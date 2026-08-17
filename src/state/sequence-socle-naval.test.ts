@@ -12,7 +12,7 @@
  *     (coque, sillage en mètres, deux camps) déroule DEUX manches par la structure — cycle,
  *     accumulateur par camp, persistance entre les manches, borne, issue.
  */
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { useGame } from './store';
@@ -108,13 +108,13 @@ registerSequence<SeaCrisisPayload>(NAVAL, {
     if (!barreur) return undefined;
     traceNavale.push({ round: seq.round, metres: seq.payload.metres, cum: { ...seq.cum } });
     const step = monoStep({
-      id: `crise-${seq.round}`, kind: 'testCriseNavale', label: rawText(`Manœuvre — manche ${seq.round}`),
+      id: `crise-${seq.round}`, kind: 'testCriseNavale', label: fixtureText(`Manœuvre — manche ${seq.round}`),
       actor: barreur, difficulty: 'intermediaire', ligne: { test: { skill: 'navigation' } },
       stake: combatStakeRef('pursuitMove', { values: { distance: seq.payload.metres, evasion: 500 } }),
     });
     if (!step) return undefined;
     return {
-      title: rawText(`Crise de mer — manche ${seq.round}`),
+      title: fixtureText(`Crise de mer — manche ${seq.round}`),
       steps: [step],
       immediate: true, // aucune fenêtre à montrer dans ce harnais : le socle résout et enchaîne
       payload: { ...seq.payload, manches: [...seq.payload.manches, seq.round] },
@@ -183,11 +183,11 @@ describe('Structure d’orchestrateur — instanciable par une crise NAVALE (2 m
         manches = seq.round;
         const h = get().party[0];
         const step = monoStep({
-          id: `b-${seq.round}`, kind: 'testCriseNavale', label: rawText('Boucle'), actor: h,
+          id: `b-${seq.round}`, kind: 'testCriseNavale', label: fixtureText('Boucle'), actor: h,
           difficulty: 'intermediaire', montee: { base: 50, target: 50 },
           stake: combatStakeRef('pursuitMove', { values: { distance: 1, evasion: 10 } }),
         });
-        return step ? { title: rawText('Boucle'), steps: [step], immediate: true } : undefined;
+        return step ? { title: fixtureText('Boucle'), steps: [step], immediate: true } : undefined;
       },
       close: () => ({ go: 'continue' }), // ne conclut JAMAIS
     });

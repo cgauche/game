@@ -115,9 +115,10 @@ export default tseslint.config(
     // Le sélecteur T1 est SYNTAXIQUE (un lint ne type pas la cible) : il vise `Object.assign` dont un
     // argument littéral porte un `label`. Le seul site RÉEL du dépôt (`interludeFlow.ts`, un
     // `Partial<PendingActivityFields>` — pas une étape) porte son exemption AU SITE avec sa raison.
-    // Les fichiers de TEST sont hors du sélecteur T2 : leurs 38 `as CascadeStep` sont GELÉS nominativement
-    // et décroissants (`state/player-text-ratchet.test.ts`, cible 0, éteints par V8a₁) — un gel mesuré
-    // vaut mieux qu'une exemption muette, et le code de PRODUCTION, lui, n'en a plus AUCUN (mesuré).
+    // Les fichiers de TEST sont hors du sélecteur T2 : leurs `as CascadeStep` sont GELÉS nominativement
+    // et décroissants — le COMPTE vit dans `GEL_AS_CASCADE_STEP` (`state/player-text-ratchet.test.ts`,
+    // cible 0), jamais ici : un chiffre recopié en commentaire ment au premier lot qui l'abaisse. Un gel
+    // mesuré vaut mieux qu'une exemption muette, et le code de PRODUCTION, lui, n'en a plus AUCUN (mesuré).
     files: ['src/**/*.ts', 'src/**/*.tsx'],
     ignores: ['src/state/rollSeam.ts', 'src/state/revealStep.ts', 'src/ui/rollRowBuild.ts', 'src/i18n/index.ts', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
     rules: {

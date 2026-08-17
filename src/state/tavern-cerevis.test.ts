@@ -16,7 +16,7 @@
  * aucune fin de partie ; elle nomme en revanche l'image de celui qui « roule sous la table » (l.88),
  * d'où l'arrêt anticipé sur un joueur Inconscient.
  */
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
@@ -58,7 +58,7 @@ function partie(challengerId: string, etat?: Partial<TavernCombinedState>, marks
 function tour(actorId: string, mien: { roll: number; target: number; sl: number }, sien: { roll: number; sl: number }): PendingCascade {
   const step: CascadeStep = {
     id: `${TAVERN_ROUND_KIND}-2`, kind: TAVERN_ROUND_KIND, actorId,
-    label: rawText('Le Cerevis'), rollLabel: 'Pari', difficulty: 'accessible', base: mien.target, target: mien.target,
+    label: fixtureText('Le Cerevis'), rollLabel: 'Pari', difficulty: 'accessible', base: mien.target, target: mien.target,
     result: { roll: mien.roll, target: mien.target, sl: mien.sl, success: mien.roll <= mien.target },
     meta: {
       gameId: 'cerevis', opponentValue: OPPONENT, opponentName: 'un habitué', stakeBrass: 0, round: 2,
@@ -226,9 +226,9 @@ describe('Le Cerevis — les chouettes s’effacent au geste du joueur (l.88)', 
       const pc: PendingCascade = {
         title: 'Cerevis', purpose: 'sequence', cursor: 1, log: [],
         participants: [{
-          id: 'tavern-erase-2', kind: 'tavern-erase', actorId: a.id, label: 'Effacer ?',
-          options: [{ key: 'efface', label: 'e' }, { key: 'garde', label: 'g' }], chosen: 'efface',
-        } as CascadeStep],
+          id: 'tavern-erase-2', kind: 'tavern-erase', actorId: a.id, label: fixtureText('Effacer ?'),
+          options: [{ key: 'efface', label: fixtureText('e') }, { key: 'garde', label: fixtureText('g') }], chosen: 'efface',
+        }],
       };
       closeSequenceRound(get, useGame.setState, pc);
     };

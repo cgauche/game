@@ -4,7 +4,7 @@
  * et ne touche NI `interactive`, NI `groupOwner`, NI `actorId` — la porte les pose depuis le socle
  * (`surfaceRow`/`bandStep`), et la fenêtre atteint le siège qui tient le porteur.
  */
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { openBand, openChoice, choiceStep, bandStep, type BuiltCascadeStep, type BandOpenSpec, type BandPorteur } from './rollSeam';
@@ -43,7 +43,7 @@ describe('#1262 — openBand : la porte monte, surface et POSSÈDE', () => {
     const h2 = hero('H2');
     deuxSieges([h1, h2]);
     openBand(useGame.getState, useGame.setState, {
-      id: 'peur', kind: 'encounterPsych', label: rawText('Peur'), title: 'Peur', purpose: 'test',
+      id: 'peur', kind: 'encounterPsych', label: fixtureText('Peur'), title: 'Peur', purpose: 'test',
       difficulty: 'intermediaire',
       porteurs: [{ actor: h1, ligne: { test: { char: 'force-mentale' } } }, { actor: h2, ligne: { test: { char: 'force-mentale' } } }],
     });
@@ -61,7 +61,7 @@ describe('#1262 — openBand : la porte monte, surface et POSSÈDE', () => {
     const h1 = hero('H1');
     deuxSieges([h1, hero('H2')]);
     openBand(useGame.getState, useGame.setState, {
-      id: 'resistance', kind: 'upkeepTest', label: rawText('Résistance'), title: 'Entretien', purpose: 'upkeep',
+      id: 'resistance', kind: 'upkeepTest', label: fixtureText('Résistance'), title: 'Entretien', purpose: 'upkeep',
       difficulty: 'intermediaire',
       porteurs: [{ actor: h1, ligne: { test: { char: 'endurance' } } }],
     });
@@ -79,7 +79,7 @@ describe('#1262 — openBand : la porte monte, surface et POSSÈDE', () => {
     deuxSieges([h1, h2]);
     setCadence('rapide');
     openBand(useGame.getState, useGame.setState, {
-      id: 'peur', kind: 'encounterPsych', label: rawText('Peur'), title: 'Peur', purpose: 'test',
+      id: 'peur', kind: 'encounterPsych', label: fixtureText('Peur'), title: 'Peur', purpose: 'test',
       difficulty: 'intermediaire',
       porteurs: [{ actor: h1, ligne: { test: { char: 'force-mentale' } } }, { actor: h2, ligne: { test: { char: 'force-mentale' } } }],
     });
@@ -96,7 +96,7 @@ describe('#1262 — openBand : la porte monte, surface et POSSÈDE', () => {
     const h1 = hero('H1');
     deuxSieges([h1, hero('H2', { aiControlled: true } as Partial<Combatant>)]);
     openBand(useGame.getState, useGame.setState, {
-      id: 'surprise', kind: 'triggeredBatchTest', label: rawText('Surprise'), title: 'Surprise', purpose: 'combat',
+      id: 'surprise', kind: 'triggeredBatchTest', label: fixtureText('Surprise'), title: 'Surprise', purpose: 'combat',
       rows: [
         { id: 'H1', base: 40, target: 40, result: null, difficulty: 'intermediaire' },
         { id: 'H2', base: 30, target: 30, result: null, difficulty: 'intermediaire' },
@@ -114,7 +114,7 @@ describe('#1262 — openBand : la porte monte, surface et POSSÈDE', () => {
     deuxSieges([h1, hero('H2')]);
     const fige = { roll: 12, target: 40, sl: 2, success: true };
     openBand(useGame.getState, useGame.setState, {
-      id: 'oppose', kind: 'triggeredBatchTest', label: rawText('Opposé gelé'), title: 'Opposé', purpose: 'combat',
+      id: 'oppose', kind: 'triggeredBatchTest', label: fixtureText('Opposé gelé'), title: 'Opposé', purpose: 'combat',
       rows: [
         { id: 'H1', base: 40, target: 40, result: fige, difficulty: 'intermediaire' },
         { id: 'H2', base: 30, target: 30, result: null, difficulty: 'intermediaire' },
@@ -130,7 +130,7 @@ describe('#1262 — openBand : la porte monte, surface et POSSÈDE', () => {
     const h1 = hero('H1');
     deuxSieges([h1, hero('H2')]);
     expect(() => openBand(useGame.getState, useGame.setState, {
-      id: 'orpheline', kind: 'k', label: rawText('L'), title: 'T', purpose: 'test',
+      id: 'orpheline', kind: 'k', label: fixtureText('L'), title: 'T', purpose: 'test',
       rows: [{ id: 'FANTOME', base: 30, target: 30, result: null, difficulty: 'intermediaire' }],
     })).toThrow(/sans combattant/);
     expect(useGame.getState().pendingCascade, 'plus aucune rangée ⇒ aucune bande').toBeNull();
@@ -139,7 +139,7 @@ describe('#1262 — openBand : la porte monte, surface et POSSÈDE', () => {
   it('zéro porteur → aucune fenêtre (rien n’est mis en jeu)', () => {
     deuxSieges([hero('H1')]);
     openBand(useGame.getState, useGame.setState, {
-      id: 'vide', kind: 'k', label: rawText('L'), title: 'T', purpose: 'test', difficulty: 'intermediaire', porteurs: [],
+      id: 'vide', kind: 'k', label: fixtureText('L'), title: 'T', purpose: 'test', difficulty: 'intermediaire', porteurs: [],
     });
     expect(useGame.getState().pendingCascade).toBeNull();
   });
@@ -161,9 +161,9 @@ describe('#1262 — openChoice : une décision PORTÉE, jamais partagée', () =>
   it('le choix porte son PORTEUR et AUCUN `groupOwner` — la fenêtre va au siège qui le tient', () => {
     deuxSieges([hero('H1'), hero('H2')]);
     openChoice(useGame.getState, useGame.setState, {
-      id: 'deviation', kind: 'deviation', label: rawText('Dévier ?'), title: 'Coup Critique', purpose: 'combat',
+      id: 'deviation', kind: 'deviation', label: fixtureText('Dévier ?'), title: 'Coup Critique', purpose: 'combat',
       actorId: 'H1',
-      options: [{ key: 'devier', label: rawText('Dévier (−1 PA)') }, { key: 'subir', label: rawText('Subir') }],
+      options: [{ key: 'devier', label: fixtureText('Dévier (−1 PA)') }, { key: 'subir', label: fixtureText('Subir') }],
       defaultChoice: 'subir',
     });
     const step = etapeCourante();
@@ -178,27 +178,27 @@ describe('#1262 — openChoice : une décision PORTÉE, jamais partagée', () =>
   it('PORTEUR oublié → signalé (DEV : throw ; en PROD la décision se dégrade au lieu de disparaître)', () => {
     deuxSieges([hero('H1')]);
     expect(() => openChoice(useGame.getState, useGame.setState, {
-      id: 'orphelin', kind: 'pick', label: rawText('Choix'), title: 'T', purpose: 'test',
-      actorId: '', options: [{ key: 'a', label: rawText('A') }],
+      id: 'orphelin', kind: 'pick', label: fixtureText('Choix'), title: 'T', purpose: 'test',
+      actorId: '', options: [{ key: 'a', label: fixtureText('A') }],
     })).toThrow(/sans PORTEUR/);
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 
   it('`defaultChoice` hors des options → signalé (DEV : throw) — la clé fautive n’est jamais posée', () => {
     expect(() => choiceStep({
-      id: 'c', kind: 'pick', label: rawText('Choix'), actorId: 'H1',
-      options: [{ key: 'a', label: rawText('A') }], defaultChoice: 'z',
+      id: 'c', kind: 'pick', label: fixtureText('Choix'), actorId: 'H1',
+      options: [{ key: 'a', label: fixtureText('A') }], defaultChoice: 'z',
     })).toThrow(/defaultChoice/);
   });
 
   it('zéro option → aucune fenêtre : elle serait une impasse (aucune décision à préserver)', () => {
-    expect(() => choiceStep({ id: 'c', kind: 'pick', label: rawText('Choix'), actorId: 'H1', options: [] })).toThrow(/sans option/);
+    expect(() => choiceStep({ id: 'c', kind: 'pick', label: fixtureText('Choix'), actorId: 'H1', options: [] })).toThrow(/sans option/);
   });
 
   /** La branche DE PROD (porteur manquant → fenêtre dégradée) est masquée par le throw de DEV : la
    *  forme qu'elle produit se monte donc directement, comme l'arbitre la recevra. */
   it('forme DÉGRADÉE (choix sans porteur) : la fenêtre EXISTE et échoit à l’hôte — l’invité voit celle d’autrui, jamais une fenêtre morte', () => {
-    const sansPorteur: CascadeStep = { id: 'degrade', kind: 'pick', label: rawText('Choix'), options: [{ key: 'a', label: rawText('A') }, { key: 'b', label: rawText('B') }] };
+    const sansPorteur: CascadeStep = { id: 'degrade', kind: 'pick', label: fixtureText('Choix'), options: [{ key: 'a', label: fixtureText('A') }, { key: 'b', label: fixtureText('B') }] };
     deuxSieges([hero('H1'), hero('H2')]);
     expect(() => startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [sansPorteur] })).not.toThrow();
     expect(useGame.getState().pendingCascade, 'une décision supprimée serait pire qu’une fenêtre à l’hôte').not.toBeNull();
@@ -216,7 +216,7 @@ describe('#1262 — « `result` ⇒ close » ne vaut QU’À L’OUVERTURE', () 
     const h2 = hero('H2');
     deuxSieges([h1, h2]);
     openBand(useGame.getState, useGame.setState, {
-      id: 'peur', kind: 'encounterPsych', label: rawText('Peur'), title: 'Peur', purpose: 'test',
+      id: 'peur', kind: 'encounterPsych', label: fixtureText('Peur'), title: 'Peur', purpose: 'test',
       difficulty: 'intermediaire',
       porteurs: [{ actor: h1, ligne: { test: { char: 'force-mentale' } } }, { actor: h2, ligne: { test: { char: 'force-mentale' } } }],
     });
@@ -246,7 +246,7 @@ describe('#1262 — marque `BuiltCascadeStep` : les constructeurs de la porte la
   });
 
   it('la marque n’existe PAS à l’exécution : une étape sérialisée traverse le JSON sans rien perdre', () => {
-    const step = choiceStep({ id: 'c', kind: 'pick', label: rawText('Choix'), actorId: 'H1', options: [{ key: 'a', label: rawText('A') }] })!;
+    const step = choiceStep({ id: 'c', kind: 'pick', label: fixtureText('Choix'), actorId: 'H1', options: [{ key: 'a', label: fixtureText('A') }] })!;
     expect(JSON.parse(JSON.stringify(step))).toEqual(step);
     expect(Object.getOwnPropertySymbols(step)).toEqual([]);
   });

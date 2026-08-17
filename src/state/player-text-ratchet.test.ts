@@ -1,22 +1,27 @@
 /**
- * TROIS CLIQUETS DU MURAGE DU TEXTE JOUEUR (#1318 V8a₀, étendus en V8a₁). Le verrou passe SEUL — la marque
- * `PlayerText` est exigée par le champ pilote (`CascadeStep.label`) ET par les 7 portes du seam
- * (`rollSeam`) — et les deux STOCKS que ce verrou met au jour sont GELÉS ici plutôt que migrés dans le
- * même geste : ce sont des échafaudages à lot d'extinction NOMMÉ (V8a₁ : migration de masse vers `t()`
- * et les gabarits ; puis V8b/V8c), pas des baselines muettes.
+ * CINQ CLIQUETS DU MURAGE DU TEXTE JOUEUR (#1318 V8a₀, étendus en V8a₁ puis E7). Le verrou passe SEUL — la
+ * marque `PlayerText` est exigée par le champ pilote (`CascadeStep.label`) ET par les 7 portes du seam
+ * (`rollSeam`) — et les STOCKS que ce verrou met au jour sont GELÉS ici plutôt que migrés dans le
+ * même geste : ce sont des échafaudages à lot d'extinction NOMMÉ, pas des baselines muettes.
  *
  *  1. `rawText(` — le FOSSILE (`i18n/rawText.ts`) : un libellé déjà écrit au call-site, gelé le temps
  *     que sa forme soit tranchée texte par texte. Le module MEURT au commit qui ramène le total à 0.
+ *     E7 a éteint tout le stock des HARNAIS ; il ne reste qu'un fichier de production, NOMMÉ.
  *  2. `as CascadeStep` — le contournement de CONTENEUR (T2) dans les fichiers de TEST. En production
  *     il n'en reste AUCUN (mesuré, et le lint l'y refuse : `built-brand-lint.test.ts`) ; les tests sont
  *     hors du sélecteur, donc c'est CE cliquet qui les tient — sans lui, « les tests sont exclus »
  *     serait un trou et non un choix.
  *  3. `dataLabel('…')` — le littéral FR passé au MINTEUR du texte authoré (V8a₁). Sans lui, `dataLabel`
  *     serait le fossile renommé. CIBLE 0 dès sa pose, donc SANS gel.
+ *  4. l'IMPORT de `i18n/fixtureText` hors d'un HARNAIS (E7) — le successeur qui a repris les 138 appels
+ *     de test est muré par CHEMIN D'IMPORT. CIBLE 0, SANS gel.
+ *  5. `fixtureText(` hors d'un HARNAIS (E7) — la serrure 4 seule laisserait passer un ré-export ;
+ *     l'appel est donc compté à part. CIBLE 0, SANS gel. Dans les tests, l'outil est LIBRE.
  *
- * Chaque cliquet a les mêmes DEUX rouges, mesurés plus bas : un fichier qui DÉPASSE son gel, un fichier
- * ABSENT du gel qui s'y met. Descendre SOUS son gel ne rougit pas (c'est le but) — mais le gel doit être
- * abaissé dans le même commit, ce que le volet « le gel est SERRÉ » rapporte.
+ * Les cliquets À GEL (1, 2) ont les mêmes DEUX rouges, mesurés plus bas : un fichier qui DÉPASSE son gel,
+ * un fichier ABSENT du gel qui s'y met. Descendre SOUS son gel ne rougit pas (c'est le but) — mais le gel
+ * doit être abaissé dans le même commit, ce que le volet « le gel est SERRÉ » rapporte. Les cliquets SANS
+ * gel (3, 4, 5) n'ont qu'un rouge : toute occurrence hors de son lieu licite.
  *
  * CE QUE CES CLIQUETS NE VOIENT PAS (dette nommée V8a₁ — ils comptent des APPELS, pas des littéraux
  * FR en général ; les deux dernières sont consignées AU SITE, pas seulement ici) :
@@ -38,51 +43,25 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * GEL DU 2026-08-16, REGEL V8a₁ — 134 appels dans 28 fichiers, dont UN SEUL en PRODUCTION.
- * La production est passée aux fabriques (`dataLabel` pour le texte AUTHORÉ, `t('step.*')`/`t('opt.*')`
- * et les gabarits de `rollSeam` pour le texte de l'application) : 84 des 85 sites de prod ont été
- * migrés. Le survivant (`combatManeuvers.ts`) appartient au périmètre d'une session voisine ACTIVE et
- * se migre au lot suivant — c'est un fichier NOMMÉ, pas une tolérance. Le stock des TESTS a monté de
- * 108 à 133 : la marque s'est étendue à `ChoiceSpec.options[].label`, et les fixtures de test posent
- * ces libellés au call-site (arbitrage du lot d'extinction E7 — cf. le solde de la vague).
+ * GEL DU 2026-08-17, REGEL E7 — 1 appel, dans 1 fichier de PRODUCTION.
  *
- * REGEL V8b₂ — 139 : le marquage de `SequenceRound.title` (`state/sequenceContract.ts`) a rougi CINQ
- * titres de fixtures des deux harnais de séquence (`sequence-familles`, `sequence-socle-naval`), qui
- * les posent au call-site. Même arbitrage E7 : la PRODUCTION reste au fichier nommé unique, le stock
- * des tests absorbe le verrou.
+ * LE STOCK DES TESTS EST ÉTEINT : les 138 appels que 27 harnais posaient au fossile sont passés à
+ * `i18n/fixtureText` (E7), un minteur RÉSERVÉ AUX TESTS et muré par chemin d'import — ses deux
+ * cliquets (T4/T5, en bas de ce fichier) sont à cible 0 hors harnais, sans gel, sans quoi ce serait
+ * le fossile renommé. Le gain de ce passage est la MARQUE de type, PAS une dispense de catalogue :
+ * c'est dit noir sur blanc au JSDoc du module.
+ *
+ * Le survivant, `state/combatManeuvers.ts`, appartient au périmètre d'une session voisine ACTIVE et
+ * se migre à son lot — c'est un fichier NOMMÉ, pas une tolérance. Le module `i18n/rawText.ts` meurt au
+ * commit qui ramène ce total à 0.
  */
 export const GEL_RAW_TEXT: Readonly<Record<string, number>> = {
-  'src/state/cadence-rapide.test.ts': 4,
-  'src/state/cargo-risk.test.ts': 4,
-  'src/state/cascade-quantite-second.test.ts': 6,
-  'src/state/cascade-table-step.test.ts': 7,
-  'src/state/cascade.test.ts': 18,
-  'src/state/combat/blade-trap-test.test.ts': 3,
   'src/state/combatManeuvers.ts': 1,
-  'src/state/fixed-die.test.ts': 1,
-  'src/state/journal-projection.test.ts': 1,
-  'src/state/night-bands.test.ts': 2,
-  'src/state/pursuit-flow.test.ts': 4,
-  'src/state/pursuit-fuite-variante.test.ts': 1,
-  'src/state/pursuit-sacrifice.test.ts': 1,
-  'src/state/rest-flow.test.ts': 1,
-  'src/state/river-voyage-flow.test.ts': 4,
-  'src/state/roll-seam-mints.test.ts': 25,
-  'src/state/roll-seam-porte.test.ts': 21,
-  'src/state/roll-seam-socle.test.ts': 5,
-  'src/state/sea-voyage-flow.test.ts': 9,
-  'src/state/sequence-familles.test.ts': 6,
-  'src/state/sequence-socle-naval.test.ts': 4,
-  'src/state/tavern-cerevis.test.ts': 1,
-  'src/state/tavern-dominos-tiebreak.test.ts': 1,
-  'src/state/tavern-lancers.test.ts': 1,
-  'src/state/upkeep-in-combat.test.ts': 2,
-  'src/ui/CascadeModal.test.ts': 1,
-  'src/ui/CascadeRevealSubject.test.tsx': 1,
-  'src/ui/CascadeTableMode.test.tsx': 4,
 };
 
-/** GEL DU 2026-08-16 (`as CascadeStep` en TEST) — 37 casts dans 17 fichiers. Zéro en production. */
+/** GEL DU 2026-08-17 (`as CascadeStep` en TEST) — 35 casts dans 15 fichiers. Zéro en production. E7 en a
+ *  éteint DEUX, dans des fichiers déjà ouverts pour la migration : leur cast ne servait qu'à blanchir un
+ *  `label` écrit au call-site — minté en fixture, le littéral satisfait le type et le cast tombe. */
 export const GEL_AS_CASCADE_STEP: Readonly<Record<string, number>> = {
   'src/state/act-gate-possession.test.ts': 2,
   'src/state/bargain-soutien-departage.test.ts': 2,
@@ -94,8 +73,6 @@ export const GEL_AS_CASCADE_STEP: Readonly<Record<string, number>> = {
   'src/state/departage-etats-non-fondus.test.ts': 3,
   'src/state/miscast-step.test.ts': 1,
   'src/state/rest-flow.test.ts': 1,
-  'src/state/roll-seam-mints.test.ts': 1,
-  'src/state/tavern-cerevis.test.ts': 1,
   'src/state/zone-cross-test-gate.test.ts': 1,
   'src/ui/CascadeTableMode.test.tsx': 1,
   'src/ui/VoyageScreen.test.tsx': 1,
@@ -108,28 +85,96 @@ export function compteAppels(source: string): number {
   return (source.match(/\brawText\s*\(/g) ?? []).length;
 }
 
+/** Un HARNAIS de test — le seul lieu où `fixtureText` est licite (cliquets T4/T5, en bas de fichier). */
+export const estHarnais = (f: string): boolean => /\.test(-d)?\.tsx?$/.test(f);
+
+/** Le chemin de module du minteur de fixture, EXTENSION COMPRISE : `moduleResolution: 'bundler'` accepte
+ *  `'./fixtureText'` comme `'./fixtureText.js'` (et `.ts`/`.mjs`/`.cjs`/`.jsx`/`.tsx`) — exiger la quote
+ *  collée au nom laissait passer la forme suffixée, qui COMPILE. */
+const CHEMIN_FIXTURE = String.raw`['"][^'"]*\/fixtureText(?:\.[mc]?[jt]sx?)?['"]`;
+
+/** Le fichier IMPORTE-t-il `i18n/fixtureText` ? (`import`/`export … from`, `import()` dynamique, `require`) */
+export function importeFixtureText(source: string): boolean {
+  return new RegExp(`(?:from|import|require)\\s*\\(?\\s*${CHEMIN_FIXTURE}`).test(source);
+}
+
+/**
+ * NOMS SOUS LESQUELS le minteur est APPELÉ dans un fichier : le nom nu, PLUS tout BINDING LOCAL que ses
+ * imports lui donnent. Sans cela, `import { fixtureText as marque }` puis `marque('…')` échappait au
+ * compteur (mesuré) — la serrure d'import seule ne suffit pas non plus, car un HUB qui ré-exporte
+ * déplace l'import d'un cran. Formes couvertes : nommée (avec ou sans `as`), NAMESPACE (`* as F` →
+ * `F.fixtureText`), défaut, et destructuration d'un `require`/`import()` (`{ fixtureText: m }`).
+ */
+export function nomsAppelFixtureText(source: string): string[] {
+  const noms = new Set(['fixtureText']);
+  const clause = (c: string): void => {
+    const ns = c.match(/\*\s*as\s+([A-Za-z_$][\w$]*)/);
+    if (ns) noms.add(`${ns[1]}.fixtureText`);
+    const acc = c.match(/\{([^}]*)\}/);
+    if (acc) {
+      for (const part of acc[1].split(',')) {
+        const m = part.trim().match(/^([A-Za-z_$][\w$]*)(?:\s*(?:as|:)\s*([A-Za-z_$][\w$]*))?$/);
+        if (m) noms.add(m[2] ?? m[1]);
+      }
+    }
+    const def = c.replace(/\{[^}]*\}/g, '').replace(/\*\s*as\s+[A-Za-z_$][\w$]*/g, '').match(/^\s*([A-Za-z_$][\w$]*)/);
+    if (def && def[1] !== 'type') noms.add(def[1]);
+  };
+  const statique = new RegExp(`(?:import|export)\\s+([^;]*?)\\s*from\\s*${CHEMIN_FIXTURE}`, 'g');
+  const dynamique = new RegExp(`(?:const|let|var)\\s+([^=]*?)=\\s*(?:await\\s+)?(?:import|require)\\s*\\(\\s*${CHEMIN_FIXTURE}`, 'g');
+  for (const rx of [statique, dynamique]) {
+    let m: RegExpExecArray | null;
+    while ((m = rx.exec(source))) clause(m[1]);
+  }
+  return [...noms];
+}
+
+/** Appels du minteur de fixture, sous TOUS ses noms locaux (le module le DÉFINIT, il ne l'appelle pas).
+ *  Le nom doit être ENTIER à gauche (`(?<![\w$.])`) : sans quoi `F.fixtureText(` d'un import NAMESPACE
+ *  serait compté deux fois — une par son binding qualifié, une par le nom nu qui s'y termine. */
+export function compteFixtureText(source: string): number {
+  return nomsAppelFixtureText(source).reduce((n, nom) => {
+    const motif = nom.replace(/[.$]/g, (c) => `\\${c}`);
+    return n + (source.match(new RegExp(`(?<![\\w$.])${motif}\\s*\\(`, 'g')) ?? []).length;
+  }, 0);
+}
+
 /** Casts de conteneur dans un texte source. TEXTUEL : il voit donc aussi les mentions en commentaire —
  *  d'où l'exclusion des deux fichiers qui NOMMENT le motif au lieu de l'employer (ci-dessous). */
 export function compteCasts(source: string): number {
   return (source.match(/\bas\s+CascadeStep\b/g) ?? []).length;
 }
 
-/** Fichiers hors recensement : ils NOMMENT les motifs (sondes de mutation, JSDoc du verrou) au lieu de
- *  les employer — les compter ferait mentir un stock dont la cible est 0. */
+/** Fichiers hors recensement des cliquets 1 et 2 : ils NOMMENT ces motifs (sondes de mutation, JSDoc du
+ *  verrou) au lieu de les employer — les compter ferait mentir un stock dont la cible est 0.
+ *
+ *  Cette liste est PROPRE aux cliquets 1/2 et ne s'applique à AUCUN autre : elle exempte deux fichiers de
+ *  PRODUCTION (`pendings.ts`) ou de garde, qui n'ont aucune raison d'être aveugles aux serrures T4/T5 —
+ *  l'exclusion est donc un PARAMÈTRE de `recense`, jamais un filtre global. */
 const HORS_RECENSEMENT = new Set([
   'src/state/player-text-ratchet.test.ts',
   'src/state/built-brand-lint.test.ts',
   'src/state/pendings.ts',
 ]);
 
-/** Recensement fichier → compte sur un arbre (chemins POSIX relatifs à la racine). */
-export function recense(racine: string, compte: (s: string) => number, filtre?: (f: string) => boolean): Record<string, number> {
+/** Hors recensement des cliquets 4 et 5 : CE fichier seul, qui nomme le motif en sondes. Rien d'autre —
+ *  surtout pas un fichier de production. */
+const HORS_FIXTURE = new Set(['src/state/player-text-ratchet.test.ts']);
+
+/** Recensement fichier → compte sur un arbre (chemins POSIX relatifs à la racine). L'exclusion est DITE
+ *  par l'appelant : chaque cliquet a la sienne, aucun n'hérite de celle d'un autre. */
+export function recense(
+  racine: string,
+  compte: (s: string) => number,
+  filtre?: (f: string) => boolean,
+  hors: ReadonlySet<string> = HORS_RECENSEMENT,
+): Record<string, number> {
   const out: Record<string, number> = {};
   const parcours = (rel: string): void => {
     for (const e of readdirSync(join(racine, rel), { withFileTypes: true })) {
       const child = `${rel}/${e.name}`;
       if (e.isDirectory()) { parcours(child); continue; }
-      if (!/\.tsx?$/.test(e.name) || HORS_RECENSEMENT.has(child)) continue;
+      if (!/\.tsx?$/.test(e.name) || hors.has(child)) continue;
       if (filtre && !filtre(child)) continue;
       const n = compte(readFileSync(join(racine, child), 'utf8'));
       if (n > 0) out[child] = n;
@@ -208,13 +253,12 @@ describe('#1318 V8a₀ — le fossile `rawText` est GELÉ, NOMINATIF et DÉCROIS
   });
 
   it('CIBLE 0 : le stock mesuré ne dépasse pas le TOTAL gelé, et ce total est DIT', () => {
-    expect(somme(reel), 'V8a₁/V8b/V8c ramènent ce total à 0, puis `i18n/rawText.ts` est supprimé').toBeLessThanOrEqual(somme(GEL_RAW_TEXT));
-    expect(somme(GEL_RAW_TEXT), 'le TOTAL regelé du 2026-08-16 (V8b₂) — il ne se relève pas, il se rabaisse').toBe(139);
+    expect(somme(reel), 'le lot suivant ramène ce total à 0, puis `i18n/rawText.ts` est supprimé').toBeLessThanOrEqual(somme(GEL_RAW_TEXT));
+    expect(somme(GEL_RAW_TEXT), 'le TOTAL regelé du 2026-08-17 (E7) — il ne se relève pas, il se rabaisse').toBe(1);
   });
 
-  it('la PRODUCTION est à UN fichier NOMMÉ — plus un stock, une exception qui a un nom et une date', () => {
-    const prod = Object.entries(reel).filter(([f]) => !estTest(f)).map(([f]) => f);
-    expect(prod, 'V8a₁ a migré 84 des 85 sites de prod ; `combatManeuvers.ts` est au périmètre d’une session voisine active').toEqual(['src/state/combatManeuvers.ts']);
+  it('le fossile n’a plus qu’UN site, en PRODUCTION, NOMMÉ — et plus AUCUN dans les harnais', () => {
+    expect(Object.keys(reel), 'E7 a migré les 138 appels des harnais vers `i18n/fixtureText` ; `combatManeuvers.ts` est au périmètre d’une session voisine active').toEqual(['src/state/combatManeuvers.ts']);
   });
 
   it('MUTATION : un appel de PLUS dans un fichier gelé rougit', () => {
@@ -226,7 +270,7 @@ describe('#1318 V8a₀ — le fossile `rawText` est GELÉ, NOMINATIF et DÉCROIS
   });
 
   it('MUTATION : un fichier qui DESCEND sous son gel ne rougit pas (la décroissance est le but)', () => {
-    expect(violations({ 'src/state/sea-voyage-flow.test.ts': 3 }, GEL_RAW_TEXT, 'appel(s)')).toEqual([]);
+    expect(violations({ 'src/state/un-harnais.test.ts': 3 }, { 'src/state/un-harnais.test.ts': 5 }, 'appel(s)')).toEqual([]);
   });
 
   it('le compteur voit les formes réelles d’appel, et pas la DÉFINITION du fossile', () => {
@@ -248,7 +292,7 @@ describe('#1318 V8a₀ T2 — les `as CascadeStep` des TESTS sont GELÉS (la pro
 
   it('le gel est SERRÉ, et son TOTAL est dit (cible 0 — V8a₁ passe ces tests par les portes)', () => {
     expect(relachees(reel, GEL_AS_CASCADE_STEP)).toEqual([]);
-    expect(somme(GEL_AS_CASCADE_STEP)).toBe(37);
+    expect(somme(GEL_AS_CASCADE_STEP)).toBe(35);
   });
 
   it('MUTATION : un cast de PLUS dans un test gelé rougit', () => {
@@ -290,5 +334,93 @@ describe('#1318 V8a₁ T3 — le minteur `dataLabel` n’accepte AUCUN littéral
     expect(litterauxDataLabel("dataLabel(CHAR_LABELS[o.char ?? 'intelligence'])")).toEqual([]);
     // …mais la prose posée EN argument reste vue, même après un argument imbriqué.
     expect(litterauxDataLabel("dataLabel(f(x), 'Péril inconnu')")).toEqual(["'Péril inconnu'"]);
+  });
+});
+
+/**
+ * CE QUE CES DEUX SERRURES GARDENT, ET CE QU'ELLES NE GARDENT PAS (#1318 E7) — elles tiennent la
+ * FRONTIÈRE prod/test, PAS le VOLUME. Avant E7, le stock FR des harnais était borné par un gel de 138
+ * qui ne pouvait que descendre ; après, il est LIBRE (`toBeGreaterThan(0)`, jamais un compte figé).
+ * C'est une PERTE DE CLIQUET, assumée : c'est le prix de l'extinction du fossile — regeler le volume des
+ * fixtures reviendrait à rendre `fixtureText` aussi contraint que `rawText`, donc à ne rien avoir éteint.
+ * Ce qui reste mesuré, et ne se négocie pas : aucun fichier de production ne l'importe ni ne l'appelle.
+ */
+describe('#1318 E7 T4/T5 — le SUCCESSEUR `fixtureText` est muré aux HARNAIS (cible 0 hors test, sans gel)', () => {
+  const imports = recense(process.cwd(), (s) => (importeFixtureText(s) ? 1 : 0), undefined, HORS_FIXTURE);
+  const appels = recense(process.cwd(), compteFixtureText, undefined, HORS_FIXTURE);
+
+  it('T4 : aucun fichier HORS HARNAIS n’IMPORTE le minteur de fixture', () => {
+    expect(
+      Object.keys(imports).filter((f) => !estHarnais(f)),
+      'un import hors harnais ferait de `fixtureText` le fossile renommé : le texte va au catalogue (`t()`) ou au minteur de donnée (`dataLabel`)',
+    ).toEqual([]);
+  });
+
+  it('T5 : aucun fichier HORS HARNAIS n’APPELLE le minteur de fixture', () => {
+    expect(
+      Object.keys(appels).filter((f) => !estHarnais(f)),
+      'la serrure d’import seule laisserait passer un ré-export : l’appel est compté à part',
+    ).toEqual([]);
+  });
+
+  it('les HARNAIS, eux, l’emploient — le stock repris au fossile est là, et il n’est PLUS borné (cf. JSDoc)', () => {
+    expect(Object.keys(appels).every(estHarnais)).toBe(true);
+    expect(somme(appels), 'les tests sont LIBRES de leur outil : ce compte est mesuré, pas figé').toBeGreaterThan(0);
+  });
+
+  it('T4/T5 n’héritent d’AUCUNE exemption d’un autre cliquet : un fichier de PROD exempté ailleurs est vu', () => {
+    expect(HORS_RECENSEMENT.has('src/state/pendings.ts'), 'ce fichier de production est hors des cliquets 1/2…').toBe(true);
+    expect(HORS_FIXTURE.has('src/state/pendings.ts'), '…et doit rester SOUS T4/T5, sans quoi la serrure a un angle mort de production').toBe(false);
+    expect([...HORS_FIXTURE]).toEqual(['src/state/player-text-ratchet.test.ts']);
+  });
+
+  it('MUTATION : un module de PRODUCTION qui importe le minteur est vu', () => {
+    expect(importeFixtureText("import { fixtureText } from '../i18n/fixtureText';")).toBe(true);
+    expect(importeFixtureText("const { fixtureText } = await import('./i18n/fixtureText');")).toBe(true);
+  });
+
+  /**
+   * LES TROIS FORMES QUI PASSAIENT (audit E7) — toutes COMPILENT sous `moduleResolution: 'bundler'`, donc
+   * « ça ne compile pas » n'était pas une garde. Elles sont ici en sondes REJOUABLES, pas en promesse.
+   */
+  it('MUTATION : l’import SUFFIXÉ `.js` (que le bundler résout) est vu — extension comprise', () => {
+    expect(importeFixtureText("import { fixtureText as marque } from '../i18n/fixtureText.js';")).toBe(true);
+    expect(importeFixtureText("import { fixtureText } from '../i18n/fixtureText.ts';")).toBe(true);
+  });
+
+  it('MUTATION : l’appel ALIASÉ est compté sous son BINDING LOCAL, pas sous le nom nu', () => {
+    const alias = "import { fixtureText as marque } from '../i18n/fixtureText.js';\nexport const l = marque('Bande');";
+    expect(nomsAppelFixtureText(alias)).toContain('marque');
+    expect(compteFixtureText(alias), 'sans le binding, `marque(…)` passait les DEUX serrures').toBe(1);
+    const ns = "import * as F from '../i18n/fixtureText.js';\nexport const l = F.fixtureText('Bande');";
+    expect(compteFixtureText(ns), 'un namespace compte UNE fois, pas deux (le nom nu s’y termine)').toBe(1);
+    // Les deux formes de chargement RUNTIME sont mesurées ICI et non par mutation d'arbre : écrites dans
+    // un module de production, elles cassent la COLLECTE avant d'atteindre le cliquet (mesuré) — un rouge
+    // de chargement ne prouverait pas la serrure.
+    const req = "const { fixtureText: m } = require('../i18n/fixtureText.js');\nexport const l = m('Bande');";
+    expect(compteFixtureText(req)).toBe(1);
+    expect(importeFixtureText(req), 'le `require` est un import : T4 le voit aussi').toBe(true);
+    const dyn = "const { fixtureText: d } = await import('../i18n/fixtureText.js');\nexport const l = d('Bande');";
+    expect(compteFixtureText(dyn)).toBe(1);
+    expect(importeFixtureText(dyn)).toBe(true);
+  });
+
+  it('MUTATION : le HUB qui RÉ-EXPORTE est vu à sa racine — la chaîne casse là, pas chez son consommateur', () => {
+    const hub = "export { fixtureText } from './fixtureText.js';";
+    expect(importeFixtureText(hub), 'un `export … from` est un import : le hub de PROD rougit').toBe(true);
+    // Le consommateur du hub, lui, n'est PAS vu (il n'importe pas le module) — limite ASSUMÉE et sans
+    // effet : le hub qu'il consommerait ne peut pas exister en production, T4 l'y refuse à la source.
+    expect(importeFixtureText("import { fixtureText as m } from './hub';")).toBe(false);
+  });
+
+  it('un import VOISIN, et un nom qui commence pareil, ne sont pas des faux rouges', () => {
+    expect(importeFixtureText("import type { PlayerText } from './playerText';")).toBe(false);
+    expect(importeFixtureText("import { x } from './fixtureTextures';")).toBe(false);
+    expect(importeFixtureText("import { x } from './fixtureText.json';")).toBe(false);
+  });
+
+  it('le compteur voit les formes réelles d’appel, et pas la DÉFINITION du minteur', () => {
+    expect(compteFixtureText("label: fixtureText('X'), autre: fixtureText(`${a}`)")).toBe(2);
+    expect(compteFixtureText('export const fixtureText = (s: string): PlayerText => s as PlayerText;')).toBe(0);
   });
 });

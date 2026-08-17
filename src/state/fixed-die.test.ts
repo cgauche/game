@@ -1,4 +1,4 @@
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
@@ -425,7 +425,7 @@ describe('journal — la marque appartient à l’ÉTAPE qui émet, pas au slot 
   const applied: string[] = [];
 
   const etape = (id: string): CascadeStep =>
-    ({ id, kind: 'markSpy', label: rawText('Tirage'), icon: 'nav/dice', table: { tableId: TBL }});
+    ({ id, kind: 'markSpy', label: fixtureText('Tirage'), icon: 'nav/dice', table: { tableId: TBL }});
 
   beforeEach(() => {
     applied.length = 0;

@@ -1,4 +1,4 @@
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
@@ -85,7 +85,7 @@ describe('partition anti-doublon — la ligne de dé n’existe QUE sans fenêtr
     return h;
   }
   const step = (id: string, actorId: string): CascadeStep =>
-    ({ id, kind: 'tally', actorId, label: rawText(id), rollLabel: 'Résistance', base: 55, target: 55, result: null });
+    ({ id, kind: 'tally', actorId, label: fixtureText(id), rollLabel: 'Résistance', base: 55, target: 55, result: null });
 
   it('pilote IMMÉDIAT (aucune fenêtre) : l’étape MONO reçoit SA ligne de dé, dérivée', () => {
     useGame.getState().seedRng(3);

@@ -11,7 +11,7 @@
  * Le porteur est un héros quelconque et le `kind` est synthétique : si l'un de ces cas ne tenait que
  * par un jeu de taverne, l'extension ne serait pas générique.
  */
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
@@ -45,18 +45,18 @@ beforeEach(() => {
 describe('Étape « quantité » — la 6ᵉ interaction de la coquille', () => {
   it('une étape à `quantity` est l’interaction « quantite », et elle naît PRÊTE sur sa valeur d’ouverture', () => {
     const h = hero();
-    const st = quantityStep({ id: 'q', kind: 'mesure-quantite', label: rawText('Combien ?'), actorId: h.id, min: 1, max: 100, value: 42 })!;
+    const st = quantityStep({ id: 'q', kind: 'mesure-quantite', label: fixtureText('Combien ?'), actorId: h.id, min: 1, max: 100, value: 42 })!;
     expect(stepInteraction(st as CascadeStep)).toBe('quantite');
     expect(stepReady(st as CascadeStep), 'un compteur n’a pas d’état vide').toBe(true);
     expect((st as CascadeStep).amount).toBe(42);
     // Sans valeur d'ouverture déclarée : le minimum de la plage.
-    expect((quantityStep({ id: 'q2', kind: 'mesure-quantite', label: rawText('C'), actorId: h.id, min: 5, max: 9 })! as CascadeStep).amount).toBe(5);
+    expect((quantityStep({ id: 'q2', kind: 'mesure-quantite', label: fixtureText('C'), actorId: h.id, min: 5, max: 9 })! as CascadeStep).amount).toBe(5);
   });
 
   it('la porte REFUSE une plage vide (aucun nombre à poser) — jamais une fenêtre en impasse', () => {
     const h = hero();
     // DEV : la porte throw ; c'est le refus lui-même qui est mesuré.
-    expect(() => quantityStep({ id: 'q', kind: 'mesure-quantite', label: rawText('C'), actorId: h.id, min: 10, max: 3 })).toThrow();
+    expect(() => quantityStep({ id: 'q', kind: 'mesure-quantite', label: fixtureText('C'), actorId: h.id, min: 10, max: 3 })).toThrow();
   });
 
   it('la BORNE est un site unique : la saisie est ramenée dans la plage et calée sur le pas', () => {
@@ -73,7 +73,7 @@ describe('Étape « quantité » — la 6ᵉ interaction de la coquille', () => 
 
   it('le poseur d’état écrit le nombre BORNÉ sur l’étape courante, et l’applier le reçoit', () => {
     const h = hero();
-    const st = quantityStep({ id: 'q', kind: 'mesure-quantite', label: rawText('Combien ?'), actorId: h.id, min: 1, max: 100, value: 1 })!;
+    const st = quantityStep({ id: 'q', kind: 'mesure-quantite', label: fixtureText('Combien ?'), actorId: h.id, min: 1, max: 100, value: 1 })!;
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [st] });
     get().cascadeAmount('q', 77);
     expect(get().pendingCascade!.participants[0].amount).toBe(77);
@@ -89,7 +89,7 @@ describe('Étape « quantité » — la 6ᵉ interaction de la coquille', () => 
 
   it('résolution IMMÉDIATE : l’étape passe sur sa valeur d’ouverture, sans fenêtre ni défaut parallèle', () => {
     const h = hero();
-    const st = quantityStep({ id: 'q', kind: 'mesure-quantite', label: rawText('Combien ?'), actorId: h.id, min: 1, max: 100, value: 30 })!;
+    const st = quantityStep({ id: 'q', kind: 'mesure-quantite', label: fixtureText('Combien ?'), actorId: h.id, min: 1, max: 100, value: 30 })!;
     runCascadeImmediate(useGame.getState, useGame.setState, [st as CascadeStep]);
     expect(retenus).toEqual([30]);
     expect(get().pendingCascade, 'aucune fenêtre laissée pendante').toBeNull();
@@ -138,7 +138,7 @@ describe('Seconde lecture d’un jet — Test COMBINÉ (LDB 12 l.202-208)', () =
   it('la PORTE transmet la déclaration jusqu’à l’étape : la fenêtre annonce ses DEUX cibles', () => {
     const h = hero();
     const st = monoStep({
-      id: 'm', kind: 'mesure-quantite', label: rawText('Test combiné'), actor: h,
+      id: 'm', kind: 'mesure-quantite', label: fixtureText('Test combiné'), actor: h,
       difficulty: 'intermediaire', ligne: { test: { skill: 'pari' } },
       second: { label: 'Initiative', target: 40, base: 40, difficulty: 'intermediaire' },
       stake: combatStakeRef('tavernGame', { values: { jeu: 'x', adversaire: 'y', mise: 'aucune' } }),

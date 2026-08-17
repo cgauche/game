@@ -1,4 +1,4 @@
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
@@ -129,10 +129,10 @@ describe('Voie d’eau — la coque percée/heurtée gâte 1d10 Enc (#327 D)', (
 
 describe('Cogue pirate — se soumettre : pillage + tribut (#327 A5.3)', () => {
   const hailStep = (): CascadeStep => ({
-    id: 'sea-pirate-hail', kind: 'sea-pirate-hail', label: rawText('Cogue pirate'), defaultChoice: 'fuir',
+    id: 'sea-pirate-hail', kind: 'sea-pirate-hail', label: fixtureText('Cogue pirate'), defaultChoice: 'fuir',
     meta: { crisisLabel: 'Cogue pirate', crisisDesc: 'desc' },
     options: [
-      { key: 'fuir', label: rawText('Fuir') }, { key: 'combattre', label: rawText('Combattre') }, { key: 'soumettre', label: rawText('Se soumettre') },
+      { key: 'fuir', label: fixtureText('Fuir') }, { key: 'combattre', label: fixtureText('Combattre') }, { key: 'soumettre', label: fixtureText('Se soumettre') },
     ],
   });
 

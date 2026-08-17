@@ -1,4 +1,4 @@
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
@@ -469,7 +469,7 @@ describe('registre cascadeAppliers — les 10 Tests d’équipage de VOYAGE (#27
   /** Étape À PARTICIPANTS déjà agrégée (`commitStep`/`aggregateBatchStep`, #275 Décision 4 cran 1) —
    *  `result.sl` = total agrégé, `result.success` = total ≥ 1 (MDG 14 l.13). */
   function step(kind: string, sl: number, success = sl >= 1): CascadeStep {
-    return { id: kind, kind, label: rawText(kind), result: { roll: 0, target: 0, sl, success }};
+    return { id: kind, kind, label: fixtureText(kind), result: { roll: 0, target: 0, sl, success }};
   }
 
   const apply = (kind: string, sl: number, success = sl >= 1) =>
@@ -1248,7 +1248,7 @@ describe('Mal de mer — #460 (MDG 14 l.211-222, câblage jamais branché, cycle
   it('applier `sea-mal-de-mer` : échec → contracté (malaise/nausée/persistant)', () => {
     const hero = get().party[0];
     hero.diseases = [];
-    cascadeAppliers['sea-mal-de-mer'].apply(get, set, { id: 'x', kind: 'sea-mal-de-mer', label: rawText('x'), result: { roll: 99, target: 40, sl: -6, success: false }}, hero, { steps: [], index: 0 });
+    cascadeAppliers['sea-mal-de-mer'].apply(get, set, { id: 'x', kind: 'sea-mal-de-mer', label: fixtureText('x'), result: { roll: 99, target: 40, sl: -6, success: false }}, hero, { steps: [], index: 0 });
     const found = get().party.find((h) => h.id === hero.id)!.diseases?.find((d) => d.id === 'mal-de-mer');
     expect(found).toBeTruthy();
     expect(found!.symptoms.map((s) => s.symptomId).sort()).toEqual(['malaise', 'nausee', 'persistant']);
@@ -1257,7 +1257,7 @@ describe('Mal de mer — #460 (MDG 14 l.211-222, câblage jamais branché, cycle
   it('applier `sea-mal-de-mer` : réussite → rien', () => {
     const hero = get().party[0];
     hero.diseases = [];
-    cascadeAppliers['sea-mal-de-mer'].apply(get, set, { id: 'x', kind: 'sea-mal-de-mer', label: rawText('x'), result: { roll: 1, target: 40, sl: 6, success: true }}, hero, { steps: [], index: 0 });
+    cascadeAppliers['sea-mal-de-mer'].apply(get, set, { id: 'x', kind: 'sea-mal-de-mer', label: fixtureText('x'), result: { roll: 1, target: 40, sl: 6, success: true }}, hero, { steps: [], index: 0 });
     expect(get().party.find((h) => h.id === hero.id)!.diseases ?? []).toHaveLength(0);
   });
 
@@ -1327,7 +1327,7 @@ describe('Tonneau d\'eau contaminé — #460 (MDG 14 l.209, `vessel.waterLitres`
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
     set({ travelPlan: plan });
     const hero = get().party[0];
-    cascadeAppliers['sea-tonneau-contamine'].apply(get, set, { id: 'x', kind: 'sea-tonneau-contamine', label: rawText('x'), result: { roll: 99, target: 40, sl: -6, success: false }, meta: { diseaseId: 'flux-sanglant' } }, hero, { steps: [], index: 0 });
+    cascadeAppliers['sea-tonneau-contamine'].apply(get, set, { id: 'x', kind: 'sea-tonneau-contamine', label: fixtureText('x'), result: { roll: 99, target: 40, sl: -6, success: false }, meta: { diseaseId: 'flux-sanglant' } }, hero, { steps: [], index: 0 });
     expect(get().travelPlan!.sea!.waterContaminated).toEqual({ diseaseId: 'flux-sanglant' });
   });
 
@@ -1335,21 +1335,21 @@ describe('Tonneau d\'eau contaminé — #460 (MDG 14 l.209, `vessel.waterLitres`
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
     set({ travelPlan: plan });
     const hero = get().party[0];
-    cascadeAppliers['sea-tonneau-contamine'].apply(get, set, { id: 'x', kind: 'sea-tonneau-contamine', label: rawText('x'), result: { roll: 1, target: 40, sl: 6, success: true }, meta: { diseaseId: 'flux-sanglant' } }, hero, { steps: [], index: 0 });
+    cascadeAppliers['sea-tonneau-contamine'].apply(get, set, { id: 'x', kind: 'sea-tonneau-contamine', label: fixtureText('x'), result: { roll: 1, target: 40, sl: 6, success: true }, meta: { diseaseId: 'flux-sanglant' } }, hero, { steps: [], index: 0 });
     expect(get().travelPlan!.sea!.waterContaminated).toBeUndefined();
   });
 
   it('applier `sea-tonneau-expose` : boire au tonneau contaminé, échec → contracté', () => {
     const hero = get().party[0];
     hero.diseases = [];
-    cascadeAppliers['sea-tonneau-expose'].apply(get, set, { id: 'x', kind: 'sea-tonneau-expose', label: rawText('x'), result: { roll: 99, target: 20, sl: -8, success: false }, meta: { diseaseId: 'peste-noire' } }, hero, { steps: [], index: 0 });
+    cascadeAppliers['sea-tonneau-expose'].apply(get, set, { id: 'x', kind: 'sea-tonneau-expose', label: fixtureText('x'), result: { roll: 99, target: 20, sl: -8, success: false }, meta: { diseaseId: 'peste-noire' } }, hero, { steps: [], index: 0 });
     expect(get().party.find((h) => h.id === hero.id)!.diseases?.some((d) => d.id === 'peste-noire')).toBe(true);
   });
 
   it('applier `sea-tonneau-expose` : réussite → rien', () => {
     const hero = get().party[0];
     hero.diseases = [];
-    cascadeAppliers['sea-tonneau-expose'].apply(get, set, { id: 'x', kind: 'sea-tonneau-expose', label: rawText('x'), result: { roll: 1, target: 20, sl: 8, success: true }, meta: { diseaseId: 'peste-noire' } }, hero, { steps: [], index: 0 });
+    cascadeAppliers['sea-tonneau-expose'].apply(get, set, { id: 'x', kind: 'sea-tonneau-expose', label: fixtureText('x'), result: { roll: 1, target: 20, sl: 8, success: true }, meta: { diseaseId: 'peste-noire' } }, hero, { steps: [], index: 0 });
     expect(get().party.find((h) => h.id === hero.id)!.diseases ?? []).toHaveLength(0);
   });
 
@@ -1504,7 +1504,7 @@ describe('Échouage/Empêtrement — dégagement par Test de Force (#444, applie
     return plan;
   }
   function step(kind: string, sl: number, success = sl >= 1): CascadeStep {
-    return { id: kind, kind, label: rawText(kind), result: { roll: 0, target: 0, sl, success }};
+    return { id: kind, kind, label: fixtureText(kind), result: { roll: 0, target: 0, sl, success }};
   }
   const apply = (kind: string, sl: number, success = sl >= 1) =>
     cascadeAppliers[kind].apply(get, set, step(kind, sl, success), undefined, { steps: [], index: 0 });
@@ -1564,7 +1564,7 @@ describe('Survitesse — « Ça va lâcher, capitaine ! » (#443, MDG 13 l.121-1
     return plan;
   }
   function step(kind: string, sl: number, success = sl >= 1, meta?: Record<string, number>): CascadeStep {
-    return { id: kind, kind, label: rawText(kind), result: { roll: 0, target: 0, sl, success }, meta };
+    return { id: kind, kind, label: fixtureText(kind), result: { roll: 0, target: 0, sl, success }, meta };
   }
   const apply = (kind: string, sl: number, success = sl >= 1, meta?: Record<string, number>) =>
     cascadeAppliers[kind].apply(get, set, step(kind, sl, success, meta), undefined, { steps: [], index: 0 });

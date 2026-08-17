@@ -371,6 +371,25 @@ describe('#1318 V8a₀ — le lint mure les ROUTES DE FORGE du texte joueur', ()
     const [res] = await eslint.lintText(second, { filePath: 'src/i18n/rawText.ts' });
     expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'un 2ᵉ cast non justifié doit rougir').toHaveLength(1);
   });
+
+  /**
+   * LE SUCCESSEUR DES HARNAIS EST SOUS LA MÊME RÈGLE (#1318 E7) — `i18n/fixtureText.ts` marque les
+   * libellés des fixtures de test. Il est réservé aux harnais par les cliquets T4/T5
+   * (`player-text-ratchet.test.ts`), et sa fabrique reste UN cast, exempté AU SITE comme celle du
+   * fossile : sans le volet symétrique ci-dessous, rien ne mesurerait qu'un 2ᵉ cast y échoue.
+   */
+  it('le MINTEUR DE FIXTURE `i18n/fixtureText.ts` passe la règle : son unique cast porte sa directive AU SITE', async () => {
+    const [res] = await eslint.lintFiles(['src/i18n/fixtureText.ts']);
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'la directive posée couvre le cast du minteur de fixture').toHaveLength(0);
+    expect(res.errorCount, 'aucune autre erreur de lint sur le minteur de fixture').toBe(0);
+  });
+
+  it('un cast de PLUS dans le minteur de fixture (sans sa directive) est REFUSÉ — l’exemption n’est pas au fichier', async () => {
+    const reel = readFileSync('src/i18n/fixtureText.ts', 'utf8');
+    const second = `${reel}\ndeclare const sonde: unknown;\nexport const forge2 = sonde as PlayerText;\n`;
+    const [res] = await eslint.lintText(second, { filePath: 'src/i18n/fixtureText.ts' });
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'un 2ᵉ cast non justifié doit rougir').toHaveLength(1);
+  });
 });
 
 /**

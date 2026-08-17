@@ -5,7 +5,7 @@
  * d'autant à la clôture de la manche. La preuve se mesure sur le chemin RÉEL (la clôture de manche du
  * socle de séquence, `closeSequenceRound`, le même que le jeu emprunte), à jets FIGÉS des deux côtés : seule la règle optionnelle change.
  */
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { pursuedMovement, pursuitOf, PURSUIT_POLICY_DEFAUT } from './pursuitFlow';
@@ -32,7 +32,7 @@ function hero(withTalent: boolean): Combatant {
  *  RNG semé (identique d'un run à l'autre). */
 function doneRound(h: Combatant, sl: number): PendingCascade {
   const participants: CascadeStep[] = [{
-    id: 'pursuit-1', kind: 'pursuitMove', label: rawText('Manche 1 — Athlétisme'), aggregate: 'none',
+    id: 'pursuit-1', kind: 'pursuitMove', label: fixtureText('Manche 1 — Athlétisme'), aggregate: 'none',
     participants: [{
       id: h.id, label: 'Athlétisme', base: 40, target: 40, interactive: true,
       result: { roll: 40, target: 40, sl, success: sl >= 0 },

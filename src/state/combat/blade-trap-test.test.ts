@@ -1,4 +1,4 @@
-import { rawText } from '../../i18n/rawText';
+import { fixtureText } from '../../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { parseQualityInstance } from '../../engine/qualities/normalize';
 import { useGame } from '../store';
@@ -56,8 +56,8 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
   function openTrapChoice(H: { id: string }, A: { id: string }, weapon: Weapon, defSL: number) {
     const pbt: PendingBladeTrap = { defenderId: H.id, attackerId: A.id, weapon, parryWeaponUid: 'parry-uid', defSL, roll: 33 };
     pushChoice(useGame.setState, {
-      id: 'cons-bladetrap', kind: 'bladeTrap', actorId: H.id, icon: 'item/weapon', label: rawText('Parade — piéger la lame ?'),
-      options: [{ key: 'trap', label: rawText('Piéger la lame') }, { key: 'crit', label: rawText('Coup Critique') }],
+      id: 'cons-bladetrap', kind: 'bladeTrap', actorId: H.id, icon: 'item/weapon', label: fixtureText('Parade — piéger la lame ?'),
+      options: [{ key: 'trap', label: fixtureText('Piéger la lame') }, { key: 'crit', label: fixtureText('Coup Critique') }],
       defaultChoice: 'crit', bladeTrap: pbt,
     });
     useGame.getState().cascadeChoose('cons-bladetrap', 'trap');

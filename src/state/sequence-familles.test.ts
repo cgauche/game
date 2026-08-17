@@ -6,7 +6,7 @@
  *  · (6) phases (mi-temps) — le découpage déclaré, et la BORNE qui en découle.
  * Le cumul (1) et les formules de camp (3) sont mesurés par `sequence-socle-naval.test.ts`.
  */
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
@@ -75,11 +75,11 @@ registerSequence<JoutePayload>(JOUTE, {
     if (!h) return undefined;
     passes.push(seq.round);
     const step = monoStep({
-      id: `passe-${seq.round}`, kind: 'testJoute', label: rawText(`Passe ${seq.round}`), actor: h,
+      id: `passe-${seq.round}`, kind: 'testJoute', label: fixtureText(`Passe ${seq.round}`), actor: h,
       difficulty: 'intermediaire', montee: { base: 50, target: 50 },
       stake: combatStakeRef('pursuitMove', { values: { distance: 1, evasion: 10 } }),
     });
-    return step ? { title: rawText(`Joute — passe ${seq.round}`), steps: [step], immediate: true, payload: { ...seq.payload, passes: [...seq.payload.passes, seq.round] } } : undefined;
+    return step ? { title: fixtureText(`Joute — passe ${seq.round}`), steps: [step], immediate: true, payload: { ...seq.payload, passes: [...seq.payload.passes, seq.round] } } : undefined;
   },
   close: ({ get, seq }): SequenceVerdict<JoutePayload> => {
     const h = get().party[0];
@@ -178,11 +178,11 @@ describe('Famille (4)+(6) — le socle DÉCLENCHE les ops de manche, et s’arr�
         const h = get().party[0];
         passes.push(seq.round);
         const step = monoStep({
-          id: `b-${seq.round}`, kind: 'testJoute', label: rawText('Passe'), actor: h,
+          id: `b-${seq.round}`, kind: 'testJoute', label: fixtureText('Passe'), actor: h,
           difficulty: 'intermediaire', montee: { base: 50, target: 50 },
           stake: combatStakeRef('pursuitMove', { values: { distance: 1, evasion: 10 } }),
         });
-        return step ? { title: rawText('Joute'), steps: [step], immediate: true } : undefined;
+        return step ? { title: fixtureText('Joute'), steps: [step], immediate: true } : undefined;
       },
       close: ({ get }) => ({ go: 'continue', roundActors: { all: [get().party[0].id] } }),
     });
@@ -222,11 +222,11 @@ describe('la BORNE tient compte des phases déclarées', () => {
         const h = get().party[0];
         passes.push(seq.round);
         const step = monoStep({
-          id: `p-${seq.round}`, kind: 'testJoute', label: rawText('Passe'), actor: h,
+          id: `p-${seq.round}`, kind: 'testJoute', label: fixtureText('Passe'), actor: h,
           difficulty: 'intermediaire', montee: { base: 50, target: 50 },
           stake: combatStakeRef('pursuitMove', { values: { distance: 1, evasion: 10 } }),
         });
-        return step ? { title: rawText('Joute'), steps: [step], immediate: true } : undefined;
+        return step ? { title: fixtureText('Joute'), steps: [step], immediate: true } : undefined;
       },
       close: () => ({ go: 'continue' }),
     });

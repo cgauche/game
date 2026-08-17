@@ -1,4 +1,4 @@
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
@@ -31,7 +31,7 @@ describe('Cadence Rapide — auto-résolution des cascades par le driver', () =>
     return h;
   }
   const step = (id: string, actorId: string): CascadeStep =>
-    ({ id, kind: 'tally', actorId, label: rawText(id), rollLabel: 'Résistance', target: 55, result: null});
+    ({ id, kind: 'tally', actorId, label: fixtureText(id), rollLabel: 'Résistance', target: 55, result: null});
 
   it('manuel (défaut) : le driver ne touche PAS la cascade', () => {
     const h = hero();
@@ -68,8 +68,8 @@ describe('Auto-combat — choix de cascade tranché par le défaut authoré', ()
   afterEach(() => resetCadence());
 
   const choix = (id: string, actorId: string, withDefault: boolean): CascadeStep => ({
-    id, kind: 'tally-choix', actorId, label: rawText(id),
-    options: [{ key: 'devier', label: rawText('Dévier') }, { key: 'subir', label: rawText('Subir') }],
+    id, kind: 'tally-choix', actorId, label: fixtureText(id),
+    options: [{ key: 'devier', label: fixtureText('Dévier') }, { key: 'subir', label: fixtureText('Subir') }],
     ...(withDefault ? { defaultChoice: 'devier' } : {}),
   });
 

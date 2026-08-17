@@ -19,7 +19,7 @@
  * Les jets sont POSÉS (aucun dé) : ce qui est mesuré est la règle, jamais le RNG — sauf le run à
  * GRAINE RÉELLE, qui déroule une partie entière sans rien poser.
  */
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
@@ -399,7 +399,7 @@ describe('L’Alvatafl — les camps asymétriques et la victoire au Critique (l
   function manche(actorId: string, mien: { roll: number; sl: number }, sien: { roll: number; sl: number }): PendingCascade {
     const step: CascadeStep = {
       id: `${TAVERN_ROUND_KIND}-2`, kind: TAVERN_ROUND_KIND, actorId,
-      label: rawText('L\'Alvatafl'), rollLabel: 'Savoir', difficulty: 'intermediaire', base: 40, target: 40,
+      label: fixtureText('L\'Alvatafl'), rollLabel: 'Savoir', difficulty: 'intermediaire', base: 40, target: 40,
       result: { roll: mien.roll, target: 40, sl: mien.sl, success: true },
       meta: {
         gameId: 'alvatafl', opponentValue: 40, opponentName: 'un habitué', stakeBrass: 0, round: 2,

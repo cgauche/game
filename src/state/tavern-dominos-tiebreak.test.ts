@@ -8,7 +8,7 @@
  * VERROUILLE, et une DONNÉE qui le déclare (`tieBreak` de l'entrée `tavernGames.json`), jamais un
  * branchement par id de jeu dans le moteur.
  */
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
@@ -40,7 +40,7 @@ function partie(tieBreak: string | undefined, challengerId: string): SequenceSta
 function doneRound(actorId: string, playerRoll: number, opponentRoll: number, sl: number): PendingCascade {
   const step: CascadeStep = {
     id: `${TAVERN_ROUND_KIND}-1`, kind: TAVERN_ROUND_KIND, actorId,
-    label: rawText('Les dominos'), rollLabel: 'Pari', difficulty: 'intermediaire',
+    label: fixtureText('Les dominos'), rollLabel: 'Pari', difficulty: 'intermediaire',
     base: 40, target: 40,
     result: { roll: playerRoll, target: 40, sl, success: true },
     meta: {

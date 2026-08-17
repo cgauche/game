@@ -7,7 +7,7 @@
  * nuit `sleepParty` (chemin EAGER — cheat `restParty`, clôture d'interlude) reste testé par
  * rest.test / upkeep-cascade.
  */
-import { rawText } from '../i18n/rawText';
+import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
@@ -173,7 +173,7 @@ describe('openRest / choix par héros', () => {
     // Cascade à une BANDE de marche forcée (#1117 L3), jet de la rangée figé sur un ÉCHEC.
     useGame.setState({ pendingCascade: {
       title: 'Marche', purpose: 'travel', cursor: 0, log: [], participants: [
-        { id: 'bande-m1', kind: 'forcedMarch', label: rawText('Marche forcée'), aggregate: 'none',
+        { id: 'bande-m1', kind: 'forcedMarch', label: fixtureText('Marche forcée'), aggregate: 'none',
           participants: [{ id: h.id, interactive: true, label: 'Résistance', base: 40, target: 40, result: { roll: 99, target: 40, sl: -4, success: false } }] },
       ],
     } });
