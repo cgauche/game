@@ -74,7 +74,10 @@ export const schema = z.array(
        *  FERMÉ : une coquille d'authoring résoudrait sinon la coque fluviale sur la table maritime.
        *  Absent/`null` = `navire` (MDG 13) ; `navire-fluvial` = MSRC 7. */
       locationTable: z.union([z.enum(['navire', 'navire-fluvial']), z.null()]).optional(),
-      criticalTable: z.union([z.string(), z.null()]).optional(),
+      /** Jeu de tables de Critiques (`shipCritSet`, `src/data/shipCriticals.ts`) — MÊME vocabulaire
+       *  FERMÉ que `locationTable`, et pour la même raison : les deux jeux chargés sont
+       *  `ship-criticals` (MDG 13) et `river-criticals` (MSRC 5). Absent/`null` = `ship-criticals`. */
+      criticalTable: z.union([z.enum(['ship-criticals', 'river-criticals']), z.null()]).optional(),
     }).optional(),
     /** Facette NAVIRE (profil naval MDG 12). */
     ship: z.strictObject({

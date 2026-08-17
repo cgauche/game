@@ -73,10 +73,97 @@ export const EQUALITY_OPS = new Set([
   ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken,
 ]);
 
-/** Littéral de chaîne NON VIDE. La chaîne vide est une SENTINELLE (« pas d'id »), jamais l'identité
- *  d'une entrée : `id === ''` ne branche sur aucune entrée du registre. */
+/**
+ * Mots RÉSERVÉS du vocabulaire `GameOp` (`src/engine/ops.ts`) — liste FERMÉE, tenue à la main :
+ *  - `''` : sentinelle « pas d'id » ;
+ *  - `'self'` : le PORTEUR de l'op (`{ op:'scheduleRespawn', ref:'self' }`, `{ stacks:'self' }`,
+ *    `on`/`near` en donnée). MESURÉ le 2026-08-17 : aucune entrée de `src/data/*.json` ne porte
+ *    `"id": "self"` — c'est un mot du vocabulaire, jamais l'identité d'une entrée de registre.
+ * Un littéral de cette liste ne DÉSIGNE aucune entrée : le comparer n'est pas un branchement par id.
+ * Toute entrée de plus se mesure sur `ops.ts` ET sur les registres avant d'être ajoutée ici.
+ */
+export const OP_VOCABULARY = new Set(['', 'self']);
+
+/** Littéral qui DÉSIGNE une entrée de registre : chaîne littérale hors `OP_VOCABULARY`. */
 export function isEntryLiteral(node) {
-  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text !== '';
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return !OP_VOCABULARY.has(node.text);
+  return false;
+}
+
+/**
+ * Types NOMMÉS dont les membres forment un vocabulaire de GÉOMÉTRIE fermé, déclaré en UNION DE
+ * LITTÉRAUX dans le code (`BoneId`, `src/gameIso/rig/bones.ts` : 16 os du squelette humanoïde + 2
+ * attaches, `arme` et `bouclier`) — jamais des entrées d'un registre de données. Une liste ANNOTÉE
+ * par un de ces types (`const WAIST_BONES: BoneId[] = […]`) ne fige aucun registre : ses membres
+ * sont bornés par le TYPE, et le compilateur refuse tout id étranger.
+ *
+ * Chaque type est ANCRÉ À SON ORIGINE (valeur = module canonique, chemin depuis la racine) : le
+ * fichier scanné doit IMPORTER ce nom depuis ce module-là. Sans cet ancrage, le seul NOM suffirait —
+ * un `type BoneId = string` redéclaré localement, ou importé d'ailleurs, blanchirait une liste d'ids
+ * de registre (fixture « shadow » assertée en test). Le spécificateur relatif est résolu contre le
+ * chemin du fichier scanné, donc `'./bones'` (rig) et `'../../src/gameIso/rig/bones'` (outillage)
+ * ancrent au même module.
+ *
+ * C'est une liste de TYPES (jamais de fichiers ni de noms de variables), et c'est un choix ASSUMÉ
+ * contre le proxy lexical général « l'annotation nomme un type non primitif » : ce proxy est
+ * RÉFUTÉ par le dépôt lui-même — `ConditionId` (`src/engine/types.ts`) et `BodyPlanId`
+ * (`src/gameIso/rig/bodyPlan.ts`) sont des alias `= string`, donc OUVERTS ; une liste
+ * `const PERSISTENTS: ConditionId[] = ['hemorragique', 'aveugle']` serait exemptée alors qu'elle
+ * fige exactement le registre des États. Sans vérificateur de types (le scan est per-fichier), la
+ * fermeture d'un type importé ne se PROUVE pas : elle se déclare ici, type par type, module par
+ * module — et `tsc` refuse ensuite tout littéral étranger à l'union sous cette annotation.
+ * ÉTENDRE CETTE TABLE EST UN ARBITRAGE DE DESIGN, JAMAIS UN GESTE DE CONFORT (contenu figé en test).
+ */
+export const VOCABULARY_TYPES = new Map([['BoneId', 'src/gameIso/rig/bones']]);
+
+/** Chemin de module d'un spécificateur RELATIF, résolu contre le fichier scanné (séparateurs `/`,
+ *  extension usuelle retirée). Un spécificateur de PAQUET (non relatif) n'ancre rien → null. */
+function resolveSpecifier(relPath, spec) {
+  if (!spec.startsWith('.')) return null;
+  const parts = relPath.split('/').slice(0, -1);
+  for (const seg of spec.split('/')) {
+    if (seg === '.' || seg === '') continue;
+    if (seg === '..') parts.pop();
+    else parts.push(seg);
+  }
+  return parts.join('/').replace(/\.(m|c)?[tj]sx?$/, '');
+}
+
+/** Noms IMPORTÉS par le fichier (spécificateurs de type compris) → module d'origine résolu. */
+function collectImportOrigins(sf, relPath) {
+  const origins = new Map();
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st) || !ts.isStringLiteral(st.moduleSpecifier)) continue;
+    const from = resolveSpecifier(relPath, st.moduleSpecifier.text);
+    if (!from) continue;
+    const named = st.importClause?.namedBindings;
+    if (named && ts.isNamedImports(named)) for (const el of named.elements) origins.set(el.name.text, from);
+  }
+  return origins;
+}
+
+/** Le nœud de type est-il une référence à un type de vocabulaire IMPORTÉ DE SON MODULE CANONIQUE ? */
+function isVocabularyTypeRef(t, origins) {
+  if (!t || !ts.isTypeReferenceNode(t) || !ts.isIdentifier(t.typeName)) return false;
+  const canonical = VOCABULARY_TYPES.get(t.typeName.text);
+  return !!canonical && origins.get(t.typeName.text) === canonical;
+}
+
+/**
+ * Déclaration d'une COLLECTION de vocabulaire fermé : `const X: BoneId[]`, `ReadonlyArray<BoneId>`,
+ * `Set<BoneId>`, ou `const X = new Set<BoneId>([…])` — l'argument de type porte la fermeture aussi
+ * bien que l'annotation.
+ */
+function isVocabularyCollectionDecl(decl, origins) {
+  let t = decl.type;
+  if (t && ts.isTypeOperatorNode(t) && t.operator === ts.SyntaxKind.ReadonlyKeyword) t = t.type;
+  if (t && ts.isArrayTypeNode(t)) return isVocabularyTypeRef(t.elementType, origins);
+  if (t && ts.isTypeReferenceNode(t) && ts.isIdentifier(t.typeName)
+    && ['Array', 'ReadonlyArray', 'Set', 'ReadonlySet'].includes(t.typeName.text)) return isVocabularyTypeRef(t.typeArguments?.[0], origins);
+  const init = decl.initializer && unwrap(decl.initializer);
+  if (init && ts.isNewExpression(init) && ts.isIdentifier(init.expression) && init.expression.text === 'Set') {
+    return isVocabularyTypeRef(init.typeArguments?.[0], origins);
+  }
   return false;
 }
 
@@ -220,15 +307,19 @@ function isExhaustiveRecordDecl(decl) {
  *  La pré-passe est à plat (tout le fichier) alors que l'usage, lui, est porté : un même nom peut
  *  désigner une table littérale dans une fonction et une valeur CALCULÉE dans une autre
  *  (`const sk = {…}` d'un côté, `const sk = buildSkeleton(p)` de l'autre). Un nom AMBIGU est donc
- *  retiré des deux jeux : la garde ne peut pas prouver que le site indexé fige quoi que ce soit. */
-function collectLiteralHolders(sf) {
+ *  retiré des deux jeux : la garde ne peut pas prouver que le site indexé fige quoi que ce soit.
+ *  Une collection de VOCABULAIRE FERMÉ (`const X: BoneId[]`, cf. `VOCABULARY_TYPES`) sort des jeux
+ *  au même titre : elle ne fige pas un registre, son type le fait déjà. */
+function collectLiteralHolders(sf, origins) {
   const collections = new Set();
   const records = new Set();
   const computed = new Set(); // noms déclarés au moins une fois avec une valeur NON littérale
+  const vocabulary = new Set(); // noms annotés par un type de `VOCABULARY_TYPES`
   const visit = (node) => {
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
       const name = node.name.text;
-      if (isLiteralStringCollection(node.initializer, collections)) collections.add(name);
+      if (isVocabularyCollectionDecl(node, origins)) vocabulary.add(name);
+      else if (isLiteralStringCollection(node.initializer, collections)) collections.add(name);
       else if (isLiteralRecord(node.initializer, records) && !isExhaustiveRecordDecl(node)) records.add(name);
       else computed.add(name);
     }
@@ -236,6 +327,7 @@ function collectLiteralHolders(sf) {
   };
   ts.forEachChild(sf, visit);
   for (const name of computed) { collections.delete(name); records.delete(name); }
+  for (const name of vocabulary) { collections.delete(name); records.delete(name); }
   return { collections, records };
 }
 
@@ -254,7 +346,10 @@ function collectLiteralHolders(sf) {
  *    stable, forme recommandée par la doctrine — la réaction PAR-NOM d'entité relève, elle, de la
  *    garde `hardcode.mjs` (`hasTalent`/`hasTraitKey`/`hasCondition` à argument littéral) ;
  *  - une entrée tenue par une constante de MODULE (`FORTUNE.id === x`) : code non générique ;
- *  - `id === ''` (sentinelle de vide) ;
+ *  - un mot du VOCABULAIRE `GameOp` (`id === ''`, `op.ref === 'self'` — `OP_VOCABULARY`) : il ne
+ *    désigne aucune entrée de registre ;
+ *  - une collection de VOCABULAIRE FERMÉ (`const WAIST_BONES: BoneId[]` — `VOCABULARY_TYPES`) : ses
+ *    membres sont bornés par une union de littéraux déclarée, pas par un registre de données ;
  *  - les TESTS et les MIGRATIONS (`isRegistryIdBranchExcluded`).
  *
  * CE QUE LA GARDE NE VOIT PAS (évasions MESURÉES, chacune à une ligne d'écriture ; faux NÉGATIFS
@@ -279,7 +374,7 @@ export function scanRegistryIdBranch(relPath, contenu) {
     : /\.[cm]?js$/.test(relPath) ? ts.ScriptKind.JS // outillage `scripts/**` (.mjs) : même AST, sans annotations
       : ts.ScriptKind.TS;
   const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
-  const { collections, records } = collectLiteralHolders(sf);
+  const { collections, records } = collectLiteralHolders(sf, collectImportOrigins(sf, relPath));
   const lines = contenu.split('\n');
   const findings = [];
   const scopes = new Scopes();

@@ -99,8 +99,15 @@ export const RIVER_CRIT_SET: ShipCritSet = {
  *  de PLUS dans cette liste (et son JSON) — aucun branchement à écrire. */
 const CRIT_SETS: Record<string, ShipCritSet> = Object.fromEntries([SHIP_CRIT_SET, RIVER_CRIT_SET].map((s) => [s.id, s]));
 
-/** Résout le jeu de Critiques d'une coque par l'id de sa `criticalTable` (`hull.criticalTable`). Absent /
- *  inconnu → jeu MDG naval (défaut, comportement historique). */
+/** Ids des jeux de Critiques RÉELLEMENT chargés — vocabulaire fermé de `hull.criticalTable`. */
+export const SHIP_CRIT_SET_IDS = Object.keys(CRIT_SETS);
+
+/** Résout le jeu de Critiques d'une coque par l'id de sa `criticalTable` (`hull.criticalTable`).
+ *  Absent/`null` = jeu MDG naval (défaut). Un id INCONNU jette : un repli silencieux résoudrait la
+ *  coque fluviale sur les tables maritimes (même coquille d'authoring que `shipHitLocation`). */
 export function shipCritSet(id?: string | null): ShipCritSet {
-  return (id ? CRIT_SETS[id] : undefined) ?? SHIP_CRIT_SET;
+  if (!id) return SHIP_CRIT_SET;
+  const set = CRIT_SETS[id];
+  if (!set) throw new Error(`shipCritSet : jeu de Critiques de coque inconnu « ${id} » (attendu : ${SHIP_CRIT_SET_IDS.join(' | ')}).`);
+  return set;
 }

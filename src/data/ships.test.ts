@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { VEHICLES_LIST } from '../engine/travel';
 import { vehicleCombatant } from '../engine/vehicle';
 import { shipHitLocation } from '../engine/combat';
+import { shipCritSet, SHIP_CRIT_SET_IDS } from './shipCriticals';
 
 // MDG 12 = navires MARITIMES (18). Les bateaux FLUVIAUX MSRC (propulsion:'fluvial') ont aussi une
 // facette `ship` mais relèvent de leur propre table (MSRC 7) — couverts par `16-embuscade-fluviale`.
@@ -65,5 +66,22 @@ describe('Table de Localisation d’une COQUE — vocabulaire fermé, résolutio
 
   it('un id de table INCONNU LÈVE au lieu de retomber en silence sur la table maritime', () => {
     expect(() => shipHitLocation('voile', 50, 'navire-fluvail')).toThrow(/navire-fluvail/);
+  });
+});
+
+describe('Jeu de Critiques d’une COQUE — vocabulaire fermé, résolution fail-fast', () => {
+  const hulls = VEHICLES_LIST.filter((v) => v.hull);
+
+  it('les coques ne portent qu’un id de jeu CHARGÉ (absent = `ship-criticals` MDG 13, seule autre valeur `river-criticals`)', () => {
+    expect(SHIP_CRIT_SET_IDS).toEqual(['ship-criticals', 'river-criticals']);
+    const distinct = [...new Set(hulls.map((v) => v.hull!.criticalTable).filter((t) => t != null))];
+    expect(distinct).toEqual(['river-criticals']);
+    for (const v of hulls) expect(() => shipCritSet(v.hull!.criticalTable), v.id).not.toThrow();
+    expect(shipCritSet(undefined).id).toBe('ship-criticals');
+    expect(shipCritSet('river-criticals').id).toBe('river-criticals');
+  });
+
+  it('un id de jeu INCONNU LÈVE au lieu de retomber en silence sur les tables maritimes', () => {
+    expect(() => shipCritSet('critiques-fluviaux')).toThrow(/critiques-fluviaux/);
   });
 });

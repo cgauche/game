@@ -105,6 +105,8 @@ const SLOT_FLESH: Partial<Record<Slot, BoneId[]>> = {
   bras: ['mainG', 'mainD'],
   jambes: ['piedG', 'piedD'],
 };
+/** Masque du TRONC SEUL — référence de matière/luminance à laquelle la tenue mesurée se compare. */
+const TORSO_BONES: BoneId[] = ['torse'];
 
 // ── CLI ───────────────────────────────────────────────────────────────────────────────────
 const USAGE = 'usage: npx tsx scripts/qc/mesure-volume.mts (<tenueId> | --all [--ids a,b,c] | --creature <id> [--os tronc,tete]) [--slot bras] [--views front,profile,back] [--json] [--with-flesh] [--no-erode]';
@@ -296,7 +298,7 @@ function measure(tenueId: string, tmap: Record<string, string>, view: View): Vie
   const bones = resolveRig(REF_APPEARANCE, REF_EQUIP, {}, tenueId, view, [], false);
   const comp = renderPng(bones, () => true);
   const solo = renderPng(bones, (id) => maskBones.has(id as BoneId));
-  const torso = renderPng(bones, (id) => id === 'torse');
+  const torso = renderPng(bones, (id) => TORSO_BONES.includes(id as BoneId));
   const { w, h } = comp;
 
   const sameAsComposite = (img: Img): Uint8Array => {
