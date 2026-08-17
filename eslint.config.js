@@ -92,8 +92,8 @@ export default tseslint.config(
     //
     // TROISIÈME MARQUE, mêmes routes, même verrou (#1318 V8a₀) : `PlayerText` (`src/i18n/playerText.ts`),
     // le texte destiné à l'œil du joueur. Ses MINTEURS sont exemptés au FICHIER (`i18n/index.ts` pour
-    // `t()`, `state/rollSeam.ts` pour `composeRollLabel` — déjà dans la liste), et le FOSSILE
-    // `i18n/rawText.ts` est SOUS la règle avec son exemption AU SITE : un second cast
+    // `t()`, `state/rollSeam.ts` pour `composeRollLabel` — déjà dans la liste), et le minteur de fixture
+    // `i18n/fixtureText.ts` est SOUS la règle avec son exemption AU SITE : un second cast
     // y échouerait. `data/index.ts` (minteur des libellés de donnée) est hors du périmètre ESLint du
     // dépôt (`ignores` de tête `src/data/**`) — dit au JSDoc de `playerText.ts`, jamais un oubli.
     files: ['src/**/*.ts', 'src/**/*.tsx'],

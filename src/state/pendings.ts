@@ -1533,9 +1533,9 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
    *  est exigée EN AMONT, au paramètre, et le cast de sortie n'a plus rien à blanchir. Restent murés par
    *  le lint les deux voies de CONTENEUR (`Object.assign` sur une étape, `x as CascadeStep`).
    *
-   *  `PlayerText` n'a que trois origines (`i18n.t`, `data.refLabel`, `rollSeam.composeRollLabel`) — un
-   *  littéral ne s'y pose plus, et le stock d'avant est gelé, nominatif et décroissant par le fossile
-   *  `i18n/rawText.ts` (`player-text-ratchet.test.ts`, cible 0). */
+   *  `PlayerText` n'a que trois origines (`i18n.t`, `data.dataLabel`/`data.refLabel`,
+   *  `rollSeam.composeRollLabel`) — un littéral ne s'y pose plus, et le stock d'avant est ÉTEINT : le
+   *  fossile qui le gelait est mort, son cliquet reste en tripwire (`player-text-ratchet.test.ts`). */
   label?: PlayerText;
   /** Nature de la conséquence (clé de `cascadeAppliers`). Ex. 'recovery' | 'nightmare' | 'exposure'. */
   kind: string;

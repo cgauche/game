@@ -20,10 +20,10 @@
  * prod/test, pas le VOLUME. Ce module distingue donc du fossile la nature du verrou, pas sa force :
  * le fossile gelait un stock de PRODUCTION en décroissance, celui-ci est muré par chemin d'import.
  *
- * Pourquoi un module distinct plutôt que le fossile prolongé : `rawText` porte une mort planifiée à 0
- * (registre des fossiles du #1318), et un stock de test qui ne descend pas la rendrait fausse. Séparer
- * l'outil des harnais du fossile de production rend les deux comptes vrais : `rawText` finit à 0 et
- * disparaît, `fixtureText` reste, borné aux tests.
+ * Pourquoi un module distinct plutôt que le fossile prolongé : `rawText` portait une mort planifiée à 0
+ * (registre des fossiles du #1318), et un stock de test qui ne descend pas l'aurait rendue fausse.
+ * Séparer l'outil des harnais du fossile de production a rendu les deux comptes vrais — `src/i18n/rawText.ts`
+ * est SUPPRIMÉ (#1318 E7-FINAL), et `fixtureText` reste, borné aux tests.
  */
 import type { PlayerText } from './playerText';
 

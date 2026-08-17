@@ -310,14 +310,17 @@ describe('#1262 V4 M2 — le murage du CHOIX DE GROUPE est TUEUR', () => {
 
 /**
  * LA MARQUE DU TEXTE JOUEUR (#1318 V8a₀) — troisième marque sous le MÊME verrou : `PlayerText`
- * (`src/i18n/playerText.ts`) n'a que trois minteurs (`i18n.t`, `data.refLabel`,
+ * (`src/i18n/playerText.ts`) n'a que trois minteurs (`i18n.t`, `data.dataLabel`/`data.refLabel`,
  * `rollSeam.composeRollLabel`), donc la seule autre fabrique est le cast. Les CINQ formes du patron
  * sont rejouées ici sur la config RÉELLE : sans elles, ajouter un nom au sélecteur serait une
  * déclaration, pas un murage.
  *
  * DEUX exemptions, de nature différente : `i18n/index.ts` est exempté AU FICHIER (c'est un minteur,
- * comme `rollSeam`), tandis que le FOSSILE `i18n/rawText.ts` reste SOUS la règle avec son exemption AU
- * SITE (patron `saves.ts`) — un second cast y échoue. `data/index.ts` n'est PAS mesurable ici :
+ * comme `rollSeam`), tandis que `i18n/fixtureText.ts` reste SOUS la règle avec son exemption AU SITE
+ * (patron `saves.ts`) — un second cast y échoue, et les deux volets du bas le mesurent. C'est le SEUL
+ * module à exemption au site depuis la mort du fossile `i18n/rawText.ts` (#1318 E7-FINAL) : ses deux
+ * volets ont disparu avec lui, et rien ne s'est perdu — la forme qu'ils rejouaient est exactement
+ * celle des volets `fixtureText`, sur un module VIVANT. `data/index.ts` n'est PAS mesurable ici :
  * `src/data/**` est hors du périmètre ESLint du dépôt (`ignores` de tête) — limite dite, pas couverte.
  */
 const ENTETE_TEXTE = "import type { PlayerText } from '../i18n/playerText';\ndeclare const o: unknown;\n";
@@ -356,19 +359,6 @@ describe('#1318 V8a₀ — le lint mure les ROUTES DE FORGE du texte joueur', ()
   it('le MINTEUR `i18n/index.ts` est exempté AU FICHIER : son cast interne est la fabrique légitime', async () => {
     const [res] = await eslint.lintText(`${ENTETE_TEXTE}export const g = o as PlayerText;\n`, { filePath: 'src/i18n/index.ts', warnIgnored: false });
     expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax')).toHaveLength(0);
-  });
-
-  it('le FOSSILE `i18n/rawText.ts` passe la règle : son unique cast porte sa directive AU SITE', async () => {
-    const [res] = await eslint.lintFiles(['src/i18n/rawText.ts']);
-    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'la directive posée couvre le cast du fossile').toHaveLength(0);
-    expect(res.errorCount, 'aucune autre erreur de lint sur le fossile').toBe(0);
-  });
-
-  it('un cast de PLUS dans le fossile (sans sa directive) est REFUSÉ — l’exemption n’est pas au fichier', async () => {
-    const reel = readFileSync('src/i18n/rawText.ts', 'utf8');
-    const second = `${reel}\ndeclare const sonde: unknown;\nexport const forge2 = sonde as PlayerText;\n`;
-    const [res] = await eslint.lintText(second, { filePath: 'src/i18n/rawText.ts' });
-    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'un 2ᵉ cast non justifié doit rougir').toHaveLength(1);
   });
 
   /**

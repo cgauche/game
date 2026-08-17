@@ -4,9 +4,10 @@
  * (`rollSeam`) — et les STOCKS que ce verrou met au jour sont GELÉS ici plutôt que migrés dans le
  * même geste : ce sont des échafaudages à lot d'extinction NOMMÉ, pas des baselines muettes.
  *
- *  1. `rawText(` — le FOSSILE (`i18n/rawText.ts`) : un libellé déjà écrit au call-site, gelé le temps
- *     que sa forme soit tranchée texte par texte. Le module MEURT au commit qui ramène le total à 0.
- *     E7 a éteint tout le stock des HARNAIS ; il ne reste qu'un fichier de production, NOMMÉ.
+ *  1. `rawText(` — le FOSSILE est MORT (E7-FINAL) : son dernier site de production est passé au
+ *     minteur du texte authoré et le module `i18n/rawText.ts` est SUPPRIMÉ. Le cliquet SURVIT au
+ *     module, converti en TRIPWIRE à zéro tolérance : le gel est vide, donc toute réapparition du
+ *     nom — module ressuscité, helper homonyme ailleurs — rougit nominativement.
  *  2. `as CascadeStep` — le contournement de CONTENEUR (T2) dans les fichiers de TEST. En production
  *     il n'en reste AUCUN (mesuré, et le lint l'y refuse : `built-brand-lint.test.ts`) ; les tests sont
  *     hors du sélecteur, donc c'est CE cliquet qui les tient — sans lui, « les tests sont exclus »
@@ -18,10 +19,11 @@
  *  5. `fixtureText(` hors d'un HARNAIS (E7) — la serrure 4 seule laisserait passer un ré-export ;
  *     l'appel est donc compté à part. CIBLE 0, SANS gel. Dans les tests, l'outil est LIBRE.
  *
- * Les cliquets À GEL (1, 2) ont les mêmes DEUX rouges, mesurés plus bas : un fichier qui DÉPASSE son gel,
- * un fichier ABSENT du gel qui s'y met. Descendre SOUS son gel ne rougit pas (c'est le but) — mais le gel
- * doit être abaissé dans le même commit, ce que le volet « le gel est SERRÉ » rapporte. Les cliquets SANS
- * gel (3, 4, 5) n'ont qu'un rouge : toute occurrence hors de son lieu licite.
+ * Le SEUL cliquet à porter encore un gel est le 2 : ses DEUX rouges, mesurés plus bas, sont un fichier qui
+ * DÉPASSE son gel et un fichier ABSENT du gel qui s'y met. Descendre SOUS son gel ne rougit pas (c'est le
+ * but) — mais le gel doit être abaissé dans le même commit, ce que le volet « le gel est SERRÉ » rapporte.
+ * Les cliquets SANS gel (1 depuis la mort du fossile, 3, 4, 5) n'ont qu'un rouge : toute occurrence hors de
+ * son lieu licite — pour le 1, il n'en existe plus aucun.
  *
  * CE QUE CES CLIQUETS NE VOIENT PAS (dette nommée V8a₁ — ils comptent des APPELS, pas des littéraux
  * FR en général ; les deux dernières sont consignées AU SITE, pas seulement ici) :
@@ -32,32 +34,35 @@
  *    le cliquet 3 qui ferme ce trou, pas le type ;
  *  - les résolveurs de donnée encore `string` : `conditionLabel`, `damageTypeLabel`,
  *    `SPEC_SOURCES[].label` (`data/index.ts`) ;
- *  - `src/state/combatManeuvers.ts` — le dernier `rawText` de PRODUCTION, gelé nominativement ;
+ *  - le nom `rawText` employé pour AUTRE CHOSE qu'un minteur (`ui/compendium/relations.ts` le prend comme
+ *    nom de PARAMÈTRE) : le cliquet 1 compte des APPELS `rawText(`, donc un paramètre homonyme APPELÉ y
+ *    rougirait à tort — angle mort inverse, dit ici et sans site actuel ;
  *  - `src/ui/CityHubScreen.tsx` (`SCENE_WEATHER_LABEL`) — 2ᵉ carte météo FR hors catalogue, autre axe
  *    (`Scene['weather']`), même classe que ce lot ; consignée à sa carte sœur (`engine/travelStages.ts`) ;
  *  - le GEL DE LOCALE au chargement des cartes dérivées du catalogue — `setLocale` les laisserait en FR
  *    en silence ; consigné sur `setLocale` lui-même (`i18n/index.ts`).
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 /**
- * GEL DU 2026-08-17, REGEL E7 — 1 appel, dans 1 fichier de PRODUCTION.
+ * GEL VIDE — LE FOSSILE EST MORT (E7-FINAL, 2026-08-17). Le compte est 0 partout, et
+ * `src/i18n/rawText.ts` n'existe plus dans l'arbre.
  *
- * LE STOCK DES TESTS EST ÉTEINT : les 138 appels que 27 harnais posaient au fossile sont passés à
- * `i18n/fixtureText` (E7), un minteur RÉSERVÉ AUX TESTS et muré par chemin d'import — ses deux
- * cliquets (T4/T5, en bas de ce fichier) sont à cible 0 hors harnais, sans gel, sans quoi ce serait
- * le fossile renommé. Le gain de ce passage est la MARQUE de type, PAS une dispense de catalogue :
- * c'est dit noir sur blanc au JSDoc du module.
+ * Les deux stocks se sont éteints par des voies DIFFÉRENTES, et c'est ce qui rend le zéro vrai : les 138
+ * appels des harnais sont passés à `i18n/fixtureText` (E7), un minteur RÉSERVÉ AUX TESTS et muré par
+ * chemin d'import (cliquets T4/T5, en bas de ce fichier) ; le dernier site de PRODUCTION
+ * (`state/combatManeuvers.ts`) est passé au minteur du texte AUTHORÉ, `dataLabel`, parce que le texte
+ * qu'il portait est le `label` d'une entité de catalogue et non une phrase écrite au call-site.
  *
- * Le survivant, `state/combatManeuvers.ts`, appartient au périmètre d'une session voisine ACTIVE et
- * se migre à son lot — c'est un fichier NOMMÉ, pas une tolérance. Le module `i18n/rawText.ts` meurt au
- * commit qui ramène ce total à 0.
+ * CE QUE CETTE CONSTANTE DEVIENT : un TRIPWIRE, pas un gel. Vide, elle fait rougir toute occurrence de
+ * `rawText(` où qu'elle soit — le module ne peut pas ressusciter en silence, et un helper homonyme posé
+ * ailleurs se signale au même titre. `compteAppels` garde donc son rôle entier : détecter la
+ * RÉSURRECTION. Il ne se relève pas ; il n'a plus rien à relever.
  */
-export const GEL_RAW_TEXT: Readonly<Record<string, number>> = {
-  'src/state/combatManeuvers.ts': 1,
-};
+export const GEL_RAW_TEXT: Readonly<Record<string, number>> = {};
 
 /** GEL DU 2026-08-17 (`as CascadeStep` en TEST) — 35 casts dans 15 fichiers. Zéro en production. E7 en a
  *  éteint DEUX, dans des fichiers déjà ouverts pour la migration : leur cast ne servait qu'à blanchir un
@@ -145,29 +150,49 @@ export function compteCasts(source: string): number {
   return (source.match(/\bas\s+CascadeStep\b/g) ?? []).length;
 }
 
-/** Fichiers hors recensement des cliquets 1 et 2 : ils NOMMENT ces motifs (sondes de mutation, JSDoc du
- *  verrou) au lieu de les employer — les compter ferait mentir un stock dont la cible est 0.
+/** Hors recensement du cliquet 2 (`as CascadeStep`) : ces fichiers NOMMENT ce motif (sondes de mutation,
+ *  JSDoc du verrou) au lieu de l'employer — les compter ferait mentir un stock dont la cible est 0.
  *
- *  Cette liste est PROPRE aux cliquets 1/2 et ne s'applique à AUCUN autre : elle exempte deux fichiers de
- *  PRODUCTION (`pendings.ts`) ou de garde, qui n'ont aucune raison d'être aveugles aux serrures T4/T5 —
- *  l'exclusion est donc un PARAMÈTRE de `recense`, jamais un filtre global. */
-const HORS_RECENSEMENT = new Set([
+ *  Cette liste exempte un fichier de PRODUCTION (`pendings.ts`, qui décrit le murage au JSDoc de
+ *  `CascadeStepBase`). C'est précisément ce qu'aucun AUTRE cliquet ne peut se permettre : une exemption de
+ *  production est un angle mort, et un angle mort ne s'hérite pas. D'où le passage EXPLICITE à `recense`
+ *  pour les cinq cliquets, et la disparition du paramètre par DÉFAUT qui la propageait en silence. */
+const HORS_CASCADE_STEP = new Set([
   'src/state/player-text-ratchet.test.ts',
   'src/state/built-brand-lint.test.ts',
   'src/state/pendings.ts',
 ]);
+
+/** Hors recensement du cliquet 1 (`rawText(`) : les DEUX HARNAIS qui nomment encore le motif — celui-ci
+ *  (sondes de mutation) et `built-brand-lint.test.ts` (JSDoc du verrou).
+ *
+ *  RIEN D'AUTRE, et surtout pas `src/state/pendings.ts` : ce module de PRODUCTION ne nomme plus `rawText`
+ *  depuis la mort du fossile, donc l'exempter rendrait le tripwire AVEUGLE dans un fichier de production —
+ *  exactement ce que la prose de tête promet de ne jamais être (« toute occurrence, où qu'elle soit »).
+ *  La sonde « le tripwire VOIT un fichier de production » plus bas mesure les deux jeux sur un arbre
+ *  factice : le bon rougit, l'ancien reste vert. */
+const HORS_RAW_TEXT = new Set([
+  'src/state/player-text-ratchet.test.ts',
+  'src/state/built-brand-lint.test.ts',
+]);
+
+/** Hors recensement du cliquet 3 (`dataLabel('…')`) : CE fichier seul, dont les sondes écrivent la prose
+ *  qu'il refuse. Aucun fichier de production — le cliquet 3 est à cible 0 SANS gel, il n'a pas de stock à
+ *  couvrir. */
+const HORS_DATA_LABEL_SONDES = new Set(['src/state/player-text-ratchet.test.ts']);
 
 /** Hors recensement des cliquets 4 et 5 : CE fichier seul, qui nomme le motif en sondes. Rien d'autre —
  *  surtout pas un fichier de production. */
 const HORS_FIXTURE = new Set(['src/state/player-text-ratchet.test.ts']);
 
 /** Recensement fichier → compte sur un arbre (chemins POSIX relatifs à la racine). L'exclusion est DITE
- *  par l'appelant : chaque cliquet a la sienne, aucun n'hérite de celle d'un autre. */
+ *  par l'appelant, et le paramètre est REQUIS : un défaut ferait hériter à un cliquet l'angle mort d'un
+ *  autre — c'est comme ça que le cliquet 1 s'est retrouvé aveugle à un fichier de production. */
 export function recense(
   racine: string,
   compte: (s: string) => number,
-  filtre?: (f: string) => boolean,
-  hors: ReadonlySet<string> = HORS_RECENSEMENT,
+  filtre: ((f: string) => boolean) | undefined,
+  hors: ReadonlySet<string>,
 ): Record<string, number> {
   const out: Record<string, number> = {};
   const parcours = (rel: string): void => {
@@ -195,6 +220,14 @@ export function recense(
  * PROFONDEUR 0 (les arguments eux-mêmes) portant AU MOINS DEUX lettres : un id passé à un appel
  * imbriqué (`dataLabel(refLabel('skills', …))`) ou une clé d'index (`CHAR_LABELS['intelligence']`)
  * n'est pas du texte joueur, et une dégradation d'UNE lettre (`'?'`, `'A'`) n'est pas de la prose.
+ *
+ * ANGLE MORT ASSUMÉ, et il est STRUCTUREL : ce cliquet ne voit que les littéraux écrits AU CALL-SITE. Une
+ * CARTE FR en dur vivant dans `src/engine` — `ATTACK_LABEL` (`engine/creatureAttacks.ts`),
+ * `CHAR_LABELS` (`engine/types.ts`), `DEFENSE_LABEL` — passée à `dataLabel` en repli est BLANCHIE sans un
+ * mot : l'argument est une expression, pas une chaîne. C'est voulu (un repli dérivé du catalogue est
+ * licite, cf. le JSDoc de `dataLabel`), mais ça veut dire que ces cartes restent du FR hors catalogue,
+ * invisible à `setLocale`, et que seule leur relecture les tient. Elles sont de la même classe que
+ * `SCENE_WEATHER_LABEL`, consignée plus haut.
  */
 export function litterauxDataLabel(source: string): string[] {
   const out: string[] = [];
@@ -241,46 +274,73 @@ function relachees(reel: Record<string, number>, gel: Readonly<Record<string, nu
 const somme = (m: Record<string, number>): number => Object.values(m).reduce((a, b) => a + b, 0);
 const estTest = (f: string): boolean => /\.test\.tsx?$/.test(f);
 
-describe('#1318 V8a₀ — le fossile `rawText` est GELÉ, NOMINATIF et DÉCROISSANT (cible 0)', () => {
-  const reel = recense(process.cwd(), compteAppels);
+describe('#1318 E7-FINAL — le fossile `rawText` est MORT : le cliquet devient un TRIPWIRE (zéro tolérance)', () => {
+  const reel = recense(process.cwd(), compteAppels, undefined, HORS_RAW_TEXT);
 
-  it('l’arbre RÉEL ne dépasse son gel dans AUCUN fichier', () => {
-    expect(violations(reel, GEL_RAW_TEXT, 'appel(s) de rawText'), 'un appel de plus = un texte joueur figé de plus : le migrer, pas relever le gel').toEqual([]);
+  it('le MODULE n’existe plus dans l’arbre — c’est la mort, pas une extinction d’usage', () => {
+    expect(existsSync(join(process.cwd(), 'src/i18n/rawText.ts')), 'le registre des fossiles promettait la suppression du module, pas seulement un compte à 0').toBe(false);
   });
 
-  it('le gel est SERRÉ : aucune entrée ne surestime l’arbre', () => {
+  it('AUCUN fichier de l’arbre n’appelle le fossile — ni en production, ni dans un harnais', () => {
+    expect(Object.keys(reel), 'les harnais sont passés à `i18n/fixtureText`, la production à `t()`/`dataLabel`').toEqual([]);
+  });
+
+  it('le TRIPWIRE est armé : le gel est VIDE, donc aucun fichier n’a de tolérance', () => {
+    expect(GEL_RAW_TEXT, 'une entrée ici rouvrirait un gel là où il n’y a plus rien à geler').toEqual({});
+    expect(somme(GEL_RAW_TEXT)).toBe(0);
+    expect(violations(reel, GEL_RAW_TEXT, 'appel(s) de rawText')).toEqual([]);
     expect(relachees(reel, GEL_RAW_TEXT)).toEqual([]);
   });
 
-  it('CIBLE 0 : le stock mesuré ne dépasse pas le TOTAL gelé, et ce total est DIT', () => {
-    expect(somme(reel), 'le lot suivant ramène ce total à 0, puis `i18n/rawText.ts` est supprimé').toBeLessThanOrEqual(somme(GEL_RAW_TEXT));
-    expect(somme(GEL_RAW_TEXT), 'le TOTAL regelé du 2026-08-17 (E7) — il ne se relève pas, il se rabaisse').toBe(1);
+  /**
+   * LE TRIPWIRE VOIT LES FICHIERS DE PRODUCTION — la sonde qui a trouvé le défaut, promue en test.
+   *
+   * Le cliquet 1 partageait l'exemption du cliquet 2, qui contient `src/state/pendings.ts` (un module de
+   * PRODUCTION, exempté là-bas parce qu'il NOMME `as CascadeStep` au JSDoc). Cette justification n'a
+   * jamais valu pour `rawText` — et depuis la mort du fossile, `pendings.ts` ne nomme même plus le motif :
+   * l'exemption ne couvrait plus rien qu'un ANGLE MORT, dans le seul fichier où il coûte le plus cher.
+   *
+   * Les deux jeux sont rejoués sur un ARBRE FACTICE, pas sur des chaînes : c'est `recense` (parcours,
+   * filtre, exclusion) qui est mesuré, pas un regex isolé. La PRÉIMAGE du défaut est assertée telle
+   * quelle — vert AVEUGLE avec l'ancien jeu — sans quoi le vert du bon jeu ne prouverait rien.
+   */
+  it('SONDE PROMUE : un `rawText(` dans un fichier de PRODUCTION exempté ailleurs est VU (l’ancien jeu était aveugle)', () => {
+    const faux = mkdtempSync(join(tmpdir(), 'tripwire-rawtext-'));
+    try {
+      mkdirSync(join(faux, 'src/state'), { recursive: true });
+      writeFileSync(join(faux, 'src/state/pendings.ts'), 'export const l = rawText("Tempête");\n', 'utf8');
+
+      const vu = recense(faux, compteAppels, undefined, HORS_RAW_TEXT);
+      expect(vu, 'le jeu propre du cliquet 1 n’exempte AUCUN fichier de production').toEqual({ 'src/state/pendings.ts': 1 });
+      expect(violations(vu, GEL_RAW_TEXT, 'appel(s) de rawText')).toEqual(['src/state/pendings.ts : 1 appel(s) de rawText pour un gel de 0']);
+
+      const aveugle = recense(faux, compteAppels, undefined, HORS_CASCADE_STEP);
+      expect(aveugle, 'PRÉIMAGE DU DÉFAUT : hériter de l’exemption du cliquet 2 rendait ce rouge invisible').toEqual({});
+      expect(violations(aveugle, GEL_RAW_TEXT, 'appel(s) de rawText'), 'vert AVEUGLE — un fossile ressuscité en production passait').toEqual([]);
+    } finally {
+      rmSync(faux, { recursive: true, force: true });
+    }
   });
 
-  it('le fossile n’a plus qu’UN site, en PRODUCTION, NOMMÉ — et plus AUCUN dans les harnais', () => {
-    expect(Object.keys(reel), 'E7 a migré les 138 appels des harnais vers `i18n/fixtureText` ; `combatManeuvers.ts` est au périmètre d’une session voisine active').toEqual(['src/state/combatManeuvers.ts']);
-  });
-
-  it('MUTATION : un appel de PLUS dans un fichier gelé rougit', () => {
-    expect(violations({ 'src/state/combatManeuvers.ts': 2 }, GEL_RAW_TEXT, 'appel(s) de rawText')).toEqual(['src/state/combatManeuvers.ts : 2 appel(s) de rawText pour un gel de 1']);
-  });
-
-  it('MUTATION : un fichier ABSENT du gel qui appelle le fossile rougit', () => {
+  it('MUTATION : un SEUL appel, dans N’IMPORTE quel fichier, rougit nominativement', () => {
+    expect(violations({ 'src/state/combatManeuvers.ts': 1 }, GEL_RAW_TEXT, 'appel(s) de rawText')).toEqual(['src/state/combatManeuvers.ts : 1 appel(s) de rawText pour un gel de 0']);
     expect(violations({ 'src/state/nouveauFlux.ts': 1 }, GEL_RAW_TEXT, 'appel(s) de rawText')).toEqual(['src/state/nouveauFlux.ts : 1 appel(s) de rawText pour un gel de 0']);
   });
 
-  it('MUTATION : un fichier qui DESCEND sous son gel ne rougit pas (la décroissance est le but)', () => {
+  it('MUTATION : un fichier qui DESCEND sous son gel ne rougit pas — la sémantique que le cliquet 2 emploie encore', () => {
     expect(violations({ 'src/state/un-harnais.test.ts': 3 }, { 'src/state/un-harnais.test.ts': 5 }, 'appel(s)')).toEqual([]);
   });
 
-  it('le compteur voit les formes réelles d’appel, et pas la DÉFINITION du fossile', () => {
+  it('le compteur voit les formes réelles d’appel, et il verrait la RÉSURRECTION du module par ses appelants', () => {
     expect(compteAppels("label: rawText('X'), autre: rawText(`${a}`)")).toBe(2);
+    // La DÉFINITION seule reste invisible au compteur (elle n'appelle pas) : c'est la sonde d'existence
+    // ci-dessus qui tient ce flanc, et les deux ensemble ferment la résurrection.
     expect(compteAppels('export const rawText = (s: string): PlayerText => s as PlayerText;')).toBe(0);
   });
 });
 
 describe('#1318 V8a₀ T2 — les `as CascadeStep` des TESTS sont GELÉS (la production n’en a plus)', () => {
-  const reel = recense(process.cwd(), compteCasts);
+  const reel = recense(process.cwd(), compteCasts, undefined, HORS_CASCADE_STEP);
 
   it('AUCUN cast de conteneur en PRODUCTION — c’est le lint qui l’y refuse, et le fait le confirme', () => {
     expect(Object.keys(reel).filter((f) => !estTest(f)), 'un `as CascadeStep` hors test rouvrirait la voie canonique').toEqual([]);
@@ -307,7 +367,7 @@ describe('#1318 V8a₀ T2 — les `as CascadeStep` des TESTS sont GELÉS (la pro
 });
 
 describe('#1318 V8a₁ T3 — le minteur `dataLabel` n’accepte AUCUN littéral FR (cible 0, sans gel)', () => {
-  const reel = recense(process.cwd(), (s) => litterauxDataLabel(s).length, (f) => !HORS_DATA_LABEL.has(f));
+  const reel = recense(process.cwd(), (s) => litterauxDataLabel(s).length, (f) => !HORS_DATA_LABEL.has(f), HORS_DATA_LABEL_SONDES);
 
   it('l’arbre RÉEL ne passe jamais de prose au minteur du texte AUTHORÉ', () => {
     expect(Object.keys(reel), '`dataLabel` mint la DONNÉE ; une phrase FR écrite au call-site va au catalogue (`t()`)').toEqual([]);
@@ -369,8 +429,9 @@ describe('#1318 E7 T4/T5 — le SUCCESSEUR `fixtureText` est muré aux HARNAIS (
   });
 
   it('T4/T5 n’héritent d’AUCUNE exemption d’un autre cliquet : un fichier de PROD exempté ailleurs est vu', () => {
-    expect(HORS_RECENSEMENT.has('src/state/pendings.ts'), 'ce fichier de production est hors des cliquets 1/2…').toBe(true);
+    expect(HORS_CASCADE_STEP.has('src/state/pendings.ts'), 'ce fichier de production est hors du cliquet 2…').toBe(true);
     expect(HORS_FIXTURE.has('src/state/pendings.ts'), '…et doit rester SOUS T4/T5, sans quoi la serrure a un angle mort de production').toBe(false);
+    expect(HORS_RAW_TEXT.has('src/state/pendings.ts'), '…et SOUS le cliquet 1, dont la prose promet « où qu’elle soit »').toBe(false);
     expect([...HORS_FIXTURE]).toEqual(['src/state/player-text-ratchet.test.ts']);
   });
 

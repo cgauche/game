@@ -3109,10 +3109,10 @@ export function specLabel(category: string, refId: string, specId: string): stri
  * de scène) vers l'affichage. Ces textes ne sont PAS traduisibles par clé : ils vivent dans la donnée,
  * et une 2ᵉ langue les surcharge par fichier `id → label` (cf. `docs/i18n-seam.md`, Phase E).
  *
- * CE QUI LE DISTINGUE DU FOSSILE `rawText` : le fossile gèle un LITTÉRAL FR écrit au call-site ; ici
- * l'argument est TOUJOURS une valeur lue dans la donnée. Le cliquet nominatif
- * `state/player-text-ratchet.test.ts` tient cette différence à ZÉRO, sans gel : un littéral FR passé à
- * `dataLabel(` rougit la CI. C'est pour ça que ce n'est pas le fossile sous un autre nom.
+ * CE QU'IL N'EST PAS : le fossile `rawText` sous un autre nom — d'autant moins négociable que ce fossile
+ * est MORT (#1318 E7-FINAL). Il gelait un LITTÉRAL FR écrit au call-site ; ici l'argument est TOUJOURS lu
+ * dans la donnée. Le cliquet nominatif `state/player-text-ratchet.test.ts` tient cette différence à ZÉRO,
+ * sans gel : un littéral FR passé à `dataLabel(` rougit la CI — la garde, pas le nom, ferme le retour.
  *
  * `repli` : la dégradation quand la donnée ne porte pas de texte — un ID, ou un libellé DÉJÀ dérivé du
  * catalogue (`refLabel`, `CHAR_LABELS`). Jamais un littéral FR : même cliquet.

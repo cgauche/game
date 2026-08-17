@@ -416,7 +416,7 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
   });
 
   it('FIGEAGE : le CONTENU des deux vocabulaires exemptés est dit, pas seulement leur mécanique', () => {
-    // Étendre l'une de ces listes = un ARBITRAGE DE DESIGN, jamais un geste de confort : un mot de plus
+    // Étendre l'une de ces listes SE FAIT JUGER, jamais au geste de confort : un mot de plus
     // blanchirait des branchements réels sans que rien ne le dise. Le contenu est donc figé ICI.
     expect([...OP_VOCABULARY].sort()).toEqual(['', 'self']);
     expect([...VOCABULARY_TYPES.entries()]).toEqual([['BoneId', 'src/gameIso/rig/bones']]);

@@ -18,7 +18,6 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { BattleState, GameState } from './store';
 import { facingToward } from './dir8';
 import { Combatant, type Difficulty, CHAR_LABELS } from '../engine/types';
-import { rawText } from '../i18n/rawText';
 import { battleRng } from './battleRng';
 import { evLines } from './combatLog';
 import type { RNG } from '../engine/dice';
@@ -31,7 +30,7 @@ import { isOutOfAction, applyZeroWounds, stacks, COND, cannotDefend } from '../e
 import { isBestial, traitCapability } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
-import { findTalentById, findPsychologyById, findManeuverById, combatStakeRef, type ManeuverDef, type ManeuverMeasure } from '../data';
+import { findTalentById, findPsychologyById, findManeuverById, combatStakeRef, dataLabel, type ManeuverDef, type ManeuverMeasure } from '../data';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { freeCons } from './rollSeam';
 import { pilotedByHuman } from './netOwnership';
@@ -515,7 +514,15 @@ function maneuverDefenseLabel(tgt: Combatant, defense: NonNullable<ManeuverDef['
 function openManeuverDefenseCascade(
   get: Get, set: SetFn, attacker: Combatant, def: ManeuverDef, indice: number, atk: TestResult, spent: number, heroes: Combatant[],
 ): void {
-  const attackerLabel = rawText(def.label || ATTACK_LABEL[def.kind]);
+  // Texte AUTHORÉ (`ManeuverDef.label`, `maneuvers.json`) → minteur du texte de donnée. La dégradation
+  // passe par `||` et non par le `repli` de `dataLabel` : `label` est un `string` REQUIS, donc seul le
+  // vide (jamais `null`/`undefined`) peut manquer — le `??` du repli ne le verrait pas.
+  // DETTE — le repli est un libellé de FAMILLE : `ATTACK_LABEL` est réservé au Codex par sa propre
+  // définition (`engine/creatureAttacks.ts` l.57-59), plusieurs `ManeuverDef` partageant un `kind`.
+  // S'il servait, le titre de cascade dirait la famille (« Souffle ») et non la manœuvre (« Souffle
+  // (Feu) »). Chemin INERTE : les 20 entrées de `maneuvers.json` portent toutes un `label` non vide
+  // (mesuré, 11 `kind` pour 20 entrées). Une manœuvre authorée sans `label` afficherait la famille.
+  const attackerLabel = dataLabel(def.label || ATTACK_LABEL[def.kind]);
   const steps: CascadeStep[] = heroes.map((h) => {
     const base = maneuverDefenseValue(h, def.defense!);
     return {
