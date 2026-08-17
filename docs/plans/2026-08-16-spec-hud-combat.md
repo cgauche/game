@@ -311,6 +311,26 @@ et LANCE (le ban ne vise que la barre), ferme après lancement. ⚠ ORDONNANCEME
 livre DANS le même lot que la purge des tiroirs (b3.16) — jamais un lot entre les deux
 sans surface exhaustive.
 
+✅ ARBITRAGE CAMÉRA (AskUserQuestion 2026-08-17, sur question user verbatim : « Je ne suis
+pas fan de ces boutons de map en haut à droite, je ne connais aucun jeu vidéo qui offre ce
+genre de bouton. Ils font comment les jeux avec des vues tactique ou pov ? ») : **gestes +
+clavier seuls — la plaque `ViewControls` QUITTE le jeu** (l'ÉDITEUR la garde, c'est un
+outil). État de l'art appliqué (BG3/Solasta/XCOM : aucun bouton caméra à l'écran).
+Grounding mesuré (lecteur 2026-08-17) : molette=zoom (`useStageCamera.ts:58-63`),
+drag-gauche=panoramique et drag-milieu=rotation libre (`useStagePointer.ts:362-388`),
+Q/E=rotation, C=recentrage (combat), F=POV (exploration) EXISTENT déjà — la plaque était
+redondante au desktop. Le lot ajoute : touches pour la bascule de projection iso↔top et
+l'inspection (clés libres du registre `keybindings.ts`, source de vérité unique) ; C
+recentrage étendu hors combat ; **tactile : pinch=zoom + deux-doigts=panoramique dans le
+stage** (zéro support aujourd'hui, sonde grep `touch|pinch` = 0 sur `src/gameIso/stage/*` ;
+porter le motif éprouvé de `MapCanvas.tsx:78-151`, garde du même patron que
+`MapCanvas-pinch-race.test.tsx`) — la plaque était le seul contrôle caméra tactile, elle
+ne part pas sans son remplaçant. Le rail droit ne garde que les OUTILS (tiroir de journal
+aujourd'hui ; à terme les écrans de la planche : fiche/grimoire/journal/vision — zone 6).
+⚠ Bug WIP relevé au passage : la version worktree de `CampaignView` omet
+`onRotateRelease={relacherCamera}` (la version main l'a) — sans objet une fois la plaque
+retirée du jeu, à ne PAS reporter.
+
 ## Zone 7 — LES PHASES
 
 ✅ TRANCHÉ (2026-08-16) : l'interlude de ciblage (`ActionBar.tsx:234-245`) et la pause de
