@@ -22,3 +22,12 @@ d'existence/d'absence = `grep -n` (Bash natif) ou `node -e` (JSON.parse + filter
 `ctx_search` avait caché. Voir [[game-socle-possessions-programme]] et
 [[feedback-verifier-les-claims-architecturaux-des-agents]] (contre-grep les claims — y compris les
 « 0 match » de mes propres outils).
+
+Récidive 2026-08-17, PAR AGENT INTERPOSÉ : un lecteur a rendu « `docs/raw/combat.md` : AUCUNE
+occurrence d'Empoignade (0 match) » — la fiche fait 730 Ko, elle était sautée ; j'ai converti ce
+faux zéro en « défaut d'Atlas » et briefé un codeur pour ajouter une section… qui existait DEUX
+fois. Sauvé par la clause « re-vérifie, ne me crois pas » du brief (le codeur a grepé en natif et
+STOPPÉ). Deux règles de propagation : (1) tout brief qui envoie un agent SONDER `docs/raw/` ou
+`Source/` (fiches >512 Ko fréquentes) porte l'avertissement + impose grep natif ; (2) une absence
+RAPPORTÉE par un agent sur ces chemins n'entre dans un brief aval qu'avec l'OUTIL de sonde nommé
+— « 0 match ctx_search » sur ces dossiers n'est jamais une preuve.
