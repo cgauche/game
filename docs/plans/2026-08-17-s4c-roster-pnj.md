@@ -2,7 +2,7 @@
 
 > **Plan DATÉ du 2026-08-17** (politique `docs/`) — à SUPPRIMER une fois exécuté ; git porte l'historique.
 > Transféré du chantier #1279 (CLOS, solde `.claude/soldes/1279.md`) comme design commissionné à part.
-> **Révision 2** — amendée après verdict du juge de design (voie A confirmée, 3 bloquants + 12 amendements).
+> **Révision 3** — amendée après verdict du juge de design (voie A confirmée, 3 bloquants + 12 amendements), puis **arbitrages TRANCHÉS par l'utilisateur le 2026-08-17** (§5, repliés dans §3.2/§3.3/§3.5 et L1-L4).
 > Ce document ne contient AUCUN code livré : il tranche, chiffre et nomme les gardes.
 
 ---
@@ -126,12 +126,12 @@ RosterNpc {
   origin:                 // d'où elle vient : re-dérivable, auditable, rejouable
     | { kind: 'scene'; sceneId: string; entityId: string }              // PNJ authoré
     | { kind: 'draw';  sceneId: string; tableId: string; seed: number } // habitué tiré
-  persist: 'scene' | 'campagne'
+  persist: 'scene' | 'place' | 'campagne'
 }
 ```
 
 - **`actor` est la fiche, pas une copie de valeurs.** Toute valeur de Test se redemande aux collecteurs canoniques (`tavernGameValue` → `testValue`/`effectiveChar`, `tavernFlow.ts:116-120`). Aucun champ `skill: number` ne descend dans le registre — ce serait rouvrir la valeur nue par la fenêtre.
-- **`persist: 'scene' | 'campagne'`** (amendement 5) — `'lieu'` est **abandonné** : le schéma de `Scene`/`SceneEntity` n'a **aucune** notion de lieu (`scene.ts`). Nuance mesurée : un id de LIEU **existe déjà ailleurs** — `MapPlace` de `state.worldMap`, `placeId`, qui sert déjà d'ancre de persistance aux possessions (`engine/possession.ts:23`, `{ kind: 'au-lieu'; placeId }`) et aux écrans Port/Marché (`portFlow.ts:63`, `landMarketFlow.ts:61`). Étendre `persist` à `'place'` est donc **possible sans rien inventer**, mais exige de rattacher une Scène à son `MapPlace` — travail non fait, **chiffré séparément (+1 j)**, arbitrage utilisateur au §5 (6).
+- **`persist: 'scene' | 'place' | 'campagne'` — TRANCHÉ (utilisateur, 2026-08-17)** : la portée **LIEU** entre au schéma, elle n'est plus une option. `'place'` s'ancre sur le `MapPlace` de `state.worldMap` — l'id `placeId` **existe déjà** et sert déjà d'ancre de persistance aux possessions (`engine/possession.ts:23`, `{ kind: 'au-lieu'; placeId }`) et aux écrans Port/Marché (`portFlow.ts:63`, `landMarketFlow.ts:61`) : rien n'est inventé. Le travail réel est le **rattachement d'une Scène à son `MapPlace`**, qui n'existe pas aujourd'hui (`scene.ts` n'a aucune notion de lieu) — il vit en **L1** (+1 j), parce que c'est lui qui détermine la clé de purge. Conséquence de jeu : un habitué **survit à un aller-retour entre deux scènes du même lieu** (sortir de la salle commune vers la cour de l'auberge ne le fait pas disparaître), et ne meurt qu'en quittant le lieu.
 - **Frappe des ids (amendement 9)** — l'unicité doit porter sur la **PERSONNE**, pas seulement sur la chaîne :
   - `origin.kind === 'scene'` → id = **l'id d'entité de scène** (`entityId`). Une entité = une personne, garanti par le document de scène. Aucune collision possible.
   - `origin.kind === 'draw'` → id **frappé** `npc:<sceneId>:<tableId>:<n>`, où `n` est le **rang de tirage dans le lieu**, jamais l'id de créature. Conséquence voulue : deux « bateliers » tirés dans la même taverne sont **deux hommes distincts** (rangs 1 et 2 — deux entrées, deux bourses, deux Exténués) ; et le **même** homme redemandé au même rang est **le même** (idempotence). Un id dérivé du seul `creatureId` produirait l'erreur inverse — un batelier unique se dédoublant ou fusionnant selon l'ordre des appels.
@@ -145,7 +145,7 @@ RosterNpc {
 | **Vie** | Toute écriture passe par le geste d'écriture UNIQUE `withNpc` (§3.3bis) — qui **produit un `set`**. Sans lui : ni re-rendu, ni broadcast coop (`netFlow.ts:248` s'abonne au store ; sonde du juge : **0 notification** sur mutation en place). | `npcRoster.ts` |
 | **Notification** | `touchActors` (`combatOrParty.ts:29-31`) prend une **3ᵉ branche** et un paramètre `actorId?` : il ne peut pas deviner qui a muté. Il reste le **filet** des chemins hérités (Chance/Résilience) ; il n'est **pas** le régime nominal du registre. | `combatOrParty.ts` |
 | **MORT** (amendement 6) | Un PNJ qui meurt **sort du registre**, et sa mort se réconcilie avec la scène : son entité rejoint `removedEntityIds` (`sceneInstance.ts:10`, déjà le canal des « PNJ tué »). Sans cette ligne, **Phillipe mort continue de proposer sa partie** (`tavernNpcOffers` lit les entités de scène, `tavernFlow.ts:159-168`) — et l'offre d'un mort est le genre de bug qui survit six mois. | `npcRoster.ts` + `transitionTo` |
-| **Sortie de scène** | Dans `transitionTo` (`store.ts:1978`), une purge **sélective** : les entrées `persist: 'scene'` dont `origin.sceneId ≠ scène cible` sont retirées ; les `'campagne'` traversent. Le slot est `resetOn: []` au manifeste (patron `sceneInstances`, `stateFields.ts:126`) — la purge est explicite, jamais un reset de scope. | `store.ts` + `stateFields.ts` |
+| **Sortie de scène / de LIEU** | Dans `transitionTo` (`store.ts:1978`), une purge **sélective** à trois portées : `persist: 'scene'` part dès que `origin.sceneId ≠ scène cible` ; `persist: 'place'` **survit tant que la scène cible appartient au MÊME `MapPlace`** (clé de purge fournie par le rattachement Scène→`MapPlace` de L1) et part en quittant le lieu ; `'campagne'` traverse tout. Le slot est `resetOn: []` au manifeste (patron `sceneInstances`, `stateFields.ts:126`) — la purge est explicite, jamais un reset de scope. | `store.ts` + `stateFields.ts` |
 | **Nouvelle partie** | Vidé avec le reste (patron `sceneInstances`, `sceneInstance.test.ts:133-141`). | `startScene` |
 
 ### 3.3bis — RÉGIME DE MUTATION UNIQUE (bloquant tranché : **IMMUTABLE**)
@@ -200,9 +200,10 @@ Trois gisements, par ordre de priorité, **aucun nouveau format** :
 | **Attrition des deux camps** (NADJ 16 l.34, Exténué) | `sequenceRoundOps` (`sequenceCore.ts:367`) | `actorIn` → `personIn`, l'`applyOps` routé par `withNpc` quand le porteur est du registre. L'intervalle est déjà par-porteur (`sequenceAttritionEvery`, `:378`) : la symétrie RAW s'obtient **sans nouvelle règle**. |
 | **Effets déclenchés sur échec de Test** | `fireOwnTestFailed` (`triggeredEffects.ts:449-452`) | Il résout par `actorIn` quand on lui passe un **id** — donc aujourd'hui un PNJ passé par id est **introuvable** et ses `onOwnTestFailed` ne partent jamais. Passe à `personIn`. |
 | **Mises des deux bourses** (l.17) | `bourseFlow.ts:51-71` | `creditBourse`/`debitBourse`/`payWithAllocation` résolvent leur PORTEUR (party ∪ registre) au lieu de mapper `s.party`. Le pot (`tavernFlow.ts:1524`, `:2438`) verse alors des deux côtés. Régime déjà immutable → aucun conflit (§3.3bis). |
-| **Talents des deux côtés** (l.19 « Spécial », #1306) | `fireTriggers` (`state/triggeredEffects.ts`) + `passiveMods` (`engine/trauma.ts`) | Ces dispatchers prennent un `Combatant` : le PNJ à fiche devient client de **la moitié TALENT de #1306** (Maîtrise des dés) sans code nouveau. **La moitié CHANCE ne suit pas automatiquement** : `fate`/`fortune`/`resilience` sont optionnels sur `Combatant` (`types.ts:1510-1513`) et aucun PNJ n'en porte — mais c'est un fait d'implémentation, **pas** une règle RAW (§1ter) : ni « asymétrie assumée », ni statu quo par défaut. Arbitrage §5 (5). |
-| **Marchandage** (LDB 59) | `merchantFlow.ts:817` | `merchantValue` (valeur nue d'archétype) meurt : le marchand est une personne du registre, sa valeur de Marchandage se lit à sa fiche, sa bourse devient réelle. |
-| **Peur/Terreur de rencontre** | `encounterPsychFlow.ts:50-53` | `sceneFearSources` cesse de re-dériver : elle lit le registre (et récupère au passage le `presetId` qu'elle perd aujourd'hui — défaut §2.2). |
+| **Talents des deux côtés** (l.19 « Spécial », #1306) | `fireTriggers` (`state/triggeredEffects.ts`) + `passiveMods` (`engine/trauma.ts`) | Ces dispatchers prennent un `Combatant` : le PNJ à fiche devient client de **la moitié TALENT de #1306** (Maîtrise des dés) sans code nouveau. |
+| **Destin / Résilience d'un PNJ nommé** (LDB 17 l.9) — **TRANCHÉ « en donnée éditable » (utilisateur, 2026-08-17)** | la DONNÉE elle-même : `fate`/`fortune`/`resilience` sont **déjà optionnels** sur `Combatant` (`types.ts:1510-1513`) | Aucun type à changer : une fiche de PNJ nommé **peut porter** ses Points, et l'authoring les expose. ⚠ La **DÉPENSE** de ces Points sur un lancer hors Test (relance d'Al-zahr, NADJ 16 l.19) reste le seam manquant de **#1306** — hors périmètre S4-c, déjà ticketé : ce chantier rend la donnée possible, il ne livre pas le canal de dépense. |
+| **Marchandage** (LDB 59) | `merchantFlow.ts:817` | `merchantValue` (valeur nue d'archétype) meurt : le marchand est une personne du registre, sa valeur de Marchandage se lit à sa fiche, sa bourse devient réelle et **bornée** (arbitrage 3, §5). |
+| **Peur/Terreur de rencontre** | `encounterPsychFlow.ts:51-61` | `sceneFearSources` cesse de re-dériver : elle lit le registre. *(Son défaut de `presetId` a été **corrigé dans l'arbre** entre-temps — cf. annexe ; le rebranchement au registre reste dû.)* |
 
 ### 3.6 Ce qui NE change PAS — et ce que le slot revendique
 
@@ -229,23 +230,27 @@ Le critère d'universalité hérité de #1279 s'applique tel quel : **le registr
 
 > Le programme **#1318 fait loi** : un verrou par lot. Ordre de préférence : **invariant mort au type > cliquet AST > baseline DÉCROISSANTE datée** ; **aucune baseline sans cible zéro nommée** (directive utilisateur 2026-08-16, verbatim : « Pas de demi-migration ou de guard qui valident l'existent »).
 
-### L1 — Le registre + le résolveur canonique + le contrat gelé · **2 j**
-Slot `npcRoster` au manifeste (`resetOn: []`), `RosterNpc`, `personIn` dans `combatants.ts` (préséance combat identique à `actorIn`), `enrollSceneNpc` (dérivation remontée, `presetId` honoré), `withNpc` (§3.3bis), `touchActors(state, actorId?)` étendu au registre, purge sélective + ligne MORT dans `transitionTo`, `tavernActor` supprimé au profit de `personIn`.
+### L1 — Le registre + le résolveur canonique + le contrat gelé + l'ancre de LIEU · **3 j**
+Slot `npcRoster` au manifeste (`resetOn: []`), `RosterNpc`, `personIn` dans `combatants.ts` (préséance combat identique à `actorIn`), `enrollSceneNpc` (dérivation remontée, `presetId` honoré), `withNpc` (§3.3bis), `touchActors(state, actorId?)` étendu au registre, purge sélective à **trois portées** + ligne MORT dans `transitionTo`, `tavernActor` supprimé au profit de `personIn`.
+**+1 j — l'ancre de LIEU** (arbitrage 1, tranché) : rattacher une Scène à son `MapPlace` (`placeId`), ce qui n'existe pas aujourd'hui. Le travail vit **ICI** et nulle part ailleurs, parce que c'est cette clé qui décide de la purge : sans elle, `persist: 'place'` n'a pas de critère et la portée LIEU serait indistinguable de `'scene'`.
 **Jugeable** : (a) `personIn(state,id)` rend **toujours l'état courant** — deux lectures encadrant une écriture diffèrent ; (b) une écriture par `withNpc` **notifie** (abonné de store réveillé — sonde sur `netFlow.ts:248`) ; (c) une save sans la clé charge à `{}` (test calqué sur `sceneInstance.test.ts:169`) ; (d) **test NOMMÉ figeant « `applyOps` mute `target` en place »** (§3.1 ; départ : `scratchpad/sonde-s4c.mts`).
 **Verrou (amendement 13)** : viser **l'INVARIANT, pas la forme**. Un cliquet AST sur le motif `actorIn(…) ?? <dérivation>` produit **11 faux positifs mesurés** (replis de label du type `actorIn(...)?.label ?? id`) — il est **écarté**. À sa place : **mort au type** — l'inscription (`enrollSceneNpc`) rend un type *inscrit* (non assignable à un `Combatant` nu obtenu par dérivation libre), de sorte qu'un site qui re-dérive une personne hors registre **ne compile pas**.
 
-### L2 — Attrition symétrique · **1 j** *(dépend de L1)*
+### L2 — Attrition symétrique + horloge « le monde vit » · **1 j** *(dépend de L1)*
 `sequenceRoundOps` et `fireOwnTestFailed` sur `personIn` ; écriture par `withNpc` ; raccord combat du §3.3ter.
-**Jugeable** : Bras de fer long contre Phillipe — **l'adversaire gagne son Exténué**, le garde à la partie suivante de la soirée, et l'écran le montre (notification). Test ROUGE avant le lot (mesure de l'asymétrie), VERT après.
+**Horloge — TRANCHÉ « le monde vit » (utilisateur, 2026-08-17)** : les États d'un PNJ du registre **décroissent avec l'horloge du jeu, même hors champ**. Conséquence de design : la récupération ne se déclenche pas à une visite du joueur (ce serait un rattrapage paresseux, donc dépendant de l'observation) mais au **seam horodaté** qui fait déjà vieillir le monde (`advanceTime`) — le PNJ récupère son Exténué au même titre qu'un héros, que le groupe soit là ou non. Le « 5 minutes de repos » de NADJ 16 l.34 est la durée, pas un déclencheur joueur.
+**Jugeable** : (a) Bras de fer long contre Phillipe — **l'adversaire gagne son Exténué**, le garde à la partie suivante, et l'écran le montre (notification) ; (b) quitter le lieu, laisser passer le temps, revenir : **il a récupéré** sans qu'aucun geste joueur ne l'ait provoqué. Tests ROUGES avant le lot (mesure de l'asymétrie), VERTS après.
 **Verrou** : mort au type — le porteur d'ops de séquence ne s'obtient QUE par `personIn`.
 
-### L3 — Bourse de personne · **1,5 j** *(dépend de L1)*
-`creditBourse`/`debitBourse`/`payWithAllocation` par PORTEUR ; pot d'Al-zahr symétrique ; un PNJ sans le sou ne mise pas.
-**Jugeable** : l'argent gagné par le héros **sort** de la bourse du PNJ (somme des deux bourses conservée) ; l'asymétrie monétaire d'Al-zahr (arbitrage S2 de #1279) se résorbe **sans règle nouvelle**.
+### L3 — Bourse de personne + les deux bornes d'économie · **1,5 j** *(dépend de L1)*
+`creditBourse`/`debitBourse`/`payWithAllocation` par PORTEUR ; pot d'Al-zahr symétrique.
+**Économie — TRANCHÉ : LES DEUX bornes acceptées (utilisateur, 2026-08-17)**. Livrables nommés : (a) **table de richesse en DONNÉE** — la bourse initiale d'un PNJ tiré vient d'une entrée authorable (plage par entrée de table de tirage, §3.4), jamais d'une constante ; (b) **l'habitué borné cesse de jouer** quand sa bourse est vide (il quitte la table, il ne mise pas à découvert) ; (c) **le marchand ruiné ne rachète plus** jusqu'au réassort. Aucun plancher d'argent, aucun renflouement silencieux : la borne EST l'effet de jeu voulu.
+**Jugeable** : (a) l'argent gagné par le héros **sort** de la bourse du PNJ (somme des deux bourses conservée) ; (b) un PNJ vidé refuse la partie suivante avec sa raison à l'écran ; (c) un marchand vidé refuse le rachat. L'asymétrie monétaire d'Al-zahr (arbitrage S2 de #1279) se résorbe **sans règle nouvelle**.
 **Verrou** : cliquet à cible 0 sur `s.party.map(` dans les fonctions de bourse.
 
-### L4 — Roster d'habitués en donnée + tirage seedé · **2 j** *(dépend de L1 ; ⚠ #1342)*
-Table de tirage authorable, résolution seedée, ids frappés (§3.2), richesse initiale en donnée.
+### L4 — Roster d'habitués en donnée + tirage seedé + Destin/Résilience authorables · **2 j** *(dépend de L1 ; ⚠ #1342)*
+Table de tirage authorable, résolution seedée, ids frappés (§3.2), richesse initiale en donnée (table de L3).
+**Destin/Résilience d'un PNJ nommé — TRANCHÉ « en donnée éditable » (utilisateur, 2026-08-17)** : livrable **sous l'epsilon de chiffrage** (aucun jour ajouté) — les champs `fate`/`fortune`/`resilience` sont **déjà optionnels** sur `Combatant` (`types.ts:1510-1513`), donc le lot ne fait qu'**exposer** ces champs à l'authoring de PNJ et les valider. Le **canal de dépense** (relance d'un lancer hors Test, NADJ 16 l.19) n'est PAS livré ici : il est le seam manquant de **#1306**. Dit franchement pour ne pas annoncer un complet incomplet — après L4, un PNJ nommé **porte** ses Points sans encore pouvoir les **dépenser**.
 **⚠ Séquencement mesuré** : le lot **ne se ferme pas** avant #1342 pour les entités qu'il tire, sinon il livre des habitués aux avances silencieusement mortes (`skills.ts:78`). Options : (a) attendre #1342 ; (b) livrer avec une garde de tirage **fail-fast** refusant une créature porteuse d'une spec-libellé. **Recommandation : (b)** — le lot avance, la dette ne rentre pas. **Mais la casse se mesure AVANT de choisir** : compter combien des **humains de taverne effectivement visés** portent une spec-libellé (387/1450 ≈ 27 % des specs du gisement ; la répartition **par entité** n'est pas mesurée — `savoir/Local` ×94 laisse craindre une forte concentration sur les humains civils, précisément la population du roster). Si la plupart des candidats tombent, **la table de tirage se vide** et le fail-fast livre un lot inerte. Cette mesure est la **première tâche** de L4 et peut basculer sur (a).
 **Jugeable** : deux entrées dans la même taverne avec la même graine → le même habitué, nommé, à fiche ; deux « bateliers » tirés = deux hommes distincts.
 
@@ -257,29 +262,37 @@ Table de tirage authorable, résolution seedée, ids frappés (§3.2), richesse 
 ### L6 — Poursuite terrestre : `PursuitFoe` à fiche · **1,5 j** *(optionnel, dépend de L1)*
 `PursuitFoe { movement: number; skill: number }` (`pursuitFlow.ts:60-64`) → personne du registre. **2ᵉ client** prouvant que le registre n'a pas pris la forme de la taverne — critère d'universalité hérité de #1279.
 
-**Totaux : 8,5 j-codeur (L1-L5) · 10 j (avec L6).** L1 est le seul lot bloquant ; L2, L3, L4 sont parallélisables. **+1 j** si l'arbitrage 6 introduit un id de LIEU.
+**Totaux : 9,5 j-codeur (L1-L5) · 11 j (avec L6).** L1 est le seul lot bloquant (il porte l'ancre de LIEU dont dépend la portée `'place'`) ; L2, L3, L4 sont parallélisables une fois L1 posé.
 
 ---
 
-## 5. Arbitrages restants pour l'utilisateur
+## 5. Arbitrages TRANCHÉS (utilisateur, 2026-08-17, via AskUserQuestion)
 
-Chaque question = **une assertion testable**.
+Chaque entrée porte l'assertion **retenue** telle qu'elle était formulée au doc, et l'alternative écartée. Ces décisions sont repliées dans le plan (§3.2, §3.3, §3.5, L1-L4) : elles ne se re-débattent pas.
 
-1. **Horloge d'un PNJ absent.** Le RAW est un FAIT, pas un arbitrage : l'Exténué du Bras de fer se récupère « après 5 minutes de repos » (NADJ 16 l.34, verbatim §1bis). La question porte sur le **temps hors champ** — *assertion* : « l'État d'un PNJ du registre **décroît avec l'horloge du jeu** même quand le groupe n'est pas là (le monde vit) » ; l'alternative testable étant « il **gèle** à la sortie de la scène et ne reprend qu'au retour du groupe (le monde attend) ».
-2. **Portée de la persistance.** *Assertion* : « un habitué **tiré au sort** disparaît quand on quitte la scène (`persist: 'scene'`) ; seul un PNJ **authoré** survit à la campagne avec ses États et sa bourse. »
-3. **Effet d'économie du marchand ruiné.** *Assertion* : « un marchand dont la bourse est vide **ne rachète plus** jusqu'au réassort — c'est un effet de jeu voulu, pas un bug à rattraper par un plancher d'argent. »
-4. **Bourse bornée de l'habitué.** *Assertion* : « un habitué tiré porte une bourse initiale tirée d'une table de richesse en donnée, et **cesse de jouer** quand elle est vide, au lieu de miser à l'infini. »
-5. **Chance/Destin des PNJ nommés** *(reformulé après réfutation, §1ter)*. Le RAW **autorise explicitement** d'attribuer Destin et Résilience à des PNJ importants (LDB 17 l.9, verbatim), et la règle 7 interdit de laisser ce point « au MJ ». *Assertion* : « un PNJ **nommé** peut porter des Points de Destin/Résilience **en donnée éditable** (champs déjà optionnels, `types.ts:1510-1513`) — donc Phillipe Descartes peut relancer son jet d'Al-zahr comme un héros, si sa fiche le dit » ; l'alternative testable étant « aucun PNJ n'en porte : house-rule maison, taguée comme telle, contre la lettre de LDB 17 l.9 ».
-6. **Id de LIEU au schéma.** *Assertion* : « une Scène se rattache à son `MapPlace` (`placeId`, déjà existant : `possession.ts:23`, `portFlow.ts:63`), ce qui ouvre `persist: 'place'` — un habitué survit alors à un aller-retour entre deux scènes du **même** lieu (+1 j) » ; sinon `'scene'` suffit et le registre s'en tient à deux portées.
+1. **PORTÉE DE LA PERSISTANCE → LIEU (+1 j).** *Retenu (2026-08-17)* : **« une Scène se rattache à son `MapPlace` (`placeId`, déjà existant : `possession.ts:23`, `portFlow.ts:63`), ce qui ouvre `persist: 'place'` — un habitué survit alors à un aller-retour entre deux scènes du même lieu. »** Le schéma porte donc **trois** portées (`'scene' | 'place' | 'campagne'`, §3.2) et le rattachement Scène→`MapPlace` est un livrable de **L1**.
+   *Écarté : s'en tenir à deux portées (`'scene'` seule), où sortir vers la cour de l'auberge suffisait à faire disparaître l'habitué.*
+   *(Cet arbitrage absorbe l'ancienne question 6 « id de LIEU au schéma » — c'était la même décision, fusionnée à la présentation.)*
+2. **HORLOGE → LE MONDE VIT.** *Retenu (2026-08-17)* : **« l'État d'un PNJ du registre décroît avec l'horloge du jeu même quand le groupe n'est pas là. »** Replié dans **L2** : la récupération s'accroche au seam horodaté (`advanceTime`), jamais à une visite du joueur. Rappel : le « 5 minutes de repos » de NADJ 16 l.34 est un FAIT RAW (la durée), pas l'objet de l'arbitrage.
+   *Écarté : le monde attend — l'État gèle à la sortie de la scène et ne reprend qu'au retour du groupe.*
+3. **ÉCONOMIE → LES DEUX BORNES.** *Retenu (2026-08-17)*, les deux assertions ensemble : **« un marchand dont la bourse est vide ne rachète plus jusqu'au réassort »** ET **« un habitué tiré porte une bourse initiale tirée d'une table de richesse en donnée, et cesse de jouer quand elle est vide. »** Repliées dans **L3** comme livrables nommés (table de richesse en donnée incluse).
+   *Écarté : rattraper l'une ou l'autre par un plancher d'argent ou un renflouement silencieux.*
+4. **CHANCE / DESTIN DES PNJ → EN DONNÉE ÉDITABLE.** *Retenu (2026-08-17)* : **« un PNJ nommé peut porter des Points de Destin/Résilience en donnée éditable (champs déjà optionnels, `types.ts:1510-1513`) — donc Phillipe Descartes peut relancer son jet d'Al-zahr comme un héros, si sa fiche le dit. »** Conforme à la lettre de LDB 17 l.9 (verbatim §1ter) et à la règle 7 (« pas de MJ » : le point laissé à l'arbitre reçoit une donnée, pas un silence). Replié dans **L4** sous l'epsilon de chiffrage ; le canal de DÉPENSE reste #1306.
+   *Écarté : aucun PNJ n'en porte — ce qui aurait été une house-rule maison contre la lettre de LDB 17 l.9.*
 
-*(La rejouabilité du tirage seedé n'est plus un arbitrage : c'est une exigence de la coop et des saves, tranchée au design — §3.4.)*
+*(La rejouabilité du tirage seedé n'a jamais été soumise : c'est une exigence de la coop et des saves, tranchée au design — §3.4.)*
 
 ---
 
-## Annexe — poison et défauts rencontrés hors périmètre (à traiter à leur site)
+## Annexe — défauts rencontrés hors périmètre
 
-- **`src/engine/types.ts:1509`** — commentaire « Destin / Résilience (héros uniquement, LDB 17 l.9) » : **paraphrase à l'envers de sa propre réf** (LDB 17 l.9 autorise explicitement l'attribution à des PNJ importants — verbatim §1ter). Poison de classe (a), CLAUDE.md règle 6 : à réduire à sa réf nue.
-- **`src/state/encounterPsychFlow.ts:50-53`** — `sceneFearSources` ne passe pas `presetId` à `spawnEnemy` : un PNJ nommé par preset y devient une fiche générique, alors que les deux autres sites de la même dérivation l'honorent (`tavernFlow.ts:140`, `combatSlice.ts:2643`). Absorbé par L5.
+**CORRIGÉS dans l'arbre depuis la rédaction** (vérifiés au code le 2026-08-17, à ne plus traiter comme dette) :
+
+- ✅ **`src/engine/types.ts:1509`** — le commentaire disait « Destin / Résilience (**héros uniquement**, LDB 17 l.9) », paraphrase à l'envers de sa propre réf (LDB 17 l.9 autorise explicitement l'attribution à des PNJ importants — verbatim §1ter). **Réduit à sa réf nue** : le site porte désormais `// Destin / Résilience (LDB 17 l.9)`. Le poison de classe (a) est éteint ; l'arbitrage 4 du §5 peut donc s'écrire en donnée sans qu'un commentaire le contredise.
+- ✅ **`src/state/encounterPsychFlow.ts:51-61`** — `sceneFearSources` ne passait ni `presetCreature` ni `appearance` à `spawnEnemy`, si bien qu'un PNJ nommé par preset y devenait une fiche générique, en divergence avec ses deux sites frères. **Corrigé au site** : la fonction résout `resolvePresetCreature(e.presetId)` et passe `{ presetCreature, appearance }` exactement comme `tavernFlow.ts:140` et `combatSlice.ts:2643` (test étendu, preuve par mutation). Ne relève **plus** de L5 : L5 ne lui doit que son rebranchement au registre.
+
+**Restants** :
+
 - **`src/state/bourseFlow.ts:79-84`** — `payWithAllocation` documente `recipient`/`purpose` comme **champs morts** (#1340) ; L3 les touche : les tuer plutôt que les traverser.
 - **`src/scenes/test-scenarios/96-presets-edo.ts:202`** — Phillipe Descartes propose `dominos` alors que le scénario prescrit **L'Impératrice Écarlate** : substitution provisoire à solder (dette de contenu).
 - **`src/engine/ops.ts:1223`** — contrat « mute en place » dont ~65 fichiers dépendent **sans qu'aucun test ne le nomme** : gelé par L1, mais le trou existe dès aujourd'hui, indépendamment de ce chantier.
