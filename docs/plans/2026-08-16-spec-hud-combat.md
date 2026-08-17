@@ -388,6 +388,34 @@ borné au paramètre : munition, localisation, objets d'UNE pastille, sort à di
 porteur) ; les 3 sondes du juge promues en tests (co-occurrence G6, charge de grille,
 débord des remèdes).
 
+## Zone 11 — HUD HORS COMBAT : LE PONT D'EXPLORATION (ouvert 2026-08-17)
+
+Constat user (verbatims) : « Il va clairement aussi adapter l Interface hors combat. Les
+Possessions ça ressemble à un bouton de menu qui irait dans le bloc à gauche non ? La date
+ça n a rien à faire là non plus globalement » ; « Pareil le bouton de repos n a pas sa
+place à cet endroit. Ils mettent ces informations ou les jeux vidéos ? »
+
+Inventaire MESURÉ de la barre haute d'exploration (`CampaignView.tsx:218-290`) : ☰ menu +
+nom du lieu + **date (`ScreenMeta`)** + jusqu'à **7 boutons flottants conditionnels**
+(Possessions, dossier du navire, carnet d'enquête, voyage réduit, carte du monde, hub de
+ville, dormir/camper — tous en `.worldmap-btn`) — le patron « chacun flotte dans son
+coin » que l'analyse RT condamnait.
+
+✅ ARBITRAGE (AskUserQuestion 2026-08-17, état de l'art BG3/Pathfinder/POE exposé : repos
+= bouton de barre basse, ouvreurs d'écrans = rangée d'icônes au bout droit de la barre
+basse + touches, date contextuelle jamais permanente) : **LE PONT EXISTE AUSSI HORS
+COMBAT, allégé** — une seule loi d'assemblage pour tout le jeu (§1c-ter) :
+- Extrémité DROITE du pont d'exploration = la rangée d'icônes-écrans (Possessions, carnet,
+  dossier navire, voyage, carte du monde, lieu-hub, repos/camp — mêmes conditions
+  d'apparition qu'aujourd'hui, cases dessinées stables quand la condition est fréquente).
+- Barre haute = ☰ + lieu + objectif SEULEMENT. **La date QUITTE le HUD** (elle vit déjà
+  au menu ☰ et sur tous les écrans plein-champ `ScreenMeta` — zéro perte).
+- Même matière/liseré que le pont de combat (tokens `--cc-*` remontés au `:root` par le
+  lot centrage) ; le combat garde sa console pleine, l'exploration son pont léger — la
+  transition combat↔exploration change le CONTENU du pont, jamais son existence.
+- Touches d'ouvreurs d'écrans (I/J/M-style, registre `labelKey`) : volet ultérieur,
+  consigné — pas dans le premier lot.
+
 ---
 
 ## Vague 2 — RETOUR VISUEL (validée par l'utilisateur le 2026-08-16, 5 éléments)
