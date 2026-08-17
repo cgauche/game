@@ -19,6 +19,19 @@ Une seule surface, géométrie IMMUABLE (position, hauteur, comptes de cases fix
 Remplace l'actuel `.action-bar`/`.ab-bar` recomposé par condition. ⚠ Géométrie mobile À
 MESURER au lot console : à 360px, une rangée de 8×52+7×4 = 444px > 336px utiles — la travée
 gauche se plie en 2×4.
+✅ BUDGET DE HAUTEUR — CONTRAT (arbitrage user 2026-08-17, capture à ~1998px, verbatim :
+« avoir 1/4 de l'interface qui est une barre d'action, ça ne va pas etre possible, surtout
+avec tout ce vide et ces icones disproportionnés ») : mesuré chez lui ~28-29 % de viewport
+là où LA PLANCHE budgétise **20,1 %** (pont 217px / 1080). Contrats :
+- **Hauteur du pont ≤ ~21 % du viewport à ≥1280** (le ratio de la planche), garde promue
+  (mesure en recette à chaque largeur ; le budget mobile ≤560 reste celui de l'arbitrage
+  compact ~40-45 %).
+- **Cases PAYSAGE à l'échelle de la planche** (~90×66 à 1920, plus larges que hautes —
+  jamais des carrés de 84px) ; les plafonds de `--cc-cell` se recalent en conséquence.
+- **Icône PROPORTIONNELLE à sa case** (≈ moitié de la hauteur utile, jamais une taille
+  figée en px qui rend une vignette de 22px dans une case de 84).
+- Le VIDE se paie au prix des cases : les LIBRE suivent la même échelle — la densité
+  augmente encore quand les défauts de remplissage (§1b) peupleront la grille.
 ✅ MAQUETTE MESURÉE (2026-08-16, worktree `agent-ac9da5df07ad973dd` = BRANCHE DE BASE du
 lot console — composant réel `CombatConsole.tsx` + `combat-console.css`, monté sur le store,
 captures + DOM) : **1280×800 TIENT** (console 185px = 23 % du viewport, zéro débordement,
