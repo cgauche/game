@@ -146,8 +146,12 @@ arbitrages du programme et les registres du dépôt :
   barre PV CHIFFRÉE (« 11/11 ») + **colonne d'alvéoles d'États réservées au flanc du
   portrait (planche : 1 colonne × 3 cases, CHIFFRÉES, vides dessinées — « zéro État ne
   rétrécit pas la carte »)** + **NOM VISIBLE SOUS LA TUILE** (la planche l'affiche en
-  permanence — l'interdit « nom au survol » du contrat précédent TOMBE) + actif surligné.
-  — Interdits : carrière, jauges annexes. Tuile petite et DENSE comme le dessin.
+  permanence — l'interdit « nom au survol » du contrat précédent TOMBE). **Le bandeau ne
+  marque PAS l'actif** (arbitrage user 2026-08-17, verbatim : « Je ne suis pas fan du cadre
+  blanc en haut, pourquoi il y en a un en combat ? On a déjà ce qu il fait dans
+  l initiative a gauche » — l'ordre du tour et l'acteur vivent à la FRISE seule ; le cadre
+  blanc de la planche était un spécimen sans valeur de règle). — Interdits : carrière,
+  jauges annexes, marqueur d'actif. Tuile petite et DENSE comme le dessin.
 - **FRISE (A)** : par entrée — vignette + liseré de camp + (pause : score en débord,
   pointe de préemption, pastille de fin) + regroupement ×N des identiques (planche : ✕ de
   mort, éclair de préemption, « ×3 », actif encadré, « Round I » en tête). C'EST TOUT. —
