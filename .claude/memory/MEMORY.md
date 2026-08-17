@@ -34,7 +34,7 @@
 
 ## Chantiers récents / état
 - **[CHANTIER HUD combat : console RT](game-arbitrage-hud-console-rt-2026-08-16.md)** (2026-08-16, verbatims) — deux travées simultanées, JAMAIS de bouton-liste (sorts = alvéoles), géométrie immuable, clavier sans modificateur, remèdes d'État sur pastille ; plan `docs/plans/2026-08-16-hud-combat.md` §3bis, dette Chance #1332.
-- **[#1318 PROGRAMME DE PRÉVENTION](project-1318-programme-prevention.md)** (2026-08-14) — 8 classes P1-P8, V3 livrée (d47f1cce), V4-V10 au ticket ; #1279/#578 CLOS (solde `.claude/soldes/1279.md`), S4-c design doc à commissionner.
+- **[#1318 PROGRAMME DE PRÉVENTION](project-1318-programme-prevention.md)** (2026-08-14) — verrous TOUS posés, E5+E2 ÉTEINTS (i18n 275→0, knip 173→11), S4-c ARBITRÉ (4 décisions user 2026-08-17, doc `docs/plans/2026-08-17-s4c-roster-pnj.md`) ; restent E1/E3/E4/E6/E7/E8, #1330, #1342, #1346 ; #1279/#578 CLOS (solde `.claude/soldes/1279.md`).
 - **[Vue TOP = tabletop/VTT](game-arbitrage-vue-top-tactique-tabletop.md)** (2026-08-12, verbatim ; P3-5 de #1176) · **[GRILLE = SYSTÈME, rendu LIBRE](game-arbitrage-grille-systeme-rendu-libre.md)** (2026-08-14, verbatim — l'immersion ne se quantifie pas par case).
 - **[NOUVEAU MOTEUR = LIBÉRER LE PRODUIT](user-doctrine-nouveau-moteur-liberer-le-produit.md)** (verbatim) — refaire MIEUX, jamais porter le contournement · **[ÉTAT DE L'ART avant invention](user-doctrine-etat-de-lart-avant-invention.md)** (2026-08-16, verbatim — un problème de rendu résolu par l'industrie s'instruit avant tout dilemme maison).
 - **[VERROU PAR CONSTRUCTION](user-doctrine-verrou-par-construction.md)** (verbatim, #1262) — seul le MURAGE supprime la divergence ; découpage par FAMILLE.
