@@ -19,6 +19,7 @@ Vécu (2026-08-06, verbatim utilisateur) : « A chaque fois que je te demande de
 - **La suite complète (`npm test`) : UNE fois, SEULE, au gate de commit** — jamais en `run_in_background` pendant qu'un agent tourne ; la borner (`npx vitest run --minWorkers=1 --maxWorkers=4`) pour les gates.
 - ⚠ **PIÈGE (mesuré 2026-08-05 par le juge)** : `--maxWorkers=N` SANS `--minWorkers=1` sur ce dépôt → `RangeError: minThreads/maxThreads conflict` AVALÉ : *0 suite exécutée*, `"success":true`, RTK affiche `PASS (0) FAIL (0)` — **faux vert total**. Toujours apparier `--minWorkers=1 --maxWorkers=N`, et ne croire un vert QUE s'il porte un COMPTE de tests > 0.
 - Les briefs d'agents disent : suites CIBLÉES uniquement, la complète appartient à l'orchestrateur.
+- ⚠ **`--maxWorkers=1` sur la suite COMPLÈTE = 21+ min de mur** (vécu 2026-08-17, flag user « 21min ! ») : la borne canonique du gate est `--minWorkers=1 --maxWorkers=4` (ligne ci-dessus) — le tout-séquentiel ne se justifie QUE si une autre charge lourde tourne en même temps (session d'art, 2e suite). Vérifier la charge (`Get-Process node`) et choisir 4, pas 1.
 - À la REPRISE d'une session : relancer les agents UN par UN, jamais tous d'un coup ; vérifier la charge d'abord (Get-Process node + RAM libre).
 - Coordination inter-sessions : si la session d'ART tourne, ne pas lancer ma suite complète en même temps que la sienne (l'utilisateur alterne).
 Cf. [[env-session-background-pieges-outils]], [[game-tests-isolate-false-speedup]].
