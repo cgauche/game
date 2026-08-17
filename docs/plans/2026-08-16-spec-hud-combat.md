@@ -32,6 +32,14 @@ là où LA PLANCHE budgétise **20,1 %** (pont 217px / 1080). Contrats :
   figée en px qui rend une vignette de 22px dans une case de 84).
 - Le VIDE se paie au prix des cases : les LIBRE suivent la même échelle — la densité
   augmente encore quand les défauts de remplissage (§1b) peupleront la grille.
+- COMPLÉMENT (user 2026-08-17, verbatim : « il y a encore enormement de vide je trouve
+  sous les barres d action et au dessus du portrait dans l arche ») — **le vide INTERNE se
+  comprime à budget constant** : (a) la BANDE MORTE sous les travées disparaît — la
+  rangée munition quitte son bandeau réservé, la munition chargée vit dans l'EN-TÊTE de
+  travée à côté du nom du set (« ARBALÈTE · Carreau ×12 » — l'en-tête existe déjà, la
+  hauteur du pont ne réserve plus ces ~12px+bande) ; (b) le FAÎTE de l'arche se serre et
+  le PORTRAIT remplit l'arche à l'échelle de la planche (chez elle le portrait domine la
+  région — chez nous il flotte petit sous un sommet creux).
 ✅ MAQUETTE MESURÉE (2026-08-16, worktree `agent-ac9da5df07ad973dd` = BRANCHE DE BASE du
 lot console — composant réel `CombatConsole.tsx` + `combat-console.css`, monté sur le store,
 captures + DOM) : **1280×800 TIENT** (console 185px = 23 % du viewport, zéro débordement,
