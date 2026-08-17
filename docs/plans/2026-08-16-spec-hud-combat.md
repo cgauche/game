@@ -115,11 +115,14 @@ armes a distance fonctionnent même en étant engagé avec l'atout pistolet […
 prefere que le joueur change lui même son set ») — **l'attaque passe par les armes du SET
 ACTIF uniquement** :
 - Le fallback moteur « Mains nues toujours dans `c.weapons` » (`items.ts:661`) SE CORRIGE :
-  Mains nues n'est une arme QUE du combattant réellement désarmé — RAW LDB 14 (Atlas
-  `combat.md`) : « Les Mains nues sont l'arme par défaut de tout combattant DÉSARMÉ » —
-  c'est-à-dire le set sans arme portée. Fini le coup de poing AUTOMATIQUE de l'arbalétrier
-  au clic-ennemi adjacent (chemin mesuré : `pickAttackWeaponList`→`meleeWeaponInRangeList`,
-  `mount.ts:92-148`).
+  Mains nues n'est une arme QUE du combattant réellement désarmé (le set sans arme portée).
+  ⚠ CORRECTION D'ATTRIBUTION (lot moteur 2026-08-17, Source relu) : la phrase « Les Mains
+  nues sont l'arme par défaut de tout combattant désarmé » est une ligne ÉDITORIALE de
+  l'Atlas (`combat.md:1157`), ABSENTE du Source — le RAW est MUET sur « qui a les Mains
+  nues » ; la décision tient sur le VERBATIM USER de ce bloc, pas sur une règle (l'Atlas
+  est à requalifier en note d'édition — dette consignée). Fini le coup de poing
+  AUTOMATIQUE de l'arbalétrier au clic-ennemi adjacent (chemin mesuré :
+  `pickAttackWeaponList`→`meleeWeaponInRangeList`, `mount.ts:92-148`).
 - **AUCUNE proposition automatique de commutation** : le geste illégal est simplement
   refusé avec sa raison ; le joueur commute lui-même (X — `battleSwitchLoadout`, action
   gratuite 1×/round déjà en place, plafond tagué maison).
