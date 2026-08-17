@@ -122,8 +122,13 @@ fonctionnement attendu, donc certaines zones plus beaucoup plus grosse que prév
 
 La V4 posait la peau sur le CONTENU LEGACY des composants — chaque zone rendait le double
 de son dessin. Règle : **une zone rend EXACTEMENT la liste de son spécimen, rien d'autre** ;
-la taille DÉCOULE du contenu. Listes fermées — là où la **PLANCHE USER 2026-08-17**
-(bloc ✅ ci-dessous) précise ou révise un spécimen antérieur, ELLE fait foi :
+la taille DÉCOULE du contenu. Listes fermées — la **PLANCHE USER 2026-08-17** (bloc ✅
+ci-dessous) fait foi sur la COMPOSITION (zones, géométrie, hiérarchie, ce que chaque zone
+MONTRE) ; **son contenu détaillé n'a PAS valeur de règle** (arbitrage user 2026-08-17,
+verbatim : « Les icônes proposées n ont pas valeur de règle, cette spec n a pas toute
+notre historique ») — icônes (placeholders), listes d'actions, libellés et touches de la
+planche sont des SPÉCIMENS illustratifs : le contenu réel reste régi par §1a/§1b, les
+arbitrages du programme et les registres du dépôt :
 
 - **ARCHE (D)** — RÉTABLI 2026-08-17 (j'avais INVERSÉ le sens du signalement user : « pas
   de zone visible pour les états » désignait un DÉFAUT des captures — la zone MANQUE — pas
@@ -149,9 +154,10 @@ la taille DÉCOULE du contenu. Listes fermées — là où la **PLANCHE USER 202
   Interdits : PV, nom, états (ils vivent au bandeau/à l'arche).
 - **TRAVÉE GAUCHE (C)** — COMPOSITION DE LA PLANCHE : **colonne latérale de SETS**
   (3 vignettes verticales : set actif en relief, set distance avec mention d'état
-  « déch. », set vide) + **2×3 cases** (rangée haute DÉDUITE du set — planche épée+dague :
-  Attaquer / Au contact / Désarmer ; rangée basse LIBRE à placement joueur, cases vides
-  dessinées « LIBRE ») + rubrique **ACCÈS RAPIDE 2×2** (consommables à compteur ×N —
+  « déch. », set vide) + **2×3 cases** (rangée haute DÉDUITE du set, rangée basse LIBRE à
+  placement joueur, cases vides dessinées « LIBRE » — le CONTENU déduit reste le §1a :
+  G1-G7, dont G2 Charge ; le trio de la planche est un spécimen illustratif) + rubrique
+  **ACCÈS RAPIDE 2×2** (consommables à compteur ×N —
   planche : Potion ×2 — + cases LIBRES dessinées). En-tête de travée = le set au poing
   (« ÉPÉE + DAGUE »). — Interdits : tout slot legacy non listé au §1a, le débord
   « Capacités N » (l'exhaustif est l'écran de capacités, zone 6).

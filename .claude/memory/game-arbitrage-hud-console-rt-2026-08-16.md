@@ -31,6 +31,11 @@ Arbitrages utilisateur (2026-08-16, verbatims au plan §3bis) :
   Sorcière du scénario de magie — « Le pire il est dans le scénario de magie ») : « on
   "Epingle pas", on place nous mêmes nos sorts et capacités », défaut fourni, placement
   libre ; l'exhaustif au grimoire (colonne d'outils, GroupedPickGrid/MasterDetail).
+- **L'état de chargement vit sur l'ARME** (verbatim 2026-08-16 : « si j ai 2 armes à
+  distance elles gèrent chacune leur propre rechargement et munition ») : migration des
+  champs `Combatant.ammoUid/loaded/reloadProgress/chambered/loadedAmmoUid` vers l'instance
+  d'arme, DANS le lot 2 — le modèle une-arme-à-distance (`types.ts:1588-1590`) meurt ; le
+  changement de set ne téléporte plus l'état.
 - **Munitions FACILES depuis la barre** (« on doit pouvoir choisir ses munitions avec nos
   armes de tir facilement depuis sa barre d'action ») MAIS **la munition se FIXE AU
   CHARGEMENT** (AskUserQuestion 2026-08-16) : le modèle actuel (choix au tir, bascule
@@ -60,11 +65,24 @@ Arbitrages utilisateur (2026-08-16, verbatims au plan §3bis) :
   monture, Servir/Pousser sur la pièce — même patron que ramasser) ; la barre garde 2 cases
   (geste d'ARME + geste d'ÉTAT du héros). Maquette = DANS le code en worktree (demande
   user), jamais du HTML jetable.
+- **Ébauche de maquettes récupérée** (artefact claude.ai → `docs/plans/2026-08-16-ebauche-
+  maquettes-hud.artifact.html`, auto-contenu) — ⚠ « cette maquette a été faite avant
+  l'invariant » (verbatim) : MATIÈRE visuelle (plaques acier/laiton, gouttières, conduit,
+  plaquettes), JAMAIS cible de conformité — la structure vient de la spec, l'invariant
+  gagne toute divergence. Leçon : une planche de design se REGARDE rendue (l'artefact/les
+  .dc.html se servent en HTTP local + Playwright), jamais parsée en texte.
 - **Vague 2 RETOUR VISUEL validée** (5 éléments, spec Vague 2) : réparer #1327 (flottants
   muets en volumique confirmé, SFX infirmé — commenté au ticket) → plaquette de conséquence
   (flottants enrichis : réaction+localisation+Blessures) → infobulle-contrat (+attaque
   gratuite annoncée ; « Réaction restante » RT abandonnée, sans objet RAW) → curseur
   porteur du coût → prévision de zone par créature. Silhouettes déjà livrées (#1297).
+- **PLANCHE USER 2026-08-17 = cible de conformité BORNÉE** (`docs/plans/2026-08-17-maquette-
+  hud-assemblee.*`, écran assemblé 1920×1080) : elle fait foi sur la COMPOSITION (zones,
+  géométrie, hiérarchie) — PAS sur le contenu réglé. Verbatims (2026-08-17) : « Certains
+  textes sont juste des explications de fonctionnement plutôt que des informations à
+  afficher » et « Les icônes proposées n ont pas valeur de règle, cette spec n a pas toute
+  notre historique » — icônes/listes d'actions/libellés/touches de la planche = spécimens
+  illustratifs, le contenu réel vient des §1a/§1b + arbitrages + registres du dépôt.
 
 **Why:** Ces arbitrages ferment des réfutations mesurées du juge (AZERTY, 360px, alvéoles
 mortes) et [[user-doctrine-etat-de-lart-avant-invention]] — RT est la référence assumée.
