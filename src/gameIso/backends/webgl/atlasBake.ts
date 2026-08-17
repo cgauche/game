@@ -130,6 +130,17 @@ function queueFrame<T>(prio: BakePriority, task: () => Promise<T>): Promise<T> {
   });
 }
 
+/**
+ * LA MÊME FILE, pour une rasterisation qui n'est pas une frame de planche — la texture STATIQUE d'un
+ * billboard à un cran de vue (`stage/GameStage3D`). Une seconde file cadencerait sa moitié du travail
+ * en ignorant l'autre : les deux populations rasterisent par la même couture (`rasterizeSvg`) et se
+ * disputent le même thread, donc elles se rangent derrière la même horloge et le même barème de
+ * priorités.
+ */
+export function queueBakeTask<T>(priority: number | BakePriority, task: () => Promise<T>): Promise<T> {
+  return queueFrame(bakePriority(priority), task);
+}
+
 /** Tranches servies depuis le chargement — instrument de garde de la CADENCE (rasterisations ≤ tranches
  *  × `FRAMES_PAR_TRANCHE`). */
 export function bakeSliceCount(): number {

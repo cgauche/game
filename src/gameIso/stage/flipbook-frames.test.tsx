@@ -207,7 +207,7 @@ describe('Écrivain de frames — deux écritures, aucune péremption (#1176 L3)
     expect(b.material.customProgramCacheKey!()).toBe(clé);
   });
 
-  it('REBUILD : un board NEUF (pas commité, quart de tour) reprend sa planche à la première image', () => {
+  it('REBUILD : un board NEUF (pas commité) reprend sa planche à la première image', () => {
     const p = planche(8);
     const atlasAt: AtlasAt = () => p;
     const pick = () => ({ key: CLE, frame: 5 });
@@ -401,7 +401,7 @@ async function monter(opts: OptsVue = {}): Promise<void> {
 }
 
 /** REBUILD des boards de l'écran déjà monté : une nouvelle identité de tableau d'acteurs suffit — c'est
- *  ce que produit chaque pas commité et chaque quart de tour (`actorPoseKey` porte x, y, facing). */
+ *  ce que produit chaque pas commité (`actorPoseKey` porte x, y, facing). */
 async function remonter(opts: OptsVue = {}): Promise<void> {
   await act(async () => {
     root!.render(vue({ ...opts, actors: [...(opts.actors ?? ACTEURS)] }));
@@ -727,7 +727,7 @@ describe('Effondrement — la chute se compte depuis l’ENTRÉE AU SOL (#1176 L
     await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
     act(() => battre!());
     expect(celluleMontrée(N), 'PRÉMISSE : la planche d’effondrement doit être servie').not.toBeNull();
-    // MI-CHUTE : les boards se rebâtissent (un quart de tour, un pas commité) — la chute ne redémarre pas.
+    // MI-CHUTE : les boards se rebâtissent (un pas commité) — la chute ne redémarre pas.
     await act(async () => { await new Promise((r) => setTimeout(r, 150)); });
     await remonter({ actors: acteurs });
     act(() => battre!());

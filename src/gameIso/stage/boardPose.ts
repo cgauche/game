@@ -521,8 +521,8 @@ export function poseBoards(boards: readonly Board[], camera: FrameCamera, glide:
 // IDEMPOTENCE PAR IMAGE, et c'est structurel : l'écrivain compare l'état COURANT du matériau à celui
 // qu'il veut, et n'écrit qu'à l'écart. Piloté par TRANSITION (« au changement de clip »), il perdrait
 // la planche à chaque rebuild de board — `actorPoseKey` porte x,y,facing, donc les sujets se
-// reconstruisent à CHAQUE pas commité et à chaque quart de tour, et le quad neuf repartirait sur sa
-// texture statique sans que rien ne le réécrive.
+// reconstruisent à CHAQUE pas commité, et le quad neuf repartirait sur sa texture statique sans que
+// rien ne le réécrive.
 
 /** Cadence de cuisson d'un flipbook : une frame tous les `ATLAS_FRAME_MS`. */
 export const ATLAS_FRAME_MS = 1000 / 24;
@@ -645,6 +645,16 @@ function poserFrame(b: Board, texture: THREE.Texture | undefined, layout: AtlasL
   if (!u) return;
   const r = layout ? frameUvRect(layout, k) : { x: FRAME_RECT_PLEIN[0], y: FRAME_RECT_PLEIN[1], w: FRAME_RECT_PLEIN[2], h: FRAME_RECT_PLEIN[3] };
   if (u.value.x !== r.x || u.value.y !== r.y || u.value.z !== r.w || u.value.w !== r.h) u.value.set(r.x, r.y, r.w, r.h);
+}
+
+/**
+ * ÉCHANGE EN PLACE de la texture STATIQUE d'un board déjà monté — la REPOSE d'un sujet dont l'art
+ * change de vue sans que rien de sa géométrie ne bouge (franchissement d'un cran de caméra : le décor
+ * n'a d'art qu'aux quarts de tour). Mêmes trois matériaux que l'écrivain de frames, et le cadre revient
+ * à la planche ENTIÈRE : cette texture est une image d'UNE frame.
+ */
+export function poserTextureStatique(b: Board, texture: THREE.Texture): void {
+  poserFrame(b, texture, undefined, 0);
 }
 
 /**

@@ -116,6 +116,7 @@ import {
   frameIndexAt,
   palierAtlas,
   poseBoards,
+  poserTextureStatique,
   writeBoardFrames,
   type BakeAsk,
   type Board,
@@ -131,8 +132,10 @@ import {
   bakeAtlas,
   enqueueBake,
   getCachedAtlas,
+  queueBakeTask,
   setAtlasPins,
   type BakedAtlas,
+  type BakePriority,
 } from '../backends/webgl/atlasBake';
 import { animCtxOf, animNow, installAnimTracks, tracksRef } from '../fx/animTracks';
 import {
@@ -489,8 +492,8 @@ interface FlipbookSujet {
   /** L'acteur est-il connu du résolveur du registre (donc ENRÔLÉ dans un combat) ? */
   enrolé: boolean;
   /** ORIGINE DE L'EFFONDREMENT sur l'horloge du registre : l'instant où l'état au sol est APPARU pour
-   *  cet acteur (`chutesRef`, par id, survit aux rebuilds). Le board se reconstruit à chaque pas commité
-   *  et à chaque quart de tour : pris au montage du board, un quart de tour rejouerait la chute. */
+   *  cet acteur (`chutesRef`, par id, survit aux rebuilds). Le board se reconstruit à chaque pas
+   *  commité : pris au montage du board, un pas de plus rejouerait la chute. */
   chute: number;
 }
 
@@ -568,6 +571,74 @@ function bbCameraDe(povFacing: Dir8 | null, camRot: Rot): BillboardCamera {
   return povFacing ? { kind: 'perspective', ...dir8Basis(povFacing) } : { kind: 'ortho', yawDeg: camRot * 90 };
 }
 
+/** Les quatre CRANS d'art d'une vue de plateau — l'art de décor n'existe qu'aux quarts de tour. */
+const CRANS_ART: readonly Rot[] = [0, 1, 2, 3];
+
+/** IDENTITÉ de cache d'un sujet AU CRAN `rot` : le cran entre dans celle d'un décor, jamais dans celle
+ *  d'un personnage (son art l'ignore — l'y mettre rasteriserait quatre fois la MÊME image). */
+function identiteAuCran(sub: BillboardSubject, rot: Rot): string {
+  return sub.kind === 'prop' ? `${sub.identity}|r${rot}` : sub.identity;
+}
+
+/**
+ * POIGNÉES DE PRIORITÉ des textures statiques EN FILE, par clé (`BakePriority`, l'objet mutable que le
+ * cuiseur relit à chaque tranche).
+ *
+ * Sans elle, une clé posée en réchauffage puis redemandée par la caméra restait servie en dernier : la
+ * mémoïsation (`getBillboardTexture`) rend la promesse DÉJÀ en file sans jamais toucher à son rang, et
+ * la relève du cran franchi passait derrière toute la pré-chauffe (mesuré : rang 31/31 contre 1/31 à
+ * froid ; 56 rasterisations pour 20 décors utiles). Le cuiseur a la même carte pour ses planches
+ * (`enqueueBake`) — c'est le même geste, pour l'autre population.
+ */
+const POIGNEES_STATIQUES = new Map<string, BakePriority>();
+
+/** TEXTURE STATIQUE d'un sujet à une vue et un cran, mémoïsée sur sa clé (`getBillboardTexture`).
+ *
+ *  `priorité` la range dans la file CADENCÉE du cuiseur (`queueBakeTask`) : c'est par là que passe
+ *  toute rasterisation qu'un franchissement de cran réclame, une par tranche d'inactivité et jamais en
+ *  rafale. Sans priorité, la rasterisation part tout de suite — le MONTAGE d'une scène, dont chaque
+ *  quad n'entre en scène qu'à sa texture.
+ *
+ *  Dans les DEUX cas, une clé DÉJÀ EN FILE que la caméra réclame voit son rang RELEVÉ, jamais abaissé :
+ *  la mémoïsation rend la promesse en attente telle quelle, et le montage comme la repose hériteraient
+ *  sinon du rang du temps mort qui l'a posée. */
+function textureAuCran(
+  sub: BillboardSubject,
+  view: View,
+  mirror: boolean,
+  rot: Rot,
+  pxHeight: number,
+  priorité?: number,
+): Promise<THREE.Texture> {
+  const clé = billboardTextureKey(identiteAuCran(sub, rot), view, mirror, pxHeight);
+  const rasteriser = () => svgToTexture(sub.svg(view, mirror, rot), sub.box, pxHeight);
+  const rang = POIGNEES_STATIQUES.get(clé);
+  const voulu = priorité ?? PRIORITE_VUE_COURANTE;
+  if (rang) rang.value = Math.max(rang.value, voulu);
+  if (priorité === undefined) return getBillboardTexture(clé, rasteriser);
+  const poignée = rang ?? { value: priorité };
+  POIGNEES_STATIQUES.set(clé, poignée);
+  return getBillboardTexture(clé, () => queueBakeTask(poignée, () => {
+    // La carte ne tient que ce qui ATTEND : une tâche partie n'a plus de rang à défendre.
+    POIGNEES_STATIQUES.delete(clé);
+    return rasteriser();
+  }));
+}
+
+/** Rend au RÉCHAUFFAGE les textures statiques que la caméra n'attend plus (le cran qu'on vient de
+ *  quitter) : laissées en tête de file, elles font patienter celles du cran regardé. */
+function rendreAuRechauffage(): void {
+  for (const poignée of POIGNEES_STATIQUES.values()) {
+    if (poignée.value > PRIORITE_RECHAUFFAGE) poignée.value = PRIORITE_RECHAUFFAGE;
+  }
+}
+
+/** Oublie le cache de textures statiques ET les rangs de ce qui l'attendait (changement de scène). */
+function viderTexturesStatiques(): void {
+  clearBillboardTextures();
+  POIGNEES_STATIQUES.clear();
+}
+
 /** Orientation MONDE la plus proche d'un déplacement (dx = est, dz = sud, repère de `walkGlideM`) —
  *  `null` si le pas est nul. C'est le SEGMENT que le marcheur suit à cette image, jamais son cap
  *  d'authoring : un chemin qui tourne changerait sinon de vue seulement à l'arrivée. */
@@ -633,6 +704,16 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const { povFacing, camRot } = frame.mode === 'pov'
     ? { povFacing: frame.facing, camRot: povArtRot(frame.facing) }
     : { povFacing: null, camRot: artRot(frame.dims) };
+  // REGARD COURANT lu par les passes qui NE SE REJOUENT PAS au cran : le montage des quads (dont les
+  // textures se résolvent après coup, parfois de l'autre côté d'un franchissement) et la REPOSE
+  // elle-même, qui vérifie à la relève que le cran qu'elle sert est toujours celui qu'on regarde.
+  const camRotRef = useRef(camRot);
+  camRotRef.current = camRot;
+  const povFacingRef = useRef(povFacing);
+  povFacingRef.current = povFacing;
+  // CRAN dont les quads montés portent l'art. Il avance à la repose comme au montage : c'est lui qui
+  // distingue « ce cran vient d'être monté » de « le regard a franchi un quart ».
+  const cranDesBoards = useRef<Rot>(camRot);
   // MILIEU de la première personne (`null` = vue de plateau) : la SEULE entrée de la brume et du fond.
   // La portée de rendu s'en dérive déjà (`povDepth`) — même donnée, même verdict d'intérieur.
   const povIndoor = frame.mode === 'pov' ? frame.indoor : null;
@@ -713,7 +794,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // portent l'identité des sujets de l'ancienne carte). Même vidange que les planches QC — sur
   // l'IDENTITÉ de la scène, pas sa référence : un hôte qui la reforge à chaque geste (l'éditeur, une
   // par `pointermove`) vidait sinon toutes les textures du décor à chaque coup de pinceau.
-  useEffect(() => () => { clearBillboardTextures(); clearPeriodTextures(); clearFaceBakes(); }, [scene.id]);
+  useEffect(() => () => { viderTexturesStatiques(); clearPeriodTextures(); clearFaceBakes(); }, [scene.id]);
 
   // ── CUISSON : la passe LOURDE (100 à 634 ms selon la carte), RETENUE PAR CONTENU — sur le read-set
   // réel de `worldFaces` (`worldBakeDeps`, `backends/webgl/sceneMeshes.ts`), jamais sur la référence
@@ -920,11 +1001,26 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       recettesRef.current.set(r.key, r);
       return r;
     };
+    /**
+     * VUE de ce corps À CETTE IMAGE. Le regard a pu tourner depuis le montage du quad : c'est ICI que
+     * le franchissement d'un quart se paie, en choisissant une autre planche DÉJÀ CUITE — jamais en
+     * rebâtissant le quad. La planche du nouveau cran manque-t-elle ? le corps garde la sienne et sa
+     * cuisson est demandée : la relève se fera à l'image où elle arrive (les quatre vues du regard sont
+     * réchauffées au montage, `précuire` — ce repli est le cas du cache froid, pas le cas courant).
+     */
+    const vueDuCran = (def: ClipDef, ground?: 'corpse' | 'prone'): { view: View; mirror: boolean } => {
+      const vm = billboardView(bbCameraDe(povFacing, camRot), s.sub.facing);
+      if (vm.view === s.view && vm.mirror === s.mirror) return vm;
+      if (servie(def, vm.view, vm.mirror)) return vm;
+      demanderCuisson({ key: poser(def, vm.view, vm.mirror, ground).key, frame: 0 }, b);
+      return { view: s.view, mirror: s.mirror };
+    };
 
     // AMBIANCE AUTHORÉE : le figurant BOUCLE sur l'horloge du registre. Aucune piste, aucun glissement
     // (une entité de scène ne marche pas), aucune orientation par segment.
     if (s.ambient) {
-      const r = poser(s.ambient, s.view, s.mirror);
+      const vue = vueDuCran(s.ambient);
+      const r = poser(s.ambient, vue.view, vue.mirror);
       return { key: r.key, frame: frameIndexAt(animNow(), dureeDeRecette(r), r.frames, true) };
     }
 
@@ -937,7 +1033,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     let elapsed = 0;
     let loop = true;
     // EFFONDREMENT : il se compte depuis l'ENTRÉE AU SOL de l'acteur (`chutesRef`), pas depuis le
-    // montage de son board — celui-ci se reconstruit à chaque quart de tour. Geste joué une fois : la
+    // montage de son board — celui-ci se reconstruit à chaque pas commité. Geste joué une fois : la
     // dernière cellule est la pose au sol, et elle y reste.
     const ground = s.sub.anim?.ground;
     if (ground) {
@@ -962,7 +1058,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     }
     if (!def || def.voie !== s.voie) return null;
 
-    let { view, mirror } = s;
+    let { view, mirror } = vueDuCran(def, ground);
     if (g && précédent) {
       const d8 = dir8DuSegment(g.dx - précédent.dx, g.dz - précédent.dz);
       if (d8) {
@@ -1574,9 +1670,47 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * REPOSE d'un franchissement de cran : les quads montés SURVIVENT à la rotation, seule leur
+   * texture change — échangée EN PLACE, à la relève, exactement comme l'écrivain de frames échange une
+   * planche de flipbook. Aucun `dispose`, aucune géométrie neuve, aucun matériau neuf.
+   *
+   * DEUX POPULATIONS, une seule ici : un corps à FLIPBOOK est déjà servi par le chemin par-frame
+   * (`vueDuCran`, qui choisit la planche du cran courant à chaque image) — le reprendre ici lui
+   * poserait une image d'UNE frame sur un matériau que la passe d'images réécrit aussitôt. Restent le
+   * DÉCOR (dont l'art n'existe qu'aux quarts de tour) et les corps sans couture de frame.
+   *
+   * La rasterisation d'un cran jamais visité passe par la file CADENCÉE du cuiseur : l'ancienne texture
+   * reste à l'écran jusqu'à la relève, et le franchissement ne coûte pas une rafale de blobs. Ce que la
+   * caméra attend passe DEVANT — `PRIORITE_VUE_COURANTE`, poignée RELEVÉE même sur une clé déjà en file
+   * (une clé pré-chauffée redemandée sans cela restait servie en dernier).
+   */
+  const reposerCran = (bs: readonly Board[], rot: Rot, facing: Dir8 | null): void => {
+    const pxm = pxPerM(mpt);
+    const dpr = window.devicePixelRatio || 1;
+    const cam = bbCameraDe(facing, rot);
+    for (const b of bs) {
+      const piste = boardTrackId(b.sub);
+      if (piste && flipRef.current.has(piste)) continue;
+      const { view, mirror } = billboardView(cam, b.sub.facing);
+      void textureAuCran(b.sub, view, mirror, rot, atlasPxHeight(b.quad.heightM, pxm, dpr), PRIORITE_VUE_COURANTE).then(
+        (texture) => {
+          // Le quad démonté entre-temps (`parent` tombe à `null` au vidage du groupe) et le cran déjà
+          // dépassé (une rotation plus rapide que la file) n'ont plus rien à recevoir.
+          if (!b.mesh.parent || camRotRef.current !== rot) return;
+          poserTextureStatique(b, texture);
+          dessinerRef.current();
+        },
+        (raison: unknown) => console.warn(`GameStage3D: billboard « ${b.sub.identity} » gardé au cran précédent — texture non rasterisée :`, raison),
+      );
+    }
+  };
+
   // ── GROUPE BILLBOARDS : décor + acteurs. Rebâti quand les SUJETS changent — l'identité d'un sujet
   // porte sa case logique et sa signature de dessin, jamais le glissement de la marche : celui-ci
-  // décale des quads déjà montés, dans `dessiner` (P2-4).
+  // décale des quads déjà montés, dans `dessiner` (P2-4). Le CRAN de vue n'y entre PAS : un quart de
+  // tour est une REPOSE (`reposerCran`), et rebâtir le groupe entier à chaque quart mesurait 7 matériaux
+  // et 6 géométries libérés pour 4 quads sur un banc de trois décors.
   useEffect(() => {
     const groupe = panneaux.current;
     if (!groupe) return;
@@ -1586,7 +1720,12 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // discrets, repère `dir8Basis`), sur la vue de plateau le cran d'art. Le repère se prend au cap et
     // NON à la caméra de la frame : fwd/right recalculés par frame recuiraient toute la planche de
     // textures à chaque frame (le piège que documente `artRot`).
-    const bbCam: BillboardCamera = bbCameraDe(povFacing, camRot);
+    // Il se lit à la RÉFÉRENCE : cette passe ne se rejoue plus au cran, donc sa fermeture le porterait
+    // périmé au premier montage qui suit une rotation.
+    const rot = camRotRef.current;
+    const facing = povFacingRef.current;
+    const bbCam: BillboardCamera = bbCameraDe(facing, rot);
+    cranDesBoards.current = rot;
     const dpr = window.devicePixelRatio || 1;
     flipRef.current.clear();
     épinglesRef.current.clear();
@@ -1722,6 +1861,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
           précuire(s, piste);
         }
       }
+      // Une texture arrivée APRÈS un franchissement monte son quad à l'art du cran précédent : il se
+      // repose comme les autres, sans attendre le quart de tour suivant.
+      if (camRotRef.current !== rot) {
+        reposerCran([board], camRotRef.current, povFacingRef.current);
+      }
       ombresARefaire.current = true;
       dessiner();
     };
@@ -1730,9 +1874,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // Le quad se taille sur la BOÎTE du sujet : un composite plus haut que la boîte canonique
       // (couple monté) gagne du quad au lieu d'être tranché à la rasterisation.
       const quad = subjectQuad(CONVENTION, sub);
-      // L'art de décor n'existe qu'AUX crans (`propSvg(ref, dir, camRot)`) ; celui d'un personnage
-      // l'ignore — l'y mettre rasteriserait quatre fois la MÊME image.
-      const identity = sub.kind === 'prop' ? `${sub.identity}|r${camRot}` : sub.identity;
       const { view, mirror } = billboardView(bbCam, sub.facing);
       // PALIER de la texture de MONTAGE : le palier CSS du billboard PORTÉ AU RAPPORT DE PIXELS du rendu
       // (`atlasPxHeight`, #1328) — le renderer peint en pixels de dispositif (`setPixelRatio`), et une
@@ -1740,15 +1881,32 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // planches de flipbook du sujet (`FlipbookSujet.pxHeight` le reprend) : un acteur ne change pas de
       // netteté en passant de sa texture de montage à sa première planche.
       const pxHeight = atlasPxHeight(quad.heightM, pxm, dpr);
-      const key = billboardTextureKey(identity, view, mirror, pxHeight);
       const q = { sub, quad, view, mirror, pxHeight };
       // RÉSOLUTION INDIVIDUELLE : chaque board entre en scène dès SA texture rasterisée. Sous un
       // `allSettled`, le groupe entier attendait le dernier sujet — et un sujet rejeté n'y laissait
       // rien du tout. Ici, une texture rejetée ne coûte que SON quad, et le reste est déjà à l'écran.
-      void getBillboardTexture(key, () => svgToTexture(sub.svg(view, mirror, camRot), sub.box, pxHeight)).then(
+      void textureAuCran(sub, view, mirror, rot, pxHeight).then(
         (texture) => { if (!annule) monter(q, texture); },
         (raison: unknown) => { if (!annule) console.warn(`GameStage3D: billboard « ${sub.identity} » sauté — texture non rasterisée :`, raison); },
       );
+    }
+    // PRÉ-CHAUFFE des crans RESTANTS, en temps mort (même patron que `précuire` pour les acteurs, et la
+    // même file) : le premier passage par un cran neuf trouve alors sa texture au cache au lieu de la
+    // réclamer à la rotation. Le DÉCOR seul en a besoin — l'art d'un corps ignore le cran, et ses
+    // quatre VUES sont déjà réchauffées par `précuire`. Aucun cran de rechange en première personne :
+    // le regard perspective n'a pas de quart de tour, il a huit caps.
+    // COÛT : quatre textures par décor au lieu d'une — c'est le plafond qu'un tour complet atteignait
+    // déjà, atteint plus tôt. Le cache se vide au changement de scène (`viderTexturesStatiques`).
+    if (!facing) {
+      for (const sub of subjects) {
+        if (sub.kind !== 'prop') continue;
+        const pxHeight = atlasPxHeight(subjectQuad(CONVENTION, sub).heightM, pxm, dpr);
+        for (const r of CRANS_ART) {
+          if (r === rot) continue;
+          const vm = billboardView(bbCameraDe(null, r), sub.facing);
+          void textureAuCran(sub, vm.view, vm.mirror, r, pxHeight, PRIORITE_RECHAUFFAGE).catch(() => undefined);
+        }
+      }
     }
     return () => {
       annule = true;
@@ -1763,7 +1921,21 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       viderGroupe(groupe);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjects, mpt, camRot, povFacing, lit]);
+  }, [subjects, mpt, povFacing, lit]);
+
+  // ── FRANCHISSEMENT D'UN QUART DE TOUR : la REPOSE, et rien d'autre. Le montage ci-dessus vient-il de
+  // poser CE cran (sujets changés, cap de première personne changé) ? alors il n'y a rien à reprendre —
+  // c'est le seul office de `cranDesBoards`.
+  useEffect(() => {
+    if (cranDesBoards.current === camRot) return;
+    cranDesBoards.current = camRot;
+    // Les relèves du cran QUITTÉ redescendent d'abord au réchauffage : la caméra ne les attend plus, et
+    // laissées en tête de file elles feraient patienter celles du cran regardé (une rotation tenue en
+    // pose trois jeux avant de s'arrêter). Ce geste précède la repose, qui relève ce qu'elle demande.
+    rendreAuRechauffage();
+    reposerCran(boardsRef.current, camRot, povFacing);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [camRot, povFacing]);
 
   // L'EXPOSITION des billboards appartient à la passe de POSE (`poseBoards`) : elle dépend de l'endroit
   // où chaque sujet se pose, donc elle se recalcule à la cadence de la frame — c'est ainsi qu'un
