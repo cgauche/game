@@ -7,6 +7,7 @@ export function makeZone8() {
   resetIds();
   return scene({
     id: 'arene-zone8',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — La Fosse',
     description: 'La grande fosse aux bêtes : des gouffres la découpent en passes étroites.',
     startMessage:
@@ -86,6 +87,7 @@ export function makeZone9() {
   resetIds();
   return scene({
     id: 'arene-zone9',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — La Caverne du Troll',
     description: 'Le garde-manger du troll de l’arène — une crevasse, des os, et un invité de marque.',
     startMessage:
@@ -211,6 +213,7 @@ export function makeZone10() {
   };
   return scene({
     id: 'arene-zone10',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Nid de Vermine',
     description: 'Un quartier muré du vieux Bourg, rendu aux skavens — terriers, rouages et cages.',
     startMessage:
@@ -313,6 +316,7 @@ export function makeZone11() {
   resetIds();
   return scene({
     id: 'arene-zone11',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Cercle Maudit',
     description: 'L’ancien sanctuaire du culte sous l’arène — l’idole noire y saigne encore.',
     startMessage:
@@ -410,6 +414,7 @@ export function makeZone12() {
   resetIds();
   return scene({
     id: 'arene-zone12',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Sépulcre',
     description: 'Le tombeau d’un seigneur oublié, sous l’arène — il reçoit, à la nuit tombée.',
     startMessage:
@@ -505,6 +510,7 @@ export function makeZone13() {
   resetIds();
   return scene({
     id: 'arene-zone13',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — L’Antre du Dragon',
     description: 'Le secret du Maître : sous la treizième porte dort un dragon des ténèbres, sur son or.',
     startMessage:

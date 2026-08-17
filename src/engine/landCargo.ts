@@ -18,7 +18,7 @@ import { d10, d100, roll as rollDice, type RNG, defaultRNG } from './dice';
 import { findTableEntry, findTableEntryIndex } from './tables';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
-import { type CargoDef, type CargoMarkerDef, isEchangeable, rollSeasonalCargo, cargoBasePrice } from './cargo';
+import { type CargoDef, type CargoMarkerDef, isEchangeable, isTradeHubColumn, rollSeasonalCargo, cargoBasePrice } from './cargo';
 
 /** Un type de cargaison terrestre = `CargoDef` + éventuel marqueur `wine` (prix par table de qualité, non
  *  par la colonne saisonnière). */
@@ -70,7 +70,8 @@ export interface LandMarketProfile {
   /** Biens en Demande (facultatif) — informatif / futur ; la Demande RAW dépend surtout de Taille+Commerce. */
   demande?: string[];
   /** Le Lieu tire sa Richesse du COMMERCE (colonne Produits « Commerce ») → centre de commerce : on inverse
-   *  le d100 de quantité et on garde le plus grand (l.40-42). Dérivé aussi de `produits.includes('commerce')`. */
+   *  le d100 de quantité et on garde le plus grand (l.40-42). Champ AUTHORÉ, distinct de la qualité de
+   *  plaque tournante (`isLandTradeHub`) : l'inversion ne vise que les Lieux qui en TIRENT leur Richesse. */
   commerceRichesse?: boolean;
   /** Régions à Vin/Eau-de-vie supérieurs (Kemperbad, Brandenburg…) : +N échelons de qualité (l.95). */
   wineBonusEchelons?: number;
@@ -82,9 +83,14 @@ export interface LandMarketProfile {
   backdrop?: string;
 }
 
+/** La colonne Produits d'un Lieu TERRESTRE le désigne-t-elle comme plaque tournante (l.24-28) ? Lit le
+ *  champ `tradeHub` de l'entrée marqueur du catalogue terrestre (SSOT `isTradeHubEntry`). PUR. */
+export const isLandTradeHub = (produits: readonly string[] | undefined): boolean =>
+  isTradeHubColumn(produits, findLandCargoEntryById);
+
 /** Le Lieu est-il une plaque tournante du Commerce (colonne Produits « Commerce », l.28) ? PUR. */
 export function hasCommerce(place: LandMarketProfile): boolean {
-  return place.produits.includes('commerce');
+  return isLandTradeHub(place.produits);
 }
 
 /** % de CHANCE de trouver un marchand ayant une cargaison à vendre (l.24-26) : (Taille + Richesse) × 10. PUR. */

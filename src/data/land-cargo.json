@@ -237,6 +237,7 @@
       "label": "Commerce",
       "echangeable": false,
       "hint": "plaque tournante",
+      "tradeHub": true,
       "source": {
         "book": "mort-sur-le-reik-compagnon",
         "page": 71,

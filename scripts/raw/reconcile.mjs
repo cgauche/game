@@ -13,7 +13,7 @@
 // Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
+import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
@@ -29,11 +29,13 @@ function walk(dir, exts, acc = []) {
   return acc
 }
 
-// Regex loose « BOOK NN » par livre CANONIQUE (miroir de `/\bLDB (\d+)\b/g`) — construite depuis
+// Regex loose « BOOK NN » par livre CANONIQUE (miroir de `PIVOT_LOOSE_RE`) — construite depuis
 // `BOOKS` (export `_lib.mjs`), abréviation canonique seule (voir note de tête sur la couverture partielle).
 const OTHER_LOOSE_RE = new Map(
-  BOOKS.filter(([abbr]) => abbr !== 'LDB').map(([abbr]) => [abbr, new RegExp(`\\b${esc(abbr)} (?:ch\\.)?(\\d+)\\b`, 'g')])
+  BOOKS.filter(([abbr]) => abbr !== PIVOT_ABBR).map(([abbr]) => [abbr, new RegExp(`\\b${esc(abbr)} (?:ch\\.)?(\\d+)\\b`, 'g')])
 )
+// Mention LÂCHE du livre PIVOT (« LDB 12 » sans réf de ligne) — sigle lu au registre des livres.
+const pivotLooseRe = () => new RegExp(`\\b${esc(PIVOT_ABBR)} (\\d+)\\b`, 'g')
 
 // Clé de chapitre canonique du Sens A (#434 défaut 9 suite, #1156) : le code écrit le numéro
 // zéro-préfixé (`AA 02`, `ADE II ch.03`, `LDB 08`), l'Atlas écrit les titres sans préfixe
@@ -71,7 +73,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
   const codeCh = new Set()       // tout chapitre LDB mentionné (lâche)
   for (const f of SRC) {
     const text = readFileSync(f, 'utf8')
-    for (const m of text.matchAll(/\bLDB (\d+)\b/g)) codeCh.add(chKey(m[1]))
+    for (const m of text.matchAll(pivotLooseRe())) codeCh.add(chKey(m[1]))
     const lines = text.split('\n')
     lines.forEach((ln, i) => {
       let m
@@ -113,7 +115,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
       const rel = f.replace(/\\/g, '/')
       if (!rel.endsWith('.json') || /\.(test|spec)\./.test(rel)) continue
       for (const c of folioCitationsFromJson(rel, readFileSync(f, 'utf8'), { ...abbrMap, stats: folioStats })) {
-        if (c.book === 'LDB') codeFolioLdbCh.add(chKey(c.ch))
+        if (c.book === PIVOT_ABBR) codeFolioLdbCh.add(chKey(c.ch))
       }
     }
   }
@@ -129,8 +131,8 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
   const ownerCount = new Map()
   for (const d of DOCS) {
     const text = readText(d)
-    for (const mm of text.matchAll(/\bLDB (\d+)\b/g)) atlasCh.add(chKey(mm[1]))
-    if (/catalogue-/.test(d)) for (const mm of text.matchAll(/\bLDB (\d+)\b/g)) catalogCh.add(chKey(mm[1]))
+    for (const mm of text.matchAll(pivotLooseRe())) atlasCh.add(chKey(mm[1]))
+    if (/catalogue-/.test(d)) for (const mm of text.matchAll(pivotLooseRe())) catalogCh.add(chKey(mm[1]))
     let m
     LDB_RE.lastIndex = 0
     while ((m = LDB_RE.exec(text))) {
@@ -145,7 +147,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
     LDB_FOLIO_RE.lastIndex = 0
     while ((m = LDB_FOLIO_RE.exec(text))) {
       const ch = chKey(m[1])
-      const resolved = folioSpan('LDB', ch, m[2], m[3])
+      const resolved = folioSpan(PIVOT_ABBR, ch, m[2], m[3])
       if (!resolved) { folioIgnored++; continue }
       if (!atlasLDB.has(ch)) atlasLDB.set(ch, [])
       atlasLDB.get(ch).push(resolved)

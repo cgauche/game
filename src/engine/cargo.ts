@@ -25,11 +25,8 @@ export interface CargoDef {
  *  marchandise — sans en être une, donc sans disponibilité ni prix. Il vit dans le MÊME catalogue
  *  (`sea-cargo.json`/`land-cargo.json`) pour que son libellé joueur ait une source unique.
  *
- *  PÉRIMÈTRE EXACT de ce qui est passé en donnée : l'EXCLUSION du négoce (`echangeable`) et le
- *  LIBELLÉ (`label` + `hint`). Le concept « plaque tournante » reste, lui, branché par id sur
- *  6 sites `production.includes('commerce')` — `landCargo.ts:87`, `seaVoyage.ts:276/299/319`,
- *  `state/portFlow.ts:120`, `ui/CityHubScreen.tsx:73` — qu'un second champ déclaré devra couvrir
- *  (lot C1-bis). Rien ici ne le résout. */
+ *  Ce qui est PASSÉ EN DONNÉE sur le marqueur : l'EXCLUSION du négoce (`echangeable`), le LIBELLÉ
+ *  (`label` + `hint`) et la qualité de PLAQUE TOURNANTE (`tradeHub`, lue par `isTradeHubEntry`). */
 export interface CargoMarkerDef {
   id: string;
   label: string;
@@ -38,6 +35,10 @@ export interface CargoMarkerDef {
    *  MSRC 13 — « plaque tournante » (l.28) vs « rien à échanger » (l.119). Deux sens DISTINCTS qu'un
    *  suffixe unique codé en dur écrasait ; l'écran l'affiche entre parenthèses après le `label`. */
   hint?: string;
+  /** Le Lieu qui porte ce marqueur est une PLAQUE TOURNANTE du commerce : variété de biens disponibles
+   *  (MSRC 13 l.24-28), cargaison aléatoire à l'escale (MDG 15 l.321). Absent = marqueur ordinaire
+   *  (« Subsistance » / « Minimum vital »). */
+  tradeHub?: true;
 }
 
 /** Une entrée de catalogue de cargaison : marchandise ou marqueur. */
@@ -46,6 +47,28 @@ export type CargoEntry = CargoDef | CargoMarkerDef;
 /** L'entrée est-elle une marchandise (achetable/vendable) ? Lit le CHAMP d'exclusion. PUR. */
 export function isEchangeable(entry: CargoEntry): entry is CargoDef {
   return entry.echangeable !== false;
+}
+
+/** L'entrée désigne-t-elle une PLAQUE TOURNANTE du commerce ? Lit le CHAMP `tradeHub` du marqueur
+ *  (MSRC 13 l.24-28, MDG 15 l.321) — SOURCE UNIQUE du concept pour les deux commerces : aucun site ne
+ *  teste l'id d'une entrée de la colonne Production/Produits. Une entrée absente du catalogue (id
+ *  inconnu) n'en est pas une. PUR. */
+export function isTradeHubEntry(entry: CargoEntry | undefined): boolean {
+  return !!entry && !isEchangeable(entry) && entry.tradeHub === true;
+}
+
+/** La colonne Production/Produits d'un Lieu le désigne-t-elle comme plaque tournante ? `resolve` = le
+ *  résolveur d'entrée du catalogue concerné (terrestre ou maritime). PUR. */
+export function isTradeHubColumn(produits: readonly string[] | undefined, resolve: (id: string) => CargoEntry | undefined): boolean {
+  return (produits ?? []).some((id) => isTradeHubEntry(resolve(id)));
+}
+
+/** Ids d'une colonne Production/Produits qui NE RÉSOLVENT PAS dans leur catalogue (clé étrangère
+ *  morte). Le silence est le danger : un id non résolu ne lève rien à la lecture — il perd juste,
+ *  sans bruit, ce que son entrée déclarait (`tradeHub`, `echangeable`, `label`). Rendu vide = colonne
+ *  saine. PUR — consommé par la garde d'intégrité `src/data/cargo-columns-fk.test.ts`. */
+export function unresolvedCargoIds(ids: readonly string[] | undefined, resolve: (id: string) => CargoEntry | undefined): string[] {
+  return (ids ?? []).filter((id) => resolve(id) === undefined);
 }
 
 /** Cargaison ALÉATOIRE de la saison : d100 dans la colonne saisonnière du tableau fourni (MSRC 13 l.71-78,

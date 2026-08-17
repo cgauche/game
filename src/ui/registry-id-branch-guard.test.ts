@@ -63,17 +63,20 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/ui/ → ..
  * DÉRIVÉE d'un écart d'armées (`difficultyFrom`), le Test d'équipage qui coûte du Moral sur DR négatif
  * (`moraleOnNegativeDR`) et celui qui DIRIGE le navire (`steering`), le choix de paie mis en avant
  * (`recommendedPay`), l'écran vers lequel un service PORTE (`opensScreen`), et la catégorie Codex de
- * chaque table de Maladresse (`codexCategory`, `miscast.json` déclarant désormais ses tables).
+ * chaque table de Maladresse (`codexCategory`, `miscast.json` déclarant désormais ses tables), puis
+ * 27 → 20 (lot E4/C4-δ4, 2026-08-17) — l'OUTILLAGE `scripts/` : les deux compilateurs de campagne
+ * déclarent l'offre de couchage à l'AUTHORING (`scene({ rest })` → `MapSpec.rest`, les deux tables
+ * `REST_OFFERS[s.id]` supprimées), `obtainabilityGraph` lit la famille de Sort qu'un Talent ouvre sur
+ * son entrée (`combat.castingKind`), `gen-toise-gallery` passe par la primitive `sizeFromTraits`, la
+ * planche `_qc-decor-sheet` prend sa liste de mise en avant EN ARGUMENT (`--new=id1,id2`) et
+ * `reconcile.mjs` lit le sigle du livre PIVOT au registre (`PIVOT_ABBR`, dérivé de `books.json`).
  */
 const KNOWN: Record<string, number> = {
-  'scripts/_qc-decor-sheet.mts': 2,
-  'scripts/arene/generate.mjs': 1, // for…of démasqué : `REST_OFFERS[s.id]` — table de repos par id de scène
-  'scripts/data/lib/obtainabilityGraph.ts': 1, // `talentId === 'invocation'|'beni'|'magie-du-chaos'` → famille
-  'scripts/gen-toise-gallery.mts': 1, // for…of démasqué : `t.id === 'taille'` (outil de galerie QC)
-  'scripts/loup-et-saumure/generate.mjs': 1, // for…of démasqué : `REST_OFFERS[s.id]` (même patron qu'arène)
-  'scripts/qc/mesure-volume.mts': 1,
-  'scripts/qc/opera-furniture-check.mts': 2, // for…of démasqué : `FLOATING.has(e.ref)` + `e.ref !== 'siege'`
-  'scripts/raw/reconcile.mjs': 1, // `book` démasqué : `c.book === 'LDB'` (garde de couverture RAW)
+  // JUSTIFIÉS NOMINATIFS (outillage de LECTURE/QC, pas de la logique de règle) — leur forme saine
+  // exigerait un champ déclaré sur le CATALOGUE DE DÉCOR (`src/gameIso/catalog/decor/`) ou sur le
+  // registre d'os, hors du périmètre du lot δ4 :
+  'scripts/qc/mesure-volume.mts': 1, // `id === 'torse'` — masque de mesure du harnais de volume
+  'scripts/qc/opera-furniture-check.mts': 2, // `FLOATING.has(e.ref)` (lustre SUSPENDU) + `e.ref !== 'siege'` (prop admis sur le parterre) : deux propriétés du prop, à déclarer sur sa def
   'src/engine/critical.ts': 4,
   'src/engine/trauma.ts': 2,
   'src/gameIso/rig/parts/injuries.ts': 2, // for…of démasqué : `t.traumaId === 'membre-inferieur-ampute'|'nez-ampute'`
@@ -117,16 +120,16 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * `conjuredWeapons.ts`, `skills.ts` et `combat.ts` sortent de la liste, `careerSlots.ts` passe de 2 à 1
  * et `CharacterCreator.tsx` de 7 à 6), 136 après le lot C4-δ3 (couche activités/UI : `mountTravel.ts`,
  * `massBattleFlow.ts`, `CityHubScreen.tsx`, `CouncilModal.tsx` et `CrewTestModal.tsx` sortent de la liste,
- * `seaVoyageFlow.ts` passe de 6 à 4, `combatSlice.ts` de 3 à 2 et `InterludeScreen.tsx` de 3 à 2).
+ * `seaVoyageFlow.ts` passe de 6 à 4, `combatSlice.ts` de 3 à 2 et `InterludeScreen.tsx` de 3 à 2),
+ * 131 après le lot C4-δ4 (outillage : `obtainabilityGraph.ts`, `gen-toise-gallery.mts` et
+ * `reconcile.mjs` sortent de la liste — famille de Sort lue sur le Talent, Taille lue par
+ * `sizeFromTraits`, sigle du livre pivot lu au registre `books.json`).
  */
 const RAW_KNOWN: Record<string, number> = {
-  'scripts/data/lib/obtainabilityGraph.ts': 3,
   'scripts/gen-bestiary-gallery.mts': 1,
   'scripts/gen-creature-attacks-gallery.mts': 2,
-  'scripts/gen-toise-gallery.mts': 1,
   'scripts/qc/mesure-volume.mts': 1,
   'scripts/qc/opera-furniture-check.mts': 1,
-  'scripts/raw/reconcile.mjs': 1,
   'src/engine/aaCritical.ts': 1,
   'src/engine/activities.ts': 1,
   'src/engine/careerSlots.ts': 1, // reste `s.skillId === 'focalisation'` (lookup par id stable)

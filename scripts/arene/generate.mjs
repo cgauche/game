@@ -118,16 +118,6 @@ for (const s of scenes) {
 }
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
-// Offre de REPOS par scène (bouton 🌙 — modale de Repos) : le Bourg (dont la taverne, tout-en-scène)
-// offre l'auberge ; zones d'arène = repos interdit ; expéditions = camp (défaut, absent).
-const REST_OFFERS = {
-  'arene-hub': { auberge: true },
-};
-for (const s of scenes) {
-  if (REST_OFFERS[s.id] !== undefined) s.rest = REST_OFFERS[s.id];
-  else if (/^arene-zone/.test(s.id)) s.rest = {}; // on ne bivouaque pas dans l'arène
-}
-
 const doc = projectDoc({
   meta: { id: 'arene', label: 'L’Arène', icon: 'scenario/village', version: 1 },
   scenes,

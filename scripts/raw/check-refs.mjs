@@ -9,7 +9,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
+import { ldbRe, otherRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED, readText, PIVOT_ABBR } from './_lib.mjs'
 
 export const RAWDIR = 'docs/raw'
 export const EXCLUDE = RAWDOC_META_GENERATED // (#454 DoD, #585 lot A) — source unique _lib.mjs
@@ -22,7 +22,7 @@ function* refsInLine(ln) {
   let m
   while ((m = ldb.exec(ln))) {
     const [, hi] = span(m[2], m[3])
-    yield { abbr: 'LDB', nn: m[1], hi }
+    yield { abbr: PIVOT_ABBR, nn: m[1], hi }
   }
   const other = otherRe()
   while ((m = other.exec(ln))) {

@@ -114,6 +114,7 @@ const scenes = [];
 resetIds();
 scenes.push(scene({
   id: 'ls-quai-salzenmund',
+  rest: { auberge: true }, // couchage effectif du quai — `placeServices` le lit via `sceneAubergeOffer` (`worldMap.ts`)
   nom: 'Salzenmund — le quai de la Seconde Flotte',
   description:
     "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, " +
@@ -433,6 +434,7 @@ scenes.push(scene({
 resetIds();
 scenes.push(scene({
   id: 'ls-quai-erengrad',
+  rest: { auberge: true }, // couchage effectif du quai — `placeServices` le lit via `sceneAubergeOffer` (`worldMap.ts`)
   nom: 'Erengrad — le port kislevite',
   description:
     "Erengrad (Taille 4, Richesse 4, surplus Laine +1 — MDG 15 l.439-506). Négoce, rumeurs, et une nuit où " +
@@ -718,16 +720,6 @@ for (const s of scenes) {
   if (starts.length !== 1) throw new Error(`${s.id} : ${starts.length} heroStart (1 attendu)`);
 }
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
-
-// Offre de REPOS par scène (patron `scripts/arene/generate.mjs`) — les quais déclarent le service
-// `auberge` (`worldMap.places[].services`) mais `placeServices` dérive son couchage effectif de
-// `scene.rest.auberge` (`sceneAubergeOffer`, `worldMap.ts`) : sans cette offre, le panneau auberge du
-// hub affiche des prix sans bouton Dormir actionnable (recette 2026-07-12).
-const REST_OFFERS = {
-  'ls-quai-salzenmund': { auberge: true },
-  'ls-quai-erengrad': { auberge: true },
-};
-for (const s of scenes) if (REST_OFFERS[s.id] !== undefined) s.rest = REST_OFFERS[s.id];
 
 const doc = projectDoc({
   meta: { id: 'loup-et-saumure', label: 'Le Loup et la Saumure', icon: 'scenario/naval', version: 1 },

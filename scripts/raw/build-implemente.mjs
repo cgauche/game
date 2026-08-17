@@ -6,7 +6,7 @@
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, bookOf, BOOKS, esc, folioRange, otherAbbrAlternation, readText } from './_lib.mjs'
+import { ldbRe, otherRe, span, bookOf, BOOKS, esc, folioRange, otherAbbrAlternation, readText, PIVOT_ABBR } from './_lib.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 
 export const RAWDIR = 'docs/raw'
@@ -47,7 +47,7 @@ export const GEN_TAG = '_(généré — `npm run raw:implemente`)_'
 export const NOT_IMPL = '(non implémenté)'
 // Alternation DÉRIVÉE de `_lib.mjs` (#434 défaut 10 : une alternation écrite à la main ici se
 // désynchronisait dès qu'un livre s'ajoutait à BOOKS — cf. otherAbbrAlternation, source unique).
-export const GUARD_LEAK_RE = new RegExp(`\\b(?:LDB|${otherAbbrAlternation()}) ?\\d* l\\.`)
+export const GUARD_LEAK_RE = new RegExp(`\\b(?:${esc(PIVOT_ABBR)}|${otherAbbrAlternation()}) ?\\d* l\\.`)
 
 export function slugify(s) {
   return s
@@ -65,7 +65,7 @@ export function refsWithSpans(line) {
   let m
   while ((m = ldb.exec(line))) {
     const [lo, hi] = span(m[2], m[3])
-    out.push({ book: 'LDB', ch: Number(m[1]), lo, hi })
+    out.push({ book: PIVOT_ABBR, ch: Number(m[1]), lo, hi })
   }
   const other = otherRe()
   while ((m = other.exec(line))) {

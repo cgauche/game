@@ -365,6 +365,7 @@
       "label": "Commerce",
       "echangeable": false,
       "hint": "plaque tournante",
+      "tradeHub": true,
       "source": {
         "book": "mer-des-griffes",
         "page": 135,

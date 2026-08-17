@@ -13,16 +13,14 @@ import { DEFS } from '../src/gameIso/sprites';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
 import { planById, resolveById, resolveSpecies, planOptsForRecord, type BodyPlanId, type RenderResolution } from '../src/gameIso/rig/bodyPlan';
 import { sizeTokenScale } from '../src/gameIso/sizeScale';
-import { parseSizeLabel, SIZE_LABEL, SIZE_ORDER, type SizeCategory } from '../src/engine/size';
+import { SIZE_LABEL, SIZE_ORDER, type SizeCategory } from '../src/engine/size';
+import { sizeFromTraits } from '../src/state/spawn';
 import { creatures } from '../src/data/index';
 import type { TraitList } from '../src/engine/statEntry';
 
-/** Taille du statbloc (trait « Taille (X) », plage → borne haute), défaut Moyenne. */
+/** Taille du statbloc — primitive UNIQUE `sizeFromTraits` (`src/state/spawn.ts`) ; défaut Moyenne. */
 function sizeOf(traits: TraitList | undefined): SizeCategory {
-  for (const t of traits ?? []) {
-    if (t.id === 'taille' && t.arg) { const s = parseSizeLabel(t.arg); if (s) return s; }
-  }
-  return 'moyenne';
+  return sizeFromTraits(traits ?? []) ?? 'moyenne';
 }
 
 /** Os STATIQUES (repos) — bipède de face (rig), gabarit en profil. Résolution EXPLICITE :

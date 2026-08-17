@@ -35,7 +35,7 @@ import { weeklyCrewWageBrass } from '../engine/crewMorale';
 import {
   rollCargoAvailability, rollMerchantSkill, rollMerchantOpposition, buySellerDR, cargoBasePrice, rollRandomCargo,
   sellChance, offerPricePct, sellRelation, dumpingPricePct, cargoTotalEnc, findCargoById,
-  cargoOverload, overloadMaxEnc,
+  cargoOverload, overloadMaxEnc, isSeaTradeHub,
   type PortProfile, type CargoLot,
 } from '../engine/seaVoyage';
 import { seasonOfMonth } from '../engine/travelStages';
@@ -117,7 +117,7 @@ export function openPort(get: Get, set: Set): void {
   for (const p of port.production) if (findCargoById(p)) ids.add(p);
   for (const s of Object.keys(port.surplus ?? {})) ids.add(s);
   // « commerce » → cargaison(s) aléatoire(s) (l.321/347).
-  if (port.production.includes('commerce')) {
+  if (isSeaTradeHub(port.production)) {
     const draws = cur.cosmopolite ? 3 : 1;
     for (let i = 0; i < draws; i++) ids.add(rollRandomCargo(season, rng).id);
   }

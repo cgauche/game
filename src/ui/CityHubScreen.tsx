@@ -6,6 +6,7 @@ import type { Scene } from '../state/scene';
 import { restServicePrice, type RestPlaces } from '../state/restFlow';
 import { findLandCargoById, findLandCargoEntryById } from '../engine/landCargo';
 import { findCargoEntryById, isEchangeable } from '../engine/seaVoyage';
+import { isTradeHubEntry } from '../engine/cargo';
 import { innGatherInfoMinutes } from '../state/innFlow';
 import { ScreenShell } from './ScreenShell';
 import { MasterDetail } from './MasterDetail';
@@ -70,15 +71,16 @@ const produitEntry = (id: string) => findLandCargoEntryById(id) ?? findCargoEntr
 function ProfileSynth({ taille, richesse, production }: { taille: number; richesse: number; production?: string[] }) {
   // Les MARCHANDISES seules se listent : un marqueur de l'Index porte son exclusion en champ.
   const goods = (production ?? []).filter((p) => { const e = produitEntry(p); return !e || isEchangeable(e); });
-  const commerce = (production ?? []).includes('commerce');
+  // La PLAQUE TOURNANTE se lit sur l'entrée marqueur (`tradeHub`) — son `label` est celui de la donnée.
+  const hub = (production ?? []).map(produitEntry).find(isTradeHubEntry);
   return (
     <ul className="city-hub-synth">
       <li><span className="city-hub-synth-k">Taille</span><span className="city-hub-synth-v">{taille}</span></li>
       <li><span className="city-hub-synth-k">Richesse</span><span className="city-hub-synth-v">{richesse}</span></li>
-      {(goods.length > 0 || commerce) && (
+      {(goods.length > 0 || hub) && (
         <li>
           <span className="city-hub-synth-k">Produits</span>
-          <span className="city-hub-synth-v">{[commerce ? 'Commerce' : null, ...goods.map((id) => produitEntry(id)?.label ?? id)].filter(Boolean).join(', ')}</span>
+          <span className="city-hub-synth-v">{[hub?.label ?? null, ...goods.map((id) => produitEntry(id)?.label ?? id)].filter(Boolean).join(', ')}</span>
         </li>
       )}
     </ul>

@@ -25,7 +25,7 @@ import type { Difficulty } from './types';
 import type { Season } from './travelStages';
 // Tronc commun cargaison (partagé avec le commerce terrestre MSRC, `landCargo.ts`) — modèle de lot,
 // tirage saisonnier, prix de base. Re-exporté pour les importeurs historiques de ce module.
-import { type CargoDef, type CargoEntry, isEchangeable, rollSeasonalCargo } from './cargo';
+import { type CargoDef, type CargoEntry, isEchangeable, isTradeHubColumn, rollSeasonalCargo } from './cargo';
 export { type CargoDef, type CargoEntry, type CargoLot, isEchangeable, cargoTotalEnc, removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoBasePrice } from './cargo';
 
 // ── Types de la donnée ───────────────────────────────────────────────────────────────────────────
@@ -100,6 +100,10 @@ export const OPPORTUNITE = CARGO.opportunite;
 export const findCargoById = (id: string): CargoDef | undefined => CARGOES.find((c) => c.id === id);
 /** Résout une entrée QUELCONQUE de la colonne Production, marqueur compris (libellé d'affichage). */
 export const findCargoEntryById = (id: string): CargoEntry | undefined => CARGO_ENTRIES.find((c) => c.id === id);
+/** La colonne Production d'un PORT le désigne-t-elle comme plaque tournante (l.321) ? Lit le champ
+ *  `tradeHub` de l'entrée marqueur du catalogue maritime (SSOT `isTradeHubEntry`). PUR. */
+export const isSeaTradeHub = (production: readonly string[] | undefined): boolean =>
+  isTradeHubColumn(production, findCargoEntryById);
 export const findManannFactor = (id: string): ManannFactor | undefined => EVENTS.manann.factors.find((f) => f.id === id);
 
 // ── Surcharge de la cale (MDG 12 l.70-75) ──────────────────────────────────────────────────────
@@ -273,7 +277,7 @@ export function buySellerDR(partial: boolean, surplus: boolean): number {
 export type SellRelation = 'no-produce' | 'produces' | 'surplus';
 export function sellRelation(port: PortProfile, cargoId: string): SellRelation {
   if ((port.surplus?.[cargoId] ?? 0) > 0) return 'surplus';
-  if (port.production.includes(cargoId) && !port.production.includes('commerce')) return 'produces';
+  if (port.production.includes(cargoId) && !isSeaTradeHub(port.production)) return 'produces';
   return 'no-produce';
 }
 
@@ -296,7 +300,7 @@ export function sellChance(port: PortProfile, cargoId: string, milles: number): 
   if (rel === 'no-produce') {
     return {
       gossip: null,
-      target: (port.taille + demand) * CARGO.sell.noProduceTargetPerSize + (port.production.includes('commerce') ? CARGO.sell.commerceBonus : 0),
+      target: (port.taille + demand) * CARGO.sell.noProduceTargetPerSize + (isSeaTradeHub(port.production) ? CARGO.sell.commerceBonus : 0),
       sellerDR: CARGO.sell.sellerDR.noProduce + (demand > 0 ? CARGO.sell.sellerDR.demand : 0),
     };
   }
@@ -316,7 +320,7 @@ export function offerPricePct(port: PortProfile, cargoId: string): number {
 /** BRADER une cargaison invendable (l.399) : « pour un quart de son prix de base dans n'importe quel
  *  Lieu … "commerce" … ou … Demande pour ce bien ». `null` si le port ne s'y prête pas. PUR. */
 export function dumpingPricePct(port: PortProfile, cargoId: string): number | null {
-  return port.production.includes('commerce') || (port.demande?.[cargoId] ?? 0) > 0 ? CARGO.sell.dumpingPctOfBase : null;
+  return isSeaTradeHub(port.production) || (port.demande?.[cargoId] ?? 0) > 0 ? CARGO.sell.dumpingPctOfBase : null;
 }
 
 /** Issue du COMMERCE D'OPPORTUNITÉ (Activité en mer, l.276-286) : Test étendu de Marchandage Complexe

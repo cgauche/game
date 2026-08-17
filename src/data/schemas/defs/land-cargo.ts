@@ -35,6 +35,9 @@ const cargoMarqueur = z.strictObject({
   echangeable: z.literal(false),
   /** Qualificatif d'affichage ÉDITABLE (« plaque tournante » / « rien à échanger ») — cf. `CargoMarkerDef`. */
   hint: z.string().optional(),
+  /** Ce marqueur désigne une PLAQUE TOURNANTE du commerce (MSRC 13 l.24-28) — lu par `isTradeHubEntry`
+   *  (`engine/cargo.ts`) : double recherche de marchand, quantité inversée, bonus de vente, bradage. */
+  tradeHub: z.literal(true).optional(),
   source: sourceRefSchema,
 });
 

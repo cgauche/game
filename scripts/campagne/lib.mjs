@@ -136,7 +136,7 @@ function validateFlowRefs(node) {
  *  réfs par ids stables des rencontres et des flows sont validées SUR LE SPEC avant compilation.
  *  `hidden` (défaut false = VISIBLE, RAW : le groupe voit
  *  ses adversaires) pose `combat.hiddenUntilCombat` sur les entités enrôlées. */
-export function scene({ id, nom, description = '', ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, metresPerTile, entities = [], architecture = [], walls = [], terrainRects = [], effectZones = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
+export function scene({ id, nom, description = '', ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, metresPerTile, rest, entities = [], architecture = [], walls = [], terrainRects = [], effectZones = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
   const spec = {
     id,
     nom,
@@ -163,6 +163,7 @@ export function scene({ id, nom, description = '', ambiance = 'exterieur', weath
   if (metresPerTile != null) spec.metresPerTile = metresPerTile; // échelle de la scène (MER = 4 m/case) — forwardée au MapSpec (sinon défaut 2 m/case)
   if (weather) spec.weather = weather;
   if (music) spec.music = music;
+  if (rest !== undefined) spec.rest = rest; // offre de couchage de la scène (`Scene.rest`) — déclarée à l'AUTHORING, jamais par une table d'ids côté générateur
   if (startMessage) spec.startMessage = startMessage;
   // entryPoints d'auteur `{name:{x,y}}` → `{name:[x,y]}` (forme MapSpec).
   if (entryPoints) spec.entryPoints = Object.fromEntries(Object.entries(entryPoints).map(([k, p]) => [k, [p.x, p.y]]));

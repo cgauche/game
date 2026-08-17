@@ -8,6 +8,7 @@ export function makeZone1() {
   resetIds();
   return scene({
     id: 'arene-zone1',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — La Cour',
     description: 'La cour d’échauffement de l’arène : du sable, des caisses, de la vermine.',
     startMessage:
@@ -75,6 +76,7 @@ export function makeZone2() {
   resetIds();
   return scene({
     id: 'arene-zone2',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Les Ruines',
     description: 'Un pan de forteresse effondrée annexé par l’arène — et squatté par des peaux-vertes.',
     startMessage:
@@ -176,6 +178,7 @@ export function makeZone3() {
   resetIds();
   return scene({
     id: 'arene-zone3',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Les Égouts',
     description: 'Le collecteur sous l’arène : un canal d’eau croupie, deux passerelles, de la vermine.',
     startMessage:
@@ -259,6 +262,7 @@ export function makeZone4() {
   resetIds();
   return scene({
     id: 'arene-zone4',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Charnier',
     description: 'La fosse commune de l’arène, murée en cryptes — les pensionnaires se relèvent.',
     startMessage:
@@ -366,6 +370,7 @@ export function makeZone5() {
   resetIds();
   return scene({
     id: 'arene-zone5',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Les Lices',
     description: 'Le champ de joute de l’arène, sous la pluie — duels montés et lances de cavalerie.',
     weather: 'pluie',
@@ -439,6 +444,7 @@ export function makeZone6() {
   resetIds();
   return scene({
     id: 'arene-zone6',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Marais',
     description: 'La fondrière au pied des murs — hommes-bêtes et loups y chassent dans la brume.',
     weather: 'brouillard',
@@ -532,6 +538,7 @@ export function makeZone7() {
   resetIds();
   return scene({
     id: 'arene-zone7',
+    rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Nid',
     description: 'Une grotte tendue de toiles sous l’arène — et le perchoir d’une vouivre.',
     startMessage:

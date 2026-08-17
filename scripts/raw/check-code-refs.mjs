@@ -16,7 +16,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, chapterFile, bookOf, readText } from './_lib.mjs'
+import { ldbRe, otherRe, span, chapterFile, bookOf, readText, PIVOT_ABBR } from './_lib.mjs'
 
 export const SRC_DIR = 'src'
 export const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de couverture, pas une règle (cf. build-implemente)
@@ -30,7 +30,7 @@ function* refsInLine(ln) {
   let m
   while ((m = ldb.exec(ln))) {
     const [, hi] = span(m[2], m[3])
-    yield { abbr: 'LDB', nn: m[1], hi }
+    yield { abbr: PIVOT_ABBR, nn: m[1], hi }
   }
   const other = otherRe()
   while ((m = other.exec(ln))) {
