@@ -299,7 +299,7 @@ Pour votre **Action**, vous pouvez vous mettre **Sur la Défensive** : choisisse
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.14-15, l.74-88, l.90, l.93-98, l.105-107, l.108-110, l.117-119, l.170-171) → `ClimbPlan`, `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `engage`, `secondsPerRound`, `markAttacked`, `ExecCtx`, `agressifEnvers`, `entityBlockedAt`, +41 — `src/data/combat-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, +24 fichiers
-- `LDB 15` (l.3-4, l.12-16, l.18-32, l.34-42, l.44-54) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `reachTiles`, `gainAdvantage`, `DisengageModal`, `planClimb`, `occupied`, `run-roll`, +41 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, +24 fichiers
+- `LDB 15` (l.3-4, l.12-16, l.18-32, l.34-42, l.44-54) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `reachTiles`, `DisengageModal`, `planClimb`, `occupied`, `run-roll`, `sizeFootprintSide`, +40 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +23 fichiers
 
 ---
 
@@ -443,7 +443,7 @@ Enfoncer une porte (ou fenêtre…) se résout par un **Test de Corps à corps (
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.4, l.113-118, l.122-129, l.132-147, l.150-153, l.156-163, l.166-167, l.170-171, l.174-175) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `engage`, `secondsPerRound`, `markAttacked`, `agressifEnvers`, `FLOW_VERBS`, `entityBlockedAt`, `useHoverTargeting`, +29 — `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/flowCore.ts`, +20 fichiers
-- `LDB 14` (l.37-53, l.65-115, l.118-131, l.134-135) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `fr`, `10-a-votre-action-au-prochain-round`, `sceneCombatModifiers`, `scatter`, +81 — `src/data/grapple.json`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/oups.ts`, +28 fichiers
+- `LDB 14` (l.37-53, l.65-115, l.118-131, l.134-135) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `fr`, `10-a-votre-action-au-prochain-round`, `sceneCombatModifiers`, `scatter`, +80 — `src/data/grapple.json`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/oups.ts`, +27 fichiers
 - `LDB 16` (l.15-17) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, +4 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`
 - `EDO 11` (l.86-101) → `delire`, `fievre-cerebrale-pourpre` — `src/data/maladies.json`, `src/data/symptoms.json`
 
@@ -717,7 +717,7 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 - `LDB 13` (l.137-145, l.183) → `FLOW_VERBS`, `useAttackJetProps`, `FLOWS`, `createCombatSlice`, `previewDefense`, `rangedDefenseModes`, `applyAttackResult`, `applyCast` — `src/data/localisation.json`, `src/engine/combat.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/flowVerbs.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
 - `LDB 14` (l.3, l.4, l.6-7, l.9) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `10-a-votre-action-au-prochain-round`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, `vous-vous-tordez-la-cheville-dechirure-musculaire-mineure-compte-comme-blessure-critique`, `vous-touchez-un-allie-au-hasard-ou-vous-meme-sonne`, `incident-de-tir-l-arme-explose-dans-votre-main-degats-au-bras-principal-arme-detruite`, `maladresse-tableau-des-oups`, `cleaveAffordance`, +14 — `src/data/oups.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +3 fichiers
 - `LDB 18` (l.17, l.41, l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `isHealable`, `HealMode`, `outOfCombatUpkeep`, `actBlockReason`, `availableHealModes`, `MedicState`, `dechirure-autre-mineure`, +88 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +25 fichiers
-- `LDB 63` (l.29-32) → `cuir-souple`, `describeReload`, `cuir-bouilli`, `mailles`, `plate`, `firedAttackBlock`, `GameOp`, `ActiveEffect`, `PendingDeviation`, `deviatableArmourAt`, +14 — `src/data/qualities.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +4 fichiers
+- `LDB 63` (l.29-32) → `cuir-souple`, `describeReload`, `cuir-bouilli`, `mailles`, `plate`, `firedAttackBlock`, `GameOp`, `PendingDeviation`, `ActiveEffect`, `deviatableArmourAt`, +14 — `src/data/qualities.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +4 fichiers
 - `AA 7` (l.25-79, l.82-104) → `StructureCritEntry`, `CritEscalation`, `useAttackJetProps`, `retenir-ses-coups`, `resolveAACritical`, `PendingDefense`, `QualityCapabilities`, `openSurfacedDefense` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/structureCriticals.ts`, `src/engine/aaCritical.ts`, +3 fichiers
 - `EDO 11` (l.237-240) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
 - sans code : `AU1 4` (l.18), `NADJ 8` (l.263)
@@ -927,7 +927,7 @@ La Taille de la cible visée modifie le tir (il est plus facile d'atteindre une 
 | Énorme | Jusqu'à 6 m | Griffon, vouivre, manticore | +40 |
 | Monstrueuse | + de 6 m | Dragon, géant, Prince démon | +60 |
 
-— `LDB 14 l.142-165`
+— `LDB 14 l.118-131`
 
 ### Table « Difficulté de Combat » — lignes liées au tir (verbatim)
 
@@ -949,7 +949,7 @@ La table générale des modificateurs de Combat rassemble plusieurs lignes propr
 
 ### Dispersion (armes de jet, sur échec)
 
-Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d10. Un **1 à 8** indique une direction (lancer 2d10 pour la distance en mètres, sans dépasser la moitié de la distance entre le lanceur et la cible) ; un **9** = l'arme atterrit aux pieds du lanceur ; un **10** = aux pieds de la cible. La Dispersion sert chaque fois qu'une direction aléatoire est requise. `LDB 14 l.181-184`
+Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d10. Un **1 à 8** indique une direction (lancer 2d10 pour la distance en mètres, sans dépasser la moitié de la distance entre le lanceur et la cible) ; un **9** = l'arme atterrit aux pieds du lanceur ; un **10** = aux pieds de la cible. La Dispersion sert chaque fois qu'une direction aléatoire est requise. `LDB 14 l.142-151`
 
 **Sources RAW** :
 - `LDB 13 l.114` — Prérequis d'un tir : arme à portée **et** cible dans la Ligne de Vue.
@@ -962,10 +962,10 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 - `LDB 14 l.131` — Taille de la cible : si le mod permet de toucher alors que le Test aurait raté → succès à **0 DR**.
 - `LDB 14 l.135` — **Cible Sans Défense** (endormie/inconsciente/sans défense) : Test de Capacité de Combat = **succès automatique**.
 - `LDB 14 l.137-138` — **Tirer Dans le Tas** : 3-6 → +20, 7-12 → +40, 13+ → +60 ; touche au hasard ; touche permise par le mod = **0 DR**.
-- `LDB 14 l.142-165` — Table de **Taille** (Minuscule −30 … Monstrueuse +60).
+- `LDB 14 l.118-131` — Table de **Taille** (Minuscule −30 … Monstrueuse +60).
 - `LDB 14 l.68-113` — Table « Difficulté de Combat » (bandes de portée + Taille + couverture/météo).
 - `LDB 14 l.120-124` — Combinaison des Difficultés (plafonds −30 / +60).
-- `LDB 14 l.181-184` — Dispersion (armes de jet sur échec).
+- `LDB 14 l.142-151` — Dispersion (armes de jet sur échec).
 - `LDB 62 l.201` / `l.244-253` — Calcul des fourchettes de portée + exemples (Arc, Arbalète lourde, Fronde, Pistolet).
 - `LDB 62 l.283-284` — Atout **Pistolet** (tirer en Combat rapproché → autorise le tir en étant Engagé).
 - `LDB 62 l.295-296` — Atout **Protectrice (Indice)** : Indice 2+ permet d'**opposer les projectiles** dans la Ligne de Vue (le « bouclier large »).
@@ -975,9 +975,9 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.114, l.125, l.133, l.137-145) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, `DisengageModal`, `sur-la-defensive`, `BattleState`, `FLOWS`, +16 — `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, +12 fichiers
-- `LDB 14` (l.40, l.41, l.43, l.44, l.53, l.68-113, l.120-124, l.126-129, l.131, l.135, l.137-138, l.142-165, l.181-184) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `areGrappling`, `fr`, `setGrapple`, +118 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +46 fichiers
+- `LDB 14` (l.40, l.41, l.43, l.44, l.53, l.68-113, l.118-131, l.135, l.137-138, l.142-151) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `areGrappling`, `fr`, `setGrapple`, +104 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +40 fichiers
 - `LDB 16` (l.113) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `sleepParty`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, `applyIncomingMeleeAdvantage`, `incomingMeleeAdvantage`, `AttackResult`, +15 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/rest.ts`, +7 fichiers
-- `LDB 62` (l.201, l.204-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `TraceRow`, `a-repetition`, `weaponSchema`, `sonne`, `resolveVolley`, `au-contact-roll`, `useAttackJetProps`, `defensive`, +79 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/trappings.ts`, +23 fichiers
+- `LDB 62` (l.201, l.204-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `TraceRow`, `a-repetition`, `weaponSchema`, `sonne`, `resolveVolley`, `au-contact-roll`, `useAttackJetProps`, `defensive`, +80 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +24 fichiers
 
 ---
 
@@ -1079,7 +1079,7 @@ Règle optionnelle pour le tir sur une cible déjà _Engagée_ avec un (ou des) 
 - `LDB 14 l.130-131` — « Taille » : modificateur de Taille au toucher pour le tir ; s'il fait toucher un Test sinon raté → succès à 0 DR.
 - `LDB 14 l.133-138` — Cas spéciaux : « Cible Sans Défense » (succès auto contre endormi/inconscient/sans défense) ; « Tirer Dans le Tas » (3-6 → +20, 7-12 → +40, 13+ → +60, succès à 0 DR si le modificateur fait toucher).
 - `LDB 14 l.139-140` — « Supériorité Numérique » : 2 c.1 = +20, 3 c.1 = +40 au toucher en Corps à corps ; fin de chaque Round, les adversaires surpassés perdent 1 Avantage ; comptage par nombre d'Engagés, MJ arbitre.
-- `LDB 14 l.142-165` — Tableau **Taille** verbatim : Minuscule −30, Très Petite −20, Petite −10, Moyenne 0, Grande +20, Énorme +40, Monstrueuse +60 (avec fourchettes de hauteur/longueur et exemples).
+- `LDB 14 l.118-131` — Tableau **Taille** verbatim : Minuscule −30, Très Petite −20, Petite −10, Moyenne 0, Grande +20, Énorme +40, Monstrueuse +60 (avec fourchettes de hauteur/longueur et exemples).
 - `EDO 11 l.157-165` — Option « Mais c'est impossible ! » : deux Difficultés extrêmes ajoutées au Tableau de Difficulté pour les situations de campagne (dont les Tests de combat type Calme vs Terreur 3-5) — Presque Impossible −40, Impossible −50 ; le plafond de combinaison des malus passe alors à −50 ; règles d'Échec / Réussite automatiques recommandées (01-05 = succès à +0 DR).
 - `EDO 11 l.165` — Repli si l'option n'est pas utilisée : remplacer Presque Impossible (−40) et Impossible (−50) par Très Difficile (−30).
 - `NADJ 06 l.148` — Application explicite de la supériorité numérique : trois gamins attaquant la même cible dans le même Round bénéficient des bonus de supériorité numérique des règles de combat normales.
@@ -1088,7 +1088,7 @@ Règle optionnelle pour le tir sur une cible déjà _Engagée_ avec un (ou des) 
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.117-118) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, `DisengageModal`, `sur-la-defensive`, `chooseEnemyAction`, `composeDifficulty`, +12 — `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, +11 fichiers
-- `LDB 14` (l.57-115, l.119-124, l.126-129, l.130-131, l.133-138, l.139-140, l.142-165) → `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `isFumble`, `areGrappling`, `schema`, `fr`, `setGrapple`, `sceneCombatModifiers`, `scatter`, +95 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +40 fichiers
+- `LDB 14` (l.57-115, l.118-131, l.133-138, l.139-140) → `SceneCombatMods`, `OupsMisfireEntry`, `isFumble`, `schema`, `fr`, `sceneCombatModifiers`, `scatter`, `combat-deux-armes`, `empetre`, `main-secondaire`, +66 — `src/data/grapple.json`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/oups.ts`, +24 fichiers
 - `EDO 11` (l.157-166) → `gonflement`, `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `absorption`, `amorphe`, `contagieux` — `src/data/etats.json`, `src/data/mutations.json`, `src/data/symptoms.json`, `src/data/traits.json`
 - sans code : `NADJ 6` (l.148)
 
@@ -1098,7 +1098,7 @@ Règle optionnelle pour le tir sur une cible déjà _Engagée_ avec un (ou des) 
 
 Trois sous-systèmes de combat du Livre de Base WFRP4 (tous traités aux pages 164-165, fichier `LDB 14`), plus la table des **Armes de Bagarre** d'*Aux Armes* qui étend le combat à mains nues.
 
-### Combat à Deux Armes — `LDB 14 l.172-180`
+### Combat à Deux Armes — `LDB 14 l.134-140`
 
 Certains guerriers combattent avec une arme dans chaque main (par exemple une épée et un brise-épée, ou une épée et un bouclier). Trois règles s'appliquent :
 
@@ -1112,7 +1112,7 @@ Certains guerriers combattent avec une arme dans chaque main (par exemple une é
 
 À noter : la table *Difficulté de Combat* (`LDB 14 l.102-103`) range « Esquiver alors que vous êtes À Terre ou sur une monture » **et** « Attaquer avec votre main secondaire » dans la même bande **Difficile −20** — c'est la source du −20 de main secondaire.
 
-### Dispersion (armes de Lancer ratées) — `LDB 14 l.181-184`
+### Dispersion (armes de Lancer ratées) — `LDB 14 l.142-151`
 
 Sur un **échec à un Test de Projectiles (Lancer)**, on lance **1d10** et on consulte le diagramme de Dispersion pour déterminer où l'arme atterrit. « T » désigne la cible.
 
@@ -1122,7 +1122,7 @@ Sur un **échec à un Test de Projectiles (Lancer)**, on lance **1d10** et on co
 | 9 | L'arme atterrit **à vos pieds**. |
 | 10 | L'arme atterrit **aux pieds de votre cible**. |
 
-Diagramme (orientation des huit directions autour de la cible T, `LDB 14 l.182`) :
+Diagramme (orientation des huit directions autour de la cible T, `LDB 14 l.146-149`) :
 
 ```
 1   2   3
@@ -1134,15 +1134,15 @@ Diagramme (orientation des huit directions autour de la cible T, `LDB 14 l.182`)
 
 La Dispersion est une mécanique générique : elle sert **chaque fois qu'une direction aléatoire est requise** (pas seulement les armes de Lancer).
 
-### Combat à Mains Nues — `LDB 14 l.185-199`
+### Combat à Mains Nues — `LDB 14 l.153-169`
 
 Un **Test de Corps à corps (Bagarre)** réussi à mains nues se gère **exactement comme n'importe quel autre Test de Combat**, avec **une option supplémentaire : l'Empoignade**.
 
-#### Empoignade — `LDB 14 l.188-199`
+#### Empoignade — `LDB 14 l.159-169`
 
 - **Déclaration** : au lieu d'infliger des Dégâts, on peut tenter d'**Empoigner et immobiliser** l'adversaire. Il faut **déclarer cette intention avant** le lancer pour toucher.
 - **Mise en place** : si l'on remporte le Test opposé, **les deux combattants sont Empoignés** et l'adversaire gagne l'État **_Empêtré_**.
-- **Au début d'un tour Empoigné** : on peut **briser l'Empoignade gratuitement si l'on a un Avantage supérieur** à celui de l'adversaire (et l'on n'est alors **pas considéré comme _Engagé_** pour son Mouvement). Sinon, l'Action est un **Test opposé de Force**. Sur un **succès**, on choisit **une** des deux options :
+- **Au début d'un tour Empoigné** : on peut **briser l'Empoignade si l'on a un Avantage supérieur** à celui de l'adversaire (et l'on n'est alors **pas considéré comme _Engagé_** pour son Mouvement). Sinon, l'Action est un **Test opposé de Force**. Sur un **succès**, on choisit **une** des deux options :
   1. **Infliger BF + DR Dégâts**, en utilisant le **lancer de Force** pour déterminer la **Localisation** affectée. On **ignore tous les PA** (clefs de bras et torsion musculaire).
   2. **Soit** : (1) conférer l'État _Empêtré_ à l'adversaire, **ou** (2) se défaire de ce même État et **retirer un État _Empêtré_ supplémentaire par DR obtenu**.
 - **Sur un échec** au Test opposé : on ne peut que se débattre et l'adversaire **gagne +1 Avantage**.
@@ -1150,7 +1150,7 @@ Un **Test de Corps à corps (Bagarre)** réussi à mains nues se gère **exactem
 
 > « Au lieu d'infliger des Dégâts suite à une attaque à mains nues, vous pouvez tenter d'Empoigner et d'immobiliser votre adversaire. Vous devez déclarer cette intention avant d'effectuer le lancer pour toucher votre adversaire. » — `LDB 14 l.159`
 
-**Option : Empoignade Grâce aux Compétences** (`LDB 14 l.201-202`) — le MJ peut autoriser, en lieu et place du Test opposé de Force, un autre Test selon les circonstances : Langue (Magick) pour lancer un Sort, Charme pour se libérer par la flatterie, Commandement pour forcer l'autre à lâcher prise, etc. En cas d'échec, le MJ peut octroyer un État _Empêtré_ supplémentaire (on ne s'est pas concentré sur l'Empoignade).
+**Option : Empoignade Grâce aux Compétences** (`LDB 14 l.171-173`) — le MJ peut autoriser, en lieu et place du Test opposé de Force, un autre Test selon les circonstances : Langue (Magick) pour lancer un Sort, Charme pour se libérer par la flatterie, Commandement pour forcer l'autre à lâcher prise, etc. En cas d'échec, le MJ peut octroyer un État _Empêtré_ supplémentaire (on ne s'est pas concentré sur l'Empoignade).
 
 #### Arme « Mains nues »
 
@@ -1183,11 +1183,11 @@ Notes mécaniques par arme (`AA 08 l.228-260`) :
 - **Matraque** : gaine de cuir/tissu remplie de matière lourde. Fabrication : Test étendu de **Métier (Charpentier, Forgeron, Ingénieur, Tailleur ou Tanneur) Intermédiaire (+0)**, total **15 DR**.
 
 **Sources RAW** :
-- `LDB 14 l.172-180` — Combat à Deux Armes : armes 1 main / pistolets autorisées ; main secondaire **−20** sur tous les Tests applicables ; talent **Maniement de deux armes** requis pour attaquer avec les deux armes.
+- `LDB 14 l.134-140` — Combat à Deux Armes : armes 1 main / pistolets autorisées ; main secondaire **−20** sur tous les Tests applicables ; talent **Maniement de deux armes** requis pour attaquer avec les deux armes.
 - `LDB 14 l.101-115` — table *Difficulté de Combat* : « Attaquer avec votre main secondaire » classé **Difficile (−20)** (source du malus de main secondaire).
-- `LDB 14 l.181-184` — Dispersion : sur un échec à un Test de **Projectiles (Lancer)**, 1d10 → 1-8 direction (+ 2d10 m, ≤ moitié de la distance) ; 9 = à vos pieds ; 10 = aux pieds de la cible ; mécanique réutilisable pour toute direction aléatoire.
-- `LDB 14 l.185-199` — Combat à Mains Nues : Corps à corps (Bagarre) comme un Test de combat normal + option **Empoignade** (déclarée avant le jet ; Test opposé → Empêtré mutuel ; tour suivant : briser gratuit si Avantage supérieur, sinon Test opposé de Force → BF+DR PA-ignorés OU gestion d'Empêtré ; échec → +1 Avantage à l'adversaire ; tiers : +20/+10 pour toucher l'Empoigné).
-- `LDB 14 l.201-202` — Option : Empoignade Grâce aux Compétences (substitut au Test de Force selon le MJ).
+- `LDB 14 l.142-151` — Dispersion : sur un échec à un Test de **Projectiles (Lancer)**, 1d10 → 1-8 direction (+ 2d10 m, ≤ moitié de la distance) ; 9 = à vos pieds ; 10 = aux pieds de la cible ; mécanique réutilisable pour toute direction aléatoire.
+- `LDB 14 l.153-169` — Combat à Mains Nues : Corps à corps (Bagarre) comme un Test de combat normal + option **Empoignade** (déclarée avant le jet ; Test opposé → Empêtré mutuel ; tour suivant : briser si Avantage supérieur, sinon Test opposé de Force → BF+DR PA-ignorés OU gestion d'Empêtré ; échec → +1 Avantage à l'adversaire ; tiers : +20/+10 pour toucher l'Empoigné).
+- `LDB 14 l.171-173` — Option : Empoignade Grâce aux Compétences (substitut au Test de Force selon le MJ).
 - `AA 08 l.224-261` — Table des Armes de Bagarre (Coup-de-poing, Gaffe, Gantelet à pointes, Gantelet verrouillé, Lacet étrangleur, Mains nues, Matraque) + règle spéciale du **Gantelet verrouillé** (conserve l'objet, −20 transitoire) + coûts de fabrication par Métier.
 - `LDB 10 l.774` — Talent **Maniement de deux armes** (prérequis pour attaquer avec les deux armes).
 
@@ -1197,7 +1197,7 @@ Notes mécaniques par arme (`AA 08 l.228-260`) :
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.774) → `useAttackJetProps`, `dualAffordance`, `PendingAttack`, `PendingDualStrike`, `resolveDualSecond`, `dualStrikeTargets`, `defenseModifiers`, `GameState`, `Combatant`, `applyAttackResult`, +11 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
-- `LDB 14` (l.101-115, l.139, l.140, l.151, l.159, l.172-180, l.181-184, l.185-199, l.201-202) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `fr`, `setGrapple`, `scatter`, `combat-deux-armes`, `combatOrder`, `empetre`, +78 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +36 fichiers
+- `LDB 14` (l.101-115, l.134-140, l.142-151, l.153-169, l.171-173) → `GrappleModal`, `areGrappling`, `fr`, `setGrapple`, `isControlledMount`, `RunModal`, `scatter`, `combat-deux-armes`, `combatOrder`, `empetre`, +79 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +36 fichiers
 - `AA 8` (l.224-261) → `immobilisante-fixe`, `protectrice`, `inoffensive` — `src/data/qualities.json`, `src/data/trappings.json`
 
 ---
@@ -1218,7 +1218,7 @@ L'**Empoignade** est l'option de combat qui permet, lors d'un **Combat à mains 
 
 Au début de votre tour, alors que vous êtes Empoigné, deux voies s'offrent à vous :
 
-1. **Briser l'Empoignade gratuitement** — possible **si vous disposez d'un Avantage supérieur à celui de votre adversaire**. Dans ce cas, vous **n'êtes pas considéré comme _Engagé_** pour votre Mouvement (vous pouvez donc vous déplacer librement).
+1. **Briser l'Empoignade** — possible **si vous disposez d'un Avantage supérieur à celui de votre adversaire**. Dans ce cas, vous **n'êtes pas considéré comme _Engagé_** pour votre Mouvement.
 2. **Sinon** — vous devez effectuer un **Test opposé de Force** pour votre Action.
 
 Résolution du Test opposé de Force :
@@ -1237,7 +1237,7 @@ Ceux qui ne sont **pas partie prenante** dans cette Empoignade gagnent un bonus 
 | Personnage Empoigné avec le **plus faible Avantage** | **+20** |
 | Personnage Empoigné avec **l'Avantage le plus important** | **+10** |
 
-*— `LDB 14 l.199`*
+*— `LDB 14 l.169`*
 
 ### Option : Empoignade Grâce aux Compétences (règle optionnelle)
 
@@ -1259,14 +1259,14 @@ L'Empoignade fonctionne entièrement via l'État _Empêtré_ infligé. Sa défin
 - Vous pouvez utiliser votre **Action** pour retirer l'État _Empêtré_ en réussissant un **Test opposé de Force contre la source de cet empêtrement**, et **chaque DR obtenu permet de retirer un État _Empêtré_ supplémentaire**.
 
 **Sources RAW** :
-- `LDB 14 l.185-186` — Combat À Mains Nues : un Test de Corps à corps (Bagarre) réussi à mains nues se gère comme tout Test de Combat, mais ouvre l'option Empoignade. (Note d'édition : le combat couvre les chapitres « 13 » et « 14 » du découpage ; tout le bloc Empoignade vit dans le fichier `14 - _GoBack.md` — le chapitre « 13 - Combat.md » n'en contient rien.)
-- `LDB 14 l.188-189` — Empoignade : déclarée avant le lancer pour toucher ; victoire au Test opposé → les deux sont Empoignés et l'adversaire gagne l'État _Empêtré_.
-- `LDB 14 l.191` — Début de tour Empoigné : briser gratuitement si Avantage supérieur (et non considéré _Engagé_ pour le Mouvement) ; sinon Test opposé de Force pour l'Action.
-- `LDB 14 l.193` — Succès option A : BF + DR Dégâts, lancer de Force = Localisation, ignore tous les PA (clefs de bras).
-- `LDB 14 l.195` — Succès option B : conférer un _Empêtré_, ou se défaire de son _Empêtré_ + 1 par DR obtenu.
-- `LDB 14 l.197` — Échec : se débattre seulement, l'adversaire gagne +1 Avantage.
-- `LDB 14 l.199` — Spectateurs : +20 pour toucher l'Empoigné au plus faible Avantage, +10 pour l'autre.
-- `LDB 14 l.201-202` — Option : Empoignade Grâce aux Compétences (Langue (Magick)/Charme/Commandement à discrétion du MJ ; échec → possible _Empêtré_ supplémentaire).
+- `LDB 14 l.153-155` — Combat À Mains Nues : un Test de Corps à corps (Bagarre) réussi à mains nues se gère comme tout Test de Combat, mais ouvre l'option Empoignade. (Note d'édition : le combat couvre les chapitres « 13 » et « 14 » du découpage ; tout le bloc Empoignade vit dans le fichier `14 - _GoBack.md` — le chapitre « 13 - Combat.md » n'en contient rien.)
+- `LDB 14 l.159` — Empoignade : déclarée avant le lancer pour toucher ; victoire au Test opposé → les deux sont Empoignés et l'adversaire gagne l'État _Empêtré_.
+- `LDB 14 l.161` — Début de tour Empoigné : briser si Avantage supérieur (et non considéré _Engagé_ pour le Mouvement) ; sinon Test opposé de Force pour l'Action.
+- `LDB 14 l.163` — Succès option A : BF + DR Dégâts, lancer de Force = Localisation, ignore tous les PA (clefs de bras).
+- `LDB 14 l.165` — Succès option B : conférer un _Empêtré_, ou se défaire de son _Empêtré_ + 1 par DR obtenu.
+- `LDB 14 l.167` — Échec : se débattre seulement, l'adversaire gagne +1 Avantage.
+- `LDB 14 l.169` — Spectateurs : +20 pour toucher l'Empoigné au plus faible Avantage, +10 pour l'autre.
+- `LDB 14 l.171-173` — Option : Empoignade Grâce aux Compétences (Langue (Magick)/Charme/Commandement à discrétion du MJ ; échec → possible _Empêtré_ supplémentaire).
 - `LDB 16 l.86-87` — État _Empêtré_ : pas de Mouvement, -10 aux actions de déplacement (dont l'Empoignade), retrait par Test opposé de Force (+1 par DR).
 
 > « Au lieu d'infliger des Dégâts suite à une attaque à mains nues, vous pouvez tenter d'Empoigner et d'immobiliser votre adversaire. Vous devez déclarer cette intention avant d'effectuer le lancer pour toucher votre adversaire. » — `LDB 14 l.159`
@@ -1277,28 +1277,28 @@ L'Empoignade fonctionne entièrement via l'État _Empêtré_ infligé. Sa défin
 
 **Voir aussi** : Combat à mains nues (Bagarre), État Empêtré, Avantage, Tests opposés et Degrés de Réussite (DR), Localisation (dé inversé), Combat monté, Trait Constriction.
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 14` (l.155, l.159, l.161, l.163, l.185-186, l.188-189, l.191, l.193, l.195, l.197, l.199, l.201-202) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `combat-deux-armes`, `combatOrder`, `empetre`, `grappleTierMod`, +50 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +27 fichiers
-- `LDB 16` (l.62, l.86-87) → `combat-fatigue`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, +28 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +17 fichiers
+- `LDB 14` (l.153-155, l.159, l.161, l.163, l.165, l.167, l.169, l.171-173) → `GrappleModal`, `areGrappling`, `setGrapple`, `isControlledMount`, `RunModal`, `scatter`, `combat-deux-armes`, `combatOrder`, `empetre`, `grappleTierMod`, +52 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +27 fichiers
+- `LDB 16` (l.62, l.86-87) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `Condition`, `aaBleedUnconsciousDue`, +29 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, +18 fichiers
 
 ---
 
 ## Combat Monté (règles de base)
 
-Le **Combat monté** est un sous-système qui s'ajoute aux règles normales de Combat sans les remplacer : *« Le Combat monté utilise les mêmes règles que tout autre Combat, avec ces ajouts »* (LDB 14 l.205). Un cavalier et sa monture forment un **couple de deux combattants distincts** ; la monture est *« un autre combattant à part entière »* (l.221). Six ajouts s'appliquent. Tous les renvois de Taille ci-dessous utilisent les sept catégories du jeu (Minuscule → Monstrueuse, cf. ci-dessous), et la notion de « plus petit/plus grand » se mesure par écart de catégorie.
+Le **Combat monté** est un sous-système qui s'ajoute aux règles normales de Combat sans les remplacer : *« Le Combat monté utilise les mêmes règles que tout autre Combat, avec ces ajouts »* (LDB 14 l.177). Un cavalier et sa monture forment un **couple de deux combattants distincts** ; la monture est *« un autre combattant à part entière »* (l.182). Six ajouts s'appliquent. Tous les renvois de Taille ci-dessous utilisent les sept catégories du jeu (Minuscule → Monstrueuse, cf. ci-dessous), et la notion de « plus petit/plus grand » se mesure par écart de catégorie.
 
 ### Les six ajouts du Combat monté
 
-**1. Mouvement de la monture (l.215).** *« on considère que le cavalier possède l'Attribut de Mouvement de sa monture. »* En outre, le cavalier doit effectuer un **Test de Chevaucher** pour tous les Tests de course, de saut ou similaires, et utilise le Mouvement de sa monture pour ces Tests.
+**1. Mouvement de la monture (l.179).** *« on considère que le cavalier possède l'Attribut de Mouvement de sa monture. »* En outre, le cavalier doit effectuer un **Test de Chevaucher** pour tous les Tests de course, de saut ou similaires, et utilise le Mouvement de sa monture pour ces Tests.
 
-**2. Bonus +20 au toucher (l.217).** *« Toute attaque effectuée par un Cavalier sur une cible plus petite que sa Monture se voit accorder un bonus de +20 au toucher. »* La condition porte sur la Taille de la **monture** (pas du cavalier), et le bonus s'applique à **toute** attaque (mêlée comme tir).
+**2. Bonus +20 au toucher (l.180).** *« Toute attaque effectuée par un Cavalier sur une cible plus petite que sa Monture se voit accorder un bonus de +20 au toucher. »* La condition porte sur la Taille de la **monture** (pas du cavalier), et le bonus s'applique à **toute** attaque (mêlée comme tir).
 
-**3. Cibler le cavalier ou la monture (l.219).** Quand on attaque un Personnage qui est sur une monture, l'attaquant **choisit** de toucher soit le cavalier, soit la monture. *« Si vous êtes en combat rapproché, vous subissez une pénalité de -10 à vos Tests de Compétence d'Armes si vous ciblez le cavalier et que vous êtes plus petit que la monture. »* Cette pénalité de -10 est explicitement limitée au **combat rapproché** (mêlée) ; elle ne s'applique pas au tir.
+**3. Cibler le cavalier ou la monture (l.181).** Quand on attaque un Personnage qui est sur une monture, l'attaquant **choisit** de toucher soit le cavalier, soit la monture. *« Si vous êtes en combat rapproché, vous subissez une pénalité de -10 à vos Tests de Compétence d'Armes si vous ciblez le cavalier et que vous êtes plus petit que la monture. »* Cette pénalité de -10 est explicitement limitée au **combat rapproché** (mêlée) ; elle ne s'applique pas au tir.
 
-**4. La monture peut agir (l.221).** *« Une monture sans le Trait Nerveux est un autre combattant à part entière, et peut effectuer sa propre Action pour attaquer les cibles Engagées. »* Une monture **possédant** le Trait Nerveux ne peut donc pas mener sa propre Action d'attaque (sauf entraînement la rendant insensible, cf. *Guerre/Magie* en aptitude des animaux).
+**4. La monture peut agir (l.182).** *« Une monture sans le Trait Nerveux est un autre combattant à part entière, et peut effectuer sa propre Action pour attaquer les cibles Engagées. »* Une monture **possédant** le Trait Nerveux ne peut donc pas mener sa propre Action d'attaque (sauf entraînement la rendant insensible, cf. *Guerre/Magie* en aptitude des animaux).
 
-**5. Charge — Force et Taille de la monture pour les Dégâts (l.223).** *« Lorsque vous Chargez, vous pouvez utiliser la Force et la règle de Taille de votre monture pour calculer les Dégâts. »* On substitue la **Force (Bonus de Force)** et la **catégorie de Taille** de la monture à celles du cavalier pour le calcul des Dégâts (le toucher reste la CC du cavalier). La « règle de Taille » désignée est *Modificateurs de Taille en combat* (LDB 85, transcrite ci-dessous).
+**5. Charge — Force et Taille de la monture pour les Dégâts (l.183).** *« Lorsque vous Chargez, vous pouvez utiliser la Force et la règle de Taille de votre monture pour calculer les Dégâts. »* On substitue la **Force (Bonus de Force)** et la **catégorie de Taille** de la monture à celles du cavalier pour le calcul des Dégâts (le toucher reste la CC du cavalier). La « règle de Taille » désignée est *Modificateurs de Taille en combat* (LDB 85, transcrite ci-dessous).
 
-**6. Esquive à cheval -20 (l.225).** *« Lorsque vous chevauchez, vous subissez une pénalité de -20 pour toute tentative d'utiliser la Compétence Esquive, sauf si vous possédez le Talent Acrobaties équestres. »*
+**6. Esquive à cheval -20 (l.184).** *« Lorsque vous chevauchez, vous subissez une pénalité de -20 pour toute tentative d'utiliser la Compétence Esquive, sauf si vous possédez le Talent Acrobaties équestres. »*
 
 ### Talents liés (LDB 10)
 
@@ -1323,7 +1323,7 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 | Énorme | Jusqu'à 6 m | Griffon, vouivre, manticore | +40 |
 | Monstrueuse | + de 6 m | Dragon, géant, Prince démon | +60 |
 
-*(LDB 14 l.142-165 — le Mod. de la colonne est le modificateur de toucher lié à la Taille de la cible.)*
+*(LDB 14 l.118-131 — le Mod. de la colonne est le modificateur de toucher lié à la Taille de la cible.)*
 
 ### Règle de Taille pour la Charge montée — Modificateurs de Taille en combat (LDB 85 l.357-362)
 
@@ -1333,20 +1333,20 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 - Toutes les frappes réussies activent la règle optionnelle **Frappe Mortelle** (même si la cible survit) (LDB 85 l.362).
 
 **Sources RAW** :
-- `LDB 14 l.204-205` — définition : le Combat monté = règles de Combat normales + 6 ajouts ; chevaucher confère un bonus au cavalier.
-- `LDB 14 l.207` — Mouvement = celui de la monture ; Tests de Chevaucher pour course/saut/similaires.
-- `LDB 14 l.209` — +20 au toucher pour le cavalier contre une cible plus petite que sa monture (toute attaque).
-- `LDB 14 l.211` — choix cible (cavalier ou monture) ; -10 en mêlée pour viser le cavalier si l'attaquant est plus petit que la monture.
-- `LDB 14 l.213` — la monture sans le Trait Nerveux est un combattant à part qui peut attaquer les cibles Engagées.
-- `LDB 14 l.215` — Charge : Force et règle de Taille de la monture pour les Dégâts.
-- `LDB 14 l.217` — Esquive à cheval : -20 sauf Talent Acrobaties équestres.
-- `LDB 14 l.142-165` — table des sept catégories de Taille (référence des ajouts 2/3 et de la charge).
+- `LDB 14 l.175-177` — définition : le Combat monté = règles de Combat normales + 6 ajouts ; chevaucher confère un bonus au cavalier.
+- `LDB 14 l.179` — Mouvement = celui de la monture ; Tests de Chevaucher pour course/saut/similaires.
+- `LDB 14 l.180` — +20 au toucher pour le cavalier contre une cible plus petite que sa monture (toute attaque).
+- `LDB 14 l.181` — choix cible (cavalier ou monture) ; -10 en mêlée pour viser le cavalier si l'attaquant est plus petit que la monture.
+- `LDB 14 l.182` — la monture sans le Trait Nerveux est un combattant à part qui peut attaquer les cibles Engagées.
+- `LDB 14 l.183` — Charge : Force et règle de Taille de la monture pour les Dégâts.
+- `LDB 14 l.184` — Esquive à cheval : -20 sauf Talent Acrobaties équestres.
+- `LDB 14 l.118-131` — table des sept catégories de Taille (référence des ajouts 2/3 et de la charge).
 - `LDB 10 l.72-74` — Talent Acrobaties équestres (Esquive non modifiée à cheval + Mouvement en début de Round).
 - `LDB 10 l.151-154` — Talent Cavalier émérite (faire agir la monture sans Test de Chevaucher).
 - `LDB 85 l.248-249` — Trait Nerveux (+3 États Brisé sur magie/bruits forts).
 - `LDB 85 l.110` — aptitudes Guerre/Magie qui font ignorer le Trait Nerveux.
 - `LDB 85 l.357-362` — Modificateurs de Taille en combat (Dévastatrice/Percutante, multiplicateur de Dégâts ×N, Frappe Mortelle) = la « règle de Taille » de la charge montée.
-- `LDB 15 l.1` — note : la plupart des montures ont un Trait de Taille différent des PJ → peuvent susciter Peur/Terreur et donner d'autres avantages en combat.
+- `LDB 14 l.187` — note : la plupart des montures ont un Trait de Taille différent des PJ → peuvent susciter Peur/Terreur et donner d'autres avantages en combat.
 
 > « Une monture sans le Trait Nerveux est un autre combattant à part entière, et peut effectuer sa propre Action pour attaquer les cibles _Engagées_. » — `LDB 14 l.182`
 
@@ -1356,8 +1356,7 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.72-74, l.151-154) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `MedicState`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `tissage`, `surgeryNext`, +26 — `src/data/flow-stakes.json`, `src/data/talents.json`, `src/i18n/messages/fr.ts`, `src/state/medicFlow.ts`, `src/state/pendings.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
-- `LDB 14` (l.142-165, l.182, l.183, l.204-205, l.207, l.209, l.211, l.213, l.215, l.217) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `setGrapple`, `isControlledMount`, `RunModal`, `scatter`, `combat-deux-armes`, `combatOrder`, +70 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +34 fichiers
-- `LDB 15` (l.1) → `run-roll`, `disengage-choice`, `disengage-esquive`, `disengage-fuir`, `climb-test`, `course`, `desengagement`, `fuite` — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`
+- `LDB 14` (l.118-131, l.175-177, l.179, l.180, l.181, l.182, l.183, l.184, l.187) → `advantageCapFor`, `isControlledMount`, `RunModal`, `combat-deux-armes`, `combatOrder`, `empetre`, `grappleTierMod`, `main-secondaire`, `grappleEnvMod`, `isPassengerInBattle`, +46 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +25 fichiers
 - `LDB 85` (l.110, l.248-250, l.357-362) → `morsure`, `cannotStopOn`, `weaponFromTrait`, `traitEntrySchema`, `woundsForSize`, `SpawnExtras`, `empetre`, `etreinte-glaciale`, `availableAttacks`, `taille-modificateurs-en-combat`, +76 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +11 fichiers
 
 ---
@@ -1368,11 +1367,11 @@ L'**Avantage** représente votre **vitesse en combat** : il se gagne lorsqu'on s
 
 ### Bénéfices — ce que rapporte chaque pion
 
-Chaque pion d'Avantage ajoute **+10 à un Test de Combat ou de Psychologie approprié**. C'est cumulatif et non plafonné par la limite habituelle des modificateurs de Difficulté : 5 pions = **+50** à tous les Tests pour toucher, pour se défendre, et pour résister à l'influence des autres (Psychologie).
+Chaque pion d'Avantage ajoute **+10 à un Test de Combat ou de Psychologie approprié**. C'est cumulatif : 5 pions = **+50** à tous les Tests pour toucher, pour se défendre, et pour résister à l'influence des autres (Psychologie).
 
-> « Chaque Avantage ajoute +10 à un Test de Combat ou de Psychologie appropriés (voir Psychologie à la page 190). De ce fait, si vous disposez de 5 pions Avantage, vous obtenez un impressionnant +50 à tous les Tests pour toucher, vous défendre, et résister à l'influence des autres. » — `LDB 15 l.37`
+> « Chaque Avantage ajoute +10 à un Test de Combat ou de Psychologie appropriés (voir Psychologie à la page 190). De ce fait, si vous disposez de 5 pions Avantage, vous obtenez un impressionnant +50 à tous les Tests pour toucher, vous défendre, et résister à l'influence des autres. » — `LDB 14 l.215`
 
-### Obtenir un Avantage — sources (LDB 15)
+### Obtenir un Avantage — sources (`LDB 14 l.200-211`)
 
 On gagne un Avantage à chaque fois qu'on **remporte un Test opposé en combat**, qu'on **attaque depuis une position conférant un avantage tactique**, ou qu'on est **plein d'espoir**. Exemples chiffrés (non exhaustifs) :
 
@@ -1387,7 +1386,7 @@ On gagne un Avantage à chaque fois qu'on **remporte un Test opposé en combat**
 
 De nombreux **Talents** (ch.4) permettent aussi d'obtenir un Avantage.
 
-### Perdre un Avantage — conditions (LDB 15)
+### Perdre un Avantage — conditions (`LDB 14 l.217-221`)
 
 - **Échec à un Test opposé en combat** → perte automatique de **TOUS** vos Avantages.
 - **Perdre une Blessure** (subir des dégâts qui retirent au moins 1 PB) → perte automatique de **TOUS** vos Avantages.
@@ -1397,9 +1396,9 @@ De nombreux **Talents** (ch.4) permettent aussi d'obtenir un Avantage.
 - Un Avantage peut aussi être **sacrifié** (dépensé) pour **se désengager** d'un combat et s'enfuir (voir *Se désengager*, p.165).
 - Certaines **Compétences et Talents** peuvent faire perdre un Avantage, ou le **transférer** à un autre Personnage.
 
-> « Si vous échouez à un Test opposé au cours d'un combat, ou perdez une Blessure, vous perdez automatiquement tous vos Avantages. Vous perdez également vos avantages lorsque le combat s'arrête. Enfin, si vous n'avez pas gagné d'Avantage ce Round-ci, ou si vous finissez le Round en infériorité numérique, vous perdez 1 Avantage. » — `LDB 15 l.40`
+> « Si vous échouez à un Test opposé au cours d'un combat, ou perdez une Blessure, vous perdez automatiquement tous vos Avantages. Vous perdez également vos avantages lorsque le combat s'arrête. Enfin, si vous n'avez pas gagné d'Avantage ce Round-ci, ou si vous finissez le Round en infériorité numérique, vous perdez 1 Avantage. » — `LDB 14 l.219`
 
-### Règle optionnelle — Limiter les Avantages (LDB 15)
+### Règle optionnelle — Limiter les Avantages (`LDB 14 l.193-198`)
 
 Pour un combat plus contrôlé (un Avantage pouvant renverser brusquement une bataille), deux plafonds optionnels au choix :
 
@@ -1417,23 +1416,23 @@ Le Trait de créature **Redoutable** rend une créature « particulièrement dan
 Le **Bras de fer** est un Test opposé **étendu** de **Force Intermédiaire (+0)** (à chaque tour, on ajoute son Bonus de Force au nombre de DR ; premier à atteindre **≥ 10 DR** = vainqueur ; tous les *BE* tours sans vainqueur → +1 État *Exténué*, récupérable après 5 min de repos). Mécaniquement, **le gagnant de chaque tour gagne +1 Avantage**, utilisable dans cette partie « en suivant les règles normales » d'Avantage — c'est-à-dire le même Avantage que celui du combat standard, +10 par pion.
 
 **Sources RAW** :
-- `LDB 15 l.2-2` — définition : l'Avantage = votre vitesse en combat ; obtenu en se montrant plus malin / en dominant / en battant ; représenté par jetons/compteurs/pions ou une feuille.
-- `LDB 15 l.2-2` — règle optionnelle « Limiter les Avantages » : (1) ne peut dépasser le **Bonus d'Initiative** du Personnage ; (2) plafond fixe préétabli (2, 4 ou plus ; 10 conseillé, comptable au 1d10).
-- `LDB 15 l.3-4` — « Obtenir Un Avantage » : Test opposé gagné / position tactique / plein d'espoir ; Surprise +1, Charge +1, Évaluer +1, Victoire (PNJ important au moins +1, némésis jusqu'à +2), Gagnant (Test opposé en combat) +1, Prendre le dessus (blesser sans Test opposé) +1 ; Talents nombreux.
-- `LDB 15 l.4-4` — « Bénéfices » : **+10 par pion** à un Test de Combat ou de Psychologie approprié ; exemple 5 pions = +50 (toucher / se défendre / résister à l'influence).
-- `LDB 15 l.4-5` — « Perdre Un Avantage » : Test opposé échoué OU perte d'une Blessure → tous perdus ; fin de combat → tous perdus ; aucun gagné ce Round OU infériorité numérique en fin de Round → −1 ; sacrifice possible pour se désengager ; Compétences/Talents peuvent en retirer ou transférer.
+- `LDB 14 l.189-191` — définition : l'Avantage = votre vitesse en combat ; obtenu en se montrant plus malin / en dominant / en battant ; représenté par jetons/compteurs/pions ou une feuille.
+- `LDB 14 l.193-198` — règle optionnelle « Limiter les Avantages » : (1) ne peut dépasser le **Bonus d'Initiative** du Personnage ; (2) plafond fixe préétabli (2, 4 ou plus ; 10 conseillé, comptable au 1d10).
+- `LDB 14 l.200-211` — « Obtenir Un Avantage » : Test opposé gagné / position tactique / plein d'espoir ; Surprise +1, Charge +1, Évaluer +1, Victoire (PNJ important au moins +1, némésis jusqu'à +2), Gagnant (Test opposé en combat) +1, Prendre le dessus (blesser sans Test opposé) +1 ; Talents nombreux.
+- `LDB 14 l.213-215` — « Les bénéfices de l'Avantage » : **+10 par pion** à un Test de Combat ou de Psychologie approprié ; exemple 5 pions = +50 (toucher / se défendre / résister à l'influence).
+- `LDB 14 l.217-221` — « Perdre Un Avantage » : Test opposé échoué OU perte d'une Blessure → tous perdus ; fin de combat → tous perdus ; aucun gagné ce Round OU infériorité numérique en fin de Round → −1 ; sacrifice possible pour se désengager ; Compétences/Talents peuvent en retirer ou transférer.
 - `ZI 14 l.1016-1017` — Trait *Redoutable* : minimum d'Avantage permanent par Indice → +10/niveau à la plupart des actions ; recommandation d'usage = activer les capacités spéciales (Vomissement, Souffle) plutôt que frapper plus fort.
 - `ZI 14 l.1024-1026` — précisions Redoutable : si le monstre a plus de niveaux que de Personnages, diminuer/supprimer ; **regain au début de son tour** jusqu'à l'Indice (défaut 1) ; **pas de gain** si *Empêtré*, *Inconscient* ou *Surpris*.
 - `NADJ 16 l.34` — Bras de fer : Test opposé étendu de Force ; le gagnant de chaque tour gagne **+1 Avantage** utilisable selon les règles normales d'Avantage.
 
-> « L'Avantage représente votre vitesse en combat, et vous l'acquérez lorsque vous vous montrez plus malin que vos adversaires, que vous les dominez ou les battez. » — `LDB 15 l.10`
+> « L'Avantage représente votre vitesse en combat, et vous l'acquérez lorsque vous vous montrez plus malin que vos adversaires, que vous les dominez ou les battez. » — `LDB 14 l.191`
 
 > « Le gagnant de chaque tour gagne +1 Avantage, pouvant être utilisé dans le cadre de cette partie de bras de fer, en suivant les règles normales. » — `NADJ 16 l.34`
 
 **Voir aussi** : Charge et déplacement en combat ; Se désengager (Esquive / Fuir) ; Surprise et embuscade ; Tests opposés et Degrés de Réussite ; Psychologie (Peur, Terreur, Calme) ; Traits de créature (Redoutable, Rage, Instable).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.2, l.3-5, l.10, l.37, l.40) → `METRES_PER_LEVEL`, `resolveRun`, `RunModal`, `gainAdvantage`, `DisengageModal`, `run-roll`, `sizeFootprintSide`, `disengage-choice`, `verticalTiles`, `disengage-esquive`, +19 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, +15 fichiers
+- `LDB 14` (l.189-191, l.193-198, l.200-211, l.213-215, l.217-221) → `advantageCap`, `advantageCapFor`, `gainAdvantage`, `isControlledMount`, `RunModal`, `combat-deux-armes`, `combatOrder`, `empetre`, `main-secondaire`, `ActiveFrame`, +33 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/advantage.ts`, `src/engine/combat.ts`, +17 fichiers
 - `ZI 14` (l.1016-1017, l.1024-1026) → `fouissement` — `src/data/traits.json`
 - `NADJ 16` (l.34) → `SequenceRoundOps`, `SequenceParams`, `elfe`, `SequenceVolleyRow`, `tavern-game`, `bete-tailleurs`, `SequenceSide`, `boules`, `registerSequenceThrow`, `sequenceRoundOps`, +4 — `src/data/combat-stakes.json`, `src/data/tavernGames.json`, `src/engine/sequenceVocab.ts`, `src/state/sequenceContract.ts`, `src/state/sequenceCore.ts`, `src/state/tavernFlow.ts`
 
@@ -1513,7 +1512,7 @@ On observe que **Marche = 2 × M mètres** (soit M cases) et **Course = 4 × M m
 **Voir aussi** : Avantage (gain/perte, +10/pion) ; Désengagement (Avantage / Esquip-CC) ; Fuite (attaque gratuite, +20 dans le dos, Calme→Brisé) ; Escalade / Saut / Chute ; États (À Terre, Engagé) ; Poursuites (Distance d10) ; Charge montée et Taille de la monture.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.3, l.12, l.15-16, l.18-32, l.34-37, l.39-42) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `gainAdvantage`, `DisengageModal`, `run-roll`, `sizeFootprintSide`, `disengage-choice`, `verticalTiles`, +22 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, +18 fichiers
+- `LDB 15` (l.3, l.12, l.15-16, l.18-32, l.34-37, l.39-42) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `DisengageModal`, `run-roll`, `sizeFootprintSide`, `disengage-choice`, `verticalTiles`, `disengage-esquive`, +21 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, `src/engine/engagement.ts`, +17 fichiers
 
 ---
 
@@ -1601,7 +1600,7 @@ La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir.
 **Voir aussi** : Avantage (combat) ; Engagement et portée de mêlée ; Test opposé et DR ; Compétence Esquive ; Psychologie — Terreur ; État Brisé ; Charge ; Course.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.18-32, l.44-49, l.60-69) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `fall-choice`, `RunModal`, `reachTiles`, `gainAdvantage`, `DisengageModal`, `planClimb`, `planJump`, +63 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, +29 fichiers
+- `LDB 15` (l.18-32, l.44-49, l.60-69) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `fall-choice`, `RunModal`, `reachTiles`, `DisengageModal`, `planClimb`, `planJump`, `fall-roll`, +62 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +28 fichiers
 
 ---
 
@@ -2317,7 +2316,7 @@ Les groupes d'armes à distance et leurs spécialisations conditionnent l'usage 
 **Voir aussi** : Bandes de portée et modificateurs de tir (Bout portant +60 / Courte +40 / Moyenne +0 / Longue -10 / Extrême -30) ; Engagement et déplacement (1 case = 2 m) ; Atouts et Défauts d'arme ; Groupes d'armes et spécialisations ; Maladresses au combat.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.20-102, l.106, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-201, l.203-215, l.297) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `REACH_OPTIONS`, `reachTiles`, `AuContactModal`, `moneySchema`, `bagarre`, `REACH_VARIABLE`, `schema`, +136 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +34 fichiers
+- `LDB 62` (l.20-102, l.106, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-201, l.203-215, l.297) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `REACH_OPTIONS`, `reachTiles`, `AuContactModal`, `moneySchema`, `bagarre`, `REACH_VARIABLE`, `schema`, +137 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +35 fichiers
 
 ---
 
@@ -2500,7 +2499,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 **Voir aussi** : Tests et Degrés de Réussite (DR) ; Combat (localisation, dé inversé, Critiques) ; Maladresses ; États (Brisé, Sonné, Empêtré, À Terre, Hémorragique, En flammes, Empoisonné, Surpris, Exténué) ; Psychologie (Peur, Terreur, Frénésie) ; Traits — défense, résilience, créatures (Éthéré, Instable, Bestial) ; Talents (Coup puissant, Frappe assommante, Frappe blessante, Tireur d'élite, Tireur embusqué, Tir rapide) ; Armes (stats : Allonge, Dégâts, Groupes) ; Armures (PA, Dégâts d'armure) ; Qualités et Défauts d'objet (Solide, Incassable, Pratique, Peu Fiable) ; Objets magiques / Enchantements (génération ADE II 4).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.218-304) → `a-enroulement`, `woundsFromHit`, `a-poudre-noire`, `TraceRow`, `isShieldItem`, `a-repetition`, `protectrice`, `availableHealModes`, `bypassedAP`, `weaponSchema`, +102 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/trappings.ts`, +33 fichiers
+- `LDB 62` (l.218-304) → `a-enroulement`, `woundsFromHit`, `a-poudre-noire`, `TraceRow`, `isShieldItem`, `a-repetition`, `protectrice`, `schema`, `availableHealModes`, `bypassedAP`, +104 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +35 fichiers
 - `LDB 63` (l.2-6, l.11, l.14) → `applyAttackResult` — `src/state/combatFlow.ts`
 - `ADE II 2` (l.608-658) → `attackModifiers`, `massue-ogre`, `protectrice`, `devastatrice`, `recharge`, `immobilisante`, `empaleuse`, `a-explosion`, `perforante`, `impenetrable` — `src/data/trappings.json`, `src/engine/combat.ts`
 - `ADE II 4` (l.212, l.214, l.215, l.216, l.218-253) → `deroutante` — `src/data/qualities.json`
@@ -6212,16 +6211,11 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - LDB 14 l.119-124 — Le texte RAW illustre la combinaison pénalité+bonus avec « neige jusqu'à la taille (Très Difficile −30) + cible À Terre » et appelle ce dernier modificateur « Facile (+20) » dans l'exemple, alors que la table (LDB 14 l.91) le classe sous Accessible (+20). Le markdown signale correctement cette incohérence RAW avec une note entre astérisques — la note est fidèle. Aucune erreur du markdown ici, mais le résumé de l'exemple (-30 + +20 = -10) est exact RAW.
 
 ### Deux armes, Dispersion et Mains nues ⚠
-- Dispersion — diagramme 3×3 non vérifiable depuis le fichier source converti : LDB 14 l.182 donne `||1<br>2<br>3<br>4<br>T<br>5<br>6<br>7<br>8|` (artefact de conversion PDF, colonne unique), pas une grille 3×3. Le document reconstruit la disposition « 1 2 3 / 4 T 5 / 6 7 8 » comme interprétation du livre imprimé — fidèle à l'esprit mais non confirmée par le fichier .md source. Signaler comme incertitude (l'original imprimé a bien une grille, mais la correspondance exacte chiffre↔direction ne peut pas être auditée ici).
-- Empoignade — le mot « gratuitement » (« briser l'Empoignade gratuitement si l'on a un Avantage supérieur ») n'apparaît pas dans LDB 14 l.191, qui dit simplement « vous pouvez briser l'Empoignade si vous disposez d'un Avantage supérieur à celui de votre adversaire ». Ajout éditorial mineur, pas une invention de règle.
+- Dispersion — diagramme 3×3 CONFIRMÉ au fichier source : `LDB 14 l.146-149` porte la grille markdown `| 1 | 2 | 3 |` / `| 4 | T | 5 |` / `| 6 | 7 | 8 |`. La disposition transcrite par le topic est celle du fichier source, et le topic n'ajoute aucune correspondance chiffre↔direction que la grille ne porte pas.
 
 ### Empoignade ⚠
 - LDB 16 l.86-87 cité pour la règle de retrait de l'Empêtré — dans le fichier .md (artefact de conversion PDF), le texte du retrait (Test opposé de Force, +1/DR) est à la ligne 61, pas aux lignes 82-85 ; les lignes 82-85 ne contiennent que l'en-tête et la pénalité de déplacement. La règle elle-même est correctement transcrite, mais le numéro de ligne est incomplet.
-- Section 'Option Compétences' : l'article dit « un autre Test qu'un Test opposé de Force » alors que la source (l.209-210) dit simplement « un autre Test qu'un Test opposé » — le « de Force » est un ajout éditorial mineur, non présent dans le RAW à cet endroit précis. Pas d'erreur factuelle, mais légère surspécification.
-- Le mot « gratuitement » pour nommer la première option (briser sans Test) n'apparaît pas dans le RAW (l.199) — c'est une étiquette éditoriale inférée correctement du contexte (absence de Test), non une invention de règle.
-
-### Avantage : gain, bénéfices et perte ❌
-- INVENTION (bénéfices) : le markdown affirme que le bonus d'Avantage est « non plafonné par la limite habituelle des modificateurs de Difficulté ». La source LDB 15 l.4-4 dit simplement « Chaque Avantage ajoute +10 à un Test de Combat ou de Psychologie appropriés » — aucune mention d'une exemption au plafond des modificateurs de Difficulté. Cette précision est absente du RAW et constitue une invention.
+- Section 'Option Compétences' : l'article dit « un autre Test qu'un Test opposé de Force » alors que la source (l.173) dit simplement « un autre Test qu'un Test opposé » — le « de Force » est un ajout éditorial mineur, non présent dans le RAW à cet endroit précis. Pas d'erreur factuelle, mais légère surspécification.
 
 ### Déplacement en combat : Marche, Course, Charge, grille ⚠
 - MINEUR — Clampage à 0 de bonusCases (movement.ts l.23) non sourcé : le RAW dit « Mouvement de Course + DR mètres » et donne un exemple DR=−2 → 14m (non nul). Le livre ne prévoit pas de plancher à 0 pour la distance de Course. Le clampage est raisonnable mais c'est une invention. (LDB 15 l.40-42)

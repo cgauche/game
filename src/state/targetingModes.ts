@@ -429,7 +429,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
     bus.emit(EVT.SCENE_DIRTY);
     return;
   }
-  // Tap 2 : COMMIT. Choix cavalier/monture (LDB 14 l.219) AVANT toute résolution — on n'ouvre la
+  // Tap 2 : COMMIT. Choix cavalier/monture (LDB 14 l.181) AVANT toute résolution — on n'ouvre la
   // modale qu'une fois (skipMountChoice évite la ré-entrée après le choix).
   if (!opts?.skipMountChoice) {
     const rider = target.mountId ? target : inBattleId(battle, target.riderId);

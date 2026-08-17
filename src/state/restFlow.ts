@@ -37,7 +37,7 @@ import { rule } from '../engine/policy';
 import { type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
 import type { DeferredUpkeepTest } from './upkeep';
-import { weatherExposure, exposureTestCount, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureCoatMods, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
+import { weatherExposure, exposureTestCount, expireOnRespite, exposureShelterFromTent, applyExposureFailure, exposureCoatMods, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
@@ -505,7 +505,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   const upkeepCount = upkeep.length;
   // `party` RAFRAÎCHI : `runDailyUpkeep` a pu débiter les gages (`tickCampaignVesselWeek` → clone
   // `withBourseMoney` du/des héros ponctionnés) — toute la suite (mutations eager de récupération/
-  // cauchemars, `expireExposureEffects`) doit opérer sur ces réfs à jour, pas sur celles PÉRIMÉES
+  // cauchemars, `expireOnRespite`) doit opérer sur ces réfs à jour, pas sur celles PÉRIMÉES
   // d'avant l'entretien (sinon perdues au `set({party:[...get().party]})` de clôture, l.551).
   party = get().party;
 
@@ -561,7 +561,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
         if (count > 0) steps.push(...buildExposureBand(party, camperIds, count));
       }
     }
-    for (const h of campers) expireExposureEffects(h, get().gameTime + Number(rule('exposure-expire-hours')) * 60); // dissipation maison
+    for (const h of campers) expireOnRespite(h, get().gameTime + Number(rule('exposure-expire-hours')) * 60); // dissipation maison
   }
 
   // Récupération + cauchemars : un jet = une étape ; sans jet (PB plein/affamé/instable) → eager.

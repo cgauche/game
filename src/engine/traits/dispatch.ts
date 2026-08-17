@@ -352,7 +352,7 @@ export function isTerritorial(traits: TraitList | undefined): boolean {
   return traitCapability(traits, 'territorial');
 }
 
-/** Monture ombrageuse (Nerveux, LDB 14 l.221) : MONTÉE, ne prend pas sa propre Action d'attaque. */
+/** Monture ombrageuse (Nerveux, LDB 14 l.182) : MONTÉE, ne prend pas sa propre Action d'attaque. */
 export function isSkittishMount(traits: TraitList | undefined): boolean {
   return traitCapability(traits, 'skittishMount');
 }

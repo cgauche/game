@@ -6,7 +6,7 @@
 > Tolérance ligne = ±20.
 
 **Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 0 chapitre(s) couverts avec des lignes non pinées. Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
-**Sens A — code → Atlas (14 autres livres)** : 4 chapitre(s)-livre cités par le code & absents de l'Atlas · 10 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
+**Sens A — code → Atlas (14 autres livres)** : 5 chapitre(s)-livre cités par le code & absents de l'Atlas · 10 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
 **Sens B — Atlas → code (LDB)** : 3 marqueur(s) « (non implémenté) » · 1 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 12 · 11 crédités par une source folio de `src/data`).
 
 ## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
@@ -27,23 +27,29 @@ _Aucune._
 | EDOC | 0 | 1 | 0 |
 | MDG | 1 | 1 | 0 |
 | MSRC | 0 | 2 | 0 |
-| NADJ | 1 | 1 | 0 |
+| NADJ | 2 | 1 | 0 |
 | PDT | 2 | 0 | 0 |
 | VDM | 0 | 1 | 0 |
 
 ## A1-AUTRES — Chapitres appelés par le CODE (autres livres), ABSENTS de l'Atlas (trous durs)
 
 ### MDG 3 — 5 réf(s) code, 0 dans l'Atlas
-- `src/state/restFlow.ts:67` (l.71) — /** À bord du navire de campagne (hamacs/quartiers, MDG 03 l.71 · 09 l.87) — couchage ABRITÉ (pas
-- `src/state/restFlow.ts:624` (l.71) — if (places.bord) out.push('bord'); // à bord = hamacs (MDG 03 l.71) ; par défaut si offert
-- `src/state/riverVoyageFlow.ts:1039` (l.71) — // Sur la rivière on peut mouiller le long de la berge : coucher À BORD (hamacs, MDG 03 l.71) offert
-- `src/state/seaActivities.ts:243` (l.71) — // dort à bord (hamacs, MDG 03 l.71) : couchage unique et abrité.
+- `src/state/restFlow.ts:68` (l.71) — /** À bord du navire de campagne (hamacs/quartiers, MDG 03 l.71 · 09 l.87) — couchage ABRITÉ (pas
+- `src/state/restFlow.ts:632` (l.71) — if (places.bord) out.push('bord'); // à bord = hamacs (MDG 03 l.71) ; par défaut si offert
+- `src/state/riverVoyageFlow.ts:1073` (l.71) — // Sur la rivière on peut mouiller le long de la berge : coucher À BORD (hamacs, MDG 03 l.71) offert
+- `src/state/seaActivities.ts:246` (l.71) — // dort à bord (hamacs, MDG 03 l.71) : couchage unique et abrité.
 
 ### NADJ 4 — 6 réf(s) code, 0 dans l'Atlas
 - `src/state/scene.ts:102` (l.72) — *  Le patron est AUTHORÉ dans la source, pas inventé : `NADJ 04 l.72` — « Elle jouera une partie de
 - `src/state/tavern-npc-a-fiche.test.ts:6` (l.72) — *  · `NADJ 04 l.72` — « Elle jouera une partie de L'Impératrice écarlate avec quiconque lui propose,
-- `src/state/tavern-npc-a-fiche.test.ts:94` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
-- `src/state/tavernFlow.ts:76` (l.72) — *    valeur recopiée à la main. C'est la forme des adversaires AUTHORÉS (`NADJ 04 l.72`, `EDO 01 l.200`) ;
+- `src/state/tavern-npc-a-fiche.test.ts:96` (l.72) — it('la SCÈNE décide : `tavernGame` sur l’entité déclare le jeu et la mise de départ (patron `NADJ 04 l.72`)', () => {
+- `src/state/tavernFlow.ts:79` (l.72) — *    valeur recopiée à la main. C'est la forme des adversaires AUTHORÉS (`NADJ 04 l.72`, `EDO 01 l.200`) ;
+
+### NADJ 14 — 5 réf(s) code, 0 dans l'Atlas
+- `src/data/index.ts:741` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
+- `src/data/reglesOptionnelles.json:332` (l.5) — "ref": "NADJ 14 l.5",
+- `src/data/schemas/defs/species.ts:54` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
+- `src/engine/creation.test.ts:127` (l.5) — describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
 
 ### PDT 8 — 1 réf(s) code, 0 dans l'Atlas
 - `src/ui/mono-stake-ratchet.test.ts:67` (l.370) — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
@@ -54,9 +60,9 @@ _Aucune._
 ## A2-AUTRES — Lignes appelées par le CODE (autres livres) non pinées par l'Atlas
 
 ### MSRC 12 — 5/11 ligne(s) code hors couverture
-- l.85 — `src/data/index.ts:2262` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.85 — `src/data/index.ts:2291` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.107 — `src/engine/naval-traits.test.ts:297` — it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (MSRC 12 l.107/109)', () => {
-- l.111 — `src/data/index.ts:2262` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.111 — `src/data/index.ts:2291` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.117 — `src/engine/naval-traits.test.ts:300` — it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
 - l.137 — `src/data/schemas/defs/sea-weather.ts:106` — /** Gréement de course (MSRC 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
 
@@ -66,35 +72,35 @@ _Aucune._
 - l.46 — `src/state/interlude-activities.test.ts:300` — // ── Identifier un artefact magique (ADE II 4 l.46-59) ─────────────────────────────────────
 - l.50 — `src/state/interlude-activities.test.ts:359` — it('Identifier : Échec (−2 à −3) → confond avec un objet similaire, AUCUNE fausse Particularité (ADE II 4 l.50)', () => {
 
-### MDG 15 — 3/39 ligne(s) code hors couverture
-- l.461 — `src/data/naval-ports.test.ts:45` — it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
-- l.468 — `src/data/naval-ports.test.ts:65` — it('Kirkjugarður Langskipa : production armes/produits-de-luxe, sans surplus ni demande (MDG 15 l.468-469, folio 138)', () => {
-- l.474 — `src/data/naval-ports.test.ts:72` — it('Fjirgard : production produits-de-luxe, Demande armes +1, sans surplus (MDG 15 l.474, folio 138)', () => {
+### MDG 15 — 3/41 ligne(s) code hors couverture
+- l.461 — `src/data/naval-ports.test.ts:47` — it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
+- l.468 — `src/data/naval-ports.test.ts:67` — it('Kirkjugarður Langskipa : production armes/produits-de-luxe, sans surplus ni demande (MDG 15 l.468-469, folio 138)', () => {
+- l.474 — `src/data/naval-ports.test.ts:74` — it('Fjirgard : production produits-de-luxe, Demande armes +1, sans surplus (MDG 15 l.474, folio 138)', () => {
 
 ### VDM 14 — 3/7 ligne(s) code hors couverture
 - l.353 — `src/data/arcanePhenomena.ts:77` — /** Modificateurs de NIVEAU D'INCANTATION apportés par le lieu (`VDM 14 l.353`, l.437, l.489) —
 - l.437 — `src/engine/castingNumber.test.ts:28` — it('Caverne de l’Attache : moitié ARRONDIE À L’INFÉRIEUR, Sorts de la Bête (VDM 14 l.437)', () => {
-- l.489 — `src/data/index.ts:1889` — *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
+- l.489 — `src/data/index.ts:1918` — *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
 
 ### EDO 1 — 2/2 ligne(s) code hors couverture
 - l.200 — `src/scenes/test-scenarios/96-presets-edo.ts:146` — // CHEMIN JOUEUR de « il leur propose une partie » (`EDO 01 l.200`) : sans lui, le rôle
 - l.202 — `src/scenes/test-scenarios/96-presets-edo.ts:198` — // comme une perte de temps de jouer pour moins de 2/- » (`EDO 01 l.202`), soit 24 sous.
 
 ### EDOC 13 — 2/7 ligne(s) code hors couverture
-- l.137 — `src/data/index.ts:948` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
-- l.522 — `src/data/index.ts:1475` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
+- l.137 — `src/data/index.ts:963` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
+- l.522 — `src/data/index.ts:1504` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
 
 ### ADE I 6 — 1/1 ligne(s) code hors couverture
-- l.185 — `src/data/index.ts:948` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
+- l.185 — `src/data/index.ts:963` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
 
 ### EDO 7 — 1/1 ligne(s) code hors couverture
 - l.184 — `src/ui/mono-stake-ratchet.test.ts:67` — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
 
 ### MSRC 5 — 1/1 ligne(s) code hors couverture
-- l.113 — `src/state/riverVoyageFlow.ts:833` — // Réparateur de SUBSTITUTION (`MSRC 5 l.113-117`) : le −10 est DÉJÀ fondu dans la valeur jetée,
+- l.113 — `src/state/riverVoyageFlow.ts:867` — // Réparateur de SUBSTITUTION (`MSRC 5 l.113-117`) : le −10 est DÉJÀ fondu dans la valeur jetée,
 
 ### NADJ 16 — 1/20 ligne(s) code hors couverture
-- l.119 — `src/engine/combat.ts:887` — *  (Middenball NADJ 16 l.119 : « en utilisant les règles habituelles relatives à l'Avantage »).
+- l.119 — `src/engine/combat.ts:888` — *  (Middenball NADJ 16 l.119 : « en utilisant les règles habituelles relatives à l'Avantage »).
 
 ## A3-AUTRES — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d'unité chapitre à couvrir)
 
@@ -102,8 +108,8 @@ _Aucune._
 
 ## B1 — Règles décrites par l'Atlas marquées « (non implémenté) » (LDB)
 
-- **docs\raw\00-index.md** L16 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
-- **docs\raw\00-index.md** L69 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
+- **docs\raw\00-index.md** L33 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
+- **docs\raw\00-index.md** L86 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
 - **docs\raw\bestiaire.md** L382 — **Implémente :** (non implémenté)
 
 ## B2 — Chapitres LDB cités par l'Atlas, jamais référencés dans le code

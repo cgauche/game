@@ -15,7 +15,7 @@ import { partyMoneyTotal, bourseOf, creditBourse } from './bourseFlow';
 import { itemFromTrappingById } from '../engine/items';
 import { bankWithdraw } from './interludeFlow';
 import { traumaById } from '../engine/trauma';
-import { findSkillById } from '../data';
+import { findSkillById, maladies } from '../data';
 import type { Combatant } from '../engine/types';
 import { buildEncounter } from './encounterAuthoring';
 import { emptyScene, type Scene } from './scene';
@@ -1368,6 +1368,13 @@ describe('Tonneau d\'eau contaminé — #460 (MDG 14 l.209, `vessel.waterLitres`
     expect(step!.actorId).toBe(party[0].id);
   });
 
+  it('PARITÉ : les 4 maladies contaminant le tonneau le DÉCLARENT en donnée, et elles seules (MDG 14 l.209)', () => {
+    // « Si un membre d'équipage souffrant de la peste noire, du flux sanglant, de la courante galopante
+    // ou de la vérole urticante boit dans un tonneau d'eau… » — le flux ne nomme plus aucun id.
+    const declares = maladies.filter((m) => m.contaminatesWaterBarrel).map((m) => m.id).sort();
+    expect(declares).toEqual(['courante-galopante', 'flux-sanglant', 'peste-noire', 'verole-urticante']);
+  });
+
   it('SANS tonneau d\'eau suivi (`vessel.waterLitres` absent) → aucune étape de tonneau, même avec un porteur actif', async () => {
     const { setGmSeat } = await import('./netFlow');
     setGmSeat(get, set, 1);
@@ -1759,6 +1766,22 @@ describe('Exposition en mer — les pénalités subies s’échoient à 24 h, ja
     expect(exposureScales()).not.toContain('permanent');
     expect(exposureScales()).toHaveLength(subies); // les pénalités existent toujours, mais horlogées
   });
+
+  it('la règle ÉDITABLE `exposure-expire-hours` gouverne AUSSI le répit de MER (48 h ⇒ échéance à 48 h)', () => {
+    // Le chemin de mer portait 24 h EN DUR : régler la règle sur 48 h laissait la mer court-circuiter le
+    // réglage du joueur. Une seule règle pour les deux répits (camp `restFlow` ET jour de mer).
+    setRule('exposure-expire-hours', 48);
+    seedBattleRng(3);
+    set({ party: get().party.map((h) => ({ ...h, characteristics: { ...h.characteristics, endurance: 1 } })) } as never);
+    const t0 = get().gameTime;
+    seaDay('glaciale');
+    const echeances = get().party
+      .flatMap((h) => (h.activeEffects ?? []).filter((e) => String(e.effectId).startsWith('exposition')))
+      .map((e) => (e.duration as { scale: string; until?: number }).until);
+    expect(echeances.length).toBeGreaterThan(0);
+    for (const u of echeances) expect(u).toBeGreaterThanOrEqual(t0 + 48 * 60);
+  });
+  afterEach(() => resetRule('exposure-expire-hours'));
 });
 
 /**

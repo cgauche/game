@@ -797,7 +797,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.battle!.order[st.battle!.turn]).toBe(E.id); // tour SUSPENDU sur l'attaquant (non avancé)
   });
 
-  it('attaque IA MONTÉE : le jet figé de la modale de défense porte le +20 Combat monté (LDB 14 l.217)', () => {
+  it('attaque IA MONTÉE : le jet figé de la modale de défense porte le +20 Combat monté (LDB 14 l.180)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(5);
@@ -966,7 +966,7 @@ describe('Boucle de jeu (store)', () => {
     expect(useGame.getState().pendingAttack).not.toBeNull(); // dé lancé → engagé
   });
 
-  it('Combat monté — cliquer un couple ouvre le choix cavalier/monture puis cible l’id choisi (LDB 14 l.219)', () => {
+  it('Combat monté — cliquer un couple ouvre le choix cavalier/monture puis cible l’id choisi (LDB 14 l.181)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);

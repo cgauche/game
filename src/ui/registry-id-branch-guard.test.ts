@@ -44,7 +44,10 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/ui/ → ..
  * `SpeciesData.gatedByRule`), `combat.ts` et `draft.ts` (tables `Record<union fermée, …>`), puis
  * 54 → 50 (lot E4/C4-groups, 2026-08-17) — `groups.ts` sort de la liste : l'appartenance à un
  * Groupe est DÉCLARÉE en donnée (`grantGroups` d'espèce/carrière/classe/culte/créature,
- * `matchesAll`/`exceptGroups` du Groupe joker).
+ * `matchesAll`/`exceptGroups` du Groupe joker), puis 50 → 46 (lot E4/C4-δ1, 2026-08-17) —
+ * `persistence.ts` et `exposure.ts` sortent de la liste (persistance d'État déclarée par
+ * `EtatData.persistsAfterCombat`, dissipation au répit par `ActiveEffect.expiresOnRespite`) et
+ * `seaVoyageFlow.ts` passe de 2 à 1 (`DiseaseDef.contaminatesWaterBarrel`).
  */
 const KNOWN: Record<string, number> = {
   'scripts/_qc-decor-sheet.mts': 2,
@@ -59,10 +62,8 @@ const KNOWN: Record<string, number> = {
   'src/engine/conjuredWeapons.ts': 2, // +1 for…of démasqué : `s.skillId === 'corps-a-corps'`
   'src/engine/creatureEquip.ts': 2,
   'src/engine/critical.ts': 4,
-  'src/engine/exposure.ts': 1, // for…of démasqué : `e.effectId === 'exposition-froid'|'-chaleur'`
   'src/engine/items.ts': 1,
   'src/engine/mountTravel.ts': 2,
-  'src/engine/persistence.ts': 2,
   'src/engine/polymorph.ts': 1, // for…of démasqué : `t.id !== 'bestial'`
   'src/engine/skills.ts': 2,
   'src/engine/trauma.ts': 2,
@@ -71,7 +72,7 @@ const KNOWN: Record<string, number> = {
   'src/state/combatFlow.ts': 2, // +1 for…of démasqué : `MISCAST_TABLE_CATEGORIES[id]`
   'src/state/combatManeuvers.ts': 1,
   'src/state/massBattleFlow.ts': 1,
-  'src/state/seaVoyageFlow.ts': 2,
+  'src/state/seaVoyageFlow.ts': 1,
   'src/ui/CharacterSheet.tsx': 3, // for…of démasqué : `it.trappingId === 'crochet'|'fausse-jambe'` (prothèses)
   'src/ui/CityHubScreen.tsx': 1,
   'src/ui/CouncilModal.tsx': 2,
@@ -105,7 +106,8 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * 169 au moment de la pose du cliquet, 165 après le lot C1 (marqueurs de cargaison passés en donnée —
  * `registry.ts` et `PortView.tsx` sortent de la liste), 163 après le lot C2 (gate d'espèce en champ
  * déclaré : `creation.ts` sort de la liste, `CharacterCreator.tsx` passe de 8 à 7), 160 après le lot
- * C4-groups (appartenance de Groupe déclarée en donnée : `groups.ts` sort de la liste).
+ * C4-groups (appartenance de Groupe déclarée en donnée : `groups.ts` sort de la liste), 158 après le
+ * lot C4-δ1 (politique de dissipation déclarée sur l'effet : `exposure.ts` sort de la liste).
  */
 const RAW_KNOWN: Record<string, number> = {
   'scripts/data/lib/obtainabilityGraph.ts': 3,
@@ -128,7 +130,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/drunkenness.ts': 1,
   'src/engine/engagement.ts': 2,
   'src/engine/equipCompare.ts': 2,
-  'src/engine/exposure.ts': 2,
   'src/engine/healing.ts': 1,
   'src/engine/items.ts': 1,
   'src/engine/magic.ts': 3,

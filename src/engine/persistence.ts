@@ -7,14 +7,14 @@
  */
 import { Combatant, ConditionInstance, Trauma, ItemInstance } from './types';
 import type { Disease } from './disease';
+import { findConditionById } from '../data';
 
-/** États qui persistent après le combat (LDB 16-États : Brisé l.57, Empoisonné l.70,
- *  En flammes l.77, Exténué l.91, Hémorragique l.107, Inconscient l.116 ; munition-logee, LDB 62
- *  l.250 : « Les flèches et les carreaux nécessitent un Test de Guérison Intermédiaire pour être
- *  retirés » — sans ce Test, elle ne disparaît pas au teardown de combat, #473). */
-export const PERSISTENT_CONDITIONS: ReadonlySet<string> = new Set([
-  'brise', 'empoisonne', 'en-flammes', 'extenue', 'hemorragique', 'inconscient', 'munition-logee',
-]);
+/** Cet État suit-il le porteur hors du combat ? Drapeau DÉCLARÉ sur l'entrée d'`etats.json`
+ *  (`EtatData.persistsAfterCombat`) : le moteur lit le champ, il n'énumère aucun id. Un État absent du
+ *  catalogue (marqueur narratif sans entrée) est transitoire par défaut. */
+export function isPersistentCondition(id: string): boolean {
+  return findConditionById(id)?.persistsAfterCombat === true;
+}
 
 /** État persistant d'un combattant à reporter vers le groupe (fin de combat) ou à ré-importer
  *  (combat suivant). N'inclut QUE ce qui survit hors combat ; le transitoire est omis. Copie défensive. */
@@ -41,7 +41,7 @@ export function carryOverState(c: Combatant): {
 } {
   return {
     wounds: { current: c.wounds.current, max: c.wounds.max },
-    conditions: c.conditions.filter((x) => PERSISTENT_CONDITIONS.has(x.id)).map((x) => ({ ...x })),
+    conditions: c.conditions.filter((x) => isPersistentCondition(x.id)).map((x) => ({ ...x })),
     criticalWounds: c.criticalWounds ?? 0,
     dead: c.dead === true,
     outOfRencontre: c.outOfRencontre === true,
@@ -80,5 +80,5 @@ export function carryOverState(c: Combatant): {
 
 /** États persistants seuls (pour le carry-in au spawn d'un combat). Copie défensive. */
 export function persistentConditions(c: Combatant): ConditionInstance[] {
-  return c.conditions.filter((x) => PERSISTENT_CONDITIONS.has(x.id)).map((x) => ({ ...x }));
+  return c.conditions.filter((x) => isPersistentCondition(x.id)).map((x) => ({ ...x }));
 }

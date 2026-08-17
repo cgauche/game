@@ -37,6 +37,7 @@ import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import { remapPassiveKindDeep } from './passiveKindMigration';
+import { flagRespiteEffectsDeep } from './respiteEffectMigration';
 import type { CodexFocus } from './codexFocus';
 import type { PendingCascade, RevealEntry } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
@@ -46,7 +47,7 @@ import { pursuitBands, PURSUIT_POLICY_DEFAUT } from './pursuitFlow';
 import { stepReady } from './cascade';
 import { combatEndBands } from './combatEndBands';
 
-export const SAVE_VERSION = 25;
+export const SAVE_VERSION = 26;
 
 export interface SaveMeta {
   version: number;
@@ -379,6 +380,11 @@ export const MIGRATIONS: MigrationMap = {
   // le collecteur passif LÈVE au rechargement (`passiveMods` → `effectiveChar`/`testValue`) : une save
   // portant une cicatrice de Critique guéri crashait. Primitive : `passiveKindMigration.ts`.
   24: (doc) => ({ ...doc, version: 25, data: remapPassiveKindDeep(doc.data) as Record<string, unknown> }),
+  // v25→v26 (#1318 E4/C4-δ1) : la dissipation au répit des pénalités d'Exposition est DÉCLARÉE sur
+  // l'effet (`ActiveEffect.expiresOnRespite`) au lieu d'être reconnue à son `effectId`. Un effet écrit
+  // avant ce lot n'a pas le drapeau : `expireOnRespite` ne le toucherait plus jamais et son −10 par
+  // caractéristique deviendrait PERPÉTUEL. Primitive : `respiteEffectMigration.ts`.
+  25: (doc) => ({ ...doc, version: 26, data: flagRespiteEffectsDeep(doc.data) as Record<string, unknown> }),
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus

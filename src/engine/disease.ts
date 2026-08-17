@@ -100,6 +100,9 @@ export interface DiseaseDef {
    *  d'infection, MSRC 16 l.138). Un op `diseaseTestMod` y est RAMPÉ par tranche de 30 jours écoulés depuis
    *  la contraction (`activeDiseaseTestMod`), puis DÉCROÎT de 1/jour après la fin (résidu). Éditable au Codex. */
   infectionPassive?: GameOp[];
+  /** Un porteur ACTIF qui boit à un tonneau d'eau risque de le rendre contagieux pour quiconque y boit
+   *  ensuite (MDG 14 l.209). Drapeau DÉCLARATIF lu par `buildBarrelSteps` (`state/seaVoyageFlow`). */
+  contaminatesWaterBarrel?: boolean;
 }
 
 /** Instance de maladie portée par un personnage. */

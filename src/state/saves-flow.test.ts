@@ -7,6 +7,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { useGame } from './store';
 import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, migrateSave, readFutureBackup, MIGRATIONS, SAVE_VERSION, type SaveGame } from './saves';
 import { migrateDoc } from './migrateDoc';
+import { expireOnRespite } from '../engine/exposure';
+import type { Combatant } from '../engine/types';
 import { rule, setRule, loadRuleOverrides } from '../engine/policy';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -761,6 +763,35 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
         expect(f in h, `${f} doit avoir quitté le combattant`).toBe(false);
       }
     }
+  });
+
+  /**
+   * MIGRATIONS[25] — la dissipation au répit est passée de l'identité de l'effet à un drapeau DÉCLARÉ
+   * (`ActiveEffect.expiresOnRespite`). Sans migration, une vieille save recharge des pénalités
+   * d'Exposition que `expireOnRespite` ne touche PLUS JAMAIS : −10 par caractéristique à perpétuité.
+   * Le contrat est mesuré jusqu'au COMPORTEMENT (le répit dissipe), pas au seul champ posé.
+   */
+  it('MIGRATIONS[25] : une pénalité d’Exposition d’avant le drapeau reçoit `expiresOnRespite` et redevient dissipable au répit', () => {
+    const raw = JSON.parse(readFileSync(new URL('v25-exposition-sans-drapeau.json', FIXTURES_DIR), 'utf-8')) as { data: { party: { activeEffects: Record<string, unknown>[] }[] } };
+    for (const h of raw.data.party) {
+      for (const e of h.activeEffects) expect('expiresOnRespite' in e, 'la fixture v25 porte bien des effets SANS le drapeau').toBe(false);
+    }
+
+    const migrated = migrateSave(raw)!;
+    expect(migrated.version).toBe(SAVE_VERSION);
+    const party = (migrated.data as { party: { activeEffects: Record<string, unknown>[] }[] }).party;
+    // (1) Les 4 pénalités d'Exposition (froid ET chaleur) portent le drapeau…
+    const expo = party.flatMap((h) => h.activeEffects).filter((e) => typeof e.effectId === 'string');
+    expect(expo).toHaveLength(4);
+    expect(expo.every((e) => e.expiresOnRespite === true)).toBe(true);
+    // (2) …et le buff permanent SANS rapport n'a rien reçu (la migration ne badge pas tout ce qui dure).
+    const buff = party[1].activeEffects.find((e) => e.label === 'Bénédiction de Shallya')!;
+    expect('expiresOnRespite' in buff).toBe(false);
+
+    // (3) COMPORTEMENT : le répit pose l'échéance d'horloge sur les effets migrés (la sonde du bug).
+    const hero = party[0] as unknown as Combatant;
+    expireOnRespite(hero, 9000);
+    expect(hero.activeEffects!.map((e) => e.duration)).toEqual(hero.activeEffects!.map(() => ({ scale: 'clock', until: 9000 })));
   });
 
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {

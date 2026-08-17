@@ -699,7 +699,7 @@ export function attackEnv(
       return !!ally && ally.kind === attacker.kind;
     });
     if (inMelee && !opts?.intoCrowd) env.push({ label: 'Tir dans la mêlée', value: -20, famille: 'circonstance', ref: RULE_REF['tir-dans-un-combat-au-corps-a-corps'] }); // « Tirer dans le tas » REMPLACE ce −20 par le bonus (l.136)
-    env.push(...mountedAttackMods(battle, attacker, target, 'ranged')); // Combat monté : +20 cible plus petite que la monture (LDB 14 l.217)
+    env.push(...mountedAttackMods(battle, attacker, target, 'ranged')); // Combat monté : +20 cible plus petite que la monture (LDB 14 l.180)
     // « Tirer dans le tas » (LDB 14 l.136/146) : bonus +20/+40/+60 selon la taille du groupe serré.
     const crowd = opts?.intoCrowd ? crowdEligible(battle, attacker, target) : [];
     const cm = opts?.intoCrowd ? crowdMod(crowd.length) : null;
@@ -722,7 +722,7 @@ export function attackEnv(
   // Surnombre (LDB 14 l.85/92) : attaquants du camp de l'attaquant au contact de la cible (2 → +20, 3+ → +40).
   const onm = outnumberMod(battle.combatants.filter((c) => c.kind === attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1).length);
   if (onm) env.push(onm);
-  env.push(...mountedAttackMods(battle, attacker, target, 'melee')); // Combat monté : +20 cible < monture / −10 viser le cavalier (LDB 14 l.217/219)
+  env.push(...mountedAttackMods(battle, attacker, target, 'melee')); // Combat monté : +20 cible < monture / −10 viser le cavalier (LDB 14 l.180/181)
   return { env, blocked: false, inMelee: false, crowd: [], cm: null, sc, flankRear };
 }
 
@@ -2873,7 +2873,7 @@ export function maybeOpenDefense(
   if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
   applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
   // Le MÊME env que resolveAttack (météo, Flanc/dos +20, Surnombre, Combat monté) : le jet figé de la
-  // défense réactive l'omettait — un cavalier IA attaquait un héros sans son +20 (LDB 14 l.217). Le
+  // défense réactive l'omettait — un cavalier IA attaquait un héros sans son +20 (LDB 14 l.180). Le
   // drapeau `flankRear` n'est PAS un champ du pending : il n'agit qu'ICI, au GEL du jet d'attaquant
   // (bonus d'Assourdi de flanc, LDB 16 l.29) ; ce qui voyage ensuite dans la fenêtre, c'est `env`.
   const { env, flankRear } = attackEnv(get, attacker, target, weapon);
@@ -7043,7 +7043,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // Sélection de loadout (avant de bâtir l'entrée IA) : dégaine l'arme à distance hors de portée de mêlée,
   // l'arme de mêlée au contact — pour que `buildAiInput` voie le bon `weapons` (le tireur tire sa fronde).
   aiSelectLoadout(set, enemy, battle);
-  // Combat monté (LDB 14 l.215) : géométrie porteuse (monture) pour le déplacement réel — empreinte +
+  // Combat monté (LDB 14 l.179) : géométrie porteuse (monture) pour le déplacement réel — empreinte +
   // chemin ; le couple est solidaire (positions synchronisées à l'exécution du « move »).
   const geom = mountOf(battle, enemy) ?? enemy;
   // Entrée de l'IA MUTUALISÉE (sorts résolus + escouade/orientation/perception/mouvement/vol/blocage).
@@ -7113,11 +7113,11 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     }, delay);
   };
 
-  // Combat monté (LDB 14 l.221) : une monture MONTÉE est dirigée par son cavalier — elle ne se déplace
+  // Combat monté (LDB 14 l.182) : une monture MONTÉE est dirigée par son cavalier — elle ne se déplace
   // pas seule (le couple bouge au tour du cavalier). Sans le Trait Nerveux, elle peut consacrer SA propre
   // Action à attaquer un adversaire au contact ; sinon elle passe son tour.
   if (enemy.riderId) {
-    const skittish = isSkittishMount(enemy.traits); // Nerveux (LDB 14 l.221) → la monture passe son tour
+    const skittish = isSkittishMount(enemy.traits); // Nerveux (LDB 14 l.182) → la monture passe son tour
     const foe = skittish || !canAct ? undefined
       : battle.combatants.find((c) => c.kind !== enemy.kind && !isOutOfAction(c) && !!c.pos && combatDistance(enemy, c) <= meleeReachTiles(enemy.weapons));
     if (foe) { attackThenAdvance(foe); return; }

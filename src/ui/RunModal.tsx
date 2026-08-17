@@ -29,7 +29,7 @@ export function RunModal() {
   const c = battle.combatants.find((x) => x.id === pr.combatantId);
   if (!c) return null;
   const r = pr.result;
-  // À cheval, la Course se teste sur Chevaucher (LDB 14 l.215) — même compétence que le flux `run`.
+  // À cheval, la Course se teste sur Chevaucher (LDB 14 l.179) — même compétence que le flux `run`.
   const skillId = c.mountId ? 'chevaucher' : 'athletisme';
   const skillLabel = refLabel('skills', { id: skillId });
   const rolled = !!r;

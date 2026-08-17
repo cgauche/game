@@ -102,8 +102,8 @@ export function stopBleedOutcome(dr: number, stacks: number, success: boolean): 
   return { removed, gainExtenue: removed > 0 && removed >= stacks };
 }
 
-/** Munitions Empaleuses logées (LDB 62 l.250, marqueur `munition-logee` posé par l'Atout Empaleuse à
- *  distance sur Critique — `qualities.json`) : nombre de flèches/carreaux/balles non retirés. */
+/** Munitions Empaleuses logées (LDB 62 l.250) : nombre de flèches/carreaux/balles non retirés — pions de
+ *  l'État `munition-logee` (`etats.json`), posé par l'Atout Empaleuse à distance sur Critique. */
 export function lodgedAmmoCount(target: Combatant): number {
   return condStacks(target, 'munition-logee');
 }

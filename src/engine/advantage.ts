@@ -17,7 +17,7 @@ export function advantageCapFor(c: Combatant): number {
 }
 
 /** Gain d'Avantage CENTRALISÉ (héros ET ennemis) : clamp au plafond effectif du combattant. Les
- *  pertes et remises à zéro restent des affectations directes (LDB 15 l.40, 16 l.15…). Pure. */
+ *  pertes et remises à zéro restent des affectations directes (LDB 14 l.219, 16 l.15…). Pure. */
 export function gainAdvantage(c: Combatant, n = 1): void {
   if (n > 0) c.advantage = Math.min(advantageCapFor(c), c.advantage + n);
 }

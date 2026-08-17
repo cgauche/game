@@ -163,7 +163,7 @@ export function applyExposureFailure(c: Combatant, failures: number, rng: RNG, k
   const effectId = kind === 'froid' ? 'exposition-froid' : 'exposition-chaleur';
   if (failures <= 2) {
     for (const k of (failures === 1 ? FIRST_FAIL : SECOND_FAIL)[kind]) {
-      c.activeEffects = [...(c.activeEffects ?? []), { label, effectId, char: k, bonus: -10, duration: { scale: 'permanent' } }];
+      c.activeEffects = [...(c.activeEffects ?? []), { label, effectId, char: k, bonus: -10, duration: { scale: 'permanent' }, expiresOnRespite: true }];
     }
     if (kind === 'chaleur') addCondition(c, 'extenue'); // « vous gagnez un État Exténué » (1ᵉʳ ET 2ᵉ échec, l.330)
     log.push(kind === 'froid'
@@ -219,9 +219,11 @@ export function exposureNight(
   return { rolls, log, failures, wounds };
 }
 
-/** Pose une échéance d'horloge sur les pénalités d'Exposition (dissipation après 24 h au chaud/au frais). */
-export function expireExposureEffects(c: Combatant, untilTime: number): void {
+/** Pose une échéance d'horloge (`untilTime`) sur les effets permanents qui DÉCLARENT se dissiper au
+ *  répit (`ActiveEffect.expiresOnRespite` — pénalités d'Exposition, posées au chaud/au frais). Le délai
+ *  vient de l'appelant, qui lit la MÊME règle éditable `exposure-expire-hours` au camp comme en mer. */
+export function expireOnRespite(c: Combatant, untilTime: number): void {
   for (const e of c.activeEffects ?? []) {
-    if ((e.effectId === 'exposition-froid' || e.effectId === 'exposition-chaleur') && e.duration.scale === 'permanent') e.duration = { scale: 'clock', until: untilTime };
+    if (e.expiresOnRespite && e.duration.scale === 'permanent') e.duration = { scale: 'clock', until: untilTime };
   }
 }

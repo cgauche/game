@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { PERSISTENT_CONDITIONS, carryOverState } from './persistence';
+import { isPersistentCondition, carryOverState } from './persistence';
+import { etats, findConditionById } from '../data';
 import { traumaById, dechirureFractureFicheId } from './trauma';
 import type { HitLocation } from './types';
 const tk = (k: 'dechirure' | 'fracture', s: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, s, loc), opts, loc);
@@ -17,21 +18,25 @@ function baseCombatant(over: Partial<Combatant> = {}): Combatant {
 }
 
 describe('persistence — classement RAW des États', () => {
-  it('classe les États persistants (LDB 16-États)', () => {
-    expect(PERSISTENT_CONDITIONS.has('hemorragique')).toBe(true);
-    expect(PERSISTENT_CONDITIONS.has('empoisonne')).toBe(true);
-    expect(PERSISTENT_CONDITIONS.has('en-flammes')).toBe(true);
-    expect(PERSISTENT_CONDITIONS.has('extenue')).toBe(true);
-    expect(PERSISTENT_CONDITIONS.has('brise')).toBe(true);
-    expect(PERSISTENT_CONDITIONS.has('inconscient')).toBe(true);
-    // Munition Empaleuse logée (LDB 62 l.250) : exige un Test de Guérison pour être retirée —
-    // ne disparaît pas d'elle-même au teardown de combat (#473).
-    expect(PERSISTENT_CONDITIONS.has('munition-logee')).toBe(true);
+  it('classe les États persistants (LDB 16-États ; Munition logée LDB 62 l.250)', () => {
+    for (const id of ['hemorragique', 'empoisonne', 'en-flammes', 'extenue', 'brise', 'inconscient', 'munition-logee']) {
+      expect(isPersistentCondition(id), id).toBe(true);
+    }
   });
   it('exclut les États transitoires', () => {
     for (const n of ['surpris', 'a-terre', 'sonne', 'aveugle', 'assourdi', 'empetre']) {
-      expect(PERSISTENT_CONDITIONS.has(n)).toBe(false);
+      expect(isPersistentCondition(n), n).toBe(false);
     }
+  });
+  it('un marqueur SANS entrée au catalogue est transitoire (aucun repli implicite)', () => {
+    expect(findConditionById('petrifie')).toBeUndefined();
+    expect(isPersistentCondition('petrifie')).toBe(false);
+  });
+  it('PARITÉ : les 7 États déclarés persistants dans `etats.json` sont EXACTEMENT ceux du classement RAW', () => {
+    // Le classement ne vit QUE sur les entrées : si une 8ᵉ entrée porte le drapeau (ou si l'une des 7 le
+    // perd), c'est ici que ça se voit — le moteur, lui, ne connaît plus aucun id.
+    const declares = etats.filter((e) => e.persistsAfterCombat).map((e) => e.id).sort();
+    expect(declares).toEqual(['brise', 'empoisonne', 'en-flammes', 'extenue', 'hemorragique', 'inconscient', 'munition-logee']);
   });
 });
 

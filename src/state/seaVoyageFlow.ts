@@ -67,7 +67,7 @@ import {
   lighthouseSpotDifficulty, lighthouseOrientationDR, savoirOceansBonus, pursuitDistanceGain,
   pursuitLowMPenalty, forcePaceDifficulty, exhaustionDifficulty, REPARATION, overspeedRow, overspeedDamage,
 } from '../engine/seaNavigation';
-import { expireExposureEffects, exposureTarget, exposureCoatMods, exposureFirstFailChars, isWeatherWarded } from '../engine/exposure';
+import { expireOnRespite, exposureTarget, exposureCoatMods, exposureFirstFailChars, isWeatherWarded } from '../engine/exposure';
 import { pursuitOutcome } from '../engine/pursuit';
 import { addCondition } from '../engine/conditions';
 import { effectiveChar } from '../engine/characteristics';
@@ -1274,15 +1274,12 @@ function applySeaProgress(get: Get, set: Set, progressionDR: number): string[] {
   return [t('sv.progressOfDay', { miles, dr: `${progressionDR >= 0 ? '+' : ''}${progressionDR}` })];
 }
 
-/** Maladies transmises par le tonneau d'eau contaminé (MDG 14 l.209) — ids app-owned de `maladies.json`
- *  (littéraux, comme `contractDisease('scorbut', …)` ci-dessus : hors du registre `DISEASES` scopé LDB). */
-const BARREL_DISEASES = ['peste-noire', 'flux-sanglant', 'courante-galopante', 'verole-urticante'];
-
 /** Étapes du tonneau d'eau contaminé (MDG 14 l.209) — DEUX volets INDÉPENDANTS, dans CET ordre : (a)
  *  EXPOSITION de qui boit AUJOURD'HUI à un tonneau contaminé la veille (`sea.waterContaminated`, jamais
  *  le jour même — « pour quiconque y boit ENSUITE ») ; (b) Test de Résistance Intermédiaire (+0) de
- *  chaque porteur ACTIF d'une des 4 maladies nommées qui boit au tonneau aujourd'hui → échec CONTAMINE
- *  le tonneau (effet visible dès demain). Ne lit QUE `vessel.waterLitres` — la petite bière
+ *  chaque porteur ACTIF d'une maladie qui DÉCLARE `contaminatesWaterBarrel` (`maladies.json`) et boit au
+ *  tonneau aujourd'hui → échec CONTAMINE le tonneau (effet visible dès demain). Ne lit QUE
+ *  `vessel.waterLitres` — la petite bière
  *  (`tonneau-de-petite-biere`) y échappe (l.209), jamais lue ici. */
 function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel | null): BuiltCascadeStep[] {
   if (vessel?.waterLitres == null) return [];
@@ -1304,7 +1301,7 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
   } else {
     for (const h of get().party) {
       if (h.dead) continue;
-      const dz = (h.diseases ?? []).find((d) => d.phase === 'active' && BARREL_DISEASES.includes(d.id));
+      const dz = (h.diseases ?? []).find((d) => d.phase === 'active' && DISEASE_DEFS[d.id]?.contaminatesWaterBarrel);
       if (!dz) continue;
       pousseSi(out, monoStep({
         id: `sea-tonneau-contamine-${h.id}`, kind: 'sea-tonneau-contamine', actor: h,
@@ -1553,13 +1550,14 @@ export function continueSeaDayAfterExposure(get: Get, set: Set, doneSteps?: Casc
   if (doneSteps) tell(get, set, doneSteps.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
   const sea = plan.sea;
 
-  // DISSIPATION (purge #T3) : les pénalités d'Exposition s'échoient 24 h après avoir été subies. Elle
-  // tourne ICI — APRÈS l'application des échecs du jour (l'applier de cascade a déjà couru, chemin
-  // immédiat comme chemin surfacé) et à CHAQUE jour de mer, y compris les jours cléments : sinon une
-  // pénalité prise un jour froid resterait PERMANENTE faute d'horloge posée.
+  // DISSIPATION (purge #T3) : les pénalités d'Exposition s'échoient après `exposure-expire-hours`
+  // (règle ÉDITABLE, défaut 24 h) — MÊME règle que le répit au camp (`restFlow`), un seul réglage
+  // gouverne les deux répits. Elle tourne ICI — APRÈS l'application des échecs du jour (l'applier de
+  // cascade a déjà couru, chemin immédiat comme chemin surfacé) et à CHAQUE jour de mer, y compris les
+  // jours cléments : sinon une pénalité prise un jour froid resterait PERMANENTE faute d'horloge posée.
   for (const h of get().party) {
     if (h.dead) continue;
-    expireExposureEffects(h, get().gameTime + MINUTES_PER_DAY);
+    expireOnRespite(h, get().gameTime + Number(rule('exposure-expire-hours')) * 60);
   }
   set({ party: [...get().party] });
 

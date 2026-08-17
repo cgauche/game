@@ -1336,7 +1336,7 @@ export const FLOWS = {
     },
   }),
 
-  /** Course (LDB 15 l.79-82) : Athlétisme (+20) — à cheval, Chevaucher + Mouvement de la monture (LDB 14 l.215). */
+  /** Course (LDB 15 l.41) : Athlétisme (+20) — à cheval, Chevaucher + Mouvement de la monture (LDB 14 l.179). */
   run: makeRollFlow<PendingRun>({
     key: 'pendingRun',
     // ACCESSEUR DE DÉ : le d100 d'Athlétisme ; la distance se REPROJETTE par `runFromTest` (engine).
@@ -1351,7 +1351,7 @@ export const FLOWS = {
       if (!s.battle || !actor) return null;
       if (forced) {
         if (p.result?.success) return null; // rien à forcer si déjà réussi
-        const m = mountMovement(s.battle, actor); // à cheval : Mouvement de la monture (LDB 14 l.215)
+        const m = mountMovement(s.battle, actor); // à cheval : Mouvement de la monture (LDB 14 l.179)
         const base = p.result;
         // RAW LDB 17 l.68 : avant le jet (result==null → on choisit 01) OU après un échec.
         return { result: { success: true, roll: base?.roll ?? 1, target: base?.target, dr: Math.max(0, base?.dr ?? 0), bonusCases: Math.max(base?.bonusCases ?? 0, 2 * m) } };

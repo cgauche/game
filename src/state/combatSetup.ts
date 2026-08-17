@@ -44,7 +44,7 @@ export function rollInitiative(c: Combatant, rng: RNG): number {
  * l.31), propagé à `initiativeOrder`. Absent = tri stable déterministe (tests purs inchangés).
  */
 export function combatOrder(all: Combatant[], merScale: boolean, rng?: RNG): string[] {
-  // Exclus de l'ordre : PASSAGERS de coque (échelle MER) ET montures Nerveux CHEVAUCHÉES (LDB 14 l.221 —
+  // Exclus de l'ordre : PASSAGERS de coque (échelle MER) ET montures Nerveux CHEVAUCHÉES (LDB 14 l.182 —
   // pas de tour propre tant qu'elles sont montées). Elles RESTENT dans `combatants` (ciblables, prennent des coups).
   const ordered = initiativeOrder(all, rng).filter((c) => !isPassengerInBattle(c, all, merScale) && !isControlledMount(c));
   return [...ordered.filter((c) => !strikesLast(c.weapons)), ...ordered.filter((c) => strikesLast(c.weapons))].map((c) => c.id);

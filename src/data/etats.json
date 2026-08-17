@@ -123,6 +123,7 @@
       "book": "livre-de-base",
       "page": 168
     },
+    "persistsAfterCombat": true,
     "restrictsAction": true,
     "passive": [
       {
@@ -338,6 +339,7 @@
       "book": "livre-de-base",
       "page": 168
     },
+    "persistsAfterCombat": true,
     "passive": [
       {
         "op": "testMod",
@@ -444,6 +446,7 @@
       "book": "livre-de-base",
       "page": 168
     },
+    "persistsAfterCombat": true,
     "effects": [
       {
         "trigger": "onRoundEnd",
@@ -495,6 +498,7 @@
       "book": "livre-de-base",
       "page": 168
     },
+    "persistsAfterCombat": true,
     "passive": [
       {
         "op": "testMod",
@@ -513,6 +517,7 @@
       "book": "livre-de-base",
       "page": 169
     },
+    "persistsAfterCombat": true,
     "effects": [
       {
         "trigger": "onRoundEnd",
@@ -549,6 +554,7 @@
       "book": "livre-de-base",
       "page": 169
     },
+    "persistsAfterCombat": true,
     "gating": {
       "action": "none",
       "movement": "none",
@@ -923,5 +929,15 @@
       "page": 147
     },
     "desc": "Une victime absorbée gagne un nombre d’États Empêtré égal au Bonus de Force de la créature et compte comme étant Empoigné. Une victime absorbée perd le Bonus de Force de la créature en Blessures à la fin de chaque tour ; les Points d’Armure, ou le Bonus d’Endurance, ne réduisent pas cette perte. Le même nombre de Blessures est « guéri » par la créature. Toute attaque qui touche la créature inflige une quantité égale de Dégâts à la victime absorbée."
+  },
+  {
+    "id": "munition-logee",
+    "label": "Munition logée",
+    "source": {
+      "book": "livre-de-base",
+      "page": 298
+    },
+    "desc": "Si l'empalement vient d'une arme à distance, la munition utilisée s'est fermement logée dans le corps de la cible. Les flèches et les carreaux nécessitent un Test de Guérison Intermédiaire pour être retirés – les balles nécessitent un chirurgien (voir le Talent Chirurgie au Chapitre 4 : Compétences et Talents). Chaque flèche ou balle non retirée vous empêche de guérir 1 de vos Blessures.",
+    "persistsAfterCombat": true
   }
 ]

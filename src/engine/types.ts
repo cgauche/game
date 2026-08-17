@@ -716,6 +716,12 @@ export interface ActiveEffect {
    *  `{scale:'rounds'}`, en heures = `{scale:'clock'}` (purgé
    *  par l'horloge), sans durée = `{scale:'permanent'}`. */
   duration: Duration;
+  /** POLITIQUE DE DURÉE déclarée à la pose : cet effet `permanent` reçoit une ÉCHÉANCE d'horloge dès que
+   *  le porteur passe un répit à l'abri de la cause (pénalités d'Exposition, `expireOnRespite`).
+   *  Le délai est le MÊME pour tous les répits — la règle éditable `exposure-expire-hours` (défaut 24 h),
+   *  lue par l'appelant (camp `restFlow`, jour de mer `seaVoyageFlow`). Absent = l'effet ne connaît pas
+   *  cette dissipation (le répit ne le touche pas). */
+  expiresOnRespite?: true;
   /** SORT SOURCE de cet effet actif (posé à l'incantation via `OpsCtx.sourceSpell`) : identité + NI, pour
    *  la DISSIPATION (LDB 46 l.158-162 : Test étendu de Langue (Magick) jusqu'au NI → retrait de TOUS les
    *  effets de ce sort). Absent = effet non-magique ou sort instantané (rien à dissiper). */

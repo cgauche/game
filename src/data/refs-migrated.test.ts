@@ -858,7 +858,6 @@ describe('GameOp — toute référence de la donnée committée résout dans son
         { op: 'exposeDisease', disease: '$arg' },
         { op: 'scheduleRespawn', ref: 'self', delayDays: 1 },
         { op: 'condition', id: 'petrifie' },
-        { op: 'condition', id: 'munition-logee' },
       ],
     }];
     expect(scanGameOpRefs({ sources: legit, resolvers }).offenders.map(formatOffender)).toEqual([]);

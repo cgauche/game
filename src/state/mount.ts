@@ -28,7 +28,7 @@ export const isRider = (c: Combatant): boolean => !!c.mountId;
 /** Ce combattant porte-t-il un cavalier (= monture) ? */
 export const isMount = (c: Combatant): boolean => !!c.riderId;
 
-/** Monture CHEVAUCHÉE qui ne peut pas mener sa propre Action (Trait Nerveux, LDB 14 l.221 : « une monture
+/** Monture CHEVAUCHÉE qui ne peut pas mener sa propre Action (Trait Nerveux, LDB 14 l.182 : « une monture
  *  possédant le Trait Nerveux ne peut pas mener sa propre Action d'attaque ») → PAS de tour d'initiative
  *  propre tant qu'elle est montée (exclue de `battle.order`). Un destrier (SANS Nerveux) est « un autre
  *  combattant à part entière » et GARDE son tour ; une monture LIBRE (sans cavalier) aussi. */
@@ -224,7 +224,7 @@ export function dismount(battle: BattleState, scene: Scene, rider: Combatant): b
   return true;
 }
 
-/** Mort/retrait de la monture (LDB 14 l.221, la monture est un combattant à part) : son cavalier est
+/** Mort/retrait de la monture (LDB 14 l.182, la monture est un combattant à part) : son cavalier est
  *  DÉMONTÉ (à pied, case libre adjacente). Pas de dégâts de chute (le RAW ne définit AUCUNE chute liée à
  *  la mort d'une monture — seul existe le cas générique de la Chute, LDB 15 l.78-84 ; on ne l'invente pas). */
 export function handleMountDeath(battle: BattleState, scene: Scene, mount: Combatant): Combatant | undefined {
@@ -255,7 +255,7 @@ export function sweepDismountDeaths(battle: BattleState, scene: Scene): string[]
 const hasAcrobatiesEquestres = (c: Combatant): boolean =>
   (c.talents ?? []).some((t) => (t.times ?? 0) > 0 && t.talentId === 'acrobaties-equestres');
 
-/** Mouvement effectif d'un combattant : celui de sa MONTURE s'il est cavalier (LDB 14 l.215), sinon le sien. */
+/** Mouvement effectif d'un combattant : celui de sa MONTURE s'il est cavalier (LDB 14 l.179), sinon le sien. */
 export function mountMovement(battle: BattleState, c: Combatant): number {
   const mount = mountOf(battle, c);
   return effectiveMovement(mount ?? c);
@@ -292,7 +292,7 @@ export function mountedAttackMods(battle: BattleState, attacker: Combatant, targ
   return out;
 }
 
-/** Pénalité d'Esquive d'un cavalier (LDB 14 l.78) : −20, sauf Talent Acrobaties équestres. 0 à pied. */
+/** Pénalité d'Esquive d'un cavalier (LDB 14 l.184) : −20, sauf Talent Acrobaties équestres. 0 à pied. */
 export function mountedDodgePenalty(defender: Combatant): number {
   return defender.mountId && !hasAcrobatiesEquestres(defender) ? -20 : 0;
 }

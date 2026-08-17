@@ -784,7 +784,7 @@ const V8C5: Site[] = [
     apres: keyLabel('NumpadEnter'),
   },
   {
-    site: 'mount.ts:251 — monture hors de combat : le cavalier est désarçonné (LDB 14 l.221)',
+    site: 'mount.ts:251 — monture hors de combat : le cavalier est désarçonné (LDB 14 l.182)',
     avant: `${HEROS5} est désarçonné — sa monture (${'Destrier'}) est hors de combat.`,
     apres: t('mount.unhorsed', { rider: HEROS5, mount: 'Destrier' }),
   },

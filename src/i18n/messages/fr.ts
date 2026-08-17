@@ -2140,9 +2140,9 @@ export const fr = {
   'key.named.escape': 'Échap',
   'key.named.numpad': 'Pavé {n}',
 
-  // ── #1318 V8c₅ — MONTURE hors de combat (`state/mount.ts`, LDB 14 l.221).
+  // ── #1318 V8c₅ — MONTURE hors de combat (`state/mount.ts`, LDB 14 l.182).
   'mount.unhorsed': '{rider} est désarçonné — sa monture ({mount}) est hors de combat.',
-  // Modificateurs d'attaque du Combat monté (LDB 14 l.217/219) — composantes NOMMÉES de la modale d'attaque.
+  // Modificateurs d'attaque du Combat monté (LDB 14 l.180/181) — composantes NOMMÉES de la modale d'attaque.
   'mount.modSmallerTarget': 'Combat monté (cible plus petite)',
   'mount.modTargetRider': 'Cibler le cavalier (plus petit que la monture)',
 

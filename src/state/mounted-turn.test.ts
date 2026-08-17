@@ -1,5 +1,5 @@
 /**
- * Combat monté (LDB 14 l.221) — « Une monture SANS le Trait Nerveux est un autre combattant à part
+ * Combat monté (LDB 14 l.182) — « Une monture SANS le Trait Nerveux est un autre combattant à part
  * entière, et peut effectuer sa propre Action ; une monture POSSÉDANT le Trait Nerveux ne peut pas mener
  * sa propre Action d'attaque. » Donc une monture Nerveux CHEVAUCHÉE n'a pas de tour d'initiative propre
  * (elle disparaît de `battle.order` tant qu'elle est montée) ; à la descente elle le retrouve. Un destrier

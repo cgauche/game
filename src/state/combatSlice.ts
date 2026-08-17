@@ -479,7 +479,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const mount = mountableNear(battle, active);
       if (!mount) return;
       mountUp(active, mount);
-      // Monture Nerveux chevauchée : elle perd son tour propre (LDB 14 l.221) → la retirer de l'ordre
+      // Monture Nerveux chevauchée : elle perd son tour propre (LDB 14 l.182) → la retirer de l'ordre
       // (et décaler le pointeur si son slot précédait l'actif). Un destrier (sans Nerveux) garde son tour.
       const orderPatch: Partial<BattleState> = {};
       if (isControlledMount(mount)) {
@@ -511,7 +511,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle, ...orderPatch, movementUsed: mountMovement(battle, active), action: null, reachable: new Map(), log: [...battle.log, ev('move', t('cs.dismount', { name: active.label, mount: mountName }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
-    // Combat monté (LDB 14 l.219) : applique le choix de cible (cavalier OU monture) puis relance l'attaque/charge
+    // Combat monté (LDB 14 l.181) : applique le choix de cible (cavalier OU monture) puis relance l'attaque/charge
     // sur l'id choisi en court-circuitant la modale (skipMountChoice). Annuler ne consomme rien.
     mountTargetSelect: (id: string) => {
       if (!get().pendingMountTarget) return;
@@ -2676,7 +2676,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const mount = mi == null ? undefined : enemies[mi];
         if (!mount) return;
         mount.mountable = true;
-        mountUp(enemies[i], mount); // partage la position/empreinte de la monture (LDB 14 l.215)
+        mountUp(enemies[i], mount); // partage la position/empreinte de la monture (LDB 14 l.179)
       });
       // Structures destructibles de siège (AA 10 p.120-121) : chaque arête portant une `structure` INTACTE devient
       // un Combattant inerte à PV (kind 'npc' → ne fausse pas la fin de combat, cf. checkBattleOver qui ne
@@ -2693,7 +2693,7 @@ export function createCombatSlice(get: Get, set: Set) {
           return c;
         })
         .filter((c): c is Combatant => !!c);
-      // #621 — Montures-possession des héros (combat monté, LDB 14 l.215). Spawnée en ALLIÉ `pos-<uid>`
+      // #621 — Montures-possession des héros (combat monté, LDB 14 l.179). Spawnée en ALLIÉ `pos-<uid>`
       // (writeback #618 dans finalizeBattle), appairée au cavalier.
       const mountCombatants: Combatant[] = [];
       for (const hero of heroes) {
@@ -2710,7 +2710,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // seulement) et `heroesAlive` (`!mountable`, checkBattleOver, combatFlow.ts) — jamais un héros.
         mount.mountable = true;
         if ('wounds' in mp && mp.wounds) mount.wounds.current = Math.min(mp.wounds.current, mount.wounds.max); // patron l.2476-2479
-        mountUp(hero, mount); // câble mountId/riderId + partage la case (LDB 14 l.215)
+        mountUp(hero, mount); // câble mountId/riderId + partage la case (LDB 14 l.179)
         mountCombatants.push(mount);
       }
       const all = [...heroes, ...enemies, ...structures, ...mountCombatants];

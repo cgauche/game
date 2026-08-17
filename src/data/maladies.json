@@ -118,6 +118,7 @@
     "label": "Courante Galopante",
     "desc": "On raconte que la nourriture des halflings ne peut pas donner de Courante galopante, une maladie peu ragoûtante et malheureusement trop répandue au sein de l’Empire à cause du manque de soins apportés à la préparation de la nourriture. Même si ceux souffrant de « Vengeance des Rumsters » après avoir ingurgité des tourtes bon marché des halflings vendues à Altdorf vous diront le contraire, s’ils peuvent quitter les toilettes assez longtemps…",
     "contractDifficulty": "facile",
+    "contaminatesWaterBarrel": true,
     "incubation": {
       "dice": {
         "n": 1,
@@ -203,6 +204,7 @@
     "label": "Flux Sanglant",
     "desc": "Le Flux sanglant est un problème récurrent au sein de l’Empire et d’une manière générale, est considéré comme une malédiction infligée par les dieux aux impies. Cette maladie infâme oblige la pauvre victime à se vider sans cesse. Le Flux sanglant est endémique au sein des Armées de l’État, où il tue bien plus de soldats que les forces ennemies. Parmi les remèdes les plus fréquents, il y a l’ingurgitation de boudin pour remplacer les humeurs perdues, le « bouchonnage », et le massage des parties avec des substances grasses afin d’atténuer la douleur aigüe.",
     "contractDifficulty": "facile",
+    "contaminatesWaterBarrel": true,
     "incubation": {
       "dice": {
         "n": 2,
@@ -247,6 +249,7 @@
     "label": "Peste Noire",
     "desc": "Les historiens affirment qu’il y a des siècles de cela, les rats ont déferlé sur l’Empire et que la Peste Noire s’ensuivit, décimant neuf âmes sur dix. Des recrudescences inexpliquées de cette horrible maladie apparaissent encore de nos jours et sont systématiquement accompagnées de la présence des pragmatiques nonnes blanches. Le Culte de Shallya a juré de faire tout ce qui était en son pouvoir pour éradiquer cette terrible maladie, et, en application de droits ancestraux qui lui sont conférés, des cordons sanitaires, délimités par des cordes blanches, sont déployés partout ou l’épidémie surgit, afin d’être certain que personne ne puisse entrer ou sortir de la zone de quarantaine. Et ce, jusqu’à ce que la recrudescence soit maîtrisée et que les corps aient été correctement traités.",
     "contractDifficulty": "accessible",
+    "contaminatesWaterBarrel": true,
     "incubation": {
       "dice": {
         "n": 1,
@@ -324,6 +327,7 @@
     "label": "Vérole Urticante",
     "desc": "Tous les ans, la plupart des villes et des cités de l’Empire subissent une épidémie de Vérole urticante. La maladie, qui fait apparaître des boursouflures qui démangent sur la quasi-totalité du corps, reste relativement bénigne et ne provoque que très rarement des complications, et n’est donc un réel souci que pour certains patients qui vont s’inquiéter et les nobliaux oisifs. La maladie est tellement répandue qu’on trouve dans la plupart des temples de Shallya des ampoules remplies de pâte blanche qui permettent de soulager les démangeaisons des malades. Antoine Droste - antoine.droste@gmail.com WARHAMMER FANTASY",
     "contractDifficulty": "accessible",
+    "contaminatesWaterBarrel": true,
     "incubation": {
       "dice": {
         "n": 1,

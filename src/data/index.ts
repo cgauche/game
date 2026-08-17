@@ -1314,6 +1314,11 @@ export interface EtatData extends StatusData {
    *  partagé par le gate de hotbar (`battleSelectAction`) ET l'IA (dépense PROACTIVE de Détermination pour se
    *  ressaisir) — plus de nom d'État en dur. */
   restrictsAction?: boolean;
+  /** Cet État SUIT le porteur hors du combat (LDB 16 : Brisé l.57, Empoisonné l.70, En flammes l.77,
+   *  Exténué l.91, Hémorragique l.107, Inconscient l.116 ; Munition logée LDB 62 l.250) — par opposition
+   *  au transitoire, retiré au teardown. Drapeau DÉCLARATIF lu par `isPersistentCondition`
+   *  (engine/persistence), seul juge du report vers le groupe et du carry-in au combat suivant. */
+  persistsAfterCombat?: boolean;
   /** AFFICHAGE (couche UI, hors RAW LDB 16) : icône du registre `<Icon>` (id `famille/nom`) + sévérité
    *  0-100 (≥50 = incapacitant → créneau unique de l'ordre de bataille). Lus par `effectIcons.conditionMeta`. */
   icon?: string;
@@ -1571,7 +1576,7 @@ export interface TraitCapabilities {
   stupid?: boolean;
   rage?: boolean;
   territorial?: boolean;
-  /** Monture trop ombrageuse pour agir seule (Nerveux, LDB 14 l.221) : MONTÉE, elle ne consacre pas sa
+  /** Monture trop ombrageuse pour agir seule (Nerveux, LDB 14 l.182) : MONTÉE, elle ne consacre pas sa
    *  propre Action à attaquer (une monture SANS ce drapeau est « un combattant à part entière »). Lu par
    *  l'IA de combat monté — drapeau de donnée, plus de test par-nom du trait. */
   skittishMount?: boolean;

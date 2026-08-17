@@ -40,6 +40,8 @@ export const schema = z.array(
     immuneAfterCure: z.boolean().optional(),
     /** Passifs actifs pendant toute l'INFECTION (Vers du Reik −5 Résistance/30 j, MSRC 16 l.138). */
     infectionPassive: z.array(gameOpSchema).optional(),
+    /** `DiseaseDef.contaminatesWaterBarrel` (`src/engine/disease.ts`) — MDG 14 l.209. */
+    contaminatesWaterBarrel: z.boolean().optional(),
     source: sourceRefSchema.optional(),
   }),
 );
