@@ -514,6 +514,28 @@ COMBAT, allégé** — une seule loi d'assemblage pour tout le jeu (§1c-ter) :
 - Touches d'ouvreurs d'écrans (I/J/M-style, registre `labelKey`) : volet ultérieur,
   consigné — pas dans le premier lot.
 
+✅ RÉVISION MAJEURE 2026-08-17 — **LE PONT UNIFIÉ : la barre ne disparaît JAMAIS**
+(question user : « dans les jeux, la barre d'action disparait hors combat ou c'est une
+invention de notre part ? » — vérifié : invention de notre part, contraire au genre
+entier — NWN/BG3/Pathfinder/POE/MMO gardent la barre hors combat pour buffs/soins/objets/
+sorts utilitaires ; puis directive de méthode : « je suis en train de remettre en cause
+chaque partie de notre interface en te poussant a regarder vers ce qui se fait
+ailleurs ») :
+- `CombatConsole` et `ExplorationDock` = **UN SEUL composant-pont à deux ÉTATS** (le
+  composant d'exploration né le jour même FUSIONNE avant de devenir une dette). Mêmes
+  emplacements, mêmes touches, même placement dans les deux modes — le contexte change
+  l'ÉLIGIBILITÉ des actions (« Charger » grisée hors combat, « Descendre » grisée sans
+  monture), jamais les cases. Le CHROME de combat (gouttières, frise, Avantage, coin Fin
+  du tour) apparaît/disparaît AUTOUR de la barre constante.
+- Hors combat : l'arche montre le héros SÉLECTIONNÉ (Zone 13) ; en combat, l'acteur du
+  tour. Les ouvreurs d'écrans restent l'extrémité droite du pont.
+- Les actions HORS COMBAT aujourd'hui enterrées dans la fiche (soins, prières,
+  consommables, sorts utilitaires — flux `ooc*`) remontent sur la barre et ENTRENT AU
+  REGISTRE (`actions.json` couvre les deux contextes ; la garde d'atteignabilité vérifie
+  l'exploration aussi) — au lot 2, le lot 1 en vol transcrit le manifeste combat sans
+  être déstabilisé.
+- X commute les sets hors combat aussi (dégainer existe déjà hors combat).
+
 ## Zone 12 — REGISTRE DES ACTIONS (design SCELLÉ 2026-08-17 : jugé + grounding exhaustif)
 
 Demande user (verbatim : « il faut un fichier .json qui liste toutes ces "capacités"
