@@ -26,9 +26,9 @@ describe('hooks du stage — smoke (premier rendu, état initial)', () => {
     const html = probe(() => {
       const svgRef = useRef<SVGSVGElement>(null);
       const cam = useStageCamera(svgRef);
-      return `${cam.shownRot}|${cam.shownEdge}|${cam.turning}|${typeof cam.zoom}|${typeof cam.camPan.x}`;
+      return `${cam.shownRot}|${cam.shownEdge}|${cam.turning}|${typeof cam.zoom}`;
     });
-    expect(html).toContain('data-out="0|false|false|number|number"');
+    expect(html).toContain('data-out="0|false|false|number"');
   });
 
   it('useStagePointer : hover null, tous les handlers exposés (scène absente tolérée)', () => {
@@ -70,8 +70,8 @@ describe('stageFocus / computeViewBounds / cameraTargeting — helpers purs de c
   };
 
   it('hors combat : suit la position (visuelle) du leader, sinon partyPos', () => {
-    expect(stageFocus(base)).toEqual({ x: 2, y: 3 });
-    expect(stageFocus({ ...base, partyLeader: cbt('h', 'hero', { x: 0, y: 0 }) })).toMatchObject({ x: 2, y: 3 }); // walkStill → position logique
+    expect(stageFocus(base)).toEqual({ x: 2, y: 3, sujet: 'groupe' });
+    expect(stageFocus({ ...base, partyLeader: cbt('h', 'hero', { x: 0, y: 0 }) })).toEqual({ x: 2, y: 3, sujet: 'groupe:h' }); // walkStill → position logique
   });
 
   it('paire de visée (télégraphe/attaque en résolution) : cadre le MILIEU attaquant ↔ cible', () => {
@@ -79,17 +79,17 @@ describe('stageFocus / computeViewBounds / cameraTargeting — helpers purs de c
     const t = cbt('t', 'hero', { x: 4, y: 2 });
     const battle = { combatants: [a, t], order: ['a'], turn: 0 } as unknown as BattleState;
     const focus = stageFocus({ ...base, mode: 'battle', battle, targeting: { from: a, to: t } });
-    expect(focus).toEqual({ x: 2, y: 1 });
-    expect(stageFocus({ ...base, mode: 'battle', battle, pendingAttack: { attackerId: 'a', targetId: 't' } })).toEqual({ x: 2, y: 1 });
+    expect(focus).toEqual({ x: 2, y: 1, sujet: 'paire:a>t' });
+    expect(stageFocus({ ...base, mode: 'battle', battle, pendingAttack: { attackerId: 'a', targetId: 't' } })).toEqual({ x: 2, y: 1, sujet: 'paire:a>t' });
   });
 
   it('combat sans paire : suit l’actif ; ouverture (planView) ou pas d’actif → centroïde ; peek de frise prime', () => {
     const a = cbt('a', 'hero', { x: 1, y: 1 });
     const b = cbt('b', 'enemy', { x: 3, y: 3 });
     const battle = { combatants: [a, b], order: ['a', 'b'], turn: 0 } as unknown as BattleState;
-    expect(stageFocus({ ...base, mode: 'battle', battle })).toMatchObject({ x: 1, y: 1 }); // l'actif
-    expect(stageFocus({ ...base, mode: 'battle', battle, planView: true })).toEqual({ x: 2, y: 2 }); // centroïde
-    expect(stageFocus({ ...base, mode: 'battle', battle, hoverCombatantId: 'b' })).toMatchObject({ x: 3, y: 3 }); // peek
+    expect(stageFocus({ ...base, mode: 'battle', battle })).toEqual({ x: 1, y: 1, sujet: 'actif:a' }); // l'actif
+    expect(stageFocus({ ...base, mode: 'battle', battle, planView: true })).toEqual({ x: 2, y: 2, sujet: 'centroide' }); // centroïde
+    expect(stageFocus({ ...base, mode: 'battle', battle, hoverCombatantId: 'b' })).toEqual({ x: 3, y: 3, sujet: 'peek:b' }); // peek
   });
 
   it('cameraTargeting : paire depuis actorAim, mêlée/charge = ligne pleine', () => {

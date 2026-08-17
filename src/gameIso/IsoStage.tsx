@@ -8,7 +8,7 @@
  * Caméra : `useStageCamera` (crans, focus, culling) ; pointeur : `useStagePointer` (picking par la
  * projection inverse, pan, clics) ; visée au survol : `useHoverTargeting`.
  */
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
 import { heightAt, sceneMetresPerTile } from '../state/scene';
@@ -26,7 +26,9 @@ import { Dims, tileCenter, capsuleCenter } from '../geometry/iso';
 import { getViewZ, subscribeViewZ } from '../state/viewLevel';
 import { setVisibleTileBounds } from './viewport';
 import { useCombatFx } from './fx/useCombatFx';
-import { useWalkAnim, subscribeWalkFrames } from './fx/useWalkAnim';
+import { useWalkAnim } from './fx/useWalkAnim';
+import { subscribeStageFrames, battreStageFrames, demanderFrames, relacherFrames } from './stage/stageFrames';
+import { getStagePan, subscribeStagePan } from '../state/stagePan';
 import { walkPoseAt } from './fx/walkPose';
 import { FxLayer } from './fx/FxLayer';
 import { buildRoofs, clearedSpace } from './builders/roofs';
@@ -40,7 +42,7 @@ import { tokenChromes, type TokenChromeMark } from './builders/tokenChrome';
 import { TokenChromeOverlay } from './stage/TokenChromeOverlay';
 import { type WalkPos } from './fx/walkPose';
 import { actorCapsuleOf } from './stage/actorCapsule';
-import { VolumetricWorld } from './stage/VolumetricWorld';
+import { VolumetricWorld, type WorldFrame } from './stage/VolumetricWorld';
 import { viewPolicy } from './stage/viewPolicy';
 import { wallTraitObjs } from './stage/layers';
 import { gridLines } from '../geometry/grid';
@@ -63,7 +65,7 @@ import { AimOverlay } from './stage/AimOverlay';
 import { CrewTooltip } from './stage/CrewTooltip';
 import { DebugMapLabels, DebugLegend } from './stage/DebugOverlay';
 import { Flies } from './stage/Ambiance';
-import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, VW, VH } from './stage/useStageCamera';
+import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, adoucirFocal, DUREE_FOCALE_MS, VW, VH, type LissageFocal } from './stage/useStageCamera';
 import { useStagePointer } from './stage/useStagePointer';
 import { useHoverTargeting } from './stage/useHoverTargeting';
 import type { Pt } from '../state/path';
@@ -74,6 +76,7 @@ import { portalsForParty } from '../state/roomPortals';
  *  cases, jamais l'outil qui sert à poser un mur — elle ne concurrence ni les traits de structure ni
  *  les pions posés dessus. */
 const GRILLE_OPACITE = 0.11;
+
 
 export function IsoStage() {
   // ── État (store) ────────────────────────────────────────────────────────────────────────────────
@@ -123,9 +126,18 @@ export function IsoStage() {
   // Un pas FRANCHI pendant une marche volumique : le seul rendu que la boucle demande (cf. son battement).
   const [, setWalkStep] = useState(0);
   const demandeRef = useRef<string | null>(null);
+  // ADOUCISSEMENT DE FOCALE : le point focal du dernier calcul de vue, le lissage EN COURS (départ figé
+  // + horodatage) et le SUJET que la caméra suivait. Le saut se détecte au SUJET, jamais aux
+  // coordonnées : un marcheur qui glisse déplace la cible sans en changer.
+  const focalRef = useRef({ x: 0, y: 0 });
+  const lissageRef = useRef<LissageFocal | null>(null);
+  const sujetFocalRef = useRef<string | null>(null);
+  // Source de battement PROPRE À CE STAGE : deux écrans montés côte à côte (jeu + aperçu) ne peuvent
+  // pas se relâcher les images l'un de l'autre.
+  const sourceFocale = useRef(Symbol('focale')).current;
 
   // ── Caméra (transition de crans, zoom, pan) & animations ───────────────────────────────────────
-  const { shownRot, shownEdge, turning, zoom, camPan } = useStageCamera(svgRef);
+  const { shownRot, shownEdge, turning, zoom } = useStageCamera(svgRef);
   // Marche visuelle : le token GLISSE le long du chemin. La boucle de rendu volumique lit `walksRef`
   // elle-même (#1176, P2-4) — aucun rendu React par frame.
   const walksRef = useWalkAnim(false);
@@ -201,23 +213,50 @@ export function IsoStage() {
   const walkPosAt = (now: number): WalkPos => (id, x, y) => walkPoseAt(walksRef.current[id], x, y, now);
   const walkPosOf: WalkPos = walkPosAt(wnow);
 
-  // ── CAMÉRA À UN INSTANT (la seule définition) : point focal (paire de visée / actif / leader) puis
-  // translation de la vue. Le rendu la demande à `wnow` ; la boucle volumique la redemande PAR FRAME
-  // pendant une marche, ce qui la fait glisser sans aucun rendu React (#1176, P2-4).
+  // ── CAMÉRA À UN INSTANT (la seule définition) : point focal (paire de visée / actif / leader),
+  // ADOUCI quand la cible SAUTE, puis décalage manuel de la vue. Le rendu la demande à `wnow` ; la
+  // boucle de rendu la redemande PAR FRAME, ce qui la fait glisser sans aucun rendu React (#1176,
+  // P2-4). UNE valeur par image pour ses DEUX clients — la caméra three (par `camAt` du cadre) et le
+  // groupe d'overlays SVG : aucun d'eux ne lisse quoi que ce soit de son côté.
   const targeting = mode === 'battle' && battle ? cameraTargeting(battle, actorAim) : null;
-  const camAt = (now: number) => {
-    if (!scene) return { x: camPan.x, y: camPan.y };
-    const wp = walkPosAt(now);
-    const focus = stageFocus({ mode, battle, partyPos, partyLeader, walkPosOf: wp, planView, hoverCombatantId, targeting, pendingAttack, pendingCast });
+  const argsFocal = { mode, battle, partyPos, partyLeader, planView, hoverCombatantId, targeting, pendingAttack, pendingCast };
+  /** Point focal ÉCRAN à un instant (avant décalage manuel), sans adoucissement : la cible VIVE. */
+  const focalBrutAt = (now: number) => {
+    const focus = stageFocus({ ...argsFocal, walkPosOf: walkPosAt(now) });
     // Visée du SUJET : le milieu de sa capsule (`actorCapsuleOf`, la même que consomme l'occlusion), et
     // non le sol de sa case — viser le sol décale le cadre d'une demi-capsule vers le haut de la scène,
     // donc vers ce qui SURPLOMBE le sujet (biais multiplié par le zoom).
     const fc = capsuleCenter(actorCapsuleOf(
-      { x: focus.x, y: focus.y, h: heightAt(scene, Math.round(focus.x), Math.round(focus.y), activeZ) },
+      { x: focus.x, y: focus.y, h: heightAt(scene!, Math.round(focus.x), Math.round(focus.y), activeZ) },
       dimsVue,
     ));
-    return { x: VW / 2 - fc.x + camPan.x, y: VH / 2 - fc.y + camPan.y };
+    return { x: VW / 2 - fc.x, y: VH / 2 - fc.y };
   };
+  /** Caméra ET point focal adouci du même instant, en UN calcul (la boucle a besoin des deux). */
+  const camEtFocalAt = (now: number) => {
+    const pan = getStagePan();
+    if (!scene) return { cam: { x: pan.x, y: pan.y }, focal: focalRef.current };
+    const focal = adoucirFocal(lissageRef.current, focalBrutAt(now), now);
+    return { cam: { x: focal.x + pan.x, y: focal.y + pan.y }, focal };
+  };
+  const camAt = (now: number) => camEtFocalAt(now).cam;
+  // SUJET que la caméra suit à ce rendu — l'entrée du saut de focale, décidé dans la phase d'EFFET
+  // ci-dessous (`useLayoutEffect`) : un rendu jeté avant commit n'arme donc aucune image et ne laisse
+  // aucun lissage derrière lui.
+  const sujetFocal = scene ? stageFocus({ ...argsFocal, walkPosOf }).sujet : '';
+  // ZOOM APPLIQUÉ (creux de la transition de cran compris) : la même valeur pour le canevas et pour le
+  // groupe d'overlays.
+  const zoomVue = zoom * (turning ? 0.97 : 1);
+  // REGARD servi au monde volumique : référence STABLE tant que la géométrie de la vue ne bouge pas
+  // (cran/lacet, zoom). La caméra n'y est pas une VALEUR mais `camAt`, que la boucle de rendu redemande
+  // à SA cadence — un cadre reforgé par image re-rendait tout le sous-arbre volumique à chaque geste.
+  const camAtRef = useRef(camAt);
+  camAtRef.current = camAt;
+  const camAtStable = useRef((now: number) => camAtRef.current(now)).current;
+  const frameMonde = useMemo<WorldFrame>(
+    () => ({ mode: 'plateau', dims: dimsVue, camAt: camAtStable, zoom: zoomVue }),
+    [dimsVue, zoomVue, camAtStable],
+  );
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
   // Cases LOGIQUES des alliés — ce que la marche fait glisser, jamais ce qu'elle fait bouger.
   const allyBases = mode === 'battle' && battle
@@ -244,27 +283,58 @@ export function IsoStage() {
     [scene, visualPartyPos.x, visualPartyPos.y, visualPartyPos.z],
   );
   const cutawayAllies = roomCutawayAllies(roomFocus, visualAllies);
-  // Le monde glisse dans la boucle de rendu et React ne rend plus rien entre deux pas. Ce que le stage
-  // écrit HORS de React suit donc la marche à la FRAME : la caméra que lisent les handlers du pointeur
-  // (`camRef` — seule source de l'inversion pixel→tuile, `useStagePointer`), le cadre de tuiles visibles
+  // Le monde glisse dans la boucle de rendu et React ne rend plus rien entre deux pas — ni pendant un
+  // glisser-caméra, ni pendant l'approche d'une focale. Ce que le stage écrit HORS de React suit donc
+  // le BATTEMENT (`stage/stageFrames`) : la caméra que lisent les handlers du pointeur (`camRef` —
+  // seule source de l'inversion pixel→tuile, `useStagePointer`), le cadre de tuiles visibles
   // (`setVisibleTileBounds`) et le transform du groupe d'overlays SVG (curseur, aperçu de chemin,
   // télégraphes), qui décrocheraient du monde d'une case entière.
   // Le FRANCHISSEMENT d'une case, lui, n'est pas une affaire d'image : c'est l'événement DISCRET dont
   // dépendent les vérités de pièce et de dégagement (`visualAllies` → `roomFocus`/`cleared`/`propEls`).
   // Il demande UN rendu — à la cadence du PAS, jamais à celle de la frame.
-  useEffect(() => subscribeWalkFrames(() => {
+  useEffect(() => subscribeStageFrames(() => {
     const now = performance.now();
-    const c = camAt(now);
+    const lissage = lissageRef.current;
+    if (lissage && now - lissage.t0 >= DUREE_FOCALE_MS) {
+      lissageRef.current = null;
+      relacherFrames(sourceFocale); // la focale est arrivée : plus rien à tenir en images
+    }
+    const { cam: c, focal } = camEtFocalAt(now);
     camRef.current = c;
+    focalRef.current = focal;
     setVisibleTileBounds(computeViewBounds(c, zoom, dimsVue));
     const g = camGRef.current;
-    if (g) g.style.transform = stageCamTransform(c, zoom * (turning ? 0.97 : 1));
+    if (g) g.style.transform = stageCamTransform(c, zoomVue);
     const k = tilesKey(visualTilesAt(now));
     if (k !== visualAlliesKey && demandeRef.current !== k) {
       demandeRef.current = k;
       setWalkStep((n) => n + 1);
     }
   }));
+  // SAUT DE FOCALE : la caméra change de SUJET (unité active, peek de frise, paire de visée). La vue y
+  // court depuis le point qu'elle occupait, en JS, dans la valeur que les DEUX clients lisent, et un
+  // rAF tient l'image tant que l'approche dure. Un panoramique manuel n'est pas un saut : il reste 1:1.
+  // En phase d'EFFET (jamais de rendu) et AVANT la peinture : le battement immédiat réécrit la vue au
+  // point quitté, que le rendu venait de poser sur la nouvelle cible.
+  useLayoutEffect(() => {
+    const now = performance.now();
+    if (sujetFocalRef.current !== sujetFocal) {
+      if (sujetFocalRef.current !== null) {
+        lissageRef.current = { depart: focalRef.current, t0: now };
+        demanderFrames(sourceFocale);
+        battreStageFrames();
+      }
+      sujetFocalRef.current = sujetFocal;
+    }
+    focalRef.current = camEtFocalAt(now).focal;
+  });
+  // La demande de frames de l'adoucissement meurt AVEC l'écran : une source oubliée ferait battre la
+  // boucle sur un stage démonté.
+  useEffect(() => () => relacherFrames(sourceFocale), [sourceFocale]);
+  // RECENTRAGE (touche dédiée, nouvelle unité active, cran de vue) : il remet le décalage vivant à zéro
+  // sans qu'aucun rendu ne suive forcément — un glisser en cours n'a rien commis. La vue le peint donc
+  // au battement, comme tout le reste.
+  useEffect(() => subscribeStagePan(battreStageFrames), []);
   // ESPACE DÉGAGÉ (#818, #907, #950) — UNE loi pour toute l'architecture. Une nappe n'est peinte que
   // si le groupe la VOIT (`seenSections`, nourri des cases explorées de `state/vision.ts`), et ce
   // qui l'ABRITE est RETIRÉ, à l'échelle de la MASSE, jamais voilé ni découpé panneau par panneau :
@@ -474,8 +544,11 @@ export function IsoStage() {
 
   // Transform CAMÉRA (pan/zoom/rotation) — partagée par le groupe principal ET l'overlay d'étiquettes
   // de zone (Bug lisibilité #782 : ce dernier doit suivre la même projection).
-  const camTransform = stageCamTransform(cam, zoom * (turning ? 0.97 : 1));
-  const camTransition = turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out';
+  // AUCUNE transition sur `transform` : ce groupe suit la caméra à l'image près, comme le canevas
+  // volumique qui se pose, lui, sans le moindre lissage. Ce qui doit glisser glisse dans `camAt`
+  // (`adoucirFocal`), donc pour les DEUX à la fois. Le creux du dim-and-turn reste une OPACITÉ.
+  const camTransform = stageCamTransform(cam, zoomVue);
+  const camTransition = 'opacity 0.13s ease-out';
   const camOpacity = turning ? 0.6 : 1;
 
   return (
@@ -485,7 +558,7 @@ export function IsoStage() {
       <VolumetricWorld
         scene={scene}
         mpt={mpt}
-        frame={{ mode: 'plateau', dims: dimsVue, cam, camAt, zoom: zoom * (turning ? 0.97 : 1) }}
+        frame={frameMonde}
         tintAt={tintAt}
         keepEl={keepEl}
         nappeVue={nappeVue}

@@ -2,26 +2,18 @@
  * Marche visuelle (extraite d'IsoStage) : le token GLISSE le long du chemin (ANIM_MOVE) au lieu
  * de se téléporter à la destination. `walksRef` = id → {path, start} ; rAF tant qu'actif.
  *
- * Le rAF ne fait que purger les marches finies et BATTRE la frame (`subscribeWalkFrames`). Qui PEINT
+ * Le rAF ne fait que purger les marches finies et BATTRE la frame du stage (`stage/stageFrames`, le
+ * rythme que partagent la marche, le glisser-caméra et l'adoucissement de focale). Qui PEINT
  * décide du reste (#1176, P2-4) — le monde volumique lit `walksRef` depuis sa propre boucle de rendu
  * et ne re-rend rien ; seule l'ARRIVÉE y re-synchronise React, en un rendu, pour
- * que les vérités dérivées de l'état de marche (transition de caméra, aperçu de chemin) reprennent la
+ * que les vérités dérivées de l'état de marche (aperçu de chemin) reprennent la
  * main sur la pose committée du store.
  */
 import { useEffect, useRef, useState } from 'react';
 import { bus, EVT } from '../../state/bus';
 import { walkDuration, STEP_MS } from '../../geometry/walk';
+import { battreStageFrames } from '../stage/stageFrames';
 import type { WalkTrack } from './walkPose';
-
-const battements = new Set<() => void>();
-
-/** S'abonne au BATTEMENT de la marche : une passe par frame tant qu'un glissement dure. */
-export function subscribeWalkFrames(cb: () => void): () => void {
-  battements.add(cb);
-  return () => {
-    battements.delete(cb);
-  };
-}
 
 /** `repaint` : la voie qui peint a-t-elle besoin d'un rendu React par frame ? (SVG oui, volumique non.) */
 export function useWalkAnim(repaint: boolean) {
@@ -41,7 +33,7 @@ export function useWalkAnim(repaint: boolean) {
         if (now - w.start >= walkDuration(w.path, STEP_MS)) delete walksRef.current[id];
         else any = true;
       }
-      for (const cb of [...battements]) cb();
+      battreStageFrames();
       if (repaintRef.current || !any) setWalkTick((t) => t + 1);
       walkRaf.current = any ? requestAnimationFrame(tick) : 0;
     };

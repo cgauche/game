@@ -16,6 +16,7 @@ import type { RoomPortal } from '../../state/roomPortals';
 import { VH, VW } from './useStageCamera';
 import { useStagePointer, type StagePointer } from './useStagePointer';
 import { SENSIBILITE_DRAG_DEG_PX, getStageYaw, poserYaw, resetStageYaw } from '../../state/stageYaw';
+import { getStagePan, resetStagePan } from '../../state/stagePan';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 Object.defineProperty(window, 'matchMedia', {
@@ -714,7 +715,10 @@ describe('useStagePointer — glisser-tourner au bouton MILIEU', () => {
     ({ ...pointerEvent(x, y), button, clientX: x, clientY: y, preventDefault: () => undefined }) as unknown as React.PointerEvent;
 
   afterEach(() => {
+    // Lacet ET panoramique sont des modules VIVANTS partagés par la suite (`isolate: false`) : un geste
+    // qui les laisse ailleurs qu'au repos décadre la vue des fichiers voisins.
     resetStageYaw();
+    resetStagePan();
   });
 
   it('un glisser de N px au MILIEU pose le lacet à yaw0 + N × SENSIBILITE_DRAG_DEG_PX', () => {
@@ -736,18 +740,25 @@ describe('useStagePointer — glisser-tourner au bouton MILIEU', () => {
     vi.unstubAllGlobals();
   });
 
-  it('le bouton PRINCIPAL panoramique et ne touche PAS au lacet', () => {
+  it('le bouton PRINCIPAL panoramique HORS du store, qui ne reçoit son commit qu’au relâchement', () => {
     vi.stubGlobal('requestAnimationFrame', undefined);
     const scene = emptyScene(8, 8);
     useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 1 }, party: [], dialogue: null, camPan: { x: 0, y: 0 } });
     resetStageYaw();
+    resetStagePan();
     const pointer = monter(scene);
 
     pointer.handlers.onPointerDown(evBouton(100, 100, 0));
     act(() => pointer.handlers.onPointerMove(evBouton(220, 100, 0)));
 
     expect(getStageYaw()).toBe(0);
-    expect(useGame.getState().camPan.x).not.toBe(0); // c'est bien un PANORAMIQUE qui a eu lieu
+    expect(getStagePan().x).not.toBe(0); // c'est bien un PANORAMIQUE qui a eu lieu…
+    expect(useGame.getState().camPan).toEqual({ x: 0, y: 0 }); // …et le store n'en a rien su
+
+    // Relâchement : UN commit, sur la valeur que la vue montre déjà.
+    act(() => pointer.handlers.onPointerUp(evBouton(220, 100, 0)));
+    expect(useGame.getState().camPan.x).toBeCloseTo(getStagePan().x, 9);
+    expect(useGame.getState().camPan.x).not.toBe(0);
     vi.unstubAllGlobals();
   });
 });

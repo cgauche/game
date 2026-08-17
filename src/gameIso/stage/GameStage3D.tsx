@@ -1818,13 +1818,21 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flaquesÉcrites]);
 
-  // La frame se rejoue à CHAQUE rendu du stage — et, pendant une MARCHE, au battement de celle-ci :
-  // c'est la boucle de rendu qui lit alors la position visuelle, pas React (P2-4). L'effet n'a pas de
-  // dépendances par CONSTRUCTION : il court après chaque rendu, donc `dessiner` réabonné est toujours
-  // celui des props courantes.
+  // ABONNEMENT AU BATTEMENT (`stage/stageFrames`, par `anim.subscribe`) : il ne se refait qu'au
+  // changement de SOURCE de frames, jamais à chaque rendu — l'objet `anim` que l'hôte reforge par rendu
+  // n'en est pas une. La frame qu'il rejoue lit `dessinerRef`, donc toujours les props courantes.
+  const battement = anim?.subscribe;
+  useEffect(() => battement?.(() => dessinerRef.current()), [battement]);
+
+  // REDESSIN : un par COMMIT React de l'hôte, sans tableau de dépendances — assumé. Ce que la passe de
+  // frame lit hors de tout montage (le REGARD, l'allure des quads, les marques dynamiques, les halos,
+  // les entrées de découpe) est reforgé à chaque rendu de l'hôte (`stage/VolumetricWorld` : `frameCam`,
+  // `chromeAt`, `anim`), donc AUCUNE liste de dépendances ne filtrerait quoi que ce soit — mesuré : un
+  // commit sans rapport avec la caméra = un `render()`. Ce que ça coûte a changé d'ordre depuis que les
+  // gestes de vue (panoramique, marche, focale) sont impératifs : les commits y sont rares. La
+  // stabilisation de `frameCam`/`chromeAt`/`dynMarks`/`halos` est le ticket suivant.
   useEffect(() => {
     dessiner();
-    return anim?.subscribe(dessiner);
   });
 
   // Le canevas OCCUPE la boîte du stage : c'est la MÊME boîte que le SVG, donc la même classe

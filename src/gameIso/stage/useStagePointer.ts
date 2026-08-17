@@ -6,7 +6,8 @@
  *    `stage/stageCam.ts`) — la même que le peintre, affine ou volumique ;
  *  - `pickTile` : picking SPRITE-aware en combat, hit-test délégué à la voie de rendu (`cidUnderPointer`) ;
  *  - glisser-caméra (seuil PAN_THRESHOLD, l'action de clic est DIFFÉRÉE au relâchement) — bouton
- *    principal : panoramique ; bouton MILIEU : lacet libre de la vue ;
+ *    principal : panoramique posé HORS de React (`state/stagePan`, un battement de frame par
+ *    mouvement) et commis au store en UN `set` au relâchement ; bouton MILIEU : lacet libre de la vue ;
  *  - `performClick` : sélection / cible / déplacement (combat et exploration) ;
  *  - `moveAlong` : marche pas-à-pas du groupe (sauts par-dessus les gouffres compris) ;
  *  - clic droit : attaque la plus PERTINENTE sur l'ennemi survolé (scoreur partagé avec l'IA) ;
@@ -29,6 +30,8 @@ import { combatantAtTile } from '../../state/combatGeometry';
 import { resolveCursorZ } from '../../state/combatCursor';
 import { controlsActive } from '../../state/netOwnership';
 import { SENSIBILITE_DRAG_DEG_PX, getStageYaw, poserYaw } from '../../state/stageYaw';
+import { accordsPan, getStagePan, poserPan } from '../../state/stagePan';
+import { battreStageFrames } from './stageFrames';
 import { combatantClickActs } from '../../state/combatOrParty';
 import { hoverClickCommits } from '../../ui/pointerCaps';
 import { bestAttack } from '../../state/attackRelevance';
@@ -88,12 +91,16 @@ export function useStagePointer({
   partyLeader: Combatant | undefined;
   activeZ?: number;
 }): StagePointer {
-  const panCamBy = useGame((s) => s.panCamBy);
+  const setCamPan = useGame((s) => s.setCamPan);
   const [hover, setHover] = useState<Pt | null>(null);
   const [hoveredPortal, setHoveredPortal] = useState<RoomPortal | null>(null);
   const movingRef = useRef(false);
   // Glisser-caméra : on diffère l'action de clic au relâchement ; un glissement > seuil = panoramique.
-  const dragRef = useRef<{ sx: number; sy: number; lastX: number; lastY: number; panned: boolean; button: number; tile: Pt | null; yaw0: number } | null>(null);
+  // La BASE du panoramique (`pan0` + le point de viewBox `vbX/vbY` + le zoom + le n° d'accord du
+  // décalage vivant) se re-pose dès qu'une de ses hypothèses bouge sous le geste : un recentrage
+  // (`resetCamPan`) ou un cran de molette. Sans elle, le delta CUMULÉ serait ré-échelonné par le
+  // nouveau zoom, et le relâchement contredirait le recentrage.
+  const dragRef = useRef<{ sx: number; sy: number; vbX: number; vbY: number; panned: boolean; button: number; tile: Pt | null; yaw0: number; pan0: { x: number; y: number }; zoom0: number; accord0: number } | null>(null);
 
   // Recette (DEV) : pilotage PROGRAMMATIQUE du survol — __wfrp.hover('id') passe par ce hook,
   // le tooltip/réticule se rendent sans souris réelle (pas de chasse aux pixels).
@@ -353,6 +360,26 @@ export function useStagePointer({
     }
   };
 
+  /** RE-POSE la base du panoramique sur l'état courant : le décalage vivant devient l'origine, et le
+   *  point de viewBox sous le doigt aussi. Ce que le geste a déjà parcouru est acquis, ce qui suit se
+   *  mesure à partir d'ici. */
+  const rebaser = (d: NonNullable<typeof dragRef.current>, p: { x: number; y: number }): void => {
+    d.pan0 = getStagePan();
+    d.vbX = p.x;
+    d.vbY = p.y;
+    d.zoom0 = zoom;
+    d.accord0 = accordsPan();
+  };
+
+  // Un glisser survit à la souris : l'écran peut être QUITTÉ en plein geste (changement de scène,
+  // combat qui s'ouvre) et aucun `pointerup` n'arrive. Le décalage vivant reviendrait alors hanter le
+  // montage suivant, sans que le store — seul état commis — n'en sache rien. On le rend au commis.
+  useEffect(() => () => {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    const commis = useGame.getState().camPan;
+    poserPan(commis.x, commis.y);
+  }, []);
   // Caméra libre : on ARME un glisser au pointer-down (sans agir), on panoramique au mouvement
   // au-delà du seuil, et le clic ne se déclenche au relâchement QUE si on n'a pas glissé.
   const onPointerDown = (ev: React.PointerEvent) => {
@@ -361,7 +388,7 @@ export function useStagePointer({
     // la page défile au moindre mouvement) — il prendrait le glisser-tourner à chaque geste.
     if (ev.button === 1) ev.preventDefault();
     const p = clientToSvg(ev);
-    dragRef.current = { sx: ev.clientX, sy: ev.clientY, lastX: p?.x ?? 0, lastY: p?.y ?? 0, panned: false, button: ev.button, tile: pickTile(ev), yaw0: getStageYaw() };
+    dragRef.current = { sx: ev.clientX, sy: ev.clientY, vbX: p?.x ?? 0, vbY: p?.y ?? 0, panned: false, button: ev.button, tile: pickTile(ev), yaw0: getStageYaw(), pan0: getStagePan(), zoom0: zoom, accord0: accordsPan() };
     svgRef.current?.setPointerCapture?.(ev.pointerId);
   };
 
@@ -380,9 +407,14 @@ export function useStagePointer({
         }
         const p = clientToSvg(ev);
         if (p) {
-          panCamBy((p.x - d.lastX) / zoom, (p.y - d.lastY) / zoom); // delta écran (viewBox) → unités caméra
-          d.lastX = p.x;
-          d.lastY = p.y;
+          // Une hypothèse de la base a bougé sous le geste (recentrage, cran de molette) : on se re-cale
+          // dessus AVANT d'appliquer quoi que ce soit — le recentrage gagne, et le doigt repart de là.
+          if (accordsPan() !== d.accord0 || zoom !== d.zoom0) rebaser(d, p);
+          // Le décalage se pose ABSOLUMENT depuis celui de la base, comme le lacet ci-dessus, et RIEN
+          // n'entre dans le store avant le relâchement : un `set` par événement de souris re-rendait le
+          // stage ENTIER. Le battement repose les deux clients de la caméra sur la même valeur.
+          poserPan(d.pan0.x + (p.x - d.vbX) / zoom, d.pan0.y + (p.y - d.vbY) / zoom); // delta écran (viewBox) → unités caméra
+          battreStageFrames();
         }
         (ev.currentTarget as SVGElement).style.cursor = 'grabbing';
         return; // pendant un panoramique : pas d'affordance ni de hover de visée
@@ -418,7 +450,13 @@ export function useStagePointer({
     dragRef.current = null;
     svgRef.current?.releasePointerCapture?.(ev.pointerId);
     (ev.currentTarget as SVGElement).style.cursor = '';
-    if (d && !d.panned && d.button === 0) performClick(d.tile); // tap (sans glisser) au bouton principal = clic
+    if (!d) return;
+    // FIN DU GLISSER-CAMÉRA : le décalage vivant se COMMET au store, en UN seul `set` ABSOLU pour tout
+    // le geste — c'est là, et là seulement, que l'état React converge sur ce que la vue montre déjà.
+    // Un recentrage arrivé APRÈS le dernier mouvement a le dernier mot : il a déjà commis {0,0} et
+    // ramené le vivant, il n'y a rien à écrire par-dessus.
+    if (d.panned && d.button === 0 && accordsPan() === d.accord0) setCamPan(getStagePan().x, getStagePan().y);
+    if (!d.panned && d.button === 0) performClick(d.tile); // tap (sans glisser) au bouton principal = clic
   };
 
   const onPointerLeave = () => {

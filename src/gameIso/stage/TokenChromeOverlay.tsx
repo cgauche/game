@@ -38,7 +38,7 @@ import { TokenChromeMarks } from '../TokenChromeMarks';
 import { tokenBodyKind } from '../tokenBodyKind';
 import { discCapPath, discR } from '../builders/dynamicMarks';
 import { NEUTRAL_TINT } from '../teamColors';
-import { subscribeWalkFrames } from '../fx/useWalkAnim';
+import { subscribeStageFrames } from './stageFrames';
 import type { TokenChromeMark } from '../builders/tokenChrome';
 import type { WalkPos } from '../fx/walkPose';
 
@@ -177,7 +177,7 @@ export function TokenChromeOverlay({ chromes, dims, liftAt, pions, tintAt, walkP
   // closure du battement porte toujours les chromes et la vue du rendu courant (même patron que la
   // passe de dessin du monde volumique, `GameStage3D`).
   useEffect(() =>
-    subscribeWalkFrames(() => {
+    subscribeStageFrames(() => {
       const wp = walkPosAt(performance.now());
       for (const m of chromes) {
         const g = groupes.current.get(m.id);

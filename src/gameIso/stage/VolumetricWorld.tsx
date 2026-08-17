@@ -25,7 +25,7 @@ import type { Pt } from '../../state/path';
 import type { LightSource } from '../../state/vision';
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
-import { subscribeWalkFrames } from '../fx/useWalkAnim';
+import { subscribeStageFrames } from './stageFrames';
 import { walkGlideM, type WalkTrack } from '../fx/walkPose';
 import { buildHighlights, type HighlightEl } from '../builders/highlights';
 import { NO_DYNAMIC_MARKS, type DynamicMarks } from '../builders/dynamicMarks';
@@ -39,15 +39,15 @@ import { GameStage3D, type PercageEntrees, type StageFrame, type StageWalkAnim }
 
 /**
  * REGARD porté sur le monde, à l'échelle de l'hôte. Même union que celle de la caméra (`StageFrame`),
- * le regard de PLATEAU portant en plus le cadrage À UN INSTANT (`camAt`) que la boucle de rendu redemande
- * par frame, et le regard POV le sujet dont la marche déplace l'œil (`cid`).
+ * le regard de PLATEAU ne portant PAS de position de caméra mais le cadrage À UN INSTANT (`camAt`) que
+ * la boucle de rendu redemande par frame — une valeur figée dans le cadre reforgerait celui-ci à chaque
+ * image. Le regard POV, lui, porte le sujet dont la marche déplace l'œil (`cid`).
  */
 export type WorldFrame =
   | {
       mode: 'plateau';
       dims: Dims;
-      cam: { x: number; y: number };
-      /** Caméra à un instant DONNÉ : la boucle de rendu la redemande par frame pendant une marche. */
+      /** Caméra à un instant DONNÉ — la seule forme sous laquelle la vue de plateau la fournit. */
       camAt: (now: number) => { x: number; y: number };
       zoom: number;
     }
@@ -128,7 +128,7 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   if (frame.mode === 'pov' && frame.cid) bases.set(frame.cid, { x: frame.partyPos.x, y: frame.partyPos.y, z: frame.partyPos.z ?? 0 });
   const solM = (x: number, y: number, z: number) => heightAt(scene, Math.round(x), Math.round(y), z);
   const anim: StageWalkAnim = {
-    subscribe: subscribeWalkFrames,
+    subscribe: subscribeStageFrames,
     glide: (cid) => {
       const base = bases.get(cid);
       return base ? walkGlideM(walksRef.current[cid], base, mpt, performance.now(), solM) : null;
@@ -140,7 +140,7 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   const allures = new Map((chromes ?? []).map((m) => [m.id, { ghost: m.ghost, dim: m.dim, highlight: m.highlight }]));
   const chromeAt: ChromeAt = (cid) => allures.get(cid) ?? null;
   const frameCam: StageFrame = frame.mode === 'plateau'
-    ? { mode: 'plateau', dims: frame.dims, cam: frame.cam, zoom: frame.zoom }
+    ? { mode: 'plateau', dims: frame.dims, cam: frame.camAt(performance.now()), zoom: frame.zoom }
     : { mode: 'pov', partyPos: frame.partyPos, facing: frame.facing, indoor: frame.indoor, cid: frame.cid };
   return <GameStage3D scene={scene} mpt={mpt} frame={frameCam} tintAt={tintAt} keepEl={keepEl} nappeVue={nappeVue} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks ?? NO_DYNAMIC_MARKS} halos={halos ?? NO_INTERACTION_HALOS} chromeAt={chromeAt} anim={anim} percage={percage ?? null} pionsEnDisques={pionsEnDisques} />;
 }
