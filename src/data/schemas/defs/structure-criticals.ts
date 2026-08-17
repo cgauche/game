@@ -27,5 +27,3 @@ export const schema = z.strictObject({
   source: sourceRefSchema,
   entries: z.array(structureCritEntrySchema),
 });
-
-export type StructureCriticalsData = z.infer<typeof schema>;

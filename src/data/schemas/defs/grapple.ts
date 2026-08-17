@@ -23,5 +23,3 @@ export const schema = z.strictObject({
   }),
   source: sourceRefSchema.optional(),
 });
-
-export type GrappleData = z.infer<typeof schema>;

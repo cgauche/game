@@ -66,5 +66,3 @@ const skillEntrySchema = z.strictObject({
 });
 
 export const schema = z.array(skillEntrySchema);
-
-export type SkillsData = z.infer<typeof schema>;

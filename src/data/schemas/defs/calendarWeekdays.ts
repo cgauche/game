@@ -15,5 +15,3 @@ export const schema = z.array(
     source: sourceRefSchema.optional(),
   }),
 );
-
-export type CalendarWeekdaysData = z.infer<typeof schema>;

@@ -13,10 +13,6 @@ const atelierAtom = persistedAtom(
   (on) => (on ? '1' : '0'),
 );
 
-export function atelierMode(): boolean {
-  return atelierAtom.get();
-}
-
 export function setAtelierMode(on: boolean): void {
   atelierAtom.set(on);
 }

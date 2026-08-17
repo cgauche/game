@@ -19,5 +19,3 @@ export const schema = z.array(
     shadeDark: z.number().optional(),
   }),
 );
-
-export type ReliefMaterialsData = z.infer<typeof schema>;

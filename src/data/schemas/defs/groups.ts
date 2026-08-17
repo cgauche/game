@@ -13,5 +13,3 @@ export const schema = z.array(
     label: z.string(),
   }),
 );
-
-export type GroupsData = z.infer<typeof schema>;

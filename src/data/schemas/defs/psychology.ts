@@ -53,5 +53,3 @@ export const schema = z.array(
     test: z.strictObject({ skill: z.string().optional(), difficulty: difficultySchema.optional() }).optional(),
   }),
 );
-
-export type PsychologyData = z.infer<typeof schema>;

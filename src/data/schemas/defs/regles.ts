@@ -18,5 +18,3 @@ export const schema = z.array(
     source: sourceRefSchema,
   }),
 );
-
-export type ReglesData = z.infer<typeof schema>;

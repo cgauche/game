@@ -37,5 +37,3 @@ export const schema = z.strictObject({
     cas: z.array(homonymeCasSchema),
   }),
 });
-
-export type DonneesManifest = z.infer<typeof schema>;

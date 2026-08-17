@@ -55,7 +55,7 @@ Les instincts et émotions influencent fortement la façon dont les personnages 
 
 **Voir aussi** : État *Brisé* (`etats.md`), Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.5-11) → `PsychAffliction`, `openEncounterPsych`, `opRow`, `endEncounterPsych`, `supersededLines`, `targetedTrigger`, `PsychologyData`, `createCombatSlice`, `collectHeroRoundStartPsych`, `openRoundStartPsych` — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/engine/psychology.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/encounterPsychFlow.ts`, +1 fichiers
+- `LDB 21` (l.5-11) → `PsychAffliction`, `opRow`, `openEncounterPsych`, `endEncounterPsych`, `supersededLines`, `targetedTrigger`, `PsychologyData`, `createCombatSlice`, `collectHeroRoundStartPsych`, `openRoundStartPsych` — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/engine/psychology.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/encounterPsychFlow.ts`, +1 fichiers
 
 ---
 
@@ -71,7 +71,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.8-11` — principe général + exemple Animosité d'un nain face à des elfes
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.8-11) → `PsychAffliction`, `openEncounterPsych`, `opRow`, `endEncounterPsych`, `supersededLines`, `targetedTrigger`, `PsychologyData`, `createCombatSlice`, `collectHeroRoundStartPsych`, `openRoundStartPsych` — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/engine/psychology.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/encounterPsychFlow.ts`, +1 fichiers
+- `LDB 21` (l.8-11) → `PsychAffliction`, `opRow`, `openEncounterPsych`, `endEncounterPsych`, `supersededLines`, `targetedTrigger`, `PsychologyData`, `createCombatSlice`, `collectHeroRoundStartPsych`, `openRoundStartPsych` — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/engine/psychology.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/encounterPsychFlow.ts`, +1 fichiers
 
 ---
 
@@ -104,7 +104,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Haine (Cible), Préjugé (Cible)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `openEncounterPsych`, `opRow`, `endEncounterPsych`, `describeApproach`, `EffectFlags`, `BattleState`, `supersededLines`, `ActionBar`, +27 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +14 fichiers
+- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `opRow`, `openEncounterPsych`, `endEncounterPsych`, `describeApproach`, `EffectFlags`, `BattleState`, `supersededLines`, `ActionBar`, +27 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +14 fichiers
 
 ---
 
@@ -155,7 +155,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Peur (Indice), État Brisé (`etats.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.54-57) → `nightmare`, `terreur`, `calme-d-approche`, `resolvePsychRow`, `endEncounterPsych`, `amour`, `humanizePerSL`, `resolvePsychAI`, `camaraderie`, `phobie`, +7 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
+- `LDB 21` (l.54-57) → `nightmare`, `terreur`, `calme-d-approche`, `endEncounterPsych`, `resolvePsychRow`, `amour`, `humanizePerSL`, `resolvePsychAI`, `camaraderie`, `phobie`, +7 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
 
 ---
 

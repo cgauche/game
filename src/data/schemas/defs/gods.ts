@@ -25,5 +25,3 @@ export const schema = z.array(
     sinLocks: z.strictObject({ beni: z.number().optional(), invocation: z.number().optional() }).optional(),
   }),
 );
-
-export type GodsData = z.infer<typeof schema>;

@@ -32,5 +32,3 @@ export const schema = z.array(
       .optional(),
   }),
 );
-
-export type LightTonesData = z.infer<typeof schema>;

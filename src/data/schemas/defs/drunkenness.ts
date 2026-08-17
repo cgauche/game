@@ -24,5 +24,3 @@ export const schema = z.strictObject({
   ),
   source: sourceRefSchema.optional(),
 });
-
-export type DrunkennessData = z.infer<typeof schema>;

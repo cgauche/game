@@ -24,5 +24,3 @@ export const schema = z.array(
     ),
   }),
 );
-
-export type TablesData = z.infer<typeof schema>;

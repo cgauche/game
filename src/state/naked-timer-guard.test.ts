@@ -25,13 +25,13 @@ const ALLOWED_SITES: Record<string, string> = {
     "de tel n'existe encore à cet instant), n'est jamais nettoyé par `clearTrackedTimers` (afterEach " +
     "de test) : nature d'infrastructure, hors du périmètre COMBAT/FLUX de `combatTimers.ts`, pas un " +
     'contournement de son suivi.',
-  'src/state/traceLayer.ts:77':
+  'src/state/traceLayer.ts:71':
     "timeout d'ouverture IndexedDB au BOOT du calque de référence (#830) — même nature d'infra que " +
     "projectLibrary.ts:82 ci-dessus (aucun `battle`/flux de scène en jeu, jamais nettoyé par " +
     '`clearTrackedTimers`), magasin distinct.',
-  'src/state/editorAutosave.ts:51':
+  'src/state/editorAutosave.ts:45':
     "timeout d'ouverture IndexedDB au BOOT du filet de crash de l'éditeur — même nature d'infra que " +
-    'projectLibrary.ts:82/traceLayer.ts:77 ci-dessus (aucun `battle`/flux de scène en jeu, jamais ' +
+    'projectLibrary.ts:82/traceLayer.ts:71 ci-dessus (aucun `battle`/flux de scène en jeu, jamais ' +
     'nettoyé par `clearTrackedTimers`), magasin distinct.',
 };
 

@@ -44,14 +44,6 @@ export interface PursuitRunner {
   total: number;
 }
 
-/** Variation de Distance d'une manche (l.93) : DR le plus BAS des poursuivis − DR le plus HAUT des
- *  poursuivants. Un camp VIDE compte 0 (il ne fait ni gagner ni perdre de terrain à lui seul). */
-export function pursuitDelta(fleeing: readonly number[], pursuers: readonly number[]): number {
-  const minFleeing = fleeing.length ? Math.min(...fleeing) : 0;
-  const maxPursuer = pursuers.length ? Math.max(...pursuers) : 0;
-  return minFleeing - maxPursuer;
-}
-
 /** « le plus lent d'entre eux » (l.94) : le coureur au plus petit Mouvement du camp ; à Mouvement égal,
  *  le plus petit DR de la manche (il traîne le plus). `undefined` sur un camp vide ou d'un seul coureur
  *  — sacrifier le dernier fuyard ne laisserait personne à qui profiter de la manœuvre. */

@@ -162,5 +162,3 @@ export const schema = z.array(
     variants: z.array(variantOf(spellEntrySchema, VARIANT_RESOLVED_FIELDS)).optional(),
   }),
 );
-
-export type SpellsData = z.infer<typeof schema>;

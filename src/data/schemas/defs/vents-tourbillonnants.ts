@@ -19,5 +19,3 @@ export const schema = z.strictObject({
   ),
   source: sourceRefSchema.optional(),
 });
-
-export type VentsTourbillonnantsData = z.infer<typeof schema>;

@@ -88,5 +88,3 @@ export const schema = z.array(
     deck: shipDeckSchema.optional(),
   }),
 );
-
-export type VehiclesData = z.infer<typeof schema>;

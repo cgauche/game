@@ -100,7 +100,7 @@ La forme (S) « position de spec » garde son exclusion structurelle.
 | `src/state/travelFlow.ts` | 3 | mixte | `forcedMarchTest`, `resolveMountedDay`, `rollStageWeather` | canonique : `rollStageWeather` (:610) est un d100 de MONDE sur la table de saison (EDOC 8 l.42) — aucun acteur ne le porte. Dettes : `forcedMarchTest` (:712, marche forcée) -> #1102 ; `resolveMountedDay` (:863, journée en selle EDOC 07 l.142-146 dont le Test de Chevaucher du CAVALIER l.165-174, rendu en lecture seule, 69,96 % d'échecs) -> #1106. |
 | `src/state/upkeep.ts` | 4 | canonique | `dailyDiseaseUpkeep`, `dailyFoodUpkeep`, `dailyWaterUpkeep`, `tickTraumaRecovery` | canonique : `dailyFoodUpkeep`/`dailyWaterUpkeep`/`dailyDiseaseUpkeep`/`tickTraumaRecovery` reçoivent `onDeferTest`, qui transforme chaque Test d'entretien en étape de cascade influençable sur les chemins principaux (store.ts:2564, :2570) ; le seul appelant sans defer est le chemin eager de `restFlow.ts` (:154), ticketé #1101 côté restFlow. |
 
-_84 call-sites mesurés dans 19 fichiers, pour 81 exports rouleurs dérivés de `src/engine` — par nature : 61 mixte, 13 dette, 10 canonique._
+_84 call-sites mesurés dans 19 fichiers, pour 80 exports rouleurs dérivés de `src/engine` — par nature : 61 mixte, 13 dette, 10 canonique._
 
 > **Nature** (`kind`) : `dette` = tous les sites doivent disparaître · `canonique` = aucun site ne bouge ·
 > `mixte` = l'entrée porte les deux natures. Sans ce discriminant, « cette liste décroît » ne veut rien dire.

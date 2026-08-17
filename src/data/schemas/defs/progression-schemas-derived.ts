@@ -47,5 +47,3 @@ export const schema = z.strictObject({
     }),
   ),
 });
-
-export type ProgressionSchemasData = z.infer<typeof schema>;

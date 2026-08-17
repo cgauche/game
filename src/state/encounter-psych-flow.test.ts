@@ -9,6 +9,7 @@ import type { Combatant } from '../engine/types';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import type { Scene, SceneEntity, CustomStatblock } from './scene';
+import { emptyNarratif } from './campaignNarratif';
 
 /**
  * Flux de Psychologie À LA RENCONTRE, hors combat (couture C). Depuis 2026-06-10 : la Peur/Terreur de
@@ -49,7 +50,7 @@ function animosite(name: string) {
 
 describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (bandes : une fenêtre par entrée de règle)', () => {
   beforeEach(() => {
-    useGame.setState({ battle: null, pendingCascade: null, scene: null, party: [] });
+    useGame.setState({ battle: null, pendingCascade: null, scene: null, party: [], campaignNarratif: null });
     useGame.getState().seedRng(2);
   });
 
@@ -63,6 +64,13 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (bandes
     );
     expect(sources.map((s) => s.id)).toEqual(['pnj']);
     expect(sources[0].causesTerreur).toBe(2);
+  });
+
+  it('sceneFearSources honore le `presetId` : le PNJ nommé garde SA fiche (même résolution que combatSlice/tavernFlow)', () => {
+    useGame.setState({ campaignNarratif: { ...emptyNarratif(), presetsPnj: [{ id: 'pnj-nomme', base: 'brigand', profil: { label: 'Nommé Test', traits: [{ id: 'terreur', value: 2 }] } }] } });
+    const src = sceneFearSources(scene([ent({ id: 'pnj', presetId: 'pnj-nomme' })]))[0];
+    expect(src.label).toBe('Nommé Test');
+    expect(src.causesTerreur).toBe(2);
   });
 
   it('une Terreur ne déclenche AUCUNE cascade à la rencontre (hors combat = non hostile)', () => {

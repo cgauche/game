@@ -20,5 +20,3 @@ export const schema = z.array(
     source: sourceRefSchema,
   }),
 );
-
-export type SeaShantiesData = z.infer<typeof schema>;

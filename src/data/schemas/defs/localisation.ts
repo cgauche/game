@@ -49,5 +49,3 @@ export const schema = z.strictObject({
     entries: z.array(shipLocEntry),
   }),
 });
-
-export type LocalisationData = z.infer<typeof schema>;

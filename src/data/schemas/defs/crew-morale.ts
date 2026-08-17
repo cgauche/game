@@ -41,5 +41,3 @@ export const schema = z.strictObject({
     }),
   ),
 });
-
-export type CrewMoraleData = z.infer<typeof schema>;

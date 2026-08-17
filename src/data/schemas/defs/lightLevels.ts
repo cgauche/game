@@ -14,5 +14,3 @@ export const schema = z.array(
     baseSightTiles: z.number(),
   }),
 );
-
-export type LightLevelsData = z.infer<typeof schema>;

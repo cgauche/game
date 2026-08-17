@@ -32,12 +32,6 @@ export function cargoBasePrice(cargo: CargoDef, season: Season, rng: RNG = defau
   return cargo.price[season];
 }
 
-/** Ampleur du Marchandage (LDB 59 p.291, cité MSRC 13 l.127 & MDG) : le prix bouge de ±10 %, ou ±20 % si le
- *  négociant possède le Talent Négociateur. PUR. */
-export function bargainDeltaPct(negotiator: boolean): number {
-  return negotiator ? 20 : 10;
-}
-
 /** Un LOT de cargaison en cale/soute (`basePriceGold` = prix de base NOTÉ à l'achat, CO par point d'Enc —
  *  le Vin fige sa qualité/son 3d10 à ce moment). Modèle commun aux deux commerces. */
 export interface CargoLot {

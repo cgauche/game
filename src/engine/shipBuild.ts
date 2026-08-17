@@ -72,10 +72,6 @@ const DATA = shipConstructionJson as unknown as {
   constructionTraits: ConstructionTraitRule[];
 };
 
-export const STANDARD_SHIPS = DATA.standard;
-export const SPEED_TRAITS = DATA.speedTraits;
-export const MAN_CHOICES = DATA.manoeuvrability;
-export const CONSTRUCTION_TRAITS = DATA.constructionTraits;
 
 /** Taille MDG d'un navire d'après sa LONGUEUR (tableau standard, ch.12 l.120-129 : 1-10 m Minuscule …
  *  81 m+ Monstrueuse). PUR. */

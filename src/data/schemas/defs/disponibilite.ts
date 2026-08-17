@@ -38,5 +38,3 @@ export const schema = z.strictObject({
     }),
   ),
 });
-
-export type DisponibiliteData = z.infer<typeof schema>;

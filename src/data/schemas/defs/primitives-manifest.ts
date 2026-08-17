@@ -17,5 +17,3 @@ export const schema = z.array(
     verrou: z.string(),
   }),
 );
-
-export type PrimitivesManifest = z.infer<typeof schema>;

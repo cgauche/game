@@ -236,8 +236,6 @@ export const draftLevel = (d: CreatorDraft): CareerLevelData | undefined =>
   levelsForCareer(d.careerId).find((l) => l.level === 1);
 /** Race choisie ET carrière choisie — la fiche vivante ne se construit qu'une fois les deux posées. */
 export const hasSpecies = (d: CreatorDraft): boolean => !!d.speciesId && !!draftSpecies(d);
-export const hasCareer = (d: CreatorDraft): boolean => !!d.careerId && !!draftLevel(d);
-
 /** Caractéristiques de carrière du Niveau 1 (clés `CharKey` stables) sur lesquelles se répartissent
  *  les 5 Augmentations gratuites de création (LDB 05 l.379). La donnée EST déjà en `CharKey`
  *  (« CT », « F »… ; cf. le champ characteristics de CareerLevelData) ; on filtre par sûreté. SOURCE UNIQUE
@@ -886,14 +884,6 @@ export function skillsSubMessage(d: CreatorDraft, sub: SkillsSub): string {
       return 'Talents tranchés — race, carrière et Magie mineure réglés.';
     }
   }
-}
-
-/** Libellé concret d'une entrée pour l'affichage (résolution courante incluse). */
-export function entryLabel(d: CreatorDraft, raw: string): string {
-  if (!isUnresolvedChoice(raw)) return raw;
-  const chosen = d.specChoices[raw];
-  if (chosen && !isUnresolvedChoice(chosen)) return chosen;
-  return raw;
 }
 
 export { splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, parseEntry };

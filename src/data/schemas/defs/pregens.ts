@@ -39,5 +39,3 @@ export const schema = z.array(
     build: z.number().optional(),
   }),
 );
-
-export type PregensData = z.infer<typeof schema>;

@@ -43,5 +43,3 @@ export const schema = z.array(
     desc: z.string().optional(),
   }),
 );
-
-export type StructuresData = z.infer<typeof schema>;

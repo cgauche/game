@@ -18,5 +18,3 @@ export const schema = z.array(
       message: 'ticket ou bloque requis',
     }),
 );
-
-export type RawManifest = z.infer<typeof schema>;

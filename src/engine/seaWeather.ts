@@ -86,7 +86,6 @@ export const windForceLabel = (id: SeaWindForceId): string => DATA.vents.find((v
 const WIND_DIRECTION_LABEL: Record<WindDirection, string> = { nord: 'Nord', sud: 'Sud', est: 'Est', ouest: 'Ouest' };
 export const windDirectionLabel = (id: WindDirection): string => WIND_DIRECTION_LABEL[id] ?? id;
 export const AFFALER_RULES = DATA.affaler;
-export const ENCALMINE_RULES = DATA.encalmine;
 
 /** Libellé compact d'une météo (journal / recap). */
 export function seaWeatherLabel(w: SeaWeather): string {

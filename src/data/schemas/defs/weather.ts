@@ -62,5 +62,3 @@ export const schema = z.strictObject({
     }),
   ),
 });
-
-export type WeatherData = z.infer<typeof schema>;

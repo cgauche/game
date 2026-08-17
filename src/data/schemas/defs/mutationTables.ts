@@ -23,5 +23,3 @@ export const schema = z.array(
     ),
   }),
 );
-
-export type MutationTablesData = z.infer<typeof schema>;

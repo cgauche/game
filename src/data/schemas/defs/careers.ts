@@ -31,5 +31,3 @@ const careerEntrySchema = z.strictObject({
 });
 
 export const schema = z.array(careerEntrySchema);
-
-export type CareersData = z.infer<typeof schema>;

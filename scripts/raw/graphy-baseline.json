@@ -8,7 +8,6 @@
     "src/data/schemas/defs/localisation.ts": 2,
     "src/data/schemas/defs/vehicles.ts": 1,
     "src/data/trait-args-derived.test.ts": 1,
-    "src/engine/cargo.ts": 1,
     "src/engine/combat.ts": 1,
     "src/engine/ops.ts": 2,
     "src/engine/statEntry.ts": 1,

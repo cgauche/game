@@ -18,5 +18,3 @@ export const schema = z.strictObject({
   source: sourceRefSchema,
   entries: z.array(travelTableEntrySchema),
 });
-
-export type IncidentsMontureData = z.infer<typeof schema>;

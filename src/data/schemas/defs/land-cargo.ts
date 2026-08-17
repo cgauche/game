@@ -56,5 +56,3 @@ export const schema = z.strictObject({
     }),
   ),
 });
-
-export type LandCargoData = z.infer<typeof schema>;

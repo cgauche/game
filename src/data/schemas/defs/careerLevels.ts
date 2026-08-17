@@ -36,5 +36,3 @@ export const schema = z.array(
     source: sourceRefSchema.optional(),
   }),
 );
-
-export type CareerLevelsData = z.infer<typeof schema>;

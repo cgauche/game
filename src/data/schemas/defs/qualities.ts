@@ -63,5 +63,3 @@ export const schema = z.array(
     indice: z.strictObject({ label: z.string() }).optional(),
   }),
 );
-
-export type QualitiesData = z.infer<typeof schema>;

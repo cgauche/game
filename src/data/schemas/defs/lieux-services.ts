@@ -32,5 +32,3 @@ export const schema = z.array(
     editorNote: z.string().optional(),
   }),
 );
-
-export type LieuxServicesData = z.infer<typeof schema>;

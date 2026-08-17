@@ -31,5 +31,3 @@ export const schema = z.array(
     extremites: z.enum(['lisses', 'griffues']).optional(),
   }),
 );
-
-export type RaceAppearanceDataSchema = z.infer<typeof schema>;

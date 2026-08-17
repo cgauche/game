@@ -369,7 +369,3 @@ export function netLeave(_get: Get, set: Set): void {
   restoreGuestActions();
   set({ net: initialNet() });
 }
-
-// Gating d'affichage (P2) : prédicats PURS vivant dans netOwnership (pas de cycle store↔netFlow) —
-// ré-exportés ici pour les sites d'import existants.
-export { ownsLocally, controlsActive } from './netOwnership';

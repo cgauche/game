@@ -25,5 +25,3 @@ export const schema = z.strictObject({
   shipboardEnc: sizeTable,
   footprintSide: sizeTable,
 });
-
-export type SizesData = z.infer<typeof schema>;

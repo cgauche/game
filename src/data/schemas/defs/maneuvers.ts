@@ -46,5 +46,3 @@ export const schema = z.array(
     stakeForm: z.enum(['verbatim', 'descripteur']).optional(),
   }),
 );
-
-export type ManeuversData = z.infer<typeof schema>;

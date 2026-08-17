@@ -28,5 +28,3 @@ export const schema = z.array(
     source: sourceRefSchema,
   }),
 );
-
-export type StarsData = z.infer<typeof schema>;

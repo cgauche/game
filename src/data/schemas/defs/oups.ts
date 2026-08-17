@@ -35,5 +35,3 @@ export const schema = z.array(
     }),
   ]),
 );
-
-export type OupsData = z.infer<typeof schema>;

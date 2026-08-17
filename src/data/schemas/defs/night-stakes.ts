@@ -35,5 +35,3 @@ export const schema = z.array(
     ruleCategory: z.string().optional(),
   }),
 );
-
-export type NightStakesData = z.infer<typeof schema>;

@@ -60,5 +60,3 @@ export const schema = z.array(
       }
     }),
 );
-
-export type CombatStakesData = z.infer<typeof schema>;

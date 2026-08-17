@@ -117,7 +117,7 @@ choisit**.
 (rôles parallèles) · `MDG 14 l.53` (cumul = +2 crans).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.354-420) → `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `lighthouseOrientationDR`, `LIGHTHOUSE_PERIL_SPOT_BONUS` ⚠sans-appelant, `WorldMapPlacePanel`, `maelstrom-primordial`, `pursuitLowMPenalty`, `resolveShipUnits`, +11 — `src/data/flow-stakes.json`, `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/data/voyage-stakes.json`, +9 fichiers
+- `MDG 13` (l.354-420) → `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `lighthouseOrientationDR`, `WorldMapPlacePanel`, `pursuitLowMPenalty`, `maelstrom-primordial`, `pursuitDistanceGain`, `resolveShipUnits`, +10 — `src/data/flow-stakes.json`, `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/data/voyage-stakes.json`, +9 fichiers
 - `MDG 14` (l.37, l.53) → `progression`, `skill`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `ShipManeuverModal`, `resolveVolley`, `CrewTestModalView`, `withCrewActed`, +28 — `src/data/crew-test-types.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, `src/engine/types.ts`, +14 fichiers
 
 **État du code.** ✅ (R3) `battle.crewActed` (par navire, reset au round-start `enterRoundStartPause`) recense les
@@ -386,7 +386,7 @@ Manœuvre / frontale = IC adverse + M total des deux). Sauf précision, **les co
 **Sources RAW** : `MDG 13 l.446-464`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.446-464) → `collisionIndex`, `iceberg`, `debris-marins`, `resolveCollision`, `rocher`, `bas-fonds`, `perilManagement` ⚠sans-appelant, `faible`, `strandingPenalty`, `moyen`, +6 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/voyage-stakes.json`, `src/engine/collision.ts`, `src/engine/seaPerils.ts`, `src/i18n/messages/fr.ts`, +2 fichiers
+- `MDG 13` (l.446-464) → `collisionIndex`, `iceberg`, `debris-marins`, `resolveCollision`, `rocher`, `bas-fonds`, `perilManagement` ⚠sans-appelant, `strandingPenalty`, `faible`, `moyen`, +6 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/voyage-stakes.json`, `src/engine/collision.ts`, `src/engine/seaPerils.ts`, `src/i18n/messages/fr.ts`, +2 fichiers
 
 **État du code.** ✅ `resolveCollision` (frontal/milieu/poupe/s'éloigne/manœuvre), localisation Coque.
 

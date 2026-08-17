@@ -71,10 +71,7 @@ const DATA = seaNavJson as unknown as {
 };
 
 export const WORK_PERIOD_HOURS = DATA.workPeriodHours;
-export const EPUISEMENT = DATA.epuisement;
-export const LONGS_VOYAGES = DATA.longsVoyages;
 export const REPARATION = DATA.reparation;
-export const ESCAPE_DISTANCES = DATA.poursuite.escapeDistances;
 
 /** Bonus de Savoir (Océans) aux Tests de NAVIGATION en mer (MDG 13 l.20) : « le premier chiffre de leur score
  *  de Compétence » (36 → +3). 0 si la Compétence n'est pas ACQUISE (le bonus récompense une formation,
@@ -208,10 +205,6 @@ export function lighthouseSpotDifficulty(milles: number, clocher = false): Diffi
 export function lighthouseOrientationDR(navigator: Combatant, clocher: boolean): number {
   return clocher ? DATA.phares.clocher.orientationDR : savoirOceansBonus(navigator);
 }
-
-/** « Si le phare se trouve près d'un danger, tous les Tests de Perception entrepris pour repérer ce
- *  danger bénéficient d'un bonus de +20 » (MDG 13 l.347). */
-export const LIGHTHOUSE_PERIL_SPOT_BONUS: number = DATA.phares.perilSpotBonus;
 
 // ── Longs voyages : milles par jour (MDG 15 l.53-78) ──────────────────────────────────────────────
 

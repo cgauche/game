@@ -44,12 +44,6 @@ export function chaosDomainOf(c: Combatant): string | undefined {
   return undefined;
 }
 
-/** `id` STABLE du Domaine du Chaos du lanceur : la spec du Talent Magie du Chaos EST un id de `gods.json`
- *  (nurgle/slaanesh/tzeentch), ou 'indivisible' (Chaos non divisé, sans dieu unique). undefined si non porteur. */
-export function chaosDomainIdOf(c: Combatant): string | undefined {
-  return chaosDomainOf(c);
-}
-
 /** Capacités de combat présentes sur le combattant, lues de la DONNÉE (`TalentData.combat`) : talents
  *  POSSÉDÉS (niveau = times) + talents ACCORDÉS par un effet actif de sort (op `grantTalent`, niveau 1
  *  tant que l'effet dure — Flambeau de Vertu : Sans peur ; Cœurs ardents : Cœur vaillant…, Jalon 2.6).

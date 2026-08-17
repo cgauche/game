@@ -915,13 +915,6 @@ export function endMassBattle(get: Get, set: Set): void {
 
 // ── Sélecteurs pour la vue ───────────────────────────────────────────────────────────────────────
 
-/** Scènes PRÉSENTÉES ce Round (la situation du moment) — défs complètes, non encore résolues. */
-export function massBattleScenes(mb: MassBattleState): ActivityDef[] {
-  return mb.situation
-    .map((id) => battleSceneById(id))
-    .filter((s): s is ActivityDef => !!s);
-}
-
 /** Libellé COURT d'une issue de bataille chiffrée (aperçu de la vue). */
 function shortOutcomeLabel(o: BattleOutcomeDelta): string {
   const target: Record<BattleOutcomeDelta['target'], string> = {

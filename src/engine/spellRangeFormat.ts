@@ -53,11 +53,6 @@ function clockUnit(unit: 'minutes' | 'hours' | 'days', plural: boolean): string 
   return plural ? t('spellFmt.jours') : t('spellFmt.jour');
 }
 
-/** Suffixe « + » (LDB 47 l.311) : Test de Force Mentale possible pour prolonger la Durée de +1 Round.
- *  Titre/tooltip d'accessibilité de la signification — à câbler par le consommateur (Compendium, hors
- *  périmètre #543, cf. rendu final). FONCTION : une constante de module figerait sa locale. */
-export const spellDurationPlusTitle = (): string => t('spellFmt.plusTitle');
-
 export function formatSpellDuration(d: SpellDuration): string {
   switch (d.kind) {
     case 'instant': return t('spellFmt.instant');

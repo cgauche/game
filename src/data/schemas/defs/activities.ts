@@ -135,5 +135,3 @@ export const schema = z.array(
     }
   }),
 );
-
-export type ActivitiesData = z.infer<typeof schema>;

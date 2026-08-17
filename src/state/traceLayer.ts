@@ -54,18 +54,12 @@ const PANEL_STORE = 'panelExpanded';
 const DB_VERSION = 2;
 const IDB_OPEN_TIMEOUT_MS = 3000;
 
-let openIdbRequest: () => IDBOpenDBRequest = () => indexedDB.open(DB, DB_VERSION);
-let openIdbRequestOverridden = false;
-
-export function __setOpenIdbRequestForTest(fn: (() => IDBOpenDBRequest) | null): void {
-  openIdbRequest = fn ?? (() => indexedDB.open(DB, DB_VERSION));
-  openIdbRequestOverridden = fn !== null;
-}
+const openIdbRequest: () => IDBOpenDBRequest = () => indexedDB.open(DB, DB_VERSION);
 
 let backendOverridden = false;
 
 function hasIdb(): boolean {
-  return backendOverridden || openIdbRequestOverridden || typeof indexedDB !== 'undefined';
+  return backendOverridden || typeof indexedDB !== 'undefined';
 }
 
 /** N'attend jamais indéfiniment (même garde que `projectLibrary.idb` — #776) : un `open` coincé

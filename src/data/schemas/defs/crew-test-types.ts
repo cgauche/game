@@ -22,5 +22,3 @@ export const schema = z.strictObject({
     }),
   ),
 });
-
-export type CrewTestTypesData = z.infer<typeof schema>;

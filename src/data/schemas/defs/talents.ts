@@ -86,5 +86,3 @@ export const schema = z.array(
     variants: z.array(variantOf(talentEntrySchema, VARIANT_RESOLVED_FIELDS)).optional(),
   }),
 );
-
-export type TalentsData = z.infer<typeof schema>;

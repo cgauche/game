@@ -17,5 +17,3 @@ export const schema = z.array(
     notes: z.string(),
   }),
 );
-
-export type SystemesManifest = z.infer<typeof schema>;

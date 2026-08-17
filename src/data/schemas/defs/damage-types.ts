@@ -12,5 +12,3 @@ export const schema = z.array(
     label: z.string(),
   }),
 );
-
-export type DamageTypesData = z.infer<typeof schema>;

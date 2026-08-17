@@ -180,5 +180,3 @@ export const schema = z.strictObject({
     }),
   ),
 });
-
-export type ArcanePhenomenaData = z.infer<typeof schema>;

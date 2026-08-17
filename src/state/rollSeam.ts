@@ -49,7 +49,6 @@ import type { RecapLine, RecapTone } from './recapLine';
 import type { ModLine } from '../engine/combat';
 import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey, combineMods, composeDifficulty } from '../engine/combat';
 import { volatileCharLines } from '../engine/characteristics';
-import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepResolved, clampStepAmount } from './cascade';
 import { testValue, partyBest, partyAssisted, testValueSplit, testValueParts, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
@@ -1705,15 +1704,6 @@ export function pushDisplay(set: Set, spec: Declaree<DisplaySpec>): void {
 /** APPEND d'une étape HÔTE à la séquence de combat. */
 export function pushHost(get: Get, set: Set, spec: Declaree<HostSpec>): void {
   pushStep(set, (index) => hostStep(get, declare(spec, index)), 'combat');
-}
-
-/** Reconstruit l'issue SCELLÉE (`TestOutcome`) d'une étape déjà résolue — lecture PARTAGÉE pour les
- *  appliers/continuations qui veulent le même vocabulaire `won`/`sl` que la fabrique de jet (au lieu
- *  de relire `step.result` à la main). `null` si l'étape n'a pas encore de résultat. */
-export function outcomeOfStep(step: CascadeStep): TestOutcome | null {
-  if (!step.result) return null;
-  const { roll, target, sl, success } = step.result;
-  return TestOutcome.seal({ roll, target, success, sl, isDouble: false });
 }
 
 /**

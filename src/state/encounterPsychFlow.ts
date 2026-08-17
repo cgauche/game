@@ -18,6 +18,7 @@ import { Combatant } from '../engine/types';
 import { Scene } from './scene';
 import type { CascadeStep, BatchParticipant, CascadeRoll } from './pendings';
 import { spawnEnemy } from './spawn';
+import { resolvePresetCreature } from './campaignData';
 import { encounterPsych } from '../engine/encounterPsych';
 import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, psychBranchOps, psychBranchFlow, supersededLines, isPsychImmune, refreshAllDefendedPsych, endEncounterPsych } from '../engine/psychology';
 import { skillBaseValue } from '../engine/skills';
@@ -50,7 +51,13 @@ export interface PendingEncounterPsych {
 export function sceneFearSources(scene: Scene): Combatant[] {
   return (scene.entities ?? [])
     .filter((e) => e.kind === 'personnage' && !e.combat?.hiddenUntilCombat)
-    .map((e) => spawnEnemy(e.ref, e.statblock, e.id, e.pos));
+    .map((e) => {
+      const preset = e.presetId ? resolvePresetCreature(e.presetId) : undefined;
+      return spawnEnemy(e.ref, e.statblock, e.id, e.pos, {
+        presetCreature: preset?.creature,
+        appearance: preset?.apparence ?? e.appearance,
+      });
+    });
 }
 
 /** DÉCLARATION COMMUNE d'une bande — telle qu'elle vit sur l'ÉTAPE (`CascadeStep.encounterPsych`). */

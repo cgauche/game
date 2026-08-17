@@ -59,5 +59,3 @@ export const schema = z.array(
     capabilities: symptomCapabilitiesSchema.optional(),
   }),
 );
-
-export type SymptomsData = z.infer<typeof schema>;

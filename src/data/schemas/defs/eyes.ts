@@ -19,5 +19,3 @@ export const schema = z.array(
     source: sourceRefSchema.optional(),
   }),
 );
-
-export type EyesData = z.infer<typeof schema>;

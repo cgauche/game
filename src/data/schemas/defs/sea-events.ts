@@ -62,5 +62,3 @@ export const schema = z.strictObject({
   portEvents: z.array(seaEventDef),
   fastVoyage: z.strictObject({ source: sourceRefSchema, paliers: z.array(fastVoyagePalier) }),
 });
-
-export type SeaEventsData = z.infer<typeof schema>;

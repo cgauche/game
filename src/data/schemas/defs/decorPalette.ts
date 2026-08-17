@@ -11,5 +11,3 @@ export const file = 'decorPalette.json';
 
 /** Valeurs observées : hex 3/6/8 chiffres (`#fff`, `#5a4a33`, `#94908648` — 8 chiffres = alpha RVBA). */
 export const schema = z.record(z.string(), z.string());
-
-export type DecorPaletteData = z.infer<typeof schema>;

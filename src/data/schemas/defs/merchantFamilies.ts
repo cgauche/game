@@ -19,5 +19,3 @@ export const schema = z.array(
     columns: z.array(z.string()),
   }),
 );
-
-export type MerchantFamiliesData = z.infer<typeof schema>;

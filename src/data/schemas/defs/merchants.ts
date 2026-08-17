@@ -27,5 +27,3 @@ export const schema = z.array(
     unitKinds: z.array(z.enum(['bete', 'vehicule-terrestre'])).optional(), // 'navire' non géré à l'achat (payCart) -> #748
   }),
 );
-
-export type MerchantsData = z.infer<typeof schema>;

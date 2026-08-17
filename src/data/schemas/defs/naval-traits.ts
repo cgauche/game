@@ -51,5 +51,3 @@ export const schema = z.array(
     maison: z.string().optional(),
   }),
 );
-
-export type NavalTraitsData = z.infer<typeof schema>;

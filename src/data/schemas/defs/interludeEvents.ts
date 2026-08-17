@@ -35,5 +35,3 @@ export const schema = z.array(
     atelierNote: z.string().optional(),
   }),
 );
-
-export type InterludeEventsData = z.infer<typeof schema>;

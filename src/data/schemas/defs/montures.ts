@@ -31,5 +31,3 @@ export const schema = z.strictObject({
     }),
   ),
 });
-
-export type MonturesData = z.infer<typeof schema>;

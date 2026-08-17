@@ -25,5 +25,3 @@ export const schema = z.array(
     desc: z.string().nullable(),
   }),
 );
-
-export type BooksData = z.infer<typeof schema>;

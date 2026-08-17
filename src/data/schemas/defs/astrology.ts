@@ -16,5 +16,3 @@ export const schema = z.array(
     source: sourceRefSchema,
   }),
 );
-
-export type AstrologyData = z.infer<typeof schema>;

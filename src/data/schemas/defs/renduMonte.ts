@@ -12,5 +12,3 @@ export const schema = z.strictObject({
   _doc: z.string().optional(),
   harnaisParDefaut: z.string(),
 });
-
-export type RenduMonteData = z.infer<typeof schema>;

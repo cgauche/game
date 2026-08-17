@@ -120,5 +120,3 @@ export const schema = z.strictObject({
   majorVdm: z.array(jsonRowSchema),
   wrath: z.array(jsonRowSchema),
 });
-
-export type MiscastData = z.infer<typeof schema>;

@@ -85,5 +85,3 @@ export const schema = z.array(
     maison: z.string().optional(),
   }),
 );
-
-export type CreaturesData = z.infer<typeof schema>;

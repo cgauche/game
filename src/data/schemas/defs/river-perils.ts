@@ -42,5 +42,3 @@ export const schema = z.strictObject({
     }
   }),
 });
-
-export type RiverPerilsData = z.infer<typeof schema>;

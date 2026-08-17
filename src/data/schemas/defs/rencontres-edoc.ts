@@ -22,5 +22,3 @@ export const schema = z.strictObject({
     dangereuses: z.array(travelTableEntrySchema),
   }),
 });
-
-export type RencontresEdocData = z.infer<typeof schema>;

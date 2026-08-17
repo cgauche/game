@@ -8,7 +8,7 @@
 import type { QualityDef } from './types';
 import { qualities } from '../../data';
 
-export type { QualityCtx, QualityDef } from './types';
+export type { QualityDef } from './types';
 
 /** Table des qualités. Clé = label FR canonique. Dérivée 1:1 de `qualities.json` (`{ key: label }`). */
 export const QUALITIES: Record<string, QualityDef> = Object.fromEntries(qualities.map((q) => [q.label, { key: q.label }]));

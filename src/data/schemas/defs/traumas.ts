@@ -34,5 +34,3 @@ export const schema = z.array(
     source: sourceRefSchema.optional(),
   }),
 );
-
-export type TraumasData = z.infer<typeof schema>;

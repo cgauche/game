@@ -345,7 +345,7 @@ Se débarrasser d'une Possession lourde annule 1 Test échoué.
 **Voir aussi** : Possessions accordant bonus/malus aux Tests d'Exposition (LDB 65 p.302 / LDB 74 p.309).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.327-334) → `faim`, `soif`, `recovery`, `bandEntry`, `availableHealModes`, `hungerThirstPenalty`, `RESISTANCE_TEST`, `effectiveChar`, `HungerState`, `exposure`, +36 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, +16 fichiers
+- `LDB 18` (l.327-334) → `faim`, `soif`, `recovery`, `bandEntry`, `availableHealModes`, `hungerThirstPenalty`, `effectiveChar`, `RESISTANCE_TEST`, `HungerState`, `exposure`, +36 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, +16 fichiers
 
 ---
 
@@ -378,7 +378,7 @@ Test de Résistance tous les **deux jours** sans nourriture.
 **Voir aussi** : Provisions / rations → [provisions.md](provisions.md) ; [Guérison des PB](#10-guérison-des-points-de-blessure) (sans provisions : pas de récupération).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.337-343) → `faim`, `soif`, `recovery`, `bandEntry`, `hungerThirstPenalty`, `RESISTANCE_TEST`, `effectiveChar`, `HungerState`, `exposure`, `ThirstState`, +41 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, +17 fichiers
+- `LDB 18` (l.337-343) → `faim`, `soif`, `recovery`, `bandEntry`, `hungerThirstPenalty`, `effectiveChar`, `RESISTANCE_TEST`, `HungerState`, `exposure`, `ThirstState`, +41 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, +17 fichiers
 
 ---
 
@@ -397,4 +397,4 @@ Source : `LDB 18 l.345-346`.
 **Voir aussi** : États → [etats.md](etats.md) ; sorts infligeant Suffocation (Ombres étrangleuses, Transmutation de Chamon).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.345-346) → `faim`, `soif`, `recovery`, `hungerThirstPenalty`, `RESISTANCE_TEST`, `effectiveChar`, `HungerState`, `exposure`, `ThirstState`, `breathHoldSeconds`, +31 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, +14 fichiers
+- `LDB 18` (l.345-346) → `faim`, `soif`, `recovery`, `hungerThirstPenalty`, `effectiveChar`, `RESISTANCE_TEST`, `HungerState`, `exposure`, `ThirstState`, `breathHoldSeconds`, +31 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, +14 fichiers

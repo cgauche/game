@@ -100,5 +100,3 @@ export const schema = z.array(
     })).optional(),
   }),
 );
-
-export type DomainsData = z.infer<typeof schema>;

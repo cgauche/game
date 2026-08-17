@@ -23,5 +23,3 @@ export const schema = z.array(
     source: sourceRefSchema.optional(),
   }),
 );
-
-export type WeaponGroupsData = z.infer<typeof schema>;

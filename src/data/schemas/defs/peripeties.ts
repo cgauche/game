@@ -20,5 +20,3 @@ export const schema = z.array(
     source: sourceRefSchema.optional(),
   }),
 );
-
-export type PeripetiesData = z.infer<typeof schema>;

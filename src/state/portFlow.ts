@@ -23,7 +23,7 @@
  * aucun Test de Marchandage au RAW, MDG 15 l.399).
  */
 import { battleRng } from './battleRng';
-import { placeOfScene, placeById } from './worldMap';
+import { placeOfScene } from './worldMap';
 import { partyAssisted } from '../engine/skills';
 import { resolveOpposed, bumpSL, SL_ASTOUNDING, type TestResult } from '../engine/tests';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
@@ -477,9 +477,3 @@ export function portDismissCrew(get: Get, set: Set, roleId: string, count = 1): 
 
 // Ré-exports des services de coque (déjà dans seaVoyageFlow) — l'écran Port les appelle par le store.
 export { portRepairVessel, portCareenVessel, portInstallUpgrade } from './seaVoyageFlow';
-
-/** Bande de prix par LIEU pour l'affichage (place courante fournie). PUR. */
-export function portPlaceLabel(get: Get, placeId: string): string {
-  const map = get().worldMap;
-  return (map && placeById(map, placeId)?.label) || placeId;
-}

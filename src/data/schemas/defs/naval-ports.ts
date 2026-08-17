@@ -29,5 +29,3 @@ export const schema = z.array(
     source: sourceRefSchema,
   }),
 );
-
-export type NavalPortsData = z.infer<typeof schema>;

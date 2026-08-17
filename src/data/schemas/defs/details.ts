@@ -1,6 +1,6 @@
 /**
  * Schéma de `details.json` — formules d'Âge/Taille par espèce (LDB 05 l.691-707) + textes d'aide
- * (Noms/Âge/Taille/Ambitions). Dérivé de l'interface `DetailsData` (`src/data/index.ts:665`, +
+ * (Noms/Âge/Taille/Ambitions). Dérivé de l'interface `DetailsData` (`src/data/index.ts:1396`, +
  * `DetailText` co-localisée) et du contenu RÉEL (objet UNIQUE, 5 clés : `ageBase`/`ageRoll`/
  * `heightBase`/`heightRoll` = records espèce→nombre à 7 clés ; `texts` = 5 `DetailText`).
  */
@@ -30,5 +30,3 @@ export const schema = z.strictObject({
     ambitionLong: detailTextSchema,
   }),
 });
-
-export type DetailsData = z.infer<typeof schema>;

@@ -19,5 +19,3 @@ export const schema = z.array(
     source: sourceRefSchema,
   }),
 );
-
-export type LocationsData = z.infer<typeof schema>;

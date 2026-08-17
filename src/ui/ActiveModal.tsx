@@ -39,7 +39,7 @@ import { ActivityModal } from './ActivityModal';
 
 // REGISTRE des modales : state/modalArbiter (une entrée = quand + concerné, ordre = priorité).
 // Ajouter une modale = 1 entrée au registre + son composant dans COMPONENT ci-dessous.
-export { pickActiveModalKey, type ModalKey } from '../state/modalArbiter';
+export { pickActiveModalKey } from '../state/modalArbiter';
 import { pickActiveModalKey, voyageHubActive, type ModalKey } from '../state/modalArbiter';
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {

@@ -17,5 +17,3 @@ export const schema = z.array(
     source: sourceRefSchema.optional(),
   }),
 );
-
-export type CalendarMonthsData = z.infer<typeof schema>;

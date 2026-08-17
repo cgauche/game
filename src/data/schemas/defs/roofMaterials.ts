@@ -30,5 +30,3 @@ export const schema = z.array(
     ridgeCap: z.string().optional(),
   }),
 );
-
-export type RoofMaterialsData = z.infer<typeof schema>;

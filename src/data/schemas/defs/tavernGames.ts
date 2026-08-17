@@ -191,5 +191,3 @@ export const schema = z.array(
     source: sourceRefSchema,
   }),
 );
-
-export type TavernGamesData = z.infer<typeof schema>;

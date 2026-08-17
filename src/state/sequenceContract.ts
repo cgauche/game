@@ -56,7 +56,7 @@ export const SEQUENCE_PURPOSE = 'sequence' as const;
  *  ici en paramètres — un catalogue du moteur ne dépend jamais du store. */
 export type {
   SequenceTableRow, SequenceRoundOps, SequencePhases,
-  SequenceDice, SequencePotRow, SequencePotRules, SequencePotTurn, SequencePotOutcome,
+  SequencePotRow, SequencePotRules, SequencePotTurn, SequencePotOutcome,
   SequenceVolleyRow, SequenceVolleyRules, SequenceThrowTurn, SequenceThrowOutcome, SequenceSide,
   SequenceCombinedRules, SequenceThrowerPenalty,
 } from '../engine/sequenceVocab';

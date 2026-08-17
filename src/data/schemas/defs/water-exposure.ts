@@ -47,5 +47,3 @@ export const schema = z.strictObject({
   ),
   source: sourceRefSchema,
 });
-
-export type WaterExposureData = z.infer<typeof schema>;

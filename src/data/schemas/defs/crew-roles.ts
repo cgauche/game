@@ -33,5 +33,3 @@ export const schema = z.array(
     maison: z.string().optional(),
   }),
 );
-
-export type CrewRolesData = z.infer<typeof schema>;

@@ -181,5 +181,3 @@ export const schema = z.array(
     service: z.boolean().optional(),
   }),
 );
-
-export type TrappingsData = z.infer<typeof schema>;

@@ -1506,7 +1506,7 @@ export interface Combatant {
   ritual?: { spellId: string; drDone: number; drTarget: number };
   /** Mouvement (cases par tour, dérivé de la table de Mouvement). */
   movement: number;
-  // Destin / Résilience (héros uniquement, LDB 17 l.9)
+  // Destin / Résilience (LDB 17 l.9)
   fate?: number;
   fortune?: number;
   resilience?: number;

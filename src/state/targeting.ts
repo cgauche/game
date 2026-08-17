@@ -17,7 +17,7 @@ import type { Pt } from './path';
 
 // Réexports de compatibilité : le TYPE d'affordance et la dérivation du côté visé d'un sort vivent
 // dans le registre de modes ; les importeurs historiques (IsoStage, tests) restent valides.
-export type { HoverTargeting, SpellAffinity, TilePreview } from './targetingModes';
+export type { HoverTargeting, TilePreview } from './targetingModes';
 export { spellAffinity } from './targetingModes';
 
 /**

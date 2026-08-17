@@ -63,11 +63,7 @@ const DATA = seaPerilsJson as unknown as {
 };
 
 export const SEA_HAZARDS = DATA.hazards;
-export const STRAITS = DATA.detroits;
-export const WHIRLPOOLS = DATA.tourbillons;
-export const ECHOUER_DESC = DATA.echouer.desc;
 export const findSeaHazard = (id: string): SeaHazardDef | undefined => DATA.hazards.find((h) => h.id === id);
-export const findStrait = (id: string): StraitDef | undefined => DATA.detroits.find((s) => s.id === id);
 export const findWhirlpool = (id: string): WhirlpoolDef | undefined => DATA.tourbillons.find((w) => w.id === id);
 
 /** Tire le péril RENCONTRÉ lors d'une collision (Iceberg/Débris marins/Rocher/Bas-fonds) — pondéré par
@@ -116,7 +112,3 @@ export function rollDebrisEntangle(hazard: SeaHazardDef, shipSize: ShipSize, rng
   }
   return { entangled: true, manDR: 0, mMod: 0 }; // Taille supérieure à Grande : « aucun effet » (MDG 13 l.489)
 }
-
-/** Nage dans la Zone d'un Tourbillon (MDG 13 l.522) : « Quiconque nage dans la Zone doit réussir un Test de
- *  Natation Complexe (–10) sous peine de commencer à se noyer. » */
-export const WHIRLPOOL_SWIM_TEST = DATA.tourbillonSwim;

@@ -53,10 +53,10 @@ export {
 } from './sequenceContract';
 export type {
   SequenceDef, SequenceParams, SequenceState, SequenceRound, SequenceVerdict, SequenceCloseCtx,
-  SequenceTableRow, SequenceRoundOps, SequencePhases, SequenceBoard, SequenceBoardCamp, SequenceRoundActors,
-  SequenceDice, SequencePotRow, SequencePotRules, SequencePotTurn, SequencePotOutcome,
+  SequenceTableRow, SequenceBoard, SequenceRoundActors,
+  SequencePotRow, SequencePotTurn, SequencePotOutcome,
   SequenceVolleyRow, SequenceVolleyRules, SequenceThrowTurn, SequenceThrowOutcome, SequenceSide,
-  SequenceCombinedRules, SequenceThrowerPenalty,
+  SequenceCombinedRules,
 } from './sequenceContract';
 
 /** Registre des définitions, peuplé par les modules de DOMAINE à leur chargement. */

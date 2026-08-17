@@ -82,7 +82,6 @@ export const NAV_BASE_DIFFICULTY = DATA.navBaseDifficulty;
 export const TACK_DIFFICULTY = DATA.tackDifficulty;
 export const CAPSIZE = DATA.capsize;
 export const OUT_OF_CONTROL = DATA.outOfControl;
-export const ECHOUAGE = DATA.echouage;
 export const TEMPORARY_REPAIR = DATA.temporaryRepair;
 export const DRIFT_PCT_OF_SPEED = DATA.driftPctOfSpeed;
 export const DRIFT_NAV_PENALTY = DATA.driftNavPenalty;
@@ -264,11 +263,6 @@ export function resolveRiverImpact(onHit: NonNullable<RiverPerilDef['onHit']>, r
     holed: onHit.holeChancePct != null && d100(rng) <= onHit.holeChancePct,
     echoue: onHit.echouageChancePct != null && d100(rng) <= onHit.echouageChancePct,
   };
-}
-
-/** Roule une chance en pourcentage (d100 ≤ pct). PUR. */
-export function rollChance(pct: number, rng: RNG = defaultRNG): boolean {
-  return d100(rng) <= Math.max(0, Math.min(100, pct));
 }
 
 /** Endurance & Blessures d'un barrage de débris (l.128 : « Endurance de 1d10 × 10 et 2d10 de Blessures »). PUR. */

@@ -21,5 +21,3 @@ export const schema = z.strictObject({
   ),
   source: sourceRefSchema.optional(),
 });
-
-export type DrivingMishapData = z.infer<typeof schema>;

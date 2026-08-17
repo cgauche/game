@@ -21,5 +21,3 @@ export const schema = z.strictObject({
   default: z.string(),
   rules: z.array(speciesRuleSchema),
 });
-
-export type SpeciesRaceData = z.infer<typeof schema>;

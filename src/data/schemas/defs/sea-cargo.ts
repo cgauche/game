@@ -67,5 +67,3 @@ export const schema = z.strictObject({
     source: sourceRefSchema,
   }),
 });
-
-export type SeaCargoData = z.infer<typeof schema>;

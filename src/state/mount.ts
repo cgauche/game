@@ -61,7 +61,7 @@ export const combatGeomOfList = (combatants: Combatant[], c: Combatant): Combata
  *  (#210 — bélier ADE II 8 : c'est la pièce qui frappe, pas le chef qui la sert), sinon lui-même.
  *  Substitution PAR-ACTEUR (indépendante de toute arme) : réservée au côté DÉFENSEUR/cible d'une attaque
  *  (l'arme employée par l'attaquant est hors-sujet pour la géométrie de SA cible) et aux usages hors attaque
- *  (mouvement, Peur, `mountedCombatDistance` générique). Côté ATTAQUANT d'une attaque → `attackGeomOf`
+ *  (mouvement, Peur, distance de combat générique). Côté ATTAQUANT d'une attaque → `attackGeomOf`
  *  (PAR-arme, #BUG-A) : une arme personnelle ne doit JAMAIS hériter de l'allonge de la coque servie. */
 export const combatGeomOf = (battle: BattleState, c: Combatant): Combatant => combatGeomOfList(battle.combatants, c);
 
@@ -160,10 +160,6 @@ export function riderFearSize(battle: BattleState, self: Combatant): SizeCategor
   return mountOf(battle, self)?.size;
 }
 
-/** Distance de COMBAT (Chebyshev d'empreinte) tenant compte des MONTURES : d'empreinte de monture à
- *  empreinte de monture (le cavalier suit). Sans monture = `combatDistance` normal. */
-export const mountedCombatDistance = (battle: BattleState, a: Combatant, b: Combatant): number =>
-  combatDistance(combatGeomOf(battle, a), combatGeomOf(battle, b));
 /** Le cavalier porté par `mount` (ou undefined). */
 export const riderOf = (battle: BattleState, mount: Combatant): Combatant | undefined =>
   mount.riderId ? inBattleId(battle, mount.riderId) : undefined;

@@ -1,6 +1,6 @@
 /**
  * Schéma de `species.json` — dérivé du contenu RÉEL (27 entrées, script d'inventaire) et de
- * `SpeciesData` (`src/data/index.ts:128`). `skills`/`talents` = `AdvancementRef[]`, `baseChar` =
+ * `SpeciesData` (`src/data/index.ts:689`). `skills`/`talents` = `AdvancementRef[]`, `baseChar` =
  * `Partial<Record<CharKey, number>>`. Mêmes petites formes partagées (Ref/AdvancementRef/CharKey)
  * que `careerLevels.ts`, PROMUES dans `common.ts`. `group` (racial de Groupe éditable, LDB 21) et
  * `mutationBodyMax` sont ABSENTS sur une partie des entrées (0/27 et 18/27) : optionnels, conformes
@@ -52,5 +52,3 @@ export const schema = z.array(
     arcaneDomainsBonusOf: charKeySchema.optional(),
   }),
 );
-
-export type SpeciesData = z.infer<typeof schema>;

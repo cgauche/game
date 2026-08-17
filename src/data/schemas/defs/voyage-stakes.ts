@@ -34,5 +34,3 @@ export const schema = z.array(
     source: sourceRefSchema,
   }),
 );
-
-export type VoyageStakesData = z.infer<typeof schema>;

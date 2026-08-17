@@ -147,5 +147,3 @@ export const schema = z.array(
     variants: z.array(variantOf(traitEntrySchema, VARIANT_RESOLVED_FIELDS)).optional(),
   }),
 );
-
-export type TraitsData = z.infer<typeof schema>;

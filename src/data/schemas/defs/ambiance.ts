@@ -208,5 +208,3 @@ export const schema = z.strictObject({
     vignette: radialVeilSchema,
   }),
 });
-
-export type AmbianceData = z.infer<typeof schema>;

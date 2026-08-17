@@ -52,7 +52,7 @@ export function hasArcaneTalent(c: Combatant, domain: string): boolean {
 }
 
 // PA par matière (métal/cuir), PA magiques et ignorance générale : moteur UNIQUE engine/armourBypass.
-export { metalAPAt, magicAPOf } from './armourBypass';
+export { metalAPAt } from './armourBypass';
 
 /** Modulation de la MITIGATION d'un Projectile par l'attribut du Domaine (Cieux/Métal/Ombres) — PARAMÈTRE
  *  lu en DONNÉES (`DomainData.missile`) : `bypass` (matière ignorée) + `bonusFromBypass` (Métal : ajoute

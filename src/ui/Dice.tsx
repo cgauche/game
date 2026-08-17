@@ -14,12 +14,6 @@ export function d100Faces(roll: number): [number, number] {
 /** Face physique d'UN d10 (numéroté 0-9, « 0 » = 10) — un jet `[1,10]` → un chiffre affichable. */
 export const d10Face = (v: number): number => (v === 10 ? 0 : v);
 
-/** Les DEUX faces physiques d'une paire de d10 (Caractéristiques 2d10, LDB 05 l.381) — source
- *  UNIQUE de la conversion pour l'animation, jamais une reconstruction depuis la somme. */
-export function d10PairFaces([a, b]: readonly [number, number]): [number, number] {
-  return [d10Face(a), d10Face(b)];
-}
-
 const TICK_MS = 45; // cadence du « roulement »
 const TICKS = 10; // ~0,45 s avant de se poser
 

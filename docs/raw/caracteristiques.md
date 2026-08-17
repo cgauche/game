@@ -241,7 +241,6 @@ Module principal : **`src/engine/characteristics.ts`**
 | Fonction | RAW couvert |
 |----------|-------------|
 | `bonus(value)` | Bonus de Caractéristique = `floor(value / 10)` — LDB 05 l.406 |
-| `charBonus(chars, key)` | Bonus d'une Caractéristique depuis un profil complet |
 | `baseWithTraits(c, key)` | Carac. de base + charMods des `liveTraits` (Élite/Coriace…), sans effets volatils |
 | `effectiveChar(c, key)` | Valeur effective : base + passifs permanents + meilleur bonus − pire pénalité des effets magiques actifs — LDB 05 l.200 |
 | `maxWounds(chars, size)` | Blessures de départ : `BF + 2×BE + BFM` avec variation par Taille — LDB 05 l.365/451, LDB 85 l.391-406 |

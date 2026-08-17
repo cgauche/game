@@ -19,5 +19,3 @@ export const schema = z.array(
     light: z.strictObject({ radiusTiles: z.number(), tone: z.string().optional() }).optional(),
   }),
 );
-
-export type PropsData = z.infer<typeof schema>;

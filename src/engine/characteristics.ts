@@ -15,10 +15,6 @@ export function bonus(value: number): number {
   return Math.floor(value / 10);
 }
 
-export function charBonus(chars: Characteristics, key: CharKey): number {
-  return bonus(chars[key]);
-}
-
 /**
  * Caractéristique de BASE + modificateurs de PROFIL des traits `liveTraits` (Élite/Coriace/Brutal…), SANS les
  * effets volatils (mutations/traumas/maladies/buffs). Reproduit EXACTEMENT l'ancienne valeur cuite au spawn

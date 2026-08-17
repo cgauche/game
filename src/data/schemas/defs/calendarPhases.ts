@@ -15,5 +15,3 @@ export const schema = z.array(
     icon: z.string(),
   }),
 );
-
-export type CalendarPhasesData = z.infer<typeof schema>;

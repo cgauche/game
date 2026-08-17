@@ -24,5 +24,3 @@ export const schema = z.array(
     source: sourceRefSchema.optional(),
   }),
 );
-
-export type EncumbranceTiersData = z.infer<typeof schema>;

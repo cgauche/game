@@ -63,5 +63,3 @@ export const schema = z.strictObject({
   structures: z.array(structureRowSchema),
   hazards: z.array(hazardRowSchema),
 });
-
-export type MassBattleData = z.infer<typeof schema>;

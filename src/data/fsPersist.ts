@@ -72,12 +72,6 @@ export async function grantPermission(h: DirHandle): Promise<boolean> {
   return perm(h, true);
 }
 
-/** Lit le texte d'un fichier du dossier. */
-export async function readFile(dir: DirHandle, name: string): Promise<string> {
-  const fh = await dir.getFileHandle(name);
-  return (await fh.getFile()).text();
-}
-
 /** Écrit le texte dans un fichier du dossier (créé au besoin). */
 export async function writeFile(dir: DirHandle, name: string, text: string): Promise<void> {
   const fh = await dir.getFileHandle(name, { create: true });

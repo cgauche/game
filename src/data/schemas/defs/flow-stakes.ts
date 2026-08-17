@@ -52,5 +52,3 @@ export const schema = z.array(
       }
     }),
 );
-
-export type FlowStakesData = z.infer<typeof schema>;

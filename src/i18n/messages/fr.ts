@@ -402,7 +402,7 @@ export const fr = {
   // #1318 V8c₅ — « Se fatiguer » (règle optionnelle, LDB 16 l.97), `state/combat/roundHooks.ts`.
   'turn.exhausted': "{name} s'épuise (effort soutenu) : Exténué.",
   'turn.effortHeld': '{name} tient bon malgré l’effort.',
-  // Surnombre (LDB 11 l.60, Maîtrise du combat LDB 10) — `state/combat/roundHooks.ts`.
+  // Surnombre (LDB 14 l.110, Maîtrise du combat LDB 10) — `state/combat/roundHooks.ts`.
   'turn.outnumbered': '{name} est surpassé en nombre ({foes} c.1) : −1 Avantage.',
   'turn.frenzyEnd': '{name} sort de Frénésie (Exténué).',
   'turn.frenzyEnter': '{name} entre en Frénésie !',

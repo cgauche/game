@@ -104,11 +104,6 @@ export function seatOwns(s: GameState, seat: number, combatantId: string | undef
  */
 let actingSeat: number | null = null;
 
-/** Le siège qui joue le geste en cours (`null` hors application d'intent = le siège local). */
-export function actingSeatOf(): number | null {
-  return actingSeat;
-}
-
 /**
  * Exécute `fn` AU NOM de `seat` (application d'un intent reçu). CONTRAT : le contexte couvre l'appel
  * SYNCHRONE — un travail différé par l'action (timer de cadence, animation) le relira retombé, donc

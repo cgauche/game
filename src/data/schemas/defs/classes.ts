@@ -19,5 +19,3 @@ export const schema = z.array(
     source: sourceRefSchema,
   }),
 );
-
-export type ClassesData = z.infer<typeof schema>;

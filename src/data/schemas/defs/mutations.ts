@@ -24,5 +24,3 @@ export const schema = z.array(
     appearance: entityAppearanceSchema.optional(),
   }),
 );
-
-export type MutationsData = z.infer<typeof schema>;

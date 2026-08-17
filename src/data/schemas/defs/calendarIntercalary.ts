@@ -18,5 +18,3 @@ export const schema = z.array(
     source: sourceRefSchema.optional(),
   }),
 );
-
-export type CalendarIntercalaryData = z.infer<typeof schema>;

@@ -95,5 +95,3 @@ export const schema = z.strictObject({
   corps: z.array(critEntrySchema),
   jambe: z.array(critEntrySchema),
 });
-
-export type CriticalsData = z.infer<typeof schema>;

@@ -341,10 +341,10 @@ export function defenseValue(c: Combatant, mode: DefenseMode, weapon?: Weapon, s
 }
 
 /** Détail d'un jet (pour l'affichage : base, modificateurs, cible, d100 et DR). */
-// Le modificateur étiqueté (`ModLine`) et sa famille (`ModFamille`) sont définis dans `types.ts` —
-// FORME UNIQUE, lisible des collecteurs d'États comme du moteur de combat sans cycle d'import ;
-// ré-exportée ici pour les lecteurs historiques (une définition, deux chemins d'import).
-export type { ModFamille, ModLine } from './types';
+// Le modificateur étiqueté (`ModLine`) est défini dans `types.ts` — FORME UNIQUE, lisible des
+// collecteurs d'États comme du moteur de combat sans cycle d'import ; ré-exporté ici pour les
+// lecteurs historiques (une définition, deux chemins d'import).
+export type { ModLine } from './types';
 
 /** Degré de masquage d'une ligne de jet à l'écran — DÉFINITION UNIQUE, partagée par le jet RÉSOLU
  *  (`RollBreakdown`) et le pré-jet (`PendingRoll`). Rendu par le site unique `ui/RollLine.tsx`. */

@@ -30,5 +30,3 @@ export const schema = z.strictObject({
   source: sourceRefSchema,
   entries: z.array(artilleryMisfireEntrySchema),
 });
-
-export type ArtilleryMisfireData = z.infer<typeof schema>;

@@ -48,5 +48,3 @@ export const schema = z.array(
     maison: z.string().optional(),
   }),
 );
-
-export type EtatsData = z.infer<typeof schema>;

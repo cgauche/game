@@ -24,5 +24,3 @@ const namePoolSchema = z.strictObject({
 });
 
 export const schema = z.record(z.string(), namePoolSchema);
-
-export type NamesData = z.infer<typeof schema>;

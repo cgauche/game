@@ -23,5 +23,3 @@ export const schema = z.strictObject({
     superstructure: z.array(shipCritEntrySchema),
   }),
 });
-
-export type RiverCriticalsData = z.infer<typeof schema>;

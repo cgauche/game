@@ -3,12 +3,6 @@
  *  (`{ key }`). Toute la MÉCANIQUE (passive `GameOp[]` + `capabilities` + `effects`) vit dans la donnée,
  *  lue PAR ID par `dispatch.ts`. */
 
-/** Contexte (lecture seule) d'un déclencheur de Critique (Empaleuse) — le jet de toucher. */
-export interface QualityCtx {
-  /** d100 du toucher (pour les déclencheurs de Critique). */
-  roll?: number;
-}
-
 /** Entrée du registre `QUALITIES` : le LIBELLÉ FR canonique seulement (affichage). La mécanique est
  *  portée par `QualityData` (donnée), lue par id. */
 export interface QualityDef {

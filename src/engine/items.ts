@@ -387,11 +387,6 @@ export function weaponHands(it: { hands?: 1 | 2; subType?: string }, ctx?: { mou
   return 1;
 }
 
-/** Arme exigeant DEUX mains (LDB 62). Pistolets/arquebuses (Poudre noire/Ingénierie) : 1 main par défaut. */
-export function isTwoHandedWeapon(it: ItemInstance): boolean {
-  return weaponHands(it) === 2;
-}
-
 /** Arme éligible à la MAIN SECONDAIRE (LDB 14 l.138 : « une arme de combat rapproché à une main OU un
  *  pistolet ») : arme de mêlée à UNE main, ou une arme à distance portant l'Atout Pistolet (qualité
  *  `pistolet` — « peut attaquer en Combat rapproché », inclut l'Arbalète de poing). Exclut donc les

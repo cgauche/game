@@ -124,11 +124,6 @@ export function computeLockedTransform(
   return { tx: midScreen.x - scale * midImg.x, ty: midScreen.y - scale * midImg.y, scale, rotateDeg: 0 };
 }
 
-/** Chaîne `transform` SVG prête à poser sur le `<g>` du calque. */
-export function transformToSvg(t: TraceTransform): string {
-  return `translate(${t.tx} ${t.ty}) rotate(${t.rotateDeg}) scale(${t.scale})`;
-}
-
 /** Étape courante du calage 2 points (machine à états linéaire, jamais de retour arrière implicite —
  *  `idle` (ou `Escape`/annulation) remet à zéro). */
 export type CalibStep = 'idle' | 'image1' | 'tile1' | 'image2' | 'tile2';

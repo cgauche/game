@@ -32,7 +32,7 @@ import {
 } from '../engine/careerSlots';
 import { careerSkillAdditions, careerTalentAdditions, baseWithTalents } from '../engine/talentEffects';
 import { rule } from '../engine/policy';
-import { levelsForCareer, findSkillById, findCareerById, findClassById, careers, refLabel, specLabel, displayLabelForSex } from '../data';
+import { levelsForCareer, findSkillById, findCareerById, refLabel, specLabel, displayLabelForSex } from '../data';
 
 export interface CharAdvanceRow {
   key: CharKey;
@@ -269,9 +269,4 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     targets,
     changeCostFor,
   };
-}
-
-/** Toutes les carrières, pour le sélecteur de changement (id + libellé + libellé de Classe). */
-export function allCareerChoices(): { id: string; label: string; className: string }[] {
-  return careers.map((c) => ({ id: c.id, label: c.label, className: findClassById(c.class)?.label ?? c.class }));
 }

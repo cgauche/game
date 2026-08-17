@@ -45,5 +45,3 @@ export const schema = z.array(
       .optional(),
   }),
 );
-
-export type ReglesOptionnellesData = z.infer<typeof schema>;
