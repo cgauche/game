@@ -191,6 +191,54 @@
   --stat-val-md: 20px;
   --stat-label-lg: 12px;
   --stat-val-lg: 25px;
+  /* Matières de la CONSOLE DE COMBAT (`CombatConsole`) — relevées sur les spécimens C (aile
+     gauche : plaque d'ACIER), D (arche : bois + laiton, gouttières creusées) et E (aile droite :
+     plaque de LAITON, conduit d'Avantage) de `docs/plans/Spec HUD Combat.dc.html`. Deux gammes
+     distinctes ASSUMÉES : l'acier dit le MATÉRIEL tenu, le laiton dit la VOLONTÉ du personnage —
+     aucune n'existait au socle (les `--atelier-*` sont du bois d'atelier, pas de la tôle). */
+  --cc-steel-hi: #1b2129; /* plaque d'acier — haut */
+  --cc-steel-lo: #0c0f13; /* plaque d'acier — bas */
+  --cc-steel-edge: #3f4c5a; /* liseré d'acier */
+  --cc-steel-cell-hi: #232a33; /* alvéole d'acier — haut */
+  --cc-steel-cell-lo: #0e1216; /* alvéole d'acier — bas */
+  --cc-steel-ink: #8fa9c4; /* icône/libellé gravés sur l'acier */
+  --cc-steel-key: #6f8098; /* touche imprimée dans le coin de la case */
+  --cc-steel-lit: #7fa8c8; /* alvéole d'acier ARMÉE (liseré + cran de coût) */
+  --cc-steel-lit-ink: #bcd8ee; /* encre d'une alvéole d'acier armée */
+  --cc-void-steel-hi: #151a1f; /* case VIDE côté acier — haut */
+  --cc-void-steel-lo: #0a0d10; /* case vide côté acier — bas */
+  --cc-void-steel-edge: #20262d; /* liseré d'une case vide d'acier */
+  --cc-void-steel-ink: #333c45; /* encre éteinte d'une case vide d'acier */
+  --cc-brass-lo: #100b07; /* plaque de laiton — bas (haut = --atelier-wood-top) */
+  --cc-brass-cell-hi: #2a2014; /* alvéole de laiton — haut */
+  --cc-brass-cell-lo: #120d08; /* alvéole de laiton — bas */
+  --cc-void-brass-hi: #1b160f; /* case VIDE côté laiton — haut */
+  --cc-void-brass-lo: #0c0906; /* case vide côté laiton — bas */
+  --cc-void-brass-edge: #2a2218; /* liseré d'une case vide de laiton */
+  --cc-void-brass-ink: #463c2c; /* encre éteinte d'une case vide de laiton */
+  --cc-conduit-edge: #6f5828; /* colliers du conduit d'Avantage */
+  --cc-conduit-track-hi: #0d0906; /* rail creusé du conduit — haut */
+  --cc-conduit-track-lo: #1a130d; /* rail creusé du conduit — bas */
+  --cc-conduit-fill-hi: #ffc98a; /* flux d'Avantage — crête (cœur = --gauge-adv) */
+  --cc-conduit-fill-lo: #8a4a10; /* flux d'Avantage — pied */
+  --cc-arch-hi: #2c2013; /* arche de l'acteur — haut */
+  --cc-arch-mid: #1a1209; /* arche de l'acteur — milieu */
+  --cc-arch-lo: #0e0a06; /* arche de l'acteur — bas */
+  --cc-arch-well-hi: #191309; /* gouttière creusée d'une jauge de l'arche — crête */
+  --cc-arch-well-lo: #0d0906; /* gouttière creusée d'une jauge de l'arche — fond */
+  --cc-end-hi: #3a1410; /* plaque de fin de tour — haut */
+  --cc-end-lo: #1a0806; /* plaque de fin de tour — bas */
+  --cc-end-warn-hi: #3a2c10; /* fin de tour APPELÉE (plus d'option utile) — haut */
+  --cc-end-warn-lo: #1a1206; /* fin de tour appelée — bas */
+  --cc-end-medal-fg: #f0d8b0; /* glyphe du médaillon de fin de tour */
+  /* Matières du HUD DE COMBAT hors console — spécimens A (frise d'initiative), B (bandeau du
+     groupe) et G (rail d'outils) de `docs/plans/Spec HUD Combat.dc.html` : le HUD entier se lit
+     dans une seule matière (bois + laiton), l'acier restant à l'arsenal tenu en main. */
+  --hud-frise-edge: #1a130d; /* bord sombre de la colonne de frise (dégradé 90°) */
+  --hud-frise-score-lo: #120c07; /* bas du badge d'Initiative posé en débord */
+  --hud-camp-ally-hi: #7fae62; /* réglette de camp — allié, crête */
+  --hud-camp-ally-lo: #2f5220; /* réglette de camp — allié, pied (ennemi = --combat-enemy/--blood) */
+  --hud-tool-hi: #3a2c18; /* haut d'une commande vissée sur le rail d'outils */
 }
 
 * {

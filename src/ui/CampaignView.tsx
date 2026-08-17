@@ -12,7 +12,7 @@ import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
 import { TavernGameModal } from './TavernGameModal';
-import { ActionBar } from './ActionBar';
+import { CombatConsole } from './CombatConsole';
 import { PosteSheet } from './ShipSheet';
 import { isVehicle } from '../engine/vehicle';
 import { isEngin } from '../engine/structures';
@@ -218,7 +218,7 @@ export function CampaignView() {
         )}
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :
-            la BARRE D'ACTION se transforme en bandeau d'interlude (cf. ActionBar). */}
+            la console porte un bandeau d'interlude (cf. CombatConsole). */}
         {/* Barre HUD supérieure UNIFIÉE : le menu ☰, les raccourcis de lieu (navire / voyage / carte /
             hub / repos) et, HORS COMBAT, la pile de contexte — lieu, date, objectif dans cet ordre
             (design 2026-07-31 §11). Sauvegarder : exploration seulement (refusée en combat) et jamais
@@ -329,28 +329,34 @@ export function CampaignView() {
         {saveOpen && !dialogue && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {(sessionOpen || sessionEndOpen) && !dialogue && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
         <PartyDock heroes={dockHeroes} targeting={isTargeting} onOpen={onDockPortrait} />
-        <LogDrawer
-          battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null}
-          journal={journal}
-          onOpenHistory={mode === 'exploration' && dialogueHistory.length > 0 ? () => setHistoryOpen(true) : undefined}
-        />
-        {/* Orientation : le MÊME geste que Q/E (`tournerCamera`/`relacherCamera`), appui ET
-            relâchement — un appui bref pousse d'un pas fin, un appui tenu fait tourner en continu. */}
-        <ViewControls
-          zoom={zoom}
-          onZoomIn={() => setZoom(zoom + 0.3)}
-          onZoomOut={() => setZoom(zoom - 0.3)}
-          onZoomReset={() => setZoom(1)}
-          onRotateLeft={() => tournerCamera(useGame.getState, -1)}
-          onRotateRight={() => tournerCamera(useGame.getState, 1)}
-          onRotateRelease={relacherCamera}
-          view={viewMode}
-          onToggleView={toggleViewMode}
-          pov={povActive}
-          onTogglePov={mode === 'exploration' ? togglePov : undefined}
-          inspectEnabled={inspectEnabled}
-          onToggleInspect={mode === 'battle' ? toggleInspect : undefined}
-        />
+        {/* RAIL D'OUTILS (épure G) : UN panneau vertical encadré au bord droit — commandes de vue
+            ET journal y sont montés ensemble, plus rien d'épars sur le champ. Aux tranches
+            étroites le rail se dissout (`display: contents`) et chaque surface reprend son ancrage
+            mobile propre. */}
+        <div className="hud-rail">
+          {/* Orientation : le MÊME geste que Q/E (`tournerCamera`/`relacherCamera`), appui ET
+              relâchement — un appui bref pousse d'un pas fin, un appui tenu fait tourner en continu. */}
+          <ViewControls
+            zoom={zoom}
+            onZoomIn={() => setZoom(zoom + 0.3)}
+            onZoomOut={() => setZoom(zoom - 0.3)}
+            onZoomReset={() => setZoom(1)}
+            onRotateLeft={() => tournerCamera(useGame.getState, -1)}
+            onRotateRight={() => tournerCamera(useGame.getState, 1)}
+            onRotateRelease={relacherCamera}
+            view={viewMode}
+            onToggleView={toggleViewMode}
+            pov={povActive}
+            onTogglePov={mode === 'exploration' ? togglePov : undefined}
+            inspectEnabled={inspectEnabled}
+            onToggleInspect={mode === 'battle' ? toggleInspect : undefined}
+          />
+          <LogDrawer
+            battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null}
+            journal={journal}
+            onOpenHistory={mode === 'exploration' && dialogueHistory.length > 0 ? () => setHistoryOpen(true) : undefined}
+          />
+        </div>
         {mode === 'exploration' && povActive && <PovControls />}
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}
@@ -384,8 +390,8 @@ export function CampaignView() {
         {/* Récapitulatif de voyage (audit M4) : à l'arrivée, ou APRÈS l'embuscade qui a interrompu
             le trajet (jamais par-dessus le combat/un dialogue). */}
         {travelRecap && mode === 'exploration' && !dialogue && !worldMapOpen && <TravelRecapModal />}
-        {/* Barre d'action + portrait du héros actif EN BAS (cf. ActionBar). */}
-        {mode === 'battle' && battle && <ActionBar />}
+        {/* Console de combat + portrait du héros actif EN BAS (cf. CombatConsole). */}
+        {mode === 'battle' && battle && <CombatConsole />}
         {/* Défaite : overlay centré (la victoire a son écran plein, VictoryScreen). Dans une Scène de
             combat de bataille de masse (ADE II 08), `dismissDefeat` fait CONTINUER la bataille (repli
             tactique, pas game-over) ; hors bataille de masse, il rend la main à la scène. */}

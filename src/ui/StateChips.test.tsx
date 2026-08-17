@@ -60,6 +60,73 @@ describe('StateChips — pastilles de portrait', () => {
 });
 
 /**
+ * Spec HUD combat §1c-bis (rappel user 2026-08-17, verbatim : « une zone pour mettre les états
+ * icônes et leur indice », « dans la barre du haut la même chose à côté de chaque portrait ») : le
+ * rack `reserve` dessine SES cases, toujours le même nombre, chacune chiffrée quand elle a un
+ * chiffre à dire.
+ */
+describe('StateChips — rack d’alvéoles RÉSERVÉES (mode `reserve`)', () => {
+  const alveoles = (html: string) => (html.match(/pt-state|pt-void/g) ?? []).length;
+
+  it('dessine EXACTEMENT `max` alvéoles, États ou pas — la carte ne change pas de taille', () => {
+    const vide = renderToStaticMarkup(<StateChips c={mkHero()} max={6} reserve />);
+    const un = renderToStaticMarkup(<StateChips c={mkHero((c) => { c.conditions = [cond('assourdi')]; })} max={6} reserve />);
+    const trois = renderToStaticMarkup(<StateChips c={mkHero((c) => { c.conditions = [cond('assourdi'), cond('aveugle'), cond('empetre')]; })} max={6} reserve />);
+    expect(alveoles(vide)).toBe(6);
+    expect(alveoles(un)).toBe(6);
+    expect(alveoles(trois)).toBe(6);
+    // Les cases non remplies sont DESSINÉES (vides), pas absentes.
+    expect((vide.match(/pt-void/g) ?? []).length).toBe(6);
+    expect((trois.match(/pt-void/g) ?? []).length).toBe(3);
+  });
+
+  it('le débord prend la DERNIÈRE alvéole : 8 États tiennent encore en 6 cases', () => {
+    const huit = ['assourdi', 'aveugle', 'empetre', 'a-terre', 'hemorragique', 'sonne', 'extenue', 'empoisonne'].map((id) => cond(id));
+    const html = renderToStaticMarkup(<StateChips c={mkHero((c) => { c.conditions = huit; })} max={6} reserve />);
+    expect(alveoles(html)).toBe(6);
+    expect(html).toContain('ptile-more');
+  });
+
+  it('chaque alvéole porte son CHIFFRE : pions de l’État, DR de Focalisation, Indice de Peur', () => {
+    const hero = mkHero((c) => {
+      c.conditions = [cond('hemorragique', 3)];
+      c.psychState = [{ type: 'peur', indice: 2, calmeDR: 0 }] as Combatant['psychState'];
+      c.focus = { dr: 4 } as Combatant['focus'];
+    });
+    const html = renderToStaticMarkup(<StateChips c={hero} max={6} reserve />);
+    const chiffres = [...html.matchAll(/<b class="pt-n">(\d+)<\/b>/g)].map((m) => m[1]);
+    // Ordre de `summarizeEffects` : malus (par sévérité) → états-drapeaux → buffs.
+    expect(chiffres).toEqual(['3', '4', '2']);
+  });
+
+  it('un État à 1 pion dit « 1 » (l’icône seule ne disait pas combien)', () => {
+    const html = renderToStaticMarkup(<StateChips c={mkHero((c) => { c.conditions = [cond('assourdi')]; })} max={6} reserve />);
+    expect(html).toContain('<b class="pt-n">1</b>');
+  });
+
+  // Spec HUD combat §1c-bis/§1c : les États de SITUATION de l'arche (Assailli ×N, Cloué, Renfort)
+  // ne vivent pas sur le Combatant — ils entrent dans le MÊME rack par `extra`, jamais dans une
+  // seconde rangée de chips.
+  it('`extra` entre dans le MÊME rack, chiffre compris, sans ajouter d’alvéole', () => {
+    const assailli = { key: 'a-assailli', icon: 'action/attack', label: 'Assailli', kind: 'state', severity: 58, indice: 3 } as const;
+    const html = renderToStaticMarkup(
+      <StateChips c={mkHero((c) => { c.conditions = [cond('assourdi')]; })} max={4} reserve extra={[{ ...assailli }]} />,
+    );
+    expect(alveoles(html)).toBe(4);
+    expect((html.match(/pt-state/g) ?? []).length).toBe(2);
+    expect(html).toContain('<b class="pt-n">3</b>');
+  });
+
+  it('une pastille `extra` SANS règle résolue reste nue (aucun `CodexRef`, aucune infobulle)', () => {
+    const html = renderToStaticMarkup(
+      <StateChips c={mkHero()} max={4} reserve extra={[{ key: 'a-assailli', icon: 'action/attack', label: 'Assailli', kind: 'state', severity: 58, indice: 2 }]} />,
+    );
+    expect(html).not.toContain('codex-ref');
+    expect(html).not.toContain('title=');
+  });
+});
+
+/**
  * #1117 (recette 2) — clé React DUPLIQUÉE (`b-exposition-froid`, 30 occurrences console). CAUSE
  * MESURÉE : l'Exposition pose un `ActiveEffect` PAR CARACTÉRISTIQUE (LDB 18 l.334 : −10 CT/Agilité/
  * Dextérité au 1ᵉʳ échec, toutes les autres au 2ᵉ) — jusqu'à 10 effets partageant `effectId`. Les

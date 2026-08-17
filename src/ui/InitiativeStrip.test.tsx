@@ -31,6 +31,25 @@ describe('InitiativeStrip', () => {
     expect(html.match(/▼/g)?.length).toBe(1);
   });
 
+  // Spec HUD combat §1c-bis : une entrée de frise = vignette + liseré de camp (+ à la pause son
+  // score, sa pointe, sa pastille). Ni Blessures, ni nom imprimé, ni États — ils vivent au bandeau
+  // de groupe et à l'arche de la console.
+  it('n’imprime ni Blessures, ni États, ni nom dans une entrée', () => {
+    const { h, foe } = fixtures();
+    h.wounds = { current: 7, max: 11 };
+    h.conditions = [{ id: 'assourdi', value: 1 }];
+    const html = renderToStaticMarkup(
+      <InitiativeStrip order={['e1', 'h1']} turn={1} round={2} combatants={[h, foe]} over={false}
+        canFirstIds={[]} onActivate={noop} onPromote={noop} />,
+    );
+    expect(html).not.toContain('ptile-gauge');
+    expect(html).not.toContain('7/11');
+    expect(html).not.toContain('pt-state');
+    // Le nom reste en title/aria-label (a11y), jamais en texte imprimé.
+    expect(html).toContain('title="Gunnar"');
+    expect(html.replace(/<[^>]*>/g, ' ')).not.toContain('Gunnar');
+  });
+
   it.each([
     { index: 0, turn: 1, over: false, want: 'past' },
     { index: 1, turn: 1, over: false, want: 'current' },

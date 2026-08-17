@@ -220,9 +220,64 @@
   line-height: 1.15;
   text-shadow: 0 0 3px var(--shadow-ink);
 }
-/* Cellule d'États à EMPREINTE STABLE (arbitrage user 2026-07-11) : réservée même vide → une rangée de
-   liste ne se décale plus selon qu'un héros porte un État ou non. En ligne (nom + États côte à côte). */
-.ptile-states[data-reserve] { flex-direction: row; align-items: center; gap: 2px; min-height: 18px; }
+/* RACK D'ALVÉOLES RÉSERVÉES (`StateChips reserve`) : les cellules sont TOUJOURS dessinées, vides
+   comprises — un État de plus ne redimensionne aucune carte, et une rangée de liste ne se décale
+   plus selon qu'un héros porte un État ou non (arbitrage user 2026-07-11, rappel 2026-08-17). */
+.ptile-states[data-reserve] {
+  --alv: 15px;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  min-height: var(--alv);
+}
+.ptile-states[data-reserve] .pt-state,
+.ptile-states[data-reserve] .pt-void {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--alv);
+  height: var(--alv);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35));
+  border: 1px solid var(--atelier-brass-rubric);
+}
+/* Alvéole VIDE : creusée, jamais un bouton — elle dit la place réservée, elle ne promet rien. Fond
+   OPAQUE (la hachure de la carte passait au travers d'un noir à 0,4 d'alpha) et filet d'un cran SOUS
+   celui d'une alvéole portée : vide < plein, mais jamais mou (sonde du juge vision : bordure blanche
+   à 0,07 d'alpha). */
+.ptile-states[data-reserve] .pt-void {
+  background: linear-gradient(180deg, var(--cc-void-brass-hi), var(--cc-void-brass-lo));
+  border-color: var(--atelier-brass-hover);
+}
+/* Le GLYPHE occupe son alvéole : à `--alv − 4` il tombait à 11px dans une case de 15, où l'indice
+   accolé prenait le pas sur lui (sonde du juge vision : deux lectures fausses mesurées). */
+.ptile-states[data-reserve] .pt-state svg {
+  width: calc(var(--alv) - 2px);
+  height: calc(var(--alv) - 2px);
+}
+/* CHIFFRE de la pastille (pions de l'État, DR de Focalisation, Indice de Peur) : gravé au coin
+   bas-droit de l'alvéole — l'icône seule ne disait pas « combien ». */
+.pt-n {
+  font: 700 9px/1 ui-monospace, monospace;
+  color: var(--gold2);
+  font-variant-numeric: tabular-nums;
+}
+/* En rack, l'indice est une PASTILLE À PART, logée DANS le coin : encre sombre sur laiton clair, il
+   ne se confond plus avec le trait du glyphe. Il tenait avant sur une plaque opaque DÉBORDANTE
+   (`-1px`), qui mangeait le filet de l'alvéole sur toute sa hauteur — cadre rompu, et le tronçon
+   restant se lisait comme un signe « − » devant le chiffre (sonde du juge vision : « −3 »). */
+.ptile-states[data-reserve] .pt-n {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 0 1px;
+  font-size: 8px;
+  border-radius: 3px;
+  color: var(--atelier-shell-lo);
+  background: var(--atelier-brass-etch);
+  text-shadow: none;
+}
 .ptile-more {
   color: var(--muted);
   font-weight: 700;
@@ -230,18 +285,27 @@
 }
 
 /* ── Frise d'initiative → COLONNE À GAUCHE (inversée avec le dock du groupe — demande utilisateur).
-   Défile verticalement si beaucoup de combattants (R4 : plus de débordement hors écran). ── */
+   Défile verticalement si beaucoup de combattants (R4 : plus de débordement hors écran).
+   ELLE S'ARRÊTE AU-DESSUS DU PONT de console (planche 2026-08-17 : plaque de frise `[0,132,133,472]`,
+   pont à y=863) : la colonne vit dans la BANDE DE TERRAIN — sous le coin du menu ☰ (44px au doigt +
+   air) et au-dessus du pont — et s'y centre. Centrée sur le VIEWPORT, sa plaque descendait derrière
+   le bout gauche de la console (mesuré 103,6 × 97,3px de recouvrement à 1280, points de frise
+   par-dessus le pont au hit-test) ; ancrée en haut seulement, son cartouche de Round passait sous le
+   bouton de menu. La réserve du bas est la hauteur du pont elle-même (`--cc-deck-h`,
+   combat-console.css), jamais un nombre recopié. ── */
 .initiative-strip {
   position: absolute;
-  top: 50%;
+  top: 70px;
+  bottom: calc(var(--cc-deck-h) + 12px);
   left: 10px;
-  transform: translateY(-50%);
+  transform: none;
   z-index: 45;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
   gap: 4px;
-  max-height: 84vh;
+  max-height: none;
 }
 .is-tiles {
   display: flex;
@@ -251,43 +315,146 @@
      2026-06-11). En flex-start tous les portraits partagent le même bord gauche, badge à droite. */
   align-items: flex-start;
   gap: 6px;
-  padding: 8px 6px;
-  background: rgba(10, 14, 20, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  backdrop-filter: blur(3px);
+  /* Matière du spécimen A (`docs/plans/Spec HUD Combat.dc.html`) : colonne de bois montée sur un
+     chant de laiton, cartouche de Round gravé en tête, badges posés en DÉBORD (rien n'élargit une
+     vignette). Habillage seul — la géométrie de la colonne est inchangée. */
+  position: relative;
+  padding: 9px 8px 12px;
+  background: linear-gradient(90deg, var(--hud-frise-edge), var(--atelier-wood-top) 62%, var(--atelier-wood-bottom));
+  border: 1px solid var(--wm-frame-dark);
+  /* Chant de laiton du bord droit : le trait qui fait « colonne montée » (spécimen A). */
+  border-right: 2px solid var(--atelier-brass-hover);
+  border-radius: 0;
+  /* L'ascenseur reste DANS le cadre : une barre système collée au chant de laiton cassait la
+     colonne (grief vision). */
+  scrollbar-width: none;
   overflow-y: auto;
   overflow-x: visible;
-  max-height: 84vh;
-  scrollbar-width: thin;
+  /* Chaque entrée est un point d'ARRÊT : la colonne ne s'immobilise jamais au milieu d'un visage. */
+  scroll-snap-type: y mandatory;
+  /* La colonne s'arrête sur une entrée ENTIÈRE : le pas d'une entrée est fixe (vignette 44 + écart
+     6), la tête (cartouche de Round + rembourrages) est réservée à part, et la hauteur utile est
+     arrondie AU PAS INFÉRIEUR — sans quoi la dernière entrée était coupée en plein portrait et son
+     score tronqué (mesuré en pause, 1280×800). La déclaration simple reste le repli des moteurs
+     sans `round()`. */
+  /* Pas MESURÉ (DOM 1280×800) : entrée 50px, pas 56px (écart 6). Hors entrées, la colonne occupe
+     49px : rembourrage 9 + 12, filets 2, cartouche de Round 26 collé en tête (`sticky`) + son
+     écart 6 — moins les 6px d'écart que la DERNIÈRE entrée ne porte pas. La hauteur utile est donc
+     arrondie AU PAS INFÉRIEUR sur cette base, et le cartouche COLLE : sans lui, la piste défilée
+     n'avait plus de tête et la 12ᵉ entrée se coupait en plein visage (sonde du juge : peau à
+     pleine intensité jusqu'à y=722 contre un filet à 724). */
+  --is-pitch: 56px;
+  --is-head: 52px;
+  /* L'entrée visée par un défilement se cale SOUS le cartouche collé (26 de cartouche + 3 de marge
+     + 6 d'écart = 35px MESURÉS), jamais dessous. */
+  scroll-padding-top: 35px;
+  /* La piste ne descend pas plus bas que la plaque : sa borne est celle de la colonne (l'espace
+     AU-DESSUS du pont), arrondie au pas d'entrée. Au-delà, elle DÉFILE — aucune entrée ne
+     disparaît, et rien ne dépasse sur le pont. */
+  --is-avail: min(84vh, calc(100vh - 70px - var(--cc-deck-h) - 12px));
+  max-height: var(--is-avail);
+  max-height: calc(round(down, calc(var(--is-avail) - var(--is-head)), var(--is-pitch)) + var(--is-head));
 }
+.is-tiles::-webkit-scrollbar {
+  display: none;
+}
+/* Indicateur de DÉBORD : une RAMPE de fondu posée sur le dernier pouce de la colonne — au bord,
+   la matière du panneau est pleine (aucun pixel de vignette à pleine intensité contre le filet),
+   et l'atténuation se lit sur 18px. L'axe suit celui de la frise (bas en colonne, droite en bande
+   horizontale ≤700). */
+.initiative-strip::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  /* 22px : le rembourrage du pied (12) PLUS la garde qui couvre le résidu d'une entrée suivante
+     quand la piste est défilée hors cran (3px mesurés) — au filet, la matière est pleinement
+     celle du panneau (luminance de bord 15 contre 34 au cœur, sonde pixel). */
+  height: 22px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(20, 15, 10, 0) 0%, var(--atelier-wood-bottom) 78%);
+}
+/* Chaque entrée est un point d'ARRÊT : la colonne ne s'immobilise jamais au milieu d'un visage. */
+.is-cell {
+  scroll-snap-align: start;
+}
+
 .is-cell {
   position: relative;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 4px;
+  padding-left: 7px;
+}
+/* Réglette de CAMP (spécimen A : « la colonne se lit comme un code-barres ») — déduite du fond
+   d'équipe déjà porté par `PortraitTile`, aucun marqueur de plus dans le markup. */
+.is-cell::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 5px;
+  background: linear-gradient(180deg, var(--combat-enemy), var(--blood));
+}
+.is-cell:has(.ptile.team-ally)::before {
+  background: linear-gradient(180deg, var(--hud-camp-ally-hi), var(--hud-camp-ally-lo));
+}
+/* Vignette d'ENNEMI : entrée PLEINE hachurée à liseré de camp (spécimen A). Le contour POINTILLÉ
+   de `RigPortrait` (canal de forme, posé en style inline) se lisait « débogage » dans la colonne ;
+   ici le camp est déjà porté par la réglette de gauche — un canal non coloré, et le seul de la
+   frise. Sur le TERRAIN, le pointillé des pions reste intact. */
+.is-tiles .ptile.team-enemy .rig-portrait {
+  border-style: solid !important;
+  border-color: var(--combat-enemy) !important;
+  background: repeating-linear-gradient(135deg, var(--cc-brass-cell-hi) 0 6px, var(--hud-frise-edge) 6px 12px);
+}
+.is-tiles .ptile.team-ally .rig-portrait {
+  border-color: var(--hud-camp-ally-hi) !important;
+  background: repeating-linear-gradient(135deg, var(--cc-brass-cell-hi) 0 6px, var(--hud-frise-edge) 6px 12px);
+}
+/* UN SEUL traitement « au trait » dans la frise : le liseré doré de la vignette active. Le survol
+   (écho carte↔frise) garde son halo NEUTRE, jamais un deuxième or. */
+.is-tiles .ptile.hov:not(.active) {
+  box-shadow: none;
 }
 .is-round {
+  /* Cartouche COLLÉ en tête de la piste défilante : la colonne garde sa tête à toute position de
+     défilement, ce qui rend la hauteur d'entrées CONSTANTE (et donc l'arrondi au pas exact). */
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(90deg, var(--hud-frise-edge), var(--atelier-wood-top) 62%, var(--atelier-wood-bottom));
   align-self: stretch;
   padding-bottom: 5px;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 3px;
+  border-bottom: 1px solid var(--atelier-brass-hover);
   color: var(--gold2);
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 14px;
+  letter-spacing: 1px;
   text-align: center;
 }
 /* Design 2026-07-31 §5. */
 .is-cell[data-phase='past'] { opacity: 0.5; }
 /* LDB 13 l.40. */
 .is-score {
-  position: absolute; top: -4px; left: -4px; z-index: 2;
-  min-width: 16px; padding: 0 3px; height: 16px; line-height: 16px;
-  border-radius: 8px; text-align: center;
-  font-size: 10px; font-weight: 700;
-  background: rgba(8, 6, 12, 0.82); color: var(--gold2);
-  border: 1px solid rgba(227, 196, 90, 0.5);
+  position: absolute; top: -4px; left: -5px; z-index: 2;
+  min-width: 20px; padding: 0 3px; height: 16px; line-height: 15px;
+  border-radius: 0; text-align: center;
+  font: 700 10px ui-monospace, monospace;
+  background: linear-gradient(180deg, var(--atelier-wood-top), var(--hud-frise-score-lo));
+  color: var(--muted);
+  border: 1px solid var(--atelier-wood-etch);
   pointer-events: none;
+}
+/* Au trait : le score passe sur plaque de laiton (le doré désigne l'acteur, spécimen A). */
+.is-cell[data-phase='current'] .is-score {
+  background: linear-gradient(180deg, var(--atelier-brass-vif), var(--atelier-brass-hover));
+  border-color: var(--combat-gold);
+  color: var(--hud-frise-edge);
 }
 .is-score.lente { color: var(--muted); border-color: rgba(163, 147, 111, 0.5); }
 .is-first {
@@ -327,6 +494,40 @@
   box-shadow: 0 0 0 1px rgba(255, 138, 92, 0.45);
 }
 
+/* RAIL D'OUTILS (épure G) : colonne encadrée du bord droit, montée par `CampaignView` — commandes
+   de vue en haut, journal en pied. Un seul plan de matière : plus aucun bouton posé à nu sur le
+   champ. Les enfants y sont STATIQUES (le rail porte l'ancrage). */
+.hud-rail {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 46;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 8px;
+  background: linear-gradient(180deg, var(--atelier-wood-top), var(--atelier-wood-bottom));
+  border: 1px solid var(--wm-frame-dark);
+  box-shadow: inset 0 1px 0 rgba(216, 185, 84, 0.14), 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+/* Les enfants ne deviennent statiques QUE là où le rail existe (au-dessus de 700px) : sous cette
+   largeur le rail se dissout et chacun reprend son ancrage propre — une règle non bornée gagnait en
+   spécificité sur les tranches étroites et rapatriait le tiroir en haut de l'écran (mesuré). */
+@media (min-width: 701px) {
+  .hud-rail > .view-controls,
+  .hud-rail > .log-drawer {
+    position: static;
+    inset: auto;
+    transform: none;
+  }
+  /* Le journal se détache des commandes par un filet de laiton — même panneau, deux rubriques. */
+  .hud-rail > .log-drawer {
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--atelier-brass-hover);
+  }
+}
 .view-controls {
   position: absolute;
   top: 16px;
@@ -342,6 +543,8 @@
   align-items: center;
   gap: 8px;
 }
+/* Rail d'OUTILS (spécimen G) : des commandes IDENTIQUES vissées sur un rail de bois — même
+   matière que le reste du HUD, aucune commande de plus (le rail complet vit au lot grimoire). */
 .btn.vc-btn {
   display: flex;
   align-items: center;
@@ -349,13 +552,19 @@
   width: 42px;
   height: 42px;
   padding: 0;
-  border-width: 1.5px;
-  border-radius: 9px;
+  border: 1px solid var(--wm-frame-dark);
+  border-radius: 0;
+  background: linear-gradient(180deg, var(--hud-tool-hi), var(--atelier-wood-mid));
+  box-shadow: inset 0 1px 0 rgba(255, 225, 160, 0.12);
+  color: var(--muted);
   font-size: 20px;
   line-height: 1;
   opacity: 0.92;
 }
-.btn.vc-btn[aria-pressed='true'] { border-color: var(--gold); }
+.btn.vc-btn[aria-pressed='true'] {
+  border-color: var(--atelier-brass-hover);
+  color: var(--gold2);
+}
 .vc-zoom-value {
   min-width: 44px;
   color: var(--muted);
@@ -363,8 +572,9 @@
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
-/* ── Dock d'équipe → RANGÉE EN HAUT (inversé avec l'initiative — demande utilisateur). Il est
-   strictement IDENTITAIRE (design 2026-07-31 §4) : ni ordre des tours, ni acteur courant.
+/* ── Dock d'équipe → RANGÉE EN HAUT (inversé avec l'initiative — demande utilisateur). Il dit
+   le GROUPE : ni ordre des tours, ni score d'initiative — la carte de celui QUI AGIT y est
+   seulement surlignée (planche 2026-08-17, spec §1c-bis « actif surligné »).
    `max-width` réserve la place des coins (menu/carte à gauche, vue à droite). ── */
 .party-dock {
   position: absolute;
@@ -373,46 +583,150 @@
   transform: translateX(-50%);
   z-index: 45;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 12px;
-  max-width: calc(100vw - 220px);
+  flex-direction: column;
+  align-items: stretch;
+  /* Matière du spécimen B : cartes de poids IDENTIQUE dans un cadre commun — seul le CADRE de
+     l'acteur s'éclaircit (la frise porte l'ordre, la console porte les jets). BANDE COMPACTE :
+     une seule rangée qui DÉFILE (un groupe de 13 en trois rangées mangeait 21 % de l'écran). */
+  /* R-M1 : la bande défile à TUILES PLEINES — jamais une tranche. Le pas est fixe, la largeur
+     utile est arrondie AU PAS INFÉRIEUR (`round(down)`), et chaque tuile est un point d'arrêt
+     (`scroll-snap`, porté par la PISTE). La déclaration simple qui précède reste le repli des
+     moteurs sans `round()`. */
+  /* Pas de la tuile = BOÎTE de la carte : portrait 56px (`CHAR_SIZE_PX.md`) + 3px d'écart + colonne
+     d'États (1 × 20px d'alvéole) + 2 × 3px de plaque + 2 × 1px de filet = 87px, borné à 88px — le
+     NOM VISIBLE de la planche (11px de corps display) se pose SOUS la boîte, sur le fond du bandeau,
+     et tient dans le même pas : R-M2, jamais un mot tranché (un nom plus long que le budget
+     s'ellipse, le nom complet restant en `title` de la tuile). */
+  --pd-tile: 88px;
+  --pd-gap: 8px;
+  --pd-pad: 10px;
+  /* Bord de la piste = rembourrage + filet de cadre (la boîte est en `border-box`). */
+  --pd-edge: calc(var(--pd-pad) + 1px);
+  --pd-pitch: calc(var(--pd-tile) + var(--pd-gap));
+  /* Réserve des DEUX coins hauts, mesurée : menu ☰ (10..50) à gauche, rail d'outils (1120..1264)
+     à droite — la bande s'arrête avant, elle ne passe plus sous aucun des deux. */
+  max-width: calc(100vw - 340px);
+  /* L'arrondi porte sur la LARGEUR DE CONTENU (les 2 × `--pd-pad` sont dans la boîte, `box-sizing:
+     border-box`) — sinon la dernière tuile restait tranchée de la valeur du rembourrage. */
+  max-width: calc(
+    round(down, calc(100vw - 340px - 2 * var(--pd-edge) + var(--pd-gap)), var(--pd-pitch))
+    - var(--pd-gap) + 2 * var(--pd-edge)
+  );
+  padding: 5px var(--pd-pad) 4px;
+  background: rgba(14, 10, 7, 0.5);
+  border: 1px solid var(--atelier-wood-etch);
 }
-/* Une alerte est CONTENUE par la carte de son personnage (design 2026-07-31 §4) : la colonne d'États
-   est sœur du portrait dans `.ptile-wrap` ; dans le dock elle est ancrée au coin haut-droit de la
-   tuile, donc l'alerte ne désigne qu'un seul héros. */
+/* PISTE : la rangée défilante des tuiles. Elle porte le défilement ET les points d'arrêt — le
+   cadre, lui, porte l'ancrage et la réserve des coins. */
+.pd-track {
+  display: flex;
+  flex-direction: row;
+  /* Piste alignée sur SON DÉBUT : CENTRÉE, une piste qui déborde coupe une tuile à CHAQUE bout
+     (2 tranches mesurées à 1280 avec 13 cartes) — R-M1. */
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  gap: var(--pd-gap);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+.pd-track::-webkit-scrollbar {
+  display: none;
+}
+/* POIGNÉE de repli : n'existe QU'À la composition étroite (≤560px). */
+.pd-handle {
+  display: none;
+}
+/* La carte du groupe = portrait À GAUCHE, COLONNE D'ÉTATS à sa droite (planche 2026-08-17) :
+   1 colonne, 3 alvéoles TOUJOURS dessinées. La colonne n'est plus posée SUR le portrait (elle
+   masquait le visage) et son emprise ne varie pas d'un héros à l'autre.
+   C'est elle, la BOÎTE de la carte : elle porte la plaque, son filet et le liseré d'actif — le nom
+   se pose SOUS elle, sur le fond du bandeau (planche 2026-08-17 ; le liseré ENCERCLAIT le nom quand
+   la plaque vivait sur la `figure`). */
 .party-dock .ptile-wrap {
   position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 3px;
+  box-sizing: border-box;
+  width: 100%;
+  /* Carte de poids IDENTIQUE (spécimen B) : même cadre pour tous, aucun liseré doré, et la HACHURE
+     de la planche derrière le portrait (la carte est une plaque, pas un vide). */
+  padding: 3px;
+  background: repeating-linear-gradient(135deg, var(--cc-brass-cell-hi) 0 6px, var(--hud-frise-edge) 6px 12px);
+  border: 1px solid var(--atelier-wood-etch);
 }
+/* Chiffre de Blessures de la carte : MÊME traitement que la valeur de l'arche — une PLAQUE opaque
+   sous l'encre. À même le remplissage de `hpColor`, le blanc de la primitive plafonne à 1,88:1
+   (sonde du juge vision) ; sur sa plaque, l'encre tient ≥ 4,5:1 contre toutes ses teintes, et la
+   piste reste lue de part et d'autre. Visé par le MODE de `LifeBar` et par sa STRUCTURE (valeur =
+   `span`), aucune classe de la primitive redéclarée (cliquet xii) — la coquille du bandeau en tête
+   du sélecteur porte le cran de spécificité qu'il faut pour la reprendre. */
+.party-dock .ptile [data-overlay] > span {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 3px;
+  color: var(--gold2);
+  background: rgba(0, 0, 0, 0.82);
+  text-shadow: none;
+}
+/* Colonne d'États calée sur la HAUTEUR du portrait : à 15px de côté, ses 3 alvéoles laissaient sous
+   elles une bande de hachure MORTE (densité, grief du juge vision) — et l'alvéole y était trop
+   petite pour que son glyphe se lise. Le côté est borné par le budget de largeur de la tuile
+   (`--pd-tile` 88 = filet 2 + plaque 6 + vignette 56 + écart 3 + alvéole). */
 .party-dock .ptile-states {
-  position: absolute;
-  top: 2px;
-  right: 2px;
+  --alv: 20px;
+  display: grid;
+  grid-template-columns: var(--alv);
+  grid-auto-rows: var(--alv);
+  align-content: start;
+  gap: 2px;
   z-index: 2;
 }
-/* Une carte de groupe = portrait + NOM VISIBLE dessous (design 2026-07-31 §4). L'enveloppe est
-   sémantique (`figure`/`figcaption`) et stylée en descendance : `PortraitTile` ne connaît pas le nom. */
-.party-dock > figure {
+/* Une carte de groupe = la TUILE (portrait + Blessures + États) et le NOM sous elle (planche
+   2026-08-17). L'enveloppe `figure` porte le pas de défilement, sa `figcaption` porte le nom —
+   visé par la STRUCTURE, aucune classe de plus (cliquet xii). */
+.pd-track > figure {
   margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  min-width: 0;
-  max-width: 84px;
+  /* Tuile PLEINE à pas fixe (R-M1) : elle ne se comprime pas et s'arrête au défilement. */
+  flex: 0 0 var(--pd-tile);
+  width: var(--pd-tile);
+  min-width: var(--pd-tile);
+  max-width: var(--pd-tile);
+  scroll-snap-align: start;
 }
-.party-dock figcaption {
+/* Le bandeau ne marque PAS l'acteur du tour (spec §1c-bis BANDEAU, arbitrage user 2026-08-17) :
+   aucune règle de situation sur la carte — la frise d'initiative porte seule l'actif. */
+/* NOM du héros, sous sa carte (planche 2026-08-17) : R-M2 — il ne se coupe qu'ENTRE MOTS, sur DEUX
+   lignes au plus (à une seule ligne, 12 noms sur 13 s'ellipsaient — mesure 1280 du lot) ; un mot seul
+   trop long s'ellipse et le nom complet reste en `title` de la tuile. La boîte suit son CONTENU, avec
+   une ligne au minimum : la réserve de deux lignes était permanente (densité, grief du juge vision),
+   et les tuiles s'alignent par le HAUT de leur boîte, pas par le pied de leur légende. */
+.pd-track > figure > figcaption {
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-top: 2px;
+  min-height: 1.3em;
   font-family: var(--font-display);
   font-size: 11px;
-  line-height: 1.1;
-  color: var(--gold2);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  line-height: 1.3;
+  letter-spacing: 0.3px;
+  color: var(--atelier-brass-vif);
+  text-align: center;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: normal;
+  word-break: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Tiroir journal (bas-droite) ── */
@@ -428,13 +742,15 @@
   align-items: flex-end;
   gap: 6px;
 }
+/* Même commande vissée que le rail d'outils (spécimen G) : une seule matière pour les coins. */
 .ld-btn {
   width: 42px;
   height: 42px;
-  border-radius: 9px;
-  background: var(--panel2);
-  border: 1.5px solid var(--border);
-  color: var(--text);
+  border-radius: 0;
+  background: linear-gradient(180deg, var(--hud-tool-hi), var(--atelier-wood-mid));
+  border: 1px solid var(--wm-frame-dark);
+  box-shadow: inset 0 1px 0 rgba(255, 225, 160, 0.12);
+  color: var(--muted);
   font-size: 19px;
   cursor: pointer;
   opacity: 0.92;
@@ -498,16 +814,19 @@
 .game-menu {
   position: relative;
 }
+/* Le menu système garde SON coin (spécimen G) — même tôle vissée, liseré de laiton. */
 .gm-btn {
   width: 42px;
   height: 42px;
-  border-radius: 9px;
-  background: var(--panel2);
-  border: 1.5px solid var(--border);
-  color: var(--text);
+  border-radius: 0;
+  background: linear-gradient(180deg, var(--hud-tool-hi), var(--atelier-wood-mid));
+  border: 1px solid var(--atelier-brass-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 225, 160, 0.12);
+  color: var(--gold2);
   font-size: 19px;
   cursor: pointer;
   opacity: 0.92;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }
 /* Sous-groupe interne (audio, coop) — pile verticale serrée. */
 .gm-section {
@@ -797,10 +1116,17 @@
 @media (max-width: 900px) {
   /* Cartes du groupe et de la frise compactées : seules les respirations tombent — portrait,
      Blessures et alertes restent. */
-  .party-dock { gap: 8px; }
+  /* Le PAS de la bande passe par son token : une valeur de `gap` écrite en dur ici désaccordait
+     l'arrondi à la tuile pleine (R-M1) et re-tranchait la dernière carte. */
+  .party-dock { --pd-gap: 8px; }
   .is-tiles { gap: 5px; padding: 6px 5px; }
 }
 @media (max-width: 700px) {
+  /* Le rail se DISSOUT sous 700px : chaque surface reprend son ancrage propre (frise horizontale
+     en haut, tiroir au coin bas) — le panneau encadré n'a plus la place d'une colonne. */
+  .hud-rail {
+    display: contents;
+  }
   /* La frise quitte la colonne latérale pour une BANDE HORIZONTALE défilable sous le groupe,
      cartouche du Round en tête. Le `padding-top` de la piste réserve la place du badge
      d'initiative, qui déborde du haut de chaque cellule.
@@ -828,6 +1154,19 @@
     max-height: none;
     min-width: 0;
     overflow-x: auto;
+    /* Bande horizontale : l'arrêt se fait sur la vignette ENTIÈRE, sur l'axe X. */
+    scroll-snap-type: x mandatory;
+  }
+  /* La rampe de fondu bascule au bord DROIT : c'est là que la bande déborde (sliver de 11px avant
+     la bordure mesuré à 360, x=343..353). Même loi, autre axe. */
+  .initiative-strip::after {
+    left: auto;
+    top: 1px;
+    bottom: 1px;
+    right: 1px;
+    width: 22px;
+    height: auto;
+    background: linear-gradient(90deg, rgba(20, 15, 10, 0) 0%, var(--atelier-wood-bottom) 78%);
   }
   .is-round {
     align-self: center;
@@ -838,33 +1177,145 @@
     white-space: nowrap;
   }
   .is-cell { flex: 0 0 auto; }
-  /* Le fil d'événements passe sous la bande d'initiative (le groupe, puis le round, puis le flux) :
-     le `top` se pose sous le BAS MESURÉ de la bande en combat ENGAGÉ (84 + 100 = 184px, recette
-     `hud-clickables.mjs`) plus l'air — le message du flux et la frise n'ont aucune surface commune. */
-  .combat-feed { top: 192px; max-width: 94vw; }
+  /* Le fil d'événements RESTE EN HAUT sous 700px : le pont s'y empile sur trois rangées (mesuré
+     616,5px de haut à 700×800) et le coin bas-gauche appartient au tiroir du journal — il n'y a pas
+     de bande de terrain au-dessus du pont où poser le fil. Il passe donc sous la bande
+     d'initiative (le groupe, puis le round, puis le flux) : le `top` se pose sous le BAS MESURÉ de
+     la bande en combat ENGAGÉ (84 + 100 = 184px, recette `hud-clickables.mjs`) plus l'air — le
+     message du flux et la frise n'ont aucune surface commune. */
+  .combat-feed {
+    top: 192px;
+    bottom: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+    max-width: 94vw;
+  }
   .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne (pas de débord) */
   .modal-actions { flex-wrap: wrap; justify-content: center; }
-  .party-dock { top: 6px; gap: 8px 10px; max-width: 92vw; }
-  .party-dock figcaption { font-size: 10px; }
+  .party-dock { top: 6px; --pd-gap: 8px; }
   .ptile-states { font-size: 10px; }
   /* Le dock de décision engagé monte à 131px du bas à cette largeur et prend presque toute la
      ligne : à 88px le tiroir mordait 32×42px dessus. */
   .log-drawer { right: 8px; bottom: 140px; }
 }
 @media (max-width: 560px) {
-  /* Les quatre portraits restent sur UNE ligne : le dock ne s'enroule plus (un 2×2 poussait la
-     bannière et le flux hors de vue). Un roster plus large — combat naval, 5 tuiles — défile
-     horizontalement plutôt que de passer à la ligne. */
+  /* BANDE DE GROUPE REPLIÉE PAR DÉFAUT (arbitrage d'assemblage 2026-08-17 : à 360 le TERRAIN doit
+     redevenir le sujet — la bande dépliée mangeait 93px de haut). Repliée, elle garde le compte du
+     groupe et la vie de chacun en micro-jauges ; le tap sur la poignée déplie la piste ENTIÈRE.
+     Rien ne quitte le DOM.
+     La bande DÉGAGE le coin du menu ☰ (44px au doigt + air) : elle ne part plus du bord gauche,
+     où sa première carte passait sous le bouton (grief vision, chevauchement mesuré). */
   .party-dock {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 6px;
-    max-width: 96vw;
-    overflow-x: auto;
+    left: 58px;
+    transform: none;
+    /* R-M1 à 360 : tuile PLEINE de 79px (vignette 44 + écart 3 + colonne d'États 1 × 12 + cadre 6,
+       le reste allant au NOM sous la carte) — la vignette reste au-dessus du minimum digne de 44px,
+       et la largeur de bande est arrondie au pas inférieur. MÊME pas pour la bande repliée et pour le volet déplié : la carte
+       ne change pas de taille en s'ouvrant. */
+    --pd-tile: 79px;
+    --pd-gap: 6px;
+    --pd-pad: 6px;
+    padding: 3px var(--pd-pad);
+    max-width: calc(100vw - 66px);
+    max-width: calc(
+      round(down, calc(100vw - 66px - 2 * var(--pd-edge) + var(--pd-gap)), var(--pd-pitch))
+      - var(--pd-gap) + 2 * var(--pd-edge)
+    );
   }
-  /* Portraits compacts (design 2026-07-31 §12) : le nom sort de la VUE, jamais du DOM — il reste
-     lisible au lecteur d'écran et en infobulle, et la rangée garde sa hauteur de tuile. */
-  .party-dock figcaption { display: none; }
+  /* Alvéole d'État à 360 : la colonne garde ses 3 cases dessinées, c'est le CÔTÉ qui cède — jamais
+     le compte. 18px et non 12 : à 12 le glyphe tombait à 10px, illisible (sonde du juge vision), et
+     la colonne laissait une bande de hachure morte sous elle. Le budget de la tuile du volet
+     (`--pd-tile` 79 = filet 2 + plaque 4 + vignette 44 + écart 3 + alvéole) le porte. */
+  .party-dock .ptile-states[data-reserve] {
+    --alv: 18px;
+  }
+  /* La poignée COMPOSE la primitive `.chip` (cadre, cible, états) — elle n'en règle que la densité
+     et l'alignement de ses deux lectures : le compte, puis les micro-jauges. */
+  .pd-handle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 6px;
+    color: var(--atelier-brass-rubric);
+    font-family: var(--font-display);
+    font-size: 11px;
+  }
+  .pd-count {
+    font: 700 11px ui-monospace, monospace;
+    color: var(--gold2);
+  }
+  .pd-label {
+    font-size: 10px;
+    color: var(--atelier-brass-meta);
+    white-space: nowrap;
+  }
+  /* Micro-jauges : une par héros, remplies à sa fraction de Blessures, teinte continue `hpColor`
+     (la même que la barre de vie de la tuile) — la vie du groupe se lit bande repliée. */
+  .pd-micro {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
+  }
+  /* Barreau de 9px : à 13 héros, la rangée de micro-jauges dictait la LARGEUR de la bande repliée
+     (263px mesurés) et mangeait le champ ; la lecture « plein / entamé / rouge » tient à 9px. */
+  .pd-micro > i {
+    display: block;
+    width: 9px;
+    height: 5px;
+    background: linear-gradient(90deg, var(--pd-hp-color) var(--pd-hp), rgba(0, 0, 0, 0.65) var(--pd-hp));
+    border: 1px solid var(--atelier-wood-etch);
+  }
+  /* Repliée : la piste sort de la VUE, jamais du DOM (a11y et états conservés). */
+  .party-dock:not(.on) .pd-track {
+    display: none;
+  }
+  /* DÉPLIÉE, la bande devient un VOLET : un panneau opaque né sous la poignée, qui s'arrête AVANT
+     la rangée d'outils (elle dépassait sous lui, boutons coupés en deux). Il ne pousse rien : il
+     naît hors du flux, la géométrie du bandeau haut ne bouge pas. Re-tap = fermeture. */
+  .party-dock.on {
+    z-index: 60;
+    overflow: visible;
+  }
+  .party-dock.on .pd-track {
+    /* VOLET : il naît SOUS la rangée d'outils (92..134 mesurés) et couvre le fil d'événements
+       (140..206) en entier — aucun contrôle n'est coupé en deux, rien ne dépasse de son pied.
+       La tuile du volet fait 74px (vignette 44 + Blessures + plaque) : la bande poignée→outils
+       (62px) ne pouvait pas l'accueillir sans rendre la vignette indigne. */
+    position: fixed;
+    top: 138px;
+    left: 4px;
+    right: auto;
+    padding: 2px;
+    /* R-M1 dans le volet aussi : sa largeur est arrondie AU PAS DE TUILE (`--pd-pitch`), sinon la
+       dernière carte s'affichait en tranche contre le filet droit. Repli simple d'abord. */
+    max-width: calc(100vw - 8px);
+    max-width: calc(
+      round(down, calc(100vw - 8px - 6px + var(--pd-gap)), var(--pd-pitch)) - var(--pd-gap) + 6px
+    );
+    background: linear-gradient(180deg, var(--atelier-wood-top), var(--atelier-wood-bottom));
+    border: 1px solid var(--atelier-wood-etch);
+  }
+  /* Vignettes du volet à 44px : la hauteur totale (poignée 24 + volet 56) tient dans la bande
+     libre au-dessus de la rangée d'outils — le volet ne mord jamais sur le rail. */
+  .party-dock.on .pd-track .ptile,
+  .party-dock.on .pd-track .ptile-face {
+    width: 44px !important;
+  }
+  .party-dock.on .pd-track .ptile-face {
+    height: 44px !important;
+  }
+  .party-dock.on .pd-track .rig-portrait {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  /* La plaque vit sur la BOÎTE de la carte (`.ptile-wrap`), pas sur l'enveloppe : c'est elle qui
+     resserre son rembourrage dans le volet. */
+  .party-dock.on .pd-track .ptile-wrap {
+    padding: 2px;
+  }
   /* BANDE BASSE, empilée au-dessus du dock de décision : dock, puis tiroir du journal, puis
      commandes de vue. En haut de l'écran à cette largeur, les six boutons étaient couverts par le
      dock du groupe ou par la pile de contexte d'exploration (mesuré 0/6 à 360px).
@@ -872,19 +1323,65 @@
      rangées) : le dock monte à 181px du bas (6px d'ancrage + 175px de haut), le tiroir se pose à
      190px et culmine à 234px (bouton de 44px au doigt), d'où 242px pour la rangée de caméra. Calée
      sur les 140px d'exploration, elle passait ENTIÈREMENT sous le dock : 0/6 boutons cliquables. */
-  .log-drawer { bottom: calc(190px + env(safe-area-inset-bottom, 0px)); }
+  /* RÉSERVE DU BAS re-mesurée sur le PONT de console (`CombatConsole`, composition compacte, passe
+     d'ASSEMBLAGE §1c-ter) : la console est devenue une bande ASSISE sur le bord bas (aucun ancrage),
+     269,4px de haut à 360×640 (magie) — le tiroir se pose JUSTE au-dessus. Sous cette réserve, il
+     passerait SOUS la console (chevauchement mesuré 42×15 à 300px avant la 1re calibration, et
+     11 points de sonde sur le bord haut du pont à 268px après le passage en bande). */
+  /* Le tiroir passe au coin BAS-GAUCHE : la colonne de droite porte déjà le fil et la caméra, et
+     la console occupe toute la largeur sous 351px. */
+  .log-drawer {
+    left: 4px;
+    right: auto;
+    bottom: calc(274px + env(safe-area-inset-bottom, 0px));
+  }
+  /* Le panneau NAÎT de son déclencheur et sort du flux : sans cela, le tiroir occupait 309px de
+     large même fermé et mordait la rangée de caméra (chevauchement mesuré 30×16). */
+  .ld-panel {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 6px;
+  }
+  /* La rangée de caméra remonte DANS le bandeau haut (arbitrage d'assemblage 2026-08-17) : posée à
+     mi-hauteur elle coupait le terrain en deux. Elle s'ARRÊTE avant le coin du tiroir (elle
+     occupait toute la largeur et le recouvrait, 30×16 mesurés) : elle part de 56px, cale à droite. */
   .view-controls {
-    top: auto;
-    bottom: calc(242px + env(safe-area-inset-bottom, 0px));
+    top: 92px;
+    bottom: auto;
+    left: 56px;
     right: 4px;
+    justify-content: flex-end;
     flex-direction: row;
     gap: 6px;
   }
+  /* Empilement HAUT re-mesuré à 360px, bande de groupe REPLIÉE : groupe (6..30), frise (34..86),
+     rangée de caméra (92..136), fil d'événements (140..) — puis le TERRAIN jusqu'à la console.
+     Vignettes de frise réduites à 34px : la bande d'ordre reste lisible sans manger le champ. */
   .initiative-strip {
-    top: 88px;
+    top: 34px;
+    /* Elle part APRÈS le coin du menu ☰ (44px au doigt + air), comme la bande de groupe : à 4px du
+       bord, sa tête passait sous le bouton (chevauchement mesuré 42×18). */
+    left: 58px;
     right: 4px;
   }
-  .combat-feed { top: 186px; } /* bande mesurée à 88 + 90 = 178px du haut, plus l'air */
+  .is-tiles .ptile,
+  .is-tiles .ptile-face {
+    width: 34px !important;
+  }
+  .is-tiles .ptile-face {
+    height: 34px !important;
+  }
+  .is-tiles .rig-portrait {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  .is-round {
+    font-size: 11px;
+  }
+  /* Le fil d'événements se pose SOUS le bandeau haut, jamais au milieu du terrain : il annonce, il
+     ne s'installe pas dans le champ (grief d'assemblage — le toast traversait le ruban de jeu). */
+  .combat-feed { top: 140px; }
   .objective-banner { max-width: 86vw; }
   .hud-topbar [data-hud='place'] { max-width: 52vw; font-size: 14px; }
   .rest-hero-line { grid-template-columns: auto minmax(0, 1fr) auto; }

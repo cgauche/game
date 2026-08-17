@@ -20,6 +20,7 @@
 @import './styles/celestial-wheel.css'; /* astrolabe de laiton (CelestialWheel, #393) — matières du cadran, valeurs du svg « 4 — Signe astral » de la planche FINALE */
 @import './styles/creator-presentation.css'; /* mise en scène finale du créateur (PresentationScreen, #393) : registre ⇄ scène ⇄ rubriques, valeurs .fin-col/.fin-stage de la planche */
 @import './styles/combat-ui.css'; /* audio, coop, select, campaign, victoire, dialogue, barre d'action */
+@import './styles/combat-console.css'; /* console de combat (CombatConsole.tsx) : deux travées + grille fixe + conduit d'Avantage + coin de fin de tour */
 @import './styles/combat-modals.css'; /* modales de jet (attaque/défense/incantation/critique…) */
 @import './styles/sheet.css'; /* fiche de personnage + avancement */
 @import './styles/test-scenarios.css'; /* écran-catalogue des scénarios de test (#492 Lot 1b, extrait de sheet.css) */

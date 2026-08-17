@@ -87,7 +87,9 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/creator.css': 5,
   'styles/editor.css': 10,
   'styles/gauges.css': 1,
-  'styles/hud.css': 6,
+  // -1 (R-M1, bande de groupe) : `.party-dock` ne s'enroule plus — une seule rangée qui DÉFILE à
+  // tuiles pleines. Baisse ASSAINIE, pas une tolérance.
+  'styles/hud.css': 5,
   'styles/mass-battle.css': 2,
   'styles/merchant.css': 1,
   // +1 (#492 lot POSSESSIONS B) : `.inv-actionbar` — barre d'actions de la rangée ÉLUE du registre
@@ -276,6 +278,7 @@ const DOMAIN_CSS_MODULES = [
   'creator-presentation',
   'creator-shell',
   'test-scenarios',
+  'combat-console',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -336,6 +339,24 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // (900/700/560 + `pointer: coarse`) n'ajoute AUCUN nom : elle ne cible que des classes déjà définies
   // ici et le slot `[data-slot='end-turn']` (attribut d'id stable, jamais une classe par écran).
   'styles/combat-ui.css': 110,
+  // Console de combat (lot console) : famille `.cc-*` de la surface — deux travées, alvéole,
+  // conduit d'Avantage, arche, coin de fin de tour, bandeau de phase.
+  // Passe de CONTENU (spec §1c-bis) : l'arche ne compose plus `ActiveFrame` — elle rend son propre
+  // gabarit (portrait + 2 gouttières à socle + Blessures + nom). Sortent les 5 spécialisations en
+  // contexte de la primitive (`.aframe`, `.af-mid`, `.af-bar`, `.af-v`, `.af-h`) et le débord
+  // `.cc-overflow`/`.cc-book` (SUPPRIMÉ : l'exhaustif est l'écran de capacités) ; entrent
+  // `.cc-arch-body`, `.cc-gutter`, `.cc-gutter-rail`, `.cc-gutter-action`, `.cc-gutter-move`,
+  // `.cc-socle`. Total MESURÉ inchangé à 43.
+  // Dont, hors famille `.cc-*` : `.ptile`/`.ptile-face` (portrait MINI de la ligne compacte —
+  // `PortraitTile` pose sa largeur en style INLINE, API fermée `CHAR_SIZE_PX`), `.btn` (densité du
+  // bouton de sortie du bandeau de phase ≤560px), `.rig-portrait` (dessin du portrait de l'arche),
+  // et les modificateurs d'état `.on`/`.out`/`.spend`/`.pulse`.
+  // +1 (43 → 44) : `.team-enemy` — correctif C-2 du juge vision (2026-08-17). Le portrait de l'arche
+  // portait DEUX anneaux de camp concentriques (bordure d'équipe de `PortraitTile` + cadre du dessin
+  // de `RigPortrait`) : « cadre dans un cadre », antipattern `FigTile` de la doctrine. Le cadre du
+  // dessin se retire, et la FORME du trait (R9, daltonisme) passe sur l'anneau restant — d'où cette
+  // seule référence à la classe d'équipe de la primitive, aucune classe de domaine créée.
+  'styles/combat-console.css': 44,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,
   // +25 : charte « Atelier du scribe » (#412) — MetalStatus/WaxSeal+SealedPlaque/CareerPath/
@@ -505,7 +526,18 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `[data-hud='place']` (attribut, pas classe). Détecteur inchangé.
   // -1 (142 → 141) : mort de la variante d'enveloppe `test` — `.rs-embedded.test-modal` n'a plus de
   // classe à neutraliser, la zone de jet embarquée compose `roll-modal` seule.
-  'styles/hud.css': 141,
+  // +6 (141 → 147), passe d'ASSEMBLAGE #1349 : `.hud-rail` (le RAIL D'OUTILS de l'épure G devient
+  // UN panneau encadré — commandes de vue + journal, plus rien d'épars sur le champ) et les cinq
+  // noms de la bande de groupe repliable à ≤560 (`.pd-track` la piste défilante, `.pd-handle` la
+  // poignée, `.pd-count`, `.pd-micro` et sa micro-jauge par héros). Aucun n'est décoratif : chacun
+  // porte une surface que le HUD n'avait pas (panneau unique, piste, repli).
+  // +1 (147 → 148) : `.pd-label` — la poignée NOMME ce qu'elle compte (« 13 au groupe ») ; un
+  // nombre nu se lisait indifféremment héros ou vignettes de la frise dessous (grief d'assemblage).
+  // +3 (148 → 151) : le RACK d'alvéoles réservées de `StateChips` (spec HUD combat §1c-bis) — la
+  // cellule pleine `.pt-state`, la cellule VIDE `.pt-void` (dessinée : « zéro État ne rétrécit pas
+  // la carte ») et le chiffre `.pt-n` porté par la pastille. Trois surfaces neuves, aucune
+  // décorative : sans elles la grille d'États du bandeau n'a ni case ni indice.
+  'styles/hud.css': 151,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
   'styles/ornaments.css': 13,
@@ -1158,9 +1190,14 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
   });
 
   it('≤560 : le groupe tient sur une ligne, le dock d’action prend la largeur, la sortie de tour colle au bord', () => {
-    const hudAt560 = mediaBlock(read('hud.css'), '@media (max-width: 560px)');
-    expect(hudAt560).toMatch(/\.party-dock\s*\{[^}]*flex-wrap:\s*nowrap/);
-    expect(hudAt560).toMatch(/\.party-dock\s*\{[^}]*overflow-x:[ \t\r\n]*auto/); // débordement de secours (combat naval)
+    // La bande de groupe tient sur UNE ligne à TOUTE largeur depuis la passe de matière (spécimen B) :
+    // l'assertion monte donc dans la section de base — une bande qui s'enroulait mangeait 21 % de
+    // l'écran à 1280 (grief vision). La lire dans la tranche ≤560 seulement laisserait le retour à la
+    // ligne revenir au-dessus de 560. Le défilement vit sur la PISTE (`.pd-track`) depuis le repli
+    // de la bande : le cadre porte l'ancrage, la piste porte la rangée.
+    const hudBase = baseSection(read('hud.css'));
+    expect(hudBase).toMatch(/\.pd-track\s*\{[^}]*flex-wrap:\s*nowrap/);
+    expect(hudBase).toMatch(/\.pd-track\s*\{[^}]*overflow-x:[ \t\r\n]*auto/); // débordement de secours (combat naval)
     const barAt560 = mediaBlock(read('combat-ui.css'), '@media (max-width: 560px)');
     expect(barAt560).toMatch(/\.action-bar\s*\{[^}]*left:\s*4px/);
     expect(barAt560).toMatch(/\.action-bar\s*\{[^}]*right:\s*4px/);
@@ -1170,25 +1207,34 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
     expect(barAt560).toMatch(/\[data-slot='end-turn'\]\s*\{[^}]*right:\s*0/);
   });
 
-  it('≤560 : la bande basse réserve la hauteur du dock ENGAGÉ (caméra et tiroir au-dessus)', () => {
+  it('≤560 : la bande basse réserve la hauteur de la CONSOLE (caméra et tiroir hors de son emprise)', () => {
     const hudAt560 = mediaBlock(read('hud.css'), '@media (max-width: 560px)');
-    // Le dock de décision d'un tour engagé monte à 181px du bas (6px d'ancrage + 175px mesurés au
-    // navigateur, `scripts/recette/hud-clickables.mjs`). Toute surface posée plus bas passe SOUS lui
-    // et cesse de recevoir ses clics — la rangée de caméra calée sur le dock d'exploration (140px)
-    // était intégralement couverte (0/6 boutons à 560 comme à 360).
-    const bottomPx = (sel: string) => {
+    // La console compacte monte à 265px du bas (4px d'ancrage + 261px mesurés au navigateur,
+    // scénario magie 360×640, passe d'ASSEMBLAGE). Toute surface posée plus bas passe SOUS elle et
+    // cesse de recevoir ses clics. Le tiroir du journal réserve donc cette hauteur ; la rangée de
+    // caméra, elle, est ancrée par le HAUT (bandeau haut, au-dessus du terrain) et doit alors
+    // dégager la COLONNE du tiroir (chevauchement mesuré 30×16 quand elle prenait toute la largeur).
+    const px = (sel: string, prop: string) => {
       const rule = new RegExp(`\\${sel}\\s*\\{([^}]*)\\}`).exec(hudAt560);
-      const v = rule && /bottom:\s*(?:calc\()?\s*(\d+(?:\.\d+)?)px/.exec(rule[1]);
+      const v = rule && new RegExp(`${prop}:\\s*(?:calc\\()?\\s*(\\d+(?:\\.\\d+)?)px`).exec(rule[1]);
       return v ? Number(v[1]) : null;
     };
-    const tiroir = bottomPx('.log-drawer');
-    const camera = bottomPx('.view-controls');
+    const tiroir = px('.log-drawer', 'bottom');
     expect(tiroir, 'le tiroir du journal ≤560 doit déclarer sa réserve du bas en px').not.toBeNull();
-    expect(camera, 'la rangée de caméra ≤560 doit déclarer sa réserve du bas en px').not.toBeNull();
-    expect(tiroir!).toBeGreaterThanOrEqual(181);
-    // La caméra s'empile AU-DESSUS du tiroir : sa réserve dépasse celle du tiroir de sa hauteur de
-    // bouton au doigt (44px, tranche `pointer: coarse`).
-    expect(camera!).toBeGreaterThanOrEqual(tiroir! + 44);
+    expect(tiroir!).toBeGreaterThanOrEqual(265);
+    const cameraBas = px('.view-controls', 'bottom');
+    const cameraHaut = px('.view-controls', 'top');
+    if (cameraBas != null) expect(cameraBas).toBeGreaterThanOrEqual(tiroir! + 44);
+    else {
+      expect(cameraHaut, 'la rangée de caméra ≤560 s’ancre par le haut ou par le bas, jamais ni l’un ni l’autre').not.toBeNull();
+      // Ancrée en haut : elle vit dans le BANDEAU HAUT (groupe replié + frise), au-dessus du
+      // terrain — jamais au milieu du champ (640 − 265 de console − 44 de bouton au doigt).
+      expect(cameraHaut!).toBeLessThanOrEqual(640 - 265 - 44);
+      // … et laisser au tiroir sa colonne de gauche (44px de bouton + son ancrage).
+      const cameraGauche = px('.view-controls', 'left');
+      expect(cameraGauche, 'la rangée de caméra ancrée en haut doit déclarer sa réserve de gauche').not.toBeNull();
+      expect(cameraGauche!).toBeGreaterThanOrEqual(48);
+    }
   });
 
   it('pointeur grossier : les commandes de caméra offrent une cible de 44px', () => {
@@ -1197,16 +1243,18 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
     expect(coarse).toMatch(/\.vc-btn\s*\{[^}]*min-height:\s*44px/);
   });
 
-  it('une alerte est ancrée dans la carte de SON héros, à TOUTE largeur', () => {
+  it('la colonne d’États est ancrée dans la carte de SON héros, à TOUTE largeur', () => {
     // L'ancrage se lit hors de toute tranche : glissé dans un `@media`, il cesserait de valoir aux
-    // largeurs qui ne l'atteignent pas et la pastille reflotterait entre deux portraits.
+    // largeurs qui ne l'atteignent pas et les pastilles reflotteraient entre deux portraits.
+    // Planche USER 2026-08-17 : la colonne est SŒUR du portrait dans `.ptile-wrap` (rangée flex) —
+    // à CÔTÉ de lui, plus posée dessus — et son emprise est UNE colonne d'alvéole, fixe.
     const base = baseSection(read('hud.css'));
-    expect(base).toMatch(/\.party-dock\s+\.ptile-wrap\s*\{[^}]*position:\s*relative/);
-    expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*position:\s*absolute/);
-    // Un coin ANCRÉ, pas seulement « absolu » : sans ses deux offsets la colonne d'États retombe à
-    // sa position statique, c'est-à-dire entre les deux portraits.
-    expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*top:\s*\d/);
-    expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*right:\s*\d/);
+    expect(base).toMatch(/\.party-dock\s+\.ptile-wrap\s*\{[^}]*display:\s*flex/);
+    expect(base).toMatch(/\.party-dock\s+\.ptile-wrap\s*\{[^}]*flex-direction:\s*row/);
+    expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*display:\s*grid/);
+    // Une colonne d'alvéole FIXE, pas une grille libre : sans ce gabarit, une tuile portant 3 États
+    // s'élargirait et la bande se décalerait d'un héros à l'autre.
+    expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*grid-template-columns:\s*var\(--alv\)/);
   });
 
   it('les modales de jet occupent l’écran sous 560, corps défilable et pied fixe', () => {

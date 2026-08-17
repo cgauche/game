@@ -86,11 +86,13 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                   {c.initiative}{strikesLast(c.weapons) ? <> <Icon id="ui/wait" size={10} /></> : null}
                 </span>
               )}
+              {/* Entrée de frise = vignette + liseré de camp (spec §1c-bis) : ni PV, ni nom, ni
+                  États — ils vivent au bandeau de groupe et à l'arche. D'où `identity`. */}
               <PortraitTile
                 c={c}
                 ring={isHero ? ALLY_TINT : ENEMY_TINT}
                 team={isHero ? 'ally' : 'enemy'}
-                variant="full"
+                variant="identity"
                 size="sm"
                 active={phase === 'current'}
                 hovered={c.id === p.hoveredId}

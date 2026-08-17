@@ -16,8 +16,9 @@ import { conditionSeverity } from '../engine/conditions';
 import { roundsLabel } from '../engine/duration';
 
 /** Clés STABLES des états-drapeaux (`EffectFlags`) — vocabulaire d'identité partagé par `flagChips`
- *  (production) et `chipCodex` (routage Codex). */
-export type FlagId = 'frenzied' | 'defensiveStance' | 'aiming' | 'focusDr' | 'hunger' | 'fear';
+ *  (production) et `chipCodex` (routage Codex). `calmeApproche` est produit hors `combatantFlags` :
+ *  la donnée vit sur `battle` (`fearGate`), pas sur le Combatant. */
+export type FlagId = 'frenzied' | 'defensiveStance' | 'aiming' | 'focusDr' | 'hunger' | 'fear' | 'calmeApproche';
 
 export interface EffectChip {
   key: string;
@@ -47,6 +48,11 @@ export interface EffectChip {
   /** Nombre de CARACTÉRISTIQUES touchées par un groupe hétérogène à bonus uniforme (Exposition,
    *  Ivresse) — remplace la carac unique, qui serait celle du premier effet seulement. */
   charCount?: number;
+  /** CHIFFRE porté par la pastille elle-même (rack d'alvéoles de `StateChips`) : pions de l'État
+   *  (`ConditionInstance.value`), DR de Focalisation, Indice de la Peur, ou nombre d'effets d'un
+   *  groupe homogène. Absent = la pastille n'a aucun chiffre à dire (Frénésie, En joue…). AFFICHAGE
+   *  seul : aucune règle ne le lit. */
+  indice?: number;
   /** Rounds restants (buffs temporisés). */
   rounds?: number;
   /** Bonus du buff (ex. +10). */
@@ -75,15 +81,22 @@ export function conditionMeta(name: string): CondMeta {
 const BUFF_CHAR_ICON: Partial<Record<CharKey, IconId>> = {
   'capacite-de-combat': 'char/cc', 'capacite-de-tir': 'char/ct', force: 'char/f', endurance: 'char/e', agilite: 'char/ag', intelligence: 'char/int', 'force-mentale': 'char/fm', sociabilite: 'char/soc',
 };
+
+/** Icône d'une CARACTÉRISTIQUE — source UNIQUE (registre `char/*`), keyée par id. Consommée par les
+ *  pastilles d'effet ET par les alvéoles d'Avantage de la console (une Compétence porte le glyphe de
+ *  son axe). Les axes sans glyphe au registre (Dextérité, Initiative) retombent sur `repli`. */
+export function charIcon(char: CharKey | undefined, repli: IconId = 'action/aim'): IconId {
+  return (char && BUFF_CHAR_ICON[char]) || repli;
+}
 function buffIcon(e: ActiveEffect): IconId {
-  return (e.char && BUFF_CHAR_ICON[e.char]) || 'action/cast'; // buff sans carac = effet de sort/bénédiction
+  return charIcon(e.char, 'action/cast'); // buff sans carac = effet de sort/bénédiction
 }
 
 function malusChips(conditions: ConditionInstance[]): EffectChip[] {
   return conditions
     .map((c): EffectChip => {
       const m = conditionMeta(c.id);
-      return { key: `c-${c.id}`, condId: c.id, icon: m.icon, label: conditionLabel(c.id), kind: 'malus', severity: m.severity, count: c.value > 1 ? c.value : undefined };
+      return { key: `c-${c.id}`, condId: c.id, icon: m.icon, label: conditionLabel(c.id), kind: 'malus', severity: m.severity, count: c.value > 1 ? c.value : undefined, indice: c.value };
     })
     .sort((a, b) => b.severity - a.severity);
 }
@@ -116,7 +129,7 @@ function buffChips(effects: ActiveEffect[]): EffectChip[] {
     const sameChar = list.every((x) => x.char === e.char);
     const sameBonus = list.every((x) => x.bonus === e.bonus);
     // Faits affichables du GROUPE (cf. en-tête) — au-delà, rien n'est chiffré.
-    const detail = n === 1 || (sameChar && sameBonus) ? { bonus: e.bonus, char: e.char, ...(n > 1 ? { count: n } : {}) }
+    const detail = n === 1 || (sameChar && sameBonus) ? { bonus: e.bonus, char: e.char, ...(n > 1 ? { count: n, indice: n } : {}) }
       : sameBonus ? { bonus: e.bonus, charCount: n }
         : {};
     return {
@@ -196,6 +209,7 @@ const FLAG_CODEX: Record<FlagId, { category: string; id: string }> = {
   defensiveStance: { category: 'regles', id: 'sur-la-defensive' },
   hunger: { category: 'regles', id: 'faim-et-soif' },
   aiming: { category: 'regles', id: 'viser' },
+  calmeApproche: { category: 'regles', id: 'calme-d-approche' },
 };
 
 /** Règle ADOSSÉE à une pastille, ou `null` quand la pastille n'en a aucune. Priorité, toujours par id
@@ -254,7 +268,7 @@ function flagChips(flags?: EffectFlags): EffectChip[] {
   if (flags?.frenzied) out.push({ key: 'f-frenzied', flagId: 'frenzied', icon: 'flag/frenzy', label: 'Frénésie', kind: 'state', severity: 68 });
   if (flags?.defensiveStance) out.push({ key: 'f-def', flagId: 'defensiveStance', icon: 'flag/defensive', label: 'Sur la défensive (+20 en défense)', kind: 'state', severity: 60 });
   if (flags?.aiming) out.push({ key: 'f-aim', flagId: 'aiming', icon: 'action/aim', label: 'En joue (+20 au prochain tir)', kind: 'state', severity: 55 });
-  if (flags?.focusDr != null) out.push({ key: 'f-focus', flagId: 'focusDr', icon: 'flag/focus', label: `Focalisation (DR ${flags.focusDr})`, kind: 'state', severity: 50, count: flags.focusDr });
+  if (flags?.focusDr != null) out.push({ key: 'f-focus', flagId: 'focusDr', icon: 'flag/focus', label: `Focalisation (DR ${flags.focusDr})`, kind: 'state', severity: 50, count: flags.focusDr, indice: flags.focusDr });
   if (flags?.hunger) {
     const h = flags.hunger;
     out.push({
@@ -264,7 +278,7 @@ function flagChips(flags?: EffectFlags): EffectChip[] {
   }
   if (flags?.fear != null) {
     out.push({
-      key: 'f-fear', flagId: 'fear', icon: 'flag/fear', kind: 'state', severity: 66,
+      key: 'f-fear', flagId: 'fear', icon: 'flag/fear', kind: 'state', severity: 66, indice: flags.fear,
       label: `Peur (Indice ${flags.fear}) — −1 DR contre la source ; approcher exige un Test de Calme (+0) ; Test étendu de Calme en fin de Round pour la vaincre`,
     });
   }

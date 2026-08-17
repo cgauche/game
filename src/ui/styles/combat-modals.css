@@ -500,32 +500,46 @@
   display: none;
 }
 
-/* Fil d'événements — SOUS la frise d'initiative (InitiativeStrip), façon BG3.
-   top calé sous le bas mesuré de la frise (~73px) + marge d'air, pour ne JAMAIS la chevaucher. */
+/* Fil d'événements — BAS-GAUCHE, posé SUR LE TERRAIN juste au-dessus du pont de console (planche
+   2026-08-17 : journal `[170,779,330,57]`, aucun cadre, aligné à gauche). Il n'appartient PAS au
+   pont : il flotte au-dessus de lui, et sa réserve du bas est la hauteur du pont elle-même
+   (`--cc-deck-h`, combat-console.css) — jamais un nombre recopié.
+   Le tiroir du journal (`.log-drawer`) garde l'historique COMPLET : ce fil ne dit que le beat. */
 .combat-feed {
   position: absolute;
-  top: 108px; /* sous le dock d'équipe désormais en RANGÉE EN HAUT (inversion init/groupe) */
-  left: 50%;
-  transform: translateX(-50%);
+  /* Après la plaque de frise (colonne x 10..114 mesurée) — la planche pose le journal à 170/1920. */
+  left: 130px;
+  right: auto;
+  top: auto;
+  /* Réserve : la hauteur du pont, PLUS la bande du bandeau de phase qui se pose à cheval sur son
+     parapet (`.cc-phase`, même coin gauche) — sans elle, le fil et le bouton « Commencer le round »
+     se recouvraient en pause de Round (mesuré à 1280). */
+  bottom: calc(var(--cc-deck-h) + 46px);
+  transform: none;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  z-index: 40;
+  align-items: flex-start;
+  gap: 2px;
+  /* AU-DESSUS du bandeau de groupe (`.party-dock`, z-index 45) : le message d'ouverture passait
+     derrière les cartes et se lisait coupé (grief vision). Le fil ne prend aucun clic. */
+  z-index: 46;
   pointer-events: none;
-  max-width: 80%;
+  max-width: 42vw;
 }
+/* Ligne NUE : aucune boîte, aucun filet — du texte sur le terrain (planche 2026-08-17). Sa
+   lisibilité tient à l'ombre portée (le voile d'une carte reviendrait à la boîte supprimée). */
 .cb-ev {
   display: flex;
   gap: 7px;
   align-items: center;
-  background: rgba(10, 14, 20, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 20px;
-  padding: 5px 14px;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
   font-size: 13.5px;
   white-space: nowrap;
-  backdrop-filter: blur(3px);
+  text-align: left;
+  text-shadow: 0 1px 2px var(--shadow-ink), 0 0 6px rgba(0, 0, 0, 0.95);
 }
 .cb-ev .cb-ic {
   font-size: 15px;
@@ -533,16 +547,15 @@
 .cb-now {
   animation: cb-in 0.18s ease-out;
 }
-/* Ton du beat (source : combatNarration.toneOf) — renforce l'entrée pour qu'on ne rate plus la
-   bannière. `strong` = une Peur ; `grave` = un critique / une mise à mort (liseré sang + pop). */
+/* Ton du beat (source : combatNarration.toneOf) — sans boîte, le ton se porte à l'ENCRE et au corps,
+   jamais au liseré : `strong` = une Peur ; `grave` = un critique / une mise à mort. */
 .cb-tone-strong {
-  border-color: color-mix(in srgb, var(--danger-soft) 60%, transparent);
-  box-shadow: 0 0 12px 0 color-mix(in srgb, var(--danger-soft) 30%, transparent);
+  color: var(--danger-soft);
 }
 .cb-tone-grave {
-  border-color: var(--blood);
-  background: color-mix(in srgb, var(--blood) 32%, rgba(10, 14, 20, 0.82));
-  box-shadow: 0 0 16px 0 color-mix(in srgb, var(--blood) 55%, transparent);
+  /* `--blood` (#5a120a) est une matière de PLAQUE, pas une encre : sur le terrain sombre elle
+     tombait sous 1,5:1. Le rouge d'alerte tient la lecture et reste plus dur que le corail. */
+  color: var(--danger);
   font-size: 15px;
   animation: cb-in-grave 0.3s cubic-bezier(0.2, 1.4, 0.4, 1);
 }
