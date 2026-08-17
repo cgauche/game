@@ -245,6 +245,27 @@ assaillants »/« 3+ », portée en nappe, anneaux de camp sous pions, ligne d'a
 pointillée. Clavier de la planche : lettres AZERTY (A/Z/E/R/T/Y) sur la travée gauche +
 F1-F4 sur l'accès rapide + 1-0/−/= sur la grille — compatible « touche = CASE »
 (la touche s'imprime PAR CASE) ; le mapping exact se règle au volet clavier du lot.
+
+### 1c-quater. CONTRAT D'INFORMATION — JAMAIS DE `title` SEUL, LE CANON EST `CodexRef`
+(arbitrages user 2026-08-17, verbatims en test réel : « J'hallucine que tu ai osé mettre
+des titles d'ailleurs, c'est une honte » puis « Mais c'est surtout qu'on gere les title
+autrement dans l'application !!! »)
+
+La charte l'exigeait déjà (grief du juge vision du lot munitions : « la raison n'est
+qu'en title — patron `GatedAction` exigé ») et des micro-briefs d'orchestrateur l'ont
+quand même violée, jusqu'à inventer une primitive (« HoverTip ») alors que LE CANON
+EXISTE : **`CodexRef`** (`src/ui/compendium/CodexRef.tsx`) — popover de survol/focus qui
+affiche l'entrée du CODEX (le verbatim de la donnée), mode `tooltipOnly`, épinglage,
+tokens `--tooltip-*` de `base.css`, 16 consommateurs. Contrats :
+- **Aucune information de la console portée par un `title` seul** (invisible au tactile,
+  latent, inaccessible) ; un `title` natif ne survit qu'en redondance stricte.
+- **Règle affichée = `CodexRef` vers l'entrée de donnée** (`regles/charger`, qualité
+  `recharge`…) — le verbatim vient de la DONNÉE par id (règle 5, jamais une phrase
+  composée en composant — précédent du même jour corrigé sur question user « les
+  infobulles c'est du verbatim non ? ») ; un mode manquant s'ajoute DANS `CodexRef`,
+  jamais un fork.
+- **Raison de gate = patron `GatedAction`/`aria-describedby`** (visible), pas un popover.
+- Garde committée : `console-no-title-only` (liste nominative, exemptions vides).
 ### 1c. Coin FIN DE TOUR + chrome de l'arche — PRÊT À BRIEFER
 
 `end-turn` isolé + garde-fou existant. `undo-move` adossé à la jauge de Mouvement

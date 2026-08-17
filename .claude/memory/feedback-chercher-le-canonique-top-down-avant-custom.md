@@ -29,3 +29,16 @@ conception. La gate credo « grep 2-3 variantes + table Primitives partagées »
 se fait EN AMONT de la proposition, jamais en réaction à une objection. Un fix générique correct =
 souvent « ajouter une entrée au registre existant + brancher », pas « écrire une résolution ad hoc ».
 Voir [[credo-exemples-calibrants]] (RELOAD_BY_LABEL), [[feedback-effet-existant-general-parametrable]].
+
+Récidive 2026-08-17, PAR LE CANAL DES MICRO-BRIEFS : trois violations de la même classe UI dans
+la même journée, toutes injectées par des SendMessage de correction en vol (jamais par les briefs
+complets, qui portaient la clause Brief-UI) — (1) infobulles de règle COMPOSÉES (paraphrase,
+règle 5), (2) info routée en `title` seul alors que la charte ET un juge vision l'avaient déjà
+condamné, (3) primitive « HoverTip » inventée sans UN grep, alors que `CodexRef`
+(`src/ui/compendium/CodexRef.tsx`, tokens `--tooltip-*`, 16 consommateurs) était LE canon des
+infobulles. Attrapé deux fois par l'USER, pas par mes filets. Verdict user : « Qui a oser saboter
+Fable pour passer outre toutes nos régles lié a l'UI comme nos primitives, notre carte, nos
+régles, et qui décide de réinventer la roue ? » **Règle : un micro-brief (SendMessage) qui touche
+l'UI porte LA MÊME discipline qu'un brief complet — primitive nommée depuis la table OU absence
+prouvée par grep collé, charte citée — sinon il ne part pas.** Le canal court est celui que
+personne ne relit : c'est là que la discipline doit être la plus dure, pas la plus molle.
