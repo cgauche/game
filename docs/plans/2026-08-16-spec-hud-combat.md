@@ -377,6 +377,32 @@ et LANCE (le ban ne vise que la barre), ferme après lancement. ⚠ ORDONNANCEME
 livre DANS le même lot que la purge des tiroirs (b3.16) — jamais un lot entre les deux
 sans surface exhaustive.
 
+✅ RÉVISIONS 2026-08-17 (échange user sur l'éditabilité) :
+- **« Déduite » = DÉFAUT, plus une loi** (correction user, verbatim : « "rangée haute est
+  déduite du set au poing", comment ca ? J'ai dit que les raccourcis étaient dépendante
+  de l'arme équipée ») : la barre est ENTIÈREMENT ÉDITABLE, gauche comprise. La
+  dépendance à l'arme est une dépendance d'ÉLIGIBILITÉ (une action d'arme n'est
+  proposable/active que si l'arme est au poing) ; la déduction ne fait que PRÉ-REMPLIR.
+  **Le placement de la travée gauche est PAR SET** : chaque set a sa disposition,
+  pré-remplie par déduction, rééditable, mémorisée (persistance `(partyKey, actorId)` +
+  set) ; commuter (X) affiche la disposition du set. Proposé sans objection user.
+- **L'écran de capacités EST l'éditeur de la console, HORS COMBAT et PAR HÉROS**
+  (verbatim user : « Faudra un moyen d'éditer tout cela oui, et pas obliger
+  l'utilisateur a etre en combat … en mode exploration on n'a pas acces a la barre
+  d'action et même si on l'avait, on ne peut pas choisir le personnage ») : sélecteur de
+  héros DANS l'écran (patron fiche/PartyScreen), il montre dispositions par set + grille
+  + accès rapide et PLACE tout — aucun besoin d'être en combat ni de contrôler le héros.
+
+## Zone 13 — CONTRÔLE DU PERSONNAGE EN EXPLORATION (ouvert 2026-08-17, à cadrer)
+
+Constat user (verbatim : « on ne peut pas choisir le personnage (vu que c'est toujours
+le premier en vie qu'on controle). Faudrait surement modifier ce comportement ») —
+aujourd'hui l'exploration contrôle le premier vivant. Proposition orchestrateur (état de
+l'art party-RPG, à CONFIRMER par l'user avant tout lot) : clic sur un portrait du
+BANDEAU en exploration = ce héros prend la TÊTE (les autres suivent) ; ouvre aussi
+l'accès naturel à « son » écran de capacités. Périmètre réel à cadrer : leader de
+marche, interactions/dialogues, coop (qui a le droit de mener), sauvegarde du choix.
+
 ✅ ARBITRAGE CAMÉRA (AskUserQuestion 2026-08-17, sur question user verbatim : « Je ne suis
 pas fan de ces boutons de map en haut à droite, je ne connais aucun jeu vidéo qui offre ce
 genre de bouton. Ils font comment les jeux avec des vues tactique ou pov ? ») : **gestes +
