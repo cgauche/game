@@ -173,9 +173,21 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   return w;
 }
 
-/** Arme « Mains nues » canonique reconnue par son marqueur STABLE (`builtinId`), pas par son nom
- *  (multilangue-safe). Utilisé pour exclure les Mains nues des armes « wielded » / choisissables. */
-export const isUnarmed = (w: Weapon): boolean => w.builtinId === 'mains-nues';
+/** L'entrée de catalogue `id` est-elle DÉCLARÉE « Mains nues » (`TrappingData.unarmed`) ? Le catalogue
+ *  porte la marque, le moteur ne connaît aucun id — une seconde entrée « poings » (espèce, prothèse)
+ *  coûte une ligne de `trappings.json`. Résolveur INJECTABLE comme partout ailleurs (couche campagne). */
+export const isUnarmedTrapping = (id: string | undefined, resolveTrapping: TrappingResolver = findTrappingById): boolean =>
+  !!(id && resolveTrapping(id)?.unarmed);
+
+/** L'entrée de catalogue `id` est-elle DÉCLARÉE « Arme improvisée » (`TrappingData.improvised`) ?
+ *  ≠ `weaponDamage.isImprovised` (arme RÉDUITE à cet état par l'usure). */
+export const isImprovisedTrapping = (id: string | undefined, resolveTrapping: TrappingResolver = findTrappingById): boolean =>
+  !!(id && resolveTrapping(id)?.improvised);
+
+/** Arme « Mains nues » canonique reconnue par son IDENTITÉ de catalogue (`builtinId`/`trappingId`,
+ *  multilangue-safe) confrontée à la marque DÉCLARÉE sur l'entrée. Utilisé pour exclure les Mains nues
+ *  des armes « wielded » / choisissables. */
+export const isUnarmed = (w: Weapon): boolean => isUnarmedTrapping(w.builtinId ?? w.trappingId);
 
 /** IDENTITÉ STABLE d'une arme — SOURCE UNIQUE pour tout keying d'arme (#598). Ordre : id de catalogue
  *  (`trappingId`, partagé par toutes les instances d'un même modèle) → marqueur built-in (`builtinId`)

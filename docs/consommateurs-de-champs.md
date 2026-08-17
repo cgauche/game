@@ -15,20 +15,20 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 7 | `src/engine/creatureEquip.ts:73` |
+| `id` | 6 | `src/engine/creatureEquip.ts:77` |
 | `value` | 6 | `src/engine/creatureEquip.ts:72` |
-| `arg` | 8 | `src/engine/creatureEquip.ts:75` |
+| `arg` | 8 | `src/engine/creatureEquip.ts:80` |
 | `count` | 3 | `src/engine/grantedTraits.ts:31` |
-| `range` | 6 | `src/engine/creatureEquip.ts:76` |
-| `natural` | 1 | `src/engine/creatureEquip.ts:82` |
+| `range` | 6 | `src/engine/creatureEquip.ts:81` |
+| `natural` | 1 | `src/engine/creatureEquip.ts:87` |
 | `hidden` | **0 — JAMAIS LU** | — |
 
 ### `SourceRef` (src/data/schemas/common.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `book` | 1 | `src/ui/creator/CharacterCreator.tsx:1255` |
-| `page` | 1 | `src/ui/creator/CharacterCreator.tsx:1255` |
+| `book` | 1 | `src/ui/creator/CharacterCreator.tsx:1257` |
+| `page` | 1 | `src/ui/creator/CharacterCreator.tsx:1257` |
 | `note` | **0 — JAMAIS LU** | — |
 
 ### `DetailRecipe` (src/gameIso/detail/types.ts)
@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:3086` |
-| `spec` | 1 | `src/data/index.ts:3087` |
+| `id` | 3 | `src/data/index.ts:3115` |
+| `spec` | 1 | `src/data/index.ts:3116` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3098` |
+| `id` | 1 | `src/data/index.ts:3127` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3098` |
+| `value` | 2 | `src/data/index.ts:3127` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3144` |
+| `id` | 4 | `src/data/index.ts:3173` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3145` |
-| `qualities` | 2 | `src/data/index.ts:3148` |
-| `qualityChoice` | 2 | `src/data/index.ts:3146` |
-| `text` | 1 | `src/data/index.ts:3139` |
-| `vehicleId` | 2 | `src/data/index.ts:3141` |
+| `count` | 3 | `src/data/index.ts:3174` |
+| `qualities` | 2 | `src/data/index.ts:3177` |
+| `qualityChoice` | 2 | `src/data/index.ts:3175` |
+| `text` | 1 | `src/data/index.ts:3168` |
+| `vehicleId` | 2 | `src/data/index.ts:3170` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3143` |
-| `choice` | 3 | `src/data/index.ts:3136` |
-| `wildcard` | 1 | `src/data/index.ts:3137` |
+| `creatureId` | 2 | `src/data/index.ts:3172` |
+| `choice` | 3 | `src/data/index.ts:3165` |
+| `wildcard` | 1 | `src/data/index.ts:3166` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:3118` |
-| `wildcard` | 5 | `src/data/index.ts:3120` |
-| `specOptions` | 3 | `src/data/index.ts:3119` |
-| `choice` | 4 | `src/data/index.ts:3122` |
-| `random` | 2 | `src/data/index.ts:3123` |
+| `ref` | 4 | `src/data/index.ts:3147` |
+| `wildcard` | 5 | `src/data/index.ts:3149` |
+| `specOptions` | 3 | `src/data/index.ts:3148` |
+| `choice` | 4 | `src/data/index.ts:3151` |
+| `random` | 2 | `src/data/index.ts:3152` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 

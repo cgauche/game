@@ -435,6 +435,18 @@
     "label": "Intimidation",
     "characteristic": "force",
     "type": "base",
+    "altChar": {
+      "gatedByRule": "test-intimidation-char",
+      "chars": {
+        "FM": "force-mentale",
+        "Int": "intelligence",
+        "max": [
+          "force",
+          "force-mentale",
+          "intelligence"
+        ]
+      }
+    },
     "combatSubstitute": {
       "role": "both",
       "gate": "fear"
@@ -579,6 +591,13 @@
     "label": "Métier",
     "characteristic": "dexterite",
     "type": "avancée",
+    "altChar": {
+      "gatedByRule": "test-metier-int",
+      "from": "dexterite",
+      "chars": {
+        "true": "intelligence"
+      }
+    },
     "specs": [
       {
         "id": "alchimiste",

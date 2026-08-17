@@ -350,12 +350,15 @@ export function talentMaxReached(hero: Combatant, talentId: string, spec?: strin
 /** `VDM 02 l.190-192` (texte identique `LDB 46 l.177`). Voir `arcaneDomainCap`/`arcaneDomainGate`. */
 export interface ArcaneDomains { normal: string[]; dark: string[] }
 
-/** Domaines (spec du Talent `magie-des-arcanes`) déjà possédés par le héros, séparés Domaine(s)
- *  sombre(s) (`DomainData.dark`) / non sombres. */
+/** Domaines déjà TENUS par le héros — spec de tout Talent dont l'entrée déclare `grantsArcaneDomain`
+ *  —, séparés Domaine(s) sombre(s) (`DomainData.dark`) / non sombres. */
 export function heldArcaneDomains(hero: Combatant): ArcaneDomains {
   const out: ArcaneDomains = { normal: [], dark: [] };
   for (const t of hero.talents) {
-    if (t.talentId !== 'magie-des-arcanes' || !t.spec) continue;
+    // « Tenir un Domaine » se lit sur l'entrée du Talent, jamais sur son id. Champ DÉDIÉ (et non le
+    // `specsSource` du pool) : `LDB 46 l.177` plafonne l'APPRENTISSAGE de Domaines par ce Talent — un
+    // futur Talent qui NOMMERAIT un Domaine sans en octroyer la pratique ne doit pas peser au plafond.
+    if (!findTalentById(t.talentId)?.grantsArcaneDomain || !t.spec) continue;
     (findDomainById(t.spec)?.dark ? out.dark : out.normal).push(t.spec);
   }
   return out;
@@ -368,7 +371,7 @@ export function arcaneDomainCap(hero: Combatant): number {
   return bonusOf ? Math.max(1, bonus(hero.characteristics[bonusOf])) : 1;
 }
 
-/** Achat d'un NOUVEAU Domaine (spec du Talent `magie-des-arcanes`) : autorisé/refusé avec raison
+/** Achat d'un NOUVEAU Domaine (spec d'un Talent `grantsArcaneDomain`) : autorisé/refusé avec raison
  *  LISIBLE (`LDB 46 l.177`, repris `VDM 02 l.190-192`). `domainId` déjà possédé → toujours autorisé
  *  (relève de `talentMaxReached`, pas de ce gate). */
 export function arcaneDomainGate(hero: Combatant, domainId: string): { ok: boolean; reason?: string } {

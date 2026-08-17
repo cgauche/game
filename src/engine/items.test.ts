@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon, itemLabel, customTrapping, wornArmourPoints, isWearable, reachIdOf, reachRankOf } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon, itemLabel, customTrapping, wornArmourPoints, isWearable, reachIdOf, reachRankOf, isUnarmed } from './items';
 import { effectiveWeaponRange } from './weaponDamage';
 import { rangeBandName } from './combat';
 import { trappings, type TrappingRef } from '../data';
@@ -848,5 +848,31 @@ describe('unarmedWeapon — arme LUE dans la donnée (`mains-nues`)', () => {
 
   it('entrée absente = donnée cassée, BRUYANTE — plus aucun repli codé en dur', () => {
     expect(() => unarmedWeapon(() => undefined)).toThrow(/mains-nues/);
+  });
+});
+
+/**
+ * `isUnarmed` lit la MARQUE du catalogue (`TrappingData.unarmed`) sur l'IDENTITÉ de l'arme, et cette
+ * identité a DEUX porteurs : le marqueur built-in (`builtinId`, posé par `unarmedWeapon` et persisté
+ * dans les sauvegardes) et l'id de catalogue d'une arme dérivée d'une Possession (`trappingId`). Les
+ * deux doivent répondre — une arme construite depuis l'entrée `mains-nues` du catalogue (sans
+ * `builtinId`) était jusque-là comptée comme arme TENUE (choisissable en attaque/parade, hors
+ * empoignade) : elle ne l'est plus.
+ */
+describe('isUnarmed — la marque du catalogue est lue par les DEUX porteurs d’identité', () => {
+  const w = (over: Partial<Weapon>): Weapon =>
+    ({ uid: 'w1', label: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [], ...over }) as Weapon;
+
+  it('`builtinId` (arme canonique, sauvegardes) → mains nues', () => {
+    expect(isUnarmed(w({ builtinId: 'mains-nues' }))).toBe(true);
+  });
+
+  it('`trappingId` SEUL (arme dérivée de l’entrée de catalogue, sans builtinId) → mains nues aussi', () => {
+    expect(isUnarmed(w({ trappingId: 'mains-nues' }))).toBe(true);
+  });
+
+  it('une arme réelle du catalogue n’est jamais « mains nues », ni une arme sans identité', () => {
+    expect(isUnarmed(w({ trappingId: 'epee', label: 'Épée' }))).toBe(false);
+    expect(isUnarmed(w({ label: 'Arme de créature' }))).toBe(false);
   });
 });

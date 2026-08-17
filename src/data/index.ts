@@ -866,6 +866,18 @@ export interface SkillData {
    *  `engine/conditions.testStatePenalty`. Approximation assumée : le −10 d'Assourdi ne s'applique qu'aux
    *  Tests des Compétences marquées `hearing` (faute d'un tag « ce Test précis fait appel à l'ouïe »). */
   hearing?: boolean;
+  /** Caractéristique ALTERNATIVE de cette Compétence sous RÈGLE OPTIONNELLE (Métier comme Savoir → Int,
+   *  `LDB 09 l.358` ; Intimidation → FM/Int, `LDB 09 l.294`) : `gatedByRule` = id d'`OptionalRule`
+   *  (FK anti-fantôme `data/variants-integrity.test.ts`), `from` = Caractéristique de base à laquelle la
+   *  substitution s'applique (absente = toutes), `chars` = Caractéristique à utiliser PAR VALEUR de la
+   *  règle (clé = valeur rendue par `rule()` convertie en chaîne — `"true"` pour un interrupteur ; une
+   *  LISTE = la MEILLEURE des Caractéristiques citées chez le porteur). Lu par `altCharKey`
+   *  (`engine/skills`), POINT UNIQUE : le moteur ne nomme plus aucune compétence. */
+  altChar?: {
+    gatedByRule: string;
+    from?: CharKey;
+    chars: Record<string, CharKey | CharKey[]>;
+  };
   /** Application de COMBAT « cumuler l'Avantage » (LDB 09 l.60/305-308) : passer son tour à réussir un Test
    *  de cette Compétence donne +1 Avantage, jusqu'à un maximum égal au Bonus de la Caractéristique `cap`
    *  (Intuition/Savoir/Survie → Int ; Prière → Soc). Lu par `engine/skillCombatApps.skillAdvantageCap`. */
@@ -936,6 +948,12 @@ export interface TalentData {
   /** Le `spec` de ce Talent nomme un CULTE (`GodData.id`) dont les `grantGroups` sont accordés au
    *  porteur (`groupsFor`) — Béni (Sigmar) fait un « sigmarite ». Absent = aucun Groupe. */
   grantSpecGroups?: true;
+  /** Le `spec` de ce Talent nomme un Domaine arcanique (`DomainData.id`) que le porteur PRATIQUE — il
+   *  compte donc dans les Domaines TENUS et sous le plafond d'apprentissage (`LDB 46 l.177`, repris
+   *  `VDM 02 l.190-192`), lu par `heldArcaneDomains` (`engine/careerSlots`). Volontairement DISTINCT de
+   *  `specsSource: 'arcaneDomains'`, qui ne décrit que le POOL de spécialisations offert au picker : un
+   *  Talent futur pourrait nommer un Domaine sans en octroyer la pratique. */
+  grantsArcaneDomain?: true;
   /** Le domaine de ce Talent accepte-t-il un TEXTE LIBRE hors `specs[]` ? Même sémantique que
    *  `SkillData.specsOpen` (absent/`false` = FERMÉ, `spec` DOIT être un id de `specs[]`). */
   specsOpen?: boolean;
@@ -1075,6 +1093,14 @@ export interface TrappingData {
    *  ≠ libellé. Posé à la migration par jointure `norm(label)` → forme. Absent pour munitions/armes de
    *  siège/Mains nues (aucune silhouette tenue). Propagé sur `ItemInstance.shape` puis `Weapon.shape`. */
   shape?: string;
+  /** Cette entrée EST l'arme « Mains nues » du catalogue (`LDB 62 l.28`) : marque STABLE et multilangue,
+   *  SEULE lecture de `isUnarmed`/`isUnarmedTrapping` (`engine/items`) — les poings ne comptent pas comme
+   *  arme tenue (`EquipmentPanel`, choix d'attaque/parade) et ne sont pas invocables (`conjuredWeapons`). */
+  unarmed?: true;
+  /** Cette entrée EST l'« Arme improvisée » du catalogue (`LDB 62 l.31`), lue par `isImprovisedTrapping`
+   *  (`engine/items`). À NE PAS confondre avec `weaponDamage.isImprovised`, qui décrit une arme RÉDUITE à
+   *  l'état improvisé par l'usure (`LDB 62 l.135`). */
+  improvised?: true;
   /** Formes choisibles (slugs `WeaponDef.slug`) d'une arme ABSTRAITE (« Arme simple » → épée/hache/
    *  masse/marteau de guerre/demi-lance). Le picker pose le choix sur `ItemInstance.shape` ; défaut =
    *  `shape` du trapping. Absent pour une arme à forme unique. */
@@ -1634,6 +1660,9 @@ export interface TraitData {
   /** L'`arg` peut être une LISTE d'ids jointe par virgules (« Immunité (Feu, Poison) »). Absent/`false`
    *  = un seul id. */
   specsMulti?: boolean;
+  /** Trait EXCLU d'un octroi EN MASSE des Traits d'une créature — `LDB 48 l.23` : « Gagnez tous les
+   *  Traits standards de la créature sauf Bestial. » Lu par `polymorphOps` (`engine/polymorph`). */
+  nonTransferable?: boolean;
   desc: string;
   source: SourceRef;
   /** Emplacement SECONDAIRE (#563) — même Trait réimprimé/à cheval ailleurs (ex. Fouissement : ZI 23

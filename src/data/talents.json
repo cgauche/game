@@ -2595,6 +2595,7 @@
     "max": 1,
     "test": null,
     "specsSource": "arcaneDomains",
+    "grantsArcaneDomain": true,
     "desc": "Vous connaissez l'un des huit Domaines de Magie – Bête, Cieux, Mort, Feu, Métal, Ombres, Lumière ou Vie –, ou pratiquez un Savoir moins connu, comme la Magie naturelle ou la Nécromancie. Vous pouvez à présent mémoriser des Sorts du Domaine choisi pour le prix en PX suivant.\n\n| Nbre de Sorts actuellement connus | Coût en PX pour un nouveau sort |\n| --- | --- |\n| Bonus d'Intelligence x 1 | 100 PX |\n| Bonus d'Intelligence x 2 | 200 PX |\n| Bonus d'Intelligence x 3 | 300 PX |\n| Bonus d'Intelligence x 4 | 400 PX |\n| ... et ainsi de suite. |  |\n\nDonc, si votre Bonus d'Intelligence est de 4, les 4 premiers Sorts vous coûteront 100 PX chacun, puis 200 PX pour les 4 suivants, et ainsi de suite. Les règles complètes sur l'apprentissage de nouveaux Sorts se trouvent dans le Chapitre 8 : Magie. Dans des conditions normales, vous ne pouvez pas apprendre plus d'un Talent Magie des Arcanes (Domaine). De plus, vous ne pouvez pas apprendre les Talents Béni ou Invocation quand vous possédez le Talent Magie des Arcanes. Vous pouvez désapprendre ce Talent pour 100 PX, mais si vous le faites, vous perdez immédiatement tous vos Sorts.",
     "rand": null,
     "source": {

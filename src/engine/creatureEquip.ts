@@ -70,17 +70,22 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
   // Indice de créature = SB déjà inclus → PAS de token BF (« +N », « -N » négatif) ; à défaut d'Indice,
   // arme générique « +BF » nu (SB-relatif). Le constructeur d'arme UNIQUE porte les deux conventions.
   const dmg: WeaponDamageSpec = t.value != null ? { plusBF: false, flat: t.value } : { plusBF: true, flat: 0, bare: true };
-  if (t.id === 'a-distance') {
+  // Quel(s) Trait(s) ARMENT une créature est DÉCLARÉ par l'entrée du registre : `specsSource` nomme LE
+  // catalogue où se résout son `arg` (`weaponsMelee`/`weaponsRanged`, cf. `SPEC_SOURCES`). Un troisième
+  // trait porteur d'arme coûte cette ligne de `traits.json` — et la source passée à `catalogItem` EST
+  // celle qui est déclarée, sans second champ à tenir synchrone.
+  const source = findTraitById(t.id)?.specsSource;
+  if (source === 'weaponsRanged') {
     if (t.value == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
-    const it = catalogItem(t.arg, 'weaponsRanged');
+    const it = catalogItem(t.arg, source);
     if (it) return creatureWeapon(it, dmg, t.range);
     // Arme naturelle/libre (arg hors catalogue, ou absent) : pas de shape (le rendu retombe sur le Groupe).
     return buildWeapon({ label: t.arg || 'Attaque à distance', type: 'ranged', damage: dmg, range: t.range ?? undefined });
   }
-  if (t.id === 'arme') {
+  if (source === 'weaponsMelee') {
     // Attaque naturelle de corps (flag DONNÉE `natural`) → aucune arme dessinée (pas de shape).
     if (t.natural) return buildWeapon({ label: t.arg ?? 'Arme', damage: dmg, natural: true });
-    const it = catalogItem(t.arg, 'weaponsMelee');
+    const it = catalogItem(t.arg, source);
     if (it) return creatureWeapon(it, dmg, t.range);
     // Arme manufacturée hors catalogue, ou descripteur naturel non flaggé : générique, mêlée par
     // défaut — REND toujours une silhouette (`weaponFamily` retombe sur le Groupe, ex. « épée »).

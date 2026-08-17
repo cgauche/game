@@ -54,6 +54,16 @@ const skillEntrySchema = z.strictObject({
   source: sourceRefSchema,
   movement: z.boolean().optional(),
   hearing: z.boolean().optional(),
+  /** Caractéristique ALTERNATIVE sous règle optionnelle (`SkillData.altChar`, lu par `altCharKey`) :
+   *  `gatedByRule` = id d'`OptionalRule` (FK validée par `variants-integrity.test.ts`), `from` = carac de
+   *  base à laquelle la substitution s'applique (absente = toute carac), `chars` = la carac à utiliser
+   *  PAR VALEUR de la règle (clé = valeur rendue par `rule()`, en chaîne — `"true"` pour un interrupteur ;
+   *  une LISTE = la meilleure des caracs citées chez le porteur). */
+  altChar: z.strictObject({
+    gatedByRule: z.string(),
+    from: charKeySchema.optional(),
+    chars: z.record(z.string(), z.union([charKeySchema, z.array(charKeySchema)])),
+  }).optional(),
   combatAdvantage: z.strictObject({ cap: charKeySchema }).optional(),
   combatSubstitute: z.strictObject({
     role: z.enum(['defense', 'attack', 'both']),

@@ -101,6 +101,14 @@ export const schema = z.array(
     subType: z.union([z.string(), z.null()]),
     weaponGroup: z.string().optional(),
     soloSimple: z.boolean().optional(),
+    /** Cette entrée EST l'arme « Mains nues » du catalogue (`LDB 62 l.28`) : la SEULE marque lue par
+     *  `isUnarmed`/`isUnarmedTrapping` (engine/items) pour écarter les poings des armes tenues,
+     *  choisissables et invocables. */
+    unarmed: z.literal(true).optional(),
+    /** Cette entrée EST l'« Arme improvisée » du catalogue (`LDB 62 l.31`) — marque lue par
+     *  `isImprovisedTrapping` (engine/items). ≠ `weaponDamage.isImprovised`, qui décrit une arme RÉDUITE
+     *  à cet état par l'usure (`LDB 62 l.135`). */
+    improvised: z.literal(true).optional(),
     indirect: z.boolean().optional(),
     /** LDB 62 l.278 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. */
     bladed: z.boolean().optional(),

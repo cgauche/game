@@ -63,7 +63,7 @@
   {
     "id": "test-metier-int",
     "label": "Métier (Savoir) : Int au lieu de Dex",
-    "ref": "LDB 09 l.352",
+    "ref": "LDB 09 l.358",
     "group": "Tests",
     "kind": "flag",
     "default": false,
@@ -72,7 +72,7 @@
   {
     "id": "test-intimidation-char",
     "label": "Intimidation : caractéristique",
-    "ref": "LDB 09 l.266",
+    "ref": "LDB 09 l.294",
     "group": "Tests",
     "kind": "mode",
     "default": "F",
@@ -82,7 +82,8 @@
       "FM",
       "Int"
     ],
-    "hint": "Caractéristique de base d’Intimidation. F = Force (RAW) ; max = la meilleure de F/FM/Int ; FM = Force Mentale ; Int = Intelligence."
+    "hint": "Caractéristique de base d’Intimidation. F = Force (RAW) ; max = la meilleure de F/FM/Int ; FM = Force Mentale ; Int = Intelligence.",
+    "maison": "LDB 09 l.294 nomme la Force Mentale et l’Intelligence comme Caractéristiques alternatives laissées au jugement du MJ (« le MJ peut juger que certaines situations vous permettent d’utiliser une Caractéristique différente »), sans jamais décrire de sélection automatique : l’option « max » (la meilleure de F/FM/Int) est une option MAISON — le RAW ne la chiffre ni ne l’évoque."
   },
   {
     "id": "fortune-mid-session",

@@ -93,6 +93,9 @@ const traitEntrySchema = z.strictObject({
   specsSource: specsSourceSchema.optional(),
   specsOpen: z.boolean().optional(),
   specsMulti: z.boolean().optional(),
+  /** Trait EXCLU d'un octroi en masse de Traits de créature — `LDB 48 l.23` : « Gagnez tous les Traits
+   *  standards de la créature sauf Bestial. » Lu par `polymorphOps` (engine/polymorph). */
+  nonTransferable: z.boolean().optional(),
   desc: z.string(),
   source: sourceRefSchema,
   /** Emplacements SECONDAIRES (#563, doctrine « jamais 2 talents différents ») — ex. `fouissement`

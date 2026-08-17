@@ -192,6 +192,7 @@
     "id": "bestial",
     "label": "Bestial",
     "desc": "La créature ne possède ni pensée, ni langage rationnel. Elle a peur du feu et gagne l'État Brisé si elle est touchée par ce dernier. En défense, elle peut seulement utiliser la Compétence Esquive. Si elle perd plus de la moitié de ses Blessures, elle tente de fuir à moins qu'elle ne protège son petit ou qu'elle soit acculée ou encore qu'elle possède le Trait de créature Territorial. Dans ce cas, elle entre en Frénésie (voir Psychologie dans le Chapitre 5 : Règles à la page 190). Pas de caractéristique de Social.",
+    "nonTransferable": true,
     "source": {
       "book": "livre-de-base",
       "page": 338

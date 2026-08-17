@@ -12,7 +12,7 @@
  */
 import type { Combatant } from './types';
 import type { GameOp } from './ops';
-import { findCreatureById } from '../data';
+import { findCreatureById, findTraitById } from '../data';
 import { baseWithTraits } from './characteristics';
 
 /** id de créature dont l'apparence rig doit être rendue actuellement (op `polymorph` en cours), sinon
@@ -36,9 +36,10 @@ export function polymorphOps(target: Combatant, ref: string): GameOp[] {
       if (diff !== 0) ops.push({ op: 'charMod', char: k, mod: diff });
     }
   }
-  // Tous les Traits standards SAUF Bestial — grantTrait par `TraitInstance` structuré (id + arg/indice).
+  // Traits standards de la créature SAUF ceux que leur entrée de registre déclare intransférables
+  // (`TraitData.nonTransferable`, LDB 48 l.23) — grantTrait par `TraitInstance` structuré (id + arg/indice).
   for (const t of cr.traits ?? [])
-    if (t.id !== 'bestial')
+    if (!findTraitById(t.id)?.nonTransferable)
       ops.push({ op: 'grantTrait', traitId: t.id, ...(t.arg ? { arg: t.arg } : {}), ...(t.value != null ? { indice: t.value } : {}) });
   ops.push({
     op: 'narrative',

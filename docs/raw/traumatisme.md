@@ -283,7 +283,7 @@ Un personnage est **blessé** s'il a perdu au moins 1 PB. Il n'y a **aucune pén
 **Voir aussi** : Compétence Guérison → [competences.md](competences.md) (LDB 09 l.255-269) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; Faim/Soif → [§ 13](#13-faim-et-soif) (sans provisions : pas de récupération naturelle).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `applyHealWounds`, `heal-wounds`, `emprise-sur-les-animaux`, `heal-bleed`, +7 — `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/skills.ts`, +2 fichiers
+- `LDB 9` (l.255-269) → `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `applyHealWounds`, `heal-wounds`, `emprise-sur-les-animaux`, `heal-bleed`, `escamotage`, +6 — `src/data/flow-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/types.ts`, `src/state/combatSlice.ts`
 - `LDB 18` (l.289-300) → `faim`, `permanentAmputations`, `soif`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `TraumaFiche`, `dechirure-autre-majeure`, `exposure`, `exposure-heat-drop`, +30 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/data/voyage-stakes.json`, `src/engine/combat.ts`, +10 fichiers
 
 ---

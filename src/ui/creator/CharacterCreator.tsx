@@ -186,9 +186,11 @@ export const STEP_META: Record<StepId, { label: string; screen: (p: StepProps) =
  *  apparaissent automatiquement à la suite. */
 const CORE = allSpecies.filter((s) => s.source.book === 'livre-de-base').map((s) => s.label);
 
-/** Choix proposés pour l'emplacement `{wildcard:'arme'}` : toutes les ARMES des données ({id, label}). */
+/** Choix proposés pour l'emplacement `{wildcard:'arme'}` : toutes les ARMES des données ({id, label}),
+ *  hors celles que le catalogue DÉCLARE « Mains nues » (`TrappingData.unarmed`) — on ne choisit pas ses
+ *  poings comme équipement de départ. */
 const WEAPON_CHOICES = allTrappings
-  .filter((t) => (t.type === 'melee' || t.type === 'ranged') && t.id !== 'mains-nues')
+  .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !t.unarmed)
   .map((t) => ({ id: t.id, label: t.label }))
   .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 /** Demeure céleste par ID (ADE II 3 l.504-512) — libellé affiché + desc RAW en tooltip du thème astral. */

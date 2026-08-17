@@ -7,10 +7,10 @@
  * (= BFM…) et l'Atout Magique sont surchargés par le Sort.
  */
 import { Combatant, ItemInstance, QualityInstance } from './types';
-import { recomputeLoadout, itemFromTrappingById, ensureDefaultLoadout, newLoadoutId } from './items';
+import { recomputeLoadout, itemFromTrappingById, ensureDefaultLoadout, newLoadoutId, isUnarmedTrapping, isImprovisedTrapping } from './items';
 import { isShieldItem } from './equipCompare';
 import { hasQuality } from './qualities/dispatch';
-import { trappings } from '../data';
+import { trappings, findSkillById } from '../data';
 
 type ConjuredSet = NonNullable<NonNullable<Combatant['activeEffects']>[number]['conjuredSet']>;
 
@@ -66,11 +66,13 @@ export interface ConjureForm {
 
 /** Une arme de mêlée est-elle un objet À INVOQUER ? Exclut les boucliers, l'Arme improvisée, les Mains
  *  nues et les armes Inoffensives — PAS « Arme simple » (= épée/hache/marteau/masse/lance courte, l'arme
- *  de base la plus commune, cf. sa description). Détection par CHAMPS STABLES (multilangue-safe) :
- *  `trappingId` de catalogue (arme-improvisee / mains-nues), Atout Protectrice (bouclier), Atout
- *  Inoffensive — plus de name-parse `/bouclier|improvis|mains nues/`. */
+ *  de base la plus commune, cf. sa description). Détection par CHAMPS DÉCLARÉS sur l'entrée de catalogue
+ *  (`TrappingData.unarmed`/`improvised`) et par Atouts (Protectrice = bouclier, Inoffensive) — le moteur
+ *  ne nomme aucun id. Les deux marques déclarées sont aujourd'hui REDONDANTES avec l'Atout Inoffensive que
+ *  ces mêmes entrées portent (leur retrait ne changerait aucun comportement mesurable) : elles gardent la
+ *  règle d'une édition de qualité au Compendium, elles ne la portent pas seules. */
 function isConjurableWeapon(it: { trappingId?: string; qualities: QualityInstance[] }): boolean {
-  if (it.trappingId === 'arme-improvisee' || it.trappingId === 'mains-nues') return false;
+  if (isUnarmedTrapping(it.trappingId) || isImprovisedTrapping(it.trappingId)) return false;
   if (isShieldItem(it)) return false;
   if (hasQuality(it, 'inoffensive')) return false;
   return true;
@@ -81,8 +83,11 @@ function isConjurableWeapon(it: { trappingId?: string; qualities: QualityInstanc
  *  CHOISIT son arme), les Spé les mieux entraînées d'abord. Aucune Spé → l'arme de base par défaut. */
 export function conjureFormOptions(caster: Pick<Combatant, 'skills'>): ConjureForm[] {
   const groupAdv = new Map<string, number>(); // id de Groupe → meilleures avances connues
+  // « Compétence de Corps à corps » = compétence dont les SPÉ sont les Groupes d'armes de mêlée : c'est
+  // la déclaration `specsSource` de son entrée de `skills.json` — et c'est exactement la garantie dont la
+  // suite a besoin (`s.spec` EST alors un id de Groupe, comparable à `it.subType`).
   for (const s of caster.skills ?? []) {
-    if (s.skillId === 'corps-a-corps' && s.spec) {
+    if (findSkillById(s.skillId)?.specsSource === 'weaponGroupsMelee' && s.spec) {
       groupAdv.set(s.spec, Math.max(groupAdv.get(s.spec) ?? 0, s.advances ?? 0));
     }
   }

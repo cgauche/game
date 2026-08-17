@@ -20,23 +20,21 @@ import { RNG, defaultRNG } from './dice';
 import { effectivePsychTraits, isPsychImmune } from './psychology';
 import { maxBy } from './pick';
 
-/** Règles optionnelles « caractéristique alternative » via policy (POINT UNIQUE de la famille) : Métier
- *  comme Savoir → Int (LDB 09 l.352) ; Intimidation → carac réglable F/FM/Int (LDB 09 l.266). Renvoie la
- *  CharKey à utiliser (inchangée si aucune règle ne s'applique). N'opère que sur une COMPÉTENCE nommée.
+/** Règles optionnelles « caractéristique alternative » (POINT UNIQUE de la famille) : la liaison
+ *  règle ↔ compétence ↔ Caractéristique vit ENTIÈREMENT sur l'entrée de `skills.json`
+ *  (`SkillData.altChar` : `gatedByRule` + `from` + `chars` par valeur de règle) — Métier comme Savoir
+ *  (LDB 09 l.358), Intimidation (LDB 09 l.294). Une compétence de plus = une entrée de donnée, zéro
+ *  ligne ici. Renvoie la CharKey à utiliser (inchangée si aucune règle ne s'applique).
  *  (Les carac alternatives PAR ENTITÉ — ex. lanceur ogre : Langue (Magick) sur Endurance, ADE II 2 l.728 —
  *  sont portées par la DONNÉE — `SkillInstance.characteristic` — lue par effectiveSkillCharKey en amont,
  *  pas ici : aucun sniff d'espèce dans le moteur.) */
 function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
-  if (ck === 'dexterite' && skillId === 'metier' && rule('test-metier-int')) return 'intelligence';
-  if (skillId === 'intimidation') {
-    const mode = rule('test-intimidation-char') as string;
-    if (mode === 'force-mentale' || mode === 'intelligence') return mode;
-    if (mode === 'max') {
-      const f = effectiveChar(c, 'force'), fm = effectiveChar(c, 'force-mentale'), i = effectiveChar(c, 'intelligence');
-      return f >= fm && f >= i ? 'force' : fm >= i ? 'force-mentale' : 'intelligence';
-    }
-  }
-  return ck;
+  const alt = findSkillById(skillId)?.altChar;
+  if (!alt || (alt.from && ck !== alt.from)) return ck;
+  const pick = alt.chars[String(rule(alt.gatedByRule))];
+  if (!pick) return ck;
+  // Liste = la MEILLEURE des Caractéristiques citées chez ce porteur (argmax UNIQUE du moteur).
+  return Array.isArray(pick) ? (maxBy(pick, (k) => effectiveChar(c, k))?.item ?? ck) : pick;
 }
 
 /** Caractéristique (CharKey STABLE) d'une compétence par son `id`. `SkillData.characteristic` EST

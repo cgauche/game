@@ -74,8 +74,10 @@ describe('garde-fou « when.rule ∈ OPTIONAL_RULES » (#564 Lot 3 item 1)', () 
 
 // ── FK d'une règle optionnelle portée par une ENTRÉE : `gatedByRule` (#1318 E4/C2) ────────────────
 /**
- * MÊME gate fantôme que `variants[].when.rule`, par une autre porte : une entrée peut subordonner sa
- * disponibilité à une règle optionnelle (`SpeciesData.gatedByRule`, lu par `speciesAllowed`).
+ * MÊME gate fantôme que `variants[].when.rule`, par une autre porte : un nœud de donnée peut subordonner
+ * à une règle optionnelle sa DISPONIBILITÉ (`SpeciesData.gatedByRule`, lu par `speciesAllowed`) ou son
+ * COMPORTEMENT (`SkillData.altChar.gatedByRule`, lu par `altCharKey`) — le walk est GÉNÉRIQUE, à toute
+ * profondeur et quel que soit le porteur.
  * `rule(id)` d'un id INCONNU rend `false` (`engine/policy.ts`) — une coquille rendrait l'entrée
  * définitivement invisible, sans la moindre erreur. La FK se valide donc ici, sur la donnée réelle.
  */

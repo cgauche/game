@@ -53,6 +53,11 @@ const talentEntrySchema = z.strictObject({
   /** Le `spec` de ce Talent nomme un CULTE (`gods.json`) : ses `grantGroups` sont accordés au
    *  porteur (`groupsFor`). Absent = le `spec` n'ouvre aucun Groupe d'appartenance. */
   grantSpecGroups: z.literal(true).optional(),
+  /** Le `spec` de ce Talent nomme un Domaine arcanique (`DomainData.id`) que son porteur PRATIQUE : il
+   *  compte alors dans les Domaines tenus et sous le plafond d'apprentissage (`LDB 46 l.177`, repris
+   *  `VDM 02 l.190-192`) — lu par `heldArcaneDomains` (engine/careerSlots). Distinct de `specsSource`,
+   *  qui ne décrit que le POOL de spécialisations proposé. */
+  grantsArcaneDomain: z.literal(true).optional(),
   specsOpen: z.boolean().optional(),
   rand: z.number().nullable(),
   source: sourceRefSchema,

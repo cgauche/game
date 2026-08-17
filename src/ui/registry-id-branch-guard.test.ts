@@ -47,7 +47,14 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/ui/ → ..
  * `matchesAll`/`exceptGroups` du Groupe joker), puis 50 → 46 (lot E4/C4-δ1, 2026-08-17) —
  * `persistence.ts` et `exposure.ts` sortent de la liste (persistance d'État déclarée par
  * `EtatData.persistsAfterCombat`, dissipation au répit par `ActiveEffect.expiresOnRespite`) et
- * `seaVoyageFlow.ts` passe de 2 à 1 (`DiseaseDef.contaminatesWaterBarrel`).
+ * `seaVoyageFlow.ts` passe de 2 à 1 (`DiseaseDef.contaminatesWaterBarrel`), puis 46 → 37 (lot E4/C4-δ2,
+ * 2026-08-17) — `creatureEquip.ts`, `polymorph.ts`, `items.ts`, `conjuredWeapons.ts`, `skills.ts` et
+ * `careerSlots.ts` sortent de la liste : Trait exclu d'un octroi en masse
+ * (`TraitData.nonTransferable`), Mains nues / Arme improvisée (`TrappingData.unarmed`/`improvised`),
+ * Domaine arcanique octroyé (`TalentData.grantsArcaneDomain`) et caractéristique alternative sous règle
+ * (`SkillData.altChar`) sont DÉCLARÉS sur l'entrée ; l'armement de créature et « une Compétence de
+ * Corps à corps » se lisent, eux, sur le `specsSource` que l'entrée déclarait DÉJÀ (aucun champ neuf
+ * à tenir synchrone : `weaponFromTrait` passe cette source telle quelle à son résolveur de catalogue).
  */
 const KNOWN: Record<string, number> = {
   'scripts/_qc-decor-sheet.mts': 2,
@@ -58,14 +65,8 @@ const KNOWN: Record<string, number> = {
   'scripts/qc/mesure-volume.mts': 1,
   'scripts/qc/opera-furniture-check.mts': 2, // for…of démasqué : `FLOATING.has(e.ref)` + `e.ref !== 'siege'`
   'scripts/raw/reconcile.mjs': 1, // `book` démasqué : `c.book === 'LDB'` (garde de couverture RAW)
-  'src/engine/careerSlots.ts': 1, // for…of démasqué : `t.talentId !== 'magie-des-arcanes'`
-  'src/engine/conjuredWeapons.ts': 2, // +1 for…of démasqué : `s.skillId === 'corps-a-corps'`
-  'src/engine/creatureEquip.ts': 2,
   'src/engine/critical.ts': 4,
-  'src/engine/items.ts': 1,
   'src/engine/mountTravel.ts': 2,
-  'src/engine/polymorph.ts': 1, // for…of démasqué : `t.id !== 'bestial'`
-  'src/engine/skills.ts': 2,
   'src/engine/trauma.ts': 2,
   'src/gameIso/rig/parts/injuries.ts': 2, // for…of démasqué : `t.traumaId === 'membre-inferieur-ampute'|'nez-ampute'`
   'src/gameIso/rig/skeletons.ts': 1, // for…of démasqué : `WAIST_BONES.includes(id)`
@@ -107,7 +108,12 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * `registry.ts` et `PortView.tsx` sortent de la liste), 163 après le lot C2 (gate d'espèce en champ
  * déclaré : `creation.ts` sort de la liste, `CharacterCreator.tsx` passe de 8 à 7), 160 après le lot
  * C4-groups (appartenance de Groupe déclarée en donnée : `groups.ts` sort de la liste), 158 après le
- * lot C4-δ1 (politique de dissipation déclarée sur l'effet : `exposure.ts` sort de la liste).
+ * lot C4-δ1 (politique de dissipation déclarée sur l'effet : `exposure.ts` sort de la liste), 146 après
+ * le lot C4-δ2 (Trait intransférable, Mains nues / Arme improvisée, Domaine arcanique octroyé et
+ * caractéristique alternative déclarés sur l'entrée ; armement de créature et « Compétence de Corps à
+ * corps » lus sur le `specsSource` déjà déclaré : `creatureEquip.ts`, `polymorph.ts`, `items.ts`,
+ * `conjuredWeapons.ts`, `skills.ts` et `combat.ts` sortent de la liste, `careerSlots.ts` passe de 2 à 1
+ * et `CharacterCreator.tsx` de 7 à 6).
  */
 const RAW_KNOWN: Record<string, number> = {
   'scripts/data/lib/obtainabilityGraph.ts': 3,
@@ -119,29 +125,23 @@ const RAW_KNOWN: Record<string, number> = {
   'scripts/raw/reconcile.mjs': 1,
   'src/engine/aaCritical.ts': 1,
   'src/engine/activities.ts': 1,
-  'src/engine/careerSlots.ts': 2,
-  'src/engine/combat.ts': 1,
+  'src/engine/careerSlots.ts': 1, // reste `s.skillId === 'focalisation'` (lookup par id stable)
   'src/engine/conditions.ts': 1,
-  'src/engine/conjuredWeapons.ts': 3,
   'src/engine/corruption.ts': 2,
-  'src/engine/creatureEquip.ts': 2,
   'src/engine/crewedWeapon.ts': 1,
   'src/engine/critical.ts': 5,
   'src/engine/drunkenness.ts': 1,
   'src/engine/engagement.ts': 2,
   'src/engine/equipCompare.ts': 2,
   'src/engine/healing.ts': 1,
-  'src/engine/items.ts': 1,
   'src/engine/magic.ts': 3,
   'src/engine/menace.ts': 1,
   'src/engine/mountTravel.ts': 1,
-  'src/engine/polymorph.ts': 1,
   'src/engine/provisions.ts': 1,
   'src/engine/psychology.ts': 3,
   'src/engine/rest.ts': 1,
   'src/engine/riverNavigation.ts': 3,
   'src/engine/seaNavigation.ts': 1,
-  'src/engine/skills.ts': 2,
   'src/engine/trauma.ts': 10,
   'src/engine/weaponDamage.ts': 1,
   'src/engine/windsOfMagic.ts': 1,
@@ -183,7 +183,7 @@ const RAW_KNOWN: Record<string, number> = {
   'src/ui/MedicModal.tsx': 2,
   'src/ui/MerchantPanel.tsx': 1,
   'src/ui/PartyScreen.tsx': 2,
-  'src/ui/creator/CharacterCreator.tsx': 7,
+  'src/ui/creator/CharacterCreator.tsx': 6,
   'src/ui/editor/StatblockEditor.tsx': 1,
   'src/ui/gallery/registry.tsx': 4,
 };

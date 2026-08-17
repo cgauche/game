@@ -43,7 +43,7 @@ const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
  * devenue trop haute.
  */
 const BASELINES: Record<string, number> = {
-  'reglesOptionnelles.json': 55,
+  'reglesOptionnelles.json': 54, // −1 (#1318 E4/C4-δ2) : `test-intimidation-char` ré-ancrée LDB 09 l.294 (l.266 tombait dans Guérison)
 };
 
 function missingByFile(): Record<string, number> {
