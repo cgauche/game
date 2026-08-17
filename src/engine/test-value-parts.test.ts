@@ -157,7 +157,7 @@ const SANS_REF_DECLARE = new Set<CasId>(['armure-custom', 'mutation-perimee', 's
 
 /** Replis de FAMILLE : jamais un nom d'octroyeur (`passivePartLine` n'en produit aucun ; cette liste
  *  interdit qu'on en réintroduise un). */
-const FAMILLES = ['Passif', 'Séquelle', 'État', 'Symptôme', 'Aura', 'Maladie', 'Faim/Soif', 'Ivresse', 'intrinsèque', 'magique'];
+const FAMILLES = ['Passif', 'Séquelle', 'État', 'Symptôme', 'Aura', 'Maladie', 'Faim/Soif', 'Ivresse', 'intrinseque', 'magique'];
 
 /** Ids RÉELS d'une catégorie du Codex — contrat POSITIF : un libellé qui est l'un de ces ids est un id
  *  BRUT échappé du résolveur. Remplace l'heuristique de forme (« contient un tiret »), aveugle sur les

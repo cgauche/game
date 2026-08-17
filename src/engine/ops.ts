@@ -65,7 +65,7 @@ import { formatTrait } from './traits/dispatch';
 import { woundsFromHit } from './woundsCalc';
 import type { TraitInstance } from './statEntry';
 import type { ChaosAlign, ExposureLevel } from './corruption';
-import { t } from '../i18n';
+import { t, type MsgKey } from '../i18n';
 
 // ---------------------------------------------------------------------------
 // Formules
@@ -196,7 +196,7 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
   // Séquelles (`c.traumas`) : leurs ops passives, `kind` = `passiveKind` de la fiche, sinon DÉRIVÉ par
   // `traumaOpKind` — qui ne classe que maxWeaponHands/senseLoss/moveScale et rend `douleur` par défaut,
   // donc annulable par Détermination/Insensible/prothèse. Les cicatrices sociales (LDB 18 l.61 et l.72)
-  // portent `passiveKind: "intrinsèque"` : liste d'annulateurs VIDE, leur DR survit à la Détermination.
+  // portent `passiveKind: "intrinseque"` : liste d'annulateurs VIDE, leur DR survit à la Détermination.
   // Une séquelle à `skillDRBonus` SANS `passiveKind` tomberait, elle, en `douleur` (annulée par Insensible).
   for (const m of traumaPassiveMods(c)) if (m.op.op === 'skillDRBonus' && matches(m.op)) n += resolveFormula(m.op.bonus, c);
   // Auras (Aura de Dhar : +1 DR Focalisation/Langue (Magick) aux sorciers et démons du dieu à portée,
@@ -1003,7 +1003,7 @@ export type GameOp =
  *  Porté par chaque `PassiveMod` ; une table `kind → annulateurs` (engine/trauma) applique le gating. */
 export type PassiveKind =
   | 'douleur'      // pénalité de douleur (séquelle) : Détermination + Insensible + prothèse 'all'
-  | 'mobilité'     // pénalité de mobilité (séquelle de jambe) : idem + prothèse 'movement'
+  | 'mobilite'     // pénalité de mobilité (séquelle de jambe) : idem + prothèse 'movement'
   | 'structurel'   // membre perdu : prothèse 'all' SEULE (ni Détermination ni Insensible)
   | 'sensoriel'    // organe perdu : rien
   | 'maladie'      // symptôme de maladie : Détermination SEULE (pas Insensible)
@@ -1011,10 +1011,28 @@ export type PassiveKind =
   | 'magique'      // effet de SORT actif (ActiveEffect) : inconditionnel mais combiné en POOL non-cumul ; expire seul
   | 'etat'         // pénalité/effet d'un État (LDB 16) : pool NON-CUMUL, le pire seul (l.20) ; Exténué ×stacks
   | 'ivresse'      // pénalité d'Ivresse (LDB 09 l.475) : pool non-cumul ; ignorée 1 Round par la Détermination (flag `drunkIgnore`)
-  | 'intrinsèque'; // trait/mutation/qualité : inconditionnel ET ADDITIF (Σ dans la base — corps/équipement permanent)
+  | 'intrinseque'; // trait/mutation/qualité : inconditionnel ET ADDITIF (Σ dans la base — corps/équipement permanent)
+
+/** Attribut visé par `attrMod` → sa CLÉ d'affichage (#1318 V8c₅, 8ᵉ forme) : le nom rendu au joueur
+ *  passait en paramètre de `t()` sous forme de littéral FR — il s'affichait donc hors catalogue. */
+const ATTR_KEY = { wounds: 'op.attrWounds', fortune: 'op.attrFortune', resolve: 'op.attrResolve' } as const satisfies Record<string, MsgKey>;
+
+/** Ramène un `PassiveKind` à sa forme COURANTE : deux valeurs sont passées de l'id accentué à l'id ASCII
+ *  (#1318 V8c₅) et ce `kind` est PERSISTÉ (`Trauma.passiveKind`) — une save/un roster d'avant le
+ *  renommage en porte encore l'ancienne. La remise à niveau de la DONNÉE est la migration de save
+ *  (`state/passiveKindMigration.ts`, `MIGRATIONS[24]`) ; ceci est le FILET lu par le collecteur passif
+ *  (`engine/trauma.ts`), qui empêche à la fois le crash et la dérive silencieuse. `undefined` reste
+ *  `undefined` ; une valeur déjà courante (ou inconnue) ressort telle quelle. Deux `if` plutôt qu'une
+ *  table : la correspondance est fermée et se lit d'un coup d'œil. */
+export function normalizePassiveKind(kind: string | undefined): PassiveKind | undefined {
+  if (kind == null) return undefined;
+  if (kind === 'mobilité') return 'mobilite';
+  if (kind === 'intrinsèque') return 'intrinseque';
+  return kind as PassiveKind;
+}
 
 /** Effet PASSIF porté par un élément (trauma/trait/mutation/qualité…) : une op + son profil d'annulation.
- *  Unité du collecteur unifié `passiveMods` ; `kind` absent ⇒ `intrinsèque`.
+ *  Unité du collecteur unifié `passiveMods` ; `kind` absent ⇒ `intrinseque`.
  *
  *  `src` = IDENTITÉ Codex de l'entité qui porte le passif (l'État pour un `kind:'etat'`, le symptôme
  *  pour un `kind:'maladie'`, le trait pour une aura) — posée par le collecteur, qui la connaît au
@@ -1218,7 +1236,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
     const dur = charRounds != null ? t('op.frag.rounds', { n: charRounds })
       : charClockMin != null ? (charClockMin >= 60 ? t('op.frag.hours', { n: Math.round(charClockMin / 60), s: charClockMin >= 120 ? 's' : '' }) : t('op.frag.min', { n: charClockMin }))
       : t('op.frag.outOfCombat');
-    lines.push(t('op.charModLine', { name: target.label, label: ctx.label ?? 'Effet', parts: charParts.join(', '), dur }));
+    lines.push(t('op.charModLine', { name: target.label, label: ctx.label ?? t('op.srcFallback'), parts: charParts.join(', '), dur }));
     charParts.length = 0;
   };
   // Filtre par Groupe de la CIBLE (engine/groups) : `only` = doit appartenir à l'un (« les
@@ -1334,7 +1352,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
             ? (target.conditions.find((x) => x.id === id)?.value ?? 1)
             : Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
           removeCondition(target, id, v);
-          lines.push(t('op.removeCond', { name: target.label, what: o.all ? "tout l'État" : `${v} État`, cond: conditionLabel(id) }));
+          lines.push(t('op.removeCond', { name: target.label, what: o.all ? t('op.condAll') : t('op.condSome', { n: v }), cond: conditionLabel(id) }));
           ctx.onCondition?.({ stateId: id, change: 'loss', targetId: target.id });
         } else {
           lines.push(t('op.noCondToRemove', { name: target.label }));
@@ -1464,7 +1482,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Sens ABRI (VDM 05) : pose la protection en crans, aucune exposition posée.
         if (o.easeSteps != null) {
           target.activeEffects = target.activeEffects ?? [];
-          target.activeEffects.push({ label: ctx.label ?? 'Effet', bonus: 0, duration: durationFromCtx(ctx), corruptionEase: o.easeSteps });
+          target.activeEffects.push({ label: ctx.label ?? t('op.srcFallback'), bonus: 0, duration: durationFromCtx(ctx), corruptionEase: o.easeSteps });
           lines.push(t('op.corruptionEase', { name: target.label, n: o.easeSteps, src: ctx.label ?? 'sort' }));
           break;
         }
@@ -1500,8 +1518,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const moved = Math.abs(target[key] - before);
         // Le journal dit ce qui a BOUGÉ : compteur déjà à 0, rien n'est retiré, rien ne se journalise
         // (« −0 Point » serait un événement inventé).
-        if (n > 0) lines.push(t('op.gainResource', { name: target.label, n, s: n > 1 ? 's' : '', res: fate ? 'Destin' : 'Chance', temp: o.temporary ? ' (le temps du Sort)' : '', total: target[key] }));
-        else if (moved > 0) lines.push(t('op.loseResource', { name: target.label, n: moved, s: moved > 1 ? 's' : '', res: fate ? 'Destin' : 'Chance', total: target[key] }));
+        if (n > 0) lines.push(t('op.gainResource', { name: target.label, n, s: n > 1 ? 's' : '', res: t(fate ? 'op.resFate' : 'op.resFortune'), temp: o.temporary ? t('op.fragSpellDuration') : '', total: target[key] }));
+        else if (moved > 0) lines.push(t('op.loseResource', { name: target.label, n: moved, s: moved > 1 ? 's' : '', res: t(fate ? 'op.resFate' : 'op.resFortune'), total: target[key] }));
         break;
       }
       case 'castPenalty': {
@@ -1543,14 +1561,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const n = resolveFormula(o.amount, ref, rng);
         if (n === 0) break;
         target.activeEffects = target.activeEffects ?? [];
-        target.activeEffects.push({ label: ctx.label ?? 'Effet', bonus: 0, duration: { scale: 'adventure' }, statusMod: n });
+        target.activeEffects.push({ label: ctx.label ?? t('op.srcFallback'), bonus: 0, duration: { scale: 'adventure' }, statusMod: n });
         lines.push(t('op.statusMod', { name: target.label, sign: n >= 0 ? '+' : '', n }));
         break;
       }
       case 'grantReverseToken': {
         target.activeEffects = target.activeEffects ?? [];
-        target.activeEffects.push({ label: ctx.label ?? 'Effet', bonus: 0, duration: { scale: 'adventure' }, reverseToken: { skill: o.skill, spec: o.spec } });
-        lines.push(t('op.grantReverseToken', { name: target.label, skill: o.skill ? refLabel('skills', { id: o.skill }) : 'un Test concernant sa cible' }));
+        target.activeEffects.push({ label: ctx.label ?? t('op.srcFallback'), bonus: 0, duration: { scale: 'adventure' }, reverseToken: { skill: o.skill, spec: o.spec } });
+        lines.push(t('op.grantReverseToken', { name: target.label, skill: o.skill ? refLabel('skills', { id: o.skill }) : t('op.reverseAnyTest') }));
         break;
       }
       case 'grantTrait': {
@@ -1828,7 +1846,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           attrMods: { [o.attr]: n },
         });
         if (o.attr === 'wounds') refreshWounds(target); // le max bouge → PB courants suivent le delta
-        lines.push(t('op.attrMod', { name: target.label, mod: `${n >= 0 ? '+' : ''}${n}`, attr: { wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination' }[o.attr], src: ctx.label ?? 'sort' }));
+        lines.push(t('op.attrMod', { name: target.label, mod: `${n >= 0 ? '+' : ''}${n}`, attr: t(ATTR_KEY[o.attr]), src: ctx.label ?? t('op.srcSpell') }));
         break;
       }
       case 'diseaseTestMod': {
@@ -1947,7 +1965,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Libellé FIDÈLE à la durée RÉELLE (jamais « permanente » en dur pour un octroi temporisé,
         // même vocabulaire que les autres effets à durée, cf. `op.suppressPsych`/`op.suppressSymptom`
         // « pour la durée »).
-        lines.push(t('op.rollMutation', { name: target.label, mutation: m.label, durability: dur.scale === 'permanent' ? 'mutation permanente' : 'pour la durée' }));
+        lines.push(t('op.rollMutation', { name: target.label, mutation: m.label, durability: dur.scale === 'permanent' ? t('op.mutationPermanent') : t('op.mutationForDuration') }));
         break;
       }
       case 'charDamage': {
@@ -2259,7 +2277,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'senseLoss': {
-        lines.push(t('op.senseLoss', { name: target.label, sense: o.sense === 'vue' ? 'un œil' : 'une oreille', src: ctx.label ?? 'séquelle' }));
+        lines.push(t('op.senseLoss', { name: target.label, sense: t(o.sense === 'vue' ? 'op.senseEye' : 'op.senseEar'), src: ctx.label ?? t('op.srcSequela') }));
         break;
       }
       case 'loseTurn':

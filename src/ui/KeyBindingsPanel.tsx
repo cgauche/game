@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../state/store';
-import { KEYBINDINGS, KEY_SECTION_LABEL, effectiveCodes, keyLabel, type KeyBindingSection } from '../state/keybindings';
+import { KEYBINDINGS, bindingLabel, keySectionLabel, effectiveCodes, keyLabel, type KeyBindingSection } from '../state/keybindings';
 import { Icon } from './Icon';
 
 /**
@@ -43,7 +43,7 @@ export function KeyBindingsPanel() {
     const byCode = new Map<string, { id: string; label: string }[]>();
     for (const b of KEYBINDINGS) {
       const code = effectiveCodes(b, keyOverrides)[0];
-      (byCode.get(code) ?? byCode.set(code, []).get(code)!).push({ id: b.id, label: b.label });
+      (byCode.get(code) ?? byCode.set(code, []).get(code)!).push({ id: b.id, label: bindingLabel(b) });
     }
     const out = new Map<string, string>(); // id → titre listant les autres partageant sa touche
     for (const entries of byCode.values()) {
@@ -67,7 +67,7 @@ export function KeyBindingsPanel() {
       <div className="opt-keys">
         {SECTION_ORDER.filter((sec) => bySection.has(sec)).map((sec) => (
           <div className="opt-key-section" key={sec}>
-            <h4 className="opt-key-section-title">{KEY_SECTION_LABEL[sec]}</h4>
+            <h4 className="opt-key-section-title">{keySectionLabel(sec)}</h4>
             {bySection.get(sec)!.map((b) => {
               const code = effectiveCodes(b, keyOverrides)[0];
               const remapped = !!keyOverrides[b.id];
@@ -75,7 +75,7 @@ export function KeyBindingsPanel() {
               return (
                 <div className="opt-key-row" key={b.id}>
                   <span className="opt-key-label">
-                    {b.label}
+                    {bindingLabel(b)}
                     {shared && (
                       <span className="opt-key-shared" title={shared}>
                         <Icon id="ui/warning" size="sm" />

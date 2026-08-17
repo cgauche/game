@@ -27,6 +27,7 @@ import { RNG, defaultRNG, d10 } from './dice';
 import { findTableEntry } from './tables';
 import type { GameOp } from './ops';
 import drunkennessJson from '../data/drunkenness.json';
+import { t } from '../i18n';
 
 // Cycle d'import évité comme `provisions.ts` : ce module n'importe PAS `conditions`/`ops` (import
 // de VALEUR — `ops.ts` importe CE module par valeur, l'inverse boucherait). La MÉCANIQUE d'un résultat
@@ -87,10 +88,10 @@ export function applyAlcoholTest(c: Combatant, success: boolean, be: number, rng
   if (success) { c.drunk = s; return { log }; }
   s.failedTests += 1;
   c.drunk = s;
-  log.push(`${c.label} tient mal l'alcool (échec ${s.failedTests}) : −10 aux CC/CT/Ag/Dex/Int${s.failedTests >= 3 ? ' (plafond −30)' : ''}.`);
+  log.push(t('drunk.failedTest', { name: c.label, n: s.failedTests, cap: s.failedTests >= 3 ? t('drunk.fragCap') : '' }));
   if (!s.drunk && s.failedTests >= Math.max(1, be)) {
     const entry = applyDrunkResult(c, rng);
-    log.push(`${c.label} est IVRE ! ${entry.desc}`);
+    log.push(t('drunk.isDrunk', { name: c.label, desc: entry.desc }));
     return { log, becameDrunk: entry, drunkOps: entry.ops };
   }
   return { log };
@@ -134,7 +135,7 @@ export function soberUpDissipate(c: Combatant, drDissipation: number): { log: st
   const dissipH = Math.max(0, 10 - drDissipation);
   c.activeEffects = (c.activeEffects ?? []).filter((e) => e.effectId !== 'ivresse');
   c.drunk = undefined;
-  return { log: [`${c.label} dessoûle (effets dissipés après ${dissipH} h).`] };
+  return { log: [t('drunk.soberUp', { name: c.label, h: dissipH })] };
 }
 
 /** 2ᵉ Test du dessoûlage (l.485) : le DR fixe la gueule de bois (Exténué non retirable pendant 5 − DR h,
@@ -142,7 +143,7 @@ export function soberUpDissipate(c: Combatant, drDissipation: number): { log: st
  *  (`addClockCondition` — évite le cycle d'import). `now` = minute `gameTime`. Ne mute pas `c`. */
 export function soberUpHangover(c: Combatant, now: number, drHangover: number): { log: string[]; hangover: { id: string; value: number; until: number } } {
   const hangoverH = Math.max(1, 5 - drHangover);
-  return { log: [`${c.label} a la gueule de bois : 1 Exténué pendant ${hangoverH} h.`], hangover: { id: 'extenue', value: 1, until: now + hangoverH * 60 } };
+  return { log: [t('drunk.hangover', { name: c.label, h: hangoverH })], hangover: { id: 'extenue', value: 1, until: now + hangoverH * 60 } };
 }
 
 /**

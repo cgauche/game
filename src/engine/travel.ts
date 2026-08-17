@@ -34,6 +34,8 @@ import {
 import { VehicleData } from './types';
 import { traceLineOf } from './traceLine';
 import vehiclesJson from '../data/vehicles.json';
+import { refLabel } from '../data';
+import { t } from '../i18n';
 
 /** FOYER UNIQUE des véhicules/embarcations (`src/data/vehicles.json`), data-driven (cf. `VehicleData`). */
 export const VEHICLES_LIST = vehiclesJson as VehicleData[];
@@ -179,11 +181,11 @@ export function forcedMarchTarget(c: Combatant): number {
  *  cascade) : échec → +1 Exténué (+1 si Surchargé, p.293). Mute `c` ; renvoie le journal + gagnés.
  *  Partagé par `forcedMarchTest` (eager) et l'applicateur de cascade « forcedMarch ». */
 export function applyForcedMarch(c: Combatant, success: boolean): { line: string; gained: number } {
-  if (success) return { line: `${c.label} — marche forcée : il tient l'allure.`, gained: 0 };
+  if (success) return { line: t('trv.forcedMarchOk', { name: c.label }), gained: 0 };
   const overloaded = encumbrancePenalties(c).tier > 0;
   const n = overloaded ? 2 : 1;
   addCondition(c, 'extenue', n);
-  return { line: `${c.label} — marche forcée : ÉCHEC, +${n} Exténué${overloaded ? ' (surchargé)' : ''}.`, gained: n };
+  return { line: t('trv.forcedMarchFail', { name: c.label, n, over: overloaded ? t('trv.fragOverloaded') : '' }), gained: n };
 }
 
 /** Marche forcée (LDB 51 l.195) : voyager plus de `hoursPerDay` heures ce jour → Test de Résistance,
@@ -191,14 +193,15 @@ export function applyForcedMarch(c: Combatant, success: boolean): { line: string
 export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): ForcedMarchResult | null {
   if (c.dead) return null;
   const base = forcedMarchTarget(c);
-  const t = rollTest(base, 'intermediaire', rng);
-  const d = testDetail('Résistance', base, t);
-  const r = applyForcedMarch(c, t.success);
+  const tr = rollTest(base, 'intermediaire', rng);
+  const skill = refLabel('skills', { id: 'resistance' });
+  const d = testDetail(skill, base, tr);
+  const r = applyForcedMarch(c, tr.success);
   // Test résolu SANS fenêtre (jour de marche) : sa ligne se DÉRIVE (`traceLineOf`).
   const line = traceLineOf({
-    who: c.label, label: 'marche forcée : Test de Résistance',
-    roll: t.roll, target: t.target, sl: t.sl, success: t.success,
-    issue: t.success ? "il tient l'allure" : `ÉCHEC, +${r.gained} Exténué${r.gained > 1 ? ' (surchargé)' : ''}`,
+    who: c.label, label: t('trv.forcedMarchLabel', { skill }),
+    roll: tr.roll, target: tr.target, sl: tr.sl, success: tr.success,
+    issue: tr.success ? t('trv.issueHold') : t('trv.issueFail', { n: r.gained, over: r.gained > 1 ? t('trv.fragOverloaded') : '' }),
   });
   return { line, gained: r.gained, d };
 }
@@ -210,5 +213,5 @@ export function applyTravelFatigue(c: Combatant): string[] {
   const n = encumbrancePenalties(c).travelFatigue;
   if (n <= 0) return [];
   addCondition(c, 'extenue', n);
-  return [`${c.label} termine la journée fourbu sous sa charge : +${n} Exténué (Encombrement).`];
+  return [t('trv.fatigue', { name: c.label, n })];
 }

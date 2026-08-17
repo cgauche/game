@@ -24,6 +24,7 @@ import { drunkCharPenalties } from './drunkenness';
 import { hasActiveFlag } from './activeFlags';
 import { wornSocialMods, qualityWearMods } from './wearPenalty';
 import type { GameOp, PairedSense, PassiveKind, PassiveMod } from './ops';
+import { normalizePassiveKind } from './ops';
 import traumasJson from '../data/traumas.json';
 import { t as tr } from '../i18n'; // alias : `t` est un identifiant local très fréquent ici (la séquelle courante)
 
@@ -712,28 +713,31 @@ function painlessIgnores(c: Combatant, t: Trauma): boolean {
  *  (LDB 17 Détermination / 85 Insensible / 73 prothèse). Le `kind` (flag de typage) → ses annulateurs. */
 const PASSIVE_CANCELLERS: Record<PassiveKind, ('determination' | 'painless' | 'prosthesis-all' | 'prosthesis-move')[]> = {
   douleur: ['determination', 'painless', 'prosthesis-all'],
-  mobilité: ['determination', 'painless', 'prosthesis-move'],
+  mobilite: ['determination', 'painless', 'prosthesis-move'],
   structurel: ['prosthesis-all'],
   sensoriel: [],
   maladie: ['determination'],
   faim: [], // annulé par `noHunger` (flag de sort) — géré à la source Faim (P2), pas par une prothèse de séquelle
-  magique: [], // sort actif : rien ne l'annule (il expire), mais il se combine en POOL non-cumul (≠ intrinsèque additif)
+  magique: [], // sort actif : rien ne l'annule (il expire), mais il se combine en POOL non-cumul (≠ `intrinseque` additif)
   etat: [], // État (LDB 16) : annulé NON PAS ici mais par le flag de combat `ignoreStatePenalties` (au consommateur) ; pool non-cumul
   ivresse: [], // Ivresse (LDB 09) : gaté à la SOURCE par le flag `drunkIgnore` (Détermination, 1 Round) ; pool non-cumul
-  intrinsèque: [],
+  intrinseque: [],
 };
 
 /** Le `kind` est-il ADDITIF (sommé dans la base : mutation/qualité, corps/équipement permanent) plutôt que
- *  combiné en POOL non-cumul (trauma/maladie/faim/sort) ? Seuls les `charMod`/`skillMod` distinguent les deux. */
+ *  combiné en POOL non-cumul (trauma/maladie/faim/sort) ? Seuls les `charMod`/`skillMod` distinguent les deux.
+ *  L'entrée est NORMALISÉE (`normalizePassiveKind`) : une valeur PERSISTÉE à l'ancien id accentué (save
+ *  antérieure à `SAVE_VERSION` 25, import de roster à la main) sortirait sinon de la somme additive pour
+ *  le pool non-cumul SANS AUCUN SIGNE — la migration ferme la porte, ce filet ferme le silence. */
 function isAdditiveKind(kind: PassiveKind | undefined): boolean {
-  return (kind ?? 'intrinsèque') === 'intrinsèque';
+  return (normalizePassiveKind(kind) ?? 'intrinseque') === 'intrinseque';
 }
 
 /** `kind` DÉRIVÉ d'une op de séquelle (P0 : par type d'op ; la donnée pourra le surcharger plus tard). */
 function traumaOpKind(op: GameOp): PassiveKind {
   if (op.op === 'maxWeaponHands') return 'structurel';
   if (op.op === 'senseLoss') return 'sensoriel';
-  if (op.op === 'moveScale') return 'mobilité';
+  if (op.op === 'moveScale') return 'mobilite';
   return 'douleur'; // charMod / skillMod
 }
 
@@ -741,7 +745,9 @@ function traumaOpKind(op: GameOp): PassiveKind {
  *  `t` (la séquelle porteuse) n'est requis que pour les annulateurs liés au porteur (Insensible/prothèse) ;
  *  les sources SANS séquelle (maladie/faim — gating par Détermination seule) l'omettent. */
 function modSurvives(c: Combatant, kind: PassiveKind, t?: Trauma): boolean {
-  for (const canc of PASSIVE_CANCELLERS[kind]) {
+  // `?? []` : la table est TOTALE sur l'union courante — un `kind` d'une autre forme (valeur persistée
+  // ancienne arrivée par une porte non migrée) ne doit pas faire LEVER le collecteur passif tout entier.
+  for (const canc of PASSIVE_CANCELLERS[normalizePassiveKind(kind) ?? kind] ?? []) {
     if (canc === 'determination' && (c.activeEffects ?? []).some((e) => e.ignoreCritMods)) return false;
     if (canc === 'painless' && t && painlessIgnores(c, t)) return false;
     if (canc === 'prosthesis-all' && t && prosthesisCancels(c, t, 'all')) return false;
@@ -755,7 +761,7 @@ function modSurvives(c: Combatant, kind: PassiveKind, t?: Trauma): boolean {
  * les sources — POINT DE LECTURE pour effectiveChar/testValue/defenseValue/effectiveMovement/recomputeLoadout
  * (via les helpers ci-dessous), filtré par type d'op. Gating UNIFORME par `kind` (table `PASSIVE_CANCELLERS`) :
  *  - séquelle : `kind` dérivé du type d'op (`traumaOpKind`) ;
- *  - sort (ActiveEffect) : kind `intrinsèque` (expire, non annulable) ;
+ *  - sort (ActiveEffect) : kind `intrinseque` (expire, non annulable) ;
  *  - à terme trait/mutation/objet : poussent leurs `PassiveMod` (kind explicite) au point d'extension.
  * Le charMod de SORT reste lu par effectiveChar (e.char/e.bonus) → non émis ici (pas de double comptage).
  */
@@ -776,7 +782,9 @@ export function traumaPassiveMods(c: Combatant): PassiveMod[] {
     // `label` = LA séquelle porteuse (« Fracture à la jambe ») : elle porte son nom sur le Combattant,
     // donc une composante de jet issue d'elle n'a jamais à se replier sur sa famille. Aucun `src` : les
     // séquelles ne sont pas une catégorie du Codex — le NOM tient, le LIEN n'existe pas.
-    for (const o of traumaOps(t)) { const kind = t.passiveKind ?? traumaOpKind(o); if (modSurvives(c, kind, t)) out.push({ op: o, kind, label: t.label }); }
+    // `normalizePassiveKind` : le `kind` PERSISTÉ de la séquelle est ramené à la forme courante AVANT
+    // d'être gaté puis propagé (save d'avant `SAVE_VERSION` 25 — cf. `state/passiveKindMigration.ts`).
+    for (const o of traumaOps(t)) { const kind = normalizePassiveKind(t.passiveKind) ?? traumaOpKind(o); if (modSurvives(c, kind, t)) out.push({ op: o, kind, label: t.label }); }
   }
   return out;
 }
@@ -817,24 +825,24 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   for (const p of c.psychState ?? [])
     for (const op of findPsychologyById(p.type)?.passive ?? []) out.push({ op, kind: 'etat', src: { category: 'psychologies', id: p.type } });
   // Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié,
-  // `mutations.json`) émis tel quel en kind `intrinsèque`, COMME les traits. (L'armure naturelle apAll/
+  // `mutations.json`) émis tel quel en kind `intrinseque`, COMME les traits. (L'armure naturelle apAll/
   // apLocations est lue à part par recomputeLoadout.) Lu inline (la donnée `c.mutations` est sur le Combatant).
   // `src` = LA mutation émettrice : c'est elle qui NOMME la chip du jet (« −20 Visage inversé ») et
   // ouvre sa fiche — jamais la famille anonyme (`srcLabel`, patron des États).
   // `label` : une mutation MAISON (hors `mutations.json`) n'a pas de fiche — elle se nomme par son
   // libellé propre plutôt que par son id brut (arbitrage hors-catalogue, cf. `passivePartLine`).
-  for (const m of c.mutations ?? []) for (const op of m.passive ?? []) out.push({ op, kind: 'intrinsèque', src: { category: 'mutations', id: m.id }, label: m.label });
+  for (const m of c.mutations ?? []) for (const op of m.passive ?? []) out.push({ op, kind: 'intrinseque', src: { category: 'mutations', id: m.id }, label: m.label });
   // Qualités d'objet équipées (LDB 60), producteurs sans cycle (wearPenalty est une feuille) : objet Laid →
   // −Soc aux Tests sociaux (testMod char-qualifié) ; port d'armure → −N% par compétence (skillMod, intrinsèque).
   out.push(...wornSocialMods(c)); // une entrée PAR qualité émettrice (`src` = la qualité : « −10 Laid »)
   out.push(...qualityWearMods(c));
   // Objets PORTÉS (equipped) ou TENUS (arme du loadout actif `c.weapons`) : leur `passive: GameOp[]`
-  // (skillMod des Bésicles…) émis kind 'intrinsèque' — comme les mutations. Les objets RANGÉS (inside) ne
+  // (skillMod des Bésicles…) émis kind 'intrinseque' — comme les mutations. Les objets RANGÉS (inside) ne
   // comptent pas (ni equipped ni tenus). Lu par `passiveSkillSum` → `testValue`.
   for (const it of c.items ?? []) {
     const held = !!it.equipped || (c.weapons ?? []).some((w) => w.uid === it.uid);
     if (!held || !it.trappingId) continue;
-    for (const op of findTrappingById(it.trappingId)?.passive ?? []) out.push({ op, kind: 'intrinsèque', src: { category: 'trappings', id: it.trappingId }, label: it.label });
+    for (const op of findTrappingById(it.trappingId)?.passive ?? []) out.push({ op, kind: 'intrinseque', src: { category: 'trappings', id: it.trappingId }, label: it.label });
   }
   // Traits à modificateur de PROFIL appliqués en DIRECT (LDB 85 : Élite/Coriace/Brutal/Rapide… facultatifs,
   // statbloc d'éditeur, traits accordés) — leurs `PassiveMod` (vocab GameOp unifié, `TraitData.passive`) émis
@@ -842,7 +850,7 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   // `characteristics`/`movement`) → zéro double-compte. Les consommateurs (passiveCharSum/passiveMoveMod) somment.
   if (c.liveTraits?.length) out.push(...traitPassiveMods(c.liveTraits));
   // Talents POSSÉDÉS (LDB 10) : leur `passive: GameOp[]` (Coup puissant, Dur à cuire… ou Frénésie →
-  // grantFreeAttack) émis kind `intrinsèque`, par niveau — comme les traits. Disjoint → zéro double-compte.
+  // grantFreeAttack) émis kind `intrinseque`, par niveau — comme les traits. Disjoint → zéro double-compte.
   out.push(...talentPassiveMods(c));
   for (const e of c.activeEffects ?? []) {
     // `src`/`label` = L'EFFET émetteur : un `skillMod` de SORT doit s'annoncer au nom de son sort, pas
@@ -880,19 +888,19 @@ export function damageSBBonus(c: Combatant): number {
   return pmods(c, 'sbBonus').reduce((n, o) => n + o.amount, 0);
 }
 
-/** Σ des `charMod` ADDITIFS (mutation/qualité, kind `intrinsèque`) pour la Caractéristique `key` — sommés
+/** Σ des `charMod` ADDITIFS (mutation/qualité, kind `intrinseque`) pour la Caractéristique `key` — sommés
  *  dans la BASE par `effectiveChar` (un corps transformé n'est pas un bonus magique : hors pool non-cumul). */
 export function passiveCharSum(c: Combatant, key: CharKey): number {
   return pmods(c, 'charMod', true).filter((o) => o.char === key).reduce((s, o) => s + o.mod, 0);
 }
 
-/** Σ de TOUS les `moveMod` (modif ADDITIVE de Mouvement — mutation `intrinsèque` + sort `magique`), additifs
+/** Σ de TOUS les `moveMod` (modif ADDITIVE de Mouvement — mutation `intrinseque` + sort `magique`), additifs
  *  par nature quel que soit le kind. Lu par `effectiveMovement` (sommé avant tout demi-Mouvement). */
 export function passiveMoveMod(c: Combatant): number {
   return pmods(c, 'moveMod').reduce((s, o) => s + o.mod, 0);
 }
 
-/** Σ des `skillMod` ADDITIFS (mutation/qualité/port d'armure, kind `intrinsèque`) s'appliquant au Test `skill`
+/** Σ des `skillMod` ADDITIFS (mutation/qualité/port d'armure, kind `intrinseque`) s'appliquant au Test `skill`
  *  (skillId STABLE) — match EXACT par id. Lu par `testValue` ; distinct du POOL non-cumul des séquelles
  *  (`traumaSkillPenalty`). */
 export function passiveSkillParts(c: Combatant, skill?: string): PassiveMod[] {
@@ -905,7 +913,7 @@ export function passiveSkillSum(c: Combatant, skill?: string): number {
   return passiveSkillParts(c, skill).reduce((s, m) => s + (m.op as Extract<GameOp, { op: 'skillMod' }>).mod, 0);
 }
 
-/** Σ des modificateurs de TEST char-qualifiés (`testMod{char}`, kind `intrinsèque`) pour la Caractéristique
+/** Σ des modificateurs de TEST char-qualifiés (`testMod{char}`, kind `intrinseque`) pour la Caractéristique
  *  `charKey` — mutation (Visage inversé −20 Soc) + objet équipé (Laid). N'altère PAS la Caractéristique
  *  (≠ charMod, donc hors stats dérivées) : s'ajoute au seul Test. Lu par `testValue`. */
 export function passiveTestModParts(c: Combatant, charKey: CharKey): PassiveMod[] {
@@ -971,14 +979,14 @@ export function traumaCharPenaltiesLabeled(c: Combatant, key: CharKey): { kind: 
   return passiveMods(c)
     .filter((m) => m.op.op === 'charMod' && !isAdditiveKind(m.kind) && m.op.char === key && m.op.mod < 0)
     .map((m) => {
-      const kind = m.kind ?? 'intrinsèque';
+      const kind = m.kind ?? 'intrinseque';
       const mod = (m.op as Extract<GameOp, { op: 'charMod' }>).mod;
       const part = passivePartLine(m, mod);
       return { kind, label: part.label || (CHAR_PENALTY_KIND_LABEL[kind] ?? kind), mod, ref: part.ref };
     });
 }
 
-/** Pénalités de Caractéristique PASSIVES non-`intrinsèque` (valeurs négatives, pour le pool « pire pénalité ») :
+/** Pénalités de Caractéristique PASSIVES non-`intrinseque` (valeurs négatives, pour le pool « pire pénalité ») :
  *  traumatismes (LDB 18), maladies (LDB 20) et faim (LDB 18 l.343), toutes sources confondues via le collecteur.
  *  Le gating (Détermination/Insensible/prothèse selon le `kind`) est déjà appliqué par `passiveMods`. */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {

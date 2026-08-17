@@ -21,6 +21,7 @@ import { structureImmune } from '../engine/structures';
 import type { Pt } from './path';
 import type { BattleState } from './store';
 import { inBattleId } from './combatants';
+import { t } from '../i18n';
 
 /** Ce combattant chevauche-t-il une monture (= cavalier) ? */
 export const isRider = (c: Combatant): boolean => !!c.mountId;
@@ -248,7 +249,7 @@ export function sweepDismountDeaths(battle: BattleState, scene: Scene): string[]
   for (const mount of battle.combatants) {
     if (!mount.riderId || !isOutOfAction(mount)) continue;
     const rider = handleMountDeath(battle, scene, mount);
-    if (rider) lines.push(`${rider.label} est désarçonné — sa monture (${mount.label}) est hors de combat.`);
+    if (rider) lines.push(t('mount.unhorsed', { rider: rider.label, mount: mount.label }));
   }
   return lines;
 }
@@ -289,9 +290,9 @@ export function mountedAttackMods(battle: BattleState, attacker: Combatant, targ
   const out: ModLine[] = [];
   if (!target) return out;
   const attMount = mountOf(battle, attacker);
-  if (attMount && sizeGap(attMount.size, target.size) >= 1) out.push({ label: 'Combat monté (cible plus petite)', value: 20, famille: 'circonstance', ref: RULE_REF['combat-monte'] });
+  if (attMount && sizeGap(attMount.size, target.size) >= 1) out.push({ label: t('mount.modSmallerTarget'), value: 20, famille: 'circonstance', ref: RULE_REF['combat-monte'] });
   const tgtMount = mountOf(battle, target); // la cible est-elle un cavalier ? (on frappe alors le cavalier, pas la monture)
-  if (kind === 'melee' && tgtMount && sizeGap(attacker.size, tgtMount.size) <= -1) out.push({ label: 'Cibler le cavalier (plus petit que la monture)', value: -10, famille: 'circonstance', ref: RULE_REF['combat-monte'] });
+  if (kind === 'melee' && tgtMount && sizeGap(attacker.size, tgtMount.size) <= -1) out.push({ label: t('mount.modTargetRider'), value: -10, famille: 'circonstance', ref: RULE_REF['combat-monte'] });
   return out;
 }
 

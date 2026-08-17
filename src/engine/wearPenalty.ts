@@ -43,7 +43,7 @@ export function wornArmourPenalty(c: Combatant, skillId: string): number {
 /** Pénalités de port → ops `skillMod` skill-qualifiées (kind `intrinsèque`, Σ) pour le collecteur passif
  *  unifié, chacune ATTRIBUÉE à la pièce qui la porte (`src`) pour que le détail de jet la NOMME. */
 export function qualityWearMods(c: Combatant): PassiveMod[] {
-  return wearEntries(c).map((e) => ({ op: { op: 'skillMod' as const, skill: e.skill, mod: e.value }, kind: 'intrinsèque' as const, label: e.label, ...(e.src ? { src: e.src } : {}) }));
+  return wearEntries(c).map((e) => ({ op: { op: 'skillMod' as const, skill: e.skill, mod: e.value }, kind: 'intrinseque' as const, label: e.label, ...(e.src ? { src: e.src } : {}) }));
 }
 
 /** Modificateurs de Sociabilité (≤ 0) des objets ÉQUIPÉS de `c` (objet Laid −10, LDB 60 l.54), UN PAR
@@ -53,7 +53,7 @@ export function wornSocialMods(c: Combatant): PassiveMod[] {
   const out: PassiveMod[] = [];
   for (const piece of c.items ?? []) {
     if (!piece.equipped) continue;
-    for (const q of qualitySocMods(piece)) out.push({ op: { op: 'testMod', amount: q.amount, char: 'sociabilite' }, kind: 'intrinsèque', src: { category: 'qualities', id: q.id } });
+    for (const q of qualitySocMods(piece)) out.push({ op: { op: 'testMod', amount: q.amount, char: 'sociabilite' }, kind: 'intrinseque', src: { category: 'qualities', id: q.id } });
   }
   return out;
 }

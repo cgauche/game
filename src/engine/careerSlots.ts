@@ -33,6 +33,7 @@ import { findTalentById, findDomainById, findSpeciesById, advancementLabel, refL
 import { domainSpellsKnown } from './grimoire';
 import { splitLabel } from './statEntry';
 import { effectiveEntry } from './variants';
+import { t } from '../i18n';
 
 // `splitLabel` (split nom↔spécialisation) est la primitive UNIQUE de `statEntry` — ré-exportée ici
 // pour ses nombreux importeurs historiques (advancement/talentEffects/draft…). Plus de copie locale.
@@ -293,16 +294,16 @@ export function designateSlot(
   spec: string | undefined,
   allSlots: CareerSlot[],
 ): { ok: boolean; reason?: string } {
-  if (!slotCovers(slot, optionId, spec)) return { ok: false, reason: "ce choix n'est pas couvert par cet emplacement" };
+  if (!slotCovers(slot, optionId, spec)) return { ok: false, reason: t('slot.notCovered') };
   const key = refKey(optionId, spec);
   const designations = designationsFor(hero, career);
   if (designations[slot.key] && designations[slot.key] !== key) {
-    return { ok: false, reason: 'emplacement déjà désigné' };
+    return { ok: false, reason: t('slot.alreadyDesignated') };
   }
   const others = { ...designations };
   delete others[slot.key];
   if (takenRefs(allSlots, others).has(key)) {
-    return { ok: false, reason: 'déjà pris par un autre emplacement de cette carrière' };
+    return { ok: false, reason: t('slot.takenByOther') };
   }
   hero.careerSlotChoices = {
     ...(hero.careerSlotChoices ?? {}),
@@ -327,8 +328,8 @@ export function talentMaxById(hero: Combatant, talentId: string): number | null 
 
 /** Affichage FR du Maxi d'un talent (Compendium), DÉRIVÉ de la donnée structurée — plus de chaîne stockée. */
 export function talentMaxLabel(max: number | { bonusOf: CharKey } | null): string {
-  if (max == null) return 'Aucun';
-  return typeof max === 'number' ? String(max) : `Bonus de ${CHAR_LABELS[max.bonusOf]}`;
+  if (max == null) return t('slot.maxNone');
+  return typeof max === 'number' ? String(max) : t('slot.maxBonusOf', { char: CHAR_LABELS[max.bonusOf] });
 }
 
 /** Maxi par LIBELLÉ — bord authoring/tests : résout l'id (nom seul) puis délègue. */
@@ -374,19 +375,19 @@ export function arcaneDomainGate(hero: Combatant, domainId: string): { ok: boole
   const held = heldArcaneDomains(hero);
   if (held.normal.includes(domainId) || held.dark.includes(domainId)) return { ok: true };
   if (findDomainById(domainId)?.dark) {
-    if (held.dark.length > 0) return { ok: false, reason: 'un seul Domaine sombre autorisé en plus des autres Domaines' };
-    if (held.normal.length === 0) return { ok: false, reason: 'un Domaine sombre ne s\'apprend qu\'en plus d\'un autre Domaine (LDB 46 l.177)' };
+    if (held.dark.length > 0) return { ok: false, reason: t('slot.darkOnlyOne') };
+    if (held.normal.length === 0) return { ok: false, reason: t('slot.darkNeedsNormal') };
     return { ok: true };
   }
   const cap = arcaneDomainCap(hero);
-  if (held.normal.length >= cap) return { ok: false, reason: `plafond de Domaines magiques atteint (${cap})` };
+  if (held.normal.length >= cap) return { ok: false, reason: t('slot.domainCap', { cap }) };
   if (held.normal.length > 0) {
     const prev = held.normal[held.normal.length - 1];
     const advances = hero.skills.find((s) => s.skillId === 'focalisation' && (s.spec ?? '') === prev)?.advances ?? 0;
     const known = domainSpellsKnown(hero, prev);
     if (advances < 20 || known < 8) {
       const prevLabel = findDomainById(prev)?.label ?? prev;
-      return { ok: false, reason: `Domaine précédent (${prevLabel}) pas assez maîtrisé : ${advances}/20 Améliorations Focalisation, ${known}/8 Sorts` };
+      return { ok: false, reason: t('slot.prevDomain', { domain: prevLabel, advances, known }) };
     }
   }
   return { ok: true };

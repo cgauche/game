@@ -546,7 +546,7 @@
     "id": "cicatrice-spectaculaire",
     "label": "Cicatrice impressionnante",
     "cosmetic": true,
-    "passiveKind": "intrinsèque",
+    "passiveKind": "intrinseque",
     "ops": [
       {
         "op": "skillDRBonus",
@@ -567,7 +567,7 @@
     "label": "Nez cassé (cicatrice)",
     "cosmetic": true,
     "needsSurgery": true,
-    "passiveKind": "intrinsèque",
+    "passiveKind": "intrinseque",
     "ops": [
       {
         "op": "skillDRBonus",

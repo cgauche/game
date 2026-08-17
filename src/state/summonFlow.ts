@@ -23,6 +23,7 @@ import { grantTrait } from '../engine/grantedTraits';
 import { resolveFormula, slBonus, type GameOp } from '../engine/ops';
 import { isOutOfAction } from '../engine/conditions';
 import { RNG, defaultRNG } from '../engine/dice';
+import { t } from '../i18n';
 
 /** Descripteur d'invocation = la charge utile de l'op `summon` du Flow (donnée éditable du sort) ;
  *  le discriminant `op` est superflu pour cette fonction dédiée → l'op complète s'assigne quand même. */
@@ -105,10 +106,10 @@ export function applySummon(get: Get, set: SetFn, caster: Combatant, summon: Sum
     placed.push(c);
   }
   set({ battle: { ...battle } });
-  if (!placed.length) return [`${caster.label} ne trouve aucune case libre pour invoquer ${summon.ref}.`];
+  if (!placed.length) return [t('summon.noRoom', { name: caster.label, ref: summon.ref })];
   const name = placed[0].label;
-  const tag = hostile ? ' — hostile, hors de son contrôle !' : kind === 'hero' ? ' (alliés)' : '';
-  return [`${caster.label} invoque ${placed.length} × ${name}${tag}.`];
+  const tag = hostile ? t('summon.fragHostile') : kind === 'hero' ? t('summon.fragAllies') : '';
+  return [t('summon.summons', { name: caster.label, n: placed.length, label: name, tag })];
 }
 
 /**
@@ -131,5 +132,5 @@ export function purgeExpiredSummons(battle: BattleState, round: number): string[
   battle.combatants = battle.combatants.filter((c) => !goneIds.has(c.id));
   battle.order = battle.order.filter((id) => !goneIds.has(id));
   if (battle.baseOrder) battle.baseOrder = battle.baseOrder.filter((id) => !goneIds.has(id));
-  return gone.map((c) => `${c.label} se dissipe (${c.summon!.label ?? 'invocation'}).`);
+  return gone.map((c) => t('summon.dispels', { name: c.label, label: c.summon!.label ?? t('summon.fallbackLabel') }));
 }

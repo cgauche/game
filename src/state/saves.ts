@@ -36,6 +36,7 @@ import { add as moneyAdd, toBrass, toMoney, type Money } from '../engine/money';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
+import { remapPassiveKindDeep } from './passiveKindMigration';
 import type { CodexFocus } from './codexFocus';
 import type { PendingCascade, RevealEntry } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
@@ -45,7 +46,7 @@ import { pursuitBands, PURSUIT_POLICY_DEFAUT } from './pursuitFlow';
 import { stepReady } from './cascade';
 import { combatEndBands } from './combatEndBands';
 
-export const SAVE_VERSION = 24;
+export const SAVE_VERSION = 25;
 
 export interface SaveMeta {
   version: number;
@@ -372,6 +373,12 @@ export const MIGRATIONS: MigrationMap = {
     loadStateOntoWeapon(data);
     return { ...doc, version: 24, data };
   },
+  // v24→v25 (#1318 V8c₅) : deux `PassiveKind` PERSISTÉS (`Trauma.passiveKind`) passent de l'id accentué
+  // à l'id ASCII (`mobilité`→`mobilite`, `intrinsèque`→`intrinseque`) — le reste de la famille l'était
+  // déjà. Sans ce remap, la table TOTALE `PASSIVE_CANCELLERS` rend `undefined` pour l'ancienne valeur et
+  // le collecteur passif LÈVE au rechargement (`passiveMods` → `effectiveChar`/`testValue`) : une save
+  // portant une cicatrice de Critique guéri crashait. Primitive : `passiveKindMigration.ts`.
+  24: (doc) => ({ ...doc, version: 25, data: remapPassiveKindDeep(doc.data) as Record<string, unknown> }),
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus

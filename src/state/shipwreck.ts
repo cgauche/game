@@ -32,9 +32,15 @@ import type { CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import { voyageStakeRef } from '../data';
 import { traceLineOf } from '../engine/traceLine';
-import { dataLabel } from '../data';
+import { dataLabel, refLabel } from '../data';
 import { t } from '../i18n';
+import type { PlayerText } from '../i18n/playerText';
 import { stepDetail } from './rollSeam';
+
+/** Libellé du Test de survie : la Compétence vient de `skills.json` (jamais bakée), sa difficulté de
+ *  la policy `sea-shipwreck-swim`. UN foyer pour les DEUX chemins (inline sans pilote / applier de cascade). */
+const swimTestLabel = (diff: Difficulty): PlayerText =>
+  t('step.sujetPrecision', { sujet: refLabel('skills', { id: 'natation' }), precision: DIFFICULTY_LABELS[diff] });
 
 /** Lieu le plus proche d'un point de la carte (distance euclidienne sur `pos`). */
 function nearestPlaceTo(map: WorldMap, pos: { x: number; y: number }): MapPlace | undefined {
@@ -74,14 +80,14 @@ function shorePlace(get: Get): MapPlace | undefined {
  */
 export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] } = {}): void {
   const vessel = get().vessel;
-  const shipName = vessel?.label ?? 'Le navire';
+  const shipName = vessel?.label ?? t('wreck.shipFallback');
   const diff = rule('sea-shipwreck-swim') as Difficulty;
   const shore = shorePlace(get);
   const aboardSet = opts.aboardIds ? new Set(opts.aboardIds) : null;
   const isAboard = (h: Combatant) => (aboardSet ? aboardSet.has(h.id) : !h.dead);
 
   const journalMark = get().journal.length;
-  const opening: string[] = [`${shipName} sombre corps et biens (MDG 13 l.674).`];
+  const opening: string[] = [t('wreck.sinks', { ship: shipName })];
   // Cascade Possession (#618 SOCLE POSSESSIONS) : `CampaignVessel` et `Possession{nature:'navire'}`
   // n'ont pas de `uid` partagé — la clé de jointure est `vehicleId` (`NavalPossessionState` miroite déjà
   // `CampaignVessel`, `engine/possession.ts`). Navire trouvé au registre → sa Possession et toute
@@ -98,7 +104,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
           return p;
         }),
       });
-      opening.push(`${possessionLabel(sunk)} et sa cargaison embarquée sombrent avec elle.`);
+      opening.push(t('wreck.cargoSinks', { label: possessionLabel(sunk) }));
     }
   }
   const swimmerIds: string[] = [];
@@ -110,7 +116,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
     // `outOfRencontre` seul (l'éjection du COMBAT que ce naufrage vient de résoudre) n'incapacite pas,
     // donc écarté du prédicat ; dead/inconscient/Mort Subite restent des voies RÉELLES d'incapacité.
     if (isOutOfAction({ ...h, outOfRencontre: false })) {
-      opening.push(`${h.label} — inconscient dans les flots : emporté sans pouvoir nager (noyé, LDB 18 l.344).`);
+      opening.push(t('wreck.unconscious', { name: h.label }));
       return { ...h, dead: true };
     }
     swimmerIds.push(h.id);
@@ -119,7 +125,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
   // Navire + cargaison sombrent avec la coque (#244, règle 7) : purgé IMMÉDIATEMENT, indépendant de
   // l'issue des jets de Natation (le navire est perdu dès qu'il coule, pas seulement s'il y a des noyés).
   set({ party, vessel: null, travelPlan: null, travelRecap: null, worldMapOpen: false });
-  get().log(['— NAUFRAGE —', ...opening]);
+  get().log([t('wreck.banner'), ...opening]);
 
   if (!swimmerIds.length) { emitShipwreckLines(get, finishShipwreck(get, set, shore, [], journalMark)); return; }
 
@@ -134,12 +140,12 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
       // Aucune rangée nulle part sur ce chemin (repli sans pilote humain, aucune cascade démarrée) —
       // le journal est la SEULE surface, et sa ligne se DÉRIVE (`traceLineOf`) comme toute ligne de dé.
       const value = testValue(h, 'natation', 'force');
-      const t = rollSansPilote(get, h, value, diff, rng);
+      const tr = rollSansPilote(get, h, value, diff, rng);
       lines.push(traceLineOf({
-        who: h.label, label: `Natation (${DIFFICULTY_LABELS[diff]})`, roll: t.roll, target: t.target, success: t.success,
-        issue: t.success ? 'rejoint la surface et nage vers la côte' : 'emporté par les flots (noyé, LDB 18 l.344)',
+        who: h.label, label: swimTestLabel(diff), roll: tr.roll, target: tr.target, success: tr.success,
+        issue: tr.success ? t('wreck.issueSwims') : t('wreck.issueDrowns'),
       }));
-      if (t.success) { h.outOfRencontre = false; h.exitReason = undefined; } else h.dead = true;
+      if (tr.success) { h.outOfRencontre = false; h.exitReason = undefined; } else h.dead = true;
     }
     set({ party: [...get().party] });
     emitShipwreckLines(get, [...lines, ...finishShipwreck(get, set, shore, swimmerIds, journalMark)]);
@@ -159,14 +165,14 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
     const result = human ? null : (() => { const t = rollSansPilote(get, h, value, diff, rng); return { roll: t.roll, target: t.target, sl: t.sl, success: t.success }; })();
     return {
       id: `shipwreck-${h.id}`, kind: 'shipwreckSwim', actorId: h.id, icon: 'nautical/swim',
-      label: stepDetail(dataLabel(h.label), t('step.natation')), rollLabel: 'Natation', difficulty: diff,
+      label: stepDetail(dataLabel(h.label), t('step.natation')), rollLabel: refLabel('skills', { id: 'natation' }), difficulty: diff,
       ...rollStep({ actor: h, test: { skill: 'natation', char: 'force' }, difficulty: diff }),
       stake: voyageStakeRef('shipwreckSwim'),
       result,
       meta,
     };
   });
-  startCascade(get, set, { title: 'Naufrage', icon: 'nautical/swim', purpose: 'test', steps });
+  startCascade(get, set, { title: t('wreck.title'), icon: 'nautical/swim', purpose: 'test', steps });
 }
 
 /** Journalise (réellement, `get().log`) une liste de lignes accumulées AVANT qu'elles n'existent dans
@@ -188,11 +194,11 @@ function finishShipwreck(get: Get, set: Set, shore: MapPlace | undefined, swimme
     .map((h) => h.label);
   const lines: string[] = [];
   if (shore) lines.push(survivors.length
-    ? `Les rescapés (${survivors.join(', ')}) s'échouent à ${shore.label}.`
-    : 'Nul rescapé ne touche terre.');
+    ? t('wreck.survivors', { names: survivors.join(', '), place: shore.label })
+    : t('wreck.noSurvivor'));
   // Échouage : transition AVANT la modale (transitionTo purge `document` via resetFields('scene')).
   if (survivors.length && shore) get().transitionTo(shore.scene, shore.entry);
-  set({ document: { title: 'Naufrage', text: [...get().journal.slice(journalMark), ...lines].join('\n') } });
+  set({ document: { title: t('wreck.title'), text: [...get().journal.slice(journalMark), ...lines].join('\n') } });
   // Aucun survivant → défaite hors combat (écran unique `checkPartyWiped`).
   checkPartyWiped(get, set);
   return lines;
@@ -205,7 +211,10 @@ registerCascadeApplier('shipwreckSwim', (get, set, step, hero, ctx) => {
   const diff = rule('sea-shipwreck-swim') as Difficulty;
   const success = step.result.success;
   // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
-  const line = `${hero.label} — Natation (${DIFFICULTY_LABELS[diff]}) : ${success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`;
+  const line = t('wreck.applierLine', {
+    name: hero.label, test: swimTestLabel(diff),
+    issue: success ? t('wreck.issueSwims') : t('wreck.issueDrowns'),
+  });
   if (success) { hero.outOfRencontre = false; hero.exitReason = undefined; } else hero.dead = true;
   set({ party: [...get().party] });
   if (ctx.index !== ctx.steps.length - 1) return { consequences: freeCons([line]) };

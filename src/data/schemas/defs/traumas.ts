@@ -28,7 +28,7 @@ export const schema = z.array(
     cosmetic: z.boolean().optional(),
     amputation: z.boolean().optional(),
     passiveKind: z
-      .enum(['douleur', 'mobilité', 'structurel', 'sensoriel', 'maladie', 'faim', 'magique', 'etat', 'ivresse', 'intrinsèque'])
+      .enum(['douleur', 'mobilite', 'structurel', 'sensoriel', 'maladie', 'faim', 'magique', 'etat', 'ivresse', 'intrinseque'])
       .optional(),
     maison: z.string().optional(),
     source: sourceRefSchema.optional(),

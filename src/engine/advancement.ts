@@ -8,6 +8,7 @@
 import { Combatant, CharKey } from './types';
 import { CareerSlot, parseRefKey } from './careerSlots';
 import advancementCostsJson from '../data/advancementCosts.json';
+import { t } from '../i18n';
 
 /**
  * Détection « in-carrière » (LDB 07 l.91) : une Augmentation est au coût standard si la
@@ -58,7 +59,7 @@ export interface AdvanceResult {
 export function buyCharAdvance(hero: Combatant, char: CharKey, inCareer = true): AdvanceResult {
   const already = hero.charAdvances?.[char] ?? 0;
   const cost = advanceCost(already, 'characteristic', inCareer);
-  if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
+  if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: t('adv.notEnoughXp') };
   hero.xp = (hero.xp ?? 0) - cost;
   hero.charAdvances = { ...(hero.charAdvances ?? {}), [char]: already + 1 };
   hero.characteristics[char] += 1; // chaque Augmentation ajoute +1 (LDB 07 l.47)
@@ -69,9 +70,9 @@ export function buyCharAdvance(hero: Combatant, char: CharKey, inCareer = true):
  *  Spécialisation est une Compétence distincte (LDB 09 l.42). */
 export function buySkillAdvance(hero: Combatant, skillId: string, spec: string | undefined, inCareer = true, discount = 0): AdvanceResult {
   const skill = hero.skills.find((s) => s.skillId === skillId && (s.spec ?? '') === (spec ?? ''));
-  if (!skill) return { ok: false, cost: 0, reason: 'Compétence inconnue' };
+  if (!skill) return { ok: false, cost: 0, reason: t('adv.unknownSkill') };
   const cost = advanceCost(skill.advances, 'skill', inCareer, discount);
-  if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
+  if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: t('adv.notEnoughXp') };
   hero.xp = (hero.xp ?? 0) - cost;
   skill.advances += 1; // chaque Augmentation ajoute +1 au niveau de Compétence (LDB 07 l.80)
   return { ok: true, cost };
@@ -85,7 +86,7 @@ export function buyTalent(hero: Combatant, talentId: string, spec?: string): Adv
   const existing = hero.talents.find((t) => t.talentId === talentId && (t.spec ?? '') === (spec ?? ''));
   const already = existing?.times ?? 0;
   const cost = talentCost(already);
-  if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: 'PX insuffisants' };
+  if ((hero.xp ?? 0) < cost) return { ok: false, cost, reason: t('adv.notEnoughXp') };
   hero.xp = (hero.xp ?? 0) - cost;
   if (existing) existing.times += 1;
   else hero.talents.push({ talentId, spec, times: 1 });
@@ -189,24 +190,24 @@ export function validateCareerChange(
   ctx: CareerChangeContext,
 ): { ok: boolean; cost: number; reason?: string } {
   const base = careerChangeCost(ctx.completed);
-  if (!ctx.targetLevelExists) return { ok: false, cost: base, reason: 'niveau de carrière inconnu' };
+  if (!ctx.targetLevelExists) return { ok: false, cost: base, reason: t('adv.unknownLevel') };
   const cur = hero.careerLevel ?? 1;
   if (newCareer === (hero.career ?? '')) {
-    if (newLevel === cur) return { ok: false, cost: base, reason: 'déjà à ce niveau' };
+    if (newLevel === cur) return { ok: false, cost: base, reason: t('adv.sameLevel') };
     if (newLevel < cur) return { ok: true, cost: base };
     if (newLevel === cur + 1) {
-      if (!ctx.completed) return { ok: false, cost: base, reason: 'niveau actuel non complété' };
+      if (!ctx.completed) return { ok: false, cost: base, reason: t('adv.levelNotCompleted') };
       return { ok: true, cost: base };
     }
     // Niveau supérieur non-adjacent : saut réservé au MJ (l.140), coût 100/200 comme un changement normal.
     if (ctx.gmJump) return { ok: true, cost: base };
-    return { ok: false, cost: base, reason: 'saut de niveau impossible (option MJ requise)' };
+    return { ok: false, cost: base, reason: t('adv.jumpNeedsGm') };
   }
   if (newLevel === 1) return { ok: true, cost: base + (ctx.sameClass ? 0 : 100) };
   // MÊME Niveau d'une autre Carrière de la Classe (l.148) : exige l'accord du MJ, la complétion et la
   // même Classe ; coût 100 PX (base complété).
   if (ctx.gmJump && ctx.sameClass && ctx.completed && newLevel === cur) return { ok: true, cost: base };
-  return { ok: false, cost: base, reason: 'nouvelle carrière : 1er niveau uniquement' };
+  return { ok: false, cost: base, reason: t('adv.newCareerFirstLevel') };
 }
 
 /**
@@ -225,7 +226,7 @@ export function mentorBlocks(inCareer: boolean, policyOn: boolean, hasMentor: bo
 export function changeCareer(hero: Combatant, newCareer: string, newLevel: number, ctx: CareerChangeContext): AdvanceResult {
   const v = validateCareerChange(hero, newCareer, newLevel, ctx);
   if (!v.ok) return { ok: false, cost: v.cost, reason: v.reason };
-  if ((hero.xp ?? 0) < v.cost) return { ok: false, cost: v.cost, reason: 'PX insuffisants' };
+  if ((hero.xp ?? 0) < v.cost) return { ok: false, cost: v.cost, reason: t('adv.notEnoughXp') };
   hero.xp = (hero.xp ?? 0) - v.cost;
   // « N'a jamais appartenu » (AA 12 l.5) : la Carrière QUITTÉE (et la nouvelle) rejoignent l'historique
   // CUMULÉ, jamais purgé — `everBelongedClasses` (`engine/activities.ts`).

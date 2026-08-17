@@ -25,6 +25,15 @@ import { shipLocationLabel } from '../engine/shipCritical';
 import { riverLocLabel } from './riverVoyageFlow';
 import { diseaseLabel, refLabel, findCareerById } from '../data';
 import type { PlayerText } from '../i18n/playerText';
+import { ammoFamilyLabel } from '../engine/items';
+import { spellMoney } from '../engine/money';
+import { qualityClassLabel } from '../engine/qualities/craftEconomy';
+import { structureCollapseLog } from '../engine/structureCritical';
+import { traitArgSkeleton } from '../engine/traits/dispatch';
+import { validateCareerChange } from '../engine/advancement';
+import { talentMaxLabel } from '../engine/careerSlots';
+import { KEYBINDINGS, bindingLabel, keySectionLabel, keyLabel } from './keybindings';
+import type { Combatant } from '../engine/types';
 
 /** Un site migré : ce que le flux écrivait AVANT, ce que le catalogue rend APRÈS. */
 interface Site {
@@ -666,7 +675,176 @@ const V8C4: Site[] = [
   },
 ];
 
-const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT, ...V8C1, ...V8C2, ...V8C3, ...V8C4];
+/* ── V8c₅ : la TRANCHE FINALE — les dix-huit derniers fichiers gelés, plus les deux nommés aux limites
+ * du garde (`advancement`/`careerSlots`, dont les `reason` remontent à l'écran par `pf.refused`). Les
+ * oracles montent la PRODUCTION partout où elle est appelable (`ammoFamilyLabel`, `spellMoney`,
+ * `qualityClassLabel`, `structureCollapseLog`, `traitArgSkeleton`, `talentMaxLabel`, `keyLabel`,
+ * `bindingLabel`, `keySectionLabel`), sinon le gabarit exact du site. UN oracle porte le texte CORRIGÉ :
+ * `keyLabel('NumpadEnter')` rendait « Pavé Enter » (l'entrée nommée « Entrée (pavé) » était
+ * inatteignable derrière le préfixe `Numpad`) — la parité avec un bug n'est pas un abri. */
+
+const HEROS5 = 'Sigrid';
+
+const V8C5: Site[] = [
+  {
+    site: 'drunkenness.ts:91 — échec de Résistance à l’alcool (plafond en fragment, U+2212)',
+    avant: `${HEROS5} tient mal l'alcool (échec ${3}) : −10 aux CC/CT/Ag/Dex/Int${' (plafond −30)'}.`,
+    apres: t('drunk.failedTest', { name: HEROS5, n: 3, cap: t('drunk.fragCap') }),
+  },
+  {
+    site: 'drunkenness.ts:146 — gueule de bois (2ᵉ Test du dessoûlage)',
+    avant: `${HEROS5} a la gueule de bois : 1 Exténué pendant ${4} h.`,
+    apres: t('drunk.hangover', { name: HEROS5, h: 4 }),
+  },
+  {
+    site: 'items.ts:959 — munition d’une pièce d’artillerie (fonction de PRODUCTION)',
+    avant: 'Boulet et poudre',
+    apres: ammoFamilyLabel('armes-de-siege'),
+  },
+  {
+    site: 'money.ts:93-96 — épellation d’un montant mixte (PRODUCTION, pluriels portés par la valeur)',
+    avant: "2 couronnes d'or, 1 pistole d'argent, 5 sous de cuivre",
+    apres: spellMoney({ gold: 2, silver: 1, brass: 5 }),
+  },
+  {
+    site: 'craftEconomy.ts:62 — classe de qualité (l’id est la logique, le libellé une clé)',
+    avant: 'Haute Qualité',
+    apres: qualityClassLabel('haute'),
+  },
+  {
+    site: 'social.ts:127 — modificateur de Statut en mendicité (LDB 08 l.92)',
+    avant: `Statut (${'mendicité '}${'Bronze<Argent'}) ${'+'}${10}`,
+    apres: t('social.statusMod', { beg: t('social.fragBegging'), side: 'Bronze<Argent', sign: '+', mod: 10 }),
+  },
+  {
+    site: 'structureCritical.ts:47 — Critique de Structure (Blessures supplémentaires en fragment)',
+    avant: `Critique de Structure : ${'Mur lézardé'}${` — ${2} Blessure(s)`}${''}.`,
+    apres: t('structCrit.line', { label: 'Mur lézardé', suite: t('structCrit.fragWounds', { n: 2 }), collapse: '' }),
+  },
+  {
+    site: 'structureCritical.ts:57 — Effondrement → brèche (fonction de PRODUCTION)',
+    avant: "La palissade s'effondre — une brèche s'ouvre.",
+    apres: structureCollapseLog('La palissade'),
+  },
+  {
+    site: 'tavernGame.ts:248 — manche `opposed` perdue (l’issue est une clé, le jeu vient de la donnée)',
+    avant: `${'Bras de fer'} : ${2} DR contre ${4} → ${'perdu'}.`,
+    apres: t('tavern.opposedLog', { jeu: 'Bras de fer', mien: 2, sien: 4, issue: t('tavern.issueLost') }),
+  },
+  {
+    site: 'tavernGame.ts:253 — partie `extended` (pluriel de manches porté par la valeur)',
+    avant: `${'Bras de fer'} : ${7} DR cumulés contre ${5} en ${3} manche${'s'}.`,
+    apres: t('tavern.extendedLog', { jeu: 'Bras de fer', mien: 7, sien: 5, rounds: 3, s: 's' }),
+  },
+  {
+    site: 'traits/dispatch.ts:136 — squelette d’argument d’un Trait (fonction de PRODUCTION)',
+    avant: '(Indice) (Type de dégâts) (Portée)',
+    apres: traitArgSkeleton({ indice: { label: 'Indice' }, specsSource: 'damageTypes', range: true })!,
+  },
+  {
+    // La Compétence lancée vient de `skills.json` : le gabarit ne la bake plus (règle de `mt.testOf`).
+    site: 'travel.ts:199 — libellé du Test de marche forcée (Compétence lue à la donnée)',
+    avant: 'marche forcée : Test de Résistance',
+    apres: t('trv.forcedMarchLabel', { skill: refLabel('skills', { id: 'resistance' }) }),
+  },
+  {
+    site: 'travel.ts:186 — échec de marche forcée, porteur SURCHARGÉ (fragment)',
+    avant: `${HEROS5} — marche forcée : ÉCHEC, +${2} Exténué${' (surchargé)'}.`,
+    apres: t('trv.forcedMarchFail', { name: HEROS5, n: 2, over: t('trv.fragOverloaded') }),
+  },
+  {
+    site: 'combat/roundHooks.ts:325 — « Se fatiguer » (LDB 16 l.97, apostrophe DROITE au site)',
+    avant: `${HEROS5} s'épuise (effort soutenu) : Exténué.`,
+    apres: t('turn.exhausted', { name: HEROS5 }),
+  },
+  {
+    site: 'keybindings.ts:191 — libellé d’un raccourci à l’écran Options (PRODUCTION)',
+    avant: 'Curseur : valider',
+    apres: bindingLabel(KEYBINDINGS.find((b) => b.id === 'cursor-commit')!),
+  },
+  {
+    site: 'keybindings.ts:218 — libellé PARAMÉTRÉ d’un slot de barre d’action (PRODUCTION)',
+    avant: 'Capacité 3 de la barre d’action',
+    apres: bindingLabel(KEYBINDINGS.find((b) => b.id === 'hotbar-3')!),
+  },
+  {
+    site: 'keybindings.ts:28 — section « Barre d’action » de l’écran Options (PRODUCTION)',
+    avant: "Barre d'action",
+    apres: keySectionLabel('hotbar'),
+  },
+  {
+    site: 'keybindings.ts:266 — touche du pavé numérique (PRODUCTION)',
+    avant: 'Pavé 5',
+    apres: keyLabel('Numpad5'),
+  },
+  {
+    // CORRIGÉ : le préfixe `Numpad` était testé AVANT la table nommée → « Pavé Enter » à l'écran.
+    site: 'keybindings.ts:256 — Entrée du pavé numérique (entrée nommée redevenue atteignable)',
+    avant: 'Entrée (pavé)',
+    apres: keyLabel('NumpadEnter'),
+  },
+  {
+    site: 'mount.ts:251 — monture hors de combat : le cavalier est désarçonné (LDB 14 l.221)',
+    avant: `${HEROS5} est désarçonné — sa monture (${'Destrier'}) est hors de combat.`,
+    apres: t('mount.unhorsed', { rider: HEROS5, mount: 'Destrier' }),
+  },
+  {
+    site: 'rollFlowFactory.ts:430 — relance OFFERTE (repli sur « Bénédiction de Chance »)',
+    avant: `${HEROS5} relance sans dépenser de Chance (${'Bénédiction de Chance'}).`,
+    apres: t('roll.freeReroll', { name: HEROS5, src: t('roll.blessingFallback') }),
+  },
+  {
+    site: 'shipManeuver.ts:239 — manœuvre ratée sans barreur nommé (repli « L’équipage »)',
+    avant: `${"L'équipage"} rate la manœuvre de ${'La Mouette'} (DR ${-2}) — le cap tient.`,
+    apres: t('shipManv.failLine', { helmsman: t('shipManv.crewFallback'), ship: 'La Mouette', dr: -2 }),
+  },
+  {
+    site: 'shipwreck.ts:84 — la coque coule corps et biens (MDG 13 l.674)',
+    avant: `${'La Mouette'} sombre corps et biens (MDG 13 l.674).`,
+    apres: t('wreck.sinks', { ship: 'La Mouette' }),
+  },
+  {
+    // La Compétence (Natation) vient de `skills.json`, la difficulté de la policy : le gabarit ne bake ni l'une ni l'autre.
+    site: 'shipwreck.ts:208 — issue de Natation d’un naufragé (applier de cascade)',
+    avant: `${HEROS5} — Natation (${'Complexe (−10)'}) : ${'emporté par les flots (noyé, LDB 18 l.344)'}.`,
+    apres: t('wreck.applierLine', {
+      name: HEROS5,
+      test: t('step.sujetPrecision', { sujet: refLabel('skills', { id: 'natation' }), precision: t('difficulty.complexe') }),
+      issue: t('wreck.issueDrowns'),
+    }),
+  },
+  {
+    site: 'summonFlow.ts:111 — invocation HOSTILE (le tag est un fragment)',
+    avant: `${HEROS5} invoque ${2} × ${'Démon'}${' — hostile, hors de son contrôle !'}.`,
+    apres: t('summon.summons', { name: HEROS5, n: 2, label: 'Démon', tag: t('summon.fragHostile') }),
+  },
+  {
+    site: 'advancement.ts:61 — refus d’Augmentation faute de PX (remonte par `pf.refused`)',
+    avant: 'PX insuffisants',
+    apres: t('adv.notEnoughXp'),
+  },
+  {
+    site: 'advancement.ts:209 — refus de changement de carrière (PRODUCTION)',
+    avant: 'nouvelle carrière : 1er niveau uniquement',
+    apres: validateCareerChange(
+      { career: 'roturier', careerLevel: 1, xp: 1000 } as Combatant,
+      'chasseur-de-primes', 3,
+      { completed: true, targetLevelExists: true, sameClass: false, gmJump: false },
+    ).reason!,
+  },
+  {
+    site: 'careerSlots.ts:331 — Maxi d’un Talent « Bonus de X » (PRODUCTION)',
+    avant: 'Bonus de Force',
+    apres: talentMaxLabel({ bonusOf: 'force' }),
+  },
+  {
+    site: 'careerSlots.ts:389 — Domaine précédent pas assez maîtrisé (LDB 46 l.177)',
+    avant: `Domaine précédent (${'Feu'}) pas assez maîtrisé : ${12}/20 Améliorations Focalisation, ${3}/8 Sorts`,
+    apres: t('slot.prevDomain', { domain: 'Feu', advances: 12, known: 3 }),
+  },
+];
+
+const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT, ...V8C1, ...V8C2, ...V8C3, ...V8C4, ...V8C5];
 
 describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue est à PARITÉ D’OCTET', () => {
   it.each(TOUS)('$site', ({ avant, apres }) => {
@@ -682,7 +860,8 @@ describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue es
     expect(V8C2.length, 'échantillons des cinq fichiers passés MIGRÉS par V8c₂ (effets / store / voyage terrestre / fluvial / maladies)').toBe(23);
     expect(V8C3.length, 'échantillons des fichiers passés MIGRÉS par V8c₃ (mer / guérison / repos / nuit / équipage / séquelles)').toBe(19);
     expect(V8C4.length, 'échantillons des QUATORZE fichiers de la longue traîne passés MIGRÉS par V8c₄').toBe(19);
-    expect(TOUS.length).toBe(105);
+    expect(V8C5.length, 'échantillons de la TRANCHE FINALE (18 fichiers gelés + advancement/careerSlots)').toBe(29);
+    expect(TOUS.length).toBe(134);
   });
 
   it('MUTATION : l’oracle est SENSIBLE — un tiret cadratin changé en tiret court diverge', () => {

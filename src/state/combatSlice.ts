@@ -3501,7 +3501,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const b = get().battle;
         const n = dissipateSpell(b ? b.combatants : get().party, pd.spellId, pd.spellCasterId);
         if (b) set({ battle: { ...b, combatants: [...b.combatants] } });
-        logLines.push(t('cs.dispelDone', { spell: pd.label, extra: n > 1 ? ` (${n} cibles libérées)` : '' }));
+        logLines.push(t('cs.dispelDone', { spell: pd.label, extra: n > 1 ? t('cs.fragTargetsFreed', { n }) : '' }));
       } else {
         caster.dispel = { spellId: pd.spellId, spellCasterId: pd.spellCasterId, total };
       }

@@ -50,11 +50,11 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
   let base = c.characteristics[key];
   // Mutations de Corruption (LDB 19) : modifs PERMANENTES de la caractéristique (« +5 Force », « -10
   // Sociabilité »…) — s'ajoutent à la BASE (hors pool non-cumul : un corps transformé n'est pas un bonus
-  // magique), via le collecteur passif unifié (kind `intrinsèque`, sommé).
+  // magique), via le collecteur passif unifié (kind `intrinseque`, sommé).
   base += passiveCharSum(c, key);
   // Pénalités PASSIVES non-cumul (pool « pire pénalité », LDB l.168) du collecteur unifié : traumatisme
   // (LDB 18), maladie (LDB 20 : fièvre −10 Physique/Social) et faim (LDB 18 l.343 : −10 F/E puis −10 ailleurs)
-  // — toutes en charMod non-`intrinsèque`, gating (Détermination…) déjà appliqué par le collecteur.
+  // — toutes en charMod non-`intrinseque`, gating (Détermination…) déjà appliqué par le collecteur.
   const mods = volatileCharEntries(c, key).map((e) => e.value);
   if (mods.length === 0) return base;
   const bestBonus = Math.max(0, ...mods.filter((m) => m > 0));

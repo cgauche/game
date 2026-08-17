@@ -16,6 +16,7 @@ import { d100, type RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
 import type { GameOp } from './ops';
 import { STRUCTURE_CRITICALS, type StructureCritEntry } from '../data/structureCriticals';
+import { t } from '../i18n';
 
 export interface StructureCriticalResolved {
   entry: StructureCritEntry;
@@ -44,7 +45,11 @@ export function rollStructureCritical(rng: RNG = defaultRNG, forcedRoll?: number
   // la table de Critiques, pas un coup d'arme. Rien pour une Triviale (0) ni un Effondrement (destruction directe).
   const ops: GameOp[] = !entry.destroyed && extra > 0 ? [{ op: 'wounds', amount: extra }] : [];
   const log = [
-    `Critique de Structure : ${entry.label}${entry.trivial ? ' (Triviale)' : extra ? ` — ${extra} Blessure(s)` : ''}${entry.destroyed ? ' — Effondrement !' : ''}.`,
+    t('structCrit.line', {
+      label: entry.label,
+      suite: entry.trivial ? t('structCrit.fragTrivial') : extra ? t('structCrit.fragWounds', { n: extra }) : '',
+      collapse: entry.destroyed ? t('structCrit.fragCollapse') : '',
+    }),
   ];
   return { entry, id: entry.id, label: entry.label, roll, ops, destroyed: !!entry.destroyed, note: entry.note, log };
 }
@@ -53,5 +58,5 @@ export function rollStructureCritical(rng: RNG = defaultRNG, forcedRoll?: number
  *  couche MOTEUR (comme les `log` de `shipCritical`) pour que la narration ne soit pas un littéral FR brut
  *  dans `state/combatFlow` (garde-fou i18n). */
 export function structureCollapseLog(name: string): string {
-  return `${name} s'effondre — une brèche s'ouvre.`;
+  return t('structCrit.collapse', { name });
 }

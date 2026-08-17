@@ -399,6 +399,11 @@ export const fr = {
   'turn.actGateOptAction': 'L’Action (perdre le Mouvement)',
   'turn.actGateOptMove': 'Le Mouvement (perdre l’Action)',
   'turn.actGateKeepAction': '{name} garde son Action — le Mouvement est perdu.',
+  // #1318 V8c₅ — « Se fatiguer » (règle optionnelle, LDB 16 l.97), `state/combat/roundHooks.ts`.
+  'turn.exhausted': "{name} s'épuise (effort soutenu) : Exténué.",
+  'turn.effortHeld': '{name} tient bon malgré l’effort.',
+  // Surnombre (LDB 11 l.60, Maîtrise du combat LDB 10) — `state/combat/roundHooks.ts`.
+  'turn.outnumbered': '{name} est surpassé en nombre ({foes} c.1) : −1 Avantage.',
   'turn.frenzyEnd': '{name} sort de Frénésie (Exténué).',
   'turn.frenzyEnter': '{name} entre en Frénésie !',
   'turn.terrified': '{name} est terrifié par {foe} : {brise} Brisé.',
@@ -2053,4 +2058,207 @@ export const fr = {
   'port.dumped': '{enc} Enc de {label} bradés ({pct} % du prix de base) : {money}.',
   'port.hired': "{count} {role} embauché(s) à {wage}/semaine — solde hebdomadaire de l'équipage : {total}.",
   'port.dismissed': "{count} {role} débarqué(s) — solde hebdomadaire de l'équipage : {total}.",
+
+  // ── #1318 V8c₅ (8ᵉ forme) — FRAGMENTS et REPLIS passés en PARAMÈTRE de `t()` : ils s'affichaient tels
+  // quels (« pas compté » n'a jamais voulu dire « au catalogue »). Sites : `engine/ops.ts`,
+  // `state/combatFlow.ts`, `state/combatSlice.ts`.
+  'op.srcFallback': 'Effet',
+  'op.srcSpell': 'sort',
+  'op.srcSequela': 'séquelle',
+  'op.condAll': "tout l'État",
+  'op.condSome': '{n} État',
+  'op.resFate': 'Destin',
+  'op.resFortune': 'Chance',
+  'op.fragSpellDuration': ' (le temps du Sort)',
+  'op.reverseAnyTest': 'un Test concernant sa cible',
+  'op.attrWounds': 'Blessures',
+  'op.attrFortune': 'Chance',
+  'op.attrResolve': 'Détermination',
+  'op.mutationPermanent': 'mutation permanente',
+  'op.mutationForDuration': 'pour la durée',
+  'op.senseEye': 'un œil',
+  'op.senseEar': 'une oreille',
+  'cf.talentBeni': 'Béni',
+  'cf.talentInvocation': 'Invocation',
+  'cs.fragTargetsFreed': ' ({n} cibles libérées)',
+
+  // ── #1318 V8c₅ — NAUFRAGE en mer (`state/shipwreck.ts`, `wreck.*`, MDG 13 l.674 / LDB 09 l.372 /
+  // LDB 18 l.344). La Compétence (Natation) vient de `skills.json` : jamais bakée au gabarit.
+  'wreck.shipFallback': 'Le navire',
+  'wreck.sinks': '{ship} sombre corps et biens (MDG 13 l.674).',
+  'wreck.cargoSinks': '{label} et sa cargaison embarquée sombrent avec elle.',
+  'wreck.unconscious': '{name} — inconscient dans les flots : emporté sans pouvoir nager (noyé, LDB 18 l.344).',
+  'wreck.banner': '— NAUFRAGE —',
+  'wreck.issueSwims': 'rejoint la surface et nage vers la côte',
+  'wreck.issueDrowns': 'emporté par les flots (noyé, LDB 18 l.344)',
+  'wreck.applierLine': '{name} — {test} : {issue}.',
+  'wreck.survivors': "Les rescapés ({names}) s'échouent à {place}.",
+  'wreck.noSurvivor': 'Nul rescapé ne touche terre.',
+  'wreck.title': 'Naufrage',
+
+  // ── #1318 V8c₅ — RACCOURCIS CLAVIER (`state/keybindings.ts`, `key.*`) : sections et libellés de
+  // l'écran Options (remap), plus les noms de touches lisibles. Le registre porte des CLÉS
+  // (`labelKey`), résolues à l'AFFICHAGE — le tableau est construit au chargement du module.
+  'key.section.pov': 'Vue subjective (POV)',
+  'key.section.camera': 'Caméra',
+  'key.section.combat': 'Combat',
+  'key.section.curseur': 'Curseur de combat',
+  'key.section.hotbar': "Barre d'action",
+  'key.section.exploration': 'Exploration',
+  'key.section.systeme': 'Système',
+  'key.povForward': 'POV : avancer',
+  'key.povBack': 'POV : reculer',
+  'key.povStrafeL': 'POV : pas de côté à gauche',
+  'key.povStrafeR': 'POV : pas de côté à droite',
+  'key.povTurnL': 'POV : pivoter le regard à gauche',
+  'key.povTurnR': 'POV : pivoter le regard à droite',
+  'key.togglePov': 'Basculer la vue subjective (POV)',
+  'key.camLeft': 'Caméra : tourner à gauche',
+  'key.camRight': 'Caméra : tourner à droite',
+  'key.camRecenter': 'Caméra : recentrer sur l’actif',
+  'key.roundStart': 'Commencer le round',
+  'key.preemptArm': 'Tir rapide : viser (interruption de début de Round)',
+  'key.cursorUp': 'Curseur : haut',
+  'key.cursorDown': 'Curseur : bas',
+  'key.cursorLeft': 'Curseur : gauche',
+  'key.cursorRight': 'Curseur : droite',
+  'key.targetNext': 'Cibler la cible valide suivante',
+  'key.targetPrev': 'Cibler la cible valide précédente',
+  'key.cursorCommit': 'Curseur : valider',
+  'key.cursorCancel': 'Curseur : annuler',
+  'key.endTurn': 'Fin du tour',
+  'key.clearPreview': 'Annuler l’aperçu de déplacement',
+  'key.hotbarSlot': 'Capacité {n} de la barre d’action',
+  'key.toggleMenu': 'Ouvrir le menu système',
+  'key.exploreUp': 'Exploration : pas vers le haut',
+  'key.exploreDown': 'Exploration : pas vers le bas',
+  'key.exploreLeft': 'Exploration : pas vers la gauche',
+  'key.exploreRight': 'Exploration : pas vers la droite',
+  'key.named.space': 'Espace',
+  'key.named.enter': 'Entrée',
+  'key.named.numpadEnter': 'Entrée (pavé)',
+  'key.named.escape': 'Échap',
+  'key.named.numpad': 'Pavé {n}',
+
+  // ── #1318 V8c₅ — MONTURE hors de combat (`state/mount.ts`, LDB 14 l.221).
+  'mount.unhorsed': '{rider} est désarçonné — sa monture ({mount}) est hors de combat.',
+  // Modificateurs d'attaque du Combat monté (LDB 14 l.217/219) — composantes NOMMÉES de la modale d'attaque.
+  'mount.modSmallerTarget': 'Combat monté (cible plus petite)',
+  'mount.modTargetRider': 'Cibler le cavalier (plus petit que la monture)',
+
+  // ── #1318 V8c₅ — INVOCATIONS (`state/summonFlow.ts`) : placement, arrivée, dissipation.
+  'summon.noRoom': '{name} ne trouve aucune case libre pour invoquer {ref}.',
+  'summon.summons': '{name} invoque {n} × {label}{tag}.',
+  'summon.fragHostile': ' — hostile, hors de son contrôle !',
+  'summon.fragAllies': ' (alliés)',
+  'summon.dispels': '{name} se dissipe ({label}).',
+  'summon.fallbackLabel': 'invocation',
+
+  // ── #1318 V8c₅ — SOCLE DU JET (`state/rollFlowFactory.ts`) : relance offerte (LDB 12/41) et dé fixé.
+  'roll.freeReroll': '{name} relance sans dépenser de Chance ({src}).',
+  'roll.blessingFallback': 'Bénédiction de Chance',
+  'roll.dieFixedBy': '{name} : dé fixé à {n}.',
+  'roll.dieFixed': 'Dé fixé à {n}.',
+
+  // ── #1318 V8c₅ — MANŒUVRE DE NAVIRE ratée (`state/shipManeuver.ts`, MDG 13).
+  'shipManv.failLine': '{helmsman} rate la manœuvre de {ship} (DR {dr}) — le cap tient.',
+  'shipManv.crewFallback': "L'équipage",
+
+  // ── #1318 V8c₅ — IVRESSE (`engine/drunkenness.ts`, `drunk.*`, LDB 09 l.471-487).
+  'drunk.failedTest': "{name} tient mal l'alcool (échec {n}) : −10 aux CC/CT/Ag/Dex/Int{cap}.",
+  'drunk.fragCap': ' (plafond −30)',
+  'drunk.isDrunk': '{name} est IVRE ! {desc}',
+  'drunk.soberUp': '{name} dessoûle (effets dissipés après {h} h).',
+  'drunk.hangover': '{name} a la gueule de bois : 1 Exténué pendant {h} h.',
+
+  // ── #1318 V8c₅ — MUNITION attendue par une arme à distance (`engine/items.ts`, `ammo.*`, hint
+  // d'achat/chargement quand carquois et coffre sont vides ; LDB 62 l.150/174-175, MDG 12 p.101).
+  'ammo.artillerie': 'Boulet et poudre',
+  'ammo.poudreIngenierie': 'Balles et poudre',
+  'ammo.arc': 'Flèches',
+  'ammo.arbalete': 'Carreaux',
+  'ammo.fronde': 'Billes',
+  'ammo.generic': 'munitions',
+
+  // ── #1318 V8c₅ — ÉPELLATION de la monnaie (`engine/money.ts`, `money.*`, LDB 57 l.25/31/33). Le
+  // pluriel est porté par l'appelant (`{s}`), comme `op.corruptionAdd`.
+  'money.gold': "{n} couronne{s} d'or",
+  'money.silver': "{n} pistole{s} d'argent",
+  'money.brass': '{n} sou{s} de cuivre',
+  'money.none': 'aucune monnaie',
+
+  // ── #1318 V8c₅ — CLASSE DE QUALITÉ d'un objet artisanal (`engine/qualities/craftEconomy.ts`,
+  // `craft.*`, LDB 60 l.7/11/42). La fonction rend désormais un id STABLE ; ces clés en sont l'affichage.
+  'craft.classHaute': 'Haute Qualité',
+  'craft.classQualite': 'Qualité',
+  'craft.classDefectueuse': 'Défectueuse',
+  'craft.classStandard': 'Standard',
+
+  // ── #1318 V8c₅ — MODIFICATEUR DE STATUT en Charme social (`engine/social.ts`, LDB 08 l.88-92).
+  'social.statusMod': 'Statut ({beg}{side}) {sign}{mod}',
+  'social.fragBegging': 'mendicité ',
+
+  // ── #1318 V8c₅ — CRITIQUE DE STRUCTURE de siège (`engine/structureCritical.ts`, AA 10 p.120-121).
+  'structCrit.line': 'Critique de Structure : {label}{suite}{collapse}.',
+  'structCrit.fragTrivial': ' (Triviale)',
+  'structCrit.fragWounds': ' — {n} Blessure(s)',
+  'structCrit.fragCollapse': ' — Effondrement !',
+  'structCrit.collapse': "{name} s'effondre — une brèche s'ouvre.",
+
+  // ── #1318 V8c₅ — JEUX DE TAVERNE : issue d'une manche/partie (`engine/tavernGame.ts`, NADJ 16
+  // l.11/34). Le nom du jeu vient d'`activities.json` (donnée), l'issue est une clé.
+  'tavern.opposedLog': '{jeu} : {mien} DR contre {sien} → {issue}.',
+  'tavern.extendedLog': '{jeu} : {mien} DR cumulés contre {sien} en {rounds} manche{s}.',
+  'tavern.issueWon': 'gagné',
+  'tavern.issueLost': 'perdu',
+  'tavern.issueTie': 'égalité',
+
+  // ── #1318 V8c₅ — SQUELETTE D'ARGUMENT d'un Trait (`engine/traits/dispatch.ts`) : le nom du POOL
+  // attendu (type d'argument), résolu à l'APPEL — la carte porte des clés, jamais des chaînes gelées.
+  'specSrc.weaponGroup': "Groupe d'arme",
+  'specSrc.wind': 'Vent',
+  'specSrc.domain': 'Domaine',
+  'specSrc.cult': 'Culte',
+  'specSrc.shanty': 'Chanson',
+  'specSrc.target': 'Cible',
+  'specSrc.disease': 'Maladie',
+  'specSrc.size': 'Taille',
+  'specSrc.mutation': 'Mutation',
+  'specSrc.breathType': 'Type de souffle',
+  'specSrc.damageType': 'Type de dégâts',
+  'specSrc.weapon': 'Arme',
+  'traitArg.range': 'Portée',
+  'traitArg.paren': '({what})',
+
+  // ── #1318 V8c₅ — VOYAGE À PIED : marche forcée et fatigue d'Encombrement (`engine/travel.ts`,
+  // `trv.*`, LDB 51 l.195 / LDB 61 p.295). La Compétence vient de `skills.json` (jamais bakée).
+  'trv.forcedMarchOk': "{name} — marche forcée : il tient l'allure.",
+  'trv.forcedMarchFail': '{name} — marche forcée : ÉCHEC, +{n} Exténué{over}.',
+  'trv.fragOverloaded': ' (surchargé)',
+  'trv.forcedMarchLabel': 'marche forcée : Test de {skill}',
+  'trv.issueHold': "il tient l'allure",
+  'trv.issueFail': 'ÉCHEC, +{n} Exténué{over}',
+  'trv.fatigue': '{name} termine la journée fourbu sous sa charge : +{n} Exténué (Encombrement).',
+
+  // ── #1318 V8c₅ — AVANCEMENT : raisons de refus (`engine/advancement.ts`, `adv.*`, LDB 07
+  // l.89/135-148). Ces `reason` remontent à l'écran via `pf.refused`/`pf.careerRefused`.
+  'adv.notEnoughXp': 'PX insuffisants',
+  'adv.unknownSkill': 'Compétence inconnue',
+  'adv.unknownLevel': 'niveau de carrière inconnu',
+  'adv.sameLevel': 'déjà à ce niveau',
+  'adv.levelNotCompleted': 'niveau actuel non complété',
+  'adv.jumpNeedsGm': 'saut de niveau impossible (option MJ requise)',
+  'adv.newCareerFirstLevel': 'nouvelle carrière : 1er niveau uniquement',
+
+  // ── #1318 V8c₅ — EMPLACEMENTS DE CARRIÈRE et Domaines d'Arcane (`engine/careerSlots.ts`, `slot.*`,
+  // LDB 10 « Schéma des Talents » / LDB 46 l.177, repris VDM 02 l.190-192). `reason` → `pf.designateRefused`.
+  'slot.notCovered': "ce choix n'est pas couvert par cet emplacement",
+  'slot.alreadyDesignated': 'emplacement déjà désigné',
+  'slot.takenByOther': 'déjà pris par un autre emplacement de cette carrière',
+  'slot.maxNone': 'Aucun',
+  'slot.maxBonusOf': 'Bonus de {char}',
+  'slot.darkOnlyOne': 'un seul Domaine sombre autorisé en plus des autres Domaines',
+  'slot.darkNeedsNormal': "un Domaine sombre ne s'apprend qu'en plus d'un autre Domaine (LDB 46 l.177)",
+  'slot.domainCap': 'plafond de Domaines magiques atteint ({cap})',
+  'slot.prevDomain': 'Domaine précédent ({domain}) pas assez maîtrisé : {advances}/20 Améliorations Focalisation, {known}/8 Sorts',
 } as const;

@@ -68,7 +68,7 @@ export function effectiveMovement(c: Combatant): number {
   const gate = conditionGating(c).movement;
   if (p.immobile || gate === 'none') return 0;
   // `moveMod` ADDITIF du collecteur passif unifié : mutation PERMANENTE (Pattes d'animaux +1 / Corpulent /
-  // Court sur pattes −1, kind `intrinsèque`) + sort actif (kind `magique`) — sommés avant tout demi-Mouvement.
+  // Court sur pattes −1, kind `intrinseque`) + sort actif (kind `magique`) — sommés avant tout demi-Mouvement.
   // HORS de son terrain (op `offTerrainMod`, gaté par `c.offTerrain`) : le M est REMPLACÉ (Créature marine
   // « son M tombe à 1 » MDG 16 p.140 ; Aquatique → 0, MSRC 15 p.90) — les gates/demi-Mouvement s'appliquent dessus.
   const mv = offTerrainMoveCap(c) ?? Math.max(0, c.movement + passiveMoveMod(c));

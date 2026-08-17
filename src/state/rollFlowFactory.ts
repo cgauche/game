@@ -33,6 +33,7 @@ import { bumpSL, evaluateTest, maxForcedRoll, forcedTR, bestForcedRoll, type Tes
 import { applyReverse, reverseAvailable as engineReverseAvailable, reversePreview as engineReversePreview } from '../engine/reverseToken';
 import { clampFixedRoll } from '../engine/fixedDie';
 import { TestOutcome } from '../engine/testOutcome';
+import { t } from '../i18n';
 
 /**
  * FENÊTRES D'INFLUENCE — prédicats PURS, écrits UNE fois, à côté des ops qui les exécutent
@@ -427,7 +428,7 @@ function opReroll<P extends PendingBase>(
   if (!patch) return;
   if (free) {
     const label = consumeActiveFlag(actor, 'freeReroll');
-    get().log(`${actor.label} relance sans dépenser de Chance (${label ?? 'Bénédiction de Chance'}).`);
+    get().log(t('roll.freeReroll', { name: actor.label, src: label ?? t('roll.blessingFallback') }));
   } else {
     actor.fortune = (actor.fortune ?? 0) - 1;
   }
@@ -714,7 +715,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       // vit le dé — jamais la valeur saisie (le résolveur peut en appliquer une autre).
       const fresh = handlers.slotOf(get, pid);
       const applied = fresh ? handlers.picker?.(fresh, actor)?.roll : undefined;
-      if (applied != null) get().log(actor ? `${actor.label} : dé fixé à ${applied}.` : `Dé fixé à ${applied}.`);
+      if (applied != null) get().log(actor ? t('roll.dieFixedBy', { name: actor.label, n: applied }) : t('roll.dieFixed', { n: applied }));
     },
     resist(get, set, pid) {
       if (!spec.caps?.resist) return;

@@ -24,6 +24,8 @@ import { fileURLToPath } from 'node:url';
  *   - `<arr>.push(`…``                  (poussée d'une LIGNE de journal — string nu en littéral)
  *   - `castRefused(…, `…``              (refus d'incantation journalisé)
  *   - `return `…``                      (issue renvoyée par un describer pur, ex. flowOutcomes)
+ *   - `t('cle', { x: '…' })`            (PARAMÈTRE d'un appel de catalogue — interpolé, donc AFFICHÉ :
+ *                                        un `t()` autour ne met pas la prose au catalogue, 8ᵉ forme V8c₅)
  *
  * NON couvert volontairement : les tableaux `outcome: […]` / `options: […]` / `label:`/`prompt:`
  * d'étape de MODALE (surface UI distincte, Phase D) — leurs chaînes ne sont PAS du journal.
@@ -41,6 +43,11 @@ const SCAN_DIRS = ['src/engine', 'src/state'];
  *  hors-jeu. */
 const DEV_ONLY = new Set([
   'src/state/devtools.ts', // outillage `__wfrp` de la recette navigateur (docs/recette-navigateur.md)
+  // #1318 V8c₅ : export ASCII d'une scène — sa SEULE surface est la modale d'export de l'ÉDITEUR
+  // (`ui/editor/Editor.tsx`, consommateur unique) et sa sortie est un FICHIER SOURCE `.ts` commenté,
+  // recollé à la main par l'auteur de map (« `bind` (marqueurs → poses) … non réémis »). Une 2ᵉ langue
+  // ne traduit pas du code d'authoring : même nature que `devtools.ts`, dispensé au même titre.
+  'src/state/sceneToAscii.ts',
 ]);
 
 /** Fichiers dont la narration de JOURNAL est entièrement passée au catalogue (Phase C) — baseline
@@ -83,26 +90,41 @@ const MIGRATED = new Set([
   'src/state/seaActivities.ts', // #1318 V8c₄ : `sact.*`
   'src/state/portFlow.ts', // #1318 V8c₄ : `port.*`
   'src/state/partyFlow.ts', // #1318 V8c₄ : `pf.*`
+  'src/engine/drunkenness.ts', // #1318 V8c₅ : `drunk.*`
+  'src/engine/items.ts', // #1318 V8c₅ : `ammo.*` (munition attendue par une arme à distance)
+  'src/engine/money.ts', // #1318 V8c₅ : `money.*` (épellation d'un montant)
+  'src/engine/qualities/craftEconomy.ts', // #1318 V8c₅ : `craft.*` (la classe est un id, le libellé une clé)
+  'src/engine/social.ts', // #1318 V8c₅ : `social.*`
+  'src/engine/structureCritical.ts', // #1318 V8c₅ : `structCrit.*`
+  'src/engine/tavernGame.ts', // #1318 V8c₅ : `tavern.*` (issue d'une manche/partie)
+  'src/engine/traits/dispatch.ts', // #1318 V8c₅ : `specSrc.*`/`traitArg.*` (carte de CLÉS, résolue à l'appel)
+  'src/engine/trauma.ts', // #1318 V8c₅ : les deux `PassiveKind` accentués sont devenus des ids ASCII
+  'src/engine/travel.ts', // #1318 V8c₅ : `trv.*`
+  'src/engine/advancement.ts', // #1318 V8c₅ : `adv.*` (les `reason` de refus, invisibles aux 7 formes)
+  'src/engine/careerSlots.ts', // #1318 V8c₅ : `slot.*` (idem, + le Maxi de Talent)
+  'src/state/combat/roundHooks.ts', // #1318 V8c₅ : `turn.exhausted`
+  'src/state/keybindings.ts', // #1318 V8c₅ : `key.*` (le registre porte des CLÉS, `bindingLabel`)
+  'src/state/mount.ts', // #1318 V8c₅ : `mount.*`
+  'src/state/rollFlowFactory.ts', // #1318 V8c₅ : `roll.*`
+  'src/state/shipManeuver.ts', // #1318 V8c₅ : `shipManv.*`
+  'src/state/shipwreck.ts', // #1318 V8c₅ : `wreck.*`
+  'src/state/summonFlow.ts', // #1318 V8c₅ : `summon.*`
 ]);
 
 /** Stock GELÉ par fichier (recensement #410, 2026-07-13) — littéraux FR de narration hors catalogue,
  *  Phase C à résorber. Toute HAUSSE échoue (régression) ; toute BAISSE doit ABAISSER la baseline. Les
  *  fichiers MIGRÉS (ci-dessus) n'y figurent PAS : leur invariant est ZÉRO.
  *
- *  GEL COURANT #1318 V8c₄ (2026-08-17) — `GEL_TOTAL` littéraux sur `GEL_FICHIERS` fichiers, tels que
- *  les voit le prédicat de francité ci-dessous (`isFrench`, qui compte aussi le FR SANS accent), le
- *  lecteur de littéraux (`readString` honore l'ÉCHAPPEMENT) et les SEPT formes d'émission. Ces entrées
- *  ne sont pas des dettes nouvelles : ce sont des littéraux de toujours, qu'une mesure plus fine rend
- *  visibles. UN mouvement dans ce lot, −71 sur 32 → 18 fichiers : les QUATORZE de la tranche 4 passés
- *  MIGRÉS (`provisions` 10, `partyFlow` 7, `mountTravel`/`shipCritical`/`spellRangeFormat`/
- *  `corruptionFlow`/`seaActivities`/`upkeep` 5 chacun, `exposure`/`suffocation`/`medicFlow`/`netFlow`/
- *  `portFlow`/`travelPostes` 4 chacun). Aucune forme nouvelle : la 7ᵉ (V8c₂) suffisait encore à ce
- *  périmètre — ce que le lot a trouvé en plus (les sites INVISIBLES au prédicat : cartes de libellés
- *  de module, `label`/`rollLabel`/`actionLabel` d'étape, retours de fonction) l'a été à la PASSE
- *  HUMAINE, et ces sites-là n'entraient dans aucun compte, ni avant ni après.
+ *  GEL COURANT #1318 V8c₅ (2026-08-17) — `GEL_TOTAL` littéraux sur `GEL_FICHIERS` fichiers : la table
+ *  est VIDE. Les DIX-HUIT derniers fichiers gelés sont passés MIGRÉS (invariant ZÉRO), et les DEUX que
+ *  la tranche 4 avait nommés aux limites (`advancement`/`careerSlots`, du texte joueur qui ne pesait
+ *  aucun point de gel) avec eux. Ce que le prédicat sait voir sur ces HUIT formes est ÉTEINT ;
+ *  `src/state/sceneToAscii.ts` sort par la porte de la NATURE (`DEV_ONLY`, sortie d'outil d'authoring),
+ *  pas par une migration.
  *  Les DEUX chiffres ci-dessus sont des CONSTANTES assertées contre la table (`GEL_TOTAL`/`GEL_FICHIERS`,
  *  dernier test du fichier) : ce commentaire a menti une fois (92 annoncés pour 103 tenus), il ne le
- *  peut plus sans rougir.
+ *  peut plus sans rougir. Une entrée qui REPARAÎTRAIT ici serait une régression, pas une dette : la
+ *  table n'est plus un stock à résorber mais un cliquet à zéro.
  *  `state/combatFlow.ts` reste MIGRÉ (invariant ZÉRO) : les littéraux que ce prédicat y a révélés sont
  *  au catalogue (`cf.gangwayCollapse`/`cf.spellNotFound`/`cf.cannotCast`/`cf.cannotPray`/`cf.oups`,
  *  plus `cf.outOfAction`/`cf.noLineOfSight`, et les DEUX que la 7ᵉ forme y a trouvés —
@@ -111,35 +133,13 @@ const MIGRATED = new Set([
 /** Le GEL ANNONCÉ au commentaire ci-dessus, en CONSTANTES — assertées contre la table réelle par le
  *  dernier test du fichier. Un commentaire de gel n'est pas une mesure : celui-ci a annoncé 92 pour
  *  103 tenus (V8c₃, rattrapé par le juge). Désormais, un chiffre faux rougit. */
-const GEL_TOTAL = 32;
-const GEL_FICHIERS = 18;
+const GEL_TOTAL = 0;
+const GEL_FICHIERS = 0;
 
 const BASELINE: Record<string, number> = {
-  'src/engine/drunkenness.ts': 2,
-  'src/engine/items.ts': 3,
-  'src/engine/money.ts': 3,
-  'src/engine/qualities/craftEconomy.ts': 3,
-  'src/engine/social.ts': 1,
-  'src/engine/structureCritical.ts': 1,
-  'src/engine/tavernGame.ts': 2,
-  'src/engine/traits/dispatch.ts': 1,
-  // NON-MIGRABLE DÉLIBÉRÉ (V8c₃) : le SEUL littéral restant est `return 'mobilité';` (`traumaOpKind`) —
-  // une valeur du type `PassiveKind`, donc un ID accentué, pas une phrase de journal. Le prédicat le
-  // compte par son accent ; le passer au catalogue serait faux (c'est du typage), et le maquiller en
-  // table pour le soustraire au détecteur serait pire (fausse décroissance). Il reste DIT, à 1.
-  'src/engine/trauma.ts': 1,
-  'src/engine/travel.ts': 1,
-  'src/state/combat/roundHooks.ts': 1,
-  // `src/state/devtools.ts` : aucune baseline — DISPENSÉ par nature (`DEV_ONLY`, #1117).
-  'src/state/keybindings.ts': 1,
-  'src/state/mount.ts': 1,
-  'src/state/rollFlowFactory.ts': 3,
-  // Légendes de l'export ASCII, semées à la déclaration : ce ne sont pas des lignes de JOURNAL, mais
-  // elles se gèlent au même titre — à passer au catalogue avec leur surface.
-  'src/state/sceneToAscii.ts': 3,
-  'src/state/shipManeuver.ts': 1,
-  'src/state/shipwreck.ts': 3,
-  'src/state/summonFlow.ts': 1,
+  // VIDE (#1318 V8c₅) : plus un seul fichier de `src/engine`+`src/state` ne porte de littéral FR sur
+  // les huit formes d'émission. `src/state/devtools.ts` et `src/state/sceneToAscii.ts` n'y figurent
+  // pas non plus — DISPENSÉS par nature (`DEV_ONLY`), jamais comptés.
 };
 
 /**
@@ -167,16 +167,17 @@ const BASELINE: Record<string, number> = {
  *   - un mot-outil FR dans une chaîne TECHNIQUE la ferait compter (aucun cas mesuré sur le stock
  *     courant : 0 faux positif sur les 67 littéraux nouvellement captés) ;
  *   - le périmètre reste celui des FORMES d'émission ci-dessus — un littéral posé ailleurs (champ
- *     `reason:`, retour d'objet) n'est vu par aucune marque, faute d'être scanné. DEUX fichiers le
- *     démontrent, NOMMÉS ici parce qu'ils portent du texte JOUEUR (leurs `reason` remontent à l'écran
- *     via `pf.refused`/`pf.designateRefused`) sans peser un seul point de gel (V8c₄, comptés à la
- *     main) : `src/engine/advancement.ts` ~10 `reason:` FR (« PX insuffisants », « Compétence
- *     inconnue », « niveau de carrière inconnu »…) et `src/engine/careerSlots.ts` ~4 (« emplacement
- *     déjà désigné », « un seul Domaine sombre autorisé… »). Ils partent à la tranche suivante.
+ *     `reason:`, retour d'objet) n'est vu par aucune marque, faute d'être scanné. DEUX fichiers l'ont
+ *     démontré, parce qu'ils portaient du texte JOUEUR (leurs `reason` remontent à l'écran via
+ *     `pf.refused`/`pf.designateRefused`) sans peser un seul point de gel : `src/engine/advancement.ts`
+ *     (« PX insuffisants », « Compétence inconnue »…) et `src/engine/careerSlots.ts` (« emplacement déjà
+ *     désigné », « un seul Domaine sombre autorisé… »). V8c₅ les a migrés et posés MIGRÉS — leur
+ *     invariant ZÉRO ne prouve toujours que ce que ces huit formes savent voir.
  *
- * CE QUE `GEL_TOTAL` EST, DONC : la COUVERTURE de ce prédicat sur ces sept formes — jamais la dette
- * totale de FR-hors-catalogue de `src/engine`+`src/state`. Un gel à 0 signifierait « plus rien de ce
- * que je sais voir », pas « plus un littéral ».
+ * CE QUE `GEL_TOTAL` EST, DONC : la COUVERTURE de ce prédicat sur ces huit formes — jamais la dette
+ * totale de FR-hors-catalogue de `src/engine`+`src/state`. Le stock COUVERT est éteint (`GEL_TOTAL` 0,
+ * V8c₅) : cela dit « plus rien de ce que je sais voir », pas « plus un littéral » — les formes
+ * ci-dessus restent hors de portée dans l'absolu. Toute réapparition dans ce périmètre ROUGIT.
  */
 const ACCENT = /[éèêëàâäçôöûùîïœÉÈÊÀÂÇÔÛ]/;
 const FR_QUOTES = /[«»]/;
@@ -312,6 +313,48 @@ function returnArrayLiterals(body: string): string[] {
   return out;
 }
 
+/**
+ * 8ᵉ FORME (#1318 V8c₅) : littéral FR passé en PARAMÈTRE de `t()`/`tr()`. Un appel de catalogue n'est
+ * pas un blanc-seing — `t('op.attrMod', { attr: 'Blessures' })` INTERPOLE ce littéral et l'affiche tel
+ * quel. Le commentaire des 6ᵉ/7ᵉ formes disait « un littéral sous appel imbriqué reste du catalogue » :
+ * c'était faux, et cette forme le mesure. Ce que les formes 6/7 constatent vraiment, c'est que ce
+ * littéral-là n'est PAS une ligne de journal ; il est désormais compté ICI, à sa place.
+ *
+ * Lecture : pour CHAQUE appel, le PREMIER littéral est la CLÉ (jamais du texte), les suivants à
+ * profondeur ≤ 1 sont les paramètres (`{ … }` ouvre un niveau). La borne évite le double comptage d'un
+ * `t()` imbriqué dans un `t()` : ses paramètres appartiennent à SON appel, compté par sa propre
+ * occurrence. Limite héritée du prédicat : un repli d'UN SEUL MOT (« Destin », « Effet ») reste
+ * invisible (indiscernable d'un id) — la passe humaine de V8c₅ en a migré 9, sans qu'aucun compte ne
+ * les ait jamais portés.
+ */
+function tParamLiterals(body: string): string[] {
+  const out: string[] = [];
+  const rx = /\b(?:t|tr)\(/g;
+  let m: RegExpExecArray | null;
+  while ((m = rx.exec(body))) {
+    if (/[A-Za-z0-9_$.]/.test(body[m.index - 1] ?? ' ')) continue; // `.at(`, `format(`… : pas un minteur
+    let i = m.index + m[0].length;
+    let prof = 0;
+    let cle = false;
+    while (i < body.length) {
+      const c = body[i];
+      if (c === '(' || c === '[' || c === '{') { prof++; i++; continue; }
+      if (c === ']' || c === '}') { prof--; i++; continue; }
+      if (c === ')') { if (prof === 0) break; prof--; i++; continue; }
+      if (c === '"' || c === "'" || c === '`') {
+        const lit = readString(body, i, c);
+        if (!lit) break;
+        if (!cle) cle = true; // 1er littéral = la clé de catalogue
+        else if (prof <= 1) out.push(lit);
+        i += lit.length;
+        continue;
+      }
+      i++;
+    }
+  }
+  return out;
+}
+
 /** Compte les littéraux FR de narration d'un fichier (hors catalogue). */
 export function narrationCount(raw: string): number {
   const body = stripComments(raw);
@@ -345,6 +388,7 @@ export function narrationCount(raw: string): number {
   }
   for (const lit of logDepth0Literals(body)) if (isFrench(lit)) n++;
   for (const lit of returnArrayLiterals(body)) if (isFrench(lit)) n++;
+  for (const lit of tParamLiterals(body)) if (isFrench(lit)) n++;
   return n;
 }
 
@@ -408,8 +452,10 @@ describe('garde-fou i18n — narration moteur (Phase C, #410 inversé)', () => {
     // Le site réel (`merchantFlow.ts`, chemin d'achat) : deux phrases joueur, zéro vue avant ce lot.
     const ternaire = 'get().log(free ? `Achat : ${e} (dans les moyens du Statut du groupe — Tenir les comptes).` : `Vente : ${e} à la criée.`);';
     expect(narrationCount(ternaire)).toBe(2);
-    // Un littéral sous appel IMBRIQUÉ reste du catalogue : profondeur 1, jamais compté.
-    expect(narrationCount("get().log(t('mf.buy', { label: 'Épée' }));")).toBe(0);
+    // Un littéral sous appel IMBRIQUÉ n'est pas une LIGNE DE JOURNAL — cette forme-ci ne le compte donc
+    // pas. « Pas compté ici » ≠ « au catalogue » : ce paramètre s'affiche tel quel, et c'est la 8ᵉ FORME
+    // qui le mesure (ci-dessous) — d'où 1, et non 0, sur cet exemple.
+    expect(narrationCount("get().log(t('mf.buy', { label: 'Épée' }));")).toBe(1);
     // La forme 1 garde ses appels : un littéral collé ne compte pas DEUX fois.
     expect(narrationCount("get().log(`Bourse insuffisante pour ${x}.`);")).toBe(1);
   });
@@ -420,10 +466,26 @@ describe('garde-fou i18n — narration moteur (Phase C, #410 inversé)', () => {
     expect(narrationCount("  return [`${c.label} développe : ${diseaseLabel(name)}.`];")).toBe(1);
     // Deux lignes dans le même retour comptent DEUX fois.
     expect(narrationCount('return [`Le groupe arrive à ${to}.`, `La nuit tombe sur le camp.`];')).toBe(2);
-    // Un littéral sous appel IMBRIQUÉ reste du catalogue : profondeur 1, jamais compté.
-    expect(narrationCount("return [t('dz.develop', { name: c.label, disease: 'Peste noire' })];")).toBe(0);
+    // Un littéral sous appel IMBRIQUÉ n'est pas une LIGNE (même énoncé qu'à la 6ᵉ forme) : il est compté
+    // par la 8ᵉ FORME, pas ici — le paramètre S'AFFICHE, interpolé dans le gabarit. (« Peste noire » ne
+    // porte ni accent ni mot-outil : le PRÉDICAT ne le voit pas — limite dite, pas une exemption.)
+    expect(narrationCount("return [t('dz.develop', { name: c.label, disease: 'la peste noire' })];")).toBe(1);
     // …et un retour de tableau TECHNIQUE (ids) ne déclenche rien.
     expect(narrationCount("return ['infection-du-sang', 'blessure-purulente'];")).toBe(0);
+  });
+
+  it('8ᵉ FORME : un littéral FR en PARAMÈTRE de `t()` compte (le catalogue l’interpole et l’AFFICHE)', () => {
+    // Le site réel (`engine/ops.ts:1847`) : le nom d'attribut passait en clair dans le gabarit — pris ici
+    // sous une forme que le prédicat SAIT voir (accent), cf. la limite « littéral d'UN SEUL mot ».
+    expect(narrationCount("lines.push(t('op.attrMod', { name: c.label, attr: 'Détermination perdue' }));")).toBe(1);
+    // La CLÉ (1er littéral) n'est jamais du texte : elle ne compte pas.
+    expect(narrationCount("lines.push(t('op.heal', { name: c.label, n: 3 }));")).toBe(0);
+    // Un paramètre qui vient du CATALOGUE (appel imbriqué) ne compte pas : c'est la forme à viser.
+    expect(narrationCount("lines.push(t('op.attrMod', { attr: t('op.attrWounds') }));")).toBe(0);
+    // Aucun double comptage d'un `t()` imbriqué : le paramètre FR de l'appel INTERNE compte UNE fois.
+    expect(narrationCount("lines.push(t('a.b', { x: t('c.d', { y: 'une phrase de plus' }) }));")).toBe(1);
+    // `.at(`/`format(` ne sont pas des minteurs : leurs littéraux ne sont pas visés par cette forme.
+    expect(narrationCount("const s = arr.at('la première case');")).toBe(0);
   });
 
   it('le GEL ANNONCÉ au commentaire est le gel TENU par la table (le chiffre ne peut plus mentir)', () => {

@@ -12,6 +12,7 @@ import type { TriggeredEffect } from './flowCore';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
 import { findTrappingById, findTraitById, qualityInstance, refLabel, type TrappingRef, type TrappingData } from '../data';
+import { t } from '../i18n';
 
 /** Résolveur d'une Possession par id STABLE — signature de `findTrappingById`. Injecté aux coutures
  *  d'objet (défaut = règle GLOBALE) pour que le state route la couche de campagne (`campaignData.ts`,
@@ -956,12 +957,12 @@ export function ammoFamilyLabel(subType?: string, defaultAmmo?: string): string 
     if (label) return label;
   }
   switch (ammoFamily(subType)) {
-    case 'artillerie': return 'Boulet et poudre';
-    case 'poudre-ingenierie': return 'Balles et poudre';
-    case 'arc': return 'Flèches';
-    case 'arbalete': return 'Carreaux';
-    case 'fronde': return 'Billes';
-    default: return 'munitions';
+    case 'artillerie': return t('ammo.artillerie');
+    case 'poudre-ingenierie': return t('ammo.poudreIngenierie');
+    case 'arc': return t('ammo.arc');
+    case 'arbalete': return t('ammo.arbalete');
+    case 'fronde': return t('ammo.fronde');
+    default: return t('ammo.generic');
   }
 }
 

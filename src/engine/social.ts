@@ -25,6 +25,7 @@ import { Status, parseStatus } from './creation';
 import { rule } from './policy';
 import type { Combatant } from './types';
 import { findCareerById, levelsForCareer } from '../data';
+import { t } from '../i18n';
 
 /** Rang numérique d'un Échelon (Bronze < Argent < Or) pour la comparaison RAW. */
 const TIER_RANK: Record<Status['tier'], number> = { Bronze: 0, Argent: 1, Or: 2 };
@@ -124,5 +125,5 @@ export function statusCharmLabel(
   const side = actor.tier === target.tier && !beg
     ? `${actor.tier} ${actor.standing}${cmp}${target.standing}` // intra-Échelon : compare le Standing
     : `${actor.tier}${cmp}${target.tier}`;
-  return `Statut (${beg ? 'mendicité ' : ''}${side}) ${sign}${Math.abs(mod)}`;
+  return t('social.statusMod', { beg: beg ? t('social.fragBegging') : '', side, sign, mod: Math.abs(mod) });
 }

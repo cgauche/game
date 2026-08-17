@@ -16,27 +16,34 @@ import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
 import { SEUIL_MAINTIEN_MS, arreterLacet, demarrerLacet, pasYaw } from './stageYaw';
 import { clearTrackedTimer, scheduleFlowTimer } from './combatTimers';
+import { t, type MsgKey } from '../i18n';
 
 /** Section d'affichage de l'écran Options (remap) — REGROUPE les raccourcis par contexte de jeu.
  *  Purement présentationnel (le `when` de chaque binding reste l'unique arbitre d'exécution). */
 export type KeyBindingSection = 'pov' | 'camera' | 'combat' | 'curseur' | 'hotbar' | 'exploration' | 'systeme';
-export const KEY_SECTION_LABEL: Record<KeyBindingSection, string> = {
-  pov: 'Vue subjective (POV)',
-  camera: 'Caméra',
-  combat: 'Combat',
-  curseur: 'Curseur de combat',
-  hotbar: "Barre d'action",
-  exploration: 'Exploration',
-  systeme: 'Système',
+const KEY_SECTION_KEY: Record<KeyBindingSection, MsgKey> = {
+  pov: 'key.section.pov',
+  camera: 'key.section.camera',
+  combat: 'key.section.combat',
+  curseur: 'key.section.curseur',
+  hotbar: 'key.section.hotbar',
+  exploration: 'key.section.exploration',
+  systeme: 'key.section.systeme',
 };
+
+/** Libellé d'une section de l'écran Options, résolu À L'APPEL (la carte ci-dessus porte des clés). */
+export const keySectionLabel = (s: KeyBindingSection): string => t(KEY_SECTION_KEY[s]);
 
 export interface KeyBinding {
   id: string;
   /** Touche(s) par DÉFAUT, par POSITION physique (event.code), jamais le caractère. */
   codes: string[];
-  /** Libellé pour l'écran Options (remap). */
-  label: string;
-  /** Section de regroupement de l'écran Options (remap) — voir `KEY_SECTION_LABEL`. */
+  /** Clé de libellé pour l'écran Options (remap) — résolue à l'affichage (`bindingLabel`), jamais au
+   *  chargement : ce tableau est construit à l'évaluation du module. */
+  labelKey: MsgKey;
+  /** Paramètres du patron de libellé (slot de barre d'action : son numéro). */
+  labelParams?: Record<string, string | number>;
+  /** Section de regroupement de l'écran Options (remap) — voir `keySectionLabel`. */
   section: KeyBindingSection;
   /** Contexte d'application (lit l'état du jeu). */
   when: (s: GameState) => boolean;
@@ -108,33 +115,33 @@ const exploring = (s: GameState) => s.screen === 'campaign' && s.mode === 'explo
 const exploringPov = (s: GameState) => exploring(s) && s.povActive;
 /** Pas clavier d'exploration ISO (ZQSD) : code physique → direction ÉCRAN. Réservé à la vue iso (hors POV,
  *  où ces mêmes touches sont cap-relatives — cf. `exploringPov` ci-dessus, résolu AVANT par ordre de tableau). */
-const EXPLORE_STEP: { code: string; dir: ScreenDir; label: string }[] = [
-  { code: 'KeyW', dir: 'up', label: 'Exploration : pas vers le haut' },
-  { code: 'KeyS', dir: 'down', label: 'Exploration : pas vers le bas' },
-  { code: 'KeyA', dir: 'left', label: 'Exploration : pas vers la gauche' },
-  { code: 'KeyD', dir: 'right', label: 'Exploration : pas vers la droite' },
+const EXPLORE_STEP: { code: string; dir: ScreenDir; labelKey: MsgKey }[] = [
+  { code: 'KeyW', dir: 'up', labelKey: 'key.exploreUp' },
+  { code: 'KeyS', dir: 'down', labelKey: 'key.exploreDown' },
+  { code: 'KeyA', dir: 'left', labelKey: 'key.exploreLeft' },
+  { code: 'KeyD', dir: 'right', labelKey: 'key.exploreRight' },
 ];
 
 export const KEYBINDINGS: KeyBinding[] = [
   // ── Vue SUBJECTIVE (POV) — AVANT les cam-*/pas-iso (mêmes codes physiques) : find = 1er `when` vrai, donc
   //    tant que `povActive`, ces raccourcis GAGNENT (ZQSD cap-relatif, A/E pivotent le regard) ; hors POV
   //    `exploringPov` est faux → cam-* et pas-iso reprennent la main. `toggle-pov` (F) commute la vue. ──
-  { id: 'pov-forward', codes: ['KeyW'], label: 'POV : avancer', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('forward') },
-  { id: 'pov-back', codes: ['KeyS'], label: 'POV : reculer', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('back') },
-  { id: 'pov-strafe-l', codes: ['KeyA'], label: 'POV : pas de côté à gauche', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('left') },
-  { id: 'pov-strafe-r', codes: ['KeyD'], label: 'POV : pas de côté à droite', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('right') },
-  { id: 'pov-turn-l', codes: ['KeyQ'], label: 'POV : pivoter le regard à gauche', section: 'pov', when: exploringPov, run: (g) => g().pivotParty(-1) },
-  { id: 'pov-turn-r', codes: ['KeyE'], label: 'POV : pivoter le regard à droite', section: 'pov', when: exploringPov, run: (g) => g().pivotParty(1) },
-  { id: 'toggle-pov', codes: ['KeyF'], label: 'Basculer la vue subjective (POV)', section: 'pov', when: exploring, run: (g) => g().togglePov() },
-  { id: 'cam-left', codes: ['KeyQ'], label: 'Caméra : tourner à gauche', section: 'camera', when: () => true, run: (g) => tournerCamera(g, -1), runUp: () => relacherCamera() },
-  { id: 'cam-right', codes: ['KeyE'], label: 'Caméra : tourner à droite', section: 'camera', when: () => true, run: (g) => tournerCamera(g, 1), runUp: () => relacherCamera() },
-  { id: 'cam-recenter', codes: ['KeyC'], label: 'Caméra : recentrer sur l’actif', section: 'camera', when: inBattle, run: (g) => g().resetCamPan() },
+  { id: 'pov-forward', codes: ['KeyW'], labelKey: 'key.povForward', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('forward') },
+  { id: 'pov-back', codes: ['KeyS'], labelKey: 'key.povBack', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('back') },
+  { id: 'pov-strafe-l', codes: ['KeyA'], labelKey: 'key.povStrafeL', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('left') },
+  { id: 'pov-strafe-r', codes: ['KeyD'], labelKey: 'key.povStrafeR', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('right') },
+  { id: 'pov-turn-l', codes: ['KeyQ'], labelKey: 'key.povTurnL', section: 'pov', when: exploringPov, run: (g) => g().pivotParty(-1) },
+  { id: 'pov-turn-r', codes: ['KeyE'], labelKey: 'key.povTurnR', section: 'pov', when: exploringPov, run: (g) => g().pivotParty(1) },
+  { id: 'toggle-pov', codes: ['KeyF'], labelKey: 'key.togglePov', section: 'pov', when: exploring, run: (g) => g().togglePov() },
+  { id: 'cam-left', codes: ['KeyQ'], labelKey: 'key.camLeft', section: 'camera', when: () => true, run: (g) => tournerCamera(g, -1), runUp: () => relacherCamera() },
+  { id: 'cam-right', codes: ['KeyE'], labelKey: 'key.camRight', section: 'camera', when: () => true, run: (g) => tournerCamera(g, 1), runUp: () => relacherCamera() },
+  { id: 'cam-recenter', codes: ['KeyC'], labelKey: 'key.camRecenter', section: 'camera', when: inBattle, run: (g) => g().resetCamPan() },
   // Pause d'initiative de début de Round (LDB 17 l.27) : Espace/Entrée = « Commencer le round » (le SEUL
   // geste possible) → passage de Round jouable SANS souris. AVANT les bindings curseur/fin-de-tour (mêmes
   // touches) : sa garde `pendingRoundStart` arbitre. notWhenControlFocused : si le bouton « Commencer » est
   // focalisé, son activation native suffit (pas de double appel). Solo = confirmRoundStart ; coop = ready du siège.
   {
-    id: 'round-start', codes: ['Space', 'Enter', 'NumpadEnter'], label: 'Commencer le round', section: 'combat', notWhenControlFocused: true,
+    id: 'round-start', codes: ['Space', 'Enter', 'NumpadEnter'], labelKey: 'key.roundStart', section: 'combat', notWhenControlFocused: true,
     when: (s) => inBattle(s) && !!s.pendingRoundStart && !s.preemptAiming, // visée Tir rapide armée → Entrée TIRE (curseur), pas « commencer »
     run: (g) => {
       const s = g();
@@ -146,7 +153,7 @@ export const KEYBINDINGS: KeyBinding[] = [
   // éligible (puis cycle les suivants, puis désarme) et pose le curseur sur la cible la plus proche → flèches/Tab
   // visent, Entrée TIRE, Échap annule. Réutilise le curseur de combat existant (aucun chemin parallèle).
   {
-    id: 'preempt-arm', codes: ['KeyT'], label: 'Tir rapide : viser (interruption de début de Round)', section: 'combat',
+    id: 'preempt-arm', codes: ['KeyT'], labelKey: 'key.preemptArm', section: 'combat',
     when: (s) => inBattle(s) && !!s.pendingRoundStart && preemptShooterIds(() => s).length > 0,
     run: (g) => {
       const shooters = preemptShooterIds(g);
@@ -163,19 +170,19 @@ export const KEYBINDINGS: KeyBinding[] = [
   //    court AVEC lui sur la même touche — le ↓ qui devait ouvrir la porte de la fiche déplaçait
   //    aussi la visée (recette B3a, capture 04). Même doctrine que `round-start`/`end-turn` pour
   //    Espace/Entrée, étendue aux flèches : la touche appartient au contrôle qui a le focus.
-  { id: 'cursor-up', codes: ['ArrowUp'], label: 'Curseur : haut', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('up') },
-  { id: 'cursor-down', codes: ['ArrowDown'], label: 'Curseur : bas', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('down') },
-  { id: 'cursor-left', codes: ['ArrowLeft'], label: 'Curseur : gauche', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('left') },
-  { id: 'cursor-right', codes: ['ArrowRight'], label: 'Curseur : droite', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('right') },
+  { id: 'cursor-up', codes: ['ArrowUp'], labelKey: 'key.cursorUp', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('up') },
+  { id: 'cursor-down', codes: ['ArrowDown'], labelKey: 'key.cursorDown', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('down') },
+  { id: 'cursor-left', codes: ['ArrowLeft'], labelKey: 'key.cursorLeft', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('left') },
+  { id: 'cursor-right', codes: ['ArrowRight'], labelKey: 'key.cursorRight', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('right') },
   // Tab : aimante le curseur sur la cible valide suivante (cycle proche→loin) ; gardé sur ≥1 cible
   // (sinon Tab garde sa nav normale). `²/~` = cible précédente (le registre ignore les modificateurs).
   {
-    id: 'target-next', codes: ['Tab'], label: 'Cibler la cible valide suivante', section: 'curseur',
+    id: 'target-next', codes: ['Tab'], labelKey: 'key.targetNext', section: 'curseur',
     when: (s) => curOrPreempt(s) && validTargets(() => s).length > 0,
     run: (g) => g().snapCursorToTarget(1),
   },
   {
-    id: 'target-prev', codes: ['Backquote'], label: 'Cibler la cible valide précédente', section: 'curseur',
+    id: 'target-prev', codes: ['Backquote'], labelKey: 'key.targetPrev', section: 'curseur',
     when: (s) => curOrPreempt(s) && validTargets(() => s).length > 0,
     run: (g) => g().snapCursorToTarget(-1),
   },
@@ -188,28 +195,28 @@ export const KEYBINDINGS: KeyBinding[] = [
   // « Pousser ») pour ENTRER dans le mode-CASE masquait `cursor-commit` : Entrée retombait sur
   // l'activation native du bouton encore focalisé (qui ferme le mode, aucune poussée commise).
   {
-    id: 'cursor-commit', codes: ['Enter', 'NumpadEnter'], label: 'Curseur : valider', section: 'curseur',
+    id: 'cursor-commit', codes: ['Enter', 'NumpadEnter'], labelKey: 'key.cursorCommit', section: 'curseur',
     when: (s) => curOrPreempt(s) && !!s.combatCursor,
     run: (g) => g().commitCursor(),
   },
   {
-    id: 'cursor-cancel', codes: ['Escape'], label: 'Curseur : annuler', section: 'curseur',
+    id: 'cursor-cancel', codes: ['Escape'], labelKey: 'key.cursorCancel', section: 'curseur',
     when: (s) => !!s.combatCursor || preemptCur(s), // armé sans cible en vue : Échap désarme quand même le Tir rapide
     run: (g) => { if (g().preemptAiming) g().armPreempt(null); g().clearCursor(); const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
   },
   {
-    id: 'end-turn', codes: ['Space', 'Enter', 'NumpadEnter'], label: 'Fin du tour', section: 'combat', notWhenControlFocused: true,
+    id: 'end-turn', codes: ['Space', 'Enter', 'NumpadEnter'], labelKey: 'key.endTurn', section: 'combat', notWhenControlFocused: true,
     when: (s) => cur(s), run: (g) => g().battleEndTurn(),
   },
   {
-    id: 'clear-preview', codes: ['Escape'], label: 'Annuler l’aperçu de déplacement', section: 'combat',
+    id: 'clear-preview', codes: ['Escape'], labelKey: 'key.clearPreview', section: 'combat',
     when: (s) => !!s.battle?.preview,
     run: (g) => { const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
   },
   // Capacités de la barre d'action : 1-9 = n-ième slot VISIBLE (positionnel, rien en dur), via le pont
   // `hotbar` publié par l'ActionBar. Inactif hors de son tour / pendant une modale.
   ...Array.from({ length: 9 }, (_, i): KeyBinding => ({
-    id: `hotbar-${i + 1}`, codes: [`Digit${i + 1}`], label: `Capacité ${i + 1} de la barre d’action`, section: 'hotbar',
+    id: `hotbar-${i + 1}`, codes: [`Digit${i + 1}`], labelKey: 'key.hotbarSlot', labelParams: { n: i + 1 }, section: 'hotbar',
     when: (s) => inBattle(s) && controlsActive(s) && noModal(s),
     run: () => { const sl = hotbar.slots[i]; if (sl && !sl.disabled) sl.run(); },
   })),
@@ -218,8 +225,8 @@ export const KEYBINDINGS: KeyBinding[] = [
   //    (l'emprise d'un pont vise la couche du dessous), devient jouable. Garde `!povActive` : en POV, les
   //    mêmes ZQSD sont cap-relatifs (bindings pov-* ci-dessus, résolus AVANT). Les flèches restent au SEUL
   //    curseur de combat (garde `cur`) — plus de partage de codes avec l'exploration.
-  ...EXPLORE_STEP.map(({ code, dir, label }): KeyBinding => ({
-    id: `explore-${dir}`, codes: [code], label, section: 'exploration', when: (s) => exploring(s) && !s.povActive, run: (g) => g().stepPartyDir(dir),
+  ...EXPLORE_STEP.map(({ code, dir, labelKey }): KeyBinding => ({
+    id: `explore-${dir}`, codes: [code], labelKey, section: 'exploration', when: (s) => exploring(s) && !s.povActive, run: (g) => g().stepPartyDir(dir),
   })),
   // Menu système PLEIN ÉCRAN (pause) : Échap l'OUVRE quand rien d'autre ne réclame la touche. Placé
   // EN DERNIER → cursor-cancel/clear-preview (mêmes codes, gardes propres) gagnent d'abord en combat.
@@ -228,7 +235,7 @@ export const KEYBINDINGS: KeyBinding[] = [
   // qui stoppe la propagation avant ce hook). Les écrans/modales plein-champ (role=dialog) consomment
   // déjà Échap et coupent la propagation → ils ne rouvrent jamais ce menu par mégarde.
   {
-    id: 'toggle-menu', codes: ['Escape'], label: 'Ouvrir le menu système', section: 'systeme',
+    id: 'toggle-menu', codes: ['Escape'], labelKey: 'key.toggleMenu', section: 'systeme',
     when: (s) => s.screen === 'campaign' && !s.gameMenuOpen && noModal(s),
     run: (g) => g().setGameMenu(true),
   },
@@ -246,17 +253,29 @@ export function runBindingById(id: string, get: () => GameState): void {
   if (b && b.when(get())) b.run(get);
 }
 
-const NAMED_KEYS: Record<string, string> = {
-  Space: 'Espace', Enter: 'Entrée', NumpadEnter: 'Entrée (pavé)', Escape: 'Échap', Tab: 'Tab',
+/** Libellé d'un raccourci pour l'écran Options, résolu À L'APPEL depuis sa clé (+ ses paramètres). */
+export const bindingLabel = (b: KeyBinding): string => t(b.labelKey, b.labelParams);
+
+/** Touches dont le nom lisible EST un texte (traduisible) — les autres sont des SYMBOLES (`NAMED_SYMBOLS`). */
+const NAMED_KEY_KEY: Record<string, MsgKey> = {
+  Space: 'key.named.space', Enter: 'key.named.enter', NumpadEnter: 'key.named.numpadEnter', Escape: 'key.named.escape',
+};
+/** Glyphes de touche : aucun texte de langue (le nom `Tab` est celui gravé sur la touche). */
+const NAMED_SYMBOLS: Record<string, string> = {
+  Tab: 'Tab',
   ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', Backquote: '²/~', Minus: '-', Equal: '=',
 };
 
 /** Libellé lisible d'un `event.code` pour l'UI de remap (KeyC→C, Digit1→1, Space→Espace…). NB : on
  *  affiche la lettre QWERTY de la position (le clavier AZERTY de l'utilisateur étiquette parfois
- *  autrement la MÊME position physique — c'est la position qui compte pour le binding). */
+ *  autrement la MÊME position physique — c'est la position qui compte pour le binding).
+ *  Les touches NOMMÉES sont résolues AVANT le préfixe `Numpad` : `NumpadEnter` rend « Entrée (pavé) »
+ *  (son entrée nommée était inatteignable derrière le préfixe, qui en faisait « Pavé Enter »). */
 export function keyLabel(code: string): string {
   if (code.startsWith('Key')) return code.slice(3);
   if (code.startsWith('Digit')) return code.slice(5);
-  if (code.startsWith('Numpad')) return `Pavé ${code.slice(6)}`;
-  return NAMED_KEYS[code] ?? code;
+  const named = NAMED_KEY_KEY[code];
+  if (named) return t(named);
+  if (code.startsWith('Numpad')) return t('key.named.numpad', { n: code.slice(6) });
+  return NAMED_SYMBOLS[code] ?? code;
 }

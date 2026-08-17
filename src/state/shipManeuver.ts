@@ -24,6 +24,7 @@ import { exposedCrew } from '../engine/shipCritical';
 import { crewRoleValue, crewTalentDR, moraleBand, capToSuccesMinime, crewTestSuccess } from '../engine/crewMorale';
 import { placementPenalty } from './shipPostes';
 import { inBattleId } from './combatants';
+import { t } from '../i18n';
 import { findVehicleById, findCrewRoleById } from '../data';
 import { vesselPropulsion } from '../engine/shipBuild';
 import type { RNG } from '../engine/dice';
@@ -236,7 +237,7 @@ export function bonusShipManeuver(ship: Combatant, prev: ManeuverResult): Maneuv
 export function applyShipManeuver(get: Get, shipId: string, result: ManeuverResult, turnSteps: number): number {
   const ship = inBattleId(get().battle, shipId);
   if (result.success) get().shipTurn(shipId, turnSteps); // vire + re-mappe les arcs + logue le nouveau cap
-  else get().log(`${result.helmsman ?? "L'équipage"} rate la manœuvre de ${ship?.label ?? shipId} (DR ${result.dr}) — le cap tient.`);
+  else get().log(t('shipManv.failLine', { helmsman: result.helmsman ?? t('shipManv.crewFallback'), ship: ship?.label ?? shipId, dr: result.dr }));
   return get().shipAdvance(shipId, result.movement);
 }
 

@@ -10,6 +10,7 @@ import { parseStatEntry, isOptionalNote, type TraitInstance, type TraitList, typ
 import { traitByLabel, traitById, SPEC_SOURCES, type SpecsSource, type TraitCapabilities, type TraitData } from '../../data';
 import { slugId } from '../../data/slug';
 import type { PassiveMod } from '../ops';
+import { t, type MsgKey } from '../../i18n';
 
 /** Résolution UNIQUE libellé (casse ignorée) → `id` STABLE (slug), DÉRIVÉE de `traits.json` (la
  *  donnée, AUSSI source de `TRAITS`) — source unique de l'import label→id (statblocs / migration).
@@ -107,26 +108,27 @@ export const optionalLabel = (e: OptionalEntry): string =>
 export const optionalLabels = (list: OptionalEntry[] | undefined): string[] =>
   (list ?? []).map(optionalLabel);
 
-/** Nom d'affichage FR du POOL d'une `specsSource` (le TYPE d'argument attendu, pas une valeur) — pour
- *  le squelette d'argument d'un trait (sous-titre du Codex). Une source par ligne : ajouter une
- *  `SpecsSource` = l'ajouter ici, jamais un cas par-trait. */
-const SPEC_SOURCE_NOUN: Record<SpecsSource, string> = {
-  weaponGroupsMelee: "Groupe d'arme",
-  weaponGroupsRanged: "Groupe d'arme",
-  winds: 'Vent',
-  arcaneDomains: 'Domaine',
-  cultBlessings: 'Culte',
-  cultMiracles: 'Culte',
-  cultChaos: 'Culte',
-  seaShanties: 'Chanson',
-  groups: 'Cible',
-  diseases: 'Maladie',
-  sizes: 'Taille',
-  mutations: 'Mutation',
-  breathTypes: 'Type de souffle',
-  damageTypes: 'Type de dégâts',
-  weaponsMelee: 'Arme',
-  weaponsRanged: 'Arme',
+/** Nom du POOL d'une `specsSource` (le TYPE d'argument attendu, pas une valeur) — pour le squelette
+ *  d'argument d'un trait (sous-titre du Codex). La carte porte des CLÉS de catalogue, résolues à
+ *  l'APPEL (jamais gelées au chargement du module). Une source par ligne : ajouter une `SpecsSource` =
+ *  l'ajouter ici, jamais un cas par-trait. */
+const SPEC_SOURCE_KEY: Record<SpecsSource, MsgKey> = {
+  weaponGroupsMelee: 'specSrc.weaponGroup',
+  weaponGroupsRanged: 'specSrc.weaponGroup',
+  winds: 'specSrc.wind',
+  arcaneDomains: 'specSrc.domain',
+  cultBlessings: 'specSrc.cult',
+  cultMiracles: 'specSrc.cult',
+  cultChaos: 'specSrc.cult',
+  seaShanties: 'specSrc.shanty',
+  groups: 'specSrc.target',
+  diseases: 'specSrc.disease',
+  sizes: 'specSrc.size',
+  mutations: 'specSrc.mutation',
+  breathTypes: 'specSrc.breathType',
+  damageTypes: 'specSrc.damageType',
+  weaponsMelee: 'specSrc.weapon',
+  weaponsRanged: 'specSrc.weapon',
 };
 
 /** Squelette d'ARGUMENT d'un Trait DÉRIVÉ de son schéma (sous-titre du Codex, remplace le champ figé
@@ -135,9 +137,9 @@ const SPEC_SOURCE_NOUN: Record<SpecsSource, string> = {
  *  → « (Indice) (Type de dégâts) (Portée) ». Trait sans argument → undefined (aucun sous-titre). */
 export function traitArgSkeleton(def: Pick<TraitData, 'indice' | 'specsSource' | 'range'>): string | undefined {
   const parts: string[] = [];
-  if (def.indice) parts.push(`(${def.indice.label})`);
-  if (def.specsSource) parts.push(`(${SPEC_SOURCE_NOUN[def.specsSource]})`);
-  if (def.range) parts.push('(Portée)');
+  if (def.indice) parts.push(t('traitArg.paren', { what: def.indice.label }));
+  if (def.specsSource) parts.push(t('traitArg.paren', { what: t(SPEC_SOURCE_KEY[def.specsSource]) }));
+  if (def.range) parts.push(t('traitArg.paren', { what: t('traitArg.range') }));
   return parts.length ? parts.join(' ') : undefined;
 }
 
@@ -204,7 +206,7 @@ export function traitPassiveMods(traits: TraitList | undefined): PassiveMod[] {
     const ops = traitById.get(t.id)?.passive; // lecture PAR ID stable (≠ jointure par libellé)
     // `src` = LE trait émetteur : c'est lui qui NOMME la composante d'un détail de jet (« +10 Dressé
     // pour divertir ») et ouvre sa fiche — jamais le repli de famille (`passivePartLine`).
-    if (ops) for (const op of ops) out.push({ op, kind: 'intrinsèque', src: { category: 'traits', id: t.id } }); // le collecteur affecte le kind (≠ donnée)
+    if (ops) for (const op of ops) out.push({ op, kind: 'intrinseque', src: { category: 'traits', id: t.id } }); // le collecteur affecte le kind (≠ donnée)
   }
   return out;
 }

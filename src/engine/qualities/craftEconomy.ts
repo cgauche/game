@@ -5,6 +5,7 @@
  */
 import { resolveQualities, type QualityCarrier } from './dispatch';
 import type { Availability } from '../types';
+import { t, type MsgKey } from '../../i18n';
 
 /** Échelle du plus COURANT au plus RARE (LDB 59). */
 export const AVAILABILITY_LADDER: Availability[] = ['Commune', 'Limitée', 'Rare', 'Exotique'];
@@ -51,16 +52,33 @@ export function shiftAvailability(base: Availability, c: QualityCarrier | undefi
   return AVAILABILITY_LADDER[Math.max(0, Math.min(AVAILABILITY_LADDER.length - 1, idx))];
 }
 
+/** Classe de qualité, en id STABLE (LDB 60 l.7/11/42) — l'affichage vit au catalogue
+ *  (`QUALITY_CLASS_KEY`/`qualityClassLabel`). */
+export type QualityClass = 'haute' | 'qualite' | 'defectueuse' | 'standard';
+
+/** Clé d'affichage de chaque classe (résolue à l'APPEL, jamais gelée au chargement du module). */
+export const QUALITY_CLASS_KEY: Record<QualityClass, MsgKey> = {
+  haute: 'craft.classHaute',
+  qualite: 'craft.classQualite',
+  defectueuse: 'craft.classDefectueuse',
+  standard: 'craft.classStandard',
+};
+
+/** Libellé JOUEUR d'une classe de qualité (LDB 60 l.7/11/42). */
+export function qualityClassLabel(k: QualityClass): string {
+  return t(QUALITY_CLASS_KEY[k]);
+}
+
 /**
  * Classe de qualité (LDB 60 l.7/11/42) : **Haute Qualité** = aucun Défaut ET plus d'Atouts que
  * l'Encombrement ; **Qualité** = plus d'Atouts que de Défauts ; **Défectueuse** = l'inverse ;
  * sinon **Standard**. `enc` = Encombrement de base de l'objet.
  */
-export function qualityClass(c: QualityCarrier | undefined, enc: number): 'Haute Qualité' | 'Qualité' | 'Défectueuse' | 'Standard' {
+export function qualityClass(c: QualityCarrier | undefined, enc: number): QualityClass {
   const a = craftAtoutCount(c);
   const d = craftDefautCount(c);
-  if (d === 0 && a > enc) return 'Haute Qualité';
-  if (a > d) return 'Qualité';
-  if (d > a) return 'Défectueuse';
-  return 'Standard';
+  if (d === 0 && a > enc) return 'haute';
+  if (a > d) return 'qualite';
+  if (d > a) return 'defectueuse';
+  return 'standard';
 }

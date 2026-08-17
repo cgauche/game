@@ -4028,7 +4028,7 @@ export function castSpell(
   // lu en DONNÉE (`GodData.sinLocks`), générique à tout culte qui en porterait.
   const sinLock = prayerSinLock(caster, spell);
   if (sinLock) {
-    castRefused(get, set, caster, tr('cf.sinLock', { cult: sinLock.cult, name: caster.label, talent: sinLock.family === 'beni' ? 'Béni' : 'Invocation', sin: String(caster.sinPoints ?? 0), threshold: String(sinLock.threshold) }));
+    castRefused(get, set, caster, tr('cf.sinLock', { cult: sinLock.cult, name: caster.label, talent: tr(sinLock.family === 'beni' ? 'cf.talentBeni' : 'cf.talentInvocation'), sin: String(caster.sinPoints ?? 0), threshold: String(sinLock.threshold) }));
     return;
   }
   // Lecture au grimoire (LDB 47 l.34) : sort NON mémorisé de son Domaine, NI doublé.
@@ -4406,7 +4406,7 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
   // Verrou de Péché du culte (MDG 11 l.142) — même gate que `castSpell` (les miracles à ZdE passent ici).
   const sinLock = prayerSinLock(caster, spell);
   if (sinLock) {
-    castRefused(get, set, caster, tr('cf.sinLock', { cult: sinLock.cult, name: caster.label, talent: sinLock.family === 'beni' ? 'Béni' : 'Invocation', sin: String(caster.sinPoints ?? 0), threshold: String(sinLock.threshold) }));
+    castRefused(get, set, caster, tr('cf.sinLock', { cult: sinLock.cult, name: caster.label, talent: tr(sinLock.family === 'beni' ? 'cf.talentBeni' : 'cf.talentInvocation'), sin: String(caster.sinPoints ?? 0), threshold: String(sinLock.threshold) }));
     return true;
   }
   const focusedNI0 = caster.focus?.spell === spell.id && caster.focus.dr >= (spell.cn ?? 0);

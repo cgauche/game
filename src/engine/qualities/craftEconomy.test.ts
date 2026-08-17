@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { craftPriceFactor, craftEncDelta, shiftAvailability, qualityClass, craftAtoutCount, craftDefautCount } from './craftEconomy';
+import { craftPriceFactor, craftEncDelta, shiftAvailability, qualityClass, qualityClassLabel, craftAtoutCount, craftDefautCount } from './craftEconomy';
 import { parseQualityInstance } from './normalize';
 
 /** Fixture : libellés FR (lisibles) → `QualityInstance[]` structurées via le parseur d'authoring. */
@@ -47,13 +47,19 @@ describe('craftEncDelta (Léger -1 / Volumineux +1, LDB 60 l.18/62)', () => {
 
 describe('qualityClass (LDB 60 l.7/11/42)', () => {
   it('Haute Qualité = 0 Défaut ET plus d’Atouts que l’Enc', () => {
-    expect(qualityClass(it_(['Raffiné', 'Solide 1', 'Léger']), 2)).toBe('Haute Qualité'); // 3 Atouts > Enc 2, 0 Défaut
-    expect(qualityClass(it_(['Raffiné', 'Solide 1']), 2)).toBe('Qualité'); // 2 Atouts = Enc 2 (pas >)
+    expect(qualityClass(it_(['Raffiné', 'Solide 1', 'Léger']), 2)).toBe('haute'); // 3 Atouts > Enc 2, 0 Défaut
+    expect(qualityClass(it_(['Raffiné', 'Solide 1']), 2)).toBe('qualite'); // 2 Atouts = Enc 2 (pas >)
   });
   it('Qualité / Défectueuse / Standard', () => {
-    expect(qualityClass(it_(['Raffiné']), 5)).toBe('Qualité'); // plus d'Atouts
-    expect(qualityClass(it_(['Bâclé', 'Laid']), 5)).toBe('Défectueuse'); // plus de Défauts
-    expect(qualityClass(it_(['Raffiné', 'Bâclé']), 5)).toBe('Standard'); // égalité
-    expect(qualityClass(it_([]), 5)).toBe('Standard');
+    expect(qualityClass(it_(['Raffiné']), 5)).toBe('qualite'); // plus d'Atouts
+    expect(qualityClass(it_(['Bâclé', 'Laid']), 5)).toBe('defectueuse'); // plus de Défauts
+    expect(qualityClass(it_(['Raffiné', 'Bâclé']), 5)).toBe('standard'); // égalité
+    expect(qualityClass(it_([]), 5)).toBe('standard');
+  });
+  it('le LIBELLÉ de chaque classe vient du catalogue (l’id reste la logique)', () => {
+    expect(qualityClassLabel(qualityClass(it_(['Raffiné', 'Solide 1', 'Léger']), 2))).toBe('Haute Qualité');
+    expect(qualityClassLabel('qualite')).toBe('Qualité');
+    expect(qualityClassLabel('defectueuse')).toBe('Défectueuse');
+    expect(qualityClassLabel('standard')).toBe('Standard');
   });
 });

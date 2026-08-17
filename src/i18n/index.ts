@@ -37,6 +37,9 @@ export const getLocale = (): Locale => locale;
  * enregistrée par une boucle de module) — le libellé y est résolu une fois pour toutes. Les autres
  * cartes de la tranche n'en sont PAS : `SHIP_LOC_KEY`/`ALLURE_KEY`/`ENCOUNTER_KEY`/`SPELL_*` portent
  * des CLÉS (`MsgKey`), résolues à l'appel — c'est la forme à reprendre pour éteindre les précédentes.
+ * V8c₅ n'AJOUTE aucun site à cette liste : ses cartes de module portent des CLÉS résolues à l'appel
+ * (`SPEC_SOURCE_KEY` de `engine/traits/dispatch.ts`, `QUALITY_CLASS_KEY` de `qualities/craftEconomy.ts`,
+ * `KEY_SECTION_KEY`/`labelKey`/`NAMED_KEY_KEY` de `state/keybindings.ts`) — la forme à reprendre.
  * Appeler `setLocale` après le chargement les laisse donc en FR, SANS erreur ni avertissement.
  *
  * Ce n'est pas un bug tant que la v1 fige la locale au lancement (`docs/i18n-seam.md`, Non-objectifs :

@@ -22,6 +22,7 @@ import type {
   SequenceCombinedRules, SequenceThrowerPenalty,
 } from './sequenceVocab';
 import tavernGamesJson from '../data/tavernGames.json';
+import { t } from '../i18n';
 
 export interface TavernGame {
   id: string;
@@ -245,10 +246,13 @@ export function resolveTavernRound(
 
 /** Ligne de journal d'une manche `opposed` (variante rapide, l.11) — DR contre DR. */
 export function tavernOpposedLog(game: TavernGame, playerSL: number, opponentSL: number, winner: TavernRoundOutcome['winner']): string {
-  return `${game.label} : ${playerSL} DR contre ${opponentSL} → ${winner === 'player' ? 'gagné' : winner === 'opponent' ? 'perdu' : 'égalité'}.`;
+  return t('tavern.opposedLog', {
+    jeu: game.label, mien: playerSL, sien: opponentSL,
+    issue: t(winner === 'player' ? 'tavern.issueWon' : winner === 'opponent' ? 'tavern.issueLost' : 'tavern.issueTie'),
+  });
 }
 
 /** Ligne de journal d'une partie `extended` (Bras de fer, l.34) — DR cumulés sur N manches. */
 export function tavernExtendedLog(game: TavernGame, playerSL: number, opponentSL: number, rounds: number): string {
-  return `${game.label} : ${playerSL} DR cumulés contre ${opponentSL} en ${rounds} manche${rounds > 1 ? 's' : ''}.`;
+  return t('tavern.extendedLog', { jeu: game.label, mien: playerSL, sien: opponentSL, rounds, s: rounds > 1 ? 's' : '' });
 }

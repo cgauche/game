@@ -173,7 +173,7 @@ registerCombatHook({
         return !!e && e.kind !== c.kind && !isOutOfAction(e);
       }).length;
       // Maîtrise du combat (LDB 10) : on compte pour 1+niveau personnes au calcul du surnombre.
-      if (foes >= 2 + outnumberCountBonus(c)) { c.advantage = Math.max(0, c.advantage - 1); sink(`${c.label} est surpassé en nombre (${foes} c.1) : −1 Avantage.`, c); }
+      if (foes >= 2 + outnumberCountBonus(c)) { c.advantage = Math.max(0, c.advantage - 1); sink(t('turn.outnumbered', { name: c.label, foes }), c); }
     }
   },
 });
@@ -322,7 +322,7 @@ function fatigueApply(c: Combatant, success: boolean, sl: number): string | null
   }
   addCondition(c, COND.extenue);
   c.effortRounds = 0;
-  return `${c.label} s'épuise (effort soutenu) : Exténué.`;
+  return t('turn.exhausted', { name: c.label });
 }
 registerCombatHook({
   id: 'se-fatiguer',
@@ -441,7 +441,7 @@ registerCascadeApplier('fatigue', (get, set, step, hero) => {
   if (!hero || !step.result) return;
   const line = fatigueApply(hero, step.result.success, step.result.sl);
   syncCombatant(get, set);
-  return { consequences: freeCons([line ?? `${hero.label} tient bon malgré l’effort.`]) };
+  return { consequences: freeCons([line ?? t('turn.effortHeld', { name: hero.label })]) };
 });
 registerCascadeApplier('aaBleedUnconscious', (get, set, step, hero) => {
   if (!hero || !step.result) return;
