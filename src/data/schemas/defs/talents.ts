@@ -1,6 +1,6 @@
 /**
  * Schéma de `talents.json` — dérivé de l'inventaire COMPLET des clés (script node, n=179/179), de
- * l'interface `TalentData` (`src/data/index.ts:311`), `TalentTest`/`TestMatch` (l.288-310) et
+ * l'interface `TalentData` (`src/data/index.ts`), `TalentTest`/`TestMatch` (`src/data/index.ts`) et
  * `CombatFeature` (`src/engine/combatFeatures/types.ts`). `effects` (`TriggeredEffect[]`) et son
  * `Flow` récursif (`src/engine/flowCore.ts`) sont PROMUS dans `common.ts` (`conditionSchema`/
  * `flowSchema`/`triggeredEffectSchema` — partagés avec talents/etats/spells).
@@ -20,7 +20,7 @@ const specsSourceSchema = z.enum([
 ]);
 const specEntrySchema = z.strictObject({ id: z.string(), label: z.string() });
 
-// ── TestMatch / TalentTest (src/data/index.ts:288-310) ──────────────────────────────────────────
+// ── TestMatch / TalentTest (src/data/index.ts) ──────────────────────────────────────────────────
 const testMatchSchema = z.strictObject({
   skill: z.string().optional(),
   char: charKeySchema.optional(),
@@ -69,10 +69,10 @@ const talentEntrySchema = z.strictObject({
 /**
  * Champs qu'une variante réglée de `talents.json` peut republier — ceux dont la lecture PASSE par
  * `effectiveEntry` (`src/engine/variants.ts`), preuve par consommateur :
- *  - `desc`/`source` → Codex `src/ui/compendium/registry.ts:1133`
- *  - `test` → `talentTestSLBonus` (`src/engine/magic.ts:314`)
- *  - `max` → `talentMaxById` (`src/engine/careerSlots.ts:324`), Apprentissage (`src/ui/InterludeScreen.tsx:722`)
- *  - `combat` → `featuresOf` (`src/engine/combatFeatures/dispatch.ts:59`), `castingKindOf` (l.17)
+ *  - `desc`/`source` → Codex `src/ui/compendium/registry.ts`
+ *  - `test` → `talentTestSLBonus` (`src/engine/magic.ts`)
+ *  - `max` → `talentMaxById` (`src/engine/careerSlots.ts`), Apprentissage (`src/ui/InterludeScreen.tsx:722`)
+ *  - `combat` → `featuresOf` (`src/engine/combatFeatures/dispatch.ts`), `castingKindOf` (l.17)
  * `passive`/`effects` en sont ABSENTS : `talentEffects.ts`/`characteristics.ts`/`combatManeuvers.ts`
  * les lisent sur l'entrée BRUTE — les y admettre ferait diverger le Codex du moteur.
  */

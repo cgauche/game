@@ -1,5 +1,5 @@
 /**
- * Schéma de `qualitySubtypes.json` — miroir de `QualitySubtypeData` (`src/data/index.ts:1588-1589`) :
+ * Schéma de `qualitySubtypes.json` — miroir de `QualitySubtypeData` (`src/data/index.ts`) :
  * les 3 entrées présentes dans le JSON (`arme`/`armure`/`objet`) — sous-type d'objet porteur de Qualité.
  */
 import { z } from 'zod';

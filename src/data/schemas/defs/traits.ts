@@ -1,6 +1,6 @@
 /**
  * Schéma de `traits.json` — Traits de créature (LDB 85 + suppléments/frenchy.bzh), miroir de
- * `TraitData` (`src/data/index.ts:792-844`) + `TraitCapabilities` (`:730-790`).
+ * `TraitData` (`src/data/index.ts`) + `TraitCapabilities` (`src/data/index.ts`).
  */
 import { z } from 'zod';
 import { sourceRefSchema, secondarySourceRefSchema, gameOpSchema, refSchema, entityAppearanceSchema, triggeredEffectSchema, charKeySchema, variantOf } from '../common';
@@ -26,7 +26,7 @@ const specsSourceSchema = z.enum([
   'weaponsRanged',
 ]);
 
-/** `TraitCapabilities` (`src/data/index.ts:730-790`) — clés OBSERVÉES dans `traits.json` (31/54 déclarées
+/** `TraitCapabilities` (`src/data/index.ts`) — clés OBSERVÉES dans `traits.json` (31/54 déclarées
  *  sur l'interface ; les autres appartiennent aux capabilities de qualités/symptômes ou sont réservées
  *  au bestiaire lu ailleurs). Schéma reflète l'INTERFACE complète (toutes optionnelles), pas seulement
  *  le sous-ensemble vu aujourd'hui — une future entrée peut légitimement en ajouter. */
@@ -134,9 +134,9 @@ const traitEntrySchema = z.strictObject({
 
 /**
  * Champs qu'une variante réglée de `traits.json` peut republier — ceux dont la lecture PASSE par
- * `effectiveEntry` : `desc`/`source` → Codex `src/ui/compendium/registry.ts:483`. `capabilities`,
+ * `effectiveEntry` : `desc`/`source` → Codex `src/ui/compendium/registry.ts`. `capabilities`,
  * `passive`, `effects` et `aura` en sont ABSENTS : le moteur les lit sur l'entrée BRUTE
- * (`src/engine/traits/dispatch.ts:204,231,273`, `src/engine/items.ts:545`).
+ * (`src/engine/traits/dispatch.ts,231,273`, `src/engine/items.ts`).
  */
 export const VARIANT_RESOLVED_FIELDS = ['desc', 'source'] as const;
 

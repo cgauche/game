@@ -2,7 +2,7 @@
  * Schéma de `characteristics.json` — l'EXEMPLAIRE de la convention des defs de schéma (Lot 1 du
  * contrat de donnée). Dérivé du contenu RÉEL du JSON (10 caracs à jet + Blessure/Destin/Chance/
  * Résilience/Détermination/Extra Points/Mouvement/Corruption/Péché) et de son seul consommateur typé,
- * `src/ui/compendium/registry.ts:460` (`{ label, abr?, type?, desc?, source? }`, `c.type === 'roll'`).
+ * `src/ui/compendium/registry.ts` (`{ label, abr?, type?, desc?, source? }`, `c.type === 'roll'`).
  */
 import { z } from 'zod';
 import { sourceRefSchema, charKeySchema } from '../common';

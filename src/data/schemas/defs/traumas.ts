@@ -1,6 +1,6 @@
 /**
  * Schéma de `traumas.json` — Traumatismes (LDB 18). Dérivé du contenu RÉEL (23 fiches) et de son
- * consommateur typé `TraumaFiche` (`src/engine/trauma.ts:38`). `ops` = `GameOp[]` (vocab partagé) ;
+ * consommateur typé `TraumaFiche` (`src/engine/trauma.ts`). `ops` = `GameOp[]` (vocab partagé) ;
  * `cosmetic`/`passiveKind`/`maison` : cicatrices post-guérison (LDB 18 l.61/72, #192).
  */
 import { z } from 'zod';

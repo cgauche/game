@@ -1,6 +1,6 @@
 /**
  * Schéma de `classes.json` — dérivé du contenu RÉEL (9 entrées) et de `ClassData`
- * (`src/data/index.ts:159`). `trappings` = `TrappingRef[]` (id catalogue + quantité, ou texte
+ * (`src/data/index.ts`). `trappings` = `TrappingRef[]` (id catalogue + quantité, ou texte
  * flavor hors catalogue) — MÊME forme que `careerLevels.trappings`/`species`, PROMUE dans `common.ts`.
  */
 import { z } from 'zod';

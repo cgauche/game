@@ -1,9 +1,9 @@
 /**
  * Schéma de `localisation.json` — tables de Localisation des coups, FOYER UNIQUE data-driven
- * (`src/engine/combat.ts:48-89`). Deux familles : `personnage` (Localisation humaine/créature par
+ * (`src/engine/combat.ts`). Deux familles : `personnage` (Localisation humaine/créature par
  * FORME de corps, LDB 13 p.159 / LDB 76 p.310 — `BODY_SHAPES`, clé = `BodyShape`, valeurs = `HitLocation`) et
  * `navire`/`navire-fluvial` (Localisation navale par gréement, MDG 13 / MSRC 7 — `ShipLocation`).
- * `HitLocation`/`ShipLocation` : `src/engine/types.ts:37` / `src/engine/combat.ts:58`.
+ * `HitLocation`/`ShipLocation` : `src/engine/types.ts` / `src/engine/combat.ts`.
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../common';
@@ -34,7 +34,7 @@ const shipLocEntry = z.strictObject({
 export const schema = z.strictObject({
   personnage: z.strictObject({
     source: sourceRefSchema,
-    /** Clé = `BodyShape` (`src/engine/types.ts:54`) — seules `humanoide`/`serpent`/`araignee` sont
+    /** Clé = `BodyShape` (`src/engine/types.ts`) — seules `humanoide`/`serpent`/`araignee` sont
      *  présentes dans le JSON (les autres formes retombent sur `humanoide`, cf. `hitLocationByShape`). */
     shapes: z.record(z.string(), z.array(bodyLocEntry)),
   }),

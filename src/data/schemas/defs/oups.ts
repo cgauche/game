@@ -1,6 +1,6 @@
 /**
  * Schéma de `oups.json` — Tableau des Maladresses (LDB 14, transcrit verbatim). Dérivé du contenu
- * RÉEL (7 entrées) et de `OupsEntry`/`OupsKind` (`src/data/oups.ts:10-14`).
+ * RÉEL (7 entrées) et de `OupsEntry`/`OupsKind` (`src/data/oups.ts`).
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../common';

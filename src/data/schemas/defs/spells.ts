@@ -1,7 +1,7 @@
 /**
  * Schéma de `spells.json` — dérivé de l'inventaire COMPLET des clés (script node, n=416/416), de
- * `SpellData` (`src/data/index.ts:983`), `SpellRange`/`SpellTarget` (`src/engine/spellRange.ts:16-36`),
- * `SpellDuration` (`src/engine/spellDuration.ts:13-18`) et `Formula` (`src/engine/ops.ts:65-84`).
+ * `SpellData` (`src/data/index.ts`), `SpellRange`/`SpellTarget` (`src/engine/spellRange.ts`),
+ * `SpellDuration` (`src/engine/spellDuration.ts`) et `Formula` (`src/engine/ops.ts`).
  * `effects` (`Flow<EffectOp>`) : MÊME algèbre que talents/etats (`engine/flowCore.ts`), PROMUE dans
  * `common.ts` (`flowSchema`/`conditionSchema`/`formulaSchema`).
  */
@@ -10,7 +10,7 @@ import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, flowSchema, f
 
 export const file = 'spells.json';
 
-/** `SpellRange` (`engine/spellRange.ts:16`). */
+/** `SpellRange` (`engine/spellRange.ts`). */
 const spellRangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('self') }),
   z.strictObject({ kind: z.literal('touch') }),
@@ -18,7 +18,7 @@ const spellRangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('special'), text: z.string() }),
 ]);
 
-/** `SpellTarget` (`engine/spellRange.ts:31`). `maison` : valeur maison ÉDITABLE portant sa
+/** `SpellTarget` (`engine/spellRange.ts`). `maison` : valeur maison ÉDITABLE portant sa
  *  justification, quand le RAW laisse un point ouvert — CLAUDE.md règle 7. */
 const spellTargetSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('self') }),
@@ -28,7 +28,7 @@ const spellTargetSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('special'), text: z.string() }),
 ]);
 
-/** `SpellDuration` (`engine/spellDuration.ts:13`). */
+/** `SpellDuration` (`engine/spellDuration.ts`). */
 const spellDurationSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('instant') }),
   z.strictObject({ kind: z.literal('rounds'), value: formulaSchema, plus: z.literal(true).optional() }),
@@ -72,7 +72,7 @@ const ritualSchema = z.strictObject({
    *  « **PX d'apprentissage :** 200 (100) »), dont la rubrique `type` nomme les bénéficiaires. La
    *  clause porte sur le LANCEUR (les Domaines qu'il PRATIQUE), pas sur le Rituel — d'où ces ids
    *  ici et non un `CastingNumberMod`, dont le `CastingNumberSubject.domainId` est le Domaine du
-   *  SORT (`src/engine/castingNumber.ts:76`). Lue par `ritualReduction` (`src/engine/grimoire.ts`),
+   *  SORT (`src/engine/castingNumber.ts`). Lue par `ritualReduction` (`src/engine/grimoire.ts`),
    *  consommée par `spellCost` (PX) et `castingNumberOf` (`src/engine/magic.ts`, NI de base). */
   reduced: z.strictObject({
     /** Ids de `domains.json` dont la pratique ouvre la valeur réduite. */
@@ -93,7 +93,7 @@ const ritualSchema = z.strictObject({
   consequences: z.string(),
 });
 
-// ── SpellData (src/data/index.ts:983) ───────────────────────────────────────────────────────────
+// ── SpellData (src/data/index.ts) ───────────────────────────────────────────────────────────────
 /** Entrée de `spells.json`. */
 const spellEntrySchema = z.strictObject({
   id: z.string(),
@@ -103,8 +103,8 @@ const spellEntrySchema = z.strictObject({
   type: z.string(),
   subType: z.string().nullable(),
   domainId: z.string().optional(),
-  /** `VDM 02 l.363` / `l.377-393` — TAG lu par `castingNumberOf` (`src/engine/magic.ts:483`) et
-   *  `effectiveSpellOf` (`src/state/combatFlow.ts:3739`) pour composer un `CastingNumberSubject`
+  /** `VDM 02 l.363` / `l.377-393` — TAG lu par `castingNumberOf` (`src/engine/magic.ts`) et
+   *  `effectiveSpellOf` (`src/state/combatFlow.ts`) pour composer un `CastingNumberSubject`
    *  dont le `kind` départage les portées `kinds:['sort'|'rituel']` (`VDM 12 l.646-647`,
    *  `VDM 14 l.489`). Sans ce champ au schéma, aucune donnée ne peut porter la nature Rituel. */
   isRitual: z.boolean().optional(),
@@ -138,16 +138,16 @@ const spellEntrySchema = z.strictObject({
 /**
  * Champs qu'une variante réglée de `spells.json` peut republier — ceux dont la lecture PASSE par
  * `effectiveEntry` (`src/engine/variants.ts`), preuve par consommateur :
- *  - `desc`/`source` → fiche Codex `src/ui/compendium/registry.ts:1371` (bâtie sur `effectiveEntry`,
- *    `registry.ts:1370`)
- *  - `cn` → NI effectif `castingNumberOf` (`src/engine/magic.ts:486`), lu par `evaluateCasting`
- *    (`magic.ts:596`) et `castLandProbability` (`magic.ts:561`) ; aperçu pré-jet `previewCast`
- *    (`src/state/combatFlow.ts:844`) ; NI de lecture au grimoire `effectiveSpellOf`
- *    (`src/state/combatFlow.ts:3740`) ; « NI » affiché de la fiche Codex (`registry.ts:1373`)
- *  - `duration` → `durationClockMinutes` (`src/state/combatFlow.ts:4105`), durée de la zone posée
- *    par `placeSpellZone` (`src/state/combatFlow.ts:4304`)
- *  - `effects` → `spellFlowFor` (`src/state/combatFlow.ts:4122`), `spellOps`
- *    (`src/state/combatEffects.ts:1463`)
+ *  - `desc`/`source` → fiche Codex `src/ui/compendium/registry.ts` (bâtie sur `effectiveEntry`,
+ *    `registry.ts`)
+ *  - `cn` → NI effectif `castingNumberOf` (`src/engine/magic.ts`), lu par `evaluateCasting`
+ *    (`magic.ts`) et `castLandProbability` (`magic.ts`) ; aperçu pré-jet `previewCast`
+ *    (`src/state/combatFlow.ts`) ; NI de lecture au grimoire `effectiveSpellOf`
+ *    (`src/state/combatFlow.ts`) ; « NI » affiché de la fiche Codex (`registry.ts`)
+ *  - `duration` → `durationClockMinutes` (`src/state/combatFlow.ts`), durée de la zone posée
+ *    par `placeSpellZone` (`src/state/combatFlow.ts`)
+ *  - `effects` → `spellFlowFor` (`src/state/combatFlow.ts`), `spellOps`
+ *    (`src/state/combatEffects.ts`)
  * `range`/`target`/`missile`/`damage`/`ignorePA`/`ignoreBE`/`opposed` en sont ABSENTS : aucune
  * variante curée ne les republie, et une liste blanche n'admet un champ qu'au moment où une donnée
  * réelle l'exerce.

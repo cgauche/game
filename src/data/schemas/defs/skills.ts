@@ -1,6 +1,6 @@
 /**
  * Schéma de `skills.json` — dérivé de l'inventaire COMPLET des clés (script node, n=46/46), de
- * l'interface `SkillData` (`src/data/index.ts:239`) et de ses consommateurs (`ItemCapabilities`,
+ * l'interface `SkillData` (`src/data/index.ts`) et de ses consommateurs (`ItemCapabilities`,
  * `SpecsSource`, `engine/skillCombatApps`).
  */
 import { z } from 'zod';
@@ -15,7 +15,7 @@ const charKeySchema = z.enum([
   'intelligence', 'force-mentale', 'sociabilite',
 ]);
 
-/** `SpecsSource` (`src/data/index.ts:222`) — registre partagé `SPEC_SOURCES` d'où dérive le pool de
+/** `SpecsSource` (`src/data/index.ts`) — registre partagé `SPEC_SOURCES` d'où dérive le pool de
  *  spécialisations quand `specs[]` est absent. Constaté sur skills.json : `weaponGroupsMelee`/
  *  `weaponGroupsRanged`/`winds` seulement, mais le type complet est repris (colonne vertébrale TS). */
 const specsSourceSchema = z.enum([
@@ -37,7 +37,7 @@ const specsSourceSchema = z.enum([
   'weaponsRanged',
 ]);
 
-/** `SpecEntry` (`src/data/index.ts:198`) — entrée de spécialisation inline. */
+/** `SpecEntry` (`src/data/index.ts`) — entrée de spécialisation inline. */
 const specEntrySchema = z.strictObject({ id: z.string(), label: z.string() });
 
 /** Entrée de `skills.json`. */
@@ -59,7 +59,7 @@ const skillEntrySchema = z.strictObject({
     role: z.enum(['defense', 'attack', 'both']),
     gate: z.literal('fear'),
   }).optional(),
-  /** `capability` = clé de `ItemCapabilities` (`src/data/index.ts:357`) — sac de flags fermé côté TS ;
+  /** `capability` = clé de `ItemCapabilities` (`src/data/index.ts`) — sac de flags fermé côté TS ;
    *  laissé en `z.string()` ici (référence croisée hors périmètre d'un seul dataset, cf. `tool.json`
    *  n'existe pas comme catalogue séparé — c'est un type TS, pas une donnée). */
   tool: z.strictObject({ capability: z.string(), withoutMod: z.number() }).optional(),

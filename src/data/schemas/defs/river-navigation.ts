@@ -1,6 +1,6 @@
 /**
  * Schéma de `river-navigation.json` — Navigation fluviale (MSRC 7 « Navigation fluviale »), pendant
- * fluvial de `sea-navigation.json`. Dérivé de la vue typée `DATA` (`src/engine/riverNavigation.ts:62-78`),
+ * fluvial de `sea-navigation.json`. Dérivé de la vue typée `DATA` (`src/engine/riverNavigation.ts`),
  * seul consommateur. `source` = réf structurée book+page+note PAR entrée/sous-objet (#278), non lue
  * par le moteur (`DATA as unknown as { ... }` ignore le champ superflu).
  */
@@ -11,10 +11,10 @@ export const file = 'river-navigation.json';
 
 const riverWindDirId = z.enum(['arriere', 'cote', 'contraire']);
 
-/** `BandRow` (`src/engine/riverNavigation.ts:59`) — table de tirage par fourchette d10. */
+/** `BandRow` (`src/engine/riverNavigation.ts`) — table de tirage par fourchette d10. */
 const bandRow = z.strictObject({ id: z.string(), label: z.string(), min: z.number(), max: z.number() });
 
-/** `RiverWindEffect` (`src/engine/riverNavigation.ts:46-57`). */
+/** `RiverWindEffect` (`src/engine/riverNavigation.ts`). */
 const riverWindEffect = z.strictObject({
   pct: z.number().optional(),
   drift: z.boolean().optional(),

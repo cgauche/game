@@ -1,7 +1,7 @@
 /**
  * Schéma de `names.json` — banques de noms par race (LDB 05), consommé par
- * `src/data/index.ts:1438` (`Record<string, NamePool>` — clé = LIBELLÉ ("Humain", "Haut Elfe"…),
- * PAS `raceKeySchema`). `NamePool` = `src/data/index.ts:1134` : `lastNameSuffixes` n'est présent QUE
+ * `src/data/index.ts` (`Record<string, NamePool>` — clé = LIBELLÉ ("Humain", "Haut Elfe"…),
+ * PAS `raceKeySchema`). `NamePool` = `src/data/index.ts` : `lastNameSuffixes` n'est présent QUE
  * pour "Nain" dans le JSON réel (patronymes générés par suffixe, LDB 05 l.622) — optionnel ailleurs.
  *
  * EXCEPTION VOLONTAIRE à la migration id (#313) : `species.refChar` (désormais `raceKeySchema`) est

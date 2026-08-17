@@ -1,7 +1,7 @@
 /**
  * Schéma de `water-exposure.json` — Exposition hydrique (MSRC 16 p.91). Fichier NON-tableau (objet
  * unique), dérivé de `WaterExposureData`/`WaterExposureModifier`/`WaterExposureAuto`
- * (`src/data/index.ts:105-126`). `test.difficulty` = `Difficulty` (moteur) → `difficultySchema` partagé.
+ * (`src/data/index.ts`). `test.difficulty` = `Difficulty` (moteur) → `difficultySchema` partagé.
  */
 import { z } from 'zod';
 import { difficultySchema, sourceRefSchema } from '../common';

@@ -1,6 +1,6 @@
 /**
  * Schéma de `locations.json` — Lieux de la carte du monde, miroir strict de `LocationData`
- * (`src/data/index.ts:1084-1094`). `parent` est une réf id (≠ libellé) vers un autre `LocationData.id`,
+ * (`src/data/index.ts`). `parent` est une réf id (≠ libellé) vers un autre `LocationData.id`,
  * ou `null` si racine.
  */
 import { z } from 'zod';

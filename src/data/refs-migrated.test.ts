@@ -31,6 +31,7 @@ import { creatureSpeciesOptions } from '../gameIso/rig/creatures';
 import { wardrobeKeyResolves } from '../gameIso/rig/parts/career';
 import { CHAR_KEYS } from '../engine/types';
 import { fileURLToPath } from 'node:url';
+import { readdirSync, readFileSync } from 'node:fs';
 import {
   GAMEOP_FIELD_TARGETS, auditFieldCoverage, collectJsonFiles, scanGameOpRefs, slackRatchets, formatOffender,
 } from '../../scripts/guards/lib/gameOpRefFk.mjs';
@@ -164,9 +165,9 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     }
   });
 
-  // `AdvancementRef` (`src/data/index.ts:2267`) : `{ref}` ET `{wildcard}` portent chacun un `Ref` dont
-  // l'`id` est lu par le moteur — `advancementBaseId` (index.ts:2377) et `slotOptionsFromRef`
-  // (`src/engine/careerSlots.ts:169`) résolvent l'id du joker EXACTEMENT comme celui d'une ref simple.
+  // `AdvancementRef` (`src/data/index.ts`) : `{ref}` ET `{wildcard}` portent chacun un `Ref` dont
+  // l'`id` est lu par le moteur — `advancementBaseId` (index.ts) et `slotOptionsFromRef`
+  // (`src/engine/careerSlots.ts`) résolvent l'id du joker EXACTEMENT comme celui d'une ref simple.
   // La CATÉGORIE vient de la liste porteuse (`skills` vs `talents`), jamais d'un « skill OU talent ».
   it('refs d’avancement explicites ({ref} ET joker {wildcard}) pointent un id de Compétence/Talent réel', () => {
     const bad: string[] = [];
@@ -203,10 +204,10 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     expect(bad).toHaveLength(1);
   });
 
-  // `TrappingRef.wildcard` (`src/data/index.ts:2263`) est une AUTRE forme : une chaîne de CATÉGORIE
+  // `TrappingRef.wildcard` (`src/data/index.ts`) est une AUTRE forme : une chaîne de CATÉGORIE
   // d'équipement (« n'importe quelle arme »), pas un id de registre — `resolveTrappingChoices`
-  // (`src/engine/trappingChoices.ts`) la remplace par l'id choisi, `trappingRefLabel` (index.ts:2385)
-  // et le pré-tiré (`src/data/schemas/defs/pregens.ts:33`) la reconnaissent par sa valeur. Le
+  // (`src/engine/trappingChoices.ts`) la remplace par l'id choisi, `trappingRefLabel` (index.ts)
+  // et le pré-tiré (`src/data/schemas/defs/pregens.ts`) la reconnaissent par sa valeur. Le
   // vocabulaire est donc CLOS : une catégorie inconnue est un emplacement que rien ne sait remplir.
   it('classes/careerLevels : tout {wildcard} de dotation appartient au vocabulaire CLOS des emplacements', () => {
     const SLOTS = new Set(['arme']);
@@ -706,7 +707,7 @@ describe('traumas.prosthesis — trappingId = id du catalogue qui résout', () =
 });
 
 // ── AURA DE TRAIT (traits.json) — `aura.affectsGroups[]` est la ref par laquelle une aura restreint ses
-// bénéficiaires à des Groupes d'appartenance (`groupMatch`, `src/engine/groups.ts:154`, projection
+// bénéficiaires à des Groupes d'appartenance (`groupMatch`, `src/engine/groups.ts`, projection
 // `recompute-auras`). Le champ vit sur l'ENTITÉ, pas sur une `GameOp` : il échappe au périmètre dérivé
 // de l'union `GameOp` (`gameOpRefFk.mjs`) et se déclare donc ici. Un id fantôme ne matcherait AUCUN
 // combattant : l'aura deviendrait muette en silence, sans jamais échouer.
@@ -735,7 +736,7 @@ describe('traits.aura.affectsGroups — ids de groups.json qui résolvent', () =
   });
 });
 
-// ── RÉFÉRENCES DES `GameOp` DE LA DONNÉE COMMITÉE (#847) — `applyOps` (`src/engine/ops.ts:1573`)
+// ── RÉFÉRENCES DES `GameOp` DE LA DONNÉE COMMITÉE (#847) — `applyOps` (`src/engine/ops.ts`)
 // empile sans valider ; le gate d'édition ne voit que ce qui passe par l'UI. Le PÉRIMÈTRE (quels
 // champs d'op portent une référence) est DÉRIVÉ de l'union `GameOp` par le TypeChecker, la CIBLE de
 // chaque champ est déclarée dans `scripts/guards/lib/gameOpRefFk.mjs` — dont l'en-tête écrit ce que
@@ -871,5 +872,45 @@ describe('careerLevels — Schéma de Progression : cardinalité 3/1/1/1 et disj
       if (new Set(all).size !== all.length) offenders.push(`${career} : doublon parmi [${all.join(', ')}]`);
     }
     expect(offenders, offenders.join('\n')).toEqual([]);
+  });
+});
+
+describe('schémas de defs/ — une réf de code cite un FICHIER et un SYMBOLE, jamais un numéro de ligne', () => {
+  const DEFS_DIR = fileURLToPath(new URL('./schemas/defs', import.meta.url));
+  const LINE_REF = /[\w./-]*\.ts:\d+(?:-\d+)?/g;
+
+  /** Intervalles [début, fin) des commentaires (bloc et ligne) — les chaînes en sont exclues. */
+  const commentRanges = (src: string): Array<[number, number]> => {
+    const out: Array<[number, number]> = [];
+    let i = 0, start = 0, inBlock = false, inLine = false, inStr: string | null = null;
+    while (i < src.length) {
+      const c = src[i], d = src[i + 1];
+      if (inBlock) { if (c === '*' && d === '/') { out.push([start, i + 2]); inBlock = false; i += 2; continue; } i++; continue; }
+      if (inLine) { if (c === '\n') { out.push([start, i]); inLine = false; } i++; continue; }
+      if (inStr) { if (c === '\\') { i += 2; continue; } if (c === inStr) inStr = null; i++; continue; }
+      if (c === '/' && d === '*') { inBlock = true; start = i; i += 2; continue; }
+      if (c === '/' && d === '/') { inLine = true; start = i; i += 2; continue; }
+      if (c === '"' || c === "'" || c === '`') { inStr = c; i++; continue; }
+      i++;
+    }
+    if (inLine) out.push([start, src.length]);
+    return out;
+  };
+
+  it('aucun commentaire de src/data/schemas/defs/**.ts ne porte de réf `fichier.ts:N` (tolérance ZÉRO)', () => {
+    const offenders: string[] = [];
+    for (const f of readdirSync(DEFS_DIR).filter((n) => n.endsWith('.ts'))) {
+      const src = readFileSync(`${DEFS_DIR}/${f}`, 'utf8');
+      const ranges = commentRanges(src);
+      for (const m of src.matchAll(LINE_REF)) {
+        if (!ranges.some(([a, b]) => m.index >= a && m.index < b)) continue;
+        offenders.push(`src/data/schemas/defs/${f}:${src.slice(0, m.index).split('\n').length} → ${m[0]}`);
+      }
+    }
+    expect(
+      offenders,
+      `Réf(s) de code ancrées sur un numéro de ligne — le numéro dérive au premier commit voisin et la réf ment.\n`
+        + `Citer le FICHIER et le SYMBOLE (\`src/engine/types.ts\` + le nom de l'interface), jamais \`:N\` :\n${offenders.join('\n')}`,
+    ).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 /**
  * Schéma de `raceAppearance.json` — apparence de base d'une espèce de rig (Humain, Ogre, Skaven…),
- * consommée comme `RaceAppearanceData[]` (`src/data/index.ts:1113`). PAR RÉFÉRENCE : `featureKeys`
+ * consommée comme `RaceAppearanceData[]` (`src/data/index.ts`). PAR RÉFÉRENCE : `featureKeys`
  * (catalogue d'éléments), ids de gabarit/tête/jambes, libellé de tenue, couleurs — les SVG/gabarits
  * restent des registres CODE résolus par `src/gameIso/rig/races/index.ts`.
  */

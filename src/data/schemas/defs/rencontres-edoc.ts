@@ -1,7 +1,7 @@
 /**
  * Schéma de `rencontres-edoc.json` — Rencontres de voyage EDOC 8 (d100, 3 tables), miroir de
- * `TravelTableEntry` (`src/engine/travelTables.ts:15-26`) + l'enveloppe `{ id, label, die, source,
- * tables }` (voir `EncounterCategory` de `travelTables.ts:43`).
+ * `TravelTableEntry` (`src/engine/travelTables.ts`) + l'enveloppe `{ id, label, die, source,
+ * tables }` (voir `EncounterCategory` de `travelTables.ts`).
  *
  * `travelTableEntrySchema` est PROMU dans `common.ts` — MÊME forme que les entrées de
  * `incidents-monture.json`/`problemes-vehicule.json` (les trois miroitent `TravelTableEntry`).

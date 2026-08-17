@@ -1,6 +1,6 @@
 /**
  * Schéma de `crew-test-types.json` — types de Test d'équipage (MDG 14) : rôles contributeurs +
- * rôle ESSENTIEL (son DR compte double). Consommé par `src/data/index.ts:1327` (`CrewTestTypeData`),
+ * rôle ESSENTIEL (son DR compte double). Consommé par `src/data/index.ts` (`CrewTestTypeData`),
  * `findCrewTestTypeById`) et `src/engine/crewMorale.ts`/`src/state/shipCrew.ts`.
  */
 import { z } from 'zod';

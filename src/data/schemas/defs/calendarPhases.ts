@@ -1,6 +1,6 @@
 /**
  * Schéma de `calendarPhases.json` — les 7 phases de la journée (Aube→Nuit), consommé par
- * `src/data/index.ts:1387` (`{ key, start, label, icon }[]`). `start` = minute du jour (0-1439) où la
+ * `src/data/index.ts` (`{ key, start, label, icon }[]`). `start` = minute du jour (0-1439) où la
  * phase commence ; `icon` = chemin d'icône (`ajouter-une-icone`).
  */
 import { z } from 'zod';

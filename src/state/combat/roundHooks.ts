@@ -161,18 +161,18 @@ registerCombatHook({
   },
 });
 registerCombatHook({
-  id: 'outnumbered', // Surnombre (LDB 14 l.149) : ≥2 ennemis Engagés → −1 Avantage en fin de Round
+  id: 'outnumbered', // LDB 14 l.110
   phase: 'onRoundEnd',
   order: 55,
   run: ({ battle, sink }) => {
-    if (groupAdvantage()) return; // mode « Avantage de groupe » : le Surnombre est absorbé par le transfert de domination (AA 11 l.44)
+    if (groupAdvantage()) return; // AA 11 l.44
     for (const c of battle.combatants) {
       if (isOutOfAction(c) || (c.advantage ?? 0) <= 0) continue;
       const foes = (c.engagedWith ?? []).filter((id) => {
         const e = inBattleId(battle, id);
         return !!e && e.kind !== c.kind && !isOutOfAction(e);
       }).length;
-      // Maîtrise du combat (LDB 10) : on compte pour 1+niveau personnes au calcul du surnombre.
+      // LDB 10 l.765
       if (foes >= 2 + outnumberCountBonus(c)) { c.advantage = Math.max(0, c.advantage - 1); sink(t('turn.outnumbered', { name: c.label, foes }), c); }
     }
   },

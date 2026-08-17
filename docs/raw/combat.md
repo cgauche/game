@@ -408,11 +408,11 @@ Les Tests de Combat se modifient comme les autres Tests. Tableau des modificateu
 | Énorme | Jusqu'à 6 m | Griffon, vouivre, manticore | +40 |
 | Monstrueuse | + de 6 m | Dragon, géant, Prince démon | +60 |
 
-— `LDB 14 l.142-165` (Taille). Si le bonus de taille fait toucher alors que le Test aurait échoué, vous réussissez avec **0 DR** (`LDB 14 l.130-131`).
+— `LDB 14 l.118-131` (Taille). Si le bonus de taille fait toucher alors que le Test aurait échoué, vous réussissez avec **0 DR** (`LDB 14 l.120`).
 
 ### Supériorité numérique
 
-À **2 contre 1** : **+20** au toucher en Corps à corps. À **3 contre 1** : **+40**. De plus, à la fin de chaque Round, tout adversaire surpassé en nombre **perd 1 Avantage** (`LDB 14 l.139-140`).
+À **2 contre 1** : **+20** au toucher en Corps à corps. À **3 contre 1** : **+40**. De plus, à la fin de chaque Round, tout adversaire surpassé en nombre **perd 1 Avantage** (`LDB 14 l.110`).
 
 ### Application aux portes / objets résistants
 
@@ -428,10 +428,10 @@ Enfoncer une porte (ou fenêtre…) se résout par un **Test de Corps à corps (
 - `LDB 13 l.170-171` — État *Engagé* : entré en attaquant/étant attaqué en mêlée ; cesse si on n'attaque pas l'autre pendant un Round complet.
 - `LDB 13 l.174-175` — DR en combat (usage spécifique) : DR → Dégâts (pas de Tableau des Résultats), Tests de Combat génèrent Critiques/Maladresses.
 - `LDB 14 l.37-53` — Détails Combat à Distance : pas d'opposition CC sauf talent/bouclier large (p.298) ; Esquive possible si à bout portant (p.297) ; tir impossible en étant Engagé sauf trait Pistolet ; si on tire en étant Engagé avec la cible, elle s'oppose avec n'importe quelle Compétence Corps à corps.
-- `LDB 14 l.65-115` — Tableau des Difficultés de Combat (verbatim) + combinaison (l.126-131, plafond ±60 / -30).
-- `LDB 14 l.130-140` — Bonus de taille fait toucher → 0 DR ; supériorité numérique +20 / +40 et perte d'Avantage des surpassés.
-- `LDB 14 l.134-135` — Cible sans défense (endormie/inconsciente/sans défense) = touche automatique.
-- `LDB 14 l.142-165` — Tableau des Tailles (verbatim).
+- `LDB 14 l.65-115` — Tableau des Difficultés de Combat (verbatim) + combinaison (l.95-96, plafond ±60 / -30).
+- `LDB 14 l.120, l.108-110` — Bonus de taille fait toucher → 0 DR ; supériorité numérique +20 / +40 et perte d'Avantage des surpassés.
+- `LDB 14 l.100-102` — Cible sans défense (endormie/inconsciente/sans défense) = touche automatique.
+- `LDB 14 l.118-131` — Tableau des Tailles (verbatim).
 - `LDB 16 l.15-17` — État *À Terre* dans la liste des États (référence d'application de l'étape 4) ; États ne se cumulent pas (pénalité la plus forte).
 - `EDO 11 l.86-101` — Portes/objets : Test CC (Bagarre) ou arme appropriée, DR + BF en dégâts (moitié des dégâts d'arme si arme), objet = (BE, B), pas de minimum 1 Blessure sur l'inanimé, notation abrégée (D, DR ; FT, B).
 
@@ -443,7 +443,7 @@ Enfoncer une porte (ou fenêtre…) se résout par un **Test de Corps à corps (
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.4, l.113-118, l.122-129, l.132-147, l.150-153, l.156-163, l.166-167, l.170-171, l.174-175) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `engage`, `secondsPerRound`, `markAttacked`, `agressifEnvers`, `FLOW_VERBS`, `entityBlockedAt`, `useHoverTargeting`, +29 — `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/flowCore.ts`, +20 fichiers
-- `LDB 14` (l.37-53, l.65-115, l.130-140, l.142-165) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `areGrappling`, `fr`, `setGrapple`, +109 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +43 fichiers
+- `LDB 14` (l.37-53, l.65-115, l.118-131, l.134-135) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `fr`, `10-a-votre-action-au-prochain-round`, `sceneCombatModifiers`, `scatter`, +81 — `src/data/grapple.json`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/oups.ts`, +28 fichiers
 - `LDB 16` (l.15-17) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, +4 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`
 - `EDO 11` (l.86-101) → `delire`, `fievre-cerebrale-pourpre` — `src/data/maladies.json`, `src/data/symptoms.json`
 
@@ -1196,7 +1196,7 @@ Notes mécaniques par arme (`AA 08 l.228-260`) :
 **Voir aussi** : Maniement de deux armes (talent, LDB 10) ; Armes (Atouts/Défauts : Inoffensive, Déstabilisante, Empaleuse, Déséquilibrée, Assommante, Enchevêtrement) ; États (Empêtré, Engagé) ; Combat à distance (Projectiles/Lancer, portées) ; Désarmer (talent).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.774) → `useAttackJetProps`, `dualAffordance`, `PendingAttack`, `PendingDualStrike`, `resolveDualSecond`, `dualStrikeTargets`, `defenseModifiers`, `GameState`, `Combatant`, `applyAttackResult`, +11 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +3 fichiers
+- `LDB 10` (l.774) → `useAttackJetProps`, `dualAffordance`, `PendingAttack`, `PendingDualStrike`, `resolveDualSecond`, `dualStrikeTargets`, `defenseModifiers`, `GameState`, `Combatant`, `applyAttackResult`, +11 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
 - `LDB 14` (l.101-115, l.139, l.140, l.151, l.159, l.172-180, l.181-184, l.185-199, l.201-202) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `fr`, `setGrapple`, `scatter`, `combat-deux-armes`, `combatOrder`, `empetre`, +78 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +36 fichiers
 - `AA 8` (l.224-261) → `immobilisante-fixe`, `protectrice`, `inoffensive` — `src/data/qualities.json`, `src/data/trappings.json`
 
@@ -1277,7 +1277,7 @@ L'Empoignade fonctionne entièrement via l'État _Empêtré_ infligé. Sa défin
 
 **Voir aussi** : Combat à mains nues (Bagarre), État Empêtré, Avantage, Tests opposés et Degrés de Réussite (DR), Localisation (dé inversé), Combat monté, Trait Constriction.
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 14` (l.155, l.159, l.161, l.163, l.185-186, l.188-189, l.191, l.193, l.195, l.197, l.199, l.201-202) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `combat-deux-armes`, `combatOrder`, `empetre`, `grappleTierMod`, +50 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +28 fichiers
+- `LDB 14` (l.155, l.159, l.161, l.163, l.185-186, l.188-189, l.191, l.193, l.195, l.197, l.199, l.201-202) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `combat-deux-armes`, `combatOrder`, `empetre`, `grappleTierMod`, +50 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +27 fichiers
 - `LDB 16` (l.62, l.86-87) → `combat-fatigue`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, +28 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +17 fichiers
 
 ---
@@ -1356,7 +1356,7 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.72-74, l.151-154) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `MedicState`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `tissage`, `surgeryNext`, +26 — `src/data/flow-stakes.json`, `src/data/talents.json`, `src/i18n/messages/fr.ts`, `src/state/medicFlow.ts`, `src/state/pendings.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
-- `LDB 14` (l.142-165, l.182, l.183, l.204-205, l.207, l.209, l.211, l.213, l.215, l.217) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `setGrapple`, `isControlledMount`, `RunModal`, `scatter`, `combat-deux-armes`, `combatOrder`, +70 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +35 fichiers
+- `LDB 14` (l.142-165, l.182, l.183, l.204-205, l.207, l.209, l.211, l.213, l.215, l.217) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `setGrapple`, `isControlledMount`, `RunModal`, `scatter`, `combat-deux-armes`, `combatOrder`, +70 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +34 fichiers
 - `LDB 15` (l.1) → `run-roll`, `disengage-choice`, `disengage-esquive`, `disengage-fuir`, `climb-test`, `course`, `desengagement`, `fuite` — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`
 - `LDB 85` (l.110, l.248-250, l.357-362) → `morsure`, `cannotStopOn`, `weaponFromTrait`, `traitEntrySchema`, `woundsForSize`, `SpawnExtras`, `empetre`, `etreinte-glaciale`, `availableAttacks`, `taille-modificateurs-en-combat`, +76 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +11 fichiers
 

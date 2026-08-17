@@ -1,6 +1,6 @@
 /**
  * Schéma de `stars.json` — Étoiles (ADE II 3), dérivé du contenu RÉEL (23 étoiles) et de
- * `StarData` (`src/data/index.ts:1051`). Les champs `string | null` de l'interface (signe/classique/
+ * `StarData` (`src/data/index.ts`). Les champs `string | null` de l'interface (signe/classique/
  * ascendant/dates/dieux/apparence/desc) sont TOUS des `string` dans la donnée actuelle — nullable
  * conservé pour rester fidèle au contrat consommateur (le type autorise `null`).
  */

@@ -1,7 +1,7 @@
 /**
  * Schéma de `careerLevels.json` — dérivé du contenu RÉEL (384 entrées, script d'inventaire) et de
- * `CareerLevelData` (`src/data/index.ts:180`). `skills`/`talents` = `AdvancementRef[]`
- * (`src/data/index.ts:1757` : {ref}/{wildcard}+specOptions/{choice}/{random}), `trappings` =
+ * `CareerLevelData` (`src/data/index.ts`). `skills`/`talents` = `AdvancementRef[]`
+ * (`src/data/index.ts` : {ref}/{wildcard}+specOptions/{choice}/{random}), `trappings` =
  * `TrappingRef[]`, `characteristics` = `CharKey[]`. Ces 3 formes (Ref/TrappingRef/AdvancementRef)
  * et l'énum `CharKey` sont PROMUES dans `common.ts` (partagées avec `species.ts`/`classes.ts`).
  *

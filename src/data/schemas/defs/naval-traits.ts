@@ -1,6 +1,6 @@
 /**
  * Schéma de `naval-traits.json` — Traits/Améliorations navals (MDG 12, MSRC 12), catalogue par id
- * STABLE (`NavalTraitRef.id`). Dérivé de l'interface `NavalTraitData` (`src/data/index.ts:1265`, +
+ * STABLE (`NavalTraitRef.id`). Dérivé de l'interface `NavalTraitData` (`src/data/index.ts`, +
  * `NavalInstall`/`InstallBand` co-localisées — bandes par PALIER DE LONGUEUR, #277) et du contenu RÉEL
  * (26 entrées : `id`/`label`/`kind`/`desc`
  * toujours présents ; `source` 25/26 (#221 : Proue-idole de Stromfels = `maison`, pas de folio RAW) ;
@@ -47,7 +47,7 @@ export const schema = z.array(
     /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau (MSRC 12 l.66 Bouteur +20 ;
      *  l.137 Gréement de course −10) — sous-système manœuvre hors vocabulaire combattant (`navalNavTestDR`). */
     navTestMod: z.number().optional(),
-    /** #221 : même champ `maison` que `traumas.json` (`src/data/schemas/defs/traumas.ts:32`). */
+    /** #221 : même champ `maison` que `traumas.json` (`src/data/schemas/defs/traumas.ts`). */
     maison: z.string().optional(),
   }),
 );

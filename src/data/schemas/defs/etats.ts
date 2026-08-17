@@ -1,6 +1,6 @@
 /**
  * Schéma de `etats.json` — dérivé de l'inventaire COMPLET des clés (script node, n=20/20) et de
- * `StatusData`/`EtatData` (`src/data/index.ts:556` et `:575`). `effects` (`TriggeredEffect[]`) et
+ * `StatusData`/`EtatData` (`src/data/index.ts`). `effects` (`TriggeredEffect[]`) et
  * son `Flow` récursif : MÊME algèbre que talents.json (`engine/flowCore.ts`), PROMUE dans
  * `common.ts` (`flowSchema`/`conditionSchema`/`triggeredEffectSchema`).
  */
@@ -9,14 +9,14 @@ import { charKeySchema, sourceRefSchema, gameOpSchema, difficultySchema, trigger
 
 export const file = 'etats.json';
 
-/** `StatusData.gating` (`src/data/index.ts:572`) — restriction Action/Mouvement/défense. */
+/** `StatusData.gating` (`src/data/index.ts`) — restriction Action/Mouvement/défense. */
 const gatingSchema = z.strictObject({
   action: z.literal('none').optional(),
   movement: z.enum(['none', 'half', 'crawl']).optional(),
   cannotDefend: z.literal(true).optional(),
 });
 
-/** `EtatData.recover` (`src/data/index.ts:588`). */
+/** `EtatData.recover` (`src/data/index.ts`). */
 const recoverSchema = z.strictObject({
   skill: z.string().optional(),
   characteristic: charKeySchema.optional(),

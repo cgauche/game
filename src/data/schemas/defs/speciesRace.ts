@@ -1,6 +1,6 @@
 /**
  * Schéma de `speciesRace.json` — règles ORDONNÉES espèce (slug/libellé) → race-id du rig, consommé
- * par `src/gameIso/rig/skeletons.ts:59` (`baseSpeciesOf`, type `SpeciesRule`). Une règle porte
+ * par `src/gameIso/rig/skeletons.ts` (`baseSpeciesOf`, type `SpeciesRule`). Une règle porte
  * EXACTEMENT un des 3 opérateurs (`prefix`/`includes`/`all`+`any`) — `_doc` documente la convention,
  * absente de la lecture runtime (cast `as`) mais présente dans le JSON réel : champ toléré ici.
  */

@@ -1,6 +1,6 @@
 /**
  * Schéma de `lightLevels.json` — paliers de lumière (jour/couvert/crépuscule/nuit/ténèbres) consommés
- * comme `LightLevelDef[]` (`src/data/index.ts:1355`) : `{ id, label, scalar, baseSightTiles }`.
+ * comme `LightLevelDef[]` (`src/data/index.ts`) : `{ id, label, scalar, baseSightTiles }`.
  */
 import { z } from 'zod';
 

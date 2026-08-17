@@ -1,6 +1,6 @@
 /**
  * Schéma de `careers.json` — dérivé du contenu RÉEL (96 entrées, script d'inventaire) et de
- * `CareerData` (`src/data/index.ts:168`). `rand` = Tableau des Classes et Carrières aléatoires
+ * `CareerData` (`src/data/index.ts`). `rand` = Tableau des Classes et Carrières aléatoires
  * (LDB 05 l.197+) : borne haute d100 par colonne d'espèce, `null` = carrière indisponible pour
  * cette espèce (l.360). Deux jeux de clés distincts observés (96 entrées → 2 key-sets, cohérent
  * avec les colonnes d'espèce qui varient selon que la carrière est ouverte aux races additionnelles).

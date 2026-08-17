@@ -1,7 +1,7 @@
 /**
  * Schéma de `trappings.json` — vocabulaire UNIFIÉ des objets (armes/armures/munitions/possessions/
  * consommables/véhicules-marqueur). Dérivé de l'interface `TrappingData` EXISTANTE
- * (`src/data/index.ts:385`, + `QualityRef`/`ItemCapabilities`/`Weapon`/`WeaponDamageSpec`/
+ * (`src/data/index.ts`, + `QualityRef`/`ItemCapabilities`/`Weapon`/`WeaponDamageSpec`/
  * `WeaponRangeSpec`/`AmmoRangeMod`/`ConsumableDuration`/`Formula`/`Flow`/`EffectOp` co-localisées dans
  * engine) et d'un inventaire EXHAUSTIF par script (histogramme de TOUTES les entrées du dataset).
  */
@@ -29,7 +29,7 @@ const qualityRefSchema = z.strictObject({
   value: z.number().optional(),
 });
 
-/** `WeaponDamageSpec` (`src/engine/types.ts:235`) : `{literal}` OU `{plusBF,flat,bare?}` (`plusBF`
+/** `WeaponDamageSpec` (`src/engine/types.ts`) : `{literal}` OU `{plusBF,flat,bare?}` (`plusBF`
  *  toujours explicite — cf. `filet`/`lance-harpon`/`piege-a-chaines`, ZI). */
 const weaponDamageSpecSchema = z.union([
   z.strictObject({ literal: z.string() }),
@@ -47,7 +47,7 @@ const weaponRangeSpecSchema = z.union([z.number(), z.strictObject({ bf: z.number
 /** `AmmoRangeMod` : fraction de la Portée de l'arme, ou ± mètres. */
 const ammoRangeModSchema = z.union([z.strictObject({ mult: z.number() }), z.strictObject({ add: z.number() })]);
 
-/** `ItemCapabilities` (`src/data/index.ts:357`) — sac de drapeaux IRRÉDUCTIBLES, tous optionnels. */
+/** `ItemCapabilities` (`src/data/index.ts`) — sac de drapeaux IRRÉDUCTIBLES, tous optionnels. */
 const itemCapabilitiesSchema = z.strictObject({
   preventForcedDrop: z.boolean().optional(),
   weatherProtection: z.boolean().optional(),
@@ -63,7 +63,7 @@ const itemCapabilitiesSchema = z.strictObject({
   waterContainer: z.boolean().optional(),
 });
 
-/** `Weapon` (`src/engine/types.ts:268`) — reflet des seuls champs pertinents en DONNÉE `derivedWeapon`
+/** `Weapon` (`src/engine/types.ts`) — reflet des seuls champs pertinents en DONNÉE `derivedWeapon`
  *  (prothèse-arme, LDB 73 : « le Crochet est considéré comme une Dague »). `Weapon` porte aussi des
  *  champs runtime-only (`uid`, `hand`…) absents de la donnée d'auteur — non repris ici (jamais observés). */
 const weaponSchema = z.strictObject({
@@ -84,7 +84,7 @@ const weaponSchema = z.strictObject({
   hands: z.union([z.literal(1), z.literal(2)]).optional(),
 });
 
-/** `ConsumableDuration` (`src/engine/consumables.ts:17`) — UNE durée par objet (minutes/heures/jours). */
+/** `ConsumableDuration` (`src/engine/consumables.ts`) — UNE durée par objet (minutes/heures/jours). */
 const consumableDurationSchema = z.strictObject({
   minutes: formulaSchema.optional(),
   hours: formulaSchema.optional(),

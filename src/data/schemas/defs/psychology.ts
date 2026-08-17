@@ -1,6 +1,6 @@
 /**
  * Schéma de `psychology.json` — États PSYCHOLOGIQUES (LDB 21), miroir de `PsychologyData extends
- * StatusData` (`src/data/index.ts:556-573` + `605-650`). Inventaire réel (9 entrées) : `gating` (hérité
+ * StatusData` (`src/data/index.ts`). Inventaire réel (9 entrées) : `gating` (hérité
  * de `StatusData`) n'est utilisé par AUCUNE entrée aujourd'hui — modélisé quand même (reflet de
  * l'interface), simplement optionnel et jamais peuplé en pratique.
  */

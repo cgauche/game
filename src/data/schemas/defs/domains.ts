@@ -1,9 +1,9 @@
 /**
  * Schéma de `domains.json` — dérivé du contenu RÉEL (19 entrées, script d'inventaire) et de
- * `DomainData` (`src/data/index.ts:931`). Domaine de magie (Couleur, LDB 48) : attributs éditables
+ * `DomainData` (`src/data/index.ts`). Domaine de magie (Couleur, LDB 48) : attributs éditables
  * au Codex (riders `effects`, mitigation `missile`, `casterOps` post-incantation…).
  *
- * `effects` porte des `TriggeredEffect<EffectOp>` (`src/engine/flowCore.ts:472`) — Condition/Flow
+ * `effects` porte des `TriggeredEffect<EffectOp>` (`src/engine/flowCore.ts`) — Condition/Flow
  * PROMUS dans `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`, partagés ici
  * et dans maneuvers/qualities/talents/etats/spells/traits/trappings/psychology).
  */

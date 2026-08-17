@@ -1,7 +1,7 @@
 /**
  * Schéma de `qualities.json` — Atouts/Défauts d'arme/armure/objet (LDB 62-63), `QualityData`
- * (`src/data/index.ts:886-901`). `capabilities` = `QualityCapabilities` (drapeaux IRRÉDUCTIBLES,
- * `src/data/index.ts:850-882`) ; `effects`/`passive` = MÊME vocabulaire `TriggeredEffect`/`GameOp` que
+ * (`src/data/index.ts`). `capabilities` = `QualityCapabilities` (drapeaux IRRÉDUCTIBLES,
+ * `src/data/index.ts`) ; `effects`/`passive` = MÊME vocabulaire `TriggeredEffect`/`GameOp` que
  * les Traits et les sorts, PROMU dans `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`
  * — partagés avec `maneuvers.ts`).
  */
@@ -10,7 +10,7 @@ import { gameOpSchema, sourceRefSchema, secondarySourceRefSchema, triggeredEffec
 
 export const file = 'qualities.json';
 
-/** `QualityCapabilities` (`src/data/index.ts:850-882`) — clés OBSERVÉES dans `qualities.json` (52
+/** `QualityCapabilities` (`src/data/index.ts`) — clés OBSERVÉES dans `qualities.json` (52
  *  entrées) sauf `slowStrike`/`layerable`/`apIgnoredOnImpaleCrit` (présents dans l'interface, absents
  *  des 52 entrées actuelles — conservés car le TYPE source fait foi, pas l'échantillon courant). */
 const qualityCapabilities = z.strictObject({

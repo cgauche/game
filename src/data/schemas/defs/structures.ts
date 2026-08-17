@@ -1,7 +1,7 @@
 /**
  * Schéma de `structures.json` — structures DESTRUCTIBLES de siège (ADE II 8 « Le théâtre de la
  * guerre », table « Barricades et protections typiques » ; AA « Tableau des Structures Courantes »,
- * AA 10 l.26-92). Dérivé de l'interface `StructureData` (`src/engine/types.ts:191`) et du contenu
+ * AA 10 l.26-92). Dérivé de l'interface `StructureData` (`src/engine/types.ts`) et du contenu
  * RÉEL (23 entrées : 5 ADE II à 2 colonnes BE/B, 18 AA à profil 5 colonnes ENC/Limite d'Encombrement/
  * Endurance-BE/Blessures/Pénalité de Couvert — `enc`/`encLimit`/`couvertPenalty` optionnels, N/A côté
  * ADE II ou pour les entrées AA sans cette colonne, ex. Herse/Solide porte en bois sans Couvert).

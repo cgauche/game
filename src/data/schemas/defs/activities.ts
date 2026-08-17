@@ -1,8 +1,8 @@
 /**
  * Schéma de `activities.json` — catalogue UNIQUE des Activités (LDB 23, EDOC 8, MDG 15,
- * ADE II 8 Bataille de masse), miroir strict de `ActivityDef` (`src/engine/activities.ts:189-256`,
- * étend `TestSpec` de `src/engine/skills.ts:173`) + `OutcomeBand`/`BattleOutcome`/`BattleCond`
- * (`.../activities.ts:56-114`). Inventaire réel (40 entrées, script node) : tous les champs déclarés
+ * ADE II 8 Bataille de masse), miroir strict de `ActivityDef` (`src/engine/activities.ts`,
+ * étend `TestSpec` de `src/engine/skills.ts`) + `OutcomeBand`/`BattleOutcome`/`BattleCond`
+ * (`.../activities.ts`). Inventaire réel (40 entrées, script node) : tous les champs déclarés
  * ci-dessous sont observés au moins une fois ; aucun champ de l'interface n'est ABSENT du JSON.
  */
 import { z } from 'zod';
@@ -68,7 +68,7 @@ export const schema = z.array(
     icon: z.string(),
     contexts: z.array(activityContextSchema),
     source: sourceRefSchema,
-    // ── TestSpec (src/engine/skills.ts:173) ──
+    // ── TestSpec (src/engine/skills.ts) ──
     skills: z.array(skillRefSchema).optional(),
     char: z.string().optional(),
     difficulty: difficultySchema.optional(),

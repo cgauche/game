@@ -1,6 +1,6 @@
 /**
  * Schéma de `symptoms.json` — dérivé de l'inventaire COMPLET des clés (script node, n=16/16) et de
- * `SymptomData`/`SymptomCapabilities` (`src/data/index.ts:904` et `:917`).
+ * `SymptomData`/`SymptomCapabilities` (`src/data/index.ts`).
  */
 import { z } from 'zod';
 import { sourceRefSchema, gameOpSchema, triggeredEffectSchema } from '../common';
@@ -12,7 +12,7 @@ const difficultySchemaLocal = z.enum([
   'difficile', 'tresDifficile', 'presqueImpossible', 'impossible',
 ]);
 
-/** `SymptomCapabilities` (`src/data/index.ts:904`) — sac de flags CLOS. */
+/** `SymptomCapabilities` (`src/data/index.ts`) — sac de flags CLOS. */
 const symptomCapabilitiesSchema = z.strictObject({
   blocksHealing: z.boolean().optional(),
   amputation: z.boolean().optional(),

@@ -1,7 +1,7 @@
 /**
  * Schéma de `vehicles.json` — véhicules/embarcations à coque (chariots, barges, navires), 3 facettes
  * indépendantes (achat/voyage/coque+navire+pont). Dérivé de l'interface `VehicleData` EXISTANTE
- * (`src/engine/types.ts:108`, + `NavalTraitRef`/`ShipDeck`/`DeckPosteSlot`/`Propulsion`/
+ * (`src/engine/types.ts`, + `NavalTraitRef`/`ShipDeck`/`DeckPosteSlot`/`Propulsion`/
  * `VehicleTravelClass` co-localisées) et du contenu RÉEL (25 entrées, script d'inventaire : `hull`
  * 22/25, `ship` 20/25, `travel` 3/25, `deck` 1/25).
  */
@@ -12,7 +12,7 @@ export const file = 'vehicles.json';
 
 const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
 
-/** `Availability` (`src/engine/types.ts:79`) : « Commune »/« Limitée »/« Rare »/« Exotique ». */
+/** `Availability` (`src/engine/types.ts`) : « Commune »/« Limitée »/« Rare »/« Exotique ». */
 const availabilitySchema = z.enum(['Commune', 'Limitée', 'Rare', 'Exotique']);
 
 const navalTraitRefSchema = z.strictObject({ id: z.string(), value: z.number().optional() });

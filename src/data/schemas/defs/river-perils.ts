@@ -1,6 +1,6 @@
 /**
  * Schéma de `river-perils.json` — Dangers fluviaux (MSRC 7 l.119-166 : Débris/Barrage/Rochers/Eaux
- * peu profondes). Dérivé de `RiverPerilDef` (`src/engine/riverNavigation.ts:258-269`), seul
+ * peu profondes). Dérivé de `RiverPerilDef` (`src/engine/riverNavigation.ts`), seul
  * consommateur. `_source` = note de traçabilité libre (non lue par le moteur).
  */
 import { z } from 'zod';

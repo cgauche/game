@@ -1,6 +1,6 @@
 /**
  * Schéma de `miscast.json` — DIALECTE compilé (PAS des `GameOp` standard), cf. en-tête de
- * `src/data/data-wellformed.test.ts:19-22` et `src/engine/miscast.ts::expandOp`. Modélise
+ * `src/data/data-wellformed.test.ts` et `src/engine/miscast.ts::expandOp`. Modélise
  * `JsonRow`/`JsonNestedTest`/`JsonOp`/`JsonFormula`/`JsonDice` TELS QU'ILS SONT LUS par
  * `miscast.ts` (miroir du `GameOp` runtime, mais `Formula` → `JsonFormula`, + `sinPlus1Value`/
  * `durationRounds` propres au dialecte). Table exposée en 3 tirages d100 : `minor`/`major` (Tableaux
@@ -17,7 +17,7 @@ const difficultySchemaLocal = z.enum([
   'difficile', 'tresDifficile', 'presqueImpossible', 'impossible',
 ]);
 
-/** `JsonDice` (`engine/miscast.ts:72`) = `DiceSpec` (`engine/dice.ts:43`) + `sinPlus` (le `plus`
+/** `JsonDice` (`engine/miscast.ts`) = `DiceSpec` (`engine/dice.ts`) + `sinPlus` (le `plus`
  *  du dé = Points de Péché à la résolution) — dé DÉCLARÉ en donnée, jamais une closure de code. */
 const jsonDiceSchema = z.strictObject({
   n: z.number(),
@@ -26,14 +26,14 @@ const jsonDiceSchema = z.strictObject({
   sinPlus: z.boolean().optional(),
 });
 
-/** `JsonFormula` (`engine/miscast.ts:81`) : nombre littéral, dé, ou `{sinPlus1}` (= 1 + Points de Péché). */
+/** `JsonFormula` (`engine/miscast.ts`) : nombre littéral, dé, ou `{sinPlus1}` (= 1 + Points de Péché). */
 const jsonFormulaSchema = z.union([
   z.number(),
   z.strictObject({ dice: jsonDiceSchema }),
   z.strictObject({ sinPlus1: z.literal(true) }),
 ]);
 
-/** `Formula` GÉNÉRAL du moteur (`engine/ops.ts:65`) — UNIQUEMENT pour `escapeStrength` : la donnée
+/** `Formula` GÉNÉRAL du moteur (`engine/ops.ts`) — UNIQUEMENT pour `escapeStrength` : la donnée
  *  réelle y écrit `{times:{of,factor}}` (miscast.json:93, « Tenue indisciplinée »), une forme HORS
  *  du dialecte `JsonFormula` (qui n'a que number/dice/sinPlus1) — ce champ n'est jamais sin-paramétré,
  *  `expandOp` le recopie tel quel (`engine/miscast.ts`). */
@@ -54,9 +54,9 @@ const engineFormulaSchema: z.ZodType<unknown> = z.lazy(() =>
 );
 
 /**
- * `JsonOp` (`engine/miscast.ts:93`) — mirroir aplati du `GameOp` runtime (`op:'condition'|'wounds'|
+ * `JsonOp` (`engine/miscast.ts`) — mirroir aplati du `GameOp` runtime (`op:'condition'|'wounds'|
  * 'corruption'|'reduceToZero'|'castPenalty'`, seuls op observés dans la donnée), en `JsonFormula`.
- * `escapeStrength` (GameOp `condition` réel, `engine/ops.ts:329` — porté par miscast.json:93
+ * `escapeStrength` (GameOp `condition` réel, `engine/ops.ts` — porté par miscast.json:93
  * « Tenue indisciplinée ») est recopié tel quel par `expandOp` (`Formula` plein, jamais sin-paramétré
  * — cf. `engineFormulaSchema` ci-dessus).
  */
@@ -84,7 +84,7 @@ const jsonOpSchema = z.strictObject({
   escapeStrength: engineFormulaSchema.optional(),
 });
 
-/** `JsonNestedTest` (`engine/miscast.ts:115`). */
+/** `JsonNestedTest` (`engine/miscast.ts`). */
 const jsonNestedTestSchema = z.strictObject({
   skill: z.string().optional(),
   characteristic: z.string().optional(),
@@ -93,7 +93,7 @@ const jsonNestedTestSchema = z.strictObject({
   onFailHard: z.strictObject({ dr: z.number(), ops: z.array(jsonOpSchema) }).optional(),
 });
 
-/** `JsonRow` (`engine/miscast.ts:124`) — entrée de table d100 (`min`/`max` inclusifs). */
+/** `JsonRow` (`engine/miscast.ts`) — entrée de table d100 (`min`/`max` inclusifs). */
 const jsonRowSchema = z.strictObject({
   /** Identité STABLE (#422, exposition Codex) — slug préfixé par table (`mineure-`/`majeure-`/`colere-`)
    *  pour éviter toute collision inter-tables ; consommée par le Codex, jamais par `engine/miscast.ts`. */

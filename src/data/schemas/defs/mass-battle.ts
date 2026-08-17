@@ -1,7 +1,7 @@
 /**
  * Schéma de `mass-battle.json` — 5 tables de bataille de masse (ADE II 8), miroir strict de
  * `PowerEstimateRow`/`MightModifierRow`/`WarMachineRow`/`StructureRow`/`HazardRow`
- * (`src/engine/massBattle.ts:27-35`).
+ * (`src/engine/massBattle.ts`).
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../common';

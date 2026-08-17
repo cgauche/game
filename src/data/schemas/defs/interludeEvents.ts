@@ -1,7 +1,7 @@
 /**
  * Schéma de `interludeEvents.json` — Tableau des Événements « Entre deux aventures » (LDB `22 -
  * Événements.md`, d100), miroir strict de `InterludeEvent`/`InterludeEventFx`
- * (`src/data/interludeEvents.ts:14-38`).
+ * (`src/data/interludeEvents.ts`).
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../common';

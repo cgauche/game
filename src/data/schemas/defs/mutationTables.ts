@@ -1,6 +1,6 @@
 /**
  * Schéma de `mutationTables.json` — Tableaux de Corruption (LDB 19, EDOC…), miroir de `MutationTable`
- * (`src/data/mutations.ts:25-29`). Plages d100 → référence de mutation par id (`ranges[].mutation`).
+ * (`src/data/mutations.ts`). Plages d100 → référence de mutation par id (`ranges[].mutation`).
  * Inventaire réel (17 tables) : `id`/`label`/`ranges[{min,max,mutation}]` seulement.
  */
 import { z } from 'zod';

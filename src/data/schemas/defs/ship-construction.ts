@@ -2,7 +2,7 @@
  * Schéma de `ship-construction.json` — CONSTRUIRE UN NAVIRE (MDG 12 l.108-193). Consommé par
  * `src/engine/shipBuild.ts` (`DATA as unknown as { ... }`, cast inline reflété ICI 1:1) : tableau
  * CARACTÉRISTIQUES DE BATEAU STANDARD, Propulsion, Manœuvrabilité, Traits de vitesse, Traits de
- * construction. `size` = `ShipSize` (`src/data/index.ts:1255`).
+ * construction. `size` = `ShipSize` (`src/data/index.ts`).
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../common';

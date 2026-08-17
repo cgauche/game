@@ -1,6 +1,6 @@
 /**
  * Schéma de `damage-types.json` — registre des types de Dégâts (Immunité aux Dégâts,
- * `src/data/index.ts:1653-1657`, `DamageTypeData`). 4 entrées présentes : poison/feu/electrique/magique.
+ * `src/data/index.ts`, `DamageTypeData`). 4 entrées présentes : poison/feu/electrique/magique.
  */
 import { z } from 'zod';
 

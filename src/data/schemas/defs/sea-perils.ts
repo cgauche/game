@@ -1,17 +1,17 @@
 /**
  * Schéma de `sea-perils.json` — Périls environnementaux en mer (MDG 13 l.423-564) : échouage,
  * dangers (Iceberg/Débris/Rocher/Bas-fonds), détroits, tourbillons, gestion à distance. Dérivé de la
- * vue typée `DATA` (`src/engine/seaPerils.ts:46-53`), seul consommateur.
+ * vue typée `DATA` (`src/engine/seaPerils.ts`), seul consommateur.
  */
 import { z } from 'zod';
 import { difficultySchema, sourceRefSchema } from '../common';
 
 export const file = 'sea-perils.json';
 
-/** `ShipSize` (`src/data/index.ts:1252`). */
+/** `ShipSize` (`src/data/index.ts`). */
 const shipSize = z.enum(['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
 
-/** `SeaHazardDef` (`src/engine/seaPerils.ts:21-31`). */
+/** `SeaHazardDef` (`src/engine/seaPerils.ts`). */
 const seaHazardDef = z.strictObject({
   id: z.string(),
   label: z.string(),
@@ -36,7 +36,7 @@ const seaHazardDef = z.strictObject({
   weight: z.number().optional(),
 });
 
-/** `StraitDef` (`src/engine/seaPerils.ts:33`). */
+/** `StraitDef` (`src/engine/seaPerils.ts`). */
 const straitDef = z.strictObject({
   id: z.string(),
   label: z.string(),
@@ -45,7 +45,7 @@ const straitDef = z.strictObject({
   source: sourceRefSchema,
 });
 
-/** `WhirlpoolDef` (`src/engine/seaPerils.ts:35-44`). */
+/** `WhirlpoolDef` (`src/engine/seaPerils.ts`). */
 const whirlpoolDef = z.strictObject({
   id: z.string(),
   label: z.string(),

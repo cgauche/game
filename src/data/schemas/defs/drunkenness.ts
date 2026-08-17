@@ -1,6 +1,6 @@
 /**
  * Schéma de `drunkenness.json` — Tableau d'Ivresse (LDB 09 l.475-481), consommé par
- * `src/engine/drunkenness.ts:47` (`{ table: DrunkEntry[] }`, lookup `findTableEntry` sur 1d10).
+ * `src/engine/drunkenness.ts` (`{ table: DrunkEntry[] }`, lookup `findTableEntry` sur 1d10).
  * `effect` = id STABLE narratif (Mouvement OU Action de « piece-tourne » lu par `drunkStaggers` ;
  * gueule de bois de « blackout » résolue par `soberUp`). La MÉCANIQUE exécutable (Bravoure/meilleur
  * ami/belligérant) est `ops` (`GameOp[]`, langue unique — `applyOps`), absent = rien d'exécutable.

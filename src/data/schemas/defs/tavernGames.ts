@@ -1,9 +1,9 @@
 /**
  * Schéma de `tavernGames.json` — Jeux de taverne (Nuits agitées & dures journées, ch.16), consommé
- * par `src/engine/tavernGame.ts:44` (type `TavernGame`, 13 entrées réelles). `skill` = `id` de
+ * par `src/engine/tavernGame.ts` (type `TavernGame`, 13 entrées réelles). `skill` = `id` de
  * `skills.json` ou `null` (aucune Compétence indiquée → Pari, variante rapide l.11) — string libre
  * car free-form FK non validée ici (grep du JSON : "savoir"/"projectiles"/"pari"/"corps-a-corps").
- * `characteristic` réutilise l'enum `CharKey` du moteur (`src/engine/types.ts:18`).
+ * `characteristic` réutilise l'enum `CharKey` du moteur (`src/engine/types.ts`).
  *
  * `desc` = la règle RECOPIÉE (CLAUDE.md règle 5), Markdown de la source compris. Un paragraphe que
  * l'extraction coupe sur une frontière de page est RECOLLÉ par-dessus son ancre de folio — aucun

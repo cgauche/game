@@ -1,8 +1,8 @@
 /**
  * Schéma de `sea-events.json` — Humeur de Manann + Événements de bord/de port (MDG 15 l.83-129).
- * Dérivé de la vue typée `EVENTS`/`SeaEventDef`/`ManannFactor` (`src/engine/seaVoyage.ts:32-48`), seul
+ * Dérivé de la vue typée `EVENTS`/`SeaEventDef`/`ManannFactor` (`src/engine/seaVoyage.ts`), seul
  * consommateur. `params` est un sac hétérogène PAR `kind` (ex. `moraleD10`, `days`, `roll`, `creatures`,
- * `restart`…), lu dynamiquement par clé (`eventParam`, `src/state/seaVoyageFlow.ts:730`) — reflet du
+ * `restart`…), lu dynamiquement par clé (`eventParam`, `src/state/seaVoyageFlow.ts`) — reflet du
  * typage source `Record<string, unknown>`, jamais un champ ad hoc par `kind` (aucune contrainte connue
  * au-delà de « objet »).
  */
@@ -11,7 +11,7 @@ import { sourceRefSchema } from '../common';
 
 export const file = 'sea-events.json';
 
-/** `ManannFactor.effect` (`src/engine/seaVoyage.ts:32`) : signe fixe (1|-1) + décompte flat/d10. */
+/** `ManannFactor.effect` (`src/engine/seaVoyage.ts`) : signe fixe (1|-1) + décompte flat/d10. */
 const manannFactor = z.strictObject({
   id: z.string(),
   label: z.string(),
@@ -23,7 +23,7 @@ const manannFactor = z.strictObject({
   source: sourceRefSchema,
 });
 
-/** `SeaEventDef` (`src/engine/seaVoyage.ts:34-42`) — `params` = sac hétérogène PAR `kind`, lu par clé. */
+/** `SeaEventDef` (`src/engine/seaVoyage.ts`) — `params` = sac hétérogène PAR `kind`, lu par clé. */
 const seaEventDef = z.strictObject({
   min: z.number(),
   max: z.number(),
