@@ -35,7 +35,7 @@ import {
 } from '../engine/mountTravel';
 import { possessionLabel } from '../engine/possession';
 import { vehicleCombatant, applyVehicleProblem } from '../engine/vehicle';
-import { rollVehicleProblem } from '../engine/travelTables';
+import { rollVehicleProblem, mountIncidentEffects } from '../engine/travelTables';
 import { applyOps } from '../engine/ops';
 import { applyFall } from './combatEffects';
 import { applyHealWounds } from '../engine/healing';
@@ -1211,9 +1211,10 @@ function travelArrivalCare(get: Get, set: Set): string[] {
   const heroById = new Map(get().party.map((h) => [h.id, h]));
   let touched = false;
   const possessions = get().possessions.map((p) => {
-    if (p.nature !== 'bete' || !p.mountInjury || p.mountInjury === 'patte-brisee') return p;
+    const eff = p.nature === 'bete' ? mountIncidentEffects(p.mountInjury) : undefined;
+    if (!eff || eff.notHealedByCare) return p; // séquelle hors de portée des soins d'étape (Patte brisée)
     const h = heroById.get(p.ownerId);
-    lines.push(t('tf.mountCared', { mount: possessionLabel(p), owner: h ? t('tf.fragMountOwner', { name: h.label }) : '', soin: t(p.mountInjury === 'boiteux' ? 'tf.mountHealed' : 'tf.mountRepaired') }));
+    lines.push(t('tf.mountCared', { mount: possessionLabel(p), owner: h ? t('tf.fragMountOwner', { name: h.label }) : '', soin: t(eff.preventsMount ? 'tf.mountHealed' : 'tf.mountRepaired') }));
     touched = true;
     return { ...p, mountInjury: undefined };
   });

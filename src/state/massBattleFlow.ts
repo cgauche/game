@@ -22,7 +22,7 @@ import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, d100, type RNG } from '../engine/dice';
-import { partyBest, testValue, skillBaseValue, bestForSkills, bestForCombined, bestAssistedOption, type SkillRef, type SupportDetail } from '../engine/skills';
+import { testValue, skillBaseValue, bestForSkills, bestForCombined, bestAssistedOption, type SkillRef, type SupportDetail } from '../engine/skills';
 import { isStructure } from '../engine/structures';
 import { inanimateCombatant } from '../engine/inanimate';
 import { applyOps } from '../engine/ops';
@@ -34,10 +34,11 @@ import { rollLine } from './rollSeam';
 import {
   activityById, activitiesFor, activityModLines, matchBattleOutcomes, battleOutcomeAmount,
   type ActivityDef, type BattleResolution, type BattleOutcome as BattleOutcomeDelta,
+  type BattleMeasure, type BattleTestModPool,
 } from '../engine/activities';
 import type { PendingActivity, PendingActivityFields, ActivityOppositionOn } from './interludeFlow';
 import {
-  inspireDifficulty, resolveClash, rallyHealAmount, battleOutcome, isDestroyed,
+  gapDifficulty, resolveClash, rallyHealAmount, battleOutcome, isDestroyed,
   battleHazard, clampMight, initHoldState, resolveHoldRound, holdEnemyBonus,
   type ClashResult, type BattleOutcome, type HoldState, type BattleHold,
 } from '../engine/massBattle';
@@ -391,23 +392,28 @@ function budgetedParty(get: Get): Combatant[] {
 
 // ── Activités pré-combat (l.79-110) ──────────────────────────────────────────────────────────────
 
-/** Ouvre le Test de Commandement du Discours inspirant (l.71). Difficulté = écart de Puissance arrondi
- *  à la dizaine ; en cas de succès → +10 au Test de Puissance du premier Round. Consomme une Activité
- *  d'interlude du meneur (budget UNIQUE, décrémenté par `confirmActivity`). */
-export function openMassBattleInspire(get: Get, set: Set): void {
-  const mb = get().massBattle;
-  if (!mb || mb.phase !== 'prep' || mb.activitiesDone.includes('inspire')) return;
-  const party = budgetedParty(get);
-  if (!party.length) return;
-  const chosen = assignedHeroesFor(mb, party, 'inspire')[0] ?? partyBest(party, 'commandement')?.actor;
-  if (!chosen) return;
-  const difficulty = inspireDifficulty(armyMight(mb.ally), armyMight(mb.enemy));
-  // Discours (data-driven, `activities.json` id 'inspire') : seule la Difficulté est DYNAMIQUE (écart de
-  // Puissance) → calculée ici ; l'issue (+10 au 1er Round, `firstRoundBonus`) passe par le chemin générique.
-  openBattlePending(get, set, {
-    actor: chosen, battle: 'prep', def: battleActivityById('inspire')!, skillValue: testValue(chosen, 'commandement'),
-    skillId: 'commandement', difficulty, label: t('mbf.inspireLabel'), heroIds: [chosen.id],
-  });
+/** ÉCART (allié − ennemi) d'une mesure d'armée NOMMÉE par une entrée (`difficultyFrom.gap`). PUR. */
+function battleMeasureGap(mb: MassBattleState, measure: BattleMeasure): number {
+  switch (measure) {
+    case 'armyMight': return armyMight(mb.ally) - armyMight(mb.enemy);
+  }
+}
+
+/** Difficulté du Test d'une Activité/Scène de bataille : DÉRIVÉE de l'écart d'armées quand l'entrée le
+ *  DÉCLARE (`difficultyFrom` — Discours inspirant, ADE II 8 l.71), sinon sa Difficulté fixe. PUR. */
+export function battleActivityDifficulty(def: ActivityDef, mb: MassBattleState): Difficulty {
+  const d = def.difficultyFrom;
+  return d ? gapDifficulty(battleMeasureGap(mb, d.gap), d.roundTo ?? 1) : def.difficulty ?? 'intermediaire';
+}
+
+/** Valeur COURANTE d'un réservoir de modificateur de Test d'armée, lu par l'Activité qui le DÉCLARE
+ *  (`testModFrom`) : Planification dépense le crédit de Repérage/Infiltration (l.75/100). PUR. */
+export function battleTestModPool(mb: MassBattleState, pool: BattleTestModPool): number {
+  switch (pool) {
+    case 'allyTestMod': return mb.allyMod;
+    case 'firstRoundBonus': return mb.firstRoundBonus;
+    case 'planningBonus': return mb.planningBonus;
+  }
 }
 
 /** Entrée d'Activité de préparation pour le menu d'interlude : la définition + son état de blocage
@@ -486,9 +492,12 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
   // Budget UNIQUE (l.65) : seuls les meneurs disposant d'une Activité d'interlude peuvent préparer.
   const party = budgetedParty(get);
   if (!party.length) return;
-  // Le Repérage/Infiltration boostent le Test de Planification (`planningBonus`, l.75/100).
-  const mod = activityId === 'planification' ? mb.planningBonus : 0;
+  // Le Test dépense le RÉSERVOIR de modificateur que l'entrée déclare (Planification ⇐ Repérage/
+  // Infiltration, `testModFrom: planningBonus`, l.75/100), et sa Difficulté peut être DÉRIVÉE de
+  // l'écart d'armées (Discours inspirant, `difficultyFrom`, l.71).
+  const mod = def.testModFrom ? battleTestModPool(mb, def.testModFrom) : 0;
   const modLabel = mod ? t('mbf.modPrep') : undefined;
+  const difficulty = battleActivityDifficulty(def, mb);
   if (def.combined && def.skills && def.skills.length >= 2) {
     // Test COMBINÉ (l.75/102) : l'acteur posté décide (à défaut, SUGGESTION = celui maximisant le PLUS FAIBLE
     // des deux). Les DEUX valeurs de l'acteur retenu sont dérivées via une passe SINGLETON.
@@ -498,7 +507,7 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
     if (!picked) return;
     openBattlePending(get, set, {
       actor: picked.actor, battle: 'prep', def, skillValue: picked.value1, skillId: def.skills[0].skillId, spec: def.skills[0].spec, char: def.char,
-      difficulty: def.difficulty ?? 'intermediaire', mod, modLabel,
+      difficulty, mod, modLabel,
       combined: { skillId: def.skills[1].skillId, spec: def.skills[1].spec, value: picked.value2 },
     });
     return;
@@ -511,7 +520,7 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
     const { team, picked } = at;
     openBattlePending(get, set, {
       actor: picked.actor, battle: 'prep', def, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
-      difficulty: def.difficulty ?? 'intermediaire', mod, modLabel,
+      difficulty, mod, modLabel,
       heroIds: team.map((h) => h.id), support: picked.support,
     });
     return;
@@ -523,7 +532,7 @@ export function openMassBattleActivity(get: Get, set: Set, activityId: string): 
   if (!picked) return;
   openBattlePending(get, set, {
     actor: picked.actor, battle: 'prep', def, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
-    difficulty: def.difficulty ?? 'intermediaire', mod, modLabel,
+    difficulty, mod, modLabel,
   });
 }
 

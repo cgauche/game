@@ -4,7 +4,7 @@ import { difficultyFromModifier } from './tests';
 import {
   mightFromRelation, estimateMightFromAspects, warMachineMight, normalizeMights,
   mightReduction, rollMightTest, resolveClash,
-  battleOutcome, isDestroyed, inspireDifficulty, roundToTen,
+  battleOutcome, isDestroyed, gapDifficulty, roundToStep,
   battleHazard, clampMight, MIGHT_MODIFIERS, POWER_ESTIMATE,
   WAR_MACHINES, STRUCTURES, BATTLE_HAZARDS,
   rallyHealAmount, initHoldState, resolveHoldRound, holdEnemyBonus, INSPIRE_BONUS,
@@ -79,12 +79,12 @@ describe('Test spectaculaire de Puissance (l.120)', () => {
 });
 
 describe('Discours inspirant (l.71)', () => {
-  it('Difficulté depuis l\'écart de Puissance, arrondi à la dizaine', () => {
-    expect(roundToTen(23)).toBe(20);
-    expect(roundToTen(-24)).toBe(-20);
-    expect(inspireDifficulty(60, 40)).toBe('accessible');     // allié +20 → plus facile
-    expect(inspireDifficulty(50, 50)).toBe('intermediaire');  // égalité → +0
-    expect(inspireDifficulty(30, 60)).toBe('tresDifficile');  // allié −30 → plus dur
+  it('Difficulté depuis l\'écart de Puissance, arrondi au pas déclaré (la dizaine)', () => {
+    expect(roundToStep(23, 10)).toBe(20);
+    expect(roundToStep(-24, 10)).toBe(-20);
+    expect(gapDifficulty(60 - 40, 10)).toBe('accessible');     // allié +20 → plus facile
+    expect(gapDifficulty(50 - 50, 10)).toBe('intermediaire');  // égalité → +0
+    expect(gapDifficulty(30 - 60, 10)).toBe('tresDifficile');  // allié −30 → plus dur
   });
 
   it('mappe un modificateur sur la bande de Difficulté la plus proche', () => {

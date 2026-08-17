@@ -60,6 +60,19 @@ export type BattleSide = 'ally' | 'enemy';
  *  (Repérage/Infiltration, l.75/100). L'échelle suit `scale` : `fixed` (plat) ; `perDR`×DR (Motivation
  *  l.151) ; `perHit`×touches / `perKill`×ennemis neutralisés (Charge/Pluie de flèches, l.139/145). */
 export type BattleOutcomeTarget = 'might' | 'startMight' | 'allyTestMod' | 'firstRoundBonus' | 'planningBonus';
+/** Cibles d'issue qui sont des RÉSERVOIRS de modificateur de Test, donc CONSOMMABLES par le Test d'une
+ *  Activité qui les déclare en `testModFrom` (les deltas de Puissance, eux, ne se dépensent pas). */
+export type BattleTestModPool = Extract<BattleOutcomeTarget, 'allyTestMod' | 'firstRoundBonus' | 'planningBonus'>;
+/** MESURE d'armée dont l'ÉCART (allié − ennemi) peut porter une difficulté dérivée (`difficultyFrom`).
+ *  `armyMight` = Puissance courante des deux armées (ADE II 8 l.71). Une mesure de plus s'ajoute ici et
+ *  dans son résolveur, jamais un mot-clef par Activité. */
+export type BattleMeasure = 'armyMight';
+/** Difficulté DÉRIVÉE : écart d'une mesure d'armée, arrondi au pas `roundTo` (10 = « à la dizaine la
+ *  plus proche », l.71), lu comme un modificateur de Test (`difficultyFromModifier`). */
+export interface BattleDifficultyFrom {
+  gap: BattleMeasure;
+  roundTo?: number;
+}
 export type BattleOutcomeScale = 'fixed' | 'perDR' | 'perHit' | 'perKill';
 export interface BattleOutcome {
   /** `might`/`startMight` portent un `side` (armée visée) ; les modificateurs de Test sont toujours alliés. */
@@ -303,6 +316,17 @@ export interface ActivityDef extends TestSpec {
   /** Flag de préparation OCTROYÉ sur réussite (débloque une Activité dépendante) : Planification → 'planned' ;
    *  Repérage → 'scouted'. */
   grantsFlag?: string;
+  /** RÉSERVOIR de modificateur que le Test de CETTE Activité consomme — le pendant LECTEUR d'un
+   *  `BattleOutcome.target` accumulé par d'autres issues : Repérage (+10, l.100) et Infiltration
+   *  (+20, l.75) créditent `planningBonus`, que le Test de Planification dépense. Absent = Test
+   *  sans modificateur d'armée. */
+  testModFrom?: BattleTestModPool;
+  /** Difficulté DÉRIVÉE de l'état des armées au lieu de la `difficulty` fixe (Discours inspirant,
+   *  ADE II 8 l.71 : « une Difficulté déterminée par la différence de Puissance entre les armées,
+   *  arrondie à la dizaine la plus proche »). L'ÉCART (`gap`) est une mesure NOMMÉE de la bataille,
+   *  arrondi au pas `roundTo`, puis converti en Difficulté par `difficultyFromModifier` — un écart
+   *  favorable facilite le Test. */
+  difficultyFrom?: BattleDifficultyFrom;
   /** Genre d'une Scène de Round ('bataille-round') : `test` (Test de Compétence des PJ, delta de Puissance
    *  par l'issue) ; `combat` (rencontre tactique — `startCombat` — touches/kills nourrissent le delta) ;
    *  `threat` (Scène MENACE qui s'IMPOSE et pénalise les autres Scènes tant qu'elle vit, Intrus l.219) ;

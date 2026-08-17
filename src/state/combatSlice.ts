@@ -1433,11 +1433,12 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!ship) { set({ pendingCrewTest: null }); return; }
       const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
       set({ pendingCrewTest: null });
-      const label = findCrewTestTypeById(p.testTypeId)?.label ?? p.testTypeId;
+      const testType = findCrewTestTypeById(p.testTypeId);
+      const label = testType?.label ?? p.testTypeId;
       get().log(t('cs.crewTest', { label, ship: ship.label, dr: total >= 0 ? `+${total}` : `${total}`, outcome: crewTestSuccess(total) ? t('cs.crewTestOk') : t('cs.crewTestKo') })); // MDG 14 l.13
-      // ISSUE PAR TYPE — Rude épreuve (l.110) : « Si le total de ce Test donne un ou plusieurs DR négatifs,
-      // réduisez le Moral d'un nombre égal au nombre de ces DR. » Persiste sur le navire de campagne.
-      if (p.testTypeId === 'rude-epreuve') {
+      // ISSUE PAR TYPE — le type de Test DÉCLARE que son total négatif coûte du Moral (MDG 14 l.110).
+      // Persiste sur le navire de campagne.
+      if (testType?.moraleOnNegativeDR) {
         for (const l of applyShipMoraleDelta(get, set, ship, rudeEpreuveMoraleDelta(total))) get().log(l);
       }
       const bC = get().battle!;

@@ -156,19 +156,20 @@ export function resolveClash(
   };
 }
 
-// ── Discours inspirant (l.69-71) ─────────────────────────────────────────────────────────────────
+// ── Difficulté DÉRIVÉE d'un écart d'armées (Discours inspirant, l.69-71) ─────────────────────────
 
-/** Arrondi à la dizaine la plus proche (l.71 : « arrondie à la dizaine la plus proche »). */
-export function roundToTen(n: number): number {
-  return Math.round(n / 10) * 10;
+/** Arrondi au PAS déclaré par l'entrée (`difficultyFrom.roundTo`) — 10 = « arrondie à la dizaine la
+ *  plus proche » (l.71). Pas ≤ 0 → valeur inchangée. */
+export function roundToStep(n: number, step: number): number {
+  return step > 0 ? Math.round(n / step) * step : n;
 }
 
-/** Difficulté du Test de Commandement du Discours inspirant (l.71) : « une Difficulté déterminée par la
- *  différence de Puissance entre les armées, arrondie à la dizaine la plus proche ». Un écart FAVORABLE
- *  (allié > ennemi) rend le Test plus facile ; défavorable, plus difficile. En cas de Succès → +10 au
- *  Test de Puissance du premier Round (`INSPIRE_BONUS`). */
-export function inspireDifficulty(allyMight: number, enemyMight: number): Difficulty {
-  return difficultyFromModifier(roundToTen(allyMight - enemyMight));
+/** Difficulté d'un Test DÉRIVÉE d'un ÉCART de mesure d'armée (l.71) : « une Difficulté déterminée par la
+ *  différence de Puissance entre les armées, arrondie à la dizaine la plus proche ». L'écart arrondi EST
+ *  le modificateur — favorable (allié devant) → plus facile ; défavorable → plus dur. En cas de Succès du
+ *  Discours → +10 au Test de Puissance du premier Round (`INSPIRE_BONUS`). PUR. */
+export function gapDifficulty(gap: number, roundTo = 1): Difficulty {
+  return difficultyFromModifier(roundToStep(gap, roundTo));
 }
 
 /** Bonus au Test de Puissance du premier Round de bataille en cas de Discours inspirant réussi (l.71). */

@@ -149,6 +149,27 @@ describe('resolveMountIncident (EDOC 07 l.157-174)', () => {
     const p = resolveMountIncident(entry('patte-brisee'), mountOf('poney'), makeRNG(1));
     expect(p.injury).toBe('patte-brisee');
   });
+
+  it('le JOURNAL dit la séquelle ET sa portée : pénalité + condition de fin, allure imposée + fin, issue de la bête', () => {
+    // Ce que le joueur DOIT continuer de lire (EDOC 07 l.157-174, verbatim des entrées) : le −20 « jusqu'à
+    // ce que la partie abîmée soit réparée », le pas « jusqu'à ce que le fer ait été remplacé par un
+    // maréchal-ferrant », et la gravité d'une patte brisée. Ces fragments sont AUTHORÉS sur l'entrée.
+    const sangle = resolveMountIncident(entry('sangle-cassee'), mountOf('cheval-de-monte'), makeRNG(3)).lines.join('\n');
+    expect(sangle).toContain('-20 aux Tests de Chevaucher');
+    expect(sangle).toContain('jusqu’à réparation de la sellerie'.replace('’', "'"));
+
+    const fer = resolveMountIncident(entry('perte-d-un-fer'), mountOf('poney'), makeRNG(5)).lines.join('\n');
+    expect(fer).toContain('ne peut plus aller qu’au pas');
+    expect(fer).toContain('maréchal-ferrant');
+
+    const boiteux = resolveMountIncident(entry('boiteux'), mountOf('poney'), makeRNG(1)).lines.join('\n');
+    expect(boiteux).toContain('ne peut plus être montée ni attelée');
+
+    const patte = resolveMountIncident(entry('patte-brisee'), mountOf('poney'), makeRNG(1)).lines.join('\n');
+    expect(patte).toContain('Fracture (Majeure)');
+    expect(patte).toContain('peu d’espoir'.replace('’', "'"));
+    expect(patte).toContain('soins d’une halte');
+  });
 });
 
 describe('resolveMountedDay — sur-endurance (EDOC 07 l.146)', () => {

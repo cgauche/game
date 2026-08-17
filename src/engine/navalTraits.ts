@@ -110,7 +110,7 @@ export function belierRam(traits: NavalTraitRef[] | undefined): { ic: number; ap
 }
 
 /** Modificateur BRUT (points de %) au Test de Navigation POUR DIRIGER le bateau, sommé sur les Traits +
- *  Améliorations (MSRC 12 l.66 : Bouteur +20 ; l.137 : Gréement de course −10). Champ de DOMAINE `navTestMod`
+ *  Améliorations (MSRC 12 l.66 : Bouteur +20 ; l.140 : Gréement de course −10). Champ de DOMAINE `navTestMod`
  *  (le +20/−10 vise le Test lui-même, hors vocabulaire combattant `skillDRBonus`). PUR. */
 export function navalNavTestMod(traits: NavalTraitRef[] | undefined): number {
   return (traits ?? []).reduce((n, ref) => n + (findNavalTrait(ref.id)?.navTestMod ?? 0), 0);

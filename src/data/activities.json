@@ -649,6 +649,10 @@
       }
     ],
     "difficulty": "intermediaire",
+    "difficultyFrom": {
+      "gap": "armyMight",
+      "roundTo": 10
+    },
     "desc": "Un Personnage peut tenter d'inspirer les troupes avant la bataille. Cela nécessite de réussir un Test de Commandement avec une Difficulté déterminée par la différence de Puissance entre les armées, arrondie à la dizaine la plus proche. En cas de Succès, l'armée obtient un bonus de +10 au Test de Puissance pendant le premier Round de bataille.",
     "outcomes": [
       {
@@ -685,6 +689,7 @@
     "difficulty": "intermediaire",
     "assisted": true,
     "grantsFlag": "planned",
+    "testModFrom": "planningBonus",
     "desc": "Assis dans une pièce autour d'un verre de vin et d'une carte décorée de figurines de bois, les généraux débattent pour mettre au point l'élément le plus important : le plan de bataille. Pour concevoir un bon plan, un Personnage doit réussir un Test de Savoir (Guerre). La Difficulté de ce Test dépend principalement de la différence de Puissance entre les armées, du champ de bataille choisi et du plan lui-même. Un Personnage avec au moins une Augmentation en Savoir (Guerre) peut aider au Test. En cas de Succès, l'armée obtient un bonus de +10 à tous les Tests de Puissance pendant la bataille. En cas de Succès Stupéfiant (+6), ce bonus passe à +20.",
     "outcomes": [
       {

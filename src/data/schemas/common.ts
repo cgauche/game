@@ -670,6 +670,34 @@ export const travelTableEntrySchema = z.strictObject({
   stageOutcome: stageOutcomeSchema.optional(),
   vehicleWounds: z.string().nullable().optional(),
   occupantOps: z.array(gameOpSchema).optional(),
+  /** Suite MÉCANIQUE d'un Incident de MONTE (`incidents-monture.json`, EDOC 07 l.157-174), miroir de
+   *  `MountIncidentEffects` (`src/engine/travelTables.ts`) : elle est DÉCLARÉE par l'entrée, jamais
+   *  déduite de son id. Une entrée sans `mount` ne laisse aucune séquelle. */
+  mount: z.strictObject({
+    /** Test du CAVALIER, sous peine de chute de `fallM` mètres (l.166/l.171). */
+    riderTest: z.strictObject({
+      skillId: z.string(),
+      char: z.string().optional(),
+      difficulty: difficultySchema,
+      fallM: z.number(),
+    }).optional(),
+    /** Modificateur PERSISTANT aux Tests de Chevaucher tant que la séquelle dure (l.174 : −20). */
+    ridingPenalty: z.number().optional(),
+    /** Allure MAXIMALE imposée à la bête tant que la séquelle dure (Perte d'un fer : le pas). */
+    forcedAllure: z.enum(['pas', 'trot', 'galop']).optional(),
+    /** La bête ne peut plus être montée ni attelée (Boiteux, Patte brisée). */
+    preventsMount: z.boolean().optional(),
+    /** Les soins d'une halte n'effacent PAS cette séquelle (Patte brisée). */
+    notHealedByCare: z.boolean().optional(),
+    /** CONDITION DE FIN de la séquelle, telle que le `text` verbatim de l'entrée la pose (« jusqu'à ce
+     *  que la partie abîmée soit réparée » / « jusqu'à ce que le fer ait été remplacé par un
+     *  maréchal-ferrant ») — fragment d'AFFICHAGE joueur accolé à la ligne de séquelle, jamais une
+     *  mécanique : ce qui EFFACE la séquelle reste `notHealedByCare` + les soins d'étape. */
+    endCondition: z.string().optional(),
+    /** ISSUE de la bête, quand le `text` verbatim en pose une (Patte brisée : « Fracture (Majeure) …
+     *  peu d'espoir qu'elle y survive ») — fragment d'AFFICHAGE joueur, ligne propre au journal. */
+    outcome: z.string().optional(),
+  }).optional(),
 });
 
 /** `ShipCrewTest` (`src/data/shipCriticals.ts`) — Test d'équipage déclenché par un Critique de coque. */

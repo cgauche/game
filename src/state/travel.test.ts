@@ -599,6 +599,24 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
     expect(st.journal.some((l) => l.includes('remise en état'))).toBe(true);
   });
 
+  it('la séquelle déclarée HORS de portée des soins (Patte brisée) survit à l’arrivée — le boiteux du même voyage, lui, est soigné', () => {
+    setRule('travel-allures', true);
+    const h = hero();
+    setup(map(), [h], [
+      mountPossession('m1', h.id, 'cheval-de-monte', 'patte-brisee'),
+      mountPossession('m2', h.id, 'poney', 'boiteux'),
+    ]);
+    useGame.getState().startTravel('r1', 'pied'); // aucune des deux bêtes n'est montable (`preventsMount`)
+    const st = useGame.getState();
+    expect(st.scene?.id).toBe('lieu-b-scene'); // le voyage est bien ARRIVÉ (sinon l'assertion suivante serait vide)
+    const injuryOf = (uid: string) => {
+      const p = st.possessions.find((x) => x.uid === uid)!;
+      return p.nature === 'bete' ? p.mountInjury : undefined;
+    };
+    expect(injuryOf('m2')).toBeUndefined(); // TÉMOIN : les soins d'arrivée ont bien tourné
+    expect(injuryOf('m1')).toBe('patte-brisee'); // …et n'ont rien pu pour celle-ci (`notHealedByCare`)
+  });
+
   it('chute de selle (Dégâts de Chute, EDOC 07 l.166/l.171) : le héros encaisse ET `party` est FLUSHÉ (nouvelle référence, re-rendu HUD/fiche)', () => {
     setRule('travel-allures', true);
     // Chien M4/BE2 au galop sur 80 km : Incidents de monte garantis ; on cherche une graine qui produit

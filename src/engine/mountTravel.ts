@@ -23,15 +23,15 @@
  * L'Exténué des bêtes est journalier (la halte de nuit vaut repos — LDB 16, l'Exténué part au repos).
  */
 import monturesJson from '../data/montures.json';
-import type { Combatant } from './types';
+import type { Combatant, CharKey } from './types';
 import type { Possession } from './possession';
 import { possessionLabel, possessionCombatRideable } from './possession';
 import { d100, type RNG } from './dice';
 import { rollTest, testDetail } from './tests';
 import { testValue } from './skills';
-import { rollMountIncident, type TravelTableEntry } from './travelTables';
+import { rollMountIncident, mountIncidentEffects, type TravelTableEntry } from './travelTables';
 import { t, type MsgKey } from '../i18n';
-import { refLabel } from '../data';
+import { refLabel, dataLabel } from '../data';
 
 export type Allure = 'pas' | 'trot' | 'galop';
 export const ALLURES: readonly Allure[] = ['pas', 'trot', 'galop'];
@@ -86,7 +86,7 @@ export interface PartyMount {
 /** Cette bête peut-elle (encore) être montée ? Boiteux : « ne peut pas … être monté » (l.157) ;
  *  Patte brisée : « demeure immobile » (l.161). */
 const rideable = (p: Possession & { nature: 'bete' }): boolean =>
-  !p.destroyed && p.mountInjury !== 'boiteux' && p.mountInjury !== 'patte-brisee';
+  !p.destroyed && !mountIncidentEffects(p.mountInjury)?.preventsMount; // la séquelle DÉCLARE `preventsMount`
 
 /** 1re bête possédée `avec-le-groupe` d'un héros passant `gate` (`possessions` = tout le registre du
  *  store, filtré par `ownerId`) — mutualise l'itération commune de `heroMount`/`heroCombatMount`. */
@@ -140,7 +140,8 @@ export function availableAllures(mounts: PartyMount[]): Allure[] {
 /** Allure EFFECTIVE d'une bête : Perte d'un fer → « au pas jusqu'à ce que le fer ait été remplacé »
  *  (l.166) ; une bête qui ne trotte pas (l.121-130) reste au pas quand le groupe trotte. */
 function effectiveAllure(m: PartyMount, allure: Allure): Allure {
-  if (m.possession.mountInjury === 'perte-d-un-fer') return 'pas';
+  const forced = mountIncidentEffects(m.possession.mountInjury)?.forcedAllure; // allure imposée par la séquelle
+  if (forced) return forced;
   if (allure === 'trot' && !m.profile.trot) return 'pas';
   return allure;
 }
@@ -193,38 +194,41 @@ export interface MountIncidentResolved {
  * s'applique aux Tests de Chevaucher suivants (l.174) — lu sur `possession.mountInjury`.
  */
 export function resolveMountIncident(entry: TravelTableEntry, mount: PartyMount, rng: RNG): MountIncidentResolved {
-  const out: MountIncidentResolved = { entry, lines: [t('mt.incident', { mount: possessionLabel(mount.possession), label: entry.label })] };
-  switch (entry.id) {
-    case 'sangle-cassee':
-    case 'perte-d-un-fer': {
-      // Test de Chevaucher Complexe (-10) du cavalier, ou chute de 2 mètres (l.166 / l.171).
-      const saddleMod = mount.possession.mountInjury === 'sangle-cassee' ? -20 : 0; // sellerie déjà abîmée (l.174)
-      const base = testValue(mount.hero, 'chevaucher', 'agilite') + saddleMod;
-      const tst = rollTest(Math.max(0, base), 'complexe', rng);
-      out.riderTest = testDetail(refLabel('skills', { id: 'chevaucher' }), Math.max(0, base), tst);
-      if (!tst.success) {
-        out.riderFallM = 2;
-        out.lines.push(t('mt.riderFalls', { name: mount.hero.label }));
-      } else {
-        out.lines.push(t('mt.riderHolds', { name: mount.hero.label }));
-      }
-      out.injury = entry.id;
-      out.lines.push(entry.id === 'sangle-cassee'
-        ? t('mt.girthBroken', { mount: possessionLabel(mount.possession) })
-        : t('mt.shoeLost', { mount: possessionLabel(mount.possession) }));
-      break;
+  const mountLabel = possessionLabel(mount.possession);
+  const out: MountIncidentResolved = { entry, lines: [t('mt.incident', { mount: mountLabel, label: entry.label })] };
+  const eff = entry.mount;
+  if (!eff) return out; // incident sans suite déclarée : la ligne d'incident, rien de plus
+  if (eff.riderTest) {
+    // Test du cavalier, sous peine de chute (l.166 / l.171). Une séquelle DÉJÀ portée grève ce Test (l.174).
+    const carried = mountIncidentEffects(mount.possession.mountInjury)?.ridingPenalty ?? 0;
+    const base = Math.max(0, testValue(mount.hero, eff.riderTest.skillId, eff.riderTest.char as CharKey | undefined) + carried);
+    const tst = rollTest(base, eff.riderTest.difficulty, rng);
+    out.riderTest = testDetail(refLabel('skills', { id: eff.riderTest.skillId }), base, tst);
+    if (!tst.success) {
+      out.riderFallM = eff.riderTest.fallM;
+      out.lines.push(t('mt.riderFalls', { name: mount.hero.label, metres: `${eff.riderTest.fallM}` }));
+    } else {
+      out.lines.push(t('mt.riderHolds', { name: mount.hero.label }));
     }
-    case 'boiteux':
-      out.injury = 'boiteux';
-      out.lines.push(t('mt.lame', { mount: possessionLabel(mount.possession) }));
-      break;
-    case 'patte-brisee':
-      out.injury = 'patte-brisee';
-      out.lines.push(t('mt.legBroken', { mount: possessionLabel(mount.possession) }));
-      break;
-    default:
-      break;
   }
+  out.injury = entry.id as MountInjury; // la séquelle persistée EST l'id de son incident
+  // CONDITION DE FIN et ISSUE : fragments AUTHORÉS de l'entrée (dérivés de son verbatim), passés par
+  // `dataLabel` — le gabarit du catalogue les accueille, aucun texte de règle n'est composé ici.
+  const fin = eff.endCondition ? dataLabel(eff.endCondition) : undefined;
+  if (eff.ridingPenalty) {
+    out.lines.push(fin
+      ? t('mt.injuryRidingPenaltyUntil', { mount: mountLabel, penalty: `${eff.ridingPenalty}`, fin })
+      : t('mt.injuryRidingPenalty', { mount: mountLabel, penalty: `${eff.ridingPenalty}` }));
+  }
+  if (eff.forcedAllure) {
+    const allure = allureLabel(eff.forcedAllure).toLowerCase();
+    out.lines.push(fin
+      ? t('mt.injuryForcedAllureUntil', { mount: mountLabel, allure, fin })
+      : t('mt.injuryForcedAllure', { mount: mountLabel, allure }));
+  }
+  if (eff.preventsMount) out.lines.push(t('mt.injuryPreventsMount', { mount: mountLabel }));
+  if (eff.outcome) out.lines.push(t('mt.injuryOutcome', { mount: mountLabel, issue: dataLabel(eff.outcome) }));
+  if (eff.notHealedByCare) out.lines.push(t('mt.injuryNotHealedByCare', { mount: mountLabel }));
   return out;
 }
 

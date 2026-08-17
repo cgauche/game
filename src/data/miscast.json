@@ -1,4 +1,59 @@
 {
+  "tables": [
+    {
+      "id": "miscast-mineure",
+      "rows": "minor",
+      "label": "Incantations Imparfaites Mineures",
+      "codexCategory": "miscastMinor",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
+    },
+    {
+      "id": "miscast-majeure",
+      "rows": "major",
+      "label": "Incantations Imparfaites Majeures",
+      "codexCategory": "miscastMajor",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
+    },
+    {
+      "id": "miscast-mineure-vdm",
+      "rows": "minorVdm",
+      "label": "Incantations Imparfaites Mineures",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "miscast-majeure-vdm",
+      "rows": "majorVdm",
+      "label": "Incantations Imparfaites Majeures",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "miscast-colere",
+      "rows": "wrath",
+      "label": "Colère des dieux",
+      "codexCategory": "miscastWrath",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
+    }
+  ],
   "minor": [
     {
       "id": "mineure-signe-de-sorciere",

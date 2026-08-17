@@ -148,7 +148,7 @@ describe('maneuverShip — Test de Navigation du barreur → vire le navire (MDG
     expect(bouteur.dr).toBe(plain.dr + 2); // +20 au Test → +2 DR d'équipage
   });
 
-  it('« Gréement de course » (Amélioration) → −10 au Test de Navigation (MSRC 12 l.137) : −1 DR à la manœuvre', () => {
+  it('« Gréement de course » (Amélioration) → −10 au Test de Navigation (MSRC 12 l.140) : −1 DR à la manœuvre', () => {
     const run = (upgrades?: NavalTraitRef[]) => {
       seedBattleRng(7);
       const s = { ...ship(), upgrades } as Combatant;

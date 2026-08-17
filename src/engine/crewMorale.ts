@@ -37,6 +37,9 @@ export interface MoraleFactor {
   /** Multiplicateur de SOLDE si ce facteur est un CHOIX de paie du Conseil de bord (donnée MAISON,
    *  cf. `payChoices`). Absent = facteur circonstanciel, pas un choix offert au capitaine. */
   wageMul?: number;
+  /** Choix de paie mis en AVANT au Conseil de bord (action principale de la modale) — donnée MAISON,
+   *  comme `wageMul` : le tableau MDG 14 ne hiérarchise pas les lignes « La paie … ». */
+  recommendedPay?: boolean;
 }
 
 /** Bande d'effet du Moral (EFFETS DU MORAL, MDG 14). */
@@ -122,6 +125,25 @@ export function payChoices(): PayChoice[] {
 /** Un id de facteur est-il un CHOIX de paie du Conseil de bord (#229) ? PUR. */
 export function isPayChoice(factorId: string): boolean {
   return findMoraleFactor(factorId)?.wageMul != null;
+}
+
+/** Ce choix de paie est-il GRATUIT (barème `wageMul: 0` — l'équipage ne touche rien) ? Dérivé du
+ *  registre, jamais d'un id : c'est ce qui rend le choix toujours offrable (0 ≤ toute bourse) et ce
+ *  qui fait cumuler la solde due en dette. Un choix inconnu n'est pas gratuit (il n'est pas un choix). PUR. */
+export function isFreePayChoice(factorId: string): boolean {
+  return findMoraleFactor(factorId)?.wageMul === 0;
+}
+
+/** Le choix de paie GRATUIT offert par le registre (`wageMul: 0`) — repli d'un groupe insolvable.
+ *  `null` si la donnée n'en offre aucun (le repli n'injecte alors aucun facteur). PUR. */
+export function freePayChoiceId(): string | null {
+  return MORALE_FACTORS.find((f) => f.wageMul === 0)?.id ?? null;
+}
+
+/** Le choix de paie RECOMMANDÉ par le registre (`recommendedPay`) — décision par défaut de la cadence
+ *  auto et action principale du Conseil. `null` si la donnée n'en désigne aucun. PUR. */
+export function recommendedPayChoiceId(): string | null {
+  return MORALE_FACTORS.find((f) => f.recommendedPay && f.wageMul != null)?.id ?? null;
 }
 
 /** Solde EFFECTIVEMENT versée (sous de cuivre) pour un choix de paie, sur la base du barème hebdomadaire

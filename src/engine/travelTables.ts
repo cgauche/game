@@ -5,9 +5,33 @@
  */
 import { findTableEntry } from './tables';
 import type { StageOutcome } from './activities';
+import type { Difficulty } from './types';
 import incidentsMonteJson from '../data/incidents-monture.json';
 import problemesVehiculeJson from '../data/problemes-vehicule.json';
 import rencontresJson from '../data/rencontres-edoc.json';
+
+/** Suite MÉCANIQUE d'un Incident de MONTE (`incidents-monture.json`, EDOC 07 l.157-174) DÉCLARÉE par
+ *  l'entrée : ce que le cavalier risque au moment de l'incident, et la SÉQUELLE que la bête garde.
+ *  Lue par `engine/mountTravel.ts` (résolution, allure effective, montabilité) et par le flux de
+ *  voyage (soins d'étape) — jamais déduite de l'id de l'entrée. */
+export interface MountIncidentEffects {
+  /** Test du CAVALIER, sous peine d'une chute de `fallM` mètres (l.166/l.171). */
+  riderTest?: { skillId: string; char?: string; difficulty: Difficulty; fallM: number };
+  /** Modificateur PERSISTANT aux Tests de Chevaucher tant que la séquelle dure (l.174 : −20). */
+  ridingPenalty?: number;
+  /** Allure MAXIMALE imposée à la bête tant que la séquelle dure (Perte d'un fer : le pas). */
+  forcedAllure?: 'pas' | 'trot' | 'galop';
+  /** La bête ne peut plus être montée ni attelée (Boiteux, Patte brisée). */
+  preventsMount?: boolean;
+  /** Les soins d'une halte n'effacent PAS cette séquelle (Patte brisée). */
+  notHealedByCare?: boolean;
+  /** CONDITION DE FIN posée par le `text` verbatim de l'entrée (« jusqu'à réparation de la sellerie »,
+   *  « jusqu'au remplacement du fer par un maréchal-ferrant ») — fragment d'AFFICHAGE accolé à la ligne
+   *  de séquelle par le gabarit du catalogue, jamais une mécanique. */
+  endCondition?: string;
+  /** ISSUE de la bête quand le `text` verbatim en pose une (Patte brisée) — fragment d'AFFICHAGE. */
+  outcome?: string;
+}
 
 /** Entrée d'une table de voyage : fourchette d100 `[min,max]` (00 = 100) + libellé/texte RAW.
  *  `stageOutcome` : effet de portée Étape (cf. `StageOutcome`). `vehicleWounds` : Dégâts au VÉHICULE
@@ -18,6 +42,8 @@ export interface TravelTableEntry {
   id: string;
   label: string;
   text: string;
+  /** Incidents de MONTE seuls : la séquelle et le risque déclarés par l'entrée. */
+  mount?: MountIncidentEffects;
   stageOutcome?: StageOutcome;
   vehicleWounds?: string | null;
   /** Dégâts aux OCCUPANTS du véhicule, en langue unique `GameOp` (EDOC 07 : Cassé = 1 Blessure ignorant
@@ -34,6 +60,11 @@ export const VEHICLE_PROBLEMS = (problemesVehiculeJson as TravelTable).entries;
 
 export function rollMountIncident(roll: number): TravelTableEntry {
   return findTableEntry(MOUNT_INCIDENTS, roll);
+}
+/** SÉQUELLE déclarée par l'Incident de monte d'id `injuryId` (l'état persistant `mountInjury` d'une
+ *  Possession EST l'id de son incident) — lookup par id STABLE, jamais un branchement. */
+export function mountIncidentEffects(injuryId: string | undefined): MountIncidentEffects | undefined {
+  return injuryId ? MOUNT_INCIDENTS.find((e) => e.id === injuryId)?.mount : undefined;
 }
 export function rollVehicleProblem(roll: number): TravelTableEntry {
   return findTableEntry(VEHICLE_PROBLEMS, roll);

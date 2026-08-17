@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { skills, traits, talents, trappings } from './index';
+import { skills, traits, talents, trappings, crewTestTypes, lieuxServices } from './index';
+import { MORALE_FACTORS } from '../engine/crewMorale';
+import { MISCAST_TABLES } from '../engine/miscast';
+import { MOUNT_INCIDENTS } from '../engine/travelTables';
+import { activityById } from '../engine/activities';
 import { isUnarmedTrapping, isImprovisedTrapping } from '../engine/items';
 import { CHAR_KEYS } from '../engine/types';
 import { ruleDef } from '../engine/policy';
@@ -86,5 +90,82 @@ describe('#1318 E4/C4-δ2 — parité « le moteur ne nomme plus d’id, l’ent
     expect(fautives, 'clé de `altChar.chars` qu’aucune valeur de la règle ne produira jamais').toEqual([]);
     // La garde n'est pas vide-et-verte : elle mesure bien des clés réelles.
     expect(skills.flatMap((s) => Object.keys(s.altChar?.chars ?? {})).length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * MÊME contrat, couche ACTIVITÉS/UI (#1318 E4/C4-δ3) : les branchements par id de la modale du Conseil
+ * de bord, du Test d'équipage, de la bataille de masse, du voyage en mer, du hub de ville, des tables
+ * de Maladresse et des Incidents de monte sont remplacés par des CHAMPS DÉCLARÉS. Chaque test fixe la
+ * POPULATION porteuse : exactement les entrées que le code nommait, ni une de plus, ni une de moins.
+ */
+describe('#1318 E4/C4-δ3 — parité des champs déclarés de la couche activités/UI', () => {
+  it('MORAL — `recommendedPay` : exactement la paie régulière (CTA du Conseil de bord)', () => {
+    expect(MORALE_FACTORS.filter((f) => f.recommendedPay).map((f) => f.id)).toEqual(['paie-reguliere']);
+    // …et le choix GRATUIT que la modale offrait toujours reste dérivable de son barème (`wageMul: 0`).
+    expect(MORALE_FACTORS.filter((f) => f.wageMul === 0).map((f) => f.id)).toEqual(['pas-de-paie']);
+  });
+
+  it('TESTS D’ÉQUIPAGE — `moraleOnNegativeDR` : exactement Rude épreuve (MDG 14 l.110)', () => {
+    expect(crewTestTypes.filter((t) => t.moraleOnNegativeDR).map((t) => t.id)).toEqual(['rude-epreuve']);
+  });
+
+  it('TESTS D’ÉQUIPAGE — `steering` : exactement la Manœuvre (Test qui DIRIGE, MDG 14 l.76)', () => {
+    expect(crewTestTypes.filter((t) => t.steering).map((t) => t.id)).toEqual(['manoeuvre']);
+  });
+
+  it('ACTIVITÉS DE BATAILLE — `testModFrom` : exactement Planification, sur le réservoir que les autres créditent', () => {
+    const plan = activityById('planification')!;
+    expect(plan.testModFrom).toBe('planningBonus');
+    // Le réservoir LU est bien celui que Repérage/Infiltration ALIMENTENT (ADE II 8 l.75/100) :
+    // la paire producteur ⇄ consommateur se mesure, elle n'est pas recopiée à la main.
+    const crediteurs = ['reperage', 'infiltration']
+      .map((id) => activityById(id)!)
+      .filter((d) => (d.outcomes ?? []).some((b) => (b.battle ?? []).some((o) => o.target === plan.testModFrom)));
+    expect(crediteurs.map((d) => d.id)).toEqual(['reperage', 'infiltration']);
+  });
+
+  it('ACTIVITÉS DE BATAILLE — `difficultyFrom` : exactement le Discours inspirant (écart de Puissance, l.71)', () => {
+    const porteuses = ['inspire', 'planification', 'infiltration', 'reperage', 'sabotage', 'rassembler-des-forces']
+      .map((id) => activityById(id)!)
+      .filter((d) => d.difficultyFrom);
+    expect(porteuses.map((d) => d.id)).toEqual(['inspire']);
+    expect(porteuses[0].difficultyFrom).toEqual({ gap: 'armyMight', roundTo: 10 });
+  });
+
+  it('SERVICES DE LIEU — `opensScreen` : exactement le chantier naval (porte de l’écran de port, #369)', () => {
+    expect(lieuxServices.filter((s) => s.opensScreen).map((s) => `${s.id}:${s.opensScreen}`)).toEqual(['chantier:port']);
+    // Un service qui porte vers un écran porte son libellé d'entrée (sinon le bouton retombe sur un repli).
+    expect(lieuxServices.filter((s) => s.opensScreen && !s.enterLabel)).toEqual([]);
+  });
+
+  it('MALADRESSES — `codexCategory` : exactement les trois tableaux du Livre de base', () => {
+    expect(MISCAST_TABLES.filter((t) => t.codexCategory).map((t) => `${t.id}:${t.codexCategory}`)).toEqual([
+      'miscast-mineure:miscastMinor', 'miscast-majeure:miscastMajor', 'miscast-colere:miscastWrath',
+    ]);
+    // Les deux tables RÉVISÉES par les Vents de Magie n'en ont pas (un renvoi y serait mort).
+    expect(MISCAST_TABLES.filter((t) => !t.codexCategory).map((t) => t.id)).toEqual(['miscast-mineure-vdm', 'miscast-majeure-vdm']);
+  });
+
+  it('INCIDENTS DE MONTE — chaque suite mécanique porte exactement les entrées que le moteur nommait (EDOC 07)', () => {
+    const porteuses = (pred: (m: NonNullable<(typeof MOUNT_INCIDENTS)[number]['mount']>) => unknown): string[] =>
+      MOUNT_INCIDENTS.filter((e) => e.mount && pred(e.mount)).map((e) => e.id);
+    expect(porteuses((m) => m.riderTest)).toEqual(['sangle-cassee', 'perte-d-un-fer']);   // l.166/l.171
+    expect(porteuses((m) => m.ridingPenalty)).toEqual(['sangle-cassee']);                 // l.174 (−20)
+    expect(porteuses((m) => m.forcedAllure)).toEqual(['perte-d-un-fer']);                 // « doit se déplacer au pas »
+    expect(porteuses((m) => m.preventsMount)).toEqual(['boiteux', 'patte-brisee']);       // l.159 / l.161
+    expect(porteuses((m) => m.notHealedByCare)).toEqual(['patte-brisee']);
+    // Fragments d'AFFICHAGE dérivés du verbatim : toute séquelle à durée BORNÉE dit sa condition de fin
+    // (sinon le joueur perdrait « jusqu'à réparation » / « jusqu'au maréchal-ferrant »), et l'issue
+    // de la bête n'est portée que là où le RAW en pose une.
+    expect(porteuses((m) => m.endCondition)).toEqual(['sangle-cassee', 'perte-d-un-fer']);
+    expect(porteuses((m) => m.outcome)).toEqual(['patte-brisee']);
+    const bornees = MOUNT_INCIDENTS.filter((e) => e.mount && (e.mount.ridingPenalty || e.mount.forcedAllure) && !e.mount.notHealedByCare);
+    expect(bornees.filter((e) => !e.mount!.endCondition).map((e) => e.id), 'séquelle bornée sans condition de fin affichée').toEqual([]);
+    // Toute entrée de la table porte une suite (aucun incident muet), et les valeurs sont celles du RAW.
+    expect(MOUNT_INCIDENTS.filter((e) => !e.mount)).toEqual([]);
+    const sangle = MOUNT_INCIDENTS.find((e) => e.id === 'sangle-cassee')!.mount!;
+    expect(sangle.ridingPenalty).toBe(-20);
+    expect(sangle.riderTest).toEqual({ skillId: 'chevaucher', char: 'agilite', difficulty: 'complexe', fallM: 2 });
   });
 });

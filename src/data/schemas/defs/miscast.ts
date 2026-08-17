@@ -112,6 +112,20 @@ const jsonRowSchema = z.strictObject({
 });
 
 export const schema = z.strictObject({
+  /** Les TABLES tirables déclarées : id STABLE d'étape de cascade, tableau de rangées porteur
+   *  (`rows`), libellé JOUEUR de la rangée de tirage, et la catégorie Codex où vivent ses LIGNES
+   *  quand elles y sont exposées (les deux révisions VDM n'en ont pas : le Codex n'expose que les
+   *  trois tableaux du Livre de base, un renvoi y serait mort). Cf. `engine/miscast.ts`. */
+  tables: z.array(
+    z.strictObject({
+      id: z.string(),
+      rows: z.enum(['minor', 'major', 'minorVdm', 'majorVdm', 'wrath']),
+      label: z.string(),
+      codexCategory: z.string().optional(),
+      /** Le TABLEAU source dont cette table est le tirage (folio du livre qui la porte). */
+      source: sourceRefSchema,
+    }),
+  ),
   minor: z.array(jsonRowSchema),
   major: z.array(jsonRowSchema),
   /** Jeux de tables ALTERNATIFS des Vents de Magie (`VDM 02 l.218-263`, folios 24-25), sélectionnés

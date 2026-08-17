@@ -69,7 +69,7 @@ describe('startMassBattle / état', () => {
 
   it('TOUS les jets passent par le canal unifié `pendingActivity` (plus de `pendingBattleTest`)', () => {
     start();
-    useGame.getState().massBattleInspire();
+    useGame.getState().massBattleActivity('inspire');
     const pa = pending()!;
     expect(pa.battle).toBe('prep');   // marqueur de bataille sur la PendingActivity
     expect(pa.kind).toBe('catalog');  // même canal que les Activités d'interlude
@@ -95,7 +95,7 @@ describe('Situation par Round (l.114-116) — sous-ensemble, pas tout le catalog
 describe('Discours inspirant (l.71)', () => {
   it('un succès accorde +10 au Test de Puissance du premier Round', () => {
     start();
-    useGame.getState().massBattleInspire();
+    useGame.getState().massBattleActivity('inspire');
     expect(pending()?.activityId).toBe('inspire');
     resolveBattleTest({ roll: 20, success: true, sl: 2 });
     expect(mbState().firstRoundBonus).toBe(10);
@@ -104,10 +104,22 @@ describe('Discours inspirant (l.71)', () => {
 
   it('un échec ne donne aucun bonus', () => {
     start();
-    useGame.getState().massBattleInspire();
+    useGame.getState().massBattleActivity('inspire');
     resolveBattleTest({ roll: 95, success: false, sl: -3 });
     expect(mbState().firstRoundBonus).toBe(0);
     expect(mbState().activitiesDone).toContain('inspire');
+  });
+
+  it('sa Difficulté est DÉRIVÉE de l’écart de Puissance (l.71), par le canal générique des Activités', () => {
+    // Armée alliée devant de +30 → Test plus FACILE ; derrière de −30 → plus DUR. Le Discours n'a pas de
+    // porte à lui : c'est l'entrée qui déclare `difficultyFrom`, lue à l'ouverture comme au pré-jet.
+    start({ allyMight: 70, enemyMight: 40 });
+    useGame.getState().massBattleActivity('inspire');
+    expect(pending()?.difficulty).toBe('facile');
+
+    start({ allyMight: 30, enemyMight: 60 });
+    useGame.getState().massBattleActivity('inspire');
+    expect(pending()?.difficulty).toBe('tresDifficile');
   });
 });
 
@@ -157,7 +169,7 @@ describe('Activités de bataille pré-combat (l.79-106)', () => {
   it('budget UNIQUE : sans interlude ouvert, AUCUNE préparation possible (Round 1 direct)', () => {
     start({}, pregenParty(PREGEN.soldat, PREGEN.chasseur), { interludeLeft: 0 });
     expect(useGame.getState().interlude).toBeNull();
-    useGame.getState().massBattleInspire();
+    useGame.getState().massBattleActivity('inspire');
     expect(pending()).toBeNull();
     useGame.getState().massBattleActivity('planification');
     expect(pending()).toBeNull();

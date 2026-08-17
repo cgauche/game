@@ -51,12 +51,12 @@ export function CouncilModal() {
   const options = payChoices().map(({ factorId }) => {
     const f = findMoraleFactor(factorId);
     const costBrass = payChoiceCostBrass(p.wageBrass, factorId);
-    const affordable = factorId === 'pas-de-paie' || costBrass <= purseBrass;
+    const affordable = costBrass <= purseBrass; // un choix GRATUIT (`wageMul: 0`) l'est toujours : 0 ≤ bourse
     return {
       key: factorId,
       label: f?.label ?? factorId,
       disabled: !affordable,
-      primary: factorId === 'paie-reguliere' && affordable,
+      primary: !!f?.recommendedPay && affordable,
       title: affordable ? undefined : 'Bourse insuffisante',
       content: (
         <>

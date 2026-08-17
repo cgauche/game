@@ -279,7 +279,26 @@ function buildRow(jr: JsonRow): Row {
 // Tables built from JSON at module load time
 // ---------------------------------------------------------------------------
 
-const data = miscastJson as { minor: JsonRow[]; major: JsonRow[]; minorVdm: JsonRow[]; majorVdm: JsonRow[]; wrath: JsonRow[] };
+/** Tableau de rangées porteur d'une table déclarée (clé de `miscast.json`). */
+type MiscastRowsKey = 'minor' | 'major' | 'minorVdm' | 'majorVdm' | 'wrath';
+
+/** DÉCLARATION d'une table tirable (donnée) : son id d'étape STABLE, ses rangées, son libellé JOUEUR
+ *  et — quand ses LIGNES sont exposées au Codex — la catégorie qui les porte. */
+export interface MiscastTableDef {
+  id: string;
+  rows: MiscastRowsKey;
+  label: string;
+  /** Catégorie Codex des LIGNES de cette table (`entryCategory` de l'étape). Absente = aucune
+   *  exposition Codex de ses lignes (un renvoi vers une catégorie qui ne les contient pas serait mort). */
+  codexCategory?: string;
+  /** Folio du TABLEAU source dont cette table est le tirage. */
+  source: { book: string; page: number; note?: string };
+}
+
+const data = miscastJson as {
+  tables: MiscastTableDef[];
+  minor: JsonRow[]; major: JsonRow[]; minorVdm: JsonRow[]; majorVdm: JsonRow[]; wrath: JsonRow[];
+};
 
 /** Une ligne de table d'Imparfaite/Colère telle que la DONNÉE la porte : fourchette + id STABLE +
  *  libellé. Forme de `TableStepRow` (state/cascade) — les rangées entrent au registre d'étapes PAR
@@ -291,26 +310,22 @@ export interface MiscastTableRow {
   label: string;
 }
 
-/** Les CINQ tables tirables, par id STABLE — source unique du couple id ⇄ rangées : le registre
- *  d'étapes de cascade (`registerTableStep`, state) et la résolution (`miscastTables`) lisent LES
- *  MÊMES tableaux. */
-export const MISCAST_TABLE_ROWS: Record<string, MiscastTableRow[]> = {
-  'miscast-mineure': data.minor,
-  'miscast-majeure': data.major,
-  'miscast-mineure-vdm': data.minorVdm,
-  'miscast-majeure-vdm': data.majorVdm,
-  'miscast-colere': data.wrath,
-};
+/** Les tables tirables TELLES QUE LA DONNÉE les déclare (`miscast.json`, clé `tables`) : id d'étape,
+ *  rangées portées, libellé JOUEUR — sans marque de livre (`docs/charte-ui.md`) : le jeu de tables en
+ *  vigueur est une RÈGLE, pas une information d'écran — et catégorie Codex de ses lignes. Une table de
+ *  plus est une entrée de plus ICI, aucune ligne de code. */
+export const MISCAST_TABLES: MiscastTableDef[] = data.tables;
 
-/** Libellé JOUEUR de chaque table (rangée de tirage) — sans marque de livre (`docs/charte-ui.md`) :
- *  le jeu de tables en vigueur est une RÈGLE, pas une information d'écran. */
-export const MISCAST_TABLE_LABELS: Record<string, string> = {
-  'miscast-mineure': 'Incantations Imparfaites Mineures',
-  'miscast-majeure': 'Incantations Imparfaites Majeures',
-  'miscast-mineure-vdm': 'Incantations Imparfaites Mineures',
-  'miscast-majeure-vdm': 'Incantations Imparfaites Majeures',
-  'miscast-colere': 'Colère des dieux',
-};
+/** Rangées par id de table — source unique du couple id ⇄ rangées : le registre d'étapes de cascade
+ *  (`registerTableStep`, state) et la résolution (`miscastTables`) lisent LES MÊMES tableaux. */
+export const MISCAST_TABLE_ROWS: Record<string, MiscastTableRow[]> = Object.fromEntries(
+  MISCAST_TABLES.map((t) => [t.id, data[t.rows]]),
+);
+
+/** Libellé JOUEUR de chaque table (rangée de tirage), tel que la déclaration le porte. */
+export const MISCAST_TABLE_LABELS: Record<string, string> = Object.fromEntries(
+  MISCAST_TABLES.map((t) => [t.id, t.label]),
+);
 
 const TABLE_IDS_LDB: Record<MiscastSeverity, string> = { mineure: 'miscast-mineure', majeure: 'miscast-majeure', colere: 'miscast-colere' };
 const TABLE_IDS_VDM: Record<MiscastSeverity, string> = { mineure: 'miscast-mineure-vdm', majeure: 'miscast-majeure-vdm', colere: 'miscast-colere' };

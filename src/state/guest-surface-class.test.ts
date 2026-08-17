@@ -173,7 +173,6 @@ const HORS_SURFACE_UI: Record<string, string> = {
   interludeEnd: HOTE('clôture de l’interlude'),
   interludeEntrainement: HOTE('entraînement (bourse du groupe)'),
   massBattleActivity: HOTE('bataille de masse'),
-  massBattleInspire: HOTE('bataille de masse'),
   setMassBattleHero: HOTE('bataille de masse'),
   massBattleAdvance: HOTE('bataille de masse'),
   massBattleClash: HOTE('bataille de masse'),

@@ -77,6 +77,7 @@
       "label": "La paie est régulière",
       "effect": "+1d10",
       "wageMul": 1,
+      "recommendedPay": true,
       "source": {
         "book": "mer-des-griffes",
         "page": 124,

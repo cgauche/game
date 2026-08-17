@@ -24,6 +24,9 @@ export const schema = z.strictObject({
        *  que l'effet de Moral des lignes « La paie … », jamais le montant : valeur MAISON éditable.
        *  Présent = ce facteur est un CHOIX de paie ; absent = facteur circonstanciel. */
       wageMul: z.number().optional(),
+      /** Choix de paie PROÉMINENT du Conseil de bord (bouton principal) — valeur MAISON, au même
+       *  titre que `wageMul` (le tableau MDG 14 ne hiérarchise pas les lignes « La paie … »). */
+      recommendedPay: z.boolean().optional(),
       source: sourceRefSchema,
     }),
   ),

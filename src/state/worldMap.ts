@@ -246,6 +246,11 @@ export interface ResolvedPlaceService {
   /** Archétype marchand (catalogue `lieux-services.json`, ex. `armurier` pour le forgeron) — porte vers
    *  le système marchand EXISTANT (`openPlaceMerchant`, #369), aucun système neuf. */
   merchantArchetype?: string;
+  /** Écran plein-champ EXISTANT vers lequel le service porte (catalogue `lieux-services.json`) :
+   *  `port` = l'écran de port (onglet Chantier par défaut), sous garde de navire de campagne. */
+  opensScreen?: 'port';
+  /** Libellé du bouton d'entrée du service qui porte un `opensScreen` (catalogue). */
+  enterLabel?: string;
 }
 
 /** Icône (id du registre `src/ui/icons`) d'un service résolu : le catalogue (`lieux-services.json`) fournit
@@ -317,6 +322,8 @@ export function placeServices(place: MapPlace, scene?: Scene): ResolvedPlaceServ
       hostLine: def?.hostLine,
       backdrop: def?.backdrop,
       merchantArchetype: def?.merchantArchetype,
+      opensScreen: def?.opensScreen,
+      enterLabel: def?.enterLabel,
     });
     declared.add(s.kind);
   }

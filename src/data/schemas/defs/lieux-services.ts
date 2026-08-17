@@ -27,6 +27,12 @@ export const schema = z.array(
      *  le forgeron) — routage vers le système marchand EXISTANT via `openPlaceMerchant`, aucune donnée
      *  de commerce dupliquée ici (#369). */
     merchantArchetype: z.string().optional(),
+    /** Écran plein-champ EXISTANT vers lequel ce service PORTE (routage app-interne, #369) : `port` =
+     *  l'écran de port, dont l'onglet Chantier est le défaut. Le service exige alors un navire de
+     *  campagne, comme « Entrer au port ». Absent = service sans écran dédié. */
+    opensScreen: z.enum(['port']).optional(),
+    /** Libellé du bouton d'entrée du service qui porte un `opensScreen` (texte d'auteur, saveur maison). */
+    enterLabel: z.string().optional(),
     /** Note d'infobulle sur la case à cocher du service dans l'éditeur (`WorldMapPlacePanel`) —
      *  ce qui dérive déjà ce service ailleurs, jamais un branchement d'id (#834). */
     editorNote: z.string().optional(),

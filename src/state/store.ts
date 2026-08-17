@@ -690,8 +690,6 @@ export interface GameState extends RollFlowActionsMap {
   startMassBattle: (spec: MassBattleSpec) => void;
   /** Passe de la phase pré-bataille (Discours/Planification) aux Rounds de bataille. */
   massBattleBegin: () => void;
-  /** Ouvre le Test de Commandement du Discours inspirant (l.71). */
-  massBattleInspire: () => void;
   /** Ouvre le Test d'une Activité de bataille pré-combat (l.79-106). */
   massBattleActivity: (activityId: string) => void;
   /** Choisit une Scène cinématique du Round (Test de Compétence ou combat tactique). */
@@ -1771,7 +1769,6 @@ export const useGame = create<GameState>((set, get) => ({
   massBattle: null,
   startMassBattle: (spec) => massBattleFlow.startMassBattle(get, set, spec),
   massBattleBegin: () => massBattleFlow.massBattleBegin(get, set),
-  massBattleInspire: () => massBattleFlow.openMassBattleInspire(get, set),
   massBattleActivity: (activityId) => massBattleFlow.openMassBattleActivity(get, set, activityId),
   massBattleScene: (sceneId) => massBattleFlow.openMassBattleScene(get, set, sceneId),
   setMassBattleHero: (actionId, heroIds) => massBattleFlow.setMassBattleHero(get, set, actionId, heroIds),

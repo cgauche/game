@@ -12,28 +12,56 @@
       "max": 40,
       "id": "sangle-cassee",
       "label": "Sangle cassée",
-      "text": "Une sangle de selle arrachée, un harnais en morceaux ou un étrier perdu, une partie de la sellerie de votre monture a été endommagée, ce qui rend le voyage plus difficile. Le cavalier doit effectuer un Test de Chevaucher Complexe (-10) ou tomber (d'une hauteur de 2 mètres). Jusqu'à ce que la partie abîmée soit réparée, tous les futurs Tests de Chevaucher subissent une pénalité de -20."
+      "text": "Une sangle de selle arrachée, un harnais en morceaux ou un étrier perdu, une partie de la sellerie de votre monture a été endommagée, ce qui rend le voyage plus difficile. Le cavalier doit effectuer un Test de Chevaucher Complexe (-10) ou tomber (d'une hauteur de 2 mètres). Jusqu'à ce que la partie abîmée soit réparée, tous les futurs Tests de Chevaucher subissent une pénalité de -20.",
+      "mount": {
+        "riderTest": {
+          "skillId": "chevaucher",
+          "char": "agilite",
+          "difficulty": "complexe",
+          "fallM": 2
+        },
+        "ridingPenalty": -20,
+        "endCondition": "jusqu'à réparation de la sellerie"
+      }
     },
     {
       "min": 41,
       "max": 85,
       "id": "perte-d-un-fer",
       "label": "Perte d'un fer",
-      "text": "L'animal perd un fer. Le cavalier doit réussir un Test de Chevaucher Complexe (-10) ou tomber (d'une hauteur de 2 mètres). L'animal doit se déplacer au pas jusqu'à ce que le fer ait été remplacé par un maréchal-ferrant. Si l'on force l'animal à se déplacer plus rapidement, il devient Boiteux."
+      "text": "L'animal perd un fer. Le cavalier doit réussir un Test de Chevaucher Complexe (-10) ou tomber (d'une hauteur de 2 mètres). L'animal doit se déplacer au pas jusqu'à ce que le fer ait été remplacé par un maréchal-ferrant. Si l'on force l'animal à se déplacer plus rapidement, il devient Boiteux.",
+      "mount": {
+        "riderTest": {
+          "skillId": "chevaucher",
+          "char": "agilite",
+          "difficulty": "complexe",
+          "fallM": 2
+        },
+        "forcedAllure": "pas",
+        "endCondition": "jusqu'au remplacement du fer par un maréchal-ferrant"
+      }
     },
     {
       "min": 86,
       "max": 98,
       "id": "boiteux",
       "label": "Boiteux",
-      "text": "L'animal ne peut pas se déplacer plus vite que la moitié de sa vitesse de marche, être monté, porter ou tirer de charge. Tenter d'emmener l'animal plus loin dans un périple en utilisant les règles de Voyage (page 31) augmente la durée du trajet d'une Étape. Toute tentative de l'obliger à faire toutes ces actions coûte à l'animal 1d10 Blessures, sans tenir compte du Bonus d'Endurance. Sur un jet de 8+, l'animal doit réussir un Test de Résistance Intermédiaire (+0) ou subir une Blessure Critique aux pattes."
+      "text": "L'animal ne peut pas se déplacer plus vite que la moitié de sa vitesse de marche, être monté, porter ou tirer de charge. Tenter d'emmener l'animal plus loin dans un périple en utilisant les règles de Voyage (page 31) augmente la durée du trajet d'une Étape. Toute tentative de l'obliger à faire toutes ces actions coûte à l'animal 1d10 Blessures, sans tenir compte du Bonus d'Endurance. Sur un jet de 8+, l'animal doit réussir un Test de Résistance Intermédiaire (+0) ou subir une Blessure Critique aux pattes.",
+      "mount": {
+        "preventsMount": true
+      }
     },
     {
       "min": 99,
       "max": 100,
       "id": "patte-brisee",
       "label": "Patte (Jambe) brisée",
-      "text": "L'animal subit une Fracture (Majeure) (WFJDR, page 179) à une patte, et demeure immobile. Si l'os cassé finit par guérir un jour, le Mouvement de l'animal est réduit de moitié. Mais normalement, lorsqu'une monture ou similaire se casse une patte, il y a peu d'espoir qu'elle y survive."
+      "text": "L'animal subit une Fracture (Majeure) (WFJDR, page 179) à une patte, et demeure immobile. Si l'os cassé finit par guérir un jour, le Mouvement de l'animal est réduit de moitié. Mais normalement, lorsqu'une monture ou similaire se casse une patte, il y a peu d'espoir qu'elle y survive.",
+      "mount": {
+        "preventsMount": true,
+        "notHealedByCare": true,
+        "outcome": "Fracture (Majeure) à une patte — la bête demeure immobile et n'a que peu d'espoir d'y survivre"
+      }
     }
   ]
 }

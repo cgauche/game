@@ -2391,6 +2391,12 @@ export interface LieuServiceData {
   backdrop?: string;
   /** Archétype marchand ouvert par ce service (`src/data/merchants.json`, #369). */
   merchantArchetype?: string;
+  /** Écran plein-champ EXISTANT vers lequel ce service PORTE (#369) : `port` = l'écran de port
+   *  (onglet Chantier par défaut), sous garde de navire de campagne. Champ DÉCLARÉ, jamais un
+   *  branchement d'id (#842). */
+  opensScreen?: 'port';
+  /** Libellé du bouton d'entrée du service qui porte un `opensScreen`. */
+  enterLabel?: string;
   /** Note d'infobulle sur la case à cocher du service (éditeur, `WorldMapPlacePanel`) — précision
    *  ponctuelle sur ce qui dérive déjà ce service ailleurs (ex. auberge ⇄ offre de repos de la scène
    *  liée). Champ DÉCLARÉ sur l'entrée, jamais un branchement d'id (#834). */
@@ -2449,6 +2455,11 @@ export interface CrewTestTypeData {
    *  à un clic depuis l'étape. L'ENJEU AFFICHÉ, lui, est le descripteur d'EFFET du `kind` joué
    *  (`voyage-stakes.json`, `voyageStake`) : deux natures, deux datasets. */
   rule?: string;
+  /** Un total NÉGATIF de ce Test retire autant de Moral à l'équipage — MDG 14 l.110. */
+  moraleOnNegativeDR?: boolean;
+  /** Test d'équipage qui DIRIGE le navire : reçoit les modificateurs de Navigation pour diriger
+   *  (Traits/Améliorations de coque, MSRC 12 l.66/140) et la gêne d'un empêtrement. */
+  steering?: boolean;
 }
 export const crewRoles = crewRolesJson as CrewRoleData[];
 const crewRoleById = new Map(crewRoles.map((r) => [r.id, r]));

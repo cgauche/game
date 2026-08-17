@@ -54,7 +54,16 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/ui/ → ..
  * Domaine arcanique octroyé (`TalentData.grantsArcaneDomain`) et caractéristique alternative sous règle
  * (`SkillData.altChar`) sont DÉCLARÉS sur l'entrée ; l'armement de créature et « une Compétence de
  * Corps à corps » se lisent, eux, sur le `specsSource` que l'entrée déclarait DÉJÀ (aucun champ neuf
- * à tenir synchrone : `weaponFromTrait` passe cette source telle quelle à son résolveur de catalogue).
+ * à tenir synchrone : `weaponFromTrait` passe cette source telle quelle à son résolveur de catalogue),
+ * puis 37 → 27 (lot E4/C4-δ3, 2026-08-17) — la couche ACTIVITÉS/UI : `mountTravel.ts`, `massBattleFlow.ts`,
+ * `seaVoyageFlow.ts`, `CityHubScreen.tsx`, `CouncilModal.tsx`, `CrewTestModal.tsx` et `InterludeScreen.tsx`
+ * sortent de la liste, `combatFlow.ts` passe de 2 à 1. Ce que l'entrée DÉCLARE désormais : la séquelle
+ * d'un Incident de monte (`mount.riderTest`/`ridingPenalty`/`forcedAllure`/`preventsMount`/
+ * `notHealedByCare`), le réservoir de modificateur qu'un Test dépense (`testModFrom`) et la difficulté
+ * DÉRIVÉE d'un écart d'armées (`difficultyFrom`), le Test d'équipage qui coûte du Moral sur DR négatif
+ * (`moraleOnNegativeDR`) et celui qui DIRIGE le navire (`steering`), le choix de paie mis en avant
+ * (`recommendedPay`), l'écran vers lequel un service PORTE (`opensScreen`), et la catégorie Codex de
+ * chaque table de Maladresse (`codexCategory`, `miscast.json` déclarant désormais ses tables).
  */
 const KNOWN: Record<string, number> = {
   'scripts/_qc-decor-sheet.mts': 2,
@@ -66,19 +75,12 @@ const KNOWN: Record<string, number> = {
   'scripts/qc/opera-furniture-check.mts': 2, // for…of démasqué : `FLOATING.has(e.ref)` + `e.ref !== 'siege'`
   'scripts/raw/reconcile.mjs': 1, // `book` démasqué : `c.book === 'LDB'` (garde de couverture RAW)
   'src/engine/critical.ts': 4,
-  'src/engine/mountTravel.ts': 2,
   'src/engine/trauma.ts': 2,
   'src/gameIso/rig/parts/injuries.ts': 2, // for…of démasqué : `t.traumaId === 'membre-inferieur-ampute'|'nez-ampute'`
   'src/gameIso/rig/skeletons.ts': 1, // for…of démasqué : `WAIST_BONES.includes(id)`
-  'src/state/combatFlow.ts': 2, // +1 for…of démasqué : `MISCAST_TABLE_CATEGORIES[id]`
+  'src/state/combatFlow.ts': 1,
   'src/state/combatManeuvers.ts': 1,
-  'src/state/massBattleFlow.ts': 1,
-  'src/state/seaVoyageFlow.ts': 1,
   'src/ui/CharacterSheet.tsx': 3, // for…of démasqué : `it.trappingId === 'crochet'|'fausse-jambe'` (prothèses)
-  'src/ui/CityHubScreen.tsx': 1,
-  'src/ui/CouncilModal.tsx': 2,
-  'src/ui/CrewTestModal.tsx': 1,
-  'src/ui/InterludeScreen.tsx': 1,
   'src/ui/PartyScreen.tsx': 2,
   'src/ui/compendium/registry.ts': 1, // `CONSTRUCTION_TRAIT_LABEL[t.id]` — libellés de Trait de coque sans champ `label` en donnée
 };
@@ -113,7 +115,9 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * caractéristique alternative déclarés sur l'entrée ; armement de créature et « Compétence de Corps à
  * corps » lus sur le `specsSource` déjà déclaré : `creatureEquip.ts`, `polymorph.ts`, `items.ts`,
  * `conjuredWeapons.ts`, `skills.ts` et `combat.ts` sortent de la liste, `careerSlots.ts` passe de 2 à 1
- * et `CharacterCreator.tsx` de 7 à 6).
+ * et `CharacterCreator.tsx` de 7 à 6), 136 après le lot C4-δ3 (couche activités/UI : `mountTravel.ts`,
+ * `massBattleFlow.ts`, `CityHubScreen.tsx`, `CouncilModal.tsx` et `CrewTestModal.tsx` sortent de la liste,
+ * `seaVoyageFlow.ts` passe de 6 à 4, `combatSlice.ts` de 3 à 2 et `InterludeScreen.tsx` de 3 à 2).
  */
 const RAW_KNOWN: Record<string, number> = {
   'scripts/data/lib/obtainabilityGraph.ts': 3,
@@ -136,7 +140,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/healing.ts': 1,
   'src/engine/magic.ts': 3,
   'src/engine/menace.ts': 1,
-  'src/engine/mountTravel.ts': 1,
   'src/engine/provisions.ts': 1,
   'src/engine/psychology.ts': 3,
   'src/engine/rest.ts': 1,
@@ -159,27 +162,23 @@ const RAW_KNOWN: Record<string, number> = {
   'src/state/combatFlow.ts': 4,
   'src/state/combatGeometry.ts': 1,
   'src/state/combatManeuvers.ts': 4,
-  'src/state/combatSlice.ts': 3,
+  'src/state/combatSlice.ts': 2,
   'src/state/devtools.ts': 1,
   'src/state/interludeFlow.ts': 4,
-  'src/state/massBattleFlow.ts': 1,
   'src/state/mount.ts': 1,
   'src/state/partyFlow.ts': 2,
   'src/state/restFlow.ts': 1,
   'src/state/riverVoyageFlow.ts': 4,
   'src/state/saves.ts': 1,
-  'src/state/seaVoyageFlow.ts': 6,
+  'src/state/seaVoyageFlow.ts': 4,
   'src/state/store.ts': 1,
   'src/state/travelFlow.ts': 6,
   'src/state/travelPostes.ts': 2,
   'src/state/vision.ts': 1,
   'src/ui/ActiveModal.tsx': 1,
   'src/ui/CharacterSheet.tsx': 3,
-  'src/ui/CityHubScreen.tsx': 1,
-  'src/ui/CouncilModal.tsx': 2,
-  'src/ui/CrewTestModal.tsx': 1,
   'src/ui/HealModal.tsx': 2,
-  'src/ui/InterludeScreen.tsx': 3,
+  'src/ui/InterludeScreen.tsx': 2,
   'src/ui/MedicModal.tsx': 2,
   'src/ui/MerchantPanel.tsx': 1,
   'src/ui/PartyScreen.tsx': 2,
@@ -489,6 +488,13 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
     expect(mesure("function f(e: E) { return e.id.startsWith('commerce'); }")).toEqual([0, 0]);
     // (6) Champ d'identité hors convention de nom : le seul critère du scan brut est ce nom.
     expect(mesure("function f(e: E) { return e.cle === 'commerce'; }")).toEqual([0, 0]);
+    // (7) VARIABLE d'identité hors convention : un id de registre transporté par un paramètre nommé
+    //     `decision`/`choix`/`kind` échappe aux DEUX gardes — angle mort MESURÉ sur le terrain
+    //     (`shipCrew.resolveVesselWeek(…, decision)` nommait 'pas-de-paie' sans jamais être compté ;
+    //     assaini à la main sous #1318 E4/C4-δ3, pas par le détecteur). Élargir `ID_NAME_RX` à ces
+    //     noms est un choix OUVERT : il rougirait ICI d'abord, et se déclarerait.
+    expect(mesure("function paie(decision: string) { return decision === 'pas-de-paie'; }")).toEqual([0, 0]);
+    expect(mesure("function svc(s: S) { return s.kind === 'auberge'; }")).toEqual([0, 0]);
   });
 
   it('CLIQUET BRUT : la forme « id === littéral » ne monte jamais, et toute baisse se répercute', () => {

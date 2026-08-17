@@ -67,7 +67,7 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
   const allRolled = p.participants.every((x) => x.result);
   const rollAll = rollAllUnrolledRows(p.participants, roll, (x) => !!x.interactive && owns(x.id));
   const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
-  const moraleLoss = p.testTypeId === 'rude-epreuve' ? rudeEpreuveMoraleDelta(total) : 0;
+  const moraleLoss = testType.moraleOnNegativeDR ? rudeEpreuveMoraleDelta(total) : 0;
   const sign = (n: number) => (n >= 0 ? `+${n}` : `${n}`);
 
   // Rangées via le builder mutualisé (#328) : la modale ne fournit QUE la PRÉSENTATION (crew-roles) + ses

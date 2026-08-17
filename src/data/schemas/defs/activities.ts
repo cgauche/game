@@ -90,6 +90,15 @@ export const schema = z.array(
     assisted: z.boolean().optional(),
     requires: z.array(z.string()).optional(),
     grantsFlag: z.string().optional(),
+    /** Réservoir de modificateur d'armée CONSOMMÉ par le Test de cette Activité (miroir de
+     *  `ActivityDef.testModFrom`) — Planification dépense `planningBonus` (ADE II 8 l.75/100). */
+    testModFrom: z.enum(['allyTestMod', 'firstRoundBonus', 'planningBonus']).optional(),
+    /** Difficulté DÉRIVÉE d'un écart de mesure d'armée (miroir de `ActivityDef.difficultyFrom`) —
+     *  Discours inspirant : écart de Puissance arrondi à la dizaine (ADE II 8 l.71). */
+    difficultyFrom: z.strictObject({
+      gap: z.enum(['armyMight']),
+      roundTo: z.number().optional(),
+    }).optional(),
     sceneKind: z.enum(['test', 'combat', 'threat', 'hold', 'rally']).optional(),
     encounter: z.string().optional(),
     rounds: z.number().optional(),

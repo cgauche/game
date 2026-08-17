@@ -48,6 +48,7 @@
       ],
       "essential": "timonier",
       "rule": "test-equipage-manoeuvre",
+      "steering": true,
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
@@ -138,6 +139,7 @@
       ],
       "essential": "cuisinier",
       "rule": "test-equipage-rude-epreuve",
+      "moraleOnNegativeDR": true,
       "source": {
         "book": "mer-des-griffes",
         "page": 123,

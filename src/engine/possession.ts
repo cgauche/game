@@ -11,6 +11,7 @@ import { cargoTotalEnc } from './cargo';
 import { itemsEncumbrance } from './items';
 import { mountProfileForCreature } from './mountTravel';
 import type { MountInjury } from './mountTravel';
+import { mountIncidentEffects } from './travelTables';
 import type { CrewHire, ShipMoraleState } from './crewMorale';
 import type { ManannMood } from './seaVoyage';
 import type { CustomStatblock } from './statblock';
@@ -125,13 +126,14 @@ export function possessionCapacity(p: Possession): number | undefined {
   }
 }
 
-/** Cette bête peut-elle être montée ? Non détruite, sans Incident de monte BLOQUANT (« Boiteux » : « ni
- *  monté, ni porter ou tirer de charge », EDOC 07 l.159 ; « Patte brisée » : « demeure immobile », l.161).
- *  Seule la nature `bete` est montable (véhicule/navire se conduisent, ne se chevauchent pas). PUR. */
+/** Cette bête peut-elle être montée ? Non détruite, sans séquelle d'Incident de monte DÉCLARÉE
+ *  bloquante (`preventsMount` — « Boiteux » : « ni monté, ni porter ou tirer de charge », EDOC 07
+ *  l.159 ; « Patte brisée » : « demeure immobile », l.161). Seule la nature `bete` est montable
+ *  (véhicule/navire se conduisent, ne se chevauchent pas). PUR. */
 export function possessionRideable(p: Possession): boolean {
   if (p.nature !== 'bete') return false;
   if (p.destroyed) return false;
-  return p.mountInjury !== 'boiteux' && p.mountInjury !== 'patte-brisee';
+  return !mountIncidentEffects(p.mountInjury)?.preventsMount;
 }
 
 /** Traits (innés + appris) d'une bête-possession. */

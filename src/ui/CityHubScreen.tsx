@@ -127,6 +127,12 @@ export function CityHubScreen({
   // « Entrer » un écran plein-champ existant : on FERME le hub d'abord (pas de ScreenShell imbriqué).
   const enter = (open: () => void) => { onClose(); open(); };
 
+  /** OUVREURS par écran DÉCLARÉ (`ResolvedPlaceService.opensScreen`) : la valeur du catalogue choisit
+   *  l'ouvreur ET sa garde. Table EXHAUSTIVE de l'union — un écran de plus ne compile pas sans sa ligne. */
+  const SCREEN_ROUTES: Record<NonNullable<ResolvedPlaceService['opensScreen']>, { open: () => void; enabled: () => boolean; reason: string }> = {
+    port: { open: openPort, enabled: () => cityHubCanEnterPort(vessel), reason: 'Aucun navire de campagne.' },
+  };
+
   /** Panneau de détail d'un SERVICE résolu — source UNIQUE, appelée pour la sélection de l'onglet
    *  Services ET pour un POI de plan ciblant un `serviceKind` (#345 : zéro copie du renderer). */
   const renderServiceDetail = (svc: ResolvedPlaceService | undefined): React.ReactNode => {
@@ -220,9 +226,11 @@ export function CityHubScreen({
         />
       );
     }
-    // Chantier naval (#369) : porte vers l'onglet Chantier de l'écran de port existant (défaut de PortView)
-    // quand un navire de campagne est là — même garde/patron que « Entrer au port ».
-    if (svc.id === 'chantier') {
+    // Service qui PORTE vers un écran plein-champ existant (#369) : l'écran est celui que le catalogue
+    // DÉCLARE (`opensScreen`), résolu par la table ci-dessus — le chantier naval entre par l'écran de
+    // port (onglet Chantier, défaut de PortView), sous la garde de cet écran.
+    const route = svc.opensScreen ? SCREEN_ROUTES[svc.opensScreen] : undefined;
+    if (route) {
       return (
         <ActivityPane
           icon={serviceIcon(svc)}
@@ -230,11 +238,11 @@ export function CityHubScreen({
           desc={svc.desc}
           actions={
             <GatedAction
-              id="city-hub-chantier-enter"
-              label="Entrer au chantier"
-              enabled={cityHubCanEnterPort(vessel)}
-              reason="Aucun navire de campagne."
-              onClick={() => enter(openPort)}
+              id={`city-hub-${svc.id}-enter`}
+              label={svc.enterLabel ?? `Entrer : ${svc.label}`}
+              enabled={route.enabled()}
+              reason={route.reason}
+              onClick={() => enter(route.open)}
             />
           }
         />

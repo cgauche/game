@@ -5,7 +5,7 @@
  * batterie, perception…) — un seul endroit assigne les marins aux postes.
  */
 import type { Combatant } from '../engine/types';
-import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, weeklyCrewWageBrass, recalcMorale, payChoiceCostBrass, isPayChoice, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
+import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, weeklyCrewWageBrass, recalcMorale, payChoiceCostBrass, isPayChoice, isFreePayChoice, freePayChoiceId, recommendedPayChoiceId, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
 import { fromBrass, canAfford, formatMoney, type Money } from '../engine/money';
 import { partyMoneyTotal, payFromGroup } from './bourseFlow';
 import { cadenceAuto } from '../engine/cadence';
@@ -318,8 +318,8 @@ type MoraleRoll = { id: string; label: string; rolled: number };
  * recalcul du Moral. Ne lit ni ne mute le store — prend le navire + le TOTAL des bourses du groupe (pour la
  * solvabilité), renvoie le navire recalculé + le coût à débiter (`costBrass`) + le procès-verbal ; le DÉBIT
  * de groupe (gages, sans bénéficiaire unique) est appliqué par l'appelant via `payFromGroup`. La solde =
- * `payChoiceCostBrass(barème, decision)` (généreuse ×2, régulière ×1, chiche ×½, pas-de-paie ×0) ;
- * `pas-de-paie` (ou un groupe insolvable) cumule la solde régulière due dans `wagesOwed`. Le facteur de
+ * `payChoiceCostBrass(barème, decision)` (le barème `wageMul` de chaque choix, en donnée) ; un choix
+ * GRATUIT (`wageMul: 0`, ou un groupe insolvable qui s'y replie) cumule la solde due dans `wagesOwed`. Le facteur de
  * paie n'est injecté que pour le recalcul de CETTE semaine, jamais persisté dans `morale.factors` (édités
  * par l'auteur). #216/#229. RNG injecté.
  */
@@ -332,8 +332,8 @@ export function resolveVesselWeek(vessel: CampaignVessel, purse: Money, decision
   let costBrass = 0;
   let wagesOwed = vessel.wagesOwed ?? 0;
   if (wageBrass > 0 && decision && isPayChoice(decision)) {
-    if (decision === 'pas-de-paie') {
-      paidFactor = 'pas-de-paie';
+    if (isFreePayChoice(decision)) {
+      paidFactor = decision;
       wagesOwed += wageBrass;
       paidLine = t('crew.unpaid', { money: formatMoney(fromBrass(wageBrass)) });
     } else {
@@ -343,9 +343,9 @@ export function resolveVesselWeek(vessel: CampaignVessel, purse: Money, decision
         paidFactor = decision;
         paidLine = t('crew.paid', { money: formatMoney(cost) });
       } else {
-        // Bourse insuffisante → repli `pas-de-paie` + dette (défaut de la cadence auto ; en Conseil de
-        // bord manuel l'option non payable est désactivée, ce repli ne s'y produit pas).
-        paidFactor = 'pas-de-paie';
+        // Bourse insuffisante → repli sur le choix GRATUIT du registre + dette (défaut de la cadence
+        // auto ; en Conseil de bord manuel l'option non payable est désactivée, ce repli ne s'y produit pas).
+        paidFactor = freePayChoiceId();
         costBrass = 0;
         wagesOwed += wageBrass;
         paidLine = t('crew.cannotPay', { money: formatMoney(cost) });
@@ -371,7 +371,7 @@ export function resolveVesselWeek(vessel: CampaignVessel, purse: Money, decision
  *  salarié — `resolveVesselWeek` bascule seul sur le repli « bourse insuffisante » (dette) si besoin ;
  *  null sans équipage salarié. PUR. */
 function defaultPayDecision(wageBrass: number): string | null {
-  return wageBrass > 0 ? 'paie-reguliere' : null;
+  return wageBrass > 0 ? recommendedPayChoiceId() : null;
 }
 
 /**
@@ -416,14 +416,14 @@ function factorLedger(rolls: MoraleRoll[]): NightEntry[] {
  * CONSEIL DE BORD — le joueur ARRÊTE la paie de la semaine (#229). Phase `choix` (aucune mutation encore) →
  * `councilPay(decision)` prélève la solde, recalcule le Moral (`resolveVesselWeek`, cœur PUR partagé avec la
  * cadence auto) et bascule en phase `bilan` où le recalcul se JOUE (PV des facteurs + delta + nouvelle bande).
- * Choix invalide / non payable rejeté (l'UI désactive déjà l'option non payable ; pas-de-paie toujours offert).
+ * Choix invalide / non payable rejeté (l'UI désactive déjà l'option non payable ; le choix GRATUIT reste toujours offert).
  */
 export function councilPay(get: Get, set: SetFn, decision: string): void {
   const p = get().pendingCouncil;
   const vessel = get().vessel;
   if (!p || p.phase !== 'choix' || !vessel || !isPayChoice(decision)) return;
-  // Non payable (hors pas-de-paie) → rejet : le Conseil n'accepte que ce que le groupe couvre.
-  if (decision !== 'pas-de-paie' && !canAfford(partyMoneyTotal(get), fromBrass(payChoiceCostBrass(p.wageBrass, decision)))) return;
+  // Non payable (hors choix GRATUIT) → rejet : le Conseil n'accepte que ce que le groupe couvre.
+  if (!isFreePayChoice(decision) && !canAfford(partyMoneyTotal(get), fromBrass(payChoiceCostBrass(p.wageBrass, decision)))) return;
   const out = resolveVesselWeek(vessel, partyMoneyTotal(get), decision, p.today, battleRng());
   if (out.costBrass > 0) payFromGroup(get, set, fromBrass(out.costBrass), { purpose: 'gages équipage' });
   set({

@@ -130,7 +130,7 @@ import { canCastFromGrimoire } from '../engine/grimoire';
 import { effectiveCastingNumber } from '../engine/castingNumber';
 import type { CastingNumberMod } from '../engine/castingNumber';
 import {
-  rollMiscast, componentDowngrade, miscastTableId, miscastRowAt, MISCAST_TABLE_ROWS, MISCAST_TABLE_LABELS,
+  rollMiscast, componentDowngrade, miscastTableId, miscastRowAt, MISCAST_TABLES, MISCAST_TABLE_ROWS,
   type MiscastSeverity, type MiscastResult,
 } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty, hydrateTR } from '../engine/tests';
@@ -3734,20 +3734,15 @@ export function useSpellComponent(caster: Combatant, spellId: string, lines: str
 // Une entrée par table RÉELLE de `miscast.json` (Mineure/Majeure LDB, leurs révisions VDM, Colère
 // des dieux) : fourchettes et ids STABLES projetés depuis la donnée PAR RÉFÉRENCE (le moteur les
 // expose), et la ligne d'affichage est le libellé de l'entrée atteinte par le dé EFFECTIF.
-/** Catégorie Codex où vit CHAQUE ligne, table par table (#1117) — les deux tables RÉVISÉES par les
- *  Vents de Magie n'en ont pas : le Codex n'expose que les trois tableaux du Livre de base, et un
- *  renvoi vers une catégorie qui ne contient pas la ligne serait un renvoi mort. Sans catégorie,
- *  l'enjeu reste au foyer du `kind` (repli déclaré). */
-const MISCAST_TABLE_CATEGORIES: Record<string, string> = {
-  'miscast-mineure': 'miscastMinor', 'miscast-majeure': 'miscastMajor', 'miscast-colere': 'miscastWrath',
-};
-for (const [id, rows] of Object.entries(MISCAST_TABLE_ROWS)) {
-  registerTableStep(id, {
-    label: MISCAST_TABLE_LABELS[id],
+// La catégorie Codex où vivent les LIGNES est DÉCLARÉE par la table elle-même (`codexCategory`,
+// miscast.json, #1117) : sans catégorie déclarée, l'enjeu reste au foyer du `kind` (repli déclaré).
+for (const table of MISCAST_TABLES) {
+  registerTableStep(table.id, {
+    label: table.label,
     die: 100,
-    rows,
-    lines: (die) => [miscastRowAt(id, die).label],
-    ...(MISCAST_TABLE_CATEGORIES[id] ? { entryCategory: MISCAST_TABLE_CATEGORIES[id] } : {}),
+    rows: MISCAST_TABLE_ROWS[table.id],
+    lines: (die) => [miscastRowAt(table.id, die).label],
+    ...(table.codexCategory ? { entryCategory: table.codexCategory } : {}),
   });
 }
 

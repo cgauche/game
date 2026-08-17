@@ -43,6 +43,8 @@
   {
     "id": "chantier",
     "label": "Chantier naval",
-    "icon": "item/misc"
+    "icon": "item/misc",
+    "opensScreen": "port",
+    "enterLabel": "Entrer au chantier"
   }
 ]

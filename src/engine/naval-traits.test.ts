@@ -184,7 +184,7 @@ describe('Améliorations MSRC 12 (Personnalisation) — MÊME canal que MDG, ent
     expect(navalNavTestMod([{ id: 'bouteur' }])).toBe(20);
     expect(navalNavTestDR([{ id: 'bouteur' }])).toBe(2); // ÷10 (LDB : 10 pts = 1 DR)
   });
-  it('Gréement de course → −10 au Test de Navigation (MSRC 12 l.137) ; converti −1 DR d’équipage', () => {
+  it('Gréement de course → −10 au Test de Navigation (MSRC 12 l.140) ; converti −1 DR d’équipage', () => {
     expect(navalNavTestMod([{ id: 'greement-de-course' }])).toBe(-10);
     expect(navalNavTestDR([{ id: 'greement-de-course' }])).toBe(-1);
   });

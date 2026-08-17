@@ -6,8 +6,7 @@ import { bourseOf } from '../state/bourseFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { heroStatus, heroClass, incomeSkillOf, interludeCatalog, bestActivitySkill, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
 import { favorRequiredActivities, type Favor, type FavorLevel } from '../state/favorFlow';
-import { armyMight, battlePrepEntries, type MassBattleState } from '../state/massBattleFlow';
-import { inspireDifficulty } from '../engine/massBattle';
+import { armyMight, battleActivityDifficulty, battlePrepEntries, type MassBattleState } from '../state/massBattleFlow';
 import {
   craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout, entrainementOptions,
   classGatedDifficulty,
@@ -1134,7 +1133,7 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
 
 /** Volet d'une Activité de PRÉPARATION de bataille (ADE II 8), rendu DANS le menu d'interlude par le
  *  gabarit `ActivityPane` (comme toute Activité). « Entreprendre » DÉSIGNE ce héros comme meneur puis ouvre
- *  le jet par le canal de bataille (`massBattleActivity` / `massBattleInspire`) — l'issue porte sur l'ARMÉE,
+ *  le jet par le canal UNIQUE de bataille (`massBattleActivity`) — l'issue porte sur l'ARMÉE,
  *  le budget d'Activité consommé est celui, UNIQUE, de l'interlude. Le pré-jet montre la compétence du héros ;
  *  la résolution RAW (Soutien/Test combiné/prérequis) reste dans `openMassBattleActivity`. */
 function BattlePrepPane({ hero, def, disabled, entry }: {
@@ -1142,15 +1141,12 @@ function BattlePrepPane({ hero, def, disabled, entry }: {
   /** État de l'Activité de prépa (bloquée par prérequis / déjà réalisée) — cf. `battlePrepEntries`. */
   entry?: { done: boolean; blocked: string | null };
 }) {
-  const inspire = useGame((s) => s.massBattleInspire);
   const battleActivity = useGame((s) => s.massBattleActivity);
   const setHero = useGame((s) => s.setMassBattleHero);
   const mb = useGame((s) => s.massBattle);
-  const isInspire = def.id === 'inspire';
-  // Difficulté : Discours = écart de Puissance (l.71) ; sinon la Difficulté de la donnée.
-  const diff: Difficulty = isInspire && mb
-    ? inspireDifficulty(armyMight(mb.ally), armyMight(mb.enemy))
-    : def.difficulty ?? 'intermediaire';
+  // Difficulté : celle que l'entrée DÉCLARE — dérivée de l'écart d'armées quand elle porte
+  // `difficultyFrom` (Discours, l.71), sinon fixe. MÊME source que l'ouverture du jet.
+  const diff: Difficulty = mb ? battleActivityDifficulty(def, mb) : def.difficulty ?? 'intermediaire';
   // Pré-jet : la MEILLEURE des compétences déclarées pour CE héros (approx. du jet mené par lui).
   let prejet: PendingRoll | undefined;
   if (def.skills?.length) {
@@ -1168,7 +1164,6 @@ function BattlePrepPane({ hero, def, disabled, entry }: {
   const done = entry?.done ?? false;
   const blocked = done ? 'Déjà réalisée cette bataille (Activité non répétable).' : entry?.blocked ?? null;
   const undertake = () => {
-    if (isInspire) { inspire(); return; }
     setHero(def.id, [hero.id]); // désigne CE héros comme meneur de l'Activité de préparation
     battleActivity(def.id);
   };

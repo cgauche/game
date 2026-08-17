@@ -18,6 +18,11 @@ export const schema = z.strictObject({
       /** Fiche `regles.json` portant le VERBATIM MDG 14 du Test (règle-cadre « ce Test peut être
        *  remplacé par un Test d'équipage »). L'enjeu AFFICHÉ vient de `voyage-stakes.json`. */
       rule: z.string().optional(),
+      /** Un total NÉGATIF de ce Test retire autant de Moral à l'équipage (MDG 14 l.110, Rude épreuve). */
+      moraleOnNegativeDR: z.boolean().optional(),
+      /** Ce Test d'équipage est celui qui DIRIGE le navire : les Traits/Améliorations de coque qui
+       *  modifient le Test de Navigation pour diriger (MSRC 12 l.66/140) s'y appliquent, et l'empêtrement le grève. */
+      steering: z.boolean().optional(),
       source: sourceRefSchema,
     }),
   ),
