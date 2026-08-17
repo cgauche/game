@@ -329,6 +329,9 @@
     "id": "noble",
     "label": "Noble",
     "class": "courtisans",
+    "grantGroups": [
+      "noble"
+    ],
     "rand": {
       "humain": 20,
       "halfling": null,
@@ -401,6 +404,9 @@
     "label": "Chevalier",
     "labelF": "Chevalière",
     "class": "guerriers",
+    "grantGroups": [
+      "chevalier"
+    ],
     "rand": {
       "humain": 26,
       "halfling": null,
@@ -423,6 +429,9 @@
     "id": "garde",
     "label": "Garde",
     "class": "guerriers",
+    "grantGroups": [
+      "garde"
+    ],
     "rand": {
       "humain": 28,
       "halfling": 40,
@@ -516,6 +525,9 @@
     "label": "Soldat",
     "labelF": "Soldate",
     "class": "guerriers",
+    "grantGroups": [
+      "soldat"
+    ],
     "rand": {
       "humain": 34,
       "halfling": 44,
@@ -978,6 +990,9 @@
     "id": "juriste",
     "label": "Juriste",
     "class": "lettres",
+    "grantGroups": [
+      "juriste"
+    ],
     "rand": {
       "humain": 50,
       "halfling": 61,
@@ -1460,6 +1475,9 @@
     "id": "bailli",
     "label": "Bailli",
     "class": "ruraux",
+    "grantGroups": [
+      "bailli"
+    ],
     "rand": {
       "humain": 88,
       "halfling": 90,

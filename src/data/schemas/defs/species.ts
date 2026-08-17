@@ -2,9 +2,8 @@
  * Schéma de `species.json` — dérivé du contenu RÉEL (27 entrées, script d'inventaire) et de
  * `SpeciesData` (`src/data/index.ts`). `skills`/`talents` = `AdvancementRef[]`, `baseChar` =
  * `Partial<Record<CharKey, number>>`. Mêmes petites formes partagées (Ref/AdvancementRef/CharKey)
- * que `careerLevels.ts`, PROMUES dans `common.ts`. `group` (racial de Groupe éditable, LDB 21) et
- * `mutationBodyMax` sont ABSENTS sur une partie des entrées (0/27 et 18/27) : optionnels, conformes
- * à l'interface.
+ * que `careerLevels.ts`, PROMUES dans `common.ts`. `mutationBodyMax` est ABSENT sur une partie des
+ * entrées (18/27) : optionnel, conforme à l'interface ; `grantGroups` est porté par les 27.
  */
 import { z } from 'zod';
 import { sourceRefSchema, charKeySchema, advancementRefSchema, raceKeySchema, refCareerIdSchema, traitInstanceSchema } from '../common';
@@ -34,9 +33,10 @@ export const schema = z.array(
     /** Talents d'espèce ({ref}, {choice} « A ou B », {wildcard} « Au choix »). */
     talents: z.array(advancementRefSchema),
     source: sourceRefSchema,
-    /** Racial de Groupe ÉDITABLE (Traits psy ciblés, LDB 21) — surcharge la dérivation par label.
-     *  Absent (0/27 observées) = racial auto-dérivé du `label`. */
-    group: z.string().optional(),
+    /** Ids de `groups.json` de l'espèce (Traits psy ciblés, LDB 21) — racial, plus la sous-espèce
+     *  quand elle a son propre Groupe (« Humains (Tiléens) » → `humain` + `tileen`). DONNÉE requise
+     *  (27/27) : `groupsFor` les lit, il ne dérive plus rien du `label`. */
+    grantGroups: z.array(z.string()),
     /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.87-91). Absent = défaut Humain (50). */
     mutationBodyMax: z.number().optional(),
     /** Habillage de l'APERÇU (créateur, carte de race #431) — id de carrière ICONIQUE et COMMUNE à

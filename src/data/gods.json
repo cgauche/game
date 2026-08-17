@@ -796,6 +796,9 @@
   {
     "id": "sigmar",
     "label": "Sigmar",
+    "grantGroups": [
+      "sigmarite"
+    ],
     "title": "Dieu de l'Empire",
     "blessings": [
       {
@@ -1029,6 +1032,9 @@
   {
     "id": "ulric",
     "label": "Ulric",
+    "grantGroups": [
+      "ulricain"
+    ],
     "title": "Dieu de la guerre",
     "blessings": [
       {

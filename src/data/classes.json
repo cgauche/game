@@ -217,6 +217,9 @@
   {
     "id": "roublards",
     "label": "Roublards",
+    "grantGroups": [
+      "criminel"
+    ],
     "trappings": [
       {
         "id": "vetements"

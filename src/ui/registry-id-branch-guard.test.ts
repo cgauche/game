@@ -41,7 +41,10 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/ui/ → ..
  * Les entrées neuves portent leur motif NOMINATIF ci-dessous : stock avoué, à faire DÉCROÎTRE.
  * Descente mesurée depuis : 60 → 58 (lots E4/C0+C1, `bc54767e`), puis 58 → 54 (lot E4/C2+C3,
  * 2026-08-17) — `creation.ts` et `CharacterCreator.tsx` (gate d'espèce passé au champ
- * `SpeciesData.gatedByRule`), `combat.ts` et `draft.ts` (tables `Record<union fermée, …>`).
+ * `SpeciesData.gatedByRule`), `combat.ts` et `draft.ts` (tables `Record<union fermée, …>`), puis
+ * 54 → 50 (lot E4/C4-groups, 2026-08-17) — `groups.ts` sort de la liste : l'appartenance à un
+ * Groupe est DÉCLARÉE en donnée (`grantGroups` d'espèce/carrière/classe/culte/créature,
+ * `matchesAll`/`exceptGroups` du Groupe joker).
  */
 const KNOWN: Record<string, number> = {
   'scripts/_qc-decor-sheet.mts': 2,
@@ -57,7 +60,6 @@ const KNOWN: Record<string, number> = {
   'src/engine/creatureEquip.ts': 2,
   'src/engine/critical.ts': 4,
   'src/engine/exposure.ts': 1, // for…of démasqué : `e.effectId === 'exposition-froid'|'-chaleur'`
-  'src/engine/groups.ts': 4, // +1 for…of démasqué : `t.talentId === 'beni'`
   'src/engine/items.ts': 1,
   'src/engine/mountTravel.ts': 2,
   'src/engine/persistence.ts': 2,
@@ -102,7 +104,8 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * Mesure du 2026-08-17 (#1318 E4/C0-a), par NŒUD (deux comparaisons sur une même ligne pèsent 2) :
  * 169 au moment de la pose du cliquet, 165 après le lot C1 (marqueurs de cargaison passés en donnée —
  * `registry.ts` et `PortView.tsx` sortent de la liste), 163 après le lot C2 (gate d'espèce en champ
- * déclaré : `creation.ts` sort de la liste, `CharacterCreator.tsx` passe de 8 à 7).
+ * déclaré : `creation.ts` sort de la liste, `CharacterCreator.tsx` passe de 8 à 7), 160 après le lot
+ * C4-groups (appartenance de Groupe déclarée en donnée : `groups.ts` sort de la liste).
  */
 const RAW_KNOWN: Record<string, number> = {
   'scripts/data/lib/obtainabilityGraph.ts': 3,
@@ -126,7 +129,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/engagement.ts': 2,
   'src/engine/equipCompare.ts': 2,
   'src/engine/exposure.ts': 2,
-  'src/engine/groups.ts': 3,
   'src/engine/healing.ts': 1,
   'src/engine/items.ts': 1,
   'src/engine/magic.ts': 3,

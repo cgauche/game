@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { groupsFor, groupMatch } from './groups';
+import { findCreatureById, findGodById, findGroupById, findSpeciesById, findTalentById } from '../data';
 
 describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3)', () => {
   it('folder créature → id de catégorie (règles ordonnées, la plus spécifique d’abord)', () => {
@@ -14,13 +15,13 @@ describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3
     expect(groupsFor({ folder: 'Les peuples du Reikland' })).toEqual([]); // pas de catégorie de monstre
   });
 
-  it('espèce → id racial + carrière + extras (dédup, ids)', () => {
-    const g = groupsFor({ species: 'Humains (Reiklander)', careerId: 'soldat', extras: ['sigmarite'] });
+  it('espèce → ids DÉCLARÉS par l’entrée (`grantGroups`) + carrière + extras (dédup, ids)', () => {
+    const g = groupsFor({ speciesId: 'humains-reiklander', careerId: 'soldat', extras: ['sigmarite'] });
     expect(g).toEqual(expect.arrayContaining(['humain', 'soldat', 'sigmarite']));
   });
 
   it('dédup : un même id n’apparaît qu’une fois', () => {
-    const g = groupsFor({ careerId: 'humain', species: 'Humains (Reiklander)' });
+    const g = groupsFor({ speciesId: 'humains-reiklander', extras: ['humain'] });
     expect(g.filter((x) => x === 'humain').length).toBe(1);
   });
 
@@ -56,9 +57,9 @@ describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3
     expect(groupMatch('elfe', ['elfe-noir'])).toBe(false); // pas de raffinement de sous-type (YAGNI)
   });
 
-  it('SOUS-ESPÈCE Tiléen : aplatit la hiérarchie — émet le racial ET le sous-type', () => {
-    expect(groupsFor({ species: 'Humains (Tiléens)' })).toEqual(expect.arrayContaining(['humain', 'tileen']));
-    expect(groupsFor({ species: 'Humains (Reiklander)' })).not.toContain('tileen'); // pas de faux positif
+  it('SOUS-ESPÈCE Tiléen : aplatit la hiérarchie — l’entrée déclare le racial ET le sous-type', () => {
+    expect(groupsFor({ speciesId: 'humains-tileens' })).toEqual(expect.arrayContaining(['humain', 'tileen']));
+    expect(groupsFor({ speciesId: 'humains-reiklander' })).not.toContain('tileen'); // pas de faux positif
   });
 
   it('carrières Bailli/Juriste/Noble → leur propre id de Groupe (Traits psy ciblés, LDB 21)', () => {
@@ -74,6 +75,15 @@ describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3
     expect(groupsFor({ talents: [{ talentId: 'autre-talent' }] })).toEqual([]); // pas Béni → rien
   });
 
+  it('le culte n’est lu QUE via un Talent porteur de `grantSpecGroups` (le `spec` seul ne suffit pas)', () => {
+    // Les deux faces du champ, sur la donnée RÉELLE : Béni le porte, Invocation non — même `spec`,
+    // même dieu, un seul des deux ouvre le Groupe.
+    expect(findTalentById('beni')?.grantSpecGroups).toBe(true);
+    expect(findTalentById('invocation')?.grantSpecGroups).toBeUndefined();
+    expect(findGodById('sigmar')?.grantGroups).toEqual(['sigmarite']);
+    expect(groupsFor({ talents: [{ talentId: 'invocation', spec: 'sigmar' }] })).toEqual([]);
+  });
+
   it('cibles spéciales : « tout » matche toujours, « vivant » exclut mort-vivant/démon', () => {
     expect(groupMatch('tout', [])).toBe(true);
     expect(groupMatch('tout', ['demon'])).toBe(true);
@@ -83,8 +93,8 @@ describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3
   });
 
   it('vérité — une créature avec Animosité (tileen) réagit à un combattant Tiléen', () => {
-    expect(groupMatch('tileen', groupsFor({ species: 'Humains (Tiléens)' }))).toBe(true);
-    expect(groupMatch('tileen', groupsFor({ species: 'Humains (Reiklander)' }))).toBe(false);
+    expect(groupMatch('tileen', groupsFor({ speciesId: 'humains-tileens' }))).toBe(true);
+    expect(groupMatch('tileen', groupsFor({ speciesId: 'humains-reiklander' }))).toBe(false);
   });
 
   it('vérité — Préjugé (noble) cible un combattant de carrière Noble', () => {
@@ -93,9 +103,31 @@ describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3
   });
 
   it('vérité — Haine (vivant) d’un mort-vivant frappe les vivants, pas les morts-vivants', () => {
-    const vivant = groupsFor({ species: 'Humains (Reiklander)' });
+    const vivant = groupsFor({ speciesId: 'humains-reiklander' });
     const mortVivant = groupsFor({ traits: [{ id: 'mort-vivant' }] });
     expect(groupMatch('vivant', vivant)).toBe(true);
     expect(groupMatch('vivant', mortVivant)).toBe(false);
+  });
+
+  it('DÉMON du bestiaire : le Groupe de son dieu est DÉCLARÉ sur l’entrée, plus dérivé du folder', () => {
+    const nurgling = findCreatureById('nurglings')!;
+    expect(nurgling.grantGroups).toEqual(['nurgle']);
+    // Le folder seul (sans la déclaration) n'émet plus que la catégorie « demon » : la dérivation
+    // par mot-clé de dossier est MORTE — le dieu vient de la donnée portée par la créature.
+    expect(groupsFor({ folder: nurgling.folder })).toEqual(['demon']);
+    expect(groupsFor({ folder: nurgling.folder, extras: nurgling.grantGroups })).toEqual(['demon', 'nurgle']);
+  });
+
+  it('ESPÈCE : les 27 entrées portent leur `grantGroups` (aucune ne dépend plus d’un mot-clé de label)', () => {
+    expect(findSpeciesById('gnomes')?.grantGroups).toEqual(['gnome']);
+    expect(findSpeciesById('hauts-elfes')?.grantGroups).toEqual(['elfe']);
+    expect(findSpeciesById('humains-tileens')?.grantGroups).toEqual(['humain', 'tileen']);
+  });
+
+  it('JOKER : `groupMatch` lit `matchesAll`/`exceptGroups` sur l’entrée de `groups.json`', () => {
+    expect(findGroupById('tout')?.matchesAll).toBe(true);
+    expect(findGroupById('vivant')?.exceptGroups).toEqual(['mort-vivant', 'demon']);
+    expect(findGroupById('humain')?.matchesAll).toBeUndefined(); // un Groupe ordinaire n'est pas joker
+    expect(groupMatch('groupe-inexistant', ['humain'])).toBe(false); // id fantôme → aucun joker implicite
   });
 });

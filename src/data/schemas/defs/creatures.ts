@@ -1,7 +1,8 @@
 /**
- * Schéma de `creatures.json` — le BESTIAIRE (472 entrées), miroir de `CreatureData`
+ * Schéma de `creatures.json` — le BESTIAIRE (490 entrées), miroir de `CreatureData`
  * (`src/data/index.ts`). GROS dataset : inventaire de clés fait par script node sur
- * les 472 entrées (histogramme complet, pas d'échantillonnage).
+ * TOUTES les entrées du fichier (histogramme complet, pas d'échantillonnage) — le compte
+ * ci-dessus suit le fichier, il ne le fige pas.
  */
 import { z } from 'zod';
 import { sourceRefSchema, secondarySourceRefSchema, refSchema, trappingRefSchema, entityAppearanceSchema, traitInstanceSchema } from '../common';
@@ -54,6 +55,9 @@ export const schema = z.array(
     title: z.string().nullable(),
     named: z.boolean().optional(),
     folder: z.string().nullable(),
+    /** Ids de `groups.json` accordés à cette créature EN PLUS de la catégorie dérivée du `folder`
+     *  (`groupsFor`) — ex. le Groupe du dieu du Chaos d'un démon. Absent = aucun Groupe additionnel. */
+    grantGroups: z.array(z.string()).optional(),
     /** `Record<string, number|null>` (`src/data/index.ts`) — clés = abréviations de caractéristique
      *  (10 attendues : CC/CT/F/E/I/Ag/Dex/Int/FM/Soc, + M/B hors-jet vus ailleurs sur d'autres profils).
      *  `record` reste ouvert par construction (anomalie #1 de tête : clé `"undefined"` structurellement

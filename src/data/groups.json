@@ -101,11 +101,17 @@
   },
   {
     "id": "vivant",
-    "label": "Vivant"
+    "label": "Vivant",
+    "matchesAll": true,
+    "exceptGroups": [
+      "mort-vivant",
+      "demon"
+    ]
   },
   {
     "id": "tout",
-    "label": "Tout"
+    "label": "Tout",
+    "matchesAll": true
   },
   {
     "id": "religion",

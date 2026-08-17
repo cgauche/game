@@ -712,9 +712,10 @@ export interface SpeciesData {
   /** Talents d'espèce (`AdvancementRef[]` : {ref}, {choice} « A ou B », {random} « N aléatoire », {wildcard}). */
   talents: AdvancementRef[];
   source: SourceRef;
-  /** Racial de Groupe ÉDITABLE (Traits psy ciblés, LDB 21) — surcharge la dérivation par label
-   *  (`engine/groups`). Absent = racial auto-dérivé du `label` d'espèce. */
-  group?: string;
+  /** Ids de `groups.json` de l'espèce (Traits psy ciblés, LDB 21) : racial, plus la sous-espèce
+   *  quand elle porte son propre Groupe (« Humains (Tiléens) » → `humain` + `tileen`). Lus tels
+   *  quels par `groupsFor` (`engine/groups`), qui ne dérive plus rien du `label`. */
+  grantGroups: string[];
   /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.87-91 : d100 ≤ seuil → corps, sinon esprit) :
    *  Elfe 0, Nain 5, Halfling 10, Humain 50. Ogre 10 (ADE II « Ogres et Mutations »). ABSENT = défaut
    *  Humain (50) — le Gnome y est rattaché par NADJ « Gnomes et Corruption » (« mutent comme les humains »). */
@@ -744,6 +745,9 @@ export interface ClassData {
   /** id STABLE (slug du libellé) — cible de `CareerData.class`. */
   id: string;
   label: string;
+  /** Ids de `groups.json` accordés à tout titulaire d'une carrière de cette Classe (`groupsFor`) —
+   *  ex. la classe des Roublards ouvre le Groupe « Criminel ». Absent = aucun Groupe. */
+  grantGroups?: string[];
   /** Possessions de départ (`TrappingRef` : id du catalogue + quantité, ou `{text}` flavor hors catalogue). */
   trappings: TrappingRef[];
   desc: string;
@@ -758,6 +762,9 @@ export interface CareerData {
   labelF?: string;
   /** `id` de la Classe (`ClassData.id`) — réf d'entité, ≠ libellé. */
   class: string;
+  /** Ids de `groups.json` accordés au titulaire de cette carrière (`groupsFor`), en plus de ceux de
+   *  sa Classe. Absent = la carrière n'ouvre aucun Groupe d'appartenance. */
+  grantGroups?: string[];
   /** id d'une tenue spécifique (`TENUE_BY_ID`) réutilisée par cette carrière quand son rendu
    *  reprend la tenue d'une autre carrière (variants MDG « (Côtier) », MDG 09 l.255/343/458). */
   tenue?: string;
@@ -926,6 +933,9 @@ export interface TalentData {
    *  `cultChaos` (Béni / Invocation / Magie du Chaos → `gods.id` filtrés, AFFICHE le nom du dieu) ou
    *  `seaShanties` (Chanson de marin). Quand présent, `specs[]` est ABSENT (le pool dérive). */
   specsSource?: SpecsSource;
+  /** Le `spec` de ce Talent nomme un CULTE (`GodData.id`) dont les `grantGroups` sont accordés au
+   *  porteur (`groupsFor`) — Béni (Sigmar) fait un « sigmarite ». Absent = aucun Groupe. */
+  grantSpecGroups?: true;
   /** Le domaine de ce Talent accepte-t-il un TEXTE LIBRE hors `specs[]` ? Même sémantique que
    *  `SkillData.specsOpen` (absent/`false` = FERMÉ, `spec` DOIT être un id de `specs[]`). */
   specsOpen?: boolean;
@@ -1183,6 +1193,12 @@ export interface WeaponGroupData {
 export interface GroupData {
   id: string;
   label: string;
+  /** Groupe-CIBLE JOKER : il vise n'importe quel combattant (`groupMatch`, `engine/groups`), hormis
+   *  les porteurs d'un `exceptGroups`. Absent = appartenance STRICTE par id. */
+  matchesAll?: true;
+  /** Ids de `groups.json` RETRANCHÉS du joker — un combattant qui en porte un n'est pas visé
+   *  (« vivant » = tout sauf Mort-vivant/Démon). */
+  exceptGroups?: string[];
 }
 /** Famille de PRÉSENTATION du stock marchand (`MerchantPanel`, ordre d'affichage = ordre du tableau).
  *  `match` = règle de classement d'une ligne de stock (priorité unit > shield > trappingType > fallback
@@ -1240,6 +1256,9 @@ export interface CreatureData {
   /** Catégorie de Groupe ÉDITABLE (Traits psy ciblés, LDB 21) — surcharge la dérivation par folder
    *  (`engine/groups`). Absent = catégorie auto-dérivée du `folder`. */
   group?: string;
+  /** Ids de `groups.json` accordés à cette créature EN PLUS de la catégorie dérivée du `folder`
+   *  (`groupsFor`) — ex. le Groupe du dieu du Chaos d'un démon du bestiaire. Absent = aucun. */
+  grantGroups?: string[];
   /** Cette entrée du bestiaire suit-elle les règles de PERSONNAGE (#143/#152 — Corruption LDB 19,
    *  composant d'incantation LDB 46, Tests de fin de combat Maladie/Corruption LDB 18/20) ? Rétro-flag
    *  du bestiaire HUMAIN (Cultiste, Brigand, Voleur… — ce sont des Personnages, pas des créatures
@@ -2528,6 +2547,9 @@ export function bookAbr(id: string | null | undefined): string {
 export interface GodData {
   id: string;
   label: string;
+  /** Ids de `groups.json` accordés au fidèle de ce culte — poussés par un Talent qui porte
+   *  `grantSpecGroups` et dont le `spec` nomme ce dieu (`groupsFor`). Absent = aucun Groupe. */
+  grantGroups?: string[];
   title?: string;
   blessings: Ref[];
   miracles: Ref[];

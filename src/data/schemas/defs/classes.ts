@@ -13,6 +13,9 @@ export const schema = z.array(
     /** id STABLE (slug du libellé) — cible de `CareerData.class`. */
     id: z.string(),
     label: z.string(),
+    /** Ids de `groups.json` accordés à tout titulaire d'une carrière de cette Classe (`groupsFor`).
+     *  Absent = la Classe n'ouvre aucun Groupe d'appartenance. */
+    grantGroups: z.array(z.string()).optional(),
     /** Possessions de départ. */
     trappings: z.array(trappingRefSchema),
     desc: z.string(),

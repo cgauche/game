@@ -121,6 +121,9 @@
       "book": "livre-de-base",
       "page": 25
     },
+    "grantGroups": [
+      "humain"
+    ],
     "preview": {
       "career": "repurgateur"
     }
@@ -245,6 +248,9 @@
       "book": "middenheim",
       "page": 151
     },
+    "grantGroups": [
+      "humain"
+    ],
     "preview": {
       "career": "repurgateur"
     }
@@ -377,6 +383,9 @@
       "book": "middenheim",
       "page": 152
     },
+    "grantGroups": [
+      "humain"
+    ],
     "preview": {
       "career": "repurgateur"
     }
@@ -524,6 +533,9 @@
       "book": "middenheim",
       "page": 153
     },
+    "grantGroups": [
+      "humain"
+    ],
     "preview": {
       "career": "repurgateur"
     }
@@ -657,6 +669,10 @@
       "book": "aux-armes",
       "page": 55
     },
+    "grantGroups": [
+      "humain",
+      "tileen"
+    ],
     "preview": {
       "career": "repurgateur"
     }
@@ -803,6 +819,9 @@
       "book": "mer-des-griffes",
       "page": 54
     },
+    "grantGroups": [
+      "humain"
+    ],
     "preview": {
       "career": "marin-cotier"
     }
@@ -950,6 +969,9 @@
       "book": "mer-des-griffes",
       "page": 54
     },
+    "grantGroups": [
+      "humain"
+    ],
     "preview": {
       "career": "marin-cotier"
     }
@@ -1098,6 +1120,9 @@
       "book": "mer-des-griffes",
       "page": 54
     },
+    "grantGroups": [
+      "humain"
+    ],
     "preview": {
       "career": "marin-cotier"
     }
@@ -1224,6 +1249,9 @@
       "book": "livre-de-base",
       "page": 26
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -1363,6 +1391,9 @@
       "book": "archives-de-l-empire-1",
       "page": 23
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -1500,6 +1531,9 @@
       "book": "archives-de-l-empire-1",
       "page": 24
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -1639,6 +1673,9 @@
       "book": "archives-de-l-empire-1",
       "page": 25
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -1777,6 +1814,9 @@
       "book": "archives-de-l-empire-1",
       "page": 25
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -1914,6 +1954,9 @@
       "book": "archives-de-l-empire-1",
       "page": 26
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -2051,6 +2094,9 @@
       "book": "archives-de-l-empire-1",
       "page": 26
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -2187,6 +2233,9 @@
       "book": "archives-de-l-empire-1",
       "page": 27
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -2328,6 +2377,9 @@
       "book": "archives-de-l-empire-1",
       "page": 28
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -2466,6 +2518,9 @@
       "book": "archives-de-l-empire-1",
       "page": 29
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -2604,6 +2659,9 @@
       "book": "archives-de-l-empire-1",
       "page": 30
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -2746,6 +2804,9 @@
       "book": "archives-de-l-empire-1",
       "page": 31
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -2884,6 +2945,9 @@
       "book": "archives-de-l-empire-1",
       "page": 32
     },
+    "grantGroups": [
+      "halfling"
+    ],
     "mutationBodyMax": 10,
     "preview": {
       "career": "colporteur"
@@ -3032,6 +3096,9 @@
       "book": "livre-de-base",
       "page": 25
     },
+    "grantGroups": [
+      "nain"
+    ],
     "mutationBodyMax": 5,
     "preview": {
       "career": "tueur"
@@ -3180,6 +3247,9 @@
       "book": "mer-des-griffes",
       "page": 54
     },
+    "grantGroups": [
+      "nain"
+    ],
     "mutationBodyMax": 5,
     "preview": {
       "career": "tueur"
@@ -3350,6 +3420,9 @@
       "book": "nuits-agitees-et-dures-journees",
       "page": 86
     },
+    "grantGroups": [
+      "gnome"
+    ],
     "preview": {
       "career": "sorcier"
     }
@@ -3500,6 +3573,9 @@
       "book": "archives-de-l-empire-2",
       "page": 15
     },
+    "grantGroups": [
+      "ogre"
+    ],
     "mutationBodyMax": 10,
     "traits": [
       {
@@ -3653,6 +3729,9 @@
       "book": "livre-de-base",
       "page": 27
     },
+    "grantGroups": [
+      "elfe"
+    ],
     "mutationBodyMax": 0,
     "preview": {
       "career": "noble"
@@ -3802,6 +3881,9 @@
       "book": "livre-de-base",
       "page": 28
     },
+    "grantGroups": [
+      "elfe"
+    ],
     "mutationBodyMax": 0,
     "preview": {
       "career": "eclaireur"

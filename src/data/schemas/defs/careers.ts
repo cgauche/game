@@ -20,6 +20,9 @@ const careerEntrySchema = z.strictObject({
   labelF: z.string().optional(),
   /** `id` de la Classe (`ClassData.id`). */
   class: z.string(),
+  /** Ids de `groups.json` accordés au titulaire de cette carrière (`groupsFor`), en plus de ceux de
+   *  sa Classe. Absent = la carrière n'ouvre aucun Groupe d'appartenance. */
+  grantGroups: z.array(z.string()).optional(),
   /** id d'une tenue spécifique (`TENUE_BY_ID`) réutilisée par cette carrière quand son rendu
    *  reprend la tenue d'une autre carrière (variants MDG « (Côtier) », MDG 09 l.255/343/458). */
   tenue: z.string().optional(),

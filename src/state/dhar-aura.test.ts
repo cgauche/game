@@ -3,6 +3,7 @@ import { combatHooksOf } from './combatHooks';
 import './combat/roundHooks'; // effet de bord : enregistre les hooks de fin de Round (dont recompute-auras)
 import { groupsFor } from '../engine/groups';
 import { castTestTalentDR } from '../engine/magic';
+import { findCreatureById } from '../data';
 import { combatTestPenalty } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
 
@@ -10,8 +11,8 @@ import type { Combatant } from '../engine/types';
  * Aura de Dhar — DEUX entrées de `traits.json`, une par dieu (frenchy-bzh 295 l.233 « Les sorciers et
  * démons de Slaanesh à moins de 10 mètres… » ; 313 l.341 « …de Nurgle à moins de 11 mètres… »). Le hook
  * générique `recompute-auras` filtre les bénéficiaires par `aura.affectsGroups` (Groupe d'appartenance,
- * `groupMatch`) et touche l'émetteur si `aura.includesSelf`. Le Groupe de dieu est DÉRIVÉ du folder du
- * bestiaire (`groupsFor`), jamais posé à la main sur le combattant.
+ * `groupMatch`) et touche l'émetteur si `aura.includesSelf`. Le Groupe de dieu est DÉCLARÉ par l'entrée
+ * du bestiaire (`CreatureData.grantGroups`, lu par `groupsFor`), jamais posé à la main sur le combattant.
  */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
   id: 'c', name: 'C', kind: 'enemy',
@@ -27,40 +28,44 @@ const recompute = (combatants: Combatant[]) => {
   hook.run({ get: () => ({ scene: null }), battle: { combatants } } as never);
 };
 
-/** Groupes d'un démon du bestiaire — DÉRIVÉS de son folder, comme au spawn (`spawn.ts` → `groupsFor`). */
-const demonOf = (god: 'Slaanesh' | 'Nurgle') => groupsFor({ folder: `Démons de ${god} (frenchy.bzh)` });
+/** Groupes d'un démon du bestiaire, calculés comme au spawn (`spawn.ts` → `groupsFor`) : catégorie
+ *  dérivée du folder + Groupes DÉCLARÉS par l'entrée (`CreatureData.grantGroups`, celui de son dieu). */
+const demonOf = (creatureId: string) => {
+  const c = findCreatureById(creatureId)!;
+  return groupsFor({ folder: c.folder, group: c.group, extras: c.grantGroups });
+};
 
 describe('Aura de Dhar — filtre par Groupe de dieu (affectsGroups) et porteur inclus (includesSelf)', () => {
-  it('le Groupe de dieu est dérivé du folder du bestiaire, EN PLUS de « demon »', () => {
-    expect(demonOf('Slaanesh')).toEqual(['demon', 'slaanesh']);
-    expect(demonOf('Nurgle')).toEqual(['demon', 'nurgle']);
+  it('le Groupe de dieu est DÉCLARÉ par l’entrée du bestiaire, EN PLUS de « demon » dérivé du folder', () => {
+    expect(demonOf('daemonette-de-slaanesh')).toEqual(['demon', 'slaanesh']);
+    expect(demonOf('nurglings')).toEqual(['demon', 'nurgle']);
   });
 
   it('un démon de Slaanesh à 10 m de l’émetteur de Slaanesh gagne +1 DR (Focalisation ET Langue (Magick))', () => {
-    const src = mk({ id: 's', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('Slaanesh') as never, pos: { x: 5, y: 5 } as never });
-    const ally = mk({ id: 'a', groups: demonOf('Slaanesh') as never, pos: { x: 9, y: 5 } as never }); // 4 cases × 2 m = 8 m ≤ 10
+    const src = mk({ id: 's', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('daemonette-de-slaanesh') as never, pos: { x: 5, y: 5 } as never });
+    const ally = mk({ id: 'a', groups: demonOf('daemonette-de-slaanesh') as never, pos: { x: 9, y: 5 } as never }); // 4 cases × 2 m = 8 m ≤ 10
     recompute([src, ally]);
     expect(castTestTalentDR(ally, 'focalisation')).toBe(1);
     expect(castTestTalentDR(ally, 'langue', 'magick')).toBe(1);
   });
 
   it('un démon de NURGLE dans l’aura de Slaanesh ne gagne RIEN (le croisement que « alliés » autorisait à tort)', () => {
-    const src = mk({ id: 's', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('Slaanesh') as never, pos: { x: 5, y: 5 } as never });
-    const other = mk({ id: 'n', groups: demonOf('Nurgle') as never, pos: { x: 6, y: 5 } as never }); // adjacent, même camp
+    const src = mk({ id: 's', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('daemonette-de-slaanesh') as never, pos: { x: 5, y: 5 } as never });
+    const other = mk({ id: 'n', groups: demonOf('nurglings') as never, pos: { x: 6, y: 5 } as never }); // adjacent, même camp
     recompute([src, other]);
     expect(other.auraMods ?? []).toEqual([]);
     expect(castTestTalentDR(other, 'focalisation')).toBe(0);
   });
 
   it('l’émetteur bénéficie de sa propre aura (« Cela vaut pour le démon porteur de l’Aura également »)', () => {
-    const src = mk({ id: 's', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('Slaanesh') as never });
+    const src = mk({ id: 's', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('daemonette-de-slaanesh') as never });
     recompute([src]);
     expect(castTestTalentDR(src, 'focalisation')).toBe(1);
     expect(castTestTalentDR(src, 'langue', 'magick')).toBe(1);
   });
 
   it('un guerrier slaaneshi non-lanceur est bien dans l’aura, mais le bonus ne s’applique à aucun de ses Tests', () => {
-    const src = mk({ id: 's', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('Slaanesh') as never, pos: { x: 5, y: 5 } as never });
+    const src = mk({ id: 's', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('daemonette-de-slaanesh') as never, pos: { x: 5, y: 5 } as never });
     const warrior = mk({ id: 'w', groups: ['humain', 'slaanesh'] as never, pos: { x: 6, y: 5 } as never });
     recompute([src, warrior]);
     expect(warrior.auraMods?.length).toBe(2); // le Groupe matche : l'aura le touche
@@ -73,7 +78,7 @@ describe('Aura de Dhar — filtre par Groupe de dieu (affectsGroups) et porteur 
   it('CAMP indifférent : un héros du Groupe du dieu, dans le rayon d’un démon ENNEMI, bénéficie', () => {
     // Le texte ne dit pas « alliés » (frenchy-bzh 295 l.233) : il vise les sorciers et démons DU DIEU.
     // Reposer un `affects:'allies'` ici rendrait ce test rouge — c'est exactement ce qu'on interdit.
-    const src = mk({ id: 's', kind: 'enemy', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('Slaanesh') as never, pos: { x: 5, y: 5 } as never });
+    const src = mk({ id: 's', kind: 'enemy', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('daemonette-de-slaanesh') as never, pos: { x: 5, y: 5 } as never });
     const hero = mk({ id: 'h', kind: 'hero', groups: ['humain', 'slaanesh'] as never, pos: { x: 6, y: 5 } as never });
     recompute([src, hero]);
     expect(castTestTalentDR(hero, 'focalisation')).toBe(1);
@@ -82,16 +87,16 @@ describe('Aura de Dhar — filtre par Groupe de dieu (affectsGroups) et porteur 
   it('SUR-INCLUSION assumée : un cultiste slaaneshi ni sorcier ni démon reçoit le +1 DR à Langue (Magick)', () => {
     // Borne de l'union de Groupes (cf. `aura.affectsGroups`, schemas/defs/traits.ts) : le filtre porte le
     // dieu, pas « sorcier OU démon » — la conjonction n'est pas exprimable. Mesuré, pas subi.
-    const src = mk({ id: 's', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('Slaanesh') as never, pos: { x: 5, y: 5 } as never });
+    const src = mk({ id: 's', traits: [{ id: 'aura-de-dhar-slaanesh' }] as never, groups: demonOf('daemonette-de-slaanesh') as never, pos: { x: 5, y: 5 } as never });
     const cultist = mk({ id: 'c2', groups: ['humain', 'cultiste', 'slaanesh'] as never, pos: { x: 6, y: 5 } as never });
     recompute([src, cultist]);
     expect(castTestTalentDR(cultist, 'langue', 'magick')).toBe(1);
   });
 
   it('portée par entrée : Nurgle porte à 11 m (5 cases = 10 m), là où Slaanesh s’arrête à 10 m', () => {
-    const nurgle = mk({ id: 'n', traits: [{ id: 'aura-de-dhar-nurgle' }] as never, groups: demonOf('Nurgle') as never, pos: { x: 5, y: 5 } as never });
-    const far = mk({ id: 'f', groups: demonOf('Nurgle') as never, pos: { x: 11, y: 5 } as never }); // 6 cases = 12 m > 11
-    const near = mk({ id: 'p', groups: demonOf('Nurgle') as never, pos: { x: 10, y: 5 } as never }); // 5 cases = 10 m ≤ 11
+    const nurgle = mk({ id: 'n', traits: [{ id: 'aura-de-dhar-nurgle' }] as never, groups: demonOf('nurglings') as never, pos: { x: 5, y: 5 } as never });
+    const far = mk({ id: 'f', groups: demonOf('nurglings') as never, pos: { x: 11, y: 5 } as never }); // 6 cases = 12 m > 11
+    const near = mk({ id: 'p', groups: demonOf('nurglings') as never, pos: { x: 10, y: 5 } as never }); // 5 cases = 10 m ≤ 11
     recompute([nurgle, far, near]);
     expect(far.auraMods ?? []).toEqual([]);
     expect(castTestTalentDR(near, 'focalisation')).toBe(1);

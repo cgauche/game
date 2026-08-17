@@ -30617,6 +30617,9 @@
     "label": "Héraut de Khorne",
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
+    "grantGroups": [
+      "khorne"
+    ],
     "char": {
       "M": 5,
       "capacite-de-combat": 70,
@@ -30732,6 +30735,9 @@
     "label": "Héraut Exalté de Khorne",
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
+    "grantGroups": [
+      "khorne"
+    ],
     "char": {
       "M": 5,
       "capacite-de-combat": 80,
@@ -30850,6 +30856,9 @@
     "label": "Buveur de Sang de Khorne",
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
+    "grantGroups": [
+      "khorne"
+    ],
     "char": {
       "M": 6,
       "capacite-de-combat": 100,
@@ -30967,6 +30976,9 @@
     "label": "Buveur de Sang Exalté de Khorne",
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
+    "grantGroups": [
+      "khorne"
+    ],
     "char": {
       "M": 7,
       "capacite-de-combat": 120,
@@ -31087,6 +31099,9 @@
     "label": "Daemonette de Slaanesh",
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
+    "grantGroups": [
+      "slaanesh"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 60,
@@ -31215,6 +31230,9 @@
     "label": "Héraut de Slaanesh",
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
+    "grantGroups": [
+      "slaanesh"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 70,
@@ -31369,6 +31387,9 @@
     "label": "Héraut Exalté de Slaanesh",
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
+    "grantGroups": [
+      "slaanesh"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 80,
@@ -31544,6 +31565,9 @@
     "label": "Gardien des Secrets de Slaanesh",
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
+    "grantGroups": [
+      "slaanesh"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 100,
@@ -31737,6 +31761,9 @@
     "label": "Gardien des Secrets Exalté de Slaanesh",
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
+    "grantGroups": [
+      "slaanesh"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 120,
@@ -31936,6 +31963,9 @@
     "label": "Nurglings",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
+    "grantGroups": [
+      "nurgle"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 25,
@@ -32029,6 +32059,9 @@
     "label": "Nuée de Nurglings",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
+    "grantGroups": [
+      "nurgle"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 35,
@@ -32121,6 +32154,9 @@
     "label": "Porte-Peste de Nurgle",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
+    "grantGroups": [
+      "nurgle"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 50,
@@ -32229,6 +32265,9 @@
     "label": "Héraut de Nurgle",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
+    "grantGroups": [
+      "nurgle"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 60,
@@ -32369,6 +32408,9 @@
     "label": "Héraut Exalté de Nurgle",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
+    "grantGroups": [
+      "nurgle"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 70,
@@ -32515,6 +32557,9 @@
     "label": "Grand Immonde de Nurgle",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
+    "grantGroups": [
+      "nurgle"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 90,
@@ -32688,6 +32733,9 @@
     "label": "Grand Immonde Exalté de Nurgle",
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
+    "grantGroups": [
+      "nurgle"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 110,
@@ -32846,6 +32894,9 @@
     "label": "Incendiaire de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
+    "grantGroups": [
+      "tzeentch"
+    ],
     "char": {
       "M": 6,
       "capacite-de-combat": 40,
@@ -32955,6 +33006,9 @@
     "label": "Grand Incendiaire de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
+    "grantGroups": [
+      "tzeentch"
+    ],
     "char": {
       "M": 6,
       "capacite-de-combat": 50,
@@ -33064,6 +33118,9 @@
     "label": "Horreur Rose de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
+    "grantGroups": [
+      "tzeentch"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 50,
@@ -33193,6 +33250,9 @@
     "label": "Héraut de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
+    "grantGroups": [
+      "tzeentch"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 60,
@@ -33348,6 +33408,9 @@
     "label": "Héraut Exalté de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
+    "grantGroups": [
+      "tzeentch"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 70,
@@ -33530,6 +33593,9 @@
     "label": "Seigneur du Changement de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
+    "grantGroups": [
+      "tzeentch"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 90,
@@ -33705,6 +33771,9 @@
     "label": "Seigneur du Changement Exalté de Tzeentch",
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
+    "grantGroups": [
+      "tzeentch"
+    ],
     "char": {
       "M": 4,
       "capacite-de-combat": 110,

@@ -12,6 +12,9 @@ export const schema = z.array(
   z.strictObject({
     id: z.string(),
     label: z.string(),
+    /** Ids de `groups.json` accordés au fidèle de ce culte — poussés par un Talent qui porte
+     *  `grantSpecGroups` et dont le `spec` nomme ce dieu (`groupsFor`). Absent = aucun Groupe. */
+    grantGroups: z.array(z.string()).optional(),
     title: z.string().optional(),
     blessings: z.array(refSchema),
     miracles: z.array(refSchema),

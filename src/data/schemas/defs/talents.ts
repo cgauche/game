@@ -50,6 +50,9 @@ const talentEntrySchema = z.strictObject({
   specs: z.array(specEntrySchema).optional(),
   size: z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']).optional(),
   specsSource: specsSourceSchema.optional(),
+  /** Le `spec` de ce Talent nomme un CULTE (`gods.json`) : ses `grantGroups` sont accordés au
+   *  porteur (`groupsFor`). Absent = le `spec` n'ouvre aucun Groupe d'appartenance. */
+  grantSpecGroups: z.literal(true).optional(),
   specsOpen: z.boolean().optional(),
   rand: z.number().nullable(),
   source: sourceRefSchema,

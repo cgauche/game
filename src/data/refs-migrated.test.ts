@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
-  traits, stars, talents, maneuvers, skills, domains, crewRoles,
+  traits, stars, talents, maneuvers, skills, domains, crewRoles, groups,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
   findCreatureById, findVehicleById, findGroupById, findPsychologyById, findTraitById, findCrewTestTypeById, findLightToneById,
@@ -733,6 +733,46 @@ describe('traits.aura.affectsGroups — ids de groups.json qui résolvent', () =
   it('la garde n’est pas vacante — une aura à Groupe fantôme est REFUSÉE (contre-épreuve)', () => {
     expect(rows.some((t) => (t.aura?.affectsGroups?.length ?? 0) > 0)).toBe(true); // le scan a de la matière à voir
     expect(scan([{ id: 'fixture', aura: { affectsGroups: ['groupe-fantome'] } }])).toHaveLength(1);
+  });
+});
+
+// ── APPARTENANCE DÉCLARÉE (#1318 E4/C4) — `grantGroups` sur l'entrée d'espèce/carrière/classe/culte/
+// créature, et `exceptGroups` sur l'entrée de Groupe JOKER, sont les ids que `groupsFor`/`groupMatch`
+// (`src/engine/groups.ts`) poussent TELS QUELS : plus aucune table de mots-clés en code. Un id fantôme
+// ne serait jamais visé par une Cible de Trait psy — l'appartenance disparaîtrait en silence.
+describe('grantGroups / exceptGroups — ids de groups.json qui résolvent (#1318 E4/C4)', () => {
+  interface GrantRow { id: string; grantGroups?: string[] }
+  const PORTEURS: [string, GrantRow[]][] = [
+    ['species.json', species as GrantRow[]],
+    ['careers.json', careers as GrantRow[]],
+    ['classes.json', classes as GrantRow[]],
+    ['gods.json', gods as GrantRow[]],
+    ['creatures.json', creatures as unknown as GrantRow[]],
+  ];
+
+  const scan = (file: string, entries: GrantRow[]): string[] =>
+    entries.flatMap((e) =>
+      (e.grantGroups ?? []).flatMap((g, i) => (findGroupById(g) ? [] : [`${file}(${e.id}).grantGroups[${i}] → ${JSON.stringify(g)}`])),
+    );
+
+  it('chaque Groupe accordé par une entrée pointe une entrée réelle de groups.json', () => {
+    const bad = PORTEURS.flatMap(([file, entries]) => scan(file, entries));
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
+  it('chaque `exceptGroups` d’un Groupe joker pointe une entrée réelle de groups.json', () => {
+    const bad = groups.flatMap((g) =>
+      (g.exceptGroups ?? []).flatMap((x, i) => (findGroupById(x) ? [] : [`groups.json(${g.id}).exceptGroups[${i}] → ${JSON.stringify(x)}`])),
+    );
+    expect(bad, bad.join('\n')).toEqual([]);
+    expect(groups.some((g) => (g.exceptGroups?.length ?? 0) > 0)).toBe(true); // matière réelle à voir
+  });
+
+  it('la garde n’est pas vacante — chaque registre PORTE le champ, et un id fantôme est REFUSÉ', () => {
+    for (const [file, entries] of PORTEURS) {
+      expect(entries.some((e) => (e.grantGroups?.length ?? 0) > 0), file).toBe(true);
+    }
+    expect(scan('fixture.json', [{ id: 'fixture', grantGroups: ['groupe-fantome'] }])).toHaveLength(1);
   });
 });
 

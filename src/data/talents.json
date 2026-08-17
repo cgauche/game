@@ -387,6 +387,7 @@
     "test": null,
     "desc": "Vous êtes protégé par l'un des dieux et vous pouvez intensifier le pouvoir de simples Prières. Vous pouvez à présent utiliser les Bénédictions de votre divinité listées au Chapitre 7 : Religions et Croyances. Dans des conditions normales, vous ne pouvez connaître qu'un seul Savoir divin pour le Talent Béni.",
     "specsSource": "cultBlessings",
+    "grantSpecGroups": true,
     "rand": null,
     "source": {
       "book": "livre-de-base",
