@@ -17,16 +17,20 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
+import type { Dir8 } from '../../state/dir8';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import type { Rot } from '../../geometry/iso';
 import type { PropEl } from '../builders/types';
 import type { ActorPose, KeepEl, SceneBillboardEls, TintAt } from '../backends/webgl/sceneMeshes';
 import { atlasLayout, billboardView } from '../backends/webgl/billboardMath';
+import { dir8Basis } from '../pov/camera';
 import * as svgTexture from '../backends/webgl/svgTexture';
 import * as atlasBake from '../backends/webgl/atlasBake';
-import { bakeQueueLength, clearAtlasCache, resetBakeQueue } from '../backends/webgl/atlasBake';
+import { PRIORITE_RECHAUFFAGE, PRIORITE_VUE_COURANTE, bakeQueueLength, clearAtlasCache, resetBakeQueue } from '../backends/webgl/atlasBake';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import { bbCameraDe, povArtRot } from './regard';
+import { poigneesEnAttente } from './texturesStatiques';
 import { frameRectOf } from './boardPose';
 import { subscribeStageFrames } from './stageFrames';
 
@@ -96,8 +100,11 @@ function simulerRasterisation(): void {
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
 }
 
-function vue(
-  yawDeg: number,
+/** Le cadre de PREMIÈRE PERSONNE au cap `facing` — la forme que le pas de POV passe au stage. */
+const cadrePov = (facing: Dir8): StageFrame => ({ mode: 'pov', partyPos: { x: 6, y: 6 }, facing, indoor: false, cid: HÉROS.id });
+
+function écran(
+  frame: StageFrame,
   els: SceneBillboardEls = ELS,
   acteurs: ActorPose[] = ACTEURS,
   animUtilisée: StageWalkAnim = anim,
@@ -107,7 +114,7 @@ function vue(
     <GameStage3D
       scene={SCENE}
       mpt={MPT}
-      frame={cadre(yawDeg)}
+      frame={frame}
       tintAt={TINT}
       keepEl={keepEl}
       els={els}
@@ -118,6 +125,16 @@ function vue(
       anim={animUtilisée}
     />
   );
+}
+
+function vue(
+  yawDeg: number,
+  els: SceneBillboardEls = ELS,
+  acteurs: ActorPose[] = ACTEURS,
+  animUtilisée: StageWalkAnim = anim,
+  keepEl: KeepEl = KEEP,
+): JSX.Element {
+  return écran(cadre(yawDeg), els, acteurs, animUtilisée, keepEl);
 }
 
 /** Laisse tourner la file du cuiseur (une rasterisation par tranche), en battant la boucle d'image. */
@@ -140,6 +157,31 @@ async function monter(
   root = createRoot(hôte);
   await act(async () => { root!.render(vue(0, els, acteurs, animUtilisée)); });
   await respirer(40);
+}
+
+/** Montage en PREMIÈRE PERSONNE au cap `cap` — même banc, l'autre regard. */
+async function monterPov(
+  cap: Dir8,
+  els: SceneBillboardEls = ELS,
+  acteurs: ActorPose[] = ACTEURS,
+): Promise<void> {
+  scènes = [];
+  hôte = document.createElement('div');
+  document.body.appendChild(hôte);
+  root = createRoot(hôte);
+  await act(async () => { root!.render(écran(cadrePov(cap), els, acteurs)); });
+  await respirer(40);
+}
+
+/** Changement de CAP servi comme le jeu le sert : un rendu, puis la file qui respire. */
+async function allerAuCap(
+  cap: Dir8,
+  els: SceneBillboardEls = ELS,
+  acteurs: ActorPose[] = ACTEURS,
+  ms = 60,
+): Promise<void> {
+  await act(async () => { root!.render(écran(cadrePov(cap), els, acteurs)); });
+  await respirer(ms);
 }
 
 /** Tous les quads de billboard montés (les corps, jamais leurs jumeaux de silhouette). */
@@ -448,5 +490,297 @@ describe('Cran franchi — N relèves, UNE image', () => {
     // PRÉMISSE — sans relève effective, « peu de rendus » ne dirait rien.
     expect(quads().map(mapDe), 'les vingt décors doivent être revenus au cran 0').toEqual(artCran0);
     expect(rendus, `${rendus} rendus pour ${DENSE.props.length} relèves`).toBeLessThan(DENSE.props.length);
+  });
+});
+
+/** La SIGNATURE d'art d'un décor (`facing:'S'`) vu depuis un cap — le fragment `|r<cran>|<vue>|<face>|`
+ *  que porte sa clé de texture. C'est par elle que le banc reconnaît, dans une clé ou une poignée, le
+ *  regard qui l'a demandée. */
+const signatureDuCap = (cap: Dir8): string => {
+  const vm = billboardView(bbCameraDe({ rot: povArtRot(cap), facing: cap }), 'S');
+  return `|r${povArtRot(cap)}|${vm.view}|${vm.mirror ? 'm' : 'd'}|`;
+};
+
+/** Décors seuls : chaque quad se compare alors à SON art d'avant, sans le corps à flipbook que la
+ *  boucle d'image repeint par ailleurs. */
+const DÉCORS = { tokens: [], props: ELS.props } satisfies SceneBillboardEls;
+
+/**
+ * PREMIÈRE PERSONNE (#1373) — le REGARD, pas le cran. L'art d'un quad se prend au CAP Dir8 du meneur ;
+ * huit caps pour quatre crans d'art (`povArtRot` planchérise), donc deux caps voisins peuvent partager
+ * leur cran tout en montrant deux vues différentes (NE : front, E : profil).
+ *
+ * Mêmes faits qu'au plateau, sur l'autre vue : les quads SURVIVENT au changement de cap, et leur art
+ * est relevé à celui du cap d'arrivée — y compris quand le cran, lui, n'a pas bougé.
+ */
+describe('Cap changé (première personne) — les quads SURVIVENT', () => {
+  it('ni matériau ni géométrie libérés, et pas un seul quad remplacé sur N→NE→E', async () => {
+    await monterPov('N');
+    const avant = quads();
+    // PRÉMISSE — sans quads montés, « rien n'est libéré » serait vrai du vide.
+    expect(avant.length, 'aucun board monté : rien à mesurer').toBeGreaterThan(0);
+    const disposeMat = vi.spyOn(THREE.Material.prototype, 'dispose');
+    const disposeGeo = vi.spyOn(THREE.BufferGeometry.prototype, 'dispose');
+
+    await allerAuCap('NE');
+    await allerAuCap('E');
+
+    expect(disposeMat, 'le groupe entier se libère au changement de cap : c’est la panne du plateau, autre vue').not.toHaveBeenCalled();
+    expect(disposeGeo, 'une géométrie de quad refaite au cap, c’est une repose ratée').not.toHaveBeenCalled();
+    const après = quads();
+    expect(après.length, 'le compte de quads ne change pas d’un cap à l’autre').toBe(avant.length);
+    expect(après.filter((m) => avant.includes(m)).length, 'les quads doivent être les MÊMES objets').toBe(avant.length);
+  });
+});
+
+describe('Cap changé — l’art est celui du NOUVEAU cap', () => {
+  /** Attend la relève de TOUS les quads, dans un budget borné (la file sert une texture par tranche). */
+  async function attendreRelève(artAvant: (THREE.Texture | null)[]): Promise<number> {
+    let relevés = 0;
+    for (let i = 0; i < 30 && relevés < artAvant.length; i++) {
+      await respirer(20);
+      relevés = quads().filter((m, k) => mapDe(m) !== artAvant[k]).length;
+    }
+    return relevés;
+  }
+
+  it('N→NE : chaque décor est relevé à l’art de son cap d’arrivée', async () => {
+    await monterPov('N', DÉCORS, SANS_ACTEUR);
+    const artN = quads().map(mapDe);
+    expect(artN.length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
+    expect(artN.every(Boolean), 'un décor sans art : le cap N n’est pas servi').toBe(true);
+
+    await act(async () => { root!.render(écran(cadrePov('NE'), DÉCORS, SANS_ACTEUR)); });
+
+    expect(await attendreRelève(artN), 'tous les décors doivent finir relevés').toBe(artN.length);
+  });
+
+  it('NE→E : deux caps du MÊME cran d’art relèvent quand même (le cas piège)', async () => {
+    // Les deux caps tombent sur le cran 1 (`povArtRot`), et montrent pourtant deux vues du décor —
+    // une garde qui ne comparerait que le cran ne reposerait rien ici, et le décor resterait de face.
+    expect(povArtRot('NE'), 'PRÉMISSE : les deux caps doivent partager leur cran').toBe(povArtRot('E'));
+    const vueNE = billboardView({ kind: 'perspective', ...dir8Basis('NE') }, 'S');
+    const vueE = billboardView({ kind: 'perspective', ...dir8Basis('E') }, 'S');
+    expect(vueNE, 'PRÉMISSE : cette paire de caps doit CHANGER l’art').not.toEqual(vueE);
+
+    await monterPov('NE', DÉCORS, SANS_ACTEUR);
+    const artNE = quads().map(mapDe);
+    expect(artNE.length).toBe(DÉCORS.props.length);
+    expect(artNE.every(Boolean)).toBe(true);
+
+    await act(async () => { root!.render(écran(cadrePov('E'), DÉCORS, SANS_ACTEUR)); });
+
+    expect(await attendreRelève(artNE), 'aucune relève : le décor est resté peint au cap quitté').toBe(artNE.length);
+  });
+
+  it('une texture arrivée APRÈS le changement de cap se pose au cap COURANT', async () => {
+    const servies = new Map<string, Promise<THREE.Texture>>();
+    const original = svgTexture.getBillboardTexture;
+    vi.spyOn(svgTexture, 'getBillboardTexture').mockImplementation((clé, faire) => {
+      const p = original(clé, faire);
+      servies.set(clé, p);
+      return p;
+    });
+    await monterPov('N', DÉCORS, SANS_ACTEUR);
+    expect(quads().length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
+
+    // RASTERISATION RETENUE : la texture d'un billboard n'arrive qu'au chargement de son image, et
+    // c'est cet instant que ce contrat déplace de l'autre côté du changement de cap. Sans cette
+    // retenue, le montage est servi avant le cap et la mesure ne porterait plus sur le vol.
+    const enAttente: (() => void)[] = [];
+    vi.stubGlobal('Image', class {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_v: string) { enAttente.push(() => this.onload?.()); }
+    });
+    /** Sert les images retenues, puis laisse la file et la boucle d'image respirer. */
+    const servirLesImages = async (): Promise<void> => {
+      for (let i = 0; i < 8; i++) {
+        const paquet = enAttente.splice(0);
+        await act(async () => { for (const f of paquet) f(); });
+        await respirer(20);
+      }
+    };
+
+    // SUJETS NEUFS : le groupe se remonte (le seul chemin qui remonte encore), au cap N…
+    const NEUFS: SceneBillboardEls = { tokens: [], props: [décor('n1', 5), décor('n2', 6), décor('n3', 7)] };
+    await act(async () => { root!.render(écran(cadrePov('N'), NEUFS, SANS_ACTEUR)); });
+    // PRÉMISSE — aucun quad neuf ne doit être monté quand le cap change, sinon la REPOSE ordinaire
+    // suffirait et le chemin « en vol » ne serait jamais emprunté.
+    expect(enAttente.length, 'les textures du montage doivent être RETENUES').toBeGreaterThan(0);
+    // …et le cap change AVANT que les textures de ce montage ne soient servies : les quads entrent en
+    // scène de l'autre côté du changement.
+    await act(async () => { root!.render(écran(cadrePov('NE'), NEUFS, SANS_ACTEUR)); });
+    await servirLesImages();
+
+    const texturesDe = async (cap: Dir8): Promise<Set<THREE.Texture>> => new Set(
+      await Promise.all([...servies.entries()].filter(([k]) => k.startsWith('prop:prop:n') && k.includes(signatureDuCap(cap))).map(([, p]) => p)),
+    );
+    const auCapNE = await texturesDe('NE');
+    const auCapN = await texturesDe('N');
+    // PRÉMISSE — les deux caps doivent avoir des textures distinctes, sinon la garde ne dirait rien.
+    expect(auCapNE.size, 'aucune texture demandée au cap NE pour les décors neufs').toBe(NEUFS.props.length);
+    expect([...auCapNE].some((t) => auCapN.has(t)), 'PRÉMISSE : les deux caps partagent une texture').toBe(false);
+
+    const posées = quads().map(mapDe);
+    expect(posées.length, 'les décors neufs doivent être montés').toBe(NEUFS.props.length);
+    expect(posées.every((t) => t !== null && auCapNE.has(t)), 'un quad monté en vol est resté peint au cap quitté').toBe(true);
+  });
+});
+
+/**
+ * PRÉ-CHAUFFE des caps VOISINS (#1373) : en première personne, le temps mort réchauffe les deux caps à
+ * ±45° du cap courant — un demi-tour progressif passe par eux. Ce que ce contrat tient : au cap voisin,
+ * la relève ne coûte AUCUNE rasterisation (~10 ms de mur chacune), elle vient du cache.
+ */
+describe('Cap voisin — servi par le cache, pas par une rafale', () => {
+  it('un demi-tour progressif reste CHAUD : chaque cap franchi réchauffe les siens', async () => {
+    const statique = vi.spyOn(svgTexture, 'svgToTexture');
+    /** Laisse la file s'épuiser : le compte de rasterisations ne bouge plus. */
+    const drainer = async (): Promise<number> => {
+      let n = -1;
+      for (let i = 0; i < 40 && n !== statique.mock.calls.length; i++) {
+        n = statique.mock.calls.length;
+        await respirer(40);
+      }
+      return statique.mock.calls.length;
+    };
+    /** Attend la relève de TOUS les décors depuis un art donné, dans un budget borné. */
+    const relever = async (artAvant: (THREE.Texture | null)[]): Promise<number> => {
+      let relevés = 0;
+      for (let i = 0; i < 30 && relevés < artAvant.length; i++) {
+        await respirer(20);
+        relevés = quads().filter((m, k) => mapDe(m) !== artAvant[k]).length;
+      }
+      return relevés;
+    };
+    const parDécor = DÉCORS.props.length;
+
+    await monterPov('N', DÉCORS, SANS_ACTEUR);
+    // MONTAGE + PRÉ-CHAUFFE : un regard servi (N), deux réchauffés (NE, NO) — trois par décor.
+    expect(await drainer(), 'la pré-chauffe des deux caps voisins n’a pas eu lieu au montage').toBe(3 * parDécor);
+    const artN = quads().map(mapDe);
+    expect(artN.length, 'aucun décor monté : rien à mesurer').toBe(parDécor);
+
+    // CAP N→NE : la relève est servie par le cache (le cap NE était réchauffé), et le franchissement
+    // réchauffe à son tour les voisins de NE — E est neuf, N vient d'être quitté.
+    await act(async () => { root!.render(écran(cadrePov('NE'), DÉCORS, SANS_ACTEUR)); });
+    expect(await relever(artN), 'tous les décors doivent finir relevés au cap NE').toBe(parDécor);
+    expect(await drainer(), 'le cap E, voisin du cap d’arrivée, n’a pas été réchauffé').toBe(4 * parDécor);
+    const artNE = quads().map(mapDe);
+
+    // CAP NE→E : le cap suivant est donc CHAUD lui aussi — sa relève ne rasterise rien, et c'est SE
+    // qui part au réchauffage derrière elle.
+    await act(async () => { root!.render(écran(cadrePov('E'), DÉCORS, SANS_ACTEUR)); });
+    expect(await relever(artNE), 'tous les décors doivent finir relevés au cap E').toBe(parDécor);
+    expect(await drainer(), 'le cap SE, voisin du cap E, n’a pas été réchauffé').toBe(5 * parDécor);
+  });
+});
+
+/**
+ * RANGS DE LA FILE au changement de regard (#1373). La file du cuiseur sert par PRIORITÉ, et une clé
+ * n'y garde son rang que tant qu'elle ATTEND : ce banc lit la carte des poignées (`poigneesEnAttente`)
+ * juste après le rendu, avant qu'aucune tranche d'inactivité n'ait servi quoi que ce soit.
+ */
+describe('Changement de regard — ce que la caméra attend passe DEVANT', () => {
+  /** Les rangs des poignées portant la signature d'un cap. */
+  const rangsDuCap = (cap: Dir8): number[] =>
+    [...poigneesEnAttente()].filter(([clé]) => clé.includes(signatureDuCap(cap))).map(([, rang]) => rang);
+
+  it('le regard QUITTÉ redescend au réchauffage, le regard courant tient le rang de la vue', async () => {
+    await monterPov('N', DÉCORS, SANS_ACTEUR);
+    // CACHE FROID : sans cela, les caps déjà réchauffés seraient servis sans jamais entrer en file, et
+    // il n'y aurait aucun rang à mesurer.
+    svgTexture.clearBillboardTextures();
+    resetBakeQueue();
+
+    // Rendus SYNCHRONES : aucune tranche d'inactivité ne peut s'intercaler entre les deux changements
+    // de cap, donc ce que la file a pris est encore EN ATTENTE quand le banc lit les rangs.
+    // N→NE : la relève du cap NE part au rang de la VUE COURANTE (et ses voisins au réchauffage).
+    act(() => { root!.render(écran(cadrePov('NE'), DÉCORS, SANS_ACTEUR)); });
+    expect(rangsDuCap('NE'), 'la relève du cap d’arrivée doit être en file au rang de la vue')
+      .toEqual(Array(DÉCORS.props.length).fill(PRIORITE_VUE_COURANTE));
+
+    // NE→E AVANT que la file n'ait servi : le cap NE n'est plus attendu, il doit lâcher son rang —
+    // sinon ses trois textures passent devant celles du cap qu'on regarde.
+    act(() => { root!.render(écran(cadrePov('E'), DÉCORS, SANS_ACTEUR)); });
+
+    expect(rangsDuCap('E'), 'le cap regardé doit tenir le rang de la vue courante')
+      .toEqual(Array(DÉCORS.props.length).fill(PRIORITE_VUE_COURANTE));
+    expect(rangsDuCap('NE'), 'le cap QUITTÉ garde son rang : il fera patienter le cap regardé')
+      .toEqual(Array(DÉCORS.props.length).fill(PRIORITE_RECHAUFFAGE));
+  });
+
+  it('une clé SERVIE PAR LE CACHE ne laisse aucune poignée derrière elle', async () => {
+    await monterPov('N', DÉCORS, SANS_ACTEUR);
+    // La file épuisée, plus rien n'attend : toute poignée restante est un fantôme que chaque
+    // `rendreAuRechauffage` reparcourt sans plus rien commander.
+    for (let i = 0; i < 40 && poigneesEnAttente().size > 0; i++) await respirer(40);
+    expect(quads().length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
+    expect(poigneesEnAttente().size, 'poignées restées après le service complet de la file').toBe(0);
+
+    // Trois allers-retours entre caps DÉJÀ CUITS : chaque repose redemande des clés que le cache sert
+    // sans rien mettre en file.
+    for (const cap of ['NE', 'N', 'NE', 'N'] as Dir8[]) {
+      await act(async () => { root!.render(écran(cadrePov(cap), DÉCORS, SANS_ACTEUR)); });
+      await respirer(20);
+    }
+    expect(poigneesEnAttente().size, 'une demande servie par le cache a posé une poignée fantôme').toBe(0);
+  });
+});
+
+/**
+ * FRAÎCHETÉ DE LA RELÈVE (#1373) : une texture cuite pour un regard qu'on a QUITTÉ entre-temps ne se
+ * pose pas. La file est cadencée — un aller-retour rapide (A→B→A) est plus court que la cuisson de B,
+ * et sans cette garde le quad se ferait repeindre au regard B alors que la caméra est revenue en A.
+ */
+describe('Changement de regard — une texture PÉRIMÉE ne se pose pas', () => {
+  it('cap N→E→N : la texture du cap E, servie après le retour, est refusée', async () => {
+    const servies = new Map<string, Promise<THREE.Texture>>();
+    const original = svgTexture.getBillboardTexture;
+    vi.spyOn(svgTexture, 'getBillboardTexture').mockImplementation((clé, faire) => {
+      const p = original(clé, faire);
+      servies.set(clé, p);
+      return p;
+    });
+    await monterPov('N', DÉCORS, SANS_ACTEUR);
+    const artN = quads().map(mapDe);
+    expect(artN.length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
+    expect(artN.every(Boolean), 'un décor sans art : le cap N n’est pas servi').toBe(true);
+
+    // RASTERISATION RETENUE : la cuisson du cap E part, mais son image ne se charge qu'au moment que
+    // ce banc choisit — après le retour en N.
+    const enAttente: (() => void)[] = [];
+    vi.stubGlobal('Image', class {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_v: string) { enAttente.push(() => this.onload?.()); }
+    });
+
+    // N→E : le cap E est FROID (ce n'est pas un voisin de N) — sa relève passe par la file.
+    await act(async () => { root!.render(écran(cadrePov('E'), DÉCORS, SANS_ACTEUR)); });
+    for (let i = 0; i < 20 && enAttente.length < DÉCORS.props.length; i++) await respirer(20);
+    // PRÉMISSE — sans cuisson partie pour E, la garde n'aurait rien à refuser.
+    expect(enAttente.length, 'aucune cuisson en vol pour le cap E : rien à périmer').toBeGreaterThanOrEqual(DÉCORS.props.length);
+
+    // …retour en N AVANT que ces images n'arrivent : le cap N est en cache, les quads y reviennent.
+    await act(async () => { root!.render(écran(cadrePov('N'), DÉCORS, SANS_ACTEUR)); });
+    await respirer(40);
+    // …et seulement MAINTENANT les textures du cap E finissent de cuire.
+    for (let i = 0; i < 8; i++) {
+      const paquet = enAttente.splice(0);
+      await act(async () => { for (const f of paquet) f(); });
+      await respirer(20);
+    }
+
+    const auCapE = new Set(await Promise.all(
+      [...servies.entries()].filter(([k]) => k.includes(signatureDuCap('E'))).map(([, p]) => p),
+    ));
+    // PRÉMISSE — les textures du cap E ont bien été produites : « aucune n'est posée » ne serait
+    // sinon vrai que du vide.
+    expect(auCapE.size, 'le cap E n’a rien cuit : la garde ne serait pas mise à l’épreuve').toBe(DÉCORS.props.length);
+    const posées = quads().map(mapDe);
+    expect(posées, 'les quads doivent être revenus à l’art du cap N').toEqual(artN);
+    expect(posées.some((t) => t !== null && auCapE.has(t)), 'une texture du cap quitté s’est posée après coup').toBe(false);
   });
 });

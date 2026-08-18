@@ -27,7 +27,8 @@ import { billboardView } from '../backends/webgl/billboardMath';
 import { project, type View } from '../rig/facing';
 import { dir8Basis } from '../pov/camera';
 import * as svgTexture from '../backends/webgl/svgTexture';
-import { artRot, GameStage3D, povArtRot, povYawDeg, setStageRendererFactory, type StageFrame, type StageRenderer } from './GameStage3D';
+import { artRot, GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer } from './GameStage3D';
+import { povArtRot, povYawDeg } from './regard';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -188,7 +189,9 @@ describe('POV — la VUE d’une entité suit le cap du meneur (#1176 P3-1b)', (
       clés = [];
       monter(cap, { x: 4, y: 6 });
       const prop = clésDe('prop:');
-      expect(prop, `cap ${cap} : le décor doit être texturé`).toHaveLength(1);
+      // Le décor est texturé au regard de MONTAGE en PREMIER ; la pré-chauffe des deux caps voisins
+      // suit dans la même passe (contrat dédié plus bas, #1373).
+      expect(prop.length, `cap ${cap} : le décor doit être texturé`).toBeGreaterThan(0);
       // L'identité d'un décor porte sa SIGNATURE DE DESSIN depuis #1176 P3-3 (`prop:<clé>|<modèle>`,
       // puis le cran d'art) : c'est le CRAN, seul, que cette garde épingle.
       expect(prop[0].identity, `cap ${cap}`).toBe(`prop:prop:tonneau|tonneau|r${povArtRot(cap)}`);
@@ -200,10 +203,15 @@ describe('POV — la VUE d’une entité suit le cap du meneur (#1176 P3-1b)', (
 });
 
 describe('POV — la planche ne se recuit qu’au PIVOT (patron anti-recuisson d’`artRot`)', () => {
-  it('une frame de marche (l’œil glisse, le cap tient) ne redemande AUCUNE texture ; un pivot, si', () => {
+  it('une frame de marche (l’œil glisse, le cap tient) ne redemande AUCUNE texture ; un pivot, si', async () => {
     monter('N', { x: 4, y: 6 });
+    // MONTAGE : l'acteur et le décor à leur vue de cap, plus la pré-chauffe du décor aux deux caps
+    // voisins (#1373) — quatre clés.
+    expect(clés.length, 'le montage doit avoir texturé acteur + décor, et réchauffé les deux caps voisins').toBe(4);
+    // Les quads n'entrent en scène qu'à la résolution de leur texture : sans ce tour de boucle, il n'y
+    // aurait aucun board à REPOSER au pivot, et la mesure porterait sur le vide.
+    await act(async () => {});
     const auMontage = clés.length;
-    expect(auMontage, 'le montage doit avoir texturé acteur + décor').toBe(2);
 
     // MARCHE : la position de l'œil est CONTINUE (`anim.glide`), donc un nouvel objet `frame` par
     // frame — celui-ci ne doit rien recuire.
@@ -212,9 +220,50 @@ describe('POV — la planche ne se recuit qu’au PIVOT (patron anti-recuisson d
     }
     expect(clés.length, 'cinq frames de marche : aucune texture redemandée').toBe(auMontage);
 
-    // PIVOT : le cap change d'un cran de 45° — la planche entière se redemande, une fois.
-    act(() => root!.render(écran(cadrePov('NE', { x: 4, y: 5 }))));
-    expect(clés.length).toBe(auMontage + 2);
+    // PIVOT : le cap change d'un cran de 45° — l'art du décor se redemande AU NOUVEAU CAP, par la
+    // REPOSE (#1373) et sans remontage. Un corps à flipbook, lui, choisit sa planche par image.
+    clés = [];
+    await act(async () => { root!.render(écran(cadrePov('NE', { x: 4, y: 5 }))); });
+    const vm = vueDepuis('NE', 'S');
+    expect(clésDe('prop:'), 'le pivot doit redemander l’art du décor au cap d’arrivée')
+      .toContainEqual({ identity: `prop:prop:tonneau|tonneau|r${povArtRot('NE')}`, view: vm.view, mirror: vm.mirror });
+  });
+});
+
+/**
+ * PRÉ-CHAUFFE des caps VOISINS (#1373) — le temps mort réchauffe les DEUX caps à ±45° du cap courant,
+ * et eux seuls : un demi-tour progressif passe par eux, et les huit caps d'un coup coûteraient huit
+ * rasterisations par décor.
+ *
+ * Elle court au montage ET à chaque changement de cap : sans ce second passage, un demi-tour
+ * (N→NE→E→SE) ne réchaufferait que les voisins du cap de DÉPART, et un cap sur deux serait froid.
+ */
+describe('POV — la pré-chauffe porte sur les deux caps VOISINS', () => {
+  /** L'art d'un décor vu d'un cap — la forme que le banc lit dans les clés demandées. */
+  const attendu = (cap: Dir8) => {
+    const vm = vueDepuis(cap, 'S');
+    return { identity: `prop:prop:tonneau|tonneau|r${povArtRot(cap)}`, view: vm.view, mirror: vm.mirror };
+  };
+
+  it('au cap N, le décor demande son art au cap N, puis aux caps NE et NO — à eux seuls', () => {
+    monter('N', { x: 4, y: 6 });
+    // PRÉMISSE — trois regards indiscernables ne prouveraient rien de la pré-chauffe.
+    expect(new Set((['N', 'NE', 'NO'] as Dir8[]).map((c) => JSON.stringify(attendu(c)))).size).toBe(3);
+    expect(clésDe('prop:')).toEqual([attendu('N'), attendu('NE'), attendu('NO')]);
+  });
+
+  it('le cap CHANGÉ réchauffe à son tour : après N→NE, les caps E et N passent en file', async () => {
+    monter('N', { x: 4, y: 6 });
+    // Les quads n'entrent en scène qu'à la résolution de leur texture : sans board monté, il n'y
+    // aurait ni relève ni réchauffage à mesurer.
+    await act(async () => {});
+    clés = [];
+
+    await act(async () => { root!.render(écran(cadrePov('NE', { x: 4, y: 5 }))); });
+
+    // La RELÈVE du cap d'arrivée d'abord (elle prend le rang de la vue courante), les deux voisins du
+    // NOUVEAU cap derrière — dont E, que le montage au cap N n'avait jamais demandé.
+    expect(clésDe('prop:')).toEqual([attendu('NE'), attendu('E'), attendu('N')]);
   });
 });
 

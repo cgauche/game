@@ -68,15 +68,13 @@ import { freeYaw, type ActorCapsule, type Dims, type Rot } from '../../geometry/
 import { heightAt, type Scene } from '../../state/scene';
 import { DIR8_DELTA, DIR8_ORDER, type Dir8 } from '../../state/dir8';
 import { affineCamera, povCamera } from '../backends/webgl/cameras';
-import { dir8Basis, fogCurveOf, povDepth } from '../pov/camera';
+import { fogCurveOf, povDepth } from '../pov/camera';
 import { pxPerM } from '../backends/webgl/worldTris';
 import {
-  billboardTextureKey,
   billboardView,
   subjectQuad,
   type BillboardCamera,
 } from '../backends/webgl/billboardMath';
-import { clearBillboardTextures, getBillboardTexture, svgToTexture } from '../backends/webgl/svgTexture';
 import { clearPeriodTextures } from '../backends/webgl/periodTexture';
 import { clearFaceBakes } from '../backends/webgl/faceBake';
 import { materiauPlanTransparent, worldSurfaceMaterials } from '../backends/webgl/worldMaterials';
@@ -125,6 +123,8 @@ import {
   type FramePick,
   type GlideAt,
 } from './boardPose';
+import { bbCameraDe, cleRegard, povArtRot, regardsVoisins, type Regard } from './regard';
+import { rendreAuRechauffage, textureAuCran, viderTexturesStatiques } from './texturesStatiques';
 import {
   PRIORITE_RECHAUFFAGE,
   PRIORITE_VUE_COURANTE,
@@ -132,10 +132,8 @@ import {
   bakeAtlas,
   enqueueBake,
   getCachedAtlas,
-  queueBakeTask,
   setAtlasPins,
   type BakedAtlas,
-  type BakePriority,
 } from '../backends/webgl/atlasBake';
 import { animCtxOf, animNow, installAnimTracks, tracksRef } from '../fx/animTracks';
 import {
@@ -446,22 +444,6 @@ function dimsKey(dims: Dims): string {
   return `${dims.w}x${dims.h}|${dims.rot ?? 0}|${dims.edge ? 'e' : ''}|${dims.yawDeg ?? ''}|${dims.view ?? 'iso'}`;
 }
 
-/** LACET (degrés, convention de `freeYaw`/`artRot`) du regard PREMIÈRE PERSONNE de cap `facing`.
- *  La caméra affine du cran `r` regarde la diagonale `DIR8_ORDER[(7 + 2r) % 8]` : à ce cap, `povView`
- *  rend exactement ce que rend `project(·, r)` sur les huit orientations (parité mesurée,
- *  `billboards-pov.test.tsx`). Les huit caps se répartissent donc tous les 45°, le cap N à 45°. PUR. */
-export function povYawDeg(facing: Dir8): number {
-  return ((DIR8_ORDER.indexOf(facing) + 1) * 45) % 360;
-}
-
-/** CRAN d'ART d'un regard première personne (#1176, P3-1b) : le lacet de son cap, PLANCHÉRISÉ par la
- *  MÊME loi qu'`artRot` — l'atlas de décor n'existe qu'aux quarts de tour (`propSvg(ref, dir, camRot)`),
- *  et les quatre caps CARDINAUX tombent entre deux crans. Sans lui, les props d'une vue première
- *  personne gardent le cran de la dernière vue de plateau. PUR. */
-export function povArtRot(facing: Dir8): Rot {
-  return (Math.floor(povYawDeg(facing) / 90) % 4) as Rot;
-}
-
 // ————————————————————————————————————————————————————————————————
 // FLIPBOOK des sujets à UN corps (#1176, L3/L4) — ce que l'écran CUIT, et ce qu'il CHOISIT par image
 // ————————————————————————————————————————————————————————————————
@@ -566,80 +548,6 @@ const VUES_REGARD: readonly { view: View; mirror: boolean }[] = [
 const REPOS = rigIdleDef();
 const REPOS_PLAN = planRestDef();
 
-/** Caméra de billboard du regard courant — la MÊME dérivation qu'au montage des quads : en première
- *  personne le CAP du meneur, sur la vue de plateau le cran d'art. */
-function bbCameraDe(povFacing: Dir8 | null, camRot: Rot): BillboardCamera {
-  return povFacing ? { kind: 'perspective', ...dir8Basis(povFacing) } : { kind: 'ortho', yawDeg: camRot * 90 };
-}
-
-/** Les quatre CRANS d'art d'une vue de plateau — l'art de décor n'existe qu'aux quarts de tour. */
-const CRANS_ART: readonly Rot[] = [0, 1, 2, 3];
-
-/** IDENTITÉ de cache d'un sujet AU CRAN `rot` : le cran entre dans celle d'un décor, jamais dans celle
- *  d'un personnage (son art l'ignore — l'y mettre rasteriserait quatre fois la MÊME image). */
-function identiteAuCran(sub: BillboardSubject, rot: Rot): string {
-  return sub.kind === 'prop' ? `${sub.identity}|r${rot}` : sub.identity;
-}
-
-/**
- * POIGNÉES DE PRIORITÉ des textures statiques EN FILE, par clé (`BakePriority`, l'objet mutable que le
- * cuiseur relit à chaque tranche).
- *
- * Sans elle, une clé posée en réchauffage puis redemandée par la caméra restait servie en dernier : la
- * mémoïsation (`getBillboardTexture`) rend la promesse DÉJÀ en file sans jamais toucher à son rang, et
- * la relève du cran franchi passait derrière toute la pré-chauffe (mesuré : rang 31/31 contre 1/31 à
- * froid ; 56 rasterisations pour 20 décors utiles). Le cuiseur a la même carte pour ses planches
- * (`enqueueBake`) — c'est le même geste, pour l'autre population.
- */
-const POIGNEES_STATIQUES = new Map<string, BakePriority>();
-
-/** TEXTURE STATIQUE d'un sujet à une vue et un cran, mémoïsée sur sa clé (`getBillboardTexture`).
- *
- *  `priorité` la range dans la file CADENCÉE du cuiseur (`queueBakeTask`) : c'est par là que passe
- *  toute rasterisation qu'un franchissement de cran réclame, une par tranche d'inactivité et jamais en
- *  rafale. Sans priorité, la rasterisation part tout de suite — le MONTAGE d'une scène, dont chaque
- *  quad n'entre en scène qu'à sa texture.
- *
- *  Dans les DEUX cas, une clé DÉJÀ EN FILE que la caméra réclame voit son rang RELEVÉ, jamais abaissé :
- *  la mémoïsation rend la promesse en attente telle quelle, et le montage comme la repose hériteraient
- *  sinon du rang du temps mort qui l'a posée. */
-function textureAuCran(
-  sub: BillboardSubject,
-  view: View,
-  mirror: boolean,
-  rot: Rot,
-  pxHeight: number,
-  priorité?: number,
-): Promise<THREE.Texture> {
-  const clé = billboardTextureKey(identiteAuCran(sub, rot), view, mirror, pxHeight);
-  const rasteriser = () => svgToTexture(sub.svg(view, mirror, rot), sub.box, pxHeight);
-  const rang = POIGNEES_STATIQUES.get(clé);
-  const voulu = priorité ?? PRIORITE_VUE_COURANTE;
-  if (rang) rang.value = Math.max(rang.value, voulu);
-  if (priorité === undefined) return getBillboardTexture(clé, rasteriser);
-  const poignée = rang ?? { value: priorité };
-  POIGNEES_STATIQUES.set(clé, poignée);
-  return getBillboardTexture(clé, () => queueBakeTask(poignée, () => {
-    // La carte ne tient que ce qui ATTEND : une tâche partie n'a plus de rang à défendre.
-    POIGNEES_STATIQUES.delete(clé);
-    return rasteriser();
-  }));
-}
-
-/** Rend au RÉCHAUFFAGE les textures statiques que la caméra n'attend plus (le cran qu'on vient de
- *  quitter) : laissées en tête de file, elles font patienter celles du cran regardé. */
-function rendreAuRechauffage(): void {
-  for (const poignée of POIGNEES_STATIQUES.values()) {
-    if (poignée.value > PRIORITE_RECHAUFFAGE) poignée.value = PRIORITE_RECHAUFFAGE;
-  }
-}
-
-/** Oublie le cache de textures statiques ET les rangs de ce qui l'attendait (changement de scène). */
-function viderTexturesStatiques(): void {
-  clearBillboardTextures();
-  POIGNEES_STATIQUES.clear();
-}
-
 /** Orientation MONDE la plus proche d'un déplacement (dx = est, dz = sud, repère de `walkGlideM`) —
  *  `null` si le pas est nul. C'est le SEGMENT que le marcheur suit à cette image, jamais son cap
  *  d'authoring : un chemin qui tourne changerait sinon de vue seulement à l'arrivée. */
@@ -705,16 +613,16 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const { povFacing, camRot } = frame.mode === 'pov'
     ? { povFacing: frame.facing, camRot: povArtRot(frame.facing) }
     : { povFacing: null, camRot: artRot(frame.dims) };
-  // REGARD COURANT lu par les passes qui NE SE REJOUENT PAS au cran : le montage des quads (dont les
-  // textures se résolvent après coup, parfois de l'autre côté d'un franchissement) et la REPOSE
-  // elle-même, qui vérifie à la relève que le cran qu'elle sert est toujours celui qu'on regarde.
-  const camRotRef = useRef(camRot);
-  camRotRef.current = camRot;
-  const povFacingRef = useRef(povFacing);
-  povFacingRef.current = povFacing;
-  // CRAN dont les quads montés portent l'art. Il avance à la repose comme au montage : c'est lui qui
-  // distingue « ce cran vient d'être monté » de « le regard a franchi un quart ».
-  const cranDesBoards = useRef<Rot>(camRot);
+  // REGARD COURANT ({cran, cap}) lu par les passes qui NE SE REJOUENT PAS au regard : le montage des
+  // quads (dont les textures se résolvent après coup, parfois de l'autre côté d'un changement de
+  // regard) et la REPOSE elle-même, qui vérifie à la relève que le regard qu'elle sert est toujours
+  // celui qu'on regarde.
+  const regard: Regard = { rot: camRot, facing: povFacing };
+  const regardRef = useRef(regard);
+  regardRef.current = regard;
+  // REGARD dont les quads montés portent l'art, par sa CLÉ. Il avance à la repose comme au montage :
+  // c'est lui qui distingue « ce regard vient d'être monté » de « le regard a changé ».
+  const regardDesBoards = useRef(cleRegard(regard));
   // MILIEU de la première personne (`null` = vue de plateau) : la SEULE entrée de la brume et du fond.
   // La portée de rendu s'en dérive déjà (`povDepth`) — même donnée, même verdict d'intérieur.
   const povIndoor = frame.mode === 'pov' ? frame.indoor : null;
@@ -1010,7 +918,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
      * réchauffées au montage, `précuire` — ce repli est le cas du cache froid, pas le cas courant).
      */
     const vueDuCran = (def: ClipDef, ground?: 'corpse' | 'prone'): { view: View; mirror: boolean } => {
-      const vm = billboardView(bbCameraDe(povFacing, camRot), s.sub.facing);
+      const vm = billboardView(bbCameraDe(regard), s.sub.facing);
       if (vm.view === s.view && vm.mirror === s.mirror) return vm;
       if (servie(def, vm.view, vm.mirror)) return vm;
       demanderCuisson({ key: poser(def, vm.view, vm.mirror, ground).key, frame: 0 }, b);
@@ -1063,7 +971,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     if (g && précédent) {
       const d8 = dir8DuSegment(g.dx - précédent.dx, g.dz - précédent.dz);
       if (d8) {
-        const vm = billboardView(bbCameraDe(povFacing, camRot), d8);
+        const vm = billboardView(bbCameraDe(regard), d8);
         if (servie(def, vm.view, vm.mirror)) ({ view, mirror } = vm);
       }
     }
@@ -1688,48 +1596,77 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   }, []);
 
   /**
-   * REPOSE d'un franchissement de cran : les quads montés SURVIVENT à la rotation, seule leur
-   * texture change — échangée EN PLACE, à la relève, exactement comme l'écrivain de frames échange une
-   * planche de flipbook. Aucun `dispose`, aucune géométrie neuve, aucun matériau neuf.
+   * REPOSE d'un changement de REGARD (quart de tour sur la vue de plateau, cap Dir8 en première
+   * personne) : les quads montés SURVIVENT, seule leur texture change — échangée EN PLACE, à la
+   * relève, exactement comme l'écrivain de frames échange une planche de flipbook. Aucun `dispose`,
+   * aucune géométrie neuve, aucun matériau neuf.
    *
    * DEUX POPULATIONS, une seule ici : un corps à FLIPBOOK est déjà servi par le chemin par-frame
-   * (`vueDuCran`, qui choisit la planche du cran courant à chaque image) — le reprendre ici lui
+   * (`vueDuCran`, qui choisit la planche du regard courant à chaque image) — le reprendre ici lui
    * poserait une image d'UNE frame sur un matériau que la passe d'images réécrit aussitôt. Restent le
    * DÉCOR (dont l'art n'existe qu'aux quarts de tour) et les corps sans couture de frame.
    *
-   * La rasterisation d'un cran jamais visité passe par la file CADENCÉE du cuiseur : l'ancienne texture
-   * reste à l'écran jusqu'à la relève, et le franchissement ne coûte pas une rafale de blobs. Ce que la
-   * caméra attend passe DEVANT — `PRIORITE_VUE_COURANTE`, poignée RELEVÉE même sur une clé déjà en file
-   * (une clé pré-chauffée redemandée sans cela restait servie en dernier).
+   * La rasterisation d'un regard jamais visité passe par la file CADENCÉE du cuiseur : l'ancienne
+   * texture reste à l'écran jusqu'à la relève, et le changement ne coûte pas une rafale de blobs. Ce
+   * que la caméra attend passe DEVANT — `PRIORITE_VUE_COURANTE`, poignée RELEVÉE même sur une clé
+   * déjà en file (une clé pré-chauffée redemandée sans cela restait servie en dernier).
    */
-  const reposerCran = (bs: readonly Board[], rot: Rot, facing: Dir8 | null): void => {
+  const reposerRegard = (bs: readonly Board[], vers: Regard): void => {
     const pxm = pxPerM(mpt);
     const dpr = window.devicePixelRatio || 1;
-    const cam = bbCameraDe(facing, rot);
+    const cam = bbCameraDe(vers);
+    const clé = cleRegard(vers);
     for (const b of bs) {
       const piste = boardTrackId(b.sub);
       if (piste && flipRef.current.has(piste)) continue;
       const { view, mirror } = billboardView(cam, b.sub.facing);
-      void textureAuCran(b.sub, view, mirror, rot, atlasPxHeight(b.quad.heightM, pxm, dpr), PRIORITE_VUE_COURANTE).then(
+      void textureAuCran(b.sub, view, mirror, vers.rot, atlasPxHeight(b.quad.heightM, pxm, dpr), PRIORITE_VUE_COURANTE).then(
         (texture) => {
-          // Le quad démonté entre-temps (`parent` tombe à `null` au vidage du groupe) et le cran déjà
+          // Le quad démonté entre-temps (`parent` tombe à `null` au vidage du groupe) et le regard déjà
           // dépassé (une rotation plus rapide que la file) n'ont plus rien à recevoir.
-          if (!b.mesh.parent || camRotRef.current !== rot) return;
+          if (!b.mesh.parent || cleRegard(regardRef.current) !== clé) return;
           poserTextureStatique(b, texture);
           // UNE image demandée, pas un rendu : N boards relevés dans la même image en obtiennent une
           // seule (`demanderUneImage`, #1376).
           demanderUneImage();
         },
-        (raison: unknown) => console.warn(`GameStage3D: billboard « ${b.sub.identity} » gardé au cran précédent — texture non rasterisée :`, raison),
+        (raison: unknown) => console.warn(`GameStage3D: billboard « ${b.sub.identity} » gardé au regard précédent — texture non rasterisée :`, raison),
       );
+    }
+  };
+
+  /**
+   * RÉCHAUFFAGE des regards VOISINS d'un regard (`regardsVoisins`) : les textures que le PROCHAIN
+   * changement réclamera, posées en temps mort dans la file cadencée — le DÉCOR seul (l'art d'un corps
+   * ignore le cran, et ses quatre vues passent par `précuire`).
+   *
+   * Il court au montage ET à chaque repose : sans le second, une rotation continue trouve chaque
+   * deuxième regard FROID (un demi-tour en première personne, N→NE→E→SE, ne réchaufferait jamais que
+   * les voisins du cap de départ).
+   *
+   * PRIORITÉ : `PRIORITE_RECHAUFFAGE`, et l'appel suit la repose — une clé que la relève courante vient
+   * de demander garde son rang (`textureAuCran` ne fait que RELEVER une poignée, jamais l'abaisser).
+   */
+  const réchaufferVoisins = (regard: Regard, sujets: readonly { sub: BillboardSubject; heightM: number }[]): void => {
+    const pxm = pxPerM(mpt);
+    const dpr = window.devicePixelRatio || 1;
+    const voisins = regardsVoisins(regard);
+    for (const { sub, heightM } of sujets) {
+      if (sub.kind !== 'prop') continue;
+      const pxHeight = atlasPxHeight(heightM, pxm, dpr);
+      for (const v of voisins) {
+        const vm = billboardView(bbCameraDe(v), sub.facing);
+        void textureAuCran(sub, vm.view, vm.mirror, v.rot, pxHeight, PRIORITE_RECHAUFFAGE).catch(() => undefined);
+      }
     }
   };
 
   // ── GROUPE BILLBOARDS : décor + acteurs. Rebâti quand les SUJETS changent — l'identité d'un sujet
   // porte sa case logique et sa signature de dessin, jamais le glissement de la marche : celui-ci
-  // décale des quads déjà montés, dans `dessiner` (P2-4). Le CRAN de vue n'y entre PAS : un quart de
-  // tour est une REPOSE (`reposerCran`), et rebâtir le groupe entier à chaque quart mesurait 7 matériaux
-  // et 6 géométries libérés pour 4 quads sur un banc de trois décors.
+  // décale des quads déjà montés, dans `dessiner` (P2-4). Le REGARD n'y entre PAS : un quart de tour
+  // comme un changement de cap est une REPOSE (`reposerRegard`), et rebâtir le groupe entier mesurait
+  // 7 matériaux et 6 géométries libérés pour 4 quads sur un banc de trois décors (vue de plateau),
+  // 10 matériaux au changement de cap sur le même banc (première personne).
   useEffect(() => {
     const groupe = panneaux.current;
     if (!groupe) return;
@@ -1739,12 +1676,12 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // discrets, repère `dir8Basis`), sur la vue de plateau le cran d'art. Le repère se prend au cap et
     // NON à la caméra de la frame : fwd/right recalculés par frame recuiraient toute la planche de
     // textures à chaque frame (le piège que documente `artRot`).
-    // Il se lit à la RÉFÉRENCE : cette passe ne se rejoue plus au cran, donc sa fermeture le porterait
-    // périmé au premier montage qui suit une rotation.
-    const rot = camRotRef.current;
-    const facing = povFacingRef.current;
-    const bbCam: BillboardCamera = bbCameraDe(facing, rot);
-    cranDesBoards.current = rot;
+    // Il se lit à la RÉFÉRENCE : cette passe ne se rejoue plus au regard, donc sa fermeture le
+    // porterait périmé au premier montage qui suit une rotation ou un changement de cap.
+    const monté = regardRef.current;
+    const rot = monté.rot;
+    const bbCam: BillboardCamera = bbCameraDe(monté);
+    regardDesBoards.current = cleRegard(monté);
     const dpr = window.devicePixelRatio || 1;
     flipRef.current.clear();
     épinglesRef.current.clear();
@@ -1880,10 +1817,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
           précuire(s, piste);
         }
       }
-      // Une texture arrivée APRÈS un franchissement monte son quad à l'art du cran précédent : il se
-      // repose comme les autres, sans attendre le quart de tour suivant.
-      if (camRotRef.current !== rot) {
-        reposerCran([board], camRotRef.current, povFacingRef.current);
+      // Une texture arrivée APRÈS un changement de regard monte son quad à l'art du regard précédent :
+      // il se repose comme les autres, sans attendre le changement suivant.
+      if (cleRegard(regardRef.current) !== cleRegard(monté)) {
+        reposerRegard([board], regardRef.current);
       }
       ombresARefaire.current = true;
       dessiner();
@@ -1909,24 +1846,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
         (raison: unknown) => { if (!annule) console.warn(`GameStage3D: billboard « ${sub.identity} » sauté — texture non rasterisée :`, raison); },
       );
     }
-    // PRÉ-CHAUFFE des crans RESTANTS, en temps mort (même patron que `précuire` pour les acteurs, et la
-    // même file) : le premier passage par un cran neuf trouve alors sa texture au cache au lieu de la
-    // réclamer à la rotation. Le DÉCOR seul en a besoin — l'art d'un corps ignore le cran, et ses
-    // quatre VUES sont déjà réchauffées par `précuire`. Aucun cran de rechange en première personne :
-    // le regard perspective n'a pas de quart de tour, il a huit caps.
-    // COÛT : quatre textures par décor au lieu d'une — c'est le plafond qu'un tour complet atteignait
-    // déjà, atteint plus tôt. Le cache se vide au changement de scène (`viderTexturesStatiques`).
-    if (!facing) {
-      for (const sub of subjects) {
-        if (sub.kind !== 'prop') continue;
-        const pxHeight = atlasPxHeight(subjectQuad(CONVENTION, sub).heightM, pxm, dpr);
-        for (const r of CRANS_ART) {
-          if (r === rot) continue;
-          const vm = billboardView(bbCameraDe(null, r), sub.facing);
-          void textureAuCran(sub, vm.view, vm.mirror, r, pxHeight, PRIORITE_RECHAUFFAGE).catch(() => undefined);
-        }
-      }
-    }
+    // PRÉ-CHAUFFE des regards VOISINS, en temps mort (même patron que `précuire` pour les acteurs, et
+    // la même file) : le premier passage par un regard neuf trouve alors sa texture au cache au lieu
+    // de la réclamer à la rotation. COÛT : quatre textures par décor au lieu d'une sur la vue de
+    // plateau (le plafond qu'un tour complet atteignait déjà, atteint plus tôt), trois en première
+    // personne sur huit caps possibles. Le cache se vide au changement de scène
+    // (`viderTexturesStatiques`).
+    réchaufferVoisins(monté, subjects.map((sub) => ({ sub, heightM: subjectQuad(CONVENTION, sub).heightM })));
     return () => {
       annule = true;
       boardsRef.current = [];
@@ -1940,19 +1866,27 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       viderGroupe(groupe);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjects, mpt, povFacing, lit]);
+  }, [subjects, mpt, lit]);
 
-  // ── FRANCHISSEMENT D'UN QUART DE TOUR : la REPOSE, et rien d'autre. Le montage ci-dessus vient-il de
-  // poser CE cran (sujets changés, cap de première personne changé) ? alors il n'y a rien à reprendre —
-  // c'est le seul office de `cranDesBoards`.
+  // ── CHANGEMENT DE REGARD (quart de tour de plateau, cap Dir8 en première personne) : la REPOSE, et
+  // rien d'autre. Le montage ci-dessus vient-il de poser CE regard (sujets changés) ? alors il n'y a
+  // rien à reprendre — c'est le seul office de `regardDesBoards`. La comparaison porte sur la CLÉ du
+  // regard, jamais sur le seul cran : deux caps voisins partagent le même cran (`povArtRot`
+  // planchérise huit caps sur quatre), et le cap N→NE ne reposerait alors rien.
   useEffect(() => {
-    if (cranDesBoards.current === camRot) return;
-    cranDesBoards.current = camRot;
-    // Les relèves du cran QUITTÉ redescendent d'abord au réchauffage : la caméra ne les attend plus, et
-    // laissées en tête de file elles feraient patienter celles du cran regardé (une rotation tenue en
-    // pose trois jeux avant de s'arrêter). Ce geste précède la repose, qui relève ce qu'elle demande.
+    const clé = cleRegard(regard);
+    if (regardDesBoards.current === clé) return;
+    regardDesBoards.current = clé;
+    // Les relèves du regard QUITTÉ redescendent d'abord au réchauffage : la caméra ne les attend plus,
+    // et laissées en tête de file elles feraient patienter celles du regard courant (une rotation
+    // tenue en pose trois jeux avant de s'arrêter). Ce geste précède la repose, qui relève ce qu'elle
+    // demande.
     rendreAuRechauffage();
-    reposerCran(boardsRef.current, camRot, povFacing);
+    reposerRegard(boardsRef.current, regard);
+    // …puis les VOISINS du regard d'arrivée, DERRIÈRE la relève : une rotation continue trouve ainsi
+    // son regard suivant déjà cuit, et le regard quitté — rabaissé juste au-dessus — redevient un
+    // voisin réchauffé.
+    réchaufferVoisins(regard, boardsRef.current.map((b) => ({ sub: b.sub, heightM: b.quad.heightM })));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camRot, povFacing]);
 
