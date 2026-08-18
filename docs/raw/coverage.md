@@ -1684,4 +1684,4 @@
 > source. Les réfs ci-dessous sont donc mortes par construction — à ré-ancrer sur le chapitre
 > voisin qui porte réellement le texte.
 
-- **LDB 06** (Source\Warhammer v4 - Livre de base version corrigée\06 - Classes.md) — stub de découpe SANS source, pourtant cité 6 fois par l'Atlas (carrieres.md ×3) : ces réfs pointent dans le vide.
+- **LDB 06** (Source/Warhammer v4 - Livre de base version corrigée/06 - Classes.md) — stub de découpe SANS source, pourtant cité 6 fois par l'Atlas (carrieres.md ×3) : ces réfs pointent dans le vide.
