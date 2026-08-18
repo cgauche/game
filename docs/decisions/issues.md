@@ -2,13 +2,6 @@
 
 ## Ouvertes
 
-- #871 [audit:contenu-manquant, domaine:religion, sev:mineur, type:donnée] 2 statblocks de pretres de Taal portent 18 Prieres avec 0 avance en Priere (injouables meme apres #868)
-- #872 [chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:règle-optionnelle] Severite d Imparfaite : proxy de reussite qui ignore les bandes auto, escalade incomplete, et un 7e delta VDM jamais recense
-- #873 [chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:règle-optionnelle] Surincantation de Duree : la valeur passe en DR sous VDM la ou le moteur attend des PAS (2x les jets de table)
-- #874 [audit:non-branché, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:donnée] Empreint de (Vent) / Assistant magique : aura a 8 m, substitution de Competence et Soutien +20 sans canal (le +1 DR de la ligne Tests est, lui, cable)
-- #875 [chantier:VDM, domaine:magie, livre:VDM, sev:mineur, type:règle-optionnelle] Marque Arcanique deja possedee : la relance sur le Tableau des Majeures n est pas cablee (VDM 02, rangee 86-90)
-- #876 [audit:principe, domaine:UX, sev:mineur, type:système] tables.json consultable mais NON editable au Compendium (regle stricte 2) — dont les 8 tables de Marques
-- #877 [audit:principe, domaine:cartes, domaine:moteur-pur, sev:majeur] Un ref de décor inconnu se rend en TONNEAU (fallback en dur) et validateScene ne vérifie aucun ref d'entité
 - #878 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] Les toits dérivés sont attribués par l'ORDRE de scene.architecture : un 2e corps de bâtiment ne reçoit jamais aucun toit
 - #879 [audit:non-branché, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:système] Les 17 Rituels sont au catalogue mais AUCUN ne peut etre accompli (pas de runner, 3 NI a zero, controle d elementaire absent)
 - #880 [audit:non-branché, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:donnée] 15 sorts affichent DEUX regles contradictoires : la desc est variantisee, l op ne l est pas
@@ -388,6 +381,13 @@
 - #1368 [audit:contenu-manquant, domaine:UX] Toasts sobres pour les gains et evenements non-bloquants (le journal reste l historique)
 - #1369 [domaine:UX, domaine:combat] Formation de marche = deploiement d entree en combat (fini le groupe en ligne) ; furtivite reste au jet RAW
 - #1370 [domaine:combat, sev:majeur] RAW : boire une potion est une action GRATUITE (LDB 13 l.106, exemple canonique) — le moteur charge l Action
+- #1371 [audit:principe, domaine:art, sev:mineur] Rendu volumique : redessin strictement pilote par les donnees - stabiliser frameCam/chromeAt/dynMarks/halos
+- #1372 [domaine:art, sev:mineur] Rendu volumique : gel de CHARGEMENT de scene - rafale synchrone de rasterisations de props au montage du groupe billboards
+- #1373 [domaine:art, sev:mineur] Rendu volumique POV : le changement de cap reste une RECONSTRUCTION destructive des billboards - meme panne que la rotation de plateau, autre vue
+- #1374 [domaine:art, sev:mineur] Rendu volumique : cache des textures statiques NON BORNE - x4 canevas par decor avec la pre-chauffe par cran, ~200 canevas retenus sur une scene-hub
+- #1375 [domaine:combat, livre:LDB, policy-à-trancher, sev:mineur] Ordre multiplicateur de Taille × encaisse (LDB 85 l.361 ne tranche pas) : l'implémentation multiplie AVANT — arbitrage à expliciter ou verbatim antérieur à produire
+- #1376 [domaine:art, sev:mineur] Rotation en EXPLORATION : residuel fixe 59-148 ms par franchissement de cran, froid=chaud - hors textures, le combat est a 0
+- #1377 [domaine:UX, sev:smell] Testabilite recette : scenario() silencieux, lacet camera inaccessible, geste de pan non documente - frictions de 2 recettes consecutives
 
 ## Fermées
 

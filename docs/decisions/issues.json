@@ -1,108 +1,5 @@
 [
   {
-    "number": 871,
-    "title": "2 statblocks de pretres de Taal portent 18 Prieres avec 0 avance en Priere (injouables meme apres #868)",
-    "state": "OPEN",
-    "labels": [
-      "audit:contenu-manquant",
-      "domaine:religion",
-      "sev:mineur",
-      "type:donnée"
-    ],
-    "body": "Deux statblocks de prêtres portent des Prières mais **0 avance en Prière** — leurs sorts restent injouables même après le correctif de routage (#868).\n\n## Mesuré\n\nSonde sur les 11 statblocks de prêtres (`creatureToCombatant` + `castLandProbability`) :\n\n| statbloc | avances Prière | prières au statbloc | jouables |\n|---|--:|--:|--:|\n| `pretre-rodeur-de-taal` | **0** | 6 | **0** |\n| `haut-pretre-rodeur-de-taal` | **0** | 12 | **0** |\n| (les 9 autres prêtres) | 10 à 20 | — | OK après #868 |\n\nLes 9 autres statblocks récupèrent 37 emplacements de sort avec le fix de #868. Ces deux-là gardent **9 sorts morts**, pour une raison distincte : sans avance en Prière, la valeur de Test reste la Force Mentale nue et `castLandProbability` tombe à 0.\n\n## Ce qu'il faut faire\n\n- Vérifier au Source le statbloc de ces deux créatures : les avances de Prière sont-elles imprimées et perdues à l'import, ou réellement absentes du livre ?\n- Si elles sont imprimées : les poser (donnée perdue, pas d'arbitrage).\n- Si elles sont absentes : c'est le livre qui donne des Prières à qui ne peut pas les lancer — arbitrage explicite et tagué `maison` (règle 7), ou retrait des Prières du statbloc.\n\n## DoD\n\n- Les deux statblocks lancent leurs Prières, ou l'incohérence est tranchée explicitement et tracée à sa source.\n- Une garde signale toute créature portant des sorts d'une famille dont elle n'a pas la Compétence.\n\n---\nDécouvert en groundant #868 (chantier VDM #834). Indépendant : #868 corrige le routage, ce ticket corrige la capacité.\n",
-    "createdAt": "2026-07-26T15:12:42Z",
-    "closedAt": null
-  },
-  {
-    "number": 872,
-    "title": "Severite d Imparfaite : proxy de reussite qui ignore les bandes auto, escalade incomplete, et un 7e delta VDM jamais recense",
-    "state": "OPEN",
-    "labels": [
-      "chantier:VDM",
-      "domaine:magie",
-      "livre:VDM",
-      "sev:majeur",
-      "type:règle-optionnelle"
-    ],
-    "body": "Trois défauts du calcul de sévérité d'Incantation Imparfaite, trouvés en câblant les deltas VDM (#733). Même zone, même geste.\n\n## 1. Le proxy de réussite ignore les bandes automatiques\n\n`src/state/combatFlow.ts:3903` appelle `malevolentInfluenceSeverity(res.roll, res.roll <= res.target, …)`.\n\nOr `CastResult` (`src/engine/magic.ts:451-465`) **ne porte pas `success`** : la vraie réussite vient d'`evaluateTest` (`src/engine/tests.ts:84-96`), qui applique les **bandes automatiques** 01-05 / 96-00. Divergences mesurées :\n\n| Cas | RAW | Proxy | Effet |\n|---|---|---|---|\n| jet ≥ `autoFailMin` (96-00) | **échec** | « réussi » | aucune Imparfaite alors qu'il en faut une |\n| jet ≤ `autoSuccessMax` (01-05) | **réussite** | « raté » | Imparfaite imposée à tort |\n| `bandsMode: 'inverted'` | — | — | **totalement inversé** |\n\nInerte sous l'option OFF (l'ancienne branche `roll % 10 === 8` ne consulte pas la réussite), donc c'est un défaut **introduit par le delta VDM**.\n\n**Fix** : porter `success` sur `CastResult` et le passer, au lieu de le recalculer sans les bandes.\n\n## 2. L'escalade vers les Majeures est incomplète\n\n`VDM 02 l.157` : « Si ce test aboutissait **déjà** à un lancer sur le Tableau […] Mineures (par exemple après une **Focalisation Critique ou une Maladresse de Focalisation**), il doit l'effectuer à la place sur le Tableau […] **Majeures**. »\n\nLe code ne renseigne `alreadyMinor` que depuis `res.isFumble`. Le cas `focusedNI0 && !res.cast` (`LDB 46 l.183`, Mineure due sur focalisation ratée) est **subsumé** par `malevolentHandled` au lieu d'escalader ⇒ une Mineure là où le RAW demande une Majeure.\n\n## 3. Un 4ᵉ delta jamais recensé — `VDM 02 l.149`\n\n> « Si le lanceur de sorts rate un Test étendu de Focalisation et obtient un double, il commet une Maladresse : il doit effectuer un lancer sur le Tableau des Incantations Imparfaites **Mineures**. »\n\n`src/state/combatSlice.ts:3151` applique `'majeure'` (règle LDB 46 l.190-191) — **y compris quand l'option VDM est active**. VDM adoucit ici ; le moteur reste plus dur que le RAW révisé.\n\n⚠ Ce delta ne figurait dans aucun inventaire : #733 en recensait 6, il y en avait **7**.\n\n## DoD\n\n- Les trois défauts corrigés, chacun avec un test qui rougit si on débranche.\n- Option OFF : comportement LDB **strictement** inchangé (les trois ne touchent que la branche VDM, sauf le proxy qui doit devenir juste dans les deux).\n- Un test couvre explicitement une bande automatique (01-05 et 96-00) sur le chemin d'Influence malveillante.\n\n---\nMesuré par la réfutation adversariale de #733 (chantier VDM #834).\n",
-    "createdAt": "2026-07-26T15:42:02Z",
-    "closedAt": null
-  },
-  {
-    "number": 873,
-    "title": "Surincantation de Duree : la valeur passe en DR sous VDM la ou le moteur attend des PAS (2x les jets de table)",
-    "state": "OPEN",
-    "labels": [
-      "chantier:VDM",
-      "domaine:magie",
-      "livre:VDM",
-      "sev:majeur",
-      "type:règle-optionnelle"
-    ],
-    "body": "Sous la règle optionnelle `magic-vdm-incantation`, la Surincantation de **Durée** est comptée en **DR**, alors que le consommateur en aval attend des **pas**. Résultat : **deux fois plus de jets de table** que le RAW.\n\n## Mesuré\n\n`src/state/combatFlow.ts:3539` et `src/state/combatSlice.ts:2910` injectent :\n\n```ts\novercastDurationSteps: pc.overcast?.duration\n```\n\n- **Sous LDB**, cette valeur est un nombre de **pas** (budget divisé par 2) — correct.\n- **Sous VDM**, le budget n'est plus divisé (`VDM 02 l.196`, « le lanceur peut dépenser **les DR restants** ») : la valeur est donc en **DR bruts**.\n\n`src/engine/ops.ts:1817-1819` la multiplie ensuite par `extraRollsPerStep` ⇒ **8 DR produisent 8 jets au lieu de 4**.\n\n## Surface\n\n4 sorts, tous « Allure démoniaque » : `src/data/spells.json:9017`, `:9038`, `:9059`, `:9080`.\n\n## Pourquoi c'est une inflation, contrairement au reste du delta\n\nLa Surincantation révisée de VDM est globalement un **nerf** (le budget double, mais chaque colonne ne peut être choisie qu'une fois et le reste est perdu — `VDM 02 l.201`). Ce site est la seule exception : il transforme le doublement de budget en doublement d'**effet**, sans plafond de colonne.\n\n## Ce qu'il faut faire\n\nLe point de conversion doit être **unique et explicite** : soit `overcastDurationSteps` reçoit des pas dans les deux modèles (conversion au site d'injection), soit le champ est renommé pour dire ce qu'il porte et `ops.ts` s'adapte au modèle actif. Ne pas laisser deux appelants supposer des unités différentes.\n\n⚠ Vérifier au passage les autres axes (`range`, `zone`, `targets`) : `zoneDiameterMultiplier` et `extraTargetCapacity` ont été mutualisés dans `src/engine/overcast.ts` et prennent le modèle en paramètre — la Durée est le seul axe resté brut.\n\n## DoD\n\n- Sous VDM, N DR de Durée produisent le même nombre de jets que ce que le tableau `VDM 02 l.207-215` prescrit.\n- Un test compare explicitement OFF et ON sur les 4 sorts concernés.\n- Aucun appelant ne suppose une unité : le modèle est lu, pas deviné.\n\n---\nMesuré par la réfutation adversariale de #733 (chantier VDM #834).\n",
-    "createdAt": "2026-07-26T15:42:27Z",
-    "closedAt": null
-  },
-  {
-    "number": 874,
-    "title": "Empreint de (Vent) / Assistant magique : aura a 8 m, substitution de Competence et Soutien +20 sans canal (le +1 DR de la ligne Tests est, lui, cable)",
-    "state": "OPEN",
-    "labels": [
-      "audit:non-branché",
-      "chantier:VDM",
-      "domaine:magie",
-      "livre:VDM",
-      "sev:majeur",
-      "type:donnée"
-    ],
-    "body": "Les 8 Talents *Empreint de (Vent)* et *Assistant magique* sont curés et obtenables. **Un seul de leurs effets est câblé** : le +1 DR de la ligne « Tests » (`LDB 10 l.20`, via `talentTestSLBonus` — `src/engine/magic.ts:327`). Tout le reste de leur règle vit en prose.\n\n## Correction du libellé (2026-07-26)\n\nLa version précédente de ce ticket annonçait « aucune mécanique » et « aucun canal ». **Faux sur deux points, mesurés :**\n\n1. Un canal EST vivant : `test.matches` des 8 entrées produit bien le +1 DR de `LDB 10 l.20` sur la Compétence que le livre nomme (`empreint-de-hysh` → Recherche, `empreint-d-ulgu` → Discrétion, etc.). Lecture RAW établie et verrouillée par `src/engine/vdm-talents.test.ts` :\n   - `NADAJ 15 l.51` imprime, pour *Empreint d'Ulgu* au corps de texte identique à `VDM 13 l.485` : « **Tests :** tout Test faisant appel à Discrétion » — les auteurs traitent donc la Compétence substituée comme la Compétence LIÉE au sens de `LDB 10`.\n   - `VDM 13 l.465` imprime « **Tests :** Voir ci-dessous. », quand *Assistant magique* (`VDM 13 l.487-489`), sur la MÊME page, n'imprime AUCUNE ligne « Tests ». Le livre distingue donc « pas de Test lié » de « Test lié, décrit plus bas ».\n2. Les 4 spécialisations de Savoir prétendues manquantes existent toutes dans `skills.json` : `betes-sauvages` (label « Bêtes », l.1073), `animaux` (l.1053), `herbes` (l.1137), `plantes` (l.1217). Cette ligne du tableau est retirée.\n\n## Mesuré\n\nClés d'un `empreint-*` : `id, label, max, test, desc, specs, rand, source` — **ni `passive`, ni `effects`, ni `combat`**.\n\n| Règle imprimée | État |\n|---|---|\n| Ligne « Tests » : +1 DR par acquisition (`LDB 10 l.20`) | **câblé** (`test.matches` → `talentTestSLBonus`) |\n| Aura : **+1 DR à 8 m** aux lanceurs du même Vent (`VDM 13 l.467`) | non exprimable — le mécanisme d'aura existe (`TraitData.aura`, `c.auraMods`) mais **pour un TRAIT**, pas pour un Talent |\n| **Substitution de Compétence** : Focalisation (X) tient lieu de Perception / Recherche / Discrétion… selon le Vent (`VDM 13 l.471-485`) | aucun canal |\n| `assistant-magique` : Soutien **+20** (`VDM 13 l.493`) | `src/engine/skills.ts` code un Soutien **+10** en dur |\n\n## Pourquoi un ticket dédié\n\nRenvoi vers #857 (ciblage géométrique) et #859 (canal passif d'objet) vérifié : aucun des deux ne porte ces manques — ni l'aura projetée par un Talent, ni la substitution de Compétence. Le précédent maison est #480 (« Marques du Chaos sans mécanique »), qui a son propre ticket.\n\n## Ce qu'il faut faire\n\n- Une **aura portée par un Talent** : généraliser le mécanisme existant (`aura` de `TraitData`) plutôt qu'en créer un second — le collecteur `c.auraMods` est déjà en place et lu par `skillDRBonus`/`charDRBonusOf`.\n- Une **substitution de Compétence** déclarée en donnée (Focalisation (X) tient lieu de Y), lue au calcul de valeur de Test. Elle s'AJOUTE au +1 DR déjà câblé, elle ne le remplace pas.\n- Le Soutien de `assistant-magique` en donnée, pas en dur.\n\n## DoD\n\n- Les 8 *Empreint* portent leur aura et leur substitution en `GameOp`/`passive`, prouvés par un test qui rougit si on débranche.\n- Aucun mécanisme parallèle : l'aura de Talent réutilise le collecteur des auras de Trait.\n- Le Soutien n'est plus une constante de code.\n- Le +1 DR de la ligne « Tests » reste en place et prouvé (`src/engine/vdm-talents.test.ts`).\n\n---\n\nMesuré par l'audit de fermeture de #734 (chantier VDM #834). **Bloque la fermeture de #734** tant que le DoD y est lu comme exigeant un comportement.\n",
-    "createdAt": "2026-07-26T16:15:55Z",
-    "closedAt": null
-  },
-  {
-    "number": 875,
-    "title": "Marque Arcanique deja possedee : la relance sur le Tableau des Majeures n est pas cablee (VDM 02, rangee 86-90)",
-    "state": "OPEN",
-    "labels": [
-      "chantier:VDM",
-      "domaine:magie",
-      "livre:VDM",
-      "sev:mineur",
-      "type:règle-optionnelle"
-    ],
-    "body": "La rangée 86-90 du Tableau des Incantations Imparfaites Mineures de VDM porte **deux** clauses de repli. Une seule est câblée.\n\n## Le RAW, verbatim\n\n`Source/Warhammer v4 - Les Vents de Magie/02 - Révisions des règles d'incantation.md`, rangée 86-90 :\n\n> « Si aucune Marque arcanique ne convient à votre tradition magique, **ou si vous obtenez une Marque que vous possédez déjà**, effectuez un nouveau lancer sur le Tableau des Incantations Imparfaites **Majeures**. »\n\n| Clause | État |\n|---|---|\n| « aucune Marque ne convient à la tradition » | **câblée** — `domainRowTable(row, domainId) === null` déclenche la relance en pré-tirage (`src/engine/miscast.ts:370`). Vivante : 10 des 18 Domaines arcanes n'ont aucune table de Marques |\n| « une Marque que vous possédez déjà » | **non câblée** |\n\n## L'obstacle, précis\n\n`rollMiscast` (`src/engine/miscast.ts:361`) est **pur et ne connaît pas le lanceur**. Il décide la première relance avant tout tirage, ce qu'il peut faire parce que la condition ne dépend que du Domaine.\n\nLa seconde clause exige de connaître **les Talents du lanceur** ET **le résultat de la table de Marques** — or cette table est tirée plus tard, par une op `rollTable` exécutée dans `applyOps` (`src/engine/ops.ts:1849`), qui n'a aucun accès aux tables d'Imparfaites.\n\nLe câblage propre : tirer la Marque **dans** `rollMiscast` (avec un paramètre « Marques déjà possédées ») et relancer sur le Majeur en cas de collision — ce qui impose de modifier son unique appelant, `applyMiscast` (`src/state/combatFlow.ts:3193`).\n\n## L'empilement, lui, est réglé\n\nLe défaut mesuré — 3 marquages identiques produisaient **3 effets** pour un Talent à `max: 1` — n'existe plus : l'acquisition est bornée par le Maxi du registre et le refus est journalisé. Le joueur ne cumule donc pas. Il manque seulement la **compensation** que le RAW prévoit : une Imparfaite Majeure à la place.\n\n## DoD\n\n- Une Marque déjà possédée déclenche un lancer sur le Tableau des Majeures, prouvé par un test à jet figé.\n- `rollMiscast` reste pur : la connaissance du lanceur lui est passée, pas importée.\n- Aucun branchement par identité de Talent ni de table.\n\n---\nMesuré en levant le blocage principal de #734 (chantier VDM #834). N'empêche pas de jouer : sans cette clause, un second marquage identique ne produit rien au lieu d'une Majeure — omission défavorable au joueur, donc sûre en attendant.\n",
-    "createdAt": "2026-07-26T16:39:24Z",
-    "closedAt": null
-  },
-  {
-    "number": 876,
-    "title": "tables.json consultable mais NON editable au Compendium (regle stricte 2) — dont les 8 tables de Marques",
-    "state": "OPEN",
-    "labels": [
-      "audit:principe",
-      "domaine:UX",
-      "sev:mineur",
-      "type:système"
-    ],
-    "body": "Les tables d'effet (`src/data/tables.json`) sont **consultables** au Compendium mais **pas éditables** — ce qui contredit la règle stricte 2 (« tout le contenu de campagne est éditable dans l'éditeur »).\n\n## Mesuré\n\n- La catégorie `effectTables` est bien exposée en lecture (`src/ui/compendium/registry.ts:1324`).\n- Elle est **absente** de `CATEGORY_DATASET` et d'`OBJECT_CATEGORY` (`src/ui/compendium/CodexEdit.tsx`, lignes 61-118 balayées).\n\nConséquence : l'utilisateur voit les tables, ne peut pas les modifier.\n\n## Le volume concerné\n\n`tables.json` porte notamment les **8 tables de Marques Arcaniques** (`VDM 02 l.238`, folios 58 à 142), la table de maladies des Poings d'ignominie, la table de Flux magique, celles d'Incantateur hasardeux et de Siphonnage de sort — soit du contenu de règle que le RAW imprime et que le joueur ne peut pas ajuster.\n\nC'est d'autant plus visible que ces tables **sont désormais tirées en jeu** : le trajet vers une Marque Arcanique existe depuis la curation des Tableaux d'Imparfaites de VDM.\n\n## Ce qu'il faut faire\n\n- Inscrire `effectTables` dans le registre d'édition, au même titre que les autres datasets consultables.\n- Vérifier au passage qu'aucune autre catégorie n'est dans le même cas : consultable sans être éditable. La liste se mesure en confrontant `registry.ts` à `CodexEdit.tsx`.\n\n## DoD\n\n- Les tables d'effet s'éditent au Compendium comme les autres datasets.\n- Une garde structurelle échoue si une catégorie devient consultable sans être éditable — sinon le trou se rouvre à la prochaine catégorie ajoutée.\n\n---\nDéfaut **préexistant**, relevé par l'audit de fermeture de #734 (chantier VDM #834). Ne bloque pas #734 : il ne vient pas de ce ticket, mais il n'existait nulle part.\n",
-    "createdAt": "2026-07-26T16:40:01Z",
-    "closedAt": null
-  },
-  {
-    "number": 877,
-    "title": "Un ref de décor inconnu se rend en TONNEAU (fallback en dur) et validateScene ne vérifie aucun ref d'entité",
-    "state": "OPEN",
-    "labels": [
-      "audit:principe",
-      "domaine:cartes",
-      "domaine:moteur-pur",
-      "sev:majeur"
-    ],
-    "body": "## Le défaut\n\n`src/gameIso/catalog/decor/index.ts:22`\n\n```ts\nconst prop = PROPS[ref] ?? PROPS.tonneau;\n```\n\nUn `ref` de décor introuvable au registre se rend **en tonneau**. Silencieusement : aucune erreur, aucun avertissement, aucune case vide. L'auteur qui se trompe d'un caractère voit un tonneau et croit à un bug de rendu — ou ne le voit jamais.\n\nDouble faute vis-à-vis de la doctrine (utilisateur, 2026-07-26, verbatim) : « Rien en dure, pas de fallback ». C'est un fallback ET un id en dur.\n\n## Ce que rien ne rattrape\n\n`src/state/validateScene.ts` ne valide **aucun** `SceneEntity.ref`. Son `EffectRefCtx` couvre `sceneIds`, `dialogueIds`, `encounterIds` — pas le registre de décor. Un projet peut donc porter des entités mortes et passer toutes les portes.\n\n## Comment on est tombé dessus\n\n`src/state/mapSpec.test.ts:353` passe `style: 'escalier-pierre'` à une recette de volée. **Cet id n'existe pas** en `src/gameIso/catalog/decor/defs/`. Le test passe depuis toujours : le prop posé se rendait en tonneau, personne n'a rien vu.\n\n## Correction attendue\n\n1. **`validateScene` refuse un `ref` inconnu** — erreur portant l'id fautif et sa position, visible dans l'éditeur comme les autres avertissements de scène.\n2. **Le rendu cesse de déguiser l'échec.** Un `ref` inconnu ne devient pas un autre objet ; il se signale. Le choix exact (rien + avertissement, marqueur d'erreur visible) se tranche au geste, mais jamais un repli sur un id en dur.\n3. Sweep : tout `?? PROPS.<id>` / `?? <REGISTRE>.<id>` de la même famille dans `src/gameIso/catalog/**` se traite dans le même lot.\n\n## DoD\n\n- Aucun repli sur un id en dur dans les résolveurs de catalogue de décor.\n- `validateScene` signale un `ref` inconnu ; test qui échoue si on retire la garde.\n- Un test prouve qu'un `ref` inconnu ne se rend PLUS comme un objet valide (contrat positif sur ce qui est rendu, pas assertion d'absence).\n- Grep : zéro `ref` mort dans les projets embarqués `src/scenes/*/*-projet.json`.\n",
-    "createdAt": "2026-07-26T16:54:29Z",
-    "closedAt": null
-  },
-  {
     "number": 878,
     "title": "Les toits dérivés sont attribués par l'ORDRE de scene.architecture : un 2e corps de bâtiment ne reçoit jamais aucun toit",
     "state": "OPEN",
@@ -6449,6 +6346,93 @@
     ],
     "body": "**Divergence RAW/moteur mesurée par le lot registre (2026-08-17)** : `Source/Warhammer v4 - Livre de base version corrigée/13 - Combat.md:106`, verbatim : « Certaines choses que vous voudrez que votre Personnage accomplisse, ne seront pas considérées comme votre Action pour le Round – dégainer votre arme ou **boire une potion**, par exemple. » — boire une potion est l'EXEMPLE CANONIQUE de l'action gratuite.\n\nLe moteur charge l'Action : `ActionBar.tsx:467` (`disabled: battle.acted…`) et `battleConsumeItem` (`consumableFlow.ts:136`, coût 1 Action via le gate `combatSlice.ts:2971`).\n\nLe registre `src/data/actions.json` (lot 1, worktree console) déclare déjà la vérité RAW (`use-item` : `cost: \"gratuit\"`, source LDB 13 l.106). À faire (lot MOTEUR) : `battleConsumeItem` cesse de consommer l'Action ; nuance RAW à instruire au même lot : la clause suivante du même passage (« Le fait de se retrouver *Engagé* en Combat peut interdire l'utilisation d'une Action gratuite qui nécessite une certaine concentration ») — arbitrage maison explicite requis pour boire-Engagé (règle 7). Tests + recette.",
     "createdAt": "2026-08-17T19:57:59Z",
+    "closedAt": null
+  },
+  {
+    "number": 1371,
+    "title": "Rendu volumique : redessin strictement pilote par les donnees - stabiliser frameCam/chromeAt/dynMarks/halos",
+    "state": "OPEN",
+    "labels": [
+      "audit:principe",
+      "domaine:art",
+      "sev:mineur"
+    ],
+    "body": "## Constat (mesuré, juge adversarial du chantier caméra impérative)\n\nL'effet de redessin de `GameStage3D` est assumé SANS tableau de dépendances (commentaire honnête posé au chantier caméra) : un `renderer.render()` par commit React de l'hôte, quelle que soit la cause du commit.\n\nMesure (sonde `render()` compté sur le renderer de banc) : `COMMIT flags: dcommits=1 drender=1` — un commit React sans aucun rapport avec la caméra déclenche un rendu WebGL complet. Ce n'est plus critique depuis que les gestes de vue (pan/marche/easing de focal) sont impératifs hors React (les commits sont rares pendant les gestes), mais en combat les commits restent fréquents.\n\nCause structurelle : les dérivations `frameCam` (`src/gameIso/stage/VolumetricWorld.tsx` — littéral neuf à chaque rendu), `chromeAt`, `dynMarks`, `halos` (`src/gameIso/IsoStage.tsx` — recalculées en plein corps de fonction) ne sont pas référentiellement stables, donc AUCUNE liste de deps ne peut filtrer.\n\n## DoD\n\n- `frameCam`/`chromeAt`/`dynMarks`/`halos` référentiellement stables (mémo sur leurs vraies entrées).\n- L'effet de redessin de `GameStage3D` reçoit un tableau de deps HONNÊTE et COMPLET (inventaire des lectures de `dessiner()` : scene en POV, brumePov, geometry, lumière.surfaceLuminance, flaquesÉcrites, champ, gammaBrume, solM — toutes couvertes par une dep ou un montage).\n- Preuve : un commit React étranger à la caméra/aux marques ne déclenche AUCUN `renderer.render` (la sonde du juge se promeut en test committé).\n- Adjacent : `src/gameIso/IsoStage.tsx` reste un monolithe (~630 l., complexité en hausse au chantier caméra) — extraction d'un hook `useStageFocale` (détection de saut + easing + rAF) dans le même geste si le découpage s'y prête, sinon ticket dédié.\n\nRéf : chantier caméra impérative 2026-08-17 (pan hors React, mort de la transition CSS, battement unique `stageFrames`).\n",
+    "createdAt": "2026-08-17T20:23:29Z",
+    "closedAt": null
+  },
+  {
+    "number": 1372,
+    "title": "Rendu volumique : gel de CHARGEMENT de scene - rafale synchrone de rasterisations de props au montage du groupe billboards",
+    "state": "OPEN",
+    "labels": [
+      "domaine:art",
+      "sev:mineur"
+    ],
+    "body": "## Constat (déclaré au chantier gel-rotation, 2026-08-18)\n\nLe fix du gel de ROTATION (repose des billboards + file cadencée pour les textures de props par cran) laisse intact le gel de CHARGEMENT : au MONTAGE d'une scène, les textures statiques des props partent toujours en rafale synchrone (`svgToTexture` hors file, `src/gameIso/stage/GameStage3D.tsx`, boucle de montage du groupe billboards). Recette du chantier caméra : longtasks de 692/624/630 ms mesurées au chargement de scénario/combat — c'est ce poste.\n\nRaison de l'exclusion du périmètre : passer le montage en file décalerait l'apparition du décor et casserait le contrat « un board entre en scène dès SA texture » (`src/gameIso/stage/flipbook-frames.test.tsx`, contrat d'entrée en scène).\n\n## DoD\n\n- Le montage de scène ne produit plus de longtask pluri-centaines-de-ms attribuable aux rasterisations de props (mesure PerformanceObserver longtask en recette, avant/après).\n- Le contrat d'entrée en scène est ARBITRÉ explicitement (apparition progressive par file rapide ? écran de chargement assumé qui attend les textures ? placeholder ?) — pas un contournement silencieux.\n- La solution réutilise la file cadencée existante (`queueBakeTask`, `src/gameIso/backends/webgl/atlasBake.ts`) — jamais une seconde file.\n\nRéf : fix rotation (repose par cran) du 2026-08-18 ; mesures de recette du 2026-08-17 (longtasks 692/624/630 ms au chargement).\n",
+    "createdAt": "2026-08-17T22:10:14Z",
+    "closedAt": null
+  },
+  {
+    "number": 1373,
+    "title": "Rendu volumique POV : le changement de cap reste une RECONSTRUCTION destructive des billboards - meme panne que la rotation de plateau, autre vue",
+    "state": "OPEN",
+    "labels": [
+      "domaine:art",
+      "sev:mineur"
+    ],
+    "body": "## Constat (juge adversarial du chantier repose-par-cran, 2026-08-18)\n\nLe fix « un franchissement de cran est une REPOSE, jamais une reconstruction » ne couvre que la vue de PLATEAU. En PREMIÈRE PERSONNE (POV), un changement de cap reste une reconstruction destructive du groupe billboards. Sonde du juge (POV, 8 décors, cap N→NE) :\n\n```\nPOV cap N->NE : materiaux liberes = 10 | geometries liberees = 10\nquads identiques apres le cap : 0 / 8\n```\n\nEt plus aucun amortisseur : pas de pré-chauffe (`GameStage3D.tsx` — garde `if (!facing)` sur la pré-chauffe des crans) ni de file pour les textures de montage en POV. La famille de longtasks 55-380 ms mesurée à la rotation de plateau subsiste donc intégralement au demi-tour en POV — même panne, autre vue.\n\n## DoD\n\n- Un changement de cap en POV repose les quads existants (identité préservée, zéro dispose sur ce chemin) — même invariant que le plateau, mêmes coutures (`reposerCran`/`camRotRef`/file cadencée), généralisées au cap Dir8 plutôt que dupliquées.\n- Contrat positif committé sur banc POV (patron `rotation-repose.test.tsx`).\n- Mesure avant/après en recette (longtask au demi-tour POV).\n\nRéf : fiche mémoire `game-doctrine-camera-boucle-jamais-react` ; chantier repose-par-cran 2026-08-18.\n",
+    "createdAt": "2026-08-17T22:30:31Z",
+    "closedAt": null
+  },
+  {
+    "number": 1374,
+    "title": "Rendu volumique : cache des textures statiques NON BORNE - x4 canevas par decor avec la pre-chauffe par cran, ~200 canevas retenus sur une scene-hub",
+    "state": "OPEN",
+    "labels": [
+      "domaine:art",
+      "sev:mineur"
+    ],
+    "body": "## Constat (juge adversarial du chantier repose-par-cran, 2026-08-18)\n\nLe cache des textures STATIQUES (`src/gameIso/backends/webgl/svgTexture.ts` — `CACHE`, Map module) est NON BORNÉ, sans éviction, purgé seulement au changement de scène (`clearBillboardTextures`). Le cuiseur de planches, lui, a un LRU à budget d'octets (`atlasBake.ts`) — les deux stocks sont disjoints.\n\nAvec la repose-par-cran et sa pré-chauffe, chaque décor retient jusqu'à ×4 canevas (un par cran) : sur une scène-hub à ~68 entités, ~200 canevas retenus jusqu'au changement de scène. Invisible sur banc jsdom à 3 décors ; à mesurer en session réelle longue.\n\n## DoD\n\n- Le stock de textures statiques est BORNÉ (budget d'octets partagé ou jumeau du LRU des planches — réutiliser la machinerie d'éviction existante d'`atlasBake`, jamais une seconde implémentation) ; une texture évincée se recuit par la file à la prochaine demande.\n- Mesure en recette : onglet Mémoire sur session longue multi-scènes, avant/après.\n\nRéf : chantier repose-par-cran 2026-08-18 ; #1372 (gel de chargement, même zone).\n",
+    "createdAt": "2026-08-17T22:30:43Z",
+    "closedAt": null
+  },
+  {
+    "number": 1375,
+    "title": "Ordre multiplicateur de Taille × encaisse (LDB 85 l.361 ne tranche pas) : l'implémentation multiplie AVANT — arbitrage à expliciter ou verbatim antérieur à produire",
+    "state": "OPEN",
+    "labels": [
+      "domaine:combat",
+      "livre:LDB",
+      "policy-à-trancher",
+      "sev:mineur"
+    ],
+    "body": "## Ordre du multiplicateur de Taille vs encaisse : le RAW ne tranche pas, l'implémentation multiplie AVANT l'encaisse\n\n**Le point** : `src/engine/combat.ts` multiplie les Dégâts par l'écart de Taille (`sizeDamageMultiplier`) **avant** l'encaisse (Bonus d'Endurance + PA). LDB 85 l.361 dit : « Vous multipliez les Dégâts infligés par le nombre de catégories de Taille supérieures […] **cette multiplication est calculée après l'application des modificateurs.** » — « les modificateurs » désigne les modificateurs de Dégâts (l'addition qui précède), pas l'encaisse : l'ordre vis-à-vis de l'encaisse **n'est tranché nulle part**.\n\n**Balayage exhaustif du chapitre 85** (lot E3-L1, 2026-08-18) : aucune occurrence d'« encaisse »/« Bonus d'Endurance et les PA » ne traite cet ordre. Indice versé au dossier : **l.130 (Endurant)** est la seule ligne du chapitre qui explicite un ordre vis-à-vis de la Taille (« appliqué avant tout modificateur de Taille » — sur les PB) : le livre sait expliciter l'ordre quand il le veut, son silence en l.361 est probablement significatif, pas un oubli.\n\n**Historique** : le commentaire du site portait « ×N AVANT soak (confirmé utilisateur) » — **sans citation verbatim ni date** : traité comme évaluation d'ingénierie révisable (doctrine des arbitrages), le commentaire a été réduit à la réf nue + la tension dite (commit `cc4d4d46`). Si le verbatim de cette confirmation existe quelque part (session antérieure), le produire ici ferme le ticket ; sinon, arbitrage à recueillir.\n\n**Enjeu mécanique** : multiplier avant l'encaisse rend les grosses créatures nettement plus létales (l'encaisse ne soustrait qu'une fois) ; multiplier après la rendrait quasi transparente aux hautes encaisse. Les deux lectures sont défendables — c'est un cas règle-optionnelle/maison à expliciter (règle 7 : arbitrage explicite, tagué, éditable si maison).\n",
+    "createdAt": "2026-08-17T23:18:16Z",
+    "closedAt": null
+  },
+  {
+    "number": 1376,
+    "title": "Rotation en EXPLORATION : residuel fixe 59-148 ms par franchissement de cran, froid=chaud - hors textures, le combat est a 0",
+    "state": "OPEN",
+    "labels": [
+      "domaine:art",
+      "sev:mineur"
+    ],
+    "body": "## Constat (recette du fix repose-par-cran 6c4ea280, 2026-08-18)\n\nAprès le fix « repose, jamais reconstruction », le gel de rotation est ÉTEINT en combat (0 longtask sur 4 rotations tenues, `siege-enceinte`, 27 entités — avant : 55-380 ms). Mais en EXPLORATION (`arene-hub`, 68 entités), un résiduel persiste sur CHAQUE fenêtre de rotation :\n\n- 1er tour (caches froids) : 130 ms · 72/134/60 ms · 138/59/108 ms\n- 2e tour immédiat (caches chauds) : 109 ms · 105/148 ms · 123 ms\n\n**Froid = chaud** → ce n'est PAS un coût de cuisson de texture (il disparaîtrait au cache chaud). C'est un coût FIXE par franchissement de cran, propre au mode exploration — combat et exploration divergent nettement sur la même mécanique de rotation.\n\n## Pistes (non instruites — candidats du lecteur au chantier, jamais mesurés isolément)\n\n- `wallTraitObjs`/`gridLines` (`src/gameIso/IsoStage.tsx` — deps `dimsVue`, objet neuf à chaque frame de lacet) : recalcul par frame pendant la rotation, corps jamais lu au chantier.\n- Recalculs branchés sur le cran en exploration seulement (roomFocus, exploredSet, percage — deps à inventorier).\n\n## DoD\n\n- Cause identifiée par mesure isolée (pas par élimination).\n- Fenêtres de rotation en exploration ramenées au niveau du combat (0 longtask attribuable, ou justification mesurée du plancher résiduel).\n- La mesure de recette (PerformanceObserver longtask, protocole du 2026-08-18) rejouée avant/après.\n\nRéf : 6c4ea280 (repose-par-cran) ; fiche `game-doctrine-camera-boucle-jamais-react`.\n",
+    "createdAt": "2026-08-17T23:29:11Z",
+    "closedAt": null
+  },
+  {
+    "number": 1377,
+    "title": "Testabilite recette : scenario() silencieux, lacet camera inaccessible, geste de pan non documente - frictions de 2 recettes consecutives",
+    "state": "OPEN",
+    "labels": [
+      "domaine:UX",
+      "sev:smell"
+    ],
+    "body": "## Constat (frictions de DEUX recettes consécutives, 2026-08-17 et 2026-08-18)\n\nFrictions d'outillage qui ont coûté des mesures perdues et des faux-négatifs aux recetteurs :\n\n1. **`__wfrp.scenario(id)` échoue SILENCIEUSEMENT** (renvoie une chaîne d'erreur au lieu de `throw`, contrairement à `__wfrp.screen()`) — deux mesures minutées perdues sur la mauvaise scène (id deviné `siege-belier` au lieu de `belier-porte`).\n2. **Aucun helper n'expose le lacet caméra** (`courant`/cran effectif de `src/state/stageYaw.ts` privés au module) — toute mesure fine de rotation passe par des proxys fragiles (`canvas.toDataURL()` sur WebGL sans `preserveDrawingBuffer` MENT : chaîne identique pendant une rotation réelle).\n3. **Le geste de PAN n'est pas documenté** dans `docs/recette-navigateur.md` (bouton + cible DOM + seuil `PAN_THRESHOLD`) — reverse-engineering depuis `useStagePointer.ts` à chaque recette, essais infructueux sur le `<canvas>`.\n4. **Deux serveurs dev simultanés** (worktree voisin sur 5173, dépôt cible ailleurs) sans signal — le recetteur du 2026-08-17 a failli mesurer le mauvais arbre ; diagnostic `Get-NetTCPConnection` à refaire à chaque fois.\n5. **Mesures temporelles en appels MCP séparés = faux-négatifs** (latence variable inter-appels) — le piège a coûté un faux « transform figé 4 s ».\n\n## DoD\n\n- `__wfrp.scenario()` `throw` comme `screen()` (+ message listant les ids valides).\n- `__wfrp.yaw()` (ou équivalent) exposant `{cran, yawDeg, courant}` en lecture.\n- `docs/recette-navigateur.md` amendé : geste de pan (bouton/cible/seuil), vérification du serveur cible quand des worktrees existent, règle « toute mesure temporelle dans UN SEUL run_code », piège `toDataURL` WebGL.\n\nRéf : rapports de recette des chantiers caméra (f21b993a) et rotation (6c4ea280).\n",
+    "createdAt": "2026-08-17T23:29:14Z",
     "closedAt": null
   }
 ]
