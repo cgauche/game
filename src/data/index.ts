@@ -124,7 +124,7 @@ export interface ActivitySkill extends EngineSkillRef {
   difficulty?: Difficulty;
 }
 
-/** Règle d'EMPOIGNADE en DONNÉE (LDB 14 l.155-169) : `init` = ops à la touche d'une Empoignade déclarée
+/** Règle d'EMPOIGNADE en DONNÉE (LDB 14 l.159-169) : `init` = ops à la touche d'une Empoignade déclarée
  *  (Empêtré + relation via le flag `grapple`) ; `win` = les 3 options du Test opposé GAGNÉ (l.161), appliquées
  *  avec `ctx.sl = DR`. La mécanique vit ICI (GameOp éditables), le flux `pendingGrapple` n'orchestre que le choix. */
 export interface GrappleRule {

@@ -13,7 +13,7 @@ const HIT: AttackResult = {
 
 /**
  * Tir « immobile » (option, comme « Tirer dans le tas ») : puisque le Mouvement est décomposable et qu'on
- * peut bouger APRÈS le tir, un tir mobile garde la pénalité -10 (LDB 14 l.101). Décider de NE PAS bouger
+ * peut bouger APRÈS le tir, un tir mobile garde la pénalité -10 (LDB 14 l.70). Décider de NE PAS bouger
  * (heldGround) annule la pénalité MAIS consomme le Mouvement du Tour (on ne pourra plus se déplacer).
  */
 describe('Tir immobile (heldGround)', () => {

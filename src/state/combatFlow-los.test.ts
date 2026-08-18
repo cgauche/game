@@ -69,7 +69,7 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
     expect(nomme(r!.res.attackerDetail!).some((m) => m.label.startsWith('Couvert'))).toBe(true);
   });
 
-  it('tir en bougeant (Mouvement dépensé ce tour) → -10 (LDB 14 l.101)', () => {
+  it('tir en bougeant (Mouvement dépensé ce tour) → -10 (LDB 14 l.70)', () => {
     seedBattleRng(1);
     const s = scene(7);
     const a = shooter();
@@ -80,7 +80,7 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
   });
 
   it('héros qui garde sa mobilité (n’a pas tiré « immobile ») → -10 même sans avoir encore bougé', () => {
-    // Mouvement décomposable : on peut bouger APRÈS le tir → un tir mobile coûte -10 par défaut (LDB 14 l.101).
+    // Mouvement décomposable : on peut bouger APRÈS le tir → un tir mobile coûte -10 par défaut (LDB 14 l.70).
     seedBattleRng(1);
     const s = scene(7);
     const a = shooter();
@@ -130,7 +130,7 @@ describe('resolveAttack — Allonge en mêlée (RAW-3, LDB 62 l.211/213)', () =>
   });
 });
 
-describe('strayShotVictim — tir dévié vers un allié (LDB 14 l.136)', () => {
+describe('strayShotVictim — tir dévié vers un allié (LDB 14 l.116)', () => {
   const att = shooter();
   const ally = { id: 'ALLY', kind: 'hero', wounds: { current: 10, max: 10 }, conditions: [] } as unknown as Combatant;
   const tgt = target({ pos: { x: 6, y: 0 }, engagedWith: ['ALLY'] });

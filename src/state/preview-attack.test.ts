@@ -67,7 +67,7 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     expect(previewAttack(mkGet([a, b]), a, b).inRange).toBe(false);
   });
 
-  it('le surnombre (2 contre 1) augmente la valeur de toucher prévue de +20 (LDB 14 l.92)', () => {
+  it('le surnombre (2 contre 1) augmente la valeur de toucher prévue de +20 (LDB 14 l.110)', () => {
     const a = combatant({ id: 'A', pos: { x: 0, y: 0 } });
     const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 1, y: 0 } });
     const ally = combatant({ id: 'A2', pos: { x: 1, y: 1 } }); // 2e attaquant au contact de B
@@ -305,7 +305,7 @@ describe('resolveDualSecond — la 2ᵉ frappe vise la cible que le moteur jette
   });
 
   it('MODS AU JET : la 2ᵉ frappe subit la somme ENTIÈRE des pénalités du jeteur (−40)', () => {
-    // État Aveuglé ×2 (−20, `LDB 16`) + Maladresse du Round précédent (−20, `LDB 14 l.26`) : deux
+    // État Aveuglé ×2 (−20, `LDB 16`) + Maladresse du Round précédent (`LDB 14 l.26` ; −20 en fixture) : deux
     // modificateurs du JETEUR, hors table des Difficultés de Combat — rien à plafonner (l.48/95).
     const a = combatant({ id: 'A', conditions: [{ id: 'aveugle', value: 2 }] as never, nextActionPenalty: 20, weapons: [
       { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [], hand: 'main', hands: 1, uid: 'm' },
@@ -366,7 +366,7 @@ describe('Difficulté — parité PRÉ-jet ↔ ligne RÉSOLUE (#1153 L4)', () =>
     id: 'A', pos: { x: 0, y: 0 },
     weapons: [{ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }] as never,
   });
-  /** Le tireur a DÉJÀ bougé ce Round (`LDB 14 l.101` : −10) — lu à l'identique par l'aperçu et par la résolution. */
+  /** Le tireur a DÉJÀ bougé ce Round (`LDB 14 l.70` : −10) — lu à l'identique par l'aperçu et par la résolution. */
   const getMobile = (combatants: Combatant[]): (() => GameState) =>
     (() => ({ scene: scene(), battle: { combatants, movementUsed: 1 }, facing: {}, gameTime: 0, log: () => {}, net: NET_LOCAL })) as unknown as () => GameState;
 
@@ -445,7 +445,7 @@ describe('Difficulté — parité PRÉ-jet ↔ ligne RÉSOLUE (#1153 L4)', () =>
       id: 'A', pos: { x: 0, y: 0 },
       weapons: [{ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 60, qualities: [] }] as never,
     });
-    // Défenseur AGILE (Esquive = meilleure défense) et au CONTACT : à bout portant, le tir s'oppose (LDB 14 l.62).
+    // Défenseur AGILE (Esquive = meilleure défense) et au CONTACT : à bout portant, le tir s'oppose (LDB 14 l.40).
     const b = combatant({
       id: 'B', kind: 'enemy', pos: { x: 1, y: 0 }, weapons: [] as never,
       characteristics: { 'capacite-de-combat': 25, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 70, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
@@ -642,7 +642,7 @@ describe('BOUTON « +1 DR » sur la ligne résolue — le chemin du store fige l
 
 /**
  * TIR DÉFENDU + influence — LE cas de la recette (#1153). À bout portant, la cible oppose sa défense
- * (`LDB 14 l.62`) : le résultat porte donc un `defenderDetail`. La re-dérivation branchait sur
+ * (`LDB 14 l.40`) : le résultat porte donc un `defenderDetail`. La re-dérivation branchait sur
  * `finishMelee` dès qu'une défense existait, SANS regarder le type de l'arme : une arbalète repassait
  * par `attackTestLabel(weapon, 'melee')` et `combatValue(attacker, 'melee', …)` — « Corps à corps »,
  * base de Capacité de Combat — pendant que la Difficulté composée du TIR restait transportée, d'où la

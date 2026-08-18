@@ -440,7 +440,7 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
 
 /** Résout une attaque (le JET) SANS l'appliquer — pour le flux par modale (« Lancer »
  *  puis éventuel point de Chance). Retourne null si la cible est hors de portée de mêlée. */
-/** Tir dans la mêlée (LDB 14 l.136) : si la pénalité de −20 a transformé une réussite en échec, le
+/** Tir dans la mêlée (LDB 14 l.116) : si la pénalité de −20 a transformé une réussite en échec, le
  *  tir touche un allié intercalé de la cible. Retourne l'allié (le 1er Engagé côté tireur, « au
  *  hasard » approximé — le cas courant n'a qu'un allié au contact), ou null si non applicable. */
 export function strayShotVictim(res: AttackResult, attacker: Combatant, target: Combatant, battle: BattleState): Combatant | null {
@@ -452,7 +452,7 @@ export function strayShotVictim(res: AttackResult, attacker: Combatant, target: 
   return allies[0] ?? null;
 }
 
-/** Cibles éligibles d'un « Tir dans le tas » (LDB 14 l.136/146) : TOUT le monde serré autour de la
+/** Cibles éligibles d'un « Tir dans le tas » (LDB 14 l.106) : TOUT le monde serré autour de la
  *  cible (au contact, Chebyshev — diagonale incluse), vivant et positionné, LE TIREUR EXCLU — les
  *  DEUX camps : « vous touchez l'un des adversaires de la cible au hasard » → ça peut être un de vos
  *  PROPRES alliés engagés dans la mêlée (tir fratricide), pas forcément un ennemi. Un tir réussi en
@@ -682,7 +682,7 @@ export function attackEnv(
     // Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne : annule la pénalité d'obscurité.
     if (sc.concealed && !seesInDark(attacker)) env.push({ label: sc.label || 'Obscurité', value: -20, famille: 'circonstance', ref: RULE_REF['cible-dissimulee'] }); // cible dissimulée (LDB 14 l.75)
     else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod, famille: 'circonstance' }); // tempête (LDB 14 l.76) / neige (l.82)
-    // Tir en bougeant (LDB 14 l.101) : −10 si l'on bouge ET tire au même Round. Le Mouvement étant
+    // Tir en bougeant (LDB 14 l.70) : −10 si l'on bouge ET tire au même Round. Le Mouvement étant
     // DÉCOMPOSABLE (on peut bouger APRÈS le tir), un HÉROS qui garde sa mobilité encaisse le −10 par défaut ;
     // il ne l'évite qu'en décidant de tirer IMMOBILE (heldGround → consomme son Mouvement, cf. attackConfirm)
     // — ou s'il NE PEUT PAS bouger (Mouvement effectif 0 : Empêtré/Surpris…), il est immobile d'office.
@@ -691,16 +691,16 @@ export function attackEnv(
       ? (battle.movementUsed > 0 || (mountMovement(battle, attacker) > 0 && !opts?.heldGround))
       : battle.movementUsed > 0;
     if (mobileShot) env.push({ label: 'Tir en bougeant', value: -10, famille: 'circonstance', ref: RULE_REF['tir-en-mouvement'] });
-    // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur. Règle optionnelle
-    // « Tir dans un corps à corps » (LDB 14 l.133) : si désactivée, pas de −20 NI d'artefact d'aperçu
+    // Tir dans la mêlée (LDB 14 l.116) : la cible est Engagée avec un allié du tireur. Règle optionnelle
+    // « Tir dans un corps à corps » (LDB 14 l.112-116) : si désactivée, pas de −20 NI d'artefact d'aperçu
     // (`inMelee` reste false → pas de tir égaré non plus).
     const inMelee = !!rule('combat-ranged-melee-penalty') && (target.engagedWith ?? []).some((id) => {
       const ally = inBattleId(battle, id);
       return !!ally && ally.kind === attacker.kind;
     });
-    if (inMelee && !opts?.intoCrowd) env.push({ label: 'Tir dans la mêlée', value: -20, famille: 'circonstance', ref: RULE_REF['tir-dans-un-combat-au-corps-a-corps'] }); // « Tirer dans le tas » REMPLACE ce −20 par le bonus (l.136)
+    if (inMelee && !opts?.intoCrowd) env.push({ label: 'Tir dans la mêlée', value: -20, famille: 'circonstance', ref: RULE_REF['tir-dans-un-combat-au-corps-a-corps'] }); // « Tirer dans le tas » REMPLACE ce −20 par le bonus (l.116)
     env.push(...mountedAttackMods(battle, attacker, target, 'ranged')); // Combat monté : +20 cible plus petite que la monture (LDB 14 l.180)
-    // « Tirer dans le tas » (LDB 14 l.136/146) : bonus +20/+40/+60 selon la taille du groupe serré.
+    // « Tirer dans le tas » (LDB 14 l.106) : bonus +20/+40/+60 selon la taille du groupe serré.
     const crowd = opts?.intoCrowd ? crowdEligible(battle, attacker, target) : [];
     const cm = opts?.intoCrowd ? crowdMod(crowd.length) : null;
     if (cm) env.push(cm);
@@ -719,7 +719,7 @@ export function attackEnv(
   // En contrebas (Difficultés de Combat) : l'attaquant le PLUS BAS subit −10 (la hauteur ne donne AUCUN
   // bonus « high-ground » — RAW : seul ce malus existe). Comparaison de la hauteur métrique des surfaces.
   if ((target.pos?.h ?? 0) - (attacker.pos?.h ?? 0) > STEP_MAX_M) env.push({ label: 'En contrebas de la cible', value: -10, famille: 'circonstance', ref: RULE_REF['cible-en-contrebas'] });
-  // Surnombre (LDB 14 l.85/92) : attaquants du camp de l'attaquant au contact de la cible (2 → +20, 3+ → +40).
+  // Surnombre (LDB 14 l.110) : attaquants du camp de l'attaquant au contact de la cible (2 → +20, 3+ → +40).
   const onm = outnumberMod(battle.combatants.filter((c) => c.kind === attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1).length);
   if (onm) env.push(onm);
   env.push(...mountedAttackMods(battle, attacker, target, 'melee')); // Combat monté : +20 cible < monture / −10 viser le cavalier (LDB 14 l.180/181)
@@ -755,7 +755,7 @@ export function resolveAttack(
   const { env, blocked, inMelee, crowd, cm, flankRear } = attackEnv(get, attacker, target, weapon, { intoCrowd, heldGround });
   if (blocked) return null; // pas de Ligne de Vue (mur/décor/fumée) → pas de tir (LDB 13 l.114)
   if (weapon.type === 'ranged') {
-    // « Tirer dans le tas » (LDB 14 l.136/146) : un ennemi AU HASARD est touché ; succès dû au seul bonus = 0 DR.
+    // « Tirer dans le tas » (LDB 14 l.106) : un ennemi AU HASARD est touché ; succès dû au seul bonus = 0 DR.
     if (intoCrowd) {
       const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env, undefined, mpt);
       if (res.hit && crowd.length) {
@@ -782,7 +782,7 @@ export function resolveAttack(
         return best && { ...best, dodgeMod: defenseDodgeMod(get, target) };
       })();
     const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env, rd, mpt);
-    // Tir dans la mêlée (LDB 14 l.136) : si le −20 a transformé une réussite en échec, le tir dévie
+    // Tir dans la mêlée (LDB 14 l.116) : si le −20 a transformé une réussite en échec, le tir dévie
     // et frappe un allié intercalé (touche acquise, dégâts recalculés sur l'allié).
     if (inMelee && !res.hit) {
       const ally = strayShotVictim(res, attacker, target, battle);
@@ -1963,7 +1963,7 @@ export function weaponHasBlade(w: Weapon | undefined): boolean {
   return w?.type === 'melee' && !!w.bladed;
 }
 
-/** Blessure critique « sèche » d'un Test opposé (LDB 14 l.7) : un double réussi inflige une Blessure
+/** Blessure critique « sèche » d'un Test opposé (LDB 14 l.3) : un double réussi inflige une Blessure
  *  critique à l'adversaire indépendamment du vainqueur de l'échange. Localisation = 1d100 frais (LDB 18
  *  l.53). Critique « sec » → aucune composante de Dégâts de base (overkill=0, deflectExtraWounds=0). La
  *  Déviation Critique (LDB 63 l.30) est offerte sur les TROIS chemins via les atomes partagés : l'ENNEMI
@@ -1995,7 +1995,7 @@ export function applyOpposedCritical(
     return;
   }
   applyCritAndFinalize(get, set, victim, loc, true, 0, log, c2, victim.wounds.current);
-  // 7bis (#316) : un Coup Critique OPPOSÉ (LDB 14 l.7) est une Blessure Critique — le bus émet `onCrit`
+  // 7bis (#316) : un Coup Critique OPPOSÉ (LDB 14 l.3) est une Blessure Critique — le bus émet `onCrit`
   // pour l'attaquant, afin que ses effets de donnée « sur Critique » (Taillade → Hémorragique) s'appliquent
   // ici aussi. Chemin mutuellement exclusif de la déviation (self → émis au Subir de resolveDeviation).
   emitOpposedCrit(get, set, attacker, victim, loc, ctx.weaponObj, log);
@@ -2256,7 +2256,7 @@ export function applyAttackResult(
       refreshAllDefendedPsych(get().battle?.combatants ?? []); // l’Amour ne se clôt pas à la chute d’UN aimé (l.75) : verdict re-mesuré
     }
   }
-  // Critiques du Test opposé (LDB 14 l.7) : « Si vous obtenez un Critique, votre adversaire reçoit
+  // Critiques du Test opposé (LDB 14 l.3) : « Si vous obtenez un Critique, votre adversaire reçoit
   // immédiatement une Blessure critique […] le DR est calculé comme d'habitude, tout comme la
   // détermination du vainqueur. » Un double RÉUSSI inflige donc un Critique même sans gagner l'échange.
   // (Pas de garde `deviated` : une 1ʳᵉ entrée qui SUSPEND (déviation) fait son early-return AVANT ce
@@ -2484,7 +2484,7 @@ export function applyAttackResult(
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
   resolveEnemyFumble(get, set, attacker, weapon, res); // Maladresse d'un ENNEMI attaquant → résolue instantanément
-  // Maladresse d'un ENNEMI défenseur (Test opposé, LDB 14 l.48-51) : sa Parade/Esquive ratée sur un double.
+  // Maladresse d'un ENNEMI défenseur (Test opposé, LDB 14 l.13) : sa Parade/Esquive ratée sur un double.
   if (target.kind === 'enemy' && defenderFumbled(res, target.weapons[0], target) && !isOutOfAction(target) && target.weapons[0]) {
     applyOups(get, set, target, target.weapons[0], rollOups(target.weapons[0], battleRng()));
   }
@@ -2536,7 +2536,7 @@ export function applyFocusInterruption(get: Get, set: SetFn, focuser: Combatant)
   set({ pendingLogQueue: [...get().pendingLogQueue, ...lines.map((line) => ({ line, cid: focuser.id }))] });
 }
 
-/** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53 ;
+/** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.19 ;
  *  arme Dangereuse : aussi tout jet raté incluant un 9, LDB 62 l.315 ; Doigts amputés : escalade par
  *  chiffre des unités si `attacker` fourni, LDB 18 l.251 — réutilise `maxFingersLostForWeapon`, #144). */
 export function attackerFumbled(res: AttackResult, weapon?: Weapon, attacker?: Combatant): boolean {
@@ -2546,7 +2546,7 @@ export function attackerFumbled(res: AttackResult, weapon?: Weapon, attacker?: C
   return isFumble(roll, success, fingers) || dangerousNine(weapon, roll, success);
 }
 
-/** Une Maladresse du DÉFENSEUR (Test opposé) : sa défense propre ratée sur un double (LDB 14 l.48-51 ;
+/** Une Maladresse du DÉFENSEUR (Test opposé) : sa défense propre ratée sur un double (LDB 14 l.13 ;
  *  parade avec une arme Dangereuse : aussi tout jet raté incluant un 9, LDB 62 l.315 ; Doigts amputés :
  *  escalade par chiffre des unités si `defender` fourni, LDB 18 l.251, #144). */
 export function defenderFumbled(res: AttackResult, parryWeapon?: Weapon, defender?: Combatant): boolean {
@@ -2556,7 +2556,7 @@ export function defenderFumbled(res: AttackResult, parryWeapon?: Weapon, defende
   return isFumble(roll, success, fingers) || dangerousNine(parryWeapon, roll, success);
 }
 
-/** La cible est-elle dans une bande de tir/portée VALIDE de `weapon` pour `shooter` (LDB 14 l.42-46) ?
+/** La cible est-elle dans une bande de tir/portée VALIDE de `weapon` pour `shooter` (LDB 14 l.54-84) ?
  *  Tir → bande de portée non nulle (munition + BF inclus) ; mêlée → Allonge (`reachTiles`). Position
  *  inconnue (tests) → vrai (aucun filtre géométrique). Source UNIQUE du test « à distance de frappe ». */
 export function inFiringBand(shooter: Combatant, target: Combatant, weapon: Weapon, metresPerTile = 2): boolean {
@@ -2569,7 +2569,7 @@ export function inFiringBand(shooter: Combatant, target: Combatant, weapon: Weap
   return d <= reachTiles(weapon);
 }
 
-/** Alliés (même camp) encore actifs, hors `c`, et À PORTÉE de `weapon` (LDB 14 l.42-46 : « à distance »).
+/** Alliés (même camp) encore actifs, hors `c`, et À PORTÉE de `weapon` (LDB 14 l.30 : « à distance »).
  *  Sans position connue (tests), on ne filtre pas. */
 function alliesAtRange(battle: BattleState, c: Combatant, weapon: Weapon, metresPerTile = 2): Combatant[] {
   return battle.combatants.filter((x) => x.id !== c.id && x.kind === c.kind && !isOutOfAction(x) && inFiringBand(c, x, weapon, metresPerTile));
@@ -2651,8 +2651,8 @@ function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void 
 }
 
 /**
- * Applique l'effet du Tableau des Oups ! au combattant `c` (mute + journalise). LDB 14 l.14-57.
- * Le chiffre des unités du jet sert de DR pour les touches (l.44).
+ * Applique l'effet du Tableau des Oups ! au combattant `c` (mute + journalise). LDB 14 l.21-30.
+ * Le chiffre des unités du jet sert de DR pour les touches (l.30).
  */
 export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r: OupsResolved): void {
   const battle = get().battle!;
@@ -2846,7 +2846,7 @@ export function maybeOpenDefense(
 ): boolean {
   if (!defenseSurfaced(get(), target)) return false;
   // TIR sur un héros : ouvre la défense réactive UNIQUEMENT si le RAW l'autorise (Protectrice 2+ en
-  // Ligne de Vue LDB 62 l.307 / Bout Portant LDB 14 l.62 / tireur Engagé LDB 14 l.70). Vide = tir non
+  // Ligne de Vue LDB 62 l.307 / Bout Portant LDB 14 l.40 / tireur Engagé LDB 14 l.44). Vide = tir non
   // opposable → résolution simple (resolveAttack). LoS acquise : l'IA ne tire que si elle voit (doAttack).
   if (weapon?.type === 'ranged') {
     const mpt = sceneMetresPerTile(get().scene);
@@ -2912,7 +2912,7 @@ export function maybeOpenDefense(
  * contre PERSONNE, #1004). Deux dérivations séparées divergeraient au premier changement de garde.
  *
  * Gardes : jet d'attaquant posé, sans jet de défense au résultat ; défenseur SURFACÉ (`defenseSurfaced`), capable
- * de défendre (`cannotDefend`) et animé ; tir DÉVIÉ (LDB 14 l.136), pilonnage de zone (AA 10
+ * de défendre (`cannotDefend`) et animé ; tir DÉVIÉ (LDB 14 l.116), pilonnage de zone (AA 10
  * l.122-123) et Tir rapide en INTERRUPTION (`pa.interrupt`, chemin d'application sans couture de
  * Défense — #997 ; la couture posée par #997 retire cette exclusion) n'ouvrent aucune fenêtre ;
  * gardes RAW de mode (portée de mêlée Allonge comprise —
@@ -3043,7 +3043,7 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
     get().log(firedWeapon(attacker, target).type === 'ranged' ? tr('cf.noLoSMasked') : tr('cs.meleeOutOfRange'));
     return false;
   }
-  const suspended = applyAttackResult(get, set, attacker, r.victim ?? target, r.weapon, r.res); // r.victim = allié touché par un tir dévié (LDB 14 l.136)
+  const suspended = applyAttackResult(get, set, attacker, r.victim ?? target, r.weapon, r.res); // r.victim = allié touché par un tir dévié (LDB 14 l.116)
   if (suspended) return true; // Déviation Critique du héros : la modale reprendra (autoCleave/Piétinement/advance rejoués au resolve)
   autoCleave(get, set, attacker, r.victim ?? target, r.res); // Frappe Mortelle : balayage auto si l'ennemi est plus grand
   return false;
@@ -3100,7 +3100,7 @@ function runCleaveChain(get: Get, set: SetFn, attacker: Combatant, chain: Cleave
 }
 
 /** REPREND une chaîne de balayage parquée par une fenêtre de défense (`pendingDefense.cleaveChain`), une
- *  fois l'enchaînement appliqué : recalage sur la case d'une cible tuée (LDB 14 l.10) puis suite de la chaîne. */
+ *  fois l'enchaînement appliqué : recalage sur la case d'une cible tuée (LDB 14 l.9) puis suite de la chaîne. */
 export function resumeCleaveChain(get: Get, set: SetFn, attacker: Combatant, defender: Combatant, chain: CleaveChain): void {
   const killed = isOutOfAction(defender);
   if (killed && defender.pos) {
@@ -3141,8 +3141,8 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
 /** Balayage d'un HÉROS (interactif) : appelé après l'application d'une attaque. Démarre le balayage
  *  sur une touche d'un plus grand (`res.cleave`), ou le poursuit si `wasChain` (un enchaînement vient
  *  d'être résolu). Ouvre/maintient `pendingCleave` tant qu'il reste des cibles adjacentes ET que le
- *  nombre d'enchaînements reste < BCC (LDB 14 l.12) ; sinon le ferme. Déplacement sur la case d'une
- *  cible tuée (l.10). */
+ *  nombre d'enchaînements reste < BCC (LDB 14 l.9) ; sinon le ferme. Déplacement sur la case d'une
+ *  cible tuée (l.9). */
 export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, target: Combatant, res: AttackResult, wasChain: boolean): void {
   if (!pilotedByHuman(get(), attacker)) return;
   const pc = get().pendingCleave;
@@ -3523,7 +3523,7 @@ function resumeMeleeAfterSuspension(
   if (!attacker || !target) return;
   if (applyAttackResult(get, set, attacker, target, weapon, res, deviated, crit)) return; // re-suspendu (fenêtre suivante)
   autoCleave(get, set, attacker, target, res); // balayage de l'ennemi plus grand sur les AUTRES héros
-  // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.48-51).
+  // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.13).
   if (target.kind === 'hero' && defenderFumbled(res, target.weapons[0], target) && !isOutOfAction(target)) {
     // Maladresse = étape APPENDUE à la cascade, et le SEUL jet hôte dont la donnée vit SUR l'étape
     // (`fumble` : arme + Oups ! à tirer) — la branche `jet:'fumble'` du mint l'exige, il n'y a pas de
@@ -6149,7 +6149,7 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
 registerCascadeApplier('bladeTrapResult', () => {});
 
 /** Applier de l'étape de CHOIX « piège-lame » (LDB 62 l.278-280). « Coup Critique » (défaut) inflige le
- *  critique normal sur sa défense (LDB 14 l.7). « Piéger » route un Test opposé de Force CADENCE-AWARE
+ *  critique normal sur sa défense (LDB 14 l.3). « Piéger » route un Test opposé de Force CADENCE-AWARE
  *  (le héros défenseur PEUT dépenser Chance/Résilience) via `runCombatFlow` : le défenseur jette, l'attaquant
  *  (porteur) oppose sa Force, en ajoutant le DR de la défense (`defSL`) au jet du défenseur (l.295) ; la
  *  branche de VICTOIRE porte l'op IMPURE `breakBlade` (désarme/brise, conséquence procédurale APRÈS le Test). */

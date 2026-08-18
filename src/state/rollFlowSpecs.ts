@@ -84,7 +84,7 @@ function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack
     const dd = r.defenderDetail;
     const def: TestResult = hydrateTR(dd);
     // BRANCHER PAR LE TYPE DE L'ARME FIGÉE, comme `finishDefenseResult` : un TIR défendu (Bout
-    // Portant, `LDB 14 l.62`) reste un Test de Projectiles. `finishMelee` le rendait « Corps à corps »
+    // Portant, `LDB 14 l.40`) reste un Test de Projectiles. `finishMelee` le rendait « Corps à corps »
     // avec une base de Capacité de Combat, quelle que soit l'arme en main.
     // Mode et arme de parade viennent du jet du DÉFENSEUR (figés dans son détail), la pénalité
     // d'esquive du contexte de la résolution — jamais un défaut forgé.

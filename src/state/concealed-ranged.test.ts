@@ -38,7 +38,7 @@ describe('Exemple RAW LDB 14 l.95 — « le Test devient simplement Très Diffic
     const target = mk('tgt', 'enemy', 8);
     const get = (() => ({ scene: fogScene(), battle: { combatants: [attacker, target], movementUsed: 0 }, facing: {}, gameTime: 12 * 60 })) as unknown as Get;
     // `heldGround` : le tireur déclare tirer IMMOBILE — isole les deux facteurs de l'exemple du livre
-    // (sans quoi la production ajoute aussi « Tir en bougeant » −10, LDB 14 l.101).
+    // (sans quoi la production ajoute aussi « Tir en bougeant » −10, LDB 14 l.70).
     const env = attackEnv(get, attacker, target, bow, { heldGround: true }).env; // production RÉELLE, aucune valeur en dur
     const mods = attackModifiers(attacker, target, bow, { kind: 'ranged', location: 'tete', env });
     expect(env.find((m) => m.ref?.id === 'cible-dissimulee')?.value).toBe(-20);

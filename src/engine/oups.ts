@@ -18,7 +18,7 @@ export interface OupsResolved {
 
 /** Une Maladresse = jet d100 raté ET (double (11,22,…,99,00), OU — Doigts amputés, LDB 18 l.251 — chiffre
  *  des unités du jet ∈ [1..fingersLost] si le Test implique une main où `fingersLost` doigts ont été
- *  perdus). `fingersLost` omis/0 = comportement d'origine (LDB 14 l.53). */
+ *  perdus). `fingersLost` omis/0 = comportement d'origine (LDB 14 l.19). */
 export function isFumble(roll: number, success: boolean, fingersLost = 0): boolean {
   if (success) return false;
   if (isDoubleRoll(roll)) return true;

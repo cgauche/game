@@ -1126,7 +1126,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Pilonnage INDIRECT : dépose le point d'impact choisi (clic-case du placeur 'siege') et ouvre la modale
    *  de tir de la pièce indirecte servie (`pendingAttack` siège). Cf. `siegeAimCommit` (combatSlice). */
   siegeAimCommit: (pt: Pt) => void;
-  /** Balayage (Frappe Mortelle, LDB 14 l.12) : enchaîne l'attaque sur une cible adjacente (ouvre une
+  /** Balayage (Frappe Mortelle, LDB 14 l.9) : enchaîne l'attaque sur une cible adjacente (ouvre une
    *  modale d'attaque standard) ; borné à BCC enchaînements. */
   cleaveAttack: (targetId: string) => void;
   /** Termine le balayage en cours (le joueur renonce aux enchaînements restants). */

@@ -201,7 +201,7 @@
   {
     "id": "combat-ranged-melee-penalty",
     "label": "Tir dans un corps à corps",
-    "ref": "LDB 14 l.133",
+    "ref": "LDB 14 l.112-116",
     "group": "Combat",
     "kind": "flag",
     "default": true,

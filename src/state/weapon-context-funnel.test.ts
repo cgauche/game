@@ -71,7 +71,7 @@ describe('attackerFumbled/defenderFumbled — escalade de Maladresse par Doigts 
     const miss = { attackerDetail: { roll: 41, success: false } } as unknown as AttackResult;
     expect(attackerFumbled(miss, weaponRight, atk)).toBe(false);
   });
-  it('même escalade côté DÉFENSEUR (parade ratée, Test opposé, LDB 14 l.48-51)', () => {
+  it('même escalade côté DÉFENSEUR (parade ratée, Test opposé, LDB 14 l.13)', () => {
     const def = mk({ traumas: [fingers('brasD', 3)] });
     const miss = { defenderDetail: { roll: 53, success: false } } as unknown as AttackResult; // unité 3 ≤ N=3, pas un double
     expect(defenderFumbled(miss, weaponRight, def)).toBe(true);

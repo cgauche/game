@@ -43,7 +43,7 @@ export const schema = z.array(
     stacksReducedBy: z.string().optional(),
     restrictsAction: z.boolean().optional(),
     recover: recoverSchema.optional(),
-    /** `EtatData.persistsAfterCombat` (`src/data/index.ts`) — LDB 16 l.57/70/77/91/107/116, LDB 62 l.250. */
+    /** `EtatData.persistsAfterCombat` (`src/data/index.ts`) — LDB 16 l.56/70/77/91/107/116, LDB 62 l.250. */
     persistsAfterCombat: z.boolean().optional(),
     /** Arbitrage NON-verbatim (`EtatData.maison`, `src/data/index.ts`) — même patron que
      *  `naval-traits.json`/`creatures.json`. */

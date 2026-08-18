@@ -7,7 +7,7 @@ import type { Weapon } from './types';
 const sword: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 const pistol: Weapon = { label: 'Pistolet', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [{ id: 'pistolet' }], subType: 'Poudre noire', range: 20 };
 
-describe('isFumble (LDB 14 l.53)', () => {
+describe('isFumble (LDB 14 l.19)', () => {
   it('échec + double = Maladresse', () => {
     expect(isFumble(33, false)).toBe(true);
     expect(isFumble(100, false)).toBe(true); // 00

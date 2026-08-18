@@ -289,7 +289,7 @@ function parryWeaponOf(defender: Combatant, pd: PendingDefense): Weapon | undefi
   return (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined) ?? defender.weapons[0];
 }
 
-/** Maladresse du DÉFENSEUR (sa défense ratée sur un double, LDB 14 l.48-51) → étape Oups! de SA cascade
+/** Maladresse du DÉFENSEUR (sa défense ratée sur un double, LDB 14 l.13) → étape Oups! de SA cascade
  *  combat (donnée SUR l'étape), SANS déclencher la Frénésie de l'attaquant. SOURCE UNIQUE des DEUX chemins
  *  de défense (réactif ET interposé) : même garde, même ordre (APRÈS l'application de l'attaque). Le droit
  *  à l'étape suit le SURFAÇAGE de la défense (`defenseSurfaced` — celui qui a JOUÉ la défense joue son
@@ -2287,7 +2287,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || !pa || !pa.result) return;
       const attacker = inBattleId(battle, pa.attackerId);
       const target = inBattleId(battle, pa.targetId);
-      // Tir dévié dans la mêlée (LDB 14 l.136) : la touche est appliquée à l'allié intercalé, pas à la cible.
+      // Tir dévié dans la mêlée (LDB 14 l.116) : la touche est appliquée à l'allié intercalé, pas à la cible.
       const victim = pa.victimId ? inBattleId(battle, pa.victimId) ?? target : target;
       const wasChain = !!pa.cleave; // cette attaque faisait-elle partie d'un balayage en cours ?
       const dualBefore = get().pendingDualStrike; // données de la 1ʳᵉ frappe (présentes quand on confirme la 2ᵉ)
@@ -2317,7 +2317,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // SA fenêtre de défense AVANT toute application, dans la cascade d'attaque EN COURS (le curseur passe
         // sur l'étape 'defense' ci-dessous). `defenseConfirm` rend la main ICI avec le résultat opposé
         // (`pa.defended`) → un seul chemin d'application. Un tir DÉVIÉ (victime ≠ cible) et le pilonnage de
-        // zone n'opposent personne (LDB 14 l.136) : gardes portées par `surfacedDefensePending`, prédicat
+        // zone n'opposent personne (LDB 14 l.116) : gardes portées par `surfacedDefensePending`, prédicat
         // PARTAGÉ avec l'affichage de la modale d'attaque (#1004) — jamais une 2ᵉ dérivation ici.
         if (openSurfacedDefense(get, set, attacker, target, weapon, pa)) {
           // Curseur : étape 'attack' (résolue) → étape 'defense' que la fenêtre vient d'appendre. Sans
@@ -2349,14 +2349,14 @@ export function createCombatSlice(get: Get, set: Set) {
         // Maniement de deux armes (LDB 10 l.767-773) : l'Avantage des deux frappes est différé — accordé seulement
         // si LES DEUX touchent (cf. blocs isDualSecond ci-dessous).
         applyAttackResult(get, set, attacker, victim, weapon, pa.result, undefined, undefined, isDualMain || isDualSecond, pa.grapple); // pa.grapple = Empoignade (LDB 14 l.159) : pose l'Empoignade au lieu des Dégâts
-        // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
+        // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.19) ; elle interrompt le balayage.
         if (controlsCombatant(get(), attacker) && attackerFumbled(pa.result, weapon, attacker)) {
           // Maladresse = étape de la cascade d'attaque (comme le Critique) ; advanceCombatJet l'enchaîne au bout.
           // La donnée (arme/résultat) vit SUR l'étape — source unique, plus de `pendingFumble` à désynchroniser.
           pushHost(get, set, { id: `cons-fumble-${attacker.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: attacker.id, fumble: { weapon, result: null } });
           set({ pendingCleave: null });
         } else if (!isDualMain && !isDualSecond && !pa.freeKind) {
-          // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand
+          // Frappe Mortelle (LDB 14 l.9 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand
           // (jamais en mode dual ni sur une Attaque gratuite de manœuvre).
           maybeHeroCleave(get, set, attacker, victim, pa.result, wasChain);
         }
@@ -2404,7 +2404,7 @@ export function createCombatSlice(get: Get, set: Set) {
         if (attacker.kind === 'hero' && pa.result?.hit && !wasChain && !isDualSecond && !pa.freeKind) {
           resolveFreeAttacks(get, set, attacker, 'onHit', victim);
         }
-        // Tir IMMOBILE (LDB 14 l.101) : le héros a renoncé à bouger pour annuler le −10 → on consomme son
+        // Tir IMMOBILE (LDB 14 l.70) : le héros a renoncé à bouger pour annuler le −10 → on consomme son
         // Mouvement du Tour (il ne pourra plus se déplacer après ce tir).
         if (pa.heldGround && weapon.type === 'ranged') {
           const b2 = get().battle;
@@ -2444,7 +2444,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const attacker = inBattleId(battle, pc.attackerId);
       const target = inBattleId(battle, targetId);
       if (!attacker || !target) return;
-      if (pc.count >= bonus(effectiveChar(attacker, 'capacite-de-combat'))) return; // borné à BCC enchaînements (LDB 14 l.12)
+      if (pc.count >= bonus(effectiveChar(attacker, 'capacite-de-combat'))) return; // borné à BCC enchaînements (LDB 14 l.9)
       if (!cleaveTargets(battle, attacker, pc.hitIds).some((t) => t.id === targetId)) return; // cible invalide (non adjacente / déjà frappée)
       set({ pendingAttack: { attackerId: attacker.id, targetId, location: null, result: null, cleave: true } });
     },

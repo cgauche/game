@@ -605,7 +605,7 @@ interface RollLineBase {
    *  l'écart en ligne NOMMÉE « plafond Difficultés » liée à sa fiche de règle. Sans ce mode, un
    *  appelant qui plafonnait sa cible à la main laissait l'amputation en chip « autres ». Réservé aux
    *  jets de COMBAT : c'est un ARBITRAGE maison (`LDB 12` n'énonce aucune règle de cumul et `l.137`
-   *  est permissif hors combat ; la combinaison vit au chapitre Combat, `LDB 14 l.46` et `l.93`). */
+   *  est permissif hors combat ; la combinaison vit au chapitre Combat, `LDB 14 l.48` et `l.95`). */
   plafond?: 'difficultes';
 }
 

@@ -81,7 +81,7 @@ export interface TavernGame {
   options?: {
     skill?: string; spec?: string; char?: CharKey; difficulty: Difficulty;
     /** Ce Test est-il un Test de COMBAT ? — c'est lui qui décide si l'Avantage s'y applique : « +10 à
-     *  un Test de Combat ou de Psychologie approprié » (`LDB 14 l.30`). Middenball l.121 renvoie aux
+     *  un Test de Combat ou de Psychologie approprié » (`LDB 14 l.215`). Middenball l.121 renvoie aux
      *  « règles habituelles relatives à l'Avantage » : Corps à corps (Bagarre) en est un, Athlétisme
      *  non. DÉCLARÉ par l'entrée (jamais déduit d'un id de Compétence au code). */
     combatTest?: boolean;

@@ -454,7 +454,7 @@ export interface AttackResult {
   attackerDetail?: RollBreakdown;
   /** Détail du jet de défense en Test opposé (cible, d100, DR) — absent si non opposé. */
   defenderDetail?: RollBreakdown;
-  /** Frappe Mortelle (LDB 14 l.12 / 85 l.299) : touche de mêlée réussie d'un attaquant plus grand
+  /** Frappe Mortelle (LDB 14 l.9 / 85 l.299) : touche de mêlée réussie d'un attaquant plus grand
    *  → balayage possible vers un autre adversaire à portée. Orchestré par le store/combatFlow. */
   cleave?: boolean;
   /** Arme avec laquelle le défenseur a PARÉ (mode parade uniquement) — sert aux Critiques du Test
@@ -696,8 +696,8 @@ export function psychDRAdjust(attacker: Combatant, target: Combatant | null): nu
 /**
  * Modificateurs étiquetés d'un Test d'attaque (source UNIQUE : le moteur les somme pour le jet,
  * l'UI les affiche). Toutes les valeurs sont sourcées dans la table des Difficultés de Combat
- * (`14 - _GoBack.md`) : Avantage ×10 (LDB Dépl.), portée (l.82-118), Viser +20 (l.90), Précise +10
- * (Armes l.304), Localisation visée −20 (LDB 14 l.73), Cible vulnérable À Terre/Surpris +20 (l.93).
+ * (`14 - _GoBack.md`) : Avantage ×10 (LDB 14 l.215), portée (l.54-84), Viser +20 (l.61), Précise +10
+ * (Armes l.304), Localisation visée −20 (LDB 14 l.73), Cible vulnérable À Terre/Surpris +20 (l.64).
  */
 /** Lignes de mod des ÉTATS d'un combattant — SOURCE UNIQUE des trois producteurs (attaque, défense,
  *  Test de combat « brut »). Chaque composante de la pénalité arrive NOMMÉE et liée au Codex
@@ -738,7 +738,7 @@ export function attackModifiers(
     // Salve (Aux Armes p.126) : chaque tir SUPPLÉMENTAIRE dans le Round subit −10 cumulatif.
     const salvoShots = hasQuality(weapon, 'salve') ? (attacker.shotsThisTurn ?? 0) : 0;
     if (salvoShots > 0) out.push({ label: 'Salve (tir suivant)', value: -10 * salvoShots, famille: 'jet', ref: RULE_REF.salve });
-    // Taille de la CIBLE au tir (LDB 14 l.151-170) — valeur absolue −30..+60. Une Nuée ignore la
+    // Taille de la CIBLE au tir (LDB 14 l.118-131) — valeur absolue −30..+60. Une Nuée ignore la
     // Taille et donne +40 au tir contre elle (LDB 85 l.253).
     if (target?.swarm) out.push({ label: 'Nuée (tir)', value: 40, famille: 'circonstance', ref: RULE_REF.nuee });
     else if (target && !ignoresSizeRangedMods(attacker)) { // Tireur d'élite (LDB 10) : ignore la Taille de la cible
@@ -884,7 +884,7 @@ function defenseTestChar(mode: DefenseMode): CharKey | null {
  *  (Empoignade, Au Contact, Désengagement) affiche ainsi ses modificateurs au lieu d'un +N anonyme.
  *  `ck` = la Caractéristique RÉELLE du Test brut (Empoignade → Force, Désengagement/coup dans le dos →
  *  CC) : la météo n'arrive que si elle est physique (LISTE maison `physicalTestChars`). */
-/** LA ligne d'AVANTAGE d'un porteur (`LDB 14 l.30` : +10 par point à un Test approprié), ou `null`
+/** LA ligne d'AVANTAGE d'un porteur (`LDB 14 l.215` : +10 par point à un Test approprié), ou `null`
  *  sans Avantage — SOURCE UNIQUE de sa mise en ligne, partagée par les Tests de combat « bruts »
  *  (`baseTestModLines`, ci-dessous) et par tout Test HORS arène que la règle dit « approprié »
  *  (Middenball NADJ 16 l.119 : « en utilisant les règles habituelles relatives à l'Avantage »).
@@ -1274,8 +1274,8 @@ export function belowMinRangeBand(distanceTiles: number, rangeMeters: number, mi
  * est un Test de Projectiles non opposé). Trois exceptions, indépendantes (le défenseur choisit parmi
  * les modes obtenus) :
  *  - Parade : bouclier/arme **Protectrice 2+**, projectile en Ligne de Vue (LDB 62 l.307) ;
- *  - Parade : tireur **Engagé** avec sa cible (tir au contact) → « n'importe quelle Corps à corps » (LDB 14 l.70) ;
- *  - Esquive : tir à **Bout Portant** (LDB 14 l.62).
+ *  - Parade : tireur **Engagé** avec sa cible (tir au contact) → « n'importe quelle Corps à corps » (LDB 14 l.44) ;
+ *  - Esquive : tir à **Bout Portant** (LDB 14 l.40).
  * `[]` = tir non défendable → résolution non opposée habituelle.
  */
 export function rangedDefenseModes(

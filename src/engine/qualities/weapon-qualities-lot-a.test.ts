@@ -152,7 +152,7 @@ describe('Perturbante / Piège-lame — prédicats', () => {
   });
 });
 
-describe('finishMelee — parryWeapon exposé pour les Critiques opposés (LDB 14 l.7)', () => {
+describe('finishMelee — parryWeapon exposé pour les Critiques opposés (LDB 14 l.3)', () => {
   it('le résultat porte l’arme de parade en mode parade', () => {
     const a = fighter({ id: 'a' });
     const d = fighter({ id: 'd' });

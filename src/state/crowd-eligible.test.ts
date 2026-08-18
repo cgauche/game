@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { crowdEligible } from './combatFlow';
 
-/** « Tirer dans le tas » (LDB 14 l.136/146) : la touche au hasard porte sur TOUT le monde serré
+/** « Tirer dans le tas » (LDB 14 l.106) : la touche au hasard porte sur TOUT le monde serré
  *  au contact de la cible — les DEUX camps (un allié peut être touché : tir fratricide), le tireur exclu. */
 const C = (id: string, x: number, y: number, kind: string) =>
   ({ id, pos: { x, y }, kind, wounds: { current: 5, max: 5 }, conditions: [] } as any);

@@ -351,16 +351,16 @@ export interface PendingAttack {
    *  Annule AVANT tout jet (`result === null`). Une fois le dé lancé, la charge est engagée (RAW). Capturé à
    *  la déclaration de charge (targetingModes), rejoué par `attackCancel`. */
   chargeUndo?: { pos: Record<string, Pt>; facing: Record<string, Dir8>; movedPreAction: boolean; movementUsed: number; advGained: number; gainedAdvBefore: boolean; chargedBefore: boolean };
-  /** Victime réelle si le tir a dévié dans la mêlée vers un allié (LDB 14 l.136) — sinon = targetId. */
+  /** Victime réelle si le tir a dévié dans la mêlée vers un allié (LDB 14 l.116) — sinon = targetId. */
   victimId?: string;
   /** Attaque d'enchaînement d'un balayage (Frappe Mortelle) : son acquittement fait avancer le `pendingCleave`. */
   cleave?: boolean;
-  /** « Tirer dans le tas » (LDB 14 l.136/146) : option de tir — bonus selon la taille du groupe, mais
+  /** « Tirer dans le tas » (LDB 14 l.106) : option de tir — bonus selon la taille du groupe, mais
    *  un combattant au contact de la cible (les DEUX camps, tir fratricide possible) est touché au hasard ;
    *  0 DR si le succès est dû au seul bonus. */
   intoCrowd?: boolean;
   /** Tir IMMOBILE (option de tir) : le héros décide de ne pas bouger ce Tour → annule la pénalité −10 « Tir
-   *  en bougeant » (LDB 14 l.101) MAIS consomme son Mouvement (cf. attackConfirm). Proposé seulement s'il
+   *  en bougeant » (LDB 14 l.70) MAIS consomme son Mouvement (cf. attackConfirm). Proposé seulement s'il
    *  n'a pas déjà bougé. */
   heldGround?: boolean;
   /** Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) : le joueur choisit de tirer sans la
@@ -445,7 +445,7 @@ export interface PendingSiegeAim {
    *  Test de tir gère l'éloignement) ; seule la Ligne de Vue au point est requise (`placedZoneValidAt`). */
   rangeTiles: number | null;
 }
-/** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.12 / 85 l.299) : après une
+/** Balayage en attente (Frappe Mortelle d'un HÉROS plus grand, LDB 14 l.9 / 85 l.299) : après une
  *  touche de mêlée, le joueur enchaîne sur d'autres adversaires adjacents (jusqu'à BCC), via le flux
  *  `pendingAttack` standard. `count` = enchaînements déjà résolus ; `hitIds` = cibles déjà frappées ce balayage. */
 export interface PendingCleave {
@@ -846,7 +846,7 @@ export interface PendingRenounce {
   align?: import('../engine/corruption').ChaosAlign;
 }
 /** Piège-lame (LDB 62 l.278-280) : le HÉROS défenseur a obtenu un Critique en parant avec une arme
- *  Piège-lame face à une arme à lame — il choisit entre le Coup Critique normal (LDB 14 l.7) et
+ *  Piège-lame face à une arme à lame — il choisit entre le Coup Critique normal (LDB 14 l.3) et
  *  PIÉGER la lame (Test opposé de Force + DR de la défense ; victoire → désarme, Stupéfiant → brise
  *  sauf Incassable, échec → l'adversaire se libère). */
 export interface PendingBladeTrap {
@@ -876,7 +876,7 @@ export interface PendingDefense {
    *  à corps (Intimidation/Dressage), figé au choix de l'option. Sa valeur de Test est re-dérivée à
    *  l'affichage/résolution (`skillBaseValue`) — le gate `fear` n'est vérifié qu'à l'OFFRE de l'option. */
   substituteSkillId?: string;
-  /** TIR défendu (RAW LDB 14 l.62/70, 62 l.307) : modes de réaction AUTORISÉS — limite le segmented
+  /** TIR défendu (RAW LDB 14 l.40/44, 62 l.307) : modes de réaction AUTORISÉS — limite le segmented
    *  control de la modale (ex. Esquive seule à Bout Portant, Parade seule avec bouclier Protectrice 2+).
    *  Absent = mêlée (Parade/Esquive libres). `distanceTiles` sert au breakdown Projectiles (finishRanged). */
   modes?: ('parade' | 'esquive')[];
@@ -915,7 +915,7 @@ export interface PendingDefense {
    *  `defenseConfirm` la rend à `attackConfirm` avec le résultat OPPOSÉ — le chemin d'application de
    *  l'attaque (balayage, gratuites onHit, Maladresse, tir immobile…) reste UNIQUE. */
   pa?: PendingAttack;
-  /** Chaîne de BALAYAGE (Frappe Mortelle/Taille, LDB 14 l.9-12 / 85 l.299) suspendue par CETTE fenêtre :
+  /** Chaîne de BALAYAGE (Frappe Mortelle/Taille, LDB 14 l.9 / 85 l.299) suspendue par CETTE fenêtre :
    *  cibles déjà frappées + enchaînements consommés. `defenseConfirm` la reprend (`resumeCleaveChain`). */
   cleaveChain?: { hitIds: string[]; n: number; bcc: number; fm: boolean };
 }

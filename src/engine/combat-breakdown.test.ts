@@ -71,7 +71,7 @@ describe('parade : pénalité de main secondaire + exception Parade/Défensive (
   });
 });
 
-describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151-170 / 85 l.301-303)', () => {
+describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.118-131 / 85 l.301-303)', () => {
   // bow portée 60, distanceTiles 28 → 56 m ≤ 60 = Moyenne (+0, pas de ligne de portée) : isole la Taille.
   it('tir : mod de Taille de la cible (Grande → +20)', () => {
     const mods = attackModifiers(mk(), mk({ size: 'grande' }), bow, { kind: 'ranged', distanceTiles: 28, env: [] });
@@ -188,7 +188,7 @@ describe('Taille — Dégâts ×N + Atouts conférés (LDB 85 l.360-361)', () =>
   });
 });
 
-describe('resolveStrayRangedHit — tir dévié sur un allié (LDB 14 l.136)', () => {
+describe('resolveStrayRangedHit — tir dévié sur un allié (LDB 14 l.116)', () => {
   it('touche automatiquement la victime depuis le jet d’origine (sans relancer)', () => {
     const att = mk({ label: 'Tireur' });
     const ally = mk({ label: 'Allié', wounds: { current: 10, max: 10 } });
@@ -475,7 +475,7 @@ describe('PIÉTINEMENT et TIR DÉVIÉ : la ligne s’explique aussi (#1153 L4)',
   it('tir DÉVIÉ : la cible chargée porte sa ligne nommée, jamais un `mods: []` muet', () => {
     const a = mk({ id: 'a', weapons: [bow] });
     const origine = resolveRanged(a, mk({ id: 'c' }), bow, makeRNG(9), 80).attackerDetail!; // bande Extrême (−30)
-    // Le tir dévie vers l'allié intercalé : cible SANS le −20 du tir dans la mêlée (LDB 14 l.136).
+    // Le tir dévie vers l'allié intercalé : cible SANS le −20 du tir dans la mêlée (LDB 14 l.116).
     const d = resolveStrayRangedHit(a, mk({ id: 'x2' }), bow, origine.roll, origine.target + 20, origine).attackerDetail!;
     expect(d.difficulty, 'même jet, même Difficulté').toBe(origine.difficulty);
     expect((d.mods ?? []).map((m) => `${m.label}:${m.value}`)).toContain('Tir dévié:20');

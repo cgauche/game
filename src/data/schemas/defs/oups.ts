@@ -9,7 +9,7 @@ export const file = 'oups.json';
 
 export const schema = z.array(
   z.union([
-    // Bandes d100 du Tableau des Oups ! (LDB 14 l.21-34).
+    // Bandes d100 du Tableau des Oups ! (LDB 14 l.21-30).
     z.strictObject({
       id: z.string(),
       min: z.number(),
@@ -26,7 +26,7 @@ export const schema = z.array(
       label: z.string(),
       source: sourceRefSchema.optional(),
     }),
-    // Incident de Tir — hors table d100 (arme à Poudre noire + jet pair, LDB 14 l.56-57).
+    // Incident de Tir — hors table d100 (arme à Poudre noire + jet pair, LDB 14 l.34).
     z.strictObject({
       id: z.string(),
       kind: z.literal('misfire'),

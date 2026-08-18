@@ -475,7 +475,7 @@ function difficulteOf(opt: TavernOption): Difficulty {
 }
 
 /**
- * L'AVANTAGE d'un camp, en ligne NOMMÉE sur la cible (`LDB 14 l.30` : +10 par point à un Test de
+ * L'AVANTAGE d'un camp, en ligne NOMMÉE sur la cible (`LDB 14 l.215` : +10 par point à un Test de
  * Combat ou de Psychologie APPROPRIÉ ; Middenball l.121 : « en utilisant les règles habituelles
  * relatives à l'Avantage »). Deux garde-fous, tous deux DÉCLARÉS :
  *  · l'option dit si son Test est un Test de Combat (`combatTest`) — Bagarre oui, Athlétisme non ;

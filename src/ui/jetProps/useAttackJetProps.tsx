@@ -82,10 +82,10 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     && attacker.weapons.some((w) => w.hand === 'main' && w.type === 'melee' && (w.hands ?? 1) === 1)
     && attacker.weapons.some((w) => w.hand === 'off' && w.type === 'melee' && (w.hands ?? 1) === 1)
     && !pa.cleave && !pa.dualSecond;
-  // LDB 14 l.136/146
+  // LDB 14 l.106
   const crowd = !res && weapon?.type === 'ranged' ? crowdEligible(battle, attacker, target) : [];
   const cm = crowdMod(crowd.length);
-  // LDB 14 l.101
+  // LDB 14 l.70
   const canHoldGround = !res && !pa.interrupt && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
   // ADE II 02 l.677
   const weaponItem = weapon ? attacker.items?.find((it) => it.uid === weapon.uid) : undefined;

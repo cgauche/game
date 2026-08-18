@@ -912,7 +912,7 @@
 | 09 | CHAPITRE 7 - Compagnons de voyage | 📖 | catalogue (catalogue-*.md) |
 | 10 | CHAPITRE 8 - LES RIVERAINS | ➖ hors-règle | |
 | 11 | CHAPITRE 9 - Le service des tours impériales à signaux | ➖ hors-règle | |
-| 12 | CHAPITRE 10 - Personnalisation | ✅ | 9 (reconciliation.md ×7) |
+| 12 | CHAPITRE 10 - Personnalisation | ✅ | 10 (reconciliation.md ×8) |
 | 13 | CHAPITRE 11 - Règles du commerce | 📖 | catalogue (catalogue-*.md) |
 | 14 | CHAPITRE 12 - Naufrageurs, contrebandiers et pirates | 📖 | catalogue (catalogue-*.md) |
 | 15 | CHAPITRE 13 - Bestiaire fluvial | ✅ | 14 (combat.md ×14) |

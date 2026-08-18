@@ -41,7 +41,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `speckle` | 6 | `src/gameIso/authoring/detailSvg.ts:414` |
 | `tufts` | 9 | `src/gameIso/authoring/detailSvg.ts:409` |
 | `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:134` |
-| `seedScope` | 1 | `src/gameIso/backends/webgl/groundAccents.ts:68` |
+| `seedScope` | 1 | `src/gameIso/backends/webgl/groundAccents.ts:70` |
 
 ### `DiceSpec` (src/engine/dice.ts)
 

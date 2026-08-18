@@ -827,8 +827,8 @@ describe('Boucle de jeu (store)', () => {
     vi.advanceTimersByTime(2000);
     st = useGame.getState();
     expect(st.pendingDefense).not.toBeNull();
-    // +20 Combat monté (cible plus petite que la monture, l.217) + 20 Surnombre (la monture est un
-    // combattant ennemi actif au contact → « 2 contre 1 », LDB 14 l.92 — même décompte que resolveAttack).
+    // +20 Combat monté (cible plus petite que la monture, l.180) + 20 Surnombre (la monture est un
+    // combattant ennemi actif au contact → « 2 contre 1 », LDB 14 l.110 — même décompte que resolveAttack).
     expect(st.pendingDefense!.atk.target).toBe(combatValue(E, 'melee', E.weapons[0]) + 40);
   });
 

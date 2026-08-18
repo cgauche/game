@@ -12,7 +12,7 @@ export type OupsKind =
   | 'loseMovement' | 'loseAction' | 'trauma' | 'hitAlly';
 
 export interface OupsEntry { id: string; min: number; max: number; kind: OupsKind; label: string; }
-/** Incident de Tir (LDB 14 l.56-57) — HORS table d100 : déclenché par arme à Poudre noire + jet PAIR. */
+/** Incident de Tir (LDB 14 l.34) — HORS table d100 : déclenché par arme à Poudre noire + jet PAIR. */
 export interface OupsMisfireEntry { id: string; kind: 'misfire'; label: string; }
 export type OupsRow = OupsEntry | OupsMisfireEntry;
 

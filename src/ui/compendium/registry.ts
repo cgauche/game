@@ -1149,7 +1149,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       return [{
         id: 'sizes', label: 'Tailles — barres par catégorie',
         sections: sections(
-          table('Modificateur d’à-toucher au TIR selon la Taille de la CIBLE (LDB 14 l.151-170)', s.rangedMod, (n) => (n > 0 ? `+${n}` : String(n))),
+          table('Modificateur d’à-toucher au TIR selon la Taille de la CIBLE (LDB 14 l.118-131)', s.rangedMod, (n) => (n > 0 ? `+${n}` : String(n))),
           table('Encombrement occupé à bord selon la Taille (MDG 12 l.25-33)', s.shipboardEnc, (n) => `${n} Enc`),
           table('Empreinte de grille par défaut — côté N de N×N (LDB 15 l.12 dit « 2, 4 ou même plus » sans barème : valeurs MAISON)', s.footprintSide, (n) => `${n}×${n} case(s)`),
         ),

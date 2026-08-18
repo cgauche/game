@@ -38,7 +38,7 @@ describe('tilesBetween — cases strictement entre deux points', () => {
   });
 });
 
-describe('coverModifier — valeurs canon (LDB 14 l.103/114/120)', () => {
+describe('coverModifier — valeurs canon (LDB 14 l.72/81/86)', () => {
   it('imparfaite -10, moyenne -20, totale -30, none 0', () => {
     expect(coverModifier('none')).toBe(0);
     expect(coverModifier('imparfaite')).toBe(-10);

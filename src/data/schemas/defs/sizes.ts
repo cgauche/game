@@ -1,5 +1,5 @@
 /**
- * Schéma de `sizes.json` — modificateur de tir selon la Taille de la CIBLE (LDB 14 l.151-170),
+ * Schéma de `sizes.json` — modificateur de tir selon la Taille de la CIBLE (LDB 14 l.118-131),
  * consommé par `src/engine/size.ts` (`SIZE_RANGED_MOD`, clé = `SizeCategory`) ; Enc qu'un être
  * occupe à bord selon sa Taille (MDG 12 l.25-33), consommé par `SIZE_SHIPBOARD_ENC` ; côté N de
  * l'empreinte de grille par défaut d'une créature de cette Taille (LDB 15 l.12 ne donne que

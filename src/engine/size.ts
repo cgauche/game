@@ -58,7 +58,7 @@ export const SIZE_LABEL: Record<SizeCategory, string> = {
   monstrueuse: 'Monstrueuse',
 };
 
-/** Taille effective (défaut Moyenne : standard implicite des espèces jouables, LDB 14 l.163). */
+/** Taille effective (défaut Moyenne : standard implicite des espèces jouables, LDB 14 l.128). */
 export const effectiveSize = (size?: SizeCategory): SizeCategory => size ?? 'moyenne';
 
 /** Écart de catégories attaquant − défenseur (> 0 si l'attaquant est plus grand). */

@@ -698,7 +698,7 @@ export interface Scene {
    *  l'environnement (LDB 48 l.690 : la Vie/Ghyran gagne +10 à Incanter/Focaliser en zone rurale ou
    *  sauvage). Absent = non spécifié (aucun bonus d'environnement). */
   environment?: 'rural' | 'urbain' | 'sauvage';
-  /** Météo (LDB 14 l.94-116) — orthogonal à `ambiance`. Défaut 'clair'. Pénalise le combat
+  /** Météo (LDB 14 l.68-82) — orthogonal à `ambiance`. Défaut 'clair'. Pénalise le combat
    *  (brouillard/tempête/neige) ; lu par `sceneCombatModifiers`. */
   weather?: 'clair' | 'pluie' | 'brouillard' | 'neige' | 'tempete';
   /** Niveau de lumière ambiante (brouillard de guerre) : `id` d'un `lightLevels` (jour/nuit/ténèbres…)

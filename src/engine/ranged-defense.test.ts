@@ -37,11 +37,11 @@ describe('rangedDefenseModes — RAW défense contre les attaques à distance', 
     expect(rangedDefenseModes(atk(), def({ weapons: [shield(2)] }), w, 5, false)).toEqual([]);
   });
 
-  it('Bout Portant → Esquive (LDB 14 l.62)', () => {
+  it('Bout Portant → Esquive (LDB 14 l.40)', () => {
     expect(rangedDefenseModes(atk(), def(), w, 1, true)).toEqual(['esquive']);
   });
 
-  it('tireur Engagé → Parade « n’importe quelle Corps à corps » (LDB 14 l.70)', () => {
+  it('tireur Engagé → Parade « n’importe quelle Corps à corps » (LDB 14 l.44)', () => {
     expect(rangedDefenseModes(atk({ engagedWith: ['d'] }), def(), w, 5, true)).toEqual(['parade']);
   });
 

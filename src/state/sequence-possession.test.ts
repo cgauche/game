@@ -224,7 +224,7 @@ describe('#1262 lot 5c — la Déviation Critique appartient à la VICTIME (LDB 
     expect(seatOwns(g(), 1, cible.id), 'la décision est au siège qui tient la victime').toBe(true);
   });
 
-  it('JUMEAU `applyOpposedCritical` (LDB 14 l.7) : même offre, même possession — les deux chemins s’alignent', () => {
+  it('JUMEAU `applyOpposedCritical` (LDB 14 l.3) : même offre, même possession — les deux chemins s’alignent', () => {
     const { H, E } = setupCoop({ heros: 2, invites: [1] });
     const cible = g().battle!.combatants.find((c) => c.id === H[1].id)!;
     blinde(cible);

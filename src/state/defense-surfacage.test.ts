@@ -257,7 +257,7 @@ describe('#989 R4 — Maladresse du défenseur : UN helper, MÊME ordre (après 
     return { hero, res, confirm: () => g().defenseConfirm(), state: g };
   }
 
-  // Graine DÉTERMINISTE : défense RATÉE sur un double (Maladresse, LDB 14 l.48-51) ET touche qui blesse.
+  // Graine DÉTERMINISTE : défense RATÉE sur un double (Maladresse, LDB 14 l.13) ET touche qui blesse.
   let seed = 0;
   for (let sd = 1; sd <= 800 && !seed; sd++) {
     const { hero, res } = playToFumble(sd, 18);

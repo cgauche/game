@@ -79,7 +79,7 @@ export const schema = z.array(
       char: charKeySchema.optional(),
       difficulty: difficultySchema,
       /** Test de COMBAT : l'Avantage s'y applique (« +10 à un Test de Combat ou de Psychologie
-       *  approprié », LDB 14 l.30) — consommé par `src/state/tavernFlow.ts`. */
+       *  approprié », LDB 14 l.215) — consommé par `src/state/tavernFlow.ts`. */
       combatTest: z.boolean().optional(),
     })).optional(),
     /** Formule de score d'un CAMP (`registerSequenceScore` : `sum` pour une équipe, l.121). */

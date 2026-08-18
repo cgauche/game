@@ -26,7 +26,7 @@ describe('size — modèle de Taille (LDB 85 l.279-280 ; 14 l.151-170)', () => {
     expect(SIZE_RANGED_MOD.grande).toBe(20);
     expect(SIZE_RANGED_MOD.monstrueuse).toBe(60);
   });
-  it('Taille effective par défaut = Moyenne (standard implicite, LDB 14 l.163)', () => {
+  it('Taille effective par défaut = Moyenne (standard implicite, LDB 14 l.128)', () => {
     expect(effectiveSize(undefined)).toBe('moyenne');
     expect(effectiveSize('grande')).toBe('grande');
   });

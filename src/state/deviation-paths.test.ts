@@ -123,7 +123,7 @@ describe('magicDeviationEligible — éligibilité d\'un Projectile (LDB 63 l.30
 });
 
 // ── Chemin opposé : HÉROS blindé → étape `self` (Dévier/Subir) ─────────────────
-describe('Test opposé — HÉROS blindé : étape de déviation `self` (LDB 14 l.7 + 63 l.30)', () => {
+describe('Test opposé — HÉROS blindé : étape de déviation `self` (LDB 14 l.3 + 63 l.30)', () => {
   beforeEach(() => seedBattleRng(7));
   afterEach(() => resetRule('combat-critical-deflect'));
 

@@ -112,7 +112,7 @@ describe('combat-critical-deflect — offre de Déviation Critique (LDB 63 l.63)
     expect(ee.criticalWounds ?? 0).toBe(1);   // Critique subi
   });
 
-  // Test OPPOSÉ (LDB 14 l.7) : la déviation auto de l'ENNEMI y était jadis INLINE et NON rule-gated.
+  // Test OPPOSÉ (LDB 14 l.3) : la déviation auto de l'ENNEMI y était jadis INLINE et NON rule-gated.
   // Mutualisée via `enemyAutoDeviate`, elle respecte désormais la règle (bug rule-gate corrigé). Armure
   // uniforme sur toutes les localisations → la loc 1d100 frais du Critique sec porte toujours de la PA.
   const armoured = { tete: 3, brasG: 3, brasD: 3, corps: 3, jambeG: 3, jambeD: 3 };
@@ -138,8 +138,8 @@ describe('combat-critical-deflect — offre de Déviation Critique (LDB 63 l.63)
   });
 });
 
-// ── Règle 3 : « Tir dans un corps à corps » (combat-ranged-melee-penalty, LDB 14 l.133) ──
-describe('combat-ranged-melee-penalty — −20 + tir égaré (LDB 14 l.133)', () => {
+// ── Règle 3 : « Tir dans un corps à corps » (combat-ranged-melee-penalty, LDB 14 l.112-116) ──
+describe('combat-ranged-melee-penalty — −20 + tir égaré (LDB 14 l.112-116)', () => {
   beforeEach(() => { seedBattleRng(1); });
   afterEach(() => resetRule('combat-ranged-melee-penalty'));
 

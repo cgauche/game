@@ -1,5 +1,5 @@
 /**
- * Schéma de `grapple.json` — règle d'Empoignade (LDB 14 l.155-169, `Source/…/14 - _GoBack.md` — le
+ * Schéma de `grapple.json` — règle d'Empoignade (LDB 14 l.159-169, `Source/…/14 - _GoBack.md` — le
  * fichier porte un titre Marker cassé mais SON CONTENU est bien le chapitre 14, cf. `data-folio="163"`
  * juste après le passage ; terme absent de `13 - Combat.md`, vérifié #309 phase 3) en donnée. Reflet
  * de `GrappleRule`

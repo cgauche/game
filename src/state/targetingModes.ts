@@ -327,7 +327,7 @@ function overcastAffordance(get: Get, _active: Combatant, target: Combatant): Ho
   return { kind: 'ok', line: 'dashed', title: spell.label, targetName: target.label, skill: 'Langue (Magick)', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
-/** Mode FRAPPE MORTELLE (cleave, LDB 14 l.12) : enchaînements adjacents non encore frappés. */
+/** Mode FRAPPE MORTELLE (cleave, LDB 14 l.9) : enchaînements adjacents non encore frappés. */
 function cleaveAffordance(get: Get, _active: Combatant, target: Combatant): HoverTargeting {
   const s = get();
   const battle = s.battle!;

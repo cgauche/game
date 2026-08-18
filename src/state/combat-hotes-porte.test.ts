@@ -227,7 +227,7 @@ describe('#1262 lot 5a — INCANTATION : `groupOwner` ne se pose QUE par le mint
 
 describe('#1262 lot 5a — MALADRESSE : le seul hôte dont la donnée vit sur l’étape', () => {
   it('reprise après suspension : l’étape `fumble` est mintée avec sa charge (aucun pending)', () => {
-    // Graine DÉTERMINISTE d'une défense RATÉE sur un double (LDB 14 l.48-51), jouée sur le chemin réel.
+    // Graine DÉTERMINISTE d'une défense RATÉE sur un double (LDB 14 l.13), jouée sur le chemin réel.
     let seed = 0;
     for (let sd = 1; sd <= 800 && !seed; sd++) {
       const { enemy, hero } = setup({ x: 1, y: 0 }, [sword]);
