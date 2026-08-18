@@ -37,7 +37,7 @@ import { buildTokens } from './builders/tokens';
 import { elOccluder } from './stage/occluders';
 import { type HighlightOpts } from './stage/highlightLayer';
 import { dynamicMarks } from './builders/dynamicMarks';
-import { interactionHalos } from './builders/interactHalos';
+import { interactionHalos, NO_INTERACTION_HALOS, type InteractionHalos } from './builders/interactHalos';
 import { tokenChromes, type TokenChromeMark } from './builders/tokenChrome';
 import { TokenChromeOverlay } from './stage/TokenChromeOverlay';
 import { type WalkPos } from './fx/walkPose';
@@ -501,6 +501,40 @@ export function IsoStage() {
   const { hover, hoveredPortal, portalHandlers, handlers } = useStagePointer({ svgRef, scene, dims: dimsVue, zoom, camRef, hoverTracking, partyLeader, activeZ });
   const { hoverAim, hoveredId, hoverMove, explorePath, ghostIds, effHover } = useHoverTargeting(scene, hover, myTurn, hoveredPortal);
 
+  // MARQUES DYNAMIQUES : dérivées UNE fois (`builders/dynamicMarks`) et servies au monde volumique — le
+  // contexte qui les autorise (mode, dialogue ouvert) se tranche ici, et nulle part ailleurs. Les
+  // ANNEAUX d'équipe (P3-0e) se dérivent des jetons du builder et du meneur hors combat : la population
+  // des jetons RÉELLEMENT postés.
+  // Les trois dérivations qui suivent sont RETENUES sur leurs entrées (#1371) : le monde volumique les
+  // prend en dépendance de son redessin, et une liste neuve par rendu y faisait peindre une image à
+  // chaque commit du stage — c'est ce qui les place AVANT les sorties anticipées ci-dessous.
+  const partyToken = useMemo(
+    () => (combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null),
+    [combatBattle, partyLeader, partyPos],
+  );
+  const marquesDyn = useMemo(
+    () => dynamicMarks(mode === 'battle' ? battle : null, mode === 'exploration' && !dialogue ? partyPos : null, tokenEls, partyToken),
+    [mode, battle, dialogue, partyPos, tokenEls, partyToken],
+  );
+  // JETONS POSTÉS (P3-0f, P3-5c) : même dérivation, même population que les marques dynamiques (les
+  // jetons du builder, plus le meneur du groupe hors combat). La surcouche SVG en peint le chrome, et
+  // le CORPS sous le verdict `pionsEnDisques` ; le monde volumique n'en reprend que l'allure, au
+  // matériau de ses quads. Dérivée SANS condition de mode : un figurant d'exploration est un jeton, et
+  // sous ce verdict c'est ici qu'il se dessine (le chrome, lui, reste vide pour lui).
+  const chromes = useMemo<TokenChromeMark[]>(
+    () => tokenChromes(tokenEls, { ghostIds, hoveredId }, partyToken),
+    [tokenEls, ghostIds, hoveredId, partyToken],
+  );
+  // HALOS D'INTERACTION (P3-0g) : même partage que les marques dynamiques — dérivés UNE fois
+  // (`builders/interactHalos`) ; le contexte qui les autorise (exploration, combat ouvert) se tranche
+  // ici, et nulle part ailleurs.
+  const halos = useMemo<InteractionHalos>(
+    () => (scene
+      ? interactionHalos(propEls, scene, flags, hover, { exploring: mode === 'exploration', combat: mode === 'battle' && !!battle })
+      : NO_INTERACTION_HALOS),
+    [propEls, scene, flags, hover, mode, battle],
+  );
+
   if (!scene) return null;
   if (sansMonde) return <SansWebgl />;
 
@@ -515,23 +549,6 @@ export function IsoStage() {
     return tileCenter(wp.x + off, wp.y + off, dimsVue);
   };
   const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
-
-  // MARQUES DYNAMIQUES : dérivées UNE fois (`builders/dynamicMarks`) et servies au monde volumique — le
-  // contexte qui les autorise (mode, dialogue ouvert) se tranche ici, et nulle part ailleurs. Les
-  // ANNEAUX d'équipe (P3-0e) se dérivent des jetons du builder et du meneur hors combat : la population
-  // des jetons RÉELLEMENT postés.
-  const partyToken = combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null;
-  const marquesDyn = dynamicMarks(mode === 'battle' ? battle : null, mode === 'exploration' && !dialogue ? partyPos : null, tokenEls, partyToken);
-  // JETONS POSTÉS (P3-0f, P3-5c) : même dérivation, même population que les marques dynamiques (les
-  // jetons du builder, plus le meneur du groupe hors combat). La surcouche SVG en peint le chrome, et
-  // le CORPS sous le verdict `pionsEnDisques` ; le monde volumique n'en reprend que l'allure, au
-  // matériau de ses quads. Dérivée SANS condition de mode : un figurant d'exploration est un jeton, et
-  // sous ce verdict c'est ici qu'il se dessine (le chrome, lui, reste vide pour lui).
-  const chromes: TokenChromeMark[] = tokenChromes(tokenEls, { ghostIds, hoveredId }, partyToken);
-  // HALOS D'INTERACTION (P3-0g) : même partage que les marques dynamiques — dérivés UNE fois
-  // (`builders/interactHalos`) ; le contexte qui les autorise (exploration, combat ouvert) se tranche
-  // ici, et nulle part ailleurs.
-  const halos = interactionHalos(propEls, scene, flags, hover, { exploring: mode === 'exploration', combat: mode === 'battle' && !!battle });
 
   // ── Caméra : point focal (paire de visée / actif / leader) + culling d'animation ────────────────
   const cam = camAt(wnow);

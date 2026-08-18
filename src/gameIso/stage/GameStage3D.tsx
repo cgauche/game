@@ -62,7 +62,7 @@
  * s'y lire — plus aucun jeton n'y porte de `data-cid` : cet écran INSCRIT son lanceur de rayon auprès
  * de `stage/spritePicker.ts`, la couture unique où le pointeur pose la question.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { freeYaw, type ActorCapsule, type Dims, type Rot } from '../../geometry/iso';
 import { heightAt, type Scene } from '../../state/scene';
@@ -752,7 +752,16 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // Les accents de sol sont semés sur les MÊMES faces : même read-set, donc mêmes deps.
   const accents = accentsRetenus(jeton, bakeDeps, () => sceneGroundAccents(scene, mpt));
   // ── DÉGAGEMENT : compactage de l'index du monde cuit (aucun sommet touché, aucun matériau refait).
-  useEffect(() => { applyCutawayMask(baked, keepEl); }, [baked, keepEl]);
+  // Cette passe PEINT ce qu'elle vient de changer : elle mute une géométrie déjà montée, qu'aucune
+  // dépendance du redessin ne voit (l'objet `baked` est le même). Un verdict inchangé n'écrit rien et
+  // ne peint rien — c'est le cas courant, un franchissement de cran passant un `KeepEl` neuf pour le
+  // même dégagement. Une masse retirée cesse de caster : la carte d'ombre se redemande avec l'image.
+  useEffect(() => {
+    if (!applyCutawayMask(baked, keepEl).bouge) return;
+    ombresARefaire.current = true;
+    dessiner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baked, keepEl]);
   // ── TEINTE : elle vit plus bas, avec la lumière — son read-set contient le fondu du soleil (#1300).
   // Les touffes d'une nappe dégagée partent avec elle — MÊME loi, appliquée par la REPOSE du semis
   // instancié (deux passes plus bas), jamais par un remontage.
@@ -792,8 +801,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // matériaux est une fonction de la frame, écrite par la passe de pose).
   const poolsHalos = useRef<HaloPools>({});
   // Le SOL d'une case, la même convention que le builder de marques (0 au rez, la surface réelle en
-  // hauteur) : c'est la hauteur d'où le glissement vertical de la marche se compte.
-  const solM = (x: number, y: number, z: number) => (z ? heightAt(scene, Math.round(x), Math.round(y), z) : 0);
+  // hauteur) : c'est la hauteur d'où le glissement vertical de la marche se compte. RETENU sur la
+  // scène : c'est une DÉPENDANCE du redessin (la passe de frame le lit), et une fonction neuve par
+  // rendu y ferait peindre une image à chaque commit de l'hôte.
+  const solM = useCallback(
+    (x: number, y: number, z: number) => (z ? heightAt(scene, Math.round(x), Math.round(y), z) : 0),
+    [scene],
+  );
 
   // ── LUMIÈRE (P2-5) : la DÉCISION est prise en scalaires purs (`stageLights.ts`), l'écran n'en monte
   // que les conséquences. `lit` = un soleil éclaire RÉELLEMENT (il est levé, au-dessus du fondu, et le
@@ -817,7 +831,12 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // les billboards sont des maillages à part, hors `spans` : ils gardent l'exposition horizontale de la
   // frame — ce qui est la bonne famille pour une touffe posée au sol, et un écart déclaré pour un
   // billboard, dont la normale est l'axe caméra et qu'aucune famille d'orientation ne décrit.
-  useEffect(() => { applyVisibilityTint(baked, tintAt, fade); }, [baked, tintAt, fade]);
+  // Elle PEINT sa propre écriture, comme le dégagement : les couleurs de sommet d'un maillage déjà
+  // monté ne sont vues par aucune dépendance du redessin. Rien d'écrit, rien de peint.
+  useEffect(() => {
+    if (applyVisibilityTint(baked, tintAt, fade).bouge) dessiner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baked, tintAt, fade]);
   // FOND du canevas sous cette météo — un NOMBRE, donc une dépendance d'effet stable (deux frames de
   // même météo ne réappliquent rien).
   const fondCanevas = stageClearColor(lumière.meteo);
@@ -845,6 +864,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     ),
     [geometry, subjects],
   );
+  // La boîte par sa VALEUR : ce que le montage des lampes lit d'elle, ce sont ses six nombres. Sa
+  // référence, elle, suit celle des SUJETS, qui portent la teinte de visibilité CUITE (`sub.tint`,
+  // `collectBillboards`) — un champ de vision qui change reforge donc la liste sans qu'aucun casteur
+  // n'ait bougé, et remontait ambiante + soleil, carte d'ombre 2048² comprise, à chaque pas du groupe.
+  const cléBoite = `${shadowBox.min.x},${shadowBox.min.y},${shadowBox.min.z},${shadowBox.max.x},${shadowBox.max.y},${shadowBox.max.z}`;
 
   // ── INTEMPÉRIES (P2-6) : ce qui TOMBE dans le monde. La PORTE est celle de toutes les vues
   // (`scenePrecip` → `sceneWeatherFx` : une météo authorée, et jamais en intérieur) ; densité, vitesse
@@ -1900,8 +1924,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
 
   // L'EXPOSITION des billboards appartient à la passe de POSE (`poseBoards`) : elle dépend de l'endroit
   // où chaque sujet se pose, donc elle se recalcule à la cadence de la frame — c'est ainsi qu'un
-  // personnage entre dans une flaque en marchant. Tout rendu de cet écran dessine (l'effet sans
-  // dépendances plus bas) : l'heure et le palier la portent aux matériaux déjà montés, sans rerasteriser.
+  // personnage entre dans une flaque en marchant. Un changement d'exposition redessine par la
+  // dépendance qui le porte (`lumière.surfaceLuminance`) : l'heure et le palier la portent aux
+  // matériaux déjà montés, sans rerasteriser.
 
   // ── GROUPE LAMPES : ce que `stageLights` décide, monté tel quel. Groupe à part des trois autres car
   // il vit sur d'autres entrées (l'heure, le palier de lumière, la boîte des casteurs) et ne coûte ni
@@ -1922,8 +1947,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // Même read-set que les scalaires ci-dessus (`stageLightScalars`) : une référence de scène par
     // tick remontait ambiante et soleil — et redemandait la carte d'ombre — sans qu'aucune entrée de
-    // lumière ait bougé. Plus le verdict de STYLE du regard, seule entrée de vue de cette passe.
-  }, [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel, shadowBox, politique.ombreSoleil]);
+    // lumière ait bougé. Plus le verdict de STYLE du regard, seule entrée de vue de cette passe, et la
+    // boîte des casteurs par sa VALEUR (`cléBoite`) — jamais par sa référence, qui suit les sujets.
+  }, [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel, cléBoite, politique.ombreSoleil]);
 
   // ── POOL DE FLAQUES (#1245, L1) : monté UNE fois, jamais reconstruit (la réf `pool` est déclarée avec
   // la décision, plus haut). Le compte de lampes ponctuelles entre dans la clé de cache de programme de
@@ -1961,16 +1987,21 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const battement = anim?.subscribe;
   useEffect(() => battement?.(() => dessinerRef.current()), [battement]);
 
-  // REDESSIN : un par COMMIT React de l'hôte, sans tableau de dépendances — assumé. Ce que la passe de
-  // frame lit hors de tout montage (le REGARD, l'allure des quads, les marques dynamiques, les halos,
-  // les entrées de découpe) est reforgé à chaque rendu de l'hôte (`stage/VolumetricWorld` : `frameCam`,
-  // `chromeAt`, `anim`), donc AUCUNE liste de dépendances ne filtrerait quoi que ce soit — mesuré : un
-  // commit sans rapport avec la caméra = un `render()`. Ce que ça coûte a changé d'ordre depuis que les
-  // gestes de vue (panoramique, marche, focale) sont impératifs : les commits y sont rares. La
-  // stabilisation de `frameCam`/`chromeAt`/`dynMarks`/`halos` est le ticket suivant.
+  // REDESSIN : une image par CAUSE, jamais par commit (#1371). Le tableau ci-dessous est l'INVENTAIRE
+  // des lectures de `dessiner` qui ne sont pas des réfs — cadre (le REGARD comme le cadrage en
+  // descendent), échelle, scène, monde cuit, brume du milieu et son gamma, exposition, flaques, allure
+  // des quads, marques dynamiques, halos, sol, verdict de pions, semis, couvert, écrêtage, entrées de
+  // découpe. Ce qu'il ne nomme pas n'est pas dessiné d'ici : ce sont les MUTATIONS d'objets déjà
+  // montés — dégagement de l'index, teinte des sommets, pools, groupes — dont chaque effet peint sa
+  // propre écriture (aucune référence ne bouge sous elles, donc aucune dépendance ne les verrait).
+  // Le PILOTE d'images (`anim`) n'y entre PAS, et c'est structurel : ce qu'il porte (glissement,
+  // cadrage vivant) se relit à la cadence de la FRAME, par le battement, sur `dessinerRef` — donc
+  // toujours à sa valeur courante ; l'hôte en reforge un objet par rendu, et l'inscrire ici rendrait
+  // ce tableau inopérant.
   useEffect(() => {
     dessiner();
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [frame, mpt, scene, geometry, brumePov, gammaBrume, lumière.surfaceLuminance, flaquesÉcrites, chromeAt, dynMarks, halos, solM, pionsEnDisques, champ, sousCouvert, ecrete, percage]);
 
   // Le canevas OCCUPE la boîte du stage : c'est la MÊME boîte que le SVG, donc la même classe
   // (`.iso-stage` — aucun sélecteur de domaine de plus, cf. cliquet CSS `ui-ratchets` xii). Les deux

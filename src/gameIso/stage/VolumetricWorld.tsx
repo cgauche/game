@@ -133,12 +133,37 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
     },
     cam: () => (frame.mode === 'plateau' ? frame.camAt(performance.now()) : { x: 0, y: 0 }),
   };
-  // ALLURE des quads : la table du rendu courant, interrogée PAR FRAME dans la passe de pose. Elle se
-  // reforge à chaque rendu, comme `anim` — un survol change trois nombres de matériau, rien de monté.
-  const allures = new Map((chromes ?? []).map((m) => [m.id, { ghost: m.ghost, dim: m.dim, highlight: m.highlight }]));
-  const chromeAt: ChromeAt = (cid) => allures.get(cid) ?? null;
-  const frameCam: StageFrame = frame.mode === 'plateau'
-    ? { mode: 'plateau', dims: frame.dims, cam: frame.camAt(performance.now()), zoom: frame.zoom }
-    : { mode: 'pov', partyPos: frame.partyPos, facing: frame.facing, indoor: frame.indoor, cid: frame.cid };
+  // ALLURE des quads : la table du rendu courant, interrogée PAR FRAME dans la passe de pose — un
+  // survol change trois nombres de matériau, rien de monté. RETENUE sur la SIGNATURE des allures
+  // (#1371) : la fonction est une DÉPENDANCE du redessin de l'écran, et une fermeture neuve sur une
+  // `Map` neuve y faisait peindre une image à chaque commit de l'hôte, quelle qu'en fût la cause.
+  const cléAllures = (chromes ?? []).map((m) => `${m.id}:${m.ghost ? 1 : 0}${m.dim ? 1 : 0}:${m.highlight ?? ''}`).join('|');
+  const chromeAt = useMemo<ChromeAt>(
+    () => {
+      const allures = new Map((chromes ?? []).map((m) => [m.id, { ghost: m.ghost, dim: m.dim, highlight: m.highlight }]));
+      return (cid) => allures.get(cid) ?? null;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cléAllures],
+  );
+  // CADRE servi à l'écran — RÉFÉRENCE STABLE tant que le cadrage ne bouge pas (#1371), même raison.
+  // La caméra de plateau n'y sert PAS à cadrer : `dessiner` prend la sienne du pilote à chaque image
+  // (`anim.cam()`, `GameStage3D`), et `frame.cam` n'est que le repli d'un hôte qui n'en fournit aucun
+  // (l'éditeur). Elle entre ici en CLÉ DE CHANGEMENT, échantillonnée à l'instant du rendu : deux
+  // commits au même cadrage rendent le même objet, un panoramique en rend un neuf. Rien n'y bat à la
+  // frame — c'est un objet de rendu React, pas une valeur d'image.
+  const camRendu = frame.mode === 'plateau' ? frame.camAt(performance.now()) : null;
+  const cléCadre = frame.mode === 'plateau'
+    ? `plateau|${frame.zoom}|${camRendu!.x}|${camRendu!.y}`
+    : `pov|${frame.partyPos.x},${frame.partyPos.y},${frame.partyPos.z ?? 0}|${frame.facing}|${frame.indoor}|${frame.cid ?? ''}`;
+  const frameCam = useMemo<StageFrame>(
+    () => (frame.mode === 'plateau'
+      ? { mode: 'plateau', dims: frame.dims, cam: { x: camRendu!.x, y: camRendu!.y }, zoom: frame.zoom }
+      : { mode: 'pov', partyPos: frame.partyPos, facing: frame.facing, indoor: frame.indoor, cid: frame.cid }),
+    // Le CRAN de vue (`dims`) entre par sa référence : l'hôte le retient déjà sur sa géométrie
+    // (`IsoStage.dimsVue`), et le sérialiser ici en ferait une seconde vérité à tenir d'accord.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cléCadre, frame.mode === 'plateau' ? frame.dims : null],
+  );
   return <GameStage3D scene={scene} mpt={mpt} frame={frameCam} tintAt={tintAt} keepEl={keepEl} nappeVue={nappeVue} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks ?? NO_DYNAMIC_MARKS} halos={halos ?? NO_INTERACTION_HALOS} chromeAt={chromeAt} anim={anim} percage={percage ?? null} pionsEnDisques={pionsEnDisques} />;
 }

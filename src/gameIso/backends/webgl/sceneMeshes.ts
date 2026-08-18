@@ -487,8 +487,12 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
  *
  *  C'est le canal GÉOMÉTRIE, jumeau d'`applyVisibilityTint` : il suit le PAS du groupe (`cleared`
  *  change à chaque case franchie et à chaque cran de caméra) sans jamais rejouer la triangulation.
- *  Rend LA géométrie du bake, pas une copie — cf. le contrat de propriété de `BakedWorld`. */
-export function applyCutawayMask(baked: BakedWorld, keepEl: KeepEl): WorldGeometry {
+ *  Rend LA géométrie du bake, pas une copie — cf. le contrat de propriété de `BakedWorld` — et ce qui
+ *  a RÉELLEMENT bougé : `bouge` est vrai si l'index de dessin ou l'ancrage d'un groupe a changé. Même
+ *  patron que `reposeGroundAccents` (`backends/webgl/groundAccents`) : un verdict identique ne vaut ni
+ *  image ni carte d'ombre, et une référence de `KeepEl` neuve pour un verdict identique est le cas
+ *  COURANT (un franchissement de cran en passe une). */
+export function applyCutawayMask(baked: BakedWorld, keepEl: KeepEl): { geometry: WorldGeometry; bouge: boolean } {
   const { geometry, spans } = baked;
   const index = geometry.getIndex() as THREE.BufferAttribute;
   const arr = index.array as Uint32Array;
@@ -496,8 +500,10 @@ export function applyCutawayMask(baked: BakedWorld, keepEl: KeepEl): WorldGeomet
   let écrit = 0;
   let groupe = -1;
   let début = 0;
+  let bouge = false;
   const clore = () => {
     if (groupe >= 0) {
+      if (groups[groupe].start !== début || groups[groupe].count !== écrit - début) bouge = true;
       groups[groupe].start = début;
       groups[groupe].count = écrit - début;
     }
@@ -510,11 +516,14 @@ export function applyCutawayMask(baked: BakedWorld, keepEl: KeepEl): WorldGeomet
     }
     if (!keepEl(span.el)) continue;
     const fin = span.start + span.count;
-    for (let i = span.start; i < fin; i++) arr[écrit++] = i;
+    for (let i = span.start; i < fin; i++) {
+      if (arr[écrit] !== i) bouge = true;
+      arr[écrit++] = i;
+    }
   }
   clore();
   index.needsUpdate = true;
-  return geometry;
+  return { geometry, bouge };
 }
 
 /** Repeint la VISIBILITÉ d'un monde cuit : l'attribut `color` est ré-écrit EN PLACE depuis la couleur
@@ -535,32 +544,40 @@ export function applyCutawayMask(baked: BakedWorld, keepEl: KeepEl): WorldGeomet
  *  (`sunFade`, `stage/stageLights.ts`). `fade = 1` (plein soleil) est le NEUTRE de cette porte : le
  *  modelé s'efface entièrement, la directionnelle le faisant seule. C'est pourquoi un appelant qui
  *  n'a pas de soleil à déclarer (gardes de géométrie, cadrage) obtient exactement les couleurs
- *  d'avant le lot. */
-export function applyVisibilityTint(baked: BakedWorld, tintAt: TintAt, fade = 1): WorldGeometry {
+ *  d'avant le lot.
+ *
+ *  Rend aussi ce qui a RÉELLEMENT été écrit (`bouge`, même patron que son jumeau ci-dessus) : deux
+ *  champs de vision qui donnent les mêmes couleurs ne valent pas une image. */
+export function applyVisibilityTint(baked: BakedWorld, tintAt: TintAt, fade = 1): { geometry: WorldGeometry; bouge: boolean } {
   const attr = baked.geometry.getAttribute('color') as THREE.BufferAttribute;
   const arr = attr.array as Float32Array;
   const pos = (baked.geometry.getAttribute('position') as THREE.BufferAttribute).array as Float32Array;
   const c = new THREE.Color();
   const parTuile = 1 / baked.mpt;
+  let bouge = false;
   for (const span of baked.spans) {
     c.set(span.color).multiplyScalar(span.varFactor);
     const fin = (span.start + span.count) * 3;
     for (let i = span.start * 3, v = span.start; i < fin; i += 3, v++) {
       // `position` et `color` partagent l'indexation par sommet : i pointe le MÊME sommet dans les deux.
       const k = shadeSousSoleil(baked.shades[v], fade) * tintAt(pos[i] * parTuile, pos[i + 2] * parTuile, span.cell.z);
-      arr[i] = c.r * k;
-      arr[i + 1] = c.g * k;
-      arr[i + 2] = c.b * k;
+      const r = c.r * k;
+      const g = c.g * k;
+      const b = c.b * k;
+      if (!bouge && (arr[i] !== r || arr[i + 1] !== g || arr[i + 2] !== b)) bouge = true;
+      arr[i] = r;
+      arr[i + 1] = g;
+      arr[i + 2] = b;
     }
   }
   attr.needsUpdate = true;
-  return baked.geometry;
+  return { geometry: baked.geometry, bouge };
 }
 
 /** Monde cuit ET teinté en un geste — pour un appelant qui n'a pas de teinte à faire varier (gardes,
  *  cadrage). Un écran qui suit la visibilité garde le bake et ne rejoue que `applyVisibilityTint`. */
 export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt, fade = 1): WorldGeometry {
-  return applyVisibilityTint(bakeWorldGeometry(scene, mpt), tintAt, fade);
+  return applyVisibilityTint(bakeWorldGeometry(scene, mpt), tintAt, fade).geometry;
 }
 
 /** Un sujet de billboard prêt à texturer : où il se pose, à quelle échelle, et comment il se dessine. */

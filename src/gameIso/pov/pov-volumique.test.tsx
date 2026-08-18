@@ -15,6 +15,7 @@ import { STEP_MS } from '../../geometry/walk';
 import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageRenderer } from '../stage/GameStage3D';
 import { hasSpritePicker } from '../stage/spritePicker';
+import { battreStageFrames } from '../stage/stageFrames';
 import { EYE_H, farTilesOf } from './camera';
 import { PovStage } from './PovStage';
 
@@ -29,6 +30,11 @@ import { PovStage } from './PovStage';
  *  3. le DÉGAGEMENT : à hauteur d'œil, TOUTES les masses se dessinent — le cutaway de la vue de plateau
  *     ouvrirait le ciel au-dessus du groupe entré sous un toit ;
  *  4. le PICKER : aucun lanceur de rayon n'est inscrit (cette vue n'a jamais eu d'affordance de clic).
+ *
+ * IMAGE D'UNE MARCHE : elle se demande au BATTEMENT du stage (`stage/stageFrames`), jamais à un rendu
+ * React — c'est le chemin réel (`fx/useWalkAnim` bat à chaque rAF de marche, et n'appelle `setState`
+ * qu'à l'arrivée) ; l'œil qui glisse est une valeur de FRAME, et le redessin de l'écran est piloté par
+ * ses données (#1371).
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -180,7 +186,7 @@ describe('POV volumique — la caméra (#1176 P3-1a)', () => {
     // Un pas vers le nord, et la MOITIÉ de sa durée : la caméra doit être entre les deux cases.
     act(() => { bus.emit(EVT.ANIM_MOVE, { id: heroId, path: [{ x: 4, y: 4 }, { x: 4, y: 3 }] }); });
     horlogeMs = STEP_MS / 2;
-    act(() => root!.render(<PovStage />));
+    act(() => battreStageFrames());
     expect(dernièreCaméra().position.z, 'l’œil glisse d’une demi-case').toBeCloseTo(3.5 * mpt, 6);
   });
 });
@@ -271,7 +277,7 @@ describe('POV volumique — le marcheur suivi et la cote sous l’œil (#1176 P3
     expect(meneur.id).toBe(debout.id);
     act(() => { bus.emit(EVT.ANIM_MOVE, { id: meneur.id, path: [{ x: 4, y: 4 }, { x: 4, y: 3 }] }); });
     horlogeMs = STEP_MS / 2;
-    act(() => root!.render(<PovStage />));
+    act(() => battreStageFrames());
     expect(dernièreCaméra().position.z, 'l’œil glisse avec le marcheur, pas avec le mort en tête de roster').toBeCloseTo(3.5 * mpt, 6);
   });
 
@@ -284,7 +290,7 @@ describe('POV volumique — le marcheur suivi et la cote sous l’œil (#1176 P3
 
     act(() => { bus.emit(EVT.ANIM_MOVE, { id: heroId, path: [{ x: 4, y: 4 }, { x: 4, y: 3 }] }); });
     horlogeMs = STEP_MS / 2;
-    act(() => root!.render(<PovStage />));
+    act(() => battreStageFrames());
     expect(dernièreCaméra().position.y, 'à position FRACTIONNAIRE, la cote reste celle du plateau').toBeCloseTo(2 + EYE_H, 6);
   });
 
@@ -300,7 +306,7 @@ describe('POV volumique — le marcheur suivi et la cote sous l’œil (#1176 P3
     act(() => { bus.emit(EVT.ANIM_MOVE, { id: heroId, path: [{ x: 4, y: 4 }, { x: 4, y: 3 }] }); });
     for (let f = 1; f < 10; f++) {
       horlogeMs = f * FRAME_MS;
-      act(() => root!.render(<PovStage />));
+      act(() => battreStageFrames());
       cotes.push(dernièreCaméra().position.y);
     }
     let saut = 0;

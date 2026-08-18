@@ -119,7 +119,7 @@ describe('INVARIANCE — deux dégagements, UN seul bake', () => {
   it('le masque n’écrit QUE l’index : même géométrie, mêmes sommets, mêmes couleurs', () => {
     const baked = bakeWorldGeometry(scene, mpt);
     applyVisibilityTint(baked, tint);
-    const gA = applyCutawayMask(baked, LOIS['sans-toits']);
+    const gA = applyCutawayMask(baked, LOIS['sans-toits']).geometry;
     const attrPos = gA.getAttribute('position');
     const attrCol = gA.getAttribute('color');
     const posA = copie(gA, 'position');
@@ -127,7 +127,7 @@ describe('INVARIANCE — deux dégagements, UN seul bake', () => {
     const comptesA = gA.groups.map((g) => g.count);
     const versionDe = (g: THREE.BufferGeometry) => (g.getIndex() as THREE.BufferAttribute).version;
     const versionA = versionDe(gA);
-    const gB = applyCutawayMask(baked, LOIS['damier-murs']);
+    const gB = applyCutawayMask(baked, LOIS['damier-murs']).geometry;
     // La géométrie rendue EST le bake — contrat de propriété de `BakedWorld`.
     expect(gB).toBe(gA);
     expect(gB.getAttribute('position')).toBe(attrPos);

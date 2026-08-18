@@ -170,8 +170,8 @@ describe('#1300 — le CÂBLAGE : le facteur arrive dans la couleur de sommet', 
 
   it('à porte OUVERTE (intérieur, fade 0) chaque sommet porte EXACTEMENT le facteur de sa famille', () => {
     const baked = bakeWorldGeometry(scene, mpt);
-    const nu = couleurs(applyVisibilityTint(baked, plein, 1));
-    const modelé = couleurs(applyVisibilityTint(baked, plein, 0));
+    const nu = couleurs(applyVisibilityTint(baked, plein, 1).geometry);
+    const modelé = couleurs(applyVisibilityTint(baked, plein, 0).geometry);
     const rapports = new Set<number>();
     let sommetsModelés = 0;
     for (let v = 0; v < baked.shades.length; v++) {
@@ -188,8 +188,8 @@ describe('#1300 — le CÂBLAGE : le facteur arrive dans la couleur de sommet', 
 
   it('sous le PLEIN SOLEIL le modelé s’efface : les couleurs sont celles d’avant le lot', () => {
     const baked = bakeWorldGeometry(scene, mpt);
-    const avecPorteFermée = couleurs(applyVisibilityTint(baked, plein, 1));
-    const parDéfaut = couleurs(applyVisibilityTint(baked, plein));
+    const avecPorteFermée = couleurs(applyVisibilityTint(baked, plein, 1).geometry);
+    const parDéfaut = couleurs(applyVisibilityTint(baked, plein).geometry);
     expect(parDéfaut).toEqual(avecPorteFermée);
     for (let v = 0; v < baked.shades.length; v += 997) expect(shadeSousSoleil(baked.shades[v], 1)).toBe(1);
   });
