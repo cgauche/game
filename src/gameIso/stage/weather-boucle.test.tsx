@@ -20,7 +20,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import type { Dims } from '../../geometry/iso';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
-import { GameStage3D, setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { GameStage3D, setStageRendererFactory, type StageRenderer, type StageWalkAnim } from './GameStage3D';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -76,6 +76,13 @@ const scenePluie = (): Scene => {
 
 const dimsDe = (scene: Scene): Dims => ({ w: scene.dimensions.w, h: scene.dimensions.h, rot: 0, view: 'iso' });
 
+/** Le stage tel que l'hôte volumique le monte : aucun pilote d'images — l'écran s'abonne lui-même au
+ *  battement du module, que l'averse TIENT tant qu'elle tombe. */
+const ANIM: StageWalkAnim = {
+  glide: () => null,
+  cam: () => ({ x: 0, y: 0 }),
+};
+
 const props = (scene: Scene, zoom: number) => ({
   scene,
   mpt: sceneMetresPerTile(scene),
@@ -87,6 +94,9 @@ const props = (scene: Scene, zoom: number) => ({
   gameTime: 12 * 60,
   lightLevel: null,
   lights: [],
+  // Câblage de PRODUCTION (`VolumetricWorld`) : l'écran reçoit ses images du battement UNIQUE du stage,
+  // que l'averse TIENT tant qu'elle tombe (#1378) — c'est par là que la boucle de chute passe désormais.
+  anim: ANIM,
 });
 
 let root: Root | null = null;

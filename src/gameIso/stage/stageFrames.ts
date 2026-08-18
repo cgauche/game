@@ -3,7 +3,7 @@
  * la marche qui glisse, le glisser-caméra, l'adoucissement d'un saut de focale.
  *
  * Ses abonnés sont les DEUX clients de la caméra — le groupe d'overlays SVG (`IsoStage`) et la caméra
- * three (`stage/GameStage3D`, par `StageWalkAnim.subscribe`). Ils reposent leur vue dans le MÊME
+ * three (`stage/GameStage3D`, qui s'y abonne de lui-même). Ils reposent leur vue dans le MÊME
  * battement, à partir de la MÊME valeur (`camAt` de l'hôte) : c'est tout l'objet du module, et la
  * raison pour laquelle il n'y a qu'un battement pour toutes les sources.
  *
@@ -12,7 +12,7 @@
  * cadence déjà à l'image), `demanderFrames`/`relacherFrames` pour ce qui n'en a aucune
  * (l'adoucissement de focale), et `demanderUneImage` pour un geste PONCTUEL qui n'a besoin que d'être
  * VU (la relève d'une texture de billboard). La boucle de demande comme la demande ponctuelle CÈDENT
- * le pas à un battement qui vient d'avoir lieu : une même image ne se peint jamais deux fois.
+ * le pas à ce qui vient d'avoir lieu, mais PAS à la même chose — cf. les deux horloges ci-dessous.
  */
 
 /** Écart (ms) en deçà duquel deux battements sont la MÊME image. */
@@ -20,7 +20,13 @@ const MEME_IMAGE_MS = 4;
 
 const abonnés = new Set<() => void>();
 const sources = new Set<unknown>();
-let derniereMs = -Infinity;
+/** DERNIÈRE IMAGE PEINTE, d'où qu'elle vienne (battement ou commit React qui redessine) : la BOUCLE y
+ *  cède le pas, car elle ne demande qu'un REDESSIN — ce qui vient d'être peint l'est déjà. */
+let dernierePeinteMs = -Infinity;
+/** DERNIER BATTEMENT servi : la demande PONCTUELLE n'y cède qu'à lui. Elle porte une peinture NEUVE
+ *  (une texture relevée que l'image précédente ne montrait pas) : un commit React qui vient de peindre
+ *  ne l'a pas servie, et l'avaler laisserait le billboard sans son art jusqu'à la frame suivante. */
+let derniereBattementMs = -Infinity;
 let image = 0;
 let imagePonctuelle = 0;
 
@@ -34,8 +40,24 @@ export function subscribeStageFrames(cb: () => void): () => void {
 
 /** UN battement : chaque abonné repose ce qu'il tient hors de React. */
 export function battreStageFrames(): void {
-  derniereMs = performance.now();
+  derniereBattementMs = performance.now();
+  dernierePeinteMs = derniereBattementMs;
   for (const cb of [...abonnés]) cb();
+}
+
+/**
+ * UNE IMAGE VIENT D'ÊTRE PEINTE hors du battement — un commit React qui redessine le stage. Seule
+ * l'horloge des PEINTES la voit : la boucle ne repeindra pas cette même image (mesuré sans elle : 4
+ * rendus dans l'image d'un commit).
+ *
+ * Elle ne bat AUCUN abonné, et n'en prive aucun : la passe que cède la boucle est un REDESSIN, et le
+ * rendu React qui l'accompagne repose déjà les surcouches de la même caméra (`IsoStage` écrit
+ * `stageCamTransform` sur son groupe et `setVisibleTileBounds` DANS son rendu, l.550/582 et l.540).
+ * Elle ne touche PAS l'horloge des battements : une demande PONCTUELLE porte une peinture neuve, et
+ * un commit ne l'a pas servie.
+ */
+export function signalerImagePeinte(): void {
+  dernierePeinteMs = performance.now();
 }
 
 function armer(): void {
@@ -43,7 +65,8 @@ function armer(): void {
   image = requestAnimationFrame(() => {
     image = 0;
     if (!sources.size) return;
-    if (performance.now() - derniereMs > MEME_IMAGE_MS) battreStageFrames();
+    // La boucle ne demande qu'un REDESSIN : elle cède à toute image déjà peinte, commit compris.
+    if (performance.now() - dernierePeinteMs > MEME_IMAGE_MS) battreStageFrames();
     armer();
   });
 }
@@ -65,13 +88,30 @@ export function relacherFrames(source: unknown): void {
 
 /** Demande UNE image, au prochain rAF — COALESCÉE : N demandes dans la même image n'en valent qu'une
  *  (les N boards reposés au franchissement d'un cran obtiennent UN battement, #1376).
- *  Elle s'efface devant une boucle continue, qui sert déjà l'image, et devant un battement qui vient
- *  d'avoir lieu. */
+ *  Elle s'efface devant une boucle continue, qui sert déjà l'image, et devant un BATTEMENT qui vient
+ *  d'avoir lieu — et devant lui SEUL : ce qu'elle demande à montrer est neuf, un commit React qui
+ *  vient de repeindre l'ancienne image ne l'a pas servi (sans quoi la texture relevée dans les 4 ms
+ *  d'un commit n'entre jamais en scène). */
 export function demanderUneImage(): void {
   if (imagePonctuelle || sources.size || typeof requestAnimationFrame !== 'function') return;
   imagePonctuelle = requestAnimationFrame(() => {
     imagePonctuelle = 0;
     if (sources.size) return;
-    if (performance.now() - derniereMs > MEME_IMAGE_MS) battreStageFrames();
+    if (performance.now() - derniereBattementMs > MEME_IMAGE_MS) battreStageFrames();
   });
+}
+
+/** ARDOISE NEUVE — outil de BANC. La suite partage ses modules (`isolate: false`) : un écran d'un
+ *  autre fichier resté monté tiendrait encore des images, et la boucle armée sur SON `requestAnimationFrame`
+ *  ne se réarmerait jamais sur celui du banc courant.
+ *  PORTÉE : les sources, l'image armée et les deux horloges — JAMAIS les abonnés. Un abonnement se dénoue par
+ *  la fonction rendue à l'inscription (le démontage de l'écran) ; un abonné qui survit à son écran est
+ *  un défaut de cet écran, qu'une ardoise complaisante cacherait à tous les bancs. */
+export function resetStageFrames(): void {
+  sources.clear();
+  if (image && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(image);
+  image = 0;
+  imagePonctuelle = 0;
+  dernierePeinteMs = -Infinity;
+  derniereBattementMs = -Infinity;
 }

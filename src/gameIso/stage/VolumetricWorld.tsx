@@ -25,7 +25,6 @@ import type { Pt } from '../../state/path';
 import type { LightSource } from '../../state/vision';
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
-import { subscribeStageFrames } from './stageFrames';
 import { walkGlideM, type WalkTrack } from '../fx/walkPose';
 import { buildHighlights, type HighlightEl } from '../builders/highlights';
 import { NO_DYNAMIC_MARKS, type DynamicMarks } from '../builders/dynamicMarks';
@@ -128,7 +127,6 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   if (frame.mode === 'pov' && frame.cid) bases.set(frame.cid, { x: frame.partyPos.x, y: frame.partyPos.y, z: frame.partyPos.z ?? 0 });
   const solM = (x: number, y: number, z: number) => heightAt(scene, Math.round(x), Math.round(y), z);
   const anim: StageWalkAnim = {
-    subscribe: subscribeStageFrames,
     glide: (cid) => {
       const base = bases.get(cid);
       return base ? walkGlideM(walksRef.current[cid], base, mpt, performance.now(), solM) : null;

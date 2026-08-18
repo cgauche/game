@@ -32,7 +32,6 @@ import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRender
 import { bbCameraDe, povArtRot } from './regard';
 import { poigneesEnAttente } from './texturesStatiques';
 import { atlasPxHeight, frameRectOf } from './boardPose';
-import { subscribeStageFrames } from './stageFrames';
 import { pxPerM } from '../backends/webgl/worldTris';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -456,9 +455,9 @@ describe('Cran franchi — N relèves, UNE image', () => {
     tokens: [],
     props: Array.from({ length: 20 }, (_, i) => décor(`c${i}`, 2 + (i % 10))),
   };
-  /** Câblage de PRODUCTION : le stage s'abonne au battement du module (`VolumetricWorld`). */
+  /** Câblage de PRODUCTION (`VolumetricWorld`) : aucun pilote d'images — l'écran s'abonne lui-même au
+   *  battement du module, et c'est ce battement que les relèves demandent. */
   const animProd: StageWalkAnim = {
-    subscribe: subscribeStageFrames,
     glide: () => null,
     cam: () => ({ x: 6, y: 6 }),
   };

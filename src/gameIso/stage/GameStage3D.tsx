@@ -200,7 +200,7 @@ import { signalerWebglRefusé } from './webglSupport';
 import { materiauProfondeurPerce, percerMateriau, PERCAGE_MAX_HEROS } from '../backends/webgl/percageLocal';
 import { creerPercage, type ActeurPerce, type Percage } from './percage';
 import type { Lid } from './architectureVisibility';
-import { demanderUneImage } from './stageFrames';
+import { demanderFrames, demanderUneImage, relacherFrames, signalerImagePeinte, subscribeStageFrames } from './stageFrames';
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
 export const CONVENTION = 'jeu' as const;
@@ -389,8 +389,12 @@ export interface GameStage3DProps {
  * Sans cet objet, rien ne bouge entre deux rendus React — le contrat d'avant le lot.
  */
 export interface StageWalkAnim {
-  /** Abonne une callback au battement de la marche (une passe par frame tant qu'un glissement dure). */
-  subscribe: (onFrame: () => void) => () => void;
+  /** PILOTE D'IMAGES ALTERNATIF — optionnel, et la production n'en fournit AUCUN : l'écran s'abonne
+   *  lui-même au battement du module pour son propre dessin. Seuls les bancs s'en servent, pour tenir
+   *  la cadence à la main.
+   *  INTERDIT d'y passer `subscribeStageFrames` : l'écran y est déjà abonné, et le doublon peint
+   *  chaque image deux fois. */
+  subscribe?: (onFrame: () => void) => () => void;
   /** Décalage MONDE (mètres) du sujet `cid` à l'instant de l'appel — `null` s'il ne marche pas. */
   glide: (cid: string) => { dx: number; dy: number; dz: number } | null;
   /** Translation caméra à l'instant de l'appel (mêmes unités que `cam`). */
@@ -568,6 +572,16 @@ function dir8DuSegment(dx: number, dz: number): Dir8 | null {
   return best;
 }
 
+/** Tient le battement unique du stage (`stageFrames`) tant que `actif`, sous une clé d'INSTANCE : deux
+ *  écrans montés ne se relâchent pas les images l'un de l'autre, et un motif éteint rend les siennes. */
+function useBattementContinu(actif: boolean, nom: string): void {
+  useEffect(() => {
+    if (!actif) return;
+    const source = Symbol(nom);
+    demanderFrames(source);
+    return () => relacherFrames(source);
+  }, [actif, nom]);
+}
 export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, decalque, spritePicking = true, percage, pionsEnDisques = false }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
@@ -596,8 +610,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   /** PILOTE de la découpe locale (#1176, M3) — un par écran monté, comme sa scène three. Il tient la
    *  clé du dernier verdict et le fondu des rayons ; les quatre trous qu'il écrit sont, eux, partagés
    *  par tous les matériaux percés du module. La fonction qu'il reçoit est SA demande de frame (le
-   *  fondu n'a pas d'horloge à lui) : elle CÈDE le pas comme les boucles d'averse et de flamme — une
-   *  image déjà rendue par l'une d'elles ne se redessine pas. */
+   *  fondu n'a pas d'horloge à lui) : elle CÈDE le pas à une image déjà peinte, qui ne se redessine pas. */
   const percageRef = useRef<Percage | null>(null);
   if (!percageRef.current) {
     percageRef.current = creerPercage(() => {
@@ -727,6 +740,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // CUISSONS RÉELLEMENT PAYÉES depuis le montage — la trace `data-bake` du canevas (un canevas n'a pas
   // d'arbre à interroger) : c'est par elle que la rétention se mesure à l'écran comme au banc.
   const cuissons = useRef(0);
+  // PASSES DE DESSIN réellement peintes depuis le montage — la trace `data-rendus` du canevas, écrite
+  // par la passe elle-même (une boucle d'image ne commit rien, donc aucun attribut de rendu React ne la
+  // verrait). C'est le témoin par lequel « une image, un rendu » se mesure, au banc comme à la recette.
+  const rendus = useRef(0);
   const dernierBake = useRef<BakedWorld | null>(null);
   if (dernierBake.current !== baked) {
     dernierBake.current = baked;
@@ -1173,6 +1190,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     if (gammaBrume !== null) applyFogGamma(three.current, gammaBrume);
     cameraRef.current = camera; // la caméra de la DERNIÈRE frame : celle que le rayon de picking doit emprunter
     renderer.render(three.current, camera);
+    rendus.current++;
+    canvas.dataset.rendus = String(rendus.current);
+    // L'horloge de cession du module voit CETTE image : la boucle ne repeindra pas ce qu'un commit
+    // React vient de peindre.
+    signalerImagePeinte();
   };
 
   /** La frame COURANTE, pour les boucles qui battent HORS des rendus React. Elles lisent la réf, jamais
@@ -1258,67 +1280,16 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planNappes, nappesAuMonde]);
 
-  // BOUCLE DE CHUTE : une averse vit hors des rendus React — tant qu'un semis existe, la frame se
-  // rejoue. Elle CÈDE le pas à la boucle de MARCHE (P2-4) quand celle-ci vient de dessiner : une même
-  // image ne se rend jamais deux fois, quelle que soit celle des deux boucles qui bat la première.
-  useEffect(() => {
-    if (!champ) return;
-    let vivant = true;
-    let image = 0;
-    const battre = () => {
-      if (!vivant) return;
-      if (performance.now() - dernierRendu.current > 4) dessinerRef.current();
-      image = requestAnimationFrame(battre);
-    };
-    image = requestAnimationFrame(battre);
-    return () => {
-      vivant = false;
-      cancelAnimationFrame(image);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [champ]);
-
-  // BOUCLE DE VACILLEMENT (#1245, L4) : une flamme vit hors des rendus React, comme l'averse. Elle ne
-  // bat QUE si une lampe qui vacille est allumée — de jour les flaques s'éteignent, et une scène sans
-  // feu (lanternes, lueurs magiques) ne rejoue pas une frame de plus qu'avant ce lot. Même politique
-  // de CESSION que la chute : une image déjà rendue par la marche ou l'averse ne se redessine pas.
+  // MOTIFS CONTINUS (#1378) — une averse qui tombe, une flamme qui vacille, un halo qui pulse vivent
+  // hors des rendus React. Chacun TIENT le battement unique du stage (`stageFrames`) tant qu'il est à
+  // l'écran, sous une clé d'instance qui lui est propre, et le relâche en s'éteignant : une scène sans
+  // pluie, sans feu et sans décor fouillable ne rejoue aucune image. Aucune horloge ici — la cadence
+  // comme la cession d'une même image vivent au module, et nulle part ailleurs.
   const vacille = hasFlicker(flaquesÉcrites);
-  useEffect(() => {
-    if (!vacille) return;
-    let vivant = true;
-    let image = 0;
-    const battre = () => {
-      if (!vivant) return;
-      if (performance.now() - dernierRendu.current > 4) dessinerRef.current();
-      image = requestAnimationFrame(battre);
-    };
-    image = requestAnimationFrame(battre);
-    return () => {
-      vivant = false;
-      cancelAnimationFrame(image);
-    };
-  }, [vacille]);
-
-  // BOUCLE DE PULSATION DES HALOS (P3-0g) : un halo d'affordance bat hors des rendus React, comme la
-  // flamme et l'averse. Elle ne bat QUE si
-  // un halo est à l'écran : une scène sans décor fouillable et sans PNJ survolé ne rejoue pas une frame
-  // de plus qu'avant ce lot. Même politique de CESSION que les deux autres boucles.
   const pulseHalos = !!halos && (halos.fouilles.length > 0 || halos.pnjs.length > 0);
-  useEffect(() => {
-    if (!pulseHalos) return;
-    let vivant = true;
-    let image = 0;
-    const battre = () => {
-      if (!vivant) return;
-      if (performance.now() - dernierRendu.current > 4) dessinerRef.current();
-      image = requestAnimationFrame(battre);
-    };
-    image = requestAnimationFrame(battre);
-    return () => {
-      vivant = false;
-      cancelAnimationFrame(image);
-    };
-  }, [pulseHalos]);
+  useBattementContinu(!!champ, 'averse');
+  useBattementContinu(vacille, 'vacillement');
+  useBattementContinu(pulseHalos, 'halos');
 
   // HIT-TEST DE SPRITE (lot P2-3, règle #1297 « ce qui se voit se clique ») : la voie volumique répond
   // au pointeur par un RAYON — cibles = les quads montés, ceux d'un combattant portant son id, ceux du
@@ -1980,9 +1951,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flaquesÉcrites]);
 
-  // ABONNEMENT AU BATTEMENT (`stage/stageFrames`, par `anim.subscribe`) : il ne se refait qu'au
-  // changement de SOURCE de frames, jamais à chaque rendu — l'objet `anim` que l'hôte reforge par rendu
-  // n'en est pas une. La frame qu'il rejoue lit `dessinerRef`, donc toujours les props courantes.
+  // ABONNEMENT AU BATTEMENT (`stage/stageFrames`) : l'écran tient SON dessin du battement unique, quel
+  // que soit l'hôte qui le monte et sans aucune prop — l'éditeur en monte un sans `anim`, et sa pluie
+  // doit tomber comme en jeu. La frame rejouée lit `dessinerRef`, donc toujours les props courantes.
+  useEffect(() => subscribeStageFrames(() => dessinerRef.current()), []);
+  // PILOTE D'IMAGES ALTERNATIF (bancs) : une horloge tenue à la main, en plus du battement. Il ne se
+  // rebranche qu'au changement de SOURCE, jamais à chaque rendu — l'objet `anim` que l'hôte reforge
+  // par rendu n'en est pas une.
   const battement = anim?.subscribe;
   useEffect(() => battement?.(() => dessinerRef.current()), [battement]);
 
@@ -2023,6 +1998,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // `setClearColor` en no-op — sans cette trace, la teinte du fond ne serait mesurable nulle part.
   // `data-brume` : le nombre de NAPPES de brume montées dans le volume. Absent = aucune (météo sans
   // brume authorée, intérieur, vue du dessus, première personne).
+  // `data-rendus` : le compte de passes DESSINÉES depuis le montage. Il n'est pas posé ici mais par la
+  // passe elle-même (`dessiner`) : une boucle d'image ne commit rien, donc un attribut de rendu React
+  // resterait à la valeur du dernier commit.
   return (
     <canvas
       ref={canvasRef}
