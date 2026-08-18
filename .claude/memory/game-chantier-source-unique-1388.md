@@ -24,7 +24,9 @@ Arbitrages structurants (verbatims à l'épique) :
   (PRIORITY_CAT_ORDER l.359, SAME_CONCEPT_GROUPS) migrent en donnée (#1392).
 - **Exceptions closes** : livres sans extraction (frenchy-bzh, 423 entrées) et prose maison, étiquetées.
   `gods` : curation à DÉFAIRE (blobs recomposés), jamais un modèle.
-- **Arbitrage RESTANT** : diffusion du texte intégral en déployé (gate du lot D #1391, repli écrit §6).
+- **Diffusion ARBITRÉE** (2026-08-18, option choisie : « Tout servir, partout ») : les chapitres entiers
+  des 16 livres extraits sont servis en déployé comme en local — exposition publique du texte intégral
+  assumée par le propriétaire. Gate du lot D #1391 LEVÉ, repli §6 sans objet (consigné sur #1388 et #1391).
 
 Leçon de méthode payée cher dans la session : un DESIGN en discussion ne se ticket pas (3 tickets créés
 puis fermés not_planned #1383/#1386/#1387) — un FAIT mesuré se ticket, un design attend l'arbitrage puis
