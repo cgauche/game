@@ -27,6 +27,7 @@ import type { Scene } from '../../../state/scene';
 import { shelterField, shelterSectionAt } from '../../builders/roofs';
 import { sceneGroundSpan } from './weatherParticles';
 import { withRenderRank } from './renderRanks';
+import { materiauPlanTransparent } from './worldMaterials';
 
 /** Une bande CONTINUE de colonnes à ciel ouvert sur la rangée `y` : de `x0` à `x1` INCLUS. */
 export interface OpenRun {
@@ -144,12 +145,10 @@ export function buildBrumeSheets(plan: BrumePlan, def: WeatherBrumeDef): THREE.M
   const { runs, mpt, groundM } = plan;
   if (!runs.length) return [];
   return def.layers.map((couche, i) => {
-    const mat = new THREE.MeshBasicMaterial({
+    const mat = materiauPlanTransparent({
       color: new THREE.Color(def.color),
-      transparent: true,
       opacity: couche.alpha,
       depthWrite: false,
-      side: THREE.DoubleSide,
       fog: false,
     });
     const mesh = new THREE.Mesh(brumeSheetGeometry(runs, mpt, groundM + couche.hM), mat);

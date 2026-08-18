@@ -34,6 +34,8 @@ import {
 import { tileQuadGeometry } from './highlightMeshes';
 import { SPECKLE_LIFT_M } from './groundAccents';
 import { withRenderRank } from './renderRanks';
+import { materiauPlanTransparent } from './worldMaterials';
+import { poserCompteInstances } from './instancePools';
 
 /** Un pool de halo d'interaction. */
 export type HaloSlot =
@@ -169,10 +171,8 @@ export function unitStarGeometry(branches = SPARK_BRANCHES, innerRatio = SPARK_I
 export function buildHaloMesh(slot: HaloSlot, capacity = HALO_SLOT_CAPACITY[slot]): THREE.InstancedMesh {
   const disque = slot === 'fouilleDisque' || slot === 'fouilleDisqueSurvol' || slot === 'pnjDisque';
   const geo = disque ? unitDiscGeometry() : slot === 'fouilleEtincelle' ? unitStarGeometry() : tileQuadGeometry();
-  const mat = new THREE.MeshBasicMaterial({
+  const mat = materiauPlanTransparent({
     color: new THREE.Color(HALO_SLOT_TINT[slot]),
-    side: THREE.DoubleSide,
-    transparent: true,
     opacity: HALO_SLOT_OPACITY[slot],
     depthWrite: false,
     fog: false,
@@ -180,6 +180,6 @@ export function buildHaloMesh(slot: HaloSlot, capacity = HALO_SLOT_CAPACITY[slot
   const mesh = new THREE.InstancedMesh(geo, mat, capacity);
   mesh.name = `halos:${slot}`;
   mesh.frustumCulled = false; // ces halos suivent le décor de toute la carte : la sphère du pool la vaudrait
-  mesh.count = 0;
+  poserCompteInstances(mesh, 0);
   return withRenderRank(mesh, 'chrome');
 }

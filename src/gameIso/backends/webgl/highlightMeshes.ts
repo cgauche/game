@@ -27,6 +27,8 @@ import * as THREE from 'three';
 import { strokeWidthK } from '../../builders/dynamicMarks';
 import type { HighlightEl } from '../../builders/highlights';
 import { tileTint } from '../../teamColors';
+import { materiauPlanTransparent } from './worldMaterials';
+import { poserCompteInstances } from './instancePools';
 import {
   RANGE_BAND_TINT,
   RING_ALLY_TINT,
@@ -237,9 +239,7 @@ export function tileFrameGeometry(k = RING_FRAME_K): THREE.BufferGeometry {
  *  EST déjà un liseré. */
 export function buildHighlightMesh(slot: HighlightSlot, capacity: number): THREE.InstancedMesh {
   const geo = slot === 'ringContour' ? tileFrameGeometry() : tileQuadGeometry(TILE_INSET_K);
-  const mat = new THREE.MeshBasicMaterial({
-    side: THREE.DoubleSide,
-    transparent: true,
+  const mat = materiauPlanTransparent({
     opacity: SLOT_OPACITY[slot],
     depthWrite: false,
     fog: false,
@@ -249,7 +249,7 @@ export function buildHighlightMesh(slot: HighlightSlot, capacity: number): THREE
   mesh.frustumCulled = false; // les marques couvrent la carte : la sphère du pool vaudrait la scène
   const blanc = new THREE.Color(1, 1, 1);
   for (let i = 0; i < capacity; i++) mesh.setColorAt(i, blanc);
-  mesh.count = 0;
+  poserCompteInstances(mesh, 0);
   // Rang `monde` : ces marques sont POSÉES au sol, sous les pions (registre `renderRanks.ts`).
   return withRenderRank(mesh, 'monde');
 }
@@ -269,7 +269,7 @@ export function writeHighlightInstances(
     mesh.setMatrixAt(i, highlightMatrix(els[i], mpt, m));
     mesh.setColorAt(i, c.set(highlightTint(els[i])));
   }
-  mesh.count = n;
+  poserCompteInstances(mesh, n);
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   return n;

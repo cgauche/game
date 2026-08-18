@@ -26,6 +26,8 @@ import { ACTIVE_HALO_TINT, ENGAGE_TINT } from '../../highlightTints';
 import { RING_FRAME_K, tileFrameGeometry, tileQuadGeometry } from './highlightMeshes';
 import { SPECKLE_LIFT_M } from './groundAccents';
 import { withRenderRank } from './renderRanks';
+import { materiauPlanTransparent } from './worldMaterials';
+import { poserCompteInstances } from './instancePools';
 
 /** Un pool de marques dynamiques. */
 export type DynMarkSlot = 'tether' | 'actif' | 'groupe' | 'anneau';
@@ -89,10 +91,8 @@ export const DYN_SLOT_CAPACITY: Record<DynMarkSlot, number> = { tether: 256, act
 export function buildDynamicMarkMesh(slot: DynMarkSlot, capacity = DYN_SLOT_CAPACITY[slot]): THREE.InstancedMesh {
   const teinte = DYN_SLOT_TINT[slot];
   const geo = slot === 'tether' || slot === 'anneau' ? tileQuadGeometry() : tileFrameGeometry(slot === 'groupe' ? PARTY_FRAME_K : RING_FRAME_K);
-  const mat = new THREE.MeshBasicMaterial({
+  const mat = materiauPlanTransparent({
     color: new THREE.Color(teinte ?? 0xffffff),
-    side: THREE.DoubleSide,
-    transparent: true,
     opacity: DYN_SLOT_OPACITY[slot],
     depthWrite: false,
     fog: false,
@@ -104,7 +104,7 @@ export function buildDynamicMarkMesh(slot: DynMarkSlot, capacity = DYN_SLOT_CAPA
   }
   mesh.name = `marquesDyn:${slot}`;
   mesh.frustumCulled = false; // ces marques suivent l'action : la sphère du pool vaudrait la scène
-  mesh.count = 0;
+  poserCompteInstances(mesh, 0);
   return withRenderRank(mesh, 'chrome');
 }
 
@@ -139,10 +139,8 @@ export const SILHOUETTE_TWIN_OPACITY = 0.65;
  * partager le programme de l'original est correct, l'état de profondeur s'applique au draw).
  */
 export function buildSilhouetteTwin(source: THREE.InstancedMesh): THREE.InstancedMesh {
-  const mat = new THREE.MeshBasicMaterial({
+  const mat = materiauPlanTransparent({
     color: new THREE.Color(0xffffff), // la teinte vient de `instanceColor`, partagé avec l'original
-    side: THREE.DoubleSide,
-    transparent: true,
     opacity: SILHOUETTE_TWIN_OPACITY,
     depthWrite: false,
     depthFunc: THREE.GreaterDepth,
@@ -157,7 +155,7 @@ export function buildSilhouetteTwin(source: THREE.InstancedMesh): THREE.Instance
   jumeau.name = `${source.name}:silhouette`;
   jumeau.frustumCulled = false;
   withRenderRank(jumeau, 'jumeau');
-  jumeau.count = source.count;
+  poserCompteInstances(jumeau, source.count);
   jumeau.userData.emprunte = true; // géométrie et buffers appartiennent à l'original (`viderGroupe`)
   (source.userData as { silhouette?: THREE.InstancedMesh }).silhouette = jumeau;
   return jumeau;

@@ -28,6 +28,7 @@ import * as atlasBake from '../backends/webgl/atlasBake';
 import { bakeQueueLength, clearAtlasCache, resetBakeQueue } from '../backends/webgl/atlasBake';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
 import { frameRectOf } from './boardPose';
+import { subscribeStageFrames } from './stageFrames';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -95,20 +96,26 @@ function simulerRasterisation(): void {
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
 }
 
-function vue(yawDeg: number, els: SceneBillboardEls = ELS, acteurs: ActorPose[] = ACTEURS): JSX.Element {
+function vue(
+  yawDeg: number,
+  els: SceneBillboardEls = ELS,
+  acteurs: ActorPose[] = ACTEURS,
+  animUtilisée: StageWalkAnim = anim,
+  keepEl: KeepEl = KEEP,
+): JSX.Element {
   return (
     <GameStage3D
       scene={SCENE}
       mpt={MPT}
       frame={cadre(yawDeg)}
       tintAt={TINT}
-      keepEl={KEEP}
+      keepEl={keepEl}
       els={els}
       actors={acteurs}
       gameTime={720}
       lightLevel={1}
       lights={[]}
-      anim={anim}
+      anim={animUtilisée}
     />
   );
 }
@@ -122,12 +129,16 @@ async function respirer(ms: number): Promise<void> {
   } while (Date.now() < fin);
 }
 
-async function monter(els: SceneBillboardEls = ELS, acteurs: ActorPose[] = ACTEURS): Promise<void> {
+async function monter(
+  els: SceneBillboardEls = ELS,
+  acteurs: ActorPose[] = ACTEURS,
+  animUtilisée: StageWalkAnim = anim,
+): Promise<void> {
   scènes = [];
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
-  await act(async () => { root!.render(vue(0, els, acteurs)); });
+  await act(async () => { root!.render(vue(0, els, acteurs, animUtilisée)); });
   await respirer(40);
 }
 
@@ -347,5 +358,95 @@ describe('Cran franchi — l’art est celui du NOUVEAU cran', () => {
     for (let i = 0; i < 20 && !(clés[clés.length - 1] ?? '').includes(marque(1)); i++) await respirer(20);
     expect(clés.length, 'aucune planche réclamée : le corps ne joue plus').toBeGreaterThan(0);
     expect(clés[clés.length - 1], 'le corps joue encore la planche du cran quitté').toContain(marque(1));
+  });
+});
+
+/**
+ * LE SOL AUSSI EST REPOSÉ (#1376). Les accents de sol (touffes/mouchetis instanciés) sont montés sur
+ * le SEMIS ; le franchissement d'un cran ne leur passe qu'une référence de `KeepEl` neuve, pour un
+ * verdict identique. Les remonter là libérait leurs matériaux et géométries — un `deleteProgram` +
+ * `linkProgram` et ~300 Ko de sommets ré-uploadés par quart de tour, mesurés au profil.
+ */
+describe('Cran franchi — les ACCENTS DE SOL survivent', () => {
+  /** Les `InstancedMesh` du groupe accents : leur nom est la clé de lot (`type|couleur`). */
+  function lotsAccents(): THREE.InstancedMesh[] {
+    const out: THREE.InstancedMesh[] = [];
+    scènes[scènes.length - 1]?.traverse((o) => {
+      const m = o as THREE.InstancedMesh;
+      if (m.isInstancedMesh && /^(tuft|speckle)\|/.test(m.name)) out.push(m);
+    });
+    return out;
+  }
+
+  it('ni matériau ni géométrie libérés, mêmes meshes, mêmes comptes d’instances', async () => {
+    await monter();
+    const avant = lotsAccents();
+    // PRÉMISSE — sans semis monté, « rien n'est libéré » serait vrai du vide.
+    expect(avant.length, 'aucun lot d’accents monté : rien à mesurer').toBeGreaterThan(0);
+    const comptes = avant.map((m) => m.count);
+    expect(comptes.reduce((a, b) => a + b, 0), 'un semis vide ne prouverait rien').toBeGreaterThan(0);
+    const disposeMat = vi.spyOn(THREE.Material.prototype, 'dispose');
+    const disposeGeo = vi.spyOn(THREE.BufferGeometry.prototype, 'dispose');
+
+    // FRANCHISSEMENT tel que l'écran le sert : le dégagement est reforgé au cran (`keepEl` dépend des
+    // `dims`, qui portent le lacet) — même verdict, référence NEUVE.
+    await act(async () => { root!.render(vue(100, ELS, ACTEURS, anim, () => true)); });
+    await respirer(60);
+
+    expect(disposeMat, 'le semis se libère au quart de tour : c’est le relink de shader mesuré').not.toHaveBeenCalled();
+    expect(disposeGeo).not.toHaveBeenCalled();
+    const après = lotsAccents();
+    expect(après.map((m) => m.name)).toEqual(avant.map((m) => m.name));
+    expect(après.filter((m) => avant.includes(m)).length, 'les lots doivent être les MÊMES objets').toBe(avant.length);
+    expect(après.map((m) => m.count)).toEqual(comptes);
+  });
+});
+
+/**
+ * COALESCENCE DES RELÈVES (#1376) : un board relevé demande UNE IMAGE (`demanderUneImage`), il ne
+ * peint pas. Vingt boards relevés dans la même image en obtiennent une seule — là où un rendu complet
+ * par board coûtait 63 rendus par franchissement en exploration (331 ms mesurés).
+ */
+describe('Cran franchi — N relèves, UNE image', () => {
+  const DENSE: SceneBillboardEls = {
+    tokens: [],
+    props: Array.from({ length: 20 }, (_, i) => décor(`c${i}`, 2 + (i % 10))),
+  };
+  /** Câblage de PRODUCTION : le stage s'abonne au battement du module (`VolumetricWorld`). */
+  const animProd: StageWalkAnim = {
+    subscribe: subscribeStageFrames,
+    glide: () => null,
+    cam: () => ({ x: 6, y: 6 }),
+  };
+  /** Une image du navigateur, servie pour de bon (jsdom cadence son rAF). */
+  const uneImage = async (): Promise<void> => {
+    await act(async () => { await new Promise<void>((r) => requestAnimationFrame(() => r())); });
+  };
+
+  it('vingt boards relevés au cran d’arrivée ne peignent pas vingt frames', async () => {
+    await monter(DENSE, SANS_ACTEUR, animProd);
+    await respirer(120);
+    expect(quads().length, 'aucun décor monté : rien à mesurer').toBe(DENSE.props.length);
+    const artCran0 = quads().map(mapDe);
+    expect(artCran0.every(Boolean), 'un décor sans art : le cran 0 n’est pas servi').toBe(true);
+
+    // Aller au cran 1 et l'attendre COMPLET : les textures des deux crans sont alors en cache, donc
+    // les vingt relèves du RETOUR tombent dans la même image — c'est la rafale qu'on mesure.
+    await act(async () => { root!.render(vue(100, DENSE, SANS_ACTEUR, animProd)); });
+    let relevés = 0;
+    for (let i = 0; i < 60 && relevés < DENSE.props.length; i++) {
+      await respirer(20);
+      relevés = quads().filter((m, k) => mapDe(m) !== artCran0[k]).length;
+    }
+    expect(relevés, 'le cran 1 n’est pas servi en entier : le retour ne serait pas en cache').toBe(DENSE.props.length);
+
+    const avant = scènes.length;
+    await act(async () => { root!.render(vue(10, DENSE, SANS_ACTEUR, animProd)); });
+    await uneImage();
+    const rendus = scènes.length - avant;
+
+    // PRÉMISSE — sans relève effective, « peu de rendus » ne dirait rien.
+    expect(quads().map(mapDe), 'les vingt décors doivent être revenus au cran 0').toEqual(artCran0);
+    expect(rendus, `${rendus} rendus pour ${DENSE.props.length} relèves`).toBeLessThan(DENSE.props.length);
   });
 });

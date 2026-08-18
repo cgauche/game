@@ -9,8 +9,10 @@
  *    en node nu. Elle consomme le MÊME cœur d'expansion que les deux autres backends
  *    (`expandRecipe`, seed = identité MONDE `hash32('floor', x, y, z)`) et le MÊME flux de brins
  *    (`seedStream(hash32(seed, 'blades'))`, deux tirages par touffe) — même seed, mêmes emplacements ;
- *  - MONTAGE (`buildGroundAccentMeshes`) : un `THREE.InstancedMesh` par (type d'accent × couleur), la
- *    teinte de visibilité de la case portée par `instanceColor`. Le frustum culling natif de three
+ *  - MONTAGE (`mountGroundAccentLots`) puis REPOSE (`reposeGroundAccents`) : un `THREE.InstancedMesh`
+ *    par (type d'accent × couleur), monté une fois par semis ; le dégagement s'y applique par
+ *    COMPACTION des instances retenues et la teinte de visibilité par `instanceColor` — ni l'un ni
+ *    l'autre ne refait un mesh. Le frustum culling natif de three
  *    reste actif : `InstancedMesh` surcharge `computeBoundingSphere` pour couvrir SES instances, et
  *    `Frustum.intersectsObject` la calcule à la première frame (three 185, `three.core.js:25611`).
  *
@@ -97,7 +99,8 @@ export interface SceneGroundAccent extends GroundAccent {
  *  porte) portant une recette d'accent, chacune semée à
  *  l'identité de SA case. INVARIANT à la visibilité ET au dégagement, comme le bake du monde
  *  (`bakeWorldGeometry`) : le semis coûte 12,1 ms sur l'arène (mesuré #1176) et ne se rejoue qu'à la
- *  scène ou à l'échelle — c'est `maskGroundAccents` qui en retire ce que le dégagement emporte. */
+ *  scène ou à l'échelle — c'est la REPOSE (`reposeGroundAccents`) qui en retire ce que le dégagement
+ *  emporte, sans jamais toucher au semis. */
 export function sceneGroundAccents(scene: Scene, mpt: number): SceneGroundAccent[] {
   const out: SceneGroundAccent[] = [];
   for (const wf of worldFaces(scene)) {
@@ -110,16 +113,6 @@ export function sceneGroundAccents(scene: Scene, mpt: number): SceneGroundAccent
   return out;
 }
 
-/** Les accents que le DÉGAGEMENT laisse : la MÊME loi que le masque du monde (`applyCutawayMask`), sur
- *  la même identité d'élément. Sans elle, les touffes d'une nappe retirée resteraient à flotter à sa
- *  place — le semis ignore le dégagement, seule son APPLICATION le porte. */
-export function maskGroundAccents(
-  accents: readonly SceneGroundAccent[],
-  keepEl: KeepEl,
-): SceneGroundAccent[] {
-  return accents.filter((a) => keepEl(a.el));
-}
-
 /** Compte d'instances par type — le budget de la scène, mesurable sans monter un seul mesh. */
 export function accentCounts(accents: readonly GroundAccent[]): { tufts: number; speckles: number; total: number } {
   let tufts = 0;
@@ -130,8 +123,8 @@ export function accentCounts(accents: readonly GroundAccent[]): { tufts: number;
 /** Regroupement de MONTAGE : un lot par (type d'accent × couleur de donnée) — la maille d'un
  *  `InstancedMesh`. La teinte de visibilité ne rentre PAS dans la clé : elle varie par case et voyage
  *  en `instanceColor`. */
-export function groupAccents(accents: readonly GroundAccent[]): Map<string, GroundAccent[]> {
-  const out = new Map<string, GroundAccent[]>();
+export function groupAccents<A extends GroundAccent>(accents: readonly A[]): Map<string, A[]> {
+  const out = new Map<string, A[]>();
   for (const a of accents) {
     const k = `${a.kind}|${a.color}`;
     const lot = out.get(k);
@@ -181,16 +174,28 @@ export function accentMatrix(a: GroundAccent, m = new THREE.Matrix4()): THREE.Ma
   return m.compose(new THREE.Vector3(a.pos.x, a.pos.y + SPECKLE_LIFT_M, a.pos.z), q, new THREE.Vector3(d, 1, d));
 }
 
-/** Les `InstancedMesh` d'une scène : un par lot (type × couleur). Chaque instance porte sa pose et sa
- *  couleur (donnée × teinte de visibilité, prise au MÊME champ que les faces du monde
- *  `applyVisibilityTint`, échantillonné au centre de sa case — un accent n'a qu'une couleur pour toute
- *  son instance), la teinte voyageant par `instanceColor` : un changement de visibilité ne
- *  refait ni le semis ni les matrices. `lit` choisit le matériau, exactement comme les faces du monde. */
-export function buildGroundAccentMeshes(
-  accents: readonly GroundAccent[],
-  opts: { lit: boolean; tintAt: TintAt },
-): THREE.InstancedMesh[] {
-  const out: THREE.InstancedMesh[] = [];
+/** Un LOT monté : le `InstancedMesh` d'un (type × couleur), le semis qu'il porte, et l'état de la
+ *  dernière REPOSE. C'est par cet état que la repose sait ne RIEN réécrire quand le verdict n'a pas
+ *  bougé — un franchissement de cran passe une référence de `KeepEl` neuve pour un verdict identique. */
+export interface GroundAccentLot {
+  readonly mesh: THREE.InstancedMesh;
+  /** Le semis de ce lot, dans l'ordre de sa capacité — l'index d'un accent y est son RANG. */
+  readonly accents: readonly SceneGroundAccent[];
+  /** Rangs écrits en tête du mesh à la dernière repose de dégagement (`mesh.count` en est la taille). */
+  retenus: number[];
+  /** Teinte appliquée aux instances retenues ; `null` tant qu'aucune repose n'est passée. */
+  teinte: TintAt | null;
+}
+
+/** MONTAGE du semis : un `InstancedMesh` par lot (type × couleur), à la CAPACITÉ du lot — géométrie et
+ *  matériau créés ici et ici seulement, libérés au seul démontage du semis. Aucune instance n'est
+ *  montrée avant la première repose : elle seule connaît le dégagement et la teinte.
+ *  `lit` choisit le matériau, exactement comme les faces du monde. */
+export function mountGroundAccentLots(
+  accents: readonly SceneGroundAccent[],
+  opts: { lit: boolean },
+): GroundAccentLot[] {
+  const out: GroundAccentLot[] = [];
   for (const [key, lot] of groupAccents(accents)) {
     const kind = lot[0].kind;
     const geo = kind === 'tuft' ? tuftGeometry() : speckleGeometry();
@@ -200,15 +205,63 @@ export function buildGroundAccentMeshes(
       : new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
     const mesh = new THREE.InstancedMesh(geo, mat, lot.length);
     mesh.name = key;
-    const m = new THREE.Matrix4();
-    const c = new THREE.Color();
-    lot.forEach((a, i) => {
-      mesh.setMatrixAt(i, accentMatrix(a, m));
-      mesh.setColorAt(i, c.set(a.color).multiplyScalar(opts.tintAt(a.cell.x, a.cell.y, a.cell.z)));
-    });
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    out.push(mesh);
+    mesh.count = 0;
+    out.push({ mesh, accents: lot, retenus: [], teinte: null });
   }
   return out;
+}
+
+/** Tampon de travail des rangs retenus, réutilisé d'une repose à l'autre : une repose qui ne change
+ *  rien n'alloue rien non plus. */
+const rangsRetenus: number[] = [];
+const matriceDeRepose = new THREE.Matrix4();
+const couleurDeRepose = new THREE.Color();
+
+/**
+ * REPOSE d'un semis déjà monté — la seule passe qu'un dégagement ou une teinte déclenche.
+ *
+ * DÉGAGEMENT : la MÊME loi que le masque du monde (`applyCutawayMask`), sur la même identité
+ * d'élément — un accent est une touffe POSÉE SUR une face, il part avec elle. Appliquée par
+ * COMPACTION : les retenus sont réécrits en tête, `count` les borne. Aucune géométrie, aucun
+ * matériau touché, donc aucun relink de shader (#1376).
+ * TEINTE : `instanceColor` sur les retenus, rien d'autre.
+ *
+ * Rend ce qui a RÉELLEMENT été écrit : un verdict inchangé et une teinte inchangée ne valent ni image
+ * ni carte d'ombre.
+ */
+export function reposeGroundAccents(
+  lots: readonly GroundAccentLot[],
+  keepEl: KeepEl,
+  tintAt: TintAt,
+): { dégagement: boolean; teinte: boolean } {
+  let dégagement = false;
+  let teinte = false;
+  for (const lot of lots) {
+    rangsRetenus.length = 0;
+    for (let i = 0; i < lot.accents.length; i++) if (keepEl(lot.accents[i].el)) rangsRetenus.push(i);
+    const bouge =
+      rangsRetenus.length !== lot.retenus.length || rangsRetenus.some((r, i) => r !== lot.retenus[i]);
+    const { mesh } = lot;
+    if (bouge) {
+      for (let i = 0; i < rangsRetenus.length; i++)
+        mesh.setMatrixAt(i, accentMatrix(lot.accents[rangsRetenus[i]], matriceDeRepose));
+      mesh.count = rangsRetenus.length;
+      mesh.instanceMatrix.needsUpdate = true;
+      // La sphère de culling couvre les instances ÉCRITES : elle se réinvalide avec elles. three ne la
+      // recalcule QUE si elle est nulle (`Frustum.intersectsObject`), et `setMatrixAt` ne l'invalide
+      // pas — sans ce geste, le lot entier sort du frustum, écran ET carte d'ombre (#1376).
+      mesh.boundingSphere = null;
+      lot.retenus = rangsRetenus.slice();
+      dégagement = true;
+    }
+    if (!bouge && lot.teinte === tintAt) continue;
+    for (let i = 0; i < lot.retenus.length; i++) {
+      const a = lot.accents[lot.retenus[i]];
+      mesh.setColorAt(i, couleurDeRepose.set(a.color).multiplyScalar(tintAt(a.cell.x, a.cell.y, a.cell.z)));
+    }
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    lot.teinte = tintAt;
+    teinte = true;
+  }
+  return { dégagement, teinte };
 }

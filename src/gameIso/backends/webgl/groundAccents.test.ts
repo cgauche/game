@@ -1,20 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import * as THREE from 'three';
 import {
   accentCounts,
   accentMatrix,
-  buildGroundAccentMeshes,
   groupAccents,
+  mountGroundAccentLots,
+  reposeGroundAccents,
   sceneGroundAccents,
   tileGroundAccents,
   SPECKLE_LIFT_M,
+  type GroundAccentLot,
+  type SceneGroundAccent,
 } from './groundAccents';
 import { groundAccentsSvg, TUFT_LEAN_AMPLITUDE } from '../../authoring/detailSvg';
 import { terrainDetail } from '../../../state/terrain';
 import { ISO_PX_PER_M } from '../../iso';
 import { TUFT_FAN } from '../../detail/expand';
 import { projGP } from '../../authoring/project';
-import { worldFaces } from './sceneMeshes';
+import { worldFaces, type KeepEl, type TintAt } from './sceneMeshes';
 import { facePoly, coplanarRanks, COPLANAR_BIAS_M } from './worldTris';
 import { buildScene } from '../../../state/mapSpec';
 import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte';
@@ -153,6 +156,16 @@ describe('groundAccents — parité de SEED avec le semis affine', () => {
   });
 });
 
+/** Semis MONTÉ puis REPOSÉ une fois — l'état dans lequel l'écran laisse ses lots après un commit. */
+function reposé(
+  accents: readonly SceneGroundAccent[],
+  opts: { lit?: boolean; keepEl?: KeepEl; tintAt?: TintAt } = {},
+): GroundAccentLot[] {
+  const lots = mountGroundAccentLots(accents, { lit: opts.lit ?? false });
+  reposeGroundAccents(lots, opts.keepEl ?? (() => true), opts.tintAt ?? (() => 1));
+  return lots;
+}
+
 describe('groundAccents — semis de SCÈNE et montage instancié', () => {
   const scene = buildScene(siegeSpec);
   const mpt = sceneMetresPerTile(scene);
@@ -166,8 +179,7 @@ describe('groundAccents — semis de SCÈNE et montage instancié', () => {
     const accents = sceneGroundAccents(scene, mpt);
     expect(accents.length).toBeGreaterThan(0);
     for (const a of accents) expect([a.cell.x, a.cell.y, a.cell.z].every(Number.isInteger)).toBe(true);
-    const meshes = buildGroundAccentMeshes(accents.slice(0, 200), { lit: false, tintAt: () => 0.25 });
-    const mesh = meshes[0];
+    const mesh = reposé(accents.slice(0, 200), { tintAt: () => 0.25 })[0].mesh;
     const attendue = new THREE.Color().set(accents.find((a) => `${a.kind}|${a.color}` === mesh.name)!.color).multiplyScalar(0.25);
     const lue = new THREE.Color();
     mesh.getColorAt(0, lue);
@@ -183,9 +195,10 @@ describe('groundAccents — semis de SCÈNE et montage instancié', () => {
     expect(b.map(trace)).toEqual(a.map(trace));
     // La teinte n'entre PAS dans le lot (elle varie par case, `instanceColor` la porte).
     const lots = groupAccents(a);
-    const eteints = buildGroundAccentMeshes(a, { lit: false, tintAt: () => 0.1 });
-    const pleins = buildGroundAccentMeshes(a, { lit: false, tintAt: () => 1 });
-    expect(eteints.map((m) => `${m.name}:${m.count}`)).toEqual(pleins.map((m) => `${m.name}:${m.count}`));
+    const eteints = reposé(a, { tintAt: () => 0.1 });
+    const pleins = reposé(a, { tintAt: () => 1 });
+    const empreinte = (l: GroundAccentLot) => `${l.mesh.name}:${l.mesh.count}`;
+    expect(eteints.map(empreinte)).toEqual(pleins.map(empreinte));
     expect(eteints.length).toBe(lots.size);
   });
 
@@ -193,8 +206,8 @@ describe('groundAccents — semis de SCÈNE et montage instancié', () => {
     const accents = sceneGroundAccents(scene, mpt);
     const lots = groupAccents(accents);
     expect(lots.size).toBeGreaterThan(1);
-    const meshes = buildGroundAccentMeshes(accents, { lit: false, tintAt: () => 1 });
-    expect(meshes.map((m) => m.count).reduce((a, b) => a + b, 0)).toBe(accents.length);
+    const meshes = reposé(accents).map((l) => l.mesh);
+    expect(meshes.map((m) => m.count).reduce((x, y) => x + y, 0)).toBe(accents.length);
     // CULLING : rien n'est calculé d'avance — three résout la sphère à la première frame
     // (`Frustum.intersectsObject`) et `InstancedMesh` la surcharge pour couvrir SES instances, pas le
     // gabarit unité posé à l'origine. C'est cette couverture qu'on exige, pas l'appel.
@@ -227,6 +240,191 @@ describe('groundAccents — semis de SCÈNE et montage instancié', () => {
   it('un terrain SANS recette d\'accent ne sème rien', () => {
     const nu: DetailRecipe = { seedScope: 'tile' };
     expect(tileGroundAccents(nu, { x: 1, y: 1, z: 0 }, 0, MPT)).toEqual([]);
+  });
+});
+
+/**
+ * REPOSE (#1376) : un semis monté ne se REBÂTIT plus. Le franchissement d'un cran passe au stage une
+ * référence de `KeepEl` NEUVE pour un verdict IDENTIQUE sur le sol (le dégagement n'obéit qu'à la
+ * découpe, jamais au lacet) — et un rebuild à cet instant libérait matériaux et géométries, donc un
+ * `deleteProgram`/`linkProgram` et un ré-upload de sommets par quart de tour.
+ */
+describe('groundAccents — REPOSE en place, jamais de reconstruction', () => {
+  const scene = buildScene(siegeSpec);
+  const mpt = sceneMetresPerTile(scene);
+  const accents = sceneGroundAccents(scene, mpt);
+  /** Teinte STABLE, comme celle que l'écran mémorise (`IsoStage`) : elle ne se reforge qu'au
+   *  changement de visibilité, jamais au franchissement d'un cran. */
+  const TEINTE_PLEINE: TintAt = () => 1;
+  /** La nappe la plus SEMÉE de la scène : la retirer doit se voir. */
+  const plusSemée = () => {
+    const parEl = new Map<SceneGroundAccent['el'], number>();
+    for (const a of accents) parEl.set(a.el, (parEl.get(a.el) ?? 0) + 1);
+    return [...parEl.entries()].sort((x, y) => y[1] - x[1])[0];
+  };
+  /** Matrices lues DANS le mesh, bornées à `count` — ce que le GPU dessinerait. */
+  const matricesMontrées = (lot: GroundAccentLot): number[][] => {
+    const out: number[][] = [];
+    const m = new THREE.Matrix4();
+    for (let i = 0; i < lot.mesh.count; i++) {
+      lot.mesh.getMatrixAt(i, m);
+      out.push([...m.elements]);
+    }
+    return out;
+  };
+  /** Une matrice telle que le tampon d'instances la RENDRA : `instanceMatrix` est en flottants 32
+   *  bits, la comparer aux doubles de `accentMatrix` échouerait sur l'arrondi seul. */
+  const en32bits = (m: THREE.Matrix4): number[] => m.elements.map((v) => Math.fround(v));
+  /** Ce que three appelle « écrit » : `needsUpdate` n'a QUE son setter (`BufferAttribute`), le
+   *  compteur `version` est la seule trace lisible d'un téléversement demandé. */
+  const versions = (lots: readonly GroundAccentLot[]) =>
+    lots.map((l) => [l.mesh.instanceMatrix.version, l.mesh.instanceColor?.version ?? -1]);
+
+  it('MONTAGE : un mesh par lot, à la capacité du lot ; la repose en borne le compte', () => {
+    const lots = mountGroundAccentLots(accents, { lit: true });
+    expect(lots.length).toBe(groupAccents(accents).size);
+    expect(lots.length).toBeGreaterThan(1);
+    // Rien n'est montré avant la repose : elle seule connaît le dégagement.
+    expect(lots.every((l) => l.mesh.count === 0)).toBe(true);
+    expect(lots.map((l) => l.mesh.instanceMatrix.count).reduce((a, b) => a + b, 0)).toBe(accents.length);
+    reposeGroundAccents(lots, () => true, TEINTE_PLEINE);
+    expect(lots.map((l) => l.mesh.count).reduce((a, b) => a + b, 0)).toBe(accents.length);
+  });
+
+  it('VERDICT INCHANGÉ (référence de `KeepEl` neuve) : rien n’est réécrit, rien n’est libéré', () => {
+    const lots = reposé(accents, { lit: true, tintAt: TEINTE_PLEINE });
+    expect(lots.length).toBeGreaterThan(1);
+    const meshesAvant = lots.map((l) => l.mesh);
+    const matsAvant = lots.map((l) => l.mesh.material);
+    const geosAvant = lots.map((l) => l.mesh.geometry);
+    const comptesAvant = lots.map((l) => l.mesh.count);
+    const versionsAvant = versions(lots);
+    expect(comptesAvant.every((c) => c > 0)).toBe(true); // un semis vide ne prouverait rien
+    const disposeMat = vi.spyOn(THREE.Material.prototype, 'dispose');
+    const disposeGeo = vi.spyOn(THREE.BufferGeometry.prototype, 'dispose');
+
+    // Le franchissement : MÊME loi, référence NEUVE — exactement ce que `keepEl` devient au cran suivant.
+    const écrit = reposeGroundAccents(lots, (el) => el !== undefined, TEINTE_PLEINE);
+
+    expect(écrit).toEqual({ dégagement: false, teinte: false });
+    expect(disposeMat).not.toHaveBeenCalled();
+    expect(disposeGeo).not.toHaveBeenCalled();
+    expect(lots.map((l) => l.mesh)).toEqual(meshesAvant);
+    expect(lots.map((l) => l.mesh.material)).toEqual(matsAvant);
+    expect(lots.map((l) => l.mesh.geometry)).toEqual(geosAvant);
+    expect(lots.map((l) => l.mesh.count)).toEqual(comptesAvant);
+    expect(versions(lots), 'un téléversement demandé pour rien : c’est le ré-upload mesuré').toEqual(versionsAvant);
+    disposeMat.mockRestore();
+    disposeGeo.mockRestore();
+  });
+
+  it('DÉGAGEMENT : la nappe retirée emporte SES touffes, les autres instances restent en tête', () => {
+    const [cible, semés] = plusSemée();
+    expect(semés).toBeGreaterThan(0);
+    // Teinte qui VARIE par case : sous une teinte plate, une couleur laissée au rang de l'instance
+    // partie serait indiscernable de la bonne.
+    const teinteParCase: TintAt = (x, y, z) => 0.2 + ((x * 7 + y * 3 + z) % 5) / 10;
+    const lots = reposé(accents, { lit: true, tintAt: teinteParCase });
+    const pleins = lots.map((l) => l.mesh.count);
+
+    const écrit = reposeGroundAccents(lots, (el) => el !== cible, teinteParCase);
+
+    expect(écrit.dégagement).toBe(true);
+    expect(lots.map((l) => l.mesh.count).reduce((a, b) => a + b, 0)).toBe(accents.length - semés);
+    expect(lots.map((l) => l.mesh.count)).not.toEqual(pleins);
+    const lue = new THREE.Color();
+    const attendue = new THREE.Color();
+    for (const lot of lots) {
+      const attendus = lot.accents.filter((a) => a.el !== cible);
+      expect(lot.mesh.count).toBe(attendus.length);
+      // Les instances MONTRÉES sont bien celles retenues, dans leur ordre de semis.
+      expect(matricesMontrées(lot)).toEqual(attendus.map((a) => en32bits(accentMatrix(a))));
+      // …et leur COULEUR suit la compaction : la teinte se lit à la case du retenu de CE rang.
+      for (let i = 0; i < lot.mesh.count; i++) {
+        const a = attendus[i];
+        lot.mesh.getColorAt(i, lue);
+        attendue.set(a.color).multiplyScalar(teinteParCase(a.cell.x, a.cell.y, a.cell.z));
+        expect([lue.r, lue.g, lue.b].map((v) => Math.round(v * 1e5))).toEqual(
+          [attendue.r, attendue.g, attendue.b].map((v) => Math.round(v * 1e5)),
+        );
+      }
+    }
+    // Le semis lui-même n'a pas bougé : c'est l'APPLICATION qui filtre.
+    expect(sceneGroundAccents(scene, mpt).length).toBe(accents.length);
+  });
+
+  /**
+   * CULLING APRÈS COMPACTION : `InstancedMesh` porte SA sphère englobante, et three ne la calcule
+   * qu'une fois — `Frustum.intersectsObject` la recalcule si (et seulement si) elle est nulle, et
+   * `setMatrixAt` ne l'invalide pas (JSDoc three, `InstancedMesh.js`). Une sphère figée sur un
+   * dégagement ACTIF fait disparaître de l'écran ET de la carte d'ombre les instances que la levée du
+   * dégagement vient de rendre.
+   */
+  it('un dégagement LEVÉ rend ses instances VISIBLES du frustum (sphère réinvalidée)', () => {
+    // Dégagement ACTIF au montage : UNE seule nappe retenue — la sphère du lot amputé se referme
+    // alors sur cette tuile, et tout le reste du semis tombe hors d'elle.
+    const [seule] = plusSemée();
+    const lots = mountGroundAccentLots(accents, { lit: true });
+    reposeGroundAccents(lots, (el) => el === seule, TEINTE_PLEINE);
+    const lot = lots.find((l) => l.mesh.count > 0 && l.accents.some((a) => a.el !== seule))!;
+    expect(lot, 'aucun lot à la fois retenu et amputé : rien à mesurer').toBeTruthy();
+    lot.mesh.updateMatrixWorld(true);
+
+    // PREMIÈRE FRAME : c'est là que three fige la sphère du lot AMPUTÉ.
+    new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().identity()).intersectsObject(lot.mesh);
+    const figée = lot.mesh.boundingSphere!.clone();
+    expect(figée.radius, 'sphère non calculée : la panne mesurée ne pourrait pas se produire').toBeGreaterThan(0);
+
+    reposeGroundAccents(lots, () => true, TEINTE_PLEINE);
+    lot.mesh.updateMatrixWorld(true);
+
+    // CADRAGE serré sur un accent que le dégagement retenait, et choisi tel que la sphère FIGÉE
+    // n'entre PAS dans ce cadre : sans cette condition le frustum toucherait la sphère périmée et le
+    // contrat serait vrai des deux côtés.
+    const cadreSur = (p: { x: number; y: number; z: number }): THREE.Frustum => {
+      const cam = new THREE.OrthographicCamera(-2, 2, 2, -2, 1, 60);
+      cam.position.set(p.x, p.y + 40, p.z);
+      cam.lookAt(p.x, p.y, p.z);
+      cam.updateMatrixWorld(true);
+      return new THREE.Frustum().setFromProjectionMatrix(
+        new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse),
+      );
+    };
+    let frustum: THREE.Frustum | null = null;
+    for (const a of lot.accents) {
+      if (a.el === seule) continue;
+      const f = cadreSur(a.pos);
+      if (!f.intersectsSphere(figée)) { frustum = f; break; }
+    }
+    expect(frustum, 'aucun cadre hors de la sphère figée : la garde ne mordrait pas').toBeTruthy();
+
+    expect(frustum!.intersectsObject(lot.mesh), 'lot entier culled : ses touffes ne se peignent plus').toBe(true);
+  });
+
+  it('TEINTE seule : `instanceColor` se réécrit, les matrices ne bougent pas', () => {
+    const lots = reposé(accents.slice(0, 400), { lit: true, tintAt: TEINTE_PLEINE });
+    const avant = lots.map(matricesMontrées);
+    const versionsAvant = versions(lots);
+
+    const écrit = reposeGroundAccents(lots, () => true, () => 0.25);
+
+    expect(écrit).toEqual({ dégagement: false, teinte: true });
+    expect(lots.map((l) => l.mesh.instanceColor!.version)).toEqual(versionsAvant.map(([, c]) => c + 1));
+    expect(lots.map((l) => l.mesh.instanceMatrix.version)).toEqual(versionsAvant.map(([m]) => m));
+    expect(lots.map(matricesMontrées)).toEqual(avant);
+    const lue = new THREE.Color();
+    lots[0].mesh.getColorAt(0, lue);
+    const attendue = new THREE.Color().set(lots[0].accents[0].color).multiplyScalar(0.25);
+    expect(lue.r).toBeCloseTo(attendue.r, 6);
+    expect(lue.g).toBeCloseTo(attendue.g, 6);
+    expect(lue.b).toBeCloseTo(attendue.b, 6);
+  });
+
+  it('MATÉRIAU : `lit` choisit le régime, exactement comme les faces du monde', () => {
+    expect(mountGroundAccentLots(accents.slice(0, 50), { lit: false })[0].mesh.material)
+      .toBeInstanceOf(THREE.MeshBasicMaterial);
+    expect(mountGroundAccentLots(accents.slice(0, 50), { lit: true })[0].mesh.material)
+      .toBeInstanceOf(THREE.MeshLambertMaterial);
   });
 });
 

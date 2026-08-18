@@ -18,6 +18,7 @@ import { TEAM_RING_WIDTH_K, TETHER_DASH_K, TETHER_GAP_K, TETHER_WIDTH_K, dashPat
 import type { ProjKind } from '../../geometry/iso';
 import { dynSlotLiftM, silhouetteTwinOf, type DynMarkSlot } from '../backends/webgl/dynamicMarkMeshes';
 import { diagOnce } from '../rig/devDiag';
+import { poserCompteInstances } from '../backends/webgl/instancePools';
 import { boardChromeOpacity, AUCUN_CHROME, type ChromeAt, type GlideAt } from './boardPose';
 
 /** Les pools montés, par slot — un slot absent n'est simplement pas peint. */
@@ -312,13 +313,13 @@ export function poseDynamicMarks(pools: DynMarkPools, marks: DynamicMarks, f: Dy
   const écrire = (slot: DynMarkSlot, n: number) => {
     const mesh = pools[slot];
     if (!mesh) return;
-    mesh.count = n;
+    poserCompteInstances(mesh, n);
     mesh.instanceMatrix.needsUpdate = true;
     // JUMEAU DE SILHOUETTE (#1297, LOT A) : il LIT les buffers de son original, rien ne s'y réécrit —
     // seul le compte dessiné se propage, sans quoi le jumeau peindrait la population de la frame
     // précédente.
     const jumeau = silhouetteTwinOf(mesh);
-    if (jumeau) jumeau.count = n;
+    if (jumeau) poserCompteInstances(jumeau, n);
     counts[slot] = n;
   };
   const liens = pools.tether;

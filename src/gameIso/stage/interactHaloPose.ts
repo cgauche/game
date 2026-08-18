@@ -40,6 +40,7 @@ import {
 import { HALO_SLOT_OPACITY, haloSlotLiftM, type HaloSlot } from '../backends/webgl/interactHaloMeshes';
 import { billboardPose } from '../backends/webgl/sceneMeshes';
 import { pxPerM } from '../backends/webgl/worldTris';
+import { poserCompteInstances } from '../backends/webgl/instancePools';
 import { ringDashes, writeRingChords } from './dynamicMarkPose';
 
 /** Les pools montés, par slot — un slot absent n'est simplement pas peint. */
@@ -303,7 +304,7 @@ export function poseInteractHalos(pools: HaloPools, halos: InteractionHalos, f: 
   for (const slot of Object.keys(n) as HaloSlot[]) {
     const mesh = pools[slot];
     if (!mesh) continue;
-    mesh.count = n[slot];
+    poserCompteInstances(mesh, n[slot]);
     mesh.instanceMatrix.needsUpdate = true;
   }
   return n;

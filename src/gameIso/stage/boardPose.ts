@@ -16,6 +16,7 @@ import * as THREE from 'three';
 import { billboardDepthOffsetUnits, billboardViewDepth, poseContactShadow, type BillboardSubject } from '../backends/webgl/sceneMeshes';
 import { billboardExposure, type PointLightSlots } from './stagePointLights';
 import { withRenderRank } from '../backends/webgl/renderRanks';
+import { materiauPlanTransparent } from '../backends/webgl/worldMaterials';
 import { LUMA_709 } from '../shade';
 import { RASTER_PX_MAX, RASTER_PX_MIN, frameUvRect, rasterPxHeight, type AtlasLayout } from '../backends/webgl/billboardMath';
 import { clipTotalMs, type ClipDef } from '../rig/anim/actorAnimSelect';
@@ -86,7 +87,7 @@ export function frameRectOf(material: THREE.Material): FrameRectUniform | undefi
  * multipliée par la teinte de visibilité du sujet.
  */
 export function billboardMaterial(map: THREE.Texture, luminance: number): THREE.MeshBasicMaterial {
-  const mat = new THREE.MeshBasicMaterial({ map, transparent: true, alphaTest: ALPHA_TEST, side: THREE.DoubleSide });
+  const mat = materiauPlanTransparent({ map, alphaTest: ALPHA_TEST });
   mat.color.setScalar(luminance);
   mat.polygonOffset = true;
   mat.polygonOffsetFactor = -1;
@@ -186,11 +187,9 @@ export function boardDepthMaterial(b: Board): THREE.MeshDepthMaterial | undefine
  * lirait plus net à travers un mur qu'à découvert.
  */
 export function silhouetteMaterial(corps: Board['material'], teamColor: string): THREE.MeshBasicMaterial {
-  const mat = new THREE.MeshBasicMaterial({
+  const mat = materiauPlanTransparent({
     map: corps.map,
-    transparent: true,
     alphaTest: ALPHA_TEST,
-    side: THREE.DoubleSide,
     depthWrite: false,
     depthFunc: THREE.GreaterDepth,
   });

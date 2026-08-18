@@ -7,7 +7,7 @@
  * QUATRE CANAUX INDÉPENDANTS, chacun avec ses propres entrées, aucun n'invalidant les autres :
  *  - CUISSON (`bakeWorldGeometry`, `sceneGroundAccents`) : la passe LOURDE, invalidée par la SEULE
  *    scène et la SEULE échelle (`[scene, mpt]`). Ni la marche ni la caméra ne la rejouent.
- *  - DÉGAGEMENT (`applyCutawayMask`, `maskGroundAccents`) : les masses qui coiffent le groupe cessent
+ *  - DÉGAGEMENT (`applyCutawayMask`, `reposeGroundAccents`) : les masses qui coiffent le groupe cessent
  *    d'être dessinées — l'index du monde cuit se compacte EN PLACE (`[baked, keepEl]`). Une masse
  *    dégagée ne se rend pas, elle ne s'estompe pas.
  *  - TEINTE (`applyVisibilityTint`, `instanceColor` des accents) : la visibilité se réécrit en place
@@ -79,7 +79,7 @@ import {
 import { clearBillboardTextures, getBillboardTexture, svgToTexture } from '../backends/webgl/svgTexture';
 import { clearPeriodTextures } from '../backends/webgl/periodTexture';
 import { clearFaceBakes } from '../backends/webgl/faceBake';
-import { worldSurfaceMaterials } from '../backends/webgl/worldMaterials';
+import { materiauPlanTransparent, worldSurfaceMaterials } from '../backends/webgl/worldMaterials';
 import {
   actorBillboards,
   applyCutawayMask,
@@ -158,7 +158,7 @@ import {
   type RigSelectCtx,
 } from '../rig/anim/actorAnimSelect';
 import type { View } from '../rig/facing';
-import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents, type SceneGroundAccent } from '../backends/webgl/groundAccents';
+import { mountGroundAccentLots, reposeGroundAccents, sceneGroundAccents, type GroundAccentLot, type SceneGroundAccent } from '../backends/webgl/groundAccents';
 import {
   HIGHLIGHT_SLOTS,
   buildHighlightMesh,
@@ -201,6 +201,7 @@ import { signalerWebglRefusé } from './webglSupport';
 import { materiauProfondeurPerce, percerMateriau, PERCAGE_MAX_HEROS } from '../backends/webgl/percageLocal';
 import { creerPercage, type ActeurPerce, type Percage } from './percage';
 import type { Lid } from './architectureVisibility';
+import { demanderUneImage } from './stageFrames';
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
 export const CONVENTION = 'jeu' as const;
@@ -820,8 +821,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // ── DÉGAGEMENT : compactage de l'index du monde cuit (aucun sommet touché, aucun matériau refait).
   useEffect(() => { applyCutawayMask(baked, keepEl); }, [baked, keepEl]);
   // ── TEINTE : elle vit plus bas, avec la lumière — son read-set contient le fondu du soleil (#1300).
-  // Les touffes d'une nappe dégagée partent avec elle — MÊME loi, appliquée sur le MÊME semis cuit.
-  const accentsVus = useMemo(() => maskGroundAccents(accents, keepEl), [accents, keepEl]);
+  // Les touffes d'une nappe dégagée partent avec elle — MÊME loi, appliquée par la REPOSE du semis
+  // instancié (deux passes plus bas), jamais par un remontage.
   // BILLBOARDS : leur seule lecture de scène est `heightAt` (`sceneHeightDeps`) — tout le reste leur
   // vient de leurs éléments. Retenus dessus, un pas de combattant (jeu) comme un déplacement d'entité
   // ou de zone (édition) ne re-rasterise plus la planche entière.
@@ -879,7 +880,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // porte le FONDU du soleil (#1300) : c'est la porte du modelé de forme — plein sous un ciel qui
   // n'éclaire pas (intérieur, nuit), effacé sous le soleil qui modèle lui-même, et CONTINU entre les
   // deux. Un nombre, donc une dépendance d'effet stable : deux frames de même fondu ne repeignent rien.
-  // PORTÉE de ce modelé : les faces du monde CUIT. Les accents de sol (`buildGroundAccentMeshes`) et
+  // PORTÉE de ce modelé : les faces du monde CUIT. Les accents de sol (`mountGroundAccentLots`) et
   // les billboards sont des maillages à part, hors `spans` : ils gardent l'exposition horizontale de la
   // frame — ce qui est la bonne famille pour une touffe posée au sol, et un écart déclaré pour un
   // billboard, dont la normale est l'axe caméra et qu'aucune famille d'orientation ne décrit.
@@ -1302,13 +1303,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     );
     const texture = new THREE.TextureLoader().load(decalque.imageDataUrl);
     texture.colorSpace = THREE.SRGBColorSpace;
-    const mat = new THREE.MeshBasicMaterial({
+    const mat = materiauPlanTransparent({
       map: texture,
-      transparent: true,
       opacity: decalque.opacity,
       depthWrite: false,
       depthTest: !au_dessus,
-      side: THREE.DoubleSide,
       toneMapped: false,
     });
     const mesh = new THREE.Mesh(geo, mat);
@@ -1555,22 +1554,40 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geometry]);
 
-  // ── GROUPE ACCENTS : les instances de touffes/mouchetis. Séparé du monde car il porte la teinte
-  // AUTREMENT (par `instanceColor`, cuit au montage) : lui seul se remonte quand la visibilité change.
+  // ── GROUPE ACCENTS — SEMIS : les instances de touffes/mouchetis, un `InstancedMesh` par lot
+  // (type × couleur), montées UNE fois par semis. Séparé du monde car il porte la teinte AUTREMENT
+  // (par `instanceColor`) : ni le dégagement ni la teinte n'y refont un mesh, ils s'y REPOSENT (passe
+  // suivante). Le CRAN de vue n'entre pas ici (#1376).
+  const lotsAccents = useRef<GroundAccentLot[]>([]);
   useEffect(() => {
     const groupe = touffes.current;
     if (!groupe) return;
     // Toujours lambertiens eux aussi — même régime que les faces du monde, dont ils prolongent le sol.
-    for (const m of buildGroundAccentMeshes(accentsVus, { lit: true, tintAt })) {
-      m.castShadow = true;
-      m.receiveShadow = true;
-      groupe.add(withRenderRank(m, 'monde'));
+    const lots = mountGroundAccentLots(accents, { lit: true });
+    lotsAccents.current = lots;
+    for (const { mesh } of lots) {
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      groupe.add(withRenderRank(mesh, 'monde'));
     }
+    return () => {
+      lotsAccents.current = [];
+      viderGroupe(groupe);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accents]);
+
+  // ── GROUPE ACCENTS — REPOSE : dégagement par COMPACTION des instances retenues, teinte par
+  // `instanceColor`. Un franchissement de cran passe une référence de `KeepEl` neuve pour un verdict
+  // identique (le sol n'obéit qu'au dégagement, jamais au lacet) : rien n'est réécrit, donc ni carte
+  // d'ombre à recuire ni image à peindre.
+  useEffect(() => {
+    const { dégagement, teinte } = reposeGroundAccents(lotsAccents.current, keepEl, tintAt);
+    if (!dégagement && !teinte) return;
     ombresARefaire.current = true;
     dessiner();
-    return () => viderGroupe(groupe);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accentsVus, tintAt]);
+  }, [accents, keepEl, tintAt]);
 
   // ── POOLS DE MARQUES (P3-0c) : la CAPACITÉ, et rien d'autre. Un pool ne naît, ne grandit ou ne meurt
   // qu'au changement de palier — c'est la seule passe qui alloue une géométrie ou un matériau de marque.
@@ -1699,7 +1716,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
           // dépassé (une rotation plus rapide que la file) n'ont plus rien à recevoir.
           if (!b.mesh.parent || camRotRef.current !== rot) return;
           poserTextureStatique(b, texture);
-          dessinerRef.current();
+          // UNE image demandée, pas un rendu : N boards relevés dans la même image en obtiennent une
+          // seule (`demanderUneImage`, #1376).
+          demanderUneImage();
         },
         (raison: unknown) => console.warn(`GameStage3D: billboard « ${b.sub.identity} » gardé au cran précédent — texture non rasterisée :`, raison),
       );

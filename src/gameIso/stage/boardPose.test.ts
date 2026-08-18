@@ -1,9 +1,9 @@
-import { Mesh, MeshBasicMaterial, OrthographicCamera, PerspectiveCamera, PlaneGeometry, PointLight, Vector3 } from 'three';
+import { DoubleSide, Mesh, MeshBasicMaterial, OrthographicCamera, PerspectiveCamera, PlaneGeometry, PointLight, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { billboardDepthOffsetUnits, billboardPose, BILLBOARD_DEPTH_BIAS_M, CONTACT_SHADOW_LIFT_M, contactShadow, DEPTH_BUFFER_BITS, type BillboardSubject } from '../backends/webgl/sceneMeshes';
 import { affineCamera, affineScales } from '../backends/webgl/cameras';
 import { FOV_X } from '../pov/camera';
-import { boardCenter, boardProjectedPx, poseBoards, UP_ECRAN_COUCHE, type Board, type FrameLights } from './boardPose';
+import { billboardMaterial, boardCenter, boardProjectedPx, poseBoards, silhouetteMaterial, UP_ECRAN_COUCHE, type Board, type FrameLights } from './boardPose';
 import { billboardExposure, FLAME_INTENSITY, FLAME_LIFT_M, type PointLightSlots } from './stagePointLights';
 
 /**
@@ -381,5 +381,17 @@ describe('boardCenter — le corps se lève à la VERTICALE quand le haut d’é
     const hautMonde = b.mesh.position.clone().add(demi).project(camera);
     const basMonde = b.mesh.position.clone().sub(demi).project(camera);
     expect((Math.abs(hautMonde.y - basMonde.y) / 2) * VUE.h, 'la verticale monde est vue dans son axe').toBeLessThan(1e-9);
+  });
+});
+
+describe('forceSinglePass — un quad aligné écran n’a pas de face arrière à trier séparément', () => {
+  it('billboardMaterial ET silhouetteMaterial passent en une seule passe, deux faces', () => {
+    const corps = billboardMaterial(new MeshBasicMaterial().map!, 1);
+    const jumeau = silhouetteMaterial(corps, '#ff0000');
+    for (const mat of [corps, jumeau]) {
+      expect(mat.forceSinglePass).toBe(true);
+      expect(mat.side).toBe(DoubleSide);
+      expect(mat.transparent).toBe(true);
+    }
   });
 });

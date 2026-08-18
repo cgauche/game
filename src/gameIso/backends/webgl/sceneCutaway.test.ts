@@ -18,7 +18,7 @@ import {
 } from './sceneMeshes';
 import { facesGeometry } from './worldTris';
 import { faceDepthOf } from './faceRelief';
-import { maskGroundAccents, sceneGroundAccents } from './groundAccents';
+import { mountGroundAccentLots, reposeGroundAccents, sceneGroundAccents } from './groundAccents';
 import type { SceneEl } from '../../builders/types';
 import { scenario as arene } from '../../../scenes/test-scenarios/arene';
 import { buildVitrineScene } from '../../../scenes/vitrine-batiments';
@@ -230,9 +230,13 @@ describe('ACCENTS DE SOL — une nappe dégagée n’emporte pas que ses faces',
     for (const a of accents) parEl.set(a.el, (parEl.get(a.el) ?? 0) + 1);
     const [cible, semés] = [...parEl.entries()].sort((a, b) => b[1] - a[1])[0];
     expect(semés).toBeGreaterThan(0);
-    const restants = maskGroundAccents(accents, (el) => el !== cible);
-    expect(restants.length).toBe(accents.length - semés);
-    expect(restants.some((a) => a.el === cible)).toBe(false);
+    // La loi s'applique par REPOSE du semis instancié : les retenus sont compactés en tête, `count`
+    // les borne (les instances de la nappe retirée ne sont plus dessinées).
+    const lots = mountGroundAccentLots(accents, { lit: false });
+    reposeGroundAccents(lots, (el) => el !== cible, () => 1);
+    expect(lots.map((l) => l.mesh.count).reduce((a, b) => a + b, 0)).toBe(accents.length - semés);
+    for (const lot of lots)
+      expect(lot.retenus.some((r) => lot.accents[r].el === cible)).toBe(false);
     // Le semis lui-même n'a pas bougé : c'est l'APPLICATION qui filtre (le bake reste invariant).
     expect(accents.length).toBe(sceneGroundAccents(scene, mpt).length);
   });

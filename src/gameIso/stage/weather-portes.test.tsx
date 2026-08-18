@@ -181,6 +181,26 @@ describe('Météo volumique — brume, lumière et fond (#1247)', () => {
     expect(fond(orage), 'le ciel ne peut pas rester clair sur un monde éteint').not.toBe(fondClair);
   });
 
+  /** #1176 — le HORS-CARTE n'est pas un vide : le fond du canevas est une couleur SOURDE tenue en
+   *  DONNÉE (`ambiance.json`, `iso.stageBg`), pas une constante du peintre. La mutation de la donnée
+   *  doit donc emporter le fond peint. */
+  it('le FOND par beau temps EST la donnée `iso.stageBg` — la muter emporte le canevas', () => {
+    const clair = monter('clair');
+    expect(fond(clair)).toBe(AMBIANCE.iso.stageBg.toLowerCase());
+    act(() => root!.unmount());
+    root = null;
+    clair.remove();
+    container = null;
+
+    const authoré = AMBIANCE.iso.stageBg;
+    AMBIANCE.iso.stageBg = '#7a4b21'; // une teinte que rien d'autre ne porte
+    try {
+      expect(fond(monter('clair'))).toBe('#7a4b21');
+    } finally {
+      AMBIANCE.iso.stageBg = authoré;
+    }
+  });
+
   it('CÂBLAGE : l’exposition de la frame est le facteur météo de la donnée partagée, dans le bon sens', () => {
     // Référence de beau temps, une fois pour toutes les météos.
     const clair = monter('clair');

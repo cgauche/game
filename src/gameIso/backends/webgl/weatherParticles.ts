@@ -38,6 +38,7 @@ import type { WeatherPrecipDef } from '../../catalog/ambiance';
 import { hash32, seedStream } from '../../detail/hash';
 import { heightAt, sceneMetresPerTile, type Scene } from '../../../state/scene';
 import { withRenderRank } from './renderRanks';
+import { materiauPlanTransparent } from './worldMaterials';
 
 /** BUDGET DUR d'instances du semis : au-delà, la densité de donnée est écrêtée. Une carte de ville
  *  entière sous la tempête demanderait des dizaines de milliers de quads pour un gain nul — au-delà
@@ -302,12 +303,10 @@ const ZERO_BASIS = new Float32Array(9);
  *  qui se croisent ne se découpent pas — mais la TESTE : le monde, lui, les cache. */
 export function buildPrecipMesh(field: WeatherField): THREE.InstancedMesh {
   const geo = new THREE.PlaneGeometry(1, 1);
-  const mat = new THREE.MeshBasicMaterial({
+  const mat = materiauPlanTransparent({
     color: new THREE.Color(field.def.color),
-    transparent: true,
     opacity: field.def.opacity,
     depthWrite: false,
-    side: THREE.DoubleSide,
   });
   const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, field.n));
   mesh.name = 'precip';

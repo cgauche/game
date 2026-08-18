@@ -7,11 +7,12 @@
  * battement, à partir de la MÊME valeur (`camAt` de l'hôte) : c'est tout l'objet du module, et la
  * raison pour laquelle il n'y a qu'un battement pour toutes les sources.
  *
- * Deux façons de le faire battre, jamais deux boucles concurrentes : `battreStageFrames` pour qui
+ * Trois façons de le faire battre, jamais deux boucles concurrentes : `battreStageFrames` pour qui
  * tient déjà une horloge (la boucle de marche `fx/useWalkAnim`, un `pointermove` que le navigateur
- * cadence déjà à l'image), et `demanderFrames`/`relacherFrames` pour ce qui n'en a aucune
- * (l'adoucissement de focale). La boucle de demande CÈDE le pas à un battement qui vient d'avoir lieu :
- * une même image ne se peint jamais deux fois.
+ * cadence déjà à l'image), `demanderFrames`/`relacherFrames` pour ce qui n'en a aucune
+ * (l'adoucissement de focale), et `demanderUneImage` pour un geste PONCTUEL qui n'a besoin que d'être
+ * VU (la relève d'une texture de billboard). La boucle de demande comme la demande ponctuelle CÈDENT
+ * le pas à un battement qui vient d'avoir lieu : une même image ne se peint jamais deux fois.
  */
 
 /** Écart (ms) en deçà duquel deux battements sont la MÊME image. */
@@ -21,6 +22,7 @@ const abonnés = new Set<() => void>();
 const sources = new Set<unknown>();
 let derniereMs = -Infinity;
 let image = 0;
+let imagePonctuelle = 0;
 
 /** S'abonne au battement : une passe par image, tant qu'une source en demande. */
 export function subscribeStageFrames(cb: () => void): () => void {
@@ -59,4 +61,17 @@ export function relacherFrames(source: unknown): void {
   if (sources.size || !image) return;
   if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(image);
   image = 0;
+}
+
+/** Demande UNE image, au prochain rAF — COALESCÉE : N demandes dans la même image n'en valent qu'une
+ *  (les N boards reposés au franchissement d'un cran obtiennent UN battement, #1376).
+ *  Elle s'efface devant une boucle continue, qui sert déjà l'image, et devant un battement qui vient
+ *  d'avoir lieu. */
+export function demanderUneImage(): void {
+  if (imagePonctuelle || sources.size || typeof requestAnimationFrame !== 'function') return;
+  imagePonctuelle = requestAnimationFrame(() => {
+    imagePonctuelle = 0;
+    if (sources.size) return;
+    if (performance.now() - derniereMs > MEME_IMAGE_MS) battreStageFrames();
+  });
 }
