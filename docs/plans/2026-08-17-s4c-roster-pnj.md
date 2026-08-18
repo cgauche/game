@@ -4,6 +4,7 @@
 > Transféré du chantier #1279 (CLOS, solde `.claude/soldes/1279.md`) comme design commissionné à part.
 > **Révision 3** — amendée après verdict du juge de design (voie A confirmée, 3 bloquants + 12 amendements), puis **arbitrages TRANCHÉS par l'utilisateur le 2026-08-17** (§5, repliés dans §3.2/§3.3/§3.5 et L1-L4).
 > Ce document ne contient AUCUN code livré : il tranche, chiffre et nomme les gardes.
+> **Lancement ARBITRÉ (utilisateur, 2026-08-18, via AskUserQuestion)** : « Après la résorption #1318 » — le chantier démarre une fois E3/E1/E6/E8 soldés, jamais en parallèle de la cible zéro.
 
 ---
 
