@@ -11,7 +11,7 @@ import type * as THREE from 'three';
 import type { Rot } from '../../geometry/iso';
 import { billboardTextureKey } from '../backends/webgl/billboardMath';
 import type { View } from '../rig/facing';
-import { clearBillboardTextures, getBillboardTexture, svgToTexture } from '../backends/webgl/svgTexture';
+import { clearBillboardTextures, getBillboardTexture, octetsTextureStatique, setStaticTexturePins, svgToTexture } from '../backends/webgl/svgTexture';
 import { PRIORITE_RECHAUFFAGE, PRIORITE_VUE_COURANTE, queueBakeTask, type BakePriority } from '../backends/webgl/atlasBake';
 import type { BillboardSubject } from '../backends/webgl/sceneMeshes';
 import { identiteAuCran } from './regard';
@@ -32,6 +32,12 @@ import { identiteAuCran } from './regard';
  */
 const POIGNEES_STATIQUES = new Map<string, BakePriority>();
 
+/** CLÉ de cache d'une texture statique — la SEULE formule : celle que `textureAuCran` demande, et
+ *  celle que l'épingle du regard courant désigne (`epinglerStatiques`). PURE. */
+export function cleStatique(sub: BillboardSubject, view: View, mirror: boolean, rot: Rot, pxHeight: number): string {
+  return billboardTextureKey(identiteAuCran(sub, rot), view, mirror, pxHeight);
+}
+
 /** TEXTURE STATIQUE d'un sujet à une vue et un cran, mémoïsée sur sa clé (`getBillboardTexture`).
  *
  *  `priorité` la range dans la file CADENCÉE du cuiseur (`queueBakeTask`) : c'est par là que passe
@@ -50,12 +56,16 @@ export function textureAuCran(
   pxHeight: number,
   priorité?: number,
 ): Promise<THREE.Texture> {
-  const clé = billboardTextureKey(identiteAuCran(sub, rot), view, mirror, pxHeight);
+  const clé = cleStatique(sub, view, mirror, rot, pxHeight);
   const rasteriser = () => svgToTexture(sub.svg(view, mirror, rot), sub.box, pxHeight);
+  // POIDS ESTIMÉ : ce que l'entrée pèse au stock borné tant que sa rasterisation court. Sans lui, une
+  // rafale de demandes (montage, pré-chauffe) ne pèse rien et le stock gonfle jusqu'à leur service
+  // (recette #1374 : 338 entrées pour 8,9 Mo comptés pendant un demi-tour).
+  const bytesEst = octetsTextureStatique(sub.box, pxHeight);
   const rang = POIGNEES_STATIQUES.get(clé);
   const voulu = priorité ?? PRIORITE_VUE_COURANTE;
   if (rang) rang.value = Math.max(rang.value, voulu);
-  if (priorité === undefined) return getBillboardTexture(clé, rasteriser);
+  if (priorité === undefined) return getBillboardTexture(clé, rasteriser, bytesEst);
   // La poignée se pose DANS la fabrique : elle seule court sur un vrai manque de cache. Posée avant,
   // une clé déjà servie en laissait une que rien ne retirerait jamais.
   return getBillboardTexture(clé, () => {
@@ -66,7 +76,7 @@ export function textureAuCran(
       POIGNEES_STATIQUES.delete(clé);
       return rasteriser();
     });
-  });
+  }, bytesEst);
 }
 
 /** Rend au RÉCHAUFFAGE les textures statiques que la caméra n'attend plus (le regard qu'on vient de
@@ -75,6 +85,13 @@ export function rendreAuRechauffage(): void {
   for (const poignée of POIGNEES_STATIQUES.values()) {
     if (poignée.value > PRIORITE_RECHAUFFAGE) poignée.value = PRIORITE_RECHAUFFAGE;
   }
+}
+
+/** ÉPINGLE les textures statiques POSÉES sur les quads montés : le stock est BORNÉ (#1374), et une
+ *  texture à l'écran évincée laisserait son quad sans art jusqu'à la recuisson. Le jeu d'épingles se
+ *  REMPLACE à chaque pose — il décrit ce qui est porté maintenant, jamais un cumul. */
+export function epinglerStatiques(clés: Iterable<string>): void {
+  setStaticTexturePins(clés);
 }
 
 /** Oublie le cache de textures statiques ET les rangs de ce qui l'attendait (changement de scène). */

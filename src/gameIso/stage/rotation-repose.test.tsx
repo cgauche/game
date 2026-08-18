@@ -27,12 +27,13 @@ import { atlasLayout, billboardView } from '../backends/webgl/billboardMath';
 import { dir8Basis } from '../pov/camera';
 import * as svgTexture from '../backends/webgl/svgTexture';
 import * as atlasBake from '../backends/webgl/atlasBake';
-import { PRIORITE_RECHAUFFAGE, PRIORITE_VUE_COURANTE, bakeQueueLength, clearAtlasCache, resetBakeQueue } from '../backends/webgl/atlasBake';
+import { PRIORITE_RECHAUFFAGE, PRIORITE_VUE_COURANTE, atlasBytesEstimés, bakeQueueLength, clearAtlasCache, resetBakeQueue } from '../backends/webgl/atlasBake';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
 import { bbCameraDe, povArtRot } from './regard';
 import { poigneesEnAttente } from './texturesStatiques';
-import { frameRectOf } from './boardPose';
+import { atlasPxHeight, frameRectOf } from './boardPose';
 import { subscribeStageFrames } from './stageFrames';
+import { pxPerM } from '../backends/webgl/worldTris';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -211,6 +212,7 @@ afterEach(() => {
   resetBakeQueue();
   clearAtlasCache();
   svgTexture.clearBillboardTextures();
+  svgTexture.setStaticTextureBudgetBytes(svgTexture.TEXTURE_STATIQUE_BUDGET_BYTES_DEFAUT);
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
@@ -782,5 +784,173 @@ describe('Changement de regard — une texture PÉRIMÉE ne se pose pas', () => 
     const posées = quads().map(mapDe);
     expect(posées, 'les quads doivent être revenus à l’art du cap N').toEqual(artN);
     expect(posées.some((t) => t !== null && auCapE.has(t)), 'une texture du cap quitté s’est posée après coup').toBe(false);
+  });
+});
+
+/**
+ * STOCK BORNÉ des textures statiques (#1374) : le cache a un budget d'OCTETS, et ce qui est POSÉ sur
+ * un quad monté y est ÉPINGLÉ. La panne en face est visible à l'écran — une texture évincée alors
+ * qu'elle est encore portée par un matériau laisse son décor sans art jusqu'à la recuisson.
+ */
+describe('Stock borné — ce qui est POSÉ est épinglé', () => {
+  /** Les crans lus dans les épingles (`|r<n>|`, fragment que seule l'identité d'un décor porte). */
+  const cransÉpinglés = (): string[] =>
+    [...svgTexture.staticTexturePins()].map((clé) => /\|r(\d)\|/.exec(clé)?.[1] ?? clé);
+
+  /** Attend la relève de tous les quads depuis un art donné, dans un budget borné. */
+  async function attendreRelève(artAvant: (THREE.Texture | null)[]): Promise<number> {
+    let relevés = 0;
+    for (let i = 0; i < 40 && relevés < artAvant.length; i++) {
+      await respirer(20);
+      relevés = quads().filter((m, k) => mapDe(m) !== artAvant[k]).length;
+    }
+    return relevés;
+  }
+
+  it('les épingles suivent la POSE : le cran monté, puis le cran d’arrivée', async () => {
+    await monter(DÉCORS, SANS_ACTEUR);
+    expect(quads().length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
+    expect(cransÉpinglés(), 'les textures posées au montage doivent être épinglées au cran 0')
+      .toEqual(Array(DÉCORS.props.length).fill('0'));
+    const artCran0 = quads().map(mapDe);
+
+    await act(async () => { root!.render(vue(100, DÉCORS, SANS_ACTEUR)); });
+    expect(await attendreRelève(artCran0), 'tous les décors doivent finir relevés').toBe(artCran0.length);
+
+    expect(cransÉpinglés(), 'les épingles sont restées au cran quitté : le cran regardé n’est plus protégé')
+      .toEqual(Array(DÉCORS.props.length).fill('1'));
+  });
+
+  it('les épingles TOMBENT au démontage des quads : plus de quad, plus rien de protégé', async () => {
+    await monter(DÉCORS, SANS_ACTEUR);
+    expect(svgTexture.staticTexturePins().size, 'les textures posées doivent être épinglées')
+      .toBe(DÉCORS.props.length);
+
+    // SCÈNE VIDÉE de ses sujets : les quads se démontent SANS que rien ne se remonte derrière — c'est
+    // le seul geste où une épingle oubliée reste seule au stock, et y cloue pour la session les
+    // textures d'un écran qui n'existe plus (le vidage de scène, lui, masquerait la fuite).
+    const VIDE: SceneBillboardEls = { tokens: [], props: [] };
+    await act(async () => { root!.render(vue(0, VIDE, SANS_ACTEUR)); });
+    await respirer(40);
+
+    expect(quads().length, 'PRÉMISSE : les quads doivent être démontés').toBe(0);
+    expect(svgTexture.staticTexturePins().size, 'épingles survivantes après démontage des quads').toBe(0);
+
+    // …et le démontage complet de l'écran ne les ressuscite pas.
+    act(() => { root!.unmount(); });
+    root = null;
+    expect(svgTexture.staticTexturePins().size).toBe(0);
+  });
+
+  /** Poids RÉEL d'une texture résolue : son canevas, 4 octets par texel (le stock la pèse ainsi). */
+  const octetsDe = (t: THREE.Texture | null): number => {
+    const img = t?.image as { width?: number; height?: number } | undefined;
+    return (img?.width ?? 0) * (img?.height ?? 0) * 4;
+  };
+
+  /** Espionne les libérations de texture (l'appel réel suit). */
+  function espionnerLibérations(): Set<THREE.Texture> {
+    const libérées = new Set<THREE.Texture>();
+    const original = THREE.Texture.prototype.dispose;
+    vi.spyOn(THREE.Texture.prototype, 'dispose').mockImplementation(function (this: THREE.Texture) {
+      libérées.add(this);
+      original.call(this);
+    });
+    return libérées;
+  }
+
+  it('budget SERRÉ : un tour complet ne libère JAMAIS une texture posée sur un quad', async () => {
+    await monter(DÉCORS, SANS_ACTEUR);
+    const posées0 = quads().map(mapDe);
+    expect(posées0.length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
+    // POIDS UNITAIRE mesuré sur une entrée RÉSOLUE (le canevas d'une texture POSÉE) — jamais sur la
+    // moyenne du stock, que les entrées en vol tirent vers le bas.
+    const unitaire = octetsDe(posées0[0]);
+    expect(unitaire, 'une texture sans canevas ne pèserait rien : le budget ne bornerait rien').toBeGreaterThan(0);
+    const budget = 2 * DÉCORS.props.length * unitaire;
+    svgTexture.setStaticTextureBudgetBytes(budget);
+
+    const libérées = espionnerLibérations();
+
+    for (const yaw of [100, 190, 280, 370]) {
+      const avant = quads().map(mapDe);
+      await act(async () => { root!.render(vue(yaw, DÉCORS, SANS_ACTEUR)); });
+      expect(await attendreRelève(avant), `cran ${yaw}° : tous les décors doivent finir relevés`).toBe(avant.length);
+      const posées = quads().map(mapDe);
+      expect(posées.every(Boolean), 'un quad sans art : la relève n’a pas eu lieu').toBe(true);
+      expect(posées.filter((t) => t && libérées.has(t)).length, `cran ${yaw}° : une texture POSÉE a été libérée`).toBe(0);
+    }
+    // PRÉMISSE — la pression a bien mordu : le budget serré a libéré des textures (celles des crans
+    // quittés, dépinglées à mesure que les quads se reposent).
+    expect(libérées.size, 'aucune libération : le budget n’aurait rien borné').toBeGreaterThan(0);
+    // FILE ÉPUISÉE avant de peser : une entrée EN VOL n'est jamais évincée (elle n'a rien à libérer),
+    // donc le stock ne retombe sous sa borne qu'une fois toutes les cuissons servies.
+    let bytes = -1;
+    for (let i = 0; i < 40 && bytes !== svgTexture.staticTextureStats().bytes; i++) {
+      bytes = svgTexture.staticTextureStats().bytes;
+      await respirer(40);
+    }
+    // BORNE RÉELLE : le budget, PLUS ce que les épingles retiennent — une épinglée n'est jamais
+    // évincée, donc le stock peut légitimement dépasser d'autant (invariant du cache borné).
+    const marge = svgTexture.staticTexturePins().size * unitaire;
+    expect(svgTexture.staticTextureStats().bytes).toBeLessThanOrEqual(budget + marge);
+  });
+
+  /**
+   * PLANCHE IMPOSSIBLE (#1374) : à très petit `mpt`, le palier de cuisson atteint son plafond et la
+   * CELLULE le dépasse (gouttière comprise) — `bakeAtlas` refuse alors de cuire, et l'écran saute le
+   * sujet avec son warn. L'ESTIMATION de poids, elle, court SYNCHRONEMENT au site d'appel : si elle
+   * levait, l'erreur ne serait plus celle d'une promesse traitée mais une EXCEPTION NON GÉRÉE
+   * (mesurée : `atlasLayout: cellule 1642×2052 au-delà du plafond de texture 2048`).
+   */
+  it('PALIER au plafond : la planche refusée ne fait AUCUNE exception non gérée', async () => {
+    const nonGérées: unknown[] = [];
+    const surErreur = (e: unknown): void => { nonGérées.push(e); };
+    process.on('uncaughtException', surErreur);
+    process.on('unhandledRejection', surErreur);
+    // Les warns de sujet sauté sont attendus ici : c'est le chemin de refus, pas la panne.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      scènes = [];
+      hôte = document.createElement('div');
+      document.body.appendChild(hôte);
+      root = createRoot(hôte);
+      // `mpt` minuscule ⇒ pixels par mètre énormes ⇒ palier plafonné (`atlasPxHeight`), cellule > 2048.
+      await act(async () => {
+        root!.render(
+          <GameStage3D
+            scene={SCENE} mpt={0.05} frame={cadre(0)} tintAt={TINT} keepEl={KEEP}
+            els={ELS} actors={ACTEURS} gameTime={720} lightLevel={1} lights={[]} anim={anim}
+          />,
+        );
+      });
+      await respirer(60);
+    } finally {
+      process.off('uncaughtException', surErreur);
+      process.off('unhandledRejection', surErreur);
+      warn.mockRestore();
+    }
+
+    expect(nonGérées.map(String), 'l’estimation de poids a levé au site d’appel').toEqual([]);
+    // PRÉMISSE — le palier atteint bien le plafond à ce `mpt` : sans cela, la garde ne mordrait pas.
+    expect(atlasPxHeight(2.17, pxPerM(0.05), 2), 'palier non plafonné : le cas testé n’existe pas').toBe(2048);
+    expect(atlasBytesEstimés({ w: 120, h: 150 }, 8, 2048), 'une planche hors plafond doit peser zéro').toBe(0);
+  });
+
+  it('MONTAGE sous pression : aucun quad n’entre en scène sur une texture déjà libérée', async () => {
+    // Budget de 1 OCTET dès l'ouverture : tout ce qui n'est pas épinglé saute à la première pression.
+    // Le montage épingle ce qu'il ATTEND avant de le demander — sans cela, les textures se font
+    // libérer entre leur cuisson et leur pose, et les quads entrent en scène morts.
+    svgTexture.setStaticTextureBudgetBytes(1);
+    const libérées = espionnerLibérations();
+
+    await monter(DÉCORS, SANS_ACTEUR);
+
+    const posées = quads().map(mapDe);
+    expect(posées.length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);
+    expect(posées.every(Boolean), 'un quad monté sans art').toBe(true);
+    expect(posées.filter((t) => t && libérées.has(t)).length, 'des quads montés portent une texture MORTE').toBe(0);
+    // PRÉMISSE — la pression a bien mordu ailleurs (la pré-chauffe des crans voisins, non épinglée).
+    expect(libérées.size, 'aucune libération : le budget d’un octet n’aurait rien borné').toBeGreaterThan(0);
   });
 });

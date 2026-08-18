@@ -7,10 +7,11 @@
  *     grille, gouttière comprise — les texels de bord y sont DUPLIQUÉS (`ATLAS_GUTTER_PX`), ce que la
  *     géométrie réservait et qu'aucun cuiseur ne faisait ;
  *  2. CADENCE : une rasterisation par tranche d'inactivité, jamais un burst (mesure navigateur ci-dessous) ;
- *  3. CACHE : LRU à budget d'OCTETS, clé = chaîne de signature complète, entrées épinglées jamais évincées.
+ *  3. CACHE : le stock BORNÉ de `cacheBorne` (LRU à budget d'octets, épingles), clé = chaîne de signature complète.
  */
 import * as THREE from 'three';
 import { ATLAS_GUTTER_PX, atlasLayout, type AtlasLayout } from './billboardMath';
+import { CacheBorne } from './cacheBorne';
 import { rasterizeSvg, type SvgBox } from './svgTexture';
 import type { View } from '../../rig/facing';
 import type { GroundState } from '../../groundPose';
@@ -193,6 +194,35 @@ function drawFrameWithGutter(ctx: BakeCtx, frame: BakeImage, r: { x: number; y: 
   ctx.drawImage(frame, fw - 1, fh - 1, 1, 1, r.x + r.w, r.y + r.h, G, G);
 }
 
+/** GÉOMÉTRIE de la planche d'une cuisson — SEULE formule : la cuisson la suit, et l'ESTIMATION de
+ *  poids (`atlasBytesEstimés`) doit la suivre à l'octet près. PURE. */
+export function atlasLayoutPour(box: SvgBox, n: number, pxHeight: number): AtlasLayout {
+  const px = Math.max(1, Math.round(pxHeight));
+  const pxWidth = Math.max(1, Math.round(px * (box.w / box.h)));
+  return atlasLayout(pxWidth + 2 * ATLAS_GUTTER_PX, px + 2 * ATLAS_GUTTER_PX, n);
+}
+
+/**
+ * Poids GPU de la planche que cuirait (boîte, `n` frames, palier) — ce que le stock borné compte
+ * AVANT que la texture n'existe (`bytesEst`). MÊME formule que le poids RÉEL. PUR.
+ *
+ * NE LÈVE JAMAIS : une planche que la cuisson refusera (cellule au-delà du plafond de texture, boîte
+ * dégénérée) pèse ZÉRO ici. Une estimation est une écriture de COMPTABILITÉ, pas une garde — la
+ * planche impossible ne se résout jamais, donc elle ne pèse jamais rien de réel non plus, et son
+ * erreur reste celle de la CUISSON, levée dans la tâche de file où l'appelant la traite déjà (sujet
+ * sauté, warn). Estimer au site d'appel, lui, est SYNCHRONE : y laisser filer l'erreur en ferait une
+ * exception non gérée.
+ */
+export function atlasBytesEstimés(box: SvgBox, n: number, pxHeight: number): number {
+  let bytes = 0;
+  try {
+    bytes = atlasBytes(atlasLayoutPour(box, n, pxHeight));
+  } catch {
+    return 0;
+  }
+  return Number.isFinite(bytes) ? bytes : 0;
+}
+
 /**
  * Cuit la planche d'un geste : `n` frames dessinées par `drawFrame(k)` (fragments SVG en boîte `box`),
  * rasterisées à `pxHeight` pixels de haut. La planche peut en porter MOINS que demandé (plafond de
@@ -211,8 +241,7 @@ export async function bakeAtlas(
   const makeCanvas = opts.deps?.makeCanvas ?? defaultCanvas;
   const prio = bakePriority(opts.priority ?? PRIORITE_RECHAUFFAGE);
   const px = Math.max(1, Math.round(pxHeight));
-  const pxWidth = Math.max(1, Math.round(px * (box.w / box.h)));
-  const layout = atlasLayout(pxWidth + 2 * ATLAS_GUTTER_PX, px + 2 * ATLAS_GUTTER_PX, n);
+  const layout = atlasLayoutPour(box, n, pxHeight);
   const canvas = makeCanvas(layout.texW, layout.texH);
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('bakeAtlas: contexte 2D indisponible');
@@ -260,7 +289,7 @@ export function collapseAtlasKeys(p: Omit<AtlasKeyParts, 'ground'>): string[] {
 }
 
 // ————————————————————————————————————————————————————————————————
-// 5. CACHE LRU À BUDGET D'OCTETS
+// 5. CACHE LRU À BUDGET D'OCTETS (machinerie : `cacheBorne`)
 // ————————————————————————————————————————————————————————————————
 
 /**
@@ -270,113 +299,66 @@ export function collapseAtlasKeys(p: Omit<AtlasKeyParts, 'ground'>): string[] {
  * des 219 Mo qu'un réchauffage non borné atteignait.
  */
 export const ATLAS_BUDGET_BYTES_DEFAUT = 96 * 1024 * 1024;
-let budget = ATLAS_BUDGET_BYTES_DEFAUT;
+
+/** Le stock de planches : LRU à budget d'octets, poignée de priorité par entrée. */
+const CACHE = new CacheBorne<BakedAtlas, BakePriority>({
+  budget: ATLAS_BUDGET_BYTES_DEFAUT,
+  bytesDe: (a) => a.bytes,
+  disposer: (a) => a.texture.dispose(),
+});
 
 /** Change le budget (réglage de mesure/garde) — rend l'ancien. */
 export function setAtlasBudgetBytes(n: number): number {
-  const avant = budget;
-  budget = n;
-  evict();
-  return avant;
+  return CACHE.définirBudget(n);
 }
-
-interface Entry {
-  promise: Promise<BakedAtlas>;
-  atlas?: BakedAtlas;
-  bytes: number;
-  /** Priorité de la cuisson de CETTE entrée, tant qu'elle a des frames en file. */
-  prio: BakePriority;
-}
-
-/** L'ordre d'insertion de la Map EST l'ordre d'usage : une entrée servie est réinsérée en queue. */
-const CACHE = new Map<string, Entry>();
-let pinned: ReadonlySet<string> = new Set();
 
 /** Clés ÉPINGLÉES (atlas des boards montés) : jamais évincées, quel que soit leur âge. */
 export function setAtlasPins(keys: Iterable<string>): void {
-  pinned = new Set(keys);
-}
-
-function evict(): void {
-  let total = 0;
-  for (const e of CACHE.values()) total += e.bytes;
-  for (const [key, e] of CACHE) {
-    if (total <= budget) return;
-    if (pinned.has(key) || !e.atlas) continue;
-    CACHE.delete(key);
-    total -= e.bytes;
-    e.atlas.texture.dispose();
-  }
+  CACHE.épingler(keys);
 }
 
 /**
  * Planche mémoïsée d'une clé, cuite par la file cadencée. `make` reçoit la POIGNÉE de priorité à
- * passer à `bakeAtlas`. Un ÉCHEC n'est pas mémoïsé (même loi que `getBillboardTexture` : un SVG
- * illisible une fois ne condamne pas le sujet pour la session).
+ * passer à `bakeAtlas`. Un ÉCHEC n'est pas mémoïsé (loi du cache borné : un SVG illisible une fois ne
+ * condamne pas le sujet pour la session).
  *
  * RE-PRIORISATION : une planche déjà en file en priorité basse et redemandée plus haut (le
  * réchauffage rattrapé par la vue courante) voit sa poignée RELEVÉE — sinon la frame que la caméra
  * attend resterait derrière tout le réchauffage déjà posé.
+ *
+ * `bytesEst` (`atlasBytesEstimés`, la MÊME formule que le poids réel) est ce que la planche pèse au
+ * budget TANT QU'ELLE CUIT : une planche connaît sa géométrie avant sa première frame, et sans cette
+ * estimation une rafale de cuissons ne pèserait rien jusqu'à son service.
  */
 export function enqueueBake(
   key: string,
   make: (priority: BakePriority) => Promise<BakedAtlas>,
   priority: number = PRIORITE_RECHAUFFAGE,
+  bytesEst?: number,
 ): Promise<BakedAtlas> {
-  const hit = CACHE.get(key);
-  if (hit) {
-    CACHE.delete(key);
-    CACHE.set(key, hit);
-    if (priority > hit.prio.value) hit.prio.value = priority;
-    return hit.promise;
-  }
-  let entry: Entry;
-  const prio: BakePriority = { value: priority };
-  const promise = make(prio).then(
-    (atlas) => {
-      if (CACHE.get(key) === entry) {
-        entry.atlas = atlas;
-        entry.bytes = atlas.bytes;
-        evict();
-      } else {
-        atlas.texture.dispose();
-      }
-      return atlas;
-    },
-    (e: unknown) => {
-      if (CACHE.get(key) === entry) CACHE.delete(key);
-      throw e;
-    },
-  );
-  entry = { bytes: 0, promise, prio };
-  CACHE.set(key, entry);
-  return promise;
+  return CACHE.obtenir(key, make, {
+    poignée: { value: priority },
+    servir: (p) => { if (priority > p.value) p.value = priority; },
+    ...(bytesEst === undefined ? {} : { bytesEst }),
+  });
 }
 
 /**
  * Planche DÉJÀ CUITE d'une clé, en SYNCHRONE — la seule lecture qu'une IMAGE de rendu s'autorise
  * (`stage/boardPose.writeBoardFrames`). `undefined` tant que la cuisson court : le cache tient une
- * promesse, et une image n'attend pas.
- *
- * Cette lecture ne compte PAS comme un usage LRU : l'ordre du cache resterait ce qu'il est même si
- * tous les boards montés le relisaient soixante fois par seconde. Ce sont les ÉPINGLES
- * (`setAtlasPins`, posées sur les atlas des boards montés) qui protègent ce qui est à l'écran.
+ * promesse, et une image n'attend pas. Ce sont les ÉPINGLES (`setAtlasPins`, posées sur les atlas des
+ * boards montés) qui protègent ce qui est à l'écran.
  */
 export function getCachedAtlas(key: string): BakedAtlas | undefined {
-  return CACHE.get(key)?.atlas;
+  return CACHE.valeur(key);
 }
 
-/** Compteur de debug du cache d'atlas — l'instrument qui manquait à la sonde (`CACHE` de `svgTexture`
- *  n'expose ni taille ni poids). */
+/** Compteur de debug du cache d'atlas. */
 export function atlasCacheStats(): { entries: number; bytes: number } {
-  let bytes = 0;
-  for (const e of CACHE.values()) bytes += e.bytes;
-  return { entries: CACHE.size, bytes };
+  return CACHE.stats();
 }
 
 /** Vide le cache et libère les textures (changement de scène, garde de test). */
 export function clearAtlasCache(): void {
-  for (const e of CACHE.values()) void e.promise.then((a) => a.texture.dispose()).catch(() => undefined);
-  CACHE.clear();
-  pinned = new Set();
+  CACHE.vider();
 }

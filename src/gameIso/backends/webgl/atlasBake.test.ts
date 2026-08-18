@@ -8,6 +8,7 @@
  */
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  atlasBytesEstimés,
   atlasCacheStats,
   atlasKey,
   bakeAtlas,
@@ -187,7 +188,42 @@ describe('cuiseur d’atlas', () => {
     await Promise.all([a, b]);
   });
 
-  it('LRU : à budget dépassé, la moins récemment SERVIE saute — jamais une épinglée', async () => {
+  it('EN VOL : la planche pèse son estimation AVANT sa première frame, et le réel la confirme', async () => {
+    const c = couches();
+    const attendu = atlasBytesEstimés(BOX, 2, PX);
+
+    const p = enqueueBake(
+      'estimée',
+      (prio) => bakeAtlas(dessin, BOX, 2, PX, { deps: c.deps, priority: prio }),
+      PRIORITE_VUE_COURANTE,
+      attendu,
+    );
+
+    // AVANT toute rasterisation : la planche connaît sa géométrie (n, palier, boîte), le stock la pèse
+    // donc déjà. Sans cela, une rafale de cuissons ne pèse rien jusqu'à son service.
+    expect(c.appels.length, 'PRÉMISSE : rien ne doit avoir rasterisé').toBe(0);
+    expect(atlasCacheStats()).toEqual({ entries: 1, bytes: attendu });
+
+    const cuite = await p;
+
+    expect(cuite.bytes, 'l’estimation et le poids RÉEL doivent coïncider').toBe(attendu);
+    expect(atlasCacheStats()).toEqual({ entries: 1, bytes: attendu });
+  });
+
+  it('ESTIMATION IMPOSSIBLE : une planche hors plafond pèse zéro et ne LÈVE PAS', async () => {
+    // Palier démesuré : la cellule dépasse `RASTER_PX_MAX` — `bakeAtlas` refusera de cuire. Mais
+    // l'estimation court SYNCHRONEMENT au site d'appel : y laisser filer l'erreur en ferait une
+    // exception non gérée, là où le refus de cuisson est déjà traité par l'appelant (sujet sauté).
+    expect(() => atlasBytesEstimés(BOX, 8, 4096)).not.toThrow();
+    expect(atlasBytesEstimés(BOX, 8, 4096)).toBe(0);
+    // …et la CUISSON, elle, refuse toujours — au même endroit qu'avant : dans sa promesse.
+    const c = couches();
+    await expect(bakeAtlas(dessin, BOX, 8, 4096, { deps: c.deps })).rejects.toThrow(/plafond de texture/);
+    // Boîte dégénérée : même loi, aucune valeur non finie ne part au budget.
+    expect(atlasBytesEstimés({ w: 120, h: 0 }, 2, PX)).toBe(0);
+  });
+
+  it('LRU : à budget dépassé, la moins récemment SERVIE saute — la re-servir la SAUVE', async () => {
     const c = couches();
     const make = () => bakeAtlas(dessin, BOX, 2, PX, { deps: c.deps });
     const un = await enqueueBake('a', make);
@@ -195,17 +231,33 @@ describe('cuiseur d’atlas', () => {
     await enqueueBake('c', make);
     expect(atlasCacheStats().entries).toBe(3);
     expect(c.appels.length).toBe(6); // 3 cuissons de 2 frames
-    setAtlasPins(['a']);
-    await enqueueBake('a', make); // 'a' épinglée ET re-servie : 'b' devient la moins récemment servie
+    // AUCUNE épingle ici : c'est le RANG D'USAGE seul qui décide. 'a' est la plus ancienne, mais elle
+    // est re-servie — sous une file d'attente FIFO, c'est elle qui sauterait, et 'b' survivrait.
+    await enqueueBake('a', make);
     setAtlasBudgetBytes(un.bytes * 2); // budget pour DEUX planches : il en saute exactement une
     expect(atlasCacheStats()).toEqual({ entries: 2, bytes: un.bytes * 2 });
-    // SURVIVANTS : 'a' (épinglée) et 'c' (servie après 'b') sont resservies du cache, sans re-cuisson.
+    // SURVIVANTS : 'a' (re-servie en dernier) et 'c' — resservies du cache, sans re-cuisson.
     await enqueueBake('a', make);
     await enqueueBake('c', make);
-    expect(c.appels.length).toBe(6);
+    expect(c.appels.length, 'une survivante a été re-cuite : l’ordre d’usage n’est pas tenu').toBe(6);
     // VICTIME : 'b', la moins récemment servie — la redemander la RE-CUIT (2 frames de plus).
     await enqueueBake('b', make);
     expect(c.appels.length).toBe(8);
+  });
+
+  it('une planche ÉPINGLÉE ne saute pas, même la moins récemment servie', async () => {
+    const c = couches();
+    const make = () => bakeAtlas(dessin, BOX, 2, PX, { deps: c.deps });
+    const un = await enqueueBake('p', make);
+    await enqueueBake('q', make);
+    setAtlasPins(['p']); // 'p' est la plus ancienne ET la seule protégée
+    setAtlasBudgetBytes(un.bytes); // budget pour UNE planche
+
+    expect(atlasCacheStats()).toEqual({ entries: 1, bytes: un.bytes });
+    await enqueueBake('p', make);
+    expect(c.appels.length, 'l’épinglée a été évincée : le board monté perdrait sa planche').toBe(4);
+    await enqueueBake('q', make);
+    expect(c.appels.length, 'PRÉMISSE : la pression doit avoir mordu sur la NON épinglée').toBe(6);
   });
 
   it('effondrement : corpse et prone sont DEUX planches (la pose au sol se lit au rendu)', () => {

@@ -124,10 +124,11 @@ import {
   type GlideAt,
 } from './boardPose';
 import { bbCameraDe, cleRegard, povArtRot, regardsVoisins, type Regard } from './regard';
-import { rendreAuRechauffage, textureAuCran, viderTexturesStatiques } from './texturesStatiques';
+import { cleStatique, epinglerStatiques, rendreAuRechauffage, textureAuCran, viderTexturesStatiques } from './texturesStatiques';
 import {
   PRIORITE_RECHAUFFAGE,
   PRIORITE_VUE_COURANTE,
+  atlasBytesEstimés,
   atlasKey,
   bakeAtlas,
   enqueueBake,
@@ -532,6 +533,9 @@ function cuire(r: Recette, priorité: number): Promise<BakedAtlas> {
       { priority: p },
     ),
     priorité,
+    // POIDS ESTIMÉ : la planche connaît sa géométrie avant sa première frame, et le stock est BORNÉ —
+    // sans lui, une rafale de cuissons ne pèse rien tant qu'elle n'est pas servie.
+    atlasBytesEstimés(r.s.sub.box, r.frames, r.pxHeight),
   );
 }
 
@@ -584,6 +588,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const demandéesRef = useRef(new Set<string>());
   /** Clés à ÉPINGLER (planches des boards montés) — jamais évincées tant qu'elles sont à l'écran. */
   const épinglesRef = useRef(new Map<string, string[]>());
+  /** Clés statiques ÉPINGLÉES par SUJET monté (#1374) : celle qu'il PORTE, et celle qu'il ATTEND tant
+   *  que sa cuisson court. Le montage y écrit avant même de demander sa texture, chaque repose de
+   *  regard y réécrit, et le démontage la vide. */
+  const clésStatiquesRef = useRef(new Map<BillboardSubject, string[]>());
   const cameraRef = useRef<THREE.Camera | null>(null);
   /** PILOTE de la découpe locale (#1176, M3) — un par écran monté, comme sa scène three. Il tient la
    *  clé du dernier verdict et le fondu des rayons ; les quatre trous qu'il écrit sont, eux, partagés
@@ -1595,6 +1603,21 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /** ÉPINGLE, pour un sujet, la texture statique qu'il PORTE et celle qu'il ATTEND (#1374). Le stock
+   *  est BORNÉ : évincer la POSÉE laisserait son quad sans art jusqu'à la recuisson, et évincer
+   *  l'ATTENDUE la libérerait entre sa cuisson et sa pose — le quad recevrait une texture morte. Deux
+   *  clés par sujet au plus : la relevée remplace les deux dès qu'elle est posée.
+   *
+   *  La carte est keyée par SUJET et non par board : le MONTAGE épingle ce qu'il attend AVANT que le
+   *  quad n'existe, exactement comme la repose. */
+  const épinglerSujet = (sub: BillboardSubject, clés: readonly string[]): void => {
+    clésStatiquesRef.current.set(sub, [...clés]);
+    epinglerStatiques([...clésStatiquesRef.current.values()].flat());
+  };
+
+  /** La clé de la texture qu'un sujet PORTE (la première de ses épingles). */
+  const cléPortée = (sub: BillboardSubject): string | undefined => clésStatiquesRef.current.get(sub)?.[0];
+
   /**
    * REPOSE d'un changement de REGARD (quart de tour sur la vue de plateau, cap Dir8 en première
    * personne) : les quads montés SURVIVENT, seule leur texture change — échangée EN PLACE, à la
@@ -1620,12 +1643,17 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       const piste = boardTrackId(b.sub);
       if (piste && flipRef.current.has(piste)) continue;
       const { view, mirror } = billboardView(cam, b.sub.facing);
-      void textureAuCran(b.sub, view, mirror, vers.rot, atlasPxHeight(b.quad.heightM, pxm, dpr), PRIORITE_VUE_COURANTE).then(
+      const pxHeight = atlasPxHeight(b.quad.heightM, pxm, dpr);
+      const cléCible = cleStatique(b.sub, view, mirror, vers.rot, pxHeight);
+      const portée = cléPortée(b.sub);
+      épinglerSujet(b.sub, portée ? [portée, cléCible] : [cléCible]);
+      void textureAuCran(b.sub, view, mirror, vers.rot, pxHeight, PRIORITE_VUE_COURANTE).then(
         (texture) => {
           // Le quad démonté entre-temps (`parent` tombe à `null` au vidage du groupe) et le regard déjà
           // dépassé (une rotation plus rapide que la file) n'ont plus rien à recevoir.
           if (!b.mesh.parent || cleRegard(regardRef.current) !== clé) return;
           poserTextureStatique(b, texture);
+          épinglerSujet(b.sub, [cléCible]);
           // UNE image demandée, pas un rendu : N boards relevés dans la même image en obtiennent une
           // seule (`demanderUneImage`, #1376).
           demanderUneImage();
@@ -1685,9 +1713,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     const dpr = window.devicePixelRatio || 1;
     flipRef.current.clear();
     épinglesRef.current.clear();
+    clésStatiquesRef.current.clear();
     // PURGE des états PAR ACTEUR qui survivent au rebuild : un acteur absent des sujets de ce montage
-    // (sorti de la scène, hors du cadre) laisse son palier et son heure de chute derrière lui. Les deux
-    // cartes refaites à neuf ci-dessus (sujets montés, épingles) n'ont, elles, rien à purger.
+    // (sorti de la scène, hors du cadre) laisse son palier et son heure de chute derrière lui. Les
+    // cartes refaites à neuf ci-dessus (sujets montés, épingles de planches et de textures statiques)
+    // n'ont, elles, rien à purger.
     const joués = new Set<string>();
     for (const sub of subjects) {
       const id = boardTrackId(sub);
@@ -1767,6 +1797,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       groupe.add(withRenderRank(mesh, 'pions'));
       const board: Board = { sub: q.sub, quad: q.quad, mesh, material: mat };
       boards.push(board);
+      épinglerSujet(q.sub, [cleStatique(q.sub, q.view, q.mirror, rot, q.pxHeight)]);
       // SILHOUETTE À TRAVERS LES MURS (#1297, LOT C) : le corps d'un jeton occulté par la matière
       // du monde garde un JUMEAU à test de profondeur retourné, teinté de sa couleur d'équipe —
       // enfant du quad, donc porté par la MÊME pose (aucune écriture de plus par frame). Les deux
@@ -1838,6 +1869,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // netteté en passant de sa texture de montage à sa première planche.
       const pxHeight = atlasPxHeight(quad.heightM, pxm, dpr);
       const q = { sub, quad, view, mirror, pxHeight };
+      // ÉPINGLE de ce que le montage ATTEND, posée AVANT la demande — même geste que la repose : sous
+      // pression de budget, une texture non épinglée est libérable entre sa cuisson et sa pose, et le
+      // quad entrerait en scène sur une texture morte.
+      épinglerSujet(sub, [cleStatique(sub, view, mirror, rot, pxHeight)]);
       // RÉSOLUTION INDIVIDUELLE : chaque board entre en scène dès SA texture rasterisée. Sous un
       // `allSettled`, le groupe entier attendait le dernier sujet — et un sujet rejeté n'y laissait
       // rien du tout. Ici, une texture rejetée ne coûte que SON quad, et le reste est déjà à l'écran.
@@ -1856,13 +1891,15 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     return () => {
       annule = true;
       boardsRef.current = [];
-      // Les deux cartes du MONTAGE se vident (elles se refont avec les boards). Les états PAR ACTEUR
+      // Les cartes du MONTAGE se vident (elles se refont avec les boards). Les états PAR ACTEUR
       // qui doivent traverser un rebuild — palier, entrée au sol, glissement précédent — restent : ce
       // teardown court à CHAQUE changement de sujets, pas seulement au démontage. Leur borne est la
       // purge d'entrée d'effet (les acteurs absents des sujets en sortent).
       flipRef.current.clear();
       épinglesRef.current.clear();
+      clésStatiquesRef.current.clear();
       setAtlasPins([]);
+      epinglerStatiques([]);
       viderGroupe(groupe);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
