@@ -220,7 +220,7 @@ effet déclenché. Composables par `all`/`any`/`not`.
 | `slThreshold` | `op`, `value` | Seuil de MARGE / DR du contexte (`ctx.sl`) : vrai si `sl ≥ atLeast`. |
 | `location` | `is` | Localisation touchée par l'attaque courante (`ctx.location`, dé inversé) — Assommante : « si vous touchez la Tête… ». |
 | `attackKind` | `is` | KIND de l'attaque courante (`ctx.attackKind` : 'morsure'/'cornes'/'caudale'/… cf. `creatureAttackKind`) — gate « seulement quand l'attaque est une Morsure » (Vampirique). |
-| `startleCause` | `is` | CAUSE d'un effarouchement courant (`ctx.startleCause` : 'noise' bruits forts / 'magic' présence de magie — LDB 85 l.197 Nerveux) — gate l'exemption Dressé (Guerre ignore les bruits, Magie ignore la magie, LDB 85 l.89). |
+| `startleCause` | `is` | CAUSE d'un effarouchement courant (`ctx.startleCause` : 'noise' bruits forts / 'magic' présence de magie — LDB 85 l.197 Nerveux) — gate l'exemption Dressé (Guerre ignore les bruits, Magie ignore la magie, LDB 85 l.110). |
 | `woundsDealt` | `op`, `value` | Blessures infligées par l'attaque/lancement courant (`ctx.woundsDealt`), comparées par `op` à `value` (Venin : `> 0` → Empoisonné ; un rider « coup lourd » : `>= 3`). |
 | `engagedAdvantageGap` | `op`, `value` | Écart d'Avantage avec les adversaires Engagés (`ctx.engagedAdvantageGap`), comparé par `op` à `value` (Instable : `> 0` → la créature est repoussée et perd des PB, LDB 85 l.177). |
 | `engagedAdvantageLead` | `op`, `value` | AVANCE d'Avantage sur TOUS les adversaires Engagés (`ctx.engagedAdvantageLead` = son Avantage − le meilleur Avantage ennemi engagé), SIGNÉE et non bornée, comparée par `op` à `value`. |
