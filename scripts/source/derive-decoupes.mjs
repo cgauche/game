@@ -5,16 +5,21 @@
 //
 // Verdicts : EXACT (un run contigu de blocs d'une même section) · EXACT-MULTI-SECTIONS (un run
 // contigu à cheval sur plusieurs sections d'un même chapitre) · MONTAGE (2+ runs disjoints, découpe
-// gloutonne par paragraphes de la desc) · ECHEC (rien de contigu — paraphrase probable ou défaut
+// gloutonne par paragraphes de la desc) · CELLULE (la desc EST une case de table, adressée par clé
+// de ligne × en-tête de colonne) · CELLULE-AMBIGUE (plusieurs cases du livre portent ce texte : pas
+// de ref, une adresse arbitraire mentirait) · ECHEC (rien de contigu — paraphrase probable ou défaut
 // d'extraction) · SANS-SOURCE (pas de `source.book`, ou livre sans `dir` dans `books.json`).
 //
-// Anti-faux-EXACT : toute ref émise est RE-RÉSOLUE par `resolveDecoupe` et son texte normalisé
-// re-comparé à la desc normalisée ; une divergence est rapportée en `verification` (bug de la
-// chaîne, jamais un verdict silencieux).
+// Anti-faux-EXACT : toute ref émise porte son empreinte `sum` et est RE-RÉSOLUE (`resolveDecoupe` /
+// `resolveCell`, empreinte comprise), son texte normalisé re-comparé à la desc normalisée ; une
+// divergence est rapportée en `verification` (bug de la chaîne, jamais un verdict silencieux).
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ABBR_BY_BOOK_ID, chaptersOf, chapterIndex, joinNorm, normText, resolveDecoupe } from './decoupe.mjs'
+import {
+  ABBR_BY_BOOK_ID, cellRefFor, chaptersOf, chapterIndex, findCells, joinNorm, normText,
+  resolveCell, resolveDecoupe, sumOf,
+} from './decoupe.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -80,11 +85,18 @@ function runToRefs(book, blocks, { i, j }) {
   return refs
 }
 
-/** Texte normalisé rendu par une liste de refs (voie de vérification croisée). */
-function resolvedText(refs) {
+/**
+ * Estampille chaque ref de son empreinte, puis LA RE-RÉSOUT empreinte comprise et rend le texte
+ * normalisé obtenu (voie de vérification croisée).
+ * @param {object[]} refs @param {(ref: object) => object} resolve
+ */
+function resolvedText(refs, resolve = resolveDecoupe) {
   const parts = []
   for (const r of refs) {
-    const res = resolveDecoupe(r)
+    const first = resolve(r)
+    if (first.error) return { error: `${first.error} : ${first.detail}` }
+    r.sum = sumOf(first.md)
+    const res = resolve(r)
     if (res.error) return { error: `${res.error} : ${res.detail}` }
     parts.push(normText(res.md))
   }
@@ -139,6 +151,18 @@ function judge(entry) {
     return { verdict: 'MONTAGE', refs, ...(ok ? {} : { verification: check.error ?? 'texte re-résolu != desc' }) }
   }
 
+  const cells = findCells(book, D)
+  if (cells.length > 1) return { verdict: 'CELLULE-AMBIGUE', reason: `${cells.length} cases portent ce texte` }
+  if (cells.length === 1) {
+    const ref = cellRefFor(book, cells[0])
+    if (ref) {
+      const check = resolvedText([ref], resolveCell)
+      const ok = !check.error && check.text === D
+      return { verdict: 'CELLULE', refs: [ref], ...(ok ? {} : { verification: check.error ?? 'texte re-résolu != desc' }) }
+    }
+    return { verdict: 'ECHEC', reason: 'cellule sans clé de ligne adressable' }
+  }
+
   const sub = D.length > 40 && blocks.some((b) => b.norm.includes(D))
   const orphan = paras.find((p) => !findRun(blocks, p)) ?? D
   return { verdict: 'ECHEC', reason: sub ? 'sous-bloc (desc = fragment d\'un bloc)' : `introuvable: « ${orphan.slice(0, 70)} … »` }
@@ -160,6 +184,8 @@ const report = {
   exact: count('EXACT'),
   exactMultiSections: count('EXACT-MULTI-SECTIONS'),
   montage: count('MONTAGE'),
+  cellule: count('CELLULE'),
+  celluleAmbigue: count('CELLULE-AMBIGUE'),
   echec: count('ECHEC'),
   sansSource: count('SANS-SOURCE'),
   descVide: entries.filter((e) => e.reason === 'desc-vide').length,
@@ -169,6 +195,7 @@ const report = {
 console.log(JSON.stringify(report, null, 1))
 console.error(
   `${dataset}: total=${report.total} EXACT=${report.exact} EXACT-MULTI-SECTIONS=${report.exactMultiSections}` +
-  ` MONTAGE=${report.montage} ECHEC=${report.echec} (dont desc vide ${report.descVide})` +
+  ` MONTAGE=${report.montage} CELLULE=${report.cellule} CELLULE-AMBIGUE=${report.celluleAmbigue}` +
+  ` ECHEC=${report.echec} (dont desc vide ${report.descVide})` +
   ` SANS-SOURCE=${report.sansSource} | verifications KO=${report.verifications.length}`,
 )
