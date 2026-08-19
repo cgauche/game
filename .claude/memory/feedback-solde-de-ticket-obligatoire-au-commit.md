@@ -29,8 +29,11 @@ ou `RAS` explicite, + section `## Réfutation` (juge adversarial sur le diff/DoD
 sans solde conforme ; le post-commit poste le solde en commentaire de fermeture de
 l'issue. PALIER (2e demande, même jour : « apres un certain nombre de ticket fermé, il
 faudrait lancer une review adversarial. Ou a chaque ticket ... c'est peut etre la même
-régle » → les deux) : compteur de fermetures ; à 10, plus AUCUNE fermeture sans une
-revue adversariale LARGE du cumul (`revue-palier.md`), puis remise à zéro. Opposable aux
+régle » → les deux) : compteur de COMMITS DE SUBSTANCE (post-commit incrémente sur tout
+commit touchant src/ ou scripts/ — PAS un compte de fermetures, vérifié à la revue du
+2026-08-19 : palier atteint avec 9 fermetures) ; au palier, plus AUCUNE fermeture sans une
+revue adversariale LARGE du cumul (`revue-palier.md`), puis remise à zéro. ⚠ Trou connu :
+`gh issue close` direct n'est gaté par RIEN (ni solde ni compteur) — #1402. Opposable aux
 sous-agents. Un rendu d'agent qui liste des restes SANS que je les aie soldés = le
 commit ne part pas.
 Cf. [[feedback-audit-obligatoire-avant-annonce-de-fermeture]],

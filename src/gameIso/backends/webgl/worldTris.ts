@@ -191,20 +191,132 @@ function planeKey(poly: WorldPoly): string | null {
  *  Deux sols voisins partagent leur plan sans se recouvrir : tous deux au rang 0, aucun déplacement —
  *  seules les piles réelles (panneau/moulure/plinthe d'un mur, wedge sur son losange, jonction de deux
  *  éléments) se séparent. Un polygone sans plan (moins de 3 points, aire nulle) reçoit 0. La portée =
- *  la liste fournie, à passer à l'échelle de la SCÈNE (une pile peut enjamber deux éléments). */
+ *  la liste fournie, à passer à l'échelle de la SCÈNE (une pile peut enjamber deux éléments).
+ *
+ *  Le rang se cherche par BALAYAGE SPATIAL au sein de chaque plan (`ranksInPlane`), jamais contre tous
+ *  les précédents : le plan du sol de l'arène porte 2 384 quads à lui seul (50×40), soit 2,8 millions de
+ *  tests de boîtes pour une poignée de recouvrements réels — 475 ms des 532 ms de `bakeWorldGeometry`
+ *  mesurés au banc (#1397). Le prédicat de recouvrement, lui, est INCHANGÉ : la grille ne fait que
+ *  proposer un SUR-ENSEMBLE de candidats, que `boxesOverlap` tranche comme avant. */
 export function coplanarRanks(polys: readonly WorldPoly[]): number[] {
-  const groups = new Map<string, { box: Bounds; rank: number }[]>();
-  return polys.map((poly) => {
+  const ranks = new Array<number>(polys.length).fill(0);
+  const groups = new Map<string, number[]>();
+  polys.forEach((poly, i) => {
     const key = planeKey(poly);
-    if (!key) return 0;
-    const box = polyBounds(poly);
-    const g = groups.get(key) ?? [];
-    let rank = 0;
-    for (const prev of g) if (boxesOverlap(prev.box, box)) rank = Math.max(rank, prev.rank + 1);
-    g.push({ box, rank });
-    groups.set(key, g);
-    return rank;
+    if (!key) return;
+    const g = groups.get(key);
+    if (g) g.push(i);
+    else groups.set(key, [i]);
   });
+  for (const idx of groups.values()) {
+    const rangs = ranksInPlane(idx.map((i) => polyBounds(polys[i])));
+    idx.forEach((i, k) => { ranks[i] = rangs[k]; });
+  }
+  return ranks;
+}
+
+/** Les trois axes, et les trois PAIRES d'axes dont `boxesOverlap` demande qu'une au moins recouvre. */
+const AXES = ['x', 'y', 'z'] as const;
+const PAIRES: readonly [number, number][] = [[0, 1], [0, 2], [1, 2]];
+
+/** Au-delà de ce nombre de cases couvertes, une boîte n'est plus indexée : elle rejoint le lot des
+ *  GROSSES, que chaque requête balaie de toute façon. Une dalle qui couvrirait la carte entière rendrait
+ *  sinon la maille inutile (une case par mètre carré de scène).
+ *  ANGLE MORT ASSUMÉ : un plan fait de N boîtes toutes hors maille retombe en O(N²), même si elles sont
+ *  DISJOINTES — mesuré 192 ms à N = 4 000, rang max 0. Aucune scène du dépôt n'en approche (arène 20 ms,
+ *  opéra 110 ms pour tous leurs plans réunis) ; une carte qui l'atteindrait demanderait une maille par
+ *  plan plutôt qu'un lot à balayer. */
+const CASES_MAX = 64;
+
+/** Grille de hachage d'une PAIRE d'axes : les index déjà posés, par case, plus le lot des grosses. */
+interface Grille {
+  a: number;
+  b: number;
+  pasA: number;
+  pasB: number;
+  cases: Map<number, number[]>;
+  grosses: number[];
+}
+
+/** Pas de maille d'un axe : la MÉDIANE des étendues non dégénérées — une tuile de sol pour un plancher,
+ *  la hauteur d'une assise pour un mur. Aucune étendue (axe plat) : le pas n'a alors aucun office. */
+function pasDeMaille(boxes: readonly Bounds[], a: number): number {
+  const k = AXES[a];
+  const ext = boxes.map((b) => b.hi[k] - b.lo[k]).filter((e) => e > RECOUVREMENT_MIN_M).sort((x, y) => x - y);
+  return ext.length ? Math.max(ext[ext.length >> 1], RECOUVREMENT_MIN_M) : 1;
+}
+
+/** Case d'un point sur un axe de la grille. */
+const caseDe = (v: number, pas: number): number => Math.floor(v / pas);
+
+/** Clé de case — un ALIASING éventuel (deux cases lointaines dans le même seau) n'ajoute que des
+ *  candidats : le prédicat exact les écarte ensuite. */
+const cleCase = (ia: number, ib: number): number => ia * 1048576 + ib;
+
+/** Étendue en cases d'une boîte sur la grille, ou `null` si elle en couvre trop (cf. `CASES_MAX`). */
+function plage(g: Grille, box: Bounds): { a0: number; a1: number; b0: number; b1: number } | null {
+  const a0 = caseDe(box.lo[AXES[g.a]], g.pasA);
+  const a1 = caseDe(box.hi[AXES[g.a]], g.pasA);
+  const b0 = caseDe(box.lo[AXES[g.b]], g.pasB);
+  const b1 = caseDe(box.hi[AXES[g.b]], g.pasB);
+  if ((a1 - a0 + 1) * (b1 - b0 + 1) > CASES_MAX) return null;
+  return { a0, a1, b0, b1 };
+}
+
+/**
+ * Rangs coplanaires des boîtes d'UN MÊME PLAN, dans leur ordre d'émission.
+ *
+ * `boxesOverlap` demande un recouvrement sur au moins DEUX des trois axes. Un axe dont AUCUNE boîte du
+ * plan n'a d'étendue ne peut jamais recouvrir : le plan horizontal d'un sol (y plat) et le plan
+ * d'arête d'un mur (x ou z plat) se ramènent donc à UNE paire d'axes, une seule grille. Un plan
+ * OBLIQUE (pan de toit) garde ses trois axes vivants : les trois paires s'indexent, et l'union de leurs
+ * candidats reste un sur-ensemble (deux boîtes qui recouvrent sur deux axes partagent une case dans la
+ * grille de cette paire).
+ */
+function ranksInPlane(boxes: readonly Bounds[]): number[] {
+  const n = boxes.length;
+  const ranks = new Array<number>(n).fill(0);
+  if (n < 2) return ranks;
+  const vivants: number[] = [];
+  for (let k = 0; k < 3; k++)
+    if (boxes.some((b) => b.hi[AXES[k]] - b.lo[AXES[k]] > RECOUVREMENT_MIN_M)) vivants.push(k);
+  if (vivants.length < 2) return ranks; // moins de deux axes recouvrables : aucune pile possible
+  const paires = vivants.length === 2 ? [[vivants[0], vivants[1]] as [number, number]] : PAIRES;
+  const grilles: Grille[] = paires.map(([a, b]) => ({
+    a, b, pasA: pasDeMaille(boxes, a), pasB: pasDeMaille(boxes, b), cases: new Map(), grosses: [],
+  }));
+  const vus = new Int32Array(n).fill(-1);
+  for (let i = 0; i < n; i++) {
+    let rang = 0;
+    const examiner = (j: number): void => {
+      if (vus[j] === i) return;
+      vus[j] = i;
+      if (boxesOverlap(boxes[j], boxes[i])) rang = Math.max(rang, ranks[j] + 1);
+    };
+    for (const g of grilles) {
+      for (const j of g.grosses) examiner(j);
+      const p = plage(g, boxes[i]);
+      if (!p) { for (let j = 0; j < i; j++) examiner(j); continue; }
+      for (let ia = p.a0; ia <= p.a1; ia++)
+        for (let ib = p.b0; ib <= p.b1; ib++) {
+          const seau = g.cases.get(cleCase(ia, ib));
+          if (seau) for (const j of seau) examiner(j);
+        }
+    }
+    ranks[i] = rang;
+    for (const g of grilles) {
+      const p = plage(g, boxes[i]);
+      if (!p) { g.grosses.push(i); continue; }
+      for (let ia = p.a0; ia <= p.a1; ia++)
+        for (let ib = p.b0; ib <= p.b1; ib++) {
+          const cle = cleCase(ia, ib);
+          const seau = g.cases.get(cle);
+          if (seau) seau.push(i);
+          else g.cases.set(cle, [i]);
+        }
+    }
+  }
+  return ranks;
 }
 
 /** Polygone DÉPLACÉ de `rank × COPLANAR_BIAS_M` le long de SA normale (l'ordre de peinture affine
@@ -231,11 +343,15 @@ export function polyBounds(poly: WorldPoly): Bounds {
   return { lo, hi };
 }
 
+/** Recouvrement MINIMAL (m) qui compte sur un axe — sous lui, deux boîtes se touchent, elles ne se
+ *  recouvrent pas. C'est aussi le seuil qui décide qu'un axe est PLAT pour un plan (`ranksInPlane`). */
+const RECOUVREMENT_MIN_M = 1e-6;
+
 /** Deux boîtes se RECOUVRENT si elles s'intersectent sur ≥ 2 axes (dans un plan, le 3ᵉ est dégénéré). */
 export function boxesOverlap(a: Bounds, b: Bounds): boolean {
   let axes = 0;
-  for (const k of ['x', 'y', 'z'] as const)
-    if (Math.min(a.hi[k], b.hi[k]) - Math.max(a.lo[k], b.lo[k]) > 1e-6) axes++;
+  for (const k of AXES)
+    if (Math.min(a.hi[k], b.hi[k]) - Math.max(a.lo[k], b.lo[k]) > RECOUVREMENT_MIN_M) axes++;
   return axes >= 2;
 }
 

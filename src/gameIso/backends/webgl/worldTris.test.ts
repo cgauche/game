@@ -294,6 +294,106 @@ describe('BIAIS COPLANAIRE — l’ordre de peinture affine devient une séparat
   });
 });
 
+/**
+ * ÉQUIVALENCE DU BALAYAGE SPATIAL (#1397). Le rang coplanaire se cherche dans une grille de hachage par
+ * plan, jamais contre tous les précédents — 2 384 quads sur le seul plan du sol de l'arène, soit 475
+ * des 532 ms de la cuisson au banc. Le prédicat de recouvrement, lui, ne change pas : ce qui se mesure
+ * ici est que les rangs sont EXACTEMENT ceux de la recherche exhaustive, qui tient lieu d'ORACLE — sur
+ * les scènes du dépôt, et sur les configurations que les scènes ne garantissent pas (plan oblique,
+ * dalle qui déborde de la maille).
+ */
+describe('coplanarRanks — le balayage spatial rend EXACTEMENT les rangs de la recherche exhaustive (#1397)', () => {
+  /** Prédicat de recouvrement de l'ORACLE — écrit ICI au littéral, jamais emprunté au module : un
+   *  seuil qui bougerait dans l'implémentation doit faire diverger l'oracle, pas le suivre. */
+  function recouvrent(a: Bounds, b: Bounds): boolean {
+    let axes = 0;
+    for (const k of ['x', 'y', 'z'] as const)
+      if (Math.min(a.hi[k], b.hi[k]) - Math.max(a.lo[k], b.lo[k]) > 1e-6) axes++;
+    return axes >= 2;
+  }
+
+  /** ORACLE : la recherche exhaustive, poly par poly, contre tous les précédents de son plan. */
+  function rangsExhaustifs(polys: readonly WorldPoly[]): number[] {
+    const plan = (poly: WorldPoly): string | null => {
+      const n = polyNormal(poly);
+      if (!n) return null;
+      const lead = [n.x, n.y, n.z].find((c) => Math.abs(c) > 1e-9) ?? 1;
+      const s = lead < 0 ? -1 : 1;
+      const c = { x: n.x * s, y: n.y * s, z: n.z * s };
+      const d = c.x * poly[0].x + c.y * poly[0].y + c.z * poly[0].z;
+      const r = (v: number) => Math.round(v * 1000);
+      return `${r(c.x)},${r(c.y)},${r(c.z)}|${r(d)}`;
+    };
+    const groups = new Map<string, { box: Bounds; rank: number }[]>();
+    return polys.map((poly) => {
+      const key = plan(poly);
+      if (!key) return 0;
+      const box = polyBounds(poly);
+      const g = groups.get(key) ?? [];
+      let rank = 0;
+      for (const prev of g) if (recouvrent(prev.box, box)) rank = Math.max(rank, prev.rank + 1);
+      g.push({ box, rank });
+      groups.set(key, g);
+      return rank;
+    });
+  }
+
+  const cartes: [string, Scene][] = [
+    ['arene (hub)', arene.scene],
+    ['siege-enceinte', siege],
+    ['diligence', diligence.scene],
+    ['vitrine-batiments', buildVitrineScene()],
+    ['opera (la plus lourde du dépôt)', buildOperaFloorplan()],
+  ];
+  for (const [nom, scene] of cartes)
+    it(`${nom} : rangs identiques à l’oracle, quad par quad`, () => {
+      const quads = quadsOf(scene);
+      const attendus = rangsExhaustifs(quads);
+      expect(attendus.filter((r) => r > 0).length).toBeGreaterThan(0); // prémisse : il y a bien des piles
+      expect(coplanarRanks(quads)).toEqual(attendus);
+    });
+
+  /** Quad AXÉ, dans le plan horizontal y = h. */
+  const dalle = (x: number, z: number, w: number, d: number, h = 0): WorldPoly => [
+    { x, y: h, z },
+    { x: x + w, y: h, z },
+    { x: x + w, y: h, z: z + d },
+    { x, y: h, z: z + d },
+  ];
+
+  const cas: [string, WorldPoly[]][] = [
+    ['pile de 3 dans un même plan', [dalle(0, 0, 2, 2), dalle(0, 0, 2, 2), dalle(0, 0, 2, 2)]],
+    ['voisins sans recouvrement (sols côte à côte)', [dalle(0, 0, 2, 2), dalle(2, 0, 2, 2), dalle(4, 0, 2, 2)]],
+    ['enjambement de deux éléments', [dalle(0, 0, 2, 2), dalle(2, 0, 2, 2), dalle(1, 0, 2, 2)]],
+    // Une dalle qui déborde très largement de la maille (le lot des GROSSES) sous un semis de tuiles.
+    ['grande dalle sous 400 tuiles', [dalle(0, 0, 20, 20), ...Array.from({ length: 400 }, (_, i) => dalle(i % 20, Math.floor(i / 20), 1, 1))]],
+  ];
+  for (const [nom, polys] of cas)
+    it(`cas synthétique — ${nom}`, () => {
+      const attendus = rangsExhaustifs(polys);
+      expect(coplanarRanks(polys)).toEqual(attendus);
+    });
+
+  it('plan OBLIQUE (les trois axes vivants — un pan de toit) : mêmes rangs que l’oracle', () => {
+    // Repère d'un plan dont la normale a ses trois composantes non nulles : aucun axe n'y est plat,
+    // et le rang ne peut donc pas se ramener à une seule paire d'axes.
+    const u = { x: 1 / Math.SQRT2, y: -1 / Math.SQRT2, z: 0 };
+    const v = { x: 1 / Math.sqrt(6), y: 1 / Math.sqrt(6), z: -2 / Math.sqrt(6) };
+    const quad = (s: number, t: number, w: number, h: number): WorldPoly =>
+      ([[s, t], [s + w, t], [s + w, t + h], [s, t + h]] as [number, number][]).map(([a, b]) => ({
+        x: a * u.x + b * v.x,
+        y: a * u.y + b * v.y,
+        z: a * u.z + b * v.z,
+      }));
+    const polys = [quad(0, 0, 2, 2), quad(0, 0, 2, 2), quad(1, 1, 2, 2), quad(5, 5, 2, 2)];
+    const n = polyNormal(polys[0])!;
+    expect(Math.min(Math.abs(n.x), Math.abs(n.y), Math.abs(n.z))).toBeGreaterThan(1e-3); // prémisse : plan oblique
+    const attendus = rangsExhaustifs(polys);
+    expect(attendus).toEqual([0, 1, 2, 0]);
+    expect(coplanarRanks(polys)).toEqual(attendus);
+  });
+});
+
 describe('ÉPAISSEUR de mur — un plan d’épaisseur nulle n’a AUCUNE surface à 90° de plongée', () => {
   /** Aire (m²) d'un triangle. */
   const aire = ([a, b, c]: [Vec3, Vec3, Vec3]) => {
