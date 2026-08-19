@@ -493,3 +493,48 @@ export async function typeInField(session, selecteur, texte, { clear = true, att
   }
   return lu;
 }
+
+/**
+ * CLIC D'UNE CASE DE CONSOLE PAR SON ID D'ACTION (`data-action`, registre `src/data/actions.json`).
+ * Le DOM de la console publie l'identité de chaque alvéole : la recette n'a donc plus à viser un
+ * libellé (qui bouge avec la donnée) ni une position (qui bouge avec le set au poing).
+ *
+ * Trois refus EXPLICITES, jamais un clic silencieux qui « n'a rien fait » :
+ *  - case ABSENTE (l'action n'est pas offerte dans cette situation) ;
+ *  - case GATÉE (`data-gated`/`disabled`) — la RAISON affichée est remontée telle quelle, et le geste
+ *    n'est pas forcé : un gate qui se déclenche est un RÉSULTAT de recette, pas un obstacle ;
+ *  - case INERTE (`.cc-inert`, action `blocked` du registre) — dite comme telle.
+ * Rend `{ actionId, label, rect }` au succès. Même dispatch souris réel que `clickButtonByText`.
+ */
+export async function cliquerAction(session, actionId, { racine = '.combat-console' } = {}) {
+  const etat = await evaluate(session, `(() => {
+    const el = document.querySelector(${JSON.stringify('%RACINE% [data-action="%ID%"]')});
+    if (!el) {
+      const offertes = Array.from(document.querySelectorAll(${JSON.stringify('%RACINE% [data-action]')})).map((b) => b.getAttribute('data-action'));
+      return { absente: true, offertes };
+    }
+    el.scrollIntoView({ block: 'center', inline: 'center' });
+    const r = el.getBoundingClientRect();
+    const raison = el.querySelector('[data-gate]');
+    return {
+      gate: el.hasAttribute('data-gated') ? (raison ? raison.textContent.trim() : '(sans raison affichée)') : null,
+      inerte: el.classList.contains('cc-inert'),
+      disabled: !!el.disabled,
+      label: (el.getAttribute('aria-label') || el.textContent || '').trim(),
+      x: r.x + r.width / 2, y: r.y + r.height / 2,
+    };
+  })()`.replace(/%RACINE%/g, racine).replace(/%ID%/g, actionId));
+  if (!etat || etat.absente) {
+    throw new Error(`cliquerAction « ${actionId} » : aucune case de console ne porte cet id — offertes : ${((etat && etat.offertes) || []).join(', ') || '(aucune)'}`);
+  }
+  if (etat.gate) throw new Error(`cliquerAction « ${actionId} » : case GATÉE — raison affichée : « ${etat.gate} » (geste non forcé)`);
+  if (etat.inerte) throw new Error(`cliquerAction « ${actionId} » : case INERTE (action déclarée sans dispatcher au registre) — rien à cliquer`);
+  if (etat.disabled) throw new Error(`cliquerAction « ${actionId} » : case DÉSACTIVÉE (${etat.label}) — la situation ne l'offre pas`);
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: etat.x, y: etat.y });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mousePressed', x: etat.x, y: etat.y, button: 'left', clickCount: 1 });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseReleased', x: etat.x, y: etat.y, button: 'left', clickCount: 1 });
+  return { actionId, label: etat.label, rect: { x: etat.x, y: etat.y } };
+}
+
+/** Frappe RÉELLE d'une touche — alias FRANÇAIS de `realKey` (même geste, même pipeline CDP). */
+export const frapperTouche = realKey;

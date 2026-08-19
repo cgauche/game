@@ -9,6 +9,7 @@ import { extendedTestStep } from '../engine/tests';
 import { unloadWeapon, setAmmoChoice } from '../engine/items';
 import type { SupportDetail } from '../engine/skills';
 import type { StakeRef } from '../data';
+import type { BattleActionMode } from './actionRegistry';
 import { fixedJetOpen, markFixedDie } from './fixedDieMark';
 import type { ShipMoraleState } from '../engine/crewMorale';
 import { dissipateSpell } from '../engine/dispel';
@@ -17,6 +18,7 @@ import { battleRng, seedBattleRng } from './battleRng';
 import { facingToward, DIR8_DELTA, rotateDir8, type Dir8 } from './dir8';
 import { footprintTiles, footprintN } from './footprint';
 import type { CombatCursor, ScreenDir } from './combatCursor';
+import type { LocalIntent } from './localIntent';
 import { applyShipCollision } from './shipCollision';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { OvercastAxis } from '../engine/overcast';
@@ -193,10 +195,12 @@ export interface BattleState {
   crewActed?: Record<string, string[]>;
   /** Mode d'action À BOUTON en cours (panneau ouvert). Le déplacement et l'attaque n'ont PAS de mode :
    *  ils sont implicites au clic (sol/ennemi) quand `action === null` — cf. battleClickTile/Entity.
-   *  'cast' = ciblage d'un sort · 'teleport' = case d'arrivée d'une Téléportation · 'resolve'/'ammo'/'heal'
-   *  = panneaux (Détermination / munition / soin). La Focalisation / l'usage d'objet / le ramassage NE sont
-   *  PAS des modes : ils passent par `battleFocusSpell`→`pendingFocus`, `battleUseItem`, `battlePickup`. */
-  action: 'cast' | 'resolve' | 'ammo' | 'heal' | 'teleport' | 'dispel' | 'battery' | 'advantage' | 'push' | null;
+   *  La Focalisation / l'usage d'objet / le ramassage NE sont PAS des modes : ils passent par
+   *  `battleFocusSpell`→`pendingFocus`, `battleUseItem`, `battlePickup`.
+   *  Le TYPE vient du REGISTRE DES ACTIONS (`actions.json` : le champ `armed` de chaque action) +
+   *  `MODES_HORS_REGISTRE` pour ce qu'aucune case n'arme (`teleport` = résolution d'un sort) —
+   *  parité gardée par `src/state/action-atteignabilite.test.ts`. */
+  action: BattleActionMode | null;
   /** Sort sélectionné pour l'action d'incantation en cours (id STABLE — le libellé se résout à l'affichage). */
   selectedSpellId: string | null;
   /** Attaque ARMÉE pour le clic-ennemi (id d'`AttackOption` : 'arme' | 'morsure' | … — cf. `availableAttacks`).
@@ -392,6 +396,13 @@ export interface GameState extends RollFlowActionsMap {
   commitCursor: () => void;
   /** Efface le curseur (la souris reprend la main, ou geste « annuler »). */
   clearCursor: () => void;
+  /** INTENTION LOCALE armée depuis l'interface (case de console) : le geste que le prochain clic du
+   *  champ commettra, avec SA portée peinte d'avance (`localIntent.ts`, spec HUD zone 4). LOCAL au
+   *  client : hors `battle`, hors allowlist d'intents, préservé par `applyHostSnapshot` — seul le
+   *  COMMIT du geste part en réseau. null = aucune intention (gestes par défaut du grid, inchangés). */
+  localIntent: LocalIntent | null;
+  /** Arme (id d'action) ou dissout (`null`) l'intention locale. Re-armer la MÊME la dissout. */
+  battleArmIntent: (actionId: string | null) => void;
   /** Combattant mis en évidence par le SURVOL (token carte OU portrait frise) — pilote le miroir
    *  réciproque sur la frise. Distinct de hoverCombatantId (frise/Tab → peek caméra). */
   hovered: string | null;
@@ -1718,6 +1729,7 @@ export const useGame = create<GameState>((set, get) => ({
   hoverCombatantId: null,
   setHoverCombatant: (id) => set((s) => (s.hoverCombatantId === id ? {} : { hoverCombatantId: id })),
   combatCursor: null,
+  localIntent: null,
   hovered: null,
   setHovered: (id) => set((s) => (s.hovered === id ? {} : { hovered: id })),
   keyOverrides: loadKeyOverrides(),

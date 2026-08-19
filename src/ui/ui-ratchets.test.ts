@@ -279,6 +279,7 @@ const DOMAIN_CSS_MODULES = [
   'creator-shell',
   'test-scenarios',
   'combat-console',
+  'exploration-dock',
 ];
 const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 20,
@@ -356,7 +357,22 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // de `RigPortrait`) : « cadre dans un cadre », antipattern `FigTile` de la doctrine. Le cadre du
   // dessin se retire, et la FORME du trait (R9, daltonisme) passe sur l'anneau restant — d'où cette
   // seule référence à la classe d'équipe de la primitive, aucune classe de domaine créée.
-  'styles/combat-console.css': 44,
+  // +8 (44 → 52) : COMPOSITION de la travée gauche sur la planche USER 2026-08-17 (spec §1c-bis) —
+  // `.cc-bay-body`/`.cc-arsenal`/`.cc-arsenal-body`/`.cc-quick` (les deux groupes de la travée et
+  // leurs boîtes), `.cc-bay-head` (bande de titre : le set au poing / ACCÈS RAPIDE), `.cc-sets` (la
+  // COLONNE de sets, qui absorbe l'ancien commutateur : `.cc-sets-toggle` disparaît), `.cc-set-n`
+  // (rang gravé de la vignette), `.cc-set-load` (l'état « déch. » DIT, jamais la couleur seule) et
+  // `.cc-grid-quick` (2×2). Aucune n'est décorative : chacune porte une région de la composition.
+  'styles/combat-console.css': 50,
+  // Pont d'EXPLORATION (spec HUD combat § « Zone 11 ») : `.exploration-dock` (la bande basse, même
+  // matière/liseré que le pont de combat) et `.xd-openers` (la rangée d'icônes-écrans à son extrémité
+  // droite, tiroir-journal compris). DEUX noms, aucun décoratif : sans eux, les ouvreurs restent des
+  // boîtes flottantes sur le champ.
+  // -1 (3 → 2) : le module ne cite PLUS `.worldmap-btn`. La tôle du pont était réécrite ici, de
+  // l'extérieur, en 6 propriétés (scope par écran) : elle est devenue une VARIANTE de la primitive
+  // (`.worldmap-btn[data-skin='tole']`, définie AVEC elle dans world-meta.css — attribut, aucun nom
+  // de classe neuf là-bas). Baisse ASSAINIE, gardée par `ExplorationDock.test.tsx`.
+  'styles/exploration-dock.css': 2,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,
   // +25 : charte « Atelier du scribe » (#412) — MetalStatus/WaxSeal+SealedPlaque/CareerPath/
@@ -537,7 +553,12 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // cellule pleine `.pt-state`, la cellule VIDE `.pt-void` (dessinée : « zéro État ne rétrécit pas
   // la carte ») et le chiffre `.pt-n` porté par la pastille. Trois surfaces neuves, aucune
   // décorative : sans elles la grille d'États du bandeau n'a ni case ni indice.
-  'styles/hud.css': 151,
+  // +2 (151 → 153), passe d'ASSEMBLAGE des deux plaques d'outils : `.exploration-dock` (l'ancrage du
+  // tiroir-journal SUR le pont hors combat, et la borne de son panneau sur la réserve `--xd-deck-h` —
+  // le tiroir ne flotte plus au coin du champ) et `.worldmap-btn` (l'ouvreur du rail dissous ≤700 se
+  // pose lui-même : sans ancrage il retombait dans le flux du stage). Deux noms CITÉS, aucun défini
+  // en propre ici, et aucun décoratif — chacun porte un ancrage que le HUD n'avait pas.
+  'styles/hud.css': 153,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
   'styles/ornaments.css': 13,
@@ -1180,13 +1201,16 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
     // de son contenu, déborde du HUD et ne défile jamais (défaut mesuré : piste 633px dans une bande
     // de 294px à 360). `stretch` la ramène à la largeur de la bande.
     expect(at700).toMatch(/\.initiative-strip\s*\{[^}]*align-items:\s*stretch/);
-    // RÉSERVE DE DROITE : la frise est au-dessus des commandes de vue dans l'empilement, donc elle
-    // doit s'arrêter AVANT elles. La colonne mesure 144px et se pose à 16px du bord (mesuré au
-    // navigateur, `scripts/recette/hud-clickables.mjs`) : moins de 160px de réserve et des boutons
-    // de caméra cessent de recevoir leur clic.
+    // LE HAUT-DROITE EST LIBRE : la plaque de caméra a quitté l'écran de jeu et le rail dégraissé
+    // (journal + dossier de navire) s'ancre EN BAS à cette largeur — la frise va jusqu'au bord, comme
+    // à gauche. Elle réservait 168px pour une colonne de 144px qui n'existe plus.
     const reserve = pxOf(at700, '.initiative-strip', 'right');
-    expect(reserve, 'la frise ≤700 doit déclarer sa réserve de droite en px').not.toBeNull();
-    expect(reserve!).toBeGreaterThanOrEqual(160);
+    expect(reserve, 'la frise ≤700 déclare son bord droit en px').not.toBeNull();
+    expect(reserve!).toBeLessThanOrEqual(8);
+    // Ce qui remplace la réserve : le rail DISSOUT à cette largeur ne porte plus l'ancrage de ses
+    // enfants — son ouvreur d'écran se pose lui-même en bas, sinon il retombe dans le flux du stage.
+    expect(at700).toMatch(/\.hud-rail\s*>\s*\.worldmap-btn\s*\{[^}]*position:\s*absolute/);
+    expect(at700).toMatch(/\.hud-rail\s*>\s*\.worldmap-btn\s*\{[^}]*bottom:\s*\d+px/);
   });
 
   it('≤560 : le groupe tient sur une ligne, le dock d’action prend la largeur, la sortie de tour colle au bord', () => {

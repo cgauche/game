@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
-import { relacherCamera, tournerCamera } from '../state/keybindings';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { preemptShooterIds } from '../state/targeting';
 import { IsoStage } from '../gameIso/IsoStage';
@@ -8,7 +7,6 @@ import { PovStage } from '../gameIso/pov/PovStage';
 import { SceneErrorBoundary } from './SceneErrorBoundary';
 import { Modal } from './Modal';
 import { PovControls } from './PovControls';
-import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
 import { MerchantPanel } from './MerchantPanel';
 import { TavernGameModal } from './TavernGameModal';
@@ -35,7 +33,7 @@ import { ObjectiveBannerMount } from './ObjectiveBanner';
 import { SaveLoadModal } from './SaveLoadModal';
 import { SessionEndModal } from './SessionEndModal';
 import { WorldMapView } from './WorldMapView';
-import { ScreenMeta } from './ScreenMeta';
+import { ExplorationDock } from './ExplorationDock';
 import { PortView } from './PortView';
 import { ShipDossier } from './ShipDossier';
 import { LandMarketView } from './LandMarketView';
@@ -69,7 +67,6 @@ export function CampaignView() {
   const sessionEndOpen = useGame((s) => s.sessionEndOpen); // Effet `sessionEnd` (#83) : ouvre la même modale
   const closeSessionEnd = useGame((s) => s.closeSessionEnd);
   const inspectEnabled = useGame((s) => s.inspectEnabled); // option de jeu : inspection des combattants
-  const toggleInspect = useGame((s) => s.toggleInspectEnabled);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   const roundStartPromote = useGame((s) => s.roundStartPromote);
   const gameTime = useGame((s) => s.gameTime);
@@ -88,12 +85,7 @@ export function CampaignView() {
   const startScene = useGame((s) => s.startScene);
   const partyWiped = useGame((s) => s.partyWiped);
   const party = useGame((s) => s.party);
-  const zoom = useGame((s) => s.zoom);
-  const setZoom = useGame((s) => s.setZoom);
-  const viewMode = useGame((s) => s.viewMode);
-  const toggleViewMode = useGame((s) => s.toggleViewMode);
   const povActive = useGame((s) => s.povActive);
-  const togglePov = useGame((s) => s.togglePov);
   const battleClickEntity = useGame((s) => s.battleClickEntity);
   const netMode = useGame((s) => s.net.mode);
   const openRest = useGame((s) => s.openRest);
@@ -219,10 +211,11 @@ export function CampaignView() {
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :
             la console porte un bandeau d'interlude (cf. CombatConsole). */}
-        {/* Barre HUD supérieure UNIFIÉE : le menu ☰, les raccourcis de lieu (navire / voyage / carte /
-            hub / repos) et, HORS COMBAT, la pile de contexte — lieu, date, objectif dans cet ordre
-            (design 2026-07-31 §11). Sauvegarder : exploration seulement (refusée en combat) et jamais
-            l'invité (la save vit chez l'hôte). */}
+        {/* Barre HUD supérieure : le menu ☰, le nom du LIEU et l'OBJECTIF — rien d'autre, en AUCUN
+            mode (spec HUD combat § « Zone 11 ») : la date vit au menu ☰ et sur les écrans plein-champ
+            (`ScreenMeta`), les ouvreurs d'écrans à l'extrémité droite du pont d'exploration hors
+            combat, sur le rail d'outils en combat. Sauvegarder : exploration seulement (refusée en
+            combat) et jamais l'invité (la save vit chez l'hôte). */}
         <div className="hud-topbar">
         <GameMenu sceneName={scene?.nom} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} />
         {/* Lieu courant : premier étage de la pile — le nom de la scène se lit sur le HUD, sans ouvrir
@@ -230,133 +223,70 @@ export function CampaignView() {
         {mode === 'exploration' && scene?.nom && (
           <strong data-hud="place" title={scene.nom}>{scene.nom}</strong>
         )}
-        {/* Horloge de campagne : la MÊME méta d'en-tête que les écrans plein-champ (`ScreenMeta`,
-            date seule — la bourse ne remonte pas dans la barre de jeu). */}
-        {mode === 'exploration' && (
-          <ScreenMeta meta={{ time: gameTime }} />
-        )}
-        {/* Possessions du groupe (#762) : gestion (bêtes/véhicules/navires/serviteurs) atteignable
-            EN JEU — hors combat, même gate que « Camper »/la carte du monde (l'écran tactique se
-            réserve le HUD). Modale GLOBALE (store `possessionsScreen`, montée dans `App.tsx`). */}
-        {mode === 'exploration' && (
-          <button
-            type="button"
-            className="worldmap-btn"
-            onClick={() => openPossessionsScreen()}
-            title="Possessions du groupe"
-          >
-            <Icon id="travel/mount" size="lg" />
-          </button>
-        )}
-        {/* Dossier du navire (#227) : écran PERSISTANT du navire de campagne, visible dès que
-            `vessel` existe — EN et HORS combat (source unique ; en combat il montre le même dossier). */}
-        {vessel && (
-          <button
-            type="button"
-            className="worldmap-btn"
-            onClick={() => setDossierOpen(true)}
-            title="Dossier du navire — état, cargaison, équipage"
-          >
-            <Icon id="travel/sail-ship" size="lg" />
-          </button>
-        )}
-        {/* Carnet d'enquête (#670) : visible seulement si la campagne embarque une enquête
-            (au moins un indice défini au narratif) — arène/scènes de test sans indices n'ont pas
-            le bouton. */}
-        {mode === 'exploration' && (campaignNarratif?.indices.length ?? 0) > 0 && (
-          <button
-            type="button"
-            className="worldmap-btn"
-            onClick={() => setCarnetOpen(true)}
-            title="Carnet d’enquête"
-          >
-            <Icon id="nav/compendium" size="lg" />
-          </button>
-        )}
-        {/* Écran-hub de voyage RÉDUIT (#333) : le rouvrir (« on pilote un voyage »). Caché tant qu'une
-            étape attend (le hub est alors forcé ouvert). */}
-        {voyageHub && voyageMin && !voyageStepUp && (
-          <button type="button" className="worldmap-btn" onClick={() => setVoyageMin(false)} title="Rouvrir l’écran de voyage">
-            <Icon id="travel/sail-ship" size="lg" />
-          </button>
-        )}
-        {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
-            qu'un voyage interrompu attend sa reprise. */}
-        {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (
-          <button
-            type="button"
-            className={`worldmap-btn ${travelPlan?.interrupted ? 'attention' : ''}`}
-            onClick={openWorldMap}
-            title={travelPlan?.interrupted ? 'Carte du monde — voyage interrompu (reprendre)' : 'Carte du monde — voyager'}
-          >
-            <Icon id="nav/campaign" size="lg" />
-          </button>
-        )}
-        {/* Hub de ville (#343) : à un lieu de la carte, UN bouton « <Lieu> » ouvre l'écran-lieu qui
-            porte Port/Marché/Dormir. Affiché dès que le lieu offre au moins un service, ou un couchage
-            sur place. */}
-        {hubPlace && (hubServices.length > 0 || restHere) && (
-          <button
-            type="button"
-            className="worldmap-btn"
-            onClick={() => setCityHubOpen(true)}
-            title={`${hubPlace.label} — services du lieu`}
-          >
-            <Icon id={hubPlace.icon ?? 'nav/campaign'} size="lg" />
-          </button>
-        )}
-        {/* Dormir ici HORS lieu (route, camp sauvage) — l'offre (auberge/chez soi/dehors) vient de la
-            ZONE où se tient le groupe, sinon de la scène. À un lieu, le repos vit DANS le hub. */}
-        {mode === 'exploration' && !travelPlan && restHere && !hubPlace && (
-          <button
-            type="button"
-            className="worldmap-btn camp-btn"
-            onClick={() => openRest({ places: restHere.places, quality: restHere.quality })}
-            title={restHere.places.auberge ? 'Dormir — auberge ou belle étoile' : restHere.places.maison ? 'Dormir — chez soi' : 'Camper — dormir sur place jusqu’à l’aube'}
-          >
-            {/* Une seule icône Repos (auberge/chez soi/camp) — le `title` porte la nuance. */}
-            <Icon id="nav/rest" size="lg" />
-          </button>
-        )}
         {/* Objectif courant (#238) — dernier étage de la pile de contexte : il occupe sa propre ligne
-            sous le lieu et la date (CSS `.hud-topbar > .objective-banner`). Masqué en combat (l'écran
-            tactique se réserve le HUD) ; nul si la pile d'objectifs est vide. */}
+            sous le lieu (CSS `.hud-topbar > .objective-banner`). Masqué en combat (l'écran tactique
+            se réserve le HUD) ; nul si la pile d'objectifs est vide. */}
         {mode === 'exploration' && <ObjectiveBannerMount />}
         </div>
+        {/* PONT D'EXPLORATION (spec § « Zone 11 ») : la bande basse allégée, montée hors combat
+            seulement — en combat, le pont est la console (`CombatConsole`). Les conditions
+            d'apparition des ouvreurs restent ICI (un rappel absent = pas d'entrée). */}
+        {mode === 'exploration' && (
+          <ExplorationDock
+            onPossessions={() => openPossessionsScreen()}
+            /* Carnet d'enquête (#670) : seulement si la campagne embarque une enquête (au moins un
+               indice authoré au narratif) — arène/scènes de test n'en ont pas. */
+            onCarnet={(campaignNarratif?.indices.length ?? 0) > 0 ? () => setCarnetOpen(true) : undefined}
+            onShipDossier={vessel ? () => setDossierOpen(true) : undefined}
+            /* Écran-hub de voyage RÉDUIT (#333) : caché tant qu'une étape attend (le hub est alors
+               forcé ouvert). */
+            onVoyage={voyageHub && voyageMin && !voyageStepUp ? () => setVoyageMin(false) : undefined}
+            /* Carte du monde (#T2) : la scène est un lieu connu, ou un voyage interrompu attend. */
+            worldMap={worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) ? { onOpen: openWorldMap, interrupted: !!travelPlan?.interrupted } : undefined}
+            /* Hub de ville (#343) : à un lieu offrant au moins un service, ou un couchage sur place. */
+            hub={hubPlace && (hubServices.length > 0 || restHere) ? { label: hubPlace.label, icon: hubPlace.icon ?? 'nav/campaign', onOpen: () => setCityHubOpen(true) } : undefined}
+            /* Dormir ici HORS lieu (route, camp sauvage) — l'offre vient de la ZONE où se tient le
+               groupe, sinon de la scène. À un lieu, le repos vit DANS le hub. */
+            rest={!travelPlan && restHere && !hubPlace
+              ? {
+                  title: restHere.places.auberge ? 'Dormir — auberge ou belle étoile' : restHere.places.maison ? 'Dormir — chez soi' : 'Camper — dormir sur place jusqu’à l’aube',
+                  onOpen: () => openRest({ places: restHere.places, quality: restHere.quality }),
+                }
+              : undefined}
+            /* Le tiroir-journal REJOINT la rangée d'ouvreurs : hors combat le pont est la SEULE plaque
+               du bas, le rail d'outils ne se rend pas (§1c-ter). */
+            journal={<LogDrawer battle={null} journal={journal} onOpenHistory={dialogueHistory.length > 0 ? () => setHistoryOpen(true) : undefined} />}
+          />
+        )}
         {/* Panneaux du menu ☰ : surfaces SYSTÈME, jamais par-dessus un dialogue PNJ en cours (#376 pt.2)
             — `DialogueBox` ne porte pas de `.modal-overlay` (pas de voile plein écran), donc une
             modale système au-dessus resterait invisible/inatteignable sous elle sans cette garde. */}
         {saveOpen && !dialogue && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {(sessionOpen || sessionEndOpen) && !dialogue && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
         <PartyDock heroes={dockHeroes} targeting={isTargeting} onOpen={onDockPortrait} />
-        {/* RAIL D'OUTILS (épure G) : UN panneau vertical encadré au bord droit — commandes de vue
-            ET journal y sont montés ensemble, plus rien d'épars sur le champ. Aux tranches
-            étroites le rail se dissout (`display: contents`) et chaque surface reprend son ancrage
-            mobile propre. */}
-        <div className="hud-rail">
-          {/* Orientation : le MÊME geste que Q/E (`tournerCamera`/`relacherCamera`), appui ET
-              relâchement — un appui bref pousse d'un pas fin, un appui tenu fait tourner en continu. */}
-          <ViewControls
-            zoom={zoom}
-            onZoomIn={() => setZoom(zoom + 0.3)}
-            onZoomOut={() => setZoom(zoom - 0.3)}
-            onZoomReset={() => setZoom(1)}
-            onRotateLeft={() => tournerCamera(useGame.getState, -1)}
-            onRotateRight={() => tournerCamera(useGame.getState, 1)}
-            onRotateRelease={relacherCamera}
-            view={viewMode}
-            onToggleView={toggleViewMode}
-            pov={povActive}
-            onTogglePov={mode === 'exploration' ? togglePov : undefined}
-            inspectEnabled={inspectEnabled}
-            onToggleInspect={mode === 'battle' ? toggleInspect : undefined}
-          />
-          <LogDrawer
-            battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null}
-            journal={journal}
-            onOpenHistory={mode === 'exploration' && dialogueHistory.length > 0 ? () => setHistoryOpen(true) : undefined}
-          />
-        </div>
+        {/* RAIL D'OUTILS (épure G) EN COMBAT : UN panneau vertical encadré au bord droit — le journal
+            de bataille et l'ouvreur de dossier de navire y sont vissés, plus rien d'épars sur le champ
+            ni dans la barre haute. Hors combat, ces commandes vivent sur le pont d'exploration : le
+            rail ne se rend plus (la planche ne le veut qu'en tactique). La caméra n'y a plus de plaque :
+            elle se pilote au GESTE (glisser, molette, pincer) et au CLAVIER (registre
+            `state/keybindings`, remappable à l'écran Options). Aux tranches étroites le rail se dissout
+            (`display: contents`) et chaque surface reprend son ancrage mobile propre. */}
+        {mode === 'battle' && (
+          <div className="hud-rail">
+            {vessel && (
+              <button
+                type="button"
+                className="worldmap-btn"
+                data-skin="tole"
+                onClick={() => setDossierOpen(true)}
+                title="Dossier du navire — état, cargaison, équipage"
+              >
+                <Icon id="travel/sail-ship" size="lg" />
+              </button>
+            )}
+            <LogDrawer battle={battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
+          </div>
+        )}
         {mode === 'exploration' && povActive && <PovControls />}
         {dialogue && <DialogueBox />}
         {merchant && <MerchantPanel />}

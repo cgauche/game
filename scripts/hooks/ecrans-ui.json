@@ -54,6 +54,7 @@
     "src/ui/EquipmentPanel.tsx",
     "src/ui/ErrorCollectorBanner.tsx",
     "src/ui/EtatPanel.tsx",
+    "src/ui/ExplorationDock.tsx",
     "src/ui/FallModal.tsx",
     "src/ui/FateSaveModal.tsx",
     "src/ui/FocusModal.tsx",

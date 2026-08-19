@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
 /**
- * #1176 — les boutons d'ORIENTATION annoncent Q et E dans leur libellé : ils doivent donc faire
- * EXACTEMENT ce que font ces touches. Le lacet est LIBRE : l'appui pousse d'un PAS FIN, et ne touche
- * pas au cran du store.
- * Monté pour de VRAI (patron `createRoot`/`act` du repo) : c'est l'ÉCRAN qui est jugé, pas le prédicat.
-
+ * #1176 — le lacet de caméra est LIBRE : l'appui bref pousse d'un PAS FIN, la touche TENUE fait
+ * tourner en continu, et une perte de focus (Alt-Tab, onglet caché) arrête tout net.
+ * Monté pour de VRAI (patron `createRoot`/`act` du repo) : c'est l'ÉCRAN qui est jugé, pas le prédicat
+ * — la pure mécanique du lacet, elle, vit dans `src/state/lacet-libre.test.ts`.
  */
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'react';
@@ -57,29 +56,7 @@ describe('CampaignView — plus aucun interrupteur de voie de rendu à l’écra
   });
 });
 
-describe('CampaignView — les boutons d’orientation SONT le geste de Q/E', () => {
-  /** Hors navigateur, le lacet arrive tout de suite (`state/stageYaw.ts`) : la poussée se mesure sans
-   *  dérouler l'approche à la frame. */
-  const sansFrames = () => vi.stubGlobal('requestAnimationFrame', undefined);
-
-  it('le bouton pousse le LACET d’un pas fin, et ne touche pas au cran du store', () => {
-    const el = monter(false);
-    sansFrames();
-    const cran = useGame.getState().camRot;
-    act(() => { el.querySelector('[aria-label="Tourner horaire (E)"]')!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
-    expect(getStageYaw()).toBe(PAS_TAP_DEG);
-    expect(useGame.getState().camRot).toBe(cran);
-  });
-
-  it('…et le geste est le MÊME dans l’autre sens (aucune asymétrie de poussée)', () => {
-    const el = monter(false);
-    sansFrames();
-    const cran = useGame.getState().camRot;
-    act(() => { el.querySelector('[aria-label="Tourner anti-horaire (Q)"]')!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
-    expect(getStageYaw()).toBe(-PAS_TAP_DEG);
-    expect(useGame.getState().camRot).toBe(cran);
-  });
-
+describe('CampaignView — le geste de caméra du joueur, monté à l’écran', () => {
   /** Pilote la boucle de frames à la main : le test décide quand chaque frame se joue. */
   function harnaisDeFrames() {
     let enAttente: FrameRequestCallback[] = [];

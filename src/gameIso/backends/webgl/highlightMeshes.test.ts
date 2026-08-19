@@ -49,6 +49,7 @@ const VUE: HighlightsView = {
   myTurn: true,
   walkReach: new Map([['3,2', 1], ['4,2', 2], ['3,3', 2]]),
   runReach: new Map([['3,2', 1], ['5,2', 3]]),
+  intentReach: new Map(),
   activeId: 'h1',
   eligibleIds: new Set(['e1']),
   crowdIds: null,

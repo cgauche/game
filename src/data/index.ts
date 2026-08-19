@@ -89,6 +89,7 @@ import voyageStakesJson from './voyage-stakes.json';
 import flowStakesJson from './flow-stakes.json';
 import combatStakesJson from './combat-stakes.json';
 import activitiesStakeJson from './activities.json';
+import actionsJson from './actions.json';
 import axesJson from './axes.json';
 import navalProgressionJson from './naval-progression.json';
 import seaNavigationJson from './sea-navigation.json';
@@ -267,6 +268,34 @@ export interface ActivityStakeEntry {
   ruleCategory?: string;
 }
 export const ACTIVITY_STAKES = activitiesStakeJson as ActivityStakeEntry[];
+
+/** REGISTRE DES ACTIONS de combat (`actions.json`, spec HUD « Zone 12 ») : une entrée = un acte
+ *  offert au joueur, avec son identité STABLE, son affichage, sa règle Codex, son coût et les IDS
+ *  de code qui l'exécutent. Le CODE derrière ces ids vit dans `src/state/actionRegistry.ts` —
+ *  `src/data` ne dépend jamais de `src/state` ni de `src/engine`. */
+export interface ActionDef {
+  id: string;
+  label: string;
+  icon: string;
+  surface: 'deduite-du-set' | 'geste-d-etat' | 'grille' | 'pastille-entite' | 'hors-console';
+  gate: string;
+  candidates?: string;
+  run?: string;
+  mode?: string;
+  intent?: string;
+  armed?: string;
+  cost: 'action' | 'mouvement' | 'gratuit' | 'aucun';
+  maison?: boolean;
+  costNote?: string;
+  source?: SourceRef;
+  rule?: string;
+  ruleCategory?: string;
+  keys?: string[];
+  blocked?: { ticket: string; raison: string };
+}
+export const ACTIONS = actionsJson as ActionDef[];
+/** Action par id STABLE (jamais par libellé). */
+export const findActionById = (id: string): ActionDef | undefined => ACTIONS.find((a) => a.id === id);
 
 /** Id de JET d'une modale mono : le couple `{flow, phase}` aplati en `kind` de `StakeKey`. SOURCE
  *  UNIQUE de la composition — la donnée porte les deux moitiés séparément, la clé les recolle ici. */

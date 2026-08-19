@@ -112,6 +112,7 @@ export function auditDataset(data) {
 export const EXEMPT_DATASETS = {
   'aa-criticals.json': "note libre `_source` au niveau du fichier (seule survivance documentée, common.ts:56-65) — l'extraction Marker d'Aux Armes EXISTE (motif RÉVISÉ #563 : la table de Blessures Critiques cite un intervalle APPROXIMATIF `p.≈118-124`, jamais migrée en `source: sourceRefSchema` PAR ENTRÉE — dette de migration, pas un blocage d'extraction).",
   'books.json': 'catalogue des LIVRES eux-mêmes — pas de "source" au sens où un livre se cite lui-même.',
+  'actions.json': "registre de ROUTAGE des actions de combat (id → icône, surface, gate/candidates/run) : aucune table CHIFFRÉE, la règle vit dans la fiche pointée par `rule`+`ruleCategory` (regles/talents/etats/qualities/skills) qui porte SA citation. `source` n'y est posée que sur les entrées dont le COÛT est adossé à un verbatim (LDB 13 l.106, 15 l.35-49, 14 « Viser »…).",
   'characteristics.json': "vocabulaire des 10 Caractéristiques (clés/labels), pas une table de valeurs RAW à citer par entrée (base SUPPRIMÉE #310, table morte).",
   'decorPalette.json': 'palette de couleurs de RENDU (hex), pas une donnée RAW.',
   'ambiance.json': 'config de rendu (éclairage iso/POV), pas une donnée RAW.',

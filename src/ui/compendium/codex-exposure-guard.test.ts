@@ -181,6 +181,7 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   // #747 rouvre UN cas : merchants.json (archétypes migrés du CODE en donnée) reste à exposer au Codex.
   'merchants.json': "exposition Codex (catégorie + formulaire CodexEdit d'archétypes) = lot UI séparé -> #747 ; migré du CODE en donnée hand-éditable (schéma zod validé) en attendant.",
   'merchantFamilies.json': "config de PRÉSENTATION du stock marchand (familles d'onglets, colonnes) — vocabulaire app-interne, pas une fiche de contenu.",
+  'actions.json': "registre de ROUTAGE des actions de combat (id → icône, surface, gate/candidates/run, mode armé) : chaque entrée POINTE vers la fiche qui porte sa règle (`rule`+`ruleCategory` → regles/talents/etats/qualities/skills), elle n'en héberge aucune — aucun verbatim à exposer, la fiche l'est déjà.",
 };
 
 /** Offenses réelles : chaque `.json` de `src/data` doit être exposé (mapping résolu via le VRAI

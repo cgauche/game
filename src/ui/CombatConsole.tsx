@@ -1,20 +1,29 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useGame, activeCombatant, movementRemaining, type BattleState } from '../state/store';
-import type { Combatant } from '../engine/types';
+import type { Combatant, Weapon, WeaponLoadout } from '../engine/types';
 import { hasMeaningfulOption } from '../state/turnEconomy';
 import { advantageCapFor } from '../engine/advantage';
+import { attackWeapon } from '../engine/combat';
 import { availableAttacks, selfManeuversOf, selfManeuverApplicable, previewResourceDelta } from '../state/combatFlow';
 import { combatAdvantageSkills } from '../engine/skillCombatApps';
-import { findSpellById, findSkillById } from '../data/index';
+import { findSpellById, findSkillById, findActionById } from '../data/index';
+import { type CodexTarget } from '../engine/ruleRefs';
+import { actionGate, runAction, type ActionCtx, type ActionRunCtx } from '../state/actionRegistry';
+import { CodexRef } from './compendium/CodexRef';
 import { isConsumable } from '../engine/consumables';
-import { compatibleAmmo, loadoutLabel } from '../engine/items';
+import { loadedAmmo, loadoutLabel, activeLoadout, weaponFromItem, isUnarmed } from '../engine/items';
+import { weaponLoaded, reloadProgressOf } from '../engine/weaponLoad';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { actorHasSkill } from '../engine/skills';
+import { hasHealSkill, healableTargets } from '../engine/healing';
 import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
-import { isFrenzied } from '../engine/psychology';
+import { isFrenzied, isFrenzyCapable } from '../engine/psychology';
+import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
+import { canAidTeam } from '../state/commandTeam';
+import { shipOfCrew } from '../state/shipPostes';
 import { isVehicle } from '../engine/vehicle';
 import { controlsCombatant } from '../state/netOwnership';
 import { inBattleId } from '../state/combatants';
@@ -30,9 +39,12 @@ import { ItemIcon } from './ItemIcon';
 import type { IconIdInput } from './icons';
 
 /** Nombre de cases de chaque travée — GÉOMÉTRIE IMMUABLE (arbitrage utilisateur 2026-08-16 :
- *  « je ne veux pas que la taille de l'interface ou les boutons bougent »). Le contenu varie,
+ *  « je ne veux pas que la taille de l'interface ou les boutons bougent » —
+ *  `.claude/memory/game-arbitrage-hud-console-rt-2026-08-16.md:22`). Le contenu varie,
  *  le compte de cases JAMAIS : une case sans contenu se DESSINE vide. */
-const LEFT_CELLS = 8; // travée gauche : 2×4
+const LEFT_CELLS = 6; // travée gauche : 2×3 — les gestes déduits du set (§1a) puis les cases LIBRES
+const QUICK_CELLS = 4; // rubrique ACCÈS RAPIDE : 2×2 (consommables groupés + Soin)
+const SET_SLOTS = 3; // colonne latérale de SETS : vignettes toujours dessinées (planche 2026-08-17)
 const RIGHT_CELLS = 12; // grille de capacités : 2×6
 const ADVANTAGE_COLLARS = 10; // conduit d'Avantage (LDB 14 l.198)
 const ARCH_STATE_CELLS = 4; // niche d'États de l'arche : alvéoles réservées (spec §1c-bis)
@@ -43,42 +55,78 @@ const PRINTED_KEYS = 8; // touches imprimées dans les cases de la grille (spec 
  *  Attribut de données, jamais une classe par écran. */
 type CellFamily = 'arme' | 'geste' | 'mouvement' | 'defense' | 'avantage' | 'attaque' | 'magie';
 
-/** Une alvéole : contenu RÉEL du store. `run` absent = case dessinée non branchée. */
+/** Une alvéole : une ENTRÉE du registre des actions (`src/data/actions.json`) habillée du contenu réel
+ *  du store. `run` absent = case dessinée non branchée (action `blocked`, ou console en lecture). */
 type Cell = {
   key: string;
+  /** ID D'ACTION du registre — l'IDENTITÉ de la case : rendue en `data-action`, publiée au pont
+   *  clavier, exécutée par `runAction`. Jamais une closure anonyme (spec HUD « Zone 12 »). */
+  id: string;
   icon: ReactNode;
   label: string;
-  title: string;
   family: CellFamily;
   /** Coût en crans d'Avantage, adossé au conduit. */
   adv?: number;
   on?: boolean;
   disabled?: boolean;
+  /** FOYER de règle de la case (`{category, id}` du Codex, `RULE_REF`/registre de données) : c'est LUI
+   *  qui porte le texte de règle, en VERBATIM, dans le popover `CodexRef`. Aucune prose de règle n'est
+   *  écrite ici (CLAUDE.md règles 5 & 6) — la case NOMME, la donnée EXPLIQUE. */
+  rule?: CodexTarget;
+  /** RAISON d'inéligibilité, quand la case se DESSINE quoi qu'il arrive mais que la situation en
+   *  interdit l'usage (Charger alors qu'on est Engagé — `regles/charger`). Rendue en texte VISIBLE dans
+   *  l'alvéole et liée par `aria-describedby` (idiome `GatedAction` : un `title` seul est invisible à
+   *  l'arbre a11y). Le compte de cases ne bouge jamais. */
+  gate?: string;
   run?: () => void;
 };
 
-const MAQUETTE_TITLE = ' — maquette (case dessinée, action non branchée)';
-
-function ConsoleCell({ cell, hotkey, advantage = 0 }: { cell?: Cell; hotkey?: number; advantage?: number }) {
+/** L'alvéole vide PORTE son mot, dans les DEUX travées : la case est offerte au placement du joueur
+ *  (planche 2026-08-17, « LIBRE »), elle n'est pas un trou de composition. Une seule grammaire de case
+ *  vide — le mot partout (grief vision : la travée droite ne disait rien).
+ *
+ *  ZÉRO `title` : l'infobulle native est proscrite (charte + grief du juge vision « la raison n'est
+ *  qu'en title »). Ce que la case doit dire passe par TROIS véhicules VISIBLES ou accessibles :
+ *  le libellé (+ `aria-label` pour le libellé entier quand l'ellipse le tronque), la RAISON de gate en
+ *  texte dans l'alvéole, et le popover `CodexRef` (mode `wrap` : le bouton EST l'affordance de sa
+ *  règle, sans ⓘ voisin — #1078) pour le verbatim de la donnée.
+ *
+ *  `intentionArmee` MET CE POPOVER EN SOURDINE (`suppressPopover`) : une intention armée peint sa portée
+ *  sur le terrain (spec zone 4), et la boîte de règle — ouverte par le focus que le clic vient de donner
+ *  au bouton — recouvrait exactement ce que le joueur a demandé à voir. L'intention dissoute, la règle
+ *  revient. */
+function ConsoleCell({ cell, hotkey, advantage = 0, intentionArmee = false }: { cell?: Cell; hotkey?: number; advantage?: number; intentionArmee?: boolean }) {
   if (!cell) {
-    return <span className="chip cc-cell cc-empty" />;
+    return (
+      <span className="chip cc-cell cc-empty">
+        <span className="cc-lbl">LIBRE</span>
+      </span>
+    );
   }
   const inert = !cell.run;
-  return (
+  const gateId = cell.gate ? `cc-gate-${cell.key}` : undefined;
+  const button = (
     <button
       type="button"
       data-cell={cell.key}
+      data-action={cell.id}
       data-family={cell.family}
+      data-gated={cell.gate ? '' : undefined}
       className={`chip cc-cell${cell.on ? ' on' : ''}${inert ? ' cc-inert' : ''}`}
       disabled={cell.disabled || inert}
-      title={inert ? cell.title + MAQUETTE_TITLE : cell.title}
+      aria-label={cell.label}
+      aria-describedby={gateId}
       onClick={cell.run}
     >
       {/* Touche imprimée SEULEMENT quand elle marche : la case branchée est publiée au pont clavier
-          (`hotbar`), une case de maquette n'a aucune touche — jamais de badge mort. */}
-      {hotkey && !inert ? <span className="cc-key">{hotkey}</span> : null}
+          (`hotbar`), une case de maquette n'a aucune touche — jamais de badge mort. Une case REFUSÉE
+          (gate du registre, ou situation qui la ferme) publie son slot `disabled` : son badge s'éteint
+          aussi, il ne promet pas une touche qui ne fera rien — et il ne vient pas mordre la raison. */}
+      {hotkey && !inert && !cell.disabled ? <span className="cc-key">{hotkey}</span> : null}
       <span className="cc-ico">{cell.icon}</span>
       <span className="cc-lbl">{cell.label}</span>
+      {/* RAISON d'indisponibilité : VISIBLE dans l'alvéole (idiome `GatedAction`), jamais un title. */}
+      {cell.gate ? <span className="cc-lbl" data-gate="" id={gateId}>{cell.gate}</span> : null}
       {cell.adv ? (
         <span className="cc-cost" aria-label={`Coût : ${cell.adv} Avantage (${Math.min(advantage, cell.adv)} couvert${Math.min(advantage, cell.adv) > 1 ? 's' : ''})`}>
           {Array.from({ length: cell.adv }, (_, i) => (
@@ -88,10 +136,31 @@ function ConsoleCell({ cell, hotkey, advantage = 0 }: { cell?: Cell; hotkey?: nu
       ) : null}
     </button>
   );
+  // Le FOYER de règle enveloppe le bouton sans rien lui prendre (`wrap` : ni clic, ni rôle, ni
+  // tabindex) — c'est l'idiome des boutons de dépense (`ChanceButtons`, `DeterminationButton`).
+  return cell.rule
+    ? <CodexRef category={cell.rule.category} id={cell.rule.id} label={cell.label} wrap suppressPopover={intentionArmee}>{button}</CodexRef>
+    : button;
 }
 
 function icon(id: IconIdInput) {
   return <Icon id={id} />;
+}
+
+/** Un SET porte-t-il une arme à distance qui n'est pas prête à tirer ? L'état de charge vit sur
+ *  l'ARME (registre `engine/weaponLoad`), pas sur le porteur : chaque objet du set est projeté par la
+ *  dérivation UNIQUE `weaponFromItem` (l'`uid` survit, donc `loadRegister` retombe sur l'objet
+ *  possédé) — c'est ainsi qu'un set NON ACTIF, dont les armes ne sont pas dans `c.weapons`, dit son
+ *  état. PUR. */
+function loadoutUnloaded(c: Combatant, lo: WeaponLoadout): boolean {
+  const items = c.items ?? [];
+  for (const uid of [lo.main, lo.off]) {
+    const it = uid ? items.find((i) => i.uid === uid) : undefined;
+    if (!it || it.kind !== 'ranged') continue;
+    const w = weaponFromItem(it);
+    if ((w.reload ?? 0) > 0 && !weaponLoaded(c, w)) return true;
+  }
+  return false;
 }
 
 /** GOUTTIÈRE de l'arche : une ressource du tour en crans verticaux (longueur constante, N segments
@@ -104,9 +173,11 @@ function icon(id: IconIdInput) {
  *  dépend d'aucune ressource (héros Empêtré = Mouvement 0). */
 function ArchGutter({ kind, value, max, label, short, unit, spend = 0 }: { kind: 'action' | 'move'; value: number; max: number; label: string; short: string; unit?: string; spend?: number }) {
   const spendFrom = Math.max(0, value - spend);
-  const title = `${label} : ${value}/${max}${unit ? ` ${unit}` : ''}`;
+  // Le CHIFFRE et les crans sont à l'écran (socle + rail) : le nom accessible suffit à les nommer pour
+  // un lecteur d'écran — aucune infobulle native (proscrite, cf. `ConsoleCell`).
+  const nom = `${label} : ${value}/${max}${unit ? ` ${unit}` : ''}`;
   return (
-    <span className={`cc-gutter cc-gutter-${kind}`} title={title} aria-label={title}>
+    <span className={`cc-gutter cc-gutter-${kind}`} aria-label={nom}>
       <span className="cc-gutter-rail">
         {Array.from({ length: max }, (_, i) => (
           <i key={i} className={i < spendFrom ? 'on' : i < value ? 'on spend' : 'off'} />
@@ -159,13 +230,15 @@ export function CombatConsole() {
   const party = useGame((s) => s.party);
   const net = useGame((s) => s.net);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
+  // Intention LOCALE armée (spec zone 4) : elle allume SA case. Jamais un intent réseau — c'est un
+  // mode d'écran, le geste qu'il commet part, lui, par les chemins de clic habituels.
+  const localIntent = useGame((s) => s.localIntent);
   const confirmRoundStart = useGame((s) => s.confirmRoundStart);
-  const endTurn = useGame((s) => s.battleEndTurn);
-  const aim = useGame((s) => s.battleAim);
-  const reload = useGame((s) => s.battleReload);
-  const switchLoadout = useGame((s) => s.battleSwitchLoadout);
-  /** Repli du commutateur de sets — état d'AFFICHAGE local (composition compacte ≤560px). */
-  const [setsOpen, setSetsOpen] = useState(false);
+  // AUCUN dispatcher n'est capté ici : toute exécution passe par `runAction` (registre des actions).
+  // Garde-fou « tour gâché » ARMÉ (2ᵉ clic attendu) — état d'UI local, remis à zéro à chaque tour/Round,
+  // comme dans la barre v7 (`ActionBar.tsx:124,129`).
+  const [confirmEnd, setConfirmEnd] = useState(false);
+  useEffect(() => { setConfirmEnd(false); }, [battle?.turn, battle?.round]);
 
   if (!battle || battle.over) return null;
   const phase = pendingRoundStart
@@ -212,112 +285,243 @@ export function CombatConsole() {
   const broken = isHero && hasCondition(active, 'brise');
   const busy = battle.acted || stunned || broken;
 
+  // ── LA CONSOLE CONSOMME LE REGISTRE DES ACTIONS ────────────────────────────────────────────────
+  // Contexte d'offre commun à toutes les cases (prédicats `ACTION_GATES`, spec HUD « Zone 12 »).
+  const gateCtx: ActionCtx = { active, battle, netMode: net.mode };
+  /** UNE CASE = UNE ENTRÉE de `src/data/actions.json` : libellé, icône, foyer de règle Codex, verdict
+   *  d'offre (`actionGate` → raison VISIBLE) et dispatcher (`runAction`) viennent tous de l'action.
+   *  La console ne décide QUE de la pertinence (le site dit quand la case existe), de sa MATIÈRE
+   *  (famille) et de l'habillage porté par le contenu réel (art de l'objet, compteurs). Une action
+   *  sans dispatcher (`blocked`) rend une case DESSINÉE mais inerte : le registre le dit, elle ne feint pas.
+   *  `off` = restriction de SITE qui s'ajoute au verdict (jamais qui l'annule). */
+  const cellFor = (
+    actionId: string,
+    family: CellFamily,
+    over: { key?: string; label?: string; icon?: ReactNode; rule?: CodexTarget; on?: boolean; off?: boolean; adv?: number; args?: ActionRunCtx } = {},
+  ): Cell | undefined => {
+    const def = findActionById(actionId);
+    if (!def) return undefined;
+    const verdict = actionGate(def.id, gateCtx);
+    // Une action à INTENTION (spec zone 4) : sa case s'allume quand SON mode est armé, et le re-clic
+    // le dissout — même patron que les modes armés de `battle.action` (Détermination, Dissiper).
+    const armedIntent = !!def.intent && localIntent?.actionId === def.id;
+    return {
+      key: over.key ?? def.keys?.[0] ?? def.id,
+      id: def.id,
+      family,
+      icon: over.icon ?? icon(def.icon as IconIdInput),
+      label: over.label ?? def.label,
+      rule: over.rule ?? (def.rule && def.ruleCategory ? ({ category: def.ruleCategory, id: def.rule } as CodexTarget) : undefined),
+      gate: verdict.ok ? undefined : verdict.reason,
+      on: over.on ?? (armedIntent || undefined),
+      adv: over.adv,
+      disabled: !live || !verdict.ok || !!over.off,
+      run: live && (def.run || def.intent)
+        ? () => runAction(def.id, useGame.getState, { ...(over.args ?? {}), ...(armedIntent ? { toggleOff: true } : null) })
+        : undefined,
+    };
+  };
+
   // ── Travée GAUCHE : l'arsenal du set au poing + le nécessaire ──────────────────────────────
   const loadouts = active.loadouts ?? [];
-  const meleeW = active.weapons.find((w) => w.type === 'melee');
   const rangedW = active.weapons.find((w) => w.type === 'ranged');
-  const setWeapon = meleeW ?? rangedW;
-  const needsReload = !!rangedW && (rangedW.reload ?? 0) > 0 && !active.loaded;
-  const ammoChoices = rangedW ? compatibleAmmo(active, rangedW) : [];
+  const heldSet = activeLoadout(active);
+  // G1 porte l'arme DU SET, lue par `uid` — jamais la première arme de `c.weapons`, dont l'ordre ne dit
+  // rien de ce qui est TENU. Sans set (statbloc de créature) : l'arme que le moteur ferait parler à
+  // distance (`attackWeapon`, source unique du choix d'arme).
+  const heldMainW = heldSet?.main ? active.weapons.find((w) => w.uid === heldSet.main) : undefined;
+  const setWeapon = heldMainW ?? attackWeapon(active.weapons, false);
+  // En-tête de travée = le SET AU POING, libellé DÉRIVÉ de son contenu (`loadoutLabel`) ; un acteur
+  // sans set (statbloc de créature) porte le nom de son arme tenue.
+  const setLabel = heldSet ? loadoutLabel(heldSet, active) : (setWeapon?.label ?? 'Mains nues');
+  const needsReload = !!rangedW && (rangedW.reload ?? 0) > 0 && !weaponLoaded(active, rangedW);
+  const reloadProg = rangedW ? reloadProgressOf(active, rangedW) : 0;
+  // MUNITION : celle qui est RÉELLEMENT dans l'arme (`loadedAmmo` → `loadRegister`, `items.ts:1005`),
+  // jamais la première compatible du sac. Elle vit dans l'EN-TÊTE de travée, à côté du nom du set
+  // (arbitrage #1348, spec § « BUDGET DE HAUTEUR » complément a) : le bandeau réservé qu'elle occupait
+  // sous la travée coûtait sa bande de plaque nue à TOUS les sets, même sans arme de tir.
+  const ammo = rangedW ? loadedAmmo(active, rangedW) : undefined;
   const canPush = active.weapons.some((w) => w.type === 'melee' && canPushback(w));
+  // Armes DU SET au poing, lues par `uid` : c'est le set qui dit ce qui est TENU (arbitrage #1348
+  // « ARBITRAGE SET STRICT », `docs/plans/2026-08-16-spec-hud-combat.md` ; dérivation `recomputeLoadout`,
+  // `engine/items.ts`). Sans set (statbloc de créature), le set est l'arsenal réel de la bête, Mains nues
+  // écartées par le prédicat canonique `isUnarmed` (`items.ts:178`, marqueur `builtinId`).
+  const setWeapons = heldSet
+    ? [heldSet.main, heldSet.off].filter((u): u is string => !!u).map((uid) => active.weapons.find((w) => w.uid === uid)).filter((w): w is Weapon => !!w)
+    : active.weapons.filter((w) => !isUnarmed(w));
+  // G2 Charge — `LDB 15 l.35-37` / `LDB 13 l.90` (fiche `regles/charger`) : elle ne se DÉDUIT que
+  // d'un set qui ouvre un corps à corps — arme de mêlée DU set, ou set MAINS NUES (aucune arme portée).
+  // Un set de tir pur ne la déduit pas. AUCUNE PERTE DE DROIT : ce prédicat ne règle que le REMPLISSAGE
+  // par défaut de la travée ; la Charge reste un geste par défaut de la grille de capacités et sera
+  // posable en case libre (lot placement).
+  const chargeDeduite = setWeapons.length === 0 || setWeapons.some((w) => w.type === 'melee');
   const consumables = (active.items ?? []).filter(isConsumable);
+  // Consommables GROUPÉS par MODÈLE — plusieurs potions identiques = une case à compteur ×N. La clé de
+  // regroupement est l'id STABLE de catalogue (`trappingId`, `items.ts:240`), jamais le libellé
+  // (doctrine CLAUDE.md : « on ne manipule que des IDs », le `label` est de l'AFFICHAGE) ; un objet
+  // CUSTOM n'en a pas — son `uid` le distingue alors, et deux customs homonymes restent deux cases.
+  // Le libellé du groupe reste celui du 1ᵉʳ objet : c'est l'affichage.
+  const consumableGroups = Object.values(
+    consumables.reduce<Record<string, { key: string; label: string; uids: string[] }>>((acc, it) => {
+      const cle = it.trappingId ?? it.uid;
+      (acc[cle] ??= { key: cle, label: it.label, uids: [] }).uids.push(it.uid);
+      return acc;
+    }, {}),
+  );
+  const healTargets = hasHealSkill(active)
+    ? healableTargets(active, battle.combatants.filter((c) => c.kind === active.kind), { adjacency: true })
+    : [];
 
-  const left: (Cell | undefined)[] = [
-    // G1 — attaque de l'arme du set
+  // Aspersion d'eau (`water`) : le contenant est au sac, les cibles sont les alliés qui suffoquent.
+  const waterTargets = hasWaterContainer(active)
+    ? waterSprayCandidates(active, battle.combatants.filter((c) => c.kind === active.kind))
+    : [];
+  // Barre d'un navire : le porteur sert-il un poste de gouverne ? (source unique `shipOfCrew`)
+  const atHelm = isHero ? shipOfCrew(battle.combatants, active.id) : undefined;
+
+  // Gestes DÉDUITS du set au poing (spec §1a, G1-G6bis). Chaque case EST une entrée du registre,
+  // habillée du contenu réel (art de l'arme tenue, progression de charge). Une case non pertinente
+  // pour ce set n'est pas rendue ; le débord garnit la rangée LIBRE (voir `left`), aucun geste ne tombe.
+  // ORDRE : l'arme d'abord, puis son cycle de charge (une arme à Recharge doit rester rechargeable
+  // quel que soit le set), puis la Charge, la visée, le geste d'arme, la posture, l'état du porteur.
+  const deduced: (Cell | undefined)[] = [
+    // G1 — attaque de l'arme du set (entrée `attaque`). L'icône et le nom suivent l'ARME réelle
+    // (`ItemIcon`, même routage d'art que la vignette de set) et le foyer de règle est la POSSESSION.
     setWeapon
-      ? { key: 'g1-attaque', family: 'arme', icon: icon('action/attack'), label: setWeapon.label, title: `Attaquer avec ${setWeapon.label}` }
-      : { key: 'g1-attaque', family: 'arme', icon: icon('melee/grapple'), label: 'Mains nues', title: 'Attaquer à mains nues' },
-    // G2 — Charge (bouton d'intention : portée M×2 visible avant le clic)
-    { key: 'g2-charge', family: 'geste', icon: icon('journal/charge'), label: 'Charger', title: 'Charger : montrer la portée de Charge avant de désigner la cible' },
-    // G3 — Viser (BRANCHÉ)
-    rangedW
-      ? {
-          key: 'g3-viser',
-          family: 'arme',
-          icon: icon('action/aim'),
-          label: active.aiming ? 'En joue' : 'Viser',
-          title: 'Viser : +20 (Accessible) au prochain tir — coûte l’Action',
-          on: !!active.aiming,
-          disabled: !live || busy || !!active.aiming || frenzied,
-          run: live ? aim : undefined,
-        }
-      : undefined,
-    // G4 — Recharger (BRANCHÉ)
+      ? cellFor('attaque', 'arme', { icon: <ItemIcon item={setWeapon} />, label: setWeapon.label, rule: setWeapon.trappingId ? { category: 'trappings', id: setWeapon.trappingId } : undefined, args: { attackId: 'arme' } })
+      : cellFor('attaque', 'arme', { icon: icon('melee/grapple'), label: 'Mains nues', rule: { category: 'trappings', id: 'mains-nues' }, args: { attackId: 'arme' } }),
+    // G4 — Recharger : le porteur de l'état est l'ARME (progression du Test étendu), et c'est ELLE
+    // que le dispatcher reçoit.
     rangedW && (rangedW.reload ?? 0) > 0
-      ? {
-          key: 'g4-recharger',
-          family: 'arme',
-          icon: icon('journal/reload'),
-          label: `Recharger${active.reloadProgress ? ` ${active.reloadProgress}/${rangedW.reload}` : ''}`,
-          title: 'Recharger : Test étendu de Projectiles — coûte l’Action',
+      ? cellFor('reload', 'arme', {
+          label: `Recharger${reloadProg ? ` ${reloadProg}/${rangedW.reload}` : ''}`,
           on: needsReload,
-          disabled: !live || busy || !needsReload || frenzied,
-          run: live ? reload : undefined,
-        }
+          off: busy || !needsReload || frenzied,
+          args: { weaponUid: rangedW.uid },
+        })
       : undefined,
+    // G2 — Charge (bouton d'intention : portée M×2 visible avant le clic). Le verdict d'offre vient
+    // du registre (`charge-possible`), le verbatim du popover de sa fiche.
+    chargeDeduite ? cellFor('charge', 'geste') : undefined,
+    // G3 — Viser
+    rangedW ? cellFor('aim', 'arme', { label: active.aiming ? 'En joue' : 'Viser', on: !!active.aiming, off: busy || !!active.aiming || frenzied }) : undefined,
+    // G6 — geste d'ARME : la jauge est l'ARSENAL tenu (`canPushback`). L'Empoignade n'en est PAS un
+    // (LDB 14 l.155, l.159) : elle reste à la modale d'attaque à mains nues (`useAttackJetProps.tsx:96`).
+    canPush ? cellFor('pushback', 'geste', { on: !!active.pushbackMode }) : undefined,
     // G5 — posture de tir (intention pré-jet, sans valeur : la fenêtre de jet garde le chiffre)
-    rangedW ? { key: 'g5-posture', family: 'arme', icon: icon('action/shoot'), label: 'Tir immobile', title: 'Posture de tir : tirer sans bouger / tirer dans le tas' } : undefined,
-    // G6 — geste d'ARME
-    canPush
-      ? { key: 'g6-geste-arme', family: 'geste', icon: icon('ui/undo'), label: 'Repousser', title: 'Perturbante : la prochaine attaque réussie repousse au lieu de blesser', on: !!active.pushbackMode }
-      : { key: 'g6-geste-arme', family: 'geste', icon: icon('melee/grapple'), label: 'Empoigner', title: 'Empoignade — geste de l’arme au poing' },
-    // G6bis — geste d'ÉTAT du héros
-    active.mountId
-      ? { key: 'g6bis-etat', family: 'geste', icon: icon('action/dismount'), label: 'Descendre', title: 'Descendre de sa monture — coûte le Mouvement' }
-      : active.mannedPoste
-        ? { key: 'g6bis-etat', family: 'geste', icon: icon('action/leave-post'), label: 'Quitter la pièce', title: 'Quitter la pièce servie — coûte l’Action' }
-        : undefined,
-    // G7 — objets (consommable, Soin, Asperger d'eau)
-    consumables[0]
-      ? { key: 'g7-objet', family: 'geste', icon: <ItemIcon item={consumables[0]} size={22} />, label: consumables[0].label, title: `Utiliser ${consumables[0].label}` }
-      : { key: 'g7-objet', family: 'geste', icon: icon('journal/heal'), label: 'Soigner', title: 'Soigner (Compétence Guérison) — coûte l’Action' },
+    rangedW ? cellFor('posture-tir', 'arme') : undefined,
+    // G6bis — gestes d'ÉTAT du porteur (surface `geste-d-etat` du registre, spec §1a) : ce que sa
+    // SITUATION ouvre — en selle, à une pièce servie, à la barre — jamais ce que son arme offre.
+    active.mountId ? cellFor('dismount', 'geste', { off: broken }) : undefined,
+    active.mannedPoste ? cellFor('leave-poste', 'geste', { off: busy }) : undefined,
+    atHelm ? cellFor('maneuver-ship', 'geste', { off: busy, args: { crewId: active.id } }) : undefined,
   ];
+  // La rangée BASSE est LIBRE (placement joueur — spec §1c-bis) et son remplissage PAR DÉFAUT est le
+  // DÉBORD des gestes déduits (spec §1b) : une case pré-remplie reste remplaçable, mais plus AUCUN geste
+  // ne tombe hors de la travée. Six cases couvrent le pire set (arme de tir à Recharge + geste d'arme).
+  const left: (Cell | undefined)[] = deduced.filter((c): c is Cell => !!c).slice(0, LEFT_CELLS);
+
+  // ── ACCÈS RAPIDE (2×2) : le nécessaire du héros — consommables à compteur, Soin, aspersion ──────
+  const quick: (Cell | undefined)[] = [
+    ...consumableGroups.map((g) => {
+      const it = consumables.find((i) => i.uid === g.uids[0])!;
+      return cellFor('use-item', 'geste', {
+        key: `q-objet-${g.key}`,
+        icon: <ItemIcon item={it} />,
+        label: `${g.label}${g.uids.length > 1 ? ` ×${g.uids.length}` : ''}`,
+        rule: it.trappingId ? { category: 'trappings', id: it.trappingId } : undefined,
+        off: busy || frenzied,
+        args: { itemUid: g.uids[0] },
+      });
+    }),
+    healTargets.length > 0
+      ? cellFor('heal', 'geste', { key: 'q-soigner', on: battle.action === 'heal', off: busy || frenzied, args: { toggleOff: battle.action === 'heal' } })
+      : undefined,
+    waterTargets.length > 0 ? cellFor('water', 'geste', { off: busy || frenzied }) : undefined,
+  ]
+    .filter((c): c is Cell => !!c)
+    .slice(0, QUICK_CELLS);
 
   // ── Travée DROITE : la grille de capacités (compte FIXE, remplissage par défaut mesuré) ─────
   const advSkills = [...new Map(combatAdvantageSkills(active).map((s) => [s.skillId, s])).values()];
   const canDispel = actorHasSkill(active, 'langue', 'magick');
   const dispellable = canDispel ? dispellableSpellsOn(battle.combatants) : [];
-  const attacks = availableAttacks(active, battle).filter((a) => a.id !== 'arme');
+  // L'attaque d'ARME n'a rien à faire dans la grille de capacités : elle EST le geste du conduit (travée
+  // gauche). Le tri se lit au DISCRIMINANT `kind` de `AttackOption` (union `AttackKind`), jamais à l'id.
+  const attacks = availableAttacks(active, battle).filter((a) => a.kind !== 'arme');
   const spells = (active.spells ?? []).map((id) => findSpellById(id)).filter((s): s is NonNullable<typeof s> => !!s);
   const selfManeuvers = selfManeuversOf(active).filter((m) => selfManeuverApplicable(active, m));
 
   const candidates: Cell[] = [
-    { key: 'course', family: 'mouvement', icon: icon('travel/foot'), label: 'Course', title: 'Course : Test d’Athlétisme — montrer la portée réelle avant de désigner la case' },
-    { key: 'mouvement', family: 'mouvement', icon: icon('journal/move'), label: 'Mouvement', title: 'Mouvement : montrer la portée de Marche' },
-    ...(isEngaged(active) ? [{ key: 'disengage', family: 'mouvement' as const, icon: icon('melee/disengage'), label: 'Se désengager', title: 'Quitter le corps à corps' }] : []),
-    { key: 'defend', family: 'defense', icon: icon('flag/defensive'), label: 'Défensive', title: '+20 à tous vos Tests de défense jusqu’à votre prochain tour' },
+    cellFor('course', 'mouvement'),
+    cellFor('mouvement', 'mouvement'),
+    isEngaged(active) ? cellFor('disengage', 'mouvement') : undefined,
+    cellFor('defend', 'defense', { off: busy }),
     // Une Compétence porte l'icône de SA caractéristique (source unique `charIcon`) : six alvéoles
-    // d'Avantage ne partagent plus le même glyphe.
-    ...advSkills.map((s) => ({
-      key: `advantage-${s.skillId}`,
-      family: 'avantage' as const,
-      icon: icon(charIcon(findSkillById(s.skillId)?.characteristic)),
-      label: findSkillById(s.skillId)?.label ?? s.skillId,
-      title: `Prendre l’Avantage par ${findSkillById(s.skillId)?.label ?? s.skillId} — coûte l’Action`,
-    })),
-    ...(hasBattement(active) ? [{ key: 'battement', family: 'avantage' as const, icon: icon('melee/close-in'), label: 'Battement', title: 'Battement : retirer de l’Avantage à un adversaire armé' }] : []),
-    ...(hasDistraire(active) ? [{ key: 'distraire', family: 'avantage' as const, icon: icon('flag/focus'), label: 'Distraire', title: 'Distraire : Test opposé d’Athlétisme contre le Calme' }] : []),
-    { key: 'resolve', family: 'defense', icon: icon('resource/resolve'), label: `Détermination ${active.resolve ?? 0}`, title: 'Détermination : immunité à la Psychologie, ignorer les modificateurs de critique, retirer un État' },
-    ...(dispellable.length > 0 ? [{ key: 'dispel', family: 'magie' as const, icon: icon('action/dispel'), label: 'Dissiper', title: 'Dissiper un sort permanent : désigner son porteur' }] : []),
-    ...selfManeuvers.map((m) => ({ key: `self-${m.id}`, family: 'geste' as const, icon: icon('flag/frenzy'), label: m.label, title: m.label })),
-    // Attaques de trait : adossées au conduit (elles se paient en crans d'Avantage).
-    ...attacks.map((a) => ({ key: `attaque-${a.id}`, family: 'attaque' as const, icon: icon(a.icon), label: a.label, title: a.label, adv: a.cost?.advantage ?? 0 })),
-    ...spells.map((sp) => ({ key: `sort-${sp.id}`, family: 'magie' as const, icon: icon('magic/power'), label: sp.label, title: `${sp.label} — incantation` })),
-  ];
+    // d'Avantage ne partagent plus le même glyphe. UNE entrée de registre (`gain-advantage`), N cases.
+    ...advSkills.map((s) =>
+      cellFor('gain-advantage', 'avantage', {
+        key: `advantage-${s.skillId}`,
+        icon: icon(charIcon(findSkillById(s.skillId)?.characteristic)),
+        label: findSkillById(s.skillId)?.label ?? s.skillId,
+        rule: { category: 'skills', id: s.skillId },
+        off: busy,
+        args: { skillId: s.skillId },
+      }),
+    ),
+    hasBattement(active) ? cellFor('battement', 'avantage', { off: busy }) : undefined,
+    hasDistraire(active) ? cellFor('distraire', 'avantage', { off: busy }) : undefined,
+    // Remèdes d'ÉTAT et relevé : offerts quand l'État est porté, exécutés par le registre.
+    hasCondition(active, 'a-terre') && active.wounds.current > 0 ? cellFor('stand', 'mouvement') : undefined,
+    hasCondition(active, 'en-flammes') ? cellFor('roll-fire', 'geste', { args: { stateId: 'en-flammes' } }) : undefined,
+    hasCondition(active, 'empetre') ? cellFor('free-entangle', 'geste', { args: { stateId: 'empetre' } }) : undefined,
+    isFrenzyCapable(active) && !isFrenzied(active) ? cellFor('frenzy', 'geste') : undefined,
+    canAidTeam(active, battle.combatants) ? cellFor('aid-team', 'geste', { off: busy }) : undefined,
+    cellFor('resolve', 'defense', { label: `Détermination ${active.resolve ?? 0}`, on: battle.action === 'resolve', args: { toggleOff: battle.action === 'resolve' } }),
+    dispellable.length > 0
+      ? cellFor('dispel', 'magie', { on: battle.action === 'dispel', off: busy || frenzied, args: { toggleOff: battle.action === 'dispel' } })
+      : undefined,
+    ...selfManeuvers.map((m) =>
+      cellFor('self-maneuver', 'geste', { key: `self-${m.id}`, label: m.label, rule: { category: 'maneuvers', id: m.id }, off: busy, args: { maneuverId: m.id } }),
+    ),
+    // Attaques de trait : adossées au conduit (elles se paient en crans d'Avantage). Une attaque de
+    // ZONE immédiate (Hurlement) part par `maneuver-area` ; les autres ARMENT le clic (`select-attack`).
+    ...attacks.map((a) => {
+      const habillage = { key: `attaque-${a.id}`, icon: icon(a.icon), label: a.label, rule: { category: 'traits', id: a.id } as CodexTarget, adv: a.cost?.advantage ?? 0, off: busy };
+      return a.targeting === 'zone'
+        ? cellFor('maneuver-area', 'attaque', { ...habillage, args: { attackKind: a.kind } })
+        : cellFor('select-attack', 'attaque', { ...habillage, args: { attackId: a.id } });
+    }),
+    ...spells.map((sp) =>
+      cellFor('cast-spell', 'magie', { key: `sort-${sp.id}`, icon: icon('magic/power'), label: sp.label, rule: { category: 'spells', id: sp.id }, off: busy || frenzied, args: { spellId: sp.id } }),
+    ),
+  ].filter((c): c is Cell => !!c);
   const right = candidates.slice(0, RIGHT_CELLS);
-  // PONT CLAVIER de la console : les touches 1-8 (`keybindings.ts`, section hotbar) visent la case
-  // de MÊME RANG de la grille de capacités. Publier ici est ce qui rend la touche imprimée VRAIE —
-  // une case non branchée publie un slot désactivé et n'imprime aucun badge.
-  hotbar.slots = Array.from({ length: PRINTED_KEYS }, (_, i) => {
-    const c = right[i];
-    return { run: c?.run ?? (() => {}), disabled: !c?.run || !!c.disabled };
-  });
+  // PONT CLAVIER de la console (`keybindings.ts`, section hotbar : « 1-9 = n-ième slot VISIBLE,
+  // positionnel »). On publie les cases BRANCHÉES dans l'ORDRE DE LECTURE du pont — travée gauche
+  // (gestes déduits + débord pré-rempli), ACCÈS RAPIDE, puis grille de capacités : sans la travée
+  // gauche, les seules cases réellement branchées de la console (Recharger, Viser, un consommable,
+  // Soigner) n'avaient AUCUNE touche. Le badge imprimé est ce MÊME rang : une case affichée et
+  // branchée a sa touche, une maquette n'en a pas.
+  const bridged: Cell[] = [...left, ...quick, ...right].filter((c): c is Cell => !!c && !!c.run);
+  hotbar.slots = bridged.map((c) => ({ actionId: c.id, run: c.run!, disabled: !!c.disabled }));
+  const keyRank = new Map(bridged.slice(0, PRINTED_KEYS).map((c, i) => [c.key, i + 1]));
+  const hotkeyOf = (c?: Cell) => (c ? keyRank.get(c.key) : undefined);
 
   const advCap = advantageCapFor(active);
   const meaningfulLeft = isHero && hasMeaningfulOption(active, battle);
-  // 3ᵉ ligne de la plaque de sortie : au repos elle imprime SA touche (Espace — `keybindings.ts`
-  // `end-turn`), en état d'appel elle dit CE QUI reste (jamais la couleur seule).
-  const endNote = meaningfulLeft ? 'ESPACE' : battle.acted ? 'Tour fini' : 'Action intacte';
+  // Garde-fou « tour gâché » (spec §1c-bis COIN) : finir avec l'Action NON DÉPENSÉE demande deux clics.
+  // MÊME mécanisme que la barre v7 (`ActionBar.tsx:341-346`), pas une réinvention.
+  const wastingAction = isHero && !battle.acted && canTakeAction(active);
+  const onEndTurn = () => {
+    if (wastingAction && !confirmEnd) { setConfirmEnd(true); return; }
+    setConfirmEnd(false);
+    runAction('end-turn', useGame.getState);
+  };
+  // 3ᵉ ligne de la plaque de sortie : elle dit l'état VRAI du tour — l'armement du 2ᵉ clic, sinon
+  // l'avertissement « Action non dépensée », sinon « Tour fini », sinon SA touche (Espace,
+  // `keybindings.ts` `end-turn`). Un héros Sonné n'a rien à dépenser : il lit la touche, pas un reproche.
+  const endNote = confirmEnd ? 'Finir quand même ?' : wastingAction ? 'Action non dépensée' : battle.acted ? 'Tour fini' : 'ESPACE';
 
   return (
     // LE PONT : la bande porteuse. Le bandeau de phase est son seul enfant HORS FLUX (superposé au
@@ -341,58 +545,88 @@ export function CombatConsole() {
 
       {/* Les quatre RÉGIONS du pont, sur une seule ligne. */}
       <div className="cc-dock">
-        {/* Travée GAUCHE : l'arsenal, et sous elle le commutateur de sets + la munition. */}
+        {/* Travée GAUCHE (planche 2026-08-17) : COLONNE DE SETS · 2×3 cases (haute déduite du set,
+            basse LIBRE) · rubrique ACCÈS RAPIDE 2×2. Le commutateur de sets N'EST PLUS une rangée
+            sous la travée : il EST la colonne (chaque vignette commute son set, la touche X les fait
+            tourner). La munition non plus : elle est dans l'EN-TÊTE, à côté du nom du set. */}
         <div className="cc-bay cc-bay-left">
-          <div className="cc-grid cc-grid-left" aria-label="Arsenal">
-            {Array.from({ length: LEFT_CELLS }, (_, i) => (
-              <ConsoleCell key={i} cell={left[i]} />
-            ))}
-          </div>
-          {/* La rangée du matériel ne se monte QUE si elle a quelque chose à dire : un set unique
-              n'a rien à commuter, et une arme sans munition n'a rien à compter — une case isolée
-              sous la grille ne désignait rien (grief d'assemblage 2026-08-17). */}
-          {(loadouts.length >= 2 || ammoChoices.length > 0) && (
-            <div className={`cc-loadouts${setsOpen ? ' on' : ''}`}>
-              {loadouts.length >= 2 && (
-                <>
-                  {/* Poignée de REPLI (composition compacte ≤560px) : le commutateur ne montre que
-                      le set au poing, le tap déplie les autres — aucun set ne quitte la console. */}
-                  <button
-                    type="button"
-                    className="chip cc-set cc-sets-toggle"
-                    aria-expanded={setsOpen}
-                    title={setsOpen ? 'Replier les sets' : 'Déplier les sets'}
-                    onClick={() => setSetsOpen((v) => !v)}
-                  >
-                    <Icon id="item/weapon" size="sm" />
-                  </button>
-                  {loadouts.map((lo) => {
-                    const mainItem = lo.main ? active.items?.find((i) => i.uid === lo.main) : undefined;
-                    return (
+          <div className="cc-bay-body">
+            <div className="cc-arsenal">
+              {/* En-tête de travée = le set AU POING (jamais un littéral) ET, quand l'arme au poing
+                  consomme des munitions, celle qui est CHARGÉE avec sa réserve — « ARBALÈTE · Carreau ×12 ».
+                  Elle porte sa fiche (popover `CodexRef`), comme toute possession de la console. */}
+              <span className="cc-bay-head">
+                {setLabel}
+                {ammo ? (
+                  <>
+                    {' · '}
+                    <CodexRef category="trappings" id={ammo.trappingId ?? ''} label={ammo.label} wrap suppressPopover={!!localIntent}>
+                      <span data-ammo="">{ammo.label}{ammo.qty ? ` ×${ammo.qty}` : ''}</span>
+                    </CodexRef>
+                  </>
+                ) : null}
+              </span>
+              <div className="cc-arsenal-body">
+                {/* COLONNE DE SETS : SET_SLOTS vignettes, toujours dessinées (un set absent est une
+                    vignette vide) — set au poing en relief, état de charge de l'arme mentionné. */}
+                <div className="cc-sets" role="group" aria-label="Sets d’armes">
+                  {Array.from({ length: SET_SLOTS }, (_, i) => {
+                    const lo = loadouts[i];
+                    if (!lo) {
+                      return (
+                        <span key={i} className="chip cc-set cc-empty">
+                          <i className="cc-set-n">{i + 1}</i>
+                        </span>
+                      );
+                    }
+                    const mainItem = lo.main ? active.items?.find((it) => it.uid === lo.main) : undefined;
+                    const held = heldSet?.id === lo.id;
+                    const unloaded = loadoutUnloaded(active, lo);
+                    // La VIGNETTE porte sa fiche : le popover `CodexRef` (mode `wrap`) montre l'arme du
+                    // set — profil, Atouts/Défauts, source — là où un `title` cachait le libellé du set.
+                    // Le nom accessible reste sur le bouton (le libellé ne tient pas dans 39px).
+                    const vignette = (
                       <button
                         key={lo.id}
                         type="button"
-                        className={`chip cc-set${active.activeLoadoutId === lo.id ? ' on' : ''}`}
-                        disabled={!live || (!!battle.loadoutSwapped && active.activeLoadoutId !== lo.id)}
-                        title={`Set : ${loadoutLabel(lo, active)}`}
-                        onClick={() => switchLoadout(lo.id)}
+                        data-set={lo.id}
+                        className={`chip cc-set${held ? ' on' : ''}`}
+                        disabled={!live || (!!battle.loadoutSwapped && !held)}
+                        aria-label={loadoutLabel(lo, active)}
+                        onClick={() => runAction('switch-loadout', useGame.getState, { loadoutId: lo.id })}
                       >
-                        {mainItem ? <ItemIcon item={mainItem} size={18} /> : <Icon id="item/weapon" size="sm" />}
+                        <i className="cc-set-n">{i + 1}</i>
+                        {mainItem ? <ItemIcon item={mainItem} /> : <Icon id="item/weapon" size="sm" />}
+                        {/* L'état de charge se DIT à l'ÉCRAN (jamais la couleur seule — grief vision a11y,
+                            jamais un `title` — grief du juge vision), en MOT ENTIER lisible. */}
+                        {unloaded ? <i className="cc-set-load">VIDE</i> : null}
+                        {/* La touche s'imprime sur la case qui l'exécute : X commute le set au poing. */}
+                        {held && live && loadouts.length >= 2 ? <span className="cc-key">X</span> : null}
                       </button>
                     );
+                    return mainItem?.trappingId
+                      ? <CodexRef key={lo.id} category="trappings" id={mainItem.trappingId} label={loadoutLabel(lo, active)} wrap suppressPopover={!!localIntent}>{vignette}</CodexRef>
+                      : vignette;
                   })}
-                </>
-              )}
-              {/* La munition ne se montre QUE si l'arme au poing en consomme : un tiret nu adossé à
-                  une icône ne disait rien (grief vision). */}
-              {ammoChoices.length > 0 && (
-                <span className="cc-ammo" title={`Munition : ${ammoChoices[0].label}`}>
-                  <Icon id="item/ammo" size="sm" />
-                  {ammoChoices[0].label}
-                </span>
-              )}
+                </div>
+                <div className="cc-grid cc-grid-left" aria-label="Arsenal">
+                  {Array.from({ length: LEFT_CELLS }, (_, i) => (
+                    <ConsoleCell key={i} cell={left[i]} hotkey={hotkeyOf(left[i])} intentionArmee={!!localIntent} />
+                  ))}
+                </div>
+              </div>
             </div>
-          )}
+            {/* Rubrique ACCÈS RAPIDE : le nécessaire (consommables à compteur, Soin), cases libres
+                dessinées comme dans la travée. */}
+            <div className="cc-quick">
+              <span className="cc-bay-head">ACCÈS RAPIDE</span>
+              <div className="cc-grid cc-grid-quick" aria-label="Accès rapide">
+                {Array.from({ length: QUICK_CELLS }, (_, i) => (
+                  <ConsoleCell key={i} cell={quick[i]} hotkey={hotkeyOf(quick[i])} intentionArmee={!!localIntent} />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Arche (spec §1c-bis, planche 2026-08-17) : gouttière MOUVEMENT à GAUCHE, portrait,
@@ -408,7 +642,7 @@ export function CombatConsole() {
                 la jauge superposée de la tuile en aurait fait la 2ᵉ écriture de la même donnée.
                 Le camp se lit au `kind` du combattant, jamais au contrôle joueur (un allié piloté par
                 un autre client reste un allié). */}
-            <PortraitTile c={active} ring={ring} variant="identity" size="lg" team={active.kind === 'enemy' ? 'enemy' : 'ally'} title={active.label} />
+            <PortraitTile c={active} ring={ring} variant="identity" size="lg" team={active.kind === 'enemy' ? 'enemy' : 'ally'} />
             <ArchGutter kind="action" value={actAvail} max={actMax} label="Action" short="ACTION" spend={previewDelta.action} />
             {/* NICHE D'ÉTATS : même primitive que la tuile du bandeau (`StateChips reserve`), icône +
                 INDICE chiffré par État, alvéoles vides toujours dessinées. */}
@@ -416,14 +650,13 @@ export function CombatConsole() {
           </div>
           {/* BLESSURES : barre pleine largeur de l'arche, valeur NOMMÉE sur la piste. Le MOT est un
               enfant à part : à 360 la ligne d'arche ne peut pas le porter (texte mesuré 236px pour
-              292px d'arche), la composition compacte le retire — le chiffre, la teinte de la piste
-              et le `title` disent toujours les Blessures. */}
+              292px d'arche), la composition compacte le retire — le CHIFFRE (`9 / 9`) et la teinte de la
+              piste restent à l'écran, et le `role="meter"` de la primitive porte la valeur à l'a11y. */}
           <LifeBar
             value={active.wounds.current}
             max={active.wounds.max}
             color={hpColor(active.wounds.max > 0 ? Math.max(0, Math.min(1, active.wounds.current / active.wounds.max)) : 0)}
             overlay
-            title={`Blessures : ${active.wounds.current}/${active.wounds.max}`}
             format={(v, m) => (
               <>
                 {v} / {m}
@@ -438,7 +671,7 @@ export function CombatConsole() {
 
         {/* Travée DROITE : conduit d'Avantage BRANCHÉ sur la grille de capacités. */}
         <div className="cc-bay cc-bay-right">
-          <div className="cc-conduit" title={`Avantage : ${active.advantage}/${advCap}`}>
+          <div className="cc-conduit" aria-label={`Avantage : ${active.advantage}/${advCap}`}>
             <span className="cc-conduit-label">AVANTAGE</span>
             <span className="cc-conduit-rail">
               {Array.from({ length: ADVANTAGE_COLLARS }, (_, i) => (
@@ -451,7 +684,7 @@ export function CombatConsole() {
           </div>
           <div className="cc-grid cc-grid-right" aria-label="Capacités">
             {Array.from({ length: RIGHT_CELLS }, (_, i) => (
-              <ConsoleCell key={i} cell={right[i]} hotkey={i < PRINTED_KEYS ? i + 1 : undefined} advantage={active.advantage} />
+              <ConsoleCell key={i} cell={right[i]} hotkey={hotkeyOf(right[i])} advantage={active.advantage} intentionArmee={!!localIntent} />
             ))}
           </div>
         </div>
@@ -461,15 +694,17 @@ export function CombatConsole() {
           <button
             type="button"
             data-cell="end-turn"
+            data-action="end-turn"
+            data-armed={confirmEnd ? '' : undefined}
             className={`chip cc-cell cc-end${!meaningfulLeft ? ' pulse' : ''}`}
             disabled={!live}
-            title="Finir le tour"
-            onClick={endTurn}
+            aria-label={confirmEnd ? 'Finir le tour quand même' : 'Finir le tour'}
+            onClick={onEndTurn}
           >
             <span className="cc-ico">
-              <Icon id="ui/turn-end" />
+              <Icon id={confirmEnd ? 'ui/warning' : 'ui/turn-end'} />
             </span>
-            <span className="cc-lbl">Fin du tour</span>
+            <span className="cc-lbl">{confirmEnd ? 'Finir quand même' : 'Fin du tour'}</span>
             <span className="cc-key">{endNote}</span>
           </button>
         </div>

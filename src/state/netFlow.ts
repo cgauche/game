@@ -83,7 +83,7 @@ export const BUILD_ID = 'w4-dev'; // V1 : même build requis de part et d'autre 
  *  campagne (313 Ko pour l'Arène : elles voyagent UNE fois au join via le message `campaign`,
  *  spec v2 §5). Un stub nom-seul reste : les invités affichent la campagne choisie (cartouche
  *  de l'écran d'équipe) sans jamais la charger eux-mêmes (« Commencer » est hôte-seul). */
-function netSnapshot(get: Get): Record<string, unknown> {
+export function netSnapshot(get: Get): Record<string, unknown> {
   const { data } = snapshotSave(
     get() as unknown as Record<string, unknown>,
     useGame.getInitialState() as unknown as Record<string, unknown>,
@@ -93,6 +93,9 @@ function netSnapshot(get: Get): Record<string, unknown> {
   (data as Record<string, unknown>).pendingCampaign = pc
     ? { label: pc.label, scenes: [], startSceneId: pc.startSceneId, worldMap: null }
     : null;
+  // L'INTENTION armée est un mode d'ÉCRAN, LOCAL au client (spec HUD zone 4) : elle ne voyage pas —
+  // la case armée de l'hôte n'a rien à allumer chez ses invités.
+  delete (data as Record<string, unknown>).localIntent;
   // Les règles maison de l'HÔTE voyagent avec l'état → parité hôte/invité (sinon l'invité calcule
   // sur SES propres surcharges localStorage et diverge).
   return packHouseRules(data, ruleOverrides());
@@ -130,8 +133,10 @@ function scheduleBroadcast(get: Get): void {
 
 /** L'invité applique un snapshot : état de l'hôte + SON identité réseau préservée.
  *  Pendant la composition d'équipe, son écran « créateur » LOCAL est aussi préservé (sinon
- *  chaque broadcast de l'hôte l'éjecterait en pleine création et perdrait son brouillon). */
-function applyNetSnapshot(set: Set, data: Record<string, unknown>): void {
+ *  chaque broadcast de l'hôte l'éjecterait en pleine création et perdrait son brouillon).
+ *  L'INTENTION armée (`localIntent`, spec HUD zone 4) l'est au même titre : c'est un mode d'ÉCRAN du
+ *  client — un snapshot de l'hôte (arrivant toutes les ~120 ms) désarmerait la case sous le doigt. */
+export function applyNetSnapshot(set: Set, data: Record<string, unknown>): void {
   const base = JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>;
   const mine = useGame.getState();
   const { game, rules } = unpackHouseRules(data);
@@ -142,6 +147,8 @@ function applyNetSnapshot(set: Set, data: Record<string, unknown>): void {
     ...base,
     ...(game as Partial<GameState>),
     ...(keepCreator ? { screen: 'creator' as const } : null),
+    localIntent: mine.localIntent,
+
     net: {
       ...(incoming ?? mine.net),
       mode: 'guest',

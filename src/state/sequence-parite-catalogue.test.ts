@@ -758,22 +758,22 @@ const V8C5: Site[] = [
     apres: t('turn.exhausted', { name: HEROS5 }),
   },
   {
-    site: 'keybindings.ts:191 — libellé d’un raccourci à l’écran Options (PRODUCTION)',
+    site: 'keybindings.ts:213 — libellé d’un raccourci à l’écran Options (PRODUCTION)',
     avant: 'Curseur : valider',
     apres: bindingLabel(KEYBINDINGS.find((b) => b.id === 'cursor-commit')!),
   },
   {
-    site: 'keybindings.ts:218 — libellé PARAMÉTRÉ d’un slot de barre d’action (PRODUCTION)',
+    site: 'keybindings.ts:234 — libellé PARAMÉTRÉ d’un slot de barre d’action (PRODUCTION)',
     avant: 'Capacité 3 de la barre d’action',
     apres: bindingLabel(KEYBINDINGS.find((b) => b.id === 'hotbar-3')!),
   },
   {
-    site: 'keybindings.ts:28 — section « Barre d’action » de l’écran Options (PRODUCTION)',
+    site: 'keybindings.ts:29 — section « Barre d’action » de l’écran Options (PRODUCTION)',
     avant: "Barre d'action",
     apres: keySectionLabel('hotbar'),
   },
   {
-    site: 'keybindings.ts:266 — touche du pavé numérique (PRODUCTION)',
+    site: 'keybindings.ts:294 — touche du pavé numérique (PRODUCTION)',
     avant: 'Pavé 5',
     apres: keyLabel('Numpad5'),
   },

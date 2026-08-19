@@ -456,6 +456,15 @@ export function createCombatSlice(get: Get, set: Set) {
     // propriété du teardown, cf. `dismissVictory`/`dismissDefeat`).
     if (!get().battle && !get().pendingCascade) resumeSuspendedCascade(get, set);
   };
+
+  /** Dissout l'INTENTION LOCALE armée et dit s'il y en avait une (spec zone 4) : le clic du champ qui
+   *  la consomme reste, lui, le geste par défaut. */
+  const consumeIntent = (): boolean => {
+    if (!get().localIntent) return false;
+    set({ localIntent: null });
+    return true;
+  };
+
   return {
     // Peek du planificateur IA exposé au store (convention feuille « tout via get().xxx ») : le hook de
     // Frénésie (`turnHooks`, module feuille) y lit la meilleure action sans importer `combatFlow` (pas de
@@ -847,6 +856,10 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || !scene || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active)) return;
+      // INTENTION LOCALE armée (spec zone 4) : ce clic EST son commit — elle se dissout et vaut
+      // confirmation (la case a été choisie sciemment) ; le geste exécuté reste celui de TOUJOURS.
+      const armedTile = consumeIntent();
+      const clickOpts = armedTile ? { ...opts, confirm: true } : opts;
       // Le MODE de ciblage courant peut posséder un commit-CASE (téléportation, pose de zone de sort
       // après jet, pilonnage indirect de siège, ouverture d'un sort de ZdE) — source UNIQUE targetingModes.
       const mode = currentTargetingMode(get);
@@ -899,7 +912,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const prev = battle.preview;
       if (movement.kind === 'run') {
         // Zone de Course : tap 1 = aperçu « Courir » ; tap 2 = Test d'Athlétisme (pendingRun + destination).
-        if (!opts?.confirm && !(prev?.kind === 'run' && prev.path === movement.path)) {
+        if (!clickOpts?.confirm && !(prev?.kind === 'run' && prev.path === movement.path)) {
           set({ battle: { ...battle, preview: { kind: 'run', tile: { ...dest }, path: movement.path, cost: movement.cost } }, hoverDelta: null });
           bus.emit(EVT.SCENE_DIRTY);
           return;
@@ -909,7 +922,7 @@ export function createCombatSlice(get: Get, set: Set) {
         return;
       }
       // Tap 1 : APERÇU (chemin + coût) — sauf confirmation directe ou re-tap de la même case.
-      if (!opts?.confirm && !(prev?.kind === 'move' && prev.path === movement.path)) {
+      if (!clickOpts?.confirm && !(prev?.kind === 'move' && prev.path === movement.path)) {
         set({ battle: { ...battle, preview: { kind: 'move', tile: { ...dest }, path: movement.path, cost: movement.cost } }, hoverDelta: null });
         bus.emit(EVT.SCENE_DIRTY);
         return;
@@ -1004,6 +1017,19 @@ export function createCombatSlice(get: Get, set: Set) {
       else if (intent.kind === 'inspect') s.setInspectId(intent.id);
       else s.battleClickTile(intent.pt, { confirm: true });
     },
+    // INTENTION LOCALE (spec zone 4) : la case d'action ARME le geste que le prochain clic du champ
+    // commettra, et sa PORTÉE se peint aussitôt (`localIntent.ts` → `HighlightsView.intentReach`).
+    // Purement locale : aucun intent réseau ne part d'ici (seul le COMMIT du geste en émet un).
+    // Re-armer la MÊME action, ou passer `null` (Échap), la dissout.
+    battleArmIntent: (actionId: string | null) => {
+      const battle = get().battle;
+      if (!battle || battle.over) return;
+      const active = activeCombatant(battle);
+      if (!active || !controlsCombatant(get(), active)) return;
+      const armed = get().localIntent;
+      set({ localIntent: !actionId || armed?.actionId === actionId ? null : { actionId } });
+      bus.emit(EVT.SCENE_DIRTY);
+    },
     clearCursor: () => {
       if (get().combatCursor) set({ combatCursor: null });
     },
@@ -1021,10 +1047,15 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active)) return;
+      // INTENTION LOCALE armée (spec zone 4) : ce clic EST son commit — elle se dissout, et le geste
+      // qui suit est celui de TOUJOURS (verbatim fondateur : « ça ne change pas les actions par défaut
+      // sur le grid »). Elle vaut confirmation : la case a déjà été choisie sciemment.
+      const armed = consumeIntent();
+      const clickOpts = armed ? { ...opts, confirm: true } : opts;
       // Le MODE de ciblage courant possède le commit-COMBATTANT (attaque/cast/soin/bordée, ou flux
       // différés : Surincantation +Cible / Frappe Mortelle / 2ᵉ frappe, ou pose de zone sur la case
       // d'un combattant). Source UNIQUE : targetingModes (réticule au survol = ce même mode).
-      currentTargetingMode(get).commitCombatant?.(get, set, active, id, opts);
+      currentTargetingMode(get).commitCombatant?.(get, set, active, id, clickOpts);
     },
     battleTrample: (targetId: string) => {
       if (combatBusy(get()) || get().pendingCascade) return; // flux différé / cascade en cours : hotbar inerte

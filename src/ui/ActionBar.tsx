@@ -2,6 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { hotbar } from '../state/hotbarBridge';
 import { useGame, activeCombatant, entityPickables, movementRemaining } from '../state/store';
 import { hasMeaningfulOption } from '../state/turnEconomy';
+import { freeDisengage } from '../state/actionRegistry';
 import { findSpellById, careerLabelFor, windsOfMagicTable } from '../data/index';
 import { findTableEntry } from '../engine/tables';
 import { isArcaneSpell, castBlockedBy, castInfoIsPrayer } from '../engine/magic';
@@ -272,10 +273,9 @@ export function ActionBar() {
     : null;
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
-  // Désengagement GRATUIT (option A, LDB 15 l.87) : Avantage strictement supérieur à tous les foes
-  // Engagés → possible MÊME après avoir agi (ne coûte pas l'Action) ; rouvre le mouvement.
-  const engagedFoes = engaged ? (active.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c && !isOutOfAction(c)) : [];
-  const canFreeDisengage = engagedFoes.length > 0 && active.advantage > Math.max(0, ...engagedFoes.map((f) => f.advantage));
+  // Désengagement GRATUIT (option A, LDB 15 l.87) : prédicat du REGISTRE (`freeDisengage`,
+  // state/actionRegistry) — la barre et l'économie du tour lisent la MÊME source.
+  const canFreeDisengage = isHero && freeDisengage({ active, battle });
   // Combat monté (LDB 14) : descendre si à cheval ; enfourcher une monture libre adjacente (coûte l'Action).
   const mounted = isHero && !!active.mountId;
   const mountCandidate = isHero && !active.mountId && !moveStarted ? mountableNear(battle, active) : undefined; // enfourcher = plein Mouvement (pas de jet → pas une Action)
@@ -495,7 +495,7 @@ export function ActionBar() {
       slots.push({ id: 'ship-reload', cls: 'ab-alert', icon: <Icon id="journal/reload" />, label: `Recharger${reloadable.length > 1 ? ` (${reloadable.length})` : ''}`, title: `Recharger une pièce déchargée : Test étendu de Projectiles du chef de pièce + Soutien des servants`, run: () => battleShipReload(active.id, reloadable[0].item.uid) });
     slots.push({ id: 'end-turn', cls: 'ab-end', icon: <Icon id="ui/turn-end" />, label: 'Fin du tour', title: `Finir le tour de ${active.label}`, run: onEndTurn });
   }
-  hotbar.slots = slots.map((s) => ({ run: s.run, disabled: s.disabled })); // pont clavier (1-9 = n-ième slot) — cf. hotbarBridge
+  hotbar.slots = slots.map((s) => ({ actionId: s.id, run: s.run, disabled: s.disabled })); // pont clavier (1-9 = n-ième slot) — cf. hotbarBridge
 
   return (
     <div className="action-bar">

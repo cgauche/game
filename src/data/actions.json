@@ -1,0 +1,824 @@
+[
+  {
+    "id": "attaque",
+    "label": "Attaque",
+    "icon": "action/attack",
+    "surface": "deduite-du-set",
+    "gate": "action-libre",
+    "run": "battleSelectAttack",
+    "mode": "attack",
+    "intent": "portee-arme",
+    "candidates": "attaques-disponibles",
+    "cost": "action",
+    "keys": [
+      "g1-attaque"
+    ]
+  },
+  {
+    "id": "charge",
+    "label": "Charger",
+    "icon": "journal/charge",
+    "surface": "deduite-du-set",
+    "gate": "charge-possible",
+    "intent": "portee-charge",
+    "cost": "mouvement",
+    "rule": "charger",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 165,
+      "note": "LDB 15 l.35-37"
+    },
+    "keys": [
+      "g2-charge"
+    ]
+  },
+  {
+    "id": "course",
+    "label": "Course",
+    "icon": "travel/foot",
+    "surface": "grille",
+    "gate": "mouvement-restant",
+    "intent": "portee-course",
+    "cost": "action",
+    "rule": "course",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 165,
+      "note": "LDB 15 l.41"
+    },
+    "keys": [
+      "course"
+    ]
+  },
+  {
+    "id": "mouvement",
+    "label": "Mouvement",
+    "icon": "journal/move",
+    "surface": "grille",
+    "gate": "mouvement-restant",
+    "intent": "portee-mouvement",
+    "cost": "mouvement",
+    "maison": true,
+    "costNote": "le déplacement dépense le Mouvement du Tour — imputation du moteur, aucun verbatim de coût cité.",
+    "rule": "mouvement",
+    "ruleCategory": "regles",
+    "keys": [
+      "mouvement"
+    ]
+  },
+  {
+    "id": "aim",
+    "label": "Viser",
+    "icon": "action/aim",
+    "surface": "deduite-du-set",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleAim",
+    "cost": "action",
+    "rule": "viser",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 161,
+      "note": "LDB 14, Tableau des Difficultés de Combat — Accessible (+20)"
+    },
+    "keys": [
+      "g3-viser"
+    ]
+  },
+  {
+    "id": "reload",
+    "label": "Recharger",
+    "icon": "journal/reload",
+    "surface": "deduite-du-set",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleReload",
+    "candidates": "armes-a-distance",
+    "cost": "action",
+    "rule": "recharge",
+    "ruleCategory": "qualities",
+    "keys": [
+      "g4-recharger",
+      "reload:"
+    ]
+  },
+  {
+    "id": "ammo",
+    "label": "Munition",
+    "icon": "action/shoot",
+    "surface": "deduite-du-set",
+    "gate": "toujours",
+    "run": "battleSelectAction",
+    "armed": "ammo",
+    "candidates": "munitions-compatibles",
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "ouvre le choix de munition (aucun acte de jeu n’est commis) — coût nul, arbitrage d’interface.",
+    "keys": [
+      "ammo:"
+    ]
+  },
+  {
+    "id": "select-ammo",
+    "label": "Choisir la munition",
+    "icon": "action/shoot",
+    "surface": "deduite-du-set",
+    "gate": "toujours",
+    "run": "battleSelectAmmo",
+    "candidates": "munitions-compatibles",
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "fixe la munition à charger ; le coût réel est celui du Rechargement qui suit."
+  },
+  {
+    "id": "pushback",
+    "label": "Repousser",
+    "icon": "ui/undo",
+    "surface": "deduite-du-set",
+    "gate": "toujours",
+    "run": "battleTogglePushback",
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "arme un MODE d’attaque (la prochaine attaque repousse au lieu de blesser) — le coût est celui de l’attaque.",
+    "rule": "perturbante",
+    "ruleCategory": "qualities",
+    "keys": [
+      "g6-geste-arme"
+    ]
+  },
+  {
+    "id": "posture-tir",
+    "label": "Tir immobile",
+    "icon": "action/shoot",
+    "surface": "deduite-du-set",
+    "gate": "toujours",
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "posture PRÉ-ARMÉE : elle modifie le jet de tir, elle ne consomme rien par elle-même.",
+    "rule": "tirer-dans-le-tas",
+    "ruleCategory": "regles",
+    "keys": [
+      "g5-posture"
+    ],
+    "blocked": {
+      "ticket": "#1349",
+      "raison": "les setters `attackSet*` sont NO-OP sans `pendingAttack` — le champ de posture pré-armée reste à créer (spec §1a G5)."
+    }
+  },
+  {
+    "id": "heal",
+    "label": "Soigner",
+    "icon": "journal/heal",
+    "surface": "deduite-du-set",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleSelectAction",
+    "armed": "heal",
+    "mode": "heal",
+    "candidates": "cibles-soin",
+    "cost": "action",
+    "rule": "guerison",
+    "ruleCategory": "skills",
+    "keys": [
+      "heal",
+      "q-soigner"
+    ]
+  },
+  {
+    "id": "water",
+    "label": "Asperger d’eau",
+    "icon": "action/water",
+    "surface": "deduite-du-set",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleWater",
+    "candidates": "cibles-aspersion",
+    "cost": "action",
+    "maison": true,
+    "costNote": "coût repris du site historique (ActionBar) sans verbatim de coût cité ni Test exigé — à re-vérifier au Source (MDG).",
+    "keys": [
+      "water"
+    ]
+  },
+  {
+    "id": "use-item",
+    "label": "Utiliser un objet",
+    "icon": "action/consume",
+    "surface": "deduite-du-set",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleUseItem",
+    "candidates": "consommables",
+    "cost": "gratuit",
+    "source": {
+      "book": "livre-de-base",
+      "page": 158,
+      "note": "LDB 13 l.106 « Actions gratuites »"
+    },
+    "keys": [
+      "item-",
+      "q-objet-"
+    ]
+  },
+  {
+    "id": "defend",
+    "label": "Défensive",
+    "icon": "flag/defensive",
+    "surface": "grille",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleDefendTotal",
+    "cost": "action",
+    "rule": "sur-la-defensive",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 158,
+      "note": "LDB 13 « OPTION : Sur la défensive »"
+    },
+    "keys": [
+      "defend"
+    ]
+  },
+  {
+    "id": "disengage",
+    "label": "Se désengager",
+    "icon": "melee/disengage",
+    "surface": "grille",
+    "gate": "desengagement",
+    "run": "battleDisengage",
+    "cost": "action",
+    "rule": "desengagement",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 165,
+      "note": "LDB 15 l.45-49"
+    },
+    "keys": [
+      "disengage"
+    ]
+  },
+  {
+    "id": "cast",
+    "label": "Incanter",
+    "icon": "action/cast",
+    "surface": "grille",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleSelectAction",
+    "armed": "cast",
+    "mode": "cast",
+    "candidates": "sorts-du-heros",
+    "cost": "action",
+    "keys": [
+      "cast"
+    ]
+  },
+  {
+    "id": "cast-spell",
+    "label": "Lancer ce sort",
+    "icon": "action/cast",
+    "surface": "grille",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleSelectSpell",
+    "candidates": "sorts-du-heros",
+    "cost": "action",
+    "keys": [
+      "sort-"
+    ]
+  },
+  {
+    "id": "focus-spell",
+    "label": "Focaliser",
+    "icon": "flag/focus",
+    "surface": "grille",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleFocusSpell",
+    "candidates": "sorts-du-heros",
+    "cost": "action",
+    "rule": "focalisation-etendue",
+    "ruleCategory": "regles"
+  },
+  {
+    "id": "dispel",
+    "label": "Dissiper",
+    "icon": "action/dispel",
+    "surface": "grille",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleSelectAction",
+    "armed": "dispel",
+    "candidates": "sorts-dissipables",
+    "cost": "action",
+    "rule": "dissipation",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 237,
+      "note": "LDB 46 l.156-162"
+    },
+    "keys": [
+      "dispel"
+    ]
+  },
+  {
+    "id": "dispel-spell",
+    "label": "Dissiper ce sort",
+    "icon": "action/dispel",
+    "surface": "grille",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleDispelSpell",
+    "candidates": "sorts-dissipables",
+    "cost": "action",
+    "rule": "dissipation",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 237,
+      "note": "LDB 46 l.156-162"
+    }
+  },
+  {
+    "id": "advantage",
+    "label": "Prendre l’Avantage",
+    "icon": "action/aim",
+    "surface": "grille",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleSelectAction",
+    "armed": "advantage",
+    "candidates": "competences-avantage",
+    "cost": "action",
+    "rule": "avantage",
+    "ruleCategory": "regles",
+    "keys": [
+      "advantage"
+    ]
+  },
+  {
+    "id": "gain-advantage",
+    "label": "Tester la Compétence",
+    "icon": "action/aim",
+    "surface": "grille",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleGainAdvantage",
+    "candidates": "competences-avantage",
+    "cost": "action",
+    "rule": "avantage",
+    "ruleCategory": "regles",
+    "keys": [
+      "advantage-"
+    ]
+  },
+  {
+    "id": "roll-fire",
+    "label": "Se rouler",
+    "icon": "action/roll-fire",
+    "surface": "grille",
+    "gate": "action-libre",
+    "run": "battleRecoverState",
+    "cost": "action",
+    "rule": "en-flammes",
+    "ruleCategory": "etats",
+    "keys": [
+      "roll-fire"
+    ]
+  },
+  {
+    "id": "free-entangle",
+    "label": "Se libérer",
+    "icon": "action/break-free",
+    "surface": "grille",
+    "gate": "action-libre",
+    "run": "battleRecoverState",
+    "cost": "action",
+    "rule": "empetre",
+    "ruleCategory": "etats",
+    "keys": [
+      "free-entangle"
+    ]
+  },
+  {
+    "id": "stand",
+    "label": "Se relever",
+    "icon": "action/stand-up",
+    "surface": "grille",
+    "gate": "mouvement-intact",
+    "run": "battleStandUp",
+    "cost": "mouvement",
+    "rule": "a-terre",
+    "ruleCategory": "etats",
+    "source": {
+      "book": "livre-de-base",
+      "page": 167
+    },
+    "keys": [
+      "stand"
+    ]
+  },
+  {
+    "id": "battement",
+    "label": "Battement",
+    "icon": "melee/close-in",
+    "surface": "grille",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleBattement",
+    "cost": "action",
+    "rule": "battement",
+    "ruleCategory": "talents",
+    "source": {
+      "book": "livre-de-base",
+      "page": 133
+    },
+    "keys": [
+      "battement"
+    ]
+  },
+  {
+    "id": "distraire",
+    "label": "Distraire",
+    "icon": "flag/focus",
+    "surface": "grille",
+    "gate": "mouvement-intact",
+    "run": "battleDistraire",
+    "cost": "mouvement",
+    "rule": "distraire",
+    "ruleCategory": "talents",
+    "source": {
+      "book": "livre-de-base",
+      "page": 136
+    },
+    "keys": [
+      "distraire"
+    ]
+  },
+  {
+    "id": "frenzy",
+    "label": "Frénésie",
+    "icon": "flag/frenzy",
+    "surface": "grille",
+    "gate": "action-libre",
+    "run": "battleFrenzy",
+    "cost": "action",
+    "rule": "frenesie",
+    "ruleCategory": "talents",
+    "keys": [
+      "frenzy"
+    ]
+  },
+  {
+    "id": "self-maneuver",
+    "label": "Manœuvre sur soi",
+    "icon": "flag/frenzy",
+    "surface": "grille",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battleSelfManeuver",
+    "candidates": "manoeuvres-sur-soi",
+    "cost": "action",
+    "maison": true,
+    "costNote": "la Métamorphose consomme DEUX Actions (celle-ci puis le tour perdu) — plafond maison, aucun verbatim de coût cité.",
+    "keys": [
+      "self-"
+    ]
+  },
+  {
+    "id": "attacks",
+    "label": "Attaque ▾",
+    "icon": "action/attack",
+    "surface": "grille",
+    "gate": "toujours",
+    "candidates": "attaques-disponibles",
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "ouvre le choix d’attaque (aucun acte commis) — coût nul, arbitrage d’interface.",
+    "keys": [
+      "attacks"
+    ],
+    "blocked": {
+      "ticket": "#1349",
+      "raison": "tiroir d’état LOCAL de l’ActionBar (`setShowManeuvers`), aucun dispatcher de store — il meurt avec la barre (spec §1d)."
+    }
+  },
+  {
+    "id": "select-attack",
+    "label": "Choisir l’attaque",
+    "icon": "action/attack",
+    "surface": "grille",
+    "gate": "toujours",
+    "run": "battleSelectAttack",
+    "candidates": "attaques-disponibles",
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "ARME l’attaque pour le clic-ennemi ; le coût est celui de l’attaque résolue.",
+    "keys": [
+      "attaque-"
+    ]
+  },
+  {
+    "id": "maneuver-area",
+    "label": "Attaque de zone",
+    "icon": "action/attack",
+    "surface": "grille",
+    "gate": "action-libre",
+    "run": "battleManeuverArea",
+    "candidates": "attaques-disponibles",
+    "cost": "action",
+    "keys": [
+      "attaque-"
+    ]
+  },
+  {
+    "id": "resolve",
+    "label": "Détermination",
+    "icon": "resource/resolve",
+    "surface": "grille",
+    "gate": "determination-en-reserve",
+    "run": "battleSelectAction",
+    "armed": "resolve",
+    "cost": "gratuit",
+    "maison": true,
+    "costNote": "les trois dépenses de Détermination ne consomment pas l’Action — imputation du moteur, aucun verbatim de coût cité.",
+    "rule": "determination",
+    "ruleCategory": "characteristics",
+    "keys": [
+      "resolve"
+    ]
+  },
+  {
+    "id": "resolve-psych-immune",
+    "label": "Immunité Psychologie",
+    "icon": "action/defend",
+    "surface": "grille",
+    "gate": "determination-en-reserve",
+    "run": "battleResolvePsychImmune",
+    "cost": "gratuit",
+    "maison": true,
+    "costNote": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
+    "rule": "determination",
+    "ruleCategory": "characteristics"
+  },
+  {
+    "id": "resolve-ignore-crit",
+    "label": "Ignorer les modificateurs de critique",
+    "icon": "journal/heal",
+    "surface": "grille",
+    "gate": "determination-en-reserve",
+    "run": "battleResolveIgnoreCrit",
+    "cost": "gratuit",
+    "maison": true,
+    "costNote": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
+    "rule": "determination",
+    "ruleCategory": "characteristics"
+  },
+  {
+    "id": "resolve-remove-condition",
+    "label": "Retirer un État",
+    "icon": "resource/resolve",
+    "surface": "grille",
+    "gate": "determination-en-reserve",
+    "run": "battleSpendResolve",
+    "candidates": "etats-retirables",
+    "cost": "gratuit",
+    "maison": true,
+    "costNote": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
+    "rule": "determination",
+    "ruleCategory": "characteristics"
+  },
+  {
+    "id": "mount",
+    "label": "Monter",
+    "icon": "action/mount",
+    "surface": "pastille-entite",
+    "gate": "mouvement-intact",
+    "run": "battleMount",
+    "candidates": "montures-adjacentes",
+    "cost": "mouvement",
+    "maison": true,
+    "costNote": "enfourcher n’exige aucun Test : l’imputation au Mouvement est notre arbitrage (la guideline ne tranche que les actes à Test).",
+    "rule": "combat-monte",
+    "ruleCategory": "regles",
+    "keys": [
+      "mount"
+    ]
+  },
+  {
+    "id": "dismount",
+    "label": "Descendre",
+    "icon": "action/dismount",
+    "surface": "geste-d-etat",
+    "gate": "mouvement-intact",
+    "run": "battleDismount",
+    "cost": "mouvement",
+    "maison": true,
+    "costNote": "descendre n’exige aucun Test : l’imputation au Mouvement est notre arbitrage.",
+    "rule": "combat-monte",
+    "ruleCategory": "regles",
+    "keys": [
+      "dismount"
+    ]
+  },
+  {
+    "id": "man-poste",
+    "label": "Servir cette pièce",
+    "icon": "action/serve-engine",
+    "surface": "pastille-entite",
+    "gate": "toujours",
+    "run": "battleManPoste",
+    "candidates": "pieces-servables",
+    "cost": "gratuit",
+    "maison": true,
+    "costNote": "rejoindre une pièce est GRATUIT (on sert puis on agit le même Round) — arbitrage maison, aucun verbatim de coût cité.",
+    "keys": [
+      "man-poste"
+    ]
+  },
+  {
+    "id": "leave-poste",
+    "label": "Quitter la pièce",
+    "icon": "action/leave-post",
+    "surface": "geste-d-etat",
+    "gate": "action-libre",
+    "run": "battleLeavePoste",
+    "cost": "action",
+    "maison": true,
+    "costNote": "quitter la pièce n’exige aucun Test : l’imputation à l’Action est notre arbitrage.",
+    "keys": [
+      "leave-poste"
+    ]
+  },
+  {
+    "id": "push-engine",
+    "label": "Pousser",
+    "icon": "action/serve-engine",
+    "surface": "pastille-entite",
+    "gate": "mouvement-intact",
+    "run": "battlePushEngine",
+    "armed": "push",
+    "mode": "push",
+    "cost": "mouvement",
+    "maison": true,
+    "costNote": "pousser l’engin dépense le MOUVEMENT de tout l’équipage — arbitrage maison (aucun Test, la guideline ne tranche pas).",
+    "keys": [
+      "push-engine"
+    ]
+  },
+  {
+    "id": "aid-team",
+    "label": "Diriger l’équipe",
+    "icon": "action/lead",
+    "surface": "grille",
+    "gate": "action-libre",
+    "run": "battleAidTeam",
+    "cost": "action",
+    "rule": "commandant-d-equipe",
+    "ruleCategory": "talents",
+    "keys": [
+      "aid-team"
+    ]
+  },
+  {
+    "id": "pickup",
+    "label": "Ramasser",
+    "icon": "action/pick-up",
+    "surface": "pastille-entite",
+    "gate": "action-libre-hors-frenesie",
+    "run": "battlePickup",
+    "candidates": "objets-au-sol",
+    "cost": "action",
+    "maison": true,
+    "costNote": "ramasser n’exige aucun Test : l’imputation à l’Action est notre arbitrage.",
+    "keys": [
+      "pickup-"
+    ]
+  },
+  {
+    "id": "maneuver-ship",
+    "label": "Manœuvrer",
+    "icon": "action/steer-ship",
+    "surface": "geste-d-etat",
+    "gate": "action-libre",
+    "run": "battleShipManeuver",
+    "cost": "action",
+    "rule": "test-equipage-manoeuvre",
+    "ruleCategory": "regles",
+    "keys": [
+      "maneuver-ship"
+    ]
+  },
+  {
+    "id": "battery",
+    "label": "Bordée",
+    "icon": "action/aim",
+    "surface": "grille",
+    "gate": "navire-action",
+    "run": "battleSelectAction",
+    "armed": "battery",
+    "mode": "battery",
+    "cost": "action",
+    "rule": "test-equipage-batterie",
+    "ruleCategory": "regles",
+    "keys": [
+      "battery"
+    ]
+  },
+  {
+    "id": "crew-test-rude-epreuve",
+    "label": "Rude épreuve",
+    "icon": "scenario/naval",
+    "surface": "grille",
+    "gate": "navire-action",
+    "run": "battleCrewTest",
+    "cost": "action",
+    "rule": "test-equipage-rude-epreuve",
+    "ruleCategory": "regles",
+    "keys": [
+      "crew-test-rude-epreuve"
+    ]
+  },
+  {
+    "id": "sing-shanty",
+    "label": "Chanson de marin",
+    "icon": "scenario/opera",
+    "surface": "grille",
+    "gate": "toujours",
+    "run": "battleSingShanty",
+    "cost": "gratuit",
+    "maison": true,
+    "costNote": "tâche PARALLÈLE : le chant occupe le chanteur, pas l’Action du navire — arbitrage maison (l’acte exige pourtant un Test).",
+    "rule": "chanson-de-marin",
+    "ruleCategory": "talents",
+    "keys": [
+      "sing-shanty"
+    ]
+  },
+  {
+    "id": "ship-reload",
+    "label": "Recharger la pièce",
+    "icon": "journal/reload",
+    "surface": "grille",
+    "gate": "toujours",
+    "run": "battleShipReload",
+    "cost": "gratuit",
+    "maison": true,
+    "costNote": "tâche d’équipage PARALLÈLE : elle occupe l’équipage, pas le tour du navire — arbitrage maison (l’acte exige pourtant un Test).",
+    "rule": "recharge",
+    "ruleCategory": "qualities",
+    "keys": [
+      "ship-reload"
+    ]
+  },
+  {
+    "id": "undo-move",
+    "label": "Annuler le déplacement",
+    "icon": "ui/undo",
+    "surface": "hors-console",
+    "gate": "toujours",
+    "run": "cancelMove",
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "annulation d’un déplacement non commis — affordance d’interface, aucun coût de jeu.",
+    "keys": [
+      "undo-move"
+    ]
+  },
+  {
+    "id": "end-turn",
+    "label": "Fin du tour",
+    "icon": "ui/turn-end",
+    "surface": "hors-console",
+    "gate": "toujours",
+    "run": "battleEndTurn",
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "clôture du tour — ne dépense rien (ce qui reste est perdu).",
+    "keys": [
+      "end-turn"
+    ]
+  },
+  {
+    "id": "raise-hand",
+    "label": "Pause Round",
+    "icon": "ui/wait",
+    "surface": "hors-console",
+    "gate": "coop",
+    "run": "raiseHand",
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "demande de pause au prochain début de Round — geste de table (coop), aucun coût de jeu.",
+    "keys": [
+      "raise-hand"
+    ]
+  },
+  {
+    "id": "switch-loadout",
+    "label": "Changer de set d’armes",
+    "icon": "item/weapon",
+    "surface": "hors-console",
+    "gate": "set-commutable",
+    "run": "battleSwitchLoadout",
+    "candidates": "sets-d-armes",
+    "cost": "gratuit",
+    "maison": true,
+    "costNote": "la gratuité est RAW (LDB 13 l.106, « dégainer votre arme ») ; le plafond 1×/tour est l’arbitrage maison, porté par `battleSwitchLoadout`.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 158,
+      "note": "LDB 13 l.106 « Actions gratuites »"
+    }
+  }
+]

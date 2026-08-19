@@ -610,6 +610,16 @@
     }
   },
   {
+    "id": "mouvement",
+    "label": "Mouvement au cours d'un Combat",
+    "desc": "Le Tableau du Mouvement indique la distance, en mètres, que vous pouvez parcourir au cours d'un tour, sans avoir à effectuer un Test d'Athlétisme. Ainsi, vous utiliserez votre Mouvement du Tour.\n\n|           | TABLEAU DES MOUVEMENTS |                 |\n|-----------|------------------------|-----------------|\n| Mouvement | Marche (mètres)        | Course (mètres) |\n| 0         | 0                      | 0               |\n| 1         | 2                      | 4               |\n| 2         | 4                      | 8               |\n| 3         | 6                      | 12              |\n| 4         | 8                      | 16              |\n| 5         | 10                     | 20              |\n| 6         | 12                     | 24              |\n| 7         | 14                     | 28              |\n| 8         | 16                     | 32              |\n| 9         | 18                     | 36              |\n| 10        | 20                     | 40              |",
+    "source": {
+      "book": "livre-de-base",
+      "page": 165,
+      "note": "LDB 15 l.16-31"
+    }
+  },
+  {
     "id": "course",
     "label": "Course",
     "desc": "À votre tour, vous pouvez utiliser votre Action pour courir. Vous avez besoin d'un Test **d'Athlétisme Accessible (+20)**, et la distance couverte vient en plus de celle parcourue par votre Mouvement de ce Round. Vous pouvez courir sur une distance équivalente à votre Mouvement de Course + DR en mètres (voir Tableau des Mouvements pour les Mouvements en Charge). Ainsi, un Personnage avec Mouvement 4 qui obtient DR -2 pourra courir sur 14 mètres supplémentaires (16-2=14).",
@@ -617,6 +627,16 @@
       "book": "livre-de-base",
       "page": 165,
       "note": "LDB 15 l.41"
+    }
+  },
+  {
+    "id": "charger",
+    "label": "Charge",
+    "desc": "Si vous n'êtes pas encore *Engagé* en combat, vous pouvez utiliser votre Mouvement pour Charger. Si vous Chargez, votre action doit être un Test de Corps à corps pour attaquer un adversaire.\n\nSi votre adversaire se trouve au moins à une distance, en mètres, égale à votre caractéristique de Mouvement de votre Course avant votre Charge, mais toujours dans la portée de cette dernière ((voir Course dans le Tableau des Mouvements pour savoir la distance que vous pouvez parcourir en chargeant), vous obtenez également +1 Avantage en fonçant sur votre adversaire.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 165,
+      "note": "LDB 15 l.35-37"
     }
   },
   {

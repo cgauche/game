@@ -45,13 +45,12 @@ const HORS_SURFACE_UI: Record<string, string> = {
   setHovered: CLIENT('survol de la carte'),
   setHoverCombatant: CLIENT('survol d’un combattant'),
   setInspectId: CLIENT('inspection d’un statbloc'),
-  toggleInspectEnabled: CLIENT('bascule d’inspection'),
   clearCursor: CLIENT('curseur clavier'),
   setCamPan: CLIENT('caméra'),
   resetCamPan: CLIENT('caméra'),
   setZoom: CLIENT('zoom'),
-  togglePov: CLIENT('vue subjective'),
-  toggleViewMode: CLIENT('mode de vue'),
+  // La bascule de vue, celle du POV et celle de l'inspection ne figurent pas ici : aucun écran ne les
+  // émet — elles vivent au registre clavier (`state/keybindings.ts`), hors du périmètre de ce scan.
   setScreen: CLIENT('écran courant'),
   setGameMenu: CLIENT('menu système'),
   closeDocument: CLIENT('document lu'),

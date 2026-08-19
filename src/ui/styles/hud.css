@@ -494,9 +494,11 @@
   box-shadow: 0 0 0 1px rgba(255, 138, 92, 0.45);
 }
 
-/* RAIL D'OUTILS (épure G) : colonne encadrée du bord droit, montée par `CampaignView` — commandes
-   de vue en haut, journal en pied. Un seul plan de matière : plus aucun bouton posé à nu sur le
-   champ. Les enfants y sont STATIQUES (le rail porte l'ancrage). */
+/* RAIL D'OUTILS (épure G) : colonne encadrée du bord droit, montée par `CampaignView` EN COMBAT —
+   dossier de navire et journal de bataille vissés sur UN seul plan de matière, plus aucun bouton posé
+   à nu sur le champ ni dans la barre haute. Les enfants y sont STATIQUES (le rail porte l'ancrage).
+   Hors combat, ces commandes vivent sur le pont d'exploration (règle `.exploration-dock .log-drawer`
+   plus bas) : le rail n'est pas monté. */
 .hud-rail {
   position: absolute;
   top: 16px;
@@ -511,21 +513,15 @@
   border: 1px solid var(--wm-frame-dark);
   box-shadow: inset 0 1px 0 rgba(216, 185, 84, 0.14), 0 6px 20px rgba(0, 0, 0, 0.45);
 }
-/* Les enfants ne deviennent statiques QUE là où le rail existe (au-dessus de 700px) : sous cette
-   largeur le rail se dissout et chacun reprend son ancrage propre — une règle non bornée gagnait en
+/* Le tiroir ne devient statique QUE là où le rail existe (au-dessus de 700px) : sous cette largeur le
+   rail se dissout et le tiroir reprend son ancrage propre — une règle non bornée gagnait en
    spécificité sur les tranches étroites et rapatriait le tiroir en haut de l'écran (mesuré). */
 @media (min-width: 701px) {
-  .hud-rail > .view-controls,
   .hud-rail > .log-drawer {
     position: static;
     inset: auto;
     transform: none;
-  }
-  /* Le journal se détache des commandes par un filet de laiton — même panneau, deux rubriques. */
-  .hud-rail > .log-drawer {
     align-items: center;
-    padding-top: 8px;
-    border-top: 1px solid var(--atelier-brass-hover);
   }
 }
 .view-controls {
@@ -603,13 +599,17 @@
   /* Bord de la piste = rembourrage + filet de cadre (la boîte est en `border-box`). */
   --pd-edge: calc(var(--pd-pad) + 1px);
   --pd-pitch: calc(var(--pd-tile) + var(--pd-gap));
-  /* Réserve des DEUX coins hauts, mesurée : menu ☰ (10..50) à gauche, rail d'outils (1120..1264)
-     à droite — la bande s'arrête avant, elle ne passe plus sous aucun des deux. */
-  max-width: calc(100vw - 340px);
+  /* Réserve des DEUX coins hauts, RE-MESURÉE après le dégraissage du rail (il ne porte plus la plaque
+     de caméra : dossier de navire + journal, 42px de commande + 2 × 8 de rembourrage + 2 × 1 de filet
+     = 60px de large, posé à 16px du bord → 76px, plus 10px d'air = 86px). À gauche, le menu ☰
+     (10..50) demande 60px : c'est le coin DROIT qui borne. La bande étant centrée, la réserve compte
+     des DEUX côtés — un seul littéral, cité deux fois. */
+  --pd-corners: 172px;
+  max-width: calc(100vw - var(--pd-corners));
   /* L'arrondi porte sur la LARGEUR DE CONTENU (les 2 × `--pd-pad` sont dans la boîte, `box-sizing:
      border-box`) — sinon la dernière tuile restait tranchée de la valeur du rembourrage. */
   max-width: calc(
-    round(down, calc(100vw - 340px - 2 * var(--pd-edge) + var(--pd-gap)), var(--pd-pitch))
+    round(down, calc(100vw - var(--pd-corners) - 2 * var(--pd-edge) + var(--pd-gap)), var(--pd-pitch))
     - var(--pd-gap) + 2 * var(--pd-edge)
   );
   padding: 5px var(--pd-pad) 4px;
@@ -774,6 +774,24 @@
   background: rgba(14, 16, 22, 0.94);
   border-color: var(--border);
   text-shadow: none;
+}
+/* LE TIROIR SUR LE PONT (exploration, §1c-ter : une plaque unique, jamais des éléments épars) — le
+   PONT porte l'ancrage, comme le rail en combat. Hors toute tranche : sans cette remise à zéro, les
+   calages mobiles du tiroir (≤700 : 140px du bas ; ≤560 : 274px) le renvoyaient flotter au milieu du
+   terrain alors que son bouton est assis dans la rangée d'ouvreurs. */
+.exploration-dock .log-drawer {
+  position: relative;
+  inset: auto;
+  align-items: flex-end;
+}
+/* Le panneau naît de son bouton et s'ouvre VERS LE HAUT, borné par la bande de terrain disponible :
+   il lit la RÉSERVE DU BAS du pont (`--xd-deck-h`, exploration-dock.css) et la réserve du haut de la
+   frise (70px), jamais un nombre recopié — même patron que `--is-avail` sur `--cc-deck-h`. */
+.exploration-dock .ld-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  max-height: calc(100vh - 70px - var(--xd-deck-h) - 12px);
 }
 /* ── Barre HUD supérieure (haut-gauche, les deux modes) : menu ☰ + raccourcis de lieu, et HORS
    COMBAT la pile de contexte — lieu, date, objectif (design 2026-07-31 §11). UN conteneur en
@@ -1127,20 +1145,28 @@
   .hud-rail {
     display: contents;
   }
+  /* Le rail dissous ne porte plus l'ancrage : son ouvreur d'écran (dossier de navire, combat) se pose
+     LUI-MÊME, juste au-dessus du tiroir avec lequel il faisait colonne (tiroir à 140px du bas, plus sa
+     commande de 42px et 6px d'air). Sans cet ancrage, il retombait dans le flux du stage. */
+  .hud-rail > .worldmap-btn {
+    position: absolute;
+    right: 8px;
+    bottom: 188px;
+    z-index: 46;
+  }
   /* La frise quitte la colonne latérale pour une BANDE HORIZONTALE défilable sous le groupe,
      cartouche du Round en tête. Le `padding-top` de la piste réserve la place du badge
      d'initiative, qui déborde du haut de chaque cellule.
-     RÉSERVE DE DROITE : la colonne de commandes de vue mesure 144px de large et se pose à 16px du
-     bord (mesuré en recette, `scripts/recette/hud-clickables.mjs`) — 168px la dégagent en entier.
-     La frise porte un `z-index` supérieur : sans cette réserve elle recouvrait des boutons de
-     caméra qui ne recevaient plus leur clic.
+     PLUS DE RÉSERVE DE DROITE : la plaque de caméra a quitté l'écran de jeu et le rail dégraissé
+     s'ancre désormais en BAS à cette largeur (règle ci-dessus) — le haut-droite est libre, la bande
+     va jusqu'au bord comme à gauche. Elle réservait 168px pour une colonne qui n'existe plus.
      `align-items: stretch` CONTRAINT la piste à la largeur de la bande : `overflow-x: auto` ne mord
      que sur une boîte bornée — alignée en `flex-start` elle prenait la largeur de son contenu et
      débordait du HUD sans jamais défiler. */
   .initiative-strip {
     top: 84px;
     left: 4px;
-    right: 168px;
+    right: 4px;
     bottom: auto;
     transform: none;
     max-height: none;
@@ -1333,6 +1359,13 @@
   .log-drawer {
     left: 4px;
     right: auto;
+    bottom: calc(274px + env(safe-area-inset-bottom, 0px));
+  }
+  /* L'ouvreur du rail dissous (dossier de navire, combat) prend le coin BAS-DROIT à la MÊME hauteur
+     que le tiroir : le panneau du tiroir s'ouvrant vers le haut depuis le coin gauche, les deux
+     commandes ne se recouvrent à aucun moment. */
+  .hud-rail > .worldmap-btn {
+    right: 4px;
     bottom: calc(274px + env(safe-area-inset-bottom, 0px));
   }
   /* Le panneau NAÎT de son déclencheur et sort du flux : sans cela, le tiroir occupait 309px de

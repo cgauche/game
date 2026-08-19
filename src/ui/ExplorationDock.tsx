@@ -1,0 +1,87 @@
+import type { ReactNode } from 'react';
+import { Icon } from './Icon';
+import type { IconIdInput } from './icons';
+
+/**
+ * PONT D'EXPLORATION — le pendant ALLÉGÉ de `CombatConsole` hors combat (spec
+ * `docs/plans/2026-08-16-spec-hud-combat.md` § « Zone 11 »). UNE bande de bord à bord, même matière
+ * et même liseré que le pont de combat (tokens `--cc-*`), à hauteur d'une rangée d'icônes : la
+ * transition combat↔exploration change le CONTENU du pont, jamais son existence.
+ *
+ * Extrémité DROITE = la rangée d'icônes-écrans, tiroir-journal compris (§1c-ter : une plaque unique,
+ * jamais des éléments épars — hors combat le rail d'outils ne se rend pas). Les ÉTATS d'ouverture
+ * (dossier, carnet, hub…) restent chez `CampaignView` : ici, une entrée est OFFERTE quand son rappel
+ * est fourni — la condition d'apparition vit au call site, jamais dupliquée.
+ *
+ * Les entrées portent la variante « tôle vissée » de leur primitive (`data-skin="tole"` sur
+ * `.worldmap-btn`, définie AVEC elle dans world-meta.css) : le pont est une plaque, pas une barre de
+ * panneaux — et aucune propriété de bouton n'est réécrite depuis la feuille de cet écran.
+ */
+export type ExplorationDockProps = {
+  /** Possessions du groupe (#762) — gestion des bêtes/véhicules/navires/serviteurs. */
+  onPossessions: () => void;
+  /** Carnet d'enquête (#670). */
+  onCarnet?: () => void;
+  /** Dossier du navire (#227). */
+  onShipDossier?: () => void;
+  /** Écran-hub de voyage RÉDUIT (#333) : le rouvrir. */
+  onVoyage?: () => void;
+  /** Carte du monde (#T2) — `interrupted` : un voyage attend sa reprise. */
+  worldMap?: { onOpen: () => void; interrupted: boolean };
+  /** Hub de ville (#343) : le lieu courant porte son libellé et son icône. */
+  hub?: { label: string; icon: IconIdInput; onOpen: () => void };
+  /** Dormir/camper hors lieu — le `title` porte la nuance (auberge / chez soi / belle étoile). */
+  rest?: { title: string; onOpen: () => void };
+  /** Tiroir-journal (`LogDrawer`) : DERNIÈRE entrée de la rangée hors combat. */
+  journal?: ReactNode;
+};
+
+export function ExplorationDock({ onPossessions, onCarnet, onShipDossier, onVoyage, worldMap, hub, rest, journal }: ExplorationDockProps) {
+  return (
+    <div className="exploration-dock" data-deck="exploration">
+      <div className="xd-openers" aria-label="Écrans de campagne">
+        <button type="button" className="worldmap-btn" data-skin="tole" onClick={onPossessions} title="Possessions du groupe">
+          <Icon id="travel/mount" size="lg" />
+        </button>
+        {onCarnet && (
+          <button type="button" className="worldmap-btn" data-skin="tole" onClick={onCarnet} title="Carnet d’enquête">
+            <Icon id="nav/compendium" size="lg" />
+          </button>
+        )}
+        {onShipDossier && (
+          <button type="button" className="worldmap-btn" data-skin="tole" onClick={onShipDossier} title="Dossier du navire — état, cargaison, équipage">
+            <Icon id="travel/sail-ship" size="lg" />
+          </button>
+        )}
+        {onVoyage && (
+          <button type="button" className="worldmap-btn" data-skin="tole" onClick={onVoyage} title="Rouvrir l’écran de voyage">
+            <Icon id="travel/sail-ship" size="lg" />
+          </button>
+        )}
+        {worldMap && (
+          <button
+            type="button"
+            className={`worldmap-btn ${worldMap.interrupted ? 'attention' : ''}`}
+            data-skin="tole"
+            onClick={worldMap.onOpen}
+            title={worldMap.interrupted ? 'Carte du monde — voyage interrompu (reprendre)' : 'Carte du monde — voyager'}
+          >
+            <Icon id="nav/campaign" size="lg" />
+          </button>
+        )}
+        {hub && (
+          <button type="button" className="worldmap-btn" data-skin="tole" onClick={hub.onOpen} title={`${hub.label} — services du lieu`}>
+            <Icon id={hub.icon} size="lg" />
+          </button>
+        )}
+        {rest && (
+          <button type="button" className="worldmap-btn" data-skin="tole" onClick={rest.onOpen} title={rest.title}>
+            {/* Une seule icône Repos (auberge/chez soi/camp) — le `title` porte la nuance. */}
+            <Icon id="nav/rest" size="lg" />
+          </button>
+        )}
+        {journal}
+      </div>
+    </div>
+  );
+}

@@ -42,6 +42,8 @@ export type RuleId =
   | 'tir-en-mouvement'
   | 'sur-la-defensive'
   | 'empoignade'
+  /** Charge : le Mouvement qui ouvre un corps à corps (`LDB 15 l.35-37`). */
+  | 'charger'
   | 'soutien'
   | 'sombre-pacte'
   | 'chance'
@@ -97,6 +99,7 @@ export const RULE_REF: Record<RuleId, CodexTarget> = {
   'tir-en-mouvement': { category: 'regles', id: 'tir-en-mouvement' },
   'sur-la-defensive': { category: 'regles', id: 'sur-la-defensive' },
   empoignade: { category: 'regles', id: 'empoignade' },
+  charger: { category: 'regles', id: 'charger' },
   soutien: { category: 'regles', id: 'soutien' },
   'sombre-pacte': { category: 'regles', id: 'sombre-pacte' },
   chance: { category: 'characteristics', id: 'chance' },

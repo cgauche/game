@@ -1,6 +1,6 @@
 /**
  * #1176 — LE LACET DE LA CAMÉRA EST LIBRE. Ce qui se mesure ici est le geste RÉEL du joueur
- * (`tournerCamera`/`relacherCamera`, source unique de Q/E et des boutons d'orientation) : un appui
+ * (`tournerCamera`/`relacherCamera`, source unique de Q/E au clavier) : un appui
  * bref pousse d'un PAS FIN, un appui tenu fait tourner en CONTINU, et la caméra s'arrête là où le
  * geste la laisse — aucun cran ne la rattrape.
  *

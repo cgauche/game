@@ -9,6 +9,7 @@ import type { GameState, BattleState, PendingAttack, PendingCleave, PendingDualS
 import { Combatant } from '../../engine/types';
 import { crowdEligible, eligibleAttackTargetIds, displayedReach, computeRunReach, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { currentTargetingMode } from '../../state/targetingModes';
+import { armedIntentPortee, intentReach, PORTEE_ARME } from '../../state/localIntent';
 import { controlsCombatant } from '../../state/netOwnership';
 import { inBattleId } from '../../state/combatants';
 import { attackWeapon } from '../../engine/combat';
@@ -35,6 +36,9 @@ export function combatHighlightsView(get: () => GameState, battle: BattleState, 
     myTurn,
     walkReach: myTurn ? displayedReach(get) : new Map<string, number>(),
     runReach: myTurn ? computeRunReach(get) : new Map<string, number>(),
+    // INTENTION armée depuis l'interface : sa portée est LOCALE au client (hors `battle`) et ne
+    // s'affiche qu'à son tour, comme toute affordance (spec HUD zone 4).
+    intentReach: myTurn ? intentReach(get) : new Map<string, number>(),
     activeId: activeC?.id ?? null,
     // Anneaux d'attaque (R4) : en mode neutre (attaque implicite), tant que l'Action est disponible
     // (ou attaque libre de Frénésie).
@@ -63,7 +67,11 @@ export function combatHighlightsView(get: () => GameState, battle: BattleState, 
     // Bandes de portée du tireur SURVOLÉ (frise ou token, `store.hovered` — même source que le halo de
     // survol) : arme à DISTANCE équipée en main → cases à colorer autour de sa position.
     rangeBandSource: (() => {
-      const c = battle.combatants.find((x) => x.id === get().hovered);
+      // L'INTENTION d'attaque (spec HUD zone 4, G1) montre la PORTÉE DE L'ARME du set : elle n'ouvre
+      // pas un 2ᵉ dessin de cette vérité — elle allume les bandes de tir existantes autour de l'ACTIF,
+      // sans attendre un survol. Le survol garde la priorité (il désigne un autre tireur).
+      const armedAttack = myTurn && armedIntentPortee(get) === PORTEE_ARME ? activeC ?? null : null;
+      const c = battle.combatants.find((x) => x.id === get().hovered) ?? armedAttack;
       if (!c?.pos) return null;
       const weapon = attackWeapon(c.weapons, false);
       if (!weapon || weapon.type !== 'ranged') return null; // structure/décor sans arme (porte…) — pas de bande (#203 régression)

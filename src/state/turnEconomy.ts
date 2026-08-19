@@ -1,38 +1,31 @@
 import type { Combatant } from '../engine/types';
 import type { BattleState } from './store';
-import { trampleTarget, canMove } from './store';
-import { canTakeAction, isOutOfAction } from '../engine/conditions';
-import { isEngaged } from '../engine/engagement';
+import { isOutOfAction } from '../engine/conditions';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
-import { hasFreeWeaponAttack } from './combatManeuvers';
-import { inBattleId } from './combatants';
+import { ACTION_GATES, freeDisengage, type ActionCtx } from './actionRegistry';
 
 /**
  * Le héros actif a-t-il ENCORE une option UTILE ce tour ? (R6 du diagnostic lisibilité-combat). Sert au
- * garde-fou « tour gâché » et au surlignage « Fin du tour ». Réutilise EXACTEMENT les prédicats de
- * l'ActionBar (Action dispo · Mouvement restant · désengagement gratuit · Piétinement · attaque libre de
- * Frénésie · Détermination en réserve) → une seule source de vérité. Pur.
+ * garde-fou « tour gâché » et au surlignage « Fin du tour ».
+ *
+ * Les prédicats viennent du REGISTRE (`ACTION_GATES`, `src/state/actionRegistry.ts`) : ce module et
+ * les surfaces (console, barre) lisent LA MÊME table — il n'y a plus de 2ᵉ dérivation manuscrite ici
+ * (la divergence entre les deux dérivations a déjà coûté un bug, Détermination, commit `0e14119b`).
+ * Pur : les gates consommés ne lisent que l'acteur et son combat.
  */
 export function hasMeaningfulOption(active: Combatant, battle: BattleState): boolean {
   if (active.kind !== 'hero') return false;
-  // Action encore disponible ET utilisable (Sonné/Brisé… gérés par canTakeAction) ?
-  if (!battle.acted && canTakeAction(active)) return true;
-  // Mouvement restant (décomposable, hors « Mouvement → Action → Mouvement ») ?
-  if (canMove(battle, active)) return true;
-  // Désengagement GRATUIT (Avantage strictement supérieur à tous les foes Engagés, LDB 15 l.87) ?
-  if (isEngaged(active)) {
-    const foes = (active.engagedWith ?? [])
-      .map((id) => inBattleId(battle, id))
-      .filter((c): c is Combatant => !!c && !isOutOfAction(c));
-    if (foes.length > 0 && active.advantage > Math.max(0, ...foes.map((f) => f.advantage))) return true;
-  }
-  // Piétinement GRATUIT (≥1 Avantage + cible adjacente plus petite, LDB 85) ?
-  if (active.advantage >= 1 && !!trampleTarget(battle, active)) return true;
-  // Attaque d'Arme GRATUITE accordée par un talent (Frénésie) encore disponible ce Round (LDB 21 l.34) ?
-  if (hasFreeWeaponAttack(active)) return true;
-  // Détermination encore en réserve : ses trois dépenses restent ouvertes (LDB 17 l.59-61) ?
-  if ((active.resolve ?? 0) > 0) return true;
-  return false;
+  const ctx: ActionCtx = { active, battle };
+  // Action disponible · Mouvement restant · désengagement gratuit (LDB 15 l.87) · Piétinement gratuit
+  // (LDB 85) · attaque d'Arme gratuite de Frénésie (LDB 21 l.34) · Détermination en réserve (LDB 17 l.59-61).
+  const gates = [
+    'action-libre',
+    'mouvement-restant',
+    'pietinement-gratuit',
+    'attaque-libre-frenesie',
+    'determination-en-reserve',
+  ];
+  return gates.some((g) => ACTION_GATES[g](ctx).ok) || freeDisengage(ctx);
 }
 
 /**

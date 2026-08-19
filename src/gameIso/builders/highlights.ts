@@ -19,6 +19,7 @@ import type { Pt } from '../../state/path';
  *  React historiques (stables entre frames). */
 export type HighlightEl = { key: string; cell: { x: number; y: number; z: number }; h: number } & (
   | { kind: 'walk' | 'run' }
+  | { kind: 'intent' }
   | { kind: 'team'; hero: boolean; active: boolean }
   | { kind: 'zone'; smoke: boolean }
   | { kind: 'ring'; tone: 'target' | 'ally' | 'crowd' }
@@ -50,6 +51,10 @@ export interface HighlightsView {
   crowdIds: ReadonlySet<string> | null;
   /** Candidats du mode de ciblage courant + teinte amie (soin) + déjà cochés (surincantation). */
   candidates: { ids: readonly string[]; friendly: boolean; checkedIds: ReadonlySet<string> | null } | null;
+  /** Portée de l'INTENTION ARMÉE depuis l'interface (Charge, Course, Mouvement — `state/localIntent`) :
+   *  la bande de cases que le joueur a demandé à VOIR avant de cliquer (spec HUD zone 4). Vide quand
+   *  aucune intention n'est armée. */
+  intentReach: ReadonlyMap<string, number>;
   /** Tireur SURVOLÉ armé d'une arme à distance : bandes de portée à colorer autour de sa position
    *  (`pos`) jusqu'à sa Portée max (Portée×3, LDB « Les armes ») — null hors survol d'un tireur. */
   rangeBandSource: { pos: Pt; rangeM: number } | null;
@@ -143,6 +148,13 @@ export function buildHighlights(scene: Scene, battle: BattleState, view: Highlig
         if (!tone) continue;
         out.push({ key: `rb-${x}-${y}`, cell: { x, y, z }, h: hAt(x, y, z), kind: 'rangeBand', tone });
       }
+  }
+  // INTENTION ARMÉE (spec HUD zone 4) : la portée du geste CHOISI depuis l'interface, peinte PAR-DESSUS
+  // Marche et Course — c'est la réponse à « il est difficile de connaître la distance » (verbatim user
+  // 2026-08-16). Émise en DERNIER : à case égale, elle passe au-dessus (rang du backend).
+  for (const k of view.intentReach.keys()) {
+    const [x, y, z] = parse(k);
+    out.push({ key: `i${k}`, cell: { x, y, z }, h: hAt(x, y, z), kind: 'intent' });
   }
   return out;
 }

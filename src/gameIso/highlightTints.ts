@@ -19,6 +19,7 @@
 export const HIGHLIGHT_TINTS = {
   '--combat-walk': '#4f8fe0',
   '--combat-run': '#9b6be0',
+  '--combat-intent': '#3fd0c9',
   '--combat-target': '#ff5a4d',
   '--combat-enemy': '#e0533a',
   '--combat-crowd': '#ff7a3c',
@@ -40,6 +41,9 @@ export const HIGHLIGHT_TINTS = {
 export const WALK_TINT = HIGHLIGHT_TINTS['--combat-walk'];
 /** Portée de Course. */
 export const RUN_TINT = HIGHLIGHT_TINTS['--combat-run'];
+/** Portée de l'INTENTION armée depuis l'interface (spec HUD zone 4) — distincte de Marche et Course :
+ *  elle se superpose à elles pour dire « voilà jusqu'où porte LE geste que j'ai choisi ». */
+export const INTENT_TINT = HIGHLIGHT_TINTS['--combat-intent'];
 /** Anneau d'une cible d'attaque. */
 export const RING_TARGET_TINT = HIGHLIGHT_TINTS['--combat-target'];
 /** Repère ENNEMI d'un télégraphe d'IA (tracé de déplacement, réticule de visée) — distinct de

@@ -59,6 +59,7 @@ import {
   DEFENSE_LABEL,
   attackHandGate,
   conditionModLines,
+  canFireWhileEngaged,
 } from '../engine/combat';
 import { RULE_REF } from '../engine/ruleRefs';
 import { engage, markAttacked, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
@@ -210,7 +211,7 @@ import {
 import { weaponGroupKey } from '../engine/weaponGroup';
 import { moveReachFor, flyReachable, fleeReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt, climbTraverseFor } from './path';
 import { chooseEnemyAction, consumeAiRanking, type EnemyAction, type EnemyTurnInput, type CastableSpell, type AiCandTrace } from './ai';
-import { resolveRun } from '../engine/movement';
+import { resolveRun, chargeReach } from '../engine/movement';
 import type { RNG } from '../engine/dice';
 import { bus, EVT } from './bus';
 import { emitCombatEvent } from './combatEvents';
@@ -380,13 +381,14 @@ export function banRangedActive(battle: BattleState | null | undefined): boolean
   return battle?.banRanged ?? (battle?.victoryCondition?.type === 'firstBlood');
 }
 
-/** Tir héros refusé faute de RESSOURCE : arme à défaut Recharge non chargée (LDB 62 l.335) ou plus
+/** Tir héros refusé — LÉGALITÉ de l'arme employée (tir en étant *Engagé*, `LDB 14 l.41` ; armes à distance
+ *  bannies de la rencontre) ou RESSOURCE : arme à défaut Recharge non chargée (LDB 62 l.335) ou plus
  *  de munition compatible — `null` si le tir peut partir. Concern ORTHOGONAL à la géométrie (`attackPlan`),
  *  rejoué À L'IDENTIQUE par le clic (`battleClickEntity`) ET le survol (`hoverTargeting`) pour que
  *  l'affordance ne mente jamais : un réticule de tir sur une arbalète vide DOIT dire « recharger », pas
  *  proposer une attaque qui se solderait par un log silencieux. Mêlée / pas d'arme à distance → `null`
  *  (la Recharge ne concerne que l'arme effectivement tirée, `firedWeapon`). */
-export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min' | 'armeBannie'; detail: string; need?: string } | null {
+export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min' | 'armeBannie' | 'engaged'; detail: string; need?: string } | null {
   if (active.kind !== 'hero') return null;
   const b = get().battle;
   // Arme effectivement testée + distance PAR CETTE ARME (#BUG-A, poule-et-œuf) : choix EXPLICITE (poste
@@ -405,6 +407,10 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
       return { reason: 'sous-effectif', detail: `${active.label} : Équipe trop réduite pour servir ${w.label}.` };
   }
   if (w.type !== 'ranged') return null;
+  // Tir en étant *Engagé* : impossible sauf Atout d'arme Pistolet (`LDB 14 l.41`, `LDB 62 l.284-285`).
+  // Refus AVANT les gates de ressource : recharger ne débloquerait rien.
+  if (isEngaged(active) && !canFireWhileEngaged(w))
+    return { reason: 'engaged', detail: `${active.label} est Engagé : ${w.label} ne peut pas tirer (Atout Pistolet requis).` };
   // Restriction d'armes à distance de la rencontre (#471, NADJ 06 l.181) — même refus AVANT tout autre
   // gate de ressource (Recharge/munition), pour ne pas dire « recharger » à une arme de toute façon bannie.
   if (banRangedActive(b)) return { reason: 'armeBannie', detail: `${w.label} : les armes à distance sont interdites (duel judiciaire).` };
@@ -1383,6 +1389,22 @@ export function computeRunReach(get: Get): Map<string, number> {
   return briseFleeFilter(scene, battle, active, reach);
 }
 
+/** Zone d'arrivée d'une CHARGE (LDB 15 l.35-37) : les cases atteignables avec le budget `chargeReach`
+ *  (Course du Tableau des Mouvements, `engine/movement`). MÊMES portes que la branche `charge` de
+ *  `attackPlan` — non Engagé, Mouvement intact, pas À Terre — pour que la bande AFFICHÉE soit
+ *  exactement celle où un clic-ennemi partira en charge. Vide quand la Charge n'est pas offerte. */
+export function computeChargeReach(get: Get): Map<string, number> {
+  const { battle, scene } = get();
+  if (!battle || !scene || battle.over || battle.movementUsed > 0) return new Map();
+  const active = activeCombatant(battle);
+  if (!active || !controlsCombatant(get(), active) || !active.pos) return new Map();
+  if (isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return new Map();
+  const geom = mountOf(battle, active) ?? active;
+  const M = mountMovement(battle, active);
+  if (M <= 0) return new Map();
+  return moveReachFor(geom, scene, active.pos, chargeReach(M, runMultiplier(geom.traits)), moveEnv(battle, geom));
+}
+
 /** Cases cliquables affichées/validées : budget SPÉCIAL stocké (Course, post-Désengagement)
  *  prioritaire, sinon Marche restante dérivée. */
 export function displayedReach(get: Get): Map<string, number> {
@@ -1415,7 +1437,7 @@ export function aiApproachPlan(
     a.kind === 'move' && combatDistance({ ...enemy, pos: a.to } as Combatant, input.heroes.find((h) => h.id === a.thenTargetId) ?? input.heroes[0]) <= meleeReachTiles(enemy.weapons);
   if (atContact(action)) return none; // la Marche suffit déjà
   // Charge (portée de Course, sans Test — LDB 15 l.74-77).
-  const courseBudget = Math.floor(M * 2 * runMultiplier(geom.traits));
+  const courseBudget = chargeReach(M, runMultiplier(geom.traits));
   if (courseBudget <= input.movement) return none;
   const charge = chooseEnemyAction({ ...input, movement: courseBudget });
   if (charge.kind === 'move' && atContact(charge)) return { plan: charge, ran: null };
@@ -1515,7 +1537,7 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
     // Charge (LDB 15 l.74-77) : manœuvre PLEINE, portée de Course (2M × Bond/Foulée), arrivée
     // adjacente la moins chère.
     const M = mountMovement(battle, active);
-    const reach = moveReachFor(geom, scene, active.pos!, Math.floor(M * 2 * runMultiplier(geom.traits)), env);
+    const reach = moveReachFor(geom, scene, active.pos!, chargeReach(M, runMultiplier(geom.traits)), env);
     const dest = bestAdjacentReachable(reach, target.pos!, footprintN(target), footprintN(geom));
     if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de Charge.' };
     return { kind: 'charge', dest, path: pathTo(scene, active.pos!, dest, env) ?? [], adv: chargeAdvantage(M, footprintChebyshev(active.pos!, footprintN(geom), target.pos!, footprintN(target))) };
@@ -6232,6 +6254,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   if (get().pendingRoundStart) return;
   if (combatAdvanceBlocked(get())) return;
   if (get().combatCursor) set({ combatCursor: null }); // le curseur clavier/manette appartient au tour qui s'achève
+  if (get().localIntent) set({ localIntent: null }); // l'intention armée appartient au tour qui s'achève
   clearActorAim(get, set); // le télégraphe appartient au geste du tour qui s'achève (filet : aucun chemin ne le laisse fuir)
   const battle = get().battle!; // non-null garanti par combatAdvanceBlocked ci-dessus
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 62 l.319) :

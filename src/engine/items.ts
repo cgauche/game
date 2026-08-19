@@ -617,6 +617,9 @@ export function recomputeLoadout(c: Combatant): void {
     // `c.weapons` (dérivé ici) exprime déjà → les lecteurs passent par `isWeaponActive`. `it.equipped` ne sert
     // plus que pour l'armure (port) et de seed du loadout par défaut (ensureDefaultLoadout).
   }
+  // Le SET ACTIF tient-il une arme ? (mesuré ICI : seules les armes issues des slots main/off comptent —
+  // les armes naturelles/dérivées/de poste ajoutées plus bas ne « désarment » ni n'« arment » un set.)
+  const setHoldsWeapon = weapons.length > 0;
 
   // Armes DÉRIVÉES d'un objet ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est considéré comme une
   // Dague » en mêlée) — DÉCLARATIF sur le trapping (`derivedWeapon`).
@@ -657,8 +660,12 @@ export function recomputeLoadout(c: Combatant): void {
     if (w) weapons.push(w);
   }
 
-  // Mains nues toujours disponibles en dernier recours (stats canoniques du trapping, LDB 62 l.28).
-  weapons.push(unarmedWeapon());
+  // Mains nues (stats canoniques du trapping, LDB 62 l.28) : arme du seul combattant DÉSARMÉ de fait —
+  // set actif ne tenant AUCUNE arme (set vide, arme détruite/inutilisable, amputation). Un set ARMÉ (même
+  // d'une seule arme à distance, même avec une main libre) n'en porte PAS : l'attaque passe par les armes
+  // du set, le joueur commute lui-même (arbitrage user 2026-08-17, #1348 —
+  // `docs/plans/2026-08-16-spec-hud-combat.md` § « ARBITRAGE SET STRICT », verbatim au ticket).
+  if (!setHoldsWeapon) weapons.push(unarmedWeapon());
 
   const armour = wornArmourPoints(items);
   // Mutations de Corruption (LDB 19) : PA NATURELS additifs (Peau d'acier +2 partout,

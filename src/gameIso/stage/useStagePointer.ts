@@ -8,6 +8,8 @@
  *  - glisser-caméra (seuil PAN_THRESHOLD, l'action de clic est DIFFÉRÉE au relâchement) — bouton
  *    principal : panoramique posé HORS de React (`state/stagePan`, un battement de frame par
  *    mouvement) et commis au store en UN `set` au relâchement ; bouton MILIEU : lacet libre de la vue ;
+ *  - TACTILE à DEUX DOIGTS : pincer = zoom (`setZoom`, borné par le store), translation du milieu des
+ *    doigts = panoramique. Un seul pointeur garde strictement le comportement ci-dessus ;
  *  - `performClick` : sélection / cible / déplacement (combat et exploration) ;
  *  - `moveAlong` : marche pas-à-pas du groupe (sauts par-dessus les gouffres compris) ;
  *  - clic droit : attaque la plus PERTINENTE sur l'ennemi survolé (scoreur partagé avec l'IA) ;
@@ -101,6 +103,11 @@ export function useStagePointer({
   // (`resetCamPan`) ou un cran de molette. Sans elle, le delta CUMULÉ serait ré-échelonné par le
   // nouveau zoom, et le relâchement contredirait le recentrage.
   const dragRef = useRef<{ sx: number; sy: number; vbX: number; vbY: number; panned: boolean; button: number; tile: Pt | null; yaw0: number; pan0: { x: number; y: number }; zoom0: number; accord0: number } | null>(null);
+  // Pointeurs ACTIFS sur le stage, par `pointerId` — c'est leur NOMBRE qui distingue les deux régimes
+  // du tactile : un doigt = le glisser historique (`dragRef`), deux = le PINCER (zoom + panoramique).
+  // `pinchRef` porte l'état du geste à deux doigts (écart et milieu du dernier échantillon).
+  const ptrs = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{ dist: number; cx: number; cy: number; accord0: number } | null>(null);
 
   // Recette (DEV) : pilotage PROGRAMMATIQUE du survol — __wfrp.hover('id') passe par ce hook,
   // le tooltip/réticule se rendent sans souris réelle (pas de chasse aux pixels).
@@ -197,12 +204,14 @@ export function useStagePointer({
 
   // Écran → coordonnées de VIEWBOX — base du panoramique (delta de glissement). Le seul étage de
   // `stageCam` qui s'inverse ici est le recouvrement `slice` : la caméra du groupe reste en place,
-  // c'est elle qu'on déplace.
-  const clientToSvg = (ev: React.PointerEvent): { x: number; y: number } | null => {
+  // c'est elle qu'on déplace. Deux entrées, une seule inversion : un point CLIENT nu (milieu de deux
+  // doigts) et l'événement de pointeur.
+  const clientPtToSvg = (cx: number, cy: number): { x: number; y: number } | null => {
     const r = svgRef.current?.getBoundingClientRect();
     if (!r || !r.width || !r.height) return null; // élément sans surface mesurée : aucun pixel à inverser
-    return viewBoxPointAt({ sx: ev.clientX - r.left, sy: ev.clientY - r.top }, { w: r.width, h: r.height });
+    return viewBoxPointAt({ sx: cx - r.left, sy: cy - r.top }, { w: r.width, h: r.height });
   };
+  const clientToSvg = (ev: React.PointerEvent): { x: number; y: number } | null => clientPtToSvg(ev.clientX, ev.clientY);
 
   const pathOpts = (): PathOpts => {
     const heroes = useGame.getState().party.filter((h) => !h.dead && h.wounds.current > 0);
@@ -387,12 +396,48 @@ export function useStagePointer({
     // Bouton MILIEU : le navigateur y arme son défilement automatique (curseur en rose des vents,
     // la page défile au moindre mouvement) — il prendrait le glisser-tourner à chaque geste.
     if (ev.button === 1) ev.preventDefault();
+    ptrs.current.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    if (ptrs.current.size === 2) {
+      // 2ᵉ doigt : le geste devient un PINCER. Le glisser à un doigt est DÉSARMÉ — sinon son
+      // relâchement commettrait le clic différé (un ordre de déplacement au bout d'un zoom).
+      const [a, b] = [...ptrs.current.values()];
+      pinchRef.current = { dist: Math.hypot(b.x - a.x, b.y - a.y) || 1, cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, accord0: accordsPan() };
+      dragRef.current = null;
+      svgRef.current?.setPointerCapture?.(ev.pointerId);
+      return;
+    }
     const p = clientToSvg(ev);
     dragRef.current = { sx: ev.clientX, sy: ev.clientY, vbX: p?.x ?? 0, vbY: p?.y ?? 0, panned: false, button: ev.button, tile: pickTile(ev), yaw0: getStageYaw(), pan0: getStagePan(), zoom0: zoom, accord0: accordsPan() };
     svgRef.current?.setPointerCapture?.(ev.pointerId);
   };
 
   const onPointerMove = (ev: React.PointerEvent) => {
+    if (ptrs.current.has(ev.pointerId)) ptrs.current.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    // DEUX DOIGTS : l'écart entre eux pilote le ZOOM, la translation de leur MILIEU pilote le
+    // PANORAMIQUE. Le geste est lu en variables LOCALES avant tout appel au store (patron
+    // `ui/MapCanvas`) — jamais un `pinchRef.current` déréférencé dans un callback différé, que le
+    // `pointerup` a pu remettre à `null` entre-temps.
+    const pinch = pinchRef.current;
+    if (pinch && ptrs.current.size === 2) {
+      const [a, b] = [...ptrs.current.values()];
+      const dist = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+      const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+      const st = useGame.getState();
+      st.setZoom(st.zoom * (dist / (pinch.dist || dist))); // le store borne
+      const from = clientPtToSvg(pinch.cx, pinch.cy);
+      const to = clientPtToSvg(cx, cy);
+      if (from && to) {
+        // Comme le glisser à un doigt : le pan se pose HORS de React (`state/stagePan`) et le store ne
+        // converge qu'au relâchement — ici en RELATIF, le milieu des doigts n'a pas de base stable.
+        const cur = getStagePan();
+        poserPan(cur.x + (to.x - from.x) / zoom, cur.y + (to.y - from.y) / zoom); // delta écran (viewBox) → unités caméra
+        battreStageFrames();
+      }
+      pinch.dist = dist;
+      pinch.cx = cx;
+      pinch.cy = cy;
+      return; // pendant un pincer : ni survol, ni panoramique à un doigt
+    }
     const d = dragRef.current;
     if (d) {
       if (!d.panned && Math.hypot(ev.clientX - d.sx, ev.clientY - d.sy) > PAN_THRESHOLD) d.panned = true;
@@ -448,6 +493,13 @@ export function useStagePointer({
   const onPointerUp = (ev: React.PointerEvent) => {
     const d = dragRef.current;
     dragRef.current = null;
+    ptrs.current.delete(ev.pointerId);
+    if (ptrs.current.size < 2 && pinchRef.current) {
+      // FIN DU PINCER : même convergence que le glisser ci-dessous — le décalage vivant se commet au
+      // store en UN `set`, sauf si un recentrage a déjà eu le dernier mot pendant le geste.
+      if (accordsPan() === pinchRef.current.accord0) setCamPan(getStagePan().x, getStagePan().y);
+      pinchRef.current = null;
+    }
     svgRef.current?.releasePointerCapture?.(ev.pointerId);
     (ev.currentTarget as SVGElement).style.cursor = '';
     if (!d) return;
@@ -460,6 +512,8 @@ export function useStagePointer({
   };
 
   const onPointerLeave = () => {
+    ptrs.current.clear();
+    pinchRef.current = null;
     if (hover) setHover(null);
     if (hoveredPortal) setHoveredPortal(null);
   };

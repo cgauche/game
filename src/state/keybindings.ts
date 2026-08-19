@@ -8,10 +8,11 @@
  * scoppés (focus-trap des modales `Modal.tsx`, éditeur).
  */
 import type { GameState } from './store';
-import { useGame } from './store';
+import { useGame, activeCombatant } from './store';
 import { controlsActive } from './netOwnership';
 import { pickActiveModalKey, modalBlocksMapHover } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
+import { runAction } from './actionRegistry';
 import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
 import { SEUIL_MAINTIEN_MS, arreterLacet, demarrerLacet, pasYaw } from './stageYaw';
@@ -38,6 +39,11 @@ export interface KeyBinding {
   id: string;
   /** Touche(s) par DÉFAUT, par POSITION physique (event.code), jamais le caractère. */
   codes: string[];
+  /** Ids avec lesquels le partage d'un `code` est DÉLIBÉRÉ — leurs `when` s'excluent (POV ⇄ vue iso,
+   *  pause de Round ⇄ fin de tour ⇄ curseur, les trois portes d'Échap). Toute autre collision de
+   *  touche dans le registre est un accident, et la garde `keybindings.test.ts` la refuse. La
+   *  déclaration est SYMÉTRIQUE : chaque membre d'une paire nomme l'autre. */
+  sharedBy?: string[];
   /** Clé de libellé pour l'écran Options (remap) — résolue à l'affichage (`bindingLabel`), jamais au
    *  chargement : ce tableau est construit à l'évaluation du module. */
   labelKey: MsgKey;
@@ -69,8 +75,9 @@ const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pick
 const mapLive = (s: GameState) => !modalBlocksMapHover(s as Parameters<typeof modalBlocksMapHover>[0]);
 /** Minuterie qui transforme l'appui en MAINTIEN — une seule, le geste de rotation est unique. */
 let minuterieMaintien: ReturnType<typeof setTimeout> | null = null;
-/** APPUI de rotation caméra — SOURCE UNIQUE du geste, partagée par le clavier (Q/E) et par les
- *  boutons d'orientation de l'écran de jeu (`ui/ViewControls`, dont les libellés annoncent Q et E).
+/** APPUI de rotation caméra — SOURCE UNIQUE du geste de l'écran de jeu, au CLAVIER (Q/E) : la caméra
+ *  du jeu se pilote au geste et au clavier, sans plaque de boutons (l'éditeur garde son cycle par
+ *  cran, local à `ui/editor/EditorCanvas`).
  *  Le lacet est LIBRE (#1176) : la caméra accepte n'importe quel angle, et le geste a DEUX régimes,
  *  distingués par la seule durée de l'appui — un appui bref pousse d'un PAS FIN (`pasYaw`), et
  *  au-delà de `SEUIL_MAINTIEN_MS` la caméra part en rotation continue jusqu'au relâchement
@@ -115,33 +122,60 @@ const exploring = (s: GameState) => s.screen === 'campaign' && s.mode === 'explo
 const exploringPov = (s: GameState) => exploring(s) && s.povActive;
 /** Pas clavier d'exploration ISO (ZQSD) : code physique → direction ÉCRAN. Réservé à la vue iso (hors POV,
  *  où ces mêmes touches sont cap-relatives — cf. `exploringPov` ci-dessus, résolu AVANT par ordre de tableau). */
-const EXPLORE_STEP: { code: string; dir: ScreenDir; labelKey: MsgKey }[] = [
-  { code: 'KeyW', dir: 'up', labelKey: 'key.exploreUp' },
-  { code: 'KeyS', dir: 'down', labelKey: 'key.exploreDown' },
-  { code: 'KeyA', dir: 'left', labelKey: 'key.exploreLeft' },
-  { code: 'KeyD', dir: 'right', labelKey: 'key.exploreRight' },
+const EXPLORE_STEP: { code: string; dir: ScreenDir; labelKey: MsgKey; povId: string }[] = [
+  { code: 'KeyW', dir: 'up', labelKey: 'key.exploreUp', povId: 'pov-forward' },
+  { code: 'KeyS', dir: 'down', labelKey: 'key.exploreDown', povId: 'pov-back' },
+  { code: 'KeyA', dir: 'left', labelKey: 'key.exploreLeft', povId: 'pov-strafe-l' },
+  { code: 'KeyD', dir: 'right', labelKey: 'key.exploreRight', povId: 'pov-strafe-r' },
 ];
 
 export const KEYBINDINGS: KeyBinding[] = [
   // ── Vue SUBJECTIVE (POV) — AVANT les cam-*/pas-iso (mêmes codes physiques) : find = 1er `when` vrai, donc
   //    tant que `povActive`, ces raccourcis GAGNENT (ZQSD cap-relatif, A/E pivotent le regard) ; hors POV
   //    `exploringPov` est faux → cam-* et pas-iso reprennent la main. `toggle-pov` (F) commute la vue. ──
-  { id: 'pov-forward', codes: ['KeyW'], labelKey: 'key.povForward', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('forward') },
-  { id: 'pov-back', codes: ['KeyS'], labelKey: 'key.povBack', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('back') },
-  { id: 'pov-strafe-l', codes: ['KeyA'], labelKey: 'key.povStrafeL', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('left') },
-  { id: 'pov-strafe-r', codes: ['KeyD'], labelKey: 'key.povStrafeR', section: 'pov', when: exploringPov, run: (g) => g().stepPartyRelative('right') },
-  { id: 'pov-turn-l', codes: ['KeyQ'], labelKey: 'key.povTurnL', section: 'pov', when: exploringPov, run: (g) => g().pivotParty(-1) },
-  { id: 'pov-turn-r', codes: ['KeyE'], labelKey: 'key.povTurnR', section: 'pov', when: exploringPov, run: (g) => g().pivotParty(1) },
+  { id: 'pov-forward', codes: ['KeyW'], labelKey: 'key.povForward', section: 'pov', sharedBy: ['explore-up'], when: exploringPov, run: (g) => g().stepPartyRelative('forward') },
+  { id: 'pov-back', codes: ['KeyS'], labelKey: 'key.povBack', section: 'pov', sharedBy: ['explore-down'], when: exploringPov, run: (g) => g().stepPartyRelative('back') },
+  { id: 'pov-strafe-l', codes: ['KeyA'], labelKey: 'key.povStrafeL', section: 'pov', sharedBy: ['explore-left'], when: exploringPov, run: (g) => g().stepPartyRelative('left') },
+  { id: 'pov-strafe-r', codes: ['KeyD'], labelKey: 'key.povStrafeR', section: 'pov', sharedBy: ['explore-right'], when: exploringPov, run: (g) => g().stepPartyRelative('right') },
+  { id: 'pov-turn-l', codes: ['KeyQ'], labelKey: 'key.povTurnL', section: 'pov', sharedBy: ['cam-left'], when: exploringPov, run: (g) => g().pivotParty(-1) },
+  { id: 'pov-turn-r', codes: ['KeyE'], labelKey: 'key.povTurnR', section: 'pov', sharedBy: ['cam-right'], when: exploringPov, run: (g) => g().pivotParty(1) },
   { id: 'toggle-pov', codes: ['KeyF'], labelKey: 'key.togglePov', section: 'pov', when: exploring, run: (g) => g().togglePov() },
-  { id: 'cam-left', codes: ['KeyQ'], labelKey: 'key.camLeft', section: 'camera', when: () => true, run: (g) => tournerCamera(g, -1), runUp: () => relacherCamera() },
-  { id: 'cam-right', codes: ['KeyE'], labelKey: 'key.camRight', section: 'camera', when: () => true, run: (g) => tournerCamera(g, 1), runUp: () => relacherCamera() },
-  { id: 'cam-recenter', codes: ['KeyC'], labelKey: 'key.camRecenter', section: 'camera', when: inBattle, run: (g) => g().resetCamPan() },
+  { id: 'cam-left', codes: ['KeyQ'], labelKey: 'key.camLeft', section: 'camera', sharedBy: ['pov-turn-l'], when: () => true, run: (g) => tournerCamera(g, -1), runUp: () => relacherCamera() },
+  { id: 'cam-right', codes: ['KeyE'], labelKey: 'key.camRight', section: 'camera', sharedBy: ['pov-turn-r'], when: () => true, run: (g) => tournerCamera(g, 1), runUp: () => relacherCamera() },
+  // Recentrer : le panoramique manuel ET le zoom reviennent au repos d'un seul geste. Le zoom y est
+  // joint parce que la molette avance par incréments continus (`useStageCamera`, `deltaY × 0.0015`) —
+  // aucune suite de crans ne retombe exactement sur 1. Hors combat le focal est le leader du groupe
+  // (`stageFocus`), en combat l'unité active : `resetCamPan` suffit dans les deux cas.
+  { id: 'cam-recenter', codes: ['KeyC'], labelKey: 'key.camRecenter', section: 'camera', when: (s) => s.screen === 'campaign', run: (g) => { g().resetCamPan(); g().setZoom(1); } },
+  // Vue ISO ⇄ TOP au clavier. Muette en POV : la vue subjective a sa propre bascule (`toggle-pov`).
+  { id: 'toggle-view', codes: ['KeyV'], labelKey: 'key.toggleView', section: 'camera', when: (s) => s.screen === 'campaign' && !s.povActive, run: (g) => g().toggleViewMode() },
+  // Inspection des combattants (option de jeu) : le clic sur un allié non actionnable ouvre son
+  // statbloc. En combat seulement — hors combat aucun clic ne l'emprunte.
+  { id: 'toggle-inspect', codes: ['KeyI'], labelKey: 'key.toggleInspect', section: 'combat', when: inBattle, run: (g) => g().toggleInspectEnabled() },
+  // Commuter le SET d'armes au poing (LDB 13 l.106 — Action gratuite ; plafond maison 1×/tour porté
+  // par `battleSwitchLoadout`) : la touche FAIT TOURNER les sets de la colonne de la console, dans
+  // l'ordre où ils y sont dessinés. Gardée sur ≥ 2 sets — un porteur d'un seul set n'a rien à commuter.
+  {
+    id: 'switch-loadout', codes: ['KeyX'], labelKey: 'key.switchLoadout', section: 'combat',
+    when: (s) => cur(s) && (activeCombatant(s.battle!)?.loadouts?.length ?? 0) >= 2,
+    // La touche CHOISIT le set suivant (geste de clavier) ; l'EXÉCUTION passe par le registre
+    // d'actions (`runAction('switch-loadout')`) — le clavier est un CONSOMMATEUR du registre, pas
+    // un 5ᵉ espace d'ids qui appellerait le store en direct.
+    run: (g) => {
+      const s = g();
+      const active = s.battle ? activeCombatant(s.battle) : undefined;
+      const sets = active?.loadouts ?? [];
+      if (!active || sets.length < 2) return;
+      const i = sets.findIndex((l) => l.id === active.activeLoadoutId);
+      runAction('switch-loadout', g, { loadoutId: sets[(i + 1) % sets.length].id });
+    },
+  },
   // Pause d'initiative de début de Round (LDB 17 l.27) : Espace/Entrée = « Commencer le round » (le SEUL
   // geste possible) → passage de Round jouable SANS souris. AVANT les bindings curseur/fin-de-tour (mêmes
   // touches) : sa garde `pendingRoundStart` arbitre. notWhenControlFocused : si le bouton « Commencer » est
   // focalisé, son activation native suffit (pas de double appel). Solo = confirmRoundStart ; coop = ready du siège.
   {
-    id: 'round-start', codes: ['Space', 'Enter', 'NumpadEnter'], labelKey: 'key.roundStart', section: 'combat', notWhenControlFocused: true,
+    id: 'round-start', codes: ['Space', 'Enter', 'NumpadEnter'], labelKey: 'key.roundStart', section: 'combat', notWhenControlFocused: true, sharedBy: ['end-turn', 'cursor-commit'],
     when: (s) => inBattle(s) && !!s.pendingRoundStart && !s.preemptAiming, // visée Tir rapide armée → Entrée TIRE (curseur), pas « commencer »
     run: (g) => {
       const s = g();
@@ -195,21 +229,30 @@ export const KEYBINDINGS: KeyBinding[] = [
   // « Pousser ») pour ENTRER dans le mode-CASE masquait `cursor-commit` : Entrée retombait sur
   // l'activation native du bouton encore focalisé (qui ferme le mode, aucune poussée commise).
   {
-    id: 'cursor-commit', codes: ['Enter', 'NumpadEnter'], labelKey: 'key.cursorCommit', section: 'curseur',
+    id: 'cursor-commit', codes: ['Enter', 'NumpadEnter'], labelKey: 'key.cursorCommit', section: 'curseur', sharedBy: ['round-start', 'end-turn'],
     when: (s) => curOrPreempt(s) && !!s.combatCursor,
     run: (g) => g().commitCursor(),
   },
+  // INTENTION armée depuis l'interface (spec HUD zone 4) : Échap la dissout AVANT tout autre usage de
+  // la touche — c'est l'annulation la plus récente, celle que le joueur vient d'ouvrir.
   {
-    id: 'cursor-cancel', codes: ['Escape'], labelKey: 'key.cursorCancel', section: 'curseur',
+    id: 'intent-cancel', codes: ['Escape'], labelKey: 'key.intentCancel', section: 'combat', sharedBy: ['cursor-cancel', 'clear-preview', 'toggle-menu'],
+    when: (s) => !!s.localIntent,
+    run: (g) => g().battleArmIntent(null),
+  },
+  {
+    id: 'cursor-cancel', codes: ['Escape'], labelKey: 'key.cursorCancel', section: 'curseur', sharedBy: ['clear-preview', 'toggle-menu', 'intent-cancel'],
     when: (s) => !!s.combatCursor || preemptCur(s), // armé sans cible en vue : Échap désarme quand même le Tir rapide
     run: (g) => { if (g().preemptAiming) g().armPreempt(null); g().clearCursor(); const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
   },
   {
-    id: 'end-turn', codes: ['Space', 'Enter', 'NumpadEnter'], labelKey: 'key.endTurn', section: 'combat', notWhenControlFocused: true,
-    when: (s) => cur(s), run: (g) => g().battleEndTurn(),
+    id: 'end-turn', codes: ['Space', 'Enter', 'NumpadEnter'], labelKey: 'key.endTurn', section: 'combat', notWhenControlFocused: true, sharedBy: ['round-start', 'cursor-commit'],
+    // Fin du tour : action NOMMÉE du registre (`actions.json`), exécutée par `runAction` — la touche
+    // ne connaît plus la méthode du store.
+    when: (s) => cur(s), run: (g) => runAction('end-turn', g),
   },
   {
-    id: 'clear-preview', codes: ['Escape'], labelKey: 'key.clearPreview', section: 'combat',
+    id: 'clear-preview', codes: ['Escape'], labelKey: 'key.clearPreview', section: 'combat', sharedBy: ['cursor-cancel', 'toggle-menu', 'intent-cancel'],
     when: (s) => !!s.battle?.preview,
     run: (g) => { const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
   },
@@ -225,8 +268,8 @@ export const KEYBINDINGS: KeyBinding[] = [
   //    (l'emprise d'un pont vise la couche du dessous), devient jouable. Garde `!povActive` : en POV, les
   //    mêmes ZQSD sont cap-relatifs (bindings pov-* ci-dessus, résolus AVANT). Les flèches restent au SEUL
   //    curseur de combat (garde `cur`) — plus de partage de codes avec l'exploration.
-  ...EXPLORE_STEP.map(({ code, dir, labelKey }): KeyBinding => ({
-    id: `explore-${dir}`, codes: [code], labelKey, section: 'exploration', when: (s) => exploring(s) && !s.povActive, run: (g) => g().stepPartyDir(dir),
+  ...EXPLORE_STEP.map(({ code, dir, labelKey, povId }): KeyBinding => ({
+    id: `explore-${dir}`, codes: [code], labelKey, section: 'exploration', sharedBy: [povId], when: (s) => exploring(s) && !s.povActive, run: (g) => g().stepPartyDir(dir),
   })),
   // Menu système PLEIN ÉCRAN (pause) : Échap l'OUVRE quand rien d'autre ne réclame la touche. Placé
   // EN DERNIER → cursor-cancel/clear-preview (mêmes codes, gardes propres) gagnent d'abord en combat.
@@ -235,7 +278,7 @@ export const KEYBINDINGS: KeyBinding[] = [
   // qui stoppe la propagation avant ce hook). Les écrans/modales plein-champ (role=dialog) consomment
   // déjà Échap et coupent la propagation → ils ne rouvrent jamais ce menu par mégarde.
   {
-    id: 'toggle-menu', codes: ['Escape'], labelKey: 'key.toggleMenu', section: 'systeme',
+    id: 'toggle-menu', codes: ['Escape'], labelKey: 'key.toggleMenu', section: 'systeme', sharedBy: ['cursor-cancel', 'clear-preview', 'intent-cancel'],
     when: (s) => s.screen === 'campaign' && !s.gameMenuOpen && noModal(s),
     run: (g) => g().setGameMenu(true),
   },

@@ -12,6 +12,7 @@ const VIEW: HighlightsView = {
   myTurn: true,
   walkReach: new Map(),
   runReach: new Map(),
+  intentReach: new Map(),
   activeId: null,
   eligibleIds: null,
   crowdIds: null,

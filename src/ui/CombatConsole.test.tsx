@@ -10,7 +10,14 @@ import { createRoot, type Root } from 'react-dom/client';
 import { useGame, movementRemaining, type BattleState } from '../state/store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import type { Combatant, ConditionInstance } from '../engine/types';
+import type { Combatant, ConditionInstance, ItemInstance, Weapon } from '../engine/types';
+import { itemFromTrappingById, recomputeLoadout, loadoutLabel, loadedAmmo, loadWeapon } from '../engine/items';
+import { weaponLoaded } from '../engine/weaponLoad';
+import { hotbar } from '../state/hotbarBridge';
+import { regles, findQualityById, findActionById } from '../data/index';
+import { actionGate } from '../state/actionRegistry';
+import { emptyScene } from '../state/scene';
+import { mdToText } from './Prose';
 import { CombatConsole } from './CombatConsole';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -68,6 +75,37 @@ afterEach(() => {
   host.remove();
   useGame.setState({ battle: null });
 });
+
+/** SURVOL d'une alvéole : ouvre le popover `CodexRef` (mode `wrap`) qui l'enveloppe et rend son contenu.
+ *  Le popover vit en PORTAL sur `document.body` (hors du `host`) — c'est là qu'on le lit. `mouseover` est
+ *  l'événement dont React DÉRIVE `onMouseEnter` (même voie qu'un vrai survol). */
+function survol(dataCell: string) {
+  const cell = host.querySelector(`[data-cell="${dataCell}"]`);
+  if (!cell) throw new Error(`alvéole « ${dataCell} » absente`);
+  const enveloppe = cell.closest('.codex-ref');
+  if (!enveloppe) throw new Error(`alvéole « ${dataCell} » sans foyer de règle (aucun CodexRef)`);
+  // Un popover déjà ouvert (survol précédent) vit dans le MÊME portal : Échap le referme — sans quoi on
+  // relirait le voisin (mesuré : « Charge » lu à la place de « Recharge »).
+  act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+  act(() => { enveloppe.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+  const pop = document.body.querySelector('.codex-pop[role="tooltip"]');
+  if (!pop) throw new Error(`aucun popover ouvert au survol de « ${dataCell} »`);
+  return {
+    title: pop.querySelector('.codex-pop-title')?.textContent ?? null,
+    body: pop.querySelector('.codex-pop-body')?.textContent ?? null,
+    /** La PORTE vers la fiche complète (le popover borne son corps, cf. `truncate` dans `CodexRef`). */
+    porte: pop.querySelector('.codex-pop-open')?.textContent ?? null,
+    source: pop.querySelector('.codex-src')?.textContent ?? null,
+  };
+}
+
+/** Le VERBATIM d'une donnée tel que le popover le rend : prose démarquée (`mdToText`) puis bornée par la
+ *  primitive. On ne recopie AUCUN texte de règle — on applique au contenu de la donnée la même
+ *  transformation que `CodexRef`, et on compare. La fiche complète reste derrière « Ouvrir la fiche ». */
+function verbatimAttendu(desc: string): string {
+  const t = mdToText(desc);
+  return t.length > 400 ? `${t.slice(0, 400).trimEnd()}…` : t;
+}
 
 /** Le rack d'États de l'arche seul (le bandeau/les tuiles ne sont pas montés ici). */
 function niche() {
@@ -458,8 +496,12 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
   // C-1 : à 360 le portrait de l'arche n'avait PAS DE VISAGE — la BOÎTE rétrécit (style inline de la
   // primitive repris à la main), le DESSIN restait à 72px et se cadrait « slice » sur son coin.
   it('C-1 — toute boîte de portrait redimensionnée remet son dessin à l’échelle', () => {
+    // La composition compacte redimensionne bien la boîte — par la VARIABLE de portrait, une seule
+    // source pour les trois boîtes (tuile, face, dessin), au lieu de trois littéraux `!important`.
     const at560 = mediaBlock(CC_CSS, '@media (max-width: 560px)');
-    expect(at560).toMatch(/\.cc-arch \.rig-portrait\s*\{[^}]*width:\s*30px/);
+    expect(parseFloat(decl(ruleOf(at560, '.combat-console'), '--cc-portrait')!)).toBeLessThanOrEqual(40);
+    const boites = ruleOf(CC_BASE, '.cc-arch .ptile, .cc-arch .ptile-face, .cc-arch .rig-portrait');
+    expect(decl(boites, 'width')).toBe('var(--cc-portrait) !important');
     const svg = ruleOf(CC_BASE, '.cc-arch .rig-portrait > svg');
     expect(decl(svg, 'width')).toBe('100%');
     expect(decl(svg, 'height')).toBe('100%');
@@ -493,13 +535,18 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     // … et JAMAIS par la casse d'un mot (R-M2), sur aucun libellé de la console.
     expect(CC_CSS).not.toMatch(/overflow-wrap:\s*(anywhere|break-word)/);
     expect(CC_CSS).not.toMatch(/word-break:\s*break-all/);
-    // Le libellé complet reste au `title` de l'alvéole : c'est la console qui le pose.
+    // Le libellé complet reste le NOM ACCESSIBLE de l'alvéole (`aria-label`) : l'infobulle native est
+    // proscrite (cf. `console-no-title-only.test.ts`), l'ellipse ne doit pas pour autant amputer
+    // l'information. (Une case VIDE porte le mot « LIBRE » : elle ne nomme aucune capacité.)
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
     monter(h);
-    const cases = [...host.querySelectorAll('.cc-grid-right .cc-cell')].filter((c) => c.querySelector('.cc-lbl'));
+    const cases = [...host.querySelectorAll('.cc-grid-right .cc-cell:not(.cc-empty)')].filter((c) => c.querySelector('.cc-lbl'));
     expect(cases.length).toBeGreaterThan(0);
-    for (const cell of cases) expect(cell.getAttribute('title')).toBeTruthy();
+    for (const cell of cases) {
+      expect(cell.getAttribute('aria-label'), `alvéole sans nom accessible : ${cell.textContent}`).toBeTruthy();
+      expect(cell.getAttribute('title'), 'infobulle native proscrite sur une alvéole').toBeNull();
+    }
   });
 });
 
@@ -559,11 +606,11 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     expect(host.querySelectorAll('.cc-cell').length).toBe(casesHeros);
     // La hauteur du pont ne dépend pas non plus de l'ACTEUR : la rangée du matériel n'est montée
     // que si l'acteur a de quoi commuter (mesuré à l'écran : 219,3 → 202,3px de pont quand le Loup
-    // prenait la main), d'où un PLANCHER déclaré sur la travée, keyé sur le côté d'alvéole.
-    const plancher = decl(ruleOf(CC_BASE, '.cc-bay-left'), 'min-height');
-    expect(plancher, 'la travée gauche ne déclare AUCUN plancher de hauteur').toBeTruthy();
-    expect(plancher!).toMatch(/var\(--cc-cell\)/);
-    expect(host.querySelectorAll('.cc-loadouts').length).toBeLessThanOrEqual(1);
+    // prenait la main), d'où une hauteur DÉCLARÉE sur la travée, keyée sur le côté d'alvéole (voir D-1
+    // pour le contrat complet : hauteur FIXE, pas un plancher).
+    const haut = decl(ruleOf(CC_BASE, '.cc-bay-left'), 'height');
+    expect(haut, 'la travée gauche ne déclare AUCUNE hauteur').toBeTruthy();
+    expect(decl(ruleOf(CC_BASE, ':root'), '--cc-bay-h')!).toMatch(/var\(--cc-cell-h\)/);
   });
 
   it('P-3 — l’arche est le FRONTON du pont : même matière, aucune couture, DANS le pont', () => {
@@ -653,9 +700,11 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
   //    terminée nettement au-dessus du pont à y=863). Mesuré avant cette passe : 103,6 × 97,3px de
   //    recouvrement à 1280, points de frise par-dessus le pont au hit-test.
   it('P-6 — la frise borne sa hauteur à l’espace AU-DESSUS du pont, à la source', () => {
-    // La hauteur du pont est une grandeur PUBLIÉE au `:root`, dérivée du seul côté d'alvéole.
+    // La hauteur du pont est une grandeur PUBLIÉE au `:root`, dérivée de la hauteur de travée — donc du
+    // seul côté d'alvéole.
     const racine = ruleOf(CC_BASE, ':root');
-    expect(decl(racine, '--cc-deck-h')).toMatch(/var\(--cc-cell\)/);
+    expect(decl(racine, '--cc-deck-h')).toMatch(/var\(--cc-bay-h\)/);
+    expect(decl(racine, '--cc-bay-h')).toMatch(/var\(--cc-cell-h\)/);
     // La colonne vit dans la BANDE DE TERRAIN : ancrée sous le coin du menu, elle S'ARRÊTE sur la
     // réserve du pont — c'est son bord BAS qui est borné, pas seulement sa hauteur.
     const strip = ruleOf(HUD_BASE, '.initiative-strip');
@@ -666,5 +715,907 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     expect(decl(tiles, '--is-avail')).toMatch(/var\(--cc-deck-h\)/);
     expect(decl(tiles, 'max-height')).toMatch(/--is-avail/);
     expect(decl(tiles, 'overflow-y')).toBe('auto');
+  });
+});
+
+// ── ÉTAT DE CHARGE : la case G4 lit le REGISTRE de l'arme (`engine/weaponLoad`), jamais un champ du
+//    porteur. Un pistolet et une arbalète tenus par le même héros ont chacun leur cycle (LDB 62 l.335).
+describe('CombatConsole — case Recharger : le porteur de l’état est l’ARME', () => {
+  /** Arme à distance NUE (sans `uid`) : son registre de charge est l'instance d'arme elle-même. */
+  function pistolet(load: Partial<Weapon>): Weapon {
+    return { label: 'Pistolet', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 20, reload: 3, qualities: [], ...load } as Weapon;
+  }
+
+  it('affiche la progression du Test étendu portée par l’ARME et allume la case tant qu’elle est déchargée', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.weapons = [pistolet({ loaded: false, reloadProgress: 2 })];
+    monter(h);
+    const cell = host.querySelector('[data-cell="g4-recharger"]')!;
+    expect(cell.querySelector('.cc-lbl')!.textContent).toBe('Recharger 2/3');
+    expect(cell.classList.contains('on')).toBe(true);
+  });
+
+  it('une progression posée sur le COMBATTANT n’est pas lue : arme chargée = case éteinte, libellé nu', () => {
+    const h = hero('h2', 'Gunnar');
+    h.conditions = [];
+    h.weapons = [pistolet({ loaded: true })];
+    Object.assign(h, { loaded: false, reloadProgress: 2 });
+    monter(h);
+    const cell = host.querySelector('[data-cell="g4-recharger"]')!;
+    expect(cell.querySelector('.cc-lbl')!.textContent).toBe('Recharger');
+    expect(cell.classList.contains('on')).toBe(false);
+  });
+});
+
+// ── TRAVÉE GAUCHE : la COMPOSITION de la planche USER 2026-08-17 (spec §1c-bis) ──────────────────
+// Colonne latérale de SETS (le commutateur EST la colonne) · 2×3 cases (haute DÉDUITE du set au
+// poing, basse LIBRE) · rubrique ACCÈS RAPIDE 2×2. Les fixtures sont de VRAIS objets du catalogue
+// (`itemFromTrappingById`) montés par la dérivation réelle (`recomputeLoadout`) : aucune arme forgée.
+describe('CombatConsole — travée gauche : sets, gestes déduits, accès rapide', () => {
+  /** Objet du CATALOGUE, uid stable pour que les sets le désignent. */
+  function objet(id: string, uid: string, over: Partial<ItemInstance> = {}): ItemInstance {
+    const it = itemFromTrappingById(id);
+    expect(it, `catalogue : « ${id} » absent`).not.toBeNull();
+    return Object.assign(it!, { uid }, over);
+  }
+
+  /** Héros à DEUX sets : dague au poing, arbalète lourde (Recharge 2) au second. */
+  function deuxSets(opts: { loaded?: boolean; reloadProgress?: number; actif?: string } = {}) {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.items = [
+      objet('dague', 'i-dague'),
+      objet('arbalete-lourde', 'i-arb', { loaded: opts.loaded ?? false, reloadProgress: opts.reloadProgress ?? 1 }),
+    ];
+    h.loadouts = [{ id: 'lo-melee', main: 'i-dague' }, { id: 'lo-tir', main: 'i-arb' }];
+    h.activeLoadoutId = opts.actif ?? 'lo-melee';
+    recomputeLoadout(h);
+    return h;
+  }
+
+  // Une alvéole/vignette porteuse de règle est ENVELOPPÉE par son `CodexRef` : on cible la case elle-même,
+  // pas l'enfant direct de la piste (qui peut être l'enveloppe).
+  const vignettes = () => [...host.querySelectorAll('.cc-sets .cc-set')];
+  const casesGauche = () => [...host.querySelectorAll('.cc-grid-left .cc-cell')];
+  const casesRapide = () => [...host.querySelectorAll('.cc-grid-quick .cc-cell')];
+
+  it('(a) dessine la COLONNE de sets — compte constant, set au poing en relief, en-tête = son libellé', () => {
+    const h = deuxSets();
+    monter(h);
+    // Trois emplacements TOUJOURS dessinés (deux sets + un vide), et le compte ne dépend pas du porteur.
+    expect(vignettes().length).toBe(3);
+    expect(vignettes().filter((v) => v.classList.contains('cc-empty')).length).toBe(1);
+    expect(vignettes().map((v) => v.classList.contains('on'))).toEqual([true, false, false]);
+    // En-tête de travée = le SET AU POING, libellé DÉRIVÉ de son contenu par le moteur.
+    const head = host.querySelector('.cc-bay-head')!;
+    expect(head.textContent).toBe(loadoutLabel(h.loadouts![0], h));
+    // Un acteur SANS set (statbloc de créature) garde les trois emplacements : géométrie immuable.
+    const nu = hero('h2', 'Gunnar');
+    nu.conditions = [];
+    nu.loadouts = [];
+    monter(nu);
+    expect(vignettes().length).toBe(3);
+    expect(vignettes().filter((v) => v.classList.contains('cc-empty')).length).toBe(3);
+  });
+
+  it('(a bis) l’état de charge d’un set est lu sur l’ARME, en MOT ENTIER, y compris pour le set NON tenu', () => {
+    const h = deuxSets({ loaded: false });
+    // L'état vient bien du registre de l'arme (l'objet possédé), pas d'un champ du porteur.
+    const arb = h.items!.find((i) => i.uid === 'i-arb')!;
+    expect(weaponLoaded(h, { ...arb, type: 'ranged', reload: 2 } as unknown as Weapon)).toBe(false);
+    monter(h);
+    const tir = host.querySelector('[data-set="lo-tir"]')!;
+    // Un MOT ENTIER, jamais une abréviation tronquée (« déch. » : grief vision 2026-08-17).
+    const mot = tir.querySelector('.cc-set-load')!.textContent!;
+    expect(mot).toBe('VIDE');
+    expect(mot, 'un mot abrégé/tronqué n’est pas du texte joueur').not.toMatch(/[.…]/);
+    // Le SET est nommé accessiblement (le libellé ne tient pas dans la vignette) — jamais par un title.
+    expect(tir.getAttribute('aria-label')).toBe(loadoutLabel(h.loadouts![1], h));
+    expect(tir.getAttribute('title'), 'infobulle native proscrite sur une vignette').toBeNull();
+    // Le set de MÊLÉE n'a pas de cycle de charge : aucune mention.
+    expect(host.querySelector('[data-set="lo-melee"]')!.querySelector('.cc-set-load')).toBeNull();
+
+    // Arme CHARGÉE : la mention disparaît (c'est l'état de l'arme qui parle, pas la présence d'un set).
+    const charge = deuxSets({ loaded: true });
+    monter(charge);
+    expect(host.querySelector('[data-set="lo-tir"]')!.querySelector('.cc-set-load')).toBeNull();
+  });
+
+  it('(b) rangée DÉDUITE d’un set ARMÉ : aucune case d’Empoignade (LDB 14 l.155), rangée basse LIBRE', () => {
+    const h = deuxSets();
+    monter(h);
+    // 2×3 : rangée haute = les gestes pertinents pour CE set (une dague en ouvre deux : frapper,
+    // charger), rangée basse LIBRE — et toute case non pertinente est DESSINÉE, pas absente.
+    expect(casesGauche().length).toBe(6);
+    const basse = casesGauche().slice(3);
+    expect(basse.every((c) => c.classList.contains('cc-empty'))).toBe(true);
+    for (const l of casesGauche().filter((c) => c.classList.contains('cc-empty'))) {
+      expect(l.querySelector('.cc-lbl')!.textContent).toBe('LIBRE');
+    }
+    // L'Empoignade est une option du combat à MAINS NUES : elle n'est pas un geste d'arme.
+    const labels = casesGauche().map((c) => c.querySelector('.cc-lbl')?.textContent ?? '');
+    expect(labels.some((l) => /Empoign/i.test(l))).toBe(false);
+    expect(host.querySelector('[data-cell="g6-geste-arme"]')).toBeNull();
+    // … et ce qui est déduit du set de mêlée l'est bien : l'attaque de l'arme tenue + la Charge.
+    expect(casesGauche()[0].getAttribute('data-cell')).toBe('g1-attaque');
+    expect(casesGauche()[0].querySelector('.cc-lbl')!.textContent).toBe('Dague');
+    expect(casesGauche().map((c) => c.getAttribute('data-cell'))).toContain('g2-charge');
+
+    // SET DE TIR au poing : la rangée CHANGE avec le set — le cycle de charge de l'arme y entre, avec sa
+    // progression, et la Charge n'y est plus déduite (aucune arme de mêlée AU SET : les Mains nues
+    // implicites de `c.weapons` ne comptent pas). Elle reste un geste par défaut de la grille.
+    const tir = deuxSets({ actif: 'lo-tir', reloadProgress: 1 });
+    monter(tir);
+    const dataCells = casesGauche().map((c) => c.getAttribute('data-cell'));
+    expect(dataCells).toContain('g4-recharger');
+    expect(dataCells, 'set de tir pur : la Charge n’y a rien à faire').not.toContain('g2-charge');
+    expect(host.querySelector('[data-cell="g4-recharger"] .cc-lbl')!.textContent).toBe('Recharger 1/2');
+  });
+
+  it('(c) ACCÈS RAPIDE : consommables GROUPÉS ×N + Soigner, cases restantes dessinées LIBRE', () => {
+    const h = deuxSets();
+    h.wounds = { current: 5, max: 12 }; // blessé → cible soignable (moteur `healableTargets`)
+    h.skills = [...(h.skills ?? []), { skillId: 'guerison', advances: 10 } as never];
+    h.items = [...h.items!, objet('potion-de-guerison', 'i-po1'), objet('potion-de-guerison', 'i-po2')];
+    monter(h);
+    expect(casesRapide().length).toBe(4);
+    const labels = casesRapide().map((c) => c.querySelector('.cc-lbl')?.textContent ?? '');
+    // Deux potions IDENTIQUES = UNE case à compteur (jamais deux cases du même objet).
+    expect(labels.filter((l) => l.startsWith('Potion de guérison')).length).toBe(1);
+    expect(labels).toContain('Potion de guérison ×2');
+    expect(labels).toContain('Soigner');
+    // Les deux restantes sont dessinées, et disent qu'elles sont libres.
+    expect(labels.filter((l) => l === 'LIBRE').length).toBe(2);
+    // La case d'objet est BRANCHÉE (elle consomme l'objet réel du store), pas une maquette.
+    const potion = casesRapide().find((c) => (c.querySelector('.cc-lbl')?.textContent ?? '').startsWith('Potion'))!;
+    expect(potion.classList.contains('cc-inert')).toBe(false);
+
+    // Rubrique nommée, et le compte de cases ne dépend PAS du contenu (héros sans rien).
+    expect([...host.querySelectorAll('.cc-bay-head')].map((e) => e.textContent)).toContain('ACCÈS RAPIDE');
+    const nu = deuxSets();
+    monter(nu);
+    expect(casesRapide().length).toBe(4);
+    expect(casesRapide().filter((c) => c.classList.contains('cc-empty')).length).toBe(4);
+  });
+});
+
+// ── VERDICTS DU JUGE VISION 2026-08-17 (2ᵉ passe) promus en contrats ─────────────────────────────────
+// Les sondes de ce bloc jugent : le DROIT (un geste déduit ne tombe plus, la Charge suit le RAW, le coin
+// dit l'état vrai du tour et garde le 2ᵉ clic, le clavier publie la travée gauche), puis le MICRO-RENDU
+// (contraste et HIÉRARCHIE des encres, hauteur du pont invariante, icône par arme, une grammaire de case
+// vide, lisibilité des vignettes, MATIÈRE UNIQUE du pont).
+describe('CombatConsole — droit de la travée et du coin (juge vision 2026-08-17)', () => {
+  function objet(id: string, uid: string, over: Partial<ItemInstance> = {}): ItemInstance {
+    const it = itemFromTrappingById(id);
+    expect(it, `catalogue : « ${id} » absent`).not.toBeNull();
+    return Object.assign(it!, { uid }, over);
+  }
+
+  /** Arbalétrier : arbalète lourde (Recharge) SEULE au set, ses carreaux au sac. */
+  function arbaletrier(opts: { ammo?: boolean } = {}) {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.items = [objet('arbalete-lourde', 'i-arb', { loaded: false, reloadProgress: 0 })];
+    if (opts.ammo) h.items.push(objet('carreau', 'i-carreaux'));
+    h.loadouts = [{ id: 'lo-tir', main: 'i-arb' }];
+    h.activeLoadoutId = 'lo-tir';
+    recomputeLoadout(h);
+    return h;
+  }
+
+  const casesGauche = () => [...host.querySelectorAll('.cc-grid-left .cc-cell')];
+  const cellKeys = () => casesGauche().map((c) => c.getAttribute('data-cell'));
+
+  /** Set d'une seule arme du catalogue, au poing. */
+  function unSet(trappingId: string, opts: Partial<ItemInstance> = {}) {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.items = [objet(trappingId, 'i-1', opts)];
+    h.loadouts = [{ id: 'lo-1', main: 'i-1' }];
+    h.activeLoadoutId = 'lo-1';
+    recomputeLoadout(h);
+    return h;
+  }
+
+  /** Set MAINS NUES : une panoplie déclarée, aucune arme portée. */
+  function poings() {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.items = [];
+    h.loadouts = [{ id: 'lo-poings' }];
+    h.activeLoadoutId = 'lo-poings';
+    recomputeLoadout(h);
+    return h;
+  }
+
+  /** Set MIXTE : lame en main principale, PISTOLET (Recharge 1) en main gauche — les deux cases
+   *  coexistent (deux armes à UNE main : `recomputeLoadout` garde bien les deux). */
+  function mixte() {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.items = [objet('dague', 'i-ep'), objet('pistolet', 'i-arb', { loaded: false, reloadProgress: 0 })];
+    h.loadouts = [{ id: 'lo-mixte', main: 'i-ep', off: 'i-arb' }];
+    h.activeLoadoutId = 'lo-mixte';
+    recomputeLoadout(h);
+    return h;
+  }
+
+  // Défaut mesuré : `deduced.slice(0, 3)` faisait TOMBER la posture de tir (G5) d'une arbalète, alors que
+  // la spec §1a en fait le SEUL accès. Le débord garnit désormais la rangée libre.
+  it('D-1 — arbalète lourde seule : TOUS les gestes déduits sont visibles, G5 posture comprise', () => {
+    monter(arbaletrier());
+    expect(casesGauche().length).toBe(6);
+    const keys = cellKeys();
+    for (const k of ['g1-attaque', 'g4-recharger', 'g3-viser', 'g5-posture']) {
+      expect(keys, `geste ${k} tombé hors de la travée`).toContain(k);
+    }
+    // Un set de TIR PUR ne déduit PAS la Charge (arbitrage user 2026-08-17 : un Test de Corps à corps
+    // n'est pas le geste d'une arbalète). Elle reste un geste par défaut de la grille de capacités.
+    expect(keys, 'set de tir pur : aucune Charge déduite').not.toContain('g2-charge');
+    // Les cases restantes sont dessinées LIBRES : le compte ne bouge pas.
+    expect(casesGauche().filter((c) => c.classList.contains('cc-empty')).length).toBe(2);
+    // La 4ᵉ case (1ʳᵉ de la rangée basse) porte bien un geste du débord, pas un trou.
+    expect(casesGauche()[3].getAttribute('data-cell')).toBeTruthy();
+  });
+
+  // Prédicat de la Charge (`LDB 15 l.34` / `LDB 13 l.90`) : une arme de mêlée DU SET, ou le set mains
+  // nues. Jamais l'arme que le moteur préférerait hors d'Allonge (`attackWeapon`, préférence distance),
+  // jamais les Mains nues implicites que `recomputeLoadout` laisse dans `c.weapons`.
+  it('D-2 — la Charge se déduit du CORPS À CORPS du set (mêlée ou mains nues), et se gate sur l’Engagement', () => {
+    // (i) tir pur → absente (cf. D-1) ; (ii) set de mêlée → présente.
+    monter(unSet('dague'));
+    expect(cellKeys(), 'set de mêlée : la Charge se déduit').toContain('g2-charge');
+    expect(host.querySelector('[data-cell="g2-charge"]')!.hasAttribute('data-gated')).toBe(false);
+
+    // (iii) set MAINS NUES → présente (le bagarreur la mérite).
+    monter(poings());
+    expect(cellKeys(), 'set mains nues : la Charge se déduit').toContain('g2-charge');
+
+    // (iv) set MIXTE lame+pistolet → les deux cases coexistent, chacune ENVELOPPÉE par le popover de SA
+    // fiche (`CodexRef wrap`) : c'est là que vit le texte de règle, en verbatim, jamais dans un `title`.
+    monter(mixte());
+    const keys = cellKeys();
+    expect(keys).toContain('g2-charge');
+    expect(keys).toContain('g4-recharger');
+    // Les textes attendus sont LUS DANS LA DONNÉE (aucune chaîne de règle recopiée dans ce test) : c'est
+    // le contrat « le texte de règle affiché est du verbatim recollable dans `Source/` » (CLAUDE.md 5).
+    const fiche = regles.find((r) => r.id === 'charger')!;
+    const qualite = findQualityById('recharge')!;
+    expect(fiche.desc.length, 'la fiche regles/charger doit porter son verbatim').toBeGreaterThan(80);
+    expect(qualite.desc, 'la qualité recharge doit porter son verbatim').toBeTruthy();
+    const popCharge = survol('g2-charge');
+    const popRech = survol('g4-recharger');
+    expect(popCharge.title).toBe(fiche.label);
+    expect(popCharge.body).toBe(verbatimAttendu(fiche.desc));
+    // Le corps est BORNÉ par la primitive : la porte vers la fiche complète doit donc être là.
+    expect(popCharge.porte, 'verbatim borné sans porte vers la fiche').toBe('Ouvrir la fiche');
+    expect(popCharge.source, 'la source de la règle se lit au popover').toContain('165');
+    expect(popRech.title).toBe(qualite.label);
+    expect(popRech.body).toBe(verbatimAttendu(qualite.desc!));
+    expect(popCharge.body, 'deux gestes, deux verbatims').not.toBe(popRech.body);
+    // Aucun `title` natif nulle part sur ces deux cases.
+    for (const k of ['g2-charge', 'g4-recharger']) {
+      expect(host.querySelector(`[data-cell="${k}"]`)!.getAttribute('title')).toBeNull();
+    }
+
+    // GATE : héros Engagé → la case reste DESSINÉE, sa raison est VISIBLE dans l'alvéole et liée par
+    // `aria-describedby` (idiome `GatedAction`), jamais cachée dans une infobulle.
+    const engage = unSet('dague');
+    engage.engagedWith = ['e1'];
+    monter(engage, { foes: [foe('e1', 5, 6)] });
+    const gate = host.querySelector('[data-cell="g2-charge"]')!;
+    expect(gate, 'la case doit rester DESSINÉE (géométrie constante)').not.toBeNull();
+    expect(gate.hasAttribute('data-gated')).toBe(true);
+    const raison = gate.querySelector('.cc-lbl[data-gate]');
+    expect(raison, 'la raison de gate doit être un TEXTE dans l’alvéole').not.toBeNull();
+    expect(raison!.textContent).toContain('Engagé');
+    expect(gate.getAttribute('aria-describedby')).toBe(raison!.id);
+    expect(gate.getAttribute('title')).toBeNull();
+    expect(casesGauche().length).toBe(6);
+  });
+
+  // Coin de sortie : la ternaire d'origine n'affichait « Action intacte » que pour un héros INCAPABLE
+  // d'agir (Surpris → `canTakeAction` faux) — l'avertissement ne sortait donc jamais quand il servait.
+  it('D-3 — le coin dit l’état VRAI du tour : Action non dépensée · Tour fini · sa touche', () => {
+    const note = () => host.querySelector('.cc-end .cc-key')!.textContent;
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h);
+    expect(note(), 'Action non dépensée et utilisable : l’avertissement doit sortir').toBe('Action non dépensée');
+
+    const agi = hero('h2', 'Gunnar');
+    agi.conditions = [];
+    monter(agi);
+    act(() => {
+      const b = useGame.getState().battle!;
+      useGame.setState({ battle: { ...b, acted: true } });
+    });
+    expect(note()).toBe('Tour fini');
+
+    // Surpris (`etats.json` : `gating.action = 'none'`) : rien à dépenser, donc aucun reproche — la
+    // plaque imprime SA touche.
+    const surpris = hero('h3', 'Gunnar');
+    surpris.conditions = [{ id: 'surpris', value: 1 }] as ConditionInstance[];
+    monter(surpris);
+    expect(note()).toBe('ESPACE');
+  });
+
+  it('D-4 — garde-fou 2 clics : le 1ᵉʳ ARME la plaque (rien ne se passe), le 2ᵉ finit le tour', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    const plaque = () => host.querySelector('.cc-end') as HTMLButtonElement;
+    expect(useGame.getState().battle!.turn).toBe(0);
+    expect(plaque().hasAttribute('data-armed')).toBe(false);
+
+    act(() => plaque().click());
+    // 1ᵉʳ clic : armement VISIBLE, tour intact.
+    expect(plaque().hasAttribute('data-armed'), 'le 1ᵉʳ clic doit ARMER, pas finir').toBe(true);
+    expect(host.querySelector('.cc-end .cc-key')!.textContent).toBe('Finir quand même ?');
+    expect(host.querySelector('.cc-end .cc-lbl')!.textContent).toBe('Finir quand même');
+    expect(useGame.getState().battle!.turn).toBe(0);
+
+    act(() => plaque().click());
+    // 2ᵉ clic : le tour passe pour de vrai (le moteur avance l'ordre).
+    expect(useGame.getState().battle!.turn).not.toBe(0);
+  });
+
+  // Le pont clavier ne publiait QUE la travée droite — or aucune case de la grille de capacités n'est
+  // branchée aujourd'hui : la console ne publiait donc RIEN, et « toute action affichée a sa touche »
+  // était faux pour Recharger/Viser/objets/Soigner. Depuis le lot registre, chaque slot publié porte
+  // aussi son `actionId` : le pont n'a plus de closure anonyme (spec HUD « Zone 12 »).
+  it('D-5 — la travée GAUCHE est publiée au pont clavier (slots IDENTIFIÉS), et sa case porte le badge de ce rang', () => {
+    hotbar.slots = [];
+    const h = arbaletrier();
+    monter(h);
+    // L'attaque de l'arme, Recharger et Viser sont branchés (store réel) → l'ordre de lecture de la
+    // travée gauche donne les premiers rangs, et chaque slot dit QUELLE action il exécute.
+    expect(hotbar.slots.length, 'aucune case de la console publiée au clavier').toBeGreaterThanOrEqual(3);
+    expect(hotbar.slots.map((s) => s.actionId).slice(0, 3)).toEqual(['attaque', 'reload', 'aim']);
+    const rech = host.querySelector('[data-cell="g4-recharger"]')!;
+    expect(rech.querySelector('.cc-key')!.textContent).toBe('2');
+    // … et la touche 2 exécute bien CETTE case (même `run` que le clic) : le rechargement OUVRE sa modale
+    // (Test étendu de Projectiles) — c'est l'effet observable du moteur, pas un drapeau forgé ici.
+    expect(useGame.getState().pendingReload ?? null).toBeNull();
+    expect(hotbar.slots[1].disabled).toBe(false);
+    act(() => hotbar.slots[1].run());
+    expect(useGame.getState().pendingReload, 'la touche 2 n’a pas déclenché la case Recharger').toBeTruthy();
+    // Une case NON branchée (action `blocked` du registre — ici la POSTURE de tir, spec §1a G5, dont
+    // le champ pré-armé reste à créer) n'imprime aucun badge.
+    const maquette = host.querySelector('[data-cell="g5-posture"]')!;
+    expect(maquette.className).toContain('cc-inert');
+    expect(maquette.querySelector('.cc-key')).toBeNull();
+  });
+
+  it('D-6 — l’icône de la case d’attaque suit l’ARME du set, jamais un glyphe d’épée en dur', () => {
+    monter(arbaletrier());
+    const arb = host.querySelector('[data-cell="g1-attaque"] .cc-ico')!.innerHTML;
+    // L'art vient de la primitive d'objet (`ItemIcon`), pas du registre d'icônes générique.
+    expect(host.querySelector('[data-cell="g1-attaque"] .item-icon')).not.toBeNull();
+
+    const h = hero('h2', 'Gunnar');
+    h.conditions = [];
+    h.items = [objet('dague', 'i-dague')];
+    h.loadouts = [{ id: 'lo-melee', main: 'i-dague' }];
+    h.activeLoadoutId = 'lo-melee';
+    recomputeLoadout(h);
+    monter(h);
+    const dague = host.querySelector('[data-cell="g1-attaque"] .cc-ico')!.innerHTML;
+    expect(dague, 'deux armes différentes ne peuvent pas porter le MÊME dessin').not.toBe(arb);
+  });
+});
+
+// ── LA CONSOLE CONSOMME LE REGISTRE DES ACTIONS (spec HUD « Zone 12 », lot branchements) ────────
+// Plus aucune case n'est écrite à la main : chacune naît d'une entrée de `src/data/actions.json`
+// (libellé, icône, foyer de règle, verdict d'offre) et s'exécute par `runAction`. Ce bloc mesure le
+// CÂBLAGE sur le store réel — un clic qui ne bouge pas le moteur est une case morte.
+describe('CombatConsole — les cases sont des ENTRÉES du registre (branchement)', () => {
+  const caseAction = (id: string) => host.querySelector(`[data-action="${id}"]`) as HTMLButtonElement | null;
+
+  it('R-1 — toute case rendue porte un `data-action` DÉCLARÉ au registre, et son libellé vient de l’entrée', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    const cases = [...host.querySelectorAll('.cc-cell:not(.cc-empty)')] as HTMLElement[];
+    expect(cases.length, 'aucune case rendue : la sonde ne mesurerait rien').toBeGreaterThan(4);
+    const inconnues = cases.filter((c) => !findActionById(c.getAttribute('data-action') ?? ''));
+    expect(
+      inconnues.map((c) => c.getAttribute('data-action')),
+      'case rendue dont l’id d’action n’existe pas au registre',
+    ).toEqual([]);
+    // Le libellé de la Défensive n'est pas écrit dans le composant : il est LU dans l'entrée.
+    expect(caseAction('defend')!.querySelector('.cc-lbl')!.textContent).toBe(findActionById('defend')!.label);
+  });
+
+  it('R-2 — la case Défensive EXÉCUTE son dispatcher (`battleDefendTotal`) par le registre', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    expect(useGame.getState().battle!.acted).toBe(false);
+    act(() => caseAction('defend')!.click());
+    // Effet MOTEUR observable (pas un drapeau d'UI) : posture défensive posée, Action dépensée.
+    expect(useGame.getState().battle!.combatants[0].defensiveStance, 'la case Défensive n’a rien exécuté').toBe(true);
+    expect(useGame.getState().battle!.acted).toBe(true);
+  });
+
+  it('R-3 — la case Détermination ARME son mode, et le re-clic le désarme (bascule du registre)', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.resolve = 2;
+    // Le moteur n'arme un mode d'action que sur une SCÈNE (`battleSelectAction` lit le terrain).
+    act(() => { useGame.setState({ scene: emptyScene(20, 20) }); });
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    act(() => caseAction('resolve')!.click());
+    expect(useGame.getState().battle!.action, 'la case Détermination n’a pas armé son mode').toBe('resolve');
+    act(() => caseAction('resolve')!.click());
+    expect(useGame.getState().battle!.action, 'le re-clic doit DÉSARMER (toggleOff du registre)').toBeNull();
+  });
+
+  it('R-4 — une case gatée porte la RAISON du registre, visible, et ne s’exécute pas', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.resolve = 0; // aucun point : le gate `determination-en-reserve` refuse, avec sa raison
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    const det = caseAction('resolve')!;
+    expect(det.hasAttribute('data-gated')).toBe(true);
+    const raison = det.querySelector('.cc-lbl[data-gate]')!;
+    expect(raison.textContent).toBe(actionGate('resolve', { active: h, battle: useGame.getState().battle! }).reason);
+    expect(det.getAttribute('aria-describedby')).toBe(raison.id);
+    expect(det.disabled).toBe(true);
+  });
+
+  // Défaut MESURÉ en recette (capture `01b`, 2026-08-17) : la raison de gate enflait dans la boîte et
+  // chassait le NOM du geste hors de l'alvéole (« Détermination 0 » invisible, seul « AUCUN POINT »
+  // lisible), pendant que le badge de touche « 4 » se collait à cette raison — une touche promise que
+  // le pont publie pourtant `disabled`. Trois contrats, DOM + CSS déclaré.
+  it('R-7 — case gatée : le NOM reste lisible, la RAISON plie (1 ligne, ellipse), le badge s’éteint', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.resolve = 0;
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    const det = caseAction('resolve')!;
+    // (a) DOM : le nom du geste est bien un nœud À PART, porteur du libellé de l'entrée + son compte.
+    const nom = det.querySelector('.cc-lbl:not([data-gate])')!;
+    expect(nom.textContent).toBe(`${findActionById('resolve')!.label} 0`);
+    // (b) CSS : le nom garde sa ligne pleine et incompressible ; la RAISON vit dans sa bande au pied,
+    // HORS FLUX (patron `.cc-set-load`) — elle ne peut donc ni chasser le nom hors de la boîte
+    // (défaut de la capture `01b`), ni tomber à zéro de haut (défaut de la capture `06`).
+    const regleNom = ruleOf(CC_BASE, '.cc-cell[data-gated] .cc-lbl:not([data-gate])');
+    expect(decl(regleNom, 'flex'), 'le nom doit être incompressible (flex: 0 0 auto)').toBe('0 0 auto');
+    expect(decl(regleNom, 'line-clamp')).toBe('1');
+    const regleCase = ruleOf(CC_BASE, '.cc-cell[data-gated]');
+    expect(decl(regleCase, 'padding-bottom'), 'la case doit RÉSERVER la place de sa bande de raison').toBe('11px');
+    const regleRaison = ruleOf(CC_BASE, '.cc-lbl[data-gate]');
+    expect(decl(regleRaison, 'position'), 'la raison prend sa bande au pied, hors flux').toBe('absolute');
+    expect(decl(regleRaison, 'bottom')).toBe('1px');
+    expect(decl(regleRaison, 'white-space')).toBe('nowrap');
+    expect(decl(regleRaison, 'text-overflow'), 'une raison trop longue s’ellipse, elle ne pousse rien').toBe('ellipsis');
+    // (c) l'encre de la raison tient 3:1 sur la carte de la case (fond dégradé, pire arrêt).
+    const travee = ruleOf(CC_BASE, '.cc-bay-right');
+    const fonds = [decl(travee, '--cc-cell-hi')!, decl(travee, '--cc-cell-lo')!].map(parseColor);
+    expect(worst(parseColor(decl(regleRaison, 'color')!), fonds)).toBeGreaterThanOrEqual(3);
+    // (d) aucun badge de touche sur une case refusée — il ne promet pas une touche qui ne fait rien.
+    expect(det.querySelector('.cc-key'), 'badge de touche sur une case gatée').toBeNull();
+  });
+
+  it('R-5 — G6bis : le geste d’ÉTAT du porteur (surface `geste-d-etat`) se dessine quand sa situation l’ouvre', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    expect(caseAction('dismount'), 'à pied : aucun geste d’état').toBeNull();
+
+    const cavalier = hero('h2', 'Gunnar');
+    cavalier.conditions = [];
+    cavalier.mountId = 'mule';
+    monter(cavalier, { foes: [foe('e1', 9, 9)] });
+    const desc = caseAction('dismount');
+    expect(desc, 'en selle : la case G6bis doit être dessinée').not.toBeNull();
+    expect(findActionById('dismount')!.surface).toBe('geste-d-etat');
+    expect(desc!.querySelector('.cc-lbl')!.textContent).toBe(findActionById('dismount')!.label);
+    // La géométrie ne bouge pas d'un poil : la travée garde son compte de cases.
+    expect(host.querySelectorAll('.cc-grid-left .cc-cell').length).toBe(6);
+  });
+
+  it('R-6 — remèdes d’ÉTAT : la case naît de l’État porté et exécute son dispatcher', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    expect(caseAction('roll-fire'), 'sans flammes, aucune case de remède').toBeNull();
+
+    const brulant = hero('h2', 'Gunnar');
+    brulant.conditions = [{ id: 'en-flammes', value: 1 }] as ConditionInstance[];
+    monter(brulant, { foes: [foe('e1', 9, 9)] });
+    const rouler = caseAction('roll-fire');
+    expect(rouler, 'En flammes : le remède doit être offert à la grille').not.toBeNull();
+    act(() => rouler!.click());
+    // `battleRecoverState('en-flammes')` ouvre le Test de récupération de l'État (donnée `EtatData.recover`).
+    expect(useGame.getState().pendingStateRecovery, 'la case n’a rien exécuté').toBeTruthy();
+  });
+});
+
+describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)', () => {
+  /** Valeur d'une variable de matière déclarée par une travée (les alvéoles/vides y sont keyés). */
+  const bayVar = (bay: string, name: string) => decl(ruleOf(CC_BASE, bay), name)!;
+  const BAYS = ['.cc-bay-left', '.cc-bay-right'];
+  /** Fonds possibles d'une alvéole PLEINE : les deux arrêts du dégradé de `.cc-cell`. */
+  const cellBgOf = (bay: string) => [bayVar(bay, '--cc-cell-hi'), bayVar(bay, '--cc-cell-lo')].map(parseColor);
+  /** Fonds possibles d'une alvéole VIDE : ses deux arrêts, nus ET sous le voile blanc de la carte à vitre. */
+  function voidBgOf(bay: string) {
+    const stops = [bayVar(bay, '--cc-void-hi'), bayVar(bay, '--cc-void-lo')].map(parseColor);
+    const voile = parseColor(/rgba\([^)]*\)/.exec(decl(ruleOf(CC_BASE, '.cc-cell.cc-empty'), 'background')!)![0]);
+    return [...stops, ...stops.map((s) => over(voile, s))];
+  }
+
+  // Sondes du juge : « LIBRE » à 1,65:1 (5× sous le seuil) ET hiérarchie INVERSÉE — une case morte
+  // (« Dague », 8,66:1 sous un simple voile d'opacité 0,88) plus lumineuse que tout le pont.
+  it('E-1 — hiérarchie des encres d’alvéole : vivant ≫ inerte ≥ 3:1, et « LIBRE » ≥ 3:1', () => {
+    const inerte = ruleOf(CC_BASE, '.cc-cell.cc-inert');
+    // L'inerte ne se joue plus à l'opacité (invisible au token, non mesurable) : c'est une ENCRE.
+    expect(decl(inerte, 'opacity')).toBe('1');
+    const inertInk = parseColor(decl(inerte, '--cc-cell-ink')!);
+    for (const bay of BAYS) {
+      const fonds = cellBgOf(bay);
+      const vivant = worst(parseColor(bayVar(bay, '--cc-cell-ink')), fonds);
+      const mort = worst(inertInk, fonds);
+      expect(vivant, `${bay} : une case vivante doit être franche`).toBeGreaterThanOrEqual(7);
+      expect(mort, `${bay} : une case dessinée reste lisible`).toBeGreaterThanOrEqual(3);
+      expect(vivant / mort, `${bay} : l’écart vivant/mort n’est pas net`).toBeGreaterThanOrEqual(2);
+      // Le mot « LIBRE » d'une case vide, sur le verre sombre : seuil d'élément graphique.
+      const libre = worst(parseColor(bayVar(bay, '--cc-void-ink')), voidBgOf(bay));
+      expect(libre, `${bay} : « LIBRE » illisible`).toBeGreaterThanOrEqual(3);
+      // … et il reste SOUS la case morte : une case vide n'est pas plus présente qu'une maquette.
+      expect(libre).toBeLessThan(mort);
+    }
+  });
+
+  // Une seule GRAMMAIRE de case vide : le mot partout (la travée droite ne disait rien).
+  it('E-2 — les DEUX travées disent « LIBRE » avec la même encre, à l’écran comme au token', () => {
+    expect(bayVar('.cc-bay-left', '--cc-void-ink')).toBe(bayVar('.cc-bay-right', '--cc-void-ink'));
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h);
+    const vides = [...host.querySelectorAll('.cc-bay-right .cc-cell.cc-empty')];
+    expect(vides.length, 'la grille de capacités n’a aucune case vide à juger').toBeGreaterThan(0);
+    for (const v of vides) expect(v.querySelector('.cc-lbl')!.textContent).toBe('LIBRE');
+    for (const v of host.querySelectorAll('.cc-bay-left .cc-cell.cc-empty')) {
+      expect(v.querySelector('.cc-lbl')!.textContent).toBe('LIBRE');
+    }
+  });
+
+  // Sonde du juge : liseré du pont à y=595 avec la rangée de munition, y=598 sans — 3px de dérive selon le
+  // CONTENU. Le contrat verrouille l'invariance PAR CONSTRUCTION (hauteur fixe, pas un plancher).
+  it('E-3 — la hauteur du pont est FIXE : la rangée de munition est réservée, jamais ajoutée', () => {
+    const bay = ruleOf(CC_BASE, '.cc-bay-left');
+    expect(decl(bay, 'height')).toBe('var(--cc-bay-h)');
+    expect(decl(bay, 'min-height'), 'un PLANCHER laisse le pont grandir avec la munition').toBeNull();
+    const racine = ruleOf(CC_BASE, ':root');
+    expect(norm(decl(racine, '--cc-deck-h')!)).toBe('calc(var(--cc-bay-h) + 3px)');
+    // Ces 3px sont bien le liseré du pont, pas un nombre en l'air.
+    expect(decl(ruleOf(CC_BASE, '.combat-console'), 'border-top')).toMatch(/^3px /);
+    // Tant que le pont est une LIGNE (≥561), aucune tranche ne rejoue la hauteur de la travée : seul le
+    // côté d'alvéole varie, et `--cc-bay-h` en découle.
+    for (const q of ['@media (max-width: 900px)', '@media (max-width: 700px)']) {
+      const tranche = mediaBlock(CC_CSS, q);
+      for (const bloc of [...tranche.matchAll(/\.cc-bay-left\s*\{([^{}]*)\}/g)].map((m) => m[1])) {
+        expect(decl(bloc, 'height'), `${q} rejoue la hauteur de la travée`).toBeNull();
+        expect(decl(bloc, 'min-height'), `${q} rejoue la hauteur de la travée`).toBeNull();
+      }
+    }
+    // ≤560 les régions s'EMPILENT (le pont n'est plus une ligne) : la réserve se relâche EXPLICITEMENT,
+    // elle ne se recalcule pas.
+    const at560 = mediaBlock(CC_CSS, '@media (max-width: 560px)');
+    expect(decl(ruleOf(at560, '.cc-bay-left'), 'height')).toBe('auto');
+    expect(decl(ruleOf(at560, '.cc-bay-left'), 'min-height')).toBeNull();
+    // … et la travée ne porte AUCUNE bande réservée : la munition vit dans l'EN-TÊTE, à côté du set
+    // (arbitrage #1348 complément a — 47px de plaque NUE mesurés sous les travées avant la coupe).
+    const objet = (id: string, uid: string, over: Partial<ItemInstance> = {}) => Object.assign(itemFromTrappingById(id)!, { uid }, over);
+    const tireur = hero('h1', 'Gunnar');
+    tireur.conditions = [];
+    tireur.items = [objet('arbalete-lourde', 'i-arb', { loaded: false }), objet('carreau', 'i-c')];
+    tireur.loadouts = [{ id: 'lo-tir', main: 'i-arb' }];
+    tireur.activeLoadoutId = 'lo-tir';
+    recomputeLoadout(tireur);
+    monter(tireur);
+    expect(host.querySelectorAll('.cc-bay-left').length).toBe(1);
+    expect((host.querySelector('.cc-bay-left') as HTMLElement).style.height, 'aucune hauteur en ligne : la loi est au CSS').toBe('');
+    // La travée n'a plus qu'UN enfant de contenu (le corps) : plus de bandeau sous les cases.
+    expect(host.querySelector('.cc-bay-left')!.children.length, 'une bande de plus sous la travée = du vide payé par le pont').toBe(1);
+    expect(host.querySelector('.cc-bay-left')!.children[0].className).toContain('cc-bay-body');
+
+    const bagarreur = hero('h2', 'Gunnar');
+    bagarreur.conditions = [];
+    bagarreur.items = [objet('dague', 'i-d')];
+    bagarreur.loadouts = [{ id: 'lo-melee', main: 'i-d' }];
+    bagarreur.activeLoadoutId = 'lo-melee';
+    recomputeLoadout(bagarreur);
+    monter(bagarreur);
+    expect(host.querySelectorAll('.cc-bay-left').length).toBe(1);
+    expect(host.querySelector('.cc-bay-left')!.children.length).toBe(1);
+  });
+
+  // Sondes du juge : « déch. » = 7px (plus petit texte du dépôt, 3 rangées de pixels à 360), à cheval sur
+  // le « X », et le set AU POING portait le liseré le PLUS discret de la travée.
+  it('E-4 — vignette de set : mot entier ≥ 8px, trois coins DISJOINTS, set au poing en relief', () => {
+    const load = ruleOf(CC_BASE, '.cc-set-load');
+    const px = (v: string) => parseFloat(/(\d+(?:\.\d+)?)px/.exec(v)![1]);
+    expect(px(decl(load, 'font')!)).toBeGreaterThanOrEqual(8);
+    // Aucune tranche compacte ne le rapetisse (il était descendu à 6px sous 560).
+    for (const q of ['@media (max-width: 900px)', '@media (max-width: 700px)', '@media (max-width: 560px)']) {
+      expect(mediaBlock(CC_CSS, q)).not.toMatch(/\.cc-set-load\s*\{/);
+    }
+    // Trois gravures, trois coins : rang haut-GAUCHE, touche haut-DROITE, état au PIED pleine largeur.
+    const rang = ruleOf(CC_BASE, '.cc-set-n');
+    const touche = ruleOf(CC_BASE, '.cc-set .cc-key');
+    expect(decl(rang, 'top')).toBeTruthy();
+    expect(decl(rang, 'left')).toBeTruthy();
+    expect(decl(touche, 'top')).toBeTruthy();
+    expect(decl(touche, 'right')).toBeTruthy();
+    expect(decl(touche, 'bottom'), 'la touche quitte le pied, occupé par l’état de charge').toBe('auto');
+    expect(decl(touche, 'left')).toBe('auto');
+    expect(decl(load, 'position')).toBe('absolute');
+    expect(decl(load, 'bottom')).toBe('0');
+
+    // RELIEF du set au poing : liseré plus épais, à l'or du pont, et lueur plus large que celle d'une
+    // alvéole armée — l'identité du set passe devant les états.
+    const set = ruleOf(CC_BASE, '.cc-set');
+    const on = ruleOf(CC_BASE, '.cc-set.on');
+    expect(px(decl(on, 'border')!)).toBeGreaterThan(px(decl(set, 'border')!));
+    expect(borderColorOf(on)).toEqual(parseColor(token('--combat-gold')));
+    const halo = (b: string) => Math.max(...[...b.matchAll(/(?:^|,)\s*0 0 (\d+(?:\.\d+)?)px/g)].map((m) => Number(m[1])));
+    expect(halo(decl(on, 'box-shadow')!)).toBeGreaterThan(halo(decl(ruleOf(CC_BASE, '.cc-cell.on'), 'box-shadow')!));
+  });
+
+  // Le pont était mesuré en quatre plats de couleurs distinctes (acier bleu, laiton, plaque rouge, bois).
+  // Loi de composition tenue ici : une SEULE matière pour le pont et ses trois plaques ; la région se
+  // distingue par son liseré et ses alvéoles. Trace de la décision : `combat-console.css` en tête des
+  // travées.
+  it('E-5 — MATIÈRE UNIQUE : les deux travées et le coin portent la nappe du pont, aucun plat propre', () => {
+    const nappe = decl(ruleOf(CC_BASE, '.cc-bay-left, .cc-bay-right, .cc-end'), 'background')!;
+    expect(nappe).toMatch(/--cc-arch-/);
+    // Chaque arrêt de la plaque est un arrêt de la NAPPE du pont : même famille de teinte, à la lettre.
+    const pont = colorsIn(decl(ruleOf(CC_BASE, '.combat-console'), 'background-image')!);
+    for (const c of colorsIn(nappe)) {
+      expect(pont.some((p) => p.join() === c.join()), `teinte de plaque hors de la nappe du pont : ${c}`).toBe(true);
+    }
+    // Aucune région ne redéclare un fond propre (acier bleu, laiton, rouge de coin).
+    for (const sel of ['.cc-bay-left', '.cc-bay-right', '.cc-end']) {
+      expect(decl(ruleOf(CC_BASE, sel), 'background'), `${sel} garde un plat de couleur`).toBeNull();
+    }
+    expect(CC_CSS, 'le rouge de la plaque de sortie doit avoir disparu').not.toMatch(/--cc-end-(hi|lo)\b/);
+    // Ce qui distingue les régions, ce sont les LISERÉS et les alvéoles — donc ils restent, et diffèrent.
+    expect(borderColorOf(ruleOf(CC_BASE, '.cc-bay-left'))).not.toEqual(borderColorOf(ruleOf(CC_BASE, '.cc-bay-right')));
+  });
+});
+
+// ── BUDGET DE HAUTEUR DU PONT — CONTRAT (spec §1c « BUDGET DE HAUTEUR », commit `432e1247`) : la
+//    planche budgétise 217px de pont pour 1080 de haut, soit 20,1 % ; une capture à ~1998px en mesurait
+//    28-29 %. Le pont tient ≤ 21 % du viewport.
+//    On ÉVALUE ici les déclarations réelles (le `clamp`/`min`/`calc` de `--cc-cell-h` et la chaîne
+//    `--cc-bay-h` → `--cc-deck-h`) à viewport simulé : c'est la LOI déclarée qui est jugée, pas un
+//    littéral recopié. La recette re-mesure les mêmes largeurs à l'écran.
+describe('CombatConsole — budget de hauteur du pont (arbitrage user 2026-08-17)', () => {
+  const racine = () => ruleOf(CC_BASE, ':root');
+
+  /** Évalue une longueur CSS déclarée (`px`, `vw`, `vh`, `calc`, `clamp`, `min`, `max`, `var`) à un
+   *  viewport donné. Résolution des `var(--x)` par les déclarations du `:root` du module. */
+  function evalLen(expr: string, vw: number, vh: number, depth = 0): number {
+    if (depth > 8) throw new Error(`résolution de variables trop profonde : ${expr}`);
+    let e = expr.trim();
+    // 1) variables du module
+    for (let i = 0; i < 8 && e.includes('var('); i++) {
+      e = e.replace(/var\((--[\w-]+)\)/g, (_m, nom: string) => {
+        const v = decl(racine(), nom);
+        if (!v) throw new Error(`variable ${nom} absente du :root de combat-console.css`);
+        return `(${String(evalLen(v, vw, vh, depth + 1))}px)`;
+      });
+    }
+    // 2) fonctions CSS → JS
+    e = e.replace(/\bclamp\(/g, 'CLAMP(').replace(/\bmin\(/g, 'Math.min(').replace(/\bmax\(/g, 'Math.max(').replace(/\bcalc\(/g, '(');
+    // 3) unités
+    e = e.replace(/(-?[\d.]+)vw/g, (_m, n: string) => String((Number(n) * vw) / 100))
+      .replace(/(-?[\d.]+)vh/g, (_m, n: string) => String((Number(n) * vh) / 100))
+      .replace(/(-?[\d.]+)px/g, '$1');
+    if (/[a-zA-Z_$]/.test(e.replace(/CLAMP|Math\.min|Math\.max/g, ''))) throw new Error(`unité/fonction non gérée : ${expr} → ${e}`);
+    const CLAMP = (lo: number, v: number, hi: number) => Math.min(Math.max(v, lo), hi);
+    // eslint-disable-next-line no-new-func
+    return Function('CLAMP', 'Math', `"use strict"; return (${e});`)(CLAMP, Math) as number;
+  }
+
+  /** Hauteur du pont telle que le CSS la déclare, à un viewport donné. */
+  const deck = (vw: number, vh: number) => evalLen(decl(racine(), '--cc-deck-h')!, vw, vh);
+
+  // 1998×959 = la résolution de la capture de l'arbitrage ; 1280×800 et 1920×1080 = l'étalon et la planche.
+  const ECRANS: [number, number][] = [[1280, 800], [1600, 900], [1920, 1080], [1998, 959], [2560, 1440]];
+
+  it('F-1 — le pont tient ≤ 21 % du viewport à toutes les largeurs de bureau', () => {
+    for (const [vw, vh] of ECRANS) {
+      const h = deck(vw, vh);
+      const part = h / vh;
+      expect(part, `${vw}×${vh} : pont ${h.toFixed(1)}px = ${(part * 100).toFixed(1)} % du viewport`).toBeLessThanOrEqual(0.21);
+      // … et il reste PRÉSENT (une console écrasée n'est pas une console).
+      expect(part, `${vw}×${vh} : pont ${(part * 100).toFixed(1)} % — trop maigre`).toBeGreaterThan(0.13);
+    }
+  });
+
+  it('F-2 — l’alvéole est PAYSAGE partout (jamais un carré, jamais un portrait)', () => {
+    for (const [vw, vh] of ECRANS) {
+      const w = evalLen(decl(racine(), '--cc-cell-w')!, vw, vh);
+      const h = evalLen(decl(racine(), '--cc-cell-h')!, vw, vh);
+      expect(w / h, `${vw}×${vh} : alvéole ${w.toFixed(1)}×${h.toFixed(1)}`).toBeGreaterThan(1.1);
+      // La planche : 90×66 à 1920, ratio 1,36 — on reste dans sa famille de proportions.
+      expect(w / h, `${vw}×${vh} : alvéole trop étirée`).toBeLessThan(1.7);
+    }
+  });
+
+  it('F-3 — la HAUTEUR d’alvéole se calcule sur la hauteur du viewport (c’est elle qui porte le budget)', () => {
+    const h = decl(racine(), '--cc-cell-h')!;
+    expect(h, 'un côté keyé sur la LARGEUR laisse un écran large et court dépasser le budget').toMatch(/vh/);
+    expect(h).not.toMatch(/vw\b/);
+    // La largeur, elle, suit la largeur d'écran (le pont doit porter ses quatre régions).
+    expect(decl(racine(), '--cc-cell-w')!).toMatch(/vw/);
+    // Un même écran, deux fois plus haut : le pont grandit (le budget est un RATIO, pas un plafond fixe).
+    expect(deck(1920, 1080)).toBeGreaterThan(deck(1920, 800));
+  });
+
+  it('F-4 — l’icône est une FRACTION de sa case, jamais un px figé (ni au CSS, ni au call-site)', () => {
+    expect(decl(racine(), '--cc-ico')!).toMatch(/var\(--cc-cell-h\)/);
+    expect(decl(racine(), '--cc-ico-set')!).toMatch(/var\(--cc-cell-h\)/);
+    const ico = ruleOf(CC_BASE, '.cc-ico');
+    expect(decl(ico, 'width')).toBe('var(--cc-ico)');
+    expect(decl(ico, 'height')).toBe('var(--cc-ico)');
+    // … et le glyphe REMPLIT cette boîte (sinon la boîte grandit sans que le dessin suive).
+    expect(decl(ruleOf(CC_BASE, '.cc-ico svg'), 'width')).toBe('100%');
+    // ≈ la moitié de la hauteur utile, comme la planche.
+    for (const [vw, vh] of ECRANS) {
+      const r = evalLen(decl(racine(), '--cc-ico')!, vw, vh) / evalLen(decl(racine(), '--cc-cell-h')!, vw, vh);
+      expect(r, `${vw}×${vh} : icône/case = ${r.toFixed(2)}`).toBeGreaterThan(0.4);
+      expect(r).toBeLessThan(0.62);
+    }
+    // Aucune taille d'icône FIGÉE au call-site de la console (le CSS est la seule échelle).
+    const tsx = readFileSync(join(process.cwd(), 'src', 'ui', 'CombatConsole.tsx'), 'utf8');
+    expect(tsx, 'taille d’icône en px au call-site : l’échelle vit au CSS').not.toMatch(/<ItemIcon[^>]*size=\{\d+\}/);
+  });
+
+  it('F-5 — le budget MOBILE reste celui de l’arbitrage compact (≤560 : la console peut prendre plus)', () => {
+    // ≤560 les régions s'EMPILENT : le pont y vaut plus que 21 %, c'est l'arbitrage 2026-08-16 (~40-45 %).
+    // Le contrat ici est que la tranche DÉCLARE ses deux côtés (aucun héritage du calcul de bureau).
+    const at560 = mediaBlock(CC_CSS, '@media (max-width: 560px)');
+    expect(decl(ruleOf(at560, ':root'), '--cc-cell-w')).toBeTruthy();
+    expect(decl(ruleOf(at560, ':root'), '--cc-cell-h')).toBeTruthy();
+    // … et l'alvéole compacte reste PAYSAGE elle aussi.
+    const w = parseFloat(decl(ruleOf(at560, ':root'), '--cc-cell-w')!);
+    const h = parseFloat(decl(ruleOf(at560, ':root'), '--cc-cell-h')!);
+    expect(w).toBeGreaterThan(h);
+  });
+
+  // ── VIDE INTERNE (spec §1c « BUDGET DE HAUTEUR » complément, commit `22004155`). Deux poches
+  //    mesurées avant la coupe : 47px de plaque NUE sous les travées à toute largeur de bureau, et un
+  //    portrait FIGÉ à 78px sous 116,6px de vide à 1920 (ratio portrait/arche 0,287).
+  it('G-1 — la travée ne réserve plus de bande sous ses cases : le socle ne paie que ses titres', () => {
+    const socle = decl(racine(), '--cc-bay-h')!;
+    // Le socle est la CONSTANTE de la formule (`2×h + écart + socle`). Il ne doit plus porter la
+    // rangée de munition (26px) ni son écart (8px).
+    const cst = Number(/\+\s*(\d+(?:\.\d+)?)px\s*\)?\s*$/.exec(socle.trim())![1]);
+    expect(cst, `socle de travée = ${cst}px`).toBeLessThanOrEqual(41);
+    expect(cst, 'un socle nul ne porterait plus ses bandes de titre').toBeGreaterThan(20);
+    // Aucune règle de bandeau de munition ne subsiste (la classe entière a disparu du module).
+    expect(CC_CSS).not.toMatch(/\.cc-loadouts\b/);
+    expect(CC_CSS).not.toMatch(/\.cc-ammo\b/);
+  });
+
+  it('G-2 — la munition CHARGÉE vit dans l’en-tête de travée, lue au registre de l’arme', () => {
+    const objet = (id: string, uid: string, over: Partial<ItemInstance> = {}) => Object.assign(itemFromTrappingById(id)!, { uid }, over);
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    const arb = objet('arbalete-lourde', 'i-arb');
+    const carreaux = objet('carreau', 'i-c', { qty: 12 });
+    h.items = [arb, carreaux];
+    h.loadouts = [{ id: 'lo-tir', main: 'i-arb' }];
+    h.activeLoadoutId = 'lo-tir';
+    recomputeLoadout(h);
+    // On CHARGE l'arme par le moteur (jamais un champ forgé) : c'est `loadedAmmo` qui doit parler.
+    const w = h.weapons.find((x) => x.type === 'ranged')!;
+    loadWeapon(h, w); // capture la munition choisie pour CETTE arme (`selectedAmmo`) dans son registre
+    expect(loadedAmmo(h, w)?.uid, 'la couture de chargement doit désigner le carreau').toBe('i-c');
+    monter(h);
+    const tete = host.querySelector('.cc-bay-head')!;
+    const mun = tete.querySelector('[data-ammo]');
+    expect(mun, 'la munition doit être dans l’EN-TÊTE de travée').not.toBeNull();
+    expect(mun!.textContent).toBe(`${carreaux.label} ×12`);
+    expect(tete.textContent).toContain(loadoutLabel(h.loadouts![0], h));
+    // … et elle porte sa fiche, comme toute possession de la console.
+    expect(mun!.closest('.codex-ref'), 'la munition doit porter son foyer Codex').not.toBeNull();
+
+    // Set de MÊLÉE : aucune mention de munition, et l'en-tête reste le nom du set.
+    const cac = hero('h2', 'Gunnar');
+    cac.conditions = [];
+    cac.items = [objet('dague', 'i-d')];
+    cac.loadouts = [{ id: 'lo-melee', main: 'i-d' }];
+    cac.activeLoadoutId = 'lo-melee';
+    recomputeLoadout(cac);
+    monter(cac);
+    expect(host.querySelector('.cc-bay-head [data-ammo]')).toBeNull();
+  });
+
+  it('G-3 — le PORTRAIT se dérive de l’arche (il la remplit), il n’est plus figé à la taille de la primitive', () => {
+    const cc = ruleOf(CC_BASE, '.combat-console');
+    const portrait = decl(cc, '--cc-portrait')!;
+    expect(portrait, 'le portrait doit suivre la hauteur du pont ET l’élévation du fronton').toMatch(/var\(--cc-deck-h\)/);
+    expect(portrait).toMatch(/var\(--cc-fronton\)/);
+    // Il DOMINE la région (planche) : au moins la moitié de la hauteur d'arche.
+    const part = Number(/\*\s*([\d.]+)\s*\)/.exec(portrait)![1]);
+    expect(part, `portrait/arche = ${part}`).toBeGreaterThanOrEqual(0.5);
+    expect(part, 'un portrait qui déborde l’arche mangerait gouttières, barre et nom').toBeLessThanOrEqual(0.7);
+    // La règle qui l'applique reprend bien le style INLINE de la primitive (sinon rien ne bouge).
+    const appl = ruleOf(CC_BASE, '.cc-arch .ptile, .cc-arch .ptile-face, .cc-arch .rig-portrait');
+    expect(decl(appl, 'height')).toBe('var(--cc-portrait) !important');
+    // Le rail des gouttières suit le portrait (il ne peut pas rester plus haut que lui).
+    expect(decl(cc, '--cc-rail')!).toMatch(/var\(--cc-portrait\)/);
+    expect(decl(ruleOf(CC_BASE, '.cc-gutter-rail'), 'height')).toBe('var(--cc-rail)');
+  });
+
+  it('G-4 — le FAÎTE de l’arche est serré : son rembourrage haut ne creuse plus un sommet vide', () => {
+    const arche = ruleOf(CC_BASE, '.cc-arch');
+    const pad = decl(arche, 'padding')!.split(/\s+/).map(parseFloat);
+    expect(pad[0], `rembourrage haut de l’arche = ${pad[0]}px`).toBeLessThanOrEqual(8);
+    // … sans toucher à l'élévation du fronton, qui est un contrat d'assemblage (§1c-ter, P-3).
+    expect(decl(arche, 'margin-top')).toBe('calc(-1 * var(--cc-fronton))');
+  });
+});
+
+/**
+ * INTENTION ARMÉE (spec HUD zone 4) — le popover de règle se TAIT tant que la portée est peinte.
+ *
+ * Défaut mesuré sur captures au lot « intentions » : le clic qui arme Course/Charge donne le focus au
+ * bouton, le popover `CodexRef` (mode `wrap`) s'ouvre par ce focus… et sa boîte recouvre le champ à
+ * l'instant PRÉCIS où le joueur a demandé à voir la portée. Le popover reste le canon d'information
+ * HORS intention : ces contrats mesurent les deux états.
+ */
+describe('CombatConsole — intention armée : aucun popover de règle au-dessus du champ', () => {
+  const caseAction = (id: string) => host.querySelector(`[data-action="${id}"]`) as HTMLButtonElement | null;
+  const popovers = () => [...document.body.querySelectorAll('.codex-pop[role="tooltip"]')];
+  const enveloppeDe = (b: HTMLButtonElement) => {
+    const e = b.closest('.codex-ref');
+    if (!e) throw new Error('la case n’est pas enveloppée par son foyer de règle (CodexRef)');
+    return e;
+  };
+  const survoler = (e: Element) => act(() => { e.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+
+  /** Héros au tour entier, intention DÉSARMÉE (le store la garde entre deux tests : `setState` fusionne). */
+  function console1() {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    act(() => { useGame.setState({ localIntent: null }); });
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    const c = caseAction('course');
+    expect(c, 'la case Course doit être rendue : sans elle la sonde ne mesure rien').not.toBeNull();
+    expect(c!.disabled, 'la case Course doit être cliquable pour armer').toBe(false);
+    return c!;
+  }
+
+  it('le clic qui ARME l’intention referme le popover que le survol/focus avait ouvert', () => {
+    const c = console1();
+    survoler(enveloppeDe(c));
+    expect(popovers().length, 'hors intention, le popover de règle doit s’ouvrir (comportement INCHANGÉ)').toBe(1);
+    act(() => { caseAction('course')!.click(); });
+    expect(useGame.getState().localIntent, 'la case n’a pas armé l’intention').toEqual({ actionId: 'course' });
+    expect(popovers().length, 'un popover de règle recouvre la portée peinte').toBe(0);
+  });
+
+  it('intention armée : plus AUCUN popover ne s’ouvre — et le désarmement rend la règle', () => {
+    const c = console1();
+    act(() => { c.click(); });
+    expect(useGame.getState().localIntent).toEqual({ actionId: 'course' });
+    // Ni la case armée, ni ses voisines : le champ reste dégagé sous toutes les alvéoles de la console.
+    survoler(enveloppeDe(caseAction('course')!));
+    expect(popovers().length, 'la case armée rouvre son popover au survol').toBe(0);
+    survoler(enveloppeDe(caseAction('defend')!));
+    expect(popovers().length, 'une case VOISINE rouvre son popover au survol').toBe(0);
+    // Désarmement (re-clic, `toggleOff` du registre) → l'information de règle n'était pas retirée, elle attendait.
+    act(() => { caseAction('course')!.click(); });
+    expect(useGame.getState().localIntent).toBeNull();
+    survoler(enveloppeDe(caseAction('course')!));
+    expect(popovers().length, 'intention dissoute : le popover de règle doit revenir').toBe(1);
   });
 });

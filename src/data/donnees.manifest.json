@@ -168,6 +168,12 @@
       "entrees": [
         {
           "files": [
+            "actions.json"
+          ],
+          "desc": "Registre des ACTIONS de combat (id stable → libellé, icône, coût, règle Codex, surface, gate/candidates/run)"
+        },
+        {
+          "files": [
             "qualities.json"
           ],
           "desc": "Atouts/défauts d'arme & armure (`belier`, `siege`… = la QUALITÉ, pas l'arme)"

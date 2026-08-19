@@ -30,6 +30,7 @@ import { tileTint } from '../../teamColors';
 import { materiauPlanTransparent } from './worldMaterials';
 import { poserCompteInstances } from './instancePools';
 import {
+  INTENT_TINT,
   RANGE_BAND_TINT,
   RING_ALLY_TINT,
   RING_CROWD_TINT,
@@ -46,6 +47,7 @@ import { withRenderRank } from './renderRanks';
 export type HighlightSlot =
   | 'walk'
   | 'run'
+  | 'intent'
   | 'rangeBand'
   | 'team'
   | 'teamActive'
@@ -65,6 +67,7 @@ export const HIGHLIGHT_SLOTS: readonly HighlightSlot[] = [
   'ringCrowd',
   'ringContour',
   'rangeBand',
+  'intent',
 ];
 
 /** Slot d'un élément du builder. */
@@ -74,6 +77,8 @@ export function highlightSlot(el: HighlightEl): HighlightSlot {
       return 'walk';
     case 'run':
       return 'run';
+    case 'intent':
+      return 'intent';
     case 'rangeBand':
       return 'rangeBand';
     case 'team':
@@ -90,6 +95,7 @@ export function highlightSlot(el: HighlightEl): HighlightSlot {
 export const SLOT_OPACITY: Record<HighlightSlot, number> = {
   walk: 0.32,
   run: 0.24,
+  intent: 0.42, // la portée DEMANDÉE prime visuellement sur les portées permanentes qu'elle recouvre
   rangeBand: 0.26,
   team: 0.2,
   teamActive: 0.3,
@@ -114,6 +120,7 @@ export const SLOT_RANK: Record<HighlightSlot, number> = {
   ringCrowd: 6,
   ringContour: 7,
   rangeBand: 8,
+  intent: 9,
 };
 
 /** Décollement (m) d'un slot au-dessus de la surface qui le porte. */
@@ -128,6 +135,8 @@ export function highlightTint(el: HighlightEl): string {
       return WALK_TINT;
     case 'run':
       return RUN_TINT;
+    case 'intent':
+      return INTENT_TINT;
     case 'rangeBand':
       return RANGE_BAND_TINT[el.tone];
     case 'team':

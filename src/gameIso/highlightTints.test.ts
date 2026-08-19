@@ -6,6 +6,7 @@ import {
   RANGE_BAND_TINT,
   WALK_TINT,
   RUN_TINT,
+  INTENT_TINT,
   RING_TARGET_TINT,
   ENEMY_CUE_TINT,
   RING_CROWD_TINT,
@@ -66,6 +67,7 @@ describe('teintes de surbrillance — catalogue TS ↔ base.css', () => {
   const RELAIS: [string, keyof typeof HIGHLIGHT_TINTS][] = [
     ['WALK_TINT', '--combat-walk'],
     ['RUN_TINT', '--combat-run'],
+    ['INTENT_TINT', '--combat-intent'],
     ['RING_TARGET_TINT', '--combat-target'],
     ['ENEMY_CUE_TINT', '--combat-enemy'],
     ['RING_CROWD_TINT', '--combat-crowd'],
@@ -82,6 +84,7 @@ describe('teintes de surbrillance — catalogue TS ↔ base.css', () => {
   const VALEURS: Record<string, string> = {
     WALK_TINT,
     RUN_TINT,
+    INTENT_TINT,
     RING_TARGET_TINT,
     ENEMY_CUE_TINT,
     RING_CROWD_TINT,

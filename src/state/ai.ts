@@ -29,7 +29,7 @@ import { reachable, flyReachable, manhattan, chebyshev, Pt, type TraverseCapabil
 import { footprintChebyshev, footprintN, combatDistance } from './footprint';
 import { verticalTiles } from './relief';
 import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
-import { rangeBandModifier, outnumberMod, type ModLine } from '../engine/combat';
+import { rangeBandModifier, outnumberMod, canFireWhileEngaged, type ModLine } from '../engine/combat';
 import { effectiveWeaponRange } from '../engine/weaponDamage';
 import { loadedAmmo } from '../engine/items';
 import { weaponLoaded } from '../engine/weaponLoad';
@@ -591,7 +591,11 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     if (sp.range == null) { castRange = null; break; }
     castRange = Math.max(castRange ?? 0, sp.range);
   }
-  const canShoot = !frenzied && hasRanged && !reloadNeeded && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootPool.length > 0;
+  // Tir en étant *Engagé* : IMPOSSIBLE sauf Atout d'arme Pistolet (`LDB 14 l.41`) — veto de RÈGLE, à côté
+  // de la préférence tactique « une arme de mêlée en main et un adversaire adjacent → on frappe ». MÊME
+  // porte que la voie joueur (`firedAttackBlock`, combatFlow).
+  const engagedNoFire = isEngaged(enemy) && !!rangedW && !canFireWhileEngaged(rangedW);
+  const canShoot = !frenzied && hasRanged && !reloadNeeded && !engagedNoFire && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootPool.length > 0;
 
   // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 p.343) :
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.

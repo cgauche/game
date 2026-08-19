@@ -78,6 +78,10 @@ function combatTémoin(over: Partial<BattleState> = {}): BattleState {
 /** L'état de store qui arme « tirer dans le tas » : l'anneau de foule remplace les anneaux de cible. */
 const TIR_DANS_LE_TAS = { pendingAttack: { attackerId: 'h1', targetId: 'e1', intoCrowd: true } };
 
+/** L'état de store qui arme l'INTENTION de Charge (spec HUD zone 4) : la portée de Charge (M×2 cases)
+ *  se peint EN PLUS des portées permanentes — c'est la réponse à « connaître la distance ». */
+const INTENTION_CHARGE = { localIntent: { actionId: 'charge' } };
+
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
 let scènes: THREE.Scene[] = [];
@@ -143,6 +147,11 @@ const ORACLE_NEUTRE: Record<string, number> = {
 const ORACLE_FOULE: Record<string, number> = {
   walk: 62, run: 36, rangeBand: 100, team: 2, teamActive: 1, zoneSmoke: 2, zoneFire: 1, ringCrowd: 2,
 };
+/** 3ᵉ témoin (lot intentions) : Charge ARMÉE depuis la console. Mouvement 4, aucun Trait de Course →
+ *  portée de Charge = `chargeReach(4)` = 8 cases, qui couvre toute la carte 10×10 depuis (3,3) sauf
+ *  les deux cases occupées par les ennemis : 98 marques `intent`, EN PLUS des portées permanentes
+ *  (le joueur voit la Charge par-dessus sa Marche, pas à sa place). Le reste est l'oracle neutre. */
+const ORACLE_INTENTION: Record<string, number> = { ...ORACLE_NEUTRE, intent: 98 };
 
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
@@ -156,9 +165,10 @@ afterEach(() => {
 });
 
 describe('Marques de cases — le monde volumique pose la population entière (#1176 P3-0c)', () => {
-  it('les deux combats témoins portent bien les NEUF natures (sinon la sonde ne pèse rien)', () => {
-    // La RÉUNION des deux témoins couvre les neuf slots : c'est ce qui rend la mesure non vide.
-    expect(new Set([...Object.keys(ORACLE_NEUTRE), ...Object.keys(ORACLE_FOULE)])).toEqual(new Set(HIGHLIGHT_SLOTS));
+  it('les trois combats témoins portent bien TOUTES les natures (sinon la sonde ne pèse rien)', () => {
+    // La RÉUNION des trois témoins couvre tous les slots : c'est ce qui rend la mesure non vide.
+    expect(new Set([...Object.keys(ORACLE_NEUTRE), ...Object.keys(ORACLE_FOULE), ...Object.keys(ORACLE_INTENTION)])).toEqual(new Set(HIGHLIGHT_SLOTS));
+    expect(ORACLE_NEUTRE.intent, 'un tour neutre n’arme AUCUNE intention').toBeUndefined();
     expect(ORACLE_NEUTRE.ringCrowd, 'un tour neutre n’arme PAS le tir dans le tas').toBeUndefined();
     expect(ORACLE_FOULE.ringContour, 'un tir dans le tas éteint les anneaux de cible').toBeUndefined();
   });
@@ -171,6 +181,11 @@ describe('Marques de cases — le monde volumique pose la population entière (#
   it('nature par nature, le volumique pose exactement l’oracle (tirer dans le tas)', () => {
     monter(TIR_DANS_LE_TAS);
     expect(comptesVolumiques()).toEqual(ORACLE_FOULE);
+  });
+
+  it('nature par nature, le volumique pose exactement l’oracle (INTENTION de Charge armée)', () => {
+    monter(INTENTION_CHARGE);
+    expect(comptesVolumiques()).toEqual(ORACLE_INTENTION);
   });
 
   it('en volumique, chaque pool monté porte l’opacité de sa nature et un `count` borné par sa capacité', () => {

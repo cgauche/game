@@ -200,13 +200,13 @@ describe('recomputeLoadout piloté par loadout', () => {
   const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
     ({ uid, label: name, kind: 'melee', qualities: [], enc: 1, equipped: true, ...p } as ItemInstance);
 
-  it('loadout 1 main + bouclier → 2 armes taguées main/off + Mains nues', () => {
+  it('loadout 1 main + bouclier → 2 armes taguées main/off, SANS Mains nues (set armé, #1348)', () => {
     const epee = w('e', 'Epee', { subType: 'Base', hands: 1 });
     const bouc = w('b', 'Bouclier', { subType: 'Base', hands: 1, qualities: [{ id: 'defensive' }] });
     const c = heroWith([epee, bouc], { loadouts: [{ id: 'l1', name: 'EB', main: 'e', off: 'b' }], activeLoadoutId: 'l1' });
     recomputeLoadout(c);
     expect(c.weapons.map((x) => [x.label, x.hand])).toEqual([
-      ['Epee', 'main'], ['Bouclier', 'off'], ['Mains nues', 'main'],
+      ['Epee', 'main'], ['Bouclier', 'off'],
     ]);
   });
 
@@ -215,7 +215,7 @@ describe('recomputeLoadout piloté par loadout', () => {
     const bouc = w('b', 'Bouclier', { subType: 'Base', hands: 1 });
     const c = heroWith([halle, bouc], { loadouts: [{ id: 'l', name: 'H', main: 'h', off: 'b' }], activeLoadoutId: 'l' });
     recomputeLoadout(c);
-    expect(c.weapons.map((x) => x.label)).toEqual(['Hallebarde', 'Mains nues']);
+    expect(c.weapons.map((x) => x.label)).toEqual(['Hallebarde']); // set armé : pas de Mains nues (#1348)
   });
 
   it('auto-prune : un slot référençant une arme absente (vendue/transférée) est vidé', () => {
@@ -232,7 +232,7 @@ describe('recomputeLoadout piloté par loadout', () => {
     const c = heroWith([a, b]);
     recomputeLoadout(c);
     expect((c.loadouts ?? []).length).toBeGreaterThanOrEqual(1); // loadout créé à la volée
-    expect(c.weapons.map((x) => [x.label, x.hand])).toEqual([['A', 'main'], ['B', 'off'], ['Mains nues', 'main']]);
+    expect(c.weapons.map((x) => [x.label, x.hand])).toEqual([['A', 'main'], ['B', 'off']]);
   });
 });
 
@@ -421,7 +421,7 @@ describe('items — recomputeLoadout / encombrement', () => {
     } as unknown as Combatant;
     recomputeLoadout(c);
     expect(c.weapons.map((w) => w.label)).toContain('Hache');
-    expect(c.weapons.map((w) => w.label)).toContain('Mains nues'); // dernier recours toujours présent
+    expect(c.weapons.map((w) => w.label)).not.toContain('Mains nues'); // set armé de la Hache (#1348)
     expect(c.armour.corps).toBe(2); // armure équipée appliquée à sa localisation
     expect(c.armour.tete).toBe(0); // l'armure NON équipée ne compte pas
   });

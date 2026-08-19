@@ -31,6 +31,16 @@ export function runFromTest(t: TestResult, movement: number): { success: boolean
 }
 
 /**
+ * Portée d'une CHARGE, en cases (LDB 15 l.35-37 — la portée est celle de la Course du Tableau des
+ * Mouvements, LDB 15 l.18-31). Grille du jeu : 2 m/case, Course = 4×M mètres = 2×M cases.
+ * `runMult` = multiplicateur de Course dû aux Traits (`runMultiplier`, Bond/Foulée/Rampant) — passé par
+ * l'appelant pour garder ce module libre de la donnée.
+ */
+export function chargeReach(movement: number, runMult = 1): number {
+  return Math.max(0, Math.floor(movement * 2 * runMult));
+}
+
+/**
  * Saut (LDB 15 l.76). « Vous pouvez sauter de votre valeur de Mouvement/3 en mètres
  * SANS avoir à effectuer de Test. » Échelle du jeu = 2 m/case (précédent `resolveRun` : les mètres du
  * livre se convertissent en cases ÷2). Saut libre = `floor((M/3)/2)` = `floor(M/6)` cases.

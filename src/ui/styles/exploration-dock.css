@@ -1,0 +1,97 @@
+/* ══════════════════ PONT D'EXPLORATION (ExplorationDock.tsx) ══════════════════
+   Le pendant ALLÉGÉ du pont de combat (spec HUD combat § « Zone 11 ») : UNE bande de bord à bord,
+   MÊME matière et MÊME liseré que `.combat-console` (nappe `--cc-arch-*` de base.css, liseré de
+   laiton), à hauteur d'une rangée d'icônes. Aucune boîte flottante : les ouvreurs d'écrans ET le
+   tiroir-journal sont assis SUR le pont, à son extrémité droite ; le reste est du pont nu.
+   Les tokens de matière et l'écart de régions viennent du `:root` (base.css pour les teintes,
+   combat-console.css pour `--cc-bay-gap` et `--cc-deck-h`) — jamais un littéral recopié ici. */
+
+/* GÉOMÉTRIE DU PONT — au `:root` comme `--cc-deck-h` (combat-console.css) et pour la même raison :
+   la HAUTEUR du pont est une grandeur que le reste du HUD doit LIRE pour s'ancrer AU-DESSUS de lui
+   (tiroir-journal, hud.css) ; portée par le seul sélecteur du pont, la réserve était illisible.
+   Hauteur COMPACTE : hors combat, se déplacer EST cliquer au sol — chaque pixel de pont est du sol
+   avalé sur toute la largeur. Le pont ne porte donc que sa rangée (cible tactile `--xd-row`), sa
+   respiration et son liseré, tant qu'aucun contenu ne lui est authoré. */
+:root {
+  /* Côté de la cible tactile de la rangée : patron des commandes vissées (`.ld-btn`/`.btn.vc-btn`,
+     hud.css) — au doigt il passe à 44px (tranche `pointer: coarse` ci-dessous), et la réserve suit. */
+  --xd-row: 42px;
+  /* Liseré de laiton du parapet : MÊME épaisseur que sur le pont de combat, et le décalage de nappe
+     ci-dessous la relit (la nappe se pose dans la boîte de fond, liseré exclu). */
+  --xd-liseret: 3px;
+  /* RÉSERVE DU BAS hors combat : rangée + respiration (2 × 2px) + liseré. */
+  --xd-deck-h: calc(var(--xd-row) + 4px + var(--xd-liseret));
+}
+@media (pointer: coarse) {
+  :root {
+    --xd-row: 44px;
+  }
+}
+.exploration-dock {
+  /* NAPPE DE BOIS : celle du pont de combat, à l'identique — même dégradé, même HAUTEUR de nappe
+     (`--cc-band`, portée par le sélecteur `.combat-console` et non par le `:root` — la garde
+     `ExplorationDock.test.tsx` échoue si les deux valeurs divergent) et un DÉCALAGE qui aligne la
+     fenêtre visible sur celle du pont de combat. Comprimer les trois bornes dans la hauteur du pont
+     léger rendait la bande 33 % plus claire que le pont de combat à profondeur égale (mesuré à +3px
+     sous le liseré : combat rgb(33,24,13)) : ce n'était pas la même matière, c'était le même dégradé
+     sur une autre course. */
+  --xd-band: 300px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  min-height: var(--xd-deck-h);
+  display: flex;
+  align-items: center;
+  gap: var(--cc-bay-gap);
+  padding: 2px 10px;
+  background-color: var(--cc-arch-lo);
+  background-image: linear-gradient(180deg, var(--cc-arch-hi), var(--cc-arch-mid) 55%, var(--cc-arch-lo));
+  background-size: 100% var(--xd-band);
+  /* Le haut de la nappe tombe où il tombe sur le pont de combat : sa boîte de fond mesure
+     `--cc-deck-h` moins son liseré et sa nappe y est ancrée EN BAS — d'où ce décalage négatif, qui
+     fait correspondre profondeur de nappe et profondeur de pont à toute largeur (`--cc-deck-h` est
+     un `clamp`). */
+  background-position: 0 calc(var(--cc-deck-h) - var(--xd-liseret) - var(--xd-band));
+  background-repeat: no-repeat;
+  border-top: var(--xd-liseret) solid var(--atelier-brass-hover);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.55);
+}
+/* Rangée d'icônes-écrans : à l'extrémité DROITE du pont, jamais au milieu du champ. Le tiroir-journal
+   en est le DERNIER élément hors combat (§1c-ter : une plaque unique, jamais des éléments épars) ;
+   son ancrage sur le pont vit avec ses classes (hud.css). Les ouvreurs portent la variante « tôle
+   vissée » de leur primitive (`.worldmap-btn[data-skin='tole']`, world-meta.css) : aucune propriété
+   de bouton n'est réécrite depuis ce module d'écran. */
+.xd-openers {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Matrice responsive (règle stricte 4 : 900 / 700 / 560, puis pointeur grossier) ── */
+@media (max-width: 700px) {
+  .exploration-dock {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .xd-openers {
+    gap: 5px;
+  }
+}
+@media (max-width: 560px) {
+  /* À 360 la rangée peut dépasser la largeur : elle DÉFILE (aucune entrée ne quitte le pont, et rien
+     ne déborde hors écran). Le pont reste une bande basse continue. */
+  .xd-openers {
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .xd-openers::-webkit-scrollbar {
+    display: none;
+  }
+  .xd-openers > * {
+    flex: 0 0 auto;
+  }
+}

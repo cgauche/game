@@ -1,6 +1,8 @@
 /* ── Carte du monde (#T2 Voyage) ─────────────────────────────────────────────── */
-/* Raccourcis de lieu (navire / voyage / carte / hub / repos) : boutons de la barre HUD supérieure
-   unifiée (`.hud-topbar`, hud.css) — plus d'îlot absolu propre, alignement continu avec le menu ☰. */
+/* Raccourcis de lieu (navire / voyage / carte / hub / repos) : la PRIMITIVE de bouton d'ouverture
+   d'écran. Sa forme de base est la pilule de panneau ; sur une PLAQUE (pont d'exploration, rail
+   d'outils de combat) elle prend la variante « tôle vissée » ci-dessous. Aucun module d'écran ne
+   redéfinit ces propriétés de l'extérieur : la variante vit ICI, avec la primitive. */
 .worldmap-btn {
   pointer-events: auto;
   width: 42px;
@@ -12,6 +14,25 @@
   font-size: 19px;
   cursor: pointer;
   opacity: 0.92;
+}
+/* VARIANTE « tôle vissée » (`data-skin="tole"`) : la matière d'une commande VISSÉE sur une plaque de
+   bois-laiton (patron `.ld-btn`/`.btn.vc-btn`, hud.css), tôle coupée à l'angle et jamais arrondie.
+   Sur le pont, la pilule claire de la forme de base lisait « bouton de menu posé là ». */
+.worldmap-btn[data-skin='tole'] {
+  border-radius: 0;
+  background: linear-gradient(180deg, var(--hud-tool-hi), var(--atelier-wood-mid));
+  border: 1px solid var(--atelier-brass-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 225, 160, 0.12);
+  color: var(--gold2);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+@media (pointer: coarse) {
+  /* Cible tactile digne (canon `.gm-btn`/`.ld-btn`) : les plaques qui portent cette variante sont les
+     bandes qu'on touche au doigt. La réserve du pont suit (`--xd-row`, exploration-dock.css). */
+  .worldmap-btn[data-skin='tole'] {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }
 /* Chip d'horloge in-game (vague « lisibilité du voyage » 2/2) : même rangée auto-empilée que les
    boutons de lieu — un texte, pas un bouton (pas d'action). */

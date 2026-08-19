@@ -84,6 +84,7 @@ export function CodexRef({
   instance,
   tooltipOnly = false,
   wrap = false,
+  suppressPopover = false,
   provenances,
   fallback,
 }: {
@@ -122,6 +123,12 @@ export function CodexRef({
    *  ⓘ voisin (#1078). La FICHE reste atteignable — le popover porte un bouton « Ouvrir la fiche »
    *  activable au pointeur (pont de survol) ou par ↓ depuis le contrôle (épinglage + focus). */
   wrap?: boolean;
+  /** POPOVER TU : tant que ce drapeau est levé, aucun popover ne s'ouvre (survol, focus, épinglage)
+   *  et celui qui était affiché se ferme. Pour un déclencheur dont le CLIC ouvre à l'écran quelque
+   *  chose que la boîte recouvrirait — une case de la console de combat qui arme une intention peint
+   *  sa portée sur le terrain (`localIntent`). Le drapeau retombé, le déclencheur retrouve son
+   *  comportement entier : l'information de règle n'est pas retirée, elle attend. */
+  suppressPopover?: boolean;
   /** Noms de PROVENANCE portés par le popover (soutiens d'un Test, octroyeurs d'un bonus) — la chip
    *  reste sobre, le détail se lit au survol/à l'épinglage (arbitrage user 2026-08-05). */
   provenances?: string[];
@@ -145,10 +152,11 @@ export function CodexRef({
     if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null; }
   }, []);
   const showAt = useCallback(() => {
+    if (suppressPopover) return;
     cancelHide();
     const el = ref.current;
     if (el) setPos(computePopoverPos(el.getBoundingClientRect(), window.innerWidth, window.innerHeight));
-  }, [cancelHide]);
+  }, [cancelHide, suppressPopover]);
   const show = useCallback(() => { if (!pinned) showAt(); }, [pinned, showAt]);
   // Sous `wrap`, le popover porte la SEULE porte vers la fiche : il ne peut pas mourir à l'instant
   // où le pointeur quitte le déclencheur (le trajet vers lui le tuerait). Fermeture DIFFÉRÉE,
@@ -162,6 +170,12 @@ export function CodexRef({
   const unpin = useCallback(() => { cancelHide(); setPinned(false); setPos(null); }, [cancelHide]);
 
   useEffect(() => cancelHide, [cancelHide]);
+
+  // Le drapeau `suppressPopover` se lève souvent APRÈS l'ouverture : le focus que le clic donne au
+  // contrôle englobé ouvre le popover, et c'est ce même clic qui arme à l'écran ce que la boîte
+  // recouvrirait. On ferme donc ce qui est affiché ; `showAt` interdit toute réouverture tant que le
+  // drapeau tient.
+  useEffect(() => { if (suppressPopover) unpin(); }, [suppressPopover, unpin]);
 
   // Échap referme le popover dès qu'il est À L'ÉCRAN — épinglé OU simplement affiché (survol/focus
   // sous `wrap`, où la fermeture est différée par le pont de survol). La couverture d'origine (#1078
@@ -224,9 +238,11 @@ export function CodexRef({
   const togglePopover = !wrap && tooltipOnly && (!!item || !!fallback);
   const clickable = wrapperOpens || togglePopover;
   const open = () => { if (item) openCodex({ category, id: item.id, label: item.label, instance: inst }); };
-  const toggle = () => { if (pinned) unpin(); else { showAt(); setPinned(true); } };
+  const toggle = () => { if (pinned) unpin(); else if (!suppressPopover) { showAt(); setPinned(true); } };
   const activate = wrapperOpens ? open : togglePopover ? toggle : undefined;
-  const pinFromWrap = wrap && openFiche;
+  // La porte clavier du popover (↓) suit le popover : mise en sourdine, elle n'est ni annoncée ni
+  // active — jamais un raccourci qui n'ouvre rien.
+  const pinFromWrap = wrap && openFiche && !suppressPopover;
   // NOM ACCESSIBLE : l'`ariaLabel` explicite prime ; sinon on le DÉRIVE du `label` dès que le
   // déclencheur ne porte aucun texte (déclencheur-icône). Sans cette dérivation, les déclencheurs
   // ⓘ du dépôt — qui passent tous un `label` — seraient des boutons MUETS.

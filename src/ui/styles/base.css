@@ -29,6 +29,7 @@
   --silver: #cdd6df; /* monnaie : pistole d'argent */
   --combat-walk: #4f8fe0; /* combat : portée de Marche */
   --combat-run: #9b6be0; /* combat : portée de Course */
+  --combat-intent: #3fd0c9; /* combat : portée de l'INTENTION armée (Charge/Course/Mouvement) */
   --combat-target: #ff5a4d; /* combat : anneau de cible d'attaque */
   --combat-enemy: #e0533a; /* combat : réticule/indicateur ennemi (et delta négatif) */
   --combat-crowd: #ff7a3c; /* combat : cibles éligibles à la Foule */
