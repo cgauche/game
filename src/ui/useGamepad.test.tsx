@@ -32,6 +32,9 @@ function padSimule() {
   };
 }
 
+/** Spy `performance.now` du test EN COURS — restauré par son propre `afterEach` (jamais un autre test). */
+let perfNowSpy: ReturnType<typeof vi.spyOn> | null = null;
+
 /** Joue `n` frames de la boucle du hook (rAF stubé) en avançant l'horloge de `dt`. */
 function harnaisFrames() {
   let enAttente: FrameRequestCallback[] = [];
@@ -40,7 +43,7 @@ function harnaisFrames() {
   let horloge = 0;
   // La boucle date ses répétitions à `performance.now()` : sans horloge qui avance, le pad ne répèterait
   // JAMAIS sa direction et le harnais mesurerait un maintien qui n'existe pas.
-  vi.spyOn(performance, 'now').mockImplementation(() => horloge);
+  perfNowSpy = vi.spyOn(performance, 'now').mockImplementation(() => horloge);
   return {
     jouer(n: number, dt = 16) {
       for (let i = 0; i < n; i++) {
@@ -89,6 +92,8 @@ describe('manette — gestes MAINTENUS armés ET relâchés par la boucle', () =
     act(() => root.unmount());
     host.remove();
     vi.unstubAllGlobals();
+    perfNowSpy?.mockRestore();
+    perfNowSpy = null;
     resetStageWalk();
     resetStageYaw();
     vi.useRealTimers();
