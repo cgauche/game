@@ -56,7 +56,12 @@ export const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 // Regex de réfs (factories : instances FRAÎCHES — l'état /g `lastIndex` n'est pas partagé entre appelants).
 // `ch.` optionnel devant le numéro de chapitre (#434 défaut 3) : le code écrit indifféremment
 // `LIVRE NN l.X` et `LIVRE ch.NN l.X` — le groupe livre reste OBLIGATOIRE dans les deux regex.
-export const ldbRe = () => new RegExp(`\\b${esc(PIVOT_ABBR)} (?:ch\\.)?(\\d+) l\\.(\\d+)((?:[-+]\\d+)*)`, 'g') // <pivot> <ch> l.<line>[-end][+n…]
+// Suffixe : `-fin` (plage) · `+n…` (points) · `/n…` (forme COMPACTE `l.298/315/369`, #1318 E3-L4 —
+// jusque-là seul le PREMIER numéro était vu, les suivants échappaient à toute garde : `l.222/999`
+// passait vert). Le `(?!\d)(?!\s*l\.)` (nombre ENTIER, puis pas de ` l.` derrière — sans le garde
+// de chiffre la regex se rabattrait sur `/2` de `/20 l.72`) distingue `/315` (ligne du MÊME chapitre) de `/20 l.72` (réf
+// MULTI-CHAPITRES `LDB 18 l.298/20 l.72`, où `20` est un CHAPITRE — jamais une ligne du 18).
+export const ldbRe = () => new RegExp(`\\b${esc(PIVOT_ABBR)} (?:ch\\.)?(\\d+) l\\.(\\d+)((?:[-+]\\d+|/\\d+(?!\\d)(?!\\s*l\\.))*)`, 'g') // <pivot> <ch> l.<line>[-end][+n…][/n…]
 
 // otherRe DÉRIVE de BOOKS (#434 défaut 10 : une alternation écrite à la main avait oublié MDG).
 // Plus de graphies tolérées (#585 lot B) : chaque livre a désormais UNE seule abréviation
@@ -67,7 +72,7 @@ const OTHER_ABBR_ALT = BOOKS.filter(([a]) => a !== PIVOT_ABBR).map(([a]) => esc(
 // m[4] = suffixe de plage `((?:[-+]\d+)*)` (#487), miroir de ldbRe ; check-refs et reconcile.mjs
 // (branche atlasOther) le lisent tous deux désormais (#586).
 export const otherRe = () =>
-  new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
+  new RegExp(`\\b(${OTHER_ABBR_ALT})(?: (?:ch\\.)?(\\d+))? l\\.(\\d+)((?:[-+]\\d+|/\\d+(?!\\d)(?!\\s*l\\.))*)`, 'g')
 
 // Miroir FOLIO de `ldbRe`/`otherRe` (#606) : la graphie canonique `ABBR NN p.<folio>[-fin][+pts]`
 // (gelee par #585) est aussi une ref de chapitre valide -- jamais captee par les regex ` l.` ci-dessus.
@@ -87,14 +92,25 @@ export function bookOf(text) {
   return BOOK_DIR.has(text) ? text : null
 }
 
-// Déplie un suffixe "-285" (intervalle) ou "+217+220" (points) → [lo, hi].
-export function span(line, suffix) {
+// Un suffixe est-il une PLAGE (`-fin`) ? Les autres formes (`+pts`, `/compacte`) sont des ancres
+// DISTINCTES, jamais un intervalle : un consommateur qui juge « toutes les lignes citées sont vides »
+// doit les traiter une à une (sans quoi `l.202/213` se lit comme 202→213, lignes pleines comprises).
+export const isRangeSuffix = (suffix) => !!suffix && /^-\d+/.test(suffix)
+
+// Tous les numéros de ligne EXPLICITEMENT cités par une réf : `l.10` → [10] · `l.10-25` → [10,25]
+// (bornes) · `l.10+17` → [10,17] · `l.298/315/369` → [298,315,369] (forme COMPACTE, #1318 E3-L4).
+export function refNums(line, suffix) {
   const a = Number(line)
-  if (!suffix) return [a, a]
-  const range = suffix.match(/^-(\d+)/)
-  if (range) return [a, Number(range[1])]
-  const plus = (suffix.match(/\+(\d+)/g) || []).map((s) => Number(s.slice(1)))
-  return [a, Math.max(a, ...plus)]
+  if (!suffix) return [a]
+  const extra = (suffix.match(/[-+/](\d+)/g) || []).map((s) => Number(s.slice(1)))
+  return [a, ...extra.filter((n) => n !== a)]
+}
+
+// Déplie un suffixe "-285" (intervalle), "+217+220" (points) ou "/315/369" (compacte) → [lo, hi].
+// `hi` = borne HAUTE de tout ce qui est cité : c'est elle que borne `check-code-refs`.
+export function span(line, suffix) {
+  const nums = refNums(line, suffix)
+  return [nums[0], Math.max(...nums)]
 }
 
 // Résout (ABRÉV, NN[, range]) → { path, file, dir } du `.md` chapitre, ou null. Lookup par préfixe `NN - `.

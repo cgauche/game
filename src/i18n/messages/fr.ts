@@ -1779,7 +1779,7 @@ export const fr = {
   'sv.shoreLeaveDenied': "Vous refusez à l'équipage la permission de faire relâche à terre.",
   'sv.desertion': 'Désertion',
 
-  // ── #1318 V8c₄ — FAIM & SOIF (`engine/provisions.ts`, `prov.*`, LDB 18 l.338/340/343). Le libellé
+  // ── #1318 V8c₄ — FAIM & SOIF (`engine/provisions.ts`, `prov.*`, LDB 18 l.338/340/342). Le libellé
   // du modificateur cumulatif et les libellés d'étape différée (Faim/Soif) sont du texte JOUEUR : ils
   // s'affichent sur la ligne de jet de la cascade de nuit, pas seulement au journal.
   'prov.penaltyTestsTaken': 'Tests déjà subis',

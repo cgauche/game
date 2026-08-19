@@ -524,7 +524,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.109-111`) : Aucun remède à base d'herbes n'est plus efficace qu'un autre. Seul vrai traitement : s'hydrater (compenser la perte de liquides) et attendre.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.104-118) → `water-exposure`, `inconscient`, `applyOnFailInline`, `colique`, `vers-de-carie`, `tickDisease`, `vers-du-reik`, `sonne`, `exposition-hydrique`, `GameOp`, +2 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, +1 fichiers
+- `MSRC 16` (l.104-118) → `water-exposure`, `inconscient`, `applyOnFailInline`, `colique`, `tickDisease`, `vers-de-carie`, `vers-du-reik`, `sonne`, `exposition-hydrique`, `GameOp`, +2 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, +1 fichiers
 
 ---
 

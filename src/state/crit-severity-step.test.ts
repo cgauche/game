@@ -22,7 +22,7 @@ import type { AttackResult } from '../engine/combat';
 /**
  * SÉVÉRITÉ d'une Blessure critique en SEAM (#942 L4) — le d100 du Tableau des Critiques (LDB 18) est
  * une étape à TABLE de la séquence : tiré par le résolveur unique `rollTableStep`, injecté au moteur
- * en `forcedRoll` (dé NATUREL — `rollCritical` applique LUI-MÊME la réduction d'overkill, LDB 18 l.16
+ * en `forcedRoll` (dé NATUREL — `rollCritical` applique LUI-MÊME la réduction d'overkill, LDB 18 l.17
  * verbatim « vous ôtez -20 à votre résultat sur le Tableau des Critiques avec un résultat minimum de
  * 01 »), et POSABLE (option « Dés fixés » + siège qui contrôle la victime) avant que le coup ne soit
  * résolu. Sans l'option, le chemin reste bit-à-bit celui d'avant (sonde différentielle ci-dessous).
@@ -79,7 +79,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
       .toBe(findTableEntry(CRITICAL_TABLES.corps, 46).label);
   });
 
-  it('déclaration : la réduction d’overkill est un `mod` NÉGATIF, et la table BORNE à 01 (LDB 18 l.16)', () => {
+  it('déclaration : la réduction d’overkill est un `mod` NÉGATIF, et la table BORNE à 01 (LDB 18 l.17)', () => {
     const { H } = startFight();
     expect(critSeverityReduction(H, 0)).toBe(0);
     const gros = 99; // dépassement très supérieur au Bonus d'Endurance → réduction

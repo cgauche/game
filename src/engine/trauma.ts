@@ -136,8 +136,8 @@ function opsOfType<K extends GameOp['op']>(ops: GameOp[], op: K): Extract<GameOp
 }
 
 /**
- * Durée de convalescence d'un trauma en JOURS (LDB 18) : déchirure mineure 30−BE (l.317) ; déchirure
- * majeure 2×(30−BE), deux périodes (l.326) ; fracture 30+1d10 (l.300), +10 jours si majeure (l.309).
+ * Durée de convalescence d'un trauma en JOURS (LDB 18) : déchirure mineure 30−BE (l.222) ; déchirure
+ * majeure 2×(30−BE), deux périodes (l.231) ; fracture 30+1d10 (l.202), +10 jours si majeure (l.212).
  * `be` = Bonus d'Endurance, `d10` = 1d10 (fractures). Plancher 1 jour.
  */
 export function traumaRecoveryDays(kind: TraumaKind, severity: TraumaSeverity, be: number, d10 = 5): number {
@@ -199,8 +199,8 @@ export function traumaById(id: string, opts?: { be?: number; d10?: number }, loc
     ...(f.ops ? { ops: f.ops.map((o) => ({ ...o })) } : {}),
     ...(f.prosthesis ? { prosthesis: f.prosthesis.map((p) => ({ ...p })) } : {}),
   };
-  // Convalescence à étapes (déchirure/fracture seules). Une fracture MAJEURE « peu probable de guérir
-  // sans intervention médicale » (l.305) exige la Chirurgie ; la formule garde le 1d10 seedé chez l'appelant.
+  // Convalescence à étapes (déchirure/fracture seules). Une fracture MAJEURE « fort peu probable qu'il se soigne
+  // correctement sans intervention médicale » (l.208) exige la Chirurgie ; la formule garde le 1d10 seedé chez l'appelant.
   if (f.kind) {
     const sev: TraumaSeverity = f.severity ?? 'mineur';
     const recoveryDays = opts?.be == null ? undefined : traumaRecoveryDays(f.kind, sev, opts.be, opts.d10 ?? 5);
@@ -228,7 +228,7 @@ function downgradeTornMuscle(t: Trauma, leftDays: number, shape?: BodyShape): st
 }
 
 /**
- * Séquelle PERMANENTE d'une fracture mal ressoudée (LDB 18 l.202/213) : à la fin de la convalescence, un
+ * Séquelle PERMANENTE d'une fracture mal ressoudée (LDB 18 l.202/212) : à la fin de la convalescence, un
  * Test de Résistance raté laisse −5 (mineure) / −10 (majeure) en Agilité (Bras/Jambe/Torse) — la Tête
  * (−5/−10 Langue, compétence) est journalisée sans pénalité chiffrée (hors modèle charPenalty).
  */
@@ -238,14 +238,14 @@ function fractureSequela(t: Trauma, shape?: BodyShape): Trauma | null {
   return { label: tr('tra.fractureSequelaLabel', { loc: locationLabel(t.location ?? 'corps', shape) }), location: t.location, ops: [{ op: 'charMod', char: 'agilite', mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-membre').desc };
 }
 
-/** Difficulté du Test de fin de fracture (LDB 18 l.202/213) selon la sévérité. */
+/** Difficulté du Test de fin de fracture (LDB 18 l.202/212) selon la sévérité. */
 export function fractureEndDifficulty(severity: string): Difficulty {
   return severity === 'majeur' ? 'intermediaire' : 'accessible';
 }
 
 /**
  * Applique le RÉSULTAT du Test de fin de fracture (séparé du jet pour différer/influencer en cascade) :
- * un échec laisse une SÉQUELLE permanente (−5/−10 Ag, l.300/309), une réussite ressoude proprement.
+ * un échec laisse une SÉQUELLE permanente (−5/−10 Ag, l.202/212), une réussite ressoude proprement.
  * Mute `c.traumas` (ajoute la séquelle) ; renvoie le journal. La fracture résolue a déjà été retirée
  * (et `criticalWounds` décrémenté) par `tickTraumaRecovery`. Partagé eager ⊥ cascade — zéro duplication.
  */
@@ -259,9 +259,9 @@ export function applyFractureEnd(c: Combatant, success: boolean, severity: strin
 
 /**
  * Convalescence : décompte `days` jours sur chaque trauma à durée. Étapes (LDB 18) :
- *  - déchirure majeure → rémission partielle (−20→−10) au passage de la mi-durée (l.326) ;
- *  - fracture atteignant 0 → Test de Résistance de fin (Accessible mineure / Intermédiaire majeure, l.300/309)
- *    SAUF si la fracture a été « réduite » (bandée, `fractureSet`, l.302) ; un échec laisse une séquelle
+ *  - déchirure majeure → rémission partielle (−20→−10) au passage de la mi-durée (l.231) ;
+ *  - fracture atteignant 0 → Test de Résistance de fin (Accessible mineure / Intermédiaire majeure, l.202/212)
+ *    SAUF si la fracture a été « réduite » (bandée, `fractureSet`, l.204) ; un échec laisse une séquelle
  *    permanente (−5/−10 Ag). Sinon le trauma disparaît (pénalités levées) + `criticalWounds`−−.
  * `resistVal` = valeur de Résistance effective de `c` (passée par l'appelant pour éviter le cycle d'import).
  * Pur ; mute `c`, renvoie le journal.
@@ -294,13 +294,13 @@ export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaul
       remaining.push(next);
       continue;
     }
-    // Résolu : la fracture/déchirure est retirée, la Blessure critique décomptée (l.317).
+    // Résolu : la fracture/déchirure est retirée, la Blessure critique décomptée (l.222).
     if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
     if (t.kind === 'fracture' && !t.fractureSet) fractureTests.push({ severity: t.severity ?? 'mineur', location: t.location ?? '', label: t.label });
     else log.push(tr('tra.recovered', { name: c.label, label: t.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) }));
   }
   c.traumas = remaining;
-  // Test de fin de fracture (l.300/309) : DIFFÉRÉ en étape de cascade si `defer`, sinon roulé ici.
+  // Test de fin de fracture (l.202/212) : DIFFÉRÉ en étape de cascade si `defer`, sinon roulé ici.
   for (const f of fractureTests) {
     if (defer) {
       defer({ kind: 'traumaFracture', label: `Convalescence — ${f.label}`, base: resistVal, difficulty: fractureEndDifficulty(f.severity),
@@ -336,7 +336,7 @@ export function cureCriticalWounds(c: Combatant, n: number): string[] {
   return log;
 }
 
-/** Le personnage porte-t-il un trauma exigeant de la Chirurgie (amputation, fracture majeure, l.305/398) ? */
+/** Le personnage porte-t-il un trauma exigeant de la Chirurgie (amputation, fracture majeure, l.208/239) ? */
 export function hasSurgeryTrauma(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.needsSurgery);
 }
@@ -705,39 +705,39 @@ export function removeSurgicalTrauma(c: Combatant, idx = 0): string[] {
 }
 
 /** Le personnage a-t-il un trauma que la Compétence Guérison peut encore traiter ?
- *  Déchirure ou fracture dans sa fenêtre de pose (l.302), dont le jet unique (l.317) n'a pas été employé. */
+ *  Déchirure ou fracture dans sa fenêtre de pose (l.204), dont le jet unique (l.222) n'a pas été employé. */
 export function hasTreatableTrauma(c: Combatant): boolean {
   return (c.traumas ?? []).some(eligibleForHeal);
 }
 
 function eligibleForHeal(t: Trauma): boolean {
-  // Un seul jet de Guérison par trauma (l.317 : « une seule fois ») — l'échec consomme aussi le jet.
+  // Un seul jet de Guérison par trauma (l.222 : « une seule fois ») — l'échec consomme aussi le jet.
   if (t.recoveryDays == null || t.healAccelerated) return false;
   if (t.kind === 'dechirure') return true;
-  // fracture : la pose (bandage) doit intervenir dans la SEMAINE suivant la fracture (l.302).
+  // fracture : la pose (bandage) doit intervenir dans la SEMAINE suivant la fracture (l.204).
   return t.kind === 'fracture' && !t.fractureSet && t.recoveryTotal != null && t.recoveryDays > t.recoveryTotal - 7;
 }
 
 /**
  * Soin assisté d'un trauma par la Compétence Guérison (LDB 18). Le JET est consommé, réussi ou
- * non (l.317 : « vous ne pouvez obtenir cet avantage qu'une seule fois ») — sans quoi, sans MJ,
+ * non (l.222 : « vous ne pouvez obtenir cet avantage qu'une seule fois ») — sans quoi, sans MJ,
  * on relancerait gratuitement jusqu'au succès. Sur un succès :
- *  - déchirure MINEURE (l.317) → raccourcit la convalescence de **1 jour + 1 par DR** ;
- *  - déchirure MAJEURE (l.326 : « n'aura d'autre intérêt que de vous informer que vous ne pourrez pas
+ *  - déchirure MINEURE (l.222) → raccourcit la convalescence de **1 jour + 1 par DR** ;
+ *  - déchirure MAJEURE (l.231 : « n'aura d'autre intérêt que de vous informer que vous ne pourrez pas
  *    utiliser la Localisation touchée tant que la rémission ne sera pas complète ») → AUCUNE accélération ;
  *    la Guérison ne fait que DIAGNOSTIQUER le délai restant (jours avant réutilisation du membre) ;
- *  - fracture dans la semaine (l.302) → « réduite » (bandée) ⟹ pas de Test de Résistance de fin.
+ *  - fracture dans la semaine (l.204) → « réduite » (bandée) ⟹ pas de Test de Résistance de fin.
  */
 export function treatTrauma(c: Combatant, dr: number, success = true): string[] {
   const t = (c.traumas ?? []).find(eligibleForHeal);
   if (!t) return [tr('tra.nothingTreatable', { name: c.label })];
-  t.healAccelerated = true; // ce trauma a eu son jet de Guérison (l.317)
+  t.healAccelerated = true; // ce trauma a eu son jet de Guérison (l.222)
   if (!success) return [tr('tra.treatFailed', { name: c.label, label: t.label })];
   if (t.kind === 'fracture') {
     t.fractureSet = true;
     return [tr('tra.fractureSet', { name: c.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) })];
   }
-  if (t.severity === 'majeur') { // déchirure majeure : la Guérison n'accélère rien, elle DIAGNOSTIQUE (l.326)
+  if (t.severity === 'majeur') { // déchirure majeure : la Guérison n'accélère rien, elle DIAGNOSTIQUE (l.231)
     return [tr('tra.tornDiagnosed', { name: c.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape), days: t.recoveryDays ?? 0 })];
   }
   const cut = 1 + Math.max(0, dr);
@@ -928,7 +928,7 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   if (c.hunger && modSurvives(c, 'faim')) {
     for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of hungerCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'faim' });
   }
-  if (c.thirst && modSurvives(c, 'faim')) { // Soif (l.420) : même privation (kind `faim` — « Plus besoin de manger/boire »)
+  if (c.thirst && modSurvives(c, 'faim')) { // Soif (LDB 18 l.340) : même privation (kind `faim` — « Plus besoin de manger/boire »)
     for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of thirstCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'faim' });
   }
   // Ivresse (LDB 09 l.475) : −10/échec aux CC/CT/Ag/Dex/Int (pool non-cumul, kind `ivresse`). Gaté à la
@@ -1113,7 +1113,7 @@ export function traumaCharPenaltiesLabeled(c: Combatant, key: CharKey): { kind: 
 }
 
 /** Pénalités de Caractéristique PASSIVES non-`intrinseque` (valeurs négatives, pour le pool « pire pénalité ») :
- *  traumatismes (LDB 18), maladies (LDB 20) et faim (LDB 18 l.343), toutes sources confondues via le collecteur.
+ *  traumatismes (LDB 18), maladies (LDB 20) et faim (LDB 18 l.342), toutes sources confondues via le collecteur.
  *  Le gating (Détermination/Insensible/prothèse selon le `kind`) est déjà appliqué par `passiveMods`. */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
   return traumaCharPenaltiesLabeled(c, key).map((p) => p.mod);
@@ -1141,7 +1141,7 @@ function senseMatches(opSense: PairedSense | undefined, testSense: PairedSense |
 }
 
 /** Pire pénalité permanente à une Compétence nommée due aux traumatismes (séquelle de fracture, LDB 18
- *  l.300/309 — ex. −5/−10 « Langue » après une fracture à la Tête). `testSense` restreint les `skillMod`
+ *  l.202/212 — ex. −5/−10 « Langue » après une fracture à la Tête). `testSense` restreint les `skillMod`
  *  qui portent un `sense` (Surdité, LDB 18 : Perception auditive seulement — `senseMatches`) au Test COURANT ;
  *  transmis par `testValue`. Non-cumul (l.20) ; ≤ 0. */
 export function traumaSkillPenaltyParts(c: Combatant, skill?: string, testSense?: PairedSense): PassiveMod[] {

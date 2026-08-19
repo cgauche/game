@@ -371,13 +371,13 @@ registerNightBandApplier('forcedMarch', (_get, _set, _band, row, hero) => {
 
 registerNightBandApplier('faim', (_get, _set, _band, row, hero) => {
   const r = applyFaimTest(hero, row.result!.success, bonus(effectiveChar(hero, 'endurance')), battleRng());
-  if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.422)
+  if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (LDB 18 l.342)
   return { consequences: freeCons(r.log) };
 });
 
 registerNightBandApplier('soif', (_get, _set, _band, row, hero) => {
   const r = applySoifTest(hero, row.result!.success, bonus(effectiveChar(hero, 'endurance')), battleRng());
-  if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.420)
+  if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (LDB 18 l.340)
   return { consequences: freeCons(r.log) };
 });
 
@@ -493,7 +493,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   bus.emit(EVT.TIME_ADVANCED, { minutes: get().gameTime - from });
   set({ lastNightDay: dayIndex(get().gameTime) }); // nuit JOUÉE (#340) — désamorce la privation de sommeil
   // Entretien quotidien (#T3) — la partie SANS jet est eager (rations consommées, jours décomptés) ;
-  // TOUT Test de Résistance (Faim l.422, maladie l.110/135/162, convalescence l.300) est DIFFÉRÉ en
+  // TOUT Test de Résistance (Faim LDB 18 l.342, maladie l.110/135/162, convalescence LDB 18 l.202) est DIFFÉRÉ en
   // étape influençable (sinon il serait pré-résolu dans le journal AVANT que le joueur n'agisse).
   const caredFor = party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
   const deferred: DeferredUpkeepTest[] = [];

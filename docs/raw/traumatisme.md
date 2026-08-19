@@ -78,14 +78,14 @@ Exemple : BE = 4, PB restants = 2, Dégâts = 8 → PB fictifs = −6 → |−6|
 
 ## 3. Retenir ses coups
 
-(`LDB 18 l.41-41`) Le personnage peut **déclarer qu'il retient ses coups avant d'effectuer le lancer**. Tout Coup Critique obtenu est alors ignoré. Applicable en entraînement ou pour maîtriser un adversaire sans le blesser grièvement.
+(`LDB 18 l.30`) Le personnage peut **déclarer qu'il retient ses coups avant d'effectuer le lancer**. Tout Coup Critique obtenu est alors ignoré. Applicable en entraînement ou pour maîtriser un adversaire sans le blesser grièvement.
 
 > « Une fois ces spécificités présentes dans votre esprit, vous pouvez décider d'ignorer tout Coup Critique que vous obtiendrez si vous déclarez que vous "retenez vos coups" **avant d'effectuer votre lancer**. » — `LDB 18 l.30`
 
-**Sources RAW** : `LDB 18 l.41-41`.
+**Sources RAW** : `LDB 18 l.30`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.30, l.41) → `EtatPanel`, `usesSuddenDeath`, `inDeathCondition`, `PendingDeviation`, `applyCriticalToTarget`, `applyAttackResult`, `overcastTargetCandidates`, `applyCast` — `src/data/reglesOptionnelles.json`, `src/engine/conditions.ts`, `src/state/combatFlow.ts`, `src/state/pendings.ts`, `src/ui/EtatPanel.tsx`
+- `LDB 18` (l.30) → `EtatPanel`, `inDeathCondition`, `PendingDeviation`, `applyAttackResult`, `applyCast` — `src/engine/conditions.ts`, `src/state/combatFlow.ts`, `src/state/pendings.ts`, `src/ui/EtatPanel.tsx`
 
 ---
 
@@ -169,7 +169,7 @@ L'os est fracturé mais aligné ; peut guérir sans intervention chirurgicale.
 
 ### Fracture (Majeure) — `LDB 18 l.207-213`
 
-L'os est salement fracturé ou a éclaté. Peu probable de guérir correctement sans intervention médicale.
+L'os est salement fracturé ou a éclaté : « Il est fort peu probable qu'il se soigne correctement sans intervention médicale » (`LDB 18 l.208`).
 
 **Guérison** :
 - Durée : **40 + 1d10 jours** (10 jours supplémentaires).
@@ -181,7 +181,7 @@ L'os est salement fracturé ou a éclaté. Peu probable de guérir correctement 
 **Voir aussi** : [Amputation — Membre amputé](#9-amputation--choc-traitement-et-séquelles-permanentes) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.193-213) → `dechirure-jambe-mineure`, `dechirure-autre-mineure`, `fracture-torse-mineure`, `trauma-fracture`, `fracture-torse-majeure`, `fracture-jambe-mineure`, `fracture-jambe-majeure`, `fracture-tete-mineure`, `fracture-tete-majeure`, `fracture-bras-mineure`, +7 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traumas.json`, `src/engine/trauma.ts`
+- `LDB 18` (l.193-213) → `dechirure-jambe-mineure`, `availableHealModes`, `dechirure-autre-mineure`, `fracture-torse-mineure`, `trauma-fracture`, `fracture-torse-majeure`, `fracture-jambe-mineure`, `fracture-jambe-majeure`, `fracture-tete-mineure`, `fracture-tete-majeure`, +12 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/healing.ts`, +6 fichiers
 
 ---
 
@@ -212,7 +212,7 @@ La Compétence Guérison ne raccourcit pas la Majeure (elle informe seulement qu
 **Voir aussi** : [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `dechirure-jambe-majeure`, `resolveAmputation`, `Amputation`, `dechirure-autre-mineure`, `amputationSchema`, `AAEntry`, +31 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, +3 fichiers
+- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `availableHealModes`, `dechirure-jambe-majeure`, `resolveAmputation`, `Amputation`, `dechirure-autre-mineure`, `amputationSchema`, +37 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, +9 fichiers
 
 ---
 
@@ -258,7 +258,7 @@ Toute amputation nécessite une **Chirurgie** pour être traitée. La blessure n
 **Voir aussi** : [Chirurgie](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; États → [etats.md](etats.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.233-285) → `faim`, `cumulSchema`, `isFumble`, `permanentAmputations`, `soif`, `dechirure-jambe-mineure`, `recovery`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `TraumaCumul`, +56 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, +10 fichiers
+- `LDB 18` (l.233-285) → `faim`, `cumulSchema`, `isFumble`, `permanentAmputations`, `soif`, `dechirure-jambe-mineure`, `recovery`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `TraumaCumul`, +58 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, +11 fichiers
 
 ---
 
@@ -283,8 +283,8 @@ Un personnage est **blessé** s'il a perdu au moins 1 PB. Il n'y a **aucune pén
 **Voir aussi** : Compétence Guérison → [competences.md](competences.md) (LDB 09 l.255-269) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; Faim/Soif → [§ 13](#13-faim-et-soif) (sans provisions : pas de récupération naturelle).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.255-269) → `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `applyHealWounds`, `heal-wounds`, `emprise-sur-les-animaux`, `heal-bleed`, `escamotage`, +6 — `src/data/flow-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/types.ts`, `src/state/combatSlice.ts`
-- `LDB 18` (l.289-300) → `faim`, `permanentAmputations`, `soif`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `dechirure-autre-majeure`, `exposure`, `exposure-heat-drop`, `TraumaFiche`, +30 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/data/voyage-stakes.json`, `src/engine/combat.ts`, +10 fichiers
+- `LDB 9` (l.255-269) → `carryOverState`, `useDefenseJetProps`, `healDifficulty`, `healWoundsDelta`, `rederiveAttack`, `stopBleedOutcome`, `HealWoundsOptions`, `applyHealWounds`, `defenseSubOf`, `heal-wounds`, +11 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/types.ts`, +4 fichiers
+- `LDB 18` (l.289-300) → `faim`, `cumulSchema`, `permanentAmputations`, `soif`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `dechirure-autre-majeure`, `exposure`, `exposure-heat-drop`, +34 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/data/voyage-stakes.json`, +11 fichiers
 
 ---
 
@@ -312,7 +312,7 @@ Certaines entrées exigent une **Chirurgie** (indiquée dans le résultat). Les 
 **Voir aussi** : Compétence Guérison → [competences.md](competences.md) ; [Fractures](#7-fractures-mineure--majeure) ; [Déchirures](#8-déchirures-musculaires-mineure--majeure) ; [Amputation](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.303-320) → `faim`, `soif`, `recovery`, `bandEntry`, `availableHealModes`, `critEscalationSchema`, `exposure`, `exposure-heat-drop`, `ExposureKind`, `exposureTestCount`, +24 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/voyage-stakes.json`, +17 fichiers
+- `LDB 18` (l.303-320) → `faim`, `soif`, `recovery`, `bandEntry`, `critEscalationSchema`, `exposure`, `exposure-heat-drop`, `ExposureKind`, `exposureTestCount`, `HealWoundsOptions`, +24 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/voyage-stakes.json`, `src/engine/conditions.ts`, +14 fichiers
 
 ---
 
@@ -345,7 +345,7 @@ Se débarrasser d'une Possession lourde annule 1 Test échoué.
 **Voir aussi** : Possessions accordant bonus/malus aux Tests d'Exposition (LDB 65 p.302 / LDB 74 p.309).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.327-334) → `faim`, `soif`, `recovery`, `bandEntry`, `availableHealModes`, `hungerThirstPenalty`, `effectiveChar`, `RESISTANCE_TEST`, `HungerState`, `exposure`, +36 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, +16 fichiers
+- `LDB 18` (l.327-334) → `faim`, `soif`, `recovery`, `bandEntry`, `hungerThirstPenalty`, `effectiveChar`, `RESISTANCE_TEST`, `HungerState`, `exposure`, `ThirstState`, +37 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, +13 fichiers
 
 ---
 
@@ -364,7 +364,7 @@ Test de Résistance chaque **jour** sans eau.
 | 1er | −10 Intelligence + −10 Force Mentale + −10 Sociabilité |
 | 2e+ | Toutes les autres Caractéristiques −10 + 1d10 Dégâts (ignorent PA ; minimum 1 PB) |
 
-### Nourriture (`LDB 18 l.343`)
+### Nourriture (`LDB 18 l.342`)
 
 Test de Résistance tous les **deux jours** sans nourriture.
 
@@ -378,13 +378,13 @@ Test de Résistance tous les **deux jours** sans nourriture.
 **Voir aussi** : Provisions / rations → [provisions.md](provisions.md) ; [Guérison des PB](#10-guérison-des-points-de-blessure) (sans provisions : pas de récupération).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.337-343) → `faim`, `soif`, `recovery`, `bandEntry`, `hungerThirstPenalty`, `effectiveChar`, `RESISTANCE_TEST`, `HungerState`, `exposure`, `ThirstState`, +41 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, +17 fichiers
+- `LDB 18` (l.337-343) → `faim`, `soif`, `recovery`, `bandEntry`, `hungerThirstPenalty`, `effectiveChar`, `RESISTANCE_TEST`, `HungerState`, `exposure`, `ThirstState`, +44 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, +17 fichiers
 
 ---
 
 ## 14. Noyade et Suffocation
 
-Source : `LDB 18 l.345-346`.
+Source : `LDB 18 l.346`.
 
 **Retenir son souffle** (préparation) : durée = **BE × 10 secondes** sans Test.
 
@@ -392,9 +392,9 @@ Source : `LDB 18 l.345-346`.
 
 > « Vous perdez 1 Point de blessure par Round que vous passez à suffoquer. Si vos Points de blessure passent à 0, gagnez immédiatement l'État Inconscient. Après cela, et au bout d'un nombre de Rounds égal à votre Bonus d'Endurance, vous mourez par suffocation ou par noyade. » — `LDB 18 l.346`
 
-**Sources RAW** : `LDB 18 l.345-346`.
+**Sources RAW** : `LDB 18 l.346`.
 
 **Voir aussi** : États → [etats.md](etats.md) ; sorts infligeant Suffocation (Ombres étrangleuses, Transmutation de Chamon).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.345-346) → `faim`, `soif`, `recovery`, `hungerThirstPenalty`, `effectiveChar`, `RESISTANCE_TEST`, `HungerState`, `exposure`, `ThirstState`, `breathHoldSeconds`, +31 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, +14 fichiers
+- `LDB 18` (l.346) → `faim`, `soif`, `recovery`, `hungerThirstPenalty`, `effectiveChar`, `RESISTANCE_TEST`, `HungerState`, `exposure`, `ThirstState`, `breathHoldSeconds`, +35 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, +14 fichiers

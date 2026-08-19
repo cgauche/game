@@ -13,7 +13,7 @@ import type { Combatant } from '../engine/types';
  * #T3 — Cascade RAW d'horloge (`state/upkeep.ts`) : ce que le passage du temps déclenche sur les
  * franchissements de jour, QUEL QUE SOIT le chemin (advanceTime, repos, voyage) :
  *  - maladies (LDB 20) : incubation/durée en jours CALENDAIRES — progressent SANS repos ;
- *  - convalescence des Blessures critiques (LDB 18 l.317 : « un nombre de JOURS égal à 30 − BE ») ;
+ *  - convalescence des Blessures critiques (LDB 18 l.222 : « un nombre de jours égal à 30 – votre Bonus d'Endurance ») ;
  *  - purge des contrecoups d'incantation à durée d'horloge (LDB 46/40) sur TOUS les chemins ;
  *  - anti-double-comptage : une journée n'est jamais décomptée deux fois (repos compris).
  */
@@ -54,7 +54,7 @@ describe('#T3 — cascade d’horloge (maladies/convalescence/purge sur franchis
     useGame.setState({ pendingCascade: null }); // ne pas geler l'IA des tests suivants (piège connu)
   });
 
-  it('la convalescence d’un trauma décompte les jours CALENDAIRES (LDB 18 l.317), repos ou pas', () => {
+  it('la convalescence d’un trauma décompte les jours CALENDAIRES (LDB 18 l.222), repos ou pas', () => {
     const c = hero({ traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 28 })] }); // 30−28 = 2 jours
     useGame.setState({ party: [c], gameTime: 0, lastUpkeepDay: 0 });
     useGame.getState().advanceTime(2 * MINUTES_PER_DAY);

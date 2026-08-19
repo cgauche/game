@@ -2,7 +2,7 @@
 // (écrite en parallèle de `LIVRE NN l.X` dans le code) doit être vue au même titre. Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ldbRe, otherRe, span, bookOf, chapterFile } from './_lib.mjs'
+import { ldbRe, otherRe, span, refNums, isRangeSuffix, bookOf, chapterFile } from './_lib.mjs'
 
 test('ldbRe : "LDB 17 l.27" matche', () => {
   const m = [...'LDB 17 l.27'.matchAll(ldbRe())]
@@ -33,6 +33,55 @@ test('ldbRe : suffixe points "l.10+17" préservé avec la forme ch.', () => {
   const m = [...'LDB ch.10 l.10+17'.matchAll(ldbRe())]
   assert.equal(m.length, 1)
   assert.equal(span(m[0][2], m[0][3]).join(','), '10,17')
+})
+
+// --- Forme COMPACTE `l.A/B/C` (#1318 E3-L4) ---
+// Avant extension, la grammaire ne rendait que le PREMIER numéro : une compacte dont le 2e membre
+// dépassait les bornes du chapitre passait VERTE à `check-code-refs`, alors que le même numéro cité
+// seul échouait. Les numéros suivants étaient INVISIBLES à TOUTES les gardes de réf.
+//
+// SPÉCIMENS CONSTRUITS, jamais écrits en graphie canonique (patron `fixtureRef` de
+// `src/raw-ref-integrity.test.ts`) : ce fichier est lui-même scanné par les gardes de réf du dépôt,
+// qui ne distinguent pas une citation vivante d'un spécimen de test — une fixture littérale
+// s'y lirait comme une vraie réf morte.
+/** Réf de FIXTURE : `spec(18, '298/315/369')` → « <pivot> 18 l.298/315/369 ». */
+const spec = (ch, tail) => ['LDB', String(ch), `l.${tail}`].join(' ')
+/** Tous les numéros de ligne rendus par la grammaire pour une chaîne (miroir du parcours des gardes). */
+const nums = (s) => [...s.matchAll(ldbRe())].flatMap((m) => refNums(m[2], m[3]))
+
+test('ldbRe : forme COMPACTE à trois numéros — les TROIS sont rendus', () => {
+  assert.deepEqual(nums(spec(18, '298/315/369')), [298, 315, 369])
+})
+
+test('ldbRe : forme COMPACTE à deux numéros', () => {
+  assert.deepEqual(nums(spec(18, '202/213')), [202, 213])
+})
+
+test('ldbRe : la borne HAUTE d’une compacte est celle que borne check-code-refs', () => {
+  const m = [...spec(18, '222/999').matchAll(ldbRe())]
+  assert.equal(m.length, 1)
+  assert.equal(span(m[0][2], m[0][3]).join(','), '222,999')
+})
+
+test('ldbRe : réf MULTI-CHAPITRES — le nombre après `/` suivi de ` l.` est un CHAPITRE, jamais une ligne', () => {
+  assert.deepEqual(nums(`${spec(18, '298')}/20 l.72/20 l.32-49`), [298])
+})
+
+test('isRangeSuffix : seule `-fin` est un intervalle ; `+pts` et `/compacte` sont des ancres distinctes', () => {
+  assert.equal(isRangeSuffix('-25'), true)
+  assert.equal(isRangeSuffix('+17'), false)
+  assert.equal(isRangeSuffix('/213'), false)
+  assert.equal(isRangeSuffix(''), false)
+})
+
+// ANGLES MORTS ASSERTÉS (mesurés, pas supposés) — patron de `src/raw-ref-integrity.test.ts` :
+//  a) une réf MULTI-CHAPITRES ne rend QUE son premier chapitre (les membres suivants n'ont pas de
+//     sigle de livre, la grammaire les ignore) ;
+//  b) une réf ENROULÉE (coupée par un retour à la ligne au milieu de la réf) est invisible : tous
+//     les scanners lisent LIGNE À LIGNE. Le site rencontré en E3-L4 a été corrigé à la main.
+test('ANGLES MORTS : multi-chapitres partiel, et réf ENROULÉE sur deux lignes — non vus, dit ici', () => {
+  assert.deepEqual([...`${spec(18, '5')}/20 l.14`.matchAll(ldbRe())].map((m) => m[1]), ['18']) // le `20` non rendu
+  assert.equal([...`LDB 09 /\n * 18 ${'l.'}382`.matchAll(ldbRe())].length, 0) // enroulée : rien
 })
 
 test('otherRe : "MSRC l.90" (livre sans chapitre) matche toujours', () => {

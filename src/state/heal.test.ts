@@ -269,7 +269,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
     expect(useGame.getState().medic).not.toBeNull();
   });
 
-  it('mode trauma : la Guérison accélère la convalescence d’une déchirure (LDB 18 l.317)', () => {
+  it('mode trauma : la Guérison accélère la convalescence d’une déchirure (LDB 18 l.222)', () => {
     const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const patient = hero({ id: 'p', label: 'Patient', skills: [], traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, medic: null });
@@ -284,7 +284,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
     expect(p.traumas![0].healAccelerated).toBe(true);
   });
 
-  it('mode trauma : un ÉCHEC consomme aussi le jet — la même déchirure ne se re-traite pas (LDB 18 l.317)', () => {
+  it('mode trauma : un ÉCHEC consomme aussi le jet — la même déchirure ne se re-traite pas (LDB 18 l.222)', () => {
     const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const patient = hero({ id: 'p', label: 'Patient', skills: [], traumas: [tk('dechirure', 'mineur', 'jambeD', { be: 4 })] }); // 26 j
     useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, medic: null });

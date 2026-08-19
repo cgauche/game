@@ -104,7 +104,7 @@ describe('Nuit — contagion / cauchemars / entretien différé montés par `rol
 
   it('Entretien différé (Faim) : base = Niveau NU, l’État ET la pénalité RAW ont chacun leur ligne', () => {
     // RÉÉCRIT depuis la règle (#1153 volet B). Le RAW nomme le Test : « vous devez effectuer un Test
-    // de Résistance tous les deux jours » (LDB 18 l.343), de plus en plus dur « −10 % de plus pour
+    // de Résistance tous les deux jours » (LDB 18 l.342), de plus en plus dur « −10 % de plus pour
     // chaque Test » (l.338). Le producteur DIT donc ses ids — la base redevient le Niveau de
     // Compétence nu (LDB 09 l.17) et l'État du héros (LDB 16) prend SA chip, à côté de la pénalité
     // cumulative. L'attendu précédent (une seule ligne, −20) mesurait la base FONDUE : il verrouillait
@@ -123,7 +123,7 @@ describe('Nuit — contagion / cauchemars / entretien différé montés par `rol
     const nue = skillBaseValue(affame, 'resistance', undefined, 'endurance');
     const jetee = testValue(affame, 'resistance', 'endurance');
     expect(jetee, 'l’État sépare la nue de la valeur jetée — sinon le test ne prouve rien').toBeLessThan(nue);
-    expect(faim!.test, 'le producteur NOMME son Test (LDB 18 l.343)').toEqual({ skill: 'resistance', char: 'endurance' });
+    expect(faim!.test, 'le producteur NOMME son Test (LDB 18 l.342)').toEqual({ skill: 'resistance', char: 'endurance' });
     expect(faim!.base, 'Niveau de Compétence NU (LDB 09 l.17), plus la valeur fondue').toBe(nue);
 
     const mods = faim!.mods ?? [];

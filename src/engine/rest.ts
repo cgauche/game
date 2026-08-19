@@ -18,7 +18,7 @@
  * `engine/provisions.ts`) ne regagne ni PB ni Exténué par le repos (dette levée, #T2).
  *
  * #T3 (cascade d'horloge) : la PROGRESSION des maladies (LDB 20 — incubation/durée en jours
- * CALENDAIRES) et la CONVALESCENCE des traumas (LDB 18 l.317 — « un nombre de jours égal à 30 − BE »)
+ * CALENDAIRES) et la CONVALESCENCE des traumas (LDB 18 l.222 — « un nombre de jours égal à 30 – votre Bonus d'Endurance »)
  * ne dépendent PAS du sommeil : elles sont décomptées par l'entretien quotidien (`state/upkeep.ts`,
  * sur franchissement de jour, quel que soit le chemin — advanceTime, repos, voyage). `restRecovery`
  * ne garde que ce qui dépend du SOMMEIL. `dailyDiseaseUpkeep` (ci-dessous) reste dans ce module
@@ -142,14 +142,14 @@ export function needsRecoveryRoll(c: Combatant): boolean {
  * Applique UNE journée de récupération à `c` étant donné le JET de Résistance (volet a) — ou `null`
  * si aucun jet n'était requis (PB plein, affamé). Sépare le jet (différable/influençable en cascade)
  * de sa CONSÉQUENCE : dissipation d'Exténué (sommeil, 16 l.91), soin volet a (DR+BE sur réussite) +
- * volet b (+BE inconditionnel, l.380), plafond « blessé » (l.110), réveil (l.28). Mute `c` ; renvoie
+ * volet b (+BE inconditionnel, LDB 18 l.296), plafond « blessé » (l.110), réveil (l.28). Mute `c` ; renvoie
  * `{ wokeUp }` (l'appelant journalise — `restRecovery` agrège, la cascade journalise par étape).
  * Partagé par `restRecovery` (eager) et l'applicateur de cascade « recovery » — zéro duplication.
  */
 export function applyRecoveryDay(c: Combatant, recoveryRoll: { sl: number; success: boolean } | null): { wokeUp: boolean } {
   if (c.dead || c.outOfRencontre || unstable(c)) return { wokeUp: false };
   const be = bonus(effectiveChar(c, 'endurance'));
-  // Faim & Soif (18 l.418) : un héros PRIVÉ (affamé OU assoiffé) ne récupère ni PB ni Exténué naturellement.
+  // Faim & Soif (LDB 18 l.338) : un héros PRIVÉ (affamé OU assoiffé) ne récupère ni PB ni Exténué naturellement.
   const starving = isDeprived(c);
   // Maladies (LDB 20) : l'Exténué « collant » du malaise (l.153) reste ; chaque « blessé » bloque 1 PB (l.110).
   const malaise = activeMalaiseCount(c);
@@ -190,7 +190,7 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
   let wokeUp = false;
 
   for (let d = 0; d < Math.max(1, days); d++) {
-    // volet a (l.380) : Test de Résistance Accessible (+20) — lancé seulement si utile (PB < max, non affamé).
+    // volet a (LDB 18 l.296) : Test de Résistance Accessible (+20) — lancé seulement si utile (PB < max, non affamé).
     let roll: { sl: number; success: boolean } | null = null;
     if (needsRecoveryRoll(c)) {
       const res = rollTest(restResistVal(c), 'accessible', rng);

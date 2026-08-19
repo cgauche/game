@@ -1,6 +1,6 @@
 /**
  * Guérison — Compétence Avancée (Int). Soin de Blessures et arrêt d'Hémorragie.
- * Source : LDB 09 l.254-269 (skills.json), LDB 16 l.103-109, LDB 18 l.14.
+ * Source : LDB 09 l.254-269 (skills.json), LDB 16 l.103-109, LDB 18 l.298.
  * Pur + testé ; ne dépend que de types/conditions (déjà purs).
  */
 import { Combatant, type Difficulty } from './types';
@@ -41,7 +41,7 @@ export function isHealable(c: Combatant): boolean {
 export type HealMode = 'wounds' | 'bleed' | 'trauma' | 'surgery' | 'recovery' | 'ammo';
 
 /** Modes disponibles pour soigner `target`, compte tenu de la limite « 1 soin de Blessures / rencontre ».
- *  Le mode `trauma` (accélérer la convalescence d'une déchirure, LDB 18 l.317) est hors-combat — les
+ *  Le mode `trauma` (accélérer la convalescence d'une déchirure, LDB 18 l.222) est hors-combat — les
  *  consommateurs en combat le filtrent. */
 export function availableHealModes(target: Combatant): HealMode[] {
   const modes: HealMode[] = [];

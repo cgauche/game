@@ -34,8 +34,8 @@
 | 14 | OPTION : FRAPPE MORTELLE | ✅ | 138 (combat.md ×132) |
 | 15 | Déplacement | ✅ | 74 (combat.md ×66) |
 | 16 | États | ✅ | 54 (etats.md ×30) |
-| 17 | Destin et Résistance | ✅ | 52 (destin.md ×27) |
-| 18 | Traumatisme | ✅ | 111 (traumatisme.md ×67) |
+| 17 | Destin et Résistance | ✅ | 54 (destin.md ×31) |
+| 18 | Traumatisme | ✅ | 103 (traumatisme.md ×68) |
 | 19 | Corruption | ✅ | 36 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
 | 21 | Psychologie | ✅ | 52 (psychologie.md ×29) |

@@ -1,7 +1,7 @@
 /**
  * Résolution des Blessures critiques — Livre de base, « Traumatisme » (LDB 18).
  * Jet 1d100 sur la table de la localisation ; -20 si l'overkill dépasse le Bonus d'Endurance
- * (LDB 18 l.16, min 01) ; PB perdus en ignorant BE+PA ; États appliqués + Test de Résistance auto-résolu.
+ * (LDB 18 l.17, min 01) ; PB perdus en ignorant BE+PA ; États appliqués + Test de Résistance auto-résolu.
  */
 import { d100, d10, RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
@@ -190,7 +190,7 @@ export function critWoundLocation(rng: RNG, bodyShape: BodyShape = 'humanoide', 
 }
 
 /**
- * Réduction du d100 de SÉVÉRITÉ d'une Blessure critique — LDB 18 l.16 (verbatim : « vous ôtez -20 à
+ * Réduction du d100 de SÉVÉRITÉ d'une Blessure critique — LDB 18 l.17 (verbatim : « vous ôtez -20 à
  * votre résultat sur le Tableau des Critiques avec un résultat minimum de 01 »), quand les PB négatifs
  * dépassent le Bonus d'Endurance. SOURCE UNIQUE du modificateur : `rollCritical` l'applique à SON
  * lookup, la DÉCLARATION d'étape à table le porte en `mod` (négatif) — les deux lisent la même valeur.

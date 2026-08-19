@@ -805,7 +805,7 @@ export interface PendingCritSeverity {
   weapon: Weapon;
   res: AttackResult;
   location: HitLocation; // loc du Critique : re-tirée pour un double, loc de touche pour un dépassement
-  overkill: number; // dépassement (−20 à la table si > BE, LDB 18 l.16) — porté en `mod` par la déclaration
+  overkill: number; // dépassement (−20 à la table si > BE, LDB 18 l.17) — porté en `mod` par la déclaration
   twice?: boolean; // LDB 41 l.170 — pose `keepHighest: 2` sur la déclaration et garde la bifurcation AA
 }
 /** Contexte SÉRIALISABLE des tirages CHAÎNÉS d'une mutation de Corruption (#942 L5, LDB 19 l.73-83) :
@@ -1471,7 +1471,7 @@ export interface CascadeTableDecl {
    *  l'ancien total). Le `mod` posé à la construction reste ADDITIF (les deux se cumulent). */
   modPerActor?: { counter: CascadeActorCounter; factor: number };
   /** PLANCHER : le dé effectif est ramené à la PREMIÈRE ligne de la table au lieu de lever. Déclaré
-   *  par les tables dont le RAW borne LITTÉRALEMENT par le BAS — Blessures critiques, LDB 18 l.16 :
+   *  par les tables dont le RAW borne LITTÉRALEMENT par le BAS — Blessures critiques, LDB 18 l.17 :
    *  « vous ôtez -20 à votre résultat sur le Tableau des Critiques avec un résultat minimum de 01 ».
    *  La borne HAUTE n'est PAS couverte (le RAW cité ne donne qu'un minimum) : un dé effectif au-dessus
    *  de la table reste un fail-fast, `clamp` ou non. */

@@ -2914,7 +2914,7 @@ export function createCombatSlice(get: Get, set: Set) {
       } else if (ph.mode === 'ammo') {
         log = resolveExtractLodgedAmmo(target, ph.success); // LDB 62 l.250 — Test de Guérison Intermédiaire
       } else {
-        log = treatTrauma(target, ph.sl, ph.success); // mode 'trauma' — l'échec consomme aussi le jet (LDB 18 l.317)
+        log = treatTrauma(target, ph.sl, ph.success); // mode 'trauma' — l'échec consomme aussi le jet (LDB 18 l.222)
       }
       // Compétence Guérison RÉUSSIE = Aide Médicale (LDB 18 l.308) : lève l'escalade en attente (« Main
       // ouverte » : plus de doigt perdu par Round) ET les verrous d'État « par Aide Médicale » (LDB 18 :

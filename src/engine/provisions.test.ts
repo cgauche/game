@@ -28,7 +28,7 @@ function hero(opts: { endurance?: number; rations?: number; brouet?: boolean; tr
 /** RNG forcé : d100 → toujours `roll` (échec/réussite déterministe), d10 → 10. */
 const fixed = (roll: number): RNG => ({ int: (_min, max) => (max === 100 ? roll : max) });
 
-describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.343)', () => {
+describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.342)', () => {
   it('consomme 1 ration/jour ; nourri = pas de faim', () => {
     const c = hero({ rations: 2 });
     const r = dailyFoodUpkeep(c, 30, 3, makeRNG(1));
@@ -145,7 +145,7 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.343)', () =>
     expect(c.hunger?.days).toBe(2); // la faim a bien progressé d'un jour
   });
 
-  it('applyFaimTest : verrouiller un échec compte le Test + applique les pénalités (LDB 18 l.343)', () => {
+  it('applyFaimTest : verrouiller un échec compte le Test + applique les pénalités (LDB 18 l.342)', () => {
     const c = hero({ rations: 0, endurance: 30 });
     c.hunger = { days: 2, tests: 0, failures: 0 };
     const r1 = applyFaimTest(c, false, 3, fixed(95)); // 1ᵉʳ échec → −10 F/E

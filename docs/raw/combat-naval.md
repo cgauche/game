@@ -144,7 +144,7 @@ M ≤ 3 subit des pénalités de Poursuite (M3 = −1 DR, M2 = −2, M1 = −3, 
 `MDG 13 l.378-399` (Progression) · `MDG 12 l.92/94` (stat-bloc Man −1 DR) · `MDG 13 l.173` (« Peu maniable »).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.92) → `shipboardSouls`, `surcharge-3` — `src/data/sea-cargo.json`, `src/gameIso/rig/ship/defs/bateau-de-patrouille.ts`, `src/state/shipCrew.ts`
+- `MDG 12` (l.92-94) → `shipboardSouls`, `surcharge-3` — `src/data/sea-cargo.json`, `src/gameIso/rig/ship/defs/bateau-de-patrouille.ts`, `src/state/shipCrew.ts`
 - `MDG 13` (l.173, l.304, l.376, l.378-399) → `OrientationOutcome`, `aucune`, `orientationOutcome`, `legeres`, `voyageTiles`, `abondantes`, `pursuitLowMPenalty`, `pursuitDistanceGain`, `tres-abondantes`, `caniculaire`, +27 — `src/data/flow-stakes.json`, `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, +4 fichiers
 
 **État du code.** ✅ Test d'équipage (Timonier ★), virage = réussite du d100 (≠ dr≥0), Man en ±DR, Progression,

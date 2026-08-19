@@ -369,7 +369,7 @@ export function PendingRollLine({ p }: { p: PendingRoll }) {
  *  mutations…) : rangée compacte NEUTRE `nom de la table · dé · résultat` — remplace les
  *  anciens verdicts plein écran rouge/vert (`.test-result`). `roll` absent : libellé seul.
  *
- *  `mod` = modificateur appliqué au dé pour atteindre la ligne (ex. −20 d'overkill, LDB 18 l.16).
+ *  `mod` = modificateur appliqué au dé pour atteindre la ligne (ex. −20 d'overkill, LDB 18 l.17).
  *  Non nul → la pastille porte le dé EFFECTIF (celui qui a résolu la ligne affichée) et l'opération
  *  qui y mène : montrer le seul dé NATUREL à côté d'une ligne obtenue avec un modificateur est une
  *  valeur menteuse (le joueur lit 76, la ligne vient de 56). */

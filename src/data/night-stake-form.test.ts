@@ -20,7 +20,7 @@ import { ACTIVITIES } from '../engine/activities';
 
 const RULE_IDS = new Set(regles.map((r) => r.id));
 
-/** Lignes du fichier de CHAPITRE cité par une note (`LDB 18 l.343` → `18 - Traumatisme.md`). */
+/** Lignes du fichier de CHAPITRE cité par une note (`LDB 18 l.342` → `18 - Traumatisme.md`). */
 const chapterCache = new Map<string, string[]>();
 function chapterLines(bookId: string, note: string): string[] {
   const chap = /^\S+\s+(\d+)/.exec(note)?.[1];

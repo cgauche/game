@@ -7,7 +7,7 @@
  *  - « Les Personnages qui n'ont ni nourriture ni boisson ne peuvent pas récupérer de Points
  *    de Blessure ou se débarrasser de l'État Exténué de manière naturelle » (LDB 18 l.338) → `isStarving`
  *    est lu par `rest.ts` (lève la dette documentée là-bas).
- *  - Nourriture (LDB 18 l.343) : « lorsque vous n'avez plus de nourriture, vous devez effectuer un Test
+ *  - Nourriture (LDB 18 l.342) : « lorsque vous n'avez plus de nourriture, vous devez effectuer un Test
  *    de Résistance tous les deux jours. Sur un premier échec, vous subissez une pénalité de –10 en
  *    Force et Endurance. À partir du deuxième échec, toutes les autres Caractéristiques sont
  *    réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1
@@ -52,7 +52,7 @@ function hungerThirstPenalty(value: number): { value: number; label: string; fam
   return { value, label: t('prov.penaltyTestsTaken'), famille: 'jet', ref: RULE_REF['faim-et-soif'] };
 }
 
-/** Ids du Test que le RAW nomme pour la Faim comme pour la Soif : `LDB 18 l.338/340/343`. Les DIRE
+/** Ids du Test que le RAW nomme pour la Faim comme pour la Soif : `LDB 18 l.338/340/342`. Les DIRE
  *  au lieu de ne transmettre qu'un nombre laisse le monteur de ligne décomposer `resVal` en Niveau
  *  de Compétence nu + composantes nommées (un héros Empoisonné lit « −10 Empoisonné » sur l'étape). */
 const RESISTANCE_TEST = { skill: 'resistance', char: 'endurance' } as const satisfies { skill: string; char: CharKey };
@@ -63,7 +63,7 @@ export interface HungerState {
   days: number;
   /** Tests de faim déjà tentés (le suivant est à −10 × tests, LDB 18 l.338). */
   tests: number;
-  /** Échecs cumulés : 1ᵉʳ → −10 F/E ; 2ᵉ et suivants → −10 autres caracs + 1d10 dégâts (LDB 18 l.343). */
+  /** Échecs cumulés : 1ᵉʳ → −10 F/E ; 2ᵉ et suivants → −10 autres caracs + 1d10 dégâts (LDB 18 l.342). */
   failures: number;
   /** Journée DÉJÀ couverte : demi-ration de Brouet (LDB 10 l.139) ou repas pris (effet `mealParty`). */
   coveredDay?: boolean;
@@ -134,7 +134,7 @@ export function feedFromMeal(c: Combatant): void {
   c.hunger = { days: 0, tests: 0, failures: 0, coveredDay: true };
 }
 
-/** Pénalités de Caractéristique dues à la faim (LDB 18 l.343), injectées dans le pool non-cumul
+/** Pénalités de Caractéristique dues à la faim (LDB 18 l.342), injectées dans le pool non-cumul
  *  d'`effectiveChar` : 1ᵉʳ échec → −10 Force et Endurance ; dès le 2ᵉ → −10 toutes les autres. */
 export function hungerCharPenalties(c: Combatant, key: CharKey): number[] {
   const f = c.hunger?.failures ?? 0;
@@ -161,7 +161,7 @@ export interface FoodUpkeepResult {
  */
 /**
  * Applique le RÉSULTAT d'un Test de Faim DIFFÉRÉ (différé/influençable en cascade de nuit) : compte
- * le Test (LDB 18 l.338), et sur un échec applique les pénalités (LDB 18 l.343 : 1ᵉʳ → −10 F/E ; 2ᵉ+ → −10 autres
+ * le Test (LDB 18 l.338), et sur un échec applique les pénalités (LDB 18 l.342 : 1ᵉʳ → −10 F/E ; 2ᵉ+ → −10 autres
  * + 1d10 Dégâts réduits du BE, min 1). Mute `c.hunger` ; renvoie le journal + les Dégâts à appliquer
  * (via `loseWounds` par l'appelant). Partagé avec `dailyFoodUpkeep` (roll eager) — zéro duplication.
  */
@@ -174,7 +174,7 @@ export function applyFaimTest(c: Combatant, success: boolean, be: number, rng: R
     h.failures += 1;
     if (h.failures === 1) log.push(t('prov.starving', { name: c.label }));
     else {
-      damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.343)
+      damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.342)
       log.push(t('prov.wasting', { name: c.label, dmg: damage }));
     }
   } // réussite : aucune conséquence (le jet a déjà été montré dans l'étape — pas de bruit de journal)
@@ -223,7 +223,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     return res;
   }
 
-  // 2. Pas de nourriture : la faim s'installe (LDB 18 l.343 — Test tous les 2 jours ; Brouet : 3).
+  // 2. Pas de nourriture : la faim s'installe (LDB 18 l.342 — Test tous les 2 jours ; Brouet : 3).
   h.coveredDay = undefined;
   h.days += 1;
   const interval = brouet ? 3 : 2;
@@ -247,7 +247,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
       if (h.failures === 1) {
         res.log.push(t('prov.starving', { name: c.label }));
       } else {
-        res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.343)
+        res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.342)
         res.log.push(t('prov.wasting', { name: c.label, dmg: res.damage }));
       }
     }

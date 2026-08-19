@@ -1593,7 +1593,7 @@ export function critSeverityInSeam(twice?: boolean): boolean {
 
 /** DÉCLARATION du tirage de SÉVÉRITÉ d'une Blessure critique (LDB 18) : la table de la Localisation,
  *  d100, et la réduction d'overkill portée en `mod` NÉGATIF (source unique `critSeverityReduction`).
- *  `clamp` : plancher « avec un résultat minimum de 01 » (LDB 18 l.16), la même borne que le
+ *  `clamp` : plancher « avec un résultat minimum de 01 » (LDB 18 l.17), la même borne que le
  *  `Math.max(1, …)` du lookup moteur. `keepHighest: 2` sous Bénédiction de Sauvagerie (LDB 41 l.170).
  *  Le dé de la déclaration est le dé NATUREL (le `mod` s'applique au lookup) : c'est exactement ce que
  *  `rollCritical` attend en `forcedRoll`, qui applique LUI-MÊME la réduction — les deux lookups tombent
@@ -1659,7 +1659,7 @@ export function applyCriticalToTarget(
     return false; // une Structure ne « meurt » pas comme un personnage : la destruction = ses Blessures → BRÈCHE
   }
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
-    // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
+    // Figurant : Mort Subite (LDB 18 l.42-46) — sortie directe.
     target.wounds.current = 0;
     if (!target.conditions.some((c) => c.id === COND.inconscient)) addCondition(target, COND.inconscient);
     log.push(tr('cf.collapse', { name: target.label }));
@@ -4703,7 +4703,7 @@ export function aiOvercastPlan(
 /** Cibles SUPPLÉMENTAIRES proposables pour la Surincantation « Cible » (LDB 47 l.28-31), côté
  *  modale : hors cible principale, À PORTÉE du Sort (quand les positions existent — hors combat
  *  le groupe n'est pas sur un plateau), et surtout EN ÉTAT D'ÊTRE CIBLÉES — un Projectile vise un
- *  adversaire encore en combat (un figurant à 0 PB est mort, LDB 18 l.51-54) ; un sort bénéfique
+ *  adversaire encore en combat (un figurant à 0 PB est mort, LDB 18 l.42-46) ; un sort bénéfique
  *  vise un allié non mort/évacué (l'Inconscient reste soignable). Aligné sur aiOvercastPlan/ZdE. */
 export function overcastTargetCandidates(
   pool: Combatant[],

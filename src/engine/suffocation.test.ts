@@ -1,5 +1,5 @@
 /**
- * Noyade et Suffocation (LDB 18 l.345-346) : « Vous perdez 1 Point de blessure par Round que
+ * Noyade et Suffocation (LDB 18 l.346) : « Vous perdez 1 Point de blessure par Round que
  * vous passez à suffoquer. Si vos Points de blessure passent à 0, gagnez immédiatement l'État
  * Inconscient. Après cela, et au bout d'un nombre de Rounds égal à votre Bonus d'Endurance,
  * vous mourez par suffocation ou par noyade. »
@@ -29,7 +29,7 @@ function mk(over: Partial<Combatant> = {}): Combatant {
   } as unknown as Combatant;
 }
 
-describe('suffocationTick — Noyade et Suffocation (LDB 18 l.345-346)', () => {
+describe('suffocationTick — Noyade et Suffocation (LDB 18 l.346)', () => {
   it('perd 1 PB par Round de suffocation', () => {
     const c = mk();
     suffocationTick(c);
@@ -68,7 +68,7 @@ describe('suffocationTick — Noyade et Suffocation (LDB 18 l.345-346)', () => {
   });
 });
 
-describe('Rétention de souffle (LDB 18 l.345) : BE×10 s avant suffocation si préparé', () => {
+describe('Rétention de souffle (LDB 18 l.346) : BE×10 s avant suffocation si préparé', () => {
   it('BE×10 secondes de souffle (BE 3 → 30 s)', () => {
     expect(breathHoldSeconds(mk())).toBe(30);
   });

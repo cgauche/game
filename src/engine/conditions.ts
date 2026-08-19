@@ -691,12 +691,12 @@ export function bleedDeathRoll(c: Combatant, rng: RNG = defaultRNG): { died: boo
   return { died: false, log: [] };
 }
 
-/** Mort Subite (LDB 18 l.51-54) : sortie directe à 0 PB, sans passer par les Blessures critiques.
+/** Mort Subite (LDB 18 l.42-46) : sortie directe à 0 PB, sans passer par les Blessures critiques.
  *  Portée réglable (`combat-sudden-death`) — JAMAIS les PJ : 'figurants' (défaut) = figurants seuls ;
  *  'tous' = aussi les PNJ importants ; 'off' = personne (tout passe par les critiques). SOURCE UNIQUE
  *  (consommée par `isOutOfAction` et la résolution de Blessure critique). */
 export function usesSuddenDeath(c: Combatant): boolean {
-  if (c.kind === 'hero') return false; // jamais pour les PJ (LDB 18 l.54)
+  if (c.kind === 'hero') return false; // jamais pour les PJ (LDB 18 l.46)
   if (c.bodyShape === 'vehicule') return false; // une COQUE n'est pas un figurant : sa destruction passe par ses Blessures (Naufrage) et les Critiques NAVALS — pas de « Mort Subite » de mook (MDG 13)
   const mode = rule('combat-sudden-death');
   if (mode === 'off') return false;

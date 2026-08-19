@@ -4,7 +4,7 @@
 > exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
 > courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
-**Bilan : ✅ 482 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 36 introuvables · ➖ 2814 synthèses** (⛔ 9 hors-fichier · ⚠️ 0 sans source) sur 3341 réfs · 518 citations · 28 fiches.
+**Bilan : ✅ 488 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 31 introuvables · ➖ 2816 synthèses** (⛔ 9 hors-fichier · ⚠️ 0 sans source) sur 3344 réfs · 519 citations · 28 fiches.
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
 
@@ -82,13 +82,6 @@
 | `EDOC 5 l.479` | ⛔ PAST-EOF | l.479 > 292 lignes |
 | `MDG 15 l.76` | ❌ LOW | « distance/jour suppose un équipage permettant d… » — aucune occurrence |
 
-## destin.md
-
-| Réf | Statut | Détail |
-|---|---|---|
-| `LDB 18 l.10` | ❌ LOW | « la détermination est récupérée chaque fois que… » — texte trouvé en LDB 17 l.81 |
-| `LDB 18 l.14` | ❌ LOW | « le mj peut accorder un point de résilience per… » — texte trouvé en LDB 17 l.85 |
-
 ## etats.md
 
 | Réf | Statut | Détail |
@@ -97,9 +90,6 @@
 | `LDB 46 l.80` | ❌ LOW | « 56-60 drain de l'âme : gagnez 1 état exténué, … » — aucune occurrence |
 | `LDB 46 l.102` | ❌ LOW | « 06-10 regard maudit : vous possédez 1 état ave… » — aucune occurrence |
 | `LDB 46 l.126` | ❌ LOW | « 66-70 régurgitation : gagnez l'état sonné, qui… » — aucune occurrence |
-| `LDB 18 l.211` | ❌ LOW | « 91-93 cage thoracique perforée : gagnez 1 état… » — aucune occurrence |
-| `LDB 18 l.213` | ❌ LOW | « 97-99 hémorragie interne : gagnez 1 état hémor… » — aucune occurrence |
-| `LDB 18 l.104` | ❌ LOW | « 76-80 commotion cérébrale : gagnez l'état exté… » — aucune occurrence |
 | `NADJ 05 l.117` | ❌ LOW | « état fatigué… » — aucune occurrence |
 
 ## tests.md

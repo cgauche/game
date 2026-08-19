@@ -828,7 +828,7 @@ export interface ActiveEffect {
   /** Aura « N'écoutez point la Sorcière » (LDB 42) : tout SORT (Langue (Magick)) ciblant quelqu'un
    *  à `radiusMeters` du porteur subit −20 au Test d'incantation. */
   castWard?: { radiusMeters: number };
-  /** Le porteur SUFFOQUE (Noyade et Suffocation, LDB 18 l.345-346 — Ombres étrangleuses,
+  /** Le porteur SUFFOQUE (Noyade et Suffocation, LDB 18 l.346 — Ombres étrangleuses,
    *  Transmutation de Chamon) : −1 PB/Round, 0 PB → Inconscient, mort après BE Rounds. */
   suffocates?: boolean;
   /** « N'a pas besoin de respirer et ignore les règles de suffocation » (B. de Souffle, LDB 41). */
@@ -936,18 +936,18 @@ export interface Trauma {
    *  à 0 le trauma (et ses pénalités) disparaît. Absent = trauma legacy/permanent (pas de décompte). */
   recoveryDays?: number;
   /** Durée totale de convalescence (à la création) — seuils : mi-durée d'une déchirure majeure (downgrade
-   *  −20→−10, l.326), fenêtre de pose d'une semaine d'une fracture (l.302). */
+   *  −20→−10, l.231), fenêtre de pose d'une semaine d'une fracture (l.204). */
   recoveryTotal?: number;
   /** Type / sévérité, pour la convalescence à étapes (déchirure : Guérison accélère ; fracture : Test de fin). */
   kind?: 'dechirure' | 'fracture';
   severity?: 'mineur' | 'majeur';
-  /** La Compétence Guérison a déjà été EMPLOYÉE sur ce trauma — succès (l.317 : −1 j −1/DR, une
+  /** La Compétence Guérison a déjà été EMPLOYÉE sur ce trauma — succès (l.222 : −1 j −1/DR, une
    *  seule fois) comme échec : le jet est consommé, on ne relance pas jusqu'au succès. */
   healAccelerated?: boolean;
-  /** Fracture « réduite » : bandée par un Test de Guérison dans la semaine (l.302) → pas de Test de Résistance de fin. */
+  /** Fracture « réduite » : bandée par un Test de Guérison dans la semaine (l.204) → pas de Test de Résistance de fin. */
   fractureSet?: boolean;
-  /** Trauma exigeant de la CHIRURGIE pour guérir (amputation, fracture majeure « peu probable sans
-   *  intervention médicale », LDB 18 l.305/398) — traité par le Talent Chirurgie, pas par le simple repos. */
+  /** Trauma exigeant de la CHIRURGIE pour guérir (amputation, fracture majeure « fort peu probable qu'il se soigne correctement sans
+   *  intervention médicale », LDB 18 l.208/239) — traité par le Talent Chirurgie, pas par le simple repos. */
   needsSurgery?: boolean;
   /** Prothèses (LDB 73) qui annulent la séquelle permanente d'une amputation TANT QUE l'objet est porté
    *  (dans `items`). Réf par `trappingId` STABLE (`crochet`/`fausse-jambe`/`merveille-d-ingenierie`/
@@ -1544,8 +1544,9 @@ export interface Combatant {
    *  Blessure majeure à l'oreille, LDB 18 l.71) — lu par `rollCritical`/`resolveAACritical` (`escalation.onRepeat`). */
   critEntriesSuffered?: string[];
   /** La blessure a été PANSÉE (matériel stérile / pansement) DANS le combat courant — un soin de Guérison
-   *  réussi ou un bandage suffit : « aucune Infection ne se développera suite à la blessure » (LDB 09 /
-   *  18 l.382). Empêche la contraction d'Infection Mineure en fin de combat. Transitoire (par rencontre). */
+   *  réussi ou un bandage suffit : « aucune Infection ne se développera suite à la blessure »
+   *  (LDB 09 l.260 ; cataplasme de guérison LDB 72 l.20). Empêche la contraction d'Infection Mineure
+   *  en fin de combat. Transitoire (par rencontre). */
   woundDressed?: boolean;
   /** Traumatismes subis (LDB 18) — persistants ; effets en-combat lus par effectiveChar/effectiveMovement. */
   traumas?: Trauma[];
@@ -1605,7 +1606,7 @@ export interface Combatant {
   /** Suffocation (LDB 18 l.346) : Rounds restants avant la MORT une fois Inconscient à 0 PB
    *  en suffoquant (posé à BE, décrémenté par Round de suffocation continue ; 0 → mort). */
   suffocationCountdown?: number;
-  /** Rétention de souffle (LDB 18 l.345) : « si vous êtes suffisamment préparé, vous pouvez retenir
+  /** Rétention de souffle (LDB 18 l.346) : « si vous êtes suffisamment préparé, vous pouvez retenir
    *  votre souffle pendant un nombre de secondes égal à votre Bonus d'Endurance x 10 sans avoir à
    *  effectuer un Test ». SECONDES de souffle restantes, posées par `prepareBreathHold` quand la
    *  privation d'air est ANTICIPÉE (plongée volontaire) : tant que > 0, la suffocation ne fait perdre

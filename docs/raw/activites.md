@@ -474,7 +474,7 @@ Test **Savoir Accessible (+20)** (spécialisation appropriée). Sans la bonne sp
 - Échec Impressionnant → fausse information crue vraie (MJ peut lancer en secret).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.222-227) → `InterludeHeroState`, `PendingActivityFields`, `heroStatus`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, `dernieres-nouvelles`, `entrainement-au-combat`, +5 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.222-227) → `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `useDefenseJetProps`, `InterludeHeroState`, `purgeAdventureEffects`, `RollFlowSpec`, `PendingActivityFields`, `heroStatus`, `statusIncomeMax`, +12 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +6 fichiers
 
 ---
 
@@ -492,7 +492,7 @@ Dépenser de l'argent pour augmenter son Standing de +1 pour la prochaine aventu
 - Échec Stupéfiant (−6) → Standing −1 pour la prochaine aventure entière.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.229-234) → `InterludeHeroState`, `ActivityDef`, `PendingActivityFields`, `heroStatus`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, `recherche-de-savoir`, +3 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.229-234) → `Duration`, `InterludeHeroState`, `purgeAdventureEffects`, `ActivityDef`, `PendingActivityFields`, `heroStatus`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, +5 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, +1 fichiers
 
 ---
 
@@ -517,7 +517,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 - Échec → pas de révolte ; Échec de plusieurs DR → la cible apprend vos actions.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.237-249) → `InterludeHeroState`, `handrich`, `ActivityDef`, `PendingActivityFields`, `heroStatus`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, +4 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.237-249) → `Duration`, `InterludeHeroState`, `purgeAdventureEffects`, `handrich`, `ActivityDef`, `PendingActivityFields`, `heroStatus`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, +6 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -564,7 +564,7 @@ Contexte : préparation d'une bataille (siège, campagne militaire). Les Activit
 **Option coût de la guerre** : entretien = Σ Statuts des soldats/jour (réduction 50 % → −10 à tous les Tests de Puissance ; aucun entretien → armée se disperse en 2 jours).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ADE II 8` (l.89-131) → `scene`, `MassBattleView`, `ActivityContext`, `inspire`, `planification`, `infiltration`, `rassembler-des-forces`, `reperage`, `sabotage`, `applyAttackResult` — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/engine/activities.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/state/combatFlow.ts`, `src/ui/MassBattleView.tsx`
+- `ADE II 8` (l.89-131) → `scene`, `MassBattleView`, `ActivityContext`, `schema`, `inspire`, `planification`, `infiltration`, `rassembler-des-forces`, `reperage`, `sabotage`, +1 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/activities.ts`, `src/engine/activities.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/state/combatFlow.ts`, +1 fichiers
 
 ---
 
@@ -593,7 +593,7 @@ Les Activités de voyage durent toute une Étape de voyage et restent **fatigant
 Note sur les Revenus en voyage : l'Activité *Revenus* (LDB 23) n'est **pas adaptée** pour la plupart des Carrières en voyage — sauf juges/huissiers itinérants, chasseurs, éclaireurs, cochers (EDOC 8 l.167).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `EDOC 8` (l.129-180) → `plein-air`, `PosteCardinality`, `printemps`, `activityAsPoste`, `approvisionnement`, `ete`, `gatherInnInfo`, `recueillir-informations`, `EncounterCategory`, `automne`, +21 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/weather.json`, `src/engine/activities.ts`, `src/engine/travelEncounter.ts`, `src/engine/travelTables.ts`, +7 fichiers
+- `EDOC 8` (l.129-180) → `plein-air`, `PosteCardinality`, `printemps`, `activityAsPoste`, `approvisionnement`, `ete`, `gatherInnInfo`, `recueillir-informations`, `EncounterCategory`, `automne`, +22 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/weather.json`, `src/engine/activities.ts`, `src/engine/travelEncounter.ts`, `src/engine/travelTables.ts`, +7 fichiers
 
 ---
 

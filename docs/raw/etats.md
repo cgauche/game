@@ -69,7 +69,7 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 - `LDB 16 l.137` — Surpris ne se cumule pas
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `STABLE_COND_KINDS`, `addCondition`, `stopBleedOutcome`, `hitModifiers`, `addClockCondition`, `sleepParty`, `restRecovery`, `etatTestMods`, +45 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +15 fichiers
+- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `schema`, `STABLE_COND_KINDS`, `addCondition`, `stopBleedOutcome`, `hitModifiers`, `addClockCondition`, `sleepParty`, `restRecovery`, +46 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +16 fichiers
 
 ---
 
@@ -175,7 +175,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Psychologie (`psychologie.md`), Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.51-61) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `describeStateRecovery`, +23 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, +15 fichiers
+- `LDB 16` (l.51-61) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `describeStateRecovery`, +24 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +16 fichiers
 
 ---
 
@@ -199,7 +199,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Empoignade (`combat.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.66, l.72, l.86-87) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `Condition`, `aaBleedUnconsciousDue`, +25 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, +16 fichiers
+- `LDB 16` (l.66, l.72, l.86-87) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `Condition`, `aaBleedUnconsciousDue`, +26 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +17 fichiers
 
 ---
 
@@ -226,7 +226,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Exténué, Drogues et poisons (`LDB 71`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-79) → `combat-fatigue`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, `PendingStateRecovery`, +20 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +13 fichiers
+- `LDB 16` (l.68-79) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `describeStateRecovery`, +22 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +15 fichiers
 
 ---
 
@@ -249,7 +249,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.81-84) → `combat-fatigue`, `Formula`, `brise`, `needsRecoveryRoll`, `ActionBar`, `empetre`, `GameOp`, `empoisonne`, `collectHeroRoundEndUpkeep`, `en-flammes`, +5 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, +5 fichiers
+- `LDB 16` (l.81-84) → `combat-fatigue`, `schema`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `Condition`, `describeStateRecovery`, `ActionBar`, `empetre`, +11 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +10 fichiers
 
 ---
 
@@ -281,7 +281,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Brisé, Sonné, Hémorragique, Empoisonné, Inconscient, Traumatisme (`traumatisme.md`), Psychologie (`psychologie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.84-102) → `combat-fatigue`, `unstable`, `Formula`, `stopBleedOutcome`, `brise`, `hitModifiers`, `needsRecoveryRoll`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, +27 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +15 fichiers
+- `LDB 16` (l.84-102) → `combat-fatigue`, `unstable`, `schema`, `EnemyAction`, `Formula`, `stopBleedOutcome`, `brise`, `hitModifiers`, `needsRecoveryRoll`, `sleepParty`, +32 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +18 fichiers
 - `LDB 21` (l.33) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `fearSourceFor`, `psychImmuneToFrom`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `describeApproach`, `EffectFlags`, +39 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, +19 fichiers
 
 ---
@@ -311,7 +311,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Inconscient, Traumatisme (`traumatisme.md`), Maladies (`maladies.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.103-109) → `combat-fatigue`, `unstable`, `stopBleedOutcome`, `brise`, `hitModifiers`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `fatigueThreshold`, +19 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +9 fichiers
+- `LDB 16` (l.103-109) → `combat-fatigue`, `unstable`, `schema`, `stopBleedOutcome`, `brise`, `hitModifiers`, `needsRecoveryRoll`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, +21 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +10 fichiers
 
 ---
 
@@ -335,7 +335,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Hémorragique, Empoisonné, À Terre, Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.112-120) → `unstable`, `STABLE_COND_KINDS`, `stopBleedOutcome`, `hitModifiers`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, +18 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/rest.ts`, +9 fichiers
+- `LDB 16` (l.112-120) → `unstable`, `schema`, `STABLE_COND_KINDS`, `stopBleedOutcome`, `hitModifiers`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `DOCTRINES`, +19 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +10 fichiers
 
 ---
 
@@ -359,7 +359,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Exténué, Magie (`magie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.123-130) → `STABLE_COND_KINDS`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, `endOfRound`, +6 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
+- `LDB 16` (l.123-130) → `schema`, `STABLE_COND_KINDS`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, +7 — `src/data/etats.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, +1 fichiers
 
 ---
 
@@ -522,33 +522,33 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 Les tableaux de Blessures Critiques (LDB 18) génèrent des États dont le **retrait est conditionnel** à un soin spécifique — comportement atypique par rapport aux règles générales du ch. 16 :
 
 - **En plein front** (46-50 Tête) : État Aveuglé qui ne peut pas être retiré tant que tous les États Hémorragique n'ont pas été éliminés.
-- **Blessure majeure à l'œil** (56-60 Tête) : **État Aveuglé** qui ne peut être soigné **que lorsqu'on applique Aide Médicale** (retrait conditionnel médical, pas par Test propre). `LDB 18 l.67-67`
+- **Blessure majeure à l'œil** (56-60 Tête) : **État Aveuglé** qui ne peut être soigné **que lorsqu'on applique Aide Médicale** (retrait conditionnel médical, pas par Test propre). `LDB 18 l.70`
 - **Commotion cérébrale** (76-80 Tête) : **État Exténué** qui dure **1d10 jours** (durée calendaire — non pas en Rounds ni en heures). Si une autre Blessure critique à la tête est reçue pendant cet État Exténué : Test de Résistance Accessible (+20) ou État Inconscient. `LDB 18 l.74-75`
-- **Épaule luxée** (76-80 Bras) : **État Sonné** qui persiste **jusqu'à Aide Médicale** (non retirable par Test de Résistance standard) ; après Aide Médicale : bras utilisable mais nécessite Test étendu de Guérison Accessible (+20) DR 6 pour récupérer l'usage complet. `LDB 18 l.123-125`
+- **Épaule luxée** (76-80 Bras) : **État Sonné** qui persiste **jusqu'à Aide Médicale** (non retirable par Test de Résistance standard) ; après Aide Médicale : bras utilisable mais nécessite Test étendu de Guérison Accessible (+20) DR 6 pour récupérer l'usage complet. `LDB 18 l.120`
 - **Cage thoracique perforée** (91-93 Torse) : État Sonné qui ne peut être retiré que par Aide Médicale.
 - **Clavicule cassée** (94-96 Torse) : État Inconscient jusqu'à Aide Médicale.
 - **Hémorragie interne** (97-99 Torse) : État Hémorragique qui ne peut être retiré que par Chirurgie.
 
-> « 91-93 Cage thoracique perforée : Gagnez 1 État _Sonné_ qui ne peut être retiré que par Aide Médicale. » — `LDB 18 l.211`
+> « Gagnez 1 État Sonné qui ne peut être retiré que par Aide Médicale » (91–93 Cage thoracique perforée, Torse) — `LDB 18 l.150`
 
-> « 97-99 Hémorragie interne : Gagnez 1 État _Hémorragique_ qui ne peut être retiré que par Chirurgie. » — `LDB 18 l.213`
+> « Gagnez 1 État Hémorragique qui ne peut être retiré que par Chirurgie » (97–99 Hémorragie interne, Torse) — `LDB 18 l.152`
 
-> « 76-80 Commotion cérébrale : Gagnez l'État _Exténué_ qui va durer 1d10 jours. » — `LDB 18 l.104`
+> « Gagnez également 1'État Exténué qui va durer 1d10 jours » (76-80 Commotion cérébrale, Tête) — `LDB 18 l.74`
 
 **Note** : la liste ci-dessus est illustrative (cas à retrait le plus inhabituels), pas exhaustive — les tableaux complets LDB 18 génèrent de nombreux États standards.
 
 **Sources RAW** :
-- `LDB 18 l.64` — En plein front : Aveuglé verrouillé sur Hémorragique
-- `LDB 18 l.67-67` — Blessure majeure à l'œil : Aveuglé non retirable sans Aide Médicale
-- `LDB 18 l.74-75` — Commotion cérébrale : Exténué 1d10 jours (calendaire)
-- `LDB 18 l.123-125` — Épaule luxée : Sonné jusqu'à Aide Médicale
-- `LDB 18 l.148` — Cage thoracique perforée : Sonné non retirable sans Aide Médicale
-- `LDB 18 l.149` — Clavicule cassée : Inconscient jusqu'à Aide Médicale
-- `LDB 18 l.149` — Hémorragie interne : Hémorragique non retirable sans Chirurgie
+- `LDB 18 l.68` — En plein front : Aveuglé verrouillé sur Hémorragique
+- `LDB 18 l.70` — Blessure majeure à l'œil : Aveuglé non retirable sans Aide Médicale
+- `LDB 18 l.74` — Commotion cérébrale : Exténué 1d10 jours (calendaire)
+- `LDB 18 l.120` — Épaule luxée : Sonné jusqu'à Aide Médicale
+- `LDB 18 l.150` — Cage thoracique perforée : Sonné non retirable sans Aide Médicale
+- `LDB 18 l.151` — Clavicule cassée : Inconscient jusqu'à Aide Médicale
+- `LDB 18 l.152` — Hémorragie interne : Hémorragique non retirable sans Chirurgie
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), section Blessures Critiques
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.64, l.67, l.74-75, l.104, l.123-125, l.148, l.149, l.211, l.213) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `HealMode`, `actBlockReason`, `availableHealModes`, `MedicState`, `dechirure-autre-mineure`, `aveugle`, `bestHealerFor`, +65 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +15 fichiers
+- `LDB 18` (l.68, l.70, l.74-75, l.120, l.150, l.151, l.152) → `critEscalationSchema`, `hemorragique`, `HealMode`, `actBlockReason`, `availableHealModes`, `MedicState`, `aveugle`, `bestHealerFor`, `CritEscalation`, `assourdi`, +44 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, +12 fichiers
 
 ---
 

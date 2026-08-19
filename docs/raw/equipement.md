@@ -500,7 +500,7 @@ Les chapitres suivants contiennent essentiellement des **listes de prix** sans r
 | `LDB 72 l.24` | `src/engine/consumables.ts` : `parseConsumable` | Potion de guérison : Bonus d'Endurance, garde-fou poison/drogue |
 | `LDB 72 l.28` | `src/engine/consumables.ts` + test | Potion de vitalité : retire tout *Exténué* |
 | `LDB 74 l.41` | `src/engine/consumables.ts` : `removeStacks: 1` (Bandages) | +1 pion *Hémorragique* retiré (pas « tout ») |
-| `LDB 18 l.262` | `src/engine/items.ts` l.309 | Amputation → pas d'arme à 2 mains |
+| `LDB 18 l.263` | `src/engine/items.ts` l.309 | Amputation → pas d'arme à 2 mains |
 
 **Fichiers engine** : `src/engine/encumbrance.ts`, `src/engine/items.ts`, `src/engine/consumables.ts`
 

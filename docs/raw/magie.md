@@ -607,7 +607,7 @@ Double effet : (1) bypass PA métal sur la cible principale ; (2) propagation é
 Double effet : (1) rider optionnel `+1 État Enflammé` sur chaque cible (sauf porteurs du Talent) ; (2) chaque état `Enflammé` actif à portée (≤ BFM mètres) octroie `+10` aux Tests de Focalisation/Incantation du lanceur.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 48` (l.201) → `a-terre`, `ironie-du-destin`, `le-premier-signe-d-amul`, `le-second-signe-d-amul`, `le-troisieme-signe-d-amul`, `maudit`, `inconscient`, `extenue`, `couronne-de-flammes` — `src/data/spells.json`, `src/engine/domainAttributes.ts`
+- `LDB 48` (l.201) → `a-terre`, `ironie-du-destin`, `le-premier-signe-d-amul`, `le-second-signe-d-amul`, `le-troisieme-signe-d-amul`, `maudit`, `inconscient`, `extenue`, `couronne-de-flammes`, `castContextMods` — `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/state/combatFlow.ts`
 
 ---
 
@@ -621,7 +621,7 @@ Double effet : (1) rider optionnel `+1 État Enflammé` sur chaque cible (sauf p
 Double effet : (1) rider optionnel `+1 État Aveuglé` sur chaque cible (sauf porteurs du Talent) ; (2) frappe supplémentaire `BInt` dégâts ignorant BE+PA contre les cibles `Démoniaque` ou `Mort-vivant`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 48` (l.302-304) → `en-flammes`, `l-egide-d-aqshy`, `bannissement` — `src/data/spells.json`, `src/engine/domainAttributes.ts`
+- `LDB 48` (l.302-304) → `en-flammes`, `l-egide-d-aqshy`, `bannissement`, `castContextMods` — `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/state/combatFlow.ts`
 
 ---
 
@@ -634,7 +634,7 @@ Double effet : (1) rider optionnel `+1 État Aveuglé` sur chaque cible (sauf po
 Bypass des PA en métal **et** bonus de dégâts égal aux PA bypassés (Métal = arme qui inflige les PA qu'elle pénètre).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 48` (l.398) → `clarte-d-esprit`, `fauche-demon`, `sonne`, `aveugle`, `lumiere-de-guerison`, `pensee-rapide`, `brise`, `arme-enchantee`, `creuset-de-chamon` — `src/data/spells.json`, `src/engine/domainAttributes.ts`
+- `LDB 48` (l.398) → `clarte-d-esprit`, `fauche-demon`, `castContextMods`, `sonne`, `aveugle`, `lumiere-de-guerison`, `pensee-rapide`, `brise`, `arme-enchantee`, `creuset-de-chamon` — `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/state/combatFlow.ts`
 
 ---
 
@@ -647,7 +647,7 @@ Bypass des PA en métal **et** bonus de dégâts égal aux PA bypassés (Métal 
 Rider optionnel `+1 État Exténué` sur chaque cible vivante (sans limite par sort, mais une cible ne peut accumuler qu'un seul état `Exténué` issu de cet Attribut à la fois).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 48` (l.497) → `Combatant`, `ecaille-d-acier`, `forge-de-chamon`, `l-or-des-fous`, `metal-changeant`, `plume-de-plomb`, `sonne`, `caresse-de-laniph`, `dernieres-paroles`, `la-faux-de-shyish`, +5 — `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/engine/types.ts`
+- `LDB 48` (l.497) → `Combatant`, `castContextMods`, `ecaille-d-acier`, `forge-de-chamon`, `l-or-des-fous`, `metal-changeant`, `plume-de-plomb`, `sonne`, `caresse-de-laniph`, `dernieres-paroles`, +6 — `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`
 
 ---
 
@@ -660,7 +660,7 @@ Rider optionnel `+1 État Exténué` sur chaque cible vivante (sans limite par s
 Bypass systématique de **tous les PA non magiques** (cuir, métal ordinaire — seuls les PA magiques résistent).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 48` (l.582-585) → `caresse-de-laniph`, `dernieres-paroles`, `la-faux-de-shyish`, `le-voile-violet-de-shyish`, `mort-rapide`, `sanctifier`, `extenue`, `brise`, `peur`, `illusion`, +4 — `src/data/spells.json`, `src/engine/domainAttributes.ts`
+- `LDB 48` (l.582-585) → `castContextMods`, `caresse-de-laniph`, `dernieres-paroles`, `la-faux-de-shyish`, `le-voile-violet-de-shyish`, `mort-rapide`, `sanctifier`, `extenue`, `brise`, `peur`, +5 — `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/state/combatFlow.ts`
 
 ---
 

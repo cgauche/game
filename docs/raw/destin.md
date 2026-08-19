@@ -139,7 +139,7 @@ La restauration se fait jusqu'à la valeur courante de Destin (pas la valeur de 
 **Sources RAW** : `LDB 17 l.41`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `je-ne-faillirai-pas`, `je-te-renie`, `Effect`, `recover-empetre`, `recover-en-flammes`, `GameOp`, `GameState`, `endSession`, +5 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, +5 fichiers
+- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `Effect`, `recover-empetre`, `recover-en-flammes`, `GameOp`, `GameState`, +6 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, +6 fichiers
 
 ### Option : Longues Séances de Jeu
 
@@ -151,7 +151,7 @@ Règle optionnelle du MJ : restauration intermédiaire au cours d'une longue ses
 **Sources RAW** : `LDB 17 l.46-47`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `EnemyAction`, `je-ne-faillirai-pas`, `je-te-renie`, `Effect`, `recover-empetre`, `recover-en-flammes`, `GameOp`, `endSession`, +6 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +6 fichiers
+- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `EnemyAction`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `Effect`, `recover-empetre`, `recover-en-flammes`, `GameOp`, +7 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +7 fichiers
 
 ### Destin
 
@@ -163,7 +163,7 @@ Les Points de Destin se renouvellent très rarement — uniquement sur décision
 **Sources RAW** : `LDB 17 l.43`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `je-ne-faillirai-pas`, `je-te-renie`, `Effect`, `recover-empetre`, `recover-en-flammes`, `GameOp`, `GameState`, `endSession`, +6 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +6 fichiers
+- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `Effect`, `recover-empetre`, `recover-en-flammes`, `GameOp`, `GameState`, +7 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +7 fichiers
 
 ---
 
@@ -195,7 +195,7 @@ Dépenser 1 Point de Détermination offre l'une de ces trois options :
 **Voir aussi** : [`etats.md`](etats.md) pour la liste des États retirables.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.56-63) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, +78 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, +44 fichiers
+- `LDB 17` (l.56-63) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, +79 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, +44 fichiers
 
 ---
 
@@ -231,7 +231,7 @@ Règles précises :
 **Voir aussi** : [Influencer un test — Chance, Résilience, Talents](tests.md#influencer-un-test--chance-résilience-talents) (dans `tests.md`) — c'est là que le mécanisme est décrit dans son contexte d'intégration au Test ; la présente section n'en donne que la définition.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.64-72) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `regainDetermination`, `forceCrewRole`, `BattementModal`, +75 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/psychology.ts`, +41 fichiers
+- `LDB 17` (l.64-72) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `regainDetermination`, `forceCrewRole`, `BattementModal`, +76 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/psychology.ts`, +41 fichiers
 
 ---
 
@@ -240,27 +240,27 @@ Règles précises :
 ### Détermination
 
 > « La Détermination est récupérée chaque fois que vous agissez en fonction de votre Motivation [...] Au cours de la partie, chaque fois que vous pensez avoir agi en conséquence, vous pouvez demander à votre MJ si vous pouvez regagner un ou plusieurs Points de Détermination. »
-> — LDB 18 l.10 (début du ch. 18, suite du ch. 17)
+> — LDB 17 l.81
 
 La fréquence et la quantité sont à la discrétion du MJ selon le comportement en jeu.
 
 **Exemple officiel** : Griselda (Motivation « Sigmar ») se rend dans le temple local, prie et fait une offrande → le MJ lui accorde 1 Point de Détermination, mais précise qu'il faudra se rendre dans un temple *différent* pour en regagner un autre de la même façon.
 
-**Sources RAW** : `LDB 18 l.3-3`
+**Sources RAW** : `LDB 17 l.81-83`
 
 ### Résilience
 
 > « Le MJ peut accorder un Point de Résilience permanent pour une action d'une grande importance effectuée en accord avec votre Motivation qui régénérera votre âme, mais de tels événements doivent rester rares. »
-> — LDB 18 l.14
+> — LDB 17 l.85
 
 Encore plus rare que l'octroi de Points de Destin. Uniquement pour des actions de grande portée narrative liées à la Motivation.
 
 **Exemple officiel** : Griselda finance la construction d'un nouveau temple en l'honneur de Sigmar dans son village natal → le MJ lui accorde 1 Point de Résilience permanent.
 
-**Sources RAW** : `LDB 18 l.4-4`
+**Sources RAW** : `LDB 17 l.85-87`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.3, l.4, l.10, l.14) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `applyHealWounds`, `critSeverityReduction`, `aaBleedUnconsciousApply`, `ActionBar`, `TableRollLine`, `isOutOfAction`, +15 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +9 fichiers
+- `LDB 17` (l.81-83, l.85-87) → `RenounceModal`, `regainDetermination`, `je-ne-faillirai-pas`, `je-te-renie`, `resolveRenounce`, `recover-empetre`, `recover-en-flammes`, `GameState`, `FLOWS`, `PendingRenounce`, +1 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/session.ts`, `src/i18n/messages/fr.ts`, `src/state/corruptionFlow.ts`, `src/state/pendings.ts`, +3 fichiers
 
 ---
 

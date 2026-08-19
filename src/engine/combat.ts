@@ -334,7 +334,7 @@ export function defenseValueMods(c: Combatant, mode: DefenseMode, weapon?: Weapo
   if (mode === 'social') return 0; // valeur fournie clé en main par la couche état
   if (mode === 'parade') return combatValueMods(c, 'melee', weapon ?? c.weapons[0]);
   // Pénalité de mobilité : pire pénalité (non-cumul, LDB l.20) entre Encombrement et traumatisme
-  // de jambe (Déchirure −10/−20, Fracture −20 « règle du Pied », LDB 18 l.298/315/369).
+  // de jambe (Déchirure −10/−20, Fracture −20 « règle du Pied », LDB 18 l.220/229/285).
   const mobilityPenalty = Math.min(agilityTestPenalty(c), traumaDodgePenalty(c));
   // #193 : pénalité de récupération « Tests impliquant cette jambe » (Genou démis, LDB/AA) — Esquive EST
   // classée « déplacement » (SkillData.movement), même catégorie que l'État À Terre/Empêtré.
@@ -1520,7 +1520,7 @@ function applyHit(
   // Dégâts (mathématiquement identique, sans écraser le clamp de PA) — « 3 × BE » ⇔ −2×BE de plus.
   if (hullAdj && 'extraTB' in hullAdj) damage -= hullAdj.extraTB;
   // Coup Critique : double réussi (déjà dans `critical`) ou Atout Empaleuse sur un multiple de
-  // 10 (l.282). L'OVERKILL (Blessures perdues > PB COURANTS, LDB 18 l.16) est désormais
+  // 10 (l.282). L'OVERKILL (Blessures perdues > PB COURANTS, LDB 18 l.17) est désormais
   // géré par le STORE (pipeline de critique), car il dépend des PB courants de la cible — pas des PB max.
   // Empaleuse déjà retirée du profil si l'on Retient ses coups → `empale` est alors false (pas de Critique
   // « multiple de 10 » ni de bypass d'armure Empaleuse).

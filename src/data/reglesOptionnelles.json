@@ -279,13 +279,13 @@
     "id": "combat-round-seconds",
     "label": "Durée d’un Round (secondes)",
     "ref": "LDB 13 l.13",
-    "maison": "LDB 13 l.13 laisse la durée d’un Round au MJ (« c’est le MJ qui décide, si nécessaire, du temps qu’il représente ») : valeur maison, lue pour convertir en Rounds les durées chiffrées en secondes (rétention de souffle, LDB 18 l.345).",
+    "maison": "LDB 13 l.13 laisse la durée d’un Round au MJ (« c’est le MJ qui décide, si nécessaire, du temps qu’il représente ») : valeur maison, lue pour convertir en Rounds les durées chiffrées en secondes (rétention de souffle, LDB 18 l.346).",
     "group": "Combat",
     "kind": "param",
     "default": 10,
     "min": 1,
     "max": 60,
-    "hint": "« Un Round correspond en général à quelques secondes, mais c’est le MJ qui décide, si nécessaire, du temps qu’il représente » (LDB 13 l.13) : sert à décompter la rétention de souffle (BE×10 s, LDB 18 l.345) en Rounds."
+    "hint": "« Un Round correspond en général à quelques secondes, mais c’est le MJ qui décide, si nécessaire, du temps qu’il représente » (LDB 13 l.13) : sert à décompter la rétention de souffle (BE×10 s, LDB 18 l.346) en Rounds."
   },
   {
     "id": "combat-voice-range-m",

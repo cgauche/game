@@ -16,7 +16,7 @@
 // Vocabulaire RÉUTILISÉ de `scripts/raw/_lib.mjs` (source unique) : `ldbRe`/`otherRe`/`span`/
 // `bookOf`/`chapterFile`/`readText`. Périmètre src/ aligné sur `check-code-refs.mjs`.
 import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { ldbRe, otherRe, span, chapterFile, bookOf, readText } from '../../raw/_lib.mjs'
+import { ldbRe, otherRe, span, refNums, isRangeSuffix, chapterFile, bookOf, readText } from '../../raw/_lib.mjs'
 
 // Réexport des DEUX résolveurs de `_lib.mjs` dont les consommateurs TypeScript ont besoin : une
 // seule couture typée (`rawRefIntegrity.d.mts`) au lieu d'un second `.d.mts` sur `_lib.mjs`.
@@ -40,7 +40,11 @@ export const SITE_EXEMPTIONS = []
  *  Cliquet à double sens (patron `check-code-refs.mjs`) : toute HAUSSE échoue (réf aveugle NEUVE),
  *  toute baisse échoue aussi tant que le registre n'est pas ABAISSÉ (réf réparée = ligne à retirer).
  *  Régime cible : fichier vide `{}` (tolérance zéro) — chaque entrée est une dette à solder en
- *  lisant le `Source/` et en réancrant la réf sur la ligne qui porte VRAIMENT le passage. */
+ *  lisant le `Source/` et en réancrant la réf sur la ligne qui porte VRAIMENT le passage.
+ *  #1318 E3-L4 : la réparation de la grammaire (formes COMPACTES `l.A/B/C`, `_lib.mjs`) a RÉVÉLÉ 17
+ *  sites jusque-là invisibles (chapitres 16/19/20/47/62/63/85 du LDB — aucun du 18) ; gelés ici,
+ *  à solder par les lots de LEURS chapitres. Le seul « disparu » du même lot est un RENOMMAGE de clé
+ *  (`LDB 20 l.32` → `LDB 20 l.32/49`, même site `combatFlow.ts:2324`), pas une réparation. */
 export const BASELINE_PATH = new URL('../raw-blind-refs-baseline.json', import.meta.url)
 
 /** Comptes mesurés `{ fichier: { réf: n } }` à partir d'une liste de réfs aveugles. */
@@ -101,13 +105,22 @@ export function isBlindRef(chapterLines, lo, hi, contextText, w = WINDOW, minLen
   return !sharesSignificantWord(windowText(chapterLines, lo, hi, w), contextText, minLen)
 }
 
-/** Réfs `<ABRÉV> NN l.X[-Y|+n…]` d'une ligne — `{ abbr, nn, lo, hi, ref }` (miroir de check-code-refs). */
+/** Ancres JUGEABLES d'une réf : une PLAGE `-fin` reste UN intervalle `[lo,hi]` ; les autres formes
+ *  (`+pts`, compacte `/n…`) sont des ancres DISTINCTES — chacune se juge seule, sinon `l.202/213`
+ *  se lirait 202→213 et sa ligne 213 VIDE resterait invisible (#1318 E3-L4, défaut D5). */
+function* anchorsOf(line, suffix) {
+  if (isRangeSuffix(suffix)) { yield span(line, suffix); return }
+  for (const n of refNums(line, suffix)) yield [n, n]
+}
+
+/** Réfs `<ABRÉV> NN l.X[-Y|+n…|/n…]` d'une ligne — `{ abbr, nn, lo, hi, ref }` (miroir de check-code-refs). */
 export function* refsInLine(ln) {
   const ldb = ldbRe()
   let m
   while ((m = ldb.exec(ln))) {
-    const [lo, hi] = span(m[2], m[3])
-    yield { abbr: 'LDB', nn: m[1], lo, hi, ref: `LDB ${Number(m[1])} l.${m[2]}${m[3]}` }
+    for (const [lo, hi] of anchorsOf(m[2], m[3])) {
+      yield { abbr: 'LDB', nn: m[1], lo, hi, ref: `LDB ${Number(m[1])} l.${m[2]}${m[3]}` }
+    }
   }
   const other = otherRe()
   while ((m = other.exec(ln))) {
@@ -115,8 +128,9 @@ export function* refsInLine(ln) {
     if (nn == null) continue
     const abbr = bookOf(m[1].replace(/\s+/g, ' ').trim())
     if (!abbr) continue
-    const [lo, hi] = span(m[3], m[4])
-    yield { abbr, nn, lo, hi, ref: `${abbr} ${Number(nn)} l.${m[3]}${m[4]}` }
+    for (const [lo, hi] of anchorsOf(m[3], m[4])) {
+      yield { abbr, nn, lo, hi, ref: `${abbr} ${Number(nn)} l.${m[3]}${m[4]}` }
+    }
   }
 }
 
