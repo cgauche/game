@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import { useGame, movementRemaining } from '../../state/store';
+import { useGame } from '../../state/store';
 import { FLOWS } from '../../state/rollFlowSpecs';
 import { HitLocation, type Weapon } from '../../engine/types';
 import type { RollLabelRef } from '../RollLine';
@@ -7,7 +7,7 @@ import { crowdMod, bestRangedDefense, locationLabel, weaponInflictsFlames, attac
 import { isUnarmed } from '../../engine/items';
 import { isInanimate } from '../../engine/structures';
 import { combatDistance } from '../../state/footprint';
-import { attackWeaponOf, crowdEligible, previewAttack, previewDefense, defenseDodgeMod, surfacedDefensePending } from '../../state/combatFlow';
+import { attackWeaponOf, crowdEligible, previewAttack, previewDefense, defenseDodgeMod, surfacedDefensePending, heldGroundStanceBlock, intoCrowdStanceBlock } from '../../state/combatFlow';
 import { t } from '../../i18n';
 import { itemCapability } from '../../engine/capabilities';
 import { attackModesFor, offHandPenalty } from '../../engine/combatFeatures/dispatch';
@@ -56,8 +56,6 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const reverseVerb = useGame((s) => s.attackReverse);
   const confirm = useGame((s) => s.attackConfirm);
   const cancel = useGame((s) => s.attackCancel);
-  const setIntoCrowd = useGame((s) => s.attackSetIntoCrowd);
-  const setHeldGround = useGame((s) => s.attackSetHeldGround);
   const setHarpoonRopeCut = useGame((s) => s.attackSetHarpoonRopeCut);
   const setWithhold = useGame((s) => s.attackSetWithhold);
   const setGrapple = useGame((s) => s.attackSetGrapple);
@@ -85,8 +83,13 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // LDB 14 l.106
   const crowd = !res && weapon?.type === 'ranged' ? crowdEligible(battle, attacker, target) : [];
   const cm = crowdMod(crowd.length);
-  // LDB 14 l.70
-  const canHoldGround = !res && !pa.interrupt && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
+  // POSTURES DE TIR (LDB 14 l.70 ; l.106/l.116) : la fenêtre les AFFICHE, elle ne les contrôle plus
+  // (spec §1a G5). Leur pertinence vient des PRÉDICATS PARTAGÉS (`STANCE_BLOCK`, `combatFlow`) — la
+  // même vérité que le gate de la case de console et que le versement dans le pending, jamais un
+  // recodage local. Une posture ARMÉE s'affiche toujours (le Tir rapide arme `heldGround` d'office).
+  const tir = weapon?.type === 'ranged'; // une posture de TIR ne se lit que sur un tir
+  const showHoldGround = !res && tir && (!!pa.heldGround || (!pa.interrupt && !heldGroundStanceBlock(battle, attacker, weapon)));
+  const showCrowd = !res && tir && (!!pa.intoCrowd || !intoCrowdStanceBlock(battle, attacker, weapon, target));
   // ADE II 02 l.677
   const weaponItem = weapon ? attacker.items?.find((it) => it.uid === weapon.uid) : undefined;
   const canHarpoonRopeCut = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && !!weaponItem && itemCapability(weaponItem, 'ropeMode');
@@ -227,26 +230,27 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               <CodexRef category="regles" id="viser-une-localisation" label="Viser une Localisation" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           )}
-          {cm && (
-            <div className="rm-crowd">
-              <button
-                className={`btn small ${pa.intoCrowd ? 'btn-primary' : ''}`}
-                onClick={() => setIntoCrowd(!pa.intoCrowd)}
-              >
-                <Icon id="action/aim" size="sm" /> Tirer dans le tas (+{cm.value})
-              </button>
+          {/* POSTURES DE TIR — LECTURE SEULE (spec HUD §1a G5, verbatim user « plutôt qu'une option
+              dans la modale ») : la fenêtre ANNONCE la posture armée et sa valeur, le CONTRÔLE vit dans
+              la console (cases `posture-tir` / `posture-tas`). Aucun bouton ici, aucun setter. */}
+          {showCrowd && (
+            <div className="rm-crowd" data-posture="intoCrowd" data-armee={pa.intoCrowd ? '' : undefined}>
+              <span className="rm-posture-etat">
+                <Icon id="action/aim" size="sm" /> Dans le tas {pa.intoCrowd ? `— armée${cm ? ` (+${cm.value})` : ''}` : '— non armée'}
+              </span>
               <CodexRef category="regles" id="tirer-dans-le-tas" label="Tirer dans le tas" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-              {pa.intoCrowd && <span className="rm-crowd-note">{crowd.length} au contact — touche au hasard, 0 DR si sauvé par le bonus.</span>}
+              <span className="rm-crowd-note">
+                {pa.intoCrowd
+                  ? `${crowd.length} au contact — touche au hasard, 0 DR si sauvé par le bonus.`
+                  : 'Tir visé : la cible désignée, sans le bonus de groupe.'}
+              </span>
             </div>
           )}
-          {canHoldGround && (
-            <div className="rm-crowd">
-              <button
-                className={`btn small ${pa.heldGround ? 'btn-primary' : ''}`}
-                onClick={() => setHeldGround(!pa.heldGround)}
-              >
-                <Icon id="travel/anchor" size="sm" /> Je ne bouge pas (annule le -10)
-              </button>
+          {showHoldGround && (
+            <div className="rm-crowd" data-posture="heldGround" data-armee={pa.heldGround ? '' : undefined}>
+              <span className="rm-posture-etat">
+                <Icon id="travel/anchor" size="sm" /> Tir immobile {pa.heldGround ? '— armé' : '— non armé'}
+              </span>
               <CodexRef category="regles" id="tir-en-mouvement" label="Tirer en se déplaçant" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
               {pa.heldGround
                 ? <span className="rm-crowd-note">Immobile : pas de -10, mais Mouvement du Tour consommé.</span>

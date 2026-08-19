@@ -52,6 +52,9 @@ export const schema = z.array(
     intent: z.string().optional(),
     /** Valeur écrite dans `battle.action` quand l'action est ARMÉE (mode à bouton). */
     armed: z.string().optional(),
+    /** POSTURE de tir pré-armée basculée par cette action (`BattleState.stances`, champ du
+     *  `PendingAttack` qu'elle pré-remplit) — exigée par le dispatcher `battleToggleStance`. */
+    stance: z.enum(['heldGround', 'intoCrowd']).optional(),
     cost: costSchema,
     /** Arbitrage NON-verbatim du coût (patron `activities.json`) — exige `costNote`. */
     maison: z.boolean().optional(),
@@ -95,6 +98,9 @@ export const schema = z.array(
     }
     if (!a.run && !a.intent && !a.blocked) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : ni dispatcher (run), ni intention (intent), ni dette déclarée (blocked)` });
+    }
+    if ((a.run === 'battleToggleStance') !== !!a.stance) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : la bascule de posture et le champ stance vont ensemble (run battleToggleStance ⇔ stance)` });
     }
     if ((a.run || a.intent) && a.blocked) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : dette déclarée alors que l’action s’exécute (run) ou s’arme (intent)` });

@@ -28,7 +28,7 @@ import { healableTargets } from '../engine/healing';
 import { waterSprayCandidates } from '../engine/suffocation';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { combatAdvantageSkills } from '../engine/skillCombatApps';
-import { availableAttacks, placingZoneOf } from './combatFlow';
+import { availableAttacks, placingZoneOf, STANCE_BLOCK } from './combatFlow';
 import { mountableNear } from './mount';
 import { servablePostes } from './shipPostes';
 import { ACTIONS, type ActionDef } from '../data/index';
@@ -153,6 +153,17 @@ export const ACTION_GATES: Record<string, (ctx: ActionCtx) => ActionGate> = {
         ? no(t('agate.advantageCapped', { n: methode.cap }))
         : ok;
     })(ctx),
+  /** Postures de tir (spec §1a G5) — PRÉDICATS UNIQUES de `combatFlow`, partagés avec le store
+   *  (`battleToggleStance`), le versement dans le pending et la fenêtre de jet. Le refus est celui
+   *  du prédicat : la raison appartient à `STANCE_BLOCK`, jamais au gate. */
+  'tir-immobile-armable': ({ active, battle }) => {
+    const refus = STANCE_BLOCK.heldGround(battle, active);
+    return refus ? no(refus) : ok;
+  },
+  'tir-dans-le-tas-armable': ({ active, battle }) => {
+    const refus = STANCE_BLOCK.intoCrowd(battle, active);
+    return refus ? no(refus) : ok;
+  },
   coop: ({ netMode }) => (netMode && netMode !== 'local' ? ok : no(t('agate.localGame'))),
   'navire-action': ({ active, battle }) =>
     !isVehicle(active) ? no(t('agate.notAVessel')) : battle.acted ? no(t('agate.vesselActionSpent')) : ok,
@@ -260,6 +271,7 @@ export const ACTION_RUN: Record<string, Dispatcher> = {
   battleReload: (get, ctx) => get().battleReload(ctx.weaponUid),
   battleSelectAmmo: (get, ctx) => { if (ctx.ammoUid) get().battleSelectAmmo(ctx.ammoUid, ctx.weaponUid); },
   battleTogglePushback: (get) => get().battleTogglePushback(),
+  battleToggleStance: (get, _ctx, def) => { if (def.stance) get().battleToggleStance(def.stance); },
   battleWater: (get, ctx) => get().battleWater(ctx.targetId),
   battleUseItem: (get, ctx) => { if (ctx.itemUid) get().battleUseItem(ctx.itemUid); },
   battleDefendTotal: (get) => get().battleDefendTotal(),

@@ -285,6 +285,8 @@ export interface ActionDef {
   mode?: string;
   intent?: string;
   armed?: string;
+  /** Champ de POSTURE pré-armée basculé par l'action (`BattleState.stances`, spec HUD §1a G5). */
+  stance?: 'heldGround' | 'intoCrowd';
   cost: 'action' | 'mouvement' | 'gratuit' | 'aucun';
   maison?: boolean;
   costNote?: string;

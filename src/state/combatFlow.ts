@@ -3,7 +3,7 @@
  * Fonctions (get,set) : combat, magie, IA, desengagement, effets. RNG via ./battleRng.
  */
 import type { PlayerText } from '../i18n/playerText';
-import type { GameState, BattleState, RevealEntry } from './store';
+import type { GameState, BattleState, RevealEntry, ShootingStanceKey } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, CascadeTableDone, PendingMiscastStep, CascadeStep, CascadeRoll, BatchParticipant, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
 import { FLOWS } from './rollFlowSpecs';
@@ -2986,6 +2986,68 @@ export function openSurfacedDefense(get: Get, set: SetFn, attacker: Combatant, t
   return openDefenseCascade(get, set, target);
 }
 
+/** Le TIR IMMOBILE est-il armable ? Renvoie la RAISON du refus, `null` si armable.
+ * PRÉDICAT UNIQUE de la posture (`LDB 14 l.70`) — TROIS lecteurs, aucun recodage : le gate du registre
+ * d'actions (case de console), le store (`battleToggleStance`) et la fenêtre de jet
+ * (`useAttackJetProps`). Il dit exactement ce que `attackEnv` mesure : seul un HÉROS a le choix (l'IA
+ * encaisse le −10 dès qu'elle a bougé, elle n'arbitre rien), et une fois le Mouvement du Tour entamé —
+ * ou sans Mouvement à céder — la posture n'annule plus rien.
+ * `weapon` = l'arme d'UN tir précis (fenêtre de jet) ; absente, la question est celle de l'ARSENAL
+ * (la console arme la posture avant toute cible). */
+export function heldGroundStanceBlock(battle: BattleState, c: Combatant, weapon?: Weapon): string | null {
+  if (c.kind !== 'hero') return 'seul un héros décide de tenir sa position';
+  const tir = weapon ? weapon.type === 'ranged' : c.weapons.some((w) => w.type === 'ranged');
+  if (!tir) return weapon ? 'cette attaque n’est pas un tir' : 'aucune arme à distance';
+  if (battle.movementUsed > 0) return 'Mouvement déjà entamé ce tour';
+  if (mountMovement(battle, c) <= 0) return 'aucun Mouvement à céder (déjà immobile)';
+  return null;
+}
+
+/** « TIRER DANS LE TAS » est-il armable ? Même contrat de retour que `heldGroundStanceBlock`.
+ * `LDB 14 l.106` (bonus +20/+40/+60 selon la taille du groupe, succès appliqué au hasard) et
+ * `LDB 14 l.116` (« Si vous n'avez cure de savoir sur qui vous tirez, vous gagnez un bonus allant de
+ * +20 à +60 ») : c'est un CHOIX du tireur, donc une posture — et il n'a d'objet que face à un groupe
+ * SERRÉ (le seuil est celui de `crowdMod`, jamais un compte recopié).
+ * `target` absente = question de CONTEXTE (la console arme avant toute cible) : un groupe suffit. */
+export function intoCrowdStanceBlock(battle: BattleState, c: Combatant, weapon?: Weapon, target?: Combatant): string | null {
+  if (c.kind !== 'hero') return 'seul un héros renonce à choisir sa cible';
+  const tir = weapon ? weapon.type === 'ranged' : c.weapons.some((w) => w.type === 'ranged');
+  if (!tir) return weapon ? 'cette attaque n’est pas un tir' : 'aucune arme à distance';
+  const serre = (t: Combatant) => !!crowdMod(crowdEligible(battle, c, t).length);
+  const groupe = target
+    ? serre(target)
+    : battle.combatants.some((t) => t.id !== c.id && !isOutOfAction(t) && !!t.pos && serre(t));
+  if (!groupe) return 'aucun groupe serré en vue';
+  return null;
+}
+
+/** Les postures de tir, par champ armé : UNE table, un seul contrat de prédicat. Le store, le gate du
+ *  registre et la fenêtre de jet la lisent — aucune posture ne peut naître sans son prédicat. */
+export const STANCE_BLOCK: Record<ShootingStanceKey, (battle: BattleState, c: Combatant, weapon?: Weapon, target?: Combatant) => string | null> = {
+  heldGround: heldGroundStanceBlock,
+  intoCrowd: intoCrowdStanceBlock,
+};
+
+/** Verse les POSTURES PRÉ-ARMÉES de l'attaquant (`battle.stances`, spec HUD §1a G5) dans le
+ *  `PendingAttack` en construction. Un champ DÉJÀ porté par l'appelant prime — le Tir rapide
+ *  d'interruption arme son `heldGround` d'office (`combatSlice`), la posture ne le contredit pas.
+ *  Chaque posture est ÉVALUÉE SUR CE COUP (arme réelle `attackWeaponOf` + cible réelle) : une attaque
+ *  de MÊLÉE ne porte jamais `heldGround`/`intoCrowd` — le champ y mentirait, et rien ne le lirait. */
+function withArmedStance(get: Get, pa: PendingAttack): PendingAttack {
+  const battle = get().battle;
+  const attacker = battle ? inBattleId(battle, pa.attackerId) : null;
+  const target = battle ? inBattleId(battle, pa.targetId) : null;
+  const armee = battle?.stances?.[pa.attackerId];
+  if (!battle || !attacker || !target || !armee) return pa;
+  const weapon = attackWeaponOf(battle, attacker, target, pa);
+  let out = pa;
+  for (const key of Object.keys(STANCE_BLOCK) as ShootingStanceKey[]) {
+    if (!armee[key] || pa[key] !== undefined) continue;
+    if (STANCE_BLOCK[key](battle, attacker, weapon, target)) continue; // posture périmée / sans objet pour CE coup
+    out = { ...out, [key]: true };
+  }
+  return out;
+}
 /**
  * OUVRE l'Action d'attaque des sites de déclaration CÔTÉ JOUEUR (flux normal `targetingModes` / Tir rapide /
  * Pilonnage) — point PARTAGÉ du gate « Main ensanglantée » (AA 07 l.117 ; le balayage/2ᵉ frappe sont des
@@ -2997,7 +3059,8 @@ export function openSurfacedDefense(get: Get, set: SetFn, attacker: Combatant, t
  *
  * RENVOIE si une fenêtre est ouverte (gate de main OU jet d'attaque) : le mint peut REFUSER l'étape
  * hôte, et c'est l'appelant — pas la porte — qui décide de ce qu'on fait d'une Action sans fenêtre. */
-export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title: string, icon: string, skipGate = false): boolean {
+export function openAttackCascade(get: Get, set: SetFn, pa0: PendingAttack, title: string, icon: string, skipGate = false): boolean {
+  const pa = withArmedStance(get, pa0);
   const attacker = actorIn(get(), pa.attackerId);
   const hand = !skipGate && attacker ? attackHandGate(attacker, pa.weaponUid) : null; // `skipGate` : gate déjà PASSÉ (reprise `handGateConfirm`) → pas de re-test
   if (attacker && hand) {
@@ -6340,7 +6403,7 @@ export function advanceTurn(get: Get, set: SetFn) {
     for (const line of gate.lines) battle.log.push(ev('detail', line, newActive.id));
     if (gate.loseMovement && movementUsed === 0) movementUsed = mountMovement(battle, newActive);
   }
-  set({ battle: { ...battle, turn, action: null, movementUsed, movedPreAction: false, acted, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null } });
+  set({ battle: { ...battle, turn, action: null, movementUsed, movedPreAction: false, acted, loadoutSwapped: false, stances: {}, reachable: new Map(), preview: null, runBudget: null, fearGate: null } });
   if (checkBattleOver(get, set)) return;
   bus.emit(EVT.SCENE_DIRTY);
   // La Psychologie ne se teste PLUS par tour (LDB 21 : Traits ciblés/Terreur au DÉBUT du Round l.14,
@@ -6428,7 +6491,7 @@ export function enterRoundStartPause(get: Get, set: SetFn): void {
   const b = get().battle;
   if (!b || b.over) return;
   for (const c of b.combatants) if (c.shotsThisTurn) c.shotsThisTurn = 0; // Salve : compteur de tirs réinitialisé à chaque Round
-  const reset = { ...b, action: null, selectedAttack: undefined, movementUsed: 0, movedPreAction: false, acted: false, crewActed: {}, loadoutSwapped: false, reachable: new Map(), preview: null, runBudget: null, fearGate: null };
+  const reset = { ...b, action: null, selectedAttack: undefined, movementUsed: 0, movedPreAction: false, acted: false, crewActed: {}, loadoutSwapped: false, stances: {}, reachable: new Map(), preview: null, runBudget: null, fearGate: null };
   if (get().net.mode !== 'local' && b.round > 1 && !b.handRaised) {
     set({ battle: reset, pendingRoundStart: null });
     get().confirmRoundStart();

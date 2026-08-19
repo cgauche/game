@@ -10,7 +10,7 @@
  */
 import type { Get, Set } from './flowTypes';
 import { tickCombatAuto } from './combatAuto';
-import type { GameState, BattleState } from './store';
+import type { GameState, BattleState, ShootingStanceKey } from './store';
 import type { BattleActionMode } from './actionRegistry';
 import type { PendingDefense, CounterParticipant, CounterDeclaration } from './pendings';
 import { fleeBackstab, fleeCalme, fleeNeedCalme } from './pendings';
@@ -22,7 +22,7 @@ import { Combatant, HitLocation, CHAR_LABELS, type FireArc, type Weapon } from '
 import { rollLine, hostStep, openSequence, pushHost, pushDisplay } from './rollSeam';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { defenseDodgeMod, activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, resolveMovement, fearedSourceTowards, markActed, noteApproachMove, clearApproachMoves, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { defenseDodgeMod, activeCombatant, STANCE_BLOCK, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, resolveMovement, fearedSourceTowards, markActed, noteApproachMove, clearApproachMoves, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf, captureMoveSnapshot } from './combatGeometry';
@@ -1909,6 +1909,20 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle } });
     },
 
+    // Posture de TIR pré-armée (spec HUD §1a G5) : le choix se pose AVANT toute cible, sur le
+    // combattant actif (`battle.stances`), et la construction du `PendingAttack` le consomme
+    // (`withArmedStance`, combatFlow). Bascule, pas une Action ; le gate est le prédicat unique de
+    // la posture (`STANCE_BLOCK`), celui-là même que la case de console affiche.
+    battleToggleStance: (stance: ShootingStanceKey) => {
+      const battle = get().battle;
+      if (!battle || battle.over) return;
+      const active = activeCombatant(battle);
+      if (!active || !controlsCombatant(get(), active)) return;
+      if (STANCE_BLOCK[stance](battle, active)) return;
+      const armee = battle.stances?.[active.id] ?? {};
+      set({ battle: { ...battle, stances: { ...battle.stances, [active.id]: { ...armee, [stance]: !armee[stance] } } } });
+    },
+
     // ── Rechargement = Test étendu de Projectiles (LDB 62 l.335 + LDB 12 l.170-174) — par modale ──
     // `weaponUid` DÉSIGNE l'arme rechargée : chaque arme à distance a son cycle (arbitrage utilisateur
     // 2026-08-16, cas nommé « deux pistolets »). Absent → la 1re arme à distance DÉCHARGÉE du set.
@@ -2283,16 +2297,6 @@ export function createCombatSlice(get: Get, set: Set) {
       const mainUid = a?.weapons.find((w) => w.hand === 'main' && w.type === 'melee' && (w.hands ?? 1) === 1)?.uid;
       set({ pendingAttack: { ...pa, dualMode: on, weaponUid: on ? (mainUid ?? pa.weaponUid) : pa.weaponUid } });
     },
-    attackSetIntoCrowd: (v: boolean) => {
-      const pa = get().pendingAttack;
-      if (!pa || pa.result) return; // choix avant le jet seulement
-      set({ pendingAttack: { ...pa, intoCrowd: v } });
-    },
-    attackSetHeldGround: (v: boolean) => {
-      const pa = get().pendingAttack;
-      if (!pa || pa.result) return; // choix avant le jet seulement
-      set({ pendingAttack: { ...pa, heldGround: v } });
-    },
     attackSetHarpoonRopeCut: (v: boolean) => {
       const pa = get().pendingAttack;
       if (!pa || pa.result) return; // choix avant le jet seulement (mode de tir, ADE II 02 l.677)
@@ -2461,10 +2465,13 @@ export function createCombatSlice(get: Get, set: Set) {
           resolveFreeAttacks(get, set, attacker, 'onHit', victim);
         }
         // Tir IMMOBILE (LDB 14 l.70) : le héros a renoncé à bouger pour annuler le −10 → on consomme son
-        // Mouvement du Tour (il ne pourra plus se déplacer après ce tir).
-        if (pa.heldGround && weapon.type === 'ranged') {
+        // Mouvement du Tour (il ne pourra plus se déplacer après ce tir). La posture PRÉ-ARMÉE tombe du
+        // même geste (spec HUD §1a G5) : le tir l'a dépensée, elle ne se reconduit pas en silence.
+        // HÉROS SEUL — parité stricte avec `attackEnv` et `heldGroundStanceBlock` : un tireur piloté par
+        // l'IA n'obtient aucun gain de la posture, il ne doit donc pas en payer le Mouvement.
+        if (pa.heldGround && weapon.type === 'ranged' && attacker.kind === 'hero') {
           const b2 = get().battle;
-          if (b2) set({ battle: { ...b2, movementUsed: mountMovement(b2, attacker) } });
+          if (b2) set({ battle: { ...b2, movementUsed: mountMovement(b2, attacker), stances: { ...b2.stances, [attacker.id]: {} } } });
         }
       }
       // Séquence de combat (jet = étape 0) : enchaîner sur les conséquences empilées par applyAttackResult,

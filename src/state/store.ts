@@ -185,6 +185,15 @@ export function resetSceneRegistry(): void {
 export * from './pendings';
 
 
+/** Postures de tir PRÉ-ARMÉES d'un combattant (`BattleState.stances`) : les champs qu'elles
+ *  pré-remplissent sur le `PendingAttack` de son prochain tir. `heldGround` — tir IMMOBILE
+ *  (`LDB 14 l.70`) ; `intoCrowd` — « Tirer dans le tas » (`LDB 14 l.106`, `l.116`). */
+export interface ShootingStance {
+  heldGround?: boolean;
+  intoCrowd?: boolean;
+}
+/** Champ de posture armable — l'id porté par le registre des actions (`ActionDef.stance`). */
+export type ShootingStanceKey = keyof ShootingStance;
 export interface BattleState {
   combatants: Combatant[];
   order: string[];
@@ -224,6 +233,11 @@ export interface BattleState {
   /** Le set d'armes a-t-il déjà été changé ce Tour ? Plafond MAISON 1×/tour (dégainer = Action gratuite,
    *  cadence laissée au MJ, LDB 13 l.106). Reset au tour. */
   loadoutSwapped?: boolean;
+  /** POSTURES DE TIR PRÉ-ARMÉES, par id de combattant (spec HUD §1a G5). La posture se choisit AVANT
+   *  qu'une cible existe (case de console) : la construction du `PendingAttack` la consomme
+   *  (`openAttackCascade`), le tir et le changement de Tour la vident. Les champs sont ceux du
+   *  `PendingAttack` qu'elle pré-remplit — aucune sémantique parallèle. */
+  stances?: Record<string, ShootingStance>;
   log: CombatEvent[];
   over: null | 'victory' | 'defeat';
   onVictory?: Flow;
@@ -1138,16 +1152,15 @@ export interface GameState extends RollFlowActionsMap {
   battleAim: () => void;
   /** Perturbante (LDB 62 l.272-274) : bascule le mode « Repousser » (1 m/DR au lieu des Dégâts). */
   battleTogglePushback: () => void;
+  /** Bascule une POSTURE DE TIR pré-armée du combattant actif (`battle.stances`, spec HUD §1a G5) :
+   *  le choix se pose hors modale, le prochain `PendingAttack` le reçoit déjà armé. */
+  battleToggleStance: (stance: ShootingStanceKey) => void;
   /** Flux d'attaque par modale : viser une localisation, lancer, dépenser une Chance, appliquer. */
   attackSetLocation: (loc: HitLocation | null) => void;
   /** Choisit l'arme d'attaque (uid d'ItemInstance du loadout actif ; null = auto) — avant le jet. */
   attackSetWeapon: (uid: string | null) => void;
   /** Maniement de deux armes (LDB 10 l.767-773) : (dés)active le mode « des deux armes » sur l'attaque-Action. */
   attackSetDualMode: (on: boolean) => void;
-  /** « Tirer dans le tas » : bascule l'option de tir dans un groupe (cible au hasard, bonus +20/+40/+60). */
-  attackSetIntoCrowd: (v: boolean) => void;
-  /** Tir immobile : bascule l'option « je ne bouge pas » (annule le −10 Tir en bougeant, consomme le Mouvement). */
-  attackSetHeldGround: (v: boolean) => void;
   /** Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) : bascule le tir sans corde (Portée 60,
    *  perte de l'Atout Immobilisante) — proposé seulement si l'arme porte `ItemCapabilities.ropeMode`. */
   attackSetHarpoonRopeCut: (v: boolean) => void;

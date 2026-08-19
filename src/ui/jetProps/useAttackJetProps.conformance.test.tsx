@@ -146,6 +146,42 @@ describe('Attaque — contrat d’affichage Z0–Z15', () => {
     expect(dialogs[0].textContent).not.toContain('Round 1');
     expect(dialogs[0].textContent).not.toContain('Groupe');
   });
+
+  /**
+   * POSTURES DE TIR — la fenêtre les AFFICHE, elle ne les CONTRÔLE plus (spec HUD §1a G5, verbatim
+   * user « plutôt qu'une option dans la modale ») : le contrôle vit dans la console. On mesure
+   * l'écran RÉEL : la ligne de posture est là, elle dit son état, et elle ne porte aucun bouton.
+   */
+  it('la posture de tir est AFFICHÉE en lecture seule — état lisible, aucun bouton de bascule', () => {
+    const v = renderAttack({ ranged: true });
+    const ligne = v.querySelector('[data-posture="heldGround"]')!;
+    expect(ligne, 'un tir de héros annonce sa posture').toBeTruthy();
+    expect(ligne.hasAttribute('data-armee'), 'ce pending est armé immobile').toBe(true);
+    expect(ligne.textContent).toContain('Tir immobile — armé');
+    expect(ligne.textContent).toContain('Mouvement du Tour consommé');
+    expect(ligne.querySelector('button'), 'aucun contrôle : le choix se pose à la console').toBeNull();
+  });
+
+  it('posture NON armée : la fenêtre le dit aussi, et reste sans bouton', () => {
+    const v = renderAttack({ ranged: true, enMouvement: true });
+    const ligne = v.querySelector('[data-posture="heldGround"]')!;
+    expect(ligne.hasAttribute('data-armee')).toBe(false);
+    expect(ligne.textContent).toContain('Tir immobile — non armé');
+    expect(ligne.textContent).toContain('-10 « Tir en bougeant »');
+    expect(ligne.querySelector('button')).toBeNull();
+  });
+
+  it('MÊLÉE : aucune ligne de posture de tir dans la fenêtre', () => {
+    const v = renderAttack();
+    expect(v.querySelector('[data-posture]'), 'une attaque au contact n’a pas de posture de tir').toBeNull();
+  });
+
+  it('les setters de posture n’existent plus dans le store (contrôle = console SEULE)', () => {
+    const store = useGame.getState() as unknown as Record<string, unknown>;
+    expect(store.attackSetHeldGround, '`attackSetHeldGround` doit être mort').toBeUndefined();
+    expect(store.attackSetIntoCrowd, '`attackSetIntoCrowd` doit être mort').toBeUndefined();
+    expect(typeof store.battleToggleStance, 'le contrôle vit dans la bascule de posture').toBe('function');
+  });
 });
 
 /**

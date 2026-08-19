@@ -150,21 +150,36 @@
   {
     "id": "posture-tir",
     "label": "Tir immobile",
-    "icon": "action/shoot",
+    "icon": "travel/anchor",
     "surface": "deduite-du-set",
-    "gate": "toujours",
+    "gate": "tir-immobile-armable",
+    "run": "battleToggleStance",
+    "stance": "heldGround",
     "cost": "aucun",
     "maison": true,
-    "costNote": "posture PRÉ-ARMÉE : elle modifie le jet de tir, elle ne consomme rien par elle-même.",
-    "rule": "tirer-dans-le-tas",
+    "costNote": "la bascule ne consomme rien ; c'est le TIR effectué en posture qui dépense le Mouvement du Tour.",
+    "rule": "tir-en-mouvement",
     "ruleCategory": "regles",
     "keys": [
       "g5-posture"
-    ],
-    "blocked": {
-      "ticket": "#1349",
-      "raison": "les setters `attackSet*` sont NO-OP sans `pendingAttack` — le champ de posture pré-armée reste à créer (spec §1a G5)."
-    }
+    ]
+  },
+  {
+    "id": "posture-tas",
+    "label": "Dans le tas",
+    "icon": "action/aim",
+    "surface": "deduite-du-set",
+    "gate": "tir-dans-le-tas-armable",
+    "run": "battleToggleStance",
+    "stance": "intoCrowd",
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "la bascule ne consomme rien : elle change la Difficulté du TIR et la cible touchée, pas l'économie du Tour.",
+    "rule": "tirer-dans-le-tas",
+    "ruleCategory": "regles",
+    "keys": [
+      "g5-posture-tas"
+    ]
   },
   {
     "id": "heal",

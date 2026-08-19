@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
-import { useGame, activeCombatant, movementRemaining, type BattleState } from '../state/store';
+import { useGame, activeCombatant, movementRemaining, type BattleState, type ShootingStanceKey } from '../state/store';
 import type { Combatant, Weapon, WeaponLoadout } from '../engine/types';
 import { hasMeaningfulOption } from '../state/turnEconomy';
 import { advantageCapFor } from '../engine/advantage';
 import { attackWeapon } from '../engine/combat';
-import { availableAttacks, selfManeuversOf, selfManeuverApplicable, previewResourceDelta } from '../state/combatFlow';
+import { availableAttacks, selfManeuversOf, selfManeuverApplicable, previewResourceDelta, STANCE_BLOCK } from '../state/combatFlow';
 import { findSpellById, findSkillById, findActionById, type ActionDef } from '../data/index';
 import { type CodexTarget } from '../engine/ruleRefs';
 import { actionGate, runAction, currentInterludeAction, ACTION_CANDIDATES, type ActionCtx, type ActionRunCtx } from '../state/actionRegistry';
@@ -493,6 +493,10 @@ export function CombatConsole() {
   // mêmes prédicats) — donc ce que le panneau doit annoncer au candidat qui n'est pas celui en chambre.
   const armeChargee = !!rangedW && (rangedW.reload ?? 0) > 0 && weaponLoaded(active, rangedW);
   const canPush = active.weapons.some((w) => w.type === 'melee' && canPushback(w));
+  // G5 — postures de tir ARMÉES : elles ne s'allument que tant qu'elles ont un effet (le MÊME prédicat
+  // que le gate de la case et que le versement dans le `PendingAttack`) — une posture périmée ne se
+  // peint pas. La case, elle, reste TOUJOURS dessinée : elle se grise et dit pourquoi.
+  const posture = (key: ShootingStanceKey) => !!battle.stances?.[active.id]?.[key] && !STANCE_BLOCK[key](battle, active);
   // Armes DU SET au poing, lues par `uid` : c'est le set qui dit ce qui est TENU (arbitrage #1348
   // « ARBITRAGE SET STRICT », `docs/plans/2026-08-16-spec-hud-combat.md` ; dérivation `recomputeLoadout`,
   // `engine/items.ts`). Sans set (statbloc de créature), le set est l'arsenal réel de la bête, Mains nues
@@ -575,8 +579,12 @@ export function CombatConsole() {
     // G6 — geste d'ARME : la jauge est l'ARSENAL tenu (`canPushback`). L'Empoignade n'en est PAS un
     // (LDB 14 l.155, l.159) : elle reste à la modale d'attaque à mains nues (`useAttackJetProps.tsx:96`).
     canPush ? cellFor('pushback', 'geste', { on: !!active.pushbackMode }) : undefined,
-    // G5 — posture de tir (intention pré-jet, sans valeur : la fenêtre de jet garde le chiffre)
-    rangedW ? cellFor('posture-tir', 'arme') : undefined,
+    // G5 — postures de tir PRÉ-ARMÉES (`battle.stances`, spec §1a G5) : les cases portent le choix, la
+    // fenêtre de jet n'en garde que l'affichage. Bascule (re-clic = désarmer), gate en texte visible.
+    // Les DEUX cases existent dès qu'une arme de tir est au poing — « Dans le tas » se grise hors
+    // contexte (aucun groupe serré), elle ne disparaît pas : une case ne décale jamais ses voisines.
+    rangedW ? cellFor('posture-tir', 'arme', { on: posture('heldGround'), off: busy }) : undefined,
+    rangedW ? cellFor('posture-tas', 'arme', { on: posture('intoCrowd'), off: busy }) : undefined,
     // G6bis — gestes d'ÉTAT du porteur (surface `geste-d-etat` du registre, spec §1a) : ce que sa
     // SITUATION ouvre — en selle, à une pièce servie, à la barre — jamais ce que son arme offre.
     active.mountId ? cellFor('dismount', 'geste', { off: broken }) : undefined,

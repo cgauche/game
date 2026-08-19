@@ -33,7 +33,7 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'battleAim', 'battleDefendTotal', 'battleDisengage', 'battleRun', 'battleTrample',
   'battleFrenzy', 'battleFocusSpell', 'battleHeal', 'battleReload', 'battleRecoverState',
   'battleStandUp', 'battlePickup', 'battleUseItem', 'battleSelectSpell', 'battleSelectAmmo',
-  'battleSpendResolve', 'battleTogglePushback', 'battleSwitchLoadout', 'battleMount',
+  'battleSpendResolve', 'battleTogglePushback', 'battleToggleStance', 'battleSwitchLoadout', 'battleMount',
   'battleDismount', 'battleResolveIgnoreCrit', 'battleResolvePsychImmune',
   'battleSelfManeuver', 'battleGainAdvantage', 'battleSelectAttack', 'battleManeuverArea',
   // Postes de bord / arme d'équipe / engin de siège : même hotbar, même possession (l'actif).
@@ -43,8 +43,8 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   // Escalade d'une arête (`ClimbOverlays`) : jumeau de `fallAcross`, même possession (l'actif).
   'climbAcross',
   // attaque : paramètres de la modale différée + jet/appliquer propres au flux d'attaque
-  'attackSetLocation', 'attackSetWeapon', 'attackSetDualMode', 'attackSetIntoCrowd',
-  'attackSetHeldGround', 'attackSetWithhold', 'attackSetHarpoonRopeCut', 'attackSetGrapple',
+  'attackSetLocation', 'attackSetWeapon', 'attackSetDualMode',
+  'attackSetWithhold', 'attackSetHarpoonRopeCut', 'attackSetGrapple',
   'attackSetCritLocation', 'attackRoll', 'attackConfirm',
   // défense réactive : choix de mode/arme/réaction de bouclier + appliquer
   'defenseSetMode', 'defenseSetParryWeapon', 'defenseSetShieldReaction', 'defenseConfirm',

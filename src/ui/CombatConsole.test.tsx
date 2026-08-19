@@ -1045,16 +1045,39 @@ describe('CombatConsole — droit de la travée et du coin (juge vision 2026-08-
     monter(arbaletrier());
     expect(casesGauche().length).toBe(6);
     const keys = cellKeys();
-    for (const k of ['g1-attaque', 'g4-recharger', 'g3-viser', 'g5-posture']) {
+    for (const k of ['g1-attaque', 'g4-recharger', 'g3-viser', 'g5-posture', 'g5-posture-tas']) {
       expect(keys, `geste ${k} tombé hors de la travée`).toContain(k);
     }
     // Un set de TIR PUR ne déduit PAS la Charge (arbitrage user 2026-08-17 : un Test de Corps à corps
     // n'est pas le geste d'une arbalète). Elle reste un geste par défaut de la grille de capacités.
     expect(keys, 'set de tir pur : aucune Charge déduite').not.toContain('g2-charge');
-    // Les cases restantes sont dessinées LIBRES : le compte ne bouge pas.
-    expect(casesGauche().filter((c) => c.classList.contains('cc-empty')).length).toBe(2);
+    // Les cases restantes sont dessinées LIBRES : le compte ne bouge pas (5 gestes déduits pour ce set —
+    // attaque, recharge, visée et les DEUX postures de tir — sur 6 alvéoles).
+    expect(casesGauche().filter((c) => c.classList.contains('cc-empty')).length).toBe(1);
     // La 4ᵉ case (1ʳᵉ de la rangée basse) porte bien un geste du débord, pas un trou.
     expect(casesGauche()[3].getAttribute('data-cell')).toBeTruthy();
+  });
+
+  // G5 — la posture de tir est une action VIVANTE (spec §1a G5) : la case EST le seul contrôle du
+  // choix pré-jet, elle l'écrit dans `battle.stances`, et une fois le Mouvement entamé elle dit
+  // POURQUOI elle ne sert plus (`LDB 14 l.70`).
+  it('D-1ter — la case G5 arme la POSTURE dans le store, se rallume, et porte sa raison de gate', () => {
+    monter(arbaletrier());
+    const case5 = () => host.querySelector('[data-action="posture-tir"]') as HTMLButtonElement;
+    expect(case5(), 'la case de posture est rendue').toBeTruthy();
+    expect(case5().disabled, 'arme de tir en main, Mouvement intact : la case est active').toBe(false);
+
+    act(() => case5().click());
+    expect(useGame.getState().battle!.stances?.['h1']?.heldGround, 'le clic ARME la posture').toBe(true);
+    expect(case5().classList.contains('on'), 'la case allumée dit que la posture est tenue').toBe(true);
+
+    act(() => case5().click());
+    expect(useGame.getState().battle!.stances?.['h1']?.heldGround, 're-clic : la posture tombe').toBe(false);
+    expect(case5().classList.contains('on')).toBe(false);
+
+    act(() => { useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 1 } }); });
+    expect(case5().hasAttribute('data-gated'), 'Mouvement entamé : la case reste dessinée, gatée').toBe(true);
+    expect(case5().textContent, 'la raison est en TEXTE dans l’alvéole, jamais dans un title').toContain('Mouvement déjà entamé ce tour');
   });
 
   // Prédicat de la Charge (`LDB 15 l.35` / `LDB 13 l.90`) : une arme de mêlée DU SET, ou le set mains
@@ -1170,20 +1193,22 @@ describe('CombatConsole — droit de la travée et du coin (juge vision 2026-08-
     // L'attaque de l'arme, Recharger et Viser sont branchés (store réel) → l'ordre de lecture de la
     // travée gauche donne les premiers rangs, et chaque slot dit QUELLE action il exécute.
     expect(hotbar.slots.length, 'aucune case de la console publiée au clavier').toBeGreaterThanOrEqual(3);
-    expect(hotbar.slots.map((s) => s.actionId).slice(0, 3)).toEqual(['attaque', 'reload', 'aim']);
+    expect(hotbar.slots.map((s) => s.actionId).slice(0, 4)).toEqual(['attaque', 'reload', 'aim', 'posture-tir']);
     const rech = host.querySelector('[data-cell="g4-recharger"]')!;
     expect(rech.querySelector('.cc-key')!.textContent).toBe('2');
+    // La POSTURE de tir n'est plus une maquette (spec §1a G5) : branchée, elle est publiée au pont avec
+    // son rang imprimé, et la touche l'ARME pour de vrai dans `battle.stances`.
+    const posture = host.querySelector('[data-cell="g5-posture"]')!;
+    expect(posture.className).not.toContain('cc-inert');
+    expect(posture.querySelector('.cc-key')!.textContent).toBe('4');
+    act(() => hotbar.slots[3].run());
+    expect(useGame.getState().battle!.stances?.[h.id]?.heldGround, 'la touche 4 n’a pas armé la posture').toBe(true);
     // … et la touche 2 exécute bien CETTE case (même `run` que le clic) : le rechargement OUVRE sa modale
     // (Test étendu de Projectiles) — c'est l'effet observable du moteur, pas un drapeau forgé ici.
     expect(useGame.getState().pendingReload ?? null).toBeNull();
     expect(hotbar.slots[1].disabled).toBe(false);
     act(() => hotbar.slots[1].run());
     expect(useGame.getState().pendingReload, 'la touche 2 n’a pas déclenché la case Recharger').toBeTruthy();
-    // Une case NON branchée (action `blocked` du registre — ici la POSTURE de tir, spec §1a G5, dont
-    // le champ pré-armé reste à créer) n'imprime aucun badge.
-    const maquette = host.querySelector('[data-cell="g5-posture"]')!;
-    expect(maquette.className).toContain('cc-inert');
-    expect(maquette.querySelector('.cc-key')).toBeNull();
   });
 
   it('D-6 — l’icône de la case d’attaque suit l’ARME du set, jamais un glyphe d’épée en dur', () => {

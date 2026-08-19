@@ -227,7 +227,7 @@ Quand **plusieurs facteurs** affectent un même test, on **somme** leurs modific
 **Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Modificateurs de test](#modificateurs-de-test), [Extensions de Difficulté (EDO)](#extensions-de-difficulté--presque-impossible-et-impossible-edo)
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 12` (l.189) → `useExtendedTestJetProps`, `soutien`, `BargainModalView`, `SequenceParams`, `runSceneConsumableFlow`, `test-extended-min-sl`, `RollRequest`, `TestFields`, `buildStageSteps`, `PendingTest`, +35 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, +22 fichiers
-- `LDB 14` (l.48, l.91-96) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `SceneCombatMods`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `fr`, `10-a-votre-action-au-prochain-round`, `sceneCombatModifiers`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `exactDifficultyFromModifier`, `viser-une-localisation`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, +55 — `src/data/actions.json`, `src/data/oups.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +14 fichiers
+- `LDB 14` (l.48, l.91-96) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `SceneCombatMods`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `fr`, `10-a-votre-action-au-prochain-round`, `sceneCombatModifiers`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `exactDifficultyFromModifier`, `viser-une-localisation`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, +57 — `src/data/actions.json`, `src/data/oups.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +15 fichiers
 - `LDB 16` (l.11) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, +4 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`
 
 ---
@@ -543,7 +543,7 @@ Autrement dit : chaque fois qu'un personnage *réussit* un test utilisant une Co
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.453, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `useAttackJetProps`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, +103 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, +11 fichiers
+- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.453, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `useAttackJetProps`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, +103 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, +11 fichiers
 
 ---
 

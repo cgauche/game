@@ -503,6 +503,19 @@
   font-size: 11px;
   color: var(--muted);
 }
+/* ÉTAT d'une posture de tir : la fenêtre de jet l'ANNONCE, elle ne la contrôle pas (le bouton vit
+   dans la console). Armée = accent, sinon ton neutre — jamais l'allure d'une affordance cliquable. */
+.rm-posture-etat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+[data-armee] > .rm-posture-etat {
+  color: var(--text);
+  font-weight: 600;
+}
 /* Rangée Av/assailli masquée quand vide (le nom du héros est passé en title sur le portrait). */
 .ab-actor-top:empty {
   display: none;
