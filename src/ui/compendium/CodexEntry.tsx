@@ -106,7 +106,8 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
         ),
       }));
   if (item.desc) {
-    tabs.push({
+    // La Description ouvre la fiche : le premier onglet est celui qu'on lit d'abord.
+    tabs.unshift({
       id: 'desc',
       label: 'Description',
       content: (
