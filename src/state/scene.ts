@@ -345,7 +345,7 @@ export type Effect =
    *  ration — remet les compteurs/malus de Faim à zéro (LDB 18 l.337-343). Le prix éventuel (« Repas,
    *  auberge », LDB 66 p.302) est porté par le CHOIX de dialogue (`DialogueChoice.cost`), pas par l'effet. */
   | { type: 'mealParty' }
-  /** Inflige le trauma « Cauchemars » (LDB 21 l.92) à un héros (défaut : le premier) après une scène
+  /** Inflige le trauma « Cauchemars » (LDB 21 l.95) à un héros (défaut : le premier) après une scène
    *  marquante : chaque nuit, Test de Calme Facile (+40) ou Exténué. L'auteur l'assigne (pas inventé). */
   | { type: 'inflictNightmares'; heroId?: string }
   /** Trauma (ADE II Annexe I « Troubles psychologiques », règle facultative `psych-acquisition-optional`) :

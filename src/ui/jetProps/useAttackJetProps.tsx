@@ -107,7 +107,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     : weapon?.type === 'ranged'
       ? (rangedDef ? previewDefense(target, { mode: rangedDef.mode, parryWeapon: rangedDef.parryWeapon, vsWeapon: weapon, dodgeMod: dodge }) : undefined)
       : isInanimate(target) ? undefined : previewDefense(target, { vsWeapon: weapon, dodgeMod: dodge });
-  // LDB États l.113 ; LDB 17 l.68
+  // LDB 16 l.113 ; LDB 17 l.68
   const helplessForced = isHelplessTarget(target);
   // LDB 23 l.209 ; LDB 10
   const reverseAvail = rolled && FLOWS.attack.reverseAvailable(useGame.getState, useGame.setState);

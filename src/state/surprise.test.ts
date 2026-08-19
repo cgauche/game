@@ -31,7 +31,7 @@ describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-
     expect(hasCondition(e, 'surpris')).toBe(false);
   });
 
-  it('effectiveMovement = 0 quand Surpris (LDB 16 l.132)', () => {
+  it('effectiveMovement = 0 quand Surpris (LDB 16 l.135)', () => {
     const c = C({ characteristics: { force: 30, endurance: 30 } as never, conditions: [{ id: 'surpris', value: 1 }] });
     expect(effectiveMovement(c)).toBe(0);
   });

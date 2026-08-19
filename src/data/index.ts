@@ -886,7 +886,7 @@ export interface SkillData {
   specsOpen?: boolean;
   desc: string;
   source: SourceRef;
-  /** Test « impliquant un déplacement » (LDB 16 l.37/85) : ciblé par les pénalités d'État À Terre /
+  /** Test « impliquant un déplacement » (LDB 16 l.35/64) : ciblé par les pénalités d'État À Terre /
    *  Empêtré (`movementOnly`). Classification de COMPÉTENCE portée par la DONNÉE (éditable au Codex),
    *  lue par `engine/conditions.testStatePenalty` — plus de liste d'ids en dur. */
   movement?: boolean;
@@ -1358,7 +1358,7 @@ export interface StatusData {
 
 export interface EtatData extends StatusData {
   /** Les magnitudes du `passive` sont-elles multipliées par le nombre de pions (Exténué −10/pion, LDB 16
-   *  l.89) ? Appliqué à l'émission par le collecteur `passiveMods`. Défaut (absent) : magnitude fixe. */
+   *  l.90) ? Appliqué à l'émission par le collecteur `passiveMods`. Défaut (absent) : magnitude fixe. */
   perStack?: boolean;
   /** Le nombre de pions vu par les `effects` (le `{stacks:'self'}` des dégâts par-round) est RÉDUIT du
    *  niveau de cette capacité de combat chez la cible — ex. Hémorragique réduit par Endurci (`bleedIgnore`,
@@ -1371,7 +1371,7 @@ export interface EtatData extends StatusData {
    *  (vaut même source absente), sinon Force de la source VIVANTE. Retire 1 + DR pions sur succès. */
   recover?: { skill?: string; characteristic?: import('../engine/types').CharKey; opposedBy?: 'source'; difficulty?: import('../engine/types').Difficulty };
   /** Cet État VERROUILLE l'Action : le Mouvement + l'Action doivent servir à fuir/se cacher (Brisé, LDB 16
-   *  l.55). Drapeau DÉCLARATIF lu en DONNÉES par `isActionLocked`/`restrictingConditions` (engine/conditions),
+   *  l.52). Drapeau DÉCLARATIF lu en DONNÉES par `isActionLocked`/`restrictingConditions` (engine/conditions),
    *  partagé par le gate de hotbar (`battleSelectAction`) ET l'IA (dépense PROACTIVE de Détermination pour se
    *  ressaisir) — plus de nom d'État en dur. */
   restrictsAction?: boolean;
@@ -1403,7 +1403,7 @@ export interface PsychologyData extends StatusData {
   /** AFFICHAGE (couche UI, hors RAW LDB 21) : icône du registre `<Icon>` (id `famille/nom`), à l'égal
    *  d'`EtatData.icon`. Lu par `CIBLE_LABEL` (engine/psychology.ts). */
   icon?: string;
-  /** Porter cet état psy IMMUNISE à la Psychologie (Frénésie, LDB 21 l.34) — lu GÉNÉRIQUEMENT par
+  /** Porter cet état psy IMMUNISE à la Psychologie (Frénésie, LDB 21 l.33) — lu GÉNÉRIQUEMENT par
    *  `isPsychImmune` (jamais codé par-nom), à l'égal du drapeau de trait « Immunité (Psychologie) ». */
   psychImmune?: boolean;
   /** Trait psychologique CIBLÉ (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie, LDB 21) : résolution
@@ -1448,7 +1448,7 @@ export interface PsychologyData extends StatusData {
    *  CIBLÉE (traits ciblés). Absent (Frénésie/trauma) = pas de Test de résolution surmontable. */
   resolution?: 'extended' | 'terreur' | 'binary';
   /** (résolution `'terreur'`) État infligé à l'ÉCHEC (l'id de l'état, p.ex. `'brise'`) ; la QUANTITÉ est
-   *  déclarée par `failAmount` (défaut = Indice + |DR négatifs|, LDB 21 l.57). */
+   *  déclarée par `failAmount` (défaut = Indice + |DR négatifs|, LDB 21 l.54). */
   failCondition?: string;
   /** (résolution `'terreur'`) QUANTITÉ d'état infligée à l'échec, EN DONNÉES (`failConditionAmount`) :
    *  `base` (l'Indice de l'affliction via `'indice'`, ou un nombre FIXE) + `perDegreeOfFailure` par DR

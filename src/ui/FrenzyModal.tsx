@@ -10,7 +10,7 @@ import { describeFrenzy } from '../state/flowOutcomes';
 import { Icon } from './Icon';
 
 /**
- * Modale d'entrée en Frénésie (LDB 21 l.32) : « Lancer » jette le Test de Force Mentale,
+ * Modale d'entrée en Frénésie (LDB 21 l.31) : « Lancer » jette le Test de Force Mentale,
  * « Relancer »/« Résilience ×N » dépensent Chance/Résilience, « Appliquer » fige le résultat
  * (entre en Frénésie sur succès). Test binaire (pas de DR) → pas de « +1 DR ».
  */

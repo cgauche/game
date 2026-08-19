@@ -167,7 +167,7 @@ export interface AttackOption {
 }
 
 /** Sources DONNÉE d'une attaque d'Arme gratuite « DISPONIBLE » (`grantFreeAttack when:'available'`) sur SON
- *  tour — Talents ET États PSY. L'état Frénésie porte LUI-MÊME son `grantFreeAttack` (LDB 21 l.34) → HÉROS
+ *  tour — Talents ET États PSY. L'état Frénésie porte LUI-MÊME son `grantFreeAttack` (LDB 21 l.33) → HÉROS
  *  comme ENNEMI, MÊME donnée (pas de jaloux). Renvoie l'op + son plafond /Round (`cap` = niveau du talent,
  *  ou 1 pour un État). SOURCE UNIQUE lue par `hasFreeWeaponAttack` (affordance UI) ET la résolution IA
  *  (`aiAvailableFreeAttack`) → l'attaque libre du frénétique passe par le MÊME résolveur que les attaques

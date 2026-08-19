@@ -112,7 +112,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
     expect(pickDoctrine(mage, [])).toBe('artillerie');
   });
 
-  // #127 — signal RÉEL de charge d'embuscade : l'État Surpris (LDB 16 l.130-136), posé par `applySurprise`
+  // #127 — signal RÉEL de charge d'embuscade : l'État Surpris (LDB 16 l.131-139), posé par `applySurprise`
   // (LDB 13 l.52-81) SEULEMENT sur le camp pris en embuscade et JAMAIS sur l'embusqueur, retiré en fin de
   // Round (etats.json `surpris.effects[0]` onRoundEnd) : l'embuscade se lit dans l'ÉTAT, pas dans un override.
   it('un ennemi qui ouvre le combat depuis l’embuscade (héros Surpris) → embuscade AUTO (sans override)', () => {

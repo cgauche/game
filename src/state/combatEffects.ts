@@ -1206,7 +1206,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Afflictions', label: 'Infliger des cauchemars (trauma nocturne)', icon: 'flag/fear',
     make: () => ({ type: 'inflictNightmares', heroId: '' }),
     apply: (e, env) => {
-      // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
+      // Trauma « Cauchemars » (LDB 21 l.95) posé sur un héros (défaut : le premier).
       const who = env.mutateHero(e.heroId, (h) => ({ ...h, nightmares: true }));
       if (who) env.log(t('eff.nightmares', { name: who.label }));
     },

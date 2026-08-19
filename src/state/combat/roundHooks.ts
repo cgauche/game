@@ -187,7 +187,7 @@ registerCombatHook({
 // (`psychImmune`/`ignoreCritMods`) à `duration` Rounds, décrémentés/expirés par `tickDurations` (hook
 // `end-of-round`) — plus de compteur/flag round-scopé ni de hook de décompte dédié.
 
-// Récupération du Brisé (LDB 16 l.55-59 ; Cœur vaillant LDB 10) MIGRÉE en DONNÉES (etats.json `brise.effects`,
+// Récupération du Brisé (LDB 16 l.54-58 ; Cœur vaillant LDB 10) MIGRÉE en DONNÉES (etats.json `brise.effects`,
 // 2 effets `onRoundEnd`) : (A) « caché hors de vue de tout ennemi » → retire 1 Brisé SANS Test (Condition
 // `hiddenFromFoes`) ; (B) Test de Calme gaté « pas Engagé OU Cœur vaillant, ET pions restants », difficulté par
 // circonstances (`difficultyBy` : caché → Accessible, ennemi à ≤3 → Très difficile), succès retire 1 + DR, vidé

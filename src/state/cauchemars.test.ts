@@ -14,7 +14,7 @@ const hero = (p: Partial<Combatant>): Combatant =>
     ...p,
   } as Combatant);
 
-describe('nightmareCheck (LDB 21 l.92)', () => {
+describe('nightmareCheck (LDB 21 l.95)', () => {
   it('Calme Facile +40 raté → Exténué', () => {
     const c = hero({ characteristics: { 'force-mentale': 35 } as never });
     const fail: RNG = { int: () => 90 }; // 90 > (35+40=75) → échec

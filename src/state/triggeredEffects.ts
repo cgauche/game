@@ -304,7 +304,7 @@ function engagedAdvantageLead(get: Get, actor: Combatant): number {
 
 /** Un adversaire VIVANT est-il dans la Ligne de Vue de `actor` ? Géométrie d'arène (au-dessus de
  *  `lineOfSightCover`, fumées/zones bloquantes incluses) alimentant la Condition `foeInLoS` : sortie de
- *  Frénésie (LDB 21 l.36), fuite/récupération du Brisé (LDB 16 l.55). Hors combat / sans position = false. */
+ *  Frénésie (LDB 21 l.35), fuite/récupération du Brisé (LDB 16 l.52). Hors combat / sans position = false. */
 export function hasFoeInLoS(get: Get, actor: Combatant): boolean {
   const { battle, scene } = get();
   if (!battle || !scene || !actor.pos) return false;
@@ -313,10 +313,10 @@ export function hasFoeInLoS(get: Get, actor: Combatant): boolean {
   );
 }
 
-/** Géométrie d'arène de RÉCUPÉRATION du Brisé (LDB 16 l.55-59) pour `actor`, alimentant les Conditions
+/** Géométrie d'arène de RÉCUPÉRATION du Brisé (LDB 16 l.54-58) pour `actor`, alimentant les Conditions
  *  `hiddenFromFoes`/`engaged`/`nearestFoe` (auto-retrait caché, gate du Test, difficulté par proximité) :
  *  - `hiddenFromFoes` : AUCUN adversaire vivant ne voit l'acteur (sens foe→acteur, `tileSeenByFoe`) — « caché
- *    hors de vue de tout ennemi » (l.59). Faux s'il n'y a aucun adversaire (rien à fuir → pas de « caché »).
+ *    hors de vue de tout ennemi » (l.56). Faux s'il n'y a aucun adversaire (rien à fuir → pas de « caché »).
  *  - `engaged` : l'acteur est-il Engagé (l.57 : aucun Test si Engagé) ;
  *  - `nearestFoeDist` : distance (cases) à l'adversaire vivant le plus proche (l.58 : Très difficile si ≤3).
  *  RNG-free → identique côté inline (ennemi/auto) et côté cascade (héros). Hors combat / sans position = neutre. */
@@ -345,7 +345,7 @@ export function applyTriggeredEffects(
   const lead = ctx.engagedAdvantageLead ?? engagedAdvantageLead(get, actor);
   const foeInLoS = ctx.foeInLoS ?? hasFoeInLoS(get, actor);
   // Géométrie de récupération du Brisé (caché/Engagé/proximité) — battle-aware, calculée UNE fois pour le
-  // porteur, et SEULEMENT à la frontière de Round (seul moment où un État la consomme : LDB 16 l.55-59),
+  // porteur, et SEULEMENT à la frontière de Round (seul moment où un État la consomme : LDB 16 l.54-58),
   // pour ne pas peser sur les déclencheurs d'attaque. Neutre hors `onRoundEnd` (Conditions → false/+∞).
   const geom = trigger === 'onRoundEnd' ? recoveryGeometry(get, actor) : undefined;
   for (const eff of effects) {
@@ -487,7 +487,7 @@ export function fireConditionEffects(get: Get, c: Combatant, trigger: EffectTrig
 
 /**
  * Déclenche les `effects` data-driven des états PSYCHOLOGIQUES portés par `c` (Frénésie : sortie
- * `onTurnStart` → fin + Exténué, LDB 21 l.36). MÊME cœur que les États (`fireStatusEffects`) ; la donnée
+ * `onTurnStart` → fin + Exténué, LDB 21 l.35). MÊME cœur que les États (`fireStatusEffects`) ; la donnée
  * vit dans `psychology.json`. Inerte tant que `psychState` ne porte aucun type doté d'`effects`.
  */
 export function firePsychEffects(get: Get, c: Combatant, trigger: EffectTrigger, ctx: TriggerCtx = {}): string[] {

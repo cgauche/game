@@ -94,7 +94,7 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.118
     const mods = attackModifiers(mk(), mk(), bow, { kind: 'ranged', distanceTiles: 28, env: [] });
     expect(mods.find((m) => m.label.startsWith('Taille'))).toBeUndefined();
   });
-  it('Peur : −1 DR au jet (PAS un −10 sur la cible) quand l’attaquant vise sa source (LDB 21 l.29)', () => {
+  it('Peur : −1 DR au jet (PAS un −10 sur la cible) quand l’attaquant vise sa source (LDB 21 l.27)', () => {
     const a = mk({ psychState: [{ type: 'peur', sourceId: 'B', calmeDR: 0 }] });
     // Le modificateur n'est PLUS une ligne de mods sur la cible : c'est un ajustement de DR (psychDRAdjust).
     const mods = attackModifiers(a, mk({ id: 'B' }), sword, { kind: 'melee', env: [] });
@@ -105,7 +105,7 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.118
     const a = mk({ psychState: [{ type: 'peur', sourceId: 'B', calmeDR: 0 }] });
     expect(psychDRAdjust(a, mk({ id: 'C' }))).toBe(0);
   });
-  it('Frénésie : +1 Bonus de Force au calcul des Dégâts (LDB 21 l.34)', () => {
+  it('Frénésie : +1 Bonus de Force au calcul des Dégâts (LDB 21 l.33)', () => {
     const tgt = mk({ id: 'T' });
     const fr = resolveMelee(mk({ psychState: [{ type: 'frenesie' }] }), tgt, sword, makeRNG(2), { defense: 'none' });
     const no = resolveMelee(mk(), tgt, sword, makeRNG(2), { defense: 'none' });

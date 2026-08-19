@@ -24,7 +24,7 @@ describe('Frénésie — attaque gratuite d’un héros (Auto-combat)', () => {
     const b = useGame.getState().battle!;
     const hero = b.combatants.find((c) => c.kind === 'hero' && (c.weapons ?? []).some((w) => w.type === 'melee'))!;
     const foe = b.combatants.find((c) => c.kind === 'enemy' && !c.dead)!;
-    hero.psychState = [{ type: 'frenesie' } as never];   // frénétique → attaque libre d'Arme (LDB 21 l.34)
+    hero.psychState = [{ type: 'frenesie' } as never];   // frénétique → attaque libre d'Arme (LDB 21 l.33)
     foe.pos = { x: hero.pos!.x + 1, y: hero.pos!.y };      // ennemi AU CONTACT (cible de l'attaque gratuite)
     foe.wounds = { ...foe.wounds, current: 99, max: 99 };  // survit pour qu'on mesure l'attaque, pas la mort
     useGame.setState({ battle: { ...b } });

@@ -35,7 +35,7 @@ function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnIn
   return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, spells: [], ...extra };
 }
 
-describe('Frénésie IA — cible la plus proche (chooseEnemyAction, pur, LDB 21 l.34)', () => {
+describe('Frénésie IA — cible la plus proche (chooseEnemyAction, pur, LDB 21 l.33)', () => {
   it('frenzied : vise le plus PROCHE en Ligne de Vue (pas le plus faible distant)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { psychState: [{ type: 'frenesie' }], movement: 4 });
     const near = mk('near', 'hero', { x: 5, y: 6 }, { wounds: { current: 10, max: 10 } }); // proche, costaud

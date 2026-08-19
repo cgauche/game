@@ -14,7 +14,7 @@ function setup(broken: boolean, enemyPos = { x: 9, y: 5 }) {
   return { hero, enemy };
 }
 
-describe('Brisé — restriction d\'action (LDB 16 l.55)', () => {
+describe('Brisé — restriction d\'action (LDB 16 l.52)', () => {
   // Purge inter-tests : `combatBusy` gèle la hotbar sous un jet OU une cascade en cours. Depuis que la
   // Charge ouvre une cascade combat (comme l'attaque normale), `battleClickEntity` laisse un `pendingCascade`
   // qu'il faut aussi purger (sinon le test suivant verra `combatBusy === true`).

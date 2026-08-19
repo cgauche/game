@@ -54,7 +54,7 @@ describe('Assourdi — +10 flanc/derrière (LDB 16 l.29) : conditionnel à l’a
 });
 
 describe('incomingMeleeAdvantage — Avantage donné à l’assaillant lu en DONNÉES (Sonné, plus de branche par-nom)', () => {
-  it('Sonné → +1 Avantage à l’attaquant en mêlée (LDB 16 l.123)', () => {
+  it('Sonné → +1 Avantage à l’attaquant en mêlée (LDB 16 l.125)', () => {
     const c = mk(); addCondition(c, COND.sonne);
     expect(incomingMeleeAdvantage(c)).toBe(1);
   });

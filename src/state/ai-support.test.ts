@@ -127,7 +127,7 @@ describe('chooseEnemyAction — soin & anti-spam (op-driven)', () => {
     expect(chooseEnemyAction(input(e, [h], { spells: [buffSelf] }))).toEqual({ kind: 'melee', targetId: 'h' });
   });
 
-  it('FRÉNÉSIE : aucun sort de soutien lancé (le frénétique ne lance RIEN, LDB 21 l.34)', () => {
+  it('FRÉNÉSIE : aucun sort de soutien lancé (le frénétique ne lance RIEN, LDB 21 l.33)', () => {
     const e = caster('e', { x: 5, y: 5 }, { psychState: [{ type: 'frenesie' }] } as Partial<Combatant>);
     const ally = caster('a', { x: 6, y: 5 }, { wounds: { current: 1, max: 12, base: 12 } });
     const h = foeAt('h', 5, 6);

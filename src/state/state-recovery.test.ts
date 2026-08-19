@@ -32,7 +32,7 @@ function setBattle(combatants: Combatant[], activeId: string) {
   });
 }
 
-describe('Récupération d’État — flux combat (LDB 16 l.66/77)', () => {
+describe('Récupération d’État — flux combat (LDB 16 l.66/84)', () => {
   beforeEach(() => { vi.useFakeTimers(); seedBattleRng(1); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 

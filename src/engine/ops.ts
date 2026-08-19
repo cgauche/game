@@ -94,7 +94,7 @@ export type Formula =
    *  Condition `woundsDealt`. Absorption « Toute attaque qui touche la créature inflige une quantité ÉGALE
    *  de Dégâts à la victime absorbée » (EDO 11 p.147) : `wounds { amount: { woundsDealt: true } }`. 0 hors contexte. */
   | { woundsDealt: true }
-  /** SOMME de termes (composition) — « 1d10 + (pions − 1) » des Dégâts d'En Flammes (LDB 16 l.77). Permet
+  /** SOMME de termes (composition) — « 1d10 + (pions − 1) » des Dégâts d'En Flammes (LDB 16 l.84). Permet
    *  d'authorer une formule composée sans coder en dur l'addition au moteur. Récursif. */
   | { sum: Formula[] }
   /** FACTEUR multiplicatif (« 1d10 × 10 minutes » — Mystracine/Mandragore, LDB 71 l.33/35) : résout `of`
@@ -330,7 +330,7 @@ export type GameOp =
        *  `metal`, Ombres = `nonMagic`) — attribut de Domaine (l'arc d'Azyr perce le métal). */
       bypassArmour?: 'metal' | 'nonMagic';
       /** Localisation dont les PA sont déduits (quand `ignoreAP:false`). `corps` (défaut) ou `least` =
-       *  la Localisation la MOINS protégée (En Flammes brûle là où l'armure protège le moins, LDB 16 l.77). */
+       *  la Localisation la MOINS protégée (En Flammes brûle là où l'armure protège le moins, LDB 16 l.84). */
       apFrom?: 'corps' | 'least';
       /** Plancher de Blessures infligées APRÈS mitigation (Sang corrosif : « min 1 » même BE/PA élevés). */
       min?: number;
@@ -356,7 +356,7 @@ export type GameOp =
        *  porte (`onlyIfCondition`) / ne porte pas (`unlessCondition`) l'État nommé. */
       onlyIfCondition?: string; unlessCondition?: string;
       /** Force d'évasion d'un État à Test opposé (Empêtré : « se libérer » contre cette Force, LDB 16
-       *  l.61) — résolue contre le RÉFÉRENT (`ctx.caster ?? target`) À L'APPLICATION et FIGÉE sur l'entrée
+       *  l.66) — résolue contre le RÉFÉRENT (`ctx.caster ?? target`) À L'APPLICATION et FIGÉE sur l'entrée
        *  de condition. Ex. `{ charOf: 'FM' }` du lanceur (Enchevêtrement de Taal, Toile surprise : « la
        *  Force d'entrave égale votre Force Mentale »), `{ charOf: 'Int' }` (Enchevêtrement des Arcanes),
        *  ou un littéral (`60`). Absente ⇒ le flux de récupération garde son défaut (Force de la source
@@ -401,7 +401,7 @@ export type GameOp =
   | { op: 'removeCondition'; id?: string; value?: Formula; valuePerSL?: PerSL; all?: boolean }
   /** Retire un état PSYCHOLOGIQUE porté (`PsychAffliction.type` — collection `psychState`, DISTINCTE de
    *  `conditions` : pas de perte d'Avantage à la pose, LDB 21 ≠ LDB 16). GÉNÉRIQUE (paramétré par `type`) :
-   *  sortie de Frénésie (`effects: onTurnStart` → fin + Exténué, LDB 21 l.36). Journalisé via `t()`. */
+   *  sortie de Frénésie (`effects: onTurnStart` → fin + Exténué, LDB 21 l.35). Journalisé via `t()`. */
   | { op: 'endPsych'; type: string }
   /** POSE (ou met à jour) un état PSYCHOLOGIQUE porté — JUMELLE d'`endPsych`, même collection
    *  `psychState` (DISTINCTE de `conditions` : pas de perte d'Avantage à la pose, LDB 21 ≠ LDB 16).
@@ -854,7 +854,7 @@ export type GameOp =
        *  `meleeAttackerBonus` seulement quand l'appelant a établi l'angle (facing). Absent = inconditionnel. */
       flankRear?: boolean }
   /** L'ASSAILLANT du porteur GAGNE `amount` Avantage(s) avant son attaque (Sonné : « +1 Avantage », LDB 16
-   *  l.123). PASSIF de l'État/trait du DÉFENSEUR, lu par `incomingMeleeAdvantage` au moment de l'attaque
+   *  l.125). PASSIF de l'État/trait du DÉFENSEUR, lu par `incomingMeleeAdvantage` au moment de l'attaque
    *  (≠ `incomingAttackMod` = bonus de TOUCHE éphémère). Inerte dans `applyOps`. */
   | { op: 'incomingAdvantage'; mode: 'melee' | 'ranged' | 'all'; amount: number }
   /** Modificateur au DR des SORTS qui affectent le porteur (Résistance à la Magie — trait `LDB 85 l.302`,
@@ -863,7 +863,7 @@ export type GameOp =
    *  `traitSpellDRMod`/`talentSpellDRMod` (engine/magic) au calcul du DR du Sort CONTRE cette cible
    *  (Dégâts du Projectile, `ctx.sl` des Flows, zone, NI par cible). Inerte dans `applyOps`. */
   | { op: 'incomingSpellDRMod'; amount: Formula }
-  /** +N au Bonus de Force employé aux DÉGÂTS (Frénésie : +1 « grâce à votre férocité », LDB 21 l.34). PASSIF,
+  /** +N au Bonus de Force employé aux DÉGÂTS (Frénésie : +1 « grâce à votre férocité », LDB 21 l.33). PASSIF,
    *  sommé par `damageSBBonus` et injecté dans `sb` au calcul des dégâts (combat.ts) — AVANT le `max` du Tueur
    *  et `effectiveWeaponDamage` (une arme à dégâts FIXES n'en profite donc pas). Inerte dans `applyOps`. */
   | { op: 'sbBonus'; amount: number }

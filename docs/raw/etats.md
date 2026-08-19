@@ -33,11 +33,11 @@ La durée de chaque État est précisée dans sa description ; cependant, certai
 > « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage. » — `LDB 16 l.7`
 
 **Sources RAW** :
-- `LDB 16 l.10-11` — définition des États + perte d'Avantage immédiate
+- `LDB 16 l.5-7` — définition des États + perte d'Avantage immédiate
 
 **Voir aussi** : Avantage (`combat.md`), Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.7, l.10-11) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, +4 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`
+- `LDB 16` (l.5-7) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, +4 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`
 
 ---
 
@@ -63,13 +63,13 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 - **Surpris** (l.134 : même principe)
 
 **Sources RAW** :
-- `LDB 16 l.12-15` — règle de cumul (même État = additif ; États différents = pénalité la plus forte seule)
+- `LDB 16 l.11-13` — règle de cumul (même État = additif ; États différents = pénalité la plus forte seule)
 - `LDB 16 l.37` — À Terre ne se cumule pas
 - `LDB 16 l.115` — Inconscient ne se cumule pas
 - `LDB 16 l.137` — Surpris ne se cumule pas
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `schema`, `STABLE_COND_KINDS`, `addCondition`, `stopBleedOutcome`, `hitModifiers`, `addClockCondition`, `sleepParty`, `restRecovery`, +46 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +16 fichiers
+- `LDB 16` (l.11-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `schema`, `STABLE_COND_KINDS`, `addCondition`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `addClockCondition`, `sleepParty`, +50 — `src/data/etats.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +18 fichiers
 
 ---
 
@@ -78,11 +78,11 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 Un État peut être annulé en dépensant un Point de Détermination.
 
 **Sources RAW** :
-- `LDB 16 l.20-21` — mention générale ; renvoi p. 171
+- `LDB 16 l.19-21` — mention générale ; renvoi p. 171
 
 **Voir aussi** : Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.20-21) → `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, `GameOp`, +7 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +2 fichiers
+- `LDB 16` (l.19-21) → `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, `GameOp`, +7 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -101,11 +101,11 @@ Un État peut être annulé en dépensant un Point de Détermination.
 **Cumul** : oui (plusieurs pions possibles, mais le bonus de flanc/derrière ne s'augmente pas).
 
 **Sources RAW** :
-- `LDB 16 l.29-30` — effets + retrait
+- `LDB 16 l.29` — effets + retrait
 
 **Voir aussi** : Aveuglé (état analogue pour la vue)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.29-30) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `GameOp`, `SkillData`, `AttackOptions`, `GameState`, `createCombatSlice`, +1 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combatFlow.ts`, +3 fichiers
+- `LDB 16` (l.29) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `GameOp`, `SkillData`, `AttackOptions`, `GameState`, `createCombatSlice`, +1 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combatFlow.ts`, +3 fichiers
 
 ---
 
@@ -130,7 +130,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 **Voir aussi** : Traumatisme (`traumatisme.md`), Inconscient
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 16` (l.33-39) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `collectHeroRoundEndUpkeep`, `meleeAttackerBonusLines`, `findAwaitingExtension`, `GameOp`, `SkillData`, `AttackOptions`, +3 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combat/roundHooks.ts`, +4 fichiers
-- `LDB 18` (l.15) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `applyHealWounds`, `critSeverityReduction`, `aaBleedUnconsciousApply`, `ActionBar`, `TableRollLine`, `isOutOfAction`, +15 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +9 fichiers
+- `LDB 18` (l.15) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `needsRecoveryRoll`, `applyHealWounds`, `critSeverityReduction`, `aaBleedUnconsciousApply`, `ActionBar`, `TableRollLine`, +16 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/rest.ts`, +10 fichiers
 
 ---
 
@@ -149,7 +149,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Assourdi
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.43-47) → `PRONE_POSE`, `combat-fatigue`, `schema`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `ActionBar`, `hasFoeInLoS`, `empetre`, +15 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, +9 fichiers
+- `LDB 16` (l.43-47) → `PRONE_POSE`, `combat-fatigue`, `schema`, `brise`, `Condition`, `tileSeenByFoe`, `aaBleedUnconsciousDue`, `ActionBar`, `hasFoeInLoS`, `empetre`, +15 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, +9 fichiers
 
 ---
 
@@ -171,11 +171,11 @@ Un État peut être annulé en dépensant un Point de Détermination.
 **Cumul** : oui (plusieurs pions, chacun retiré séparément).
 
 **Sources RAW** :
-- `LDB 16 l.51-61` — effets, contraintes de comportement, retrait
+- `LDB 16 l.50-58` — effets, contraintes de comportement, retrait
 
 **Voir aussi** : Psychologie (`psychologie.md`), Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.51-61) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `describeStateRecovery`, +24 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +16 fichiers
+- `LDB 16` (l.50-58) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `brise`, `Condition`, `tileSeenByFoe`, `aaBleedUnconsciousDue`, `describeStateRecovery`, +23 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +16 fichiers
 
 ---
 
@@ -192,14 +192,14 @@ Un État peut être annulé en dépensant un Point de Détermination.
 **Cumul** : oui.
 
 **Sources RAW** :
-- `LDB 16 l.86-87` — définition et effets de déplacement
+- `LDB 16 l.60-66` — définition et effets de déplacement
 - `LDB 16 l.72` — retrait par Test de Force opposé (chaque DR retire un État _Empêtré_ supplémentaire)
 
 > « Vous pouvez utiliser votre Action pour retirer l'État _Empêtré_ en réussissant un Test opposé **de Force** contre la source de cet empêtrement, et chaque DR obtenu permet de retirer un État _Empêtré_ supplémentaire. » — `LDB 16 l.66`
 
 **Voir aussi** : Empoignade (`combat.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.66, l.72, l.86-87) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `Condition`, `aaBleedUnconsciousDue`, +26 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +17 fichiers
+- `LDB 16` (l.60-66, l.72) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `brise`, `Condition`, `tileSeenByFoe`, `aaBleedUnconsciousDue`, `describeStateRecovery`, +23 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +16 fichiers
 
 ---
 
@@ -222,11 +222,11 @@ Un État peut être annulé en dépensant un Point de Détermination.
 **Cumul** : oui (1 dégât par pion par Round).
 
 **Sources RAW** :
-- `LDB 16 l.68-79` — définition, effets, retrait, conséquences à 0 PB et Inconscient
+- `LDB 16 l.68-78` — définition, effets, retrait, conséquences à 0 PB et Inconscient
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Exténué, Drogues et poisons (`LDB 71`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-79) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `describeStateRecovery`, +22 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +15 fichiers
+- `LDB 16` (l.68-78) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, +21 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +14 fichiers
 
 ---
 
@@ -245,11 +245,11 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 **Retrait** : Test d'**Athlétisme** (Difficulté selon les circonstances : rouler dans du sable = plus facile, cuisine pleine d'huile = plus difficile) ; succès = retire 1 État En flammes (+ 1 par DR).
 
 **Sources RAW** :
-- `LDB 16 l.81-84` — condition d'inflammabilité, dégâts, formule, retrait
+- `LDB 16 l.80-84` — condition d'inflammabilité, dégâts, formule, retrait
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.81-84) → `combat-fatigue`, `schema`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `Condition`, `describeStateRecovery`, `ActionBar`, `empetre`, +11 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +10 fichiers
+- `LDB 16` (l.80-84) → `combat-fatigue`, `schema`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `describeStateRecovery`, `ActionBar`, `empetre`, `GameOp`, +9 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, +8 fichiers
 
 ---
 
@@ -276,12 +276,12 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 **Cumul** : oui (chaque pion ajoute -10 ; pas de plafond RAW précisé).
 
 **Sources RAW** :
-- `LDB 16 l.84-102` — définition, effets, retrait, option MJ Se fatiguer, durée de repos
+- `LDB 16 l.86-101` — définition, effets, retrait, option MJ Se fatiguer, durée de repos
 - `LDB 21 l.33` — Frénésie : gain Exténué à la fin de la Frénésie
 
 **Voir aussi** : Brisé, Sonné, Hémorragique, Empoisonné, Inconscient, Traumatisme (`traumatisme.md`), Psychologie (`psychologie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.84-102) → `combat-fatigue`, `unstable`, `schema`, `EnemyAction`, `Formula`, `stopBleedOutcome`, `brise`, `hitModifiers`, `needsRecoveryRoll`, `sleepParty`, +32 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +18 fichiers
+- `LDB 16` (l.86-101) → `combat-fatigue`, `unstable`, `schema`, `EnemyAction`, `Formula`, `stopBleedOutcome`, `brise`, `needsRecoveryRoll`, `sleepParty`, `restRecovery`, +24 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +15 fichiers
 - `LDB 21` (l.33) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `fearSourceFor`, `psychImmuneToFrom`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `describeApproach`, `describeFrenzy`, +39 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, +19 fichiers
 
 ---
@@ -311,7 +311,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Inconscient, Traumatisme (`traumatisme.md`), Maladies (`maladies.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.103-109) → `combat-fatigue`, `unstable`, `schema`, `stopBleedOutcome`, `brise`, `hitModifiers`, `needsRecoveryRoll`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, +21 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +10 fichiers
+- `LDB 16` (l.103-109) → `combat-fatigue`, `unstable`, `schema`, `stopBleedOutcome`, `useAttackJetProps`, `brise`, `hitModifiers`, `needsRecoveryRoll`, `sleepParty`, `restRecovery`, +23 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +12 fichiers
 
 ---
 
@@ -331,11 +331,11 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 **Cumul** : **non** — soit on est Inconscient, soit on ne l'est pas.
 
 **Sources RAW** :
-- `LDB 16 l.112-120` — effets, attaque facilité, retrait, transition vers À Terre + Exténué
+- `LDB 16 l.111-119` — effets, attaque facilité, retrait, transition vers À Terre + Exténué
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Hémorragique, Empoisonné, À Terre, Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.112-120) → `unstable`, `schema`, `STABLE_COND_KINDS`, `stopBleedOutcome`, `hitModifiers`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `DOCTRINES`, +19 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +10 fichiers
+- `LDB 16` (l.111-119) → `combat-fatigue`, `unstable`, `schema`, `STABLE_COND_KINDS`, `stopBleedOutcome`, `useAttackJetProps`, `brise`, `hitModifiers`, `needsRecoveryRoll`, `sleepParty`, +28 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +12 fichiers
 
 ---
 
@@ -355,11 +355,11 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 **Cumul** : oui.
 
 **Sources RAW** :
-- `LDB 16 l.123-130` — effets, langue magick, -10 tests, +1 avantage attaquant, retrait, transition Exténué
+- `LDB 16 l.123-129` — effets, langue magick, -10 tests, +1 avantage attaquant, retrait, transition Exténué
 
 **Voir aussi** : Exténué, Magie (`magie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.123-130) → `schema`, `STABLE_COND_KINDS`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, +7 — `src/data/etats.json`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, +1 fichiers
+- `LDB 16` (l.123-129) → `schema`, `STABLE_COND_KINDS`, `useAttackJetProps`, `hitModifiers`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, `AttackResult`, `cannotDefend`, +18 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/state/ai.ts`, +6 fichiers
 
 ---
 
@@ -379,11 +379,11 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 **Cumul** : **non** — un seul pion possible (techniquement, on peut être surpris plusieurs fois dans un Round, mais l'État ne s'empile pas).
 
 **Sources RAW** :
-- `LDB 16 l.132-139` — effets, retrait, non-cumul
+- `LDB 16 l.131-139` — effets, retrait, non-cumul
 
 **Voir aussi** : Initiative et Surprise (`combat.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.132-139) → `STABLE_COND_KINDS`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, `endOfRound`, +6 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
+- `LDB 16` (l.131-139) → `STABLE_COND_KINDS`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, `endOfRound`, +9 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -416,11 +416,11 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 | En Flammes | variable | `max(1, 1d10 + (pions-1) - BE - PA_min)` |
 
 **Sources RAW** :
-- `LDB 16 l.16-17` — liste complète des 12 États
-- `LDB 16 l.28-139` — descriptions individuelles
+- `LDB 16 l.15-17` — liste complète des 12 États
+- `LDB 16 l.27-139` — descriptions individuelles
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `schema`, `STABLE_COND_KINDS`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `stopBleedOutcome`, +75 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +27 fichiers
+- `LDB 16` (l.15-17, l.27-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `schema`, `STABLE_COND_KINDS`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `stopBleedOutcome`, +79 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +29 fichiers
 
 ---
 
@@ -650,7 +650,7 @@ Interprétation probable : traduction alternative de **Exténué** (État offici
 ## Bilan de fidélité
 
 Points vérifiés contre le source `.md` :
-- Règle de cumul des pénalités (même État additif, États différents = max) : conforme `LDB 16 l.12-15`.
+- Règle de cumul des pénalités (même État additif, États différents = max) : conforme `LDB 16 l.11-13`.
 - Les 3 non-cumulables (À Terre, Inconscient, Surpris) : conformes.
 - Formule En Flammes (+1/État supplémentaire, min 1) : conforme `l.77` et `endOfRound l.241-244`.
 - Hémorragique : jet de mort 10%/pion + coagulation sur double : conforme `l.105` et `bleedDeathRoll`.

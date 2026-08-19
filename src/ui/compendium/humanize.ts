@@ -204,7 +204,7 @@ const armourBypassCatLabel = (b: ArmourBypass | undefined): string | undefined =
   typeof b === 'string' ? ARMOUR_BYPASS_CAT_LABEL[b] : undefined;
 
 /** ÉCHELLE « par DR » d'une quantité d'op (`PerSL`) en clair joueur — « +1 par DR d'échec » (Terreur,
- *  LDB 21 l.57), « +1 par 2 DR ». SOURCE UNIQUE de cette phrase : la chip d'une op qui la porte
+ *  LDB 21 l.54), « +1 par 2 DR ». SOURCE UNIQUE de cette phrase : la chip d'une op qui la porte
  *  l'affiche AVANT le jet (la règle complète), le nombre RÉSOLU la remplace une fois le DR connu. */
 export function humanizePerSL(p: { every: number; amount: number; onFailure?: boolean }): string {
   const pas = p.every > 1 ? `${p.every} DR` : 'DR';

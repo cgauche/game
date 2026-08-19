@@ -1,7 +1,7 @@
 /**
  * Repos / nuit de sommeil — récupération hors combat (Livre de base FR).
  * Sources :
- *  - Exténué retiré par le repos (LDB 16 l.92) ; cadence « une nuit = tout retiré » (choix figé, LDB 16 l.100
+ *  - Exténué retiré par le repos (LDB 16 l.92) ; cadence « une nuit = tout retiré » (choix figé, LDB 16 l.101
  *    laisse la vitesse au MJ ; on prend la nuit complète, cohérente avec « une bonne nuit de sommeil »).
  *  - Soin de Blessures (LDB 18 l.296, volet a) : Test de Résistance Accessible (+20) ⇒ DR + Bonus
  *    d'Endurance Points de Blessure regagnés.
@@ -126,9 +126,9 @@ export interface RestRoll {
 
 /**
  * Repos de `days` journée(s) pour UN personnage (défaut 1 = « Dormir jusqu'à l'aube »). Par journée :
- * dissipe l'Exténué (sommeil, LDB 16 l.92/100), soigne les PB (LDB 18 l.296 volet a Résistance +20 → DR+BE,
+ * dissipe l'Exténué (sommeil, LDB 16 l.92/101), soigne les PB (LDB 18 l.296 volet a Résistance +20 → DR+BE,
  * ET volet b +BE inconditionnel), puis les cauchemars (LDB 21 l.95) peuvent en regagner un. Réveille un
- * Inconscient et relève un héros À Terre dès qu'il repasse > 0 PB (l.28). Mute `c`, renvoie un résumé.
+ * Inconscient et relève un héros À Terre dès qu'il repasse > 0 PB (LDB 18 l.15). Mute `c`, renvoie un résumé.
  * `collect` (modale de Repos) reçoit les JETS structurés (récupération, cauchemars) pour le bilan.
  * (Maladies/convalescence : décomptées par l'entretien quotidien — cf. en-tête #T3.)
  */
@@ -199,7 +199,7 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
     }
     // Conséquence du jour (dissipation + soin volets a/b + plafond blessé + réveil) — logique PARTAGÉE.
     if (applyRecoveryDay(c, roll).wokeUp) wokeUp = true;
-    // Cauchemars (l.92) : une nuit marquée peut regagner un Exténué.
+    // Cauchemars (LDB 21 l.95) : une nuit marquée peut regagner un Exténué.
     if (c.nightmares) {
       const before = stacks(c, 'extenue');
       const out: { base: number; result: import('./tests').TestResult }[] = [];

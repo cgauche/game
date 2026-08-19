@@ -1,14 +1,7 @@
 {
-  "src/data/combat-stakes.json": {
-    "LDB 21 l.14": 2
-  },
   "src/data/flow-stakes.json": {
-    "LDB 16 l.77": 1,
     "LDB 19 l.65": 1,
     "LDB 41 l.105": 1
-  },
-  "src/data/index.ts": {
-    "LDB 16 l.37/85": 1
   },
   "src/data/obtainability-guard.test.ts": {
     "VDM 4 l.153": 1
@@ -16,9 +9,6 @@
   "src/data/reglesOptionnelles.json": {
     "EDOC 8 l.73": 1,
     "LDB 23 l.48": 1
-  },
-  "src/data/schemas/defs/etats.ts": {
-    "LDB 16 l.56/70/77/91/107/116": 3
   },
   "src/data/schemas/defs/gods.ts": {
     "MDG 11 l.142": 1
@@ -46,20 +36,11 @@
     "LDB 5 l.383": 1,
     "LDB 5 l.385": 1
   },
-  "src/engine/ops.ts": {
-    "LDB 16 l.77": 1
-  },
   "src/engine/prayer-sin-lock.test.ts": {
     "MDG 11 l.142": 1
   },
   "src/engine/sequenceVocab.ts": {
     "NADJ 16 l.83": 1
-  },
-  "src/engine/skills-ooc.test.ts": {
-    "LDB 16 l.18/89": 1
-  },
-  "src/engine/skills-psych.test.ts": {
-    "LDB 21 l.24": 1
   },
   "src/engine/social.ts": {
     "LDB 8 l.88": 1
@@ -67,31 +48,15 @@
   "src/engine/traits/parity.test.ts": {
     "LDB 85 l.85/89": 1
   },
-  "src/engine/trauma.ts": {
-    "LDB 16 l.89": 1
-  },
   "src/gameIso/rig/creatures/defs/Manticore.ts": {
     "LDB 79 l.108": 1
   },
   "src/gameIso/stage/ZdeTemplate.tsx": {
     "LDB 47 l.29/44": 1
   },
-  "src/state/ai.ts": {
-    "LDB 16 l.66/85": 1,
-    "LDB 16 l.85": 1
-  },
-  "src/state/cauchemars.test.ts": {
-    "LDB 21 l.92": 1
-  },
-  "src/state/combat/recover.test.ts": {
-    "LDB 16 l.66/77": 2
-  },
   "src/state/combatFlow.ts": {
     "LDB 20 l.32/49": 1,
     "MDG 11 l.142": 2
-  },
-  "src/state/flowOutcomes.ts": {
-    "LDB 16 l.66/77": 1
   },
   "src/state/interlude-flow.test.ts": {
     "LDB 23 l.30": 1
@@ -102,14 +67,7 @@
   "src/state/sequenceCore.ts": {
     "NADJ 16 l.83": 2
   },
-  "src/state/social-psych-flow.test.ts": {
-    "LDB 21 l.24": 1
-  },
-  "src/state/state-recovery.test.ts": {
-    "LDB 16 l.66/77": 1
-  },
   "src/state/store.ts": {
-    "LDB 16 l.66/77": 1,
     "LDB 41 l.105": 2,
     "LDB 47 l.29/44": 1
   },
@@ -122,9 +80,6 @@
   "src/state/zde-cast.test.ts": {
     "LDB 47 l.29/44": 1,
     "LDB 47 l.347": 1
-  },
-  "src/ui/ActionBar.tsx": {
-    "LDB 16 l.77": 1
   },
   "src/ui/CorruptionModal.tsx": {
     "LDB 19 l.26": 1

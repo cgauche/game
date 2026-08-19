@@ -306,7 +306,7 @@ export function peurTerreurFromSize(foe?: SizeCategory, self?: SizeCategory): { 
 /**
  * Immunité à la Psychologie — PRÉDICAT CENTRAL (toute source d'immunité passe par ici) :
  * - trait « Immunité (Psychologie) » (`psychImmune`, LDB 85 l.143-144) ;
- * - Frénésie active (LDB 21 l.34) ;
+ * - Frénésie active (LDB 21 l.33) ;
  * - Détermination « immunisé à Psychologie jusqu'à la fin du prochain Round » (LDB 17 l.59), via le
  *   compteur `psychImmuneRoundsLeft` (décrémenté au passage de Round) → l'immunité ne fait que RETARDER :
  *   à expiration, les déclencheurs/effets reprennent (sauf si la source est morte entre-temps).
@@ -320,7 +320,7 @@ export function isPsychImmune(c: Combatant, foesMaxAdvantage?: number): boolean 
   if (foesMaxAdvantage != null && bellicosePsychImmune(c, foesMaxAdvantage)) return true;
   // Immunité par DONNÉE : trait « Immunité (Psychologie) » (`c.psychImmune`), Détermination temporaire
   // (`ActiveEffect.psychImmune`), OU un état psy porté qui l'accorde (Frénésie → `psychology.json`
-  // `psychImmune:true`, LDB 21 l.34) — lu GÉNÉRIQUEMENT, jamais par-nom.
+  // `psychImmune:true`, LDB 21 l.33) — lu GÉNÉRIQUEMENT, jamais par-nom.
   return !!c.psychImmune
     || (c.activeEffects ?? []).some((e) => e.psychImmune)
     || (c.psychState ?? []).some((p) => findPsychologyById(p.type)?.psychImmune);
@@ -374,14 +374,14 @@ export function isFrenzyCapable(c: Combatant): boolean {
     || effectivePsychTraits(c).some((p) => p.type === 'frenesie');
 }
 
-/** Le combattant est-il EN Frénésie (LDB 21 l.34) ? État psychologique porté `frenesie` (`psychState`,
+/** Le combattant est-il EN Frénésie (LDB 21 l.33) ? État psychologique porté `frenesie` (`psychState`,
  *  posé par l'entrée — Action héros / décision IA / Rage).
  *  Lu par le combat (charge, gating, +1 BF via données, immunité psy, attaque libre). */
 export function isFrenzied(c: Combatant): boolean {
   return (c.psychState ?? []).some((p) => p.type === 'frenesie');
 }
 
-/** Test de Force Mentale pour entrer en Frénésie (LDB 21 l.32). Succès → on entre. */
+/** Test de Force Mentale pour entrer en Frénésie (LDB 21 l.31). Succès → on entre. */
 export function resolveFrenzyEntry(fm: number, rng: RNG = defaultRNG): { success: boolean; roll: number; target: number; sl: number } {
   const t = rollTest(fm, 'intermediaire', rng);
   return { success: t.success, roll: t.roll, target: t.target, sl: t.sl };
@@ -479,7 +479,7 @@ export function resolveCalmeSimple(calme: number, rng: RNG = defaultRNG): { succ
 
 /** Quantité d'état infligée par un Test BINAIRE raté (résolution `'terreur'`), EN DONNÉES (`failAmount`) :
  *  `base` (l'Indice de l'affliction via `'indice'`, ou un nombre FIXE) + `perDegreeOfFailure` × DR négatifs.
- *  Défauts `{ base:'indice', perDegreeOfFailure:1 }` = la règle Terreur (Indice + |DR|, LDB 21 l.57) — un
+ *  Défauts `{ base:'indice', perDegreeOfFailure:1 }` = la règle Terreur (Indice + |DR|, LDB 21 l.54) — un
  *  nouvel État/Psy peut infliger une quantité propre (fixe, ou par DR seul) sans code. L'appelant n'invoque
  *  ce calcul que sur un ÉCHEC (le succès n'inflige rien) : SOURCE UNIQUE. */
 export function failConditionAmount(
@@ -521,7 +521,7 @@ export interface PsychStake {
  * codex-liées). DÉRIVÉE de l'entrée `psychology.json` (`resolution`/`failCondition`/`failAmount`/
  * `becomes`) : aucune conséquence n'est rédigée par entrée.
  *
- * · résolution `'terreur'` (LDB 21 l.55-57) — échec : `failCondition` à la quantité déclarée (part
+ * · résolution `'terreur'` (LDB 21 l.54-56) — échec : `failCondition` à la quantité déclarée (part
  *   fixe en `value`, part par degré d'échec en `valuePerSL{onFailure}` — résolue par `applyOps` avec
  *   le DR du jet) ; PUIS l'entrée `becomes` posée à PLEIN Indice, quel que soit le résultat (#1190).
  * · Traits CIBLÉS — l'entrée est posée `active` selon l'issue : subie sur un échec, marqueur inerte
@@ -595,7 +595,7 @@ export function gainPhobieIfThreshold(
 ): { phobie: PsychTrait; resetCounter: true } | null {
   if (!rule('psych-acquisition-optional')) return null;
   if (cumulativeBriseFromTerreur < bonus(effectiveChar(c, 'force-mentale'))) return null;
-  // Phobie = Peur 1 sur la source (même convention que parsePsychTraits, LDB 21 l.84-87).
+  // Phobie = Peur 1 sur la source (même convention que parsePsychTraits, LDB 21 l.85-87).
   return { phobie: { type: 'phobie', cible: cause, indice: 1 }, resetCounter: true };
 }
 
@@ -633,7 +633,7 @@ export function traumaOnImpossibleAmbition(
   return t.success ? { test } : { test, trait: { type: 'trauma' } };
 }
 
-/** Test de Terreur à la 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ;
+/** Test de Terreur à la 1ʳᵉ rencontre (LDB 21 l.54-56) : échec → Brisé = Indice + |DR négatifs| ;
  *  ensuite la créature cause une Peur d'Indice équivalent (`devientPeur`).
  *  `sansPeur` (Sans Peur (Ennemi), LDB 10 l.1051) : le Test de Calme est Accessible (+20) — une
  *  réussite ignore la Terreur (et la Peur subséquente, via `devientPeur: 0`). */

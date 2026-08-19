@@ -248,7 +248,7 @@ export interface EffectFlags {
   focusDr?: number;
   /** Faim (#T2, LDB 18 l.337-343) : jours sans manger + échecs (malus de caracs actifs). */
   hunger?: { days: number; failures: number };
-  /** Sous l'emprise de la PEUR (LDB 21 l.29) : Indice le plus élevé des sources non surmontées
+  /** Sous l'emprise de la PEUR (LDB 21 l.27) : Indice le plus élevé des sources non surmontées
    *  (calmeDR < Indice). Undefined = aucune Peur active. */
   fear?: number;
 }

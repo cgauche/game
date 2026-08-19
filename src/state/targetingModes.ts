@@ -373,7 +373,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   if (!option || !scene) return;
   if (target.kind === active.kind) return; // camp RELATIF : on ne frappe que le camp ADVERSE (soin/sort via leurs modes)
   if (!canTakeAction(active) || hasCondition(active, COND.brise)) return; // Sonné/Brisé : pas d'attaque (parité boutons)
-  // Frénésie (LDB 21 l.34) : la cible est IMPOSÉE — l'ennemi le plus proche en Ligne de Vue.
+  // Frénésie (LDB 21 l.33) : la cible est IMPOSÉE — l'ennemi le plus proche en Ligne de Vue.
   if (isFrenzied(active)) {
     const ft = frenzyTarget(get, active);
     if (ft && ft.id !== id) {
@@ -399,7 +399,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   // L'Action dépensée interdit le DÉPLACEMENT combiné pour une attaque qui COÛTE l'Action (Arme hors
   // Frénésie) → frappe directe seulement. Une attaque GRATUITE (Morsure/Caudale/Tentacule, ou l'Arme en
   // attaque libre de Frénésie → `cost.action===false`) PEUT s'approcher (charge) même l'Action dépensée
-  // (LDB 21 l.34 : « se déplacer au maximum vers l'ennemi le plus proche pour l'attaquer »).
+  // (LDB 21 l.33 : « se déplacer au maximum vers l'ennemi le plus proche pour l'attaquer »).
   if (battle.acted && option.cost.action && plan.kind !== 'attack') return;
   if (plan.kind === 'blocked') {
     get().log(plan.reason);
@@ -439,7 +439,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
       return;
     }
   }
-  // Peur (LDB 21 l.29) : charger / rejoindre une source de Peur = s'en RAPPROCHER → même Test de
+  // Peur (LDB 21 l.27) : charger / rejoindre une source de Peur = s'en RAPPROCHER → même Test de
   // Calme d'approche que le clic-sol (une tentative par Tour, battle.fearGate).
   if (plan.kind === 'charge' || plan.kind === 'moveAttack') {
     const feared = battle.fearGate === 'passed' ? null : fearedSourceTowards(battle, active, plan.dest);
@@ -536,7 +536,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
       pa = { attackerId: active.id, targetId: target.id, location: null, result: null, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
     }
   }
-  // Cible Inconsciente (LDB États l.113) : l'attaquant gagne « Je ne faillirai pas ! » SANS dépenser de
+  // Cible Inconsciente (LDB 16 l.113) : l'attaquant gagne « Je ne faillirai pas ! » SANS dépenser de
   // Résilience → réutilise le MÊME picker de Localisation (`pa.forced`/CritLocationPicker, LDB 17 l.68)
   // que le Critique forcé par Résilience. Réservé au joueur qui PILOTE ; l'IA (doAttack) résout hors de
   // ce chemin (pendingAttack), donc ne voit jamais ce choix.

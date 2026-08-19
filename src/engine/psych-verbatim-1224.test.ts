@@ -127,7 +127,7 @@ describe('#1224 écart 4 — la pénalité SUR SUCCÈS vit en DONNÉE (LDB 21 l.
     expect(socialPsychLabel(contenu, ['hommes-betes'])).toBe('Animosité −20');
   });
 
-  it('cumul Animosité + Préjugé, et DISPARITION dès que l’affliction devient ACTIVE (compulsion, l.24)', () => {
+  it('cumul Animosité + Préjugé, et DISPARITION dès que l’affliction devient ACTIVE (compulsion, LDB 21 l.21)', () => {
     const deux = obs({
       psychTraits: [{ type: 'animosite', cible: 'hommes-betes' }, { type: 'prejuge', cible: 'hommes-betes' }],
       psychState: [],

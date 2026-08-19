@@ -259,7 +259,7 @@ export interface BattleState {
   /** Budget de Mouvement ÉTENDU du Tour après une Course (Marche + Course + DR, LDB 15 l.41) :
    *  le reliquat non parcouru reste dépensable en segments. Null hors Course ; purgé au Tour/Round. */
   runBudget?: number | null;
-  /** Test de Calme d'APPROCHE d'une source de Peur (LDB 21 l.29) — une tentative par Tour :
+  /** Test de Calme d'APPROCHE d'une source de Peur (LDB 21 l.27) — une tentative par Tour :
    *  'passed' = approches libres ce Tour ; 'failed' = aucune approche ce Tour. Purgé au Tour/Round. */
   fearGate?: 'passed' | 'failed' | null;
   /** COOP : un joueur demande la PAUSE du prochain début de Round (fenêtre Chance « agir en
@@ -600,7 +600,7 @@ export interface GameState extends RollFlowActionsMap {
   pendingCrewTest: PendingCrewTest | null;
   /** Chanson de marin en cours (Talent, MDG 09 l.32-40 : choix de la chanson + Test de Divertissement (Chant)). */
   pendingShanty: PendingShanty | null;
-  /** Approche d'une source de Peur en cours (Test de Calme +0 différant le clic — LDB 21 l.29). */
+  /** Approche d'une source de Peur en cours (Test de Calme +0 différant le clic — LDB 21 l.27). */
   pendingApproach: PendingApproach | null;
   /** Bénédiction de Protection en cours (Test de FM +20 différant la déclaration d'attaque — LDB 41 l.105). */
   pendingWard: PendingWard | null;
@@ -608,7 +608,7 @@ export interface GameState extends RollFlowActionsMap {
   pendingFocus: PendingFocus | null;
   pendingDispel: PendingDispel | null;
   // (Psychologie de combat : cascade de Round, cf. openRoundStartPsych/openRoundEndCascade.)
-  /** Entrée en Frénésie d'un héros en cours (Test de FM, LDB 21 l.32). */
+  /** Entrée en Frénésie d'un héros en cours (Test de FM, LDB 21 l.31). */
   pendingFrenzy: PendingFrenzy | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
   pendingRoundStart: { round: number; readyBySeat?: Record<number, boolean> } | null;
@@ -958,7 +958,7 @@ export interface GameState extends RollFlowActionsMap {
   handGateConfirm: () => void;
   /** Annule l'Action avant le jet de Main ensanglantée (défait une charge misclic comme `attackCancel`). */
   handGateCancel: () => void;
-  /** Se libérer (Empêtré, Test opposé de Force) / se rouler au sol (En flammes, Athlétisme) : OUVRE la modale (LDB 16 l.66/77). */
+  /** Se libérer (Empêtré, Test opposé de Force) / se rouler au sol (En flammes, Athlétisme) : OUVRE la modale (LDB 16 l.66/84). */
   battleRecoverState: (state: 'empetre' | 'en-flammes') => void;
   // recover{Roll,Reroll,BonusSL,DarkPact} (Lancer/Chance/+1 DR/Pacte) : générés (RollFlowActionsMap).
   /** « Appliquer » : retire 1 + DR pions de l'État, consomme l'Action. */
@@ -1229,7 +1229,7 @@ export interface GameState extends RollFlowActionsMap {
   // fall{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   fallConfirm: () => void;
   fallCancel: () => void;
-  /** Approche d'une source de Peur (LDB 21 l.29) : Test de Calme (+0) ; succès → l'intention différée est relancée. */
+  /** Approche d'une source de Peur (LDB 21 l.27) : Test de Calme (+0) ; succès → l'intention différée est relancée. */
   // approach{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   approachConfirm: () => void;
   approachCancel: () => void;
@@ -1265,7 +1265,7 @@ export interface GameState extends RollFlowActionsMap {
   // (Psychologie de combat (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round — Traits/Terreur au
   //  DÉBUT (openRoundStartPsych), Peur à la FIN (openRoundEndCascade) — résolue par les handlers `cascade*`,
   //  applier 'combatPsych'.)
-  /** Entrée en Frénésie d'un héros (LDB 21 l.32) : ouvrir la modale, lancer le Test de FM, Chance/Résilience, appliquer. */
+  /** Entrée en Frénésie d'un héros (LDB 21 l.31) : ouvrir la modale, lancer le Test de FM, Chance/Résilience, appliquer. */
   battleFrenzy: () => void;
   // frenzy{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   /** Action « cumuler l'Avantage » (LDB 09 l.305-308) : Test de la Compétence `skillId` (Intuition/

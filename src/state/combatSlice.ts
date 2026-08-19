@@ -881,7 +881,7 @@ export function createCombatSlice(get: Get, set: Set) {
         }
         return;
       }
-      // Peur (LDB 21 l.29) : se RAPPROCHER d'une source de Peur exige un Test de Calme Intermédiaire (+0)
+      // Peur (LDB 21 l.27) : se RAPPROCHER d'une source de Peur exige un Test de Calme Intermédiaire (+0)
       // — vérifié au COMMIT seulement (l'aperçu reste libre). Une tentative par Tour (battle.fearGate) :
       // succès → approches libres ce Tour ; échec → aucune approche ce Tour.
       const fearGateBlocks = (): boolean => {
@@ -899,7 +899,7 @@ export function createCombatSlice(get: Get, set: Set) {
         bus.emit(EVT.SCENE_DIRTY);
         return true;
       };
-      // Frénésie (LDB 21 l.34) : « vous devez vous déplacer à votre maximum en direction de l'ennemi
+      // Frénésie (LDB 21 l.33) : « vous devez vous déplacer à votre maximum en direction de l'ennemi
       // le plus proche dans votre Ligne de Vue » → seules les cases qui RAPPROCHENT de cette cible.
       const frenzyBlocks = (): boolean => {
         if (!isFrenzied(active)) return false;
@@ -1521,7 +1521,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     shantyCancel: () => set({ pendingShanty: null }),
 
-    // ── Approche d'une source de Peur (LDB 21 l.29) : Test de Calme Intermédiaire (+0) qui DIFFÈRE le
+    // ── Approche d'une source de Peur (LDB 21 l.27) : Test de Calme Intermédiaire (+0) qui DIFFÈRE le
     //    clic d'approche. Succès → fearGate 'passed' (approches libres ce Tour) + l'intention est relancée ;
     //    échec → fearGate 'failed' (aucune approche ce Tour). « Un jet = une modale ». ──
     approachConfirm: () => {
@@ -1770,7 +1770,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle, turn, action: null, movementUsed, movedPreAction: false, acted, reachable: new Map() } });
       if (checkBattleOver(get, set)) return;
       bus.emit(EVT.SCENE_DIRTY);
-      // Psychologie de DÉBUT de Round (LDB 21 l.14) : Traits ciblés (Animosité/Haine/…) + nouvelles
+      // Psychologie de DÉBUT de Round (LDB 21 l.9) : Traits ciblés (Animosité/Haine/…) + nouvelles
       // Terreurs → UNE cascade (un héros par étape) qui suspend l'IA jusqu'à résolution.
       openRoundStartPsych(get, set);
       if (get().pendingCascade) return; // la cascade tient la main ; sa fermeture reprendra l'IA
@@ -1840,7 +1840,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active)) return;
-      if (!canTakeAction(active)) return; // Sonné : pas d'Action (LDB États l.123)
+      if (!canTakeAction(active)) return; // Sonné : pas d'Action (LDB 16 l.125)
       active.defensiveStance = true;
       active.aiming = false; // une autre action que le tir gâche la visée
       set({ battle: { ...markActed(get, set, battle), action: null, log: [...battle.log, ev('defensive', t('cs.defensive', { name: active.label }), active.id)] } });
@@ -2295,7 +2295,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const attacker = inBattleId(battle, pa.attackerId);
       const target = inBattleId(battle, pa.targetId);
       if (!attacker || !target) return;
-      applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
+      applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée (LDB 16 l.125), avant le jet
       const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid, pa.withhold, pa.harpoonRopeCut); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.183) ; pa.withhold = Retenir ses coups (AA) ; pa.harpoonRopeCut = mode de tir corde séparée (ADE II 02 l.677)
       if (!r) {
         get().log(firedWeapon(attacker, target, pa.weaponUid).type === 'ranged' ? t('cf.noLoSMasked') : t('cs.meleeOutOfRange'));
@@ -2422,7 +2422,7 @@ export function createCombatSlice(get: Get, set: Set) {
           applyFreeAttackEffects(get, attacker, victim, pa.freeKind, pa.result);
           set({ battle: { ...get().battle!, acted: prevActed } });
         }
-        // Attaque d'Arme GRATUITE accordée par un talent (Frénésie : `grantFreeAttack{available}`, LDB 21 l.34) :
+        // Attaque d'Arme GRATUITE accordée par un talent (Frénésie : `grantFreeAttack{available}`, LDB 21 l.33) :
         // la 1ʳᵉ attaque d'arme du Round ne consomme PAS l'Action ; on COMPTE l'usage (plafond /Round = niveau,
         // via `freeAttacksThisTurn['arme']`) → l'attaque d'arme suivante coûtera l'Action. Donnée, plus de booléen.
         if (attacker.kind === 'hero' && !wasChain && !isDualSecond && !pa.freeKind && hasFreeWeaponAttack(attacker)) {
@@ -2598,7 +2598,7 @@ export function createCombatSlice(get: Get, set: Set) {
         return;
       }
       // Attaque(s) d'Arme GRATUITE(S) « disponible(s) » de l'attaquant après l'attaque PRINCIPALE (jamais après
-      // une gratuite : `!pd.free`) ; toute source `grantFreeAttack{when:'available'}` — Frénésie LDB 21 l.34 = seule en donnée.
+      // une gratuite : `!pd.free`) ; toute source `grantFreeAttack{when:'available'}` — Frénésie LDB 21 l.33 = seule en donnée.
       if (attacker && !pd.free) aiAvailableFreeAttack(get, set, attacker);
       // Attaques gratuites de créature : enchaîne la file (peut rouvrir une modale → ne pas reprendre).
       if (attacker && aiCreatureFreeAttacks(get, set, attacker)) {
@@ -2854,7 +2854,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || !scene) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active)) return;
-      // Brisé (LDB 16 l.55) : Mouvement + Action doivent servir à FUIR / se cacher — aucune action
+      // Brisé (LDB 16 l.52) : Mouvement + Action doivent servir à FUIR / se cacher — aucune action
       // offensive. Le déplacement (fuite) passe par le clic-sol implicite (filtre dans computeMoveReach) ;
       // ici seuls « resolve » (Détermination, qui peut retirer le Brisé) et la fermeture (null) passent.
       // (« Se cacher » par Discrétion = pas de système de furtivité en combat ; approximé par « rester
@@ -2863,7 +2863,7 @@ export function createCombatSlice(get: Get, set: Set) {
         get().log(t('cs.brokenFlee', { name: active.label }));
         return;
       }
-      // Pas d'Action ce tour (Sonné LDB 16 l.123 / Surpris l.132 — lu en DONNÉES via `canTakeAction`/gating,
+      // Pas d'Action ce tour (Sonné LDB 16 l.125 / Surpris l.135 — lu en DONNÉES via `canTakeAction`/gating,
       // plus de branche par-nom). La Détermination ('resolve') ne coûte pas l'Action et peut retirer l'État
       // (LDB 13 l.81 / 17 l.59-61) ; les manœuvres gratuites (Se relever, Se désengager…) sont des slots
       // DIRECTS qui n'appellent pas battleSelectAction. Surpris : message dédié (UX), le reste silencieux.
@@ -3590,7 +3590,7 @@ export function createCombatSlice(get: Get, set: Set) {
     // Psychologie À LA RENCONTRE (couture C, LDB 21) : cascade équivalente, applier 'encounterPsych',
     // ouverte par `openEncounterPsych` à l'entrée de scène.
 
-    // ── Entrée en Frénésie d'un héros (LDB 21 l.31-36) : Test de FM, succès → +1 BF / immunité psy / attaque obligatoire ──
+    // ── Entrée en Frénésie d'un héros (LDB 21 l.31-35) : Test de FM, succès → +1 BF / immunité psy / attaque obligatoire ──
 
     battleFrenzy: () => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte

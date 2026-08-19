@@ -17,7 +17,7 @@ describe('testValue HORS COMBAT — mêmes modulations qu’en combat (audit, LD
     expect(testValue(mk({ conditions: [{ id: 'empoisonne', value: 1 }] }), undefined, 'intelligence')).toBe(20); // 30 − 10
   });
 
-  it('État Exténué ×2 → −20 (LDB 16 l.18/89)', () => {
+  it('État Exténué ×2 → −20 (LDB 16 l.11/90)', () => {
     expect(testValue(mk({ conditions: [{ id: 'extenue', value: 2 }] }), undefined, 'intelligence')).toBe(10); // 30 − 20
   });
 

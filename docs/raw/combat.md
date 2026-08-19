@@ -173,7 +173,7 @@ Même quand le MJ déclare qu'il n'y a **aucune chance** de repérer les protago
 
 Si un Personnage est surpris, il peut **dépenser 1 Point de Détermination pour se débarrasser de l'État *Surpris*** (`LDB 13 l.71`). C'est l'application de l'option générique « **Retirer un État** » de la dépense de Détermination (`LDB 17 l.61`) : *Vous pouvez dépenser un Point de Détermination pour … Retirez un État.*
 
-### Effet mécanique de l'État *Surpris* (LDB 16 l.132-139)
+### Effet mécanique de l'État *Surpris* (LDB 16 l.131-139)
 
 L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'êtes absolument pas prêt à réagir. » Concrètement, tant que vous subissez l'État *Surpris* :
 
@@ -196,7 +196,7 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 - `LDB 13 l.62-65` — certains Talents (ex. Vigilance, Test de Perception +0) permettent d'éviter la Surprise même sans chance de repérage.
 - `LDB 13 l.67-69` — Test opposé Discrétion/Perception (la Discrétion la plus faible vs tous les guetteurs) ; chaque vaincu côté défenseur subit *Surpris* ; sinon combat normal.
 - `LDB 13 l.71` — un Personnage surpris peut dépenser 1 Point de Détermination pour retirer l'État *Surpris*.
-- `LDB 16 l.132-139` — État *Surpris* : ni Mouvement ni Action, pas de défense en Test opposé, +20 CC à l'attaquant en mêlée, non-cumul, retiré en fin de Round ou après la première tentative pour vous toucher.
+- `LDB 16 l.131-139` — État *Surpris* : ni Mouvement ni Action, pas de défense en Test opposé, +20 CC à l'attaquant en mêlée, non-cumul, retiré en fin de Round ou après la première tentative pour vous toucher.
 - `LDB 17 l.61` — option générique « Retirez un État » de la dépense de Détermination.
 - `NADJ 06 l.148` — embuscade des gamins : 3 attaques le même Round + supériorité numérique, CC 20, Perception Très difficile (-30) sinon État *Surpris* (sauf Talent approprié).
 - `NADJ 05 l.117` — réveil en sursaut : Perception Très difficile (-30) → réveil Fatigué ; États *Inconscient* + *À terre* au Round 1 et *Surpris* au Round du réveil.
@@ -211,7 +211,7 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.21, l.48-59, l.62-65, l.67-69, l.71) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `ExecCtx`, `triggeredTestStepId`, `resolveSpell`, `opposedAttackerFreeze`, `ambush-surprise`, `pickDoctrine`, `CascadeBody`, +11 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, +11 fichiers
-- `LDB 16` (l.132-139) → `STABLE_COND_KINDS`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, `endOfRound`, +6 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
+- `LDB 16` (l.131-139) → `STABLE_COND_KINDS`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, `endOfRound`, +9 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 - `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, `useTrampleJetProps`, +75 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/psychology.ts`, +40 fichiers
 - sans code : `NADJ 5` (l.117), `NADJ 6` (l.148)
 
@@ -717,7 +717,7 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.137-145, l.183) → `FLOW_VERBS`, `useAttackJetProps`, `FLOWS`, `createCombatSlice`, `previewDefense`, `rangedDefenseModes`, `applyHit`, `applyAttackResult`, `applyCast` — `src/data/localisation.json`, `src/engine/combat.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/flowVerbs.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
 - `LDB 14` (l.3, l.4, l.6-7, l.9) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `10-a-votre-action-au-prochain-round`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, `vous-vous-tordez-la-cheville-dechirure-musculaire-mineure-compte-comme-blessure-critique`, `vous-touchez-un-allie-au-hasard-ou-vous-meme-sonne`, `incident-de-tir-l-arme-explose-dans-votre-main-degats-au-bras-principal-arme-detruite`, `maladresse-tableau-des-oups`, +18 — `src/data/oups.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/oups.ts`, `src/state/combatFlow.ts`, +4 fichiers
-- `LDB 18` (l.17, l.30, l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `isHealable`, `HealMode`, `outOfCombatUpkeep`, `actBlockReason`, `availableHealModes`, `MedicState`, `dechirure-autre-mineure`, +89 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +25 fichiers
+- `LDB 18` (l.17, l.30, l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `isHealable`, `HealMode`, `outOfCombatUpkeep`, `actBlockReason`, `availableHealModes`, `MedicState`, `dechirure-autre-mineure`, +90 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +26 fichiers
 - `LDB 63` (l.29-32) → `cuir-souple`, `cuir-bouilli`, `mailles`, `plate`, `GameOp`, `PendingDeviation`, `ActiveEffect`, `wornArmourPoints`, `flexible`, `deviatableArmourAt`, +13 — `src/data/qualities.json`, `src/data/reglesOptionnelles.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, +3 fichiers
 - `AA 7` (l.25-79, l.82-104) → `StructureCritEntry`, `useAttackJetProps`, `CritEscalation`, `retenir-ses-coups`, `resolveAACritical`, `PendingDefense`, `QualityCapabilities`, `openSurfacedDefense` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/structureCriticals.ts`, `src/engine/aaCritical.ts`, +3 fichiers
 - `EDO 11` (l.237-240) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
@@ -977,7 +977,7 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.114, l.125, l.133, l.137-145) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, `DisengageModal`, `sur-la-defensive`, `KEYBINDINGS`, `use-item`, +21 — `src/data/actions.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/actions.ts`, `src/engine/combat.ts`, +15 fichiers
 - `LDB 14` (l.40, l.41, l.43, l.44, l.53, l.68-131, l.135, l.137-138, l.142-151) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `areGrappling`, `fr`, `setGrapple`, `10-a-votre-action-au-prochain-round`, +100 — `src/data/actions.json`, `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, +39 fichiers
-- `LDB 16` (l.113) → `unstable`, `schema`, `stopBleedOutcome`, `hitModifiers`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `applyIncomingMeleeAdvantage`, `incomingMeleeAdvantage`, +16 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +8 fichiers
+- `LDB 16` (l.113) → `unstable`, `schema`, `stopBleedOutcome`, `useAttackJetProps`, `hitModifiers`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `AttackResult`, +12 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +9 fichiers
 - `LDB 62` (l.198-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `TraceRow`, `isShieldItem`, `a-repetition`, `InitiativeStripProps`, `protectrice`, `canActFirst`, `freeActFirst`, `resolveQualities`, +90 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +27 fichiers
 
 ---
@@ -1268,7 +1268,7 @@ L'Empoignade fonctionne entièrement via l'État _Empêtré_ infligé. Sa défin
 - `LDB 14 l.167` — Échec : se débattre seulement, l'adversaire gagne +1 Avantage.
 - `LDB 14 l.169` — Spectateurs : +20 pour toucher l'Empoigné au plus faible Avantage, +10 pour l'autre.
 - `LDB 14 l.171-173` — Option : Empoignade Grâce aux Compétences (Langue (Magick)/Charme/Commandement à discrétion du MJ ; échec → possible _Empêtré_ supplémentaire).
-- `LDB 16 l.86-87` — État _Empêtré_ : pas de Mouvement, -10 aux actions de déplacement (dont l'Empoignade), retrait par Test opposé de Force (+1 par DR).
+- `LDB 16 l.60-66` — État _Empêtré_ : pas de Mouvement, -10 aux actions de déplacement (dont l'Empoignade), retrait par Test opposé de Force (+1 par DR).
 
 > « Au lieu d'infliger des Dégâts suite à une attaque à mains nues, vous pouvez tenter d'Empoigner et d'immobiliser votre adversaire. Vous devez déclarer cette intention avant d'effectuer le lancer pour toucher votre adversaire. » — `LDB 14 l.159`
 
@@ -1279,7 +1279,7 @@ L'Empoignade fonctionne entièrement via l'État _Empêtré_ infligé. Sa défin
 **Voir aussi** : Combat à mains nues (Bagarre), État Empêtré, Avantage, Tests opposés et Degrés de Réussite (DR), Localisation (dé inversé), Combat monté, Trait Constriction.
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.153-155, l.159, l.161, l.163, l.165, l.167, l.169, l.171-173) → `GrappleModal`, `areGrappling`, `setGrapple`, `isControlledMount`, `RunModal`, `scatter`, `combat-deux-armes`, `combatOrder`, `empetre`, `grappleTierMod`, +51 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/engine/combat.ts`, `src/engine/combatFeatures/dispatch.ts`, +25 fichiers
-- `LDB 16` (l.62, l.86-87) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `Condition`, `aaBleedUnconsciousDue`, +30 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +19 fichiers
+- `LDB 16` (l.60-66) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `brise`, `Condition`, `tileSeenByFoe`, `aaBleedUnconsciousDue`, `describeStateRecovery`, +23 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +16 fichiers
 
 ---
 
@@ -1547,7 +1547,7 @@ Si vous êtes Engagé et ne souhaitez plus combattre, vous disposez de **deux op
 
 > « S'il n'y a pas d'autre solution, vous pouvez faire demi-tour et utiliser votre Mouvement pour fuir. Bien souvent, la Fuite est involontaire, et est provoquée par la Terreur (voir page 191) ou la magie. » — `LDB 15 l.61`
 
-La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir. Elle est souvent **involontaire**, provoquée par la **Terreur** (LDB Psychologie) ou la magie. Sa résolution, dans l'ordre :
+La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir. Elle est souvent **involontaire**, provoquée par la **Terreur** (LDB 21 l.54) ou la magie. Sa résolution, dans l'ordre :
 
 1. **L'adversaire gagne immédiatement +1 Avantage** et **une Attaque gratuite**.
 2. Cette attaque est un **Test de Corps à corps non opposé** ; le **DR sert à infliger les Dégâts** comme d'habitude. Comme vous lui tournez le dos, **l'adversaire bénéficie de +20 au toucher**.
@@ -1603,6 +1603,7 @@ La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 15` (l.18-31, l.45-49, l.61-68) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `planJump`, `fall-choice`, `RunModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, +77 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, +32 fichiers
+- `LDB 21` (l.54) → `nightmare`, `terreur`, `calme-d-approche`, `endEncounterPsych`, `resolvePsychRow`, `amour`, `humanizePerSL`, `resolvePsychAI`, `camaraderie`, `phobie`, +7 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
 
 ---
 
@@ -3111,7 +3112,7 @@ Le Venin ne déclenche que si l'attaque venimeuse **fait perdre des PB**. La cib
 
 ### Règles invoquées par ces Traits
 
-**État Empêtré** (cible d'une Langue/Tentacule/Constricteur/Toile) — `LDB 16 l.86-87` + l'échappée :
+**État Empêtré** (cible d'une Langue/Tentacule/Constricteur/Toile) — `LDB 16 l.60-66` + l'échappée :
 > « Au cours de votre tour, vous ne pouvez pas utiliser votre Mouvement, et toute action qui implique un déplacement quelconque subit une pénalité de -10 (dont l'Empoignade ; voir page 163). »
 
 Pour s'en défaire : **Action** = Test **opposé de Force** contre la source de l'empêtrement ; chaque DR retire un État Empêtré supplémentaire (la « Force » de la Toile = son Indice). `LDB 16` (état Empêtré, p.168).
@@ -3121,7 +3122,7 @@ Pour s'en défaire : **Action** = Test **opposé de Force** contre la source de 
 
 À 0 PB sous Empoisonné, aucune Blessure ne peut être soignée tant qu'il reste des États Empoisonné ; tomber Inconscient sous Empoisonné force un Test de Résistance après BE Rounds sous peine de mort. `LDB 16 l.68-74`.
 
-**Empoignade** (suite possible de Langue / Tentacule / Constricteur) : Test renvoyé p.163 ; l'Empêtré pénalise l'Empoignade de -10. `LDB 16 l.87`, `LDB 13` (renvoi p.163).
+**Empoignade** (suite possible de Langue / Tentacule / Constricteur) : Test renvoyé p.163 ; l'Empêtré pénalise l'Empoignade de -10. `LDB 16 l.64`, `LDB 13` (renvoi p.163).
 
 ### Exemple de mise en œuvre RAW (corroboration cross-livre)
 
@@ -3140,7 +3141,7 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 - `LDB 85 l.451` — Trait **Toile (Indice)** : touche → **Empêtré** de **Force = Indice** (OCR : titre inversé avec « Vol » l.363-364).
 - `LDB 85 l.389-389` — Trait **Venin (Difficulté)** : attaque venimeuse faisant perdre des PB → Test (défaut **Intermédiaire**) ou **Empoisonné**.
 - `LDB 85 l.388-388` — Trait **Vampirique** : Morsure réussie → regagne les PB perdus par la cible ; seul moyen de soin.
-- `LDB 16 l.86-87` + état Empêtré p.168 — Empêtré : pas de Mouvement, -10 ; échappée = Test opposé de Force, 1 État retiré par DR.
+- `LDB 16 l.60-66` + état Empêtré p.168 — Empêtré : pas de Mouvement, -10 ; échappée = Test opposé de Force, 1 État retiré par DR.
 - `LDB 16 l.68-74` — Empoisonné : 1 PB/fin de Round (ignore modificateurs), -10 à tous les Tests, blocage de soin / risque de mort.
 - `AU1 04 l.12` — page-mémo (basilic) : Morsure/Attaque caudale/Piétiner = attaques gratuites à **1 Avantage** chacune (corroboration + renvois p.338/340/341).
 
@@ -3151,7 +3152,7 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 **Voir aussi** : Souffle (Indice)(Type) ; Regard pétrifiant ; Étreinte glaciale ; Hurlement fantomatique ; Vomissement ; Trait Taille (Piétinement, multiplicateur de Dégâts) ; États Empêtré / Empoisonné / À Terre ; Empoignade ; Charge et Avantage.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-74, l.86-87) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `Condition`, `aaBleedUnconsciousDue`, +26 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +17 fichiers
+- `LDB 16` (l.60-66, l.68-74) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `Condition`, `tileSeenByFoe`, `aaBleedUnconsciousDue`, +25 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +16 fichiers
 - `LDB 85` (l.8-9, l.32-35, l.43, l.46-47, l.74-75, l.82-83, l.193-194, l.210-213, l.237, l.388, l.389, l.405, l.408, l.451) → `a-distance`, `arme`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `amphibie`, `agressifEnvers`, `markAttacked`, `a-terre`, +89 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +16 fichiers
 - sans code : `AU1 4` (l.9, l.12)
 
@@ -3542,19 +3543,19 @@ La créature est **porteuse de la maladie _Type_**. **Les autres doivent faire u
 - `LDB 85 l.274` — Préjugé (Cible) : n'apprécie pas la Cible (renvoi p.190).
 - `LDB 85 l.383` — Peur/Terreur par la Taille : niveau = écart de catégories ; Terreur si écart ≥ 2.
 - `LDB 21 l.9` — Test de Psychologie : Calme au début du Round, Difficulté au MJ ; succès = effets annulés pour la rencontre.
-- `LDB 21 l.20` — Animosité : succès = −20 Soc, échec = doit s'en prendre au groupe (+1 DR) ; annulé par Peur/Terreur.
+- `LDB 21 l.19-21` — Animosité : succès = −20 Soc, échec = doit s'en prendre au groupe (+1 DR) ; annulé par Peur/Terreur.
 - `LDB 21 l.23-25` — Peur : Test étendu de Calme jusqu'à DR ≥ Indice ; sous Peur −1 DR, approche/source-qui-approche = Test Calme Intermédiaire (+0) sinon Brisé.
 - `LDB 21 l.29-33` — Frénésie : Test de FM ; immunité psy, ne fuit pas, doit avancer/attaquer, CC gratuit/Round, +1 BF, fin → Exténué.
 - `LDB 21 l.37-39` — Haine : doit détruire le groupe, +1 DR Combat vs groupe, immunité Peur/Intimidation (pas Terreur).
-- `LDB 21 l.41-51` — Préjugé : succès = −10 Soc, échec = insulter copieusement la Cible.
-- `LDB 21 l.54-57` — Terreur : un seul Test de Calme ; échec = Indice Brisé + |DR négatifs| ; puis Peur d'Indice égal.
+- `LDB 21 l.43-50` — Préjugé : succès = −10 Soc, échec = insulter copieusement la Cible.
+- `LDB 21 l.54-56` — Terreur : un seul Test de Calme ; échec = Indice Brisé + |DR négatifs| ; puis Peur d'Indice égal.
 - `LDB 19 l.34-58` — Exposition Mineure / Modérée / Majeure : conversion Degré → Points de Corruption gagnés selon le résultat du Test.
 
 **Voir aussi** : États (Brisé, Sonné, Inconscient, Exténué) ; Frénésie et Avantage ; Peur, Terreur et Calme ; Corruption et mutations ; Maladies et Contraction ; Taille des créatures (Peur/Terreur par catégorie) ; Test étendu et Degrés de Réussite.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 19` (l.34-58) → `CorruptionModal`, `combat-end-corruption`, `sombre-pacte`, `EXPOSURE_LADDER`, `MANUAL_COMBAT_INTENTS`, `physique`, `schema`, `corruption-mineure`, `corruption-moderee`, `corruption-majeure`, +16 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs/arcane-phenomena.ts`, +11 fichiers
-- `LDB 21` (l.9, l.20, l.21, l.23-25, l.27, l.29-35, l.37-39, l.41-51, l.54-57) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `terreur`, `opRow`, `openEncounterPsych`, `fearSourceFor`, `psychImmuneToFrom`, +59 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +27 fichiers
+- `LDB 21` (l.9, l.19-21, l.23-25, l.27, l.29-35, l.37-39, l.41, l.43-50, l.54-56) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `terreur`, `opRow`, `openEncounterPsych`, `fearSourceFor`, `psychImmuneToFrom`, +59 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +27 fichiers
 - `LDB 85` (l.5, l.13, l.17, l.25, l.51, l.59, l.71, l.87, l.92, l.110, l.142, l.150, l.165, l.179, l.185, l.221, l.225, l.249, l.253, l.262, l.264, l.274, l.282, l.334, l.335, l.383, l.411) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `affame`, `scenario`, `creatureWeapon`, `StatblockEditor`, +152 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +29 fichiers
 
 ---
@@ -6173,7 +6174,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - LDB 13 l.62-65 — L'exemple canon sur Vigilance (lignes 75-76 en réalité) cite un Test de Perception Intermédiaire (+0) pour le talent Vigilance. La description dans le markdown dit que l'exemple cite « le Talent Vigilance, qui autorise un Test de Perception Intermédiaire (+0) pour éviter d'être surpris » — cela est correct. En revanche le markdown affirme que « certains Talents permettent d'éviter la Surprise » et l'exemple est dans le corps du texte (lignes 72-76), non aux lignes 72-75 strictement. La ref l.72-75 est correcte pour le paragraphe introductif + début exemple.
 - LDB 13 l.67-69 — Le markdown dit « chaque Personnage vaincu subit l'État Surpris ». La source dit « chaque Personnage vaincu subit alors l'État Surpris ». Fidèle.
 - LDB 13 l.71 — Le markdown parle de « dépenser 1 Point de Détermination ». La source dit « il peut utiliser un Point de Détermination pour se débarrasser de l'État Surpris ». Fidèle.
-- LDB 16 l.132-139 — La phrase dans la source (l.130) dit « vous n'êtes absolument pas prêt à réagir à ce qu'il arrive » ; le markdown transcrit « vous n'êtes absolument pas prêt à réagir » (sans « à ce qu'il arrive »). Légère troncature de citation mais sans impact sémantique sur la règle.
+- LDB 16 l.131-139 — La phrase dans la source (l.130) dit « vous n'êtes absolument pas prêt à réagir à ce qu'il arrive » ; le markdown transcrit « vous n'êtes absolument pas prêt à réagir » (sans « à ce qu'il arrive »). Légère troncature de citation mais sans impact sémantique sur la règle.
 - NADJ 05 l.117 — ERREUR FACTUELLE : le markdown dit que le Test est « Très difficile (-30) » pour se réveiller en sursaut. La source dit « Test de Perception Très Difficile (-30) ». C'est correct. MAIS le markdown dit « réussite = réveil avec l'État Fatigué ». La source dit « se réveiller en sursaut avec un État Fatigué ». C'est fidèle. CEPENDANT le markdown dit : « On lui donne en outre les États Inconscient et À terre pour le Round 1, et un État Surpris pour le Round où il se réveille ». La source dit : « Donnez-leur également les États Inconscient et À terre pour le Round 1 et un État Surpris pour le Round où ils se réveillent. » — Le markdown est fidèle.
 - NADJ 06 l.148 — ERREUR : le markdown dit que les orphelins frappent « à CC 20 ». La source dit qu'ils portent les coups « avec leur modeste CC de 20 ». C'est fidèle. MAIS le markdown dit « trois attaques sont portées pendant le même Round avec les bonus de supériorité numérique ». La source dit « trois attaques vont être faites sur les jambes de ce Personnage » et « toutes les attaques ayant lieu pendant le même Round et bénéficiant des bonus de supériorité numérique ». Le markdown est fidèle mais omet que les attaques ciblent spécifiquement les jambes (genoux et arrière des cuisses) — omission non critique.
 - LDB 17 l.61 — La source (ligne 66) dit : « Retirez un État : si vous retirez l'État à Terre, regagnez 1 Point de Blessure lorsque vous vous mettez debout. » Le markdown cite cette option comme « Retirer un État » et l'appelle « option générique ». Le label exact dans la source est juste « Retirez un État » sans titre en gras distinct — c'est une des trois options sous « Dépenser de la Détermination ». La ref l.66 est correcte.
@@ -6216,7 +6217,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - Dispersion — diagramme 3×3 CONFIRMÉ au fichier source : `LDB 14 l.146-149` porte la grille markdown `| 1 | 2 | 3 |` / `| 4 | T | 5 |` / `| 6 | 7 | 8 |`. La disposition transcrite par le topic est celle du fichier source, et le topic n'ajoute aucune correspondance chiffre↔direction que la grille ne porte pas.
 
 ### Empoignade ⚠
-- LDB 16 l.86-87 cité pour la règle de retrait de l'Empêtré — dans le fichier .md (artefact de conversion PDF), le texte du retrait (Test opposé de Force, +1/DR) est à la ligne 61, pas aux lignes 82-85 ; les lignes 82-85 ne contiennent que l'en-tête et la pénalité de déplacement. La règle elle-même est correctement transcrite, mais le numéro de ligne est incomplet.
+- LDB 16 l.60-66 — section *Empêtré* complète : en-tête (l.60), description (l.62), pénalité de déplacement et Empoignade −10 (l.64), retrait par Test opposé de Force +1 par DR (l.66). La règle est correctement transcrite et la ref couvre le retrait.
 - Section 'Option Compétences' : l'article dit « un autre Test qu'un Test opposé de Force » alors que la source (l.173) dit simplement « un autre Test qu'un Test opposé » — le « de Force » est un ajout éditorial mineur, non présent dans le RAW à cet endroit précis. Pas d'erreur factuelle, mais légère surspécification.
 
 ### Déplacement en combat : Marche, Course, Charge, grille ⚠
@@ -6283,7 +6284,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 
 ### Traits d'attaque naturelle des créatures ❌
 - VENIN — mécanique inventée : le document décrit Venin comme «cible qui perd des PB → Test pour résister, sinon État Empoisonné» (tableau) et «La cible tente un Test (Résistance / Endurance) de Difficulté indiquée ; défaut = Intermédiaire (+0) ; en cas d'échec → État Empoisonné» (texte intégral). Le RAW (LDB 85 l.389-389) dit : «Quand elle inflige des Points de Blessure avec ses Attaques venimeuses, son adversaire subit un État Empoisonné. Si aucune Difficulté n'est indiquée pour résister au Venin, le Test est considéré comme Intermédiaire.» — l'État Empoisonné est infligé DIRECTEMENT ; la Difficulté gouverne le Test de Résistance de FIN DE ROUND pour retirer l'état (confirmé par AU1 04 l.38 : «qui nécessitent un Test de Résistance Intermédiaire (+0) pour les éliminer à la fin de chaque Round»). Aucun test de résistance initial n'existe dans le RAW.
-- EMPÊTRÉ — ref incorrecte pour la règle d'échappée : le document cite «LDB 16 l.86-87» pour la règle de retrait (Test opposé de Force, chaque DR retire un état). Le texte à l.82-85 est la description de l'effet Empêtré (pas de Mouvement, -10). La règle d'échappée se trouve à l.61, dans la section Brisé : «Vous pouvez utiliser votre Action pour retirer l'État Empêtré en réussissant un Test opposé de Force contre la source de cet empêtrement, et chaque DR obtenu permet de retirer un État Empêtré supplémentaire.» La ref «l.82-85» pour l'échappée est donc erronée.
+- EMPÊTRÉ — règle d'échappée : `LDB 16 l.66` porte « Vous pouvez utiliser votre Action pour retirer l'État *Empêtré* en réussissant un Test opposé **de Force** contre la source de cet empêtrement, et chaque DR obtenu permet de retirer un État *Empêtré* supplémentaire. » — dans la section *Empêtré* (l.60-66), pas dans *Brisé*.
 - TENTACULES — ordre du nom inversé : le document écrit «Tentacules # (Indice)» alors que le titre LDB est «# Tentacules (Indice)» (l.354). Mineur mais inexact si des vérifications de libellé sont faites par correspondance exacte.
 - LANGUE PRÉHENSILE — défense non précisée dans le Trait : le tableau indique «CT / Esquive (à distance)» comme défense. Le texte LDB du trait (l.185-188) précise seulement «C'est une Attaque à distance» sans spécifier explicitement le jet de défense dans la description du trait lui-même. L'inférence «Esquive» est raisonnable (règle générale des attaques à distance) mais n'est pas un verbatim du trait ; à signaler comme inférence.
 - OCR Toile/Vol (signalé dans le doc) : la ref «l.380» pour la Toile est correcte malgré l'inversion des titres aux l.363-364 ; le document le note honnêtement — ce n'est pas une erreur du doc, juste une confirmation que la ref est fiable.
@@ -6297,8 +6298,8 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - RAGE — wording mineur : la source (LDB 85 l.282) dit 'pour que celui devienne _Haine_' (pronom 'celui' = l'Avantage accumulé). Le markdown dit 'pour que cela devienne _Haine_'. Changement de pronom non conforme à la source, mais sans impact mécanique.
 - BESTIAL — parenthèse d'inférence : le markdown ajoute '(pas de Parade)' après 'ne peut utiliser que la Compétence Esquive'. Cette parenthèse est une inférence correcte mais n'est pas dans le texte source (LDB 85 l.59) ; à signaler comme ajout non littéral.
 - FRÉNÉSIE (Trait) — ref : le markdown cite 'LDB 85 l.150' pour le Trait Frénésie et renvoie à 'page 190'. La source (ligne 120-121) dit bien 'La créature peut entrer en _Frénésie_. Voir page 190.' La citation est fidèle. Pas d'issue.
-- TEST DE PSYCHOLOGIE — la mécanique du Test de Calme 'au début du Round' s'applique au Test de résistance général (LDB 21 l.9). Cependant pour Peur, la source précise qu'on peut tenter 'à la fin de chaque Round' (LDB 21 l.23 : 'Vous pouvez effectuer ce Test à la fin de chaque Round'). Le markdown présente correctement ces deux moments distincts (début de Round pour la résistance générale, fin de Round pour vaincre la Peur par Test étendu). Pas d'issue.
-- HAINE — condition de fin : le markdown dit 'quand tous les membres du groupe en Ligne de Vue sont morts/disparus ou qu'on gagne l'État Inconscient'. La source (LDB 21 l.37) dit 'lorsque tous les membres du groupe concerné dans votre Ligne de Vue seront morts ou auront disparu, ou que vous gagniez l'État Inconscient'. Le markdown fusionne 'morts' et 'disparus' en 'morts/disparus', ce qui est fidèle au sens. Pas d'issue.
+- TEST DE PSYCHOLOGIE — la mécanique du Test de Calme 'au début du Round' s'applique au Test de résistance général (LDB 21 l.9). Cependant pour Peur, la source précise qu'on peut tenter 'à la fin de chaque Round' (LDB 21 l.25 : 'Vous pouvez effectuer ce Test à la fin de chaque Round'). Le markdown présente correctement ces deux moments distincts (début de Round pour la résistance générale, fin de Round pour vaincre la Peur par Test étendu). Pas d'issue.
+- HAINE — condition de fin : le markdown dit 'quand tous les membres du groupe en Ligne de Vue sont morts/disparus ou qu'on gagne l'État Inconscient'. La source (LDB 21 l.39) dit 'lorsque tous les membres du groupe concerné dans votre Ligne de Vue seront morts ou auront disparu, ou que vous gagniez l'État Inconscient'. Le markdown fusionne 'morts' et 'disparus' en 'morts/disparus', ce qui est fidèle au sens. Pas d'issue.
 
 ### Traits de mouvement et modificateurs d'attributs des créatures ⚠
 - Foulée (LDB 85 l.145-146) : la source dit « Multipliez son Mouvement de charge de 1,5 quand elle Court » (préposition « de »), le topic écrit « par 1,5 » (préposition « par »). Pas d'erreur mécanique, mais transcription légèrement infidèle.

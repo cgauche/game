@@ -48,7 +48,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
     expect(pt.psychMod ?? 0).toBe(0); // F n'est pas un Test de Sociabilité
   });
 
-  it('Animosité ACTIVE (Test de Psy échoué) → pas de malus social « contenu » (compulsion, LDB 21 l.24)', () => {
+  it('Animosité ACTIVE (Test de Psy échoué) → pas de malus social « contenu » (compulsion, LDB 21 l.21)', () => {
     const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfe' }]);
     a.psychState = [{ type: 'animosite', cible: 'Elfe', active: true }] as never; // état actif (échec)
     useGame.setState({ party: [a] });

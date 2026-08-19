@@ -152,7 +152,7 @@
 - **LDB 15** (Déplacement) :
   - ⬜ l.113-120 « OPTION : COMPLICATIONS DE POURSUITE » — candidat trou de règle, 0 réf
 - **LDB 21** (Psychologie) :
-  - 🔻 enfoui l.98-111 « ENTRE DEUX AVENTURES » — titre orné rétrogradé par l'extraction, 2 réf
+  - 🔻 enfoui l.98-111 « ENTRE DEUX AVENTURES » — titre orné rétrogradé par l'extraction, 1 réf
 - **LDB 23** (Activités) :
   - 🔻 enfoui l.251-256 « RELIGIONS ET CROYANCES » — titre orné rétrogradé par l'extraction, 0 réf
 - **LDB 24** (Les dieux) :

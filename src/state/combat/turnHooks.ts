@@ -157,7 +157,7 @@ registerCascadeApplier('actGateChoice', (get, set, step, hero) => {
 // le `sink` du ctx n'est pas requis ici (contrairement à roundHooks).
 // ============================================================================================
 
-/** L'IA tente d'entrer en Frénésie au début de son tour (LDB 21 l.32) : combattant capable, pas déjà
+/** L'IA tente d'entrer en Frénésie au début de son tour (LDB 21 l.31) : combattant capable, pas déjà
  *  frénétique ni immunisé à la Psychologie, avec un adversaire vivant en Ligne de Vue → Test de Force
  *  Mentale ; sur un succès, il entre en Frénésie (état psy `frenesie` posé en `psychState`). La SORTIE est
  *  un effet déclenché `onTurnStart` en DONNÉES (`psychology.json`) — plus de hook `end-frenzy` par-nom. */
@@ -256,7 +256,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
 // Chaque `run()` appelle au RUNTIME la fonction/le bloc correspondant (pas de souci de cycle à l'import).
 // ============================================================================================
 
-// Sortie de Frénésie (LDB 21 l.36) : plus de hook `end-frenzy` par-nom — c'est un effet déclenché
+// Sortie de Frénésie (LDB 21 l.35) : plus de hook `end-frenzy` par-nom — c'est un effet déclenché
 // `onTurnStart` en DONNÉES (`psychology.json` : Sonné/Inconscient ∨ plus d'ennemi en LdV → Exténué),
 // diffusé UNIFORMÉMENT (héros + IA) par `fireTurnStartTriggers` AVANT les hooks d'entrée ci-dessous.
 registerCombatHook({
@@ -303,7 +303,7 @@ registerCombatHook({
   },
 });
 registerCombatHook({
-  id: 'ai-maybe-frenzy', // l'IA tente d'entrer en Frénésie (LDB 21 l.32) AVANT le test psy (la Frénésie en rend immunisé)
+  id: 'ai-maybe-frenzy', // l'IA tente d'entrer en Frénésie (LDB 21 l.31) AVANT le test psy (la Frénésie en rend immunisé)
   phase: 'onTurnStart',
   order: 30,
   run: ({ get, set, self }) => { if (self) aiMaybeFrenzy(get, set, self); },

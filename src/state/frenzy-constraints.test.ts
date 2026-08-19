@@ -6,7 +6,7 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 
 /**
- * Contraintes de Frénésie pour le HÉROS (LDB 21 l.34) : « vous devez vous déplacer à votre maximum
+ * Contraintes de Frénésie pour le HÉROS (LDB 21 l.33) : « vous devez vous déplacer à votre maximum
  * en direction de l'ennemi le plus proche dans votre Ligne de Vue pour l'attaquer. La seule Action
  * possible est un Test de Capacité de Combat ou un Test d'Athlétisme. »
  */
@@ -50,7 +50,7 @@ describe('Frénésie héros — cible imposée et déplacement contraint', () =>
     expect(useGame.getState().pendingAttack?.targetId).toBe(E1.id); // charge/attaque sur la cible imposée
   });
 
-  it('entrée en Frénésie ce Tour (Action dépensée) : la CHARGE vers la cible imposée reste permise (LDB 21 l.34)', () => {
+  it('entrée en Frénésie ce Tour (Action dépensée) : la CHARGE vers la cible imposée reste permise (LDB 21 l.33)', () => {
     const { H, E1 } = setup();
     // Le Test de FM pour ENTRER en Frénésie a consommé l'Action (acted), mais PAS le Mouvement : le
     // frénétique « doit se déplacer à son maximum vers l'ennemi le plus proche pour l'attaquer ».

@@ -20,7 +20,7 @@ describe('conditionMeta', () => {
   });
 });
 
-describe('combatantFlags — Peur (LDB 21 l.29)', () => {
+describe('combatantFlags — Peur (LDB 21 l.27)', () => {
   const C = (psychState: unknown) => ({ conditions: [], psychState }) as unknown as Combatant;
   it('sous l’emprise (calmeDR < Indice) → drapeau fear avec l’Indice max, et chip flag/fear visible', () => {
     const f = combatantFlags(C([{ type: 'peur', sourceId: 'x', indice: 2, calmeDR: 0 }, { type: 'peur', sourceId: 'y', indice: 3, calmeDR: 1 }]));

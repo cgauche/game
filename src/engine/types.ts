@@ -1447,7 +1447,7 @@ export interface Combatant {
    *  (LDB 21 l.27) : l'événement s'évalue à l'IRRÉVOCABILITÉ du déplacement — Action prise
    *  (`markActed`) ou fin de tour (`advanceTurn`). Un déplacement DÉFAIT les purge. */
   approachMoves?: { from: { x: number; y: number }; to: { x: number; y: number } }[];
-  /** Règle optionnelle « se fatiguer » (LDB 16 l.99) : Rounds d'effort soutenu accumulés ; à BE Rounds,
+  /** Règle optionnelle « se fatiguer » (LDB 16 l.97) : Rounds d'effort soutenu accumulés ; à BE Rounds,
    *  Test de Résistance → échec = Exténué. Inerte tant que la règle `combat-se-fatiguer` est inactive. */
   effortRounds?: number;
   /** Attaques GRATUITES de manœuvre déjà jouées ce TOUR, COMPTÉES par type (LDB 85 : « pendant son tour,
@@ -1565,7 +1565,7 @@ export interface Combatant {
   /** Damné (LDB 19 l.87) : plus de mutations physiques que BE ou mentales que BFM — l'âme
    *  appartient aux Dieux Sombres. Hors-jeu définitif (traité comme mort, affiché « Damné »). */
   damned?: boolean;
-  /** Trauma psychologique « Cauchemars » (LDB 21 l.92) : chaque nuit, Test de Calme Facile (+40) ou
+  /** Trauma psychologique « Cauchemars » (LDB 21 l.95) : chaque nuit, Test de Calme Facile (+40) ou
    *  Exténué. Posé par l'Effet d'éditeur `inflictNightmares` (assigné par l'auteur, jamais inventé). */
   nightmares?: boolean;
   /** Maladies et infections en cours (LDB 20) — incubation/durée décomptées au repos ; symptômes =

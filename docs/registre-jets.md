@@ -65,7 +65,7 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 | `src/state/medicFlow.ts` | 2 | dette | 175, 201 | `pendingHeal` et `pendingSurgery` du soigneur PNJ hors combat -> #1064. |
 | `src/state/merchantFlow.ts` | 1 | dette | 879 | `pendingAppraise` (Évaluation / Intuition de détection) -> #1064. |
 | `src/state/seaVoyageFlow.ts` | 1 | dette | 2047 | `pendingSteamSave` (`openSteamSave`, Test d'Initiative de l'ingénieur) -> #1064. |
-| `src/state/store.ts` | 1 | canonique | 2476 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
+| `src/state/store.ts` | 1 | canonique | 2478 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
 
 _15 sites mesurés dans 9 fichiers — par nature : 11 dette, 2 canonique, 2 mixte._
 

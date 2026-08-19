@@ -296,7 +296,7 @@ registerNightBandApplier('recovery', (_get, _set, _band, row, hero) => {
 
 registerNightBandApplier('nightmare', (_get, _set, _band, row, hero) => {
   if (row.result!.success) return { consequences: freeCons([t('rf.dreamless', { name: hero.label })]) };
-  addCondition(hero, 'extenue'); // LDB 21 l.92 : Calme +40 raté → Exténué
+  addCondition(hero, 'extenue'); // LDB 21 l.95 : Calme +40 raté → Exténué
   return { consequences: freeCons([t('rf.nightmareFail', { name: hero.label })]) };
 });
 

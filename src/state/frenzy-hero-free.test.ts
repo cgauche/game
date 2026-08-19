@@ -10,7 +10,7 @@ const HIT: AttackResult = {
   critical: false, advantageTo: 'attacker', defenderDefeated: false, log: '',
 };
 
-describe('Frénésie du héros — attaque de CC GRATUITE chaque Round (LDB 21 l.34)', () => {
+describe('Frénésie du héros — attaque de CC GRATUITE chaque Round (LDB 21 l.33)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();

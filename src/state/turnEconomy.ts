@@ -17,7 +17,7 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
   if (active.kind !== 'hero') return false;
   const ctx: ActionCtx = { active, battle };
   // Action disponible · Mouvement restant · désengagement gratuit (LDB 15 l.47) · Piétinement gratuit
-  // (LDB 85) · attaque d'Arme gratuite de Frénésie (LDB 21 l.34) · Détermination en réserve (LDB 17 l.59-61).
+  // (LDB 85) · attaque d'Arme gratuite de Frénésie (LDB 21 l.33) · Détermination en réserve (LDB 17 l.59-61).
   const gates = [
     'action-libre',
     'mouvement-restant',

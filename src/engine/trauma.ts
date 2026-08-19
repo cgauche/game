@@ -943,7 +943,7 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   for (const cond of c.conditions ?? []) {
     const ed = findConditionById(cond.id);
     if (!ed?.passive?.length) continue;
-    const mult = ed.perStack ? Math.max(1, cond.value ?? 1) : 1; // Exténué −10/pion (LDB 16 l.89)
+    const mult = ed.perStack ? Math.max(1, cond.value ?? 1) : 1; // Exténué −10/pion (LDB 16 l.90)
     for (const op of ed.passive) out.push({ op: scaleEtatOp(op, mult), kind: 'etat', src: { category: 'etats', id: cond.id } });
   }
   // États PSYCHOLOGIQUES (LDB 21, `psychology.json`) : leur `passive` (Frénésie → `sbBonus +1`) émis dans le
@@ -1008,7 +1008,7 @@ export function traumaMovementHalved(c: Combatant): boolean {
 }
 
 /** Σ des modificateurs PASSIFS du Bonus de Force employé aux DÉGÂTS (`sbBonus`) — Frénésie : +1 (LDB 21
- *  l.34). Lu par le calcul des dégâts (`combat.ts`) à l'endroit du `sb`, en remplacement du drapeau
+ *  l.33). Lu par le calcul des dégâts (`combat.ts`) à l'endroit du `sb`, en remplacement du drapeau
  *  `frenzied ? 1 : 0` codé en dur — la donnée vient de `psychology.json` via `passiveMods`. */
 export function damageSBBonus(c: Combatant): number {
   return pmods(c, 'sbBonus').reduce((n, o) => n + o.amount, 0);

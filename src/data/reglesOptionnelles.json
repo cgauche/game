@@ -210,7 +210,7 @@
   {
     "id": "combat-helpless-mode",
     "label": "Cible Inconsciente",
-    "ref": "LDB 16 l.112",
+    "ref": "LDB 16 l.113",
     "group": "Combat",
     "kind": "mode",
     "default": "critique",
@@ -269,7 +269,7 @@
   {
     "id": "combat-se-fatiguer",
     "label": "Se fatiguer au combat",
-    "ref": "LDB 16 l.99",
+    "ref": "LDB 16 l.97",
     "group": "Combat",
     "kind": "flag",
     "default": false,

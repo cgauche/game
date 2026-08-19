@@ -1598,7 +1598,7 @@ export const FLOWS = {
   //  une CASCADE de Round — résolue par le `FLOWS.cascade` générique, applier 'combatPsych'. La Peur
   //  forcée (Résilience) prend le DR maximal du `forceSuccess` générique, comme la psy de rencontre.)
 
-  /** Entrée en Frénésie (LDB 21 l.31-36) : Test de FM. */
+  /** Entrée en Frénésie (LDB 21 l.31-35) : Test de FM. */
   frenzy: makeRollFlow<PendingFrenzy>({
     key: 'pendingFrenzy',
     die: resultDie<PendingFrenzy>(),
@@ -1618,7 +1618,7 @@ export const FLOWS = {
     issue: (p, s) => describeFrenzy(p, actorIn(s, p.combatantId)?.label ?? ''),
   }),
 
-  /** Approche d'une source de Peur (LDB 21 l.29) : Test SEC de Calme Intermédiaire (+0) pour oser
+  /** Approche d'une source de Peur (LDB 21 l.27) : Test SEC de Calme Intermédiaire (+0) pour oser
    *  se rapprocher — distinct du Test étendu qui VAINC la Peur (flux `psych`). */
   approach: makeRollFlow<PendingApproach>({
     key: 'pendingApproach',

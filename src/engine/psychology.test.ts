@@ -19,7 +19,7 @@ describe('Psychologie (pur)', () => {
       { type: 'prejuge', cible: 'nain' },
       { type: 'amour', cible: undefined }, // « Famille » n'est pas un id de Groupe (groups.json) → inerte
       { type: 'camaraderie', cible: 'soldat' },
-      { type: 'phobie', cible: undefined, indice: 1 }, // « Araignées » non plus (Phobie = Peur 1 sur la source, LDB 21 l.84-87)
+      { type: 'phobie', cible: undefined, indice: 1 }, // « Araignées » non plus (Phobie = Peur 1 sur la source, LDB 21 l.85-87)
     ]));
   });
   it('parsePsychTraits : « un au choix » → Cible indéfinie (inerte)', () => {

@@ -117,7 +117,7 @@ describe('#1262 lot 5c — la BANDE se compose sur la SURFACE, pas sur l’écra
     expect(seatOwns(g(), 0, H[0].id), 'et plus à l’hôte').toBe(false);
   });
 
-  it('Psychologie de Round (LDB 21 l.14) : la bande du porteur de l’invité porte SA possession', () => {
+  it('Psychologie de Round (LDB 21 l.9) : la bande du porteur de l’invité porte SA possession', () => {
     const { H, E } = setupCoop({ heros: 1, invites: [0] });
     E[0].size = 'enorme'; // gap de Taille ≥ 2 → Terreur
 

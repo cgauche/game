@@ -6,7 +6,7 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 
 /**
- * Traits psy CIBLÉS en COMBAT (Animosité/Haine/…, LDB 21 l.14 : Test de Calme « au début du Round »).
+ * Traits psy CIBLÉS en COMBAT (Animosité/Haine/…, LDB 21 l.9 : Test de Calme « au début du Round »).
  * Depuis la VAGUE MULTI (#1117 L2) : c'est une cascade `purpose:'combat'` ouverte par
  * `openRoundStartPsych` en BANDES (une étape par entrée de règle, applier 'combatPsych', une RANGÉE par
  * héros), résolue par les handlers `cascadeBatch*`. L'IA reste instantanée (resolvePsychAI).

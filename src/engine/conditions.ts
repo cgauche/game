@@ -338,7 +338,7 @@ export function combatTestPenalty(c: Combatant): number {
   return combatTestPenaltyParts(c).reduce((s, p) => s + p.value, 0);
 }
 
-// Tests « impliquant un déplacement » (LDB 16 l.37/l.85) — classification DÉRIVÉE de la donnée
+// Tests « impliquant un déplacement » (LDB 16 l.35/l.64) — classification DÉRIVÉE de la donnée
 // (`SkillData.movement`, éditable au Codex), plus de liste d'ids en dur. Acrobaties (spé de
 // Représentation) non classables à l'id de base → non couvertes.
 const MOVEMENT_SKILL = new Set(skills.filter((s) => s.movement).map((s) => s.id));
@@ -421,7 +421,7 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
  * Bonus pour TOUCHER en mêlée une cible affectée, en lignes NOMMÉES par l'État qui les octroie —
  * SOURCE UNIQUE de la somme (`meleeAttackerBonus`) et de son affichage (chip « +20 À Terre »).
  * Lues en DONNÉES (`incomingAttackMod` des `passive` d'État, kind `etat`). Deux familles :
- *  - INCONDITIONNELS (À Terre/Surpris +20, Aveuglé +10 — `LDB 16 l.37/l.137/l.43`) : le MEILLEUR
+ *  - INCONDITIONNELS (À Terre/Surpris +20, Aveuglé +10 — `LDB 16 l.35/l.135/l.45`) : le MEILLEUR
  *    seul. Ce non-cumul est un arbitrage MAISON, pas une citation : `LDB 16 l.13` ne régit que les
  *    PÉNALITÉS subies par le porteur, et `l.11` fait au contraire s'accumuler les pions d'un même
  *    État. À Terre et Surpris ne se cumulent de toute façon pas (l.37/l.137) ; Aveuglé, si — le
@@ -456,7 +456,7 @@ export function meleeAttackerBonus(target: Combatant, opts?: { flankRear?: boole
 
 /**
  * Avantage(s) GAGNÉ(s) par l'assaillant qui frappe `target` en mêlée — lu en DONNÉES (`passive`
- * `incomingAdvantage` melee/all, kind `etat`). Sonné : « +1 Avantage avant l'attaque » (LDB 16 l.123).
+ * `incomingAdvantage` melee/all, kind `etat`). Sonné : « +1 Avantage avant l'attaque » (LDB 16 l.125).
  * Non-cumul : le MEILLEUR seul (comme `meleeAttackerBonus`). ≠ bonus de TOUCHE (`meleeAttackerBonus`).
  */
 export function incomingMeleeAdvantage(target: Combatant): number {
@@ -488,20 +488,20 @@ export function conditionGating(c: Combatant): { noAction: boolean; cannotDefend
   return { noAction, cannotDefend, movement };
 }
 
-/** Ne peut pas se défendre lors d'un Test opposé (Surpris LDB 16 l.132 / Inconscient l.112 « rien faire
+/** Ne peut pas se défendre lors d'un Test opposé (Surpris LDB 16 l.135 / Inconscient l.113 « rien faire
  *  de votre tour ») — lu du `gating.cannotDefend` des statuts portés (données, plus de liste par-nom). */
 export function cannotDefend(c: Combatant): boolean {
   return conditionGating(c).cannotDefend;
 }
 
 /** Le combattant peut-il effectuer son Action ce tour ? Faux si un statut porté déclare `gating.action:
- *  'none'` (Sonné « incapable d'effectuer votre Action », LDB 16 l.123 ; Surpris/Inconscient). Données. */
+ *  'none'` (Sonné « incapable d'effectuer votre Action », LDB 16 l.125 ; Surpris/Inconscient). Données. */
 export function canTakeAction(c: Combatant): boolean {
   return !conditionGating(c).noAction;
 }
 
 /** États portés par `c` dont la DONNÉE déclare `restrictsAction` (Brisé : Mouvement + Action verrouillés
- *  pour fuir/se cacher, LDB 16 l.55) — lus en DONNÉES (etats.json), JAMAIS par-nom. `stacks` = pions portés. */
+ *  pour fuir/se cacher, LDB 16 l.52) — lus en DONNÉES (etats.json), JAMAIS par-nom. `stacks` = pions portés. */
 export function restrictingConditions(c: Combatant): { id: string; stacks: number }[] {
   const out: { id: string; stacks: number }[] = [];
   for (const cond of c.conditions ?? []) {
@@ -543,13 +543,13 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG, emit?: Condition
   // BE+PA), joués par `fireConditionEffects` au hook order-10. Le Test de Résistance qui élimine l'État
   // reste le hook `poison-resist` (cadence-aware).
   // En Flammes : dégâts par-round MIGRÉS en données (etats.json `effects: onRoundEnd → wounds`,
-  // amount {sum:[1d10, pions, −1]} − BE − PA de la Localisation la moins protégée, min 1 ; LDB 16 l.77),
+  // amount {sum:[1d10, pions, −1]} − BE − PA de la Localisation la moins protégée, min 1 ; LDB 16 l.84),
   // joués par fireConditionEffects.
   // Sonné : Test de Résistance Intermédiaire (+0) en fin de Round (retire 1+DR ; vidé → 1 Exténué « si pas
-  // déjà », LDB 16 l.123-127) MIGRÉ en DONNÉES — `etats.json` sonne `effects: onRoundEnd → {test → removeCondition
+  // déjà », LDB 16 l.125-129) MIGRÉ en DONNÉES — `etats.json` sonne `effects: onRoundEnd → {test → removeCondition
   // 1+DR, `if` sonne∧extenue vidés → condition extenue}`, résolu par le DISPATCHER UNIQUE (cadence-aware en
   // combat, inline hors-combat). Le −10 du Sonné s'applique au jet via `combatTestPenalty` (rawCombatTestBase).
-  // Auto-dissipation en fin de Round (Aveuglé l.48 / Assourdi l.32 / Surpris l.136) MIGRÉE en données :
+  // Auto-dissipation en fin de Round (Aveuglé l.47 / Assourdi l.29 / Surpris l.139) MIGRÉE en données :
   // `effects: [{trigger:'onRoundEnd', flow:…removeCondition}]` dans etats.json, jouée par fireConditionEffects.
   // Effets RÉCURRENTS portés par un effet actif de sort (op `perRound`) — re-joués tant que l'effet
   // dure (AVANT le décrément : il agit aussi son dernier Round). 1 État X/Round, 1 Ration de
@@ -658,7 +658,7 @@ export function tickDurations(c: Combatant, emit?: ConditionEmit): string[] {
 }
 
 /**
- * Cauchemars (trauma psychologique, LDB 21 l.92) : chaque nuit, un Personnage marqué effectue un
+ * Cauchemars (trauma psychologique, LDB 21 l.95) : chaque nuit, un Personnage marqué effectue un
  * Test de **Calme Facile (+40)** ; sur un échec, il est en proie à de terribles cauchemars et gagne
  * un État **Exténué**. Pur ; mute `c`, renvoie le journal.
  */

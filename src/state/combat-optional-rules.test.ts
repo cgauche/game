@@ -171,8 +171,8 @@ describe('combat-ranged-melee-penalty — −20 + tir égaré (LDB 14 l.112-116)
   });
 });
 
-// ── Règle 4 : « Cible Inconsciente » (combat-helpless-mode, LDB 16 l.112) ──
-describe('combat-helpless-mode — cible Inconsciente (LDB 16 l.112)', () => {
+// ── Règle 4 : « Cible Inconsciente » (combat-helpless-mode, LDB 16 l.113) ──
+describe('combat-helpless-mode — cible Inconsciente (LDB 16 l.113)', () => {
   beforeEach(() => { seedBattleRng(7); });
   afterEach(() => resetRule('combat-helpless-mode'));
 

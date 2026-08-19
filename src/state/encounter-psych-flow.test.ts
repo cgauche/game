@@ -303,7 +303,7 @@ describe('Terreur réussie : la Peur qui en découle est due à PLEIN Indice (LD
     const peur = peurOf(hero);
     expect(peur?.indice).toBe(3); // plein Indice, jamais 0
     expect(peur?.calmeDR ?? 0).toBe(0); // jamais testée EN TANT QUE Peur
-    // Elle MORD : Peur active non vaincue vs sa source (LDB 21 l.29) — la couture réelle, pas le champ.
+    // Elle MORD : Peur active non vaincue vs sa source (LDB 21 l.27) — la couture réelle, pas le champ.
     expect(psychDRAdjust(hero, spectre)).toBe(-1);
   });
 

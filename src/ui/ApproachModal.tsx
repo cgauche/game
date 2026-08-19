@@ -9,7 +9,7 @@ import { ev } from '../state/combatLog';
 import { describeApproach } from '../state/flowOutcomes';
 
 /**
- * Modale d'APPROCHE d'une source de Peur (LDB 21 l.29) : « incapable de vous rapprocher … à moins de
+ * Modale d'APPROCHE d'une source de Peur (LDB 21 l.27) : « incapable de vous rapprocher … à moins de
  * réussir un Test de Calme Intermédiaire (+0) ». Test SEC qui diffère le clic d'approche — succès →
  * l'intention est relancée (approches libres ce Tour) ; échec → aucune approche ce Tour.
  */

@@ -175,13 +175,13 @@ export type Condition =
   | { kind: 'engagedAdvantageLead'; op: CompareOp; value: number }
   /** Y a-t-il un adversaire VIVANT dans la Ligne de Vue de `target` (`ctx.foeInLoS`) ? Géométrie d'arène
    *  emballée en donnée (au-dessus de `lineOfSightCover`) : sortie de Frénésie « plus d'ennemi en vue → fin »
-   *  (LDB 21 l.36), fuite/récupération du Brisé « hors de vue de l'ennemi » (LDB 16 l.55). Hors combat = false. */
+   *  (LDB 21 l.35), fuite/récupération du Brisé « hors de vue de l'ennemi » (LDB 16 l.52). Hors combat = false. */
   | { kind: 'foeInLoS' }
   /** Aucun adversaire VIVANT ne voit l'acteur (sens foe→acteur, ≠ `foeInLoS` acteur→foe) — « caché hors de
-   *  vue de l'ennemi » (Brisé, LDB 16 l.55/71 : retrait sans Test + difficulté Accessible). Précalculé sur
+   *  vue de l'ennemi » (Brisé, LDB 16 l.54/56 : retrait sans Test + difficulté Accessible). Précalculé sur
    *  la battle (`ctx.hiddenFromFoes`). Hors combat = false. */
   | { kind: 'hiddenFromFoes' }
-  /** L'acteur est-il ENGAGÉ avec un adversaire (LDB 13 l.159) ? Gate de récupération du Brisé (LDB 16 l.57 :
+  /** L'acteur est-il ENGAGÉ avec un adversaire (LDB 13 l.159) ? Gate de récupération du Brisé (LDB 16 l.54 :
    *  aucun Test si Engagé). Précalculé (`ctx.engaged`). Hors combat = false. */
   | { kind: 'engaged' }
   /** Le Test courant est-il un TEST D'ÉQUIPAGE à bord (MDG 14) ? Gate du bonus « Commandant émérite »

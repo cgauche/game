@@ -121,7 +121,7 @@ registerHitModifier({
   // quand on l'attaque — « les bruits forts, le fait de la déplacer ou de la bousculer la réveille
   // instantanément » (sort Sommeil). Cette règle était laissée à un op `narrative` « arbitrage MJ » ; ici
   // le MJ, c'est le MOTEUR, donc on l'applique. Le dormeur n'est PAS achevé (≠ coup de grâce d'un Inconscient
-  // à 0 PB, LDB 16 l.112 → `autoKill` annulé) : il encaisse une attaque normale et se relève. EXCEPTION :
+  // à 0 PB, LDB 16 l.113 → `autoKill` annulé) : il encaisse une attaque normale et se relève. EXCEPTION :
   // Salive analgésique (capability `wakelessBite`) — la morsure INDOLORE s'accroche à la proie sans la réveiller.
   id: 'wake-sleeper',
   order: 5,

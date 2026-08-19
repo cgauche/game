@@ -5,7 +5,7 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 
 /**
- * Approche sous Peur (LDB 21 l.29) : « incapable de vous rapprocher … à moins de réussir un Test de
+ * Approche sous Peur (LDB 21 l.27) : « incapable de vous rapprocher … à moins de réussir un Test de
  * Calme Intermédiaire (+0) ». Le clic d'approche ouvre pendingApproach (jet GRATUIT) ; succès →
  * approches libres ce Tour (fearGate 'passed') et l'intention différée est relancée ; échec → aucune
  * approche ce Tour ('failed'). S'éloigner reste libre.

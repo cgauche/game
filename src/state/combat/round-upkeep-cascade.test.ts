@@ -53,7 +53,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
   //  déclenché À L'ACQUISITION du Sonné — couvert par `triggered-test.test.ts` (brique cadence-aware).)
 
   it('Récupération du Brisé : héros Brisé (non Engagé) → étape de Test (Calme) ; succès retire ≥ 1 Brisé', () => {
-    seedBattleRng(2); // seed donnant une réussite du Calme (le −10 du Brisé lui-même s'applique, LDB 16 l.55)
+    seedBattleRng(2); // seed donnant une réussite du Calme (le −10 du Brisé lui-même s'applique, LDB 16 l.52)
     const { H } = setup();
     H.characteristics['force-mentale'] = 95; // Calme élevé → Test réussi malgré le −10 de l'État Brisé
     addCondition(H, COND.brise, 2);
@@ -127,7 +127,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     expect(hasCondition(h, COND.extenue)).toBe(true);      // … vidé → 1 Exténué (LDB 16 l.72, via `if`/`condition`)
   });
 
-  it('Sonné data-driven : héros → étape triggeredTest ; succès → Sonné vidé + 1 Exténué (RAW l.123-127)', () => {
+  it('Sonné data-driven : héros → étape triggeredTest ; succès → Sonné vidé + 1 Exténué (RAW l.125-129)', () => {
     seedBattleRng(5);
     const { H } = setup();
     H.characteristics.endurance = 90; // Résistance haute → réussite

@@ -8,7 +8,7 @@ import type { AttackResult } from '../engine/combat';
  * Réveil d'un dormeur MAGIQUE à l'attaque (« bruits/bousculade la réveillent », sort Sommeil) — jadis un op
  * `narrative` « arbitrage MJ », désormais MÉCANISÉ (le MJ, c'est le moteur). Une cible qui dort EST Inconsciente,
  * mais on la distingue d'un KO à 0 PB par la DURÉE de son Inconscient + des PB > 0 : la première se RÉVEILLE
- * quand on l'attaque (pas de coup de grâce), la seconde reste un Inconscient achevable (LDB 16 l.112).
+ * quand on l'attaque (pas de coup de grâce), la seconde reste un Inconscient achevable (LDB 16 l.113).
  */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
   id: 's', name: 'Dormeur', kind: 'hero', conditions: [{ id: 'inconscient', value: 1, roundsLeft: 3 }],

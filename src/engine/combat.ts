@@ -460,7 +460,7 @@ export interface AttackResult {
   /** Arme avec laquelle le défenseur a PARÉ (mode parade uniquement) — sert aux Critiques du Test
    *  opposé (Piège-lame, LDB 62 l.278) et à la Maladresse défensive d'une arme Dangereuse. */
   parryWeapon?: Weapon;
-  /** Cible Inconsciente — règle optionnelle « mort-auto » (LDB 16 l.112) : en CORPS À CORPS, la cible
+  /** Cible Inconsciente — règle optionnelle « mort-auto » (LDB 16 l.113) : en CORPS À CORPS, la cible
    *  est tuée automatiquement. Le store applique la mise hors de combat MORTELLE par le chemin des morts
    *  normales (finalizeHeroDeath → Destin possible). Absent/false = comportement « critique » (RAW). */
   autoKill?: boolean;
@@ -1149,7 +1149,7 @@ function combineOpposed(
 }
 
 /**
- * Cible Inconscient (LDB 16 l.112) : l'attaquant bénéficie de « Je ne faillirai pas ! »
+ * Cible Inconscient (LDB 16 l.113) : l'attaquant bénéficie de « Je ne faillirai pas ! »
  * (LDB 17 l.68) sans dépenser de Résilience — il *choisit* le résultat, donc on prend le
  * meilleur : une réussite **critique** (double choisi). À distance, les Dégâts sont ceux
  * d'un tir **à bout portant** (+6 DR ≈ le +60 au toucher de la bande de portée). Le jet
@@ -1182,7 +1182,7 @@ export function resolveMeleePassive(
   return res;
 }
 
-/** Cible sans défense possible face à une attaque (LDB 16 l.112 / États l.113). */
+/** Cible sans défense possible face à une attaque (LDB 16 l.113). */
 export const isHelplessTarget = (c: Combatant): boolean => hasCondition(c, 'inconscient');
 
 /** Résout une attaque de mêlée (Test opposé de Corps à corps). Orchestrateur :
@@ -1197,7 +1197,7 @@ export function resolveMelee(
   // Un OBJET INANIMÉ (structure de siège / véhicule-coque / affût inerte) n'a ni CC/Ag, ni Parade, ni Esquive → jamais de défense.
   const defenseMode = (cannotDefend(defender) || isInanimate(defender)) ? 'none' : opts.defense ?? 'parade';
   let atk = rollMeleeAttacker(attacker, defender, weapon, rng, opts.location, opts.env, opts.flankRear);
-  // Cible Inconsciente (LDB 16 l.112) : auto-réussite + Critique (RAW). Règle optionnelle « mort-auto » :
+  // Cible Inconsciente (LDB 16 l.113) : auto-réussite + Critique (RAW). Règle optionnelle « mort-auto » :
   // en CORPS À CORPS la cible est tuée automatiquement → on marque `autoKill` (le store finalise la mort
   // par le chemin normal, Destin possible). Le tir n'est PAS concerné (cf. resolveRanged).
   const helpless = isHelplessTarget(defender);
@@ -1333,7 +1333,7 @@ export function resolveRanged(
     return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.label} : cible hors de portée.` };
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env, metresPerTile });
   let atk: TestResult = { ...rollTest(atkVal, 'intermediaire', rng, combineMods(mods)), base: combatBaseValue(attacker, 'ranged', weapon) }; // LDB 12 l.160
-  if (isHelplessTarget(defender)) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
+  if (isHelplessTarget(defender)) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.113)
   const atkBd = bd(attackTestLabel(weapon, 'ranged'), atkVal, atk, composeAttack(mods));
   // Tir DÉFENDU (RAW : Protectrice 2+ LDB 62 l.296 / Bout Portant 14 l.62 / tireur Engagé 14 l.70) →
   // Test OPPOSÉ, cœur partagé avec la mêlée (`combineOpposed`). L'Inconscient ne se défend pas.
@@ -1493,7 +1493,7 @@ function applyHit(
     };
   }
   // Charge montée (LDB 14 l.183) : DÉGÂTS calculés avec la Force (Bonus) et la Taille de la MONTURE.
-  let sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'force'))) + damageSBBonus(attacker); // +1 BF en Frénésie via `sbBonus` (psychology.json, LDB 21 l.34)
+  let sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'force'))) + damageSBBonus(attacker); // +1 BF en Frénésie via `sbBonus` (psychology.json, LDB 21 l.33)
   // Tueur (LDB 10) : « utilisez le Bonus d'Endurance de votre adversaire comme votre Bonus de Force
   // s'il est plus élevé ; déterminez toujours ce point avant toute autre règle ».
   if (isSlayer(attacker)) sb = Math.max(sb, bonus(effectiveChar(defender, 'endurance')));

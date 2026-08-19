@@ -12,11 +12,11 @@ describe('socialPsychMod — pénalités de Sociabilité psy (LDB 21, P3)', () =
     expect(socialPsychMod(tester, ['Elfe', 'Soldat'])).toBe(-20);
     expect(socialPsychMod(tester, ['Humain'])).toBe(0); // hors groupe
   });
-  it('Animosité ACTIVE (Test de Psy ÉCHOUÉ) → 0 : compulsion d’attaque, PAS le malus social contenu (LDB 21 l.24)', () => {
+  it('Animosité ACTIVE (Test de Psy ÉCHOUÉ) → 0 : compulsion d’attaque, PAS le malus social contenu (LDB 21 l.21)', () => {
     const tester = mk({ psychTraits: [{ type: 'animosite', cible: 'Elfe' }], psychState: [{ type: 'animosite', cible: 'Elfe', active: true }] });
     expect(socialPsychMod(tester, ['Elfe'])).toBe(0);
   });
-  it('Animosité RÉSISTÉE (Test de Psy RÉUSSI, active:false) → −20 : c’est précisément l’effet du succès (LDB 21 l.22)', () => {
+  it('Animosité RÉSISTÉE (Test de Psy RÉUSSI, active:false) → −20 : c’est précisément l’effet du succès (LDB 21 l.19)', () => {
     const tester = mk({ psychTraits: [{ type: 'animosite', cible: 'Elfe' }], psychState: [{ type: 'animosite', cible: 'Elfe', active: false }] });
     expect(socialPsychMod(tester, ['Elfe'])).toBe(-20);
   });

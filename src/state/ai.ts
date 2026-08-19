@@ -94,7 +94,7 @@ export type EnemyAction =
   | { kind: 'reload' } // recharge une arme à Recharge déchargée (Test étendu de Projectiles, LDB 62 l.333)
   | { kind: 'melee'; targetId: string } // attaque de mêlée (cible adjacente)
   | { kind: 'move'; to: Pt; thenTargetId: string } // approche ; attaque après si adjacent
-  | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.66/77)
+  | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.66/84)
   | { kind: 'spendResource'; resource: 'resolve'; via: 'removeCondition'; id: string } // dépense PROACTIVE de Détermination pour retirer un État verrouillant (Brisé) et se ressaisir (LDB 17 l.57-61)
   | { kind: 'grapple'; targetId: string; resolution: 'break' | 'test' } // Empoigné à son tour (LDB 14 l.161) : son Action EST le Test opposé de Force, OU « Briser » (Avantage supérieur) pour regagner sa liberté d'action puis re-décider
   | { kind: 'manPoste'; hullId: string; posteUid: string } // « Servir cette pièce » (MDG 12) : devenir chef d'un poste de siège NON servi adjacent (l'arme de siège est octroyée) — coûte l'Action
@@ -276,7 +276,7 @@ const DOCTRINES: Record<DoctrineId, Doctrine> = {
   // Insensible/Sans Peur ne fuit pas — et n'étant pas Bestial, aucune garde de fuite ne s'applique).
   horde: { dangerAvoid: 0, cohesion: 0 },
   // EMBUSCADE : « attaque-surprise sur l'isolé, pas de repli ». SÉLECTIONNÉE AUTO par `pickDoctrine` sur le
-  // signal RÉEL de charge d'embuscade (État Surpris du camp adverse, LDB 16 l.130-136 — cf. `pickDoctrine`
+  // signal RÉEL de charge d'embuscade (État Surpris du camp adverse, LDB 16 l.131-139 — cf. `pickDoctrine`
   // ci-dessous), ou par l'override `aiDoctrine` (donnée) en secours/forçage manuel. DISTINCTE de la meute
   // (≠ identité nominale, cf. relecture L5) : l'embusqué a l'INITIATIVE et frappe pour TUER la cible isolée
   // d'entrée, prise à revers depuis sa cachette. ↑↑flankRear (frappe de dos depuis l'embuscade, plus marqué
@@ -306,7 +306,7 @@ export function pickDoctrine(enemy: Combatant, _squad: Combatant[] = [], heroes:
   if (forced && forced in DOCTRINES) return forced as DoctrineId;
 
   // (2) SIGNAL RÉEL DE CHARGE D'EMBUSCADE (#127) : `applySurprise` (LDB 13 l.52-81) pose l'État Surpris
-  // (LDB 16 l.130-136) SEULEMENT sur le camp PRIS en embuscade, JAMAIS sur l'embusqueur, et l'État est
+  // (LDB 16 l.131-139) SEULEMENT sur le camp PRIS en embuscade, JAMAIS sur l'embusqueur, et l'État est
   // retiré en fin de Round (etats.json `surpris.effects[0]` onRoundEnd) — le signal est donc borné au(x)
   // Round(s) où l'embuscade est encore active. Un héros Surpris ET cet ennemi lui-même NON Surpris (il subit
   // sinon, il ne mène pas l'embuscade) ⇒ CET ennemi a l'initiative de la frappe d'ouverture.
@@ -434,7 +434,7 @@ function bestAreaCenter(
   return best && best.covered >= 2 ? best : null;
 }
 
-/** Frénésie (LDB 21 l.34) : le frénétique vise IMPÉRATIVEMENT l'ennemi le plus PROCHE de sa Ligne de
+/** Frénésie (LDB 21 l.33) : le frénétique vise IMPÉRATIVEMENT l'ennemi le plus PROCHE de sa Ligne de
  *  Vue (pas le plus faible) ; à distance égale, le plus blessé (tri stable, déterministe). */
 function nearest(enemyPos: Pt, heroes: Combatant[]): Combatant {
   return [...heroes].sort((a, b) => {
@@ -521,9 +521,9 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Gardes FORCÉES (psychologie/RAW, hors scoring) : la trace = action forcée, classement VIDE.
   const forced = (a: EnemyAction): EnemyAction => { if (AI_TRACE) _lastRanking = []; return a; };
   if (input.heroes.length === 0) return forced({ kind: 'end' }); // plus AUCUN adversaire (combat fini) → passe la main
-  if (!canTakeAction(enemy) && effectiveMovement(enemy) === 0) return forced({ kind: 'end' }); // ni Action ni Mouvement (Surpris LDB 16 l.132…) → passe la main (gating data-driven, plus de nom en dur)
-  // En flammes (LDB 16 l.77) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
-  // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.34).
+  if (!canTakeAction(enemy) && effectiveMovement(enemy) === 0) return forced({ kind: 'end' }); // ni Action ni Mouvement (Surpris LDB 16 l.135…) → passe la main (gating data-driven, plus de nom en dur)
+  // En flammes (LDB 16 l.84) : un ennemi NON frénétique se roule au sol pour éteindre le feu (1d10/Round
+  // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.33).
   if (hasCondition(enemy, 'en-flammes') && !isFrenzied(enemy)) return forced({ kind: 'recover', state: 'en-flammes' });
   const pos = enemy.pos!;
   // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.163/164) ; 1 case par défaut. Diagonale incluse
@@ -573,7 +573,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const ebf = () => bonus(effectiveChar(enemy, 'force')); // BF du tireur → résout les Portées de jet `{bf}` (paresseux : ignoré pour une portée fixe)
   const maxWeaponRange = enemy.weapons.reduce((m, w) => { const r = w.type === 'ranged' ? effectiveWeaponRange(w, loadedAmmo(enemy, w)?.ammoRangeMod, ebf) : null; return r != null ? Math.max(m, r) : m; }, 0);
   const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange, mpt) != null) : shootableHeroes;
-  // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
+  // Frénésie (LDB 21 l.33) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
   const frenzied = isFrenzied(enemy);
   // LdV vers un point (centre de ZdE) — réutilisé par le gate `canCast` et l'énumération de zone.
   const losAt = (pt: Pt): boolean => losClear(scene, pos, pt, smoke ?? []);
@@ -623,7 +623,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     return forced(to ? { kind: 'move', to, thenTargetId: closest.id } : { kind: 'end' });
   }
 
-  // Fuite (Brisé / Bestial blessé). `preferHidden` (Brisé, LDB 16 l.55 « hors de vue de l'ennemi ») :
+  // Fuite (Brisé / Bestial blessé). `preferHidden` (Brisé, LDB 16 l.52 « hors de vue de l'ennemi ») :
   // gagner une CACHETTE (case hors de vue de tout héros) prime sur la distance ; sinon, la plus éloignée.
   const fleeMove = (preferHidden = false): EnemyAction => {
     const tiles = [...reach.keys()].map((k) => { const [x, y] = k.split(',').map(Number); return { x, y } as Pt; });
@@ -655,9 +655,9 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     if (!isEngaged(enemy) && !reachableFoe) return null; // ni Engagé ni cible joignable → se cacher vaut mieux
     return { kind: 'spendResource', resource: 'resolve', via: 'removeCondition', id: clearable.id };
   };
-  // Verrouillage d'Action data-driven (`restrictsAction`, ex. Brisé LDB 16 l.55) : Mouvement + Action doivent
+  // Verrouillage d'Action data-driven (`restrictsAction`, ex. Brisé LDB 16 l.52) : Mouvement + Action doivent
   // servir à fuir/se cacher. AVANT de fuir, l'IA tente de se RESSAISIR par la Détermination ; sinon, fuir si
-  // NON Engagé (un Brisé Engagé ne peut PAS récupérer par Test, LDB 16 l.51 → il retombe dans le scoring et se
+  // NON Engagé (un Brisé Engagé ne peut PAS récupérer par Test, LDB 16 l.54 → il retombe dans le scoring et se
   // bat à −10). PLUS de nom d'État en dur.
   if (isActionLocked(enemy)) {
     const spend = planProactiveSpend();
@@ -679,7 +679,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const doctrine = pickDoctrine(enemy, squad, input.heroes);
   const Weff = doctrineWeights(doctrine);
   const macro = DOCTRINES[doctrine].macro;
-  // GARDE Empêtré (LDB 16 l.66/85) : un Empêtré a un Mouvement NUL → `fleeMove` ne trouverait aucune
+  // GARDE Empêtré (LDB 16 l.64/66) : un Empêtré a un Mouvement NUL → `fleeMove` ne trouverait aucune
   // case d'évasion et renverrait `end` (tour gâché). On NE déclenche donc PAS le repli « doctrine » pour
   // un Empêtré : le cœur discrétionnaire ne produira aucun candidat (Mouvement 0) et le fallback final
   // l'enverra sur `recover empetre` (se libérer) — le bon comportement, plutôt que passer son tour.
@@ -708,7 +708,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // l'argmax. Aucune règle inventée : gardes de validité (portée, LdV, canCast/canShoot/inMelee, ZdE,
   // focalisable) IDENTIQUES ; chaque heuristique dérive d'une fonction du moteur.
 
-  // Animosité/Haine ACTIVE (LDB 21 l.22/41) : filtre de VIVIER appliqué AVANT le choix de cible — on
+  // Animosité/Haine ACTIVE (LDB 21 l.21/41) : filtre de VIVIER appliqué AVANT le choix de cible — on
   // s'en prend en priorité au groupe haï présent dans le vivier considéré (sinon vivier brut).
   const hatedCibles = (enemy.psychState ?? [])
     .filter((p) => (p.type === 'animosite' || p.type === 'haine') && p.active && p.cible)
@@ -717,7 +717,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     hatedCibles.length ? pool.filter((h) => hatedCibles.some((cb) => groupMatch(cb, h.groups ?? []))) : [];
   /** Restreint un vivier au groupe haï s'il y en a un présent, sinon le vivier brut. */
   const restrict = (pool: Combatant[]): Combatant[] => { const hp = hatedOf(pool); return hp.length ? hp : pool; };
-  /** En Frénésie, la cible est IMPÉRATIVEMENT le plus proche en LdV (LDB 21 l.34) — on contraint le vivier
+  /** En Frénésie, la cible est IMPÉRATIVEMENT le plus proche en LdV (LDB 21 l.33) — on contraint le vivier
    *  d'énumération à ce seul héros (le scoring ne peut donc choisir personne d'autre). */
   const frenzyPick = (): Combatant | null => {
     if (!frenzied) return null;
@@ -898,7 +898,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Pour CHAQUE sort connu NON déjà actif (Unicité RAW, LDB 46 l.116-121 / 40 l.16-19), on dérive des
   // candidats `cast`/`castArea`/`focus` scorés par `spellActionValue` (Σ valeur des GameOp × fiabilité ×
   // opposition). La POLARITÉ (offensif/bénéfique) et la valeur viennent des OPS, jamais d'un nom de sort
-  // ni d'une catégorie. Un FRÉNÉTIQUE ne lance AUCUN sort (Frénésie LDB 21 l.34) → on saute le bloc.
+  // ni d'une catégorie. Un FRÉNÉTIQUE ne lance AUCUN sort (Frénésie LDB 21 l.33) → on saute le bloc.
   if (!frenzied) {
     // Existe-t-il un sort OFFENSIF lançable IMMÉDIATEMENT (en un jet, cible en portée) ? Si oui, FOCALISER
     // (qui ne produit RIEN ce tour) n'a pas de sens — on frappe maintenant (gate du candidat `focus` plus bas).
@@ -977,7 +977,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
 
   // Recharger (LDB 62 l.333) : arme à Recharge déchargée + cible en vue/portée, sauf attaque de mêlée
   // justifiée. Utilité neutre (préparation) — préféré seulement faute de tir/mêlée meilleurs. Un
-  // frénétique NE recharge PAS (Frénésie LDB 21 l.34 : seule Action = Test de CC/Athlétisme → mêlée).
+  // frénétique NE recharge PAS (Frénésie LDB 21 l.33 : seule Action = Test de CC/Athlétisme → mêlée).
   if (!frenzied && reloadNeeded && shootPool.length > 0 && !(adjacentFoes.length > 0 && hasMeleeWeapon)) {
     candidates.push({ action: { kind: 'reload' }, kind: 'reload', utility: 0, targetId: '', coord: null });
     committingPrep = true; // un tireur recharge sur place plutôt que de foncer en mêlée
@@ -1088,7 +1088,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // postes servables est surfacée par l'appelant impur (`servablePostes`, KIND-AGNOSTIQUE) ; absente/vide (toute
   // fixture sans emplacement) → aucun candidat (parité golden). Utilité NEUTRE (0) : c'est une PRÉPARATION (comme
   // Recharger), choisie SEULEMENT faute d'attaque/approche jouable ce tour. Les tactiques fines (QUAND servir)
-  // sont hors scope : ceci garantit la seule DISPONIBILITÉ kind-agnostique. Un frénétique ne sert pas (LDB 21 l.34).
+  // sont hors scope : ceci garantit la seule DISPONIBILITÉ kind-agnostique. Un frénétique ne sert pas (LDB 21 l.33).
   if (!frenzied) for (const sp of input.servablePostes ?? [])
     candidates.push({ action: { kind: 'manPoste', hullId: sp.hullId, posteUid: sp.posteUid }, kind: 'manPoste', utility: 0, targetId: sp.hullId, coord: null });
 
@@ -1098,8 +1098,8 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const chosen = argmax(candidates);
   if (chosen) return chosen.action;
 
-  // Aucun candidat jouable : un Empêtré (Mouvement nul, LDB 16 l.85) se libère plutôt que perdre son
-  // tour (Test opposé de Force contre la source, l.61). Sinon, passe la main.
+  // Aucun candidat jouable : un Empêtré (Mouvement nul, LDB 16 l.64) se libère plutôt que perdre son
+  // tour (Test opposé de Force contre la source, l.66). Sinon, passe la main.
   if (hasCondition(enemy, 'empetre')) return { kind: 'recover', state: 'empetre' };
   return { kind: 'end' };
 }

@@ -685,7 +685,7 @@ export interface PendingDispel {
 // Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round — étapes
 //  `kind:'combatPsych'` (cf. CascadeStep.combatPsych) ; Traits/Terreur au DÉBUT de Round, Peur
 //  (Test étendu) à la FIN.
-/** Entrée en Frénésie en attente (LDB 21 l.32) : Test de FM. Lancer → Chance → Appliquer (entre si succès). */
+/** Entrée en Frénésie en attente (LDB 21 l.31) : Test de FM. Lancer → Chance → Appliquer (entre si succès). */
 export interface PendingFrenzy {
   combatantId: string;
   /** `target`/`sl` absents sur un résultat synthétique (Résilience pré-jet) — la RollLine retombe sur la base. */

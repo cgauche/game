@@ -20,7 +20,7 @@ const hero = (p: Partial<Combatant>): Combatant =>
     ...p,
   } as Combatant);
 
-describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)', () => {
+describe('restRecovery — repos d’une nuit (LDB 16 l.92 / 18 l.380 / 21 l.95)', () => {
   it('retire TOUS les États Exténué (cadence « nuit complète »)', () => {
     const c = hero({ conditions: [{ id: 'extenue', value: 2 }] });
     restRecovery(c, { int: () => 1 });

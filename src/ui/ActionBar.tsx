@@ -280,9 +280,9 @@ export function ActionBar() {
   const mounted = isHero && !!active.mountId;
   const mountCandidate = isHero && !active.mountId && !moveStarted ? mountableNear(battle, active) : undefined; // enfourcher = plein Mouvement (pas de jet → pas une Action)
   const prone = isHero && hasCondition(active, 'a-terre'); // À Terre (LDB 16 l.37) : ni Charge ni Course
-  const broken = isHero && hasCondition(active, 'brise'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
+  const broken = isHero && hasCondition(active, 'brise'); // Brisé (LDB 16 l.52) : fuir/se cacher uniquement, aucune action offensive
   const entangled = isHero && hasCondition(active, 'empetre'); // Empêtré (LDB 16 l.66) : se libérer (Action, Test opposé de Force)
-  const onFire = isHero && hasCondition(active, 'en-flammes'); // En flammes (LDB 16 l.77) : se rouler (Action, Test d'Athlétisme)
+  const onFire = isHero && hasCondition(active, 'en-flammes'); // En flammes (LDB 16 l.84) : se rouler (Action, Test d'Athlétisme)
   // Déplacement, Attaque, Charge et Course sont implicites au clic (sol/ennemi), sans bouton dédié.
   // La Charge se déclenche d'elle-même (mêlée + non Engagé + Mouvement intact — LDB 15 l.35-37) ;
   // la Course est la zone violette au-delà de la Marche (clic → Test d'Athlétisme, LDB 15 l.41).
@@ -293,11 +293,11 @@ export function ActionBar() {
   // Source UNIQUE : availableAttacks (combatFlow). Sélectionner arme `selectedAttack` ; le clic-ennemi
   // résout l'attaque armée (approche-puis-frappe). La hotbar ne fait que rendre ces descripteurs.
   const attacks = isHero ? availableAttacks(active, battle) : [];
-  // Frénésie (LDB 21 l.31-32) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
+  // Frénésie (LDB 21 l.31) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
   const canFrenzy = isHero && isFrenzyCapable(active) && !isFrenzied(active) && !battle.acted && !stunned;
-  // Frénésie : l'attaque d'Arme gratuite (talent, LDB 21 l.34) reste possible même l'Action dépensée (donnée).
+  // Frénésie : l'attaque d'Arme gratuite (talent, LDB 21 l.33) reste possible même l'Action dépensée (donnée).
   const freeFrenzy = isHero && hasFreeWeaponAttack(active);
-  // Frénésie (LDB 21 l.34) : « La seule Action possible est un Test de Capacité de Combat ou un Test
+  // Frénésie (LDB 21 l.33) : « La seule Action possible est un Test de Capacité de Combat ou un Test
   // d'Athlétisme » + « sous aucun prétexte vous ne fuirez, ni ne battrez en retraite » → en Frénésie,
   // la hotbar masque Incanter/Soigner/Défensive/Tir/Objets/Se désengager (restent : attaque au clic,
   // Course vers la cible, Se relever, Piétiner, Détermination — qui ne coûte pas l'Action).

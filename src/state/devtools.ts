@@ -1232,7 +1232,7 @@ export function buildApi() {
     },
 
     /** RECETTE : pose une Peur active de `heroId` envers `enemyId` (Indice) puis simule l'APPROCHE de la
-     *  source (LDB 21 l.29) — `fear('hero-1','enemy-1', 2)`. C'est le MÊME appel que le mouvement d'IA quand
+     *  source (LDB 21 l.27) — `fear('hero-1','enemy-1', 2)`. C'est le MÊME appel que le mouvement d'IA quand
      *  une source de Peur se rapproche (`approachFearTrigger`) : le héros doit réussir un Test de Calme
      *  Intermédiaire (héros manuel → étape de cascade INFLUENÇABLE) ou gagner un État Brisé. */
     fear: (heroId: string, enemyId: string, indice = 2) => {

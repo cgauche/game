@@ -190,7 +190,7 @@ export function describeAppraise(pa: PendingAppraise): string {
     : t('out.appraiseNone', { name: pa.actorName, item: pa.itemName });
 }
 
-/** Approche d'une source de Peur (LDB 21 l.29) : issue du Test de Calme (popin). Le fil journalise la
+/** Approche d'une source de Peur (LDB 21 l.27) : issue du Test de Calme (popin). Le fil journalise la
  *  conséquence (gate d'approche du Tour) à part. `name` = combattant ; `sourceName` = source de Peur. */
 export function describeApproach(pa: PendingApproach): string {
   if (!pa.result) return '';
@@ -214,7 +214,7 @@ export function describeRun(pr: PendingRun): string {
   return t('out.run', { label: r.success ? t('out.runYes') : t('out.runNo'), cases: r.bonusCases });
 }
 
-/** « Se libérer » (Empêtré) / « se rouler » (En flammes) — LDB 16 l.66/77 : issue du Test (source unique
+/** « Se libérer » (Empêtré) / « se rouler » (En flammes) — LDB 16 l.66/84 : issue du Test (source unique
  *  popin ↔ journal). `name` = l'acteur. */
 export function describeStateRecovery(sr: PendingStateRecovery, name: string): string {
   if (sr.roll == null) return '';
@@ -242,7 +242,7 @@ export function describeFocus(pf: PendingFocus, prev: number, ni: number): strin
   return prev + r.dr >= ni ? t('out.focusDone') : '';
 }
 
-/** Entrée en Frénésie (LDB 21 l.32) : issue (source unique popin ↔ journal). `name` = le combattant. */
+/** Entrée en Frénésie (LDB 21 l.31) : issue (source unique popin ↔ journal). `name` = le combattant. */
 export function describeFrenzy(pf: PendingFrenzy, name: string): string {
   const r = pf.result;
   if (!r) return '';

@@ -193,7 +193,7 @@ export const losClear = (scene: Scene, from: Pt, to: Pt, smoke: Pt[] = []): bool
   !lineOfSightCover(scene, from, to, [], smoke).blocked;
 
 /** La case `pos` est-elle DANS la Ligne de Vue d'au moins un `foe` (direction adversaire→case) ?
- *  Primitive géométrique du Brisé (LDB 16 l.55, « hors de vue de l'ennemi » = aucun adversaire ne te voit).
+ *  Primitive géométrique du Brisé (LDB 16 l.52, « hors de vue de l'ennemi » = aucun adversaire ne te voit).
  *  `foes` = la liste d'adversaires PERTINENTS (l'appelant filtre camp/vivacité) ; on ignore les sans-position. */
 export function tileSeenByFoe(scene: Scene, foes: Combatant[], pos: Pt, smoke: Pt[] = []): boolean {
   return foes.some((e) => e.pos && losClear(scene, e.pos, pos, smoke));

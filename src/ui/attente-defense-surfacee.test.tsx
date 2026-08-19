@@ -152,7 +152,7 @@ describe('#1004 modale d’attaque — attente neutre au lieu du verdict', () =>
 
   it('SOURCE UNIQUE — cas DIVERGENT : défenseur surfacé mais SURPRIS (il ne se défendra pas) → verdict immédiat', () => {
     // `defenseSurfaced` est VRAI ici ; seul le prédicat COMPLET du moteur (`cannotDefend`, LDB 16
-    // l.132) sait qu'aucune fenêtre ne s'ouvrira. Une re-dérivation UI sur `defenseSurfaced` seul
+    // l.135) sait qu'aucune fenêtre ne s'ouvrira. Une re-dérivation UI sur `defenseSurfaced` seul
     // afficherait une attente qui ne viendra jamais.
     const { enemy, hero, pa } = playAttack(HIT_SEED, { surpris: true });
     expect(surfacedDefensePending(useGame.getState(), enemy, hero, enemy.weapons[0], pa),

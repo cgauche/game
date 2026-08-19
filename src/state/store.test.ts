@@ -710,7 +710,7 @@ describe('Boucle de jeu (store)', () => {
     expect(useGame.getState().pendingTest).toBeNull();
   });
 
-  it('attaquer une cible Sonnée en mêlée donne +1 Avantage à l’attaquant (LDB États l.123)', () => {
+  it('attaquer une cible Sonnée en mêlée donne +1 Avantage à l’attaquant (LDB 16 l.125)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
@@ -832,7 +832,7 @@ describe('Boucle de jeu (store)', () => {
     expect(st.pendingDefense!.atk.target).toBe(combatValue(E, 'melee', E.weapons[0]) + 40);
   });
 
-  it('Sonné : un héros actif ne peut PAS attaquer/incanter, mais peut se déplacer (LDB États l.123)', () => {
+  it('Sonné : un héros actif ne peut PAS attaquer/incanter, mais peut se déplacer (LDB 16 l.125)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(3) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);

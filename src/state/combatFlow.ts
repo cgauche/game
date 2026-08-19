@@ -284,7 +284,7 @@ import { stepPrecision, stepPsych } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
- *  l'attaque » (LDB 16 l.123) — ce gain profite déjà au jet en cours puis persiste. À appeler une seule
+ *  l'attaque » (LDB 16 l.125) — ce gain profite déjà au jet en cours puis persiste. À appeler une seule
  *  fois par attaque (avant le 1er jet ; pas sur une relance). Plus de branche par-nom de l'État. */
 export function applyIncomingMeleeAdvantage(get: Get, attacker: Combatant, target: Combatant): void {
   const adv = attacker.weapons[0]?.type === 'melee' ? incomingMeleeAdvantage(target) : 0;
@@ -757,7 +757,7 @@ export function resolveAttack(
   // `weapon` est la pièce de mêlée servie — jamais pour une arme personnelle (`attackGeomOf`).
   const dist = combatDistance(attackGeomOf(battle, attacker, weapon), combatGeomOf(battle, target));
   if (dist > reachTiles(weapon) && weapon.type === 'melee') return null; // hors de portée de mêlée (Allonge incluse, RAW-3)
-  // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
+  // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.125 : DÉJÀ géré par le flux d'attaque existant.)
   const { env, blocked, inMelee, crowd, cm, flankRear } = attackEnv(get, attacker, target, weapon, { intoCrowd, heldGround });
   if (blocked) return null; // pas de Ligne de Vue (mur/décor/fumée) → pas de tir (LDB 13 l.114)
   if (weapon.type === 'ranged') {
@@ -1348,7 +1348,7 @@ export function computeMoveReach(get: Get): Map<string, number> {
   return briseFleeFilter(scene, battle, active, reach);
 }
 
-/** Brisé (LDB 16 l.55) : « se déplacer jusqu'à se retrouver à l'abri, HORS DE VUE de l'ennemi ». Si des
+/** Brisé (LDB 16 l.52) : « se déplacer jusqu'à se retrouver à l'abri, HORS DE VUE de l'ennemi ». Si des
  *  cases atteignables BRISENT la Ligne de Vue de tout adversaire (`tileSeenByFoe` faux), on s'y limite
  *  (gagner une cachette prime) ; sinon, à défaut de cachette, fuir = ne pas se rapprocher (distance). */
 function briseFleeFilter(scene: Scene, battle: BattleState, active: Combatant, reach: Map<string, number>): Map<string, number> {
@@ -1451,7 +1451,7 @@ export function aiApproachPlan(
   return none;
 }
 
-/** Cible IMPOSÉE d'un combattant en Frénésie (LDB 21 l.34) : l'ennemi le plus proche dans sa Ligne
+/** Cible IMPOSÉE d'un combattant en Frénésie (LDB 21 l.33) : l'ennemi le plus proche dans sa Ligne
  *  de Vue (à distance égale, le plus blessé — même critère que l'IA). Null si pas frénétique ou
  *  aucun ennemi visible (alors pas de contrainte). */
 export function frenzyTarget(get: Get, c: Combatant): Combatant | null {
@@ -2065,7 +2065,7 @@ export function applyAttackResult(
   // toutes ses sorties écrivent la ligne de journal du geste, que le bandeau prend alors. Le réticule
   // d'intention n'a donc plus lieu d'être ici, quel que soit le chemin qui a mené à l'application.
   clearActorAim(get, set);
-  // Surpris (LDB 16 l.136) : « après la première tentative effectuée pour vous toucher, vous perdez
+  // Surpris (LDB 16 l.139) : « après la première tentative effectuée pour vous toucher, vous perdez
   // l'État Surpris ». On le retire après une attaque STANDARD (deviated===undefined) — le +20 / l'absence
   // de défense ont déjà joué pour CELLE-CI ; les suivantes n'en bénéficieront plus. Les attaques GRATUITES
   // groupées d'une créature (Morsure+Piétinement, deviated===false) forment UN assaut-surprise : on garde
@@ -2082,7 +2082,7 @@ export function applyAttackResult(
   // Critique et mort-auto de CE coup (les branches Surpris/Engagé/Avantage/journal restent intactes) ; la
   // pose de l'Empoignade + de l'État *Empêtré* se fait après l'Engagement, plus bas.
   if (grapple && res.hit) res = { ...res, woundsLost: 0, critical: false, autoKill: false };
-  // Cible Inconsciente — règle optionnelle « mort-auto » (LDB 16 l.112) : en CORPS À CORPS la cible est
+  // Cible Inconsciente — règle optionnelle « mort-auto » (LDB 16 l.113) : en CORPS À CORPS la cible est
   // tuée automatiquement. On applique la mort par le MÊME chemin que les morts normales (`finalizeHeroDeath`
   // → un héros à Destin est suspendu via pendingFateSave, sinon `dead = true`), pas un early-return brutal.
   // Le reste du flux d'attaque (États/Avantage/Critiques) est court-circuité : la cible est hors de combat.
@@ -2891,7 +2891,7 @@ export function maybeOpenDefense(
   }
   if (weapon?.type !== 'melee') return false;
   if (combatDistance(attacker, target) > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
-  if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
+  if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB 16 l.135)
   applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
   // Le MÊME env que resolveAttack (météo, Flanc/dos +20, Surnombre, Combat monté) : le jet figé de la
   // défense réactive l'omettait — un cavalier IA attaquait un héros sans son +20 (LDB 14 l.180). Le
@@ -3057,7 +3057,7 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
     const b0 = get().battle;
     if (b0) set({ battle: { ...b0, log: [...b0.log, ev('shoot', tr('cf.aim', { name: attacker.label, target: target.label }), attacker.id, target.id)] } });
   }
-  applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
+  applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée (LDB 16 l.125), avant le jet
   // Charge montée (LDB 14 l.183) : si l'attaquant a chargé ce tour, ses dégâts utilisent la Force + la
   // Taille de sa monture — PARITÉ avec le joueur (le proxy ne s'applique que s'il chevauche réellement).
   const r = resolveAttack(get, attacker, target, undefined, attacker.chargedThisTurn);
@@ -3224,7 +3224,7 @@ export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: 
 }
 
 /** Résolution IA des attaques d'Arme GRATUITES « disponibles » (`grantFreeAttack {when:'available'}` —
- *  aujourd'hui l'état Frénésie, LDB 21 l.34 : « un Test de CC gratuit chaque Round ») d'un combattant PILOTÉ
+ *  aujourd'hui l'état Frénésie, LDB 21 l.33 : « un Test de CC gratuit chaque Round ») d'un combattant PILOTÉ
  *  PAR L'IA. Gate `!aiDriven` : ennemi OU héros en Auto-combat (un héros MANUEL la déclenche lui-même via
  *  l'affordance UI `hasFreeWeaponAttack`). DÉLÈGUE chaque op au MÊME résolveur que les attaques gratuites
  *  RÉACTIVES (`applyTalentFreeAttack` : plafond, coût d'Avantage, jet d'attaque, Action préservée) — un seul
@@ -6556,7 +6556,7 @@ function visibleFoesAndAllies(battle: BattleState, scene: import('./scene').Scen
   return battle.combatants.filter((v) => v.id !== c.id && v.pos && !isOutOfAction(v) && losClear(scene, c.pos!, v.pos, smokeOf(battle)));
 }
 
-/** Test de Psychologie de DÉBUT de Round dû à `c` (LDB 21 l.14) : un Trait ciblé (re-test d'un actif
+/** Test de Psychologie de DÉBUT de Round dû à `c` (LDB 21 l.9) : un Trait ciblé (re-test d'un actif
  *  OU nouveau déclenchement) ou une NOUVELLE Terreur en Ligne de Vue. Pur de lecture. La Peur (simple
  *  Taille/causesPeur) NE se teste PAS ici : c'est un Test étendu de FIN de Round (cf. collectHeroRoundEndPsych). */
 export function collectHeroRoundStartPsych(get: Get, c: Combatant): HeroPsychDue | null {
@@ -6564,7 +6564,7 @@ export function collectHeroRoundStartPsych(get: Get, c: Combatant): HeroPsychDue
   const scene = get().scene;
   if (!battle || !scene || !c.pos || isPsychImmune(c)) return null; // Immunité psy (trait/Frénésie/Détermination temp)
   const state = c.psychState ?? [];
-  // NOUVELLE Terreur en Ligne de Vue (1ʳᵉ rencontre → Brisé, puis devient une Peur — LDB 21 l.55-57).
+  // NOUVELLE Terreur en Ligne de Vue (1ʳᵉ rencontre → Brisé, puis devient une Peur — LDB 21 l.54-56).
   for (const foe of battle.combatants) {
     if (foe.id === c.id || isOutOfAction(foe) || !foe.pos) continue; // « chez les autres créatures » (LDB 85 l.264-266) : seule exclusion, soi-même
     if (!losClear(scene, c.pos, foe.pos, smokeOf(battle))) continue;
@@ -6729,7 +6729,7 @@ function openCombatPsychCascade(
   openSequence(get, set, { title, icon, purpose: 'combat', steps, roundBoundary });
 }
 
-/** Cascade de Psychologie de DÉBUT de Round (Traits ciblés + nouvelles Terreurs, LDB 21 l.14) — une
+/** Cascade de Psychologie de DÉBUT de Round (Traits ciblés + nouvelles Terreurs, LDB 21 l.9) — une
  *  bande par entrée de règle. Appelée APRÈS `confirmRoundStart` (acteur posé) ; suspend l'IA jusqu'à
  *  résolution. */
 export function openRoundStartPsych(get: Get, set: SetFn): void {
@@ -6822,7 +6822,7 @@ function resolveCombatPsychRow(get: Get, hero: Combatant, cp: CombatPsychDecl, r
   // d'État de l'échec (`valuePerSL{onFailure}`) s'y résout, même arithmétique que `failConditionAmount`.
   applyOps(hero, psychBranchOps(cp, { success: r.success, calmeDR, round: battle?.round }), { sl: r.sl, source: { kind: 'psychology', id: cp.kind } });
   if (res.mode === 'terreur') {
-    // 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → État `failCondition` = Indice + |DR négatifs| ; devient
+    // 1ʳᵉ rencontre (LDB 21 l.54-56) : échec → État `failCondition` = Indice + |DR négatifs| ; devient
     // l'état `becomes` (LDB 21 l.56, INCONDITIONNEL, à PLEIN Indice — #1190). Conséquences en DONNÉES.
     const brise = r.success ? 0 : failConditionAmount(res.failAmount, cp.indice, r.sl);
     line = r.success ? tr('out.terreurHold', { name: hero.label }) : tr('cf.terreurThenFear', { name: hero.label, foe: cp.sourceName, brise, indice: cp.indice });
@@ -7101,7 +7101,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   AI_TURN_LOG.push({ round: battle.round, id: enemy.id, label: enemy.label, action: describeAiAction(action), top: consumeAiRanking() });
   if (AI_TURN_LOG.length > 400) AI_TURN_LOG.shift();
   const targetOf = (id: string) => inBattleId(battle, id)!;
-  const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)
+  const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB 16 l.125)
 
   // Attaque (mêlée ou tir, selon l'arme active) puis fin de tour — cadence préservée.
   const attackThenAdvance = (target: Combatant, delay: number = TEMPO.aimTelegraph) => {
@@ -7122,7 +7122,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // Si la modale de défense s'ouvre, ne PAS armer advanceTurn ici : la reprise
       // est portée par defenseConfirm → resumeEnemyTurn (anti double-advance).
       if (!suspended) {
-        aiAvailableFreeAttack(get, set, enemy); // attaque(s) d'Arme GRATUITE(S) « disponible(s) » après l'attaque principale (Frénésie LDB 21 l.34 = seule source en donnée)
+        aiAvailableFreeAttack(get, set, enemy); // attaque(s) d'Arme GRATUITE(S) « disponible(s) » après l'attaque principale (Frénésie LDB 21 l.33 = seule source en donnée)
         // Attaques gratuites de créature (Morsure/Caudale/Piétinement, OPPOSÉES) après l'attaque
         // principale ; si une modale de défense s'ouvre, ne PAS avancer (reprise via defenseConfirm).
         if (!aiCreatureFreeAttacks(get, set, enemy)) scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
