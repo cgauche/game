@@ -1524,7 +1524,7 @@ export interface Combatant {
   resolve?: number;
   /** Talent Résistance (Menace), LDB 10 l.1015-1021 : specs (normalisées) dont l'auto-succès « premier
    *  Test pour résister à la menace » a DÉJÀ servi cette séance de jeu. Remis à zéro par la couture de
-   *  début de séance (`restoreFortune`, LDB 17 l.47). Persisté (party + writeback de combat). */
+   *  début de séance (`restoreFortune`, LDB 17 l.41). Persisté (party + writeback de combat). */
   resistanceUsed?: string[];
   motivation?: string;
   /** Signe astral (« Naissance sous les Étoiles », ADE II) — `id` STABLE du signe (≠ libellé —

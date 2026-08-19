@@ -130,7 +130,7 @@ export function CampaignView() {
     ...party.map((h) => battle?.combatants.find((x) => x.id === h.id) ?? h),
     ...(battle?.combatants.filter((c) => (isVehicle(c) || isEngin(c)) && c.kind === 'hero') ?? []),
   ];
-  // LDB 17 l.27.
+  // LDB 17 l.25.
   const canFirstIds = battle && pendingRoundStart
     ? battle.order.filter((id) => {
         const c = battle.combatants.find((x) => x.id === id);

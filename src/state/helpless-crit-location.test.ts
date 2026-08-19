@@ -13,7 +13,7 @@ import { testScene } from '../scenes/test-fixture';
  * (`attackSetCritLocation`, gated par `pendingAttack.forced`) pour l'attaquant qui PILOTE. L'IA
  * (`doAttack`) ne passe jamais par `pendingAttack` : aucun choix, tirage inchangé.
  */
-describe('#124 — cible Inconsciente : choix de Localisation (RAW-2 gratuit, LDB 17 l.68/73)', () => {
+describe('#124 — cible Inconsciente : choix de Localisation (RAW-2 gratuit, LDB 17 l.68)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();

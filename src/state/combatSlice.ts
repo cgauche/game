@@ -1676,13 +1676,13 @@ export function createCombatSlice(get: Get, set: Set) {
       advanceTurn(get, set);
     },
 
-    // ── Chance, 3e usage : pré-emption d'initiative en début de Round (LDB 17 l.27) ──
+    // ── Chance, 3e usage : pré-emption d'initiative en début de Round (LDB 17 l.25) ──
     roundStartPromote: (heroId: string) => {
       const { battle, pendingRoundStart } = get();
       if (!battle || !pendingRoundStart) return;
       const hero = inBattleId(battle, heroId);
       // Réordonnancement d'initiative : arme Rapide (LDB 62 l.298-300) → gratuit ; sinon 1 point de Chance
-      // (LDB 17 l.27). Tir rapide (interruption hors de l'ordre, LDB 11 l.97-103) ne passe PAS par ici (`preemptRangedShot`).
+      // (LDB 17 l.25). Tir rapide (interruption hors de l'ordre, LDB 11 l.97-103) ne passe PAS par ici (`preemptRangedShot`).
       const free = !!hero && canStrikeFirst(hero.weapons);
       if (!hero || !controlsCombatant(get(), hero) || (!free && (hero.fortune ?? 0) <= 0)) return;
       if (battle.order[0] === heroId) return; // déjà en tête
@@ -2793,7 +2793,7 @@ export function createCombatSlice(get: Get, set: Set) {
         baseOrder: order,
         // Pause d'ouverture : PERSONNE n'est actif (turn -1) tant qu'on n'a pas « Commencé » —
         // toutes les affordances (marche/course, anneaux, visée, clics, IA) dérivent de l'actif
-        // et se taisent d'elles-mêmes ; confirmRoundStart pose le vrai tour (LDB 17 l.27).
+        // et se taisent d'elles-mêmes ; confirmRoundStart pose le vrai tour (LDB 17 l.25).
         turn: -1,
         round: 1,
         action: null,

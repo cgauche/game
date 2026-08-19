@@ -478,7 +478,7 @@ Les Points de Chance se reconstituent au début de chaque session, jusqu'à un m
 
 **Option — Longues séances de jeu** : lors de marathons (sessions de toute une journée), le MJ peut permettre la récupération de Points de Chance à des moments choisis de la narration, environ une fois par heure. Le maximum reste l'Indice de Destin actuel.
 
-> « Relancer un Test qui s'est conclu par un échec. / Ajouter +1 DR à un Test après qu'il a été effectué. » — `LDB 17 l.23-28`
+> « Relancer un Test qui s'est conclu par un échec. / Ajouter +1 DR à un Test après qu'il a été effectué. » — `LDB 17 l.23-25`
 
 ### « Je ne faillirai pas ! » (dépense d'un Point de Résilience)
 
@@ -492,14 +492,14 @@ En dépensant un Point de Résilience, un personnage peut choisir *lui-même* le
 > « "Je ne faillirai pas !" : au lieu de lancer les dés pour un Test, vous choisissez le résultat, ce qui vous permet de réussir, même dans les pires conditions. […] S'il s'agit d'un Test opposé, vous l'emportez avec au moins DR +1. Vous pouvez même faire ce choix après un Test qui a échoué. » — `LDB 17 l.68`
 
 **Sources RAW** :
-- `LDB 17 l.17-27` — dépense de Chance : relance ou +1 DR
-- `LDB 17 l.40-44` — Détermination (retirer un État, ignorer Psychologie, ignorer malus de Critique 1 Round — non lié aux Tests)
+- `LDB 17 l.17-25` — dépense de Chance : relance ou +1 DR
+- `LDB 17 l.57-61` — Détermination (retirer un État, ignorer Psychologie, ignorer malus de Critique 1 Round — non lié aux Tests)
 - `LDB 17 l.46-48` — règle optionnelle longues séances : récupération de Points de Chance environ 1×/heure
-- `LDB 17 l.64-71` — dépense de Résilience : « Je te renie ! » (Corruption) et « Je ne faillirai pas ! » (forcer un succès)
+- `LDB 17 l.67-68` — dépense de Résilience : « Je te renie ! » (Corruption) et « Je ne faillirai pas ! » (forcer un succès)
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé), [Tests opposés](#tests-opposés), Destin et Résilience (domaine propre)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71) → `canReroll`, `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `hasMeaningfulOption`, `fateSaveOrDie`, `canActFirst`, +100 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, +52 fichiers
+- `LDB 17` (l.17-25, l.46-48, l.57-61, l.67-68) → `canReroll`, `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `hasMeaningfulOption`, `canActFirst`, `fateSaveOrDie`, +99 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, +51 fichiers
 
 ---
 
@@ -580,7 +580,7 @@ Talents concernés (LDB 10) :
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.150, l.176, l.634, l.834, l.899, l.950, l.966) → `MedicState`, `CombatFeature`, `surgeryNext`, `MedicModal`, `battement-roll`, `surgery-roll`, `baratiner`, `battement`, `beni`, `regions-boisees`, +68 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/i18n/messages/fr.ts`, +4 fichiers
+- `LDB 10` (l.150, l.176, l.634, l.834, l.899, l.950, l.966) → `restoreFortune`, `MedicState`, `CombatFeature`, `surgeryNext`, `MedicModal`, `battement-roll`, `surgery-roll`, `baratiner`, `battement`, `beni`, +69 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/fortune.ts`, +5 fichiers
 - `LDB 12` (l.42) → `canReroll`, `getTestPolicy`, `ChanceButtons`, `RollRowCore`, `rerollAvailable`, `NightEntry`, `PendingTest`, `RollRowProps`, `PendingReload`, `PendingBargain`, +9 — `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +4 fichiers
 
 ---
@@ -593,7 +593,7 @@ Le supplément **Nuits Agitées & Dures Journées** précise l'interprétation d
 
 Cela confirme que la définition du Critique par double (LDB 12 l.124-127 — règle optionnelle) s'applique *textuellement identique* hors combat, notamment dans les jeux de taverne. Un **double sur un test réussi = Critique** (traité comme Succès Stupéfiant, DR 6+). Un double sur un test raté = Maladresse (Échec Stupéfiant, DR −6 ou moins) selon la même règle optionnelle.
 
-NADJ utilise également les **Points de Chance pour relancer** dans les jeux de taverne (`NADJ 16 l.19`) — confirmation que la relance (LDB 17 l.22) s'applique dans tout contexte.
+NADJ utilise également les **Points de Chance pour relancer** dans les jeux de taverne (`NADJ 16 l.19`) — confirmation que la relance (LDB 17 l.23) s'applique dans tout contexte.
 
 **Option — Jeux de Taverne Rapides** : pour les groupes qui ne souhaitent pas dérouler les règles complètes de chaque jeu, NADJ propose une résolution par un unique **test opposé Intermédiaire (+0)** utilisant la Compétence indiquée pour ce jeu. Si aucune Compétence n'est précisée (par exemple Al-zahr), on effectue un **Test opposé de Pari (+0)**. Celui qui obtient le DR le plus élevé remporte la partie.
 
@@ -620,5 +620,5 @@ Ces trois mécaniques constituent des extensions légitimes du système de DR da
 **Voir aussi** : [Doubles — Critique et Maladresse](#doubles--critique-et-maladresse), [Influencer un test — Chance, Résilience, Talents](#influencer-un-test--chance-résilience-talents), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 12` (l.124-127) → `amazingTestLabel`, `useTestJetProps`, `double-critique-maladresse`, `evaluateTest`, `SL_IMPRESSIVE`, `isImpressiveFailure`, `isAstoundingFailure` — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/tests.ts`, `src/state/flowOutcomes.ts`, `src/ui/jetProps/useTestJetProps.tsx`
-- `LDB 17` (l.22) → `canReroll`, `RunModal`, `fateSaveOrDie`, `canActFirst`, `freeActFirst`, `rerollAvailable`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `RollFlowLens`, +15 — `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +11 fichiers
+- `LDB 17` (l.23) → `canReroll`, `RunModal`, `canActFirst`, `fateSaveOrDie`, `freeActFirst`, `rerollAvailable`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `RollFlowLens`, +15 — `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +11 fichiers
 - `NADJ 16` (l.7, l.11, l.19, l.25, l.34, l.57, l.97) → `SequenceRoundOps`, `schema`, `SequenceDice`, `TavernGame`, `al-zahr`, `SequenceParams`, `TavernGameModal`, `elfe`, `SequenceTieSide`, `SequenceVolleyRow`, +33 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/tavernGames.ts`, `src/data/tavernGames.json`, `src/engine/sequenceVocab.ts`, +8 fichiers

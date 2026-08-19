@@ -313,7 +313,7 @@ Vous toussez et éternuez régulièrement, **propageant votre maladie**. Tout Pe
 
 Le RAW est COMPLET (le verbatim intégral vit dans `symptoms.json`, entrée `toxine` : échec du Test quotidien
 = mort ; difficulté indexée sur la sévérité — Très Facile +60, Modéré → Facile +40, Grave → Accessible +20).
-IMPLÉMENTÉ (#338) : `onTick.onFail` porte `{ op: 'kill' }` (Point de Destin sauve, LDB 17 l.29-39, sinon
+IMPLÉMENTÉ (#338) : `onTick.onFail` porte `{ op: 'kill' }` (Point de Destin sauve, LDB 17 l.29-37, sinon
 `Combatant.dead`) ; `onTick.difficultyBySeverity` indexe la difficulté sur la sévérité de l'instance
 (lu par `symptomOnTick`, `src/engine/disease.ts`).
 

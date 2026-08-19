@@ -482,7 +482,7 @@ export const ROUTES: ReadonlyMap<string, Route> = buildRoutes(
     ['battleClickTile', CLIC_CARTE],
     // Pause de début de Round (`pendingRoundStart`) : la FENÊTRE est à tous ('*' — ready-check par
     // siège), ses gestes ne le sont pas.
-    //  - `roundStartPromote` dépense la Chance du héros promu (LDB 17 l.27) → routé par le prédicat des
+    //  - `roundStartPromote` dépense la Chance du héros promu (LDB 17 l.25) → routé par le prédicat des
     //    dépenses sur CE héros. Sans cette route, aucun `pending*` du registre des modales n'étant ouvert,
     //    le repli tombait sur le combattant ACTIF — inexistant pendant la pause (`turn: -1`, cf.
     //    `combatFlow.enterRoundStartPause`) : la promotion était refusée à TOUT siège invité, et la Chance

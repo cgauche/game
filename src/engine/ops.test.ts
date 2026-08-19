@@ -397,7 +397,7 @@ describe('applyOps — opérations unitaires', () => {
       expect(c.dead).toBe(true);
     });
 
-    it('avec Destin (LDB 17 l.29-39 : « éviter une mort certaine ») : 1 Point sacrifié, la cible survit', () => {
+    it('avec Destin (LDB 17 l.29-37 : « éviter une mort certaine ») : 1 Point sacrifié, la cible survit', () => {
       const c = hero({ fate: 1, wounds: { current: 0, max: 12 } });
       applyOps(c, [{ op: 'kill' }]);
       expect(c.dead).toBeFalsy();

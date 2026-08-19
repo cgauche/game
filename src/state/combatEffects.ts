@@ -970,7 +970,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Récompenses', label: 'Regagner la Chance (début de session, max = Destin)', icon: 'resource/fortune',
     make: () => ({ type: 'restoreFortune' }),
     apply: (_e, env) => {
-      // Début de session (LDB 17 l.47) : Chance regagnée jusqu'au maximum = Destin actuel.
+      // Début de session (LDB 17 l.41) : Chance regagnée jusqu'au maximum = Destin actuel.
       env.set((s: GameState) => ({ party: restoreFortune(s.party) }));
       env.log(t('eff.restoreFortune'));
     },

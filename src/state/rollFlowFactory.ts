@@ -163,8 +163,8 @@ export interface ForcedPick {
  * Résistance Menace). Ces règles sont GLOBALES (LDB 17 l.24/68) : quand un flux fournit sa lentille,
  * la fabrique compose `bonusSL`/`forceSuccess`/`setForcedRoll`/`resist` DEPUIS elle — la mécanique ne vit
  * plus qu'ICI, le flux ne déclare que SA FORME. Un flux sans lentille retombe sur le chemin `resolve(forced)`
- * / `bonus.derive` (repli). Le `+1 DR` passe TOUJOURS par `bumpSL`, qui n'écrit jamais `success` (LDB 17
- * l.24 ; succès du Test : LDB 12 l.11).
+ * / `bonus.derive` (repli). Le `+1 DR` passe TOUJOURS par `bumpSL`, qui n'écrit jamais `success`
+ * (LDB 17 l.24 ; succès du Test : LDB 12 l.11).
  */
 export interface RollFlowLens<P extends PendingBase, Slot extends PendingBase = P> {
   /** TestResult ACTEUR courant du slot (post-jet), ou `null` (pas encore lancé / rien à re-dériver). */

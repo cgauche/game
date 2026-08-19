@@ -88,7 +88,7 @@
   {
     "id": "fortune-mid-session",
     "label": "Chance regagnée en cours de session",
-    "ref": "LDB 17 l.52",
+    "ref": "LDB 17 l.47",
     "group": "Destin & Résistance",
     "kind": "mode",
     "default": "off",

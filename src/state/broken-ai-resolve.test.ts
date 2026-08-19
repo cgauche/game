@@ -10,7 +10,7 @@ import type { Combatant } from '../engine/types';
 
 /**
  * Lot 1 — IA : un acteur VERROUILLÉ (`restrictsAction`, ex. Brisé) dépense PROACTIVEMENT sa Détermination
- * pour se RESSAISIR (retirer l'État, LDB 17 l.57-63) au lieu de fuir/subir tout le combat. GÉNÉRIQUE et
+ * pour se RESSAISIR (retirer l'État, LDB 17 l.57-61) au lieu de fuir/subir tout le combat. GÉNÉRIQUE et
  * data-driven (aucun nom d'État en dur) : la décision PURE vit dans `chooseEnemyAction` (`spendResource`),
  * l'exécution dans `runEnemyAI` (dépense via l'action store `spendResolveCondition`, puis vraie action).
  */
@@ -29,7 +29,7 @@ const hero = (x: number, y: number): Combatant => ({ id: 'h', kind: 'hero', name
 const decide = (enemy: Combatant, heroes: Combatant[]) =>
   chooseEnemyAction({ enemy, heroes, scene: scene(), blocked: new Set<string>(), movement: 4 } as never);
 
-describe('IA Brisé — dépense PROACTIVE de Détermination (LDB 17 l.57-63), data-driven', () => {
+describe('IA Brisé — dépense PROACTIVE de Détermination (LDB 17 l.57-61), data-driven', () => {
   it('Engagé + Détermination suffisante → se RESSAISIT (spendResource resolve→removeCondition brise)', () => {
     const enemy = foe({ conditions: [{ id: 'brise', value: 1 }], resolve: 1, engagedWith: ['h'] });
     const action = decide(enemy, [hero(6, 5)]); // héros adjacent

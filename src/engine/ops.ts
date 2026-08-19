@@ -578,7 +578,7 @@ export type GameOp =
    *  (→ Blessure Purulente) ; applicable par tout effet (artefact maudit…). Inerte si déjà porteur. */
   | { op: 'contractDisease'; disease: string }
   /** Mort DIRECTE hors Tableau des Critiques (Toxine, LDB 20 l.215 : « ou vous mourrez ») — 1 Point de
-   *  Destin sauve (LDB 17 l.29-39, « circonstances les plus difficiles […] éviter une mort certaine »,
+   *  Destin sauve (LDB 17 l.29-37, « circonstances les plus difficiles […] éviter une mort certaine »,
    *  MÊME patron que la mort par Hémorragie hors combat, `outOfCombatUpkeep.ts`), sinon `target.dead = true`. */
   | { op: 'kill' }
   /** Guérit `count` (+échelle DR) Blessures critiques de convalescence — jamais une amputation

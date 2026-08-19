@@ -561,7 +561,7 @@ Quand la menace choisie est **Mutation** : réussir automatiquement le premier T
 | Limites : physique > BE ou mentale > BFM → damné | `mutationLimitExceeded` → `hero.damned = true` | **OK** |
 | PA naturels des mutations (apAll / apLocations) | `mutationArmourBonus(c, loc)` | **OK** |
 | Sombre Pacte (gain volontaire pour relancer) | `gainCorruption` + `pendingCorruption` | **OK** |
-| « Je te renie ! » (LDB 17 l.71) — 1 Résilience, pas de mutation | `resolveRenounce` + `pendingRenounce` | **OK** |
+| « Je te renie ! » (LDB 17 l.67) — 1 Résilience, pas de mutation | `resolveRenounce` + `pendingRenounce` | **OK** |
 | Mods passifs via collecteur unifié passiveMods | `passive: GameOp[]` sur `Mutation` (mutations.json) | **OK** |
 | Traits de créature via mutation (Tentacule, Stupide…) | `attachMutation` → copie `m.traits` sur `c.traits` | **OK** |
 | Traits psychologiques via mutation (Frénésie) | `attachMutation` → copie `m.psychTraits` | **OK** |

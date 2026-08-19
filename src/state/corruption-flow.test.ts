@@ -128,7 +128,7 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
     a.characteristics.endurance = 1; // BE 0
     a.characteristics['force-mentale'] = 30; // BFM 3
     a.corruption = 4; // seuil = BFM(3) + BE(0) = 3 → dépassé au prochain gain
-    a.resilience = 0; // sans Résilience, pas de « Je te renie ! » (LDB 17 l.71) → mutation directe
+    a.resilience = 0; // sans Résilience, pas de « Je te renie ! » (LDB 17 l.67) → mutation directe
     useGame.setState({ party });
     gainCorruption(useGame.getState, useGame.setState, a, 1);
     // « Un jet = une modale » : le Test du seuil est DIFFÉRÉ — visible, avec Chance/Pacte.

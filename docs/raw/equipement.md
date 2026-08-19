@@ -491,7 +491,7 @@ Les chapitres suivants contiennent essentiellement des **listes de prix** sans r
 |---|---|---|
 | `LDB 61 l.4` | `src/engine/items.ts` : `maxEncumbrance` | Capacité = BF + BE + bonus talent Robuste |
 | `LDB 61 l.21` | `src/engine/items.ts` : `totalEncumbrance` l.205 | Objet porté : Enc −1 (armure/vêtement) |
-| `LDB 60 l.18/91` | `src/engine/items.ts` : `totalEncumbrance` l.202 | Léger −1 / Volumineux +1 via `craftEncDelta` |
+| `LDB 60 l.18/62` | `src/engine/items.ts` : `totalEncumbrance` l.202 | Léger −1 / Volumineux +1 via `craftEncDelta` |
 | `LDB 61 l.33-43` | `src/engine/encumbrance.ts` : `encumbrancePenalties` | Table seuils 0/1/2/3× → paliers Mouvement/Agilité/Fatigue |
 | `LDB 61 l.43-43` | `src/engine/encumbrance.ts` : commentaires | Mouvement immédiat ; Fatigue = échelle voyage (fin de journée) |
 | `LDB 62 l.28` | `src/engine/items.ts` l.269 | Mains nues : +BF+0, Personnelle, Inoffensive |

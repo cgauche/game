@@ -11,9 +11,9 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 97 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 176 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3440 section(s) non couvertes par une fiche : **632 transcrite(s) en catalogue** (recopiées, pas traitées) · **2363 hors-règle** (chapitre explicitement exclu) · **159 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **286 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 95 traités par une fiche · 📖 78 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 175 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3440 section(s) non couvertes par une fiche : **632 transcrite(s) en catalogue** (recopiées, pas traitées) · **2363 hors-règle** (chapitre explicitement exclu) · **159 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **286 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅9·📖4·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
 
-## LDB — ✅ 41 · 📖 33 · 🟡 0 · ⬜ 1
+## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -22,10 +22,10 @@
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | *(artefact OCR)* | ➖ | |
 | 04 | Cités et villes | ✅ | 7 (creation.md ×7) |
-| 05 | Points de vue | ✅ | 92 (creation.md ×52) |
-| 06 | Classes | ✅ | 6 (carrieres.md ×3) |
-| 07 | Carrières | ✅ | 69 (avancement.md ×45) |
-| 08 | Statut | ✅ | 44 (carrieres.md ×22) |
+| 05 | Points de vue | ✅ | 93 (creation.md ×52) |
+| 06 | *(artefact OCR)* | ➖ | |
+| 07 | Carrières | ✅ | 71 (avancement.md ×45) |
+| 08 | Statut | ✅ | 45 (carrieres.md ×23) |
 | 09 | Compétences | ✅ | 146 (competences.md ×137) |
 | 10 | Talents | ✅ | 200 (talents.md ×138) |
 | 11 | Sixième sens | ✅ | 31 (talents.md ×30) |
@@ -359,12 +359,12 @@
   - 📖 l.13-16 « Animosité et Haine » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.17-24 « Trauma » — transcrit en catalogue, jamais traité, 0 réf
 
-## AA — ✅ 10 · 📖 3 · 🟡 0 · ⬜ 0
+## AA — ✅ 9 · 📖 4 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | CRÉDITS | ✅ | 9 (combat.md ×5) |
+| 01 | CRÉDITS | 📖 | 1 (combat.md ×1) |
 | 02 | INTRODUCTION | 📖 | 2 (competences.md ×2) |
 | 03 | LES CHEVALIERS DE L'EMPIRE | ✅ | 3 (competences.md ×3) |
 | 04 | LES CHIENS DE GUERRE | 📖 | catalogue (catalogue-*.md) |
@@ -375,7 +375,7 @@
 | 09 | LE COMBAT MONTÉ | ✅ | 24 (combat.md ×23) |
 | 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 98 (combat.md ×92) |
 | 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
-| 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 17 (combat.md ×16) |
+| 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 21 (combat.md ×20) |
 | 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 17 (combat.md ×17) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
@@ -471,8 +471,8 @@
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | TROIS EXPÉDITIONS | ✅ | 7 (combat.md ×5) |
-| 02 | Griffon | ✅ | 6 (combat.md ×3) |
+| 01 | TROIS EXPÉDITIONS | ✅ | 3 (combat.md ×3) |
+| 02 | Griffon | ✅ | 8 (combat.md ×5) |
 | 03 | Dragon | 📖 | catalogue (catalogue-*.md) |
 | 04 | « L'abominable » Halagrundsor | 📖 | 1 (etats.md ×1) |
 | 05 | Amibe | 📖 | 1 (etats.md ×1) |
@@ -1675,11 +1675,3 @@
 
 - **VDM 09** (Shyish — Domaine de la Mort) :
   - 📖 l.375-536 « Le Labyrinthe de Cristal » — transcrit en catalogue, jamais traité, 0 réf
-
-## ⚠ Stubs de découpe CITÉS par l’Atlas
-
-> Le fichier-chapitre ne contient que la note de page partagée : il ne porte AUCUNE ligne de
-> source. Les réfs ci-dessous sont donc mortes par construction — à ré-ancrer sur le chapitre
-> voisin qui porte réellement le texte.
-
-- **LDB 06** (Source\Warhammer v4 - Livre de base version corrigée\06 - Classes.md) — stub de découpe SANS source, pourtant cité 6 fois par l'Atlas (carrieres.md ×3) : ces réfs pointent dans le vide.

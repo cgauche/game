@@ -698,8 +698,8 @@ export const FLOWS = {
     key: 'pendingCast',
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.casterId),
-    // Résolveur UNIQUE (`caps.forced`) : jet normal (Relance Chance/Pacte) OU Résilience (LDB 17
-    // l.73) selon `forced` — plus de dérives `force`/`forceRoll` séparées. La localisation d'un
+    // Résolveur UNIQUE (`caps.forced`) : jet normal (Relance Chance/Pacte) OU Résilience
+    // (LDB 17 l.68) selon `forced` — plus de dérives `force`/`forceRoll` séparées. La localisation d'un
     // Projectile suit le dé inversé (LDB 46 l.156) : choisir le dé le re-dérive (socle + accesseur).
     // Picker : 11 → Incantation Critique seulement pour un sort (les Prières n'ont pas de Critique).
     caps: {

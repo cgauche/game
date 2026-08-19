@@ -212,7 +212,7 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.21, l.48-59, l.62-65, l.67-69, l.71) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `ExecCtx`, `triggeredTestStepId`, `resolveSpell`, `opposedAttackerFreeze`, `ambush-surprise`, `pickDoctrine`, `CascadeBody`, +11 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, +11 fichiers
 - `LDB 16` (l.132-139) → `STABLE_COND_KINDS`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, `endOfRound`, +6 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
-- `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, +76 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, +42 fichiers
+- `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, `useTrampleJetProps`, +75 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/psychology.ts`, +40 fichiers
 - sans code : `NADJ 5` (l.117), `NADJ 6` (l.148)
 
 ---
@@ -1355,7 +1355,7 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 **Voir aussi** : Charge et Mouvement (LDB 15) ; Taille des créatures et Frappe Mortelle (LDB 85) ; Talents de Chevaucher ; Peur et Terreur (Psychologie) ; Compétence Chevaucher.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.72-74, l.151-154) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `MedicState`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `tissage`, `surgeryNext`, +26 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/i18n/messages/fr.ts`, `src/state/medicFlow.ts`, `src/state/pendings.ts`, +2 fichiers
+- `LDB 10` (l.72-74, l.151-154) → `talent-aleatoire`, `restoreFortune`, `acrobaties-equestres`, `affable`, `MedicState`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `tissage`, +27 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/fortune.ts`, `src/i18n/messages/fr.ts`, `src/state/medicFlow.ts`, +3 fichiers
 - `LDB 14` (l.118-131, l.175-177, l.179, l.180, l.181, l.182, l.183, l.184, l.187) → `advantageCapFor`, `isControlledMount`, `RunModal`, `combat-deux-armes`, `combatOrder`, `empetre`, `grappleTierMod`, `main-secondaire`, `effectiveSize`, `grappleEnvMod`, +44 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +24 fichiers
 - `LDB 85` (l.110, l.248-250, l.357-362) → `morsure`, `cannotStopOn`, `applySwarmBuild`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `traitEntrySchema`, `Condition`, `SpawnExtras`, `empetre`, +81 — `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +12 fichiers
 
@@ -3862,12 +3862,12 @@ Le profil ci-dessous porte le Trait **Nuée\*** (l'astérisque sur la créature 
 **Traits :** Bestial, Bond, Infecté, Infravision, **Nuée\***
 **Traits d'attaque :** Arme (Gueule pleine de crocs) +9
 
-— `ZI 01 l.702-709`
+— `ZI 02 l.136-140`
 
 **Sources RAW** :
 - `LDB 85 l.252-253` — Définition complète et faisant foi du Trait Nuée : agit comme une seule créature ; ignore Psychologie (p.190), Engagement pendant le Mouvement, et **toutes** les règles de Taille ; toute attaque réussie active **Frappe Mortelle** (même sans tuer, p.160) ; chaque opposant Engagé perd **1 PB en fin de Round** (auto) ; **×5 PB** d'une créature-type ; **+10 CC** ; **+40 au toucher** pour tirer sur la nuée.
-- `ZI 14 l.1070` — Reformulation condensée identique en mécanique dans le tableau de référence des Traits du Zoo Impérial (CONSOLIDÉE : confirme chaque clause, « considérée comme une seule créature », +40 au tir, ×5 PB, +10 CC, −1 PB/Round, Frappe Mortelle).
-- `ZI 01 l.702-709` — Application concrète : **Nuée de Squigs des Cavernes**, Trait **Nuée\*** ; CC **55\*** (base +10 CC déjà appliqué), B **60\*** (PB d'un squig ×5 déjà appliqué) ; rappelle que les valeurs astérisquées du statbloc incorporent la transformation Nuée.
+- `ZI 14 l.1147` — Reformulation condensée identique en mécanique dans le tableau de référence des Traits du Zoo Impérial (CONSOLIDÉE : confirme chaque clause, « considérée comme une seule créature », +40 au tir, ×5 PB, +10 CC, −1 PB/Round, Frappe Mortelle).
+- `ZI 02 l.136-140` — Application concrète : **Nuée de Squigs des Cavernes**, Trait **Nuée\*** ; CC **55\*** (base +10 CC déjà appliqué), B **60\*** (PB d'un squig ×5 déjà appliqué) ; rappelle que les valeurs astérisquées du statbloc incorporent la transformation Nuée.
 - `LDB 14 l.6-7` — Règle optionnelle **Frappe Mortelle** activée par la nuée : se déplacer sur l'emplacement de la cible touchée et frapper un autre adversaire, jusqu'à BCC fois ; certaines créatures (dont la nuée) l'activent sans tuer.
 - `LDB 85 l.346-355` — Tableau des sept catégories de Taille (Minuscule → Monstrueuse) que la nuée ignore intégralement.
 
@@ -3880,8 +3880,9 @@ Le profil ci-dessous porte le Trait **Nuée\*** (l'astérisque sur la créature 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.5-8) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `10-a-votre-action-au-prochain-round`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, `vous-vous-tordez-la-cheville-dechirure-musculaire-mineure-compte-comme-blessure-critique`, `vous-touchez-un-allie-au-hasard-ou-vous-meme-sonne`, `incident-de-tir-l-arme-explose-dans-votre-main-degats-au-bras-principal-arme-detruite`, `maladresse-tableau-des-oups`, `pushDefenderFumble`, +16 — `src/data/oups.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +3 fichiers
 - `LDB 85` (l.199-200, l.252-253, l.346-355) → `morsure`, `STARTLE_CAUSE_LABELS`, `creatureWeapon`, `cannotStopOn`, `applySwarmBuild`, `sizeDamageMultiplier`, `TraumaFiche`, `weaponFromTrait`, `sizeGrantedQualities`, `traitEntrySchema`, +64 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +17 fichiers
+- `ZI 2` (l.136-140) → `cornes`, `projectiles`, `taille` — `src/data/creatures.json`
 - `ZI 13` (l.984) → `derniere-gorgee`, `pierre-assoiffee` — `src/data/trappings.json`
-- sans code : `ZI 1` (l.702-709), `ZI 14` (l.1070)
+- `ZI 14` (l.1147) → `miracles` — `src/data/traits.json`
 
 ---
 
@@ -5357,7 +5358,7 @@ Quelques pièces et un mot glissé à un vieux compagnon dans les parties louche
 
 Pour obtenir l'objet, faites un jet dans le **Tableau de Lieu** (où aller), le **Tableau d'Objectif** (que rapporter) et le **Tableau de Personnalité** (qui vous emploie). *— `AA 12 l.64-66`*
 
-> ⚠️ **Avertissement de fidélité :** dans le `.md` source, ce générateur est une mise en page PDF à **trois colonnes** que l'OCR a aplaties/entrelacées (`AA 01 l.4268-4350`). Les valeurs ci-dessous sont reconstruites passage par passage ; quelques cellules portent des artefacts OCR (orthographe, fusion de mots) signalés par `[sic]`. Les bornes d100 sont fiables.
+> **Fidélité :** les trois tableaux ci-dessous sont recopiés verbatim de l'extraction courante (`AA 12 l.68-145`) — bornes d100 et libellés inchangés, seuls les retours de mise en page PDF (`<br>`) sont repliés.
 
 **Tableau de Lieu** :
 
@@ -5384,7 +5385,7 @@ Pour obtenir l'objet, faites un jet dans le **Tableau de Lieu** (où aller), le 
 | 91-95 | Une cave utilisée comme lieu de rendez-vous secret. |
 | 96-100 | Un quai pourri à plusieurs endroits. |
 
-*— `AA 12 l.72-134`*
+*— `AA 12 l.72-92`*
 
 **Tableau d'Objectif** :
 
@@ -5411,7 +5412,7 @@ Pour obtenir l'objet, faites un jet dans le **Tableau de Lieu** (où aller), le 
 | 91-95 | Une carte détaillant certains secrets. |
 | 96-100 | Un appareil d'ingénierie naine. |
 
-*— `AA 01 l.4272-4350` (entrées 01-45 verbatim depuis le bloc propre `l.4443-4452` ; 46-100 reconstruites depuis le bloc OCR à trois colonnes `l.4408-4416` — l'item 81-85 fusionne les deux moitiés OCR « talisman de jade […] runes étranges »)*
+*— `AA 12 l.98-120` (la source scinde le tableau en deux blocs : entrées 01-45 `l.98-106`, entrées 46-100 `l.110-120`)*
 
 **Tableau de Personnalité** (qui vous emploie) :
 
@@ -5438,7 +5439,7 @@ Pour obtenir l'objet, faites un jet dans le **Tableau de Lieu** (où aller), le 
 | 91-95 | Un général commandant une armée. |
 | 96-100 | Un émissaire impérial. |
 
-*— `AA 12 l.93-144`*
+*— `AA 12 l.126-145`*
 
 ---
 
@@ -5449,21 +5450,20 @@ Listée dans la même annexe (le Personnage raconte ses aventures à un imprimeu
 ---
 
 **Sources RAW** :
-- `AA 01 l.4202-4205` — Annexe II « Activités de guerrier » : cadre général + règle d'accès (non-Guerrier = Difficulté +1 Niveau, p. ex. Complexe –10 → Difficile –20).
+- `AA 12 l.3-5` — Annexe II « Activités de guerrier » : cadre général + règle d'accès (non-Guerrier = Difficulté +1 Niveau, p. ex. Complexe –10 → Difficile –20).
 - `AA 12 l.8-18` — Tir Parfait de Fanmaris : Test Projectiles (Arc) Complexe (–10) à l'entreprise ; bénéfice après 1 Round de visée (Test Projectiles incluant +20 visée) ; table d'effets cumulatifs par DR.
 - `AA 12 l.21-32` — Défense de Leitdorf : Test Corps à Corps Complexe (–10) à l'entreprise ; attaque en Test opposé Corps à Corps –10, adversaire privé de Talents et d'Augmentations ; succès = 1d10 Dégâts ignorant l'Armure pour soi ; échec = Coup Critique reçu ; renouvelable.
 - `AA 12 l.36-44` — Méthode Alcatani : pré-requis 2 rangs de Coude-à-coude ; Test Commandement Complexe (–10) ; 1 rang temporaire de Coude-à-coude par DR (durée d'aventure), plafonné au rang de l'instructeur ; interaction avec Exaltant (exemple : 30 personnes).
 - `AA 12 l.46-49` — Fabuleuse Vente du Comte de Punchausen : Test Charme Complexe (–10) ou Divertissement (Narration) Intermédiaire (+0) ; gain 2d10 pistoles + inversion des dés sur 1 Test de Charme/Divertissement.
 - `AA 12 l.52-61` — Remaniement du Contremaître : objet (Atouts) à coût ≤20 CO (MJ peut lever) ; Test Ragot Intermédiaire (+0) pour le contact ; mission = Test Corps à Corps ou Projectiles Complexe (–10) ; Succès = objet + Critique avec –20 au jet ; Échec = objet + Critique avec +coût-en-CO au jet ; Critique non déviable par armure mais Destin possible.
-- `AA 01 l.4264-4350` — Générateur de Mission : règle d'usage (3 tableaux) + Tableaux de Lieu / Objectif / Personnalité (1d100). Mise en page PDF à trois colonnes ; OCR partiellement entrelacé (`l.4405-4439`), bloc Objectif propre `l.4441-4452`.
+- `AA 12 l.61-145` — Générateur de Mission : règle d'usage des 3 tableaux (`l.66`) + Tableau de Lieu (`l.68-92`), Tableau d'Objectif (`l.94-120`) et Tableau de Personnalité (`l.122-145`), tous en 1d100.
 
 > « Pour entreprendre cette Activité, choisissez une Possession, appliquez-lui les Atouts souhaités et calculez son coût final, en arrondissant à la couronne d'or la plus proche. Le coût devrait normalement être limité à 20 CO, mais le MJ peut lever cette limite s'il le veut. » — `AA 12 l.55`
 
 **Voir aussi** : Talent Coude-à-coude · Talent Exaltant · Atouts d'armes (*Perforante* / *Dévastatrice* / *Percutante*) · Tableau des Critiques & Localisations · Degrés de Réussite (DR) · Interlude & Activités (Engagements LDB).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 12` (l.5, l.8-18, l.21-32, l.36-44, l.46-49, l.52-61, l.64-66, l.72-144) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `ActivityDef`, `battement`, `team-command`, `PendingActivityFields`, `everBelongedClasses`, `bestActivitySkill`, +16 — `src/data/activities.json`, `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, +4 fichiers
-- sans code : `AA 1` (l.4202-4205, l.4264-4350)
+- `AA 12` (l.3-5, l.8-18, l.21-32, l.36-44, l.46-49, l.52-145) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `ActivityDef`, `battement`, `team-command`, `PendingActivityFields`, `everBelongedClasses`, `bestActivitySkill`, +16 — `src/data/activities.json`, `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, +4 fichiers
 
 ---
 

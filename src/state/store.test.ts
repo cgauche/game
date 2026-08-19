@@ -2080,7 +2080,7 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB 13 l.115-116)',
   });
 });
 
-describe('Chance — 3e usage : pré-emption d’initiative en début de Round (LDB 17 l.27)', () => {
+describe('Chance — 3e usage : pré-emption d’initiative en début de Round (LDB 17 l.25)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();

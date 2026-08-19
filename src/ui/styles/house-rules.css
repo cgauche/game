@@ -52,7 +52,7 @@
 .house-rules .hr-row:nth-child(even) {
   background: rgba(255, 255, 255, 0.03);
 }
-/* Action MJ sous une règle (ex. « Regagner la Chance » du mode 'manual', LDB 17 l.52). */
+/* Action MJ sous une règle (ex. « Regagner la Chance » du mode 'manual', LDB 17 l.47). */
 .house-rules .hr-action {
   display: flex;
   justify-content: flex-end;

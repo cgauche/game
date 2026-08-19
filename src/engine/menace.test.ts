@@ -48,7 +48,7 @@ describe('Résistance (Menace) — disponibilité de la spec (LDB 10 l.1015-1021
     const h = hero();
     markResistanceUsed(h, 'maladie');
     expect(availableResistance(h, 'maladie')).toBeNull();
-    const [fresh] = restoreFortune([h]); // couture UNIQUE : Chance (LDB 17 l.47) + compteurs de séance
+    const [fresh] = restoreFortune([h]); // couture UNIQUE : Chance (LDB 17 l.41) + compteurs de séance
     expect(fresh.resistanceUsed).toBeUndefined();
     expect(availableResistance(fresh, 'maladie')).toBe('maladie');
     expect(fresh.fortune).toBe(2); // la Chance est bien restaurée par la MÊME couture

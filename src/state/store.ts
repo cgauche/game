@@ -488,7 +488,7 @@ export interface GameState extends RollFlowActionsMap {
   /** « Se libérer » (Empêtré) / « se rouler » (En flammes) en cours — modale interactive (LDB 16). */
   pendingStateRecovery: PendingStateRecovery | null;
   pendingDefense: PendingDefense | null;
-  /** « Je te renie ! » (LDB 17 l.71) : choix subir la mutation / la refuser (1 Résilience). */
+  /** « Je te renie ! » (LDB 17 l.67) : choix subir la mutation / la refuser (1 Résilience). */
   pendingRenounce: PendingRenounce | null;
   pendingDisengage: PendingDisengage | null;
   /** « Au Contact » (LDB 62 l.176, Option « Longueur d'arme ») : Test opposé de Corps à corps + choix du vainqueur. */
@@ -686,7 +686,7 @@ export interface GameState extends RollFlowActionsMap {
   startInterlude: (weeks?: number) => void;
   /** Clôt l'interlude : « Avec le pouvoir », Argent à gaspiller, Revenus, le temps passe. */
   interludeEnd: () => void;
-  /** Regagne MAINTENANT les Points de Chance du groupe (LDB 17 l.52 « Longues Séances de Jeu » —
+  /** Regagne MAINTENANT les Points de Chance du groupe (LDB 17 l.47 « Longues Séances de Jeu » —
    *  règle optionnelle `fortune-mid-session` en mode 'manual'). Réutilise l'Effet `restoreFortune`
    *  (logique partagée via `engine/fortune.restoreFortune`) — pas de duplication. */
   restoreFortuneNow: () => void;
@@ -1087,7 +1087,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Reprise après un changement de Cadence de combat en plein combat (passage en Auto/Rapide) :
    *  ré-entre la boucle (auto-résolution de modale + tour de l'IA). No-op en manuel / hors combat. */
   resumeCadence: () => void;
-  /** Chance, 3e usage (LDB 17 l.27) : en début de Round, place un héros en tête de l'ordre
+  /** Chance, 3e usage (LDB 17 l.25) : en début de Round, place un héros en tête de l'ordre
    *  contre 1 point de Chance (pré-emption d'initiative). */
   roundStartPromote: (heroId: string) => void;
   /** Tir rapide (talent, LDB 10) : INTERRUPTION à distance en début de Round (hors de l'ordre) ; le tir
@@ -1285,7 +1285,7 @@ export interface GameState extends RollFlowActionsMap {
   defenseSetShieldReaction: (kind: 'damage' | 'push' | null) => void;
   // defense{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   defenseConfirm: () => void;
-  /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
+  /** « Je te renie ! » (LDB 17 l.67) : résout le choix (true = refuser la mutation, 1 Résilience). */
   renounceResolve: (renounce: boolean) => void;
   /** Peek du planificateur IA (déterministe, sans RNG ni mutation) : la meilleure action du combattant `id`
    *  est-elle de PRÉPARER un sort (cast/castArea/focus) ? Lu par le hook de Frénésie pour différer l'entrée
@@ -1781,7 +1781,7 @@ export const useGame = create<GameState>((set, get) => ({
   favors: [],
   startInterlude: (weeks) => interludeFlow.startInterlude(get, set, weeks),
   interludeEnd: () => interludeFlow.interludeEnd(get, set),
-  // Longues Séances de Jeu (LDB 17 l.52) : réutilise l'Effet `restoreFortune` (NE DUPLIQUE PAS la
+  // Longues Séances de Jeu (LDB 17 l.47) : réutilise l'Effet `restoreFortune` (NE DUPLIQUE PAS la
   // logique — même case que le début de session, qui appelle `engine/fortune.restoreFortune`).
   restoreFortuneNow: () => applyEffects(get, set, [{ type: 'restoreFortune' }]),
   // TOUS les délégués de jet (mono+multi, 36 flux) en UN spread — dérivés de FLOW_WIRING (fin des 40 spreads épars).

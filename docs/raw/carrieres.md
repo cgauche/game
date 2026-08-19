@@ -45,8 +45,8 @@ Ce fichier couvre le **système de Classes et Carrières** (structure, avancemen
 
 ## Classes
 
-> « WFJDR regroupe les Carrières similaires en Classes. »
-> — LDB 06 l.14
+> « Warhammer Fantasy (**WFJDR)** regroupe les Carrières similaires en Classes. »
+> — LDB 07 l.9
 
 Les 8 Classes du LDB (avec renvois source) :
 
@@ -61,12 +61,12 @@ Les 8 Classes du LDB (avec renvois source) :
 | **Roublards** | p. 101 |
 | **Ruraux** | p. 109 |
 
-Les Classes ont plusieurs rôles (LDB 06 l.18-19) :
+Les Classes ont plusieurs rôles (LDB 07 l.13) :
 - Regrouper les Carrières similaires.
 - Influencer le changement de Carrière (même classe = 100 PX vs classe différente = +100 PX de surcoût).
 - Certaines Classes donnent accès à des Activités spécifiques entre deux aventures.
 
-**Sources RAW** : `LDB 06 l.14-24`
+**Sources RAW** : `LDB 07 l.9-17`
 
 ---
 
@@ -75,7 +75,7 @@ Les Classes ont plusieurs rôles (LDB 06 l.18-19) :
 > « Chaque Carrière possède quatre Niveaux, chacun étant meilleur que le précédent. »
 > — LDB 07 l.26
 
-Chaque Carrière est structurée ainsi (LDB 07 l.151-171) :
+Chaque Carrière est structurée ainsi (LDB 08 l.130-142) :
 
 - **Nom** : nom de la Carrière.
 - **Restriction** : Races qui embrassent généralement la Carrière.

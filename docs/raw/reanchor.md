@@ -4,7 +4,7 @@
 > exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
 > courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
-**Bilan : ✅ 492 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 27 introuvables · ➖ 2816 synthèses** (⛔ 9 hors-fichier · ⚠️ 0 sans source) sur 3344 réfs · 519 citations · 28 fiches.
+**Bilan : ✅ 493 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 26 introuvables · ➖ 2825 synthèses** (⛔ 0 hors-fichier · ⚠️ 0 sans source) sur 3344 réfs · 519 citations · 28 fiches.
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
 
@@ -35,9 +35,6 @@
 
 | Réf | Statut | Détail |
 |---|---|---|
-| `LDB 06 l.14` | ❌ LOW | « wfjdr regroupe les carrières similaires en cla… » — aucune occurrence |
-| `LDB 06 l.18-19` | ⛔ PAST-EOF | l.18 > 6 lignes |
-| `LDB 06 l.14-24` | ⛔ PAST-EOF | l.14 > 6 lignes |
 | `LDB 07 l.84` | ❌ LOW | « gagner de l'argent… » — aucune occurrence |
 
 ## combat.md
@@ -50,20 +47,14 @@
 | `ADE II 04 l.237` | ❌ LOW | « de blessure grave : … il peut inverser les chi… » — aucune occurrence |
 | `LDB 85 l.199-200` | ❌ LOW | « nuée - les nuées sont constituées d'un grand n… » — aucune occurrence |
 | `ZI 13 l.984` | ❌ LOW | « nuée - la nuée est considérée comme une seule … » — aucune occurrence |
-| `ZI 01 l.702-709` | ⛔ PAST-EOF | l.702 > 296 lignes |
-| `ZI 01 l.702-709` | ⛔ PAST-EOF | l.702 > 296 lignes |
 | `AA 10 l.215` | ❌ LOW | « pierrier 20 co 5 rare 30 +14 dangereuse, recha… » — aucune occurrence |
-| `AA 01 l.4268-4350` | ⛔ PAST-EOF | l.4268 > 65 lignes |
-| `AA 01 l.4272-4350` | ⛔ PAST-EOF | l.4272 > 65 lignes |
-| `AA 01 l.4202-4205` | ⛔ PAST-EOF | l.4202 > 65 lignes |
-| `AA 01 l.4264-4350` | ⛔ PAST-EOF | l.4264 > 65 lignes |
 
 ## corruption.md
 
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 19 l.51-52` | ❌ LOW | « sur un échec, vous gagnez 2 points de corrupti… » — texte trouvé en LDB 21 l.54 |
-| `LDB 17 l.71` | ❌ LOW | « je te renie !… » — aucune occurrence |
+| `LDB 17 l.67` | ❌ LOW | « je te renie !… » — aucune occurrence |
 
 ## creation.md
 
@@ -75,7 +66,6 @@
 
 | Réf | Statut | Détail |
 |---|---|---|
-| `EDOC 5 l.479` | ⛔ PAST-EOF | l.479 > 292 lignes |
 | `MDG 15 l.76` | ❌ LOW | « distance/jour suppose un équipage permettant d… » — aucune occurrence |
 
 ## etats.md

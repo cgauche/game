@@ -38,7 +38,7 @@ N'EXISTENT PLUS — Frappe Mortelle, 2ᵉ frappe deux-armes et cibles de Surinca
 
 **Dédup du cycle d'influence** : `InfluenceRow` (rangée Chance/Relance gratuite/+1 DR/Pacte/Résilience)
 est partagée par Attaque/Défense/Incantation/Désengagement — créée sur remarque utilisateur
-(« copié/collé »). Le dé forcé (LDB 17 l.73) a été généralisé aux 4 flux après divergence repérée par
+(« copié/collé »). Le dé forcé (LDB 17 l.68 — ré-ancré E3-L6, l'ancienne l.73 est vide) a été généralisé aux 4 flux après divergence repérée par
 l'utilisateur (« pourquoi seules certaines modales… ») : sélecteur partagé `ForcedRollPicker` (11 = le
 plus bas double → Critique, PAS le plus haut).
 

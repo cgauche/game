@@ -9,7 +9,7 @@
  *    → damné (hors-jeu définitif). Le slot est UNIQUE : les seuils dus EN RAFALE (une bande de fin
  *    de combat qui fait déborder deux héros) prennent rang dans `corruptionQueue`, vidée un à un
  *    par `releaseCorruptionSlot` — jamais un Test roulé en silence faute de fenêtre libre.
- *  - « Je te renie ! » (LDB 17 l.71) : un HÉROS avec de la Résilience peut REFUSER la mutation
+ *  - « Je te renie ! » (LDB 17 l.67) : un HÉROS avec de la Résilience peut REFUSER la mutation
  *    (1 Point de Résilience ; « comme vous ne mutez pas, vous ne perdez aucun Point de
  *    Corruption ») → choix par modale (`pendingRenounce`), la mutation est suspendue.
  *  - Sombre Pacte (l.17) : +1 Point volontaire pour RELANCER un Test — branché dans les
@@ -289,7 +289,7 @@ function finishMutation(
   return lines;
 }
 
-/** Résolution du choix « Je te renie ! » (LDB 17 l.71) : `renounce` → −1 Résilience, pas de
+/** Résolution du choix « Je te renie ! » (LDB 17 l.67) : `renounce` → −1 Résilience, pas de
  *  mutation NI de perte de Points de Corruption ; sinon la mutation s'applique. */
 export function resolveRenounce(get: Get, set: Set, renounce: boolean): void {
   const pr = get().pendingRenounce;

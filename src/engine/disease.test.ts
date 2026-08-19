@@ -212,7 +212,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
       expect(log.some((l) => /succombe/.test(l))).toBe(true);
     });
 
-    it('Test raté MAIS 1 Point de Destin (LDB 17 l.29-39) → sauvé in extremis, pas mort', () => {
+    it('Test raté MAIS 1 Point de Destin (LDB 17 l.29-37) → sauvé in extremis, pas mort', () => {
       const c = sick({ diseases: [contractDisease('infection-du-sang', seq([]), { incubation: 0, duration: 5 })!], fate: 1, wounds: { current: 0, max: 10 } });
       const log = tickDisease(c, MINUTES_PER_DAY, seq([99]), 1); // échec du Test de Résistance
       expect(c.dead).toBeFalsy();

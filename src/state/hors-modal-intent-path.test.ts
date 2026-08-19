@@ -228,7 +228,7 @@ describe('#1016 — gestes TERMINAUX de ces mêmes fenêtres (barre d’action /
 describe('#1016 — pause de début de Round (`turn: -1`) : la FENÊTRE est à tous, ses GESTES ne le sont pas', () => {
   beforeEach(reset);
 
-  it('roundStartPromote : le siège du héros promu agit (LDB 17 l.27) ; un autre siège est refusé', () => {
+  it('roundStartPromote : le siège du héros promu agit (LDB 17 l.25) ; un autre siège est refusé', () => {
     setup({}, -1);
     useGame.setState({ pendingRoundStart: { round: 2 } });
     const b = useGame.getState().battle!;

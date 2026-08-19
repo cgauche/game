@@ -11,7 +11,7 @@ import type { CascadeStep, CascadeRoll } from './pendings';
 /**
  * #253 — les jets du BILAN quotidien (Faim, Exposition, Contagion) passent par la surface
  * INFLUENÇABLE (cascade de nuit), au même titre que leurs frères diseaseTick/weatherResistance :
- * chaque jet est une ÉTAPE lancée puis influençable à la Chance (LDB 17 l.21-27) AVANT de se
+ * chaque jet est une ÉTAPE lancée puis influençable à la Chance (LDB 17 l.21-25) AVANT de se
  * verrouiller. Ce test prouve, pour la nuit UNIQUE (chemin du bouton Repos, `restSleep` days=1) :
  *  1. le jet apparaît en étape de cascade (jamais pré-résolu dans le journal) ;
  *  2. la Chance est proposable sur la RANGÉE ratée (`cascadeBatchReroll` dépense 1 Point de Chance) ;

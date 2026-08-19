@@ -112,7 +112,7 @@ function seuilTone(value: number, limit: number): GaugeTone {
  *  `fortuneMax`/`resolveMax` = Indice + talents/effets — Chanceux/Obstiné compris, JAMAIS l'Indice
  *  seul). Puis les 4 seuils avant inaptitude, 2 par ligne (Critiques actives ≤ BE, Mutations physiques
  *  ≤ BE, Mutations mentales ≤ BFM, Corruption vers son seuil). Réf réserves : `LDB 17 l.4-9`,
- *  `LDB 17 l.12-17`, `LDB 17 l.21-27`. Bloc réserves masqué si Destin ET Résilience valent 0
+ *  `LDB 17 l.12-17`, `LDB 17 l.21-25`. Bloc réserves masqué si Destin ET Résilience valent 0
  *  (`LDB 05 l.366-367`). DAMNÉ (`LDB 19 l.87`) : indicateur du slot droit. Aucune réf livre à l'écran. */
 function ReservesSeuilsBand({ hero, activeCriticals, be, physMutations, mentMutations, bfm, corruption, corruptionMax }: { hero: Combatant; activeCriticals: number; be: number; physMutations: number; mentMutations: number; bfm: number; corruption: number; corruptionMax: number }) {
   const fate = hero.fate ?? 0;

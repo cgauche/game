@@ -129,7 +129,7 @@ export function ActionBar() {
   const [ammoWeaponUid, setAmmoWeaponUid] = useState<string | undefined>(undefined);
   useEffect(() => { setConfirmEnd(false); setShowManeuvers(false); setAmmoWeaponUid(undefined); }, [battle?.turn, battle?.round]);
   if (!battle || battle.over) return null;
-  // Début de Round (LDB 17 l.27) : pause d'initiative à CHAQUE Round — la barre d'action est remplacée par
+  // Début de Round (LDB 17 l.25) : pause d'initiative à CHAQUE Round — la barre d'action est remplacée par
   // un seul bouton. On voit l'ordre (frise) et le champ, et on peut dépenser sa Chance pour agir en premier
   // (canActFirst) avant de lancer. Au Round 1 c'est l'ouverture du combat (« Commencer le combat »).
   if (pendingRoundStart) {

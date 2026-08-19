@@ -86,14 +86,14 @@ Dépenser 1 Point de Chance offre l'une de ces trois options (au choix du joueur
 3. **Au début du Round**, choisir le moment où l'on agit, **sans tenir compte de l'Ordre d'Initiative**.
 
 > « Vous pouvez dépenser des Points de Chance de votre réserve afin de faire pencher la balance de votre côté [...] Voici les trois options dont vous disposez : Relancer un Test qui s'est conclu par un échec. / Ajouter +1 DR à un Test après qu'il a été effectué. / Au début du Round, choisissez le moment où vous allez agir, sans tenir compte de l'Ordre d'Initiative. »
-> — LDB 17 l.21-27
+> — LDB 17 l.21-25
 
-**Sources RAW** : `LDB 17 l.21-26`
+**Sources RAW** : `LDB 17 l.21-25`
 
 **Voir aussi** : [Influencer un test — Chance, Résilience, Talents](tests.md#influencer-un-test--chance-résilience-talents) (dans `tests.md`) pour le contexte d'intégration avec les Tests et les Degrés de Réussite.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.21-27) → `canReroll`, `RunModal`, `fateSaveOrDie`, `canActFirst`, `freeActFirst`, `rerollAvailable`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `je-ne-faillirai-pas`, +19 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, +12 fichiers
+- `LDB 17` (l.21-25) → `canReroll`, `RunModal`, `canActFirst`, `fateSaveOrDie`, `freeActFirst`, `rerollAvailable`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `je-ne-faillirai-pas`, +19 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, +12 fichiers
 
 ---
 
@@ -118,12 +118,12 @@ Le personnage reste dans la rencontre mais demeure en danger — il peut avoir �
 
 Le MJ décrit la façon dont le personnage survit après la dépense.
 
-**Sources RAW** : `LDB 17 l.29-39`
+**Sources RAW** : `LDB 17 l.29-37`
 
 **Voir aussi** : [Personnages Sacrifiés](#personnages-sacrifiés-destin-au-moment-de-la-mort) ci-dessous (usage du Destin face à la mort au Tableau des Critiques).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.29-39) → `canReroll`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `canActFirst`, `freeActFirst`, `rerollAvailable`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, +24 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +16 fichiers
+- `LDB 17` (l.29-37) → `canReroll`, `restoreFortune`, `RunModal`, `canActFirst`, `fateSaveOrDie`, `freeActFirst`, `rerollAvailable`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, +25 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
 
@@ -139,7 +139,7 @@ La restauration se fait jusqu'à la valeur courante de Destin (pas la valeur de 
 **Sources RAW** : `LDB 17 l.41`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `Effect`, `recover-empetre`, `recover-en-flammes`, `GameOp`, `GameState`, +6 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, +6 fichiers
+- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `Effect`, `recover-empetre`, `recover-en-flammes`, `GameOp`, `GameState`, +7 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +7 fichiers
 
 ### Option : Longues Séances de Jeu
 
@@ -188,14 +188,14 @@ Dépenser 1 Point de Détermination offre l'une de ces trois options :
 3. **Retirer un État**. Si l'État retiré est *À Terre*, regagner **1 Point de Blessure** au moment de se relever.
 
 > « Vous pouvez dépenser un Point de Détermination pour puiser dans vos réserves : affronter un Ogre terrifiant sans trembler ou ignorer les effets d'un coup extrêmement puissant. Voici les choix dont vous disposez : / Demeurer immunisé à Psychologie jusqu'à la fin du prochain Round. / Ignorer tous les modificateurs dus à une Blessure critique jusqu'au début du prochain Round. / Retirez un État : si vous retirez l'État À Terre, regagnez 1 Point de Blessure lorsque vous vous mettez debout. »
-> — LDB 17 l.57-63
+> — LDB 17 l.57-61
 
 **Sources RAW** : `LDB 17 l.56-61`
 
 **Voir aussi** : [`etats.md`](etats.md) pour la liste des États retirables.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.56-63) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, +79 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, +44 fichiers
+- `LDB 17` (l.56-61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `restoreFortune`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, +76 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, +42 fichiers
 
 ---
 
@@ -231,7 +231,7 @@ Règles précises :
 **Voir aussi** : [Influencer un test — Chance, Résilience, Talents](tests.md#influencer-un-test--chance-résilience-talents) (dans `tests.md`) — c'est là que le mécanisme est décrit dans son contexte d'intégration au Test ; la présente section n'en donne que la définition.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.64-72) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `regainDetermination`, `forceCrewRole`, `BattementModal`, +76 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/psychology.ts`, +41 fichiers
+- `LDB 17` (l.64-72) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `regainDetermination`, `forceCrewRole`, `BattementModal`, +77 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/psychology.ts`, +42 fichiers
 
 ---
 
@@ -260,7 +260,7 @@ Encore plus rare que l'octroi de Points de Destin. Uniquement pour des actions d
 **Sources RAW** : `LDB 17 l.85-87`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.81-83, l.85-87) → `RenounceModal`, `regainDetermination`, `je-ne-faillirai-pas`, `je-te-renie`, `resolveRenounce`, `recover-empetre`, `recover-en-flammes`, `GameState`, `FLOWS`, `PendingRenounce`, +1 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/session.ts`, `src/i18n/messages/fr.ts`, `src/state/corruptionFlow.ts`, `src/state/pendings.ts`, +3 fichiers
+- `LDB 17` (l.81-83, l.85-87) → `regainDetermination`, `je-ne-faillirai-pas`, `je-te-renie`, `recover-empetre`, `recover-en-flammes`, `Effect`, `FLOWS` — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/session.ts`, `src/state/rollFlowSpecs.ts`, `src/state/scene.ts`
 
 ---
 

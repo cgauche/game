@@ -6419,7 +6419,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   enterRoundStartPause(get, set);
 }
 
-/** Pause de DÉBUT DE ROUND (LDB 17 l.27) : on s'arrête à CHAQUE début de Round pour montrer
+/** Pause de DÉBUT DE ROUND (LDB 17 l.25) : on s'arrête à CHAQUE début de Round pour montrer
  *  l'initiative (frise d'initiative (InitiativeStrip)) et permettre la pré-emption (Chance, 3e usage ;
  *  futurs Atouts/talents). L'IA reste gelée jusqu'à « Commencer le round » (confirmRoundStart) — cf.
  *  garde de maybeRunEnemyTurn. EN COOP (arbitrage 2026-06-11) : seul le round 1 est gaté (ready-check
@@ -7068,7 +7068,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   let input = buildAiInput(enemy, get);
   if (justMounted) input.movement = 0;
   let action = chooseEnemyAction(input);
-  // Dépense PROACTIVE de Détermination (LDB 17 l.57-63) : si l'IA décide de se DÉVERROUILLER (action
+  // Dépense PROACTIVE de Détermination (LDB 17 l.57-61) : si l'IA décide de se DÉVERROUILLER (action
   // `spendResource`, ex. Brisé), on dépense la Détermination via l'action store `spendResolveCondition`
   // (coop-safe, hôte-autoritaire, ne consomme PAS l'Action — retire 1 pion/dépense) PUIS on RE-CHOISIT
   // l'action, le tout AVANT le dispatch, pour que l'acteur DÉVERROUILLÉ joue sa vraie action (melee/cast/

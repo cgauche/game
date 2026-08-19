@@ -1,5 +1,5 @@
 /**
- * Le passage au Round suivant (pause d'initiative `pendingRoundStart`, LDB 17 l.27) doit être
+ * Le passage au Round suivant (pause d'initiative `pendingRoundStart`, LDB 17 l.25) doit être
  * jouable au CLAVIER/MANETTE — sinon un joueur sans souris reste bloqué à chaque frontière de Round.
  * Le binding `round-start` (Espace/Entrée, partagé par la manette via runBindingById) appelle
  * `confirmRoundStart` en solo, et n'est actif QUE pendant la pause.

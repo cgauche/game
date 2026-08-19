@@ -10,7 +10,7 @@ couvre : où poser le pending, écrire la spec (`RollFlowSpec`), câbler le stor
 
 ```
 ouvrir (pending posé) → Lancer (roll) → Chance : relancer (reroll, jet propre raté, 1× max)
-  ou +1 DR (bonusSL, LDB 17 l.26/84) → Sombre Pacte (darkPact, +1 Corruption, héros only)
+  ou +1 DR (bonusSL, LDB 17 l.24) → Sombre Pacte (darkPact, +1 Corruption, héros only)
   → Résilience « Je ne faillirai pas ! » (forceSuccess/setForcedRoll, LDB 17 l.68)
   → Résistance (Menace) (resist, LDB 10 l.1015-1021, sur slot tagué `menace`)
   → Appliquer (xConfirm) / Annuler (xCancel)
@@ -100,7 +100,7 @@ plus besoin d'écrire ses branches `forced`/`bonus` à la main (repli byte-ident
 `opposedBinaryFlow` fait de même pour un Test opposé binaire calqué (foe FIGÉ).
 
 Atomes OBLIGATOIRES (gardés par `rollflow-no-drift.test.ts`, §5) : `bumpSL(tr)` pour Chance « +1 DR »
-(ne touche jamais `success` — LDB 17 l.84 : un Degré de plus ne transforme pas un échec en réussite),
+(ne touche jamais `success` — LDB 17 l.24 n'ajoute qu'un Degré ; le succès se juge au lancer, LDB 12 l.11),
 `bestForcedRoll(target)` pour le dé forcé par défaut (policy-aware Fast DR), `forcedTR(roll, target,
 sl)` pour construire un `TestResult` de réussite forcée (jamais un littéral `{ success: true, …,
 isDouble: isDoubleRoll(r) }` recopié), `hydrateTR(detail)` pour ré-hydrater un `TestResult` depuis un

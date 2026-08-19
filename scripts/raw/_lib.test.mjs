@@ -4,18 +4,18 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { ldbRe, otherRe, span, refNums, isRangeSuffix, bookOf, chapterFile } from './_lib.mjs'
 
-test('ldbRe : "LDB 17 l.27" matche', () => {
-  const m = [...'LDB 17 l.27'.matchAll(ldbRe())]
+test('ldbRe : "LDB 17 l.25" matche', () => {
+  const m = [...'LDB 17 l.25'.matchAll(ldbRe())]
   assert.equal(m.length, 1)
   assert.equal(m[0][1], '17')
-  assert.equal(m[0][2], '27')
+  assert.equal(m[0][2], '25')
 })
 
-test('ldbRe : "LDB ch.17 l.27" matche (forme ch. optionnelle)', () => {
-  const m = [...'LDB ch.17 l.27'.matchAll(ldbRe())]
+test('ldbRe : "LDB ch.17 l.25" matche (forme ch. optionnelle)', () => {
+  const m = [...'LDB ch.17 l.25'.matchAll(ldbRe())]
   assert.equal(m.length, 1)
   assert.equal(m[0][1], '17')
-  assert.equal(m[0][2], '27')
+  assert.equal(m[0][2], '25')
 })
 
 test('ldbRe : "ch.23 l.75" SANS livre ne matche pas (le groupe livre reste obligatoire)', () => {

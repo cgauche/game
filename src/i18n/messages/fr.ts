@@ -453,7 +453,7 @@ export const fr = {
   'countdown.soon': 'imminent',
   'countdown.due': 'échéance atteinte',
   'eff.learnSpell': '{name} apprend {spell}.',
-  'eff.restoreFortune': 'Début de session : Points de Chance regagnés (maximum = Destin).',
+  'eff.restoreFortune': 'Début de session : Points de Chance regagnés (jusqu’au maximum).',
   'eff.setVessel': 'Le groupe prend possession du navire : {name}.',
   'eff.blast': 'Souffle de zone : {lines}.',
   'eff.fallTarget': '{name} {lost}{aterre}',
@@ -1956,7 +1956,7 @@ export const fr = {
   'tp.exposureLine': "{name} — Exposition de fin d'Étape ({weather}) : transi par le froid.",
   'tp.coldSeasonChill': '{name} grelotte et tousse — un rhume couve (saison froide).',
 
-  // ── #1318 V8c₄ — CORRUPTION (`state/corruptionFlow.ts`, `cor.*`, LDB 19 l.70-87 / LDB 17 l.71). La
+  // ── #1318 V8c₄ — CORRUPTION (`state/corruptionFlow.ts`, `cor.*`, LDB 19 l.70-87 / LDB 17 l.67). La
   // NATURE de la mutation était l'id interpolé (`physique`/`mentale`) : elle passe par ses deux clés.
   'cor.phaWard': '{name} : la lumière sacrée de Phâ écarte la Corruption (aucun gain).',
   'cor.gain': '{name} : +{n} Point{s} de Corruption (total {total}).',

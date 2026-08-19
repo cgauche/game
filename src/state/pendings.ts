@@ -834,7 +834,7 @@ export interface PendingMiscastStep {
   suppressReveal?: boolean;
   rerollHigh?: boolean;
 }
-/** « Je te renie ! » (LDB 17 l.71) : le héros a échoué au Test de Résistance du seuil de Corruption —
+/** « Je te renie ! » (LDB 17 l.67) : le héros a échoué au Test de Résistance du seuil de Corruption —
  *  il choisit entre SUBIR la mutation et la REFUSER (1 Point de Résilience ; il ne perd alors aucun
  *  Point de Corruption). */
 export interface PendingRenounce {

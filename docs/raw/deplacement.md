@@ -116,8 +116,8 @@ Ces règles s'appliquent en et hors combat.
 
 - **Vitesse (km/h) = M du personnage le plus lent du groupe.**
 - M est le **M effectif** (après pénalités d'Encombrement, voir § Encombrement).
-- EDOC 5 l.479 (EDOC 08) confirme : « combien de kilomètres par heure vous pouvez aisément
-  parcourir ».
+- LDB 05 l.449 (définition du Mouvement) dit la même chose : « À plus long terme, il indique
+  combien de kilomètres par heure vous pouvez aisément parcourir à pied. »
 
 ### Heures de marche par jour sans Test
 

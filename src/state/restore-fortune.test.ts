@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
 import { restoreFortune } from '../engine/fortune';
+import { fortuneMax } from '../engine/talentEffects';
 import type { Combatant } from '../engine/types';
 
 const hero = (p: Partial<Combatant>): Combatant =>
@@ -13,7 +14,7 @@ const hero = (p: Partial<Combatant>): Combatant =>
     fate: 3, fortune: 0, ...p,
   } as Combatant);
 
-describe('Effet restoreFortune — Chance regagnée en début de session (LDB 17 l.47)', () => {
+describe('Effet restoreFortune — Chance regagnée en début de session (LDB 17 l.41)', () => {
   beforeEach(() => { useGame.setState({ battle: null, mode: 'exploration' }); });
 
   it('chaque héros regagne sa Chance jusqu’au maximum = Destin actuel', () => {
@@ -34,7 +35,7 @@ describe('Effet restoreFortune — Chance regagnée en début de session (LDB 17
   });
 });
 
-describe('engine/fortune.restoreFortune — helper PUR partagé (LDB 17 l.47)', () => {
+describe('engine/fortune.restoreFortune — helper PUR partagé (LDB 17 l.41)', () => {
   it('ramène la Chance d’un héros à son Destin, laisse les autres inchangés', () => {
     const a = hero({ id: 'a', fate: 3, fortune: 0 });
     const b = hero({ id: 'b', fate: 2, fortune: 1 });
@@ -43,6 +44,25 @@ describe('engine/fortune.restoreFortune — helper PUR partagé (LDB 17 l.47)', 
     expect(out.find((h) => h.id === 'a')!.fortune).toBe(3);
     expect(out.find((h) => h.id === 'b')!.fortune).toBe(2);
     expect(out.find((h) => h.id === 'e')!.fortune).toBe(0); // pas de Destin → inchangé
+  });
+
+  // Le plafond de Chance n'est PAS l'Indice de Destin nu : « Votre maximum de Points de Chance est à
+  // présent égal à votre nombre actuel de Points de Destin, plus le nombre de fois que vous avez pris
+  // Chanceux. » (LDB 10 l.160). La restauration de séance vise donc `fortuneMax`, jamais `fate`.
+  it('restaure au plafond RÉEL : Destin 2 + Chanceux ×2 → 4 (fortuneMax), et Destin nu → fate', () => {
+    const chanceux = hero({ id: 'c', fate: 2, fortune: 0, talents: [{ talentId: 'chanceux', times: 2 }] });
+    const nu = hero({ id: 'n', fate: 2, fortune: 0 });
+    expect(fortuneMax(chanceux)).toBe(4); // le plafond mesuré, pas une valeur forcée
+    const out = restoreFortune([chanceux, nu]);
+    expect(out.find((h) => h.id === 'c')!.fortune).toBe(4);
+    expect(out.find((h) => h.id === 'n')!.fortune).toBe(2);
+  });
+
+  it('la voie « Longues Séances de Jeu » (store.restoreFortuneNow, LDB 17 l.47) tient le MÊME plafond', () => {
+    const chanceux = hero({ id: 'c', fate: 2, fortune: 0, talents: [{ talentId: 'chanceux', times: 2 }] });
+    useGame.setState({ party: [chanceux], battle: null, mode: 'exploration' });
+    useGame.getState().restoreFortuneNow();
+    expect(useGame.getState().party[0].fortune).toBe(4);
   });
 
   it('logique IDENTIQUE au case Effet `restoreFortune` (pas de duplication)', () => {
@@ -57,7 +77,7 @@ describe('engine/fortune.restoreFortune — helper PUR partagé (LDB 17 l.47)', 
   });
 });
 
-describe('store.restoreFortuneNow — règle « Longues Séances de Jeu » mode manual (LDB 17 l.52)', () => {
+describe('store.restoreFortuneNow — règle « Longues Séances de Jeu » mode manual (LDB 17 l.47)', () => {
   beforeEach(() => { useGame.setState({ battle: null, mode: 'exploration' }); });
 
   it('un héros fortune < fate voit sa Chance remise à fate', () => {

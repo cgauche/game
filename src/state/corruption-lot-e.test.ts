@@ -1,6 +1,6 @@
 /**
  * Lot E — compléments Corruption : Âme pure (LDB 10, seuil +niveau), « Je te renie ! »
- * (LDB 17 l.71, refus de mutation contre 1 Résilience), exposition par le Trait Corruption.
+ * (LDB 17 l.67, refus de mutation contre 1 Résilience), exposition par le Trait Corruption.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
@@ -32,7 +32,7 @@ describe('Âme pure (LDB 10) — seuil de Corruption +niveau', () => {
   });
 });
 
-describe('« Je te renie ! » (LDB 17 l.71)', () => {
+describe('« Je te renie ! » (LDB 17 l.67)', () => {
   /** Franchit le seuil : le Test de Résistance est désormais une MODALE (kind 'seuil') —
    *  on lance puis on FORCE l'échec (déterministe) avant d'acquitter. */
   function corruptPastThreshold(h: Combatant): void {

@@ -331,7 +331,7 @@ export type Effect =
    *  `entityId` = le PNJ soigneur (son `label` donne le NOM affiché) → aucun nom codé en dur. Le
    *  joueur choisit les patients dans la modale. */
   | { type: 'medicalAid'; acts?: { act: 'wounds' | 'bleed' | 'trauma' | 'surgery'; cost?: { gold?: number; silver?: number; brass?: number } }[]; skill: number; intBonus: number; entityId?: string }
-  /** Début de session (LDB 17 l.47) : chaque héros regagne tous ses Points de Chance,
+  /** Début de session (LDB 17 l.41) : chaque héros regagne tous ses Points de Chance,
    *  jusqu'à un maximum égal à son Destin actuel. Exposé dans l'éditeur (pas de hook caché). */
   | { type: 'restoreFortune' }
   /** Repos (LDB 16/18/21) : ouvre la MODALE DE NUIT (state/restFlow) — par héros : couchage +
@@ -443,7 +443,7 @@ export type Effect =
    *  possède la Compétence Prière). Exaucée → le `reward` (Flow authoré : bonus, don, flag…) s'applique ;
    *  sinon rien. Cible : `heroId`, sinon le premier héros vivant non Béni. Sans effet hors du toggle. */
   | { type: 'petitePriere'; heroId?: string; reward: Flow }
-  /** FIN DE SÉANCE (LDB 05 Ambitions l.793-841 + LDB 17 Détermination l.81) : ouvre l'écran de fin de
+  /** FIN DE SÉANCE (LDB 05 Ambitions l.793-841 + Détermination LDB 17 l.81) : ouvre l'écran de fin de
    *  séance EXISTANT (`SessionEndModal`) où le MJ/les joueurs cochent les Ambitions accomplies et les
    *  Motivations suivies — l'octroi (PX +50/+500, Détermination, Chance restaurée) passe par `endSession`
    *  (state/partyFlow), déjà câblé derrière cette modale. À poser en fin de chapitre par l'auteur (#83). */

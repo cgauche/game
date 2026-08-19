@@ -1,3 +1,4 @@
+import { fortuneMax } from './talentEffects';
 import type { Combatant } from './types';
 
 /**
@@ -10,21 +11,25 @@ export function canReroll(ownRollFailed: boolean, alreadyRerolled: boolean): boo
 }
 
 /**
- * COUTURE UNIQUE de « début de séance de jeu » : restaure les Points de Chance (LDB 17 l.47 : « au
- * début de chaque session de jeu, vos Points de Chance sont remis au niveau de votre Destin actuel »)
+ * COUTURE UNIQUE de « début de séance de jeu » : restaure les Points de Chance (LDB 17 l.41 : « Vous
+ * regagnez tous vos Points de Chance au début de chaque session de jeu, jusqu'à un maximum équivalent
+ * à votre Destin actuel. »)
  * ET remet à zéro les compteurs PAR-SÉANCE (Résistance (Menace), LDB 10 l.1015-1021 : « à chaque
  * séance de jeu » → `resistanceUsed`). PUR : renvoie un nouveau tableau (héros seulement ; un héros
  * sans Destin garde sa Chance mais voit tout de même ses compteurs de séance remis).
- * SOURCE UNIQUE partagée par l'Effet de scène `restoreFortune` (combatEffects) ET l'action de store
- * `restoreFortuneNow()` (règle optionnelle « Longues Séances de Jeu », LDB 17 l.52).
+ * Le plafond restauré est `fortuneMax` — le MAXIMUM effectif, que Chanceux (LDB 10 l.160) et les
+ * effets actifs déplacent au-dessus du seul Indice de Destin — jamais `fate` nu.
+ * SOURCE UNIQUE partagée par l'Effet de scène `restoreFortune` (combatEffects), l'action de store
+ * `restoreFortuneNow()` (règle optionnelle « Longues Séances de Jeu », LDB 17 l.47) et la fin de
+ * séance (`endSession`, partyFlow).
  */
 export function restoreFortune(party: Combatant[]): Combatant[] {
   return party.map((h) => (h.kind === 'hero'
-    ? { ...h, ...(h.fate != null ? { fortune: h.fate } : {}), resistanceUsed: undefined }
+    ? { ...h, ...(h.fate != null ? { fortune: fortuneMax(h) } : {}), resistanceUsed: undefined }
     : h));
 }
 
-/** Mort certaine évitée en brûlant 1 Point de Destin (LDB 17 l.29-39) : Destin −1 et la cible
+/** Mort certaine évitée en brûlant 1 Point de Destin (LDB 17 l.29-37) : Destin −1 et la cible
  *  survit à 1 Blessure minimum (true) ; sans Destin, elle meurt (`dead`, false). La prose du
  *  dénouement reste au call-site (contexte : hémorragie, op kill, tick de maladie). */
 export function fateSaveOrDie(c: Combatant): boolean {
