@@ -157,6 +157,7 @@ async function monter(
   root = createRoot(hôte);
   await act(async () => { root!.render(vue(0, els, acteurs, animUtilisée)); });
   await respirer(40);
+  await attendreMontage(els.props.length + els.tokens.length + acteurs.length);
 }
 
 /** Montage en PREMIÈRE PERSONNE au cap `cap` — même banc, l'autre regard. */
@@ -171,6 +172,7 @@ async function monterPov(
   root = createRoot(hôte);
   await act(async () => { root!.render(écran(cadrePov(cap), els, acteurs)); });
   await respirer(40);
+  await attendreMontage(els.props.length + els.tokens.length + acteurs.length);
 }
 
 /** Changement de CAP servi comme le jeu le sert : un rendu, puis la file qui respire. */
@@ -182,6 +184,12 @@ async function allerAuCap(
 ): Promise<void> {
   await act(async () => { root!.render(écran(cadrePov(cap), els, acteurs)); });
   await respirer(ms);
+}
+
+/** Attend l'ENTRÉE EN SCÈNE de tous les sujets : depuis #1372 les textures du montage passent par la
+ *  file cadencée, donc les quads naissent une tranche d'inactivité après l'autre. Budget BORNÉ. */
+async function attendreMontage(attendus: number): Promise<void> {
+  for (let i = 0; i < 80 && quads().length < attendus; i++) await respirer(20);
 }
 
 /** Tous les quads de billboard montés (les corps, jamais leurs jumeaux de silhouette). */
@@ -337,7 +345,16 @@ describe('Cran franchi — la relève passe devant la pré-chauffe', () => {
     // MINIMUM UTILE = une texture par décor (moins celles que la pré-chauffe a eu le temps de servir :
     // 12 mesurées ici pour 20 décors). Le plafond tient donc au minimum utile, jamais à un défilé de
     // pré-chauffe — sans la relève de rang, la même mesure donnait 48.
-    expect(servies, `${servies} rasterisations servies pour ${artAvant.length} utiles`).toBeLessThanOrEqual(artAvant.length);
+    //
+    // MARGE : la relève et la pré-chauffe partagent UNE file (le montage aussi, #1372), et la boucle
+    // ci-dessus OBSERVE par sondage — entre la dernière relève servie et le sondage qui la constate,
+    // les tranches d'inactivité continuent de tourner et servent des tâches de réchauffage. Ces
+    // quelques rasterisations-là sont LÉGALES : elles ne font patienter aucune relève (rang 0 contre
+    // 100, servi seulement quand plus aucune relève n'attend). La marge les couvre sans rien céder de
+    // ce que ce contrat défend — 26 reste loin des 48 du défilé de pré-chauffe.
+    const MARGE_PRECHAUFFE = 6;
+    expect(servies, `${servies} rasterisations servies pour ${artAvant.length} utiles`)
+      .toBeLessThanOrEqual(artAvant.length + MARGE_PRECHAUFFE);
   });
 });
 
@@ -606,6 +623,9 @@ describe('Cap changé — l’art est celui du NOUVEAU cap', () => {
     // SUJETS NEUFS : le groupe se remonte (le seul chemin qui remonte encore), au cap N…
     const NEUFS: SceneBillboardEls = { tokens: [], props: [décor('n1', 5), décor('n2', 6), décor('n3', 7)] };
     await act(async () => { root!.render(écran(cadrePov('N'), NEUFS, SANS_ACTEUR)); });
+    // Les rasterisations du montage passent par la file cadencée (#1372) : on la laisse les poser
+    // avant de mesurer ce que le banc RETIENT.
+    for (let i = 0; i < 40 && enAttente.length === 0; i++) await respirer(20);
     // PRÉMISSE — aucun quad neuf ne doit être monté quand le cap change, sinon la REPOSE ordinaire
     // suffirait et le chemin « en vol » ne serait jamais emprunté.
     expect(enAttente.length, 'les textures du montage doivent être RETENUES').toBeGreaterThan(0);
@@ -944,6 +964,10 @@ describe('Stock borné — ce qui est POSÉ est épinglé', () => {
     const libérées = espionnerLibérations();
 
     await monter(DÉCORS, SANS_ACTEUR);
+    // Ce qui se fait ÉVINCER sous ce budget, c'est la pré-chauffe (non épinglée) — et elle passe par
+    // la MÊME file cadencée que le montage (#1372), une tâche par tranche : on la laisse être servie
+    // avant de mesurer, sinon la pression n'a encore rien eu à mordre. Budget BORNÉ.
+    for (let i = 0; i < 40 && libérées.size === 0; i++) await respirer(20);
 
     const posées = quads().map(mapDe);
     expect(posées.length, 'aucun décor monté : rien à mesurer').toBe(DÉCORS.props.length);

@@ -24,6 +24,7 @@ import {
 import { PERCAGE_DEFINE, PERCAGE_FONDU_MS, PERCAGE_RAYON_PX, percerMateriau, trousPercage } from '../backends/webgl/percageLocal';
 import { centrePercage, clePercage } from './percage';
 import { frameRectOf } from './boardPose';
+import { resetBakeQueue } from '../backends/webgl/atlasBake';
 import { IsoStage } from '../IsoStage';
 import { useGame } from '../../state/store';
 
@@ -140,6 +141,16 @@ async function rendre(pos: { x: number; y: number }, percage: PercageEntrees | n
   });
 }
 
+/** Laisse tourner la file CADENCÉE du cuiseur en battant la boucle d'image : depuis #1372 les textures
+ *  du MONTAGE y passent aussi, donc aucun quad n'entre en scène dans le rendu qui l'a demandé. */
+async function respirer(ms: number): Promise<void> {
+  const fin = Date.now() + ms;
+  do {
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+    if (battre) act(() => battre!());
+  } while (Date.now() < fin);
+}
+
 async function monter(pos: { x: number; y: number }, percage: PercageEntrees | null): Promise<void> {
   scènes = [];
   cameras = [];
@@ -149,6 +160,7 @@ async function monter(pos: { x: number; y: number }, percage: PercageEntrees | n
   document.body.appendChild(hôte);
   root = createRoot(hôte);
   await rendre(pos, percage, CADRE);
+  await respirer(120);
 }
 
 /** Le maillage du MONDE de la dernière frame : le seul à porter UN MATÉRIAU PAR GROUPE DE SURFACE
@@ -352,6 +364,11 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
     performance.now = () => horloge;
     vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => { file.push(cb); return file.length; });
     vi.stubGlobal('cancelAnimationFrame', () => undefined);
+    // La file du cuiseur (#1372 : les textures du MONTAGE y passent) prend sa propre couture
+    // d'inactivité, servie par les VRAIS timers — sinon elle se brancherait sur l'horloge manuelle de
+    // ce banc, qui ne sert ses rappels qu'à `image()` et jamais dans un `await`.
+    vi.stubGlobal('requestIdleCallback', (cb: () => void) => setTimeout(() => cb(), 0));
+    resetBakeQueue();
   });
 
   afterEach(() => {
@@ -418,6 +435,8 @@ describe('L’hôte de plateau alimente la découpe (#1176, M3)', () => {
     document.body.appendChild(hôte);
     root = createRoot(hôte);
     await act(async () => { root!.render(<IsoStage />); });
+    // Le quad du héros entre en scène par la FILE cadencée (#1372) : le trou n'a rien à percer avant.
+    await respirer(150);
     expect(trousPercage()[0].w, 'rayon du trou du groupe coiffé, chaîne IsoStage entière').toBeGreaterThan(0);
   });
 });

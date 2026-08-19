@@ -8,6 +8,7 @@ import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer } from './GameStage3D';
 import { clearBillboardTextures } from '../backends/webgl/svgTexture';
+import { resetBakeQueue } from '../backends/webgl/atlasBake';
 import type { ActorPose } from '../backends/webgl/sceneMeshes';
 
 /**
@@ -79,9 +80,18 @@ function simulerRasterisationRetenue(): void {
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
 }
 
+/** Laisse la file CADENCÉE du cuiseur poser ses tâches (#1372 : les textures du montage y passent
+ *  aussi, une par tranche d'inactivité) jusqu'à ce qu'au moins `n` rasterisations soient EN VOL. */
+async function enVol(n: number): Promise<void> {
+  for (let i = 0; i < 60 && enAttente.length < n; i++) {
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+  }
+}
+
 /** Libère LA prochaine rasterisation en vol (texture de sujet ou planche de flipbook — l'écran en
  *  demande des deux sortes, et la fenêtre les entrelace) et laisse l'écran faire ce qu'elle déclenche. */
 async function résoudreUneRasterisation(): Promise<void> {
+  await enVol(1);
   const suivante = enAttente.shift();
   if (!suivante) throw new Error('aucune rasterisation en vol : la fenêtre de montage ne s’ouvre pas');
   await act(async () => { suivante(); });
@@ -168,6 +178,9 @@ beforeEach(async () => {
   // Le cache de textures est un MODULE : une entrée laissée par le banc précédent résoudrait le sujet
   // sans passer par `Image`, et la fenêtre mesurée n'existerait plus.
   clearBillboardTextures();
+  // …et la FILE du cuiseur avec (#1372 : les textures du montage y passent) — des tâches laissées par
+  // un banc voisin feraient patienter celles de ce montage derrière elles.
+  resetBakeQueue();
   scènes = [];
   enAttente = [];
   simulerRasterisationRetenue();
@@ -175,10 +188,14 @@ beforeEach(async () => {
   document.body.appendChild(hôte);
   root = createRoot(hôte);
   await rendre(acteurs());
+  await enVol(2);
 });
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
+  // File et stock sont GLOBAUX : une tâche laissée en file mémoïserait, pour le banc suivant, une
+  // texture qui ne se résoudra jamais (l'`Image` du banc courant meurt avec lui).
+  resetBakeQueue();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
@@ -204,6 +221,7 @@ describe('Jumeau de silhouette — jamais rendu sans son corps (#1337)', () => {
     // referme trop vite pour qu'on y mesure quoi que ce soit.
     clearBillboardTextures();
     await rendre(acteurs(1));
+    await enVol(1);
     expect(enAttente.length, 'le rebuild rasterise à nouveau : la fenêtre se rouvre').toBeGreaterThan(0);
     expect(corps(), 'le groupe précédent est vidé').toHaveLength(0);
     expect(jumeaux(), 'un jumeau survivant au vidage se rendrait seul, en aplat d’équipe').toHaveLength(0);

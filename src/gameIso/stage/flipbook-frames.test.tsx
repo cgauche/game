@@ -390,6 +390,15 @@ function vue(opts: OptsVue): JSX.Element {
   );
 }
 
+/** Laisse la file CADENCÉE du cuiseur servir ses tâches (#1372 : les textures du montage y passent) —
+ *  jusqu'à ce que `attendus` corps soient en scène, dans un budget BORNÉ. */
+async function attendreMontage(attendus: number): Promise<void> {
+  for (let i = 0; i < 60 && corps().length < attendus; i++) {
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+    if (battre) act(() => battre!());
+  }
+}
+
 async function monter(opts: OptsVue = {}): Promise<void> {
   scènes = [];
   hôte = document.createElement('div');
@@ -398,6 +407,7 @@ async function monter(opts: OptsVue = {}): Promise<void> {
   await act(async () => {
     root!.render(vue(opts));
   });
+  await attendreMontage((opts.actors ?? ACTEURS).length);
 }
 
 /** REBUILD des boards de l'écran déjà monté : une nouvelle identité de tableau d'acteurs suffit — c'est
@@ -532,6 +542,8 @@ describe('Boucle volumique — une image joue une frame, elle n’en cuit aucune
         />,
       );
     });
+    // Le montage passe par la file cadencée (#1372) : la seule texture qui aboutira arrive à sa tranche.
+    await attendreMontage(1);
     // Sous un `allSettled`, AUCUN board n'existerait : le groupe entier attendait le dernier sujet.
     expect(corps(), 'le sujet résolu doit être à l’écran, seul').toHaveLength(1);
   });

@@ -17,7 +17,7 @@
  * la case et l'échelle, le cavalier voyage avec elle (`ActorPose.rider`) et les deux sortent en UN seul
  * billboard composite (loi de selle `seatRiderOnMount`, `backends/webgl/sceneMeshes`).
  */
-import { useMemo, type MutableRefObject } from 'react';
+import { useMemo, useState, type MutableRefObject } from 'react';
 import { useGame, type BattleState } from '../../state/store';
 import { heightAt, type Scene } from '../../state/scene';
 import type { Dir8 } from '../../state/dir8';
@@ -95,6 +95,11 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   pionsEnDisques?: boolean;
 }) {
   const facings = useGame((s) => s.facing); // orientation MONDE vivante par acteur (Dir8)
+  // VOILE D'ENTRÉE EN SCÈNE (#1372) : l'écran volumique dit quand il tient son chargement, cette
+  // couche le PEINT — un simple élément de DOM par-dessus le canevas (même boîte, `.iso-stage`), et
+  // aucun chemin de rendu de plus. Il vit ici et pas dans un hôte : les deux vues (plateau, première
+  // personne) montent ce même monde, et un voile par hôte en ferait deux à tenir d'accord.
+  const [voile, setVoile] = useState(false);
   const poses: ActorPose[] = actorPoses(tokenEls, facings);
   if (partyToken) {
     const z = partyToken.pos.z ?? 0;
@@ -165,5 +170,25 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [cléCadre, frame.mode === 'plateau' ? frame.dims : null],
   );
-  return <GameStage3D scene={scene} mpt={mpt} frame={frameCam} tintAt={tintAt} keepEl={keepEl} nappeVue={nappeVue} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks ?? NO_DYNAMIC_MARKS} halos={halos ?? NO_INTERACTION_HALOS} chromeAt={chromeAt} anim={anim} percage={percage ?? null} pionsEnDisques={pionsEnDisques} />;
+  return (
+    <>
+      <GameStage3D scene={scene} mpt={mpt} frame={frameCam} tintAt={tintAt} keepEl={keepEl} nappeVue={nappeVue} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks ?? NO_DYNAMIC_MARKS} halos={halos ?? NO_INTERACTION_HALOS} chromeAt={chromeAt} anim={anim} percage={percage ?? null} pionsEnDisques={pionsEnDisques} onEntreeEnScene={setVoile} />
+      {/* Le chargement de l'app, RÉUTILISÉ tel quel (`.lazy-fallback`, repli de `Suspense` dans
+          `ui/App.tsx`) : `role="status"` et le mot « Chargement… », rien de plus — aucune classe de
+          domaine de plus (cliquet `ui-ratchets` xii). Ce qui lui est PROPRE tient en trois réglages
+          de boîte : il se cale sur le canevas (`.iso-stage`, absolu inset 0) au lieu d'occuper une
+          hauteur d'écran. Il AVALE les clics tant qu'il tient : la surcouche SVG qu'il couvre reste
+          cliquable, et un clic porté sur un monde invisible est un clic à l'aveugle. */}
+      {voile && (
+        <div
+          className="lazy-fallback"
+          role="status"
+          data-voile="1"
+          style={{ position: 'absolute', inset: 0, minHeight: 0, background: 'var(--bg)' }}
+        >
+          Chargement…
+        </div>
+      )}
+    </>
+  );
 }

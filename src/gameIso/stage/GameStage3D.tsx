@@ -131,6 +131,7 @@ import {
   atlasBytesEstimés,
   atlasKey,
   bakeAtlas,
+  bakeQueueLength,
   enqueueBake,
   getCachedAtlas,
   setAtlasPins,
@@ -180,7 +181,7 @@ import { stageLightScalars, stageLights } from './stageLights';
 import { viewPolicy } from './viewPolicy';
 import { applyFlicker, applyPointLights, createPointLightPool, hasFlicker, pointLightWrites, POINT_LIGHT_BUDGET, type PointLightSlots } from './stagePointLights';
 import type { LightSource } from '../../state/vision';
-import { sceneBrume, scenePrecip } from '../catalog/ambiance';
+import { AMBIANCE, sceneBrume, scenePrecip } from '../catalog/ambiance';
 import { isSheltered, shelterField, shelterSectionAt } from '../builders/roofs';
 import { buildBrumeSheets, retainBrumeSheets, type BrumeSlot } from '../backends/webgl/weatherSheets';
 import {
@@ -305,6 +306,25 @@ export interface PercageEntrees {
   heros: readonly { cid: string; capsule: ActorCapsule; z: number }[];
 }
 
+/**
+ * CENTRE DE PROXIMITÉ du montage (#1372) — la position du GROUPE, en CASES, celle dont l'entrée en
+ * scène juge ce qui est « proche ». En première personne, c'est la case du meneur, que le cadre porte
+ * déjà ; sur la vue de plateau, le BARYCENTRE des héros posés (le seul point qui tienne en combat
+ * comme en exploration — le jeton de groupe hors combat entre dans les acteurs, `VolumetricWorld`).
+ *
+ * `null` quand aucun héros n'est monté : l'éditeur et les planches QC regardent un décor sans groupe,
+ * et il n'y a alors ni proximité à trier ni voile à tenir. PURE.
+ */
+export function centreDuGroupe(frame: StageFrame, actors: readonly ActorPose[]): { x: number; y: number } | null {
+  if (frame.mode === 'pov') return { x: frame.partyPos.x, y: frame.partyPos.y };
+  const héros = actors.filter((a) => a.c.kind === 'hero');
+  if (héros.length === 0) return null;
+  return {
+    x: héros.reduce((s, a) => s + a.x, 0) / héros.length,
+    y: héros.reduce((s, a) => s + a.y, 0) / héros.length,
+  };
+}
+
 export interface GameStage3DProps {
   scene: Scene;
   /** Mètres par tuile. */
@@ -381,6 +401,12 @@ export interface GameStage3DProps {
    *  l'auteur perdrait de vue ses figurants (mesuré : `ui/editor/editeur-monde-volumique.test.tsx`).
    *  Absent = billboards, le régime historique. */
   pionsEnDisques?: boolean;
+  /** ENTRÉE EN SCÈNE (#1372) — l'écran signale ici qu'il tient (ou lâche) son voile de chargement :
+   *  `true` tant que les sujets dans le rayon d'entrée (`AMBIANCE.entreeEnScene`) n'ont pas leur
+   *  texture, `false` ensuite (et au plafond, quoi qu'il arrive). Le VOILE lui-même est du DOM de
+   *  l'hôte (`stage/VolumetricWorld.tsx`), posé par-dessus le canevas — cet écran n'ouvre aucun
+   *  chemin de rendu pour lui. Absent (éditeur, planches QC) = personne n'écoute, rien ne se voile. */
+  onEntreeEnScene?: (enCours: boolean) => void;
 }
 
 /**
@@ -582,7 +608,7 @@ function useBattementContinu(actif: boolean, nom: string): void {
     return () => relacherFrames(source);
   }, [actif, nom]);
 }
-export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, decalque, spritePicking = true, percage, pionsEnDisques = false }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, decalque, spritePicking = true, percage, pionsEnDisques = false, onEntreeEnScene }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -725,6 +751,64 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // l'IDENTITÉ de la scène, pas sa référence : un hôte qui la reforge à chaque geste (l'éditeur, une
   // par `pointermove`) vidait sinon toutes les textures du décor à chaque coup de pinceau.
   useEffect(() => () => { viderTexturesStatiques(); clearPeriodTextures(); clearFaceBakes(); }, [scene.id]);
+
+  // ── ENTRÉE EN SCÈNE (#1372) : un voile bref, puis le progressif. Le montage d'une scène demande
+  // toutes ses textures à la file cadencée (une par tranche d'inactivité) : sans voile, la carte
+  // s'ouvrirait sur des quads qui poppent l'un après l'autre sous les yeux du groupe. Le voile tient
+  // donc tant que les sujets DANS LE RAYON (donnée, `AMBIANCE.entreeEnScene`) n'ont pas leur texture,
+  // et le lointain arrive derrière, en silence, par la même file.
+  const [entréeEnScène, setEntréeEnScène] = useState(true);
+  /** Ce que le voile ATTEND (clés statiques) — la lecture des résolutions de texture, hors rendu. */
+  const attenteEntréeRef = useRef(new Set<string>());
+  /** Le voile est-il encore levé ? (la réf, parce que les résolutions de texture ne rendent pas). */
+  const entréeRef = useRef(true);
+  const plafondEntréeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** TOMBÉE du voile — une seule fois par scène, quelle qu'en soit la cause (dernière texture proche
+   *  posée, ou plafond de sécurité atteint). */
+  const finirEntrée = (): void => {
+    if (!entréeRef.current) return;
+    entréeRef.current = false;
+    attenteEntréeRef.current.clear();
+    if (plafondEntréeRef.current !== null) clearTimeout(plafondEntréeRef.current);
+    plafondEntréeRef.current = null;
+    setEntréeEnScène(false);
+  };
+
+  /** Le jeu de clés PROCHES que le voile attend, tel que le montage vient de l'établir. Aucune clé
+   *  attendue (éditeur sans groupe, scène sans décor proche) = rien à couvrir, le voile tombe. */
+  const attendreEntrée = (clés: readonly string[]): void => {
+    if (!entréeRef.current) return;
+    attenteEntréeRef.current = new Set(clés);
+    if (attenteEntréeRef.current.size === 0) finirEntrée();
+  };
+
+  /** Une texture attendue est arrivée — ou perdue (un sujet sauté n'entrera jamais en scène, il ne
+   *  peut pas retenir le voile). */
+  const servirEntrée = (clé: string): void => {
+    if (!entréeRef.current) return;
+    attenteEntréeRef.current.delete(clé);
+    if (attenteEntréeRef.current.size === 0) finirEntrée();
+  };
+
+  // ARMEMENT à l'ouverture d'une SCÈNE (montage compris) : le voile se relève, et son PLAFOND part.
+  // Sans lui, un SVG qui ne se charge jamais tiendrait l'écran voilé pour toute la session.
+  useEffect(() => {
+    entréeRef.current = true;
+    attenteEntréeRef.current.clear();
+    setEntréeEnScène(true);
+    plafondEntréeRef.current = setTimeout(finirEntrée, AMBIANCE.entreeEnScene.plafondMs);
+    return () => {
+      if (plafondEntréeRef.current !== null) clearTimeout(plafondEntréeRef.current);
+      plafondEntréeRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene.id]);
+
+  // L'hôte apprend l'état du voile par ce seul canal (il en est le seul rendu, `VolumetricWorld`).
+  useEffect(() => {
+    onEntreeEnScene?.(entréeEnScène);
+  }, [entréeEnScène, onEntreeEnScene]);
 
   // ── CUISSON : la passe LOURDE (100 à 634 ms selon la carte), RETENUE PAR CONTENU — sur le read-set
   // réel de `worldFaces` (`worldBakeDeps`, `backends/webgl/sceneMeshes.ts`), jamais sur la référence
@@ -1216,6 +1300,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     renderer.render(three.current, camera);
     rendus.current++;
     canvas.dataset.rendus = String(rendus.current);
+    // `data-file` : ce qui ATTEND encore dans la file cadencée du cuiseur (#1372). Écrit ici, avec le
+    // compteur d'images, parce qu'une file se vide entre deux commits React et qu'un attribut de rendu
+    // resterait à la valeur du dernier. 0 = cuiseur au repos.
+    canvas.dataset.file = String(bakeQueueLength());
     // L'horloge de cession du module voit CETTE image : la boucle ne repeindra pas ce qu'un commit
     // React vient de peindre.
     signalerImagePeinte();
@@ -1852,7 +1940,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       dessiner();
     };
 
-    for (const sub of subjects) {
+    // ORDRE DE PROXIMITÉ (#1372) : le montage sert les sujets du plus PROCHE du groupe au plus
+    // lointain. La file range par priorité PUIS par rang d'entrée (`queueBakeTask`) — à priorité
+    // égale, l'ordre d'enfilement EST l'ordre de service, et c'est lui, seul, que ce tri fixe.
+    // Sans centre de groupe (éditeur, planche QC), aucune proximité n'a de sens : l'ordre reste celui
+    // des sujets, et la distance INFINIE qui en découle ne tient aucun voile d'entrée en scène.
+    const centre = centreDuGroupe(frame, actors);
+    const àMonter = subjects.map((sub) => {
       // Le quad se taille sur la BOÎTE du sujet : un composite plus haut que la boîte canonique
       // (couple monté) gagne du quad au lieu d'être tranché à la rasterisation.
       const quad = subjectQuad(CONVENTION, sub);
@@ -1863,17 +1957,30 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // planches de flipbook du sujet (`FlipbookSujet.pxHeight` le reprend) : un acteur ne change pas de
       // netteté en passant de sa texture de montage à sa première planche.
       const pxHeight = atlasPxHeight(quad.heightM, pxm, dpr);
-      const q = { sub, quad, view, mirror, pxHeight };
+      const distance = centre ? Math.hypot(sub.anchor.x - centre.x * mpt, sub.anchor.z - centre.y * mpt) : Infinity;
+      return { sub, quad, view, mirror, pxHeight, distance, clé: cleStatique(sub, view, mirror, rot, pxHeight) };
+    });
+    àMonter.sort((a, b) => a.distance - b.distance);
+    // VOILE D'ENTRÉE EN SCÈNE : ce que le groupe a SOUS LES YEUX (rayon en donnée) le tient levé ; le
+    // lointain arrivera derrière, en silence, par la même file.
+    attendreEntrée(àMonter.filter((q) => q.distance <= AMBIANCE.entreeEnScene.rayonM).map((q) => q.clé));
+    for (const q of àMonter) {
       // ÉPINGLE de ce que le montage ATTEND, posée AVANT la demande — même geste que la repose : sous
       // pression de budget, une texture non épinglée est libérable entre sa cuisson et sa pose, et le
       // quad entrerait en scène sur une texture morte.
-      épinglerSujet(sub, [cleStatique(sub, view, mirror, rot, pxHeight)]);
+      épinglerSujet(q.sub, [q.clé]);
       // RÉSOLUTION INDIVIDUELLE : chaque board entre en scène dès SA texture rasterisée. Sous un
       // `allSettled`, le groupe entier attendait le dernier sujet — et un sujet rejeté n'y laissait
       // rien du tout. Ici, une texture rejetée ne coûte que SON quad, et le reste est déjà à l'écran.
-      void textureAuCran(sub, view, mirror, rot, pxHeight).then(
-        (texture) => { if (!annule) monter(q, texture); },
-        (raison: unknown) => { if (!annule) console.warn(`GameStage3D: billboard « ${sub.identity} » sauté — texture non rasterisée :`, raison); },
+      void textureAuCran(q.sub, q.view, q.mirror, rot, q.pxHeight, PRIORITE_VUE_COURANTE).then(
+        (texture) => {
+          if (!annule) monter(q, texture);
+          servirEntrée(q.clé);
+        },
+        (raison: unknown) => {
+          if (!annule) console.warn(`GameStage3D: billboard « ${q.sub.identity} » sauté — texture non rasterisée :`, raison);
+          servirEntrée(q.clé);
+        },
       );
     }
     // PRÉ-CHAUFFE des regards VOISINS, en temps mort (même patron que `précuire` pour les acteurs, et
@@ -2032,6 +2139,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // `data-rendus` : le compte de passes DESSINÉES depuis le montage. Il n'est pas posé ici mais par la
   // passe elle-même (`dessiner`) : une boucle d'image ne commit rien, donc un attribut de rendu React
   // resterait à la valeur du dernier commit.
+  // `data-file` : même famille, même raison — ce qui attend dans la file du cuiseur, écrit par la passe.
+  // `data-voile` : l'ENTRÉE EN SCÈNE en cours (#1372). Absent = le voile est tombé. Le voile lui-même
+  // est du DOM de l'hôte : cet attribut est ce que la garde et la recette lisent sur le canevas.
   return (
     <canvas
       ref={canvasRef}
@@ -2047,6 +2157,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       data-sujets={subjects.length}
       data-bg={`#${fondCanevas.toString(16).padStart(6, '0')}`}
       data-brume={nappesMontées || undefined}
+      data-voile={entréeEnScène ? '1' : undefined}
     />
   );
 }

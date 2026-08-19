@@ -8,6 +8,8 @@ import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
 import { RENDER_ORDER } from '../backends/webgl/renderRanks';
+import { resetBakeQueue } from '../backends/webgl/atlasBake';
+import { clearBillboardTextures } from '../backends/webgl/svgTexture';
 import {
   ALPHA_TEST,
   GHOST_OPACITY,
@@ -98,6 +100,17 @@ function simulerRasterisation(): void {
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
 }
 
+/** Laisse tourner la file CADENCÉE du cuiseur (une rasterisation par tranche d'inactivité) en battant
+ *  la boucle d'image : depuis #1372, les textures du MONTAGE y passent comme les autres, et aucun quad
+ *  n'entre en scène dans le rendu qui l'a demandé. */
+async function respirer(ms: number): Promise<void> {
+  const fin = Date.now() + ms;
+  do {
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+    if (battre) act(() => battre!());
+  } while (Date.now() < fin);
+}
+
 /** Monte l'écran volumique sous le cadre donné et laisse la rasterisation se résoudre. */
 async function monter(frame: StageFrame): Promise<void> {
   scènes = [];
@@ -122,6 +135,7 @@ async function monter(frame: StageFrame): Promise<void> {
       />,
     );
   });
+  await respirer(120);
 }
 
 /** Le quad d'un combattant et son jumeau de silhouette, tels que la scène rendue les porte. */
@@ -155,6 +169,11 @@ afterEach(() => {
   glissement = null;
   battre = null;
   allures = {};
+  // La file du cuiseur et le stock de textures sont GLOBAUX au module : un banc qui les laisse
+  // chargés fait démarrer le suivant sur les tâches et les textures du précédent — dont une texture
+  // mémoïsée sur une promesse que plus aucune `Image` ne résoudra (#1372).
+  resetBakeQueue();
+  clearBillboardTextures();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }

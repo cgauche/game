@@ -163,6 +163,24 @@ export const schema = z.strictObject({
       message: 'fogTint doit décroître visible ≥ explored ≥ unknown : une case moins connue ne peut pas être plus lumineuse',
     }),
   faceShade: faceShadeSchema,
+  /** #1372 — ENTRÉE EN SCÈNE : le voile bref que l'écran tient pendant que les sujets PROCHES du
+   *  groupe reçoivent leur texture (`stage/GameStage3D.tsx`). Valeurs MAISON (rendu, hors RAW).
+   *
+   *  `rayonM` est un rayon MONDE en mètres, comparé à la distance du sujet au groupe dans le repère
+   *  three — il ne se compte pas en cases : deux scènes de `mpt` différents ne montreraient pas la
+   *  même profondeur de décor sous le même chiffre. `plafondMs` est la borne de SÉCURITÉ : un SVG
+   *  qui ne se charge jamais tiendrait sinon le voile pour toute la session. Les bornes sont des
+   *  bornes d'usage — un rayon nul ne voile rien, un plafond de dix secondes n'est plus un plafond. */
+  entreeEnScene: z.strictObject({
+    rayonM: z
+      .number()
+      .gt(0, 'entreeEnScene.rayonM : le rayon doit être > 0 — à zéro aucun sujet n’est « proche », et le voile tombe sans avoir rien couvert')
+      .max(200, 'entreeEnScene.rayonM : le rayon doit rester ≤ 200 m — au-delà, le voile attend la carte ENTIÈRE et il n’y a plus de progressif'),
+    plafondMs: z
+      .number()
+      .gt(0, 'entreeEnScene.plafondMs : le plafond doit être > 0 — à zéro le voile tombe avant la première texture')
+      .max(10000, 'entreeEnScene.plafondMs : le plafond doit rester ≤ 10000 ms — au-delà ce n’est plus une borne de sécurité, l’écran reste voilé'),
+  }),
   iso: z.strictObject({
     warm: radialVeilSchema,
     vignette: radialVeilSchema,

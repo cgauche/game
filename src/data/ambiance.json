@@ -15,6 +15,10 @@
     ],
     "bas": 0.55
   },
+  "entreeEnScene": {
+    "rayonM": 12,
+    "plafondMs": 2000
+  },
   "iso": {
     "warm": {
       "cx": "55%",

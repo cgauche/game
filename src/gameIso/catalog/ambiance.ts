@@ -77,6 +77,10 @@ export interface AmbianceDef {
    *  CYCLIQUE de la grille (−z, +x, +z, −x) ; le schéma en tient les bornes et l'absence de paire
    *  cycliquement adjacente jumelle (`data/schemas/defs/ambiance.ts`). */
   faceShade: { haut: number; verticales: readonly number[]; bas: number };
+  /** #1372 — ENTRÉE EN SCÈNE : rayon MONDE (m) autour du groupe dont les sujets tiennent le voile de
+   *  chargement, et PLAFOND (ms) au-delà duquel il tombe quoi qu'il arrive. Lus par l'écran volumique
+   *  (`stage/GameStage3D.tsx`), nulle part ailleurs. */
+  entreeEnScene: { rayonM: number; plafondMs: number };
   iso: {
     /** Voile CHAUD (lumière dorée descendante) posé sur toute la scène. */
     warm: RadialVeilDef;

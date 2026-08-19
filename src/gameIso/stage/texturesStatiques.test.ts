@@ -55,7 +55,7 @@ function simulerRasterisation() {
   return { rendues, espion };
 }
 
-const auCran = (rot: Rot, priorité?: number): Promise<THREE.Texture> =>
+const auCran = (rot: Rot, priorité: number): Promise<THREE.Texture> =>
   textureAuCran(DÉCOR, 'front', false, rot, PX, priorité);
 
 afterEach(() => {

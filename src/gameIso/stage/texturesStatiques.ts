@@ -12,7 +12,7 @@ import type { Rot } from '../../geometry/iso';
 import { billboardTextureKey } from '../backends/webgl/billboardMath';
 import type { View } from '../rig/facing';
 import { clearBillboardTextures, getBillboardTexture, octetsTextureStatique, setStaticTexturePins, svgToTexture } from '../backends/webgl/svgTexture';
-import { PRIORITE_RECHAUFFAGE, PRIORITE_VUE_COURANTE, queueBakeTask, type BakePriority } from '../backends/webgl/atlasBake';
+import { PRIORITE_RECHAUFFAGE, queueBakeTask, type BakePriority } from '../backends/webgl/atlasBake';
 import type { BillboardSubject } from '../backends/webgl/sceneMeshes';
 import { identiteAuCran } from './regard';
 
@@ -40,21 +40,20 @@ export function cleStatique(sub: BillboardSubject, view: View, mirror: boolean, 
 
 /** TEXTURE STATIQUE d'un sujet à une vue et un cran, mémoïsée sur sa clé (`getBillboardTexture`).
  *
- *  `priorité` la range dans la file CADENCÉE du cuiseur (`queueBakeTask`) : c'est par là que passe
- *  toute rasterisation qu'un changement de regard réclame, une par tranche d'inactivité et jamais en
- *  rafale. Sans priorité, la rasterisation part tout de suite — le MONTAGE d'une scène, dont chaque
- *  quad n'entre en scène qu'à sa texture.
+ *  `priorité` la range dans la file CADENCÉE du cuiseur (`queueBakeTask`) : TOUTE rasterisation de
+ *  texture statique y passe — celle qu'un changement de regard réclame comme celle du MONTAGE d'une
+ *  scène (#1372) —, une par tranche d'inactivité et jamais en rafale. AUCUN chemin direct.
  *
- *  Dans les DEUX cas, une clé DÉJÀ EN FILE que la caméra réclame voit son rang RELEVÉ, jamais abaissé :
- *  la mémoïsation rend la promesse en attente telle quelle, et le montage comme la repose hériteraient
- *  sinon du rang du temps mort qui l'a posée. */
+ *  Une clé DÉJÀ EN FILE que la caméra réclame voit son rang RELEVÉ, jamais abaissé : la mémoïsation
+ *  rend la promesse en attente telle quelle, et le montage comme la repose hériteraient sinon du rang
+ *  du temps mort qui l'a posée. */
 export function textureAuCran(
   sub: BillboardSubject,
   view: View,
   mirror: boolean,
   rot: Rot,
   pxHeight: number,
-  priorité?: number,
+  priorité: number,
 ): Promise<THREE.Texture> {
   const clé = cleStatique(sub, view, mirror, rot, pxHeight);
   const rasteriser = () => svgToTexture(sub.svg(view, mirror, rot), sub.box, pxHeight);
@@ -63,9 +62,7 @@ export function textureAuCran(
   // (recette #1374 : 338 entrées pour 8,9 Mo comptés pendant un demi-tour).
   const bytesEst = octetsTextureStatique(sub.box, pxHeight);
   const rang = POIGNEES_STATIQUES.get(clé);
-  const voulu = priorité ?? PRIORITE_VUE_COURANTE;
-  if (rang) rang.value = Math.max(rang.value, voulu);
-  if (priorité === undefined) return getBillboardTexture(clé, rasteriser, bytesEst);
+  if (rang) rang.value = Math.max(rang.value, priorité);
   // La poignée se pose DANS la fabrique : elle seule court sur un vrai manque de cache. Posée avant,
   // une clé déjà servie en laissait une que rien ne retirerait jamais.
   return getBillboardTexture(clé, () => {
@@ -80,7 +77,12 @@ export function textureAuCran(
 }
 
 /** Rend au RÉCHAUFFAGE les textures statiques que la caméra n'attend plus (le regard qu'on vient de
- *  quitter) : laissées en tête de file, elles font patienter celles du regard courant. */
+ *  quitter) : laissées en tête de file, elles font patienter celles du regard courant.
+ *
+ *  INVARIANT : ce geste ne distingue pas l'origine d'une clé — les demandes de MONTAGE encore en
+ *  attente y descendent aussi. Ce qui les relève est la re-demande du regard d'arrivée, dont le rang
+ *  ne fait que MONTER (`Math.max` de `textureAuCran`) ; un montage qu'aucune repose ne redemande
+ *  reste donc servi en temps mort, après le regard courant (#1372). */
 export function rendreAuRechauffage(): void {
   for (const poignée of POIGNEES_STATIQUES.values()) {
     if (poignée.value > PRIORITE_RECHAUFFAGE) poignée.value = PRIORITE_RECHAUFFAGE;

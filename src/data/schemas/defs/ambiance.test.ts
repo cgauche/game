@@ -197,3 +197,44 @@ describe('ambiance.json — `faceShade` est borné et SÉPARE les familles adjac
       expect(jumelles.error.issues.map((i) => i.message).join('\n')).toContain('cycliquement adjacentes');
   });
 });
+
+/**
+ * `entreeEnScene` (#1372) — le RAYON et le PLAFOND du voile de chargement sont une donnée éditable
+ * qui décide de ce que le joueur voit à l'ouverture d'une carte : un rayon nul ouvre la scène sur des
+ * quads nus, un plafond nul aussi, et un plafond démesuré laisse l'écran voilé sur un SVG en panne.
+ * Le schéma doit refuser ces quatre-là AU CHARGEMENT.
+ */
+const avecEntree = (entreeEnScene: unknown) => ({ ...(ambianceJson as object), entreeEnScene });
+const ENTREE_BON = { rayonM: 12, plafondMs: 2000 };
+
+describe('ambiance.json — `entreeEnScene` est borné (#1372)', () => {
+  it('la donnée réelle passe, et le témoin de ce fichier EST la donnée réelle', () => {
+    expect(schema.safeParse(ambianceJson).success).toBe(true);
+    expect((ambianceJson as unknown as { entreeEnScene: unknown }).entreeEnScene).toEqual(ENTREE_BON);
+  });
+
+  const refuses: [string, Record<string, unknown>][] = [
+    ['rayon NUL — aucun sujet n’est « proche », la scène s’ouvre sur des quads nus', { ...ENTREE_BON, rayonM: 0 }],
+    ['rayon négatif', { ...ENTREE_BON, rayonM: -3 }],
+    ['rayon démesuré — le voile attend la carte entière, il n’y a plus de progressif', { ...ENTREE_BON, rayonM: 400 }],
+    ['plafond NUL — le voile tombe avant la première texture', { ...ENTREE_BON, plafondMs: 0 }],
+    ['plafond négatif', { ...ENTREE_BON, plafondMs: -1 }],
+    ['plafond démesuré — ce n’est plus une borne de sécurité', { ...ENTREE_BON, plafondMs: 60000 }],
+    ['rayon absent', { plafondMs: 2000 }],
+    ['plafond absent', { rayonM: 12 }],
+    ['champ inconnu (frappe de l’auteur)', { ...ENTREE_BON, rayonCases: 8 }],
+  ];
+  for (const [cas, entree] of refuses)
+    it(`REFUSÉ : ${cas}`, () => {
+      expect(schema.safeParse(avecEntree(entree)).success).toBe(false);
+    });
+
+  it('le message d’erreur DIT la règle (un auteur doit savoir quoi corriger)', () => {
+    const rayon = schema.safeParse(avecEntree({ ...ENTREE_BON, rayonM: 0 }));
+    expect(rayon.success).toBe(false);
+    if (!rayon.success) expect(rayon.error.issues.map((i) => i.message).join('\n')).toContain('le rayon doit être > 0');
+    const plafond = schema.safeParse(avecEntree({ ...ENTREE_BON, plafondMs: 60000 }));
+    expect(plafond.success).toBe(false);
+    if (!plafond.success) expect(plafond.error.issues.map((i) => i.message).join('\n')).toContain('≤ 10000 ms');
+  });
+});

@@ -723,7 +723,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
 // (top-level) qui porte aussi les règles TRANSVERSES manette + le bandeau DEV du collecteur d'erreurs.
 const SHARED_CSS_FILES = ['styles/base.css', 'styles/components.css', 'styles/tabs.css', 'styles.css'];
 const SHARED_LEAK_BASELINE: Record<string, number> = {
-  'styles/base.css': 16, // #417 : `.hero-present-sec` reste croisée (PartyScreen+HeroPresentation) ; `.lore-chip`/
+  // #1372 : 16 → 15 — `.lazy-fallback` cesse d'être mono-consommateur (le voile d'entrée en scène du
+  // monde volumique le REPREND au lieu de définir sa propre classe, `stage/VolumetricWorld.tsx`).
+  'styles/base.css': 15, // #417 : `.hero-present-sec` reste croisée (PartyScreen+HeroPresentation) ; `.lore-chip`/
   // `.hero-present-chips` repassent mono-consommateur — le détail candidat compose désormais `SkillChip`/
   // `TalentChip`/`EntityRef` + `.skill-tags` (recalage utilisateur 2026-07-14, primitives de fiche vivante)
   // #839 : INCHANGÉ à 11 — le partage de l'écran Options déplace deux fuites sans en retirer :
