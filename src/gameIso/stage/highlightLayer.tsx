@@ -9,7 +9,7 @@ import type { GameState, BattleState, PendingAttack, PendingCleave, PendingDualS
 import { Combatant } from '../../engine/types';
 import { crowdEligible, eligibleAttackTargetIds, displayedReach, computeRunReach, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { currentTargetingMode } from '../../state/targetingModes';
-import { armedIntentPortee, intentReach, PORTEE_ARME } from '../../state/localIntent';
+import { armedIntentPortee, intentReach, PORTEE_ARME, type LocalIntent } from '../../state/localIntent';
 import { controlsCombatant } from '../../state/netOwnership';
 import { inBattleId } from '../../state/combatants';
 import { attackWeapon } from '../../engine/combat';
@@ -24,10 +24,17 @@ export interface HighlightOpts {
   pendingCleave: PendingCleave | null;
   pendingDualStrike: PendingDualStrike | null;
   pendingCast: PendingCast | null;
+  /** INTENTION ARMÉE (`state/localIntent`) — elle vit à la RACINE du store, hors `battle` : c'est par
+   *  ce contexte que l'hôte fait savoir au monde qu'elle a changé. Sa PORTÉE, elle, se lit à sa source
+   *  unique (`intentReach`). */
+  localIntent: LocalIntent | null;
+  /** Combattant SURVOLÉ (`store.hovered`, frise ou token) — même raison : c'est lui qui allume les
+   *  bandes de portée d'un tireur, et il vit hors `battle`. */
+  hovered: string | null;
 }
 
 export function combatHighlightsView(get: () => GameState, battle: BattleState, opts: HighlightOpts): HighlightsView {
-  const { myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast } = opts;
+  const { myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast, localIntent, hovered } = opts;
   const activeC = inBattleId(battle, battle.order[battle.turn]);
   // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — aucune affordance
   // (ni grille de déplacement, ni anneaux de cible, ni aperçu) ; teintes d'équipe/zones restent.
@@ -38,7 +45,7 @@ export function combatHighlightsView(get: () => GameState, battle: BattleState, 
     runReach: myTurn ? computeRunReach(get) : new Map<string, number>(),
     // INTENTION armée depuis l'interface : sa portée est LOCALE au client (hors `battle`) et ne
     // s'affiche qu'à son tour, comme toute affordance (spec HUD zone 4).
-    intentReach: myTurn ? intentReach(get) : new Map<string, number>(),
+    intentReach: myTurn && localIntent ? intentReach(get) : new Map<string, number>(),
     activeId: activeC?.id ?? null,
     // Anneaux d'attaque (R4) : en mode neutre (attaque implicite), tant que l'Action est disponible
     // (ou attaque libre de Frénésie).
@@ -70,8 +77,8 @@ export function combatHighlightsView(get: () => GameState, battle: BattleState, 
       // L'INTENTION d'attaque (spec HUD zone 4, G1) montre la PORTÉE DE L'ARME du set : elle n'ouvre
       // pas un 2ᵉ dessin de cette vérité — elle allume les bandes de tir existantes autour de l'ACTIF,
       // sans attendre un survol. Le survol garde la priorité (il désigne un autre tireur).
-      const armedAttack = myTurn && armedIntentPortee(get) === PORTEE_ARME ? activeC ?? null : null;
-      const c = battle.combatants.find((x) => x.id === get().hovered) ?? armedAttack;
+      const armedAttack = myTurn && localIntent && armedIntentPortee(get) === PORTEE_ARME ? activeC ?? null : null;
+      const c = battle.combatants.find((x) => x.id === hovered) ?? armedAttack;
       if (!c?.pos) return null;
       const weapon = attackWeapon(c.weapons, false);
       if (!weapon || weapon.type !== 'ranged') return null; // structure/décor sans arme (porte…) — pas de bande (#203 régression)

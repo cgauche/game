@@ -22,6 +22,11 @@ export function useGameKeyboard() {
         controlFocused: /^(BUTTON|A)$/.test(tag), // Espace/Entrée doivent activer ce contrôle, pas le raccourci
       };
     };
+    // UN APPUI, UN RACCOURCI : tant que la touche n'est pas relâchée, elle appartient au raccourci qui
+    // l'a prise — la répétition automatique du clavier (l'OS réémet des `keydown` tant qu'on tient) ne la
+    // passe jamais à un AUTRE. Sans cette mémoire, Échap désarmait l'intention au 1ᵉʳ `keydown` puis, la
+    // condition de `intent-cancel` étant retombée, ouvrait le menu système au suivant (#1411 P0-A).
+    const priseParCode = new Map<string, string>();
     const onKey = (e: KeyboardEvent) => {
       const { saisie, controlFocused } = saisieEnCours();
       if (saisie) return;
@@ -29,6 +34,9 @@ export function useGameKeyboard() {
       const b = trouver(e, controlFocused);
       if (!b) return;
       e.preventDefault();
+      const prise = priseParCode.get(e.code);
+      if (e.repeat && prise !== undefined && prise !== b.id) return;
+      if (!e.repeat) priseParCode.set(e.code, b.id);
       // Geste MAINTENU (`runUp`) ou d'UNE PRESSION (`unePression`) : la répétition automatique du
       // clavier ne le rejoue pas — la cadence est celle du geste (durée de l'appui, fin d'un pas, un
       // quart de tour), jamais celle de l'auto-repeat de l'OS.
@@ -36,6 +44,7 @@ export function useGameKeyboard() {
       b.run(useGame.getState);
     };
     const onKeyUp = (e: KeyboardEvent) => {
+      priseParCode.delete(e.code); // l'appui est fini : la touche est rendue au registre
       const { saisie, controlFocused } = saisieEnCours();
       if (saisie) return;
       const b = trouver(e, controlFocused);
@@ -48,6 +57,7 @@ export function useGameKeyboard() {
     // donc TOUT geste maintenu du registre : `runUp` est idempotent, et un relâchement de trop ne
     // coûte rien face à une caméra qui tourne toute seule pendant qu'on est ailleurs.
     const relacherTout = () => {
+      priseParCode.clear();
       for (const b of KEYBINDINGS) b.runUp?.(useGame.getState);
     };
     const onVisibilite = () => { if (document.hidden) relacherTout(); };

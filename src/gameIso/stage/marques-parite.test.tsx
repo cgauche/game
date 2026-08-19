@@ -105,7 +105,7 @@ function monter(extra: Record<string, unknown> = {}): HTMLDivElement {
     battle: combatTémoin(),
     dialogue: null,
     flags: {},
-    hovered: 'h1', // tireur SURVOLÉ → bandes de portée
+    hovered: null, // le survol du tireur se pose APRÈS le montage (cf. plus bas)
     pendingAttack: null,
     ...extra,
   } as never);
@@ -114,6 +114,12 @@ function monter(extra: Record<string, unknown> = {}): HTMLDivElement {
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
   act(() => root!.render(<MondeDeCampagne />));
+  // SURVOL POSÉ APRÈS LE MONTAGE (#1411, P0-A) : c'est ainsi qu'il arrive dans la partie — la souris
+  // passe sur un tireur d'un écran déjà là. Le poser dans l'état de départ aurait mesuré un montage,
+  // et laissait donc passer un survol que l'écran n'apprend jamais (même classe de défaut que
+  // l'intention armée). Les oracles ci-dessous sont inchangés : la population est la même, c'est le
+  // CHEMIN qui est désormais celui du jeu.
+  act(() => { useGame.getState().setHovered('h1'); });
   return conteneur;
 }
 

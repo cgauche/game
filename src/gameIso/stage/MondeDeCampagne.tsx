@@ -111,6 +111,8 @@ function CorpsDuMonde() {
   const pendingCleave = useGame((s) => s.pendingCleave);
   const pendingDualStrike = useGame((s) => s.pendingDualStrike);
   const preemptAiming = useGame((s) => s.preemptAiming); // Tir rapide armé (pause) : cible par la carte hors tour
+  const localIntent = useGame((s) => s.localIntent); // intention ARMÉE : sa portée est une marque de cases
+  const hovered = useGame((s) => s.hovered); // tireur SURVOLÉ (frise ou token) : ses bandes de portée sont des marques de cases
   const viewMode = useGame((s) => s.viewMode);
   // CAP du groupe, lu SEULEMENT sous le regard de première personne : `setFacing` reforge la table à
   // chaque pas et à chaque attaque, et un abonnement à la table entière re-rendrait tout l'hôte. Le
@@ -481,11 +483,15 @@ function CorpsDuMonde() {
   );
 
   // Les vérités de surbrillance sont assemblées par le monde volumique lui-même
-  // (`combatHighlightsView`), à partir de ce contexte de tour.
+  // (`combatHighlightsView`), à partir de ce contexte de tour. TOUT ce dont ces marques dépendent y
+  // entre, y compris ce qui vit à la RACINE du store, hors `battle` : l'INTENTION ARMÉE
+  // (`state/localIntent`) et le SURVOL (`store.hovered`, qui allume les bandes de portée d'un tireur).
+  // Sans elles ici, l'écran déjà monté ne réapprenait jamais leur changement — les marques ne se
+  // peignaient qu'au MONTAGE (sonde `intention-peinture-vive`).
   const combatBattle = mode === 'battle' && battle ? battle : null;
   const highlightOpts = useMemo<HighlightOpts>(
-    () => ({ myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast }),
-    [myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast],
+    () => ({ myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast, localIntent, hovered }),
+    [myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast, localIntent, hovered],
   );
 
   // ── Pointeur & visée au survol ──────────────────────────────────────────────────────────────────
