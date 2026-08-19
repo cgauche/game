@@ -182,8 +182,8 @@ gh workflow run deploy.yml --ref main     # déclenche le workflow « Déploieme
 déclenchement manuel) qui build le **COMMIT** de `main` sur un runner propre et pousse `dist/` (hors
 `qc/`) vers `cgauche/cgauche.github.io` sous `jeu/` → **https://cgauche.github.io/jeu/**. Il n'embarque
 JAMAIS le working tree local : seul le travail commité+poussé part en prod.
-Prérequis : secret Actions `PROD_REPO_TOKEN` dans `cgauche/game` (PAT fine-grained du compte `cgauche`,
-Contents read/write sur `cgauche.github.io`). **Ne déployer que sur demande explicite de l'utilisateur**,
+Prérequis (en place) : secret Actions `PROD_DEPLOY_KEY` dans `cgauche/game` — clé privée SSH dont la
+publique est une deploy key en écriture sur `cgauche.github.io`. **Ne déployer que sur demande explicite de l'utilisateur**,
 après suite complète verte, et après `git push` (le workflow build le commit distant).
 
 **Vérification** : après une feature UI, valider dans le navigateur — flux complet dans

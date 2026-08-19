@@ -23,11 +23,11 @@ jobs:
       - run: npm run build
       # dist/qc = scratch des galeries QC, jamais publié
       - run: rm -rf dist/qc
-      # PROD_REPO_TOKEN : PAT fine-grained du compte cgauche, Contents read/write sur cgauche.github.io
+      # PROD_DEPLOY_KEY : clé privée SSH dont la publique est une deploy key en écriture sur cgauche.github.io
       - uses: actions/checkout@v4
         with:
           repository: cgauche/cgauche.github.io
-          token: ${{ secrets.PROD_REPO_TOKEN }}
+          ssh-key: ${{ secrets.PROD_DEPLOY_KEY }}
           path: prod
       - name: Publier
         run: |

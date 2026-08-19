@@ -21,5 +21,6 @@ gh run watch                          # ou : gh run list --workflow=deploy.yml -
 ```
 Puis vérifier le site : https://cgauche.github.io/jeu/
 
-Le secret Actions `PROD_REPO_TOKEN` (dépôt `cgauche/game`) autorise le push vers
-`cgauche/cgauche.github.io` — un run qui échoue sur l'authentification vient de lui.
+Le secret Actions `PROD_DEPLOY_KEY` (dépôt `cgauche/game`) est la clé privée SSH dont la publique est
+une deploy key en écriture sur `cgauche/cgauche.github.io` — un run qui échoue sur l'authentification
+vient d'elle.
