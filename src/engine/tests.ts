@@ -121,7 +121,7 @@ export function isDoubleRoll(roll: number): boolean {
 export function evaluateTest(r: number, target: number, base?: number, policy: TestPolicy = getTestPolicy()): TestResult {
   // 1) Réussite « numérique » : jet ≤ cible.
   let success = r <= target;
-  // 2) Bandes automatiques (LDB 12 l.46). 'normal' = RAW (01..autoSuccessMax réussite auto,
+  // 2) Bandes automatiques (LDB 12 l.28). 'normal' = RAW (01..autoSuccessMax réussite auto,
   //    autoFailMin..00 échec auto) ; 'inverted' = maison (bandes échangées) ; 'off' = aucune.
   const lowBand = r <= policy.autoSuccessMax;
   const highBand = r >= policy.autoFailMin;
@@ -133,7 +133,7 @@ export function evaluateTest(r: number, target: number, base?: number, policy: T
     if (lowBand) { success = false; forced = 'fail'; }
     else if (highBand) { success = true; forced = 'success'; }
   }
-  // 3) DR : 'fast' = dizaines du jet sur une RÉUSSITE (LDB 12 l.128) ; sinon différence de dizaines.
+  // 3) DR : 'fast' = dizaines du jet sur une RÉUSSITE (LDB 12 l.102) ; sinon différence de dizaines.
   const baseSL = policy.slMode === 'fast' && success ? tens(r) : tens(target) - tens(r);
   // 4) DR auto des bandes (LDB 12 l.119/l.121) : réussite forcée ≥ +1 ; échec forcé ≤ −1.
   const sl = forced === 'success' ? Math.max(1, baseSL) : forced === 'fail' ? Math.min(-1, baseSL) : baseSL;
@@ -142,7 +142,7 @@ export function evaluateTest(r: number, target: number, base?: number, policy: T
 
 /** Valeur maximale d'un dé FORCÉ par la Résilience « Je ne faillirai pas ! » (LDB 17 l.68) : le dé
  *  choisi doit RESTER une réussite — ≤ cible ET hors bande d'échec auto. En mode 'normal' la bande
- *  haute (≥ autoFailMin) échoue toujours (LDB 12 l.46), d'où le plafond `autoFailMin − 1` — DÉRIVÉ
+ *  haute (≥ autoFailMin) échoue toujours (LDB 12 l.28), d'où le plafond `autoFailMin − 1` — DÉRIVÉ
  *  de la policy, jamais un nombre en dur. SOURCE UNIQUE (sélecteur + résolveurs de jet forcé). */
 export function maxForcedRoll(target: number, policy: TestPolicy = getTestPolicy()): number {
   const ceil = policy.bandsMode === 'normal' ? policy.autoFailMin - 1 : policy.targetMax;
@@ -151,7 +151,7 @@ export function maxForcedRoll(target: number, policy: TestPolicy = getTestPolicy
 
 /** Le dé qui MAXIMISE le DR d'une réussite FORCÉE (« Je ne faillirai pas ! », LDB 17 l.68 : on choisit
  *  le résultat → LE MEILLEUR), selon le `slMode` — car le meilleur jet DÉPEND de la policy :
- *  - **fast** (DR = dizaines du jet, LDB 12 l.128) → le jet valide le PLUS HAUT (`maxForcedRoll` : dizaines max) ;
+ *  - **fast** (DR = dizaines du jet, LDB 12 l.102) → le jet valide le PLUS HAUT (`maxForcedRoll` : dizaines max) ;
  *  - **standard** (DR = différence de dizaines) → **01** (le plus bas → dizaines de la cible).
  *  SOURCE UNIQUE du dé PAR DÉFAUT de la Résilience — remplace les `01` codés en dur (faux en Fast DR). */
 export function bestForcedRoll(target: number, policy: TestPolicy = getTestPolicy()): number {
@@ -374,7 +374,7 @@ export function extendedTestStep(
   return { total, done: total >= targetDR };
 }
 
-// ── Tableau des Résultats : bandes de DR (LDB 12 l.103-114) — PRIMITIVE PARTAGÉE ─────────────────
+// ── Tableau des Résultats : bandes de DR (LDB 12 l.104-114) — PRIMITIVE PARTAGÉE ─────────────────
 // Source UNIQUE des seuils qualitatifs « Impressionnant / Stupéfiant » jusqu'ici recopiés en nombres
 // magiques (critiques, maladies, soin, marchandage, interlude/évaluation, corruption, rencontres de
 // voyage). Le « palier » dépend de la MAGNITUDE du DR ; la réussite/l'échec, du drapeau `success`.

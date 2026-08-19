@@ -53,7 +53,7 @@ export function forceCrewRole(crew: Combatant, roleId: string, cumul = false, se
   const role = findCrewRoleById(roleId);
   if (!role) return null;
   // Résilience à DR max ; cible abaissée de +2 crans si cumul (Manque de bras, l.53). Le dé forcé est
-  // POLICY-AWARE (`bestForcedRoll` : standard → 01 = DR max ; Fast DR → dé le plus haut, LDB 12 l.128) —
+  // POLICY-AWARE (`bestForcedRoll` : standard → 01 = DR max ; Fast DR → dé le plus haut, LDB 12 l.102) —
   // un 01 en dur DONNERAIT DR 0 en Fast DR (dizaines du jet). `crewTalentDR` (Commandant émérite, MDG 09 l.54)
   // PRÉSERVÉ, ajouté au DR (jamais double-compté).
   // La cible passe par le MONTEUR, donc par `clampTarget` — le MÊME écrêtage que `rollTest` applique

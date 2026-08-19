@@ -82,7 +82,7 @@ describe('Test Étendu séquentiel (porte DR cumulé)', () => {
   });
 });
 
-describe('Test Étendu — règle « DR 0 = ±1 minimum » (LDB 12 l.208)', () => {
+describe('Test Étendu — règle « DR 0 = ±1 minimum » (LDB 12 l.185)', () => {
   beforeEach(() => { useGame.setState({ battle: null, pendingExtendedTest: null }); });
   afterEach(() => resetRule('test-extended-min-sl'));
 

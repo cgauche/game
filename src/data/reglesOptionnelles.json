@@ -2,7 +2,7 @@
   {
     "id": "test-auto-bands",
     "label": "Réussite / échec automatiques",
-    "ref": "LDB 12 l.46/48",
+    "ref": "LDB 12 l.28/32",
     "group": "Tests",
     "kind": "mode",
     "default": "normal",
@@ -16,7 +16,7 @@
   {
     "id": "test-critiques-doubles",
     "label": "Succès / échec stupéfiants",
-    "ref": "LDB 12 l.151",
+    "ref": "LDB 12 l.127",
     "group": "Tests",
     "kind": "flag",
     "default": false,
@@ -25,7 +25,7 @@
   {
     "id": "test-fast-sl",
     "label": "Calculer rapidement un DR",
-    "ref": "LDB 12 l.128",
+    "ref": "LDB 12 l.102",
     "group": "Tests",
     "kind": "flag",
     "default": false,
@@ -34,7 +34,7 @@
   {
     "id": "test-over-100",
     "label": "Tests supérieurs à 100 %",
-    "ref": "LDB 12 l.101",
+    "ref": "LDB 12 l.75",
     "group": "Tests",
     "kind": "flag",
     "default": false,
@@ -43,7 +43,7 @@
   {
     "id": "test-auto-band-width",
     "label": "Largeur des bandes automatiques",
-    "ref": "LDB 12 l.48",
+    "ref": "LDB 12 l.32",
     "group": "Tests",
     "kind": "param",
     "default": 5,
@@ -54,7 +54,7 @@
   {
     "id": "test-extended-min-sl",
     "label": "Tests étendus : DR 0 = ±1 minimum",
-    "ref": "LDB 12 l.208",
+    "ref": "LDB 12 l.185",
     "group": "Tests",
     "kind": "flag",
     "default": false,
@@ -430,8 +430,8 @@
   {
     "id": "interlude-assist-costs-activity",
     "label": "Assister une Entreprise coûte un créneau (maison)",
-    "ref": "LDB 12 l.188 / ADE II 8 l.81",
-    "maison": "#257 — LDB 23 l.5 / ADE II 8 l.65 bornent le budget par « participer à une Activité » ; le Soutien (LDB 12 l.188-200) et Planification (ADE II 8 l.81) ne chiffrent aucun coût d’Activité pour l’assistant. Défaut `false` : `confirmActivity` ne décompte que le meneur.",
+    "ref": "LDB 12 l.189 / ADE II 8 l.81",
+    "maison": "#257 — LDB 23 l.5 / ADE II 8 l.65 bornent le budget par « participer à une Activité » ; le Soutien (LDB 12 l.187-200) et Planification (ADE II 8 l.81) ne chiffrent aucun coût d’Activité pour l’assistant. Défaut `false` : `confirmActivity` ne décompte que le meneur.",
     "group": "Activités",
     "kind": "flag",
     "default": false,

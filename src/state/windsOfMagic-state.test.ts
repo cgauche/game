@@ -29,7 +29,7 @@ function setupCombat(): void {
   useGame.getState().startScene(testScene);
 }
 
-/** Cible de Test MODÉRÉE (loin du plafond `targetMax` 99 de `testPolicy`, LDB 12 l.101, option
+/** Cible de Test MODÉRÉE (loin du plafond `targetMax` 99 de `testPolicy`, LDB 12 l.75, option
  *  `test-over-100` désactivée) — un lanceur trop puissant écrêterait le delta du mod des Vents sous
  *  le plafond et fausserait la comparaison (`clamp`, `engine/tests.ts`). */
 function moderateCaster(): Combatant {

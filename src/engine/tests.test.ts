@@ -8,7 +8,7 @@ const P = (over: Partial<TestPolicy> = {}): TestPolicy => ({
   autoSuccessMax: 5, autoFailMin: 96, bandsMode: 'normal', slMode: 'standard', targetMin: 1, targetMax: 99, ...over,
 });
 
-describe('evaluateTest — bandes automatiques (LDB 12 l.46-47, l.147-149)', () => {
+describe('evaluateTest — bandes automatiques (LDB 12 l.28, l.32)', () => {
   it("'normal' : 01-05 = réussite auto même si cible < jet ; DR ≥ +1", () => {
     const t = evaluateTest(3, 0, undefined, P()); // 3 > 0 → échec « numérique », mais bande basse
     expect(t.success).toBe(true);
@@ -29,7 +29,7 @@ describe('evaluateTest — bandes automatiques (LDB 12 l.46-47, l.147-149)', () 
   });
 });
 
-describe('evaluateTest — DR rapide (« Calculer Rapidement un DR », LDB 12 l.128)', () => {
+describe('evaluateTest — DR rapide (« Calculer Rapidement un DR », LDB 12 l.102)', () => {
   it("'fast' : sur une réussite, DR = chiffre des dizaines du JET", () => {
     expect(evaluateTest(36, 80, undefined, P({ slMode: 'fast' })).sl).toBe(3); // dizaines de 36
     expect(evaluateTest(36, 80, undefined, P()).sl).toBe(5); // standard : 8 − 3
@@ -41,7 +41,7 @@ describe('evaluateTest — DR rapide (« Calculer Rapidement un DR », LDB 12 l.
   });
 });
 
-describe('Tests >100 % (LDB 12 l.101-104) : la valeur n’est plus plafonnée à 99', () => {
+describe('Tests >100 % (LDB 12 l.73-77) : la valeur n’est plus plafonnée à 99', () => {
   const rng50: RNG = { int: () => 50 }; // jet 50
   it('off (défaut) : valeur 115 plafonnée à 99 → DR = tens(99) − tens(50) = 4', () => {
     expect(rollTest(115, 'intermediaire', rng50, 0, P()).sl).toBe(4);
@@ -52,7 +52,7 @@ describe('Tests >100 % (LDB 12 l.101-104) : la valeur n’est plus plafonnée à
 });
 
 describe('maxForcedRoll — borne du dé forcé DÉRIVÉE de la policy (pas un nombre en dur)', () => {
-  it("'normal' : ≤ cible ET ≤ autoFailMin − 1 (96-00 échoue toujours, LDB 12 l.46)", () => {
+  it("'normal' : ≤ cible ET ≤ autoFailMin − 1 (96-00 échoue toujours, LDB 12 l.28)", () => {
     expect(maxForcedRoll(99, P())).toBe(95);
     expect(maxForcedRoll(40, P())).toBe(40);
   });
@@ -105,7 +105,7 @@ describe('evaluateCombinedTest — Test Combiné (LDB 12 l.202-206) : un jet vs 
   });
 });
 
-describe('Largeur des bandes automatiques (LDB 12 l.48) : param réglable, plus de 5/96 en dur', () => {
+describe('Largeur des bandes automatiques (LDB 12 l.32) : param réglable, plus de 5/96 en dur', () => {
   afterEach(() => resetRule('test-auto-band-width'));
   it('défaut RAW : bandes 01-05 / 96-00', () => {
     expect(getTestPolicy().autoSuccessMax).toBe(5);
@@ -146,7 +146,7 @@ describe('Bascule in-game : éditer UNE règle change le comportement (preuve «
   });
 });
 
-describe('Tableau des Résultats — paliers de DR (LDB 12 l.103-114, primitive partagée)', () => {
+describe('Tableau des Résultats — paliers de DR (LDB 12 l.104-114, primitive partagée)', () => {
   it('slTier par magnitude (succès comme échec)', () => {
     expect([0, 1].map(slTier)).toEqual(['minime', 'minime']);
     expect([2, -3].map(slTier)).toEqual(['normal', 'normal']);

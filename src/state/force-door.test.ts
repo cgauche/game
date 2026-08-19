@@ -78,7 +78,7 @@ describe('Enfoncer une porte à plusieurs (objet BE/B, jets indépendants)', () 
   });
 
   // Non-régression : le dé PAR DÉFAUT de la Résilience doit être policy-aware (`bestForcedRoll`). En Fast DR
-  // (LDB 12 l.128, DR = dizaines du JET), l'ancien `1` codé en dur donnait le DR MINIMAL (planché à 1) au lieu
+  // (LDB 12 l.102, DR = dizaines du JET), l'ancien `1` codé en dur donnait le DR MINIMAL (planché à 1) au lieu
   // du MAXIMAL. RAW LDB 17 l.68/73 « vous choisissez le résultat » = LE MEILLEUR → dizaines de la cible.
   it('Fast DR : le dé forcé vise le DR MAXIMAL (dizaines de la cible), PAS 1', () => {
     setRule('test-fast-sl', true); // règle optionnelle : sur une réussite, DR = dizaines du jet

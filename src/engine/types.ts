@@ -1135,7 +1135,7 @@ export interface ItemInstance {
    *  tenter ce Test qu'une seule fois par artefact touché »). */
   detectTried?: boolean;
   /** Jour de jeu de la dernière Évaluation RATÉE : pas de re-tentative le même jour (anti-spam —
-   *  LDB 12 l.120 : seul un résultat marginal offre un nouvel essai ; ADE II : re-tenter coûte du temps). */
+   *  LDB 12 l.94 : seul un résultat marginal offre un nouvel essai ; ADE II : re-tenter coûte du temps). */
   appraiseTriedDay?: number;
   /** FAUSSES Particularités soupçonnées (ADE II 4 : échec Impressionnant/Stupéfiant de
    *  l'identification — « soupçonne que l'objet possède une Particularité qu'il n'a pas

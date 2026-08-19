@@ -10,7 +10,7 @@ import { join } from 'node:path';
  * Test, donc implémentées UNE SEULE FOIS et réutilisées par TOUS les flux :
  *   • Chance « +1 DR » (LDB 17 l.24) → `bumpSL(tr)` (ajoute un Degré, `success` INTACT) ;
  *   • Résilience « Je ne faillirai pas ! » (l.68/73) → `bestForcedRoll(cible)` (dé forcé DR-MAX
- *     SELON la policy : standard → 01, mais Fast DR (LDB 12 l.128) → dé le plus HAUT valide) + `forcedTR` ;
+ *     SELON la policy : standard → 01, mais Fast DR (LDB 12 l.102) → dé le plus HAUT valide) + `forcedTR` ;
  *   • dé CHOISI (picker) → `evaluateTest(forced.roll, cible)` ; Résistance → `resist`.
  * La fabrique `makeRollFlow` compose ces verbes ; un flux ne fournit que sa FORME (`resolve`/`lens`/
  * `bonus`/`caps`) — il ne doit JAMAIS RE-CODER la mécanique dans son closure.
@@ -58,7 +58,7 @@ describe('Anti-dérive du système de jet — tout passe par la fabrique + les a
     const hits = scan(/evaluateTest\(\s*0?1\s*,/g);
     expect(
       hits,
-      `Dé forcé « 01 » codé en dur (${hits.join(', ')}) — route par bestForcedRoll(cible) (policy-aware, LDB 17 l.68 + Fast DR LDB 12 l.128).`,
+      `Dé forcé « 01 » codé en dur (${hits.join(', ')}) — route par bestForcedRoll(cible) (policy-aware, LDB 17 l.68 + Fast DR LDB 12 l.102).`,
     ).toEqual([]);
   });
 

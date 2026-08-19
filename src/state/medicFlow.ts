@@ -48,7 +48,7 @@ export interface MedicState {
   /** Absent = soins entre héros (meilleur soigneur du groupe). */
   npc?: MedicNpc;
   patientId: string | null;
-  /** Opération ARMÉE (Test étendu, LDB 12 l.200 : interrompre = perdre le cumul). Deux `kind`, MÊME machinerie
+  /** Opération ARMÉE (Test étendu, LDB 12 l.170-174). Deux `kind`, MÊME machinerie
    *  de passes (jet de Guérison influençable → cumul du DR) : `'surgery'` = Chirurgie d'une Blessure Critique
    *  (Talent Chirurgie, chaque passe inflige 1d10 PB + 1 Hémorragie, LDB 10 l.154) ; `'recovery'` = Test étendu
    *  de Guérison qui rend l'usage d'un membre désactivé (« Épaule luxée »/« Genou démis », LDB 18 l.120/179 — aucun
@@ -214,7 +214,7 @@ export function openSurgeryPass(get: Get, set: Set): void {
 }
 
 /** APPLIQUE une passe de l'opération étendue (calque `extendedTestNext`) : prend le jet FIGÉ de `pendingSurgery`
- *  (déjà roulé + influencé en modale) et cumule le DR (repart à 0 sous 0, LDB 12 l.200).
+ *  (déjà roulé + influencé en modale) et cumule le DR (repart à 0 sous 0, LDB 12 l.174).
  *  - `kind:'surgery'` : chaque passe inflige 1d10 PB + 1 Hémorragie (LDB 10 l.154) ; à 0 PB → interruption.
  *    Cible atteinte → Blessure Critique réparée + Test d'infection du PATIENT (LDB 10 l.365) DIFFÉRÉ en ÉTAPE de
  *    cascade INFLUENÇABLE (`combatEndDisease`, jumeau de fin de combat).
@@ -272,7 +272,7 @@ export function surgeryNext(get: Get, set: Set): void {
   openSurgeryPass(get, set);
 }
 
-/** Annule la Chirurgie (le cumul est perdu — Test étendu interrompu, LDB 12 l.200). Jamais commencée
+/** Annule la Chirurgie : le cumul du Test étendu (LDB 12 l.170-174) est perdu. Jamais commencée
  *  (aucune passe appliquée) → l'acte PNJ est remboursé, comme `healCancel`. Ferme la passe en cours
  *  (`pendingSurgery`) ET l'opération armée (`medic.surgery`). */
 export function surgeryCancel(get: Get, set: Set): void {

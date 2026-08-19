@@ -8,7 +8,7 @@ import type { PendingTest } from './pendings';
 import type { Combatant } from '../engine/types';
 
 /**
- * Option « Succès / échec stupéfiants » (LDB 12 l.151) : un Test résolu sur un DOUBLE devient un
+ * Option « Succès / échec stupéfiants » (LDB 12 l.127) : un Test résolu sur un DOUBLE devient un
  * Succès / Échec Stupéfiant — PUREMENT un libellé (aucune mécanique nouvelle). On vérifie (1) que
  * `pendingTest.isDouble` est bien PROPAGÉ par la fabrique de flux jusqu'au pending, (2) que le
  * libellé pur `amazingTestLabel` lit ce flag correctement, piloté par la règle.
@@ -29,7 +29,7 @@ const basePending = (over: Partial<PendingTest> = {}): PendingTest => ({
   roll: null, success: false, sl: 0, ...over,
 });
 
-describe('amazingTestLabel — libellé du double (LDB 12 l.151), PUR', () => {
+describe('amazingTestLabel — libellé du double (LDB 12 l.127), PUR', () => {
   it('aucun badge avant le jet', () => {
     expect(amazingTestLabel(basePending({ roll: null }))).toBeNull();
   });

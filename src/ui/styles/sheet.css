@@ -594,7 +594,7 @@
   line-height: 1.35;
   text-align: left;
 }
-/* Badge « Succès / Échec Stupéfiant » (option LDB 12 l.151) : libellé du double, sous l'issue du Test. */
+/* Badge « Succès / Échec Stupéfiant » (option LDB 12 l.127) : libellé du double, sous l'issue du Test. */
 .amazing-row { display: flex; justify-content: center; margin: -2px 0 8px; }
 .amazing-chip { font-weight: 700; letter-spacing: 0.02em; }
 .amazing-chip.amazing-success { color: var(--gold2); border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, transparent); }

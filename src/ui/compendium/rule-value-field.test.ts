@@ -51,7 +51,7 @@ describe('B2 — REMÈDE (b) : validateEntry refuse une valeur incompatible avec
   const errs = (entry: Record<string, unknown>) => validateEntry('reglesOptionnelles', entry, [...entries, entry], 1);
 
   it('MORSURE — `"false"` (chaîne) sur un interrupteur → rouge', () => {
-    const e = errs({ id: 'r', label: 'R', ref: 'LDB 12 l.46', group: 'Tests', kind: 'flag', default: 'false' });
+    const e = errs({ id: 'r', label: 'R', ref: 'LDB 12 l.28', group: 'Tests', kind: 'flag', default: 'false' });
     expect(e.some((x) => x.startsWith('default : un interrupteur'))).toBe(true);
   });
 
@@ -61,7 +61,7 @@ describe('B2 — REMÈDE (b) : validateEntry refuse une valeur incompatible avec
   });
 
   it('MORSURE — un défaut HORS des `options` d’un choix → rouge', () => {
-    const e = errs({ id: 'r', label: 'R', ref: 'LDB 12 l.46', group: 'Tests', kind: 'mode', default: 'inconnu', options: ['normal', 'off'] });
+    const e = errs({ id: 'r', label: 'R', ref: 'LDB 12 l.28', group: 'Tests', kind: 'mode', default: 'inconnu', options: ['normal', 'off'] });
     expect(e.some((x) => x.includes("n'est pas une des `options`"))).toBe(true);
   });
 

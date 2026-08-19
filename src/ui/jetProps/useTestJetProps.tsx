@@ -54,7 +54,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   // il décale le DR du Test résolu (`FLOWS.test`), donc il s'affiche comme une ligne de mod de DR.
   const capLabel = pt.capriciousRoll == null ? null
     : `Capricieux (d10 ${pt.capriciousRoll} → ${pt.capriciousDR ? `${pt.capriciousDR > 0 ? '+' : '−'}${Math.abs(pt.capriciousDR)} DR` : 'DR indiqué'})`;
-  // Option « Succès / échec stupéfiants » (LDB 12 l.151) : badge du double, pilotée par la règle.
+  // Option « Succès / échec stupéfiants » (LDB 12 l.127) : badge du double, pilotée par la règle.
   const amazing = rule('test-critiques-doubles') ? amazingTestLabel(pt) : null;
   // Inversion de Test (LDB 23 l.209/218, LDB 10 — CHOIX du joueur, #558) : offerte dès qu'une voie
   // (Talent/jeton) est applicable (`reverseAvailable`, pure) ; `reversePreview` rend l'issue LISIBLE
@@ -127,7 +127,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
       }),
     ],
     outcome: rolled ? [recapLineOfEvent(ev('info', describeTest(pt), pt.actorId), party)] : undefined,
-    /* Option « Succès / échec stupéfiants » (LDB 12 l.151) : badge du double (libellé seul, aucune
+    /* Option « Succès / échec stupéfiants » (LDB 12 l.127) : badge du double (libellé seul, aucune
        mécanique nouvelle), gaté par la règle. */
     postRollExtra: amazing ? (
       <div className="amazing-row">

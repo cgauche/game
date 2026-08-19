@@ -2239,7 +2239,7 @@ function sidesClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): Seq
  * auxquels vous échouez et pour chaque 2 chouettes que vous effacez, faites un Test de **Résistance à
  * l'alcool Intermédiaire (+0)**. »
  *
- * UN SEUL DÉ, DEUX LECTURES (`LDB 12 l.203-208`) : le jet du tour est celui de la première lecture
+ * UN SEUL DÉ, DEUX LECTURES (`LDB 12 l.202-208`) : le jet du tour est celui de la première lecture
  * (le Test que la manche joue déjà) ; la seconde est ÉVALUÉE sur LE MÊME dé par la primitive du
  * moteur (`evaluateCombinedTest`) — aucun second tirage n'existe.
  *
@@ -2370,7 +2370,7 @@ function combinedClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): 
     log.push(t('tavern.cerevisChouette', { who: qui, dr: perdant === CAMP_PLAYER ? drMien : drSien }));
   }
 
-  // 3) LA SECONDE LECTURE, sur LE MÊME dé (`LDB 12 l.203-208`) : chaque échec compte, et l'échéance
+  // 3) LA SECONDE LECTURE, sur LE MÊME dé (`LDB 12 l.202-208`) : chaque échec compte, et l'échéance
   //    déclarée paie ce que la donnée dit.
   for (const camp of [CAMP_PLAYER, CAMP_OPPONENT]) {
     const jet = camp === CAMP_PLAYER ? sides.player : sides.opponent;

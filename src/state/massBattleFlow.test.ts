@@ -672,7 +672,7 @@ describe('Activité SOUTENABLE — Planification (l.81 : « peut aider au Test �
     expect(pa.heroId).toBe(a);
   });
 
-  // #257 — RAW muet (LDB 12 l.188 « aider au Test » / ADE II 8 l.81) : le coût d'Activité de
+  // #257 — RAW muet (LDB 12 l.189 « apporter son soutien » / ADE II 8 l.81) : le coût d'Activité de
   // l'assistant est un arbitrage éditable (flag `interlude-assist-costs-activity`, policy.ts).
   it('assistant GRATUIT par défaut : seul le meneur perd un créneau', () => {
     resetRule('interlude-assist-costs-activity');

@@ -52,7 +52,7 @@ Chaque entrée : la règle RAW non entièrement suivie, ce qui est fait, ce qui 
   deux sens ») et FAIT CONTINUER la bataille (groupe repoussé mais relevé, pas d'écran de game-over).
 - ~~**Activités de bataille — Tests combinés (l.79-110)**~~ ✅ **RÉSOLU** : Infiltration (Discrétion +
   Perception) & Repérage (Chevaucher + Perception) portent `combined:true` et réutilisent la primitive
-  existante `evaluateCombinedTest` (un jet vs deux valeurs, LDB 12 l.229) — RÉUSSITE sur `full` (les deux),
+  existante `evaluateCombinedTest` (un jet vs deux valeurs, LDB 12 l.202-208) — RÉUSSITE sur `full` (les deux),
   DR de palier = le plus faible des deux. Sabotage reste au CHOIX (« Discrétion OU Divertissement », RAW).
 - **Aléa de bataille** : appliqué en narratif (option RAW l.309), pas mécanisé. HORS PÉRIMÈTRE.
 - **Coût / Horreurs de la guerre** (options ADE II) : non modélisés. HORS PÉRIMÈTRE.

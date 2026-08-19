@@ -565,7 +565,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
   const party = useGame((s) => s.party);
   // Détection d'artefact (LDB 10) : visible seulement si un héros du groupe possède le Talent.
   const canDetect = !!bestDetector(party);
-  // Verrou d'Évaluation : un échec bloque la re-tentative jusqu'au lendemain (LDB 12 l.120).
+  // Verrou d'Évaluation : un échec bloque la re-tentative jusqu'au lendemain (LDB 12 l.94).
   const today = useGame((s) => Math.floor(s.gameTime / MINUTES_PER_DAY));
 
   return (

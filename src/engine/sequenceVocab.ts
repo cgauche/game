@@ -223,8 +223,8 @@ export interface SequenceSide {
 }
 
 /* ── FAMILLE (9) : TEST COMBINÉ À CONSÉQUENCES DISTINCTES ────────────────────────────────────────
- * UN seul dé, DEUX lectures, et chacune sa conséquence propre (`LDB 12 l.203-208` : « On lance un
- * seul d100, comparé successivement aux deux valeurs cibles » ; `NADJ 16 l.97`). La première lecture
+ * UN seul dé, DEUX lectures, et chacune sa conséquence propre (`LDB 12 l.202-208` : « Faire un seul Test, en
+ * comparant donc un unique jet de pourcentage avec la valeur de ces deux Compétences » ; `NADJ 16 l.97`). La première lecture
  * est le Test que la séquence joue déjà (Compétence/Difficulté de l'entrée) ; la seconde est déclarée
  * ici, avec ce qu'elle coûte quand elle échoue et le RYTHME auquel ce coût se paie. */
 export interface SequenceCombinedRules {

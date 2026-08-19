@@ -8,7 +8,7 @@
  * - bandsMode : 'normal' = RAW (01..autoSuccessMax réussite auto, autoFailMin..00 échec auto, LDB 12
  *   l.46) ; 'inverted' = règle maison (les deux bandes échangées) ; 'off' = aucune bande.
  * - slMode : 'standard' = DR par différence de dizaines ; 'fast' = sur une réussite, DR = dizaines
- *   du jet (« Calculer Rapidement un DR », LDB 12 l.128).
+ *   du jet (« Calculer Rapidement un DR », LDB 12 l.102).
  */
 import { rule } from './policy';
 
@@ -16,9 +16,9 @@ export type BandsMode = 'normal' | 'inverted' | 'off';
 export type SLMode = 'standard' | 'fast';
 
 export interface TestPolicy {
-  /** 01..autoSuccessMax = bande basse (LDB 12 l.46). */
+  /** 01..autoSuccessMax = bande basse (LDB 12 l.28). */
   autoSuccessMax: number;
-  /** autoFailMin..00 = bande haute (LDB 12 l.46). */
+  /** autoFailMin..00 = bande haute (LDB 12 l.28). */
   autoFailMin: number;
   bandsMode: BandsMode;
   slMode: SLMode;
@@ -30,7 +30,7 @@ export interface TestPolicy {
 /** Policy EFFECTIVE courante (lit les règles optionnelles). Appelée à chaque Test → reflète les
  *  surcharges in-game en direct. */
 export function getTestPolicy(): TestPolicy {
-  // Largeur des bandes auto réglable (LDB 12 l.48) : 01..N réussite, (101−N)..00 échec. Défaut 5 → 01-05 / 96-00.
+  // Largeur des bandes auto réglable (LDB 12 l.32) : 01..N réussite, (101−N)..00 échec. Défaut 5 → 01-05 / 96-00.
   const bandWidth = rule('test-auto-band-width') as number;
   return {
     autoSuccessMax: bandWidth,

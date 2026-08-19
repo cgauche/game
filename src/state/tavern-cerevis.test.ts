@@ -8,8 +8,8 @@
  * Pour chaque 3 Tests d'Initiative auxquels vous échouez et pour chaque 2 chouettes que vous effacez,
  * faites un Test de **Résistance à l'alcool Intermédiaire (+0)**. »
  * Verbatim `l.88` : « chaque chouette est effacé lorsque le joueur boit une demi-chope de bière ».
- * `LDB 12 l.203-208` (Tests Combinés) : « On lance un seul d100, comparé successivement aux deux
- * valeurs cibles. »
+ * `LDB 12 l.202-208` (Tests Combinés) : « Faire un seul Test, en comparant donc un unique jet de
+ * pourcentage avec la valeur de ces deux Compétences. »
  *
  * CE QUI EST ARBITRÉ MAISON (le RAW est muet, et cela se mesure ici comme tel) : le NOMBRE DE TOURS
  * (donnée éditable `combined.tours`) et le vainqueur = le MOINS de chouettes. La source ne nomme
@@ -159,7 +159,7 @@ describe('Le Cerevis — les deux lectures du MÊME dé', () => {
   });
 
   /**
-   * LA SECONDE lecture est faite sur LE MÊME dé (LDB 12 l.203-208) : le cas qui la PROUVE est le dé
+   * LA SECONDE lecture est faite sur LE MÊME dé (LDB 12 l.202-208) : le cas qui la PROUVE est le dé
    * qui tombe ENTRE les deux cibles — réussite au Pari, échec à l'Initiative. Un dé sous les deux
    * cibles ne discriminerait rien (les deux lectures réussissent).
    */

@@ -1438,7 +1438,7 @@ export interface BatchParticipant extends RollParticipant {
   /** DÉTERMINATION (LDB 17 l.59) dépensée SUR CETTE RANGÉE : l'applier de bande lit le flag DE LA RANGÉE
    *  pour ne pas lui appliquer la conséquence, les autres rangées de la bande gardant la leur. */
   immune?: boolean;
-  /** SECONDE LECTURE du MÊME dé pour CETTE rangée (Test combiné, `LDB 12 l.203-208`) — cf.
+  /** SECONDE LECTURE du MÊME dé pour CETTE rangée (Test combiné, `LDB 12 l.202-208`) — cf.
    *  `CascadeSecondRead` : la rangée dit ses deux cibles, un seul jet les tranche. */
   second?: CascadeSecondRead;
 }

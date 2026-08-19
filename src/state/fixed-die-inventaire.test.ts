@@ -30,7 +30,7 @@ const HERO: Combatant = {
 const FOE = { ...HERO, id: 'E', label: 'Ennemi', kind: 'enemy', pos: { x: 1, y: 0 } } as unknown as Combatant;
 
 const T = 45; // cible de toutes les fixtures
-const PERDANT = 99; // > cible ET dans la bande d'échec auto (LDB 12 l.46)
+const PERDANT = 99; // > cible ET dans la bande d'échec auto (LDB 12 l.28)
 const rate = { roll: 88, target: T, sl: -4, success: false }; // jet RATÉ générique (4 champs)
 const rateTR = { ...rate, isDouble: true };
 const atkDetail = { label: 'Corps à corps', base: T, modifier: 0, target: T, roll: 88, success: false, sl: -4 };

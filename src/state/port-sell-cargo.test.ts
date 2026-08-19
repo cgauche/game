@@ -51,7 +51,7 @@ function setup(port: PortProfile, party: Combatant[], enc = 40): void {
 }
 
 describe('portSellCargo — cascade Ragot → acheteur → Marchandage (#275/#274)', () => {
-  // Bandes automatiques du d100 (LDB 12 l.46, 01-05 auto-succès / 96-00 auto-échec) OFF pour ces tests :
+  // Bandes automatiques du d100 (LDB 12 l.28, 01-05 auto-succès / 96-00 auto-échec) OFF pour ces tests :
   // les cibles construites (0 ou ≥ 100) doivent trancher SEULES, sans les 10 % de rolls « forcés ».
   beforeEach(() => setRule('test-auto-bands', 'off'));
   afterEach(() => resetRule('test-auto-bands'));

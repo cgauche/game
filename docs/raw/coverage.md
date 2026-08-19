@@ -29,7 +29,7 @@
 | 09 | Compétences | ✅ | 146 (competences.md ×137) |
 | 10 | Talents | ✅ | 200 (talents.md ×138) |
 | 11 | Sixième sens | ✅ | 31 (talents.md ×30) |
-| 12 | Tests | ✅ | 48 (tests.md ×43) |
+| 12 | Tests | ✅ | 50 (tests.md ×45) |
 | 13 | Combat | ✅ | 133 (combat.md ×122) |
 | 14 | OPTION : FRAPPE MORTELLE | ✅ | 138 (combat.md ×132) |
 | 15 | Déplacement | ✅ | 74 (combat.md ×66) |

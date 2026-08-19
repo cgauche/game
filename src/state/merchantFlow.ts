@@ -975,7 +975,7 @@ export function resolveAppraise(get: Get, set: Set): void {
     return;
   }
   if (!pa.success) {
-    // Échec NET : pas de re-tentative le même jour (LDB 12 l.120 — seul un résultat marginal
+    // Échec NET : pas de re-tentative le même jour (LDB 12 l.94 — seul un résultat marginal
     // « permet de faire un nouvel essai » ; ADE II : re-tenter une identification coûte du temps).
     patchAppraiseTarget(get, set, pa, { appraiseTriedDay: gameDay(get) });
     get().log(t('mf.appraiseFail', { item: pa.itemName }));

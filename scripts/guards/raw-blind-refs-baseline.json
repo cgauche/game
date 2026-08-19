@@ -19,7 +19,6 @@
   },
   "src/data/reglesOptionnelles.json": {
     "EDOC 8 l.73": 1,
-    "LDB 12 l.101": 1,
     "LDB 23 l.48": 1,
     "LDB 63 l.63": 1
   },
@@ -73,13 +72,6 @@
   "src/engine/social.ts": {
     "LDB 8 l.88": 1
   },
-  "src/engine/testPolicy.ts": {
-    "LDB 12 l.48": 1
-  },
-  "src/engine/tests.test.ts": {
-    "LDB 12 l.128": 1,
-    "LDB 12 l.48": 1
-  },
   "src/engine/trauma.ts": {
     "LDB 16 l.89": 1
   },
@@ -118,9 +110,6 @@
   "src/state/jumpMove.ts": {
     "LDB 15 l.114": 1
   },
-  "src/state/massBattleFlow.test.ts": {
-    "LDB 12 l.188": 1
-  },
   "src/state/medicFlow.ts": {
     "LDB 10 l.365": 1
   },
@@ -135,9 +124,6 @@
   },
   "src/state/restore-fortune.test.ts": {
     "LDB 17 l.52": 1
-  },
-  "src/state/rollflow-no-drift.test.ts": {
-    "LDB 12 l.128": 1
   },
   "src/state/sequenceCore.ts": {
     "NADJ 16 l.83": 2
