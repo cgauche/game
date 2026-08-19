@@ -303,7 +303,7 @@
 .is-first .icon {
   vertical-align: -2px;
 }
-/* LDB 62 l.318-319. */
+/* LDB 62 l.298-300. */
 .is-first.free {
   color: var(--cyan-pale);
   border-color: rgba(159, 216, 255, 0.55);

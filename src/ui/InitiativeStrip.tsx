@@ -39,7 +39,7 @@ export interface InitiativeStripProps {
   over: boolean;
   /** Ids des combattants pouvant « agir en premier » (canActFirst, calculé par CampaignView). */
   canFirstIds: string[];
-  /** LDB 62 l.318-319. */
+  /** LDB 62 l.298-300. */
   freeFirstIds?: string[];
   /** Action de CIBLAGE en cours (#21) : le clic sur une tuile CIBLE ce combattant (titre adapté). */
   targeting?: boolean;

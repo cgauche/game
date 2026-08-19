@@ -145,7 +145,7 @@ export function CampaignView() {
         return !!c && canActFirst(c, battle) && controlsCombatant(useGame.getState(), c);
       })
     : [];
-  // LDB 62 l.318-319.
+  // LDB 62 l.298-300.
   const freeFirstIds = canFirstIds.filter((id) => {
     const c = battle?.combatants.find((x) => x.id === id);
     return !!c && freeActFirst(c);
