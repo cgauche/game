@@ -80,6 +80,9 @@ import { clearFaceBakes } from '../backends/webgl/faceBake';
 import { materiauPlanTransparent, worldSurfaceMaterials } from '../backends/webgl/worldMaterials';
 import {
   actorBillboards,
+  actorIdentityKey,
+  memesBillboardEls,
+  reposerActeurs,
   applyCutawayMask,
   applyFogGamma,
   applyVisibilityTint,
@@ -440,22 +443,34 @@ const accentsRetenus = memoByRefDeps<object, SceneGroundAccent[]>();
 const decorRetenu = memoByRefDeps<object, BillboardSubject[]>();
 const acteursRetenus = memoByRefDeps<object, BillboardSubject[]>();
 
-/** Vide un groupe et libère ce qu'il portait — un groupe se reconstruit ENTIER, jamais par différence.
- *  La géométrie marquée `emprunte` appartient à un autre (le bake de `bakeWorldGeometry`, le corps
- *  d'un jumeau de silhouette) : elle survit au groupe. La descente est RÉCURSIVE — ce qu'un objet
- *  porte en enfant (le jumeau de silhouette d'un quad, #1297) a son propre matériau à libérer. */
+/** LIBÈRE un objet monté et sa descendance : matériaux et géométries, sauf celles marquées
+ *  `emprunte` (le bake de `bakeWorldGeometry`, le corps d'un jumeau de silhouette), qui appartiennent
+ *  à un autre. La descente est RÉCURSIVE — ce qu'un objet porte en enfant (le jumeau de silhouette
+ *  d'un quad, #1297) a son propre matériau à libérer. */
+function libererObjet(groupe: THREE.Group, objet: THREE.Object3D): void {
+  groupe.remove(objet);
+  objet.traverse((o) => {
+    const porteur = o as THREE.Mesh;
+    if (porteur.material) {
+      const mats = Array.isArray(porteur.material) ? porteur.material : [porteur.material];
+      for (const m of mats) m.dispose();
+    }
+    if (porteur.geometry && !porteur.userData.emprunte) porteur.geometry.dispose();
+  });
+}
+
+/** Libère UN quad et tout ce qu'il porte : son jumeau de silhouette (enfant du quad) et son disque
+ *  d'ombre de contact (frère dans le groupe). C'est le geste du SORTANT dans la différence de montage
+ *  (#1396) — le groupe entier, lui, ne se vide qu'au départ de l'écran (`viderGroupe`). */
+function libererBoard(groupe: THREE.Group, b: Board): void {
+  libererObjet(groupe, b.mesh);
+  if (b.shadow) libererObjet(groupe, b.shadow as THREE.Object3D);
+}
+
+/** Vide un groupe et libère ce qu'il portait — au DÉPART DE L'ÉCRAN seulement : la passe de montage,
+ *  elle, travaille par DIFFÉRENCE (#1396). */
 function viderGroupe(groupe: THREE.Group): void {
-  for (const enfant of [...groupe.children]) {
-    groupe.remove(enfant);
-    enfant.traverse((o) => {
-      const porteur = o as THREE.Mesh;
-      if (porteur.material) {
-        const mats = Array.isArray(porteur.material) ? porteur.material : [porteur.material];
-        for (const m of mats) m.dispose();
-      }
-      if (porteur.geometry && !porteur.userData.emprunte) porteur.geometry.dispose();
-    });
-  }
+  for (const enfant of [...groupe.children]) libererObjet(groupe, enfant);
 }
 
 /** CRAN d'ART d'une vue. La CAMÉRA suit le lacet continu (`stage3dFraming` lit `Dims.yawDeg`), mais
@@ -670,6 +685,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // REGARD dont les quads montés portent l'art, par sa CLÉ. Il avance à la repose comme au montage :
   // c'est lui qui distingue « ce regard vient d'être monté » de « le regard a changé ».
   const regardDesBoards = useRef(cleRegard(regard));
+  /** BASE de montage des quads (échelle du monde, présence d'ombre de contact) : elle décide si la
+   *  passe de montage peut faire une DIFFÉRENCE ou doit tout refaire (#1396). */
+  const baseDesBoards = useRef('');
   // MILIEU de la première personne (`null` = vue de plateau) : la SEULE entrée de la brume et du fond.
   // La portée de rendu s'en dérive déjà (`povDepth`) — même donnée, même verdict d'intérieur.
   const povIndoor = frame.mode === 'pov' ? frame.indoor : null;
@@ -865,9 +883,33 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     () => (pionsEnDisques ? { tokens: AUCUN_TOKEN, props: els.props } : els),
     [pionsEnDisques, els],
   );
-  const decor = decorRetenu(jeton, [...hauteurDeps, mpt, tintAt, elsMonde], () => collectBillboards(scene, mpt, tintAt, elsMonde));
-  const acteurs = acteursRetenus(jeton, [...hauteurDeps, actors, mpt, tintAt, pionsEnDisques], () => (pionsEnDisques ? AUCUN_SUJET : actorBillboards(actors, scene, mpt, tintAt)));
+  // ÉLÉMENTS RETENUS PAR CONTENU (#1396) : les builders rendent des tableaux NEUFS à chaque calcul de
+  // vue (ils prennent le champ de visibilité) et l'éditeur en reforge à chaque tick d'outil. La
+  // rétention vit ICI, au socle, et non chez un hôte : les deux appelants montent le même écran.
+  const elsRetenu = useRef<SceneBillboardEls | null>(null);
+  if (!elsRetenu.current || !memesBillboardEls(elsRetenu.current, elsMonde)) elsRetenu.current = elsMonde;
+  const elsStables = elsRetenu.current;
+  // IDENTITÉ des acteurs — qui ils sont et quel art ils portent, JAMAIS où ils sont (`actorIdentityKey`) :
+  // la case logique appartient à la pose, que la repose ci-dessous porte aux sujets déjà montés.
+  const acteursCle = actors.map(actorIdentityKey).join('|');
+  // La TEINTE de visibilité n'entre PAS dans ces rétentions (#1396) : elle se prend à la case du sujet,
+  // par la passe de POSE, à la cadence de la frame (`stage/boardPose.poseBoards`).
+  const decor = decorRetenu(jeton, [...hauteurDeps, mpt, elsStables], () => collectBillboards(scene, mpt, elsStables));
+  const acteurs = acteursRetenus(jeton, [...hauteurDeps, acteursCle, mpt, pionsEnDisques], () => (pionsEnDisques ? AUCUN_SUJET : actorBillboards(actors, scene, mpt)));
   const subjects = useMemo(() => [...decor, ...acteurs], [decor, acteurs]);
+  // REPOSE DE POSITION : un acteur qui change de case suit sa case, en place. C'est la passe sœur de
+  // la repose de regard — même loi, autre entrée. Elle PEINT sa propre écriture (aucune référence ne
+  // bouge sous elle) et redemande la carte d'ombre : le casteur, lui, a bougé.
+  useEffect(() => {
+    const { ancres, caps } = reposerActeurs(acteurs, actors, scene, mpt);
+    // Un cap qui tourne se relève comme un quart de tour : par la repose de regard, sur les seuls
+    // quads concernés. Un corps ANIMÉ n'y passe pas — il choisit sa vue par image (`choisirFrame`).
+    if (caps.length) reposerRegard(boardsRef.current.filter((b) => caps.includes(b.sub)), regardRef.current);
+    if (!ancres && !caps.length) return;
+    ombresARefaire.current = true;
+    dessiner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [acteurs, actors, scene, mpt]);
   // ── MARQUES DE CASES (P3-0c) : les éléments du builder, rangés par SLOT de montage. La CAPACITÉ des
   // pools ne suit que les paliers (`slotCapacity`) — un anneau de cible qui apparaît ne redimensionne
   // rien, il s'écrit dans le pool déjà là.
@@ -916,9 +958,15 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // frame — ce qui est la bonne famille pour une touffe posée au sol, et un écart déclaré pour un
   // billboard, dont la normale est l'axe caméra et qu'aucune famille d'orientation ne décrit.
   // Elle PEINT sa propre écriture, comme le dégagement : les couleurs de sommet d'un maillage déjà
-  // monté ne sont vues par aucune dépendance du redessin. Rien d'écrit, rien de peint.
+  // monté ne sont vues par aucune dépendance du redessin. Rien d'écrit, rien de peint — à une
+  // exception près, et c'est la MÊME porte : les BILLBOARDS relisent le champ à la POSE (#1396), donc
+  // un champ NEUF les concerne même si aucun sommet du monde n'a bougé.
+  const champTeinte = useRef<TintAt | null>(null);
   useEffect(() => {
-    if (applyVisibilityTint(baked, tintAt, fade).bouge) dessiner();
+    const bougé = applyVisibilityTint(baked, tintAt, fade).bouge;
+    const neuf = champTeinte.current !== tintAt;
+    champTeinte.current = tintAt;
+    if (bougé || neuf) dessiner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baked, tintAt, fade]);
   // FOND du canevas sous cette météo — un NOMBRE, donc une dépendance d'effet stable (deux frames de
@@ -949,9 +997,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     [geometry, subjects],
   );
   // La boîte par sa VALEUR : ce que le montage des lampes lit d'elle, ce sont ses six nombres. Sa
-  // référence, elle, suit celle des SUJETS, qui portent la teinte de visibilité CUITE (`sub.tint`,
-  // `collectBillboards`) — un champ de vision qui change reforge donc la liste sans qu'aucun casteur
-  // n'ait bougé, et remontait ambiante + soleil, carte d'ombre 2048² comprise, à chaque pas du groupe.
+  // référence, elle, suit celle des SUJETS — une liste reforgée sans qu'aucun casteur n'ait bougé
+  // remontait ambiante + soleil, carte d'ombre 2048² comprise.
   const cléBoite = `${shadowBox.min.x},${shadowBox.min.y},${shadowBox.min.z},${shadowBox.max.x},${shadowBox.max.y},${shadowBox.max.z}`;
 
   // ── INTEMPÉRIES (P2-6) : ce qui TOMBE dans le monde. La PORTE est celle de toutes les vues
@@ -1179,12 +1226,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     applyFlicker(pool.current, flaquesÉcrites, performance.now() / 1000);
     // Quads ALIGNÉS ÉCRAN, ancrés aux PIEDS — exactement ce que fait le backend affine du sprite ; le
     // glissement de marche de l'instant y entre (`stage/boardPose.ts`, la passe pure), les lampes qu'un
-    // marcheur PORTE avec lui, et l'EXPOSITION de chaque quad à l'endroit où il vient de se poser.
+    // marcheur PORTE avec lui, l'EXPOSITION de chaque quad à l'endroit où il vient de se poser, et la
+    // TEINTE de visibilité de sa case (#1396 : une valeur de frame, jamais une identité de sujet).
     const aGlissé = poseBoards(boardsRef.current, camera, anim ? anim.glide : AUCUN_GLISSEMENT, {
       pool: pool.current,
       slots: flaquesÉcrites,
       surfaceLuminance: lumière.surfaceLuminance,
-    }, chromeAt ?? AUCUN_CHROME);
+    }, chromeAt ?? AUCUN_CHROME, tintAt);
     // FLIPBOOK (#1176, L3) : la CELLULE que chaque quad montre à cette image. Passe sœur de la pose,
     // au même endroit et sur les mêmes boards — deux écritures de matériau, aucune rasterisation. La
     // planche absente du cache est DEMANDÉE, jamais attendue : le quad garde la sienne d'ici là.
@@ -1217,7 +1265,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // CARTE D'OMBRE : elle ne se recuit QUE quand ce qu'elle contient a bougé — un casteur qui glisse,
     // ou un montage (lampes, monde, billboards) qui l'a demandée. Une rotation de caméra, un zoom, une
     // frame de marche où personne ne glisse : la carte 2048² de la frame précédente reste valide.
-    if (aGlissé || ombresARefaire.current) {
+    // …et jamais quand RIEN NE PROJETTE (`lit` : intérieur, nuit, soleil sous son fondu, regard qui
+    // n'en monte aucun) — la passe d'ombres n'a alors pas de directionnelle à rendre, et un pas y
+    // demandait tout de même une recuisson par image de glissement (mesuré : 15 par pas).
+    if (lit && (aGlissé || ombresARefaire.current)) {
       renderer.shadowMap.needsUpdate = true;
       ombresARefaire.current = false;
     }
@@ -1399,9 +1450,17 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // comme la cession d'une même image vivent au module, et nulle part ailleurs.
   const vacille = hasFlicker(flaquesÉcrites);
   const pulseHalos = !!halos && (halos.fouilles.length > 0 || halos.pnjs.length > 0);
+  // Un CORPS ANIMÉ est un motif comme les autres (#1396) : sa planche de flipbook se choisit PAR IMAGE
+  // (`choisirFrame` : respiration au repos, cycle de marche, effondrement d'un corps à terre, et la vue
+  // que le regard courant demande). Sans battement, ces gestes n'avancent qu'aux commits React — l'idle
+  // se joue par à-coups, un effondrement se fige à mi-chute (corps en l'air) et la vue d'un quart de
+  // tour ne se relève qu'au prochain rendu venu d'ailleurs. Le remontage complet des quads à chaque pas
+  // le masquait : il peignait une image par quad.
+  const corpsAnimés = subjects.some((s) => !!s.frameSvg);
   useBattementContinu(!!champ, 'averse');
   useBattementContinu(vacille, 'vacillement');
   useBattementContinu(pulseHalos, 'halos');
+  useBattementContinu(corpsAnimés, 'corps-animés');
 
   // HIT-TEST DE SPRITE (lot P2-3, règle #1297 « ce qui se voit se clique ») : la voie volumique répond
   // au pointeur par un RAYON — cibles = les quads montés, ceux d'un combattant portant son id, ceux du
@@ -1773,9 +1832,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   };
 
   // ── GROUPE BILLBOARDS : décor + acteurs. Rebâti quand les SUJETS changent — l'identité d'un sujet
-  // porte sa case logique et sa signature de dessin, jamais le glissement de la marche : celui-ci
-  // décale des quads déjà montés, dans `dessiner` (P2-4). Le REGARD n'y entre PAS : un quart de tour
-  // comme un changement de cap est une REPOSE (`reposerRegard`), et rebâtir le groupe entier mesurait
+  // porte sa SIGNATURE DE DESSIN, et elle seule (`actorIdentityKey`) : ni sa case, ni son cap, ni le
+  // glissement de la marche n'y entrent. Tous trois se REPOSENT sur des quads déjà montés — la case et
+  // le cap par `reposerActeurs` (#1396), le glissement par frame dans `dessiner` (P2-4). Le REGARD n'y
+  // entre pas non plus : un quart de tour est une REPOSE (`reposerRegard`), et rebâtir le groupe mesurait
   // 7 matériaux et 6 géométries libérés pour 4 quads sur un banc de trois décors (vue de plateau),
   // 10 matériaux au changement de cap sur le même banc (première personne).
   useEffect(() => {
@@ -1794,13 +1854,48 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     const bbCam: BillboardCamera = bbCameraDe(monté);
     regardDesBoards.current = cleRegard(monté);
     const dpr = window.devicePixelRatio || 1;
-    flipRef.current.clear();
-    épinglesRef.current.clear();
-    clésStatiquesRef.current.clear();
-    // PURGE des états PAR ACTEUR qui survivent au rebuild : un acteur absent des sujets de ce montage
-    // (sorti de la scène, hors du cadre) laisse son palier et son heure de chute derrière lui. Les
-    // cartes refaites à neuf ci-dessus (sujets montés, épingles de planches et de textures statiques)
-    // n'ont, elles, rien à purger.
+    // BASE DE MONTAGE : ce dont dépend la GÉOMÉTRIE d'un quad (échelle du monde) et sa composition
+    // (ombre de contact sous un soleil qui n'éclaire pas). Elle change ? il n'y a rien à garder.
+    // La SCÈNE en fait partie : son changement DISPOSE les textures statiques
+    // (`viderTexturesStatiques`), et un survivant garderait une texture morte.
+    const base = `${scene.id}|${mpt}|${lit ? 1 : 0}`;
+    const memeBase = baseDesBoards.current === base;
+    baseDesBoards.current = base;
+    // ── DIFFÉRENCE (#1396) : le groupe ne se reconstruit PLUS quand la POPULATION change. Un sujet qui
+    // ENTRE dans le champ de vision — ou qui en sort — changeait l'identité de la liste, et les 63
+    // quads de l'arène se libéraient pour un seul entrant (mesuré en recette : 0/63 survivants,
+    // ~250 buffers, 2 `linkProgram`). Ce qui persiste garde son quad, sa texture et son uuid.
+    const voulus = new Map<string, BillboardSubject>();
+    for (const sub of subjects) voulus.set(sub.identity, sub);
+    const boards: Board[] = [];
+    for (const b of boardsRef.current) {
+      const neuf = memeBase ? voulus.get(b.sub.identity) : undefined;
+      if (!neuf) {
+        libererBoard(groupe, b);
+        const piste = boardTrackId(b.sub);
+        if (piste) { flipRef.current.delete(piste); épinglesRef.current.delete(piste); }
+        clésStatiquesRef.current.delete(b.sub);
+        continue;
+      }
+      // Le SUJET est reforgé à chaque calcul de liste (closures de dessin, ancre, case) : le board
+      // reprend la référence COURANTE, sinon il poserait la case et l'art d'un tour précédent.
+      clésStatiquesRef.current.set(neuf, clésStatiquesRef.current.get(b.sub) ?? []);
+      clésStatiquesRef.current.delete(b.sub);
+      b.sub = neuf;
+      boards.push(b);
+    }
+    const déjàMontés = new Set(boards.map((b) => b.sub.identity));
+    // ÉPINGLES DE TEXTURE : elles se purgent sur la POPULATION, pas sur les boards. Un sujet épinglé
+    // AVANT l'arrivée de sa texture (plus bas) puis supersédé n'a jamais eu de quad — sans cette purge
+    // il restait épinglé à vie, avec les closures de dessin qu'il capture (mesuré : 20 épingles pour
+    // 5 quads après six passes).
+    for (const sujet of [...clésStatiquesRef.current.keys()]) {
+      if (voulus.get(sujet.identity) !== sujet) clésStatiquesRef.current.delete(sujet);
+    }
+    setAtlasPins([...épinglesRef.current.values()].flat());
+    epinglerStatiques([...clésStatiquesRef.current.values()].flat());
+    // PURGE des états PAR ACTEUR : un acteur absent des sujets de ce montage (sorti de la scène, hors
+    // du cadre) laisse son palier et son heure de chute derrière lui.
     const joués = new Set<string>();
     for (const sub of subjects) {
       const id = boardTrackId(sub);
@@ -1809,7 +1904,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     for (const id of [...paliersRef.current.keys()]) if (!joués.has(id)) paliersRef.current.delete(id);
     for (const id of [...chutesRef.current.keys()]) if (!joués.has(id)) chutesRef.current.delete(id);
     for (const id of [...glissePrecRef.current.keys()]) if (!joués.has(id)) glissePrecRef.current.delete(id);
-    const boards: Board[] = [];
     boardsRef.current = boards;
 
     /**
@@ -1863,6 +1957,33 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       setAtlasPins([...épinglesRef.current.values()].flat());
     };
 
+    // ── PISTES DE FLIPBOOK DES SURVIVANTS : le contexte d'animation d'un acteur VIT (un héros entre
+    // en combat, un corps tombe). Un sujet gelé au montage garderait `enrolé: false` et un `rig` vide —
+    // ses gestes de combat ne seraient jamais cuits, et sa marche perdrait sa monture. Ce qui reste du
+    // montage est ce qui décrit l'ART POSÉ (vue, miroir, palier) : la relève de celui-là est l'affaire
+    // du regard (`reposerRegard`) et de l'image (`choisirFrame`).
+    for (const b of boards) {
+      const piste = boardTrackId(b.sub);
+      const flip = piste ? flipRef.current.get(piste) : undefined;
+      if (!piste || !flip) continue;
+      const ctx = b.sub.cid ? animCtxOf(b.sub.cid) : undefined;
+      const voie = b.sub.anim?.voie ?? ctx?.voie ?? 'rig';
+      const enrolé = !!ctx;
+      const auSol = b.sub.anim?.ground;
+      const chute = auSol ? (chutesRef.current.get(piste) ?? animNow()) : flip.chute;
+      if (auSol) chutesRef.current.set(piste, chute);
+      else chutesRef.current.delete(piste);
+      const gestesNeufs = flip.enrolé !== enrolé || flip.voie !== voie;
+      flip.sub = b.sub;
+      flip.voie = voie;
+      flip.rig = ctx?.rig ?? {};
+      flip.enrolé = enrolé;
+      flip.chute = chute;
+      if (b.sub.anim?.leap) flip.leap = true; else delete flip.leap;
+      // Le SET DE GESTES a changé (entrée en combat, changement de voie) : il se cuit, comme au montage.
+      if (gestesNeufs) précuire(flip, piste);
+    }
+
     /** Le quad d'un sujet, monté DÈS QUE SA texture est là — jamais au dernier des sujets. */
     const monter = (q: { sub: BillboardSubject; quad: ReturnType<typeof subjectQuad>; view: View; mirror: boolean; pxHeight: number }, texture: THREE.Texture): void => {
       const geo = new THREE.PlaneGeometry(q.quad.widthM, q.quad.heightM);
@@ -1888,11 +2009,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // Un sujet sans équipe (décor, figurant) n'en reçoit aucun : il n'y a rien à y signaler.
       if (q.sub.teamColor) attachBodySilhouette(board, q.sub.teamColor);
       // Ombre de CONTACT : le rig ne porte aucune ellipse au pied (le décor, si). Elle entre dans le
-      // board — donc dans la passe de pose, donc elle suit le sujet qui glisse. Sous le soleil, c'est
-      // l'ombre PROJETÉE qui fait foi (`wantsContactShadow`) — sinon le personnage en porte deux.
+      // board — donc dans la passe de pose, donc elle suit le sujet qui glisse, et c'est là que sa
+      // teinte de visibilité s'applique (#1396). Sous le soleil, c'est l'ombre PROJETÉE qui fait foi
+      // (`wantsContactShadow`) — sinon le personnage en porte deux.
       if (wantsContactShadow(q.sub.kind, lit)) {
         const disque = contactShadow(q.sub, q.quad);
-        disque.material.opacity *= q.sub.tint;
         board.shadow = disque;
         groupe.add(withRenderRank(disque, 'pions'));
       }
@@ -1946,7 +2067,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // Sans centre de groupe (éditeur, planche QC), aucune proximité n'a de sens : l'ordre reste celui
     // des sujets, et la distance INFINIE qui en découle ne tient aucun voile d'entrée en scène.
     const centre = centreDuGroupe(frame, actors);
-    const àMonter = subjects.map((sub) => {
+    const àMonter = subjects.filter((sub) => !déjàMontés.has(sub.identity)).map((sub) => {
       // Le quad se taille sur la BOÎTE du sujet : un composite plus haut que la boîte canonique
       // (couple monté) gagne du quad au lieu d'être tranché à la rasterisation.
       const quad = subjectQuad(CONVENTION, sub);
@@ -1990,22 +2111,25 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // personne sur huit caps possibles. Le cache se vide au changement de scène
     // (`viderTexturesStatiques`).
     réchaufferVoisins(monté, subjects.map((sub) => ({ sub, heightM: subjectQuad(CONVENTION, sub).heightM })));
-    return () => {
-      annule = true;
-      boardsRef.current = [];
-      // Les cartes du MONTAGE se vident (elles se refont avec les boards). Les états PAR ACTEUR
-      // qui doivent traverser un rebuild — palier, entrée au sol, glissement précédent — restent : ce
-      // teardown court à CHAQUE changement de sujets, pas seulement au démontage. Leur borne est la
-      // purge d'entrée d'effet (les acteurs absents des sujets en sortent).
-      flipRef.current.clear();
-      épinglesRef.current.clear();
-      clésStatiquesRef.current.clear();
-      setAtlasPins([]);
-      epinglerStatiques([]);
-      viderGroupe(groupe);
-    };
+    // Ce teardown court à CHAQUE changement de sujets, PAS seulement au démontage : il n'y a donc
+    // rien à libérer ici (la passe suivante fait la différence). Il ne fait qu'annuler les textures en
+    // vol — une texture servie après coup monterait un quad que la différence n'a pas voulu.
+    return () => { annule = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subjects, mpt, lit]);
+
+  // ── VIDAGE FINAL : l'écran s'en va. C'est le SEUL endroit qui libère le groupe entier — la passe de
+  // montage, elle, ne libère que les sortants.
+  useEffect(() => () => {
+    const groupe = panneaux.current;
+    boardsRef.current = [];
+    flipRef.current.clear();
+    épinglesRef.current.clear();
+    clésStatiquesRef.current.clear();
+    setAtlasPins([]);
+    epinglerStatiques([]);
+    if (groupe) viderGroupe(groupe);
+  }, []);
 
   // ── CHANGEMENT DE REGARD (quart de tour de plateau, cap Dir8 en première personne) : la REPOSE, et
   // rien d'autre. Le montage ci-dessus vient-il de poser CE regard (sujets changés) ? alors il n'y a

@@ -130,7 +130,8 @@ function TokenDisc({ m, dims }: { m: TokenChromeMark; dims: Dims }): JSX.Element
 
 /** Style d'ALLURE du disque : les trois canaux que le monde volumique porte au matériau de son quad
  *  (`boardPose.applyBoardChrome`), ici en CSS — estompe, désaturation, lueur de survol — plus la teinte
- *  de visibilité de la case, que le quad prend à `BillboardSubject.tint`. */
+ *  de visibilité de la case, que le quad échantillonne à SA case dans la passe de pose
+ *  (`boardPose.poseBoards`, `BillboardSubject.cell`). */
 export function allureStyle(m: TokenChromeMark, tint: number): CSSProperties {
   const filtres = [
     m.ghost && !m.dim ? `grayscale(${DISQUE_GHOST_DESAT})` : '',

@@ -194,7 +194,7 @@ describe('POV — la VUE d’une entité suit le cap du meneur (#1176 P3-1b)', (
       expect(prop.length, `cap ${cap} : le décor doit être texturé`).toBeGreaterThan(0);
       // L'identité d'un décor porte sa SIGNATURE DE DESSIN depuis #1176 P3-3 (`prop:<clé>|<modèle>`,
       // puis le cran d'art) : c'est le CRAN, seul, que cette garde épingle.
-      expect(prop[0].identity, `cap ${cap}`).toBe(`prop:prop:tonneau|tonneau|r${povArtRot(cap)}`);
+      expect(prop[0].identity, `cap ${cap}`).toBe(`prop:prop:tonneau|tonneau|${TONNEAU.facing}|${TONNEAU.foot.scale}|r${povArtRot(cap)}`);
       crans.add(prop[0].identity);
       démonter();
     }
@@ -226,7 +226,7 @@ describe('POV — la planche ne se recuit qu’au PIVOT (patron anti-recuisson d
     await act(async () => { root!.render(écran(cadrePov('NE', { x: 4, y: 5 }))); });
     const vm = vueDepuis('NE', 'S');
     expect(clésDe('prop:'), 'le pivot doit redemander l’art du décor au cap d’arrivée')
-      .toContainEqual({ identity: `prop:prop:tonneau|tonneau|r${povArtRot('NE')}`, view: vm.view, mirror: vm.mirror });
+      .toContainEqual({ identity: `prop:prop:tonneau|tonneau|${TONNEAU.facing}|${TONNEAU.foot.scale}|r${povArtRot('NE')}`, view: vm.view, mirror: vm.mirror });
   });
 });
 
@@ -242,7 +242,7 @@ describe('POV — la pré-chauffe porte sur les deux caps VOISINS', () => {
   /** L'art d'un décor vu d'un cap — la forme que le banc lit dans les clés demandées. */
   const attendu = (cap: Dir8) => {
     const vm = vueDepuis(cap, 'S');
-    return { identity: `prop:prop:tonneau|tonneau|r${povArtRot(cap)}`, view: vm.view, mirror: vm.mirror };
+    return { identity: `prop:prop:tonneau|tonneau|${TONNEAU.facing}|${TONNEAU.foot.scale}|r${povArtRot(cap)}`, view: vm.view, mirror: vm.mirror };
   };
 
   it('au cap N, le décor demande son art au cap N, puis aux caps NE et NO — à eux seuls', () => {
@@ -277,7 +277,7 @@ describe('PLATEAU — la vue affine garde son regard ORTHO (l’autre branche de
       // Branche ORTHO de `billboardView` : la MÊME planche que la vue de plateau a toujours servie.
       expect({ view: acteur[0].view, mirror: acteur[0].mirror }, `cran ${rot}`).toEqual(project('S', rot));
       const prop = clésDe('prop:');
-      expect(prop[0].identity, `cran ${rot}`).toBe(`prop:prop:tonneau|tonneau|r${artRot({ ...SCENE.dimensions, rot, view: 'iso' })}`);
+      expect(prop[0].identity, `cran ${rot}`).toBe(`prop:prop:tonneau|tonneau|${TONNEAU.facing}|${TONNEAU.foot.scale}|r${artRot({ ...SCENE.dimensions, rot, view: 'iso' })}`);
       démonter();
     }
   });

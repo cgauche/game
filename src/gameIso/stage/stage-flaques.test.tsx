@@ -26,7 +26,7 @@ import { useGame } from '../../state/store';
 import { emptyScene, heightAt, sceneMetresPerTile, type Scene } from '../../state/scene';
 import { sceneLightSources } from '../../state/visionState';
 import { ambientScalar, buildOpaque, computeLightField, mapLights, type LightSource } from '../../state/vision';
-import { poseBoards, type Board } from './boardPose';
+import { AUCUN_CHROME, TEINTE_PLEINE, poseBoards, type Board } from './boardPose';
 import { ambianceLuminance } from '../catalog/ambiance';
 import { lightLevels } from '../../data';
 import { areneCampaign } from '../../scenes/campaign';
@@ -615,7 +615,7 @@ function boardDe(cid: string, anchor: THREE.Vector3): Board {
   const material = new THREE.MeshBasicMaterial();
   const sub = {
     identity: `sonde:${cid}`, cid, kind: 'personnage', anchor, facing: 'S',
-    scaleK: 1, tint: 1, box: { w: 120, h: 150 }, svg: () => '',
+    scaleK: 1, cell: { x: 0, y: 0, z: 0 }, box: { w: 120, h: 150 }, svg: () => '',
   };
   return {
     sub: sub as unknown as Board['sub'],
@@ -665,7 +665,7 @@ describe('La lampe du GROUPE en exploration — portée par le MENEUR (#1245)', 
     const b = boardDe('h1', new THREE.Vector3(CASE.x * mpt, heightAt(scene, CASE.x, CASE.y, 0), CASE.y * mpt));
     const clartés: number[] = [];
     for (let i = 0; i <= 8; i++) {
-      poseBoards([b], CAMERA, () => ({ dx: (i / 8) * mpt, dy: 0, dz: 0 }), f);
+      poseBoards([b], CAMERA, () => ({ dx: (i / 8) * mpt, dy: 0, dz: 0 }), f, AUCUN_CHROME, TEINTE_PLEINE);
       clartés.push(b.material.color.r);
     }
     expect(Math.max(...clartés) - Math.min(...clartés)).toBeLessThan(0.01);

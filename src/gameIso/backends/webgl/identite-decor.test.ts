@@ -13,7 +13,6 @@ import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '..
  * Ce qui est mesuré : deux DESSINS différents ne peuvent plus tomber sur la même identité, ni pour un
  * décor d'entité (même id, modèle changé) ni pour un overlay de terrain (même case, terrain changé).
  */
-const TEINTE = () => 1;
 
 function scèneAvecDecor(ref: string): Scene {
   const s = emptyScene(6, 6);
@@ -22,7 +21,7 @@ function scèneAvecDecor(ref: string): Scene {
 }
 
 const identités = (scene: Scene) =>
-  collectBillboards(scene, sceneMetresPerTile(scene), TEINTE, wholeSceneBillboardEls(scene))
+  collectBillboards(scene, sceneMetresPerTile(scene), wholeSceneBillboardEls(scene))
     .filter((b) => b.kind === 'prop')
     .map((b) => b.identity);
 
@@ -53,6 +52,32 @@ describe('Identité d’un billboard de DÉCOR — la clé porte le DESSIN (#117
     const base = emptyScene(4, 4);
     const layers = base.layers.map((l) => ({ ...l, tiles: [...l.tiles] }));
     layers[0].tiles[0] = 'bois';
-    expect(identités({ ...base, layers })).toEqual(['prop:ov:0,0,0|arbre']);
+    expect(identités({ ...base, layers })).toEqual(['prop:ov:0,0,0|arbre||1']);
+  });
+});
+
+/**
+ * …et ce que l'identité doit porter en PLUS depuis que les quads survivent par différence (#1396) :
+ * un survivant garde SON quad, taillé au montage. Deux props de même clé et de même modèle mais
+ * d'ÉCHELLE différente partageraient donc un quad de la mauvaise taille ; d'ORIENTATION différente,
+ * une texture qui ne montre pas le bon côté (`propSvg` prend le cap).
+ */
+describe('Identité d’un prop — l’échelle et le cap en font partie (#1396)', () => {
+  const propEl = (patch: { facing?: 'S' | 'E'; scale?: number }) => ({
+    kind: 'prop' as const, source: 'entity' as const, key: 'prop:decor-1', ref: 'tonneau',
+    cell: { x: 2, y: 2, z: 0 }, foot: { offX: 0, offY: 0, scale: patch.scale ?? 1 },
+    interact: false, states: { visible: true },
+    ...(patch.facing ? { facing: patch.facing } : {}),
+  });
+  const scene = emptyScene(6, 6);
+  const identité = (patch: { facing?: 'S' | 'E'; scale?: number }) =>
+    collectBillboards(scene, sceneMetresPerTile(scene), { tokens: [], props: [propEl(patch) as never] })[0].identity;
+
+  it('deux ÉCHELLES d’empreinte donnent deux identités (un quad ne se partage pas)', () => {
+    expect(identité({ scale: 1 })).not.toBe(identité({ scale: 2 }));
+  });
+
+  it('deux CAPS donnent deux identités — c’est le cap que `propSvg` reçoit', () => {
+    expect(identité({ facing: 'S' })).not.toBe(identité({ facing: 'E' }));
   });
 });

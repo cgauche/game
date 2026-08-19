@@ -211,14 +211,20 @@ beforeAll(() => {
 });
 afterAll(() => setStageRendererFactory(null));
 
-beforeEach(() => simulerRasterisation());
+// PURGE À L'OUVERTURE, jamais à la fermeture (#1396) : plusieurs fichiers tournent EN MÊME TEMPS sur
+// les mêmes modules (`isolate: false`), et vider la file du cuiseur ou le stock de textures À LA FIN
+// d'un test tue les cuissons EN VOL du banc voisin (mesuré sur la suite complète : un banc sans un
+// seul quad monté). À l'OUVERTURE, l'ardoise est aussi nette.
+beforeEach(() => {
+  resetBakeQueue();
+  clearAtlasCache();
+  svgTexture.clearBillboardTextures();
+  simulerRasterisation();
+});
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
   battre = null;
-  resetBakeQueue();
-  clearAtlasCache();
-  svgTexture.clearBillboardTextures();
   svgTexture.setStaticTextureBudgetBytes(svgTexture.TEXTURE_STATIQUE_BUDGET_BYTES_DEFAUT);
   vi.unstubAllGlobals();
   vi.restoreAllMocks();

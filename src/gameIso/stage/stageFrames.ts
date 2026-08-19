@@ -101,6 +101,14 @@ export function demanderUneImage(): void {
   });
 }
 
+/** Combien de SOURCES tiennent le battement en ce moment — lecture seule, pour les bancs : c'est la
+ *  seule façon de voir qu'un motif a RELÂCHÉ ses images (une pompe qui a convergé) quand un autre
+ *  motif de la même scène en demande encore (un corps animé, une averse). Le compte de rappels rAF ne
+ *  le dirait pas : la boucle n'en arme qu'UN pour toutes les sources. */
+export function sourcesDeFrames(): number {
+  return sources.size;
+}
+
 /** ARDOISE NEUVE — outil de BANC. La suite partage ses modules (`isolate: false`) : un écran d'un
  *  autre fichier resté monté tiendrait encore des images, et la boucle armée sur SON `requestAnimationFrame`
  *  ne se réarmerait jamais sur celui du banc courant.

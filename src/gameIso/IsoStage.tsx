@@ -49,6 +49,7 @@ import { gridLines } from '../geometry/grid';
 import { SansWebgl, useWebglRefusé } from './stage/SansWebgl';
 import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../state/stageYaw';
 import { visibilityField } from './backends/webgl/visibilityTint';
+import { useExploreCourant } from './stage/exploreCourant';
 import { roomZonesByElKey, type KeepEl, type TintAt } from './backends/webgl/sceneMeshes';
 import { stageCamTransform } from './stage/stageCam';
 import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
@@ -180,7 +181,13 @@ export function IsoStage() {
     () => (scene ? sceneLightSources({ scene, battle, party, partyPos }) : []),
     [scene, battle, party, partyPos],
   );
-  const exploredSet = useMemo(() => new Set(explored[scene?.id ?? ''] ?? []), [explored, scene?.id]);
+  // L'EXPLORÉ DU PAS COURANT : ce que le store a retenu, PLUS ce que le groupe voit à l'instant. Un pas
+  // découvre des cases, et l'accumulation persistante ci-dessous ne fait que les CONFIRMER au commit
+  // SUIVANT : sans cette union, un pas passait DEUX champs de teinte (un au calcul de `visible`, un au
+  // retour du store), donc deux fois toute la cascade qui en dépend (#1396).
+  // Sa RÉFÉRENCE ne change qu'au CONTENU : le commit de confirmation rend un ensemble égal, et la
+  // teinte qui en descend ne doit pas s'y reforger.
+  const exploredSet = useExploreCourant(explored, scene?.id, visible);
   // Accumulation persistante de l'exploré (no-op si rien de neuf → pas de boucle de rendu).
   useEffect(() => {
     if (visible.size) markExplored([...visible]);

@@ -35,7 +35,7 @@ const DÉCOR = {
   kind: 'prop',
   facing: 'S',
   scaleK: 1,
-  tint: 1,
+  cell: { x: 0, y: 0, z: 0 },
   box: BOX,
   svg: (_v: unknown, _m: boolean, rot: Rot) => `<g data-cran="${rot}" />`,
 } as unknown as BillboardSubject;

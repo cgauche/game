@@ -293,10 +293,10 @@ describe('Mutations du monde cuit — chaque passe peint SA propre écriture (#1
 
     expect(couleursDuMonde(), 'les couleurs de sommet n’ont pas été repeintes').not.toEqual(avantCouleurs);
     expect(rendus(canevas) - avant, `${rendus(canevas) - avant} image(s) pour une teinte neuve`).toBe(1);
-    // Le 2e volet ferme la route ACCIDENTELLE : la teinte est cuite dans les sujets de billboard
-    // (`sub.tint`), donc elle reforge leur liste — mais la boîte des CASTEURS, elle, n'a pas bougé, et
-    // c'est par sa VALEUR que les lampes se remontent (`cléBoite`). Une ambiante neuve ici voudrait
-    // dire que le champ de vision recuit encore la carte d'ombre à chaque pas du groupe.
+    // Le 2e volet ferme la route ACCIDENTELLE : la teinte ne touche plus la liste des sujets (elle se
+    // prend à la case, dans la passe de pose — #1396), et la boîte des CASTEURS n'entre dans le
+    // montage des lampes que par sa VALEUR (`cléBoite`). Une ambiante neuve ici voudrait dire que le
+    // champ de vision recuit encore la carte d'ombre à chaque pas du groupe.
     expect(ambiante(), 'le groupe des lampes a été remonté par un simple changement de teinte').toBe(avantAmbiante);
   });
 });

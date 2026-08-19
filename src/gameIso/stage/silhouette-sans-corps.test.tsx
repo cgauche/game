@@ -193,9 +193,8 @@ beforeEach(async () => {
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
-  // File et stock sont GLOBAUX : une tâche laissée en file mémoïserait, pour le banc suivant, une
-  // texture qui ne se résoudra jamais (l'`Image` du banc courant meurt avec lui).
-  resetBakeQueue();
+  // (la purge se fait à l'OUVERTURE — cf. `beforeEach` : purger ici tuerait les cuissons en vol d'un
+  // banc voisin, les fichiers partageant leurs modules sous `isolate: false`, #1396)
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
@@ -216,11 +215,16 @@ describe('Jumeau de silhouette — jamais rendu sans son corps (#1337)', () => {
 
   it('VIDAGE : le groupe refait à neuf ne laisse AUCUN jumeau orphelin en attendant les corps suivants', async () => {
     await dérouler(2, 'montage initial');
-    // Un pas commité : les sujets changent, le groupe se vide, les textures repartent en vol. Le cache
-    // est vidé d'abord — sur un HIT, la texture revient dans la microtâche suivante et la fenêtre se
-    // referme trop vite pour qu'on y mesure quoi que ce soit.
+    // Une POPULATION neuve (deux autres combattants) : les sujets changent, le groupe se vide, les
+    // textures repartent en vol. C'est bien un rebuild qu'il faut ici, et un PAS n'en est plus un
+    // (#1396 : la case appartient à la pose, elle se repose sur les quads montés). Le cache est vidé
+    // d'abord — sur un HIT, la texture revient dans la microtâche suivante et la fenêtre se referme
+    // trop vite pour qu'on y mesure quoi que ce soit.
     clearBillboardTextures();
-    await rendre(acteurs(1));
+    await rendre([
+      { c: combattant('h2', 'hero', { x: 3, y: 2 }), x: 3, y: 2, z: 0, heroIndex: 0 },
+      { c: combattant('e2', 'enemy', { x: 6, y: 2 }), x: 6, y: 2, z: 0 },
+    ]);
     await enVol(1);
     expect(enAttente.length, 'le rebuild rasterise à nouveau : la fenêtre se rouvre').toBeGreaterThan(0);
     expect(corps(), 'le groupe précédent est vidé').toHaveLength(0);

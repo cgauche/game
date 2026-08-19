@@ -29,7 +29,6 @@ const SCENES = new Map(doc.scenes.map((s) => [s.id, s] as const));
 /** Les scènes de l'arène qui POSENT une embuscade (`combat.hiddenUntilCombat`), et leur compte. */
 const EMBUSCADES: [string, number][] = [['arene-exp-foret', 8], ['arene-exp-marais', 4], ['arene-route-embuscade', 4]];
 
-const plein = () => 1;
 
 /** Tout est en vue : la population mesurée est celle des FILTRES, pas celle du brouillard. */
 function toutVu(scene: Scene): Set<string> {
@@ -65,7 +64,7 @@ describe('POPULATION — le monde volumique dessine les corps du builder, pas la
   for (const [id, n] of EMBUSCADES)
     it(`${id} : hors combat, les ${n} embusqués ne sont pas billboardés — la voie brute les montrait`, () => {
       const scene = SCENES.get(id)!;
-      const rendus = persosBillboardés(collectBillboards(scene, sceneMetresPerTile(scene), plein, elsDuStage(scene, null)));
+      const rendus = persosBillboardés(collectBillboards(scene, sceneMetresPerTile(scene), elsDuStage(scene, null)));
       const cachés = embusques(scene);
       expect(rendus.filter((rid) => cachés.includes(rid))).toEqual([]);
       // La mesure MORD : la lecture brute de `scene.entities` en montrait exactement `n` de plus.
@@ -80,7 +79,7 @@ describe('POPULATION — le monde volumique dessine les corps du builder, pas la
         .filter((t) => t.subject.kind === 'figurant' && t.subject.ent.kind === 'personnage')
         .map((t) => t.id)
         .sort();
-      const volumique = persosBillboardés(collectBillboards(scene, sceneMetresPerTile(scene), plein, els)).sort();
+      const volumique = persosBillboardés(collectBillboards(scene, sceneMetresPerTile(scene), els)).sort();
       expect([scene.id, volumique]).toEqual([scene.id, affine]);
       corps += affine.length;
     }
@@ -93,8 +92,8 @@ describe('POPULATION — le monde volumique dessine les corps du builder, pas la
     const ent = scene.entities.find((e) => e.kind === 'personnage' && !e.combat?.hiddenUntilCombat)!;
     const enrôlé = creatureToCombatant(creatures[0], ent.id, { x: ent.pos.x, y: ent.pos.y, z: ent.z ?? 0 });
     const battle = { combatants: [enrôlé], order: [enrôlé.id], turn: 0 } as unknown as BattleState;
-    const subs = collectBillboards(scene, mpt, plein, elsDuStage(scene, battle));
-    const acteurs = actorBillboards([{ c: enrôlé, x: ent.pos.x, y: ent.pos.y, z: ent.z ?? 0 }], scene, mpt, plein);
+    const subs = collectBillboards(scene, mpt, elsDuStage(scene, battle));
+    const acteurs = actorBillboards([{ c: enrôlé, x: ent.pos.x, y: ent.pos.y, z: ent.z ?? 0 }], scene, mpt);
     expect(persosBillboardés(subs)).not.toContain(ent.id);
     // Un seul acteur, ancré sur SON id — la suite de l'identité est la signature de dessin
     // (`combatantRenderSignature`, cf. `actor-signature.test.ts`).
@@ -117,7 +116,7 @@ describe('ÉCHELLE — la même pour les deux voies, sur TOUT le bestiaire', () 
     let mesurées = 0;
     for (const record of creatures) {
       const c = creatureToCombatant(record, `p-${record.id}`, { x: 1, y: 1, z: 0 });
-      const volumique = actorBillboards([{ c, x: 1, y: 1, z: 0 }], scene, mpt, plein)[0];
+      const volumique = actorBillboards([{ c, x: 1, y: 1, z: 0 }], scene, mpt)[0];
       if (!volumique) continue; // structure de siège : elle se rend sur son arête, pas en jeton
       mesurées++;
       const affine = echelleAffine(c);

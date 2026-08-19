@@ -262,7 +262,7 @@ describe('CADRAGE — la vue affine tient le CONTENU, sans toucher à la défini
   /** Boîte de CONTENU de la scène-témoin (bâti + sujets), à la convention de taille par défaut. */
   const contenu = (() => {
     const geoBox = buildWorldGeometry(scene, mpt, () => 1).boundingBox!;
-    const subs = collectBillboards(scene, mpt, () => 1, wholeSceneBillboardEls(scene));
+    const subs = collectBillboards(scene, mpt, wholeSceneBillboardEls(scene));
     return contentBox(scene, mpt, subs, (s) => anchorAndSize(billboardHeightM('jeu', s.kind) * s.scaleK, BILLBOARD_BOX_ASPECT), geoBox);
   })();
 

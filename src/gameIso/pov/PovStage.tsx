@@ -8,6 +8,7 @@ import { AMBIANCE, povAmbianceDefs } from '../catalog/ambiance';
 import { buildTokens } from '../builders/tokens';
 import { buildProps } from '../builders/props';
 import { visibilityField } from '../backends/webgl/visibilityTint';
+import { useExploreCourant } from '../stage/exploreCourant';
 import type { KeepEl, TintAt } from '../backends/webgl/sceneMeshes';
 import { useWalkAnim } from '../fx/useWalkAnim';
 import { VolumetricWorld } from '../stage/VolumetricWorld';
@@ -45,7 +46,6 @@ export function PovStage() {
   const markExplored = useGame((s) => s.markExplored);
 
   const dir = (party[0] && facing[party[0].id]) || 'S';
-  const exploredSet = useMemo(() => new Set(explored[scene?.id ?? ''] ?? []), [explored, scene?.id]);
 
   const vues = useMemo(() => {
     if (!scene) return null;
@@ -62,6 +62,10 @@ export function PovStage() {
   // Les vérités de scène que le monde partagé attend, par les MÊMES builders que `IsoStage` (aucune
   // seconde dérivation), à l'étage du groupe et sans isolement de couche.
   const visible = vues ?? AUCUNE_CASE;
+  // L'exploré du pas courant — la MÊME dérivation que l'iso (`stage/exploreCourant`) : union avec ce
+  // qui est vu à l'instant, référence stable au contenu. Deux dérivations, c'était une double passe de
+  // teinte par pas côté première personne (#1396).
+  const exploredSet = useExploreCourant(explored, scene?.id, visible);
   const activeZ = partyPos.z ?? 0;
   const walksRef = useWalkAnim(false); // la voie volumique lit la marche dans SA boucle de rendu (P2-4)
   const tintAt = useMemo<TintAt>(

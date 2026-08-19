@@ -56,7 +56,7 @@ function quadDe(sub: BillboardSubject, camera: Camera): Mesh {
 
 /** Sujet de billboard d'un combattant posé sur une case (le chemin de production `actorBillboards`). */
 function sujet(scene: Scene, mpt: number, c: Combatant, x: number, y: number): BillboardSubject {
-  const [s] = actorBillboards([{ c, x, y, z: 0 }], scene, mpt, () => 1);
+  const [s] = actorBillboards([{ c, x, y, z: 0 }], scene, mpt);
   expect(s, 'aucun sujet de billboard — le rig ne se résout pas').toBeTruthy();
   return s;
 }

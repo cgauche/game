@@ -603,8 +603,11 @@ export interface BillboardSubject {
   facing: Dir8;
   /** Multiplicateur de taille (espèce × Taille pour un personnage, empreinte de décor pour un prop). */
   scaleK: number;
-  /** Teinte de visibilité de la case d'ancrage. */
-  tint: number;
+  /** CASE d'ancrage — celle dont la teinte de visibilité s'applique au quad. Le sujet porte la case,
+   *  jamais la teinte : la teinte est une VALEUR DE FRAME, que la passe de pose échantillonne
+   *  (`stage/boardPose.poseBoards`). Cuite ici, elle mettrait le champ de vision dans l'IDENTITÉ des
+   *  sujets, et un pas du groupe remonterait tous les quads du monde. */
+  cell: { x: number; y: number; z: number };
   /** Boîte locale du fragment SVG. */
   box: { w: number; h: number };
   /** Fragment SVG pour une vue (défs globaux inclus : le blob de rasterisation est un document isolé). */
@@ -724,7 +727,7 @@ export function wholeSceneBillboardEls(scene: Scene): SceneBillboardEls {
 /** Sujets de billboard de la scène : personnages FIGURANTS (`kind:'personnage'`) puis décor. Les
  *  COMBATTANTS n'entrent pas ici — ils passent par `actorBillboards`, à leur position visuelle ; c'est
  *  le builder qui garantit qu'une entité enrôlée n'est pas dessinée deux fois. */
-export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els: SceneBillboardEls): BillboardSubject[] {
+export function collectBillboards(scene: Scene, mpt: number, els: SceneBillboardEls): BillboardSubject[] {
   const out: BillboardSubject[] = [];
   const defs = `<defs>${DEFS}</defs>`;
   for (const tk of els.tokens) {
@@ -751,7 +754,7 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els
       anchor: new THREE.Vector3(gx * mpt, heightAt(scene, ent.pos.x, ent.pos.y, z), gy * mpt),
       facing: ent.facing ?? 'S',
       scaleK: entityTokenScale(ent),
-      tint: tintAt(ent.pos.x, ent.pos.y, z),
+      cell: { x: ent.pos.x, y: ent.pos.y, z },
       box: { w: BB_W, h: BB_H },
       svg: (view, mirror) => defs + corps.draw(view, mirror),
       ...(ambient ? { frameSvg: (view, mirror, def, k, n) => defs + corps.frame(view, mirror, def, k, n) } : {}),
@@ -769,18 +772,61 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els
       // partageaient une entrée de cache et le premier dessin restait à l'écran. Le cache de textures
       // ne se vide plus à chaque référence de scène (rétention par contenu) : il n'y a plus de purge
       // pour masquer cette collision, un modèle changé à l'inspecteur la rendrait éternelle.
-      identity: `prop:${el.key}|${el.ref}`,
+      // Le CAP et l'ÉCHELLE y entrent : l'un choisit le dessin servi (`propSvg`), l'autre la TAILLE du
+      // quad — deux props de même clé et de même modèle mais d'empreinte différente ne peuvent pas
+      // partager une entrée de cache, ni un quad (#1396).
+      identity: `prop:${el.key}|${el.ref}|${el.facing ?? ''}|${el.foot.scale}`,
       kind: 'prop',
       anchor: new THREE.Vector3(gx * mpt, h, gy * mpt),
       facing: el.facing ?? 'S',
       scaleK: el.foot.scale,
-      tint: tintAt(el.cell.x, el.cell.y, el.cell.z),
+      cell: { x: el.cell.x, y: el.cell.y, z: el.cell.z },
       box: { w: BB_W, h: BB_H },
       // Le décor délègue sa vue à `propSvg` (dir + cran caméra), exactement comme les deux backends.
       svg: (_view, _mirror, camRot) => defs + propSvg(el.ref, el.facing, camRot),
     });
   }
   return out;
+}
+
+/**
+ * DEUX LOTS D'ÉLÉMENTS DONNENT-ILS LES MÊMES SUJETS ? — le read-set de `collectBillboards` ci-dessus,
+ * et lui seul : ce qu'un figurant apporte de lui-même passe par la RÉFÉRENCE de son entité de scène
+ * (une retouche d'auteur en produit une neuve), le reste est primitif.
+ *
+ * Sa raison d'être : les builders rendent des tableaux NEUFS à chaque calcul de vue (`buildTokens`/
+ * `buildProps` prennent le champ de visibilité), si bien qu'un pas du groupe passait des éléments
+ * identiques sous une référence neuve — et remontait tous les quads du monde. Le pendant exact de la
+ * clé de pose des acteurs (`actorPoseKey`, `stage/VolumetricWorld`), du côté du décor.
+ *
+ * IL VIT ICI, contre le collecteur : c'est la même lecture, et deux fichiers ne peuvent pas la tenir
+ * d'accord.
+ */
+export function memesBillboardEls(a: SceneBillboardEls, b: SceneBillboardEls): boolean {
+  if (a === b) return true;
+  if (a.tokens.length !== b.tokens.length || a.props.length !== b.props.length) return false;
+  for (let i = 0; i < a.tokens.length; i++) {
+    const x = a.tokens[i];
+    const y = b.tokens[i];
+    if (x === y) continue;
+    if (x.cell.z !== y.cell.z) return false;
+    const sx = x.subject;
+    const sy = y.subject;
+    if (sx.kind !== sy.kind) return false;
+    // Seuls les FIGURANTS deviennent des sujets ici (les combattants passent par `actorBillboards`) :
+    // un token d'une autre nature ne se compare pas au-delà de sa nature.
+    if (sx.kind !== 'figurant' || sy.kind !== 'figurant') continue;
+    if (sx.ent !== sy.ent || sx.enrolled !== sy.enrolled) return false;
+  }
+  for (let i = 0; i < a.props.length; i++) {
+    const x = a.props[i];
+    const y = b.props[i];
+    if (x === y) continue;
+    if (x.key !== y.key || x.ref !== y.ref || x.facing !== y.facing || x.liftM !== y.liftM) return false;
+    if (x.cell.x !== y.cell.x || x.cell.y !== y.cell.y || x.cell.z !== y.cell.z) return false;
+    if (x.foot.offX !== y.foot.offX || x.foot.offY !== y.foot.offY || x.foot.scale !== y.foot.scale) return false;
+  }
+  return true;
 }
 
 /** ACTEUR à billboarder : le combattant (groupe en exploration, combattants en combat) et sa case
@@ -882,6 +928,74 @@ export function combatantRenderSignature(c: Combatant): string {
 export function actorPoseKey(p: ActorPose): string {
   const monté = p.rider ? `+${p.rider.id}:${combatantRenderSignature(p.rider)}` : '';
   return `${p.c.id}:${p.x},${p.y},${p.z}:${p.facing ?? ''}:${combatantRenderSignature(p.c)}${monté}`;
+}
+
+/**
+ * Clé d'IDENTITÉ d'un acteur — QUI est ce sujet et QUEL ART il porte, jamais OÙ il est ni de quel
+ * côté il regarde (#1396).
+ *
+ * C'est elle qui décide du MONTAGE des quads. La position et le cap n'y entrent pas : ils
+ * appartiennent à la POSE, que la passe de frame relit (`stage/boardPose.poseBoards` pour la case,
+ * `choisirFrame` pour la vue d'un corps animé) et que la repose ci-dessous porte aux sujets déjà
+ * montés. Position comprise, un seul pas — d'un héros comme d'un PNJ — détruisait et remontait TOUS
+ * les quads du monde, décor inclus (mesuré : 13 matériaux libérés, 0 survivant sur un banc de douze
+ * décors).
+ *
+ * La SIGNATURE DE DESSIN, elle, reste une identité : elle dit ce que le corps montre (équipement,
+ * apparence, état au sol), donc l'art à rasteriser.
+ */
+export function actorIdentityKey(p: ActorPose): string {
+  const monté = p.rider ? `+${p.rider.id}:${combatantRenderSignature(p.rider)}` : '';
+  return `${p.c.id}:${combatantRenderSignature(p.c)}${monté}`;
+}
+
+/** Ancre PIEDS (mètres) et CASE d'un acteur posé — la SEULE définition de cette géométrie, partagée
+ *  par le montage (`actorBillboards`) et la repose de position. Le glissement de marche n'y est pas :
+ *  il se compte DEPUIS ce point, par la boucle de rendu. */
+function ancreActeur(p: ActorPose, scene: Scene, mpt: number): { anchor: THREE.Vector3; cell: { x: number; y: number; z: number } } {
+  const off = (sizeFootprint(p.c.size) - 1) / 2;
+  const cell = { x: Math.round(p.x), y: Math.round(p.y), z: p.z };
+  return {
+    anchor: new THREE.Vector3((p.x + off) * mpt, heightAt(scene, cell.x, cell.y, cell.z), (p.y + off) * mpt),
+    cell,
+  };
+}
+
+/**
+ * REPOSE DE POSE des acteurs : les sujets DÉJÀ MONTÉS suivent la case et le cap où le store vient de
+ * les poser, en place — aucun quad démonté, aucune texture périmée (l'art ne dépend ni de l'une ni de
+ * l'autre : la case se lit à la frame, la vue se choisit à la frame).
+ *
+ * Rend ce qui a bougé : `ancres` = au moins une case (une image à peindre, une carte d'ombre à
+ * redemander) ; `caps` = les sujets dont le cap a tourné, que l'appelant repose au regard courant
+ * (seuls les corps SANS flipbook en ont besoin — un corps animé choisit sa vue par image).
+ */
+export function reposerActeurs(
+  subjects: readonly BillboardSubject[],
+  actors: readonly ActorPose[],
+  scene: Scene,
+  mpt: number,
+): { ancres: boolean; caps: BillboardSubject[] } {
+  const caps: BillboardSubject[] = [];
+  if (!subjects.length) return { ancres: false, caps };
+  const parCid = new Map<string, BillboardSubject>();
+  for (const s of subjects) if (s.cid) parCid.set(s.cid, s);
+  let ancres = false;
+  for (const p of actors) {
+    const sujet = parCid.get(p.c.id);
+    if (!sujet) continue;
+    const cap = p.facing ?? 'S';
+    if (sujet.facing !== cap) {
+      sujet.facing = cap;
+      caps.push(sujet);
+    }
+    const { anchor, cell } = ancreActeur(p, scene, mpt);
+    if (sujet.anchor.equals(anchor) && sujet.cell.x === cell.x && sujet.cell.y === cell.y && sujet.cell.z === cell.z) continue;
+    sujet.anchor.copy(anchor);
+    sujet.cell = cell;
+    ancres = true;
+  }
+  return { ancres, caps };
 }
 
 /** Les trois vues d'un corps. La boîte d'un sujet est UNE (le quad ne change pas quand la caméra
@@ -1045,7 +1159,7 @@ function tiltFracAtFrame(k: number, n: number): number {
  *  La BASCULE d'un corps au sol y est portée par `rigGroundTilt` (#1334) : un hors de combat est À
  *  TERRE, et la pose d'os seule ne le couche pas — un rig sous `CORPSE_POSE` sans rotation reste
  *  DEBOUT, membres écartés (mesuré à l'écran : un Gobelin mis hors de combat restait planté). */
-export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt: number, tintAt: TintAt): BillboardSubject[] {
+export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt: number): BillboardSubject[] {
   const defs = `<defs>${DEFS}</defs>`;
   const out: BillboardSubject[] = [];
   for (const { c, x, y, z, facing, rider, heroIndex } of actors) {
@@ -1116,7 +1230,7 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
     const composite = monté ? rider : undefined; // cavalier RÉELLEMENT entré dans le fragment
     const trace = draw;
     const traceAt = frameAt;
-    const off = (sizeFootprint(c.size) - 1) / 2;
+    const { anchor, cell } = ancreActeur({ c, x, y, z, ...(facing ? { facing } : {}) }, scene, mpt);
     out.push({
       // la signature du DESSIN, cf. `combatantRenderSignature` — le couple monté a SA clé (les deux
       // corps y entrent) : ni la monture seule ni le cavalier à pied ne peuvent la resservir.
@@ -1128,13 +1242,13 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
       // souvent un autre camp que celui qu'elle transporte (`builders/tokens`).
       teamColor: teamRingDecor(rider ?? c, heroIndex).color,
       kind: 'personnage',
-      anchor: new THREE.Vector3((x + off) * mpt, heightAt(scene, Math.round(x), Math.round(y), z), (y + off) * mpt),
+      anchor,
       facing: facing ?? 'S',
       scaleK: inputs.scaleK,
       // Un CORPS prend la teinte de SA case (position logique arrondie), pas celle du point où il
       // glisse : un acteur est un objet du système de jeu, posé sur une case, et son quad porte UNE
       // couleur. Le champ continu est la matière du MONDE, qui, lui, a des sommets à échantillonner.
-      tint: tintAt(Math.round(x), Math.round(y), z),
+      cell,
       box: monté?.box ?? { w: boxW, h: boxH },
       svg: (view, mirror) => defs + trace(view, mirror),
       ...(traceAt ? { frameSvg: (view, mirror, def, k, n, o) => defs + traceAt(view, mirror, def, k, n, o) } : {}),

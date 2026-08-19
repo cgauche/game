@@ -21,6 +21,7 @@ import {
   billboardMaterial,
   luminance709,
   poseBoards,
+  TEINTE_PLEINE,
   type Board,
   type BoardChrome,
   type FrameLights,
@@ -273,7 +274,7 @@ describe('Chrome des jetons — l’ALLURE passe au MATÉRIAU du billboard (#117
     const material = billboardMaterial(new THREE.Texture(), 1);
     const sub: BillboardSubject = {
       identity: `sonde:${cid}`, cid, kind: 'personnage', anchor: new THREE.Vector3(0, 0, 0),
-      facing: 'S', scaleK: 1, tint: 1, box: { w: 120, h: 150 }, svg: () => '',
+      facing: 'S', scaleK: 1, cell: { x: 0, y: 0, z: 0 }, box: { w: 120, h: 150 }, svg: () => '',
     };
     return {
       sub,
@@ -298,7 +299,7 @@ describe('Chrome des jetons — l’ALLURE passe au MATÉRIAU du billboard (#117
   /** Pose UNE frame avec l'allure donnée, et rend les canaux mesurés SUR le board. */
   function allure(chrome: BoardChrome | null, ombre = false): ReturnType<typeof canaux> {
     const b = board('h1', ombre);
-    poseBoards([b], CAMERA, () => null, FLAQUES, () => chrome);
+    poseBoards([b], CAMERA, () => null, FLAQUES, () => chrome, TEINTE_PLEINE);
     return canaux(b);
   }
 
@@ -348,7 +349,7 @@ describe('Chrome des jetons — l’ALLURE passe au MATÉRIAU du billboard (#117
   function teinté(highlight: string | null, exposition = LUM): THREE.Color {
     const b = board('h1');
     const flaques: FrameLights = { pool: [], slots: [], surfaceLuminance: exposition };
-    poseBoards([b], CAMERA, () => null, flaques, () => ({ ghost: false, dim: false, highlight }));
+    poseBoards([b], CAMERA, () => null, flaques, () => ({ ghost: false, dim: false, highlight }), TEINTE_PLEINE);
     return b.material.color.clone();
   }
 
@@ -412,7 +413,7 @@ describe('Chrome des jetons — l’ALLURE passe au MATÉRIAU du billboard (#117
       e1: { ghost: true, dim: false, highlight: null },
       h1: { ghost: false, dim: false, highlight: ENEMY_TINT },
     };
-    poseBoards([h1, e1], CAMERA, () => null, FLAQUES, (cid) => table[cid] ?? null);
+    poseBoards([h1, e1], CAMERA, () => null, FLAQUES, (cid) => table[cid] ?? null, TEINTE_PLEINE);
     expect(canaux(e1).alpha, 'le fantôme est celui que la table désigne').toBe(GHOST_OPACITY);
     expect(canaux(e1).desat).toBe(GHOST_DESAT);
     expect(canaux(h1).alpha).toBe(1);

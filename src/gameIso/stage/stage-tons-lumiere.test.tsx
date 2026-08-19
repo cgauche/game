@@ -23,7 +23,7 @@ import { combatantLights } from '../../state/vision';
 import { lightTones, props as propsData, trappings, type LightToneDef } from '../../data';
 import { schema as lightTonesSchema } from '../../data/schemas/defs/lightTones';
 import { ambianceLuminance } from '../catalog/ambiance';
-import { poseBoards, type Board } from './boardPose';
+import { AUCUN_CHROME, TEINTE_PLEINE, poseBoards, type Board } from './boardPose';
 import {
   applyFlicker,
   applyPointLights,
@@ -220,7 +220,7 @@ function boardDe(anchor: THREE.Vector3): Board {
   const material = new THREE.MeshBasicMaterial();
   const sub = {
     identity: 'sonde', cid: undefined, kind: 'personnage', anchor, facing: 'S',
-    scaleK: 1, tint: 1, box: { w: 120, h: 150 }, svg: () => '',
+    scaleK: 1, cell: { x: 0, y: 0, z: 0 }, box: { w: 120, h: 150 }, svg: () => '',
   };
   return {
     sub: sub as unknown as Board['sub'],
@@ -241,7 +241,7 @@ describe('Le billboard et la lampe partagent l’intensité de l’INSTANT (#124
     const paires: [number, number][] = [];
     for (let i = 0; i < 40; i++) {
       applyFlicker(pool, slots, i / 40);
-      poseBoards([b], CAMERA, () => null, { pool, slots, surfaceLuminance: AMB_NUIT });
+      poseBoards([b], CAMERA, () => null, { pool, slots, surfaceLuminance: AMB_NUIT }, AUCUN_CHROME, TEINTE_PLEINE);
       paires.push([pool[0].intensity, b.material.color.r]);
     }
     // La clarté du quad bouge — donc elle suit bien la flamme…
@@ -260,7 +260,7 @@ describe('Le billboard et la lampe partagent l’intensité de l’INSTANT (#124
     const b = boardDe(ancre);
     for (const t of [0, 0.21, 0.63]) {
       applyFlicker(pool, slots, t);
-      poseBoards([b], CAMERA, () => null, { pool, slots, surfaceLuminance: AMB_NUIT });
+      poseBoards([b], CAMERA, () => null, { pool, slots, surfaceLuminance: AMB_NUIT }, AUCUN_CHROME, TEINTE_PLEINE);
       expect(b.material.color.r).toBeCloseTo(billboardExposure(ancre, pool, AMB_NUIT), 12);
     }
   });

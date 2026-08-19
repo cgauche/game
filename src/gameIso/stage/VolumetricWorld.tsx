@@ -116,6 +116,8 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   const posesKey = poses.map(actorPoseKey).join('|');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const actors = useMemo(() => poses, [posesKey]);
+  // Les éléments du DÉCOR passent tels quels : leur rétention par CONTENU vit au socle
+  // (`GameStage3D`, `memesBillboardEls`) — l'éditeur monte cet écran sans passer par ici.
   const els = useMemo(() => ({ tokens: tokenEls, props: propEls }), [tokenEls, propEls]);
   // MARQUES DE CASES (P3-0c) : le builder PUR `builders/highlights`, sur la vue assemblée
   // (`combatHighlightsView`). L'écran volumique n'en connaît que la liste — il la pose à plat au sol.

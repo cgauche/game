@@ -13,7 +13,7 @@
  * marcheur sur sa case d'arrivée ; une lanterne laissée là éclairerait la case qu'il vient de quitter.
  */
 import * as THREE from 'three';
-import { billboardDepthOffsetUnits, billboardViewDepth, poseContactShadow, type BillboardSubject } from '../backends/webgl/sceneMeshes';
+import { billboardDepthOffsetUnits, billboardViewDepth, poseContactShadow, type BillboardSubject, type TintAt } from '../backends/webgl/sceneMeshes';
 import { billboardExposure, type PointLightSlots } from './stagePointLights';
 import { withRenderRank } from '../backends/webgl/renderRanks';
 import { materiauPlanTransparent } from '../backends/webgl/worldMaterials';
@@ -415,6 +415,10 @@ export type ChromeAt = (cid: string) => BoardChrome | null;
 /** Aucune allure particulière — la valeur d'une voie qui n'en fournit pas (planches QC). */
 export const AUCUN_CHROME: ChromeAt = () => null;
 
+/** Aucun brouillard — la teinte d'une voie qui n'échantillonne aucun champ de vision (planches QC,
+ *  bancs de pose). */
+export const TEINTE_PLEINE: TintAt = () => 1;
+
 /** Les FLAQUES de la frame (#1245, L2/L3) : le POOL de lampes ponctuelles monté et la table qui vient
  *  d'y être écrite (`stage/stagePointLights.ts`), index par index, plus l'exposition globale du moment. */
 export interface FrameLights {
@@ -471,8 +475,13 @@ const GLISSEMENTS: ({ dx: number; dy: number; dz: number } | null)[] = [];
  *  la profondeur fenêtre n'y est pas linéaire, donc un même biais métrique ne vaut pas le même nombre
  *  d'unités à 1 m et à 30 m (`billboardDepthOffsetUnits`, branche `depthM`). La grandeur qui la
  *  gouverne est `z_view` (`billboardViewDepth`), pas la distance à l'œil. En ortho, la profondeur EST
- *  linéaire : une seule valeur pour toute la frame. */
-export function poseBoards(boards: readonly Board[], camera: FrameCamera, glide: GlideAt, lights: FrameLights, chromeAt: ChromeAt = AUCUN_CHROME): boolean {
+ *  linéaire : une seule valeur pour toute la frame.
+ *
+ *  La TEINTE DE VISIBILITÉ du quad (#1396) se prend ici aussi, à la case du sujet (`sub.cell`) : c'est
+ *  une valeur de FRAME, au même titre que l'exposition. Cuite dans le sujet, elle entrait dans
+ *  l'identité des sujets, et un pas du groupe — qui change le champ de vision — remontait tous les
+ *  quads du monde (mesuré #1371 : ~126 disposes et 0/63 quads survivants par pas). */
+export function poseBoards(boards: readonly Board[], camera: FrameCamera, glide: GlideAt, lights: FrameLights, chromeAt: ChromeAt, tintAt: TintAt): boolean {
   const perspective = camera.isPerspectiveCamera === true;
   const unitsOrtho = perspective ? 0 : billboardDepthOffsetUnits(camera.near, camera.far);
   let aGlissé = false;
@@ -496,14 +505,15 @@ export function poseBoards(boards: readonly Board[], camera: FrameCamera, glide:
       ? billboardDepthOffsetUnits(camera.near, camera.far, billboardViewDepth(camera, b.mesh.position))
       : unitsOrtho;
     const chrome = b.sub.cid ? chromeAt(b.sub.cid) : null;
+    const teinte = tintAt(b.sub.cell.x, b.sub.cell.y, b.sub.cell.z);
     if (b.shadow) {
       poseContactShadow(b.shadow, ancre);
-      applyShadowAllure(b.shadow, boardChromeOpacity(chrome));
+      applyShadowAllure(b.shadow, boardChromeOpacity(chrome) * teinte);
     }
     applyBoardChrome(
       b.material,
       chrome,
-      b.sub.tint * billboardExposure(ancre, lights.pool, lights.surfaceLuminance),
+      teinte * billboardExposure(ancre, lights.pool, lights.surfaceLuminance),
     );
   }
   return aGlissé;

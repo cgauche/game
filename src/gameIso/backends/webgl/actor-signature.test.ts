@@ -14,7 +14,6 @@ import type { Combatant, Weapon } from '../../../engine/types';
 
 const scene = emptyScene(6, 6);
 const mpt = sceneMetresPerTile(scene);
-const plein = () => 1;
 
 /** Héros rendu depuis SON PROPRE inventaire (pas de `creatureId`, pas d'IA) : garde-robe = `career`,
  *  équipement = `weapons`/`items` — le chemin du groupe joueur. */
@@ -28,7 +27,7 @@ function héros(patch: Partial<Combatant> = {}): Combatant {
 }
 
 const pose = (c: Combatant): ActorPose => ({ c, x: 1, y: 1, z: 0, facing: 'S' });
-const sujet = (c: Combatant) => actorBillboards([pose(c)], scene, mpt, plein)[0];
+const sujet = (c: Combatant) => actorBillboards([pose(c)], scene, mpt)[0];
 const svgDe = (c: Combatant) => sujet(c).svg('front', false, 0);
 
 const ÉPÉE = { label: 'Épée', type: 'melee', group: 'base', damage: 4, shape: 'epee' } as unknown as Weapon;

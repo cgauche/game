@@ -182,6 +182,7 @@ beforeEach(() => {
   // voisin qui les laisse chargés ferait démarrer celui-ci sur des tâches et des textures d'ailleurs —
   // la file mesurée ne serait plus celle du montage.
   resetBakeQueue();
+  clearAtlasCache();
   svgTexture.clearBillboardTextures();
   simulerRasterisation(true);
 });
@@ -190,9 +191,8 @@ afterEach(() => {
   if (hôte) { hôte.remove(); hôte = null; }
   battre = null;
   enAttente = [];
-  resetBakeQueue();
-  clearAtlasCache();
-  svgTexture.clearBillboardTextures();
+  // (la purge se fait à l'OUVERTURE — cf. `beforeEach` : purger ici tuerait les cuissons en vol d'un
+  // banc voisin, les fichiers partageant leurs modules sous `isolate: false`, #1396)
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }

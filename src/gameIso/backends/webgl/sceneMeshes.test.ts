@@ -9,6 +9,8 @@ import {
   contactShadow,
   contactShadowWidthM,
   actorBillboards,
+  actorIdentityKey,
+  reposerActeurs,
   contentBox,
   applyFogGamma,
   installFogGamma,
@@ -189,7 +191,7 @@ describe('ORIENTATION — les triangles regardent DEHORS (la carte d’ombre en 
 
 describe('BILLBOARDS — sujets de la scène', () => {
   it('les personnages et le décor sont collectés, ancrés aux pieds, avec leur SVG par vue', () => {
-    const subs = collectBillboards(scene, mpt, plein, wholeSceneBillboardEls(scene));
+    const subs = collectBillboards(scene, mpt, wholeSceneBillboardEls(scene));
     const persos = subs.filter((s) => s.kind === 'personnage');
     expect(persos.length).toBeGreaterThan(0);
     expect(subs.some((s) => s.kind === 'prop')).toBe(true);
@@ -201,7 +203,7 @@ describe('BILLBOARDS — sujets de la scène', () => {
   });
 
   it('le SVG d\'un PERSONNAGE ignore le cran de caméra, celui d\'un DÉCOR directionnel en dépend — c\'est ce qui règle la clé de cache', () => {
-    const perso = collectBillboards(scene, mpt, plein, wholeSceneBillboardEls(scene)).find((s) => s.kind === 'personnage')!;
+    const perso = collectBillboards(scene, mpt, wholeSceneBillboardEls(scene)).find((s) => s.kind === 'personnage')!;
     for (const camRot of [1, 2, 3] as const)
       expect(perso.svg('front', false, camRot)).toBe(perso.svg('front', false, 0));
     // Le décor délègue à `propSvg(ref, dir, camRot)` : un prop DIRECTIONNEL (`views`) pivote avec la
@@ -222,7 +224,7 @@ describe('CONTENU — ce qu’un cadrage doit tenir', () => {
       const scn = faire();
       const m = sceneMetresPerTile(scn);
       const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
-      const subs = collectBillboards(scn, m, plein, wholeSceneBillboardEls(scn));
+      const subs = collectBillboards(scn, m, wholeSceneBillboardEls(scn));
       const box = contentBox(scn, m, subs, quadDe, geoBox);
       const englobante = worldShadowBox(geoBox, subs, quadDe);
       // La boîte englobante vient de l'attribut de position, en FLOAT32 : elle arrondit d'un ULP là où
@@ -248,7 +250,7 @@ describe('CONTENU — ce qu’un cadrage doit tenir', () => {
     const scn = buildVitrineScene();
     const m = sceneMetresPerTile(scn);
     const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
-    const subs = collectBillboards(scn, m, plein, wholeSceneBillboardEls(scn));
+    const subs = collectBillboards(scn, m, wholeSceneBillboardEls(scn));
     const box = contentBox(scn, m, subs, quadDe, geoBox);
     const t = (b: THREE.Box3) => b.getSize(new THREE.Vector3());
     // Mesuré #1176 : 60×48 m de géométrie pour 51,4×37,1 m de contenu.
@@ -312,7 +314,7 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
       const scn = faire();
       const m = sceneMetresPerTile(scn);
       const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
-      const subs = collectBillboards(scn, m, plein, wholeSceneBillboardEls(scn));
+      const subs = collectBillboards(scn, m, wholeSceneBillboardEls(scn));
       const quadDe = (s: (typeof subs)[number]) =>
         anchorAndSize(billboardHeightM('jeu', s.kind) * s.scaleK, BILLBOARD_BOX_ASPECT);
       const box = worldShadowBox(geoBox, subs, quadDe);
@@ -367,7 +369,7 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
   function biaisReel(scn: Scene): number {
     const m = sceneMetresPerTile(scn);
     const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
-    const subs = collectBillboards(scn, m, plein, wholeSceneBillboardEls(scn));
+    const subs = collectBillboards(scn, m, wholeSceneBillboardEls(scn));
     const biais = (['jeu', 'heroique', 'metrique'] as BillboardConvention[]).map((conv) =>
       sunRig(
         worldShadowBox(geoBox, subs, (s: (typeof subs)[number]) =>
@@ -689,7 +691,7 @@ describe('OMBRE DE CONTACT — le socle se dimensionne sur le SUJET, jamais sur 
     }) as unknown as Combatant;
 
   const sujetDe = (c: Combatant, rider?: Combatant) =>
-    actorBillboards([{ c, ...(rider ? { rider } : {}), x: 1, y: 1, z: 0, facing: 'S' }], scèneNue, mptNu, plein)[0];
+    actorBillboards([{ c, ...(rider ? { rider } : {}), x: 1, y: 1, z: 0, facing: 'S' }], scèneNue, mptNu)[0];
 
   /** Le rayon MONDE du socle tel que la prod le monte : le sujet et son quad, rien d'autre. */
   const rayon = (s: ReturnType<typeof sujetDe>): number =>
@@ -980,5 +982,61 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
       }
     }
     expect(mesurés).toBeGreaterThan(10);
+  });
+});
+
+/**
+ * LA POSE D'UN ACTEUR N'EST PAS SON IDENTITÉ (#1396) — la couture que le montage des quads interroge.
+ * Un pas ou un pivot doit se REPOSER sur les sujets montés : l'identité, elle, ne bouge pas, faute de
+ * quoi tout le groupe de billboards se démonte à chaque pas (mesuré : 13 matériaux libérés, 0 quad
+ * survivant sur un banc de douze décors).
+ */
+describe('reposerActeurs — case et cap sont de la POSE, jamais de l’identité (#1396)', () => {
+  const scèneRepose = emptyScene(8, 8);
+  const mptRepose = sceneMetresPerTile(scèneRepose);
+  const combattant = (): Combatant =>
+    ({
+      id: 'r1', label: 'R', kind: 'hero', pos: { x: 1, y: 1 }, size: 'moyenne',
+      wounds: { current: 12, max: 12 }, weapons: [], characteristics: {}, advantage: 0,
+      conditions: [], armour: {}, skills: [], talents: [], movement: 4, career: 'soldat', species: 'Humain',
+    }) as unknown as Combatant;
+
+  it('l’identité IGNORE la case et le cap (deux poses, une seule identité)', () => {
+    const c = combattant();
+    expect(actorIdentityKey({ c, x: 1, y: 1, z: 0, facing: 'S' }))
+      .toBe(actorIdentityKey({ c, x: 4, y: 6, z: 0, facing: 'NE' }));
+  });
+
+  it('un PAS réécrit la case du sujet monté (sans quoi sa teinte reste celle du départ)', () => {
+    const c = combattant();
+    const [sujet] = actorBillboards([{ c, x: 1, y: 1, z: 0, facing: 'S' }], scèneRepose, mptRepose);
+    const ancre = sujet.anchor.clone();
+
+    const { ancres } = reposerActeurs([sujet], [{ c, x: 2, y: 1, z: 0, facing: 'S' }], scèneRepose, mptRepose);
+
+    expect(ancres, 'la repose ne signale pas le déplacement : rien ne peindra').toBe(true);
+    expect(sujet.cell, 'la CASE du sujet est restée au départ — sa teinte y resterait aussi').toEqual({ x: 2, y: 1, z: 0 });
+    expect(sujet.anchor.equals(ancre), 'l’ancre monde n’a pas suivi la case').toBe(false);
+  });
+
+  it('un PIVOT réécrit le cap du sujet et le SIGNALE (l’art se relève dessus)', () => {
+    const c = combattant();
+    const [sujet] = actorBillboards([{ c, x: 1, y: 1, z: 0, facing: 'S' }], scèneRepose, mptRepose);
+
+    const { ancres, caps } = reposerActeurs([sujet], [{ c, x: 1, y: 1, z: 0, facing: 'E' }], scèneRepose, mptRepose);
+
+    expect(sujet.facing, 'le cap du sujet est resté au précédent : le corps regarde ailleurs qu’il ne va').toBe('E');
+    expect(caps, 'le cap changé n’est pas signalé : un corps SANS flipbook garderait l’art de l’ancien cap').toEqual([sujet]);
+    expect(ancres, 'un pivot sur place ne déplace rien').toBe(false);
+  });
+
+  it('une pose INCHANGÉE n’écrit rien et ne signale rien (aucune image gratuite)', () => {
+    const c = combattant();
+    const [sujet] = actorBillboards([{ c, x: 1, y: 1, z: 0, facing: 'S' }], scèneRepose, mptRepose);
+
+    const { ancres, caps } = reposerActeurs([sujet], [{ c, x: 1, y: 1, z: 0, facing: 'S' }], scèneRepose, mptRepose);
+
+    expect(ancres).toBe(false);
+    expect(caps).toEqual([]);
   });
 });

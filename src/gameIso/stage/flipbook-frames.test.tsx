@@ -73,7 +73,7 @@ function board(cid: string): Board {
   const material = billboardMaterial(new THREE.Texture(), 1);
   const sub: BillboardSubject = {
     identity: `sonde:${cid}`, cid, teamColor: HERO_RING[0], kind: 'personnage',
-    anchor: new THREE.Vector3(), facing: 'S', scaleK: 1, tint: 1, box: { w: 120, h: 150 }, svg: () => '',
+    anchor: new THREE.Vector3(), facing: 'S', scaleK: 1, cell: { x: 0, y: 0, z: 0 }, box: { w: 120, h: 150 }, svg: () => '',
   };
   const b: Board = {
     sub,
@@ -435,14 +435,16 @@ beforeAll(() => {
 });
 afterAll(() => setStageRendererFactory(null));
 
-beforeEach(() => simulerRasterisation());
+// PURGE À L'OUVERTURE, jamais à la fermeture (#1396) : plusieurs fichiers tournent EN MÊME TEMPS sur
+// les mêmes modules (`isolate: false`), et vider la file du cuiseur ou le stock de planches À LA FIN
+// d'un test tue les cuissons EN VOL du banc voisin (mesuré sur la suite complète : un banc sans un
+// seul quad monté). À l'OUVERTURE, l'ardoise est aussi nette.
+beforeEach(() => { resetBakeQueue(); clearAtlasCache(); simulerRasterisation(); });
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
   glissement = null;
   battre = null;
-  resetBakeQueue();
-  clearAtlasCache();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }

@@ -162,18 +162,18 @@ beforeAll(() => {
 });
 afterAll(() => setStageRendererFactory(null));
 
-beforeEach(() => simulerRasterisation());
+  // PURGE À L'OUVERTURE, jamais à la fermeture (#1396) : la suite fait tourner plusieurs fichiers EN
+  // MÊME TEMPS sur les mêmes modules (`isolate: false`), et vider la file du cuiseur ou le stock de
+  // textures À LA FIN d'un test tue les cuissons EN VOL du banc voisin — mesuré sur la suite complète :
+  // ce banc-là se retrouvait sans un seul quad monté. À l'OUVERTURE, l'ardoise est aussi nette, dans
+  // la fenêtre où ce banc est seul à travailler.
+beforeEach(() => { resetBakeQueue(); clearBillboardTextures(); simulerRasterisation(); });
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
   glissement = null;
   battre = null;
   allures = {};
-  // La file du cuiseur et le stock de textures sont GLOBAUX au module : un banc qui les laisse
-  // chargés fait démarrer le suivant sur les tâches et les textures du précédent — dont une texture
-  // mémoïsée sur une promesse que plus aucune `Image` ne résoudra (#1372).
-  resetBakeQueue();
-  clearBillboardTextures();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
@@ -272,7 +272,7 @@ describe('Corps à travers les murs — ce que le FRAGMENT porte (#1297 LOT C)',
     const material = billboardMaterial(new THREE.Texture(), 1);
     const sub: BillboardSubject = {
       identity: `sonde:${cid}`, cid, teamColor: HERO_RING[0], kind: 'personnage',
-      anchor: new THREE.Vector3(), facing: 'S', scaleK: 1, tint: 1, box: { w: 120, h: 150 }, svg: () => '',
+      anchor: new THREE.Vector3(), facing: 'S', scaleK: 1, cell: { x: 0, y: 0, z: 0 }, box: { w: 120, h: 150 }, svg: () => '',
     };
     return {
       sub,
@@ -359,7 +359,7 @@ describe('Corps à travers les murs — la TEINTE le long de la chaîne RÉELLE 
   function teintes(combatants: Combatant[]): Record<string, string | undefined> {
     const els = buildTokens(SCENE, TOUT_VU(), { combatants } as unknown as BattleState, { activeZ: 0, viewZ: null, top: false });
     const out: Record<string, string | undefined> = {};
-    for (const b of actorBillboards(actorPoses(els, {}), SCENE, MPT, () => 1)) out[b.cid!] = b.teamColor;
+    for (const b of actorBillboards(actorPoses(els, {}), SCENE, MPT)) out[b.cid!] = b.teamColor;
     return out;
   }
 

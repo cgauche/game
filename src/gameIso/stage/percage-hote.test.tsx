@@ -23,6 +23,7 @@ import {
 } from './GameStage3D';
 import { PERCAGE_DEFINE, PERCAGE_FONDU_MS, PERCAGE_RAYON_PX, percerMateriau, trousPercage } from '../backends/webgl/percageLocal';
 import { centrePercage, clePercage } from './percage';
+import { sourcesDeFrames } from './stageFrames';
 import { frameRectOf } from './boardPose';
 import { resetBakeQueue } from '../backends/webgl/atlasBake';
 import { IsoStage } from '../IsoStage';
@@ -392,11 +393,22 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
   it('une fois convergé, la pompe s’ÉTEINT : plus une seule frame n’est demandée', async () => {
     await monter(COIFFÉ, entreesDe(COIFFÉ));
     let images = 0;
+    // EN PLEIN FONDU : la pompe demande SES images, en plus de ce que la scène tient déjà (un corps
+    // animé est un motif continu — #1396 —, et il en tient une).
+    const pendant = image();
+    images++;
+    expect(pendant, 'prémisse : la pompe du fondu ne demande aucune image').toBeGreaterThan(0);
     while (trousPercage()[0].w < PERCAGE_RAYON_PX && images < 200) { image(); images++; }
     expect(trousPercage()[0].w).toBe(PERCAGE_RAYON_PX);
-    // La dernière image servie est celle qui a convergé : elle n'en a pas redemandé.
-    expect(image(), 'rappels d’animation en attente après convergence').toBe(0);
-    expect(image(), 'et toujours aucun à l’image suivante').toBe(0);
+    // La pompe du fondu a RELÂCHÉ ses images. Ce qui reste est le motif de la scène — un corps animé
+    // en est un (#1396 : sa planche se choisit par image) —, et la boucle n'arme qu'UN rappel pour
+    // toutes les sources : c'est donc le compte de SOURCES qui dit qui demande encore, jamais le
+    // compte de rappels.
+    const après = image();
+    expect(après, 'la pompe du fondu redemande des images après convergence').toBeLessThan(pendant);
+    expect(image(), 'et son compte ne remonte pas à l’image suivante').toBe(après);
+    // Ce qui reste demandé, s'il reste quelque chose, est le motif de la scène, pas le fondu.
+    expect(après, 'plus d’un demandeur restant : ce n’est plus le seul motif de la scène').toBeLessThanOrEqual(sourcesDeFrames());
     expect(trousPercage()[0].w, 'le trou reste ouvert').toBe(PERCAGE_RAYON_PX);
   });
 
