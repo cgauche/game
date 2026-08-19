@@ -104,7 +104,7 @@ function lineCost(id: string, factor: number): Money | null {
   return fromBrass(Math.round(brass));
 }
 
-/** Coût de réparation d'un objet endommagé — armure (LDB 63 l.97-98) ou arme (LDB 62 l.135). */
+/** Coût de réparation d'un objet endommagé — armure (LDB 63 l.64) ou arme (LDB 62 l.135). */
 function repairCost(item: ItemInstance): Money {
   const t = item.trappingId ? findTrappingById(item.trappingId) : undefined;
   const base = t ? toBrass(priceToMoney(t.price)) : 0;

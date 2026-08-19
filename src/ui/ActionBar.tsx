@@ -366,7 +366,7 @@ export function ActionBar() {
   const ammoWeapon = rangedWeapons.find((w) => w.uid === ammoWeaponUid) ?? rangedW;
   const needsReload = !!ammoWeapon && !weaponLoaded(active, ammoWeapon); // l'Arc (reload 0) ne recharge jamais
   const ammoChoices = isHero && ammoWeapon ? compatibleAmmo(active, ammoWeapon) : [];
-  // Perturbante (LDB 62 l.275-276) : mode « Repousser » disponible avec une arme de mêlée Perturbante.
+  // Perturbante (LDB 62 l.272-274) : mode « Repousser » disponible avec une arme de mêlée Perturbante.
   const canPush = isHero && active.weapons.some((w) => w.type === 'melee' && canPushback(w));
 
   // Guérison (LDB 09-Compétences) : soi + alliés (héros) adjacents soignables, si le héros a la Compétence.
