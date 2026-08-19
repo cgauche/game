@@ -33,7 +33,7 @@
 - [FR uniquement](game-francais-jamais-anglais.md) · [sources FR élargies](game-source-fr-campagne-custom.md) · [PowerShell](env-use-powershell-not-bash.md) · [débloquer l'autre session](game-cross-session-console-unblock.md) · [pièges background](env-session-background-pieges-outils.md) · [CHARGE](env-charge-machine-un-seul-agent-lourd.md) — `--minWorkers=1`.
 
 ## Chantiers récents / état
-- [CHANTIER HUD combat : console RT](game-arbitrage-hud-console-rt-2026-08-16.md) — géométrie immuable, jamais de bouton-liste ; dette Chance #1332.
+- [CHANTIER HUD combat : console RT](game-arbitrage-hud-console-rt-2026-08-16.md) — géométrie immuable, jamais de bouton-liste ; dette Chance #1332. **[MODÈLE DE GESTES 2026-08-19](game-arbitrage-modele-gestes-2026-08-19.md)** — supplante le « grid par défaut » : attaque à portée seule, Course à armer, Marche peinte, refus visible, annulation gratuite.
 - [#1318 PROGRAMME DE PRÉVENTION](project-1318-programme-prevention.md) — E5+E2+E4+E7 soldés ; restent E1, E3, E6, E8 ; le ticket fait foi.
 - [Vue TOP = tabletop/VTT](game-arbitrage-vue-top-tactique-tabletop.md) · [GRILLE = SYSTÈME, rendu LIBRE](game-arbitrage-grille-systeme-rendu-libre.md) · [NOUVEAU MOTEUR = LIBÉRER LE PRODUIT](user-doctrine-nouveau-moteur-liberer-le-produit.md) · [ÉTAT DE L'ART avant invention](user-doctrine-etat-de-lart-avant-invention.md).
 - [VERROU PAR CONSTRUCTION](user-doctrine-verrou-par-construction.md) · [Reprise : `.superpowers/sdd/` D'ABORD](game-reprise-chantier-lire-superpowers-sdd.md) · [CHANTIER campagne EDO+EDOC](game-campagne-edo-programme.md) · [campagne = JSON PORTABLE](game-campagne-json-portable-frontiere-reference-narratif.md).
