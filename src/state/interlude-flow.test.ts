@@ -52,7 +52,7 @@ describe('Interlude — flux start/end', () => {
     }
   });
 
-  it('startInterlude : 5 semaines → max 3 Activités (« maximum de trois », LDB 23 l.6)', () => {
+  it('startInterlude : 5 semaines → max 3 Activités (« maximum de trois », LDB 23 l.5)', () => {
     useGame.getState().startInterlude(5);
     for (const st of Object.values(useGame.getState().interlude!.perHero)) {
       const ev = eventOf(st);
@@ -100,7 +100,7 @@ describe('Interlude — flux start/end', () => {
     expect(useGame.getState().journal.join('\n')).not.toMatch(/dépérit|Faim :/);
   });
 
-  it('« Avec le pouvoir » : Niveau 3 sans Revenus → retombe au Niveau 2 (LDB 23 l.30)', () => {
+  it('« Avec le pouvoir » : Niveau 3 sans Revenus → retombe au Niveau 2 (LDB 23 l.33)', () => {
     useGame.getState().startInterlude(1);
     const hero = useGame.getState().party[0];
     hero.careerLevel = 3;

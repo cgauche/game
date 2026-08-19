@@ -303,7 +303,7 @@
   {
     "id": "social-status-reaction-roll",
     "label": "Réaction au Statut (1d10)",
-    "ref": "LDB 08 l.54",
+    "ref": "LDB 08 l.40/59",
     "group": "Social",
     "kind": "flag",
     "default": false,
@@ -312,7 +312,7 @@
   {
     "id": "social-begging-bonus",
     "label": "Mendicité et Statut",
-    "ref": "LDB 08 l.92",
+    "ref": "LDB 08 l.63",
     "group": "Social",
     "kind": "flag",
     "default": false,
@@ -321,7 +321,7 @@
   {
     "id": "social-charm-intra-tier",
     "label": "Statut au sein d’un même Échelon",
-    "ref": "LDB 08 l.88",
+    "ref": "LDB 08 l.57",
     "group": "Social",
     "kind": "flag",
     "default": false,
@@ -421,7 +421,7 @@
   {
     "id": "interlude-elf-duty",
     "label": "Devoir elfique (Prestige Elfique)",
-    "ref": "LDB 23 l.48",
+    "ref": "LDB 23 l.54-56",
     "group": "Activités",
     "kind": "flag",
     "default": true,
@@ -587,7 +587,7 @@
   {
     "id": "disease-mode",
     "label": "Utilisation des maladies",
-    "ref": "LDB 20 l.36",
+    "ref": "LDB 20 l.35",
     "group": "Maladies",
     "kind": "mode",
     "default": "full",

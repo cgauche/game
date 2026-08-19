@@ -218,32 +218,31 @@ Règles précises :
 
 - **Niveau suivant** : possible uniquement si le Niveau actuel est **complété** ; coût 100 PX.
 - **Niveau inférieur** : toujours possible pour 100 PX (sans condition de complétion).
-- **Saut de Niveau** (sauter un Niveau) : normalement **interdit** sauf avec l'accord du MJ, justifié par des événements narratifs (`LDB 08 l.1-2`).
+- **Saut de Niveau** (sauter un Niveau) : normalement **interdit** sauf avec l'accord du MJ, justifié par des événements narratifs (`LDB 07 l.140`).
 
 > « Avec l'accord du MJ, vous pouvez également sauter des Niveaux de Carrière, fait normalement expliqué par des événements dans le jeu. »
-> — LDB 08 l.5
+> — LDB 07 l.140
 
-Coût d'un saut accordé par le MJ : 100 PX si le Niveau courant est achevé, 200 PX sinon (`LDB 08 l.2`).
+Coût d'un saut accordé par le MJ : 100 PX si le Niveau courant est achevé, 200 PX sinon (`LDB 07 l.140`).
 
-**Sources RAW** : `LDB 07 l.136-139`, `LDB 08 l.1-2`
+**Sources RAW** : `LDB 07 l.136-139`, `LDB 07 l.140`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.136-139) → `feu`, `careerCompletionAdvances`, `AdvancementView`, `lumiere`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, `cieux`, +6 — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
-- `LDB 8` (l.1-2, l.5) → `changeCareer` — `src/state/partyFlow.ts`
+- `LDB 7` (l.136-139, l.140) → `feu`, `careerCompletionAdvances`, `AdvancementView`, `lumiere`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, `cieux`, +6 — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
 
 ---
 
 ## Changer pour une Nouvelle Carrière
 
 > « Si vous avez achevé votre Niveau de Carrière actuel, vous pouvez faire vos débuts au premier Niveau d'une autre Carrière de votre Classe pour 100 PX, ou pour 200 PX si vous n'avez pas achevé votre Niveau de Carrière actuel. Si vous voulez commencer le premier Niveau d'une Carrière d'une Classe différente, il vous en coûtera 100 PX supplémentaires. »
-> — LDB 08 l.9
+> — LDB 07 l.144
 
 > « votre MJ pourra vous demander de justifier tout changement de Carrière par des événements qui se produiront en cours de jeu »
-> — LDB 08 l.11
+> — LDB 07 l.146
 
-**Cas particulier — même Niveau dans une autre Carrière** : si le Niveau actuel est achevé et avec l'accord du MJ, il est possible de rejoindre le même Niveau de Carrière d'une autre Carrière de la même Classe pour 100 PX (`LDB 08 l.2`). Restrictions : certaines Carrières exigent les bases préalables (ex. Sorcier) ; les Talents des Niveaux non parcourus ne sont pas disponibles.
+**Cas particulier — même Niveau dans une autre Carrière** : si le Niveau actuel est achevé et avec l'accord du MJ, il est possible de rejoindre le même Niveau de Carrière d'une autre Carrière de la même Classe pour 100 PX (`LDB 07 l.148`). Restrictions : certaines Carrières exigent les bases préalables (ex. Sorcier) ; les Talents des Niveaux non parcourus ne sont pas disponibles.
 
-**Activité « Changement de Carrière »** : entre deux aventures, le changement peut aussi s'effectuer via l'Activité Changement de Carrière (ch. 6, `LDB 08 l.3`).
+**Activité « Changement de Carrière »** : entre deux aventures, le changement peut aussi s'effectuer via l'Activité Changement de Carrière (`LDB 23 l.104`).
 
 **Récapitulatif des règles de cible** :
 
@@ -251,16 +250,17 @@ Coût d'un saut accordé par le MJ : 100 PX si le Niveau courant est achevé, 20
 - Même Classe : coût de base (100 ou 200 PX selon complétion).
 - Classe différente : +100 PX.
 
-**Sources RAW** : `LDB 08 l.2-3`
+**Sources RAW** : `LDB 07 l.144-148`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 8` (l.2-3, l.9, l.11) → `changeCareer`, `necromancie`, `demonologie` — `src/data/domains.json`, `src/state/partyFlow.ts`
+- `LDB 7` (l.144-148) → `feu`, `careerCompletionAdvances`, `AdvancementView`, `lumiere`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, `cieux`, +6 — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
+- `LDB 23` (l.104) → `craft`, `learn`, `entrainement`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`
 
 ---
 
 ## Table de synthèse des coûts de Carrière
 
-Verbatim depuis `LDB 08 l.3-4` (tableau « Coût des Changements de Carrière et de Talent ») :
+Verbatim depuis `LDB 07 l.152-159` (tableau « Coût des Changements de Carrière et de Talent ») :
 
 | Progression | Coût en PX |
 |---|---|
@@ -269,10 +269,10 @@ Verbatim depuis `LDB 08 l.3-4` (tableau « Coût des Changements de Carrière et
 | Quitter une Carrière inachevée | 200 PX |
 | Embrasser une nouvelle Classe | +100 PX |
 
-**Sources RAW** : `LDB 08 l.3-4`
+**Sources RAW** : `LDB 07 l.152-159`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 8` (l.3-4) → `changeCareer` — `src/state/partyFlow.ts`
+- `LDB 7` (l.152-159) → `AdvancementView`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `changeCareer`, `sorcellerie` — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`
 
 ---
 
@@ -338,10 +338,13 @@ Module principal : `src/engine/advancement.ts`
 | `careerCompletionAdvances(level)` | Augmentations requises pour compléter (5 × niveau) | `LDB 07 l.126-131` |
 | `isCareerLevelComplete(hero, level, opts)` | Conditions de complétion d'un Niveau | `LDB 07 l.124` |
 | `careerChangeCost(completed)` | Coût de base d'un changement de Carrière | `LDB 07 l.118` |
-| `validateCareerChange(hero, newCareer, newLevel, ctx)` | Règles de cible + surcoût Classe différente | `LDB 07 l.137`, `LDB 08 l.2-2` |
-| `changeCareer(hero, newCareer, newLevel, ctx)` | Application du changement (mute le héros) | `LDB 07 l.137`, `LDB 08 l.2` |
+| `validateCareerChange(hero, newCareer, newLevel, ctx)` | Règles de cible + surcoût Classe différente | `LDB 07 l.137`, `LDB 07 l.152-159` |
+| `changeCareer(hero, newCareer, newLevel, ctx)` | Application du changement (mute le héros) | `LDB 07 l.137`, `LDB 07 l.140` |
 
 **Refs code dans le fichier** (lignes exactes du source) :
-- `LDB 09 l.44` (Compétence = Spécialisation distincte) — commentaire l.82
-- `LDB 08 l.2` (surcoût Classe différente) — commentaire l.181, l.213
-- `LDB 07 l.137 + LDB 08 l.2-2` (règles changement) — commentaire l.188
+- `LDB 09 l.42` (Spécialisation = Compétence distincte) — commentaire l.70
+- `LDB 07 l.118` (coût de base : 100 PX si complété, 200 sinon) — commentaire l.159, l.184
+- `LDB 07 l.137` (Niveau suivant ou inférieur au sein de la même Carrière) — commentaire l.178, l.180
+- `LDB 07 l.140` (saut de Niveau accordé par le MJ) — commentaire l.171, l.181, l.202
+- `LDB 07 l.144` (1er Niveau d'une autre Carrière ; +100 PX si la Classe diffère) — commentaire l.167, l.182
+- `LDB 07 l.148` (même Niveau d'une autre Carrière de la Classe, accord du MJ) — commentaire l.171, l.183, l.207

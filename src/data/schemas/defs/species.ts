@@ -37,7 +37,7 @@ export const schema = z.array(
      *  quand elle a son propre Groupe (« Humains (Tiléens) » → `humain` + `tileen`). DONNÉE requise
      *  (27/27) : `groupsFor` les lit, il ne dérive plus rien du `label`. */
     grantGroups: z.array(z.string()),
-    /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.87-91). Absent = défaut Humain (50). */
+    /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.78-81). Absent = défaut Humain (50). */
     mutationBodyMax: z.number().optional(),
     /** Habillage de l'APERÇU (créateur, carte de race #431) — id de carrière ICONIQUE et COMMUNE à
      *  l'espèce (jamais un choix de RÈGLE, pur flavor de vitrine) : la tuile de famille montre un

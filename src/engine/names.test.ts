@@ -15,7 +15,7 @@ const endsWithOne = (name: string, pool: string[]) => pool.some((p) => name.ends
 
 // generateName est keyé par `species.refChar` (`RaceKey`, #313) — le pont vers le libellé de
 // `names.json` vit dans `RACE_KEY_LABEL` (SEUL point de conversion, cf. `engine/names.ts`).
-describe('generateName — banque names.json + canon nain (LDB 05 l.622)', () => {
+describe('generateName — banque names.json + canon nain (LDB 05 l.627-633)', () => {
   it('Humain : « Prénom Famille », prénom du pool du SEXE', () => {
     for (let s = 1; s <= 25; s++) {
       const m = generateName('humain', 'M', makeRNG(s))!;

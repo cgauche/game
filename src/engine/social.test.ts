@@ -12,7 +12,7 @@ afterEach(() => {
   resetRule('social-charm-intra-tier');
 });
 
-describe('statusCharmMod — inter-Échelon (RAW de base, LDB 08 l.88)', () => {
+describe('statusCharmMod — inter-Échelon (RAW de base, LDB 08 l.57)', () => {
   it('actor d’un Échelon SUPÉRIEUR → +10', () => {
     expect(statusCharmMod(S('Or', 1), S('Argent', 5))).toBe(10);
     expect(statusCharmMod(S('Argent', 1), S('Bronze', 5))).toBe(10);

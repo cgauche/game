@@ -745,7 +745,7 @@ export interface SpeciesData {
    *  quand elle porte son propre Groupe (« Humains (Tiléens) » → `humain` + `tileen`). Lus tels
    *  quels par `groupsFor` (`engine/groups`), qui ne dérive plus rien du `label`. */
   grantGroups: string[];
-  /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.87-91 : d100 ≤ seuil → corps, sinon esprit) :
+  /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.78-81 : d100 ≤ seuil → corps, sinon esprit) :
    *  Elfe 0, Nain 5, Halfling 10, Humain 50. Ogre 10 (ADE II « Ogres et Mutations »). ABSENT = défaut
    *  Humain (50) — le Gnome y est rattaché par NADJ « Gnomes et Corruption » (« mutent comme les humains »). */
   mutationBodyMax?: number;
@@ -1032,7 +1032,7 @@ export interface ItemCapabilities {
   isShelter?: boolean;
   /** Ration de voyage (« Ration (1 jour) », LDB 66 p.302) — consommée par l'entretien de Faim (NON gaté). */
   isRations?: boolean;
-  /** Grimoire / livre de Sorts (LDB 47 l.34) — un Sort non mémorisé du Domaine peut y être lu (NON gaté). */
+  /** Grimoire / livre de Sorts (LDB 47 l.21) — un Sort non mémorisé du Domaine peut y être lu (NON gaté). */
   isGrimoire?: boolean;
   /** Outils de crochetage (LDB 67 l.66 : « nécessaire pour utiliser la Compétence Crochetage sans
    *  pénalité ») — consommé par `SkillData.tool` (crochetage → −10 sans outil, LDB 09 l.168). NON gaté
@@ -2150,7 +2150,7 @@ export interface NamePool {
   maleFirstNames: string[];
   femaleFirstNames: string[];
   lastNames: string[];
-  /** Suffixes de patronyme par sexe du PERSONNAGE (Nain, LDB 05 l.622 : « –sson » fils de…, « –snev »
+  /** Suffixes de patronyme par sexe du PERSONNAGE (Nain, LDB 05 l.627-633 : « –sson » fils de…, « –snev »
    *  neveu de…, « –sdottir » fille de…, « –sniz » nièce de…) — le nom de famille est généré depuis le
    *  parent + suffixe quand `lastNames` est vide. Absent = pas de génération par suffixe. */
   lastNameSuffixes?: { M: string[]; F: string[] };
@@ -2721,7 +2721,7 @@ export function speciesSize(sp: SpeciesData): import('../engine/size').SizeCateg
 export function rigSpeciesId(rulesId: string | undefined): RigSpeciesId {
   return slugId(findSpeciesById(rulesId)?.label ?? rulesId ?? 'Humain') as RigSpeciesId;
 }
-/** Seuil d100 de mutation PHYSIQUE d'une espèce par `id` (LDB 19 l.87-91). Défaut **50** = colonne
+/** Seuil d100 de mutation PHYSIQUE d'une espèce par `id` (LDB 19 l.78-81). Défaut **50** = colonne
  *  Humain (LDB) — couvre aussi le Gnome (NADJ « Gnomes et Corruption » : « mutent comme les humains »)
  *  et toute espèce hors Tableau. Les valeurs ≠ 50 (Elfe 0, Nain 5, Halfling 10, Ogre 10) sont en donnée. */
 export function mutationBodyMaxForSpecies(id: string | undefined): number {

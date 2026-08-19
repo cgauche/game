@@ -55,7 +55,7 @@ Ce fichier couvre le **processus complet de création de Personnage** (étapes 1
 
 ### Tableau des Races aléatoires (verbatim)
 
-`LDB 04 l.94`
+`LDB 04 l.95-101`
 
 | 1d100 | Race |
 |-------|------|
@@ -224,9 +224,9 @@ Trois options, dans l'ordre :
 ### Augmentations de Caractéristique gratuites (à la création)
 
 > « Consultez votre Carrière. Recherchez dans le Schéma de progression les trois Caractéristiques marquées ☐ sans bordure bronze, argent ou or. Vous pouvez répartir comme bon vous semble un total de 5 Augmentations entre ces Caractéristiques. »
-> — LDB 05 l.488
+> — LDB 05 l.459
 
-`LDB 05 l.460-491` — les 5 Augmentations initiales s'ajoutent à la valeur après tirage 2d10+bonus.
+`LDB 05 l.459-463` — les 5 Augmentations initiales s'ajoutent à la valeur après tirage 2d10+bonus.
 
 ---
 
@@ -580,7 +580,7 @@ Possessions : arme simple, haillons, respect des autres Frères Loups.
 
 ## Noms nains — suffixes patronymiques
 
-`LDB 05 l.622-624`
+`LDB 05 l.627-633`
 
 > « Les noms de famille nains sont basés sur ceux des personnes qui les ont élevés, et les suffixes suivants sont les plus courants : »
 
@@ -602,7 +602,7 @@ Possessions : arme simple, haillons, respect des autres Frères Loups.
 **Voir aussi :** `talents.md` § Vision nocturne (Talent de départ nain) ; `carrieres.md` § Nains.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 5` (l.622-624) → `generateName`, `NamePool`, `DetailsScreen` — `src/data/index.ts`, `src/data/schemas/defs/names.ts`, `src/engine/names.ts`, `src/ui/creator/CharacterCreator.tsx`
+- `LDB 5` (l.623-624, l.627-633) → `generateName`, `NamePool`, `DetailsScreen` — `src/data/index.ts`, `src/data/schemas/defs/names.ts`, `src/engine/names.ts`, `src/ui/creator/CharacterCreator.tsx`
 
 ---
 
@@ -650,17 +650,17 @@ Ces Carrières peuvent aussi être choisies librement à la création. `ADE I AN
 
 | Mécanique | Fichier(s) code |
 |-----------|----------------|
-| Tirage espèce d100 / +20 PX | `src/engine/creation.ts l.25, 33` — `LDB 04 l.91, 90` |
+| Tirage espèce d100 / +20 PX | `src/engine/creation.ts l.25, 33` — `LDB 04 l.91, 93` |
 | Tirage carrière d100 / +50/+25 PX | `src/engine/creation.ts l.26-27, 64` — `LDB 05 l.210-211` |
 | Tirage 2d10 Caractéristiques / +50/+25 PX | `src/engine/creation.ts l.28-29, 81` — `LDB 05 l.337-385` |
 | Profils d'espèce (bonus de Caractéristique) | `src/data/species.json` |
 | Blessures = BF+(2×BE)+BFM | `src/engine/characteristics.ts` |
 | Richesse initiale (Bronze/Argent/Or × Standing) | `src/engine/creation.ts l.11, 112` — `LDB 05 l.578-583` |
-| Âge par espèce (15+d10 / 15+10d10 / …) | `src/engine/creation.ts l.131` — `LDB 05 l.709` |
-| Taille par espèce (145+5d10 cm / …) | `src/engine/creation.ts l.136` — `LDB 05 l.727` |
+| Âge par espèce (15+d10 / 15+10d10 / …) | `src/engine/creation.ts l.131` — `LDB 05 l.705-711` |
+| Taille par espèce (145+5d10 cm / …) | `src/engine/creation.ts l.136` — `LDB 05 l.728` |
 | Couleur des yeux (2d10, table par espèce) | `src/engine/creation.ts l.142` — `LDB 05 l.742-754` |
 | Couleur des cheveux (2d10, table par espèce) | `src/engine/creation.ts l.147` — `LDB 05 l.756-768` |
-| 5 Augmentations gratuites sur 3 Caractéristiques de carrière | `src/engine/character.ts l.256, 263` — `LDB 05 l.460, 491` |
+| 5 Augmentations gratuites sur 3 Caractéristiques de carrière | `src/engine/character.ts l.256, 263` — `LDB 05 l.459, 463` |
 | 40 Augmentations de Compétences de carrière (max 10 / Comp.) | `src/ui/creator/draft.ts` |
 | Magie mineure : BFM sorts mémorisés à la création | `src/ui/creator/draft.ts l.88, 505` — `LDB 10 l.714` |
 | Compétences/Talents des Races LDB | `src/data/species.json` |

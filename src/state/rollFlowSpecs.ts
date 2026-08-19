@@ -732,7 +732,7 @@ export const FLOWS = {
     },
     resolve: (s, p, actor, _get, forced) => {
       const target = actorIn(s, p.targetId);
-      const spell = effectiveSpellOf(p); // NI ×2 si lecture au grimoire (LDB 47 l.34)
+      const spell = effectiveSpellOf(p); // NI ×2 si lecture au grimoire (LDB 47 l.21)
       if (!actor || !target || !spell) return null;
       if (forced) {
         // — Résilience « Je ne faillirai pas ! » (LDB 17 l.68) —
@@ -1634,7 +1634,7 @@ export const FLOWS = {
     outcome: (p) => testOutcome(p.result),
   }),
 
-  /** Bénédiction de Protection (LDB 41 l.105) : Test de Force Mentale Accessible (+20) qui DIFFÈRE la
+  /** Bénédiction de Protection (LDB 41 l.142) : Test de Force Mentale Accessible (+20) qui DIFFÈRE la
    *  déclaration d'attaque d'un héros sur une cible bénie — succès → l'attaque est relancée ; échec →
    *  l'attaque n'a pas lieu (« choisir une cible ou une Action différente »). Frère du flux `approach`. */
   ward: makeRollFlow<PendingWard>({

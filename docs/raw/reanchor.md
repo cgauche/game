@@ -4,7 +4,7 @@
 > exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
 > courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
-**Bilan : ✅ 493 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 26 introuvables · ➖ 2825 synthèses** (⛔ 0 hors-fichier · ⚠️ 0 sans source) sur 3344 réfs · 519 citations · 28 fiches.
+**Bilan : ✅ 496 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 23 introuvables · ➖ 2828 synthèses** (⛔ 0 hors-fichier · ⚠️ 0 sans source) sur 3347 réfs · 519 citations · 28 fiches.
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
 
@@ -20,9 +20,6 @@
 |---|---|---|
 | `LDB 07 l.43` | ❌ LOW | « votre carrière va influer sur son gain en expé… » — aucune occurrence |
 | `LDB 07 l.84` | ❌ LOW | « gagner de l'argent… » — aucune occurrence |
-| `LDB 08 l.5` | ❌ LOW | « avec l'accord du mj, vous pouvez également sau… » — aucune occurrence |
-| `LDB 08 l.9` | ❌ LOW | « si vous avez achevé votre niveau de carrière a… » — texte trouvé en LDB 7 l.144 |
-| `LDB 08 l.11` | ❌ LOW | « votre mj pourra vous demander de justifier tou… » — texte trouvé en LDB 7 l.146 |
 
 ## bestiaire.md
 
@@ -60,7 +57,7 @@
 
 | Réf | Statut | Détail |
 |---|---|---|
-| `LDB 05 l.488` | ❌ LOW | « consultez votre carrière. recherchez dans le s… » — aucune occurrence |
+| `LDB 05 l.459` | ❌ LOW | « consultez votre carrière. recherchez dans le s… » — aucune occurrence |
 
 ## deplacement.md
 

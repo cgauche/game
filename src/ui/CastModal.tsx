@@ -92,7 +92,7 @@ export function CastModal() {
   const conjureForms = spellEffectOps(spell.effects).some((o) => o.op === 'grantWeapon' && o.chooseForm)
     ? conjureFormOptions(caster) : [];
   const selectedForm = pc.conjureForm ?? conjureForms[0];
-  // ZONE non posée (flux « jet puis pose », LDB 47 l.29/44) : pas de cible — le gabarit se dépose
+  // ZONE non posée (flux « jet puis pose », LDB 47 l.15/28) : pas de cible — le gabarit se dépose
   // APRÈS le jet et la Surincantation. « Puissance totale » (crit) repêche un DR insuffisant.
   const zoneUnplaced = !!pc.zone && !pc.zone.center;
   const placeable = zoneUnplaced && !!res && !res.dispelled && castAfterCrit(res, pc.critChoice, !!pc.missile);

@@ -172,7 +172,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(html).toContain('Talents — un au choix');
   });
 
-  it('bug utilisateur 2026-07-15 — le qualificatif « un au choix » (LDB 05 l.288) ne vaut QUE pour le Niveau de départ, jamais un rang exploré supérieur', () => {
+  it('bug utilisateur 2026-07-15 — le qualificatif « un au choix » (LDB 05 l.535) ne vaut QUE pour le Niveau de départ, jamais un rang exploré supérieur', () => {
     expect(careerLevelTalentsTitle(1)).toBe('Talents — un au choix');
     expect(careerLevelTalentsTitle(3)).toBe('Talents — Niveau 3');
     expect(careerLevelTalentsTitle(3)).not.toContain('un au choix');

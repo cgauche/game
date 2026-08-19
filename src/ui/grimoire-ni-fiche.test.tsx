@@ -53,7 +53,7 @@ const sorcier = (): Combatant =>
     charAdvances: {},
   }) as unknown as Combatant;
 
-describe('fiche — NI de lecture au grimoire (LDB 47 l.34, `VDM 12 l.646-647`)', () => {
+describe('fiche — NI de lecture au grimoire (LDB 47 l.21, `VDM 12 l.646-647`)', () => {
   beforeAll(() => {
     (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   });

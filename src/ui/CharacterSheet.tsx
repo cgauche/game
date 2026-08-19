@@ -301,7 +301,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
   const spells = (hero.spells ?? [])
     .map((x) => findSpellById(x)) // hero.spells = ids de sort (runtime)
     .filter((s): s is NonNullable<ReturnType<typeof findSpellById>> => !!s);
-  // Lecture au grimoire (LDB 47 l.34, `VDM 12 l.646-647`). Le catalogue est ramené à sa forme
+  // Lecture au grimoire (LDB 47 l.21, `VDM 12 l.646-647`). Le catalogue est ramené à sa forme
   // EFFECTIVE par `findSpellById` (variante réglée) et le NI de lecture vient de `effectiveSpellOf`
   // — le MÊME couple que la résolution (`oocCastSpell(…, true)`), jamais un facteur recopié ici.
   const grimoireSpells = carriedGrimoire(hero)

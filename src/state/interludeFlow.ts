@@ -241,7 +241,7 @@ function finishInterludeEvent(get: Get, set: Set, hero: Combatant, roll: number)
   let left = st.left;
   if (ev.fx?.loseActivity) left -= 1;
   // « les elfes ne perdent une Activité que si la durée est d'au moins trois semaines » (ch.23 l.50).
-  // Règle optionnelle (LDB 23 l.48) : le devoir elfique peut être ignoré (désactiver `interlude-elf-duty`).
+  // Règle optionnelle (LDB 23 l.54-56) : le devoir elfique peut être ignoré (désactiver `interlude-elf-duty`).
   const elfDuty = rule('interlude-elf-duty') && /elfe/i.test(hero.species ?? '') && itl.weeks >= 3;
   if (elfDuty) {
     left -= 1;
@@ -398,7 +398,7 @@ export function heroClass(h: Combatant): string {
   return findCareerById(h.career ?? '')?.class ?? '';
 }
 
-/** Compétence de carrière « qui permet de Gagner de l'argent » (LDB 08 l.135 : celle en italique
+/** Compétence de carrière « qui permet de Gagner de l'argent » (LDB 08 l.110 : celle en italique
  *  du premier Niveau — l'italique n'est pas dans les données : on prend la première compétence du
  *  Niveau 1 que le héros POSSÈDE, sinon la première listée. Approximation documentée). */
 export function incomeSkillOf(h: Combatant): string {
@@ -416,7 +416,7 @@ const activitySource = (pa: PendingActivity): EffectSource | undefined =>
   (pa.activityId ? { kind: 'activity', id: pa.activityId } : undefined);
 
 /** Décrémente le budget d'Activités d'un héros (`interlude.perHero[id].left`) — SOURCE UNIQUE du budget
- *  de downtime (LDB 23 l.6 / ADE II 8 l.65). No-op si aucun interlude / budget épuisé. */
+ *  de downtime (LDB 23 l.5 / ADE II 8 l.65). No-op si aucun interlude / budget épuisé. */
 export function consumeActivity(get: Get, set: Set, heroId: string): void {
   const itl = get().interlude;
   const st = itl?.perHero[heroId];
@@ -535,7 +535,7 @@ export function bestActivitySkill(
 }
 
 /** Round de Focalisation d'un Rituel engagé/à engager (Activité « Accomplir un Rituel »,
- *  `VDM 02 l.777`) — extrait d'`openCatalogActivity` (résolveur `ritualFocus`) pour tenir sa
+ *  `VDM 02 l.777`) — résolveur `ritualFocus` à part d'`openCatalogActivity`, pour tenir sa
  *  complexité cognitive. `h.ritual` persiste entre Activités comme l'Artisanat (`h.craft`) ;
  *  le sort visé vient d'`opts.spellId` au 1er Round, puis du Rituel déjà engagé. NI formule
  *  (`cn: null`, `ritual.cnFrom`) = volet 2 (#879), non engageable ici. `null` = refus (déjà

@@ -2206,7 +2206,7 @@ export const fr = {
   'craft.classDefectueuse': 'Défectueuse',
   'craft.classStandard': 'Standard',
 
-  // ── #1318 V8c₅ — MODIFICATEUR DE STATUT en Charme social (`engine/social.ts`, LDB 08 l.88-92).
+  // ── #1318 V8c₅ — MODIFICATEUR DE STATUT en Charme social (`engine/social.ts`, LDB 08 l.57-63).
   'social.statusMod': 'Statut ({beg}{side}) {sign}{mod}',
   'social.fragBegging': 'mendicité ',
 

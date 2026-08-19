@@ -955,7 +955,7 @@ export function buildApi() {
     /** RECETTE : ARME les conséquences de fin de combat (LDB 18/19/20) puis termine le combat par le
      *  flux NORMAL (`checkBattleOver`) en LAISSANT la cascade OUVERTE — contrairement à `killEnemies`
      *  qui la résout d'office. C'est la mise en place de la recette « cascade de fin de combat » :
-     *   - `tookCriticalThisFight` posé sur le héros → Test d'Infection post-critique (LDB 20 l.72) ;
+     *   - `tookCriticalThisFight` posé sur le héros → Test d'Infection post-critique (LDB 20 l.90) ;
      *   - trait `corruption` (Mineure/Modérée/Majeure) posé sur un ennemi présent → Test d'exposition
      *     à la Corruption (LDB 19) pour TOUS les héros survivants ;
      *   - Destin/Résilience CRÉDITÉS au héros (≥1 chacun) → les boutons Chance/Résilience sont visibles
@@ -971,7 +971,7 @@ export function buildApi() {
         ? s.battle.combatants.find((c) => c.id === opts.heroId && c.kind === 'hero')
         : s.battle.combatants.find((c) => c.kind === 'hero' && !isOutOfAction(c)));
       if (!hero) return '✗ aucun héros survivant ciblable';
-      if (opts?.critical !== false) hero.tookCriticalThisFight = true; // Infection post-critique (LDB 20 l.72)
+      if (opts?.critical !== false) hero.tookCriticalThisFight = true; // Infection post-critique (LDB 20 l.90)
       hero.woundDressed = false; // pas de pansement → l'Infection s'applique
       hero.fortune = Math.max(1, hero.fortune ?? 0); // Chance visible (relance)
       hero.resilience = Math.max(1, hero.resilience ?? 0); // Résilience visible (« Je ne faillirai pas ! »)

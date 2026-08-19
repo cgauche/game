@@ -1,20 +1,12 @@
 {
-  "src/data/flow-stakes.json": {
-    "LDB 19 l.65": 1,
-    "LDB 41 l.105": 1
-  },
   "src/data/obtainability-guard.test.ts": {
     "VDM 4 l.153": 1
   },
   "src/data/reglesOptionnelles.json": {
-    "EDOC 8 l.73": 1,
-    "LDB 23 l.48": 1
+    "EDOC 8 l.73": 1
   },
   "src/data/schemas/defs/gods.ts": {
     "MDG 11 l.142": 1
-  },
-  "src/data/schemas/defs/maladies.ts": {
-    "LDB 20 l.97": 1
   },
   "src/data/vdm-marques-arcaniques.test.ts": {
     "VDM 4 l.153": 1
@@ -22,75 +14,22 @@
   "src/data/vdm-spells-variantes.test.ts": {
     "VDM 8 l.361": 1
   },
-  "src/engine/character.ts": {
-    "LDB 5 l.491": 1
-  },
-  "src/engine/corruption.test.ts": {
-    "LDB 19 l.31/52/65": 1
-  },
-  "src/engine/creation.test.ts": {
-    "LDB 5 l.385": 1
-  },
-  "src/engine/creation.ts": {
-    "LDB 5 l.381": 1,
-    "LDB 5 l.383": 1,
-    "LDB 5 l.385": 1
-  },
   "src/engine/prayer-sin-lock.test.ts": {
     "MDG 11 l.142": 1
   },
   "src/engine/sequenceVocab.ts": {
     "NADJ 16 l.83": 1
   },
-  "src/engine/social.ts": {
-    "LDB 8 l.88": 1
-  },
-  "src/engine/traits/parity.test.ts": {
-    "LDB 85 l.85/89": 1
-  },
-  "src/gameIso/rig/creatures/defs/Manticore.ts": {
-    "LDB 79 l.108": 1
-  },
-  "src/gameIso/stage/ZdeTemplate.tsx": {
-    "LDB 47 l.29/44": 1
-  },
   "src/state/combatFlow.ts": {
-    "LDB 20 l.32/49": 1,
     "MDG 11 l.142": 2
-  },
-  "src/state/interlude-flow.test.ts": {
-    "LDB 23 l.30": 1
-  },
-  "src/state/pendings.ts": {
-    "LDB 47 l.44": 1
   },
   "src/state/sequenceCore.ts": {
     "NADJ 16 l.83": 2
-  },
-  "src/state/store.ts": {
-    "LDB 41 l.105": 2,
-    "LDB 47 l.29/44": 1
   },
   "src/state/tavernFlow.ts": {
     "NADJ 16 l.67": 1
   },
   "src/state/travel.test.ts": {
     "EDOC 7 l.166": 1
-  },
-  "src/state/zde-cast.test.ts": {
-    "LDB 47 l.29/44": 1,
-    "LDB 47 l.347": 1
-  },
-  "src/ui/CorruptionModal.tsx": {
-    "LDB 19 l.26": 1
-  },
-  "src/ui/creator/CharacterCreator.tsx": {
-    "LDB 4 l.84": 1
-  },
-  "src/ui/creator/draft.ts": {
-    "LDB 5 l.379": 1
-  },
-  "src/ui/editor/EffectList.tsx": {
-    "LDB 19 l.26": 1
   }
 }

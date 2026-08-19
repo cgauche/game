@@ -487,7 +487,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               <option value="majeure">Exposition majeure (+3 / +2 / +1 selon DR)</option>
             </select>
             {/* Compétence déterminée en amont (verrouillée en jeu) ou « au choix » (nature indéterminée,
-                LDB 19 l.26 → le joueur tranche dans la modale, comme la Défense). */}
+                LDB 19 l.29 → le joueur tranche dans la modale, comme la Défense). */}
             <select value={e.skill ?? ''} onChange={(ev) => upd({ skill: (ev.target.value || undefined) as 'resistance' | 'calme' | undefined })}>
               <option value="">Au choix du joueur (nature indéterminée)</option>
               <option value="resistance">Résistance (Influence physique)</option>

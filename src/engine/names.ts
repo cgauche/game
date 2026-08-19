@@ -35,7 +35,7 @@ export function generateName(refChar: RaceKey, sex: 'M' | 'F', rng: RNG): string
   const first = pick(sex === 'F' ? pool.femaleFirstNames : pool.maleFirstNames, rng);
   const suffixes = pool.lastNameSuffixes?.[sex];
   if (!pool.lastNames.length && suffixes?.length) {
-    // Nain : patronyme « parent + suffixe sexué » (LDB 05 l.622, donnée). Parent mono-mot (lisibilité).
+    // Nain : patronyme « parent + suffixe sexué » (LDB 05 l.627-633, donnée). Parent mono-mot (lisibilité).
     const parents = [...pool.maleFirstNames, ...pool.femaleFirstNames].filter((p) => !p.includes(' '));
     return `${first} ${pick(parents, rng)}${pick(suffixes, rng)}`;
   }

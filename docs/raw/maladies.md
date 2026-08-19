@@ -52,7 +52,7 @@ Chaque maladie est définie par les champs suivants :
 
 **Flux :** Contraction → Test raté → Incubation (jours/heures, pas encore actif) → symptômes ACTIFS (Durée) → résolution (`persistant` : Test de fin ; sinon guérison naturelle).
 
-**Incubation « instantanée »** : certaines maladies ont une incubation de 0 (développement depuis un autre symptôme, `LDB 20 l.26`). Par exemple Infection du Sang et la cascade Persistant → Infection du Sang.
+**Incubation « instantanée »** : certaines maladies ont une incubation de 0 (développement depuis un autre symptôme, `LDB 20 l.27`). Par exemple Infection du Sang et la cascade Persistant → Infection du Sang.
 
 ---
 
@@ -86,7 +86,7 @@ Chaque maladie est définie par les champs suivants :
 | `verole-du-tanneur` | Vérole du Tanneur | Résistance Facile (+40) après contact avec animal/peau/cadavres infectés | 1d10 j | 5d10 j | démangeaisons, persistant (Intermédiaire) |
 | `verole-urticante` | Vérole Urticante | Résistance Accessible (+20) au toucher d'une personne infectée, ou par toux/éternuement (1 Test/heure) | 1d10 j | 1d10+7 j | démangeaisons, toux et éternuements |
 
-**Effet permanent — Vérole Urticante** (`LDB 20 l.128`) : « vous ne pouvez pas l'attraper une seconde fois, si vous l'avez déjà contractée dans le passé. »
+**Effet permanent — Vérole Urticante** (`LDB 20 l.127-129`) : « vous ne pouvez pas l'attraper une seconde fois, si vous l'avez déjà contractée dans le passé. »
 
 ---
 

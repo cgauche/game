@@ -1,5 +1,5 @@
 /**
- * Gabarit de ZONE D'EFFET (LDB 47 l.29/44) : pendant la POSE (rayon FINAL surincanté, le gabarit suit
+ * Gabarit de ZONE D'EFFET (LDB 47 l.15/28) : pendant la POSE (rayon FINAL surincanté, le gabarit suit
  * le curseur) — ou aperçu au rayon initial si un sort de ZdE est sélectionné sans modale (re-cliquer
  * l'ouvre). Contour POINTILLÉ ROUGE ANIMÉ (fourmis) + remplissage ; gris quand la case est invalide
  * (hors portée OU hors Ligne de Vue). INTERACTION (suit le survol) → overlay du stage, hors builders.

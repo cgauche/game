@@ -10,7 +10,7 @@ import { describeWard } from '../state/flowOutcomes';
 import { Icon } from './Icon';
 
 /**
- * Modale de la Bénédiction de Protection (LDB 41 l.105) : « Les ennemis doivent effectuer un Test de
+ * Modale de la Bénédiction de Protection (LDB 41 l.142) : « Les ennemis doivent effectuer un Test de
  * Force Mentale Accessible (+20) pour attaquer votre cible […]. Sur un échec, ils doivent choisir une
  * cible ou une Action différente. » Le Test du HÉROS attaquant DIFFÈRE la déclaration d'attaque sur une
  * cible bénie — succès → l'attaque est relancée ; échec → l'attaque n'a pas lieu (rien n'est consommé).

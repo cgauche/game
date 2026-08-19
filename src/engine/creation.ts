@@ -1,11 +1,11 @@
 /**
  * Tables & bonus de la création de personnage — LDB chapitres 04/05 « Personnage ».
  *
- *  - Races aléatoires (LDB 04 l.87-90) : d100 → 01-90 Humain, 91-94 Halfling, 95-98 Nain,
+ *  - Races aléatoires (LDB 04 l.93-101) : d100 → 01-90 Humain, 91-94 Halfling, 95-98 Nain,
  *    99 Haut elfe, 00 Elfe sylvain ; +20 PX si le PREMIER tirage est accepté.
- *  - Classes et Carrières aléatoires (LDB 05 l.191-195) : 1er jet accepté = +50 PX ; sinon
+ *  - Classes et Carrières aléatoires (LDB 05 l.208-212) : 1er jet accepté = +50 PX ; sinon
  *    2 jets de plus et choix parmi les 3 = +25 PX ; sinon choix libre / relances = 0 PX.
- *  - Caractéristiques (LDB 05 l.381-385) : tirage 2d10 gardé = +50 PX ; réassignation des dix
+ *  - Caractéristiques (LDB 05 l.337-341) : tirage 2d10 gardé = +50 PX ; réassignation des dix
  *    jets = +25 PX ; relance ou répartition de 100 Points (min 4, max 18 par Caractéristique,
  *    + bonus d'espèce) = 0 PX.
  *  - Richesse initiale (LDB 05 l.578-583) : Bronze 2d10 sous × Standing ; Argent 1d10 pistoles
@@ -26,11 +26,11 @@ import { baseWithTalents } from './talentEffects';
 import { castingKindOf } from './combatFeatures/dispatch';
 
 // Bonus de PX des choix aléatoires acceptés (citations en tête de fichier).
-export const XP_SPECIES_ACCEPTED = 20; // LDB 04 l.87
-export const XP_CAREER_FIRST = 50; // LDB 05 l.191
-export const XP_CAREER_TOP3 = 25; // LDB 05 l.193
-export const XP_CHARS_KEPT = 50; // LDB 05 l.381
-export const XP_CHARS_REASSIGNED = 25; // LDB 05 l.383
+export const XP_SPECIES_ACCEPTED = 20; // LDB 04 l.91
+export const XP_CAREER_FIRST = 50; // LDB 05 l.210
+export const XP_CAREER_TOP3 = 25; // LDB 05 l.211
+export const XP_CHARS_KEPT = 50; // LDB 05 l.337
+export const XP_CHARS_REASSIGNED = 25; // LDB 05 l.339
 export const XP_STAR_ROLLED = 25; // ADE II 3 l.36 (signe astral tiré et accepté)
 
 /**
@@ -44,7 +44,7 @@ export function speciesAllowed(s: SpeciesData): boolean {
 }
 
 /**
- * Tableau des Races aléatoires (LDB 04 l.90) — DÉRIVÉ des données : chaque espèce porte sa
+ * Tableau des Races aléatoires (LDB 04 l.93-101) — DÉRIVÉ des données : chaque espèce porte sa
  * borne haute d100 (`SpeciesData.rand`, suppléments inclus). Plusieurs espèces partagent une
  * même borne (variantes régionales d'ADE, Gnome/Ogre…) : c'est VOULU par le RAW. Un jet désigne
  * une BORNE, et le joueur CHOISIT librement parmi toutes les espèces de cette borne en conservant
@@ -90,7 +90,7 @@ export function rollCareer(careers: CareerData[], sp: SpeciesData, rng: RNG = de
   return { roll: r, ids };
 }
 
-/** Répartition manuelle (LDB 05 l.385) : 100 Points, min 4 / max 18 par Caractéristique. */
+/** Répartition manuelle (LDB 05 l.341) : 100 Points, min 4 / max 18 par Caractéristique. */
 export const POINT_BUY_TOTAL = 100;
 export const POINT_BUY_MIN = 4;
 export const POINT_BUY_MAX = 18;
@@ -121,7 +121,7 @@ export function parseStatus(s: string): Status {
   return { tier, standing };
 }
 
-/** Richesse initiale (LDB 05 l.581-583) : Bronze 2d10 sc × Standing ; Argent 1d10 pa ×
+/** Richesse initiale (LDB 05 l.578) : Bronze 2d10 sc × Standing ; Argent 1d10 pa ×
  *  Standing ; Or 1 CO × Standing. Standing 0 (ex. Mendiant « Bronze 0 ») → rien. */
 export function rollInitialWealth(status: Status, rng: RNG = defaultRNG): Money {
   const m: Money = { gold: 0, silver: 0, brass: 0 };
@@ -141,7 +141,7 @@ function rollDetailFormula(base: Partial<Record<RaceKey, number>>, dice: Partial
   return b + (n > 0 ? roll(n, 10, rng) : 0);
 }
 
-/** Âge (LDB 05 l.693, table par espèce — ex. Humain 15+1d10, Nain 15+10d10). */
+/** Âge (LDB 05 l.705-711, table par espèce — ex. Humain 15+1d10, Nain 15+10d10). */
 export function rollAge(sp: SpeciesData, rng: RNG = defaultRNG): number {
   return rollDetailFormula(detailTables.ageBase, detailTables.ageRoll, sp, rng);
 }

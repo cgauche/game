@@ -340,7 +340,7 @@ export function openSkillTest(
   const isSocial = isSocialTest(spec.skill, spec.characteristic);
   const tgtStatus = isSocial && spec.vsStatus ? parseStatus(spec.vsStatus) : undefined;
   const psychMod = spec.vsGroups?.length && isSocial ? (c: Combatant) => socialPsychMod(c, spec.vsGroups!) : undefined;
-  // 1d10 « réaction au Statut » (option, LDB 08 l.54/90) tiré UNE fois par Test (RNG seedé) — appliqué à
+  // 1d10 « réaction au Statut » (option, LDB 08 l.40/59) tiré UNE fois par Test (RNG seedé) — appliqué à
   // tous les candidats de façon cohérente (la réaction de l'interlocuteur ne dépend pas du héros choisi).
   const reactionRoll = tgtStatus && rule('social-status-reaction-roll') ? battleRng().int(1, 10) : undefined;
   const statusMod = tgtStatus ? (c: Combatant) => statusCharmMod(actorStatus(c), tgtStatus, { begging: spec.begging, reactionRoll }) : undefined;

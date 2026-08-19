@@ -279,7 +279,7 @@ export interface HeroDetails {
   height?: number;
   eyes?: string;
   hair?: string;
-  /** Ambitions à court / long terme (LDB 05 l.710-717). */
+  /** Ambitions à court / long terme (LDB 05 l.730-736). */
   ambitionShort?: string;
   ambitionLong?: string;
   /** Astrologie (ADE II 3, optionnel) — flavor pur : signe ascendant + demeures célestes
@@ -1284,7 +1284,7 @@ export interface WeaponLoadout {
 }
 
 /** UNE exposition à une maladie (op `exposeDisease`) — consommée par le bilan de fin de combat
- *  (Test de Contraction, LDB 20 l.32/49). Les modulateurs viennent de la SOURCE de l'exposition :
+ *  (Test de Contraction, LDB 20 l.25/51). Les modulateurs viennent de la SOURCE de l'exposition :
  *  Contagieux (Type), EDO App.2 l.228-230 → `difficultyShift: -2` (« 2 niveaux plus difficile »,
  *  sens `easeDifficulty` : négatif = plus difficile) + `instant` (« incubation “Instantanée” »). */
 export interface DiseaseExposure {
@@ -1536,7 +1536,7 @@ export interface Combatant {
   /** Nombre de Blessures critiques cumulées (mort si > Bonus d'Endurance + Inconscient + 0 PB). */
   criticalWounds?: number;
   /** A subi ≥1 Blessure critique DANS le combat courant (transitoire) — déclenche en fin de combat le Test
-   *  de Résistance Très Facile (+60) « ou Infection Mineure » (LDB 20 l.72). Remis à zéro au prochain combat. */
+   *  de Résistance Très Facile (+60) « ou Infection Mineure » (LDB 20 l.90). Remis à zéro au prochain combat. */
   tookCriticalThisFight?: boolean;
   /** Historique des ENTRÉES de Blessure critique subies (ids STABLES de `criticals.json`/`aa-criticals.json`),
    *  appendé à chaque résolution (`applyCriticalToTarget`). PERSISTE à vie (jamais réinitialisé au combat) :
@@ -1580,7 +1580,7 @@ export interface Combatant {
   /** Ivresse (LDB 09 l.471-487) : échecs de Résistance à l'alcool (−10/échec aux CC/CT/Ag/Dex/Int, lus
    *  par `drunkCharPenalties`) + seuil d'Ivresse + résultat du Tableau. Absent = sobre. */
   drunk?: import('./drunkenness').DrunkState;
-  /** Immunités acquises (Vérole Urticante guérie — LDB 20 l.97) : maladies inattrapables à nouveau. */
+  /** Immunités acquises (Vérole Urticante guérie — LDB 20 l.127-129) : maladies inattrapables à nouveau. */
   diseaseImmunities?: string[];
   /** Pénalité RÉSIDUELLE (magnitude ≥ 0) aux Tests de Résistance-aux-maladies APRÈS la fin d'une maladie
    *  à `infectionPassive` (Vers du Reik : « Cette pénalité est réduite de 1 point par jour après la mort
@@ -1590,7 +1590,7 @@ export interface Combatant {
    *  Infecté → 'blessure-purulente', Maladie (Type) → l'`arg` (ex. 'fievre-du-rongeur' des rats),
    *  munition Infecté ; touché par Contagieux (Type) — EDO App.2 l.228-230 : Test 2 niveaux plus
    *  difficile + incubation « Instantanée ») → Tests de Contraction post-combat (LDB 85 p.340 /
-   *  LDB 20 l.32/49). SOURCE UNIQUE (op `exposeDisease`). */
+   *  LDB 20 l.25/51). SOURCE UNIQUE (op `exposeDisease`). */
   diseaseExposure?: DiseaseExposure[];
   // Maladresse (LDB 14 — Tableau des Oups !) : effets reportés au prochain Round.
   /** Pénalité (positive) à l'Action au prochain Round (Oups! 41-60). Consommée au prochain Test d'attaque. */

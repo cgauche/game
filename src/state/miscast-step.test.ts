@@ -268,7 +268,7 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
   });
 
   it('SONDE A bis — les Points de Sorcellerie tombent UN PAR UN : le Test de seuil s’ouvre AU gain qui franchit', () => {
-    // LDB 19 l.80 : le Test de Résistance se joue à CHAQUE gain. Un gain groupé de N n'en jouerait
+    // LDB 19 l.70 : le Test de Résistance se joue à CHAQUE gain. Un gain groupé de N n'en jouerait
     // qu'un seul — d'où `sorceryCorruptionLines` qui appelle `gainCorruption(…, 1)` N fois.
     const seuilDe = (c: Combatant) => bonus(effectiveChar(c, 'force-mentale')) + bonus(effectiveChar(c, 'endurance'));
 

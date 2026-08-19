@@ -26,7 +26,7 @@ function hero(p: Partial<Combatant> = {}): Combatant {
   } as Combatant;
 }
 
-describe('corruptionGain (LDB 19 l.31/52/65)', () => {
+describe('corruptionGain (LDB 19 l.35/48/58)', () => {
   it('mineure : échec → 1 ; succès → 0', () => {
     expect(corruptionGain('mineure', false, -2)).toBe(1);
     expect(corruptionGain('mineure', true, 0)).toBe(0);

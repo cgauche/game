@@ -567,7 +567,7 @@ function ActivityList({ hero, catalog, favors, pane, onPane, canDrive, none, own
   );
 }
 
-/** Revenus (LDB 08 l.135-144) : Test Accessible (+20) de la compétence de carrière — la formule
+/** Revenus (LDB 08 l.105-120) : Test Accessible (+20) de la compétence de carrière — la formule
  *  ET le pré-jet sont lisibles AVANT d'entreprendre. */
 function RevenusPane({ hero, st, disabled, desc }: { hero: Combatant; st: InterludeHeroState; disabled: boolean; desc?: string }) {
   const activity = useGame((s) => s.interludeActivity);
@@ -578,7 +578,7 @@ function RevenusPane({ hero, st, disabled, desc }: { hero: Combatant; st: Interl
     ? `Interdit par l'événement de la période (${ev.label}).`
     : null;
   const status = heroStatus(hero);
-  // « Gagner de l'argent grâce au Statut » (LDB 08 l.135-144) — la formule, lisible AVANT le jet.
+  // « Gagner de l'argent grâce au Statut » (LDB 08 l.105-120) — la formule, lisible AVANT le jet.
   const incomeFormula = status.tier === 'bronze'
     ? `${status.standing} × 2d10 sous`
     : status.tier === 'argent'

@@ -22,10 +22,10 @@
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | *(artefact OCR)* | ➖ | |
 | 04 | Cités et villes | ✅ | 7 (creation.md ×7) |
-| 05 | Points de vue | ✅ | 93 (creation.md ×52) |
+| 05 | Points de vue | ✅ | 91 (creation.md ×52) |
 | 06 | *(artefact OCR)* | ➖ | |
-| 07 | Carrières | ✅ | 71 (avancement.md ×45) |
-| 08 | Statut | ✅ | 45 (carrieres.md ×23) |
+| 07 | Carrières | ✅ | 86 (avancement.md ×61) |
+| 08 | Statut | ✅ | 26 (carrieres.md ×22) |
 | 09 | Compétences | ✅ | 146 (competences.md ×137) |
 | 10 | Talents | ✅ | 200 (talents.md ×138) |
 | 11 | Sixième sens | ✅ | 31 (talents.md ×30) |
@@ -38,9 +38,9 @@
 | 18 | Traumatisme | ✅ | 103 (traumatisme.md ×68) |
 | 19 | Corruption | ✅ | 36 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
-| 21 | Psychologie | ✅ | 52 (psychologie.md ×29) |
+| 21 | Psychologie | ✅ | 53 (psychologie.md ×29) |
 | 22 | Événements | ✅ | 6 (activites.md ×5) |
-| 23 | Activités | ✅ | 40 (activites.md ×36) |
+| 23 | Activités | ✅ | 41 (activites.md ×36) |
 | 24 | Les dieux | 📖 | catalogue (catalogue-*.md) |
 | 25 | Les cultes | ✅ | 3 (religion.md ×3) |
 | 26 | Le culte de Manaan, dieu de la mer | 📖 | catalogue (catalogue-*.md) |
@@ -57,13 +57,13 @@
 | 37 | Les dieux elfes | 📖 | catalogue (catalogue-*.md) |
 | 38 | Les dieux halflings | 📖 | catalogue (catalogue-*.md) |
 | 39 | Les dieux du Chaos | 📖 | catalogue (catalogue-*.md) |
-| 40 | Les prières | ✅ | 45 (etats.md ×22) |
-| 41 | Bénédictions | ✅ | 14 (religion.md ×9) |
+| 40 | Les prières | ✅ | 47 (religion.md ×23) |
+| 41 | Bénédictions | ✅ | 12 (religion.md ×7) |
 | 42 | Miracles | 📖 | 4 (magie.md ×2) |
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
 | 44 | L’Aethyr | ✅ | 10 (magie.md ×10) |
 | 45 | • MAGIE • | ➖ hors-règle | |
-| 46 | Les règles magiques | ✅ | 93 (magie.md ×51) |
+| 46 | Les règles magiques | ✅ | 95 (magie.md ×51) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 18 (magie.md ×18) |
 | 49 | Sorcellerie | ✅ | 4 (magie.md ×3) |

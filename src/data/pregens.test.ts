@@ -33,7 +33,7 @@ describe('Personnages pré-tirés', () => {
     const pretre = pregens.find((h) => h.career === 'pretre')!;
     // LDB 10 (Magie mineure) : « Vous pouvez apprendre des Sorts de Magie mineure » — requis pour Fléchette/Choc.
     expect(sorcier.talents.map((t) => talentConcrete(t))).toContain('Magie mineure');
-    // LDB 41 l.14 : « un Personnage avec le Talent Béni reçoit les six Bénédictions de son culte ».
+    // LDB 41 l.5 : « un Personnage avec le Talent Béni reçoit les six Bénédictions de son culte ».
     expect(pretre.talents.map((t) => talentConcrete(t))).toContain('Béni (Sigmar)');
     // Et les Compétences d'incantation restent là (gating des Compétences avancées).
     expect(sorcier.skills.some((s) => s.skillId === 'langue' && s.spec === 'magick' && s.advances >= 1)).toBe(true);

@@ -102,7 +102,7 @@ export function extraTargetCapacity(source: OvercastSource, steps: number, initi
 }
 
 /** Multiplicateur du DIAMÈTRE de Zone d'Effet après `steps` pas alloués à l'axe Zone (arcane seulement).
- *  LDB 47 l.29 : chaque pas ajoute la ZdE initiale (×(1+n)) ; VDM : colonne « ZdE étendue » du Tableau. */
+ *  LDB 47 l.15 : chaque pas ajoute la ZdE initiale (×(1+n)) ; VDM : colonne « ZdE étendue » du Tableau. */
 export function zoneDiameterMultiplier(source: OvercastSource, steps: number): number {
   if (overcastModel(source) === 'vdm') return vdmRow(steps)?.zone ?? 1;
   return 1 + steps;

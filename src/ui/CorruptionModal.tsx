@@ -18,7 +18,7 @@ import { describeCorruption } from '../state/flowOutcomes';
  * dépend du niveau d'exposition ET du DR, donc la Chance « +1 DR » peut sauver
  * l'âme. Test imposé (pas d'« Annuler »).
  *
- * MÊME modale pour le SEUIL de Corruption (kind 'seuil', LDB 19 l.80) : Test de Résistance
+ * MÊME modale pour le SEUIL de Corruption (kind 'seuil', LDB 19 l.70) : Test de Résistance
  * au franchissement — succès = contenu « pour cette fois » ; échec = « Je te renie ! »/mutation.
  */
 export function CorruptionModal() {
@@ -80,7 +80,7 @@ export function CorruptionModal() {
         </>
       }
       setup={
-        // Compétence indéterminée en amont (LDB 19 l.26) → le joueur tranche Résistance/Calme (cf.
+        // Compétence indéterminée en amont (LDB 19 l.29) → le joueur tranche Résistance/Calme (cf.
         // Défense). Déterminée par la source (`skillLocked`) ou au seuil → pas de choix.
         !seuil && !pc.skillLocked && hero ? (
           <div className="rm-options">

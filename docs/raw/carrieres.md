@@ -166,7 +166,7 @@ Pour **compléter** un Niveau de Carrière et débloquer le changement à 100 PX
 
 Source : LDB 07 l.136-137 (changement de niveau), l.9-16 (changement de Carrière).
 
-> Remarque : il est possible de **sauter des niveaux** avec accord du MJ (justifié par les événements de jeu). Coût = 100 PX si achevé, 200 PX sinon (LDB 08 l.1-2).
+> Remarque : il est possible de **sauter des niveaux** avec accord du MJ (justifié par les événements de jeu). Coût = 100 PX si achevé, 200 PX sinon (LDB 07 l.140).
 
 **Sources RAW** : `LDB 07 l.112-139` + `LDB 08 l.1-30`
 
@@ -217,7 +217,7 @@ Le Statut est indiqué **à côté du nom de chaque Niveau de Carrière** (ex. �
 
 - Agir en adéquation avec son rôle social est requis pour bénéficier du Statut (LDB 08 l.86-91).
 - Passer incognito = Statut Bronze 3 par défaut.
-- Ne pas maintenir son train de vie → perte de 1 Standing par semaine (LDB 08 l.94-103).
+- Ne pas maintenir son train de vie → perte de 1 Standing par semaine (LDB 08 l.95-103).
 - Si Standing atteint 0 : l'Échelon baisse de 1, Standing remonte à 5 (LDB 08 l.101).
 
 ### Effets du Statut
@@ -230,7 +230,7 @@ Le Statut est indiqué **à côté du nom de chaque Niveau de Carrière** (ex. �
 | **Commandement** | 1 Échelon au-dessus → +10 ; 2 Échelons au-dessus → +20 (LDB 08 l.81-83). |
 | **Divertissement** | Le Statut n'influe pas directement (LDB 08 l.65-69). |
 
-**Réaction aléatoire des PNJ au Statut** (LDB 08 l.24-29) :
+**Réaction aléatoire des PNJ au Statut** (LDB 08 l.40-46) :
 
 | 1d10 | Réaction |
 |---|---|

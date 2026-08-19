@@ -130,7 +130,7 @@ describe('Résistance (Corruption) — exposition (modale pendingCorruption, LDB
   });
 });
 
-describe('Résistance (Mutation) — Test de SEUIL de Corruption (LDB 19 l.80)', () => {
+describe('Résistance (Mutation) — Test de SEUIL de Corruption (LDB 19 l.70)', () => {
   it('le seuil ouvre la modale taguée `menace: mutation` ; resist → contenu (pas de mutation)', () => {
     const a = hero({ corruption: 7 }); // seuil BFM+BE = 3+4 = 7 → le prochain gain déborde
     useGame.setState({ party: [a] });
@@ -147,7 +147,7 @@ describe('Résistance (Mutation) — Test de SEUIL de Corruption (LDB 19 l.80)',
   });
 });
 
-describe('Résistance (Maladie) — Contraction de fin de combat (LDB 20 l.32/49)', () => {
+describe('Résistance (Maladie) — Contraction de fin de combat (LDB 20 l.25/51)', () => {
   it('étape `combatEndDisease` taguée `menace: maladie` ; cascadeResist → réussite à DR = BE → PAS de contraction', () => {
     const a = hero({ diseaseExposure: [{ disease: 'blessure-purulente' }] });
     setBattle([a]);

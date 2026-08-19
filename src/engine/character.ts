@@ -296,14 +296,14 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const chars = rollCharacteristics(sp, rng);
   if (opts.manualChars) for (const k of CHAR_KEYS) if (opts.manualChars[k] != null) chars[k] = opts.manualChars[k]!;
 
-  // 3b) 5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.488).
+  // 3b) 5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.459).
   const careerCharKeys: CharKey[] = level?.characteristics ?? []; // déjà des CharKey (donnée)
   const alloc: Partial<Record<CharKey, number>> = opts.charAdvancesAlloc ?? autoCharAlloc(careerCharKeys);
   const charAdvances: Partial<Record<CharKey, number>> = {};
   for (const [k, n] of Object.entries(alloc) as [CharKey, number][]) {
     if (!n) continue;
     charAdvances[k] = n;
-    chars[k] += n; // l'Augmentation s'ajoute à la valeur initiale (LDB 05 l.491)
+    chars[k] += n; // l'Augmentation s'ajoute à la valeur initiale (LDB 05 l.463)
   }
 
   // 4a) Talents : 1 Talent de carrière (libellé concret) + Talents d'espèce. Le talent de

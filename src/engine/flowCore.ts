@@ -412,7 +412,7 @@ export interface FlowTest {
   vsGroups?: string[];
   /** Statut de la cible (« Argent 3 ») : mod social d'Échelon/Standing sur un Test social (LDB 08). */
   vsStatus?: string;
-  /** Le Test social est une mendicité (option « Mendicité et Statut », LDB 08 l.92). */
+  /** Le Test social est une mendicité (option « Mendicité et Statut », LDB 08 l.63). */
   begging?: boolean;
   /** L'interlocuteur est une créature CAPRICIEUSE (Trait Capricieux, MSRC 15) : un d10 tiré UNE fois
    *  module le Test de Sociabilité de −2 à +2 DR (soit ±10 par DR sur la valeur, comme la réaction de

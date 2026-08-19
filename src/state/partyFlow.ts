@@ -1,5 +1,5 @@
 /**
- * Actions GROUPE (hors combat) extraites de store.ts pour le garder navigable — même patron
+ * Actions GROUPE (hors combat) — module à part du store, même patron
  * `(get, set)` que combatFlow : équipement (équiper/transférer/skin), avancement PX
  * (caractéristiques/compétences/talents/carrière, prothèses), consommables de fiche, butin.
  * Refacto pure — comportement préservé.
@@ -675,7 +675,7 @@ export function changeCareer(get: Get, set: Set, heroId: string, newCareer: stri
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = structuredClone(h);
-      // Validation LDB 07 l.137 + LDB 08 l.7-11 : complétion, niveau cible, surcoût de Classe.
+      // Validation LDB 07 l.137 + LDB 07 l.144-148 : complétion, niveau cible, surcoût de Classe.
       const completed = isCompleted(clone);
       const sameClass = findCareerById(clone.career ?? '')?.class === findCareerById(newCareer)?.class;
       const targetLevelExists = levelsForCareer(newCareer).some((l) => l.level === newLevel);

@@ -1395,10 +1395,10 @@ describe('Avancement par PX (store) — câblage moteur', () => {
     expect(h0().xp).toBe(1000);
   });
 
-  it('changeCareer : 200 (non complété) + 100 (autre Classe, LDB 08 l.9) ; niveau 1 imposé', () => {
+  it('changeCareer : 200 (non complété) + 100 (autre Classe, LDB 07 l.144) ; niveau 1 imposé', () => {
     // Agitateur (Citadins) → Érudit (Lettrés) : 200 + 100 PX.
     set1(mkHero({ xp: 350 }));
-    useGame.getState().changeCareer('h', 'erudit', 2); // niveau ≠ 1 → refusé (LDB 08 l.9)
+    useGame.getState().changeCareer('h', 'erudit', 2); // niveau ≠ 1 → refusé (LDB 07 l.144)
     expect(h0().career).toBe('agitateur');
     useGame.getState().changeCareer('h', 'erudit', 1);
     expect(h0().career).toBe('erudit');

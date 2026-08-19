@@ -197,7 +197,7 @@ export function describeApproach(pa: PendingApproach): string {
   return pa.result.success ? t('out.approachYes') : t('out.approachNo');
 }
 
-/** Bénédiction de Protection (LDB 41 l.105) : issue du Test de FM (popin). Le fil journalise la
+/** Bénédiction de Protection (LDB 41 l.142) : issue du Test de FM (popin). Le fil journalise la
  *  conséquence (attaque relancée / refusée) à part. `targetName` = la cible bénie. */
 export function describeWard(pw: PendingWard, targetName: string): string {
   if (!pw.result) return '';

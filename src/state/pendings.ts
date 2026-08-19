@@ -1,6 +1,6 @@
 /**
  * Types des jets/flux DIFFÉRÉS du store + récompenses de victoire et
- * monnaie — types PURS, sans logique, extraits de store.ts pour le garder navigable.
+ * monnaie — types PURS, sans logique, tenus hors du store.
  * Le store les ré-exporte (les imports existants `from './store'` restent valides).
  */
 import type { CharKey, Difficulty, HitLocation, Weapon, FireArc, Combatant } from '../engine/types';
@@ -648,7 +648,7 @@ export interface PendingApproach {
   result: { success: boolean; roll: number; target?: number; sl: number } | null;
   rerolled?: boolean;
 }
-/** Bénédiction de Protection (LDB 41 l.105 : « Les ennemis doivent effectuer un Test de Force Mentale
+/** Bénédiction de Protection (LDB 41 l.142 : « Les ennemis doivent effectuer un Test de Force Mentale
  *  Accessible (+20) pour attaquer votre cible […]. Sur un échec, ils doivent choisir une cible ou une
  *  Action différente. ») : la DÉCLARATION d'attaque d'un héros sur une cible bénie est DIFFÉRÉE derrière
  *  ce Test de FM. Succès → l'attaque est relancée (`battleClickEntity(targetId, {confirm, wardCleared})`) ;
@@ -732,7 +732,7 @@ export interface PendingCorruption {
   level?: import('../engine/corruption').ExposureLevel;
   skill: 'resistance' | 'calme'; // skillId stable (libellé dérivé par refLabel à l'affichage)
   /** Compétence déterminée en amont (source ou seuil) → pas de choix joueur. Absent/false = nature
-   *  indéterminée (LDB 19 l.26) → la modale propose Résistance/Calme (cf. `corruptionSetSkill`). */
+   *  indéterminée (LDB 19 l.29) → la modale propose Résistance/Calme (cf. `corruptionSetSkill`). */
   skillLocked?: boolean;
   /** Alignement de la SOURCE (Puissance du Chaos) posé par l'éditeur de niveau → table EDOC à tirer
    *  si une mutation survient (sinon la règle globale décide). Voyage exposition → seuil → mutation. */
@@ -1050,7 +1050,7 @@ export interface PendingCast {
   /** Choix des cibles supplémentaires EN COURS sur le champ de bataille : la modale s'efface
    *  (bandeau TargetPrompt + clic carte → castToggleExtraTarget), « Valider » la restaure. */
   pickingTargets?: boolean;
-  /** Sort à Zone d'Effet (LDB 47 l.44) — flux « jet PUIS pose » : la modale s'ouvre SANS cible
+  /** Sort à Zone d'Effet (LDB 47 l.28) — flux « jet PUIS pose » : la modale s'ouvre SANS cible
    *  (`center: null`, `targetId` = ancre lanceur), le jet et la Surincantation (+Zone via `r0m`,
    *  rayon initial en mètres) précèdent la pose ; `placing` = choix de la case en cours sur la
    *  carte (la modale s'efface). À la pose : tous les combattants dans `radius` (cases,
@@ -1063,7 +1063,7 @@ export interface PendingCast {
      *  dans le `castConfirm` UNIQUE (gardée par `aiDriven`), pas dans un chemin spécial de Contre-sort.
      *  Absent = pose joueur classique (attend le clic réel). */
     autoCenter?: { x: number; y: number } };
-  /** Lancé DEPUIS le grimoire porté (sort non mémorisé de son Domaine, LDB 47 l.34) :
+  /** Lancé DEPUIS le grimoire porté (sort non mémorisé de son Domaine, LDB 47 l.21) :
    *  le NI est DOUBLÉ à la résolution (et le livre s'expose aux dégâts/au vol — narratif). */
   grimoire?: boolean;
   /** OPPOSITION de la cible RÉSOLUE (issue figée du flux `castOpposition`) : par cible, indique si

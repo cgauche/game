@@ -30,7 +30,7 @@
 
 ## Les 10 Caractéristiques
 
-**Source :** LDB 05 l.342-402 (descriptions individuelles) ; LDB 05 l.344 (moyenne humaine = 30).
+**Source :** LDB 05 l.342-402 (descriptions individuelles) ; LDB 05 l.331 (moyenne humaine = 30).
 
 > « La moyenne humaine pour ces Attributs est de 30. Ceux qui sont doués, ou bien entraînés, peuvent
 > obtenir des scores supérieurs à 40 ; seuls les plus dévoués et expérimentés obtiendront des scores
@@ -52,7 +52,7 @@
 **Sources verbatim :**
 - CC : LDB 05 l.345 — « votre capacité à vous battre au Corps à corps, à exécuter une frappe mesurée, et de votre efficacité dans le tumulte d'une mêlée générale. Cet Attribut est aussi utilisé pour le combat à mains nues, quand l'arme est votre propre corps. »
 - CT : LDB 05 l.349 — « représente votre capacité à atteindre vos cibles avec des armes à distance telles que des arcs et des couteaux de lancer, et, en général, à lancer des objets. Cet Attribut est aussi utilisé comme base pour d'autres attaques à distance comme le Vomissement des trolls. »
-- F : LDB 05 l.373 — « Ceci indique combien de Dégâts vous infligez au Corps à corps, combien vous pouvez soulever et à quel point vous êtes bon en Natation et en Escalade. »
+- F : LDB 05 l.374 — « Ceci indique combien de Dégâts vous infligez au Corps à corps, combien vous pouvez soulever et à quel point vous êtes bon en Natation et en Escalade. »
 - E : LDB 05 l.378 — « votre résistance physique. Elle vous aide à survivre aux Dégâts durant un combat, mais aussi à des conditions difficiles et à résister au poison. »
 - I : LDB 05 l.382 — « représente votre vitesse de pensée et de réaction, en particulier dans le feu de l'action et quand vous êtes sous pression. Elle détermine l'ordre de combat, votre intuition et votre perception, et vous aide à être le premier à réagir. »
 - Ag : LDB 05 l.386 — « expression de votre coordination physique et de vos capacités athlétiques naturelles, la base dans des domaines comme la course, l'équitation et la dissimulation. Elle est aussi utilisée pour esquiver les coups en combat. »
@@ -184,7 +184,7 @@ Les sept catégories de Taille et leurs exemples (LDB 85 l.343-355) :
 
 Les effets magiques actifs qui modifient F, E ou FM font varier le maximum de Blessures en temps réel :
 seul le **MEILLEUR bonus** et la **PIRE pénalité** s'appliquent (règle générale des modificateurs de Caractéristique,
-voir LDB 05 l.200 / p.220 pour la règle d'accumulation).
+voir LDB 46 l.119 / p.220 pour la règle d'accumulation).
 
 ---
 
@@ -242,7 +242,7 @@ Module principal : **`src/engine/characteristics.ts`**
 |----------|-------------|
 | `bonus(value)` | Bonus de Caractéristique = `floor(value / 10)` — LDB 05 l.406 |
 | `baseWithTraits(c, key)` | Carac. de base + charMods des `liveTraits` (Élite/Coriace…), sans effets volatils |
-| `effectiveChar(c, key)` | Valeur effective : base + passifs permanents + meilleur bonus − pire pénalité des effets magiques actifs — LDB 05 l.200 |
+| `effectiveChar(c, key)` | Valeur effective : base + passifs permanents + meilleur bonus − pire pénalité des effets magiques actifs — LDB 46 l.119 |
 | `maxWounds(chars, size)` | Blessures de départ : `BF + 2×BE + BFM` avec variation par Taille — LDB 05 l.365/451, LDB 85 l.391-406 |
 | `effectiveMaxWounds(c)` | Blessures dynamiques : `wounds.base + Δ` dû aux buffs F/E/FM actifs |
 | `refreshWounds(c)` | Recale `wounds.max` et `wounds.current` quand les Blessures max changent (buffs/dispels) |

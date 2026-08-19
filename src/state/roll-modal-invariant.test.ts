@@ -239,7 +239,7 @@ function behavioralFloor(): void {
     aiCreatureFreeAttacks(get, set, E);
     expect(get().pendingCascade?.participants.some((s) => s.kind === 'maneuverDefense' && s.actorId === H.id), 'défense de manœuvre doit REMONTER').toBeTruthy();
   }
-  // 7) Corruption au seuil (LDB 19 l.80) — gaté `pilotedByHuman` (cadence-agnostique, modale).
+  // 7) Corruption au seuil (LDB 19 l.70) — gaté `pilotedByHuman` (cadence-agnostique, modale).
   {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'C', rng: makeRNG(1) });
     hero.aiControlled = silence; // volet (d) : ré-silençage réel

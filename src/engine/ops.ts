@@ -565,7 +565,7 @@ export type GameOp =
   /** Les Blessures ne s'infecteront pas (Cautériser, LDB 47 → flag `woundDressed`, LDB 18 l.298). */
   | { op: 'preventInfection' }
   /** EXPOSE la cible à une Maladie (`disease` = id de `maladies.json`) → Test de Contraction au bilan de
-   *  fin de combat (LDB 20 l.32/49). Op GÉNÉRIQUE : Infecté → 'blessure-purulente', trait Maladie →
+   *  fin de combat (LDB 20 l.25/51). Op GÉNÉRIQUE : Infecté → 'blessure-purulente', trait Maladie →
    *  l'`arg` (ex. 'fievre-du-rongeur' pour les rats/skavens). Cumule sans doublon dans `diseaseExposure`
    *  (double exposition à la même maladie → on garde la PIRE : shift le plus dur, `instant` si l'une
    *  l'impose). Contagieux (Type), EDO App.2 l.228-230 : `difficultyShift: -2` (« le Test est de 2

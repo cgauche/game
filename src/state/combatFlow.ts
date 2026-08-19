@@ -1,7 +1,6 @@
 /**
- * Flux de combat (tour par tour) extrait de store.ts pour le garder navigable.
+ * Flux de combat (tour par tour) — module à part du store, qui le ré-expose.
  * Fonctions (get,set) : combat, magie, IA, desengagement, effets. RNG via ./battleRng.
- * Refacto pure -- comportement preserve.
  */
 import type { PlayerText } from '../i18n/playerText';
 import type { GameState, BattleState, RevealEntry } from './store';
@@ -1705,7 +1704,7 @@ export function applyCriticalToTarget(
   // trivial : chaque Critique compte). `critTwice` (Sauvagerie) reste tables LDB même en mode AA (critical.ts).
   const aaTrivial = !ctx?.critTwice && rule('combat-aa-blessures') === 'aa' && aaCriticalIsTrivial(crit.location, crit.roll);
   if (!aaTrivial) target.criticalWounds = (target.criticalWounds ?? 0) + 1;
-  target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.72)
+  target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.90)
   // Historique d'occurrence PAR ID D'ENTRÉE (LDB 18 l.71) : appendé après résolution — persiste à vie (jamais
   // réinitialisé au combat). `rollCritical`/`resolveAACritical` l'ont LU avant (`onRepeat` sur une 2e occurrence).
   target.critEntriesSuffered = [...(target.critEntriesSuffered ?? []), crit.entryId];
@@ -2343,7 +2342,7 @@ export function applyAttackResult(
   // Exposition aux Maladies (Infecté/Rongeur/Maladie (Type) ; munition Infecté) MIGRÉE en données :
   // `effects: onHit → if woundsDealt>0 → exposeDisease(<id>)` sur les traits/qualité de l'ATTAQUANT,
   // dispatchés par le `fireTriggers('onHit')` ci-dessous. Op GÉNÉRIQUE unique (plus de flags ad hoc).
-  // Le bilan reste héros-only : exposer un non-héros est inerte. (LDB 20 l.32/49 ; LDB 85 p.340.)
+  // Le bilan reste héros-only : exposer un non-héros est inerte. (LDB 20 l.25/51 ; LDB 85 p.340.)
   // Nausée (LDB 20 l.170) : un Test de DÉPLACEMENT raté (Esquive) fait vomir → État Sonné.
   if (res.defenderDetail?.mode === 'esquive' && !res.defenderDetail.success
       && hasActiveCapability(target, 'nausea') && !hasCondition(target, COND.sonne)) {
@@ -3894,7 +3893,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
  * Corruption de SORCELLERIE — LDB 49 l.5, verbatim : « À chaque fois qu'un pratiquant de la
  * Sorcellerie fait un jet sur le Tableau des Incantations Imparfaites, il gagne 1 Point de
  * Corruption. » C'est PAR JET : `jets` Points, gagnés UN PAR UN (chaque gain rejoue son seuil de
- * Corruption, LDB 19 l.80 — un gain groupé n'en jouerait qu'un). Compte identique dans les deux
+ * Corruption, LDB 19 l.70 — un gain groupé n'en jouerait qu'un). Compte identique dans les deux
  * modes (dé tiré inline : tous les jets de la cascade ; dé posé : le jet de CETTE étape).
  * #143 : personnage (`followsCharacterRules`), pas un proxy `kind`.
  */
@@ -4047,7 +4046,7 @@ export function castSpell(
     castRefused(get, set, caster, tr('cf.sinLock', { cult: sinLock.cult, name: caster.label, talent: tr(sinLock.family === 'beni' ? 'cf.talentBeni' : 'cf.talentInvocation'), sin: String(caster.sinPoints ?? 0), threshold: String(sinLock.threshold) }));
     return;
   }
-  // Lecture au grimoire (LDB 47 l.34) : sort NON mémorisé de son Domaine, NI doublé.
+  // Lecture au grimoire (LDB 47 l.21) : sort NON mémorisé de son Domaine, NI doublé.
   if (fromGrimoire && !canCastFromGrimoire(caster, spell)) {
     castRefused(get, set, caster, tr('cf.grimoireRefused', { name: caster.label, spell: label }));
     return;
@@ -4401,11 +4400,11 @@ export function zoneRadiusMeters(spell: NonNullable<ReturnType<typeof findSpell>
 }
 
 /** Rayon en CASES après `alloc` Surincantations « +Zone » — multiplicateur SOURCE UNIQUE
- *  (`zoneDiameterMultiplier`, LDB 47 l.29 / `VDM 02 l.207-215`). La ZdE est réservée à l'arcane. 1 case = 2 m. */
+ *  (`zoneDiameterMultiplier`, LDB 47 l.15 / `VDM 02 l.207-215`). La ZdE est réservée à l'arcane. 1 case = 2 m. */
 export const zoneRadiusTilesAt = (r0m: number, alloc: number): number =>
   Math.max(0, Math.floor((r0m * zoneDiameterMultiplier('arcane', alloc)) / 2));
 
-/** Ouvre la modale d'un sort de ZONE — flux « jet PUIS pose » (LDB 47 l.29/44) : pas de cible à
+/** Ouvre la modale d'un sort de ZONE — flux « jet PUIS pose » (LDB 47 l.15/28) : pas de cible à
  *  désigner, le centre se choisit APRÈS le jet et la Surincantation (+Zone agrandit le gabarit).
  *  `targetId` = ancre lanceur (aucun effet ne lui est appliqué — les cibles réelles sont
  *  recensées à la pose). Retourne false si le sort n'est PAS une zone chiffrable. */
@@ -4750,7 +4749,7 @@ export function overcastTargetCandidates(
   });
 }
 
-/** NI d'un Sort lu au grimoire (LDB 47 l.34, `VDM 12 l.646-647`) — modificateurs en donnée, passés
+/** NI d'un Sort lu au grimoire (LDB 47 l.21, `VDM 12 l.646-647`) — modificateurs en donnée, passés
  *  par la primitive UNIQUE `effectiveCastingNumber` comme tout autre porteur. */
 export const GRIMOIRE_NI_MODS: CastingNumberMod[] = [
   {
@@ -4767,7 +4766,7 @@ export const GRIMOIRE_NI_MODS: CastingNumberMod[] = [
   },
 ];
 
-/** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34), QUADRUPLÉ
+/** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.21), QUADRUPLÉ
  *  pour un Rituel (`VDM 12 l.647`, `VDM 02 l.369`). */
 export function effectiveSpellOf(pc: { spellId: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
   const spell = resolveSpell(pc.spellId);
@@ -5595,7 +5594,7 @@ function combatEndResistVal(c: Combatant): number {
 
 /**
  * DÉCIDE et CONSOMME les Tests de fin de combat DUS pour le PERSONNAGE `c` (héros, ou combattant flagué
- * #143 `followsCharacterRules` — LDB 18 l.298/20 l.72/20 l.32-49 + LDB 19 Corruption) — SOURCE UNIQUE de
+ * #143 `followsCharacterRules` — LDB 18 l.298/20 l.90/20 l.25/51 + LDB 19 Corruption) — SOURCE UNIQUE de
  * la décision : les marqueurs (`tookCriticalThisFight`/`woundDressed`/`diseaseExposure`) sont purgés ICI
  * (idempotent). Retourne la LISTE des Tests de Contraction de maladie dus + le NIVEAU d'exposition à la
  * Corruption (worst des créatures affrontées), ou `null` pour la Corruption si aucune. PUR de RNG (aucun
@@ -5606,7 +5605,7 @@ function decideCombatEndHeroTests(
 ): { diseases: CombatEndDiseaseTest[]; corruption: import('../engine/corruption').ExposureLevel | null } {
   const dm = rule('disease-mode') as string;
   const diseases: CombatEndDiseaseTest[] = [];
-  // Infection Mineure post-critique (LDB 20 l.72) : Résistance Très Facile (+60) — sauf blessure PANSÉE
+  // Infection Mineure post-critique (LDB 20 l.90) : Résistance Très Facile (+60) — sauf blessure PANSÉE
   // (LDB 18 l.298). Règle « Utilisation des Maladies » : seul 'full' (RAW) applique l'Infection Mineure.
   if (c.tookCriticalThisFight) {
     const dressed = c.woundDressed;
@@ -5615,7 +5614,7 @@ function decideCombatEndHeroTests(
   }
   c.tookCriticalThisFight = false; // consommé (idempotent)
   c.woundDressed = false;
-  // Exposition aux Maladies (LDB 20 l.32/49 ; LDB 85 p.340) — SOURCE UNIQUE `diseaseExposure` (Infecté/
+  // Exposition aux Maladies (LDB 20 l.25/51 ; LDB 85 p.340) — SOURCE UNIQUE `diseaseExposure` (Infecté/
   // Rongeur/Maladie/munition/Contagieux exposent via l'op `exposeDisease`). Difficulté = celle de la
   // maladie (`def.contractDifficulty`), décalée des crans de l'exposition (Contagieux, EDO App.2
   // l.228-230 : « 2 niveaux plus difficile » → shift −2 ; « incubation “Instantanée” » → `instant`).
@@ -6423,8 +6422,8 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
  *  l'initiative (frise d'initiative (InitiativeStrip)) et permettre la pré-emption (Chance, 3e usage ;
  *  futurs Atouts/talents). L'IA reste gelée jusqu'à « Commencer le round » (confirmRoundStart) — cf.
  *  garde de maybeRunEnemyTurn. EN COOP (arbitrage 2026-06-11) : seul le round 1 est gaté (ready-check
- *  de tous) — les rounds suivants S'ENCHAÎNENT sans pause. Extrait de `resolveRoundBoundary` pour être
- *  rappelable après la cascade de Peur de fin de Round. */
+ *  de tous) — les rounds suivants S'ENCHAÎNENT sans pause. Point d'entrée à part de
+ *  `resolveRoundBoundary` : il se rappelle après la cascade de Peur de fin de Round. */
 export function enterRoundStartPause(get: Get, set: SetFn): void {
   const b = get().battle;
   if (!b || b.over) return;
@@ -7183,7 +7182,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     }
     case 'castArea': {
       if (!canAct) return advanceTurn(get, set);
-      // Sort de ZONE (ZdE, LDB 47 l.44) d'un lanceur IA : MÊME drive que le missile (`case 'cast'`) — la
+      // Sort de ZONE (ZdE, LDB 47 l.28) d'un lanceur IA : MÊME drive que le missile (`case 'cast'`) — la
       // seule spécificité est de PORTER le centre décidé par l'IA pure (`action.center`, sur un paquet de
       // héros) dans `pendingCast.zone.autoCenter`. Ce centre est l'ÉQUIVALENT du curseur souris d'un héros :
       // le `castConfirm` PARTAGÉ le lira pour poser la zone tout seul (gardé par `aiDriven`), exactement

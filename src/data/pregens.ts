@@ -36,7 +36,7 @@ export interface PregenDef {
   career: string;
   seed: number;
   motivation: string;
-  /** Ambitions à court / long terme (LDB 05 l.710-717) — flavor APP-OWNED du pré-tiré, atterrit dans `details`. */
+  /** Ambitions à court / long terme (LDB 05 l.730-736) — flavor APP-OWNED du pré-tiré, atterrit dans `details`. */
   ambitionShort?: string;
   ambitionLong?: string;
   /** Âge (LDB 05 étape 6) — sinon laissé indéfini (pas de tirage moteur côté pré-tiré). */
@@ -112,7 +112,7 @@ function buildPregenHero(d: PregenDef): Combatant {
   return hero;
 }
 
-/** Fabrique tous les pré-tirés + leur Richesse initiale (LDB 05 l.581-583, tirée par
+/** Fabrique tous les pré-tirés + leur Richesse initiale (LDB 05 l.578, tirée par
  *  `rollInitialWealth` — même formule que le créateur, seedée sur un dérivé du seed du pré-tiré,
  *  décorrélé de la consommation RNG de `createHero`). Résilient : un pré-tiré fautif est ignoré
  *  plutôt que de faire planter l'écran. */

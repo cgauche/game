@@ -60,7 +60,7 @@ Deux Talents identifient les « Bienheureux » (terme officiel VF pour les perso
 > appel à l'intervention directe de leur divinité sous forme de Miracles. »
 > — LDB 40 l.5
 
-Un personnage Béni obtient les six Bénédictions de son culte (liste par culte `LDB 41 l.30`).  
+Un personnage Béni obtient les six Bénédictions de son culte (liste par culte `LDB 41 l.29-41`).  
 Un personnage avec Invocation peut pratiquer l'un des Miracles de son culte (liste par culte `LDB 42-43`).
 
 ---
@@ -118,7 +118,7 @@ Pour chaque **+2 DR** obtenus au Test de Prière sur une Bénédiction, choisir 
 
 Une même option peut être choisie plusieurs fois. Si la Durée est « Instantanée », l'option Durée n'est pas disponible.
 
-> Exemple (LDB 41 l.26) : +4 DR sur Bénédiction de Guérison → soigner 3 cibles au contact, ou 2 cibles à 6 m, ou 1 cible à 12 m.
+> Exemple (LDB 41 l.27) : +4 DR sur Bénédiction de Guérison → soigner 3 cibles au contact, ou 2 cibles à 6 m, ou 1 cible à 12 m.
 
 ---
 
@@ -243,11 +243,11 @@ Le MJ peut aussi utiliser la table ou y piocher des résultats chaque fois qu'un
 
 ## Pénitence
 
-**Sources RAW** : `LDB 41 l.4-4`
+**Sources RAW** : `LDB 40 l.98-100`
 
 Certaines entrées de la Colère des dieux exigent une Pénitence. Le MJ détermine une pénitence appropriée à la faute (ou laisse le joueur proposer, avec châtiment supplémentaire si non repentant). Des exemples typiques sont listés dans la description de chaque culte. Les Pénitences peuvent se manifester via des visions, de l'inspiration divine, un autre membre du culte, ou un Serviteur divin.
 
-**Serviteurs divins** : séides surnaturels du dieu dans le royaume matériel, prenant l'apparence d'un animal préféré ou d'un dévot défunt. Construits avec les règles du bestiaire (ch. 12). `LDB 41 l.2-3`
+**Serviteurs divins** : séides surnaturels du dieu dans le royaume matériel, prenant l'apparence d'un animal préféré ou d'un dévot défunt. Construits avec les règles du bestiaire (ch. 12). `LDB 40 l.94-96`
 
 ---
 

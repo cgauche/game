@@ -118,7 +118,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
     }
   });
 
-  it('5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.488)', () => {
+  it('5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.459)', () => {
     const hero = createHero({ speciesId: REIK, careerId: 'soldat', label: 'T', rng: makeRNG(3) });
     const total = Object.values(hero.charAdvances ?? {}).reduce((a, b) => a + (b ?? 0), 0);
     expect(total).toBe(5);

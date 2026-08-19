@@ -12,7 +12,7 @@
  *  - **Opérations bancaires** (ch.23 l.154-165) : invest — « Lancez 1d100 : si le résultat est
  *    inférieur ou égal à votre Indice d'intérêts, l'entreprise a fait faillite » ; planque —
  *    « si le résultat est de 10 ou inférieur, votre planque a été découverte ».
- *  - **Revenus** = « Gagner de l'argent grâce au Statut » (LDB 08 l.130-144) : Bronze
+ *  - **Revenus** = « Gagner de l'argent grâce au Statut » (LDB 08 l.105-120) : Bronze
  *    « 2d10 sous de cuivre » / Argent « 1d10 pistoles d'argent » / Or « 1 couronne d'or »
  *    PAR Standing ; « Sur un Échec, vous ne gagnez que la moitié de la somme. Sur un Échec
  *    Stupéfiant (-6) […] vous n'avez rien gagné. »
@@ -432,7 +432,7 @@ export function classGatedDifficulty(
 }
 
 /** Plafond des revenus d'une semaine par Statut (« le maximum de vos revenus standards », Réputation
- *  LDB 23 l.228-234) — MÊME grille que `statusIncome` (LDB 08 l.135-144), bornes hautes des dés (2d10 →
+ *  LDB 23 l.228-234) — MÊME grille que `statusIncome` (LDB 08 l.105-120), bornes hautes des dés (2d10 →
  *  20, 1d10 → 10), sans tirage. PURE. */
 export function statusIncomeMax(tier: PriceTier, standing: number): Money {
   const n = Math.max(0, standing);
@@ -920,7 +920,7 @@ export function orderCatalog(): { id: string; label: string; type: string; price
     .sort((a, b) => a.priceBrass - b.priceBrass);
 }
 
-/** Revenus d'une semaine de travail par Statut (LDB 08 l.135-144). */
+/** Revenus d'une semaine de travail par Statut (LDB 08 l.105-120). */
 export function statusIncome(
   tier: PriceTier,
   standing: number,

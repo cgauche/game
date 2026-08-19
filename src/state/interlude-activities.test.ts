@@ -1,5 +1,5 @@
 /**
- * Activités d'interlude (LDB 23) : Revenus (LDB 08 l.135-144), Artisanat (Test étendu, matériaux
+ * Activités d'interlude (LDB 23) : Revenus (LDB 08 l.105-120), Artisanat (Test étendu, matériaux
  * ¼ prix, achèvement → objet avec qualités), Opérations bancaires (invest/planque), blocages
  * d'événements par Classe.
  */

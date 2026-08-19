@@ -210,7 +210,7 @@ describe('previewAttack — plafond des Difficultés NOMMÉ et cible écrêtée 
 
   it('les ÉTATS du jeteur ne se plafonnent PAS : 4 pions Exténué pèsent −40 sur la cible (LDB 16 l.11)', () => {
     // « si vous avez 3 États *Exténué*, vous subissez une pénalité de -30 à tous vos Tests » — la
-    // règle d'accumulation serait morte au 4ᵉ pion si le plafond des Difficultés (l.95) la bornait.
+    // règle d'accumulation serait morte au 4ᵉ pion si le plafond des Difficultés (LDB 14 l.95) la bornait.
     const trois = combatant({ id: 'A', conditions: [{ id: 'extenue', value: 3 }] as never } as never);
     const quatre = combatant({ id: 'A', conditions: [{ id: 'extenue', value: 4 }] as never } as never);
     const b = foe();

@@ -422,7 +422,7 @@ export function StepBody({ id, ...props }: StepProps & { id: StepId; step: numbe
   return <Screen {...props} />;
 }
 
-/** Titre de la rubrique Talents de l'explorateur de carrière (LDB 05 l.288 : « Vous pouvez choisir un
+/** Titre de la rubrique Talents de l'explorateur de carrière (LDB 05 l.535 : « Vous pouvez choisir un
  *  unique Talent » — un SEUL choix à la création, parmi les 4 du Niveau de DÉPART uniquement). Les
  *  niveaux supérieurs consultés (rangs 2-4, `CareerPath`) restent NEUTRES — de l'évolution future,
  *  jamais un choix de création (bug utilisateur 2026-07-15 : le rang 3 affichait la même note). */
@@ -436,7 +436,7 @@ function LoreText({ md }: { md: string | null | undefined }) {
   return <div className="lore-text"><Prose md={md} /></div>;
 }
 
-// ════ 1) Race (LDB 04 l.84-90) — charte « Atelier du scribe » (#393 P2, correction structurelle
+// ════ 1) Race (LDB 04 l.87-101) — charte « Atelier du scribe » (#393 P2, correction structurelle
 //      du verdict utilisateur 2026-07-14) : ossature `CreatorStepFrame` (bande d'action = recherche
 //      + encrier ; choix ~60 % / desc ~40 %) — choix = 7 GRANDES CARTES DE RACE (une par `SpeciesData.family`,
 //      figurine généreuse + « N lignées ») ⇄ détail = la LIGNÉE choisie (chips-pills en tête du
@@ -453,7 +453,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
 
   // Groupes par race (`SpeciesData.family` — donnée, plus de regex sur le libellé),
   // les races du Livre de base d'abord — l'ordre des familles suit les données ; au sein d'une
-  // famille, la 1ʳᵉ lignée des données EST la canonique (ex. Reiklander pour Humains, LDB 04 l.84).
+  // famille, la 1ʳᵉ lignée des données EST la canonique (ex. Reiklander pour Humains, LDB 04 l.91).
   // Une espèce gatée par une règle optionnelle inactive (`SpeciesData.gatedByRule`) n'apparaît pas
   // dans la grille — MÊME filtre que le Tableau des Races aléatoires (`speciesAllowed`).
   const families: { family: string; list: SpeciesData[] }[] = [];
@@ -666,7 +666,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
   return <CreatorStepFrame d={d} step={stepIds().indexOf('species')} label="Choix de la race" zones={{ action, choice, desc: detail }} />;
 }
 
-// ════ 2) Carrière (LDB 05 l.186-365) — charte « Atelier du scribe » (#393 P2, MÊME ossature
+// ════ 2) Carrière (LDB 05 l.204-318) — charte « Atelier du scribe » (#393 P2, MÊME ossature
 //      `CreatorStepFrame` que Race) : choix = TOUTES les classes en SECTIONS empilées
 //      (`GroupedPickGrid`, une tuile-figurine compacte par carrière — `FigTile`/`CharacterPreview`,
 //      ~6-7 par rangée, maquette ratifiée `finale-mock1-carriere.png`, corrigé 2026-07-14 : le brief
@@ -713,7 +713,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
     : sectionsAll;
 
   // Encrier de tirage CARRIÈRE (#393 P2, même patron que Race #393 P3) : rangée unique recherche +
-  // encrier, le résultat vit dans l'encrier rendu (plus de mur de boutons de borne). LDB 05 l.191-195 :
+  // encrier, le résultat vit dans l'encrier rendu (plus de mur de boutons de borne). LDB 05 l.208-212 :
   // 1ᵉʳ jet gardé = +50 PX ; pas convaincu → deux jets de plus (3 bornes au choix) = +25 PX ; au-delà,
   // relances libres = 0 PX (mécanique `rollDraftCareer`/`careerXp`, INCHANGÉE).
   const rolledLast = d.careerRolls[d.careerRolls.length - 1];
@@ -869,7 +869,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
               </div>
               <div>
                 {/* Le qualificatif « un au choix » + la note de tranchage n'est vrai QU'AU NIVEAU DE
-                    DÉPART (LDB 05 l.288 : « Vous pouvez choisir un unique Talent » — un seul choix à
+                    DÉPART (LDB 05 l.535 : « Vous pouvez choisir un unique Talent » — un seul choix à
                     la création, parmi les 4 du Niveau 1 SEUL) ; les niveaux supérieurs consultés ici
                     ne sont que de l'ÉVOLUTION future, jamais un choix de création (bug utilisateur
                     2026-07-15 : le rang 3 affichait la même note « se tranche à l'étape 5 »). */}
@@ -894,7 +894,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
   return <CreatorStepFrame d={d} step={stepIds().indexOf('career')} label="Choix de la carrière" zones={{ action, choice, desc: detail }} />;
 }
 
-// ════ 3) Caractéristiques (LDB 05 l.370-491) — charte « Atelier du scribe » (#393 P3bis, correctif
+// ════ 3) Caractéristiques (LDB 05 l.319-464) — charte « Atelier du scribe » (#393 P3bis, correctif
 //      utilisateur 2026-07-15 : « ni de près, ni de loin, la maquette » sur la composition 3-zones
 //      d'origine) : gabarit DEUX ZONES (panneau + fiche vivante, MÊME composition que Race/Carrière/
 //      Compétences) — plus de rail séparé, TOUT vit dans le panneau central en BANDES (`Band`, étalon
@@ -918,7 +918,7 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
   // « Tirer aux dés » (caracs à « — ») ; le geste commit le brouillon (`rollDraftChars` — valeurs
   // figées par le seed, découvertes seulement) puis les rangées roulent UNE PAR UNE (`seq` = rangée
   // en cours, jauge N/10) ; chaque rangée fige sa PROPRE paire réelle (`pairs[i]`, `charRollPairs`),
-  // jamais une valeur reconstruite depuis la somme. La relance (LDB 05 l.385, bonus perdus) rejoue
+  // jamais une valeur reconstruite depuis la somme. La relance (LDB 05 l.341, bonus perdus) rejoue
   // la MÊME cérémonie. `prefers-reduced-motion` (source unique `prefersReducedMotion`) saute le
   // théâtre : tout se révèle au clic.
   const [seq, setSeq] = useState<number | null>(null);
@@ -1436,7 +1436,7 @@ export function StarScreen({ d, setD }: StepProps) {
   return <CreatorStepFrame d={d} step={stepIds().indexOf('star')} label="Signe astral" zones={{ action, choice }} />;
 }
 
-// ════ 4) Compétences & Talents (LDB 05 l.493-555) — charte « Atelier du scribe » (#393 P4, étalons
+// ════ 4) Compétences & Talents (LDB 05 l.465-541) — charte « Atelier du scribe » (#393 P4, étalons
 //      `finale-mock4/5/6-5{a,b,c}`) : TROIS SOUS-ÉCRANS (`Tabs`, dock d'onglets « a/b/c ») — chacun
 //      GABARIT DEUX ZONES (panneau de travail + fiche vivante `CreatorSummary`, MÊME composition que
 //      Race/Carrière, #393 P2) : plus de rail séparé pour cette étape, l'encrier de sous-tirage/
@@ -2001,7 +2001,7 @@ function trappingMeta(id: string): string {
   return bits.join(' · ');
 }
 
-// ════ 6) Possessions (LDB 05 l.559-585) — charte « Atelier du scribe » (#393 P5, étalon
+// ════ 6) Possessions (LDB 05 l.542-583) — charte « Atelier du scribe » (#393 P5, étalon
 //      `finale-mock7-possessions.png`) : gabarit DEUX ZONES (panneau + fiche vivante, MÊME composition
 //      que Caractéristiques/Compétences) — le panneau porte le statut en tête, puis les bandes « De
 //      carrière » / « De classe » (chips d'équipement comptées) / « La bourse » (rappel de la formule +
@@ -2168,7 +2168,7 @@ function IdentityField({ label, value, onChange, onClear, type = 'text' }: {
   );
 }
 
-// ════ 7) Détails (LDB 05 l.587-744) — charte « Atelier du scribe » (#393, lot « ossature enforcée » ;
+// ════ 7) Détails (LDB 05 l.584-803) — charte « Atelier du scribe » (#393, lot « ossature enforcée » ;
 //      étalon = les VALEURS de `planche-creator-FINALE.html`, écran 7) : ossature 2 zones (bande
 //      d'ACTION à la topbar `.fam-topbar` — titre + plaque « Tirer le nom » + encrier « Aux dés » —
 //      puis zone de CHOIX ; fiche vivante à droite). L'état civil COMPOSE la rangée-plaque

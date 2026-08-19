@@ -1,5 +1,5 @@
 /**
- * Lot 6 — Ciblage de Zone d'Effet (LDB 47 l.44) : parsing diamètre/portée,
+ * Lot 6 — Ciblage de Zone d'Effet (LDB 47 l.28) : parsing diamètre/portée,
  * clic-case en mode incantation → toutes les cibles du rayon visées par le
  * même jet, garde-fou de portée.
  */
@@ -15,7 +15,7 @@ function wiz() {
   const w = pregen(PREGEN.sorcier);
   const sk = w.skills.find((s) => s.skillId === 'langue');
   if (sk) sk.advances = Math.max(sk.advances, 10);
-  w.spells = ['explosion', ...(w.spells ?? [])]; // Explosion : Projectile magique ZdE (LDB 47 l.347)
+  w.spells = ['explosion', ...(w.spells ?? [])]; // Explosion : Projectile magique ZdE (LDB 47 l.453)
   return w;
 }
 
@@ -36,7 +36,7 @@ describe('parsing ZdE / portée (engine/magic)', () => {
   });
 });
 
-describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.29/44)', () => {
+describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.15/28)', () => {
   beforeEach(() => {
     useGame.setState({ battle: null, party: [], journal: [], pendingCast: null });
     useGame.getState().seedRng(17);
@@ -80,7 +80,7 @@ describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.29/44)', () => {
     void e1; void e2; void e3;
   });
 
-  it('Surincantation « +Zone » (LDB 47 l.29) : le gabarit s’agrandit du Ø initial et la pose ramasse plus loin', () => {
+  it('Surincantation « +Zone » (LDB 47 l.15) : le gabarit s’agrandit du Ø initial et la pose ramasse plus loin', () => {
     const { w } = setupBattle();
     const ni = findSpell('Explosion')!.cn ?? 0;
     useGame.getState().battleClickTile({ x: 9, y: 9 });

@@ -712,7 +712,7 @@ const V8C5: Site[] = [
     apres: qualityClassLabel('haute'),
   },
   {
-    site: 'social.ts:127 — modificateur de Statut en mendicité (LDB 08 l.92)',
+    site: 'social.ts:127 — modificateur de Statut en mendicité (LDB 08 l.63)',
     avant: `Statut (${'mendicité '}${'Bronze<Argent'}) ${'+'}${10}`,
     apres: t('social.statusMod', { beg: t('social.fragBegging'), side: 'Bronze<Argent', sign: '+', mod: 10 }),
   },

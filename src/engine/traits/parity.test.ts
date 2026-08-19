@@ -128,7 +128,7 @@ const DISPATCH = new Set<string>([
   'À sang-froid', 'Affamé', 'Armure', 'Belliqueux', 'Bestial', 'Bond', 'Brutal', 'Champion', 'Coriace',
   // Dressé (Guerre) : passive +10 CC (charMod) + marqueur du gate Nerveux (bruits). Dompté : suppression
   // GÉNÉRIQUE du Trait Bestial (suppressesCapabilities, lue par traitCapability ; +2d10 Soc = profil cuit
-  // à l'authoring). Garde : capability `territorial` (lue par isTerritorial). Tous DISPATCH (LDB 85 l.85/89).
+  // à l'authoring). Garde : capability `territorial` (lue par isTerritorial). Tous DISPATCH (LDB 85 l.106/108/110).
   // Dressé (Divertir) : passive +10 aux Tests de Divertissement/Musicien/Représentation (skillMod ×3,
   // LDB 85 l.104) — même canal passive que Dressé (Guerre) +10 CC. DISPATCH.
   'Dressé (Guerre)', 'Dressé (Dompté)', 'Dressé (Garde)', 'Dressé (Divertir)',

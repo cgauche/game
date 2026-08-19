@@ -11,7 +11,7 @@ import type { Combatant } from '../engine/types';
 
 /** Amorce une bataille avec un vrai groupe (pré-tirés) et le RNG seedé. Par défaut ouvre AUSSI un
  *  interlude doté du budget d'Activités (3 par héros) : c'est le budget UNIQUE dans lequel puise la
- *  préparation de bataille (ADE II 8 l.65 / LDB 23 l.6). `interludeLeft: 0` (ou absence) simule une
+ *  préparation de bataille (ADE II 8 l.65 / LDB 23 l.5). `interludeLeft: 0` (ou absence) simule une
  *  bataille SANS interlude (aucune préparation possible → Round 1 direct). */
 function start(
   spec: Partial<MassBattleSpec> = {},

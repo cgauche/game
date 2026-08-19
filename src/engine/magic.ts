@@ -369,7 +369,7 @@ export function castTestTalentDR(c: Combatant, skill: 'langue' | 'focalisation' 
 }
 
 /**
- * Zone d'Effet (LDB 47 l.44) : « les Sorts marqués ZdE affectent tous les individus à l'intérieur de
+ * Zone d'Effet (LDB 47 l.28) : « les Sorts marqués ZdE affectent tous les individus à l'intérieur de
  * ce DIAMÈTRE ». Diamètre en mètres depuis la cible STRUCTURÉE (`{kind:'area'}`), résolu contre le
  * lanceur. Null si la cible n'est pas une aire chiffrable. Zéro parsing de chaîne (cf. `spellRange.ts`).
  */

@@ -71,7 +71,7 @@ Le MJ peut suggérer l'option, mais **la décision appartient toujours au joueur
 
 L'option « Embrasser les Ombres » (encart) encourage le MJ à enjoliver narrativement le pacte (animaux qui fuient, plantes qui pourrissent, jet sur la table des Incantations Imparfaites…).
 
-**Sources RAW** : `LDB 19 l.14-23` (Sombres Pactes), `LDB 19 l.41` (dépense volontaire inline)
+**Sources RAW** : `LDB 19 l.13-23` (Sombres Pactes), `LDB 19 l.17` (gain volontaire pour relancer)
 
 ---
 

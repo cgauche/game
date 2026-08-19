@@ -15,7 +15,7 @@ const FAVOR_LEVEL_LABELS: Record<FavorLevel, string> = {
 
 /** Onglet « Background » de la fiche : bio en LECTURE SEULE (détails physiques + astrologie, LDB 05
  *  étape 6 — cosmétique) et les champs ÉDITABLES hors combat (Motivation + Ambitions court/long,
- *  LDB 05 l.710-717) — rendus par la primitive PARTAGÉE `BackgroundFields` (même markup/hints que le
+ *  LDB 05 l.730-736) — rendus par la primitive PARTAGÉE `BackgroundFields` (même markup/hints que le
  *  créateur). L'édition passe par `setHeroBackground` → persistée en save + roster. En combat, c'est
  *  verrouillé (on ne mute que `store.party`, jamais la copie de bataille). Les Faveurs dues (LDB 23
  *  l.139-153, #509) s'affichent ici — même famille narrative que Motivation/Ambitions. */

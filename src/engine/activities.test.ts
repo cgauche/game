@@ -7,7 +7,7 @@
  *    +10 par tentative ratée.
  *  - Opérations bancaires (l.154-165) : invest — retirer rate 1d100 ≤ Indice → faillite ;
  *    planque — 1d100 ≤ 10 → perdue.
- *  - Revenus = « Gagner de l'argent grâce au Statut » (LDB 08 l.130-144) : Test Spectaculaire
+ *  - Revenus = « Gagner de l'argent grâce au Statut » (LDB 08 l.105-120) : Test Spectaculaire
  *    Accessible (+20) de la Compétence de carrière ; Bronze 2d10 sc × Standing, Argent 1d10 pa
  *    × Standing, Or 1 CO × Standing ; échec → moitié ; Échec Stupéfiant (−6) → rien.
  */
@@ -45,7 +45,7 @@ describe('craftTarget — Artisanat (LDB 23 l.68-85)', () => {
   });
 });
 
-describe('apprenticeshipTutorCost — « 2D10 pistoles d’argent par 100PX » (LDB 23 l.63)', () => {
+describe('apprenticeshipTutorCost — « 2D10 pistoles d’argent par 100PX » (LDB 23 l.72)', () => {
   it('un Talent à 100 PX : un seul 2d10 en pa', () => {
     const m = apprenticeshipTutorCost(100, seq([4, 6])); // 10 pa
     expect(toBrass(m)).toBe(10 * 12);
@@ -71,7 +71,7 @@ describe('bankWithdrawOutcome — Opérations bancaires (LDB 23 l.157-159)', () 
   });
 });
 
-describe('statusIncome — « Gagner de l’argent grâce au Statut » (LDB 08 l.135-144)', () => {
+describe('statusIncome — « Gagner de l’argent grâce au Statut » (LDB 08 l.105-120)', () => {
   it('Bronze N : N × 2d10 sous de cuivre', () => {
     const m = statusIncome('bronze', 2, seq([3, 4, 5, 6]), 'success'); // (3+4)+(5+6) = 18 sc
     expect(toBrass(m)).toBe(18);

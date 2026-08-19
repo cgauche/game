@@ -136,7 +136,7 @@ export interface MassBattleState {
   // ── Activités de bataille pré-combat (l.79-110) ──
   /** Ids des Activités de préparation déjà réalisées — set ANTI-RÉPÉTITION seul (« Les Activités ratées ne
    *  peuvent être réessayées », l.67). Le BUDGET des 3 Activités est celui, UNIQUE, de l'interlude
-   *  (`interlude.perHero[id].left`, LDB 23 l.6 / ADE II 8 l.65). */
+   *  (`interlude.perHero[id].left`, LDB 23 l.5 / ADE II 8 l.65). */
   activitiesDone: string[];
   /** Planification réussie (prérequis de l'Infiltration). */
   planned?: boolean;
@@ -378,7 +378,7 @@ function openBattlePending(_get: Get, set: Set, o: {
   set({ pendingActivity: o.opposition ? { ...pa, ...o.opposition } : pa });
 }
 
-/** Budget d'Activités restant d'un héros — le budget UNIQUE de l'interlude (LDB 23 l.6 / ADE II 8
+/** Budget d'Activités restant d'un héros — le budget UNIQUE de l'interlude (LDB 23 l.5 / ADE II 8
  *  l.65). Une prépa de bataille EST une Activité d'interlude : sans interlude ouvert, aucun budget. */
 function heroBudget(get: Get, heroId: string): number {
   return get().interlude?.perHero[heroId]?.left ?? 0;

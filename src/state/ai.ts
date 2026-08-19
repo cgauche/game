@@ -405,7 +405,7 @@ function targetThreat(enemy: Combatant, hero: Combatant, mpt = 2): number {
 }
 
 /**
- * Meilleur CENTRE d'un sort de ZONE (ZdE, LDB 47 l.44) couvrant le plus de héros : on essaie chaque
+ * Meilleur CENTRE d'un sort de ZONE (ZdE, LDB 47 l.28) couvrant le plus de héros : on essaie chaque
  * case occupée par un héros comme centre candidat (déterministe, suffisant pour « un paquet ») et on
  * compte les héros dans le rayon (Chebyshev, comme `castCommitZone`). Un centre VALIDE doit respecter
  * la portée du sort (Chebyshev depuis le lanceur) et la Ligne de Vue (LDB 46 l.121). Renvoie le centre
@@ -465,7 +465,7 @@ interface Candidate {
 // Paliers d'action (cascade historique, du plus prioritaire au moins). Au Lot 3 ils ne servent plus de
 // PRIORITÉ absolue (l'utilité prime) mais de BIAIS de départage stable à utilité égale (parité golden).
 const TIER = {
-  castArea: 0, // ZdE couvrant ≥2 héros (LDB 47 l.44)
+  castArea: 0, // ZdE couvrant ≥2 héros (LDB 47 l.28)
   focus: 1, // Focalisation d'un sort infaisable d'un jet (LDB 46)
   selfManeuver: 2, // capacité SUR SOI (forme de combat lycanthrope) — self-buff, prioritaire comme un cast
   cast: 2, // sort offensif mono-cible

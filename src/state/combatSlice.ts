@@ -1545,7 +1545,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     approachCancel: () => set({ pendingApproach: null }), // renonce avant le jet : aucune trace, re-cliquable
 
-    // ── Bénédiction de Protection (LDB 41 l.105) : Test de FM Accessible (+20) qui DIFFÈRE la déclaration
+    // ── Bénédiction de Protection (LDB 41 l.142) : Test de FM Accessible (+20) qui DIFFÈRE la déclaration
     //    d'attaque sur une cible bénie. Succès → l'attaque est relancée (`wardCleared` saute ce gate) ;
     //    échec → l'attaque n'a pas lieu (rien n'est consommé). « Un jet = une modale ». ──
     wardConfirm: () => {
@@ -2982,7 +2982,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
 
     /** Sélectionne un sort à incanter ; le clic suivant sur une cible le lance. Un sort de ZONE
-     *  ouvre la modale DIRECTEMENT (flux « jet puis pose », LDB 47 l.29) — pas de cible à désigner. */
+     *  ouvre la modale DIRECTEMENT (flux « jet puis pose », LDB 47 l.15) — pas de cible à désigner. */
     battleSelectSpell: (spellId: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();
@@ -3016,7 +3016,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!pc || pc.result) return;
       const caster = actorIn(get(), pc.casterId);
       const target = actorIn(get(), pc.targetId);
-      const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
+      const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.21)
       if (!caster || !target || !spell) return;
       // ZONE non posée (flux « jet puis pose ») : pas de cible désignée au jet — pas de ward
       // individuel (« N'écoutez point » protège une CIBLE), pas de résolution Projectile (les
@@ -3101,7 +3101,7 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       const caster = actorIn(get(), pc.casterId);
       const target = actorIn(get(), pc.targetId);
-      const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
+      const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.21)
       // Surincantation : cibles supplémentaires + multiplicateur de durée (LDB 47 l.28-31).
       // ZdE : TOUTES les cibles de la zone sont visées (pas de budget de Surincantation).
       const extras = castExtraTargets(get, pc);

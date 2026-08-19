@@ -602,7 +602,7 @@ export interface GameState extends RollFlowActionsMap {
   pendingShanty: PendingShanty | null;
   /** Approche d'une source de Peur en cours (Test de Calme +0 différant le clic — LDB 21 l.27). */
   pendingApproach: PendingApproach | null;
-  /** Bénédiction de Protection en cours (Test de FM +20 différant la déclaration d'attaque — LDB 41 l.105). */
+  /** Bénédiction de Protection en cours (Test de FM +20 différant la déclaration d'attaque — LDB 41 l.142). */
   pendingWard: PendingWard | null;
   /** Focalisation en cours (modale interactive). */
   pendingFocus: PendingFocus | null;
@@ -897,7 +897,7 @@ export interface GameState extends RollFlowActionsMap {
   resolveTest: () => void;
   /** Exposition à une Influence corruptrice (LDB 19) : Lancer → Chance → Appliquer (gain selon DR).
    *  Délégués `corruption{Roll,Reroll,BonusSL,DarkPact}` : générés (RollFlowActionsMap). */
-  /** Choisit Résistance/Calme AVANT le jet d'exposition (LDB 19 l.26 : « ou … comme déterminé par le
+  /** Choisit Résistance/Calme AVANT le jet d'exposition (LDB 19 l.29 : « ou … comme déterminé par le
    *  MJ » — RAW indéterminé pour le trait de créature ; le joueur tranche, comme la Défense). Le SEUIL
    *  (l.80) reste figé sur Résistance et ignore cet appel. */
   corruptionSetSkill: (skill: 'resistance' | 'calme') => void;
@@ -1011,7 +1011,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Surincantation « +Cible » : bascule le choix SUR LE CHAMP DE BATAILLE (la modale s'efface,
    *  bandeau TargetPrompt + clic carte → castToggleExtraTarget). En combat uniquement. */
   castPickTargets: (on: boolean) => void;
-  /** Sort de ZONE (flux « jet puis pose », LDB 47 l.29/44) : bascule la POSE sur la carte
+  /** Sort de ZONE (flux « jet puis pose », LDB 47 l.15/28) : bascule la POSE sur la carte
    *  (la modale s'efface, le gabarit final suit le curseur, clic-case = dépose). */
   castPlaceZone: (on: boolean) => void;
   castConfirm: () => void;
@@ -1233,7 +1233,7 @@ export interface GameState extends RollFlowActionsMap {
   // approach{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   approachConfirm: () => void;
   approachCancel: () => void;
-  /** Bénédiction de Protection (LDB 41 l.105) : Test de FM Accessible (+20) ; succès → l'attaque est relancée. */
+  /** Bénédiction de Protection (LDB 41 l.142) : Test de FM Accessible (+20) ; succès → l'attaque est relancée. */
   // ward{Roll,Reroll,ForceSuccess,DarkPact} : générés (RollFlowActionsMap).
   wardConfirm: () => void;
   wardCancel: () => void;

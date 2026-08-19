@@ -136,7 +136,7 @@ describe('#1262 lot 5c — la BANDE se compose sur la SURFACE, pas sur l’écra
 });
 
 describe('#1262 lot 5c — la fin de combat ne contracte plus en silence', () => {
-  it('Contraction (LDB 20 l.72) : le héros de l’invité reçoit SON étape au lieu d’un jet muet', () => {
+  it('Contraction (LDB 20 l.90) : le héros de l’invité reçoit SON étape au lieu d’un jet muet', () => {
     seedBattleRng(4); // ce seed fait ÉCHOUER le Test (+60) : sans fenêtre, la maladie était contractée
     const { H } = setupCoop({ heros: 1, invites: [0] });
     const c = g().battle!.combatants.find((x) => x.id === H[0].id)!;

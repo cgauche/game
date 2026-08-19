@@ -25,7 +25,7 @@ import {
 } from './creation';
 import { careers, findSpeciesById, species, stars, type SpeciesData } from '../data';
 
-describe('bonus de PX des choix aléatoires (LDB 04 l.87 / 05 l.191-385)', () => {
+describe('bonus de PX des choix aléatoires (LDB 04 l.91 / 05 l.208-341)', () => {
   it('valeurs verbatim', () => {
     expect(XP_SPECIES_ACCEPTED).toBe(20);
     expect(XP_CAREER_FIRST).toBe(50);
@@ -101,7 +101,7 @@ describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE II
   });
 });
 
-describe('Tableau des Races aléatoires (LDB 04 l.90) — borne = CHOIX (species.rand partagé)', () => {
+describe('Tableau des Races aléatoires (LDB 04 l.93-101) — borne = CHOIX (species.rand partagé)', () => {
   it('bornes croissantes jusqu\'à 100 ; chaque borne porte TOUTES ses espèces (choix RAW)', () => {
     const table = randomSpeciesTable();
     const bounds = table.map((e) => e.max);
@@ -173,7 +173,7 @@ describe('Tableau des Classes et Carrières aléatoires (LDB 05 l.197+)', () => 
   });
 });
 
-describe('répartition de 100 Points (LDB 05 l.385 : min 4, max 18)', () => {
+describe('répartition de 100 Points (LDB 05 l.341 : min 4, max 18)', () => {
   const alloc = (v: number): Record<CharKey, number> => Object.fromEntries(CHAR_KEYS.map((k) => [k, v])) as Record<CharKey, number>;
   it('valide : 10 × 10 = 100', () => {
     expect(validatePointBuy(alloc(10)).ok).toBe(true);

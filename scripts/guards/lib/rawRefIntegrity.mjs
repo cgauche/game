@@ -41,10 +41,8 @@ export const SITE_EXEMPTIONS = []
  *  toute baisse échoue aussi tant que le registre n'est pas ABAISSÉ (réf réparée = ligne à retirer).
  *  Régime cible : fichier vide `{}` (tolérance zéro) — chaque entrée est une dette à solder en
  *  lisant le `Source/` et en réancrant la réf sur la ligne qui porte VRAIMENT le passage.
- *  #1318 E3-L4 : la réparation de la grammaire (formes COMPACTES `l.A/B/C`, `_lib.mjs`) a RÉVÉLÉ 17
- *  sites jusque-là invisibles (chapitres 16/19/20/47/62/63/85 du LDB — aucun du 18) ; gelés ici,
- *  à solder par les lots de LEURS chapitres. Le seul « disparu » du même lot est un RENOMMAGE de clé
- *  (`LDB 20 l.32` → `LDB 20 l.32/49`, même site `combatFlow.ts:2324`), pas une réparation. */
+ *  Les formes COMPACTES (`l.A/B/C`, `_lib.mjs`) comptent chaque ancre SÉPARÉMENT : une seule d'entre
+ *  elles pointant une ligne vide suffit à rougir la réf entière. */
 export const BASELINE_PATH = new URL('../raw-blind-refs-baseline.json', import.meta.url)
 
 /** Comptes mesurés `{ fichier: { réf: n } }` à partir d'une liste de réfs aveugles. */

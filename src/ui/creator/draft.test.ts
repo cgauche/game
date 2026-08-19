@@ -286,7 +286,7 @@ describe('buildHero — bout en bout', () => {
   });
 });
 
-describe('Possessions — emplacement `{wildcard:\'arme\'}` (LDB 05 l.559-585, construct de choix d\'équipement)', () => {
+describe('Possessions — emplacement `{wildcard:\'arme\'}` (LDB 05 l.542-583, construct de choix d\'équipement)', () => {
   const WEAPON_SLOT = 'Arme (au choix)'; // trappingRefLabel({ wildcard: 'arme' })
 
   it('trappingChoices (id STABLE) résout l\'emplacement en l\'objet catalogue choisi', () => {

@@ -1,18 +1,11 @@
 // Test du garde `reconcile` (node --test). Lancé par `npm run test:raw`.
-// Non-régression softA (#434 défaut 9) : baseline des chapitres LDB couverts à lignes non pinées.
-// La baseline se met à jour à la BAISSE UNIQUEMENT — un ré-ancrage au Source pine une ligne de plus,
-// jamais de nouveau trou : une HAUSSE = régression réelle (échec attendu). Ce cliquet ne verrouille
-// QUE la direction (décrue) : toute baisse constatée fait foi si elle est PROUVÉE par de vraies réfs
-// ré-ancrées (jamais un artefact de mesure). Mesurée à 2 après d92d8329/2ed2acff (ref #526/#583) :
-// LDB 12/15 sortent de la liste — les réfs LDB 12 (activities.ts/skills.ts/policy.ts/fortune.test.ts…)
-// et LDB 15 (jump.test.ts/jumpMove.ts/social.ts/combatFlow.ts…) étaient re-pointées sur de MAUVAISES
-// lignes (ex. `LDB 12 l.229` → `l.202-206`, `LDB 15 l.117-122` → `l.78-84`) ; ré-ancrées au texte
-// Source, elles tombent désormais dans les plages pinées de l'Atlas (±TOL=20). Était 4 : LDB 05/11
-// pinés avant ça.
-// #606 : LDB 10 (Talents) sort de la liste — talents.md cite en graphie FOLIO (`LDB 10 p.X`, #585),
-// invisible de l'ancienne mesure (comptait seulement `l.X`) ; les refs folio sont désormais converties
-// en plages de lignes via `folioSpan`/`folioRange`, ce qui pine les lignes de code citées. Était 2 :
-// LDB 10/46 avant ce fix.
+// CONTRAT vérifié ici, sur le VRAI dépôt (#434 défaut 9) : le sens A du LDB ne porte AUCUN trou dur,
+// et AUCUN chapitre ne reste « à lignes non pinées » — la liste attendue est VIDE. Le cliquet ne
+// verrouille que la DIRECTION : une HAUSSE est une régression (un chapitre dont les réfs de code
+// retombent hors des plages pinées de l'Atlas, ±TOL=20) ; une baisse ne vaut que PROUVÉE par des
+// réfs ré-ancrées au `Source/`, jamais par un artefact de mesure.
+// Les tests suivants fixent le vocabulaire de couverture : une fiche qui ne cite QU'en graphie FOLIO
+// (`ABBR NN p.X`, #585/#606) crédite son chapitre via `folioSpan`/`folioRange`, à l'égal d'une réf ligne.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'

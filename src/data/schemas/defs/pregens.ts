@@ -1,7 +1,7 @@
 /**
  * Schéma de `pregens.json` — dérivé du contenu RÉEL (8 entrées, script d'inventaire) et de
  * `PregenDef` (`src/data/pregens.ts`). Personnages pré-tirés APP-OWNED (flavor : motivation,
- * ambitions LDB 05 l.710-717) ; la fabrique (`src/data/pregens.ts`, #421) route par le MÊME
+ * ambitions LDB 05 l.730-736) ; la fabrique (`src/data/pregens.ts`, #421) route par le MÊME
  * pipeline que le créateur joueur (`CreatorDraft` → `buildHero`) — `species`/`career` (ids stables),
  * `careerTalent` et `pettySpells` sont les seuls choix AUTHORÉS, le reste suit la recette RAW seedée.
  */
@@ -19,7 +19,7 @@ export const schema = z.array(
     career: z.string(),
     seed: z.number(),
     motivation: z.string(),
-    /** Ambitions à court/long terme (LDB 05 l.710-717) — flavor du pré-tiré. */
+    /** Ambitions à court/long terme (LDB 05 l.730-736) — flavor du pré-tiré. */
     ambitionShort: z.string().optional(),
     ambitionLong: z.string().optional(),
     /** Âge (LDB 05 étape 6) — absent sur toutes les entrées observées (pas de tirage moteur côté pré-tiré). */

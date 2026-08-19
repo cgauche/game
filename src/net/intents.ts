@@ -88,7 +88,7 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'frenzyConfirm', 'frenzyCancel', 'reloadConfirm', 'reloadCancel',
   'handGateConfirm', 'handGateCancel', 'recoverConfirm', 'recoverCancel',
   'healSetMode', 'healConfirm', 'healCancel',
-  // Corruption (LDB 19 l.26) : choix Résistance/Calme AVANT le jet (le jet et son influence sont dérivés).
+  // Corruption (LDB 19 l.29) : choix Résistance/Calme AVANT le jet (le jet et son influence sont dérivés).
   'corruptionSetSkill',
   // Manoeuvres d'arme et de mouvement (#1017) : OUVREUR + paramètre pré-jet + résolution ; le jet et
   // ses verbes d'influence sont dérivés de `FLOW_VERBS` (mono → routés par le porteur).

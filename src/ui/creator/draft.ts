@@ -4,8 +4,8 @@
  * Tout l'aléatoire est FIGÉ par des flux RNG seedés dérivés d'un seed unique tiré à l'ouverture
  * de l'assistant : re-calculer une dérivation redonne le MÊME résultat (anti-savescum), et les
  * bonus de PX des tirages acceptés sont perdus dès qu'on dévie du chemin RAW :
- *  - Espèce (LDB 04 l.87) : d100 figé ; +20 PX si on le garde tel quel ; pas de relance.
- *  - Carrière (LDB 05 l.191-195) : 1er jet accepté = +50 PX ; sinon 2 jets de plus, choix parmi
+ *  - Espèce (LDB 04 l.91) : d100 figé ; +20 PX si on le garde tel quel ; pas de relance.
+ *  - Carrière (LDB 05 l.208-212) : 1er jet accepté = +50 PX ; sinon 2 jets de plus, choix parmi
  *    les 3 = +25 PX ; sinon choix libre / « continuez à relancer » = 0 PX (relances RAW l.195).
  *  - Caractéristiques (l.381-385) : tirage gardé = +50 ; réassignation des dix jets = +25 ;
  *    relance (RAW, 0 PX) ou répartition de 100 Points = 0.
@@ -68,7 +68,7 @@ export interface CreatorDraft {
   // 1) Espèce
   /** `id` STABLE de l'espèce (`SpeciesData.id`) — ≠ libellé. */
   speciesId: string;
-  /** Tirage d'espèce figé — le d100 désigne une BORNE (LDB 04 l.90) ; `ids` = toutes les espèces
+  /** Tirage d'espèce figé — le d100 désigne une BORNE (LDB 04 l.93-101) ; `ids` = toutes les espèces
    *  de cette borne, parmi lesquelles le joueur choisit librement (bonus de PX conservé). Absent
    *  tant que le d100 n'a pas été lancé. */
   speciesRoll?: { roll: number; ids: string[] };
@@ -122,7 +122,7 @@ export interface CreatorDraft {
    *  choix d'équipement) — clé = `trappingRefLabel` de l'EMPLACEMENT (même convention que
    *  `resolveTrappingChoices`), valeur = libellé de la branche (`choice`) ou id de trapping (`wildcard`). */
   trappingChoices?: Record<string, string>;
-  /** Bourse de départ TIRÉE (LDB 05 l.581-583) — geste explicite requis (#393 P5 correctif
+  /** Bourse de départ TIRÉE (LDB 05 l.578) — geste explicite requis (#393 P5 correctif
    *  d'agentivité : le montant, bien que déterministe côté `draftWealth`, ne s'affiche PLUS avant
    *  que le joueur ait pressé « Tirer aux dés » — jamais un résultat pré-rempli au montage). */
   wealthRoll?: boolean;
@@ -237,7 +237,7 @@ export const draftLevel = (d: CreatorDraft): CareerLevelData | undefined =>
 /** Race choisie ET carrière choisie — la fiche vivante ne se construit qu'une fois les deux posées. */
 export const hasSpecies = (d: CreatorDraft): boolean => !!d.speciesId && !!draftSpecies(d);
 /** Caractéristiques de carrière du Niveau 1 (clés `CharKey` stables) sur lesquelles se répartissent
- *  les 5 Augmentations gratuites de création (LDB 05 l.379). La donnée EST déjà en `CharKey`
+ *  les 5 Augmentations gratuites de création (LDB 05 l.459). La donnée EST déjà en `CharKey`
  *  (« CT », « F »… ; cf. le champ characteristics de CareerLevelData) ; on filtre par sûreté. SOURCE UNIQUE
  *  partagée par la grille d'allocation et `validateStep` (plus de re-dérivation divergente). */
 export const careerCharKeys = (d: CreatorDraft): CharKey[] =>
@@ -315,7 +315,7 @@ export function rollDraftCareer(d: CreatorDraft): CreatorDraft {
     return r ? withCareer({ ...d, careerRolls: [r] }, r.ids[0]) : d;
   }
   if (n === 1) {
-    // « Faites deux lancers de plus, ce qui porte votre total à 3 choix » (LDB 05 l.193).
+    // « Faites deux lancers de plus, ce qui porte votre total à 3 choix » (LDB 05 l.211).
     const rng = makeRNG(d.seed ^ 0xca2);
     const r2 = rollCareer(pool, sp, rng);
     const r3 = rollCareer(pool, sp, rng);
@@ -633,7 +633,7 @@ export function draftWealth(d: CreatorDraft): Money {
   const status = parseStatus(draftLevel(d)?.status ?? 'Bronze 0');
   return rollInitialWealth(status, makeRNG(d.seed ^ 0x901d));
 }
-/** Pose le geste « Tirer aux dés » de la bourse — FIGÉ (aucune relance, LDB 05 l.581-583 n'en offre
+/** Pose le geste « Tirer aux dés » de la bourse — FIGÉ (aucune relance, LDB 05 l.578 n'en offre
  *  aucune) : le montant lui-même est déjà déterminé par `d.seed`, ce geste n'en découvre que
  *  l'affichage (anti-résultat-pré-rempli, #393 P5). */
 export function rollDraftWealth(d: CreatorDraft): CreatorDraft {

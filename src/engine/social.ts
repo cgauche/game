@@ -5,7 +5,7 @@
  * l'Échelon supérieur obtiennent un bonus de +10 à leur Test de Charme lorsque ce dernier a pour
  * cible des personnes appartenant à un Échelon inférieur. De la même façon, les personnes
  * appartenant à un Échelon inférieur subissent une pénalité de -10 lorsqu'ils doivent influencer
- * des personnes d'Échelon supérieur. » (LDB 08 l.88). Ce ±10 INTER-Échelon est le RAW de base :
+ * des personnes d'Échelon supérieur. » (LDB 08 l.57). Ce ±10 INTER-Échelon est le RAW de base :
  * il s'applique TOUJOURS dès que la couche est présente (ce n'est pas une option).
  *
  * Trois règles optionnelles l'enrichissent (registre `policy.ts`, groupe « Social ») :
@@ -83,9 +83,9 @@ export function statusCharmMod(
   let mod: number;
   const da = TIER_RANK[actor.tier], dt = TIER_RANK[target.tier];
   if (da !== dt) {
-    // (a) Inter-Échelon : ±10 selon le sens (RAW de base, LDB 08 l.88).
+    // (a) Inter-Échelon : ±10 selon le sens (RAW de base, LDB 08 l.57).
     mod = da > dt ? 10 : -10;
-    // (c) Mendicité (LDB 08 l.92) : Bronze → Argent « juste au-dessus » → +10 au lieu de −10.
+    // (c) Mendicité (LDB 08 l.63) : Bronze → Argent « juste au-dessus » → +10 au lieu de −10.
     if (
       rule('social-begging-bonus') && opts?.begging &&
       actor.tier === 'Bronze' && target.tier === 'Argent'

@@ -110,7 +110,7 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
   });
 });
 
-describe('lecture au grimoire (LDB 47 l.34)', () => {
+describe('lecture au grimoire (LDB 47 l.21)', () => {
   it('sort de son Domaine NON mémorisé + grimoire porté → lançable (NI ×2 côté flux)', () => {
     const c = hero({
       talents: [{ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 }],
