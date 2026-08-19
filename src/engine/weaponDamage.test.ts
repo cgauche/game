@@ -6,7 +6,7 @@ import type { Weapon, Combatant } from './types';
 const sword = (over: Partial<Weapon> = {}): Weapon => ({ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], ...over });
 const bow = (over: Partial<Weapon> = {}): Weapon => ({ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [], range: 30, ...over });
 
-describe('effectiveWeaponDamage (LDB 62 l.178)', () => {
+describe('effectiveWeaponDamage (LDB 62 l.135)', () => {
   it('réduit les Dégâts de damageTaken', () => {
     expect(effectiveWeaponDamage(sword({ damageTaken: 2 }), 3)).toBe(5); // BF3 + (4-2)
     expect(effectiveWeaponDamage(bow({ damageTaken: 3 }), 3)).toBe(6);   // 9-3, pas de BF
@@ -66,7 +66,7 @@ describe('recomputeLoadout — Portée = SPEC COPIÉE (résolue à l’usage, pa
   });
 });
 
-describe('effectiveWeapon — bascule Arme improvisée à +0 (LDB 62 l.178)', () => {
+describe('effectiveWeapon — bascule Arme improvisée à +0 (LDB 62 l.135)', () => {
   it('arme usée à +0 → +BF+1, Inoffensive, sans Atout (Empaleuse/Perforante perdus)', () => {
     const w = effectiveWeapon(sword({ damageTaken: 4, qualities: [{ id: 'empaleuse' }, { id: 'perforante' }] }));
     expect(damageString(w.damage)).toBe('+BF+1');

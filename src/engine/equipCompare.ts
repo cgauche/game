@@ -33,7 +33,7 @@ const ZONES: { label: string; locs: HitLocation[] }[] = [
   { label: 'Jambes', locs: ['jambeG', 'jambeD'] },
 ];
 
-/** Un bouclier = l'arme portant l'Atout « Protectrice N » (LDB 62 l.272 — c'est la PA d'un bouclier en
+/** Un bouclier = l'arme portant l'Atout « Protectrice N » (LDB 62 l.296 — c'est la PA d'un bouclier en
  *  parade ; cet Atout est exclusif aux boucliers dans le catalogue). Détection par ID STABLE de qualité
  *  (`QualityInstance.id`) — multilangue-safe : ne dépend plus du libellé « Bouclier ». Pur (pas d'import rig). */
 export function isShieldItem(i: { qualities?: QualityInstance[] }): boolean {
@@ -41,7 +41,7 @@ export function isShieldItem(i: { qualities?: QualityInstance[] }): boolean {
 }
 
 const trendOf = (n: number): Trend => (n > 0 ? 'up' : n < 0 ? 'down' : 'same');
-/** Indice de l'Atout « Protectrice N » (PA d'un bouclier en parade, LDB 62 l.272) — lecture structurée. */
+/** Indice de l'Atout « Protectrice N » (PA d'un bouclier en parade, LDB 62 l.296) — lecture structurée. */
 const protectrice = (q: QualityInstance[]): number => q.find((x) => x.id === 'protectrice')?.value ?? 0;
 
 export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparison {
@@ -69,7 +69,7 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
       { label: 'Dégâts', current: cur ? damageString(cur.damage) : (baseline ? `${damageString(baseline)} (mains nues)` : '—'), next: item.damage ? damageString(item.damage) : '—', trend: trendOf(damageScore(item.damage) - damageScore(curDmg)) },
     ];
     if (item.kind === 'melee') {
-      // Rien de tenu → base = mains nues, comme pour les Dégâts (Allonge Personnelle, LDB 62 l.75/l.158).
+      // Rien de tenu → base = mains nues, comme pour les Dégâts (Allonge Personnelle, LDB 62 l.28/l.158).
       const curReach = cur ? cur.reach ?? null : unarmedWeapon().reach ?? null;
       const cr = reachRankOf(curReach), nr = reachRankOf(item.reach);
       // Une Allonge hors de l'axe (« Variable », LDB 62 l.31) ou absente ne se compare pas : aucun sens affirmé.

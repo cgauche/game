@@ -127,7 +127,7 @@ describe('#1262 lot 5b — CHOIX : la charge de l’applier voyage par la décla
     expect(st.bladeTrap!.defenderId).toBe(defenseur.id);
     expect(st.bladeTrap!.attackerId).toBe(attaquant.id);
     expect(st.bladeTrap!.parryWeaponUid).toBe('parade-1');
-    expect(st.bladeTrap!.defSL, 'le DR de la défense entre dans le Test opposé (LDB 62 l.293)').toBe(2);
+    expect(st.bladeTrap!.defSL, 'le DR de la défense entre dans le Test opposé (LDB 62 l.280)').toBe(2);
     expect(st.outcome!.length, 'ce que chaque voie coûte est écrit sous les options').toBeGreaterThan(0);
     expect(modalOwnerOf(useGame.getState()), 'COOP : le piégeur tranche SA parade').toBe(defenseur.id);
     expect(ownsLocally(useGame.getState(), defenseur.id), 'chez l’hôte, la décision n’est pas à lui').toBe(false);

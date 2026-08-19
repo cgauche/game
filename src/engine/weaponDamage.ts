@@ -144,7 +144,7 @@ export function improvisedProfile(w: Weapon, resolveTrapping: ResolveTrapping = 
 }
 
 /** Lance de cavalerie (Groupe Cavalerie, nom contenant « lance ») — la règle « improvisée hors Charge »
- *  (LDB 62 l.59) ne vise QUE les lances du Groupe, pas le Marteau à bec-de-corbin ni le Sabre. Détection
+ *  (LDB 62 l.58) ne vise QUE les lances du Groupe, pas le Marteau à bec-de-corbin ni le Sabre. Détection
  *  par la DONNÉE de combat (`subType` + nom), JAMAIS par le `WeaponDef.group` de rendu. */
 function isCavalryLance(w: Weapon): boolean {
   return w.subType === 'cavalerie' && norm(w.label).includes('lance');
@@ -179,10 +179,10 @@ export interface WeaponContext {
 
 /**
  * Profil de combat EFFECTIF d'une arme, contexte d'usage compris. Sans `ctx` : seule l'usure→improvisée
- * (LDB 62 l.178) s'applique — Dégâts `+BF+1`, Atout `Inoffensive`, plus aucun autre Atout ; une arme non
+ * (LDB 62 l.135) s'applique — Dégâts `+BF+1`, Atout `Inoffensive`, plus aucun autre Atout ; une arme non
  * altérée est renvoyée TELLE QUELLE (même référence). Avec `ctx`, deux règles de Groupe contextuelles
  * s'ajoutent :
- *  - Lance de cavalerie utilisée hors d'un Round de Charge → **Arme improvisée** (LDB 62 l.59).
+ *  - Lance de cavalerie utilisée hors d'un Round de Charge → **Arme improvisée** (LDB 62 l.58).
  *  - Fléau manié **sans la Spécialisation** appropriée → Défaut **Dangereuse**, et **aucun autre Atout**
  *    n'est utilisé (LDB 62 l.146-147).
  *  - Arme à distance couverte en mode **`'degraded'`** (`WeaponContext.groupSkillMode`, Arbalète/Lancer
@@ -195,7 +195,7 @@ export interface WeaponContext {
  * transformé (ex. l'usure recalculée dans `applyHit`) ne le ré-altère pas.
  */
 export function effectiveWeapon(w: Weapon, ctx?: WeaponContext): Weapon {
-  if (isImprovised(w)) return improvisedProfile(w); // usure jusqu'à +0 (LDB 62 l.178)
+  if (isImprovised(w)) return improvisedProfile(w); // usure jusqu'à +0 (LDB 62 l.135)
   if (ctx?.charged === false && isCavalryLance(w)) return improvisedProfile(w); // Lance hors Charge (l.59)
   // Combat « au contact » (LDB 62 l.176) : « n'importe quelle arme plus longue que Courte est considérée
   // comme une Arme improvisée » (l'adversaire est entré dans la longueur d'arme). Allonge ≤ Courte

@@ -54,7 +54,7 @@ describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () =>
   });
 });
 
-describe('parade : pénalité de main secondaire + exception Parade/Défensive (LDB 62 l.192)', () => {
+describe('parade : pénalité de main secondaire + exception Parade/Défensive (LDB 62 l.151)', () => {
   const parrySpec = { skillId: 'corps-a-corps', spec: 'parade', characteristic: 'capacite-de-combat', advances: 0 } as any;
   const offShield: Weapon = { label: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'defensive' }], hand: 'off', hands: 1 };
   it('parade main secondaire : bouclier Défensive + spé Parade → AUCUNE pénalité', () => {
@@ -125,7 +125,7 @@ describe('Esquive dans une haute épaisseur de neige −30 (LDB 14 l.82)', () =>
   });
 });
 
-describe('Atouts Dévastatrice / Percutante (LDB 62 l.279/313)', () => {
+describe('Atouts Dévastatrice / Percutante (LDB 62 l.244/266)', () => {
   // roll 34 vs cible 52 → DR (sl) = 5−3 = 2 ; dé des unités = 4. Arme '+8' (ranged) ; cible mk() E30 → BE3, PA0.
   // Sans Atout : dégâts = 8 + 2 = 10 → woundsLost 7. Dévastatrice : 8 + max(2,4)=12 → 9. Percutante : 8+2+4=14 → 11.
   const ranged = (qualities: string[]) => ({ label: 'X', type: 'ranged' as const, damage: { plusBF: false, flat: 8 }, qualities: qualities.map((s) => parseQualityInstance(s)!) });

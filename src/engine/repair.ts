@@ -1,6 +1,6 @@
 import type { ItemInstance, WeaponDamageSpec } from './types';
 
-/** Coût de réparation d'une armure, en sous de cuivre (PA). RAW LDB 63 « Réparer Une Armure » l.97-98 :
+/** Coût de réparation d'une armure, en sous de cuivre (PA). RAW LDB 63 « Réparer Une Armure » l.64 :
  *  10 % du prix de base PAR PA perdu ; 30 % du prix de base si la pièce est complètement brisée (PA nette ≤ 0). */
 export function repairCostBrass(item: Pick<ItemInstance, 'pa' | 'damageTaken'>, basePriceBrass: number): number {
   const lost = item.damageTaken ?? 0;
@@ -36,7 +36,7 @@ export function isRepairable(item: Pick<ItemInstance, 'kind' | 'damage' | 'damag
 }
 
 /** Coût de réparation UNIFIÉ (armure ou arme), en sous de cuivre — dispatch par `kind`. SOURCE UNIQUE
- *  du prix de réparation (armures LDB 63 l.97-98 · armes LDB 62 l.135), partagée par le marchand et l'UI. */
+ *  du prix de réparation (armures LDB 63 l.64 · armes LDB 62 l.135), partagée par le marchand et l'UI. */
 export function itemRepairCostBrass(item: Pick<ItemInstance, 'kind' | 'pa' | 'damage' | 'damageTaken'>, basePriceBrass: number): number {
   return item.kind === 'melee' || item.kind === 'ranged'
     ? repairWeaponCostBrass(item, basePriceBrass)

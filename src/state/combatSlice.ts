@@ -1650,7 +1650,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, pendingRoundStart } = get();
       if (!battle || !pendingRoundStart) return;
       const hero = inBattleId(battle, heroId);
-      // Réordonnancement d'initiative : arme Rapide (LDB 62 l.318-319) → gratuit ; sinon 1 point de Chance
+      // Réordonnancement d'initiative : arme Rapide (LDB 62 l.298-300) → gratuit ; sinon 1 point de Chance
       // (LDB 17 l.27). Tir rapide (interruption hors de l'ordre, LDB 11 l.97-103) ne passe PAS par ici (`preemptRangedShot`).
       const free = !!hero && canStrikeFirst(hero.weapons);
       if (!hero || !controlsCombatant(get(), hero) || (!free && (hero.fortune ?? 0) <= 0)) return;
@@ -1843,7 +1843,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...markActed(get, set, battle), action: null, log: [...battle.log, ev('aim', t('cs.aim', { name: active.label }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
-    // Perturbante (LDB 62 l.275-276) : arme le mode « Repousser » — la prochaine attaque réussie
+    // Perturbante (LDB 62 l.272-274) : arme le mode « Repousser » — la prochaine attaque réussie
     // repousse d'1 m/DR AU LIEU de causer des Dégâts. Simple bascule (pas une Action).
     battleTogglePushback: () => {
       const battle = get().battle;
@@ -2619,7 +2619,7 @@ export function createCombatSlice(get: Get, set: Set) {
           wounds: { ...h.wounds },
         } as Combatant;
         // Re-dérive les armes ACTIVES depuis les items persistés : une arme usée/détruite au combat
-        // précédent (damageTaken/destroyed sur l'ItemInstance) reste usée/détruite (LDB 62 l.177-180).
+        // précédent (damageTaken/destroyed sur l'ItemInstance) reste usée/détruite (LDB 62 l.135).
         if (c.items?.length) recomputeLoadout(c);
         // Armes à distance CHARGÉES au début du combat (le cycle de charge ne joue que pour les armes à
         // Recharge) — CHACUNE la sienne. Le CHOIX de munition n'est PAS réinitialisé : la munition est un

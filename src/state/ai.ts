@@ -526,7 +526,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // est mortel). Un frénétique ignore le danger et continue d'attaquer (Frénésie, LDB 21 l.34).
   if (hasCondition(enemy, 'en-flammes') && !isFrenzied(enemy)) return forced({ kind: 'recover', state: 'en-flammes' });
   const pos = enemy.pos!;
-  // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.211/213) ; 1 case par défaut. Diagonale incluse
+  // Portée de mêlée = Allonge de l'arme (RAW-3, LDB 62 l.163/164) ; 1 case par défaut. Diagonale incluse
   // (Chebyshev). Source unique partagée avec le héros et la résolution → symétrie héros/ennemi.
   const mr = meleeReachTiles(enemy.weapons);
   const mpt = sceneMetresPerTile(scene); // m/case de la scène (échelle RAW, défaut 2) → convertit la hauteur en cases

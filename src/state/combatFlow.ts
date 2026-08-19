@@ -380,7 +380,7 @@ export function banRangedActive(battle: BattleState | null | undefined): boolean
   return battle?.banRanged ?? (battle?.victoryCondition?.type === 'firstBlood');
 }
 
-/** Tir héros refusé faute de RESSOURCE : arme à défaut Recharge non chargée (LDB 63 l.28-29) ou plus
+/** Tir héros refusé faute de RESSOURCE : arme à défaut Recharge non chargée (LDB 62 l.335) ou plus
  *  de munition compatible — `null` si le tir peut partir. Concern ORTHOGONAL à la géométrie (`attackPlan`),
  *  rejoué À L'IDENTIQUE par le clic (`battleClickEntity`) ET le survol (`hoverTargeting`) pour que
  *  l'affordance ne mente jamais : un réticule de tir sur une arbalète vide DOIT dire « recharger », pas
@@ -2090,7 +2090,7 @@ export function applyAttackResult(
     checkBattleOver(get, set);
     return false; // application complète (mort-auto) — non suspendu côté cascade d'attaque
   }
-  // Déviation Critique (LDB 63 l.63-66) : un HÉROS subit un Coup Critique à une localisation où il
+  // Déviation Critique (LDB 63 l.30-32) : un HÉROS subit un Coup Critique à une localisation où il
   // porte de la PA → on SUSPEND pour son choix Dévier/Subir (modale). AUCUN effet de bord ici ; la
   // résolution (étape 'deviation', resolveDeviation) rappelle cette fonction avec `deviated` défini (early-return sauté →
   // application UNE seule fois). Les sous-attaques (balayage/Piétinement) passent `deviated` explicite
@@ -2137,7 +2137,7 @@ export function applyAttackResult(
     });
     return true; // suspendu — la résolution part de l'applier 'critSeverity'
   }
-  // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, on N'OFFRE PAS le choix
+  // Règle optionnelle « Déviation Critique » (LDB 63 l.30) : si désactivée, on N'OFFRE PAS le choix
   // Dévier/Subir au héros → le Critique est subi directement (chemin normal ci-dessous).
   // La décision appartient à la VICTIME (LDB 63 l.30) : le prédicat est donc celui du SURFAÇAGE
   // (`jetSurfaced` — un siège humain QUELCONQUE tient la cible), jamais l'affordance LOCALE
@@ -2212,7 +2212,7 @@ export function applyAttackResult(
     // encore sacrifiée ici (deflectCrit/enemyAutoDeviate le font) → on recompute woundsFromHit à PA−1
     // (`extraAP:-1`) et on isole le DELTA par rapport aux Blessures de base déjà appliquées.
     const extra = Math.max(0, woundsFromHit(weapon, target, loc, res.damage ?? 0, -1) - (res.woundsLost ?? 0));
-    // Déviation (LDB 63 l.63-66) : l'ENNEMI dévie AUTO (rule-gated, `enemyAutoDeviate`) ; le HÉROS « Dévier »
+    // Déviation (LDB 63 l.30-32) : l'ENNEMI dévie AUTO (rule-gated, `enemyAutoDeviate`) ; le HÉROS « Dévier »
     // sur re-entrée (deviated===true, sans prerolledCrit, `deflectCrit`). Sacrifient 1 PA puis ajoutent `extra`.
     let deviationApplied = false;
     if (res.critical || overkill > 0) {
@@ -2346,7 +2346,7 @@ export function applyAttackResult(
   // résolution : la CIBLE (touche, Critique létal, 0 PB) ET l'ATTAQUANT (Critique défensif opposé qui le
   // tue PENDANT sa charge). Émis une fois (garde `slainNotified`).
   for (const c of [target, attacker]) critLog.push(...notifySlain(get, set, c));
-  // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
+  // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 62 l.307).
   if (res.hit && hasQuality(weapon, 'taille')) damageArmour(target, res.location ?? 'corps');
   // Munition du coup : CELLE QUI ÉTAIT DANS L'ARME (`loadedAmmo`), lue AVANT que le tir ne décharge.
   const firedAmmo = weapon.type === 'ranged' && attacker.kind === 'hero' ? loadedAmmo(attacker, weapon) : undefined;
@@ -2638,7 +2638,7 @@ function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void 
     if (destroy) {
       it.destroyed = true;
     } else {
-      // Une Arme improvisée déjà à +0 qui prend un Dégât de plus devient inutilisable (LDB 62 l.178).
+      // Une Arme improvisée déjà à +0 qui prend un Dégât de plus devient inutilisable (LDB 62 l.135).
       if (isImprovised({ ...weapon, damageTaken: it.damageTaken ?? 0 })) it.destroyed = true;
       it.damageTaken = (it.damageTaken ?? 0) + 1;
     }
@@ -2846,7 +2846,7 @@ export function maybeOpenDefense(
 ): boolean {
   if (!defenseSurfaced(get(), target)) return false;
   // TIR sur un héros : ouvre la défense réactive UNIQUEMENT si le RAW l'autorise (Protectrice 2+ en
-  // Ligne de Vue LDB 62 l.307 / Bout Portant LDB 14 l.40 / tireur Engagé LDB 14 l.44). Vide = tir non
+  // Ligne de Vue LDB 62 l.296 / Bout Portant LDB 14 l.40 / tireur Engagé LDB 14 l.44). Vide = tir non
   // opposable → résolution simple (resolveAttack). LoS acquise : l'IA ne tire que si elle voit (doAttack).
   if (weapon?.type === 'ranged') {
     const mpt = sceneMetresPerTile(get().scene);

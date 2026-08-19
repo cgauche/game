@@ -864,8 +864,8 @@ export interface GameState extends RollFlowActionsMap {
   removeFromSellCart: (uid: string) => void;
   clearSellCart: () => void;
   confirmSell: () => void;
-  /** Réparation chez l'artisan : remet damageTaken à 0 contre le coût unifié — armure 10 %/PA (LDB 63
-   *  l.97-98) ou arme 10 %/point de Dégâts (LDB 62 l.135). Arme improvisée = irréparable. */
+  /** Réparation chez l'artisan : remet damageTaken à 0 contre le coût unifié — armure 10 %/PA (LDB 63 l.64)
+   *  ou arme 10 %/point de Dégâts (LDB 62 l.135). Arme improvisée = irréparable. */
   repairItem: (uid: string, heroId: string) => void;
   /** Marchandage (LDB 59 l.43) : ouvre un Test opposé (1/visite) ; réduit ensuite les prix de 10-20 %. */
   startBargain: (mode: 'buy' | 'sell') => void;
@@ -1096,7 +1096,7 @@ export interface GameState extends RollFlowActionsMap {
   battleSwitchLoadout: (loadoutId: string) => void;
   /** Action « Viser » (sans jet) : +20 (Accessible) au prochain tir tant que c'est la dernière action. */
   battleAim: () => void;
-  /** Perturbante (LDB 62 l.275-276) : bascule le mode « Repousser » (1 m/DR au lieu des Dégâts). */
+  /** Perturbante (LDB 62 l.272-274) : bascule le mode « Repousser » (1 m/DR au lieu des Dégâts). */
   battleTogglePushback: () => void;
   /** Flux d'attaque par modale : viser une localisation, lancer, dépenser une Chance, appliquer. */
   attackSetLocation: (loc: HitLocation | null) => void;

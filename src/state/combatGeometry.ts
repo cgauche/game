@@ -121,7 +121,7 @@ export function combatantAtTile(combatants: Combatant[], x: number, y: number, z
   return combatants.find((c) => c.pos && !isOutOfAction(c) && (c.pos.z ?? 0) === z && occupiesTile(c.pos, footprintN(c), x, y));
 }
 
-/** Perturbante (LDB 62 l.275-276) : repousse `target` d'au plus `tiles` cases dans la direction
+/** Perturbante (LDB 62 l.272-274) : repousse `target` d'au plus `tiles` cases dans la direction
  *  opposée à l'attaquant (cases praticables et libres seulement). Renvoie les cases reculées. */
 export function pushBackTiles(get: Get, attacker: Combatant, target: Combatant, tiles: number): number {
   const { scene, battle } = get();

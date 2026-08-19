@@ -777,7 +777,7 @@ export function confirmSell(get: Get, set: Set): void {
   get().log(`Vente : ${names.join(', ')} (+${formatMoney(total)}).`);
 }
 
-/** Réparation d'un objet chez un artisan — armure (LDB 63 l.97-98) OU arme (LDB 62 l.135), coût unifié
+/** Réparation d'un objet chez un artisan — armure (LDB 63 l.64) OU arme (LDB 62 l.135), coût unifié
  *  par `itemRepairCostBrass`. Une arme réduite à l'état improvisé est irréparable (isRepairable). */
 export function repairItem(get: Get, set: Set, uid: string, heroId: string): void {
   const m = get().merchant; if (!m) return;

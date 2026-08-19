@@ -225,7 +225,7 @@ export function describeStateRecovery(sr: PendingStateRecovery, name: string): s
   return t('out.stateRecovery', { name, body });
 }
 
-/** Rechargement = Test étendu de Projectiles (LDB 63 l.28-29) : issue (source unique popin ↔ journal).
+/** Rechargement = Test étendu de Projectiles (LDB 62 l.335) : issue (source unique popin ↔ journal).
  *  `after` = DR cumulé après ce jet (plafond 0). `weaponName` = NOM résolu de l'arme (uid → nom à l'appel). */
 export function describeReload(pr: PendingReload, after: number, weaponName: string): string {
   if (pr.roll == null) return '';

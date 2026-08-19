@@ -29,7 +29,7 @@ const combatant = (p: Partial<Combatant>): Combatant => ({
   ...p,
 } as unknown as Combatant);
 
-describe('43.1c — Lance de cavalerie hors Charge → Arme improvisée (LDB 62 l.59)', () => {
+describe('43.1c — Lance de cavalerie hors Charge → Arme improvisée (LDB 62 l.58)', () => {
   it('NON chargé → +BF+1, Inoffensive, Atouts perdus (Empaleuse/Percutante)', () => {
     const w = effectiveWeapon(lance(), { charged: false });
     expect(w.damage).toEqual({ plusBF: true, flat: 1 });

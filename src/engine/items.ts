@@ -657,7 +657,7 @@ export function recomputeLoadout(c: Combatant): void {
     if (w) weapons.push(w);
   }
 
-  // Mains nues toujours disponibles en dernier recours (stats canoniques du trapping, LDB 62 l.75).
+  // Mains nues toujours disponibles en dernier recours (stats canoniques du trapping, LDB 62 l.28).
   weapons.push(unarmedWeapon());
 
   const armour = wornArmourPoints(items);
@@ -705,7 +705,7 @@ export function hydratePoste(a: AuthoredShipPoste): ShipPoste {
     ...base,
     uid: a.uid ?? a.item?.uid ?? base.uid, // uid d'instance STABLE (liens hotbar/log)
     ...(enchants?.length ? { enchants } : {}), // dérogation de CETTE pièce (hors base catalogue)
-    ...(a.item?.damageTaken != null ? { damageTaken: a.item.damageTaken } : {}), // usure runtime (LDB 62 l.178)
+    ...(a.item?.damageTaken != null ? { damageTaken: a.item.damageTaken } : {}), // usure runtime (LDB 62 l.135)
     ...(a.item?.destroyed ? { destroyed: true } : {}),
   };
   const poste: ShipPoste = { item };
@@ -821,7 +821,7 @@ export function wornArmourPoints(items: ItemInstance[], exclude?: (it: ItemInsta
   for (const it of items) {
     if (!it.equipped || it.kind !== 'armor' || !it.pa || !it.locs || it.destroyed) continue;
     if (exclude?.(it)) continue;
-    const net = Math.max(0, it.pa - (it.damageTaken ?? 0)); // PA nette des dégâts (LDB 63 l.53)
+    const net = Math.max(0, it.pa - (it.damageTaken ?? 0)); // PA nette des dégâts (LDB 63 l.19)
     const layer = hasQuality(it, 'flexible') ? flex : rigid;
     for (const l of it.locs) layer[l] = Math.max(layer[l], net);
   }
@@ -864,7 +864,7 @@ export function deviatableArmourAt(c: Combatant, loc: HitLocation): number {
   return (c.armour?.[loc] ?? 0) - nonDeviatableMutationAP(c, loc);
 }
 
-/** Endommage de 1 PA l'armure de `c` à la localisation `loc` (LDB 63 l.52-55). Héros : endommage la
+/** Endommage de 1 PA l'armure de `c` à la localisation `loc` (LDB 63 l.19-21). Héros : endommage la
  *  pièce la plus solide (damageTaken+1) puis re-dérive ; ennemi/figurant (armure plate du statblock,
  *  sans items) : décrément direct. RETOURNE true si une PA a été retirée. */
 export function damageArmour(c: Combatant, loc: HitLocation): boolean {

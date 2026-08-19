@@ -717,7 +717,7 @@ Ces tables **remplacent** celles du LDB. Les **quatre tableaux complets** (Tête
 - `LDB 13` (l.137-145, l.183) → `FLOW_VERBS`, `useAttackJetProps`, `FLOWS`, `createCombatSlice`, `previewDefense`, `rangedDefenseModes`, `applyHit`, `applyAttackResult`, `applyCast` — `src/data/localisation.json`, `src/engine/combat.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/flowVerbs.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
 - `LDB 14` (l.3, l.4, l.6-7, l.9) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `10-a-votre-action-au-prochain-round`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, `vous-vous-tordez-la-cheville-dechirure-musculaire-mineure-compte-comme-blessure-critique`, `vous-touchez-un-allie-au-hasard-ou-vous-meme-sonne`, `incident-de-tir-l-arme-explose-dans-votre-main-degats-au-bras-principal-arme-detruite`, `maladresse-tableau-des-oups`, +18 — `src/data/oups.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/oups.ts`, `src/state/combatFlow.ts`, +4 fichiers
 - `LDB 18` (l.17, l.30, l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `isHealable`, `HealMode`, `outOfCombatUpkeep`, `actBlockReason`, `availableHealModes`, `MedicState`, `dechirure-autre-mineure`, +89 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +25 fichiers
-- `LDB 63` (l.29-32) → `cuir-souple`, `describeReload`, `cuir-bouilli`, `mailles`, `plate`, `firedAttackBlock`, `GameOp`, `PendingDeviation`, `ActiveEffect`, `flexible`, +14 — `src/data/qualities.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +4 fichiers
+- `LDB 63` (l.29-32) → `cuir-souple`, `cuir-bouilli`, `mailles`, `plate`, `GameOp`, `PendingDeviation`, `ActiveEffect`, `wornArmourPoints`, `flexible`, `deviatableArmourAt`, +13 — `src/data/qualities.json`, `src/data/reglesOptionnelles.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, +3 fichiers
 - `AA 7` (l.25-79, l.82-104) → `StructureCritEntry`, `useAttackJetProps`, `CritEscalation`, `retenir-ses-coups`, `resolveAACritical`, `PendingDefense`, `QualityCapabilities`, `openSurfacedDefense` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/structureCriticals.ts`, `src/engine/aaCritical.ts`, +3 fichiers
 - `EDO 11` (l.237-240) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
 - sans code : `AU1 4` (l.18), `NADJ 8` (l.263)
@@ -779,9 +779,9 @@ Note de portée : pour ces armes, *seules les Maladresses (échec + double) PAIR
 
 Le Défaut d'arme **Dangereuse** (porté entre autres par l'Arquebuse, le Tromblon, la Bombe, l'Arquebuse à répétition, le Pistolet à répétition, et conféré par défaut à tout maniement d'arme à distance sans la compétence) modifie la *condition de déclenchement* de la Maladresse :
 
-> « Certaines armes sont presque aussi susceptibles de vous blesser que votre adversaire. **Tout Test raté incluant un 9 sur le dé des dizaines ou des unités entraîne une Maladresse** (voir Chapitre 5 : Règles pour plus d'informations sur les Maladresses). » — `LDB 63 l.13-14`
+> « Certaines armes sont presque aussi susceptibles de vous blesser que votre adversaire. **Tout Test raté incluant un 9 sur le dé des dizaines ou des unités entraîne une Maladresse** (voir Chapitre 5 : Règles pour plus d'informations sur les Maladresses). » — `LDB 62 l.315`
 
-Donc avec une arme Dangereuse, il n'est plus nécessaire d'obtenir un double : tout **échec** dont le d100 contient un **9** (aux unités ou aux dizaines — `09, 19, 29, …, 90-99`) est déjà une Maladresse, qui se résout ensuite normalement (Tableau des Oups ! ou Incident de Tir si pair + arme à Poudre noire). C'est la raison pour laquelle les armes à feu, presque toutes Dangereuses, ratent et explosent bien plus souvent. (À noter : « toutes les Armes à Poudre noire et d'Ingénierie possèdent les Atouts Poudre noire et Dévastatrice », `LDB 62 l.104`.)
+Donc avec une arme Dangereuse, il n'est plus nécessaire d'obtenir un double : tout **échec** dont le d100 contient un **9** (aux unités ou aux dizaines — `09, 19, 29, …, 90-99`) est déjà une Maladresse, qui se résout ensuite normalement (Tableau des Oups ! ou Incident de Tir si pair + arme à Poudre noire). C'est la raison pour laquelle les armes à feu, presque toutes Dangereuses, ratent et explosent bien plus souvent. (À noter : « toutes les Armes à Poudre noire et d'Ingénierie possèdent les Atouts Poudre noire et Dévastatrice », `LDB 62 l.99`.)
 
 ### Maladresse comme défenseur (Test opposé en Corps à corps)
 
@@ -794,19 +794,19 @@ Le « Lancer pour Toucher » de Corps à corps étant un Test opposé, le **déf
 - `LDB 14 l.13-15` — **Tests Opposés et Maladresses** : Maladresse possible même en gagnant le Test opposé (DR supérieur) ; exemple Molli `66` vs adversaire `92`.
 - `LDB 14 l.8-13` — **Tableau des Oups !** (d100, 7 fourchettes) reproduit verbatim.
 - `LDB 14 l.29-34` — **Incident de Tir** : arme à Poudre noire/mécanique/explosive + Maladresse PAIRE → explosion dans la main, tous les Dégâts au Bras principal (DR = dé des unités), arme détruite.
-- `LDB 63 l.2-3` — Défaut d'arme **Dangereuse** : tout Test raté incluant un 9 (dizaines ou unités) entraîne une Maladresse (élargit le déclenchement).
+- `LDB 62 l.313-315` — Défaut d'arme **Dangereuse** : tout Test raté incluant un 9 (dizaines ou unités) entraîne une Maladresse (élargit le déclenchement).
 - `LDB 62 l.98-104` — Armes à Poudre noire (Arquebuse, Long fusil d'Hochland, Pistolet, Tromblon) ; Atouts Poudre noire + Dévastatrice systématiques ; plusieurs portent aussi Dangereuse.
 
 > « tout Test de combat qui est un échec et dont le résultat du jet est un double est une Maladresse » — `LDB 14 l.19`
-> « Tout Test raté incluant un 9 sur le dé des dizaines ou des unités entraîne une Maladresse » — `LDB 63 l.14`
+
+> « Tout Test raté incluant un 9 sur le dé des dizaines ou des unités entraîne une Maladresse » — `LDB 62 l.315`
 
 **Voir aussi** : Critiques et Blessures critiques (succès + double) ; Tests Opposés et Degrés de Réussite ; Atouts et Défauts d'arme (Dangereuse, Poudre noire, Dévastatrice, Recharge) ; Traumatisme (Déchirure musculaire) ; États (Sonné) ; Incantation Imparfaite et Colère des dieux (la « Maladresse » magique).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.127, l.178-183, l.184) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `engage`, `markAttacked`, `agressifEnvers`, `FLOW_VERBS`, `useHoverTargeting`, `useAttackJetProps`, `decayEngagement`, +20 — `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/psychology.ts`, +14 fichiers
 - `LDB 14` (l.8-15, l.18-19, l.29-34) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `10-a-votre-action-au-prochain-round`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `viser-une-localisation`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, `viser`, +31 — `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/oups.ts`, `src/engine/combat.ts`, +7 fichiers
-- `LDB 62` (l.98-104) → `armes-d-hast`, `bagarre`, `base`, `cavalerie`, `deux-mains`, `empaleuse`, `a-enroulement`, `defensive`, `poudre-noire-et-ingenierie`, `munitions`, +19 — `src/data/trappings.json`, `src/data/weaponGroups.json`
-- `LDB 63` (l.2-3, l.13-14) → `applyAttackResult` — `src/state/combatFlow.ts`
+- `LDB 62` (l.98-104, l.313-315) → `armes-d-hast`, `bagarre`, `base`, `cavalerie`, `deux-mains`, `resolveQualities`, `empaleuse`, `a-enroulement`, `resolveVolley`, `defensive`, +49 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/qualities.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, +6 fichiers
 
 ---
 
@@ -898,8 +898,8 @@ La Difficulté d'un tir dépend de la **distance** rapportée à la **Portée mo
 | Longue | jusqu'à deux fois la portée | Complexe | −10 |
 | Extrême | jusqu'à trois fois la portée | Très Difficile | −30 |
 
-— `LDB 14 l.73/88/99/118` (Difficulté de Combat) ; calcul des fourchettes `LDB 62 l.201`
-**Calcul des fourchettes de portée** : `LDB 62 l.201`
+— `LDB 14 l.73/88/99/118` (Difficulté de Combat) ; calcul des fourchettes `LDB 62 l.198-206`
+**Calcul des fourchettes de portée** : `LDB 62 l.198-206`
 > « Bout portant = Portée ÷ 10 — Courte = Portée ÷ 2 — Longue = Portée × 2 — Extrême = Portée × [3] »
 
 **Exemples de portées d'arme** (en mètres) :
@@ -966,7 +966,7 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 - `LDB 14 l.68-113` — Table « Difficulté de Combat » (bandes de portée + Taille + couverture/météo).
 - `LDB 14 l.120-124` — Combinaison des Difficultés (plafonds −30 / +60).
 - `LDB 14 l.142-151` — Dispersion (armes de jet sur échec).
-- `LDB 62 l.201` / `l.244-253` — Calcul des fourchettes de portée + exemples (Arc, Arbalète lourde, Fronde, Pistolet).
+- `LDB 62 l.198-206` / `l.208-215` — Calcul des fourchettes de portée + exemples (Arc, Arbalète lourde, Fronde, Pistolet).
 - `LDB 62 l.283-284` — Atout **Pistolet** (tirer en Combat rapproché → autorise le tir en étant Engagé).
 - `LDB 62 l.295-296` — Atout **Protectrice (Indice)** : Indice 2+ permet d'**opposer les projectiles** dans la Ligne de Vue (le « bouclier large »).
 - `LDB 16 l.113` — État Sans Défense/Inconscient : Test de Capacité de Combat automatiquement réussi contre une cible ainsi affectée.
@@ -977,7 +977,7 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 - `LDB 13` (l.114, l.125, l.133, l.137-145) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, `DisengageModal`, `sur-la-defensive`, `BattleState`, `FLOWS`, +17 — `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, +12 fichiers
 - `LDB 14` (l.40, l.41, l.43, l.44, l.53, l.68-131, l.135, l.137-138, l.142-151) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `areGrappling`, `fr`, `setGrapple`, `10-a-votre-action-au-prochain-round`, +97 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +37 fichiers
 - `LDB 16` (l.113) → `unstable`, `schema`, `stopBleedOutcome`, `hitModifiers`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `applyIncomingMeleeAdvantage`, `incomingMeleeAdvantage`, +16 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +8 fichiers
-- `LDB 62` (l.201, l.204-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `TraceRow`, `a-repetition`, `weaponSchema`, `sonne`, `resolveVolley`, `au-contact-roll`, `useAttackJetProps`, `defensive`, +80 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +24 fichiers
+- `LDB 62` (l.198-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `TraceRow`, `isShieldItem`, `a-repetition`, `InitiativeStripProps`, `protectrice`, `canActFirst`, `resolveQualities`, `freeActFirst`, +89 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +27 fichiers
 
 ---
 
@@ -1899,7 +1899,7 @@ Chaque arme est décrite par sept champs (LDB 62 l.7-15) :
 
 — `LDB 62 l.38-40`
 
-\* Les Lances de cavalerie sont considérées comme des **Armes improvisées** si vous les utilisez lors d'un Round où vous n'avez pas Chargé (`LDB 62 l.59`).
+\* Les Lances de cavalerie sont considérées comme des **Armes improvisées** si vous les utilisez lors d'un Round où vous n'avez pas Chargé (`LDB 62 l.58`).
 
 #### Groupe — DEUX-MAINS
 
@@ -2007,7 +2007,7 @@ Synthèse des règles du combat d'honneur (`NADJ 06 l.176-191`) :
 - `LDB 62 l.5-15` — Schéma de présentation d'une arme : les 7 champs (Groupe/Prix/Enc/Disponibilité/Allonge-Portée/Dégâts/Atouts-Défauts), Dégâts ajoutés au DR, BF = Bonus de Force.
 - `LDB 62 l.19-57` — Bloc complet « Armes de Corps à Corps » : les 8 tables de groupe transcrites *verbatim* ci-dessus (Armes d'hast, Bagarre, Base, Cavalerie, Deux-mains, Escrime, Fléau, Parade).
 - `LDB 62 l.37` — Profil de la Dague (Enc 0, Très courte, +BF +2, aucun Atout/Défaut) — base du profil des Griffes de Tigre.
-- `LDB 62 l.59` — Note : Lance de cavalerie = Arme improvisée hors Round de Charge (le `*` de +BF +6).
+- `LDB 62 l.58` — Note : Lance de cavalerie = Arme improvisée hors Round de Charge (le `*` de +BF +6).
 - `LDB 62 l.126-127` — Règle « Arme simple » (définition générique : épées, haches, marteaux, masses, lances courtes traités comme identiques).
 - `LDB 62 l.133-136` — Dégâts d'arme : −1 Dégâts/point, +0 → Arme improvisée, réparation 10 %/point, irréparable une fois improvisée.
 - `LDB 62 l.138-139` — Sous-système des Groupes d'armes de Corps à corps : Compétences *Corps à corps (X)* distinctes ; sans Augmentation → Test sur Caractéristique, Défauts subis, Atouts inutilisables.
@@ -2023,7 +2023,7 @@ Synthèse des règles du combat d'honneur (`NADJ 06 l.176-191`) :
 **Voir aussi** : Atouts et Défauts d'arme (LDB) ; Allonge d'arme et fourchettes de portée (LDB) ; Armes à distance (LDB) : groupes et tables ; Le Combat (Test de Corps à corps, Parade, Esquive) ; Résolution d'une attaque (corps à corps / distance) ; Compétences groupées (Corps à corps / Projectiles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.5-15, l.19-57, l.59, l.126-127, l.133-136, l.138-139, l.142-143, l.146-147, l.150-151) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `REACH_OPTIONS`, `moneySchema`, `bagarre`, `REACH_VARIABLE`, `schema`, `a-poudre-noire`, `IMPROVISED_DAMAGE`, +79 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/schemas/defs/weaponGroups.ts`, +18 fichiers
+- `LDB 62` (l.5-15, l.19-57, l.58, l.126-127, l.133-136, l.138-139, l.142-143, l.146-147, l.150-151) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `REACH_OPTIONS`, `moneySchema`, `bagarre`, `REACH_VARIABLE`, `schema`, `a-poudre-noire`, `IMPROVISED_DAMAGE`, +86 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/schemas/defs/weaponGroups.ts`, +20 fichiers
 - `ADE II 2` (l.661-705) → `traitCapabilitiesSchema`, `traitConsumptionFactor`, `useAttackJetProps`, `WeaponSpec`, `schema`, `WeaponContext`, `effectiveWeapon`, `dailyFoodUpkeep`, `itemFromTrappingById`, `maxEncumbrance`, +26 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/data/trappings.json`, +12 fichiers
 - `NADJ 6` (l.176-191) → `EnemyTurnInput`, `banRangedActive`, `firedAttackBlock`, `chooseEnemyAction`, `EncountersTab`, `EncounterDef`, `resolveAttack`, `VictoryCondition`, `Combatant`, `victoryConditionMet`, +1 — `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/scene.ts`, `src/ui/editor/LogicDock.tsx`
 - `NADJ 11` (l.20, l.23-32) → `griffe-de-tigre` — `src/data/trappings.json`
@@ -2109,9 +2109,9 @@ Colonnes : **Arme · Prix · Enc · Disponibilité · Portée · Dégâts · Ato
 
 ### Trois notes du tableau (renvois * / ** / ***)
 
-- **Poudre noire et Ingénierie — Atouts systématiques** : *« Toutes les Armes à Poudre noire et d'Ingénierie possèdent les Atouts Poudre noire et Dévastatrice. »* (`LDB 62 l.104`). Ces deux Atouts s'ajoutent donc à TOUTES les lignes des groupes Poudre Noire et Ingénierie en plus de ce qui est imprimé dans leur ligne de table.
-- **Armes immobilisantes — portée sans fourchette** : *« Les armes immobilisantes ne possèdent pas de fourchette de portée, juste la portée listée. »* (`LDB 62 l.106`). Le Fouet, le Lasso et les armes de Lancer à l'Atout Immobilisante (Bolas) n'utilisent donc PAS les bandes Bout portant/Courte/Longue/Extrême : seule leur portée écrite s'applique.
-- **Bombe incendiaire — État Enflammé +DR** : *« Une Bombe incendiaire donne +DR État Enflammé à chaque cible affectée. »* (`LDB 62 l.106`). C'est le contenu de la mention « Dégâts : Spécial*** » de sa ligne : pas de Dégâts physiques chiffrés, mais un nombre d'États _Enflammé_ égal aux Degrés de Réussite, infligés à chaque cible de la zone d'Explosion 4.
+- **Poudre noire et Ingénierie — Atouts systématiques** : *« Toutes les Armes à Poudre noire et d'Ingénierie possèdent les Atouts Poudre noire et Dévastatrice. »* (`LDB 62 l.99`). Ces deux Atouts s'ajoutent donc à TOUTES les lignes des groupes Poudre Noire et Ingénierie en plus de ce qui est imprimé dans leur ligne de table.
+- **Armes immobilisantes — portée sans fourchette** : *« Les armes immobilisantes ne possèdent pas de fourchette de portée, juste la portée listée. »* (`LDB 62 l.101`). Le Fouet, le Lasso et les armes de Lancer à l'Atout Immobilisante (Bolas) n'utilisent donc PAS les bandes Bout portant/Courte/Longue/Extrême : seule leur portée écrite s'applique.
+- **Bombe incendiaire — État Enflammé +DR** : *« Une Bombe incendiaire donne +DR État Enflammé à chaque cible affectée. »* (`LDB 62 l.103`). C'est le contenu de la mention « Dégâts : Spécial*** » de sa ligne : pas de Dégâts physiques chiffrés, mais un nombre d'États _Enflammé_ égal aux Degrés de Réussite, infligés à chaque cible de la zone d'Explosion 4.
 
 ### Table Munitions — toutes les valeurs verbatim
 
@@ -2179,7 +2179,7 @@ Contrairement aux armes de corps à corps (où l'absence de spécialisation perm
 
 ### Portée d'une arme et fourchettes (rappel utilisé par les tables ci-dessus)
 
-La Portée listée est la portée moyenne en mètres ; les fourchettes se calculent ainsi (`LDB 62 l.195-201`) : **Bout portant = Portée ÷ 10**, **Courte = Portée ÷ 2**, **Moyenne = Portée** (la valeur listée), **Longue = Portée × 2**, **Extrême = Portée × 3**.
+La Portée listée est la portée moyenne en mètres ; les fourchettes se calculent ainsi (`LDB 62 l.195-206`) : **Bout portant = Portée ÷ 10**, **Courte = Portée ÷ 2**, **Moyenne = Portée** (la valeur listée), **Longue = Portée × 2**, **Extrême = Portée × 3**.
 
 | Arme | Bout portant | Courte | Moyenne | Longue | Extrême |
 |---|---|---|---|---|---|
@@ -2193,8 +2193,8 @@ La Portée listée est la portée moyenne en mètres ; les fourchettes se calcul
 **Sources RAW** :
 - `LDB 62 l.5-15` — schéma de description d'une arme (Groupe d'armes / Prix / Enc / Disponibilité / Allonge-Portée / Dégâts / Atouts et Défauts ; BF = Bonus de Force).
 - `LDB 62 l.65-102` — Table « Armes à distance » verbatim : groupes Arbalète, Arc, Entraves (**), Explosifs, Fronde, Lancer, Ingénierie (*), Poudre Noire (*).
-- `LDB 62 l.104` — Note : toutes les armes à Poudre noire ET d'Ingénierie possèdent les Atouts **Poudre noire** + **Dévastatrice**.
-- `LDB 62 l.106` — Notes : armes immobilisantes = portée sans fourchette ; Bombe incendiaire = +DR État _Enflammé_ par cible.
+- `LDB 62 l.99` — Note : toutes les armes à Poudre noire ET d'Ingénierie possèdent les Atouts **Poudre noire** + **Dévastatrice**.
+- `LDB 62 l.101/103` — Notes : armes immobilisantes = portée sans fourchette ; Bombe incendiaire = +DR État _Enflammé_ par cible.
 - `LDB 62 l.111-124` — Table « Munitions » verbatim : Arbalète, Arc, Fronde, Poudre Noire et Ingénierie.
 - `LDB 62 l.130-131` — Règle « Munitions pour Poudre noire » : Tromblons = seules armes à Petites munitions / Munitions improvisées ; toutes les autres = balles.
 - `LDB 62 l.179-180` — Sous-système Groupes d'armes à Distance : spécialisation Projectiles requise, pas de Test hors spécialisation (sauf exceptions).
@@ -2214,7 +2214,7 @@ La Portée listée est la portée moyenne en mètres ; les fourchettes se calcul
 **Voir aussi** : qualites-defauts-armes-tables (Recharge, Dévastatrice, Explosion, Immobilisante, Empaleuse, Perforante, Pointue, Précise, Dangereuse) ; armes-corps-a-corps-tables (groupes de corps à corps, Allonge) ; bandes-portee-modificateurs (Bout portant/Courte/Longue/Extrême) ; etats-table (État Enflammé) ; monnaie-tables (lecture des prix `X/Y` et `XCO`).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.5-15, l.65-124, l.130-131, l.179-180, l.183-184, l.187-188, l.191-192, l.195-211) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `AuContactModal`, `moneySchema`, `reachTiles`, `bagarre`, `schema`, `a-poudre-noire`, `base`, +98 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, +25 fichiers
+- `LDB 62` (l.5-15, l.65-124, l.130-131, l.179-180, l.183-184, l.187-188, l.191-192, l.195-211) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `AuContactModal`, `moneySchema`, `reachTiles`, `bagarre`, `schema`, `a-poudre-noire`, `base`, +94 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, +23 fichiers
 - sans code : `AA 8` (l.366-385, l.386-389)
 
 ---
@@ -2252,7 +2252,7 @@ Règle **optionnelle** « pour ceux qui aiment utiliser la longueur de l'arme po
 
 La Portée listée d'une arme à distance est sa **portée moyenne en mètres** (LDB 62 l.196). À partir de cette valeur, les autres fourchettes (Bout portant, Courte, Longue, Extrême) se calculent ; les modificateurs de Test associés à chaque fourchette sont présentés au chapitre Règles/Combat (voir *Voir aussi*).
 
-#### Calcul des fourchettes de portée (LDB 62 l.201)
+#### Calcul des fourchettes de portée (LDB 62 l.198-206)
 
 | Fourchette | Calcul depuis la Portée moyenne |
 |---|---|
@@ -2283,12 +2283,12 @@ La Portée listée d'une arme à distance est sa **portée moyenne en mètres** 
 Certaines Maladresses (voir LDB 14, p. 160) ou Sorts peuvent endommager une arme (LDB 62 l.133-136) :
 
 - **Détérioration** : « Pour chaque point de Dégâts que votre arme reçoit, **réduisez ses Dégâts de 1**. »
-- **Réduction à l'état improvisé** : « Si les Dégâts sont réduits à **+0 (ou BF +0)**, l'arme est tellement abîmée qu'elle n'est plus identifiable, et elle est à présent **considérée comme une Arme improvisée**. » (L'Arme improvisée a les Dégâts **+BF+1** et l'Atout **Inoffensive** — LDB 62 l.30 ; elle perd donc tout Atout préexistant.)
+- **Réduction à l'état improvisé** : « Si les Dégâts sont réduits à **+0 (ou BF +0)**, l'arme est tellement abîmée qu'elle n'est plus identifiable, et elle est à présent **considérée comme une Arme improvisée**. » (L'Arme improvisée a les Dégâts **+BF+1** et l'Atout **Inoffensive** — LDB 62 l.31 ; elle perd donc tout Atout préexistant.)
 - **Arme improvisée endommagée** : « Si une Arme improvisée est endommagée, elle est considérée comme **inutile pour le Combat au Corps à corps**. »
 - **Réparation** : « Les armes peuvent être réparées par des artisans appropriés pour **10 % du coût de l'arme par point de Dégâts subi**. Les armes réduites à l'état d'Armes improvisées **ne peuvent pas être réparées**. »
 - **Auto-réparation** : « Vous pouvez aussi rafistoler vos propres armes si vous possédez la **Compétence Métier**, les **Outils de Profession** et un **Atelier approprié** (pour plus qu'un simple point de Dégât). »
 
-> *L'Atout **Incassable** (LDB 62 l.297) exempte une arme de tout dégât/corrosion/destruction. L'Atout **Solide(N)** (LDB 60) absorbe les N premiers Points de Dégâts sans pénalité.*
+> *L'Atout **Incassable** (LDB 62 l.260-262) exempte une arme de tout dégât/corrosion/destruction. L'Atout **Solide(N)** (LDB 60) absorbe les N premiers Points de Dégâts sans pénalité.*
 
 ### Annexe — règles connexes de groupes d'armes (au contexte d'Allonge/Portée)
 
@@ -2302,11 +2302,11 @@ Les groupes d'armes à distance et leurs spécialisations conditionnent l'usage 
 - `LDB 62 l.156-164` — Allonge d'arme : 7 catégories (Personnelle / Très courte <30 cm / Courte ≤60 cm / Moyenne ≤90 cm / Longue ≤1m80 / Très longue ≤3 m, Engage à 4 m / Considérable >3 m, Engage à 6 m).
 - `LDB 62 l.167-176` — Option « Longueur d'arme et combat au contact » : -10 à l'adversaire pour vous toucher si arme plus longue ; Test opposé de Corps à corps pour entrer « au contact » ; au contact, toute arme > Courte = Arme improvisée.
 - `LDB 62 l.196` — la Portée listée = portée moyenne en mètres ; les modificateurs par fourchette sont au chapitre Règles.
-- `LDB 62 l.198-201` — Calcul des Fourchettes de Portée : Bout portant = Portée ÷ 10 ; Courte = Portée ÷ 2 ; Longue = Portée × 2 ; Extrême = Portée × 3.
+- `LDB 62 l.198-206` — Calcul des Fourchettes de Portée : Bout portant = Portée ÷ 10 ; Courte = Portée ÷ 2 ; Longue = Portée × 2 ; Extrême = Portée × 3.
 - `LDB 62 l.203-215` — Table Exemple de portées d'arme (Arbalète lourde, Arc, Fronde, Pistolet ; colonnes Bout portant / Courte / Moyenne / Longue / Extrême).
-- `LDB 62 l.106` — armes Immobilisantes : pas de fourchette de portée, juste la portée listée.
+- `LDB 62 l.101` — armes Immobilisantes : pas de fourchette de portée, juste la portée listée.
 - `LDB 62 l.133-136` — Dégâts d'arme : -1 Dégât par point reçu ; à +0 (ou BF +0) → Arme improvisée (non identifiable) ; Arme improvisée endommagée = inutile au Corps à corps ; réparation = 10 % du prix par point de Dégât ; armes réduites à improvisées non réparables ; auto-réparation via Métier + Outils + Atelier.
-- `LDB 62 l.30` — profil de l'Arme improvisée : Dégâts +BF+1, Atout Inoffensive.
+- `LDB 62 l.31` — profil de l'Arme improvisée : Dégâts +BF+1, Atout Inoffensive.
 - `LDB 62 l.179-192` — groupes d'armes à distance : Arbalète/Lancer utilisables sans spé (perd Atouts) ; Ingénierie via Projectiles (Poudre noire), perd Atouts ; Poudre noire/Explosifs via Projectiles (Ingénierie) sans pénalité.
 
 > « Si les Dégâts sont réduits à +0 (ou BF +0), l'arme est tellement abîmée qu'elle n'est plus identifiable, et elle est à présent considérée comme une Arme improvisée. […] Les armes peuvent être réparées par des artisans appropriés pour 10 % du coût de l'arme par point de Dégâts subi. Les armes réduites à l'état d'Armes improvisées ne peuvent pas être réparées. » — `LDB 62 l.135`
@@ -2316,7 +2316,7 @@ Les groupes d'armes à distance et leurs spécialisations conditionnent l'usage 
 **Voir aussi** : Bandes de portée et modificateurs de tir (Bout portant +60 / Courte +40 / Moyenne +0 / Longue -10 / Extrême -30) ; Engagement et déplacement (1 case = 2 m) ; Atouts et Défauts d'arme ; Groupes d'armes et spécialisations ; Maladresses au combat.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.20-102, l.106, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-201, l.203-215, l.297) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `REACH_OPTIONS`, `reachTiles`, `AuContactModal`, `moneySchema`, `bagarre`, `REACH_VARIABLE`, `schema`, +138 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +35 fichiers
+- `LDB 62` (l.20-102, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-215, l.260-262) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `REACH_OPTIONS`, `reachTiles`, `AuContactModal`, `moneySchema`, `woundsFromHit`, `bagarre`, `REACH_VARIABLE`, +142 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +45 fichiers
 
 ---
 
@@ -2359,7 +2359,7 @@ Chaque arme peut porter un ou plusieurs **Atouts** (avantages) et **Défauts** (
 
 ### Défauts d'arme (LDB 63)
 
-> « Certaines armes sont juste plus difficiles à utiliser, ou simplement dangereuses, comme décrit dans les Défauts d'arme. » — `LDB 63 l.11`
+> « Certaines armes sont juste plus difficiles à utiliser, ou simplement dangereuses, comme décrit dans les Défauts d'arme. » — `LDB 62 l.311`
 
 | Défaut | Effet mécanique (verbatim) |
 |---|---|
@@ -2463,9 +2463,9 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 | **Flèches de grêle funeste** (92–00) | « Une fois décochée, une Flèche de grêle de mort se sépare en **1d10 flèches** en plein vol. Faites un jet d'attaque et de dégâts pour chaque flèche. Ces flèches peuvent toutes toucher la même cible, ou toucher des **cibles secondaires** qui se trouveraient à la fois **à moins d'1,50 mètre** de la cible principale et **dans la ligne de vue** du tireur. » |
 
 **Sources RAW** :
-- `LDB 62 l.218-304` — Atouts d'arme : À Enroulement, À Poudre noire, À Répétition (Indice), Assommante, Défensive, Perturbante, Dévastatrice, Empaleuse (+ retrait de projectile l.284), Explosion (Indice), Immobilisante, Piège-Lame, Pistolet, Pointue, Précise, Protectrice (Indice), Incassable, Percutante, Perforante, Rapide.
-- `LDB 63 l.2` — Atout Taille (endommage de 1 PA une pièce d'armure/bouclier frappé tout en blessant).
-- `LDB 63 l.2-6` — Défauts d'arme : Dangereuse, Épuisante, Imprécise, Inoffensive, Lente, Recharge (Indice).
+- `LDB 62 l.217-307` — Atouts d'arme : À Enroulement, À Poudre noire, À Répétition (Indice), Assommante, Défensive, Perturbante, Dévastatrice, Empaleuse (+ retrait de projectile l.250), Explosion (Indice), Immobilisante, Piège-Lame, Pistolet, Pointue, Précise, Protectrice (Indice), Incassable, Percutante, Perforante, Rapide.
+- `LDB 62 l.305-307` — Atout Taille (endommage de 1 PA une pièce d'armure/bouclier frappé tout en blessant).
+- `LDB 62 l.309-335` — Défauts d'arme : Dangereuse, Épuisante, Imprécise, Inoffensive, Lente, Recharge (Indice).
 - `AA 08 l.67-76` — Atouts Optionnels (choix avant le jet ; ex. marteau de guerre Assommante/Perforante ; défaut → premier Atout listé).
 - `AA 08 l.79-95` — nouveaux Atouts/Défauts : Déséquilibrée, Déstabilisante, Taillade (XA), Tir de zone (Indice), Salve (Indice).
 - `AA 08 l.98-108` — Atout Protectrice modifié (PA en opposition CC/Corps à Corps ; Protectrice 2+ pare les projectiles, exemple Uri).
@@ -2484,7 +2484,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 
 > « Les PA ne provenant pas de métal sont ignorés, et le premier point de toutes les autres armures est ignoré. » — `LDB 62 l.270` (Perforante)
 
-> « Tout Test raté incluant un 9 sur le dé des dizaines ou des unités entraîne une Maladresse. » — `LDB 63 l.14` (Dangereuse)
+> « Tout Test raté incluant un 9 sur le dé des dizaines ou des unités entraîne une Maladresse. » — `LDB 62 l.315` (Dangereuse)
 
 > « Funeste : l'arme est imprégnée de magie de mort […]. L'utilisateur compte comme infligeant Peur (1). » — `ADE II 04 l.215`
 
@@ -2499,8 +2499,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 **Voir aussi** : Tests et Degrés de Réussite (DR) ; Combat (localisation, dé inversé, Critiques) ; Maladresses ; États (Brisé, Sonné, Empêtré, À Terre, Hémorragique, En flammes, Empoisonné, Surpris, Exténué) ; Psychologie (Peur, Terreur, Frénésie) ; Traits — défense, résilience, créatures (Éthéré, Instable, Bestial) ; Talents (Coup puissant, Frappe assommante, Frappe blessante, Tireur d'élite, Tireur embusqué, Tir rapide) ; Armes (stats : Allonge, Dégâts, Groupes) ; Armures (PA, Dégâts d'armure) ; Qualités et Défauts d'objet (Solide, Incassable, Pratique, Peu Fiable) ; Objets magiques / Enchantements (génération ADE II 4).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.218-304) → `a-enroulement`, `woundsFromHit`, `a-poudre-noire`, `TraceRow`, `isShieldItem`, `a-repetition`, `protectrice`, `schema`, `availableHealModes`, `bypassedAP`, +104 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +35 fichiers
-- `LDB 63` (l.2-6, l.11, l.14) → `applyAttackResult` — `src/state/combatFlow.ts`
+- `LDB 62` (l.217-307, l.309-335) → `a-enroulement`, `woundsFromHit`, `a-poudre-noire`, `TraceRow`, `CrewedReloadStep`, `isShieldItem`, `combatOrder`, `a-repetition`, `InitiativeStripProps`, `crewedReloadStep`, +136 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +48 fichiers
 - `ADE II 2` (l.608-658) → `attackModifiers`, `massue-ogre`, `protectrice`, `devastatrice`, `recharge`, `immobilisante`, `empaleuse`, `a-explosion`, `perforante`, `impenetrable` — `src/data/trappings.json`, `src/engine/combat.ts`
 - `ADE II 4` (l.212, l.214, l.215, l.216, l.218-253) → `deroutante` — `src/data/qualities.json`
 - `AA 8` (l.67-76, l.77, l.79-95, l.98-108) → `taillade`, `precise`, `a-terre`, `tir-de-zone`, `desequilibree`, `percutante`, `inoffensive`, `empaleuse`, `lente` — `src/data/qualities.json`, `src/data/trappings.json`
@@ -2553,11 +2552,11 @@ Verbatim, par matériau (Prix au format pièce/—, c.-à-d. en pièces — `CO`
 \* **Le cuir souple peut être porté sans pénalité sous n'importe quelle autre Armure.** (Règle de port — voir ci-dessous.)
 \*\* **Porter n'importe quelle maille ou plate confère chaque fois une pénalité de -10 en Discrétion.** (Pénalité de Discrétion — voir ci-dessous.)
 
-### Règle de port — Cuir souple sous une autre armure (LDB 63 l.59, note \*)
+### Règle de port — Cuir souple sous une autre armure (LDB 63 l.60, note \*)
 
 Le **cuir souple** est la seule armure que l'on peut superposer **sans pénalité** sous n'importe quelle autre Armure. Ses PA s'ajoutent donc à ceux de l'armure portée par-dessus (combinaison classique cuir souple + plate/maille). Le cuir bouilli, les mailles et la plate ne bénéficient pas de cette permission générale ; seul l'Atout **Flexible** (cf. plus bas) autorise une superposition cumulant les PA.
 
-### Pénalité de Discrétion pour maille et plate (LDB 63 l.61, note \*\*)
+### Pénalité de Discrétion pour maille et plate (LDB 63 l.92, note \*\*)
 
 **Porter n'importe quelle maille OU plate confère chaque fois une pénalité de -10 en Discrétion.** Cette pénalité est globale (s'applique au seul fait d'en porter), et **s'ajoute** aux pénalités de port spécifiques listées dans la colonne *Pénalité* (p.ex. les Jambières d'acier ont déjà « -10 en Discrétion » en propre, et les heaumes / coiffe ont des pénalités de Perception). Le cuir souple et le cuir bouilli n'imposent pas cette pénalité de Discrétion.
 
@@ -2619,7 +2618,7 @@ Certaines sources naturelles de PA **ne peuvent pas servir à la Déviation Crit
 - `LDB 63 l.77-78` — Atout Impénétrable : Critiques causés par un jet de toucher impair (11, 33…) ignorés.
 - `LDB 63 l.85-86` — Défaut Partielle : jet de toucher pair OU Coup Critique → PA de la pièce Partielle ignorés.
 - `LDB 63 l.89-90` — Défaut Points Faibles : arme Empaleuse + Critique → PA ignorés.
-- `LDB 63 l.2-2` — Atout d'arme Taille : une touche endommage de 1 Point une pièce d'armure ou un Bouclier frappé (autre source de Dégâts d'Armure).
+- `LDB 62 l.307` — Atout d'arme Taille : une touche endommage de 1 Point une pièce d'armure ou un Bouclier frappé (autre source de Dégâts d'Armure).
 - `EDO 11 l.192-196` — Mutation Écailles Épineuses : +1 PA sur tous les emplacements, mais ce PA n'est pas utilisable pour la Déviation Critique ; -10 Dextérité et -10 Sociabilité.
 
 > « Chaque fois qu'une pièce d'armure est endommagée, les PA de l'emplacement endommagé sont réduits de 1. […] Si cela réduit les PA de l'emplacement en dessous de 0, l'Armure devient inutilisable. » — `LDB 63 l.19-21`
@@ -2629,7 +2628,8 @@ Certaines sources naturelles de PA **ne peuvent pas servir à la Déviation Crit
 **Voir aussi** : Armes — table, Atouts et Défauts d'arme (Empaleuse, Taille) ; Localisation et Point d'Impact des Créatures (PA des créatures) ; Blessures Critiques (Traumatisme, table par localisation) ; Encombrement et pénalités de port ; Corruption et mutations (PA naturels).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 63` (l.2, l.7-15, l.18-27, l.29-32, l.38-61, l.63-66, l.73-74, l.77-78, l.85-86, l.89-90) → `itemRepairCostBrass`, `repairCost`, `cuir-souple`, `describeReload`, `cuir-bouilli`, `mailles`, `plate`, `sacs-et-contenants`, `firedAttackBlock`, `GameOp`, +33 — `src/data/qualities.json`, `src/data/reglesOptionnelles.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, +9 fichiers
+- `LDB 62` (l.307) → `InitiativeStripProps`, `canActFirst`, `resolveQualities`, `freeActFirst`, `useAttackJetProps`, `defensive`, `devastatrice`, `CampaignView`, `empaleuse`, `rapideParryMod`, +33 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/qualities/dispatch.ts`, +7 fichiers
+- `LDB 63` (l.7-15, l.18-27, l.29-32, l.38-61, l.63-66, l.73-74, l.77-78, l.85-86, l.89-90, l.92) → `itemRepairCostBrass`, `repairCost`, `cuir-souple`, `cuir-bouilli`, `mailles`, `plate`, `sacs-et-contenants`, `GameOp`, `PendingDeviation`, `ActiveEffect`, +31 — `src/data/qualities.json`, `src/data/reglesOptionnelles.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, +8 fichiers
 - `EDO 11` (l.192-196) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `absorption`, `amorphe`, `contagieux` — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
 
 ---
@@ -6243,7 +6243,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 
 ### Portée, Allonge et dégradation des armes ⚠
 - MINEURE — Groupes d'armes à distance : le topic dit « on peut tenter un Test de Projectiles (Arbalète) ou Projectiles (Lancer) sans la spécialisation correcte » mais la source (l.227-228) précise qu'on utilise « votre Compétence de Tir » (pas la spécialisation correcte, donc). La nuance est subtile : le test s'effectue via la compétence générique CT, pas via la spécialisation — la paraphrase du topic est fonctionnellement correcte mais légèrement imprécise.
-- NON-DÉCLARÉE (impl) — effectiveWeapon() dans weaponDamage.ts bascule une arme usée vers reach: 'Moyenne' au lieu de reach: 'Variable' (LDB 62 l.30). Ce point ne constitue pas une erreur dans le topic lui-même (qui cite correctement 'Variable' depuis la source), mais l'implémentation diverge silencieusement de la RAW sur ce champ. À noter pour une éventuelle correction de code.
+- NON-DÉCLARÉE (impl) — effectiveWeapon() dans weaponDamage.ts bascule une arme usée vers reach: 'Moyenne' au lieu de reach: 'Variable' (LDB 62 l.31). Ce point ne constitue pas une erreur dans le topic lui-même (qui cite correctement 'Variable' depuis la source), mais l'implémentation diverge silencieusement de la RAW sur ce champ. À noter pour une éventuelle correction de code.
 - OCR confirmé — la table Calcul des Fourchettes de Portée (l.241) affiche 'Extrême = Portée x — p. 3' dans le source .md (artefact de pagination OCR). Le topic l'interprète correctement comme ×3 via la table d'exemple (l.243-253). Pas d'erreur, juste à garder en mémoire si la source brute est relue par un autre agent.
 
 ### Atouts et Défauts d'arme ❌
@@ -6267,7 +6267,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 ### Armures : table, PA, dégâts et réparation ⚠
 - Déviation Critique (LDB 63 l.32) : la source dit « Vous subissez toujours les Blessures normales (et étant donné que vos PA sont à présent réduits de 1 Point, vous subissez probablement une Blessure supplémentaire) », en un seul membre de phrase. Le markdown sépare en deux bullets distincts (« les PB ordinaires sont infligés quoi qu'il arrive » + « vous subissez probablement une Blessure supplémentaire ») et reformule l'intérieur de la parenthèse. La substance est préservée mais la structure source n'est pas respectée verbatim.
 - Atout Flexible (LDB 63 l.73-74) : la source dit uniquement « vous gagnez les bénéfices des deux ». Le markdown ajoute une précision éditoriale non présente dans la source : « les PA de la pièce Flexible et ceux de la pièce rigide se cumulent à l'emplacement commun ». L'interprétation est correcte mais ce n'est pas du verbatim sourcé.
-- Règle de port — section éditoriale (note * LDB 63 l.59) : la phrase « seul l'Atout Flexible autorise une superposition cumulant les PA » est une inférence non présente dans le texte source. La source ne dit pas explicitement que c'est le seul cas ; c'est une extrapolation logique du texte Flexible.
+- Règle de port — section éditoriale (note * LDB 63 l.60) : la phrase « seul l'Atout Flexible autorise une superposition cumulant les PA » est une inférence non présente dans le texte source. La source ne dit pas explicitement que c'est le seul cas ; c'est une extrapolation logique du texte Flexible.
 
 ### Localisation des créatures non humaines ❌
 - ERREUR DE TABLE — commentaire Araignées inversé : le document dit « La Tête couvre une plage plus large que chez le serpent » mais c'est l'inverse. Tête Araignée = 01-09 (9 cases) < Tête Serpent = 01-19 (19 cases). Source LDB 76 l.25-28.

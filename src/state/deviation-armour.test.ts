@@ -92,7 +92,7 @@ describe('deviatableArmourAt / nonDeviatableMutationAP — PA sacrifiable (LDB 6
 });
 
 // ── Flux de Déviation Critique (intégration légère) ───────────────────────────
-describe('Déviation Critique — flux (LDB 63 l.30/63 + EDO App.2 l.196)', () => {
+describe('Déviation Critique — flux (LDB 63 l.30-32 + EDO App.2 l.196)', () => {
   beforeEach(() => { seedBattleRng(424242); });
   afterEach(() => resetRule('combat-critical-deflect'));
 

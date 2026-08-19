@@ -11,7 +11,7 @@ import type { Combatant, Weapon } from '../types';
 import { parseQualityInstance } from './normalize';
 
 /**
- * Lot A — les 10 derniers Atouts/Défauts d'armes (LDB 62 l.264-321 / LDB 62 l.313-331) :
+ * Lot A — les 10 derniers Atouts/Défauts d'armes (LDB 62 l.229-302 / LDB 62 l.313-331) :
  * À Répétition, Immobilisante, Perturbante, Piège-lame, Protectrice, Rapide,
  * Dangereuse, Épuisante, Imprécise, Lente. Tests PURS (moteur).
  */
@@ -29,7 +29,7 @@ function fighter(over: Partial<Combatant> = {}): Combatant {
   } as Combatant;
 }
 
-describe('préséance `beats` (LDB 62 l.323 / 331)', () => {
+describe('préséance `beats` (LDB 62 l.302/323)', () => {
   it('Imprécise prend le dessus sur Précise (les deux présentes → Précise inerte)', () => {
     const keys = resolveQualities(w(['Imprécise', 'Précise'])).map((r) => r.def.key);
     expect(keys).toContain('Imprécise');
@@ -71,7 +71,7 @@ describe('Lente — +1 DR à TOUTE défense adverse + frappe en dernier (LDB 62 
   });
 });
 
-describe('Rapide — −10 à la parade adverse non-Rapide + pré-emption (LDB 62 l.318-321)', () => {
+describe('Rapide — −10 à la parade adverse non-Rapide + pré-emption (LDB 62 l.298-302)', () => {
   it('rapideParryMod : −10 contre parade non-Rapide, 0 si l’arme de parade est Rapide', () => {
     expect(rapideParryMod(w(['Rapide']), w([]))).toBe(-10);
     expect(rapideParryMod(w(['Rapide']), w(['Rapide']))).toBe(0);
@@ -125,7 +125,7 @@ describe('À répétition — chargeur (LDB 62 l.229/231)', () => {
   });
 });
 
-describe('Protectrice — Indice PA partout en opposant (LDB 62 l.306-307)', () => {
+describe('Protectrice — Indice PA partout en opposant (LDB 62 l.294-296)', () => {
   it('protectriceAP lit l’Indice du bouclier de parade', () => {
     expect(protectriceAP(w(['Protectrice 2', 'Défensive']))).toBe(2);
     expect(protectriceAP(w(['Défensive'])))?.valueOf();

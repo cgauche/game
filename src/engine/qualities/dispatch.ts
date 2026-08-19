@@ -50,7 +50,7 @@ export function weaponPassiveOps(w: QualityCarrier | undefined): GameOp[] {
 
 /** Qualités du registre présentes sur l'objet (normalisées, avec id/donnée/Indice). Chaînes inconnues
  *  ignorées. Applique la PRÉSÉANCE `capabilities.beats` (ids) : une qualité vaincue par une autre présente
- *  est retirée (« Imprécise prend le dessus » sur Précise, LDB 62 l.323 ; Lente sur Rapide, LDB 62 l.321). */
+ *  est retirée (« Imprécise prend le dessus » sur Précise, LDB 62 l.323 ; Lente sur Rapide, LDB 62 l.302). */
 export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality[] {
   if (!w) return [];
   const own = w.qualities ?? [];
@@ -201,7 +201,7 @@ export function reloadDRTarget(w: (QualityCarrier & { reload?: number }) | undef
   return (w?.reload ?? 0) * (crewedTeamIndice(w) >= 2 ? 2 : 1);
 }
 
-/** Rapide (LDB 62 l.320-321) : −10 à la PARADE contre une arme Rapide si l'arme de parade n'est
+/** Rapide (LDB 62 l.302) : −10 à la PARADE contre une arme Rapide si l'arme de parade n'est
  *  pas Rapide elle-même. 0 sinon (l'Esquive et les autres Compétences défendent normalement). */
 export function rapideParryMod(attackerWeapon: QualityCarrier | undefined, parryWeapon: QualityCarrier | undefined): number {
   if (!resolveQualities(attackerWeapon).some((r) => r.caps?.fastStrike)) return 0;
@@ -213,7 +213,7 @@ export function strikesLast(weapons: QualityCarrier[] | undefined): boolean {
   return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.caps?.slowStrike));
 }
 
-/** Rapide (LDB 62 l.318-319) : le porteur peut attaquer hors de l'ordre d'Initiative (pré-emption gratuite). */
+/** Rapide (LDB 62 l.298-300) : le porteur peut attaquer hors de l'ordre d'Initiative (pré-emption gratuite). */
 export function canStrikeFirst(weapons: QualityCarrier[] | undefined): boolean {
   return (weapons ?? []).some((w) => resolveQualities(w).some((r) => r.caps?.fastStrike));
 }
@@ -241,13 +241,13 @@ export function magazineSize(w: QualityCarrier | undefined): number | undefined 
 }
 
 /** Protectrice (Indice) : PA conférés à TOUTES les localisations quand on OPPOSE l'attaque avec
- *  cette arme (LDB 62 l.306). 0 si la qualité est absente. */
+ *  cette arme (LDB 62 l.296). 0 si la qualité est absente. */
 export function protectriceAP(parryWeapon: QualityCarrier | undefined): number {
   const r = resolveQualities(parryWeapon).find((x) => x.caps?.parryAP);
   return r ? r.indice ?? 1 : 0;
 }
 
-/** Protectrice ≥ 2 : permet d'OPPOSER les projectiles tirés en Ligne de Vue (LDB 62 l.307).
+/** Protectrice ≥ 2 : permet d'OPPOSER les projectiles tirés en Ligne de Vue (LDB 62 l.296).
  *  Renvoie l'arme protectrice utilisable, ou undefined. */
 export function rangedOpposeWeapon(weapons: Weapon[] | undefined): Weapon | undefined {
   return (weapons ?? []).find((w) => {
@@ -256,7 +256,7 @@ export function rangedOpposeWeapon(weapons: Weapon[] | undefined): Weapon | unde
   });
 }
 
-/** Perturbante (LDB 62 l.275-276) : l'arme peut repousser au lieu de blesser. */
+/** Perturbante (LDB 62 l.272-274) : l'arme peut repousser au lieu de blesser. */
 export function canPushback(w: QualityCarrier | undefined): boolean {
   return resolveQualities(w).some((r) => r.caps?.pushback);
 }
@@ -274,7 +274,7 @@ export function isMagicWeapon(w: QualityCarrier | undefined): boolean {
 export interface DamageStepCtx {
   /** DR-pour-dégâts de base (DR du Test d'attaque, Atouts de DR compris). */
   effDR: number;
-  /** Dé des unités du jet de toucher (LDB 62 l.279/313). */
+  /** Dé des unités du jet de toucher (LDB 62 l.244/266). */
   units: number;
   /** L'attaquant a Chargé ce Tour (gating Épuisante, LDB 62 l.319). */
   charged?: boolean;

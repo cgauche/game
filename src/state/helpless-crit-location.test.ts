@@ -65,7 +65,7 @@ describe('#124 — cible Inconsciente : choix de Localisation (RAW-2 gratuit, LD
   it("l'IA (doAttack) contre une cible Inconsciente : aucun pendingAttack, aucun choix — le tirage RAW par défaut s'applique", () => {
     const { H, E } = setup();
     H.conditions = [{ id: 'inconscient', value: 1 }];
-    // PA à 0 partout : évite d'entrer dans la Déviation Critique (LDB 63 l.63, feature DISTINCTE de #124)
+    // PA à 0 partout : évite d'entrer dans la Déviation Critique (LDB 63 l.30, feature DISTINCTE de #124)
     // qui suspendrait aussi — on isole ici le comportement du picker de Localisation.
     H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
     const before = H.wounds.current;

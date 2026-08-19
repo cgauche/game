@@ -1,8 +1,8 @@
 /**
- * Pénalités de port d'armure (LDB 63 l.84-95) : portées STRUCTURÉES par les pseudo-qualités d'armure
+ * Pénalités de port d'armure (LDB 63 l.12) : portées STRUCTURÉES par les pseudo-qualités d'armure
  * `en-<skillId>` (`{id:'en-discretion', value:-10}`) — l'id encode la Compétence, le `value` la magnitude.
  * Plus aucune prose FR « -N% en <Compétence> » re-parsée par regex. Somme les pièces ÉQUIPÉES d'un acteur
- * (LDB 63 l.95 : « chaque fois » → cumul), modulée par l'artisanat (Pratique réduit d'un niveau, Peu Fiable
+ * (LDB 63 l.92 : « chaque fois » → cumul), modulée par l'artisanat (Pratique réduit d'un niveau, Peu Fiable
  * double — LDB 60 l.22/58).
  */
 import { Combatant } from './types';

@@ -15,8 +15,7 @@
   },
   "src/data/reglesOptionnelles.json": {
     "EDOC 8 l.73": 1,
-    "LDB 23 l.48": 1,
-    "LDB 63 l.63": 1
+    "LDB 23 l.48": 1
   },
   "src/data/schemas/defs/etats.ts": {
     "LDB 16 l.56/70/77/91/107/116": 3
@@ -36,9 +35,6 @@
   "src/engine/character.ts": {
     "LDB 5 l.491": 1
   },
-  "src/engine/combat.ts": {
-    "LDB 62 l.306": 1
-  },
   "src/engine/corruption.test.ts": {
     "LDB 19 l.31/52/65": 1
   },
@@ -50,17 +46,11 @@
     "LDB 5 l.383": 1,
     "LDB 5 l.385": 1
   },
-  "src/engine/items.test.ts": {
-    "LDB 62 l.150": 1
-  },
   "src/engine/ops.ts": {
     "LDB 16 l.77": 1
   },
   "src/engine/prayer-sin-lock.test.ts": {
     "MDG 11 l.142": 1
-  },
-  "src/engine/qualities/dispatch.ts": {
-    "LDB 62 l.306": 1
   },
   "src/engine/sequenceVocab.ts": {
     "NADJ 16 l.83": 1
@@ -83,17 +73,11 @@
   "src/engine/types.ts": {
     "LDB 10 l.312": 1
   },
-  "src/engine/weapon-spec.test.ts": {
-    "LDB 62 l.225/234": 1
-  },
   "src/gameIso/rig/creatures/defs/Manticore.ts": {
     "LDB 79 l.108": 1
   },
   "src/gameIso/stage/ZdeTemplate.tsx": {
     "LDB 47 l.29/44": 1
-  },
-  "src/i18n/messages/fr.ts": {
-    "LDB 62 l.150/174-175": 1
   },
   "src/state/ai.ts": {
     "LDB 16 l.66/85": 1,
@@ -102,12 +86,6 @@
   "src/state/cauchemars.test.ts": {
     "LDB 21 l.92": 1
   },
-  "src/state/combat-optional-rules.test.ts": {
-    "LDB 63 l.63": 2
-  },
-  "src/state/combat-tables-choix-porte.test.ts": {
-    "LDB 62 l.293": 1
-  },
   "src/state/combat/recover.test.ts": {
     "LDB 16 l.66/77": 2
   },
@@ -115,9 +93,6 @@
     "LDB 10 l.365": 1,
     "LDB 20 l.32/49": 1,
     "MDG 11 l.142": 2
-  },
-  "src/state/deviation-armour.test.ts": {
-    "LDB 63 l.30/63": 1
   },
   "src/state/flowOutcomes.ts": {
     "LDB 16 l.66/77": 1

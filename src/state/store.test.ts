@@ -156,7 +156,7 @@ describe('Boucle de jeu (store)', () => {
     expect(h.conditions.some((x) => x.id === 'surpris')).toBe(false);            // transitoire jeté
   });
 
-  // ── Déviation Critique côté JOUEUR (LDB 63 l.63-66) : suspend re-entrant + choix Dévier/Subir ──
+  // ── Déviation Critique côté JOUEUR (LDB 63 l.30-32) : suspend re-entrant + choix Dévier/Subir ──
   // Un héros encaisse un Coup Critique à une localisation armurée → applyAttackResult SUSPEND
   // (étape de séquence 'deviation', AUCUN effet de bord) ; la décision rejoue l'application UNE seule fois.
   function mkDeviationSetup() {
@@ -212,7 +212,7 @@ describe('Boucle de jeu (store)', () => {
     useGame.getState().cascadeChoose('cons-deviation-h1', 'devier');
     useGame.getState().cascadeNext(); // valide le choix → applier 'deviation' → resolveDeviation
     const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
-    expect(h.armour.corps).toBe(2);          // 1 PA sacrifiée (LDB 63 l.63-66)
+    expect(h.armour.corps).toBe(2);          // 1 PA sacrifiée (LDB 63 l.30-32)
     expect(h.criticalWounds ?? 0).toBe(0);   // Coup Critique ignoré
   });
 

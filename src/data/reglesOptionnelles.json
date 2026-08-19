@@ -170,7 +170,7 @@
   {
     "id": "combat-critical-deflect",
     "label": "Déviation Critique",
-    "ref": "LDB 63 l.63",
+    "ref": "LDB 63 l.30",
     "group": "Combat",
     "kind": "flag",
     "default": true,

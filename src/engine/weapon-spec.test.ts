@@ -64,7 +64,7 @@ describe('combatValue — Spécialisation de Corps à corps (LDB 09 l.44)', () =
   });
 });
 
-describe('combatValue — Spécialisation de Projectiles (LDB 62 l.225/234)', () => {
+describe('combatValue — Spécialisation de Projectiles (LDB 62 l.180/184)', () => {
   const sk = (spec: string, advances: number) =>
     ({ skillId: 'projectiles', spec, characteristic: 'capacite-de-tir', advances } as Combatant['skills'][number]);
 

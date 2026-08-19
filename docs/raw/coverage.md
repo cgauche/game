@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 97 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 176 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3441 section(s) non couvertes par une fiche : **633 transcrite(s) en catalogue** (recopiées, pas traitées) · **2363 hors-règle** (chapitre explicitement exclu) · **159 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **286 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 97 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 176 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3440 section(s) non couvertes par une fiche : **632 transcrite(s) en catalogue** (recopiées, pas traitées) · **2363 hors-règle** (chapitre explicitement exclu) · **159 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **286 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
 
 ## LDB — ✅ 41 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -79,8 +79,8 @@
 | 59 | Faire son marché | ✅ | 19 (economie.md ×19) |
 | 60 | Fabrication | ✅ | 16 (economie.md ×13) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
-| 62 | Les armes | ✅ | 113 (combat.md ×103) |
-| 63 | Armures | ✅ | 40 (combat.md ×35) |
+| 62 | Les armes | ✅ | 119 (combat.md ×111) |
+| 63 | Armures | ✅ | 28 (combat.md ×27) |
 | 64 | Sacs et contenants | 📖 | catalogue (catalogue-*.md) |
 | 65 | Vêtements et accessoires | 📖 | 1 (traumatisme.md ×1) |
 | 66 | Nourriture, boisson et hébergement | 📖 | catalogue (catalogue-*.md) |
@@ -233,8 +233,6 @@
 - **LDB 51** (Magie du Chaos) :
   - 🔻 enfoui l.52-250 « MENEUR DE JEU » — titre orné rétrogradé par l'extraction, 14 réf
   - 📖 l.39-51 « Trahison de Tzeentch » — transcrit en catalogue, jamais traité, 0 réf
-- **LDB 62** (Les armes) :
-  - 📖 l.325-332 « Inoffensive » — transcrit en catalogue, jamais traité, 0 réf
 
 ## ADE I — ✅ 0 · 📖 2 · 🟡 0 · ⬜ 0
 

@@ -4,7 +4,7 @@
 > exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
 > courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
-**Bilan : ✅ 488 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 31 introuvables · ➖ 2816 synthèses** (⛔ 9 hors-fichier · ⚠️ 0 sans source) sur 3344 réfs · 519 citations · 28 fiches.
+**Bilan : ✅ 492 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 27 introuvables · ➖ 2816 synthèses** (⛔ 9 hors-fichier · ⚠️ 0 sans source) sur 3344 réfs · 519 citations · 28 fiches.
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
 
@@ -44,11 +44,7 @@
 
 | Réf | Statut | Détail |
 |---|---|---|
-| `LDB 63 l.13-14` | ❌ LOW | « certaines armes sont presque aussi susceptible… » — texte trouvé en LDB 62 l.315 |
 | `LDB 13 l.184` | ❌ LOW | « lancer pour toucher de corps à corps étant un … » — aucune occurrence |
-| `LDB 63 l.14` | ❌ LOW | « tout test de combat qui est un échec et dont l… » — texte trouvé en LDB 14 l.19 |
-| `LDB 63 l.11` | ❌ LOW | « certaines armes sont juste plus difficiles à u… » — texte trouvé en LDB 62 l.311 |
-| `LDB 63 l.14` | ❌ LOW | « tout test raté incluant un 9 sur le dé des diz… » — texte trouvé en LDB 62 l.315 |
 | `ADE II 04 l.215` | ❌ LOW | « funeste : l'arme est imprégnée de magie de mor… » — aucune occurrence |
 | `ADE II 04 l.235` | ❌ LOW | « de coupure infinie : … si un coup de cette arm… » — aucune occurrence |
 | `ADE II 04 l.237` | ❌ LOW | « de blessure grave : … il peut inverser les chi… » — aucune occurrence |

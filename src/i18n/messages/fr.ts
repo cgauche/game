@@ -2180,7 +2180,7 @@ export const fr = {
   'drunk.hangover': '{name} a la gueule de bois : 1 Exténué pendant {h} h.',
 
   // ── #1318 V8c₅ — MUNITION attendue par une arme à distance (`engine/items.ts`, `ammo.*`, hint
-  // d'achat/chargement quand carquois et coffre sont vides ; LDB 62 l.150/174-175, MDG 12 p.101).
+  // d'achat/chargement quand carquois et coffre sont vides ; LDB 62 l.110-123, MDG 12 p.101).
   'ammo.artillerie': 'Boulet et poudre',
   'ammo.poudreIngenierie': 'Balles et poudre',
   'ammo.arc': 'Flèches',

@@ -835,7 +835,7 @@ function hasMeleeSpec(c: Combatant, spec: string): boolean {
   return (c.skills ?? []).some((s) => findSkillById(s.skillId)?.specsSource === 'weaponGroupsMelee' && (s.spec ?? '') === spec);
 }
 
-/** Pénalité à la PARADE avec l'arme `weapon` (LDB 62 l.192) : 0 en main principale ; 0 si arme à 1 main +
+/** Pénalité à la PARADE avec l'arme `weapon` (LDB 62 l.151) : 0 en main principale ; 0 si arme à 1 main +
  *  Défensive + le défenseur a Corps à corps (Parade) ; sinon pénalité de main secondaire (Ambidextre la réduit). */
 export function parryPenalty(defender: Combatant, weapon: Weapon | undefined): number {
   if (!weapon || weapon.hand !== 'off') return 0;
@@ -1066,7 +1066,7 @@ export function finishMelee(
  * d'attaque `atkBd` (libellé « Corps à corps » vs « Projectiles », construit par l'appelant avec SES
  * mods : la mêlée via `finishMelee`, le tir DÉFENDU via `resolveRanged` — défense RAW Protectrice 2+/
  * Bout Portant/tireur Engagé). drAdjust : Défensive (déf.) +1 DR (l.273), À Enroulement (att.) -1 DR
- * (l.259), pénalité de Taille en Parade (LDB 85 l.370) ; Protectrice (LDB 62 l.306) → Indice PA
+ * (l.259), pénalité de Taille en Parade (LDB 85 l.370) ; Protectrice (LDB 62 l.296) → Indice PA
  * partout en Parade. Imprécise/Pratique/Peu Fiable/Lente modulent le DR du Test (LDB 62/60).
  */
 function combineOpposed(
@@ -1139,7 +1139,7 @@ function combineOpposed(
     };
   }
   const critical = atk.isDouble && atk.success;
-  // Protectrice (LDB 62 l.306) : opposer l'attaque avec l'arme → Indice PA à toutes les localisations.
+  // Protectrice (LDB 62 l.296) : opposer l'attaque avec l'arme → Indice PA à toutes les localisations.
   const res = applyHit(attacker, defender, weapon, atkLine, opp.netSL, critical, location, dmgProxy, defenseMode === 'parade' ? protectriceAP(parryWeapon) : 0, opts.withhold);
   res.defenderRoll = def.roll;
   res.defenderDetail = defLine;
@@ -1273,7 +1273,7 @@ export function belowMinRangeBand(distanceTiles: number, rangeMeters: number, mi
  * Modes de défense AUTORISÉS contre une attaque à DISTANCE. Défaut RAW : AUCUN (LDB 13 l.135, le tir
  * est un Test de Projectiles non opposé). Trois exceptions, indépendantes (le défenseur choisit parmi
  * les modes obtenus) :
- *  - Parade : bouclier/arme **Protectrice 2+**, projectile en Ligne de Vue (LDB 62 l.307) ;
+ *  - Parade : bouclier/arme **Protectrice 2+**, projectile en Ligne de Vue (LDB 62 l.296) ;
  *  - Parade : tireur **Engagé** avec sa cible (tir au contact) → « n'importe quelle Corps à corps » (LDB 14 l.44) ;
  *  - Esquive : tir à **Bout Portant** (LDB 14 l.40).
  * `[]` = tir non défendable → résolution non opposée habituelle.
@@ -1335,7 +1335,7 @@ export function resolveRanged(
   let atk: TestResult = { ...rollTest(atkVal, 'intermediaire', rng, combineMods(mods)), base: combatBaseValue(attacker, 'ranged', weapon) }; // LDB 12 l.160
   if (isHelplessTarget(defender)) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
   const atkBd = bd(attackTestLabel(weapon, 'ranged'), atkVal, atk, composeAttack(mods));
-  // Tir DÉFENDU (RAW : Protectrice 2+ LDB 62 l.307 / Bout Portant 14 l.62 / tireur Engagé 14 l.70) →
+  // Tir DÉFENDU (RAW : Protectrice 2+ LDB 62 l.296 / Bout Portant 14 l.62 / tireur Engagé 14 l.70) →
   // Test OPPOSÉ, cœur partagé avec la mêlée (`combineOpposed`). L'Inconscient ne se défend pas.
   if (defense && !isHelplessTarget(defender)) {
     const def = rollMeleeDefender(defender, defense.mode, rng, defense.dodgeMod ?? 0, defense.parryWeapon ?? defender.weapons[0], weapon);
@@ -1458,10 +1458,10 @@ function applyHit(
   critical: boolean,
   forcedLoc?: HitLocation,
   dmgProxy?: AttackOptions['dmgProxy'],
-  extraAP = 0, // PA conférés par l'arme d'opposition du défenseur (Protectrice, LDB 62 l.306)
+  extraAP = 0, // PA conférés par l'arme d'opposition du défenseur (Protectrice, LDB 62 l.296)
   withhold = false, // « Retenir ses coups » (Aux Armes 07 l.59-61) — voir applyHit, n'agit qu'en mêlée
 ): AttackResult {
-  // Arme usée à +0 → improvisée (LDB 62 l.178). L'enchantement (Magique/Dégâts/onHit) est DÉJÀ replié
+  // Arme usée à +0 → improvisée (LDB 62 l.135). L'enchantement (Magique/Dégâts/onHit) est DÉJÀ replié
   // dans l'arme active par recomputeLoadout (applyEnchants) — porté par l'objet, plus de merge ici.
   weapon = effectiveWeapon(weapon);
   // Retenir ses coups (Aux Armes 07 l.59-61) : maîtriser sans tuer. N'a d'effet qu'en MÊLÉE, jamais avec
@@ -1502,8 +1502,8 @@ function applyHit(
   // par le TABLEAU DE COMPARAISON DES TAILLES (l.618-637), qui « remplace les modificateurs normaux » de
   // Taille (l.616) → `noSize` ; plancher 0 Blessure (un coup trop faible ricoche, comme la bordée).
   const hullAdj = hullHitAdjust(dmgSize, weapon, defender);
-  const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
-  const units = atkBd.roll % 10; // dé des unités (LDB 62 l.279/313) ; « 00 » → 0
+  const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.135)
+  const units = atkBd.roll % 10; // dé des unités (LDB 62 l.244/266) ; « 00 » → 0
   // Dévastatrice (max(DR, unités)) / Percutante (+unités), annulés par Inoffensive ; Atouts conférés
   // par la Taille (attaquant plus grand, LDB 85 l.360) fusionnés via `extra` (qualityDamageStep).
   // Une Nuée ignore toutes les règles de Taille (l.200) : ni Atout ni multiplicateur de Taille.

@@ -95,11 +95,16 @@ function withTempRawDir(files, fn) {
   try { fn(join(dir, 'raw')) } finally { rmSync(dir, { recursive: true, force: true }) }
 }
 
+/** Réf de FIXTURE : `spec(18, '417-422')` → « <pivot> 18 l.417-422 » (patron `spec` de `_lib.test.mjs`).
+ *  SPÉCIMEN CONSTRUIT, jamais écrit en graphie canonique : ce fichier est lui-même balayé par les
+ *  gardes de réf du dépôt, qui ne distinguent pas un spécimen de test d'une citation vivante. */
+const spec = (ch, tail) => ['LDB', String(ch), `l.${tail}`].join(' ')
+
 test('docs/raw (a) : plage à tiret cadratin (l.417–422 / l.417—422) → détectée, tiret-moins silencieux', () => {
   withTempRawDir({
-    'en.md': 'Faim (LDB 18 l.417–422) en cadratin\n',   // en-dash U+2013
-    'em.md': 'Soif (LDB 18 l.417—422) em-cadratin\n',    // em-dash U+2014
-    'ok.md': 'Faim (LDB 18 l.417-422) tiret-moins\n',     // hyphen-minus → canonique
+    'en.md': `Faim (${spec(18, '417–422')}) en cadratin\n`,   // en-dash U+2013
+    'em.md': `Soif (${spec(18, '417—422')}) em-cadratin\n`,    // em-dash U+2014
+    'ok.md': `Faim (${spec(18, '417-422')}) tiret-moins\n`,     // hyphen-minus → canonique
   }, (raw) => {
     const v = scanDocsRawViolations(raw).filter((x) => x.kind === 'emdash-range')
     assert.equal(v.length, 2)

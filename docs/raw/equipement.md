@@ -494,8 +494,8 @@ Les chapitres suivants contiennent essentiellement des **listes de prix** sans r
 | `LDB 60 l.18/91` | `src/engine/items.ts` : `totalEncumbrance` l.202 | Léger −1 / Volumineux +1 via `craftEncDelta` |
 | `LDB 61 l.33-43` | `src/engine/encumbrance.ts` : `encumbrancePenalties` | Table seuils 0/1/2/3× → paliers Mouvement/Agilité/Fatigue |
 | `LDB 61 l.43-43` | `src/engine/encumbrance.ts` : commentaires | Mouvement immédiat ; Fatigue = échelle voyage (fin de journée) |
-| `LDB 62 l.27` | `src/engine/items.ts` l.269 | Mains nues : +BF+0, Personnelle, Inoffensive |
-| `LDB 63 l.18-55` | `src/engine/items.ts` l.481 / `damageArmour` | PA nette = PA − dégâts pris ; endommagement armure |
+| `LDB 62 l.28` | `src/engine/items.ts` l.269 | Mains nues : +BF+0, Personnelle, Inoffensive |
+| `LDB 63 l.18-21` | `src/engine/items.ts` l.481 / `damageArmour` | PA nette = PA − dégâts pris ; endommagement armure |
 | `LDB 72 l.5-6` (p.307) | `src/engine/consumables.ts` | Parsing desc `récupérer/Blessure` → soin (Bonus d'Endurance) ; parsing `retire … État` → retrait d'État |
 | `LDB 72 l.24` | `src/engine/consumables.ts` : `parseConsumable` | Potion de guérison : Bonus d'Endurance, garde-fou poison/drogue |
 | `LDB 72 l.28` | `src/engine/consumables.ts` + test | Potion de vitalité : retire tout *Exténué* |

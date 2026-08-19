@@ -25,7 +25,7 @@ describe('rangedDefenseModes — RAW défense contre les attaques à distance', 
     expect(rangedDefenseModes(atk(), def(), w, 5, true)).toEqual([]);
   });
 
-  it('bouclier Protectrice 2+ en Ligne de Vue → Parade (LDB 62 l.307)', () => {
+  it('bouclier Protectrice 2+ en Ligne de Vue → Parade (LDB 62 l.296)', () => {
     expect(rangedDefenseModes(atk(), def({ weapons: [shield(2)] }), w, 5, true)).toEqual(['parade']);
   });
 

@@ -109,7 +109,7 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
   });
 });
 
-describe('resolveAttack — Allonge en mêlée (RAW-3, LDB 62 l.211/213)', () => {
+describe('resolveAttack — Allonge en mêlée (RAW-3, LDB 62 l.163/164)', () => {
   const lance = { name: 'Pique', type: 'melee', damage: { plusBF: true, flat: 2 }, reach: 'Très longue', qualities: [] };
   const dague = { name: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte', qualities: [] };
 

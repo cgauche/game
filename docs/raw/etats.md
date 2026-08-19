@@ -603,7 +603,7 @@ Ces tableaux utilisent tous les États standards (Hémorragique, Sonné, Aveugl�
 
 Les listes de sorts et miracles (LDB 47-51, 40-43) infligent des États en cours de partie. Ce n'est pas une modification des règles d'États, mais une source de déclenchement. Points notables :
 
-- **Atout Assommante** (LDB 62 l.233-234) : sur touche à la Tête, Test opposé Force/Résistance — succès de l'attaquant → gain d'un État Sonné par la cible. Armes concernées : bâton de combat, marteau de guerre, marteau à bec-de-corbin, masse, matraque, bille de plomb (fronde).
+- **Atout Assommante** (LDB 62 l.233-235) : sur touche à la Tête, Test opposé Force/Résistance — succès de l'attaquant → gain d'un État Sonné par la cible. Armes concernées : bâton de combat, marteau de guerre, marteau à bec-de-corbin, masse, matraque, bille de plomb (fronde).
 - **Sort Enchevêtrement** (LDB 47) : inflige État Empêtré à la cible. La variante Force Mentale au lieu de Force pour s'en dépêtrer est introduite dans un sort de ZI (Forêt d'épines, voir ci-dessous).
 - **Forêt d'épines** (ZI 14 l.1008, sort chamanique Gobelin) : traverser la zone nécessite un Test d'**Agilité Difficile (-20)** ; en cas d'échec, la victime gagne **1 État Empêtré** (Force Mentale à la place de Force pour résister) **et 1 État Hémorragique** simultanément.
 - **Filets** (ZI 2 l.165, 176, groupe d'armes à Entraves) : sur touche réussie, cible gagne 1 État Empêtré. Pour se libérer : Test de **Force Intermédiaire (+0)** avec un nombre de DR **égal à l'Indice du filet** (les DR ne sont pas cumulatifs) ; en cas d'échec, gagne 1 État Empêtré supplémentaire. Filets barbelés (ZI 2 l.178) : infligent automatiquement des Dégâts ignorant l'armure à chaque tentative d'évasion (réussie ou non).
@@ -612,14 +612,14 @@ Les listes de sorts et miracles (LDB 47-51, 40-43) infligent des États en cours
 - **Objets magiques** (ADE II 4 l.222, l.230, l.367) : arme Embrasée inflige État En flammes sur touche à une cible inflammable ; arme « Déroutante » inflige État Surpris à toute cible blessée ; armure argentée scintillante force un Test d'Agilité Accessible (+20) en début de Round ou État Aveuglé pour les adversaires en corps à corps.
 
 **Sources RAW** :
-- `LDB 62 l.233-234` — Atout Assommante → État Sonné
+- `LDB 62 l.233-235` — Atout Assommante → État Sonné
 - `ZI 14 l.1008` — Forêt d'épines : Empêtré FM + Hémorragique simultané
 - `ZI 13 l.25` — Chant de la Sirène : pseudo-Inconscient narratif
 - `ZI 2 l.165, 176, 178` — Filets : Empêtré avec DR non cumulatifs (≠ LDB Test de Force opposé)
 - `ADE II 4 l.222, l.230, l.367` — objets magiques : sources d'État En flammes / Surpris / Aveuglé
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.233-234) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `sonne`, `au-contact-roll`, `defensive`, `arbalete`, `au-contact-choice`, `devastatrice`, `arc`, +35 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/weaponGroups.json`, +6 fichiers
+- `LDB 62` (l.233-235) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `sonne`, `au-contact-roll`, `defensive`, `arbalete`, `au-contact-choice`, `devastatrice`, `arc`, +37 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/weaponGroups.json`, +7 fichiers
 - `ADE II 4` (l.222) → `deroutante` — `src/data/qualities.json`
 - `ZI 2` (l.165, l.178) → `filet`, `filet-barbele`, `cornes`, `arme`, `projectiles`, `discretion` — `src/data/creatures.json`, `src/data/qualities.json`
 - `ZI 13` (l.25) → `taille` — `src/data/creatures.json`

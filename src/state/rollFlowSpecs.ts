@@ -1766,7 +1766,7 @@ export const FLOWS = {
     touch: touchActors,
   }),
 
-  /** Rechargement (LDB 63 l.28-29) : Test ÉTENDU de Projectiles — le DR se cumule à l'Appliquer. */
+  /** Rechargement (LDB 62 l.335) : Test ÉTENDU de Projectiles — le DR se cumule à l'Appliquer. */
   reload: makeRollFlow<PendingReload, PendingReload, { after: number; weapon: string }>({
     key: 'pendingReload',
     rolled: (p) => p.roll != null,

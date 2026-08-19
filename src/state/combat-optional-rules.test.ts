@@ -65,8 +65,8 @@ describe('combat-defensive-stance — Action « Sur la Défensive » (LDB 13 l.1
   });
 });
 
-// ── Règle 2 : « Déviation Critique » (combat-critical-deflect, LDB 63 l.63) ──
-describe('combat-critical-deflect — offre de Déviation Critique (LDB 63 l.63)', () => {
+// ── Règle 2 : « Déviation Critique » (combat-critical-deflect, LDB 63 l.30) ──
+describe('combat-critical-deflect — offre de Déviation Critique (LDB 63 l.30)', () => {
   beforeEach(() => { seedBattleRng(424242); });
   afterEach(() => resetRule('combat-critical-deflect'));
 

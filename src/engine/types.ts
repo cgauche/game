@@ -412,7 +412,7 @@ export interface Weapon {
   /** Ignorance de PA de l'arme (Épée de justice → 'all', etc.) — fusionnée par `enchantedWeapon`,
    *  lue par `woundsFromHit` (engine/armourBypass). */
   bypass?: ArmourBypass;
-  /** Dégâts subis par l'arme (LDB 62 l.178) : réduit les Dégâts de 1/point ; à +0 → improvisée. */
+  /** Dégâts subis par l'arme (LDB 62 l.135) : réduit les Dégâts de 1/point ; à +0 → improvisée. */
   damageTaken?: number;
   /** Arme détruite (Incident de Tir, LDB 14) : inutilisable. */
   destroyed?: boolean;
@@ -1108,7 +1108,7 @@ export interface ItemInstance {
   /** Arme INHABITUELLE (ACE 12 l.17-21) : exige la maîtrise (`Combatant.masteredWeapons`) pour
    *  être maniée avec la Compétence du Groupe — copié du catalogue (`TrappingData.requiresMastery`). */
   requiresMastery?: boolean;
-  /** Dégâts subis par l'arme (LDB 62 l.178), persistés sur le trapping ; propagé au Weapon actif. */
+  /** Dégâts subis par l'arme (LDB 62 l.135), persistés sur le trapping ; propagé au Weapon actif. */
   damageTaken?: number;
   /** Arme détruite (Incident de Tir) : non équipable. */
   destroyed?: boolean;
@@ -1650,7 +1650,7 @@ export interface Combatant {
   /** Salve (Aux Armes p.126) : nombre de tirs DÉJÀ effectués ce tour (réinit. au changement de tour) ;
    *  chaque tir suivant d'une arme à Salve subit −10 cumulatif (lu par `attackModifiers`). */
   shotsThisTurn?: number;
-  /** Perturbante (LDB 62 l.275-276) : mode « Repousser » armé — la prochaine attaque réussie repousse
+  /** Perturbante (LDB 62 l.272-274) : mode « Repousser » armé — la prochaine attaque réussie repousse
    *  d'1 m par DR au lieu de causer des Dégâts. Consommé par l'attaque (héros uniquement). */
   pushbackMode?: boolean;
   /** `passive` des AURAS de combat à portée desquelles ce combattant se trouve (Perturbant :

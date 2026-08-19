@@ -166,7 +166,7 @@ describe('isOffHandEligible (LDB 14 l.138 — main secondaire)', () => {
   });
 });
 
-describe('unarmedWeapon (Mains nues canoniques, LDB 62 l.75)', () => {
+describe('unarmedWeapon (Mains nues canoniques, LDB 62 l.28)', () => {
   it('dérivées du trapping : +BF+0, Personnelle, Inoffensive (pas +BF-2)', () => {
     const u = unarmedWeapon();
     expect(damageString(u.damage)).toBe('+BF+0');
@@ -351,7 +351,7 @@ describe('couches d’armure (LDB 63) — armourLayer / equipConflicts', () => {
   const hero = (items: ItemInstance[]): Combatant => ({ id: 'h', items } as unknown as Combatant);
 
   it('armourLayer lit la donnée réelle : Cuir souple / Flexible (Mailles) / rigide (Cuir bouilli, Plate)', () => {
-    expect(armourLayer(itemFromTrapping('Justaucorps de cuir')!)).toBe('souple'); // subType Cuir souple (LDB 63 l.93)
+    expect(armourLayer(itemFromTrapping('Justaucorps de cuir')!)).toBe('souple'); // subType Cuir souple (LDB 63 l.41)
     expect(armourLayer(itemFromTrapping('Chemise de mailles')!)).toBe('flexible'); // qualité Flexible (l.105-106)
     expect(armourLayer(itemFromTrapping('Plastron de cuir')!)).toBe('rigide'); // Cuir bouilli
     expect(armourLayer(itemFromTrapping('Plastron')!)).toBe('rigide'); // Plate
@@ -639,7 +639,7 @@ describe('totalEncumbrance — qualités d’artisanat (LDB 60 l.18/62)', () => 
   });
 });
 
-describe('Dégâts d’armure (LDB 63 l.52-55)', () => {
+describe('Dégâts d’armure (LDB 63 l.19-21)', () => {
   const heroWith = (items: ItemInstance[]): Combatant =>
     ({ characteristics: { force: 30, endurance: 30 }, items, armour: emptyArmour() }) as unknown as Combatant;
 
@@ -692,7 +692,7 @@ describe('Munitions & rechargement', () => {
     expect(list.length).toBe(1);
     expect(list[0].label).toBe('Flèche');
   });
-  it('compatibleAmmo : Poudre noire ET Ingénierie acceptent les munitions « Poudre noire et ingénierie » (LDB 62 l.150)', () => {
+  it('compatibleAmmo : Poudre noire ET Ingénierie acceptent les munitions « Poudre noire et ingénierie » (LDB 62 l.120)', () => {
     const c = { items: [itemFromTrapping('Balle et Poudre')] } as unknown as Combatant;
     const pistolet: Weapon = { label: 'Pistolet', type: 'ranged', damage: { plusBF: false, flat: 8 }, qualities: [{ id: 'pistolet' }], subType: 'poudre-noire', reload: 1 };
     const arqRep: Weapon = { label: 'Arquebus à répétition', type: 'ranged', damage: { plusBF: false, flat: 9 }, qualities: [], subType: 'ingenierie', reload: 5 };
