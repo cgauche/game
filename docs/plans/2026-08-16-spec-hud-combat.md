@@ -656,3 +656,20 @@ volumique exige soit un builder pur nouveau (patron `buildHighlights`/`tokenChro
 déjà bi-backend), soit un peintre monté par `GameStage3D` ; à articuler avec le GO/NO-GO
 WebGL (#1160). La vague livre le SVG d'abord, le canal volumique passe par le lot 1 (#1327)
 qui décide du patron.
+
+## ARBITRAGE 2026-08-19 — MODÈLE DE GESTES RÉVISÉ (supplante le verbatim « actions par défaut du grid » du 2026-08-16)
+
+Instruit par l'état de l'art (panel 9 jeux, rendu de recherche du 2026-08-19 : RT/XCOM/JA3 = attaque-capacité ; BG3 = Dash explicite ; grille = zones peintes d'office ; partout : hors-max = refus net, jamais de partiel silencieux). Question ouverte par l'utilisateur (verbatim) : « Rogue Trader demande a cliquer explicitement d'un l'attaque que tu souhaite faire pour attaquer, ce n'est jamais choisi automatiquement ? Par défaut seul la zone de déplacement est affiché, et BG3 demande a cliquer sur la course pour dépasser la zone de mouvement normal, ce n'est pas automatique ? »
+
+Réponses AskUserQuestion du 2026-08-19 (options choisies, assertions intégrales) :
+
+1. **Clic-ennemi nu = « Attaque auto À PORTÉE seulement »** — à portée = attaque de l'arme équipée ; hors portée = refus dit (ou simple sélection/examen) — le déplacement reste un geste séparé, cohérent avec la Course à armer.
+2. **Clic-sol au-delà de la Marche = « Course à ARMER (école BG3) »** — cliquer au-delà de la Marche = refus dit ; il faut armer la case Course pour débloquer la zone étendue.
+3. **Zones par défaut = « Marche seule »** — par défaut seule la zone de déplacement est affichée ; la Course ne se peint qu'à l'armement de sa case.
+
+Lois d'accompagnement (fondées par la même recherche) :
+- **Refus VISIBLE par construction** — jamais un refus muet au journal (doctrine #516 ; le journal n'est pas affiché en combat, `LogDrawer`) ; le refus se dit à l'écran au point du geste.
+- **Annulation gratuite par construction** — Échap/désarmement n'a JAMAIS de coût (contre-exemple documenté : Solasta, Échap consomme l'action, défaut dénoncé forum officiel).
+- Une intention armée ne bloque JAMAIS les modes de ciblage (`cast`/`teleport`/`push`/zone) — verrouillé par `intention-geste-par-defaut.test.ts` (contrat (b), à conserver sous le nouveau modèle).
+
+Conséquence : le verbatim du 2026-08-16 porté par `src/state/localIntent.ts:4-9` est SUPPLANTÉ sur le point « actions par défaut du grid » — le lot d'implémentation met à jour ce commentaire et réécrit le contrat (a)/(c) de `intention-geste-par-defaut.test.ts` sur le présent arbitrage.
