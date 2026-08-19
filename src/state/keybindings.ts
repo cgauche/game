@@ -16,6 +16,7 @@ import { runAction } from './actionRegistry';
 import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
 import { SEUIL_MAINTIEN_MS, arreterLacet, demarrerLacet, pasYaw } from './stageYaw';
+import { arreterMarche, demarrerMarche } from './stageWalk';
 import { clearTrackedTimer, scheduleFlowTimer } from './combatTimers';
 import { t, type MsgKey } from '../i18n';
 
@@ -63,6 +64,10 @@ export interface KeyBinding {
    *  l'enfoncement, dure tant que la touche est tenue, et se termine ici. La répétition automatique du
    *  clavier ne le rejoue pas (`useGameKeyboard`) — la durée est mesurée par le geste, pas par l'OS. */
   runUp?: (get: () => GameState) => void;
+  /** Geste d'UNE PRESSION : la touche tenue ne le rejoue pas non plus, et il n'a rien à terminer au
+   *  relâchement (pivot du regard en vue subjective). La répétition automatique de l'OS est un artefact
+   *  de saisie de texte : aucune cadence de jeu ne s'en déduit. */
+  unePression?: boolean;
 }
 
 const inBattle = (s: GameState) => s.mode === 'battle' && !!s.battle && !s.battle.over;
@@ -128,17 +133,25 @@ const EXPLORE_STEP: { code: string; dir: ScreenDir; labelKey: MsgKey; povId: str
   { code: 'KeyA', dir: 'left', labelKey: 'key.exploreLeft', povId: 'pov-strafe-l' },
   { code: 'KeyD', dir: 'right', labelKey: 'key.exploreRight', povId: 'pov-strafe-r' },
 ];
+/** Pas clavier d'exploration en vue SUBJECTIVE (ZQSD cap-relatifs) : mêmes touches physiques, autre
+ *  vocabulaire de direction — un seul mécanisme de marche tenue pour les deux vues (`stageWalk`). */
+const POV_STEP: { id: string; code: string; rel: 'forward' | 'back' | 'left' | 'right'; labelKey: MsgKey; isoId: string }[] = [
+  { id: 'pov-forward', code: 'KeyW', rel: 'forward', labelKey: 'key.povForward', isoId: 'explore-up' },
+  { id: 'pov-back', code: 'KeyS', rel: 'back', labelKey: 'key.povBack', isoId: 'explore-down' },
+  { id: 'pov-strafe-l', code: 'KeyA', rel: 'left', labelKey: 'key.povStrafeL', isoId: 'explore-left' },
+  { id: 'pov-strafe-r', code: 'KeyD', rel: 'right', labelKey: 'key.povStrafeR', isoId: 'explore-right' },
+];
 
 export const KEYBINDINGS: KeyBinding[] = [
   // ── Vue SUBJECTIVE (POV) — AVANT les cam-*/pas-iso (mêmes codes physiques) : find = 1er `when` vrai, donc
   //    tant que `povActive`, ces raccourcis GAGNENT (ZQSD cap-relatif, A/E pivotent le regard) ; hors POV
   //    `exploringPov` est faux → cam-* et pas-iso reprennent la main. `toggle-pov` (F) commute la vue. ──
-  { id: 'pov-forward', codes: ['KeyW'], labelKey: 'key.povForward', section: 'pov', sharedBy: ['explore-up'], when: exploringPov, run: (g) => g().stepPartyRelative('forward') },
-  { id: 'pov-back', codes: ['KeyS'], labelKey: 'key.povBack', section: 'pov', sharedBy: ['explore-down'], when: exploringPov, run: (g) => g().stepPartyRelative('back') },
-  { id: 'pov-strafe-l', codes: ['KeyA'], labelKey: 'key.povStrafeL', section: 'pov', sharedBy: ['explore-left'], when: exploringPov, run: (g) => g().stepPartyRelative('left') },
-  { id: 'pov-strafe-r', codes: ['KeyD'], labelKey: 'key.povStrafeR', section: 'pov', sharedBy: ['explore-right'], when: exploringPov, run: (g) => g().stepPartyRelative('right') },
-  { id: 'pov-turn-l', codes: ['KeyQ'], labelKey: 'key.povTurnL', section: 'pov', sharedBy: ['cam-left'], when: exploringPov, run: (g) => g().pivotParty(-1) },
-  { id: 'pov-turn-r', codes: ['KeyE'], labelKey: 'key.povTurnR', section: 'pov', sharedBy: ['cam-right'], when: exploringPov, run: (g) => g().pivotParty(1) },
+  ...POV_STEP.map(({ id, code, rel, labelKey, isoId }): KeyBinding => ({
+    id, codes: [code], labelKey, section: 'pov', sharedBy: [isoId], when: exploringPov,
+    run: (g) => demarrerMarche(g, { vue: 'pov', rel }), runUp: () => arreterMarche({ vue: 'pov', rel }),
+  })),
+  { id: 'pov-turn-l', codes: ['KeyQ'], labelKey: 'key.povTurnL', section: 'pov', sharedBy: ['cam-left'], when: exploringPov, unePression: true, run: (g) => g().pivotParty(-1) },
+  { id: 'pov-turn-r', codes: ['KeyE'], labelKey: 'key.povTurnR', section: 'pov', sharedBy: ['cam-right'], when: exploringPov, unePression: true, run: (g) => g().pivotParty(1) },
   { id: 'toggle-pov', codes: ['KeyF'], labelKey: 'key.togglePov', section: 'pov', when: exploring, run: (g) => g().togglePov() },
   { id: 'cam-left', codes: ['KeyQ'], labelKey: 'key.camLeft', section: 'camera', sharedBy: ['pov-turn-l'], when: () => true, run: (g) => tournerCamera(g, -1), runUp: () => relacherCamera() },
   { id: 'cam-right', codes: ['KeyE'], labelKey: 'key.camRight', section: 'camera', sharedBy: ['pov-turn-r'], when: () => true, run: (g) => tournerCamera(g, 1), runUp: () => relacherCamera() },
@@ -170,7 +183,7 @@ export const KEYBINDINGS: KeyBinding[] = [
       runAction('switch-loadout', g, { loadoutId: sets[(i + 1) % sets.length].id });
     },
   },
-  // Pause d'initiative de début de Round (LDB 17 l.27) : Espace/Entrée = « Commencer le round » (le SEUL
+  // Pause d'initiative de début de Round (LDB 17 l.25) : Espace/Entrée = « Commencer le round » (le SEUL
   // geste possible) → passage de Round jouable SANS souris. AVANT les bindings curseur/fin-de-tour (mêmes
   // touches) : sa garde `pendingRoundStart` arbitre. notWhenControlFocused : si le bouton « Commencer » est
   // focalisé, son activation native suffit (pas de double appel). Solo = confirmRoundStart ; coop = ready du siège.
@@ -269,7 +282,8 @@ export const KEYBINDINGS: KeyBinding[] = [
   //    mêmes ZQSD sont cap-relatifs (bindings pov-* ci-dessus, résolus AVANT). Les flèches restent au SEUL
   //    curseur de combat (garde `cur`) — plus de partage de codes avec l'exploration.
   ...EXPLORE_STEP.map(({ code, dir, labelKey, povId }): KeyBinding => ({
-    id: `explore-${dir}`, codes: [code], labelKey, section: 'exploration', sharedBy: [povId], when: (s) => exploring(s) && !s.povActive, run: (g) => g().stepPartyDir(dir),
+    id: `explore-${dir}`, codes: [code], labelKey, section: 'exploration', sharedBy: [povId], when: (s) => exploring(s) && !s.povActive,
+    run: (g) => demarrerMarche(g, { vue: 'iso', dir }), runUp: () => arreterMarche({ vue: 'iso', dir }),
   })),
   // Menu système PLEIN ÉCRAN (pause) : Échap l'OUVRE quand rien d'autre ne réclame la touche. Placé
   // EN DERNIER → cursor-cancel/clear-preview (mêmes codes, gardes propres) gagnent d'abord en combat.
@@ -294,6 +308,13 @@ export function effectiveCodes(b: KeyBinding, overrides: Record<string, string>)
 export function runBindingById(id: string, get: () => GameState): void {
   const b = KEYBINDINGS.find((k) => k.id === id);
   if (b && b.when(get())) b.run(get);
+}
+
+/** RELÂCHE un raccourci par son `id` — pendant du précédent pour les gestes MAINTENUS (`runUp`), que
+ *  la manette doit signaler comme le clavier : sans lui, un geste tenu armé par `runBindingById` n'a
+ *  aucune fin. Sans garde `when` : un geste s'arrête même si le contexte a changé pendant qu'il durait. */
+export function runBindingUpById(id: string, get: () => GameState): void {
+  KEYBINDINGS.find((k) => k.id === id)?.runUp?.(get);
 }
 
 /** Libellé d'un raccourci pour l'écran Options, résolu À L'APPEL depuis sa clé (+ ses paramètres). */

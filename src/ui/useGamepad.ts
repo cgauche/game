@@ -8,7 +8,7 @@
  */
 import { useEffect } from 'react';
 import { useGame } from '../state/store';
-import { runBindingById } from '../state/keybindings';
+import { runBindingById, runBindingUpById } from '../state/keybindings';
 import { visibleFocusables } from './Modal';
 
 /** Contexte d'entrée courant (DOM pur, pas d'état React) : une modale ouverte capte tout ; sinon, le
@@ -68,6 +68,14 @@ export function padDir(dir: PadDir): void {
   if (container) focusStep(container, dir === 'down' || dir === 'right' ? 1 : -1);
 }
 
+/** RELÂCHEMENT d'une direction (croix/stick revenus au repos) : les gestes MAINTENUS armés par
+ *  `padDir` (marche tenue du groupe, iso et POV) se terminent ici. Les mêmes ids, dans le même ordre —
+ *  la manette n'a pas plus de chemin propre à la fin du geste qu'à son début. */
+export function padDirUp(dir: PadDir): void {
+  runBindingUpById('explore-' + dir, useGame.getState);
+  runBindingUpById(POV_DIR[dir], useGame.getState);
+}
+
 /** Bouton de manette → intention CONTEXTUELLE (cf. table de la spec). Tout ce qui agit sur le combat
  *  passe par `runBindingById` (garde `when` + action `run` portées une seule fois, côté clavier) ;
  *  l'activation/sortie d'un menu/modale manipule le focus DOM. Aucun nom d'entité codé en dur. */
@@ -113,6 +121,17 @@ export function padButton(name: PadButton): void {
   }
 }
 
+/** RELÂCHEMENT d'un bouton : seuls les boutons qui arment un geste MAINTENU en ont un — les gâchettes
+ *  de pas latéral (marche tenue) et de rotation caméra (lacet continu). Les autres ne tiennent rien. */
+export function padButtonUp(name: PadButton): void {
+  const get = useGame.getState;
+  if (name === 'LB') runBindingUpById('pov-strafe-l', get);
+  else if (name === 'RB') runBindingUpById('pov-strafe-r', get);
+  else if (name === 'LT') runBindingUpById('cam-left', get);
+
+  else if (name === 'RT') runBindingUpById('cam-right', get);
+}
+
 // ── Mapping « standard » W3C (https://w3c.github.io/gamepad/#remapping) ──────────────────────────
 const BUTTON_MAP: Record<number, PadButton> = { 0: 'A', 1: 'B', 2: 'X', 3: 'Y', 4: 'LB', 5: 'RB', 6: 'LT', 7: 'RT', 8: 'Back' };
 const DPAD_INDEX: Record<PadDir, number> = { up: 12, down: 13, left: 14, right: 15 };
@@ -153,6 +172,7 @@ export function useGamepad(): void {
           const i = Number(k);
           const pressed = !!gp.buttons[i]?.pressed;
           if (pressed && !prev[i]) padButton(BUTTON_MAP[i]);
+          else if (!pressed && prev[i]) padButtonUp(BUTTON_MAP[i]);
           prev[i] = pressed;
         }
         // Directions (croix + stick) : 1er pas immédiat, puis auto-repeat doux ; relâché = remis à zéro.
@@ -161,7 +181,7 @@ export function useGamepad(): void {
             const due = repeatAt[dir];
             if (due == null) { padDir(dir); repeatAt[dir] = now + REPEAT_DELAY; }
             else if (now >= due) { padDir(dir); repeatAt[dir] = now + REPEAT_RATE; }
-          } else delete repeatAt[dir];
+          } else if (repeatAt[dir] != null) { padDirUp(dir); delete repeatAt[dir]; }
         }
       }
       raf = requestAnimationFrame(frame);
@@ -186,9 +206,15 @@ export function useGamepad(): void {
   // piloter la manette SANS pad réel (Playwright n'a pas l'API Gamepad). MÊMES fonctions que la boucle.
   useEffect(() => {
     if (!import.meta.env.DEV) return;
-    const w = window as unknown as { __wfrpPad?: (name: PadButton) => void; __wfrpPadDir?: (dir: PadDir) => void };
+    const w = window as unknown as {
+      __wfrpPad?: (name: PadButton) => void; __wfrpPadDir?: (dir: PadDir) => void;
+      __wfrpPadUp?: (name: PadButton) => void; __wfrpPadDirUp?: (dir: PadDir) => void;
+    };
     w.__wfrpPad = (name) => padButton(name);
     w.__wfrpPadDir = (dir) => padDir(dir);
-    return () => { delete w.__wfrpPad; delete w.__wfrpPadDir; };
+    // Relâchements : un geste MAINTENU se recette du début À SA FIN (sans eux, la sonde arme sans lâcher).
+    w.__wfrpPadUp = (name) => padButtonUp(name);
+    w.__wfrpPadDirUp = (dir) => padDirUp(dir);
+    return () => { delete w.__wfrpPad; delete w.__wfrpPadDir; delete w.__wfrpPadUp; delete w.__wfrpPadDirUp; };
   }, []);
 }
