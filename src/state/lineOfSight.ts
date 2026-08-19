@@ -40,20 +40,6 @@ export function tilesBetween(a: Pt, b: Pt): Pt[] {
 
 const adjacent = (p: Pt, q: Pt): boolean => Math.max(Math.abs(p.x - q.x), Math.abs(p.y - q.y)) <= 1;
 
-/** Suite COMPLÈTE des cases de `a` à `b`, extrémités INCLUSES (supercover, pour tester les arêtes
- *  franchies entre cases consécutives — ce que `tilesBetween` (strictement entre) ne donne pas). */
-function cellPath(a: Pt, b: Pt): Pt[] {
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const steps = Math.max(Math.abs(dx), Math.abs(dy));
-  if (steps === 0) return [{ x: a.x, y: a.y }];
-  const out: Pt[] = [];
-  for (let i = 0; i <= steps; i++) {
-    out.push({ x: Math.round(a.x + (dx * i) / steps), y: Math.round(a.y + (dy * i) / steps) });
-  }
-  return out;
-}
-
 /** Un mur d'arête (`Scene.walls`) est-il franchi par la ligne `from`→`to` ? Bloque la vue
  *  (« pas à travers les murs »). Le test PAR ARÊTE est injectable (`edgeBlocks`) : défaut = `wallBetween`
  *  (O(murs), combat) ; la vision passe un prédicat O(1) (Set d'arêtes précalculé) pour les scènes très
@@ -61,18 +47,24 @@ function cellPath(a: Pt, b: Pt): Pt[] {
 export function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0, edgeBlocks?: (ax: number, ay: number, bx: number, by: number) => boolean): boolean {
   if (!scene.walls?.length) return false;
   const blk = edgeBlocks ?? ((ax, ay, bx, by) => wallBetween(scene, ax, ay, bx, by, z));
-  const path = cellPath(from, to);
-  for (let i = 0; i + 1 < path.length; i++) {
-    const a = path[i], b = path[i + 1];
-    const dx = b.x - a.x, dy = b.y - a.y;
-    if (dx !== 0 && dy !== 0) {
+  // Supercover de `from` à `to`, extrémités incluses (ce que `tilesBetween`, strictement entre, ne
+  // donne pas), parcouru EN PLACE : ce chemin est le plus chaud du brouillard — un rayon par case
+  // vue, une case par pas — et n'a besoin d'aucun tableau ni point intermédiaire matérialisé.
+  const steps = Math.max(Math.abs(to.x - from.x), Math.abs(to.y - from.y));
+  let ax = from.x, ay = from.y;
+  for (let i = 1; i <= steps; i++) {
+    const bx = Math.round(from.x + ((to.x - from.x) * i) / steps);
+    const by = Math.round(from.y + ((to.y - from.y) * i) / steps);
+    const px = ax, py = ay;
+    ax = bx; ay = by;
+    if (px !== bx && py !== by) {
       // Pas DIAGONAL : le rayon franchit le coin partagé. Bloqué si les DEUX contournements
-      // orthogonaux du coin (via (b.x,a.y) et via (a.x,b.y)) sont murés — un mur droit bloque, mais
+      // orthogonaux du coin (via (bx,py) et via (px,by)) sont murés — un mur droit bloque, mais
       // on peut « jeter un œil » au-delà de l'EXTRÉMITÉ d'un mur (un seul côté muré).
-      const blocked1 = blk(a.x, a.y, b.x, a.y) || blk(b.x, a.y, b.x, b.y);
-      const blocked2 = blk(a.x, a.y, a.x, b.y) || blk(a.x, b.y, b.x, b.y);
+      const blocked1 = blk(px, py, bx, py) || blk(bx, py, bx, by);
+      const blocked2 = blk(px, py, px, by) || blk(px, by, bx, by);
       if (blocked1 && blocked2) return true;
-    } else if (blk(a.x, a.y, b.x, b.y)) {
+    } else if (blk(px, py, bx, by)) {
       return true;
     }
   }

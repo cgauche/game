@@ -115,6 +115,13 @@ function buildOpaqueUncached(scene: Scene): Occ {
  *  que le rayon ne fait qu'EFFLEURER). */
 const SAMPLES_PER_TILE = 4;
 
+/** Prédicat d'arête O(1) de la grille d'opacité, bâti UNE fois par `Occ` (`memoByRef`) et non par
+ *  rayon : c'est le même pour tous les rayons d'une scène, et il en part un par case regardée. */
+const edgeBlockerOf = memoByRef((occ: Occ) => (ax: number, ay: number, bx: number, by: number): boolean => {
+  const e = edgeOf(ax, ay, bx, by);
+  return e ? occ.walls.has(`${e.x},${e.y},${e.side}`) : false;
+});
+
 /** La vue `from`→`to` est-elle OCCULTÉE (vision) ? RAPIDE : grille d'opacité O(1) + murs d'arête + fumée.
  *  Plus strict que le combat : TOUTE case opaque sur la ligne (même collée à la cible) cache — on ne
  *  voit pas à travers un mur. Les couverts PARTIELS (haie, tonneau…) ne sont pas opaques → laissent voir.
@@ -123,23 +130,24 @@ const SAMPLES_PER_TILE = 4;
 function rayBlocked(scene: Scene, occ: Occ, smoke: Set<string>, from: Pt, to: Pt, ignoreEdges = false, viewerH = 0): boolean {
   if (smoke.size && (smoke.has(`${from.x},${from.y}`) || smoke.has(`${to.x},${to.y}`))) return true;
   if (!ignoreEdges && occ.walls.size) {
-    const eb = (ax: number, ay: number, bx: number, by: number) => {
-      const e = edgeOf(ax, ay, bx, by);
-      return e ? occ.walls.has(`${e.x},${e.y},${e.side}`) : false;
-    };
-    if (wallOnSight(scene, from, to, 0, eb)) return true;
+    if (wallOnSight(scene, from, to, 0, edgeBlockerOf(occ))) return true;
   }
   const dx = to.x - from.x, dy = to.y - from.y;
   const n = Math.ceil(Math.hypot(dx, dy) * SAMPLES_PER_TILE);
+  // Boucle d'ÉCHANTILLONS : le poste le plus chaud de tout le brouillard (une centaine de milliers de
+  // passages par recalcul sur une grande carte). Les champs de `occ` sont tenus en locales, et la
+  // FUMÉE n'est interrogée que s'il y en a — sinon sa clé de case se fabriquerait à chaque échantillon.
+  const { g, topH, w, h } = occ;
+  const fumee = smoke.size > 0;
   for (let i = 1; i < n; i++) {
     const t = i / n;
     const cx = Math.round(from.x + dx * t), cy = Math.round(from.y + dy * t);
     if ((cx === from.x && cy === from.y) || (cx === to.x && cy === to.y)) continue;
-    if (cx < 0 || cy < 0 || cx >= occ.w || cy >= occ.h) continue;
-    const oi = cy * occ.w + cx;
+    if (cx < 0 || cy < 0 || cx >= w || cy >= h) continue;
+    const oi = cy * w + cx;
     // TUILE OPAQUE : ne coupe QUE si le viewer est PLUS BAS que le sommet de la masse (sinon il voit
     // par-dessus — défenseur sur le chemin de ronde). Fumée : coupe toujours.
-    if ((occ.g[oi] && viewerH < occ.topH[oi]) || smoke.has(`${cx},${cy}`)) return true;
+    if ((g[oi] && viewerH < topH[oi]) || (fumee && smoke.has(`${cx},${cy}`))) return true;
   }
   return false;
 }

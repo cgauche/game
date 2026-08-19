@@ -6,7 +6,7 @@ import { walkNeighbors, type Pt } from './path';
 /**
  * SYMÉTRIE du franchissement — la marchabilité est une propriété de l'ARÊTE, pas du sens de parcours :
  * `B ∈ walkNeighbors(A) ⟺ A ∈ walkNeighbors(B)`. Ce qui en dépend (`pathTo`, la fermeture transitive des
- * gardes de scène, `reachedOnFoot`/`portalsForParty`, le pas du joueur) devient faux dès qu'une arête
+ * gardes de scène, `walkComponentAt`/`portalsForParty`, le pas du joueur) devient faux dès qu'une arête
  * se franchit dans un seul sens. Le cas critique est la diagonale INTER-COUCHES : ses cases de FLANC
  * n'ont pas d'étage propre — au sommet d'une rampe, elles n'existent que sur la couche basse — et le
  * garde anti coupe-de-coin doit les chercher sur les DEUX couches du pas, jamais sur la seule couche

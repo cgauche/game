@@ -7,7 +7,7 @@ import {
   type Scene,
   type WallSeg,
 } from './scene';
-import { tileKey, walkNeighbors, type Pt } from './path';
+import { tileKey, walkComponentAt, walkComponentsFrom, walkNeighbors, type Pt } from './path';
 import { memoByRef } from './sceneMemo';
 import { sceneZoneTiles } from './zones';
 
@@ -145,25 +145,19 @@ export function portalsFromRooms(
     portal.fromZoneId !== null && occupiedZoneIds.has(portal.fromZoneId));
 }
 
-/** Cases atteignables À PIED depuis `from`, sans borne de portée — UNE exploration en largeur sur la
- *  MÊME connectivité que les chemins (`walkNeighbors`, qui bâtit les arêtes murées et n'émet que des
- *  cases marchables). Sert à trancher l'accessibilité de PLUSIEURS destinations depuis un même
- *  départ : une exploration puis N tests d'appartenance, là où un chemin PAR destination refait N
- *  fois le même parcours. `from` appartient toujours au résultat (un départ est joignable de
- *  lui-même), y compris s'il n'est pas marchable — comme un chemin de longueur nulle. */
-function reachedOnFoot(scene: Scene, from: Pt): Set<string> {
-  const start = { x: from.x, y: from.y, z: from.z ?? 0 };
-  const reached = new Set<string>([tileKey(start.x, start.y, start.z)]);
-  const queue: Pt[] = [start];
-  for (let i = 0; i < queue.length; i++) {
-    for (const next of walkNeighbors(scene, queue[i])) {
-      const key = tileKey(next.x, next.y, next.z ?? 0);
-      if (reached.has(key)) continue;
-      reached.add(key);
-      queue.push(next);
-    }
-  }
-  return reached;
+/** Prédicat « joignable À PIED depuis `from` », sans borne de portée — tranché par ÉTIQUETAGE des
+ *  composantes marchables de la scène (`walkComponentsFrom`/`walkComponentAt`, `path.ts`), bâti UNE
+ *  fois par scène et partagé par tous les pas : même étiquette = relié à pied. `from` compte toujours
+ *  (un départ est joignable de lui-même, comme un chemin de longueur nulle). */
+function reachedOnFootFrom(scene: Scene, from: Pt): (p: Pt) => boolean {
+  const startKey = tileKey(from.x, from.y, from.z ?? 0);
+  const components = walkComponentsFrom(scene, from);
+  return (p: Pt) => {
+    const z = p.z ?? 0;
+    if (tileKey(p.x, p.y, z) === startKey) return true;
+    const id = walkComponentAt(scene, p.x, p.y, z);
+    return id !== null && components.has(id);
+  };
 }
 
 export function portalsForParty(
@@ -174,14 +168,14 @@ export function portalsForParty(
   if (occupiedZoneIds.size) return portalsFromRooms(scene, occupiedZoneIds);
   // Sorties ACCESSIBLES au groupe. L'environnement de traversée est FIXE ici — aucune case bloquée,
   // empreinte 1×1, aucun saut, aucune capacité de nage/escalade : « il existe un chemin jusqu'à cette
-  // porte » se réduit donc exactement à « sa case est dans la composante marchable du groupe ». Une
-  // seule exploration répond pour TOUTES les portes, au lieu d'une par porte.
-  const reachable = reachedOnFoot(scene, partyPos);
+  // porte » se réduit donc exactement à « sa case est dans la composante marchable du groupe ». La
+  // composante ne dépend QUE de la scène : un pas ne la recalcule pas, il ne fait que la relire.
+  const reached = reachedOnFootFrom(scene, partyPos);
   return roomPortals(scene)
     .filter((portal) =>
       portal.exterior
       && portal.toZoneId === null
-      && reachable.has(tileKey(portal.to.x, portal.to.y, portal.to.z ?? 0)))
+      && reached(portal.to))
     .map((portal) => ({
       ...portal,
       id: `${edgeKey(portal.edge.x, portal.edge.y, portal.edge.side, portal.z)}:exterior:${portal.fromZoneId}`,

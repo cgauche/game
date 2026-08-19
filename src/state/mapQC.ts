@@ -3,29 +3,19 @@
  * en assertions MÉCANIQUES générales, réutilisables par le test de N'IMPORTE QUELLE scène (`buildScene`).
  * Node-safe (ZÉRO import ui/gameIso). RÉFUTE (échoue si une pièce est murée) plutôt que certifier.
  */
-import type { Pt } from './path';
-import { walkNeighbors } from './path';
+import { walkReachableFrom } from './path';
 import { isDescriptiveZone, isWalkable, type Scene, type SceneEffectZone } from './scene';
 import { zoneAreaTiles } from './zones';
 
 const key = (x: number, y: number, z: number) => `${x},${y},${z}`;
 
-/** Toutes les cases atteignables À PIED depuis `start` (BFS via `walkNeighbors`, portée illimitée,
- *  cross-couche). Brique commune du harnais. */
+/** Toutes les cases atteignables À PIED depuis `start` (portée illimitée, cross-couche) — léguées par
+ *  l'étiquetage des composantes marchables de la scène (`walkReachableFrom`, `path.ts` : la SOURCE
+ *  UNIQUE de connectivité, bâtie une fois par scène), plus de parcours propre au harnais. Les clés
+ *  portent TOUJOURS leur étage (« x,y,z ») — la convention de ce harnais, pas celle de `path.ts`. */
 export function reachableCells(scene: Scene, start: { x: number; y: number; z?: number }): Set<string> {
-  const startZ = start.z ?? 0;
-  const seen = new Set<string>([key(start.x, start.y, startZ)]);
-  const queue: Pt[] = [{ x: start.x, y: start.y, z: startZ }];
-  while (queue.length) {
-    const p = queue.shift()!;
-    for (const n of walkNeighbors(scene, p)) {
-      const nz = n.z ?? 0;
-      const k = key(n.x, n.y, nz);
-      if (seen.has(k)) continue;
-      seen.add(k);
-      queue.push({ x: n.x, y: n.y, z: nz });
-    }
-  }
+  const seen = new Set<string>();
+  for (const p of walkReachableFrom(scene, start)) seen.add(key(p.x, p.y, p.z ?? 0));
   return seen;
 }
 

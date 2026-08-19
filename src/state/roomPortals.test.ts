@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { emptyScene, isDescriptiveZone, isWalkable, setDoorOpen, setStructureDown, type Scene, type WallSeg } from './scene';
 import { portalsForParty, portalsFromRooms, roomPortals, type RoomPortal } from './roomPortals';
-import { pathTo, type Pt } from './path';
+import { pathTo, walkNeighbors, tileKey, type Pt } from './path';
 import { sceneZoneTiles } from './zones';
 import { effectiveArchitecture } from './sceneEdit';
 import { massFootprintCells } from '../gameIso/builders/roofs';
 import { occupiedInteriorZoneIds } from '../gameIso/stage/roomFocus';
-import { diligenceCampaign } from '../scenes/campaign';
+import { campaign, diligenceCampaign } from '../scenes/campaign';
 
 function sceneWithRooms(
   walls: WallSeg[] = [],
@@ -382,5 +382,132 @@ describe('roomPortals — mémoïsé par scène, et rafraîchi dès qu’elle ch
     const apres = roomPortals(ouvert);
     expect(apres, 'la scène a changé : le mémo doit avoir été refait').not.toBe(avant);
     expect(surLEdge(apres)?.kind).toBe('door-open');
+  });
+});
+
+/**
+ * #1416 LOT 1 — l'accessibilité des sorties se lit désormais sur un ÉTIQUETAGE de composantes
+ * marchables bâti PAR SCÈNE (`walkComponentAt`), là où chaque pas relançait une exploration en
+ * largeur plein-carte. Deux contrats verrouillent l'échange : le résultat est le MÊME (équivalence
+ * avec l'exploration, gardée ici comme ORACLE), et son coût ne vit plus dans le pas.
+ */
+const sceneDe = (id: string): Scene => campaign.find((c) => c.id === id)!.scene;
+
+/** L'ANCIENNE formulation, gardée comme oracle : une exploration en largeur par appel. */
+function parExplorationEnLargeur(scene: Scene, from: Pt, occupiedZoneIds: ReadonlySet<string>): RoomPortal[] {
+  if (occupiedZoneIds.size) return portalsFromRooms(scene, occupiedZoneIds);
+  const start = { x: from.x, y: from.y, z: from.z ?? 0 };
+  const reached = new Set<string>([tileKey(start.x, start.y, start.z)]);
+  const queue: Pt[] = [start];
+  for (let i = 0; i < queue.length; i++) {
+    for (const next of walkNeighbors(scene, queue[i])) {
+      const k = tileKey(next.x, next.y, next.z ?? 0);
+      if (reached.has(k)) continue;
+      reached.add(k);
+      queue.push(next);
+    }
+  }
+  return roomPortals(scene)
+    .filter((portal) => portal.exterior
+      && portal.toZoneId === null
+      && reached.has(tileKey(portal.to.x, portal.to.y, portal.to.z ?? 0)))
+    .map((portal) => ({
+      ...portal,
+      fromZoneId: null,
+      toZoneId: portal.fromZoneId,
+      from: portal.to,
+      to: portal.from,
+    }));
+}
+
+/** Signature d'un accès, hors `id` — lequel est réécrit par `portalsForParty` à partir de champs tous
+ *  présents ici (arête, étage, zone de rattachement) : deux accès de même signature portent le même `id`. */
+const signature = ({ id: _id, ...reste }: RoomPortal) => JSON.stringify(reste);
+
+describe('portalsForParty — mêmes sorties que l’exploration en largeur, sur les cartes réelles', () => {
+  const cartes: [string, Scene][] = [
+    ['arene-hub', sceneDe('arene-hub')],
+    ['arene-exp-village', sceneDe('arene-exp-village')],
+    ['arene-zone13', sceneDe('arene-zone13')],
+    ['diligence', diligenceCampaign.scenes[0]],
+  ];
+
+  /** Échantillon de positions : cases MARCHABLES réparties sur toute la carte (toutes couches) ET
+   *  cases NON marchables (le groupe peut se tenir sur une case que le pas ne peut pas fouler — la
+   *  branche où le départ n'a aucune étiquette et emprunte celles de ses voisins). */
+  const positions = (scene: Scene, combien: number): Pt[] => {
+    const marchables: Pt[] = [];
+    const bloquees: Pt[] = [];
+    const { w, h } = scene.dimensions;
+    for (const l of scene.layers)
+      for (let y = 0; y < h; y++)
+        for (let x = 0; x < w; x++) {
+          const p: Pt = l.z ? { x, y, z: l.z } : { x, y };
+          (isWalkable(scene, x, y, l.z) ? marchables : bloquees).push(p);
+        }
+    const prends = (source: Pt[], n: number) => {
+      const pas = Math.max(1, Math.floor(source.length / n));
+      return source.filter((_, i) => i % pas === 0).slice(0, n);
+    };
+    return [...prends(marchables, combien), ...prends(bloquees, Math.ceil(combien / 2))];
+  };
+
+  it.each(cartes)('%s — accès identiques, case par case', (nom, scene) => {
+    const cases = positions(scene, 24);
+    expect(cases.length, `${nom} : échantillon vide`).toBeGreaterThan(12);
+    let horsPiece = 0;
+    for (const pos of cases) {
+      const occupees = occupiedInteriorZoneIds(scene, [pos]);
+      if (!occupees.size) horsPiece++;
+      const attendu = parExplorationEnLargeur(scene, pos, occupees).map(signature);
+      const obtenu = portalsForParty(scene, pos, occupees).map(signature);
+      expect(obtenu, `${nom} — case ${pos.x},${pos.y},${pos.z ?? 0}`).toEqual(attendu);
+    }
+    // Sans cases HORS pièce, l'échantillon ne prouverait rien : la branche mesurée serait le
+    // raccourci `portalsFromRooms`, pas l'accessibilité à pied.
+    expect(horsPiece, `${nom} : aucune case hors pièce échantillonnée`).toBeGreaterThan(8);
+  }, 120000);
+
+  it('des sorties sont bien RETENUES et d’autres ÉCARTÉES (sinon l’équivalence serait vide)', () => {
+    const scene = sceneDe('arene-exp-village');
+    const rendus = new Set<number>();
+    for (const pos of positions(scene, 24)) {
+      const occupees = occupiedInteriorZoneIds(scene, [pos]);
+      if (occupees.size) continue;
+      rendus.add(portalsForParty(scene, pos, occupees).length);
+    }
+    const total = roomPortals(scene).filter((p) => p.exterior && p.toZoneId === null).length;
+
+    expect(total, 'la carte doit porter des sorties extérieures').toBeGreaterThan(0);
+    expect([...rendus].some((n) => n > 0), 'aucune sortie retenue nulle part').toBe(true);
+    expect([...rendus].some((n) => n < total), 'toutes les sorties retenues partout : rien n’est écarté').toBe(true);
+  });
+});
+
+/**
+ * COÛT : le travail d'accessibilité appartient à la SCÈNE, pas au PAS. Mesuré par une sonde qui
+ * compte les LECTURES de la scène (Proxy) — observable indépendante de l'implémentation : un pas qui
+ * refouille la carte lit forcément ses couches/tuiles des milliers de fois.
+ */
+describe('portalsForParty — le coût vit dans la scène, plus dans le pas (#1416)', () => {
+  it('après le premier calcul, 40 pas ne relisent presque plus la carte', () => {
+    const brute = sceneDe('arene-hub');
+    let lectures = 0;
+    const scene = new Proxy(brute, {
+      get(cible, prop, recepteur) { lectures++; return Reflect.get(cible, prop, recepteur); },
+    }) as Scene;
+    const { w, h } = brute.dimensions;
+    const cases: Pt[] = [];
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (isWalkable(brute, x, y, 0)) cases.push({ x, y });
+    const horsPiece = new Set<string>();
+
+    portalsForParty(scene, cases[0], horsPiece);
+    const premier = lectures;
+    lectures = 0;
+    for (let i = 0; i < 40; i++) portalsForParty(scene, cases[(i * 17) % cases.length], horsPiece);
+    const quaranteS = lectures;
+
+    expect(premier, 'le premier calcul fouille bien la carte').toBeGreaterThan(10000);
+    expect(quaranteS / 40, 'un pas doit coûter O(portes), pas O(carte)').toBeLessThan(premier / 100);
   });
 });

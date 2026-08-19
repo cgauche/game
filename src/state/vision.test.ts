@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { computeVisible, computeLightField, ambientScalar, baseSightTiles, combatantLights, darkSightTiles, mapLights, type LightField } from './vision';
 import { Scene, WallSeg } from './scene';
 import { METRES_PER_LEVEL } from './relief';
+import { computeStateVisible } from './visionState';
+import { campaign, diligenceCampaign } from '../scenes/campaign';
 
 const DAY = 12 * 60; // 12:00 → jour
 const NIGHT = 23 * 60; // 23:00 → nuit (NIGHT_WINDOW 22:00-05:00)
@@ -247,4 +249,77 @@ describe('computeLightField — ambiance plancher + halo de source', () => {
     expect(f.at(1, 0)).toBeGreaterThan(0); // avant le mur : éclairé
     expect(f.at(3, 0)).toBe(0); // derrière le mur : noir
   });
+});
+
+/**
+ * CE QUE LE GROUPE VOIT SUR LES CARTES RÉELLES — empreinte de la vue (taille + hachage FNV-1a des
+ * cases) à 36 postes répartis sur trois cartes jouées, dont l'étage de La Diligence. Les petites
+ * scènes ci-dessus disent la RÈGLE ; celle-ci dit le RÉSULTAT, seul filet qui attrape un changement
+ * de brouillard né d'une optimisation — le rayon échantillonné décide d'un pixel de coin, et une
+ * « accélération équivalente » qui déplace une seule case le fait ici tomber en rouge.
+ * Empreintes MESURÉES le 2026-08-19 (#1416) : identiques à celles de l'implémentation d'avant
+ * l'étape sans-allocation (les deux versions comparées dans le même processus, 36/36 postes égaux,
+ * champ de lumière compris). Une empreinte qui change = un changement de VUE : le justifier, puis
+ * remesurer — jamais recopier la nouvelle valeur pour faire taire le rouge.
+ */
+describe('computeVisible — vue INCHANGÉE sur les cartes réelles (empreintes #1416)', () => {
+  const empreinte = (cases: Set<string>): string => {
+    let hache = 0x811c9dc5;
+    for (const k of [...cases].sort())
+      for (let i = 0; i < k.length; i++) { hache ^= k.charCodeAt(i); hache = Math.imul(hache, 0x01000193) >>> 0; }
+    return `${cases.size}:${hache.toString(16)}`;
+  };
+
+  const cartes: [string, Scene, [number, number, number, string][]][] = [
+    ['arene-hub', campaign.find((c) => c.id === 'arene-hub')!.scene, [
+      [1, 1, 0, '186:466dec0f'],
+      [6, 4, 0, '253:19f6ab98'],
+      [20, 7, 0, '955:90165a9c'],
+      [27, 10, 0, '1143:25498f87'],
+      [35, 13, 0, '141:732cf450'],
+      [46, 16, 0, '891:1b30cc4b'],
+      [3, 20, 0, '932:889f176d'],
+      [8, 23, 0, '1046:9440af01'],
+      [15, 26, 0, '1213:1db43e95'],
+      [25, 29, 0, '1202:fc9a14b'],
+      [33, 32, 0, '1078:4ca5078b'],
+      [43, 35, 0, '127:a5f5cc4f'],
+    ]],
+    ['arene-exp-village', campaign.find((c) => c.id === 'arene-exp-village')!.scene, [
+      [1, 1, 0, '136:5ec30abb'],
+      [26, 2, 0, '254:37438b9d'],
+      [21, 4, 0, '473:6beec7a4'],
+      [15, 6, 0, '589:b7f576e'],
+      [9, 8, 0, '600:78514c0b'],
+      [8, 10, 0, '606:4e7da482'],
+      [1, 12, 0, '481:345b1333'],
+      [26, 13, 0, '509:bd457a0d'],
+      [19, 15, 0, '657:4a2d12e1'],
+      [13, 17, 0, '661:251fc6f7'],
+      [6, 19, 0, '536:415b1edb'],
+      [31, 20, 0, '366:56245c56'],
+    ]],
+    ['diligence', diligenceCampaign.scenes[0], [
+      [0, 0, 0, '62:75652ee8'],
+      [8, 4, 0, '100:3f7efa4'],
+      [16, 8, 0, '208:a228e0c4'],
+      [24, 12, 0, '116:d17fb990'],
+      [0, 17, 0, '38:a48e3264'],
+      [8, 21, 0, '77:6a5dbe1a'],
+      [16, 25, 0, '268:2085c87'],
+      [24, 29, 0, '13:a1c27c9e'],
+      [0, 34, 0, '38:a48e3264'],
+      [5, 7, 1, '1276:a3005eaa'],
+      [11, 12, 1, '1359:8abc13f5'],
+      [17, 17, 1, '1386:72c7a3da'],
+    ]],
+  ];
+
+  it.each(cartes)('%s — même vue à chaque poste', (nom, carte, postes) => {
+    for (const [x, y, z, attendue] of postes) {
+      const pos = z ? { x, y, z } : { x, y };
+      const vue = computeStateVisible({ scene: carte, battle: null, party: [], partyPos: pos, gameTime: DAY, lightLevel: null });
+      expect(empreinte(vue), `${nom} — poste ${x},${y},${z}`).toBe(attendue);
+    }
+  }, 60000);
 });

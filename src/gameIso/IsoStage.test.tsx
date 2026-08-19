@@ -96,11 +96,10 @@ describe('IsoStage — stabilité de propEls entre deux rendus sans changement l
 });
 
 /**
- * #817 — les ACCÈS de pièce sont le poste le plus lourd du stage : hors zone intérieure,
- * `portalsForParty` teste l'accessibilité de CHAQUE porte extérieure par un BFS plein-carte
- * (`roomPortals.ts` → `pathTo`, sans borne de portée). Ses seules vraies entrées sont la SCÈNE et la
- * case de CONTRÔLE ; une image d'animation de marche (le jeton glisse, la case ne change pas) ne
- * doit en déclencher AUCUN, et un changement de case doit en déclencher UN.
+ * #817 — les ACCÈS de pièce se recalculent à la CASE, jamais à l'image : hors zone intérieure,
+ * `portalsForParty` filtre les sorties sur la composante marchable du groupe (`roomPortals.ts`). Ses
+ * seules vraies entrées sont la SCÈNE et la case de CONTRÔLE ; une image d'animation de marche (le
+ * jeton glisse, la case ne change pas) ne doit en déclencher AUCUN, et un changement de case UN.
  */
 describe('IsoStage — accès de pièce recalculés à la case, pas à l’image (#817)', () => {
   let root: Root | null = null;

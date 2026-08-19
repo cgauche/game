@@ -479,12 +479,11 @@ export function IsoStage() {
   );
 
   // ── Accès de PIÈCE (portes/passages des overlays) ──────────────────────────────────────────────
-  // `portalsForParty` scanne toute la carte et, hors zone intérieure, teste l'accessibilité de CHAQUE
-  // porte extérieure par un BFS plein-carte (`roomPortals.ts` → `pathTo`, sans borne de portée) : le
-  // poste le plus lourd du stage sur une grande scène. Ses seules vraies entrées sont la SCÈNE (réf
-  // neuve dès qu'une porte s'ouvre — `wallEdges`/`doorIsOpen` lisent `scene.flags`) et la case de
-  // CONTRÔLE arrondie ; le glissement visuel d'une marche n'en fait pas partie, donc une image
-  // d'animation ne recalcule aucun accès (#817).
+  // `portalsForParty` lit les accès de la scène (mémoïsés) et, hors zone intérieure, ne garde que les
+  // sorties de la COMPOSANTE marchable du groupe (`walkComponentAt`, étiquetage bâti une fois par
+  // scène — #1416). Ses seules vraies entrées sont la SCÈNE (réf neuve dès qu'une porte s'ouvre —
+  // `wallEdges`/`doorIsOpen` lisent `scene.flags`) et la case de CONTRÔLE arrondie ; le glissement
+  // visuel d'une marche n'en fait pas partie, donc une image d'animation ne recalcule aucun accès (#817).
   const doorCtrlKey = battle
     ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? `${activeC.id}@${activeC.pos.x},${activeC.pos.y},${activeC.pos.z ?? 0}` : '')
     : `party@${partyPos.x},${partyPos.y},${partyPos.z ?? 0}`;

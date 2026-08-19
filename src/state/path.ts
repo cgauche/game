@@ -135,6 +135,76 @@ export function walkNeighbors(scene: Scene, p: Pt): Pt[] {
   return neighborsOf(scene, p, wallEdges(scene));
 }
 
+/** Étiquetage des COMPOSANTES CONNEXES marchables d'une scène : chaque case marchable reçoit le numéro
+ *  du bloc de cases qu'on peut parcourir à pied depuis elle (`walkNeighbors` — la SOURCE UNIQUE de
+ *  connectivité ; l'arête marchable est symétrique par construction, cf. `neighborsOf`). Répond en O(1)
+ *  à « existe-t-il un chemin de A à B ? » quand l'environnement de traversée est nu (aucune case
+ *  bloquée, empreinte 1×1, ni saut ni nage ni escalade) : même étiquette = même composante. Ne dépend
+ *  que de la SCÈNE — d'où la mémoïsation par identité (`memoByRef`, même patron que `wallEdges`) :
+ *  ouvrir une porte rend une nouvelle réf de scène et refait donc l'étiquetage. */
+function walkComponentsUncached(scene: Scene): Map<string, number> {
+  const label = new Map<string, number>();
+  const { w, h } = scene.dimensions;
+  let nextId = 0;
+  for (const layer of scene.layers) {
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const k = key(x, y, layer.z);
+      if (label.has(k) || !isWalkable(scene, x, y, layer.z)) continue;
+      const id = nextId++;
+      label.set(k, id);
+      const queue: Pt[] = [pt(x, y, layer.z)];
+      for (let i = 0; i < queue.length; i++) {
+        for (const n of walkNeighbors(scene, queue[i])) {
+          const nk = key(n.x, n.y, pz(n));
+          if (label.has(nk)) continue;
+          label.set(nk, id);
+          queue.push(n);
+        }
+      }
+    }
+  }
+  return label;
+}
+const walkComponentsOf = memoByRef(walkComponentsUncached);
+
+/** Numéro de composante marchable de la case (`walkComponentsUncached`), ou `null` si elle n'est pas
+ *  marchable. Deux cases de même numéro sont reliées à pied, deux numéros distincts ne le sont pas. */
+export function walkComponentAt(scene: Scene, x: number, y: number, z = 0): number | null {
+  return walkComponentsOf(scene).get(key(x, y, z)) ?? null;
+}
+
+/** Composantes marchables ATTEINTES depuis `from` : la sienne s'il est marchable, sinon celles de ses
+ *  voisins immédiats — exactement les cases d'où une exploration à pied serait partie (un départ non
+ *  marchable, jeton posé sur un obstacle, n'annule pas ses voisins). SOURCE UNIQUE du verdict
+ *  « joignable depuis `from` » : `walkComponentAt(p) ∈ walkComponentsFrom(from)`. */
+export function walkComponentsFrom(scene: Scene, from: Pt): Set<number> {
+  const z = pz(from);
+  const own = walkComponentAt(scene, from.x, from.y, z);
+  if (own !== null) return new Set([own]);
+  const out = new Set<number>();
+  for (const n of walkNeighbors(scene, pt(from.x, from.y, z))) {
+    const id = walkComponentAt(scene, n.x, n.y, pz(n));
+    if (id !== null) out.add(id);
+  }
+  return out;
+}
+
+/** Cases atteignables À PIED depuis `from`, sans borne de portée — l'ÉNUMÉRATION de `walkComponentsFrom`
+ *  (là où le prédicat suffit, l'appeler lui, pas ceci : il répond en O(1) sans parcourir la carte).
+ *  `from` en fait toujours partie, comme un chemin de longueur nulle, même s'il n'est pas marchable. */
+export function walkReachableFrom(scene: Scene, from: Pt): Pt[] {
+  const z = pz(from);
+  const ids = walkComponentsFrom(scene, from);
+  const out: Pt[] = [pt(from.x, from.y, z)];
+  const startKey = key(from.x, from.y, z);
+  for (const [k, id] of walkComponentsOf(scene)) {
+    if (!ids.has(id) || k === startKey) continue;
+    const [cx, cy, cz = 0] = k.split(',').map(Number);
+    out.push(pt(cx, cy, cz));
+  }
+  return out;
+}
+
 /** Sauts (Saut, LDB 15 l.76) : atterrissages possibles en franchissant un GOUFFRE — des cases
  *  non-marchables au même étage, en ligne droite — jusqu'à `jump` cases de distance. Une case
  *  intermédiaire MARCHABLE interrompt (on s'y poserait au lieu de sauter par-dessus). Les sauts

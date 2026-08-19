@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, wallBetween, edgeOf, setDoorOpen, type Scene } from './scene';
-import { pathTo, reachable, walkNeighbors } from './path';
+import { pathTo, reachable, walkComponentAt, walkNeighbors } from './path';
 
 /**
  * Murs sur ARÊTES (cloisons fines) : ils bloquent le PASSAGE entre deux cases adjacentes sans rendre
@@ -57,5 +57,47 @@ describe('murs sur arêtes — walkability', () => {
     const opened = setDoorOpen(s, 1, 1, 'E', 0, true); // NOUVELLE réf scène
     const after = walkNeighbors(opened, { x: 1, y: 1 });
     expect(after.some((n) => n.x === 2 && n.y === 1)).toBe(true); // cache invalidé, porte franchissable
+  });
+});
+
+/**
+ * COMPOSANTES marchables (#1416) : l'étiquetage qui répond « existe-t-il un chemin de A à B ? » sans
+ * refaire un parcours par question. Il doit dire EXACTEMENT ce que dit `pathTo` sur environnement nu,
+ * et suivre l'état RUNTIME des portes — un étiquetage figé à l'état de départ serait pire que pas
+ * d'étiquetage : il condamnerait à jamais ce qu'une porte ouverte vient de relier.
+ */
+describe('composantes marchables — même verdict que `pathTo`, et rafraîchies avec la scène', () => {
+  const comp = (s: Scene, x: number, y: number) => walkComponentAt(s, x, y, 0);
+
+  it('un mur plein sépare les composantes, une porte les réunit — comme `pathTo`', () => {
+    const mur = walledColumn();
+    const porte = walledColumn(2);
+
+    expect(comp(mur, 0, 0)).not.toBeNull();
+    expect(comp(mur, 0, 0)).toBe(comp(mur, 1, 3)); // même côté
+    expect(comp(mur, 0, 0)).not.toBe(comp(mur, 3, 0)); // de part et d'autre du mur
+    expect(pathTo(mur, { x: 0, y: 0 }, { x: 3, y: 0 }, { blocked: empty })).toBeNull();
+
+    expect(comp(porte, 0, 0)).toBe(comp(porte, 3, 0)); // la porte réunit
+    expect(pathTo(porte, { x: 0, y: 0 }, { x: 3, y: 0 }, { blocked: empty })).not.toBeNull();
+  });
+
+  it('une case NON marchable n’a aucune étiquette', () => {
+    const s = emptyScene(4, 4);
+    s.layers[0].tiles[1 * 4 + 1] = 'mur';
+
+    expect(comp(s, 1, 1)).toBeNull();
+    expect(comp(s, 0, 0)).not.toBeNull();
+  });
+
+  it('ouvrir une porte (scène neuve) refait l’étiquetage : les deux côtés se rejoignent', () => {
+    const s = emptyScene(4, 4);
+    s.walls = [0, 1, 2, 3].map((y) => ({ x: 1 as const, y, side: 'E' as const, door: y === 2, closed: y === 2 }));
+    expect(comp(s, 0, 0), 'porte fermée : les deux côtés sont séparés').not.toBe(comp(s, 3, 0));
+
+    const ouvert = setDoorOpen(s, 1, 2, 'E', 0, true); // NOUVELLE réf de scène
+
+    expect(comp(ouvert, 0, 0), 'porte ouverte : même composante').toBe(comp(ouvert, 3, 0));
+    expect(pathTo(ouvert, { x: 0, y: 0 }, { x: 3, y: 0 }, { blocked: empty })).not.toBeNull();
   });
 });
