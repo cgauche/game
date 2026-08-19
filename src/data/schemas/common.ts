@@ -4,6 +4,7 @@
  * se factorise ICI — jamais recopié dans chaque def.
  */
 import { z } from 'zod';
+import { isMenaceId, menaceIds } from '../../engine/menace';
 
 /**
  * Un `GameOp` (`src/engine/ops.ts`) tel qu'il apparaît en DONNÉE : forme LOOSE — seul `op` (le nom
@@ -564,7 +565,20 @@ export const flowTestSchema = z.strictObject({
    *  dialogue : soutenable ; effet déclenché / consommable : non soutenable) ; `true` = jamais
    *  soutenable ; `false` = soutenable malgré la voie (Test de soin d'un nécessaire). */
   noSupport: z.boolean().optional(),
-  menace: z.string().optional(),
+  /** Tag MENACE du talent « Résistance (Menace) » (LDB 10 l.1015-1021) — CLÉ ÉTRANGÈRE vers un id de
+   *  spec de l'entrée `resistance` de `talents.json`, résolue à la VALIDATION (liste OUVERTE : une
+   *  spec ajoutée au Compendium est utilisable sans toucher au code). Un id inconnu échoue au
+   *  chargement (`dev-validate`), au contrat CI (`schema-contract.test.ts`) et à la sauvegarde Codex. */
+  menace: z
+    .string()
+    .superRefine((v, ctx) => {
+      if (isMenaceId(v)) return;
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `menace « ${v} » : aucune spec de ce nom sur le talent « resistance » (talents.json). Valeurs admises : ${menaceIds().join(', ')}`,
+      });
+    })
+    .optional(),
   difficultyBy: z.array(z.strictObject({ cond: conditionSchema, difficulty: difficultySchema })).optional(),
   opposed: z
     .strictObject({

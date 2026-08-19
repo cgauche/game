@@ -1514,9 +1514,7 @@ function applyHit(
   // Talents de Dégâts (LDB 10) : Coup puissant (mêlée), Tir précis (distance), Combat déloyal
   // (Bagarre), Charge berserk/Déterminé (en Charge) — +niveau, avant le multiplicateur de Taille.
   damage += talentDamageBonus(attacker, weapon, !!attacker.chargedThisTurn);
-  // LDB 85 l.361 (la multiplication s'applique après les modificateurs — l'ordre exact vis-à-vis de
-  // l'encaisse Bonus d'E + PA est à trancher, ticket à venir ; l'implémentation actuelle multiplie
-  // avant l'encaisse).
+  // LDB 85 l.361 ; ordre vis-à-vis de l'encaisse : séquence LDB 13 l.149-163 (étape 3 Dégâts, étape 4 encaisse).
   if (!noSize) damage *= sizeDamageMultiplier(dmgSize, defender.size);
   // Coque (MDG 13 l.618-637) : le BE ajusté du tableau (« 3 × BE » / « BE−1 ») est appliqué côté
   // Dégâts (mathématiquement identique, sans écraser le clamp de PA) — « 3 × BE » ⇔ −2×BE de plus.

@@ -13,6 +13,7 @@ import type { Effect } from '../../state/scene';
 import { Icon } from '../Icon';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
+import { menaceIds } from '../../engine/menace';
 import { RefField } from '../compendium/RefField';
 import { refLabel } from '../../data';
 import {
@@ -98,14 +99,21 @@ export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: F
         <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="compétence" value={test.easierIf?.hasSkill} onChange={(v) => setEase({ hasSkill: (v as { id: string; spec?: string } | null) ?? undefined })} nullable />
         <input placeholder="ou talent" value={test.easierIf?.hasTalent ?? ''} onChange={(e) => setEase({ hasTalent: e.target.value || undefined })} />
         <label className="dr">−<input type="number" min={1} value={test.easierIf?.steps ?? 1} onChange={(e) => setEase({ steps: Number(e.target.value) })} /> cran(s)</label>
-        {/* Menace du talent « Résistance (Menace) » (LDB 10) : tag qui offre son auto-succès sur CE Test. */}
-        <input
-          style={{ width: '9em' }}
-          placeholder="menace (Poison…)"
-          title="Résistance (Menace), LDB 10 : ce Test « résiste » à la menace indiquée (Poison, Maladie, Magie…) — le talent y offre son auto-succès"
-          value={test.menace ?? ''}
-          onChange={(e) => upd({ menace: e.target.value.trim() || undefined })}
-        />
+        {/* Menace du talent « Résistance (Menace) » (LDB 10) : tag qui offre son auto-succès sur CE Test.
+            Les options sont les SPECS AUTHORÉES du talent (`menaceIds`, lues au catalogue) — l'auteur
+            choisit un id, jamais du texte ; une spec ajoutée au Compendium apparaît ici sans code. */}
+        <label className="dr" title="Résistance (Menace), LDB 10 : ce Test « résiste » à la menace indiquée — le talent y offre son auto-succès">
+          Menace
+          <select
+            value={test.menace ?? ''}
+            onChange={(e) => upd({ menace: e.target.value || undefined })}
+          >
+            <option value="">aucune</option>
+            {menaceIds().map((m) => (
+              <option key={m} value={m}>{refLabel('talents', { id: 'resistance', spec: m })}</option>
+            ))}
+          </select>
+        </label>
         {/* Soutien (LDB 12 l.187-198) : TRI-ÉTAT authoré — le défaut suit la VOIE qui ouvre le Test
             (scène/dialogue soutenable, effet déclenché/consommable non), l'auteur peut trancher. */}
         <label className="dr" title="Soutien (LDB 12) : « selon la voie » = soutenable en scène/dialogue, non soutenable pour un effet déclenché ou un consommable ; « soutenable »/« jamais » tranchent explicitement.">

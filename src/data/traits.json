@@ -420,7 +420,10 @@
       "page": 339
     },
     "capabilities": {
-      "wardSave": true
+      "wardSave": true,
+      "grantGroups": [
+        "demon"
+      ]
     },
     "passive": [
       {
@@ -1140,7 +1143,10 @@
       "page": 340
     },
     "capabilities": {
-      "undead": true
+      "undead": true,
+      "grantGroups": [
+        "mort-vivant"
+      ]
     }
   },
   {

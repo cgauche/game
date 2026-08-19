@@ -743,7 +743,10 @@
     },
     "appearance": {
       "species": "araignee"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "cheval",
@@ -817,7 +820,10 @@
     },
     "appearance": {
       "species": "cheval"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "chien",
@@ -916,7 +922,10 @@
     "appearance": {
       "species": "chien",
       "harnais": "harnais-de-guerre-canin"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "loup",
@@ -1009,7 +1018,10 @@
     },
     "appearance": {
       "species": "loup"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "ours",
@@ -1098,7 +1110,10 @@
     },
     "appearance": {
       "species": "ours"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "pigeon",
@@ -1162,7 +1177,10 @@
     },
     "appearance": {
       "species": "pigeon"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "rat-geant",
@@ -1251,7 +1269,10 @@
     },
     "appearance": {
       "species": "rat-geant"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "sanglier",
@@ -1342,7 +1363,10 @@
     },
     "appearance": {
       "species": "sanglier"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "serpent",
@@ -1436,7 +1460,10 @@
     },
     "appearance": {
       "species": "serpent"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "basilic",
@@ -1523,7 +1550,10 @@
     },
     "appearance": {
       "species": "basilic"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "bete-des-marais",
@@ -1609,6 +1639,9 @@
         "book": "vents-de-la-magie",
         "page": 179
       }
+    ],
+    "grantGroups": [
+      "bete"
     ]
   },
   {
@@ -1685,7 +1718,10 @@
     },
     "appearance": {
       "species": "griffon"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "dragon",
@@ -1792,7 +1828,10 @@
     },
     "appearance": {
       "species": "dragon"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "fimir",
@@ -1858,7 +1897,10 @@
     "appearance": {
       "species": "fimir",
       "tenue": "nu"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "geant",
@@ -1943,7 +1985,10 @@
       "rarity": "Rare",
       "danger": "Menaçante",
       "uses": "Les ongles de pied de géant constituent des boucliers invincibles"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "griffon",
@@ -2025,7 +2070,10 @@
       "rarity": "Rare",
       "danger": "Inquiétante",
       "uses": "Plumes porte-bonheur"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "hyppogriffe",
@@ -2112,7 +2160,10 @@
     },
     "appearance": {
       "species": "hippogriffe"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "hydre",
@@ -2195,7 +2246,10 @@
     },
     "appearance": {
       "species": "hydre"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "jabberslythe",
@@ -2283,7 +2337,10 @@
     },
     "appearance": {
       "species": "jabberslythe"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "manticore",
@@ -2368,7 +2425,10 @@
     },
     "appearance": {
       "species": "manticore"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "pegase",
@@ -2435,7 +2495,10 @@
     "appearance": {
       "species": "pegase",
       "harnais": "collier-dore-pegase"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "pieuvre-des-tourbieres",
@@ -2506,7 +2569,10 @@
     },
     "appearance": {
       "species": "pieuvre"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "squig-des-cavernes",
@@ -2601,7 +2667,10 @@
     },
     "appearance": {
       "species": "squig"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "troll",
@@ -2705,7 +2774,10 @@
     "appearance": {
       "species": "troll",
       "tenue": "nu"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "vouivre",
@@ -2794,7 +2866,10 @@
       "rarity": "Rare",
       "danger": "Menaçante",
       "uses": "Le venin de sa queue serait capable de tuer n'importe quelle créature"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "orc",
@@ -2868,7 +2943,10 @@
       "species": "orc",
       "tenue": "mendiant",
       "armurePortee": true
-    }
+    },
+    "grantGroups": [
+      "peau-verte"
+    ]
   },
   {
     "id": "gobelin",
@@ -2945,7 +3023,10 @@
     "appearance": {
       "species": "gobelin",
       "tenue": "mendiant"
-    }
+    },
+    "grantGroups": [
+      "peau-verte"
+    ]
   },
   {
     "id": "snotling",
@@ -3014,7 +3095,10 @@
     "appearance": {
       "species": "snotling",
       "tenue": "nu"
-    }
+    },
+    "grantGroups": [
+      "peau-verte"
+    ]
   },
   {
     "id": "banshee",
@@ -3088,7 +3172,10 @@
     },
     "appearance": {
       "species": "banshee"
-    }
+    },
+    "grantGroups": [
+      "mort-vivant"
+    ]
   },
   {
     "id": "chauve-souris-vampire-varghulf",
@@ -3189,7 +3276,10 @@
     },
     "appearance": {
       "species": "varghulf"
-    }
+    },
+    "grantGroups": [
+      "mort-vivant"
+    ]
   },
   {
     "id": "fantome",
@@ -3260,7 +3350,10 @@
     },
     "appearance": {
       "species": "fantome"
-    }
+    },
+    "grantGroups": [
+      "mort-vivant"
+    ]
   },
   {
     "id": "goule-de-crypte",
@@ -3320,7 +3413,10 @@
     "appearance": {
       "species": "goule",
       "tenue": "nu"
-    }
+    },
+    "grantGroups": [
+      "mort-vivant"
+    ]
   },
   {
     "id": "loup-funeste",
@@ -3406,7 +3502,10 @@
     },
     "appearance": {
       "species": "loup"
-    }
+    },
+    "grantGroups": [
+      "mort-vivant"
+    ]
   },
   {
     "id": "spectre-de-cairn",
@@ -3477,7 +3576,10 @@
     },
     "appearance": {
       "species": "spectre"
-    }
+    },
+    "grantGroups": [
+      "mort-vivant"
+    ]
   },
   {
     "id": "squelette",
@@ -3551,7 +3653,10 @@
     "appearance": {
       "species": "squelette",
       "tenue": "squelette"
-    }
+    },
+    "grantGroups": [
+      "mort-vivant"
+    ]
   },
   {
     "id": "vampire",
@@ -3662,7 +3767,10 @@
     "appearance": {
       "species": "vampire",
       "tenue": "vampire"
-    }
+    },
+    "grantGroups": [
+      "mort-vivant"
+    ]
   },
   {
     "id": "zombie",
@@ -3744,7 +3852,10 @@
     "appearance": {
       "species": "zombie",
       "tenue": "mendiant"
-    }
+    },
+    "grantGroups": [
+      "mort-vivant"
+    ]
   },
   {
     "id": "chamane-brey",
@@ -3823,7 +3934,10 @@
     "appearance": {
       "species": "chamane-brey",
       "tenue": "chamane-bray"
-    }
+    },
+    "grantGroups": [
+      "homme-bete"
+    ]
   },
   {
     "id": "gor",
@@ -3910,7 +4024,10 @@
     "appearance": {
       "species": "gor",
       "tenue": "nu"
-    }
+    },
+    "grantGroups": [
+      "homme-bete"
+    ]
   },
   {
     "id": "minotaure",
@@ -3991,7 +4108,10 @@
     "appearance": {
       "species": "minotaure",
       "tenue": "nu"
-    }
+    },
+    "grantGroups": [
+      "homme-bete"
+    ]
   },
   {
     "id": "ungor",
@@ -4068,7 +4188,10 @@
     "appearance": {
       "species": "ungor",
       "tenue": "nu"
-    }
+    },
+    "grantGroups": [
+      "homme-bete"
+    ]
   },
   {
     "id": "cultiste",
@@ -4126,7 +4249,10 @@
       "tenue": "cultiste",
       "armurePortee": true
     },
-    "followsCharacterRules": true
+    "followsCharacterRules": true,
+    "grantGroups": [
+      "cultiste"
+    ]
   },
   {
     "id": "mutant",
@@ -4183,7 +4309,10 @@
       "species": "humain",
       "tenue": "mendiant"
     },
-    "followsCharacterRules": true
+    "followsCharacterRules": true,
+    "grantGroups": [
+      "cultiste"
+    ]
   },
   {
     "id": "guerrier-du-chaos",
@@ -4259,7 +4388,10 @@
       "tenue": "guerrier-du-chaos",
       "armurePortee": true
     },
-    "followsCharacterRules": true
+    "followsCharacterRules": true,
+    "grantGroups": [
+      "cultiste"
+    ]
   },
   {
     "id": "sanguinaire-de-khorne",
@@ -4336,7 +4468,10 @@
     "appearance": {
       "species": "demon",
       "tenue": "sanguinaire"
-    }
+    },
+    "grantGroups": [
+      "demon"
+    ]
   },
   {
     "id": "demonette-de-slaanesh",
@@ -4404,7 +4539,10 @@
     "appearance": {
       "species": "demonette",
       "tenue": "demonette"
-    }
+    },
+    "grantGroups": [
+      "demon"
+    ]
   },
   {
     "id": "furie-du-chaos",
@@ -4511,7 +4649,10 @@
     "appearance": {
       "species": "furie-du-chaos",
       "tenue": "nu"
-    }
+    },
+    "grantGroups": [
+      "demon"
+    ]
   },
   {
     "id": "horreur-rose",
@@ -4604,7 +4745,10 @@
     "appearance": {
       "species": "horreur-rose",
       "tenue": "nu"
-    }
+    },
+    "grantGroups": [
+      "demon"
+    ]
   },
   {
     "id": "horreur-bleue",
@@ -4690,7 +4834,10 @@
     "appearance": {
       "species": "horreur-bleue",
       "tenue": "nu"
-    }
+    },
+    "grantGroups": [
+      "demon"
+    ]
   },
   {
     "id": "slenderthigh-whiptongue",
@@ -4774,7 +4921,10 @@
     },
     "appearance": {
       "species": "slenderthigh-whiptongue"
-    }
+    },
+    "grantGroups": [
+      "demon"
+    ]
   },
   {
     "id": "fr-hough-mournbreath",
@@ -4867,7 +5017,10 @@
     },
     "appearance": {
       "species": "fr-hough-mournbreath"
-    }
+    },
+    "grantGroups": [
+      "demon"
+    ]
   },
   {
     "id": "guerrier-des-clans",
@@ -4939,7 +5092,10 @@
       "species": "skaven",
       "tenue": "skaven",
       "armurePortee": true
-    }
+    },
+    "grantGroups": [
+      "skaven"
+    ]
   },
   {
     "id": "rat-ogre",
@@ -5037,7 +5193,10 @@
     "appearance": {
       "species": "rat-ogre",
       "tenue": "rat-ogre"
-    }
+    },
+    "grantGroups": [
+      "skaven"
+    ]
   },
   {
     "id": "vermine-de-choc",
@@ -5103,7 +5262,10 @@
       "species": "vermine-de-choc",
       "tenue": "vermine-de-choc",
       "armurePortee": true
-    }
+    },
+    "grantGroups": [
+      "skaven"
+    ]
   },
   {
     "id": "destrier-cheval-de-guerre-lourd",
@@ -30610,7 +30772,10 @@
     },
     "appearance": {
       "species": "furie-du-chaos"
-    }
+    },
+    "grantGroups": [
+      "demon"
+    ]
   },
   {
     "id": "heraut-de-khorne",
@@ -30618,6 +30783,7 @@
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "khorne"
     ],
     "char": {
@@ -30736,6 +30902,7 @@
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "khorne"
     ],
     "char": {
@@ -30857,6 +31024,7 @@
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "khorne"
     ],
     "char": {
@@ -30977,6 +31145,7 @@
     "title": null,
     "folder": "Démons de Khorne (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "khorne"
     ],
     "char": {
@@ -31100,6 +31269,7 @@
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "slaanesh"
     ],
     "char": {
@@ -31231,6 +31401,7 @@
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "slaanesh"
     ],
     "char": {
@@ -31388,6 +31559,7 @@
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "slaanesh"
     ],
     "char": {
@@ -31566,6 +31738,7 @@
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "slaanesh"
     ],
     "char": {
@@ -31762,6 +31935,7 @@
     "title": null,
     "folder": "Démons de Slaanesh (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "slaanesh"
     ],
     "char": {
@@ -31964,6 +32138,7 @@
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "nurgle"
     ],
     "char": {
@@ -32060,6 +32235,7 @@
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "nurgle"
     ],
     "char": {
@@ -32155,6 +32331,7 @@
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "nurgle"
     ],
     "char": {
@@ -32266,6 +32443,7 @@
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "nurgle"
     ],
     "char": {
@@ -32409,6 +32587,7 @@
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "nurgle"
     ],
     "char": {
@@ -32558,6 +32737,7 @@
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "nurgle"
     ],
     "char": {
@@ -32734,6 +32914,7 @@
     "title": null,
     "folder": "Démons de Nurgle (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "nurgle"
     ],
     "char": {
@@ -32895,6 +33076,7 @@
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "tzeentch"
     ],
     "char": {
@@ -33007,6 +33189,7 @@
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "tzeentch"
     ],
     "char": {
@@ -33119,6 +33302,7 @@
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "tzeentch"
     ],
     "char": {
@@ -33251,6 +33435,7 @@
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "tzeentch"
     ],
     "char": {
@@ -33409,6 +33594,7 @@
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "tzeentch"
     ],
     "char": {
@@ -33594,6 +33780,7 @@
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "tzeentch"
     ],
     "char": {
@@ -33772,6 +33959,7 @@
     "title": null,
     "folder": "Démons de Tzeentch (frenchy.bzh)",
     "grantGroups": [
+      "demon",
       "tzeentch"
     ],
     "char": {
@@ -63598,7 +63786,10 @@
     },
     "appearance": {
       "species": "cheval"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "cheval-de-trait-lourd",
@@ -63668,7 +63859,10 @@
     },
     "appearance": {
       "species": "cheval"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "boeuf",
@@ -63731,7 +63925,10 @@
     },
     "appearance": {
       "species": "boeuf"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "cheval-de-monte",
@@ -63795,7 +63992,10 @@
     "appearance": {
       "species": "cheval",
       "harnais": "sellerie-imperiale"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "cheval-de-guerre-leger",
@@ -63881,7 +64081,10 @@
     "appearance": {
       "species": "cheval",
       "harnais": "sellerie-imperiale"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "mule",
@@ -63940,7 +64143,10 @@
     },
     "appearance": {
       "species": "cheval"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "ane",
@@ -63999,7 +64205,10 @@
     },
     "appearance": {
       "species": "cheval"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "poney",
@@ -64058,7 +64267,10 @@
     },
     "appearance": {
       "species": "cheval"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "blaireau",
@@ -64132,7 +64344,10 @@
     "maison": "Caractéristiques + traits d'espèce = profil du blaireau d'ADE III (Vol. III, chap. « Animal Familiars », profil PNJ VO, l.52-58). Taille portée à Moyenne : ADE III (VO) l.172 indique que le blaireau du Moot atteint la Taille (Moyenne) et sert de monture aux Halflings, SANS statbloc dédié de la variante montée → on reprend le profil du blaireau à cette Taille (seul choix maison de modélisation). Prix (100 CO) / disponibilité (Exotique) ancrés sur ADE III (VO) l.225 (animal doué mature, 100 GC, Exotic), appliqués au blaireau-monture reçu par dotation (ADE I p.88), le RAW ne tarifant pas la monture elle-même. Folio 78 : non déterminable précisément dans l'extraction (pas de marqueur de page imprimée dans le fichier source, seule l'indication « Pages PDF 75-82 » du chapitre existe) — à affiner si une extraction paginée devient disponible.",
     "appearance": {
       "species": "blaireau"
-    }
+    },
+    "grantGroups": [
+      "bete"
+    ]
   },
   {
     "id": "poulet",

@@ -272,11 +272,12 @@ describe('Poursuite — une manche bandifiée se possède comme la manche vive',
     // …et quand l'étape en porte, elles descendent (pli du socle, jamais un oubli local).
     const avecMenace = monoStep({
       id: `pursuit-9-${a.id}`, kind: 'pursuitMove', actor: a, label: fixtureText('Manche 9'), rollLabel: 'Athlétisme',
-      difficulty: 'intermediaire', montee: { base: 40, target: 40 }, menace: 'Poursuite', meta: { round: 9 },
+      // Tag de catalogue quelconque : ce qui est vérifié ici est le PLI DU SOCLE (le champ descend), pas la Menace.
+      difficulty: 'intermediaire', montee: { base: 40, target: 40 }, menace: 'maladie', meta: { round: 9 },
       stake: combatStakeRef('pursuitMove', { values: { distance: 10, evasion: 3 } }),
     })!;
     const r2 = pursuitBands([avecMenace])[0].participants![0];
-    expect(r2.menace).toBe('Poursuite');
+    expect(r2.menace).toBe('maladie');
     expect(r2.meta).toEqual({ round: 9 });
   });
 });

@@ -64,9 +64,10 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
  *  `lanceur-de-sorts` → `capabilities.spellcaster` (magic.ts), `frenesie` → `capabilities.frenzyCapable`
  *  (psychology.ts), `nerveux` → `capabilities.skittishMount` déjà porté par le trait, appel direct à
  *  `isSkittishMount` (mount.ts), `mort-vivant` → `capabilities.undead` — le TRAIT, pas le Groupe bestiaire
- *  (contre-preuve du juge de réfutation : Goule de crypte, folder « Les morts sans repos » SANS le Trait,
- *  reste ciblable par Hurlement fantomatique, LDB 85 l.170 — `traitCapability(c.traits, 'undead')`,
- *  combatManeuvers.ts ; test verrou `maneuver-effects.test.ts`).
+ *  (contre-preuve du juge de réfutation : Goule de crypte, du Groupe « mort-vivant » DÉCLARÉ par son entrée
+ *  (`CreatureData.grantGroups`, #1357) mais SANS le Trait, reste ciblable par Hurlement fantomatique,
+ *  LDB 85 l.170 — `traitCapability(c.traits, 'undead')`, combatManeuvers.ts ; test verrou
+ *  `maneuver-effects.test.ts`).
  *  `magic.ts`/`psychology.ts`/`mount.ts` retombent à 0 (retirés de `BASELINES`, défaut implicite).
  *  `combatManeuvers.ts` passe de 2 à 1 (reste `isBestial`, hors périmètre #402).
  *

@@ -1288,11 +1288,8 @@ export interface CreatureData {
   /** Récolte « Précieuses Entrailles » (ZI) : rareté + dangerosité (→ coût par Enc des pièces,
    *  cf. engine/harvest) et usages supposés des organes. Porté par la créature (pas de table //). */
   harvest?: { rarity: HarvestRarity; danger: HarvestDanger; uses: string };
-  /** Catégorie de Groupe ÉDITABLE (Traits psy ciblés, LDB 21) — surcharge la dérivation par folder
-   *  (`engine/groups`). Absent = catégorie auto-dérivée du `folder`. */
-  group?: string;
-  /** Ids de `groups.json` accordés à cette créature EN PLUS de la catégorie dérivée du `folder`
-   *  (`groupsFor`) — ex. le Groupe du dieu du Chaos d'un démon du bestiaire. Absent = aucun. */
+  /** Ids de `groups.json` de cette créature (Traits psy ciblés, LDB 21 — `groupsFor`) : sa CATÉGORIE
+   *  (« demon », « bete »…) et, le cas échéant, le Groupe du dieu du Chaos qu'elle sert. Absent = aucun. */
   grantGroups?: string[];
   /** Cette entrée du bestiaire suit-elle les règles de PERSONNAGE (#143/#152 — Corruption LDB 19,
    *  composant d'incantation LDB 46, Tests de fin de combat Maladie/Corruption LDB 18/20) ? Rétro-flag

@@ -28,15 +28,15 @@ const recompute = (combatants: Combatant[]) => {
   hook.run({ get: () => ({ scene: null }), battle: { combatants } } as never);
 };
 
-/** Groupes d'un démon du bestiaire, calculés comme au spawn (`spawn.ts` → `groupsFor`) : catégorie
- *  dérivée du folder + Groupes DÉCLARÉS par l'entrée (`CreatureData.grantGroups`, celui de son dieu). */
+/** Groupes d'un démon du bestiaire, calculés comme au spawn (`spawn.ts` → `groupsFor`) : les Groupes
+ *  DÉCLARÉS par l'entrée (`CreatureData.grantGroups` — sa catégorie ET celui de son dieu). */
 const demonOf = (creatureId: string) => {
   const c = findCreatureById(creatureId)!;
-  return groupsFor({ folder: c.folder, group: c.group, extras: c.grantGroups });
+  return groupsFor({ extras: c.grantGroups });
 };
 
 describe('Aura de Dhar — filtre par Groupe de dieu (affectsGroups) et porteur inclus (includesSelf)', () => {
-  it('le Groupe de dieu est DÉCLARÉ par l’entrée du bestiaire, EN PLUS de « demon » dérivé du folder', () => {
+  it('le Groupe de dieu est DÉCLARÉ par l’entrée du bestiaire, à côté de sa catégorie « demon »', () => {
     expect(demonOf('daemonette-de-slaanesh')).toEqual(['demon', 'slaanesh']);
     expect(demonOf('nurglings')).toEqual(['demon', 'nurgle']);
   });

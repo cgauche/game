@@ -164,7 +164,7 @@ const FIXTURES: Partial<Record<FlowKey, Fixture>> = {
   // Exposition à une Influence corruptrice (LDB 19 l.29) : « tentez un Test de Résistance Intermédiaire
   // (+0) ou un Test de Calme » — un Test, donc la Résilience (LDB 17 l.68) et son dé choisi.
   corruption: {
-    state: { pendingCorruption: { heroId: 'H', kind: 'exposition', level: 'mineure', skill: 'resistance', skillLocked: true, menace: 'Corruption', ...rate } },
+    state: { pendingCorruption: { heroId: 'H', kind: 'exposition', level: 'mineure', skill: 'resistance', skillLocked: true, menace: 'corruption', ...rate } },
     read: flatRead('pendingCorruption'),
   },
   recover: { state: { pendingStateRecovery: { actorId: 'H', state: 'sonne', skillValue: T, difficulty: 'intermediaire', roll: rateTR } }, read: trRead('pendingStateRecovery') },

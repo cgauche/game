@@ -139,12 +139,12 @@ describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-awar
 
   /**
    * #402 — le filtre `allFoes` doit lire la CAPABILITY `undead` (portée par le TRAIT Mort-vivant),
-   * PAS le Groupe bestiaire (dérivé aussi du FOLDER, `groups.ts` FOLDER_RULES « morts sans repos »).
-   * Contre-preuve du juge de réfutation : une créature de folder « Les morts sans repos » SANS le
+   * PAS le Groupe bestiaire (déclaré par l'entrée, `CreatureData.grantGroups`).
+   * Contre-preuve du juge de réfutation : une créature du Groupe « mort-vivant » SANS le
    * Trait (ex. RAW Goule de crypte, `creatures.json`) reste une cible VALIDE du Hurlement fantomatique
    * (LDB 85 l.170 : « créatures vivantes (ne possédant pas le trait Mort-vivant) »).
    */
-  it('cible une créature de Groupe « mort-vivant » (folder seul, sans le Trait) — exclut le PORTEUR du Trait', () => {
+  it('cible une créature de Groupe « mort-vivant » (Groupe déclaré seul, sans le Trait) — exclut le PORTEUR du Trait', () => {
     seedBattleRng(5);
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });

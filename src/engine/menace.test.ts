@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { availableResistance, markResistanceUsed, resistanceForcedSL } from './menace';
+import { availableResistance, markResistanceUsed, resistanceForcedSL, menaceIds, isMenaceId } from './menace';
+import { findTalentById } from '../data';
 import { restoreFortune } from './fortune';
 import type { Combatant } from './types';
 
@@ -55,5 +56,14 @@ describe('Résistance (Menace) — disponibilité de la spec (LDB 10 l.1015-1021
 
   it('DR de l’auto-succès = Bonus d’Endurance (« utilisez votre Bonus d’Endurance comme DR »)', () => {
     expect(resistanceForcedSL(hero())).toBe(4); // E 43 → BE 4
+  });
+
+  it('les Menaces authorées SONT les specs du talent, lues au catalogue (source unique, liste OUVERTE — #1346)', () => {
+    const specs = (findTalentById('resistance')?.specs ?? []).map((s) => s.id);
+    expect(menaceIds()).toEqual(specs);
+    expect(specs.length).toBeGreaterThan(0); // le corpus mesuré n'est pas vide
+    expect(isMenaceId('maladie')).toBe(true);
+    expect(isMenaceId('Maladie')).toBe(false); // id STABLE : la casse du libellé n'est pas un id
+    expect(isMenaceId('exposition')).toBe(false); // hors catalogue
   });
 });

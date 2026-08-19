@@ -445,7 +445,7 @@ export interface FlowTest {
    *   - `false` : soutenable malgré la voie (Test de SOIN d'un nécessaire — soigner n'est pas résister). */
   noSupport?: boolean;
   /** MENACE à laquelle ce Test RÉSISTE (tag du talent « Résistance (Menace) », LDB 10 l.1015-1021 :
-   *  'Poison' pour Venin/lames empoisonnées…). Copié sur l'étape de cascade du héros → offre
+   *  `poison` pour Venin/lames empoisonnées…). Copié sur l'étape de cascade du héros → offre
    *  l'auto-succès du talent (verbe `resist`, cf. engine/menace). Absent = Test non couvert. */
   menace?: string;
   /** Difficulté DYNAMIQUE : la PREMIÈRE Condition vraie impose sa difficulté ; sinon `difficulty` (défaut

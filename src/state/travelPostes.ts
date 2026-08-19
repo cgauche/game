@@ -395,7 +395,6 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
       // MÊME Test d'Exposition que la nuit de repos : EDOC 08 l.90 renvoie à LDB p181, donc MÊME entrée.
       stake: voyageStakeRef('exposure', { chars: exposureFirstFailChars('froid') }),
       ligne: { test: { skill: 'resistance', char: 'endurance' } },
-      menace: 'Exposition',
       meta: { weatherLabel: WEATHER_LABEL[stage.weather], warded: isWeatherWarded(h), coldSeason: isColdSeason(stage.season) },
     });
     pousseSi(out, st);

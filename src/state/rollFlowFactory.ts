@@ -108,8 +108,8 @@ export interface PendingBase {
   rerolled?: boolean;
   /** Réussite forcée par Résilience (LDB 17 l.68) — posé par `forceSuccess`, ouvre `setForcedRoll`. */
   forced?: boolean;
-  /** MENACE à laquelle ce Test RÉSISTE (« Résistance (Menace) », LDB 10 l.1015-1021 : 'Maladie' /
-   *  'Corruption' / 'Mutation' / 'Magie' / 'Poison'…) — posé par le SITE qui ouvre le pending/l'étape.
+  /** MENACE à laquelle ce Test RÉSISTE (« Résistance (Menace) », LDB 10 l.1015-1021 : `maladie` /
+   *  `corruption` / `mutation` / `magie` / `poison`…) — posé par le SITE qui ouvre le pending/l'étape.
    *  Présent + talent disponible ⇒ le verbe `resist` offre l'auto-succès (1× par spec et par séance). */
   menace?: string;
   /** DÉ FIXÉ à la main (option de confort « Dés fixés », `engine/fixedDie.ts`) — PROVENANCE, pas une

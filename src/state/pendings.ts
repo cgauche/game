@@ -742,8 +742,8 @@ export interface PendingCorruption {
   sl?: number;
   success?: boolean;
   rerolled?: boolean;
-  /** Menace du talent « Résistance (Menace) » (LDB 10) couverte par CE Test : 'Corruption' (exposition,
-   *  l.23-75 — résister au GAIN de Points) ou 'Mutation' (seuil, l.80 — l'échec fait MUTER). Posé à
+  /** Menace du talent « Résistance (Menace) » (LDB 10) couverte par CE Test : `corruption` (exposition,
+   *  l.23-75 — résister au GAIN de Points) ou `mutation` (seuil, l.80 — l'échec fait MUTER). Posé à
    *  l'ouverture ; offre l'auto-succès via `corruptionResist`. */
   menace?: string;
 }

@@ -110,8 +110,8 @@ describe('Riders « à la touche » data-driven (Feu / Lumière / Mort / Vie) �
     applyDomain(w, t, 'mort');
     applyDomain(w, t, 'mort');
     expect(stacks(t, 'extenue')).toBe(1);
-    // `groups` = ce que le spawn dériverait via TRAIT_RULES (engine/groups.ts) pour une créature
-    // trait-only SANS folder — `isUndead`/`isLiving` lisent PUREMENT `c.groups` (plus de repli hasTraitKey).
+    // `groups` = ce que le spawn dérive du seul Trait (`capabilities.grantGroups`, engine/groups.ts) —
+    // `isUndead`/`isLiving` lisent PUREMENT `c.groups` (plus de repli hasTraitKey).
     const z = mk({ id: 'z', kind: 'enemy', traits: [{ id: 'mort-vivant' }], groups: groupsFor({ traits: [{ id: 'mort-vivant' }] }) });
     expect(isLiving(z)).toBe(false);
     applyDomain(w, z, 'mort');

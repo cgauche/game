@@ -2,56 +2,25 @@
  * Groupes d'appartenance d'un combattant (WFRP4, support des Traits psy ciblés — LDB 21).
  * Un combattant possède plusieurs IDS de Groupe STABLES (jamais traduits, cf. `src/data/groups.json`),
  * DÉCLARÉS par les entrées de donnée qu'il porte (espèce, carrière, classe, culte du Talent de Prière,
- * créature du bestiaire) + la catégorie dérivée du folder bestiaire + extras manuels (éditeur : déjà
- * des ids). Les Cibles des traits psy (Animosité (Elfes), Haine (Skavens)…) sont normalisées en id
- * de Groupe (cf. `psych/registry.ts`) et mises en correspondance avec ces ids. Pur.
+ * créature du bestiaire) + extras manuels (éditeur : déjà des ids). Les Cibles des traits psy
+ * (Animosité (Elfes), Haine (Skavens)…) sont normalisées en id de Groupe (cf. `psych/registry.ts`)
+ * et mises en correspondance avec ces ids. Pur.
  * Cf. spec : docs/superpowers/specs/2026-06-07-psychologie-design.md (§3).
  */
 import { norm } from '../lib/normalize';
 import { findCareerById, findClassById, findGodById, findGroupById, findSpeciesById, findTalentById, findTraitById } from '../data';
 
-/** Folder bestiaire (`creatures.json`) → id de Groupe. Règles ORDONNÉES (la plus spécifique
- *  d'abord : « hommes-bêtes » avant « bêtes »). Mot-clé normalisé (AUTHORING) cherché dans le folder
- *  normalisé — c'est la RÉSOLUTION, pas la valeur émise (l'id, lui, est stable). */
-const FOLDER_RULES: { kw: string; group: string }[] = [
-  { kw: 'peaux-vertes', group: 'peau-verte' },
-  { kw: 'morts sans repos', group: 'mort-vivant' },
-  { kw: 'hommes-betes', group: 'homme-bete' },
-  { kw: 'hommes-rats', group: 'skaven' },
-  { kw: 'demon', group: 'demon' }, // « Démons » et « Princes démons »
-  { kw: 'cultistes', group: 'cultiste' },
-  { kw: 'betes', group: 'bete' }, // après hommes-bêtes
-];
-
-/** Trait (`TraitInstance.id`) → id de Groupe. Unifie la dérivation avec `domainAttributes` (isUndead/
- *  isDaemon) : une créature SANS folder mais porteuse du Trait est quand même du Groupe (ex. statbloc
- *  d'éditeur « Mort-vivant » sans catégorie bestiaire). */
-const TRAIT_RULES: { traitId: string; group: string }[] = [
-  { traitId: 'mort-vivant', group: 'mort-vivant' },
-  { traitId: 'demoniaque', group: 'demon' },
-];
-
-/** Id de Groupe d'un folder bestiaire : le `group` ÉDITABLE de la créature (déjà un id) l'emporte sur
- *  la dérivation par table (overridable en donnée, cf. `CreatureData.group`). */
-function categoryFromFolder(folder: string, override?: string | null): string | null {
-  if (override) return override;
-  const n = norm(folder);
-  for (const r of FOLDER_RULES) if (n.includes(r.kw)) return r.group;
-  return null;
-}
-
-/** Ids de Groupe d'appartenance d'un combattant : catégorie(folder) ∪ espèce (`SpeciesData.grantGroups`)
- *  ∪ trait(s) ∪ carrière et classe (`grantGroups`) ∪ culte du Talent de Prière (`GodData.grantGroups`,
- *  via `TalentData.grantSpecGroups`) ∪ `group` (surcharge éditable de folder, déjà un id) ∪ extras
- *  manuels (déjà des ids — dont `CreatureData.grantGroups`). Dédupliqué par id EXACT, ordre stable. */
+/** Ids de Groupe d'appartenance d'un combattant : espèce (`SpeciesData.grantGroups`) ∪ trait(s)
+ *  (`TraitData.capabilities.grantGroups`) ∪ carrière et classe (`grantGroups`) ∪ culte du Talent de
+ *  Prière (`GodData.grantGroups`, via `TalentData.grantSpecGroups`) ∪ extras manuels (déjà des ids —
+ *  dont `CreatureData.grantGroups`, qui porte la catégorie de la créature). Dédupliqué par id EXACT,
+ *  ordre stable. */
 export function groupsFor(src: {
-  folder?: string | null;
   speciesId?: string;
   careerId?: string;
   traits?: { id: string }[];
   talents?: { talentId: string; spec?: string }[];
   extras?: string[];
-  group?: string | null;
 }): string[] {
   const out: string[] = [];
   const push = (g?: string | null) => {
@@ -60,13 +29,8 @@ export function groupsFor(src: {
   const pushAll = (gs?: string[]) => {
     for (const g of gs ?? []) push(g);
   };
-  if (src.folder) push(categoryFromFolder(src.folder, src.group));
   pushAll(findSpeciesById(src.speciesId)?.grantGroups);
-  for (const t of src.traits ?? []) {
-    const rule = TRAIT_RULES.find((r) => r.traitId === t.id);
-    if (rule) push(rule.group);
-    pushAll(findTraitById(t.id)?.capabilities?.grantGroups);
-  }
+  for (const t of src.traits ?? []) pushAll(findTraitById(t.id)?.capabilities?.grantGroups);
   if (src.careerId) {
     const career = findCareerById(src.careerId);
     pushAll(career?.grantGroups);

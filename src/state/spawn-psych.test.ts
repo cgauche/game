@@ -24,9 +24,10 @@ describe('spawn — propriétés psychologiques', () => {
 });
 
 describe('spawn — Groupes & traits psy ciblés (P3)', () => {
-  it('creatureToCombatant : groups dérivés du folder (id canonique)', () => {
-    const orc = findCreature('Orc')!; // folder « Les hordes de peaux-vertes »
+  it('creatureToCombatant : groups = les Groupes DÉCLARÉS par l’entrée du bestiaire (ids canoniques)', () => {
+    const orc = findCreature('Orc')!; // `grantGroups: ['peau-verte']` porté par l'entrée (#1357)
     const c = creatureToCombatant(orc, 'e1', { x: 0, y: 0 });
+    expect(orc.grantGroups).toContain('peau-verte'); // la donnée le DIT — rien n'est dérivé du dossier
     expect(c.groups).toContain('peau-verte');
   });
   it('statblockToCombatant : extras manuels conservés dans groups', () => {

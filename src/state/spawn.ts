@@ -278,7 +278,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     ...(extras?.spells?.length
       ? { spells: extras.spells.filter((id) => !!findSpellById(id)) }
       : creature.spells.length ? { spells: creature.spells.map((s) => s.id) } : {}),
-    groups: groupsFor({ folder: creature.folder, group: creature.group, extras: creature.grantGroups, traits, talents }), // catégorie de Groupe (folder/traits, ou surcharge `group` éditable) + Groupes DÉCLARÉS par la créature (dieu du Chaos) + culte (Talent de Prière, P3)
+    groups: groupsFor({ extras: creature.grantGroups, traits, talents }), // Groupes DÉCLARÉS par l'entrée (`grantGroups` : catégorie + dieu du Chaos) + Traits (`capabilities.grantGroups`) + culte (Talent de Prière, P3)
     traits, // conservés (facultatifs inclus) → attaques gratuites de créature en combat
     skills,
     talents,

@@ -333,7 +333,7 @@ export function pickDoctrine(enemy: Combatant, _squad: Combatant[] = [], heroes:
   // Signaux MILITAIRE et RACAILLE — UNIQUEMENT des ids qui matchent VRAIMENT un Groupe émis par
   // `groupsFor` (`engine/groups.ts`), pour une classification HONNÊTE (relecture L6). Deux familles de
   // signaux réels :
-  //  • Catégories de Groupe dérivées du folder bestiaire : `cultiste`, `peau-verte`, `skaven` (FOLDER_RULES).
+  //  • Catégories de Groupe DÉCLARÉES par l'entrée du bestiaire (`CreatureData.grantGroups`) : `cultiste`, `peau-verte`, `skaven`.
   //  • Carrières PRÉCISES poussées par `groupsFor` (CAREER_RULES) : `soldat`, `garde`, `chevalier` sont de
   //    vraies carrières (`careers.json`) — PAS la classe `guerriers` entière (trop large : Cavalier,
   //    Gladiateur, Archer, Tueur… n'en font pas partie). `criminel` est auto-dérivé de la CLASSE

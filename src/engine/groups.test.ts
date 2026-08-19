@@ -1,18 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { groupsFor, groupMatch } from './groups';
-import { findCreatureById, findGodById, findGroupById, findSpeciesById, findTalentById } from '../data';
+import { groupsFor, groupMatch, hiddenGroupsOf } from './groups';
+import { targetedTrigger } from './psychology';
+import type { Combatant } from './types';
+import { findCreatureById, findGodById, findGroupById, findSpeciesById, findTalentById, findTraitById } from '../data';
 
 describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3)', () => {
-  it('folder créature → id de catégorie (règles ordonnées, la plus spécifique d’abord)', () => {
-    expect(groupsFor({ folder: 'Les hordes de peaux-vertes' })).toContain('peau-verte');
-    expect(groupsFor({ folder: 'Les morts sans repos' })).toContain('mort-vivant');
-    expect(groupsFor({ folder: 'Hommes-bêtes, les enfants du Chaos' })).toContain('homme-bete');
-    expect(groupsFor({ folder: 'Les bêtes du Reikland' })).toContain('bete');
-    expect(groupsFor({ folder: 'Hommes-bêtes, les enfants du Chaos' })).not.toContain('bete'); // spécificité
-    expect(groupsFor({ folder: 'Démons, les armées baragouinantes' })).toContain('demon');
-    expect(groupsFor({ folder: 'Princes démons' })).toContain('demon');
-    expect(groupsFor({ folder: 'Les ignobles hommes-rats' })).toContain('skaven');
-    expect(groupsFor({ folder: 'Les peuples du Reikland' })).toEqual([]); // pas de catégorie de monstre
+  it('la CATÉGORIE de la créature est DÉCLARÉE sur son entrée (`grantGroups`) — plus aucune dérivation par folder', () => {
+    expect(groupsFor({ extras: findCreatureById('gobelin')?.grantGroups })).toContain('peau-verte');
+    expect(groupsFor({ extras: findCreatureById('zombie')?.grantGroups })).toContain('mort-vivant');
+    expect(groupsFor({ extras: findCreatureById('ungor')?.grantGroups })).toContain('homme-bete');
+    expect(groupsFor({ extras: findCreatureById('ungor')?.grantGroups })).not.toContain('bete');
+    expect(groupsFor({ extras: findCreatureById('guerrier-des-clans')?.grantGroups })).toContain('skaven');
+    expect(groupsFor({ extras: findCreatureById('cultiste')?.grantGroups })).toContain('cultiste');
+    expect(groupsFor({ extras: findCreatureById('cheval')?.grantGroups })).toContain('bete');
+    // Une entrée sans catégorie de monstre ne déclare aucun Groupe (« Les peuples du Reikland »).
+    expect(findCreatureById('humain')?.grantGroups).toBeUndefined();
   });
 
   it('espèce → ids DÉCLARÉS par l’entrée (`grantGroups`) + carrière + extras (dédup, ids)', () => {
@@ -25,10 +27,29 @@ describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3
     expect(g.filter((x) => x === 'humain').length).toBe(1);
   });
 
-  it('Trait (mort-vivant/demoniaque) → id de Groupe, même hors folder (unifie avec domainAttributes)', () => {
+  it('Trait (mort-vivant/demoniaque) → id de Groupe, même hors bestiaire (unifie avec domainAttributes)', () => {
     expect(groupsFor({ traits: [{ id: 'mort-vivant' }] })).toEqual(['mort-vivant']);
     expect(groupsFor({ traits: [{ id: 'demoniaque' }] })).toEqual(['demon']);
-    expect(groupsFor({ traits: [{ id: 'vol' }] })).toEqual([]); // trait sans règle → aucun Groupe
+    expect(groupsFor({ traits: [{ id: 'vol' }] })).toEqual([]); // trait sans Groupe déclaré → aucun
+  });
+
+  it('Trait DISSIMULÉ : le Groupe qu’il déclare n’est PAS exposé au ciblage psy tant que la dissimulation tient (#1357)', () => {
+    // Haine (mort-vivant) portée par un Répurgateur face à un porteur du Trait Mort-vivant caché.
+    const chasseur = {
+      id: 'repurgateur', name: 'Répurgateur', kind: 'hero', groups: [],
+      psychTraits: [{ type: 'haine' as const, cible: 'mort-vivant' }],
+    } as unknown as Combatant;
+    const cache = [{ id: 'mort-vivant', hidden: true }];
+    const dissimule = { id: 'v-1', name: 'Vampire', kind: 'enemy', groups: groupsFor({ traits: cache }), traits: cache } as unknown as Combatant;
+    expect(dissimule.groups).toEqual(['mort-vivant']); // le Groupe EXISTE bien sur le porteur
+    expect(hiddenGroupsOf(dissimule)).toEqual(['mort-vivant']); // …mais il est masqué
+    expect(targetedTrigger(chasseur, [dissimule])).toBeNull();
+
+    // Marque levée : le même Groupe redevient visible et la Haine se déclenche.
+    const vu = [{ id: 'mort-vivant' }];
+    const revele = { ...dissimule, groups: groupsFor({ traits: vu }), traits: vu } as unknown as Combatant;
+    expect(hiddenGroupsOf(revele)).toEqual([]);
+    expect(targetedTrigger(chasseur, [revele])).toEqual({ type: 'haine', cible: 'mort-vivant', sourceId: 'v-1', indice: undefined });
   });
 
   it('classe « Roublards » → Groupe « criminel » auto-dérivé (Épée de justice / Traits psy ciblés)', () => {
@@ -109,13 +130,15 @@ describe('Groupes — dérivation par id canonique & matching strict (LDB 21, P3
     expect(groupMatch('vivant', mortVivant)).toBe(false);
   });
 
-  it('DÉMON du bestiaire : le Groupe de son dieu est DÉCLARÉ sur l’entrée, plus dérivé du folder', () => {
+  it('DÉMON du bestiaire : catégorie ET Groupe de son dieu, tous deux DÉCLARÉS sur l’entrée', () => {
     const nurgling = findCreatureById('nurglings')!;
-    expect(nurgling.grantGroups).toEqual(['nurgle']);
-    // Le folder seul (sans la déclaration) n'émet plus que la catégorie « demon » : la dérivation
-    // par mot-clé de dossier est MORTE — le dieu vient de la donnée portée par la créature.
-    expect(groupsFor({ folder: nurgling.folder })).toEqual(['demon']);
-    expect(groupsFor({ folder: nurgling.folder, extras: nurgling.grantGroups })).toEqual(['demon', 'nurgle']);
+    expect(nurgling.grantGroups).toEqual(['demon', 'nurgle']);
+    expect(groupsFor({ extras: nurgling.grantGroups })).toEqual(['demon', 'nurgle']);
+  });
+
+  it('Trait porté (Mort-vivant/Démoniaque) → Groupe DÉCLARÉ par `capabilities.grantGroups` (#1357)', () => {
+    expect(findTraitById('mort-vivant')?.capabilities?.grantGroups).toEqual(['mort-vivant']);
+    expect(findTraitById('demoniaque')?.capabilities?.grantGroups).toEqual(['demon']);
   });
 
   it('ESPÈCE : les 27 entrées portent leur `grantGroups` (aucune ne dépend plus d’un mot-clé de label)', () => {
