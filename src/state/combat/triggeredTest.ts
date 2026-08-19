@@ -293,7 +293,7 @@ export function frozenOpposedBatchStep(
   const opp = ft.opposed;
   if (!opp) throw new Error('frozenOpposedBatchStep : le FlowTest doit déclarer son opposition (`opposed`).');
   // Test tagué `menace` : la rangée batch porte le tag ELLE-MÊME (comme l'étape mono), donc le verbe
-  // `resist` (Résistance (Menace), LDB 10 l.1015-1021) s'y joue PAR RANGÉE — `FLOWS.cascadeBatch.caps`.
+  // `resist` (Résistance (Menace), LDB 10 l.1016-1020) s'y joue PAR RANGÉE — `FLOWS.cascadeBatch.caps`.
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   const participants: BatchParticipant[] = [];
   for (const c of defenders) {

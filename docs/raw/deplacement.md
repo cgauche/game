@@ -56,7 +56,7 @@
 
 ## Tableau des Mouvements
 
-**Source :** LDB 15 l.19-32
+**Source :** LDB 15 l.19-31
 
 Le Tableau des Mouvements donne la distance couverte *en mètres* pour un tour de combat selon la
 caractéristique **M** (Mouvement). Pour le voyage, les valeurs de marche/course en mètres/tour
@@ -88,7 +88,7 @@ et options d'Action.
 
 ## Course hors combat
 
-**Source :** LDB 15 l.40-42 (section « Course »)
+**Source :** LDB 15 l.41 (section « Course »)
 
 Utiliser son Action pour courir : Test **Athlétisme Accessible (+20)**.
 - Distance couverte EN PLUS du Mouvement normal : **Mouvement de Course + DR** mètres.
@@ -525,7 +525,7 @@ commun** (EDOC 08 l.110-122).
 
 ## Poursuites
 
-**Source :** LDB 15 l.87-109
+**Source :** LDB 15 l.88-108
 
 ### Procédure en 4 étapes
 
@@ -564,7 +564,7 @@ Comparer le **DR le plus bas** des poursuivis au **DR le plus haut** des poursui
 
 ### Modificateurs de Mouvement
 
-**Source :** LDB 15 l.105-108
+**Source :** LDB 15 l.106-108
 
 Si un participant a un **M supérieur** aux autres, il gagne autant de **DR bonus** que la différence.
 

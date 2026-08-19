@@ -100,7 +100,7 @@ export interface WallSpec {
   structure?: string;
   /** DÉCORATIF : l'arête porte une fenêtre au rendu (mur plein serti d'une vitre — ne change pas le combat). */
   window?: boolean;
-  /** ESCALADABLE (LDB 15 l.52-57, cf. `WallSeg.climb`) : l'arête sépare deux surfaces de hauteurs
+  /** ESCALADABLE (LDB 15 l.53-57, cf. `WallSeg.climb`) : l'arête sépare deux surfaces de hauteurs
    *  différentes, franchissable en grimpant plutôt qu'à pied. */
   climb?: WallClimb;
 }

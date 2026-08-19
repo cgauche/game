@@ -867,7 +867,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Mode NEUTRE = clic-sol implicite. Les modes restants sans commit-CASE (soin/munition/dissipation/
       // Détermination) ne déplacent pas au clic-case → inertes ; seul le mode neutre (action null) marche.
       if (battle.action !== null) return;
-      // Engagé : pas de déplacement libre (LDB 15 l.84) → le clic-sol route vers le Désengagement.
+      // Engagé : pas de déplacement libre (LDB 15 l.45) → le clic-sol route vers le Désengagement.
       if (isEngaged(active)) {
         startDisengage(get, set, active);
         return;
@@ -1285,7 +1285,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!c) return;
       // Combat monté : Course au Mouvement de la monture, empreinte/collisions de la monture (couple solidaire).
       const geom = mountOf(battle, c) ?? c;
-      const range = mountMovement(battle, c) + pr.result.bonusCases; // Marche + (Course + DR) (LDB 15 l.80)
+      const range = mountMovement(battle, c) + pr.result.bonusCases; // Marche + (Course + DR) (LDB 15 l.41)
       const env = moveEnv(battle, geom);
       const skill = c.mountId ? 'Chevaucher' : 'Athlétisme';
       // Le jet peut porter MOINS loin que la destination demandée : on suit le chemin et on s'arrête au

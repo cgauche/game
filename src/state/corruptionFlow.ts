@@ -98,7 +98,7 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   if (pilotedByHuman(get(), hero)) {
     lines.push(t('cor.threshold', { name: hero.label }));
     // `menace: 'mutation'` : l'échec du Test de seuil fait MUTER (l.82) → c'est le Test qui « résiste
-    // à la Mutation » du talent Résistance (Menace), LDB 10 l.1015-1021.
+    // à la Mutation » du talent Résistance (Menace), LDB 10 l.1016-1020.
     const seuil: PendingCorruption = { heroId: hero.id, kind: 'seuil', skill: 'resistance', skillLocked: true, align, menace: 'mutation' };
     poseCorruptionPending(get, set, seuil);
     return lines;

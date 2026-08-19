@@ -109,7 +109,7 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.342)', () =>
     expect(effectiveChar(c, 'force')).toBe(30);
   });
 
-  it('Brouet (LDB 10 l.113) : 1 ration couvre 2 jours, Test de faim tous les 3 jours', () => {
+  it('Brouet (LDB 10 l.139) : 1 ration couvre 2 jours, Test de faim tous les 3 jours', () => {
     const c = hero({ rations: 1, brouet: true });
     const d1 = dailyFoodUpkeep(c, 30, 3, makeRNG(1));
     expect(d1.rationConsumed).toBe(true);

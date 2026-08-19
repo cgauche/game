@@ -13,6 +13,8 @@ import { playSfx, playMusic } from './engine';
 import { musicSelectionOf } from './music';
 
 let lastAttackKind: 'melee' | 'ranged' | 'spell' = 'melee';
+/** Le heurt de la série en cours a-t-il déjà sonné ? (réarmé par le premier pas qui passe) */
+let heurtSonne = false;
 
 export function initAudioWiring(): void {
   // Musique de fond pilotée par l'état : la scène (éditeur) a la main, sinon contexte
@@ -31,10 +33,17 @@ export function initAudioWiring(): void {
     playSfx('parade'); // déjoué : parade/esquive — le métal claque
   });
   bus.on(EVT.ANIM_MOVE, (p: { path?: unknown[] }) => {
+    heurtSonne = false;
     const steps = Math.min(4, Math.max(1, Math.floor((p?.path?.length ?? 1) / 2)));
     for (let i = 0; i < steps; i++) setTimeout(() => playSfx('pas'), i * 220);
   });
-  bus.on(EVT.MOVE_BLOCKED, () => playSfx('heurt'));
+  // Heurt : le PREMIER blocage d'une série seulement. Une touche tenue contre un mur re-tente le pas à
+  // la cadence de marche ; le mur ne sonne qu'une fois, et une avancée réussie (ANIM_MOVE) réarme.
+  bus.on(EVT.MOVE_BLOCKED, () => {
+    if (heurtSonne) return;
+    heurtSonne = true;
+    playSfx('heurt');
+  });
   bus.on(EVT.BATTLE_OVER, (p: { victory?: boolean }) => {
     if (p?.victory) playSfx('gong-victoire');
   });

@@ -246,19 +246,19 @@ Le Tableau du Mouvement « indique la distance, en mètres, que vous pouvez parc
 | 9 | 18 | 36 |
 | 10 | 20 | 40 |
 
-— `LDB 15 l.18-32` (« Tableau des Mouvements »)
+— `LDB 15 l.18-31` (« Tableau des Mouvements »)
 
-La **Marche** est gratuite (le Mouvement du tour, sans Test). La **Course** utilise l'**Action** : Test d'**Athlétisme Accessible (+20)**, la distance courue venant *en plus* du Mouvement déjà parcouru ce Round, soit **Mouvement de Course + DR mètres** (ex. M4, DR −2 → 14 m supplémentaires) (`LDB 15 l.39-42`).
+La **Marche** est gratuite (le Mouvement du tour, sans Test). La **Course** utilise l'**Action** : Test d'**Athlétisme Accessible (+20)**, la distance courue venant *en plus* du Mouvement déjà parcouru ce Round, soit **Mouvement de Course + DR mètres** (ex. M4, DR −2 → 14 m supplémentaires) (`LDB 15 l.39-41`).
 
 #### Charge
 
-Si vous n'êtes pas déjà en train de vous battre (non *Engagé*), vous pouvez utiliser votre Mouvement pour **Charger** en combat rapproché ; vous gagnez **+1 Avantage** et vous retrouvez *Engagé* (`LDB 13 l.90`). Une Charge consomme tout le Mouvement et **impose que l'Action soit un Test de Corps à corps** pour attaquer. Le **+1 Avantage** n'est acquis que si l'adversaire se trouve **à au moins une distance (en mètres) égale à votre Mouvement** avant la charge, tout en restant dans la portée de votre Course (`LDB 15 l.34-37`).
+Si vous n'êtes pas déjà en train de vous battre (non *Engagé*), vous pouvez utiliser votre Mouvement pour **Charger** en combat rapproché ; vous gagnez **+1 Avantage** et vous retrouvez *Engagé* (`LDB 13 l.90`). Une Charge consomme tout le Mouvement et **impose que l'Action soit un Test de Corps à corps** pour attaquer. Le **+1 Avantage** n'est acquis que si l'adversaire se trouve **à au moins une distance (en mètres) égale à votre Mouvement** avant la charge, tout en restant dans la portée de votre Course (`LDB 15 l.35-37`).
 
 #### Désengagement
 
 Si vous êtes *Engagé* et ne souhaitez plus échanger de coups, deux options pour partir « en toute sécurité » :
 - **Utiliser l'Avantage** : si vous avez **plus d'Avantages que votre adversaire**, ramenez votre Avantage à 0 pour vous éloigner sans pénalité (puis Charger une autre cible, courir, ou tirer un coup de feu) (`LDB 15 l.47`).
-- **Utiliser l'Esquive** : si votre Avantage est **inférieur ou égal** à celui de l'adversaire et que vous ne voulez pas le dépenser, vous êtes cloué sur place. Pour fuir, dépensez votre **Action** en Test opposé d'**Esquive / Corps à corps**. Sur un succès, +1 Avantage et vous bougez normalement ; sur un échec, l'adversaire gagne +1 Avantage et votre fuite échoue « à moins de vous prendre un coup dans le dos » (`LDB 15 l.49-54`).
+- **Utiliser l'Esquive** : si votre Avantage est **inférieur ou égal** à celui de l'adversaire et que vous ne voulez pas le dépenser, vous êtes cloué sur place. Pour fuir, dépensez votre **Action** en Test opposé d'**Esquive / Corps à corps**. Sur un succès, +1 Avantage et vous bougez normalement ; sur un échec, l'adversaire gagne +1 Avantage et votre fuite échoue « à moins de vous prendre un coup dans le dos » (`LDB 15 l.49-53`).
 
 ### Actions Gratuites
 
@@ -279,7 +279,7 @@ Pour votre **Action**, vous pouvez vous mettre **Sur la Défensive** : choisisse
 ### Notes liées (résolution dans d'autres topics)
 
 - **Engagé** : on est *Engagé* dès qu'on attaque ou qu'on est attaqué au Corps à corps ; on cesse de l'être après un Round complet sans attaquer (`LDB 13 l.170-171`).
-- **Avantage** : la Charge n'est qu'une des sources d'Avantage (Surprise, Évaluer, gagner un Test opposé, etc.) ; chaque pion d'Avantage donne **+10** à un Test de Combat/Psychologie approprié (`LDB 15 l.3-4`).
+- **Avantage** : la Charge n'est qu'une des sources d'Avantage (Surprise, Évaluer, gagner un Test opposé, etc.) ; chaque pion d'Avantage donne **+10** à un Test de Combat/Psychologie approprié (`LDB 14 l.205+215`).
 
 **Sources RAW** :
 - `LDB 13 l.14` — un Tour par combattant et par Round = **une Action + un Mouvement** ; ordre par Initiative décroissante (`LDB 13 l.15`).
@@ -291,15 +291,16 @@ Pour votre **Action**, vous pouvez vous mettre **Sur la Défensive** : choisisse
 - `LDB 13 l.108-110` — **Option Sur la Défensive** : Action = choisir une Compétence défensive → **+20 à tous les Tests de défense jusqu'au début du prochain Tour**.
 - `LDB 13 l.117-118` — **Difficulté par défaut** en combat = **Intermédiaire (+0)** si rien n'est précisé.
 - `LDB 15 l.12-16` — échelle de grille (2 m / case) ; le Tableau du Mouvement = distance d'un tour **sans Test d'Athlétisme**.
-- `LDB 15 l.18-32` — **Tableau des Mouvements** verbatim (M 0→10, Marche, Course).
-- `LDB 15 l.34-42` — **Charge** (Action = Test de Corps à corps ; +1 Avantage si l'adversaire est à ≥ M mètres) et **Course** (Action, Athlétisme Accessible +20, Mouvement de Course + DR).
-- `LDB 15 l.44-49` — **Désengagement** : par l'Avantage (ramené à 0) ou par Test opposé d'Esquive/Corps à corps (Action).
+- `LDB 15 l.18-31` — **Tableau des Mouvements** verbatim (M 0→10, Marche, Course).
+- `LDB 15 l.35-41` — **Charge** (Action = Test de Corps à corps ; +1 Avantage si l'adversaire est à ≥ M mètres) et **Course** (Action, Athlétisme Accessible +20, Mouvement de Course + DR).
+- `LDB 15 l.45-49` — **Désengagement** : par l'Avantage (ramené à 0) ou par Test opposé d'Esquive/Corps à corps (Action).
 
 **Voir aussi** : Structure d'un Round et Initiative ; Surprise et État Surpris ; Attaquer (toucher, localisation, dégâts) ; Avantage en combat ; Déplacement détaillé (Saut, Escalade, Fuite, Poursuite) ; Engagé et Corps à corps.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.14-15, l.74-88, l.90, l.93-98, l.105-107, l.108-110, l.117-119, l.170-171) → `ClimbPlan`, `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `engage`, `secondsPerRound`, `markAttacked`, `ExecCtx`, `agressifEnvers`, `entityBlockedAt`, +47 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/actions.ts`, +28 fichiers
-- `LDB 15` (l.3-4, l.12-16, l.18-32, l.34-42, l.44-54) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `reachTiles`, `DisengageModal`, `planClimb`, `charge`, `chargeReach`, `occupied`, +51 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, +27 fichiers
+- `LDB 14` (l.205-215) → `advantageCap`, `advantageCapFor`, `gainAdvantage`, `ActiveFrame`, `ADVANTAGE_COLLARS`, `schema`, `TavernGame`, `avantage`, `avantageSurLaCible`, `conditionModLines`, +3 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/tavernGames.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +5 fichiers
+- `LDB 15` (l.12-16, l.18-31, l.35-41, l.45-53) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, `charge`, `chargeReach`, +60 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, +30 fichiers
 
 ---
 
@@ -974,7 +975,7 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 **Voir aussi** : Tests opposés et Degrés de Réussite ; Localisation et Dégâts (étapes 2-4 de l'attaque) ; États (_Engagé_, _Inconscient_, _Surpris_, _À Terre_) ; Atouts et Défauts d'arme (Pistolet, Protectrice, Recharge) ; Portées et statistiques des armes à distance ; Psychologie (Peur −10 au tir).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 13` (l.114, l.125, l.133, l.137-145) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, `KEYBINDINGS`, `DisengageModal`, `sur-la-defensive`, `use-item`, +21 — `src/data/actions.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/actions.ts`, `src/engine/combat.ts`, +15 fichiers
+- `LDB 13` (l.114, l.125, l.133, l.137-145) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, `DisengageModal`, `sur-la-defensive`, `KEYBINDINGS`, `use-item`, +21 — `src/data/actions.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/actions.ts`, `src/engine/combat.ts`, +15 fichiers
 - `LDB 14` (l.40, l.41, l.43, l.44, l.53, l.68-131, l.135, l.137-138, l.142-151) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `areGrappling`, `fr`, `setGrapple`, `10-a-votre-action-au-prochain-round`, +100 — `src/data/actions.json`, `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, +39 fichiers
 - `LDB 16` (l.113) → `unstable`, `schema`, `stopBleedOutcome`, `hitModifiers`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `applyIncomingMeleeAdvantage`, `incomingMeleeAdvantage`, +16 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +8 fichiers
 - `LDB 62` (l.198-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `TraceRow`, `isShieldItem`, `a-repetition`, `InitiativeStripProps`, `protectrice`, `canActFirst`, `freeActFirst`, `resolveQualities`, +90 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +27 fichiers
@@ -1189,14 +1190,14 @@ Notes mécaniques par arme (`AA 08 l.228-260`) :
 - `LDB 14 l.153-169` — Combat à Mains Nues : Corps à corps (Bagarre) comme un Test de combat normal + option **Empoignade** (déclarée avant le jet ; Test opposé → Empêtré mutuel ; tour suivant : briser si Avantage supérieur, sinon Test opposé de Force → BF+DR PA-ignorés OU gestion d'Empêtré ; échec → +1 Avantage à l'adversaire ; tiers : +20/+10 pour toucher l'Empoigné).
 - `LDB 14 l.171-173` — Option : Empoignade Grâce aux Compétences (substitut au Test de Force selon le MJ).
 - `AA 08 l.224-261` — Table des Armes de Bagarre (Coup-de-poing, Gaffe, Gantelet à pointes, Gantelet verrouillé, Lacet étrangleur, Mains nues, Matraque) + règle spéciale du **Gantelet verrouillé** (conserve l'objet, −20 transitoire) + coûts de fabrication par Métier.
-- `LDB 10 l.774` — Talent **Maniement de deux armes** (prérequis pour attaquer avec les deux armes).
+- `LDB 10 l.773` — Talent **Maniement de deux armes** (prérequis pour attaquer avec les deux armes).
 
 > « Un Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans cette main, même lorsque les circonstances l'y obligeraient normalement. Au lieu de cela, il subit une pénalité de -20 sur tous les Tests qu'il effectue avec cet objet, y compris les Tests de Corps à Corps, tant que les circonstances qui auraient dû lui faire lâcher l'objet persistent (et pendant un Round minimum). » — `AA 08 l.236`
 
 **Voir aussi** : Maniement de deux armes (talent, LDB 10) ; Armes (Atouts/Défauts : Inoffensive, Déstabilisante, Empaleuse, Déséquilibrée, Assommante, Enchevêtrement) ; États (Empêtré, Engagé) ; Combat à distance (Projectiles/Lancer, portées) ; Désarmer (talent).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.774) → `useAttackJetProps`, `dualAffordance`, `PendingAttack`, `PendingDualStrike`, `resolveDualSecond`, `dualStrikeTargets`, `defenseModifiers`, `GameState`, `Combatant`, `applyAttackResult`, +11 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
+- `LDB 10` (l.773) → `useAttackJetProps`, `dualAffordance`, `PendingAttack`, `PendingDualStrike`, `resolveDualSecond`, `dualStrikeTargets`, `defenseModifiers`, `GameState`, `Combatant`, `applyAttackResult`, +11 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
 - `LDB 14` (l.101-115, l.134-140, l.142-151, l.153-169, l.171-173) → `GrappleModal`, `areGrappling`, `fr`, `setGrapple`, `isControlledMount`, `RunModal`, `scatter`, `combat-deux-armes`, `combatOrder`, `empetre`, +80 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +37 fichiers
 - `AA 8` (l.224-261) → `immobilisante-fixe`, `protectrice`, `inoffensive` — `src/data/qualities.json`, `src/data/trappings.json`
 
@@ -1341,8 +1342,8 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 - `LDB 14 l.183` — Charge : Force et règle de Taille de la monture pour les Dégâts.
 - `LDB 14 l.184` — Esquive à cheval : -20 sauf Talent Acrobaties équestres.
 - `LDB 14 l.118-131` — table des sept catégories de Taille (référence des ajouts 2/3 et de la charge).
-- `LDB 10 l.72-74` — Talent Acrobaties équestres (Esquive non modifiée à cheval + Mouvement en début de Round).
-- `LDB 10 l.151-154` — Talent Cavalier émérite (faire agir la monture sans Test de Chevaucher).
+- `LDB 10 l.24-30` — Talent Acrobaties équestres (Esquive non modifiée à cheval + Mouvement en début de Round).
+- `LDB 10 l.152-154` — Talent Cavalier émérite (faire agir la monture sans Test de Chevaucher).
 - `LDB 85 l.248-249` — Trait Nerveux (+3 États Brisé sur magie/bruits forts).
 - `LDB 85 l.110` — aptitudes Guerre/Magie qui font ignorer le Trait Nerveux.
 - `LDB 85 l.357-362` — Modificateurs de Taille en combat (Dévastatrice/Percutante, multiplicateur de Dégâts ×N, Frappe Mortelle) = la « règle de Taille » de la charge montée.
@@ -1355,7 +1356,7 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 **Voir aussi** : Charge et Mouvement (LDB 15) ; Taille des créatures et Frappe Mortelle (LDB 85) ; Talents de Chevaucher ; Peur et Terreur (Psychologie) ; Compétence Chevaucher.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.72-74, l.151-154) → `talent-aleatoire`, `restoreFortune`, `acrobaties-equestres`, `affable`, `MedicState`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `tissage`, +27 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/fortune.ts`, `src/i18n/messages/fr.ts`, `src/state/medicFlow.ts`, +3 fichiers
+- `LDB 10` (l.24-30, l.152-154) → `talent-aleatoire`, `restoreFortune`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, +30 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, +3 fichiers
 - `LDB 14` (l.118-131, l.175-177, l.179, l.180, l.181, l.182, l.183, l.184, l.187) → `advantageCapFor`, `isControlledMount`, `RunModal`, `combat-deux-armes`, `combatOrder`, `empetre`, `grappleTierMod`, `main-secondaire`, `effectiveSize`, `grappleEnvMod`, +44 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +24 fichiers
 - `LDB 85` (l.110, l.248-250, l.357-362) → `morsure`, `cannotStopOn`, `applySwarmBuild`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `traitEntrySchema`, `Condition`, `SpawnExtras`, `empetre`, +81 — `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +12 fichiers
 
@@ -1466,7 +1467,7 @@ Le Tableau du Mouvement indique la distance, en mètres, parcourue en un tour sa
 | 9 | 18 | 36 |
 | 10 | 20 | 40 |
 
-— `LDB 15 l.18-32`
+— `LDB 15 l.18-31`
 
 On observe que **Marche = 2 × M mètres** (soit M cases) et **Course = 4 × M mètres** (soit 2 × M cases). La colonne Course n'est pas une Action de Course « pleine » mais le **Mouvement de Course** servant de base à la Course et à la Charge (voir ci-dessous).
 
@@ -1486,7 +1487,7 @@ On observe que **Marche = 2 × M mètres** (soit M cases) et **Course = 4 × M m
 
 **Portée de la Charge** : elle utilise le **Mouvement de Course** du Tableau (2 × M cases / 4 × M mètres) pour atteindre l'adversaire.
 
-**Bonus d'Avantage (+1)** : si l'adversaire se trouve, **avant la Charge, à une distance d'au moins votre caractéristique de Mouvement (en mètres)** — tout en restant dans la portée de Course — vous obtenez **+1 Avantage** en fonçant. Autrement dit, foncer de loin (au moins M mètres) octroie l'Avantage ; charger un ennemi quasi adjacent ne le donne pas. (Ce +1 Avantage est aussi listé parmi les sources d'Avantage : « **Charge :** charger tête la première en combat confère +1 Avantage. », `LDB 15 l.3`.)
+**Bonus d'Avantage (+1)** : si l'adversaire se trouve, **avant la Charge, à une distance d'au moins votre caractéristique de Mouvement (en mètres)** — tout en restant dans la portée de Course — vous obtenez **+1 Avantage** en fonçant. Autrement dit, foncer de loin (au moins M mètres) octroie l'Avantage ; charger un ennemi quasi adjacent ne le donne pas. (Ce +1 Avantage est aussi listé parmi les sources d'Avantage : « **Charge :** charger tête la première en combat confère +1 Avantage. », `LDB 14 l.205`.)
 
 > « Si votre adversaire se trouve au moins à une distance, en mètres, égale à votre caractéristique de Mouvement de votre Course avant votre Charge, mais toujours dans la portée de cette dernière […], vous obtenez également +1 Avantage en fonçant sur votre adversaire. » — `LDB 15 l.37`
 
@@ -1499,11 +1500,11 @@ On observe que **Marche = 2 × M mètres** (soit M cases) et **Course = 4 × M m
 
 **Sources RAW** :
 - `LDB 15 l.12` — Grille recommandée : case 3 cm = **2 mètres** ; Mouvement 4 = 4 cases ; les grandes créatures occupent 2, 4 cases ou plus selon le Trait Taille ; sans grille, conserver l'échelle 3 cm = 2 m.
-- `LDB 15 l.15-16` — Le Tableau du Mouvement donne la distance en mètres parcourue par tour **sans** Test d'Athlétisme (« Mouvement du Tour »).
-- `LDB 15 l.18-32` — **Tableau des Mouvements** complet : Mouvement 0→10, Marche 0→20 m, Course 0→40 m (Marche = 2M m, Course = 4M m).
-- `LDB 15 l.34-37` — **Charge** : possible seulement si non encore *Engagé* ; Action imposée = Test de Corps à corps ; **+1 Avantage** si la cible était à ≥ M mètres avant la charge, dans la portée de Course.
-- `LDB 15 l.3` — La Charge (« tête la première ») est listée parmi les sources d'**+1 Avantage**.
-- `LDB 15 l.39-42` — **Course** : Action + **Test d'Athlétisme Accessible (+20)**, distance = **Mouvement de Course + DR** mètres (en plus du Mouvement du Round) ; exemple M4 / DR −2 → 14 m supplémentaires.
+- `LDB 15 l.16` — Le Tableau du Mouvement donne la distance en mètres parcourue par tour **sans** Test d'Athlétisme (« Mouvement du Tour »).
+- `LDB 15 l.18-31` — **Tableau des Mouvements** complet : Mouvement 0→10, Marche 0→20 m, Course 0→40 m (Marche = 2M m, Course = 4M m).
+- `LDB 15 l.35-37` — **Charge** : possible seulement si non encore *Engagé* ; Action imposée = Test de Corps à corps ; **+1 Avantage** si la cible était à ≥ M mètres avant la charge, dans la portée de Course.
+- `LDB 14 l.205` — La Charge (« tête la première ») est listée parmi les sources d'**+1 Avantage**.
+- `LDB 15 l.39-41` — **Course** : Action + **Test d'Athlétisme Accessible (+20)**, distance = **Mouvement de Course + DR** mètres (en plus du Mouvement du Round) ; exemple M4 / DR −2 → 14 m supplémentaires.
 
 > « Si vous n'êtes pas encore *Engagé* en combat, vous pouvez utiliser votre Mouvement pour Charger. Si vous Chargez, votre action doit être un Test de Corps à corps pour attaquer un adversaire. » — `LDB 15 l.35`
 
@@ -1512,7 +1513,8 @@ On observe que **Marche = 2 × M mètres** (soit M cases) et **Course = 4 × M m
 **Voir aussi** : Avantage (gain/perte, +10/pion) ; Désengagement (Avantage / Esquip-CC) ; Fuite (attaque gratuite, +20 dans le dos, Calme→Brisé) ; Escalade / Saut / Chute ; États (À Terre, Engagé) ; Poursuites (Distance d10) ; Charge montée et Taille de la monture.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.3, l.12, l.15-16, l.18-32, l.34-37, l.39-42) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `DisengageModal`, `charge`, `chargeReach`, `run-roll`, `sizeFootprintSide`, `RuleId`, +32 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +21 fichiers
+- `LDB 14` (l.205) → `advantageCap`, `advantageCapFor`, `ActiveFrame`, `ADVANTAGE_COLLARS`, `schema`, `TavernGame`, `avantage`, `avantageSurLaCible`, `conditionModLines`, `advantageModLine` — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/tavernGames.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, `src/engine/tavernGame.ts`, +3 fichiers
+- `LDB 15` (l.12, l.16, l.18-31, l.35-37, l.39-41) → `METRES_PER_LEVEL`, `resolveRun`, `RunModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `charge`, `chargeReach`, `occupied`, `run-roll`, +43 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +24 fichiers
 
 ---
 
@@ -1543,7 +1545,7 @@ Si vous êtes Engagé et ne souhaitez plus combattre, vous disposez de **deux op
 
 ### Fuite (involontaire ou désespérée)
 
-> « S'il n'y a pas d'autre solution, vous pouvez faire demi-tour et utiliser votre Mouvement pour fuir. Bien souvent, la Fuite est involontaire, et est provoquée par la Terreur (voir page 191) ou la magie. » — `LDB 15 l.61-62`
+> « S'il n'y a pas d'autre solution, vous pouvez faire demi-tour et utiliser votre Mouvement pour fuir. Bien souvent, la Fuite est involontaire, et est provoquée par la Terreur (voir page 191) ou la magie. » — `LDB 15 l.61`
 
 La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir. Elle est souvent **involontaire**, provoquée par la **Terreur** (LDB Psychologie) ou la magie. Sa résolution, dans l'ordre :
 
@@ -1552,7 +1554,7 @@ La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir.
 3. **Si vous êtes touché** : l'adversaire gagne **+1 Avantage supplémentaire**, et vous devez effectuer un **Test de Calme Intermédiaire (+0)**. Sur un **échec**, vous obtenez l'**État Brisé**, plus **+1 Brisé par DR inférieur à 0**.
 4. **Une fois ce coup gratuit résolu**, vous pouvez vous déplacer **jusqu'à la limite de votre Mouvement de Course** (cf. Tableau des Mouvements), dans la **direction opposée** à celle de votre adversaire — en partant du principe que vous en êtes encore capable.
 
-> « Si vous fuyez, votre adversaire gagne immédiatement +1 Avantage et une Attaque gratuite. Cette attaque est un Test de Corps à corps non opposé, et le DR est utilisé pour vous infliger des Dégâts, comme d'habitude. […] votre adversaire bénéficie de +20 au toucher. Si vous êtes touché, votre adversaire gagne +1 Avantage, et vous devez effectuer un Test de Calme Intermédiaire (+0) : sur un échec, vous obtenez l'État Brisé, ainsi que +1 Brisé par DR inférieur à 0. » — `LDB 15 l.63-69`
+> « Si vous fuyez, votre adversaire gagne immédiatement +1 Avantage et une Attaque gratuite. Cette attaque est un Test de Corps à corps non opposé, et le DR est utilisé pour vous infliger des Dégâts, comme d'habitude. […] votre adversaire bénéficie de +20 au toucher. Si vous êtes touché, votre adversaire gagne +1 Avantage, et vous devez effectuer un Test de Calme Intermédiaire (+0) : sur un échec, vous obtenez l'État Brisé, ainsi que +1 Brisé par DR inférieur à 0. » — `LDB 15 l.63-68`
 
 > « Une fois que ce coup gratuit est résolu, vous pouvez vous déplacer jusqu'à la limite de votre Mouvement de Course (voir le Tableau des Mouvements) dans la direction opposée à celle de votre adversaire, en partant du principe que vous en êtes encore capable. » — `LDB 15 l.68`
 
@@ -1584,7 +1586,7 @@ La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir.
 | 9 | 18 | 36 |
 | 10 | 20 | 40 |
 
-*Réf. table : `LDB 15 l.18-32`.*
+*Réf. table : `LDB 15 l.18-31`.*
 
 ### Notes de cohérence
 
@@ -1593,14 +1595,14 @@ La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir.
 - L'**État Brisé** infligé sur Fuite n'est pas plafonné par cette règle : on cumule **1 + (nombre de DR négatifs)** ; au-delà de ce seuil le combattant peut fuir le combat (cf. la fiche de l'État Brisé).
 
 **Sources RAW** :
-- `LDB 15 l.44-49` — *Désengagement* : conditions d'Engagement (p.159) ; option 1 « Utiliser l'Avantage » (Avantage > adversaire → ramener à 0 → se déplacer sans pénalité) ; option 2 « Utiliser l'Esquive » (Avantage ≤ adversaire → Action → Test opposé Esquive / Corps à corps ; succès = +1 Avantage + Mouvement libre ; échec = adversaire +1 Avantage, fuite impossible sauf coup dans le dos).
-- `LDB 15 l.60-68` — *Fuite* : déclenchement (souvent involontaire, Terreur p.191 ou magie) ; adversaire +1 Avantage + Attaque gratuite ; Attaque = Test de CC non opposé, DR → Dégâts, **+20 au toucher** (dos tourné) ; si touché : +1 Avantage adversaire + Test de Calme Intermédiaire (+0) → échec = État Brisé + 1 Brisé par DR < 0 ; puis déplacement jusqu'à la **Course** dans la direction opposée à l'adversaire.
-- `LDB 15 l.18-32` — *Tableau des Mouvements* : Marche = 2×Mouvement, Course = 4×Mouvement (sert à chiffrer la distance de repli après le coup gratuit).
+- `LDB 15 l.45-49` — *Désengagement* : conditions d'Engagement (p.159) ; option 1 « Utiliser l'Avantage » (Avantage > adversaire → ramener à 0 → se déplacer sans pénalité) ; option 2 « Utiliser l'Esquive » (Avantage ≤ adversaire → Action → Test opposé Esquive / Corps à corps ; succès = +1 Avantage + Mouvement libre ; échec = adversaire +1 Avantage, fuite impossible sauf coup dans le dos).
+- `LDB 15 l.61-68` — *Fuite* : déclenchement (souvent involontaire, Terreur p.191 ou magie) ; adversaire +1 Avantage + Attaque gratuite ; Attaque = Test de CC non opposé, DR → Dégâts, **+20 au toucher** (dos tourné) ; si touché : +1 Avantage adversaire + Test de Calme Intermédiaire (+0) → échec = État Brisé + 1 Brisé par DR < 0 ; puis déplacement jusqu'à la **Course** dans la direction opposée à l'adversaire.
+- `LDB 15 l.18-31` — *Tableau des Mouvements* : Marche = 2×Mouvement, Course = 4×Mouvement (sert à chiffrer la distance de repli après le coup gratuit).
 
 **Voir aussi** : Avantage (combat) ; Engagement et portée de mêlée ; Test opposé et DR ; Compétence Esquive ; Psychologie — Terreur ; État Brisé ; Charge ; Course.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.18-32, l.44-49, l.60-69) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `fall-choice`, `RunModal`, `reachTiles`, `DisengageModal`, `planClimb`, `planJump`, `fall-roll`, +73 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, +32 fichiers
+- `LDB 15` (l.18-31, l.45-49, l.61-68) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `planJump`, `fall-choice`, `RunModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, +77 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, +32 fichiers
 
 ---
 
@@ -1624,7 +1626,7 @@ Certaines escalades sont **trop difficiles** pour un Personnage ne possédant pa
 
 ### Saut
 
-> « Vous pouvez sauter de votre valeur de Mouvement/3 en mètres sans avoir à effectuer de Test. » — `LDB 15 l.76-77`
+> « Vous pouvez sauter de votre valeur de Mouvement/3 en mètres sans avoir à effectuer de Test. » — `LDB 15 l.76`
 
 - **Saut libre** (sans Test) : distance = **Mouvement / 3** mètres.
 - **Sauter plus loin** : Test d'**Athlétisme**.
@@ -1650,14 +1652,14 @@ Note (LDB 15 l.72) : dans la plupart des cas un simple Test d'**Athlétisme** (o
 > « Si vous subissez plus de Points de Blessure à cause de la chute que votre Bonus d'Endurance, vous obtenez l'État À Terre. » — `LDB 15 l.84`
 
 **Sources RAW** :
-- `LDB 15 l.52-57` — Escalade : pas de Test si facile/courte ; échelle = vitesse ½ (4 m de Mouvement pour 2 m d'échelle) ; option Escalade Accessible (+20) sur l'Action → +Mouvement+DR mètres ; surface à prises avec deux mains libres = Action + Test Escalade, vitesse ½Mouvement+DR mètres ; Talent Grimpeur requis pour les surfaces difficiles.
-- `LDB 15 l.71-76` — Saut : libre = Mouvement/3 mètres sans Test ; au-delà = Athlétisme Accessible (+20) avec élan ≥ Mouvement, Intermédiaire sinon ; +30 cm/DR sur succès (DR 0 = +15 cm).
-- `LDB 15 l.79-85` — Chute : 3 Dégâts/mètre + 1d10, réduits par le Bonus d'Endurance mais pas par les PA ; chute à dessein = Athlétisme Accessible (+20), −1 m de chute/DR (0 m ou moins = aucun Dégât) ; Blessures perdues > Bonus d'Endurance → État À Terre.
+- `LDB 15 l.53-57` — Escalade : pas de Test si facile/courte ; échelle = vitesse ½ (4 m de Mouvement pour 2 m d'échelle) ; option Escalade Accessible (+20) sur l'Action → +Mouvement+DR mètres ; surface à prises avec deux mains libres = Action + Test Escalade, vitesse ½Mouvement+DR mètres ; Talent Grimpeur requis pour les surfaces difficiles.
+- `LDB 15 l.72-76` — Saut : libre = Mouvement/3 mètres sans Test ; au-delà = Athlétisme Accessible (+20) avec élan ≥ Mouvement, Intermédiaire sinon ; +30 cm/DR sur succès (DR 0 = +15 cm).
+- `LDB 15 l.80-84` — Chute : 3 Dégâts/mètre + 1d10, réduits par le Bonus d'Endurance mais pas par les PA ; chute à dessein = Athlétisme Accessible (+20), −1 m de chute/DR (0 m ou moins = aucun Dégât) ; Blessures perdues > Bonus d'Endurance → État À Terre.
 
 **Voir aussi** : Mouvement & Course · Désengagement & Fuite · États (À Terre) · Athlétisme / Escalade (compétences) · Talent Grimpeur
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.52-57, l.71-77, l.79-85) → `FallPlan`, `scene`, `ClimbPlan`, `fall-choice`, `FallModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, `planJump`, +79 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/engine/combat.ts`, +35 fichiers
+- `LDB 15` (l.53-57, l.72-76, l.80-84) → `FallPlan`, `scene`, `ClimbPlan`, `planJump`, `fall-choice`, `FallModal`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, `fall-roll`, +69 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/engine/combat.ts`, +32 fichiers
 
 ---
 
@@ -1719,7 +1721,7 @@ Un participant dont la **Caractéristique de Mouvement (M)** est supérieure gag
 | +2 M (ex. M 9 contre M 7) | DR +2 |
 | +n M | DR +n |
 
-*(LDB 15 l.105-106 ; l'exemple de Perdita l.146 montre une monture M 8 contre des montures adverses M 7 → DR +1 pour elle, et M 9 → DR +2 pour le second Bandit, le Bandit M 7 servant de référence à M 0 d'écart.)*
+*(LDB 15 l.106 ; l'exemple de Perdita l.146 montre une monture M 8 contre des montures adverses M 7 → DR +1 pour elle, et M 9 → DR +2 pour le second Bandit, le Bandit M 7 servant de référence à M 0 d'écart.)*
 
 ### Exemples canon
 
@@ -1727,14 +1729,14 @@ Un participant dont la **Caractéristique de Mouvement (M)** est supérieure gag
 - **À cheval (l.146)** : Perdita (cheval M 8) poursuit deux Bandits (montures M 7 et M 9), Tests de **Chevaucher (Cheval)**. Le Bandit M 7 teste sans modificateur, Perdita gagne **DR +1**, le Bandit M 9 gagne **DR +2**.
 
 **Sources RAW** :
-- `LDB 15 l.87-89` — cadrage : poursuites effrénées (marché bondé, chariot à grande vitesse) ; introduit la procédure.
+- `LDB 15 l.88` — cadrage : poursuites effrénées (marché bondé, chariot à grande vitesse) ; introduit la procédure.
 - `LDB 15 l.90` — Étape 1 « Déterminer la Distance » : Avantage de départ nommé **Distance**, échelle 1 (presque à portée) / 4 (avance confortable) / 8 (quasiment hors de portée).
 - `LDB 15 l.92` — Étape 2 « Test » : chaque participant teste son Mouvement via **Conduite d'Attelages**, **Chevaucher** ou **Athlétisme** selon les circonstances.
 - `LDB 15 l.93` — Étape 3 « Actualiser la Distance » : DR le plus PETIT des poursuivis vs DR le plus HAUT des poursuivants ; différence ajoutée (poursuivis gagnants) ou retranchée (poursuivants gagnants).
-- `LDB 15 l.95` — Étape 4 « Déterminer l'issue » : Distance ≤ 0 = rattrapés (sacrifier le plus lent OU affronter ; les poursuivants choisissent qui s'arrête / continue ; traînard non prioritaire = ignoré) ; Distance 10+ = proie perdue, poursuite finie ; Distance 1–9 = continue (retour étape 2).
+- `LDB 15 l.94` — Étape 4 « Déterminer l'issue » : Distance ≤ 0 = rattrapés (sacrifier le plus lent OU affronter ; les poursuivants choisissent qui s'arrête / continue ; traînard non prioritaire = ignoré) ; Distance 10+ = proie perdue, poursuite finie ; Distance 1–9 = continue (retour étape 2).
 - `LDB 15 l.96` — description narrative de fin de Round (large DR = terrain gagné ; DR négatif = obstacles).
 - `LDB 15 l.98-102` — exemple à pied (Eichengard / Sigrid / cultistes, Distance 2, Athlétisme).
-- `LDB 15 l.105-106` — « Modificateurs de Mouvement » : différence de M = autant de DR bonus (M 5 vs M 4 → DR +1).
+- `LDB 15 l.106` — « Modificateurs de Mouvement » : différence de M = autant de DR bonus (M 5 vs M 4 → DR +1).
 - `LDB 15 l.108` — exemple à cheval (Perdita M 8 vs Bandits M 7 / M 9 → DR +1 et DR +2).
 - `NADJ 06 l.150` — application en scénario (« Une journée au tribunal ») : gamins des rues fuyards, **Athlétisme 40**, Distance de départ **4** ; très à l'aise en milieu urbain (allées, passages entre bâtiments, trous dans les murs et clôtures).
 
@@ -1747,7 +1749,7 @@ Un participant dont la **Caractéristique de Mouvement (M)** est supérieure gag
 **Voir aussi** : Désengagement et fuite (Attaque gratuite, +1 Avantage, Calme / Brisé) ; Mouvement & Course (Tableau des Mouvements, M en mètres) ; Saut et Chute ; Tests opposés & Degrés de Réussite (DR).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.87-89, l.90, l.92, l.93, l.94, l.95, l.96, l.98-102, l.105-106, l.108) → `FallPlan`, `assourdi`, `scene`, `planJump`, `fall-choice`, `FallModal`, `hasMeaningfulOption`, `fall-roll`, `a-terre`, `scenario`, +39 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combatFeatures/types.ts`, +24 fichiers
+- `LDB 15` (l.88, l.90, l.92, l.93, l.94, l.96, l.98-102, l.106, l.108) → `FallPlan`, `assourdi`, `scene`, `fall-choice`, `FallModal`, `planJump`, `fall-roll`, `a-terre`, `scenario`, `PursuitSpec`, +27 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combatFeatures/types.ts`, +19 fichiers
 - sans code : `NADJ 6` (l.150)
 
 ---
@@ -6180,7 +6182,7 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - Implémentation mentionnée dans le markdown — non vérifiée dans cette passe (hors scope de la vérification source RAW). Les refs aux fichiers src/ sont des déclarations d'implémentation, pas des claims RAW.
 
 ### Action, Mouvement et options du Tour ⚠
-- MINEUR — Charge : le topic écrit « consomme tout le Mouvement » (section Charge, corps), formulation absente du RAW. LDB 15 l.34-35 dit seulement « vous pouvez utiliser votre Mouvement pour Charger » sans préciser « tout ». La portée est bien celle de la Course (tableau), mais l'adjectif « tout » est une inférence rédactionnelle, pas une citation directe.
+- MINEUR — Charge : le topic écrit « consomme tout le Mouvement » (section Charge, corps), formulation absente du RAW. LDB 15 l.35 dit seulement « vous pouvez utiliser votre Mouvement pour Charger » sans préciser « tout ». La portée est bien celle de la Course (tableau), mais l'adjectif « tout » est une inférence rédactionnelle, pas une citation directe.
 
 ### Résolution d'une attaque : les 4 étapes ❌
 - CRITIQUE: l.137 and l.183-184 — Le document affirme qu'un Critique « inflige immédiatement une Blessure critique » en citant ces lignes. Or l.137 (LDB 13) dit seulement de se référer à la section Critiques/Maladresses, et l.184 dit qu'un double sur un succès génère un Critique. Aucun des deux passages ne dit qu'une Blessure critique est infligée immédiatement — c'est un effet aval non cité aux lignes référencées. La source précise que le Critique peut se produire aussi pour le défenseur (l.184 : « cela peut également se produire lorsque vous êtes le défenseur »), information absente du doc.
@@ -6218,16 +6220,16 @@ Une arme à *Tir de zone* projette **un nuage de projectiles** qui se déploie e
 - Section 'Option Compétences' : l'article dit « un autre Test qu'un Test opposé de Force » alors que la source (l.173) dit simplement « un autre Test qu'un Test opposé » — le « de Force » est un ajout éditorial mineur, non présent dans le RAW à cet endroit précis. Pas d'erreur factuelle, mais légère surspécification.
 
 ### Déplacement en combat : Marche, Course, Charge, grille ⚠
-- MINEUR — Clampage à 0 de bonusCases (movement.ts l.23) non sourcé : le RAW dit « Mouvement de Course + DR mètres » et donne un exemple DR=−2 → 14m (non nul). Le livre ne prévoit pas de plancher à 0 pour la distance de Course. Le clampage est raisonnable mais c'est une invention. (LDB 15 l.40-42)
+- MINEUR — Clampage à 0 de bonusCases (movement.ts l.23) non sourcé : le RAW dit « Mouvement de Course + DR mètres » et donne un exemple DR=−2 → 14m (non nul). Le livre ne prévoit pas de plancher à 0 pour la distance de Course. Le clampage est raisonnable mais c'est une invention. (LDB 15 l.41)
 - MINEUR — Math.round(t.sl / 2) pour la conversion DR mètres → cases (movement.ts l.23) : le DR RAW est toujours un entier, donc DR/2 peut être un demi-entier sur grille à 2 m/case. L'arrondi au plus proche est une décision de grille non sourcée (le livre ne mentionne pas d'arrondi).
 - INFO — Le texte dit « la colonne Course n'est pas une Action de Course 'pleine' mais le Mouvement de Course servant de base à la Course et à la Charge ». Cette distinction éditoriale n'est pas dans le RAW : le tableau nomme simplement « Course (mètres) ». La formulation peut prêter à confusion mais ne contredit pas le RAW.
-- INFO — Le markdown parle d'« Avantage +10/pion » dans le renvoi final. LDB 15 l.4 confirme : « Chaque Avantage ajoute +10 à un Test de Combat ou de Psychologie appropriés ». Correct mais c'est hors-scope du chapitre 15.
+- INFO — Le markdown parle d'« Avantage +10/pion » dans le renvoi final. LDB 14 l.215 confirme : « Chaque Avantage ajoute +10 à un Test de Combat ou de Psychologie appropriés ». Correct mais c'est hors-scope du chapitre 15.
 
 ### Escalade, Saut et Chute ⚠
-- Code implementation (non-doc issue): combatEffects.ts l.693 — `if (lost > be) addCondition(c, 'a-terre')` où `lost = max(0, 3*m + d10 - be)`. Le RAW (l.122) dit À Terre si les Blessures subies > BE ; 'lost' étant déjà réduit par BE, la condition effective est `raw > 2×BE`, plus restrictive que le RAW. Ce bug est dans le code, pas dans la doc (la doc cite le RAW correctement). Signal pour un agent de correction ultérieure.
+- Code implementation (non-doc issue): combatEffects.ts l.693 — `if (lost > be) addCondition(c, 'a-terre')` où `lost = max(0, 3*m + d10 - be)`. Le RAW (l.84) dit À Terre si les Blessures subies > BE ; 'lost' étant déjà réduit par BE, la condition effective est `raw > 2×BE`, plus restrictive que le RAW. Ce bug est dans le code, pas dans la doc (la doc cite le RAW correctement). Signal pour un agent de correction ultérieure.
 
 ### Poursuite (procédure de base) ⚠
-- LDB 15 l.87-89 — intro : le markdown ajoute « fuite à cheval » comme troisième exemple de poursuite ; la source ne mentionne que « marché bondé » et « chariot lancé à grande vitesse » dans ces lignes. La poursuite à cheval n'apparaît qu'à l'exemple l.146. Ajout éditorial mineur, non faux (la procédure couvre les montures), mais non sourcé dans ces lignes précises.
+- LDB 15 l.88 — intro : le markdown ajoute « fuite à cheval » comme troisième exemple de poursuite ; la source ne mentionne que « marché bondé » et « chariot lancé à grande vitesse » dans ces lignes. La poursuite à cheval n'apparaît qu'à l'exemple l.146. Ajout éditorial mineur, non faux (la procédure couvre les montures), mais non sourcé dans ces lignes précises.
 - LDB 15 l.108 — exemple Perdita : le markdown ajoute une glose parenthétique « le Bandit M 7 servant de référence à M 0 d'écart » absente de la source. La source dit simplement « le premier Bandit effectue un Test sans modificateurs ». Glose factuelle correcte mais non sourcée.
 - Note structurelle (non-bug) : les renvois entre parenthèses « voir l'étape 4 pour les bornes de sortie 0 et 10+ » (après la table Distance étape 1) et les notes éditoriales en italique sous les tables sont des ajouts du rédacteur, non présents dans le texte RAW. Aucun n'introduit d'erreur de règle.
 

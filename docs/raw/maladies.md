@@ -640,7 +640,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 
 ## Guérison et soins (renvoi)
 
-**Sources RAW** : `LDB 09 l.262-269` (compétence Guérison), `LDB 10 l.174-184` (Talent Chirurgie), `LDB 41 l.?` (Bénédiction de Convalescence), `LDB 42 l.?` (Miracle Amère Catharsis)
+**Sources RAW** : `LDB 09 l.262-269` (compétence Guérison), `LDB 10 l.178-184` (Talent Chirurgie), `LDB 41 l.?` (Bénédiction de Convalescence), `LDB 42 l.?` (Miracle Amère Catharsis)
 
 - **Compétence Guérison** : Test réussi → protège le soignant pour ce jour ; chaque DR supplémentaire protège un autre personnage présent. Chaque journée complète aux bons soins : **durée maladie −1 (minimum 1)**. Échec stupéfiant : le patient contracte *Infection Mineure*.
 - **Talent Chirurgie** : requis pour percer les Bubons (voir § Symptôme Bubons).

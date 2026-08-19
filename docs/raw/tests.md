@@ -522,7 +522,7 @@ Autrement dit : chaque fois qu'un personnage *réussit* un test utilisant une Co
 | Grand Orateur | Charme (parler en public) | Bonus de DR = niveaux du Talent à tout Test de Charme en public (`LDB 10 l.520`) |
 | Menaçant | Intimidation | Bonus de DR = niveaux du Talent (`LDB 10 l.787`) |
 | Artilleur | Test étendu de rechargement Poudre noire | Ajoute un DR = niveau du Talent à chaque test du test étendu (`LDB 10 l.62`) |
-| Feinte | Corps à corps (Escrime) pour la Feinte | Si réussi, ajoute le DR de la Feinte à l'attaque suivante contre la même cible (`LDB 10 l.448`) |
+| Feinte | Corps à corps (Escrime) pour la Feinte | Si réussi, ajoute le DR de la Feinte à l'attaque suivante contre la même cible (`LDB 10 l.453`) |
 | Bonnes Jambes | Athlétisme (Saut) | Ajoute niveau du Talent au DR (`LDB 10 l.123`) |
 | Infatigable | Tests opposés de Force | Ajoute niveaux au DR dans les tests opposés de Force (`LDB 10 l.605`) |
 
@@ -535,7 +535,7 @@ Autrement dit : chaque fois qu'un personnage *réussit* un test utilisant une Co
 - `LDB 10 l.123` — Bonnes Jambes : +DR Saut
 - `LDB 10 l.263` — Coopératif : DR ou chiffre des unités (social/supérieur)
 - `LDB 10 l.411` — Ergoteur : DR ou chiffre des unités (débattre)
-- `LDB 10 l.448` — Feinte : DR de la feinte ajouté à l'attaque
+- `LDB 10 l.453` — Feinte : DR de la feinte ajouté à l'attaque
 - `LDB 10 l.520` — Grand Orateur : +DR en public
 - `LDB 10 l.605` — Infatigable : +DR Force opposée
 - `LDB 10 l.759` — Maîtrise des Dés : DR ou chiffre des unités
@@ -543,7 +543,7 @@ Autrement dit : chaque fois qu'un personnage *réussit* un test utilisant une Co
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.448, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `useAttackJetProps`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, +104 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, +12 fichiers
+- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.453, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `useAttackJetProps`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, +103 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, +11 fichiers
 
 ---
 
@@ -557,7 +557,7 @@ Talents concernés (LDB 10) :
 
 | Talent | Compétence(s) | Condition | Plafond DR |
 |--------|--------------|-----------|-----------|
-| Chat de Gouttière | Discrétion (Urbaine) | Test raté → inverser si succès | Aucun plafond mentionné (`LDB 10 l.150`) |
+| Chat de Gouttière | Discrétion (Urbaine) | Test raté → inverser si succès | Aucun plafond mentionné (`LDB 10 l.176`) |
 | Pansement de Fortune | Guérison (avec Bandages, pendant le combat) | Test raté → inverser si succès | +1 DR max (`LDB 10 l.899`) |
 | Pilote | Ramer / Voile (eaux dangereuses) | Test raté → inverser si succès | +1 DR max (`LDB 10 l.966`) |
 | Pharmacologie | Métier (Apothicaire) | Test raté → inverser si succès | Aucun plafond mentionné (`LDB 10 l.950`) |
@@ -571,7 +571,7 @@ Talents concernés (LDB 10) :
 **Note de cohérence** : le plafond à +1 DR ne s'applique qu'à Pansement de Fortune et Pilote, qui précisent explicitement « car vous vous concentrez sur la vitesse plutôt que sur la précision ». Pour les autres Talents (Chat de Gouttière, Pharmacologie, Noctambule, Lecture Rapide), le DR calculé normalement après inversion s'applique.
 
 **Sources RAW** :
-- `LDB 10 l.150` — Chat de Gouttière
+- `LDB 10 l.176` — Chat de Gouttière
 - `LDB 10 l.634` — Lecture Rapide
 - `LDB 10 l.834` — Noctambule
 - `LDB 10 l.899` — Pansement de Fortune
@@ -580,7 +580,7 @@ Talents concernés (LDB 10) :
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.150, l.176, l.634, l.834, l.899, l.950, l.966) → `restoreFortune`, `MedicState`, `CombatFeature`, `surgeryNext`, `MedicModal`, `battement-roll`, `surgery-roll`, `baratiner`, `battement`, `beni`, +69 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/fortune.ts`, +5 fichiers
+- `LDB 10` (l.176, l.634, l.834, l.899, l.950, l.966) → `MedicState`, `MODAL_DEFS`, `CombatFeature`, `surgeryNext`, `MedicModal`, `surgery-roll`, `caid`, `cavalier-emerite`, `chanceux`, `charge-berserk`, +63 — `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/i18n/messages/fr.ts`, `src/state/combatFlow.ts`, +5 fichiers
 - `LDB 12` (l.42) → `canReroll`, `getTestPolicy`, `ChanceButtons`, `RollRowCore`, `rerollAvailable`, `NightEntry`, `PendingTest`, `RollRowProps`, `PendingReload`, `PendingBargain`, +9 — `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +4 fichiers
 
 ---

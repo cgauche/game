@@ -565,7 +565,7 @@ export const flowTestSchema = z.strictObject({
    *  dialogue : soutenable ; effet déclenché / consommable : non soutenable) ; `true` = jamais
    *  soutenable ; `false` = soutenable malgré la voie (Test de soin d'un nécessaire). */
   noSupport: z.boolean().optional(),
-  /** Tag MENACE du talent « Résistance (Menace) » (LDB 10 l.1015-1021) — CLÉ ÉTRANGÈRE vers un id de
+  /** Tag MENACE du talent « Résistance (Menace) » (LDB 10 l.1016-1020) — CLÉ ÉTRANGÈRE vers un id de
    *  spec de l'entrée `resistance` de `talents.json`, résolue à la VALIDATION (liste OUVERTE : une
    *  spec ajoutée au Compendium est utilisable sans toucher au code). Un id inconnu échoue au
    *  chargement (`dev-validate`), au contrat CI (`schema-contract.test.ts`) et à la sauvegarde Codex. */

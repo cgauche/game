@@ -30,8 +30,9 @@ import { planFall } from './fallMove';
 import { climbMovementCost } from '../engine/movement';
 import { hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
 import { controlsCombatant } from './netOwnership';
-import { resetStageYaw, viewYawDeg } from './stageYaw';
+import { viewYawDeg } from './stageYaw';
 import { resetStagePan } from './stagePan';
+import { resetStageGestes } from './stageGestes';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { markActed } from './combatFlow';
 import { EMPTY_FLOW, type Flow } from './flow';
@@ -255,7 +256,7 @@ export interface BattleState {
    *  positions de TOUS les combattants (un grand a pu en déplacer d'autres), orientation et
    *  `movedPreAction`. Effacé à l'annulation ou écrasé au 1ᵉʳ segment du Tour suivant. */
   moveSnapshot?: MoveSnapshot | null;
-  /** Budget de Mouvement ÉTENDU du Tour après une Course (Marche + Course + DR, LDB 15 l.80) :
+  /** Budget de Mouvement ÉTENDU du Tour après une Course (Marche + Course + DR, LDB 15 l.41) :
    *  le reliquat non parcouru reste dépensable en segments. Null hors Course ; purgé au Tour/Round. */
   runBudget?: number | null;
   /** Test de Calme d'APPROCHE d'une source de Peur (LDB 21 l.29) — une tentative par Tour :
@@ -817,7 +818,7 @@ export interface GameState extends RollFlowActionsMap {
   loadProject: (scenes: Scene[], entryId: string, worldMap?: import('./worldMap').WorldMap | null, narratif?: NarratifBlock) => void;
   transitionTo: (sceneId: string, entry?: string, pos?: Pt) => void;
   moveParty: (pt: Pt) => void;
-  /** ESCALADE d'une arête `WallSeg.climb` (LDB 15 l.52-57) : `from` (case basse, adjacente) → `to` (case
+  /** ESCALADE d'une arête `WallSeg.climb` (LDB 15 l.53-57) : `from` (case basse, adjacente) → `to` (case
    *  haute). Exploration = le groupe ; combat = le héros actif. `ladder` monte d'office (pas de Test) au
    *  coût du Mouvement à ½ vitesse ; `surface` déclenche un Test d'Escalade influençable (cascade RollShell)
    *  dont l'échec fait chuter, et consomme l'Action en combat (LDB 13 l.86-88). Geste EXPLICITE (overlay). */
@@ -1186,7 +1187,7 @@ export interface GameState extends RollFlowActionsMap {
   maneuverCancel: () => void;
   /** Avantage dépensé par le Regard pétrifiant (variable, LDB 85 l.290) : 1..advantage → +N DR. */
   maneuverSetAvantage: (n: number) => void;
-  /** Course (LDB 15 l.79-82) : ouvrir la modale, lancer le Test d'Athlétisme, Chance/Résilience, appliquer (déplacement étendu). */
+  /** Course (LDB 15 l.41) : ouvrir la modale, lancer le Test d'Athlétisme, Chance/Résilience, appliquer (déplacement étendu). */
   battleRun: (dest?: Pt, movement?: { path: Pt[]; cost: number }) => void;
   /** Manœuvre navale (MDG 13) : ouvre la modale du Test de Navigation pour le navire que sert `crewId`. */
   battleShipManeuver: (crewId: string) => void;
@@ -1925,8 +1926,9 @@ export const useGame = create<GameState>((set, get) => ({
       campaignSceneId: scene.id,
       journal: scene.startMessage ? [scene.startMessage] : [],
     });
-    resetStageYaw(); // le lacet libre de la voie volumique n'est pas un état de partie : la carte s'ouvre à son cran
-    resetStagePan(); // idem pour le décalage manuel : la carte s'ouvre CENTRÉE, jamais au cadrage de la précédente
+    // Gestes VIVANTS de la frontière (`stageGestes`) : la carte s'ouvre à son cran, CENTRÉE, et sans
+    // qu'aucune marche tenue de l'écran précédent n'y commette de pas.
+    resetStageGestes();
     // Semis des Possessions de dotation (#617/#618 Lot 1) — ICI, jamais `loadGame` (qui restaure
     // `data.possessions` de la save) : `startScene` est le SEUL seam qui repart d'un registre
     // `possessions` vidé (le reset ci-dessus), pour toute partie neuve (créateur → campagne,
@@ -2016,8 +2018,8 @@ export const useGame = create<GameState>((set, get) => ({
       camEdge: false, // idem `resetStageYaw` ci-dessous : la scène d'arrivée se regarde depuis un cran DIAGONAL (#1289)
       camPan: { x: 0, y: 0 }, // …et depuis son CENTRE : le commis suit le vivant que `resetStagePan` remet à zéro
     }));
-    resetStageYaw(); // idem `startScene` : la scène d'arrivée se regarde depuis son cran, pas depuis le lacet de la précédente
-    resetStagePan(); // …ni depuis le décalage manuel de la précédente
+    resetStageGestes(); // idem `startScene` : la scène d'arrivée se regarde depuis SON cran, depuis son centre, et la
+                        // touche encore enfoncée n'y marche pas (la main a armé ce geste dans la scène de départ)
     if (target.startMessage) get().log(target.startMessage);
     get().advanceTime(TIME_COST.sceneTransition); // seam « tout est horodaté » : 0 en intérieur (paramétrable, #T2 extérieur/voyage)
     bus.emit(EVT.SCENE_DIRTY);

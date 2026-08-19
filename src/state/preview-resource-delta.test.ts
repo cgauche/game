@@ -16,7 +16,7 @@ describe('previewResourceDelta — coût/gain de l’aperçu, zéro valeur en du
     expect(previewResourceDelta(null)).toEqual({ action: 0, move: 0, adv: 0 });
     expect(d(null)).toEqual({ action: 0, move: 0, adv: 0 });
   });
-  it('Marche → Mouvement lu sur preview.cost sans Action ; COURSE → + l’Action (LDB 15 l.79)', () => {
+  it('Marche → Mouvement lu sur preview.cost sans Action ; COURSE → + l’Action (LDB 15 l.41)', () => {
     expect(d({ kind: 'move', cost: 3 })).toEqual({ action: 0, move: 3, adv: 0 });
     expect(d({ kind: 'run', cost: 5 })).toEqual({ action: 1, move: 5, adv: 0 });
   });

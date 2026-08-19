@@ -11,7 +11,7 @@
 // préfixe (radical distinct, synonyme, vocabulaire de code étranger) ne recouvre PAS : une dérive de
 // ligne post-ré-extraction Marker n'est donc innocentée QUE si son sujet reste à ±`WINDOW` ET s'écrit
 // pareil — mesure du 2026-08-16 : sans le préfixe, 161 sites gelés dont 84 avaient déjà leur sujet à
-// ±6 lignes ; avec le préfixe, 108 (le stock gelé courant, voir la baseline).
+// ±6 lignes ; avec le préfixe, 108 à cette date. Le stock gelé COURANT se lit dans la baseline, jamais ici.
 //
 // Vocabulaire RÉUTILISÉ de `scripts/raw/_lib.mjs` (source unique) : `ldbRe`/`otherRe`/`span`/
 // `bookOf`/`chapterFile`/`readText`. Périmètre src/ aligné sur `check-code-refs.mjs`.

@@ -5,7 +5,7 @@ import { planJump } from './jumpMove';
 
 /**
  * `planJump` traduit un PAS de saut (du chemin 3D) en plan jouable, SANS nouveau flux : un saut dans
- * la portée libre (LDB 15 l.114) se franchit d'office ; un saut plus long = l'Effet `test` existant
+ * la portée libre (LDB 15 l.76) se franchit d'office ; un saut plus long = l'Effet `test` existant
  * (Athlétisme, « Saut ») dont l'échec déclenche `fall` dans le gouffre/niveau inférieur. Réutilise
  * `test` + `fall` (déjà livrés) → zéro modale dédiée.
  */

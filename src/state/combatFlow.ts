@@ -1022,7 +1022,7 @@ export function previewResourceDelta(battle: BattleState | null): { action: numb
   //                la CHARGE est une manœuvre PLEINE → tout le Mouvement (mountMovement, comme le commit).
   //  - Avantage  : lu sur `p.adv`, SOURCE UNIQUE `chargeAdvantage()` partagée par preview / commit / IA.
   //  - Action    : DÉRIVÉE de la structure — viser un ennemi (`targetId`) = attaque, et la COURSE
-  //                consomme aussi l'Action (LDB 15 l.79 — le commit passe par pendingRun).
+  //                consomme aussi l'Action (LDB 15 l.41 — le commit passe par pendingRun).
   const action = 'targetId' in p || p.kind === 'run' ? 1 : 0;
   const active = battle?.combatants ? activeCombatant(battle) : undefined; // (les tests passent des battles minces)
   const move = p.kind === 'move' || p.kind === 'run' || p.kind === 'moveAttack'
@@ -1335,7 +1335,7 @@ export function bestAdjacentReachable(reach: Map<string, number>, target: Pt, ta
 
 /** Cases de Mouvement LIBRE cliquables MAINTENANT (héros actif, mode neutre) : Marche restante
  *  (mouvement décomposable), géométrie de la monture, règle M-A-M, filtre Brisé. Vide si Engagé
- *  (le déplacement passe par le Désengagement — LDB 15 l.84). Source unique pour l'affichage ET la
+ *  (le déplacement passe par le Désengagement — LDB 15 l.45). Source unique pour l'affichage ET la
  *  validation des clics de déplacement. */
 export function computeMoveReach(get: Get): Map<string, number> {
   const { battle, scene } = get();
@@ -1368,7 +1368,7 @@ function briseFleeFilter(scene: Scene, battle: BattleState, active: Combatant, r
   }));
 }
 
-/** Zone NOMINALE de Course (LDB 15 l.79-82) : Marche + Course (3M cases, avant DR) — affichée dans une
+/** Zone NOMINALE de Course (LDB 15 l.41) : Marche + Course (3M cases, avant DR) — affichée dans une
  *  autre couleur ; un clic dedans demande le Test d'Athlétisme (+20), le déplacement réel dépendant du
  *  jet. Mêmes conditions que la Course : plein Mouvement, Action libre, non Engagé, pas À Terre. */
 export function computeRunReach(get: Get): Map<string, number> {
@@ -1414,7 +1414,7 @@ export function displayedReach(get: Get): Map<string, number> {
 }
 
 /**
- * PARITÉ héros/IA sur l'approche (LDB 15 l.74-82) : si le plan de MARCHE n'amène pas l'ennemi au
+ * PARITÉ héros/IA sur l'approche (LDB 15 l.35-41) : si le plan de MARCHE n'amène pas l'ennemi au
  * contact, un combattant de mêlée non Engagé tente une CHARGE à portée de Course (2M × Bond/Foulée) ;
  * si même la Course ne suffit pas, il COURT (Action + Test d'Athlétisme — Chevaucher à cheval —,
  * résolution instantanée IA) : budget = Marche + Course + DR, et il n'attaque PAS ce tour.
@@ -1436,12 +1436,12 @@ export function aiApproachPlan(
   const atContact = (a: EnemyAction): boolean =>
     a.kind === 'move' && combatDistance({ ...enemy, pos: a.to } as Combatant, input.heroes.find((h) => h.id === a.thenTargetId) ?? input.heroes[0]) <= meleeReachTiles(enemy.weapons);
   if (atContact(action)) return none; // la Marche suffit déjà
-  // Charge (portée de Course, sans Test — LDB 15 l.74-77).
+  // Charge (portée de Course, sans Test — LDB 15 l.35-37).
   const courseBudget = chargeReach(M, runMultiplier(geom.traits));
   if (courseBudget <= input.movement) return none;
   const charge = chooseEnemyAction({ ...input, movement: courseBudget });
   if (charge.kind === 'move' && atContact(charge)) return { plan: charge, ran: null };
-  // Course (LDB 15 l.79-82) : Test d'Athlétisme/Chevaucher, budget = Marche + Course + DR ; pas d'attaque.
+  // Course (LDB 15 l.41) : Test d'Athlétisme/Chevaucher, budget = Marche + Course + DR ; pas d'attaque.
   const r = resolveRun(testValue(enemy, enemy.mountId ? 'chevaucher' : 'athletisme'), M, rng);
   const runBudget = M + r.bonusCases;
   const run = runBudget > input.movement ? chooseEnemyAction({ ...input, movement: runBudget }) : action;
@@ -1488,7 +1488,7 @@ export type AttackPlan =
   | { kind: 'blocked'; reason: string };
 
 /** Ce qu'un clic sur CET ennemi ferait : attaque directe (Allonge / tir), Charge implicite
- *  (non Engagé + Mouvement intact + mêlée, portée de Course — LDB 15 l.74-77), ou
+ *  (non Engagé + Mouvement intact + mêlée, portée de Course — LDB 15 l.35-37), ou
  *  rejoindre-et-attaquer dans la Marche restante (pas une Charge → pas de bonus). Pure-store. */
 export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?: { reach?: number; forceMelee?: boolean; weaponUid?: string }): AttackPlan {
   const battle = get().battle!;
@@ -1534,7 +1534,7 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
   if (isEngaged(active)) return { kind: 'blocked', reason: 'Engagé : se désengager avant de rejoindre une autre cible.' };
   const env = moveEnv(battle, geom);
   if (battle.movementUsed === 0 && !hasCondition(active, COND.aTerre)) {
-    // Charge (LDB 15 l.74-77) : manœuvre PLEINE, portée de Course (2M × Bond/Foulée), arrivée
+    // Charge (LDB 15 l.35-37) : manœuvre PLEINE, portée de Course (2M × Bond/Foulée), arrivée
     // adjacente la moins chère.
     const M = mountMovement(battle, active);
     const reach = moveReachFor(geom, scene, active.pos!, chargeReach(M, runMultiplier(geom.traits)), env);
@@ -3245,7 +3245,7 @@ export function aiAvailableFreeAttack(get: Get, set: SetFn, actor: Combatant): v
 //    `onCharged`) : op `grantFreeAttack{when:'immediate'}` portée en DONNÉE par le talent. Résolution
 //    INSTANTANÉE (motif aiAvailableFreeAttack — pas de modale), arme TENUE, Action PRÉSERVÉE. La frappe est
 //    OUVERTE par le hook `freeAttack` que `runCombatFlow` appelle sur le `do`/`grantFreeAttack` — un
-//    éventuel jet préalable (Frappe réactive : Test d'Initiative LDB 10 l.429-432) est un nœud Flow
+//    éventuel jet préalable (Frappe réactive : Test d'Initiative LDB 10 l.496-500) est un nœud Flow
 //    `test` EN AMONT (cadence-aware : héros manuel = jet influençable ; ennemi/auto = inline). ──
 
 /** Résout UNE attaque gratuite de talent contre la cible `fa.targetId` (un TIERS : le chargeur pour Frappe
@@ -5576,7 +5576,7 @@ export function castWardPenalty(s: GameState, target: Combatant, spell: SpellLik
  * ENTRÉE DE RÈGLE d'un Test de Contraction (LDB 20) — DISCRIMINANT de bande, jamais un libellé :
  *  - `infection` : Infection Mineure d'après Blessure critique (LDB 20 l.90) ;
  *  - `contagion` : exposition à une créature/source infectée (LDB 20 l.25/l.51) ;
- *  - `chirurgie` : suites d'une opération (LDB 10 l.365, hors combat).
+ *  - `chirurgie` : suites d'une opération (LDB 10 l.184, hors combat).
  * Deux entrées peuvent réclamer la MÊME maladie au MÊME personnage — d'où deux fenêtres, pas une.
  */
 export type ContractionEntry = 'infection' | 'contagion' | 'chirurgie';
@@ -5813,7 +5813,7 @@ registerCombatEndBandApplier('combatEndCorruption', (get, set, _band, row, hero,
 
 /** Ouvre une cascade INFLUENÇABLE à UNE bande de Contraction de maladie pour `patient` (Test de
  *  Résistance `difficulty` → `applyContraction` à la validation, via l'applier `combatEndDisease`) —
- *  HORS combat. Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience
+ *  HORS combat. Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.184) : Chance/Résilience
  *  + auto-succès Résistance (Menace : Maladie) offerts, jamais un jet silencieux. `combatEndResistVal`
  *  fige la Résistance. Une bande d'UN porteur — la forme est celle de l'applier, pas celle du nombre. */
 export function openContractionCascade(get: Get, set: SetFn, patient: Combatant, disease: string, difficulty: Difficulty, title: string): void {
@@ -6637,7 +6637,7 @@ function psychDueFor(get: Get, c: Combatant, collect: (get: Get, c: Combatant) =
   // (défaut Intermédiaire). Plus de Calme/Intermédiaire codé en dur.
   const td = findPsychologyById(t.kind)?.test;
   const skill = td?.skill ?? 'calme';
-  // Sans Peur (Ennemi) (LDB 10 l.864) : face à une NOUVELLE Peur/Terreur de l'ennemi spécifié, « un
+  // Sans Peur (Ennemi) (LDB 10 l.1051) : face à une NOUVELLE Peur/Terreur de l'ennemi spécifié, « un
   // seul Test de Calme Accessible (+20) » pour l'ignorer. Pas sur les re-tests d'une Peur déjà subie
   // (entrée psychState existante → Test étendu normal +0) ni sur les Traits ciblés.
   const sourceFoe = !isCible ? inBattleId(get().battle, t.sourceId) : undefined;
@@ -6808,7 +6808,7 @@ function resolveCombatPsychRow(get: Get, hero: Combatant, cp: CombatPsychDecl, r
   const res = psychResolution(cp.kind);
   const cible = CIBLE_TYPES.has(cp.kind);
   // Peur = Test ÉTENDU de Calme (LDB 21 l.25) : cumuler le DR vers l'Indice (calque resolvePeurTest).
-  // Sans Peur (LDB 10 l.864) : « un seul Test (+20) » → une réussite IGNORE la Peur d'emblée
+  // Sans Peur (LDB 10 l.1051) : « un seul Test (+20) » → une réussite IGNORE la Peur d'emblée
   // (DR porté à l'Indice) ; un échec laisse le porteur sujet (re-tests suivants = Peur normale +0).
   // Sinon Test étendu LDB 12 MUTUALISÉ (`extendedTestStep`) — un Round raté RETIRE les DR négatifs
   // (planché à 0), au lieu de l'ancien cumul add-only (bug : la Peur ne pouvait jamais régresser).
@@ -7338,7 +7338,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // Simplification IA assumée (sévérité mineure, relevée par la revue de fidélité) :
       //  • l'IA ne fait JAMAIS de Désengagement (option joueur, LDB 15 l.43-49) : un
       //    ennemi Engagé qui se repositionne ne paie pas l'Esquive/le sacrifice d'Avantage.
-      // PARITÉ d'approche (LDB 15 l.74-82) : Charge à portée de Course si la Marche ne suffit pas,
+      // PARITÉ d'approche (LDB 15 l.35-41) : Charge à portée de Course si la Marche ne suffit pas,
       // sinon Course (Test d'Athlétisme instantané, pas d'attaque ce tour) — cf. aiApproachPlan.
       const { plan, ran } = aiApproachPlan(input, geom, action, battleRng());
       const mv = plan.kind === 'move' ? plan : action;

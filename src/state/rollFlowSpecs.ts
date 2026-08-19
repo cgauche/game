@@ -882,7 +882,7 @@ export const FLOWS = {
       // `evaluateCasting`), les DEUX camps la portent donc au départage à DR égal (`LDB 12 l.160`).
       const oppBase = skillBaseValue(actor, pco.skill, undefined, pco.char);
       if (forced?.sl != null) {
-        // Résistance (Magie), LDB 10 l.1015-1021 : le Test pour résister au Sort réussit d'office —
+        // Résistance (Magie), LDB 10 l.1016-1020 : le Test pour résister au Sort réussit d'office —
         // la cible RÉSISTE (interprétation : « réussir le Test pour résister » = l'opposition est
         // tenue), DR imposé = Bonus d'Endurance (nourrit la marge).
         const oppose = forcedTR(1, oppVal, forced.sl, oppBase); // dé 01 → double=false
@@ -1006,7 +1006,7 @@ export const FLOWS = {
       if (st.target == null) return null; // étape sans jet → rien à lancer
       const opp = stepOpposedFreeze(st); // Test OPPOSÉ figé (Assommante) → l'issue vient de resolveOpposed.
       if (forced?.sl != null) {
-        // Résistance (Menace), LDB 10 l.1015-1021 : auto-succès du Test de l'étape (Contraction,
+        // Résistance (Menace), LDB 10 l.1016-1020 : auto-succès du Test de l'étape (Contraction,
         // Exposition à la Corruption, Venin…) — DR IMPOSÉ = Bonus d'Endurance (pas de choix du dé).
         return { result: { roll: 1, target: st.target, sl: forced.sl, success: true } };
       }
@@ -1474,7 +1474,7 @@ export const FLOWS = {
     rolled: (r) => !!r.result,
     actor: (s, r) => actorIn(s, r.id),
     // Une bande met en jeu les mêmes règles qu'une étape seule, et chaque rangée les joue POUR ELLE :
-    // Résilience (`forced`), Résistance (Menace) (`resist`, LDB 10 l.1015-1021) et Détermination
+    // Résilience (`forced`), Résistance (Menace) (`resist`, LDB 10 l.1016-1020) et Détermination
     // (`determine`, LDB 17 l.59 — la Psychologie ne se teste qu'en bandes).
     caps: {
       forced: true,
@@ -1500,7 +1500,7 @@ export const FLOWS = {
     },
     resolve: (s, r, actor, _get, forced) => {
       if (!actor) return null; // rangée sans acteur résoluble (parité historique) — pas de jet
-      // Résistance (Menace), LDB 10 l.1015-1021 : auto-succès de CETTE rangée à DR IMPOSÉ (aucun dé,
+      // Résistance (Menace), LDB 10 l.1016-1020 : auto-succès de CETTE rangée à DR IMPOSÉ (aucun dé,
       // aucune ré-opposition — calque de l'étape MONO) ; les autres rangées de la bande sont intactes.
       if (forced?.sl != null) return { result: { roll: 1, target: r.target, sl: forced.sl, success: true } };
       // Résilience : le défenseur d'une opposition RÉSISTE (binaire, `forceBatchParticipant` rend
@@ -1962,7 +1962,7 @@ export const FLOWS = {
     outcome: (p) => rollOutcome(p.roll, p.target ?? 0, p.sl),
     // Chance « +1 DR » (`bumpSL`, success intact), Résilience (LDB 17 l.68 — dé par défaut ET dé choisi,
     // l'accesseur étant dérivé d'`actorTR`/`applyRoll`) et Résistance (Menace) GLOBALES via la lentille :
-    // le resist force l'auto-succès à DR = Bonus d'Endurance (LDB 10 l.1015-1021), cible = valeur du Test.
+    // le resist force l'auto-succès à DR = Bonus d'Endurance (LDB 10 l.1016-1020), cible = valeur du Test.
     lens: {
       actorTR: (p) => p.roll != null ? hydrateTR({ roll: p.roll, target: p.target ?? 0, success: !!p.success, sl: p.sl ?? 0 }) : null,
       applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, target: tr.target, sl: tr.sl, success: tr.success }),
@@ -2053,7 +2053,7 @@ export const FLOWS = {
     lens: flatRollLens((p) => (p.success || p.mode === 'surgery') ? null : p.target),
   }),
 
-  /** Chirurgie — le Test de Médecine d'UNE passe (Test ÉTENDU, LDB 10 l.154 / 12 l.200). Calque
+  /** Chirurgie — le Test de Médecine d'UNE passe (Test ÉTENDU, LDB 10 l.184 / 12 l.200). Calque
    *  `heal` : acteur = le chirurgien (héros → Chance/Pacte/Résilience ; PNJ → influence no-op). Ici
    *  `resolve` ne fait QUE le jet de la passe (DR = `sl`) ; le CUMUL du DR + 1d10 PB + Hémorragie +
    *  le Test d'infection vivent dans `surgeryNext` (medicFlow), comme `extendedTestNext`. */

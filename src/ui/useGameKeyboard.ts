@@ -29,9 +29,10 @@ export function useGameKeyboard() {
       const b = trouver(e, controlFocused);
       if (!b) return;
       e.preventDefault();
-      // Geste MAINTENU (`runUp`) : la répétition automatique du clavier ne le rejoue pas — sa durée est
-      // celle de l'appui, mesurée par le geste lui-même.
-      if (e.repeat && b.runUp) return;
+      // Geste MAINTENU (`runUp`) ou d'UNE PRESSION (`unePression`) : la répétition automatique du
+      // clavier ne le rejoue pas — la cadence est celle du geste (durée de l'appui, fin d'un pas, un
+      // quart de tour), jamais celle de l'auto-repeat de l'OS.
+      if (e.repeat && (b.runUp || b.unePression)) return;
       b.run(useGame.getState);
     };
     const onKeyUp = (e: KeyboardEvent) => {

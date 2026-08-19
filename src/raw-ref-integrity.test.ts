@@ -26,8 +26,9 @@ import {
  * l'essentiel du stock gelé. Mesures du 2026-08-16 sur le même arbre : 161 sites sans le préfixe
  * (dont 84 avaient pourtant leur sujet à ±6 lignes, rougis sur un pluriel), 108 avec.
  *
- * STOCK HÉRITÉ : `scripts/guards/raw-blind-refs-baseline.json` gèle, par fichier × réf, les 108 sites
- * aveugles mesurés à la pose de la garde. Cliquet à double sens : une réf aveugle NEUVE échoue ; une
+ * STOCK HÉRITÉ : `scripts/guards/raw-blind-refs-baseline.json` gèle, par fichier × réf, les sites
+ * aveugles hérités — le COMPTE vit dans ce JSON, jamais recopié ici (un nombre en dur y périmerait
+ * à chaque solde). Cliquet à double sens : une réf aveugle NEUVE échoue ; une
  * réf réparée échoue tant que le registre n'est pas abaissé. Solder une entrée = lire le `Source/` et
  * réancrer la réf sur la ligne qui porte le passage (ex. déjà soldés dans le lot de pose : les trois
  * puces de « Dépenser de la Détermination » (ch.17 lignes 62/64/66 → 59/60/61), la Ligne de Vue des

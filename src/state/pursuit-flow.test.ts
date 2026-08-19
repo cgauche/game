@@ -1,5 +1,5 @@
 /**
- * Poursuite TERRESTRE jouable (#95, LDB 15 l.87-109) : l'Effet `startPursuit` ouvre la boucle de manches
+ * Poursuite TERRESTRE jouable (#95, LDB 15 l.88-108) : l'Effet `startPursuit` ouvre la boucle de manches
  * (cascade influençable du socle de séquence) ; chaque manche compare le DR le plus bas des poursuivis au
  * DR le plus haut des poursuivants et fait varier la Distance ; issue par `pursuitOutcome` (semé/rattrapé).
  * Réutilise les primitives PARTAGÉES `engine/pursuit` et la CASCADE (state/cascade), pas un flux parallèle.

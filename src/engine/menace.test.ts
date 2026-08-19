@@ -5,7 +5,7 @@ import { restoreFortune } from './fortune';
 import type { Combatant } from './types';
 
 /**
- * Talent « Résistance (Menace) » — LDB 10 l.1015-1021 : « Vous pouvez réussir automatiquement le
+ * Talent « Résistance (Menace) » — LDB 10 l.1016-1020 : « Vous pouvez réussir automatiquement le
  * premier Test pour résister à la menace spécifiée […] à chaque séance de jeu. Si le DR requis est
  * important, utilisez votre Bonus d'Endurance comme DR pour le Test. » Moteur pur : disponibilité de
  * la spec, compteur « 1 par séance », DR = BE, remise à zéro par la couture de début de séance.
@@ -21,7 +21,7 @@ const hero = (p: Partial<Combatant> = {}): Combatant =>
     ...p,
   } as Combatant);
 
-describe('Résistance (Menace) — disponibilité de la spec (LDB 10 l.1015-1021)', () => {
+describe('Résistance (Menace) — disponibilité de la spec (LDB 10 l.1016-1020)', () => {
   it('spec couvrant la menace → disponible (comparaison stricte par id, plus de pont norm)', () => {
     // La spec du talent ET le tag `menace` sont désormais TOUS DEUX des ids stables ('maladie') —
     // `availableResistance` exige une égalité stricte (Phase 3 : plus de tag FR capitalisé résiduel).

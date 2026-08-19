@@ -188,7 +188,7 @@ describe('#1262 lot 3 — un Test déclenché HORS fin de Round ne se roule pas 
 });
 
 describe('#1262 lot 3 — un « Vous pouvez… » ne se tranche pas chez l’hôte', () => {
-  it('Frappe réactive (LDB 10 l.429-432) : le CHOIX de l’invité existe, et son Avantage est intact', () => {
+  it('Frappe réactive (LDB 10 l.496-500) : le CHOIX de l’invité existe, et son Avantage est intact', () => {
     const { H, E } = setupCoop();
     H.talents = [...(H.talents ?? []), { talentId: 'frappe-reactive', times: 1 }];
     H.advantage = 3; // payable : l'heuristique inline aurait dit OUI et débité

@@ -294,7 +294,7 @@ export interface PendingBargain {
 }
 /** Évaluation en attente (LDB 59 l.41 : « estimer les prix … à ±10 % ») — Test d'Évaluation (Int) ;
  *  un succès RÉVÈLE l'objet (`identified = true`, ses qualités cachées deviennent visibles) et donne
- *  une fourchette de prix. OU Détection d'artefact (`mode:'detect'`, LDB 10 l.310-312) — Test
+ *  une fourchette de prix. OU Détection d'artefact (`mode:'detect'`, LDB 10 l.336) — Test
  *  d'Intuition au toucher : succès = l'objet est senti MAGIQUE, chaque DR apprend une règle (qualité) ;
  *  une seule tentative par artefact. Même modale (« Lancer », résultat, Chance, acquittement). */
 export interface PendingAppraise {
@@ -1319,7 +1319,7 @@ export interface CascadeStepMeta {
   /** Test ÉTENDU de Peur (LDB 21 l.25) : DR déjà cumulé AVANT ce jet, porté PAR LA RANGÉE d'une bande
    *  de Psychologie de combat (`BatchParticipant.meta`) — l'applier y ajoute le DR du jet. */
   prevDR?: number;
-  /** « Sans Peur (Ennemi) » (LDB 10 l.864) sur CETTE rangée : son Test est allégé (Accessible +20) et
+  /** « Sans Peur (Ennemi) » (LDB 10 l.1051) sur CETTE rangée : son Test est allégé (Accessible +20) et
    *  une réussite ignore la Peur d'emblée. Divergence PAR HÉROS d'une bande, jamais de l'étape. */
   sansPeur?: boolean;
   /** RANGÉE RÉSOLUE D'OFFICE (#1281) : aucune fenêtre ne s'ouvrira sur elle. POSÉE par le seul pilote
@@ -1800,7 +1800,7 @@ export interface PendingHeal {
   paidCost?: { gold?: number; silver?: number; brass?: number };
 }
 
-/** Chirurgie (Test ÉTENDU multi-passes, LDB 10 l.154 / 12 l.200) — le Test de Médecine d'UNE passe,
+/** Chirurgie (Test ÉTENDU multi-passes, LDB 10 l.184 / 12 l.200) — le Test de Médecine d'UNE passe,
  *  DIFFÉRÉ en modale INFLUENÇABLE (« un jet = une modale ») : le chirurgien peut être un HÉROS, qui
  *  dépense Chance/Pacte/Résilience sur SON jet (PNJ → `actorIn` introuvable → influence no-op, comme
  *  `PendingHeal`). Calque `PendingHeal` (jet du soigneur) + `PendingExtendedTest` (cumul du DR). Le cumul

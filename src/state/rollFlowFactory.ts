@@ -108,7 +108,7 @@ export interface PendingBase {
   rerolled?: boolean;
   /** Réussite forcée par Résilience (LDB 17 l.68) — posé par `forceSuccess`, ouvre `setForcedRoll`. */
   forced?: boolean;
-  /** MENACE à laquelle ce Test RÉSISTE (« Résistance (Menace) », LDB 10 l.1015-1021 : `maladie` /
+  /** MENACE à laquelle ce Test RÉSISTE (« Résistance (Menace) », LDB 10 l.1016-1020 : `maladie` /
    *  `corruption` / `mutation` / `magie` / `poison`…) — posé par le SITE qui ouvre le pending/l'étape.
    *  Présent + talent disponible ⇒ le verbe `resist` offre l'auto-succès (1× par spec et par séance). */
   menace?: string;
@@ -124,7 +124,7 @@ export interface PendingBase {
  *  - `{}`               → `forceSuccess` (Résilience, LDB 17 l.68) : le flux applique son dé PAR
  *                          DÉFAUT (01 → DR max, ou, en Test opposé, le jet courant forcé à l'emporter) ;
  *  - `{ roll: n }`      → `setForcedRoll` (Résilience) : le joueur a CHOISI le dé `n` (doit rester une réussite) ;
- *  - `{ sl: n }`        → `resist` (Résistance (Menace), LDB 10 l.1015-1021) : auto-succès à DR IMPOSÉ
+ *  - `{ sl: n }`        → `resist` (Résistance (Menace), LDB 10 l.1016-1020) : auto-succès à DR IMPOSÉ
  *                          (« utilisez votre Bonus d'Endurance comme DR pour le Test ») — pas de choix du dé.
  * Absent (`resolve` appelé sans ce paramètre) → jet NORMAL (RNG). Un seul résolveur porte donc tous
  * les cas, au lieu des dérives séparées `force`/`forceRoll` (le « code dérivé » d'avant).
@@ -333,7 +333,7 @@ export interface RollFlowHandlers {
   forceSuccess: (get: Get, set: Set, pid?: string) => void;
   /** Choix du dé d'un Test forcé (no-op sans `caps.forced` ou avant `forceSuccess`). */
   setForcedRoll: (get: Get, set: Set, roll: number, pid?: string) => void;
-  /** Résistance (Menace), LDB 10 l.1015-1021 : auto-succès du premier Test qui résiste à la menace
+  /** Résistance (Menace), LDB 10 l.1016-1020 : auto-succès du premier Test qui résiste à la menace
    *  taguée sur le slot (`menace`), DR = Bonus d'Endurance, 1× par spec et par séance. No-op sans
    *  `caps.resist`, sans tag, sans talent disponible, ou si le Test est déjà réussi. */
   resist: (get: Get, set: Set, pid?: string) => void;
@@ -458,7 +458,7 @@ function opForceSuccess<P extends PendingBase>(
   commit(patch, { forced: true, touch: true });
 }
 
-/** Résistance (Menace), LDB 10 l.1019-1020 : auto-succès du premier Test qui résiste à la menace du
+/** Résistance (Menace), LDB 10 l.1020 : auto-succès du premier Test qui résiste à la menace du
  *  slot — MÊME mécanisme que `forceSuccess` (le résolveur reçoit `{ sl: BE }`), autre RESSOURCE : la
  *  spec du talent, consommée 1× par séance (compteur `resistanceUsed`, remis par `restoreFortune`).
  *  Fenêtre : avant le jet comme après (`resistanceImproves` — l'auto-succès REMPLACE l'issue posée). */
@@ -555,7 +555,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
   // personne ne garantissait la cohérence avec le jet réellement posé.
   //
   // `spec.rolled` SEUL ne suffit pas — MESURÉ : la Résilience (LDB 17 l.68) et la Résistance (Menace)
-  // (LDB 10 l.1015-1021) se jouent APRÈS un échec, et les trois verbes de renversement EXIGENT un jet
+  // (LDB 10 l.1016-1020) se jouent APRÈS un échec, et les trois verbes de renversement EXIGENT un jet
   // posé (`spec.rolled`, ci-dessous). Un `passive = rolled` fermerait le cas nominal et tuerait le
   // renversement entier. C'est la POSSESSION qui tranche, pas la seule présence du dé.
   const passive = (slot: Slot, s: GameState, get: Get, p: P) =>

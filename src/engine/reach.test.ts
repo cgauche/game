@@ -8,7 +8,7 @@ const w = (over: Partial<Weapon>): Weapon => ({ label: 'X', type: 'melee', damag
 
 /**
  * Allonge = portée d'ENGAGEMENT/d'attaque de mêlée (LDB 62 l.163 « Très longue » → 4 m ; l.164
- * « Considérable » → 6 m), convertie en cases avec 1 case = 2 m (LDB 15 l.55). L'axe des sept
+ * « Considérable » → 6 m), convertie en cases avec 1 case = 2 m (LDB 15 l.12). L'axe des sept
  * longueurs (l.156-164) est keyé par `ReachId` : AUCUNE comparaison de libellé ici.
  */
 describe('reachTiles — Allonge d’engagement', () => {

@@ -2,7 +2,7 @@ import { Icon } from './Icon';
 import { refLabel } from '../data';
 
 /**
- * Bouton « Résistance (Menace) » (LDB 10 l.1015-1021) : auto-succès du premier Test pour résister à
+ * Bouton « Résistance (Menace) » (LDB 10 l.1016-1020) : auto-succès du premier Test pour résister à
  * la menace spécifiée (DR = Bonus d'Endurance), UNE fois par spec et par séance de jeu. Pendant UI du
  * verbe `resist` de la fabrique rollFlow — frère de `ResilienceButton` (même mécanisme, autre
  * ressource). Affiché seulement quand le talent est DISPONIBLE (spec couvrant la menace du Test, non

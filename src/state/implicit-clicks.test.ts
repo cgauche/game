@@ -81,7 +81,7 @@ describe('clic-sol implicite — tap 1 aperçu, tap 2 déplace', () => {
   });
 });
 
-describe('Course implicite — zone au-delà de la Marche, jet au commit (LDB 15 l.79-82)', () => {
+describe('Course implicite — zone au-delà de la Marche, jet au commit (LDB 15 l.41)', () => {
   beforeEach(() => { useGame.setState({ battle: null, pendingAttack: null, pendingRun: null }); });
 
   it('clic case au-delà de la Marche (≤ 3M) : aperçu run, re-clic ouvre pendingRun avec destination', () => {

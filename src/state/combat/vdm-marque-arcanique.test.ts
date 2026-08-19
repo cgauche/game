@@ -85,7 +85,7 @@ describe('Marque Arcanique — le Talent marqué est RÉELLEMENT possédé', () 
     expect((marque.activeEffects ?? []).some((e) => e.grantedTalent?.talentId === TALENT)).toBe(false);
   });
 
-  it('Maxi 1 (LDB 10 l.13-21) : trois marquages identiques n’empilent ni acquisition ni effet actif', () => {
+  it('Maxi 1 (LDB 10 l.13-20) : trois marquages identiques n’empilent ni acquisition ni effet actif', () => {
     const seed = seedYieldingMark();
     const H = setup();
     for (let i = 0; i < 3; i++) {

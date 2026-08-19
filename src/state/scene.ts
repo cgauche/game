@@ -461,7 +461,7 @@ export type Effect =
    *  héros désigné, sinon le premier héros vivant du groupe (la source parle au singulier « vous »,
    *  l.141 « votre Niveau » : la Faveur est due par UN héros, pas le groupe). */
   | { type: 'grantFavor'; heroId?: string; level: import('./favorFlow').FavorLevel; owedTo: string; desc: string }
-  /** Poursuite TERRESTRE jouable (LDB 15 l.87-109) — à poser sur un trigger/dialogue (« ils prennent la
+  /** Poursuite TERRESTRE jouable (LDB 15 l.88-108) — à poser sur un trigger/dialogue (« ils prennent la
    *  fuite », « rattrapez-les ! »). `partyRole` : le groupe FUIT (défaut) ou POURSUIT ; l'autre camp est
    *  décrit par `foes` (Mouvement + valeur de Test de Mouvement de chaque adversaire). `distance` de départ
    *  (1-8, l.500-504), `escapeAt` = seuil d'évasion (défaut 10, l.520). `skill` = Compétence de Mouvement
@@ -869,7 +869,7 @@ export interface WallSeg {
    *  comme un mur nu (`window` n'est lu par AUCUNE règle de combat : ni `wallIsOpen`, ni `vision`, ni
    *  `isWalkable`). N'affecte que l'apparence iso + POV (nuit : vitre ambrée émissive). */
   window?: boolean;
-  /** ESCALADABLE (LDB 15 l.52-57) : l'arête sépare deux surfaces de hauteurs différentes (une FALAISE au
+  /** ESCALADABLE (LDB 15 l.53-57) : l'arête sépare deux surfaces de hauteurs différentes (une FALAISE au
    *  sens `surfaceLink` — infranchissable à pied) qu'un Personnage peut GRIMPER. `ladder` = échelle ou
    *  surface facile (pas de Test, LDB 15 l.53) ; `surface` = paroi à prises (Test d'Escalade, l.57).
    *  Bloque toujours passage+vue comme un mur PLEIN (une falaise n'est pas une ouverture) : la grimpe est

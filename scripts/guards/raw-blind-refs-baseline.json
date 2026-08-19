@@ -70,9 +70,6 @@
   "src/engine/trauma.ts": {
     "LDB 16 l.89": 1
   },
-  "src/engine/types.ts": {
-    "LDB 10 l.312": 1
-  },
   "src/gameIso/rig/creatures/defs/Manticore.ts": {
     "LDB 79 l.108": 1
   },
@@ -90,33 +87,14 @@
     "LDB 16 l.66/77": 2
   },
   "src/state/combatFlow.ts": {
-    "LDB 10 l.365": 1,
     "LDB 20 l.32/49": 1,
     "MDG 11 l.142": 2
   },
   "src/state/flowOutcomes.ts": {
     "LDB 16 l.66/77": 1
   },
-  "src/state/granted-traits.test.ts": {
-    "LDB 10 l.859": 1
-  },
   "src/state/interlude-flow.test.ts": {
     "LDB 23 l.30": 1
-  },
-  "src/state/jumpMove.test.ts": {
-    "LDB 15 l.114": 1
-  },
-  "src/state/jumpMove.ts": {
-    "LDB 15 l.114": 1
-  },
-  "src/state/medicFlow.ts": {
-    "LDB 10 l.365": 1
-  },
-  "src/state/merchantFlow.ts": {
-    "LDB 10 l.312": 1
-  },
-  "src/state/modalArbiter.ts": {
-    "LDB 10 l.365": 1
   },
   "src/state/pendings.ts": {
     "LDB 47 l.44": 1
@@ -141,15 +119,11 @@
   "src/state/travel.test.ts": {
     "EDOC 7 l.166": 1
   },
-  "src/state/turnEconomy.ts": {
-    "LDB 15 l.87": 1
-  },
   "src/state/zde-cast.test.ts": {
     "LDB 47 l.29/44": 1,
     "LDB 47 l.347": 1
   },
   "src/ui/ActionBar.tsx": {
-    "LDB 15 l.87": 1,
     "LDB 16 l.77": 1
   },
   "src/ui/CorruptionModal.tsx": {

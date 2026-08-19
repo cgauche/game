@@ -444,7 +444,7 @@ export function CastModal() {
                     onBonusSL={() => oppBonusSL(part.id)}
                     onDarkPact={() => oppDarkPact(part.id)}
                     onForce={() => oppForce(part.id)}
-                    /* Résistance (Menace : Magie), LDB 10 l.1019-1020 : auto-succès du Test qui résiste au
+                    /* Résistance (Menace : Magie), LDB 10 l.1020 : auto-succès du Test qui résiste au
                        Sort, à DR = Bonus d'Endurance. MÊME fenêtre que le verbe `resist` de la fabrique
                        (`resistanceImproves`) : une opposition GAGNÉE à DR inférieur laisse une marge que
                        le talent réduit encore — c'est le « DR requis important » du texte. */

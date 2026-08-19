@@ -200,7 +200,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
     if (!losClear(scene, enemy.pos, foe.pos, smokeOf(battle))) continue;
     const src = fearSourceFor(enemy, foe, riderFearSize(battle, enemy)); // Cavalier émérite (AA 13 l.25) : Taille = monture face à la Peur de Taille
     if (!src || enemy.psychState.some((p) => p.sourceId === foe.id)) continue;
-    const sansPeur = sansPeurVs(enemy, foe); // Sans Peur (Ennemi, LDB 10 l.864) : Test de Calme +20 à la rencontre
+    const sansPeur = sansPeurVs(enemy, foe); // Sans Peur (Ennemi, LDB 10 l.1051) : Test de Calme +20 à la rencontre
     const res = psychResolution(src.kind);
     if (res.mode === 'terreur') {
       const r = resolveTerreurTest(calmeValue(enemy), src.indice, battleRng(), isColdBlooded(enemy.traits), sansPeur); // À sang-froid : inverse un raté (LDB 85)

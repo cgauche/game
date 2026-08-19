@@ -504,7 +504,7 @@ Confère la capacité d'entrer en Frénésie (idem trait de créature Frénésie
 **Sources RAW** : `LDB 10 l.506`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.255, l.398, l.506) → `distraire-roll`, `distraire`, `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `costaud`, `coude-a-coude`, +38 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`, `src/i18n/messages/fr.ts`
+- `LDB 10` (l.255, l.398, l.506) → `distraire-roll`, `distraire`, `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `costaud`, `coude-a-coude`, +38 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`, `src/state/combatFlow.ts`
 
 ---
 
@@ -535,10 +535,10 @@ Exemples de groupes : hommes-bêtes, peaux-vertes, monstres, hors-la-loi, sigmar
 **Mécanique** : ce Talent ne confère **pas** l'immunité automatique — il accorde **un seul Test de Calme Accessible (+20)** pour ignorer les effets. En cas d'échec, le personnage est sujet aux règles normales de Peur (avec Tests à Intermédiaire +0 les Rounds suivants).
 
 **Sources RAW** :
-- `LDB 10 l.1053` — définition, Test Accessible (+20), liste d'ennemis courants
+- `LDB 10 l.1051` — définition, Test Accessible (+20), liste d'ennemis courants
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.548, l.1051, l.1053) → `fearImmuneVs`, `CombatFeature`, `frappe-assommante`, `frappe-blessante`, `frappe-precise`, `frappe-reactive`, `frenesie`, `fuite`, `grand-orateur`, `grimpeur`, +14 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
+- `LDB 10` (l.548, l.1051) → `fearImmuneVs`, `fearSourceFor`, `CombatFeature`, `resolvePsychAI`, `sansPeurVs`, `resolvePeurTest`, `resolveTerreurTest`, `CascadeStepMeta`, `frappe-assommante`, `frappe-blessante`, +22 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/psychology.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`, +1 fichiers
 - `LDB 21` (l.37-39) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `terreur`, `fearSourceFor`, `psychImmuneToFrom`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, +39 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +23 fichiers
 
 ---
@@ -605,11 +605,11 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 - `LDB 21 l.5-98` — toutes les règles de Psychologie (Traits courants + personnalisés)
 - `LDB 85 l.178-179` — Immunité Psychologique
 - `LDB 85 l.382-383` — Peur/Terreur par Taille
-- `LDB 10 l.1053` — Talent Sans Peur (Ennemi)
+- `LDB 10 l.1051` — Talent Sans Peur (Ennemi)
 - `LDB 17 l.59` — Détermination vs Psychologie
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `soldats`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
+- `LDB 10` (l.1051) → `fearImmuneVs`, `fearSourceFor`, `CombatFeature`, `resolvePsychAI`, `sansPeurVs`, `resolvePeurTest`, `resolveTerreurTest`, `CascadeStepMeta`, `robuste`, `vampires`, +8 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/psychology.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`, +1 fichiers
 - `LDB 17` (l.59) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, `useTrampleJetProps`, +75 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, `src/engine/psychology.ts`, +40 fichiers
 - `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `encounterPsych`, `nightmare`, `PsychAffliction`, `combat-psych`, `fearSourceFor`, `encounter-psych`, `terreur`, +75 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +34 fichiers
 - `LDB 85` (l.178-179, l.382-383) → `morsure`, `cannotStopOn`, `agressifEnvers`, `markAttacked`, `Formula`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, `Condition`, +69 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +16 fichiers

@@ -1,5 +1,5 @@
 /**
- * Talent « Résistance (Menace) » — LDB 10 l.1015-1021 : « Vous pouvez réussir automatiquement le
+ * Talent « Résistance (Menace) » — LDB 10 l.1016-1020 : « Vous pouvez réussir automatiquement le
  * premier Test pour résister à la menace spécifiée, telle que Magie, Poison, Maladie, Mutation, à
  * chaque séance de jeu. Si le DR requis est important, utilisez votre Bonus d'Endurance comme DR
  * pour le Test. »
@@ -23,7 +23,7 @@ import { findTalentById } from '../data';
 
 /**
  * Les Menaces AUTHORÉES : les ids de SPEC de l'entrée `resistance` de `talents.json`, lus À
- * L'EXÉCUTION — SOURCE UNIQUE. La liste est OUVERTE (LDB 10 l.1015-1021) : une spec ajoutée au
+ * L'EXÉCUTION — SOURCE UNIQUE. La liste est OUVERTE (LDB 10 l.1016-1020) : une spec ajoutée au
  * Compendium devient utilisable sans toucher au code. Le tag `menace` est une CLÉ ÉTRANGÈRE vers
  * cette liste : validée en donnée par `flowTestSchema` (`data/schemas/common.ts`) et au code par la
  * garde `menace-fk.test.ts`, qui NOMME le site fautif.

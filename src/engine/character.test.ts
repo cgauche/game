@@ -57,7 +57,7 @@ describe('rollRandomTalent — Tableau des Talents aléatoires (table d100)', ()
 
   // #602 — `owned` est keyé par IDENTITÉ STABLE (`refKey(talentId, specId)`), plus par libellé concret :
   // le MÊME couple (talent, spec) écrit sous ses deux formes (id de spec / libellé d'affichage) donne UNE
-  // clé ; deux specs distinctes d'un talent groupé restent deux entités (LDB 10 l.13-21).
+  // clé ; deux specs distinctes d'un talent groupé restent deux entités (LDB 10 l.13-20).
   it('identité de spécialisation : même (talent, spec) sous ses deux écritures = une seule clé', () => {
     const grouped = talents.find((t) => t.rand != null && specIdsOf(t).length > 1)!;
     const [specA, specB] = specIdsOf(grouped);

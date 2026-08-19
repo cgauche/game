@@ -10,7 +10,7 @@ import { Icon } from './Icon';
 /**
  * Liste de butin ATTRIBUABLE — brique partagée écran de victoire / fenêtre de loot : chaque ligne
  * porte son nom (magique, qualités une fois révélées), ses actions de révélation — Évaluer
- * (LDB 09 l.241) / Détecter (Talent Détection d'artefact, LDB 10 l.310-312, si un héros l'a) —
+ * (LDB 09 l.241) / Détecter (Talent Détection d'artefact, LDB 10 l.336, si un héros l'a) —
  * et l'attribution par portrait (montrer, pas écrire).
  */
 export function GearAssignList({ gear, assignable, onAssign, onAppraise }: {

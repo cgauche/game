@@ -3,7 +3,7 @@ import { emptyScene, type Scene, type WallClimb } from './scene';
 import { planClimb } from './climbMove';
 
 /**
- * `planClimb` traduit une ESCALADE d'arête (LDB 15 l.52-57) en plan jouable — sibling de `planJump` :
+ * `planClimb` traduit une ESCALADE d'arête (LDB 15 l.53-57) en plan jouable — sibling de `planJump` :
  * échelle = franchissement d'office, paroi = Test d'Escalade influençable (échec → chute), Grimpeur requis
  * sinon impossible, arête non grimpable → null. Chute = hauteur RÉELLE du relief (retombe au pied).
  */

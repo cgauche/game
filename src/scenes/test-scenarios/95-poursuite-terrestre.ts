@@ -4,7 +4,7 @@ import { flowFromEffects } from '../../state/flow';
 import type { TestScenario } from './_shared';
 
 /**
- * POURSUITE TERRESTRE JOUABLE (#95, LDB 15 l.87-109) : le groupe fuit trois brigands sur un chemin
+ * POURSUITE TERRESTRE JOUABLE (#95, LDB 15 l.88-108) : le groupe fuit trois brigands sur un chemin
  * découvert. Le trigger d'entrée pose l'Effet `startPursuit` (state/pursuitFlow ouvre la boucle de
  * manches, cascade influençable `purpose:'pursuite'`) dès le premier pas. Rattrapé (Distance ≤ 0),
  * la fuite se dénoue en COMBAT (`enc-rattrapage`, mêmes brigands) ; semé, elle se dénoue au récit.
@@ -62,7 +62,7 @@ export const scenario: TestScenario = {
   icon: 'scenario/travel',
   title: 'Poursuite terrestre',
   tests:
-    "L'Effet `startPursuit` (#95, LDB 15 l.87-109) ouvre la boucle de manches JOUABLE (cascade " +
+    "L'Effet `startPursuit` (#95, LDB 15 l.88-108) ouvre la boucle de manches JOUABLE (cascade " +
     "influençable purpose:'pursuite', UNE bande par manche — une rangée par coureur) dès l'entrée ; rattrapage " +
     '(Distance ≤ 0) bascule en combat contre les mêmes brigands, évasion (Distance ≥ 10) se dénoue au récit.',
   partyNote: 'Groupe fixe (pré-tirés)',

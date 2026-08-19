@@ -5,7 +5,7 @@ import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 
 /**
- * Parité héros/IA sur l'approche (LDB 15 l.74-82) : Charge à portée de Course (2M) quand la Marche
+ * Parité héros/IA sur l'approche (LDB 15 l.35-41) : Charge à portée de Course (2M) quand la Marche
  * ne suffit pas à entrer au contact ; Course (Test d'Athlétisme, pas d'attaque) au-delà.
  */
 const scene = () =>

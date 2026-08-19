@@ -10,7 +10,7 @@ describe('offHandPenalty (registre de capacités)', () => {
   it('sans Ambidextre : -20 (LDB 14 l.181)', () => {
     expect(offHandPenalty(mk([]))).toBe(-20);
   });
-  it('Ambidextre 1x : -10 (LDB 10 l.32)', () => {
+  it('Ambidextre 1x : -10 (LDB 10 l.50)', () => {
     expect(offHandPenalty(mk([{ name: 'Ambidextre', times: 1 }]))).toBe(-10);
   });
   it('Ambidextre 2x : 0', () => {

@@ -191,7 +191,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     expect(r.success).toBe(true); // binaire : le dé change le DR affiché, jamais l'issue
   });
 
-  it('Sans Peur (Ennemi, LDB 10 l.864) : allègement PAR RANGÉE (Calme Accessible +20) ; réussite → Peur ignorée', () => {
+  it('Sans Peur (Ennemi, LDB 10 l.1051) : allègement PAR RANGÉE (Calme Accessible +20) ; réussite → Peur ignorée', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup('grande'); // source de Peur 1 (Taille)
     E.groups = ['Ogre'];
@@ -430,7 +430,7 @@ describe('Psychologie de combat — regroupement en BANDES', () => {
 
   /**
    * SONDE B (juge) — une bande peut porter DEUX Difficultés : la clé est l'entrée de RÈGLE, pas le
-   * Test de chacun. Sans Peur (LDB 10 l.864) allège la SEULE rangée de son porteur.
+   * Test de chacun. Sans Peur (LDB 10 l.1051) allège la SEULE rangée de son porteur.
    */
   it('DEUX difficultés dans UNE bande : le porteur de Sans Peur teste en Accessible, l’autre en Intermédiaire', () => {
     useGame.getState().seedRng(3);

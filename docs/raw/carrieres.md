@@ -103,7 +103,7 @@ Quand une entrée de Compétence ou Talent porte « (Au choix) », le joueur cho
 
 **Jokers restreints** : « (Fléau ou À deux mains) » = uniquement les specs listées.
 
-**Sources RAW** : `LDB 07 l.26-164` + `LDB 09 l.34-45` (compétences groupées) + `LDB 10 l.14-20` (talents à spécialisations).  
+**Sources RAW** : `LDB 07 l.26-164` + `LDB 09 l.34-45` (compétences groupées) + `LDB 10 l.15-20` (talents à spécialisations).  
 **Refs code** : `src/engine/careerSlots.ts l.1-21` (commentaires RAW sur l'accumulation des compétences par niveaux ≤ courant et les talents du niveau courant uniquement) ; `l.153-156` (`skillSlots` cumul LDB 07 l.76) ; `l.158-162` (`talentSlots` niveau courant uniquement LDB 07 l.103).
 
 ---

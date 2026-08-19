@@ -4,7 +4,7 @@
  *  - Compétences groupées (LDB 09 l.33-43) : chaque Spécialisation est UNE Compétence distincte
  *    (l.42, ex. Sigrid). Quand l'entrée de carrière porte « (Au choix) », le joueur choisit la
  *    Spécialisation AU MOMENT où il alloue une Augmentation (l.38, ex. Théodora).
- *  - Talents (LDB 10 l.13-21) : la parenthèse est une « utilisation » distincte — Sens aiguisé
+ *  - Talents (LDB 10 l.13-20) : la parenthèse est une « utilisation » distincte — Sens aiguisé
  *    (Vue) ≠ Sens aiguisé (Goût) ; le Maxi (1 ou « Bonus de X ») se compte par spécialisation.
  *  - Disponibilité (LDB 07) : Compétences cumulatives sur les niveaux ≤ courant (l.78),
  *    Talents du niveau courant uniquement (l.100).

@@ -3,7 +3,7 @@ import { emptyScene, type Scene, type Terrain } from './scene';
 import { pathTo } from './path';
 
 /**
- * Saut au pathfinding (LDB 15 l.114-115 : on saute librement de Mouvement/3 m ; au-delà, Test
+ * Saut au pathfinding (LDB 15 l.76 : on saute librement de Mouvement/3 m ; au-delà, Test
  * d'Athlétisme — géré à la couche déplacement). `pathTo(..., jump)` peut FRANCHIR un gouffre de
  * cases non-marchables (« vide ») en ligne droite, en atterrissant jusqu'à `jump` cases plus loin.
  * `jump=0` (défaut) = aucun saut → strictement l'ancien comportement (non-régression).

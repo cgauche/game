@@ -1,5 +1,5 @@
 /**
- * POURSUITE TERRESTRE jouable (LDB 15 l.87-109 — « Poursuites » ; fiche `docs/raw/deplacement.md`).
+ * POURSUITE TERRESTRE jouable (LDB 15 l.88-108 — « Poursuites » ; fiche `docs/raw/deplacement.md`).
  *
  * INSTANCIATION DU SOCLE DE SÉQUENCE (`state/sequenceCore`, #1279) : l'état de manche, la persistance,
  * la borne anti-boucle et le cycle ouvrir→clore→rouvrir appartiennent au socle ; ce module ne fournit

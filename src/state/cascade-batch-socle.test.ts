@@ -20,7 +20,7 @@ import './travelPostes'; // enregistre l'applier de BANDE de voyage `weatherResi
  *     l'entrée de règle mise en jeu) ;
  *  2. DÉTERMINATION par rangée (LDB 17 l.59) : `BatchParticipant.immune` marque LE porteur, les autres
  *     rangées gardant leur conséquence ;
- *  3. RÉSISTANCE (Menace) par rangée (LDB 10 l.1015-1021) : une bande dont le Test est tagué `menace`
+ *  3. RÉSISTANCE (Menace) par rangée (LDB 10 l.1016-1020) : une bande dont le Test est tagué `menace`
  *     se construit (plus de fail-fast) et chaque rangée peut jouer SON auto-succès.
  */
 
@@ -130,7 +130,7 @@ describe('DÉTERMINATION par rangée (LDB 17 l.59)', () => {
   });
 });
 
-describe('RÉSISTANCE (Menace) par rangée (LDB 10 l.1015-1021)', () => {
+describe('RÉSISTANCE (Menace) par rangée (LDB 10 l.1016-1020)', () => {
   it('le verbe agit sur LA rangée taguée : auto-succès à DR = Bonus d’Endurance, l’autre rangée intacte', () => {
     const talents = [{ talentId: 'resistance', spec: 'maladie', times: 1 }];
     const h1 = bandHero('h1', { talents }); const h2 = bandHero('h2', { talents });

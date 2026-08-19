@@ -135,7 +135,7 @@ export function walkNeighbors(scene: Scene, p: Pt): Pt[] {
   return neighborsOf(scene, p, wallEdges(scene));
 }
 
-/** Sauts (Saut, LDB 15 l.114-115) : atterrissages possibles en franchissant un GOUFFRE — des cases
+/** Sauts (Saut, LDB 15 l.76) : atterrissages possibles en franchissant un GOUFFRE — des cases
  *  non-marchables au même étage, en ligne droite — jusqu'à `jump` cases de distance. Une case
  *  intermédiaire MARCHABLE interrompt (on s'y poserait au lieu de sauter par-dessus). Les sauts
  *  retournés sont DÉJÀ validés (atterrissage praticable et libre). `foot>1` ne saute pas ; `jump<2`
@@ -161,7 +161,7 @@ function jumpNeighbors(scene: Scene, p: Pt, jump: number, blocked: Set<string>, 
 /**
  * L'empreinte N×N ancrée en (x, y, z) (coin NO) tient-elle ? Toutes ses tuiles (au même étage)
  * doivent être walkable (terrain/bâtiment) ET non bloquées. Pour `foot=1`, vérifie juste la tuile.
- * Permet à une grande créature de NE PAS se faufiler dans un couloir d'1 tuile (LDB 15 l.55).
+ * Permet à une grande créature de NE PAS se faufiler dans un couloir d'1 tuile (LDB 15 l.12).
  */
 function footFits(scene: Scene, x: number, y: number, z: number, foot: number, blocked: Set<string>, swim?: ReadonlySet<string>): boolean {
   if (foot <= 1) return isWalkable(scene, x, y, z, swim) && !blocked.has(key(x, y, z));
@@ -225,7 +225,7 @@ export function reachable(scene: Scene, start: Pt, range: number, env: MoveEnv):
         const nz = pz(n);
         const k = key(n.x, n.y, nz);
         if (dist.has(k)) continue;
-        if (!footFits(scene, n.x, n.y, nz, foot, blocked, swim)) continue; // l'empreinte entière doit tenir (LDB 15 l.55)
+        if (!footFits(scene, n.x, n.y, nz, foot, blocked, swim)) continue; // l'empreinte entière doit tenir (LDB 15 l.12)
         dist.set(k, step + 1);
         next.push(n); // franchie pour l'expansion même si interdite à l'arrêt (`noStop`)
       }

@@ -698,7 +698,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       extendedDrOf: (part) => extendedDrData(part.extendedDrDone, part.extendedDrTarget, part.result),
     }).map((r) => {
       // Verbes à RESSOURCE de la rangée (parité avec l'étape MONO, joués PAR RANGÉE — flux `cascadeBatch`) :
-      // Résistance (Menace) sur une rangée TAGUÉE dont l'issue reste défavorable (LDB 10 l.1015-1021) ;
+      // Résistance (Menace) sur une rangée TAGUÉE dont l'issue reste défavorable (LDB 10 l.1016-1020) ;
       // Détermination avant le jet sur une bande de Psychologie (LDB 17 l.59), dont la DÉCLARATION vit
       // sur l'étape (`cur.combatPsych`/`cur.encounterPsych`), les divergences par héros sur la rangée.
       const part = cur.participants!.find((x) => x.id === String(r.key));
@@ -753,7 +753,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // `outcome` (résumé de conséquence) n'existe que sur une étape COMMITTÉE ; l'étape COURANTE
   // s'appuie sur la rangée ✓/✗ ±DR (breakdown) comme SEUL verdict (#295 Décision 1b) : aucun
   // prologue « X réussit »/« X échoue » ici.
-  // Résistance (Menace), LDB 10 l.1019-1020 : étape taguée `menace` + spec du talent disponible (non
+  // Résistance (Menace), LDB 10 l.1020 : étape taguée `menace` + spec du talent disponible (non
   // consommée cette séance) + `resistanceImproves` (MÊME fenêtre que le verbe `resist` de la fabrique).
   const resistAvail = !!actor && cur.menace != null && availableResistance(actor, cur.menace) != null
     && resistanceImproves(actor, res ? { won: !!res.success, sl: res.sl ?? 0 } : null);

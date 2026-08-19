@@ -11,7 +11,7 @@ import { effectiveMovement } from '../engine/encumbrance';
  * du Tour, MAIS le Mouvement ne s'entrelace pas avec l'Action. Séquences permises : `Mouvement* puis Action`
  * OU `Action puis Mouvement*`. INTERDIT : `Mouvement → Action → Mouvement`. (Ex. : bouger pour repérer les
  * adversaires puis faire demi-tour reste possible, tant qu'aucune Action n'a lieu entre les deux segments.)
- * La Charge est une action COMBINÉE non décomposable (Mouvement + attaque, LDB 15 l.74-77) : plein Mouvement.
+ * La Charge est une action COMBINÉE non décomposable (Mouvement + attaque, LDB 15 l.35-37) : plein Mouvement.
  */
 describe('Mouvement décomposable', () => {
   beforeEach(() => {

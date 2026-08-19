@@ -1878,7 +1878,7 @@ function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZon
   };
 }
 
-/** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.587) : le Talent pris → choisir
+/** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.714) : le Talent pris → choisir
  *  exactement BFM sorts, mémorisés de façon permanente à la création. */
 export function PettySpellsSection({ d, setD }: StepProps) {
   const quota = pettySpellQuota(d);

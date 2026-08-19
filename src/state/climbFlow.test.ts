@@ -8,7 +8,7 @@ import { placeCombatant } from './spawn';
 import { testScene } from '../scenes/test-fixture';
 
 /**
- * Câblage de l'ESCALADE (LDB 15 l.52-57) à la géométrie z (#82) : `climbAcross` grimpe une arête
+ * Câblage de l'ESCALADE (LDB 15 l.53-57) à la géométrie z (#82) : `climbAcross` grimpe une arête
  * `WallSeg.climb` — exploration (le groupe) et combat (le héros actif). Échelle = sans Test, coût de
  * Mouvement (½ vitesse) ; paroi = Test d'Escalade (échec → chute) consommant l'Action (LDB 13 l.86-88) ;
  * paroi exigeant Grimpeur, Talent absent = refus.

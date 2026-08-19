@@ -48,7 +48,7 @@ describe('trappingRefSchema — branches de TrappingRef', () => {
 
 /**
  * `flowTestSchema.menace` (#1346) — CLÉ ÉTRANGÈRE vers un id de spec du talent « Résistance (Menace) »
- * (LDB 10 l.1015-1021). La liste est OUVERTE côté RAW : elle n'est donc PAS figée dans le code, elle
+ * (LDB 10 l.1016-1020). La liste est OUVERTE côté RAW : elle n'est donc PAS figée dans le code, elle
  * est résolue au catalogue (`talents.json`) à la VALIDATION. Un tag hors catalogue est refusé au
  * chargement DEV (`dev-validate`), au contrat CI (`schema-contract.test.ts`) et à la sauvegarde Codex.
  */

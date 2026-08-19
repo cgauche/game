@@ -532,7 +532,7 @@ Le Talent **Magie du Chaos (Domaine)** coûte 100 PX par prise et confère **+1 
 
 Quand la menace choisie est **Mutation** : réussir automatiquement le premier Test de Résistance au seuil par séance de jeu. Si le DR requis est important, utiliser le Bonus d'Endurance comme DR.
 
-**Sources RAW** : `LDB 10 l.1016-1021`
+**Sources RAW** : `LDB 10 l.1016-1020`
 
 ---
 

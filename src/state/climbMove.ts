@@ -5,7 +5,7 @@ import { surfaceClimbImpossible } from '../engine/movement';
 import { combatStakeRef } from '../data';
 
 /**
- * Traduit une ESCALADE d'arête (LDB 15 l.52-57) — `from` (case basse) vers `to` (case haute, adjacente en
+ * Traduit une ESCALADE d'arête (LDB 15 l.53-57) — `from` (case basse) vers `to` (case haute, adjacente en
  * cardinal) à travers une arête `WallSeg.climb` — en plan jouable, SANS flux dédié, sur le patron de
  * `jumpMove.planJump` :
  *  - `ladder` (échelle / surface facile, LDB 15 l.53) → franchissement d'office SANS Test (`free`) ;

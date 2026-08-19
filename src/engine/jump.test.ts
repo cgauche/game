@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { freeJumpTiles, maxJumpTiles, jumpNeedsTest } from './movement';
 
 /**
- * Saut (LDB 15 l.114-115). Échelle du jeu = 2 m/case (précédent `resolveRun`). On saute LIBREMENT
+ * Saut (LDB 15 l.76). Échelle du jeu = 2 m/case (précédent `resolveRun`). On saute LIBREMENT
  * de Mouvement/3 mètres → floor((M/3)/2) cases sans Test ; un Test d'Athlétisme étend d'UNE case
  * (incrément minimal de la grille pour « chaque DR rajoute 30 cm »). Au-delà = infranchissable.
  */

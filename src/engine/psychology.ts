@@ -101,7 +101,7 @@ export function agressifEnvers(
  *  `self` déclaré `targetCauses` (Phobie, LDB 21 l.87). Elles DIFFÈRENT : le Trait de statbloc ne connaît ni
  *  camp ni condition, la Taille passe par `agressifEnvers`, la Phobie vit sur l'OBSERVATEUR et matche le
  *  Groupe de `foe`. Terreur prime ; sinon le plus haut Indice. Pur.
- *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
+ *  NB : « Sans Peur (Ennemi) » (LDB 10 l.1051) ne supprime PLUS la source ici (ce n'était pas RAW : le
  *  talent n'accorde pas l'immunité automatique mais « un seul Test de Calme Accessible (+20) » pour
  *  l'ignorer) — la source est donc détectée, et le porteur la teste à +20 (cf. `sansPeurVs`). */
 export function fearSourceFor(self: Combatant, foe: Combatant, selfSizeForSize?: SizeCategory): { kind: 'peur' | 'terreur'; indice: number } | null {
@@ -262,7 +262,7 @@ export function supersededLines(c: Combatant, name: string): string[] {
   return suppressSupersededPsych(c).map((tp) => t('turn.psychSuperseded', { name, psych: psychologyLabel(tp) }));
 }
 
-/** `self` possède-t-il « Sans Peur (Ennemi) » (LDB 10 l.864) contre `foe` ? Le porteur n'est PAS
+/** `self` possède-t-il « Sans Peur (Ennemi) » (LDB 10 l.1051) contre `foe` ? Le porteur n'est PAS
  *  immunisé d'office : il teste la Peur/Terreur de cet ennemi par UN seul Test de Calme Accessible
  *  (+20). Nom sémantique pour la couche state (le prédicat sous-jacent vit dans combatFeatures). */
 export function sansPeurVs(self: Combatant, foe: Pick<Combatant, 'groups'>): boolean {
@@ -395,7 +395,7 @@ export function calmeValue(c: Combatant): number {
 
 /** Un Round de Test ÉTENDU de Calme contre la Peur (LDB 21 l.25) : cumule le DR jusqu'à l'Indice.
  *  `prevDR` = DR déjà accumulé. `vaincue` = la Peur est surmontée (DR cumulé ≥ Indice).
- *  `sansPeur` (Sans Peur (Ennemi), LDB 10 l.864) : « un seul Test de Calme Accessible (+20)… vous
+ *  `sansPeur` (Sans Peur (Ennemi), LDB 10 l.1051) : « un seul Test de Calme Accessible (+20)… vous
  *  pouvez IGNORER les effets » → Test UNIQUE (binaire) à +20 ; une réussite vainc d'emblée la Peur
  *  (DR porté à l'Indice), un échec laisse le porteur sujet (re-tests ultérieurs = Peur normale +0). */
 export function resolvePeurTest(
@@ -635,7 +635,7 @@ export function traumaOnImpossibleAmbition(
 
 /** Test de Terreur à la 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → Brisé = Indice + |DR négatifs| ;
  *  ensuite la créature cause une Peur d'Indice équivalent (`devientPeur`).
- *  `sansPeur` (Sans Peur (Ennemi), LDB 10 l.864) : le Test de Calme est Accessible (+20) — une
+ *  `sansPeur` (Sans Peur (Ennemi), LDB 10 l.1051) : le Test de Calme est Accessible (+20) — une
  *  réussite ignore la Terreur (et la Peur subséquente, via `devientPeur: 0`). */
 export function resolveTerreurTest(
   calme: number,

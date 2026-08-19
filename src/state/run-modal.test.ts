@@ -4,7 +4,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 
-describe('Course (Courir) — modale Test d’Athlétisme +20 (LDB 15 l.79-82)', () => {
+describe('Course (Courir) — modale Test d’Athlétisme +20 (LDB 15 l.41)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();

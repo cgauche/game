@@ -20,8 +20,8 @@ de capacités de combat** extensible (talents + traits de créature deviennent d
 | Règle | Source | Contenu retenu |
 |---|---|---|
 | Combat à deux armes | LDB 14 l.177-183 | 1 arme à 1 main (ou pistolet) par main. **Attaque de la main secondaire = -20** sur tous les Tests applicables. Frapper avec **les deux** = talent Maniement de deux armes. |
-| Ambidextre (talent, max 2) | LDB 10 l.30-32 | Pénalité main secondaire : -20 → **-10** (1×) → **0** (2×). |
-| Maniement de deux armes (talent, max = Bonus d'Ag) | LDB 10 l.633-638 | « Pour votre Action » : jet main principale ; si touche, dégâts normaux **on garde le d100** ; main secondaire vise **une cible au choix** au **d100 inversé** (34→43) **+ pénalité main secondaire** ; **nouveau jet de défense** adverse ; **exception Critique** : la 2ᵉ utilise le jet de la table des Critiques ; **-10 à TOUS ses jets de défense jusqu'au prochain Tour** ; **+1 Avantage UNIQUE, seulement si les deux touchent**. |
+| Ambidextre (talent, max 2) | LDB 10 l.46-50 | Pénalité main secondaire : -20 → **-10** (1×) → **0** (2×). |
+| Maniement de deux armes (talent, max = Bonus d'Ag) | LDB 10 l.767-773 | « Pour votre Action » : jet main principale ; si touche, dégâts normaux **on garde le d100** ; main secondaire vise **une cible au choix** au **d100 inversé** (34→43) **+ pénalité main secondaire** ; **nouveau jet de défense** adverse ; **exception Critique** : la 2ᵉ utilise le jet de la table des Critiques ; **-10 à TOUS ses jets de défense jusqu'au prochain Tour** ; **+1 Avantage UNIQUE, seulement si les deux touchent**. |
 | Parade (atout) | LDB 62 l.192 | Toute arme **à 1 main + Défensive** s'utilise avec **Corps à corps (Parade)** → parer **sans le -20** de main secondaire. |
 | Défensive (atout) | LDB 62 l.272 | **+1 DR** à tout Test de Corps à corps en opposant une attaque. (Déjà implémenté dans `finishMelee`.) |
 | Actions gratuites | LDB 13 l.116 | **Dégainer une arme** = Action gratuite (exemple cité). **Le nombre est laissé au MJ.** Être **Engagé peut interdire** une Action gratuite « qui pourrait octroyer un bonus à l'ennemi ». Changer d'armure **n'est PAS** une Action gratuite (non listé ; aucune règle d'enfilage dans tout le LDB). |
@@ -30,7 +30,7 @@ de capacités de combat** extensible (talents + traits de créature deviennent d
 | Maladresse / amputation ↔ main | LDB 14 l.53-57 ; LDB 18 l.341/352 | Maladresse (échec + double) → « Tableau des Oups! » (peut faire **lâcher l'arme**) ; ratage d'arme à feu → Localisation **Bras principal** + arme détruite. Critique au bras → **amputation** de la main (brasD principal → -20 ; brasG secondaire). → la main qui lâche/est amputée mappe sur **brasD/brasG**. |
 
 Exemples-cibles du registre (hors périmètre, vérifiés pour valider les seams) :
-- **Riposte** (talent, LDB 10 l.843-852) : arme **Rapide** → inflige des dégâts quand on est attaqué « comme si
+- **Riposte** (talent, LDB 10 l.1034-1037) : arme **Rapide** → inflige des dégâts quand on est attaqué « comme si
   c'était son Action », N/Round = niveau de Riposte. → hook **réactif sur défense gagnée**.
 - **Champion** (trait créature, LDB 85 l.55-56) : « gagne un Test opposé en se défendant en CC → cause autant
   de Dégâts que si elle était l'attaquant. » → **même hook** réactif que Riposte.
@@ -149,7 +149,7 @@ Séquence :
 4. **-10 à tous les jets de défense du héros jusqu'au début de son prochain Tour** (nouvel état, expire au tour).
 5. **Avantage** : non gagné par ce mode sauf si **les deux** attaques touchent — et alors **+1 UNIQUE** (pas +1
    par frappe ; le gain par-frappe habituel est remplacé par un seul +1 conditionné aux deux touches). RAW vérifié
-   avec l'utilisateur (LDB 10 l.638 « ne gagnez pas d'Avantage … sauf si les deux attaques touchent »).
+   avec l'utilisateur (LDB 10 l.773 « ne gagnez pas d'Avantage … sauf si les deux attaques touchent »).
 Implémentation via la file de modales existante (arbitre R2) : 1ʳᵉ attaque → (si touche) sélection de la 2ᵉ cible
 → 2ᵉ attaque. Pur autant que possible (le d100 inversé est dérivé, pas re-tiré → déterminisme intact).
 

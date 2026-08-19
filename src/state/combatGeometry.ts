@@ -32,7 +32,7 @@ import type { EffectSource } from '../engine/types';
 import { EMPTY_FLOW } from '../engine/flowCore';
 
 /**
- * Tuiles qui BLOQUENT le déplacement de `mover` : l'empreinte (LDB 15 l.55) de chaque AUTRE
+ * Tuiles qui BLOQUENT le déplacement de `mover` : l'empreinte (LDB 15 l.12) de chaque AUTRE
  * combattant, SAUF ceux de Taille STRICTEMENT inférieure au mover — une créature plus grande
  * « dégage les combattants de taille inférieure du chemin, se déplaçant où elle veut » (LDB 85
  * l.373-374). C'est l'ensemble de TRANSIT (ce qui interrompt le passage). Pour ce qui interdit de

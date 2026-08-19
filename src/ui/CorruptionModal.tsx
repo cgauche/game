@@ -38,7 +38,7 @@ export function CorruptionModal() {
   const hero = pool.find((c) => c.id === pc.heroId);
   const rolled = pc.roll != null;
   const seuil = pc.kind === 'seuil';
-  // Résistance (Menace) (LDB 10 l.1019-1020) : exposition → 'corruption', seuil → 'mutation' (tag posé
+  // Résistance (Menace) (LDB 10 l.1020) : exposition → 'corruption', seuil → 'mutation' (tag posé
   // à l'ouverture). MÊME fenêtre que le verbe `resist` de la fabrique — `resistanceImproves`.
   const resistAvail = pc.menace != null && hero != null && availableResistance(hero, pc.menace) != null
     && resistanceImproves(hero, rolled ? { won: !!pc.success, sl: pc.sl ?? 0 } : null);

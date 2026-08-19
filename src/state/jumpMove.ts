@@ -8,11 +8,11 @@ export type JumpPlan = { kind: 'free' } | { kind: 'test'; flow: Flow };
 
 /**
  * Traduit un pas de SAUT (`takeoff`→`landing`, en cases cardinales) en plan jouable, SANS flux dédié :
- *  - dans la portée libre (Saut LDB 15 l.114) → franchissement d'office (`free`) ;
+ *  - dans la portée libre (Saut LDB 15 l.76) → franchissement d'office (`free`) ;
  *  - au-delà → l'Effet `test` existant (Athlétisme, label « Saut ») dont l'ÉCHEC déclenche `fall` dans
  *    le gouffre (1er niveau marchable sous le décollage, sinon le sol).
  * `runUpCases` = élan en ligne droite avant décollage : ≥ ceil(M/2) cases ⇒ Test Accessible (+20),
- * sinon Intermédiaire (LDB 15 l.115 : « course d'élan au moins équivalente à votre Mouvement en mètres »).
+ * sinon Intermédiaire (LDB 15 l.76 : « course d'élan au moins équivalente à votre Mouvement en mètres »).
  */
 export function planJump(scene: Scene, takeoff: Pt, landing: Pt, movement: number, runUpCases: number): JumpPlan {
   const tz = takeoff.z ?? 0;

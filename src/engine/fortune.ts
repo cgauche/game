@@ -14,7 +14,7 @@ export function canReroll(ownRollFailed: boolean, alreadyRerolled: boolean): boo
  * COUTURE UNIQUE de « début de séance de jeu » : restaure les Points de Chance (LDB 17 l.41 : « Vous
  * regagnez tous vos Points de Chance au début de chaque session de jeu, jusqu'à un maximum équivalent
  * à votre Destin actuel. »)
- * ET remet à zéro les compteurs PAR-SÉANCE (Résistance (Menace), LDB 10 l.1015-1021 : « à chaque
+ * ET remet à zéro les compteurs PAR-SÉANCE (Résistance (Menace), LDB 10 l.1016-1020 : « à chaque
  * séance de jeu » → `resistanceUsed`). PUR : renvoie un nouveau tableau (héros seulement ; un héros
  * sans Destin garde sa Chance mais voit tout de même ses compteurs de séance remis).
  * Le plafond restauré est `fortuneMax` — le MAXIMUM effectif, que Chanceux (LDB 10 l.160) et les

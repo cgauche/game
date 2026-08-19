@@ -217,7 +217,7 @@ export function MedicModal() {
                   ouverte) — ce n'est pas la barre d'UN jet mais le cumul PERSISTANT de l'opération. */}
               <DrBar cum={sg.cumDR} target={sg.targetDR} />
               {sg.last && <p className="rm-note">Dernière passe : {sg.last.sl >= 0 ? '+' : ''}{sg.last.sl} DR</p>}
-              {/* coût RAW d'une passe de Chirurgie : LDB 10 l.154 (la rééducation Guérison n'inflige rien). */}
+              {/* coût RAW d'une passe de Chirurgie : LDB 10 l.184 (la rééducation Guérison n'inflige rien). */}
               <p className="rm-note">{recovery ? 'Test étendu de Guérison — récupération de l’usage du membre.' : 'Chaque passe inflige 1d10 PB + 1 Hémorragie. À 0 PB, l’opération s’interrompt.'}</p>
               {/* La passe est un jet INFLUENÇABLE (modale embarquée) ; avant le 1er jet, on l'arme/renonce. */}
               {ps ? (

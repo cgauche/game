@@ -351,7 +351,7 @@ Choix du d100 lui-même = étage de fidélité supérieur (optionnel) ; à défa
 
 ### RAW-3 — Portée d'engagement de mêlée codée en dur à 1 case (Allonge ignorée)
 
-**Règle.** LDB 62 l.211 (Très longue : Engage jusqu'à 4 m) ; LDB 62 l.213 (Considérable : 6 m) ; LDB 15 l.55
+**Règle.** LDB 62 l.163 (Très longue : Engage jusqu'à 4 m) ; LDB 62 l.164 (Considérable : 6 m) ; LDB 15 l.12
 (1 case = 2 m). → Très longue = 2 cases, Considérable = 3 cases. **NE PAS** implémenter l'Option « Longueur
 d'Arme / Combat au Contact » (LDB 62 l.215-222, marquée optionnelle).
 
@@ -360,7 +360,7 @@ rejette `dist > 1` (`combatFlow.ts:510`) sans jamais lire `weapon.reach` (l'Allo
 `character.ts:296`).
 
 **Correctif.** Fonction pure `reachTiles(weapon)` dans `engagement.ts` ({ 'Très longue': 2, 'Considérable':
-3, défaut: 1 }, citant LDB 62 l.211/213 + LDB 15 l.55), partagée aux TROIS points (`store.ts:2288`,
+3, défaut: 1 }, citant LDB 62 l.163/164 + LDB 15 l.12), partagée aux TROIS points (`store.ts:2288`,
 `combatFlow.ts:510`, `combatFlow.ts:446/firedWeapon`) ET l'IA (`combatFlow.ts:966,1019,1088,…`) sinon
 asymétrie héros/ennemi. Préférer `combatDistance` (empreinte) à `chebyshev` brut pour cumuler avec le footprint
 T6. Exposer le même `reachTiles` à IsoStage pour peindre la zone d'engagement (corrige aussi R4).

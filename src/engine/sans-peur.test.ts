@@ -1,5 +1,5 @@
 /**
- * Sans Peur (Ennemi) — LDB 10 l.864 : « Avec un seul Test de Calme Accessible (+20), vous pouvez
+ * Sans Peur (Ennemi) — LDB 10 l.1051 : « Avec un seul Test de Calme Accessible (+20), vous pouvez
  * IGNORER les effets … de Peur ou de Terreur de l'ennemi spécifié ». Ce n'est PAS une immunité
  * automatique (l'ancien comportement). On vérifie ici la mécanique RAW au niveau moteur :
  *  - le Test passe à Accessible (+20) ;
@@ -18,7 +18,7 @@ const mk = (o: Partial<Combatant> = {}): Combatant => ({
   weapons: [], armour: {} as never, skills: [], talents: [], movement: 4, wounds: { current: 10, max: 10 }, ...o,
 } as Combatant);
 
-describe('Sans Peur (Ennemi) — Test de Calme Accessible (+20), un seul Test (LDB 10 l.864)', () => {
+describe('Sans Peur (Ennemi) — Test de Calme Accessible (+20), un seul Test (LDB 10 l.1051)', () => {
   it('PEUR : le Test passe de Intermédiaire (+0) à Accessible (+20)', () => {
     expect(resolvePeurTest(50, 3, 0, rngOf(99), false, false).target).toBe(50);
     expect(resolvePeurTest(50, 3, 0, rngOf(99), false, true).target).toBe(70);

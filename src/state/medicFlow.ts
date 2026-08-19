@@ -4,7 +4,7 @@
  * se ferme pas entre deux actes. Le RAW vit dans engine/healing + engine/trauma (sources uniques),
  * ici : orchestration seulement. En combat, le flux ActionBar reste (un acte = une Action).
  *
- * La CHIRURGIE (Test ÉTENDU, LDB 10 l.154 / 12 l.200) est « armée » sur l'infirmerie (`medic.surgery` :
+ * La CHIRURGIE (Test ÉTENDU, LDB 10 l.184 / 12 l.200) est « armée » sur l'infirmerie (`medic.surgery` :
  * chirurgien figé, patient verrouillé) ; chaque passe est un jet INFLUENÇABLE (`pendingSurgery` via
  * `FLOWS.surgery` — Chance/Pacte/Résilience comme tout jet de héros), qui inflige 1d10 PB + 1 Hémorragie
  * et cumule le DR (DrBar) à l'application (`surgeryNext`). Le Test d'infection du patient (cible atteinte)
@@ -50,7 +50,7 @@ export interface MedicState {
   patientId: string | null;
   /** Opération ARMÉE (Test étendu, LDB 12 l.170-174). Deux `kind`, MÊME machinerie
    *  de passes (jet de Guérison influençable → cumul du DR) : `'surgery'` = Chirurgie d'une Blessure Critique
-   *  (Talent Chirurgie, chaque passe inflige 1d10 PB + 1 Hémorragie, LDB 10 l.154) ; `'recovery'` = Test étendu
+   *  (Talent Chirurgie, chaque passe inflige 1d10 PB + 1 Hémorragie, LDB 10 l.184) ; `'recovery'` = Test étendu
    *  de Guérison qui rend l'usage d'un membre désactivé (« Épaule luxée »/« Genou démis », LDB 18 l.120/179 — aucun
    *  dégât, cible DR 6, Accessible +20, pénalité 1d10 j à la clé). */
   surgery?: {
@@ -215,8 +215,8 @@ export function openSurgeryPass(get: Get, set: Set): void {
 
 /** APPLIQUE une passe de l'opération étendue (calque `extendedTestNext`) : prend le jet FIGÉ de `pendingSurgery`
  *  (déjà roulé + influencé en modale) et cumule le DR (repart à 0 sous 0, LDB 12 l.174).
- *  - `kind:'surgery'` : chaque passe inflige 1d10 PB + 1 Hémorragie (LDB 10 l.154) ; à 0 PB → interruption.
- *    Cible atteinte → Blessure Critique réparée + Test d'infection du PATIENT (LDB 10 l.365) DIFFÉRÉ en ÉTAPE de
+ *  - `kind:'surgery'` : chaque passe inflige 1d10 PB + 1 Hémorragie (LDB 10 l.184) ; à 0 PB → interruption.
+ *    Cible atteinte → Blessure Critique réparée + Test d'infection du PATIENT (LDB 10 l.184) DIFFÉRÉ en ÉTAPE de
  *    cascade INFLUENÇABLE (`combatEndDisease`, jumeau de fin de combat).
  *  - `kind:'recovery'` (« Épaule luxée »/« Genou démis », LDB 18 l.120/179) : AUCUN dégât. Cible DR 6 atteinte →
  *    usage du membre rendu (séquelle « membre désactivé » retirée) + `recoveryPenalty` posé à la cible avec une
@@ -233,7 +233,7 @@ export function surgeryNext(get: Get, set: Set): void {
   const recovery = sg.kind === 'recovery';
   const verb = recovery ? t('medic.verbRecovery') : t('medic.verbSurgery');
   const harm = recovery ? 0 : battleRng().int(1, 10);
-  if (!recovery) { loseWounds(patient, harm); addCondition(patient, 'hemorragique'); } // dégâts d'une passe de Chirurgie (LDB 10 l.154)
+  if (!recovery) { loseWounds(patient, harm); addCondition(patient, 'hemorragique'); } // dégâts d'une passe de Chirurgie (LDB 10 l.184)
   const log: string[] = [t('medic.pass', { healer: sg.healerName, verb, patient: patient.label, dr: `${ps.sl >= 0 ? '+' : ''}${ps.sl}`, cum, target: sg.targetDR, suite: recovery ? t('medic.fragPassEnd') : t('medic.fragPassHarm', { harm }) })];
   if (!recovery && patient.wounds.current <= 0) { // « de fortes chances de tuer » (LDB 10) : on interrompt
     log.push(t('medic.patientSinks', { patient: patient.label }));
@@ -259,7 +259,7 @@ export function surgeryNext(get: Get, set: Set): void {
     log.push(...releaseConditionLocks(patient, 'surgery')); // verrous d'État « ne peut être retiré que par Chirurgie » (Hémorragie interne, LDB 18)
     set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
     finishPlayerAction(get, set, log, 'heal');
-    // Test d'infection du PATIENT (LDB 10 l.365) : Résistance Accessible (+20) — plus un jet SILENCIEUX
+    // Test d'infection du PATIENT (LDB 10 l.184) : Résistance Accessible (+20) — plus un jet SILENCIEUX
     // mais une ÉTAPE INFLUENÇABLE (cascade `combatEndDisease`, jumeau d'`openCombatEndCascade` :
     // Chance/Résilience + auto-succès Résistance (Menace : Maladie), LDB 17/10). La contraction
     // (`applyContraction`) est appliquée à la VALIDATION de l'étape, jamais avant l'influence.

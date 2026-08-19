@@ -9,7 +9,7 @@ import { menaceIds, isMenaceId } from '../engine/menace';
  * `flowTestSchema` (`data/schemas/common.ts`).
  *
  * Le tag `menace` d'un pending / d'une étape / d'une rangée est une CLÉ ÉTRANGÈRE vers un id de spec
- * de l'entrée `resistance` de `talents.json` (LDB 10 l.1015-1021, liste OUVERTE : l'auteur ajoute une
+ * de l'entrée `resistance` de `talents.json` (LDB 10 l.1016-1020, liste OUVERTE : l'auteur ajoute une
  * spec au Compendium, aucun code à toucher). Rien, à la lecture, ne distingue un tag vivant d'un tag
  * MORT : `availableResistance` rend `null` sur un id inconnu et le bouton Résistance ne s'affiche
  * simplement jamais — l'affordance est silencieusement absente (c'est ainsi que `menace: 'Exposition'`

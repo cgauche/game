@@ -1128,10 +1128,10 @@ export interface ItemInstance {
   /** Objet NON identifié (objet magique/légendaire trouvé) : ses qualités sont MASQUÉES à l'affichage
    *  (elles restent ACTIVES mécaniquement) tant qu'une Évaluation ne l'a pas révélé. Absent/true = identifié. */
   identified?: boolean;
-  /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
+  /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.336 : « vous sentez que
    *  l'objet est magique ») — s'affiche « magique » même tant que ses règles restent non identifiées. */
   magicKnown?: boolean;
-  /** Détection d'artefact déjà tentée sur cet objet (LDB 10 l.312 : « En principe, vous ne pouvez
+  /** Détection d'artefact déjà tentée sur cet objet (LDB 10 l.336 : « En principe, vous ne pouvez
    *  tenter ce Test qu'une seule fois par artefact touché »). */
   detectTried?: boolean;
   /** Jour de jeu de la dernière Évaluation RATÉE : pas de re-tentative le même jour (anti-spam —
@@ -1522,7 +1522,7 @@ export interface Combatant {
   fortune?: number;
   resilience?: number;
   resolve?: number;
-  /** Talent Résistance (Menace), LDB 10 l.1015-1021 : specs (normalisées) dont l'auto-succès « premier
+  /** Talent Résistance (Menace), LDB 10 l.1016-1020 : specs (normalisées) dont l'auto-succès « premier
    *  Test pour résister à la menace » a DÉJÀ servi cette séance de jeu. Remis à zéro par la couture de
    *  début de séance (`restoreFortune`, LDB 17 l.41). Persisté (party + writeback de combat). */
   resistanceUsed?: string[];

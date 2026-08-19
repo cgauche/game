@@ -115,7 +115,7 @@ export interface CreatorDraft {
   specChoices: Record<string, string>;
   skillAdvances: Record<string, number>;
   careerTalent?: string;
-  /** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.587) — exactement BFM à choisir. */
+  /** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.714) — exactement BFM à choisir. */
   pettySpells: string[];
   // 5) Possessions
   /** Résolution des emplacements `{choice}`/`{wildcard}` des dotations de la carrière (construct de
@@ -810,7 +810,7 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
   // appearance.species = id d'espèce RIG (slug, via rigSpeciesId) ≠ Combatant.species (id rules).
   hero.appearance = { species: rigSpeciesId(d.speciesId), sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
   if (d.star) hero.star = d.star;
-  // Sorts de Magie mineure inclus au Talent (LDB 10 l.587) — choisis à l'étape 4, mémorisés.
+  // Sorts de Magie mineure inclus au Talent (LDB 10 l.714) — choisis à l'étape 4, mémorisés.
   // (Les Bénédictions de Béni sont déjà octroyées par applyTalentAcquisition dans createHero.)
   const quota = pettySpellQuota(d);
   if (quota && d.pettySpells.length) {

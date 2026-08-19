@@ -12,7 +12,7 @@ import { REACH_IDS, reachIdOf, reachRankOf } from './items';
 /**
  * Portée d'ENGAGEMENT / d'attaque d'une arme de MÊLÉE, en CASES. RAW : LDB 62 l.163 (Allonge
  * « Très longue » → Engage jusqu'à 4 m) et l.164 (« Considérable » → 6 m), avec 1 case = 2 m
- * (LDB 15 l.55) → 2 et 3 cases. Toute autre Allonge (ou arme à distance / mains nues) engage aux
+ * (LDB 15 l.12) → 2 et 3 cases. Toute autre Allonge (ou arme à distance / mains nues) engage aux
  * 2 m par défaut que ces deux lignes remplacent (« plutôt que 2 ») = 1 case.
  * L'Option « Longueur d'Arme » (LDB 62 l.172 : −10 à l'adversaire) est une règle optionnelle dont le
  * modificateur de Test vit dans combat.ts (`weaponReachPenalty`) ; l'engagement reste basé sur les cases. Pure.

@@ -190,7 +190,7 @@ voir LDB 05 l.200 / p.220 pour la règle d'accumulation).
 
 ## Statistiques dérivées — Mouvement
 
-**Source :** LDB 05 l.448-456 (§ Mouvement, Tableau des Mouvements abrégé) ; LDB 15 l.19-32 (Tableau des Mouvements complet).
+**Source :** LDB 05 l.448-456 (§ Mouvement, Tableau des Mouvements abrégé) ; LDB 15 l.19-31 (Tableau des Mouvements complet).
 
 > « Le Mouvement est utilisé pour déterminer vos vitesses de marche et de course. Le Mouvement humain
 > standard est de 4. Si vous utilisez une grille pour le déplacement, cela indique le nombre de cases
@@ -206,7 +206,7 @@ voir LDB 05 l.200 / p.220 pour la règle d'accumulation).
 | Halfling | 3 |
 | Elfe (Haut elfe, Elfe Sylvain) | 5 |
 
-**Tableau des Mouvements (extrait LDB 05 l.451-456 / LDB 15 l.19-32) :**
+**Tableau des Mouvements (extrait LDB 05 l.451-456 / LDB 15 l.19-31) :**
 
 | M | Marche (m/tour) | Course (m/tour) |
 |:-:|:---------------:|:---------------:|

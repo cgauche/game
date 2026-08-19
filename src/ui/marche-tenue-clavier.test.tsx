@@ -102,6 +102,41 @@ describe('touche TENUE — l’auto-repeat de l’OS ne commet pas de pas', () =
     expect(useGame.getState().partyPos, 'plus aucune touche tenue : arrêt').toEqual(arret);
   });
 
+  it('TAP bref (40 ms) : EXACTEMENT un pas — même si une répétition de l’OS traîne après le relâchement', () => {
+    const t = traceur();
+    frapper('keydown', 'KeyW');
+    act(() => { vi.advanceTimersByTime(40); });
+    frapper('keyup', 'KeyW');
+    frapper('keydown', 'KeyW', true); // répétition livrée EN RETARD, après le relâchement
+    act(() => { vi.advanceTimersByTime(STEP_MS * 4) });
+    t.off();
+    expect(t.cases.length, 'un tap bref a commis deux cases').toBe(1);
+  });
+
+  it('AMORÇAGE : après un relâchement, une NOUVELLE pression repart tout de suite (pas d’attente d’une seconde)', () => {
+    frapper('keydown', 'KeyW');
+    act(() => { vi.advanceTimersByTime(40); });
+    frapper('keyup', 'KeyW');
+    act(() => { vi.advanceTimersByTime(STEP_MS * 2) }); // le glissement du 1ᵉʳ pas est fini
+    const avant = { ...useGame.getState().partyPos };
+    frapper('keydown', 'KeyW');
+    expect(useGame.getState().partyPos, 'la nouvelle pression doit commettre SANS attendre').not.toEqual(avant);
+  });
+
+  it('PIVOT du regard (POV) : cent répétitions de l’OS ne font QU’UN quart de tour', () => {
+    useGame.setState({
+      povActive: true,
+      party: [{ id: 'lead', label: 'L', dead: false, wounds: { current: 10, max: 10 } }],
+      facing: { lead: 'S' },
+    } as never);
+    const cap = () => useGame.getState().facing.lead;
+    frapper('keydown', 'KeyE');
+    const apres1 = cap();
+    expect(apres1, 'la pression doit pivoter').not.toBe('S');
+    for (let i = 0; i < 100; i++) frapper('keydown', 'KeyE', true);
+    expect(cap(), 'le maintien a fait tourner en rafale').toBe(apres1);
+  });
+
   it('le relâchement d’une AUTRE touche ne coupe pas la direction tenue', () => {
     frapper('keydown', 'KeyW');
     frapper('keyup', 'KeyD'); // jamais enfoncée : elle n'a aucun geste à terminer

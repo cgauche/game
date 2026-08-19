@@ -131,7 +131,7 @@ La compétence **Évaluation** sert à :
 
 **Limitation** : échec NET → pas de nouvelle tentative le même jour (LDB 12 l.94 — règle générale des Tests avancés, appliquée ici). Seul un résultat marginal (*Échec Minime*) permet un nouvel essai.
 
-**Talent Détection d'artefact** (LDB 10 l.332, 336) : Test d'Intuition au toucher — une seule tentative par artefact. Révèle l'aura magique et ses règles (par DR).
+**Talent Détection d'artefact** (LDB 10 l.336) : Test d'Intuition au toucher — une seule tentative par artefact. Révèle l'aura magique et ses règles (par DR).
 
 ---
 
@@ -388,7 +388,7 @@ Couverture confirmée des refs `LDB XX l.YY` dans le code :
 | `LDB 60 l.3` | `src/engine/bargain.ts` + `src/state/merchantFlow.ts` | Test opposé Marchandage : −10 % achat ; soured sur botch (DR net ≥ 6 en défaite) ; gel du Marchandage cette visite |
 | `LDB 60 l.5` | `src/engine/bargain.ts` + `src/state/merchantFlow.ts` | Vente base = ½ prix listé ; ¼ sans Marchandage gagné, ½ si gagné (`resaleRate`) |
 | `LDB 60 l.3-62` | `src/engine/qualities/craftEconomy.ts` | Facteur prix (`craftPriceFactor` : ×2/Atout, ÷2/Défaut) ; décalage Disponibilité (`shiftAvailability`) ; delta Enc (`craftEncDelta` : Léger −1, Volumineux +1) ; classe de qualité (`qualityClass`) |
-| `LDB 10 l.332, 336` | `src/state/merchantFlow.ts` | Talent Détection d'artefact : Test Intuition, 1 tentative/artefact, révèle aura par DR |
+| `LDB 10 l.336` | `src/state/merchantFlow.ts` | Talent Détection d'artefact : Test Intuition, 1 tentative/artefact, révèle aura par DR |
 | `LDB 12 l.94` | `src/state/merchantFlow.ts` | Échec net Évaluation : pas de re-tentative le même jour |
 
 **Fichiers engine** : `src/engine/disponibilite.ts`, `src/engine/bargain.ts`, `src/engine/appraisal.ts`, `src/engine/qualities/craftEconomy.ts`

@@ -9,7 +9,7 @@ import type { RNG } from './dice';
 /** RNG d100 → `roll` (le reste des int() renvoie `roll` aussi ; escalade/chute n'utilisent qu'un d100). */
 const fixed = (roll: number): RNG => ({ int: () => roll });
 
-describe('Escalade (LDB 15 l.52-57)', () => {
+describe('Escalade (LDB 15 l.53-57)', () => {
   it('échelle sans Test : ½ vitesse → M mètres avec le Mouvement du Round', () => {
     expect(ladderClimbReach(4)).toBe(4);
   });

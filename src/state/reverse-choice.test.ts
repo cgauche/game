@@ -190,7 +190,7 @@ describe('flux `defense` (LDB 23 l.209 — Parade = Corps à corps)', () => {
 /**
  * Talent ET jeton simultanément applicables sur la MÊME Compétence (#508 réfutation, point 4) :
  * `applyReverse` (engine/reverseToken.ts) tente le Talent EN PREMIER — gratuit, illimité — le jeton
- * n'est consommé QUE si le Talent ne s'applique pas. Sociable (LDB 10 l.950 → Ragot) + jeton
+ * n'est consommé QUE si le Talent ne s'applique pas. Sociable (LDB 11 l.25 → Ragot) + jeton
  * « Observer une cible » (LDB 23 l.218, sans `skill` — couvre tout Test) sur le MÊME jet raté.
  */
 describe('Talent + jeton simultanément applicables (LDB 10 Sociable + LDB 23 l.218) : le Talent gratuit prime, le jeton reste intact', () => {

@@ -844,14 +844,14 @@ export function bargainConfirm(get: Get, set: Set): void {
   }));
 }
 
-/** Talent « Détection d'artefact » (LDB 10 l.310-312) : Test d'Intuition au toucher — succès =
+/** Talent « Détection d'artefact » (LDB 10 l.336) : Test d'Intuition au toucher — succès =
  *  l'objet est senti magique, chaque DR apprend une règle spéciale ; UNE tentative par artefact. */
 export const DETECT_TALENT = "Détection d'artefact";
 
 /** Compétence testée par CHAQUE mode de la fenêtre Évaluation/Détection, par id STABLE — SOURCE
  *  UNIQUE lue par l'ouverture du jet (`bestDetector`/`openAppraise`) ET par la modale qui décompose
  *  la valeur affichée (`AppraiseModal`, #1178). Détection : Talent « Détection d'artefact »
- *  (`LDB 10 l.310-312`). Les Caractéristiques associées sont celles de `skills.json`. */
+ *  (`LDB 10 l.336`). Les Caractéristiques associées sont celles de `skills.json`. */
 export const APPRAISE_SKILL = {
   evaluate: { skill: 'evaluation', characteristic: 'intelligence' },
   detect: { skill: 'intuition', characteristic: 'initiative' },
@@ -894,7 +894,7 @@ export function gameDay(get: Get): number {
 export function appraiseItem(get: Get, set: Set, uid: string, heroId: string, mode: 'evaluate' | 'detect' = 'evaluate'): void {
   const hero = get().party.find((h) => h.id === heroId);
   const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
-  if (mode === 'detect' && item.detectTried) return; // une seule tentative par artefact (LDB 10 l.312)
+  if (mode === 'detect' && item.detectTried) return; // une seule tentative par artefact (LDB 10 l.336)
   if (mode === 'evaluate' && item.appraiseTriedDay === gameDay(get)) {
     get().log(t('mf.appraiseSameDay', { label: item.label }));
     return;
@@ -946,7 +946,7 @@ function patchAppraiseTarget(_get: Get, set: Set, pa: { itemUid?: string; gear?:
 }
 
 /** Acquitte l'Évaluation (révèle `identified` + estimation, LDB 59 l.41) ou la Détection d'artefact
- *  (aura sentie + règles apprises par DR, LDB 10 l.310-312 ; tentative unique). */
+ *  (aura sentie + règles apprises par DR, LDB 10 l.336 ; tentative unique). */
 export function resolveAppraise(get: Get, set: Set): void {
   const pa = get().pendingAppraise;
   if (!pa || pa.roll == null) return; // pas d'acquittement avant le jet

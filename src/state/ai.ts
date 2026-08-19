@@ -536,7 +536,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Même décompte vertical que `combatDistance`.
   const withinMelee = (a: Pt, b: Pt & { h?: number }) =>
     Math.max(chebyshev(a, b), verticalTiles(pos.h ?? 0, b.h ?? 0, mpt)) <= mr;
-  // Au CONTACT par empreinte (LDB 15 l.55) : un grand ennemi touche depuis n'importe quelle de ses tuiles.
+  // Au CONTACT par empreinte (LDB 15 l.12) : un grand ennemi touche depuis n'importe quelle de ses tuiles.
   // `combatDistance` plie empreinte ET Δhauteur (même `mpt`) → s'aligne sur la grille d'engagement de la résolution.
   const inMelee = (h: Combatant) => combatDistance(enemy, h, mpt) <= mr;
 

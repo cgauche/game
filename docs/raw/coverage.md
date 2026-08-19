@@ -31,8 +31,8 @@
 | 11 | Sixième sens | ✅ | 31 (talents.md ×30) |
 | 12 | Tests | ✅ | 50 (tests.md ×45) |
 | 13 | Combat | ✅ | 133 (combat.md ×122) |
-| 14 | OPTION : FRAPPE MORTELLE | ✅ | 137 (combat.md ×132) |
-| 15 | Déplacement | ✅ | 74 (combat.md ×66) |
+| 14 | OPTION : FRAPPE MORTELLE | ✅ | 141 (combat.md ×136) |
+| 15 | Déplacement | ✅ | 70 (combat.md ×62) |
 | 16 | États | ✅ | 54 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 54 (destin.md ×31) |
 | 18 | Traumatisme | ✅ | 103 (traumatisme.md ×68) |

@@ -1691,7 +1691,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Octroi SANS échéance (table de contrecoup — Marques Arcaniques, VDM 02 l.238) = acquisition
         // STRUCTURELLE dans `c.talents`, MÊME chemin que `attachMutation` (corruption.ts) et que l'effet
         // de Signe astral (`applyCreationOps`) : fiche, avancement, +DR de Talent et passifs de Talent
-        // lisent `c.talents`. Le Maxi du registre borne l'octroi (LDB 10 l.13-21, `talentMaxReached`).
+        // lisent `c.talents`. Le Maxi du registre borne l'octroi (LDB 10 l.13-20, `talentMaxReached`).
         if (dur.scale === 'permanent') {
           target.talents = target.talents ?? [];
           if (talentMaxReached(target, o.talentId, o.spec)) {

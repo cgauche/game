@@ -669,6 +669,12 @@ export function buildApi() {
      *  Carte = déplace le curseur de combat ; menu/modale = déplace le focus. */
     padDir: (dir: string) => (window as unknown as { __wfrpPadDir?: (d: string) => void }).__wfrpPadDir?.(dir),
 
+    /** RELÂCHE un bouton / une direction (`window.__wfrpPadUp` / `__wfrpPadDirUp`). Un geste MAINTENU
+     *  (marche tenue du groupe, rotation caméra continue) se recette du début à SA FIN : sans ces deux
+     *  portes, une sonde arme le geste et ne le lâche jamais. */
+    padUp: (name: string) => (window as unknown as { __wfrpPadUp?: (n: string) => void }).__wfrpPadUp?.(name),
+    padDirUp: (dir: string) => (window as unknown as { __wfrpPadDirUp?: (d: string) => void }).__wfrpPadDirUp?.(dir),
+
     /** Vérité STATE du ciblage au survol — ce que le clic ferait sur cette cible pour l'actif :
      *  {kind:'ok'|'invalid'|'none', line, title, skill, base, mod, dmg | reason}. */
     aim: (id: string) => {

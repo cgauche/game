@@ -273,7 +273,7 @@ export function ActionBar() {
     : null;
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)
-  // Désengagement GRATUIT (option A, LDB 15 l.87) : prédicat du REGISTRE (`freeDisengage`,
+  // Désengagement GRATUIT (option A, LDB 15 l.47) : prédicat du REGISTRE (`freeDisengage`,
   // state/actionRegistry) — la barre et l'économie du tour lisent la MÊME source.
   const canFreeDisengage = isHero && freeDisengage({ active, battle });
   // Combat monté (LDB 14) : descendre si à cheval ; enfourcher une monture libre adjacente (coûte l'Action).
@@ -284,8 +284,8 @@ export function ActionBar() {
   const entangled = isHero && hasCondition(active, 'empetre'); // Empêtré (LDB 16 l.66) : se libérer (Action, Test opposé de Force)
   const onFire = isHero && hasCondition(active, 'en-flammes'); // En flammes (LDB 16 l.77) : se rouler (Action, Test d'Athlétisme)
   // Déplacement, Attaque, Charge et Course sont implicites au clic (sol/ennemi), sans bouton dédié.
-  // La Charge se déclenche d'elle-même (mêlée + non Engagé + Mouvement intact — LDB 15 l.74-77) ;
-  // la Course est la zone violette au-delà de la Marche (clic → Test d'Athlétisme, LDB 15 l.79-82).
+  // La Charge se déclenche d'elle-même (mêlée + non Engagé + Mouvement intact — LDB 15 l.35-37) ;
+  // la Course est la zone violette au-delà de la Marche (clic → Test d'Athlétisme, LDB 15 l.41).
   // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.15) et Mouvement non entamé.
   const canStandUp = prone && active.wounds.current > 0 && !moveStarted;
   // Liste d'ATTAQUES activables (« Attaque ▾ ») : l'Arme du Set actif + les attaques gratuites/zone d'un

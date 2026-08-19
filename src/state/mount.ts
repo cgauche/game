@@ -264,7 +264,7 @@ export function mountMovement(battle: BattleState, c: Combatant): number {
 /** Cases de Mouvement encore disponibles ce Tour : budget du Tour moins le Mouvement déjà parcouru
  *  (déplacement DÉCOMPOSABLE — règle maison, cf. `BattleState.movementUsed`). Le budget est la Marche
  *  (de la monture si cavalier), ÉTENDU par une Course réussie (`battle.runBudget` = Marche + Course + DR,
- *  LDB 15 l.80 : la distance de Course « vient en plus » du Mouvement du Round — le reliquat reste dépensable). */
+ *  LDB 15 l.41 : la distance de Course « vient en plus » du Mouvement du Round — le reliquat reste dépensable). */
 export function movementRemaining(battle: BattleState, c: Combatant): number {
   const budget = Math.max(battle.runBudget ?? 0, mountMovement(battle, c));
   return Math.max(0, budget - (battle.movementUsed ?? 0));

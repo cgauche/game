@@ -111,7 +111,7 @@ describe('op grantTalent — talents temporisés (Flambeau de Vertu / Cœurs ard
     applyOps(c, [{ op: 'grantTalent', talentId: 'sans-peur' }], { label: 'Flambeau de Vertu', defaultDurationRounds: 1 });
     expect(fearImmuneVs(c, ogre)).toBe(true); // le talent (temporisé) est détecté
     expect(sansPeurVs(c, ogre)).toBe(true);
-    // RAW (LDB 10 l.864) : Sans Peur n'immunise PAS d'office — la source RESTE détectée, le porteur
+    // RAW (LDB 10 l.1051) : Sans Peur n'immunise PAS d'office — la source RESTE détectée, le porteur
     // la teste par un seul Calme Accessible (+20).
     expect(fearSourceFor(c, ogre)?.kind).toBe('peur');
     expect(c.talents).toHaveLength(0); // PAS posé dans les talents possédés (fiche intacte)
@@ -119,7 +119,7 @@ describe('op grantTalent — talents temporisés (Flambeau de Vertu / Cœurs ard
     expect(fearImmuneVs(c, ogre)).toBe(false); // dissipé avec l'effet
   });
 
-  it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.859) : immunise vs l’Ennemi spécifié seulement', async () => {
+  it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.1051) : immunise vs l’Ennemi spécifié seulement', async () => {
     const { fearImmuneVs } = await import('../engine/combatFeatures/dispatch');
     const c = dummy({ talents: [{ talentId: 'sans-peur', spec: 'mort-vivant', times: 1 }] });
     expect(fearImmuneVs(c, { groups: ['mort-vivant'] })).toBe(true);

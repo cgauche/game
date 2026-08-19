@@ -15,7 +15,7 @@ function scene(w: number, h: number, walls: string[] = []): Scene {
   } as unknown as Scene;
 }
 
-describe('reachable — l’empreinte doit RENTRER le long du trajet (LDB 15 l.55)', () => {
+describe('reachable — l’empreinte doit RENTRER le long du trajet (LDB 15 l.12)', () => {
   it('un 1×1 franchit un goulet d’1 tuile ; un 2×2 non', () => {
     // grille 6×3 ; murs en (2,0) et (2,2) → seul (2,1) est libre dans la colonne 2 (goulet d’1 tuile)
     const s = scene(6, 3, ['2,0', '2,2']);

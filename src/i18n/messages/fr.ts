@@ -1000,7 +1000,7 @@ export const fr = {
   'mf.appraiseFail': "Évaluation ratée : {item} reste non identifié (rien de plus à en tirer aujourd'hui).",
   'mf.appraiseUnique': 'Évaluation : {item} révélé (pièce unique — sans prix de catalogue).',
   'mf.appraiseValue': 'Évaluation : {item} révélé (valeur estimée {range}).',
-  // POURSUITE terrestre (LDB 15 l.87-109) et SOCLE DE SÉQUENCE (#1279) — narration de journal.
+  // POURSUITE terrestre (LDB 15 l.88-108) et SOCLE DE SÉQUENCE (#1279) — narration de journal.
   'pursuit.none': 'Poursuite : aucun participant.',
   'pursuit.open': 'Poursuite — {camp} (Distance {distance}, évasion à {evasion} — LDB 15).',
   'pursuit.openFleeing': 'le groupe prend la fuite',
@@ -1914,7 +1914,7 @@ export const fr = {
   'upkeep.sleepDeprived': '{name} — privation de sommeil ({n} nuit{s} sans dormir) :',
   'upkeep.rationsUsed': 'Le groupe entame ses provisions ({n} ration{s}).',
 
-  // ── #1318 V8c₄ — SOINS & CHIRURGIE (`state/medicFlow.ts`, `medic.*`, LDB 10 l.154/365, LDB 18 l.120/179).
+  // ── #1318 V8c₄ — SOINS & CHIRURGIE (`state/medicFlow.ts`, `medic.*`, LDB 10 l.184, LDB 18 l.120/179).
   'medic.aidRequired': 'Aide Médicale requise avant de rééduquer le membre.',
   'medic.tooExpensive': 'Le groupe n’a pas assez d’argent pour cet acte.',
   'medic.verbRecovery': 'rééduque',

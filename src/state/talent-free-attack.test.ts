@@ -59,7 +59,7 @@ describe('Talents d’attaque déclenchée (grantFreeAttack en donnée)', () => 
     expect(h.freeAttacksThisTurn?.['assaut-feroce']).toBeUndefined();
   });
 
-  // Frappe réactive (LDB 10 l.429-432) = CHOIX opt-in (« vous POUVEZ ») + Test d'Initiative. Pour un HÉROS
+  // Frappe réactive (LDB 10 l.496-500) = CHOIX opt-in (« vous POUVEZ ») + Test d'Initiative. Pour un HÉROS
   // en cadence MANUELLE, ces deux jets sont CADENCE-AWARE : ils s'ouvrent en étapes de cascade influençables
   // (modale de choix puis Test d'Init), pas en silence — c'est le principe « aucun jet de héros muet ».
   function driveChoice(key: string) {

@@ -959,7 +959,7 @@ describe('CombatConsole — droit de la travée et du coin (juge vision 2026-08-
     expect(casesGauche()[3].getAttribute('data-cell')).toBeTruthy();
   });
 
-  // Prédicat de la Charge (`LDB 15 l.34` / `LDB 13 l.90`) : une arme de mêlée DU SET, ou le set mains
+  // Prédicat de la Charge (`LDB 15 l.35` / `LDB 13 l.90`) : une arme de mêlée DU SET, ou le set mains
   // nues. Jamais l'arme que le moteur préférerait hors d'Allonge (`attackWeapon`, préférence distance),
   // jamais les Mains nues implicites que `recomputeLoadout` laisse dans `c.weapons`.
   it('D-2 — la Charge se déduit du CORPS À CORPS du set (mêlée ou mains nues), et se gate sur l’Engagement', () => {
