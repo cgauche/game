@@ -1160,7 +1160,7 @@
 ### docs/regles-optionnelles-playbook.md — sévérité haute
 - **Quote** : N/A (disposition globale)
 - **Affirme** : Le doc prétend guider un travail encore à faire (« pour dérouler les lots restants sans ré-investiguer »).
-- **Réalité** : L'écrasante majorité des ids listés (DO, 2b et même plusieurs HEAVY) sont déjà implémentés dans `src/engine/policy.ts` depuis la rédaction (2026-06-18) : le playbook est entièrement consommé, plus aucun agent ne doit s'y fier pour savoir quoi faire — `docs/regles-optionnelles-catalogue.md` est la source de vérité vivante à jour.
+- **Réalité** : L'écrasante majorité des ids listés (DO, 2b et même plusieurs HEAVY) sont déjà implémentés dans `src/engine/policy.ts` depuis la rédaction (2026-06-18) : le playbook est entièrement consommé, plus aucun agent ne doit s'y fier pour savoir quoi faire. (Mise à jour 2026-08-19 : le « catalogue » que cette ligne désignait comme source de vérité a été SUPPRIMÉ — plan exécuté, 81 règles livrées ; la seule source de vérité vivante du catalogue est `src/data/reglesOptionnelles.json`, app-owned, éditable au Compendium.)
 - **Fix** : supprimer (redondant/faux) — ou bandeau ARCHIVE en tête si l'historique du raisonnement est jugé utile ; en l'état il induira un agent à ré-implémenter ou re-scoper des règles déjà livrées.
 - **Vérif adversariale** : Lu docs/regles-optionnelles-playbook.md en entier (sections DO l.10-24, 2b l.26-34, HEAVY l.36-47) ; grep des 16 ids DO+2b dans src/engine/policy.ts → toutes trouvées (lignes 55-470) ; git log confirme policy.ts modifié après la rédaction du playbook (commit 9449c529 postérieur). Aucun bandeau ARCHIVE dans le fichier.
 
