@@ -50,7 +50,7 @@ en fin de workflow) — c'est le signal qu'un geste manuel a dévié de ce que `
 | PDFs de `Source/*.pdf` | droits Cubicle 7, taille (limite GitHub 100 Mo/fichier) | conservés LOCALEMENT ; ré-extraction via `bash scripts/raw/reextract-all.sh` (Marker, staging `Source/_marker/split/`, **ne promeut pas** — revue manuelle avant d'écraser `Source/`) |
 | `/art-ref/` (images extraites des PDF) | droits Cubicle 7, ce sont des sorties | régénérables via `scripts/art-ref/` + les PDFs locaux |
 | Compte Cloudflare du relay coop | secret/infra externe | URL prod dans `src/net/relay.ts` (`RELAY_URL_PROD`) ; redéployable via `npm run relay:deploy` (`npm --prefix server run deploy`) |
-| Repo sibling `cgauche.github.io` | dépôt distinct (déploiement prod) | cf. `CLAUDE.md` § Déploiement — `node scripts/deploy/deploy.mjs --push` (doit exister en sibling de `Foundry/`, remote en écriture) |
+| Publication du jeu en prod | workflow GitHub Actions | cf. `CLAUDE.md` § Déploiement — `.github/workflows/deploy.yml` (déclenchement manuel, build du commit de `main`) ; secret Actions `PROD_REPO_TOKEN` requis côté dépôt. Aucun clone local du dépôt prod nécessaire |
 | Auth `gh` (CLI GitHub) | credentials locales | nécessaire pour : fermeture auto d'issues (`post-commit`), export hebdo (`export-issues.yml` tourne en CI avec son propre token), et toute commande `gh` manuelle |
 
 ## 4. Archivage des non-versionnés

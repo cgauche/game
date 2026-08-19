@@ -57,7 +57,7 @@ broker, codes `W4C1.` ~700 chars copiés/collés) est SUPPRIMÉ — inutilisable
 `npm run relay:dev` + `VITE_RELAY_URL=http://localhost:8787` (Vite à relancer pour prendre
 l'env). Piège rencontré : 1er deploy exige un sous-domaine workers.dev (visite dashboard) + TLS
 provisionné ~1 min après. Toute action joueur réseau → allowlist ; toute modale → registre.
-Reste : recette UI 2 onglets, et le JEU sur GitHub Pages doit être redéployé (deploy.mjs, sur
+Reste : recette UI 2 onglets, et le JEU sur GitHub Pages doit être redéployé (workflow deploy.yml, sur
 demande) pour que la coop prod soit jouable en ligne. LIVRÉ aussi (491af01) : choix de campagne
 dans l'écran de groupe (cartouche 📜 + modale, hôte/solo ; invités voient le nom via stub
 nom-seul dans netSnapshot), « Mes campagnes » retiré du menu.

@@ -1,0 +1,47 @@
+name: Déploiement prod
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # dist/qc = scratch des galeries QC, jamais publié
+      - run: rm -rf dist/qc
+      # PROD_REPO_TOKEN : PAT fine-grained du compte cgauche, Contents read/write sur cgauche.github.io
+      - uses: actions/checkout@v4
+        with:
+          repository: cgauche/cgauche.github.io
+          token: ${{ secrets.PROD_REPO_TOKEN }}
+          path: prod
+      - name: Publier
+        run: |
+          set -e
+          rm -rf prod/jeu
+          mkdir -p prod/jeu
+          cp -r dist/. prod/jeu/
+          cd prod
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add jeu
+          if git diff --cached --quiet; then
+            echo "Rien à publier"
+          else
+            git commit -m "deploy: jeu WFRP (${GITHUB_SHA::8})"
+            git push
+          fi

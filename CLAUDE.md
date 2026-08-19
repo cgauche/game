@@ -175,18 +175,16 @@ npm run relay:dev      # Worker relay en local (wrangler dev, port 8787) ; côt�
 npm run relay:deploy   # déploie le Worker (compte Cloudflare) → URL dans RELAY_URL_PROD (src/net/relay.ts)
 
 # Déploiement en PRODUCTION (GitHub Pages → https://cgauche.github.io/jeu/)
-node scripts/deploy/deploy.mjs            # build (Vite) + copie dist/ → cgauche.github.io/jeu/
-node scripts/deploy/deploy.mjs --no-build # copie le dist/ existant seulement (pas de rebuild)
-node scripts/deploy/deploy.mjs --push     # + git add/commit/push du repo prod (publie réellement)
+gh workflow run deploy.yml --ref main     # déclenche le workflow « Déploiement prod » (ou bouton « Run workflow » sur GitHub → Actions)
 ```
 
-**Déploiement** : `scripts/deploy/deploy.mjs` est LE script de mise en prod (le jeu jouable en ligne).
-Il build le jeu, copie `dist/` (hors `qc/`) dans le repo voisin `cgauche.github.io/jeu/`, et avec
-`--push` commit + push ce repo → le site se met à jour sur **https://cgauche.github.io/jeu/**.
-Prérequis : `PhpstormProjects/cgauche.github.io` doit exister en sibling de `Foundry/`, avec un remote
-en écriture. **Ne déployer que sur demande explicite de l'utilisateur** (et après suite verte) ;
-`deploy.mjs` lit le **working tree** (pas Git) — si une autre session a du WIP non commité, il
-l'embarquerait → s'assurer que l'arbre est propre/commité avant de pousser en prod.
+**Déploiement** : le déploiement est un **workflow GitHub Actions** (`.github/workflows/deploy.yml`,
+déclenchement manuel) qui build le **COMMIT** de `main` sur un runner propre et pousse `dist/` (hors
+`qc/`) vers `cgauche/cgauche.github.io` sous `jeu/` → **https://cgauche.github.io/jeu/**. Il n'embarque
+JAMAIS le working tree local : seul le travail commité+poussé part en prod.
+Prérequis : secret Actions `PROD_REPO_TOKEN` dans `cgauche/game` (PAT fine-grained du compte `cgauche`,
+Contents read/write sur `cgauche.github.io`). **Ne déployer que sur demande explicite de l'utilisateur**,
+après suite complète verte, et après `git push` (le workflow build le commit distant).
 
 **Vérification** : après une feature UI, valider dans le navigateur — flux complet dans
 **`docs/recette-navigateur.md`** (outils `window.__wfrp`, scénarios de test, piège closure-sync).

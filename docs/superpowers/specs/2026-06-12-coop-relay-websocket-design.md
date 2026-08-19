@@ -167,7 +167,7 @@ server/
 - `cd server && npx wrangler deploy` (une fois ; compte Cloudflare gratuit). L'URL `*.workers.dev`
   obtenue va dans `RELAY_URL` (et `VITE_RELAY_URL` pour l'override).
 - Dev local : `wrangler dev` + `VITE_RELAY_URL=ws://localhost:8787 npm run dev`.
-- Le déploiement du JEU (`scripts/deploy/deploy.mjs`) est indépendant — aucune étape ajoutée.
+- Le déploiement du JEU (workflow `.github/workflows/deploy.yml`) est indépendant — aucune étape ajoutée.
 
 ## 10. Limites assumées
 

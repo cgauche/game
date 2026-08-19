@@ -5,7 +5,20 @@ description: À utiliser quand l'utilisateur demande une mise en production, un 
 
 # Déployer en production
 
-Suivre le § Déploiement du **CLAUDE.md** (`node scripts/deploy/deploy.mjs`, `--push` pour publier).
-Préconditions ABSOLUES : demande explicite de l'utilisateur + suite complète verte + **arbre
-PROPRE/commité** — `deploy.mjs` lit le working tree, pas Git : le WIP non commité d'une autre
-session partirait en prod. Vérifier `git status` avant.
+Référence canonique : § **Déploiement** du **CLAUDE.md**.
+
+Préconditions ABSOLUES :
+- demande explicite de l'utilisateur ;
+- suite complète verte ;
+- le travail à publier est **COMMITTÉ ET POUSSÉ** sur `main` — le workflow build le commit distant,
+  pas l'arbre local : ce qui n'est pas poussé ne part pas en prod.
+
+Procédure :
+```bash
+gh workflow run deploy.yml --ref main
+gh run watch                          # ou : gh run list --workflow=deploy.yml -L 1
+```
+Puis vérifier le site : https://cgauche.github.io/jeu/
+
+Le secret Actions `PROD_REPO_TOKEN` (dépôt `cgauche/game`) autorise le push vers
+`cgauche/cgauche.github.io` — un run qui échoue sur l'authentification vient de lui.
