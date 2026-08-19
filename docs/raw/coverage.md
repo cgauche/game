@@ -31,7 +31,7 @@
 | 11 | Sixième sens | ✅ | 31 (talents.md ×30) |
 | 12 | Tests | ✅ | 50 (tests.md ×45) |
 | 13 | Combat | ✅ | 133 (combat.md ×122) |
-| 14 | OPTION : FRAPPE MORTELLE | ✅ | 138 (combat.md ×132) |
+| 14 | OPTION : FRAPPE MORTELLE | ✅ | 137 (combat.md ×132) |
 | 15 | Déplacement | ✅ | 74 (combat.md ×66) |
 | 16 | États | ✅ | 54 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 54 (destin.md ×31) |
@@ -79,7 +79,7 @@
 | 59 | Faire son marché | ✅ | 19 (economie.md ×19) |
 | 60 | Fabrication | ✅ | 16 (economie.md ×13) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
-| 62 | Les armes | ✅ | 119 (combat.md ×111) |
+| 62 | Les armes | ✅ | 118 (combat.md ×111) |
 | 63 | Armures | ✅ | 28 (combat.md ×27) |
 | 64 | Sacs et contenants | 📖 | catalogue (catalogue-*.md) |
 | 65 | Vêtements et accessoires | 📖 | 1 (traumatisme.md ×1) |
