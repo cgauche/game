@@ -1,6 +1,6 @@
 /**
  * DÉCOUPE LOCALE — LE VERDICT (#1176, M2). Sur La Diligence RÉELLE, avec le montage du stage
- * (`IsoStage` : nappes projetées + capsules d'acteurs), jamais une géométrie de laboratoire.
+ * (`stage/MondeDeCampagne` : nappes projetées + capsules d'acteurs), jamais une géométrie de laboratoire.
  */
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
@@ -16,7 +16,7 @@ import { PERCAGE_FONDU_MS, PERCAGE_MAX_HEROS, PERCAGE_RAYON_PX, trousPercage } f
 
 const scene = diligenceCampaign.scenes[0];
 const dims: Dims = { ...scene.dimensions, rot: 0, view: 'iso' };
-/** Le montage du stage, mot pour mot (`IsoStage`) : une nappe par masse de toit, projetée. */
+/** Le montage de l'hôte, mot pour mot (`stage/MondeDeCampagne`) : une nappe par masse de toit, projetée. */
 const lids: Lid[] = buildRoofs(scene).map((el) => ({
   sectionId: el.sectionId ?? el.key, z: el.cell.z, cells: el.cells, occluder: elOccluder(el, dims),
 }));

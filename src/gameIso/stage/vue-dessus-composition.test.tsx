@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * LA COMPOSITION DE LA VUE DU DESSUS SUR LE CHEMIN RÉEL (#1176, P3-5b) — `IsoStage` monté en voie
+ * LA COMPOSITION DE LA VUE DU DESSUS SUR LE CHEMIN RÉEL (#1176, P3-5b) — `MondeDeCampagne` monté en voie
  * volumique, mesuré sur ce qui part au GPU ET sur le DOM réellement émis :
  *  - D4, MURS AU TRAIT : le monde cuit ne dessine plus AUCUN sommet de mur (ni de toit) au-dessus, et
  *    la surcouche SVG porte les traits ; en plateau iso, l'inverse exact — murs peints par le monde,
@@ -24,7 +24,7 @@ import { emptyScene, sceneMetresPerTile, type BuildingMass, type Scene } from '.
 import { setRevealAll } from '../../state/visionState';
 import type { ViewMode } from '../../geometry/iso';
 import { bakeWorldGeometry, type WorldGeometry } from '../backends/webgl/sceneMeshes';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -101,7 +101,7 @@ function monter(scene: Scene, view: ViewMode, debugLabels = false): HTMLDivEleme
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return conteneur;
 }
 

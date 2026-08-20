@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { cidUnderPointer, hasSpritePicker } from './spritePicker';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
@@ -67,7 +67,7 @@ function poserEtat(): void {
 function monter(): { el: HTMLDivElement; commits: () => number } {
   poserEtat();
   let n = 0;
-  act(() => root!.render(<Profiler id="stage" onRender={() => { n += 1; }}><IsoStage /></Profiler>));
+  act(() => root!.render(<Profiler id="stage" onRender={() => { n += 1; }}><MondeDeCampagne /></Profiler>));
   return { el: container!, commits: () => n };
 }
 
@@ -76,7 +76,7 @@ function monter(): { el: HTMLDivElement; commits: () => number } {
  *  d'école. */
 function monterStrict(): HTMLDivElement {
   poserEtat();
-  act(() => root!.render(<StrictMode><IsoStage /></StrictMode>));
+  act(() => root!.render(<StrictMode><MondeDeCampagne /></StrictMode>));
   return container!;
 }
 

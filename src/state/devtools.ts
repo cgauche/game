@@ -642,12 +642,12 @@ export function buildApi() {
       return v ? 'labels ON' : 'labels OFF';
     },
 
-    /** Survol PROGRAMMATIQUE (combat) : pose la tuile survolée d'IsoStage comme si la souris y
+    /** Survol PROGRAMMATIQUE (combat) : pose la tuile survolée du monde de campagne comme si la souris y
      *  était — tooltip + réticule se rendent sans chasser les pixels. `null` efface. Accepte un id
      *  de combattant, un id d'entité de scène, ou {x,y}. */
     hover: (idOrXY: string | { x: number; y: number } | null) => {
       const hook = (window as unknown as { __wfrpSetHover?: (t: { x: number; y: number } | null) => void }).__wfrpSetHover;
-      if (!hook) return '✗ IsoStage non monté';
+      if (!hook) return '✗ monde de campagne non monté';
       if (idOrXY == null) {
         hook(null);
         return '✓ survol effacé';

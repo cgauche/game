@@ -1,7 +1,7 @@
 /**
- * MUTATIONS PURES de Scène (Scene → Scene) — Node-safe, ZÉRO dépendance UI/gameIso. Extraites de
- * `ui/editor/editorState.ts` pour que le compilateur headless-editor (`state/mapSpec.buildScene`,
- * exécuté via `tsx` par le générateur d'arène en Node) puisse les rejouer sans tirer le rendu.
+ * MUTATIONS PURES de Scène (Scene → Scene) — Node-safe, ZÉRO dépendance UI/gameIso. Elles vivent
+ * hors de l'éditeur pour que le compilateur headless-editor (`state/mapSpec.buildScene`, exécuté via
+ * `tsx` par le générateur d'arène en Node) puisse les rejouer sans tirer le rendu.
  *
  * Chaque fonction renvoie une NOUVELLE Scène (immuable). `editorState.ts` les RÉ-EXPORTE : les câblages
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.

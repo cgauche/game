@@ -16,7 +16,7 @@
  * React ne se produit entre deux pas (`fx/useWalkAnim`, `repaint = false`), si bien qu'un jeton posé au
  * seul rendu attendrait le marcheur sur sa case de départ. Le groupe de chaque jeton porte donc une
  * RÉF, et le battement de la marche y réécrit un `transform` — le patron du groupe caméra du stage
- * (`IsoStage`, `camGRef`), sans un `setState` par frame. Le glissement du DISQUE est donc GRATUIT : il
+ * (`SurcoucheIso`, `camGRef`), sans un `setState` par frame. Le glissement du DISQUE est donc GRATUIT : il
  * vit dans ce même groupe.
  *
  * HAUTEUR : celle du CORPS DESSINÉ, pas celle de son cadre — la toise du gabarit (`bodyTopFrac`,

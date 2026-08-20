@@ -14,7 +14,7 @@ import { spec as siegeSpec } from '../../scenes/test-scenarios/siege-enceinte';
  * CÂBLAGE store → caméra volumique. `cameras.test.ts` prouve déjà la coïncidence des ÉCARTS de pixel à
  * ancrage commun ; ce qui reste à prouver ici, c'est que l'ANCRAGE dérivé de l'état de caméra du stage
  * (cran, edge-on, projection, zoom, décalage manuel) pose le monde volumique au MÊME pixel ABSOLU que la
- * chaîne de transformation d'`IsoStage` — cible ET échelle comprises. Un signe de rotation inversé, un
+ * chaîne de transformation de l'hôte du monde (`stage/MondeDeCampagne`) — cible ET échelle comprises. Un signe de rotation inversé, un
  * zoom appliqué au mauvais étage ou un `slice` oublié s'y voient au pixel.
  */
 const scene = buildScene(siegeSpec);
@@ -25,7 +25,7 @@ const TOL = 1e-6;
 const SAMPLES: { x: number; y: number; h: number }[] = [];
 for (const x of [0, 7, 14.5, 22, 29]) for (const y of [0, 11, 23.5, 34, 45]) for (const h of [0, 1.7, 4, 9.25]) SAMPLES.push({ x, y, h });
 
-/** Pixel de l'ÉLÉMENT rendu par la chaîne d'`IsoStage` — la FONCTION DE PRODUCTION (`stageScreenPixel`,
+/** Pixel de l'ÉLÉMENT rendu par la chaîne de la surcouche de plateau — la FONCTION DE PRODUCTION (`stageScreenPixel`,
  *  dont `stageCamTransform` que le stage rend est l'autre dérivée), jamais une réplique manuscrite. */
 function pixelSvg(
   s: { x: number; y: number; h: number },

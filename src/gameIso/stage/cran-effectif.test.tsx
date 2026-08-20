@@ -20,7 +20,7 @@ import { emptyScene } from '../../state/scene';
 import { nudgeStageYaw, resetStageYaw, rotAtYaw } from '../../state/stageYaw';
 import type { Combatant } from '../../engine/types';
 import type { Dims, Rot } from '../../geometry/iso';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { artRot, setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import * as archVis from './architectureVisibility';
 import { frontFacadeCutaway, type ClearedSpace } from './architectureVisibility';
@@ -114,7 +114,7 @@ describe('Verdict de FAÇADE au cran effectif (sonde du juge, promue)', () => {
   });
 });
 
-describe('IsoStage — le cran effectif ALIMENTE le dégagement, et ne rejoue qu’au franchissement', () => {
+describe('MondeDeCampagne — le cran effectif ALIMENTE le dégagement, et ne rejoue qu’au franchissement', () => {
   let root: Root | null = null;
   let container: HTMLDivElement | null = null;
 
@@ -145,7 +145,7 @@ describe('IsoStage — le cran effectif ALIMENTE le dégagement, et ne rejoue qu
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
   }
 
   it('après un demi-tour de lacet, la loi de façade reçoit le cran 2 — jamais le cran 0 du store', () => {

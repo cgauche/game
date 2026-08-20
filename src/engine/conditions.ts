@@ -571,7 +571,7 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG, emit?: Condition
 
 /**
  * Décrément des DURÉES à la frontière de Round — SOURCE UNIQUE (effets magiques temporisés, États de
- * sort, contrecoups d'incantation en Rounds). Extrait d'`endOfRound` : un seul point décrémente les
+ * sort, contrecoups d'incantation en Rounds) : un SEUL point décrémente les
  * `roundsLeft`, branché par le hook `tick-durations` (order 15.5, après les dégâts périodiques, avant
  * `refresh-wounds`). RNG-FREE (décrément + filtre + retraits) → n'altère pas le flux déterministe.
  * Rejoué hors combat par `outOfCombatUpkeep` (les durées en Rounds tickent aussi à l'horloge).

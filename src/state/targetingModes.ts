@@ -4,7 +4,7 @@
  * soin, surincantation, zone, téléportation, piétinement, au-contact, empoignade, bordée, siège,
  * Frappe Mortelle, deux armes) répond à CE besoin unique ; `currentTargetingMode(get)` est
  * l'aiguilleur. Les facettes (réticule au survol / cibles Tab-curseur / commit) qui vivaient à
- * trois endroits (targeting.ts, combatSlice.ts, IsoStage.tsx) sont ICI, unifiées.
+ * trois endroits (targeting.ts, combatSlice.ts, la surcouche de plateau) sont ICI, unifiées.
  *
  * Module FEUILLE : importe combatFlow/targeting-helpers, n'est importé par AUCUN d'eux côté
  * combatFlow (zéro cycle d'exécution via le moteur de combat) — consommé par targeting.ts,

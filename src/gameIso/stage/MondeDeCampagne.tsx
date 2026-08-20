@@ -1,85 +1,91 @@
 /**
- * Stage isométrique — la COQUILLE FINE de l'écran de jeu : elle lit le store, memoïse les BUILDERS
- * (camera-free : toits/props/tokens), tranche les vérités d'ARCHITECTURE (dégagement, façades,
- * pièce focalisée) et de VISIBILITÉ, puis les sert au MONDE VOLUMIQUE (`stage/VolumetricWorld`), seul
- * peintre du monde depuis #1176 P3-4 C5a. Le SVG qu'elle monte par-dessus ne peint plus AUCUN décor :
- * il porte les overlays d'INTERACTION (portes, hit-areas de siège, télégraphes, gabarit ZdE, réticules,
- * tooltips, debug, faune) et reçoit le picking.
- * Caméra : `useStageCamera` (crans, focus, culling) ; pointeur : `useStagePointer` (picking par la
- * projection inverse, pan, clics) ; visée au survol : `useHoverTargeting`.
+ * UN SEUL MONDE, DEUX REGARDS (#1385) — le monde volumique est possédé par l'hôte, ne se démonte
+ * qu'avec l'écran de campagne ; une vue n'est pas un écran, c'est un `frame` servi à un monde déjà là.
+ *
+ * LA FRONTIÈRE, DITE SANS FARD : est une VÉRITÉ MONDE tout ce qui ENTRE DANS LE CANEVAS — vision,
+ * exploré, teinte, lumières, éléments (jetons/décors), marche, dégagement, perçage, cadre de regard.
+ * Ça vit ICI, et une feuille n'en recalcule aucune. Le reste est de l'OVERLAY : la surcouche de
+ * plateau dérive bel et bien sa propre géométrie d'affordance (grille, murs au trait `wallTraitObjs`,
+ * accès de pièce `portalsForParty`, réticules, FX) — rien de tout cela n'atteint le canevas, et un
+ * regard qui ne les montre pas ne les paie pas.
+ *
+ * CE QUI DÉPEND DU REGARD SE PARAMÈTRE, et se compte : SIX branches, plus le slot de surcouche.
+ * Trois de SÉLECTION — `keepEl` (dehors la loi de dégagement, dedans tout se dessine), le dégagement
+ * des décors dans `propEls`, le jeton de groupe `partyToken` (on ne se voit pas soi-même). Une de
+ * CADRE — `frameMonde` (plateau : `dims`/`camAt`/zoom ; œil : case, cap, intérieur, sujet suivi). Deux
+ * de STYLE — `politique` et `dims.view`, parce que la vue du DESSUS est un regard de plateau et ne
+ * saurait s'hériter à hauteur d'homme. Les sorties anticipées de `cleared`/`lids`/`percage`/`roofEls`
+ * n'ajoutent aucune règle : elles ne font pas payer à un regard ce qu'il ne lit pas.
+ *
+ * LE CHANGEMENT DE REGARD EST UNE REPOSE — toute reconstruction à la bascule est un défaut, sauf le
+ * meneur et les nappes de brume (mesuré : `stage/bascule-de-vue.test.tsx`). LA VUE N+1 COÛTE UNE LIGNE.
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import './anim.css';
-import { useGame } from '../state/store';
-import { heightAt, sceneMetresPerTile } from '../state/scene';
-import { metricToLift } from '../state/relief';
-import { computeStateVisibleAndLight, sceneLightSources } from '../state/visionState';
-import { partyLeaderOf } from '../state/combatants';
-import { Combatant } from '../engine/types';
-import { footprintN, sizeFootprint } from '../state/footprint';
-import { mountOf } from '../state/mount';
-import { placingZoneOf } from '../state/combatFlow';
-import { controlsActive } from '../state/netOwnership';
-import { modalBlocksMapHover } from '../state/modalArbiter';
-import { mapTargetingActive } from '../state/targetingHolder';
-import { Dims, tileCenter, capsuleCenter } from '../geometry/iso';
-import { getViewZ, subscribeViewZ } from '../state/viewLevel';
-import { setVisibleTileBounds } from './viewport';
-import { useCombatFx } from './fx/useCombatFx';
-import { useWalkAnim } from './fx/useWalkAnim';
-import { subscribeStageFrames, battreStageFrames, demanderFrames, relacherFrames } from './stage/stageFrames';
-import { getStagePan, subscribeStagePan } from '../state/stagePan';
-import { walkPoseAt } from './fx/walkPose';
-import { FxLayer } from './fx/FxLayer';
-import { buildRoofs, clearedSpace } from './builders/roofs';
-import { buildProps } from './builders/props';
-import { buildTokens } from './builders/tokens';
-import { elOccluder } from './stage/occluders';
-import { type HighlightOpts } from './stage/highlightLayer';
-import { dynamicMarks } from './builders/dynamicMarks';
-import { interactionHalos, NO_INTERACTION_HALOS, type InteractionHalos } from './builders/interactHalos';
-import { tokenChromes, type TokenChromeMark } from './builders/tokenChrome';
-import { TokenChromeOverlay } from './stage/TokenChromeOverlay';
-import { type WalkPos } from './fx/walkPose';
-import { actorCapsuleOf } from './stage/actorCapsule';
-import { VolumetricWorld, type WorldFrame } from './stage/VolumetricWorld';
-import { viewPolicy } from './stage/viewPolicy';
-import { wallTraitObjs } from './stage/layers';
-import { gridLines } from '../geometry/grid';
-import { SansWebgl, useWebglRefusé } from './stage/SansWebgl';
-import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../state/stageYaw';
-import { visibilityField } from './backends/webgl/visibilityTint';
-import { useExploreCourant } from './stage/exploreCourant';
-import { roomZonesByElKey, type KeepEl, type TintAt } from './backends/webgl/sceneMeshes';
-import { stageCamTransform } from './stage/stageCam';
-import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
-import { NO_CLEARED_SPACE, frontFacadeCutaway, cutawayForSection, cutawayOverhead, spaceCellKey } from './stage/architectureVisibility';
-import { clePercage } from './stage/percage';
-import { DoorOverlays } from './stage/DoorOverlays';
-import { ClimbOverlays } from './stage/ClimbOverlays';
-import { FallOverlays } from './stage/FallOverlays';
-import { SiegeHitAreas } from './stage/SiegeHitAreas';
-import { EnemyMoveTelegraph, EnemyAimTelegraph, EnemyAoeTelegraph } from './stage/Telegraphs';
-import { ZdeTemplate } from './stage/ZdeTemplate';
-import { CursorOverlay, HoverMovePreview, ExplorePathPreview, TapPreview } from './stage/MoveOverlays';
-import { AimOverlay } from './stage/AimOverlay';
-import { CrewTooltip } from './stage/CrewTooltip';
-import { DebugMapLabels, DebugLegend } from './stage/DebugOverlay';
-import { Flies } from './stage/Ambiance';
-import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, adoucirFocal, DUREE_FOCALE_MS, VW, VH, type LissageFocal } from './stage/useStageCamera';
-import { useStagePointer } from './stage/useStagePointer';
-import { useHoverTargeting } from './stage/useHoverTargeting';
-import type { Pt } from '../state/path';
-import { portalsForParty } from '../state/roomPortals';
+import { useGame } from '../../state/store';
+import { heightAt, isIndoor, sceneMetresPerTile } from '../../state/scene';
+import { metricToLift } from '../../state/relief';
+import { computeStateVisibleAndLight, sceneLightSources } from '../../state/visionState';
+import { partyLeaderOf } from '../../state/combatants';
+import { placingZoneOf } from '../../state/combatFlow';
+import { controlsActive } from '../../state/netOwnership';
+import { Dims, capsuleCenter } from '../../geometry/iso';
+import { getViewZ, subscribeViewZ } from '../../state/viewLevel';
+import { setVisibleTileBounds } from '../viewport';
+import { useWalkAnim } from '../fx/useWalkAnim';
+import { subscribeStageFrames, battreStageFrames, demanderFrames, relacherFrames } from './stageFrames';
+import { getStagePan, subscribeStagePan } from '../../state/stagePan';
+import { walkPoseAt, type WalkPos } from '../fx/walkPose';
+import { buildRoofs, clearedSpace } from '../builders/roofs';
+import { buildProps } from '../builders/props';
+import { buildTokens } from '../builders/tokens';
+import { elOccluder } from './occluders';
+import { type HighlightOpts } from './highlightLayer';
+import { dynamicMarks } from '../builders/dynamicMarks';
+import { interactionHalos, NO_INTERACTION_HALOS, type InteractionHalos } from '../builders/interactHalos';
+import { tokenChromes, type TokenChromeMark } from '../builders/tokenChrome';
+import { actorCapsuleOf } from './actorCapsule';
+import { VolumetricWorld, type WorldFrame } from './VolumetricWorld';
+import { viewPolicy } from './viewPolicy';
+import { SansWebgl, useWebglRefusé } from './SansWebgl';
+import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../../state/stageYaw';
+import { visibilityField } from '../backends/webgl/visibilityTint';
+import { useExploreCourant } from './exploreCourant';
+import { roomZonesByElKey, type KeepEl, type TintAt } from '../backends/webgl/sceneMeshes';
+import { stageCamTransform } from './stageCam';
+import { roomCutawayAllies, roomFocusAt } from './roomFocus';
+import { NO_CLEARED_SPACE, frontFacadeCutaway, cutawayForSection, cutawayOverhead, spaceCellKey } from './architectureVisibility';
+import { clePercage } from './percage';
+import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, adoucirFocal, DUREE_FOCALE_MS, VW, VH, type LissageFocal } from './useStageCamera';
+import { useStagePointer } from './useStagePointer';
+import { useHoverTargeting } from './useHoverTargeting';
+import { SceneErrorBoundary } from '../../ui/SceneErrorBoundary';
+import { SurcoucheIso } from '../SurcoucheIso';
+import { SurcouchePov } from '../pov/SurcouchePov';
+// KEYFRAMES DU STAGE (`gameIso/anim.css`) : projectiles et halos de FX, fourmis de gabarit de ZdE,
+// pastilles d'état des jetons, faune et ambiance. Elles servent les DEUX regards, donc elles entrent
+// par l'hôte — la feuille qui les porte peut se démonter, le monde non.
+import '../anim.css';
 
-/** OPACITÉ de la grille TACTIQUE (encre `--iso-grid`, partagée avec l'éditeur), plus basse que celle de
- *  l'auteur (`ui/editor/EditorCanvas`, 0,22) : en jeu la grille est un FOND qui donne l'échelle des
- *  cases, jamais l'outil qui sert à poser un mur — elle ne concurrence ni les traits de structure ni
- *  les pions posés dessus. */
-const GRILLE_OPACITE = 0.11;
+/** À HAUTEUR D'ŒIL, TOUT SE DESSINE (#1176, P3-1a) : le dégagement d'architecture est une loi de la vue
+ *  de PLATEAU (retirer ce qui coiffe le groupe pour voir dedans depuis le dessus). Appliqué en première
+ *  personne, il ouvrirait le ciel au-dessus de la tête du groupe dès qu'il entre sous un toit. */
+const TOUT_SE_DESSINE: KeepEl = () => true;
 
+/**
+ * L'écran de campagne : le filet du MONDE, et le corps dessous. Un boundary ne rattrape JAMAIS
+ * l'erreur du composant qui le rend — le corps (≈500 lignes de dérivations : vision, dégagement,
+ * caméra, éléments) doit donc vivre SOUS le sien, sans quoi un crash de dérivation emporterait le HUD
+ * de l'écran entier.
+ */
+export function MondeDeCampagne() {
+  return (
+    <SceneErrorBoundary>
+      <CorpsDuMonde />
+    </SceneErrorBoundary>
+  );
+}
 
-export function IsoStage() {
+function CorpsDuMonde() {
   // ── État (store) ────────────────────────────────────────────────────────────────────────────────
   const scene = useGame((s) => s.scene);
   const mode = useGame((s) => s.mode);
@@ -92,34 +98,28 @@ export function IsoStage() {
   const explored = useGame((s) => s.explored);
   const markExplored = useGame((s) => s.markExplored);
   const dialogue = useGame((s) => s.dialogue);
-  // Télégraphes ENNEMIS (« qui l'adversaire vise / où il va / où l'aire tombe ») — le ciblage du
-  // JOUEUR a son propre réticule (hoverAim + jets pendants), même rendu partagé (TargetReticle).
+  // REGARD COURANT : la seule chose qui distingue les deux vues. Il ne démonte plus le monde.
+  const pov = useGame((s) => s.mode === 'exploration' && s.povActive);
+  // Télégraphe ENNEMI de visée : entrée du cadrage caméra (la paire à tenir dans le champ).
   const actorAim = useGame((s) => s.actorAim);
-  const actorMove = useGame((s) => s.actorMove);
-  const actorAoe = useGame((s) => s.actorAoe);
   // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — AUCUNE affordance.
   const myTurn = useGame(controlsActive);
   const planView = useGame((s) => s.pendingRoundStart?.round === 1); // ouverture : cadrer tout le champ
-  const mapInert = useGame(modalBlocksMapHover); // modale bloquante (arbitre) : la carte ne répond plus
-  const mapTargeting = useGame(mapTargetingActive); // un ciblage carte tient la scène (registre des pendings de ciblage)
   const pendingAttack = useGame((s) => s.pendingAttack);
   const pendingCast = useGame((s) => s.pendingCast);
   const pendingSiegeAim = useGame((s) => s.pendingSiegeAim); // pilonnage indirect : placeur de CASE
   const pendingCleave = useGame((s) => s.pendingCleave);
   const pendingDualStrike = useGame((s) => s.pendingDualStrike);
   const preemptAiming = useGame((s) => s.preemptAiming); // Tir rapide armé (pause) : cible par la carte hors tour
-  const pendingTrample = useGame((s) => s.pendingTrample);
-  const pendingHeal = useGame((s) => s.pendingHeal);
-  const pendingDefense = useGame((s) => s.pendingDefense);
   const viewMode = useGame((s) => s.viewMode);
-  const debugLabels = useGame((s) => s.debugLabels); // overlay d'annotation de carte (__wfrp.labels)
-  // L'orientation MONDE vivante (store `facing`) n'est PAS lue ici (`setFacing` reforge la référence à
-  // chaque pas) : `VolumetricWorld` s'y abonne pour ses billboards, et le disque d'un pion pour son cap
-  // — ce dernier seulement là où il est monté, c'est-à-dire sous `pionsEnDisques`.
+  // CAP du groupe, lu SEULEMENT sous le regard de première personne : `setFacing` reforge la table à
+  // chaque pas et à chaque attaque, et un abonnement à la table entière re-rendrait tout l'hôte. Le
+  // sélecteur rend une valeur PRIMITIVE, constante hors POV.
+  const capPov = useGame((s) => (s.povActive && s.party[0] ? s.facing[s.party[0].id] ?? null : null));
+  // L'orientation MONDE vivante n'est PAS lue ici : `VolumetricWorld` s'y abonne pour ses billboards.
   // MONDE INAFFICHABLE (#1176 C5a) : contexte volumique refusé = plus aucun peintre du monde — l'écran
   // le DIT, il ne se replie plus en silence (`stage/webglSupport`).
   const sansMonde = useWebglRefusé();
-  const combatCursor = useGame((s) => s.combatCursor);
   const hoverCombatantId = useGame((s) => s.hoverCombatantId); // survol de la frise → peek caméra + réticule
   const svgRef = useRef<SVGSVGElement>(null);
   const camRef = useRef({ x: 0, y: 0 }); // caméra du rendu courant, lue par les handlers du pointeur
@@ -133,16 +133,21 @@ export function IsoStage() {
   const focalRef = useRef({ x: 0, y: 0 });
   const lissageRef = useRef<LissageFocal | null>(null);
   const sujetFocalRef = useRef<string | null>(null);
-  // Source de battement PROPRE À CE STAGE : deux écrans montés côte à côte (jeu + aperçu) ne peuvent
+  // Source de battement PROPRE À CET HÔTE : deux écrans montés côte à côte (jeu + aperçu) ne peuvent
   // pas se relâcher les images l'un de l'autre.
   const sourceFocale = useRef(Symbol('focale')).current;
 
   // ── Caméra (transition de crans, zoom, pan) & animations ───────────────────────────────────────
-  const { shownRot, shownEdge, turning, zoom } = useStageCamera(svgRef);
+  const { shownRot, shownEdge, turning, zoom, attacherMolette } = useStageCamera();
+  // La surcouche de plateau se démonte au passage en première personne : le SVG qu'elle porte se pose
+  // ICI par ref-callback (la molette suit l'élément vivant, jamais celui du premier montage).
+  const poserSvg = useRef((el: SVGSVGElement | null) => {
+    (svgRef as { current: SVGSVGElement | null }).current = el;
+    attacherMolette(el);
+  }).current;
   // Marche visuelle : le token GLISSE le long du chemin. La boucle de rendu volumique lit `walksRef`
   // elle-même (#1176, P2-4) — aucun rendu React par frame.
   const walksRef = useWalkAnim(false);
-  const { floats, projs, auras, aoes } = useCombatFx();
 
   // ── Vérités de scène : étage actif, hauteurs métriques, brouillard ──────────────────────────────
   // Étages rendus = l'ACTIF + ceux du DESSOUS (sélection des builders). Override DEBUG viewLevel(z).
@@ -151,7 +156,8 @@ export function IsoStage() {
   const activeZ = viewZ ?? ((activeC?.pos as { z?: number } | undefined)?.z ?? partyPos.z ?? 0);
   // STYLE DE LA VUE (#1176, P3-5) : ce que ce regard choisit de MONTRER (`stage/viewPolicy`). Les
   // verdicts en descendent tous — l'étage isolé ci-dessous comme le découvert des toits de `keepEl`.
-  const politique = useMemo(() => viewPolicy({ view: viewMode }), [viewMode]);
+  // La vue du DESSUS est un regard de PLATEAU : à hauteur d'œil, c'est le style iso qui vaut.
+  const politique = useMemo(() => viewPolicy({ view: pov ? 'iso' : viewMode }), [viewMode, pov]);
   // VUE DU DESSUS (`view: 'top'`, mode tactique et source de la minimap) : on regarde UN plancher à la
   // VERTICALE — l'étage ACTIF, et lui seul. Ce n'est pas un réglage d'affichage de plus : c'est le
   // `viewZ` du pivot (isolement d'un étage) que l'APPELANT fournit, là où l'iso fournit `null`
@@ -164,7 +170,8 @@ export function IsoStage() {
   const liftAt = (x: number, y: number, z = 0) => (scene ? metricToLift(heightAt(scene, Math.round(x), Math.round(y), z)) : 0);
   // BROUILLARD DE GUERRE (cases visibles) + CHAMP DE LUMIÈRE par tuile en UN calcul (`sceneLightField`,
   // potentiellement lourd, ne tourne qu'UNE fois par pas — la vue ET l'éclairage des sols le partagent).
-  // Dérivé des positions LOGIQUES, pas du glissement → memo STABLE pendant la marche.
+  // Dérivé des positions LOGIQUES, pas du glissement → memo STABLE pendant la marche. UNE vision pour
+  // les deux regards (#1385) : la première personne en dérivait une seconde, sur les mêmes entrées.
   const vl = useMemo(
     () => (scene ? computeStateVisibleAndLight({ scene, battle, party, partyPos, gameTime, lightLevel }) : { visible: new Set<string>(), light: undefined, smoke: [] }),
     [scene, battle, party, partyPos, gameTime, lightLevel],
@@ -188,12 +195,14 @@ export function IsoStage() {
   // Sa RÉFÉRENCE ne change qu'au CONTENU : le commit de confirmation rend un ensemble égal, et la
   // teinte qui en descend ne doit pas s'y reforger.
   const exploredSet = useExploreCourant(explored, scene?.id, visible);
-  // Accumulation persistante de l'exploré (no-op si rien de neuf → pas de boucle de rendu).
+  // Accumulation persistante de l'exploré (no-op si rien de neuf → pas de boucle de rendu). Explorer
+  // en première personne nourrit la MÊME mémoire de carte : c'est le même hôte.
   useEffect(() => {
     if (visible.size) markExplored([...visible]);
   }, [visible, markExplored]);
 
   const mpt = scene ? sceneMetresPerTile(scene) : 2;
+  const indoor = useMemo(() => (scene ? isIndoor(scene) : false), [scene]);
   // LACET CONTINU (#1176, P2-7) : deux formes du MÊME regard.
   // `dims` est le CRAN — la géométrie de DÉGAGEMENT s'y décide, et ses memos ne doivent pas se rejouer
   // soixante fois par seconde pendant une rotation. Son cran est celui que le lacet RÉEL regarde
@@ -207,7 +216,7 @@ export function IsoStage() {
   // lisent la source, pas une valeur passée) : sans cet abonnement, rien ne suivrait la rotation.
   useSyncExternalStore(subscribeStageYaw, getStageYaw, getStageYaw);
   const cranVue = viewRot(shownRot) ?? shownRot;
-  const dims = useMemo<Dims>(() => ({ ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: cranVue, view: viewMode, edge: shownEdge }), [scene, cranVue, viewMode, shownEdge]);
+  const dims = useMemo<Dims>(() => ({ ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: cranVue, view: pov ? 'iso' : viewMode, edge: shownEdge }), [scene, cranVue, viewMode, shownEdge, pov]);
   const yawVue = viewYawDeg(shownRot, shownEdge); // change à chaque frame de rotation (`yawOffset`)
   const dimsVue = useMemo<Dims>(
     () => (yawVue == null ? dims : { ...dims, yawDeg: yawVue }),
@@ -260,9 +269,13 @@ export function IsoStage() {
   const camAtRef = useRef(camAt);
   camAtRef.current = camAt;
   const camAtStable = useRef((now: number) => camAtRef.current(now)).current;
+  // LE REGARD, et rien d'autre : c'est le SEUL endroit où les deux vues divergent de cadrage.
   const frameMonde = useMemo<WorldFrame>(
-    () => ({ mode: 'plateau', dims: dimsVue, camAt: camAtStable, zoom: zoomVue }),
-    [dimsVue, zoomVue, camAtStable],
+    () => (pov
+      ? { mode: 'pov', partyPos, facing: capPov ?? 'S', indoor, cid: partyLeader?.id ?? null }
+      : { mode: 'plateau', dims: dimsVue, camAt: camAtStable, zoom: zoomVue }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pov, partyPos, capPov, indoor, partyLeader?.id, dimsVue, zoomVue, camAtStable],
   );
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
   // Cases LOGIQUES des alliés — ce que la marche fait glisser, jamais ce qu'elle fait bouger.
@@ -282,6 +295,7 @@ export function IsoStage() {
   const visualAlliesKey = tilesKey(visualTilesAt(wnow));
   const visualAllies = useMemo(
     () => visualTilesAt(wnow).map(({ x, y, z }) => ({ x, y, z })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [visualAlliesKey],
   );
   const visualPartyPos = visualAllies[0] ?? partyPos;
@@ -291,7 +305,7 @@ export function IsoStage() {
   );
   const cutawayAllies = roomCutawayAllies(roomFocus, visualAllies);
   // Le monde glisse dans la boucle de rendu et React ne rend plus rien entre deux pas — ni pendant un
-  // glisser-caméra, ni pendant l'approche d'une focale. Ce que le stage écrit HORS de React suit donc
+  // glisser-caméra, ni pendant l'approche d'une focale. Ce que l'hôte écrit HORS de React suit donc
   // le BATTEMENT (`stage/stageFrames`) : la caméra que lisent les handlers du pointeur (`camRef` —
   // seule source de l'inversion pixel→tuile, `useStagePointer`), le cadre de tuiles visibles
   // (`setVisibleTileBounds`) et le transform du groupe d'overlays SVG (curseur, aperçu de chemin,
@@ -351,16 +365,16 @@ export function IsoStage() {
   // trou local (#1176, M3, `stage/percage.ts`).
   const roofGeom = useMemo(() => (scene ? buildRoofs(scene) : []), [scene]);
   const lids = useMemo(
-    () => roofGeom.map((el) => ({
+    () => (pov ? [] : roofGeom.map((el) => ({
       sectionId: el.sectionId ?? el.key, // nappe hors masse authorée : elle est sa propre section
       z: el.cell.z,
       cells: el.cells,
       occluder: elOccluder(el, dims),
-    })),
-    [roofGeom, dims],
+    }))),
+    [roofGeom, dims, pov],
   );
   // ALLIÉS COIFFABLES : leur case VISUELLE, leur `cid` et leur capsule d'écran — les entrées du trou
-  // local (#1176, M3), résolues ICI parce qu'elles exigent la projection (donc le stage, jamais le
+  // local (#1176, M3), résolues ICI parce qu'elles exigent la projection (donc l'hôte, jamais le
   // builder).
   const alliesCoiffables = useMemo(
     () => (scene
@@ -373,19 +387,21 @@ export function IsoStage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [scene, visualAlliesKey, dims],
   );
+  // À hauteur d'œil, RIEN n'est dégagé (`keepEl` y rend tout) : la résolution du dégagement — la
+  // passe la plus chère de la chaîne, rejouée à chaque pas — n'aurait aucun lecteur.
   const cleared = useMemo(
-    () => (scene ? clearedSpace(scene, visualAllies, exploredSet) : NO_CLEARED_SPACE),
-    [scene, visualAllies, exploredSet],
+    () => (scene && !pov ? clearedSpace(scene, visualAllies, exploredSet) : NO_CLEARED_SPACE),
+    [scene, visualAllies, exploredSet, pov],
   );
   // DÉCOUPE LOCALE PAR OCCLUSION (#1176, M3) : ce que la boucle de rendu volumique reprend à la CLÉ
   // (pas franchi, quart de tour, étage) pour percer un trou dans la masse qui cache un héros à
   // l'écran. Les entrées sont celles ci-dessus, sans un seul second calcul.
   const percage = useMemo(
-    () => (scene
+    () => (scene && !pov
       ? { cle: clePercage({ tuiles: visualTilesAt(wnow), rot: dims.rot ?? 0, view: dims.view ?? 'iso', activeZ }), lids, heros: alliesCoiffables }
       : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [scene, visualAlliesKey, dims, activeZ, lids, alliesCoiffables],
+    [scene, visualAlliesKey, dims, activeZ, lids, alliesCoiffables, pov],
   );
   // Les MÊMES vérités, dans la forme que consomme la voie VOLUMIQUE (#1176) : le dégagement en canal
   // GÉOMÉTRIE (une masse dégagée ne se rend pas), la visibilité en canal TEINTE. Un seul jeu de lois.
@@ -394,7 +410,7 @@ export function IsoStage() {
   // n'est pas dans le read-set de la cuisson — un `roomZoneIds` cuit aurait périmé en silence. La loi
   // ci-dessous les redemande par la CLÉ de l'élément.
   const zonesVives = useMemo(() => (scene ? roomZonesByElKey(scene) : new Map<string, readonly string[]>()), [scene]);
-  const keepEl = useMemo<KeepEl>(() => (el) => {
+  const loiDeDégagement = useMemo<KeepEl>(() => (el) => {
     // VUE DU DESSUS (#892) : on regarde UN plancher à la VERTICALE — superposer le rez à l'étage rend
     // le plan illisible. La loi voyageait dans le `viewZ` que les builders de sols et de murs
     // recevaient ; la masse est désormais CUITE en bloc (`bakeWorldGeometry` prend la scène entière),
@@ -424,6 +440,8 @@ export function IsoStage() {
     }
     return true;
   }, [cleared, dims, zonesVives, planVue, politique, activeZ]);
+  // ÉCART DE REGARD nº 1 : à hauteur d'œil, tout se dessine.
+  const keepEl = pov ? TOUT_SE_DESSINE : loiDeDégagement;
   // CHAMP de visibilité (#1176, C6) : le monde volumique l'échantillonne PAR SOMMET, les corps posés
   // sur leur case y lisent la valeur discrète de la leur. Les dimensions bornent le champ : hors carte,
   // il se rabat sur le bord au lieu d'assombrir le pourtour d'un dehors inconnu.
@@ -435,39 +453,31 @@ export function IsoStage() {
   // dépendent les memos en aval : la GÉOMÉTRIE des nappes est mémoïsée par la scène, et seul le
   // dégagement s'y rejoue, par la loi commune, sur la SECTION entière (tous les pans d'une masse).
   const roofEls = useMemo(
-    () => roofGeom.filter((el) => cutawayForSection({
+    () => (pov ? [] : roofGeom.filter((el) => cutawayForSection({
       sectionId: el.sectionId ?? el.key,
       roomZoneIds: el.roomZoneIds,
       cells: el.cells.map((cell) => spaceCellKey(cell.x, cell.y, el.cell.z)),
-    }, cleared) === 'visible'),
-    [roofGeom, cleared],
+    }, cleared) === 'visible')),
+    [roofGeom, cleared, pov],
   );
   // Le MÊME verdict, rendu par SECTION : les nappes que la frame PEINT. La météo volumique s'en sert
   // pour écrêter ce qui tombe au-dessus d'un toit levé (#1247) — la pluie s'y arrêtait en l'air. Il se
   // LIT sur `roofEls`, la sortie même de la loi de dégagement : aucune seconde application.
   const nappesVues = useMemo(() => new Set(roofEls.map((el) => el.sectionId ?? el.key)), [roofEls]);
   const nappeVue = useMemo(() => (sectionId: string) => nappesVues.has(sectionId), [nappesVues]);
+  // ÉCART DE REGARD nº 2 : le dégagement des décors est une loi de plateau (retirer ce qui coiffe le
+  // groupe) ; à hauteur d'œil rien n'est retiré, et aucun allié ne « découvre » sa pièce.
   const propEls = useMemo(
-    () => (scene ? buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }).filter((el) => !cutawayOverhead(el.cell, cleared)) : []),
-    [scene, visible, activeZ, layerZ, cutawayAllies, cleared],
+    () => (scene
+      ? (pov
+        ? buildProps(scene, visible, { activeZ, viewZ: layerZ })
+        : buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }).filter((el) => !cutawayOverhead(el.cell, cleared)))
+      : []),
+    [scene, visible, activeZ, layerZ, cutawayAllies, cleared, pov],
   );
   const tokenEls = useMemo(
     () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ: layerZ, top: politique.montesDissocies }) : []),
     [scene, visible, mode, battle, activeZ, layerZ, politique],
-  );
-  // STRUCTURE AU TRAIT (#1176, P3-5b) : la MÊME couche que le plan de station (`stage/layers`), montrée
-  // ici quand le regard retire les murs du monde volumique. Le brouillard lui est passé : un mur non vu
-  // n'est pas tracé. Projection par `dimsVue` (le lacet RÉEL) — la même que celle du canevas et des
-  // autres overlays, sans quoi les traits décrocheraient du monde pendant une rotation.
-  const mursTrait = useMemo(
-    () => (scene && politique.mursAuTrait ? wallTraitObjs(scene, dimsVue, activeZ, visible) : []),
-    [scene, politique, dimsVue, activeZ, visible],
-  );
-  // GRILLE TACTIQUE (#1176, P3-5b) : la même fonction pure que l'éditeur (`geometry/grid`), à l'encre du
-  // JEU — un FOND de plateau, pas un outil d'auteur. `w+h+2` segments, jamais un par case.
-  const grille = useMemo(
-    () => (scene && politique.grilleTactique ? gridLines(dimsVue, activeZ) : []),
-    [scene, politique, dimsVue, activeZ],
   );
 
   // Les vérités de surbrillance sont assemblées par le monde volumique lui-même
@@ -478,25 +488,10 @@ export function IsoStage() {
     [myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast],
   );
 
-  // ── Accès de PIÈCE (portes/passages des overlays) ──────────────────────────────────────────────
-  // `portalsForParty` lit les accès de la scène (mémoïsés) et, hors zone intérieure, ne garde que les
-  // sorties de la COMPOSANTE marchable du groupe (`walkComponentAt`, étiquetage bâti une fois par
-  // scène — #1416). Ses seules vraies entrées sont la SCÈNE (réf neuve dès qu'une porte s'ouvre —
-  // `wallEdges`/`doorIsOpen` lisent `scene.flags`) et la case de CONTRÔLE arrondie ; le glissement
-  // visuel d'une marche n'en fait pas partie, donc une image d'animation ne recalcule aucun accès (#817).
-  const doorCtrlKey = battle
-    ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? `${activeC.id}@${activeC.pos.x},${activeC.pos.y},${activeC.pos.z ?? 0}` : '')
-    : `party@${partyPos.x},${partyPos.y},${partyPos.z ?? 0}`;
-  const doorCtrls = useMemo<Pt[]>(
-    () => (battle ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? [activeC.pos] : []) : [partyPos]),
-    [doorCtrlKey],
-  );
-  const portals = useMemo(
-    () => (scene && doorCtrls.length ? portalsForParty(scene, doorCtrls[0], occupiedInteriorZoneIds(scene, doorCtrls)) : []),
-    [scene, doorCtrls],
-  );
-
   // ── Pointeur & visée au survol ──────────────────────────────────────────────────────────────────
+  // Le picking désigne des cases du MONDE : il vit avec lui, et ses verdicts (survol, fantômes)
+  // nourrissent les marques que le monde peint. La surcouche de plateau ne fait que porter les
+  // handlers sur son SVG.
   // Suivi du SURVOL : tout contexte où l'on cible par la carte — mode neutre (attaque implicite),
   // incantation (tooltip + gabarit ZdE), et flux différés (Frappe Mortelle / 2ᵉ frappe / Surincantation).
   const hoverTracking =
@@ -504,8 +499,9 @@ export function IsoStage() {
     (((battle.action === null || battle.action === 'cast') && activeC?.kind === 'hero') ||
       !!preemptAiming || // Tir rapide armé pendant la pause : on suit le survol (réticule + trait de visée) alors qu'il n'y a AUCUN actif
       !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, pendingSiegeAim, battle }));
-  const { hover, hoveredPortal, portalHandlers, handlers } = useStagePointer({ svgRef, scene, dims: dimsVue, zoom, camRef, hoverTracking, partyLeader, activeZ });
-  const { hoverAim, hoveredId, hoverMove, explorePath, ghostIds, effHover } = useHoverTargeting(scene, hover, myTurn, hoveredPortal);
+  const pointeur = useStagePointer({ svgRef, scene, dims: dimsVue, zoom, camRef, hoverTracking, partyLeader, activeZ });
+  const hover = pointeur.hover;
+  const visée = useHoverTargeting(scene, hover, myTurn, pointeur.hoveredPortal);
 
   // MARQUES DYNAMIQUES : dérivées UNE fois (`builders/dynamicMarks`) et servies au monde volumique — le
   // contexte qui les autorise (mode, dialogue ouvert) se tranche ici, et nulle part ailleurs. Les
@@ -513,10 +509,11 @@ export function IsoStage() {
   // des jetons RÉELLEMENT postés.
   // Les trois dérivations qui suivent sont RETENUES sur leurs entrées (#1371) : le monde volumique les
   // prend en dépendance de son redessin, et une liste neuve par rendu y faisait peindre une image à
-  // chaque commit du stage — c'est ce qui les place AVANT les sorties anticipées ci-dessous.
+  // chaque commit de l'hôte — c'est ce qui les place AVANT les sorties anticipées ci-dessous.
+  // ÉCART DE REGARD nº 3 : le meneur ne porte AUCUN billboard quand on regarde par ses yeux.
   const partyToken = useMemo(
-    () => (combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null),
-    [combatBattle, partyLeader, partyPos],
+    () => (pov || combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null),
+    [pov, combatBattle, partyLeader, partyPos],
   );
   const marquesDyn = useMemo(
     () => dynamicMarks(mode === 'battle' ? battle : null, mode === 'exploration' && !dialogue ? partyPos : null, tokenEls, partyToken),
@@ -528,8 +525,8 @@ export function IsoStage() {
   // matériau de ses quads. Dérivée SANS condition de mode : un figurant d'exploration est un jeton, et
   // sous ce verdict c'est ici qu'il se dessine (le chrome, lui, reste vide pour lui).
   const chromes = useMemo<TokenChromeMark[]>(
-    () => tokenChromes(tokenEls, { ghostIds, hoveredId }, partyToken),
-    [tokenEls, ghostIds, hoveredId, partyToken],
+    () => tokenChromes(tokenEls, { ghostIds: visée.ghostIds, hoveredId: visée.hoveredId }, partyToken),
+    [tokenEls, visée.ghostIds, visée.hoveredId, partyToken],
   );
   // HALOS D'INTERACTION (P3-0g) : même partage que les marques dynamiques — dérivés UNE fois
   // (`builders/interactHalos`) ; le contexte qui les autorise (exploration, combat ouvert) se tranche
@@ -548,22 +545,11 @@ export function IsoStage() {
   // Une marche en cours ? La caméra suit image par image : on COUPE la transition CSS du transform
   // (sinon elle « chasse » une cible mobile et traîne ~0,3 s derrière).
   const anyWalking = Object.keys(walksRef.current).length > 0;
-  /** Ancre écran d'un combattant pour réticule/ligne de visée : centre de l'EMPREINTE, suit le glissé. */
-  const reticleAnchor = (c: Combatant) => {
-    const off = (sizeFootprint(c.size) - 1) / 2;
-    const wp = walkPosOf(c.id, c.pos!.x, c.pos!.y);
-    return tileCenter(wp.x + off, wp.y + off, dimsVue);
-  };
-  const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
 
   // ── Caméra : point focal (paire de visée / actif / leader) + culling d'animation ────────────────
   const cam = camAt(wnow);
   camRef.current = cam;
-  const viewBounds = computeViewBounds(cam, zoom, dimsVue);
-  setVisibleTileBounds(viewBounds); // écriture dans un module = pas de re-rendu
-
-  // Empreinte du MOBILE actif (sa MONTURE si cavalier) → aperçus/curseur à la BONNE taille.
-  const activeMoveN = activeC ? footprintN(mountOf(battle!, activeC) ?? activeC) : 1;
+  setVisibleTileBounds(computeViewBounds(cam, zoom, dimsVue)); // écriture dans un module = pas de re-rendu
 
   // Transform CAMÉRA (pan/zoom/rotation) — partagée par le groupe principal ET l'overlay d'étiquettes
   // de zone (Bug lisibilité #782 : ce dernier doit suivre la même projection).
@@ -571,20 +557,18 @@ export function IsoStage() {
   // volumique qui se pose, lui, sans le moindre lissage. Ce qui doit glisser glisse dans `camAt`
   // (`adoucirFocal`), donc pour les DEUX à la fois. Le creux du dim-and-turn reste une OPACITÉ.
   const camTransform = stageCamTransform(cam, zoomVue);
-  const camTransition = 'opacity 0.13s ease-out';
-  const camOpacity = turning ? 0.6 : 1;
 
   return (
     <>
-      {/* Le MONDE : le canevas volumique prend la couche monde et se pose SOUS le SVG, qui garde ses
-          overlays d'interaction et son picking. */}
+      {/* Le MONDE : POSITION ET TYPE FIXES dans l'arbre. Il ne se démonte qu'avec l'écran de campagne
+          — une bascule de regard ne fait que lui servir un autre `frame`. */}
       <VolumetricWorld
         scene={scene}
         mpt={mpt}
         frame={frameMonde}
         tintAt={tintAt}
         keepEl={keepEl}
-        nappeVue={nappeVue}
+        nappeVue={pov ? undefined : nappeVue}
         tokenEls={tokenEls}
         propEls={propEls}
         walksRef={walksRef}
@@ -600,63 +584,38 @@ export function IsoStage() {
         percage={percage}
         pionsEnDisques={politique.pionsEnDisques}
       />
-    {/* Le fond du SVG est transparent : le canevas peint dessous. */}
-    <svg ref={svgRef} className="iso-stage" style={{ background: 'transparent' }} viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" {...handlers}>
-      <g ref={camGRef} style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
-        {/* COMPOSITION DE LA VUE DU DESSUS (#1176, P3-5b/P3-5c) : le canevas volumique dessous ne peint
-            que les SOLS de l'étage actif et le DÉCOR ; ce qui suit est la surcouche de PLATEAU, du plus
-            bas au plus haut — la grille (fond), puis la structure au trait, puis les affordances
-            (portes, escaliers, télégraphes), puis les PIONS et leur chrome. L'ordre est celui de
-            l'émission du groupe : l'état d'une porte se lit SUR son mur, un pion SUR le sol qu'il
-            foule, jamais l'inverse. */}
-        {grille.length > 0 && (
-          <g pointerEvents="none" data-grille-jeu={grille.length}>
-            {grille.map((l, i) => (
-              <line key={`gj-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="var(--iso-grid)" strokeOpacity={GRILLE_OPACITE} strokeWidth={1} shapeRendering="crispEdges" />
-            ))}
-          </g>
+      {/* LA SURCOUCHE — ce que le regard ADRESSE : overlays d'interaction et picking du plateau,
+          voiles d'écran de la première personne. Elle se démonte et se remonte librement. */}
+      <SceneErrorBoundary>
+        {pov ? (
+          <SurcouchePov indoor={indoor} />
+        ) : (
+          <SurcoucheIso
+            scene={scene}
+            dims={dimsVue}
+            turning={turning}
+            activeZ={activeZ}
+            visible={visible}
+            tintAt={tintAt}
+            liftAt={liftAt}
+            politique={politique}
+            chromes={chromes}
+            walkPosAt={walkPosAt}
+            activeC={activeC}
+            battle={combatBattle}
+            myTurn={myTurn}
+            partyPos={partyPos}
+            mode={mode}
+            targeting={targeting}
+            anyWalking={anyWalking}
+            camTransform={camTransform}
+            camGRef={camGRef}
+            poserSvg={poserSvg}
+            pointeur={pointeur}
+            visée={visée}
+          />
         )}
-        {mursTrait.length > 0 && <g pointerEvents="none" data-murs-trait={mursTrait.length}>{mursTrait.map((o) => o.el)}</g>}
-        <DoorOverlays
-          portals={portals}
-          dims={dimsVue}
-          activeZ={activeZ}
-          visible={visible}
-          hoveredPortalId={hoveredPortal?.id ?? null}
-          lift={liftOf}
-          onPortalHover={portalHandlers.onPortalHover}
-          onPortalClick={portalHandlers.onPortalClick}
-        />
-        <ClimbOverlays scene={scene} dims={dimsVue} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
-        <FallOverlays scene={scene} dims={dimsVue} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
-        {battle && <SiegeHitAreas scene={scene} battle={battle} dims={dimsVue} activeZ={activeZ} visible={visible} />}
-        <EnemyMoveTelegraph actorMove={actorMove} dims={dimsVue} footN={activeMoveN} lift={liftOf} />
-        <EnemyAimTelegraph targeting={targeting} anchor={reticleAnchor} />
-        <Flies scene={scene} dims={dimsVue} />
-        <FxLayer dims={dimsVue} floats={floats} projs={projs} auras={auras} aoes={aoes} />
-        {battle && hover && <ZdeTemplate battle={battle} hover={hover} pendingCast={pendingCast} pendingSiegeAim={pendingSiegeAim} activeC={activeC} dims={dimsVue} />}
-        {mode === 'battle' && <EnemyAoeTelegraph actorAoe={actorAoe} dims={dimsVue} />}
-        {/* JETONS (P3-0f, P3-5c) : ils se peignent APRÈS les affordances de SOL (portes, télégraphes,
-            gabarits) — l'état d'un combattant se lit par-dessus ce qui est peint sur le sol, jamais
-            dessous — et, sous `pionsEnDisques`, c'est ICI que vit le pion lui-même. */}
-        <TokenChromeOverlay chromes={chromes} dims={dimsVue} liftAt={liftAt} pions={politique.pionsEnDisques} tintAt={tintAt} walkPosAt={walkPosAt} />
-        {/* Curseur LIBRE : il se tait dès qu'un ciblage carte tient la scène (verdict du registre
-            `mapTargetingActive`) — le réticule/le gabarit du mode prennent alors le relais. */}
-        {mode === 'battle' && battle && combatCursor
-          && !mapInert && !mapTargeting
-          && !hoverAim?.reticle && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dimsVue} liftAt={liftAt} />}
-        {mode === 'battle' && battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dimsVue} lift={liftOf} />}
-        {mode === 'exploration' && explorePath && (hover || hoveredPortal) && <ExplorePathPreview path={explorePath} dims={dimsVue} lift={liftOf} walking={anyWalking} />}
-        {combatBattle && <TapPreview battle={combatBattle} activeC={activeC} dims={dimsVue} liftAt={liftAt} myTurn={myTurn} />}
-        {mode === 'battle' && battle && (
-          <AimOverlay battle={battle} hoverAim={hoverAim} anchor={reticleAnchor} dims={dimsVue}
-            pendingAttack={pendingAttack} pendingDefense={pendingDefense} pendingTrample={pendingTrample} pendingHeal={pendingHeal} pendingCast={pendingCast} />
-        )}
-        {mode === 'battle' && battle && <CrewTooltip battle={battle} hoveredId={hoveredId} myTurn={myTurn} anchor={reticleAnchor} />}
-        {debugLabels && <DebugMapLabels scene={scene} dims={dimsVue} liftAt={liftAt} />}
-      </g>
-      {debugLabels && <DebugLegend />}
-    </svg>
+      </SceneErrorBoundary>
     </>
   );
 }

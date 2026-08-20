@@ -180,6 +180,17 @@ const NO_MORE_ARTIFACT_RX = new RegExp(
 // aucune restriction de vocabulaire n'est nécessaire ici (locution sans emploi de jeu).
 const OF_YORE_RX = new RegExp('\\bd' + APOS + 'antan\\b', 'i');
 
+// L'ORIGINE d'un module ne se lit plus : le fichier dont il fut extrait a changé de nom, de forme ou
+// n'existe plus — git porte cette histoire, le lecteur a besoin du contrat COURANT.
+// La CIBLE doit être un MODULE ou un SYMBOLE de module : back-ticks portant une majuscule interne ou
+// un suffixe de fichier, identifiant chameau nu, ou nom de fichier nu. Deux classes en sont donc
+// exclues par construction — la citation de SOURCE (« extrait du chapitre LDB 13 », « extrait d'ADE
+// II » : sigles sans minuscule interne) et la DÉRIVATION vivante (« arêtes extraites de `walled` » :
+// un mot local en back-ticks décrit ce que le code FAIT, pas d'où il vient).
+const EXTRACTED_FROM_RX = new RegExp(
+  `\\b[Ee]xtraite?s?\\s+d(?:e\\s+|${APOS})(?:${BT}[\\w/-]*(?:[a-zà-ÿ][A-Z]|\\.tsx?)[\\w/.-]*${BT}|[A-Z][a-zà-ÿ]+[A-Z][\\w]*|[\\w-]+\\.tsx?\\b)`,
+);
+
 /** @type {{ rx: RegExp, label: string }[]} */
 export const TOMBSTONE_FAMILIES = [
   // NB : l'accord féminin/pluriel du participe passé est couvert par les suffixes optionnels
@@ -228,6 +239,12 @@ export const TOMBSTONE_FAMILIES = [
   // vivante (un format de sauvegarde lisible, le propriétaire précédent d'un objet EN JEU).
   // Formes couvertes et faux positifs écartés : LITTÉRAUX dans `src/comment-poison-guard.test.ts`.
   { rx: /\(ancien(?:ne)?s?\b|\(anciennement\b/i, label: 'ancien X (parenthésé — artefact disparu)' },
+  // #1385 : l'ORIGINE révolue d'un module (« extrait d'X », « extraits de X ») nomme un artefact que
+  // le lecteur ne peut plus ouvrir, et que git porte déjà. Discriminant : la source doit RESSEMBLER à
+  // du code — back-ticks, identifiant chameau (`IsoStage`, `GameStage3D`) ou nom de fichier `.ts(x)`.
+  // Les citations de source RAW en sont exclues par construction (leurs sigles — LDB, ADE, EDOC — ne
+  // portent aucune minuscule interne), comme l'extrait de texte au sens courant (minuscules).
+  { rx: EXTRACTED_FROM_RX, label: 'extrait de X (origine révolue du module)' },
   { rx: NO_MORE_ARTIFACT_RX, label: 'négation temporelle + artefact de code (état révolu)' },
   { rx: OF_YORE_RX, label: 'passé nostalgique (état révolu)' },
 ];

@@ -1,6 +1,6 @@
 /**
- * FX de combat pilotés par le bus (extraits d'IsoStage pour le garder navigable) :
- * flottants typés, projectiles volants, halos d'incantation, flashes de zone d'effet.
+ * FX de combat pilotés par le bus : flottants typés, projectiles volants, halos d'incantation,
+ * flashes de zone d'effet.
  * Chaque système = un état local + un abonnement bus à durée de vie bornée (setTimeout).
  * Le RENDU vit dans `FxLayer.tsx` ; la marche animée dans `useWalkAnim.ts`.
  */

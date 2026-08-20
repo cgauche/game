@@ -9,7 +9,7 @@
  *  2. la MATIÈRE : le monde est lambertien (l'ambiante doit donc AGIR, ce que le lambertien de three
  *     fait à `1/π` près — mesuré ici sur ses propres chunks de shader), les billboards ne le sont
  *     jamais (leur normale est l'axe caméra : une luminance lambertienne y suivrait la rotation) ;
- *  3. le MONTAGE réel de l'écran (`GameStage3D` sous `IsoStage`, voie volumique) : un canevas WebGL n'a
+ *  3. le MONTAGE réel de l'écran (`GameStage3D` sous `MondeDeCampagne`, voie volumique) : un canevas WebGL n'a
  *     pas d'arbre à interroger, mais il porte la signature du soleil monté (`data-sun`) et l'exposition
  *     de sa frame (`data-lum`) — et, en volumique, le voile d'ambiance du SVG n'est plus peint.
  */
@@ -26,7 +26,7 @@ import { ambianceLuminance, nightVeilAlpha } from '../catalog/ambiance';
 import { AUCUN_CHROME, TEINTE_PLEINE, billboardMaterial, poseBoards, type Board, type FrameLights } from './boardPose';
 import { FLAME_INTENSITY, FLAME_LIFT_M } from './stagePointLights';
 import { SUN_ACNE_ELEVATION_DEG, stageLightScalars, stageLights, sunFade } from './stageLights';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -284,7 +284,7 @@ function monter(scene: Scene, gameTime: number): HTMLDivElement {
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return container;
 }
 

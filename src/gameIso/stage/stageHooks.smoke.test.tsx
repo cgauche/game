@@ -22,13 +22,12 @@ function probe(render: () => string): string {
 }
 
 describe('hooks du stage — smoke (premier rendu, état initial)', () => {
-  it('useStageCamera : rotation affichée 0, pas de transition en cours, zoom du store', () => {
+  it('useStageCamera : rotation affichée 0, pas de transition en cours, zoom du store, molette à attacher', () => {
     const html = probe(() => {
-      const svgRef = useRef<SVGSVGElement>(null);
-      const cam = useStageCamera(svgRef);
-      return `${cam.shownRot}|${cam.shownEdge}|${cam.turning}|${typeof cam.zoom}`;
+      const cam = useStageCamera();
+      return `${cam.shownRot}|${cam.shownEdge}|${cam.turning}|${typeof cam.zoom}|${typeof cam.attacherMolette}`;
     });
-    expect(html).toContain('data-out="0|false|false|number"');
+    expect(html).toContain('data-out="0|false|false|number|function"');
   });
 
   it('useStagePointer : hover null, tous les handlers exposés (scène absente tolérée)', () => {

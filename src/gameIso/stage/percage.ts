@@ -40,7 +40,7 @@ export function verdictPercage(lids: readonly Lid[], acteurs: readonly ActeurPer
   return acteurs.map((a) => lids.some((lid) => lid.z >= a.z && occludesActor(lid.occluder, a.capsule)));
 }
 
-/** CLÉ DISCRÈTE du verdict — la même discipline que le stage (`IsoStage`, `tilesKey`) : les tuiles des
+/** CLÉ DISCRÈTE du verdict — la même discipline que l'hôte du monde (`stage/MondeDeCampagne`, `tilesKey`) : les tuiles des
  *  alliés (identité + case), le cran et le lacet de la caméra, l'étage actif. Tant qu'elle ne bouge
  *  pas, aucun pas n'a été franchi et rien n'a tourné : le verdict d'avant tient. */
 export function clePercage(vue: {

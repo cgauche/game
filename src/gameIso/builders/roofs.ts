@@ -1011,7 +1011,8 @@ export function shelterSectionAt(field: ReadonlyMap<string, ShelterColumn>, x: n
 
 /** ESPACE DÉGAGÉ par les alliés (#818), résolution UNIQUE de la scène — consommée par la loi
  *  `cutawayForSection` (`stage/architectureVisibility.ts`) pour les toits ICI et pour les murs et
- *  façades dans `IsoStage` : une seule vérité, jamais deux qui pourraient diverger.
+ *  façades dans l'hôte du monde (`stage/MondeDeCampagne`) : une seule vérité, jamais deux qui
+ *  pourraient diverger.
  *
  *  Un allié dégage l'ESPACE HABITÉ où il se tient, à l'échelle entière de cet espace : la PIÈCE quand
  *  il en occupe une (toutes ses cases, quel que soit le nombre de travées de charpente qui la

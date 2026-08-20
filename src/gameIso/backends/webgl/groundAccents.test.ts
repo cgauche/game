@@ -253,7 +253,7 @@ describe('groundAccents — REPOSE en place, jamais de reconstruction', () => {
   const scene = buildScene(siegeSpec);
   const mpt = sceneMetresPerTile(scene);
   const accents = sceneGroundAccents(scene, mpt);
-  /** Teinte STABLE, comme celle que l'écran mémorise (`IsoStage`) : elle ne se reforge qu'au
+  /** Teinte STABLE, comme celle que l'hôte du monde mémorise (`stage/MondeDeCampagne`) : elle ne se reforge qu'au
    *  changement de visibilité, jamais au franchissement d'un cran. */
   const TEINTE_PLEINE: TintAt = () => 1;
   /** La nappe la plus SEMÉE de la scène : la retirer doit se voir. */

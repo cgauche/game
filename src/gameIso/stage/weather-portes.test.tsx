@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene, type Scene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { AMBIANCE, weatherLightScalars } from '../catalog/ambiance';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
@@ -66,7 +66,7 @@ function monter(meteo: Scene['weather'], ambiance?: Scene['ambiance']): HTMLDivE
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return container;
 }
 

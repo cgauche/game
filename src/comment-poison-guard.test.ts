@@ -168,6 +168,23 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
     expect(tombstonesIn("// n'a plus de modèle applicable : on retombe sur le gabarit générique.")).toEqual([]);
   });
 
+  it('cas planté : l’ORIGINE révolue d’un module est une tombale (#1385)', () => {
+    const L = 'extrait de X (origine révolue du module)';
+    expect(tombstonesIn(" * Extrait d'IsoStage tel quel (rendu inchangé).")).toContain(L);
+    expect(tombstonesIn('// FX de combat (extraits de GameStage3D) : flottants typés.')).toContain(L);
+    expect(tombstonesIn(' * Marche visuelle (extraite de useWalkAnim.ts) : le token glisse.')).toContain(L);
+    expect(tombstonesIn(' * extrait de `IsoStage` pour le garder navigable')).toContain(L);
+  });
+
+  it('faux positifs écartés : l’extrait de SOURCE et le sens courant du mot (#1385)', () => {
+    // Une citation RAW nomme un livre, pas un module : ses sigles ne portent aucune minuscule interne.
+    expect(tombstonesIn('// extrait du chapitre LDB 13 sur les Talents')).toEqual([]);
+    expect(tombstonesIn("// extrait d'ADE II, page 41 — verbatim")).toEqual([]);
+    expect(tombstonesIn('// un extrait de texte est affiché dans la fiche')).toEqual([]);
+    expect(tombstonesIn("// l'extrait de la prose est tronqué à 80 signes")).toEqual([]);
+    expect(tombstonesIn('// extraits de sang et de bile (composants alchimiques)')).toEqual([]);
+  });
+
   it('cas planté : le passé nostalgique nomme un état révolu, quel que soit son sujet (2026-07-30)', () => {
     expect(tombstonesIn('// DR maximum, plus le plancher 1 d’antan')).toContain('passé nostalgique (état révolu)');
     expect(tombstonesIn("// mêmes couleurs que la palette d'antan.")).toContain('passé nostalgique (état révolu)');

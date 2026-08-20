@@ -3,7 +3,8 @@ import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent }
 import { VB_W, VB_H, Z_MIN, Z_MAX, type Viewport, clampViewport } from './worldMapViewport';
 
 /**
- * Primitive de CARTE SVG panoramable/zoomable (#343-C) — mini-moteur extrait de `WorldMapView` : la
+ * Primitive de CARTE SVG panoramable/zoomable (#343-C) — mini-moteur partagé, consommé par
+ * `WorldMapView` : la
  * caméra (pan à 1 doigt/souris, zoom molette-vers-le-curseur, pinch tactile), le fond, les TRACÉS et
  * les MARQUEURS cliquables, plus les commandes de zoom. Aucune logique de voyage/lieu ici : le
  * consommateur fournit son contenu en DONNÉE (`paths`/`markers`/`overlay`) et son habillage

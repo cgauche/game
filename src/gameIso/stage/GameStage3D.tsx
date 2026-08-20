@@ -1,8 +1,8 @@
 /**
  * MONDE VOLUMIQUE de l'écran de jeu (#1176, lots P2-2/P2-2b) — la couche MONDE, rendue en three.
  * CONSOMMATEUR
- * pur du stage : il ne lit AUCUN store, ne décide ni cadrage ni visibilité ni dégagement — `IsoStage`
- * reste la seule source d'intention, exactement comme pour le backend affine.
+ * pur du stage : il ne lit AUCUN store, ne décide ni cadrage ni visibilité ni dégagement — l'hôte du
+ * monde (`stage/MondeDeCampagne`) reste la seule source d'intention.
  *
  * QUATRE CANAUX INDÉPENDANTS, chacun avec ses propres entrées, aucun n'invalidant les autres :
  *  - CUISSON (`bakeWorldGeometry`, `sceneGroundAccents`) : la passe LOURDE, invalidée par la SEULE
@@ -17,9 +17,10 @@
  *  - MARCHE (P2-4) : la boucle de rendu lit elle-même le glissement (`anim.glide`) et ne déplace que
  *    les matrices des quads concernés. Aucun rendu React, aucun sommet, aucun matériau.
  *
- * DEUX REGARDS, UN SEUL MONDE (#1176, P3-1a) : le cadre de la frame est une UNION (`StageFrame`) —
- * ortho affine cadrée par le stage SVG (`IsoStage`), ou PERSPECTIVE à hauteur d'homme cadrée par la
- * pose du groupe (`PovStage`). Tout le reste de cet écran l'ignore : mêmes cuisson, teinte, lumière,
+ * DEUX REGARDS, UN SEUL MONDE (#1176, P3-1a ; #1385) : le cadre de la frame est une UNION
+ * (`StageFrame`) que l'hôte unique (`stage/MondeDeCampagne`) sert selon son regard — ortho affine
+ * cadrée sur la surcouche de plateau, ou PERSPECTIVE à hauteur d'homme cadrée par la pose du groupe.
+ * Tout le reste de cet écran l'ignore : mêmes cuisson, teinte, lumière,
  * billboards et intempéries. La première personne n'a ni marques de sol, ni halos, ni picker inscrit —
  * ce sont des affordances de la vue de plateau, et le POV n'en a jamais porté.
  *
@@ -392,14 +393,14 @@ export interface GameStage3DProps {
    *  picker inscrit ici écraserait celui du jeu — le registre est un singleton. */
   spritePicking?: boolean;
   /** DÉCOUPE LOCALE PAR OCCLUSION (#1176, M3) — les entrées du verdict, telles que l'hôte de plateau
-   *  les dérive une seule fois (`IsoStage` : nappes projetées + capsules d'alliés). Cet écran n'en
+   *  les dérive une seule fois (`stage/MondeDeCampagne` : nappes projetées + capsules d'alliés). Cet écran n'en
    *  dérive AUCUNE : deux jeux de nappes/capsules divergeraient de la géométrie d'occlusion, et le
    *  trou s'ouvrirait là où rien n'est caché. Absent (POV, éditeur) = aucun trou. */
   percage?: PercageEntrees | null;
   /** PIONS EN DISQUES (#1176, P3-5c) — le verdict `pionsEnDisques` de `stage/viewPolicy`, tel que
    *  l'hôte le tranche. EXIGÉ chez l'hôte, et pas re-déduit ici de la projection : c'est celui qui
    *  PEINT les disques qui doit éteindre les billboards, jamais l'inverse. L'écran de JEU
-   *  (`IsoStage` → `stage/TokenChromeOverlay`) le passe ; l'ÉDITEUR, lui, regarde aussi son plateau du
+   *  (`stage/MondeDeCampagne` → `stage/TokenChromeOverlay`) le passe ; l'ÉDITEUR, lui, regarde aussi son plateau du
    *  dessus mais ne monte AUCUNE surcouche de jeton — il garde donc ses corps en billboard, sans quoi
    *  l'auteur perdrait de vue ses figurants (mesuré : `ui/editor/editeur-monde-volumique.test.tsx`).
    *  Absent = billboards, le régime historique. */

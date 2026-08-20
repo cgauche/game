@@ -5,7 +5,8 @@
  * l'overlay de terrain n'est plus qu'un prop dérivé d'une donnée `TerrainDef.overlayProp` (le mur PLEIN,
  * lui, naît de `solidHeightM` via le relief de `buildFloors`, pas d'ici). PUR et projection-agnostique :
  * identité + case + empreinte + vérités de scène, aucune caméra.
- * Consommé par IsoStage (couches props/affordances), l'éditeur et le POV (mêmes billboards).
+ * Consommé par l'hôte du monde de campagne (`stage/MondeDeCampagne`, qui le sert à SES DEUX regards)
+ * et par l'éditeur — mêmes billboards partout.
  */
 import { Scene, tileAt, heightAt, type ArchitectureEdgeRef, type ArchitectureRect, type WallSide } from '../../state/scene';
 import { roofHidden, massFootBBox } from '../../state/buildings';

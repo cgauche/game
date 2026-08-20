@@ -63,7 +63,7 @@ export function screenStepDot(scene: Scene, from: Pt, to: Pt, dir: ScreenDir, di
 /**
  * Couche RÉSOLUE de la case (x,y) : la plus HAUTE couche y portant une SURFACE RÉELLE, SANS borne d'étage
  * `≤ activeZ` — SOURCE UNIQUE partagée par le curseur de combat (clavier/manette, `nextCursorTile`) ET le
- * picking SOURIS (`IsoStage.tsx::tileFromEvent`) : les deux doivent pouvoir VISER le chemin de ronde z1
+ * picking SOURIS (`stage/useStagePointer`) : les deux doivent pouvoir VISER le chemin de ronde z1
  * depuis la cour z0 (là où se tiennent défenseurs et pièces). On prend d'abord la couche MARCHABLE la plus
  * haute (chemin de ronde > sol), sinon la couche RÉELLE la plus haute (terrain ≠ 'vide' : eau/mur visables) ;
  * à défaut, la base z0. Mono-couche ⇒ toujours z0 (byte-identique au sol plat). PUR.

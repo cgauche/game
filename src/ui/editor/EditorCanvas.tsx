@@ -81,7 +81,7 @@ const LAMP_INK = 'rgba(255,196,92,0.95)';
 /** Encre de la GRILLE d'authoring : un gris froid DISCRET — elle borne la case sans concurrencer ni le
  *  terrain qu'on peint, ni les traits d'auteur (zones, murs, sélection) qui, eux, portent du sens. */
 /** OPACITÉ de la grille d'AUTEUR (encre `--iso-grid`, la même qu'en jeu) : plus haute que celle du jeu
- *  (`gameIso/IsoStage`, 0,11) — ici la grille est l'outil qui sert à poser une case, pas un fond. */
+ *  (`gameIso/SurcoucheIso`, 0,11) — ici la grille est l'outil qui sert à poser une case, pas un fond. */
 const GRILLE_OPACITE = 0.22;
 
 /** Les 4 voisines de grille d'une case, appariées à l'ARÊTE qui les sépare (`tileEdge`). */

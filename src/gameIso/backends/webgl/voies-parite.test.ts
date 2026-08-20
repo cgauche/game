@@ -39,7 +39,8 @@ function toutVu(scene: Scene): Set<string> {
   return out;
 }
 
-/** Éléments du stage pour une scène — la loi de la voie affine, celle qu'`IsoStage` applique. */
+/** Éléments du stage pour une scène — la loi de la voie affine, celle que l'hôte du monde applique
+ *  (`stage/MondeDeCampagne`). */
 function elsDuStage(scene: Scene, battle: BattleState | null) {
   const visible = toutVu(scene);
   const vue = { activeZ: Math.max(...scene.layers.map((l) => l.z)), viewZ: null, top: false };

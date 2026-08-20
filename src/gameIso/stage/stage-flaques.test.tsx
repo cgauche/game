@@ -30,7 +30,7 @@ import { AUCUN_CHROME, TEINTE_PLEINE, poseBoards, type Board } from './boardPose
 import { ambianceLuminance } from '../catalog/ambiance';
 import { lightLevels } from '../../data';
 import { areneCampaign } from '../../scenes/campaign';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import {
@@ -304,7 +304,7 @@ afterEach(() => {
   démonter();
 });
 
-/** Monte l'écran de JEU (store → `IsoStage` → voie volumique) sur `scene` à l'heure `gameTime`. */
+/** Monte l'écran de JEU (store → `MondeDeCampagne` → voie volumique) sur `scene` à l'heure `gameTime`. */
 function canevas(scene: Scene, gameTime: number): HTMLCanvasElement {
   useGame.setState({
     scene, mode: 'exploration', partyPos: { x: 5, y: 5 }, party: [], battle: null, dialogue: null,
@@ -313,7 +313,7 @@ function canevas(scene: Scene, gameTime: number): HTMLCanvasElement {
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return hôte.querySelector('canvas.iso-stage') as HTMLCanvasElement;
 }
 

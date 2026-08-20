@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { useGame, type BattleState } from '../../state/store';
 import { emptyScene, sceneMetresPerTile } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import { ACTIVE_HALO_TINT, ENGAGE_TINT } from '../highlightTints';
 import { ENEMY_RING, HERO_RING, teamShape } from '../teamColors';
@@ -102,7 +102,7 @@ function monter(mode: 'battle' | 'exploration', retouche: Record<string, unknown
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return conteneur;
 }
 

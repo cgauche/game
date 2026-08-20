@@ -1,8 +1,8 @@
 /**
- * L'EXPLORÉ DU PAS COURANT — la dérivation que partagent les DEUX hôtes du monde (`IsoStage`,
- * `pov/PovStage`) : ce que le store a retenu, PLUS ce que le groupe voit à l'instant.
+ * L'EXPLORÉ DU PAS COURANT — la dérivation de l'hôte du monde (`stage/MondeDeCampagne`), servie à ses
+ * DEUX regards : ce que le store a retenu, PLUS ce que le groupe voit à l'instant.
  *
- * Deux raisons, et elles vivent ensemble ici pour qu'aucun hôte n'en applique qu'une :
+ * Deux raisons, et elles vivent ensemble ici pour qu'aucun appelant n'en applique qu'une :
  *  - l'UNION : un pas découvre des cases, et l'accumulation persistante (`markExplored`) ne fait que
  *    les confirmer au commit SUIVANT. Sans elle, un pas passe DEUX champs de teinte — un au calcul de
  *    `visible`, un au retour du store — donc deux fois toute la cascade qui en descend (#1396) ;

@@ -92,7 +92,7 @@ export interface StyleVue {
    *
    *  C'est aussi ce qui referme l'écart d'ORDRE de la composition du dessus : grille, murs au trait,
    *  affordances et pions vivent alors dans le MÊME arbre SVG, où le rang de calque se décide
-   *  (`IsoStage`), au lieu de deux arbres dont l'un couvre l'autre en entier.
+   *  (`SurcoucheIso`), au lieu de deux arbres dont l'un couvre l'autre en entier.
    *
    *  La CLASSIFICATION du pion n'est PAS rejouée ici : `tokenBodyKind(subject, 'top')` la porte déjà
    *  (`flat` + `portraitBox`), et reste sa source unique. */

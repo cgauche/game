@@ -10,8 +10,9 @@ Scene ──(builders, PURS, espace MONDE)──▶ SceneEl[] ──┬─(monde
 apparence = DONNÉE (src/data/*.json + defs de terrain) ; LUMIÈRE = shade.ts ; jamais un hex dans un renderer.
 ```
 
-Contrat de perf : un **builder n'importe ni `Dims` ni caméra**. Sa sortie (mémoïsée par `IsoStage`)
-survit à toute rotation/projection ; la première personne n'hérite d'aucun concept d'écran.
+Contrat de perf : un **builder n'importe ni `Dims` ni caméra**. Sa sortie (mémoïsée par l'hôte du
+monde, `stage/MondeDeCampagne`) survit à toute rotation/projection ; la première personne n'hérite
+d'aucun concept d'écran.
 
 ## 1. Le pivot — `builders/types.ts`
 
@@ -46,8 +47,8 @@ Les builders dérivent la scène en **éléments sémantiques en espace monde**.
 LE moteur du jeu, en toutes vues (iso crantée, lacet continu, plan du dessus, première personne) :
 les éléments du pivot sont CUITS en géométrie (`sceneMeshes`, `faceBake`, `periodTexture`) et rendus
 par une caméra réelle (`cameras.ts`). Hôtes : `stage/GameStage3D` (via `stage/VolumetricWorld`),
-monté par `IsoStage` (jeu), `pov/PovStage` (première personne), `stage/PlanWorldCanvas` (plan de
-station) et `ui/editor/EditorCanvas` (aperçu WYSIWYG). Sans contexte WebGL, l'hôte le DIT
+monté par `stage/MondeDeCampagne` (le jeu — UN monde, ses deux regards), `stage/PlanWorldCanvas` (plan
+de station) et `ui/editor/EditorCanvas` (aperçu WYSIWYG). Sans contexte WebGL, l'hôte le DIT
 (`stage/SansWebgl`) — il n'y a plus de second peintre du monde (#1176 P3-4, commit C5a).
 
 ### L'authoring — `authoring/*` (peintres SVG, iso losange · edge-on · top)
@@ -64,8 +65,9 @@ volumique (`backends/webgl/*.test.ts`). La frontière est écrite au JSDoc d'`au
 
 ### La première personne — `pov/*`
 `camera.ts` (caméra + brume/fog calculés, partagés avec `backends/webgl/cameras.ts`),
-`billboardCore.ts` (boîte et hauteurs métriques des billboards), `PovStage.tsx` (l'hôte : le MÊME
-monde volumique, regardé à hauteur d'œil, plus les voiles d'écran).
+`billboardCore.ts` (boîte et hauteurs métriques des billboards), `SurcouchePov.tsx` (les
+voiles d'écran de ce regard — le monde, lui, est celui de `stage/MondeDeCampagne`, regardé à hauteur
+d'œil).
 
 ## 4. Détail de surface (matériaux v2) — `detail/*`
 
@@ -87,8 +89,8 @@ seuls · `≥0.7` motifs + accents.
 ## 5. Ambiance — `catalog/ambiance.ts` (← `src/data/ambiance.json`)
 
 Ciel d'extérieur, brumes (intérieure sombre / extérieure claire), vignette, voile chaud, filtre de
-l'étage inférieur, voile de nuit. Les stages (`IsoStage`/`PovStage`) et la QC headless consomment les
-MÊMES defs SVG assemblées ici. `DEFS` (`sprites.ts`) = dégradés de terrain (dérivés des `TerrainDef.stops`)
+l'étage inférieur, voile de nuit. Les deux regards de `stage/MondeDeCampagne` et la QC headless
+consomment les MÊMES defs SVG assemblées ici. `DEFS` (`sprites.ts`) = dégradés de terrain (dérivés des `TerrainDef.stops`)
 + `rigFxGradients` (`rig/fxGradients.ts`, domaine rig/FX), montés une fois au niveau App (`GlobalSvgDefs`).
 
 ## 6. Garde-fou anti-couleur — `renderer-no-hardcoded-color.test.ts`
@@ -96,7 +98,7 @@ MÊMES defs SVG assemblées ici. `DEFS` (`sprites.ts`) = dégradés de terrain (
 Aucun renderer d'environnement ne porte de **littéral** de couleur : toute couleur vient de la DONNÉE
 (`src/data/*.json`, defs de terrain) ou de `shade.ts` (la LUMIÈRE : `shade`/`mix` + voiles `ao`/`spec`/
 `warm`). Couverture = **balayage récursif** de `builders/ backends/ authoring/ detail/ pov/ catalog/ stage/` + les
-renderers racine (`IsoStage.tsx`, `sprites.ts`) + un bloc dédié aux 97 defs de props (`catalog/decor/defs/`,
+renderers racine nommés par fichier (`SurcoucheIso.tsx`, `sprites.ts`) + un bloc dédié aux 97 defs de props (`catalog/decor/defs/`,
 qui consomment la palette `P.<ton>` de `decorPalette.json`). Hors périmètre (couleur légitime) : le rig
 (`rig/**`), les FX de combat (`fx/**`), les jetons (`stage/TokenChromeOverlay` = chrome d'état, qui a
 son propre bloc à allowlist neutre),

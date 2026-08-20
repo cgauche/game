@@ -190,7 +190,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | Helper | Usage | Limites connues |
 |---|---|---|
 | `battle()` | snapshot combat (round, actif, modales, combattants une ligne chacun) | lecture seule |
-| `hover('id'\|{x,y}\|null)` | survol PROGRAMMATIQUE (tooltip + réticule sans souris) | requiert IsoStage monté (`✗ IsoStage non monté` sinon) |
+| `hover('id'\|{x,y}\|null)` | survol PROGRAMMATIQUE (tooltip + réticule sans souris) | requiert le monde de campagne monté (`✗ monde de campagne non monté` sinon) |
 | `aim('id')` | vérité state du ciblage pour l'actif (`ok`/`invalid`/`none` + raison, compétence, dégâts) | uniquement en combat |
 | `pad('A'\|'B'\|…)` / `padDir('up'\|…)` | simule bouton/direction manette (shim DEV, MÊME chemin que la vraie manette) | requiert le shim `window.__wfrpPad(Dir)` installé (`useGamepad` monté) |
 | `padUp('LT'\|…)` / `padDirUp('up'\|…)` | RELÂCHE le bouton/la direction — obligatoire pour tout geste MAINTENU (marche tenue, rotation caméra) | sans lui le geste armé ne s'arrête jamais |

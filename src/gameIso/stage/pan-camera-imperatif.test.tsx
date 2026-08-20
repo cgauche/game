@@ -7,7 +7,7 @@ import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import { getStagePan, resetStagePan } from '../../state/stagePan';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { battreStageFrames } from './stageFrames';
 import { DUREE_FOCALE_MS } from './useStageCamera';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
@@ -66,7 +66,7 @@ function monter(): { el: HTMLDivElement; commits: () => number } {
   document.body.appendChild(container);
   root = createRoot(container);
   let n = 0;
-  act(() => root!.render(<Profiler id="stage" onRender={() => { n += 1; }}><IsoStage /></Profiler>));
+  act(() => root!.render(<Profiler id="stage" onRender={() => { n += 1; }}><MondeDeCampagne /></Profiler>));
   return { el: container!, commits: () => n };
 }
 
@@ -76,7 +76,7 @@ function monterSansReset(): { el: HTMLDivElement } {
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return { el: container };
 }
 

@@ -4,7 +4,7 @@
  * traduction. Module PUR : aucun `three`, aucun DOM, aucun store.
  *
  * Deux étages, jamais recopiés ailleurs :
- *  1. CAMÉRA du groupe (pan/zoom, unités de viewBox) — `IsoStage` la pose en `transform` CSS ;
+ *  1. CAMÉRA du groupe (pan/zoom, unités de viewBox) — `SurcoucheIso` la pose en `transform` CSS ;
  *  2. RECOUVREMENT du viewBox (`preserveAspectRatio="xMidYMid slice"` de `.iso-stage`) : le viewBox
  *     `0 0 VW VH` RECOUVRE l'élément, donc son échelle est le MAX des deux rapports (un `meet` en
  *     prendrait le min) et son centre coïncide avec le centre de l'élément (`xMidYMid`).

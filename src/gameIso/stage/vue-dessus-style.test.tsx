@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * LE STYLE DE LA VUE DU DESSUS SUR LE CHEMIN RÉEL (#1176, P3-5) — `IsoStage` monté en voie volumique,
+ * LE STYLE DE LA VUE DU DESSUS SUR LE CHEMIN RÉEL (#1176, P3-5) — `MondeDeCampagne` monté en voie volumique,
  * mesuré sur ce qui part au GPU, jamais sur une intention :
  *  - D1, TOITS : en vue du dessus, AUCUN span de toiture n'est dessiné (découvert PERMANENT) ; en
  *    plateau iso, le MÊME monde garde ses toits — la loi de dégagement y vit entière ;
@@ -18,7 +18,7 @@ import { emptyScene, sceneMetresPerTile, type BuildingMass, type Scene } from '.
 import { setRevealAll } from '../../state/visionState';
 import type { ViewMode } from '../../geometry/iso';
 import { bakeWorldGeometry, type WorldGeometry } from '../backends/webgl/sceneMeshes';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import { stageLightScalars } from './stageLights';
 
@@ -84,7 +84,7 @@ function monter(scene: Scene, view: ViewMode): HTMLDivElement {
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return conteneur;
 }
 

@@ -14,7 +14,7 @@ import type { SizeCategory } from '../../engine/size';
 
 /**
  * LA CAPSULE EST CALÉE SUR LE CORPS DESSINÉ (#907). Elle sert la visée CAMÉRA du sujet et la loi de
- * DÉGAGEMENT du monde (`IsoStage` → `cleared`) : trop étroite, elle manque les occulteurs posés sur
+ * DÉGAGEMENT du monde (`stage/MondeDeCampagne` → `cleared`) : trop étroite, elle manque les occulteurs posés sur
  * les épaules (le défaut d'origine) ; trop large, elle dégage des masses qui ne cachent rien.
  * Le contrat se REMESURE sur le rig, il ne fige aucun nombre.
  */
@@ -47,7 +47,7 @@ describe('actorCapsuleOf — la boîte du jeton est calée sur le CORPS DESSINÉ
   };
 
   /** Carrures qu'un HÉROS présente à la capsule (elle ne sert que les héros et le meneur du groupe —
-   *  `IsoStage`), de Taille Moyenne ou moindre. La Taille vient du talent d'espèce (`species.json` :
+   *  `stage/MondeDeCampagne`), de Taille Moyenne ou moindre. La Taille vient du talent d'espèce (`species.json` :
    *  `petit` → Petite, `talents.json`). */
   const HERO_RIGS: { race: string; size: SizeCategory }[] = [
     { race: 'Humain', size: 'moyenne' },

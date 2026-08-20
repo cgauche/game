@@ -35,7 +35,7 @@ function attackLabelRef(weapon: Weapon | undefined, kind: 'melee' | 'ranged'): R
 }
 
 /**
- * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET d'attaque — extrait de `RollModal`
+ * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET d'attaque — hook à part de `RollModal`,
  * pour être réutilisé à l'IDENTIQUE par la séquence de combat (`CascadeModal` rend l'étape-jet via ce
  * hook, sans démonter la coquille → une seule fenêtre). Renvoie les props de `RollShell`, ou
  * `null` si aucune attaque en attente. AUCUNE mécanique générique réécrite : que du métier d'attaque.

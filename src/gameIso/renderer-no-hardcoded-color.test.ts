@@ -5,7 +5,8 @@
  * tables hex-valuées. Deux niveaux de couverture :
  *   1) balayage RÉCURSIF des arborescences pivot/backend/authoring/pov/catalog/stage — auto-couvre tout NOUVEAU
  *      fichier (plus de liste à tenir à la main) ;
- *   2) les renderers à la RACINE de `gameIso/`, nommés explicitement (`IsoStage`, `sprites`).
+ *   2) les renderers à la RACINE de `gameIso/`, nommés explicitement par FICHIER (`SurcoucheIso.tsx`,
+ *      `sprites.ts`) — l'hôte du monde et ses surcouches de `stage/` sont pris par le balayage.
  * `catalog/decor/defs/` (les 97 defs de props) a son propre bloc plus bas (dessin par def, MAIS couleurs
  * tirées de la palette partagée) → exclu du balayage.
  *
@@ -25,7 +26,7 @@ const HERE = fileURLToPath(new URL('.', import.meta.url)); // …/src/gameIso/
 
 // Renderers d'environnement à la RACINE de gameIso/ (hors arborescence balayée) — nommés.
 const ROOT_RENDERERS = [
-  'IsoStage.tsx', // stage iso (coquille fine) — orchestration seule, zéro couleur
+  'SurcoucheIso.tsx', // surcouche de plateau (coquille fine) — overlays et picking seuls, zéro couleur
   'sprites.ts', // overlays de terrain (mur/arbre) + villageois d'ambiance — tons de decorPalette + ao()
 ];
 

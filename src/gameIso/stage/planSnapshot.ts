@@ -3,7 +3,7 @@
  * rendue par le monde volumique, en UNE frame, par un renderer ÉPHÉMÈRE.
  *
  * Pourquoi éphémère, et pas un `GameStage3D` monté : la fiche de station s'ouvre EN MODALE au-dessus
- * de l'écran de jeu, qui garde son propre contexte WebGL (`ui/CampaignView.tsx` monte `IsoStage` sous
+ * de l'écran de jeu, qui garde son propre contexte WebGL (`ui/CampaignView.tsx` monte `stage/MondeDeCampagne` sous
  * la modale). Un second contexte vivant à côté du premier n'a aucune raison d'exister pour une image
  * FIXE : on crée le renderer, on rend une frame, on la copie dans le canevas 2D affiché, on libère
  * tout. Le plan ne bouge pas — c'est une carte, pas une vue de jeu.

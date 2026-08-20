@@ -3,7 +3,7 @@
  * caméra libre (camPan, remise à zéro au changement d'unité active), calcul du POINT FOCAL
  * (leader/centroïde/actif/paire de visée/peek de frise) et du cadre VISIBLE (culling d'animation).
  */
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGame, type BattleState } from '../../state/store';
 import { Combatant } from '../../engine/types';
 import { isOutOfAction } from '../../engine/conditions';
@@ -19,14 +19,15 @@ export const VH = 720;
 /** État caméra réactif : rotation AFFICHÉE (retardée pour masquer le ré-agencement sous le creux
  *  d'opacité de la transition) et zoom (molette non-passive). Le décalage manuel, lui, ne remonte
  *  PAS en état de rendu : le commis du store descend au panoramique vivant (`state/stagePan`). */
-export function useStageCamera(svgRef: RefObject<SVGSVGElement>): {
+export function useStageCamera(): {
   shownRot: 0 | 1 | 2 | 3;
   shownEdge: boolean;
   turning: boolean;
   zoom: number;
+  /** À poser en `ref` sur le SVG de la surcouche de plateau : c'est lui qui porte la molette. */
+  attacherMolette: (svg: SVGSVGElement | null) => void;
 } {
   const zoom = useGame((s) => s.zoom);
-  const setZoom = useGame((s) => s.setZoom);
   // Rotation caméra (cran de 90°). `camRot` = cible (store, lu en live par le rig) ; `shownRot` =
   // orientation AFFICHÉE, retardée. `camEdge` : cran impair, vue « de face » (edge-on) axis-alignée 3D.
   const camRot = useGame((s) => s.camRot);
@@ -52,17 +53,23 @@ export function useStageCamera(svgRef: RefObject<SVGSVGElement>): {
     };
   }, [camRot, camEdge]);
 
-  // Zoom molette (listener non-passif pour pouvoir preventDefault le scroll de page).
-  useEffect(() => {
-    const svg = svgRef.current;
-    if (!svg) return;
-    const onWheel = (e: WheelEvent) => {
+  // Zoom molette (listener non-passif pour pouvoir preventDefault le scroll de page). L'écoute suit
+  // l'ÉLÉMENT par une ref-callback, jamais un effet de montage : la surcouche de plateau se démonte au
+  // passage en première personne et un aller-retour en remonte une NEUVE — une écoute posée une fois
+  // pour toutes serait morte sur l'élément d'avant (#1385).
+  const molette = useRef<{ el: SVGSVGElement | null; onWheel: (e: WheelEvent) => void }>({
+    el: null,
+    onWheel: (e: WheelEvent) => {
       e.preventDefault();
-      setZoom(useGame.getState().zoom - e.deltaY * 0.0015); // le store borne
-    };
-    svg.addEventListener('wheel', onWheel, { passive: false });
-    return () => svg.removeEventListener('wheel', onWheel);
-  }, []);
+      useGame.getState().setZoom(useGame.getState().zoom - e.deltaY * 0.0015); // le store borne
+    },
+  }).current;
+  const attacherMolette = useRef((svg: SVGSVGElement | null) => {
+    if (molette.el === svg) return;
+    molette.el?.removeEventListener('wheel', molette.onWheel);
+    molette.el = svg;
+    svg?.addEventListener('wheel', molette.onWheel, { passive: false });
+  }).current;
 
   // Refocus « sur celui qui joue après » : tout décalage manuel de caméra est annulé quand l'unité
   // active change (nouveau tour) — sinon le pion actif pourrait rester hors champ après un panoramique.
@@ -75,7 +82,7 @@ export function useStageCamera(svgRef: RefObject<SVGSVGElement>): {
   // qu'une remise à zéro (nouveau tour, touche de recentrage) et le commit du relâchement d'un glisser
   // atteignent la vue. Écriture dans un module = pas de re-rendu (même patron que `setVisibleTileBounds`).
   accorderPan(camPan);
-  return { shownRot, shownEdge, turning, zoom };
+  return { shownRot, shownEdge, turning, zoom, attacherMolette };
 }
 
 /** Attaque/sort ENNEMI télégraphié (actorAim) : la paire à cadrer + le style de ligne (pleine en

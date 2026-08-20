@@ -1,7 +1,7 @@
 /**
- * Actions MARCHAND (#2, LDB 59/60) extraites de store.ts pour le garder navigable — même patron
+ * Actions MARCHAND (#2, LDB 59/60) — module à part du store, même patron
  * `(get, set)` que combatFlow : ouverture/réassort, panier, achat/vente/réparation, Marchandage
- * (Test opposé), Évaluation. Refacto pure — comportement préservé.
+ * (Test opposé), Évaluation.
  */
 import type { GameState } from './store';
 import { toRecapLines } from './recapLine';

@@ -3,20 +3,20 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
-import { setStageRendererFactory, type StageRenderer } from './stage/GameStage3D';
-import * as sceneMeshes from './backends/webgl/sceneMeshes';
-import type { KeepEl } from './backends/webgl/sceneMeshes';
-import { useGame } from '../state/store';
-import { emptyScene, heightAt } from '../state/scene';
-import type { Combatant } from '../engine/types';
-import * as propsBuilder from './builders/props';
-import * as roomPortalsModule from '../state/roomPortals';
-import * as roofsBuilder from './builders/roofs';
-import { IsoStage } from './IsoStage';
-import { capsuleCenter, tileCenter, LEVEL_H, type Dims } from '../geometry/iso';
-import { metricToLift } from '../state/relief';
-import { actorCapsuleOf } from './stage/actorCapsule';
-import { VW, VH } from './stage/useStageCamera';
+import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import * as sceneMeshes from '../backends/webgl/sceneMeshes';
+import type { KeepEl } from '../backends/webgl/sceneMeshes';
+import { useGame } from '../../state/store';
+import { emptyScene, heightAt } from '../../state/scene';
+import type { Combatant } from '../../engine/types';
+import * as propsBuilder from '../builders/props';
+import * as roomPortalsModule from '../../state/roomPortals';
+import * as roofsBuilder from '../builders/roofs';
+import { MondeDeCampagne } from './MondeDeCampagne';
+import { capsuleCenter, tileCenter, LEVEL_H, type Dims } from '../../geometry/iso';
+import { metricToLift } from '../../state/relief';
+import { actorCapsuleOf } from './actorCapsule';
+import { VW, VH } from './useStageCamera';
 
 /**
  * #817 — un rendu de PLUS (survol, pan caméra, tout état sans rapport avec scène/position
@@ -51,7 +51,7 @@ function hero(id: string, pos: { x: number; y: number }): Combatant {
   } as unknown as Combatant;
 }
 
-describe('IsoStage — stabilité de propEls entre deux rendus sans changement logique (#817)', () => {
+describe('MondeDeCampagne — stabilité de propEls entre deux rendus sans changement logique (#817)', () => {
   let root: Root | null = null;
   let container: HTMLDivElement | null = null;
 
@@ -82,7 +82,7 @@ describe('IsoStage — stabilité de propEls entre deux rendus sans changement l
 
     container = document.createElement('div');
     root = createRoot(container);
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
     // Le montage peut déclencher SA PROPRE re-passe interne (effet `markExplored`) — on ne fige le
     // compteur qu'UNE FOIS le montage stabilisé, pour isoler le SEUL rendu forcé qui suit.
     const afterMount = spy.mock.calls.length;
@@ -90,7 +90,7 @@ describe('IsoStage — stabilité de propEls entre deux rendus sans changement l
 
     // Second rendu FORCÉ (ex. re-rendu React déclenché par un état sans rapport) : aucun changement
     // logique n'a eu lieu entre les deux — `buildProps` ne doit PAS être rappelé.
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
     expect(spy.mock.calls.length).toBe(afterMount);
   });
 });
@@ -101,7 +101,7 @@ describe('IsoStage — stabilité de propEls entre deux rendus sans changement l
  * seules vraies entrées sont la SCÈNE et la case de CONTRÔLE ; une image d'animation de marche (le
  * jeton glisse, la case ne change pas) ne doit en déclencher AUCUN, et un changement de case UN.
  */
-describe('IsoStage — accès de pièce recalculés à la case, pas à l’image (#817)', () => {
+describe('MondeDeCampagne — accès de pièce recalculés à la case, pas à l’image (#817)', () => {
   let root: Root | null = null;
   let container: HTMLDivElement | null = null;
 
@@ -127,18 +127,18 @@ describe('IsoStage — accès de pièce recalculés à la case, pas à l’image
 
     container = document.createElement('div');
     root = createRoot(container);
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
     const afterMount = spy.mock.calls.length;
     expect(afterMount).toBeGreaterThan(0);
 
     // Rendu FORCÉ sans changement logique : c'est le cas d'une image d'animation de marche.
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
     expect(spy.mock.calls.length).toBe(afterMount);
 
     // Un vrai PAS change la case de contrôle : les accès doivent bien être recalculés (le memo ne
     // sur-cache pas — une porte devenue accessible doit apparaître).
     act(() => { useGame.setState({ partyPos: { x: 3, y: 2 } }); });
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
     expect(spy.mock.calls.length).toBeGreaterThan(afterMount);
   });
 });
@@ -149,7 +149,7 @@ describe('IsoStage — accès de pièce recalculés à la case, pas à l’image
  * réimplémente pas : il lui passe les positions alliées. Ce test verrouille le CÂBLAGE : sans les
  * positions alliées, un bâti NON ZONÉ (carte en cours d'édition) ne se dégagerait jamais.
  */
-describe('IsoStage — les positions alliées atteignent la loi de dégagement (#818, #907)', () => {
+describe('MondeDeCampagne — les positions alliées atteignent la loi de dégagement (#818, #907)', () => {
   let root: Root | null = null;
   let container: HTMLDivElement | null = null;
 
@@ -175,7 +175,7 @@ describe('IsoStage — les positions alliées atteignent la loi de dégagement (
 
     container = document.createElement('div');
     root = createRoot(container);
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
 
     expect(spy).toHaveBeenCalled();
     const allies = spy.mock.calls[spy.mock.calls.length - 1][1];
@@ -201,8 +201,8 @@ describe('IsoStage — les positions alliées atteignent la loi de dégagement (
 
     container = document.createElement('div');
     root = createRoot(container);
-    act(() => root!.render(<IsoStage />));
-    act(() => root!.render(<IsoStage />)); // 2e rendu : l'exploré du 1er pas est accumulé
+    act(() => root!.render(<MondeDeCampagne />));
+    act(() => root!.render(<MondeDeCampagne />)); // 2e rendu : l'exploré du 1er pas est accumulé
 
     const sight = spy.mock.calls[spy.mock.calls.length - 1][2];
     expect(sight).toBeInstanceOf(Set);
@@ -221,7 +221,7 @@ describe('IsoStage — les positions alliées atteignent la loi de dégagement (
  * remet à `applyCutawayMask`. Les deux se mesurent ici — l'étage isolé ne doit dépendre d'aucun des
  * deux chemins pris isolément.
  */
-describe('IsoStage — la vue du dessus isole l’étage actif (#892)', () => {
+describe('MondeDeCampagne — la vue du dessus isole l’étage actif (#892)', () => {
   let root: Root | null = null;
   let container: HTMLDivElement | null = null;
 
@@ -259,7 +259,7 @@ describe('IsoStage — la vue du dessus isole l’étage actif (#892)', () => {
 
     container = document.createElement('div');
     root = createRoot(container);
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
     expect(storeysBuilt(spy)).toEqual([0, 1]); // iso : le contrebas reste du contexte utile
 
     act(() => { useGame.setState({ viewMode: 'top' }); });
@@ -288,7 +288,7 @@ describe('IsoStage — la vue du dessus isole l’étage actif (#892)', () => {
 
     container = document.createElement('div');
     root = createRoot(container);
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
     const loiIso = spy.mock.calls[spy.mock.calls.length - 1][1];
     expect(loiIso(solAu(1)), 'iso : l’étage actif est dessiné').toBe(true);
     expect(loiIso(solAu(0)), 'iso : le contrebas reste du contexte utile').toBe(true);
@@ -305,7 +305,7 @@ describe('IsoStage — la vue du dessus isole l’étage actif (#892)', () => {
  * que consomme l'occlusion), jamais le sol de sa case — un cadrage sur le sol pousse le viewport d'une
  * demi-capsule vers le haut de la scène, donc vers ce qui SURPLOMBE le groupe (biais × zoom).
  */
-describe('IsoStage — la caméra vise le milieu de la capsule du sujet', () => {
+describe('MondeDeCampagne — la caméra vise le milieu de la capsule du sujet', () => {
   let root: Root | null = null;
   let container: HTMLDivElement | null = null;
 
@@ -341,7 +341,7 @@ describe('IsoStage — la caméra vise le milieu de la capsule du sujet', () => 
     });
     container = document.createElement('div');
     root = createRoot(container);
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
     return scene;
   }
 

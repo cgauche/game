@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { preemptShooterIds } from '../state/targeting';
-import { IsoStage } from '../gameIso/IsoStage';
-import { PovStage } from '../gameIso/pov/PovStage';
+import { MondeDeCampagne } from '../gameIso/stage/MondeDeCampagne';
 import { SceneErrorBoundary } from './SceneErrorBoundary';
 import { Modal } from './Modal';
 import { PovControls } from './PovControls';
@@ -184,7 +183,11 @@ export function CampaignView() {
     >
     <div className="screen campaign-view">
       <main className="stage">
-        <SceneErrorBoundary>{mode === 'exploration' && povActive ? <PovStage /> : <IsoStage />}</SceneErrorBoundary>
+        {/* UN SEUL MONDE, DEUX REGARDS (#1385) : l'hôte possède le canevas volumique et ne se démonte
+            qu'avec cet écran ; la bascule plateau ⇄ première personne n'y change qu'une surcouche.
+            Il porte DEUX filets imbriqués — un pour le CORPS du monde (ses dérivations), un pour la
+            surcouche — pour qu'un crash de rendu du stage n'emporte jamais le HUD de cet écran. */}
+        <MondeDeCampagne />
         {/* ── Overlays HUD plein-champ (façon BG3, mobile-first) ── */}
         {mode === 'battle' && battle && (
           <>

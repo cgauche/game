@@ -130,7 +130,7 @@ describe('dynamicMarks — l’unité ACTIVE (#1176 P3-0d)', () => {
 describe('dynamicMarks — le repère du GROUPE et la valeur VIDE (#1176 P3-0d)', () => {
   it('le repère du groupe n’existe que si l’appelant fournit sa case (contexte tranché chez lui)', () => {
     // Le CONTEXTE (mode exploration, aucun dialogue ouvert) est tranché une seule fois par l'appelant
-    // — `IsoStage.tsx:427` — et les deux voies consomment le même verdict.
+    // — l'hôte du monde (`stage/MondeDeCampagne`) — et les deux voies consomment le même verdict.
     expect(dynamicMarks(null, { x: 6, y: 6 }, [], null).party).toEqual({ x: 6, y: 6, z: 0 });
     expect(dynamicMarks(null, null, [], null).party).toBeNull();
     expect(dynamicMarks(null, { x: 6, y: 6, z: 3 }, [], null).party).toEqual({ x: 6, y: 6, z: 3 });

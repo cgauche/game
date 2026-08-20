@@ -26,7 +26,7 @@ import { centrePercage, clePercage } from './percage';
 import { sourcesDeFrames } from './stageFrames';
 import { frameRectOf } from './boardPose';
 import { resetBakeQueue } from '../backends/webgl/atlasBake';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { useGame } from '../../state/store';
 
 /**
@@ -49,7 +49,7 @@ const CADRE: StageFrame = { mode: 'plateau', dims: DIMS, cam: { x: 0, y: 0 }, zo
 const COIFFÉ = { x: 24, y: 22 } as const;
 const DÉCOUVERT = { x: 31, y: 0 } as const;
 
-/** Le montage du stage, mot pour mot (`IsoStage`) : une nappe par masse de toit, projetée. */
+/** Le montage du stage, mot pour mot (`MondeDeCampagne`) : une nappe par masse de toit, projetée. */
 const LIDS = buildRoofs(SCENE).map((el) => ({
   sectionId: el.sectionId ?? el.key, z: el.cell.z, cells: el.cells, occluder: elOccluder(el, DIMS),
 }));
@@ -68,7 +68,7 @@ function poseDe(pos: { x: number; y: number }): ActorPose[] {
   return [{ c: combattant('h1', pos), x: pos.x, y: pos.y, z: 0, heroIndex: 0 }];
 }
 
-/** Les entrées que l'hôte de plateau fournit (`IsoStage`) pour ce héros-là. */
+/** Les entrées que l'hôte de plateau fournit (`MondeDeCampagne`) pour ce héros-là. */
 function entreesDe(pos: { x: number; y: number }): PercageEntrees {
   return {
     cle: clePercage({ tuiles: [{ id: 'h1', x: pos.x, y: pos.y, z: 0 }], rot: 0, view: 'iso', activeZ: 0 }),
@@ -429,7 +429,7 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
 /**
  * LA CHAÎNE ENTIÈRE — l'hôte de plateau FOURNIT bien ses nappes et ses capsules. Les contrats
  * ci-dessus montent l'écran volumique seul, avec des entrées écrites à la main : ils resteraient verts
- * si `IsoStage` ne passait plus rien. Celui-ci monte le stage RÉEL sur la même carte.
+ * si `MondeDeCampagne` ne passait plus rien. Celui-ci monte le stage RÉEL sur la même carte.
  */
 describe('L’hôte de plateau alimente la découpe (#1176, M3)', () => {
   it('groupe posé sous une masse : le trou s’ouvre sans qu’aucune entrée ne soit écrite à la main', async () => {
@@ -446,17 +446,17 @@ describe('L’hôte de plateau alimente la découpe (#1176, M3)', () => {
     hôte = document.createElement('div');
     document.body.appendChild(hôte);
     root = createRoot(hôte);
-    await act(async () => { root!.render(<IsoStage />); });
+    await act(async () => { root!.render(<MondeDeCampagne />); });
     // Le quad du héros entre en scène par la FILE cadencée (#1372) : le trou n'a rien à percer avant.
     await respirer(150);
-    expect(trousPercage()[0].w, 'rayon du trou du groupe coiffé, chaîne IsoStage entière').toBeGreaterThan(0);
+    expect(trousPercage()[0].w, 'rayon du trou du groupe coiffé, chaîne MondeDeCampagne entière').toBeGreaterThan(0);
   });
 });
 
 /**
  * L'OCCLUSION D'ÉCRAN NE RETIRE RIEN — AU MONTAGE (#1176, M3). La loi elle-même se mesure sur ses
  * fonctions pures (`stage/architectureVisibility.test.ts`, balayage de la cour) ; ici c'est le
- * CÂBLAGE de l'hôte qui est en jeu : ce que `IsoStage` remet réellement au renderer par son `keepEl`.
+ * CÂBLAGE de l'hôte qui est en jeu : ce que `MondeDeCampagne` remet réellement au renderer par son `keepEl`.
  * Une levée d'écran rebranchée dans l'hôte seul laisserait la loi verte et l'écran troué.
  *
  * Le poste est celui de la cour (17,2) : des nappes y recouvrent la capsule du héros, et rien ne
@@ -500,7 +500,7 @@ describe('L’hôte de plateau garde les nappes qui CACHENT sans abriter (#1176,
       hôte = document.createElement('div');
       document.body.appendChild(hôte);
       root = createRoot(hôte);
-      await act(async () => { root!.render(<IsoStage />); });
+      await act(async () => { root!.render(<MondeDeCampagne />); });
 
       expect(passes.length, 'le masque de dégagement a bien tourné').toBeGreaterThan(0);
       const posée = passes[passes.length - 1];

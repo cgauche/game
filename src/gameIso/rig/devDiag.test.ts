@@ -7,10 +7,10 @@ import { useGame } from '../../state/store';
 import type { Scene, SceneEntity } from '../../state/scene';
 
 /**
- * Les sites de diagnostic du pipeline de rendu sont rappelés à deux régimes : les tokens de COMBAT sont
- * rebâtis hors memo à chaque rendu du stage (`combatantObjs`, IsoStage.tsx:313), soit ~60/s pendant une
- * marche ; les FIGURANTS passent par un memo (`figurantObjs`, IsoStage.tsx:257) et se rejouent au pas ou
- * au changement d'état de combat. Le diagnostic d'un défaut de donnée se dit UNE FOIS PAR SUJET — et
+ * Les sites de diagnostic du pipeline de rendu sont rappelés à chaque redérivation des sujets par
+ * l'hôte du monde (`stage/MondeDeCampagne` → `builders/tokens` → `actorPoses`) : un pas, un tour de
+ * vue, un survol en repassent la population entière. Le diagnostic d'un défaut de donnée se dit UNE
+ * FOIS PAR SUJET — et
  * TOUS les sujets défectueux parlent, y compris ceux qui n'ont aucune réf à se mettre sous la clé (#936).
  */
 const ent = (id: string): SceneEntity => ({ id, kind: 'personnage', pos: { x: 0, y: 0 }, label: 'Sans espèce' });

@@ -30,7 +30,7 @@ import * as visibilityTint from '../backends/webgl/visibilityTint';
 import * as actorAnimSelect from '../rig/anim/actorAnimSelect';
 import { gabaritTint } from '../../ui/editor/lowerLayerGabarit';
 import { staticTexturePins } from '../backends/webgl/svgTexture';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
 import { frameRectOf } from './boardPose';
 
@@ -109,7 +109,7 @@ afterEach(() => {
 });
 
 // ————————————————————————————————————————————————————————————————
-// LE PAS, AU CHEMIN RÉEL — `IsoStage` monté sur le store, pas clavier compris
+// LE PAS, AU CHEMIN RÉEL — `MondeDeCampagne` monté sur le store, pas clavier compris
 // ————————————————————————————————————————————————————————————————
 
 const HÉROS = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(7) });
@@ -147,7 +147,7 @@ async function monterIso(): Promise<void> {
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
-  await act(async () => { root!.render(<IsoStage />); });
+  await act(async () => { root!.render(<MondeDeCampagne />); });
   // 12 décors + le jeton du groupe : attendre le compte PLEIN, sinon un quad en retard passerait pour
   // un quad remonté.
   for (let i = 0; i < 40 && quads().length < 13; i++) await respirer(20);

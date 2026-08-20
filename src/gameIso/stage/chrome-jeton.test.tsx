@@ -8,7 +8,7 @@ import { emptyScene } from '../../state/scene';
 import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { CONVENTION, setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import { chromeHeadPx } from './TokenChromeOverlay';
 import { viewPolicy } from './viewPolicy';
@@ -122,7 +122,7 @@ function monter(retouche: Record<string, unknown> = {}): HTMLDivElement {
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
   commits = 0;
-  act(() => root!.render(<Profiler id="chrome" onRender={() => { commits += 1; }}><IsoStage /></Profiler>));
+  act(() => root!.render(<Profiler id="chrome" onRender={() => { commits += 1; }}><MondeDeCampagne /></Profiler>));
   return conteneur;
 }
 
@@ -605,7 +605,7 @@ describe('Pions en disques — la vue du dessus n’a plus un seul billboard de 
   it('LE GATE : UN SEUL verdict alimente les deux props de l’hôte — sujets du monde ET disques', () => {
     // `GameStage3D pionsEnDisques` (le monde ne monte alors AUCUN sujet `personnage`) et
     // `TokenChromeOverlay pions` (la surcouche porte alors le CORPS) descendent du MÊME
-    // `politique.pionsEnDisques` (`IsoStage`). Un hôte qui n'en passerait qu'une donnerait deux pions
+    // `politique.pionsEnDisques` (`MondeDeCampagne`). Un hôte qui n'en passerait qu'une donnerait deux pions
     // (billboard + disque) ou zéro : c'est le COUPLE qui se mesure ici, vue par vue, contre le verdict
     // du module pur — jamais deux attentes écrites à la main.
     for (const view of ['iso', 'top'] as const) {

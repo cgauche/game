@@ -1,7 +1,7 @@
 /**
- * DOUBLE PÉREMPTION du monde volumique (#1176) : la clé de mémo des acteurs (`actorPoseKey`, celle
- * qu'`IsoStage` compose) et l'identité de cache de texture (`BillboardSubject.identity`) se dérivent de
- * la MÊME signature d'entrées de dessin (`combatantRenderSignature`). Une entrée que le billboard
+ * DOUBLE PÉREMPTION du monde volumique (#1176) : la clé de mémo des acteurs (`actorPoseKey`, composée
+ * par `stage/VolumetricWorld`) et l'identité de cache de texture (`BillboardSubject.identity`) se
+ * dérivent de la MÊME signature d'entrées de dessin (`combatantRenderSignature`). Une entrée que le billboard
  * consomme ne peut donc plus périmer l'une sans l'autre.
  *
  * Chaque axe porte sa PREUVE D'EFFET dans le même test : le SVG rendu (ou l'échelle du sujet) diffère

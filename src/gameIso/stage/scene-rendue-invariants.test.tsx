@@ -6,13 +6,13 @@ import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
 /**
  * INVARIANTS DE LA SCÈNE RÉELLEMENT MONTÉE — la mesure SÉMANTIQUE que les gardes textuelles ne
  * peuvent pas rendre : on ne lit plus des littéraux de source, on traverse le graphe three que
- * `IsoStage` remet au renderer, et on interroge les objets tels qu'ils partiront au dessin.
+ * `MondeDeCampagne` remet au renderer, et on interroge les objets tels qu'ils partiront au dessin.
  *
  *  1. AUCUN matériau `transparent && side === DoubleSide && forceSinglePass === false`. C'est
  *     exactement la condition de la branche à DEUX PASSES de `WebGLRenderer.renderObject` : deux
@@ -86,7 +86,7 @@ function monter(): void {
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
 }
 
 /** Le nom lisible d'un objet de la scène — un maillage anonyme se désigne par son type. */

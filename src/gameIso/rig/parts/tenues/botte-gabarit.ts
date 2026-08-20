@@ -1,7 +1,7 @@
 import type { PartArt } from '../types';
 
 // Botte de cuir SYSTÈME (#736 Lot 1) — HABIT du pied (repère os `pied`, origine = cheville, +y
-// descend), extrait de `bodies/extremites.ts` : une botte n'est pas un repli de chair, c'est
+// descend) : une botte n'est pas un repli de chair — elle ne vit pas avec le corps (`bodies/`), c'est
 // l'équipement par défaut de toute tenue chaussée (piloté par `TenueSet.pied`, cf. `types.ts`).
 // Dessinée par-dessus le bas de jambe → un pied de profil pointe vers l'avant (botte de côté),
 // de face un bout arrondi, de dos un talon.

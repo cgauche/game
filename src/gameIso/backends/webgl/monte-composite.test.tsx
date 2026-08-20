@@ -2,7 +2,7 @@
  * COUPLE MONTÉ dans le monde VOLUMIQUE (#1176, P3-0h) : un cavalier en selle est UN sujet de
  * billboard COMPOSITE — cavalier assis sur les os réels de la monture (`seatRiderOnMount`), un seul
  * fragment SVG, jamais deux quads superposés. La chaîne mesurée est celle de l'écran : les ÉLÉMENTS
- * du builder (`buildTokens`) → les poses d'acteur (`actorPoses`, ce qu'`IsoStage` appelle) → les
+ * du builder (`buildTokens`) → les poses d'acteur (`actorPoses`, ce que `MondeDeCampagne` appelle) → les
  * sujets (`actorBillboards`).
  *
  * ORACLE RE-DÉRIVÉ (C5a) : la parité géométrique se jugeait contre le corps AFFINE (`MountedToken`),

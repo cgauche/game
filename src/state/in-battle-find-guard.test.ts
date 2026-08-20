@@ -75,7 +75,7 @@ const BASELINES: Record<string, number> = {
   // src/gameIso (#410 — stock à résorber par #276)
   'src/gameIso/builders/highlights.ts': 1,
   'src/gameIso/fx/useCombatFx.ts': 6,
-  'src/gameIso/IsoStage.tsx': 1,
+  'src/gameIso/stage/MondeDeCampagne.tsx': 1,
   'src/gameIso/stage/AimOverlay.tsx': 1,
   'src/gameIso/stage/CrewTooltip.tsx': 3,
   // -1 (4 → 3) : la mort de la voie de jeu affine (#1176 P3-4, commit C5a) emporte l'aperçu tap-1 de

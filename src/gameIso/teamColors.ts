@@ -1,6 +1,6 @@
 /**
  * Source UNIQUE des couleurs d'identité d'équipe (anneaux des pions + portraits HUD)
- * et de la couleur d'une barre de vie. Utilisée par le rendu de carte (IsoStage, surcouche de jetons)
+ * et de la couleur d'une barre de vie. Utilisée par le rendu de carte (`SurcoucheIso`, surcouche de jetons)
  * ET par le HUD React (ActionBar, CampaignView) — pas de duplication.
  */
 
@@ -29,7 +29,7 @@ export const ACTIVE_TINT = '#ffe066';
 export const NEUTRAL_TINT = '#ffd75e';
 
 /** Couleur de la RELATION d'une cible au survol/visée (réticule + halo) : adversaire rouge, allié
- *  vert, neutre or. Source unique consommée par le rendu de ciblage (IsoStage). */
+ *  vert, neutre or. Source unique consommée par le rendu de ciblage (`SurcoucheIso`). */
 export function relationColor(kind: 'hero' | 'enemy' | 'npc'): string {
   return kind === 'enemy' ? ENEMY_TINT : kind === 'hero' ? ALLY_TINT : NEUTRAL_TINT;
 }

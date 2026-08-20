@@ -915,7 +915,8 @@ function stableStr(v: unknown): string {
 }
 
 /** SIGNATURE des entrées de dessin d'un combattant — stable tant que le corps rendu ne change pas.
- *  Consommée par les DEUX péremptions du monde volumique : la clé de mémo des acteurs (`IsoStage`) et
+ *  Consommée par les DEUX péremptions du monde volumique : la clé de mémo des acteurs
+ *  (`stage/VolumetricWorld`) et
  *  l'identité de cache de texture (`BillboardSubject.identity`). */
 export function combatantRenderSignature(c: Combatant): string {
   return hash32(stableStr(actorDrawInputs(c))).toString(16);

@@ -1,14 +1,13 @@
 /**
- * MONDE VOLUMIQUE (#1176) monté sous une vue — la couche PARTAGÉE des deux hôtes : le stage
- * isométrique (`IsoStage`, regard de plateau) et la vue première personne (`pov/PovStage`, regard POV,
- * lot P3-1a). Un seul montage volumique, donc une seule dérivation d'acteurs, une seule marche lue à
- * la frame, une seule liste de marques — les deux vues ne peuvent pas diverger sur ce que le monde
+ * MONDE VOLUMIQUE (#1176) monté sous une vue — la couche PARTAGÉE des deux regards, servie par l'hôte
+ * unique de l'écran de campagne (`stage/MondeDeCampagne`, #1385) : regard de plateau et regard à
+ * hauteur d'homme. Un seul montage volumique, donc une seule dérivation d'acteurs, une seule marche lue
+ * à la frame, une seule liste de marques — les deux vues ne peuvent pas diverger sur ce que le monde
  * contient, seulement sur le REGARD porté dessus (`frame`, cf. `StageFrame`).
  *
- * Composant à part, et c'est STRUCTUREL : les abonnements au store qui n'ont de sens qu'ici y vivent,
- * donc ne s'abonnent pas quand l'hôte ne monte pas le monde (le POV SVG, jusqu'à C5b). `facing` en est
- * le cas d'école — `setFacing` reforge la référence de la table à chaque orientation (`store.ts`, à
- * chaque pas et à chaque attaque) : lu par `IsoStage`, il re-rendait le stage ENTIER.
+ * Composant à part, et c'est STRUCTUREL : les abonnements au store qui n'ont de sens qu'ici y vivent.
+ * `facing` en est le cas d'école — `setFacing` reforge la référence de la table à chaque orientation
+ * (`store.ts`, à chaque pas et à chaque attaque) : lu par l'hôte, il re-rendrait le stage ENTIER.
  * Un hook conditionnel est interdit ; un composant conditionnel, non.
  *
  * Les ACTEURS se dérivent des ÉLÉMENTS DU BUILDER (`tokenEls`), pas de `battle.combatants` : les
@@ -106,7 +105,7 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
     poses.push({ c: partyToken.leader, x: partyToken.pos.x, y: partyToken.pos.y, z, facing: facings[partyToken.leader.id] });
   }
   // RÉFÉRENCE STABLE tant que rien de ce que le billboard dessine n'a bougé — même patron de clé que
-  // `visualAllies` (`IsoStage`). Un tableau neuf démonte puis remonte les quads de TOUS les sujets ; la
+  // `visualAllies` (`stage/MondeDeCampagne`). Un tableau neuf démonte puis remonte les quads de TOUS les sujets ; la
   // clé porte donc tout ce dont la POSE et le DESSIN dépendent : identité, case LOGIQUE, orientation,
   // et la SIGNATURE des entrées de dessin (garde-robe, équipement, apparence vivante, état au sol,
   // échelle). `actorPoseKey` la compose depuis la MÊME signature que l'identité de cache de texture
@@ -168,7 +167,7 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
       ? { mode: 'plateau', dims: frame.dims, cam: { x: camRendu!.x, y: camRendu!.y }, zoom: frame.zoom }
       : { mode: 'pov', partyPos: frame.partyPos, facing: frame.facing, indoor: frame.indoor, cid: frame.cid }),
     // Le CRAN de vue (`dims`) entre par sa référence : l'hôte le retient déjà sur sa géométrie
-    // (`IsoStage.dimsVue`), et le sérialiser ici en ferait une seconde vérité à tenir d'accord.
+    // (`MondeDeCampagne.dimsVue`), et le sérialiser ici en ferait une seconde vérité à tenir d'accord.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [cléCadre, frame.mode === 'plateau' ? frame.dims : null],
   );

@@ -1,6 +1,6 @@
 /**
  * CAPSULE ÉCRAN d'un acteur — le volume pieds→tête qu'il occupe une fois projeté : la caméra en tire
- * sa visée du sujet (`IsoStage`) et la découpe locale son verdict d'occultation (`verdictPercage`,
+ * sa visée du sujet (`stage/MondeDeCampagne`) et la découpe locale son verdict d'occultation (`verdictPercage`,
  * `stage/percage.ts`). Rien ici ne connaît le peintre : c'est de la géométrie de scène.
  */
 import { Dims, tileCenter, depth, type ActorCapsule } from '../../geometry/iso';

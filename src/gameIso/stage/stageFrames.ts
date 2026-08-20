@@ -2,7 +2,8 @@
  * BATTEMENT DE FRAME du stage — le rythme UNIQUE de tout ce qui bouge la VUE hors des rendus React :
  * la marche qui glisse, le glisser-caméra, l'adoucissement d'un saut de focale.
  *
- * Ses abonnés sont les DEUX clients de la caméra — le groupe d'overlays SVG (`IsoStage`) et la caméra
+ * Ses abonnés sont les DEUX clients de la caméra — le groupe d'overlays SVG de la surcouche de
+ * plateau, recalé par l'hôte (`stage/MondeDeCampagne`), et la caméra
  * three (`stage/GameStage3D`, qui s'y abonne de lui-même). Ils reposent leur vue dans le MÊME
  * battement, à partir de la MÊME valeur (`camAt` de l'hôte) : c'est tout l'objet du module, et la
  * raison pour laquelle il n'y a qu'un battement pour toutes les sources.
@@ -51,8 +52,8 @@ export function battreStageFrames(): void {
  * rendus dans l'image d'un commit).
  *
  * Elle ne bat AUCUN abonné, et n'en prive aucun : la passe que cède la boucle est un REDESSIN, et le
- * rendu React qui l'accompagne repose déjà les surcouches de la même caméra (`IsoStage` écrit
- * `stageCamTransform` sur son groupe et `setVisibleTileBounds` DANS son rendu, l.550/582 et l.540).
+ * rendu React qui l'accompagne repose déjà les surcouches de la même caméra (l'hôte écrit
+ * `stageCamTransform` sur le groupe de la surcouche et `setVisibleTileBounds` DANS son rendu).
  * Elle ne touche PAS l'horloge des battements : une demande PONCTUELLE porte une peinture neuve, et
  * un commit ne l'a pas servie.
  */

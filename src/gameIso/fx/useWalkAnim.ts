@@ -1,5 +1,5 @@
 /**
- * Marche visuelle (extraite d'IsoStage) : le token GLISSE le long du chemin (ANIM_MOVE) au lieu
+ * Marche visuelle : le token GLISSE le long du chemin (ANIM_MOVE) au lieu
  * de se téléporter à la destination. `walksRef` = id → {path, start} ; rAF tant qu'actif.
  *
  * Le rAF ne fait que purger les marches finies et BATTRE la frame du stage (`stage/stageFrames`, le

@@ -2,7 +2,7 @@
  * GRILLE DE CASES projetée (#1176, P3-3 puis P3-5b) — les LIMITES de cases, en traits, dans le repère
  * de projection du plateau. Fonction PURE, sans DOM ni React : elle vit ici, sous l'éditeur ET sous le
  * rendu de jeu, parce que ses DEUX consommateurs en dépendent (`ui/editor/EditorCanvas` en surcouche
- * d'AUTEUR, `gameIso/IsoStage` en surcouche TACTIQUE de la vue du dessus) et qu'aucun des deux n'a à
+ * d'AUTEUR, `gameIso/SurcoucheIso` en surcouche TACTIQUE de la vue du dessus) et qu'aucun des deux n'a à
  * dépendre de l'autre.
  *
  * POURQUOI ELLE EXISTE : sur la voie AFFINE, chaque losange de sol était tracé avec son contour

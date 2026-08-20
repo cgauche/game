@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { useGame, type BattleState } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import { HIGHLIGHT_SLOTS, SLOT_OPACITY, type HighlightSlot } from '../backends/webgl/highlightMeshes';
 
@@ -113,7 +113,7 @@ function monter(extra: Record<string, unknown> = {}): HTMLDivElement {
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return conteneur;
 }
 

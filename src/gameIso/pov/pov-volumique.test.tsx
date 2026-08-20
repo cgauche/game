@@ -17,14 +17,14 @@ import { GameStage3D, setStageRendererFactory, type StageRenderer } from '../sta
 import { hasSpritePicker } from '../stage/spritePicker';
 import { battreStageFrames } from '../stage/stageFrames';
 import { EYE_H, farTilesOf } from './camera';
-import { PovStage } from './PovStage';
+import { MondeDeCampagne } from '../stage/MondeDeCampagne';
 
 /**
  * LE POV VOLUMIQUE (#1176, P3-1a) — la vue première personne montée sur le MÊME monde que le stage
  * isométrique, regardée par une caméra PERSPECTIVE à hauteur d'homme. Ce banc mesure les quatre faits
  * que le lot introduit, et rien de l'apparence (jsdom ne rastérise pas ; le goût se juge au navigateur) :
  *
- *  1. l'HÔTE : la branche volumique de `PovStage` monte le monde et abandonne le SVG première personne ;
+ *  1. l'HÔTE : la branche volumique de `MondeDeCampagne` monte le monde et abandonne le SVG première personne ;
  *  2. la CAMÉRA : une perspective à `heightAt + EYE_H`, bornée à la portée du milieu (`farTilesOf`),
  *     et qui GLISSE avec la marche du meneur au lieu de sauter de case en case ;
  *  3. le DÉGAGEMENT : à hauteur d'œil, TOUTES les masses se dessinent — le cutaway de la vue de plateau
@@ -143,7 +143,7 @@ afterEach(() => {
 
 describe('POV volumique — l’hôte (#1176 P3-1a)', () => {
   it('le monde volumique prend toute la place : plus une seule géométrie SVG en première personne', () => {
-    const vol = monter(<PovStage />);
+    const vol = monter(<MondeDeCampagne />);
     expect(vol.querySelector('canvas.iso-stage'), 'le monde volumique doit être monté').toBeTruthy();
     expect(vol.querySelector('canvas')!.getAttribute('data-vue')).toBe('pov');
     // Le SVG première personne (géométrie + billboards) ne se peint plus : il ne reste que les VOILES
@@ -155,7 +155,7 @@ describe('POV volumique — l’hôte (#1176 P3-1a)', () => {
   it('l’exploré s’accumule (même couture de store que l’iso)', () => {
     const scene = useGame.getState().scene!;
     expect(useGame.getState().explored[scene.id] ?? []).toEqual([]);
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     expect(useGame.getState().explored[scene.id] ?? []).toContain('4,4,0');
   });
 });
@@ -163,7 +163,7 @@ describe('POV volumique — l’hôte (#1176 P3-1a)', () => {
 describe('POV volumique — la caméra (#1176 P3-1a)', () => {
   it('PERSPECTIVE à hauteur d’œil, bornée à la portée du milieu (jamais un far généreux)', () => {
     const scene = useGame.getState().scene!;
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     const cam = dernièreCaméra();
     expect((cam as THREE.PerspectiveCamera).isPerspectiveCamera, 'le POV ne se regarde pas en ortho').toBe(true);
     const mpt = sceneMetresPerTile(scene);
@@ -180,7 +180,7 @@ describe('POV volumique — la caméra (#1176 P3-1a)', () => {
     const mpt = sceneMetresPerTile(scene);
     let horlogeMs = 0;
     vi.spyOn(performance, 'now').mockImplementation(() => horlogeMs);
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     expect(dernièreCaméra().position.z).toBeCloseTo(4 * mpt, 6);
 
     // Un pas vers le nord, et la MOITIÉ de sa durée : la caméra doit être entre les deux cases.
@@ -194,7 +194,7 @@ describe('POV volumique — la caméra (#1176 P3-1a)', () => {
 describe('POV volumique — ce que la première personne ne porte PAS (#1176 P3-1a)', () => {
   it('à hauteur d’œil TOUTES les masses se dessinent — le toit du dessus reste en place', () => {
     const scene = useGame.getState().scene!;
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     const dessinéEnPov = trianglesDuMonde(dernièreScène());
     démonter();
 
@@ -222,7 +222,7 @@ describe('POV volumique — ce que la première personne ne porte PAS (#1176 P3-
 
   it('aucun lanceur de rayon inscrit en POV — la vue affine, elle, en inscrit un', () => {
     const scene = useGame.getState().scene!;
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     expect(hasSpritePicker(), 'la première personne n’ouvre aucune affordance de clic').toBe(false);
     démonter();
 
@@ -268,7 +268,7 @@ describe('POV volumique — le marcheur suivi et la cote sous l’œil (#1176 P3
     const mpt = sceneMetresPerTile(scene);
     let horlogeMs = 0;
     vi.spyOn(performance, 'now').mockImplementation(() => horlogeMs);
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     expect(dernièreCaméra().position.z).toBeCloseTo(4 * mpt, 6);
 
     // Le store émet la marche pour le meneur VALIDE (`partyLeaderOf`, `store.stepPartyRelative`) : ici
@@ -285,7 +285,7 @@ describe('POV volumique — le marcheur suivi et la cote sous l’œil (#1176 P3
     const { heroId } = poserRelief(() => 2);
     let horlogeMs = 0;
     vi.spyOn(performance, 'now').mockImplementation(() => horlogeMs);
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     expect(dernièreCaméra().position.y, 'à la case').toBeCloseTo(2 + EYE_H, 6);
 
     act(() => { bus.emit(EVT.ANIM_MOVE, { id: heroId, path: [{ x: 4, y: 4 }, { x: 4, y: 3 }] }); });
@@ -300,7 +300,7 @@ describe('POV volumique — le marcheur suivi et la cote sous l’œil (#1176 P3
     const { heroId } = poserRelief((_x, y) => (y <= 3 ? STEP_MAX_M : 0));
     let horlogeMs = 0;
     vi.spyOn(performance, 'now').mockImplementation(() => horlogeMs);
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     const cotes: number[] = [dernièreCaméra().position.y];
 
     act(() => { bus.emit(EVT.ANIM_MOVE, { id: heroId, path: [{ x: 4, y: 4 }, { x: 4, y: 3 }] }); });

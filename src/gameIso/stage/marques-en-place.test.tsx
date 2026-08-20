@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { useGame, type BattleState } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
 /**
@@ -118,7 +118,7 @@ describe('Marques de cases — le pas ne remonte AUCUN pool (#1176 P3-0c)', () =
       conteneur = document.createElement('div');
       document.body.appendChild(conteneur);
       root = createRoot(conteneur);
-      act(() => root!.render(<IsoStage />));
+      act(() => root!.render(<MondeDeCampagne />));
 
       const avant = pools();
       expect(avant.get('marques:walk')?.count, 'le témoin doit VRAIMENT peindre une portée').toBe(4);

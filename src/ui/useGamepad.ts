@@ -202,7 +202,7 @@ export function useGamepad(): void {
     };
   }, []);
 
-  // Shim DEV (même pattern que `__wfrpSetHover` dans IsoStage) : expose padDir/padButton sur window pour
+  // Shim DEV (même pattern que `__wfrpSetHover` dans `stage/useStagePointer`) : expose padDir/padButton sur window pour
   // piloter la manette SANS pad réel (Playwright n'a pas l'API Gamepad). MÊMES fonctions que la boucle.
   useEffect(() => {
     if (!import.meta.env.DEV) return;

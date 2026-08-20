@@ -20,8 +20,8 @@ import { Icon } from '../Icon';
 import { CodexRef } from '../compendium/CodexRef';
 
 /**
- * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET de défense réactive — extrait de
- * `DefenseModal` pour être rendu à l'IDENTIQUE par la séquence de combat (`CascadeModal` rend l'étape-jet
+ * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET de défense réactive — hook à part de
+ * `DefenseModal`, pour être rendu à l'IDENTIQUE par la séquence de combat (`CascadeModal` rend l'étape-jet
  * `jet:'defense'` via ce hook, sans démonter la coquille → la défense ET son Critique/Maladresse vivent
  * dans UNE seule fenêtre). Renvoie les props de `RollShell`, ou `null` si aucune défense en attente.
  * La rangée de l'ATTAQUANT est FIGÉE (`interactive:false`) ; MA rangée porte le cycle d'influence.

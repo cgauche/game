@@ -1,7 +1,7 @@
 /**
  * Calque de rendu des FX de combat (cf. `useCombatFx`) : flottants typés, projectiles,
  * flashes de zone d'effet, halos d'incantation — dans cet ordre de superposition (z-order SVG).
- * Extrait d'IsoStage tel quel (rendu inchangé).
+ * Monté par la surcouche de plateau : ces FX se peignent SUR le monde, jamais dedans.
  */
 import type { Dims } from '../../geometry/iso';
 import { tileCenter, diamondPath } from '../../geometry/iso';

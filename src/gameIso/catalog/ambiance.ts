@@ -1,6 +1,7 @@
 /** AMBIANCE partagée iso ⇄ POV — donnée pure (`src/data/ambiance.json`) : ciel d'extérieur, brumes
  *  (intérieure sombre / extérieure claire), vignette, voile chaud, filtre d'étage inférieur, voile de
- *  nuit. Les stages (IsoStage/PovStage) et la QC headless consomment les MÊMES defs SVG assemblées ici —
+ *  nuit. Les deux regards de l'hôte du monde (`stage/MondeDeCampagne`) et la QC headless consomment
+ *  les MÊMES defs SVG assemblées ici —
  *  plus aucune de ces couleurs en dur dans un renderer. */
 import { ambiance } from '../../data';
 import { ao, luminanceHex, spec } from '../shade';

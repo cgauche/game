@@ -86,7 +86,7 @@ export function useStagePointer({
   scene: GameScene | null;
   dims: Dims;
   zoom: number;
-  /** Caméra du RENDU COURANT (réf mise à jour par IsoStage après le calcul du focal — les handlers
+  /** Caméra du RENDU COURANT (réf mise à jour par l'hôte du monde après le calcul du focal — les handlers
    *  lisent la valeur au moment de l'événement, comme la closure historique). */
   camRef: RefObject<{ x: number; y: number }>;
   hoverTracking: boolean;

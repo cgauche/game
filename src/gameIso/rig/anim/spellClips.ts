@@ -2,7 +2,7 @@
  * Animations d'INCANTATION (brin H). Deux gestes distincts dérivés de la relation
  * lanceur↔cible (donnée présente dans l'événement, sans toucher le store) :
  *  - bolt     : sort OFFENSIF sur un ennemi → rassemble l'énergie puis projette en avant
- *               (un projectile magique part — géré par IsoStage).
+ *               (un projectile magique part — géré par la surcouche de plateau, `fx/FxLayer`).
  *  - blessing : BÉNÉDICTION / MIRACLE / buff sur soi ou un allié → bras levés soutenus,
  *               tête vers le ciel, halo sur la cible (pas de projectile).
  *
@@ -64,7 +64,7 @@ export function classifySpellByLabel(label: string): { school: SpellSchool; miss
 
 /**
  * FEEDBACK VISUEL d'incantation par école — SOURCE DE VÉRITÉ UNIQUE (couleur du
- * projectile/halo/aura de canalisation). Le rendu (IsoStage) lit ces tokens ; ajouter
+ * projectile/halo/aura de canalisation). Le rendu (`fx/FxLayer`) lit ces tokens ; ajouter
  * une école (Chaos, etc.) = une entrée ici + un gradient `g_<école>` dans `DEFS`,
  * sans toucher au rendu. `gradient` réfère un <radialGradient> de `sprites.ts`.
  */

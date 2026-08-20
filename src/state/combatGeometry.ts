@@ -1,5 +1,5 @@
 /**
- * Géométrie de combat extraite de combatFlow.ts : placement, empreintes/déplacement des
+ * Géométrie de combat : placement, empreintes/déplacement des
  * combattants (LDB 15/85), poussée Perturbante, traversée de zones, flanc-dos et vision dans
  * l'obscurité. Helpers de BAS NIVEAU (engine + path/footprint/zones/scene) sans dépendance vers
  * le noyau de résolution — combatFlow.ts les ré-exporte (baril) pour ses 61 importeurs.

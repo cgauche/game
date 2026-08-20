@@ -5,7 +5,7 @@
  * `{ cible monde, viewport métrique }`, la forme d'entrée d'`affineCamera` (`backends/webgl/cameras.ts`).
  *
  * La chaîne de l'iso, pour un point de grille `p` projeté par `worldToScreen` (`stage/projection.ts`) :
- *   viewBox : q = (p + cam − C)·k + C           (`IsoStage` : translate/scale/translate + translate(cam))
+ *   viewBox : q = (p + cam − C)·k + C           (`SurcoucheIso` : translate/scale/translate + translate(cam))
  *   élément : px = (q − C)·s + centre           (`viewBox 0 0 VW VH`, `preserveAspectRatio="xMidYMid slice"`)
  * soit px = (p + cam − C)·k·s + centre : le pixel du centre de l'élément est celui du point d'écran
  * `C − cam`, et l'échelle vaut `k·s` fois celle de la projection nue. D'où les deux seules grandeurs
@@ -42,7 +42,7 @@ export interface Stage3dFraming {
  *
  * DEUX conventions dans le dépôt, toutes deux réduites à ce couple — c'est la généralisation du lot
  * P3-3 (#1176), et le jeu en devient le cas particulier :
- *  - JEU (`IsoStage`) : viewBox FIXE `0 0 VW VH` + `slice`, cadré par une caméra de GROUPE (`cam`,
+ *  - JEU (`SurcoucheIso`) : viewBox FIXE `0 0 VW VH` + `slice`, cadré par une caméra de GROUPE (`cam`,
  *    `zoom`) → `stageScreen` ;
  *  - ÉDITEUR (`ui/editor/EditorCanvas.tsx`) : viewBox MOBILE de taille variable, `meet`, élément à
  *    TAILLE DE CONTENU rétréci par la CSS (`.editor-iso { max-width: 100% }`) → `viewBoxScreen`,
@@ -56,7 +56,7 @@ export interface StageScreen {
 }
 
 /** Convention du JEU : caméra de groupe sur viewBox FIXE recouvrant l'élément (`slice`). `cam` est la
- *  translation caméra d'`IsoStage` (unités de viewBox), `zoom` son facteur d'échelle APPLIQUÉ
+ *  translation caméra de la surcouche de plateau (unités de viewBox), `zoom` son facteur d'échelle APPLIQUÉ
  *  (transition de cran comprise). */
 export function stageScreen(cam: { x: number; y: number }, zoom: number, canvas: StageCanvas): StageScreen {
   return { centre: { x: VW / 2 - cam.x, y: VH / 2 - cam.y }, scale: zoom * viewBoxScale(canvas) };

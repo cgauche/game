@@ -138,7 +138,8 @@ src/state/
                               facingToward (#161 : ex-`gameIso/rig/facing.ts` — la géométrie de cap grille
                               n'est pas du rendu, `gameIso` la ré-importe pour l'orientation écran)
   viewLevel.ts                override DEBUG de l'étage AFFICHÉ (`__wfrp.viewLevel(z)`, #161 : ex-
-                              `gameIso/viewLevel.ts`) — SOURCE dans `state`, lu par `gameIso/IsoStage`
+                              `gameIso/viewLevel.ts`) — SOURCE dans `state`, lu par l'hôte du monde
+                              (`gameIso/stage/MondeDeCampagne`)
   stageYaw.ts                 LACET CONTINU de la caméra du stage (#1176, P2-7) : cible + courant qui y
                               court, `viewYawDeg` (projection) et `viewRot` (cran EFFECTIF du dégagement)
   combatLog.ts                CombatEvent/CombatEventKind + CombatTone/toneOf/isImportantEvent/
@@ -189,8 +190,11 @@ src/gameIso/                Rendu du monde. Le moteur est le monde VOLUMIQUE thr
   backends/webgl/           SEUL backend du monde : cuisson des SceneEl en géométrie three (sceneMeshes,
                             faceBake, periodTexture, atlasBake des billboards) + caméras réelles
                             (cameras.ts, ortho pour les vues de plateau, perspective en POV)
-  stage/                    hôtes et surcouches du monde : GameStage3D (boucle de rendu three) monté par
-                            VolumetricWorld ; viewPolicy.ts = POLITIQUE DE VUE (module PUR : d'un regard
+  stage/                    hôtes et surcouches du monde : MondeDeCampagne (#1385 = l'HÔTE de l'écran de
+                            campagne — il POSSÈDE le canevas et ne se démonte qu'avec l'écran ; vision,
+                            exploré, teinte, éléments, marche, caméra et picking y vivent, et la bascule
+                            plateau ⇄ première personne n'y change qu'un `frame` et une surcouche) ;
+                            GameStage3D (boucle de rendu three) monté par VolumetricWorld ; viewPolicy.ts = POLITIQUE DE VUE (module PUR : d'un regard
                             — plateau iso, dessus, POV — il dérive ce que l'écran CHOISIT de montrer :
                             `mursAuTrait`, `grilleTactique`, `pionsEnDisques`, `toitsVisibles`,
                             `etageIsole`, `ombreSoleil`, `nappesMonde`, `precipitations`,
@@ -203,8 +207,9 @@ src/gameIso/                Rendu du monde. Le moteur est le monde VOLUMIQUE thr
                             caméra et l'élévation-écran vivent LÀ, jamais dans un builder. Trois
                             consommateurs : plan de station, aperçu de l'éditeur, oracles de parité
                             du monde volumique. Ils ne peignent AUCUNE image de partie
-  pov/                      première personne : le MÊME monde volumique regardé à hauteur d'œil
-                            (PovStage) + camera.ts (caméra et brume) + billboardCore.ts
+  pov/                      première personne : le MÊME monde volumique regardé à hauteur d'œil —
+                            SurcouchePov.tsx n'en porte que les voiles d'écran
+                            + camera.ts (caméra et brume) + billboardCore.ts
   detail/                   détail de surface en DONNÉE (`DetailRecipe`, `expandRecipe` → primitives UV
                             seedées) — même recette cuite par le monde et posée en pattern par le SVG
   iso.ts                    dérivés MÉTRIQUES de la projection (WALL_H_M, isoPxToM — besoin du monde,
@@ -215,12 +220,10 @@ src/gameIso/                Rendu du monde. Le moteur est le monde VOLUMIQUE thr
                             AJOUTER une créature : suivre docs/creer-une-creature.md (registre defs/,
                             corps nu ≠ tenue, illustration art-ref obligatoire, pièges codifiés)
   tokenBodyKind.tsx         classifieur unique : rig humanoïde / gabarit animé / sprite décor
-  IsoStage.tsx              hôte de l'écran de jeu : caméra (lacet CONTINU `state/stageYaw`, zoom molette
-                            continu, panoramique), clics et picking, et l'arbre SVG posé SUR le canevas
+  SurcoucheIso.tsx          SURCOUCHE DE PLATEAU : l'arbre SVG posé SUR le canevas
                             (grille tactique `geometry/grid.gridLines`, murs au trait, portes/escaliers/
                             télégraphes, FxLayer, TokenChromeOverlay = pions et chrome, curseur, aperçu
-                            de chemin). Le MONDE est peint par stage/VolumetricWorld, qui reçoit AUSSI
-                            les marques dynamiques et les halos d'interaction en props et les pose au sol
+                            de chemin). Elle ne dérive AUCUNE vérité monde : l'hôte la lui sert
   TopoScene.tsx             plan de station : sols cuits par PlanWorldCanvas, murs/portes/marqueurs en
                             surcouche SVG — la MÊME loi de composition que la vue du dessus de jeu
   fx/                       FX de combat pilotés par le bus : useCombatFx (flottants/projectiles/halos/

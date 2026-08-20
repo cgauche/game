@@ -42,7 +42,7 @@ describe('couche des murs — la projection porte les vérités du builder', () 
 
     expect(wallLayerObjs(buildWalls(s), DIMS(s), 0, OPTS)[0].roomZoneIds).toEqual(['salle']);
     // La nappe porte la MÊME relation, lue directement au builder : c'est de là que la voie volumique
-    // la prend (`IsoStage.keepEl` → `cutawayForSection`), aucune projection SVG entre les deux.
+    // la prend (`MondeDeCampagne.keepEl` → `cutawayForSection`), aucune projection SVG entre les deux.
     expect(buildRoofs(s)[0].roomZoneIds).toEqual(['salle']);
   });
 });

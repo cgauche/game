@@ -3,7 +3,7 @@
  * en trait symbolique par le peintre `authoring/wallsSvg`, puis triés par `stage/objs`.
  *
  * UNE SEULE COUCHE POUR LES DEUX VUES DU DESSUS (#1176 P3-5b) : le PLAN DE STATION
- * (`gameIso/TopoScene`) et la vue du dessus de JEU (`gameIso/IsoStage`, verdict `mursAuTrait` de
+ * (`gameIso/TopoScene`) et la vue du dessus de JEU (`SurcoucheIso`, verdict `mursAuTrait` de
  * `stage/viewPolicy`) la montent toutes deux — elles ne diffèrent que par le brouillard, un argument.
  * Vu à la verticale, la coiffe d'un mur volumique tombe sous le pixel (mesure au JSDoc de
  * `stage/planSnapshot.ts`), là où le trait est invariant d'échelle — la MATIÈRE vient du monde cuit,

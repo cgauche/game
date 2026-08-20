@@ -318,7 +318,7 @@ describe('vue — une nappe se peint quand le groupe la VOIT (#950)', () => {
  *  occlusion-là est le TROU local (`stage/percage.ts`, `verdictPercage` sur la MÊME géométrie).
  *  L'ABRI RÉEL, lui, retire toujours.
  *
- *  Le montage est celui du stage (`IsoStage`), pas une reconstruction : vision réelle, `clearedSpace`,
+ *  Le montage est celui de l'hôte du monde (`stage/MondeDeCampagne`), pas une reconstruction : vision réelle, `clearedSpace`,
  *  nappes projetées et capsule d'acteur. */
 describe('occlusion d’écran — une masse qui CACHE sans abriter reste peinte (La Diligence)', () => {
   const scene = diligenceCampaign.scenes[0];

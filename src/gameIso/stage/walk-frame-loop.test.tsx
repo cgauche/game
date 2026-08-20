@@ -8,7 +8,7 @@ import { emptyScene } from '../../state/scene';
 import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import * as sceneMeshes from '../backends/webgl/sceneMeshes';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
@@ -74,7 +74,7 @@ function monter(): { el: HTMLDivElement; commits: () => number } {
   document.body.appendChild(container);
   root = createRoot(container);
   let n = 0;
-  act(() => root!.render(<Profiler id="stage" onRender={() => { n += 1; }}><IsoStage /></Profiler>));
+  act(() => root!.render(<Profiler id="stage" onRender={() => { n += 1; }}><MondeDeCampagne /></Profiler>));
   return { el: container!, commits: () => n };
 }
 

@@ -7,7 +7,7 @@ import { useGame } from '../../state/store';
 import { emptyScene, sceneMetresPerTile, type BuildingMass, type Scene } from '../../state/scene';
 import { setRevealAll } from '../../state/visionState';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import { clearedSpace, massFootprintCells, massSpaceCells, shelterField, shelterSectionAt } from '../builders/roofs';
 import { cutawayForSection } from './architectureVisibility';
@@ -17,7 +17,7 @@ import { cutawayForSection } from './architectureVisibility';
  * (`shelterField`, qui ignore la vue). Quand la VUE lève la nappe qui coiffe une colonne, ce qui
  * tombait dessus s'arrêtait donc EN L'AIR, au-dessus d'un toit qu'on ne dessine plus.
  *
- * Ce banc mesure le geste sur le chemin RÉEL (`IsoStage` en voie volumique, les matrices d'instance
+ * Ce banc mesure le geste sur le chemin RÉEL (`MondeDeCampagne` en voie volumique, les matrices d'instance
  * telles qu'elles partent au GPU) et ses deux invariants :
  *  - la colonne coiffée par une section CACHÉE ne rend AUCUNE particule (la colonne entière, pas
  *    « au-dessus du faîte » : la pluie réapparaîtrait entre l'égout et le faîte) ;
@@ -101,7 +101,7 @@ function monter(): HTMLDivElement {
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return conteneur;
 }
 
@@ -187,7 +187,7 @@ describe('Météo volumique — écrêtage au cutaway (#1247)', () => {
     expect(compteAvant).toBeGreaterThan(0);
 
     act(() => { poser(scene, SOUS_TOIT); });
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
     const après = semisMonté();
     expect(après, 'le semis est RETENU : l’écrêtage n’entre pas dans sa clé').toBe(avant);
     expect(après.count).toBe(compteAvant);
@@ -205,7 +205,7 @@ describe('Météo volumique — écrêtage au cutaway (#1247)', () => {
 
     // Un pas de combattant : le store rend une NOUVELLE référence de scène, au même contenu.
     act(() => { poser({ ...scene }, SOUS_TOIT); });
-    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<MondeDeCampagne />));
     expect(dernièreScène().getObjectByName('brume:0'), 'la géométrie de nappe survit au pas').toBe(avant);
   });
 });

@@ -90,7 +90,7 @@ interface Leviers {
   bidon: () => void;
   marques: (m: DynamicMarks) => void;
   zoom: (z: number) => void;
-  /** Dégagement et teinte, RETENUS sur leur valeur comme chez l'hôte de jeu (deux memos d'`IsoStage`). */
+  /** Dégagement et teinte, RETENUS sur leur valeur comme chez l'hôte de jeu (deux memos de `MondeDeCampagne`). */
   keep: (k: KeepEl) => void;
   tint: (t: TintAt) => void;
   percage: (p: PercageEntrees) => void;
@@ -113,7 +113,7 @@ function Hôte({ leviers }: { leviers: MutableRefObject<Leviers | null> }) {
     percage: setPercage,
   };
   // Cadre reforgé à CHAQUE rendu, comme l'hôte de jeu en reforge un : ce sont ses ENTRÉES qui sont
-  // retenues (`IsoStage.dimsVue`, `camAtStable`), jamais l'objet.
+  // retenues (`MondeDeCampagne.dimsVue`, `camAtStable`), jamais l'objet.
   const frame: WorldFrame = { mode: 'plateau', dims: DIMS, camAt: CAM_AT, zoom };
   return (
     <div data-bidon={bidon}>

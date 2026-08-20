@@ -7,7 +7,7 @@ import { useGame } from '../../state/store';
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { GameStage3D, setStageRendererFactory, type StageRenderer, type StageWalkAnim } from './GameStage3D';
 import { HALO_SLOTS } from '../backends/webgl/interactHaloMeshes';
 import { haloRadiusK, HALO_RX_PX, type InteractionHalos } from '../builders/interactHalos';
@@ -105,7 +105,7 @@ function monter(flags: Record<string, boolean> = {}): HTMLDivElement {
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return conteneur;
 }
 

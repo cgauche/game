@@ -11,7 +11,7 @@ import { makeRNG } from '../../engine/dice';
 import type { Dims } from '../../geometry/iso';
 import { AMBIANCE, ambianceLuminance } from '../catalog/ambiance';
 import { fogCurveOf, povDepth } from '../pov/camera';
-import { PovStage } from '../pov/PovStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { FOG_GAMMA_DEFINE, type MatériauEmbrumable } from '../backends/webgl/sceneMeshes';
 import { GameStage3D, setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
@@ -127,7 +127,7 @@ describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {
   it('EXTÉRIEUR : brume des surfaces sur la courbe du dehors, fond = le dégradé de CIEL', () => {
     const scene = poser('exterieur');
     const mpt = sceneMetresPerTile(scene);
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     const s = dernièreScène();
     const fog = s.fog as THREE.Fog;
     expect(fog, 'la première personne a un horizon : il lui faut une brume').toBeTruthy();
@@ -148,7 +148,7 @@ describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {
   it('INTÉRIEUR : brume sombre et COURTE, fond sombre (aucun ciel sous un toit)', () => {
     const scene = poser('interieur');
     const mpt = sceneMetresPerTile(scene);
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     const fog = dernièreScène().fog as THREE.Fog;
     const courbe = fogCurveOf(true);
     expect(fog.near).toBeCloseTo(courbe.start * mpt, 6);
@@ -167,7 +167,7 @@ describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {
   it('NUIT : le CIEL et la brume suivent le palier de la scène — plus d’horizon de plein jour à minuit', () => {
     poser('exterieur');
     useGame.setState({ lightLevel: 0.18 } as never); // le palier `nuit` de `lightLevels.json`
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     const s = dernièreScène();
     const lum = ambianceLuminance(0.18);
     /** La loi du MONDE : l'albédo décodé × le palier, en linéaire (l'espace où les lampes multiplient). */
@@ -183,18 +183,18 @@ describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {
 
   it('le GAMMA de la courbe est posé sur TOUS les matériaux embrumés, et c’est celui du milieu', () => {
     poser('exterieur');
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     expect(gammasPosés(dernièreScène())).toEqual(new Set([fogCurveOf(false).gamma.toFixed(4)]));
     démonter();
 
     poser('interieur');
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     expect(gammasPosés(dernièreScène())).toEqual(new Set([fogCurveOf(true).gamma.toFixed(4)]));
   });
 
   it('le CHROME d’interface n’est PAS de la matière : les pools d’affordance montés n’ont ni brume ni gamma', () => {
     poser('exterieur');
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     const chrome = chromeMonté(dernièreScène());
     expect(chrome.length, 'la scène POV monte bien des pools d’affordance (marques dynamiques, halos)').toBeGreaterThanOrEqual(12);
     expect(chrome.filter((c) => c.mat.fog).map((c) => c.nom), 'la brume délaverait une affordance lointaine').toEqual([]);
@@ -203,7 +203,7 @@ describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {
 
   it('à la SORTIE du POV, le gamma part AVEC la brume (nettoyage de l’effet)', () => {
     poser('exterieur');
-    monter(<PovStage />);
+    monter(<MondeDeCampagne />);
     const scène3d = dernièreScène();
     const embrumés = matériauxEmbrumés(scène3d);
     expect(embrumés.length, 'le monde du POV a bien des matériaux embrumés').toBeGreaterThan(0);

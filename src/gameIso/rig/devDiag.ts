@@ -1,9 +1,8 @@
 /**
  * Diagnostics de DONNÉE du pipeline de rendu (espèce/réf manquante, propulsion sans gabarit) — dits
- * UNE FOIS PAR SUJET, jamais par rendu. Deux régimes de rappel mesurés : les tokens de COMBAT sont
- * rebâtis HORS memo à chaque rendu du stage (`combatantObjs`, IsoStage.tsx:313), soit ~60/s pendant une
- * marche ; les FIGURANTS passent par un memo (`figurantObjs`, IsoStage.tsx:257) et se rejouent au pas ou
- * au changement d'état de combat. Sans mémoïsation, un défaut de donnée noie la console.
+ * UNE FOIS PAR SUJET, jamais par rendu. Les sujets se redérivent à chaque commit de l'hôte du monde
+ * (`stage/MondeDeCampagne` → `builders/tokens` → `actorPoses`) : un pas, un tour de vue, un survol en
+ * repassent la population entière. Sans mémoïsation, un défaut de donnée noie la console.
  *
  * Clé = site + identité STABLE du sujet. Un sujet SANS réf n'a aucune identité à ce niveau : l'appelant
  * qui la connaît (scène + id d'entité) la POSE via `withDiagSubject`, sinon tous ces sujets partagent une

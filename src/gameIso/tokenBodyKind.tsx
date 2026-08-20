@@ -59,7 +59,7 @@ const STRUCT_BOX = '26 38 68 68';
 /** Corps d'une STRUCTURE de siège (porte/rempart) : bloc de pierre crénelé ferré aux couleurs de
  *  l'apparence partagée (`mur-en-pierre`, palette pierre unifiée du JSON) — JAMAIS un bipède. Sert au
  *  portrait d'inspection / VsHeader de la modale d'attaque (le jeton de CASE, lui, est supprimé : la
- *  fortification se rend sur son arête, cf. IsoStage). */
+ *  fortification se rend sur son arête, cf. `builders/tokens`). */
 const STRUCT_APP = structureAppearance('mur-en-pierre');
 const STRUCT_BODY = (
   <g>

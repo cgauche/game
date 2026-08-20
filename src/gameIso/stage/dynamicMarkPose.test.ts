@@ -426,7 +426,7 @@ describe('poseDynamicMarks — les ANNEAUX d’équipe (#1176 P3-0e)', () => {
   });
 
   it('BIAIS : l’anneau passe AU-DESSUS des trois autres marques dynamiques', () => {
-    // Mesure de la voie affine : l'anneau y est peint DANS le jeton (`combatantObjs`, profondeur
+    // Mesure de la voie affine : l'anneau y est peint DANS le jeton (profondeur
     // `+0.5`) quand le lien, le contour d'actif et le repère de groupe se posent SOUS lui (`+0.25`,
     // `dynamicHighlightObjs`).
     expect(dynSlotLiftM('anneau')).toBeGreaterThan(dynSlotLiftM('groupe'));

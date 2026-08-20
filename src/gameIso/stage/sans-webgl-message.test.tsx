@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
-import { IsoStage } from '../IsoStage';
+import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import { webglRefusé } from './webglSupport';
 
@@ -77,7 +77,7 @@ function monter(fabrique: (canvas: HTMLCanvasElement) => StageRenderer): HTMLDiv
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
-  act(() => root!.render(<IsoStage />));
+  act(() => root!.render(<MondeDeCampagne />));
   return conteneur;
 }
 
