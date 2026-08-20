@@ -11,15 +11,22 @@
  * Trois façons de le faire battre, jamais deux boucles concurrentes : `battreStageFrames` pour qui
  * tient déjà une horloge (la boucle de marche `fx/useWalkAnim`, un `pointermove` que le navigateur
  * cadence déjà à l'image), `demanderFrames`/`relacherFrames` pour ce qui n'en a aucune
- * (l'adoucissement de focale), et `demanderUneImage` pour un geste PONCTUEL qui n'a besoin que d'être
- * VU (la relève d'une texture de billboard). La boucle de demande comme la demande ponctuelle CÈDENT
- * le pas à ce qui vient d'avoir lieu, mais PAS à la même chose — cf. les deux horloges ci-dessous.
+ * (l'adoucissement de focale, `useBattementContinu` pour un motif qui dure), et `demanderUneImage`
+ * pour un geste PONCTUEL qui n'a besoin que d'être VU (la relève d'une texture de billboard). La
+ * boucle de demande comme la demande ponctuelle CÈDENT le pas à ce qui vient d'avoir lieu, mais PAS à
+ * la même chose — cf. les deux horloges ci-dessous.
+ *
+ * Une image a DEUX temps : le PRÉLUDE avance la vue (`subscribeStagePrelude`), les abonnés la lisent
+ * et reposent ce qu'ils tiennent. C'est ce qui ôte à l'ordre d'inscription le pouvoir de décider qui
+ * voit quel angle.
  */
+import { useEffect } from 'react';
 
 /** Écart (ms) en deçà duquel deux battements sont la MÊME image. */
 const MEME_IMAGE_MS = 4;
 
 const abonnés = new Set<() => void>();
+const préludes = new Set<(now: number) => void>();
 const sources = new Set<unknown>();
 /** DERNIÈRE IMAGE PEINTE, d'où qu'elle vienne (battement ou commit React qui redessine) : la BOUCLE y
  *  cède le pas, car elle ne demande qu'un REDESSIN — ce qui vient d'être peint l'est déjà. */
@@ -39,10 +46,27 @@ export function subscribeStageFrames(cb: () => void): () => void {
   };
 }
 
-/** UN battement : chaque abonné repose ce qu'il tient hors de React. */
+/**
+ * PRÉLUDE du battement — ce qui AVANCE la vue de l'image, avant que quiconque ne la LISE. Le lacet
+ * continu y vit (`state/stageYaw.avancerLacet`) : ses lecteurs sont des abonnés ordinaires — la passe
+ * de dessin du canevas volumique (`stage/GameStage3D`) et la reprojection d'overlays de l'hôte
+ * (`stage/MondeDeCampagne`) — et l'ordre d'inscription dans un `Set` ne saurait décider lequel des
+ * deux voit l'angle de son image et lequel voit celui de la précédente.
+ *
+ * Un prélude POSE la vue, il ne la lit pas : rien de ce qui peint n'a sa place ici.
+ */
+export function subscribeStagePrelude(cb: (now: number) => void): () => void {
+  préludes.add(cb);
+  return () => {
+    préludes.delete(cb);
+  };
+}
+
+/** UN battement : la vue avance (préludes), puis chaque abonné repose ce qu'il tient hors de React. */
 export function battreStageFrames(): void {
   derniereBattementMs = performance.now();
   dernierePeinteMs = derniereBattementMs;
+  for (const cb of [...préludes]) cb(derniereBattementMs);
   for (const cb of [...abonnés]) cb();
 }
 
@@ -113,9 +137,10 @@ export function sourcesDeFrames(): number {
 /** ARDOISE NEUVE — outil de BANC. La suite partage ses modules (`isolate: false`) : un écran d'un
  *  autre fichier resté monté tiendrait encore des images, et la boucle armée sur SON `requestAnimationFrame`
  *  ne se réarmerait jamais sur celui du banc courant.
- *  PORTÉE : les sources, l'image armée et les deux horloges — JAMAIS les abonnés. Un abonnement se dénoue par
- *  la fonction rendue à l'inscription (le démontage de l'écran) ; un abonné qui survit à son écran est
- *  un défaut de cet écran, qu'une ardoise complaisante cacherait à tous les bancs. */
+ *  PORTÉE : les sources, l'image armée et les deux horloges — JAMAIS les abonnés ni les préludes. Un
+ *  abonnement se dénoue par la fonction rendue à l'inscription (le démontage de l'écran) ; un abonné
+ *  qui survit à son écran est un défaut de cet écran, qu'une ardoise complaisante cacherait à tous les
+ *  bancs. */
 export function resetStageFrames(): void {
   sources.clear();
   if (image && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(image);
@@ -123,4 +148,15 @@ export function resetStageFrames(): void {
   imagePonctuelle = 0;
   dernierePeinteMs = -Infinity;
   derniereBattementMs = -Infinity;
+}
+
+/** Tient le battement unique du stage tant que `actif`, sous une clé d'INSTANCE : deux écrans montés ne
+ *  se relâchent pas les images l'un de l'autre, et un motif éteint rend les siennes. */
+export function useBattementContinu(actif: boolean, nom: string): void {
+  useEffect(() => {
+    if (!actif) return;
+    const source = Symbol(nom);
+    demanderFrames(source);
+    return () => relacherFrames(source);
+  }, [actif, nom]);
 }

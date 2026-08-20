@@ -11,6 +11,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../state/store';
 import { testScene } from '../scenes/test-fixture';
 import { CampaignView } from './CampaignView';
+import { resetStageFrames } from '../gameIso/stage/stageFrames';
 import { PAS_TAP_DEG, SEUIL_MAINTIEN_MS, getStageYaw, resetStageYaw } from '../state/stageYaw';
 
 beforeAll(() => {
@@ -33,7 +34,9 @@ afterEach(() => {
   act(() => { root.unmount(); });
   host.remove();
   resetStageYaw();
+  resetStageFrames();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
@@ -57,25 +60,34 @@ describe('CampaignView — plus aucun interrupteur de voie de rendu à l’écra
 });
 
 describe('CampaignView — le geste de caméra du joueur, monté à l’écran', () => {
-  /** Pilote la boucle de frames à la main : le test décide quand chaque frame se joue. */
+  /**
+   * Pilote le BATTEMENT du stage à la main : le test décide quand chaque image se joue. C'est ce
+   * battement qui avance le lacet (`stageYaw.avancerLacet`, tiré en prélude par l'hôte
+   * `gameIso/stage/MondeDeCampagne` tant que le régime dure) — la file de `requestAnimationFrame`
+   * est celle de la boucle du stage, et `performance.now` est l'horloge que le test avance, sans
+   * quoi la boucle céderait le pas à l'image qu'elle vient elle-même de servir.
+   */
   function harnaisDeFrames() {
-    let enAttente: FrameRequestCallback[] = [];
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => enAttente.push(cb));
-    let horloge = 0;
+    let file: FrameRequestCallback[] = [];
+    let horloge = 1000;
+    vi.spyOn(performance, 'now').mockImplementation(() => horloge);
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => file.push(cb));
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+    resetStageFrames();
     return (n: number): void => {
       for (let i = 0; i < n; i++) {
         horloge += 16;
-        const cb = enAttente[enAttente.length - 1];
-        enAttente = [];
-        cb?.(horloge);
+        const àServir = file;
+        file = [];
+        àServir.forEach((cb) => cb(horloge));
       }
     };
   }
 
   it('TOUCHE TENUE : passé le seuil, l’écran fait tourner la caméra en continu', () => {
     vi.useFakeTimers();
-    monter(false);
     const jouer = harnaisDeFrames();
+    monter(false);
     act(() => { window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' })); });
     act(() => { vi.advanceTimersByTime(SEUIL_MAINTIEN_MS); }); // la touche n'est PAS relâchée
     act(() => { jouer(60); });
@@ -84,8 +96,8 @@ describe('CampaignView — le geste de caméra du joueur, monté à l’écran',
 
   it('TOUCHE RELÂCHÉE avant le seuil : la vue en reste au pas fin', () => {
     vi.useFakeTimers();
-    monter(false);
     const jouer = harnaisDeFrames();
+    monter(false);
     act(() => { window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' })); });
     act(() => { window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyE' })); });
     act(() => { vi.advanceTimersByTime(10 * SEUIL_MAINTIEN_MS); });
@@ -105,8 +117,8 @@ describe('CampaignView — le geste de caméra du joueur, monté à l’écran',
 
   it('BLUR (Alt-Tab) : le lacet en cours S’ARRÊTE, et la minuterie de maintien est désarmée', () => {
     vi.useFakeTimers();
-    monter(false);
     const jouer = harnaisDeFrames();
+    monter(false);
 
     // 1. Un maintien EN VOL : la fenêtre perd le focus, la caméra s'arrête net et n'avance plus.
     const enVol = maintenirEtMesurer(jouer);
@@ -129,8 +141,8 @@ describe('CampaignView — le geste de caméra du joueur, monté à l’écran',
 
   it('ONGLET CACHÉ (visibilitychange) : même arrêt, même désarmement', () => {
     vi.useFakeTimers();
-    monter(false);
     const jouer = harnaisDeFrames();
+    monter(false);
     const cacher = (hidden: boolean) => {
       Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
       act(() => { document.dispatchEvent(new Event('visibilitychange')); });

@@ -10,7 +10,13 @@ import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
 import * as sceneMeshes from '../backends/webgl/sceneMeshes';
 import { setStageRendererFactory } from './GameStage3D';
+import { battreStageFrames, resetStageFrames } from './stageFrames';
+import { arreterLacet, demarrerLacet, getStageYaw, poserYaw, resetStageYaw } from '../../state/stageYaw';
 import { BancRenderer, brancherArdoise } from './banc-volumique';
+import { VH, VW } from './useStageCamera';
+import { stageYawCorrection } from './stageCam';
+import { poseFromDims, worldToScreen } from './projection';
+import type { Dims } from '../../geometry/iso';
 
 /**
  * LA MARCHE PILOTÉE PAR LA BOUCLE DE RENDU (#1176, P2-4). La cadence LOGIQUE d'un pas est le store
@@ -84,6 +90,33 @@ function image(tick: FrameRequestCallback, dt: number): FrameRequestCallback | n
 }
 
 const transform = (el: HTMLElement) => (el.querySelector('svg.iso-stage > g') as SVGGElement).style.transform;
+
+/** UNE image du battement : l'horloge avance, et les rAF que la boucle a posés sont servis. */
+function imageBattement(dt = 16): void {
+  horloge += dt;
+  const àServir = file.splice(0);
+  act(() => àServir.forEach((cb) => cb(horloge)));
+}
+
+/** Le canevas de jsdom n'a aucune boîte, et la passe de dessin sort sur `!w || !h` : sans cadre, le
+ *  compteur d'images peintes ne bougerait jamais et la prémisse « ça peint » serait vraie du vide.
+ *  Rend aussi l'ardoise du lacet et du battement, que la suite partage (`isolate: false`). */
+function harnaisCanevas(): void {
+  beforeEach(() => {
+    Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => 800 });
+    Object.defineProperty(HTMLCanvasElement.prototype, 'clientHeight', { configurable: true, get: () => 600 });
+    resetStageFrames();
+    resetStageYaw();
+  });
+  afterEach(() => {
+    delete (HTMLCanvasElement.prototype as unknown as Record<string, unknown>).clientWidth;
+    delete (HTMLCanvasElement.prototype as unknown as Record<string, unknown>).clientHeight;
+    // Le lacet est un module PARTAGÉ par la suite (`isolate: false`) : un angle laissé en l'air
+    // déplacerait le cran effectif de tout banc suivant.
+    resetStageYaw();
+    resetStageFrames();
+  });
+}
 
 beforeEach(() => {
   horloge = 1000;
@@ -257,5 +290,193 @@ describe('P2 — un motif continu ne commet pas par image (#1401)', () => {
       commits() - avant,
       `${commits() - avant} commits pour ${images} images — borne : ${FRANCHISSEMENTS} cases franchies + ${ARRIVEE} arrivée = ${BORNE}`,
     ).toBeLessThanOrEqual(BORNE);
+  });
+});
+
+/**
+ * P2 — LE LACET TENU NE COMMET PAS PAR IMAGE (#1403). Le lacet continu n'a plus d'horloge à lui : le
+ * battement du stage l'AVANCE (`state/stageYaw.avancerLacet`, tiré par l'hôte tant que `lacetActif`),
+ * et ses consommateurs par-frame le relisent à l'image — la caméra volumique par `yawAt`, le groupe
+ * d'overlays par sa reprojection d'écran. Ses commits sont donc bornés par ses ÉVÉNEMENTS DISCRETS,
+ * nommés et comptés d'avance :
+ *  - le DÉPART et l'ARRÊT du régime (`demarrerLacet`/`arreterLacet`, un avis chacun) ;
+ *  - un par CRAN franchi (`rotAtYaw` — la quantification que lisent les memos lourds du rendu).
+ *
+ * CE QUE LA SONDE MESURE : les commits du SOUS-ARBRE PROFILÉ (`monter`) et les images PEINTES par le
+ * canevas (`data-rendus`, le compteur applicatif — un canevas WebGL n'a pas d'arbre à interroger).
+ * ANGLE MORT : un commit d'un parent de `MondeDeCampagne` ne s'y verrait pas.
+ */
+describe('P2 — le lacet tenu ne commet pas par image (#1403)', () => {
+  harnaisCanevas();
+
+  it('lacet MAINTENU sur 40 images : commits ≤ crans franchis + départ + arrêt, et les images PEINTES montent d’autant', () => {
+    // Ardoise du battement et du lacet : la suite partage ses modules (`isolate: false`), et une
+    // horloge de peinte laissée loin devant par un banc voisin ferait céder toute la boucle.
+    resetStageFrames();
+    resetStageYaw();
+    const { el, commits } = monter();
+    const canevas = el.querySelector('canvas.iso-stage') as HTMLCanvasElement;
+    const avant = commits();
+    const peintsAvant = Number(canevas.dataset.rendus);
+
+    act(() => demarrerLacet(1));
+    const IMAGES = 40;
+    for (let i = 0; i < IMAGES; i++) imageBattement();
+    const parcouru = getStageYaw();
+    act(() => arreterLacet());
+
+    const CRANS = Math.abs(Math.round(parcouru / 90));
+    const DEPART_ET_ARRET = 2; // deux avis de RÉGIME : le geste commence, le geste finit
+    const BORNE = CRANS + DEPART_ET_ARRET;
+    const peints = Number(canevas.dataset.rendus) - peintsAvant;
+
+    // Prémisse 1 — la sonde MORD : le montage, lui, a bien commis.
+    expect(avant, 'aucun commit compté au montage : la sonde de commits est débranchée').toBeGreaterThan(0);
+    // Prémisse 2 — le lacet a VRAIMENT tourné : un angle figé rendrait « aucun commit » vrai du vide.
+    expect(parcouru, `${parcouru}° parcourus : le lacet n’a pas tourné`).toBeGreaterThan(50);
+    // Prémisse 3 — les images ont bien été PEINTES : un canevas gelé ne commet pas non plus.
+    expect(peints, `${peints} images peintes pour ${IMAGES} images battues`).toBeGreaterThanOrEqual(IMAGES - BORNE);
+    expect(
+      commits() - avant,
+      `${commits() - avant} commits pour ${IMAGES} images de lacet — borne : ${CRANS} cran(s) franchi(s) + départ + arrêt = ${BORNE}`,
+    ).toBeLessThanOrEqual(BORNE);
+  });
+});
+
+/** Les `matrix(...)` d'une chaîne de transformation, dans l'ordre. Sur le groupe d'overlays : la
+ *  CAMÉRA d'abord, puis — entre deux commits d'une rotation seulement — la reprojection d'écran du
+ *  lacet parcouru depuis le dernier commit. */
+function matrices(css: string): number[][] {
+  return [...css.matchAll(/matrix\(([^)]*)\)/g)].map((m) => m[1].split(',').map(Number));
+}
+
+/** Image d'un point par une affine `matrix(a,b,c,d,e,f)`. */
+const applique = (m: number[], p: { x: number; y: number }) => ({
+  x: m[0] * p.x + m[2] * p.y + m[4],
+  y: m[1] * p.x + m[3] * p.y + m[5],
+});
+
+const ecart = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
+
+/**
+ * DÉSACCORD, en pixels de viewBox, entre la projection COMMISE — celle que portent les overlays SVG et
+ * le picking (`dimsVue`) — et le lacet VIF que regarde le monde volumique. C'est exactement la
+ * reprojection que le groupe doit encore appliquer pour remettre les uns sur l'autre, mesurée au plus
+ * écarté des quatre coins du viewBox. Nul quand les deux lacets coïncident : la chaîne n'a alors
+ * qu'une matrice, sa caméra.
+ */
+function desaccordPx(el: HTMLElement): number {
+  const mats = matrices(transform(el));
+  if (mats.length < 2) return 0;
+  const coins = [{ x: 0, y: 0 }, { x: VW, y: 0 }, { x: 0, y: VH }, { x: VW, y: VH }];
+  return Math.max(...coins.map((p) => ecart(applique(mats[1], p), p)));
+}
+
+/**
+ * G4 — LA PROJECTION COMMISE CONCORDE AVEC LE LACET VIF (#1403). Le lacet vit à l'IMAGE, les overlays
+ * SVG et le picking vivent au COMMIT : entre les deux, le groupe porte une reprojection d'écran
+ * (`stageCam.stageYawCorrection`) qui remet les uns sur l'autre. Elle n'est TENABLE que si chaque
+ * commit la ramène à rien — sinon le résidu sous-cran (jusqu'à un demi-cran, des centaines de pixels)
+ * survit au dernier battement et s'installe : les overlays sont peints à un lacet, le monde à un
+ * autre, et le clic vise à côté sans que rien ne vienne plus le corriger.
+ *
+ * CE QUE LA SONDE MESURE : la reprojection que la production ELLE-MÊME calcule entre les deux lacets,
+ * lue sur le groupe d'overlays. Le battement de sonde ne change aucun état — il ne fait qu'écrire au
+ * groupe ce que la projection commise réclame à cet instant.
+ */
+describe('Lacet — la projection commise concorde avec le lacet vif (#1403)', () => {
+  harnaisCanevas();
+
+  /** Un battement de SONDE : aucune avance (le lacet est au repos), juste la reprojection écrite. */
+  const sonder = () => act(() => battreStageFrames());
+
+  /** ~24° de maintien, sous le cran — l'état où le désaccord est maximal et où RIEN ne viendra le
+   *  solder de lui-même. Rend le désaccord mesuré à cet instant. */
+  function maintenirSousCran(el: HTMLElement): number {
+    act(() => demarrerLacet(1));
+    for (let i = 0; i < 15; i++) imageBattement();
+    const parcouru = getStageYaw();
+    expect(parcouru, `${parcouru}° parcourus : le lacet n’a pas tourné`).toBeGreaterThan(15);
+    expect(Math.round(parcouru / 90), `${parcouru}° : un cran a été franchi, le résidu n’est plus sous-cran`).toBe(0);
+    return desaccordPx(el);
+  }
+
+  it('la correction de lacet ne SURVIT pas au commit d’ARRÊT', () => {
+    const { el } = monter();
+    // Prémisse — la sonde MORD : en plein maintien, la projection commise est bien en retard.
+    expect(maintenirSousCran(el), 'aucun désaccord en plein maintien : la sonde est débranchée').toBeGreaterThan(50);
+    act(() => arreterLacet());
+    sonder();
+    expect(
+      desaccordPx(el),
+      'la projection commise est restée au cran après l’arrêt : overlays et picking faux, durablement',
+    ).toBeLessThan(1e-9);
+  });
+
+  it('le glisser-tourner REPROJETTE : `poserYaw` commet la projection du pointeur', () => {
+    const { el } = monter();
+    expect(maintenirSousCran(el), 'aucun désaccord en plein maintien : la sonde est débranchée').toBeGreaterThan(50);
+    act(() => poserYaw(30));
+    sonder();
+    expect(desaccordPx(el), 'le glisser-tourner a laissé la projection commise en arrière').toBeLessThan(1e-9);
+  });
+
+  it('la reprojection est EXACTE au sol, et son cisaillement en élévation est MESURÉ', () => {
+    const rendu: Dims = { w: 20, h: 20, rot: 0, view: 'iso', edge: false, yawDeg: 0 };
+    const vif: Dims = { ...rendu, yawDeg: 37.5 };
+    const m = matrices(stageYawCorrection(rendu, vif))[0];
+    const poseR = poseFromDims(rendu);
+    const poseV = poseFromDims(vif);
+    const ecarts = (lift: number) => {
+      let max = 0;
+      for (let x = 0; x < 20; x += 3) {
+        for (let y = 0; y < 20; y += 3) {
+          max = Math.max(max, ecart(applique(m, worldToScreen(poseR, { x, y, lift })), worldToScreen(poseV, { x, y, lift })));
+        }
+      }
+      return max;
+    };
+    // AU SOL, la reprojection EST la projection : `worldToScreen` est affine en la case à lift
+    // constant, donc trois points la déterminent entièrement (cf. `stageCam.stageYawCorrection`).
+    const sol = ecarts(0);
+    expect(sol, `${sol} px d’écart au sol : la reprojection n’est plus exacte`).toBeLessThan(1e-9);
+    // CE QUI EST ÉLEVÉ y est emporté comme le sol : son décalage écran vertical ne dépend pas du
+    // lacet (`stage/projection.liftPx`), donc la reprojection le déplace du même vecteur que sa base.
+    // L'écart qui en résulte est le produit du LIFT par un vecteur qui ne dépend que de l'angle : il
+    // ne dépend NI de la case NI de la carte, et croît LINÉAIREMENT avec l'étage — c'est ce que les
+    // deux mesures qui suivent établissent, et c'est ce qui le rend borné.
+    const eleve1 = ecarts(1);
+    const eleve2 = ecarts(2);
+    expect(2 * eleve1, `lift 1 : ${eleve1} px, lift 2 : ${eleve2} px — le cisaillement n’est pas linéaire en l’étage`).toBeCloseTo(eleve2, 9);
+    // BORNE, à l'angle le plus défavorable qu'un maintien puisse laisser (un demi-cran, ici 37,5°) et
+    // à deux étages au-dessus du sol : 237 px de viewBox — sur 1100×720, un quart de champ.
+    expect(eleve2, `${eleve2} px de cisaillement à lift 2 sous 37,5°`).toBeGreaterThan(230);
+    expect(eleve2, `${eleve2} px de cisaillement à lift 2 sous 37,5°`).toBeLessThan(240);
+  });
+});
+
+/**
+ * G8 — L'AVANCE DU LACET PRÉCÈDE LE DESSIN, DANS LA MÊME IMAGE (#1403). Le lacet n'a plus d'horloge :
+ * l'hôte l'avance dans le battement, et le canevas volumique dessine dans le MÊME battement. Si le
+ * dessin passait le premier, il peindrait le lacet de l'image PRÉCÉDENTE — une image de retard sur les
+ * overlays, qui, eux, sont reprojetés au lacet avancé dans la même passe.
+ */
+describe('Lacet — l’avance précède le dessin dans la même image (#1403)', () => {
+  harnaisCanevas();
+
+  it('la passe de dessin voit le lacet de SON image, jamais celui de la précédente', () => {
+    const vus: number[] = [];
+    setStageRendererFactory(() => new BancRenderer(() => vus.push(getStageYaw())));
+    try {
+      monter();
+      act(() => demarrerLacet(1));
+      vus.length = 0; // ardoise : les passes du montage et de l'avis de régime précèdent toute avance
+      imageBattement();
+      // Prémisse — l'image a bien été DESSINÉE : un canevas gelé rendrait le verdict vrai du vide.
+      expect(vus.length, 'aucune passe de dessin dans l’image battue').toBeGreaterThan(0);
+      expect(vus[0], `le dessin a vu ${vus[0]}° : le lacet d’AVANT l’avance de sa propre image`).toBeGreaterThan(0);
+    } finally {
+      setStageRendererFactory(() => new BancRenderer());
+    }
   });
 });

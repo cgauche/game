@@ -15,6 +15,8 @@
  * `stagePointAt`) — pixel de l'élément → point de projection — sans jamais interroger un CTM de SVG,
  * que la voie volumique n'a pas.
  */
+import type { Dims } from '../../geometry/iso';
+import { poseFromDims, screenToWorldAtLift, worldToScreen } from './projection';
 import { VH, VW } from './useStageCamera';
 
 /** Cadre en pixels CSS de la surface de rendu. */
@@ -45,6 +47,36 @@ export function stageCamAffine(cam: { x: number; y: number }, zoom: number): Sta
 export function stageCamTransform(cam: { x: number; y: number }, zoom: number): string {
   const { k, tx, ty } = stageCamAffine(cam, zoom);
   return `matrix(${k}, 0, 0, ${k}, ${tx}, ${ty})`;
+}
+
+/**
+ * REPROJECTION D'ÉCRAN d'un lacet qui a AVANCÉ depuis le dernier rendu (#1403). Les overlays SVG sont
+ * projetés au lacet du COMMIT (`Dims.yawDeg`, relu à chaque rendu), le monde volumique tourne à
+ * l'IMAGE : entre deux commits, ce facteur remet les uns sur l'autre, et le commit suivant reprojette
+ * exactement.
+ *
+ * C'est l'affine qui envoie un point de projection du lacet `rendu` sur son homologue du lacet `vif`
+ * AU SOL : `worldToScreen` étant affine en la case à lift constant, elle se lit entièrement sur l'image
+ * de l'origine et des deux vecteurs unitaires d'écran. Ce qui est ÉLEVÉ y est emporté comme le sol —
+ * son décalage écran vertical ne dépend pas du lacet (cf. `stage/projection.ts`) : là est
+ * l'approximation, bornée par le quart de tour et soldée à chaque COMMIT (franchissement de cran,
+ * départ et arrêt du régime, pose au pointeur) — elle ne vit donc que le temps d'un maintien entre
+ * deux crans. Mesurée : `stage/walk-frame-loop.test.tsx`.
+ *
+ * Chaîne VIDE quand les deux lacets coïncident : hors rotation, le groupe ne porte que sa caméra.
+ */
+export function stageYawCorrection(rendu: Dims, vif: Dims): string {
+  const poseRendu = poseFromDims(rendu);
+  const poseVif = poseFromDims(vif);
+  if (poseRendu.yawDeg === poseVif.yawDeg) return '';
+  const image = (x: number, y: number) => {
+    const w = screenToWorldAtLift(poseRendu, { x, y }, 0);
+    return worldToScreen(poseVif, { x: w.x, y: w.y });
+  };
+  const o = image(0, 0);
+  const ex = image(1, 0);
+  const ey = image(0, 1);
+  return `matrix(${ex.x - o.x}, ${ex.y - o.y}, ${ey.x - o.x}, ${ey.y - o.y}, ${o.x}, ${o.y})`;
 }
 
 /** Facteur du `preserveAspectRatio="xMidYMid slice"` de `.iso-stage` : le viewBox RECOUVRE l'élément,

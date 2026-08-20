@@ -27,7 +27,7 @@ export const getStagePan = (): { x: number; y: number } => pan;
 export const accordsPan = (): number => accords;
 
 /** S'abonne aux REMISES À ZÉRO du décalage (recentrage, entrée de scène) — la vue les repeint hors de
- *  tout rendu, comme elle repeint un glissement (`subscribeStageYaw`, même patron). */
+ *  tout rendu : elles peuvent tomber en plein glisser, là où aucun rendu React ne vient. */
 export function subscribeStagePan(f: () => void): () => void {
   subs.add(f);
   return () => { subs.delete(f); };

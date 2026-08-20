@@ -8,6 +8,7 @@ import {
   PAS_TAP_DEG,
   VITESSE_LACET_DEG_S,
   arreterLacet,
+  avancerLacet,
   demarrerLacet,
   getStageYaw,
   pasYaw,
@@ -15,20 +16,19 @@ import {
   resetStageYaw,
 } from './stageYaw';
 
-/** Pilote la boucle de frames à la main : `requestAnimationFrame` met la frame EN ATTENTE, et le test
- *  décide quand elle se joue et avec quel horodatage — donc de combien la caméra a tourné. */
+/** Joue le BATTEMENT à la main (#1403) : le lacet n'a plus d'horloge à lui — il est AVANCÉ par l'image
+ *  (`avancerLacet`), et le test décide de la cadence, donc de combien la caméra a tourné. Le
+ *  `requestAnimationFrame` stubé ne dit qu'une chose au module : une horloge d'images EXISTE (sans
+ *  elle, le maintien ne peut pas s'intégrer et la poussée fine arrive tout de suite). */
 function harnaisDeFrames() {
-  let enAttente: FrameRequestCallback[] = [];
-  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => enAttente.push(cb));
+  vi.stubGlobal('requestAnimationFrame', (() => 0) as unknown as typeof requestAnimationFrame);
   let horloge = 0;
   return {
-    /** Joue `n` frames de `dt` ms. Rend le temps écoulé. */
+    /** Joue `n` images de `dt` ms. Rend le temps écoulé. */
     jouer(n: number, dt = 16): number {
       for (let i = 0; i < n; i++) {
         horloge += dt;
-        const cb = enAttente[enAttente.length - 1];
-        enAttente = [];
-        cb?.(horloge);
+        avancerLacet(horloge);
       }
       return n * dt;
     },
@@ -105,7 +105,7 @@ describe('MAINTIEN — la caméra tourne tant que le geste dure, sans plafond', 
     expect(relache % 90).not.toBe(0); // on relâche bien entre deux crans
     arreterLacet();
     expect(getStageYaw()).toBe(relache);
-    h.jouer(120); // la boucle a tout le temps de ramener la vue quelque part : elle ne le fait pas
+    h.jouer(120); // les images ont tout le temps de ramener la vue quelque part : elles ne le font pas
     expect(getStageYaw()).toBe(relache);
   });
 });

@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { relacherCamera, tournerCamera } from './keybindings';
-import { PAS_TAP_DEG, SEUIL_MAINTIEN_MS, getStageYaw, resetStageYaw, rotAtYaw } from './stageYaw';
+import { PAS_TAP_DEG, SEUIL_MAINTIEN_MS, avancerLacet, getStageYaw, resetStageYaw, rotAtYaw } from './stageYaw';
 import { readSlot, deleteSlot } from './saves';
 import { testScene } from '../scenes/test-fixture';
 
@@ -28,18 +28,16 @@ function fakeStorage(): Storage {
   } as Storage;
 }
 
-/** Pilote la boucle de frames à la main : `requestAnimationFrame` met la frame EN ATTENTE, et le test
- *  décide quand elle se joue et avec quel horodatage. */
+/** Joue le BATTEMENT à la main (#1403) : c'est l'image qui AVANCE le lacet (`avancerLacet`, appelé en
+ *  production par l'hôte du stage), le module n'ayant plus d'horloge à lui. Le `requestAnimationFrame`
+ *  stubé ne dit qu'une chose : une horloge d'images existe. */
 function harnaisDeFrames() {
-  let enAttente: FrameRequestCallback[] = [];
-  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => enAttente.push(cb));
+  vi.stubGlobal('requestAnimationFrame', (() => 0) as unknown as typeof requestAnimationFrame);
   let horloge = 0;
   return (n: number, dt = 16): void => {
     for (let i = 0; i < n; i++) {
       horloge += dt;
-      const cb = enAttente[enAttente.length - 1];
-      enAttente = [];
-      cb?.(horloge);
+      avancerLacet(horloge);
     }
   };
 }

@@ -9,8 +9,9 @@
  *  1. les trois motifs vivants ne posent qu'UN `requestAnimationFrame` par image et ne peignent qu'un
  *     rendu — le compteur applicatif du canevas (`data-rendus`) dit exactement ce que le renderer a
  *     reçu (un canevas WebGL n'a pas d'arbre à interroger) ;
- *  2. un battement d'une horloge TIERCE (le lacet continu, `state/stageYaw`) dans la MÊME image ne
- *     s'ajoute pas au rendu de la boucle : la cession vit au module, et nulle part ailleurs.
+ *  2. un battement VENU D'AILLEURS (un geste qui tient déjà son horloge — la marche, un `pointermove`
+ *     que le navigateur cadence) dans la MÊME image ne s'ajoute pas au rendu de la boucle : la cession
+ *     vit au module, et nulle part ailleurs.
  */
 import { Profiler, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -186,12 +187,12 @@ describe('Trois motifs continus — une seule horloge (#1378)', () => {
     expect(canevas.dataset.rendus, 'le compteur du canevas ne suit pas les rendus').toBe(String(scènes.length));
   });
 
-  it('un battement du LACET dans la MÊME image ne double pas le rendu', () => {
+  it('un battement VENU D’AILLEURS dans la MÊME image ne double pas le rendu', () => {
     const canevas = monter();
     prémisses(canevas);
 
     const avant = scènes.length;
-    act(() => battreStageFrames()); // le lacet continu bat sur SON horloge (`state/stageYaw`)
+    act(() => battreStageFrames()); // un geste qui tient déjà son horloge fait battre le stage
     expect(scènes.length, 'le battement doit peindre : sans cela la suite serait vraie du vide').toBe(avant + 1);
 
     image(1); // moins de `MEME_IMAGE_MS` : c'est la MÊME image
@@ -209,8 +210,9 @@ describe('Trois motifs continus — une seule horloge (#1378)', () => {
     posesRaf = 0;
     let aLImage = 0;
     for (let i = 0; i < IMAGES; i++) {
-      // Le lacet continu (`state/stageYaw`) pose un yaw neuf — un commit React — puis bat sur SON
-      // horloge ; ce que ce contrat borne est ce que la boucle d'image ajoute PAR-DESSUS.
+      // Un lacet qui FRANCHIT un cran pose un yaw neuf — le seul commit React que la rotation coûte
+      // (#1403) — et le battement suit ; ce que ce contrat borne est ce que la boucle d'image ajoute
+      // PAR-DESSUS.
       act(() => écrans[0].root.render(écran(10 * (i + 1))));
       act(() => battreStageFrames());
       const avant = scènes.length;
@@ -321,6 +323,9 @@ describe('Deux écrans — aucun ne relâche les images de l’autre', () => {
  * CE QUE LA SONDE MESURE : les commits du SOUS-ARBRE PROFILÉ (l'écran monté ici), comptés par
  * `<Profiler>`. ANGLE MORT : un commit d'un parent qui ne re-rendrait pas cet écran ne s'y verrait
  * pas, et un état interne qui ne re-rendrait aucun composant du sous-arbre non plus.
+ *
+ * Le LACET TENU est le même contrat sur l'autre motif continu ; il exige l'HÔTE (c'est lui qui avance
+ * le lacet et tient les images) et se mesure donc là où l'hôte est monté : `stage/walk-frame-loop.test.tsx`.
  */
 describe('P2 — un motif continu ne commet pas (#1401)', () => {
   it('averse tenue sur 30 images : 0 commit React, alors que les images PEINTES montent d’autant', () => {
@@ -343,6 +348,4 @@ describe('P2 — un motif continu ne commet pas (#1401)', () => {
       `${commitsReact - commitsAvant} commits React pour ${IMAGES} images d’averse — aucun événement discret ne s’est produit, la borne est 0`,
     ).toBe(0);
   });
-
-  it.todo('P2 — le lacet tenu ne commet pas (#1403 : useSyncExternalStore(subscribeStageYaw) commet par frame — le contrat s’active avec le fix)');
 });

@@ -8,8 +8,15 @@
  * de vue vivant n'a rien à faire dans une sauvegarde. Même patron que `state/viewLevel.ts` — le clavier
  * le PILOTE, le rendu le LIT.
  *
- * TROIS RÉGIMES, une seule boucle de frames (`mode`) :
- *  - `repos` : rien ne tourne, la boucle est arrêtée. Le lacet reste OÙ IL EST — aucun angle n'est
+ * PULLÉ, JAMAIS POUSSÉ (#1403) : ce module n'a AUCUNE horloge. Il expose son avancement
+ * (`avancerLacet(now)`) et son régime (`lacetActif()`) ; c'est le battement unique du stage
+ * (`gameIso/stage/stageFrames`, tenu par l'hôte tant que `lacetActif`) qui l'appelle à l'image, et les
+ * consommateurs par-frame relisent `getStageYaw()` là. Ses ABONNÉS, eux, ne sont avisés qu'au DISCRET
+ * — franchissement de cran, changement de régime, pose/remise à zéro : un avis par image, c'est un
+ * commit React par image.
+ *
+ * TROIS RÉGIMES, une seule avance (`mode`) :
+ *  - `repos` : rien ne tourne, l'avance est un no-op. Le lacet reste OÙ IL EST — aucun angle n'est
  *    privilégié, il n'y a pas de ré-aimantage.
  *  - `approche` : le PAS FIN. `cible` est là où le joueur veut regarder, `courant` est là où la caméra
  *    EST, et il y court (exponentielle `TAU_MS`) — le pas glisse au lieu de sauter.
@@ -56,6 +63,14 @@ let mode: ModeLacet = 'repos';
 let sens: 1 | -1 = 1;
 let dernier = 0;
 const subs = new Set<() => void>();
+
+/** QUART DE TOUR d'un lacet — la composante DISCRÈTE que ce module possède (le cran de départ,
+ *  `camRot`, est au store) : c'est son changement qui fait un avis (cf. `viewRot`/`rotAtYaw`). */
+const cranDe = (deg: number): number => Math.round(deg / 90);
+
+/** Ce que les abonnés ont DÉJÀ appris : sans quoi « au franchissement » se relirait à chaque image. */
+let cranAnnonce = 0;
+let modeAnnonce: ModeLacet = 'repos';
 
 /** Lacet courant (degrés) à ajouter au cran de la vue. */
 export const getStageYaw = (): number => courant;
@@ -110,12 +125,25 @@ export function yawTarget(courantDeg: number, cibleDeg: number, deltaDeg: number
   return courantDeg + Math.max(-AVANCE_MAX_DEG, Math.min(AVANCE_MAX_DEG, avance));
 }
 
+/** Avis INCONDITIONNEL, et re-calage de ce qui a été annoncé : la pose et la remise à zéro sont des
+ *  événements en elles-mêmes. */
 function notifier(): void {
+  cranAnnonce = cranDe(courant);
+  modeAnnonce = mode;
   subs.forEach((f) => f());
 }
 
-/** UNE frame, quel que soit le régime. Le mode décide ce qui avance ; `repos` arrête la boucle. */
-function frame(now: number): void {
+/** Avis au DISCRET seul — le franchissement d'un cran ou le changement de régime. Entre les deux, le
+ *  lacet avance sans rien annoncer : ses lecteurs par-frame le relisent à l'image (`getStageYaw`). */
+function notifierSiDiscret(): void {
+  if (cranDe(courant) === cranAnnonce && mode === modeAnnonce) return;
+  notifier();
+}
+
+/** UNE avance, quel que soit le régime, à l'horodatage de l'image qui l'appelle. Le mode décide ce qui
+ *  avance ; `repos` ne fait rien (l'hôte relâche alors ses images, cf. `lacetActif`). */
+export function avancerLacet(now: number): void {
+  if (mode === 'repos') return;
   const dt = dernier ? now - dernier : 16;
   dernier = now;
   if (mode === 'libre') {
@@ -124,18 +152,21 @@ function frame(now: number): void {
     courant = yawStep(courant, cible, dt);
     if (courant === cible) mode = 'repos';
   }
-  notifier();
-  if (mode === 'repos') return;
-  requestAnimationFrame(frame);
+  notifierSiDiscret();
 }
 
-/** Passe au régime `m` et s'assure qu'UNE boucle tourne (jamais deux). */
+/** Le lacet est-il EN RÉGIME ? C'est à cette question que l'hôte tient (ou relâche) ses images. */
+export function lacetActif(): boolean {
+  return mode !== 'repos';
+}
+
+/** Passe au régime `m` : l'avance repart de l'image suivante, et l'avis de régime est ce qui fait tenir
+ *  le battement à l'hôte. */
 function relancer(m: 'libre' | 'approche'): void {
   const enVol = mode !== 'repos';
   mode = m;
-  if (enVol) return;
-  dernier = 0;
-  requestAnimationFrame(frame);
+  if (!enVol) dernier = 0;
+  notifierSiDiscret();
 }
 
 /** Pose la CIBLE et lance (ou relance) l'approche — le geste commun aux deux poussées fines. */
@@ -176,6 +207,7 @@ export function arreterLacet(): void {
   if (mode !== 'libre') return;
   cible = courant;
   mode = 'repos';
+  notifierSiDiscret();
 }
 
 /** Pose le lacet à `deg` SANS animation : le glisser-tourner du pointeur, qui suit le doigt image par

@@ -205,7 +205,7 @@ import { signalerWebglRefusé } from './webglSupport';
 import { materiauProfondeurPerce, percerMateriau, PERCAGE_MAX_HEROS } from '../backends/webgl/percageLocal';
 import { creerPercage, type ActeurPerce, type Percage } from './percage';
 import type { Lid } from './architectureVisibility';
-import { demanderFrames, demanderUneImage, relacherFrames, signalerImagePeinte, subscribeStageFrames } from './stageFrames';
+import { demanderUneImage, signalerImagePeinte, subscribeStageFrames, useBattementContinu } from './stageFrames';
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
 export const CONVENTION = 'jeu' as const;
@@ -272,7 +272,16 @@ export function setStageRendererFactory(fabrique: ((canvas: HTMLCanvasElement) =
 export type StageFrame =
   /** Regard de PLATEAU (iso losange, edge-on, dessus) : le cran/lacet, la translation caméra et le
    *  zoom du stage. Le mode discrimine une VUE, pas un backend. */
-  | { mode: 'plateau'; dims: Dims; cam: { x: number; y: number }; zoom: number }
+  | {
+      mode: 'plateau';
+      dims: Dims;
+      cam: { x: number; y: number };
+      /** LACET À L'IMAGE (#1403) : sous rotation continue, l'angle réel se REDEMANDE dans la passe de
+       *  dessin — celui de `dims` est celui du dernier commit, donc le cran. Absent chez l'hôte qui ne
+       *  tourne pas en continu (l'éditeur). */
+      yawAt?: () => number;
+      zoom: number;
+    }
   /**
    * Regard de PLATEAU cadré par un VIEWBOX MOBILE (#1176, P3-3) — la convention de l'ÉDITEUR de scènes
    * (`ui/editor/EditorCanvas.tsx`) : aucune caméra de groupe, le viewBox rendu EST le cadrage, et
@@ -614,16 +623,6 @@ function dir8DuSegment(dx: number, dz: number): Dir8 | null {
   return best;
 }
 
-/** Tient le battement unique du stage (`stageFrames`) tant que `actif`, sous une clé d'INSTANCE : deux
- *  écrans montés ne se relâchent pas les images l'un de l'autre, et un motif éteint rend les siennes. */
-function useBattementContinu(actif: boolean, nom: string): void {
-  useEffect(() => {
-    if (!actif) return;
-    const source = Symbol(nom);
-    demanderFrames(source);
-    return () => relacherFrames(source);
-  }, [actif, nom]);
-}
 export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, decalque, spritePicking = true, percage, pionsEnDisques = false, onEntreeEnScene }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
@@ -1214,7 +1213,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       const écran = frame.mode === 'viewbox'
         ? viewBoxScreen(frame.viewBox, { w, h })
         : stageScreen(anim ? anim.cam() : frame.cam, frame.zoom, { w, h });
-      f = stage3dFramingFor({ dims: frame.dims, mpt, screen: écran, canvas: { w, h } });
+      // Le lacet de l'IMAGE quand l'hôte en sert un (#1403) : la même valeur que celle dont sa caméra
+      // (`camAt`) vient d'être tirée, sans quoi le sujet cadré dériverait au lieu de tourner.
+      const yawImage = frame.mode === 'plateau' ? frame.yawAt : undefined;
+      const dimsCadre = yawImage ? { ...frame.dims, yawDeg: yawImage() } : frame.dims;
+      f = stage3dFramingFor({ dims: dimsCadre, mpt, screen: écran, canvas: { w, h } });
       const cible = new THREE.Vector3(f.centre.x, f.centre.y, f.centre.z);
       const boite = geometry.boundingBox;
       const rayon = boite ? boite.getSize(new THREE.Vector3()).length() / 2 : 100;

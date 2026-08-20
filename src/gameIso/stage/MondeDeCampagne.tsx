@@ -32,7 +32,7 @@ import { Dims, capsuleCenter } from '../../geometry/iso';
 import { getViewZ, subscribeViewZ } from '../../state/viewLevel';
 import { setVisibleTileBounds } from '../viewport';
 import { useWalkAnim } from '../fx/useWalkAnim';
-import { subscribeStageFrames, battreStageFrames, demanderFrames, relacherFrames } from './stageFrames';
+import { subscribeStageFrames, subscribeStagePrelude, battreStageFrames, demanderFrames, relacherFrames, useBattementContinu } from './stageFrames';
 import { getStagePan, subscribeStagePan } from '../../state/stagePan';
 import { walkPoseAt, type WalkPos } from '../fx/walkPose';
 import { buildRoofs, clearedSpace } from '../builders/roofs';
@@ -47,11 +47,11 @@ import { actorCapsuleOf } from './actorCapsule';
 import { VolumetricWorld, type WorldFrame } from './VolumetricWorld';
 import { viewPolicy } from './viewPolicy';
 import { SansWebgl, useWebglRefusé } from './SansWebgl';
-import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../../state/stageYaw';
+import { avancerLacet, getStageYaw, lacetActif, subscribeStageYaw, viewRot, viewYawDeg } from '../../state/stageYaw';
 import { visibilityField } from '../backends/webgl/visibilityTint';
 import { useExploreCourant } from './exploreCourant';
 import { roomZonesByElKey, type KeepEl, type TintAt } from '../backends/webgl/sceneMeshes';
-import { stageCamTransform } from './stageCam';
+import { stageCamTransform, stageYawCorrection } from './stageCam';
 import { roomCutawayAllies, roomFocusAt } from './roomFocus';
 import { NO_CLEARED_SPACE, frontFacadeCutaway, cutawayForSection, cutawayOverhead, spaceCellKey } from './architectureVisibility';
 import { clePercage } from './percage';
@@ -205,25 +205,43 @@ function CorpsDuMonde() {
 
   const mpt = scene ? sceneMetresPerTile(scene) : 2;
   const indoor = useMemo(() => (scene ? isIndoor(scene) : false), [scene]);
-  // LACET CONTINU (#1176, P2-7) : deux formes du MÊME regard.
+  // LACET CONTINU (#1176, P2-7 ; #1403) : trois formes du MÊME regard — le CRAN (`dims`), la
+  // projection du COMMIT (`dimsVue`) et celle de l'IMAGE (`dimsAt`).
   // `dims` est le CRAN — la géométrie de DÉGAGEMENT s'y décide, et ses memos ne doivent pas se rejouer
   // soixante fois par seconde pendant une rotation. Son cran est celui que le lacet RÉEL regarde
   // (`viewRot`), pas celui du store : sous lacet libre `camRot` ne bouge plus, et un demi-tour
   // laisserait le dégagement au cran du départ. Il ne change qu'au FRANCHISSEMENT d'un quart —
   // l'abonnement au lacet est ce qui fait re-rendre à ce moment-là.
-  // `dimsVue` porte en plus le lacet RÉEL : c'est la projection que voient la caméra volumique, le
-  // picking et TOUS les overlays SVG — le seul endroit où le lacet libre entre dans le stage,
-  // `tileCenter` s'occupant du reste (`geometry/iso.ts`).
-  // S'ABONNER au lacet EST la dépendance de rendu des deux formes ci-dessous (`viewRot`/`viewYawDeg`
-  // lisent la source, pas une valeur passée) : sans cet abonnement, rien ne suivrait la rotation.
+  // `dimsVue` porte en plus le lacet, celui de l'instant du COMMIT : c'est la projection que reçoivent
+  // le picking et TOUS les overlays SVG — le seul endroit où le lacet entre dans un rendu du stage,
+  // `tileCenter` s'occupant du reste (`geometry/iso.ts`). Ce qui vit à l'IMAGE (caméra volumique,
+  // groupe d'overlays) lit `dimsAt`, jamais cette valeur-là.
+  // Le lacet n'AVISE qu'au DISCRET (#1403, `state/stageYaw`) : franchissement de cran, départ et arrêt
+  // du régime, pose au pointeur. S'y abonner EST la dépendance de rendu des deux formes ci-dessous
+  // (`viewRot`/`viewYawDeg` lisent la source à l'instant du commit, pas une valeur passée) ; entre deux
+  // avis, le lacet AVANCE quand même (le prélude du battement, ci-dessous) et ce sont les lecteurs
+  // par-frame qui le suivent : la caméra volumique par `yawAt`, le groupe d'overlays par sa
+  // reprojection. Un avis par image serait un commit React par image.
   useSyncExternalStore(subscribeStageYaw, getStageYaw, getStageYaw);
+  // RÉGIME du lacet — état DISCRET (il ne change qu'au départ et à l'arrêt du geste) : c'est lui, et
+  // rien d'autre, qui fait tenir les images à l'hôte pendant une rotation. Le module n'a plus d'horloge.
+  const lacetTenu = useSyncExternalStore(subscribeStageYaw, lacetActif, lacetActif);
+  useBattementContinu(lacetTenu, 'lacet');
   const cranVue = viewRot(shownRot) ?? shownRot;
   const dims = useMemo<Dims>(() => ({ ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: cranVue, view: pov ? 'iso' : viewMode, edge: shownEdge }), [scene, cranVue, viewMode, shownEdge, pov]);
-  const yawVue = viewYawDeg(shownRot, shownEdge); // change à chaque frame de rotation (`yawOffset`)
-  const dimsVue = useMemo<Dims>(
-    () => (yawVue == null ? dims : { ...dims, yawDeg: yawVue }),
-    [dims, yawVue],
-  );
+  /** Projection VIVE à l'instant d'une IMAGE : le lacet y est RELU. Ce que lisent les consommateurs
+   *  par-frame (caméra, cadre de tuiles visibles), jamais un rendu React. */
+  const dimsAt = (): Dims => ({ ...dims, yawDeg: viewYawDeg(shownRot, shownEdge) });
+  // Projection du COMMIT : le lacet y est celui de l'instant du rendu — RELU à chaque rendu, et donc
+  // dépendance de la projection commise. C'est ce qui rend la reprojection d'écran du groupe
+  // TENABLE : elle se mesure entre cette projection et celle de l'image, et tout commit la ramène à
+  // rien (le lacet n'avise qu'au discret, un rendu par cran / départ / arrêt / pose — jamais par
+  // image). La figer au cran, c'est laisser le résidu sous-cran survivre au dernier battement :
+  // overlays et picking peints à un lacet, monde à un autre, sans plus rien pour les recaler.
+  const yawVue = viewYawDeg(shownRot, shownEdge);
+  const dimsVue = useMemo<Dims>(() => ({ ...dims, yawDeg: yawVue }), [dims, yawVue]);
+  const dimsVueRef = useRef(dimsVue);
+  dimsVueRef.current = dimsVue;
   const partyLeader = partyLeaderOf(party);
   const wnow = performance.now();
   // Position VISUELLE des jetons à un instant donné : le rendu la demande au sien, les boucles hors
@@ -244,9 +262,12 @@ function CorpsDuMonde() {
     // Visée du SUJET : le milieu de sa capsule (`actorCapsuleOf`, la même que consomme l'occlusion), et
     // non le sol de sa case — viser le sol décale le cadre d'une demi-capsule vers le haut de la scène,
     // donc vers ce qui SURPLOMBE le sujet (biais multiplié par le zoom).
+    // Projection VIVE (`dimsAt`) et non celle du commit : la caméra volumique cadre le point MONDE que
+    // cette valeur désigne à l'écran (`stage3dFramingFor`), et lire deux lacets aux deux bouts de la
+    // même image ferait dériver le sujet au lieu de le faire tourner autour.
     const fc = capsuleCenter(actorCapsuleOf(
       { x: focus.x, y: focus.y, h: heightAt(scene!, Math.round(focus.x), Math.round(focus.y), activeZ) },
-      dimsVue,
+      dimsAt(),
     ));
     return { x: VW / 2 - fc.x, y: VH / 2 - fc.y };
   };
@@ -271,13 +292,18 @@ function CorpsDuMonde() {
   const camAtRef = useRef(camAt);
   camAtRef.current = camAt;
   const camAtStable = useRef((now: number) => camAtRef.current(now)).current;
+  // LACET À L'IMAGE, même patron : le monde volumique le REDEMANDE dans sa passe de dessin au lieu de
+  // recevoir l'angle du dernier commit — sans quoi il ne tournerait qu'aux crans.
+  const yawAtRef = useRef(() => viewYawDeg(shownRot, shownEdge));
+  yawAtRef.current = () => viewYawDeg(shownRot, shownEdge);
+  const yawAtStable = useRef((): number => yawAtRef.current()).current;
   // LE REGARD, et rien d'autre : c'est le SEUL endroit où les deux vues divergent de cadrage.
   const frameMonde = useMemo<WorldFrame>(
     () => (pov
       ? { mode: 'pov', partyPos, facing: capPov ?? 'S', indoor, cid: partyLeader?.id ?? null }
-      : { mode: 'plateau', dims: dimsVue, camAt: camAtStable, zoom: zoomVue }),
+      : { mode: 'plateau', dims: dimsVue, camAt: camAtStable, yawAt: yawAtStable, zoom: zoomVue }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pov, partyPos, capPov, indoor, partyLeader?.id, dimsVue, zoomVue, camAtStable],
+    [pov, partyPos, capPov, indoor, partyLeader?.id, dimsVue, zoomVue, camAtStable, yawAtStable],
   );
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
   // Cases LOGIQUES des alliés — ce que la marche fait glisser, jamais ce qu'elle fait bouger.
@@ -315,6 +341,10 @@ function CorpsDuMonde() {
   // Le FRANCHISSEMENT d'une case, lui, n'est pas une affaire d'image : c'est l'événement DISCRET dont
   // dépendent les vérités de pièce et de dégagement (`visualAllies` → `roomFocus`/`cleared`/`propEls`).
   // Il demande UN rendu — à la cadence du PAS, jamais à celle de la frame.
+  // LE LACET AVANCE ICI, et nulle part ailleurs (#1403) : le battement le tire, il ne se pousse pas.
+  // En PRÉLUDE de l'image, donc avant TOUT lecteur — la passe de dessin du canevas volumique et la
+  // reprojection d'overlays ci-dessous lisent le même angle, celui de leur propre image.
+  useEffect(() => subscribeStagePrelude(avancerLacet), []);
   useEffect(() => subscribeStageFrames(() => {
     const now = performance.now();
     const lissage = lissageRef.current;
@@ -323,11 +353,14 @@ function CorpsDuMonde() {
       relacherFrames(sourceFocale); // la focale est arrivée : plus rien à tenir en images
     }
     const { cam: c, focal } = camEtFocalAt(now);
+    const dimsImage = dimsAt();
     camRef.current = c;
     focalRef.current = focal;
-    setVisibleTileBounds(computeViewBounds(c, zoom, dimsVue));
+    setVisibleTileBounds(computeViewBounds(c, zoom, dimsImage));
     const g = camGRef.current;
-    if (g) g.style.transform = stageCamTransform(c, zoomVue);
+    // Le groupe d'overlays porte sa caméra ET, pendant une rotation, la reprojection d'écran de ce que
+    // le lacet a parcouru depuis le commit (`stageYawCorrection`, chaîne vide hors rotation).
+    if (g) g.style.transform = `${stageCamTransform(c, zoomVue)} ${stageYawCorrection(dimsVueRef.current, dimsImage)}`.trim();
     const k = tilesKey(visualTilesAt(now));
     if (k !== visualAlliesKey && demandeRef.current !== k) {
       demandeRef.current = k;
@@ -509,6 +542,9 @@ function CorpsDuMonde() {
     (((battle.action === null || battle.action === 'cast') && activeC?.kind === 'hero') ||
       !!preemptAiming || // Tir rapide armé pendant la pause : on suit le survol (réticule + trait de visée) alors qu'il n'y a AUCUN actif
       !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, pendingSiegeAim, battle }));
+  // Le picking inverse la projection COMMISE : exacte à chaque commit du lacet (cran, départ, arrêt,
+  // pose au pointeur). PENDANT un maintien entre deux crans, elle retarde du lacet parcouru depuis le
+  // dernier commit — jusqu'à un demi-cran, le temps du geste (#1403).
   const pointeur = useStagePointer({ svgRef, scene, dims: dimsVue, zoom, camRef, hoverTracking, partyLeader, activeZ });
   const hover = pointeur.hover;
   const visée = useHoverTargeting(scene, hover, myTurn, pointeur.hoveredPortal);
