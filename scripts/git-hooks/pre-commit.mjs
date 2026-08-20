@@ -8,8 +8,8 @@
 // docs/raw/, les fiches régénérables — #487).
 // Testabilité : des chemins passés en arguments remplacent la liste stagée (aucun toucher à l'index).
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_GUARD_ACTIVE,
@@ -28,7 +28,24 @@ import { scanBattleRngEngineLeak } from '../guards/lib/battleRngEngineLeak.mjs';
 import { battleRngEngineLeakExcluded } from '../guards/lib/battleRngEngineLeakWhitelist.mjs';
 import { scanNpmLockHoisted } from '../guards/lib/npmLockHoisted.mjs';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+// Deux racines DISTINCTES, jamais interchangeables — le hook est installé par `core.hooksPath` ABSOLU,
+// donc le FICHIER joué est toujours celui de l'arbre principal, quel que soit le worktree qui committe.
+//  - ROOT = racine du worktree QUI COMMITTE, l'arbre à JUGER (contenu lu, scripts de garde joués, cwd
+//    des sous-processus). git chdir dans la racine de la copie de travail avant d'invoquer un hook
+//    (githooks(5)), donc process.cwd() la porte ; `rev-parse --show-toplevel` la normalise.
+//  - HOOK_TREE = arbre qui HÉBERGE le hook, seul garanti `npm install`é (un worktree d'agent ne porte
+//    qu'un node_modules de caches). Il ne sert QU'À retrouver l'outillage installé, jamais à juger.
+const HOOK_TREE = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const ROOT = (() => {
+  try {
+    const top = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
+    return top ? resolve(top) : HOOK_TREE;
+  } catch { return HOOK_TREE; }
+})();
+// tsx est de l'OUTILLAGE, pas du contenu jugé : il vit là où l'install a eu lieu. Le SCRIPT qu'il joue,
+// lui, reste celui de ROOT.
+const tsxIn = (root) => join(root, 'node_modules', 'tsx', 'dist', 'cli.mjs');
+const TSX_CLI = existsSync(tsxIn(ROOT)) ? tsxIn(ROOT) : tsxIn(HOOK_TREE);
 
 // 5ᵉ forme du garde-fou #142 (`.label` passé où le paramètre de déclaration est `id`) : map GLOBALE
 // des déclarations id-param sur le MÊME périmètre que `label-logic-guard.test.ts` (déclaration et
@@ -126,7 +143,7 @@ if (dataStaged.length) {
   try {
     execFileSync(
       process.execPath,
-      [join(ROOT, 'node_modules', 'tsx', 'dist', 'cli.mjs'), join(ROOT, 'scripts', 'guards', 'validate-data.mts'), ...dataStaged],
+      [TSX_CLI, join(ROOT, 'scripts', 'guards', 'validate-data.mts'), ...dataStaged],
       { cwd: ROOT, stdio: 'inherit' },
     );
   } catch {
@@ -188,7 +205,7 @@ if (atelierQuadStaged) {
   try {
     execFileSync(
       process.execPath,
-      [join(ROOT, 'node_modules', 'tsx', 'dist', 'cli.mjs'), join(ROOT, 'scripts', 'rig', 'compile-dessin-quad.mts'), '--check'],
+      [TSX_CLI, join(ROOT, 'scripts', 'rig', 'compile-dessin-quad.mts'), '--check'],
       { cwd: ROOT, stdio: 'inherit' },
     );
   } catch {
