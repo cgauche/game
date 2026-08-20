@@ -3,6 +3,10 @@
     "id": "test-auto-bands",
     "label": "Réussite / échec automatiques",
     "ref": "LDB 12 l.28/32",
+    "source": {
+      "book": "livre-de-base",
+      "page": 150
+    },
     "group": "Tests",
     "kind": "mode",
     "default": "normal",
@@ -17,6 +21,10 @@
     "id": "test-critiques-doubles",
     "label": "Succès / échec stupéfiants",
     "ref": "LDB 12 l.127",
+    "source": {
+      "book": "livre-de-base",
+      "page": 153
+    },
     "group": "Tests",
     "kind": "flag",
     "default": false,
@@ -26,6 +34,10 @@
     "id": "test-fast-sl",
     "label": "Calculer rapidement un DR",
     "ref": "LDB 12 l.102",
+    "source": {
+      "book": "livre-de-base",
+      "page": 152
+    },
     "group": "Tests",
     "kind": "flag",
     "default": false,
@@ -35,6 +47,10 @@
     "id": "test-over-100",
     "label": "Tests supérieurs à 100 %",
     "ref": "LDB 12 l.75",
+    "source": {
+      "book": "livre-de-base",
+      "page": 151
+    },
     "group": "Tests",
     "kind": "flag",
     "default": false,
@@ -44,6 +60,10 @@
     "id": "test-auto-band-width",
     "label": "Largeur des bandes automatiques",
     "ref": "LDB 12 l.32",
+    "source": {
+      "book": "livre-de-base",
+      "page": 150
+    },
     "group": "Tests",
     "kind": "param",
     "default": 5,
@@ -55,6 +75,10 @@
     "id": "test-extended-min-sl",
     "label": "Tests étendus : DR 0 = ±1 minimum",
     "ref": "LDB 12 l.185",
+    "source": {
+      "book": "livre-de-base",
+      "page": 155
+    },
     "group": "Tests",
     "kind": "flag",
     "default": false,
@@ -64,6 +88,10 @@
     "id": "test-metier-int",
     "label": "Métier (Savoir) : Int au lieu de Dex",
     "ref": "LDB 09 l.358",
+    "source": {
+      "book": "livre-de-base",
+      "page": 126
+    },
     "group": "Tests",
     "kind": "flag",
     "default": false,
@@ -89,6 +117,10 @@
     "id": "fortune-mid-session",
     "label": "Chance regagnée en cours de session",
     "ref": "LDB 17 l.47",
+    "source": {
+      "book": "livre-de-base",
+      "page": 171
+    },
     "group": "Destin & Résistance",
     "kind": "mode",
     "default": "off",
@@ -109,6 +141,10 @@
     "id": "combat-advantage-cap",
     "label": "Plafond d’Avantage",
     "ref": "LDB 14 l.198",
+    "source": {
+      "book": "livre-de-base",
+      "page": 164
+    },
     "group": "Combat",
     "kind": "param",
     "default": 10,
@@ -120,6 +156,10 @@
     "id": "combat-advantage-cap-bi",
     "label": "Plafond d’Avantage = Bonus d’Initiative",
     "ref": "LDB 14 l.197",
+    "source": {
+      "book": "livre-de-base",
+      "page": 164
+    },
     "group": "Combat",
     "kind": "flag",
     "default": false,
@@ -129,6 +169,10 @@
     "id": "combat-diff-cap-bonus",
     "label": "Plafond des bonus de Difficulté",
     "ref": "LDB 14 l.95",
+    "source": {
+      "book": "livre-de-base",
+      "page": 162
+    },
     "group": "Combat",
     "kind": "param",
     "default": 60,
@@ -141,6 +185,10 @@
     "id": "combat-diff-cap-malus",
     "label": "Plafond des malus de Difficulté",
     "ref": "LDB 14 l.95",
+    "source": {
+      "book": "livre-de-base",
+      "page": 162
+    },
     "group": "Combat",
     "kind": "param",
     "default": 30,
@@ -153,6 +201,10 @@
     "id": "combat-frappe-mortelle",
     "label": "Frappe Mortelle",
     "ref": "LDB 14 l.9",
+    "source": {
+      "book": "livre-de-base",
+      "page": 160
+    },
     "group": "Combat",
     "kind": "flag",
     "default": false,
@@ -162,6 +214,10 @@
     "id": "combat-defensive-stance",
     "label": "Sur la Défensive",
     "ref": "LDB 13 l.118",
+    "source": {
+      "book": "livre-de-base",
+      "page": 158
+    },
     "group": "Combat",
     "kind": "flag",
     "default": true,
@@ -171,6 +227,10 @@
     "id": "combat-critical-deflect",
     "label": "Déviation Critique",
     "ref": "LDB 63 l.30",
+    "source": {
+      "book": "livre-de-base",
+      "page": 299
+    },
     "group": "Combat",
     "kind": "flag",
     "default": true,
@@ -180,6 +240,10 @@
     "id": "combat-aa-blessures",
     "label": "Blessures & Critiques (Aux Armes)",
     "ref": "AA 07 l.1-185",
+    "source": {
+      "book": "aux-armes",
+      "page": 80
+    },
     "group": "Combat",
     "kind": "mode",
     "default": "ldb",
@@ -193,6 +257,10 @@
     "id": "combat-aa-avantage-groupe",
     "label": "Avantage de groupe (Aux Armes)",
     "ref": "AA 11 l.3-100",
+    "source": {
+      "book": "aux-armes",
+      "page": 133
+    },
     "group": "Combat",
     "kind": "flag",
     "default": false,
@@ -202,6 +270,10 @@
     "id": "combat-ranged-melee-penalty",
     "label": "Tir dans un corps à corps",
     "ref": "LDB 14 l.112-116",
+    "source": {
+      "book": "livre-de-base",
+      "page": 162
+    },
     "group": "Combat",
     "kind": "flag",
     "default": true,
@@ -211,6 +283,10 @@
     "id": "combat-helpless-mode",
     "label": "Cible Inconsciente",
     "ref": "LDB 16 l.113",
+    "source": {
+      "book": "livre-de-base",
+      "page": 169
+    },
     "group": "Combat",
     "kind": "mode",
     "default": "critique",
@@ -223,7 +299,11 @@
   {
     "id": "combat-sudden-death",
     "label": "Mort Subite",
-    "ref": "LDB 18 l.51",
+    "ref": "LDB 18 l.42",
+    "source": {
+      "book": "livre-de-base",
+      "page": 173
+    },
     "group": "Combat",
     "kind": "mode",
     "default": "figurants",
@@ -238,6 +318,10 @@
     "id": "combat-weapon-reach",
     "label": "Longueur d’arme",
     "ref": "LDB 62 l.172",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297
+    },
     "group": "Combat",
     "kind": "flag",
     "default": false,
@@ -247,6 +331,10 @@
     "id": "combat-init-method",
     "label": "Méthode d’Initiative",
     "ref": "LDB 13 l.29",
+    "source": {
+      "book": "livre-de-base",
+      "page": 156
+    },
     "group": "Combat",
     "kind": "mode",
     "default": "fixed-i",
@@ -261,6 +349,10 @@
     "id": "combat-init-reroll",
     "label": "Relancer l’Initiative chaque Round",
     "ref": "LDB 13 l.43",
+    "source": {
+      "book": "livre-de-base",
+      "page": 156
+    },
     "group": "Combat",
     "kind": "flag",
     "default": false,
@@ -270,6 +362,10 @@
     "id": "combat-se-fatiguer",
     "label": "Se fatiguer au combat",
     "ref": "LDB 16 l.97",
+    "source": {
+      "book": "livre-de-base",
+      "page": 168
+    },
     "group": "Combat",
     "kind": "flag",
     "default": false,
@@ -304,6 +400,10 @@
     "id": "social-status-reaction-roll",
     "label": "Réaction au Statut (1d10)",
     "ref": "LDB 08 l.40/59",
+    "source": {
+      "book": "livre-de-base",
+      "page": 50
+    },
     "group": "Social",
     "kind": "flag",
     "default": false,
@@ -313,6 +413,10 @@
     "id": "social-begging-bonus",
     "label": "Mendicité et Statut",
     "ref": "LDB 08 l.63",
+    "source": {
+      "book": "livre-de-base",
+      "page": 51
+    },
     "group": "Social",
     "kind": "flag",
     "default": false,
@@ -322,6 +426,10 @@
     "id": "social-charm-intra-tier",
     "label": "Statut au sein d’un même Échelon",
     "ref": "LDB 08 l.57",
+    "source": {
+      "book": "livre-de-base",
+      "page": 51
+    },
     "group": "Social",
     "kind": "flag",
     "default": false,
@@ -331,6 +439,10 @@
     "id": "creation-gnome-jouable",
     "label": "Gnome jouable (NADJ)",
     "ref": "NADJ 14 l.5",
+    "source": {
+      "book": "nuits-agitees-et-dures-journees",
+      "page": 86
+    },
     "group": "Création",
     "kind": "flag",
     "default": false,
@@ -339,7 +451,11 @@
   {
     "id": "creation-signes-astraux",
     "label": "Signes astraux à la création",
-    "ref": "ADE II 3",
+    "ref": "ADE II 03 l.30",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 39
+    },
     "group": "Création",
     "kind": "flag",
     "default": true,
@@ -349,6 +465,10 @@
     "id": "market-mode",
     "label": "Système d’achat / vente",
     "ref": "LDB 59 l.15",
+    "source": {
+      "book": "livre-de-base",
+      "page": 290
+    },
     "group": "Marché",
     "kind": "mode",
     "default": "complet",
@@ -364,6 +484,10 @@
     "id": "market-tenir-comptes",
     "label": "Tenir les comptes (Statut)",
     "ref": "LDB 59 l.9",
+    "source": {
+      "book": "livre-de-base",
+      "page": 290
+    },
     "group": "Marché",
     "kind": "flag",
     "default": false,
@@ -373,6 +497,10 @@
     "id": "market-guild",
     "label": "Guildes d’Artisans",
     "ref": "LDB 60 l.38",
+    "source": {
+      "book": "livre-de-base",
+      "page": 292
+    },
     "group": "Marché",
     "kind": "flag",
     "default": false,
@@ -395,6 +523,10 @@
     "id": "tavern-games",
     "label": "Jeux de taverne",
     "ref": "NADJ 16 l.9",
+    "source": {
+      "book": "nuits-agitees-et-dures-journees",
+      "page": 91
+    },
     "group": "Activités",
     "kind": "flag",
     "default": false,
@@ -404,6 +536,10 @@
     "id": "tavern-games-rapides",
     "label": "Jeux de taverne rapides",
     "ref": "NADJ 16 l.9-11",
+    "source": {
+      "book": "nuits-agitees-et-dures-journees",
+      "page": 91
+    },
     "group": "Activités",
     "kind": "flag",
     "default": false,
@@ -412,7 +548,11 @@
   {
     "id": "interlude-enabled",
     "label": "Entre deux aventures",
-    "ref": "LDB 22 l.14",
+    "ref": "LDB 21 l.108",
+    "source": {
+      "book": "livre-de-base",
+      "page": 192
+    },
     "group": "Activités",
     "kind": "flag",
     "default": true,
@@ -422,6 +562,10 @@
     "id": "interlude-elf-duty",
     "label": "Devoir elfique (Prestige Elfique)",
     "ref": "LDB 23 l.54-56",
+    "source": {
+      "book": "livre-de-base",
+      "page": 196
+    },
     "group": "Activités",
     "kind": "flag",
     "default": true,
@@ -464,6 +608,10 @@
     "id": "advancement-career-jump",
     "label": "Sauts de Niveau de Carrière (accord du MJ)",
     "ref": "LDB 07 l.140/148",
+    "source": {
+      "book": "livre-de-base",
+      "page": 49
+    },
     "group": "Avancement",
     "kind": "flag",
     "default": false,
@@ -473,6 +621,10 @@
     "id": "advancement-mentor",
     "label": "Mentor requis hors carrière",
     "ref": "LDB 07 l.89",
+    "source": {
+      "book": "livre-de-base",
+      "page": 48
+    },
     "group": "Avancement",
     "kind": "flag",
     "default": false,
@@ -481,7 +633,11 @@
   {
     "id": "magic-composant",
     "label": "Composants d'incantation",
-    "ref": "LDB 46 l.159",
+    "ref": "LDB 46 l.107",
+    "source": {
+      "book": "livre-de-base",
+      "page": 236
+    },
     "group": "Magie",
     "kind": "flag",
     "default": false,
@@ -491,6 +647,10 @@
     "id": "vents-tourbillonnants",
     "label": "Vents Tourbillonnants",
     "ref": "LDB 46 l.179-190",
+    "source": {
+      "book": "livre-de-base",
+      "page": 238
+    },
     "group": "Magie",
     "kind": "mode",
     "default": "off",
@@ -505,6 +665,10 @@
     "id": "prayer-conviction",
     "label": "Prêchez ma sœur !",
     "ref": "LDB 40 l.42",
+    "source": {
+      "book": "livre-de-base",
+      "page": 218
+    },
     "group": "Prières",
     "kind": "flag",
     "default": false,
@@ -514,6 +678,10 @@
     "id": "prayer-petites",
     "label": "Petites Prières",
     "ref": "LDB 25 l.22",
+    "source": {
+      "book": "livre-de-base",
+      "page": 204
+    },
     "group": "Prières",
     "kind": "flag",
     "default": false,
@@ -535,6 +703,10 @@
     "id": "magic-sorcellerie",
     "label": "Sorcellerie",
     "ref": "LDB 49 l.5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 255
+    },
     "group": "Magie",
     "kind": "flag",
     "default": false,
@@ -544,6 +716,10 @@
     "id": "magic-vdm-incantation",
     "label": "Règles d'incantation révisées (VDM)",
     "ref": "VDM 02 l.5-7",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 19
+    },
     "group": "Magie",
     "kind": "flag",
     "default": false,
@@ -553,6 +729,10 @@
     "id": "magic-vdm-environnementale",
     "label": "Magie environnementale (VDM)",
     "ref": "VDM 14 l.26 / l.94 / l.136-179 / l.212-278",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 190
+    },
     "group": "Magie",
     "kind": "flag",
     "default": false,
@@ -561,7 +741,11 @@
   {
     "id": "corruption-tables-edoc",
     "label": "Tables de Corruption étendues (EDOC)",
-    "ref": "EDOC 12",
+    "ref": "EDOC 12 l.63",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65
+    },
     "group": "Corruption",
     "kind": "mode",
     "default": "ldb",
@@ -578,7 +762,11 @@
   {
     "id": "psych-acquisition-optional",
     "label": "Acquisition de Traits psychologiques",
-    "ref": "ADE II Annexe I",
+    "ref": "ADE II 09 l.3",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 92
+    },
     "group": "Psychologie",
     "kind": "flag",
     "default": false,
@@ -588,6 +776,10 @@
     "id": "disease-mode",
     "label": "Utilisation des maladies",
     "ref": "LDB 20 l.35",
+    "source": {
+      "book": "livre-de-base",
+      "page": 186
+    },
     "group": "Maladies",
     "kind": "mode",
     "default": "full",
@@ -602,6 +794,10 @@
     "id": "travel-etapes",
     "label": "Voyage par Étapes",
     "ref": "EDOC 8 l.33",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 31
+    },
     "group": "Voyage",
     "kind": "flag",
     "default": false,
@@ -611,6 +807,10 @@
     "id": "travel-etapes-count-bonus",
     "label": "Étapes supplémentaires",
     "ref": "EDOC 8 l.40",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 32
+    },
     "group": "Voyage",
     "kind": "param",
     "default": 0,
@@ -635,6 +835,10 @@
     "id": "travel-allures",
     "label": "Montures et attelages (allures)",
     "ref": "EDOC 07 l.138-146",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 25
+    },
     "group": "Voyage",
     "kind": "flag",
     "default": false,
@@ -674,6 +878,10 @@
     "id": "travel-attraper-froid",
     "label": "Attraper froid",
     "ref": "EDOC 8 l.90",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 33
+    },
     "group": "Voyage",
     "kind": "flag",
     "default": false,
@@ -683,6 +891,10 @@
     "id": "water-scarcity",
     "label": "Pénurie d’eau",
     "ref": "LDB 18 l.340",
+    "source": {
+      "book": "livre-de-base",
+      "page": 181
+    },
     "group": "Voyage",
     "kind": "flag",
     "default": false,
@@ -692,6 +904,10 @@
     "id": "crew-test-zero-success",
     "label": "Test d’équipage : 0 DR compte comme un succès",
     "ref": "MDG 14 l.13",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 121
+    },
     "group": "Voyage",
     "kind": "flag",
     "default": false,

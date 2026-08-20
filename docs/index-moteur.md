@@ -150,7 +150,7 @@ _2001 exports publics mesurés (154 fichiers de `src/engine`, hors tests) — 17
 | Personnage : dérivés, résolution de fiche | `createHero` (character.ts:288), `CreateHeroOptions` (character.ts:216), `dotationRefsForHero` (character.ts:499), `RANDOM_ENTRY_RE` (character.ts:117), `resolveSpeciesTalents` (character.ts:159), `rollCharacteristics` (character.ts:263), `rollRandomTalent` (character.ts:126), `skillCharacteristicById` (character.ts:53), `speciesSkillAdvanceMap` (character.ts:97), `talentRefKeyOf` (character.ts:86) |
 | Points de Chance | `canReroll` (fortune.ts:9), `fateSaveOrDie` (fortune.ts:35), `restoreFortune` (fortune.ts:26) |
 | Politique de test | `BandsMode` (testPolicy.ts:15), `getTestPolicy` (testPolicy.ts:32), `SLMode` (testPolicy.ts:16), `TestPolicy` (testPolicy.ts:18) |
-| Politique, règles optionnelles | `loadRuleOverrides` (policy.ts:115), `OPTIONAL_RULES` (policy.ts:83), `OptionalRule` (policy.ts:25), `resetRule` (policy.ts:105), `rule` (policy.ts:94), `RuleAction` (policy.ts:60), `ruleDef` (policy.ts:89), `RuleKind` (policy.ts:21), `ruleOverrides` (policy.ts:110), `RuleValue` (policy.ts:23), `setRule` (policy.ts:100) |
+| Politique, règles optionnelles | `loadRuleOverrides` (policy.ts:119), `OPTIONAL_RULES` (policy.ts:87), `OptionalRule` (policy.ts:26), `resetRule` (policy.ts:109), `rule` (policy.ts:98), `RuleAction` (policy.ts:64), `ruleDef` (policy.ts:93), `RuleKind` (policy.ts:22), `ruleOverrides` (policy.ts:114), `RuleValue` (policy.ts:24), `setRule` (policy.ts:104) |
 | Portée de sort | `parseFormulaMeasure` (spellRange.ts:59), `parseSpellRange` (spellRange.ts:76), `parseSpellTarget` (spellRange.ts:90), `SpellRange` (spellRange.ts:16), `SpellTarget` (spellRange.ts:31) |
 | Possession (objet en main) | `canEmbark` (possession.ts:204), `canEmbarkNow` (possession.ts:221), `embarkedEnc` (possession.ts:212), `LivingRef` (possession.ts:28), `NavalPossessionState` (possession.ts:46), `Possession` (possession.ts:61), `possessionCapacity` (possession.ts:114), `possessionCombatRideable` (possession.ts:147), `PossessionInput` (possession.ts:109), `possessionLabel` (possession.ts:155), `possessionLoadEnc` (possession.ts:235), `PossessionLocation` (possession.ts:22), `possessionRideable` (possession.ts:133), `possessionTotalEnc` (possession.ts:249) |
 | Poursuite | `npcPursuerChoice` (pursuit.ts:91), `npcSacrificeChoice` (pursuit.ts:80), `PURSUIT_ESCAPE_DISTANCE` (pursuit.ts:24), `pursuitLaggard` (pursuit.ts:50), `pursuitMoveBonus` (pursuit.ts:34), `pursuitOutcome` (pursuit.ts:27), `PursuitPolicy` (pursuit.ts:60), `PursuitRunner` (pursuit.ts:40) |
@@ -1572,7 +1572,7 @@ _2001 exports publics mesurés (154 fichiers de `src/engine`, hors tests) — 17
 | `MISCAST_TABLE_LABELS` | 326 | const | Libellé JOUEUR de chaque table (rangée de tirage), tel que la déclaration le porte. | Incantation ratée (Fiasco), Création de personnage : tirage aléatoire, espèce, carrière, Tests : Degrés de Réussite, Caractéristiques, tables |
 | `miscastTableId` | 340 | function | Id de la table d'une sévérité sous le jeu de tables EN VIGUEUR — `VDM 02 l.218-263` sous la règle optionnelle `magic-vdm-incantation`, sinon LDB 46. | Incantation ratée (Fiasco), Magie, incantation, sorts, prières, miracles, Tests : Degrés de Réussite, Caractéristiques, tables |
 | `miscastRowAt` | 349 | function | Ligne atteinte par un dé EFFECTIF sur une table déclarée (lookup partagé `findTableEntry`) — SOURCE UNIQUE du texte rendu par l'étape à table. | Incantation ratée (Fiasco), Tests : Degrés de Réussite, Caractéristiques, tables |
-| `componentDowngrade` | 416 | function | Composant d'incantation (LDB 46 l.161, règle optionnelle) — transformation PURE de la sévérité d'une Incantation Imparfaite quand le lanceur a sacrifié un composant adapté au Sort : « toute Incantation Imparfaite Majeure devient Mineure, et aucune Incantation Imparfaite Mineure n'a d'effet ». | Incantation ratée (Fiasco), Magie, incantation, sorts, prières, miracles |
+| `componentDowngrade` | 416 | function | Composant d'incantation (LDB 46 l.111, règle optionnelle) — transformation PURE de la sévérité d'une Incantation Imparfaite quand le lanceur a sacrifié un composant adapté au Sort : « toute Incantation Imparfaite Majeure devient Mineure, et aucune Incantation Imparfaite Mineure n'a d'effet ». | Incantation ratée (Fiasco), Magie, incantation, sorts, prières, miracles |
 | `rollMiscast` | 459 | function | Effectue un jet sur la table d'Incantation Imparfaite / Colère des dieux et renvoie les ops mécaniques + un journal fidèle. | Incantation ratée (Fiasco), Magie, incantation, sorts, prières, miracles, Tests : Degrés de Réussite, Caractéristiques, tables |
 
 ### `money.ts` — Argent, monnaie
@@ -1742,17 +1742,17 @@ _2001 exports publics mesurés (154 fichiers de `src/engine`, hors tests) — 17
 
 | Export | Ligne | Genre | Rôle | Concepts |
 |---|---|---|---|---|
-| `RuleKind` | 21 | type | Forme du contrôle qu'une règle optionnelle fait auto-rendre au panneau in-game : `flag` = interrupteur, `param` = nombre borné, `mode` = choix parmi `options`. | Politique, règles optionnelles |
-| `RuleValue` | 23 | type | Valeur d'une règle optionnelle — union FERMÉE (miroir `ruleValueSchema`, `data/schemas/common.ts`). | Politique, règles optionnelles |
-| `OptionalRule` | 25 | interface | — | Politique, règles optionnelles |
-| `RuleAction` | 60 | interface | — | Politique, règles optionnelles |
-| `OPTIONAL_RULES` | 83 | const | LE registre, LU de la donnée. | Politique, règles optionnelles |
-| `ruleDef` | 89 | function | Définition d'une règle (métadonnée pour l'auto-rendu du panneau). | Politique, règles optionnelles |
-| `rule` | 94 | function | Valeur EFFECTIVE d'une règle : surcharge runtime si présente, sinon défaut. | Politique, règles optionnelles |
-| `setRule` | 100 | function | Surcharge runtime (depuis le panneau in-game). | Politique, règles optionnelles |
-| `resetRule` | 105 | function | Retire la surcharge → retour au défaut. | Politique, règles optionnelles |
-| `ruleOverrides` | 110 | function | Snapshot des surcharges (pour persistance). | Politique, règles optionnelles |
-| `loadRuleOverrides` | 115 | function | Remplace les surcharges (depuis la persistance). | Politique, règles optionnelles |
+| `RuleKind` | 22 | type | Forme du contrôle qu'une règle optionnelle fait auto-rendre au panneau in-game : `flag` = interrupteur, `param` = nombre borné, `mode` = choix parmi `options`. | Politique, règles optionnelles |
+| `RuleValue` | 24 | type | Valeur d'une règle optionnelle — union FERMÉE (miroir `ruleValueSchema`, `data/schemas/common.ts`). | Politique, règles optionnelles |
+| `OptionalRule` | 26 | interface | — | Politique, règles optionnelles |
+| `RuleAction` | 64 | interface | — | Politique, règles optionnelles |
+| `OPTIONAL_RULES` | 87 | const | LE registre, LU de la donnée. | Politique, règles optionnelles |
+| `ruleDef` | 93 | function | Définition d'une règle (métadonnée pour l'auto-rendu du panneau). | Politique, règles optionnelles |
+| `rule` | 98 | function | Valeur EFFECTIVE d'une règle : surcharge runtime si présente, sinon défaut. | Politique, règles optionnelles |
+| `setRule` | 104 | function | Surcharge runtime (depuis le panneau in-game). | Politique, règles optionnelles |
+| `resetRule` | 109 | function | Retire la surcharge → retour au défaut. | Politique, règles optionnelles |
+| `ruleOverrides` | 114 | function | Snapshot des surcharges (pour persistance). | Politique, règles optionnelles |
+| `loadRuleOverrides` | 119 | function | Remplace les surcharges (depuis la persistance). | Politique, règles optionnelles |
 
 ### `polymorph.ts` — Métamorphose, forme alternative
 

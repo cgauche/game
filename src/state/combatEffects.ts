@@ -1351,7 +1351,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'interlude', weeks: 1 }),
     apply: (e, env) => {
       // « Entre deux aventures » (LDB 22-23) — via l'action store (pas d'import direct : cycle).
-      // Règle optionnelle (LDB 22 l.14) : tout le chapitre est facultatif → désactivable.
+      // Règle optionnelle (LDB 21 l.108-110) : tout le chapitre est facultatif → désactivable.
       if (rule('interlude-enabled')) env.get().startInterlude(e.weeks ?? 1);
     },
   },

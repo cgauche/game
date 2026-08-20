@@ -1,9 +1,9 @@
 /**
- * Composants d'incantation (LDB 46 l.158-163, règle optionnelle `magic-composant`) :
- *  - l.161 : « toute Incantation Imparfaite Majeure devient Mineure, et aucune Incantation
+ * Composants d'incantation (LDB 46 l.107-113, règle optionnelle `magic-composant`) :
+ *  - l.111 : « toute Incantation Imparfaite Majeure devient Mineure, et aucune Incantation
  *    Imparfaite Mineure n'a d'effet » ; le composant est « consumé ou détruit […], même si aucune
  *    Incantation Imparfaite n'a été obtenue » ;
- *  - l.163 : composants = Sorts d'Arcane et de Domaine, coût NI pistoles d'argent, par Sort.
+ *  - l.113 : composants = Sorts d'Arcane et de Domaine, coût NI pistoles d'argent, par Sort.
  *
  * On pilote directement `applyMiscast` (gate de dégradation, façon miscast.test.ts) ET la
  * consommation au point d'incantation via `useSpellComponent`.
@@ -31,7 +31,7 @@ function mageInBattle() {
   return b.combatants.find((c) => c.kind === 'hero')!;
 }
 
-describe('Composants d’incantation (LDB 46 l.158-163)', () => {
+describe('Composants d’incantation (LDB 46 l.107-113)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
@@ -164,7 +164,7 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
     expect(npc.componentSpells).toEqual([SPELL]); // intact
   });
 
-  it('la Colère des dieux n’est jamais dégradée (composants = Sorts, pas Prières — l.163)', () => {
+  it('la Colère des dieux n’est jamais dégradée (composants = Sorts, pas Prières — l.113)', () => {
     setRule('magic-composant', true);
     const hero = mageInBattle();
     const out = applyMiscast(useGame.getState, useGame.setState, hero, 'colere', { componentDowngrade: true });

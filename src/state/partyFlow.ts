@@ -557,8 +557,8 @@ export function buySpell(get: Get, set: Set, heroId: string, spellId: string, op
   return result;
 }
 
-/** Composant d'incantation (LDB 46 l.158-163, règle optionnelle `magic-composant`) : achète un
- *  composant pour un Sort d'Arcane/Domaine CONNU du héros — coût = NI pistoles d'argent (l.163),
+/** Composant d'incantation (LDB 46 l.107-113, règle optionnelle `magic-composant`) : achète un
+ *  composant pour un Sort d'Arcane/Domaine CONNU du héros — coût = NI pistoles d'argent (l.113),
  *  prélevé sur la Bourse de l'incantateur. « acheté pour un Sort spécifique […], ne marche que pour ce
  *  Sort. » Le composant absorbe le contrecoup à l'incantation (consumé) — cf. applyMiscast. */
 export function buySpellComponent(get: Get, set: Set, heroId: string, spellId: string): void {

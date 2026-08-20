@@ -794,7 +794,7 @@ export interface GameState extends RollFlowActionsMap {
   designateCareerSlot: (heroId: string, slotKey: string, optionId: string, spec?: string) => void;
   /** Apprentissage/mémorisation d'un sort (LDB 46/10) — coût PX via engine/grimoire. */
   buySpell: (heroId: string, spellId: string) => void;
-  /** Achète un composant d'incantation pour un Sort d'Arcane/Domaine connu (LDB 46 l.163 — NI pistoles). */
+  /** Achète un composant d'incantation pour un Sort d'Arcane/Domaine connu (LDB 46 l.113 — NI pistoles). */
   buySpellComponent: (heroId: string, spellId: string) => void;
   /** Retire un composant d'incantation possédé pour un Sort (sans remboursement). */
   removeSpellComponent: (heroId: string, spellId: string) => void;

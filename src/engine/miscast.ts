@@ -407,10 +407,10 @@ function mkTest(t: NestedTest, rowId: string, severity: MiscastSeverity): Flow {
 // ---------------------------------------------------------------------------
 
 /**
- * Composant d'incantation (LDB 46 l.161, règle optionnelle) — transformation PURE de la sévérité
+ * Composant d'incantation (LDB 46 l.111, règle optionnelle) — transformation PURE de la sévérité
  * d'une Incantation Imparfaite quand le lanceur a sacrifié un composant adapté au Sort :
  * « toute Incantation Imparfaite Majeure devient Mineure, et aucune Incantation Imparfaite Mineure
- * n'a d'effet ». `null` = annulée (aucun effet). N'affecte PAS la Colère des dieux (l.163 : les
+ * n'a d'effet ». `null` = annulée (aucun effet). N'affecte PAS la Colère des dieux (l.113 : les
  * composants ne concernent que les Sorts d'Arcane et de Domaine, pas les Prières).
  */
 export function componentDowngrade(severity: MiscastSeverity): MiscastSeverity | null {

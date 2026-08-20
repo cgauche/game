@@ -15,6 +15,7 @@
  * quand le passage en porte une) ; les formes réelles sont mesurées au schéma de la donnée.
  */
 import reglesOptionnellesJson from '../data/reglesOptionnelles.json';
+import type { SourceRef } from '../data/schemas/common';
 
 /** Forme du contrôle qu'une règle optionnelle fait auto-rendre au panneau in-game : `flag` =
  *  interrupteur, `param` = nombre borné, `mode` = choix parmi `options`. */
@@ -30,6 +31,9 @@ export interface OptionalRule {
   /** Citation de la règle, montrée en infobulle : livre (`abbr` de `books.json`) + chapitre, plus la
    *  ligne quand le passage en porte une. Formes mesurées : `data/schemas/defs/reglesOptionnelles.ts`. */
   ref: string;
+  /** Ancre `{book, page}` de couverture par entrée — folio IMPRIMÉ relevé au marqueur `data-folio`
+   *  du passage visé par `ref` (#1318 E8). Absente sur les entrées portant `maison`. */
+  source?: SourceRef;
   /** Justification d'une valeur que le RAW ne chiffre pas (CLAUDE.md règle 7) — même sémantique que
    *  `castingNumberMod.maison` (`src/data/schemas/common.ts`). Absente = la règle est au RAW. */
   maison?: string;

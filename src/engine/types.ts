@@ -1476,7 +1476,7 @@ export interface Combatant {
   activeLoadoutId?: string;
   /** Sorts/prières connus (libellés référençant src/data/spells.json). */
   spells?: string[];
-  /** Composants d'incantation possédés (LDB 46 l.158-163) — `id` des Sorts d'Arcane/Domaine pour
+  /** Composants d'incantation possédés (LDB 46 l.107-113) — `id` des Sorts d'Arcane/Domaine pour
    *  lesquels le héros a acheté un composant (coût = NI pistoles d'argent, « acheté pour un Sort
    *  spécifique »). Sous la règle optionnelle `magic-composant`, le composant absorbe les pires
    *  effets du contrecoup : Imparfaite Majeure → Mineure, Mineure → annulée ; consommé à l'incantation

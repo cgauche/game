@@ -3448,7 +3448,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (malepierreItem) runConsumable(get, set, caster, malepierreItem);
       const ni = spell.cn ?? 0;
       const logLines = [res.log];
-      // Composant d'incantation (LDB 46 l.158-163) : la Focalisation est une incantation en cours —
+      // Composant d'incantation (LDB 46 l.107-113) : la Focalisation est une incantation en cours —
       // un composant adapté au Sort est consumé (si un contrecoup survient) et dégrade l'Imparfaite.
       const compUsed = (res.isCritical || res.isFumble) && useSpellComponent(caster, pf.spellId, logLines);
       // Focalisation CRITIQUE (LDB 46 l.136) : le sort est lançable au prochain Round

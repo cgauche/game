@@ -38,8 +38,8 @@
 | 18 | Traumatisme | ✅ | 103 (traumatisme.md ×68) |
 | 19 | Corruption | ✅ | 36 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
-| 21 | Psychologie | ✅ | 53 (psychologie.md ×29) |
-| 22 | Événements | ✅ | 6 (activites.md ×5) |
+| 21 | Psychologie | ✅ | 54 (psychologie.md ×29) |
+| 22 | Événements | ✅ | 4 (activites.md ×4) |
 | 23 | Activités | ✅ | 41 (activites.md ×36) |
 | 24 | Les dieux | 📖 | catalogue (catalogue-*.md) |
 | 25 | Les cultes | ✅ | 3 (religion.md ×3) |
@@ -152,7 +152,7 @@
 - **LDB 15** (Déplacement) :
   - ⬜ l.113-120 « OPTION : COMPLICATIONS DE POURSUITE » — candidat trou de règle, 0 réf
 - **LDB 21** (Psychologie) :
-  - 🔻 enfoui l.98-111 « ENTRE DEUX AVENTURES » — titre orné rétrogradé par l'extraction, 1 réf
+  - 🔻 enfoui l.98-111 « ENTRE DEUX AVENTURES » — titre orné rétrogradé par l'extraction, 2 réf
 - **LDB 23** (Activités) :
   - 🔻 enfoui l.251-256 « RELIGIONS ET CROYANCES » — titre orné rétrogradé par l'extraction, 0 réf
 - **LDB 24** (Les dieux) :

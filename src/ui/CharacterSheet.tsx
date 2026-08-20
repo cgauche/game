@@ -439,7 +439,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
         );
       })()}
       {rule('magic-composant') === true && (() => {
-        // Composants d'incantation (LDB 46 l.158-163) : achetés PAR Sort d'Arcane/Domaine connu,
+        // Composants d'incantation (LDB 46 l.107-113) : achetés PAR Sort d'Arcane/Domaine connu,
         // coût = NI pistoles d'argent ; absorbent le contrecoup (Imparfaite Majeure→Mineure,
         // Mineure→annulée) puis sont consumés à l'incantation. Visible seulement règle ON.
         const arcane = spells.filter((sp) => isArcaneSpell(sp) && sp.cn != null);

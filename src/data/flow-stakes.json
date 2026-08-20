@@ -145,7 +145,7 @@
     "ruleCategory": "regles",
     "source": {
       "book": "livre-de-base",
-      "page": 182,
+      "page": 183,
       "note": "LDB 19 l.48"
     }
   },
@@ -160,7 +160,7 @@
     "ruleCategory": "regles",
     "source": {
       "book": "livre-de-base",
-      "page": 182,
+      "page": 183,
       "note": "LDB 19 l.58"
     }
   },
@@ -175,7 +175,7 @@
     "ruleCategory": "regles",
     "source": {
       "book": "livre-de-base",
-      "page": 182,
+      "page": 183,
       "note": "LDB 19 l.70"
     }
   },
@@ -205,7 +205,7 @@
     "ruleCategory": "spells",
     "source": {
       "book": "livre-de-base",
-      "page": 213,
+      "page": 221,
       "note": "LDB 41 l.142"
     }
   },
@@ -446,7 +446,7 @@
     "ruleCategory": "characteristics",
     "source": {
       "book": "livre-de-base",
-      "page": 34,
+      "page": 170,
       "note": "LDB 17 l.31-35"
     }
   },

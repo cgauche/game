@@ -33,18 +33,12 @@ const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
  * Baseline gelée = nombre d'entrées SANS citation, par dataset. Vidée à la phase 3 (#309,
  * 2026-07-11) — tout dataset non listé ici est à 0 manquant (baseline 0 implicite).
  *
- * `reglesOptionnelles.json` (2026-08-16, V9 du programme #1318 — cliquet E8) : le registre des règles
- * optionnelles a migré du CODE (`src/engine/policy.ts`) en donnée. Chaque entrée porte déjà sa `ref`
- * (livre + chapitre + ligne quand le passage en porte une, abréviation vérifiée contre `books.json`
- * par `src/engine/policy-donnee.test.ts`) et les 26 valeurs MAISON portent leur `maison` — restent 55
- * entrées dont le folio IMPRIMÉ qu'exige `source: {book,page}` n'a pas été relevé (la LIGNE des réfs
- * a dérivé à la ré-extraction Marker 2026-06-22 : le folio ne s'en dérive pas automatiquement). Ce
- * chiffre ne peut que DESCENDRE, cible 0 — le second volet ci-dessous fait rougir toute baseline
- * devenue trop haute.
+ * `reglesOptionnelles.json` (E8 du programme #1318) : le cliquet ouvert à 55 le 2026-08-16 est SOLDÉ
+ * au 2026-08-20 — les 54 entrées restantes portent leur `source: {book,page}`, folio IMPRIMÉ relevé
+ * au marqueur `data-folio` gouvernant la ligne de leur `ref` (les 27 autres portent `maison`). La
+ * baseline est VIDE : toute nouvelle entrée sans citation fait rouge.
  */
-const BASELINES: Record<string, number> = {
-  'reglesOptionnelles.json': 54, // −1 (#1318 E4/C4-δ2) : `test-intimidation-char` ré-ancrée LDB 09 l.294 (l.266 tombait dans Guérison)
-};
+const BASELINES: Record<string, number> = {};
 
 function missingByFile(): Record<string, number> {
   const files = readdirSync(DATA_DIR).filter((f) => f.endsWith('.json'));

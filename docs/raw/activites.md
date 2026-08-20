@@ -74,9 +74,9 @@ Séquence obligatoire :
 3. **Choisir les Activités** (max 1/semaine, max 3 au total — LDB 23 l.5).
 4. **Résoudre les conséquences** avant la prochaine aventure.
 
-> « Chaque règle de ce chapitre est optionnelle. » — LDB 22 l.14.
+> « Chaque règle de ce chapitre est optionnelle. » — LDB 21 l.110 (sous le titre `# OPTION : TOUT EST FACULTATIF`, LDB 21 l.108 — l'extraction ouvre la section « Entre deux aventures » en fin de `21 - Psychologie.md`).
 
-**Règle maison recommandée :** la règle optionnelle peut être désactivée entièrement (flag `interlude-enabled`, `src/engine/policy.ts` l.333-339).
+**Règle maison recommandée :** la règle optionnelle peut être désactivée entièrement (flag `interlude-enabled`, entrée de `src/data/reglesOptionnelles.json` lue par `src/engine/policy.ts`).
 
 ---
 
@@ -121,7 +121,7 @@ Lancer **1d100** par Personnage. Certains événements n'affectent que le Person
 | 98–00 | **Mercenaires Particuliers** | Entraînement/Apprentissage particulier : −20 % des coûts. *Entraînement au Combat* : +20 % à tout Test adapté. |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 22` (l.11-135) → `allie-inculpe`, `encheres-esoteriques`, `trahison`, `imprevu`, `eh-tu-as-renverse-ma-pinte`, `repression-du-crime`, `le-prevot-arrive`, `fausse-monnaie`, `profits-abondants`, `un-homme-averti-en-vaut-deux`, +25 — `src/data/combat-stakes.json`, `src/data/interludeEvents.json`, `src/data/reglesOptionnelles.json`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`
+- `LDB 22` (l.11-135) → `allie-inculpe`, `encheres-esoteriques`, `trahison`, `imprevu`, `eh-tu-as-renverse-ma-pinte`, `repression-du-crime`, `le-prevot-arrive`, `fausse-monnaie`, `profits-abondants`, `un-homme-averti-en-vaut-deux`, +24 — `src/data/combat-stakes.json`, `src/data/interludeEvents.json`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -158,7 +158,7 @@ Si un Personnage a atteint le **Niveau 3 ou 4** de son Évolution de Carrière e
 Le Statut inférieur entraîne des Revenus moindres lors des futures Activités. Pour récupérer le Niveau perdu : payer à nouveau le coût en PX.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.22-56) → `craft`, `learn`, `finishInterludeEvent` — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.22-56) → `craft`, `learn`, `finishInterludeEvent`, `interlude-elf-duty` — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/state/interludeFlow.ts`
 - sans code : `LDB 23` (l.31-37)
 
 ### Amélioration Elfique / Prestige Elfique
@@ -175,7 +175,7 @@ Les Personnages **elfes** doivent entreprendre **1 Activité** supplémentaire p
 **Règle optionnelle :** flag `interlude-elf-duty` (`src/engine/policy.ts` l.342-348).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.40-56) → `craft`, `learn`, `finishInterludeEvent` — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.40-56) → `craft`, `learn`, `finishInterludeEvent`, `interlude-elf-duty` — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -205,7 +205,7 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 - Échec → peut réessayer à une future Activité ; gagne **+10 par tentative ratée**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `resetInterruptedFavorProgress`, `FavorRow`, `InterludeHeroState`, `purgeAdventureEffects`, +42 — `src/data/activities.json`, `src/data/gods.json`, `src/data/reglesOptionnelles.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, +19 fichiers
+- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `resetInterruptedFavorProgress`, `FavorRow`, `InterludeHeroState`, `purgeAdventureEffects`, +43 — `src/data/activities.json`, `src/data/gods.json`, `src/data/reglesOptionnelles.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, +19 fichiers
 
 ---
 
@@ -241,7 +241,7 @@ Créer de l'équipement du Guide de l'équipement (LDB 11) si le Personnage poss
 Chaque Activité *Artisanat* = un lancer de Test étendu. Le travail inachevé se conserve.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`
+- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `interlude-elf-duty`, `dressage`, `Combatant` — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/engine/types.ts`
 
 ---
 
@@ -256,7 +256,7 @@ Avec accord du MJ :
 Le temps illustre présentations, pots-de-vin, licences, etc.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`
+- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `interlude-elf-duty`, `dressage`, `Combatant` — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/engine/types.ts`
 
 ---
 
@@ -404,7 +404,7 @@ Test de Compétence de Carrière :
 Les Personnages aux Niveaux 3-4 qui entreprennent *Revenus* **maintiennent automatiquement leur Statut** (voir *Avec le pouvoir*).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 8` (l.106-122) → `statusOf`, `incomeSkillOf`, `statusIncomeMax`, `RevenusPane`, `openCatalogActivity`, `runActivityResolver`, `statut`, `statusIncome` — `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `LDB 8` (l.106-122) → `statusOf`, `incomeSkillOf`, `social-begging-bonus`, `social-charm-intra-tier`, `statusIncomeMax`, `RevenusPane`, `openCatalogActivity`, `runActivityResolver`, `statut`, `statusIncome` — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`, `src/ui/InterludeScreen.tsx`
 - `LDB 23` (l.187-193) → `revenus`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `Combatant`, `dernieres-nouvelles`, `entrainement-au-combat`, `observer-une-cible` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
@@ -593,7 +593,7 @@ Les Activités de voyage durent toute une Étape de voyage et restent **fatigant
 Note sur les Revenus en voyage : l'Activité *Revenus* (LDB 23) n'est **pas adaptée** pour la plupart des Carrières en voyage — sauf juges/huissiers itinérants, chasseurs, éclaireurs, cochers (EDOC 8 l.167).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `EDOC 8` (l.129-180) → `plein-air`, `PosteCardinality`, `printemps`, `activityAsPoste`, `approvisionnement`, `ete`, `gatherInnInfo`, `recueillir-informations`, `EncounterCategory`, `automne`, +22 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/weather.json`, `src/engine/activities.ts`, `src/engine/travelEncounter.ts`, `src/engine/travelTables.ts`, +7 fichiers
+- `EDOC 8` (l.129-180) → `plein-air`, `PosteCardinality`, `printemps`, `activityAsPoste`, `approvisionnement`, `ete`, `gatherInnInfo`, `recueillir-informations`, `EncounterCategory`, `automne`, +23 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/weather.json`, `src/engine/activities.ts`, `src/engine/travelEncounter.ts`, `src/engine/travelTables.ts`, +7 fichiers
 
 ---
 
@@ -609,7 +609,7 @@ Requiert accès à un lieu de repos (hospice, monastère, temple). Contexte : su
 - Échec → se sent mieux quand même ; peut **inverser** un Test de **Calme** pour résister aux effets du Trait lors de la prochaine aventure.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ADE II 9` (l.32-33) → `convalescence` — `src/data/activities.json`
+- `ADE II 9` (l.32-33) → `convalescence`, `psych-acquisition-optional` — `src/data/activities.json`, `src/data/reglesOptionnelles.json`
 
 ---
 

@@ -2541,7 +2541,7 @@ export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant):
 
 /**
  * Conséquence PROCÉDURALE d'un Test de Calme d'interruption RATÉ (op `interruptFocus`, hook `focusInterrupt`) :
- * le focaliseur perd tous les DR accumulés sur son Sort focalisé (couverts par son composant — LDB 46 l.161) et
+ * le focaliseur perd tous les DR accumulés sur son Sort focalisé (couverts par son composant — LDB 46 l.111) et
  * subit une Incantation Imparfaite Mineure (LDB 46 l.144). L'Imparfaite garde son rendu propre (étape de cascade
  * `miscast` pour un héros / lignes pour un ennemi) : le Test de Calme est l'étape influençable visible,
  * l'Imparfaite est sa conséquence en aval. Les lignes partent dans la file
@@ -3725,10 +3725,10 @@ export function resumeManeuverDefense(get: Get, set: SetFn, resume: { attackerId
 
 
 /**
- * Composant d'incantation (LDB 46 l.158-163, règle optionnelle `magic-composant`) — appelé UNE fois
+ * Composant d'incantation (LDB 46 l.107-113, règle optionnelle `magic-composant`) — appelé UNE fois
  * au point d'incantation d'un Sort d'Arcane/Domaine par un lanceur qui suit les règles de PERSONNAGE
  * (#143 — `followsCharacterRules`, PAS un proxy `kind`). Si un composant pour ce Sort est possédé :
- * il est CONSUMÉ « même si aucune Incantation Imparfaite n'a été obtenue » (l.161), une ligne est
+ * il est CONSUMÉ « même si aucune Incantation Imparfaite n'a été obtenue » (l.111), une ligne est
  * journalisée, et `true` est renvoyé → toute Imparfaite de ce lancement sera dégradée (passé en
  * `componentDowngrade` à `applyMiscast`). Mute `caster.componentSpells`. Renvoie `false` (sans effet)
  * si la règle est éteinte, le lanceur ne suit pas les règles de Personnage, ou aucun composant ne
@@ -3853,7 +3853,7 @@ registerCascadeApplier('miscastTable', (get, set, step, caster) => {
  * réduction à 0 + Inconscient). Retourne les lignes de journal.
  */
 export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: MiscastSeverity, opts?: { suppressReveal?: boolean; componentDowngrade?: boolean; sorceryCorruption?: boolean; domainId?: string }): string[] {
-  // Composant d'incantation (LDB 46 l.161, règle optionnelle) : si un composant adapté a été
+  // Composant d'incantation (LDB 46 l.111, règle optionnelle) : si un composant adapté a été
   // SACRIFIÉ pour ce Sort (consommation décidée et journalisée au point d'incantation — cf.
   // `useSpellComponent`), il absorbe les pires effets du contrecoup : « toute Incantation Imparfaite
   // Majeure devient Mineure, et aucune Incantation Imparfaite Mineure n'a d'effet ». La transformation
@@ -4965,10 +4965,10 @@ export function applyCast(
     }
   }
   const logLines: string[] = [res.log];
-  // Composant d'incantation (LDB 46 l.158-163, règle optionnelle) : consommé UNE fois par lancement
+  // Composant d'incantation (LDB 46 l.107-113, règle optionnelle) : consommé UNE fois par lancement
   // d'un Sort d'Arcane/Domaine couvert, « même si aucune Incantation Imparfaite n'a été obtenue »
-  // (l.161). `componentUsed` → toute Imparfaite de ce lancement est dégradée (Majeure→Mineure,
-  // Mineure→annulée). N'a pas lieu pour une Prière (l.163 : composants = Sorts d'Arcane/Domaine).
+  // (l.111). `componentUsed` → toute Imparfaite de ce lancement est dégradée (Majeure→Mineure,
+  // Mineure→annulée). N'a pas lieu pour une Prière (l.113 : composants = Sorts d'Arcane/Domaine).
   const componentUsed = isSort && useSpellComponent(caster, spell.id, logLines);
   // Malepierre PORTÉE (`VDM 02 l.163-165`) : le doublement du DR (déjà figé sur `res.malepierreConsumed`,
   // `engine/magic.ts`) décrémente ICI la réserve — seul point d'ÉCRITURE (`consumeMalepierre`).

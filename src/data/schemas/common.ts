@@ -41,7 +41,11 @@ export const traitInstanceSchema = z.strictObject({
 export const sourceRefSchema = z.strictObject({
   book: z.string(),
   page: z.number(),
-  /** Précision optionnelle (ch./l. du passage, portée VERBATIM…) — display-only, jamais parsée. */
+  /** Précision optionnelle (ch./l. du passage, portée VERBATIM…). Aucune LOGIQUE DE JEU ne la lit ;
+   *  une GARDE la lit désormais : quand elle est de la forme `<ABRÉV> <ch> l.<ligne>`,
+   *  `scripts/guards/lib/folioLineAlign.mjs` la confronte au marqueur `data-folio` qui gouverne cette
+   *  ligne — `page` et `note` doivent désigner le même endroit (#1318 E8). Toute autre forme est
+   *  ignorée par la garde (aucune contrainte de saisie ajoutée). */
   note: z.string().optional(),
 });
 

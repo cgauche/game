@@ -23,7 +23,7 @@ describe('Modèle de mort (LDB 18-Traumatisme)', () => {
     expect(usesSuddenDeath(e)).toBe(true);
     expect(isOutOfAction(e)).toBe(true);
   });
-  describe('Mort Subite — portée réglable (LDB 18 l.51) ; jamais les PJ', () => {
+  describe('Mort Subite — portée réglable (LDB 18 l.42) ; jamais les PJ', () => {
     afterEach(() => resetRule('combat-sudden-death'));
     const fig = mk({ kind: 'enemy' });
     const vip = mk({ kind: 'enemy', important: true } as Partial<Combatant>);
