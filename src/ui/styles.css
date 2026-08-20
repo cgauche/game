@@ -22,6 +22,7 @@
 @import './styles/combat-ui.css'; /* audio, coop, select, campaign, victoire, dialogue, barre d'action */
 @import './styles/combat-console.css'; /* console de combat (CombatConsole.tsx) : deux travées + grille fixe + conduit d'Avantage + coin de fin de tour */
 @import './styles/combat-modals.css'; /* modales de jet (attaque/défense/incantation/critique…) */
+@import './styles/panneau-parametre.css'; /* panneau-paramètre borné ANCRÉ (PanneauParametre, spec HUD zone 10) — APRÈS combat-modals.css : scope le .rm-loc-grid d'OptionChooser dans le panneau */
 @import './styles/sheet.css'; /* fiche de personnage + avancement */
 @import './styles/test-scenarios.css'; /* écran-catalogue des scénarios de test (#492 Lot 1b, extrait de sheet.css) */
 @import './styles/merchant.css'; /* marchand (achat/vente/réparation) */

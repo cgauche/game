@@ -11,7 +11,7 @@ import { useSyncExternalStore } from 'react';
 import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, siegeEngines, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
-  stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, advancementBaseId, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
+  stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, advancementBaseId, weaponGroupLabel, trappingTypeLabel, qualitySubtypeLabel, qualityTypeLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names, RACE_KEY_LABEL,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
@@ -1447,7 +1447,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         ? fact('Portée', rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod))
         : fact('Allonge', t.reach);
       return {
-        id: t.id, label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
+        id: t.id, label: t.label, sub: join(trappingTypeLabel(t.type), weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
         meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', damageFact(t)), fact('PA', t.pa), reachFact),
         sections: sections(
           chips('Qualités', 'qualities', resolveQualities({ qualities: t.qualities, subType: t.subType }).map((r) => qualityRefLabel({ id: r.id, value: r.indice }))),
@@ -1464,7 +1464,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // MÊME chemin — appearance.species = siegeRig) ET de « Possessions » pour les faits d'arme
     // (Portée/Dégâts) + Atouts (l'Indice « Arme d'équipe N » = équipage requis).
     build: () => siegeEngines.map((t) => ({
-      id: t.id, label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
+      id: t.id, label: t.label, sub: join(trappingTypeLabel(t.type), weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
       // Aperçu rig de l'affût, résolu comme une créature (par id + apparence species).
       appearance: { species: t.siegeRig! }, previewRef: t.siegeRig!,
       meta: facts(

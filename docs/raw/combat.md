@@ -1197,7 +1197,7 @@ Notes mécaniques par arme (`AA 08 l.228-260`) :
 **Voir aussi** : Maniement de deux armes (talent, LDB 10) ; Armes (Atouts/Défauts : Inoffensive, Déstabilisante, Empaleuse, Déséquilibrée, Assommante, Enchevêtrement) ; États (Empêtré, Engagé) ; Combat à distance (Projectiles/Lancer, portées) ; Désarmer (talent).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.773) → `useAttackJetProps`, `dualAffordance`, `PendingAttack`, `PendingDualStrike`, `resolveDualSecond`, `dualStrikeTargets`, `defenseModifiers`, `GameState`, `Combatant`, `applyAttackResult`, +11 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
+- `LDB 10` (l.773) → `useAttackJetProps`, `PendingAttack`, `dualAffordance`, `PendingDualStrike`, `resolveDualSecond`, `dualStrikeTargets`, `defenseModifiers`, `GameState`, `Combatant`, `applyAttackResult`, +11 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
 - `LDB 14` (l.101-115, l.134-140, l.142-151, l.153-169, l.171-173) → `GrappleModal`, `areGrappling`, `fr`, `setGrapple`, `isControlledMount`, `RunModal`, `scatter`, `combat-deux-armes`, `combatOrder`, `empetre`, +83 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +37 fichiers
 - `AA 8` (l.224-261) → `immobilisante-fixe`, `protectrice`, `inoffensive` — `src/data/qualities.json`, `src/data/trappings.json`
 

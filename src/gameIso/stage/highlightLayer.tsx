@@ -21,6 +21,10 @@ import type { HighlightsView } from '../builders/highlights';
 export interface HighlightOpts {
   myTurn: boolean;
   pendingAttack: PendingAttack | null;
+  /** Flux différés qui TIENNENT le ciblage (`state/targetingHolder`) — ils vivent à la racine du store,
+   *  hors `battle` : le contexte les porte pour que l'écran déjà monté réapprenne leur changement
+   *  (même raison que `localIntent`/`hovered`). Le VERDICT, lui, se lit au mode courant
+   *  (`currentTargetingMode`), jamais à une 2ᵉ liste de priorités recopiée ici. */
   pendingCleave: PendingCleave | null;
   pendingDualStrike: PendingDualStrike | null;
   pendingCast: PendingCast | null;
@@ -34,7 +38,7 @@ export interface HighlightOpts {
 }
 
 export function combatHighlightsView(get: () => GameState, battle: BattleState, opts: HighlightOpts): HighlightsView {
-  const { myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast, localIntent, hovered } = opts;
+  const { myTurn, pendingAttack, pendingCast, localIntent, hovered } = opts;
   const activeC = inBattleId(battle, battle.order[battle.turn]);
   // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — aucune affordance
   // (ni grille de déplacement, ni anneaux de cible, ni aperçu) ; teintes d'équipe/zones restent.
@@ -63,15 +67,18 @@ export function combatHighlightsView(get: () => GameState, battle: BattleState, 
       const tgt = battle.combatants.find((c) => c.id === pendingAttack.targetId);
       return atk && tgt ? new Set(crowdEligible(battle, atk, tgt).map((v) => v.id)) : null;
     })(),
-    // Cibles cliquables du MODE de ciblage courant (targetingModes → MÊME source que réticule/clic) :
-    // Soin (alliés → anneau AMI) ; flux différés (ennemis → anneau hostile, déjà cochés en vert).
+    // Cibles cliquables du MODE de ciblage courant (targetingModes → MÊME source que réticule/clic).
+    // C'est le MODE qui DÉCLARE s'il peint ses candidats et de quelle teinte (`anneauCandidats`) : rien
+    // ici ne nomme un flux ni un id d'action. Les `pending*` du contexte restent le signal de fraîcheur
+    // de l'hôte (cf. `HighlightOpts`) — l'aiguilleur, lui, les relit à leur source.
     candidates: (() => {
-      if (!myTurn || pendingAttack || !(pendingCleave || pendingDualStrike || pendingCast?.pickingTargets || battle.action === 'heal')) return null;
+      if (!myTurn || pendingAttack) return null;
       const tmode = currentTargetingMode(get);
+      if (!tmode.anneauCandidats) return null;
       const cands = activeC ? tmode.candidates?.(get, activeC) ?? [] : [];
       return {
         ids: cands.map((c: Combatant) => c.id),
-        friendly: tmode.id === 'heal', // soin = anneau ami (vert)
+        friendly: tmode.anneauCandidats === 'ami',
         checkedIds: pendingCast?.pickingTargets ? new Set(pendingCast.extraTargetIds ?? []) : null, // surincantation : déjà coché
       };
     })(),

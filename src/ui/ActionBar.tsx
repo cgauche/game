@@ -19,8 +19,6 @@ import { mdToText } from './Prose';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets } from '../engine/healing';
 import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
-import { combatAdvantageSkills } from '../engine/skillCombatApps';
-import { findSkillById } from '../data/index';
 import { mountableNear } from '../state/mount';
 import { combatDistance } from '../state/footprint';
 import { shipOfCrew, servablePostes } from '../state/shipPostes';
@@ -34,7 +32,7 @@ import { ownsLocal } from './ownership';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
-import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from '../state/combatFlow';
+import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, hasFreeWeaponAttack, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from '../state/combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from '../state/lineOfSight';
 import { smokeOf } from '../state/combatGeometry';
@@ -93,9 +91,6 @@ export function ActionBar() {
   const aim = useGame((s) => s.battleAim);
   const togglePushback = useGame((s) => s.battleTogglePushback);
   const dispelSpell = useGame((s) => s.battleDispelSpell);
-  const gainAdvantage = useGame((s) => s.battleGainAdvantage);
-  const selectAttack = useGame((s) => s.battleSelectAttack);
-  const maneuverArea = useGame((s) => s.battleManeuverArea);
   const cancelMove = useGame((s) => s.cancelMove);
   const switchLoadout = useGame((s) => s.battleSwitchLoadout);
   const scene = useGame((s) => s.scene);
@@ -118,11 +113,9 @@ export function ActionBar() {
   // Garde-fou « tour gâché » (R6) : confirmation à 2 clics avant de finir avec une Action non dépensée.
   // Réinitialisé à chaque changement de tour/Round.
   const [confirmEnd, setConfirmEnd] = useState(false);
-  // Repli du menu « Manœuvre ▾ » (état UI local, comme l'ouverture d'un sous-menu) ; refermé au tour/round.
-  const [showManeuvers, setShowManeuvers] = useState(false);
   // ARME visée par le tiroir munitions (chacune a la sienne) — état UI local, refermé au tour/round.
   const [ammoWeaponUid, setAmmoWeaponUid] = useState<string | undefined>(undefined);
-  useEffect(() => { setConfirmEnd(false); setShowManeuvers(false); setAmmoWeaponUid(undefined); }, [battle?.turn, battle?.round]);
+  useEffect(() => { setConfirmEnd(false); setAmmoWeaponUid(undefined); }, [battle?.turn, battle?.round]);
   if (!battle || battle.over) return null;
   // Début de Round (LDB 17 l.25) : pause d'initiative à CHAQUE Round — la barre d'action est remplacée par
   // un seul bouton. On voit l'ordre (frise) et le champ, et on peut dépenser sa Chance pour agir en premier
@@ -285,11 +278,6 @@ export function ActionBar() {
   // la Course est la zone violette au-delà de la Marche (clic → Test d'Athlétisme, LDB 15 l.41).
   // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.15) et Mouvement non entamé.
   const canStandUp = prone && active.wounds.current > 0 && !moveStarted;
-  // Liste d'ATTAQUES activables (« Attaque ▾ ») : l'Arme du Set actif + les attaques gratuites/zone d'un
-  // trait de créature (Morsure/Caudale/Tentacule/Souffle…) + Piétinement (Taille) + mutation Tentacule.
-  // Source UNIQUE : availableAttacks (combatFlow). Sélectionner arme `selectedAttack` ; le clic-ennemi
-  // résout l'attaque armée (approche-puis-frappe). La hotbar ne fait que rendre ces descripteurs.
-  const attacks = isHero ? availableAttacks(active, battle) : [];
   // Frénésie (LDB 21 l.31) : un héros capable peut tenter d'entrer en Frénésie (Test de FM, coûte l'Action).
   const canFrenzy = isHero && isFrenzyCapable(active) && !isFrenzied(active) && !battle.acted && !stunned;
   // Frénésie : l'attaque d'Arme gratuite (talent, LDB 21 l.33) reste possible même l'Action dépensée (donnée).
@@ -372,12 +360,6 @@ export function ActionBar() {
   // Dissipation (LDB 46 l.158-162) : le héros actif possède Langue (Magick) ET ≥ 1 sort permanent est actif.
   const canDispel = isHero && actorHasSkill(active, 'langue', 'magick');
   const dispellable = canDispel ? dispellableSpellsOn(battle.combatants) : [];
-  // Cumuler l'Avantage (LDB 09 l.305-308) : Compétences data-driven (`combatAdvantage`) que l'actif peut
-  // tester pour +1 Avantage, tant qu'il n'est PAS déjà au plafond de la méthode. Dédupliqué par id de
-  // Compétence (Savoir groupé → un seul bouton). Coûte l'Action.
-  const advSkills = isHero && !frenzied
-    ? [...new Map(combatAdvantageSkills(active).filter((s) => s.cap > active.advantage).map((s) => [s.skillId, s])).values()]
-    : [];
 
   // ── Capacités de la barre, DATA-DRIVEN : UNE liste de descripteurs, source du rendu ET des
   // raccourcis clavier 1-9 (positionnels, rien en dur). Construite au tour d'un héros, publiée au pont. ──
@@ -412,7 +394,6 @@ export function ActionBar() {
     if (canHeal && healTargets.length > 0) slots.push({ id: 'heal', cls: battle.action === 'heal' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="journal/heal" />, label: 'Soigner', title: "Soigner (Compétence Guérison) : rend des PB ou stoppe une hémorragie — coûte l'Action", run: () => selectAction(battle.action === 'heal' ? null : 'heal') });
     if (canWater && waterTargets.length > 0) slots.push({ id: 'water', disabled: battle.acted || stunned || broken, icon: <Icon id="action/water" />, label: 'Asperger d’eau', title: "Asperger d'eau une Créature marine adjacente hors de l'eau : repousse la suffocation pour ce Round — coûte l'Action", run: () => battleWater() });
     if (canDispel && dispellable.length > 0 && !frenzied) slots.push({ id: 'dispel', cls: battle.action === 'dispel' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="action/dispel" />, label: 'Dissiper', done: battle.acted, title: "Dissiper un sort permanent (Test étendu de Langue (Magick) → NI) — coûte l'Action chaque Round", run: () => selectAction(battle.action === 'dispel' ? null : 'dispel') });
-    if (advSkills.length > 0) slots.push({ id: 'advantage', cls: battle.action === 'advantage' ? 'on' : '', disabled: battle.acted || stunned || broken, icon: <Icon id="action/aim" />, label: 'Prendre l’Avantage', done: battle.acted, title: 'Évaluer l’environnement / prier pour gagner +1 Avantage (Test d’une Compétence — coûte l’Action, plafonné au Bonus de Caractéristique)', run: () => selectAction(battle.action === 'advantage' ? null : 'advantage') });
     if (!frenzied) slots.push({ id: 'defend', disabled: battle.acted || stunned || broken, icon: <Icon id="action/defend" />, label: 'Défensive', done: battle.acted, title: '+20 à tous vos Tests de défense jusqu’à votre prochain tour', run: defendTotal });
     if (onFire) slots.push({ id: 'roll-fire', disabled: battle.acted || stunned, icon: <Icon id="action/roll-fire" />, label: 'Se rouler', done: battle.acted, title: "Se rouler au sol pour éteindre les flammes (Test d'Athlétisme — coûte l'Action)", run: () => recoverState('en-flammes') });
     if (entangled) slots.push({ id: 'free-entangle', disabled: battle.acted || stunned, icon: <Icon id="action/break-free" />, label: 'Se libérer', done: battle.acted, title: "Se libérer de l'entrave (Test opposé de Force contre la source — coûte l'Action)", run: () => recoverState('empetre') });
@@ -454,7 +435,6 @@ export function ActionBar() {
     // manœuvre APPLICABLE (prendre/reprendre la forme) — coûte deux Actions (celle-ci + le loseTurn suivant).
     if (!frenzied) for (const m of selfManeuversOf(active).filter((mm) => selfManeuverApplicable(active, mm)))
       slots.push({ id: `self-${m.id}`, disabled: battle.acted || stunned || broken, icon: <Icon id="flag/frenzy" />, label: m.label, done: battle.acted, title: `${m.label} — se métamorphoser (coûte deux Actions, RAW Métamorphose)`, run: () => selfManeuver(m.id) });
-    if (attacks.length > 1) slots.push({ id: 'attacks', cls: showManeuvers || (battle.action === null && (battle.selectedAttack ?? 'arme') !== 'arme') ? 'on' : '', icon: <Icon id="action/attack" />, label: 'Attaque ▾', title: "Choisir l'attaque (arme ou attaque spéciale d'un trait de créature)", run: () => setShowManeuvers((v) => !v) });
     if (!frenzied) for (const g of usableGroups) {
       const it = active.items?.find((i) => i.uid === g.uids[0]);
       slots.push({ id: `item-${g.label}`, disabled: battle.acted || stunned || broken, icon: it ? <ItemIcon item={it} size={22} /> : <Icon id="action/consume" />, label: `${g.label}${g.uids.length > 1 ? ` ×${g.uids.length}` : ''}`, title: (g.desc ? mdToText(g.desc) : '') || `Utiliser ${g.label}`, run: () => useItem(g.uids[0]) });
@@ -562,22 +542,6 @@ export function ActionBar() {
           })}
         </div>
       )}
-      {battle.action === 'advantage' && (
-        <div className="ab-spells">
-          {advSkills.length === 0 && <div className="ab-hint">Aucune Compétence exploitable ici.</div>}
-          {advSkills.map((s) => {
-            const label = findSkillById(s.skillId)?.label ?? s.skillId;
-            return (
-              <div key={s.skillId} className="ab-spell-row">
-                <button className="btn btn-sm" onClick={() => gainAdvantage(s.skillId)} title={`Test de ${label} : +1 Avantage sur réussite (max ${s.cap}) — coûte l’Action`}>
-                  <Icon id="action/aim" size="sm" /> {label} <span className="bp-spell-ni">(max {s.cap})</span>
-                </button>
-                <CodexRef category="skills" id={s.skillId} label={label} className="ab-codex-info" hideIfUnknown><Icon id="journal/info" size="sm" /></CodexRef>
-              </div>
-            );
-          })}
-        </div>
-      )}
       {battle.action === 'ammo' && (
         <div className="ab-spells">
           {!!ammoWeapon && (ammoWeapon.reload ?? 0) > 0 && !needsReload && (
@@ -589,25 +553,6 @@ export function ActionBar() {
               <CodexRef category="trappings" id={a.trappingId} label={a.label} className="ab-codex-info" hideIfUnknown><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           ))}
-        </div>
-      )}
-      {showManeuvers && attacks.length > 1 && (
-        <div className="ab-spells">
-          {attacks.map((o) => {
-            const armed = battle.action === null && (battle.selectedAttack ?? 'arme') === o.id;
-            const immediate = o.kind === 'hurlement'; // Hurlement : tous les ennemis à I mètres → résolution directe
-            const onClick = () => {
-              if (immediate) { maneuverArea('hurlement'); setShowManeuvers(false); return; }
-              selectAttack(o.id); // arme l'attaque → le clic-ennemi l'exécute (approche-puis-frappe)
-            };
-            return (
-              <div key={o.id} className="ab-spell-row">
-                <button className={`btn btn-sm ${armed ? 'btn-primary' : ''}`} onClick={onClick}>
-                  <Icon id={o.icon} size="sm" /> {o.label}{o.cost.advantage > 0 ? ` · ${o.cost.advantage} Av` : ''}{!immediate && <> <Icon id="action/aim" size="sm" /></>}
-                </button>
-              </div>
-            );
-          })}
         </div>
       )}
 

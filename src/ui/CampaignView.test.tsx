@@ -10,6 +10,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../state/store';
 import { testScene } from '../scenes/test-fixture';
+import { makePregens } from '../data/pregens';
 import { CampaignView } from './CampaignView';
 import { resetStageFrames } from '../gameIso/stage/stageFrames';
 import { PAS_TAP_DEG, SEUIL_MAINTIEN_MS, getStageYaw, resetStageYaw } from '../state/stageYaw';
@@ -162,5 +163,67 @@ describe('CampaignView — le geste de caméra du joueur, monté à l’écran',
     act(() => { jouer(60); });
     expect(getStageYaw()).toBeCloseTo(enVol + PAS_TAP_DEG, 6);
     Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+  });
+});
+
+/**
+ * PARITÉ PORTRAIT ⇄ JETON pendant un ciblage d'ENTITÉ, jugée à l'ÉCRAN (le dock monté pour de vrai).
+ * En mode Dissiper (LDB 46 l.158-162) le porteur du Sort est le plus souvent un ALLIÉ : son portrait
+ * du dock est le chemin naturel, et il doit router vers `battleClickEntity` comme le clic-jeton.
+ */
+describe('CampaignView — le portrait du dock route le ciblage d’ENTITÉ', () => {
+  /** Combat à 2 héros, `h2` PORTEUR de 2 Sorts permanents. `action` arme (ou non) la Dissipation. */
+  function combatDissipation(action: 'dispel' | null) {
+    // `hoverClickCommits` (pointerCaps) interroge le pointeur : jsdom n'a pas `matchMedia`.
+    vi.stubGlobal('matchMedia', (media: string) => ({ matches: false, media, addEventListener() {}, removeEventListener() {} }));
+    const [h1, h2] = makePregens();
+    h1.id = 'h1'; h1.pos = { x: 6, y: 6 };
+    h2.id = 'h2'; h2.pos = { x: 5, y: 6 };
+    (h2 as { activeEffects?: unknown[] }).activeEffects = [1, 2].map((i) => ({
+      label: `Effet ${i}`, bonus: 0, duration: { scale: 'permanent' },
+      spell: { spellId: `sort-${i}`, casterId: 'h1', label: `Sort ${i}`, ni: 3 },
+    }));
+    const battle = {
+      combatants: [h1, h2], order: ['h1', 'h2'], baseOrder: ['h1', 'h2'], turn: 0, round: 1,
+      action, selectedSpellId: null, reachable: new Map(),
+      movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
+    } as never;
+    useGame.setState({
+      scene: testScene, mode: 'battle', povActive: false, battle, party: [h1, h2],
+      sheetId: null, dispelCarrierId: null, inspectId: null,
+      pendingCleave: null, pendingDualStrike: null, pendingCast: null, pendingAttack: null,
+      pendingSiegeAim: null, pendingDispel: null,
+    });
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = createRoot(host);
+    act(() => { root.render(<CampaignView />); });
+    return { h1, h2 };
+  }
+
+  /** Le bouton-portrait du dock (jamais la poignée : elle n'a pas d'`aria-label`). */
+  const portraitDock = (label: string): HTMLButtonElement => {
+    const el = [...host.querySelectorAll<HTMLButtonElement>('.party-dock button')]
+      .find((b) => b.getAttribute('aria-label')?.startsWith(label));
+    expect(el, `portrait de ${label} absent du dock`).toBeTruthy();
+    return el!;
+  };
+
+  it('mode Dissiper ARMÉ : le portrait de l’allié porteur ÉLIT le porteur (comme son jeton)', () => {
+    const { h2 } = combatDissipation('dispel');
+    const b = portraitDock(h2.label);
+    expect(b.getAttribute('aria-label')).toBe(`${h2.label} — cibler`);
+    act(() => { b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(useGame.getState().dispelCarrierId, 'le porteur est élu — le SORT reste à choisir').toBe('h2');
+    expect(useGame.getState().sheetId, 'le clic ne doit pas ouvrir la fiche pendant un ciblage').toBeNull();
+  });
+
+  it('TÉMOIN — aucun ciblage armé : le même portrait ouvre la fiche du personnage', () => {
+    const { h2 } = combatDissipation(null);
+    const b = portraitDock(h2.label);
+    expect(b.getAttribute('aria-label')).toBe(`${h2.label} — fiche du personnage`);
+    act(() => { b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(useGame.getState().sheetId).toBe('h2');
+    expect(useGame.getState().dispelCarrierId).toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { preemptShooterIds } from '../state/targeting';
+import { ciblageEntiteArme } from '../state/targetingModes';
 import { MondeDeCampagne } from '../gameIso/stage/MondeDeCampagne';
 import { SceneErrorBoundary } from './SceneErrorBoundary';
 import { Modal } from './Modal';
@@ -145,12 +146,15 @@ export function CampaignView() {
   const preemptAiming = useGame((s) => s.preemptAiming);
   const armPreempt = useGame((s) => s.armPreempt);
   const canPreemptIds = preemptShooterIds(useGame.getState); // source UNIQUE (partagée avec le ciblage clavier)
-  // #21 : pendant une action de CIBLAGE (attaque/incantation/charge/piétinement), cliquer un PORTRAIT
-  // (frise ou dock) cible ce combattant — même validation/portée que cliquer son pion sur le champ.
+  // #21 : pendant un ciblage d'ENTITÉ, cliquer un PORTRAIT (frise ou dock) cible ce combattant —
+  // même validation/portée que cliquer son pion sur le champ. Le « quels ciblages » vient du REGISTRE
+  // (`ciblageEntiteArme`, dérivé de `currentTargetingMode`), jamais d'une liste d'ids recopiée ici :
+  // le sélecteur relit le mode à chaque changement du store, donc les modes tenus par un `pending*`
+  // (Frappe Mortelle, 2ᵉ frappe, Surincantation, pose de zone) comptent comme ceux de `battle.action`.
   // COOP : seulement quand le combattant actif est À SOI (le tour d'un autre joueur est inerte).
   const controls = useGame(controlsActive);
-  const targetingAction = battle && !battle.over ? battle.action : null;
-  const isTargeting = controls && !!targetingAction && ['attack', 'cast', 'charge', 'trample'].includes(targetingAction as string);
+  const cibleDesEntites = useGame((s) => ciblageEntiteArme(() => s));
+  const isTargeting = controls && cibleDesEntites;
   // LDB 10.
   const onStripPortrait = (id: string) => {
     const c = battle?.combatants.find((x) => x.id === id);

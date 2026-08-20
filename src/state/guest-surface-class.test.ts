@@ -46,6 +46,11 @@ const HORS_SURFACE_UI: Record<string, string> = {
   setHoverCombatant: CLIENT('survol d’un combattant'),
   setInspectId: CLIENT('inspection d’un statbloc'),
   clearCursor: CLIENT('curseur clavier'),
+  // Élection LOCALE d'écran, hors réseau PAR CONSTRUCTION (même famille que `localIntent`) : le clic
+  // qui élit le porteur du mode Dissiper n'engage rien — il ouvre le choix du Sort CHEZ CE JOUEUR.
+  // `netFlow.emettreIntentInvite` le joue dans le store de l'émetteur et n'envoie aucun intent ; le
+  // COMMIT, lui (`battleDispelSpell`), est exposé. Voyager le ferait naître chez l'HÔTE.
+  dispelSelectCarrier: CLIENT('porteur élu du mode Dissiper — panneau-paramètre'),
   setCamPan: CLIENT('caméra'),
   resetCamPan: CLIENT('caméra'),
   setZoom: CLIENT('zoom'),

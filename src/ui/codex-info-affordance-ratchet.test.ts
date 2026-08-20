@@ -50,7 +50,11 @@ function infoAffordances(): Record<string, number> {
  * Toute NOUVELLE occurrence, et tout retour d'une occurrence supprimée, échoue ici.
  */
 const RATCHET: Record<string, number> = {
-  'ActionBar.tsx': 4,
+  // 4 → 3 (#1411 P1) : le tiroir « Prendre l'Avantage » de la barre v7 est mort — la méthode
+  // d'Avantage est désormais UNE ALVÉOLE par Compétence dans la console (entrée `gain-advantage`,
+  // foyer de règle porté par la case elle-même via `CodexRef wrap`). L'ⓘ accolé au bouton de ce
+  // tiroir n'a plus de porteur ; il ne revient pas.
+  'ActionBar.tsx': 3,
   'StakeNote.tsx': 1,
   'CharacterSheet.tsx': 1,
   'MerchantPanel.tsx': 3,

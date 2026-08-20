@@ -10,12 +10,13 @@
  * ne sélectionne l'entrée. `note` documente une exception explicite (maquette statique plutôt que
  * vivante) — jamais une exclusion silencieuse : la garde compte aussi les entrées notées.
  */
-import { type ComponentType, useState } from 'react';
+import { type ComponentType, useRef, useState } from 'react';
 import { ScreenMeta } from '../ScreenMeta';
 import { Tabs, type TabItem } from '../Tabs';
 import { OptionChooser } from '../OptionChooser';
 import { ParchmentCard } from '../ParchmentCard';
 import { QtyStepper } from '../QtyStepper';
+import { PanneauParametre } from '../PanneauParametre';
 import { NumberField } from '../NumberField';
 import { GatedAction } from '../GatedAction';
 import { PortraitTile } from '../PortraitTile';
@@ -42,7 +43,7 @@ import { MenuCard, MenuSection, MenuButton, MenuToggle } from '../MenuCard';
 import { CreatorDice } from '../creator/CreatorDice';
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
-import { species, careers, levelsForCareer, stars, mutations, rigSpeciesId, allAxes, CHAR_ABR } from '../../data';
+import { species, careers, levelsForCareer, stars, mutations, rigSpeciesId, allAxes, CHAR_ABR, spells } from '../../data';
 import { makePregens } from '../../data/pregens';
 import { toMoney } from '../../engine/money';
 import { RoseAxes } from '../RoseAxes';
@@ -479,6 +480,41 @@ function GatedActionDemo() {
   return <GatedAction id="gal-gated" label="Entrer" enabled={false} reason="Bourse insuffisante." onClick={() => {}} />;
 }
 
+/** Trois Sorts RÉELS du catalogue portant un NI (`cn`) — la matière du panneau « Quel Sort
+ *  dissiper ? » de la console, sans rien inventer. */
+const SORTS_A_DISSIPER = spells.filter((s) => typeof s.cn === 'number').slice(0, 3);
+
+/** Panneau-paramètre VIVANT : un déclencheur, le panneau qui en NAÎT (ancré à son rect), un clic qui
+ *  commet ET referme, Échap/clic-dehors qui annulent sans rien engager. Le choix retenu s'affiche
+ *  sous le bouton — un panneau muet ne montrerait pas que le clic COMMET. */
+function PanneauParametreDemo() {
+  const declencheur = useRef<HTMLButtonElement>(null);
+  const [ouvert, setOuvert] = useState(false);
+  const [choisi, setChoisi] = useState<string | null>(null);
+  if (!SORTS_A_DISSIPER.length) return <p className="hint">Aucun Sort à NI dans le catalogue.</p>;
+  return (
+    <div className="col gap-sm">
+      <button ref={declencheur} type="button" className="chip" aria-haspopup="dialog" aria-expanded={ouvert} onClick={() => setOuvert((v) => !v)}>
+        Dissiper
+      </button>
+      <span className="hint">{choisi ? `Sort choisi : ${choisi}` : 'Aucun Sort choisi'}</span>
+      {ouvert && (
+        <PanneauParametre
+          anchor={declencheur.current}
+          intitule="Quel Sort dissiper ?"
+          options={SORTS_A_DISSIPER.map((s) => ({
+            key: s.id,
+            label: s.label,
+            meta: `NI ${s.cn}`,
+            onSelect: () => setChoisi(s.label),
+          }))}
+          onClose={() => setOuvert(false)}
+        />
+      )}
+    </div>
+  );
+}
+
 function ParchmentCardDemo() {
   return (
     <ParchmentCard title="Événement" seal={{ label: 'Tirage', roll: 42 }} tone="ok">
@@ -698,6 +734,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { label: 'Band', file: 'src/ui/Band.tsx', category: 'Écrans & layout', render: BandDemo },
   { label: 'SearchFilterField', file: 'src/ui/SearchFilterField.tsx', category: 'Écrans & layout', render: SearchFilterFieldDemo },
   { label: 'OptionChooser', file: 'src/ui/OptionChooser.tsx', category: 'Jets', render: OptionChooserDemo },
+  { label: 'PanneauParametre', file: 'src/ui/PanneauParametre.tsx', category: 'Écrans & layout', render: PanneauParametreDemo },
   { label: 'InfluenceRow', file: 'src/ui/InfluenceRow.tsx', category: 'Jets', render: InfluenceRowDemo },
   { label: 'VsHeader', file: 'src/ui/VsHeader.tsx', category: 'Jets', render: VsHeaderDemo },
   { label: 'RollShell', file: 'src/ui/RollShell.tsx', category: 'Jets', note: 'maquette statique d’états — un spécimen vivant exigerait un flux de jet monté (store + makeRollFlow), hors de portée d’une vignette de galerie', render: RollShellStaticMock },

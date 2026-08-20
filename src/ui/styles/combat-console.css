@@ -416,6 +416,12 @@
   background: var(--cc-cell-edge);
   opacity: 0.55;
 }
+/* La case qui IMPRIME sa touche lui RÉSERVE sa bande au pied — sans quoi un libellé long descend
+   sous le chiffre et les deux se chevauchent (sonde du juge vision : « Immunité Psychologie (2) »).
+   Même patron que la bande de raison : la hauteur de l'alvéole, elle, ne bouge pas. */
+.cc-cell[data-hotkey] {
+  padding-bottom: 10px;
+}
 /* Touche IMPRIMÉE dans la case (spec zone 8) — coin bas-gauche, gravure de tôle. */
 .cc-key {
   position: absolute;
@@ -467,7 +473,7 @@
   line-clamp: 2;
   overflow: hidden;
   /* R-M2 : AUCUN mot tranché. Le texte ne se coupe qu'ENTRE MOTS (deux lignes au plus) ; un mot
-     seul trop long s'ellipse (« … »), et le libellé complet reste en `title` sur l'alvéole. */
+     seul trop long s'ellipse (« … »), et le libellé complet reste le nom accessible de l'alvéole. */
   overflow-wrap: normal;
   word-break: normal;
   text-overflow: ellipsis;
@@ -580,6 +586,26 @@
    #1348). Sélecteur d'ATTRIBUT (aucune classe de plus) ; teinte d'acier pour la distinguer du nom. */
 .cc-bay-head [data-ammo] {
   color: var(--cc-steel-lit-ink);
+}
+/* Quand l'arme accepte PLUSIEURS munitions, le même chip devient le DÉCLENCHEUR du panneau-paramètre.
+   Il COMPOSE alors la primitive partagée `.chip` (langage `button.chip` : boîte, survol, curseur) — la
+   seule chose ajoutée ICI est le CHEVRON qui dit qu'un panneau naîtra de lui, et rien de la primitive
+   n'est neutralisé depuis ce module. */
+.cc-bay-head button[data-ammo] {
+  position: relative;
+}
+.cc-bay-head button[data-ammo]::after {
+  content: '▾';
+}
+.cc-bay-head button[data-ammo]:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+/* RAISON du refus : elle PARTAGE la ligne de l'en-tête (elle ne l'ajoute pas) et s'ellipse avec elle. */
+.cc-bay-head [data-gate] {
+  color: var(--tooltip-warn);
+  font-style: normal;
+  margin-left: 6px;
 }
 
 /* L'arche est le FRONTON DU PONT (spec §1c-ter), pas un panneau posé devant : elle s'élève de
@@ -799,6 +825,48 @@
   color: var(--muted);
   text-shadow: none;
   white-space: nowrap;
+}
+/* GESTE adossé à la gouttière (annulation du déplacement) : plaque JUMELLE du socle, au pied de la
+   même colonne — le bouton COMPOSE `.chip` (canon des boutons, cliquet x) et reprend le badge du
+   socle, aucune classe de plus (cliquet xii). Il n'existe à l'écran que quand son gate passe :
+   rien à désactiver, rien à griser.
+   SA PLACE, elle, est RÉSERVÉE dans TOUTE gouttière — hauteur FIXE portée par le slot, occupé ou
+   vide (loi 1 : la géométrie ne bouge jamais ; le compteur du socle remontait de 13px à la venue du
+   geste, sonde du juge vision). */
+.cc-gutter > [data-geste] {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: 30px;
+}
+button.cc-socle {
+  position: relative;
+  cursor: pointer;
+  padding: 2px 3px;
+  gap: 1px;
+}
+/* CIBLE TACTILE du geste, à TOUS les pointeurs (≥44px, la plaque en mesurait 26 de haut) : la zone
+   de touche s'étend HORS FLUX (même patron que le chip munition), la plaque et la géométrie de
+   l'arche ne bougent pas d'un pixel. */
+button.cc-socle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+}
+button.cc-socle:hover,
+button.cc-socle:focus-visible {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4));
+  filter: brightness(1.25);
+}
+/* Le glyphe du geste garde la boîte de la plaque : c'est le MOT qui le nomme, pas sa taille. */
+button.cc-socle svg {
+  width: 13px;
+  height: 13px;
 }
 
 /* Conduit d'Avantage : 10 colliers (plafond RAW LDB 14 l.198), plaque chiffrée, branché sur la
@@ -1172,7 +1240,7 @@
      à la frontière d'un glyphe. La boîte à deux lignes ne posait son ellipse que sur la DERNIÈRE :
      un mot plus large que l'alvéole de 36px (« Mouvement », « Détermination ») était TRANCHÉ en
      plein glyphe par le `overflow: hidden` de la première (sonde du juge vision à 360 : « Mouve… »,
-     « Déter… » avec son « 3 » orphelin). Le libellé entier reste au `title` de l'alvéole.
+     « Déter… » avec son « 3 » orphelin). Le libellé entier reste le nom accessible de l'alvéole.
      Aucune coupe DANS un mot n'est autorisée pour autant (ni `overflow-wrap: anywhere`, ni
      `word-break: break-all`) : le mot n'est pas cassé, il est ellipsé. */
   .cc-lbl {
@@ -1203,5 +1271,12 @@
   /* Cible tactile de la colonne de sets : la vignette s'élargit, son compte ne change pas. */
   .cc-sets {
     width: 44px;
+  }
+  /* Cible tactile du chip MUNITION : elle s'étend HORS FLUX (calque de touche), sans grandir la ligne
+     de l'en-tête — 44px de haut au doigt pour un texte de 10px qui, lui, ne bouge pas. */
+  .cc-bay-head button[data-ammo]::before {
+    content: '';
+    position: absolute;
+    inset: -16px -10px;
   }
 }

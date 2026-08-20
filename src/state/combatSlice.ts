@@ -11,6 +11,7 @@
 import type { Get, Set } from './flowTypes';
 import { tickCombatAuto } from './combatAuto';
 import type { GameState, BattleState } from './store';
+import type { BattleActionMode } from './actionRegistry';
 import type { PendingDefense, CounterParticipant, CounterDeclaration } from './pendings';
 import { fleeBackstab, fleeCalme, fleeNeedCalme } from './pendings';
 import { SceneEntity, structureIsDown } from './scene';
@@ -2882,7 +2883,7 @@ export function createCombatSlice(get: Get, set: Set) {
 
     // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
 
-    battleSelectAction: (a: 'cast' | 'ammo' | 'heal' | 'dispel' | 'battery' | 'advantage' | null) => {
+    battleSelectAction: (a: BattleActionMode | null) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle, scene } = get();
       if (!battle || !scene) return;
@@ -2909,7 +2910,9 @@ export function createCombatSlice(get: Get, set: Set) {
       // implicites au clic (battleClickTile/battleClickEntity), sans mode : le reachable stocké ne
       // porte que les budgets spéciaux (Course, post-Désengagement), on ne le touche pas ici.
       const selectedSpellId = a === 'cast' ? battle.selectedSpellId : null;
-      set({ battle: { ...battle, action: a, selectedSpellId, preview: null } });
+      // Changer (ou quitter) le mode armé oublie le PORTEUR élu du mode Dissiper : son panneau de
+      // paramètre n'a plus de déclencheur allumé d'où naître.
+      set({ battle: { ...battle, action: a, selectedSpellId, preview: null }, dispelCarrierId: null });
       bus.emit(EVT.SCENE_DIRTY);
     },
 
@@ -3515,8 +3518,12 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     focusCancel: () => set({ pendingFocus: null }),
 
-    /** Dissipe un Sort permanent (LDB 46 l.158-160 : Test étendu de Langue (Magick) → NI). Action de combat
-     *  RÉPÉTÉE chaque Round (comme la Focalisation) ; le DR cumule sur `caster.dispel` jusqu'au NI. */
+    /** ÉLIT (ou oublie) le PORTEUR dont on va dissiper un Sort — porte UNIQUE de `dispelCarrierId` :
+     *  le clic-token du mode Dissiper l'appelle, la fermeture du panneau-paramètre aussi. Aucun jet,
+     *  aucune ressource : c'est un choix d'écran, annulable gratuitement. */
+    dispelSelectCarrier: (carrierId: string | null) => set({ dispelCarrierId: carrierId }),
+    /** Dissipe un Sort permanent (LDB 46 l.158-160). Action de combat RÉPÉTÉE chaque Round (comme la
+     *  Focalisation) ; le DR cumule sur `caster.dispel` jusqu'au NI. */
     battleDispelSpell: (spellId: string, spellCasterId: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();
@@ -3537,11 +3544,15 @@ export function createCombatSlice(get: Get, set: Set) {
         (c) => c.kind === active.kind && [...domainsOf(c)].some((d) => mine.has(d))
           && (!active.pos || (!!c.pos && combatDistance(active, c) <= 1)));
       const value = testValue(active, 'langue', undefined, 'magick') + sup.bonus;
-      set({ pendingDispel: {
-        casterId: active.id, spellId, spellCasterId, label: target.label, ni: target.ni, value,
-        support: sup.bonus > 0 ? sup : undefined,
-        result: null,
-      } });
+      set({
+        pendingDispel: {
+          casterId: active.id, spellId, spellCasterId, label: target.label, ni: target.ni, value,
+          support: sup.bonus > 0 ? sup : undefined,
+          result: null,
+        },
+        // Le paramètre est choisi : le panneau borné qui l'a servi n'a plus lieu d'être.
+        dispelCarrierId: null,
+      });
     },
     // Dissipation COMMUNE combat/hors-combat (couture D, #461) : acteur via `actorIn`, sortie
     // journal hors combat (calque `focusConfirm`).

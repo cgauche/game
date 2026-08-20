@@ -304,7 +304,9 @@
     "gate": "action-libre-hors-frenesie",
     "run": "battleSelectAction",
     "armed": "dispel",
+    "mode": "dispel",
     "candidates": "sorts-dissipables",
+    "panneau": true,
     "cost": "action",
     "rule": "dissipation",
     "ruleCategory": "regles",
@@ -335,27 +337,11 @@
     }
   },
   {
-    "id": "advantage",
-    "label": "Prendre l’Avantage",
-    "icon": "action/aim",
-    "surface": "grille",
-    "gate": "action-libre-hors-frenesie",
-    "run": "battleSelectAction",
-    "armed": "advantage",
-    "candidates": "competences-avantage",
-    "cost": "action",
-    "rule": "avantage",
-    "ruleCategory": "regles",
-    "keys": [
-      "advantage"
-    ]
-  },
-  {
     "id": "gain-advantage",
     "label": "Tester la Compétence",
     "icon": "action/aim",
     "surface": "grille",
-    "gate": "action-libre-hors-frenesie",
+    "gate": "avantage-sous-plafond",
     "run": "battleGainAdvantage",
     "candidates": "competences-avantage",
     "cost": "action",
@@ -475,24 +461,6 @@
     "keys": [
       "self-"
     ]
-  },
-  {
-    "id": "attacks",
-    "label": "Attaque ▾",
-    "icon": "action/attack",
-    "surface": "grille",
-    "gate": "toujours",
-    "candidates": "attaques-disponibles",
-    "cost": "aucun",
-    "maison": true,
-    "costNote": "ouvre le choix d’attaque (aucun acte commis) — coût nul, arbitrage d’interface.",
-    "keys": [
-      "attacks"
-    ],
-    "blocked": {
-      "ticket": "#1349",
-      "raison": "tiroir d’état LOCAL de l’ActionBar (`setShowManeuvers`), aucun dispatcher de store — il meurt avec la barre (spec §1d)."
-    }
   },
   {
     "id": "select-attack",
@@ -750,7 +718,7 @@
     "label": "Annuler le déplacement",
     "icon": "ui/undo",
     "surface": "hors-console",
-    "gate": "toujours",
+    "gate": "deplacement-annulable",
     "run": "cancelMove",
     "cost": "aucun",
     "maison": true,
@@ -813,6 +781,7 @@
     "run": "cleaveEnd",
     "mode": "cleave",
     "exitSafe": false,
+    "role": "valide",
     "cost": "aucun",
     "maison": true,
     "costNote": "clore le balayage ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
@@ -826,6 +795,7 @@
     "run": "dualStrikeSkip",
     "mode": "dual",
     "exitSafe": false,
+    "role": "renonce",
     "cost": "aucun",
     "maison": true,
     "costNote": "renoncer à la 2ᵉ frappe ne dépense rien de plus (l’Action est déjà payée) — coût nul, arbitrage d’interface."
@@ -839,6 +809,7 @@
     "run": "castPickTargetsOff",
     "mode": "overcast",
     "exitSafe": true,
+    "role": "valide",
     "cost": "aucun",
     "maison": true,
     "costNote": "revenir à la modale avec les cibles désignées ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
@@ -852,6 +823,7 @@
     "run": "placingZoneOff",
     "mode": "placing-zone",
     "exitSafe": true,
+    "role": "renonce",
     "cost": "aucun",
     "maison": true,
     "costNote": "reposer le gabarit — retour à la modale du sort, ou placeur du pilonnage refermé — ne commet aucun acte de jeu : coût nul, arbitrage d’interface."
@@ -865,6 +837,7 @@
     "run": "batterySelectNone",
     "mode": "battery",
     "exitSafe": true,
+    "role": "renonce",
     "cost": "aucun",
     "maison": true,
     "costNote": "désarmer la désignation de bordée ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
@@ -878,6 +851,7 @@
     "run": "teleportStay",
     "mode": "teleport",
     "exitSafe": false,
+    "role": "valide",
     "cost": "aucun",
     "maison": true,
     "costNote": "la case d’arrivée se choisit après un sort déjà payé ; arriver sur sa propre case ne coûte rien de plus — arbitrage d’interface."

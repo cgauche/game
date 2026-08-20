@@ -271,6 +271,14 @@
   gap: 6px;
   margin-top: 6px;
 }
+/* Option RETENUE d'une grille de choix (`OptionChooser layout='grid'`, `RollOption.selected` → classe
+   `on` + `aria-pressed`) : le choix déjà posé se VOIT — la classe était émise sans qu'aucune règle ne
+   la peigne, et la munition en chambre restait indiscernable de ses voisines (sonde du juge vision).
+   Posé au foyer de `.rm-loc-grid`, donc pour TOUS ses consommateurs. */
+.rm-loc-grid .btn.on {
+  border-color: var(--atelier-brass-vif);
+  box-shadow: inset 0 0 0 1px var(--atelier-brass-vif);
+}
 /* ── Sélecteur de dé d'une rangée de jet (`ForcedRollPicker`) — bloc PARTAGÉ par TOUTES les modales de
    jet. Alignement et matière sont posés ICI, explicitement : hérités de l'ambiance de la coquille, ils
    divergeaient d'un écran à l'autre (même étiquette centrée en modale Corruption, ferrée à gauche en

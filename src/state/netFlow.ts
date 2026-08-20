@@ -28,6 +28,7 @@ import { argsAvecVerdictLocal } from './localIntent';
 import { RoomGuest, RoomHost, relayHttpUrl } from '../net/relay';
 import type { NetMessage } from '../net/protocol';
 import type { Scene } from './scene';
+import { intentEluLocalement } from './targetingModes';
 import { bus, EVT } from './bus';
 import { scheduleFlowTimer, clearTrackedTimer } from './combatTimers';
 
@@ -97,6 +98,10 @@ export function netSnapshot(get: Get): Record<string, unknown> {
   // L'INTENTION armée est un mode d'ÉCRAN, LOCAL au client (spec HUD zone 4) : elle ne voyage pas —
   // la case armée de l'hôte n'a rien à allumer chez ses invités.
   delete (data as Record<string, unknown>).localIntent;
+  // MÊME raison pour le PORTEUR élu du mode Dissiper : le clic-token qui l'élit n'engage rien, il
+  // ouvre le choix du paramètre CHEZ CE JOUEUR (spec HUD §1d). L'élection se joue donc chez
+  // l'ÉMETTEUR (`emettreIntentInvite`), jamais par un intent — sinon elle atterrirait ici, à l'hôte.
+  delete (data as Record<string, unknown>).dispelCarrierId;
   // MÊME raison pour le REFUS de geste (`refusVisible.ts`) : c'est la réponse faite à CE joueur sur SON
   // clic. L'hôte qui refuse son propre geste n'a rien à dire aux autres tables ; et quand il exécute
   // l'intent d'un invité, le refus éventuel appartient à l'invité, pas au sien.
@@ -153,6 +158,7 @@ export function applyNetSnapshot(set: Set, data: Record<string, unknown>): void 
     ...(game as Partial<GameState>),
     ...(keepCreator ? { screen: 'creator' as const } : null),
     localIntent: mine.localIntent,
+    dispelCarrierId: mine.dispelCarrierId, // le porteur élu est le choix EN COURS de ce client
     refus: mine.refus, // le refus du CLIENT survit au snapshot : c'est SON retour de geste
 
     net: {
@@ -166,8 +172,34 @@ export function applyNetSnapshot(set: Set, data: Record<string, unknown>): void 
   bus.emit(EVT.SCENE_DIRTY);
 }
 
+/**
+ * SUBSTITUT D'INVITÉ pour UNE action de l'allowlist — corps UNIQUE de l'enrobage, isolé pour être
+ * éprouvable hors session (une session réelle exige un relay).
+ *
+ * Deux sorts, dans cet ordre :
+ *  - ÉLECTION LOCALE (`intentEluLocalement`) : le clic n'ouvre qu'un CHOIX D'ÉCRAN — le paramètre
+ *    borné qui reste à demander — et se joue ENTIER dans le store du client, par son action locale.
+ *    Rien ne part : le porteur élu est hors snapshot, l'exécuter chez l'hôte y ferait naître un
+ *    panneau étranger et n'en montrerait aucun à l'émetteur ;
+ *  - sinon l'intent PART, avec le VERDICT D'ARMEMENT calculé ICI, chez l'émetteur
+ *    (`argsAvecVerdictLocal`) : l'intention est locale au client, l'hôte ne peut pas la relire dans
+ *    son propre store.
+ */
+export function emettreIntentInvite(
+  name: string,
+  local: (...args: unknown[]) => unknown,
+  envoyer: (action: string, args: unknown[]) => void,
+  args: unknown[],
+): void {
+  if (intentEluLocalement(useGame.getState, name, args)) {
+    local(...args);
+    return;
+  }
+  envoyer(name, sanitizeIntentArgs(argsAvecVerdictLocal(useGame.getState, name, args)));
+}
+
 /** INVITÉ : enrobe les actions de l'allowlist → intents (l'état viendra du snapshot de l'hôte). */
-function interceptGuestActions(): void {
+export function interceptGuestActions(): void {
   if (originals) return;
   originals = {};
   const state = useGame.getState() as unknown as Record<string, unknown>;
@@ -175,16 +207,16 @@ function interceptGuestActions(): void {
   for (const name of GUEST_INTENTS) {
     const fn = state[name];
     if (typeof fn !== 'function') continue;
-    originals[name] = fn as (...args: unknown[]) => unknown;
-    // Le geste part avec le VERDICT D'ARMEMENT calculé ICI, chez l'émetteur (`argsAvecVerdictLocal`) :
-    // l'intention est locale au client, l'hôte ne peut pas la relire dans son propre store.
-    wrapped[name] = (...args: unknown[]) => guest?.sendIntent(name, sanitizeIntentArgs(argsAvecVerdictLocal(useGame.getState, name, args)));
+    const local = fn as (...args: unknown[]) => unknown;
+    originals[name] = local;
+    wrapped[name] = (...args: unknown[]) =>
+      emettreIntentInvite(name, local, (action, a) => guest?.sendIntent(action, a), args);
   }
   useGame.setState(wrapped as Partial<GameState>);
 }
 
 /** Restaure les actions locales (fin de session invité). */
-function restoreGuestActions(): void {
+export function restoreGuestActions(): void {
   if (!originals) return;
   useGame.setState(originals as unknown as Partial<GameState>);
   originals = null;

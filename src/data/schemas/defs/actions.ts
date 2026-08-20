@@ -73,6 +73,15 @@ export const schema = z.array(
      *  doit jamais le déclencher, seul le clic explicite le fait. `true` = la sortie ne perd rien
      *  (retour à la modale, désarmement d'un mode). */
     exitSafe: z.boolean().optional(),
+    /** RÔLE SÉMANTIQUE de la sortie d'interlude (`surface: 'interlude'` uniquement, requis) : ce que
+     *  le joueur FAIT en la prenant. `valide` = elle mène le geste à son terme (« Terminer »,
+     *  « Valider », « Rester sur place ») ; `renonce` = elle abandonne ou revient en arrière
+     *  (« Renoncer », « Retour », « Annuler »). C'est un rôle, PAS un style : la proéminence du
+     *  bouton s'en DÉDUIT au rendu (même doctrine que `RollShell`), elle ne se déclare pas ici. */
+    role: z.enum(['valide', 'renonce']).optional(),
+    /** L'action FAIT NAÎTRE un panneau-paramètre (`PanneauParametre`) de SON alvéole : la surface qui
+     *  la rend y pose l'ANCRE du panneau. Déclaré ICI pour qu'aucune console ne teste un id. */
+    panneau: z.boolean().optional(),
   })
   .superRefine((a, ctx) => {
     if (a.maison && !a.costNote) {
@@ -95,6 +104,12 @@ export const schema = z.array(
     }
     if (a.exitSafe !== undefined && a.surface !== 'interlude') {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : exitSafe hors d’une action d’interlude (aucune touche d’annulation ne la vise)` });
+    }
+    if (a.surface === 'interlude' && !a.role) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : sortie d’interlude sans role (valide/renonce) — sa proéminence ne peut pas se déduire` });
+    }
+    if (a.role && a.surface !== 'interlude') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : role hors d’une action d’interlude (aucun bandeau de phase ne la rend)` });
     }
   }),
 );

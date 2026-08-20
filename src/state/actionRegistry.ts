@@ -46,6 +46,11 @@ export interface ActionCtx {
   active: Combatant;
   battle: BattleState;
   netMode?: string;
+  /** PARAMÈTRES DE LA CASE (`ActionRunCtx` — la Compétence visée, l'arme, l'objet) : une entrée du
+   *  registre peut être rendue N fois, une par candidat, et le verdict d'offre porte alors sur CE
+   *  candidat (« au plafond de CETTE méthode d'Avantage »). Les gates de règle pure les ignorent ; le
+   *  dispatcher reçoit exactement les mêmes (`runAction`), d'où une seule et même mesure. */
+  args?: ActionRunCtx;
 }
 
 const ok: ActionGate = { ok: true };
@@ -113,6 +118,14 @@ export const ACTION_GATES: Record<string, (ctx: ActionCtx) => ActionGate> = {
     et(fantassin, ACTION_GATES['action-libre-hors-frenesie'])(ctx),
   'mouvement-intact': mouvementIntact,
   'mouvement-restant-fantassin': (ctx) => et(fantassin, ACTION_GATES['mouvement-restant'])(ctx),
+  /** MIROIR de la garde de `cancelMove` (`combatSlice.ts:975-979`) : le segment restaurable est le
+   *  SNAPSHOT, pas le compteur — `battleStandUp` écrit `movementUsed` sans en poser un, et le
+   *  dispatcher n'aurait rien à défaire. Le contrôle du siège n'entre pas ici (il est au dispatcher
+   *  et aux contextes de surface : `live` pour la console, `cur` pour la touche). */
+  'deplacement-annulable': ({ battle }) => {
+    if (!battle.moveSnapshot || (battle.movementUsed ?? 0) === 0) return no(t('agate.noMoveToUndo'));
+    return battle.acted ? no(t('agate.actionSpent')) : ok;
+  },
   /** Charge — fiche `regles/charger` (`LDB 15 l.35-37`), foyer du verbatim au Codex. */
   'charge-possible': (ctx) => (isEngaged(ctx.active) ? no(t('agate.alreadyEngaged')) : mouvementIntact(ctx)),
   'mouvement-restant': ({ active, battle }) => (canMove(battle, active) ? ok : no(t('agate.noMovementLeft'))),
@@ -129,6 +142,17 @@ export const ACTION_GATES: Record<string, (ctx: ActionCtx) => ActionGate> = {
       : battle.loadoutSwapped
         ? no(t('agate.loadoutSwapped'))
         : ok,
+  /** Cumuler l'Avantage (LDB 09 l.305-308) : chaque méthode a SON plafond (`skillAdvantageCap`), et
+   *  au plafond le Test ne peut plus rien rendre. Le refus est DIT (« Avantage au plafond (N) ») et la
+   *  case reste dessinée : la faire disparaître privait le joueur de la raison. La méthode visée vient
+   *  des ARGS de la case — les mêmes que le dispatcher `battleGainAdvantage` reçoit. */
+  'avantage-sous-plafond': (ctx) =>
+    et(ACTION_GATES['action-libre-hors-frenesie'], ({ active, args }) => {
+      const methode = combatAdvantageSkills(active).find((s) => s.skillId === args?.skillId);
+      return methode && active.advantage >= methode.cap
+        ? no(t('agate.advantageCapped', { n: methode.cap }))
+        : ok;
+    })(ctx),
   coop: ({ netMode }) => (netMode && netMode !== 'local' ? ok : no(t('agate.localGame'))),
   'navire-action': ({ active, battle }) =>
     !isVehicle(active) ? no(t('agate.notAVessel')) : battle.acted ? no(t('agate.vesselActionSpent')) : ok,
@@ -162,8 +186,11 @@ export const ACTION_CANDIDATES: Record<string, (ctx: ActionSelectorCtx) => unkno
   'cibles-aspersion': ({ active, battle }) =>
     waterSprayCandidates(active, battle.combatants.filter((c) => c.kind === active.kind)),
   'sorts-dissipables': ({ battle }) => dispellableSpellsOn(battle.combatants),
+  /** Méthodes d'Avantage POSSÉDÉES (dédupliquées par Compétence : un Savoir groupé = une case). Le
+   *  PLAFOND ne filtre plus ici : il est le verdict d'offre `avantage-sous-plafond`, qui laisse la case
+   *  dessinée fermée avec sa raison — une seule source, jamais un filtre muet doublé d'un gate. */
   'competences-avantage': ({ active }) =>
-    [...new Map(combatAdvantageSkills(active).filter((s) => s.cap > active.advantage).map((s) => [s.skillId, s])).values()],
+    [...new Map(combatAdvantageSkills(active).map((s) => [s.skillId, s])).values()],
   'attaques-disponibles': ({ active, battle }) => availableAttacks(active, battle),
   'sorts-du-heros': ({ active }) => active.spells ?? [],
   'etats-retirables': ({ active }) => ((active.resolve ?? 0) > 0 ? active.conditions : []),
@@ -327,7 +354,6 @@ export type BattleActionMode =
   | 'heal'
   | 'dispel'
   | 'battery'
-  | 'advantage'
   | 'push'
   | keyof typeof MODES_HORS_REGISTRE;
 
@@ -335,5 +361,5 @@ export type BattleActionMode =
  *  couvrent EXACTEMENT les `armed` du registre + `MODES_HORS_REGISTRE` (union validée, pas dérivée :
  *  un JSON importé n'a pas de type littéral). */
 export const BATTLE_ACTION_MODES: readonly BattleActionMode[] = [
-  'cast', 'ammo', 'heal', 'dispel', 'battery', 'advantage', 'push', 'teleport',
+  'cast', 'ammo', 'heal', 'dispel', 'battery', 'push', 'teleport',
 ];

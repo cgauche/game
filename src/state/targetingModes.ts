@@ -22,6 +22,7 @@ import { campGain, campSpend } from './combat/advantagePool';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzied } from '../engine/psychology';
 import { healableTargets, combatHealModes } from '../engine/healing';
+import { dispellableSpellsOn, type DispellableSpell } from '../engine/dispel';
 import { findSpellById } from '../data';
 import { isStructure, structureImmune } from '../engine/structures';
 import { overcastSourceOf } from '../engine/overcast';
@@ -59,8 +60,10 @@ export type HoverTargeting =
    *  `unloaded` = arme à Recharge non chargée (recharger d'abord) ; `noammo` = plus de munition ;
    *  `sous-effectif` = machine de guerre ADE II sous la moitié de l'Équipe requise (ch.08 l.233) ;
    *  `approche-non-armee` = hors de portée ET la Charge n'est pas armée (spec HUD § 2026-08-19) : le clic
-   *  REFUSERAIT, l'affordance le dit au lieu de promettre une Charge que le clic ne fera pas. */
-  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min' | 'armeBannie' | 'approche-non-armee';
+   *  REFUSERAIT, l'affordance le dit au lieu de promettre une Charge que le clic ne fera pas.
+   *  `sans-sort-dissipable` = mode Dissiper armé, mais la cible survolée ne porte aucun Sort permanent
+   *  (LDB 46 l.158-162) : le clic ne ferait rien — l'affordance le DIT au lieu de rester muette. */
+  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min' | 'armeBannie' | 'approche-non-armee' | 'sans-sort-dissipable';
       /** Munition attendue (libellé JOUEUR, `noammo`) — nommée dans l'affordance/tooltip pour dire quoi
        *  acheter/charger (« Pas de munitions (Boulet et poudre) »). */
       need?: string }
@@ -119,7 +122,18 @@ export interface TargetingMode {
   label?: string;
   affordance?(get: Get, active: Combatant, target: Combatant): HoverTargeting;
   candidates?(get: Get, active: Combatant): Combatant[];
+  /** Les `candidates` de ce mode sont-ils PEINTS en anneaux sur le terrain quand il tient le ciblage,
+   *  et de quelle TEINTE ? `'ami'` = la cible élue est un allié (anneau vert : Soin) ; `'hostile'` =
+   *  un adversaire. Absent = ce mode ne peint aucun anneau de candidat (l'attaque en mode neutre a les
+   *  siens, `eligibleAttackTargetIds` ; Dissiper n'en peint pas). SÉMANTIQUE D'AFFICHAGE déclarée au
+   *  mode — le peintre (`gameIso/stage/highlightLayer` → `builders/highlights`) ne connaît aucun id. */
+  anneauCandidats?: 'ami' | 'hostile';
   commitCombatant?(get: Get, set: Set, active: Combatant, id: string, opts?: BattleClickOpts): void;
+  /** Ce clic-token, sur CETTE cible, n'ouvre-t-il qu'un CHOIX D'ÉCRAN — le paramètre borné qui reste
+   *  à demander — sans rien commettre au jeu ? PUR. Vrai = le geste se joue ENTIER chez l'ÉMETTEUR :
+   *  `netFlow` ne l'envoie pas à l'hôte (`INTENT_ELECTION_LOCALE`), au même titre que l'intention
+   *  armée est un mode d'écran qui ne voyage pas. Absent = tout clic de ce mode est un geste de jeu. */
+  electionLocale?(get: Get, id: string): boolean;
   tileValidAt?(get: Get, active: Combatant, pt: Pt): boolean;
   commitTile?(get: Get, set: Set, active: Combatant, pt: Pt): void;
   tilePreview?(get: Get, active: Combatant, pt: Pt): TilePreview | null;
@@ -348,6 +362,23 @@ function healAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
   const allies = battle.combatants.filter((c) => c.kind === active.kind); // camp RELATIF : on soigne SON camp
   if (!healableTargets(active, allies, { adjacency: true }).some((c) => c.id === target.id)) return { kind: 'none' };
   return { kind: 'ok', line: 'solid', title: 'Soigner', targetName: target.label, skill: 'Guérison', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+}
+
+/** Sorts permanents dissipables PORTÉS par un combattant donné (regroupés par (sort, lanceur) —
+ *  `dispellableSpellsOn` les rend déjà groupés, `carriers` dit qui en porte les effets). PUR :
+ *  source unique du mode de ciblage ET du panneau-paramètre de la console. */
+export function dispellableOnCarrier(get: Get, carrierId: string): DispellableSpell[] {
+  const battle = get().battle;
+  if (!battle) return [];
+  return dispellableSpellsOn(battle.combatants).filter((d) => d.carriers.includes(carrierId));
+}
+
+/** Mode DISSIPATION (LDB 46 l.158-162) : la cible du clic est le PORTEUR du Sort, jamais un
+ *  adversaire à frapper. Un non-porteur porte sa RAISON au réticule (patron `approche-non-armee`) —
+ *  sans ce refus dit, le joueur croirait à une cible hors de portée. */
+function dispelAffordance(get: Get, _active: Combatant, target: Combatant): HoverTargeting {
+  if (dispellableOnCarrier(get, target.id).length === 0) return { kind: 'invalid', reason: 'sans-sort-dissipable' };
+  return { kind: 'ok', line: 'dashed', title: 'Dissiper', targetName: target.label, skill: 'Langue (Magick)', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
 /** Mode SURINCANTATION (+Cible, LDB 47 l.28) : cibles supplémentaires éligibles (portée/éveillées/LdV). */
@@ -717,7 +748,7 @@ const BATTERY_MODE: TargetingMode = {
   commitCombatant: (get, _set, active, id) => { get().battleShipBattery(active.id, id); },
 };
 const HEAL_MODE: TargetingMode = {
-  id: 'heal', affordance: healAffordance,
+  id: 'heal', affordance: healAffordance, anneauCandidats: 'ami',
   candidates: (get, active) => healableTargets(active, (get().battle?.combatants ?? []).filter((c) => c.kind === active.kind), { adjacency: true }),
   commitCombatant: (get, _set, _active, id) => {
     const target = inBattleId(get().battle, id);
@@ -726,8 +757,34 @@ const HEAL_MODE: TargetingMode = {
     if (mode) get().battleHeal(id, mode);
   },
 };
+/** ≥2 Sorts dissipables sur ce porteur : il reste un PARAMÈTRE à demander (le panneau borné de la
+ *  console). Prédicat PARTAGÉ par l'élection locale et par le commit — une seule mesure. */
+const dispelParametreADemander = (get: Get, id: string): boolean => dispellableOnCarrier(get, id).length > 1;
+
+/**
+ * Mode DISSIPATION (LDB 46 l.158-162) — armé par la case Dissiper (`battle.action === 'dispel'`).
+ * Le clic-token SÉLECTIONNE le porteur, il n'attaque JAMAIS : c'est le PORTEUR qui est la cible du
+ * geste, et le SORT à dissiper qui reste à choisir (paramètre borné, spec HUD §1d). Un seul Sort sur
+ * le porteur = commit direct (un panneau à un choix serait du bruit) ; N Sorts = le panneau-paramètre
+ * de la console naît de l'alvéole, sur `dispelCarrierId`.
+ *
+ * COOP : cette élection est un choix d'ÉCRAN, elle se joue chez l'ÉMETTEUR (`electionLocale`) — le
+ * porteur élu vit hors snapshot (`netFlow.netSnapshot`), et seul le COMMIT `battleDispelSpell`
+ * voyage. Sans cette déclaration, l'intent d'un invité faisait naître le panneau chez L'HÔTE.
+ */
+const DISPEL_MODE: TargetingMode = {
+  id: 'dispel', affordance: dispelAffordance,
+  candidates: (get) => (get().battle?.combatants ?? []).filter((c) => dispellableOnCarrier(get, c.id).length > 0),
+  electionLocale: dispelParametreADemander,
+  commitCombatant: (get, _set, _active, id) => {
+    const porte = dispellableOnCarrier(get, id);
+    if (porte.length === 0) return;
+    if (dispelParametreADemander(get, id)) { get().dispelSelectCarrier(id); return; }
+    get().battleDispelSpell(porte[0].spellId, porte[0].casterId);
+  },
+};
 const OVERCAST_MODE: TargetingMode = {
-  id: 'overcast', label: 'Surincantation', affordance: overcastAffordance,
+  id: 'overcast', label: 'Surincantation', affordance: overcastAffordance, anneauCandidats: 'hostile',
   candidates: (get) => {
     const s = get();
     const pc = s.pendingCast;
@@ -740,7 +797,7 @@ const OVERCAST_MODE: TargetingMode = {
   commitCombatant: (get, _set, _active, id) => { get().castToggleExtraTarget(id); },
 };
 const CLEAVE_MODE: TargetingMode = {
-  id: 'cleave', label: 'Frappe Mortelle', affordance: cleaveAffordance,
+  id: 'cleave', label: 'Frappe Mortelle', affordance: cleaveAffordance, anneauCandidats: 'hostile',
   candidates: (get) => {
     const s = get();
     const battle = s.battle;
@@ -751,7 +808,7 @@ const CLEAVE_MODE: TargetingMode = {
   commitCombatant: (get, _set, _active, id) => { get().cleaveAttack(id); },
 };
 const DUAL_MODE: TargetingMode = {
-  id: 'dual', label: 'Des deux armes', affordance: dualAffordance,
+  id: 'dual', label: 'Des deux armes', affordance: dualAffordance, anneauCandidats: 'hostile',
   candidates: (get) => {
     const s = get();
     const battle = s.battle;
@@ -798,7 +855,7 @@ export const TILE_MODES: readonly TileTargetingMode[] = [TELEPORT_MODE, PUSH_MOD
  *  registre des actions, libellé de phase d'un interlude). L'aiguilleur ci-dessous garde SA priorité :
  *  ce tableau ne décide de rien, il rend les modes énumérables à l'exécution. */
 export const TARGETING_MODES: readonly TargetingMode[] = [
-  ATTACK_MODE, CAST_MODE, BATTERY_MODE, HEAL_MODE, OVERCAST_MODE, CLEAVE_MODE, DUAL_MODE, TELEPORT_MODE, PUSH_MODE, PLACING_MODE,
+  ATTACK_MODE, CAST_MODE, BATTERY_MODE, HEAL_MODE, DISPEL_MODE, OVERCAST_MODE, CLEAVE_MODE, DUAL_MODE, TELEPORT_MODE, PUSH_MODE, PLACING_MODE,
 ];
 
 /** Nom d'affichage de la phase de ciblage d'un mode (`undefined` = mode sans bandeau). */
@@ -808,7 +865,7 @@ export const targetingModeLabel = (modeId: string): string | undefined =>
 /**
  * Aiguilleur UNIQUE — extrait factuellement des priorités de `battleClickEntity`/`hoverAim` :
  *   pendingCleave > pendingDualStrike > pendingCast.pickingTargets (Surincantation) >
- *   placingZoneOf (cast-zone OU siège) > battle.action ∈ {cast, heal, battery, teleport} > attack.
+ *   placingZoneOf (cast-zone OU siège) > battle.action ∈ {cast, heal, dispel, battery, teleport} > attack.
  * `battle.action` (string) et les `pending*` RESTENT l'état sous-jacent (ils gatent aussi mouvement/
  * fin de tour ailleurs) — on n'en DÉRIVE que le mode de ciblage.
  * La TÊTE de cette priorité (les fenêtres hors-modale qui DÉTIENNENT le ciblage) est déléguée à
@@ -825,8 +882,42 @@ export function currentTargetingMode(get: Get): TargetingMode {
   const action = s.battle?.action ?? null;
   if (action === 'cast') return CAST_MODE;
   if (action === 'heal') return HEAL_MODE;
+  if (action === 'dispel') return DISPEL_MODE;
   if (action === 'battery') return BATTERY_MODE;
   if (action === 'teleport') return TELEPORT_MODE;
   if (action === 'push') return PUSH_MODE;
   return ATTACK_MODE;
+}
+
+/**
+ * Un ciblage d'ENTITÉ est-il ARMÉ ? DÉRIVÉ du registre — jamais une liste d'ids recopiée : le mode
+ * courant est un mode-COMBATTANT (il définit `commitCombatant`, donc son clic-token commet un geste
+ * sur une entité) et ce n'est pas `ATTACK_MODE`, que l'aiguilleur rend AUSSI quand rien n'est armé —
+ * il ne peut donc témoigner d'aucun armement. Les modes-CASE (téléportation, poussée) n'ont pas de
+ * `commitCombatant` : ils en sortent d'eux-mêmes.
+ * Consommé par les surfaces PORTRAIT (dock du groupe), pour router le clic vers `battleClickEntity`
+ * comme le clic-jeton au lieu d'ouvrir la fiche.
+ */
+export function ciblageEntiteArme(get: Get): boolean {
+  const battle = get().battle;
+  if (!battle || battle.over) return false;
+  const mode = currentTargetingMode(get);
+  return mode !== ATTACK_MODE && !!mode.commitCombatant;
+}
+
+/**
+ * GESTES CONSOMMÉS CHEZ L'ÉMETTEUR (coop) — jumelle de `INTENT_VERDICT_ARGS` (`localIntent.ts`) :
+ * une action de clic, la façon de savoir si CE clic-là n'est qu'un choix d'ÉCRAN. Table déclarative,
+ * jamais un `if (action === …)` au fil de `netFlow` ; les intents absents d'ici voyagent tous.
+ *
+ * Le verdict se lit au MODE de ciblage courant (`electionLocale`) : c'est lui qui sait ce que son
+ * clic-token fait, et le mode est le même des deux côtés du fil pour un ciblage armé localement.
+ */
+export const INTENT_ELECTION_LOCALE: Record<string, (get: Get, args: readonly unknown[]) => boolean> = {
+  battleClickEntity: (get, [id]) => typeof id === 'string' && (currentTargetingMode(get).electionLocale?.(get, id) ?? false),
+};
+
+/** Ce geste se joue-t-il ENTIER chez l'émetteur (aucun intent à envoyer) ? */
+export function intentEluLocalement(get: Get, action: string, args: readonly unknown[]): boolean {
+  return INTENT_ELECTION_LOCALE[action]?.(get, args) ?? false;
 }

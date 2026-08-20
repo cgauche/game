@@ -22,6 +22,11 @@ import { hoverTargeting, tilePreviewAt } from '../../state/targeting';
 import { modalBlocksMapHover } from '../../state/modalArbiter';
 import { mapTargetingActive } from '../../state/targetingHolder';
 import type { RoomPortal } from '../../state/roomPortals';
+import { findActionById } from '../../data/index';
+
+/** Entrée de registre qui ARME l'incantation : c'est elle qui déclare le mode posé dans
+ *  `battle.action` (`armed`), et donc la SEULE source de cette valeur côté lecture. */
+const ACTION_INCANTER = 'cast';
 
 export interface HoverAim {
   fromId: string | null; // départ de la ligne (résolu en pixels au rendu — suit le glissement)
@@ -52,6 +57,8 @@ function hoverErrText(inv: { reason: string; need?: string }): string {
     // Le clic-ennemi ne s'approche plus tout seul (spec HUD § ARBITRAGE 2026-08-19) : le réticule dit
     // ce que le clic FERA — un refus — et par quoi le débloquer, au lieu de promettre une Charge.
     : reason === 'approche-non-armee' ? 'Hors de portée — armez la Charge'
+    // Mode Dissiper armé : la cible du clic est le PORTEUR d'un Sort permanent (LDB 46 l.158-162).
+    : reason === 'sans-sort-dissipable' ? 'Aucun Sort à dissiper sur cette cible'
     : 'hors de portée';
 }
 
@@ -89,8 +96,10 @@ export function useHoverTargeting(
   // visée — mode neutre ou catégorie Tir ouverte — tant que l'Action n'est pas consommée.
   const ghostIds = useMemo<Set<string>>(() => {
     if (mode !== 'battle' || !battle || battle.over) return new Set();
-    // Mode incantation : grisage hors-LdV du SORT (LDB 46 l.121), indépendant de l'arme portée.
-    if (battle.action === 'cast' && battle.selectedSpellId) return castOutOfSightTargetIds(useGame.getState);
+    // Mode incantation : grisage hors-LdV du SORT (LDB 46 l.121), indépendant de l'arme portée. Le mode
+    // armé se lit à l'entrée du REGISTRE qui l'arme (`armed`, `actions.json`) — aucune valeur d'état
+    // recopiée ici.
+    if (battle.action === findActionById(ACTION_INCANTER)?.armed && battle.selectedSpellId) return castOutOfSightTargetIds(useGame.getState);
     if (battle.acted || battle.action !== null) return new Set();
     return outOfSightTargetIds(useGame.getState);
   }, [scene, mode, battle]);

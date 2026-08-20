@@ -253,7 +253,7 @@ export function CastModal() {
               ) : (
                 <>
                   <strong>{spell.label}</strong>
-                  {!isPrayer ? ` · NI ${ni}` : ''} — sur lui-même
+                  {!isPrayer ? ` · NI ${ni}` : ''} — sur soi
                 </>
               )}
             </p>

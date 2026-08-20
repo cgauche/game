@@ -295,6 +295,11 @@ export interface ActionDef {
   /** Sortie d'interlude atteignable à la touche d'annulation (`surface: 'interlude'`) — `false` :
    *  le dispatcher commet une perte, seul le clic explicite le déclenche. */
   exitSafe?: boolean;
+  /** RÔLE sémantique de la sortie d'interlude : `valide` mène le geste à son terme, `renonce`
+   *  abandonne/revient. La proéminence du bouton s'en DÉDUIT au rendu — ce n'est pas un style. */
+  role?: 'valide' | 'renonce';
+  /** L'action fait naître un panneau-paramètre de SON alvéole : la surface y pose l'ancre. */
+  panneau?: boolean;
 }
 export const ACTIONS = actionsJson as ActionDef[];
 /** Action par id STABLE (jamais par libellé). */
@@ -2879,6 +2884,21 @@ export function findWeaponGroupById(id: string | null | undefined): WeaponGroupD
 /** Libellé d'affichage d'un Groupe d'objet par son id (repli sur l'id). SOURCE UNIQUE du nom de Groupe. */
 export function weaponGroupLabel(id: string | null | undefined): string {
   return id ? (WEAPON_GROUP_BY_ID.get(id)?.label ?? id) : '';
+}
+/** Libellés FR des TYPES de possession (`TrappingData.type`, énumérés par le schéma
+ *  `data/schemas/defs/trappings.ts`) — SOURCE UNIQUE : l'enum est un id de logique, il ne s'affiche
+ *  jamais nu (« ammunition » lu à l'écran, grief du juge vision). */
+const TRAPPING_TYPE_LABEL: Record<string, string> = {
+  melee: 'Armes de mêlée',
+  ranged: 'Armes à distance',
+  ammunition: 'Munitions',
+  armor: 'Armures',
+  trapping: 'Équipement',
+  vehicle: 'Véhicules',
+};
+/** Libellé d'affichage d'un type de possession par son id (repli sur l'id). */
+export function trappingTypeLabel(id: string | null | undefined): string {
+  return id ? (TRAPPING_TYPE_LABEL[id] ?? id) : '';
 }
 const WEAPON_GROUP_ID_BY_LABEL = new Map(weaponGroups.map((g) => [g.label.toLowerCase(), g.id]));
 /** Résout un `id` de Groupe depuis un LIBELLÉ (authoring/données de Sort « subType » par libellé) —

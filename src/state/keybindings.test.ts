@@ -149,6 +149,43 @@ describe('raccourcis — les commandes de vue de l’ancienne plaque', () => {
 });
 
 /**
+ * RETOUR ARRIÈRE ANNULE LE DÉPLACEMENT (#1411 P1 lot C) : la touche du geste adossé à la gouttière de
+ * Mouvement. Sa garde est le GATE DU REGISTRE (`deplacement-annulable`), donc elle se tait exactement
+ * là où `cancelMove` ne mordrait pas — Mouvement dépensé SANS instantané (relevé) compris.
+ */
+describe('raccourcis — Retour arrière annule le déplacement', () => {
+  /** Combat dont l'acteur actif a l'état de Mouvement donné. */
+  const avecMouvement = (over: Record<string, unknown>) =>
+    fake({
+      battle: {
+        over: null, turn: 0, order: ['h1'], action: null, acted: false, movementUsed: 0, moveSnapshot: null,
+        combatants: [{ id: 'h1', kind: 'hero', label: 'Gunnar', advantage: 0, conditions: [] }],
+        ...over,
+      } as never,
+    });
+
+  it('un segment restaurable : la touche répond, et EXÉCUTE le dispatcher du registre', () => {
+    const b = binding('undo-move');
+    expect(b.codes).toEqual(['Backspace']);
+    const s = avecMouvement({ movementUsed: 2, moveSnapshot: { pos: { h1: { x: 5, y: 5 } }, facing: {}, movedPreAction: false } });
+    expect(b.when(s)).toBe(true);
+    const cancelMove = vi.fn();
+    b.run(() => ({ ...s, cancelMove }) as never);
+    expect(cancelMove).toHaveBeenCalledOnce();
+  });
+
+  it('Mouvement dépensé SANS instantané (relevé) ou Action prise : la touche est MUETTE', () => {
+    const b = binding('undo-move');
+    expect(b.when(avecMouvement({ movementUsed: 2 })), 'aucun instantané : `cancelMove` no-operait').toBe(false);
+    expect(b.when(avecMouvement({}))).toBe(false);
+    expect(
+      b.when(avecMouvement({ movementUsed: 2, acted: true, moveSnapshot: { pos: { h1: { x: 5, y: 5 } }, facing: {}, movedPreAction: false } })),
+      'Action prise : l’annulation est une aide PRÉ-Action',
+    ).toBe(false);
+  });
+});
+
+/**
  * X FAIT TOURNER LES SETS (planche USER 2026-08-17, travée gauche de la console) : la colonne de sets
  * a absorbé le commutateur, et sa touche passe au set SUIVANT dans l'ordre où ils y sont dessinés.
  * Le plafond 1×/tour et les gates de contrôle restent au store (`battleSwitchLoadout`).

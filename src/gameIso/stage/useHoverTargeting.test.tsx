@@ -177,3 +177,55 @@ describe('useHoverTargeting — modale bloquante (arbitre modal)', () => {
     useGame.setState({ pendingSiegeAim: null });
   });
 });
+
+/**
+ * GRISAGE HORS-LdV DU MODE INCANTATION (LDB 46 l.121) — il se déclenche sur le mode que l'entrée
+ * « Incanter » du REGISTRE déclare armer (`armed`, `actions.json`), et il est indépendant de l'arme
+ * portée comme de l'Action déjà dépensée (contrairement au grisage de TIR, qui s'éteint dès que
+ * l'Action est consommée ou qu'un autre mode est armé).
+ */
+describe('useHoverTargeting — grisage hors-LdV du SORT', () => {
+  beforeEach(() => useGame.setState({ battle: null, hoverDelta: null }));
+  afterEach(() => {
+    if (root) act(() => root!.unmount());
+    root = null;
+  });
+
+  /** Arène 20×8, MUR vertical en x=10 percé d'une brèche en y=0 (même gabarit que `cast-los.test.ts`). */
+  function murScene() {
+    const w = 20, h = 8;
+    const tiles: string[] = new Array(w * h).fill('herbe');
+    for (let y = 1; y < h; y++) tiles[y * w + 10] = 'mur';
+    return { id: 's', dimensions: { w, h }, layers: [{ z: 0, tiles }], entities: [], dialogues: [], triggers: [], encounters: [] } as never;
+  }
+
+  function probeGhosts() {
+    let result: ReturnType<typeof useHoverTargeting> | undefined;
+    const Probe = () => {
+      result = useHoverTargeting(murScene(), null, true);
+      return null;
+    };
+    root = createRoot(document.createElement('div'));
+    act(() => root!.render(<Probe />));
+    act(() => root!.unmount());
+    root = null;
+    return result!.ghostIds;
+  }
+
+  it('mode Incanter armé : l’ennemi derrière le mur est grisé, celui de la brèche non — Action dépensée comprise', () => {
+    const active = setup();
+    const battle = useGame.getState().battle!;
+    const foes = battle.combatants.filter((c) => c.kind === 'enemy');
+    expect(foes.length, 'la rencontre doit fournir deux ennemis à placer').toBeGreaterThanOrEqual(2);
+    const [vu, cache] = foes;
+    active.pos = { x: 2, y: 0 };
+    vu.pos = { x: 16, y: 0 }; // brèche : ligne dégagée
+    cache.pos = { x: 16, y: 4 }; // derrière le mur
+    for (const autre of foes.slice(2)) autre.pos = { x: 0, y: 7 };
+    useGame.setState({ scene: murScene(), battle: { ...battle, action: 'cast', selectedSpellId: 'carreau', acted: true } });
+
+    const ghosts = probeGhosts();
+    expect(ghosts.has(cache.id), 'sans Ligne de Vue, l’ennemi est fantomatique').toBe(true);
+    expect(ghosts.has(vu.id), 'la ligne dégagée ne grise personne').toBe(false);
+  });
+});

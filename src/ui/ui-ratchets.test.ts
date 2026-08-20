@@ -274,6 +274,7 @@ const DOMAIN_CSS_MODULES = [
   'creator-step',
   'plaque-row',
   'band',
+  'panneau-parametre',
   'celestial-wheel',
   'creator-presentation',
   'creator-shell',
@@ -748,6 +749,12 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // +1 (juge vision, 2026-07-17) : `.creator-band-title-affordance` — glyphe d'affordance codex
   // (discret au repos, plein contraste au survol/focus), posé UNE fois dans la primitive.
   'styles/band.css': 7,
+  // Panneau-paramètre borné ANCRÉ (`PanneauParametre`, spec HUD combat zone 10) — module primitive
+  // dédiée : `.pp-panel` (la surface hors flux, ancrée), `.pp-title`, `.pp-meta` (la méta qui fait
+  // décider : NI, quantité, progression). La 4ᵉ est `.rm-loc-grid` — non pas une définition neuve
+  // mais le SCOPE du canon d'`OptionChooser` dans le panneau (une valeur de paramètre par ligne),
+  // même précédent que `.creator-step .rm-loc-grid` (creator.css).
+  'styles/panneau-parametre.css': 4,
   // Astrolabe de la roue céleste (`CelestialWheel`, migration étape 4 du lot ossature) : les MATIÈRES
   // du cadran aux valeurs du `svg` « 4 — Signe astral » de la planche FINALE. 14 pour 3 qui vivaient
   // dans creator.css : contrepartie ASSUMÉE de la fidélité (l'ancienne roue était un croquis à deux

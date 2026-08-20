@@ -12,6 +12,7 @@ import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { spawnEnemy } from './spawn';
 import { findSpellById } from '../data';
+import type { ActiveEffect, Combatant } from '../engine/types';
 
 const arena = () => {
   const w = 16, h = 12;
@@ -47,6 +48,10 @@ describe('currentTargetingMode — aiguilleur unique', () => {
   it('action=heal → mode soin', () => {
     combat({ action: 'heal' });
     expect(currentTargetingMode(useGame.getState).id).toBe('heal');
+  });
+  it('action=dispel → mode DISSIPATION (jamais l’attaque : le clic viserait le porteur pour le frapper)', () => {
+    combat({ action: 'dispel' });
+    expect(currentTargetingMode(useGame.getState).id).toBe('dispel');
   });
   it('action=battery → mode bordée', () => {
     combat({ action: 'battery' });
@@ -267,5 +272,65 @@ describe('spellAffinity — HELPFUL_TARGET_OPS (#131)', () => {
   it("Malédiction de malchance (op cible unique testMod AMBIGU, amount:-10, LDB 49 p.255) reste 'any' — un malus ne doit jamais retomber en 'ally'", () => {
     const spell = findSpellById('malediction-de-malchance')!;
     expect(spellAffinity(spell)).toBe('any');
+  });
+});
+
+/**
+ * MODE DISSIPATION (LDB 46 l.158-162) — la cible du clic est le PORTEUR du Sort, jamais un adversaire
+ * à frapper (spec HUD §1d). Le SORT reste un paramètre : commit direct quand le porteur n'en porte
+ * qu'un, élection du porteur (panneau-paramètre de la console) quand il en porte plusieurs.
+ */
+describe('DISPEL_MODE — le clic-token élit le PORTEUR, il n’attaque jamais', () => {
+  /** Marque un combattant PORTEUR de `n` Sorts permanents distincts (effets `ActiveEffect.spell`).
+   *  Forme RÉELLE d'un effet actif (`bonus` et `duration` REQUIS, `engine/types.ts`) : un effet sans
+   *  durée n'existe nulle part dans le jeu et fait jeter le peintre de pastilles
+   *  (`gameIso/effectIcons.ts` lit `e.duration.scale`). Le type le GARDE ici. */
+  function porteur(c: Combatant, n: number) {
+    c.activeEffects = Array.from({ length: n }, (_, i): ActiveEffect => ({
+      label: `Effet ${i + 1}`,
+      bonus: 0,
+      duration: { scale: 'permanent' },
+      spell: { spellId: `sort-${i + 1}`, casterId: 'e2', label: `Sort ${i + 1}`, ni: 3 + i },
+    }));
+  }
+
+  beforeEach(() => { useGame.setState({ battle: null, party: [], pendingDispel: null, pendingAttack: null, dispelCarrierId: null }); });
+
+  it('deux Sorts sur le porteur → le clic ÉLIT le porteur (aucune attaque, aucun jet ouvert)', () => {
+    const { hero, e1 } = combat({ action: 'dispel' });
+    hero.skills.push({ skillId: 'langue', spec: 'magick', advances: 0 } as never);
+    porteur(e1, 2);
+    useGame.getState().battleClickEntity('e1');
+    expect(useGame.getState().dispelCarrierId, 'le porteur est élu — le SORT reste à choisir').toBe('e1');
+    expect(useGame.getState().pendingAttack, 'cliquer le porteur ne l’attaque JAMAIS en mode Dissiper').toBeNull();
+    expect(useGame.getState().pendingDispel, 'rien n’est engagé tant que le paramètre n’est pas choisi').toBeNull();
+  });
+
+  it('UN seul Sort → commit DIRECT (un panneau à un choix serait du bruit)', () => {
+    const { hero, e1 } = combat({ action: 'dispel' });
+    hero.skills.push({ skillId: 'langue', spec: 'magick', advances: 0 } as never);
+    porteur(e1, 1);
+    useGame.getState().battleClickEntity('e1');
+    expect(useGame.getState().dispelCarrierId, 'aucun paramètre à demander').toBeNull();
+    expect(useGame.getState().pendingDispel).toMatchObject({ spellId: 'sort-1', spellCasterId: 'e2', ni: 3 });
+  });
+
+  it('cible SANS Sort dissipable : le réticule porte SA raison (affordance-vérité), et le clic ne fait rien', () => {
+    const { hero, e1, e2 } = combat({ action: 'dispel' });
+    hero.skills.push({ skillId: 'langue', spec: 'magick', advances: 0 } as never);
+    porteur(e1, 2);
+    const mode = currentTargetingMode(useGame.getState);
+    expect(mode.affordance!(useGame.getState, hero, e2)).toMatchObject({ kind: 'invalid', reason: 'sans-sort-dissipable' });
+    expect(mode.affordance!(useGame.getState, hero, e1)).toMatchObject({ kind: 'ok', title: 'Dissiper' });
+    useGame.getState().battleClickEntity('e2');
+    expect(useGame.getState().dispelCarrierId).toBeNull();
+    expect(useGame.getState().pendingAttack).toBeNull();
+  });
+
+  it('les CANDIDATS du mode (Tab/curseur) sont les porteurs, pas les ennemis', () => {
+    const { hero, e1 } = combat({ action: 'dispel' });
+    porteur(e1, 2);
+    const mode = currentTargetingMode(useGame.getState);
+    expect(mode.candidates!(useGame.getState, hero).map((c) => c.id)).toEqual(['e1']);
   });
 });

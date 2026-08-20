@@ -1,10 +1,8 @@
 /**
  * DISSIPATION DE SORTS PERMANENTS (LDB 46 l.158-162) — partie PURE.
  *
- * « Si un Sort a un effet durable, vous pouvez tenter de le dissiper pour votre Action. Il faut pour cela
- *  effectuer un Test étendu de Langue (Magick). Quand votre DR atteint la NI du Sort, vous le dissipez
- *  avec succès. » (l.204-205). « Plusieurs lanceurs … effectuent leur lancer séparément. S'ils incantent
- *  en utilisant le même Domaine, ils peuvent décider d'effectuer un Test Soutenu à la place. » (l.207).
+ * Réfs : LDB 46 l.160 (le Test et sa condition d'aboutissement), LDB 46 l.162 (pluralité de
+ * dissipateurs).
  *
  * Le CUMUL du DR → NI est porté par `extendedTestStep` (engine/tests, mutualisé), le bonus de coopération
  * par `assistedTest`. Ici : ÉNUMÉRER les sorts permanents actifs (effets marqués `ActiveEffect.spell` à

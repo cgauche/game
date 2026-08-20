@@ -12,7 +12,7 @@ import { useGame, activeCombatant } from './store';
 import { controlsActive } from './netOwnership';
 import { pickActiveModalKey, modalBlocksMapHover } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
-import { runAction, currentInterludeAction } from './actionRegistry';
+import { runAction, currentInterludeAction, actionGate } from './actionRegistry';
 import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
 import { SEUIL_MAINTIEN_MS, arreterLacet, demarrerLacet, pasYaw } from './stageYaw';
@@ -120,6 +120,11 @@ const curMap = (s: GameState) => inBattle(s) && controlsActive(s) && mapLive(s);
 const preemptCur = (s: GameState) => inBattle(s) && !!s.preemptAiming && mapLive(s);
 /** Curseur de combat actif : tour normal OU visée Tir rapide armée (le même curseur pilote les deux). */
 const curOrPreempt = (s: GameState) => curMap(s) || preemptCur(s);
+/** Un mode de `battle.action` est ARMÉ SANS SORTIE déclarée : le registre n'expose aucune action
+ *  d'interlude pour le mode de ciblage courant (Dissiper, Soigner, Incanter, Munition, Poussée), là
+ *  où bordée et téléportation ont la leur — que `interlude-exit` prend. Sans ce prédicat, Échap
+ *  n'avait aucun barreau pour ces armés-là et retombait sur le menu système. */
+const armeSansInterlude = (s: GameState) => inBattle(s) && !!s.battle!.action && !currentInterludeAction(() => s);
 /** Contexte d'EXPLORATION (carte hors combat) : écran de jeu, mode exploration, hors dialogue. */
 const exploring = (s: GameState) => s.screen === 'campaign' && s.mode === 'exploration' && !s.dialogue;
 /** Contexte d'exploration en vue SUBJECTIVE (POV) : les ZQSD deviennent cap-relatifs et A/E pivotent le
@@ -249,12 +254,12 @@ export const KEYBINDINGS: KeyBinding[] = [
   // INTENTION armée depuis l'interface (spec HUD zone 4) : Échap la dissout AVANT tout autre usage de
   // la touche — c'est l'annulation la plus récente, celle que le joueur vient d'ouvrir.
   {
-    id: 'intent-cancel', codes: ['Escape'], labelKey: 'key.intentCancel', section: 'combat', sharedBy: ['cursor-cancel', 'clear-preview', 'toggle-menu', 'interlude-exit'],
+    id: 'intent-cancel', codes: ['Escape'], labelKey: 'key.intentCancel', section: 'combat', sharedBy: ['cursor-cancel', 'clear-preview', 'toggle-menu', 'interlude-exit', 'action-disarm'],
     when: (s) => !!s.localIntent,
     run: (g) => g().battleArmIntent(null),
   },
   {
-    id: 'cursor-cancel', codes: ['Escape'], labelKey: 'key.cursorCancel', section: 'curseur', sharedBy: ['clear-preview', 'toggle-menu', 'intent-cancel', 'interlude-exit'],
+    id: 'cursor-cancel', codes: ['Escape'], labelKey: 'key.cursorCancel', section: 'curseur', sharedBy: ['clear-preview', 'toggle-menu', 'intent-cancel', 'interlude-exit', 'action-disarm'],
     when: (s) => !!s.combatCursor || preemptCur(s), // armé sans cible en vue : Échap désarme quand même le Tir rapide
     run: (g) => { if (g().preemptAiming) g().armPreempt(null); g().clearCursor(); const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
   },
@@ -265,9 +270,21 @@ export const KEYBINDINGS: KeyBinding[] = [
     when: (s) => cur(s), run: (g) => runAction('end-turn', g),
   },
   {
-    id: 'clear-preview', codes: ['Escape'], labelKey: 'key.clearPreview', section: 'combat', sharedBy: ['cursor-cancel', 'toggle-menu', 'intent-cancel', 'interlude-exit'],
+    id: 'clear-preview', codes: ['Escape'], labelKey: 'key.clearPreview', section: 'combat', sharedBy: ['cursor-cancel', 'toggle-menu', 'intent-cancel', 'interlude-exit', 'action-disarm'],
     when: (s) => !!s.battle?.preview,
     run: (g) => { const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
+  },
+  // ANNULER LE DÉPLACEMENT du tour (`undo-move`) : la touche du geste adossé à la gouttière de
+  // Mouvement de la console. Sa garde EST le gate du registre (`deplacement-annulable`) — la touche
+  // ne recopie aucun prédicat, et elle se tait exactement quand le geste n'est pas rendu à l'écran.
+  {
+    id: 'undo-move', codes: ['Backspace'], labelKey: 'key.undoMove', section: 'combat',
+    when: (s) => {
+      if (!cur(s)) return false;
+      const active = activeCombatant(s.battle!);
+      return !!active && actionGate('undo-move', { active, battle: s.battle!, netMode: s.net.mode }).ok;
+    },
+    run: (g) => runAction('undo-move', g),
   },
   // Capacités de la barre d'action : 1-9 = n-ième slot VISIBLE (positionnel, rien en dur), via le pont
   // `hotbar` publié par l'ActionBar. Inactif hors de son tour / pendant une modale.
@@ -298,19 +315,32 @@ export const KEYBINDINGS: KeyBinding[] = [
   // se clique, la touche d'annulation ne la déclenche pas.
   {
     id: 'interlude-exit', codes: ['Escape'], labelKey: 'key.interludeExit', section: 'combat',
-    sharedBy: ['cursor-cancel', 'clear-preview', 'intent-cancel', 'toggle-menu'],
+    sharedBy: ['cursor-cancel', 'clear-preview', 'intent-cancel', 'toggle-menu', 'action-disarm'],
     when: (s) => inBattle(s) && controlsActive(s) && !!currentInterludeAction(() => s)?.exitSafe,
     run: (g) => { const def = currentInterludeAction(g); if (def) runAction(def.id, g); },
   },
+  // MODE ARMÉ SANS INTERLUDE (Dissiper, Soigner, Incanter, Munition, Poussée) : le seul désarmement
+  // était le re-clic sur la case (`toggleOff`), et Échap ouvrait le menu système par-dessus le mode
+  // resté armé. La touche prend ici le désarmement CANONIQUE du store (`battleSelectAction(null)`,
+  // celui-là même qu'exécute `battery-cancel` par le registre) — jamais un `set` recopié.
   {
-    id: 'toggle-menu', codes: ['Escape'], labelKey: 'key.toggleMenu', section: 'systeme', sharedBy: ['cursor-cancel', 'clear-preview', 'intent-cancel', 'interlude-exit'],
+    id: 'action-disarm', codes: ['Escape'], labelKey: 'key.actionDisarm', section: 'combat',
+    sharedBy: ['cursor-cancel', 'clear-preview', 'intent-cancel', 'interlude-exit', 'toggle-menu'],
+    when: (s) => cur(s) && armeSansInterlude(s),
+    run: (g) => g().battleSelectAction(null),
+  },
+  {
+    id: 'toggle-menu', codes: ['Escape'], labelKey: 'key.toggleMenu', section: 'systeme', sharedBy: ['cursor-cancel', 'clear-preview', 'intent-cancel', 'interlude-exit', 'action-disarm'],
     // Un interlude de ciblage OCCUPE Échap, même quand sa sortie n'est pas atteignable à la touche
     // (`exitSafe: false`) : la touche ne doit pas ouvrir le menu par-dessus un ciblage en cours.
     // MAIS il ne l'occupe QU'AU SIÈGE QUI LE TIENT : `interlude-exit` exige `controlsActive`, donc
     // pendant le ciblage d'un AUTRE joueur, un siège qui n'a pas la main n'aurait ni sortie ni menu.
+    // Garde COMPLÉMENTAIRE d'`action-disarm` : un mode armé sans interlude occupe la touche au siège
+    // qui le tient, et la rend au menu chez les autres (même frontière que ci-dessus).
     when: (s) =>
       s.screen === 'campaign' && !s.gameMenuOpen && noModal(s) &&
-      (!currentInterludeAction(() => s) || !controlsActive(s)),
+      (!currentInterludeAction(() => s) || !controlsActive(s)) &&
+      !(cur(s) && armeSansInterlude(s)),
     run: (g) => g().setGameMenu(true),
   },
 ];
@@ -340,6 +370,7 @@ export const bindingLabel = (b: KeyBinding): string => t(b.labelKey, b.labelPara
 /** Touches dont le nom lisible EST un texte (traduisible) — les autres sont des SYMBOLES (`NAMED_SYMBOLS`). */
 const NAMED_KEY_KEY: Record<string, MsgKey> = {
   Space: 'key.named.space', Enter: 'key.named.enter', NumpadEnter: 'key.named.numpadEnter', Escape: 'key.named.escape',
+  Backspace: 'key.named.backspace',
 };
 /** Glyphes de touche : aucun texte de langue (le nom `Tab` est celui gravé sur la touche). */
 const NAMED_SYMBOLS: Record<string, string> = {

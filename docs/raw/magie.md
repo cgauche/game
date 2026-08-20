@@ -233,7 +233,7 @@ cibles supplémentaires (`LDB 47 l.28`).
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 41` (l.21-27) → `BLESSING_STEP`, `effectiveRangeMetres`, `effectiveSpellRangeTiles` — `src/engine/magic.ts`, `src/engine/overcast.ts`
 - `LDB 42` (l.7-13) → `src/engine/overcast.ts`
-- `LDB 47` (l.13-17, l.28) → `CastingNumberRounding`, `SpellTarget`, `overcastBudget`, `CastModal`, `zoneDiameterMultiplier`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `zdeDiameterMeters`, `bestAreaCenter`, +19 — `src/data/index.ts`, `src/engine/castingNumber.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/overcast.ts`, +11 fichiers
+- `LDB 47` (l.13-17, l.28) → `CastingNumberRounding`, `SpellTarget`, `overcastBudget`, `CastModal`, `zoneDiameterMultiplier`, `carriedGrimoire`, `SpellbookSection`, `zdeDiameterMeters`, `overcastAffordance`, `bestAreaCenter`, +19 — `src/data/index.ts`, `src/engine/castingNumber.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/overcast.ts`, +11 fichiers
 
 ---
 
@@ -338,7 +338,7 @@ Les Avantages **ne s'appliquent pas** aux Tests de Focalisation (contrairement a
 > **Verbatim** (l.176) : « Les Avantages en combat s'appliquent aux Tests d'Incantation, pas aux Tests de Focalisation. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.129-151) → `DispelModal`, `STEP_WINDOW_AUTO`, `combat-spell-plus`, `CastableSpell`, `useHoverTargeting`, `FocusInterruptHook`, `focalisation-etendue`, `lecture-au-grimoire`, `jetSurfaced`, `miscast-table`, +68 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +22 fichiers
+- `LDB 46` (l.129-151) → `DispelModal`, `STEP_WINDOW_AUTO`, `hoverErrText`, `combat-spell-plus`, `HoverTargeting`, `CastableSpell`, `useHoverTargeting`, `FocusInterruptHook`, `focalisation-etendue`, `lecture-au-grimoire`, +73 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +24 fichiers
 
 ---
 
@@ -400,7 +400,7 @@ Porter les couleurs appropriées au Vent manipulé aide à l'attirer. C'est pour
 > **Verbatim** (l.150) : « tout Lanceur de Sorts portant une armure subit une pénalité de −1 DR à tous ses Tests d'Incantation et de Focalisation, pour chaque PA sur la Localisation la mieux protégée du corps. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.150-152) → `DispelModal`, `STEP_WINDOW_AUTO`, `FocusInterruptHook`, `focalisation-etendue`, `jetSurfaced`, `dispel-roll`, `armourCastDRPenalty`, `RollRowProps`, `dispel`, `focus-interrupt`, +49 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, +19 fichiers
+- `LDB 46` (l.150-152) → `DispelModal`, `STEP_WINDOW_AUTO`, `hoverErrText`, `HoverTargeting`, `FocusInterruptHook`, `focalisation-etendue`, `jetSurfaced`, `dispel-roll`, `armourCastDRPenalty`, `RollRowProps`, +54 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, +22 fichiers
 - `VDM 2` (l.5, l.169) → `schema`, `armourCastDRPenalty`, `armure-du-chaos`, `malevolentInfluenceSeverity`, `magic-vdm-incantation`, `ItemInstance`, `malepierreDR`, `malepierreCharge`, `TrappingData`, `malepierreReserveOf`, +4 — `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/surincantation.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, +4 fichiers
 
 ---
@@ -427,7 +427,7 @@ Si un sort **vous cible** ou vise un point **visible** à une distance en mètre
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.108-110) → `AuContactModal`, `GrappleModal`, `entityBlockedAt`, `useDefenseJetProps`, `useAttackJetProps`, `DisengageModal`, `sur-la-defensive`, `KEYBINDINGS`, `use-item`, `combat-defensive-stance`, +12 — `src/data/actions.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/actions.ts`, `src/engine/combat.ts`, `src/state/combatFlow.ts`, +11 fichiers
-- `LDB 46` (l.154-156) → `DispelModal`, `STEP_WINDOW_AUTO`, `FocusInterruptHook`, `focalisation-etendue`, `jetSurfaced`, `dispel-roll`, `armourCastDRPenalty`, `RollRowProps`, `dispel`, `focus-interrupt`, +49 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, +19 fichiers
+- `LDB 46` (l.154-156) → `DispelModal`, `STEP_WINDOW_AUTO`, `hoverErrText`, `HoverTargeting`, `FocusInterruptHook`, `focalisation-etendue`, `jetSurfaced`, `dispel-roll`, `armourCastDRPenalty`, `RollRowProps`, +54 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, +22 fichiers
 - dette : #1033
 
 ---
@@ -444,7 +444,7 @@ Pour dissiper un sort à **effet durable** déjà en place :
 > **Verbatim** (l.160, l.162) : « Il faut pour cela effectuer un Test étendu de Langue (Magick). Quand votre DR atteint la NI du Sort, vous le dissipez avec succès. » / « Plusieurs lanceurs de Sorts tentant de dissiper le même Sort effectuent leur lancer séparément. S'ils incantent en utilisant le même Domaine, ils peuvent décider d'effectuer un Test Soutenu à la place. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.159-162) → `DispelModal`, `vents-tres-forts`, `STEP_WINDOW_AUTO`, `focalisation-etendue`, `jetSurfaced`, `dispel-roll`, `armourCastDRPenalty`, `RollRowProps`, `dispel`, `focus-interrupt`, +45 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +20 fichiers
+- `LDB 46` (l.159-162) → `DispelModal`, `vents-tres-forts`, `STEP_WINDOW_AUTO`, `hoverErrText`, `HoverTargeting`, `focalisation-etendue`, `jetSurfaced`, `dispel-roll`, `armourCastDRPenalty`, `RollRowProps`, +50 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +23 fichiers
 
 ---
 
@@ -690,7 +690,7 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 > **Verbatim** (LDB 47 l.28) : « les Sorts marqués ZdE affectent tous les individus à l'intérieur de ce DIAMÈTRE ».
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 47` (l.28) → `CastingNumberRounding`, `SpellTarget`, `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `zdeDiameterMeters`, `bestAreaCenter`, `TIER`, `FLOWS`, +14 — `src/data/index.ts`, `src/engine/castingNumber.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/spellRange.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, +9 fichiers
+- `LDB 47` (l.28) → `CastingNumberRounding`, `SpellTarget`, `CastModal`, `carriedGrimoire`, `SpellbookSection`, `zdeDiameterMeters`, `overcastAffordance`, `bestAreaCenter`, `TIER`, `FLOWS`, +14 — `src/data/index.ts`, `src/engine/castingNumber.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/spellRange.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, +9 fichiers
 
 ---
 
@@ -742,7 +742,7 @@ La **malepierre** est un éclat de magie pure dans le plan matériel — manifes
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 19` (l.40, l.51-53) → `CorruptionModal`, `combat-end-corruption`, `sombre-pacte`, `EXPOSURE_LADDER`, `physique`, `schema`, `corruption-mineure`, `corruption-moderee`, `corruption-majeure`, `corruption-seuil`, +13 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs/arcane-phenomena.ts`, +8 fichiers
 - `LDB 44` (l.113-119) → `schema` — `src/data/schemas/defs/trappings.ts`
-- `LDB 46` (l.164-173) → `DispelModal`, `windsModFromRoll`, `FocusModal`, `vents-tres-forts`, `rollWindsOfMagic`, `STEP_WINDOW_AUTO`, `schema`, `talentEntrySchema`, `windsMagicModOf`, `focalisation-etendue`, +64 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, +31 fichiers
+- `LDB 46` (l.164-173) → `DispelModal`, `windsModFromRoll`, `FocusModal`, `vents-tres-forts`, `rollWindsOfMagic`, `STEP_WINDOW_AUTO`, `schema`, `talentEntrySchema`, `hoverErrText`, `windsMagicModOf`, +69 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, +34 fichiers
 - `VDM 2` (l.165) → `schema`, `armourCastDRPenalty`, `armure-du-chaos`, `malevolentInfluenceSeverity`, `ItemInstance`, `malepierreDR`, `malepierreCharge`, `TrappingData`, `malepierreReserveOf`, `consumeMalepierre`, +3 — `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/surincantation.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, +4 fichiers
 - dette : #884
 

@@ -17,13 +17,20 @@ import { GUEST_INTENTS } from '../net/intents';
 import { HORS_MODAL } from './modalArbiter';
 
 /**
- * Actions `<prefix><Maj>…` VOLONTAIREMENT hors surface invité — une entrée, une raison. Ne peut y
- * figurer qu'une action d'OUVERTURE depuis un écran piloté par l'hôte : le jet, une fois ouvert, est
- * joué ENTIER par le siège de son porteur (verbes ET `resolution`, routes `jetOwnedIntents`).
+ * Actions `<prefix><Maj>…` VOLONTAIREMENT hors surface invité — une entrée, une raison. DEUX classes
+ * seulement peuvent y figurer :
+ *  - une action d'OUVERTURE depuis un écran piloté par l'hôte : le jet, une fois ouvert, est joué
+ *    ENTIER par le siège de son porteur (verbes ET `resolution`, routes `jetOwnedIntents`) ;
+ *  - un CHOIX D'ÉCRAN qui ne commet rien au jeu et se joue chez l'ÉMETTEUR par construction
+ *    (`targetingModes.INTENT_ELECTION_LOCALE` / `netFlow.emettreIntentInvite`) : son état vit hors
+ *    snapshot, donc il n'a rien à demander à l'hôte — et le COMMIT qui suit, lui, est exposé.
  */
 const HORS_SURFACE: Record<string, string> = {
   appraiseItem: 'OUVRE une Évaluation depuis l’inventaire — écran hôte (ouverture coop : lot #284)',
   appraiseGear: 'OUVRE une Évaluation sur une ligne de butin — fenêtre de butin hôte (lot #284)',
+  dispelSelectCarrier:
+    'ÉLECTION locale d’écran (porteur du mode Dissiper) — jouée chez l’ÉMETTEUR, hors réseau par ' +
+    'construction (`dispelCarrierId` hors snapshot) ; le COMMIT `battleDispelSpell` est exposé',
 };
 
 /** Extraction PURE de la détection d'orphelines, pour qu'elle soit elle-même éprouvable (cas simulé

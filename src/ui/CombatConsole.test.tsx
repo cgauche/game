@@ -11,12 +11,13 @@ import { useGame, movementRemaining, type BattleState } from '../state/store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import type { Combatant, ConditionInstance, ItemInstance, ShipPoste, Weapon } from '../engine/types';
-import { itemFromTrappingById, recomputeLoadout, loadoutLabel, loadedAmmo, loadWeapon } from '../engine/items';
+import { itemFromTrappingById, recomputeLoadout, loadoutLabel, loadedAmmo, selectedAmmo, loadWeapon } from '../engine/items';
 import { weaponLoaded } from '../engine/weaponLoad';
+import { t } from '../i18n';
 import { hotbar } from '../state/hotbarBridge';
 import { regles, findQualityById, findActionById, findVehicleById } from '../data/index';
 import { vehicleCombatant } from '../engine/vehicle';
-import { actionGate } from '../state/actionRegistry';
+import { actionGate, ACTION_CANDIDATES } from '../state/actionRegistry';
 import { emptyScene } from '../state/scene';
 import { mdToText } from './Prose';
 import { CombatConsole } from './CombatConsole';
@@ -1306,6 +1307,32 @@ describe('CombatConsole — les cases sont des ENTRÉES du registre (branchement
     expect(det.querySelector('.cc-key'), 'badge de touche sur une case gatée').toBeNull();
   });
 
+  // Le badge de touche est posé HORS FLUX au pied de l'alvéole : sur un libellé long il passait SOUS
+  // les mots (sonde du juge vision, « Immunité Psychologie (2) » captures 01/07/15). La case qui
+  // IMPRIME sa touche lui réserve donc sa bande, comme la case gatée réserve celle de sa raison.
+  it('R-7bis — la case qui imprime sa touche RÉSERVE sa bande au pied (le chiffre ne mord plus le nom)', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    // Les alvéoles des GRILLES (la plaque de sortie a sa propre boîte et sa propre note de pied).
+    const alveoles = [...host.querySelectorAll('.cc-grid .cc-cell')];
+    const avecTouche = alveoles.filter((c) => c.querySelector('.cc-key'));
+    expect(avecTouche.length, 'aucune case à touche : la sonde ne mesurerait rien').toBeGreaterThan(0);
+    for (const c of avecTouche) {
+      expect(c.hasAttribute('data-hotkey'), `case « ${c.getAttribute('data-action')} » : touche imprimée sans réserve`).toBe(true);
+    }
+    // … et aucune case SANS badge ne paie la réserve (la géométrie ne se paie que là où elle sert).
+    for (const c of alveoles.filter((x) => !x.querySelector('.cc-key'))) {
+      expect(c.hasAttribute('data-hotkey')).toBe(false);
+    }
+    const regle = ruleOf(CC_BASE, '.cc-cell[data-hotkey]');
+    const bande = parseFloat(decl(regle, 'padding-bottom')!);
+    const badge = ruleOf(CC_BASE, '.cc-key');
+    // La bande couvre le badge : son corps + son fond de ligne.
+    expect(bande, 'réserve plus courte que le badge : le chevauchement revient')
+      .toBeGreaterThanOrEqual(parseFloat(/\b(\d+(?:\.\d+)?)px\b/.exec(decl(badge, 'font')!)![1]) + parseFloat(decl(badge, 'bottom')!));
+  });
+
   it('R-5 — G6bis : le geste d’ÉTAT du porteur (surface `geste-d-etat`) se dessine quand sa situation l’ouvre', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
@@ -1947,5 +1974,426 @@ describe('CombatConsole — COOP : la console suit la POSSESSION, jamais le mode
     expect((host.querySelector('[data-cell="end-turn"]') as HTMLButtonElement).disabled).toBe(true);
     // Les cases VIDES sont des `span` (la géométrie ne bouge pas) : ce sont les alvéoles BOUTON qu'on compte.
     expect(host.querySelectorAll('button.cc-cell:not([disabled])').length, 'aucune case ne doit être cliquable').toBe(0);
+  });
+});
+
+/**
+ * DISSIPATION JOUABLE (spec HUD §1d, LDB 46 l.158-162) — l'alvéole ARME le mode, le clic-token élit
+ * le PORTEUR (`DISPEL_MODE`), et le SORT se choisit au PANNEAU-PARAMÈTRE né de cette même alvéole.
+ * La progression du Test étendu se lit sur la case.
+ */
+describe('CombatConsole — Dissiper : alvéole → porteur → panneau-paramètre', () => {
+  /** Un mage capable de dissiper (Langue (Magick)) — le gate de la case le lit sur ses Compétences. */
+  function mage() {
+    const h = hero('h1', 'Elsa');
+    h.skills.push({ skillId: 'langue', spec: 'magick', advances: 2 } as never);
+    return h;
+  }
+
+  /** Marque un combattant PORTEUR de `n` Sorts permanents (effets `ActiveEffect.spell`, cf. `engine/dispel`). */
+  function porteur(c: Combatant, n: number) {
+    c.activeEffects = Array.from({ length: n }, (_, i) => ({
+      label: `Effet ${i + 1}`,
+      spell: { spellId: `sort-${i + 1}`, casterId: 'e1', label: `Sort ${i + 1}`, ni: 3 + i },
+    })) as never;
+  }
+
+  const panneau = () => document.body.querySelector('[data-panneau-parametre]');
+  const options = () => [...(panneau()?.querySelectorAll('button') ?? [])];
+
+  // `battleSelectAction` (l'armement du mode) exige une SCÈNE : sans elle, la case cliquée n'arme rien.
+  beforeEach(() => { useGame.setState({ scene: emptyScene() }); });
+  afterEach(() => { useGame.setState({ dispelCarrierId: null, pendingDispel: null, battle: null }); });
+
+  it('l’alvéole Dissiper existe dès qu’un Sort permanent est en jeu, et le clic ARME le mode', () => {
+    const h = mage();
+    const e = foe('e1', 6, 5);
+    porteur(e, 2);
+    monter(h, { foes: [e] });
+    const cell = host.querySelector('[data-action="dispel"]') as HTMLButtonElement;
+    expect(cell, 'aucune alvéole Dissiper').toBeTruthy();
+    act(() => { cell.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(useGame.getState().battle!.action).toBe('dispel');
+  });
+
+  it('clic-porteur (2 Sorts) → panneau BORNÉ à SES Sorts ; le clic COMMET `dispel-spell` avec les bons ids', () => {
+    const h = mage();
+    const e = foe('e1', 6, 5);
+    porteur(e, 2);
+    monter(h, { foes: [e] });
+    act(() => { (host.querySelector('[data-action="dispel"]') as HTMLButtonElement).dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    // Le clic-token du champ passe par la MÊME porte que la carte (`battleClickEntity`).
+    act(() => { useGame.getState().battleClickEntity('e1'); });
+    expect(useGame.getState().dispelCarrierId).toBe('e1');
+    expect(options().map((b) => b.textContent), 'un candidat par Sort de CE porteur, NI en méta')
+      .toEqual(['Sort 1NI 3', 'Sort 2NI 4']);
+    act(() => { options()[1].dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(useGame.getState().pendingDispel).toMatchObject({ spellId: 'sort-2', spellCasterId: 'e1', ni: 4 });
+    expect(panneau(), 'le panneau se referme sur son commit').toBeNull();
+  });
+
+  it('ÉCHAP referme le panneau sans rien dissiper (annulation gratuite)', () => {
+    const h = mage();
+    const e = foe('e1', 6, 5);
+    porteur(e, 2);
+    monter(h, { foes: [e] });
+    act(() => { (host.querySelector('[data-action="dispel"]') as HTMLButtonElement).dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    act(() => { useGame.getState().battleClickEntity('e1'); });
+    expect(panneau()).toBeTruthy();
+    act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+    expect(panneau()).toBeNull();
+    expect(useGame.getState().pendingDispel).toBeNull();
+    expect(useGame.getState().battle!.action, 'le mode reste armé : on vise un autre porteur').toBe('dispel');
+  });
+
+  it('l’alvéole PORTE la progression du Test étendu (DR cumulé / NI) dès qu’un Sort est entamé', () => {
+    const h = mage();
+    h.dispel = { spellId: 'sort-1', spellCasterId: 'e1', total: 2 };
+    const e = foe('e1', 6, 5);
+    porteur(e, 2);
+    monter(h, { foes: [e] });
+    const cell = host.querySelector('[data-action="dispel"]') as HTMLButtonElement;
+    expect(cell.querySelector('.cc-lbl')?.textContent).toBe(`${findActionById('dispel')!.label} 2/3`);
+  });
+
+  // ON VISE, ON NE LIT PAS : un mode de ciblage armé met les popovers de règle de la console en
+  // SOURDINE — le pavé de règle de la case armée (ouvert par le focus que son propre clic lui donne)
+  // recouvrait la bandelette de refus du survol et quatre cases du pont (sonde du juge vision,
+  // captures 08/09). Le mode dissous, la règle revient : l'information n'est pas retirée, elle attend.
+  it('mode de ciblage ARMÉ : le popover de règle de la case se tait, et revient au désarmement', () => {
+    const h = mage();
+    const e = foe('e1', 6, 5);
+    porteur(e, 2);
+    monter(h, { foes: [e] });
+    const cell = () => host.querySelector('[data-action="dispel"]') as HTMLButtonElement;
+    const survole = () => {
+      act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+      act(() => { cell().closest('.codex-ref')!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+      return document.body.querySelector('.codex-pop[role="tooltip"]');
+    };
+    expect(survole(), 'témoin : rien d’armé, la règle de la case s’ouvre au survol').not.toBeNull();
+
+    act(() => { cell().dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(useGame.getState().battle!.action, 'témoin : le mode doit être armé').toBe('dispel');
+    expect(survole(), 'pavé de règle ouvert pendant qu’on vise : il recouvre ce que le clic a armé').toBeNull();
+
+    act(() => { cell().dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(useGame.getState().battle!.action, 'témoin : le re-clic dissout le mode').toBeNull();
+    expect(survole(), 'le mode dissous, la règle doit revenir').not.toBeNull();
+  });
+});
+
+/**
+ * MUNITION JOUABLE DEPUIS LA CONSOLE (#1411 P1-B, spec §1a + zone 10) : la munition vit à l'EN-TÊTE de
+ * travée, et ce chip EST le déclencheur du choix — panneau BORNÉ aux munitions compatibles de l'arme,
+ * conséquence RENDUE sur le candidat qui déchargera, annulation gratuite. Le commit passe par le
+ * registre (`select-ammo` → `battleSelectAmmo`), jamais par une closure de site.
+ */
+describe('CombatConsole — munition : le chip de l’en-tête est le DÉCLENCHEUR du choix', () => {
+  const objet = (id: string, uid: string, over: Partial<ItemInstance> = {}) =>
+    Object.assign(itemFromTrappingById(id)!, { uid }, over) as ItemInstance;
+
+  /** Arbalétrier au set de tir, avec DEUX munitions compatibles (même famille) dans sa besace. */
+  function tireur(opts: { charge?: boolean; deuxMunitions?: boolean } = {}) {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    const arb = objet('arbalete-lourde', 'i-arb');
+    h.items = [
+      arb,
+      objet('carreau', 'i-c', { qty: 12 }),
+      ...(opts.deuxMunitions === false ? [] : [objet('carreau', 'i-c2', { label: 'Carreau perçant', qty: 5 })]),
+    ];
+    h.loadouts = [{ id: 'lo-tir', main: 'i-arb' }];
+    h.activeLoadoutId = 'lo-tir';
+    recomputeLoadout(h);
+    // Le chargement passe par le MOTEUR (jamais un registre forgé) : c'est lui qui capture la munition.
+    if (opts.charge !== false) loadWeapon(h, h.weapons.find((w) => w.type === 'ranged')!);
+    return h;
+  }
+
+  const chip = () => host.querySelector('.cc-bay-head button[data-ammo]') as HTMLButtonElement | null;
+  const panneau = () => document.body.querySelector('[data-panneau-parametre]');
+  const candidats = () => [...(panneau()?.querySelectorAll('button') ?? [])];
+  const ouvrir = () => act(() => { chip()!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+  /** L'acteur tel que le STORE le porte après un dispatch (jamais l'objet de départ). */
+  const acteur = () => useGame.getState().battle!.combatants[0];
+
+  afterEach(() => { useGame.setState({ battle: null }); });
+
+  it('DEUX munitions compatibles : le chip est un BOUTON qui ouvre un panneau BORNÉ à ces munitions', () => {
+    monter(tireur());
+    expect(chip(), 'le chip de munition doit être actionnable dès qu’il y a un choix').not.toBeNull();
+    expect(chip()!.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(panneau(), 'aucun panneau avant le clic').toBeNull();
+    ouvrir();
+    expect(panneau()).toBeTruthy();
+    // La conséquence ne pend qu'au candidat qui DÉCHARGERA : celui en chambre ne la porte pas.
+    expect(candidats().map((b) => b.textContent)).toEqual(['Carreau×12valeur actuelle', 'Carreau perçant×5décharge — rechargement à refaire']);
+    // La munition EN CHAMBRE est MARQUÉE (état, pas une simple mise en avant) — et son marquage est
+    // LISIBLE : classe d'état, `aria-pressed`, ET un mot à l'écran (une classe qu'aucune règle ne
+    // peint ne marque rien : sonde du juge vision).
+    expect(candidats().map((b) => b.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
+    expect(candidats().map((b) => b.classList.contains('on'))).toEqual([true, false]);
+    expect(candidats().map((b) => b.querySelector('[data-actuel]')?.textContent ?? null)).toEqual(['valeur actuelle', null]);
+  });
+
+  it('le clic COMMET `select-ammo` avec les bons ids : l’arme change de munition ET se décharge', () => {
+    const h = tireur();
+    const w = h.weapons.find((x) => x.type === 'ranged')!;
+    expect(weaponLoaded(h, w), 'témoin : l’arme part chargée').toBe(true);
+    monter(h);
+    ouvrir();
+    act(() => { candidats()[1].dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const c = acteur();
+    expect(selectedAmmo(c, w)?.uid, 'la munition choisie est celle du candidat cliqué').toBe('i-c2');
+    expect(weaponLoaded(c, w), 'changer la munition d’une arme chargée la décharge (dispatcher)').toBe(false);
+    expect(panneau(), 'le panneau se referme sur son commit').toBeNull();
+  });
+
+  it('la CONSÉQUENCE n’est rendue que là où le dispatcher déchargera VRAIMENT (arme non chargée : aucune)', () => {
+    monter(tireur({ charge: false }));
+    ouvrir();
+    expect(candidats().map((b) => b.textContent)).toEqual(['Carreau×12valeur actuelle', 'Carreau perçant×5']);
+    expect(panneau()!.textContent).not.toContain('rechargement à refaire');
+  });
+
+  it('ÉCHAP referme sans rien engager (annulation gratuite : la munition ne bouge pas)', () => {
+    const h = tireur();
+    const w = h.weapons.find((x) => x.type === 'ranged')!;
+    monter(h);
+    ouvrir();
+    expect(panneau()).toBeTruthy();
+    act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+    expect(panneau()).toBeNull();
+    expect(selectedAmmo(acteur(), w)?.uid).toBe('i-c');
+    expect(weaponLoaded(acteur(), w), 'aucune décharge : rien n’a été commis').toBe(true);
+  });
+
+  it('UNE SEULE munition compatible : chip INFORMATIF seul — aucun panneau à un candidat', () => {
+    monter(tireur({ deuxMunitions: false }));
+    expect(chip(), 'un panneau à une valeur ne choisit rien').toBeNull();
+    expect(host.querySelector('.cc-bay-head [data-ammo]'), 'la munition reste LUE dans l’en-tête').not.toBeNull();
+  });
+
+  it('FRÉNÉSIE : le choix est REFUSÉ et le refus se VOIT (raison du registre), jamais escamoté', () => {
+    const h = tireur();
+    h.psychState = [{ type: 'frenesie' }] as never;
+    monter(h);
+    expect(chip(), 'le chip reste à l’écran : le refus ne fait pas disparaître l’affordance').not.toBeNull();
+    expect(chip()!.disabled).toBe(true);
+    const raison = host.querySelector('.cc-bay-head [data-gate]');
+    expect(raison?.textContent, 'la raison est VISIBLE, pas dans un title').toBe(t('agate.frenzyOnly'));
+    expect(chip()!.getAttribute('aria-describedby')).toBe(raison!.id);
+  });
+
+  // Le panneau appartient à l'ARME qui l'a ouvert. Commuter de set refait l'arme au poing : le chip
+  // déclencheur du set précédent n'existe plus, et un panneau qui lui survit est un FANTÔME — ancré
+  // à rien, et il garde le popover de règle du chip en sourdine (`suppressPopover`) sans plus aucun
+  // moyen de se refermer. L'autre set porte lui aussi une arme de tir : sans remise à zéro, la
+  // condition de rendu du panneau resterait vraie.
+  it('COMMUTER DE SET referme le panneau (il appartient à l’arme qui l’a ouvert)', () => {
+    const h = tireur();
+    h.items = [
+      ...h.items!,
+      objet('arc', 'i-arc'),
+      objet('fleche', 'i-f', { qty: 10 }),
+      objet('fleche', 'i-f2', { label: 'Flèche barbelée', qty: 4 }),
+    ];
+    h.loadouts = [...h.loadouts!, { id: 'lo-arc', main: 'i-arc' }];
+    monter(h);
+    ouvrir();
+    expect(panneau(), 'témoin : le panneau doit être ouvert avant la commutation').toBeTruthy();
+    act(() => { useGame.getState().battleSwitchLoadout('lo-arc'); });
+    act(() => { root.render(<CombatConsole />); });
+    expect(acteur().weapons.some((w) => w.type === 'ranged'), 'témoin : l’autre set porte AUSSI une arme de tir').toBe(true);
+    expect(panneau(), 'panneau FANTÔME : il a survécu à l’arme qui l’avait ouvert').toBeNull();
+  });
+});
+
+// ── GESTE ADOSSÉ À LA GOUTTIÈRE DE MOUVEMENT (#1411 P1 lot C, spec §1c) ─────────────────────────
+// L'annulation du déplacement n'est pas une case de plus : elle vit sur la ressource qu'elle rend.
+// Le contrat est une AFFORDANCE-VÉRITÉ — elle n'est à l'écran que là où `cancelMove` mordrait
+// vraiment. Le compteur `movementUsed` ne suffit pas à le dire : `battleStandUp` l'écrit SANS poser
+// de `moveSnapshot` (`combatSlice.ts:1602`), et le dispatcher n'aurait alors rien à restaurer.
+describe('CombatConsole — annuler le déplacement, sur la gouttière de Mouvement', () => {
+  const geste = () => host.querySelector('.cc-gutter-move [data-action="undo-move"]') as HTMLButtonElement | null;
+
+  beforeEach(() => { useGame.setState({ scene: emptyScene(20, 20) }); });
+
+  it('Mouvement dépensé SANS segment restaurable (relevé) : AUCUN geste — pas de bouton mort', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [{ id: 'a-terre', value: 1 }] as ConditionInstance[];
+    monter(h);
+    act(() => { useGame.getState().battleStandUp(); });
+    const st = useGame.getState().battle!;
+    // Le relevé a bien consommé du Mouvement — et n'a laissé AUCUN instantané à défaire.
+    expect(st.movementUsed, 'la sonde ne mesurerait rien sans Mouvement dépensé').toBeGreaterThan(0);
+    expect(st.moveSnapshot ?? null).toBeNull();
+    act(() => { root.render(<CombatConsole />); });
+    expect(geste(), 'geste rendu alors que `cancelMove` no-operait : affordance morte').toBeNull();
+  });
+
+  it('après une Marche : le geste EXISTE, le clic RESTAURE la position, puis le geste meurt', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h);
+    const depart = { ...h.pos! };
+    act(() => { useGame.getState().battleClickTile({ x: depart.x + 1, y: depart.y }, { confirm: true }); });
+    act(() => { root.render(<CombatConsole />); });
+    const st = useGame.getState().battle!;
+    expect(st.movementUsed, 'aucun segment commis : la sonde mesurerait le vide').toBeGreaterThan(0);
+    expect(st.combatants[0].pos).toEqual({ x: depart.x + 1, y: depart.y });
+    const bouton = geste();
+    expect(bouton, 'aucun geste d’annulation sur la gouttière de Mouvement').toBeTruthy();
+    // Le nom accessible vient de l'ENTRÉE du registre, jamais d'un littéral du composant.
+    expect(bouton!.getAttribute('aria-label')).toBe(findActionById('undo-move')!.label);
+    act(() => { bouton!.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const apres = useGame.getState().battle!;
+    expect(apres.combatants[0].pos, 'le clic n’a pas restauré la position').toEqual(depart);
+    expect(apres.movementUsed).toBe(0);
+    act(() => { root.render(<CombatConsole />); });
+    expect(geste(), 'le gate est mort avec le segment : plus rien à annuler, plus rien à l’écran').toBeNull();
+  });
+
+  it('une Action prise ferme le geste (aide PRÉ-Action, même verdict que le dispatcher)', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h);
+    const depart = { ...h.pos! };
+    act(() => { useGame.getState().battleClickTile({ x: depart.x + 1, y: depart.y }, { confirm: true }); });
+    act(() => { root.render(<CombatConsole />); });
+    expect(geste()).toBeTruthy();
+    act(() => { useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } }); });
+    act(() => { root.render(<CombatConsole />); });
+    expect(geste(), 'l’Action prise, `cancelMove` ne mord plus : le geste ne doit pas rester offert').toBeNull();
+  });
+
+  // GÉOMÉTRIE IMMUABLE (loi 1) : la venue du geste ne DÉPLACE rien — sa place est réservée dans
+  // TOUTE gouttière. Sonde du juge vision : la boîte du compteur MOUV. remontait de 13px (y 810→797)
+  // au moment où « Annuler dépl. » apparaissait.
+  it('la place du geste est RÉSERVÉE : le socle a les mêmes voisins et le même rang, geste ou pas', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h);
+    const rangs = () => {
+      const g = host.querySelector('.cc-gutter-move')!;
+      const enfants = [...g.children];
+      return {
+        formes: enfants.map((el) => (el.classList.contains('cc-gutter-rail') ? 'rail' : el.classList.contains('cc-socle') ? 'socle' : el.hasAttribute('data-geste') ? 'slot-geste' : 'autre')),
+        socle: enfants.findIndex((el) => el.classList.contains('cc-socle')),
+      };
+    };
+    const avant = rangs();
+    expect(avant.formes, 'le slot du geste doit être dessiné même sans geste offert').toEqual(['rail', 'socle', 'slot-geste']);
+    expect(host.querySelector('.cc-gutter-move [data-geste]')!.children.length, 'slot vide tant que rien n’est à annuler').toBe(0);
+
+    const depart = { ...h.pos! };
+    act(() => { useGame.getState().battleClickTile({ x: depart.x + 1, y: depart.y }, { confirm: true }); });
+    act(() => { root.render(<CombatConsole />); });
+    expect(geste(), 'témoin : sans geste offert la sonde ne mesurerait rien').toBeTruthy();
+    expect(rangs(), 'la venue du geste a changé la place du socle').toEqual(avant);
+    expect(geste()!.parentElement!.hasAttribute('data-geste'), 'le geste naît DANS le slot réservé').toBe(true);
+
+    // … et le slot porte une HAUTEUR FIXE en CSS : occupé ou vide, il occupe la même bande.
+    const slot = ruleOf(CC_BASE, '.cc-gutter > [data-geste]');
+    expect(decl(slot, 'height'), 'sans hauteur déclarée, le slot vide se replie et le compteur remonte').toMatch(/^\d+px$/);
+    expect(decl(slot, 'flex')).toBe('0 0 auto');
+  });
+
+  // Le geste DIT ce qu'il fait et s'atteint au doigt : glyphe de 26px, sans mot, cible 32×26 mesurée
+  // par le juge vision. Le mot est à l'écran, le libellé ENTIER reste le nom accessible (jamais un
+  // `title`), et la zone de touche vaut ≥44px À TOUS LES POINTEURS, hors flux (la plaque ne grandit pas).
+  it('le geste porte un MOT visible, son nom accessible entier, et une cible ≥44px hors flux', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h);
+    const depart = { ...h.pos! };
+    act(() => { useGame.getState().battleClickTile({ x: depart.x + 1, y: depart.y }, { confirm: true }); });
+    act(() => { root.render(<CombatConsole />); });
+    const bouton = geste()!;
+    expect(bouton.querySelector('i')!.textContent, 'le geste ne dit rien à l’écran').toBe('ANNULER');
+    expect(bouton.getAttribute('aria-label')).toBe(findActionById('undo-move')!.label);
+    expect(bouton.hasAttribute('title'), 'la raison ne passe jamais par une infobulle native').toBe(false);
+    // La cible tactile est posée HORS de toute tranche de pointeur (elle vaut partout).
+    const cible = ruleOf(CC_BASE, 'button.cc-socle::before');
+    expect(decl(cible, 'position')).toBe('absolute');
+    for (const cote of ['width', 'height']) {
+      expect(decl(cible, cote), `cible tactile : ${cote} sous 44px`).toBe('max(100%, 44px)');
+    }
+  });
+});
+
+// ── PLAFOND D'AVANTAGE : un REFUS VISIBLE, jamais une case qui s'évapore (#1411 P1) ─────────────
+// Spec HUD § « ARBITRAGE 2026-08-19 » : le refus se VOIT. Une méthode d'Avantage déjà au plafond de
+// sa Caractéristique (LDB 09 l.305-308) ne peut plus rien rendre — mais faire disparaître sa case
+// privait le joueur de la RAISON, et le laissait chercher une affordance qu'il avait vue au tour
+// d'avant. Le verdict est donc le gate `avantage-sous-plafond` (`actionRegistry.ts`), source UNIQUE :
+// le sélecteur `competences-avantage` (`actionRegistry.ts:192`) ne filtre plus rien.
+describe('CombatConsole — Avantage au plafond : la case reste, FERMÉE, avec sa raison', () => {
+  const casesAdv = () => [...host.querySelectorAll('[data-action="gain-advantage"]')] as HTMLButtonElement[];
+
+  it('à Avantage 0 la case est OUVERTE ; au plafond elle reste dessinée, désactivée, raison à l’écran', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.advantage = 0;
+    // Intuition (LDB 09 l.305-308) : Compétence de BASE dont la donnée porte `combatAdvantage` —
+    // plafond = Bonus d'Intelligence. C'est la méthode que la case offre.
+    h.skills = [{ skillId: 'intuition', advances: 0 }] as never;
+    monter(h);
+    const offertes = casesAdv();
+    expect(offertes.length, 'aucune case d’Avantage : la sonde ne mesurerait rien').toBeGreaterThan(0);
+    expect(offertes.every((b) => !b.disabled), 'à Avantage 0 aucune méthode n’est au plafond').toBe(true);
+    expect(host.querySelector('[data-action="gain-advantage"] [data-gate]'), 'aucune raison ne doit s’afficher tant que rien ne refuse').toBeNull();
+    // Au PLUS HAUT plafond offert, plus AUCUNE méthode ne peut rendre un cran.
+    const cap = Math.max(
+      ...ACTION_CANDIDATES['competences-avantage']({ active: h, battle: useGame.getState().battle! } as never)
+        .map((s) => (s as { cap: number }).cap),
+    );
+    act(() => {
+      const b = useGame.getState().battle!;
+      useGame.setState({ battle: { ...b, combatants: b.combatants.map((c) => (c.id === h.id ? { ...c, advantage: cap } : c)) } as BattleState });
+    });
+    act(() => { root.render(<CombatConsole />); });
+    const fermees = casesAdv();
+    expect(fermees.length, 'la case a DISPARU au plafond : le refus est devenu muet').toBe(offertes.length);
+    expect(fermees.every((b) => b.disabled), 'case au plafond encore cliquable').toBe(true);
+    const raison = host.querySelector('[data-action="gain-advantage"] [data-gate]');
+    expect(raison?.textContent, 'la raison du refus n’est pas à l’écran').toBe(t('agate.advantageCapped', { n: cap }));
+    expect(fermees[0].getAttribute('aria-describedby')).toBe(raison!.id);
+  });
+});
+
+/**
+ * UNE CASE QUI ARME UN MODE LIT SON MODE AU REGISTRE (`armed` de son entrée d'`actions.json`) — la
+ * console ne recopie aucune valeur de `battle.action`. Même patron que l'intention locale : allumée
+ * tant que SON mode est armé, et le re-clic le dissout (`toggleOff` déduit, jamais passé au site).
+ */
+describe('CombatConsole — l’allumage d’une case armée vient du REGISTRE', () => {
+  const caseCell = (key: string) => host.querySelector(`[data-cell="${key}"]`) as HTMLButtonElement | null;
+
+  /** Un héros CAPABLE de soigner (Compétence Guérison) et BLESSÉ : la case Soigner n'existe qu'avec
+   *  au moins une cible soignable (`healableTargets` — lui-même en fait partie). */
+  function soigneur() {
+    const h = hero('h1', 'Gunnar');
+    h.skills.push({ skillId: 'guerison', advances: 10 } as never);
+    h.wounds = { ...h.wounds, current: h.wounds.max - 4 };
+    return h;
+  }
+
+  it('Soigner : la case s’allume quand `battle.action` vaut l’`armed` de son entrée, et le re-clic désarme', () => {
+    act(() => { useGame.setState({ scene: emptyScene() }); }); // `battleSelectAction` lit { battle, scene }
+    monter(soigneur());
+    const armed = findActionById('heal')!.armed;
+    expect(armed, 'l’entrée « Soigner » du registre déclare le mode qu’elle arme').toBe('heal');
+    expect(caseCell('q-soigner'), 'la case Soigner doit être à l’écran').not.toBeNull();
+    expect(caseCell('q-soigner')!.className, 'rien n’est armé au départ').not.toContain(' on');
+
+    act(() => { caseCell('q-soigner')!.click(); });
+    expect(useGame.getState().battle!.action, 'le clic arme le mode DÉCLARÉ par l’entrée').toBe(armed);
+    expect(caseCell('q-soigner')!.className, 'mode armé → la case est allumée').toContain(' on');
+
+    act(() => { caseCell('q-soigner')!.click(); });
+    expect(useGame.getState().battle!.action, 'le re-clic dissout le mode (toggleOff déduit)').toBeNull();
+    expect(caseCell('q-soigner')!.className).not.toContain(' on');
   });
 });

@@ -21,7 +21,7 @@ import { testValue } from '../engine/skills';
 import { combatValue } from '../engine/combat';
 import { RULE_REF } from '../engine/ruleRefs';
 import { buildWeapon } from '../engine/items';
-import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel, activityStakeRef, hasActivityStake } from '../data';
+import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel, trappingTypeLabel, activityStakeRef, hasActivityStake } from '../data';
 import type { Combatant, ConditionId } from '../engine/types';
 import { rule } from '../engine/policy';
 import { effectiveEntry } from '../engine/variants';
@@ -54,12 +54,6 @@ const ATOUTS = qualities.filter((q) => q.type === 'atout' && q.subType === 'obje
 const DEFAUTS = qualities.filter((q) => q.type === 'defaut' && q.subType === 'objet').map((q) => q.id);
 /** Libellé + desc d'une qualité d'artisanat par id (registre via `describeQuality`). */
 const craftQual = (id: string) => describeQuality({ id }) ?? { label: id, desc: undefined };
-
-/** Familles d'équipement pour grouper les sélecteurs (mêmes données que le marchand). */
-const FAMILY_LABEL: Record<string, string> = {
-  melee: 'Armes de mêlée', ranged: 'Armes à distance', ammunition: 'Munitions',
-  armor: 'Armures', trapping: 'Équipement', vehicle: 'Véhicules',
-};
 
 /** Montant en TEXTE (attributs `title`, contenu d'`<option>` — HTML texte seul) ; tout AFFICHAGE
  *  passe par `<Coins>` (source visuelle unique des montants, LOT 5). */
@@ -646,7 +640,7 @@ function TrappingSelect({ options, value, onChange, detail }: {
   const families = useMemo(() => {
     const m = new Map<string, typeof filtered>();
     for (const o of filtered) {
-      const f = FAMILY_LABEL[o.type] ?? 'Équipement';
+      const f = trappingTypeLabel(o.type) || 'Équipement';
       if (!m.has(f)) m.set(f, []);
       m.get(f)!.push(o);
     }

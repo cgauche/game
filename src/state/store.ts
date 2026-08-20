@@ -404,6 +404,17 @@ export interface GameState extends RollFlowActionsMap {
    *  client : hors `battle`, hors allowlist d'intents, préservé par `applyHostSnapshot` — seul le
    *  COMMIT du geste part en réseau. null = aucune intention (gestes par défaut du grid, inchangés). */
   localIntent: LocalIntent | null;
+  /** PORTEUR élu du mode Dissiper (`DISPEL_MODE`, spec HUD §1d) : le clic-token l'a choisi, il reste
+   *  à choisir LEQUEL de ses Sorts permanents dissiper — c'est le paramètre que le panneau borné de
+   *  la console demande. LOCAL au client au même titre que `localIntent` (aucune ressource engagée,
+   *  hors `battle`, hors snapshot). L'élection se joue donc chez l'ÉMETTEUR du clic
+   *  (`netFlow.emettreIntentInvite`, table `targetingModes.INTENT_ELECTION_LOCALE`) : elle ne part
+   *  JAMAIS en intent — l'exécuter dans le store de l'hôte y ferait naître un panneau étranger, et
+   *  l'invité n'en verrait aucun (le snapshot efface ce champ).
+   *  null = aucun porteur élu — avant le clic-token, ou après la fermeture du panneau. */
+  dispelCarrierId: string | null;
+  /** Élit (ou oublie, `null`) ce porteur — porte unique du champ ci-dessus. */
+  dispelSelectCarrier: (carrierId: string | null) => void;
   /** REFUS de geste à DIRE au joueur (`refusVisible.ts`, spec HUD § ARBITRAGE 2026-08-19 « refus
    *  VISIBLE par construction ») — retour d'IHM strictement LOCAL, comme `localIntent` : hors
    *  `battle` (il ne persiste pas au journal de combat), hors snapshot (le refus opposé au geste de
@@ -914,7 +925,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Flow, opts?: { noSurprise?: boolean }) => void;
-  battleSelectAction: (a: 'cast' | 'ammo' | 'heal' | 'dispel' | 'battery' | 'advantage' | null) => void;
+  battleSelectAction: (a: BattleActionMode | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
   /** « Asperger d'eau » (MDG 16 l.19, #497) — Action DIRECTE (aucune modale) : cible explicite ou
@@ -1745,6 +1756,7 @@ export const useGame = create<GameState>((set, get) => ({
   setHoverCombatant: (id) => set((s) => (s.hoverCombatantId === id ? {} : { hoverCombatantId: id })),
   combatCursor: null,
   localIntent: null,
+  dispelCarrierId: null,
   hovered: null,
   setHovered: (id) => set((s) => (s.hovered === id ? {} : { hovered: id })),
   keyOverrides: loadKeyOverrides(),

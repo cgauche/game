@@ -2141,8 +2141,10 @@ export const fr = {
   'key.cursorCancel': 'Curseur : annuler',
   'key.endTurn': 'Fin du tour',
   'key.clearPreview': 'Annuler l’aperçu de déplacement',
+  'key.undoMove': 'Annuler le déplacement du tour',
   'key.intentCancel': 'Annuler l’intention armée',
   'key.interludeExit': 'Sortir du ciblage en cours',
+  'key.actionDisarm': 'Désarmer le mode d’action armé',
   'key.hotbarSlot': 'Capacité {n} de la barre d’action',
   'key.toggleMenu': 'Ouvrir le menu système',
   'key.exploreUp': 'Exploration : pas vers le haut',
@@ -2154,6 +2156,7 @@ export const fr = {
   'key.named.numpadEnter': 'Entrée (pavé)',
   'key.named.escape': 'Échap',
   'key.named.numpad': 'Pavé {n}',
+  'key.named.backspace': 'Retour arrière',
 
   // ── #1318 V8c₅ — MONTURE hors de combat (`state/mount.ts`, LDB 14 l.182).
   'mount.unhorsed': '{rider} est désarçonné — sa monture ({mount}) est hors de combat.',
@@ -2286,6 +2289,7 @@ export const fr = {
   'agate.notEngaged': 'pas Engagé',
   'agate.actionSpentNoFreeDisengage': 'Action déjà dépensée (désengagement gratuit indisponible)',
   'agate.movementStarted': 'Mouvement déjà entamé ce tour',
+  'agate.noMoveToUndo': 'aucun déplacement à annuler',
   'agate.hullHasNoBody': 'une coque n’a pas de corps : geste de fantassin',
   'agate.frenzyOnly': 'Frénésie : seuls la Capacité de Combat et l’Athlétisme',
   'agate.alreadyEngaged': 'déjà Engagé',
@@ -2298,4 +2302,5 @@ export const fr = {
   'agate.localGame': 'partie locale',
   'agate.notAVessel': 'pas un navire',
   'agate.vesselActionSpent': 'Action du navire déjà dépensée',
+  'agate.advantageCapped': 'Avantage au plafond ({n})',
 } as const;

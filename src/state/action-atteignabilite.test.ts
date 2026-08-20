@@ -47,18 +47,13 @@ const CHANTIER_BRANCHEMENTS_OUVERT = true;
 
 /** Actions SANS surface vivante — nominatif, DÉCROISSANT, cible `{}` (voir en-tête). */
 const SANS_SURFACE: Record<string, string> = {
-  ammo: 'tiroir munitions de la barre morte ; la console la rendra à l’en-tête de travée (spec §1a).',
-  'select-ammo': 'choix de munition — même adresse que `ammo`.',
+  ammo: 'MODE ARMÉ résiduel du tiroir de la barre morte (`ActionBar.tsx:425-433` le slot, `:545` le tiroir — seuls consommateurs mesurés, et les DERNIERS du mode `ammo` depuis la purge advantage/attacks) : le choix de munition se fait désormais au chip de l’en-tête de travée (`select-ammo`), l’entrée meurt AVEC la barre (lot 3).',
   cast: 'le mode disparaît comme slot : alvéoles de sorts + grimoire (spec §1d).',
   'focus-spell': 'affordance secondaire de l’alvéole du sort (spec §1d).',
-  'dispel-spell': 'alvéole Dissiper + panneau-paramètre du porteur (spec §1d).',
-  advantage: 'alvéoles par Compétence (spec §1d) — la case `advantage-<skill>` existe déjà, pas l’ouvreur.',
-  attacks: 'tiroir d’attaques : il disparaît au profit de G1/G2 + grille (spec §1d).',
   mount: 'pastille sur la MONTURE (zone 4, tranché 2026-08-16).',
   'man-poste': 'pastille sur la PIÈCE (zone 4).',
   'push-engine': 'pastille sur la PIÈCE (zone 4).',
   pickup: 'pastille ⓘ de l’objet au sol (zone 4).',
-  'undo-move': 'adossée à la jauge de Mouvement de l’arche (spec §1c).',
   'raise-hand': 'passe à la FRISE (spec §1d).',
 };
 
