@@ -1,0 +1,182 @@
+import { describe, expect, it } from 'vitest';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/**
+ * LE HARNAIS DE BANC RESTE DANS LES BANCS — `stage/banc-volumique.ts` est le SEUL fichier non-`.test.`
+ * de `src/gameIso` à importer `vitest` (précédent unique du dépôt : `src/test-setup.ts`). Quatre faits
+ * s'y tiennent, chacun réfutable seul :
+ *  1. aucun fichier de PRODUCTION de `src/` n'importe le harnais — un renderer de banc, une
+ *     rasterisation stubbée ou une purge de singletons embarqués dans le bundle de jeu, c'est du code
+ *     de test livré au joueur ;
+ *  2. aucun fichier de PRODUCTION de `src/gameIso/**` n'importe `vitest` — le harnais est le seul, et
+ *     il n'a pas de jumeau côté production. Ce fait ne dit RIEN d'un essaimage entre bancs : un
+ *     deuxième harnais écrit dans un `.test.` importe `vitest` légitimement et lui échappe par
+ *     construction — c'est le fait 3 qui mord là ;
+ *  3. `implements StageRenderer` n'apparaît qu'UNE fois dans tout `src/`, `.test.` COMPRIS : le
+ *     renderer de banc est unique, et un banc qui se réécrit le sien au lieu de composer
+ *     `BancRenderer` est détecté ;
+ *  4. tout `.test.` qui importe le harnais appelle `brancherArdoise(` : un importeur sans ardoise
+ *     démarre sur les caches de MODULE laissés chargés par le fichier précédent (`isolate: false`).
+ *
+ * PÉRIMÈTRE : `src/**` en entier pour les faits 1, 3 et 4 ; `src/gameIso/**` pour le fait 2 (le
+ * harnais est un harnais de rendu ; hors de `gameIso`, `src/test-setup.ts` est le point d'entrée
+ * légitime).
+ * ANGLE MORT ASSUMÉ : le scan est TEXTUEL, sur les lignes d'`import` (faits 1, 2, 4), sur la forme
+ * de DÉCLARATION `class X implements StageRenderer` (fait 3) et sur l'occurrence textuelle de `brancherArdoise(`
+ * (fait 4). Un `await import()` dynamique au chemin composé à l'exécution, une ré-exportation du
+ * harnais depuis un troisième module, une classe de banc déclarée sans clause `implements` (ou via un
+ * alias de type), un appel de `brancherArdoise` enveloppé dans une fonction d'un autre fichier :
+ * aucun n'existe aujourd'hui, aucun n'est couvert.
+ */
+
+const ROOT = fileURLToPath(new URL('../../..', import.meta.url)); // racine du projet (src/gameIso/stage → ../../..)
+const SRC = join(ROOT, 'src');
+const GAME_ISO = join(SRC, 'gameIso');
+const HARNAIS = join(GAME_ISO, 'stage', 'banc-volumique.ts');
+
+const EST_TEST = /\.test\.(ts|tsx)$/;
+
+/** Tous les fichiers TypeScript sous `dir`, hors `node_modules`. */
+function sources(dir: string): string[] {
+  const out: string[] = [];
+  const walk = (d: string): void => {
+    let entries: string[];
+    try { entries = readdirSync(d); } catch { return; }
+    for (const e of entries) {
+      const p = join(d, e);
+      if (statSync(p).isDirectory()) { if (e !== 'node_modules') walk(p); }
+      else if (/\.(ts|tsx)$/.test(e)) out.push(p);
+    }
+  };
+  walk(dir);
+  return out;
+}
+
+/** Les fichiers de PRODUCTION (non-`.test.`) d'une racine, le harnais lui-même exclu. */
+const production = (dir: string): string[] => sources(dir).filter((p) => !EST_TEST.test(p) && p !== HARNAIS);
+
+/** Les lignes d'`import`/`export … from` d'une source, avec leur numéro (1-based). */
+export function lignesDImport(source: string): { n: number; texte: string }[] {
+  const out: { n: number; texte: string }[] = [];
+  source.split(/\r?\n/).forEach((ligne, i) => {
+    if (/^\s*(import|export)\b[^;]*\bfrom\s*['"]/.test(ligne) || /^\s*import\s*['"]/.test(ligne)) {
+      out.push({ n: i + 1, texte: ligne.trim() });
+    }
+  });
+  return out;
+}
+
+/** `fichier:ligne` de chaque import dont le spécifieur contient `motif`. */
+export function importeurs(source: string, label: string, motif: RegExp): string[] {
+  return lignesDImport(source)
+    .filter(({ texte }) => motif.test(texte.replace(/^.*from\s*/, '')) || motif.test(texte))
+    .map(({ n, texte }) => `${label}:${n} → ${texte}`);
+}
+
+const SPEC_HARNAIS = /['"][^'"]*banc-volumique['"]/;
+const SPEC_VITEST = /['"]vitest['"]/;
+
+/** La forme d'une DÉCLARATION de classe portant la clause `implements StageRenderer` — ancrée en
+ *  début de ligne : une mention en prose ou dans une chaîne (les cas plantés de ce fichier) n'en est
+ *  pas une. */
+const DECL_RENDERER = /^\s*(export\s+)?(default\s+)?(abstract\s+)?class\s+\w+\s+implements\s+StageRenderer\b/;
+
+/** `fichier:ligne` de chaque déclaration de renderer de banc (clause `implements` littérale). */
+export function renderersDeBanc(source: string, label: string): string[] {
+  return source
+    .split(/\r?\n/)
+    .map((ligne, i) => ({ n: i + 1, ligne }))
+    .filter(({ ligne }) => DECL_RENDERER.test(ligne))
+    .map(({ n, ligne }) => `${label}:${n} → ${ligne.trim()}`);
+}
+
+/** Un banc branche-t-il l'ardoise ? (occurrence textuelle de l'appel, pas de l'import seul). */
+export const brancheLArdoise = (source: string): boolean => /\bbrancherArdoise\s*\(/.test(source);
+
+/** Les `.test.` de `src/**` qui importent le harnais, par chemin relatif à la racine. */
+function bancs(): { chemin: string; source: string }[] {
+  return sources(SRC)
+    .filter((p) => EST_TEST.test(p) && p !== join(GAME_ISO, 'stage', 'banc-volumique.test.ts'))
+    .map((p) => ({ chemin: relative(ROOT, p).replace(/\\/g, '/'), source: readFileSync(p, 'utf8') }))
+    .filter(({ chemin, source }) => importeurs(source, chemin, SPEC_HARNAIS).length > 0);
+}
+
+describe('le harnais de banc volumique reste dans les bancs (#1401)', () => {
+  it('cas planté : un import du harnais depuis un fichier de production est détecté (preuve TDD)', () => {
+    const planté = ['const x = 1;', "import { BancRenderer } from './banc-volumique';"].join('\n');
+    expect(importeurs(planté, 'planté.ts', SPEC_HARNAIS)).toEqual([
+      "planté.ts:2 → import { BancRenderer } from './banc-volumique';",
+    ]);
+    // …et un fichier qui ne l'importe pas ne déclenche RIEN : le détecteur ne mord pas dans le vide.
+    expect(importeurs("import * as THREE from 'three';", 'sain.ts', SPEC_HARNAIS)).toEqual([]);
+  });
+
+  it('cas planté : un import de `vitest` est détecté avec son `fichier:ligne` (preuve TDD)', () => {
+    const planté = "import { describe, it } from 'vitest';";
+    expect(importeurs(planté, 'planté.ts', SPEC_VITEST)).toEqual([
+      "planté.ts:1 → import { describe, it } from 'vitest';",
+    ]);
+  });
+
+  it('le harnais existe bien, et il importe `vitest` — sans quoi les deux faits seraient vrais du vide', () => {
+    const source = readFileSync(HARNAIS, 'utf8');
+    expect(importeurs(source, 'banc-volumique.ts', SPEC_VITEST).length,
+      'le harnais n’importe plus `vitest` : cette garde ne garde plus rien').toBeGreaterThan(0);
+  });
+
+  it('AUCUN fichier de production de `src/` n’importe le harnais', () => {
+    const fautifs: string[] = [];
+    for (const p of production(SRC)) {
+      fautifs.push(...importeurs(readFileSync(p, 'utf8'), relative(ROOT, p).replace(/\\/g, '/'), SPEC_HARNAIS));
+    }
+    expect(fautifs, 'un harnais de banc embarqué dans le bundle de jeu').toEqual([]);
+  });
+
+  it('aucun non-`.test.` de `src/gameIso/**` hors le harnais n’importe `vitest`', () => {
+    const fautifs: string[] = [];
+    for (const p of production(GAME_ISO)) {
+      fautifs.push(...importeurs(readFileSync(p, 'utf8'), relative(ROOT, p).replace(/\\/g, '/'), SPEC_VITEST));
+    }
+    expect(fautifs, 'du code de test dans un fichier de production de `gameIso`').toEqual([]);
+  });
+
+  it('cas planté : une classe de banc déclarée ailleurs est détectée avec son `fichier:ligne` (preuve TDD)', () => {
+    const planté = ['// entête', 'class MonRenderer implements StageRenderer {'].join('\n');
+    expect(renderersDeBanc(planté, 'planté.ts')).toEqual([
+      'planté.ts:2 → class MonRenderer implements StageRenderer {',
+    ]);
+    // …ni une classe d'un AUTRE contrat, ni une mention en prose ou en chaîne, ne déclenchent RIEN.
+    expect(renderersDeBanc('class X implements StageRendererFactory {}', 'sain.ts')).toEqual([]);
+    expect(renderersDeBanc('// class X implements StageRenderer — en prose', 'sain.ts')).toEqual([]);
+  });
+
+  it('`implements StageRenderer` n’apparaît qu’UNE fois dans tout `src/`, `.test.` compris', () => {
+    const trouvés: string[] = [];
+    for (const p of sources(SRC)) {
+      trouvés.push(...renderersDeBanc(readFileSync(p, 'utf8'), relative(ROOT, p).replace(/\\/g, '/')));
+    }
+    expect(trouvés.length, `un renderer de banc a essaimé :\n${trouvés.join('\n')}`).toBe(1);
+    expect(trouvés[0]).toContain('src/gameIso/stage/banc-volumique.ts:');
+  });
+
+  it('cas planté : un banc qui importe le harnais sans brancher l’ardoise est détecté (preuve TDD)', () => {
+    expect(brancheLArdoise("import { quads } from './banc-volumique';\nquads();")).toBe(false);
+    expect(brancheLArdoise("import { brancherArdoise } from './banc-volumique';\nbrancherArdoise();")).toBe(true);
+    // L'import du symbole SEUL ne suffit pas : c'est l'APPEL qui pose l'afterEach.
+    expect(brancheLArdoise("import { brancherArdoise } from './banc-volumique';")).toBe(false);
+  });
+
+  it('tout `.test.` qui importe le harnais APPELLE `brancherArdoise`', () => {
+    const liste = bancs();
+    expect(liste.length, 'plus aucun banc n’importe le harnais : ce fait serait vrai du vide').toBeGreaterThan(30);
+    const sansArdoise = liste.filter(({ source }) => !brancheLArdoise(source)).map(({ chemin }) => chemin);
+    expect(sansArdoise, 'un banc démarre sur les caches de MODULE du fichier précédent').toEqual([]);
+  });
+
+  it('PRÉMISSE — le scan voit bien des fichiers : un périmètre vide rendrait les faits gratuits', () => {
+    expect(production(SRC).length).toBeGreaterThan(500);
+    expect(production(GAME_ISO).length).toBeGreaterThan(50);
+  });
+});

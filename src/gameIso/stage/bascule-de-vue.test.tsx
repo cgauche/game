@@ -27,73 +27,27 @@ import { parseProject } from '../../state/worldMap';
 import * as sceneMeshes from '../backends/webgl/sceneMeshes';
 import * as texturesStatiques from './texturesStatiques';
 import { CampaignView } from '../../ui/CampaignView';
-import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
-import { frameRectOf } from './boardPose';
+import { setStageRendererFactory } from './GameStage3D';
+import {
+  BancRenderer,
+  attendreQuads,
+  brancherArdoise,
+  canevas as canevasDe,
+  quads,
+  respirer,
+  simulerRasterisation,
+  scènes,
+  viderCaptures,
+} from './banc-volumique';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const TAILLE = { w: 800, h: 600 };
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
-
-let scènes: THREE.Scene[] = [];
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
-let urlAvant: { create: typeof URL.createObjectURL; revoke: typeof URL.revokeObjectURL } | null = null;
 
-/** Rasterisation SIMULÉE au niveau du DOM (jamais par mock de module) — sans elle, jsdom ne résout
- *  aucune texture de billboard et AUCUN board n'est monté : toute mesure porterait sur le vide. */
-function simulerRasterisation(): void {
-  vi.stubGlobal('Image', class {
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    set src(_v: string) { queueMicrotask(() => this.onload?.()); }
-  });
-  urlAvant = { create: URL.createObjectURL, revoke: URL.revokeObjectURL };
-  URL.createObjectURL = () => 'blob:banc';
-  URL.revokeObjectURL = () => undefined;
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
-  // La file du cuiseur prend sa propre couture d'INACTIVITÉ, servie par les vrais timers : sans elle
-  // elle se branche sur l'horloge d'images, qu'un banc voisin de la même suite peut tenir lui-même
-  // (`isolate: false`) — la file resterait alors armée sans jamais être servie, et rien ne se
-  // monterait. Même couture qu'au banc de perçage.
-  vi.stubGlobal('requestIdleCallback', (cb: () => void) => setTimeout(() => cb(), 0));
-}
-
-/** Laisse tourner la file cadencée du cuiseur (une rasterisation par tranche). */
-async function respirer(ms: number): Promise<void> {
-  const fin = Date.now() + ms;
-  do {
-    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
-  } while (Date.now() < fin);
-}
-
-/** Attend que la file cadencée du cuiseur ait posé `n` quads — PRÉMISSE de mesure, jamais une
- *  assertion : la suite fait tourner plusieurs bancs sur le même module (`isolate: false`) et la file
- *  d'un écran chargé partage la machine avec eux. Le budget est un PLAFOND : la boucle sort au compte
- *  plein. */
-async function attendreQuads(n: number, limiteMs = 4000): Promise<void> {
-  const fin = Date.now() + limiteMs;
-  while (quads().length < n && Date.now() < fin) await respirer(20);
-}
-
-/** Tous les quads de billboard montés (les corps, jamais leurs jumeaux de silhouette). */
-function quads(): THREE.Mesh[] {
-  const out: THREE.Mesh[] = [];
-  scènes[scènes.length - 1]?.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (m.isMesh && !m.userData.emprunte && frameRectOf(m.material as THREE.Material)) out.push(m);
-  });
-  return out;
-}
+brancherArdoise();
 
 /** Les `InstancedMesh` MONTÉS dont le nom passe le filtre, par NOM → identité + capacité. Les lots
  *  d'accents de sol se nomment `<kind>|<couleur>` (`backends/webgl/groundAccents`), les pools portent
@@ -125,7 +79,7 @@ function remontes(avant: Map<string, { uuid: string; count: number }>, apres: Ma
   return out;
 }
 
-const canevas = () => hôte!.querySelector('canvas.iso-stage') as HTMLCanvasElement;
+const canevas = () => canevasDe(hôte!);
 const cuissons = () => Number(canevas().dataset.bake ?? -1);
 
 beforeAll(() => {
@@ -135,14 +89,11 @@ beforeAll(() => {
 });
 afterAll(() => setStageRendererFactory(null));
 
-beforeEach(() => simulerRasterisation());
+beforeEach(() => { simulerRasterisation(); });
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
   useGame.setState({ povActive: false });
-  vi.unstubAllGlobals();
-  vi.restoreAllMocks();
-  if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
 });
 
 const HÉROS = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(7) });
@@ -171,19 +122,9 @@ const HUB = parseProject(
 /** Le poste de départ authored du groupe (`heroStart`) — la même lecture que `store.startScene`. */
 const DEPART = { ...(HUB.entities.find((e) => e.kind === 'heroStart')!.pos) };
 
-/** Le hub monté, groupé à son départ authored, décor SERVI. Même REPRISE que l'arène ci-dessous : un
- *  voisin de la suite vide des caches GLOBAUX à la volée et abandonne les cuissons EN VOL. */
+/** Le hub monté, groupé à son départ authored, décor SERVI. */
 async function monterHub(quadsAttendus = 40): Promise<void> {
-  for (let essai = 0; essai < 3; essai++) {
-    await monterHubUneFois(quadsAttendus);
-    if (quads().length >= quadsAttendus) return;
-    if (root) { await act(async () => root!.unmount()); root = null; }
-    if (hôte) { hôte.remove(); hôte = null; }
-  }
-}
-
-async function monterHubUneFois(quadsAttendus: number): Promise<void> {
-  scènes = [];
+  viderCaptures();
   useGame.setState({
     scene: HUB,
     mode: 'exploration',
@@ -202,21 +143,10 @@ async function monterHubUneFois(quadsAttendus: number): Promise<void> {
   await attendreQuads(quadsAttendus);
 }
 
-/** Monte l'écran de campagne et attend son décor. La REPRISE est une nécessité de banc, pas une
- *  tolérance de mesure : la suite vide des caches GLOBAUX à la volée (`resetBakeQueue` d'un voisin, cf.
- *  `percage-hote`), ce qui abandonne les cuissons EN VOL de l'écran monté ici — un remontage les
- *  redemande. Rien n'est mesuré tant que le décor n'est pas au complet. */
+/** Monte l'écran de campagne et attend son décor. Rien n'est mesuré tant que le décor n'est pas au
+ *  complet. */
 async function monterCampagne(): Promise<void> {
-  for (let essai = 0; essai < 3; essai++) {
-    await monterUneFois();
-    if (quads().length >= 13) return;
-    if (root) { await act(async () => root!.unmount()); root = null; }
-    if (hôte) { hôte.remove(); hôte = null; }
-  }
-}
-
-async function monterUneFois(): Promise<void> {
-  scènes = [];
+  viderCaptures();
   useGame.setState({
     scene: scèneArène(),
     mode: 'exploration',
@@ -237,8 +167,8 @@ async function monterUneFois(): Promise<void> {
   await attendreQuads(13);
 }
 
-/** Budget de ce banc : il monte l'ÉCRAN entier et attend la file cadencée du cuiseur, reprises
- *  comprises — le défaut de 5 s coupait la mesure au milieu du montage sous charge. */
+/** Budget de ce banc : il monte l'ÉCRAN entier et attend la file cadencée du cuiseur — le défaut de
+ *  5 s coupait la mesure au milieu du montage sous charge. */
 const BUDGET_MS = 30_000;
 
 /** La bascule de regard, telle que le jeu l'émet (touche F → `keybindings` → `togglePov`). */

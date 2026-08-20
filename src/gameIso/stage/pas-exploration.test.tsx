@@ -31,62 +31,19 @@ import * as actorAnimSelect from '../rig/anim/actorAnimSelect';
 import { gabaritTint } from '../../ui/editor/lowerLayerGabarit';
 import { staticTexturePins } from '../backends/webgl/svgTexture';
 import { MondeDeCampagne } from './MondeDeCampagne';
-import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
-import { frameRectOf } from './boardPose';
+import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
+import { BancRenderer, brancherArdoise, quads, rendus as rendusDe, respirer, simulerRasterisation, viderCaptures } from './banc-volumique';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const TAILLE = { w: 800, h: 600 };
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
-
-let scènes: THREE.Scene[] = [];
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
-let urlAvant: { create: typeof URL.createObjectURL; revoke: typeof URL.revokeObjectURL } | null = null;
 
-/** Rasterisation SIMULÉE au niveau du DOM (jamais par mock de module) — sans elle, jsdom ne résout
- *  aucune texture de billboard et AUCUN board n'est monté : toute mesure porterait sur le vide. */
-function simulerRasterisation(): void {
-  vi.stubGlobal('Image', class {
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    set src(_v: string) { queueMicrotask(() => this.onload?.()); }
-  });
-  urlAvant = { create: URL.createObjectURL, revoke: URL.revokeObjectURL };
-  URL.createObjectURL = () => 'blob:banc';
-  URL.revokeObjectURL = () => undefined;
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
-}
+const rendus = () => rendusDe(hôte!);
 
-/** Laisse tourner la file cadencée du cuiseur (une rasterisation par tranche). */
-async function respirer(ms: number): Promise<void> {
-  const fin = Date.now() + ms;
-  do {
-    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
-  } while (Date.now() < fin);
-}
-
-/** Tous les quads de billboard montés (les corps, jamais leurs jumeaux de silhouette). */
-function quads(): THREE.Mesh[] {
-  const out: THREE.Mesh[] = [];
-  scènes[scènes.length - 1]?.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (m.isMesh && !m.userData.emprunte && frameRectOf(m.material as THREE.Material)) out.push(m);
-  });
-  return out;
-}
-
-const canevas = () => hôte!.querySelector('canvas.iso-stage') as HTMLCanvasElement;
-const rendus = () => Number(canevas().dataset.rendus ?? 0);
+brancherArdoise();
 
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
@@ -95,17 +52,10 @@ beforeAll(() => {
 });
 afterAll(() => setStageRendererFactory(null));
 
-beforeEach(() => simulerRasterisation());
+beforeEach(() => { simulerRasterisation(); });
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
-  // AUCUN cache de MODULE vidé ici (file du cuiseur, planches, textures statiques) : la suite fait
-  // tourner plusieurs fichiers EN MÊME TEMPS sur le même module (`isolate: false`), et vider un cache
-  // global à la fin d'un test tue les cuissons EN VOL d'un banc voisin — mesuré : `silhouette-corps`
-  // se retrouvait sans un seul quad monté. Ce banc n'a besoin que de son écran démonté.
-  vi.unstubAllGlobals();
-  vi.restoreAllMocks();
-  if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
 });
 
 // ————————————————————————————————————————————————————————————————
@@ -134,7 +84,7 @@ function scèneArène(): Scene {
 }
 
 async function monterIso(): Promise<void> {
-  scènes = [];
+  viderCaptures();
   useGame.setState({
     scene: scèneArène(),
     mode: 'exploration',
@@ -143,6 +93,11 @@ async function monterIso(): Promise<void> {
     battle: null,
     dialogue: null,
     explored: {},
+    // `stepPartyDir` projette la direction poussée avec le REGARD du store (`camRot`/`viewMode`/
+    // `camEdge`) : ce banc l'épingle, la suite se passant le store en l'état (`isolate: false`).
+    camRot: 0,
+    viewMode: 'iso',
+    camEdge: false,
   });
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
@@ -268,7 +223,7 @@ function écran(tintAt: TintAt, actors: ActorPose[] = ACTEURS, els: SceneBillboa
 }
 
 async function monterNu(): Promise<void> {
-  scènes = [];
+  viderCaptures();
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);

@@ -25,7 +25,8 @@ import { setRevealAll } from '../../state/visionState';
 import type { ViewMode } from '../../geometry/iso';
 import { bakeWorldGeometry, type WorldGeometry } from '../backends/webgl/sceneMeshes';
 import { MondeDeCampagne } from './MondeDeCampagne';
-import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -48,17 +49,8 @@ const TOIT: BuildingMass = {
 
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
-let scènes: THREE.Scene[] = [];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
+brancherArdoise();
 
 /** Une scène de CLOISONS : des murs sur arêtes, aucune masse — le masque n'a donc rien à dégager, et
  *  « tous les sols de l'étage » y est une affirmation vérifiable. */
@@ -79,7 +71,7 @@ function scèneCoiffée(): Scene {
 }
 
 function monter(scene: Scene, view: ViewMode, debugLabels = false): HTMLDivElement {
-  scènes = [];
+  viderCaptures();
   const { w, h } = scene.dimensions;
   const toutes: string[] = [];
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) toutes.push(`${x},${y},0`);

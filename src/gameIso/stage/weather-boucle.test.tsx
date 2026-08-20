@@ -20,7 +20,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import type { Dims } from '../../geometry/iso';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
-import { GameStage3D, setStageRendererFactory, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import { GameStage3D, setStageRendererFactory, type StageWalkAnim } from './GameStage3D';
+import { BancRenderer, brancherArdoise } from './banc-volumique';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -32,17 +33,7 @@ interface Frame {
 }
 let frames: Frame[] = [];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene, camera: THREE.Camera): void {
-    frames.push({ projection: [...camera.projectionMatrix.elements].join(','), scene });
-  }
-}
+brancherArdoise();
 
 /** Le canevas de jsdom n'a aucune boîte : la passe de dessin sort sur `!w || !h` sans elle. */
 const TAILLE = { w: 800, h: 600 };
@@ -58,7 +49,9 @@ beforeAll(() => {
     return rafs.length;
   }) as typeof globalThis.requestAnimationFrame;
   globalThis.cancelAnimationFrame = (() => {}) as typeof globalThis.cancelAnimationFrame;
-  setStageRendererFactory(() => new BancRenderer());
+  setStageRendererFactory(() => new BancRenderer((scene, camera) => {
+    frames.push({ projection: [...camera.projectionMatrix.elements].join(','), scene });
+  }));
 });
 
 afterAll(() => {

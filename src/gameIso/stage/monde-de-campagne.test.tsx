@@ -2,8 +2,8 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import * as THREE from 'three';
-import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise } from './banc-volumique';
 import * as sceneMeshes from '../backends/webgl/sceneMeshes';
 import type { KeepEl } from '../backends/webgl/sceneMeshes';
 import { useGame } from '../../state/store';
@@ -26,19 +26,7 @@ import { VW, VH } from './useStageCamera';
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-/** Renderer de BANC : jsdom n'a aucun contexte WebGL, et le monde volumique est le SEUL peintre du
- *  jeu (#1176 P3-4, commit C5a) — sans banc, l'écran monte le message « le monde ne peut pas être
- *  affiché » (`stage/SansWebgl`) et ce fichier mesurerait la panne au lieu du stage. */
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(): void {}
-}
-
+brancherArdoise();
 beforeAll(() => setStageRendererFactory(() => new BancRenderer()));
 afterAll(() => setStageRendererFactory(null));
 

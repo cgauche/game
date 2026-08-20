@@ -8,7 +8,8 @@ import { emptyScene, sceneMetresPerTile, type BuildingMass, type Scene } from '.
 import { setRevealAll } from '../../state/visionState';
 import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
-import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
 import { clearedSpace, massFootprintCells, massSpaceCells, shelterField, shelterSectionAt } from '../builders/roofs';
 import { cutawayForSection } from './architectureVisibility';
 
@@ -46,17 +47,8 @@ const DEHORS = { x: 10, y: 10 };
 
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
-let scènes: THREE.Scene[] = [];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
+brancherArdoise();
 
 function hero(id: string, pos: { x: number; y: number }): Combatant {
   return {
@@ -97,7 +89,7 @@ function poser(scene: Scene, pos: { x: number; y: number }): void {
 }
 
 function monter(): HTMLDivElement {
-  scènes = [];
+  viderCaptures();
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);

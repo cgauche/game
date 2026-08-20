@@ -2,13 +2,13 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene, type Scene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
 import { AMBIANCE, weatherLightScalars } from '../catalog/ambiance';
-import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise, canevas } from './banc-volumique';
 
 /**
  * PORTES DE LA MÉTÉO (#1176, P2-6) — une météo authorée a UNE expression par voie, jamais deux, et
@@ -21,19 +21,7 @@ import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-/** Renderer de BANC : jsdom n'a aucun contexte WebGL, et depuis que la voie volumique est le défaut
- *  (#1176, P3-4) un contexte refusé REBASCULE l'écran en affine (`GameStage3D`, création de renderer).
- *  Sans banc, ce fichier mesurerait le repli au lieu de la voie volumique. */
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(): void {}
-}
-
+brancherArdoise();
 beforeAll(() => setStageRendererFactory(() => new BancRenderer()));
 afterAll(() => setStageRendererFactory(null));
 
@@ -79,9 +67,8 @@ const voile = (el: HTMLElement, meteo: Scene['weather']): Element | null => {
   return [...el.querySelectorAll('svg.iso-stage rect')].find((r) => r.getAttribute('fill') === teinte) ?? null;
 };
 /** Le semis volumique : le compte de particules inscrit par le canevas. */
-const semis = (el: HTMLElement) => el.querySelector('canvas.iso-stage')?.getAttribute('data-precip') ?? null;
+const semis = (el: HTMLElement) => canevas(el)?.getAttribute('data-precip') ?? null;
 /** Les nappes de brume MONTÉES dans le volume, et les deux traces de teinte du canevas (#1247). */
-const canevas = (el: HTMLElement) => el.querySelector('canvas.iso-stage');
 const nappes = (el: HTMLElement) => canevas(el)?.getAttribute('data-brume') ?? null;
 const exposition = (el: HTMLElement) => Number(canevas(el)?.getAttribute('data-lum'));
 const fond = (el: HTMLElement) => canevas(el)?.getAttribute('data-bg') ?? null;

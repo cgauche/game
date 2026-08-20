@@ -6,10 +6,9 @@ import * as THREE from 'three';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
-import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
+import { BancRenderer, brancherArdoise, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
 import { RENDER_ORDER } from '../backends/webgl/renderRanks';
-import { resetBakeQueue } from '../backends/webgl/atlasBake';
-import { clearBillboardTextures } from '../backends/webgl/svgTexture';
 import {
   ALPHA_TEST,
   GHOST_OPACITY,
@@ -59,23 +58,13 @@ const ACTEURS: ActorPose[] = [
   { c: combattant('e1', 'enemy', { x: 5, y: 2 }), x: 5, y: 2, z: 0 },
 ];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
-
-let scènes: THREE.Scene[] = [];
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
 let glissement: { dx: number; dy: number; dz: number } | null = null;
 let battre: (() => void) | null = null;
 let allures: Record<string, BoardChrome> = {};
-let urlAvant: { create: typeof URL.createObjectURL; revoke: typeof URL.revokeObjectURL } | null = null;
+
+brancherArdoise();
 
 const anim: StageWalkAnim = {
   subscribe: (onFrame) => { battre = onFrame; return () => { battre = null; }; },
@@ -83,37 +72,14 @@ const anim: StageWalkAnim = {
   cam: () => ({ x: 0, y: 0 }),
 };
 
-/** Rasterisation de billboard SIMULÉE au niveau du DOM (jamais par mock de module, cf.
- *  `src/vi-mock-isolate-guard.test.ts`) : jsdom ne charge aucune ressource, donc l'`Image` d'un blob
- *  SVG n'y déclenche ni `onload` ni `onerror` et la promesse de texture resterait pendante. */
-function simulerRasterisation(): void {
-  vi.stubGlobal('Image', class {
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    set src(_v: string) { queueMicrotask(() => this.onload?.()); }
-  });
-  // jsdom ne fournit PAS `URL.createObjectURL` : il n'y a rien à espionner, on la POSE (et on la
-  // reprend à la sortie du banc).
-  urlAvant = { create: URL.createObjectURL, revoke: URL.revokeObjectURL };
-  URL.createObjectURL = () => 'blob:banc';
-  URL.revokeObjectURL = () => undefined;
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
-}
-
-/** Laisse tourner la file CADENCÉE du cuiseur (une rasterisation par tranche d'inactivité) en battant
- *  la boucle d'image : depuis #1372, les textures du MONTAGE y passent comme les autres, et aucun quad
- *  n'entre en scène dans le rendu qui l'a demandé. */
-async function respirer(ms: number): Promise<void> {
-  const fin = Date.now() + ms;
-  do {
-    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
-    if (battre) act(() => battre!());
-  } while (Date.now() < fin);
-}
+/** La file CADENCÉE du cuiseur servie en battant la boucle d'image de CE banc : depuis #1372, les
+ *  textures du MONTAGE y passent comme les autres, et aucun quad n'entre en scène dans le rendu qui
+ *  l'a demandé. */
+const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.());
 
 /** Monte l'écran volumique sous le cadre donné et laisse la rasterisation se résoudre. */
 async function monter(frame: StageFrame): Promise<void> {
-  scènes = [];
+  viderCaptures();
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
@@ -162,21 +128,13 @@ beforeAll(() => {
 });
 afterAll(() => setStageRendererFactory(null));
 
-  // PURGE À L'OUVERTURE, jamais à la fermeture (#1396) : la suite fait tourner plusieurs fichiers EN
-  // MÊME TEMPS sur les mêmes modules (`isolate: false`), et vider la file du cuiseur ou le stock de
-  // textures À LA FIN d'un test tue les cuissons EN VOL du banc voisin — mesuré sur la suite complète :
-  // ce banc-là se retrouvait sans un seul quad monté. À l'OUVERTURE, l'ardoise est aussi nette, dans
-  // la fenêtre où ce banc est seul à travailler.
-beforeEach(() => { resetBakeQueue(); clearBillboardTextures(); simulerRasterisation(); });
+beforeEach(() => { simulerRasterisation(); });
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
   glissement = null;
   battre = null;
   allures = {};
-  vi.unstubAllGlobals();
-  vi.restoreAllMocks();
-  if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
 });
 
 describe('Corps à travers les murs — le jumeau MONTÉ sur le quad (#1297 LOT C)', () => {

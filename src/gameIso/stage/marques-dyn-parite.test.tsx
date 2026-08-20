@@ -7,7 +7,8 @@ import { useGame, type BattleState } from '../../state/store';
 import { emptyScene, sceneMetresPerTile } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
-import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
 import { ACTIVE_HALO_TINT, ENGAGE_TINT } from '../highlightTints';
 import { ENEMY_RING, HERO_RING, teamShape } from '../teamColors';
 import { COMBAT_TOKEN_BASE, PARTY_TOKEN_BASE, TETHER_DASH_PX, TETHER_GAP_PX, dashPattern, teamRingRadiusK } from '../builders/dynamicMarks';
@@ -69,17 +70,8 @@ function combatEngagé(): BattleState {
 
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
-let scènes: THREE.Scene[] = [];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
+brancherArdoise();
 
 /** État de combat (les deux Engagés) ou d'exploration (le groupe sur sa case). */
 function étatDe(mode: 'battle' | 'exploration'): Record<string, unknown> {
@@ -98,7 +90,7 @@ function étatDe(mode: 'battle' | 'exploration'): Record<string, unknown> {
 
 function monter(mode: 'battle' | 'exploration', retouche: Record<string, unknown> = {}): HTMLDivElement {
   useGame.setState({ ...étatDe(mode), ...retouche } as never);
-  scènes = [];
+  viderCaptures();
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);

@@ -19,7 +19,8 @@ import { setRevealAll } from '../../state/visionState';
 import type { ViewMode } from '../../geometry/iso';
 import { bakeWorldGeometry, type WorldGeometry } from '../backends/webgl/sceneMeshes';
 import { MondeDeCampagne } from './MondeDeCampagne';
-import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise, canevas as canevasDe, scènes, viderCaptures } from './banc-volumique';
 import { stageLightScalars } from './stageLights';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -44,17 +45,8 @@ const DEHORS = { x: 10, y: 10 };
 
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
-let scènes: THREE.Scene[] = [];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
+brancherArdoise();
 
 function scèneCoiffée(): Scene {
   const scene = { ...emptyScene(12, 12), ambiance: 'exterieur' as const };
@@ -63,7 +55,7 @@ function scèneCoiffée(): Scene {
 }
 
 function monter(scene: Scene, view: ViewMode): HTMLDivElement {
-  scènes = [];
+  viderCaptures();
   const { w, h } = scene.dimensions;
   const toutes: string[] = [];
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) toutes.push(`${x},${y},0`);
@@ -95,7 +87,7 @@ function remonter(scene: Scene, view: ViewMode): void {
   monter(scene, view);
 }
 
-const canevas = () => conteneur!.querySelector('canvas.iso-stage') as HTMLCanvasElement;
+const canevas = () => canevasDe(conteneur!);
 
 /** Le maillage du MONDE dans la dernière frame rendue : le seul qui porte l'index de la masse cuite. */
 function mondeRendu(): THREE.Mesh {

@@ -2,12 +2,12 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { BancRenderer, brancherArdoise } from './banc-volumique';
 import { webglRefusé } from './webglSupport';
 
 /**
@@ -33,19 +33,10 @@ function hero(id: string, pos: { x: number; y: number }): Combatant {
   } as unknown as Combatant;
 }
 
-/** Renderer de banc SERVI : le contexte existe, le monde volumique tient. */
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(): void {}
-}
-
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
+
+brancherArdoise();
 
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });

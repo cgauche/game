@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
-import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
+import { BancRenderer, brancherArdoise, quads, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
 import {
   ALPHA_TEST,
   ATLAS_FRAMES_MAX,
@@ -333,42 +334,18 @@ function combattant(id: string, pos: { x: number; y: number }): Combatant {
 
 const ACTEURS: ActorPose[] = [{ c: combattant('h1', { x: 2, y: 2 }), x: 2, y: 2, z: 0, heroIndex: 0 }];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
-
-let scènes: THREE.Scene[] = [];
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
 let glissement: { dx: number; dy: number; dz: number } | null = null;
 let battre: (() => void) | null = null;
-let urlAvant: { create: typeof URL.createObjectURL; revoke: typeof URL.revokeObjectURL } | null = null;
+
+brancherArdoise();
 
 const anim: StageWalkAnim = {
   subscribe: (onFrame) => { battre = onFrame; return () => { battre = null; }; },
   glide: (cid) => (cid === 'h1' ? glissement : null),
   cam: () => ({ x: 0, y: 0 }),
 };
-
-/** Rasterisation SIMULÉE au niveau du DOM (jamais par mock de module) — sans elle, jsdom ne résout
- *  aucune texture de billboard et AUCUN board n'est monté : toute mesure porterait sur le vide. */
-function simulerRasterisation(): void {
-  vi.stubGlobal('Image', class {
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    set src(_v: string) { queueMicrotask(() => this.onload?.()); }
-  });
-  urlAvant = { create: URL.createObjectURL, revoke: URL.revokeObjectURL };
-  URL.createObjectURL = () => 'blob:banc';
-  URL.revokeObjectURL = () => undefined;
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
-}
 
 interface OptsVue { actors?: ActorPose[]; els?: SceneBillboardEls; frame?: StageFrame }
 
@@ -400,7 +377,7 @@ async function attendreMontage(attendus: number): Promise<void> {
 }
 
 async function monter(opts: OptsVue = {}): Promise<void> {
-  scènes = [];
+  viderCaptures();
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
@@ -435,19 +412,12 @@ beforeAll(() => {
 });
 afterAll(() => setStageRendererFactory(null));
 
-// PURGE À L'OUVERTURE, jamais à la fermeture (#1396) : plusieurs fichiers tournent EN MÊME TEMPS sur
-// les mêmes modules (`isolate: false`), et vider la file du cuiseur ou le stock de planches À LA FIN
-// d'un test tue les cuissons EN VOL du banc voisin (mesuré sur la suite complète : un banc sans un
-// seul quad monté). À l'OUVERTURE, l'ardoise est aussi nette.
-beforeEach(() => { resetBakeQueue(); clearAtlasCache(); simulerRasterisation(); });
+beforeEach(() => { simulerRasterisation(); });
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
   glissement = null;
   battre = null;
-  vi.unstubAllGlobals();
-  vi.restoreAllMocks();
-  if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
 });
 
 describe('Boucle volumique — une image joue une frame, elle n’en cuit aucune (#1176 L3)', () => {
@@ -523,7 +493,7 @@ describe('Boucle volumique — une image joue une frame, elle n’en cuit aucune
       onerror: (() => void) | null = null;
       set src(_v: string) { if (servies++ === 0) queueMicrotask(() => this.onload?.()); }
     });
-    scènes = [];
+    viderCaptures();
     hôte = document.createElement('div');
     document.body.appendChild(hôte);
     root = createRoot(hôte);
@@ -572,16 +542,6 @@ function figurantEl(id: string, anim?: string): TokenEl {
     kind: 'token', key: `fig:${id}`, id, cell: { x: 4, y: 4, z: 0 },
     subject: { kind: 'figurant', ent, enrolled: false, inBattle: false },
   } as unknown as TokenEl;
-}
-
-/** Tous les quads de billboard de la dernière frame (un jeton de figurant n'a pas de silhouette). */
-function quads(): THREE.Mesh[] {
-  const out: THREE.Mesh[] = [];
-  scènes[scènes.length - 1]?.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (m.isMesh && !m.userData.emprunte && frameRectOf(m.material as THREE.Material)) out.push(m);
-  });
-  return out;
 }
 
 const cadre = (m: THREE.Mesh) => frameRectOf(m.material as THREE.Material)!.value.toArray().join(',');

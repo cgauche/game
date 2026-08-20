@@ -21,12 +21,12 @@ import type { Dir8 } from '../../state/dir8';
 import type { PropEl } from '../builders/types';
 import type { ActorPose, KeepEl, SceneBillboardEls, TintAt } from '../backends/webgl/sceneMeshes';
 import * as svgTexture from '../backends/webgl/svgTexture';
-import { bakeQueueLength, clearAtlasCache, resetBakeQueue } from '../backends/webgl/atlasBake';
+import { bakeQueueLength } from '../backends/webgl/atlasBake';
 import { AMBIANCE } from '../catalog/ambiance';
-import { GameStage3D, centreDuGroupe, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import { GameStage3D, centreDuGroupe, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
+import { BancRenderer, brancherArdoise, quads, respirer as respirerBanc, simulerRasterisation, viderCaptures, type Rasterisation } from './banc-volumique';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
-import { frameRectOf } from './boardPose';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -52,21 +52,11 @@ const décor = (id: string, x: number, y = GROUPE.y): PropEl => ({
   states: { visible: true },
 } as unknown as PropEl);
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
-
-let scènes: THREE.Scene[] = [];
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
 let battre: (() => void) | null = null;
-let urlAvant: { create: typeof URL.createObjectURL; revoke: typeof URL.revokeObjectURL } | null = null;
+
+brancherArdoise();
 
 const anim: StageWalkAnim = {
   subscribe: (onFrame) => { battre = onFrame; return () => { battre = null; }; },
@@ -75,24 +65,9 @@ const anim: StageWalkAnim = {
 };
 
 /** IMAGES RETENUES : la rasterisation d'un billboard ne s'achève qu'au chargement de son image, et ce
- *  banc en tient l'instant. `null` = aucune ne s'achèvera jamais (le cas du SVG qui ne charge pas). */
-let enAttente: (() => void)[] = [];
-
-function simulerRasterisation(auto: boolean): void {
-  enAttente = [];
-  vi.stubGlobal('Image', class {
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    set src(_v: string) {
-      if (auto) queueMicrotask(() => this.onload?.());
-      else enAttente.push(() => this.onload?.());
-    }
-  });
-  urlAvant = { create: URL.createObjectURL, revoke: URL.revokeObjectURL };
-  URL.createObjectURL = () => 'blob:banc';
-  URL.revokeObjectURL = () => undefined;
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
-}
+ *  banc en tient l'instant (mode `retenue`, file `ras.enAttente`) — une file jamais servie est le cas
+ *  du SVG qui ne charge pas. */
+let ras!: Rasterisation;
 
 /** Le cadre de PREMIÈRE PERSONNE au cap `facing`, le groupe à sa case — le regard qui porte lui-même
  *  la position du groupe (`StageFrame`), donc le banc n'a aucun héros à monter pour l'exprimer. */
@@ -131,14 +106,8 @@ function écran(
   );
 }
 
-/** Laisse tourner la file du cuiseur (une rasterisation par tranche), en battant la boucle d'image. */
-async function respirer(ms: number): Promise<void> {
-  const fin = Date.now() + ms;
-  do {
-    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
-    if (battre) act(() => battre!());
-  } while (Date.now() < fin);
-}
+/** La file du cuiseur servie (une rasterisation par tranche) en battant la boucle d'image de CE banc. */
+const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.());
 
 function monterSync(
   els: SceneBillboardEls,
@@ -146,7 +115,7 @@ function monterSync(
   frame: StageFrame = cadrePov(),
   acteurs: readonly ActorPose[] = SANS_ACTEUR,
 ): void {
-  scènes = [];
+  viderCaptures();
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
@@ -154,17 +123,6 @@ function monterSync(
 }
 
 const canevas = (): HTMLCanvasElement => hôte!.querySelector('canvas')!;
-
-/** Tous les quads de billboard montés, DANS L'ORDRE DE MONTAGE (l'ordre du graphe de scène) : c'est
- *  par lui que l'ordre de SERVICE de la file se lit — un quad naît à sa texture. */
-function quads(): THREE.Mesh[] {
-  const out: THREE.Mesh[] = [];
-  scènes[scènes.length - 1]?.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (m.isMesh && !m.userData.emprunte && frameRectOf(m.material as THREE.Material)) out.push(m);
-  });
-  return out;
-}
 
 /** Distance MONDE (m) d'un quad posé au groupe — la grandeur que le tri de proximité ordonne. */
 const distanceAuGroupe = (m: THREE.Mesh): number =>
@@ -178,24 +136,12 @@ beforeAll(() => {
 afterAll(() => setStageRendererFactory(null));
 
 beforeEach(() => {
-  // File du cuiseur et stock de textures sont GLOBAUX au module (suite à graphe partagé) : un banc
-  // voisin qui les laisse chargés ferait démarrer celui-ci sur des tâches et des textures d'ailleurs —
-  // la file mesurée ne serait plus celle du montage.
-  resetBakeQueue();
-  clearAtlasCache();
-  svgTexture.clearBillboardTextures();
-  simulerRasterisation(true);
+  ras = simulerRasterisation('auto');
 });
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
   battre = null;
-  enAttente = [];
-  // (la purge se fait à l'OUVERTURE — cf. `beforeEach` : purger ici tuerait les cuissons en vol d'un
-  // banc voisin, les fichiers partageant leurs modules sous `isolate: false`, #1396)
-  vi.unstubAllGlobals();
-  vi.restoreAllMocks();
-  if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
 });
 
 describe('Montage d’une scène — aucune rasterisation en rafale', () => {
@@ -267,7 +213,7 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
   it('levé au montage, il tombe dès le décor PROCHE posé — sans attendre le lointain', async () => {
     // IMAGES RETENUES : le banc choisit l'instant où chaque texture s'achève, donc l'instant où le
     // voile peut tomber.
-    simulerRasterisation(false);
+    ras = simulerRasterisation('retenue');
     const états: boolean[] = [];
     monterSync(PROCHE_ET_LOIN, (v) => états.push(v));
 
@@ -278,7 +224,7 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
     // le voile doit tomber à la PREMIÈRE, celle du décor proche.
     let montésÀLaChute = -1;
     for (let i = 0; i < 40 && canevas().dataset.voile; i++) {
-      const paquet = enAttente.splice(0, 1);
+      const paquet = ras.enAttente.splice(0, 1);
       await act(async () => { for (const f of paquet) f(); });
       await respirer(40);
       if (!canevas().dataset.voile) montésÀLaChute = quads().length;
@@ -294,12 +240,12 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
 
   it('PLAFOND : une texture qui n’arrive JAMAIS ne tient pas l’écran voilé', async () => {
     // Aucune image ne se chargera : sans plafond, le voile resterait levé pour la session.
-    simulerRasterisation(false);
+    ras = simulerRasterisation('retenue');
     const plafond = AMBIANCE.entreeEnScene.plafondMs;
     monterSync({ tokens: [], props: [décor('près', GROUPE.x + 1)] });
 
     await respirer(Math.round(plafond / 2));
-    expect(enAttente.length, 'PRÉMISSE : une rasterisation doit être en vol, image jamais servie').toBeGreaterThan(0);
+    expect(ras.enAttente.length, 'PRÉMISSE : une rasterisation doit être en vol, image jamais servie').toBeGreaterThan(0);
     expect(canevas().dataset.voile, 'le voile devrait tenir tant que le plafond n’est pas atteint').toBe('1');
 
     await respirer(plafond / 2 + 400);
@@ -332,7 +278,7 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
   it('AUCUN sujet dans le rayon : le voile tombe au montage, il n’a rien à couvrir', async () => {
     // Une scène dont tout le décor est au LOIN (ou un écran sans groupe) n'a rien à faire attendre :
     // le voile qui tiendrait quand même serait un écran noir gratuit, jusqu'au plafond.
-    simulerRasterisation(false);
+    ras = simulerRasterisation('retenue');
     const états: boolean[] = [];
     monterSync(
       { tokens: [], props: [décor('loin1', GROUPE.x + LOIN), décor('loin2', GROUPE.x + LOIN + 1)] },
@@ -343,7 +289,7 @@ describe('Voile d’entrée en scène — les PROCHES le tiennent, le lointain n
     expect(états[états.length - 1], 'l’hôte doit apprendre tout de suite qu’il n’y a rien à voiler').toBe(false);
     // PRÉMISSE — les lointains sont bien là, et bien EN VOL : le voile est tombé DEVANT eux.
     await respirer(60);
-    expect(enAttente.length, 'aucune rasterisation en vol : la scène serait vide').toBeGreaterThan(0);
+    expect(ras.enAttente.length, 'aucune rasterisation en vol : la scène serait vide').toBeGreaterThan(0);
     expect(quads(), 'aucun quad ne doit être monté à cet instant').toHaveLength(0);
   });
 });
@@ -375,7 +321,7 @@ describe('Vue de plateau — le centre de proximité vient des HÉROS', () => {
   });
 
   it('MONTAGE de plateau : le voile est armé, et il tombe sur le décor PROCHE des héros', async () => {
-    simulerRasterisation(false);
+    ras = simulerRasterisation('retenue');
     const états: boolean[] = [];
     const PROCHE_ET_LOIN: SceneBillboardEls = {
       tokens: [],
@@ -393,7 +339,7 @@ describe('Vue de plateau — le centre de proximité vient des HÉROS', () => {
 
     let montésÀLaChute = -1;
     for (let i = 0; i < 40 && canevas().dataset.voile; i++) {
-      const paquet = enAttente.splice(0, 1);
+      const paquet = ras.enAttente.splice(0, 1);
       await act(async () => { for (const f of paquet) f(); });
       await respirer(40);
       if (!canevas().dataset.voile) montésÀLaChute = quads().length;

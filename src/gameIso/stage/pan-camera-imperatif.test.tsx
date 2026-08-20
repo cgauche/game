@@ -2,7 +2,6 @@
 import { Profiler, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import { getStagePan, resetStagePan } from '../../state/stagePan';
@@ -10,7 +9,8 @@ import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
 import { battreStageFrames } from './stageFrames';
 import { DUREE_FOCALE_MS } from './useStageCamera';
-import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise } from './banc-volumique';
 
 /**
  * GLISSER-CAMÉRA IMPÉRATIF — une valeur de caméra par IMAGE, deux clients servis par elle.
@@ -24,17 +24,7 @@ import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-/** Renderer de BANC : jsdom n'a aucun contexte WebGL (cf. `walk-frame-loop.test.tsx`). */
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(): void {}
-}
-
+brancherArdoise();
 beforeAll(() => setStageRendererFactory(() => new BancRenderer()));
 afterAll(() => setStageRendererFactory(null));
 
@@ -105,7 +95,6 @@ afterEach(() => {
   if (container) { container.remove(); container = null; }
   resetStagePan();
   useGame.setState({ camPan: { x: 0, y: 0 } });
-  vi.unstubAllGlobals();
 });
 
 describe('Glisser-caméra — impératif pendant le geste, commis au relâchement', () => {

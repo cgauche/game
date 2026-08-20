@@ -7,7 +7,8 @@ import { useGame, type BattleState } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
-import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
 import { HIGHLIGHT_SLOTS, SLOT_OPACITY, type HighlightSlot } from '../backends/webgl/highlightMeshes';
 
 /**
@@ -88,17 +89,8 @@ const INTENTION_COURSE = { localIntent: { actionId: 'course' } };
 
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
-let scènes: THREE.Scene[] = [];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
+brancherArdoise();
 
 function monter(extra: Record<string, unknown> = {}): HTMLDivElement {
   useGame.setState({
@@ -113,7 +105,7 @@ function monter(extra: Record<string, unknown> = {}): HTMLDivElement {
     pendingAttack: null,
     ...extra,
   } as never);
-  scènes = [];
+  viderCaptures();
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);

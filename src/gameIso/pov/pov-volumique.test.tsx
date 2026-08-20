@@ -13,7 +13,8 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { STEP_MS } from '../../geometry/walk';
 import type { Dims } from '../../geometry/iso';
-import { GameStage3D, setStageRendererFactory, type StageRenderer } from '../stage/GameStage3D';
+import { GameStage3D, setStageRendererFactory } from '../stage/GameStage3D';
+import { BancRenderer, brancherArdoise, caméras, scènes, viderCaptures } from '../stage/banc-volumique';
 import { hasSpritePicker } from '../stage/spritePicker';
 import { battreStageFrames } from '../stage/stageFrames';
 import { EYE_H, farTilesOf } from './camera';
@@ -42,18 +43,8 @@ const TAILLE = { w: 800, h: 600 };
 
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
-let scènes: THREE.Scene[] = [];
-let caméras: THREE.Camera[] = [];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene, camera: THREE.Camera): void { scènes.push(scene); caméras.push(camera); }
-}
+brancherArdoise();
 
 /** Une masse de bâtiment COIFFANTE : le groupe se tient dessous, donc son toit est ce que le cutaway
  *  de la vue de plateau lèverait. */
@@ -108,8 +99,7 @@ function poserRelief(coteM: (x: number, y: number) => number): { scene: Scene; h
 }
 
 function monter(node: JSX.Element): HTMLDivElement {
-  scènes = [];
-  caméras = [];
+  viderCaptures();
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);

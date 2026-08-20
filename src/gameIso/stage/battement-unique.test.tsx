@@ -15,12 +15,12 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as THREE from 'three';
 import type { Dims } from '../../geometry/iso';
 import type { LightSource } from '../../state/vision';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { InteractionHalos } from '../builders/interactHalos';
-import { GameStage3D, setStageRendererFactory, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import { GameStage3D, setStageRendererFactory, type StageWalkAnim } from './GameStage3D';
+import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
 import { POINT_LIGHT_BUDGET, resolveTone } from './stagePointLights';
 import { battreStageFrames, resetStageFrames } from './stageFrames';
 
@@ -29,22 +29,19 @@ import { battreStageFrames, resetStageFrames } from './stageFrames';
 /** Le canevas de jsdom n'a aucune boîte : la passe de dessin sort sur `!w || !h` sans elle. */
 const TAILLE = { w: 800, h: 600 };
 
-let scènes: THREE.Scene[] = [];
 /** Les rAF POSÉS et non encore servis, et le COMPTE des poses — c'est lui qui dit combien de boucles
  *  tournent : une seule pose par image = une seule horloge. */
 let rafs: (() => void)[] = [];
 let posesRaf = 0;
 let horloge = 0;
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
+/** Les images du navigateur, tenues à la main par ce banc — RENDUES à la sortie : la suite partage
+ *  ses globales par worker (`isolate: false`), et une horloge d'images laissée derrière nourrirait la
+ *  boucle des bancs suivants avec des rappels que personne ne sert plus. */
+const rafAvant = globalThis.requestAnimationFrame;
+const cancelAvant = globalThis.cancelAnimationFrame;
+
+brancherArdoise();
 
 /** Scène d'EXTÉRIEUR sous la pluie : c'est elle qui ouvre le semis d'intempéries (le premier motif). */
 const SCENE: Scene = (() => {
@@ -126,21 +123,28 @@ function prémisses(canevas: HTMLCanvasElement): void {
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientHeight', { configurable: true, get: () => TAILLE.h });
+  setStageRendererFactory(() => new BancRenderer());
+});
+
+afterAll(() => {
+  setStageRendererFactory(null);
+  globalThis.requestAnimationFrame = rafAvant;
+  globalThis.cancelAnimationFrame = cancelAvant;
+});
+
+beforeEach(() => {
+  viderCaptures();
+  rafs = [];
+  posesRaf = 0;
+  // L'horloge d'images se REPOSE à chaque test : un fichier voisin de la même suite peut avoir
+  // stubbé `requestAnimationFrame` (`vi.stubGlobal`), et la remise à l'état d'origine qui suit un
+  // banc emporterait celle-ci si elle n'était posée qu'une fois.
   globalThis.requestAnimationFrame = ((cb: () => void) => {
     posesRaf++;
     rafs.push(cb);
     return rafs.length;
   }) as typeof globalThis.requestAnimationFrame;
   globalThis.cancelAnimationFrame = (() => {}) as typeof globalThis.cancelAnimationFrame;
-  setStageRendererFactory(() => new BancRenderer());
-});
-
-afterAll(() => setStageRendererFactory(null));
-
-beforeEach(() => {
-  scènes = [];
-  rafs = [];
-  posesRaf = 0;
   // ARDOISE NEUVE du battement : la suite partage ses modules (`isolate: false`) — un écran resté
   // monté dans un autre fichier tiendrait des images sur SON `requestAnimationFrame`, et la boucle ne se
   // réarmerait jamais sur celui de ce banc.

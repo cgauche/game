@@ -32,7 +32,8 @@ import { lightLevels } from '../../data';
 import { areneCampaign } from '../../scenes/campaign';
 import { MondeDeCampagne } from './MondeDeCampagne';
 import type { Dims } from '../../geometry/iso';
-import { GameStage3D, setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { GameStage3D, setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
 import {
   applyPointLights,
   billboardExposure,
@@ -295,6 +296,8 @@ describe('Le PROFIL d’une flaque — épinglé, et calé sous la saturation', 
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
 
+brancherArdoise();
+
 function démonter(): void {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
@@ -342,19 +345,6 @@ describe('L’écran de jeu — les flaques de la scène, allumées par la nuit 
   });
 });
 
-/** Ce que le banc retient de chaque frame dessinée : la scène three montée à cet instant. */
-let scènes: THREE.Scene[] = [];
-
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
-
 const TAILLE = { w: 800, h: 600 };
 const dimsDe = (scene: Scene): Dims => ({ w: scene.dimensions.w, h: scene.dimensions.h, rot: 0, view: 'iso' });
 const props = (scene: Scene, gameTime: number) => ({
@@ -387,7 +377,7 @@ describe('Le pool MONTÉ — un compte que rien ne fait varier (la clé de cache
   }
 
   function monter(scene: Scene, gameTime: number): void {
-    scènes = [];
+    viderCaptures();
     hôte = document.createElement('div');
     document.body.appendChild(hôte);
     root = createRoot(hôte);
@@ -446,7 +436,7 @@ describe('Le pool ÉCRIT — une passe par changement de lumière ; par frame, l
     // l'heure et du palier — celui d'avant #1245 L4, invariant compris.
     const scene = avecLampadaires(2);
     const p = props(scene, NUIT);
-    scènes = [];
+    viderCaptures();
     hôte = document.createElement('div');
     document.body.appendChild(hôte);
     root = createRoot(hôte);
@@ -483,7 +473,7 @@ describe('Le pool ÉCRIT — une passe par changement de lumière ; par frame, l
       { id: 'l0', kind: 'prop', pos: { x: 6, y: 6 }, ref: 'lampadaire' },
     ] as unknown as Scene['entities'];
     const p = props(scene, NUIT);
-    scènes = [];
+    viderCaptures();
     hôte = document.createElement('div');
     document.body.appendChild(hôte);
     root = createRoot(hôte);
@@ -506,7 +496,7 @@ describe('Le pool ÉCRIT — une passe par changement de lumière ; par frame, l
   it('le slot d’une source SURVIT au changement d’heure (la table se relit, elle ne se rebat pas)', () => {
     const scene = avecBraseros(3);
     const p = props(scene, NUIT);
-    scènes = [];
+    viderCaptures();
     hôte = document.createElement('div');
     document.body.appendChild(hôte);
     root = createRoot(hôte);

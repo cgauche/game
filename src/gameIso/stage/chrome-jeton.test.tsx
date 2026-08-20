@@ -9,7 +9,8 @@ import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
-import { CONVENTION, setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { CONVENTION, setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise } from './banc-volumique';
 import { chromeHeadPx } from './TokenChromeOverlay';
 import { viewPolicy } from './viewPolicy';
 import {
@@ -90,19 +91,11 @@ function combatChromé(): BattleState {
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(): void {}
-}
+brancherArdoise();
 
 /** Commits du sous-arbre du stage depuis le dernier montage — un rendu React, un commit. */
 let commits = 0;
-const rendus = () => commits;
+const commitsReact = () => commits;
 
 function monter(retouche: Record<string, unknown> = {}): HTMLDivElement {
   useGame.setState({
@@ -493,7 +486,6 @@ describe('Chrome des jetons — la POSITION suit la marche à la FRAME (#1176 P3
     vi.stubGlobal('cancelAnimationFrame', () => {});
   });
   afterEach(() => {
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -526,13 +518,13 @@ describe('Chrome des jetons — la POSITION suit la marche à la FRAME (#1176 P3
     // On mesure APRÈS le dernier franchissement de case (le seul événement discret qui re-rend le
     // stage) : de f=0,55 à f=0,70 la case visuelle vaut 2 tout du long, donc aucun commit n'est attendu.
     tick = image(tick, DURÉE * 0.55);
-    const commitsAvant = rendus();
+    const commitsAvant = commitsReact();
     const vues = [posé(el, 'h1')];
     tick = image(tick, DURÉE * 0.07);
     vues.push(posé(el, 'h1'));
     image(tick, DURÉE * 0.08);
     vues.push(posé(el, 'h1'));
-    expect(rendus(), 'aucun rendu React entre ces trois images').toBe(commitsAvant);
+    expect(commitsReact(), 'aucun rendu React entre ces trois images').toBe(commitsAvant);
     expect(new Set(vues).size, 'trois positions distinctes').toBe(3);
     // Le chrome de l'autre combattant, lui, n'a pas bougé d'un pixel : la glisse est keyée par id.
     expect(posé(el, 'e1')).toBe(e1Avant);

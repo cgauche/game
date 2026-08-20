@@ -26,7 +26,8 @@ import type { LightSource } from '../../state/vision';
 import type { WalkTrack } from '../fx/walkPose';
 import { COMBAT_TOKEN_BASE, NO_DYNAMIC_MARKS, teamRingRadiusK, type DynamicMarks } from '../builders/dynamicMarks';
 import { HERO_RING } from '../teamColors';
-import { setStageRendererFactory, type PercageEntrees, type StageRenderer } from './GameStage3D';
+import { setStageRendererFactory, type PercageEntrees } from './GameStage3D';
+import { BancRenderer, brancherArdoise, rendus as rendusDe, scènes, viderCaptures } from './banc-volumique';
 import { VolumetricWorld, type WorldFrame } from './VolumetricWorld';
 import { resetStageFrames } from './stageFrames';
 
@@ -72,17 +73,7 @@ const ANNEAU: DynamicMarks = {
   rings: [{ id: 'h1', cell: { x: 2, y: 2, z: 0 }, rK: teamRingRadiusK(COMBAT_TOKEN_BASE), color: HERO_RING[0] }],
 };
 
-let scènes: THREE.Scene[] = [];
-
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
+brancherArdoise();
 
 /** Les leviers que le banc actionne sur l'hôte — un par CAUSE possible de commit. */
 interface Leviers {
@@ -182,15 +173,14 @@ function ambiante(): THREE.Object3D {
   return trouvée;
 }
 
-function monter(): HTMLCanvasElement {
+function monter(): void {
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
   act(() => root!.render(<Hôte leviers={leviers} />));
-  return hôte.querySelector('canvas.iso-stage') as HTMLCanvasElement;
 }
 
-const rendus = (canevas: HTMLCanvasElement): number => Number(canevas.dataset.rendus ?? 0);
+const rendus = () => rendusDe(hôte!);
 
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
@@ -200,7 +190,7 @@ beforeAll(() => {
 afterAll(() => setStageRendererFactory(null));
 
 beforeEach(() => {
-  scènes = [];
+  viderCaptures();
   // ARDOISE NEUVE du battement : la suite partage ses modules (`isolate: false`).
   resetStageFrames();
 });
@@ -214,8 +204,8 @@ afterEach(() => {
 
 describe('Redessin piloté par les données (#1371)', () => {
   it('un commit ÉTRANGER de l’hôte ne peint AUCUNE image', () => {
-    const canevas = monter();
-    const avant = rendus(canevas);
+    monter();
+    const avant = rendus();
     expect(avant, 'le montage doit avoir peint : sans cela le contrat serait vrai du vide').toBeGreaterThan(0);
 
     const bidonAvant = Number(hôte!.querySelector('[data-bidon]')!.getAttribute('data-bidon'));
@@ -225,29 +215,29 @@ describe('Redessin piloté par les données (#1371)', () => {
       'le commit doit avoir eu lieu : sans lui, « aucune image » ne prouverait rien',
     ).toBe(bidonAvant + 1);
 
-    expect(rendus(canevas) - avant, `${rendus(canevas) - avant} image(s) peinte(s) pour un commit sans rapport avec le monde`).toBe(0);
+    expect(rendus() - avant, `${rendus() - avant} image(s) peinte(s) pour un commit sans rapport avec le monde`).toBe(0);
   });
 
   it('des marques dynamiques NEUVES peignent UNE image, et cette image les porte', () => {
-    const canevas = monter();
+    monter();
     expect(pool('marquesDyn:anneau').count, 'prémisse : aucun anneau posé au départ').toBe(0);
-    const avant = rendus(canevas);
+    const avant = rendus();
 
     act(() => leviers.current!.marques(ANNEAU));
 
-    expect(rendus(canevas) - avant, `${rendus(canevas) - avant} image(s) pour une marque neuve`).toBe(1);
+    expect(rendus() - avant, `${rendus() - avant} image(s) pour une marque neuve`).toBe(1);
     // Le pool d'anneaux écrit UNE instance par TIRET de l'anneau : ce que le témoin dit est qu'il y a
     // désormais quelque chose de peint là où il n'y avait rien.
     expect(pool('marquesDyn:anneau').count, 'l’image peinte ne porte pas l’anneau neuf').toBeGreaterThan(0);
   });
 
   it('un cadrage NEUF (zoom) peint son image', () => {
-    const canevas = monter();
-    const avant = rendus(canevas);
+    monter();
+    const avant = rendus();
 
     act(() => leviers.current!.zoom(2));
 
-    expect(rendus(canevas) - avant, `${rendus(canevas) - avant} image(s) pour un zoom neuf`).toBe(1);
+    expect(rendus() - avant, `${rendus() - avant} image(s) pour un zoom neuf`).toBe(1);
   });
 });
 
@@ -260,39 +250,39 @@ describe('Redessin piloté par les données (#1371)', () => {
  */
 describe('Mutations du monde cuit — chaque passe peint SA propre écriture (#1371)', () => {
   it('un dégagement NEUF change l’index du monde ET peint son image', () => {
-    const canevas = monter();
+    monter();
     const avantFaces = facesDessinées();
     expect(avantFaces, 'prémisse : le plancher doit donner des faces à dégager').toBeGreaterThan(0);
-    const avant = rendus(canevas);
+    const avant = rendus();
 
     act(() => leviers.current!.keep(RIEN_GARDÉ));
 
     expect(facesDessinées(), 'l’index du monde n’a pas été recompacté').toBe(0);
-    expect(rendus(canevas) - avant, `${rendus(canevas) - avant} image(s) pour un dégagement neuf`).toBeGreaterThanOrEqual(1);
+    expect(rendus() - avant, `${rendus() - avant} image(s) pour un dégagement neuf`).toBeGreaterThanOrEqual(1);
   });
 
   it('un dégagement de MÊME verdict (référence neuve) ne peint rien', () => {
-    const canevas = monter();
+    monter();
     const faces = facesDessinées();
-    const avant = rendus(canevas);
+    const avant = rendus();
 
     // Le cas COURANT : un franchissement de cran passe un `KeepEl` neuf pour le même verdict.
     act(() => leviers.current!.keep(() => true));
 
     expect(facesDessinées(), 'le verdict est le même : rien ne doit avoir bougé').toBe(faces);
-    expect(rendus(canevas) - avant, `${rendus(canevas) - avant} image(s) pour un verdict identique`).toBe(0);
+    expect(rendus() - avant, `${rendus() - avant} image(s) pour un verdict identique`).toBe(0);
   });
 
   it('une teinte NEUVE repeint les sommets, peint UNE image, et NE REMONTE PAS les lampes', () => {
-    const canevas = monter();
+    monter();
     const avantCouleurs = couleursDuMonde();
     const avantAmbiante = ambiante();
-    const avant = rendus(canevas);
+    const avant = rendus();
 
     act(() => leviers.current!.tint(() => 0.4));
 
     expect(couleursDuMonde(), 'les couleurs de sommet n’ont pas été repeintes').not.toEqual(avantCouleurs);
-    expect(rendus(canevas) - avant, `${rendus(canevas) - avant} image(s) pour une teinte neuve`).toBe(1);
+    expect(rendus() - avant, `${rendus() - avant} image(s) pour une teinte neuve`).toBe(1);
     // Le 2e volet ferme la route ACCIDENTELLE : la teinte ne touche plus la liste des sujets (elle se
     // prend à la case, dans la passe de pose — #1396), et la boîte des CASTEURS n'entre dans le
     // montage des lampes que par sa VALEUR (`cléBoite`). Une ambiante neuve ici voudrait dire que le
@@ -308,12 +298,12 @@ describe('Mutations du monde cuit — chaque passe peint SA propre écriture (#1
  */
 describe('Perçage — une clé neuve peint (#1371)', () => {
   it('une clé de perçage neuve peint son image', () => {
-    const canevas = monter();
+    monter();
     act(() => leviers.current!.percage({ cle: 'A', lids: [], heros: [] }));
-    const avant = rendus(canevas);
+    const avant = rendus();
 
     act(() => leviers.current!.percage({ cle: 'B', lids: [], heros: [] }));
 
-    expect(rendus(canevas) - avant, `${rendus(canevas) - avant} image(s) pour une clé de perçage neuve`).toBe(1);
+    expect(rendus() - avant, `${rendus() - avant} image(s) pour une clé de perçage neuve`).toBe(1);
   });
 });

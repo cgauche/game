@@ -27,7 +27,8 @@ import { billboardView } from '../backends/webgl/billboardMath';
 import { project, type View } from '../rig/facing';
 import { dir8Basis } from '../pov/camera';
 import * as svgTexture from '../backends/webgl/svgTexture';
-import { artRot, GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer } from './GameStage3D';
+import { artRot, GameStage3D, setStageRendererFactory, type StageFrame } from './GameStage3D';
+import { BancRenderer, brancherArdoise } from './banc-volumique';
 import { povArtRot, povYawDeg } from './regard';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -69,15 +70,7 @@ describe('POV — la relation entre les deux regards (parité mesurée)', () => 
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(): void {}
-}
+brancherArdoise();
 
 const SCENE: Scene = emptyScene(12, 12);
 const MPT = sceneMetresPerTile(SCENE);

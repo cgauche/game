@@ -27,11 +27,12 @@ import { atlasLayout, billboardView } from '../backends/webgl/billboardMath';
 import { dir8Basis } from '../pov/camera';
 import * as svgTexture from '../backends/webgl/svgTexture';
 import * as atlasBake from '../backends/webgl/atlasBake';
-import { PRIORITE_RECHAUFFAGE, PRIORITE_VUE_COURANTE, atlasBytesEstimés, bakeQueueLength, clearAtlasCache, resetBakeQueue } from '../backends/webgl/atlasBake';
-import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import { PRIORITE_RECHAUFFAGE, PRIORITE_VUE_COURANTE, atlasBytesEstimés, bakeQueueLength, resetBakeQueue } from '../backends/webgl/atlasBake';
+import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
+import { BancRenderer, brancherArdoise, quads, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
 import { bbCameraDe, povArtRot } from './regard';
 import { poigneesEnAttente } from './texturesStatiques';
-import { atlasPxHeight, frameRectOf } from './boardPose';
+import { atlasPxHeight } from './boardPose';
 import { pxPerM } from '../backends/webgl/worldTris';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -64,41 +65,17 @@ const cadre = (yawDeg: number): StageFrame => ({
   zoom: 1,
 });
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
-
-let scènes: THREE.Scene[] = [];
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
 let battre: (() => void) | null = null;
-let urlAvant: { create: typeof URL.createObjectURL; revoke: typeof URL.revokeObjectURL } | null = null;
+
+brancherArdoise();
 
 const anim: StageWalkAnim = {
   subscribe: (onFrame) => { battre = onFrame; return () => { battre = null; }; },
   glide: () => null,
   cam: () => ({ x: 6, y: 6 }),
 };
-
-/** Rasterisation SIMULÉE au niveau du DOM (jamais par mock de module) — sans elle, jsdom ne résout
- *  aucune texture de billboard et AUCUN board n'est monté : toute mesure porterait sur le vide. */
-function simulerRasterisation(): void {
-  vi.stubGlobal('Image', class {
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    set src(_v: string) { queueMicrotask(() => this.onload?.()); }
-  });
-  urlAvant = { create: URL.createObjectURL, revoke: URL.revokeObjectURL };
-  URL.createObjectURL = () => 'blob:banc';
-  URL.revokeObjectURL = () => undefined;
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
-}
 
 /** Le cadre de PREMIÈRE PERSONNE au cap `facing` — la forme que le pas de POV passe au stage. */
 const cadrePov = (facing: Dir8): StageFrame => ({ mode: 'pov', partyPos: { x: 6, y: 6 }, facing, indoor: false, cid: HÉROS.id });
@@ -137,21 +114,15 @@ function vue(
   return écran(cadre(yawDeg), els, acteurs, animUtilisée, keepEl);
 }
 
-/** Laisse tourner la file du cuiseur (une rasterisation par tranche), en battant la boucle d'image. */
-async function respirer(ms: number): Promise<void> {
-  const fin = Date.now() + ms;
-  do {
-    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
-    if (battre) act(() => battre!());
-  } while (Date.now() < fin);
-}
+/** La file du cuiseur servie (une rasterisation par tranche) en battant la boucle d'image de CE banc. */
+const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.());
 
 async function monter(
   els: SceneBillboardEls = ELS,
   acteurs: ActorPose[] = ACTEURS,
   animUtilisée: StageWalkAnim = anim,
 ): Promise<void> {
-  scènes = [];
+  viderCaptures();
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
@@ -166,7 +137,7 @@ async function monterPov(
   els: SceneBillboardEls = ELS,
   acteurs: ActorPose[] = ACTEURS,
 ): Promise<void> {
-  scènes = [];
+  viderCaptures();
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
@@ -192,16 +163,6 @@ async function attendreMontage(attendus: number): Promise<void> {
   for (let i = 0; i < 80 && quads().length < attendus; i++) await respirer(20);
 }
 
-/** Tous les quads de billboard montés (les corps, jamais leurs jumeaux de silhouette). */
-function quads(): THREE.Mesh[] {
-  const out: THREE.Mesh[] = [];
-  scènes[scènes.length - 1]?.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (m.isMesh && !m.userData.emprunte && frameRectOf(m.material as THREE.Material)) out.push(m);
-  });
-  return out;
-}
-
 const mapDe = (m: THREE.Mesh) => (m.material as THREE.MeshBasicMaterial).map;
 
 beforeAll(() => {
@@ -211,14 +172,7 @@ beforeAll(() => {
 });
 afterAll(() => setStageRendererFactory(null));
 
-// PURGE À L'OUVERTURE, jamais à la fermeture (#1396) : plusieurs fichiers tournent EN MÊME TEMPS sur
-// les mêmes modules (`isolate: false`), et vider la file du cuiseur ou le stock de textures À LA FIN
-// d'un test tue les cuissons EN VOL du banc voisin (mesuré sur la suite complète : un banc sans un
-// seul quad monté). À l'OUVERTURE, l'ardoise est aussi nette.
 beforeEach(() => {
-  resetBakeQueue();
-  clearAtlasCache();
-  svgTexture.clearBillboardTextures();
   simulerRasterisation();
 });
 afterEach(() => {
@@ -226,9 +180,6 @@ afterEach(() => {
   if (hôte) { hôte.remove(); hôte = null; }
   battre = null;
   svgTexture.setStaticTextureBudgetBytes(svgTexture.TEXTURE_STATIQUE_BUDGET_BYTES_DEFAUT);
-  vi.unstubAllGlobals();
-  vi.restoreAllMocks();
-  if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
 });
 
 describe('Cran franchi — les quads SURVIVENT', () => {
@@ -936,7 +887,7 @@ describe('Stock borné — ce qui est POSÉ est épinglé', () => {
     // Les warns de sujet sauté sont attendus ici : c'est le chemin de refus, pas la panne.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     try {
-      scènes = [];
+      viderCaptures();
       hôte = document.createElement('div');
       document.body.appendChild(hôte);
       root = createRoot(hôte);

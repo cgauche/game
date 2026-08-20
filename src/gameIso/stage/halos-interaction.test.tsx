@@ -8,7 +8,8 @@ import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '..
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
 import { MondeDeCampagne } from './MondeDeCampagne';
-import { GameStage3D, setStageRendererFactory, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import { GameStage3D, setStageRendererFactory, type StageWalkAnim } from './GameStage3D';
+import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
 import { HALO_SLOTS } from '../backends/webgl/interactHaloMeshes';
 import { haloRadiusK, HALO_RX_PX, type InteractionHalos } from '../builders/interactHalos';
 import { PING_S } from './interactHaloPose';
@@ -36,17 +37,8 @@ const TAILLE = { w: 800, h: 600 };
 
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
-let scènes: THREE.Scene[] = [];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
+brancherArdoise();
 
 function hero(id: string, pos: { x: number; y: number }): Combatant {
   return {
@@ -101,7 +93,7 @@ function monter(flags: Record<string, boolean> = {}): HTMLDivElement {
     hovered: null,
     pendingAttack: null,
   } as never);
-  scènes = [];
+  viderCaptures();
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);
@@ -219,7 +211,7 @@ const HALOS: InteractionHalos = {
 
 describe('Halos d’interaction — la pulsation se prend à la FRAME (#1176 P3-0g)', () => {
   it('un battement fait avancer la PHASE ; aucun rendu React n’y participe', () => {
-    scènes = [];
+    viderCaptures();
     let battre: (() => void) | null = null;
     const anim: StageWalkAnim = {
       subscribe: (onFrame) => { battre = onFrame; return () => { battre = null; }; },
@@ -292,7 +284,7 @@ describe('Halos d’interaction — la pulsation se prend à la FRAME (#1176 P3-
 
   it('la BOUCLE de pulsation ne bat QUE s’il y a un halo à l’écran', () => {
     const raf = vi.spyOn(globalThis, 'requestAnimationFrame').mockReturnValue(1 as unknown as number);
-    scènes = [];
+    viderCaptures();
     conteneur = document.createElement('div');
     document.body.appendChild(conteneur);
     root = createRoot(conteneur);

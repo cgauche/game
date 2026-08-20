@@ -12,7 +12,6 @@
  *     de perf d'origine : 44° ne rebâtit rien, 46° rebâtit une fois).
  */
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import * as THREE from 'three';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../../state/store';
@@ -21,26 +20,15 @@ import { nudgeStageYaw, resetStageYaw, rotAtYaw } from '../../state/stageYaw';
 import type { Combatant } from '../../engine/types';
 import type { Dims, Rot } from '../../geometry/iso';
 import { MondeDeCampagne } from './MondeDeCampagne';
-import { artRot, setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { artRot, setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise } from './banc-volumique';
 import * as archVis from './architectureVisibility';
 import { frontFacadeCutaway, type ClearedSpace } from './architectureVisibility';
 import * as percage from './percage';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-/** Renderer de BANC : jsdom n'a aucun contexte WebGL, et depuis que la voie volumique est le défaut
- *  (#1176, P3-4) un contexte refusé REBASCULE l'écran en affine (`GameStage3D`, création de renderer).
- *  Sans banc, ce fichier mesurerait le repli au lieu de la voie volumique. */
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(): void {}
-}
-
+brancherArdoise();
 beforeAll(() => setStageRendererFactory(() => new BancRenderer()));
 afterAll(() => setStageRendererFactory(null));
 
@@ -122,7 +110,6 @@ describe('MondeDeCampagne — le cran effectif ALIMENTE le dégagement, et ne re
     if (root) { act(() => root!.unmount()); root = null; }
     if (container) { container.remove(); container = null; }
     vi.restoreAllMocks();
-    vi.unstubAllGlobals();
     resetStageYaw();
   });
 

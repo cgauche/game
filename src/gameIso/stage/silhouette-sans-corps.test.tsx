@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
-import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer } from './GameStage3D';
+import { GameStage3D, setStageRendererFactory, type StageFrame } from './GameStage3D';
+import { BancRenderer, brancherArdoise, scènes, simulerRasterisation, type Rasterisation } from './banc-volumique';
 import { clearBillboardTextures } from '../backends/webgl/svgTexture';
-import { resetBakeQueue } from '../backends/webgl/atlasBake';
 import type { ActorPose } from '../backends/webgl/sceneMeshes';
 
 /**
@@ -49,41 +49,18 @@ function acteurs(dx = 0): ActorPose[] {
   ];
 }
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
-
-let scènes: THREE.Scene[] = [];
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
-let urlAvant: { create: typeof URL.createObjectURL; revoke: typeof URL.revokeObjectURL } | null = null;
-/** Les rasterisations EN VOL : une par sujet, chacune libérée à la main (c'est la fenêtre). */
-let enAttente: (() => void)[] = [];
+/** La rasterisation RETENUE de ce banc : jsdom ne charge rien, et ici on décide QUAND chaque sujet
+ *  obtient sa texture — sa file `enAttente` EST la fenêtre de montage que le banc mesure. */
+let ras!: Rasterisation;
 
-/** Rasterisation simulée au niveau du DOM (jamais par mock de module, cf. `src/vi-mock-isolate-guard.test.ts`),
- *  mais RETENUE : jsdom ne charge rien, et ici on décide QUAND chaque sujet obtient sa texture. */
-function simulerRasterisationRetenue(): void {
-  vi.stubGlobal('Image', class {
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    set src(_v: string) { enAttente.push(() => this.onload?.()); }
-  });
-  urlAvant = { create: URL.createObjectURL, revoke: URL.revokeObjectURL };
-  URL.createObjectURL = () => 'blob:banc';
-  URL.revokeObjectURL = () => undefined;
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
-}
+brancherArdoise();
 
 /** Laisse la file CADENCÉE du cuiseur poser ses tâches (#1372 : les textures du montage y passent
  *  aussi, une par tranche d'inactivité) jusqu'à ce qu'au moins `n` rasterisations soient EN VOL. */
 async function enVol(n: number): Promise<void> {
-  for (let i = 0; i < 60 && enAttente.length < n; i++) {
+  for (let i = 0; i < 60 && ras.enAttente.length < n; i++) {
     await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
   }
 }
@@ -92,7 +69,7 @@ async function enVol(n: number): Promise<void> {
  *  demande des deux sortes, et la fenêtre les entrelace) et laisse l'écran faire ce qu'elle déclenche. */
 async function résoudreUneRasterisation(): Promise<void> {
   await enVol(1);
-  const suivante = enAttente.shift();
+  const suivante = ras.enAttente.shift();
   if (!suivante) throw new Error('aucune rasterisation en vol : la fenêtre de montage ne s’ouvre pas');
   await act(async () => { suivante(); });
 }
@@ -175,15 +152,7 @@ beforeAll(() => {
 afterAll(() => setStageRendererFactory(null));
 
 beforeEach(async () => {
-  // Le cache de textures est un MODULE : une entrée laissée par le banc précédent résoudrait le sujet
-  // sans passer par `Image`, et la fenêtre mesurée n'existerait plus.
-  clearBillboardTextures();
-  // …et la FILE du cuiseur avec (#1372 : les textures du montage y passent) — des tâches laissées par
-  // un banc voisin feraient patienter celles de ce montage derrière elles.
-  resetBakeQueue();
-  scènes = [];
-  enAttente = [];
-  simulerRasterisationRetenue();
+  ras = simulerRasterisation('retenue');
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
@@ -193,17 +162,12 @@ beforeEach(async () => {
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (hôte) { hôte.remove(); hôte = null; }
-  // (la purge se fait à l'OUVERTURE — cf. `beforeEach` : purger ici tuerait les cuissons en vol d'un
-  // banc voisin, les fichiers partageant leurs modules sous `isolate: false`, #1396)
-  vi.unstubAllGlobals();
-  vi.restoreAllMocks();
-  if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
 });
 
 describe('Jumeau de silhouette — jamais rendu sans son corps (#1337)', () => {
   it('FENÊTRE DE MONTAGE : à chaque rasterisation résolue, jamais un jumeau de plus que de corps', async () => {
     // La fenêtre est RÉELLE : deux textures de sujet en vol, aucun quad encore monté.
-    expect(enAttente, 'un sujet, une rasterisation : sans deux temps, ce banc ne mesure rien').toHaveLength(2);
+    expect(ras.enAttente, 'un sujet, une rasterisation : sans deux temps, ce banc ne mesure rien').toHaveLength(2);
     expect(corps()).toHaveLength(0);
     expect(jumeaux()).toHaveLength(0);
 
@@ -226,7 +190,7 @@ describe('Jumeau de silhouette — jamais rendu sans son corps (#1337)', () => {
       { c: combattant('e2', 'enemy', { x: 6, y: 2 }), x: 6, y: 2, z: 0 },
     ]);
     await enVol(1);
-    expect(enAttente.length, 'le rebuild rasterise à nouveau : la fenêtre se rouvre').toBeGreaterThan(0);
+    expect(ras.enAttente.length, 'le rebuild rasterise à nouveau : la fenêtre se rouvre').toBeGreaterThan(0);
     expect(corps(), 'le groupe précédent est vidé').toHaveLength(0);
     expect(jumeaux(), 'un jumeau survivant au vidage se rendrait seul, en aplat d’équipe').toHaveLength(0);
     await dérouler(2, 'après vidage');

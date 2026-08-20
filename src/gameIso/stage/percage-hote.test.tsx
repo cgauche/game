@@ -18,9 +18,9 @@ import {
   setStageRendererFactory,
   type PercageEntrees,
   type StageFrame,
-  type StageRenderer,
   type StageWalkAnim,
 } from './GameStage3D';
+import { BancRenderer, brancherArdoise, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
 import { PERCAGE_DEFINE, PERCAGE_FONDU_MS, PERCAGE_RAYON_PX, percerMateriau, trousPercage } from '../backends/webgl/percageLocal';
 import { centrePercage, clePercage } from './percage';
 import { sourcesDeFrames } from './stageFrames';
@@ -77,22 +77,10 @@ function entreesDe(pos: { x: number; y: number }): PercageEntrees {
   };
 }
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene, camera: THREE.Camera): void { scènes.push(scene); cameras.push(camera); }
-}
-
-let scènes: THREE.Scene[] = [];
-/** La caméra de CHAQUE frame dessinée — le banc du lacet libre en compare deux. */
-let cameras: THREE.Camera[] = [];
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
-let urlAvant: { create: typeof URL.createObjectURL; revoke: typeof URL.revokeObjectURL } | null = null;
+
+brancherArdoise();
 
 /** Ce que la BOUCLE DE MARCHE fait vivre hors de React : le battement abonné, le glissement du sujet
  *  et le cadrage de l'instant. Les trois sont pilotés par le banc. */
@@ -105,20 +93,6 @@ const anim: StageWalkAnim = {
   glide: (cid) => (cid === 'h1' ? glissement : null),
   cam: () => cadrage,
 };
-
-/** Rasterisation de billboard SIMULÉE au niveau du DOM (patron de `silhouette-corps.test.tsx`) : sans
- *  elle la promesse de texture reste pendante et AUCUN quad n'est monté — donc aucun centre de trou. */
-function simulerRasterisation(): void {
-  vi.stubGlobal('Image', class {
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    set src(_v: string) { queueMicrotask(() => this.onload?.()); }
-  });
-  urlAvant = { create: URL.createObjectURL, revoke: URL.revokeObjectURL };
-  URL.createObjectURL = () => 'blob:banc';
-  URL.revokeObjectURL = () => undefined;
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
-}
 
 /** Rend (ou re-rend) l'écran volumique sous le cadre donné, sur la racine courante. */
 async function rendre(pos: { x: number; y: number }, percage: PercageEntrees | null, cadre: StageFrame, heure = 720): Promise<void> {
@@ -142,19 +116,12 @@ async function rendre(pos: { x: number; y: number }, percage: PercageEntrees | n
   });
 }
 
-/** Laisse tourner la file CADENCÉE du cuiseur en battant la boucle d'image : depuis #1372 les textures
- *  du MONTAGE y passent aussi, donc aucun quad n'entre en scène dans le rendu qui l'a demandé. */
-async function respirer(ms: number): Promise<void> {
-  const fin = Date.now() + ms;
-  do {
-    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
-    if (battre) act(() => battre!());
-  } while (Date.now() < fin);
-}
+/** La file CADENCÉE du cuiseur servie en battant la boucle d'image de CE banc : depuis #1372 les
+ *  textures du MONTAGE y passent aussi, donc aucun quad n'entre en scène dans le rendu qui l'a demandé. */
+const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.());
 
 async function monter(pos: { x: number; y: number }, percage: PercageEntrees | null): Promise<void> {
-  scènes = [];
-  cameras = [];
+  viderCaptures();
   glissement = null;
   cadrage = { x: 0, y: 0 };
   hôte = document.createElement('div');
@@ -199,7 +166,7 @@ function quadHeros(): THREE.Mesh {
 /** Le centre écran que le shader DOIT lire : la position du quad, projetée par la caméra de la
  *  DERNIÈRE frame dessinée. Algèbre pure (`uPercageVP` × position monde) — aucun pixel en jeu. */
 function centreAttendu(): THREE.Vector3 {
-  const camera = cameras[cameras.length - 1];
+  const camera = caméras[caméras.length - 1];
   if (!camera) throw new Error('aucune caméra de frame');
   return centrePercage(camera, quadHeros().position, TAILLE.w, TAILLE.h);
 }
@@ -213,19 +180,16 @@ beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientHeight', { configurable: true, get: () => TAILLE.h });
   setStageRendererFactory(() => new BancRenderer());
-  simulerRasterisation();
 });
 
-afterAll(() => {
-  setStageRendererFactory(null);
-  vi.unstubAllGlobals();
-  vi.restoreAllMocks();
-  if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; }
-});
+afterAll(() => setStageRendererFactory(null));
 
 // Les quatre trous sont des uniformes PARTAGÉS par le module : un banc les remet à zéro, sans quoi le
 // rayon laissé ouvert par le montage précédent se lirait comme celui du montage courant.
-beforeEach(() => { for (const t of trousPercage()) t.set(0, 0, 0, 0); });
+beforeEach(() => {
+  for (const t of trousPercage()) t.set(0, 0, 0, 0);
+  simulerRasterisation();
+});
 
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
@@ -365,17 +329,11 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
     performance.now = () => horloge;
     vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => { file.push(cb); return file.length; });
     vi.stubGlobal('cancelAnimationFrame', () => undefined);
-    // La file du cuiseur (#1372 : les textures du MONTAGE y passent) prend sa propre couture
-    // d'inactivité, servie par les VRAIS timers — sinon elle se brancherait sur l'horloge manuelle de
-    // ce banc, qui ne sert ses rappels qu'à `image()` et jamais dans un `await`.
-    vi.stubGlobal('requestIdleCallback', (cb: () => void) => setTimeout(() => cb(), 0));
     resetBakeQueue();
   });
 
   afterEach(() => {
     if (nowAvant) performance.now = nowAvant;
-    vi.unstubAllGlobals();
-    simulerRasterisation(); // `unstubAllGlobals` emporte aussi le stub d'`Image` du banc
   });
 
   it('héros COIFFÉ, personne ne bouge : le rayon ATTEINT sa cible, et en ~PERCAGE_FONDU_MS', async () => {
@@ -433,7 +391,7 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
  */
 describe('L’hôte de plateau alimente la découpe (#1176, M3)', () => {
   it('groupe posé sous une masse : le trou s’ouvre sans qu’aucune entrée ne soit écrite à la main', async () => {
-    scènes = [];
+    viderCaptures();
     useGame.setState({
       scene: SCENE,
       mode: 'exploration',

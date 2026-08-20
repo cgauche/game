@@ -13,7 +13,8 @@ import { AMBIANCE, ambianceLuminance } from '../catalog/ambiance';
 import { fogCurveOf, povDepth } from '../pov/camera';
 import { MondeDeCampagne } from './MondeDeCampagne';
 import { FOG_GAMMA_DEFINE, type MatériauEmbrumable } from '../backends/webgl/sceneMeshes';
-import { GameStage3D, setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { GameStage3D, setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
 
 /**
  * BRUME & CIEL DE LA PREMIÈRE PERSONNE (#1176, P3-1c) — l'horizon du POV volumique cesse d'être tranché
@@ -30,17 +31,8 @@ const TAILLE = { w: 800, h: 600 };
 
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
-let scènes: THREE.Scene[] = [];
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
+brancherArdoise();
 
 /** Pose une scène jouable au store — `interieur` bascule le MILIEU (c'est `isIndoor` qui tranche). */
 function poser(ambiance: Scene['ambiance']): Scene {
@@ -56,7 +48,7 @@ function poser(ambiance: Scene['ambiance']): Scene {
 }
 
 function monter(node: JSX.Element): void {
-  scènes = [];
+  viderCaptures();
   conteneur = document.createElement('div');
   document.body.appendChild(conteneur);
   root = createRoot(conteneur);

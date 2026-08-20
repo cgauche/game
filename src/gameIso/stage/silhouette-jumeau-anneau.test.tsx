@@ -5,7 +5,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import * as THREE from 'three';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { Dims } from '../../geometry/iso';
-import { GameStage3D, setStageRendererFactory, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import { GameStage3D, setStageRendererFactory, type StageWalkAnim } from './GameStage3D';
+import { BancRenderer, brancherArdoise, scènes, viderCaptures } from './banc-volumique';
 import { COMBAT_TOKEN_BASE, teamRingRadiusK, type DynamicMarks } from '../builders/dynamicMarks';
 import { HERO_RING } from '../teamColors';
 import { SILHOUETTE_TWIN_OPACITY } from '../backends/webgl/dynamicMarkMeshes';
@@ -31,19 +32,10 @@ const MARQUES: DynamicMarks = {
   rings: [{ id: 'h1', cell: { x: 2, y: 2, z: 0 }, rK: teamRingRadiusK(COMBAT_TOKEN_BASE), color: HERO_RING[0] }],
 };
 
-let scènes: THREE.Scene[] = [];
 let root: Root | null = null;
 let hôte: HTMLDivElement | null = null;
 
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(scene: THREE.Scene): void { scènes.push(scene); }
-}
+brancherArdoise();
 
 let glissement: { dx: number; dy: number; dz: number } | null = null;
 let battre: (() => void) | null = null;
@@ -66,7 +58,7 @@ function pool(nom: string): THREE.InstancedMesh {
 }
 
 function monter(): void {
-  scènes = [];
+  viderCaptures();
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);

@@ -2,13 +2,13 @@
 import { Profiler, StrictMode, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
 import { cidUnderPointer, hasSpritePicker } from './spritePicker';
-import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
+import { setStageRendererFactory } from './GameStage3D';
+import { BancRenderer, brancherArdoise } from './banc-volumique';
 
 /**
  * LE MONDE EST VOLUMIQUE, ET LUI SEUL (#1176 P3-4, commit C5a) : l'écran de jeu ne peint plus aucun
@@ -22,15 +22,7 @@ import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
 /** Renderer de BANC : jsdom n'a aucun contexte WebGL, et un contexte refusé fait DIRE le refus au
  *  joueur (`stage/SansWebgl`) au lieu de peindre. Sans banc, ce fichier mesurerait ce message. */
-class BancRenderer implements StageRenderer {
-  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
-  capabilities = { getMaxAnisotropy: () => 1 };
-  setPixelRatio(): void {}
-  setClearColor(): void {}
-  setSize(): void {}
-  dispose(): void {}
-  render(): void {}
-}
+brancherArdoise();
 
 beforeAll(() => setStageRendererFactory(() => new BancRenderer()));
 afterAll(() => setStageRendererFactory(null));
