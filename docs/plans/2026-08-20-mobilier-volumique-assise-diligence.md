@@ -2,7 +2,7 @@
 
 **Date :** 2026-08-20
 
-**Statut :** À valider par l'utilisateur
+**Statut :** Validée par l'utilisateur le 2026-08-20
 
 **Nature :** spécification de conception, à supprimer une fois exécutée
 
@@ -87,10 +87,20 @@ backends et politiques de vue reçoivent toujours le même monde, sans géométr
 Le contrat `PropEl` devient explicitement capable de porter soit des faces volumiques dérivées, soit
 le chemin billboard historique. Il ne possède jamais une seconde vérité de dimensions ou
 d'empreinte : physique, collision et dimensions viennent exclusivement de `PropData` et de sa recette.
+Le champ legacy `SceneEntity.foot` est donc retiré du schéma et de l'éditeur ; les documents existants
+sont migrés vers l'empreinte de leur `ref`, et le chargement dépouille cet ancien champ sans en faire
+un override implicite. Lorsqu'une ref historique est réellement utilisée avec plusieurs empreintes,
+la variante reçoit un id de type stable distinct : les meubles longs de l'Opéra deviennent
+`table-2x1`, `bureau-2x1` et `etabli-2x1`, tandis que les tables historiques sans override restent
+`table` 1×1. La preuve de migration couvre exhaustivement les vingt-quatre instances authorées qui
+portaient `SceneEntity.foot` : onze dans l'Arène et treize dans le mobilier de l'Opéra.
 Pour une ref volumique, `PropEl` transporte les `Face[]` déjà dérivées ainsi que l'`entId` nécessaire au
 picking ; le clic d'une face doit restituer le `SceneEntity.id` source. Le SVG du registre
 `src/gameIso/catalog/decor/` reste autorisé comme vignette de palette et comme fallback visible d'une
 ref invalide ou legacy ; il n'est jamais le corps monde d'une ref dont la recette volumique est valide.
+La cuisson multi-matériaux peut produire plusieurs plages de sommets pour le même `entId`; toute face
+de ces plages restitue le même id. Une face monde sans plage de prop reste étrangère à ce picking et
+ne doit pas masquer le clic historique d'un acteur derrière un mur, un sol ou un toit non-prop.
 
 Les types de recette et de slots sont neutres et vivent côté donnée/état, afin que `src/state` puisse
 les lire sans importer `src/gameIso`. Le builder importe ces types et les transforme ; la dépendance
@@ -247,6 +257,10 @@ les slots fournis par la ref et permet d'authorer l'occupant initial avec des pi
 document en porte réellement un, PNJ parmi les `SceneEntity kind:'personnage'` de la scène. Aucun champ
 ne demande un label libre. Supprimer ou changer la ref d'un meuble déclenche le pruning des affectations
 de cette instance dans la même mutation d'éditeur.
+
+L'action contextuelle « Se relever » compose le pont d'exploration et sa commande vissée existants,
+sans nouvelle classe CSS. Elle garde un nom accessible, le focus clavier, la cible tactile 44 px sous
+`pointer: coarse` et le comportement du pont à 360 px.
 
 `MapSpec.entities` accepte naturellement les props et PNJ puisqu'il conserve leurs ids. `MapSpec`
 reçoit explicitement `seatAssignments` pour authorer une occupation seulement lorsque le prop et le
@@ -489,7 +503,7 @@ ligne par ligne.
 
 | Domaine | Fichiers probables | Responsabilité |
 |---|---|---|
-| Données | `src/data/props.json`, `src/data/index.ts`, `src/data/schemas/defs/props.ts`, donnée/schéma de matériaux de props | recettes, physique, lumière, matériaux, slots |
+| Données | `src/data/props.json`, `src/data/index.ts`, `src/data/schemas/defs/props.ts`, donnée/schéma de matériaux de props, `src/data/donnees.manifest.json`, registre de schémas généré | recettes, physique, lumière, matériaux, slots, atlas et registre générés |
 | Catalogue/vignettes | `src/gameIso/catalog/types.ts`, `src/gameIso/catalog/decor/defs/`, registre généré | labels et vignettes/fallback ; aucune seconde vérité de physique ou d'empreinte |
 | Builders | `src/gameIso/builders/props.ts`, `src/gameIso/builders/types.ts`, éventuel module pur de recette | compilation locale vers `Face[]`, `PropEl` sans seconde empreinte, conservation d'`entId` |
 | Backend volumique | `src/gameIso/backends/webgl/sceneMeshes.ts`, résolution de matériaux/couleurs de faces | cuisson des faces, exclusion des billboards et picking face→`SceneEntity.id` |
