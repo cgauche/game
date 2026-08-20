@@ -643,8 +643,11 @@ export interface PendingApproach {
   combatantId: string;
   /** Source de Peur la plus proche dont le déplacement RAPPROCHE. */
   sourceId: string;
-  /** Intention différée, relancée après un succès. */
-  intent: { kind: 'tile'; pt: Pt } | { kind: 'entity'; id: string };
+  /** Intention différée, relancée après un succès — avec le VERDICT D'ARMEMENT du geste d'origine
+   *  (`courseArmee`/`approche`, spec HUD § ARBITRAGE 2026-08-19). Il est CAPTURÉ ici parce que le clic
+   *  qui a ouvert ce gate a déjà dissous l'intention : le relire au store à la relance refuserait le
+   *  geste que le joueur vient de gagner (« armez la Charge » après un Test de Calme réussi). */
+  intent: { kind: 'tile'; pt: Pt; courseArmee?: boolean } | { kind: 'entity'; id: string; approche?: boolean };
   result: { success: boolean; roll: number; target?: number; sl: number } | null;
   rerolled?: boolean;
 }
@@ -657,6 +660,8 @@ export interface PendingWard {
   attackerId: string;
   /** Cible bénie (porte le drapeau `attackWardFM`). */
   targetId: string;
+  /** VERDICT D'ARMEMENT capturé au clic qui a ouvert ce gate (même raison que `PendingApproach`). */
+  approche?: boolean;
   result: { success: boolean; roll: number; target?: number; sl: number } | null;
   rerolled?: boolean;
 }

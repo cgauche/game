@@ -597,6 +597,8 @@ export const fr = {
   'cs.fragChargeAdv': ' (+{adv} Avantage)',
   'cs.meleeOutOfRange': 'Cible hors de portée de mêlée.',
   'cs.cursorInvalidTile': 'Case non valide pour cette action.',
+  'cs.refusCourseNonArmee': 'Trop loin pour marcher — armez la Course pour aller jusque-là.',
+  'cs.refusApprocheNonArmee': '{name} est hors de portée — armez la Charge pour l’atteindre.',
   'cs.runStumble': '{name} trébuche dans sa Course ({skill} {roll}) : sur place.',
   'cs.run': '{name} prend sa Course ({skill} {roll}) : {cost} cases{short}.',
   'cs.fragRunShort': ' — le souffle manque avant la destination',

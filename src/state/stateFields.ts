@@ -43,6 +43,10 @@ const STATE_FIELDS = {
   actorAim: { init: null, resetOn: ['combatStart'] },
   actorMove: { init: null, resetOn: ['combatStart'] },
   actorAoe: { init: null, resetOn: ['combatStart'] },
+  // Retour d'IHM du dernier geste refusé (`refusVisible.ts`) : per-combat/per-scène comme le
+  // télégraphe `actorAim` ci-dessus — un refus prononcé dans un combat n'ouvre pas le suivant, et
+  // n'entre pas dans le checkpoint d'entrée de scène (`transitionTo` → `autoSave`).
+  refus: { init: null, resetOn: ['scene', 'combatStart'] },
   hoverDelta: { init: null, resetOn: [] },
   pendingReload: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingStateRecovery: { init: null, resetOn: ['scene', 'combatStart'] },

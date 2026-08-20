@@ -80,12 +80,13 @@ describe('résolution canonique du déplacement', () => {
   it('conserve le chemin de Course du premier tap dans le pending', () => {
     const active = setup();
     const dest = { x: active.pos!.x + effectiveMovement(active) + 2, y: active.pos!.y };
-    useGame.getState().battleClickTile(dest);
+    // Course ARMÉE (spec HUD § ARBITRAGE 2026-08-19) : sans elle, le clic au-delà de la Marche refuse.
+    useGame.getState().battleClickTile(dest, { courseArmee: true });
     const preview = useGame.getState().battle!.preview;
     expect(preview?.kind).toBe('run');
     if (!preview || preview.kind !== 'run') throw new Error('aperçu de Course absent');
 
-    useGame.getState().battleClickTile(dest);
+    useGame.getState().battleClickTile(dest, { courseArmee: true });
 
     expect(useGame.getState().pendingRun?.path).toBe(preview.path);
     expect(useGame.getState().pendingRun?.cost).toBe(preview.cost);

@@ -257,7 +257,8 @@ describe('Approche du HÉROS vers un ennemi qui le craint (LDB 21 l.27)', () => 
     const { H, E } = field();
     vi.useFakeTimers();
     try {
-      useGame.getState().battleClickEntity(E.id, { confirm: true }); // hors Marche, à portée de Course → Charge
+      // Charge ARMÉE (spec HUD § ARBITRAGE 2026-08-19) : hors Marche, l'approche se demande.
+      useGame.getState().battleClickEntity(E.id, { confirm: true, approche: true });
       vi.runOnlyPendingTimers(); // joue le glissé d'approche → ouvre la frappe
     } finally {
       vi.useRealTimers();

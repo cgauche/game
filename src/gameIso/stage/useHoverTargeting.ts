@@ -49,6 +49,9 @@ function hoverErrText(inv: { reason: string; need?: string }): string {
     : reason === 'sous-effectif' ? 'Équipe trop réduite'
     : reason === 'portee-min' ? 'Cible trop proche — Portée minimale'
     : reason === 'armeBannie' ? 'Armes à distance interdites (duel judiciaire)'
+    // Le clic-ennemi ne s'approche plus tout seul (spec HUD § ARBITRAGE 2026-08-19) : le réticule dit
+    // ce que le clic FERA — un refus — et par quoi le débloquer, au lieu de promettre une Charge.
+    : reason === 'approche-non-armee' ? 'Hors de portée — armez la Charge'
     : 'hors de portée';
 }
 

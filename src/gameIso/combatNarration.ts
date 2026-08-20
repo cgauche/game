@@ -11,6 +11,7 @@
 import { conditionMeta } from './effectIcons';
 import type { IconId } from '../ui/icons';
 import type { RecapLine } from '../state/recapLine';
+import type { RefusIHM } from '../state/refusVisible';
 import {
   type CombatEvent, type CombatEventKind, type ActorAim, type ActorAimKind,
   type CombatTone, toneOf, isImportantEvent, STATE_LABEL_TO_ID,
@@ -130,6 +131,13 @@ export function narrateIntent(aim: ActorAim, combatants: ComLite[] = []): Narrat
   const { verb, kind } = INTENT[aim.kind];
   const text = `${from.label} ${verb} ${to.label}`;
   return { raw: text, icon: KIND_ICON[kind], important: true, tone: toneOf(kind), segments: colorize(text, combatants) };
+}
+
+/** Narre un REFUS de geste (`state/refusVisible`) — MÊME patron que le télégraphe ci-dessus : une
+ *  ligne PROJETÉE, jamais journalisée (un clic refusé n'est pas un fait de jeu). Ton `strong` : c'est
+ *  une réponse à un geste du joueur, elle doit se remarquer sans crier comme un critique. */
+export function narrateRefus(refus: RefusIHM, combatants: ComLite[] = []): NarratedLine {
+  return { raw: refus.texte, icon: 'ui/forbidden', important: true, tone: 'strong', segments: colorize(refus.texte, combatants) };
 }
 
 /** Les `max` derniers événements IMPORTANTS (pour le bandeau haut), ordre chronologique préservé. */

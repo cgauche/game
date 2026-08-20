@@ -34,6 +34,8 @@ import { mountMovement, mountUp, dismount, mountOf, mountableNear, isControlledM
 import { heroCombatMount } from '../engine/mountTravel';
 import { ev, evLines } from './combatLog';
 import { viewYawDeg } from './stageYaw';
+import { chargeArmee, courseArmee } from './localIntent';
+import { refuserGeste } from './refusVisible';
 import { t } from '../i18n';
 import { combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, backstabWeapon, attackHandGate, type DefenseMode } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, meleeReachRank } from '../engine/engagement';
@@ -95,7 +97,7 @@ import { actorIn, inBattleId } from './combatants';
 import { controlsCombatant, pilotedByHuman, defenseSurfaced, influencesLocally } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
-import { currentTargetingMode, type BattleClickOpts } from './targetingModes';
+import { currentTargetingMode, type BattleClickOpts, type TileClickOpts } from './targetingModes';
 import { resolveRecoverTest } from './combat/recover';
 import { resolveRenounce } from './corruptionFlow';
 import { toMoney } from '../engine/money';
@@ -523,9 +525,11 @@ export function createCombatSlice(get: Get, set: Set) {
     // Combat monté (LDB 14 l.181) : applique le choix de cible (cavalier OU monture) puis relance l'attaque/charge
     // sur l'id choisi en court-circuitant la modale (skipMountChoice). Annuler ne consomme rien.
     mountTargetSelect: (id: string) => {
-      if (!get().pendingMountTarget) return;
+      const pm = get().pendingMountTarget;
+      if (!pm) return;
       set({ pendingMountTarget: null });
-      get().battleClickEntity(id, { skipMountChoice: true });
+      // Le verdict d'armement du clic d'origine revient avec la relance (même raison que le gate de Peur).
+      get().battleClickEntity(id, { skipMountChoice: true, approche: pm.approche });
     },
     mountTargetCancel: () => set({ pendingMountTarget: null }),
 
@@ -851,13 +855,18 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     grappleCancel: () => set({ pendingGrapple: null }), // renonce avant tout jet : aucun coût
 
-    battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => {
+    battleClickTile: (pt: Pt, opts?: TileClickOpts) => {
       const { battle, scene } = get();
       if (!battle || !scene || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active)) return;
       // INTENTION LOCALE armée (spec zone 4) : ce clic EST son commit — elle se dissout et vaut
-      // confirmation (la case a été choisie sciemment) ; le geste exécuté reste celui de TOUJOURS.
+      // confirmation (la case a été choisie sciemment).
+      // VERDICT D'ARMEMENT de la Course (spec § 2026-08-19) : il vient des OPTS quand le geste a déjà
+      // été jugé chez son émetteur (intent d'un invité — l'hôte n'a pas SON intention — ou relance d'un
+      // geste différé, dont l'intention a été dissoute au premier clic) ; sinon on le lit ICI, AVANT que
+      // `consumeIntent` ne l'efface.
+      const courseDemandee = opts?.courseArmee ?? courseArmee(get);
       const armedTile = consumeIntent();
       const clickOpts = armedTile ? { ...opts, confirm: true } : opts;
       // Le MODE de ciblage courant peut posséder un commit-CASE (téléportation, pose de zone de sort
@@ -895,7 +904,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // On rejoue le clic BRUT (`pt`) après le Test (l.962) → `battleClickTile` re-résout l'escalier
         // (sinon, stocker `dest` le re-traduirait une 2ᵉ fois et renverrait au pied). Le check de Peur, lui,
         // porte bien sur la destination réelle (`dest` ci-dessus).
-        set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, intent: { kind: 'tile', pt: { ...pt } }, result: null }, battle: { ...battle, preview: null } });
+        set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, intent: { kind: 'tile', pt: { ...pt }, courseArmee: courseDemandee }, result: null }, battle: { ...battle, preview: null } });
         bus.emit(EVT.SCENE_DIRTY);
         return true;
       };
@@ -911,6 +920,14 @@ export function createCombatSlice(get: Get, set: Set) {
       const geom = mountOf(battle, active) ?? active;
       const prev = battle.preview;
       if (movement.kind === 'run') {
+        // COURSE À ARMER (spec HUD § ARBITRAGE 2026-08-19, école BG3) : au-delà de la Marche, le champ
+        // ne court plus tout seul — sans la case Course armée, le clic est REFUSÉ, et le refus se DIT
+        // (bandeau d'annonce, `state/refusVisible`). L'intention armée reste armée : c'est le refus
+        // qui informe, pas une punition.
+        // EXEMPTION par NATURE : la Frénésie IMPOSE la course vers l'ennemi (LDB 21 l.33, verbatim
+        // « la seule Action possible est un Test de Capacité de Combat ou un Test d'Athlétisme pour
+        // atteindre votre ennemi le plus rapidement possible ») — ce que la règle impose ne s'arme pas.
+        if (!courseDemandee && !isFrenzied(active)) return void refuserGeste(get, set, t('cs.refusCourseNonArmee'));
         // Zone de Course : tap 1 = aperçu « Courir » ; tap 2 = Test d'Athlétisme (pendingRun + destination).
         if (!clickOpts?.confirm && !(prev?.kind === 'run' && prev.path === movement.path)) {
           set({ battle: { ...battle, preview: { kind: 'run', tile: { ...dest }, path: movement.path, cost: movement.cost } }, hoverDelta: null });
@@ -1047,11 +1064,15 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active)) return;
-      // INTENTION LOCALE armée (spec zone 4) : ce clic EST son commit — elle se dissout, et le geste
-      // qui suit est celui de TOUJOURS (verbatim fondateur : « ça ne change pas les actions par défaut
-      // sur le grid »). Elle vaut confirmation : la case a déjà été choisie sciemment.
+      // INTENTION LOCALE armée (spec zone 4) : ce clic EST son commit — elle se dissout, et vaut
+      // confirmation (la cible a déjà été choisie sciemment).
+      // VERDICT D'ARMEMENT DE LA CHARGE (spec § 2026-08-19) : c'est lui — et lui seul — qui autorise
+      // l'approche vers la cible cliquée. Même règle que le clic-case : il vient des OPTS quand le
+      // geste a déjà été jugé chez son émetteur (intent d'un invité, ou relance d'un geste différé par
+      // un gate), sinon il se lit ici, avant que `consumeIntent` ne l'efface.
+      const approche = opts?.approche ?? chargeArmee(get);
       const armed = consumeIntent();
-      const clickOpts = armed ? { ...opts, confirm: true } : opts;
+      const clickOpts = { ...opts, approche, ...(armed ? { confirm: true } : {}) };
       // Le MODE de ciblage courant possède le commit-COMBATTANT (attaque/cast/soin/bordée, ou flux
       // différés : Surincantation +Cible / Frappe Mortelle / 2ᵉ frappe, ou pose de zone sur la case
       // d'un combattant). Source UNIQUE : targetingModes (réticule au survol = ce même mode).
@@ -1537,9 +1558,11 @@ export function createCombatSlice(get: Get, set: Set) {
         : t('cs.courageNo', { name: c.label, src: src?.label ?? t('cs.fearSourceFallback') }), c.id, src?.id)];
       set({ battle: { ...get().battle!, fearGate: ok ? 'passed' : 'failed', log } });
       if (ok) {
-        // Relance l'intention différée (le gate est désormais 'passed').
-        if (pa.intent.kind === 'tile') get().battleClickTile(pa.intent.pt, { confirm: true });
-        else get().battleClickEntity(pa.intent.id, { confirm: true });
+        // Relance l'intention différée (le gate est désormais 'passed') AVEC son verdict d'armement :
+        // l'intention qui l'a produite a été dissoute par le premier clic, la relire ici refuserait le
+        // geste que le joueur vient de gagner à son Test de Calme.
+        if (pa.intent.kind === 'tile') get().battleClickTile(pa.intent.pt, { confirm: true, courseArmee: pa.intent.courseArmee });
+        else get().battleClickEntity(pa.intent.id, { confirm: true, approche: pa.intent.approche });
       }
       bus.emit(EVT.SCENE_DIRTY);
     },
@@ -1561,7 +1584,7 @@ export function createCombatSlice(get: Get, set: Set) {
         : t('cs.shameBlocked', { name: attacker.label, foe: target.label }), attacker.id, target.id)];
       set({ battle: { ...get().battle!, log } });
       // Succès : relance la déclaration d'attaque (le gate est franchi pour CE clic via `wardCleared`).
-      if (ok) get().battleClickEntity(pw.targetId, { confirm: true, wardCleared: true });
+      if (ok) get().battleClickEntity(pw.targetId, { confirm: true, wardCleared: true, approche: pw.approche });
       bus.emit(EVT.SCENE_DIRTY);
     },
     wardCancel: () => set({ pendingWard: null }), // renonce avant le jet : aucune trace, re-cliquable

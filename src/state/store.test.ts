@@ -920,7 +920,8 @@ describe('Boucle de jeu (store)', () => {
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
     vi.clearAllTimers();
-    useGame.getState().battleClickEntity(E.id, { confirm: true }); // Charge implicite (mêlée + non Engagé + Mvt intact)
+    // Charge ARMÉE (spec HUD § ARBITRAGE 2026-08-19) : l'approche vers l'ennemi cliqué se DEMANDE.
+    useGame.getState().battleClickEntity(E.id, { confirm: true, approche: true });
     vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) → ouvre la frappe
     st = useGame.getState();
     const Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
@@ -987,9 +988,11 @@ describe('Boucle de jeu (store)', () => {
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 0, movedPreAction: false, acted: false } });
     // Clic confirmé sur la monture → la modale de choix s'ouvre (pas d'attaque encore).
-    useGame.getState().battleClickEntity(mount.id, { confirm: true });
+    // Charge ARMÉE (spec HUD § ARBITRAGE 2026-08-19) : le couple est hors d'Allonge, l'approche se demande.
+    useGame.getState().battleClickEntity(mount.id, { confirm: true, approche: true });
     st = useGame.getState();
-    expect(st.pendingMountTarget).toEqual({ riderId: rider.id, mountId: mount.id });
+    // Le verdict voyage DANS le pending : `mountTargetSelect` relance le clic, l'intention est déjà dissoute.
+    expect(st.pendingMountTarget).toEqual({ riderId: rider.id, mountId: mount.id, approche: true });
     expect(st.pendingAttack).toBeNull();
     // Choisir la monture → modale fermée + attaque ciblée sur la monture.
     useGame.getState().mountTargetSelect(mount.id);

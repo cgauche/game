@@ -70,13 +70,14 @@ describe('set de TIR pur : aucune arme de mêlée fabriquée (#1348)', () => {
     expect(h.weapons.map((w) => w.label)).toEqual(['Arbalète']);
   });
 
-  it('Engagé : le clic-ennemi est REFUSÉ (journal), aucun pendingAttack, aucune Action consommée', () => {
+  it('Engagé : le clic-ennemi est REFUSÉ (refus DIT), aucun pendingAttack, aucune Action consommée', () => {
     const h = shooter('arbalete');
     const e = battleWith(h, true);
     useGame.getState().battleClickEntity(e.id, { confirm: true });
     expect(useGame.getState().pendingAttack).toBeNull();
     expect(useGame.getState().battle!.acted).toBe(false);
-    expect(useGame.getState().journal.join('\n')).toMatch(/Engagé/);
+    // Le refus se dit au canal VISIBLE du combat (`state.refus`), pas au journal (spec § 2026-08-19).
+    expect(useGame.getState().refus?.texte ?? '').toMatch(/Engagé/);
   });
 
   it('après commutation vers le set de MÊLÉE (action gratuite), l’attaque PART', () => {

@@ -84,15 +84,17 @@ describe('clic-sol implicite — tap 1 aperçu, tap 2 déplace', () => {
 describe('Course implicite — zone au-delà de la Marche, jet au commit (LDB 15 l.41)', () => {
   beforeEach(() => { useGame.setState({ battle: null, pendingAttack: null, pendingRun: null }); });
 
-  it('clic case au-delà de la Marche (≤ 3M) : aperçu run, re-clic ouvre pendingRun avec destination', () => {
+  it('clic case au-delà de la Marche, COURSE ARMÉE : aperçu run, re-clic ouvre pendingRun avec destination', () => {
     const { H } = setup();
     const p = { ...useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos! };
     const M = effectiveMovement(H);
     const dest = { x: p.x + M + 2, y: p.y }; // hors Marche, dans la Course
-    useGame.getState().battleClickTile(dest);
+    // Spec HUD § ARBITRAGE 2026-08-19 : au-delà de la Marche, le champ ne court plus tout seul — la
+    // Course s'ARME, et son verdict voyage avec le geste (`courseArmee`), comme `confirm`.
+    useGame.getState().battleClickTile(dest, { courseArmee: true });
     expect(useGame.getState().battle!.preview).toMatchObject({ kind: 'run', tile: dest });
     expect(useGame.getState().pendingRun).toBeNull(); // pas encore de jet
-    useGame.getState().battleClickTile(dest);
+    useGame.getState().battleClickTile(dest, { courseArmee: true });
     const pr = useGame.getState().pendingRun;
     expect(pr).toMatchObject({ combatantId: H.id, dest });
     expect(useGame.getState().battle!.preview).toBeNull();
@@ -194,10 +196,12 @@ describe('clic-ennemi implicite', () => {
     const e = st0.battle!.combatants.find((c) => c.kind === 'enemy')!;
     e.pos = { x: h.pos!.x + 2, y: h.pos!.y };
     h.advantage = 0;
-    useGame.getState().battleClickEntity(e.id);
+    // Spec HUD § ARBITRAGE 2026-08-19 : hors d'Allonge, l'approche se DEMANDE (Charge armée) — son
+    // verdict voyage avec le geste, y compris pour l'APERÇU (le survol dit déjà la même vérité).
+    useGame.getState().battleClickEntity(e.id, { approche: true });
     expect(useGame.getState().battle!.preview).toMatchObject({ kind: 'charge', targetId: e.id, adv: 1 });
     vi.clearAllTimers();
-    useGame.getState().battleClickEntity(e.id);
+    useGame.getState().battleClickEntity(e.id, { approche: true });
     vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) → ouvre la frappe
     const st = useGame.getState();
     const hh = st.battle!.combatants.find((c) => c.id === H.id)!;
@@ -206,7 +210,7 @@ describe('clic-ennemi implicite', () => {
     expect(st.pendingAttack?.fromCharge).toBe(true);
   });
 
-  it('Mouvement entamé : pas de Charge — rejoindre dans la Marche restante puis attaquer, sans bonus', () => {
+  it('Mouvement entamé, approche ARMÉE : pas de Charge — rejoindre dans la Marche restante puis attaquer, sans bonus', () => {
     const { H } = setup();
     useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 1, movedPreAction: true } });
     const st0 = useGame.getState();
@@ -214,10 +218,10 @@ describe('clic-ennemi implicite', () => {
     const e = st0.battle!.combatants.find((c) => c.kind === 'enemy')!;
     e.pos = { x: h.pos!.x + 2, y: h.pos!.y };
     h.advantage = 0;
-    useGame.getState().battleClickEntity(e.id);
+    useGame.getState().battleClickEntity(e.id, { approche: true });
     expect(useGame.getState().battle!.preview).toMatchObject({ kind: 'moveAttack', targetId: e.id });
     vi.clearAllTimers();
-    useGame.getState().battleClickEntity(e.id);
+    useGame.getState().battleClickEntity(e.id, { approche: true });
     vi.runOnlyPendingTimers(); // joue le glissé d'approche → ouvre la frappe
     const st = useGame.getState();
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(0);

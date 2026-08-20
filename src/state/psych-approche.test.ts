@@ -93,9 +93,12 @@ describe('Approche sous Peur (store)', () => {
   it('CHARGER la source de sa Peur passe aussi par le Test de Calme (intention entité relancée)', () => {
     const { H, E } = setup();
     E.pos = { x: 13, y: 10 }; // distance 3 ≤ 2M+1 (M4) → charge possible
-    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    // Charge ARMÉE (spec HUD § ARBITRAGE 2026-08-19) : le clic ne s'approche plus tout seul.
+    useGame.getState().battleClickEntity(E.id, { confirm: true, approche: true });
     let st = useGame.getState();
-    expect(st.pendingApproach).toMatchObject({ combatantId: H.id, sourceId: E.id, intent: { kind: 'entity', id: E.id } });
+    // Le verdict d'armement est CAPTURÉ dans le pending : la relance après le Test de Calme ne relit
+    // pas l'intention (dissoute par ce clic), sans quoi le geste gagné serait refusé.
+    expect(st.pendingApproach).toMatchObject({ combatantId: H.id, sourceId: E.id, intent: { kind: 'entity', id: E.id, approche: true } });
     expect(st.pendingAttack).toBeNull(); // la charge attend le Test
     useGame.setState({ pendingApproach: { ...st.pendingApproach!, result: { success: true, roll: 5, target: 50, sl: 4 } } });
     vi.clearAllTimers();

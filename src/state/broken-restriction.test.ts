@@ -27,10 +27,12 @@ describe('Brisé — restriction d\'action (LDB 16 l.52)', () => {
     expect(useGame.getState().pendingAttack).toBeNull();
   });
 
-  it('non Brisé : le clic-ennemi attaque (régression)', () => {
+  it('non Brisé : le clic-ennemi APPROCHE-ET-FRAPPE quand la Charge est armée (régression)', () => {
     setup(false);
     vi.clearAllTimers();
-    useGame.getState().battleClickEntity('e', { confirm: true });
+    // La cible est hors d'Allonge : depuis la spec HUD § ARBITRAGE 2026-08-19, le clic ne s'approche
+    // plus tout seul — le joueur ARME la Charge, et le verdict voyage avec le geste (`approche`).
+    useGame.getState().battleClickEntity('e', { confirm: true, approche: true });
     vi.runOnlyPendingTimers(); // joue le glissé d'approche (charge) → ouvre la frappe
     expect(useGame.getState().pendingAttack).not.toBeNull();
   });

@@ -82,6 +82,10 @@ const TIR_DANS_LE_TAS = { pendingAttack: { attackerId: 'h1', targetId: 'e1', int
  *  se peint EN PLUS des portées permanentes — c'est la réponse à « connaître la distance ». */
 const INTENTION_CHARGE = { localIntent: { actionId: 'charge' } };
 
+/** L'état de store qui arme l'INTENTION de Course : depuis la spec § ARBITRAGE 2026-08-19, c'est LUI
+ *  — et lui seul — qui allume la zone de Course du champ (nature `run`). */
+const INTENTION_COURSE = { localIntent: { actionId: 'course' } };
+
 let root: Root | null = null;
 let conteneur: HTMLDivElement | null = null;
 let scènes: THREE.Scene[] = [];
@@ -142,22 +146,31 @@ function comptesVolumiques(): Record<string, number> {
 }
 
 /**
- * L'ORACLE, nature par nature — ce que la voie affine peignait sur ces deux témoins, et que le monde
+ * L'ORACLE, nature par nature — ce que la voie affine peignait sur ces témoins, et que le monde
  * volumique posait à l'identique (mesuré à l'arbre d'avant le retrait de l'affine, 2026-08-14).
  * Une case de marche gagnée ou perdue, une bande de portée qui change de largeur, un anneau qui
  * disparaît : tout se voit ici.
+ *
+ * MISE À JOUR 2026-08-19 (spec HUD § ARBITRAGE) : la zone de COURSE (`run`, 36 cases sur ce témoin)
+ * a quitté les oracles de tour ordinaire — « par défaut seule la zone de déplacement est affichée ».
+ * Elle n'est plus peinte que sous l'intention de Course, d'où le 4ᵉ témoin ci-dessous : le compte 36
+ * est CONSERVÉ tel quel, il a seulement changé de condition.
  */
 const ORACLE_NEUTRE: Record<string, number> = {
-  walk: 62, run: 36, rangeBand: 100, team: 2, teamActive: 1, zoneSmoke: 2, zoneFire: 1, ringContour: 2,
+  walk: 62, rangeBand: 100, team: 2, teamActive: 1, zoneSmoke: 2, zoneFire: 1, ringContour: 2,
 };
 const ORACLE_FOULE: Record<string, number> = {
-  walk: 62, run: 36, rangeBand: 100, team: 2, teamActive: 1, zoneSmoke: 2, zoneFire: 1, ringCrowd: 2,
+  walk: 62, rangeBand: 100, team: 2, teamActive: 1, zoneSmoke: 2, zoneFire: 1, ringCrowd: 2,
 };
 /** 3ᵉ témoin (lot intentions) : Charge ARMÉE depuis la console. Mouvement 4, aucun Trait de Course →
  *  portée de Charge = `chargeReach(4)` = 8 cases, qui couvre toute la carte 10×10 depuis (3,3) sauf
  *  les deux cases occupées par les ennemis : 98 marques `intent`, EN PLUS des portées permanentes
  *  (le joueur voit la Charge par-dessus sa Marche, pas à sa place). Le reste est l'oracle neutre. */
 const ORACLE_INTENTION: Record<string, number> = { ...ORACLE_NEUTRE, intent: 98 };
+/** 4ᵉ témoin (spec § 2026-08-19) : Course ARMÉE. Sa zone se peint en nature `run` — les 36 mêmes cases
+ *  qu'un tour ordinaire peignait d'office avant l'arbitrage — et RIEN en `intent` : cette intention
+ *  délègue son affichage au champ au lieu d'écrire deux fois la même vérité. */
+const ORACLE_COURSE: Record<string, number> = { ...ORACLE_NEUTRE, run: 36 };
 
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
@@ -171,10 +184,12 @@ afterEach(() => {
 });
 
 describe('Marques de cases — le monde volumique pose la population entière (#1176 P3-0c)', () => {
-  it('les trois combats témoins portent bien TOUTES les natures (sinon la sonde ne pèse rien)', () => {
-    // La RÉUNION des trois témoins couvre tous les slots : c'est ce qui rend la mesure non vide.
-    expect(new Set([...Object.keys(ORACLE_NEUTRE), ...Object.keys(ORACLE_FOULE), ...Object.keys(ORACLE_INTENTION)])).toEqual(new Set(HIGHLIGHT_SLOTS));
+  it('les QUATRE combats témoins portent bien TOUTES les natures (sinon la sonde ne pèse rien)', () => {
+    // La RÉUNION des témoins couvre tous les slots : c'est ce qui rend la mesure non vide.
+    expect(new Set([...Object.keys(ORACLE_NEUTRE), ...Object.keys(ORACLE_FOULE), ...Object.keys(ORACLE_INTENTION), ...Object.keys(ORACLE_COURSE)])).toEqual(new Set(HIGHLIGHT_SLOTS));
     expect(ORACLE_NEUTRE.intent, 'un tour neutre n’arme AUCUNE intention').toBeUndefined();
+    expect(ORACLE_NEUTRE.run, 'un tour neutre ne peint PAS la zone de Course (spec § 2026-08-19)').toBeUndefined();
+    expect(ORACLE_COURSE.intent, 'la Course armée peint sa zone en nature `run`, jamais une 2ᵉ fois en `intent`').toBeUndefined();
     expect(ORACLE_NEUTRE.ringCrowd, 'un tour neutre n’arme PAS le tir dans le tas').toBeUndefined();
     expect(ORACLE_FOULE.ringContour, 'un tir dans le tas éteint les anneaux de cible').toBeUndefined();
   });
@@ -192,6 +207,11 @@ describe('Marques de cases — le monde volumique pose la population entière (#
   it('nature par nature, le volumique pose exactement l’oracle (INTENTION de Charge armée)', () => {
     monter(INTENTION_CHARGE);
     expect(comptesVolumiques()).toEqual(ORACLE_INTENTION);
+  });
+
+  it('nature par nature, le volumique pose exactement l’oracle (INTENTION de Course armée)', () => {
+    monter(INTENTION_COURSE);
+    expect(comptesVolumiques()).toEqual(ORACLE_COURSE);
   });
 
   it('en volumique, chaque pool monté porte l’opacité de sa nature et un `count` borné par sa capacité', () => {

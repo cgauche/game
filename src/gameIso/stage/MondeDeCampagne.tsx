@@ -39,7 +39,7 @@ import { buildRoofs, clearedSpace } from '../builders/roofs';
 import { buildProps } from '../builders/props';
 import { buildTokens } from '../builders/tokens';
 import { elOccluder } from './occluders';
-import { type HighlightOpts } from './highlightLayer';
+import { tireurSurvole, type HighlightOpts } from './highlightLayer';
 import { dynamicMarks } from '../builders/dynamicMarks';
 import { interactionHalos, NO_INTERACTION_HALOS, type InteractionHalos } from '../builders/interactHalos';
 import { tokenChromes, type TokenChromeMark } from '../builders/tokenChrome';
@@ -488,10 +488,14 @@ function CorpsDuMonde() {
   // (`state/localIntent`) et le SURVOL (`store.hovered`, qui allume les bandes de portée d'un tireur).
   // Sans elles ici, l'écran déjà monté ne réapprenait jamais leur changement — les marques ne se
   // peignaient qu'au MONTAGE (sonde `intention-peinture-vive`).
+  // Le survol n'entre QUE s'il peint (`tireurSurvole`, verdict partagé avec la vue) : survoler un
+  // combattant sans arme à distance ne change aucune marque, et reforger la liste pour lui faisait
+  // réécrire tous les pools d'instances pour une image identique (garde `marques-en-place`).
   const combatBattle = mode === 'battle' && battle ? battle : null;
+  const hoveredTireur = combatBattle ? tireurSurvole(combatBattle, hovered) : null;
   const highlightOpts = useMemo<HighlightOpts>(
-    () => ({ myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast, localIntent, hovered }),
-    [myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast, localIntent, hovered],
+    () => ({ myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast, localIntent, hovered: hoveredTireur }),
+    [myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast, localIntent, hoveredTireur],
   );
 
   // ── Pointeur & visée au survol ──────────────────────────────────────────────────────────────────

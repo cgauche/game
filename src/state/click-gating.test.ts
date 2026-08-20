@@ -37,15 +37,17 @@ beforeEach(() => {
 });
 
 describe('battleClickEntity — tir refusé AVANT la modale', () => {
-  it('cible hors LdV → journal « ligne de vue », pas de pendingAttack ni d’aperçu', () => {
+  it('cible hors LdV → refus DIT « ligne de vue », pas de pendingAttack ni d’aperçu', () => {
     setup();
     useGame.getState().battleClickEntity('e-cache');
     expect(useGame.getState().pendingAttack).toBeNull();
     expect(useGame.getState().battle?.preview ?? null).toBeNull();
-    expect(useGame.getState().journal.join('\n')).toMatch(/ligne de vue/i);
+    // Le refus d'un clic se dit au CANAL VISIBLE du combat (`state.refus` → bannière), pas au journal
+    // de partie que le tiroir n'affiche pas pendant un combat (spec HUD § ARBITRAGE 2026-08-19).
+    expect(useGame.getState().refus?.texte ?? '').toMatch(/ligne de vue/i);
   });
 
-  it('cible au-delà de Portée ×3 → journal « hors de portée », pas de pendingAttack', () => {
+  it('cible au-delà de Portée ×3 → refus DIT « hors de portée », pas de pendingAttack', () => {
     const { a } = setup();
     a.weapons = [{ name: 'Arc court', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 4, qualities: [] }] as never; // ×3 = 6 cases
     useGame.getState().battleClickEntity('e-cache'); // à 14 cases — ET sans LdV, mais la portée seule suffirait
@@ -55,7 +57,7 @@ describe('battleClickEntity — tir refusé AVANT la modale', () => {
     useGame.setState({ battle: { ...b, combatants: [...b.combatants, b2] } });
     useGame.getState().battleClickEntity('e-loin');
     expect(useGame.getState().pendingAttack).toBeNull();
-    expect(useGame.getState().journal.join('\n')).toMatch(/hors de portée/i);
+    expect(useGame.getState().refus?.texte ?? '').toMatch(/hors de portée/i);
   });
 
   it('cible VALIDE (LdV + portée) → l’aperçu tap-1 se pose normalement', () => {

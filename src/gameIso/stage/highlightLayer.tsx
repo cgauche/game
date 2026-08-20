@@ -9,7 +9,7 @@ import type { GameState, BattleState, PendingAttack, PendingCleave, PendingDualS
 import { Combatant } from '../../engine/types';
 import { crowdEligible, eligibleAttackTargetIds, displayedReach, computeRunReach, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { currentTargetingMode } from '../../state/targetingModes';
-import { armedIntentPortee, intentReach, PORTEE_ARME, type LocalIntent } from '../../state/localIntent';
+import { armedIntentPortee, courseArmee, intentReach, PORTEE_ARME, type LocalIntent } from '../../state/localIntent';
 import { controlsCombatant } from '../../state/netOwnership';
 import { inBattleId } from '../../state/combatants';
 import { attackWeapon } from '../../engine/combat';
@@ -42,7 +42,11 @@ export function combatHighlightsView(get: () => GameState, battle: BattleState, 
   const view: HighlightsView = {
     myTurn,
     walkReach: myTurn ? displayedReach(get) : new Map<string, number>(),
-    runReach: myTurn ? computeRunReach(get) : new Map<string, number>(),
+    // ZONE DE COURSE : peinte SEULEMENT quand la Course est ARMÉE (spec HUD § ARBITRAGE 2026-08-19,
+    // « par défaut seule la zone de déplacement est affichée »). C'est aussi l'affichage de cette
+    // intention-là : `INTENT_REACH['portee-course']` délègue ICI plutôt que de peindre une 2ᵉ fois la
+    // même vérité en nature `intent` (même patron que la portée d'ARME → `rangeBandSource`).
+    runReach: myTurn && courseArmee(get) ? computeRunReach(get) : new Map<string, number>(),
     // INTENTION armée depuis l'interface : sa portée est LOCALE au client (hors `battle`) et ne
     // s'affiche qu'à son tour, comme toute affordance (spec HUD zone 4).
     intentReach: myTurn && localIntent ? intentReach(get) : new Map<string, number>(),
@@ -87,4 +91,20 @@ export function combatHighlightsView(get: () => GameState, battle: BattleState, 
     })(),
   };
   return view;
+}
+
+/**
+ * Le combattant SURVOLÉ porte-t-il des BANDES DE PORTÉE (arme à distance en main) ? Renvoie son id, ou
+ * `null` — c'est-à-dire : ce survol change-t-il quoi que ce soit aux marques de cases ?
+ *
+ * SOURCE UNIQUE de ce verdict, à DEUX usages : la vue ci-dessus s'en sert pour choisir sa source, et
+ * l'hôte (`IsoStage`) pour ne faire entrer dans son contexte que les survols qui PEIGNENT. Sans ce
+ * filtre, survoler n'importe qui reforgeait la liste entière des marques et faisait réécrire tous les
+ * pools d'instances pour une image identique (garde `marques-en-place`, #1176 P3-0c).
+ */
+export function tireurSurvole(battle: BattleState, hovered: string | null): string | null {
+  const c = inBattleId(battle, hovered ?? undefined); // primitive canonique du find-par-id EN COMBAT (cliquet #279)
+  if (!c?.pos) return null;
+  const weapon = attackWeapon(c.weapons, false);
+  return weapon?.type === 'ranged' ? c.id : null;
 }

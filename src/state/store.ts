@@ -19,6 +19,8 @@ import { facingToward, DIR8_DELTA, rotateDir8, type Dir8 } from './dir8';
 import { footprintTiles, footprintN } from './footprint';
 import type { CombatCursor, ScreenDir } from './combatCursor';
 import type { LocalIntent } from './localIntent';
+import type { RefusIHM } from './refusVisible';
+import type { BattleClickOpts, TileClickOpts } from './targetingModes';
 import { applyShipCollision } from './shipCollision';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { OvercastAxis } from '../engine/overcast';
@@ -402,6 +404,11 @@ export interface GameState extends RollFlowActionsMap {
    *  client : hors `battle`, hors allowlist d'intents, préservé par `applyHostSnapshot` — seul le
    *  COMMIT du geste part en réseau. null = aucune intention (gestes par défaut du grid, inchangés). */
   localIntent: LocalIntent | null;
+  /** REFUS de geste à DIRE au joueur (`refusVisible.ts`, spec HUD § ARBITRAGE 2026-08-19 « refus
+   *  VISIBLE par construction ») — retour d'IHM strictement LOCAL, comme `localIntent` : hors
+   *  `battle` (il ne persiste pas au journal de combat), hors snapshot (le refus opposé au geste de
+   *  l'hôte ne s'affiche pas chez ses invités). Projeté par `ui/CombatBanner`. */
+  refus: RefusIHM | null;
   /** Arme (id d'action) ou dissout (`null`) l'intention locale. Re-armer la MÊME la dissout. */
   battleArmIntent: (actionId: string | null) => void;
   /** Combattant mis en évidence par le SURVOL (token carte OU portrait frise) — pilote le miroir
@@ -1079,8 +1086,11 @@ export interface GameState extends RollFlowActionsMap {
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
   oocCastSpell: (casterId: string, spellId: string, targetId: string, fromGrimoire?: boolean) => void;
   battleFocusSpell: (spellId: string) => void;
-  battleClickTile: (pt: Pt, opts?: { confirm?: boolean }) => void;
-  battleClickEntity: (id: string, opts?: { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string; wardCleared?: boolean }) => void;
+  // Les OPTIONS de ces deux clics vivent avec leur consommateur (`targetingModes`) : les recopier ici
+  // en littéral les faisait diverger en silence — le champ `approche` (verdict d'armement de la
+  // Charge, spec § 2026-08-19) manquait déjà de cette copie, et TypeScript ne pouvait pas le dire.
+  battleClickTile: (pt: Pt, opts?: TileClickOpts) => void;
+  battleClickEntity: (id: string, opts?: BattleClickOpts) => void;
   /** Annule TOUT le déplacement décomposé du Tour (R6/LOT 6) tant qu'aucune Action n'a été prise :
    *  restaure positions/orientation depuis `battle.moveSnapshot`. No-op après l'Action. */
   cancelMove: () => void;
@@ -1300,7 +1310,8 @@ export interface GameState extends RollFlowActionsMap {
   battleDismount: () => void;
   /** Combat monté (AA 9 l.36) : clic sur un couple cavalier+monture (deux ennemis) → choisir lequel
    *  frapper (le cavalier −10 si l'on est plus petit que la monture ; abattre la monture désarçonne). */
-  pendingMountTarget: { riderId: string; mountId: string } | null;
+  /** `approche` = VERDICT D'ARMEMENT capturé au clic qui a ouvert ce choix (cf. `PendingApproach`). */
+  pendingMountTarget: { riderId: string; mountId: string; approche?: boolean } | null;
   mountTargetSelect: (id: string) => void;
   mountTargetCancel: () => void;
   /** Désengagement (LDB 15 l.43-68) : menu Sacrifier l'Avantage / Esquiver / Fuir / Renoncer. */

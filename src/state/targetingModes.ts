@@ -39,6 +39,8 @@ import { inBattleId } from './combatants';
 import { targetingHolder } from './targetingHolder';
 import { afterApproach } from './combatDirector';
 import { ev } from './combatLog';
+import { refuserGeste } from './refusVisible';
+import { chargeArmee } from './localIntent';
 import { t } from '../i18n';
 import { bus, EVT } from './bus';
 import type { GameState } from './store';
@@ -55,8 +57,10 @@ export type HoverTargeting =
   | { kind: 'none' }
   /** Cible refusée au clic — `engaged` = mêlée verrouillée par l'Engagement (Désengagement requis) ;
    *  `unloaded` = arme à Recharge non chargée (recharger d'abord) ; `noammo` = plus de munition ;
-   *  `sous-effectif` = machine de guerre ADE II sous la moitié de l'Équipe requise (ch.08 l.233). */
-  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min' | 'armeBannie';
+   *  `sous-effectif` = machine de guerre ADE II sous la moitié de l'Équipe requise (ch.08 l.233) ;
+   *  `approche-non-armee` = hors de portée ET la Charge n'est pas armée (spec HUD § 2026-08-19) : le clic
+   *  REFUSERAIT, l'affordance le dit au lieu de promettre une Charge que le clic ne fera pas. */
+  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min' | 'armeBannie' | 'approche-non-armee';
       /** Munition attendue (libellé JOUEUR, `noammo`) — nommée dans l'affordance/tooltip pour dire quoi
        *  acheter/charger (« Pas de munitions (Boulet et poudre) »). */
       need?: string }
@@ -120,8 +124,25 @@ export interface TargetingMode {
  *  tuiles (catalogue `TILE_MODES`) DOIT fournir son aperçu, sinon erreur de compilation (#198). */
 export type TileTargetingMode = TargetingMode & Required<Pick<TargetingMode, 'tileValidAt' | 'commitTile' | 'tilePreview'>>;
 
-/** Options du clic-token (parité `battleClickEntity`). */
-export type BattleClickOpts = { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string; wardCleared?: boolean };
+/**
+ * Options du clic-token (parité `battleClickEntity`).
+ *
+ * `approche` = VERDICT D'ARMEMENT de la Charge (spec HUD § ARBITRAGE 2026-08-19) : sans lui, un
+ * clic-ennemi ne frappe qu'À PORTÉE et ne s'approche jamais tout seul. Il VOYAGE avec le geste, comme
+ * `confirm`, pour deux raisons mesurées :
+ *  - COOP : l'intention est locale au CLIENT (`localIntent`, hors snapshot). L'hôte qui exécute
+ *    l'intent d'un invité ne peut pas la relire dans SON store — il y verrait sa propre case. Le
+ *    verdict se calcule donc chez l'émetteur (`localIntent.INTENT_VERDICT_ARGS`, joint par `netFlow`).
+ *  - RÉ-ENTRÉE : un geste différé par un gate (Test de Calme d'approche, Bénédiction de Protection,
+ *    choix cavalier/monture) est REJOUÉ plus tard, quand l'intention a déjà été dissoute par le
+ *    premier clic. Le verdict voyage donc aussi DANS le pending, et revient par ici à la relance.
+ * Absent = « non renseigné » : le site d'appel local le calcule alors depuis SON store.
+ */
+export type BattleClickOpts = { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string; wardCleared?: boolean; approche?: boolean };
+
+/** Options du clic-CASE (parité `battleClickTile`). `courseArmee` = le pendant exact de `approche`
+ *  pour la zone de Course (même voyage, mêmes deux raisons). */
+export type TileClickOpts = { confirm?: boolean; courseArmee?: boolean };
 
 /** Libellé de la compétence d'attaque : `attackTestLabel` (Corps à corps/Projectiles, ou la Carac
  *  de Résolution alternative de l'arme) + famille d'arme si connue. */
@@ -275,6 +296,14 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
     const p = previewAttack(get, active, target, undefined, { weaponUid: option.weaponUid });
     return { kind: 'invalid', reason: p.blocked ? 'los' : p.kind === 'melee' && isEngaged(active) ? 'engaged' : 'range' };
   }
+  // LE SURVOL DIT LA VÉRITÉ DU CLIC (contrat de ce fichier : « réticule au survol = ce que le clic
+  // commet ») : depuis l'arbitrage du 2026-08-19, un plan d'APPROCHE que la Charge n'a pas armé sera
+  // REFUSÉ au clic — l'affordance porte donc ce refus, au lieu d'annoncer « Charge (+1 Avantage) » et
+  // un chemin que le clic ne parcourra pas. MÊME prédicat qu'au commit (`gesteImpose` y compris) ; le
+  // survol, lui, est un rendu LOCAL : il lit l'intention du client sans passer par les args d'intent.
+  if (plan.kind !== 'attack' && !isFrenzied(active) && option.cost.action && !chargeArmee(get)) {
+    return { kind: 'invalid', reason: 'approche-non-armee' };
+  }
   // Tir direct (pas une Charge/rejoindre, pas une attaque gratuite) refusé faute de ressource : MÊME
   // prédicat que le clic (firedAttackBlock) → le réticule annonce « recharger »/« plus de munitions »
   // au lieu d'une attaque qui se solderait par un log silencieux.
@@ -399,10 +428,28 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   // L'Action dépensée interdit le DÉPLACEMENT combiné pour une attaque qui COÛTE l'Action (Arme hors
   // Frénésie) → frappe directe seulement. Une attaque GRATUITE (Morsure/Caudale/Tentacule, ou l'Arme en
   // attaque libre de Frénésie → `cost.action===false`) PEUT s'approcher (charge) même l'Action dépensée
-  // (LDB 21 l.33 : « se déplacer au maximum vers l'ennemi le plus proche pour l'attaquer »).
+  // (LDB 21 l.33).
   if (battle.acted && option.cost.action && plan.kind !== 'attack') return;
+  // CLIC-ENNEMI NU = ATTAQUE À PORTÉE SEULEMENT (spec HUD § ARBITRAGE 2026-08-19) : l'approche
+  // automatique vers la cible cliquée (Charge implicite / rejoindre-et-frapper) ne part plus toute
+  // seule — elle se DEMANDE, en armant la Charge (`opts.approche`). Sans elle, refus DIT. Ce gate ne
+  // vaut que pour ce chemin de CLIC : l'IA ne passe jamais par ici (elle exécute ses propres plans),
+  // sa parité d'approche est donc intacte.
+  //
+  // Il ne vise QUE le geste par DÉFAUT du clic nu, et s'efface donc devant deux NATURES de geste qui
+  // ne sont pas un choix du joueur (jamais un id nommé ici — la nature seule décide) :
+  //  - un déplacement OBLIGATOIRE : la Frénésie (LDB 21 l.33) — ce que la règle IMPOSE ne s'arme pas ;
+  //  - une attaque GRATUITE (`cost.action === false` : Morsure/Caudale/Tentacule, ou l'Arme en attaque
+  //    libre) : elle ne consomme pas l'Action et porte SA propre approche, celle que la ligne
+  //    ci-dessus autorise déjà même l'Action dépensée.
+  const gesteImpose = isFrenzied(active) || !option.cost.action;
+  if (plan.kind !== 'attack' && plan.kind !== 'blocked' && !opts?.approche && !gesteImpose) {
+    refuserGeste(get, set, t('cs.refusApprocheNonArmee', { name: target.label }));
+    if (battle.preview) set({ battle: { ...get().battle!, preview: null } }); // l'aperçu du geste refusé s'efface, comme aux autres refus
+    return;
+  }
   if (plan.kind === 'blocked') {
-    get().log(plan.reason);
+    refuserGeste(get, set, plan.reason); // « hors de portée », « pas de ligne de vue »… : VISIBLE (spec § 2026-08-19)
     if (battle.preview) set({ battle: { ...battle, preview: null } });
     bus.emit(EVT.SCENE_DIRTY);
     return;
@@ -414,7 +461,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   if (plan.kind === 'attack' && !option.freeKind) {
     const block = firedAttackBlock(get, active, target, option.weaponUid);
     if (block) {
-      get().log(block.detail);
+      refuserGeste(get, set, block.detail); // même loi de visibilité : ce refus est celui d'un clic
       if (battle.preview) set({ battle: { ...battle, preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
       return;
@@ -435,7 +482,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
     const rider = target.mountId ? target : inBattleId(battle, target.riderId);
     const mount = target.riderId ? target : inBattleId(battle, target.mountId);
     if (rider && mount && rider.kind !== 'hero' && mount.kind !== 'hero' && !isOutOfAction(rider) && !isOutOfAction(mount)) {
-      set({ pendingMountTarget: { riderId: rider.id, mountId: mount.id } });
+      set({ pendingMountTarget: { riderId: rider.id, mountId: mount.id, approche: opts?.approche } });
       return;
     }
   }
@@ -448,7 +495,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
         get().log(t('cs.fearNoApproach', { name: active.label, feared: feared.label }));
         return;
       }
-      set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, intent: { kind: 'entity', id }, result: null }, battle: { ...get().battle!, preview: null } });
+      set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, intent: { kind: 'entity', id, approche: opts?.approche }, result: null }, battle: { ...get().battle!, preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
       return;
     }
@@ -459,7 +506,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   // Résilience) → il DIFFÈRE la déclaration derrière `pendingWard`. `wardCleared` = ce gate a déjà été
   // franchi pour CE clic (relance) → on le saute.
   if (!opts?.wardCleared && hasActiveFlag(target, 'attackWardFM')) {
-    set({ pendingWard: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...get().battle!, preview: null } });
+    set({ pendingWard: { attackerId: active.id, targetId: target.id, approche: opts?.approche, result: null }, battle: { ...get().battle!, preview: null } });
     bus.emit(EVT.SCENE_DIRTY);
     return;
   }

@@ -28,11 +28,14 @@ const scene = (mur?: number): Scene => {
   return { id: 's', name: 's', dimensions: { w: 8, h: 8 }, ambiance: 'jour', layers: [{ z: 0, tiles }], entities: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene;
 };
 
-const mkGet = (combatants: Combatant[], battleOver: Partial<Record<string, unknown>> = {}, sc = scene()): (() => GameState) =>
+const mkGet = (combatants: Combatant[], battleOver: Partial<Record<string, unknown>> = {}, sc = scene(), racine: Partial<Record<string, unknown>> = {}): (() => GameState) =>
   (() => ({
     scene: sc,
     battle: { combatants, order: combatants.map((c) => c.id), turn: 0, movementUsed: 0, action: null, selectedSpellId: null, acted: false, over: null, ...battleOver },
     facing: {}, gameTime: 0, log: () => {},
+    // L'INTENTION ARMÉE fait partie du contexte que l'affordance lit (spec HUD § ARBITRAGE 2026-08-19) :
+    // le survol dit ce que le CLIC fera, or le clic dépend désormais de la case Charge.
+    localIntent: null, ...racine,
   })) as unknown as () => GameState;
 
 const bow = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 4, qualities: [] }; // ×3 = 12 m = 6 cases
@@ -52,11 +55,19 @@ describe('hoverTargeting — mode neutre (attaque implicite)', () => {
     expect(ht).toMatchObject({ kind: 'ok', line: 'solid', title: 'Épée', skill: 'Corps à corps', dmg: 7 }); // BF 3 + 4
   });
 
-  it('cible chargeable (hors Allonge, Mouvement intact) → ok PLEINE (aperçu depuis l’arrivée)', () => {
+  it('cible hors d’Allonge, Charge NON armée → le réticule annonce le REFUS, pas une Charge', () => {
+    // Spec HUD § ARBITRAGE 2026-08-19 : le clic ne s'approche plus tout seul. Le survol doit dire CE
+    // QUE LE CLIC FERA — promettre « Charge (+1 Avantage) » et un chemin serait un mensonge d'affordance.
     const a = combatant({ id: 'A' });
     const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 4, y: 0 } });
-    const ht = hoverTargeting(mkGet([a, b]), a, b);
-    expect(ht).toMatchObject({ kind: 'ok', line: 'solid', title: 'Épée' });
+    expect(hoverTargeting(mkGet([a, b]), a, b)).toMatchObject({ kind: 'invalid', reason: 'approche-non-armee' });
+  });
+
+  it('cible chargeable, Charge ARMÉE → ok PLEINE (aperçu depuis l’arrivée)', () => {
+    const a = combatant({ id: 'A' });
+    const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 4, y: 0 } });
+    const get = mkGet([a, b], {}, scene(), { localIntent: { actionId: 'charge' } });
+    expect(hoverTargeting(get, a, b)).toMatchObject({ kind: 'ok', line: 'solid', title: 'Épée' });
   });
 
   it('tir hors LdV → invalid los ; au-delà de ×3 → invalid range', () => {

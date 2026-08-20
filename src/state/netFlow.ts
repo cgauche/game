@@ -24,6 +24,7 @@ import { ruleOverrides, loadRuleOverrides } from '../engine/policy';
 import { HostSession, GuestSession } from '../net/session';
 import { GUEST_INTENTS, sanitizeIntentArgs } from '../net/intents';
 import { intentAllowedFor, withActingSeat } from './netOwnership';
+import { argsAvecVerdictLocal } from './localIntent';
 import { RoomGuest, RoomHost, relayHttpUrl } from '../net/relay';
 import type { NetMessage } from '../net/protocol';
 import type { Scene } from './scene';
@@ -96,6 +97,10 @@ export function netSnapshot(get: Get): Record<string, unknown> {
   // L'INTENTION armée est un mode d'ÉCRAN, LOCAL au client (spec HUD zone 4) : elle ne voyage pas —
   // la case armée de l'hôte n'a rien à allumer chez ses invités.
   delete (data as Record<string, unknown>).localIntent;
+  // MÊME raison pour le REFUS de geste (`refusVisible.ts`) : c'est la réponse faite à CE joueur sur SON
+  // clic. L'hôte qui refuse son propre geste n'a rien à dire aux autres tables ; et quand il exécute
+  // l'intent d'un invité, le refus éventuel appartient à l'invité, pas au sien.
+  delete (data as Record<string, unknown>).refus;
   // Les règles maison de l'HÔTE voyagent avec l'état → parité hôte/invité (sinon l'invité calcule
   // sur SES propres surcharges localStorage et diverge).
   return packHouseRules(data, ruleOverrides());
@@ -148,6 +153,7 @@ export function applyNetSnapshot(set: Set, data: Record<string, unknown>): void 
     ...(game as Partial<GameState>),
     ...(keepCreator ? { screen: 'creator' as const } : null),
     localIntent: mine.localIntent,
+    refus: mine.refus, // le refus du CLIENT survit au snapshot : c'est SON retour de geste
 
     net: {
       ...(incoming ?? mine.net),
@@ -170,7 +176,9 @@ function interceptGuestActions(): void {
     const fn = state[name];
     if (typeof fn !== 'function') continue;
     originals[name] = fn as (...args: unknown[]) => unknown;
-    wrapped[name] = (...args: unknown[]) => guest?.sendIntent(name, sanitizeIntentArgs(args));
+    // Le geste part avec le VERDICT D'ARMEMENT calculé ICI, chez l'émetteur (`argsAvecVerdictLocal`) :
+    // l'intention est locale au client, l'hôte ne peut pas la relire dans son propre store.
+    wrapped[name] = (...args: unknown[]) => guest?.sendIntent(name, sanitizeIntentArgs(argsAvecVerdictLocal(useGame.getState, name, args)));
   }
   useGame.setState(wrapped as Partial<GameState>);
 }
