@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act } from 'react';
+import { Profiler, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
@@ -94,10 +94,15 @@ const anim: StageWalkAnim = {
   cam: () => cadrage,
 };
 
+/** Les commits React de l'écran monté par `rendre` — comptés par un `<Profiler>` posé AUTOUR de lui
+ *  (même sonde que `walk-frame-loop.test.tsx`). Il ne voit que le SOUS-ARBRE profilé. */
+let commitsReact = 0;
+
 /** Rend (ou re-rend) l'écran volumique sous le cadre donné, sur la racine courante. */
 async function rendre(pos: { x: number; y: number }, percage: PercageEntrees | null, cadre: StageFrame, heure = 720): Promise<void> {
   await act(async () => {
     root!.render(
+      <Profiler id="stage" onRender={() => { commitsReact += 1; }}>
       <GameStage3D
         scene={SCENE}
         mpt={sceneMetresPerTile(SCENE)}
@@ -111,7 +116,8 @@ async function rendre(pos: { x: number; y: number }, percage: PercageEntrees | n
         lights={[]}
         anim={anim}
         percage={percage}
-      />,
+      />
+      </Profiler>,
     );
   });
 }
@@ -122,6 +128,7 @@ const respirer = (ms: number): Promise<void> => respirerBanc(ms, () => battre?.(
 
 async function monter(pos: { x: number; y: number }, percage: PercageEntrees | null): Promise<void> {
   viderCaptures();
+  commitsReact = 0;
   glissement = null;
   cadrage = { x: 0, y: 0 };
   hôte = document.createElement('div');
@@ -312,10 +319,10 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
   let file: FrameRequestCallback[] = [];
   let nowAvant: (() => number) | null = null;
 
-  /** UNE image d'horloge : 16 ms plus tard, on sert les rappels d'animation en attente. Rend leur
+  /** UNE image d'horloge : `dt` ms plus tard, on sert les rappels d'animation en attente. Rend leur
    *  nombre — zéro veut dire que plus personne ne demande de frame. */
-  const image = (): number => {
-    horloge += 16;
+  const image = (dt = 16): number => {
+    horloge += dt;
     const dus = file;
     file = [];
     for (const cb of dus) cb(horloge);
@@ -381,6 +388,38 @@ describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
     }
     expect(rafale.some((w) => w > 1), `le rayon n’a jamais dépassé 1 px : ${JSON.stringify(rafale)}`).toBe(true);
     expect(rafale[rafale.length - 1], 'rayon au bout de la rafale').toBe(PERCAGE_RAYON_PX);
+  });
+
+  /**
+   * P2 — L'HORLOGE D'IMAGES NE PILOTE JAMAIS REACT (#1401). Le fondu est le dernier motif à tenir une
+   * horloge rAF à lui (`stage/percage.ts`, la pompe) : ce qu'elle appelle est la fonction de DESSIN de
+   * l'hôte (`stage/GameStage3D.tsx:659` → `dessinerRef.current()`), impérative. Un fondu est donc un
+   * motif SANS aucun événement discret, et sa borne de commits est ZÉRO.
+   *
+   * CE QUE LA SONDE MESURE : les commits du SOUS-ARBRE PROFILÉ par `rendre`. ANGLE MORT : un commit
+   * d'un parent de l'écran ne s'y verrait pas ; hors de ce banc, l'hôte de plateau reste soumis au
+   * lacet (#1403).
+   */
+  it('P2 — fondu tenu sur 30 images : il PEINT et n’engendre aucun commit React', async () => {
+    await monter(COIFFÉ, entreesDe(COIFFÉ));
+    const rayonAvant = trousPercage()[0].w;
+    expect(rayonAvant, 'le fondu n’est pas fini au montage : sans lui, « aucun commit » serait vrai du vide').toBeLessThan(PERCAGE_RAYON_PX);
+    // Le compteur MORD : le montage, lui, a commis.
+    expect(commitsReact, 'aucun commit compté au montage : la sonde de commits est débranchée').toBeGreaterThan(0);
+
+    const IMAGES = 30;
+    const PAS_MS = 8; // 30 × 8 ms < PERCAGE_FONDU_MS : le fondu est encore EN VOL à la dernière image
+    const commitsAvant = commitsReact;
+    let servies = 0;
+    for (let i = 0; i < IMAGES; i++) if (image(PAS_MS) > 0) servies++;
+
+    expect(servies, `${servies} images servies sur ${IMAGES} : la pompe du fondu a lâché en route`).toBe(IMAGES);
+    expect(trousPercage()[0].w, 'le rayon n’a pas avancé : rien n’a été peint').toBeGreaterThan(rayonAvant);
+    expect(trousPercage()[0].w, 'le fondu a convergé avant la fin : les images mesurées ne sont plus les siennes').toBeLessThan(PERCAGE_RAYON_PX);
+    expect(
+      commitsReact - commitsAvant,
+      `${commitsReact - commitsAvant} commits React pour ${IMAGES} images de fondu — aucun événement discret, la borne est 0`,
+    ).toBe(0);
   });
 });
 

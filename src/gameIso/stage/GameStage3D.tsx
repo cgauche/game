@@ -181,7 +181,7 @@ import { poseInteractHalos, type HaloPools } from './interactHaloPose';
 import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
 import { setSpritePicker } from './spritePicker';
 import { stage3dFramingFor, stageScreen, viewBoxScreen, type Stage3dFraming } from './stage3dCamera';
-import { stageLightScalars, stageLights } from './stageLights';
+import { poserLampesDuCiel, stageLightScalars, type LampesDuCiel } from './stageLights';
 import { viewPolicy } from './viewPolicy';
 import { applyFlicker, applyPointLights, createPointLightPool, hasFlicker, pointLightWrites, POINT_LIGHT_BUDGET, type PointLightSlots } from './stagePointLights';
 import type { LightSource } from '../../state/vision';
@@ -739,9 +739,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     touffes.current = new THREE.Group();
     panneaux.current = new THREE.Group();
     lampes.current = new THREE.Group();
-    // Groupe à part de `lampes` : celui-là se VIDE et se reconstruit (l'ambiante et le soleil suivent
-    // l'heure), le pool de flaques ne se monte QU'UNE fois — un vidage partagé le démonterait avec lui,
-    // et ferait varier le compte de lampes ponctuelles que le pool existe justement pour figer.
+    // Groupe à part de `lampes` : les deux se montent une fois et se REPOSENT, mais ils ne vivent pas
+    // des mêmes entrées — le ciel suit l'heure et le palier, les flaques suivent les sources de la
+    // scène à la frame. Un groupe partagé ferait varier le compte de lampes ponctuelles que le pool
+    // existe justement pour figer.
     flaques.current = new THREE.Group();
     intemperies.current = new THREE.Group();
     // Groupe FRÈRE des NAPPES DE BRUME (#1247) : à part du semis parce qu'il vit sur d'autres entrées
@@ -988,6 +989,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const pool = useRef<THREE.PointLight[]>([]);
   // Demande de recuisson de la carte d'ombre, honorée par la prochaine frame (cf. `dessiner`).
   const ombresARefaire = useRef(true);
+  /** Les lampes du CIEL posées dans leur groupe (`stageLights.poserLampesDuCiel`) — la repose de
+   *  l'heure écrit dessus, elle ne les remonte pas. */
+  const lampesDuCiel = useRef<LampesDuCiel | null>(null);
   // Boîte des CASTEURS (géométrie + quads de billboard) : c'est elle qui serre le frustum d'ombre.
   const shadowBox = useMemo(
     () => worldShadowBox(
@@ -1654,6 +1658,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   useEffect(() => {
     const groupe = marques.current;
     if (!groupe) return;
+    let bougé = false;
     HIGHLIGHT_SLOTS.forEach((slot, i) => {
       const voulue = capacités[i];
       const courant = poolsMarques.current.get(slot);
@@ -1663,22 +1668,31 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
         courant.geometry.dispose();
         (courant.material as THREE.Material).dispose();
         poolsMarques.current.delete(slot);
+        bougé = true;
       }
       if (voulue <= 0) return;
       const mesh = buildHighlightMesh(slot, voulue);
       poolsMarques.current.set(slot, mesh);
       groupe.add(mesh);
+      bougé = true;
     });
+    // Un pool RETIRÉ ne repassera pas par l'écriture qui suit : sa disparition est peinte ici, sans
+    // quoi ses marques resteraient à l'écran jusqu'à la prochaine image.
+    if (bougé) dessiner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clésCapacités]);
 
   // ── ÉCRITURE des marques : matrices et teintes réécrites EN PLACE dans des pools déjà montés. Aucun
-  // montage, aucun démontage, aucune allocation — un tour de combat ne fait que repasser ici.
+  // montage, aucun démontage, aucune allocation — un tour de combat ne fait que repasser ici. La passe
+  // rend son VERDICT par pool : une mise à jour d'état qui laisse les marques où elles sont (survol
+  // sans rapport, recalcul d'une même portée) ne peint pas d'image.
   useEffect(() => {
+    let bougé = false;
     for (const slot of HIGHLIGHT_SLOTS) {
       const mesh = poolsMarques.current.get(slot);
-      if (mesh) writeHighlightInstances(mesh, marquesGroupées.get(slot) ?? [], mpt);
+      if (mesh && writeHighlightInstances(mesh, marquesGroupées.get(slot) ?? [], mpt)) bougé = true;
     }
+    if (!bougé) return;
     dessiner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marquesGroupées, mpt]);
@@ -1993,6 +2007,14 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // passe de montage, avant toute peinture — une seconde loi ici en ferait deux à tenir d'accord.
       const mat = billboardMaterial(texture, 1);
       const mesh = new THREE.Mesh(geo, mat);
+      // IDENTITÉ DU SUJET PORTÉE PAR LE QUAD (#1401) : la rétention des boards se fait sur
+      // `sub.identity` (un quad survit exactement tant que son identité est voulue) ; le `name` la
+      // porte CÔTÉ SCÈNE, dans la même veine que le jumeau de silhouette
+      // (`boardPose.attachBodySilhouette`), pour qu'un objet monté soit appariable à ce qu'il
+      // représente (garde `stage/murage-identite.test.tsx`). Elle est INVARIANTE pour un quad donné :
+      // la relève du sujet plus haut (`b.sub = neuf`) ne change que la référence, jamais l'identité —
+      // le nom se pose donc UNE fois, au montage.
+      mesh.name = q.sub.identity;
       // Un quad PROJETTE son ombre même en Basic (le casteur ne connaît que sa géométrie et son alpha) ;
       // `receiveShadow` n'aurait, lui, aucun effet sous ce matériau. La passe d'ombres rend un matériau
       // de PROFONDEUR, jamais celui-ci : le cadre de frame ne l'atteint que par `customDepthMaterial`
@@ -2015,6 +2037,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // (`wantsContactShadow`) — sinon le personnage en porte deux.
       if (wantsContactShadow(q.sub.kind, lit)) {
         const disque = contactShadow(q.sub, q.quad);
+        // Le disque est un FRÈRE du quad dans le groupe (jamais son enfant : sa pose est propre) — il
+        // porte donc l'identité de son sujet lui-même, sinon rien ne le rattacherait à ce qu'il ombre.
+        disque.name = q.sub.identity;
         board.shadow = disque;
         groupe.add(withRenderRank(disque, 'pions'));
       }
@@ -2160,27 +2185,33 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // dépendance qui le porte (`lumière.surfaceLuminance`) : l'heure et le palier la portent aux
   // matériaux déjà montés, sans rerasteriser.
 
-  // ── GROUPE LAMPES : ce que `stageLights` décide, monté tel quel. Groupe à part des trois autres car
-  // il vit sur d'autres entrées (l'heure, le palier de lumière, la boîte des casteurs) et ne coûte ni
-  // géométrie ni matériau : une lampe se remplace, elle ne se reconstruit pas avec le monde.
+  // ── GROUPE LAMPES : posé UNE fois pour la vie de l'écran (`poserLampesDuCiel`). Groupe à part des
+  // trois autres car il vit sur d'autres entrées (l'heure, le palier de lumière, la boîte des
+  // casteurs) et ne coûte ni géométrie ni matériau.
   useEffect(() => {
     const groupe = lampes.current;
     if (!groupe) return;
-    const { ambient, sun } = stageLights({ scene, gameTime, lightLevel, shadowBox, ombreSoleil: politique.ombreSoleil });
-    groupe.add(ambient);
-    if (sun) groupe.add(sun, sun.target);
+    const pose = poserLampesDuCiel(groupe);
+    lampesDuCiel.current = pose;
+    return () => { lampesDuCiel.current = null; pose.déposer(); };
+  }, []);
+
+  // ── REPOSE DES LAMPES (#1401) : une heure qui avance ÉCRIT des intensités, une teinte et une
+  // direction sur les lampes POSÉES au-dessus. Aucune lampe ne se remonte ; le seul montage qui reste
+  // est le franchissement du régime solaire, et il vit dans `poserLampesDuCiel`. Garde :
+  // `stage/murage-identite.test.tsx`, geste « une heure ».
+  useEffect(() => {
+    const pose = lampesDuCiel.current;
+    if (!pose) return;
+    pose.reposer({ scene, gameTime, lightLevel, shadowBox, ombreSoleil: politique.ombreSoleil });
     ombresARefaire.current = true;
     dessiner();
-    return () => {
-      for (const enfant of [...groupe.children]) groupe.remove(enfant);
-      ambient.dispose();
-      sun?.dispose();
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // Même read-set que les scalaires ci-dessus (`stageLightScalars`) : une référence de scène par
-    // tick remontait ambiante et soleil — et redemandait la carte d'ombre — sans qu'aucune entrée de
-    // lumière ait bougé. Plus le verdict de STYLE du regard, seule entrée de vue de cette passe, et la
-    // boîte des casteurs par sa VALEUR (`cléBoite`) — jamais par sa référence, qui suit les sujets.
+    // Dépendances = le read-set des scalaires ci-dessus (`stageLightScalars`), CHAMP PAR CHAMP et
+    // jamais la référence de scène (un hôte qui la reforge par tick redemanderait la carte d'ombre
+    // sans qu'aucune entrée de lumière ait bougé) ; plus le verdict de STYLE du regard, seule entrée
+    // de vue de cette passe, et la boîte des casteurs par sa VALEUR (`cléBoite`) — jamais par sa
+    // référence, qui suit les sujets.
   }, [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel, cléBoite, politique.ombreSoleil]);
 
   // ── POOL DE FLAQUES (#1245, L1) : monté UNE fois, jamais reconstruit (la réf `pool` est déclarée avec

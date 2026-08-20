@@ -12,7 +12,7 @@
  *  2. un battement d'une horloge TIERCE (le lacet continu, `state/stageYaw`) dans la MÊME image ne
  *     s'ajoute pas au rendu de la boucle : la cession vit au module, et nulle part ailleurs.
  */
-import { act } from 'react';
+import { Profiler, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Dims } from '../../geometry/iso';
@@ -68,23 +68,30 @@ const ANIM: StageWalkAnim = {
 
 const dimsDe = (yawDeg: number): Dims => ({ w: SCENE.dimensions.w, h: SCENE.dimensions.h, rot: 0, view: 'iso', yawDeg });
 
+/** Les commits React des écrans montés par le test courant — comptés par un `<Profiler>` posé AUTOUR
+ *  de l'écran (`walk-frame-loop.test.tsx` compte les siens de la même façon). Il ne voit que le
+ *  SOUS-ARBRE profilé : un commit d'un parent qui ne re-rendrait pas l'écran lui échapperait. */
+let commitsReact = 0;
+
 /** `avecAnim` = l'hôte de JEU (qui passe un `anim` pour le glissement) ; sans lui, c'est l'ÉDITEUR
  *  (`ui/editor/EditorCanvas`), qui monte le même écran sans aucune prop d'animation. */
 const écran = (yawDeg = 0, avecAnim = true): JSX.Element => (
-  <GameStage3D
-    scene={SCENE}
-    mpt={MPT}
-    frame={{ mode: 'plateau', dims: dimsDe(yawDeg), cam: { x: 0, y: 0 }, zoom: 1 }}
-    tintAt={() => 1}
-    keepEl={() => true}
-    els={{ tokens: [], props: [] }}
-    actors={[]}
-    gameTime={NUIT}
-    lightLevel={null}
-    lights={LAMPES}
-    halos={HALOS}
-    {...(avecAnim ? { anim: ANIM } : {})}
-  />
+  <Profiler id="stage" onRender={() => { commitsReact += 1; }}>
+    <GameStage3D
+      scene={SCENE}
+      mpt={MPT}
+      frame={{ mode: 'plateau', dims: dimsDe(yawDeg), cam: { x: 0, y: 0 }, zoom: 1 }}
+      tintAt={() => 1}
+      keepEl={() => true}
+      els={{ tokens: [], props: [] }}
+      actors={[]}
+      gameTime={NUIT}
+      lightLevel={null}
+      lights={LAMPES}
+      halos={HALOS}
+      {...(avecAnim ? { anim: ANIM } : {})}
+    />
+  </Profiler>
 );
 
 /** Les écrans MONTÉS par un test — plusieurs à la fois (deux stages coexistent : jeu et aperçu). */
@@ -136,6 +143,7 @@ beforeEach(() => {
   viderCaptures();
   rafs = [];
   posesRaf = 0;
+  commitsReact = 0;
   // L'horloge d'images se REPOSE à chaque test : un fichier voisin de la même suite peut avoir
   // stubbé `requestAnimationFrame` (`vi.stubGlobal`), et la remise à l'état d'origine qui suit un
   // banc emporterait celle-ci si elle n'était posée qu'une fois.
@@ -303,4 +311,38 @@ describe('Deux écrans — aucun ne relâche les images de l’autre', () => {
     expect(scènes.length - avant, 'un écran démonté peint encore : son abonnement a fui').toBe(1);
     expect(Number(c1.dataset.rendus), 'l’écran mort a redessiné').toBe(mortAvant);
   });
+});
+
+/**
+ * P2 — L'HORLOGE D'IMAGES NE PILOTE JAMAIS REACT (#1401). Pendant un motif continu, AUCUN commit React
+ * par image : les commits sont bornés par les ÉVÉNEMENTS DISCRETS du motif. L'averse n'en a aucun —
+ * elle ne fait que tomber —, donc la borne y est ZÉRO.
+ *
+ * CE QUE LA SONDE MESURE : les commits du SOUS-ARBRE PROFILÉ (l'écran monté ici), comptés par
+ * `<Profiler>`. ANGLE MORT : un commit d'un parent qui ne re-rendrait pas cet écran ne s'y verrait
+ * pas, et un état interne qui ne re-rendrait aucun composant du sous-arbre non plus.
+ */
+describe('P2 — un motif continu ne commet pas (#1401)', () => {
+  it('averse tenue sur 30 images : 0 commit React, alors que les images PEINTES montent d’autant', () => {
+    const canevas = monter();
+    prémisses(canevas);
+
+    const IMAGES = 30;
+    const peintsAvant = Number(canevas.dataset.rendus);
+    const commitsAvant = commitsReact;
+    for (let i = 0; i < IMAGES; i++) image();
+
+    const peints = Number(canevas.dataset.rendus) - peintsAvant;
+    // Prémisse : le compteur MORD — le montage, lui, a bien commis ; un zéro par construction (sonde
+    // débranchée, sous-arbre jamais profilé) rendrait le contrat vrai du vide.
+    expect(commitsAvant, 'aucun commit compté au montage : la sonde de commits est débranchée').toBeGreaterThan(0);
+    // Prémisse : sans images peintes, « aucun commit » serait vrai d'un écran gelé.
+    expect(peints, `${peints} images peintes pour ${IMAGES} images battues`).toBeGreaterThanOrEqual(IMAGES);
+    expect(
+      commitsReact - commitsAvant,
+      `${commitsReact - commitsAvant} commits React pour ${IMAGES} images d’averse — aucun événement discret ne s’est produit, la borne est 0`,
+    ).toBe(0);
+  });
+
+  it.todo('P2 — le lacet tenu ne commet pas (#1403 : useSyncExternalStore(subscribeStageYaw) commet par frame — le contrat s’active avec le fix)');
 });

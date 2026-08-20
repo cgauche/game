@@ -265,21 +265,37 @@ export function buildHighlightMesh(slot: HighlightSlot, capacity: number): THREE
 
 /** Réécrit EN PLACE le contenu d'un pool : matrices, teintes, et le COMPTE d'instances dessinées. Rien
  *  n'est alloué, rien n'est démonté — c'est la passe que tout changement d'état de combat rejoue.
- *  Renvoie le compte écrit (borné par la capacité du pool). */
+ *
+ *  Renvoie `true` quand le DESSIN a changé — compte, matrice ou teinte d'une instance dessinée. Le
+ *  compte écrit ne dirait rien : 0 après effacement est un changement, et un pas qui déplace une
+ *  marque garde le même compte. La comparaison se fait contre le tampon déjà en place, sans état
+ *  gardé ni allocation : lire les 16 flottants qu'on s'apprête à écrire coûte l'écriture même. Le
+ *  tampon d'instances est en SIMPLE précision — la comparaison arrondit (`Math.fround`) la valeur
+ *  calculée, sans quoi toute matrice se dirait changée par la seule troncature. */
 export function writeHighlightInstances(
   mesh: THREE.InstancedMesh,
   els: readonly HighlightEl[],
   mpt: number,
-): number {
+): boolean {
   const n = Math.min(els.length, mesh.instanceMatrix.count);
   const m = new THREE.Matrix4();
   const c = new THREE.Color();
+  const mats = mesh.instanceMatrix.array;
+  const cols = mesh.instanceColor?.array ?? null;
+  let bouge = mesh.count !== n || (n > 0 && cols === null);
   for (let i = 0; i < n; i++) {
-    mesh.setMatrixAt(i, highlightMatrix(els[i], mpt, m));
-    mesh.setColorAt(i, c.set(highlightTint(els[i])));
+    highlightMatrix(els[i], mpt, m);
+    const om = i * 16;
+    if (!bouge) for (let k = 0; k < 16; k++) if (mats[om + k] !== Math.fround(m.elements[k])) { bouge = true; break; }
+    mesh.setMatrixAt(i, m);
+    c.set(highlightTint(els[i]));
+    const oc = i * 3;
+    if (!bouge && cols && (cols[oc] !== Math.fround(c.r) || cols[oc + 1] !== Math.fround(c.g) || cols[oc + 2] !== Math.fround(c.b))) bouge = true;
+    mesh.setColorAt(i, c);
   }
   poserCompteInstances(mesh, n);
+  if (!bouge) return false;
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-  return n;
+  return true;
 }

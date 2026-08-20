@@ -88,7 +88,7 @@ describe('Marques volumiques — le compte d’instances est celui des élément
       }
       const mesh = buildHighlightMesh(slot, capacité);
       expect(mesh.count).toBe(0); // un pool naît vide : c'est l'écriture qui le remplit
-      expect(writeHighlightInstances(mesh, els, MPT)).toBe(els.length);
+      expect(writeHighlightInstances(mesh, els, MPT), 'remplir un pool vide CHANGE le dessin').toBe(true);
       expect(mesh.count).toBe(els.length);
       expect(mesh.instanceMatrix.count).toBe(capacité);
       expect((mesh.material as THREE.MeshBasicMaterial).opacity).toBe(SLOT_OPACITY[slot]);
@@ -104,6 +104,20 @@ describe('Marques volumiques — le compte d’instances est celui des élément
     expect(mesh.instanceMatrix.array).toBe(tampon); // même tampon : rien n'a été réalloué
   });
 
+  it('le retour est un signal de CHANGEMENT : muet à l’identique, vrai au déplacement comme à l’effacement', () => {
+    const marches = ELS.filter((e) => e.kind === 'walk');
+    const mesh = buildHighlightMesh('walk', slotCapacity(marches.length));
+    expect(writeHighlightInstances(mesh, marches, MPT)).toBe(true);
+    const version = mesh.instanceMatrix.version; // `needsUpdate` n'a QUE son mutateur : la version en tient le compte
+    expect(writeHighlightInstances(mesh, marches, MPT), 'rien n’a bougé : rien à repeindre').toBe(false);
+    expect(mesh.instanceMatrix.version, 'ni tampon à re-téléverser').toBe(version);
+    const bougée = marches.map((e, i) => (i === 0 ? { ...e, cell: { ...e.cell, x: e.cell.x + 1 } } : e));
+    expect(writeHighlightInstances(mesh, bougée, MPT), 'même COMPTE, autre case').toBe(true);
+    expect(mesh.count).toBe(marches.length);
+    expect(writeHighlightInstances(mesh, [], MPT), 'effacer est un changement').toBe(true);
+    expect(mesh.count).toBe(0);
+  });
+
   it('capacité par PALIER : plancher 32, puissances de deux, 0 quand il n’y a rien', () => {
     expect(slotCapacity(0)).toBe(0);
     expect(slotCapacity(1)).toBe(32);
@@ -114,7 +128,7 @@ describe('Marques volumiques — le compte d’instances est celui des élément
 
   it('un pool SATURÉ écrit ce qu’il peut, sans déborder son tampon', () => {
     const mesh = buildHighlightMesh('walk', 2);
-    expect(writeHighlightInstances(mesh, ELS.filter((e) => e.kind === 'walk'), MPT)).toBe(2);
+    expect(writeHighlightInstances(mesh, ELS.filter((e) => e.kind === 'walk'), MPT)).toBe(true);
     expect(mesh.count).toBe(2);
   });
 });

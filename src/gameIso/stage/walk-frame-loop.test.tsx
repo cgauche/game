@@ -106,6 +106,8 @@ afterEach(() => {
 const CHEMIN = [{ x: 1, y: 2 }, { x: 2, y: 2 }];
 /** DEUX pas d'un seul trait : ce que le combat émet (chemin ENTIER, un seul événement). */
 const COURSE = [{ x: 4, y: 2 }, { x: 3, y: 2 }, { x: 2, y: 2 }];
+/** QUATRE pas : de quoi tenir la marche sur quarante images sans qu'elle meure en route. */
+const TRAJET = [{ x: 6, y: 2 }, { x: 5, y: 2 }, { x: 4, y: 2 }, { x: 3, y: 2 }, { x: 2, y: 2 }];
 
 describe('Marche — qui peint décide de ce qu’une image coûte (#1176 P2-4)', () => {
   it('aucune IMAGE ne re-rend le stage — seul un FRANCHISSEMENT de case le fait', () => {
@@ -219,5 +221,41 @@ describe('Marche volumique — ni géométrie ni billboards reconstruits entre d
     act(() => { useGame.getState().setFacing('__sonde-orientation', 'N'); });
     expect(cuisson.mock.calls.length).toBe(cAvant);
     expect(billboards.mock.calls.length).toBe(bAvant);
+  });
+});
+
+/**
+ * P2 — L'HORLOGE D'IMAGES NE PILOTE JAMAIS REACT (#1401). Pendant un motif continu, les commits sont
+ * bornés par les ÉVÉNEMENTS DISCRETS du motif, jamais par le nombre d'images. Pour la marche, ces
+ * événements sont NOMMÉS et se comptent d'avance :
+ *  - un par CASE VISUELLE occupée le long du trajet (`MondeDeCampagne`, `visualAlliesKey` →
+ *    `setWalkStep`) : les cases arrondies d'un trajet en ligne sont ses tuiles, la case de DÉPART
+ *    comprise (la case logique du sujet est déjà la destination, la marche l'en fait repartir) ;
+ *  - un à l'ARRIVÉE (`fx/useWalkAnim` : `setWalkTick` à l'image où plus aucune marche ne vit).
+ *
+ * CE QUE LA SONDE MESURE : les commits du SOUS-ARBRE PROFILÉ (`monter`), et le tick de marche EXTRAIT
+ * de la file (cf. en-tête du fichier) — donc les commits imputables à la marche seule. ANGLE MORT : un
+ * commit d'un parent de `MondeDeCampagne` ne s'y verrait pas.
+ */
+describe('P2 — un motif continu ne commet pas par image (#1401)', () => {
+  it('marche tenue sur 40 images : commits ≤ cases franchies + la re-synchronisation d’ARRIVÉE', () => {
+    const { commits } = monter();
+    const avant = commits();
+    const PAS_PAR_IMAGE = STEP_MS / 10; // dix images par pas : aucune case ne se saute
+    const FRANCHISSEMENTS = TRAJET.length; // 6,5,4,3,2 — une case visuelle par tuile du trajet
+    const ARRIVEE = 1; // `setWalkTick` de `fx/useWalkAnim`, quand la dernière marche meurt
+    const BORNE = FRANCHISSEMENTS + ARRIVEE;
+
+    let tick: FrameRequestCallback | null = marcher('h1', TRAJET);
+    let images = 0;
+    while (tick && images < 40) { tick = image(tick, PAS_PAR_IMAGE); images++; }
+
+    // Prémisse : la marche a bien été TENUE — un motif éteint au bout de trois images ne prouverait
+    // rien d'une horloge qui piloterait React.
+    expect(images, `${images} images servies : la marche n’a pas tenu 30 images`).toBeGreaterThanOrEqual(30);
+    expect(
+      commits() - avant,
+      `${commits() - avant} commits pour ${images} images — borne : ${FRANCHISSEMENTS} cases franchies + ${ARRIVEE} arrivée = ${BORNE}`,
+    ).toBeLessThanOrEqual(BORNE);
   });
 });

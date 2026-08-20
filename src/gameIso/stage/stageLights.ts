@@ -163,7 +163,7 @@ export function meteoLightColor(meteo: WeatherLight): THREE.Color {
   return meteo.tint ? base.lerp(new THREE.Color(meteo.tint), meteo.k) : base;
 }
 
-export function stageLights(args: {
+export type ArgsLampes = {
   scene: Scene;
   gameTime: number;
   lightLevel: number | null | undefined;
@@ -171,13 +171,14 @@ export function stageLights(args: {
   /** Le REGARD porté sur la scène veut-il un soleil (`viewPolicy`, verdict `ombreSoleil`) — passé tel
    *  quel à la décision ci-dessus, qui l'applique sur le FONDU. Aucune porte ici : `lit` suffit. */
   ombreSoleil?: boolean;
-}): StageLights {
-  const scalars = stageLightScalars(args);
-  const teinte = meteoLightColor(scalars.meteo);
-  const ambient = new THREE.AmbientLight(teinte, scalars.ambientIntensity);
-  if (!scalars.lit || !scalars.course) return { ...scalars, ambient, sun: null };
-  const rig = sunRigFrom(args.shadowBox, scalars.course.dir);
-  const sun = new THREE.DirectionalLight(teinte, scalars.sunIntensity);
+};
+
+/** RÉGLAGE d'un soleil déjà monté sur la décision courante — la seule écriture qu'une heure demande.
+ *  Partagée par le montage neuf (`stageLights`) et la repose (`poserLampesDuCiel`) : deux lois de
+ *  réglage divergeraient au premier champ ajouté. */
+function réglerSoleil(sun: THREE.DirectionalLight, teinte: THREE.Color, intensité: number, rig: ReturnType<typeof sunRigFrom>): void {
+  sun.color.copy(teinte);
+  sun.intensity = intensité;
   sun.position.copy(rig.position);
   sun.target.position.copy(rig.target);
   sun.castShadow = true;
@@ -186,10 +187,92 @@ export function stageLights(args: {
   cam.near = rig.near;
   cam.far = rig.far;
   cam.updateProjectionMatrix();
-  sun.shadow.mapSize.set(rig.mapSize, rig.mapSize);
+  // La carte d'ombre est ALLOUÉE à sa taille : la retailler sur une lampe qui vit demande de libérer
+  // celle qui est en place, sinon la texture d'avant reste sur le GPU sans lecteur.
+  if (sun.shadow.mapSize.x !== rig.mapSize || sun.shadow.mapSize.y !== rig.mapSize) {
+    sun.shadow.map?.dispose();
+    sun.shadow.map = null as unknown as THREE.DirectionalLightShadow['map'];
+    sun.shadow.mapSize.set(rig.mapSize, rig.mapSize);
+  }
   // Décalage le long de la NORMALE (jamais un biais de profondeur seul) : c'est lui qui sépare un plan
   // de son propre rendu dans la carte d'ombre. Il ne suffit plus sous `SUN_ACNE_ELEVATION_DEG` — d'où
   // le fondu, qui éteint le soleil avant d'y arriver.
   sun.shadow.normalBias = rig.normalBias;
+}
+
+export function stageLights(args: ArgsLampes): StageLights {
+  const scalars = stageLightScalars(args);
+  const teinte = meteoLightColor(scalars.meteo);
+  const ambient = new THREE.AmbientLight(teinte, scalars.ambientIntensity);
+  if (!scalars.lit || !scalars.course) return { ...scalars, ambient, sun: null };
+  const sun = new THREE.DirectionalLight();
+  réglerSoleil(sun, teinte, scalars.sunIntensity, sunRigFrom(args.shadowBox, scalars.course.dir));
   return { ...scalars, ambient, sun };
+}
+
+/**
+ * LES LAMPES DU CIEL POSÉES DANS UN GROUPE, et REPOSÉES ensuite (#1401) — jamais reconstruites.
+ *
+ * `stageLights` ci-dessus rend une DÉCISION avec ses objets neufs : c'est ce qu'il faut à une planche
+ * QC ou à un instantané (`planSnapshot`), qui montent une scène et la jettent. L'écran de jeu, lui,
+ * VIT : son heure avance minute par minute, et une avance d'horloge n'est qu'un réglage d'intensité,
+ * de teinte et de direction. Un franchissement d'entrée est une REPOSE — garde
+ * `stage/murage-identite.test.tsx`, geste « une heure ».
+ *
+ * Ce qui reste un MONTAGE, et pourquoi : le SOLEIL ne naît qu'au premier régime éclairé et se démonte
+ * en le quittant (`lit` faux — intérieur, nuit, soleil rasant, regard sans soleil). Le compte de
+ * lampes directionnelles entre dans la clé de programme de three (`numDirectionalLights`) : le tenir
+ * monté à intensité nulle compilerait toute la scène pour une lampe éteinte, et le tenir `castShadow`
+ * ferait rendre une carte d'ombre de nuit. Franchir ce régime est donc le SEUL churn de lampes qui
+ * reste, et il est structurel.
+ */
+export interface LampesDuCiel {
+  /** L'ambiante, montée UNE fois — elle existe sous tous les régimes. */
+  readonly ambiante: THREE.AmbientLight;
+  /** Le soleil MONTÉ, ou `null` sous un régime sans soleil. */
+  readonly soleil: THREE.DirectionalLight | null;
+  /** Applique la décision courante aux lampes en place. Rend les scalaires de cette décision. */
+  reposer(args: ArgsLampes): StageLightScalars;
+  /** Retire du groupe et libère tout ce qui a été posé. */
+  déposer(): void;
+}
+
+export function poserLampesDuCiel(groupe: THREE.Group): LampesDuCiel {
+  const ambiante = new THREE.AmbientLight();
+  groupe.add(ambiante);
+  let soleil: THREE.DirectionalLight | null = null;
+  return {
+    ambiante,
+    get soleil(): THREE.DirectionalLight | null { return soleil; },
+    reposer(args: ArgsLampes): StageLightScalars {
+      const scalars = stageLightScalars(args);
+      const teinte = meteoLightColor(scalars.meteo);
+      ambiante.color.copy(teinte);
+      ambiante.intensity = scalars.ambientIntensity;
+      if (!scalars.lit || !scalars.course) {
+        if (soleil) {
+          groupe.remove(soleil, soleil.target);
+          soleil.dispose();
+          soleil = null;
+        }
+        return scalars;
+      }
+      if (!soleil) {
+        soleil = new THREE.DirectionalLight();
+        // La CIBLE d'une directionnelle n'oriente la lampe que si elle vit dans le graphe rendu.
+        groupe.add(soleil, soleil.target);
+      }
+      réglerSoleil(soleil, teinte, scalars.sunIntensity, sunRigFrom(args.shadowBox, scalars.course.dir));
+      return scalars;
+    },
+    déposer(): void {
+      groupe.remove(ambiante);
+      ambiante.dispose();
+      if (soleil) {
+        groupe.remove(soleil, soleil.target);
+        soleil.dispose();
+        soleil = null;
+      }
+    },
+  };
 }
