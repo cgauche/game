@@ -66,12 +66,24 @@ function reachableFrom(from: Pt, on: Scene = scene): Set<string> {
   return seen;
 }
 
+function wallVertices(wall: NonNullable<Scene['walls']>[number]): [string, string] | undefined {
+  const z = wall.z ?? 0;
+  if (wall.side === 'N') return [`${wall.x},${wall.y},${z}`, `${wall.x + 1},${wall.y},${z}`];
+  if (wall.side === 'E') return [`${wall.x + 1},${wall.y},${z}`, `${wall.x + 1},${wall.y + 1},${z}`];
+  return undefined;
+}
+
 /** Le cellier de l'étage — pièce close du plan authoré, desservie par une porte percée sur son
  *  périmètre à z1 : la connectivité de `walkNeighbors` l'atteint (mesuré ci-dessous). */
 const cellier = scene.effectZones!.find((z) => z.id === 'zone-l-z1')!;
 const casesCellier = sceneZoneTiles(cellier).map((p) => `${p.x},${p.y},${p.z ?? 0}`).sort();
 
 describe('La Diligence — paquet de campagne authoré dans l’éditeur', () => {
+  it('exclut les diagonales visuelles du voisinage des portes cardinales', () => {
+    const diagonal = { x: 0, y: 0, side: '\\' } as NonNullable<Scene['walls']>[number];
+    expect(wallVertices(diagonal)).toBeUndefined();
+  });
+
   it('sanctuarise le plan hors apparence et fenêtres', () => {
     expect(planSanctuarise(scene)).toMatchSnapshot();
   });
@@ -83,6 +95,23 @@ describe('La Diligence — paquet de campagne authoré dans l’éditeur', () =>
     const windows = (scene.walls ?? []).filter((wall) => wall.window);
     expect(windows.length).toBeGreaterThan(9);
     expect(windows.every((wall) => !wall.door)).toBe(true);
+  });
+
+  it('ne conserve aucune porte totalement orpheline', () => {
+    const walls = scene.walls ?? [];
+    const doorWithoutIncidentWall = walls.filter((wall, index) => {
+      if (!wall.door) return false;
+      const doorVertices = wallVertices(wall);
+      if (!doorVertices) return false;
+      const vertices = new Set(doorVertices);
+      return !walls.some((other, otherIndex) => {
+        const otherVertices = wallVertices(other);
+        return otherIndex !== index && otherVertices?.some((vertex) => vertices.has(vertex));
+      });
+    });
+
+    expect(walls).not.toContainEqual({ x: 27, y: 30, side: 'N', door: true });
+    expect(doorWithoutIncidentWall).toEqual([]);
   });
 
   it('abaisse seulement les murs existants du jardin et les six séparations de box de la zone 5', () => {
@@ -102,7 +131,7 @@ describe('La Diligence — paquet de campagne authoré dans l’éditeur', () =>
 
     expect(jardin).toHaveLength(13);
     expect(boxes).toHaveLength(6);
-    expect(scene.walls).toHaveLength(669);
+    expect(scene.walls).toHaveLength(668);
     expect(jardin.map((edge) => wallAt(edge)?.structure)).toEqual(new Array(13).fill(clayonnage));
     const mursDesBoxes = boxes.map(wallAt);
     expect(mursDesBoxes.map((wall) => wall?.structure)).toEqual(new Array(6).fill('mur-a-ossature-en-bois'));

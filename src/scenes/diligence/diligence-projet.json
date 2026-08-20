@@ -5414,12 +5414,6 @@
      "window": true
     },
     {
-     "x": 27,
-     "y": 30,
-     "side": "N",
-     "door": true
-    },
-    {
      "x": 14,
      "y": 8,
      "side": "E",

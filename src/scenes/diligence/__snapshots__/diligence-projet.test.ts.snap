@@ -18625,12 +18625,6 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "door": true,
-      "side": "N",
-      "x": 27,
-      "y": 30,
-    },
-    {
-      "door": true,
       "side": "E",
       "structure": "solide-porte-en-bois",
       "x": 3,
