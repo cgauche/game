@@ -50,6 +50,13 @@
   --cc-bay-h: calc(var(--cc-cell-h) * 2 + var(--cc-gap) + 41px);
   /* HAUTEUR DU PONT lue par le reste du HUD (frise, fil de combat) : la travée plus le liseré haut. */
   --cc-deck-h: calc(var(--cc-bay-h) + 3px);
+  /* HAUTEUR DU BANDEAU DE PHASE, publiée au MÊME titre que `--cc-deck-h` et pour la même raison : le
+     bandeau est superposé AU-DESSUS du liseré, il occupe donc de la bande de terrain que la frise ne
+     doit pas revendiquer (sans cette réserve, la colonne d'initiative — z-index 45 contre 5 — passait
+     par-dessus le titre et le décapitait, sonde pixel B6 : le « B » et l'accent de « Bordée » perdus
+     sur quatre captures). C'est un plancher TENU (`min-height` ci-dessous) : la réserve ne peut pas
+     être plus courte que la boîte qu'elle décrit. */
+  --cc-phase-h: 48px;
 }
 .combat-console {
   /* Encoche d'angle des plaques (patron d'ébauche : la tôle est coupée, jamais arrondie). */
@@ -85,13 +92,20 @@
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.55);
 }
 
-/* Bandeau de PHASE (spec zone 7) : SUPERPOSÉ, jamais en flux — posé à cheval sur le parapet, côté
+/* Bandeau de PHASE (spec zone 7) : SUPERPOSÉ, jamais en flux — posé AU-DESSUS du parapet, côté
    gauche pour laisser le fronton libre. En flux il volait 17px au pont au tour de l'ennemi ; le
-   pont ne bouge plus d'un pixel d'une phase à l'autre. */
+   pont ne bouge plus d'un pixel d'une phase à l'autre.
+   `bottom: calc(100% + 3px)` (la MÊME loi que la branche compacte plus bas) cale le bandeau au-dessus
+   du LISERÉ, pas de son côté intérieur : `100%` porte sur la boîte de rembourrage, donc SOUS la
+   bordure. À cheval (`calc(100% - 10px)`), il descendait dans la bande de la frise d'initiative, qui
+   le recouvre (z-index 45 contre 5) et lui décapitait son titre. Sa boîte est un plancher TENU :
+   c'est elle que la frise réserve (`--cc-phase-h`, `hud.css`). */
 .cc-phase {
   position: absolute;
   left: 12px;
-  bottom: calc(100% - 10px);
+  bottom: calc(100% + 3px);
+  box-sizing: border-box;
+  min-height: var(--cc-phase-h);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -973,6 +987,9 @@
     --cc-cell-h: 32px;
     --cc-gap: 3px;
     --cc-bay-gap: 4px;
+    /* Le bandeau compact est plus bas (rembourrage 2px, boutons 11px) : sa RÉSERVE suit, sinon la
+       frise réserverait la boîte de la version large. */
+    --cc-phase-h: 24px;
   }
   .combat-console {
     /* La composition compacte se pose SUR LE MÊME PONT (spec §1c-ter, point 5) : la bande garde ses

@@ -38,7 +38,7 @@
     "label": "Course",
     "icon": "travel/foot",
     "surface": "grille",
-    "gate": "mouvement-restant",
+    "gate": "mouvement-restant-fantassin",
     "intent": "portee-course",
     "cost": "action",
     "rule": "course",
@@ -57,7 +57,7 @@
     "label": "Mouvement",
     "icon": "journal/move",
     "surface": "grille",
-    "gate": "mouvement-restant",
+    "gate": "mouvement-restant-fantassin",
     "intent": "portee-mouvement",
     "cost": "mouvement",
     "maison": true,
@@ -223,7 +223,7 @@
     "label": "Défensive",
     "icon": "flag/defensive",
     "surface": "grille",
-    "gate": "action-libre-hors-frenesie",
+    "gate": "action-libre-hors-frenesie-fantassin",
     "run": "battleDefendTotal",
     "cost": "action",
     "rule": "sur-la-defensive",
@@ -523,23 +523,6 @@
     ]
   },
   {
-    "id": "resolve",
-    "label": "Détermination",
-    "icon": "resource/resolve",
-    "surface": "grille",
-    "gate": "determination-en-reserve",
-    "run": "battleSelectAction",
-    "armed": "resolve",
-    "cost": "gratuit",
-    "maison": true,
-    "costNote": "les trois dépenses de Détermination ne consomment pas l’Action — imputation du moteur, aucun verbatim de coût cité.",
-    "rule": "determination",
-    "ruleCategory": "characteristics",
-    "keys": [
-      "resolve"
-    ]
-  },
-  {
     "id": "resolve-psych-immune",
     "label": "Immunité Psychologie",
     "icon": "action/defend",
@@ -569,7 +552,7 @@
     "id": "resolve-remove-condition",
     "label": "Retirer un État",
     "icon": "resource/resolve",
-    "surface": "grille",
+    "surface": "pastille-etat",
     "gate": "determination-en-reserve",
     "run": "battleSpendResolve",
     "candidates": "etats-retirables",
@@ -820,5 +803,83 @@
       "page": 158,
       "note": "LDB 13 l.106 « Actions gratuites »"
     }
+  },
+  {
+    "id": "cleave-end",
+    "label": "Terminer",
+    "icon": "ui/done",
+    "surface": "interlude",
+    "gate": "toujours",
+    "run": "cleaveEnd",
+    "mode": "cleave",
+    "exitSafe": false,
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "clore le balayage ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
+  },
+  {
+    "id": "dual-strike-skip",
+    "label": "Renoncer",
+    "icon": "ui/undo",
+    "surface": "interlude",
+    "gate": "toujours",
+    "run": "dualStrikeSkip",
+    "mode": "dual",
+    "exitSafe": false,
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "renoncer à la 2ᵉ frappe ne dépense rien de plus (l’Action est déjà payée) — coût nul, arbitrage d’interface."
+  },
+  {
+    "id": "overcast-validate",
+    "label": "Valider",
+    "icon": "action/aim",
+    "surface": "interlude",
+    "gate": "toujours",
+    "run": "castPickTargetsOff",
+    "mode": "overcast",
+    "exitSafe": true,
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "revenir à la modale avec les cibles désignées ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
+  },
+  {
+    "id": "place-zone-back",
+    "label": "Retour",
+    "icon": "ui/undo",
+    "surface": "interlude",
+    "gate": "toujours",
+    "run": "placingZoneOff",
+    "mode": "placing-zone",
+    "exitSafe": true,
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "reposer le gabarit — retour à la modale du sort, ou placeur du pilonnage refermé — ne commet aucun acte de jeu : coût nul, arbitrage d’interface."
+  },
+  {
+    "id": "battery-cancel",
+    "label": "Annuler",
+    "icon": "ui/undo",
+    "surface": "interlude",
+    "gate": "toujours",
+    "run": "batterySelectNone",
+    "mode": "battery",
+    "exitSafe": true,
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "désarmer la désignation de bordée ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
+  },
+  {
+    "id": "teleport-place",
+    "label": "Rester sur place",
+    "icon": "ui/done",
+    "surface": "interlude",
+    "gate": "toujours",
+    "run": "teleportStay",
+    "mode": "teleport",
+    "exitSafe": false,
+    "cost": "aucun",
+    "maison": true,
+    "costNote": "la case d’arrivée se choisit après un sort déjà payé ; arriver sur sa propre case ne coûte rien de plus — arbitrage d’interface."
   }
 ]

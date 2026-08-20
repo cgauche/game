@@ -10,11 +10,12 @@ import { createRoot, type Root } from 'react-dom/client';
 import { useGame, movementRemaining, type BattleState } from '../state/store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import type { Combatant, ConditionInstance, ItemInstance, Weapon } from '../engine/types';
+import type { Combatant, ConditionInstance, ItemInstance, ShipPoste, Weapon } from '../engine/types';
 import { itemFromTrappingById, recomputeLoadout, loadoutLabel, loadedAmmo, loadWeapon } from '../engine/items';
 import { weaponLoaded } from '../engine/weaponLoad';
 import { hotbar } from '../state/hotbarBridge';
-import { regles, findQualityById, findActionById } from '../data/index';
+import { regles, findQualityById, findActionById, findVehicleById } from '../data/index';
+import { vehicleCombatant } from '../engine/vehicle';
 import { actionGate } from '../state/actionRegistry';
 import { emptyScene } from '../state/scene';
 import { mdToText } from './Prose';
@@ -347,6 +348,27 @@ function token(name: string): string {
   return m![1].trim();
 }
 
+/**
+ * Évalue une longueur DÉCLARÉE (`calc(a + b - c)`, somme de termes en px, de `var(--x)` et de `100%`)
+ * dans un environnement de valeurs. Sert à COMPARER deux bornes exprimées dans les mêmes tokens : les
+ * chiffres injectés sont arbitraires, seule leur relation est jugée.
+ */
+function pxCalc(value: string, env: Record<string, number>): number {
+  const inner = /^calc\((.*)\)$/.exec(norm(value))?.[1] ?? norm(value);
+  let total = 0;
+  let signe = 1;
+  for (const jeton of inner.split(/\s+/)) {
+    if (jeton === '+') { signe = 1; continue; }
+    if (jeton === '-') { signe = -1; continue; }
+    const nom = /^var\((--[a-z0-9-]+)\)$/.exec(jeton)?.[1] ?? jeton;
+    const val = nom in env ? env[nom] : parseFloat(jeton);
+    expect(Number.isFinite(val), `terme « ${jeton} » non résolu dans « ${value} »`).toBe(true);
+    total += signe * val;
+    signe = 1;
+  }
+  return total;
+}
+
 type RGBA = [number, number, number, number];
 
 function parseColor(v: string): RGBA {
@@ -491,6 +513,43 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     const ratioPlein = worst(borderColorOf(alv), fondPlein);
     expect(ratioPlein).toBeGreaterThanOrEqual(3);
     expect(ratioPlein).toBeGreaterThan(ratioVide);
+  });
+
+  // B-7 : la pastille-BOUTON (slot `action` de `StateChips`) portait un commentaire annonçant son
+  // style… suivi d'AUCUNE règle : à l'écran elle était le jumeau exact de l'informative.
+  it('B-7 — la pastille ACTIONNABLE se distingue de l’informative (affordance visible)', () => {
+    const info = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
+    const bouton = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-state.btn');
+    // L'informative garde le laiton de RUBRIQUE ; la bouton prend un filet d'un AUTRE laiton.
+    expect(decl(info, 'border')).toMatch(/--atelier-brass-rubric/);
+    const filet = decl(bouton, 'border-color');
+    expect(filet, 'la pastille-bouton n’a pas de filet propre').toBeTruthy();
+    expect(filet).not.toMatch(/--atelier-brass-rubric/);
+    // … et elle se DÉTACHE du fond de l'alvéole (le filet doit se voir, pas seulement exister).
+    const fondAlv = colorsIn(decl(info, 'background')!).map((c) => over(c, parseColor(token('--cc-brass-cell-hi'))));
+    expect(worst(parseColor(token(filet!.replace(/^var\(|\)$/g, ''))), fondAlv)).toBeGreaterThanOrEqual(3);
+    expect(decl(bouton, 'box-shadow'), 'aucune lueur intérieure').toBeTruthy();
+    expect(decl(bouton, 'cursor')).toBe('pointer');
+  });
+
+  // B-8 : `.btn.btn-nu` (base.css) annule `min-height`/`min-width` et, PLUS SPÉCIFIQUE que le
+  // plancher global `@media (pointer: coarse) .btn`, il l'écrase — cible mesurée 15 × 15px au doigt.
+  it('B-8 — la pastille ACTIONNABLE garde le plancher tactile (≥ 40px) que la variante NUE annule', () => {
+    const nu = ruleOf(baseSection(BASE_CSS), '.btn.btn-nu');
+    expect(parseFloat(decl(nu, 'min-height')!), 'la variante nue ne remet plus le plancher à 0 ?').toBe(0);
+    // L'alvéole reste de 15px À L'ŒIL : c'est sa ZONE DE CONTACT qui porte le calibre.
+    const alv = ruleOf(HUD_BASE, '.ptile-states[data-reserve]');
+    expect(parseFloat(decl(alv, '--alv')!)).toBeLessThan(40);
+    const coarse = mediaBlock(HUD_CSS, '@media (pointer: coarse)');
+    const cible = ruleOf(coarse, '.ptile-states[data-reserve] .pt-state.btn::after');
+    expect(decl(cible, 'position')).toBe('absolute');
+    for (const d of ['width', 'height']) {
+      expect(parseFloat(decl(cible, d)!), `cible tactile ${d}`).toBeGreaterThanOrEqual(40);
+    }
+    // … centrée sur l'alvéole, qui doit donc être le repère positionné de la zone.
+    expect(decl(cible, 'transform')).toBe('translate(-50%, -50%)');
+    const boite = ruleOf(HUD_BASE, '.ptile-states[data-reserve] .pt-state, .ptile-states[data-reserve] .pt-void');
+    expect(decl(boite, 'position')).toBe('relative');
   });
 
   // C-1 : à 360 le portrait de l'arche n'avait PAS DE VISAGE — la BOÎTE rétrécit (style inline de la
@@ -715,6 +774,44 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     expect(decl(tiles, '--is-avail')).toMatch(/var\(--cc-deck-h\)/);
     expect(decl(tiles, 'max-height')).toMatch(/--is-avail/);
     expect(decl(tiles, 'overflow-y')).toBe('auto');
+  });
+
+  // ── P-7 : LE BANDEAU DE PHASE ET LA FRISE NE SE RECOUPENT JAMAIS. La colonne d'initiative est en
+  //    z-index 45 contre 5 pour la console : tout ce qu'elle occupe de la bande de terrain passe
+  //    PAR-DESSUS le bandeau. Mesuré à l'écran (sonde pixel de recette, 4 captures sur 4) : le titre
+  //    perdait ses capitales et ses accents — « Bordée » se lisait « Bordee ». Deux causes, deux
+  //    bornes ici : le bandeau était posé À CHEVAL sur le liseré (`bottom: calc(100% - 10px)`), et la
+  //    réserve du bas de la frise ne connaissait que le pont.
+  //    Le contrat est ARITHMÉTIQUE, dans les tokens déclarés : une hauteur de pont arbitraire suffit,
+  //    seules les RELATIONS entre les deux boîtes sont jugées.
+  it('P-7 — le bandeau de phase se pose AU-DESSUS du liseré, et la frise réserve sa hauteur', () => {
+    const liseret = parseFloat(decl(ruleOf(CC_BASE, '.combat-console'), 'border-top')!);
+    expect(liseret).toBeGreaterThan(0);
+    const P = parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-phase-h')!);
+    expect(P, 'hauteur de bandeau non publiée').toBeGreaterThan(0);
+    // La réserve n'est pas une fiction : le bandeau TIENT la boîte qu'il fait réserver.
+    const phase = ruleOf(CC_BASE, '.cc-phase');
+    expect(decl(phase, 'min-height')).toBe('var(--cc-phase-h)');
+    expect(decl(phase, 'box-sizing')).toBe('border-box');
+
+    // Repère : distances au BAS du viewport. Le pont occupe [0, D] (liseré compris), sa boîte de
+    // rembourrage [0, D − liseré] — c'est elle que `100%` mesure pour un enfant absolu.
+    const D = 240;
+    const env = { '--cc-deck-h': D, '--cc-phase-h': P, '100%': D - liseret };
+    const basBandeau = pxCalc(decl(phase, 'bottom')!, env);
+    expect(basBandeau, 'le bandeau redescend sur le liseré du pont').toBeGreaterThanOrEqual(D);
+    const hautBandeau = basBandeau + P;
+    const basFrise = pxCalc(decl(ruleOf(HUD_BASE, '.initiative-strip'), 'bottom')!, env);
+    expect(basFrise, 'la frise descend dans la bande du bandeau de phase').toBeGreaterThanOrEqual(hautBandeau);
+    // La piste borne sa hauteur sur la MÊME réserve (sinon elle déborderait là où la boîte s'arrête).
+    expect(decl(ruleOf(HUD_BASE, '.is-tiles'), '--is-avail')).toMatch(/var\(--cc-phase-h\)/);
+
+    // … et la RAMPE de débord suit la PLAQUE : la boîte de la frise épouse son contenu au lieu d'être
+    // étirée jusqu'à la réserve (sonde B6 : 174px de terrain nu, puis 20px de bois dans le vide).
+    const strip = ruleOf(HUD_BASE, '.initiative-strip');
+    expect(decl(strip, 'height')).toBe('fit-content');
+    expect(decl(strip, 'margin-block')).toBe('auto');
+    expect(decl(ruleOf(HUD_BASE, '.initiative-strip::after'), 'bottom')).toBeTruthy();
   });
 });
 
@@ -1139,17 +1236,27 @@ describe('CombatConsole — les cases sont des ENTRÉES du registre (branchement
     expect(useGame.getState().battle!.acted).toBe(true);
   });
 
-  it('R-3 — la case Détermination ARME son mode, et le re-clic le désarme (bascule du registre)', () => {
+  // DÉTERMINATION (LDB 17 l.59-60) : deux des trois dépenses sont des ALVÉOLES, et leurs dispatchers
+  // sont DIRECTS — le clic DÉPENSE le point, il n'arme aucun mode. L'ancienne case d'armement (qui
+  // ouvrait la liste `.ab-spells` de la barre morte) n'a donc plus rien à ouvrir : elle est purgée du
+  // registre, avec son mode (#1411 P0-B lot 3).
+  it('R-3 — les deux dépenses de Détermination sont des alvéoles DIRECTES (aucun mode armé)', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
     h.resolve = 2;
-    // Le moteur n'arme un mode d'action que sur une SCÈNE (`battleSelectAction` lit le terrain).
     act(() => { useGame.setState({ scene: emptyScene(20, 20) }); });
     monter(h, { foes: [foe('e1', 9, 9)] });
-    act(() => caseAction('resolve')!.click());
-    expect(useGame.getState().battle!.action, 'la case Détermination n’a pas armé son mode').toBe('resolve');
-    act(() => caseAction('resolve')!.click());
-    expect(useGame.getState().battle!.action, 'le re-clic doit DÉSARMER (toggleOff du registre)').toBeNull();
+    act(() => caseAction('resolve-psych-immune')!.click());
+    // Effet MOTEUR observable : un point parti, l'immunité posée, et AUCUN mode d'action armé.
+    expect(useGame.getState().battle!.combatants[0].resolve, 'la case n’a pas dépensé le point').toBe(1);
+    expect(useGame.getState().battle!.combatants[0].activeEffects?.some((e) => e.psychImmune)).toBe(true);
+    expect(useGame.getState().battle!.action, 'une dépense directe n’arme rien').toBeNull();
+    act(() => caseAction('resolve-ignore-crit')!.click());
+    expect(useGame.getState().battle!.combatants[0].resolve).toBe(0);
+    expect(useGame.getState().battle!.combatants[0].activeEffects?.some((e) => e.ignoreCritMods)).toBe(true);
+    // Réserve épuisée : le gate du registre referme les deux alvéoles, avec sa raison.
+    expect(caseAction('resolve-psych-immune')!.disabled).toBe(true);
+    expect(caseAction('resolve-ignore-crit')!.disabled).toBe(true);
   });
 
   it('R-4 — une case gatée porte la RAISON du registre, visible, et ne s’exécute pas', () => {
@@ -1157,10 +1264,10 @@ describe('CombatConsole — les cases sont des ENTRÉES du registre (branchement
     h.conditions = [];
     h.resolve = 0; // aucun point : le gate `determination-en-reserve` refuse, avec sa raison
     monter(h, { foes: [foe('e1', 9, 9)] });
-    const det = caseAction('resolve')!;
+    const det = caseAction('resolve-psych-immune')!;
     expect(det.hasAttribute('data-gated')).toBe(true);
     const raison = det.querySelector('.cc-lbl[data-gate]')!;
-    expect(raison.textContent).toBe(actionGate('resolve', { active: h, battle: useGame.getState().battle! }).reason);
+    expect(raison.textContent).toBe(actionGate('resolve-psych-immune', { active: h, battle: useGame.getState().battle! }).reason);
     expect(det.getAttribute('aria-describedby')).toBe(raison.id);
     expect(det.disabled).toBe(true);
   });
@@ -1174,10 +1281,10 @@ describe('CombatConsole — les cases sont des ENTRÉES du registre (branchement
     h.conditions = [];
     h.resolve = 0;
     monter(h, { foes: [foe('e1', 9, 9)] });
-    const det = caseAction('resolve')!;
-    // (a) DOM : le nom du geste est bien un nœud À PART, porteur du libellé de l'entrée + son compte.
+    const det = caseAction('resolve-psych-immune')!;
+    // (a) DOM : le nom du geste est bien un nœud À PART, porteur du libellé de l'entrée + sa réserve.
     const nom = det.querySelector('.cc-lbl:not([data-gate])')!;
-    expect(nom.textContent).toBe(`${findActionById('resolve')!.label} 0`);
+    expect(nom.textContent).toBe(`${findActionById('resolve-psych-immune')!.label} (0)`);
     // (b) CSS : le nom garde sa ligne pleine et incompressible ; la RAISON vit dans sa bande au pied,
     // HORS FLUX (patron `.cc-set-load`) — elle ne peut donc ni chasser le nom hors de la boîte
     // (défaut de la capture `01b`), ni tomber à zéro de haut (défaut de la capture `06`).
@@ -1617,5 +1724,228 @@ describe('CombatConsole — intention armée : aucun popover de règle au-dessus
     expect(useGame.getState().localIntent).toBeNull();
     survoler(enveloppeDe(caseAction('course')!));
     expect(popovers().length, 'intention dissoute : le popover de règle doit revenir').toBe(1);
+  });
+});
+
+/**
+ * BANDEAU D'INTERLUDE (#1411 P0-B) — un ciblage par la carte SANS MODALE (Frappe Mortelle, 2ᵉ frappe,
+ * Surincantation, pose de zone, bordée, téléportation) doit porter SA SORTIE à l'écran : sans elle, le
+ * joueur n'a plus que le clic-carte pour quitter le mode. Le bandeau la tire du REGISTRE (entrées
+ * `surface: 'interlude'`, appariées par leur `mode` au mode de ciblage courant) — la console ne nomme
+ * aucun état de flux, et le dispatcher exécuté est celui du registre (`runAction`).
+ */
+describe('CombatConsole — bandeau d’interlude : tout ciblage par la carte porte sa sortie', () => {
+  const bandeau = () => host.querySelector('.cc-phase');
+  const sortie = (id: string) => host.querySelector(`.cc-phase [data-action="${id}"]`) as HTMLButtonElement | null;
+  /** Remet à zéro les flux différés que `setState` conserve d'un test à l'autre (fusion du store). */
+  const sansFlux = () => act(() => { useGame.setState({ pendingCleave: null, pendingDualStrike: null, pendingCast: null, pendingRoundStart: null }); });
+
+  it('Frappe Mortelle : le bandeau nomme la phase et son bouton COMMET la sortie du registre', () => {
+    sansFlux();
+    const h = hero('h1', 'Gunnar');
+    monter(h, { foes: [foe('e1', 6, 5)] });
+    act(() => { useGame.setState({ pendingCleave: { attackerId: h.id, hitIds: [], count: 0 } as never }); });
+    expect(bandeau()?.querySelector('.cc-phase-label')?.textContent).toBe('Frappe Mortelle');
+    const b = sortie('cleave-end');
+    expect(b, 'la sortie « Terminer » de l’interlude cleave doit être à l’écran').not.toBeNull();
+    expect(b!.textContent).toContain('Terminer');
+    // Proéminence DÉDUITE du rôle (validation) — jamais un champ de style en donnée.
+    expect(b!.className).toContain('btn-primary');
+    act(() => { b!.click(); });
+    expect(useGame.getState().pendingCleave, 'le clic doit exécuter `cleaveEnd` (dispatcher du registre)').toBeNull();
+    sansFlux();
+  });
+
+  it('Bordée : la sortie d’annulation est DISCRÈTE et désarme le mode', () => {
+    sansFlux();
+    const h = hero('h1', 'Gunnar');
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    // La scène est requise par `battleSelectAction` (le désarmement lit `{ battle, scene }`).
+    act(() => { useGame.setState({ scene: emptyScene(), battle: { ...useGame.getState().battle!, action: 'battery' } }); });
+    expect(bandeau()?.querySelector('.cc-phase-label')?.textContent).toBe('Bordée');
+    const b = sortie('battery-cancel');
+    expect(b, 'la sortie « Annuler » de l’interlude bordée doit être à l’écran').not.toBeNull();
+    expect(b!.className, 'une annulation ne porte pas l’accent').toContain('btn-ghost');
+    act(() => { b!.click(); });
+    expect(useGame.getState().battle!.action, 'le clic doit désarmer le mode de bordée').toBeNull();
+  });
+
+  it('hors interlude : aucun bandeau de sortie — et la pause de Round garde le sien', () => {
+    sansFlux();
+    const h = hero('h1', 'Gunnar');
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    expect(bandeau(), 'un tour ordinaire n’a pas de bandeau de phase').toBeNull();
+    act(() => { useGame.setState({ pendingRoundStart: { round: 2, readyBySeat: {} } as never }); });
+    expect(bandeau()?.querySelector('.cc-phase-label')?.textContent).toBe('Début du Round 2');
+    expect(sortie('round-start')?.textContent, 'la pause de Round garde son bouton d’ouverture').toContain('Commencer le round 2');
+    sansFlux();
+  });
+});
+
+/**
+ * TOUR DU NAVIRE & COOP (#1411 P0-B lot 2) — deux défauts d'UNE racine : la console ne vivait que pour
+ * un combattant non-véhicule d'une partie `mode:'local'`. Résultat mesuré : au tour de la COQUE, toutes
+ * les cases étaient inertes et aucune case navale n'était même construite ; et en partie réseau, la
+ * console était morte pour TOUT le monde, hôte compris. La possession se tranche par `controlsCombatant`
+ * (`netOwnership.ts`), qui connaît déjà les sièges — la console n'a aucune clause de mode de partie.
+ */
+describe('CombatConsole — tour du NAVIRE contrôlé : ses Tests d’équipage SONT les cases', () => {
+  const caseAction = (id: string) => host.querySelector(`[data-action="${id}"]`) as HTMLButtonElement | null;
+
+  /** Une pièce de bord DÉCHARGÉE servie par son chef : c'est ce qui rend la recharge pertinente. */
+  const poste = (): ShipPoste =>
+    ({
+      side: 'tribord', loaded: false, reloadProgress: 0, crewIds: ['gunner'],
+      item: { uid: 'canon', label: 'Canon moyen', type: 'ranged', damage: { flat: 14, plusBF: false }, range: 75, qualities: [{ id: 'recharge', value: 6 }] },
+    }) as unknown as ShipPoste;
+
+  /** La COQUE du groupe : un vrai `vehicleCombatant` (facette `hull` de `vehicles.json`), du camp
+   *  joueur (`kind:'hero'` — c'est ainsi que le combat naval la pose, `combatSlice.ts:2777`). */
+  function navire(): Combatant {
+    const hull = vehicleCombatant(findVehicleById('bateau-de-patrouille')!)!;
+    hull.id = 'ship';
+    hull.kind = 'hero';
+    hull.pos = { x: 5, y: 5 };
+    hull.crewIds = ['gunner'];
+    hull.postes = [poste()];
+    return hull;
+  }
+
+  /** Combat naval : la coque et son artilleur, la coque ACTIVE. */
+  function monterNavire() {
+    const crew = hero('gunner', 'Artilleur');
+    const ship = navire();
+    act(() => {
+      useGame.setState({
+        party: [crew], scene: emptyScene(20, 20),
+        battle: {
+          combatants: [ship, crew], order: [ship.id, crew.id], baseOrder: [ship.id, crew.id], turn: 0, round: 1,
+          action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
+          acted: false, runBudget: 4, log: [], over: null, crewActed: {},
+        } as unknown as BattleState,
+      });
+    });
+    act(() => { root.render(<CombatConsole />); });
+    return ship;
+  }
+
+  it('N-1 — la console VIT au tour de la coque : aucune bande d’attente, les cinq cases navales sont là', () => {
+    monterNavire();
+    expect(host.querySelector('.cc-phase'), 'le tour d’un acteur CONTRÔLÉ n’est pas une phase d’attente').toBeNull();
+    for (const id of ['maneuver-ship', 'battery', 'crew-test-rude-epreuve', 'sing-shanty', 'ship-reload']) {
+      expect(caseAction(id), `case navale « ${id} » absente de la travée`).not.toBeNull();
+    }
+    // BRANCHÉES, pas seulement dessinées : le pont clavier ne publie que les cases qui portent un `run`.
+    const publiees = hotbar.slots.map((s) => s.actionId);
+    for (const id of ['maneuver-ship', 'battery', 'crew-test-rude-epreuve', 'ship-reload']) {
+      expect(publiees, `« ${id} » n’est pas branchée (aucun dispatcher publié)`).toContain(id);
+    }
+    // Manœuvrer / Bordée / Rude épreuve : Action du navire INTACTE → offertes (gates du registre).
+    for (const id of ['maneuver-ship', 'battery', 'crew-test-rude-epreuve']) {
+      expect(caseAction(id)!.disabled, `« ${id} » est inerte alors que l’Action du navire est intacte`).toBe(false);
+    }
+    // … et aucune case de FANTASSIN ne s'invite : une coque n'a ni poing ni Charge.
+    expect(caseAction('attaque'), 'une coque n’a pas d’attaque d’arme').toBeNull();
+    expect(caseAction('charge'), 'une coque ne charge pas').toBeNull();
+  });
+
+  it('N-2 — la Bordée ARME son mode par le registre, et l’interlude prend la main pour en sortir', () => {
+    monterNavire();
+    act(() => caseAction('battery')!.click());
+    expect(useGame.getState().battle!.action, 'la case Bordée n’a pas armé le mode').toBe('battery');
+    // Le mode armé est un CIBLAGE par la carte : la console passe sous son bandeau de phase, et c'est
+    // LUI qui porte la sortie (aucune case ne reste cliquable pendant un interlude).
+    expect(host.querySelector('.cc-phase .cc-phase-label')!.textContent).toBe('Bordée');
+    const sortie = host.querySelector('.cc-phase [data-action="battery-cancel"]') as HTMLButtonElement;
+    act(() => sortie.click());
+    expect(useGame.getState().battle!.action, 'la sortie d’interlude doit désarmer la bordée').toBeNull();
+  });
+
+  it('N-3 — la fin de tour passe au tour du navire (garde-fou « Action non dépensée » compris)', () => {
+    monterNavire();
+    const fin = host.querySelector('[data-cell="end-turn"]') as HTMLButtonElement;
+    expect(fin.disabled, 'la fin de tour est inerte au tour du navire').toBe(false);
+    act(() => fin.click()); // 1ᵉʳ clic : Action du navire non dépensée → confirmation armée
+    expect((host.querySelector('[data-cell="end-turn"]') as HTMLElement).hasAttribute('data-armed')).toBe(true);
+    act(() => (host.querySelector('[data-cell="end-turn"]') as HTMLButtonElement).click());
+    expect(useGame.getState().battle!.turn, 'le tour du navire n’est pas passé').not.toBe(0);
+  });
+
+  it('N-4 — une pièce DÉJÀ chargée éteint la recharge (restriction de site), la case restant dessinée', () => {
+    const crew = hero('gunner', 'Artilleur');
+    const ship = navire();
+    ship.postes = [{ ...poste(), loaded: true } as ShipPoste];
+    act(() => {
+      useGame.setState({
+        party: [crew], scene: emptyScene(20, 20),
+        battle: {
+          combatants: [ship, crew], order: [ship.id, crew.id], baseOrder: [ship.id, crew.id], turn: 0, round: 1,
+          action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
+          acted: false, runBudget: 4, log: [], over: null, crewActed: {},
+        } as unknown as BattleState,
+      });
+    });
+    act(() => { root.render(<CombatConsole />); });
+    expect(caseAction('ship-reload'), 'la géométrie ne perd jamais une case').not.toBeNull();
+    expect(caseAction('ship-reload')!.disabled).toBe(true);
+  });
+
+  // Une coque n'a « ni arme tenue, ni sort, ni marche de fantassin » (`engine/vehicle.ts`) : les
+  // gestes du CORPS ne lui sont pas offerts. Sans gate, « Défensive » restait vivante au tour du
+  // navire et le clic BRÛLAIT son Action (celle de la Bordée) — le refus doit être visible et inerte.
+  it('N-5 — les gestes de FANTASSIN sont fermés à la coque, avec leur raison, et ne s’exécutent pas', () => {
+    monterNavire();
+    for (const id of ['defend', 'course', 'mouvement']) {
+      const c = caseAction(id);
+      expect(c, `la géométrie garde sa case « ${id} »`).not.toBeNull();
+      expect(c!.disabled, `« ${id} » reste cliquable au tour d’une coque`).toBe(true);
+      const raison = c!.querySelector('.cc-lbl[data-gate]');
+      expect(raison?.textContent, `« ${id} » se ferme sans dire pourquoi`).toBe(
+        actionGate(id, { active: useGame.getState().battle!.combatants[0], battle: useGame.getState().battle! }).reason,
+      );
+      expect(c!.getAttribute('aria-describedby')).toBe(raison!.id);
+    }
+    // … et le clic ne mange PAS l'Action du navire (elle reste à la Bordée).
+    act(() => caseAction('defend')!.click());
+    expect(useGame.getState().battle!.acted, 'la Défensive a dépensé l’Action de la coque').toBe(false);
+    expect(useGame.getState().battle!.combatants[0].defensiveStance).toBeFalsy();
+    expect(caseAction('battery')!.disabled, 'l’Action du navire doit rester offerte à la Bordée').toBe(false);
+  });
+});
+
+describe('CombatConsole — COOP : la console suit la POSSESSION, jamais le mode de partie', () => {
+  const enAttente = () => !!host.querySelector('.cc-phase');
+  /** Deux héros de sièges différents, un combat, et le siège LOCAL est 0 (hôte). */
+  function monterCoop(turn: number) {
+    const a = hero('h1', 'Gunnar');
+    const b = hero('h2', 'Rolf');
+    act(() => {
+      useGame.setState({
+        party: [a, b], scene: emptyScene(20, 20),
+        net: { ...useGame.getState().net, mode: 'host', mySeat: 0, ownership: { h1: 0, h2: 1 } },
+        battle: {
+          combatants: [a, b], order: [a.id, b.id], baseOrder: [a.id, b.id], turn, round: 1,
+          action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
+          acted: false, runBudget: 4, log: [], over: null,
+        } as unknown as BattleState,
+      });
+    });
+    act(() => { root.render(<CombatConsole />); });
+  }
+  afterEach(() => { act(() => { useGame.setState({ net: { ...useGame.getState().net, mode: 'local', ownership: {} } }); }); });
+
+  it('C-1 — en partie RÉSEAU, le siège qui tient l’actif a une console VIVANTE', () => {
+    monterCoop(0); // tour de « h1 », possédé par le siège local (0)
+    expect(enAttente(), 'la console de MON héros ne doit pas être en lecture').toBe(false);
+    expect((host.querySelector('[data-cell="end-turn"]') as HTMLButtonElement).disabled).toBe(false);
+    expect(hotbar.slots.some((s) => !s.disabled), 'aucune case branchée : le pont clavier est mort').toBe(true);
+  });
+
+  it('C-2 — le tour du héros d’un AUTRE siège reste en LECTURE (mêmes cases, inertes)', () => {
+    monterCoop(1); // tour de « h2 », possédé par le siège 1
+    expect(enAttente(), 'le tour d’autrui doit porter sa bande d’attente').toBe(true);
+    expect((host.querySelector('[data-cell="end-turn"]') as HTMLButtonElement).disabled).toBe(true);
+    // Les cases VIDES sont des `span` (la géométrie ne bouge pas) : ce sont les alvéoles BOUTON qu'on compte.
+    expect(host.querySelectorAll('button.cc-cell:not([disabled])').length, 'aucune case ne doit être cliquable').toBe(0);
   });
 });

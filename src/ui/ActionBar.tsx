@@ -2,8 +2,8 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { hotbar } from '../state/hotbarBridge';
 import { useGame, activeCombatant, entityPickables, movementRemaining } from '../state/store';
 import { hasMeaningfulOption } from '../state/turnEconomy';
-import { freeDisengage } from '../state/actionRegistry';
-import { findSpellById, careerLabelFor, windsOfMagicTable } from '../data/index';
+import { freeDisengage, runAction } from '../state/actionRegistry';
+import { findSpellById, careerLabelFor, windsOfMagicTable, findActionById } from '../data/index';
 import { findTableEntry } from '../engine/tables';
 import { isArcaneSpell, castBlockedBy, castInfoIsPrayer } from '../engine/magic';
 import { actorHasSkill } from '../engine/skills';
@@ -41,7 +41,6 @@ import { smokeOf } from '../state/combatGeometry';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { ActiveFrame } from './ActiveFrame';
 import { CodexRef } from './compendium/CodexRef';
-import { RULE_REF } from '../engine/ruleRefs';
 import { ItemIcon } from './ItemIcon';
 import { Icon } from './Icon';
 import { GatedAction } from './GatedAction';
@@ -74,9 +73,6 @@ export function ActionBar() {
   const mountUp = useGame((s) => s.battleMount);
   const dismount = useGame((s) => s.battleDismount);
   const useItem = useGame((s) => s.battleUseItem);
-  const spendResolve = useGame((s) => s.battleSpendResolve);
-  const resolvePsychImmune = useGame((s) => s.battleResolvePsychImmune);
-  const resolveIgnoreCrit = useGame((s) => s.battleResolveIgnoreCrit);
   const frenzy = useGame((s) => s.battleFrenzy);
   const selfManeuver = useGame((s) => s.battleSelfManeuver);
   const standUp = useGame((s) => s.battleStandUp);
@@ -116,7 +112,6 @@ export function ActionBar() {
   const cleaveEnd = useGame((s) => s.cleaveEnd);
   const dualStrikeSkip = useGame((s) => s.dualStrikeSkip);
   const pickTargets = useGame((s) => s.castPickTargets);
-  const placeZone = useGame((s) => s.castPlaceZone);
   // Coût/gain de l'intention SOUS LA SOURIS (desktop) — posé par IsoStage, même source que le tap-1.
   const hoverDelta = useGame((s) => s.hoverDelta);
   const roundStartReady = useGame((s) => s.roundStartReady);
@@ -222,7 +217,9 @@ export function ActionBar() {
       const d = pz.radius * 2 + 1;
       return {
         icon: <Icon id="action/dispel" />, title: pz.label, badge: `gabarit ${d}×${d}`,
-        exit: { label: <><Icon id="ui/undo" size="sm" /> Modale</>, onClick: () => placeZone(false), primary: false },
+        // Sortie du placeur : l'ENTRÉE DU REGISTRE (routée par la source — sort ou pilonnage), jamais
+        // `castPlaceZone` en direct, qui ne connaît que le sort.
+        exit: { label: <><Icon id="ui/undo" size="sm" /> {findActionById('place-zone-back')!.label}</>, onClick: () => runAction('place-zone-back', useGame.getState), primary: false },
       };
     }
     // Ciblage de BORDÉE (navire) : la barre se transforme — on désigne le navire à canonner (le bord est auto).
@@ -331,10 +328,6 @@ export function ActionBar() {
     }, {}),
   );
 
-  // Détermination (Resolve) : la porte de la barre s'ouvre sur les TROIS dépenses (LDB 17 l.59-61) ;
-  // `removableConditions` ne sert qu'à la LISTE des États du panneau.
-  const resolve = isHero ? active.resolve ?? 0 : 0;
-  const removableConditions = isHero && resolve > 0 ? active.conditions : [];
   // Économie du tour (R6) : reste-t-il une option utile ? sinon « Fin du tour » pulse (nudge). Finir avec
   // l'Action non dépensée = gros gâchis → confirmation à 2 clics.
   const meaningfulLeft = isHero && hasMeaningfulOption(active, battle);
@@ -467,7 +460,6 @@ export function ActionBar() {
       slots.push({ id: `item-${g.label}`, disabled: battle.acted || stunned || broken, icon: it ? <ItemIcon item={it} size={22} /> : <Icon id="action/consume" />, label: `${g.label}${g.uids.length > 1 ? ` ×${g.uids.length}` : ''}`, title: (g.desc ? mdToText(g.desc) : '') || `Utiliser ${g.label}`, run: () => useItem(g.uids[0]) });
     }
     if (!frenzied) for (const g of groundItems) slots.push({ id: `pickup-${g.entityId}:${g.key}`, disabled: battle.acted || stunned || broken, icon: <Icon id="action/pick-up" />, label: g.label, title: "Ramasser cet objet au sol (coûte l'Action)", run: () => pickup(g.entityId, g.key) });
-    if (resolve > 0) slots.push({ id: 'resolve', cls: `ab-alert ${battle.action === 'resolve' ? 'on' : ''}`, icon: <Icon id="resource/resolve" />, label: `Détermination (${resolve})`, title: "Détermination : immunité Psychologie, ignorer les modificateurs de critique, ou retirer un État (ne coûte pas l'Action)", run: () => selectAction(battle.action === 'resolve' ? null : 'resolve') });
     if (net.mode !== 'local') slots.push({ id: 'raise-hand', cls: battle.handRaised ? 'on' : '', disabled: !!battle.handRaised, icon: <Icon id="ui/wait" />, label: battle.handRaised ? 'Pause demandée' : 'Pause Round', title: 'Demander la pause au prochain début de Round (fenêtre Chance « agir en premier »)', run: () => useGame.getState().raiseHand() });
     slots.push({ id: 'end-turn', cls: `ab-end ${!meaningfulLeft ? 'pulse' : ''} ${confirmEnd ? 'warn' : ''}`, icon: confirmEnd ? <Icon id="ui/warning" /> : <Icon id="ui/turn-end" />, label: confirmEnd ? 'Finir quand même ?' : 'Fin du tour', title: confirmEnd ? 'Tu n’as pas encore agi ce tour — clique encore pour finir quand même' : !meaningfulLeft ? 'Plus rien à faire ce tour' : 'Finir le tour', run: onEndTurn });
   }
@@ -616,37 +608,6 @@ export function ActionBar() {
               </div>
             );
           })}
-        </div>
-      )}
-      {battle.action === 'resolve' && resolve > 0 && (
-        <div className="ab-spells">
-          {/* Dépenses de Détermination : chaque BOUTON est l'affordance de sa règle (`CodexRef wrap`
-              englobe le contrôle sans lui voler son clic) — plus d'ⓘ parallèle (#1078). */}
-          <div className="ab-spell-row">
-            <CodexRef category={RULE_REF.determination.category} id={RULE_REF.determination.id} label="Détermination" wrap>
-              <button className="btn btn-sm" onClick={resolvePsychImmune}>
-                <Icon id="action/defend" size="sm" /> Immunité Psychologie (ce Round + le prochain)
-              </button>
-            </CodexRef>
-          </div>
-          {(active.traumas?.length ?? 0) > 0 && (
-            <div className="ab-spell-row">
-              <CodexRef category={RULE_REF.determination.category} id={RULE_REF.determination.id} label="Détermination" wrap>
-                <button className="btn btn-sm" onClick={resolveIgnoreCrit}>
-                  <Icon id="journal/heal" size="sm" /> Ignorer modifs de critique (ce Round)
-                </button>
-              </CodexRef>
-            </div>
-          )}
-          {removableConditions.map((c) => (
-            <div key={c.id} className="ab-spell-row">
-              <CodexRef category={RULE_REF.determination.category} id={RULE_REF.determination.id} label="Détermination" wrap>
-                <button className="btn btn-sm" onClick={() => spendResolve(c.id)}>
-                  <Icon id="resource/resolve" size="sm" /> Retirer {c.id}{c.value > 1 ? ` (${c.value})` : ''}
-                </button>
-              </CodexRef>
-            </div>
-          ))}
         </div>
       )}
 

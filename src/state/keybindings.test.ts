@@ -192,3 +192,74 @@ describe('raccourcis — X commute le set d’armes', () => {
     expect(binding('switch-loadout').when(s)).toBe(false);
   });
 });
+
+/**
+ * ÉCHAP PENDANT UN INTERLUDE DE CIBLAGE (#1411 P0-B) — six modes ciblent par la CARTE sans modale
+ * (Frappe Mortelle, 2ᵉ frappe, Surincantation, pose de zone, bordée, téléportation). Contrat par
+ * ÉTAT, positif :
+ *   • un interlude dont la sortie ne perd RIEN (`exitSafe`) : Échap la prend — un seul binding, et
+ *     JAMAIS `toggle-menu` (ouvrir le menu système par-dessus un ciblage en cours) ;
+ *   • un interlude dont la sortie COMMET (renoncer à un enchaînement, se poser sur sa case) : Échap
+ *     ne sélectionne RIEN. La touche d'annulation ne commet jamais — seul le clic explicite le fait.
+ */
+describe('raccourcis — Échap pendant un INTERLUDE de ciblage par la carte', () => {
+  const escapes = (s: GameState) => KEYBINDINGS.filter((k) => k.codes.includes('Escape') && k.when(s)).map((k) => k.id);
+  const combat = (over: Partial<GameState>) =>
+    fake({ battle: { over: null, order: [], turn: 0, combatants: [], action: null } as never, ...over });
+  const avecAction = (action: string) => combat({ battle: { over: null, order: [], turn: 0, combatants: [], action } as never });
+
+  const CAS: [string, GameState, string[]][] = [
+    ['Frappe Mortelle', combat({ pendingCleave: { attackerId: 'h1', hitIds: [], count: 0 } as never }), []],
+    ['2ᵉ frappe', combat({ pendingDualStrike: { attackerId: 'h1', offWeaponUid: 'w1' } as never }), []],
+    ['Surincantation', combat({ pendingCast: { casterId: 'h1', pickingTargets: true } as never }), ['interlude-exit']],
+    ['pose de zone', combat({ pendingCast: { casterId: 'h1', result: {}, zone: { placing: true, radius: 2 } } as never }), ['interlude-exit']],
+    ['bordée', avecAction('battery'), ['interlude-exit']],
+    ['téléportation', avecAction('teleport'), []],
+  ];
+
+  for (const [nom, etat, attendu] of CAS) {
+    it(`${nom} : Échap sélectionne ${attendu.length ? `« ${attendu[0]} »` : 'RIEN'} — jamais le menu système`, () => {
+      const hits = escapes(etat);
+      expect(hits, `Échap pendant « ${nom} »`).toEqual(attendu);
+      expect(hits, 'le menu système ne s’ouvre jamais par-dessus un ciblage').not.toContain('toggle-menu');
+    });
+  }
+
+  it('hors interlude, Échap retombe bien sur le menu système (la garde n’est pas devenue muette)', () => {
+    expect(escapes(combat({}))).toEqual(['toggle-menu']);
+  });
+
+  it('la sortie EXÉCUTÉE est celle du registre : la bordée désarme le mode, sans dispatcher recopié', () => {
+    const battleSelectAction = vi.fn();
+    const s = avecAction('battery');
+    binding('interlude-exit').run(() => ({ ...s, battleSelectAction }) as never);
+    expect(battleSelectAction).toHaveBeenCalledWith(null);
+  });
+});
+
+/**
+ * COOP — l'interlude d'AUTRUI n'enferme pas les autres sièges (#1411 P0-B). `interlude-exit` exige
+ * `controlsActive` : pendant le ciblage du héros d'un autre joueur, ce siège n'a AUCUNE sortie à
+ * prendre — Échap doit donc lui rendre le menu système. L'état est un VRAI combat à deux sièges
+ * (deux héros possédés, tour du siège 0, invité au siège 1), pas un `combatants: []` dégénéré.
+ */
+describe('raccourcis — Échap pendant l’interlude d’un AUTRE siège (coop)', () => {
+  const escapes = (s: GameState) => KEYBINDINGS.filter((k) => k.codes.includes('Escape') && k.when(s)).map((k) => k.id);
+  const H = (id: string) => ({ id, kind: 'hero', label: id, pos: { x: 5, y: 5 }, conditions: [], activeEffects: [], wounds: { current: 10, max: 10 }, chars: {}, skills: [], talents: [], weapons: [], items: [], advantage: 0 });
+  /** Bordée en cours (interlude `battery-cancel`, `exitSafe`), tour du héros `turn`, siège local `mySeat`. */
+  const table = (turn: number, mySeat: number) =>
+    fake({
+      party: [H('h1'), H('h2')] as never,
+      net: { mode: 'guest', mySeat, gmSeat: null, ownership: { h1: 0, h2: 1 } } as never,
+      battle: { over: null, order: ['h1', 'h2'], turn, combatants: [H('h1'), H('h2')], action: 'battery' } as never,
+    });
+
+  it('le siège QUI TIENT le ciblage prend sa sortie (et pas le menu)', () => {
+    expect(escapes(table(1, 1))).toEqual(['interlude-exit']);
+  });
+
+  it('le siège qui NE tient PAS le ciblage garde le menu système : ni sortie, ni impasse', () => {
+    const hits = escapes(table(0, 1));
+    expect(hits, 'un siège sans sortie ET sans menu serait enfermé par l’interlude d’autrui').toEqual(['toggle-menu']);
+  });
+});

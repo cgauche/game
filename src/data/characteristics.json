@@ -180,10 +180,11 @@
     "abr": "",
     "label": "Détermination",
     "type": "",
-    "desc": "Tout comme le Destin, la Résilience est directement liée à une réserve de Point, cette fois appelée Détermination. Les Points e Détermination sont dépensés afin de passer outre des contrariétés mineures, comme le fait d'ignorer les effets négatifs des Blessures critiques pendant un Round ou de retirer un Etat.",
+    "desc": "Tout comme le Destin, la Résilience est directement liée à une réserve de Points, cette fois appelée Détermination. Les Points de Détermination sont dépensés afin de passer outre des contrariétés mineures, comme le fait d'ignorer les effets négatifs des Blessures critiques pendant un Round ou de retirer un État.",
     "source": {
       "book": "livre-de-base",
-      "page": 34
+      "page": 171,
+      "note": "LDB 17 « Résilience et Détermination »"
     }
   },
   {

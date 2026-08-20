@@ -914,7 +914,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Réensemence le RNG de combat (déterminisme des tests + future coop réseau). */
   seedRng: (seed: number) => void;
   startCombat: (encounterId: string, onVictory?: Flow, opts?: { noSurprise?: boolean }) => void;
-  battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | 'advantage' | null) => void;
+  battleSelectAction: (a: 'cast' | 'ammo' | 'heal' | 'dispel' | 'battery' | 'advantage' | null) => void;
   /** Guérison (LDB 09-Compétences) — ouvre la modale de soin EN COMBAT (soi/allié adjacent). */
   battleHeal: (targetId: string, mode: HealMode) => void;
   /** « Asperger d'eau » (MDG 16 l.19, #497) — Action DIRECTE (aucune modale) : cible explicite ou
@@ -1148,6 +1148,9 @@ export interface GameState extends RollFlowActionsMap {
   /** Pilonnage INDIRECT : dépose le point d'impact choisi (clic-case du placeur 'siege') et ouvre la modale
    *  de tir de la pièce indirecte servie (`pendingAttack` siège). Cf. `siegeAimCommit` (combatSlice). */
   siegeAimCommit: (pt: Pt) => void;
+  /** Pilonnage INDIRECT : referme le placeur sans tirer (option « Servir … » désarmée). SORTIE de
+   *  l'interlude `placing-zone` de source 'siege' (`ACTION_RUN.placingZoneOff`). */
+  siegeAimCancel: () => void;
   /** Balayage (Frappe Mortelle, LDB 14 l.9) : enchaîne l'attaque sur une cible adjacente (ouvre une
    *  modale d'attaque standard) ; borné à BCC enchaînements. */
   cleaveAttack: (targetId: string) => void;

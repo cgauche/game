@@ -78,7 +78,7 @@ import { resolveSteamSave, continueSeaDayAfterCascade, continueSeaDayAfterScorbu
 import { continueSeaActivitiesAfterCascade } from './seaActivities';
 import { resolveCrewTestByRoles, rudeEpreuveMoraleDelta, crewTestSuccess, capToSuccesMinime } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
-import { findSeaShantyById } from '../data';
+import { findSeaShantyById, conditionLabel } from '../data';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById, findStructureById, combatStakeRef } from '../data';
 import { structureCombatant } from '../engine/structures';
 import { targetArc, headingToBear } from './fireArc';
@@ -2153,7 +2153,8 @@ export function createCombatSlice(get: Get, set: Set) {
         applyHealWounds(active, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.61), plafond munition-logée
         extra = t('cs.fragGettingUp');
       }
-      set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', t('cs.determinationRemove', { name: active.label, cond: conditionName, extra }), active.id)] } });
+      // Le JOUEUR lit le LIBELLÉ de l'État (« Aveuglé »), jamais son id : `conditionLabel` est la porte.
+      set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', t('cs.determinationRemove', { name: active.label, cond: conditionLabel(conditionName), extra }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
     /** Détermination (LDB 17 l.59-61) : même règle que `battleSpendResolve`, mais pour N'IMPORTE QUEL
@@ -2174,7 +2175,7 @@ export function createCombatSlice(get: Get, set: Set) {
         extra = t('cs.fragGettingUp');
       }
       if (s.battle) {
-        set({ battle: { ...s.battle, log: [...s.battle.log, ev('info', t('cs.determinationRemove', { name: hero.label, cond: conditionName, extra }), hero.id)] } });
+        set({ battle: { ...s.battle, log: [...s.battle.log, ev('info', t('cs.determinationRemove', { name: hero.label, cond: conditionLabel(conditionName), extra }), hero.id)] } });
       } else {
         set({ party: [...s.party] });
       }
@@ -2482,7 +2483,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, pendingSiegeAim: sa } = get();
       if (!battle || battle.over || !sa) return;
       const gunner = inBattleId(battle, sa.gunnerId);
-      set({ pendingSiegeAim: null, battle: { ...battle, selectedAttack: undefined, preview: null } }); // referme le placeur
+      get().siegeAimCancel(); // referme le placeur — MÊME porte que la sortie d'interlude
       if (!gunner || isOutOfAction(gunner) || !canTakeAction(gunner) || battle.acted) return;
       const aim = battle.combatants
         .filter((c) => c.kind !== gunner.kind && !isOutOfAction(c) && c.pos && chebyshev(pt, c.pos) <= sa.radius)
@@ -2491,6 +2492,16 @@ export function createCombatSlice(get: Get, set: Set) {
       // Pilonnage : la pièce est SERVIE (hors loadout main/off) → `openAttackCascade` ne gate jamais un
       // canon monté (`attackHandGate` = null), mais passe par le MÊME point partagé que les autres attaques.
       openAttackCascade(get, set, { attackerId: gunner.id, targetId: aim.id, location: null, result: null, weaponUid: sa.weaponUid, center: { ...pt }, siege: true }, 'Pilonnage', 'fire/blast');
+    },
+    /** REFERME le placeur de case du pilonnage SANS tirer : le pending tombe et l'option « Servir … »
+     *  se désarme (l'attaque redevient celle de l'Arme) — l'état exact que laisse un re-clic sur la
+     *  case d'attaque (`battleSelectAttack`, plus haut). Sortie de l'interlude `placing-zone` quand
+     *  la zone en cours vient du siège (`placingZoneOf` source `siege`), et point de fermeture unique
+     *  du commit ci-dessus. Aucun coût : rien n'a été jeté. */
+    siegeAimCancel: () => {
+      const { battle, pendingSiegeAim } = get();
+      if (!battle || !pendingSiegeAim) return;
+      set({ pendingSiegeAim: null, battle: { ...battle, selectedAttack: undefined, preview: null } });
     },
     cleaveAttack: (targetId: string) => {
       const { battle, pendingCleave: pc } = get();
@@ -2871,7 +2882,7 @@ export function createCombatSlice(get: Get, set: Set) {
 
     // ── Écran de victoire : assignation du butin (même flux que le marchand) + fermeture ──
 
-    battleSelectAction: (a: 'cast' | 'resolve' | 'ammo' | 'heal' | 'dispel' | 'battery' | 'advantage' | null) => {
+    battleSelectAction: (a: 'cast' | 'ammo' | 'heal' | 'dispel' | 'battery' | 'advantage' | null) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle, scene } = get();
       if (!battle || !scene) return;
@@ -2879,18 +2890,18 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || !controlsCombatant(get(), active)) return;
       // Brisé (LDB 16 l.52) : Mouvement + Action doivent servir à FUIR / se cacher — aucune action
       // offensive. Le déplacement (fuite) passe par le clic-sol implicite (filtre dans computeMoveReach) ;
-      // ici seuls « resolve » (Détermination, qui peut retirer le Brisé) et la fermeture (null) passent.
+      // ici seule la fermeture (null) passe. La Détermination n'entre PLUS par cette porte : ses trois
+      // dépenses (LDB 17 l.59-61) sont des dispatchers directs, qui n'arment aucun mode.
       // (« Se cacher » par Discrétion = pas de système de furtivité en combat ; approximé par « rester
       // hors de vue » → récupération en fin de Round, cf. brokenRecovery.)
-      if (isActionLocked(active) && a !== 'resolve' && a !== null) {
+      if (isActionLocked(active) && a !== null) {
         get().log(t('cs.brokenFlee', { name: active.label }));
         return;
       }
       // Pas d'Action ce tour (Sonné LDB 16 l.125 / Surpris l.135 — lu en DONNÉES via `canTakeAction`/gating,
-      // plus de branche par-nom). La Détermination ('resolve') ne coûte pas l'Action et peut retirer l'État
-      // (LDB 13 l.81 / 17 l.59-61) ; les manœuvres gratuites (Se relever, Se désengager…) sont des slots
+      // plus de branche par-nom) ; les manœuvres gratuites (Se relever, Se désengager…) sont des slots
       // DIRECTS qui n'appellent pas battleSelectAction. Surpris : message dédié (UX), le reste silencieux.
-      if (a !== 'resolve' && a !== null && !canTakeAction(active)) {
+      if (a !== null && !canTakeAction(active)) {
         if (hasCondition(active, COND.surpris)) get().log(t('cs.surprised', { name: active.label }));
         return;
       }

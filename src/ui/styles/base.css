@@ -472,6 +472,16 @@ h3 {
   padding: 6px 10px;
   font-size: 13px;
 }
+/* Variante NUE (`GatedAction bare`) : le contrôle n'apporte AUCUNE boîte — l'alvéole qui l'accueille
+   porte déjà sa géométrie (fond, filet, taille). Elle vit ICI, chez la primitive, jamais en
+   neutralisation de `.btn` depuis le conteneur d'un écran. */
+.btn.btn-nu {
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
 .btn-primary {
   background: linear-gradient(180deg, var(--accent2), var(--accent));
   border-color: #c9573f;

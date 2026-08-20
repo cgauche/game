@@ -25,6 +25,10 @@ import { testBreakdown, testPending, soutienMod, opposedLines } from './breakdow
 import { Icon } from './Icon';
 import { resultLine, freeCons } from '../state/rollSeam';
 
+/** Marque du pluriel FR, accordée sur la VALEUR (patron `plural(n)` des modales de navire) : le
+ *  raccourci « (s) » du code laissait l'écran écrire « 1 pas … RESTANT(S) ». */
+const plural = (n: number) => (n > 1 ? 's' : '');
+
 /**
  * Modale d'incantation — paramétrage de la coquille PARTAGÉE `RollShell` (comme Attaque/Défense) :
  * on sélectionne un sort + une cible, « Lancer » (rangée mono) fait le jet, on voit le résultat
@@ -328,7 +332,7 @@ export function CastModal() {
             const candidates = overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, source, oc.range);
             return (
               <div className="rm-options">
-                <span className="mini-title"><Icon id="magic/gust" size="sm" /> Surincantation — {left} pas (+{stepCost} DR) restant(s)</span>
+                <span className="mini-title"><Icon id="magic/gust" size="sm" /> Surincantation — {left} pas (+{stepCost} DR) restant{plural(left)}</span>
                 <div className="rm-stepper-list">
                   {rows.map((a) => (
                     <div key={a} className="rm-stepper">

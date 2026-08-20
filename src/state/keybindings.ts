@@ -12,7 +12,7 @@ import { useGame, activeCombatant } from './store';
 import { controlsActive } from './netOwnership';
 import { pickActiveModalKey, modalBlocksMapHover } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
-import { runAction } from './actionRegistry';
+import { runAction, currentInterludeAction } from './actionRegistry';
 import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
 import { SEUIL_MAINTIEN_MS, arreterLacet, demarrerLacet, pasYaw } from './stageYaw';
@@ -249,12 +249,12 @@ export const KEYBINDINGS: KeyBinding[] = [
   // INTENTION armée depuis l'interface (spec HUD zone 4) : Échap la dissout AVANT tout autre usage de
   // la touche — c'est l'annulation la plus récente, celle que le joueur vient d'ouvrir.
   {
-    id: 'intent-cancel', codes: ['Escape'], labelKey: 'key.intentCancel', section: 'combat', sharedBy: ['cursor-cancel', 'clear-preview', 'toggle-menu'],
+    id: 'intent-cancel', codes: ['Escape'], labelKey: 'key.intentCancel', section: 'combat', sharedBy: ['cursor-cancel', 'clear-preview', 'toggle-menu', 'interlude-exit'],
     when: (s) => !!s.localIntent,
     run: (g) => g().battleArmIntent(null),
   },
   {
-    id: 'cursor-cancel', codes: ['Escape'], labelKey: 'key.cursorCancel', section: 'curseur', sharedBy: ['clear-preview', 'toggle-menu', 'intent-cancel'],
+    id: 'cursor-cancel', codes: ['Escape'], labelKey: 'key.cursorCancel', section: 'curseur', sharedBy: ['clear-preview', 'toggle-menu', 'intent-cancel', 'interlude-exit'],
     when: (s) => !!s.combatCursor || preemptCur(s), // armé sans cible en vue : Échap désarme quand même le Tir rapide
     run: (g) => { if (g().preemptAiming) g().armPreempt(null); g().clearCursor(); const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
   },
@@ -265,7 +265,7 @@ export const KEYBINDINGS: KeyBinding[] = [
     when: (s) => cur(s), run: (g) => runAction('end-turn', g),
   },
   {
-    id: 'clear-preview', codes: ['Escape'], labelKey: 'key.clearPreview', section: 'combat', sharedBy: ['cursor-cancel', 'toggle-menu', 'intent-cancel'],
+    id: 'clear-preview', codes: ['Escape'], labelKey: 'key.clearPreview', section: 'combat', sharedBy: ['cursor-cancel', 'toggle-menu', 'intent-cancel', 'interlude-exit'],
     when: (s) => !!s.battle?.preview,
     run: (g) => { const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
   },
@@ -291,9 +291,26 @@ export const KEYBINDINGS: KeyBinding[] = [
   // OUVERT (`gameMenuOpen`) rend la main à son propre focus-trap (Modal.a11y : Échap = Retour/Fermer,
   // qui stoppe la propagation avant ce hook). Les écrans/modales plein-champ (role=dialog) consomment
   // déjà Échap et coupent la propagation → ils ne rouvrent jamais ce menu par mégarde.
+  // INTERLUDE de ciblage par la carte (Frappe Mortelle, 2ᵉ frappe, Surincantation, pose de zone,
+  // bordée, téléportation) : Échap prend la SORTIE que le registre déclare pour le mode courant —
+  // la même que le bandeau de la console, jamais un chemin parallèle. Seules les sorties `exitSafe`
+  // y sont atteignables : une sortie qui COMMET (renoncer à un enchaînement, se poser sur sa case)
+  // se clique, la touche d'annulation ne la déclenche pas.
   {
-    id: 'toggle-menu', codes: ['Escape'], labelKey: 'key.toggleMenu', section: 'systeme', sharedBy: ['cursor-cancel', 'clear-preview', 'intent-cancel'],
-    when: (s) => s.screen === 'campaign' && !s.gameMenuOpen && noModal(s),
+    id: 'interlude-exit', codes: ['Escape'], labelKey: 'key.interludeExit', section: 'combat',
+    sharedBy: ['cursor-cancel', 'clear-preview', 'intent-cancel', 'toggle-menu'],
+    when: (s) => inBattle(s) && controlsActive(s) && !!currentInterludeAction(() => s)?.exitSafe,
+    run: (g) => { const def = currentInterludeAction(g); if (def) runAction(def.id, g); },
+  },
+  {
+    id: 'toggle-menu', codes: ['Escape'], labelKey: 'key.toggleMenu', section: 'systeme', sharedBy: ['cursor-cancel', 'clear-preview', 'intent-cancel', 'interlude-exit'],
+    // Un interlude de ciblage OCCUPE Échap, même quand sa sortie n'est pas atteignable à la touche
+    // (`exitSafe: false`) : la touche ne doit pas ouvrir le menu par-dessus un ciblage en cours.
+    // MAIS il ne l'occupe QU'AU SIÈGE QUI LE TIENT : `interlude-exit` exige `controlsActive`, donc
+    // pendant le ciblage d'un AUTRE joueur, un siège qui n'a pas la main n'aurait ni sortie ni menu.
+    when: (s) =>
+      s.screen === 'campaign' && !s.gameMenuOpen && noModal(s) &&
+      (!currentInterludeAction(() => s) || !controlsActive(s)),
     run: (g) => g().setGameMenu(true),
   },
 ];

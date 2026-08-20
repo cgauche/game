@@ -18,8 +18,13 @@ export const file = 'actions.json';
 
 /** Surface d'accueil PAR DÉFAUT (spec §1a / §1c-bis / zone 4). Le placement joueur reste libre :
  *  ce champ dit d'où l'action NAÎT quand rien n'a été posé. `geste-d-etat` = la case G6bis de la
- *  travée gauche (spec §1a, G6bis) : ce que l'ÉTAT du porteur ouvre, pas ce que son arme offre. */
-const surfaceSchema = z.enum(['deduite-du-set', 'geste-d-etat', 'grille', 'pastille-entite', 'hors-console']);
+ *  travée gauche (spec §1a, G6bis) : ce que l'ÉTAT du porteur ouvre, pas ce que son arme offre.
+ *  `interlude` = le bandeau de phase de la console (`.cc-phase`) : l'action s'affiche tant que le
+ *  mode de ciblage courant (`currentTargetingMode`) est celui de son `mode`, et SON dispatcher est
+ *  la SORTIE de ce ciblage. Elle exige donc `mode`, `run` et `exitSafe`. `pastille-etat` = la
+ *  PASTILLE de l'État concerné dans la niche d'États (`StateChips`, slot `action`) : la réaction que
+ *  cet État ouvre vit sur LUI, jamais dans une case de la grille (arbitrage HUD 2026-08-16). */
+const surfaceSchema = z.enum(['deduite-du-set', 'geste-d-etat', 'grille', 'pastille-entite', 'pastille-etat', 'hors-console', 'interlude']);
 
 /** Ce que l'acte consomme dans l'économie du Tour. */
 const costSchema = z.enum(['action', 'mouvement', 'gratuit', 'aucun']);
@@ -63,6 +68,11 @@ export const schema = z.array(
     keys: z.array(z.string()).optional(),
     /** Dette BLOQUANTE : l'action est déclarée mais aucun dispatcher ne l'exécute encore. */
     blocked: z.strictObject({ ticket: z.string(), raison: z.string() }).optional(),
+    /** SORTIE D'INTERLUDE ATTEIGNABLE À ÉCHAP (`surface: 'interlude'` uniquement) : `false` = son
+     *  dispatcher COMMET quelque chose (un renoncement, un placement) — la touche d'annulation ne
+     *  doit jamais le déclencher, seul le clic explicite le fait. `true` = la sortie ne perd rien
+     *  (retour à la modale, désarmement d'un mode). */
+    exitSafe: z.boolean().optional(),
   })
   .superRefine((a, ctx) => {
     if (a.maison && !a.costNote) {
@@ -79,6 +89,12 @@ export const schema = z.array(
     }
     if ((a.run || a.intent) && a.blocked) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : dette déclarée alors que l’action s’exécute (run) ou s’arme (intent)` });
+    }
+    if (a.surface === 'interlude' && (!a.mode || !a.run || a.exitSafe === undefined)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : action d’interlude sans mode de ciblage, sans dispatcher de sortie ou sans exitSafe` });
+    }
+    if (a.exitSafe !== undefined && a.surface !== 'interlude') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : exitSafe hors d’une action d’interlude (aucune touche d’annulation ne la vise)` });
     }
   }),
 );

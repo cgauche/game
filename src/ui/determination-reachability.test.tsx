@@ -1,9 +1,23 @@
 // @vitest-environment jsdom
+/**
+ * DÉTERMINATION — les TROIS dépenses (LDB 17 l.59-61) sont atteignables sur la surface VIVANTE, la
+ * console de combat : deux ALVÉOLES de la grille (immunité Psychologie, ignorer les modificateurs de
+ * Critique) et la PASTILLE de l'État pour « Retirez un État » (arbitrage HUD 2026-08-16 : « Réactions
+ * d'État sur la PASTILLE (`StateChips`+`GatedAction`) »). Aucune liste ne s'ouvre : la barre morte les
+ * rendait en rangées `.ab-spells`, patron banni par le même arbitrage.
+ *
+ * Console MONTÉE pour de vrai (`createRoot`/`act`) sur le VRAI store — aucun module mocké, et l'effet
+ * mesuré est celui du MOTEUR (réserve débitée, État retiré), jamais un drapeau d'UI.
+ */
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame, type BattleState } from '../state/store';
-import { ActionBar } from './ActionBar';
+import { conditionLabel, findActionById } from '../data';
+import { hasCondition } from '../engine/conditions';
+import { actionGate } from '../state/actionRegistry';
+import { emptyScene } from '../state/scene';
+import { CombatConsole } from './CombatConsole';
 import type { Combatant } from '../engine/types';
 
 const BASE_CHARS = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
@@ -19,75 +33,125 @@ const heros = (over: Partial<Combatant>) =>
     ...over,
   }) as unknown as Combatant;
 
-/** Barre d'action MONTÉE sur le store RÉEL (patron `createRoot`/`act` de `ActiveFrame.test.tsx`). */
 let host: HTMLDivElement;
 let root: Root;
 
 function monter(hero: Combatant) {
-  useGame.setState({
-    battle: {
-      combatants: [hero], order: [hero.id], baseOrder: [hero.id], turn: 0, round: 1, action: null,
-      selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false,
-      log: [], over: null, preview: null,
-    } as unknown as BattleState,
-    // `scene` est requise : `battleSelectAction` sort tout de suite sans elle (combatSlice.ts:2803).
-    scene: { id: 'test', name: 'Test', entities: [], tiles: [] } as never,
-    mode: 'battle', party: [hero], pendingRoundStart: null, pendingAttack: null, pendingCast: null,
-    pendingCleave: null, pendingDualStrike: null, pendingSiegeAim: null, hoverDelta: null,
-    net: { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
+  act(() => {
+    useGame.setState({
+      battle: {
+        combatants: [hero], order: [hero.id], baseOrder: [hero.id], turn: 0, round: 1, action: null,
+        selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false,
+        log: [], over: null, preview: null,
+      } as unknown as BattleState,
+      scene: emptyScene(20, 20),
+      mode: 'battle', party: [hero], pendingRoundStart: null, pendingAttack: null, pendingCast: null,
+      pendingCleave: null, pendingDualStrike: null, pendingSiegeAim: null, hoverDelta: null,
+      net: { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
+    });
   });
-  act(() => { root.render(<ActionBar />); });
+  act(() => { root.render(<CombatConsole />); });
 }
 
-const slotResolve = () => host.querySelector<HTMLButtonElement>('button.ab-slot[data-slot="resolve"]');
+const alveole = (id: string) => host.querySelector<HTMLButtonElement>(`.cc-cell[data-action="${id}"]`);
+/** Boutons de la niche d'États de l'arche : une pastille ACTIONNABLE est un `<button>` (`GatedAction`). */
+const pastilles = () => [...host.querySelectorAll<HTMLButtonElement>('.ptile-states button.pt-state')];
+const actif = () => useGame.getState().battle!.combatants[0];
 
-/** Ouvre le panneau de Détermination en cliquant le slot. */
-function ouvrirPanneau() {
-  const slot = slotResolve();
-  expect(slot, 'aucun slot « Détermination » dans la barre').toBeTruthy();
-  act(() => { slot!.click(); });
-}
+beforeAll(() => {
+  (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+});
+beforeEach(() => {
+  host = document.createElement('div');
+  document.body.appendChild(host);
+  root = createRoot(host);
+});
+afterEach(() => {
+  act(() => root.unmount());
+  host.remove();
+  useGame.setState({ battle: null, party: [], mode: 'menu' } as never);
+});
 
-const libelles = () => [...host.querySelectorAll('.ab-spells .ab-spell-row button')].map((b) => b.textContent ?? '');
-
-describe('Détermination — les trois usages sont ATTEIGNABLES depuis la barre (LDB 17 l.59-61)', () => {
-  beforeAll(() => {
-    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-  });
-  beforeEach(() => {
-    host = document.createElement('div');
-    document.body.appendChild(host);
-    root = createRoot(host);
-  });
-  afterEach(() => {
-    act(() => root.unmount());
-    host.remove();
-    useGame.setState({ battle: null, party: [], mode: 'menu' } as never);
-  });
-
-  it('héros SANS État mais Détermination > 0 : le slot est présent et mène à l\'immunité Psychologie', () => {
+describe('Détermination — les trois usages sont ATTEIGNABLES depuis la console (LDB 17 l.59-61)', () => {
+  it('usage 1 (l.59) — l’alvéole « immunité Psychologie » est vivante et DÉPENSE le point', () => {
     monter(heros({ resolve: 2, conditions: [], traumas: [] }));
-    expect(slotResolve()?.textContent).toContain('Détermination (2)');
-    ouvrirPanneau();
-    expect(libelles().some((t) => t.includes('Immunité Psychologie'))).toBe(true);
+    const c = alveole('resolve-psych-immune');
+    expect(c, 'aucune alvéole d’immunité Psychologie dans la grille').toBeTruthy();
+    expect(c!.disabled).toBe(false);
+    act(() => c!.click());
+    expect(actif().resolve, 'le clic n’a pas débité la réserve').toBe(1);
+    expect(actif().activeEffects?.some((e) => e.psychImmune)).toBe(true);
   });
 
-  it('héros SANS État, avec une Blessure critique : « Ignorer modifs de critique » est atteignable', () => {
-    monter(heros({ resolve: 1, conditions: [], traumas: [{ label: 'Fracture', ops: [] }] as never }));
-    ouvrirPanneau();
-    const t = libelles();
-    expect(t.some((x) => x.includes('Immunité Psychologie'))).toBe(true);
-    expect(t.some((x) => x.includes('Ignorer modifs de critique'))).toBe(true);
+  it('usage 2 (l.60) — l’alvéole « ignorer les modificateurs de critique » est vivante et DÉPENSE le point', () => {
+    // Aucune Blessure critique en cours : le RAW n'attache la dépense à AUCUNE condition d'état, et
+    // `ignoreCritMods` porte au-delà des seules séquelles (il annule aussi les malus de maladie/faim,
+    // `engine/trauma.ts:877`). La case reste donc offerte tant qu'il reste un point.
+    monter(heros({ resolve: 1, conditions: [], traumas: [] }));
+    const c = alveole('resolve-ignore-crit');
+    expect(c, 'aucune alvéole « ignorer les modificateurs de critique »').toBeTruthy();
+    act(() => c!.click());
+    expect(actif().resolve).toBe(0);
+    expect(actif().activeEffects?.some((e) => e.ignoreCritMods)).toBe(true);
   });
 
-  it('héros AVEC État : la liste des États retirables reste rendue (usage 3)', () => {
+  it('réserve VIDE — les deux alvéoles restent DESSINÉES et portent leur raison, visible', () => {
+    const h = heros({ resolve: 0, conditions: [] });
+    monter(h);
+    const attendue = actionGate('resolve-psych-immune', { active: h, battle: useGame.getState().battle! }).reason;
+    for (const id of ['resolve-psych-immune', 'resolve-ignore-crit']) {
+      const c = alveole(id)!;
+      expect(c, `l’alvéole ${id} a disparu — la géométrie ne bouge jamais`).toBeTruthy();
+      expect(c.disabled).toBe(true);
+      const raison = c.querySelector('.cc-lbl[data-gate]')!;
+      expect(raison.textContent).toBe(attendue);
+      expect(c.getAttribute('aria-describedby')).toBe(raison.id);
+    }
+  });
+
+  it('usage 3 (l.61) — la PASTILLE de l’État porte son retrait : le clic retire l’État et débite', () => {
     monter(heros({ resolve: 1, conditions: [{ id: 'aveugle', value: 1 }] as never }));
-    ouvrirPanneau();
-    expect(libelles().some((x) => x.includes('Retirer aveugle'))).toBe(true);
+    const p = pastilles();
+    expect(p.length, 'la pastille d’État ne porte aucun geste').toBe(1);
+    act(() => p[0].click());
+    expect(hasCondition(actif(), 'aveugle'), 'l’État n’a pas été retiré').toBe(false);
+    expect(actif().resolve).toBe(0);
+    // Le JOURNAL est une surface JOUEUR : il dit l'État par son LIBELLÉ, comme la pastille.
+    const journal = useGame.getState().battle!.log;
+    const ligne = journal[journal.length - 1].text;
+    expect(ligne).toContain(conditionLabel('aveugle'));
+    expect(ligne, 'le journal a servi l’id d’État au joueur').not.toContain('aveugle');
   });
 
-  it('Détermination à 0 : aucun slot (rien à dépenser)', () => {
-    monter(heros({ resolve: 0, conditions: [] }));
-    expect(slotResolve()).toBeNull();
+  it('usage 3 — le geste NOMME l’État par son LIBELLÉ (jamais son id)', () => {
+    monter(heros({ resolve: 1, conditions: [{ id: 'aveugle', value: 1 }] as never }));
+    const nom = pastilles()[0].getAttribute('aria-label') ?? '';
+    expect(nom).toContain(findActionById('resolve-remove-condition')!.label);
+    expect(nom).toContain(conditionLabel('aveugle'));
+    // Assertion NÉGATIVE sur l'id : le libellé (« Aveuglé ») et l'id (« aveugle ») sont des chaînes
+    // distinctes — le témoin ci-dessus borne la mesure, celui-ci interdit d'afficher l'id au joueur.
+    expect(nom, 'l’id d’État ne s’affiche JAMAIS').not.toContain('aveugle');
+  });
+
+  // CÂBLAGE de l'affordance : le style qui distingue la pastille-BOUTON de l'informative est keyé sur
+  // `.pt-state.btn` (hud.css), et sa cible tactile de 44px sur `.pt-state.btn::after`. Si le bouton
+  // cessait d'arriver par `GatedAction` (donc de porter `.btn`), les deux règles s'éteindraient sans
+  // qu'aucun contrat CSS ne rougisse — c'est ce clou-ci qui les tient.
+  it('usage 3 — la pastille ACTIONNABLE est un bouton `.btn` (la classe que le style de l’affordance vise)', () => {
+    monter(heros({ resolve: 1, conditions: [{ id: 'aveugle', value: 1 }] as never }));
+    const p = pastilles()[0];
+    expect(p.tagName).toBe('BUTTON');
+    expect([...p.classList], 'le bouton de la pastille n’arrive plus par GatedAction').toEqual(
+      expect.arrayContaining(['btn', 'btn-nu', 'pt-state']),
+    );
+    // … et l'INFORMATIVE, elle, n'est pas un bouton (sinon la distinction n'aurait rien à distinguer).
+    monter(heros({ resolve: 0, conditions: [{ id: 'aveugle', value: 1 }] as never }));
+    expect(host.querySelector('.pt-state')!.matches('button.btn')).toBe(false);
+  });
+
+  it('réserve VIDE — la pastille redevient purement informative (aucun geste feint)', () => {
+    monter(heros({ resolve: 0, conditions: [{ id: 'aveugle', value: 1 }] as never }));
+    expect(pastilles()).toHaveLength(0);
+    expect(host.querySelector('.ptile-states .pt-state'), 'la pastille elle-même reste dessinée').toBeTruthy();
   });
 });

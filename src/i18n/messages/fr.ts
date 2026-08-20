@@ -2142,6 +2142,7 @@ export const fr = {
   'key.endTurn': 'Fin du tour',
   'key.clearPreview': 'Annuler l’aperçu de déplacement',
   'key.intentCancel': 'Annuler l’intention armée',
+  'key.interludeExit': 'Sortir du ciblage en cours',
   'key.hotbarSlot': 'Capacité {n} de la barre d’action',
   'key.toggleMenu': 'Ouvrir le menu système',
   'key.exploreUp': 'Exploration : pas vers le haut',
@@ -2275,4 +2276,26 @@ export const fr = {
   'slot.darkNeedsNormal': "un Domaine sombre ne s'apprend qu'en plus d'un autre Domaine (LDB 46 l.177)",
   'slot.domainCap': 'plafond de Domaines magiques atteint ({cap})',
   'slot.prevDomain': 'Domaine précédent ({domain}) pas assez maîtrisé : {advances}/20 Améliorations Focalisation, {known}/8 Sorts',
+
+  // ── GATES D'ACTION : raisons d'indisponibilité du registre (`state/actionRegistry.ts`, `agate.*`).
+  // Ces `reason` sont du texte JOUEUR : la console les grave sous la case fermée et `GatedAction` les
+  // lie en `aria-describedby`. Elles vivaient en littéraux au call-site, invisibles au garde de
+  // narration (posées en argument de `no(…)`, aucune des huit formes ne les voit).
+  'agate.actionSpent': 'Action déjà dépensée ce tour',
+  'agate.unableToAct': 'hors d’état d’agir',
+  'agate.notEngaged': 'pas Engagé',
+  'agate.actionSpentNoFreeDisengage': 'Action déjà dépensée (désengagement gratuit indisponible)',
+  'agate.movementStarted': 'Mouvement déjà entamé ce tour',
+  'agate.hullHasNoBody': 'une coque n’a pas de corps : geste de fantassin',
+  'agate.frenzyOnly': 'Frénésie : seuls la Capacité de Combat et l’Athlétisme',
+  'agate.alreadyEngaged': 'déjà Engagé',
+  'agate.noMovementLeft': 'plus de Mouvement ce tour',
+  'agate.noResolve': 'aucun point de Détermination',
+  'agate.noFreeWeaponAttack': 'aucune attaque d’Arme gratuite disponible',
+  'agate.noTrampleTarget': 'aucune cible piétinable',
+  'agate.singleLoadout': 'un seul set d’armes',
+  'agate.loadoutSwapped': 'set d’armes déjà changé ce tour',
+  'agate.localGame': 'partie locale',
+  'agate.notAVessel': 'pas un navire',
+  'agate.vesselActionSpent': 'Action du navire déjà dépensée',
 } as const;

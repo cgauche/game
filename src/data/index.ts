@@ -277,7 +277,7 @@ export interface ActionDef {
   id: string;
   label: string;
   icon: string;
-  surface: 'deduite-du-set' | 'geste-d-etat' | 'grille' | 'pastille-entite' | 'hors-console';
+  surface: 'deduite-du-set' | 'geste-d-etat' | 'grille' | 'pastille-entite' | 'pastille-etat' | 'hors-console' | 'interlude';
   gate: string;
   candidates?: string;
   run?: string;
@@ -292,6 +292,9 @@ export interface ActionDef {
   ruleCategory?: string;
   keys?: string[];
   blocked?: { ticket: string; raison: string };
+  /** Sortie d'interlude atteignable à la touche d'annulation (`surface: 'interlude'`) — `false` :
+   *  le dispatcher commet une perte, seul le clic explicite le déclenche. */
+  exitSafe?: boolean;
 }
 export const ACTIONS = actionsJson as ActionDef[];
 /** Action par id STABLE (jamais par libellé). */

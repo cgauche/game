@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { computeMoveReach } from './combatFlow';
 import { chooseEnemyAction } from './ai';
+import { hasCondition } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
 
 const scene = () =>
@@ -37,10 +38,16 @@ describe('Brisé — restriction d\'action (LDB 16 l.52)', () => {
     expect(useGame.getState().pendingAttack).not.toBeNull();
   });
 
-  it('Brisé : « Détermination » (resolve) reste permis — pour pouvoir retirer le Brisé', () => {
-    setup(true);
-    useGame.getState().battleSelectAction('resolve');
-    expect(useGame.getState().battle!.action).toBe('resolve');
+  // « Retirez un État » (LDB 17 l.61) ne connaît aucune restriction d'État : le Brisé se retire donc
+  // à la Détermination, malgré la restriction d'Action de l'État lui-même (LDB 16 l.52). Depuis
+  // #1411 P0-B lot 3 cette dépense n'ARME plus rien (`battle.action`) — elle part du geste de la
+  // pastille de l'État, dispatcher DIRECT ; c'est ce chemin qui se mesure.
+  it('Brisé : la Détermination le RETIRE (LDB 17 l.61), malgré la restriction d’Action', () => {
+    const { hero } = setup(true);
+    hero.resolve = 1;
+    useGame.getState().battleSpendResolve('brise');
+    expect(hasCondition(useGame.getState().battle!.combatants[0], 'brise')).toBe(false);
+    expect(useGame.getState().battle!.combatants[0].resolve).toBe(0);
   });
 
   it('Brisé : le déplacement ne propose QUE des cases qui ne rapprochent pas d\'un ennemi (fuir)', () => {

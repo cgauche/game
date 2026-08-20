@@ -25,7 +25,7 @@ import { healableTargets, combatHealModes } from '../engine/healing';
 import { findSpellById } from '../data';
 import { isStructure, structureImmune } from '../engine/structures';
 import { overcastSourceOf } from '../engine/overcast';
-import type { Pt } from './path';
+import { tileKey, type Pt } from './path';
 import { combatDistance } from './footprint';
 import { targetArc } from './fireArc';
 import { bearingPostes } from './shipBattery';
@@ -112,6 +112,11 @@ export interface TilePreview {
  */
 export interface TargetingMode {
   id: string;
+  /** Nom d'AFFICHAGE de la phase de ciblage, quand ce mode est un INTERLUDE (ciblage par la carte
+   *  sans modale : Frappe Mortelle, 2ᵉ frappe, Surincantation, pose de zone, bordée, téléportation).
+   *  Rendu par le bandeau de phase de la console — la SORTIE, elle, vit au registre des actions
+   *  (`surface: 'interlude'`). Absent = mode ordinaire, aucun bandeau. */
+  label?: string;
   affordance?(get: Get, active: Combatant, target: Combatant): HoverTargeting;
   candidates?(get: Get, active: Combatant): Combatant[];
   commitCombatant?(get: Get, set: Set, active: Combatant, id: string, opts?: BattleClickOpts): void;
@@ -621,7 +626,7 @@ function castClickCommit(get: Get, set: Set, active: Combatant, id: string): voi
 function teleportCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void {
   const battle = get().battle;
   if (!battle) return;
-  const k = `${pt.x},${pt.y}`;
+  const k = tileKey(pt.x, pt.y, pt.z);
   if (!battle.reachable.has(k)) return;
   const from = { ...active.pos! };
   const mount = mountOf(battle, active);
@@ -651,7 +656,7 @@ function pushCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void {
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !active.pos) return;
-  const k = `${pt.x},${pt.y}`;
+  const k = tileKey(pt.x, pt.y, pt.z);
   if (!battle.reachable.has(k)) return;
   const poste = active.mannedPoste;
   const hull = poste && posteHullOf(poste, battle.combatants);
@@ -708,7 +713,7 @@ const CAST_MODE: TargetingMode = {
   id: 'cast', affordance: castAffordance, commitCombatant: castClickCommit, commitTile: castCommitTile,
 };
 const BATTERY_MODE: TargetingMode = {
-  id: 'battery', affordance: batteryAffordance,
+  id: 'battery', label: 'Bordée', affordance: batteryAffordance,
   commitCombatant: (get, _set, active, id) => { get().battleShipBattery(active.id, id); },
 };
 const HEAL_MODE: TargetingMode = {
@@ -722,7 +727,7 @@ const HEAL_MODE: TargetingMode = {
   },
 };
 const OVERCAST_MODE: TargetingMode = {
-  id: 'overcast', affordance: overcastAffordance,
+  id: 'overcast', label: 'Surincantation', affordance: overcastAffordance,
   candidates: (get) => {
     const s = get();
     const pc = s.pendingCast;
@@ -735,7 +740,7 @@ const OVERCAST_MODE: TargetingMode = {
   commitCombatant: (get, _set, _active, id) => { get().castToggleExtraTarget(id); },
 };
 const CLEAVE_MODE: TargetingMode = {
-  id: 'cleave', affordance: cleaveAffordance,
+  id: 'cleave', label: 'Frappe Mortelle', affordance: cleaveAffordance,
   candidates: (get) => {
     const s = get();
     const battle = s.battle;
@@ -746,7 +751,7 @@ const CLEAVE_MODE: TargetingMode = {
   commitCombatant: (get, _set, _active, id) => { get().cleaveAttack(id); },
 };
 const DUAL_MODE: TargetingMode = {
-  id: 'dual', affordance: dualAffordance,
+  id: 'dual', label: 'Des deux armes', affordance: dualAffordance,
   candidates: (get) => {
     const s = get();
     const battle = s.battle;
@@ -758,8 +763,8 @@ const DUAL_MODE: TargetingMode = {
   commitCombatant: (get, _set, _active, id) => { get().dualStrikeAttack(id); },
 };
 const TELEPORT_MODE: TileTargetingMode = {
-  id: 'teleport',
-  tileValidAt: (get, _active, pt) => !!get().battle?.reachable.has(`${pt.x},${pt.y}`),
+  id: 'teleport', label: 'Téléportation',
+  tileValidAt: (get, _active, pt) => !!get().battle?.reachable.has(tileKey(pt.x, pt.y, pt.z)),
   commitTile: teleportCommitTile,
   tilePreview: (_get, active, pt) => (active.pos ? { target: pt, path: [active.pos, pt], label: 'Téléporter' } : null),
 };
@@ -767,17 +772,17 @@ const TELEPORT_MODE: TileTargetingMode = {
  *  (posé par `battlePushEngine`), MÊME gabarit que TELEPORT_MODE. */
 const PUSH_MODE: TileTargetingMode = {
   id: 'push',
-  tileValidAt: (get, _active, pt) => !!get().battle?.reachable.has(`${pt.x},${pt.y}`),
+  tileValidAt: (get, _active, pt) => !!get().battle?.reachable.has(tileKey(pt.x, pt.y, pt.z)),
   commitTile: pushCommitTile,
   tilePreview: (get, active, pt) => {
     if (!active.pos) return null;
-    const cost = get().battle?.reachable.get(`${pt.x},${pt.y}`) ?? 0;
+    const cost = get().battle?.reachable.get(tileKey(pt.x, pt.y, pt.z)) ?? 0;
     return { target: pt, path: [active.pos, pt], cost, label: `Pousser (${cost})` };
   },
 };
 /** Pose libre d'un gabarit de zone (sort de ZdE après jet OU pilonnage indirect de siège). */
 const PLACING_MODE: TileTargetingMode = {
-  id: 'placing-zone',
+  id: 'placing-zone', label: 'Pose de la zone',
   tileValidAt: (get, _active, pt) => { const pz = placingZoneOf(get()); return !!pz && placedZoneValidAt(get, pz, pt); },
   commitTile: (get, set, _active, pt) => commitPlacedZone(get, set, pt),
   commitCombatant: placingCommitCombatant,
@@ -788,6 +793,17 @@ const PLACING_MODE: TileTargetingMode = {
  *  vérifie un aperçu non-vide sur une tuile valide) et pour tout consommateur générique (aperçu au
  *  survol, adressabilité DOM des cases valides). */
 export const TILE_MODES: readonly TileTargetingMode[] = [TELEPORT_MODE, PUSH_MODE, PLACING_MODE];
+
+/** Catalogue de TOUS les modes — source unique d'ÉNUMÉRATION (parité avec le `mode` des entrées du
+ *  registre des actions, libellé de phase d'un interlude). L'aiguilleur ci-dessous garde SA priorité :
+ *  ce tableau ne décide de rien, il rend les modes énumérables à l'exécution. */
+export const TARGETING_MODES: readonly TargetingMode[] = [
+  ATTACK_MODE, CAST_MODE, BATTERY_MODE, HEAL_MODE, OVERCAST_MODE, CLEAVE_MODE, DUAL_MODE, TELEPORT_MODE, PUSH_MODE, PLACING_MODE,
+];
+
+/** Nom d'affichage de la phase de ciblage d'un mode (`undefined` = mode sans bandeau). */
+export const targetingModeLabel = (modeId: string): string | undefined =>
+  TARGETING_MODES.find((m) => m.id === modeId)?.label;
 
 /**
  * Aiguilleur UNIQUE — extrait factuellement des priorités de `battleClickEntity`/`hoverAim` :

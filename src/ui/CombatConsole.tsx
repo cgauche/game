@@ -8,13 +8,14 @@ import { availableAttacks, selfManeuversOf, selfManeuverApplicable, previewResou
 import { combatAdvantageSkills } from '../engine/skillCombatApps';
 import { findSpellById, findSkillById, findActionById } from '../data/index';
 import { type CodexTarget } from '../engine/ruleRefs';
-import { actionGate, runAction, type ActionCtx, type ActionRunCtx } from '../state/actionRegistry';
+import { actionGate, runAction, currentInterludeAction, type ActionCtx, type ActionRunCtx } from '../state/actionRegistry';
+import { targetingModeLabel } from '../state/targetingModes';
 import { CodexRef } from './compendium/CodexRef';
 import { isConsumable } from '../engine/consumables';
 import { loadedAmmo, loadoutLabel, activeLoadout, weaponFromItem, isUnarmed } from '../engine/items';
 import { weaponLoaded, reloadProgressOf } from '../engine/weaponLoad';
 import { canPushback } from '../engine/qualities/dispatch';
-import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
+import { hasBattement, hasDistraire, knownShanties } from '../engine/combatFeatures/dispatch';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { actorHasSkill } from '../engine/skills';
 import { hasHealSkill, healableTargets } from '../engine/healing';
@@ -24,6 +25,7 @@ import { isFrenzied, isFrenzyCapable } from '../engine/psychology';
 import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
 import { canAidTeam } from '../state/commandTeam';
 import { shipOfCrew } from '../state/shipPostes';
+import { quartIndex } from '../state/shipCrew';
 import { isVehicle } from '../engine/vehicle';
 import { controlsCombatant } from '../state/netOwnership';
 import { inBattleId } from '../state/combatants';
@@ -147,6 +149,32 @@ function icon(id: IconIdInput) {
   return <Icon id={id} />;
 }
 
+/** Le BANDEAU DE PHASE (`.cc-phase`, superposé au parapet) : ce que le pont dit quand le tour n'est
+ *  pas ordinaire — pause de Round, interlude de ciblage par la carte, tour d'un autre. Ses actions
+ *  sont des ENTRÉES DU REGISTRE (ou le geste de pause), jamais des closures anonymes. */
+type PhaseAction = { key: string; label: string; icon: ReactNode; primary: boolean; run: () => void };
+type PhaseBanner = { label: ReactNode; actions: PhaseAction[] };
+
+/** Proéminence DÉDUITE du rôle de l'action — même doctrine que `RollShell` (`ACTION_GHOST_KEYS`) : le
+ *  style se lit à un SET DE CLÉS EXACTES, jamais à un motif de nom. Sont discrètes les sorties qui
+ *  abandonnent ou reviennent en arrière ; tout ce qui VALIDE ou COMMET porte l'accent (« Terminer »,
+ *  « Valider », « Rester sur place »). Restyler un rôle se fait ICI, jamais au call-site. */
+const BANDEAU_GHOST_KEYS = new Set(['dual-strike-skip', 'place-zone-back', 'battery-cancel']);
+const bandeauDiscret = (actionId: string) => BANDEAU_GHOST_KEYS.has(actionId);
+
+function PhaseBanner({ label, actions }: PhaseBanner) {
+  return (
+    <div className="cc-phase">
+      <span className="cc-phase-label">{label}</span>
+      {actions.map((a) => (
+        <button key={a.key} type="button" data-action={a.key} className={`btn ${a.primary ? 'btn-primary' : 'btn-ghost'}`} onClick={a.run}>
+          {a.icon} {a.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** Un SET porte-t-il une arme à distance qui n'est pas prête à tirer ? L'état de charge vit sur
  *  l'ARME (registre `engine/weaponLoad`), pas sur le porteur : chaque objet du set est projeté par la
  *  dérivation UNIQUE `weaponFromItem` (l'`uid` survit, donc `loadRegister` retombe sur l'objet
@@ -229,10 +257,16 @@ export function CombatConsole() {
   const battle = useGame((s) => s.battle);
   const party = useGame((s) => s.party);
   const net = useGame((s) => s.net);
+  // Heure de jeu : le QUART courant borne la chanson de marin (une par quart, MDG 09 l.40).
+  const gameTime = useGame((s) => s.gameTime);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   // Intention LOCALE armée (spec zone 4) : elle allume SA case. Jamais un intent réseau — c'est un
   // mode d'écran, le geste qu'il commet part, lui, par les chemins de clic habituels.
   const localIntent = useGame((s) => s.localIntent);
+  // INTERLUDE de ciblage en cours : l'ID de son action de sortie, lu au registre depuis le mode de
+  // ciblage courant. La console ne nomme aucun état de flux — elle ne connaît que des ids d'action ;
+  // et le sélecteur rend une CHAÎNE, donc il ne re-rend que quand l'interlude change.
+  const interludeId = useGame((s) => currentInterludeAction(() => s)?.id);
   const confirmRoundStart = useGame((s) => s.confirmRoundStart);
   // AUCUN dispatcher n'est capté ici : toute exécution passe par `runAction` (registre des actions).
   // Garde-fou « tour gâché » ARMÉ (2ᵉ clic attendu) — état d'UI local, remis à zéro à chaque tour/Round,
@@ -241,13 +275,33 @@ export function CombatConsole() {
   useEffect(() => { setConfirmEnd(false); }, [battle?.turn, battle?.round]);
 
   if (!battle || battle.over) return null;
-  const phase = pendingRoundStart
+  // LE BANDEAU DE PHASE, source unique : la pause de Round, ou l'INTERLUDE de ciblage par la carte
+  // (l'action `surface: 'interlude'` du mode courant, § registre). Un interlude sans bandeau serait un
+  // ciblage SANS SORTIE — le joueur n'aurait plus que le clic-carte pour en sortir.
+  const interlude = interludeId ? findActionById(interludeId) : undefined;
+  const phase: PhaseBanner | null = pendingRoundStart
     ? {
         label: pendingRoundStart.round <= 1 ? 'Ouverture du combat' : `Début du Round ${pendingRoundStart.round}`,
-        exit: pendingRoundStart.round <= 1 ? 'Commencer le combat' : `Commencer le round ${pendingRoundStart.round}`,
-        onExit: confirmRoundStart,
+        actions: [{
+          key: 'round-start',
+          label: pendingRoundStart.round <= 1 ? 'Commencer le combat' : `Commencer le round ${pendingRoundStart.round}`,
+          icon: <Icon id="ui/round-start" size="sm" />,
+          primary: true,
+          run: confirmRoundStart,
+        }],
       }
-    : null;
+    : interlude
+      ? {
+          label: (interlude.mode && targetingModeLabel(interlude.mode)) ?? interlude.label,
+          actions: [{
+            key: interlude.id,
+            label: interlude.label,
+            icon: <Icon id={interlude.icon as IconIdInput} size="sm" />,
+            primary: !bandeauDiscret(interlude.id),
+            run: () => runAction(interlude.id, useGame.getState),
+          }],
+        }
+      : null;
   // Pendant la PAUSE de Round, `battle.turn` vaut -1 : personne n'agit encore. La console ne
   // DISPARAÎT pas pour autant (loi 1 : la géométrie ne bouge jamais) — elle passe en LECTURE sur
   // le combattant qui ouvrira le round (tête de l'ordre), sous le bandeau de phase (spec zone 7).
@@ -255,22 +309,22 @@ export function CombatConsole() {
   if (!active) {
     return phase ? (
       <div className="combat-console">
-        <div className="cc-phase">
-          <span className="cc-phase-label">{phase.label}</span>
-          <button type="button" className="btn btn-primary" onClick={phase.onExit}>
-            <Icon id="ui/round-start" size="sm" /> {phase.exit}
-          </button>
-        </div>
+        <PhaseBanner {...phase} />
       </div>
     ) : null;
   }
 
-  const playerControlled = controlsCombatant(useGame.getState(), active);
-  const isHero = playerControlled && !isVehicle(active) && net.mode === 'local';
+  // POSSESSION de l'acteur actif — prédicat UNIQUE des affordances de tour (`controlsCombatant`, déjà
+  // siège-aware : héros d'un autre siège, Auto-combat, ennemi conduit par le MJ). Il n'y a donc AUCUNE
+  // clause de mode de partie ici : en coop, celui qui tient l'actif voit sa console VIVRE, les autres la
+  // lisent. Et un VÉHICULE contrôlé (coque, échelle Mer) est un acteur comme un autre : ses cases sont
+  // les cases navales du registre, dans la MÊME travée.
+  const controlled = controlsCombatant(useGame.getState(), active);
+  const vehicule = isVehicle(active);
   // LECTURE : la console garde sa géométrie, ses cases deviennent inertes (spec zone 7).
-  const live = isHero && !phase;
+  const live = controlled && !phase;
 
-  const frenzied = isHero && isFrenzied(active);
+  const frenzied = controlled && isFrenzied(active);
   // Ressources du Tour EN COURS : `movementRemaining`/`battle.movementUsed`/`battle.acted` portent
   // l'acteur actif quel qu'il soit — l'arche affiche donc la valeur réelle du moteur pour un ennemi
   // comme pour un héros (spec zone 7 : mêmes cases, inertes).
@@ -282,7 +336,7 @@ export function CombatConsole() {
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
   const previewDelta = previewResourceDelta(battle);
   const stunned = !canTakeAction(active);
-  const broken = isHero && hasCondition(active, 'brise');
+  const broken = controlled && hasCondition(active, 'brise');
   const busy = battle.acted || stunned || broken;
 
   // ── LA CONSOLE CONSOMME LE REGISTRE DES ACTIONS ────────────────────────────────────────────────
@@ -377,7 +431,19 @@ export function CombatConsole() {
     ? waterSprayCandidates(active, battle.combatants.filter((c) => c.kind === active.kind))
     : [];
   // Barre d'un navire : le porteur sert-il un poste de gouverne ? (source unique `shipOfCrew`)
-  const atHelm = isHero ? shipOfCrew(battle.combatants, active.id) : undefined;
+  const atHelm = controlled ? shipOfCrew(battle.combatants, active.id) : undefined;
+  // Tâches d'équipage PARALLÈLES de la coque (elles ne dépensent pas l'Action du navire, donc aucun gate
+  // du registre ne les ferme) : le SITE dit si elles ont un objet — un chanteur apte dont le quart n'a pas
+  // eu sa chanson (MDG 09 l.32-40), une pièce déchargée dont le chef reste libre ce Round.
+  const shipCrew = vehicule
+    ? (active.crewIds ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c)
+    : [];
+  const canSing =
+    active.lastShantyQuart !== quartIndex(gameTime) &&
+    shipCrew.some((c) => !isOutOfAction(c) && knownShanties(c).length > 0 && !c.singingShanty);
+  const reloadable = vehicule
+    ? (active.postes ?? []).find((p) => p.loaded === false && p.crewIds?.[0] && !(battle.crewActed?.[active.id] ?? []).includes(p.crewIds[0]))
+    : undefined;
 
   // Gestes DÉDUITS du set au poing (spec §1a, G1-G6bis). Chaque case EST une entrée du registre,
   // habillée du contenu réel (art de l'arme tenue, progression de charge). Une case non pertinente
@@ -387,9 +453,13 @@ export function CombatConsole() {
   const deduced: (Cell | undefined)[] = [
     // G1 — attaque de l'arme du set (entrée `attaque`). L'icône et le nom suivent l'ARME réelle
     // (`ItemIcon`, même routage d'art que la vignette de set) et le foyer de règle est la POSSESSION.
-    setWeapon
-      ? cellFor('attaque', 'arme', { icon: <ItemIcon item={setWeapon} />, label: setWeapon.label, rule: setWeapon.trappingId ? { category: 'trappings', id: setWeapon.trappingId } : undefined, args: { attackId: 'arme' } })
-      : cellFor('attaque', 'arme', { icon: icon('melee/grapple'), label: 'Mains nues', rule: { category: 'trappings', id: 'mains-nues' }, args: { attackId: 'arme' } }),
+    // Une COQUE n'a ni arme tenue ni poing (`isVehicle`, `engine/vehicle.ts:22`) : la case d'attaque du
+    // set ne lui est pas pertinente — ce que le navire offre, ce sont ses Tests d'équipage (plus bas).
+    vehicule
+      ? undefined
+      : setWeapon
+        ? cellFor('attaque', 'arme', { icon: <ItemIcon item={setWeapon} />, label: setWeapon.label, rule: setWeapon.trappingId ? { category: 'trappings', id: setWeapon.trappingId } : undefined, args: { attackId: 'arme' } })
+        : cellFor('attaque', 'arme', { icon: icon('melee/grapple'), label: 'Mains nues', rule: { category: 'trappings', id: 'mains-nues' }, args: { attackId: 'arme' } }),
     // G4 — Recharger : le porteur de l'état est l'ARME (progression du Test étendu), et c'est ELLE
     // que le dispatcher reçoit.
     rangedW && (rangedW.reload ?? 0) > 0
@@ -402,7 +472,7 @@ export function CombatConsole() {
       : undefined,
     // G2 — Charge (bouton d'intention : portée M×2 visible avant le clic). Le verdict d'offre vient
     // du registre (`charge-possible`), le verbatim du popover de sa fiche.
-    chargeDeduite ? cellFor('charge', 'geste') : undefined,
+    chargeDeduite && !vehicule ? cellFor('charge', 'geste') : undefined,
     // G3 — Viser
     rangedW ? cellFor('aim', 'arme', { label: active.aiming ? 'En joue' : 'Viser', on: !!active.aiming, off: busy || !!active.aiming || frenzied }) : undefined,
     // G6 — geste d'ARME : la jauge est l'ARSENAL tenu (`canPushback`). L'Empoignade n'en est PAS un
@@ -414,7 +484,17 @@ export function CombatConsole() {
     // SITUATION ouvre — en selle, à une pièce servie, à la barre — jamais ce que son arme offre.
     active.mountId ? cellFor('dismount', 'geste', { off: broken }) : undefined,
     active.mannedPoste ? cellFor('leave-poste', 'geste', { off: busy }) : undefined,
-    atHelm ? cellFor('maneuver-ship', 'geste', { off: busy, args: { crewId: active.id } }) : undefined,
+    // La barre : le BARREUR la tient (`atHelm`), et la COQUE elle-même quand c'est SON tour — même case,
+    // mêmes arguments (`battleShipManeuver` accepte l'un ou l'autre, `combatSlice.ts:1362`).
+    atHelm || vehicule ? cellFor('maneuver-ship', 'geste', { off: busy, args: { crewId: active.id } }) : undefined,
+    // NAVIRE (échelle Mer) : au tour de la coque, ses Tests d'équipage sont les gestes de la travée —
+    // les MÊMES cases du registre, pas une 2ᵉ barre. Bordée et Rude épreuve dépensent l'Action du navire
+    // (gate `navire-action`) ; chant et recharge sont des tâches parallèles (gate `toujours`), donc leur
+    // disponibilité RÉELLE est une restriction de SITE : sans chanteur / sans pièce déchargée, case inerte.
+    vehicule ? cellFor('battery', 'attaque', { on: battle.action === 'battery', off: (active.postes ?? []).length === 0, args: { toggleOff: battle.action === 'battery' } }) : undefined,
+    vehicule ? cellFor('crew-test-rude-epreuve', 'geste', { args: { shipId: active.id, crewTestId: 'rude-epreuve' } }) : undefined,
+    vehicule ? cellFor('sing-shanty', 'geste', { off: !canSing, args: { shipId: active.id } }) : undefined,
+    vehicule ? cellFor('ship-reload', 'geste', { off: !reloadable, args: { shipId: active.id, posteUid: reloadable?.item.uid } }) : undefined,
   ];
   // La rangée BASSE est LIBRE (placement joueur — spec §1c-bis) et son remplissage PAR DÉFAUT est le
   // DÉBORD des gestes déduits (spec §1b) : une case pré-remplie reste remplaçable, mais plus AUCUN geste
@@ -477,7 +557,13 @@ export function CombatConsole() {
     hasCondition(active, 'empetre') ? cellFor('free-entangle', 'geste', { args: { stateId: 'empetre' } }) : undefined,
     isFrenzyCapable(active) && !isFrenzied(active) ? cellFor('frenzy', 'geste') : undefined,
     canAidTeam(active, battle.combatants) ? cellFor('aid-team', 'geste', { off: busy }) : undefined,
-    cellFor('resolve', 'defense', { label: `Détermination ${active.resolve ?? 0}`, on: battle.action === 'resolve', args: { toggleOff: battle.action === 'resolve' } }),
+    // DÉTERMINATION — deux des trois dépenses (LDB 17 l.59-60) sont des alvéoles, comme toute action :
+    // leurs dispatchers sont DIRECTS (`battleResolvePsychImmune`/`battleResolveIgnoreCrit` dépensent le
+    // point au clic), il n'y a donc plus rien à ARMER. La 3ᵉ (« Retirez un État », l.61) vit sur la
+    // PASTILLE de l'État qu'elle retire (plus bas, `retraitDEtat`). Le chiffre entre parenthèses est la
+    // RÉSERVE restante — l'ancienne case d'armement la portait seule.
+    cellFor('resolve-psych-immune', 'defense', { label: `${findActionById('resolve-psych-immune')!.label} (${active.resolve ?? 0})` }),
+    cellFor('resolve-ignore-crit', 'defense', { label: `${findActionById('resolve-ignore-crit')!.label} (${active.resolve ?? 0})` }),
     dispellable.length > 0
       ? cellFor('dispel', 'magie', { on: battle.action === 'dispel', off: busy || frenzied, args: { toggleOff: battle.action === 'dispel' } })
       : undefined,
@@ -509,10 +595,10 @@ export function CombatConsole() {
   const hotkeyOf = (c?: Cell) => (c ? keyRank.get(c.key) : undefined);
 
   const advCap = advantageCapFor(active);
-  const meaningfulLeft = isHero && hasMeaningfulOption(active, battle);
+  const meaningfulLeft = controlled && hasMeaningfulOption(active, battle);
   // Garde-fou « tour gâché » (spec §1c-bis COIN) : finir avec l'Action NON DÉPENSÉE demande deux clics.
   // MÊME mécanisme que la barre v7 (`ActionBar.tsx:341-346`), pas une réinvention.
-  const wastingAction = isHero && !battle.acted && canTakeAction(active);
+  const wastingAction = controlled && !battle.acted && canTakeAction(active);
   const onEndTurn = () => {
     if (wastingAction && !confirmEnd) { setConfirmEnd(true); return; }
     setConfirmEnd(false);
@@ -523,19 +609,33 @@ export function CombatConsole() {
   // `keybindings.ts` `end-turn`). Un héros Sonné n'a rien à dépenser : il lit la touche, pas un reproche.
   const endNote = confirmEnd ? 'Finir quand même ?' : wastingAction ? 'Action non dépensée' : battle.acted ? 'Tour fini' : 'ESPACE';
 
+  /** « Retirez un État » (LDB 17 l.61) — la 3ᵉ dépense de Détermination est le geste de L'ÉTAT, porté
+   *  par SA pastille (arbitrage HUD 2026-08-16 : « Réactions d'État sur la PASTILLE »), jamais une
+   *  case de plus dans la grille. C'est une ENTRÉE DU REGISTRE comme les autres — `cellFor` en rend le
+   *  verdict, le dispatcher et le foyer de règle ; seule l'alvéole d'accueil change.
+   *  Le nom accessible dit l'État par son LIBELLÉ (`chip.label`, résolu par `conditionLabel`) : l'id
+   *  reste en logique (`conditionId`), il ne s'affiche jamais.
+   *  Un effet SANS `condId` (buff, état-drapeau, pastille de situation) n'ouvre aucun geste : la
+   *  pastille y reste purement informative. */
+  const retraitDEtat = (chip: EffectChip) => {
+    if (!chip.condId) return undefined;
+    const geste = cellFor('resolve-remove-condition', 'geste', {
+      key: `etat-${chip.condId}`,
+      label: `${findActionById('resolve-remove-condition')!.label} : ${chip.label} (1 Détermination)`,
+      args: { conditionId: chip.condId },
+    });
+    // Rack de 15px : la raison d'un geste fermé n'y tiendrait pas sans casser la géométrie de l'arche
+    // (loi 1). Une pastille sans geste offert redevient donc informative — elle ne feint rien.
+    const run = geste?.run;
+    return run && !geste!.disabled ? { label: geste!.label, run } : undefined;
+  };
+
   return (
     // LE PONT : la bande porteuse. Le bandeau de phase est son seul enfant HORS FLUX (superposé au
     // parapet, `.cc-phase`) — une phase qui va et vient ne déplace donc aucune case.
     <div className="combat-console">
-      {phase && (
-        <div className="cc-phase">
-          <span className="cc-phase-label">{phase.label}</span>
-          <button type="button" className="btn btn-primary" onClick={phase.onExit}>
-            <Icon id="ui/round-start" size="sm" /> {phase.exit}
-          </button>
-        </div>
-      )}
-      {!phase && !isHero && (
+      {phase && <PhaseBanner {...phase} />}
+      {!phase && !controlled && (
         <div className="cc-phase">
           <span className="cc-phase-label">
             <Icon id="ui/wait" size="sm" /> {active.kind === 'enemy' ? 'Tour de l’ennemi' : `Tour de ${active.label}`}
@@ -646,7 +746,7 @@ export function CombatConsole() {
             <ArchGutter kind="action" value={actAvail} max={actMax} label="Action" short="ACTION" spend={previewDelta.action} />
             {/* NICHE D'ÉTATS : même primitive que la tuile du bandeau (`StateChips reserve`), icône +
                 INDICE chiffré par État, alvéoles vides toujours dessinées. */}
-            <StateChips c={active} max={ARCH_STATE_CELLS} reserve extra={actorStateChips(active, battle)} />
+            <StateChips c={active} max={ARCH_STATE_CELLS} reserve extra={actorStateChips(active, battle)} action={retraitDEtat} />
           </div>
           {/* BLESSURES : barre pleine largeur de l'arche, valeur NOMMÉE sur la piste. Le MOT est un
               enfant à part : à 360 la ligne d'arche ne peut pas le porter (texte mesuré 236px pour

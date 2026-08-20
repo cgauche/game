@@ -1,7 +1,23 @@
+import { Fragment } from 'react';
 import { summarizeEffects, combatantFlags, chipCodex, type EffectChip } from '../gameIso/effectIcons';
 import type { Combatant } from '../engine/types';
 import { CodexRef } from './compendium/CodexRef';
+import { GatedAction } from './GatedAction';
 import { Icon } from './Icon';
+
+/**
+ * GESTE porté par UNE pastille — slot GÉNÉRIQUE (arbitrage HUD 2026-08-16, verbatim : « Réactions
+ * d'État sur la PASTILLE (`StateChips`+`GatedAction`) »). La forme ne nomme AUCUNE mécanique :
+ * l'appelant fournit le nom accessible et le dispatcher — une `Cell` de la console la satisfait
+ * telle quelle, et une autre réaction d'État s'y branchera sans fork.
+ * Un geste FERMÉ ne s'y rend pas : l'appelant rend `undefined` (la raison d'un refus ne tient pas
+ * dans une alvéole de 15px), et la pastille redevient purement informative.
+ */
+interface ChipAction {
+  /** Nom ACCESSIBLE du geste : la pastille n'affiche qu'un glyphe, elle n'a aucun texte à lui prêter. */
+  label: string;
+  run: () => void;
+}
 
 /**
  * Pastilles d'États / effets actifs d'un combattant (la colonne `.ptile-states`) — EXTRAITE de
@@ -26,8 +42,25 @@ import { Icon } from './Icon';
  * `extra` : pastilles d'ÉTAT que le Combatant ne porte pas lui-même — elles dépendent de la SITUATION
  * de combat (`battle`) et non de `conditions`/`activeEffects` : Assailli ×N, Cloué, Renfort de pièce.
  * Elles entrent dans le MÊME rack, après les effets portés — une seule niche d'États, jamais deux.
+ *
+ * `action` : RÉSOLVEUR de geste, appelé pour CHAQUE pastille rendue (portée ou `extra`) — il rend le
+ * geste que CET effet ouvre, ou `undefined` (la pastille reste alors purement informative). Le
+ * contrôle est composé par `GatedAction` et reste enveloppé de son `CodexRef` : la règle et le geste
+ * vivent dans la MÊME alvéole, aucune 2ᵉ surface.
  */
-export function StateChips({ c, max = 4, reserve = false, extra }: { c: Combatant; max?: number; reserve?: boolean; extra?: EffectChip[] }) {
+export function StateChips({
+  c,
+  max = 4,
+  reserve = false,
+  extra,
+  action,
+}: {
+  c: Combatant;
+  max?: number;
+  reserve?: boolean;
+  extra?: EffectChip[];
+  action?: (chip: EffectChip) => ChipAction | undefined;
+}) {
   const all = [...summarizeEffects(c.conditions, c.activeEffects, Infinity, combatantFlags(c)).visible, ...(extra ?? [])];
   // En rack réservé, le débord occupe la DERNIÈRE alvéole : le compte de cellules dessinées ne bouge
   // pas d'un cran, quel que soit le nombre d'États portés.
@@ -40,12 +73,39 @@ export function StateChips({ c, max = 4, reserve = false, extra }: { c: Combatan
     <span className="ptile-states" data-reserve={reserve ? '' : undefined}>
       {shown.map((v) => {
         const ref = chipCodex(v);
+        const geste = action?.(v);
         const inner = (
           <>
             <Icon id={v.icon} size="sm" />
             {v.indice != null && <b className="pt-n">{v.indice}</b>}
           </>
         );
+        if (geste) {
+          // Le bouton EST l'alvéole : il arrive NU (`bare`) et garde la matière du rack (`pt-state`).
+          // Aucun conteneur — un `<div>` de `GatedAction` romprait le flux inline des alvéoles, d'où
+          // la forme `reasonId`. Une pastille ne rend QUE des gestes OFFERTS (l'appelant écarte les
+          // gestes fermés : leur raison ne tiendrait pas dans une alvéole de 15px).
+          const rid = `pt-act-${v.key}`;
+          const bouton = (
+            <GatedAction
+              id={rid}
+              reasonId={rid}
+              label={inner}
+              ariaLabel={geste.label}
+              enabled
+              primary={false}
+              bare
+              btnClassName="pt-state"
+              onClick={geste.run}
+            />
+          );
+          if (!ref) return <Fragment key={v.key}>{bouton}</Fragment>;
+          return (
+            <CodexRef key={v.key} category={ref.category} id={ref.id} label={ref.label} instance={ref.instance} wrap>
+              {bouton}
+            </CodexRef>
+          );
+        }
         if (!ref) return <span key={v.key} className="pt-state">{inner}</span>;
         return (
           <CodexRef

@@ -26,6 +26,7 @@ export function GatedAction({
   primary = true,
   className,
   btnClassName,
+  bare = false,
 }: {
   id: string;
   label: ReactNode;
@@ -39,6 +40,10 @@ export function GatedAction({
   /** Classes SUPPLÉMENTAIRES du `<button>` (ex. `small` dans une rangée compacte) — la taille reste
    *  au bouton, `className` reste réservé au conteneur `.gated-action`. */
   btnClassName?: string;
+  /** Variante NUE (`.btn-nu`) : le bouton n'apporte AUCUNE boîte (padding, hauteur mini, rayon,
+   *  ombre) — pour une alvéole qui porte déjà sa géométrie (rack d'États de la console). La variante
+   *  vit DANS la primitive (`base.css`), jamais en neutralisation de `.btn` depuis un conteneur. */
+  bare?: boolean;
 } & (
   | {
       /** Raison d'indisponibilité — rendue sous le bouton quand `enabled=false` (info de DÉCISION). */
@@ -57,7 +62,7 @@ export function GatedAction({
   const button = (
     <button
       type="button"
-      className={`btn ${primary ? 'btn-primary' : ''}${btnClassName ? ` ${btnClassName}` : ''}`}
+      className={`btn ${primary ? 'btn-primary' : ''}${bare ? ' btn-nu' : ''}${btnClassName ? ` ${btnClassName}` : ''}`}
       disabled={!enabled}
       aria-label={ariaLabel}
       title={ariaLabel}

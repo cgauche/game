@@ -256,6 +256,19 @@
   width: calc(var(--alv) - 2px);
   height: calc(var(--alv) - 2px);
 }
+/* Pastille ACTIONNABLE (slot `action` de `StateChips`) : le BOUTON est l'alvéole. Il arrive NU
+   (`GatedAction bare` → `.btn-nu`, base.css) — la géométrie reste celle du rack, mais la MATIÈRE
+   dit qu'on peut appuyer : filet de laiton VIF (l'informative garde le laiton de rubrique) et lueur
+   intérieure du même or. Sans elle, rien ne distinguait à l'œil une alvéole-bouton d'une alvéole
+   d'information. */
+.ptile-states[data-reserve] .pt-state.btn {
+  border-color: var(--atelier-brass-vif);
+  box-shadow: inset 0 0 0 1px rgba(216, 185, 84, 0.22);
+  cursor: pointer;
+}
+.ptile-states[data-reserve] .pt-state.btn:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 1px rgba(216, 185, 84, 0.45);
+}
 /* CHIFFRE de la pastille (pions de l'État, DR de Focalisation, Indice de Peur) : gravé au coin
    bas-droit de l'alvéole — l'icône seule ne disait pas « combien ». */
 .pt-n {
@@ -291,13 +304,20 @@
    air) et au-dessus du pont — et s'y centre. Centrée sur le VIEWPORT, sa plaque descendait derrière
    le bout gauche de la console (mesuré 103,6 × 97,3px de recouvrement à 1280, points de frise
    par-dessus le pont au hit-test) ; ancrée en haut seulement, son cartouche de Round passait sous le
-   bouton de menu. La réserve du bas est la hauteur du pont elle-même (`--cc-deck-h`,
-   combat-console.css), jamais un nombre recopié. ── */
+   bouton de menu. La réserve du bas est la hauteur du pont elle-même PLUS celle du bandeau de phase
+   qui se pose dessus (`--cc-deck-h`/`--cc-phase-h`, combat-console.css), jamais un nombre recopié :
+   la colonne est en z-index 45 contre 5 pour la console, elle recouvrait donc le titre du bandeau et
+   le décapitait (sonde pixel, quatre captures sur quatre).
+   La boîte ÉPOUSE SA PLAQUE (`height: fit-content` + marges automatiques qui la centrent dans la
+   bande) : étirée du haut au bas de la bande, elle emportait sa rampe de débord loin sous la dernière
+   vignette — 174px de terrain nu, puis 20px de bois suspendu dans le vide (sonde B6). ── */
 .initiative-strip {
   position: absolute;
   top: 70px;
-  bottom: calc(var(--cc-deck-h) + 12px);
+  bottom: calc(var(--cc-deck-h) + var(--cc-phase-h) + 12px);
   left: 10px;
+  height: fit-content;
+  margin-block: auto;
   transform: none;
   z-index: 45;
   display: flex;
@@ -351,7 +371,7 @@
   /* La piste ne descend pas plus bas que la plaque : sa borne est celle de la colonne (l'espace
      AU-DESSUS du pont), arrondie au pas d'entrée. Au-delà, elle DÉFILE — aucune entrée ne
      disparaît, et rien ne dépasse sur le pont. */
-  --is-avail: min(84vh, calc(100vh - 70px - var(--cc-deck-h) - 12px));
+  --is-avail: min(84vh, calc(100vh - 70px - var(--cc-deck-h) - var(--cc-phase-h) - 12px));
   max-height: var(--is-avail);
   max-height: calc(round(down, calc(var(--is-avail) - var(--is-head)), var(--is-pitch)) + var(--is-head));
 }
@@ -361,7 +381,8 @@
 /* Indicateur de DÉBORD : une RAMPE de fondu posée sur le dernier pouce de la colonne — au bord,
    la matière du panneau est pleine (aucun pixel de vignette à pleine intensité contre le filet),
    et l'atténuation se lit sur 18px. L'axe suit celui de la frise (bas en colonne, droite en bande
-   horizontale ≤700). */
+   horizontale ≤700). Elle est ancrée à la PLAQUE : la boîte de la frise l'épouse (`fit-content`
+   ci-dessus), donc la rampe se pose sur le pied du bois et jamais sur du terrain nu. */
 .initiative-strip::after {
   content: '';
   position: absolute;
@@ -1432,5 +1453,19 @@
   .gm-btn, .ld-btn {
     min-width: 44px;
     min-height: 44px;
+  }
+  /* PASTILLE D'ÉTAT ACTIONNABLE : la variante NUE remet `min-height`/`min-width` à 0 et, plus
+     spécifique que le plancher global `.btn` (base.css), elle l'ÉCRASE — la cible au doigt tombait à
+     l'alvéole, 15 × 15px contre les 40px du contrat (base.css, « pointer: coarse »). L'alvéole ne
+     grossit pas (le rack tient sa géométrie) : c'est sa ZONE DE CONTACT qui s'étend, centrée sur
+     elle, au même calibre de 44px que les commandes de coin ci-dessus. */
+  .ptile-states[data-reserve] .pt-state.btn::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
   }
 }

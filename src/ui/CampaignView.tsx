@@ -212,8 +212,9 @@ export function CampaignView() {
           </>
         )}
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
-        {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :
-            la console porte un bandeau d'interlude (cf. CombatConsole). */}
+        {/* Ciblage par carte (Frappe Mortelle / Des deux armes / Surincantation / pose de zone /
+            bordée / téléportation) : la console porte le bandeau d'interlude et SA sortie, tirés du
+            registre des actions (`surface: 'interlude'`, cf. CombatConsole). */}
         {/* Barre HUD supérieure : le menu ☰, le nom du LIEU et l'OBJECTIF — rien d'autre, en AUCUN
             mode (spec HUD combat § « Zone 11 ») : la date vit au menu ☰ et sur les écrans plein-champ
             (`ScreenMeta`), les ouvreurs d'écrans à l'extrémité droite du pont d'exploration hors

@@ -42,14 +42,19 @@ describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-
     expect(chooseEnemyAction({ enemy: e, heroes: [h], scene: scene(), blocked: new Set(), movement: 4 } as never).kind).toBe('end');
   });
 
-  it('un héros Surpris ne peut QUE puiser dans sa Détermination (resolve)', () => {
+  // Surpris (LDB 16 l.135) : ni Mouvement ni Action ce tour. La Détermination reste ouverte, et le
+  // RAW le dit pour CET État en propre (LDB 13 l.71). Elle se mesure sur son chemin RÉEL — le
+  // dispatcher DIRECT ; depuis #1411 P0-B lot 3 elle n'arme plus aucun mode (`battle.action`), c'est
+  // la pastille de l'État qui porte le retrait.
+  it('un héros Surpris ne peut QUE puiser dans sa Détermination — et elle retire l’État (LDB 13 l.71)', () => {
     const hero = C({ id: 'h', kind: 'hero', conditions: [{ id: 'surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }] as never, resolve: 1 });
     useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, action: null, movementUsed: 0, acted: false, reachable: new Map(), over: false, round: 1, log: [] } as never, scene: scene() });
     expect(computeMoveReach(useGame.getState).size).toBe(0); // Mouvement bloqué (effectiveMovement = 0)
     useGame.getState().battleSelectAction('cast');
     expect(useGame.getState().battle!.action).toBeNull(); // Action bloquée
-    useGame.getState().battleSelectAction('resolve');
-    expect(useGame.getState().battle!.action).toBe('resolve'); // Détermination permise (LDB 13 l.81)
+    useGame.getState().battleSpendResolve('surpris'); // dépense DIRECTE, jamais un mode armé
+    expect(hasCondition(useGame.getState().battle!.combatants[0], 'surpris')).toBe(false);
+    expect(useGame.getState().battle!.combatants[0].resolve).toBe(0);
   });
 
   it('aucune surprise déclarée → personne n\'est Surpris', () => {

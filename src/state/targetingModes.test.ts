@@ -6,6 +6,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { currentTargetingMode, spellAffinity, TILE_MODES } from './targetingModes';
 import { tilePreviewAt } from './targeting';
+import { runAction } from './actionRegistry';
+import { flyReachable } from './path';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { spawnEnemy } from './spawn';
@@ -175,6 +177,80 @@ describe('TILE_MODES — garde structurelle : aperçu non-vide sur une tuile val
     combat({ action: null }); // mode neutre → attaque implicite, pas un mode-case
     expect(tilePreviewAt(useGame.getState, { x: 7, y: 6 })).toBeNull();
   });
+});
+
+/**
+ * SORTIE de l'interlude `placing-zone` (#1411 P0-B) — UN mode, DEUX sources (sort de ZdE après jet,
+ * pilonnage indirect de siège) : l'entrée du registre `place-zone-back` doit MORDRE pour les deux,
+ * routée par `placingZoneOf` comme le commit l'est déjà (`commitPlacedZone`).
+ */
+describe('interlude `placing-zone` — la sortie du registre MORD, par source', () => {
+  beforeEach(() => { useGame.setState({ battle: null, party: [], pendingCleave: null, pendingDualStrike: null, pendingCast: null, pendingAttack: null, pendingSiegeAim: null }); });
+
+  it('PILONNAGE : la sortie referme le placeur — le pending tombe et le mode avec lui', () => {
+    combat({ selectedAttack: 'servir-mortier' });
+    useGame.setState({ pendingSiegeAim: { gunnerId: 'h1', weaponUid: 'w', radius: 2, rangeTiles: 10 } as never });
+    expect(currentTargetingMode(useGame.getState).id).toBe('placing-zone');
+    runAction('place-zone-back', useGame.getState);
+    expect(useGame.getState().pendingSiegeAim, 'le placeur de siège doit être refermé').toBeNull();
+    expect(useGame.getState().battle!.selectedAttack, 'l’option « Servir … » se désarme avec lui').toBeUndefined();
+    expect(currentTargetingMode(useGame.getState).id).not.toBe('placing-zone');
+  });
+
+  it('SORT de zone : la MÊME sortie revient à la modale — le jet posé n’est pas perdu', () => {
+    combat();
+    useGame.setState({ pendingCast: { casterId: 'h1', spellId: 'carreau', result: { cast: true }, zone: { placing: true, radius: 2 } } as never });
+    expect(currentTargetingMode(useGame.getState).id).toBe('placing-zone');
+    runAction('place-zone-back', useGame.getState);
+    expect(useGame.getState().pendingCast, 'le sort JETÉ survit : on revient à sa modale').not.toBeNull();
+    expect(useGame.getState().pendingCast!.zone!.placing).toBe(false);
+    expect(currentTargetingMode(useGame.getState).id).not.toBe('placing-zone');
+  });
+});
+
+/**
+ * TÉLÉPORTATION À L'ÉTAGE (z > 0) — l'ensemble `battle.reachable` est ÉCRIT par `flyReachable`
+ * (convention `tileKey` : z=0 sans suffixe, z>0 « x,y,z ») ; le mode et le commit doivent le LIRE
+ * avec la même clé, sinon plus aucune case n'est valide à l'étage — pas même celle du lanceur, qui
+ * porte la sortie « Rester sur place ». La sonde bâtit l'ensemble avec le VRAI écrivain.
+ */
+describe('téléportation — les cases se lisent à la clé de `flyReachable`, étage compris', () => {
+  const etage = () => {
+    const w = 16, h = 12;
+    return { id: 's', dimensions: { w, h },
+      layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }, { z: 1, tiles: new Array(w * h).fill('herbe') }],
+      entities: [], dialogues: [], triggers: [], encounters: [] } as never;
+  };
+  /** Combat armé en téléportation, lanceur posé à l'étage `z`, portée réelle depuis `flyReachable`. */
+  function armer(z: number) {
+    const { hero } = combat();
+    hero.pos = { x: 6, y: 6, ...(z ? { z } : {}) };
+    const scene = etage();
+    const reachable = flyReachable(scene, hero.pos, 3, { blocked: new Set<string>() });
+    useGame.setState({ scene, battle: { ...useGame.getState().battle!, action: 'teleport', reachable } as never });
+    return { hero, reachable };
+  }
+
+  for (const z of [0, 1]) {
+    it(`z=${z} : la case du lanceur et une voisine sont VALIDES pour le mode`, () => {
+      const { hero, reachable } = armer(z);
+      expect(reachable.size, 'sans case atteignable, la sonde ne mesurerait rien').toBeGreaterThan(1);
+      const mode = TILE_MODES.find((m) => m.id === 'teleport')!;
+      expect(mode.tileValidAt(useGame.getState, hero, { ...hero.pos! }), 'sa propre case porte la sortie « Rester sur place »').toBe(true);
+      expect(mode.tileValidAt(useGame.getState, hero, { x: 7, y: 6, ...(z ? { z } : {}) })).toBe(true);
+    });
+
+    it(`z=${z} : « Rester sur place » SORT du mode, et un clic valide TÉLÉPORTE`, () => {
+      const { hero } = armer(z);
+      runAction('teleport-place', useGame.getState);
+      expect(useGame.getState().battle!.action, 'la sortie doit désarmer la téléportation').toBeNull();
+      const { hero: h2 } = armer(z);
+      useGame.getState().battleClickTile({ x: 7, y: 6, ...(z ? { z } : {}) });
+      expect(h2.pos).toEqual({ x: 7, y: 6, ...(z ? { z } : {}) });
+      expect(useGame.getState().battle!.action).toBeNull();
+      expect(hero.id).toBe(h2.id);
+    });
+  }
 });
 
 describe('spellAffinity — HELPFUL_TARGET_OPS (#131)', () => {

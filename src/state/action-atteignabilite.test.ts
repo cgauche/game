@@ -25,12 +25,17 @@
  *     `CHANTIER_BRANCHEMENTS_OUVERT = false` — aucun stock gelé n'atteint le tronc.
  * ─────────────────────────────────────────────────────────────────────────────────────────────
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ACTIONS } from '../data/index';
-import { ACTION_GATES, ACTION_CANDIDATES, ACTION_RUN, MODES_HORS_REGISTRE, BATTLE_ACTION_MODES, actionGate } from './actionRegistry';
+import { ACTION_GATES, ACTION_CANDIDATES, ACTION_RUN, MODES_HORS_REGISTRE, BATTLE_ACTION_MODES, actionGate, runAction } from './actionRegistry';
+import { TARGETING_MODES, targetingModeLabel } from './targetingModes';
 import { KEYBINDINGS } from './keybindings';
+import { useGame, type BattleState } from './store';
+import { emptyScene } from './scene';
+import { createHero } from '../engine/character';
+import { makeRNG } from '../engine/dice';
 
 const src = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 const CONSOLE_SRC = src('../ui/CombatConsole.tsx');
@@ -49,17 +54,10 @@ const SANS_SURFACE: Record<string, string> = {
   'dispel-spell': 'alvéole Dissiper + panneau-paramètre du porteur (spec §1d).',
   advantage: 'alvéoles par Compétence (spec §1d) — la case `advantage-<skill>` existe déjà, pas l’ouvreur.',
   attacks: 'tiroir d’attaques : il disparaît au profit de G1/G2 + grille (spec §1d).',
-  'resolve-psych-immune': 'alvéole Détermination + pastilles (spec §1d).',
-  'resolve-ignore-crit': 'alvéole Détermination + pastilles (spec §1d).',
-  'resolve-remove-condition': 'remède porté par la pastille d’État (zone 3).',
   mount: 'pastille sur la MONTURE (zone 4, tranché 2026-08-16).',
   'man-poste': 'pastille sur la PIÈCE (zone 4).',
   'push-engine': 'pastille sur la PIÈCE (zone 4).',
   pickup: 'pastille ⓘ de l’objet au sol (zone 4).',
-  battery: 'contenu NAVIRE de la console (zone 7) — reste un interlude.',
-  'crew-test-rude-epreuve': 'contenu NAVIRE de la console (zone 7).',
-  'sing-shanty': 'contenu NAVIRE de la console (zone 7).',
-  'ship-reload': 'contenu NAVIRE de la console (zone 7).',
   'undo-move': 'adossée à la jauge de Mouvement de l’arche (spec §1c).',
   'raise-hand': 'passe à la FRISE (spec §1d).',
 };
@@ -80,8 +78,18 @@ const CONSOLE_KEYS = [
 const ACTIONBAR_KEYS = keysFrom(ACTIONBAR_SRC, /slots\.push\(\{\s*id:\s*(?:'([^']+)'|`([^`$]*)\$\{)/g);
 const KEYBINDING_IDS = KEYBINDINGS.map((b) => b.id);
 
+/** Le bandeau de phase de la console consomme-t-il les actions d'INTERLUDE ? Elles n'ont pas de case
+ *  nommée (le bandeau les rend depuis le registre, par le mode de ciblage courant) : leur surface est
+ *  donc CE branchement. Il est lu sur la SOURCE, faute d'ancrage structurel ici — ce fichier tourne en
+ *  environnement `node` (aucun DOM), et la seule preuve structurelle possible est de MONTER la console,
+ *  ce que fait déjà `CombatConsole.test.tsx` (bandeau d'interlude : `.cc-phase [data-action=…]` rendu,
+ *  cliqué, effet mesuré). Débrancher le bandeau y vire donc rouge ; ici, la lecture ne sert qu'à
+ *  n'attribuer une surface aux interludes que tant que le pont existe. */
+const INTERLUDE_BRANCHE = /currentInterludeAction/.test(CONSOLE_SRC);
+const INTERLUDE_KEYS = INTERLUDE_BRANCHE ? ACTIONS.filter((a) => a.surface === 'interlude').map((a) => a.id) : [];
+
 /** Surfaces VIVANTES (l'`ActionBar` n'en est PAS une : elle n'est plus montée, seuls ses tests tournent). */
-const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...KEYBINDING_IDS]);
+const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...INTERLUDE_KEYS, ...KEYBINDING_IDS]);
 
 /** Les clés qu'une action revendique : son id + ses clés de surface encore forkées. */
 const claimedKeys = (a: (typeof ACTIONS)[number]) => [a.id, ...(a.keys ?? [])];
@@ -102,6 +110,27 @@ describe('registre des actions — cohérence interne (ids de code résolus)', (
   it('chaque `mode` déclaré est un TargetingMode existant (`targetingModes.ts`)', () => {
     const bad = ACTIONS.filter((a) => a.mode && !TARGETING_SRC.includes(`id: '${a.mode}'`)).map((a) => `${a.id} → ${a.mode}`);
     expect(bad, `mode(s) de ciblage inexistant(s) :\n  ${bad.join('\n  ')}`).toEqual([]);
+  });
+  it('PARITÉ INVERSE — tout mode de ciblage a une action PORTEUSE au registre (aucun mode sans surface)', () => {
+    // Méta d'abord : le catalogue énumérable doit couvrir les modes DÉCLARÉS dans la source (un mode
+    // oublié au catalogue rendrait la parité verte à tort).
+    const idsSource = [...new Set([...TARGETING_SRC.matchAll(/^\s*id: '([a-z-]+)'/gm)].map((m) => m[1]))];
+    const horsCatalogue = idsSource.filter((id) => !TARGETING_MODES.some((m) => m.id === id));
+    expect(horsCatalogue, `mode(s) déclaré(s) mais absent(s) de TARGETING_MODES :\n  ${horsCatalogue.join('\n  ')}`).toEqual([]);
+    // Parité : un mode que le joueur peut atteindre sans action porteuse est un ciblage SANS SORTIE.
+    const orphelins = TARGETING_MODES.filter((m) => !ACTIONS.some((a) => a.mode === m.id)).map((m) => m.id);
+    expect(
+      orphelins,
+      `mode(s) de ciblage qu'aucune action ne porte (armer/sortir ce mode n'a aucune surface) :\n  ${orphelins.join('\n  ')}`,
+    ).toEqual([]);
+  });
+  it('un mode d’INTERLUDE porte son nom de phase, et sa sortie dit si Échap peut la prendre', () => {
+    const interludes = ACTIONS.filter((a) => a.surface === 'interlude');
+    expect(interludes.length, 'aucune action d’interlude : le bandeau n’aurait rien à rendre').toBeGreaterThan(0);
+    const muets = interludes.filter((a) => !a.mode || !targetingModeLabel(a.mode)).map((a) => a.id);
+    expect(muets, `interlude(s) dont le mode n'a pas de libellé de phase :\n  ${muets.join('\n  ')}`).toEqual([]);
+    const sansVerdict = interludes.filter((a) => typeof a.exitSafe !== 'boolean').map((a) => a.id);
+    expect(sansVerdict, `interlude(s) sans verdict exitSafe :\n  ${sansVerdict.join('\n  ')}`).toEqual([]);
   });
   it('chaque action rend un VERDICT sur un état réel (aucun gate ne jette, aucune raison muette)', () => {
     const active = {
@@ -192,5 +221,51 @@ describe('(b) réciproque fail-closed — aucun slot/case d’action hors regist
   it('méta — les deux extracteurs voient bien des clés (une regex muette rendrait la garde verte à tort)', () => {
     expect(CONSOLE_KEYS.length).toBeGreaterThan(10);
     expect(ACTIONBAR_KEYS.length).toBeGreaterThan(20);
+  });
+});
+
+/**
+ * POURQUOI CHAQUE INTERLUDE PORTE SON PROPRE DISPATCHER (#1411 P0-B) — les sorties ne sont pas
+ * interchangeables : `battleSelectAction` (sortie de la bordée) est AVALÉ sous un flux différé
+ * (`combatBusy`, `combatSlice.ts:2875`), là où `cleaveEnd`/`dualStrikeSkip` sont justement les verbes
+ * DE ces flux. Un dispatcher mutualisé rendrait la sortie muette dès qu'un flux se superpose. Le
+ * témoin POSITIF (sans flux, la sortie mord) borne la mesure.
+ */
+describe('sorties d’interlude — le dispatcher mutualisé est inexprimable (témoin mesuré)', () => {
+  /** Combat minimal réel : un héros ACTIF, une scène, le mode de bordée armé. */
+  function combatArme(over: Partial<BattleState> = {}) {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Gunnar', rng: makeRNG(7) });
+    h.id = 'h1';
+    h.pos = { x: 5, y: 5 };
+    useGame.setState({
+      party: [h], scene: emptyScene(), pendingCleave: null, pendingDualStrike: null, pendingCast: null,
+      battle: {
+        combatants: [h], order: [h.id], baseOrder: [h.id], turn: 0, round: 1, action: 'battery',
+        selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false,
+        log: [], over: null, ...over,
+      } as unknown as BattleState,
+    });
+    return h;
+  }
+
+  afterEach(() => { useGame.setState({ battle: null, pendingCleave: null }); });
+
+  it('TÉMOIN — sans flux différé, la sortie de bordée désarme bien le mode', () => {
+    combatArme();
+    runAction('battery-cancel', useGame.getState);
+    expect(useGame.getState().battle!.action).toBeNull();
+  });
+
+  it('MESURE — sous un flux différé, la MÊME sortie est avalée (donc jamais partagée avec cleave/dual)', () => {
+    const h = combatArme();
+    useGame.setState({ pendingCleave: { attackerId: h.id, hitIds: [], count: 0 } as never });
+    runAction('battery-cancel', useGame.getState);
+    expect(
+      useGame.getState().battle!.action,
+      'la sortie de bordée est avalée sous `combatBusy` — c’est pourquoi cleave/dual portent leurs propres verbes',
+    ).toBe('battery');
+    // … et le verbe DE ce flux, lui, passe : chaque interlude sort par SON dispatcher.
+    runAction('cleave-end', useGame.getState);
+    expect(useGame.getState().pendingCleave).toBeNull();
   });
 });
