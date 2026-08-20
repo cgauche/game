@@ -18,6 +18,7 @@
  * la couture d'en dessous. Les joints VERTICAUX, eux, ne touchent jamais le bord (`rowBoundaries`).
  */
 import * as THREE from 'three';
+import { PRIORITE_FOND, queueBakeTask } from './atlasBake';
 import {
   coursesKey,
   coursesPeriod,
@@ -242,10 +243,20 @@ export interface PeriodTexture {
 
 const CACHE = new Map<string, PeriodTexture | null>();
 
+/** Périodes FROIDES déjà parties en file, par clé — même rôle que dans `faceBake` : deux demandes
+ *  concurrentes de la même image partagent UNE tâche. L'entrée meurt à la résolution. */
+const EN_VOL = new Map<string, Promise<PeriodTexture | null>>();
+
+/** GÉNÉRATION de cuisson — même rôle que dans `faceBake` : une tâche encore en file au moment où le
+ *  cache est vidé appartient à une carte morte, et ne cuit pas à son tour de tranche. */
+let génération = 0;
+
 /** Vide le cache (changement de scène : les surfaces de l'ancienne carte ne reviendront pas). */
 export function clearPeriodTextures(): void {
   for (const t of CACHE.values()) t?.texture.dispose();
   CACHE.clear();
+  EN_VOL.clear();
+  génération += 1;
 }
 
 /** DataTexture d'une période, cuite UNE fois par (clé de surface, variante) : `RepeatWrapping`, mipmaps
@@ -276,4 +287,39 @@ export function getPeriodTexture(
   const out = { texture, gain: cuit.gain, periodM: cuit.periodM };
   CACHE.set(cacheKey, out);
   return out;
+}
+
+/** Ce que rend une demande de période PAR LA FILE (`getPeriodTextureEnFile`). */
+export interface PeriodTextureEnFile {
+  /** La texture quand le cache est CHAUD ; `null` tant que la file n'a pas servi la tranche. */
+  période: PeriodTexture | null;
+  /** Résolue quand la cuisson est faite (cache chaud : déjà résolue). `null` = rien à cuire, ou tâche
+   *  d'une GÉNÉRATION révolue (cache vidé depuis la mise en file). */
+  prêt: Promise<PeriodTexture | null>;
+}
+
+/**
+ * MÊME cuisson que `getPeriodTexture`, demandée à la FILE CADENCÉE du cuiseur (`queueBakeTask`) —
+ * jumelle de `getFaceBakeEnFile`, et pour la même raison : le montage d'une carte rasterise ses
+ * gabarits en tranches au lieu d'un bloc synchrone. Une cuisson par tâche, en `PRIORITE_FOND`.
+ */
+export function getPeriodTextureEnFile(
+  cacheKey: string,
+  recipe: DetailRecipe,
+  variant: number,
+  opts: PeriodTextureOpts & { anisotropy?: number },
+): PeriodTextureEnFile {
+  const hit = CACHE.get(cacheKey);
+  if (hit !== undefined) return { période: hit, prêt: Promise.resolve(hit) };
+  const enVol = EN_VOL.get(cacheKey);
+  if (enVol) return { période: null, prêt: enVol };
+  const née = génération;
+  const prêt = queueBakeTask(PRIORITE_FOND, async () =>
+    née === génération ? getPeriodTexture(cacheKey, recipe, variant, opts) : null,
+  );
+  EN_VOL.set(cacheKey, prêt);
+  // …et l'oubli ne retire QUE sa propre entrée (voir `getFaceBakeEnFile`).
+  const oublier = (): void => { if (EN_VOL.get(cacheKey) === prêt) EN_VOL.delete(cacheKey); };
+  void prêt.then(oublier, oublier);
+  return { période: null, prêt };
 }

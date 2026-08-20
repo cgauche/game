@@ -146,7 +146,8 @@ export function renderPlanSnapshot(args: {
     // `fade` = la part de soleil allumée (0 ici) : le modelé de forme reste PLEIN, comme sous un ciel
     // qui n'éclaire pas — c'est ce qui donne au plan ses volumes sans une seule ombre portée.
     applyVisibilityTint(baked, PLEIN, lumière.fade);
-    const matériaux = worldSurfaceMaterials(baked.geometry, renderer.capabilities.getMaxAnisotropy());
+    // SYNCHRONE (`enFile` par défaut) : cette cuisson hors écran n'a qu'UNE image, celle d'ici.
+    const { materials: matériaux } = worldSurfaceMaterials(baked.geometry, renderer.capabilities.getMaxAnisotropy());
     const trois = new THREE.Scene();
     const maillage = new THREE.Mesh(baked.geometry, matériaux);
     trois.add(maillage, lumière.ambient);

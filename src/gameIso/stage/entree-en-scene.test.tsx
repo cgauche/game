@@ -169,8 +169,9 @@ describe('Montage d’une scène — aucune rasterisation en rafale', () => {
 
   it('`data-file` témoigne de la file : chargée au montage, au repos une fois servie', async () => {
     monterSync(DENSE);
-    await act(async () => { await Promise.resolve(); });
-    if (battre) act(() => battre!());
+    // Une image peinte AVANT toute tranche d'inactivité : ce que le témoin doit montrer, c'est la file
+    // telle que le montage vient de la charger — pas ce qu'il en reste une fois le cuiseur passé.
+    act(() => battre!());
     expect(Number(canevas().dataset.file), 'le témoin de file ne voit pas les cuissons du montage').toBeGreaterThan(0);
     for (let i = 0; i < 60 && bakeQueueLength() > 0; i++) await respirer(40);
     if (battre) act(() => battre!());

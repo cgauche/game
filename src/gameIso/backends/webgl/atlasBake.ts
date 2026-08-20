@@ -6,7 +6,7 @@
  *  1. CUISSON : rasteriser `n` frames par la chaîne EXISTANTE (`rasterizeSvg`) et les ranger dans la
  *     grille, gouttière comprise — les texels de bord y sont DUPLIQUÉS (`ATLAS_GUTTER_PX`), ce que la
  *     géométrie réservait et qu'aucun cuiseur ne faisait ;
- *  2. CADENCE : une rasterisation par tranche d'inactivité, jamais un burst (mesure navigateur ci-dessous) ;
+ *  2. CADENCE : des tranches d'inactivité à COÛT borné (`BUDGET_TRANCHE_MS_DEFAUT`), jamais un burst ;
  *  3. CACHE : le stock BORNÉ de `cacheBorne` (LRU à budget d'octets, épingles), clé = chaîne de signature complète.
  */
 import * as THREE from 'three';
@@ -64,13 +64,46 @@ const defaultCanvas = (w: number, h: number): BakeCanvas => {
 // ————————————————————————————————————————————————————————————————
 
 /**
- * Rasterisations lancées par tranche d'inactivité. Sonde navigateur (#1176, 2026-08-14) : ~9,3 ms par
- * frame en 109×136 et ~10,1 ms en 217×271 — un réchauffage complet en burst mesurait ≈ 2,4 s de mur.
+ * Rasterisations lancées par tranche d'inactivité AVANT que le budget de temps ne décide de la suite
+ * (`BUDGET_TRANCHE_MS_DEFAUT`) : le PLANCHER de service d'une tranche. Sonde navigateur (#1176,
+ * 2026-08-14) : ~9,3 ms par frame en 109×136 et ~10,1 ms en 217×271 — un réchauffage complet en burst
+ * mesurait ≈ 2,4 s de mur.
  */
 export const FRAMES_PAR_TRANCHE = 1;
 
+/**
+ * BUDGET de temps d'une TRANCHE (ms) : la tranche continue de servir tant qu'elle est restée sous ce
+ * budget, et sert toujours au moins `FRAMES_PAR_TRANCHE` tâche. Le plafond d'UNE tâche par tranche
+ * bornait le COMPTE, pas le COÛT : 85 gabarits de monde (médiane 1,47 ms de calcul chacun, 368 ms en
+ * tout) prenaient 86 tranches, soit 1 112 ms de mur — le temps passé à ATTENDRE la tranche suivante,
+ * pas à cuire. Une tâche LONGUE (une rasterisation de billboard) épuise le budget à elle seule et
+ * garde donc sa tranche entière, comme avant.
+ *
+ * Le budget compte le temps SYNCHRONE consommé dans la tranche : c'est exactement ce qui fait la
+ * durée d'une tâche longue pour le thread. Ce qu'une tâche poursuit APRÈS son point d'attente (le
+ * décodage d'une image) n'est pas de la tranche et n'y est pas compté.
+ */
+export const BUDGET_TRANCHE_MS_DEFAUT = 6;
+let budgetTrancheMs = BUDGET_TRANCHE_MS_DEFAUT;
+
+/** Change le budget de tranche (réglage de mesure/garde, même patron que `setAtlasBudgetBytes`) —
+ *  rend l'ancien. À `0`, la tranche sert exactement `FRAMES_PAR_TRANCHE` tâche : la cadence stricte
+ *  dont un banc d'ORDRE a besoin pour lire la file coup par coup. */
+export function setBudgetTrancheMs(n: number): number {
+  const avant = budgetTrancheMs;
+  budgetTrancheMs = n;
+  return avant;
+}
+
 /** Priorités d'usage : la vue courante passe devant le réchauffage du reste. */
 export const PRIORITE_VUE_COURANTE = 100;
+/**
+ * Les GABARITS DU MONDE (colombage `faceBake`, périodes `periodTexture`) : SOUS la vue courante,
+ * AU-DESSUS du réchauffage. Un gabarit qui manque laisse sa surface sur son aplat de base et se
+ * relève EN PLACE sous le voile ; un billboard qui manque, lui, est le quad absent que ce voile
+ * existe pour cacher. À file chargée, la vue courante passe donc devant le sol.
+ */
+export const PRIORITE_FOND = 90;
 export const PRIORITE_RECHAUFFAGE = 0;
 
 /**
@@ -106,7 +139,9 @@ function requestSlice(): void {
 function pump(): void {
   sliceArmed = false;
   slices += 1;
-  for (let i = 0; i < FRAMES_PAR_TRANCHE && QUEUE.length; i++) {
+  const début = performance.now();
+  let servies = 0;
+  while (QUEUE.length && (servies < FRAMES_PAR_TRANCHE || performance.now() - début < budgetTrancheMs)) {
     let best = 0;
     for (let k = 1; k < QUEUE.length; k++) {
       const a = QUEUE[k];
@@ -114,6 +149,7 @@ function pump(): void {
       if (a.prio.value > b.prio.value || (a.prio.value === b.prio.value && a.seq < b.seq)) best = k;
     }
     QUEUE.splice(best, 1)[0].run();
+    servies += 1;
   }
   if (QUEUE.length) requestSlice();
 }
@@ -142,8 +178,7 @@ export function queueBakeTask<T>(priority: number | BakePriority, task: () => Pr
   return queueFrame(bakePriority(priority), task);
 }
 
-/** Tranches servies depuis le chargement — instrument de garde de la CADENCE (rasterisations ≤ tranches
- *  × `FRAMES_PAR_TRANCHE`). */
+/** Tranches servies depuis le chargement — instrument de garde de la CADENCE. */
 export function bakeSliceCount(): number {
   return slices;
 }

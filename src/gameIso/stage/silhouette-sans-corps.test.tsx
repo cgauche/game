@@ -9,6 +9,7 @@ import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageFrame } from './GameStage3D';
 import { BancRenderer, brancherArdoise, scènes, simulerRasterisation, type Rasterisation } from './banc-volumique';
 import { clearBillboardTextures } from '../backends/webgl/svgTexture';
+import { setBudgetTrancheMs } from '../backends/webgl/atlasBake';
 import type { ActorPose } from '../backends/webgl/sceneMeshes';
 
 /**
@@ -152,6 +153,10 @@ beforeAll(() => {
 afterAll(() => setStageRendererFactory(null));
 
 beforeEach(async () => {
+  // CADENCE STRICTE (une tâche par tranche) : ce banc déroule la FENÊTRE DE MONTAGE rasterisation par
+  // rasterisation, et ses rasterisations sont des modèles à coût NUL — sous le budget de temps d'une
+  // tranche, toute la file partirait en vol d'un coup et il n'y aurait plus de fenêtre à dérouler.
+  setBudgetTrancheMs(0);
   ras = simulerRasterisation('retenue');
   hôte = document.createElement('div');
   document.body.appendChild(hôte);

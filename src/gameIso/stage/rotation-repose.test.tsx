@@ -27,7 +27,7 @@ import { atlasLayout, billboardView } from '../backends/webgl/billboardMath';
 import { dir8Basis } from '../pov/camera';
 import * as svgTexture from '../backends/webgl/svgTexture';
 import * as atlasBake from '../backends/webgl/atlasBake';
-import { PRIORITE_RECHAUFFAGE, PRIORITE_VUE_COURANTE, atlasBytesEstimés, bakeQueueLength, resetBakeQueue } from '../backends/webgl/atlasBake';
+import { PRIORITE_RECHAUFFAGE, PRIORITE_VUE_COURANTE, setBudgetTrancheMs, atlasBytesEstimés, bakeQueueLength, resetBakeQueue } from '../backends/webgl/atlasBake';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageWalkAnim } from './GameStage3D';
 import { BancRenderer, brancherArdoise, quads, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
 import { bbCameraDe, povArtRot } from './regard';
@@ -173,6 +173,10 @@ beforeAll(() => {
 afterAll(() => setStageRendererFactory(null));
 
 beforeEach(() => {
+  // CADENCE STRICTE (une tâche par tranche) : ce banc lit l'ORDRE DE SERVICE de la file, et ses
+  // rasterisations sont des modèles à coût NUL — sous le budget de temps d'une tranche, elles se
+  // serviraient toutes dans la première et il n'y aurait plus ni pré-chauffe en attente ni rang à lire.
+  setBudgetTrancheMs(0);
   simulerRasterisation();
 });
 afterEach(() => {

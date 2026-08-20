@@ -453,6 +453,12 @@ const accentsRetenus = memoByRefDeps<object, SceneGroundAccent[]>();
 const decorRetenu = memoByRefDeps<object, BillboardSubject[]>();
 const acteursRetenus = memoByRefDeps<object, BillboardSubject[]>();
 
+/** Les deux populations de textures que le VOILE d'entrée en scène attend : les GABARITS du monde cuit
+ *  (colombage, périodes — le sol visuel de la carte, #1399) et les BILLBOARDS du décor. Chacune donne
+ *  son jeu de clés à son montage ; le voile ne tombe qu'une fois les deux servies. */
+const POPULATIONS_ENTRÉE = ['gabarit', 'billboard'] as const;
+type PopulationEntrée = (typeof POPULATIONS_ENTRÉE)[number];
+
 /** LIBÈRE un objet monté et sa descendance : matériaux et géométries, sauf celles marquées
  *  `emprunte` (le bake de `bakeWorldGeometry`, le corps d'un jumeau de silhouette), qui appartiennent
  *  à un autre. La descente est RÉCURSIVE — ce qu'un objet porte en enfant (le jumeau de silhouette
@@ -777,8 +783,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // donc tant que les sujets DANS LE RAYON (donnée, `AMBIANCE.entreeEnScene`) n'ont pas leur texture,
   // et le lointain arrive derrière, en silence, par la même file.
   const [entréeEnScène, setEntréeEnScène] = useState(true);
-  /** Ce que le voile ATTEND (clés statiques) — la lecture des résolutions de texture, hors rendu. */
+  /** Ce que le voile ATTEND (clés préfixées par leur population) — la lecture des résolutions de
+   *  texture, hors rendu. */
   const attenteEntréeRef = useRef(new Set<string>());
+  /** Les populations qui ont DÉCLARÉ leur jeu de clés pour cette scène. */
+  const déclaréesEntréeRef = useRef(new Set<string>());
   /** Le voile est-il encore levé ? (la réf, parce que les résolutions de texture ne rendent pas). */
   const entréeRef = useRef(true);
   const plafondEntréeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -794,20 +803,33 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     setEntréeEnScène(false);
   };
 
-  /** Le jeu de clés PROCHES que le voile attend, tel que le montage vient de l'établir. Aucune clé
-   *  attendue (éditeur sans groupe, scène sans décor proche) = rien à couvrir, le voile tombe. */
-  const attendreEntrée = (clés: readonly string[]): void => {
+  /** Le voile a-t-il fini de couvrir ? Un jeu d'attente vide ne suffit pas : il faut que TOUTES les
+   *  populations aient parlé — une population encore muette n'a pas de clés parce qu'elle n'a pas
+   *  encore monté, pas parce qu'elle n'a rien à faire attendre. */
+  const jugerEntrée = (): void => {
+    if (attenteEntréeRef.current.size > 0) return;
+    if (!POPULATIONS_ENTRÉE.every((p) => déclaréesEntréeRef.current.has(p))) return;
+    finirEntrée();
+  };
+
+  /** Le jeu de clés qu'une POPULATION donne à attendre, tel que son montage vient de l'établir : il
+   *  REMPLACE le sien (un montage suivant ne reprend que ce qui est encore en vol) et laisse celui des
+   *  autres intact. Aucune clé nulle part (éditeur sans groupe, scène sans décor proche, monde sans
+   *  gabarit) = rien à couvrir, le voile tombe. */
+  const attendreEntrée = (population: PopulationEntrée, clés: readonly string[]): void => {
     if (!entréeRef.current) return;
-    attenteEntréeRef.current = new Set(clés);
-    if (attenteEntréeRef.current.size === 0) finirEntrée();
+    déclaréesEntréeRef.current.add(population);
+    for (const k of [...attenteEntréeRef.current]) if (k.startsWith(`${population}|`)) attenteEntréeRef.current.delete(k);
+    for (const k of clés) attenteEntréeRef.current.add(`${population}|${k}`);
+    jugerEntrée();
   };
 
   /** Une texture attendue est arrivée — ou perdue (un sujet sauté n'entrera jamais en scène, il ne
    *  peut pas retenir le voile). */
-  const servirEntrée = (clé: string): void => {
+  const servirEntrée = (population: PopulationEntrée, clé: string): void => {
     if (!entréeRef.current) return;
-    attenteEntréeRef.current.delete(clé);
-    if (attenteEntréeRef.current.size === 0) finirEntrée();
+    attenteEntréeRef.current.delete(`${population}|${clé}`);
+    jugerEntrée();
   };
 
   // ARMEMENT à l'ouverture d'une SCÈNE (montage compris) : le voile se relève, et son PLAFOND part.
@@ -815,6 +837,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   useEffect(() => {
     entréeRef.current = true;
     attenteEntréeRef.current.clear();
+    déclaréesEntréeRef.current.clear();
     setEntréeEnScène(true);
     plafondEntréeRef.current = setTimeout(finirEntrée, AMBIANCE.entreeEnScene.plafondMs);
     return () => {
@@ -835,6 +858,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // cuisson par tick gelait l'écran. Le patron est celui du dépôt (`memoByRefDeps`, semis P2-6,
   // nappes P3-2), keyé sur un jeton d'INSTANCE : deux stages montés côte à côte gardent leur bake
   // (contrat de propriété de `BakedWorld` — une teinte écrase l'autre sur un bake partagé).
+  // Le double rendu de montage de `StrictMode` fabrique DEUX jetons, donc deux slots et deux cuissons
+  // (dev seulement) : la géométrie du rendu jeté n'est montée dans aucune scène — mesuré, jamais
+  // téléversée, donc rien à libérer côté GPU (`stage/gabarits-en-file.test.tsx`).
   const jeton = useRef({}).current;
   const bakeDeps = worldBakeDeps(scene, mpt);
   const baked = bakeRetenu(jeton, bakeDeps, () => bakeWorldGeometry(scene, mpt));
@@ -1584,13 +1610,22 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   useEffect(() => {
     const groupe = monde.current;
     const renderer = rendererRef.current;
-    if (!groupe || !renderer) return;
+    if (!groupe || !renderer) {
+      // Aucun monde à monter : cette population n'a rien à faire attendre, et le voile ne doit pas
+      // rester accroché à une déclaration qui ne viendra pas.
+      attendreEntrée('gabarit', []);
+      return;
+    }
     const anisotropy = renderer.capabilities.getMaxAnisotropy();
     // UN MATÉRIAU PAR GROUPE DE SURFACE (`backends/webgl/worldMaterials.ts`, source unique) : la
     // géométrie reste fusionnée, seul le dessin se scinde. Le régime NE BASCULE PLUS avec la lumière :
     // toujours lambertien, même sans soleil — l'ambiante porte alors la scène à elle seule
     // (`stageLights`), et le crépuscule n'a plus de marche d'escalier.
-    const materials = worldSurfaceMaterials(geometry, anisotropy);
+    // EN FILE (#1399) : les gabarits FROIDS (colombage, périodes) partent par la file cadencée du
+    // cuiseur au lieu d'être rasterisés dans cet effet — 732 ms de blocage mesurés au chargement. Les
+    // matériaux sortent tout de suite, sur la seule couleur de sommet de leur surface, et se RELÈVENT
+    // en place (aucun matériau, aucun maillage refait) à mesure que la file sert.
+    const { materials, attendues, relèves } = worldSurfaceMaterials(geometry, anisotropy, { enFile: true });
     // DÉCOUPE LOCALE (#1176, M3) : chaque matériau du monde SAIT se trouer — une seule référence de
     // fonction pour tous (`percerMateriau`), donc une seule clé de programme et aucun texte de shader
     // touché. Sans le `#define`, les chunks surchargés rendent le shader d'origine.
@@ -1609,7 +1644,27 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     groupe.add(withRenderRank(mesh, 'monde'));
     ombresARefaire.current = true;
     dessiner();
+    // VOILE D'ENTRÉE EN SCÈNE : les faces du monde sont le SOL VISUEL de la carte — TOUTES les cuissons
+    // froides du montage le tiennent levé, sans filtre de distance (le rayon de proximité ne trie que
+    // les billboards : une face n'a pas de position, elle en a autant que le groupe en porte).
+    let annulé = false;
+    attendreEntrée('gabarit', attendues);
+    for (const relève of relèves) {
+      void relève.then(({ clé, posé }) => {
+        if (annulé) return;
+        // Servie RÉSOLUE OU PERDUE : un gabarit qui ne cuira jamais ne peut pas tenir l'écran voilé.
+        servirEntrée('gabarit', clé);
+        // La relève a muté un matériau DÉJÀ MONTÉ : personne d'autre ne redemandera cette image. Les
+        // ombres, elles, ne bougent pas — une `map` de masque ne change ni la géométrie ni l'alpha.
+        // Par `dessinerRef` (même raison qu'au flipbook, `demanderCuisson`) : cet effet est keyé sur
+        // la seule cuisson, donc le `dessiner` qu'il capture est celui du montage — une image peinte
+        // depuis lui rejouerait le point de vue d'alors (mesuré : 48 images sur 62 à l'ancien poste
+        // après un déplacement du groupe).
+        if (posé) dessinerRef.current();
+      });
+    }
     return () => {
+      annulé = true;
       viderGroupe(groupe); // `viderGroupe` ne connaît que `material` : le matériau de profondeur se libère ici
       profondeurPercée.dispose();
     };
@@ -2113,7 +2168,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     àMonter.sort((a, b) => a.distance - b.distance);
     // VOILE D'ENTRÉE EN SCÈNE : ce que le groupe a SOUS LES YEUX (rayon en donnée) le tient levé ; le
     // lointain arrivera derrière, en silence, par la même file.
-    attendreEntrée(àMonter.filter((q) => q.distance <= AMBIANCE.entreeEnScene.rayonM).map((q) => q.clé));
+    attendreEntrée('billboard', àMonter.filter((q) => q.distance <= AMBIANCE.entreeEnScene.rayonM).map((q) => q.clé));
     for (const q of àMonter) {
       // ÉPINGLE de ce que le montage ATTEND, posée AVANT la demande — même geste que la repose : sous
       // pression de budget, une texture non épinglée est libérable entre sa cuisson et sa pose, et le
@@ -2125,11 +2180,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       void textureAuCran(q.sub, q.view, q.mirror, rot, q.pxHeight, PRIORITE_VUE_COURANTE).then(
         (texture) => {
           if (!annule) monter(q, texture);
-          servirEntrée(q.clé);
+          servirEntrée('billboard', q.clé);
         },
         (raison: unknown) => {
           if (!annule) console.warn(`GameStage3D: billboard « ${q.sub.identity} » sauté — texture non rasterisée :`, raison);
-          servirEntrée(q.clé);
+          servirEntrée('billboard', q.clé);
         },
       );
     }

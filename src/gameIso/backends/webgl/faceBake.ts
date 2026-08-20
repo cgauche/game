@@ -23,6 +23,7 @@
  * tore sur la face — une face cuite garde donc ses joints, et sort du groupe de période sans rien perdre.
  */
 import * as THREE from 'three';
+import { PRIORITE_FOND, queueBakeTask } from './atlasBake';
 import { expandRecipe, TIMBER_V0, TIMBER_V1 } from '../../detail/expand';
 import { periodTextureData, teinteRatio, PERIOD_PX_PER_M } from './periodTexture';
 import type { DetailRecipe } from '../../detail/types';
@@ -252,10 +253,23 @@ export interface FaceBake {
 
 const CACHE = new Map<string, FaceBake | null>();
 
+/** Cuissons FROIDES déjà parties en file, par clé — deux demandes concurrentes de la même image (deux
+ *  stages montés, le double montage de `StrictMode`, l'écran et une planche) partagent donc UNE tâche
+ *  au lieu d'en payer deux. L'entrée meurt à la résolution ; le cache prend le relais. */
+const EN_VOL = new Map<string, Promise<FaceBake | null>>();
+
+/** GÉNÉRATION de cuisson : `clearFaceBakes` la fait avancer, et toute tâche encore en file la relit à
+ *  son tour de tranche. Vider le cache défait le dédoublonnage (`EN_VOL`) sans vider la FILE : sans
+ *  génération, la scène neuve attend derrière une tâche qui ne sert plus personne, puis reçoit l'image
+ *  que cette tâche morte a posée dans le cache neuf. */
+let génération = 0;
+
 /** Vide le cache (changement de scène) — même patron que `clearPeriodTextures`. */
 export function clearFaceBakes(): void {
   for (const t of CACHE.values()) t?.texture.dispose();
   CACHE.clear();
+  EN_VOL.clear();
+  génération += 1;
 }
 
 /** DataTexture d'une face cuite, une fois par clé. `ClampToEdgeWrapping` : une face ne se répète pas.
@@ -288,4 +302,46 @@ export function getFaceBake(
   const out = { texture, gain: cuit.gain };
   CACHE.set(cacheKey, out);
   return out;
+}
+
+/** Ce que rend une demande de cuisson PAR LA FILE (`getFaceBakeEnFile`). */
+export interface FaceBakeEnFile {
+  /** La cuisson quand le cache est CHAUD ; `null` tant que la file n'a pas servi la tranche. */
+  cuisson: FaceBake | null;
+  /** Résolue quand la cuisson est faite (cache chaud : déjà résolue). `null` = rien à cuire, ou tâche
+   *  d'une GÉNÉRATION révolue (cache vidé depuis la mise en file). */
+  prêt: Promise<FaceBake | null>;
+}
+
+/**
+ * MÊME cuisson que `getFaceBake`, demandée à la FILE CADENCÉE du cuiseur (`queueBakeTask`) au lieu
+ * d'être payée dans l'appel. Le calcul lui-même ne change pas : c'est son INSTANT qui change — un
+ * montage de carte cuit ses gabarits de face en tranches au lieu d'un bloc synchrone, et l'appelant
+ * tient un matériau utilisable dès le premier instant.
+ *
+ * La granularité est UNE cuisson par tâche : c'est elle qui découpe la passe. Priorité `PRIORITE_FOND`
+ * (sous la vue courante) : le gabarit se relève en place, le billboard absent est un trou.
+ */
+export function getFaceBakeEnFile(
+  cacheKey: string,
+  surface: BakeSurface,
+  wM: number,
+  hM: number,
+  variant: number,
+  anisotropy = 1,
+): FaceBakeEnFile {
+  const hit = CACHE.get(cacheKey);
+  if (hit !== undefined) return { cuisson: hit, prêt: Promise.resolve(hit) };
+  const enVol = EN_VOL.get(cacheKey);
+  if (enVol) return { cuisson: null, prêt: enVol };
+  const née = génération;
+  const prêt = queueBakeTask(PRIORITE_FOND, async () =>
+    née === génération ? getFaceBake(cacheKey, surface, wM, hM, variant, anisotropy) : null,
+  );
+  EN_VOL.set(cacheKey, prêt);
+  // …et l'oubli ne retire QUE sa propre entrée : une tâche périmée qui se résout après que la scène
+  // neuve a ré-enfilé la même clé effacerait sinon le dédoublonnage de celle-ci.
+  const oublier = (): void => { if (EN_VOL.get(cacheKey) === prêt) EN_VOL.delete(cacheKey); };
+  void prêt.then(oublier, oublier);
+  return { cuisson: null, prêt };
 }

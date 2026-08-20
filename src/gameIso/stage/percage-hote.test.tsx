@@ -20,7 +20,7 @@ import {
   type StageFrame,
   type StageWalkAnim,
 } from './GameStage3D';
-import { BancRenderer, brancherArdoise, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
+import { BancRenderer, attendreQuads, brancherArdoise, caméras, respirer as respirerBanc, scènes, simulerRasterisation, viderCaptures } from './banc-volumique';
 import { PERCAGE_DEFINE, PERCAGE_FONDU_MS, PERCAGE_RAYON_PX, percerMateriau, trousPercage } from '../backends/webgl/percageLocal';
 import { centrePercage, clePercage } from './percage';
 import { sourcesDeFrames } from './stageFrames';
@@ -135,6 +135,10 @@ async function monter(pos: { x: number; y: number }, percage: PercageEntrees | n
   document.body.appendChild(hôte);
   root = createRoot(hôte);
   await rendre(pos, percage, CADRE);
+  // Le quad du héros passe par la file CADENCÉE, où il partage la tranche avec les gabarits du monde
+  // cuit depuis #1399 (colombages et périodes, mis en file par le montage du groupe monde) : la fenêtre
+  // de montage se ferme sur le QUAD, jamais sur un budget de mur.
+  await attendreQuads(1);
   await respirer(120);
 }
 
@@ -444,7 +448,9 @@ describe('L’hôte de plateau alimente la découpe (#1176, M3)', () => {
     document.body.appendChild(hôte);
     root = createRoot(hôte);
     await act(async () => { root!.render(<MondeDeCampagne />); });
-    // Le quad du héros entre en scène par la FILE cadencée (#1372) : le trou n'a rien à percer avant.
+    // Le quad du héros entre en scène par la FILE cadencée (#1372), qu'il partage avec les gabarits du
+    // monde cuit (#1399) : le trou n'a rien à percer avant, et la fenêtre se ferme sur le QUAD.
+    await attendreQuads(1);
     await respirer(150);
     expect(trousPercage()[0].w, 'rayon du trou du groupe coiffé, chaîne MondeDeCampagne entière').toBeGreaterThan(0);
   });

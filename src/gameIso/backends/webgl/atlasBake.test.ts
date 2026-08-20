@@ -18,11 +18,14 @@ import {
   collapseAtlasKeys,
   enqueueBake,
   bakeQueueLength,
+  BUDGET_TRANCHE_MS_DEFAUT,
   PRIORITE_RECHAUFFAGE,
   PRIORITE_VUE_COURANTE,
+  queueBakeTask,
   resetBakeQueue,
   setAtlasBudgetBytes,
   setAtlasPins,
+  setBudgetTrancheMs,
   type BakeCanvas,
   type BakeCtx,
   type BakeImage,
@@ -94,6 +97,7 @@ afterEach(() => {
   clearAtlasCache();
   setAtlasBudgetBytes(96 * 1024 * 1024);
   setAtlasPins([]);
+  setBudgetTrancheMs(BUDGET_TRANCHE_MS_DEFAUT);
   resetBakeQueue();
   vi.useRealTimers();
 });
@@ -152,8 +156,30 @@ describe('cuiseur d’atlas', () => {
     expect(c.appels.length).toBeLessThanOrEqual(tranches * FRAMES_PAR_TRANCHE);
   });
 
+  it('BUDGET DE TRANCHE : des tâches BRÈVES se servent à plusieurs par tranche', async () => {
+    const N = 8;
+    const brèves = (): Promise<number[]> =>
+      Promise.all(Array.from({ length: N }, () => queueBakeTask(PRIORITE_RECHAUFFAGE, async () => 1)));
+
+    const t0 = bakeSliceCount();
+    await brèves();
+    const avecBudget = bakeSliceCount() - t0;
+    expect(avecBudget, `${avecBudget} tranches pour ${N} tâches brèves : la file est en famine`).toBeLessThan(N);
+
+    // …et la cadence STRICTE reste disponible (budget nul) : c'est l'instrument des bancs d'ORDRE.
+    setBudgetTrancheMs(0);
+    const t1 = bakeSliceCount();
+    await brèves();
+    expect(bakeSliceCount() - t1, 'budget nul : la tranche doit servir exactement `FRAMES_PAR_TRANCHE`')
+      .toBeGreaterThanOrEqual(N / FRAMES_PAR_TRANCHE);
+  });
+
   it('priorité : la vue courante passe devant le réchauffage déjà en file', async () => {
     vi.useFakeTimers();
+    // CADENCE STRICTE : ce banc lit la file COUP PAR COUP — une tranche, une tâche. Sous le budget de
+    // temps, des tâches-modèles à coût nul se serviraient toutes dans la même tranche et l'ordre de
+    // service ne se lirait plus.
+    setBudgetTrancheMs(0);
     const c = couches();
     const tard = bakeAtlas((k) => `F${k}`, BOX, 2, PX, { deps: c.deps, priority: 0 });
     const urgent = bakeAtlas(() => 'F7', BOX, 1, PX, { deps: c.deps, priority: 100 });
@@ -177,6 +203,7 @@ describe('cuiseur d’atlas', () => {
 
   it('priorité : une planche DÉJÀ en file, redemandée pour la vue courante, REMONTE', async () => {
     vi.useFakeTimers();
+    setBudgetTrancheMs(0); // cadence stricte : même raison qu'au banc de priorité ci-dessus
     const c = couches();
     // Deux réchauffages posés en priorité basse ; 'A' est en tête de file, mais ses frames SUIVANTES
     // repasseraient derrière 'B' si sa demande urgente ne relevait pas sa priorité.

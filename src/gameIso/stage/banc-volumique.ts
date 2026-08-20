@@ -17,7 +17,9 @@ import { afterEach, vi } from 'vitest';
 import * as THREE from 'three';
 import type { StageRenderer } from './GameStage3D';
 import { frameRectOf } from './boardPose';
-import { clearAtlasCache, resetBakeQueue } from '../backends/webgl/atlasBake';
+import { BUDGET_TRANCHE_MS_DEFAUT, clearAtlasCache, resetBakeQueue, setBudgetTrancheMs } from '../backends/webgl/atlasBake';
+import { clearFaceBakes } from '../backends/webgl/faceBake';
+import { clearPeriodTextures } from '../backends/webgl/periodTexture';
 import { clearBillboardTextures } from '../backends/webgl/svgTexture';
 import { viderTexturesStatiques } from './texturesStatiques';
 
@@ -113,7 +115,8 @@ export function simulerRasterisation(mode: 'auto' | 'retenue' = 'auto'): Rasteri
  * ARDOISE NEUVE entre deux tests, et entre deux FICHIERS — à appeler UNE fois en tête d'un banc.
  *
  * La suite partage son graphe de modules par worker (`isolate: false`, `vite.config.ts`) : la file du
- * cuiseur, le stock d'atlas, les textures de billboard et les textures statiques sont des SINGLETONS
+ * cuiseur et SON BUDGET DE TRANCHE, le stock d'atlas, les gabarits du monde cuit (colombage,
+ * périodes), les textures de billboard et les textures statiques sont des SINGLETONS
  * que deux fichiers voisins se passent en l'état. Un fichier qui les laisse chargés fait démarrer le
  * suivant sur des tâches et des textures d'ailleurs — mesuré : un écran monté sans un seul quad.
  *
@@ -123,8 +126,11 @@ export function simulerRasterisation(mode: 'auto' | 'retenue' = 'auto'): Rasteri
 export function brancherArdoise(): void {
   afterEach(() => {
     resetBakeQueue();
+    setBudgetTrancheMs(BUDGET_TRANCHE_MS_DEFAUT);
     clearAtlasCache();
     clearBillboardTextures();
+    clearFaceBakes();
+    clearPeriodTextures();
     viderTexturesStatiques();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
