@@ -825,11 +825,11 @@ const wallIndexOf = memoByRef((scene: Scene) => {
 });
 
 /** Apparence RÉSOLUE d'un segment de mur — LA MÊME loi que `wallGeometry` (`walls.ts`) : la façade
- *  authorée sur l'arête l'emporte (sauf structure posée), sinon `wallApp`. Une seule loi, jamais deux
+ *  authorée sur l'arête l'emporte (sauf structure ou override posé), sinon `wallApp`. Une seule loi, jamais deux
  *  qui pourraient diverger. */
 function segAppearance(scene: Scene, facades: ReadonlyMap<string, FacadeEdge>, seg: WallSeg): string {
   const facade = facades.get(edgeKey(seg));
-  return facade && !seg.structure
+  return facade && !seg.structure && !seg.appearance
     ? facadeStructureAppearance(facade.appearance).id
     : wallApp(seg, heightAt(scene, seg.x, seg.y, seg.z ?? 0)).id;
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, structureAt } from '../../state/scene';
+import { emptyScene, structureAt, type WallSeg } from '../../state/scene';
 import { wallBetween } from '../../state/scene';
 import { canonEdge, edgeWallState, toggleEdgeWall, toggleDiagonalWall, paintHeight, nearestEdge, pickWallEdge, patchWall, deleteSel } from './editorState';
 
@@ -83,6 +83,20 @@ describe('editorState — sélection + structure d’une arête-mur', () => {
     s = patchWall(s, 2, 2, 'E', 0, { structure: undefined }); // « aucune »
     expect(structureAt(s, 2, 2, 'E', 0)).toBeUndefined();
     expect(s.walls![0]).toEqual({ x: 2, y: 2, side: 'E' }); // forme compacte restaurée (pas de structure vide)
+  });
+
+  it('patchWall : l’override visuel survit à la normalisation sans changer la structure', () => {
+    const patch: Partial<WallSeg> = { appearance: 'cloison-basse-a-ossature-en-bois' };
+    const s = patchWall(
+      patchWall(withWall(), 2, 2, 'E', 0, { structure: 'mur-a-ossature-en-bois' }),
+      2, 2, 'E', 0, patch,
+    );
+    expect(s.walls![0]).toEqual({
+      x: 2, y: 2, side: 'E',
+      structure: 'mur-a-ossature-en-bois',
+      appearance: 'cloison-basse-a-ossature-en-bois',
+    });
+    expect(JSON.parse(JSON.stringify(s)).walls[0].appearance).toBe('cloison-basse-a-ossature-en-bois');
   });
 
   it('patchWall : Cloison ↔ Porte + closed, forme canonique compacte (pas de door:false / closed sans porte)', () => {

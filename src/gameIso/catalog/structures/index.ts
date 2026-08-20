@@ -25,10 +25,14 @@ export function structureAppearance(id?: string): StructureAppearanceDef {
   return catalogEntry(MAP, id, 'structure', MISSING);
 }
 
-/** Apparence d'un mur d'arête — SOURCE UNIQUE iso + POV : sa structure, sinon rempart de pierre si
- *  surélevé (base > 1 m), sinon mur nu. */
+/** Apparence d'un mur d'arête — SOURCE UNIQUE iso + POV : override visuel, puis structure, puis
+ *  rempart de pierre si surélevé (base > 1 m), sinon mur nu. */
 export function wallApp(seg: WallSeg, baseH: number): StructureAppearanceDef {
-  return seg.structure ? structureAppearance(seg.structure) : structureAppearance(baseH > 1 ? 'mur-en-pierre' : 'plain');
+  return seg.appearance
+    ? structureAppearance(seg.appearance)
+    : seg.structure
+      ? structureAppearance(seg.structure)
+      : structureAppearance(baseH > 1 ? 'mur-en-pierre' : 'plain');
 }
 
 /** Croisée de repli (def SANS bloc `window`) = celle de `plain` (DONNÉE JSON : verre froid + ambre allumé) —

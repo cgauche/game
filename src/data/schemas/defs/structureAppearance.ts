@@ -44,6 +44,7 @@ export const schema = z.array(
     id: z.string(),
     label: z.string(),
     material: z.enum(['bois', 'pierre']),
+    wallHeightM: z.number().positive().optional(),
     detail: detailRecipeSchema.optional(),
     face: z.string(),
     post: z.string(),

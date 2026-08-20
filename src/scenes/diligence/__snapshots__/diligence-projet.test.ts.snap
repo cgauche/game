@@ -18463,6 +18463,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "y": 29,
     },
     {
+      "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
       "structure": "mur-a-ossature-en-bois",
       "x": 21,
@@ -18481,6 +18482,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "y": 29,
     },
     {
+      "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
       "structure": "mur-a-ossature-en-bois",
       "x": 23,
@@ -18602,12 +18604,14 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "y": 30,
     },
     {
+      "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
       "structure": "mur-a-ossature-en-bois",
       "x": 21,
       "y": 30,
     },
     {
+      "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
       "structure": "mur-a-ossature-en-bois",
       "x": 23,
@@ -18657,6 +18661,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "y": 31,
     },
     {
+      "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
       "structure": "mur-a-ossature-en-bois",
       "x": 19,
@@ -18700,6 +18705,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "y": 32,
     },
     {
+      "appearance": "cloison-basse-a-ossature-en-bois",
       "side": "E",
       "structure": "mur-a-ossature-en-bois",
       "x": 19,
@@ -18725,7 +18731,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "side": "E",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 0,
       "y": 33,
     },
@@ -18880,7 +18886,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "side": "E",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 0,
       "y": 34,
     },
@@ -18911,7 +18917,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "side": "E",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 0,
       "y": 35,
     },
@@ -18941,7 +18947,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "side": "E",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 0,
       "y": 36,
     },
@@ -19109,7 +19115,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "side": "N",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 1,
       "y": 37,
     },
@@ -19121,49 +19127,49 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "side": "N",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 2,
       "y": 37,
     },
     {
       "side": "N",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 3,
       "y": 37,
     },
     {
       "side": "N",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 4,
       "y": 37,
     },
     {
       "side": "N",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 5,
       "y": 37,
     },
     {
       "side": "N",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 6,
       "y": 37,
     },
     {
       "side": "N",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 7,
       "y": 37,
     },
     {
       "side": "N",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 8,
       "y": 37,
     },
     {
       "side": "N",
-      "structure": "mur-en-pierres-seches",
+      "structure": "cloture-en-clayonnage",
       "x": 9,
       "y": 37,
     },

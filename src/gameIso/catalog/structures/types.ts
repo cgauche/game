@@ -8,6 +8,8 @@ export interface StructureAppearanceDef {
   id: string;
   label: string;
   material: 'bois' | 'pierre';
+  /** Hauteur visuelle métrique de la face du mur ; défaut `WALL_H_M`. */
+  wallHeightM?: number;
   /** Recette de détail de surface (appareillage/joints/mouchetis) — consommée par les backends (iso + POV). */
   detail?: DetailRecipe;
   /** Face principale (POV + base de la face iso, ombrée par orientation). */

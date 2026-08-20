@@ -25,7 +25,7 @@ import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { allMusicDefs } from '../../audio/music';
-import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, roofMaterials } from '../../data';
+import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, roofMaterials, structureAppearances } from '../../data';
 import { DEFAULT_ROOF_DEFAULTS, rederiveRoofMasses } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
 
@@ -1061,6 +1061,15 @@ export function Inspector({
                   onChange={(v) => patchSelW({ structure: (v as string | null) || undefined })}
                   nullable
                 />
+                <label className="ed-field">
+                  <span>Apparence visuelle</span>
+                  <select value={selW.appearance ?? ''} onChange={(e) => patchSelW({ appearance: e.target.value || undefined })}>
+                    <option value="">— Dérivée de la structure/façade —</option>
+                    {structureAppearances.map((appearance) => (
+                      <option key={appearance.id} value={appearance.id}>{appearance.label}</option>
+                    ))}
+                  </select>
+                </label>
                 <p className="hint">Posée, l'arête tient (bloque vue + passage) jusqu'à être abattue en combat ; elle devient alors une brèche franchissable. « — (aucun) — » = pas de structure. La HAUTEUR d'un rempart se peint désormais à l'outil <Icon id="map-tool/height" size="sm" /> (hauteur des cases qu'il borde), plus de réglage par segment.</p>
                 <div className="ed-field">
                   <span>Escaladable</span>

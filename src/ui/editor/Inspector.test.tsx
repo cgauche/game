@@ -55,6 +55,60 @@ function roundTrip(scene: Scene): Scene {
   return JSON.parse(JSON.stringify(scene)) as Scene;
 }
 
+describe('Inspector — apparence visuelle des murs', () => {
+  it('conserve la structure mécanique quand une apparence est choisie et sérialisée', async () => {
+    const scene: Scene = {
+      ...emptyScene(4, 4),
+      walls: [{ x: 1, y: 1, side: 'E', structure: 'mur-a-ossature-en-bois' }],
+    };
+    let latest = scene;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    const render = (next: Scene) => root.render(
+      <Inspector
+        scene={next}
+        otherScenes={[]}
+        worldMap={null}
+        setScene={(updated) => {
+          latest = updated;
+          render(updated);
+        }}
+        sel={{ type: 'wall', x: 1, y: 1, side: 'E', z: 0 }}
+        setSel={() => undefined}
+        enemyCreatures={[]}
+        openLogic={() => undefined}
+        resizeScene={() => undefined}
+        narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
+        tool={{ mode: 'select' }}
+        armZoneTiles={() => undefined}
+        zoneFocusKey={null}
+      />,
+    );
+    await act(() => render(scene));
+
+    const appearance = Array.from(container.querySelectorAll('select'))
+      .find((el) => el.closest('label')?.textContent?.includes('Apparence visuelle')) as HTMLSelectElement;
+    expect(appearance).toBeTruthy();
+    await act(async () => {
+      appearance.value = 'cloison-basse-a-ossature-en-bois';
+      appearance.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    expect(latest.walls?.[0]).toEqual({
+      x: 1,
+      y: 1,
+      side: 'E',
+      structure: 'mur-a-ossature-en-bois',
+      appearance: 'cloison-basse-a-ossature-en-bois',
+    });
+    expect(roundTrip(latest).walls?.[0]).toEqual(latest.walls?.[0]);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+});
+
 describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
   it('light.radiusTiles : la case + le rayon atterrissent dans la Scène et survivent au round-trip', async () => {
     const h = mount({ id: 'lanterne', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau' });

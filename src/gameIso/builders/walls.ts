@@ -553,14 +553,15 @@ function wallGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
     const baseH = heightAt(scene, w.x, w.y, z);
     const facade = authoredEdges.get(edgeKey(w));
     const physicalApp = wallApp(w, baseH);
-    const app = facade && !w.structure
+    const app = facade && !w.structure && !w.appearance
       ? facadeStructureAppearance(facade.appearance)
       : physicalApp;
+    const wallHeightM = app.wallHeightM ?? WALL_H_M;
     const down = !!w.structure && structureIsDown(scene, w);
     const open = !!w.door && doorIsOpen(scene, w);
     const [nx, ny] = NB[w.side];
     const [A, B] = wallEnds(w);
-    const physicalFaces = wallFaces(w, app, baseH, down, WALL_H_M, open, storeyAbove(scene, w, z, baseH + WALL_H_M));
+    const physicalFaces = wallFaces(w, app, baseH, down, wallHeightM, open, storeyAbove(scene, w, z, baseH + wallHeightM));
     out.push({
       off: {
         kind: 'wall',

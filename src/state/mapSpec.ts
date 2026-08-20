@@ -98,6 +98,8 @@ export interface WallSpec {
   door?: boolean;
   /** Structure destructible posée sur l'arête (id de `structures.json`, ex. `porte-de-ville`). */
   structure?: string;
+  /** Apparence de rendu indépendante de la structure mécanique (`structureAppearance.json`). */
+  appearance?: string;
   /** DÉCORATIF : l'arête porte une fenêtre au rendu (mur plein serti d'une vitre — ne change pas le combat). */
   window?: boolean;
   /** ESCALADABLE (LDB 15 l.53-57, cf. `WallSeg.climb`) : l'arête sépare deux surfaces de hauteurs
@@ -751,15 +753,15 @@ export function buildScene(spec: MapSpec): Scene {
     if (wall.side === '\\' || wall.side === '/') continue;
     const z = wall.z ?? 0;
     s = setEdgeWall(s, wall.x, wall.y, wall.side, z, wall.door ? 'door' : 'wall');
-    if (wall.structure || wall.window || wall.climb) {
+    if (wall.structure || wall.appearance || wall.window || wall.climb) {
       const c = canonEdge(wall.x, wall.y, wall.side);
-      s = patchWall(s, c.x, c.y, c.side, z, { ...(wall.structure ? { structure: wall.structure } : {}), ...(wall.window ? { window: true } : {}), ...(wall.climb ? { climb: wall.climb } : {}) });
+      s = patchWall(s, c.x, c.y, c.side, z, { ...(wall.structure ? { structure: wall.structure } : {}), ...(wall.appearance ? { appearance: wall.appearance } : {}), ...(wall.window ? { window: true } : {}), ...(wall.climb ? { climb: wall.climb } : {}) });
     }
   }
   // Passe 2 : diagonales — arête PUREMENT VISUELLE (scene.ts:698-700) : déplacement/vision/grimpe restent
   // orthogonaux (`edgeOf`/`wallBetween`/`vision.ts` ne résolvent QUE N/E) → `climb`/`structure`/`door`
   // ne bloqueraient/ouvriraient jamais rien : les poser mentirait silencieusement sur leur effet.
-  // `window` reste décoratif pur (aucune règle mécanique ne le lit) → seul attribut propageable.
+    // `window` et `appearance` restent décoratifs purs (aucune règle mécanique ne les lit).
   for (const wall of allWalls) {
     if (wall.side !== '\\' && wall.side !== '/') continue;
     const z = wall.z ?? 0;
@@ -780,7 +782,10 @@ export function buildScene(spec: MapSpec): Scene {
       );
     }
     s = toggleDiagonalWall(s, wall.x, wall.y, wall.side, z);
-    if (wall.window) s = patchWall(s, wall.x, wall.y, wall.side, z, { window: true });
+    if (wall.window || wall.appearance) s = patchWall(s, wall.x, wall.y, wall.side, z, {
+      ...(wall.window ? { window: true } : {}),
+      ...(wall.appearance ? { appearance: wall.appearance } : {}),
+    });
   }
 
   // 5. architecture (copie non validée — la validation tourne en fin de fonction, §9, une fois les

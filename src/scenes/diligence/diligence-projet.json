@@ -6664,25 +6664,29 @@
      "x": 21,
      "y": 29,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
      "x": 21,
      "y": 30,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
      "x": 19,
      "y": 32,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
      "x": 19,
      "y": 31,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
      "x": 22,
@@ -6701,13 +6705,15 @@
      "x": 23,
      "y": 29,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
      "x": 23,
      "y": 30,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "appearance": "cloison-basse-a-ossature-en-bois"
     },
     {
      "x": 25,
@@ -6855,79 +6861,79 @@
      "x": 9,
      "y": 37,
      "side": "N",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 8,
      "y": 37,
      "side": "N",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 7,
      "y": 37,
      "side": "N",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 6,
      "y": 37,
      "side": "N",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 5,
      "y": 37,
      "side": "N",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 4,
      "y": 37,
      "side": "N",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 3,
      "y": 37,
      "side": "N",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 2,
      "y": 37,
      "side": "N",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 1,
      "y": 37,
      "side": "N",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 0,
      "y": 36,
      "side": "E",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 0,
      "y": 35,
      "side": "E",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 0,
      "y": 34,
      "side": "E",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 0,
      "y": 33,
      "side": "E",
-     "structure": "mur-en-pierres-seches"
+     "structure": "cloture-en-clayonnage"
     },
     {
      "x": 0,

@@ -161,6 +161,7 @@ describe('buildScene — murs d’arête explicites', () => {
       { x: 1, y: 1, side: 'N' },
       { x: 1, y: 1, side: 'E', door: true },
       { x: 0, y: 0, side: 'N', structure: 'porte-de-ville' },
+      { x: 1, y: 0, side: 'N', structure: 'mur-a-ossature-en-bois', appearance: 'cloison-basse-a-ossature-en-bois' },
       { x: 2, y: 0, side: 'N', climb: { kind: 'surface', difficulty: 'difficile' } },
     ],
   });
@@ -168,6 +169,10 @@ describe('buildScene — murs d’arête explicites', () => {
     expect(edgeWallState(s, 1, 1, 'N')).toBe('wall');
     expect(edgeWallState(s, 1, 1, 'E')).toBe('door');
     expect(s.walls!.find((w) => w.x === 0 && w.y === 0 && w.side === 'N')!.structure).toBe('porte-de-ville');
+    expect(s.walls!.find((w) => w.x === 1 && w.y === 0 && w.side === 'N')).toMatchObject({
+      structure: 'mur-a-ossature-en-bois',
+      appearance: 'cloison-basse-a-ossature-en-bois',
+    });
   });
   it('pose une arête escaladable (#505)', () => {
     expect(s.walls!.find((w) => w.x === 2 && w.y === 0 && w.side === 'N')!.climb).toEqual({ kind: 'surface', difficulty: 'difficile' });

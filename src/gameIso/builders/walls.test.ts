@@ -78,6 +78,47 @@ describe('buildWalls — mur BOIS nu (def sans parapet)', () => {
   });
 });
 
+describe('buildWalls — hauteur visuelle portée par l’apparence', () => {
+  it('borne la face et les poteaux à 1,25 m sans modifier les portes et fenêtres voisines', () => {
+    const [fence, door, window] = buildWalls(sceneWith([
+      { x: 1, y: 1, side: 'N', structure: 'cloture-en-clayonnage' },
+      { x: 2, y: 1, side: 'N', door: true, structure: 'solide-porte-en-bois' },
+      { x: 3, y: 1, side: 'N', window: true, structure: 'mur-a-ossature-en-bois' },
+    ]));
+    const topOf = (el: WallEl, selected: readonly string[]) => Math.max(
+      ...el.faces.filter((face) => face.material.part != null && selected.includes(face.material.part))
+        .flatMap((face) => face.poly.map((point) => point.h)),
+    );
+
+    expect(topOf(fence, ['face', 'poteau'])).toBe(1.25);
+    expect(topOf(door, ['face', 'poteau'])).toBe(WALL_H_M);
+    expect(topOf(window, ['face', 'poteau'])).toBe(WALL_H_M);
+
+    const sousEtage = sceneWith([{ x: 1, y: 1, side: 'N', structure: 'cloture-en-clayonnage' }]);
+    sousEtage.layers.push({
+      z: 1,
+      tiles: new Array(36).fill('herbe'),
+      height: new Array(36).fill(METRES_PER_LEVEL),
+    });
+    const fenceSousEtage = one(sousEtage);
+    expect(topOf(fenceSousEtage, ['couronnement'])).toBe(1.25 + isoPxToM(4));
+  });
+
+  it('l’override visuel abaisse un mur sans remplacer sa structure mécanique', () => {
+    const seg = {
+      x: 1, y: 1, side: 'N',
+      structure: 'mur-a-ossature-en-bois',
+      appearance: 'cloison-basse-a-ossature-en-bois',
+    } satisfies WallSeg;
+    const wall = one(sceneWith([seg]));
+    const top = Math.max(...facesOf(wall, 'face').flatMap((face) => face.poly.map((point) => point.h)));
+
+    expect(seg.structure).toBe('mur-a-ossature-en-bois');
+    expect(wall.appearance).toBe('cloison-basse-a-ossature-en-bois');
+    expect(top).toBe(1.25);
+  });
+});
+
 describe('buildWalls — hauteur de base MÉTRIQUE (heightAt, vérité partagée iso/POV)', () => {
   it('un mur sur une case à 4 m part de 4 m ; sans structure il devient rempart (wallApp base > 1 m)', () => {
     const s = sceneWith([{ x: 2, y: 2, side: 'E' }]);
@@ -147,6 +188,16 @@ describe('buildWalls — façades architecturales authorées', () => {
       { x: 3, y: 3, side: 'N', window: true },
       { x: 4, y: 3, side: 'N' },
     ]);
+  });
+
+  it('respecte un override visuel explicite sur une arête de façade', () => {
+    const scene = facadeScene();
+    scene.walls![0].appearance = 'cloison-basse-a-ossature-en-bois';
+    const [wall] = buildWalls(scene);
+    const top = Math.max(...facesOf(wall, 'face').flatMap((face) => face.poly.map((point) => point.h)));
+
+    expect(wall.appearance).toBe('cloison-basse-a-ossature-en-bois');
+    expect(top).toBe(1.25);
   });
 
   it('préserve la géométrie des portes et fenêtres existantes', () => {

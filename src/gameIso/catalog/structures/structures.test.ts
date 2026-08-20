@@ -16,9 +16,10 @@ function sceneWith(seg: WallSeg): Scene {
 }
 
 describe('apparence de structure (JSON partagé iso/POV)', () => {
-  it('les 17 apparences sont présentes (#832 : les 10 manquantes + les 7 historiques)', () => {
+  it('les 18 apparences sont présentes (#832 : les 17 historiques + la cloison basse)', () => {
     const ids = structureAppearances.map((s) => s.id).sort();
     expect(ids).toEqual([
+      'cloison-basse-a-ossature-en-bois',
       'cloture-en-clayonnage',
       'herse',
       'mantelet-de-bois',

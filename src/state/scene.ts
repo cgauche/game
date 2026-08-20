@@ -864,6 +864,9 @@ export interface WallSeg {
    *  qu'elle tient, l'arête bloque passage+vue comme un mur plein ; une fois ABATTUE (`structureIsDown`),
    *  l'arête devient une BRÈCHE franchissable et transparente. */
   structure?: string;
+  /** Apparence de rendu (`structureAppearance.json`) indépendante de `structure`. N'affecte ni
+   *  résistance, ni couvert, ni collision : absent = apparence dérivée de la structure/façade. */
+  appearance?: string;
   /** DÉCORATIF uniquement : l'arête porte une FENÊTRE (croisée vitrée) au rendu. Un mur fenêtré reste un
    *  mur PLEIN (vitre SERTIE, pas une ouverture) — il bloque passage/vue/vision/marchabilité EXACTEMENT
    *  comme un mur nu (`window` n'est lu par AUCUNE règle de combat : ni `wallIsOpen`, ni `vision`, ni

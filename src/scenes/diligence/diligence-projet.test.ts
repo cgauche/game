@@ -4,6 +4,9 @@ import { doorAt, edgeOf, heightAt, isWalkable, type Scene } from '../../state/sc
 import { pathTo, walkNeighbors, type Pt } from '../../state/path';
 import { sceneZoneTiles } from '../../state/zones';
 import { gradeBetween } from '../../state/relief';
+import { structureAppearance } from '../../gameIso/catalog/structures';
+import { WALL_H_M } from '../../gameIso/iso';
+import { findStructureById } from '../../data';
 
 /**
  * « La Diligence » — relais routier authoré dans l'éditeur, embarqué en paquet de campagne
@@ -80,6 +83,67 @@ describe('La Diligence — paquet de campagne authoré dans l’éditeur', () =>
     const windows = (scene.walls ?? []).filter((wall) => wall.window);
     expect(windows.length).toBeGreaterThan(9);
     expect(windows.every((wall) => !wall.door)).toBe(true);
+  });
+
+  it('abaisse seulement les murs existants du jardin et les six séparations de box de la zone 5', () => {
+    const clayonnage = 'cloture-en-clayonnage';
+    const cloisonBasse = 'cloison-basse-a-ossature-en-bois';
+    const jardin = [
+      ...[33, 34, 35, 36].map((y) => ({ x: 0, y, side: 'E' as const })),
+      ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((x) => ({ x, y: 37, side: 'N' as const })),
+    ];
+    const boxes = [
+      ...[31, 32].map((y) => ({ x: 19, y, side: 'E' as const })),
+      ...[29, 30].map((y) => ({ x: 21, y, side: 'E' as const })),
+      ...[29, 30].map((y) => ({ x: 23, y, side: 'E' as const })),
+    ];
+    const wallAt = ({ x, y, side }: (typeof jardin)[number]) =>
+      scene.walls!.find((wall) => wall.x === x && wall.y === y && wall.side === side && (wall.z ?? 0) === 0);
+
+    expect(jardin).toHaveLength(13);
+    expect(boxes).toHaveLength(6);
+    expect(scene.walls).toHaveLength(669);
+    expect(jardin.map((edge) => wallAt(edge)?.structure)).toEqual(new Array(13).fill(clayonnage));
+    const mursDesBoxes = boxes.map(wallAt);
+    expect(mursDesBoxes.map((wall) => wall?.structure)).toEqual(new Array(6).fill('mur-a-ossature-en-bois'));
+    expect(mursDesBoxes.map((wall) => wall?.appearance))
+      .toEqual(new Array(6).fill(cloisonBasse));
+
+    const murOssature = findStructureById('mur-a-ossature-en-bois')!;
+    expect(findStructureById(cloisonBasse)).toBeUndefined();
+    expect(mursDesBoxes.map((wall) => findStructureById(wall!.structure!))).toEqual(new Array(6).fill(murOssature));
+
+    const apparenceMur = structureAppearance('mur-a-ossature-en-bois');
+    const apparenceCloison = structureAppearance(cloisonBasse);
+    const { id: _murAppId, label: _murAppLabel, wallHeightM: _murHeight, ...peauMur } = apparenceMur;
+    const { id: _cloisonAppId, label: _cloisonAppLabel, wallHeightM, ...peauCloison } = apparenceCloison;
+    expect(wallHeightM).toBe(1.25);
+    expect(peauCloison).toEqual(peauMur);
+    const clayonnagesPreexistants = [0, 1, 2, 3, 4, 5]
+      .map((y) => wallAt({ x: 19, y, side: 'E' }));
+    expect(clayonnagesPreexistants.map((wall) => wall?.structure)).toEqual(
+      new Array(6).fill(clayonnage),
+    );
+    expect(structureAppearance(clayonnage).wallHeightM).toBe(1.25);
+
+    const zones5 = scene.effectZones!.filter((zone) =>
+      ['zone-E-z0', 'zone-e-z0'].includes(zone.id));
+    const dedans = new Set(zones5.flatMap((zone) =>
+      sceneZoneTiles(zone).map((tile) => `${tile.x},${tile.y}`)));
+    const perimetre = new Map<string, { x: number; y: number; side: 'N' | 'E' }>();
+    for (const key of dedans) {
+      const [x, y] = key.split(',').map(Number);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        if (dedans.has(`${x + dx},${y + dy}`)) continue;
+        const edge = edgeOf(x, y, x + dx, y + dy)!;
+        perimetre.set(`${edge.x},${edge.y},${edge.side}`, edge);
+      }
+    }
+    const mursPeripheriques = [...perimetre.values()].map(wallAt);
+    expect(mursPeripheriques).toHaveLength(44);
+    expect(mursPeripheriques.every((wall) => wall && wall.structure !== clayonnage)).toBe(true);
+    expect(mursPeripheriques.every((wall) =>
+      wall && (structureAppearance(wall.structure).wallHeightM ?? WALL_H_M) === WALL_H_M)).toBe(true);
   });
 
   it('une seule scène, 32×38, deux niveaux', () => {
