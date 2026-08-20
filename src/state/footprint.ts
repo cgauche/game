@@ -5,9 +5,13 @@
  * par catégorie : les 7 valeurs sont une extrapolation MAISON, sortie en donnée éditable
  * (`src/data/sizes.json::footprintSide`, lue par `sizeFootprintSide`).
  *
- * PUR (géométrie de grille, pas une règle testée). Convention d'ANCRAGE : `pos` = coin Nord-Ouest
+ * Géométrie de grille, pas une règle testée. Convention d'ANCRAGE : `pos` = coin Nord-Ouest
  * (min x, min y) de l'empreinte, qui s'étend vers +x/+y. Une créature 1×1 garde sa sémantique
  * actuelle (pos = sa tuile), donc tout le code positionnel existant reste correct par défaut.
+ *
+ * Les fonctions de CRÉATURE (`sizeFootprint`…) restent des fonctions pures de leurs arguments ; celles
+ * de DÉCOR (`propDeclaredFoot`/`propFootTiles`) LISENT le catalogue app-owned `props.json` (`../data`),
+ * vérité unique de l'empreinte d'un prop — ce module n'est donc pas sans dépendance de données.
  */
 import { findPropById, propFootOf } from '../data';
 import { effectiveSize, sizeFootprintSide, type SizeCategory } from '../engine/size';

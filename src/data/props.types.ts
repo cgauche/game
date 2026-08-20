@@ -76,7 +76,8 @@ export function validatePropCatalog(entries: readonly PropData[], materials: rea
     }
     const { w, h } = propFootOf(prop);
     for (const slot of prop.seatSlots ?? []) {
-      if (!slot.id.trim() || slots.has(slot.id)) errors.push(`${prop.id}: slot dupliqué « ${slot.id} »`);
+      if (!slot.id.trim()) errors.push(`${prop.id}: slot sans id`);
+      else if (slots.has(slot.id)) errors.push(`${prop.id}: slot dupliqué « ${slot.id} »`);
       slots.add(slot.id);
       const key = `${slot.approach.x},${slot.approach.y}`;
       if (approaches.has(key)) errors.push(`${prop.id}: approche dupliquée (${key})`);

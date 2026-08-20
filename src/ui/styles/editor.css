@@ -394,10 +394,6 @@ button.insp-row.active {
 .ed-dim input {
   width: 56px;
 }
-.ed-foot-inputs {
-  display: flex;
-  gap: 4px;
-}
 .ed-rest-places {
   display: flex;
   flex-direction: column;

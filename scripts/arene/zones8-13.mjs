@@ -349,7 +349,7 @@ export function makeZone11() {
     legend: { s: 'sang' },
     entities: [
       hero(2, 18),
-      P(16, 5, 'idole-chaos', { foot: { w: 2, h: 2 }, label: 'L’Idole noire' }),
+      P(16, 5, 'idole-chaos', { label: 'L’Idole noire' }),
       P(16, 16, 'autel', { label: 'Autel des sacrifices' }),
       P(14, 8, 'cercle-runique'),
       P(19, 8, 'cercle-runique'),

@@ -110,11 +110,13 @@ describe('embuscade — Scene produite par buildScene', () => {
     const positions = ['enemy-enc-mutants-0', 'enemy-enc-mutants-1', 'enemy-enc-mutants-2', 'enemy-enc-mutants-3', 'enemy-enc-mutants-4'].map(
       (id) => s.entities.find((e) => e.id === id)?.pos,
     );
+    // Les mutants encerclent l'épave SANS naître dedans : elle occupe 2×2 depuis (15,6) au catalogue
+    // (`props.json` `epave-carrosse`) — cf. le balayage `src/scenes/prop-footprint-occupancy.test.ts`.
     expect(positions).toEqual([
       { x: 17, y: 6 },
-      { x: 16, y: 7 },
+      { x: 17, y: 7 },
       { x: 14, y: 8 },
-      { x: 15, y: 7 },
+      { x: 14, y: 7 },
       { x: 12, y: 7 },
     ]);
     const terenz = s.entities.find((e) => e.id === 'enemy-enc-mutants-4');

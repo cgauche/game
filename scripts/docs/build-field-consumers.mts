@@ -18,9 +18,11 @@
  * PARTAGÉS et RÉUTILISÉS, exportés sous un nom `export const xSchema` ET portant un alias TS
  * NOMMÉ vérifiable ailleurs dans le dépôt (`interface`/`type X = …`) — c'est la classe exacte où
  * vit `TrappingRef.spec`. Mesurés dans `src/data/schemas/common.ts` (37 schémas nommés) +
- * `src/data/schemas/defs/criticals.ts` (2) : 39 candidats, réduits à 17 après exclusion des deux
+ * `src/data/schemas/defs/criticals.ts` (2) : 45 candidats, réduits à 21 après exclusion des deux
  * catégories ci-dessous (non un cliquet — `TARGETS` est un TABLEAU statique, étendu à la main si
- * un nouveau schéma nommé apparaît).
+ * un nouveau schéma nommé apparaît). `props.json` est le premier catalogue SORTI de l'angle mort
+ * ci-dessus : sa forme a été nommée dans `common.ts` (`propDataSchema` + ses sous-schémas) au lieu de
+ * rester anonyme dans `defs/props.ts` — le chemin à suivre pour tout catalogue qu'on veut mesurer.
  *
  * SECOND ANGLE MORT, MESURÉ (pas hypothétique) — `fieldConsumers.mjs` ne borne une lecture que sur
  * un identifiant explicitement ANNOTÉ `T` (littéral du nom dans un type de paramètre/variable). Les
@@ -90,10 +92,11 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
   out += `> accès/déstructuration, cf. \`scripts/guards/lib/fieldConsumers.mjs\`). Complète\n`
   out += `> \`docs/orphelines-donnees.md\` (consommateurs d'ENTITÉ) — ici, consommateurs de CHAMP.\n\n`
   out += `## Périmètre mesuré / angles morts\n\n`
-  out += `39 schémas NOMMÉS mesurés dans \`src/data/schemas/common.ts\` (37) + \`src/data/schemas/defs/criticals.ts\` (2) ; `
-  out += `**17 retenus** (voir en-tête du générateur pour le détail des 22 exclus). Les 109 catalogues `
-  out += `\`src/data/schemas/defs/*.ts\` (schéma d'entrée ANONYME par fichier) restent HORS PÉRIMÈTRE — `
-  out += `sans alias TS nommé, ce détecteur ne peut pas y borner une lecture.\n\n`
+  out += `45 schémas NOMMÉS mesurés dans \`src/data/schemas/common.ts\` (43) + \`src/data/schemas/defs/criticals.ts\` (2) ; `
+  out += `**${TARGETS.length} retenus** (voir en-tête du générateur pour les raisons d'exclusion). Les catalogues `
+  out += `\`src/data/schemas/defs/*.ts\` à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE — sans alias TS nommé, `
+  out += `ce détecteur ne peut pas y borner une lecture ; en SORTIR un catalogue est un geste d'auteur (nommer `
+  out += `son schéma dans \`common.ts\`, l'ajouter à \`TARGETS\`), fait pour \`props.json\` → \`PropData\`.\n\n`
   out += `Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant doit être `
   out += `EXPLICITEMENT annoté du type cible. **Vérification manuelle des 16 champs « 0 lecteur »** de la `
   out += `première mesure (échantillon COMPLET, pas partiel) : 9/16 (56 %) sont des FAUX NÉGATIFS — un `

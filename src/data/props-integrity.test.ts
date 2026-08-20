@@ -52,6 +52,11 @@ describe('validatePropCatalog — invariants de données du décor', () => {
     ]));
   });
 
+  it('distingue un slot SANS id d’un slot DUPLIQUÉ (deux causes, deux messages)', () => {
+    const sansId = propFixture({ seatSlots: [{ id: '  ', anchor: { x: 0, y: -0.35, h: 0.48 }, facing: 'S', approach: { x: 0, y: -1 } }] });
+    expect(validatePropCatalog([sansId], propMaterials)).toEqual(['x: slot sans id']);
+  });
+
   it('refuse une coordonnée non finie, sur une boîte comme sur un cylindre', () => {
     const boite = propFixture({ volume: { primitives: [{ kind: 'box', center: { x: Number.NaN, y: 0, h: 0.5 }, size: { x: 1, y: 1, h: 1 }, material: 'bois-chene' }] } });
     const cylindre = propFixture({ volume: { primitives: [{ kind: 'cylinder', center: { x: 0, y: 0, h: 0.5 }, radius: Number.POSITIVE_INFINITY, heightM: 1, sides: 12, material: 'fer-noirci' }] } });

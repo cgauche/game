@@ -24,6 +24,10 @@ export const TARGETS = [
   { schema: common.travelTableEntrySchema, type: 'TravelTableEntry', home: 'src/engine/travelTables.ts' },
   { schema: common.shipCrewTestSchema, type: 'ShipCrewTest', home: 'src/data/shipCriticals.ts' },
   { schema: common.shipCritEntrySchema, type: 'ShipCritEntry', home: 'src/data/shipCriticals.ts' },
+  { schema: common.propDataSchema, type: 'PropData', home: 'src/data/props.types.ts' },
+  { schema: common.propVolumeRecipeSchema, type: 'PropVolumeRecipe', home: 'src/data/props.types.ts' },
+  { schema: common.propPrimitiveSchema, type: 'PropPrimitive', home: 'src/data/props.types.ts' },
+  { schema: common.propSeatSlotSchema, type: 'PropSeatSlot', home: 'src/data/props.types.ts' },
   { schema: critEscalationSchema, type: 'CritEscalation', home: 'src/data/criticals.ts' },
   { schema: amputationSchema, type: 'Amputation', home: 'src/data/criticals.ts' },
 ]

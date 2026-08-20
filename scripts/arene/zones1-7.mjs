@@ -412,7 +412,7 @@ export function makeZone5() {
           { type: 'journal', text: 'Une lance de cavalerie de tournoi — parfaite depuis une selle.' },
         ]),
       }),
-      P(29, 12, 'abreuvoir', { foot: { w: 2, h: 1 } }),
+      P(29, 12, 'abreuvoir'),
       P(30, 3, 'tas-foin'),
       P(4, 13, 'tas-foin'),
     ],
@@ -497,14 +497,14 @@ export function makeZone6() {
       P(5, 9, 'souche'),
       P(24, 13, 'souche'),
       P(7, 14, 'champignon'),
-      P(8, 16, 'cheval-mort', { foot: { w: 2, h: 1 },
+      P(8, 16, 'cheval-mort', {
         label: 'Monture éventrée',
         ...fouille([
           { type: 'giveTrapping', trapping: 'Faxtoryll' },
           { type: 'journal', text: 'Les fontes du cavalier disparu contenaient du faxtoryll — encore sec.' },
         ]),
       }),
-      P(26, 18, 'barque', { foot: { w: 2, h: 1 },
+      P(26, 18, 'barque', {
         label: 'Barque embourbée',
         ...fouille([
           { type: 'giveMoney', silver: 10 },

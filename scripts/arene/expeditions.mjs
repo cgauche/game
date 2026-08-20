@@ -72,10 +72,10 @@ export function makeForet() {
         ]),
       }),
       // Le camp de Bella (cœur du bois, est)
-      P(30, 9, 'tente', { foot: { w: 2, h: 2 }, label: 'Tente de Bella' }),
+      P(30, 9, 'tente', { label: 'Tente de Bella' }),
       P(28, 12, 'feu-camp'),
       P(33, 12, 'tonneaux-pile'),
-      P(27, 10, 'charrette', { foot: { w: 2, h: 1 }, label: 'Butin des convois' }),
+      P(27, 10, 'charrette', { label: 'Butin des convois' }),
       P(34, 8, 'coffre', {
         label: 'Coffre de la bande',
         ...fouille([
@@ -186,7 +186,7 @@ export function makeMarais() {
       P(31, 18, 'arbre-mort'),
       P(8, 21, 'arbre-mort'),
       P(28, 21, 'souche'),
-      P(5, 23, 'barque', { foot: { w: 2, h: 1 },
+      P(5, 23, 'barque', {
         label: 'Barque du tourbier',
         ...fouille([
           { type: 'giveTrapping', trapping: 'Corde' },
@@ -334,8 +334,8 @@ export function makeVillage() {
     entities: [
       hero(2, 21),
       P(7, 9, 'puits', { label: 'LE puits de Felsbach' }),
-      P(10, 8, 'abreuvoir', { foot: { w: 2, h: 1 } }),
-      P(16, 9, 'charrette', { foot: { w: 2, h: 1 }, label: 'Charrette abandonnée' }),
+      P(10, 8, 'abreuvoir'),
+      P(16, 9, 'charrette', { label: 'Charrette abandonnée' }),
       P(19, 5, 'gibet', { label: 'Le gibet du village' }),
       P(13, 13, 'cadavre'),
       P(20, 17, 'cadavre'),
@@ -431,7 +431,7 @@ export function makeEmbuscade() {
     legend: { r: 'route', b: 'bois' },
     entities: [
       hero(3, 8),
-      P(8, 6, 'epave-carrosse', { foot: { w: 2, h: 2 }, label: 'La diligence de Felsbach' }),
+      P(8, 6, 'epave-carrosse', { label: 'La diligence de Felsbach' }),
       P(16, 3, 'buisson'),
       P(22, 10, 'buisson'),
       P(5, 11, 'arbre-mort'),

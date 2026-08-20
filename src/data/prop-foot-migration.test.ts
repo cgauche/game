@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { props, findPropById } from './index';
 import { normalizeScene, emptyScene, type Scene, type SceneEntity } from '../state/scene';
 import { entityBlockedAt } from '../state/sceneRules';
 import { parseProject } from '../state/worldMap';
 import { scenarioEntities } from '../scenes/opera/furnished';
+import type { AreneSceneFactory } from '../../scripts/arene/scenes.d.mts';
 
 /**
  * Empreintes de TYPE portées par le catalogue de décor (`props.json` `foot`), figées à la valeur
@@ -45,7 +46,37 @@ const propFootTable = (): [string, number, number][] =>
   props.filter((p) => p.foot).map((p): [string, number, number] => [p.id, p.foot!.w, p.foot!.h])
     .sort((a, b) => a[0].localeCompare(b[0], 'fr'));
 
-const areneDoc = parseProject(JSON.parse(readFileSync(join(__dirname, '../scenes/arene/arene-projet.json'), 'utf8')));
+const SCENES_DIR = join(__dirname, '../scenes');
+const ARENE_JSON = join(SCENES_DIR, 'arene/arene-projet.json');
+
+/** Tous les `.json` de `src/scenes` (récursif). */
+function sceneJsonFiles(dir = SCENES_DIR, rel = ''): string[] {
+  const out: string[] = [];
+  for (const ent of readdirSync(dir, { withFileTypes: true })) {
+    const relPath = rel ? `${rel}/${ent.name}` : ent.name;
+    if (ent.isDirectory()) out.push(...sceneJsonFiles(join(dir, ent.name), relPath));
+    else if (ent.name.endsWith('.json')) out.push(relPath);
+  }
+  return out;
+}
+
+/** `<fichier>/<scène>/<entité>` pour chaque entité portant un `foot` d'INSTANCE dans un document BRUT. */
+function entitesAvecFoot(doc: unknown, fichier: string): string[] {
+  const scenes: { id?: string; entities?: { id?: string; foot?: unknown }[] }[] = [];
+  (function rec(o: unknown) {
+    if (!o || typeof o !== 'object') return;
+    if (Array.isArray(o)) { o.forEach(rec); return; }
+    const rec_ = o as Record<string, unknown>;
+    if (Array.isArray(rec_.entities)) scenes.push(rec_ as never);
+    for (const k of Object.keys(rec_)) rec(rec_[k]);
+  })(doc);
+  return scenes.flatMap((s) => (s.entities ?? []).filter((e) => e && 'foot' in e).map((e) => `${fichier}/${s.id ?? '?'}/${e.id}`));
+}
+
+const entitesAvecFootDansLesJson = (): string[] =>
+  sceneJsonFiles().flatMap((f) => entitesAvecFoot(JSON.parse(readFileSync(join(SCENES_DIR, f), 'utf8')), f));
+
+const areneDoc = parseProject(JSON.parse(readFileSync(ARENE_JSON, 'utf8')));
 const OPERA = 'opera/furnished';
 const entitiesOf = (scene: string): SceneEntity[] =>
   scene === OPERA ? scenarioEntities : areneDoc.scenes.find((s) => s.id === scene)!.entities;
@@ -130,9 +161,43 @@ describe('migration de l’empreinte : du legacy d’instance au catalogue de ty
     expect(authoredPropFoot(OPERA, 'salon-s-table')).toEqual(['table', 1, 1]);
   });
 
-  it('plus AUCUNE instance authorée ne porte d’empreinte propre', () => {
-    const porteuses = [...areneDoc.scenes.flatMap((s) => s.entities.map((e) => `${s.id}/${e.id}`).filter((_, i) => 'foot' in s.entities[i])),
-      ...scenarioEntities.filter((e) => 'foot' in e).map((e) => `${OPERA}/${e.id}`)];
+  /** Le JSON BRUT, jamais `parseProject`/`normalizeScene` : `stripLegacyFoot` dépouille `foot` au
+   *  chargement, une assertion posée APRÈS lui serait verte sur un fichier sali. */
+  it('plus AUCUNE instance authorée ne porte d’empreinte propre — mesuré sur le JSON BRUT', () => {
+    expect(entitesAvecFootDansLesJson()).toEqual([]);
+    expect(scenarioEntities.filter((e) => 'foot' in e).map((e) => `${OPERA}/${e.id}`)).toEqual([]);
+  });
+
+  it('le verrou MORD : un JSON sali est rapporté (il ne passe pas sous la normalisation)', () => {
+    const sali = JSON.parse(readFileSync(ARENE_JSON, 'utf8'));
+    const hub = sali.scenes.find((s: { id: string }) => s.id === 'arene-hub');
+    hub.entities.find((e: { id: string }) => e.id === 'p8').foot = { w: 9, h: 9 };
+    expect(entitesAvecFoot(sali, 'arene-projet.json')).toEqual(['arene-projet.json/arene-hub/p8']);
+    // et la normalisation, elle, l'aurait effacé : c'est bien le fichier BRUT que ce verrou juge.
+    expect(normalizeScene(hub as Scene).entities.find((e) => e.id === 'p8')).not.toHaveProperty('foot');
+  });
+});
+
+/**
+ * `arene-projet.json` est GÉNÉRÉ (`scripts/arene/generate.mjs`) : purger le JSON sans purger ses
+ * call-sites laisserait la prochaine régénération ré-émettre les empreintes d'instance. Ce verrou
+ * juge la SOURCE, en appelant les fabriques de scène du générateur.
+ */
+describe('générateur de l’Arène — aucune fabrique ne pose d’empreinte d’instance', () => {
+  it('les 18 scènes produites par les fabriques ne portent AUCUN `foot` d’entité', async () => {
+    const [hub, zones1a7, zones8a13, expeditions] = await Promise.all([
+      import('../../scripts/arene/hub.mjs'),
+      import('../../scripts/arene/zones1-7.mjs'),
+      import('../../scripts/arene/zones8-13.mjs'),
+      import('../../scripts/arene/expeditions.mjs'),
+    ]);
+    const fabriques: [string, AreneSceneFactory][] = [hub, zones1a7, zones8a13, expeditions]
+      .flatMap((m) => Object.entries(m).filter(([nom]) => nom.startsWith('make')) as [string, AreneSceneFactory][]);
+    expect(fabriques).toHaveLength(18); // 1 hub + 13 zones + 4 expéditions = les 18 scènes du projet
+    const porteuses: string[] = [];
+    for (const [nom, fabrique] of fabriques) {
+      for (const e of fabrique().entities ?? []) if ('foot' in e) porteuses.push(`${nom}/${e.id}`);
+    }
     expect(porteuses).toEqual([]);
   });
 });

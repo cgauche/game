@@ -507,7 +507,7 @@ export function makeHub() {
         merchant: { archetype: 'medecin' },
         appearance: { species: 'humains-reiklander', tenue: 'apothicaire', sex: 'M', build: 0.46 },
       }),
-      P(27, 14, 'tente', { foot: { w: 2, h: 2 }, label: 'Infirmerie' }),
+      P(27, 14, 'tente', { label: 'Infirmerie' }),
       // Coin entraînement (herbe, ouest de la place)
       P(15, 20, 'mannequin'),
       P(15, 22, 'rack-lances'),
