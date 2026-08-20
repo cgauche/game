@@ -92,7 +92,7 @@ const C1: CareerLevelData[] = [
   },
 ];
 
-describe('disponibilité par niveaux (LDB 07 l.67/78/100)', () => {
+describe('disponibilité par niveaux (LDB 07 l.43/76/103)', () => {
   it('skillSlots : cumul des niveaux ≤ courant ; talentSlots : niveau courant seul', () => {
     expect(skillSlots(C1, 1).map((s) => s.entry)).toEqual(['Charme', 'Savoir (Au choix)']);
     expect(skillSlots(C1, 2).map((s) => s.entry)).toEqual(['Charme', 'Savoir (Au choix)', 'Ragot', 'Savoir (Au choix)']);

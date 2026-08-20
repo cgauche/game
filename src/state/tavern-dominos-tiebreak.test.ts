@@ -1,6 +1,6 @@
 /**
  * LES DOMINOS par le SOCLE DE SÉQUENCE (#1279) — et son départage d'égalité CONTRE-INTUITIF, verbatim
- * NADJ 16 l.107 : « pour jouer, chaque joueur effectue un Test opposé de Pari Accessible (+20). En cas
+ * NADJ 16 l.105 : « pour jouer, chaque joueur effectue un Test opposé de Pari Accessible (+20). En cas
  * d'égalité, les joueurs comparent le résultat de leur dé d'unités pour ce Test. Celui qui a le nombre
  * le plus bas gagne. »
  *
@@ -51,7 +51,7 @@ function doneRound(actorId: string, playerRoll: number, opponentRoll: number, sl
   return { title: 't', purpose: 'sequence', participants: [step], cursor: 1, log: [] };
 }
 
-describe('Les dominos — départage d’égalité au dé d’unités (NADJ 16 l.107)', () => {
+describe('Les dominos — départage d’égalité au dé d’unités (NADJ 16 l.105)', () => {
   beforeEach(() => {
     useGame.setState({ battle: null, party: [], journal: [], tavernGames: null, pendingCascade: null, sequence: null });
     seedBattleRng(3);

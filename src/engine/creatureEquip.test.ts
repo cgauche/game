@@ -196,7 +196,7 @@ describe('armement — la projection catalogue → arme est UNE, quel que soit l
     const nu = { plusBF: true, flat: 0, bare: true };
     expect(weaponFromId('lasso')!.damage).toEqual(nu);
     expect(parPossession('lasso')!.damage).toEqual(nu);
-    // Canal TRAIT : l'Indice IMPRIMÉ du statbloc prime (LDB 85 l.338) — il n'y a rien à replier.
+    // Canal TRAIT : l'Indice IMPRIMÉ du statbloc prime (LDB 85 l.9) — il n'y a rien à replier.
     expect(weaponFromTrait(t({ id: 'a-distance', arg: 'lasso', value: 4 }))!.damage).toEqual({ plusBF: false, flat: 4 });
   });
 

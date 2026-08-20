@@ -1,7 +1,7 @@
 /**
  * LE CEREVIS (#1279 S3) — la famille (9) du socle : UN SEUL DÉ, DEUX LECTURES, chacune sa conséquence.
  *
- * Verbatim `NADJ 16 l.97` : « à chaque tour de Cerevis, chaque joueur effectue un Test combiné
+ * Verbatim `NADJ 16 l.90` : « à chaque tour de Cerevis, chaque joueur effectue un Test combiné
  * d'**Initiative** et de **Pari Accessible (+20)**. Le joueur qui a obtenu le moins de DR à son Test
  * de **Pari** perd le tour, et doit marquer une chouette. En cas d'échec du Test d'Initiative, le
  * joueur utilise accidentellement le nom correct d'une des cartes et doit prendre une grosse gorgée.
@@ -92,7 +92,7 @@ describe('Le Cerevis — la donnée porte la règle, et dit ce qui est maison', 
     expect(CEREVIS.combined?.eraseEvery, '« pour chaque 2 chouettes que vous effacez »').toBe(2);
     expect(CEREVIS.combined?.markLoser, '« Le joueur qui a obtenu le moins de DR […] doit marquer une chouette »').toBe(true);
     expect(CEREVIS.combined?.ops, 'le Tableau Ivre passe par l’op qui le porte (LDB 09 l.475)').toEqual([{ op: 'intoxicate' }]);
-    // `NADJ 16 l.97` s'achève sur le Tableau Ivre : aucune fin de partie n'y est écrite. Le nombre
+    // `NADJ 16 l.90` s'achève sur le Tableau Ivre : aucune fin de partie n'y est écrite. Le nombre
     // de tours vit donc en DONNÉE éditable, et ce test mesure qu'il y vit.
     expect(CEREVIS.combined?.tours, 'nombre de tours = donnée maison, jamais du RAW').toBe(6);
   });

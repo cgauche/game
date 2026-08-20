@@ -214,7 +214,7 @@ Express, L'Express impérial (Nuln), Diligences du Tunnel (Talabheim).
 
 ### Tableau des allures (Mouvement en mètres/tour)
 
-**Source :** EDOC 07 l.118-130
+**Source :** EDOC 07 l.115-130
 
 | Animal | M | Pas (m) | Trot (m) | Petit galop (m) |
 |---|:--:|:--:|:--:|:--:|
@@ -229,7 +229,7 @@ Express, L'Express impérial (Nuln), Diligences du Tunnel (Talabheim).
 
 ### Vitesse de voyage des montures
 
-**Source :** EDOC 07 l.139-140
+**Source :** EDOC 07 l.138-140
 
 > « Chaque point de Mouvement équivaut à **1,5 km par heure au pas**, **2,5 km par heure au trot**,
 > et **3 km par heure au galop**. »
@@ -258,7 +258,7 @@ Au-delà de la limite :
 
 ### Tableau des Incidents de Monte (1d100)
 
-**Source :** EDOC 07 l.151-156
+**Source :** EDOC 07 l.150-155
 
 | 1d100 | Incident |
 |:---:|---|
@@ -268,13 +268,13 @@ Au-delà de la limite :
 | 99–00 | Patte (Jambe) brisée |
 
 **Boiteux** : max ½ vitesse de marche ; impossible d'être monté, portée ou tirée. Prolonger le
-trajet augmente la durée d'une Étape. EDOC 07 l.158-160.
+trajet augmente la durée d'une Étape. EDOC 07 l.157-159.
 
 **Patte brisée** : Fracture (Majeure) + immobilisation. M divisé par 2 si guérison. EDOC 07
 l.145-147.
 
 **Perte d'un fer** : Test **Chevaucher Complexe (-10)** ou chute (2 m). Déplacement au pas jusqu'au
-maréchal-ferrant. EDOC 07 l.166-168.
+maréchal-ferrant. EDOC 07 l.165-167.
 
 **Sangle cassée** : Test **Chevaucher Complexe (-10)** ou chute (2 m). −20 à tous futurs Tests
 Chevaucher jusqu'à réparation. EDOC 07 l.171-174.
@@ -349,7 +349,7 @@ Course forcée (galop en tirant) :
 
 ### Tableau des Problèmes de Véhicule (1d100)
 
-**Source :** EDOC 07 l.286-288
+**Source :** EDOC 07 l.257-264
 
 | 1d100 | Résultat |
 |:---:|---|
@@ -359,17 +359,17 @@ Course forcée (galop en tirant) :
 | 96–00 | Accident |
 
 **Incontrôlable** : rênes cassées, pas de contrôle ; collision en 1d10 rounds si pas maîtrisé →
-Endommagé (pas) ou Accident (plus vite). EDOC 07 l.283-286.
+Endommagé (pas) ou Accident (plus vite). EDOC 07 l.282-286.
 
 **Endommagé** : ne peut rouler qu'au pas jusqu'à réparation (Métier Charpentier/Charron). Si forcé
-plus vite : Cassé après 1d10 rounds. EDOC 07 l.272-280.
+plus vite : Cassé après 1d10 rounds. EDOC 07 l.278-280.
 
 **Cassé** : harnais/roue/essieu brisé. Véhicule immobilisé. Conducteur : Test **Athlétisme
 Intermédiaire (+0)** pour ne pas être arraché ; échec = chute (+ éventuellement Traîné au sol).
-EDOC 07 l.297-299.
+EDOC 07 l.270-276.
 
 **Accident** : collision violente. Occupants : 2d10 Blessures (−BE, −PA, min 1). Véhicule : 2d10
-Blessures (−BE, min 1). Réparation obligatoire avant usage. EDOC 07 l.291-292.
+Blessures (−BE, min 1). Réparation obligatoire avant usage. EDOC 07 l.266-268.
 
 ---
 
@@ -435,7 +435,7 @@ symbole à 8 pointes du Chaos). Certains MJ préfèrent 1 événement par voyage
 
 ### Nombre d'Étapes
 
-**Source :** EDOC 08 l.8-19
+**Source :** EDOC 08 l.21-27+40
 
 - Déterminé par le MJ ; courts voyages = 1 Étape, villes importantes = 2-4, très longs = davantage.
 - **M ≤ 3** du plus lent → +1-2 Étapes.
@@ -445,7 +445,7 @@ symbole à 8 pointes du Chaos). Certains MJ préfèrent 1 événement par voyage
 
 ### Météo par Étape
 
-**Source :** EDOC 08 l.53-62 (verbatim du tableau + effets l.55-94)
+**Source :** EDOC 08 l.50-59 (verbatim du tableau + effets l.62-127)
 
 Jet au début de chaque Étape (d100) :
 
@@ -458,7 +458,7 @@ Jet au début de chaque Étape (d100) :
 | Neige | 96–00 | — | 99–00 | 66–90 |
 | Blizzard | — | — | — | 91–00 |
 
-Ajustements : régions plus au nord → +10 à +30 ; plus au sud → −10 à −30. EDOC 08 l.64.
+Ajustements : régions plus au nord → +10 à +30 ; plus au sud → −10 à −30. EDOC 08 l.62.
 
 **Effets météo :**
 
@@ -516,7 +516,7 @@ commun** (EDOC 08 l.110-122).
 
 ### Provisions en voyage
 
-**Source :** EDOC 08 l.45-46
+**Source :** EDOC 08 l.46
 
 > « Les Personnages et leurs montures consomment **1 Encombrement en nourriture par jour**, pour un
 > coût de 2/–. »

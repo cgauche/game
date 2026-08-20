@@ -91,11 +91,11 @@ export interface SequenceParams {
   scoreThreshold?: number;
   /** (5) Mise, pot, abandon, élimination (Al-zahr NADJ 16 l.17). */
   pot?: SequencePotRules;
-  /** (7) Volée de lancers (Bête NADJ 16 l.42, Arène l.65, Fléchettes l.83, Boules l.57). */
+  /** (7) Volée de lancers (Bête NADJ 16 l.42, Arène l.70, Fléchettes l.97, Boules l.57). */
   volley?: SequenceVolleyRules;
-  /** (8) Camps asymétriques (Alvatafl NADJ 16 l.27-28). */
+  /** (8) Camps asymétriques (Alvatafl NADJ 16 l.25-28). */
   sides?: readonly SequenceSide[];
-  /** (9) Test combiné à conséquences distinctes (Cerevis NADJ 16 l.97). */
+  /** (9) Test combiné à conséquences distinctes (Cerevis NADJ 16 l.90). */
   combined?: SequenceCombinedRules;
   /** (10) Sanction du lanceur qui MANQUE (Torchon NADJ 16 l.111). */
   throwerPenalty?: SequenceThrowerPenalty;

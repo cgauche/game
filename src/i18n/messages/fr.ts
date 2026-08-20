@@ -499,7 +499,7 @@ export const fr = {
   'out.activityDone': '{name} — {activity} (effectué).',
   // Rencontre d'Étape (EDOC 8) : catégorie + libellé + texte VERBATIM, sans id d'icône dans la prose.
   'out.travelEncounter': '{category} — {label} : {text}',
-  // Météo d'Étape (EDOC 8 l.42) : libellé seul — le d100 est un tirage de MONDE, jamais montré au joueur.
+  // Météo d'Étape (EDOC 8 l.50) : libellé seul — le d100 est un tirage de MONDE, jamais montré au joueur.
   'out.stageWeather': 'Météo : {weather}.',
   // Passthrough narratif générique (#295 Lot 1) : `text` est COMPOSÉ par l'applier (jamais un gabarit avec
   // {roll}/{target}/{sl} — la ligne de jet visible au-dessus porte déjà le verdict).
@@ -1101,7 +1101,7 @@ export const fr = {
   'tavern.volleyGain': '{who} marque {gain}.',
   'tavern.volleyGainChoix': '{who} — combien marquez-vous ?',
   'tavern.volleyPoints': '{n}',
-  // Unité du compteur de la SAISIE de gain libre (NADJ 16 l.83) — ce qui se compte, au pluriel.
+  // Unité du compteur de la SAISIE de gain libre (NADJ 16 l.97) — ce qui se compte, au pluriel.
   'tavern.volleyUnitePoints': 'points',
   // RÉGIME RAPIDE actif (NADJ 16 l.9-11) : la règle affichée sous ce texte est le verbatim de la
   // source, et elle décrit ce que le régime rapide ne joue pas. La fenêtre le DIT.
@@ -1132,7 +1132,7 @@ export const fr = {
   'tavern.cerevisNote': 'le moins de chouettes l’emporte',
   'tavern.cerevisFinal': '{mien} chouette(s) contre {sien} en {tours} tour(s).',
 
-  // ── Météo d'Étape (EDOC 8 l.44-51) — migré de `engine/travelStages.ts` (WEATHER_LABEL), Phase B. ──
+  // ── Météo d'Étape (EDOC 8 l.50-59) ──
   'weather.sec': 'Temps sec',
   'weather.beau': 'Beau temps',
   'weather.pluie': 'Pluie',

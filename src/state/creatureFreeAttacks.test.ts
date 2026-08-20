@@ -58,7 +58,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBeLessThan(2);
   });
 
-  it('Attaque caudale : cible de Taille INFÉRIEURE qui perd des PB → À Terre (LDB 85 l.338)', () => {
+  it('Attaque caudale : cible de Taille INFÉRIEURE qui perd des PB → À Terre (LDB 85 l.47)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.traits = [{ id: 'attaque-caudale', value: 14 }]; E.advantage = 1;
@@ -180,7 +180,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // 2 − 2
   });
 
-  it('« 8 Tentacules +9 » : 8 Attaques gratuites à coût 0, Empêtré sur Dégâts, Avantage non consommé (LDB 85 l.354-355)', () => {
+  it('« 8 Tentacules +9 » : 8 Attaques gratuites à coût 0, Empêtré sur Dégâts, Avantage non consommé (LDB 85 l.405)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.traits = [{ id: 'tentacules', count: 8, value: 9 }]; E.advantage = 0; E.characteristics['capacite-de-combat'] = 95; // coût 0 : pas besoin d'Avantage

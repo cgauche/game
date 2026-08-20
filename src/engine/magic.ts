@@ -174,7 +174,7 @@ export function priestCult(c: Combatant): string | undefined {
   return undefined;
 }
 
-/** VERROU de Péché du culte (MDG 11 l.142 : « Stromfels retire à un suivant la capacité d'utiliser le
+/** VERROU de Péché du culte (MDG 11 l.148 : « Stromfels retire à un suivant la capacité d'utiliser le
  *  Talent *Invocation* s'il possède au moins deux Points de Péché et celle d'utiliser le Talent *Béni*
  *  s'il possède au moins cinq Points de Péché ») — GÉNÉRIQUE : lit `GodData.sinLocks` du culte du
  *  prêtre (par famille de la Prière tentée). Renvoie le seuil franchi (message de refus), sinon null. */

@@ -617,7 +617,7 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
     expect(injuryOf('m1')).toBe('patte-brisee'); // …et n'ont rien pu pour celle-ci (`notHealedByCare`)
   });
 
-  it('chute de selle (Dégâts de Chute, EDOC 07 l.166/l.171) : le héros encaisse ET `party` est FLUSHÉ (nouvelle référence, re-rendu HUD/fiche)', () => {
+  it('chute de selle (Dégâts de Chute, EDOC 07 l.167/l.174) : le héros encaisse ET `party` est FLUSHÉ (nouvelle référence, re-rendu HUD/fiche)', () => {
     setRule('travel-allures', true);
     // Chien M4/BE2 au galop sur 80 km : Incidents de monte garantis ; on cherche une graine qui produit
     // une chute de selle (Sangle cassée/Perte d'un fer ratée, l.166/l.171) sans tuer/estropier la bête

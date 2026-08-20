@@ -11,7 +11,7 @@ import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
 // ---------------------------------------------------------------------------
-// Tentacule épais (LDB 19) → trait Tentacules (LDB 85 l.354) : arme naturelle +
+// Tentacule épais (LDB 19) → trait Tentacules (LDB 85 l.405) : arme naturelle +
 // Attaque GRATUITE 1/tour (Empêtré sur Dégâts). Cornes asymétriques → Arme de
 // Créature (Dégâts = Bonus de Force, LDB 85 p.338).
 // ---------------------------------------------------------------------------
@@ -100,7 +100,7 @@ describe('Attaque gratuite de Tentacule (store)', () => {
     expect(st.battle!.acted).toBe(false); // GRATUITE : l'Action reste disponible
     expect(h2.freeAttacksThisTurn?.tentacules).toBe(1); // consommée pour ce tour (compteur 1/tour)
     expect(e2.wounds.current).toBeLessThan(before); // CC 95 vs Mutant : touche déterministe (seed 2)
-    expect(hasCondition(e2, 'empetre')).toBe(true); // LDB 85 l.354 : Dégâts → Empêtré (État keyé par id stable)
+    expect(hasCondition(e2, 'empetre')).toBe(true); // LDB 85 l.405 : Dégâts → Empêtré (État keyé par id stable)
     // 2ᵉ tentative le même tour : la mutation Tentacule n'est PLUS dans la liste d'attaques (1/tour).
     expect(availableAttacks(h2, st.battle!).some((o) => o.id === 'tentacule')).toBe(false);
   });

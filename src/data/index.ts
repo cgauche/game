@@ -410,7 +410,7 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
   mutationTables: (id) => mutationTables.some((t) => t.id === id),
   interludeEvents: (id) => interludeEvents.some((e) => e.id === id),
   // Un jeu de taverne PORTE sa règle (sa fiche Codex la recopie verbatim) : c'est le foyer des effets
-  // qu'une partie inflige (l'ivresse d'un jeu à boire, NADJ 16 l.97).
+  // qu'une partie inflige (l'ivresse d'un jeu à boire, NADJ 16 l.90).
   tavernGames: (id) => (tavernGamesJson as { id: string }[]).some((g) => g.id === id),
   // Catégories atteignables par l'ENTITÉ SOURCE d'un effet (`CATEGORY_BY_SOURCE_KIND`, engine/types) —
   // la table est TOTALE côté source, donc le pool l'est aussi : sans elles, un jet exigé par un objet
@@ -844,7 +844,7 @@ export function specEntryLabel(e: SpecEntry): string {
  *  `diseases` (Maladie — `maladies.json`), `sizes` (catégorie de Taille — `engine/size`), `mutations`
  *  (Mutation — `mutations.json`), `breathTypes` (Type de Souffle — `breath-types.json`), `damageTypes`
  *  (Immunité aux Dégâts — `damage-types.json`, matché aussi par `unlessImmune` des Flows), `weaponsMelee`/
- *  `weaponsRanged` (Arme / À distance, LDB 85 l.338 — `arg` = une arme PRÉCISE du catalogue `trappings`
+ *  `weaponsRanged` (Arme / À distance, LDB 85 l.33/9 — `arg` = une arme PRÉCISE du catalogue `trappings`
  *  filtrée par `type`, `specsOpen` car ces traits acceptent aussi une attaque naturelle/générique hors
  *  catalogue). Absent = specs inline (`SpecEntry[]`). */
 export type SpecsSource =
@@ -1877,7 +1877,7 @@ export interface DomainData {
   source?: SourceRef;
   /** Emplacements SECONDAIRES du même Domaine — republication à l'identique (doctrine « UNE entité,
    *  N livres ») : l'attribut du Domaine de la Lumière est reparu tel quel dans les Vents de Magie
-   *  (`VDM 04 l.251-257`, folio 62). L'ancre `source` reste seule à porter la `desc`. */
+   *  (`VDM 04 l.252-260`, folio 62). L'ancre `source` reste seule à porter la `desc`. */
   alsoIn?: SecondaryRef[];
   /** Vent de Magie (Couleur) du Domaine, EXTRAIT du `desc` (« Domaine du Feu (Aqshy) », LDB 48) — source
    *  d'AFFICHAGE de la Compétence Focalisation (spécialisée par Vent) et clé de `findDomainByWind`. Les 8
@@ -2639,7 +2639,7 @@ export interface GodData {
   chaosSpells?: Ref[];
   desc?: string;
   source?: SourceRef;
-  /** VERROU de Péché du culte (MDG 11 l.142, Stromfels : « retire à un suivant la capacité d'utiliser le
+  /** VERROU de Péché du culte (MDG 11 l.148, Stromfels : « retire à un suivant la capacité d'utiliser le
    *  Talent *Invocation* s'il possède au moins deux Points de Péché et celle d'utiliser le Talent *Béni*
    *  s'il possède au moins cinq Points de Péché ») — seuil de Points de Péché à partir duquel le dieu
    *  RETIRE l'usage du Talent de Prière (clé = famille d'incantation). GÉNÉRIQUE : aucun culte LDB n'en

@@ -4,7 +4,7 @@ import { findGodById } from '../data';
 import type { Combatant } from './types';
 
 /**
- * VERROU de Péché des cultes (MDG 11 l.142, verbatim) : « Stromfels retire à un suivant la capacité
+ * VERROU de Péché des cultes (MDG 11 l.148, verbatim) : « Stromfels retire à un suivant la capacité
  * d'utiliser le Talent *Invocation* s'il possède au moins deux Points de Péché et celle d'utiliser le
  * Talent *Béni* s'il possède au moins cinq Points de Péché. » — champ GÉNÉRIQUE `GodData.sinLocks`
  * (aucun culte LDB n'en porte : LDB 40 ne connaît que la Colère au dé des unités), consommé par le
@@ -22,7 +22,7 @@ const miracle: SpellLike = { label: 'Lame de fond', type: 'Miracle', cn: null, d
 const blessing: SpellLike = { label: 'Bénédiction de Bataille', type: 'Bénédiction', cn: null, desc: '', family: 'beni' };
 const arcane: SpellLike = { label: 'Trait', type: 'Sort', cn: 0, desc: '', family: 'arcane' };
 
-describe('Gating Péché des cultes (MDG 11 l.142 — Stromfels, GodData.sinLocks)', () => {
+describe('Gating Péché des cultes (MDG 11 l.148 — Stromfels, GodData.sinLocks)', () => {
   it('la donnée Stromfels porte le verrou RAW : Invocation ≥ 2, Béni ≥ 5', () => {
     expect(findGodById('stromfels')?.sinLocks).toEqual({ invocation: 2, beni: 5 });
   });

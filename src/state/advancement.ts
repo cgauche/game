@@ -190,7 +190,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     skillSlotsOpen.push({ slotKey: slot.key, entry: slot.entry, group: o.label, groupId: o.optionId, characteristic, options, nextCost: advanceCost(0, 'skill', true) });
   }
 
-  // Talents : un rang par EMPLACEMENT du niveau courant (LDB 07 l.100).
+  // Talents : un rang par EMPLACEMENT du niveau courant (LDB 07 l.103).
   const talents: TalentSlotRow[] = tSlots.map((slot) => {
     let ref: { id: string; spec?: string } | null;
     if (slot.needsChoice) {

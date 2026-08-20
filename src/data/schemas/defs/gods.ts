@@ -23,7 +23,7 @@ export const schema = z.array(
     chaosSpells: z.array(refSchema).optional(),
     desc: z.string().optional(),
     source: sourceRefSchema.optional(),
-    /** VERROU de Péché (MDG 11 l.142, Stromfels) : seuil de Points de Péché retirant l'usage du
+    /** VERROU de Péché (MDG 11 l.148, Stromfels) : seuil de Points de Péché retirant l'usage du
      *  Talent de Prière (Béni/Invocation). 1/41 dieu observé (Stromfels). */
     sinLocks: z.strictObject({ beni: z.number().optional(), invocation: z.number().optional() }).optional(),
   }),

@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 95 traités par une fiche · 📖 78 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 175 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3440 section(s) non couvertes par une fiche : **632 transcrite(s) en catalogue** (recopiées, pas traitées) · **2363 hors-règle** (chapitre explicitement exclu) · **159 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **286 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅9·📖4·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 95 traités par une fiche · 📖 78 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 175 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3444 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2363 hors-règle** (chapitre explicitement exclu) · **159 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **287 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅9·📖4·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -818,12 +818,16 @@
   - 📖 l.192-205 « Chaises à porteurs » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.206-214 « ACCROCHE D'AVENTURE LA FOLIE DE LA MODE » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.215-224 « Litières » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.288-291 « COMBAT MONTÉ » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.292-295 « Localisations des Coups » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.296-311 « ATTAQUES SUR DES QUADRUPÈDES » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.312-315 « Attaques sur les Véhicules » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.316-325 « SOINS AUX ANIMAUX BLESSÉS » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.326-348 « ON NE S'ARRÊTE PAS ! » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.349-356 « RÉPARATION DES VÉHICULES » — transcrit en catalogue, jamais traité, 0 réf
 - **EDOC 08** (CHAPITRE 5 - Voyager) :
-  - ⬜ l.21-30 « ÉTAPES DU VOYAGE » — candidat trou de règle, 0 réf
+  - ⬜ l.3-10 « CHAPITRE 5 : VOYAGER » — candidat trou de règle, 0 réf
+  - ⬜ l.11-20 « DESTINATIONS ET DIRECTIONS » — candidat trou de règle, 0 réf
   - ⬜ l.31-35 « OPTIONS : TOUT EST OPTIONNEL, NE L'OUBLIEZ PAS ! » — candidat trou de règle, 0 réf
   - ⬜ l.36-43 « LA DISTANCE JUSQU'À… ? » — candidat trou de règle, 0 réf
   - ⬜ l.70-87 « Beau temps » — candidat trou de règle, 0 réf

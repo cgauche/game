@@ -1454,7 +1454,7 @@ describe('Avancement par PX (store) — câblage moteur', () => {
     expect(h0().xp).toBe(1000); // gratuit
     useGame.getState().buyTalent('h', 'savoir-vivre', 'criminels');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Criminels)')!.times).toBe(2);
-    expect(h0().xp).toBe(800); // 2ᵉ acquisition = 200 PX (LDB 07 l.102)
+    expect(h0().xp).toBe(800); // 2ᵉ acquisition = 200 PX (LDB 07 l.105)
     // Le slot étant désigné, une AUTRE spec est hors carrière → refusée (l.97).
     useGame.getState().buyTalent('h', 'savoir-vivre', 'nobles');
     expect(h0().talents.find((t) => talentConcrete(t) === 'Savoir-vivre (Nobles)')).toBeUndefined();

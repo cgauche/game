@@ -90,7 +90,7 @@ export interface TravelRecapDay {
   /** MER (route COMMANDÉE) : instantané du jour pour l'écran de traversée (rose des vents + jauges +
    *  distance restante) — rendu par `SeaVoyageScreen` à la place du corps de recap terrestre. */
   sea?: import('./seaVoyageFlow').SeaRecapChrome;
-  /** MÉTÉO d'Étape (EDOC 8 l.42) = CONTEXTE DU JOUR (arbitrage user 2026-07-11 : « elle doit juste
+  /** MÉTÉO d'Étape (EDOC 8 l.50) = CONTEXTE DU JOUR (arbitrage user 2026-07-11 : « elle doit juste
    *  s'afficher dans un écart lié à la journée », plus de pas de cascade). `id` = météo affichée
    *  (en-tête « Journée de route — … — {météo} » + tuile Météo, vague 2) ; `roll` = d100 INTERNE (debug/
    *  tests ; « y'a que le MJ qui voit le jet de météo » → jamais montré au joueur). */
@@ -136,7 +136,7 @@ export interface TravelPlan {
   /** Allure EDOC (règle `travel-allures`) : en selle = pas/trot/galop (EDOC 07 l.140-144) ; sur un
    *  attelage, `'galop'` = allure forcée (EDOC 07 l.229). Absent = cadence de base. */
   allure?: Allure;
-  /** Attelage « Endommagé » (Problème de véhicule) : au pas jusqu'à réparation (EDOC 07 l.272-280). */
+  /** Attelage « Endommagé » (Problème de véhicule) : au pas jusqu'à réparation (EDOC 07 l.278-280). */
   vehicleLame?: boolean;
   km: number;
   kmDone: number;
@@ -584,7 +584,7 @@ export function continueTravelAfterNight(get: Get, set: Set): void {
   runTravelDays(get, set);
 }
 
-/** Saison courante (table de Météo EDOC 8 l.44) depuis l'horloge du jeu. */
+/** Saison courante (table de Météo EDOC 8 l.52) depuis l'horloge du jeu. */
 function currentSeason(get: Get): Season {
   return seasonOfMonth(toDate(get().gameTime).month);
 }
@@ -893,7 +893,7 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
           text: inc.riderTest.success ? t('tf.staysInSaddle') : t('tf.fallsOff'), tone: inc.riderTest.success ? 'ok' : 'bad',
         });
       }
-      // Chute de selle (2 mètres, EDOC 07 l.166/l.171) — Dégâts de Chute (LDB 15) via la brique partagée.
+      // Chute de selle (2 mètres, EDOC 07 l.167/l.174) — Dégâts de Chute (LDB 15) via la brique partagée.
       if (inc.riderFallM) { applyFall(o.mount.hero, inc.riderFallM, battleRng()); fell = true; }
       if (inc.injury) injuries.set(o.mount.possession.uid, inc.injury);
     }
@@ -935,7 +935,7 @@ interface ForcedPaceDayResult {
   entries: NonNullable<TravelRecapDay['entries']>;
   /** Cassé/Accident ou coque à 0 Blessure : véhicule hors d'usage. */
   vehicleOut: boolean;
-  /** Endommagé : au pas jusqu'à réparation (EDOC 07 l.272-280). */
+  /** Endommagé : au pas jusqu'à réparation (EDOC 07 l.278-280). */
   vehicleLame: boolean;
 }
 
@@ -1201,8 +1201,8 @@ registerCascadeApplier('landForcedPaceControl', (get, set, step, hero) => {
 });
 
 /**
- * Soins de l'ARRIVÉE au relais : le maréchal-ferrant remplace le fer (EDOC 07 l.166), la sellerie est
- * réparée (l.174), la bête boiteuse est laissée aux bons soins de l'étape. EDOC 07 l.166/174 — silence
+ * Soins de l'ARRIVÉE au relais : le maréchal-ferrant remplace le fer (EDOC 07 l.167), la sellerie est
+ * réparée (l.174), la bête boiteuse est laissée aux bons soins de l'étape. EDOC 07 l.167/174 — silence
  * sur coût/durée, valeur maison : on les résout gratuitement à l'arrivée (Patte brisée, elle, a coûté
  * la bête en route).
  */

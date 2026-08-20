@@ -1,6 +1,6 @@
 /**
  * Montures en VOYAGE (EDOC 7 « Montures et véhicules ») — moteur PUR, données `src/data/montures.json`
- * (table « Mouvement pour les montures » + Endurance des profils, verbatim EDOC 07 l.17-96 et l.119-130).
+ * (table « Mouvement pour les montures » + Endurance des profils, verbatim EDOC 07 l.13-93 et l.121-130).
  *
  * RAW modélisé :
  *  - Vitesse de voyage (EDOC 07 l.140) : « Chaque point de Mouvement équivaut à un 1,5 km par heure au
@@ -51,7 +51,7 @@ export interface MountProfile {
   creatureIds: string[];
   /** Mouvement (EDOC 07 l.121-130). */
   m: number;
-  /** Endurance du profil (EDOC 07 l.17-96) — le Bonus en dérive. */
+  /** Endurance du profil (EDOC 07 l.13-93) — le Bonus en dérive. */
   e: number;
   /** La bête trotte-t-elle ? (colonne Trot « - » pour chien/poney/trait/bœuf, l.121-130). */
   trot: boolean;

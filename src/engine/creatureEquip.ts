@@ -47,7 +47,7 @@ function catalogItem(arg: string | undefined, source: 'weaponsMelee' | 'weaponsR
 /**
  * Arme de créature dérivée d'une Possession de CATALOGUE : la projection UNIQUE `weaponFromItem`
  * (engine/items) porte TOUT le profil — le STATBLOC ne surcharge que ce qu'il IMPRIME, l'Indice de
- * Dégâts et la Portée du trait (LDB 85 l.338). `reload` DÉRIVE de la Qualité Recharge (LDB 62 l.333)
+ * Dégâts et la Portée du trait (LDB 85 l.9). `reload` DÉRIVE de la Qualité Recharge (LDB 62 l.333)
  * dans la projection : l'armement de créature étant en Traits, sans qualité portée, une arbalète de
  * bestiaire n'aurait sinon aucun défaut Recharge.
  */
@@ -97,7 +97,7 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
   }
   // Attaque naturelle TYPÉE (Morsure, Cornes, Tentacules…) : reconnue par la CAPACITÉ du trait
   // (`capabilities.naturalWeapon`, donnée). L'arme reste UNE (l'Action d'attaque) ; le compte joue sur
-  // les Attaques GRATUITES (aiCreatureFreeAttacks, LDB 85 l.354). `natural` → aucune arme tenue dessinée.
+  // les Attaques GRATUITES (aiCreatureFreeAttacks, LDB 85 l.405). `natural` → aucune arme tenue dessinée.
   // `attackKind = t.id` (l'id du trait EST le kind : morsure/cornes/tentacules) → la pose/anim route par
   // ce champ STABLE (handlingClass), jamais par le libellé.
   const nat = findTraitById(t.id)?.capabilities?.naturalWeapon;

@@ -4039,7 +4039,7 @@ export function castSpell(
     castRefused(get, set, caster, tr(castInfoIsPrayer(spell) ? 'cf.cannotPray' : 'cf.cannotCast', { name: caster.label, reason: blocked }));
     return;
   }
-  // Verrou de Péché du culte (MDG 11 l.142 — Stromfels : Invocation retirée à 2 Péchés, Béni à 5) —
+  // Verrou de Péché du culte (MDG 11 l.148 — Stromfels : Invocation retirée à 2 Péchés, Béni à 5) —
   // lu en DONNÉE (`GodData.sinLocks`), générique à tout culte qui en porterait.
   const sinLock = prayerSinLock(caster, spell);
   if (sinLock) {
@@ -4418,7 +4418,7 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
     castRefused(get, set, caster, tr(castInfoIsPrayer(spell) ? 'cf.cannotPray' : 'cf.cannotCast', { name: caster.label, reason: blocked }));
     return true; // c'était bien une zone — l'entrée est consommée (refus signalé)
   }
-  // Verrou de Péché du culte (MDG 11 l.142) — même gate que `castSpell` (les miracles à ZdE passent ici).
+  // Verrou de Péché du culte (MDG 11 l.148) — même gate que `castSpell` (les miracles à ZdE passent ici).
   const sinLock = prayerSinLock(caster, spell);
   if (sinLock) {
     castRefused(get, set, caster, tr('cf.sinLock', { cult: sinLock.cult, name: caster.label, talent: tr(sinLock.family === 'beni' ? 'cf.talentBeni' : 'cf.talentInvocation'), sin: String(caster.sinPoints ?? 0), threshold: String(sinLock.threshold) }));

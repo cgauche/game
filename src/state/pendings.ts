@@ -1371,7 +1371,7 @@ export type CascadeAggregate = 'best' | 'opposed' | 'summed-dr' | 'none';
  * `result` — l'issue est ÉVALUÉE (`secondReadOf`, `state/cascade.ts`, via `evaluateCombinedTest`).
  *
  * GÉNÉRIQUE : toute étape/rangée dont un dé unique tranche deux valeurs (le Cerevis en hérite,
- * `NADJ 16 l.97`). La CIBLE est EFFECTIVE (Difficulté déjà appliquée, comme `target`) — la
+ * `NADJ 16 l.90`). La CIBLE est EFFECTIVE (Difficulté déjà appliquée, comme `target`) — la
  * Difficulté déclarée n'est là que pour se LIRE sur la ligne.
  */
 export interface CascadeSecondRead {
@@ -1668,7 +1668,7 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
   /** Étape « quantité » (6ᵉ interaction, #1279 Sf) : SAISIE NUMÉRIQUE BORNÉE — le joueur pose un
    *  NOMBRE entre `min` et `max` (pas `step`, défaut 1). Elle existe parce qu'une décision à plage
    *  large n'est pas une décision à options : « autant de points que vous le souhaitez, entre 1 et
-   *  100 » (`NADJ 16 l.83`) sort en 100 boutons, complet et illisible. GÉNÉRIQUE : la plage est
+   *  100 » (`NADJ 16 l.97`) sort en 100 boutons, complet et illisible. GÉNÉRIQUE : la plage est
    *  DÉCLARÉE par l'étape, aucun domaine n'est nommé ici. `unit` (pluriel, affichage) nomme ce qui se
    *  compte quand ce n'est pas évident. */
   quantity?: { min: number; max: number; step?: number; unit?: string };

@@ -102,7 +102,7 @@ export function sequenceScoreOf(formule: string | undefined, values: readonly nu
 
 /* ── FAMILLE (1bis) : DÉPARTAGE D'ÉGALITÉ DÉCLARÉ ────────────────────────────────────────────────
  * Deux camps à égalité : ce que le jeu en fait est un PARAMÈTRE (`params.tieBreak`), résolu par un
- * réducteur enregistré. `units-lowest` = Dominos (NADJ 16 l.107) ; `nul` = Boules (l.57). MÊME
+ * réducteur enregistré. `units-lowest` = Dominos (NADJ 16 l.105) ; `nul` = Boules (l.57). MÊME
  * registre ouvert que les formules de score : ce qui indexe est le nom d'un DÉPARTAGE, pas un id. */
 export interface SequenceTieSide {
   /** Le d100 obtenu — son chiffre des unités est le « dé d'unités » du départage. */
@@ -121,7 +121,7 @@ export function registerSequenceTieBreak(departage: string, fn: SequenceTieBreak
 /** L'égalité reste une égalité. */
 registerSequenceTieBreak('nul', () => 'tie');
 /** « les joueurs comparent le résultat de leur dé d'unités pour ce Test. Celui qui a le nombre le
- *  plus bas gagne » (NADJ 16 l.107). Le chiffre des unités d'un d100 : 100 → 0. */
+ *  plus bas gagne » (NADJ 16 l.105). Le chiffre des unités d'un d100 : 100 → 0. */
 registerSequenceTieBreak('units-lowest', (a, b) => {
   const ua = a.roll % 10;
   const ub = b.roll % 10;
@@ -218,27 +218,27 @@ registerSequenceThrow('dr', (t) => ({ gain: Math.max(0, t.sl) }));
 registerSequenceThrow('dr-ecrete', (t) => ({ gain: Math.max(0, Math.min(t.sl, t.reserve ?? t.sl)) }));
 /** TOUTE la réserve restante (`NADJ 16 l.42`). */
 registerSequenceThrow('toute-la-reserve', (t) => ({ gain: t.reserve ?? 0 }));
-/** Les points de la LIGNE désignée, sur une réussite (`NADJ 16 l.65`). */
+/** Les points de la LIGNE désignée, sur une réussite (`NADJ 16 l.70`). */
 registerSequenceThrow('points-de-la-ligne', (t) => ({ gain: t.success ? (t.row?.points ?? 0) : 0 }));
-/** Les points de la ligne SUIVANTE de la table (`NADJ 16 l.65`) — la dernière ligne n'en a pas de
+/** Les points de la ligne SUIVANTE de la table (`NADJ 16 l.70`) — la dernière ligne n'en a pas de
  *  suivante : elle rend la sienne. */
 registerSequenceThrow('points-de-la-ligne-suivante', (t) => ({
   gain: t.rows[(t.rowIndex ?? -1) + 1]?.points ?? t.row?.points ?? 0,
 }));
 /** Les CHIFFRES du dé : sur une réussite, le lanceur tranche entre unités, dizaines et leurs dizaines ;
- *  sur un échec, le chiffre des unités (`NADJ 16 l.83`). */
+ *  sur un échec, le chiffre des unités (`NADJ 16 l.97`). */
 registerSequenceThrow('chiffres-du-de', (t) => {
   const unites = t.roll % 10;
   const dizaines = Math.floor(t.roll / 10) % 10;
   if (!t.success) return { gain: unites };
   return { choix: [...new Set([unites, dizaines, unites * 10, dizaines * 10])].sort((a, b) => a - b) };
 });
-/** Un gain que le lanceur fixe LIBREMENT dans la plage déclarée (`NADJ 16 l.83`) — la PLAGE est
+/** Un gain que le lanceur fixe LIBREMENT dans la plage déclarée (`NADJ 16 l.97`) — la PLAGE est
  *  rendue telle quelle (`libre`), jamais énumérée : c'est une SAISIE, pas une liste de valeurs. */
 registerSequenceThrow('gain-au-choix', (t) => (t.libre ? { libre: t.libre } : {}));
-/** Aucun gain (`NADJ 16 l.83`). */
+/** Aucun gain (`NADJ 16 l.97`). */
 registerSequenceThrow('aucun-gain', () => ({ gain: 0 }));
-/** Aucun gain, et le PASSAGE s'arrête là (`NADJ 16 l.83`). */
+/** Aucun gain, et le PASSAGE s'arrête là (`NADJ 16 l.97`). */
 registerSequenceThrow('termine-le-passage', () => ({ gain: 0, ends: true }));
 
 /** La LIGNE que DÉSIGNE une grandeur (`pick: 'reserve'`), avec son rang — `{}` si la séquence n'en
@@ -350,7 +350,7 @@ export function sequenceAttritionEvery(params: SequenceParams, actor: Combatant 
  *
  * `conclut` = la manche a CONCLU la séquence. L'ATTRITION ne s'y applique pas : elle est le prix des
  * manches qui PASSENT sans que la partie se décide (« Pour chaque Bonus d'Endurance tours qui passent
- * sans que personne n'ait gagné », NADJ 16 l.35) — la manche qui donne un vainqueur n'est pas de
+ * sans que personne n'ait gagné », NADJ 16 l.34) — la manche qui donne un vainqueur n'est pas de
  * celles-là. C'est un invariant de la FAMILLE, tenu ICI : aucun client n'a à s'en souvenir. Les ops de
  * `winner`, elles, tombent aussi sur la manche conclusive (le vainqueur du tour reste le vainqueur du
  * tour, l.34).

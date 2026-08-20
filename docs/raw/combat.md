@@ -1358,7 +1358,7 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.24-30, l.152-154) → `talent-aleatoire`, `restoreFortune`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, +30 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, +3 fichiers
 - `LDB 14` (l.118-131, l.175-177, l.179, l.180, l.181, l.182, l.183, l.184, l.187) → `advantageCapFor`, `isControlledMount`, `RunModal`, `combat-deux-armes`, `combatOrder`, `empetre`, `grappleTierMod`, `main-secondaire`, `effectiveSize`, `grappleEnvMod`, +44 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +24 fichiers
-- `LDB 85` (l.110, l.248-250, l.357-362) → `morsure`, `cannotStopOn`, `applySwarmBuild`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `traitEntrySchema`, `Condition`, `SpawnExtras`, `empetre`, +81 — `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +12 fichiers
+- `LDB 85` (l.110, l.248-250, l.357-362) → `morsure`, `cannotStopOn`, `applySwarmBuild`, `sizeDamageMultiplier`, `sizeGrantedQualities`, `traitEntrySchema`, `Condition`, `SpawnExtras`, `empetre`, `etreinte-glaciale`, +79 — `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +10 fichiers
 
 ---
 
@@ -2871,7 +2871,7 @@ Liste complète des Traits du Livre de base, avec leur effet exact. (Indice) = v
 | **Vol (Indice)** | Vole jusqu'à Indice mètres en se Déplaçant ; ignore terrains/obstacles/personnages ; peut Charger. Cible volante : distance **+1** (Extrême → intouchable). En vol : **−20** au combat à distance. |
 | **Vomissement** | Attaque gratuite **(coût 3 Avantages)** : cible visible à **BE** mètres ; tout à ≤ 2 m touché aussi. Test opposé **CT/Esquive** (**Facile +40** pour elle, **Intermédiaire +0** pour l'adversaire). Échec → **BE + 4** Dégâts d'Arme + État **Sonné** ; Armes/Armures touchées **−1**. |
 
-— `LDB 85 l.8-380` (catalogue complet) ; **Fouissement** et **Redoutable** ajoutés par `ZI 14 l.1016-1030`
+— `LDB 85 l.9-447` (catalogue complet) ; **Fouissement** et **Redoutable** ajoutés par `ZI 14 l.1016-1030`
 
 > *« Vous pouvez choisir d'appliquer n'importe quel Trait à n'importe quelle créature si cela correspond à ce que vous voulez utiliser dans votre partie. »* — `LDB 76 l.11`
 
@@ -2896,7 +2896,7 @@ Sept catégories de Taille (`LDB 85 l.344-355`) :
 - Dégâts **×** le nombre de catégories d'écart (2 cat. = ×2, 3 cat. = ×3…), multiplication appliquée **après** les autres modificateurs.
 - Toute frappe réussie active la règle optionnelle **Frappe Mortelle** (même si la cible survit).
 
-**Créature plus petite** (`LDB 85 l.367`) : **+10 pour toucher**.
+**Créature plus petite** (`LDB 85 l.366`) : **+10 pour toucher**.
 
 **Défense contre les grosses créatures** (`LDB 85 l.369-370`) : **−2 DR par catégorie de Taille supérieure** de l'adversaire quand vous vous défendez en **CC** lors d'un Test opposé (mieux vaut esquiver).
 
@@ -3004,7 +3004,7 @@ Profils du Tome 1 qui montrent le gabarit §1 en pratique (caractéristiques abs
 - `LDB 76 l.31-37` — **Traits Standard de Créature** : liste de 15 ajoutés à la liste Facultative de toutes les créatures + Remarque Arme/Armure.
 - `LDB 76 l.38-45` — **Schéma des Profils du Bestiaire** : Nom / Description / Attributs / Traits / Facultatif ; règles de localisation (créature 2 cat. plus grande, Localisation sans table de Critiques).
 - `LDB 77 l.7-68` — profils PNJ standard (Humain, Nain, Halfling, Elfe, Ogre) : ligne M…B + Traits + Facultatif ; « Traits standard = meilleurs choix de départ ».
-- `LDB 85 l.8-380` — catalogue complet des Traits de créature (effet mécanique de chacun), Tableau Taille, modificateurs de Taille en combat, table Blessures-par-Taille.
+- `LDB 85 l.9-447` — catalogue complet des Traits de créature (effet mécanique de chacun), Tableau Taille, modificateurs de Taille en combat, table Blessures-par-Taille.
 - `LDB 85 l.340-406` — modifier la Taille (+10 F/E, −5 Ag par catégorie), modificateurs en combat (Dévastatrice/Percutante, Dégâts ×catégories, Frappe Mortelle), défense −2 DR/cat., Force opposée, Peur/Terreur par différence de catégories, Piétinement, table Blessures-par-Taille.
 - `ZI 14 l.1013-1035` — présentation ZI : Armure affiche (Indice + BE), catégorie « Traits d'attaque », Trait **Redoutable**, Trait **Fouissement**, conseils d'emploi de Redoutable selon la taille du groupe.
 - `ZI 14 l.1037-1087` — tableau de référence rapide reprenant **tous** les Traits du LDB (texte complet).
@@ -3024,7 +3024,7 @@ Profils du Tome 1 qui montrent le gabarit §1 en pratique (caractéristiques abs
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.9-13, l.16-28, l.31-37, l.38-45) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `critTableKeyFor`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
 - `LDB 77` (l.7-68) → `maladie`, `rage`, `furtif`, `resistance-a-la-magie`, `pisteur` — `src/data/creatures.json`
-- `LDB 85` (l.8-406) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, +174 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +34 fichiers
+- `LDB 85` (l.9-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, +174 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +34 fichiers
 - `ZI 14` (l.1013-1035, l.1037-1087) → `ethere`, `fouissement` — `src/data/traits.json`
 - `EDO 11` (l.172-243) → `gonflement`, `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, +3 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/symptoms.json`, `src/data/traits.json`
 - `MSRC 15` (l.119-128, l.133-135, l.138-163) → `useTestJetProps`, `capriciousDR`, `PendingTest`, `PerSL`, `openSkillTest`, `FLOWS`, `aquatique`, `s-accrocher-pour-se-nourrir`, `capricieux`, `engloutir`, +5 — `src/data/creatures.json`, `src/data/traits.json`, `src/engine/ops.ts`, `src/engine/social.ts`, `src/state/combatEffects.ts`, `src/state/pendings.ts`, +2 fichiers
@@ -3064,48 +3064,48 @@ Le **Trait Arme (Indice)** est l'attaque de mêlée par défaut (dents, griffes,
 | **Venin (Difficulté)** | sur attaque venimeuse infligeant des PB | — | (Test de la cible) | — | cible qui perd des PB → Test pour résister, sinon État **Empoisonné** (Difficulté ; défaut Intermédiaire) |
 | **Vampirique** | sur Morsure réussie | — | — | — | regagne autant de PB que la cible en perd (seul moyen de se soigner) |
 
-*Sources :* `LDB 85 l.32-35` (Arme), `l.8-9` (À Distance), `l.170-171` (Morsure), `l.64-65` (Cornes), `l.37-38` (Attaque Caudale), `l.185-188` (Langue Préhensile), `l.354-355` (Tentacules), `l.58-59` (Constricteur), `l.380` (Toile), `l.326-327` (Venin), `l.323-324` (Vampirique).
+*Sources :* `LDB 85 l.33-35` (Arme), `l.9` (À Distance), `l.235-237` (Morsure), `l.81-83` (Cornes), `l.45-47` (Attaque Caudale), `l.209-213` (Langue Préhensile), `l.403-405` (Tentacules), `l.73-75` (Constricteur), `l.415-417` (Toile), `l.423-425` (Venin), `l.419-421` (Vampirique).
 
 ### Texte intégral des Traits concernés (verbatim)
 
-**À Distance (Indice)(Portée)** — `LDB 85 l.8-9`
+**À Distance (Indice)(Portée)** — `LDB 85 l.9`
 > « La créature possède une arme à distance. L'arme cause _Indice_ Dégâts et la distance en mètres est ( _Portée)_ . »
 
 C'est un **descripteur d'arme**, pas une Attaque gratuite : la créature tire à la Capacité de Tir comme avec une arme normale, l'Indice donnant les Dégâts et la Portée la distance utile.
 
-**Morsure (Indice)** — `LDB 85 l.193-194`
+**Morsure (Indice)** — `LDB 85 l.235-237`
 > « Pendant son tour, la créature peut effectuer une Attaque gratuite en dépensant 1 Avantage. Les Dégâts de l'Attaque égalent _Indice_ et incluent déjà son bonus de Force. »
 
-**Cornes (Aspect)(Indice)** — `LDB 85 l.82-83`
+**Cornes (Aspect)(Indice)** — `LDB 85 l.81-83`
 > « Quand la créature gagne un Avantage pour Charger, elle peut aussi gagner une Attaque gratuite de Cornes, calculée normalement, en utilisant _Indice_ pour les Dégâts (son bonus de Force est déjà inclus). »
 
 Si les Cornes ont un Aspect différent (Impact, Tranchant…), il est noté entre parenthèses. L'attaque est **liée à la Charge** : on ne paie pas d'Avantage en plus, elle vient avec l'Avantage gagné en chargeant.
 
-**Attaque Caudale (Indice)** — `LDB 85 l.46-47`
+**Attaque Caudale (Indice)** — `LDB 85 l.45-47`
 > « À son tour, elle peut effectuer une Attaque gratuite en dépensant 1 Avantage. La queue inflige _Indice_ Dégâts, _qui incluent déjà son bonus de Force_ . Les adversaires avec une plus petite Taille _que la créature,_ qui perdent des Points de Blessure par cette attaque, subissent également l'État _À Terre_ . »
 
-**Langue Préhensile (Indice)(Portée)** — `LDB 85 l.210-213`
+**Langue Préhensile (Indice)(Portée)** — `LDB 85 l.209-213`
 > « Pendant son tour, elle peut effectuer une Attaque gratuite en dépensant 1 Avantage. C'est une Attaque à distance qui inflige _Indice_ Dégâts (la _Portée_ est indiquée entre parenthèses, en mètres). Si l'Attaque touche, son adversaire reçoit 1 État _Empêtré_ et, s'il a une Taille inférieure, il est entraîné vers la créature. Elle peut laisser ensuite partir la cible, effectuer une Attaque gratuite en utilisant son Trait Arme, ou conserver la cible enroulée dans sa langue, avec le démarrage d'une Empoignade (voir page 163). »
 
-**Tentacules # (Indice)** — `LDB 85 l.408-408` *(sous-système : une attaque par tentacule)*
+**Tentacules # (Indice)** — `LDB 85 l.405` *(sous-système : une attaque par tentacule)*
 > « La créature possède un nombre _#_ de tentacules. Gagnez une Action d'Attaque gratuite par tentacule. Les tentacules infligent _Indice_ Dégâts, qui incluent déjà son bonus de Force. Si elle cause des Dégâts, elle peut aussi infliger à son adversaire l'État _Empêtré_ , bien que cela entame une Empoignade avec ce tentacule. Si un tentacule est en Empoignade, vous pouvez utiliser une Action d'Attaque gratuite pour résoudre l'Empoignade au lieu de l'Action de la créature. Voir page 163. »
 
 Le **#** en tête du Trait est le **nombre de tentacules** (ex. « 8 Tentacules +9 » = 8 attaques gratuites de +9, coût 0 chacune). Chaque tentacule peut entamer **sa propre** Empoignade, et une Action d'Attaque gratuite peut servir à résoudre une Empoignade d'un tentacule.
 
-**Constricteur** — `LDB 85 l.74-75`
+**Constricteur** — `LDB 85 l.73-75`
 > « Tout lancer réussi pour toucher donne à son adversaire l'État _Empêtré_ . Elle peut ensuite entamer une Empoignade (voir page 163). »
 
-**Toile (Indice)** — `LDB 85 l.451` *(l'OCR a inversé le titre l.363 avec « Vol » ; la description réelle est en l.380)*
+**Toile (Indice)** — `LDB 85 l.417`
 > « La créature peut créer une toile pour attraper les ennemis imprudents. Chaque fois qu'elle réussit à toucher, son adversaire gagne 1 État _Empêtré_ , avec une Force de _Indice_ . Voir page 168. »
 
 La **Force de l'empêtrement = Indice** : c'est la valeur opposée lors du Test pour se libérer (voir État Empêtré ci-dessous).
 
-**Vampirique** — `LDB 85 l.388-388`
+**Vampirique** — `LDB 85 l.421`
 > « Chaque fois qu'elle réussit une Attaque de Morsure contre un adversaire approprié, elle récupère autant de Points de Blessure que son adversaire en perd. Boire du sang de cette façon est la seule manière pour elle de se soigner. »
 
 Le Vol de vie ne s'applique qu'à la **Morsure** (pas aux autres attaques), et c'est **l'unique** moyen de soin de la créature.
 
-**Venin (Difficulté)** — `LDB 85 l.389-389`
+**Venin (Difficulté)** — `LDB 85 l.423-425`
 > « Quand elle inflige des Points de Blessure avec ses Attaques venimeuses, son adversaire subit un État _Empoisonné_ . Si aucune Difficulté n'est indiquée pour résister au Venin, le Test est considéré comme Intermédiaire. Voir page 168. »
 
 Le Venin ne déclenche que si l'attaque venimeuse **fait perdre des PB**. La cible tente un Test (Résistance / Endurance) de **Difficulté indiquée entre parenthèses** ; **défaut = Intermédiaire (+0)** ; en cas d'échec → État Empoisonné.
@@ -3130,17 +3130,17 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 
 **Sources RAW** :
 - `LDB 85 l.43` — définition de l'**Attaque gratuite** (jet CC/CT supplémentaire, ne coûte pas l'Action ; renvoi Actions gratuites p.158).
-- `LDB 85 l.32-35` — Trait **Arme (Indice)** : Indice = 4 + BF, BF déjà inclus.
-- `LDB 85 l.8-9` — Trait **À Distance (Indice)(Portée)** : arme à distance, Dégâts = Indice, Portée en mètres.
-- `LDB 85 l.193-194` — Trait **Morsure (Indice)** : Attaque gratuite, **1 Avantage**, Indice (BF inclus).
-- `LDB 85 l.82-83` — Trait **Cornes (Aspect)(Indice)** : Attaque gratuite gagnée **à la Charge** (pas de coût supplémentaire).
-- `LDB 85 l.46-47` — Trait **Attaque Caudale (Indice)** : Attaque gratuite, **1 Avantage** ; cible plus petite perdant des PB → **À Terre**.
-- `LDB 85 l.210-213` — Trait **Langue Préhensile (Indice)(Portée)** : Attaque gratuite à distance, **1 Avantage** ; touche → **Empêtré**, traction si plus petite, puis relâcher / Attaque d'Arme / **Empoignade**.
-- `LDB 85 l.408-408` — Trait **Tentacules # (Indice)** : **une Attaque gratuite par tentacule** (coût 0) ; Dégâts → **Empêtré** + Empoignade par tentacule.
-- `LDB 85 l.74-75` — Trait **Constricteur** : toute touche → **Empêtré** puis **Empoignade**.
-- `LDB 85 l.451` — Trait **Toile (Indice)** : touche → **Empêtré** de **Force = Indice** (OCR : titre inversé avec « Vol » l.363-364).
-- `LDB 85 l.389-389` — Trait **Venin (Difficulté)** : attaque venimeuse faisant perdre des PB → Test (défaut **Intermédiaire**) ou **Empoisonné**.
-- `LDB 85 l.388-388` — Trait **Vampirique** : Morsure réussie → regagne les PB perdus par la cible ; seul moyen de soin.
+- `LDB 85 l.33-35` — Trait **Arme (Indice)** : Indice = 4 + BF, BF déjà inclus.
+- `LDB 85 l.9` — Trait **À Distance (Indice)(Portée)** : arme à distance, Dégâts = Indice, Portée en mètres.
+- `LDB 85 l.235-237` — Trait **Morsure (Indice)** : Attaque gratuite, **1 Avantage**, Indice (BF inclus).
+- `LDB 85 l.81-83` — Trait **Cornes (Aspect)(Indice)** : Attaque gratuite gagnée **à la Charge** (pas de coût supplémentaire).
+- `LDB 85 l.45-47` — Trait **Attaque Caudale (Indice)** : Attaque gratuite, **1 Avantage** ; cible plus petite perdant des PB → **À Terre**.
+- `LDB 85 l.209-213` — Trait **Langue Préhensile (Indice)(Portée)** : Attaque gratuite à distance, **1 Avantage** ; touche → **Empêtré**, traction si plus petite, puis relâcher / Attaque d'Arme / **Empoignade**.
+- `LDB 85 l.405` — Trait **Tentacules # (Indice)** : **une Attaque gratuite par tentacule** (coût 0) ; Dégâts → **Empêtré** + Empoignade par tentacule.
+- `LDB 85 l.73-75` — Trait **Constricteur** : toute touche → **Empêtré** puis **Empoignade**.
+- `LDB 85 l.417` — Trait **Toile (Indice)** : touche → **Empêtré** de **Force = Indice**.
+- `LDB 85 l.423-425` — Trait **Venin (Difficulté)** : attaque venimeuse faisant perdre des PB → Test (défaut **Intermédiaire**) ou **Empoisonné**.
+- `LDB 85 l.421` — Trait **Vampirique** : Morsure réussie → regagne les PB perdus par la cible ; seul moyen de soin.
 - `LDB 16 l.60-66` + état Empêtré p.168 — Empêtré : pas de Mouvement, -10 ; échappée = Test opposé de Force, 1 État retiré par DR.
 - `LDB 16 l.68-74` — Empoisonné : 1 PB/fin de Round (ignore modificateurs), -10 à tous les Tests, blocage de soin / risque de mort.
 - `AU1 04 l.12` — page-mémo (basilic) : Morsure/Attaque caudale/Piétiner = attaques gratuites à **1 Avantage** chacune (corroboration + renvois p.338/340/341).
@@ -3153,7 +3153,7 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 16` (l.60-66, l.68-74) → `combat-fatigue`, `schema`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `Condition`, `tileSeenByFoe`, `aaBleedUnconsciousDue`, +25 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/conditions.ts`, +16 fichiers
-- `LDB 85` (l.8-9, l.32-35, l.43, l.46-47, l.74-75, l.82-83, l.193-194, l.210-213, l.237, l.388, l.389, l.405, l.408, l.451) → `a-distance`, `arme`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `amphibie`, `agressifEnvers`, `markAttacked`, `a-terre`, +89 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +16 fichiers
+- `LDB 85` (l.9, l.33-35, l.43, l.45-47, l.73-75, l.81-83, l.209-213, l.235-237, l.405, l.417, l.421, l.423-425) → `a-distance`, `arme`, `a-sang-froid`, `morsure`, `affame`, `creatureWeapon`, `amphibie`, `a-terre`, `weaponFromTrait`, `cornes`, +73 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, +7 fichiers
 - sans code : `AU1 4` (l.9, l.12)
 
 ---
@@ -3253,7 +3253,7 @@ La créature vomit un flot de corruption corrosive. **Pendant son tour, au prix 
 **Voir aussi** : Traits de créature (vue d'ensemble) · États (Sonné, Enflammé, Empoisonné, Brisé, Assourdi, Empêtré) · Tentacules et attaques naturelles · Zones d'effet et Lignes de vue · Avantage en combat · Le sort « Souffle » (Magie des Arcanes)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.137-138, l.168-169, l.289-290, l.317-331, l.442-447) → `scene`, `planClimb`, `morsure`, `scenario`, `creatureWeapon`, `useTrampleJetProps`, `TraverseCapability`, `Formula`, `maxWounds`, `moveEnv`, +102 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +20 fichiers
+- `LDB 85` (l.137-138, l.168-169, l.289-290, l.317-331, l.442-447) → `scene`, `planClimb`, `morsure`, `scenario`, `useTrampleJetProps`, `TraverseCapability`, `Formula`, `maxWounds`, `moveEnv`, `trampleTarget`, +99 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +19 fichiers
 
 ---
 
@@ -3273,7 +3273,7 @@ Ces Traits de créature (LDB chap. 85, *Traits de créature*) régissent **comme
 
 **Immunité (Type).** « La créature est totalement immunisée à un certain *Type* de Dégâts, comme ceux du poison, magiques ou électriques. **Tous les Dégâts de ce *Type*, y compris les Dégâts Critiques, sont ignorés.** » Annulation totale (Dégâts + Critiques) du type indiqué entre parenthèses (ex. *Immunité (Poison)*, *Immunité (Feu)*). — `LDB 85 l.172-173`
 
-**Résistance à la Magie (Indice).** « La Magie n'affecte pas la créature autant que les autres. Le **DR de tous les Sorts** l'affectant est **réduit du nombre indiqué**. Ainsi, *Résistance à la Magie 2* réduit le DR de 2. » Ce n'est pas une annulation : on **soustrait l'Indice au nombre de Degrés de Réussite** du lanceur sur cette cible (réduisant la puissance/durée/dégâts par-DR du sort). — `LDB 85 l.265-265`
+**Résistance à la Magie (Indice).** « La Magie n'affecte pas la créature autant que les autres. Le **DR de tous les Sorts** l'affectant est **réduit du nombre indiqué**. Ainsi, *Résistance à la Magie 2* réduit le DR de 2. » Ce n'est pas une annulation : on **soustrait l'Indice au nombre de Degrés de Réussite** du lanceur sur cette cible (réduisant la puissance/durée/dégâts par-DR du sort). — `LDB 85 l.302`
 
 ### Ignorer la douleur et les blessures
 
@@ -3328,7 +3328,7 @@ Les Dégâts dus au **Feu** sont notés à part et **jamais** régénérés. —
 - `LDB 85 l.95-98` — **Démoniaque (Indice)** : attaques Magiques + sauvegarde 1d10 ≥ Indice (Critique inclus) + à 0 PB banni vers les Royaumes du Chaos ; sans besoin d'eau/nourriture/air.
 - `LDB 85 l.133-134` — **Éthéré** : immatériel, traverse les solides, blessé uniquement par Attaques magiques.
 - `LDB 85 l.172-173` — **Immunité (Type)** : Dégâts du Type (Critiques inclus) totalement ignorés.
-- `LDB 85 l.265-265` — **Résistance à la Magie (Indice)** : DR de tous les Sorts l'affectant réduit de l'Indice (ex. 2 → −2 DR).
+- `LDB 85 l.302` — **Résistance à la Magie (Indice)** : DR de tous les Sorts l'affectant réduit de l'Indice (ex. 2 → −2 DR).
 - `LDB 85 l.195-195` — **Insensible à la Douleur** : pénalités de Critiques non-amputants ignorées ; États subis normalement.
 - `LDB 85 l.293-302` — **Régénération** : début de Round, >0 PB → +1d10 PB ; à 0 PB → 8+ régénère 1 PB ; 10 régénère aussi 1 Critique ; Feu jamais régénéré (noté à part).
 - `LDB 85 l.182-183` — **Increvable** : Critiques non-mortels recousables, même la mort si parties rattachées ; Test de Résistance Intermédiaire (+0) DR 6 chaque début de Round, *bonus d'Endurance* Rounds → retour à 1 PB.
@@ -3348,7 +3348,7 @@ Les Dégâts dus au **Feu** sont notés à part et **jamais** régénérés. —
 **Voir aussi** : Traits d'attaque et d'allonge des créatures (Arme, Morsure, Cornes, Souffle, Étreinte glaciale) · Avantage en combat (Redoutable, Belliqueux) · Blessures critiques et Traumatisme (LDB 18) · Maladies et infections (LDB 20 — Blessure Purulente) · Localisation et Points d'Armure · Attaques magiques et Résistance des sorts (LDB 46) · Psychologie des créatures (Bestial, Immunité Psychologique).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.38-39, l.95-98, l.133-134, l.172-173, l.182-183, l.187, l.195, l.198-199, l.256-257, l.265, l.268, l.277-278, l.293-302) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `StatblockEditor`, +136 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/characteristics.ts`, +28 fichiers
+- `LDB 85` (l.38-39, l.95-98, l.133-134, l.172-173, l.182-183, l.187, l.195, l.198-199, l.256-257, l.268, l.277-278, l.293-302) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `StatblockEditor`, +137 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/characteristics.ts`, +28 fichiers
 - `ZI 1` (l.79-80) → `empoisonne`, `nuee-d-escampette`, `empetre`, `corps-a-corps`, `affinite-avec-les-animaux`, `sang-corrosif` — `src/data/creatures.json`, `src/data/spells.json`
 - `ZI 14` (l.1024, l.1025-1026, l.1045) → `fouissement` — `src/data/traits.json`
 - `EDO 11` (l.224-226) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
@@ -3529,7 +3529,7 @@ La créature est **porteuse de la maladie _Type_**. **Les autres doivent faire u
 - `LDB 85 l.185` — Magique : toutes ses Attaques sont magiques (blessent le « uniquement vulnérable au magique »).
 - `LDB 85 l.262` — Perturbant : aura −20 à tous les Tests dans un rayon = Bonus d'Endurance (mètres), non cumulable.
 - `LDB 85 l.282` — Rage : dépenser tous Avantages (min 1) → Haine, ou (min 3) → Frénésie.
-- `LDB 85 l.334` — Stupide : sans allié non-Stupide adjacent, Test d'Int Facile (+40) début de Round, échec = perd Mouvement + Action.
+- `LDB 85 l.335` — Stupide : sans allié non-Stupide adjacent, Test d'Int Facile (+40) début de Round, échec = perd Mouvement + Action.
 - `LDB 85 l.13` — À Sang-Froid : peut inverser tous ses Tests de FM échoués.
 - `LDB 85 l.17` — Affamé : tue/neutralise (ou cadavre récent) → Test de FM Accessible (+20) ou festoie (perd prochaine Action + Mouvement).
 - `LDB 85 l.249` — Nerveux : effrayé par magie / bruits forts → +3 États Brisé.
@@ -3538,7 +3538,7 @@ La créature est **porteuse de la maladie _Type_**. **Les autres doivent faire u
 - `LDB 85 l.185` — Maladie (Type) : porteuse ; les autres font un Test pour éviter la Contraction (p.186).
 - `LDB 85 l.264` — Peur (Indice) : Peur surnaturelle de niveau Indice (renvoi p.190).
 - `LDB 85 l.411` — Terreur (Indice) : Terreur surnaturelle de niveau Indice (renvoi p.191).
-- `LDB 85 l.165` — Haine (Cible) : haine profonde de la Cible (renvoi p.190).
+- `LDB 85 l.166` — Haine (Cible) : haine profonde de la Cible (renvoi p.190).
 - `LDB 85 l.25` — Animosité (Cible) : n'aime pas la Cible (renvoi p.190).
 - `LDB 85 l.274` — Préjugé (Cible) : n'apprécie pas la Cible (renvoi p.190).
 - `LDB 85 l.383` — Peur/Terreur par la Taille : niveau = écart de catégories ; Terreur si écart ≥ 2.
@@ -3556,7 +3556,7 @@ La créature est **porteuse de la maladie _Type_**. **Les autres doivent faire u
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 19` (l.34-58) → `CorruptionModal`, `combat-end-corruption`, `sombre-pacte`, `EXPOSURE_LADDER`, `MANUAL_COMBAT_INTENTS`, `physique`, `schema`, `corruption-mineure`, `corruption-moderee`, `corruption-majeure`, +16 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs/arcane-phenomena.ts`, +11 fichiers
 - `LDB 21` (l.9, l.19-21, l.23-25, l.27, l.29-35, l.37-39, l.41, l.43-50, l.54-56) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `terreur`, `opRow`, `openEncounterPsych`, `fearSourceFor`, `psychImmuneToFrom`, +59 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +27 fichiers
-- `LDB 85` (l.5, l.13, l.17, l.25, l.51, l.59, l.71, l.87, l.92, l.110, l.142, l.150, l.165, l.179, l.185, l.221, l.225, l.249, l.253, l.262, l.264, l.274, l.282, l.334, l.335, l.383, l.411) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `affame`, `scenario`, `creatureWeapon`, `StatblockEditor`, +152 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +29 fichiers
+- `LDB 85` (l.5, l.13, l.17, l.25, l.51, l.59, l.71, l.87, l.92, l.110, l.142, l.150, l.166, l.179, l.185, l.221, l.225, l.249, l.253, l.262, l.264, l.274, l.282, l.335, l.383, l.411) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `affame`, `scenario`, `creatureWeapon`, `StatblockEditor`, +153 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +29 fichiers
 
 ---
 
@@ -3668,7 +3668,7 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 **Voir aussi** : Taille des créatures et modificateurs de combat · Charge, Course et Désengagement · Bandes de portée (À distance) · Initiative et Avantage · Traits d'attaque de créature (Arme, Morsure, Cornes, Attaque Caudale)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370, l.428-439) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `useTrampleJetProps`, `StatblockEditor`, `TraverseCapability`, +124 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +26 fichiers
+- `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370, l.428-439) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `useTrampleJetProps`, `StatblockEditor`, `TraverseCapability`, +124 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +25 fichiers
 - `ZI 2` (l.66-70) → `fouissement`, `coup-puissant` — `src/data/creatures.json`, `src/data/traits.json`
 - `ZI 14` (l.1029-1035) → `fouissement` — `src/data/traits.json`
 - sans code : `AU1 4` (l.17)
@@ -3800,7 +3800,7 @@ Côté inverse, l'adversaire **plus petit** gagne toujours **+10 pour toucher** 
 **Voir aussi** : Trait Taille — ajustement de profil et Points de Blessure ; Modificateur d'à-toucher au Tir selon la Taille de la cible ; Atouts d'arme Dévastatrice & Percutante ; règle optionnelle Frappe Mortelle ; Peur & Terreur (psychologie) ; Désengagement ; Tests opposés.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.339-340, l.343-355, l.357-387, l.391-406) → `creatureWeapon`, `cannotStopOn`, `agressifEnvers`, `markAttacked`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, +53 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/creatureEquip.ts`, +12 fichiers
+- `LDB 85` (l.339-340, l.343-355, l.357-387, l.391-406) → `cannotStopOn`, `agressifEnvers`, `markAttacked`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, +50 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/creatureEquip.ts`, +12 fichiers
 - `ZI 14` (l.1075, l.1162) → `ethere`, `miracles` — `src/data/traits.json`
 - sans code : `ADE II 2` (l.563-589), `ZI 14` (l.1070)
 
@@ -3882,7 +3882,7 @@ Le profil ci-dessous porte le Trait **Nuée\*** (l'astérisque sur la créature 
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.5-8) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `10-a-votre-action-au-prochain-round`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, `vous-vous-tordez-la-cheville-dechirure-musculaire-mineure-compte-comme-blessure-critique`, `vous-touchez-un-allie-au-hasard-ou-vous-meme-sonne`, `incident-de-tir-l-arme-explose-dans-votre-main-degats-au-bras-principal-arme-detruite`, `maladresse-tableau-des-oups`, `pushDefenderFumble`, +16 — `src/data/oups.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +3 fichiers
-- `LDB 85` (l.199-200, l.252-253, l.346-355) → `morsure`, `STARTLE_CAUSE_LABELS`, `creatureWeapon`, `cannotStopOn`, `applySwarmBuild`, `sizeDamageMultiplier`, `TraumaFiche`, `weaponFromTrait`, `sizeGrantedQualities`, `traitEntrySchema`, +64 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +17 fichiers
+- `LDB 85` (l.199-200, l.252-253, l.346-355) → `morsure`, `STARTLE_CAUSE_LABELS`, `cannotStopOn`, `applySwarmBuild`, `sizeDamageMultiplier`, `TraumaFiche`, `sizeGrantedQualities`, `traitEntrySchema`, `Condition`, `resizeBySteps`, +59 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +15 fichiers
 - `ZI 2` (l.136-140) → `cornes`, `projectiles`, `taille` — `src/data/creatures.json`
 - `ZI 13` (l.984) → `derniere-gorgee`, `pierre-assoiffee` — `src/data/trappings.json`
 - `ZI 14` (l.1147) → `miracles` — `src/data/traits.json`

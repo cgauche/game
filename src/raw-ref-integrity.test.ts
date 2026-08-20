@@ -26,17 +26,13 @@ import {
  * l'essentiel du stock gelé. Mesures du 2026-08-16 sur le même arbre : 161 sites sans le préfixe
  * (dont 84 avaient pourtant leur sujet à ±6 lignes, rougis sur un pluriel), 108 avec.
  *
- * STOCK HÉRITÉ : `scripts/guards/raw-blind-refs-baseline.json` gèle, par fichier × réf, les sites
- * aveugles hérités — le COMPTE vit dans ce JSON, jamais recopié ici (un nombre en dur y périmerait
+ * REGISTRE : `scripts/guards/raw-blind-refs-baseline.json` gèle, par fichier × réf, les sites
+ * aveugles tolérés — le COMPTE vit dans ce JSON, jamais recopié ici (un nombre en dur y périmerait
  * à chaque solde). Cliquet à double sens : une réf aveugle NEUVE échoue ; une
  * réf réparée échoue tant que le registre n'est pas abaissé. Solder une entrée = lire le `Source/` et
- * réancrer la réf sur la ligne qui porte le passage (ex. déjà soldés dans le lot de pose : les trois
- * puces de « Dépenser de la Détermination » (ch.17 lignes 62/64/66 → 59/60/61), la Ligne de Vue des
- * sorts (ch.46 ligne 170 → 121), le non-cumul des États (ch.16 ligne 20 → 13), « se libérer » (ch.16 ligne 61 → 66).
- * Re-geler après solde : voir `countsByFileRef` + `serializeBaseline` (lib).
- *
- * Les entrées restantes du registre sont à INSTRUIRE une par une (ligne cible inconnue tant que le
- * passage n'a pas été relu au `Source/`).
+ * réancrer la réf sur la ligne qui porte le passage. Re-geler après solde : voir `countsByFileRef` +
+ * `serializeBaseline` (lib). Le registre est à `{}` : toute réf aveugle est désormais un ÉCHEC, sans
+ * seuil à négocier — le contrat que ce fichier verrouille est « zéro réf aveugle dans `src/` ».
  *
  * ANGLE MORT ASSERTÉ (mesuré, pas supposé) : une réf pointant une ligne PLEINE mais ÉTRANGÈRE au
  * passage est invisible aux DEUX volets — ni `check-code-refs` (elle est dans les bornes du
@@ -45,6 +41,10 @@ import {
  * Marker : les réfs tombaient en plein texte de « Régénération »/« Résistance à la Magie ». Les
  * détecter exigerait un recouvrement SÉMANTIQUE généralisé (le recouvrement lexical à ±2 lignes ne
  * mord pas ici : la ligne visée est pleine, donc jamais soumise au test) — coût à chiffrer, hors E3.
+ * Ce qui les rend TRIABLES sans garde assertive : `node scripts/raw/audit-refs-chapitre.mjs LDB 85`
+ * confronte TOUTE réf d'un chapitre au texte de sa ligne, triée par ligne citée — le verdict reste
+ * humain (lecture du `Source/`). C'est l'outil qui a levé 13 sites survivants au lot E3-L11, tous
+ * verts pour les trois gardes.
  */
 
 /**
@@ -112,15 +112,30 @@ describe('garde « réf RAW aveugle » — ligne citée VIDE et sans recouvremen
     expect(assertAgainstBaseline({ 'a.ts': { [ref]: 1 } }, { 'a.ts': { [ref]: 1 } })).toEqual({ over: [], stale: [] });
   });
 
-  it('CLIQUET sur l’ARBRE RÉEL : amputer une entrée du registre fait rouge, la gonfler la rend périmée', () => {
-    const entree = Object.keys(baseline)[0];
-    const ref = Object.keys(baseline[entree])[0];
-    const ampute = JSON.parse(JSON.stringify(baseline));
-    delete ampute[entree][ref];
-    expect(assertAgainstBaseline(counts, ampute).over.some((o: string) => o.startsWith(`${entree} — ${ref}`))).toBe(true);
-    const gonfle = JSON.parse(JSON.stringify(baseline));
-    gonfle[entree][ref] += 5;
-    expect(assertAgainstBaseline(counts, gonfle).stale.some((s: string) => s.startsWith(`${entree} — ${ref}`))).toBe(true);
+  it('RÉGIME CIBLE : l’arbre réel ne porte AUCUNE réf aveugle, et le registre est VIDE', () => {
+    expect(blind.map((b: { file: string; row: number; ref: string }) => `${b.file}:${b.row} — ${b.ref}`)).toEqual([]);
+    expect(baseline).toEqual({});
+  });
+
+  it('CLIQUET sur une MESURE RÉELLE : un site aveugle scanné sur un chapitre RÉEL monte en `over`, l’inscrire l’éteint, le retirer le rend `stale`', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'raw-ref-integrity-cliquet-'));
+    try {
+      writeFileSync(join(dir, 'mut.ts'), fixtureLine('une regle inventee adossee', 17, 84));
+      const mesure = countsByFileRef(scanBlindRefs(dir));
+      const [fichier] = Object.keys(mesure);
+      const ref = Object.keys(mesure[fichier])[0];
+      // Le registre confronté est CONSTRUIT ici, jamais dérivé du registre du dépôt : ce test doit
+      // mordre à l'identique quand le stock réel se repeuple (une entrée étrangère y ferait `stale`).
+      // (a) registre VIDE : le site mesuré n'y figure pas → rouge nominatif.
+      expect(assertAgainstBaseline(mesure, {}).over.some((o: string) => o.startsWith(`${fichier} — ${ref}`))).toBe(true);
+      // (b) inscrit à sa mesure → plus rien.
+      const inscrit = { [fichier]: { [ref]: 1 } };
+      expect(assertAgainstBaseline(mesure, inscrit)).toEqual({ over: [], stale: [] });
+      // (c) le site disparaît, l'entrée reste → périmée.
+      expect(assertAgainstBaseline({}, inscrit).stale.some((s: string) => s.startsWith(`${fichier} — ${ref}`))).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('MORSURE — le cas historique (ch.17 ligne 84) est ROUGE sur le chapitre RÉEL, la ligne qui porte la règle est VERTE', () => {

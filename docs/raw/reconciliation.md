@@ -100,7 +100,7 @@ _Aucune._
 ### MSRC 5 — 1/1 ligne(s) code hors couverture
 - l.113 — `src/state/riverVoyageFlow.ts:867` — // Réparateur de SUBSTITUTION (`MSRC 5 l.113-117`) : le −10 est DÉJÀ fondu dans la valeur jetée,
 
-### NADJ 16 — 1/20 ligne(s) code hors couverture
+### NADJ 16 — 1/19 ligne(s) code hors couverture
 - l.119 — `src/engine/combat.ts:890` — *  (Middenball NADJ 16 l.119 : « en utilisant les règles habituelles relatives à l'Avantage »).
 
 ## A3-AUTRES — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d'unité chapitre à couvrir)

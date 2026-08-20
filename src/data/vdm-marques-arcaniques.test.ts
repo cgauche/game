@@ -4,8 +4,8 @@ import { effectTables, findEffectTableById, domains, findTalentById } from './in
 import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph';
 
 /**
- * Les 8 tables « MARQUES ARCANIQUES DE <VENT> » (1d10, une par Domaine de Couleur) — `VDM 04 l.153`,
- * `VDM 05 l.142`, `VDM 06 l.141`, `VDM 07 l.143`, `VDM 08 l.115`, `VDM 09 l.136`, `VDM 10 l.134`,
+ * Les 8 tables « MARQUES ARCANIQUES DE <VENT> » (1d10, une par Domaine de Couleur) — `VDM 04 l.156`,
+ * `VDM 05 l.142`, `VDM 06 l.141`, `VDM 07 l.142`, `VDM 08 l.136`, `VDM 09 l.136`, `VDM 10 l.144`,
  * `VDM 11 l.142`. Tirées par l'op `rollTable` variante `tableId` sur le résultat « Marqué par la
  * Magie » du Tableau des Incantations Imparfaites (`VDM 02 l.238`).
  *

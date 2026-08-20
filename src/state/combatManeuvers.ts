@@ -249,7 +249,7 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   // (2) Piétinement (Taille, LDB 85 l.320-321) : adversaire adjacent plus petit, ≥1 Avantage. Flux dédié.
   if (active.advantage >= 1 && trampleTarget(battle, active))
     out.push({ id: 'pietinement', label: 'Piétiner', icon: 'journal/charge', targeting: 'trample', cost: { action: false, advantage: 1 } });
-  // (3) Mutation Tentacule (arme `nat-tentacule`, LDB 85 l.354) : 1/tour (compteur partagé), 0 Avantage. Comme
+  // (3) Mutation Tentacule (arme `nat-tentacule`, LDB 85 l.405) : 1/tour (compteur partagé), 0 Avantage. Comme
   //     toute attaque de mêlée, elle s'APPROCHE (charge/rejoindre) → dispo dès qu'un ennemi existe (adjacence non requise).
   if (
     (active.freeAttacksThisTurn?.['tentacules'] ?? 0) < 1 && active.weapons.some((w) => w.uid === 'nat-tentacule') && !!active.pos &&
@@ -582,7 +582,7 @@ registerCascadeApplier('maneuverDefense', (get, set, step, hero) => {
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive (Agilité + avances,
  *  pénalité d'Encombrement incluse) — la plus haute valeur. Vit ICI (feuille) et est ré-exporté par
  *  `combatFlow` (baril) : SOURCE UNIQUE, importée par combatFlow/rollFlows sans cycle.
- *  Bestial (LDB 85 l.338) : « En défense, elle peut seulement utiliser la Compétence Esquive. » */
+ *  Bestial (LDB 85 l.59) : « En défense, elle peut seulement utiliser la Compétence Esquive. » */
 export function bestDefenseMode(defender: Combatant): 'parade' | 'esquive' {
   if (isBestial(defender.traits)) return 'esquive';
   return defenseValue(defender, 'esquive') > defenseValue(defender, 'parade') ? 'esquive' : 'parade';

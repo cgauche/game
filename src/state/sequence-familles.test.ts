@@ -152,7 +152,7 @@ describe('Famille (4)+(6) — le socle DÉCLENCHE les ops de manche, et s’arr�
   });
 
   /**
-   * INVARIANT DE LA FAMILLE (NADJ 16 l.35, verbatim) : « Pour chaque Bonus d'Endurance **tours qui
+   * INVARIANT DE LA FAMILLE (NADJ 16 l.34, verbatim) : « Pour chaque Bonus d'Endurance **tours qui
    * passent sans que personne n'ait gagné**, vous gagnez + 1 État *Exténué* ». L'attrition est le prix
    * des manches qui PASSENT : la manche qui CONCLUT la séquence n'en est pas une, même si son rang
    * tombe pile sur l'intervalle. Tenu par le SOCLE — aucun client n'a à s'en souvenir.

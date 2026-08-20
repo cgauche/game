@@ -56,7 +56,7 @@ export const TOLERATED = {
   templates: ['$arg', '$indice'],
   selfRef: 'self',
   softIds: {
-    // Pétrifié (LDB 85 l.238) n'a pas d'entrée `etats.json` : sa seule mécanique câblée est une
+    // Pétrifié (LDB 85 l.290) n'a pas d'entrée `etats.json` : sa seule mécanique câblée est une
     // sévérité d'affichage, portée à `src/engine/conditions.ts:44` (`NARRATIVE_MARKER_SEVERITY`).
     // SOURCE UNIQUE de la liste : `src/data/data-wellformed.test.ts:66` l'IMPORTE d'ici.
     etats: ['petrifie'],

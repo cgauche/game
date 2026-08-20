@@ -29,7 +29,7 @@ Ce fichier couvre tout ce qui concerne **l'acquisition et la dépense de Points 
 
 Les trois formes d'Augmentation partagent le même principe : chaque Augmentation ajoute +1 et coûte un nombre de PX qui dépend du nombre d'Augmentations déjà achetées pour cet élément précis. Les coûts de Caractéristique et de Compétence sont dans le même tableau (à des colonnes différentes) ; les Talents suivent une formule linéaire séparée.
 
-**Sources RAW** : `LDB 07 l.36-37`
+**Sources RAW** : `LDB 07 l.37`
 
 ---
 
@@ -45,7 +45,7 @@ Les tomes de la campagne **L'Ennemi dans l'Ombre** et **Mort sur le Reik** donne
 
 ## Coût des Augmentations — table verbatim
 
-Table copiée verbatim depuis `LDB 07 l.37-40` (colonne « Augmentations » = nombre d'Augmentations **déjà achetées** pour cet élément avant d'acheter la prochaine) :
+Table copiée verbatim depuis `LDB 07 l.51-70` (colonne « Augmentations » = nombre d'Augmentations **déjà achetées** pour cet élément avant d'acheter la prochaine) :
 
 | Augmentations déjà achetées | Coût Caractéristiques (PX) | Coût Compétences (PX) |
 |---|---|---|
@@ -68,7 +68,7 @@ Table copiée verbatim depuis `LDB 07 l.37-40` (colonne « Augmentations » = no
 > « Les Augmentations coûtent 25 PX chacune, et ce sera le cas pour chaque Point acquis, tant que votre nombre précédent d'Augmentation est compris entre 0 et 5. »
 > — LDB 07 l.47
 
-**Sources RAW** : `LDB 07 l.37-40`
+**Sources RAW** : `LDB 07 l.51-70`
 
 **Aucun plafond maximum** : le LDB précise explicitement qu'aucune limite au nombre d'Augmentations n'est imposée, « même si les niveaux les plus élevés se révèlent extrêmement onéreux » (`LDB 07 l.49`).
 
@@ -119,7 +119,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 **Voir aussi** : [`competences.md`](competences.md) pour la définition des Compétences et la règle des Spécialisations.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.75-84) → `adv-0-5`, `feu`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `advanceCost`, `adv-16-20`, `adv-21-25`, `adv-26-30`, +26 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +4 fichiers
+- `LDB 7` (l.75-84) → `adv-0-5`, `feu`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `advanceCost`, `adv-16-20`, `adv-21-25`, `adv-26-30`, +25 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +4 fichiers
 - `LDB 9` (l.44) → `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `combatBaseValue`, `weaponUnmastered`, `createHero`, `entrainementOptions`, `AdvancementPanel`, `GameState`, +2 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, `src/engine/combat.ts`, +6 fichiers
 
 ---
@@ -329,7 +329,7 @@ Module principal : `src/engine/advancement.ts`
 
 | Fonction | Règle couverte | Ref code |
 |---|---|---|
-| `ADVANCE_COST_TABLE` | Table des coûts verbatim | `LDB 07 l.37-40` |
+| `ADVANCE_COST_TABLE` | Table des coûts verbatim | `LDB 07 l.51-70` |
 | `advanceCost(n, kind, inCareer, discount)` | Coût de la N+1ᵉ Augmentation ; ×2 hors carrière | `LDB 07 l.45/80/95` |
 | `buyCharAdvance(hero, char, inCareer)` | Achat d'une Augmentation de Caractéristique | `LDB 07 l.45-72` |
 | `buySkillAdvance(hero, skillName, spec, inCareer, discount)` | Achat d'une Augmentation de Compétence (par spec distincte) | `LDB 07 l.78-84`, `LDB 09 l.44` |

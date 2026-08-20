@@ -46,7 +46,7 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  * comme `AdvancementRef` (espèces/carrières).
  *
  * Curation VDM (#734, 2026-07-26) — −7 : les 8 tables « Marques Arcaniques de <Vent> » (`tables.json`,
- * `VDM 04 l.153` … `VDM 11 l.142`) octroient chacune son Talent *Empreint* en rangée 10 (op
+ * `VDM 04 l.156` … `VDM 11 l.142`) octroient chacune son Talent *Empreint* en rangée 10 (op
  * `grantTalent`) → 8 → 1. Le graphe lit désormais `tables.json` comme source d'octroi
  * (`obtainabilityGraph.ts`, tag `table:<id>`) ; câblage prouvé par `vdm-marques-arcaniques.test.ts`.
  * `talent-aleatoire` désormais exempté via `META_CATALOG_ENTRIES` (cf. ci-dessus) → 1 → 0.

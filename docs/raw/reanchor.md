@@ -26,7 +26,7 @@
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 85 l.276-277` | ❌ LOW | « augmentez f et e de +10, et réduisez ag de -5 … » — aucune occurrence |
-| `LDB 85 l.321` | ❌ LOW | « corps à corps (bagarre)… » — aucune occurrence |
+| `LDB 85 l.387` | ❌ LOW | « corps à corps (bagarre)… » — aucune occurrence |
 
 ## carrieres.md
 

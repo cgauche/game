@@ -601,7 +601,7 @@
   {
     "id": "travel-etapes",
     "label": "Voyage par Étapes",
-    "ref": "EDOC 8 l.29",
+    "ref": "EDOC 8 l.33",
     "group": "Voyage",
     "kind": "flag",
     "default": false,
@@ -610,7 +610,7 @@
   {
     "id": "travel-etapes-count-bonus",
     "label": "Étapes supplémentaires",
-    "ref": "EDOC 8 l.34",
+    "ref": "EDOC 8 l.40",
     "group": "Voyage",
     "kind": "param",
     "default": 0,
@@ -673,7 +673,7 @@
   {
     "id": "travel-attraper-froid",
     "label": "Attraper froid",
-    "ref": "EDOC 8 l.73",
+    "ref": "EDOC 8 l.90",
     "group": "Voyage",
     "kind": "flag",
     "default": false,

@@ -40,7 +40,7 @@ describe('seasonOfMonth (calendrier impérial → table de Météo)', () => {
   });
 });
 
-describe('table de Météo VERBATIM (EDOC 8 l.44-51)', () => {
+describe('table de Météo VERBATIM (EDOC 8 l.50-59)', () => {
   // Plages bornes (max inclus) — lit la table telle que transcrite.
   it('printemps : 01-10 sec, 11-30 beau, 31-90 pluie, 91-95 diluvienne, 96-00 neige', () => {
     expect(weatherFromRoll(1, 'printemps')).toBe('sec');
@@ -106,7 +106,7 @@ describe('table de Météo VERBATIM (EDOC 8 l.44-51)', () => {
   });
 });
 
-describe('stageCount (EDOC 8 l.34) — distance → Étapes ± bonus', () => {
+describe('stageCount (EDOC 8 l.40) — distance → Étapes ± bonus', () => {
   it('village proche (≤ 25 km) = 1 Étape', () => {
     expect(stageCount(10)).toBe(1);
     expect(stageCount(25)).toBe(1);
@@ -134,7 +134,7 @@ describe('stageCount (EDOC 8 l.34) — distance → Étapes ± bonus', () => {
   it('sans paramètre, le bonus est LU sur la règle optionnelle `travel-etapes-count-bonus`', () => {
     expect(stageCount(10)).toBe(1); // défaut de la règle = 0
     setRule('travel-etapes-count-bonus', 2);
-    expect(stageCount(10)).toBe(3); // 1 + 2 (EDOC 8 l.34 « augmentez le nombre d'Étapes de 2 ou plus »)
+    expect(stageCount(10)).toBe(3); // 1 + 2 (EDOC 8 l.40 « augmentez le nombre d'Étapes de 2 ou plus »)
     resetRule('travel-etapes-count-bonus');
     expect(stageCount(10)).toBe(1);
   });
@@ -169,7 +169,7 @@ describe('stageCount — modificateur de Mouvement du groupe (EDOC 8 l.25)', () 
   });
 });
 
-describe('stageExposureDifficulty (EDOC 8 l.73) — difficulté du Test selon équipement', () => {
+describe('stageExposureDifficulty (EDOC 8 l.90) — difficulté du Test selon équipement', () => {
   it('beau temps / sec : aucun Test', () => {
     expect(stageExposureDifficulty('beau', false, false)).toBeNull();
     expect(stageExposureDifficulty('sec', false, false)).toBeNull();

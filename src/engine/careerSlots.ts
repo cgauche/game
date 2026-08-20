@@ -187,7 +187,7 @@ export function skillSlots(levels: CareerLevelData[], level: number): CareerSlot
   return levels.filter((l) => l.level <= level).flatMap((l) => slotsOfLevel(l, 'skill'));
 }
 
-/** Slots de TALENTS achetables : niveau courant UNIQUEMENT (LDB 07 l.100). */
+/** Slots de TALENTS achetables : niveau courant UNIQUEMENT (LDB 07 l.103). */
 export function talentSlots(levels: CareerLevelData[], level: number): CareerSlot[] {
   const cur = levels.find((l) => l.level === level);
   return cur ? slotsOfLevel(cur, 'talent') : [];
@@ -198,7 +198,7 @@ export function talentSlotsUpTo(levels: CareerLevelData[], level: number): Caree
   return levels.filter((l) => l.level <= level).flatMap((l) => slotsOfLevel(l, 'talent'));
 }
 
-/** Caractéristiques de carrière disponibles : cumul des niveaux ≤ courant (LDB 07 l.67). */
+/** Caractéristiques de carrière disponibles : cumul des niveaux ≤ courant (LDB 07 l.43). */
 export function availableChars(levels: CareerLevelData[], level: number): CharKey[] {
   return levels.filter((l) => l.level <= level).flatMap((l) => l.characteristics);
 }

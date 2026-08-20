@@ -219,7 +219,7 @@ function ruleTextOf(node: unknown): string {
  * `ldb` = la formulation du Livre de base que la variante remplace (doit avoir disparu des deux).
  */
 const CONTRADICTIONS: { id: string; ref: string; vdm: RegExp[]; ldb: RegExp[] }[] = [
-  { id: 'illusion', ref: 'VDM 08 l.361', vdm: [/Intuition Complexe/], ldb: [/Perception Complexe/] },
+  { id: 'illusion', ref: 'VDM 08 l.382', vdm: [/Intuition Complexe/], ldb: [/Perception Complexe/] },
   {
     id: 'serres-d-ambre',
     ref: 'VDM 11 l.426',

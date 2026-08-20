@@ -410,7 +410,7 @@ registerCascadeApplier(TAVERN_ROUND_KIND, (get, set, step) => {
 });
 
 /**
- * DÉCLARATION de la SECONDE LECTURE d'un jeu à Test COMBINÉ (`NADJ 16 l.97` : « un Test combiné
+ * DÉCLARATION de la SECONDE LECTURE d'un jeu à Test COMBINÉ (`NADJ 16 l.90` : « un Test combiné
  * d'**Initiative** et de **Pari Accessible (+20)** ») — ce que la RANGÉE dit d'elle-même : la
  * Compétence/Caractéristique que le MÊME dé tranche aussi, sa valeur et sa cible. C'est la SEULE
  * source de la seconde ligne affichée ; le compte des échecs, lui, reste au réducteur de clôture
@@ -1781,7 +1781,7 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
 }
 
 /* ── LA VOLÉE : un PASSAGE de lancers en nombre fixe (famille 7 du socle) ────────────────────────
- * `NADJ 16 l.42` (trois coups, les quilles ÉCRÊTÉES à ce qu'il en reste), `l.65` (cinq lancers, la
+ * `NADJ 16 l.42` (trois coups, les quilles ÉCRÊTÉES à ce qu'il en reste), `l.70` (cinq lancers, la
  * cible CHOISIE avant chacun), `l.83` (trois fléchettes, un total EXACT), `l.57` (trois boules, la
  * meilleure compte). Un tour de séquence = UN lancer d'UN lanceur : c'est la seule granularité qui
  * tienne, parce que la Difficulté du lancer suivant dépend de ce que celui-ci a produit (l.42) et
@@ -1796,7 +1796,7 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
  * boule de –1 par DR que vous dépensez ») et la variante en points sur trois manches ne sont pas
  * joués : ils demandent une dépense de DR ciblée sur la boule d'autrui, mécanisme qu'aucune famille
  * ne porte encore -> #1279 (lot Sf).
- * `NADJ 16 l.67` / `l.85` — les « Spécial » (Tireur d'élite : d'un cran plus facile ; ±1 au dé des
+ * `NADJ 16 l.82` / `l.99` — les « Spécial » (Tireur d'élite : d'un cran plus facile ; ±1 au dé des
  * unités) -> #1306, avec les Points de Chance de l'Al-zahr.
  *
  * DEUX ARBITRAGES MAISON, portés par la DONNÉE et dits ici (jamais prêtés au RAW) :
@@ -1835,7 +1835,7 @@ export interface TavernVolleyState {
 }
 
 /** LES DEUX LANCEURS, dans l'ordre du passage : le challenger et son vis-à-vis. L'ordre est celui que
- *  la donnée déclare — TIRÉ AU SORT quand elle le dit (`NADJ 16 l.83` : « jetez une pièce de monnaie
+ *  la donnée déclare — TIRÉ AU SORT quand elle le dit (`NADJ 16 l.97` : « jetez une pièce de monnaie
  *  pour déterminer qui joue en premier »). */
 function volleyThrowers(get: Get, p: TavernPayload, ordre: SequenceVolleyRules['ordre'], rng: RNG): NonNullable<TavernPayload['throwers']> {
   const mien = { id: p.challengerId, label: actorIn(get(), p.challengerId)?.label ?? p.challengerId, camp: 'player' as const };
@@ -1874,7 +1874,7 @@ function volleyPolitique(v: SequenceVolleyRules, turn: SequenceThrowTurn, choix:
   return ordre.find((n) => turn.points + n <= cible) ?? ordre[ordre.length - 1] ?? 0;
 }
 
-/** MÊME POLITIQUE sur une PLAGE libre (`NADJ 16 l.83`) : le plus grand nombre de la plage qui ne
+/** MÊME POLITIQUE sur une PLAGE libre (`NADJ 16 l.97`) : le plus grand nombre de la plage qui ne
  *  dépasse pas la cible exacte, son minimum à défaut. Sert au lanceur qu'aucun siège ne tient ET de
  *  valeur d'OUVERTURE du compteur pour celui qui saisit — la fenêtre s'ouvre donc sur le coup que le
  *  jeu jouerait, jamais sur une borne arbitraire. */
@@ -2134,7 +2134,7 @@ function volleyClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<Tave
   return { go: 'continue', cum, payload, log };
 }
 
-/* ── LES CAMPS ASYMÉTRIQUES (Alvatafl, `NADJ 16 l.27-28`) ───────────────────────────────────────
+/* ── LES CAMPS ASYMÉTRIQUES (Alvatafl, `NADJ 16 l.25-28`) ───────────────────────────────────────
  * « Le total obtenu par le joueur elfe indique combien de pièces naines sont prises ce tour. Le total
  * obtenu par le joueur nain est divisé par quatre (arrondi au supérieur) pour indiquer combien de
  * pièces elfes sont prises ce tour. […] Sinon, le premier camp à prendre plus de la moitié des pièces
@@ -2183,7 +2183,7 @@ function sidesOf(game: TavernGame, p: TavernPayload): { mien: SequenceSide; sien
   return { mien, sien };
 }
 
-/** RÉDUCTEUR DE CLÔTURE d'une manche à camps asymétriques (`NADJ 16 l.27-28`). */
+/** RÉDUCTEUR DE CLÔTURE d'une manche à camps asymétriques (`NADJ 16 l.25-28`). */
 function sidesClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): SequenceVerdict<TavernPayload> {
   const { seq, done } = ctx;
   const p = seq.payload;
@@ -2231,7 +2231,7 @@ function sidesClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): Seq
   };
 }
 
-/* ── LE TEST COMBINÉ À CONSÉQUENCES DISTINCTES (Cerevis, `NADJ 16 l.97`) ────────────────────────
+/* ── LE TEST COMBINÉ À CONSÉQUENCES DISTINCTES (Cerevis, `NADJ 16 l.90`) ────────────────────────
  * « à chaque tour de Cerevis, chaque joueur effectue un Test combiné d'**Initiative** et de **Pari
  * Accessible (+20)**. Le joueur qui a obtenu le moins de DR à son Test de **Pari** perd le tour, et
  * doit marquer une chouette. En cas d'échec du Test d'Initiative, le joueur utilise accidentellement
@@ -2321,7 +2321,7 @@ function combinedSecondTarget(regles: SequenceCombinedRules, acteur: Combatant |
 }
 
 /**
- * RÉDUCTEUR DE CLÔTURE d'un tour à Test COMBINÉ (`NADJ 16 l.97`) : la première lecture désigne le
+ * RÉDUCTEUR DE CLÔTURE d'un tour à Test COMBINÉ (`NADJ 16 l.90`) : la première lecture désigne le
  * perdant du tour (une marque), la seconde — LE MÊME DÉ, `evaluateCombinedTest` — compte les échecs et
  * paie ce que la donnée déclare à chaque échéance.
  */

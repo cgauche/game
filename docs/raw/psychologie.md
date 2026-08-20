@@ -326,7 +326,7 @@ L'immunité est conditionnelle : elle ne s'applique que si la créature a **plus
 **Sources RAW** : `LDB 85 l.51` — condition d'immunité
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.23, l.51) → `a-distance`, `arme`, `a-sang-froid`, `affame`, `amphibie`, `a-terre`, `weaponFromTrait`, `cornes`, `animosite`, `arboricole`, +17 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`
+- `LDB 85` (l.23, l.51) → `a-distance`, `arme`, `a-sang-froid`, `affame`, `amphibie`, `a-terre`, `weaponFromTrait`, `cornes`, `animosite`, `arboricole`, +19 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`, `src/state/combat/turnHooks.ts`, +2 fichiers
 
 ---
 
@@ -461,7 +461,7 @@ Un Test de FM raté est relu avec ses chiffres inversés (ex. 91 → 19) ; si le
 **Sources RAW** : `LDB 85 l.13`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.13) → `a-distance`, `arme`, `a-sang-froid`, `affame`, `amphibie`, `a-terre`, `cornes`, `animosite`, `arboricole`, `armure`, +13 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`
+- `LDB 85` (l.13) → `a-distance`, `arme`, `a-sang-froid`, `affame`, `creatureWeapon`, `amphibie`, `a-terre`, `cornes`, `animosite`, `arboricole`, +14 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`
 
 ---
 

@@ -155,7 +155,7 @@ Règle d'application des Traits Facultatifs modificateurs de profil (**Élite, C
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.11-13, l.45) → `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `critTableKeyFor`, `rollCritical` — `src/data/criticals.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
-- `LDB 85` (l.339-340) → `creatureWeapon`, `resizeBySteps`, `taille-modificateurs-en-combat`, `sonne`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `souffle-electrique`, `bestDefenseMode`, `souffle-poison`, +19 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +2 fichiers
+- `LDB 85` (l.339-340) → `resizeBySteps`, `taille-modificateurs-en-combat`, `sonne`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `souffle-electrique`, `souffle-poison`, `souffle-fumee`, `perturbant`, +16 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/size.ts`, `src/state/rollFlowSpecs.ts`
 
 ---
 
@@ -204,7 +204,7 @@ Le trait **Endurant** ajoute +BE aux Blessures calculées (appliqué avant tout 
 **Voir aussi** : [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat) ; [Taille dans combat.md](combat.md#taille-categories-et-modificateurs-de-combat) (récapitulatif en-combat, renvoi ici pour le détail des Blessures).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.343-406) → `creatureWeapon`, `cannotStopOn`, `agressifEnvers`, `markAttacked`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, +53 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/creatureEquip.ts`, +12 fichiers
+- `LDB 85` (l.343-406) → `cannotStopOn`, `agressifEnvers`, `markAttacked`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, +50 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/creatureEquip.ts`, +12 fichiers
 
 ---
 
@@ -222,7 +222,7 @@ Ces modificateurs s'appliquent **par catégorie d'écart**. Ils sont cumulatifs 
 - `LDB 85 l.339-340` — règle d'agrandissement/réduction.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.276-277, l.339-340) → `creatureWeapon`, `StatblockEditor`, `resizeBySteps`, `resolvePsychAI`, `creatureToCombatant`, `taille-modificateurs-en-combat`, `sonne`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, +24 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +6 fichiers
+- `LDB 85` (l.276-277, l.339-340) → `StatblockEditor`, `resizeBySteps`, `resolvePsychAI`, `creatureToCombatant`, `taille-modificateurs-en-combat`, `sonne`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `souffle-electrique`, +21 — `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/size.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`, +3 fichiers
 
 ---
 
@@ -295,7 +295,7 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.142-165) → `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `combat-deux-armes`, `empetre`, `grappleTierMod`, `main-secondaire`, `grappleEnvMod`, `MANUAL_COMBAT_INTENTS`, +38 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/engine/combat.ts`, `src/engine/engagement.ts`, +22 fichiers
-- `LDB 85` (l.357-387) → `cannotStopOn`, `agressifEnvers`, `markAttacked`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, +26 — `src/data/index.ts`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/creatureEquip.ts`, `src/engine/engagement.ts`, +11 fichiers
+- `LDB 85` (l.357-387) → `cannotStopOn`, `agressifEnvers`, `markAttacked`, `sizeDamageMultiplier`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, `MoveEnv`, +24 — `src/data/index.ts`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/psychology.ts`, +10 fichiers
 
 ---
 
@@ -316,7 +316,7 @@ Les Caractéristiques inexistantes (« – » → 0) **ne sont pas tirées**.
 
 ## Index des Traits de créature
 
-**Source RAW** : `LDB 85 l.1-382` (chapitres Traits de créature)
+**Source RAW** : `LDB 85 l.1-447` (chapitres Traits de créature)
 
 Les Traits de créature sont **définis dans `LDB 85`** et sont indexés ici pour référence rapide. Leurs règles complètes sont transcrites dans les domaines suivants :
 
@@ -340,10 +340,10 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 |---|---|---|---|
 | **Arme (Indice)** | Action normale | — | Arme de C-à-C standard |
 | **À Distance (Indice)(Portée)** | Action normale | — | Attaque à distance |
-| **Morsure (Indice)** | Attaque gratuite | 1 Avantage | `LDB 85 l.194` |
-| **Attaque Caudale (Indice)** | Attaque gratuite | 1 Avantage | Cible Taille inférieure → À Terre (`LDB 85 l.395`) |
+| **Morsure (Indice)** | Attaque gratuite | 1 Avantage | `LDB 85 l.237` |
+| **Attaque Caudale (Indice)** | Attaque gratuite | 1 Avantage | Cible Taille inférieure → À Terre (`LDB 85 l.47`) |
 | **Cornes (Aspect)(Indice)** | Attaque gratuite | — | À la Charge seulement (`LDB 85 l.83`) |
-| **Tentacules # (Indice)** | Attaque gratuite par tentacule | — | Empêtré si Dégâts ; Empoignade possible (`LDB 85 l.408-408`) |
+| **Tentacules # (Indice)** | Attaque gratuite par tentacule | — | Empêtré si Dégâts ; Empoignade possible (`LDB 85 l.405`) |
 | **Souffle (Indice)(Type)** | Attaque gratuite zone | 2 Avantages | Portée BE+20m, zone BF cible ; Magique (`LDB 85 l.317-330`) |
 | **Vomissement** | Attaque gratuite zone | 3 Avantages | Portée BE, zone 2m ; corrosif ; État Sonné (`LDB 85 l.442-447`) |
 | **Regard Pétrifiant** | Action | 1+ Avantages | CT/Init opposé, +1DR/Avantage ; pétrification à 6+ DR (`LDB 85 l.290`) |
@@ -353,7 +353,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `critTableKeyFor`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
-- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, +174 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +34 fichiers
+- `LDB 85` (l.1-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, +174 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +34 fichiers
 
 ---
 
@@ -462,15 +462,15 @@ Les chapitres `LDB 77-83`, `ZI`, `frenchy.bzh`, `EDO`, `MSR/MSRC`, `PDT`, `NADJ`
 - `src/engine/size.ts` — `LDB 85 l.343-406` (7 catégories, Blessures, mods combat).
 - `src/state/spawn.ts` — `LDB 76 l.45` (Facultatifs), `LDB 77 l.108` (carac. aléatoires).
 - `src/engine/creatureAttacks.ts` — `LDB 85 traits` (grantsManeuvers par id).
-- `src/engine/creatureEquip.ts` — `LDB 85 l.408` (Tentacules, compte/attaques gratuites).
-- `src/engine/combat.ts` l.280-297, 565, 596 — `LDB 85 l.253/299/301-303/305-306`.
+- `src/engine/creatureEquip.ts` — `LDB 85 l.405` (Tentacules, compte/attaques gratuites).
+- `src/engine/combat.ts` — `LDB 85 l.253` (Nuée : ignore les règles de Taille), `l.360-362` (Atouts, multiplicateur de Dégâts, Frappe Mortelle par Taille), `l.366` (+10 au plus petit), `l.370` (pénalité de Parade), `l.387` (Piétinement).
 - `src/state/combatFlow.ts` l.674, 1770 — `LDB 85 l.373-374` (désengagement gratuit), `LDB 85 l.386-387` (Piétinement).
 - `src/engine/psychology.ts` l.119-130 — `LDB 85 l.382-383` (Peur/Terreur par Taille).
 - `src/state/aim-bigger.test.ts` — `LDB 76 l.40` (localisation gratuite ≥ 2 cat).
 
 ### Écarts ou points à vérifier
 
-- La règle **Piétinement** mentionne « Corps à corps (Bagarre) » (`LDB 85 l.321`) : vérifier que le code utilise bien cette Compétence (pas Corps à corps base générique).
+- La règle **Piétinement** mentionne « Corps à corps (Bagarre) » (`LDB 85 l.387`) : vérifier que le code utilise bien cette Compétence (pas Corps à corps base générique).
 - La règle **Nuée** (`LDB 85 l.252-258`) est synthétisée dans `combat.md` — ce fichier ne la re-transcrit pas (renvoi).
 - **Chapitres chamaniques / sorts de créatures** (Lanceur de Sorts, Béni, Miracles) : règle dans `magie.md` / `religion.md`, pas ici.
-- La règle d'**Animosité** (LDB 85 l.18 → LDB 21 l.X) est dans `psychologie.md`.
+- La règle d'**Animosité** (LDB 85 l.25 → LDB 21 l.X) est dans `psychologie.md`.

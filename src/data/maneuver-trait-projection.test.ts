@@ -14,10 +14,8 @@ import { codexLookupById } from '../ui/compendium/registry';
  * `Map`, une manœuvre revendiquée par DEUX traits y serait écrasée en silence : le contrat d'UNICITÉ
  * ci-dessous l'interdit nommément.
  *
- * La prose ET son ancrage vivent chez le TRAIT, repérés au FOLIO (`source.page`) : les ancres `l.<ligne>`
- * que portaient les descs des manœuvres (`LDB 85 l.338`, `l.249-269`…) ne sont plus dans l'arbre. Elles
- * dataient d'avant la ré-extraction Marker et pointaient le préfixe de FICHIER, pas le folio imprimé ;
- * la classe de ce localisateur relève de #1228.
+ * La prose ET son ancrage vivent chez le TRAIT, repérés au FOLIO (`source.page`) : une manœuvre ne
+ * porte AUCUN localisateur RAW propre. La classe de ce localisateur relève de #1228.
  */
 const RAW: { id: string; source?: { book: string; page: number }; desc?: string }[] = JSON.parse(
   readFileSync(fileURLToPath(new URL('./maneuvers.json', import.meta.url)), 'utf8'),
