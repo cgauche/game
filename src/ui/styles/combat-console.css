@@ -779,8 +779,11 @@
 }
 .cc-gutter-action { --gc: var(--gauge-action); }
 .cc-gutter-move { --gc: var(--gauge-move); }
-/* Aperçu du geste en cours : les crans qui vont partir clignotent (même horloge que les jauges de
-   la barre d'action — `af-pulse`, `combat-ui.css`). */
+/* Aperçu du geste en cours : les crans qui vont partir clignotent. UNE horloge par gouttière
+   (`af-pulse`, définie ICI, chez son unique consommateur) → tous les crans qui partent battent EN
+   PHASE ; le `@property` typé en `<number>` est ce qui rend la variable INTERPOLABLE. */
+@property --af-pulse { syntax: '<number>'; inherits: true; initial-value: 1; }
+@keyframes af-pulse { 0%, 100% { --af-pulse: 1; } 50% { --af-pulse: 0.28; } }
 .cc-gutter-rail:has(i.spend) {
   animation: af-pulse 0.7s ease-in-out infinite;
 }

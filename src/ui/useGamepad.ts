@@ -11,24 +11,28 @@ import { useGame } from '../state/store';
 import { runBindingById, runBindingUpById } from '../state/keybindings';
 import { visibleFocusables } from './Modal';
 
+/** Surface d'AFFORDANCES du combat : le pont de la console (`CombatConsole`), unique conteneur de
+ *  cases/boutons de tour. Codé ici une seule fois — les trois sites de la manette le partagent. */
+const CONSOLE_SEL = '.combat-console';
+
 /** Contexte d'entrée courant (DOM pur, pas d'état React) : une modale ouverte capte tout ; sinon, le
- *  focus dans la barre d'action = navigation de menu ; à défaut = pilotage de la carte (curseur). */
+ *  focus dans la console de combat = navigation de menu ; à défaut = pilotage de la carte (curseur). */
 type PadCtx = 'modal' | 'menu' | 'map';
 function padContext(): PadCtx {
   if (document.querySelector('[role="dialog"]')) return 'modal';
   const ae = document.activeElement;
-  if (ae && ae.closest('.action-bar')) return 'menu';
+  if (ae && ae.closest(CONSOLE_SEL)) return 'menu';
   return 'map';
 }
 
 /** Conteneur ACTIF du contexte focus : la modale du DESSUS (dernier `[role=dialog]`, cohérent avec le
- *  piège Tab de `Modal`) ou la barre d'action. `null` en contexte carte (pas de nav de focus). */
+ *  piège Tab de `Modal`) ou la console de combat. `null` en contexte carte (pas de nav de focus). */
 function activeContainer(ctx: PadCtx): HTMLElement | null {
   if (ctx === 'modal') {
     const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"]');
     return dialogs[dialogs.length - 1] ?? null;
   }
-  if (ctx === 'menu') return document.querySelector<HTMLElement>('.action-bar');
+  if (ctx === 'menu') return document.querySelector<HTMLElement>(CONSOLE_SEL);
   return null;
 }
 
@@ -93,9 +97,9 @@ export function padButton(name: PadButton): void {
       else if (ctx === 'menu') ae?.blur();
       else document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       break;
-    case 'X': // carte : combat = focus la barre d'action ; exploration (pas de barre) = bascule le POV. menu = revenir carte.
+    case 'X': // carte : combat = focus la console ; exploration (pas de console) = bascule le POV. menu = revenir carte.
       if (ctx === 'map') {
-        const bar = document.querySelector<HTMLElement>('.action-bar');
+        const bar = document.querySelector<HTMLElement>(CONSOLE_SEL);
         if (bar) visibleFocusables(bar)[0]?.focus();
         else runBindingById('toggle-pov', get); // exploration : X commute la vue subjective
       } else if (ctx === 'menu') ae?.blur();
