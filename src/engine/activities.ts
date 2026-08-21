@@ -19,7 +19,7 @@
  */
 import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { Money, fromBrass, toBrass, priceToMoney, PA_PER_SC, PA_PER_CO } from './money';
-import type { Combatant, Difficulty, SkillInstance, Availability } from './types';
+import type { Combatant, Difficulty, SkillInstance, Availability, StakeForm } from './types';
 import type { GameOp } from './ops';
 import type { ModLine } from './combat';
 import { resolveSkillBest, bestSkilledOption, testValue, type SkillRef, type TestSpec } from './skills';
@@ -372,7 +372,7 @@ export interface ActivityDef extends TestSpec {
    *  unique `resolveStake` (`src/data/index.ts`, dataset `activity`). */
   stake?: string;
   /** FORME DÉCLARÉE du `stake` — même contrat que `night-stakes`/`flow-stakes` (garde de forme). */
-  stakeForm?: 'verbatim' | 'descripteur';
+  stakeForm?: StakeForm;
   /** FOYER de la règle derrière le jet : id de l'ENTITÉ qui la porte. Absent = l'Activité elle-même
    *  (sa `desc` verbatim, catégorie Codex `activities`) — jamais une fiche `regles.json` doublon. */
   rule?: string;

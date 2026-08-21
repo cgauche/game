@@ -6,7 +6,7 @@
  * ci-dessous sont observés au moins une fois ; aucun champ de l'interface n'est ABSENT du JSON.
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, difficultySchema, stageOutcomeSchema } from '../common';
+import { gameOpSchema, sourceRefSchema, difficultySchema, stageOutcomeSchema, stakeFormSchema } from '../common';
 
 export const file = 'activities.json';
 
@@ -125,7 +125,7 @@ export const schema = z.array(
     /** Texte d'enjeu — descripteur mécanique de ce que le résolveur applique, et/ou verbatim court. */
     stake: z.string().optional(),
     /** FORME DÉCLARÉE du `stake` (même contrat que `night-stakes`/`flow-stakes`). */
-    stakeForm: z.enum(['verbatim', 'descripteur']).optional(),
+    stakeForm: stakeFormSchema.optional(),
     /** FOYER de la règle derrière le jet — id de l'entité qui la PORTE. Absent : le foyer est
      *  l'Activité elle-même (sa `desc` verbatim, catégorie Codex `activities`). */
     rule: z.string().optional(),

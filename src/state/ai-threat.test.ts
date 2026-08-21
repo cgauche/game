@@ -13,6 +13,7 @@
 import { describe, it, expect } from 'vitest';
 import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
 import { emptyScene } from './scene';
+import { chebyshev } from './path';
 import type { Combatant, Weapon } from '../engine/types';
 import type { SpellData } from '../data';
 import type { Dir8 } from './dir8';
@@ -133,7 +134,7 @@ describe('Lot 3 — positionValue : portée préférée & flanc/dos', () => {
     expect(a.kind).toBe('move');
     if (a.kind === 'move') {
       // arrive au contact du héros…
-      expect(Math.max(Math.abs(a.to.x - 10), Math.abs(a.to.y - 10))).toBe(1);
+      expect(chebyshev(a.to, { x: 10, y: 10 })).toBe(1);
       // …par une case HORS du champ de vision avant (flanc/dos) : pas la case nord (10,9) qui est plein
       // front du héros orienté N. (Le sud (10,11) est le dos.)
       expect(`${a.to.x},${a.to.y}`).not.toBe('10,9');

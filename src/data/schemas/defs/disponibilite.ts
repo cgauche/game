@@ -6,11 +6,10 @@
  * STABLE ; `village`/`ville`/`cite` = `Settlement`.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { availabilitySchema, sourceRefSchema } from '../common';
 
 export const file = 'disponibilite.json';
 
-const availabilitySchema = z.enum(['Commune', 'Limitée', 'Rare', 'Exotique']);
 const ratioSchema = z.strictObject({ give: z.number(), get: z.number() });
 
 export const schema = z.strictObject({

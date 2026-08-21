@@ -2,6 +2,7 @@ import type { RaceDef } from './types';
 import type { StoredPalette } from '../palette';
 import { raceAppearance, type RaceAppearanceData } from '../../../data';
 import { feat } from '../parts/elements';
+import { memoByRef } from '../../../state/sceneMemo';
 import speciesRaceJson from '../../../data/speciesRace.json';
 
 /**
@@ -9,15 +10,10 @@ import speciesRaceJson from '../../../data/speciesRace.json';
  * façade) résolue ICI en `RaceDef` : `featureKeys` → `feat()` (overlays du catalogue), le reste en
  * passe-plat. Plus de race-defs code : éditer une espèce dans le Compendium se reflète en jeu.
  */
-const cache = new WeakMap<RaceAppearanceData, RaceDef>();
-function resolve(rec: RaceAppearanceData): RaceDef {
-  const hit = cache.get(rec);
-  if (hit) return hit;
+const resolve = memoByRef((rec: RaceAppearanceData): RaceDef => {
   const { featureKeys, ...rest } = rec;
-  const def = { ...rest, ...(featureKeys?.length ? { features: feat(...featureKeys) } : {}) } as unknown as RaceDef;
-  cache.set(rec, def);
-  return def;
-}
+  return { ...rest, ...(featureKeys?.length ? { features: feat(...featureKeys) } : {}) } as unknown as RaceDef;
+});
 
 export type { RaceDef, RaceFeature } from './types';
 /** Toutes les races résolues, par id (instantané — relu à chaque accès pour suivre les éditions live). */

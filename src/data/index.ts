@@ -98,7 +98,7 @@ import seaPerilsJson from './sea-perils.json';
 import seaWeatherJson from './sea-weather.json';
 import shipConstructionJson from './ship-construction.json';
 import riverNavigationJson from './river-navigation.json';
-import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability, Difficulty, type NightTestKind } from '../engine/types';
+import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability, Difficulty, type NightTestKind, type StakeForm } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
 import type { PowerEstimateRow, MightModifierRow, WarMachineRow, StructureRow as MassBattleStructureRow, HazardRow } from '../engine/massBattle'; // type-only (le runtime de massBattle.ts importe ces tableaux d'ici)
@@ -185,7 +185,7 @@ export interface NightStakeEntry {
   stake: string;
   /** FORME DÉCLARÉE du `stake` (garde `night-stake-form.test.ts`) : `verbatim` (défaut) = contigu au
    *  Source, bloc par bloc ; `descripteur` = assemblage mécanique assumé, fiche `rule` exigée. */
-  form?: 'verbatim' | 'descripteur';
+  form?: StakeForm;
   source: SourceRef;
   /** FOYER de la règle derrière l'étape : l'id de l'ENTITÉ qui la porte (amendement A) — une fiche
    *  `regles.json` seulement quand aucune entité ne l'héberge. */
@@ -222,7 +222,7 @@ export interface FlowStakeEntry {
   flow: string;
   phase: string;
   template: string;
-  form: 'verbatim' | 'descripteur';
+  form: StakeForm;
   rule?: string;
   ruleCategory?: string;
   /** Catégorie Codex de l'ENTRÉE jouée — le renvoi descend jusqu'à elle quand la clé la nomme. */
@@ -243,7 +243,7 @@ export interface CombatStakeEntry {
   /** Gabarit du descripteur — ABSENT quand l'issue du jet se lit en chips d'ops (#1117) : l'entrée ne
    *  porte alors que son foyer de règle. `form` le qualifie, donc absente avec lui. */
   template?: string;
-  form?: 'verbatim' | 'descripteur';
+  form?: StakeForm;
   rule?: string;
   ruleCategory?: string;
   /** Catégorie Codex de l'ENTRÉE jouée — le renvoi descend jusqu'à elle quand la clé la nomme. */
@@ -260,11 +260,12 @@ export const COMBAT_STAKES = combatStakesJson as CombatStakeEntry[];
 /** ENJEU d'une ACTIVITÉ (#1117 L3) — porté par l'ENTITÉ elle-même (`activities.json`), pas par un
  *  fichier d'enjeux tiers : une Activité EST déjà une entrée Codex éditable qui porte sa règle en
  *  `desc` verbatim. Vue MINIMALE de `ActivityDef` (`src/engine/activities.ts`) réduite aux champs
- *  d'enjeu : `src/data` ne dépend jamais de `src/engine`. */
+ *  d'enjeu : `src/data` n'importe pas `src/engine/activities` (du moteur, seul le module FEUILLE
+ *  `engine/types` l'est). */
 export interface ActivityStakeEntry {
   id: string;
   stake?: string;
-  stakeForm?: 'verbatim' | 'descripteur';
+  stakeForm?: StakeForm;
   rule?: string;
   ruleCategory?: string;
 }
@@ -1410,7 +1411,7 @@ export interface PsychologyData extends StatusData {
    *  ses conséquences lui sont propres (`resolution`/`failCondition`/`failAmount`/`becomes`), un texte
    *  au `kind` serait tautologique. Résolu par `resolveStake` via l'`entryId` de l'étape. */
   stake?: string;
-  stakeForm?: 'verbatim' | 'descripteur';
+  stakeForm?: StakeForm;
   /** AFFICHAGE (couche UI, hors RAW LDB 21) : icône du registre `<Icon>` (id `famille/nom`), à l'égal
    *  d'`EtatData.icon`. Lu par `CIBLE_LABEL` (engine/psychology.ts). */
   icon?: string;
@@ -1563,7 +1564,7 @@ export interface ManeuverDef {
    *  `maneuverDefense`, `entryId` = l'id de la manœuvre) : il PRIME sur le gabarit du kind. */
   stake?: string;
   /** FORME déclarée de l'enjeu — `verbatim` (contigu au Source) ou `descripteur` (assemblage des ops). */
-  stakeForm?: 'verbatim' | 'descripteur';
+  stakeForm?: StakeForm;
 }
 /** Drapeaux de CAPACITÉ IRRÉDUCTIBLES d'un trait (LDB 85) — décisions d'IA/psychologie, règles de
  *  résolution de combat, capacités de construction/déplacement/vision : NI un modificateur (`passive`)

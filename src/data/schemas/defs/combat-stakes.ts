@@ -9,7 +9,7 @@
  * `regles.json` n'étant que le foyer des règles de cadre. Au moins l'un des deux est exigé.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema, stakeFormSchema } from '../common';
 
 export const file = 'combat-stakes.json';
 
@@ -29,7 +29,7 @@ export const schema = z.array(
       template: z.string().optional(),
       /** FORME DÉCLARÉE (garde `night-stake-form.test.ts`, étendue à ce dataset) — qualifie le gabarit :
        *  présente si et seulement s'il y en a un. */
-      form: z.enum(['verbatim', 'descripteur']).optional(),
+      form: stakeFormSchema.optional(),
       /** Id du FOYER de la règle (entité porteuse, ou fiche de `regles.json` à défaut). Le foyer est la
        *  règle qui EXIGE le jet, JAMAIS son issue : le ⓘ du titre ouvre cette règle, les chips d'issue
        *  ouvrent la conséquence appliquée (arbitrage user 2026-08-09 : « ce jet fait référence à une

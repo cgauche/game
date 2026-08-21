@@ -15,6 +15,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { runEnemyAI } from './combatFlow';
 import { spawnEnemy } from './spawn';
+import { chebyshev } from './path';
 import { pregen, PREGEN } from '../data/pregens';
 import { findSpell } from '../data';
 import { seedBattleRng } from './battleRng';
@@ -74,9 +75,8 @@ describe('ZdE ennemie — télégraphe visuel actorAoe (pose pendant le télégr
     expect(aoe!.casterId).toBe('caster');
     expect(aoe!.radius).toBeGreaterThanOrEqual(1); // Explosion : rayon ≥ 1 case
     // Centre choisi par l'IA pure : couvre le paquet (8,5)/(9,5) → distance Chebyshev ≤ rayon de chaque héros.
-    const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
-    expect(cheb(aoe!.center, h1.pos!)).toBeLessThanOrEqual(aoe!.radius);
-    expect(cheb(aoe!.center, h2.pos!)).toBeLessThanOrEqual(aoe!.radius);
+    expect(chebyshev(aoe!.center, h1.pos!)).toBeLessThanOrEqual(aoe!.radius);
+    expect(chebyshev(aoe!.center, h2.pos!)).toBeLessThanOrEqual(aoe!.radius);
     // Avant le timer du télégraphe, la résolution reste inamorcée (pas de cast en cours).
     expect(useGame.getState().pendingCast).toBeNull();
     expect(useGame.getState().pendingCascade).toBeNull();

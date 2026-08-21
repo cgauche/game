@@ -15,7 +15,7 @@
  * l'`entryId` pris de SON état. Au moins l'un des deux est exigé : un enjeu sans porte est refusé.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema, stakeFormSchema } from '../common';
 
 export const file = 'flow-stakes.json';
 
@@ -32,8 +32,13 @@ export const schema = z.array(
       phase: z.string(),
       /** Gabarit du texte d'enjeu — trous `{nom}` remplis par le producteur (valeurs calculées). */
       template: z.string(),
-      /** FORME DÉCLARÉE (garde `night-stake-form.test.ts`, étendue à ce dataset). */
-      form: z.enum(['verbatim', 'descripteur']),
+      /** FORME DÉCLARÉE (garde `night-stake-form.test.ts`, étendue à ce dataset). EXIGÉE ici, alors
+       *  qu'elle est facultative chez les datasets jumeaux — l'écart est un CHOIX, pas un oubli :
+       *  `night-stakes` laisse `form` absente parce que son type déclare `verbatim` par DÉFAUT
+       *  (13 entrées sur 15 en profitent), `combat-stakes` l'omet exactement quand `template` est
+       *  absent (3 sur 3 — il n'y a alors aucun texte à qualifier). Ici `template` est REQUIS : tout
+       *  enjeu porte un texte, donc tout enjeu déclare sa forme (33 sur 33 en donnée). */
+      form: stakeFormSchema,
       /** Id du FOYER de la règle (entité porteuse, ou fiche de `regles.json` à défaut). */
       rule: z.string().optional(),
       /** Catégorie Codex du foyer (`'regles'`, `'skills'`, `'talents'`, `'etats'`…). */

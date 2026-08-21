@@ -10,6 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
 import { emptyScene, type Scene } from './scene';
+import { chebyshev } from './path';
 import type { Combatant, Weapon } from '../engine/types';
 import type { SpellData } from '../data';
 
@@ -287,7 +288,7 @@ describe('GOLDEN — extensions op-driven (attaquer prime / pas de move parasite
     const a = chooseEnemyAction(input(e, [h]));
     expect(a.kind).toBe('move'); // s'approche (hors de portée de tir)
     expect(tidOf(a)).toBe('h');
-    if (a.kind === 'move') expect(Math.max(Math.abs(a.to.x - 8), Math.abs(a.to.y - 12))).toBeGreaterThan(1); // STANDOFF, pas le contact
+    if (a.kind === 'move') expect(chebyshev(a.to, { x: 8, y: 12 })).toBeGreaterThan(1); // STANDOFF, pas le contact
   });
 
   // (b) PAS de MOVE PARASITE : en scène NEUTRE (déjà à bonne distance, rien à gagner en position), le

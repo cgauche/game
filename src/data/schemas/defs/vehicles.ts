@@ -6,14 +6,11 @@
  * 22/25, `ship` 20/25, `travel` 3/25, `deck` 1/25).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { availabilitySchema, sourceRefSchema } from '../common';
 
 export const file = 'vehicles.json';
 
 const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
-
-/** `Availability` (`src/engine/types.ts`) : « Commune »/« Limitée »/« Rare »/« Exotique ». */
-const availabilitySchema = z.enum(['Commune', 'Limitée', 'Rare', 'Exotique']);
 
 const navalTraitRefSchema = z.strictObject({ id: z.string(), value: z.number().optional() });
 

@@ -4,6 +4,7 @@ import { chooseEnemyAction, type EnemyTurnInput, type CastableSpell } from './ai
 import { opValue, spellActionValue, type SpellPlacement } from './aiSpellValue';
 import { creatureToCombatant } from './spawn';
 import { emptyScene } from './scene';
+import { chebyshev } from './path';
 import { findCreature, findSpell, type SpellData } from '../data';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant, Weapon } from '../engine/types';
@@ -97,7 +98,7 @@ describe('chooseEnemyAction — sorts (énumération op-driven)', () => {
     expect(a.kind).toBe('castArea');
     if (a.kind === 'castArea') {
       expect(a.spell).toBe('vortex-d-ames');
-      const cov = [h1, h2].filter((h) => Math.max(Math.abs(h.pos!.x - a.center.x), Math.abs(h.pos!.y - a.center.y)) <= 1).length;
+      const cov = [h1, h2].filter((h) => chebyshev(h.pos!, a.center) <= 1).length;
       expect(cov).toBe(2);
     }
   });

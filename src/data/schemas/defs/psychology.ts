@@ -5,7 +5,7 @@
  * l'interface), simplement optionnel et jamais peuplé en pratique.
  */
 import { z } from 'zod';
-import { sourceRefSchema, gameOpSchema, difficultySchema, triggeredEffectSchema } from '../common';
+import { sourceRefSchema, gameOpSchema, difficultySchema, triggeredEffectSchema, stakeFormSchema } from '../common';
 
 export const file = 'psychology.json';
 
@@ -40,7 +40,7 @@ export const schema = z.array(
      *  qui PORTE la règle porte aussi ce que son jet met en jeu. `{indice}` = trou rempli par le flux. */
     stake: z.string().optional(),
     /** FORME DÉCLARÉE du `stake` (même contrat que `night-stakes`/`flow-stakes`/`activities`). */
-    stakeForm: z.enum(['verbatim', 'descripteur']).optional(),
+    stakeForm: stakeFormSchema.optional(),
     resolution: z.enum(['extended', 'terreur', 'binary']).optional(),
     failCondition: z.string().optional(),
     failAmount: z

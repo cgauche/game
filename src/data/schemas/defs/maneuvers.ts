@@ -11,7 +11,7 @@
  * donc tout `desc` ré-ajouté ici. Résolution du trait : `traitProjectingManeuver` (`src/data/index.ts`).
  */
 import { z } from 'zod';
-import { charKeySchema, sourceRefSchema, triggeredEffectSchema } from '../common';
+import { charKeySchema, sourceRefSchema, triggeredEffectSchema, stakeFormSchema } from '../common';
 
 export const file = 'maneuvers.json';
 
@@ -43,6 +43,6 @@ export const schema = z.array(
     /** ENJEU de l'ENTRÉE (#1117) — ce que la manœuvre met en jeu, COLLÉ à ses `effects` (éditable au
      *  Codex). Rendu par `resolveStake` et PRIORITAIRE sur le gabarit du kind `maneuverDefense`. */
     stake: z.string().optional(),
-    stakeForm: z.enum(['verbatim', 'descripteur']).optional(),
+    stakeForm: stakeFormSchema.optional(),
   }),
 );

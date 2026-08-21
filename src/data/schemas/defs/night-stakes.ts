@@ -4,7 +4,7 @@
  * doctrine 2026-07-12 : un catalogue en dur est l'exception, il migre en donnée). Lu par `nightStake`.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema, stakeFormSchema } from '../common';
 
 export const file = 'night-stakes.json';
 
@@ -23,7 +23,7 @@ export const schema = z.array(
      *  - `'descripteur'` : descripteur MÉCANIQUE assemblé depuis ce que l'applier fait réellement
      *    (aucun fragment n'est réputé verbatim). Le verbatim intégral vit dans la fiche `rule`.
      *  La garde distingue les deux STRUCTURELLEMENT : un assemblage non déclaré échoue. */
-    form: z.enum(['verbatim', 'descripteur']).optional(),
+    form: stakeFormSchema.optional(),
     source: sourceRefSchema,
     /** FICHE derrière cette étape — la règle est à UN CLIC depuis l'enjeu (#1117). C'est l'id de
      *  l'entité qui PORTE déjà la règle (amendement A, 2026-08-06 : « tant qu'on évite de surcharger

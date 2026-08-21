@@ -117,10 +117,14 @@ export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'):
   return BODY_SHAPE_LOC_LABELS[shape]?.[loc] ?? HIT_LOCATION_LABELS[loc];
 }
 
+/** Paliers de Disponibilité, dans l'ordre IMPRIMÉ par le tableau (LDB 59 « Disponibilité »). Tuple
+ *  RUNTIME : les schémas zod le consomment tel quel (`availabilitySchema`, `src/data/schemas/common.ts`),
+ *  donc la donnée et le type ne peuvent plus diverger d'un palier. */
+export const AVAILABILITIES = ['Commune', 'Limitée', 'Rare', 'Exotique'] as const;
 /** Disponibilité d'un objet/équipement (LDB 59 « Disponibilité ») — FOYER UNIQUE du concept :
  *  Test de Disponibilité au marché (`disponibilite`), Difficulté d'Artisanat (`activities`),
  *  décalage par qualité (`craftEconomy`). `HarvestRarity` l'étend de `'Unique'` (récolte/trophées). */
-export type Availability = 'Commune' | 'Limitée' | 'Rare' | 'Exotique';
+export type Availability = (typeof AVAILABILITIES)[number];
 
 /** Propulsion d'un véhicule/embarcation — pilote la table de localisation des dégâts (terre : roues/
  *  attelage ; fleuve/mer : voiles/avirons/coque). EDOC 7 (terrestre), MoR ch.5 (fluvial), MDG 13 (maritime). */
@@ -1773,6 +1777,15 @@ export type NightTestKind = (typeof NIGHT_TEST_KINDS)[number];
 export function isNightTestKind(k: string): k is NightTestKind {
   return (NIGHT_TEST_KINDS as readonly string[]).includes(k);
 }
+
+/** FORME DÉCLARÉE d'un texte d'ENJEU (#1117) : `verbatim` = contigu au Source, bloc par bloc ;
+ *  `descripteur` = assemblage mécanique assumé, qui doit alors nommer son foyer de règle. Tuple
+ *  RUNTIME posé ICI (module FEUILLE que `src/data` importe déjà) : les 6 schémas zod d'enjeu le
+ *  consomment tel quel (`stakeFormSchema`, `src/data/schemas/common.ts`) et les déclarations TS
+ *  référencent `StakeForm` — un palier de plus ne peut plus atterrir d'un seul côté. */
+export const STAKE_FORMS = ['verbatim', 'descripteur'] as const;
+/** Forme déclarée d'un enjeu — union FERMÉE dérivée de `STAKE_FORMS`. */
+export type StakeForm = (typeof STAKE_FORMS)[number];
 
 /** Spec d'un Test de Résistance d'entretien DIFFÉRÉ (cascade de nuit influençable) : le moteur le
  *  COLLECTE au lieu de le rouler (`state/upkeep` calcule la cible et en fait une étape de cascade,

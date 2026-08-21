@@ -5,7 +5,7 @@
  * ci-dessus suit le fichier, il ne le fige pas.
  */
 import { z } from 'zod';
-import { sourceRefSchema, secondarySourceRefSchema, refSchema, trappingRefSchema, entityAppearanceSchema, traitInstanceSchema } from '../common';
+import { availabilitySchema, harvestRaritySchema, sourceRefSchema, secondarySourceRefSchema, refSchema, trappingRefSchema, entityAppearanceSchema, traitInstanceSchema } from '../common';
 
 export const file = 'creatures.json';
 
@@ -38,15 +38,10 @@ const skillRefSchema = z.strictObject({ id: z.string(), spec: z.string().optiona
 /** `TalentRef` (`src/data/index.ts`) — `Ref` + niveau facultatif. */
 const talentRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), times: z.number().optional() });
 
-/** `HarvestRarity` = `Availability | 'Unique'` (`src/engine/types.ts`, `src/data/index.ts`). */
-const harvestRaritySchema = z.enum(['Commune', 'Limitée', 'Rare', 'Exotique', 'Unique']);
 /** `HarvestDanger` (`src/data/index.ts`). */
 const harvestDangerSchema = z.enum(['Inoffensive', 'Inquiétante', 'Menaçante', 'Mortelle']);
 
 const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
-
-/** `Availability` (`src/engine/types.ts`) : « Commune »/« Limitée »/« Rare »/« Exotique ». */
-const availabilitySchema = z.enum(['Commune', 'Limitée', 'Rare', 'Exotique']);
 
 export const schema = z.array(
   z.strictObject({

@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { computeMoveReach } from './combatFlow';
 import { chooseEnemyAction } from './ai';
 import { hasCondition } from '../engine/conditions';
+import { chebyshev } from './path';
 import type { Combatant } from '../engine/types';
 
 const scene = () =>
@@ -63,6 +64,6 @@ describe('Brisé — restriction d\'action (LDB 16 l.52)', () => {
     const action = chooseEnemyAction({ enemy, heroes: [h], scene: scene(), blocked: new Set(['6,5']), movement: 4 } as never);
     expect(action.kind).toBe('move');
     const to = (action as { to: { x: number; y: number } }).to;
-    expect(Math.max(Math.abs(to.x - 6), Math.abs(to.y - 5))).toBeGreaterThan(1); // plus loin du héros que (5,5)
+    expect(chebyshev(to, { x: 6, y: 5 })).toBeGreaterThan(1); // plus loin du héros que (5,5)
   });
 });

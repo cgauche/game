@@ -6,7 +6,7 @@
  * engine) et d'un inventaire EXHAUSTIF par script (histogramme de TOUTES les entrées du dataset).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, secondarySourceRefSchema, formulaSchema, flowSchema, triggeredEffectSchema } from '../common';
+import { availabilitySchema, gameOpSchema, sourceRefSchema, secondarySourceRefSchema, formulaSchema, flowSchema, triggeredEffectSchema } from '../common';
 import { REACH_LABELS, REACH_VARIABLE } from '../../../engine/types';
 
 /** `SizeCategory` (`src/engine/size.ts`) — réf par id, jamais un enum parallèle. */
@@ -148,7 +148,7 @@ export const schema = z.array(
      *    le sens du mot — hors du commerce ordinaire (`isTradable`, engine/disponibilite) ;
      *  - `null` — le livre n'imprime AUCUNE valeur : tiret en Disponibilité (LDB 62 l.28, Mains nues) ou
      *    entrée hors table d'équipement (malepierre LDB 44 l.113-119, sel sacré MDG 10 l.112). */
-    availability: z.union([z.enum(['Commune', 'Limitée', 'Rare', 'Exotique']), z.literal('ND'), z.null()]),
+    availability: z.union([availabilitySchema, z.literal('ND'), z.null()]),
     /** `reach`/`loc`/`pa`/`damage` : portés par les armes/armures — ABSENTS (pas seulement `null`) sur
      *  les consommables/potions sans profil d'arme (`optional()` en plus de `null`, contenu réel). */
     reach: z.union([reachSchema, z.null()]).optional(),

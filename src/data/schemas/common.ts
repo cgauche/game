@@ -5,6 +5,28 @@
  */
 import { z } from 'zod';
 import { isMenaceId, menaceIds } from '../../engine/menace';
+import { AVAILABILITIES, STAKE_FORMS } from '../../engine/types';
+
+/**
+ * Disponibilité (`Availability`, `src/engine/types.ts`) — le schéma DÉRIVE du tuple canon au lieu de
+ * retaper ses 4 paliers : c'est la porte unique des defs (`disponibilite`, `creatures`, `vehicles`,
+ * `trappings`).
+ */
+export const availabilitySchema = z.enum(AVAILABILITIES);
+
+/**
+ * Rareté d'une pièce de créature récoltée (`HarvestRarity`, `src/data/index.ts`) = les paliers de
+ * Disponibilité + `'Unique'`. Le 5ᵉ palier est RAW, pas une dérive : la table « COÛT DE BASE POUR
+ * 1 ENC DE PIÈCES DE CRÉATURE BRUTES » imprime cinq colonnes (`ZI 13 l.286`).
+ */
+export const harvestRaritySchema = z.enum([...AVAILABILITIES, 'Unique']);
+
+/**
+ * Forme déclarée d'un texte d'enjeu (`StakeForm`, `src/engine/types.ts`) — porte unique des 6 defs
+ * qui portent un enjeu (`night-stakes`, `flow-stakes`, `combat-stakes`, `activities`, `psychology`,
+ * `maneuvers`). L'OPTIONALITÉ reste au site : elle se décide par def, pas ici.
+ */
+export const stakeFormSchema = z.enum(STAKE_FORMS);
 
 /**
  * Un `GameOp` (`src/engine/ops.ts`) tel qu'il apparaît en DONNÉE : forme LOOSE — seul `op` (le nom
