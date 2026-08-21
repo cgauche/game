@@ -492,9 +492,10 @@
     "label": "Météo de l'Étape",
     "kind": "stageWeather",
     "template": "Le temps de l'Étape : il commande le Test de Résistance de traversée (Neige/Blizzard) et les postes praticables du jour.",
+    "rule": "meteo-etape",
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
-      "page": 33,
+      "page": 32,
       "note": "EDOC 8 l.50-59 (tableau Météo par saison)"
     }
   }
