@@ -29,9 +29,9 @@ signe d'un détecteur inadapté plutôt que d'une dette réelle à ce volume. No
 | `qualities` | 59 | 2 | 3 % |
 | `maneuvers` | 20 | 0 | 0 % |
 | `skills` | 48 | 1 | 2 % |
-| `props` | 74 | 1 | 1 % |
+| `props` | 78 | 0 | 0 % |
 | `vehicles` | 31 | 0 | 0 % |
-| **Total** | **550** | **16** | — |
+| **Total** | **554** | **15** | — |
 
 ### `traits`
 
@@ -59,8 +59,4 @@ signe d'un détecteur inadapté plutôt que d'une dette réelle à ce volume. No
 ### `skills`
 
 - `hypnotisme` — Hypnotisme
-
-### `props`
-
-- `table-ronde-4-tabourets`
 
