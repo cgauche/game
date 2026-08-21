@@ -143,7 +143,9 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * la prose de ce lot annonçait 113, la SOMME de la table valait 112 — écart de prose corrigé au lot Cε,
  * mesure re-faite), puis 110 après le lot E4/Cε (mot de VOCABULAIRE `'self'` hors champ des DEUX
  * détecteurs : `combatFlow.ts` passe de 4 à 3 ; masque de tronc du harnais de volume écrit en collection
- * `BoneId[]` : `mesure-volume.mts` sort de la liste).
+ * `BoneId[]` : `mesure-volume.mts` sort de la liste), puis 109 après le lot « anneau ami en donnée »
+ * (le MODE de ciblage déclare son anneau de candidats sur son entrée — `tmode.anneauCandidats`, plus de
+ * `tmode.id === 'heal'` : `highlightLayer.tsx` sort de la liste).
  */
 const RAW_KNOWN: Record<string, number> = {
   'scripts/gen-bestiary-gallery.mts': 1,
@@ -176,7 +178,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/gameIso/rig/parts/injuries.ts': 2, // reste le canal APPARENCE (œil remplacé en place), hors `rig` (calques)
   'src/gameIso/stage/Ambiance.tsx': 1,
   'src/gameIso/stage/CrewTooltip.tsx': 1,
-  'src/gameIso/stage/highlightLayer.tsx': 1,
   'src/gameIso/tokenBodyKind.tsx': 1,
   'src/state/aiSpellValue.ts': 2,
   'src/state/bourseFlow.ts': 1,

@@ -2885,10 +2885,13 @@ export function findWeaponGroupById(id: string | null | undefined): WeaponGroupD
 export function weaponGroupLabel(id: string | null | undefined): string {
   return id ? (WEAPON_GROUP_BY_ID.get(id)?.label ?? id) : '';
 }
-/** Libellés FR des TYPES de possession (`TrappingData.type`, énumérés par le schéma
- *  `data/schemas/defs/trappings.ts`) — SOURCE UNIQUE : l'enum est un id de logique, il ne s'affiche
- *  jamais nu (« ammunition » lu à l'écran, grief du juge vision). */
-const TRAPPING_TYPE_LABEL: Record<string, string> = {
+/** VOCABULAIRE FERMÉ des types de possession (`TrappingData.type`), miroir de l'enum du schéma
+ *  `src/data/schemas/defs/trappings.ts` — une union, pas un registre de données. */
+export type TrappingTypeId = 'melee' | 'ranged' | 'ammunition' | 'armor' | 'trapping' | 'vehicle';
+/** Libellés FR des TYPES de possession — SOURCE UNIQUE : l'enum est un id de logique, il ne s'affiche
+ *  jamais nu (« ammunition » lu à l'écran, grief du juge vision). Table EXHAUSTIVE par son type de
+ *  clé : tout membre nouveau du vocabulaire sans libellé est un échec `tsc`. */
+const TRAPPING_TYPE_LABEL: Record<TrappingTypeId, string> = {
   melee: 'Armes de mêlée',
   ranged: 'Armes à distance',
   ammunition: 'Munitions',
@@ -2898,7 +2901,7 @@ const TRAPPING_TYPE_LABEL: Record<string, string> = {
 };
 /** Libellé d'affichage d'un type de possession par son id (repli sur l'id). */
 export function trappingTypeLabel(id: string | null | undefined): string {
-  return id ? (TRAPPING_TYPE_LABEL[id] ?? id) : '';
+  return id ? (TRAPPING_TYPE_LABEL[id as TrappingTypeId] ?? id) : '';
 }
 const WEAPON_GROUP_ID_BY_LABEL = new Map(weaponGroups.map((g) => [g.label.toLowerCase(), g.id]));
 /** Résout un `id` de Groupe depuis un LIBELLÉ (authoring/données de Sort « subType » par libellé) —
