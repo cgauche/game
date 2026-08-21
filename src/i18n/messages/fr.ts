@@ -2309,4 +2309,14 @@ export const fr = {
   'agate.notAVessel': 'pas un navire',
   'agate.vesselActionSpent': 'Action du navire déjà dépensée',
   'agate.advantageCapped': 'Avantage au plafond ({n})',
+
+  // Postures de tir : le refus vient du prédicat partagé `STANCE_BLOCK` (`state/combatFlow.ts`), lu
+  // par le gate du registre, le store et la fenêtre de jet. Même famille de texte JOUEUR que ci-dessus
+  // — `agate.movementStarted` y est RÉUTILISÉ, la posture n'a pas sa propre formulation du Mouvement.
+  'agate.stanceHeroOnlyHold': 'seul un héros décide de tenir sa position',
+  'agate.stanceHeroOnlyCrowd': 'seul un héros renonce à choisir sa cible',
+  'agate.stanceNotAShot': 'cette attaque n’est pas un tir',
+  'agate.stanceNoRangedWeapon': 'aucune arme à distance',
+  'agate.stanceNoMovementToYield': 'aucun Mouvement à céder (déjà immobile)',
+  'agate.stanceNoCrowd': 'aucun groupe serré en vue',
 } as const;

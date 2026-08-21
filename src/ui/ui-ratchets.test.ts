@@ -334,7 +334,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // -2 (143 → 141) : mort de la VARIANTE d'enveloppe `test` — `.test-modal` (largeur figée à 340px,
   // qui écrasait la coquille standard) et `.test-actor` (sous-titre jumeau de `.rm-subtitle`)
   // disparaissent ; les fenêtres de jet n'ont plus qu'une enveloppe, gardée par le cliquet (xvi).
-  'styles/combat-modals.css': 141,
+  // +1 (#1349 G5) : `.rm-posture-etat` — l'ÉTAT LECTURE SEULE d'une posture de tir (armée / non armée,
+  // accent porté par `[data-armee]` sur la rangée) est un rôle distinct de `.rm-crowd-note` (la note
+  // explicative, 11px muted) qu'il détournerait sinon. Un rôle de plus nommé, aucun motif d'écran.
+  'styles/combat-modals.css': 142,
   // #1135 : baseline abaissée (112 → 111), bloc mort `.af-hp` purgé — détecteur inchangé.
   // #1135 responsive : -1 (111 → 110) — `.inspect-toggle` MEURT (plus aucun consommateur : la bascule
   // d'inspection a rejoint `ViewControls` et compose `.btn.vc-btn`). La matrice responsive du dock

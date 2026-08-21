@@ -2995,11 +2995,11 @@ export function openSurfacedDefense(get: Get, set: SetFn, attacker: Combatant, t
  * `weapon` = l'arme d'UN tir précis (fenêtre de jet) ; absente, la question est celle de l'ARSENAL
  * (la console arme la posture avant toute cible). */
 export function heldGroundStanceBlock(battle: BattleState, c: Combatant, weapon?: Weapon): string | null {
-  if (c.kind !== 'hero') return 'seul un héros décide de tenir sa position';
+  if (c.kind !== 'hero') return tr('agate.stanceHeroOnlyHold');
   const tir = weapon ? weapon.type === 'ranged' : c.weapons.some((w) => w.type === 'ranged');
-  if (!tir) return weapon ? 'cette attaque n’est pas un tir' : 'aucune arme à distance';
-  if (battle.movementUsed > 0) return 'Mouvement déjà entamé ce tour';
-  if (mountMovement(battle, c) <= 0) return 'aucun Mouvement à céder (déjà immobile)';
+  if (!tir) return tr(weapon ? 'agate.stanceNotAShot' : 'agate.stanceNoRangedWeapon');
+  if (battle.movementUsed > 0) return tr('agate.movementStarted');
+  if (mountMovement(battle, c) <= 0) return tr('agate.stanceNoMovementToYield');
   return null;
 }
 
@@ -3010,14 +3010,14 @@ export function heldGroundStanceBlock(battle: BattleState, c: Combatant, weapon?
  * SERRÉ (le seuil est celui de `crowdMod`, jamais un compte recopié).
  * `target` absente = question de CONTEXTE (la console arme avant toute cible) : un groupe suffit. */
 export function intoCrowdStanceBlock(battle: BattleState, c: Combatant, weapon?: Weapon, target?: Combatant): string | null {
-  if (c.kind !== 'hero') return 'seul un héros renonce à choisir sa cible';
+  if (c.kind !== 'hero') return tr('agate.stanceHeroOnlyCrowd');
   const tir = weapon ? weapon.type === 'ranged' : c.weapons.some((w) => w.type === 'ranged');
-  if (!tir) return weapon ? 'cette attaque n’est pas un tir' : 'aucune arme à distance';
+  if (!tir) return tr(weapon ? 'agate.stanceNotAShot' : 'agate.stanceNoRangedWeapon');
   const serre = (t: Combatant) => !!crowdMod(crowdEligible(battle, c, t).length);
   const groupe = target
     ? serre(target)
     : battle.combatants.some((t) => t.id !== c.id && !isOutOfAction(t) && !!t.pos && serre(t));
-  if (!groupe) return 'aucun groupe serré en vue';
+  if (!groupe) return tr('agate.stanceNoCrowd');
   return null;
 }
 
