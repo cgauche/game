@@ -89,7 +89,7 @@ afterEach(() => {
  * Localisation visée, tir en mouvement, États et AVANTAGE du jeteur. Défaut = duel de mêlée nu, par
  * temps clair, tireur immobile.
  */
-function renderAttack(opts: { ranged?: boolean; cases?: number; fog?: boolean; location?: HitLocation; enMouvement?: boolean; avantage?: number; conditions?: { id: string; value: number }[]; badauds?: number; tasArme?: boolean } = {}): HTMLDivElement {
+function renderAttack(opts: { ranged?: boolean; cases?: number; fog?: boolean; location?: HitLocation; enMouvement?: boolean; avantage?: number; conditions?: { id: string; value: number }[]; badauds?: number; tasArme?: boolean; tirArme?: boolean; mouvementUse?: number } = {}): HTMLDivElement {
   const weapon = opts.ranged ? bow : sword;
   // Tir : 20 cases = 40 m avec une Portée de 60 m → bande « Moyenne » (+0, aucune chip de portée) ;
   // 5 cases = 10 m → « Courte portée » (+20, entrée de la table). Mêlée : au contact. La distance est
@@ -105,13 +105,15 @@ function renderAttack(opts: { ranged?: boolean; cases?: number; fog?: boolean; l
     combatants,
     order: combatants.map((c) => c.id),
     baseOrder: combatants.map((c) => c.id),
-    ...(opts.tasArme ? { stances: { [attacker.id]: { intoCrowd: true } } } : {}),
+    ...(opts.tasArme || opts.tirArme
+      ? { stances: { [attacker.id]: { ...(opts.tasArme ? { intoCrowd: true } : {}), ...(opts.tirArme ? { heldGround: true } : {}) } } }
+      : {}),
     turn: 0,
     round: 1,
     action: null,
     selectedSpellId: null,
     reachable: new Map(),
-    movementUsed: 0,
+    movementUsed: opts.mouvementUse ?? 0,
     movedPreAction: false,
     acted: false,
     log: [],
@@ -129,7 +131,9 @@ function renderAttack(opts: { ranged?: boolean; cases?: number; fog?: boolean; l
   openAttackCascade(
     useGame.getState,
     useGame.setState,
-    { attackerId: attacker.id, targetId: target.id, location: opts.location ?? null, result: null, weaponUid: weapon.uid, heldGround: !opts.enMouvement },
+    // Posture ARMÉE à la console : on laisse le VERSEMENT moteur (`withArmedStance`) trancher, comme
+    // au vrai site de déclaration — un champ porté par l'appelant primerait et court-circuiterait le prédicat.
+    { attackerId: attacker.id, targetId: target.id, location: opts.location ?? null, result: null, weaponUid: weapon.uid, ...(opts.tirArme ? {} : { heldGround: !opts.enMouvement }) },
     'Attaque',
     'action/attack',
   );
@@ -198,6 +202,31 @@ describe('Attaque — contrat d’affichage Z0–Z15', () => {
     expect(ligne.hasAttribute('data-armee')).toBe(true);
     expect(ligne.textContent).toContain('Dans le tas — armée (+20)');
     expect(ligne.textContent).toContain('3 au contact');
+    expect(ligne.textContent).not.toContain('sans objet');
+  });
+
+  /**
+   * SYMÉTRIE du cas ci-dessus pour le TIR IMMOBILE (`LDB 14 l.70`) : la console arme la posture au
+   * début du Tour, le joueur entame ensuite son Mouvement — la posture est PÉRIMÉE quand le tir part.
+   * Le pending ne la porte donc pas ; la fenêtre la rend quand même, avec la raison du prédicat partagé
+   * (`heldGroundStanceBlock`).
+   */
+  it('« Tir immobile » armé puis Mouvement ENTAMÉ : la ligne est là, sans objet, avec sa raison', () => {
+    const v = renderAttack({ ranged: true, tirArme: true, mouvementUse: 3 });
+    const ligne = v.querySelector('[data-posture="heldGround"]')!;
+    expect(ligne, 'une posture armée ne disparaît pas en silence').toBeTruthy();
+    expect(ligne.hasAttribute('data-armee'), 'le Mouvement entamé la périme').toBe(false);
+    expect(ligne.textContent).toContain('sans objet sur ce tir');
+    expect(ligne.textContent).toContain('Mouvement déjà entamé ce tour');
+    expect(ligne.querySelector('button')).toBeNull();
+  });
+
+  it('« Tir immobile » armé + Mouvement INTACT : la ligne de posture armée normale', () => {
+    const v = renderAttack({ ranged: true, tirArme: true });
+    const ligne = v.querySelector('[data-posture="heldGround"]')!;
+    expect(ligne.hasAttribute('data-armee')).toBe(true);
+    expect(ligne.textContent).toContain('Tir immobile — armé');
+    expect(ligne.textContent).toContain('Mouvement du Tour consommé');
     expect(ligne.textContent).not.toContain('sans objet');
   });
 

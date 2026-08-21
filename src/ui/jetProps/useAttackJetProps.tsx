@@ -88,7 +88,13 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // même vérité que le gate de la case de console et que le versement dans le pending, jamais un
   // recodage local. Une posture ARMÉE s'affiche toujours (le Tir rapide arme `heldGround` d'office).
   const tir = weapon?.type === 'ranged'; // une posture de TIR ne se lit que sur un tir
-  const showHoldGround = !res && tir && (!!pa.heldGround || (!pa.interrupt && !heldGroundStanceBlock(battle, attacker, weapon)));
+  // La console arme la posture AVANT le tir ; le Mouvement du Tour peut tomber entre les deux. Même
+  // patron que « Dans le tas » : une posture armée que ce tir-ci rend sans objet s'affiche avec la
+  // raison du prédicat, jamais en silence.
+  const holdArme = !!battle.stances?.[attacker.id]?.heldGround;
+  const holdBlock = !res && tir ? heldGroundStanceBlock(battle, attacker, weapon) : null;
+  const holdSansObjet = !pa.heldGround && holdArme && !!holdBlock;
+  const showHoldGround = !res && tir && (!!pa.heldGround || (!pa.interrupt && !holdBlock) || holdSansObjet);
   // La case de console arme la posture SANS cible ; ce coup-ci en a une. La fenêtre est donc le seul
   // siège où le verdict PAR CIBLE existe : une posture armée que la cible visée rend sans objet
   // s'affiche avec la raison du prédicat, jamais en silence.
@@ -257,12 +263,14 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
           {showHoldGround && (
             <div className="rm-crowd" data-posture="heldGround" data-armee={pa.heldGround ? '' : undefined}>
               <span className="rm-posture-etat">
-                <Icon id="travel/anchor" size="sm" /> Tir immobile {pa.heldGround ? '— armé' : '— non armé'}
+                <Icon id="travel/anchor" size="sm" /> Tir immobile {pa.heldGround ? '— armé' : holdSansObjet ? '— sans objet sur ce tir' : '— non armé'}
               </span>
               <CodexRef category="regles" id="tir-en-mouvement" label="Tirer en se déplaçant" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
               {pa.heldGround
                 ? <span className="rm-crowd-note">Immobile : pas de -10, mais Mouvement du Tour consommé.</span>
-                : <span className="rm-crowd-note">Tir mobile : -10 « Tir en bougeant » (tu gardes ton Mouvement).</span>}
+                : holdSansObjet
+                  ? <span className="rm-crowd-note">Posture armée à la console : {holdBlock}. Ce tir n’en bénéficie pas.</span>
+                  : <span className="rm-crowd-note">Tir mobile : -10 « Tir en bougeant » (tu gardes ton Mouvement).</span>}
             </div>
           )}
           {canHarpoonRopeCut && (
