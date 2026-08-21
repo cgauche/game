@@ -43,7 +43,6 @@ const BASELINES: Record<string, number> = {
   'src/state/combatFlow.ts': 1,
   'src/state/devtools.ts': 1,
   // src/ui (#410 — stock à résorber par #276)
-  'src/ui/ActionBar.tsx': 3,
   'src/ui/ApproachModal.tsx': 2,
   'src/ui/AuContactModal.tsx': 2,
   'src/ui/BattementModal.tsx': 2,

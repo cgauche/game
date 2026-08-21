@@ -19,7 +19,7 @@
    cascade d'ouverture de combat (1600×900 comme 900×780) — 0 après.
    Le plafond de hauteur se recalcule sur les DEUX bandes : la fenêtre ne crève jamais le bas de
    l'écran, les grands flux défilent dans `.rs-scroll` (pied d'actions fixe, règles ci-dessous).
-   La bande BASSE (`--roll-dock`) réserve la place du dock d'action (`.action-bar`, bottom 14px) et
+   La bande BASSE (`--roll-dock`) réserve la place de la console de combat (`.combat-console`) et
    du tiroir de journal (`.log-drawer`, bottom 92px) : sans elle, une fenêtre haute descend jusqu'à
    8px du bas et les recouvre. Les deux bandes se soustraient du `max-height` (`box-sizing:
    border-box` global, base.css) — le bord haut reste invariant, le débordement part au défilement.
@@ -404,18 +404,6 @@
   padding: 4px 8px;
   font-size: 12px;
 }
-.bp-spell-ni {
-  color: var(--muted);
-  font-size: 11px;
-}
-/* Découvrabilité d'un sort (R4) : portée / durée / cibles sous le nom, dans le sélecteur. */
-.ab-spell-meta {
-  display: block;
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 400;
-}
 /* Journal en couleur (narration partagée : icône unifiée + noms par camp). */
 .jr-line {
   display: flex;
@@ -516,10 +504,6 @@
   color: var(--text);
   font-weight: 600;
 }
-/* Rangée Av/assailli masquée quand vide (le nom du héros est passé en title sur le portrait). */
-.ab-actor-top:empty {
-  display: none;
-}
 
 /* Fil d'événements — BAS-GAUCHE, posé SUR LE TERRAIN juste au-dessus du pont de console (planche
    2026-08-17 : journal `[170,779,330,57]`, aucun cadre, aligné à gauche). Il n'appartient PAS au
@@ -579,46 +563,6 @@
   color: var(--danger);
   font-size: 15px;
   animation: cb-in-grave 0.3s cubic-bezier(0.2, 1.4, 0.4, 1);
-}
-/* INTERLUDE de ciblage par carte (Frappe Mortelle / 2ᵉ frappe / Surincantation +Cible / pose de
-   zone) : la BARRE D'ACTION se transforme (cf. ActionBar) — liseré or pulsé = « la carte attend
-   ton clic », titre d'apparat à gauche, sortie à droite. Remplace l'ancienne pill flottante. */
-.action-bar.targeting-interlude {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px 16px;
-  border-color: var(--gold2);
-  animation: tiPulse 1.8s ease-in-out infinite;
-}
-.targeting-interlude .ti-icon {
-  font-size: 17px;
-}
-.targeting-interlude .ti-title {
-  font-family: var(--font-display);
-  font-size: 17px;
-  letter-spacing: 0.5px;
-  color: var(--gold2);
-}
-.targeting-interlude .ti-badge {
-  font-size: 12.5px;
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 10px;
-  padding: 2px 9px;
-}
-@keyframes tiPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(227, 196, 90, 0); }
-  50% { box-shadow: 0 0 14px 0 rgba(227, 196, 90, 0.35); }
-}
-@media (pointer: coarse) {
-  .targeting-interlude .btn.small {
-    padding: 9px 14px;
-  }
 }
 @keyframes cb-in {
   from {

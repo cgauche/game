@@ -37,7 +37,7 @@ function infoAffordances(): Record<string, number> {
  *  - `jetProps/*` : l'ⓘ est accolé à un CONTRÔLE de choix (menu d'arme, menu de Localisation,
  *    bascule « Tirer dans le tas »/« Je ne bouge pas », case « des deux armes ») — la règle se lit
  *    AVANT que le modificateur n'existe, donc avant qu'une chip ne puisse la porter ;
- *  - `ActionBar`/`CharacterSheet`/`MerchantPanel`/`PossessionsRegistry` : ⓘ d'un ÉLÉMENT de liste
+ *  - `CharacterSheet`/`MerchantPanel`/`PossessionsRegistry` : ⓘ d'un ÉLÉMENT de liste
  *    (sort, compétence, possession) sans contrôle englobable à ce jour ;
  *  - `compendium/CodexRef.tsx` : la DÉFINITION de la classe (l'habillage de l'affordance) ;
  *  - `StakeNote.tsx` : le renvoi de règle d'un ENJEU, en affordance accolée au titre de l'étape ou de
@@ -50,11 +50,9 @@ function infoAffordances(): Record<string, number> {
  * Toute NOUVELLE occurrence, et tout retour d'une occurrence supprimée, échoue ici.
  */
 const RATCHET: Record<string, number> = {
-  // 4 → 3 (#1411 P1) : le tiroir « Prendre l'Avantage » de la barre v7 est mort — la méthode
-  // d'Avantage est désormais UNE ALVÉOLE par Compétence dans la console (entrée `gain-advantage`,
-  // foyer de règle porté par la case elle-même via `CodexRef wrap`). L'ⓘ accolé au bouton de ce
-  // tiroir n'a plus de porteur ; il ne revient pas.
-  'ActionBar.tsx': 3,
+  // 3 → 0 (entrée retirée) : la barre v7 est SUPPRIMÉE ; ses trois ⓘ (alvéole de sort, munition,
+  // Calme d'approche) meurent avec elle. La console porte ses foyers de règle par `CodexRef wrap`
+  // sur la case elle-même — aucun ⓘ parallèle n'y naît.
   'StakeNote.tsx': 1,
   'CharacterSheet.tsx': 1,
   'MerchantPanel.tsx': 3,

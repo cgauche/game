@@ -47,9 +47,9 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `n` | 2 | `src/engine/dice.ts:78` |
-| `sides` | 2 | `src/engine/dice.ts:78` |
-| `plus` | 3 | `src/engine/dice.ts:78` |
+| `n` | 2 | `src/engine/dice.ts:61` |
+| `sides` | 2 | `src/engine/dice.ts:61` |
+| `plus` | 3 | `src/engine/dice.ts:61` |
 
 ### `Ref` (src/data/index.ts)
 

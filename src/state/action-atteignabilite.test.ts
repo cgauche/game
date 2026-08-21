@@ -4,16 +4,15 @@
  *  (a) ATTEIGNABILITÉ — toute action déclarée dans `actions.json` a une SURFACE VIVANTE : une case
  *      de la console (par son id, ou par une clé de surface encore forkée), ou une touche du
  *      registre clavier. Ce qui n'en a pas est nommé dans `SANS_SURFACE`.
- *  (b) RÉCIPROQUE, FAIL-CLOSED — tout id de slot/case d'action rendu par `CombatConsole.tsx` (et
- *      `ActionBar.tsx` tant qu'elle vit) est DÉCLARÉ au registre. ZÉRO exemption : sans elle, la
- *      classe « action perdue » se reforme au premier slot manuscrit.
+ *  (b) RÉCIPROQUE, FAIL-CLOSED — tout id de case d'action rendu par `CombatConsole.tsx` est DÉCLARÉ
+ *      au registre. ZÉRO exemption : sans elle, la classe « action perdue » se reforme à la première
+ *      case manuscrite.
  *
  * ─────────────────────────────────────────────────────────────────────────────────────────────
  * `SANS_SURFACE` EST UN ÉCHAFAUDAGE DE CHANTIER, PAS UNE ABSOLUTION (posé le 2026-08-17).
  *   • CIBLE : `{}` — zéro entrée.
  *   • ÉCHÉANCE : le LOT BRANCHEMENTS de ce même chantier (spec zone 12, ordre des lots (2)) —
- *     jamais « plus tard ». Chaque lot en retire des lignes ; la purge d'`ActionBar` (lot 3) est
- *     conditionnée à `SANS_SURFACE` vide.
+ *     jamais « plus tard ». Chaque lot en retire des lignes.
  *   • CLIQUET STRICT DÉCROISSANT (patron `raw-blind-refs-baseline`) : une action nouvellement sans
  *     surface qui n'est pas listée = ROUGE ; une entrée listée qui a retrouvé sa surface = ROUGE
  *     « périmée » (elle se retire dans le MÊME commit que le branchement).
@@ -39,7 +38,6 @@ import { makeRNG } from '../engine/dice';
 
 const src = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 const CONSOLE_SRC = src('../ui/CombatConsole.tsx');
-const ACTIONBAR_SRC = src('../ui/ActionBar.tsx');
 const TARGETING_SRC = src('./targetingModes.ts');
 
 /** Le chantier des BRANCHEMENTS est-il ouvert ? Voir l'en-tête : `false` verrouille la baseline à vide. */
@@ -47,7 +45,6 @@ const CHANTIER_BRANCHEMENTS_OUVERT = true;
 
 /** Actions SANS surface vivante — nominatif, DÉCROISSANT, cible `{}` (voir en-tête). */
 const SANS_SURFACE: Record<string, string> = {
-  ammo: 'MODE ARMÉ résiduel du tiroir de la barre morte (`ActionBar.tsx:425-433` le slot, `:545` le tiroir — seuls consommateurs mesurés, et les DERNIERS du mode `ammo` depuis la purge advantage/attacks) : le choix de munition se fait désormais au chip de l’en-tête de travée (`select-ammo`), l’entrée meurt AVEC la barre (lot 3).',
   cast: 'le mode disparaît comme slot : alvéoles de sorts + grimoire (spec §1d).',
   'focus-spell': 'affordance secondaire de l’alvéole du sort (spec §1d).',
   mount: 'pastille sur la MONTURE (zone 4, tranché 2026-08-16).',
@@ -69,8 +66,6 @@ const CONSOLE_KEYS = [
   ...keysFrom(CONSOLE_SRC, /cellFor\(\s*'([^']+)'()/g),
   ...keysFrom(CONSOLE_SRC, /data-action="([^"]+)"()/g),
 ];
-/** Slots de la barre historique : `slots.push({ id: '…' })` (ou son template). */
-const ACTIONBAR_KEYS = keysFrom(ACTIONBAR_SRC, /slots\.push\(\{\s*id:\s*(?:'([^']+)'|`([^`$]*)\$\{)/g);
 const KEYBINDING_IDS = KEYBINDINGS.map((b) => b.id);
 
 /** Le bandeau de phase de la console consomme-t-il les actions d'INTERLUDE ? Elles n'ont pas de case
@@ -83,7 +78,7 @@ const KEYBINDING_IDS = KEYBINDINGS.map((b) => b.id);
 const INTERLUDE_BRANCHE = /currentInterludeAction/.test(CONSOLE_SRC);
 const INTERLUDE_KEYS = INTERLUDE_BRANCHE ? ACTIONS.filter((a) => a.surface === 'interlude').map((a) => a.id) : [];
 
-/** Surfaces VIVANTES (l'`ActionBar` n'en est PAS une : elle n'est plus montée, seuls ses tests tournent). */
+/** Surfaces VIVANTES : la console, le bandeau d'interlude qu'elle rend, et le registre clavier. */
 const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...INTERLUDE_KEYS, ...KEYBINDING_IDS]);
 
 /** Les clés qu'une action revendique : son id + ses clés de surface encore forkées. */
@@ -194,7 +189,7 @@ describe('(a) atteignabilité — toute action du registre a une surface vivante
   });
 });
 
-describe('(b) réciproque fail-closed — aucun slot/case d’action hors registre', () => {
+describe('(b) réciproque fail-closed — aucune case d’action hors registre', () => {
   const declared = new Set(ACTIONS.flatMap(claimedKeys));
 
   it('toute case d’action de CombatConsole est déclarée au registre', () => {
@@ -205,17 +200,8 @@ describe('(b) réciproque fail-closed — aucun slot/case d’action hors regist
     ).toEqual([]);
   });
 
-  it('tout slot d’ActionBar est déclaré au registre (tant que la barre vit)', () => {
-    const orphelins = [...new Set(ACTIONBAR_KEYS)].filter((k) => !declared.has(k));
-    expect(
-      orphelins,
-      `Slot(s) de barre inconnu(s) du registre (déclarer l'action dans src/data/actions.json — aucune exemption) :\n  ${orphelins.join('\n  ')}`,
-    ).toEqual([]);
-  });
-
-  it('méta — les deux extracteurs voient bien des clés (une regex muette rendrait la garde verte à tort)', () => {
+  it('méta — l’extracteur voit bien des clés (une regex muette rendrait la garde verte à tort)', () => {
     expect(CONSOLE_KEYS.length).toBeGreaterThan(10);
-    expect(ACTIONBAR_KEYS.length).toBeGreaterThan(20);
   });
 });
 

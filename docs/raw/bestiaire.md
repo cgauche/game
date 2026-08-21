@@ -409,7 +409,7 @@ Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de
 **Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Trait *Aquatique* (MSRC) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 16` (l.15-19, l.63-305) → `scene`, `scenario`, `fireTurnEdgeTriggers`, `suffocationTick`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `sea-scorbut`, `sea-mal-de-mer`, `sea-tonneau-expose`, `sea-tonneau-contamine`, +20 — `src/data/creatures.json`, `src/data/domains.json`, `src/data/index.ts`, `src/data/voyage-stakes.json`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, +8 fichiers
+- `MDG 16` (l.15-19, l.63-305) → `scene`, `scenario`, `fireTurnEdgeTriggers`, `suffocationTick`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `sea-scorbut`, `sea-mal-de-mer`, `sea-tonneau-expose`, `sea-tonneau-contamine`, +19 — `src/data/creatures.json`, `src/data/domains.json`, `src/data/index.ts`, `src/data/voyage-stakes.json`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, +7 fichiers
 
 ---
 
@@ -433,7 +433,7 @@ Indices observés dans le bestiaire MDG : Redoutable 1 (Baudroye, Hydre d'os, Sa
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `ZI 14` (l.1045) → `fouissement` — `src/data/traits.json`
-- `MDG 16` (l.9-13, l.152) → `scene`, `scenario`, `fireTurnEdgeTriggers`, `suffocationTick`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `sea-scorbut`, `TriggerCtx`, `offTerrainSuffocates`, `ActionBar`, +9 — `src/data/creatures.json`, `src/data/index.ts`, `src/data/voyage-stakes.json`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, +7 fichiers
+- `MDG 16` (l.9-13, l.152) → `scene`, `scenario`, `fireTurnEdgeTriggers`, `suffocationTick`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `sea-scorbut`, `TriggerCtx`, `offTerrainSuffocates`, `GameOp`, +8 — `src/data/creatures.json`, `src/data/index.ts`, `src/data/voyage-stakes.json`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, +6 fichiers
 
 ## Bilan de fidélité
 

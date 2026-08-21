@@ -121,7 +121,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
 
   // ── Lot 2 (#156) : MOBILITÉ — « Pousser » l'engin (ADE II 8 l.258, mouvement simple, aucun jet) ──
 
-  it("gate du bouton « Pousser » (ActionBar via `pushSlot`, GAP intégration UI) : visible pour le CHEF, absent pour un héros sans poste, désactivé sous-effectif", () => {
+  it("gate de la case « Pousser » (console via `pushSlot`, GAP intégration UI) : visible pour le CHEF, absent pour un héros sans poste, désactivé sous-effectif", () => {
     const { soldat, crew } = startBelier();
     const combatants = useGame.getState().battle!.combatants;
     // CHEF d'un engin mobile → bouton VISIBLE et actif (Équipe complète 6/6).

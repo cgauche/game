@@ -429,7 +429,7 @@
   padding: 6px;
 }
 
-/* déclencheur-icône d'info à côté d'un bouton/contrôle d'action (ActionBar, modales de jet, marchand…) */
+/* déclencheur-icône d'info à côté d'un bouton/contrôle d'action (modales de jet, marchand, fiche…) */
 .codex-ref.ab-codex-info {
   flex-shrink: 0;
   font-size: 13px;

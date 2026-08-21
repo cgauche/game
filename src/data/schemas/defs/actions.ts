@@ -64,7 +64,7 @@ export const schema = z.array(
     rule: z.string().optional(),
     /** Catégorie Codex du foyer (`'regles'`, `'talents'`, `'etats'`…) — exigée avec `rule`. */
     ruleCategory: z.string().optional(),
-    /** Clés de SURFACE historiques (slots `ActionBar`, cases `CombatConsole`) couvertes par cette
+    /** Clés de SURFACE historiques (cases `CombatConsole`) couvertes par cette
      *  action, tant que les espaces d'ids sont forkés. Une clé template (`sort-${id}`) se déclare
      *  par son PRÉFIXE littéral. Liste DÉCROISSANTE : le lot branchements remplace ces clés par
      *  l'id d'action lui-même. Consommée par `src/state/action-atteignabilite.test.ts`. */

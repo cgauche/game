@@ -210,7 +210,7 @@ export function useHoverTargeting(
   }, [hover, hoveredPortal, mode, dialogue, scene, partyPos, party]);
   const explorePath = explorePlan?.path ?? null;
 
-  // Jauges EN DIRECT (clignotant de l'ActiveFrame) : le coût/gain (Action/Mouvement/Avantage) de
+  // Jauges EN DIRECT (clignotant des gouttières de l'arche) : le coût/gain (Action/Mouvement/Avantage) de
   // l'intention SOUS LA SOURIS — un aperçu de la forme tap-1 est synthétisé du survol et passe par la
   // MÊME source (`previewResourceDelta`). Écrit au store seulement quand le delta CHANGE.
   useEffect(() => {

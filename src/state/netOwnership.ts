@@ -430,8 +430,8 @@ const routeJet = (jet: JetOwnerRef): Route => ({
 
 /**
  * Gestes TERMINAUX d'une fenêtre HORS registre de modales (`HORS_MODAL.intents`) : possession prise
- * au pending qui héberge le geste. `cleaveEnd`/`dualStrikeSkip` sont émis par la barre d'action
- * (`ActionBar`, sortie d'interlude) ; `cleaveAttack`/`dualStrikeAttack` n'ont AUCUN émetteur d'UI
+ * au pending qui héberge le geste. `cleaveEnd`/`dualStrikeSkip` sont émis par le bandeau de phase de
+ * la console (sortie d'interlude) ; `cleaveAttack`/`dualStrikeAttack` n'ont AUCUN émetteur d'UI
  * aujourd'hui (défense en profondeur pour un futur émetteur direct — table `EMISSION` de
  * `hors-modal-intent-path.test.ts`).
  */

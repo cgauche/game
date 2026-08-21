@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { previewResourceDelta } from './combatFlow';
 
 /**
- * `previewResourceDelta` (retour « clignotant » des jauges de l'ActiveFrame) lit le coût/gain de
+ * `previewResourceDelta` (retour « clignotant » des gouttières de l'arche) lit le coût/gain de
  * l'aperçu de clic SANS aucune valeur en dur (anti-duplication — demande utilisateur 2026-06-11,
  * « Action comme Mouvement comme Avantage ») : Mouvement sur `preview.cost` (le coût que le commit
  * consomme), Avantage sur `preview.adv` (source UNIQUE `chargeAdvantage`), Action dérivée de la

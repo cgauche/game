@@ -104,22 +104,6 @@
     ]
   },
   {
-    "id": "ammo",
-    "label": "Munition",
-    "icon": "action/shoot",
-    "surface": "deduite-du-set",
-    "gate": "toujours",
-    "run": "battleSelectAction",
-    "armed": "ammo",
-    "candidates": "munitions-compatibles",
-    "cost": "aucun",
-    "maison": true,
-    "costNote": "ouvre le choix de munition (aucun acte de jeu n’est commis) — coût nul, arbitrage d’interface.",
-    "keys": [
-      "ammo:"
-    ]
-  },
-  {
     "id": "select-ammo",
     "label": "Choisir la munition",
     "icon": "action/shoot",
@@ -209,7 +193,7 @@
     "candidates": "cibles-aspersion",
     "cost": "action",
     "maison": true,
-    "costNote": "coût repris du site historique (ActionBar) sans verbatim de coût cité ni Test exigé — à re-vérifier au Source (MDG).",
+    "costNote": "coût repris du site historique sans verbatim de coût cité ni Test exigé — à re-vérifier au Source (MDG).",
     "keys": [
       "water"
     ]

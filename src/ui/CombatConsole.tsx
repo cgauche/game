@@ -212,8 +212,7 @@ function loadoutUnloaded(c: Combatant, lo: WeaponLoadout): boolean {
  *  égaux) + son SOCLE au pied — VALEUR COURANTE seule, `short` gravé dessous (planche 2026-08-17 :
  *  « 3 / MOUV. », « 1 / ACTION »). Le MAXIMUM se lit aux crans du rail, jamais deux fois.
  *  `spend` = crans qui vont partir au commit du geste en cours.
- *  Propre à la console : l'arche ne rend QUE portrait/nom/gouttières/Blessures/États (spec §1c-bis) —
- *  `ActiveFrame` garde son gabarit complet pour ses propres appelants.
+ *  Propre à la console : l'arche ne rend QUE portrait/nom/gouttières/Blessures/États (spec §1c-bis).
  *  Une gouttière à 0 cran RESTE DESSINÉE, rail vide et socle « 0 » : la géométrie de l'arche ne
  *  dépend d'aucune ressource (héros Empêtré = Mouvement 0).
  *
@@ -330,8 +329,7 @@ export function CombatConsole() {
   const interludeId = useGame((s) => currentInterludeAction(() => s)?.id);
   const confirmRoundStart = useGame((s) => s.confirmRoundStart);
   // AUCUN dispatcher n'est capté ici : toute exécution passe par `runAction` (registre des actions).
-  // Garde-fou « tour gâché » ARMÉ (2ᵉ clic attendu) — état d'UI local, remis à zéro à chaque tour/Round,
-  // comme dans la barre v7 (`ActionBar.tsx:115,118`).
+  // Garde-fou « tour gâché » ARMÉ (2ᵉ clic attendu) — état d'UI local, remis à zéro à chaque tour/Round.
   const [confirmEnd, setConfirmEnd] = useState(false);
   // PANNEAU-PARAMÈTRE de la MUNITION : son déclencheur est le chip de l'en-tête de travée, donc son
   // ancre est le rect de CE chip. L'ouverture est un état d'ÉCRAN (rien n'est engagé tant qu'aucun
@@ -718,7 +716,6 @@ export function CombatConsole() {
   const advCap = advantageCapFor(active);
   const meaningfulLeft = controlled && hasMeaningfulOption(active, battle);
   // Garde-fou « tour gâché » (spec §1c-bis COIN) : finir avec l'Action NON DÉPENSÉE demande deux clics.
-  // MÊME mécanisme que la barre v7 (`ActionBar.tsx:322-327`), pas une réinvention.
   const wastingAction = controlled && !battle.acted && canTakeAction(active);
   const onEndTurn = () => {
     if (wastingAction && !confirmEnd) { setConfirmEnd(true); return; }
@@ -803,8 +800,8 @@ export function CombatConsole() {
         };
       })
     : [];
-  // FRÉNÉSIE : le refus est VISIBLE, avec la raison du registre (`agate.frenzyOnly`) — la barre v7
-  // faisait disparaître le choix (`ActionBar.tsx:425`), ce qui en faisait une perte muette.
+  // FRÉNÉSIE : le refus est VISIBLE, avec la raison du registre (`agate.frenzyOnly`) — un choix qui
+  // disparaît est une perte muette.
   const ammoRaison = live && frenzied && ammoChoices.length >= 2 ? t('agate.frenzyOnly') : undefined;
 
   return (

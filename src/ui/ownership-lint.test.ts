@@ -62,7 +62,7 @@ describe('#1262 L1 — le lint refuse le prédicat d’état importé dans une f
  * CE QU'IL NE VISE PAS (mesuré sur la population réelle : 14 occurrences de `ownership[`/`mySeat`
  * sous `src/ui`, dont 12 légitimes) — et c'est voulu, pas un trou :
  *  · lire le SIÈGE d'un héros pour en AFFICHER le nom ou le portrait (`net.ownership[id] ?? 0`
- *    seul : `ActionBar`, `ActiveModal`, `CoopPanels`, `RestModal`, `VictoryScreen`, `CharacterCreator`,
+ *    seul : `ActiveModal`, `CoopPanels`, `RestModal`, `VictoryScreen`, `CharacterCreator`,
  *    `InterludeScreen.ownerName`) — aucune décision de possession n'y est prise ;
  *  · comparer un siège DÉJÀ RÉSOLU à `mySeat` (`seat === net.mySeat` : le slot de `PartyScreen`
  *    porte son siège, même quand AUCUN héros ne l'occupe — la porte, elle, est keyée par combattant

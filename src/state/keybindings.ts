@@ -286,8 +286,8 @@ export const KEYBINDINGS: KeyBinding[] = [
     },
     run: (g) => runAction('undo-move', g),
   },
-  // Capacités de la barre d'action : 1-9 = n-ième slot VISIBLE (positionnel, rien en dur), via le pont
-  // `hotbar` publié par l'ActionBar. Inactif hors de son tour / pendant une modale.
+  // Cases de la console : 1-9 = n-ième case VISIBLE (positionnel, rien en dur), via le pont
+  // `hotbar` publié par la `CombatConsole`. Inactif hors de son tour / pendant une modale.
   ...Array.from({ length: 9 }, (_, i): KeyBinding => ({
     id: `hotbar-${i + 1}`, codes: [`Digit${i + 1}`], labelKey: 'key.hotbarSlot', labelParams: { n: i + 1 }, section: 'hotbar',
     when: (s) => inBattle(s) && controlsActive(s) && noModal(s),

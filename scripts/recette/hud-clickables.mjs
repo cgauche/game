@@ -10,8 +10,8 @@
 //
 // Ce qui est VÉRIFIÉ, à chaque largeur, par `elementFromPoint` au centre de chaque surface :
 //   · chaque `.vc-btn` (commandes de vue) reçoit SON propre clic — rien ne le recouvre ;
-//   · en combat, le dock de décision (`.ab-bar`) est MONTÉ, peuplé, et chacun de ses contrôles
-//     reçoit son propre clic ;
+//   · en combat, la console (`.combat-console`) est MONTÉE, peuplée, et chacune de ses cases
+//     (`.cc-cell`) reçoit son propre clic ;
 //   · en combat, `.combat-feed` et `.initiative-strip` n'ont aucune surface commune ;
 //   · en combat, la piste `.is-tiles` DÉFILE (scrollWidth > clientWidth) et tient dans sa bande ;
 //   · en exploration, la boîte pleine ligne de `.objective-banner` n'avale aucun clic hors de sa
@@ -65,10 +65,10 @@ const PROBE = `(() => {
   const strip = document.querySelector('.initiative-strip');
   const tiles = document.querySelector('.is-tiles');
   const ptiles = [...document.querySelectorAll('.party-dock .ptile')].map((p, i) => ({ i, ...reaches(p) }));
-  // Dock de décision (barre d'action du tour) : chacun de ses contrôles se sonde comme une commande
-  // de vue. (Aucun accent grave dans cette sonde : elle vit dans un gabarit de chaîne.)
-  const abBar = document.querySelector('.ab-bar');
-  const dockBtns = [...document.querySelectorAll('.ab-bar button')].map((b, i) => ({
+  // Console de combat (pont du tour) : chacune de ses cases se sonde comme une commande de vue.
+  // (Aucun accent grave dans cette sonde : elle vit dans un gabarit de chaîne.)
+  const pont = document.querySelector('.combat-console');
+  const dockBtns = [...document.querySelectorAll('.combat-console button.cc-cell')].map((b, i) => ({
     i, label: (b.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 40) || (b.getAttribute('title') || '').trim(), ...reaches(b),
   }));
 
@@ -101,7 +101,7 @@ const PROBE = `(() => {
       scrollWidth: tiles.scrollWidth, clientWidth: tiles.clientWidth, bande: strip.clientWidth,
       defile: tiles.scrollWidth > tiles.clientWidth, tientDansLaBande: tiles.clientWidth <= strip.clientWidth,
     } : null,
-    dock: abBar ? { rect: box(abBar.getBoundingClientRect()) } : null,
+    dock: pont ? { rect: box(pont.getBoundingClientRect()) } : null,
     dockBtns,
   };
 })()`;
@@ -120,16 +120,17 @@ async function resoudreModales(session, etape) {
 }
 
 /**
- * Amène le combat jusqu'au DOCK DE DÉCISION d'un héros (`.ab-bar`). La pause d'initiative de début
- * de Round remplace la barre d'action par le seul bouton « Commencer … » (`src/ui/ActionBar.tsx`),
- * qui n'est PAS dans une fenêtre : `resoudreModales` ne le voit pas, et `fastForward` ne le franchit
- * pas. Sans ce clic la sonde mesurait cette barre de pause (un bouton) au lieu du dock de tour —
- * elle ne pouvait constater aucun recouvrement des contrôles du dock.
+ * Amène le combat jusqu'aux CASES du tour d'un héros (`.combat-console button.cc-cell`). Pendant la
+ * pause d'initiative de début de Round, le pont ne porte que le bandeau de phase et son bouton
+ * « Commencer … » (`.cc-phase [data-action='round-start']`, `src/ui/CombatConsole.tsx`), qui n'est PAS
+ * dans une fenêtre : `resoudreModales` ne le voit pas, et `fastForward` ne le franchit pas. Sans ce
+ * clic la sonde mesurait la phase (un bouton) au lieu du pont de tour — elle ne pouvait constater
+ * aucun recouvrement des cases.
  */
 async function monterLeDock(session) {
   for (let i = 0; i < 8; i++) {
-    if (await evaluate(session, `!!document.querySelector('.ab-bar button')`)) return;
-    if (await evaluate(session, `!!document.querySelector('.commencer-btn:not(:disabled)')`)) {
+    if (await evaluate(session, `!!document.querySelector('.combat-console button.cc-cell')`)) return;
+    if (await evaluate(session, `!!document.querySelector(".cc-phase [data-action='round-start']:not(:disabled)")`)) {
       await clickButtonByText(session, 'Commencer');
       await sleep(900);
       await resoudreModales(session, 'ouverture de Round');
@@ -139,7 +140,7 @@ async function monterLeDock(session) {
     await sleep(1200);
     await resoudreModales(session, 'tours IA');
   }
-  throw new Error('le dock de décision (.ab-bar) ne monte pas : le combat ne parvient pas au tour d’un héros');
+  throw new Error('la console (.combat-console .cc-cell) ne monte pas : le combat ne parvient pas au tour d’un héros');
 }
 
 /** Défauts d'une mesure, en clair (liste vide = tout passe). */
@@ -150,12 +151,12 @@ function defauts(m, phase) {
     if (!b.ok) out.push(`${phase} ${m.largeur}px : la commande de vue « ${b.label} » ${JSON.stringify(b.rect)} ne reçoit pas son clic — recouverte par ${b.hitBy}`);
   }
   if (m.combat) {
-    // Le dock de décision doit être MONTÉ et peuplé : sans lui la sonde mesure la barre de pause de
-    // Round (un seul bouton, 47px) et ne voit aucun des recouvrements de la barre de tour (175px).
-    if (!m.dock) out.push(`${phase} ${m.largeur}px : aucun dock de décision (.ab-bar) — sonde aveugle sur la barre de tour`);
-    else if (!m.dockBtns.length) out.push(`${phase} ${m.largeur}px : le dock de décision ne porte aucun contrôle — sonde aveugle`);
+    // La console doit être MONTÉE et peuplée : sans elle la sonde mesure le bandeau de phase (un seul
+    // bouton) et ne voit aucun des recouvrements du pont de tour.
+    if (!m.dock) out.push(`${phase} ${m.largeur}px : aucune console (.combat-console) — sonde aveugle sur le pont de tour`);
+    else if (!m.dockBtns.length) out.push(`${phase} ${m.largeur}px : la console ne porte aucune case — sonde aveugle`);
     for (const b of m.dockBtns) {
-      if (!b.ok) out.push(`${phase} ${m.largeur}px : le contrôle du dock « ${b.label} » ${JSON.stringify(b.rect)} ne reçoit pas son clic — recouvert par ${b.hitBy}`);
+      if (!b.ok) out.push(`${phase} ${m.largeur}px : la case « ${b.label} » ${JSON.stringify(b.rect)} ne reçoit pas son clic — recouverte par ${b.hitBy}`);
     }
     if (m.feedXfrise) out.push(`${phase} ${m.largeur}px : le fil d'événements recouvre la frise d'initiative de ${m.feedXfrise.ox}×${m.feedXfrise.oy}px`);
     if (m.piste) {

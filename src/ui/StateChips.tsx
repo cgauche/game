@@ -21,7 +21,7 @@ interface ChipAction {
 
 /**
  * Pastilles d'États / effets actifs d'un combattant (la colonne `.ptile-states`) — EXTRAITE de
- * PortraitTile pour être posable hors de la tuile : dans le cadre actif (ActiveFrame) elles vivent
+ * PortraitTile pour être posable hors de la tuile : dans l'arche de la console elles vivent
  * À DROITE de la barre de Mouvement (et non plus en débordement DERRIÈRE elle, retour 2026-06-11 :
  * le buff +10 CC d'une Bénédiction passait sous la jauge). `max` = pastilles avant le « ▾ » de débord.
  * Pure (testable en SSR).

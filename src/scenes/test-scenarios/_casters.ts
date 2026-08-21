@@ -37,7 +37,7 @@ export function addTalents(c: Combatant, names: string[]): void {
   }
 }
 
-/** IDS des sorts d'un type (+ sous-type optionnel) depuis la base — `c.spells` = ids (ActionBar → findSpellById). */
+/** IDS des sorts d'un type (+ sous-type optionnel) depuis la base — `c.spells` = ids (console → findSpellById). */
 export const spellsOf = (type: string, subTypes?: (string | null)[]): string[] =>
   spells.filter((s) => s.type === type && (!subTypes || subTypes.includes(s.subType ?? null))).map((s) => s.id);
 

@@ -1,7 +1,7 @@
 /**
  * FAÇADE des couleurs d'IDENTITÉ d'unité (anneaux des pions + portraits HUD) et de la couleur d'une
  * barre de vie. Utilisée par le rendu de carte (`SurcoucheIso`, surcouche de jetons) ET par le HUD
- * React (ActionBar, CampaignView) — pas de duplication. La DONNÉE vit dans `src/data/teintesJeu.json`
+ * React (CombatConsole, CampaignView) — pas de duplication. La DONNÉE vit dans `src/data/teintesJeu.json`
  * (schéma et invariants : `src/data/schemas/defs/teintesJeu.ts`), qui sert aussi les surbrillances
  * d'arène par l'autre façade (`highlightTints.ts`).
  */

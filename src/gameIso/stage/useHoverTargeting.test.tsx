@@ -142,7 +142,7 @@ describe('useHoverTargeting — modale bloquante (arbitre modal)', () => {
     expect(probe({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim).toBeNull();
     const under = probe(empty);
     expect(under.hoverMove).toBeNull();
-    expect(useGame.getState().hoverDelta).toBeNull(); // movementIntent (ActionBar) = hoverDelta.movement
+    expect(useGame.getState().hoverDelta).toBeNull(); // l'aperçu de mouvement se lit à hoverDelta.movement
   });
 
   it('ciblage de sort PAR LA CARTE (pickingTargets) : le réticule reste actif sous la cascade', () => {

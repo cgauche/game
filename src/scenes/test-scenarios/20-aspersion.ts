@@ -4,7 +4,7 @@ import { arena, setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
 /**
- * ASPERSION (MDG 16 l.19, #497) : « Asperger d'eau » (`battleWater`, `ActionBar.tsx`) gate ses cibles
+ * ASPERSION (MDG 16 l.19, #497) : « Asperger d'eau » (`battleWater`) gate ses cibles
  * sur `waterSprayCandidates(active, battle.combatants.filter(c => c.kind === active.kind))` — VOULU
  * (« ≥1 ALLIÉ Créature marine adjacent ») : la créature marine à asperger doit donc entrer en jeu
  * avec le MÊME `kind` que le héros, jamais `kind:'enemy'`. Mécanisme canonique = `side:'ally'` sur un

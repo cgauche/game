@@ -2,7 +2,7 @@
  * REGISTRE DES ACTIONS — le CODE derrière `src/data/actions.json` (spec HUD « Zone 12 »).
  *
  * Trois tables, trois responsabilités, aucune logique en JSON :
- *  - `ACTION_GATES`    — les PRÉDICATS d'offre, par id. Source UNIQUE : `ActionBar` et `turnEconomy`
+ *  - `ACTION_GATES`    — les PRÉDICATS d'offre, par id. Source UNIQUE : `CombatConsole` et `turnEconomy`
  *                        les consomment (ils en tenaient chacun une dérivation manuscrite, et la
  *                        divergence a déjà coûté un bug — Détermination, commit `0e14119b`).
  *  - `ACTION_CANDIDATES` — les SÉLECTEURS impurs (listes de cibles/objets), enveloppes NOMMÉES des
@@ -362,7 +362,6 @@ export const MODES_HORS_REGISTRE = {
 /** Union des valeurs légales de `BattleState.action` — le type raconte le registre. */
 export type BattleActionMode =
   | 'cast'
-  | 'ammo'
   | 'heal'
   | 'dispel'
   | 'battery'
@@ -373,5 +372,5 @@ export type BattleActionMode =
  *  couvrent EXACTEMENT les `armed` du registre + `MODES_HORS_REGISTRE` (union validée, pas dérivée :
  *  un JSON importé n'a pas de type littéral). */
 export const BATTLE_ACTION_MODES: readonly BattleActionMode[] = [
-  'cast', 'ammo', 'heal', 'dispel', 'battery', 'push', 'teleport',
+  'cast', 'heal', 'dispel', 'battery', 'push', 'teleport',
 ];

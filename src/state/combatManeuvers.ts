@@ -186,7 +186,7 @@ export function availableFreeAttackOps(c: Combatant): { op: GrantFreeAttackOp; c
 }
 
 /** Une attaque d'Arme GRATUITE est-elle ENCORE disponible ce Round ? (compteur partagé `freeAttacksThisTurn
- *  ['arme']` < plafond de la source). Lue par `availableAttacks` + ActionBar/IsoStage/turnEconomy. */
+ *  ['arme']` < plafond de la source). Lue par `availableAttacks` + CombatConsole/IsoStage/turnEconomy. */
 export const hasFreeWeaponAttack = (c: Combatant): boolean => {
   const used = c.freeAttacksThisTurn?.['arme'] ?? 0;
   return availableFreeAttackOps(c).some((s) => used < s.cap);

@@ -24,6 +24,8 @@ import { intentAllowedFor, withActingSeat, seatOwns, ROUTES } from './netOwnersh
 import { jetOwnedIntents, participantOwnedIntents } from './flowVerbs';
 import { modalOwnerOf, HORS_MODAL, horsModalOwnedIntents } from './modalArbiter';
 import { GUEST_INTENTS } from '../net/intents';
+import { ACTIONS } from '../data/index';
+import { KEYBINDINGS } from './keybindings';
 import { seedBattleRng } from './battleRng';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant, Weapon } from '../engine/types';
@@ -262,13 +264,20 @@ describe('#1016 — pause de début de Round (`turn: -1`) : la FENÊTRE est à t
  * là : `cleaveAttack` routé alors qu'AUCUN site d'écran ne le demande (le clic voyage par
  * `battleClickEntity`). Chaque intent routé par #1016 déclare donc son émetteur, et le scan
  * CONFRONTE la déclaration aux sources d'écran.
- * DEUX LIMITES DÉCLARÉES : (a) le scan est TEXTUEL (présence du nom dans `src/ui`/`src/gameIso`, tests
- * exclus) — il prouve l'existence d'un site d'émission, JAMAIS son atteignabilité à l'écran (bouton
- * affiché, affordance ouverte), qui se juge en recette navigateur ; (b) la liste confrontée à cette
- * table est DÉRIVÉE de `netOwnership.ROUTES` (#1051) — toute route nominative doit donc déclarer son
- * émetteur, sauf celles que `Route.horsAllowlist` marque inatteignables par le réseau.
+ * UN GESTE PEUT ÊTRE ÉMIS PAR TROIS CHEMINS, et le scan les connaît tous les trois :
+ *   1. TEXTUEL — le nom du verbe apparaît dans une source d'écran (`src/ui`/`src/gameIso`) ;
+ *   2. RELAI DU REGISTRE — une entrée d'`actions.json` déclare `run: <verbe>` ET porte une surface
+ *      vivante (case de console, bandeau d'interlude, touche du registre) : l'écran l'émet par
+ *      `runAction(<id>)`, sans jamais nommer le verbe ;
+ *   3. REGISTRE CLAVIER — `keybindings.ts` appelle le verbe directement (une touche EST une surface,
+ *      même définition que la garde d'atteignabilité des actions).
+ * DEUX LIMITES DÉCLARÉES : (a) le scan reste TEXTUEL — il prouve l'existence d'un site d'émission,
+ * JAMAIS son atteignabilité à l'écran (bouton affiché, affordance ouverte), qui se juge en recette
+ * navigateur ; (b) la liste confrontée à cette table est DÉRIVÉE de `netOwnership.ROUTES` (#1051) —
+ * toute route nominative doit donc déclarer son émetteur, sauf celles que `Route.horsAllowlist`
+ * marque inatteignables par le réseau.
  */
-const EMISSION: Record<string, { parUI: true } | { interne: string; dans: string }> = {
+const EMISSION: Record<string, { parUI: true } | { interne: string; dans: string } | { sansSurface: string }> = {
   battleClickEntity: { parUI: true },
   battleClickTile: { parUI: true },
   cleaveEnd: { parUI: true },
@@ -277,7 +286,11 @@ const EMISSION: Record<string, { parUI: true } | { interne: string; dans: string
   confirmRoundStart: { parUI: true },
   roundStartReady: { parUI: true },
   victoryReady: { parUI: true },
-  raiseHand: { parUI: true },
+  // La demande de pause de Round n'a PLUS d'émetteur : son entrée `raise-hand` du registre attend sa
+  // surface à la FRISE d'initiative (même destination que `SANS_SURFACE` d'`action-atteignabilite`).
+  // La route reste POSÉE (le verbe est dans `GUEST_INTENTS`) ; le verdict ci-dessous est VÉRIFIÉ : si
+  // l'entrée retrouve une case, une touche ou un bandeau, il vire ROUGE « périmé ».
+  raiseHand: { sansSurface: 'entrée `raise-hand` sans case, sans touche et sans bandeau — destination : la frise d’initiative (spec HUD §1d).' },
   assignVictoryGear: { parUI: true },
   partyAddHero: { parUI: true },
   partyRemoveHero: { parUI: true },
@@ -320,19 +333,57 @@ function ecranSources(): string[] {
   return out;
 }
 
+/** Surfaces VIVANTES d'une entrée du registre : une case de console (site d'appel `cellFor('<id>')`
+ *  ou `data-action="<id>"`), le bandeau d'interlude que la console rend depuis le registre, ou une
+ *  touche du registre clavier. Même définition que la garde `action-atteignabilite`. */
+function actionsAvecSurface(): Set<string> {
+  const src = readFileSync(join(process.cwd(), 'src', 'ui', 'CombatConsole.tsx'), 'utf8');
+  const cles = [
+    ...[...src.matchAll(/cellFor\(\s*'([^']+)'/g)].map((m) => m[1]),
+    ...[...src.matchAll(/data-action="([^"]+)"/g)].map((m) => m[1]),
+    ...KEYBINDINGS.map((b) => b.id),
+  ];
+  if (/currentInterludeAction/.test(src)) for (const a of ACTIONS) if (a.surface === 'interlude') cles.push(a.id);
+  const vivantes = new Set(cles);
+  return new Set(ACTIONS.filter((a) => [a.id, ...(a.keys ?? [])].some((k) => vivantes.has(k))).map((a) => a.id));
+}
+
+/** Verbes que le REGISTRE relaie pour l'écran : `run` d'une action qui porte une surface vivante. */
+function verbesRelayesParLeRegistre(): Set<string> {
+  const avecSurface = actionsAvecSurface();
+  return new Set(ACTIONS.filter((a) => a.run && avecSurface.has(a.id)).map((a) => a.run!));
+}
+
 describe('#1016 — toute route porte sur un geste RÉELLEMENT émis (ou déclare son site interne)', () => {
   const emis = (name: string, sources: string[]) => sources.some((src) => src.includes(name));
+  const CLAVIER_SRC = readFileSync(join(process.cwd(), 'src', 'state', 'keybindings.ts'), 'utf8');
+  /** Les trois chemins d'émission (voir l'en-tête d'`EMISSION`). */
+  const emisParUneSurface = (n: string, sources: string[], relais: Set<string>) =>
+    emis(n, sources) || relais.has(n) || CLAVIER_SRC.includes(n);
 
-  it('précondition : le scan voit bien des sources d’écran', () => {
+  it('précondition : le scan voit bien des sources d’écran, un relais de registre et un registre clavier', () => {
     expect(ecranSources().length).toBeGreaterThan(50);
+    expect(verbesRelayesParLeRegistre().size).toBeGreaterThan(10);
+    expect(KEYBINDINGS.length).toBeGreaterThan(10);
   });
 
-  it('les intents déclarés `parUI` ONT un site d’émission dans src/ui|src/gameIso', () => {
+  it('les intents déclarés `parUI` ONT un site d’émission (écran, relais du registre ou touche)', () => {
     const sources = ecranSources();
+    const relais = verbesRelayesParLeRegistre();
     const muets = Object.entries(EMISSION)
       .filter(([, e]) => 'parUI' in e).map(([n]) => n)
-      .filter((n) => !emis(n, sources));
+      .filter((n) => !emisParUneSurface(n, sources, relais));
     expect(muets, 'route déclarée « émise par l’UI » sans aucun site — la route est MORTE').toEqual([]);
+  });
+
+  it('les intents déclarés `sansSurface` n’en ont VRAIMENT aucune, et portent leur destination', () => {
+    const sources = ecranSources();
+    const relais = verbesRelayesParLeRegistre();
+    const decl = Object.entries(EMISSION).filter(([, e]) => 'sansSurface' in e) as [string, { sansSurface: string }][];
+    const perimees = decl.map(([n]) => n).filter((n) => emisParUneSurface(n, sources, relais));
+    expect(perimees, 'déclaré sans surface alors qu’un émetteur existe — le reclasser `parUI`').toEqual([]);
+    const muettes = decl.filter(([, e]) => e.sansSurface.trim().length < 15).map(([n]) => n);
+    expect(muettes, 'entrée `sansSurface` sans adresse de destination').toEqual([]);
   });
 
   it('les intents déclarés `interne` n’ont AUCUN site d’écran, et le site nommé existe', () => {

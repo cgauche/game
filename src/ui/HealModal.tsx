@@ -15,7 +15,7 @@ import { VsHeader } from './VsHeader';
 /**
  * Flux de jet d'un SOIN (Guérison, LDB 09-Compétences) : « Lancer » → Chance (relance / +1 DR) →
  * Résilience → « Appliquer ». Sert DEUX hôtes :
- *  - en COMBAT : modale autonome (HealModal, via l'ActionBar — un acte = une Action) ;
+ *  - en COMBAT : modale autonome (HealModal, via la console — un acte = une Action) ;
  *  - hors combat : zone EMBARQUÉE de l'infirmerie (MedicModal, `embedded`) — la modale persistante
  *    reste ouverte après « Appliquer ».
  * Le soigneur peut être un PNJ payant : sa Chance/Résilience valent 0 (boutons inertes), et

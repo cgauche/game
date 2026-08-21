@@ -46,14 +46,13 @@
 /* Anneau de focus NET : la manette déplace le focus DOM réel (visibleFocusables) dans les menus/modales
    → il faut voir l'élément focalisé. On réutilise l'accent or (--gold), comme l'anneau déjà posé sur les
    cases à cocher / .char-head — aucune couleur en dur. */
-.ab-slot:focus-visible,
 .btn:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 
 /* Curseur de combat (losange piloté clavier/manette) : trait d'accent or + pulsation douce (même
-   grammaire d'opacité que .lazy-pulse / af-pulse), neutralisée sous prefers-reduced-motion. La position
+   grammaire d'opacité que .lazy-pulse), neutralisée sous prefers-reduced-motion. La position
    est posée par le rendu iso ; ici seulement l'aspect du trait. */
 .combat-cursor {
   fill: none;

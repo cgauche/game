@@ -581,7 +581,7 @@ export interface GameState extends RollFlowActionsMap {
    *  `actorAim` du missile, qui ne sait montrer qu'une ligne from→to inadaptée à une case). */
   actorAoe: { casterId: string; center: { x: number; y: number }; radius: number } | null;
   /** Coût/gain (Action/Mouvement/Avantage) de l'intention SOUS LA SOURIS (desktop) — alimente le
-   *  clignotant des jauges (ActiveFrame), même source que le tap-1 (`previewResourceDelta`).
+   *  clignotant des gouttières de l'arche, même source que le tap-1 (`previewResourceDelta`).
    *  Posé par IsoStage au changement de tuile survolée ; null hors survol pertinent. */
   hoverDelta: {
     action: number;

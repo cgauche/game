@@ -640,16 +640,15 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   et de cliquer ; vérifier par `elementFromPoint` en cas de clic mort (vécu recette #495, créateur
   étape Caractéristiques).
 
-- **Occlusion par le panneau de sorts (`.ab-spell-row`)** : le dock des sorts RESTE superposé après la
-  sélection d'un sort et couvre la moitié BASSE de l'écran. La visée canonique du token (« bas de la
-  bbox », `screenPos` ci-dessus) tombe alors DANS le panneau, pas sur le token — clic mort ou action
-  parasite. Panneau de sorts ouvert : viser le HAUT du token (`{x: x+width/2, y: y+8}`) et VÉRIFIER par
-  `elementFromPoint` avant le clic ; si un `.ab-spell-row` répond, remonter encore (vécu recette #1004,
-  incantation sur un token en combat).
+- **Occlusion par la console de combat (`.combat-console`)** : le pont occupe la bande BASSE de
+  l'écran. La visée canonique du token (« bas de la bbox », `screenPos` ci-dessus) peut tomber DANS le
+  pont, pas sur le token — clic mort ou action parasite. Viser le HAUT du token
+  (`{x: x+width/2, y: y+8}`) et VÉRIFIER par `elementFromPoint` avant le clic ; si une surface de la
+  console répond, remonter encore (vécu recette #1004, incantation sur un token en combat).
 
 - **Sélecteur TEXTE ambigu pour un sort** : viser un sort par son seul NOM (getByText de Playwright)
   matche AUSSI les lignes de journal de combat qui le citent → plusieurs nœuds, ou le mauvais. Cibler
-  le bouton du dock : `div.ab-spell-row button` avec hasText (vécu recette #1004).
+  l'alvéole de la console : `.combat-console button.cc-cell` avec hasText (vécu recette #1004).
 
 - **Sort de ZONE = DEUX portées, DEUX clics** : le clic sur un token ne fait qu'ARMER l'incantation
   (`castZoneSpell` ouvre la modale sans cible — le centre se choisit APRÈS le jet,
@@ -828,7 +827,7 @@ suivant. Ce qui ressemble à « ça a marché puis c'est revenu en arrière » n
 
 | # | Invariant | Vérité de code | Ce qu'on OBSERVE |
 |---|---|---|---|
-| 1 | **Un jet possédé par l'invité surface CHEZ LUI** | `ActiveModal` (`src/ui/ActiveModal.tsx`) ne monte la modale que si le siège local possède le concerné (`modalOwnerOf` + `ownsLocal`) ; `'*'` = tous | **invité** : la modale est rendue (`.modal-overlay`) — **hôte** : rien. Pendant le TOUR du héros distant l'hôte n'a MÊME PAS de puce (anti-doublon) : c'est la barre d'action qui porte « <siège> joue <héros>… » (`.establishing-bar` > `.ready-chip`, `src/ui/ActionBar.tsx`). Hors tour du concerné (défense réactive), l'hôte a la puce `.spectator-chip` |
+| 1 | **Un jet possédé par l'invité surface CHEZ LUI** | `ActiveModal` (`src/ui/ActiveModal.tsx`) ne monte la modale que si le siège local possède le concerné (`modalOwnerOf` + `ownsLocal`) ; `'*'` = tous | **invité** : la modale est rendue (`.modal-overlay`) — **hôte** : rien. Hors tour du concerné (défense réactive), l'hôte a la puce `.spectator-chip` |
 | 2 | **Le `pending*` NE prouve rien** | l'état voyage entier (`netSnapshot`) | `__wfrp.modal()` répond PAREIL des deux côtés — la possession se lit au DOM, jamais au pending. C'est le piège n°1 d'une recette coop |
 | 3 | **Le choix de GROUPE va au meneur** | dialogue = décision de groupe : `chooseDialogue`/`closeDialogue`/`interactEntity` sont routés `seat === (net.gmSeat ?? 0)` (`ROUTES`, `src/state/netOwnership.ts`) ET absents de `GUEST_INTENTS` ; `DialogueBox` lit le MÊME routage par `ownsGroupDecision` (`src/ui/ownership.ts`) | l'invité VOIT le dialogue (miroir) mais ses réponses sont **désactivées**, avec une puce `.spectator-chip` qui NOMME le meneur ; seul le choix du meneur fait avancer le nœud/le flag/le combat des deux côtés. Chez l'invité, `state().inDialogue` et le nœud affiché suivent l'hôte |
 | 4 | **Une bande partagée : chaque siège ses rangées** | `bandStep` (`src/state/rollSeam.ts`) pose `groupOwner` dès >1 porteur → `modalOwnerOf` rend `'*'` → fenêtre chez TOUS ; chaque rangée n'est actionnable que par le siège qui possède son acteur (`useOwns`, `src/ui/ownership.ts` — `rollAllUnrolledRows` filtré par `owns`) | la MÊME fenêtre est ouverte des deux côtés ; le bouton de jet d'une rangée n'est servi qu'au siège propriétaire ; « Tout lancer » ne roule QUE les rangées du siège qui clique |
@@ -846,15 +845,14 @@ suivant. Ce qui ressemble à « ça a marché puis c'est revenu en arrière » n
   `controlsActive` **ET** aucune modale ouverte (`src/state/keybindings.ts`) → pendant le tour d'un
   autre siège, ou tant qu'une fenêtre (dialogue, pause de Round, cascade) est ouverte, rien ne répond.
   Fermer la fenêtre, ou rendre la main au bon siège, AVANT de conclure à une régression clavier.
-- **Ready-check de début de Round — le combat n'est PAS bloqué** : dès `net.mode !== 'local'`, la barre
-  d'action de la pause d'initiative est remplacée par un ready-check PAR SIÈGE (`src/ui/ActionBar.tsx`) —
-  une puce `.ready-chip` par siège de `net.seatNames`, un bouton **« Prêt »** qui appelle
-  `roundStartReady(net.mySeat)` et devient « En attente des autres… ». L'hôte ne lance le Round que
-  quand `pendingRoundStart.readyBySeat` est complet. Cliquer « Prêt » **sur CHAQUE page** (le raccourci
-  d'état est `store.getState().roundStartReady(<siège>)` appelé sur la page du siège concerné) — sans
-  ce clic des deux côtés, rien n'avance, aucun tour ne s'ouvre, aucune modale ne surface : ce n'est pas
-  un gel, c'est le ready-check. En solo (`net.mode === 'local'`) c'est le bouton unique
-  « Commencer le combat » — la recette coop N'A PAS ce bouton.
+- **Ready-check de début de Round — le combat n'est PAS bloqué** : dès `net.mode !== 'local'`, l'hôte ne
+  lance le Round que quand `pendingRoundStart.readyBySeat` est complet (`roundStartReady(net.mySeat)`,
+  `src/state/combatSlice.ts`). Annoncer « Prêt » **sur CHAQUE page** — sans les deux déclarations, rien
+  n'avance, aucun tour ne s'ouvre, aucune modale ne surface : ce n'est pas un gel, c'est le
+  ready-check. ⚠ SEULE SURFACE aujourd'hui : le raccourci clavier `round-start`
+  (`src/state/keybindings.ts`) — le bandeau de phase de la console ne rend que le
+  « Commencer le combat » SOLO (`confirmRoundStart`) ; en recette coop, piloter par
+  `store.getState().roundStartReady(<siège>)` sur la page du siège concerné.
 - **Sous-bandes successives INDISCERNABLES au DOM** : une bande peut en appeler une autre (chaque rangée
   vaincue ré-appende SON Test à la cascade — Surprise → Vigilance, `src/state/combat/triggeredTest.ts`).
   Deux étapes consécutives présentent alors le MÊME libellé et les MÊMES boutons : la présence de

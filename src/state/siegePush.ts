@@ -91,8 +91,8 @@ export function pushMovement(): number {
   return Number(rule('siege-engine-push-speed'));
 }
 
-/** État du SLOT « Pousser » de la barre d'action (`ui/ActionBar`) — SOURCE UNIQUE du gate d'affordance,
- *  découplée du reste des conditions de barre (Action dispo / Sonné / Brisé, qui vivent dans ActionBar).
+/** État de la case « Pousser » de la console — SOURCE UNIQUE du gate d'affordance, découplée du reste
+ *  des conditions de surface (Action dispo / Sonné / Brisé, qui vivent dans `CombatConsole`).
  *  `show` = `active` est chef d'un engin poussable RÉSOLU (arme + affût présents) ; `undercrew` = visible mais
  *  Équipe sous la moitié requise → bouton DÉSACTIVÉ (parité tir sous-effectif, `firedAttackBlock`). PUR. */
 export function pushSlot(active: Combatant, combatants: Combatant[]): { show: boolean; undercrew: boolean } {

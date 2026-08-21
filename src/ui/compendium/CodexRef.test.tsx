@@ -74,8 +74,9 @@ describe('CodexRef — repli sans entrée catalogue (#956) : la surface garde sa
 
 /**
  * NOM ACCESSIBLE d'un déclencheur-ICÔNE (#1117 L0b) — `Icon` rend un `<svg aria-hidden>` : sans nom
- * dérivé, les 8 ⓘ du dépôt (ActionBar ×4, CharacterSheet, useAttackJetProps ×3) seraient des boutons
- * MUETS. La dérivation vit DANS la primitive : les call-sites n'ont qu'à passer leur `label`, comme
+ * dérivé, tous les ⓘ du dépôt (stock ÉNUMÉRÉ par `codex-info-affordance-ratchet.test.ts` :
+ * `CharacterSheet`, `MerchantPanel`, `PossessionsRegistry`, `StakeNote`, `jetProps/*`) seraient des
+ * boutons MUETS. La dérivation vit DANS la primitive : les call-sites n'ont qu'à passer leur `label`, comme
  * ils le font déjà. Un `ariaLabel` explicite reste prioritaire.
  */
 describe('CodexRef — le déclencheur-icône se NOMME tout seul (#1117)', () => {

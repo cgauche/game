@@ -86,7 +86,7 @@ afterEach(() => {
 });
 
 /** Les modes ARMABLES sans interlude apparié — la liste que la trouvaille de recette désigne. */
-const ARMÉS_NUS: BattleActionMode[] = ['dispel', 'heal', 'cast', 'ammo', 'push'];
+const ARMÉS_NUS: BattleActionMode[] = ['dispel', 'heal', 'cast', 'push'];
 
 describe('Échap sur un mode armé NU (#1411)', () => {
   for (const action of ARMÉS_NUS) {

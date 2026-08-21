@@ -1011,7 +1011,7 @@ export function previewCast(
 }
 
 /** Delta de RESSOURCES de l'aperçu de clic (tap 1, `battle.preview`) — pour le retour « clignotant »
- *  de l'ActiveFrame : ce qu'une opération en attente va COÛTER (Action / Mouvement en cases) et
+ *  des gouttières de l'arche : ce qu'une opération en attente va COÛTER (Action / Mouvement en cases) et
  *  RAPPORTER (Avantage) AVANT le commit du 2ᵉ clic. Tout à 0 si aucun aperçu en cours. */
 export function previewResourceDelta(battle: BattleState | null): { action: number; move: number; adv: number } {
   const p = battle?.preview;

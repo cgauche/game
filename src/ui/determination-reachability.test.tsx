@@ -3,8 +3,8 @@
  * DÉTERMINATION — les TROIS dépenses (LDB 17 l.59-61) sont atteignables sur la surface VIVANTE, la
  * console de combat : deux ALVÉOLES de la grille (immunité Psychologie, ignorer les modificateurs de
  * Critique) et la PASTILLE de l'État pour « Retirez un État » (arbitrage HUD 2026-08-16 : « Réactions
- * d'État sur la PASTILLE (`StateChips`+`GatedAction`) »). Aucune liste ne s'ouvre : la barre morte les
- * rendait en rangées `.ab-spells`, patron banni par le même arbitrage.
+ * d'État sur la PASTILLE (`StateChips`+`GatedAction`) »). Aucune liste ne s'ouvre : le même arbitrage
+ * bannit le tiroir, chaque dépense se prend là où elle s'affiche.
  *
  * Console MONTÉE pour de vrai (`createRoot`/`act`) sur le VRAI store — aucun module mocké, et l'effet
  * mesuré est celui du MOTEUR (réserve débitée, État retiré), jamais un drapeau d'UI.

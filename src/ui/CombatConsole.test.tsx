@@ -1263,9 +1263,7 @@ describe('CombatConsole — les cases sont des ENTRÉES du registre (branchement
   });
 
   // DÉTERMINATION (LDB 17 l.59-60) : deux des trois dépenses sont des ALVÉOLES, et leurs dispatchers
-  // sont DIRECTS — le clic DÉPENSE le point, il n'arme aucun mode. L'ancienne case d'armement (qui
-  // ouvrait la liste `.ab-spells` de la barre morte) n'a donc plus rien à ouvrir : elle est purgée du
-  // registre, avec son mode (#1411 P0-B lot 3).
+  // sont DIRECTS — le clic DÉPENSE le point, il n'arme aucun mode (aucune entrée d'armement au registre).
   it('R-3 — les deux dépenses de Détermination sont des alvéoles DIRECTES (aucun mode armé)', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];

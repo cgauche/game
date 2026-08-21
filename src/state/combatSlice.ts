@@ -121,7 +121,7 @@ import { FLOWS } from './rollFlowSpecs';
 /** Un flux DIFFÉRÉ tient la main (modale de jet/révélation, ciblage par carte : Frappe Mortelle,
  *  2ᵉ frappe, Surincantation +Cible, pose de zone) :
  *  toutes les actions d'INTENTION de la hotbar sont inertes — on ne change pas d'action au milieu
- *  d'un jet. La barre est masquée (ActionBar), mais ce garde-fou couvre AUSSI le clavier, les
+ *  d'un jet. La console masque ses cases, mais ce garde-fou couvre AUSSI le clavier, les
  *  intents coop et la recette. (La PAUSE de début de Round, elle, est gatée à l'entrée UI —
  *  performClick d'IsoStage — pour rester neutre vis-à-vis des harnais de test sans UI.) */
 const combatBusy = (s: Pick<GameState, 'pendingCleave' | 'pendingDualStrike' | 'pendingCast'>): boolean =>

@@ -74,9 +74,9 @@
   --magic-panel: #241830; /* fond sombre « objet équipé/enchanté » */
   --magic-panel-dk: #0e0b14;
   --cyan-pale: #9fd8ff; /* badge de pré-emption gratuite (éclair) */
-  --gauge-action: #e0b83a; /* ActiveFrame : jauge Action */
-  --gauge-move: #46c2d6; /* ActiveFrame : jauge Mouvement */
-  --gauge-adv: #ff9b3d; /* ActiveFrame : jauge Avantage (LDB 14 l.198) */
+  --gauge-action: #e0b83a; /* gouttière d'Action de l'arche (CombatConsole) */
+  --gauge-move: #46c2d6; /* gouttière de Mouvement de l'arche */
+  --gauge-adv: #ff9b3d; /* conduit d'Avantage (LDB 14 l.198) */
   --chip-malus-bg: #2a1518; /* pastille d'État : malus */
   --chip-malus-border: #7a2a2a;
   --chip-buff-bg: #16261a; /* pastille d'État : buff */

@@ -200,7 +200,6 @@ const BARE_BUTTON_EXEMPT_FILES = new Set([
 // explorable propre (langage `.cc-path`/`.cc-link`, pas un `.chip`/`.seg` recyclé).
 const BARE_BUTTON_CANON = /\b(btn|chip|seg|dicewell|cc-step)\b/;
 const BARE_BUTTON_BASELINE: Record<string, number> = {
-  'ActionBar.tsx': 1,
   // +1 (LOT L, 2026-07-17) : titre de bande CLIQUABLE (`onTitleClick`, registre État → catégorie
   // Compendium) — bouton de RESET pur (`all: unset`) posé UNE fois dans la primitive PARTAGÉE
   // elle-même (`Band.tsx`), jamais recopié à l'appel : tout consommateur de `Band` hérite du patron.
@@ -337,13 +336,20 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // +1 (#1349 G5) : `.rm-posture-etat` — l'ÉTAT LECTURE SEULE d'une posture de tir (armée / non armée,
   // accent porté par `[data-armee]` sur la rangée) est un rôle distinct de `.rm-crowd-note` (la note
   // explicative, 11px muted) qu'il détournerait sinon. Un rôle de plus nommé, aucun motif d'écran.
-  'styles/combat-modals.css': 142,
-  // #1135 : baseline abaissée (112 → 111), bloc mort `.af-hp` purgé — détecteur inchangé.
-  // #1135 responsive : -1 (111 → 110) — `.inspect-toggle` MEURT (plus aucun consommateur : la bascule
-  // d'inspection a rejoint `ViewControls` et compose `.btn.vc-btn`). La matrice responsive du dock
-  // (900/700/560 + `pointer: coarse`) n'ajoute AUCUN nom : elle ne cible que des classes déjà définies
-  // ici et le slot `[data-slot='end-turn']` (attribut d'id stable, jamais une classe par écran).
-  'styles/combat-ui.css': 110,
+  // -9 (142 → 133), mort de la barre v7 : sortent l'interlude de ciblage qu'elle SEULE portait
+  // (`.action-bar.targeting-interlude` + `.targeting-interlude`/`.ti-icon`/`.ti-title`/`.ti-badge`
+  // et la densité `.btn`/`.small` de sa tranche `pointer: coarse`), la méta de son sélecteur de sort
+  // (`.bp-spell-ni`, `.ab-spell-meta`) et le masquage `.ab-actor-top:empty` de sa rangée d'Avantage.
+  'styles/combat-modals.css': 133,
+  // -35 (110 → 75), mort de la barre v7 : le module ne définit plus AUCUNE classe de la barre
+  // (`.action-bar`, `.commencer-btn`, `.coop-ready`, la famille `.ab-*` — cadre acteur, hotbar,
+  // slots, tiroirs) ni du cadre actif `ActiveFrame` (`.aframe`, famille `.af-*`, `[data-slot=…]`).
+  // Sa matrice responsive (900/700/560 + `pointer: coarse`) part avec elle : le DOCK DE DÉCISION est
+  // la console, qui porte SA matrice dans `combat-console.css` (test « matrice responsive canonique »
+  // recentré). Restent ici les surfaces qui ont d'autres porteurs : `.rig-portrait` (portrait de
+  // l'arche), `.fx-chip*` (pastilles partagées), `.pv-badge` (aperçu tap-1 sur la scène),
+  // `.ready-row`/`.ready-chip` (RestModal/VictoryScreen/VoyageScreen).
+  'styles/combat-ui.css': 75,
   // Console de combat (lot console) : famille `.cc-*` de la surface — deux travées, alvéole,
   // conduit d'Avantage, arche, coin de fin de tour, bandeau de phase.
   // Passe de CONTENU (spec §1c-bis) : l'arche ne compose plus `ActiveFrame` — elle rend son propre
@@ -1181,7 +1187,7 @@ function pxOf(css: string, selector: string, prop: string): number | null {
 const occurrences = (s: string, needle: string) => s.split(needle).length - 1;
 
 const HUD_TRANCHES = ['@media (max-width: 900px)', '@media (max-width: 700px)', '@media (max-width: 560px)', '@media (pointer: coarse)'];
-const HUD_MODULES = ['hud.css', 'combat-ui.css'];
+const HUD_MODULES = ['hud.css', 'combat-console.css'];
 
 describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => {
   const read = (m: string) => readFileSync(join(UI, 'styles', m), 'utf8');
@@ -1223,7 +1229,7 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
     expect(at700).toMatch(/\.hud-rail\s*>\s*\.worldmap-btn\s*\{[^}]*bottom:\s*\d+px/);
   });
 
-  it('≤560 : le groupe tient sur une ligne, le dock d’action prend la largeur, la sortie de tour colle au bord', () => {
+  it('≤560 : le groupe tient sur une ligne, la console prend la largeur, la sortie de tour reste en bout de rangée d’arche', () => {
     // La bande de groupe tient sur UNE ligne à TOUTE largeur depuis la passe de matière (spécimen B) :
     // l'assertion monte donc dans la section de base — une bande qui s'enroulait mangeait 21 % de
     // l'écran à 1280 (grief vision). La lire dans la tranche ≤560 seulement laisserait le retour à la
@@ -1232,13 +1238,15 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
     const hudBase = baseSection(read('hud.css'));
     expect(hudBase).toMatch(/\.pd-track\s*\{[^}]*flex-wrap:\s*nowrap/);
     expect(hudBase).toMatch(/\.pd-track\s*\{[^}]*overflow-x:[ \t\r\n]*auto/); // débordement de secours (combat naval)
-    const barAt560 = mediaBlock(read('combat-ui.css'), '@media (max-width: 560px)');
-    expect(barAt560).toMatch(/\.action-bar\s*\{[^}]*left:\s*4px/);
-    expect(barAt560).toMatch(/\.action-bar\s*\{[^}]*right:\s*4px/);
-    // « Fin du tour » (désignée par son id de slot) reste COLLÉE au bord droit pendant qu'on fait
-    // défiler la hotbar : la seule présence du sélecteur ne dit rien de ce comportement.
-    expect(barAt560).toMatch(/\[data-slot='end-turn'\]\s*\{[^}]*position:\s*sticky/);
-    expect(barAt560).toMatch(/\[data-slot='end-turn'\]\s*\{[^}]*right:\s*0/);
+    const barAt560 = mediaBlock(read('combat-console.css'), '@media (max-width: 560px)');
+    // Le pont PREND LA LARGEUR (grille, pas une rangée qui déborde) : les deux travées s'empilent sous
+    // la rangée d'arête. Sans `width: 100%`, la grille se rétracte à son contenu et les cases sortent.
+    expect(barAt560).toMatch(/\.cc-dock\s*\{[^}]*display:\s*grid/);
+    expect(barAt560).toMatch(/\.cc-dock\s*\{[^}]*width:\s*100%/);
+    // La SORTIE DE TOUR (le coin) reste EN BOUT DE LA RANGÉE D'ARCHE : le gabarit la nomme, elle ne
+    // retombe pas sous les travées où il faudrait défiler pour l'atteindre.
+    expect(barAt560).toMatch(/\.cc-dock\s*\{[^}]*grid-template-areas:\s*'arch corner'/);
+    expect(barAt560).toMatch(/\.cc-corner\s*\{[^}]*grid-area:\s*corner/);
   });
 
   it('≤560 : la bande basse réserve la hauteur de la CONSOLE (caméra et tiroir hors de son emprise)', () => {

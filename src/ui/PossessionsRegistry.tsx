@@ -5,7 +5,7 @@
  * `CharacterSheet.tsx`) — cliquer une ligne OUVRE LA GESTION (#762 : `PossessionsScreen`, modale
  * globale, pré-sélectionnée sur la possession cliquée), en fermant la fiche héros au passage (évite
  * l'empilement modale-sur-modale). Le lien Codex reste disponible en petite affordance secondaire
- * (icône ⓘ à côté du nom, patron `ab-codex-info` de `ActionBar`) — SIBLING de la plaque cliquable,
+ * (icône ⓘ à côté du nom, patron partagé `ab-codex-info` de `CodexRef`) — SIBLING de la plaque cliquable,
  * jamais imbriqué dedans (un `role=button` dans un `<button>` double l'action au clic).
  *
  * Helpers de présentation (`NATURE_*`/`prefixOf`/`labelOf`/`locationBadge`) EXPORTÉS — réutilisés tels

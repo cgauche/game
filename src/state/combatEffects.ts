@@ -914,7 +914,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // en PX ne vaut que pour la mémorisation volontaire, LDB 46 l.16-20).
       const sp = findSpellById(e.spell);
       if (!sp) return;
-      // `c.spells` = IDS de sort (résolus par findSpellById dans l'ActionBar/IA/grimoire) ; le libellé
+      // `c.spells` = IDS de sort (résolus par findSpellById dans la console/IA/grimoire) ; le libellé
       // ne sert qu'à l'affichage (log ci-dessous). Même convention que pregens/buySpell/Béni.
       const who = env.mutateHero(
         e.heroId,

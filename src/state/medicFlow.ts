@@ -2,7 +2,7 @@
  * INFIRMERIE — flux de soins HORS COMBAT unifié (Guérison / Hémorragie / Déchirure / Chirurgie) :
  * une modale PERSISTANTE (MedicModal) — bandeau patients → dossier (actes) → zone de jet — qui ne
  * se ferme pas entre deux actes. Le RAW vit dans engine/healing + engine/trauma (sources uniques),
- * ici : orchestration seulement. En combat, le flux ActionBar reste (un acte = une Action).
+ * ici : orchestration seulement. En combat, le flux de la console reste (un acte = une Action).
  *
  * La CHIRURGIE (Test ÉTENDU, LDB 10 l.184 / 12 l.200) est « armée » sur l'infirmerie (`medic.surgery` :
  * chirurgien figé, patient verrouillé) ; chaque passe est un jet INFLUENÇABLE (`pendingSurgery` via
@@ -99,7 +99,7 @@ function healLineTarget(healer: { actor?: Combatant; skill: number; support?: Su
 
 /** Ouvre l'infirmerie (hors combat). Patient par défaut : celui demandé, sinon le premier soignable. */
 export function openMedic(get: Get, set: Set, opts?: { patientId?: string; npc?: MedicNpc }): void {
-  if (get().battle) return; // en combat : flux ActionBar (un acte = une Action)
+  if (get().battle) return; // en combat : flux de la console (un acte = une Action)
   const party = get().party;
   const patientId = opts?.patientId ?? party.find((h) => isHealable(h))?.id ?? party[0]?.id ?? null;
   set({ medic: { npc: opts?.npc, patientId } });
