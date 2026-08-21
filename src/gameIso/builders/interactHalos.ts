@@ -11,6 +11,7 @@
  */
 import type { Pt } from '../../state/path';
 import type { Scene } from '../../state/scene';
+import { decorFootGeometry } from '../../state/footprint';
 import { RING_A_PX, type MarkCell } from './dynamicMarks';
 import type { PropEl } from './types';
 
@@ -63,7 +64,7 @@ export interface InteractHalo {
   span: { w: number; h: number };
   /** Centre de l'empreinte (décalages de `foot` appliqués) : le halo est aux PIEDS du décor. */
   centre: { x: number; y: number };
-  /** Échelle du décor (`PropEl.foot.scale`) — le halo grandit avec lui. */
+  /** Échelle du décor (côté max de son empreinte) — le halo grandit avec lui. */
   scale: number;
   /** La tuile sous le curseur EST celle du décor → variante renforcée. */
   hovered: boolean;
@@ -112,12 +113,15 @@ export function interactionHalos(
   for (const el of propEls) {
     if (el.source !== 'entity' || !el.interact || !el.entId || flags[`__fouille_${el.entId}`]) continue;
     const ez = el.cell.z;
+    // La géométrie du halo se dérive de l'EMPREINTE de l'élément — la même source pour un décor
+    // billboardé et pour un décor volumique, qui ne porte aucune empreinte de billboard.
+    const foot = decorFootGeometry(el.span);
     fouilles.push({
       id: el.entId,
       cell: { x: el.cell.x, y: el.cell.y, z: ez },
       span: { w: el.span?.w ?? 1, h: el.span?.h ?? 1 },
-      centre: { x: el.cell.x + el.foot.offX, y: el.cell.y + el.foot.offY },
-      scale: el.foot.scale,
+      centre: { x: el.cell.x + foot.offX, y: el.cell.y + foot.offY },
+      scale: foot.scale,
       hovered: ctx.exploring && !!hover && hover.x === el.cell.x && hover.y === el.cell.y && (hover.z ?? 0) === ez,
       visible: el.states.visible,
     });

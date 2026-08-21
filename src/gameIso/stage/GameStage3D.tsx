@@ -181,7 +181,7 @@ import { poseDynamicMarks, type DynMarkPools } from './dynamicMarkPose';
 import { NO_INTERACTION_HALOS, type InteractionHalos } from '../builders/interactHalos';
 import { HALO_SLOTS, buildHaloMesh } from '../backends/webgl/interactHaloMeshes';
 import { poseInteractHalos, type HaloPools } from './interactHaloPose';
-import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
+import { ndcAt, pickNearestTarget, type PickTarget, type WorldPickMesh } from '../backends/webgl/spriteRaycast';
 import { setSpritePicker } from './spritePicker';
 import { stage3dFramingFor, stageScreen, viewBoxScreen, type Stage3dFraming } from './stage3dCamera';
 import { poserLampesDuCiel, stageLightScalars, type LampesDuCiel } from './stageLights';
@@ -637,6 +637,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
    *  regard y réécrit, et le démontage la vide. */
   const clésStatiquesRef = useRef(new Map<BillboardSubject, string[]>());
   const cameraRef = useRef<THREE.Camera | null>(null);
+  /** Le maillage du monde CUIT, vivant — le picking y résout les faces de décor volumique. */
+  const mondeMeshRef = useRef<WorldPickMesh | null>(null);
   /** PILOTE de la découpe locale (#1176, M3) — un par écran monté, comme sa scène three. Il tient la
    *  clé du dernier verdict, l'horloge et le fondu des rayons ; les quatre trous qu'il écrit sont, eux,
    *  partagés par tous les matériaux percés du module. Tant qu'un rayon court après sa cible, il tient
@@ -1489,9 +1491,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       const rect = canvas.getBoundingClientRect();
       if (!rect.width || !rect.height) return null;
       const cibles: PickTarget[] = boardsRef.current.map((b) => ({ cid: b.sub.cid ?? null, object: b.mesh }));
-      return pickNearestCid(
+      return pickNearestTarget(
         camera,
         cibles,
+        mondeMeshRef.current,
         ndcAt({ x: clientX - rect.left, y: clientY - rect.top }, { w: rect.width, h: rect.height }),
       );
     });
@@ -1656,6 +1659,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     const profondeurPercée = materiauProfondeurPerce();
     mesh.customDepthMaterial = profondeurPercée;
     groupe.add(withRenderRank(mesh, 'monde'));
+    // Le picking d'ENTITÉ lit ce maillage : ses faces de décor volumique y sont les seules nommées.
+    mondeMeshRef.current = mesh as unknown as WorldPickMesh;
     ombresARefaire.current = true;
     dessiner();
     // VOILE D'ENTRÉE EN SCÈNE : les faces du monde sont le SOL VISUEL de la carte — TOUTES les cuissons
@@ -1679,6 +1684,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     }
     return () => {
       annulé = true;
+      mondeMeshRef.current = null;
       viderGroupe(groupe); // `viderGroupe` ne connaît que `material` : le matériau de profondeur se libère ici
       profondeurPercée.dispose();
     };

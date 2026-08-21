@@ -408,5 +408,37 @@
       "w": 1,
       "h": 1
     }
+  },
+  {
+    "id": "table-ronde-4-tabourets",
+    "solid": true,
+    "volume": {
+      "primitives": [
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.78
+          },
+          "radius": 0.31,
+          "heightM": 0.08,
+          "sides": 16,
+          "material": "bois-chene"
+        },
+        {
+          "kind": "cylinder",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.39
+          },
+          "radius": 0.09,
+          "heightM": 0.78,
+          "sides": 12,
+          "material": "fer-noirci"
+        }
+      ]
+    }
   }
 ]

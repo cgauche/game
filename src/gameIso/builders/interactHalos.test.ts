@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
 import { RING_A_PX } from './dynamicMarks';
 import { HALO_RX_PX, haloRadiusK, interactionHalos, NO_INTERACTION_HALOS } from './interactHalos';
-import type { PropEl } from './types';
+import type { BillboardPropEl } from './types';
 
 /**
  * DÉRIVATION des halos d'interaction (#1176, P3-0g) : c'est ELLE qui décide qui appelle le
@@ -10,7 +10,7 @@ import type { PropEl } from './types';
  * SANS rien re-décider ; ce qu'il ne pourrait pas rattraper, c'est un halo dérivé pour un objet déjà
  * fouillé.
  */
-function décor(id: string, x: number, y: number, extra: Partial<PropEl> = {}): PropEl {
+function décor(id: string, x: number, y: number, extra: Partial<BillboardPropEl> = {}): BillboardPropEl {
   return {
     kind: 'prop',
     key: `prop:${id}`,

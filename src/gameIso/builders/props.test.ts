@@ -1,7 +1,56 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, type SceneEntity, type WallSeg } from '../../state/scene';
 import { buildProps } from './props';
+import { estPropVolumique, type BillboardPropEl } from './types';
+import type { Dir8 } from '../../state/dir8';
 import { fieldHeightAt, nappeKey, resolveNappes, ROOF_SLOPE_M } from './roofs';
+
+/** Le décor BILLBOARD d'une sortie de builder : un décor VOLUMIQUE n'a ni empreinte de billboard, ni
+ *  surélévation, ni feature de façade à juger — il porte des faces. */
+const buildBillboardProps = (...args: Parameters<typeof buildProps>): BillboardPropEl[] =>
+  buildProps(...args).filter((el): el is BillboardPropEl => !estPropVolumique(el));
+
+/**
+ * DÉCOR VOLUMIQUE — un type qui porte une recette (`PropData.volume`) sort en FACES monde, jamais en
+ * sujet de billboard, et se pose sur la surface de sa case (relief et couche compris).
+ */
+describe('buildProps — un décor à recette sort en faces monde', () => {
+  const sceneWithReliefAndUpperLayer = ({ x, y, z, heightM }: { x: number; y: number; z: number; heightM: number }) => {
+    const s = emptyScene(8, 8);
+    s.layers.push({ z, tiles: new Array(8 * 8).fill('pierre') });
+    const étage = s.layers.find((l) => l.z === z)!;
+    étage.height = new Array(8 * 8).fill(0);
+    étage.height[y * 8 + x] = heightM;
+    return s;
+  };
+  const propEntity = ({ id, pos, z, facing }: { id: string; pos: { x: number; y: number }; z?: number; facing: Dir8 }): SceneEntity =>
+    ({ id, kind: 'prop', pos, ref: 'table-ronde-4-tabourets', facing, ...(z !== undefined ? { z } : {}) }) as SceneEntity;
+
+  it('pose le volume à la hauteur métrique fournie par le relief et la couche', () => {
+    const scene = sceneWithReliefAndUpperLayer({ x: 4, y: 6, z: 1, heightM: 7.25 });
+    const ent = propEntity({ id: 'meuble-haut', pos: { x: 4, y: 6 }, z: 1, facing: 'S' });
+    const [el] = buildProps({ ...scene, entities: [ent] }).filter(estPropVolumique);
+    expect(Math.min(...el.faces.map((face) => Math.min(...face.poly.map((p) => p.h))))).toBeCloseTo(7.25);
+  });
+
+  it('un décor à recette n’a plus de billboard : il porte ses faces, son entId et son cap', () => {
+    const scene = emptyScene(8, 8);
+    scene.entities = [propEntity({ id: 'table-1', pos: { x: 2, y: 3 }, facing: 'E' })];
+    const els = buildProps(scene);
+    expect(els.filter(estPropVolumique)).toHaveLength(1);
+    expect(els.filter((el) => !estPropVolumique(el) && el.source === 'entity')).toEqual([]);
+    const [el] = els.filter(estPropVolumique);
+    expect(el).toMatchObject({ entId: 'table-1', ref: 'table-ronde-4-tabourets', facing: 'E', source: 'entity' });
+    expect(el.faces.every((f) => f.entId === 'table-1' && f.material.domain === 'prop')).toBe(true);
+  });
+
+  it('un décor SANS recette reste un billboard (le décor historique ne bouge pas)', () => {
+    const scene = emptyScene(8, 8);
+    scene.entities = [{ id: 't1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'tonneau' }] as SceneEntity[];
+    expect(buildProps(scene).filter(estPropVolumique)).toEqual([]);
+    expect(buildBillboardProps(scene).map((el) => el.entId)).toEqual(['t1']);
+  });
+});
 
 /** BUILDER de props : clés stables, overlays de terrain, géométrie d'empreinte, vérités de scène. */
 describe('buildProps — éléments prop du pivot', () => {
@@ -18,7 +67,7 @@ describe('buildProps — éléments prop du pivot', () => {
   };
 
   it('émet un billboard de DÉCOR pour un terrain à overlayProp (bois→arbre) ; le mur PLEIN est un bloc de relief, pas un prop', () => {
-    const els = buildProps(scene());
+    const els = buildBillboardProps(scene());
     const terrain = els.filter((e) => e.source === 'terrain');
     expect(terrain.map((e) => e.key)).toEqual(['ov:4,3,0']); // seul `bois` a un overlayProp
     expect(terrain.map((e) => e.ref)).toEqual(['arbre']);  // rendu comme un prop d'entité (billboard partagé)
@@ -30,14 +79,14 @@ describe('buildProps — éléments prop du pivot', () => {
   });
 
   it('un overlay de terrain suit le brouillard comme un prop (en vue → au-dessus du voile, cull LdV en POV sinon)', () => {
-    const seen = buildProps(scene(), new Set(['4,3,0'])).find((e) => e.key === 'ov:4,3,0')!;
+    const seen = buildBillboardProps(scene(), new Set(['4,3,0'])).find((e) => e.key === 'ov:4,3,0')!;
     expect(seen.states.visible).toBe(true); // sa tuile est en vue
-    const hidden = buildProps(scene(), new Set(['0,0,0'])).find((e) => e.key === 'ov:4,3,0')!;
+    const hidden = buildBillboardProps(scene(), new Set(['0,0,0'])).find((e) => e.key === 'ov:4,3,0')!;
     expect(hidden.states.visible).toBe(false); // mémorisé → sous le voile / culé en POV
   });
 
   it('normalise la ref (défaut tonneau) et porte facing/empreinte/interact', () => {
-    const [p1, p2] = buildProps(scene()).filter((e) => e.source === 'entity');
+    const [p1, p2] = buildBillboardProps(scene()).filter((e) => e.source === 'entity');
     expect(p1.ref).toBe('tonneau');
     expect(p1.foot).toEqual({ offX: 0, offY: 0, scale: 1 });
     expect(p1.interact).toBe(false);
@@ -50,7 +99,7 @@ describe('buildProps — éléments prop du pivot', () => {
   });
 
   it('tague `visible` un prop en vue, mémorisé sinon', () => {
-    const els = buildProps(scene(), new Set(['1,1,0']));
+    const els = buildBillboardProps(scene(), new Set(['1,1,0']));
     const p1 = els.find((e) => e.key === 'prop:p1')!;
     const p2 = els.find((e) => e.key === 'prop:p2')!;
     expect(p1.states.visible).toBe(true);
@@ -61,10 +110,10 @@ describe('buildProps — éléments prop du pivot', () => {
     const s = scene();
     s.layers.push({ z: 1, tiles: new Array(36).fill('vide') });
     (s.entities[1] as SceneEntity).z = 1; // p2 à l'étage
-    expect(buildProps(s).filter((e) => e.source === 'entity')).toHaveLength(2); // POV/éditeur : tout
-    const game = buildProps(s, undefined, { activeZ: 0, viewZ: null });
+    expect(buildBillboardProps(s).filter((e) => e.source === 'entity')).toHaveLength(2); // POV/éditeur : tout
+    const game = buildBillboardProps(s, undefined, { activeZ: 0, viewZ: null });
     expect(game.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p1']); // au-dessus → coupé
-    const iso = buildProps(s, undefined, { activeZ: 0, viewZ: 1 });
+    const iso = buildBillboardProps(s, undefined, { activeZ: 0, viewZ: 1 });
     expect(iso.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p2']); // isolement debug
   });
 
@@ -72,11 +121,11 @@ describe('buildProps — éléments prop du pivot', () => {
     const s = scene();
     s.layers.push({ z: 1, tiles: new Array(36).fill('vide') });
     s.layers[1].tiles[3 * 6 + 4] = 'bois'; // (4,3) à l'étage 1
-    const allZ = buildProps(s).filter((e) => e.source === 'terrain');
+    const allZ = buildBillboardProps(s).filter((e) => e.source === 'terrain');
     expect(allZ.map((e) => e.key)).toEqual(['ov:4,3,0', 'ov:4,3,1']); // sans `view` : toutes les couches
-    const activeZ0 = buildProps(s, undefined, { activeZ: 0, viewZ: null }).filter((e) => e.source === 'terrain');
+    const activeZ0 = buildBillboardProps(s, undefined, { activeZ: 0, viewZ: null }).filter((e) => e.source === 'terrain');
     expect(activeZ0.map((e) => e.key)).toEqual(['ov:4,3,0']); // étage 1 coupé (au-dessus de la zone active)
-    const activeZ1 = buildProps(s, undefined, { activeZ: 1, viewZ: null }).filter((e) => e.source === 'terrain');
+    const activeZ1 = buildBillboardProps(s, undefined, { activeZ: 1, viewZ: null }).filter((e) => e.source === 'terrain');
     const ov1 = activeZ1.find((e) => e.key === 'ov:4,3,1')!;
     expect(ov1.cell).toEqual({ x: 4, y: 3, z: 1 });
   });
@@ -98,7 +147,7 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     return s;
   };
   const orns = (s: ReturnType<typeof withRoof>, visible?: Set<string>) =>
-    buildProps(s, visible).filter((e) => e.source === 'ornament');
+    buildBillboardProps(s, visible).filter((e) => e.source === 'ornament');
 
   it("chapelle → clocheton au FAÎTE : partage l'empreinte/profondeur du toit, billboard centré, surélevé", () => {
     const [o] = orns(withRoof('chapelle', { x: 1, y: 1, w: 4, h: 5 }));
@@ -165,10 +214,10 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     const foot = { x: 1, y: 1, w: 4, h: 4 }; // allié (2,2) DANS l'empreinte → roofHidden
     const ally = [{ x: 2, y: 2 }];
     // Faîte : sauté avec le toit en cutaway ; présent sans allié.
-    expect(buildProps(withRoof('chapelle', foot), undefined, { allies: ally }).filter((e) => e.source === 'ornament')).toHaveLength(0);
+    expect(buildBillboardProps(withRoof('chapelle', foot), undefined, { allies: ally }).filter((e) => e.source === 'ornament')).toHaveLength(0);
     expect(orns(withRoof('chapelle', foot))).toHaveLength(1);
     // Façade (au sol devant la porte) : le toit levé ne l'occulte pas → reste.
-    const tav = buildProps(withRoof('taverne', foot, [{ x: 2, y: 5, side: 'N', door: true }]), undefined, { allies: ally }).filter((e) => e.source === 'ornament');
+    const tav = buildBillboardProps(withRoof('taverne', foot, [{ x: 2, y: 5, side: 'N', door: true }]), undefined, { allies: ally }).filter((e) => e.source === 'ornament');
     expect(tav.map((e) => e.ref)).toEqual(['enseigne']);
   });
 
@@ -203,7 +252,7 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     expect(resolveNappes(s).size).toBe(0);
     s.architecture = bodies;
     expect(resolveNappes(s).get(nappeKey('body-chapelle', 'mass-0'))).toBeUndefined();
-    const els = buildProps(s);
+    const els = buildBillboardProps(s);
     expect(els.filter((e) => e.source === 'ornament')).toHaveLength(0);
     expect(els.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p1']);
     expect(els.filter((e) => e.source === 'terrain').map((e) => e.key)).toEqual(['ov:7,7,0']);
@@ -244,7 +293,7 @@ describe('buildProps — features de façade authorées', () => {
   };
 
   it('émet chaque feature exactement une fois, dans l’ordre d’auteur', () => {
-    const out = buildProps(authoredFacade()).filter((prop) => prop.architectureFeatureId);
+    const out = buildBillboardProps(authoredFacade()).filter((prop) => prop.architectureFeatureId);
     expect(out.map((prop) => prop.architectureFeatureId)).toEqual([
       'corps-auberge:facade-rue:cheminee-ouest',
       'corps-auberge:facade-rue:cheminee-est',
@@ -260,18 +309,18 @@ describe('buildProps — features de façade authorées', () => {
       kind: 'sign',
       edge: { x: 8, y: 8, side: 'N' },
     });
-    expect(buildProps(scene).filter(hasFeatureId).some((prop) => prop.architectureFeatureId.endsWith(':enseigne-sans-mur'))).toBe(false);
+    expect(buildBillboardProps(scene).filter(hasFeatureId).some((prop) => prop.architectureFeatureId.endsWith(':enseigne-sans-mur'))).toBe(false);
   });
 
   it('respecte z, offset, visibilité et filtrage d’étage sans dupliquer les ancres', () => {
     const scene = authoredFacade();
     const visible = new Set(['4,5,0']);
-    const all = buildProps(scene, visible);
+    const all = buildBillboardProps(scene, visible);
     const chimney = all.filter(hasFeatureId).find((prop) => prop.architectureFeatureId.endsWith(':cheminee-ouest'))!;
     expect(chimney.cell).toEqual({ x: 4, y: 5, z: 0 });
     expect(chimney.foot.offX).not.toBe(0);
     expect(chimney.states.visible).toBe(true);
-    expect(buildProps(scene, undefined, { activeZ: -1, viewZ: null })
+    expect(buildBillboardProps(scene, undefined, { activeZ: -1, viewZ: null })
       .some((prop) => prop.architectureFeatureId)).toBe(false);
   });
 
@@ -285,7 +334,7 @@ describe('buildProps — features de façade authorées', () => {
       appearance: 'auberge-relais-imperiale',
       features: [{ id: 'cheminee-ouest', kind: 'chimney', edge: { x: 6, y: 5, side: 'N' } }],
     });
-    expect(buildProps(scene).filter((prop) => prop.architectureFeatureId)
+    expect(buildBillboardProps(scene).filter((prop) => prop.architectureFeatureId)
       .map((prop) => prop.architectureFeatureId)).toEqual([
       'corps-auberge:facade-rue:cheminee-ouest',
       'corps-auberge:facade-rue:cheminee-est',

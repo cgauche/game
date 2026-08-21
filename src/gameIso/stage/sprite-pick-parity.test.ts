@@ -9,7 +9,7 @@ import { buildWalls } from '../builders/walls';
 import { affineCamera, projectToScreen } from '../backends/webgl/cameras';
 import { BILLBOARD_BOX_ASPECT, anchorAndSize, billboardHeightM } from '../backends/webgl/billboardMath';
 import { actorBillboards, bakeWorldGeometry, billboardPose, type BillboardSubject } from '../backends/webgl/sceneMeshes';
-import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
+import { ndcAt, pickNearestTarget, type PickTarget } from '../backends/webgl/spriteRaycast';
 import { actorCapsuleOf } from './actorCapsule';
 import { stage3dFraming } from './stage3dCamera';
 
@@ -54,6 +54,16 @@ function quadDe(sub: BillboardSubject, camera: Camera): Mesh {
   return mesh;
 }
 
+/** Le verdict sur les seuls BILLBOARDS (aucun maillage monde) ramené à un id de combattant. */
+const cidLePlusProche = (
+  camera: OrthographicCamera | PerspectiveCamera,
+  cibles: readonly PickTarget[],
+  ndc: { x: number; y: number },
+): string | null => {
+  const visé = pickNearestTarget(camera, cibles, null, ndc);
+  return visé?.kind === 'combatant' ? visé.id : null;
+};
+
 /** Sujet de billboard d'un combattant posé sur une case (le chemin de production `actorBillboards`). */
 function sujet(scene: Scene, mpt: number, c: Combatant, x: number, y: number): BillboardSubject {
   const [s] = actorBillboards([{ c, x, y, z: 0 }], scene, mpt);
@@ -64,7 +74,7 @@ function sujet(scene: Scene, mpt: number, c: Combatant, x: number, y: number): B
 /** Le verdict VOLUMIQUE sous un point monde : l'id rendu par le rayon (`null` = rien de cliquable). */
 function verdictVolumique(camera: Camera, cibles: readonly PickTarget[], pointMonde: Vector3): string | null {
   const p = projectToScreen(camera, pointMonde, CANVAS);
-  return pickNearestCid(camera, cibles, ndcAt({ x: p.sx, y: p.sy }, { w: CANVAS.w, h: CANVAS.h }));
+  return cidLePlusProche(camera, cibles, ndcAt({ x: p.sx, y: p.sy }, { w: CANVAS.w, h: CANVAS.h }));
 }
 
 /** L'obstacle (masse CUITE du monde ou quad de décor) intercepte-t-il le rayon AVANT le quad, au pixel
@@ -175,11 +185,11 @@ describe('Deux jetons qui se CHEVAUCHENT — même vainqueur des deux côtés (#
     const p = projectToScreen(camera, milieu, CANVAS);
     const ndc = ndcAt({ x: p.sx, y: p.sy }, { w: CANVAS.w, h: CANVAS.h });
     // Prémisse : les deux quads sont bien touchés à ce pixel (sinon la garde ne mesurerait rien).
-    expect(pickNearestCid(camera, [{ cid: a.id, object: qa }], ndc)).toBe(a.id);
-    expect(pickNearestCid(camera, [{ cid: b.id, object: qb }], ndc)).toBe(b.id);
+    expect(cidLePlusProche(camera, [{ cid: a.id, object: qa }], ndc)).toBe(a.id);
+    expect(cidLePlusProche(camera, [{ cid: b.id, object: qb }], ndc)).toBe(b.id);
     // …et le verdict ne dépend que de la DISTANCE : les deux ordres de tableau donnent B.
-    expect(pickNearestCid(camera, [{ cid: a.id, object: qa }, { cid: b.id, object: qb }], ndc)).toBe(b.id);
-    expect(pickNearestCid(camera, [{ cid: b.id, object: qb }, { cid: a.id, object: qa }], ndc)).toBe(b.id);
+    expect(cidLePlusProche(camera, [{ cid: a.id, object: qa }, { cid: b.id, object: qb }], ndc)).toBe(b.id);
+    expect(cidLePlusProche(camera, [{ cid: b.id, object: qb }, { cid: a.id, object: qa }], ndc)).toBe(b.id);
   });
 });
 
@@ -234,15 +244,15 @@ describe('Cibles à distance ÉGALE — le verdict ne dépend pas de l’ordre d
 
   it('prémisse : les deux quads sont COPLANAIRES et touchés au même pixel', () => {
     expect(suba.anchor).toEqual(subb.anchor);
-    expect(pickNearestCid(camera, [{ cid: a.id, object: qa }], ndc)).toBe(a.id);
-    expect(pickNearestCid(camera, [{ cid: b.id, object: qb }], ndc)).toBe(b.id);
+    expect(cidLePlusProche(camera, [{ cid: a.id, object: qa }], ndc)).toBe(a.id);
+    expect(cidLePlusProche(camera, [{ cid: b.id, object: qb }], ndc)).toBe(b.id);
   });
 
   it('deux JETONS : le même id dans les deux ordres — le plus petit id, arbitraire mais STABLE', () => {
     const ca: PickTarget = { cid: a.id, object: qa };
     const cb: PickTarget = { cid: b.id, object: qb };
-    expect(pickNearestCid(camera, [ca, cb], ndc)).toBe(pickNearestCid(camera, [cb, ca], ndc));
-    expect(pickNearestCid(camera, [ca, cb], ndc)).toBe([a.id, b.id].sort()[0]);
+    expect(cidLePlusProche(camera, [ca, cb], ndc)).toBe(cidLePlusProche(camera, [cb, ca], ndc));
+    expect(cidLePlusProche(camera, [ca, cb], ndc)).toBe([a.id, b.id].sort()[0]);
   });
 
   it('un JETON et un DÉCOR coplanaires : le jeton rend son id dans les deux ordres (#1297 lot B)', () => {
@@ -250,8 +260,8 @@ describe('Cibles à distance ÉGALE — le verdict ne dépend pas de l’ordre d
     // l'égalité EXACTE de distance qu'une scène ne produit qu'au hasard d'une coïncidence.
     const masse: PickTarget = { cid: null, object: quadDe(suba, camera) };
     const jeton: PickTarget = { cid: a.id, object: qa };
-    expect(pickNearestCid(camera, [jeton, masse], ndc)).toBe(a.id);
-    expect(pickNearestCid(camera, [masse, jeton], ndc)).toBe(a.id);
+    expect(cidLePlusProche(camera, [jeton, masse], ndc)).toBe(a.id);
+    expect(cidLePlusProche(camera, [masse, jeton], ndc)).toBe(a.id);
   });
 });
 

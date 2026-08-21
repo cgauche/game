@@ -17,9 +17,9 @@ import { getFaceBake, getFaceBakeEnFile } from './faceBake';
 import { getPeriodTexture, getPeriodTextureEnFile } from './periodTexture';
 import type { WorldGeometry } from './sceneMeshes';
 
-/** Matériau d'un groupe de surface : les deux régimes partagent `map`, `color` et les couleurs de
+/** Matériau d'un groupe de surface : les trois régimes partagent `map`, `color` et les couleurs de
  *  sommet — tout ce que cette passe écrit. */
-export type WorldSurfaceMaterial = THREE.MeshLambertMaterial | THREE.MeshBasicMaterial;
+export type WorldSurfaceMaterial = THREE.MeshLambertMaterial | THREE.MeshBasicMaterial | THREE.MeshStandardMaterial;
 
 /** Ce que rend une RELÈVE de gabarit quand elle s'achève. */
 export interface RelèveDeSurface {
@@ -87,9 +87,13 @@ export function worldSurfaceMaterials(
   const attendues: string[] = [];
   const relèves: Promise<RelèveDeSurface>[] = [];
   const materials = geometry.userData.surfaceGroups.map((g, rang) => {
-    const mat: WorldSurfaceMaterial = lit
-      ? new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true })
-      : new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
+    // Un groupe qui authore sa réponse à la lumière (décor volumique, `propMaterials.json`) se monte en
+    // matériau à rugosité/métal : le lambertien commun n'a ni l'une ni l'autre à offrir.
+    const mat: WorldSurfaceMaterial = !lit
+      ? new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
+      : g.pbr
+        ? new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true, roughness: g.pbr.roughness, metalness: g.pbr.metalness })
+        : new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true });
     /** Enregistre une relève et rend le matériau nu en attendant. */
     const relever = <T>(prêt: Promise<T | null>, poser: (cuit: T) => void): WorldSurfaceMaterial => {
       const clé = cléDeSurface(rang, g.key);

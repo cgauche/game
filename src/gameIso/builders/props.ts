@@ -1,7 +1,9 @@
 /**
  * BUILDER de PROPS — produit les éléments `prop` du pivot (cf. ./types) : le DÉCOR de scène (entités
  * `kind:'prop'` — tonneaux, cadavres, tentes…) et les OVERLAYS de TERRAIN à décor (tuile `bois → 'arbre'`).
- * TOUS rendus en BILLBOARD du SVG catalogue (`propSvg`) par les DEUX backends (iso/éditeur ET POV) —
+ * Rendus en BILLBOARD du SVG catalogue (`propSvg`) par les DEUX backends (iso/éditeur ET POV), SAUF un
+ * type de décor qui porte une recette volumique (`PropData.volume`) : celui-là sort en faces MONDE
+ * (`propVolumes.ts`), cuites dans la masse commune, et n'a plus de sujet de billboard —
  * l'overlay de terrain n'est plus qu'un prop dérivé d'une donnée `TerrainDef.overlayProp` (le mur PLEIN,
  * lui, naît de `solidHeightM` via le relief de `buildFloors`, pas d'ici). PUR et projection-agnostique :
  * identité + case + empreinte + vérités de scène, aucune caméra.
@@ -12,6 +14,8 @@ import { Scene, tileAt, heightAt, type ArchitectureEdgeRef, type ArchitectureRec
 import { roofHidden, massFootBBox } from '../../state/buildings';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { decorFootGeometry, propDeclaredFoot } from '../../state/footprint';
+import { findPropById } from '../../data';
+import { buildPropVolumes } from './propVolumes';
 import { terrainOverlayProp } from '../../state/terrain';
 import { buildingFeatures } from '../catalog/buildings';
 import { facadeFeatureViz } from '../catalog/facades';
@@ -61,18 +65,35 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
     const z = ent.z ?? 0;
     if (hasLayerView && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
     const empreinte = propDeclaredFoot(ent.ref);
-    out.push({
-      kind: 'prop',
+    const ref = ent.ref ?? 'tonneau';
+    const states = { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) };
+    const ancrage = {
+      kind: 'prop' as const,
       key: `prop:${ent.id}`,
       cell: { x: ent.pos.x, y: ent.pos.y, z },
       ...(empreinte ? { span: { w: empreinte.w, h: empreinte.h } } : {}),
-      source: 'entity',
+      source: 'entity' as const,
       entId: ent.id,
-      ref: ent.ref ?? 'tonneau',
+      ref,
+      interact: !!ent.interact,
+      states,
+    };
+    const prop = findPropById(ref);
+    if (prop?.volume) {
+      // VOLUME : la recette du type devient de la géométrie MONDE, cuite dans la masse commune. La
+      // hauteur du sol de la case se résout ICI, une seule fois par entité.
+      const facing = ent.facing ?? 'S';
+      out.push({
+        ...ancrage,
+        facing,
+        faces: buildPropVolumes(ent, prop, heightAt(scene, ent.pos.x, ent.pos.y, z)),
+      });
+      continue;
+    }
+    out.push({
+      ...ancrage,
       ...(ent.facing ? { facing: ent.facing } : {}),
       foot: decorFootGeometry(empreinte),
-      interact: !!ent.interact,
-      states: { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) },
     });
   }
   const physicalEdges = new Set((scene.walls ?? []).map((wall) => architectureEdgeKey(wall)));

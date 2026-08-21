@@ -14,9 +14,10 @@
  * connaître la voie de rendu pour lui poser la question. L'inscription d'un lanceur EST la bascule :
  * `GameStage3D` n'est monté qu'en volumique, et se désinscrit à son démontage.
  */
+import type { PickResult } from '../backends/webgl/spriteRaycast';
 
-/** Répondeur de la voie volumique : coordonnées CLIENT (celles d'un `PointerEvent`) → id de combattant. */
-export type SpritePicker = (clientX: number, clientY: number) => string | null;
+/** Répondeur de la voie volumique : coordonnées CLIENT (celles d'un `PointerEvent`) → ce qui est visé. */
+export type SpritePicker = (clientX: number, clientY: number) => PickResult;
 
 let _picker: SpritePicker | null = null;
 
@@ -29,9 +30,12 @@ export function hasSpritePicker(): boolean {
   return _picker !== null;
 }
 
-/** Id du combattant dessiné sous le pixel, ou `null` (sol visible, décor devant, hors monde). */
-export function cidUnderPointer(clientX: number, clientY: number): string | null {
+/** Ce qui est dessiné sous le pixel — un COMBATTANT, une ENTITÉ de scène (décor volumique), ou `null`
+ *  (sol visible, décor billboardé devant, hors monde). La voie affine ne peint que des jetons : son
+ *  hit-test natif ne rend donc jamais d'entité. */
+export function targetUnderPointer(clientX: number, clientY: number): PickResult {
   if (_picker) return _picker(clientX, clientY);
   const el = document.elementFromPoint(clientX, clientY) as Element | null;
-  return el?.closest('[data-cid]')?.getAttribute('data-cid') ?? null;
+  const cid = el?.closest('[data-cid]')?.getAttribute('data-cid');
+  return cid ? { kind: 'combatant', id: cid } : null;
 }

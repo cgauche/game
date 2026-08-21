@@ -1,0 +1,96 @@
+import { describe, expect, it } from 'vitest';
+import { DIR8_ORDER, type Dir8 } from '../../state/dir8';
+import type { SceneEntity } from '../../state/scene';
+import type { PropData } from '../../data/props.types';
+import { polyNormal } from '../backends/webgl/worldTris';
+import { buildPropVolumes } from './propVolumes';
+import type { Face } from './types';
+
+/**
+ * COMPILATION VOLUMIQUE — ce qu'un type de décor à recette produit comme géométrie MONDE, aux HUIT
+ * caps. Les goldens tiennent la forme (nombre de faces par primitive, coordonnées) ; les assertions
+ * qui les entourent tiennent ce qu'un golden ne dit pas : l'identité de picking, le domaine de
+ * matériau, l'orientation vers le dehors et l'absence de face dégénérée.
+ */
+const PROP_TROIS_PRIMITIVES: PropData = {
+  id: 'banc-d-epreuve',
+  solid: true,
+  volume: {
+    primitives: [
+      { kind: 'box', center: { x: 0, y: 0, h: 0.45 }, size: { x: 0.8, y: 0.4, h: 0.1 }, material: 'bois-chene' },
+      { kind: 'cylinder', center: { x: 0.2, y: 0, h: 0.2 }, radius: 0.06, heightM: 0.4, sides: 8, material: 'fer-noirci' },
+      { kind: 'prism', center: { x: -0.2, y: 0.1, h: 0.15 }, size: { x: 0.3, y: 0.2, h: 0.3 }, slope: 'x+', material: 'pierre-atre' },
+    ],
+  },
+};
+
+function propEntity({ id, pos, facing, z }: { id: string; pos: { x: number; y: number }; facing: Dir8; z?: number }): SceneEntity {
+  return { id, kind: 'prop', pos, ref: PROP_TROIS_PRIMITIVES.id, facing, ...(z !== undefined ? { z } : {}) } as SceneEntity;
+}
+
+const r3 = (n: number): number => Math.round(n * 1000) / 1000;
+/** Le golden d'une face : son matériau, son nombre de sommets, ses sommets arrondis au millimètre. */
+const snapshotFaces = (faces: readonly Face[]): string[] =>
+  faces.map((f) => `${f.material.domain}:${f.material.id}|${f.poly.length}|${f.poly.map((p) => `(${r3(p.x)},${r3(p.y)},${r3(p.h)})`).join(' ')}`);
+
+/** Aire (m²) d'un polygone MONDE, à l'échelle d'une case d'un mètre : zéro = face dégénérée. */
+function aire(face: Face): number {
+  let nx = 0, ny = 0, nz = 0;
+  for (let i = 0; i < face.poly.length; i++) {
+    const a = face.poly[i];
+    const b = face.poly[(i + 1) % face.poly.length];
+    nx += (a.h - b.h) * (a.y + b.y);
+    ny += (a.y - b.y) * (a.x + b.x);
+    nz += (a.x - b.x) * (a.h + b.h);
+  }
+  return Math.hypot(nx, ny, nz) / 2;
+}
+
+describe('buildPropVolumes — la recette locale devient de la géométrie monde', () => {
+  it.each<Dir8>(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'])('compile les trois primitives au cap %s', (facing) => {
+    const ent = propEntity({ id: `meuble-${facing}`, pos: { x: 4, y: 6 }, facing });
+    const faces = buildPropVolumes(ent, PROP_TROIS_PRIMITIVES, 0);
+    expect(faces.length).toBe(6 + 10 + 5); // boîte, cylindre à 8 pans (+ dessus + dessous), prisme
+    expect(faces.every((f) => f.entId === ent.id && f.material.domain === 'prop')).toBe(true);
+    expect(snapshotFaces(faces)).toMatchSnapshot();
+  });
+
+  it('aucune face dégénérée, et chaque polygone regarde le DEHORS de sa primitive', () => {
+    const faces = buildPropVolumes(propEntity({ id: 'meuble', pos: { x: 4, y: 6 }, facing: 'S' }), PROP_TROIS_PRIMITIVES, 0);
+    for (const face of faces) expect(aire(face)).toBeGreaterThan(1e-6);
+    // Le centre de la BOÎTE, en monde : toute face de la boîte doit lui tourner le dos.
+    const boite = faces.filter((f) => f.material.id === 'bois-chene');
+    expect(boite).toHaveLength(6);
+    const centre = { x: 4, y: 6, h: 0.45 };
+    for (const face of boite) {
+      const n = polyNormal(face.poly.map((p) => ({ x: p.x, y: p.h, z: p.y })))!;
+      const c = face.poly.reduce((acc, p) => ({ x: acc.x + p.x / 4, y: acc.y + p.h / 4, z: acc.z + p.y / 4 }), { x: 0, y: 0, z: 0 });
+      expect(n.x * (c.x - centre.x) + n.y * (c.y - centre.h) + n.z * (c.z - centre.y)).toBeGreaterThan(0);
+    }
+  });
+
+  it('le CAP tourne la géométrie une seule fois, autour de la case d’ancrage', () => {
+    const parCap = DIR8_ORDER.map((facing) =>
+      buildPropVolumes(propEntity({ id: 'meuble', pos: { x: 4, y: 6 }, facing }), PROP_TROIS_PRIMITIVES, 0));
+    // Le cylindre est excentré (x = 0.2) : chaque cap le pose ailleurs — huit positions DISTINCTES.
+    const piedsParCap = parCap.map((faces) => {
+      const pied = faces.filter((f) => f.material.id === 'fer-noirci').flatMap((f) => f.poly);
+      return `${r3(Math.min(...pied.map((p) => p.x)))},${r3(Math.min(...pied.map((p) => p.y)))}`;
+    });
+    expect(new Set(piedsParCap).size).toBe(8);
+    // …et l'ancrage ne bouge pas : le centre de la boîte reste sur la case, à tous les caps.
+    for (const faces of parCap) {
+      const boite = faces.filter((f) => f.material.id === 'bois-chene').flatMap((f) => f.poly);
+      expect(r3((Math.min(...boite.map((p) => p.x)) + Math.max(...boite.map((p) => p.x))) / 2)).toBe(4);
+      expect(r3((Math.min(...boite.map((p) => p.y)) + Math.max(...boite.map((p) => p.y))) / 2)).toBe(6);
+    }
+  });
+
+  it('la hauteur du sol s’ajoute UNE fois à chaque hauteur locale', () => {
+    const ent = propEntity({ id: 'meuble', pos: { x: 4, y: 6 }, facing: 'S' });
+    const auSol = buildPropVolumes(ent, PROP_TROIS_PRIMITIVES, 0);
+    const enHauteur = buildPropVolumes(ent, PROP_TROIS_PRIMITIVES, 7.25);
+    expect(enHauteur.map((f) => f.poly.map((p) => r3(p.h - 7.25)))).toEqual(auSol.map((f) => f.poly.map((p) => r3(p.h))));
+    expect(Math.min(...enHauteur.flatMap((f) => f.poly.map((p) => p.h)))).toBeCloseTo(7.25);
+  });
+});

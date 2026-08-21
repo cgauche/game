@@ -1,6 +1,6 @@
 import { Mesh, MeshBasicMaterial, OrthographicCamera, PlaneGeometry, type Intersection, type Raycaster } from 'three';
 import { describe, expect, it } from 'vitest';
-import { pickNearestCid, type PickTarget } from './spriteRaycast';
+import { pickNearestTarget, type PickTarget } from './spriteRaycast';
 
 /**
  * QUI GAGNE UN PIXEL DISPUTÉ (#1176 P2-4, #1297 lot B + correctif du juge du cumul).
@@ -33,34 +33,40 @@ function decor(z: number): { cible: PickTarget; balayages: () => number } {
   return { cible: { cid: null, object: m }, balayages: () => n };
 }
 
+/** Le verdict sur les seuls BILLBOARDS (aucun maillage monde) ramené à un id de combattant. */
+const cidLePlusProche = (camera: OrthographicCamera, cibles: readonly PickTarget[], ndc: { x: number; y: number }): string | null => {
+  const visé = pickNearestTarget(camera, cibles, null, ndc);
+  return visé?.kind === 'combatant' ? visé.id : null;
+};
+
 const CENTRE = { x: 0, y: 0 }; // pixel sur le quad
 const BORD = { x: 0.9, y: 0.9 }; // pixel hors du quad (le quad ne fait que 2 m dans un cadre de 20 m)
 
-describe('pickNearestCid — le plus PROCHE tranche, et un DÉCOR rend `null` (#1297)', () => {
+describe('pickNearestTarget (billboards seuls) — le plus PROCHE tranche, et un DÉCOR rend `null` (#1297)', () => {
   it('aucun quad sous le pixel : verdict `null` — et le décor a bien été interrogé', () => {
     const d = decor(-9);
-    expect(pickNearestCid(CAMERA, [d.cible, { cid: 'h1', object: quad(-5) }], BORD)).toBeNull();
+    expect(cidLePlusProche(CAMERA, [d.cible, { cid: 'h1', object: quad(-5) }], BORD)).toBeNull();
     expect(d.balayages()).toBe(1);
   });
 
   it('décor DERRIÈRE le jeton : il ne dispute rien — l’id est rendu', () => {
     const d = decor(-9);
-    expect(pickNearestCid(CAMERA, [d.cible, { cid: 'h1', object: quad(-5) }], CENTRE)).toBe('h1');
+    expect(cidLePlusProche(CAMERA, [d.cible, { cid: 'h1', object: quad(-5) }], CENTRE)).toBe('h1');
   });
 
   it('décor DEVANT le jeton : ce qui cache un corps le rend inatteignable — verdict `null`', () => {
     const d = decor(-3);
-    expect(pickNearestCid(CAMERA, [d.cible, { cid: 'h1', object: quad(-5) }], CENTRE)).toBeNull();
-    expect(pickNearestCid(CAMERA, [{ cid: 'h1', object: quad(-5) }, d.cible], CENTRE)).toBeNull();
+    expect(cidLePlusProche(CAMERA, [d.cible, { cid: 'h1', object: quad(-5) }], CENTRE)).toBeNull();
+    expect(cidLePlusProche(CAMERA, [{ cid: 'h1', object: quad(-5) }, d.cible], CENTRE)).toBeNull();
   });
 
   it('deux JETONS alignés : le plus PROCHE gagne, et un décor DERRIÈRE les deux n’y change rien', () => {
     const proche: PickTarget = { cid: 'proche', object: quad(-4) };
     const loin: PickTarget = { cid: 'loin', object: quad(-8) };
-    expect(pickNearestCid(CAMERA, [loin, proche], CENTRE)).toBe('proche');
-    expect(pickNearestCid(CAMERA, [decor(-9).cible, loin, proche], CENTRE)).toBe('proche');
+    expect(cidLePlusProche(CAMERA, [loin, proche], CENTRE)).toBe('proche');
+    expect(cidLePlusProche(CAMERA, [decor(-9).cible, loin, proche], CENTRE)).toBe('proche');
     // …et un décor DEVANT les deux les couvre tous les deux.
-    expect(pickNearestCid(CAMERA, [decor(-1).cible, loin, proche], CENTRE)).toBeNull();
+    expect(cidLePlusProche(CAMERA, [decor(-1).cible, loin, proche], CENTRE)).toBeNull();
   });
 
   it('PIONS EN DISQUES (#1176 P3-5c) : sans un seul quad de personnage, le verdict est `null` — le clic RETOMBE sur la case', () => {
@@ -69,11 +75,11 @@ describe('pickNearestCid — le plus PROCHE tranche, et un DÉCOR rend `null` (#
     // picking de sprite se tait donc PAR CONSTRUCTION, et `useStagePointer.pickTile` résout par
     // `tileFromEvent` — juste, puisque le disque est centré sur SA case.
     const cibles = [decor(-9).cible, decor(-3).cible];
-    expect(pickNearestCid(CAMERA, cibles, CENTRE)).toBeNull();
-    expect(pickNearestCid(CAMERA, cibles, BORD)).toBeNull();
-    expect(pickNearestCid(CAMERA, [], CENTRE)).toBeNull();
+    expect(cidLePlusProche(CAMERA, cibles, CENTRE)).toBeNull();
+    expect(cidLePlusProche(CAMERA, cibles, BORD)).toBeNull();
+    expect(cidLePlusProche(CAMERA, [], CENTRE)).toBeNull();
     // TÉMOIN : la même caméra, le même pixel, avec un quad de personnage — l'absence d'id vient bien
     // de la population, pas d'un rayon qui ne touche rien.
-    expect(pickNearestCid(CAMERA, [{ cid: 'h1', object: quad(-5) }], CENTRE)).toBe('h1');
+    expect(cidLePlusProche(CAMERA, [{ cid: 'h1', object: quad(-5) }], CENTRE)).toBe('h1');
   });
 });

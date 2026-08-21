@@ -24,7 +24,9 @@ import { buildRoofs, ROOF_SLOPE_M } from '../../builders/roofs';
 import { buildProps } from '../../builders/props';
 import { buildTokens } from '../../builders/tokens';
 import { teamRingDecor } from '../../builders/dynamicMarks';
-import type { CellSide, Face, PropEl, RoofEl, SceneEl, TokenEl, WallEl } from '../../builders/types';
+import { estPropVolumique, type CellSide, type Face, type PropEl, type RoofEl, type SceneEl, type TokenEl, type WallEl } from '../../builders/types';
+import { findPropById, findPropMaterialById } from '../../../data';
+import type { PropVertexRange } from './spriteRaycast';
 import { roofCourseStepM, variantOf } from '../../detail/courses';
 import type { DetailRecipe } from '../../detail/types';
 import type { PeriodKind } from './periodTexture';
@@ -83,7 +85,12 @@ export type KeepEl = (el: SceneEl) => boolean;
  *  les planches QC jugent l'ENVIRONNEMENT, pas le brouillard de l'étage actif). */
 function faceEls(scene: Scene): SceneEl[] {
   const maxZ = Math.max(...scene.layers.map((l) => l.z));
-  return [...buildFloors(scene, undefined, { activeZ: maxZ }), ...buildWalls(scene), ...buildRoofs(scene)];
+  return [
+    ...buildFloors(scene, undefined, { activeZ: maxZ }),
+    ...buildWalls(scene),
+    ...buildRoofs(scene),
+    ...buildProps(scene).filter(estPropVolumique),
+  ];
 }
 
 /** Faces MONDE de la scène dans l'ordre de peinture des builders, chacune avec la clé de case qui porte
@@ -140,6 +147,9 @@ export interface SurfaceGroup {
   bake?: { wM: number; hM: number };
   /** PART de mur des faces du groupe — seule une part que le colombage habille se cuit (`needsFaceBake`). */
   part?: string;
+  /** Réponse à la lumière authorée du matériau (décor volumique) — le groupe se monte alors en
+   *  matériau à rugosité/métal (`worldMaterials`) au lieu du lambertien commun. */
+  pbr?: { roughness: number; metalness: number };
 }
 
 const NU: SurfaceGroup = { key: 'nu', kind: null };
@@ -155,6 +165,10 @@ const cm = (m: number): number => Math.round(m * 100) / 100;
 export function faceGroup(wf: WorldFace, mpt: number): SurfaceGroup {
   const surface = faceSurface(wf.face);
   const { domain, part } = wf.face.material;
+  // DÉCOR VOLUMIQUE : un groupe par MATÉRIAU de recette — aucune période, aucune cuisson par face, mais
+  // sa réponse à la lumière lui est propre, et c'est le groupe qui la porte jusqu'au matériau monté.
+  if (domain === 'prop')
+    return { key: `prop|${wf.face.material.id}`, kind: null, surfaceKey: surface.surfaceKey, color: surface.color, ...(surface.pbr ? { pbr: surface.pbr } : {}) };
   const kind: PeriodKind = domain === 'terrain' ? 'ground' : 'wall';
   // La variante se cale sur le CÔTÉ D'ARÊTE de l'élément — la même clé que `variantOf(cell, side)` de
   // le peintre SVG (`authoring/detailSvg.ts`). Sans côté (pan de toit),
@@ -223,7 +237,7 @@ export function surfaceGrouping(listées: readonly WorldFace[], mpt: number): { 
 /** La géométrie fusionnée porte ses groupes de surface (index = `materialIndex` de `geometry.groups`) :
  *  c'est le contrat entre le maillage et les matériaux que l'écran monte. */
 export interface WorldGeometry extends THREE.BufferGeometry {
-  userData: { surfaceGroups: SurfaceGroup[] };
+  userData: { surfaceGroups: SurfaceGroup[]; propVertexRanges: PropVertexRange[] };
 }
 
 /** PLAGE d'une face dans la géométrie fusionnée : les sommets qu'elle occupe, le groupe de surface qui
@@ -330,7 +344,21 @@ export function shadeSousSoleil(shade: number, fade: number): number {
  * de l'élément (`roomZonesByElKey`).
  */
 export function worldBakeDeps(scene: Scene, mpt: number): readonly unknown[] {
-  return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.metresPerTile, mpt];
+  return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.metresPerTile, mpt,
+    scene.entities, ...propRecipeDeps(scene)];
+}
+
+/** Ce que la cuisson lit du CATALOGUE pour les décors volumiques de la scène : leur recette et les
+ *  matériaux qu'elle nomme, à PLAT (une dep par objet, comparée par identité comme les autres). */
+function propRecipeDeps(scene: Scene): readonly unknown[] {
+  const out: unknown[] = [];
+  for (const ent of scene.entities) {
+    if (ent.kind !== 'prop') continue;
+    const volume = findPropById(ent.ref ?? 'tonneau')?.volume;
+    out.push(volume);
+    for (const primitive of volume?.primitives ?? []) out.push(findPropMaterialById(primitive.material));
+  }
+  return out;
 }
 
 /** READ-SET de `heightAt` (`state/scene.ts`) — la SEULE lecture de scène des passes de billboards
@@ -403,6 +431,11 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   //    l'EXTÉRIEUR de la carte si verticale.
   const cx = ((scene.dimensions.w - 1) / 2) * mpt;
   const cz = ((scene.dimensions.h - 1) / 2) * mpt;
+  // PLAGES DE PICKING : les sommets ORIGINAUX d'un décor volumique, relevés AVANT toute indexation —
+  // un cutaway réécrit l'index de dessin, jamais les sommets. Un lot par (entité × groupe de surface) :
+  // la cuisson groupe par matériau, donc un même décor à deux matériaux occupe deux plages disjointes.
+  const propVertexRanges: PropVertexRange[] = [];
+  let plageEnCours: PropVertexRange | null = null;
   const pousser = (i: number, groupe: number) => {
     const g = geoms[i];
     const début = positions.length / 3;
@@ -434,6 +467,15 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
     // La couleur de sommet porte l'albédo du matériau × la variance de teinte de la surface (un aplat
     // répété tuile après tuile se lit sinon comme une nappe de peinture) × la visibilité ÉCHANTILLONNÉE
     // au sommet — ce dernier facteur SEUL est réversible, et c'est `applyVisibilityTint` qui le pose.
+    const entId = faces[i].entId;
+    if (entId) {
+      if (plageEnCours && plageEnCours.entId === entId && plageEnCours.vertexStart + plageEnCours.vertexCount === début)
+        plageEnCours.vertexCount = positions.length / 3 - plageEnCours.vertexStart;
+      else {
+        plageEnCours = { entId, vertexStart: début, vertexCount: positions.length / 3 - début };
+        propVertexRanges.push(plageEnCours);
+      }
+    } else plageEnCours = null;
     const surface = faceSurface(faces[i]);
     spans.push({
       cell: listées[i].cell,
@@ -453,6 +495,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const groupSpans: [number, number][] = [];
   faceIndices.forEach((idx, k) => {
     const début = positions.length / 3;
+    plageEnCours = null; // une plage ne franchit jamais un groupe : c'est le matériau qui la borne
     for (const i of idx) pousser(i, k);
     groupSpans.push([début, positions.length / 3 - début]);
   });
@@ -467,7 +510,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   // LA géométrie fusionnée comme les uv — un matériau qui ne porte pas le défine ne le déclare même pas.
   geometry.setAttribute(PERCABLE_ATTRIBUT, new THREE.Float32BufferAttribute(percables, 1));
   groupSpans.forEach(([début, count], k) => geometry.addGroup(début, count, k));
-  geometry.userData = { surfaceGroups: groups };
+  geometry.userData = { surfaceGroups: groups, propVertexRanges };
   geometry.computeVertexNormals();
   geometry.computeBoundingBox();
   // INDEX IDENTITÉ : le monde nu se dessine entier, sommet par sommet dans l'ordre où il a été cuit.
@@ -720,7 +763,8 @@ export function wholeSceneBillboardEls(scene: Scene): SceneBillboardEls {
   const maxZ = Math.max(...scene.layers.map((l) => l.z));
   return {
     tokens: buildTokens(scene, undefined, null, { activeZ: maxZ, viewZ: null, top: false }),
-    props: buildProps(scene),
+    // Un décor volumique est cuit dans la masse du monde : il n'a pas de sujet de billboard à poser.
+    props: buildProps(scene).filter((el) => !estPropVolumique(el)),
   };
 }
 
@@ -761,6 +805,7 @@ export function collectBillboards(scene: Scene, mpt: number, els: SceneBillboard
     });
   }
   for (const el of els.props) {
+    if (estPropVolumique(el)) continue; // cuit dans la masse du monde, jamais billboardé
     const gx = el.cell.x + el.foot.offX;
     const gy = el.cell.y + el.foot.offY;
     const h = heightAt(scene, el.cell.x, el.cell.y, el.cell.z) + (el.liftM ?? 0);
@@ -822,8 +867,11 @@ export function memesBillboardEls(a: SceneBillboardEls, b: SceneBillboardEls): b
     const x = a.props[i];
     const y = b.props[i];
     if (x === y) continue;
-    if (x.key !== y.key || x.ref !== y.ref || x.facing !== y.facing || x.liftM !== y.liftM) return false;
+    if (x.key !== y.key || x.ref !== y.ref || x.facing !== y.facing) return false;
     if (x.cell.x !== y.cell.x || x.cell.y !== y.cell.y || x.cell.z !== y.cell.z) return false;
+    if (estPropVolumique(x) !== estPropVolumique(y)) return false;
+    if (estPropVolumique(x) || estPropVolumique(y)) continue; // cuit dans la masse : aucun sujet à comparer
+    if (x.liftM !== y.liftM) return false;
     if (x.foot.offX !== y.foot.offX || x.foot.offY !== y.foot.offY || x.foot.scale !== y.foot.scale) return false;
   }
   return true;

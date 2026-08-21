@@ -6,7 +6,7 @@ import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import { MondeDeCampagne } from './MondeDeCampagne';
-import { cidUnderPointer, hasSpritePicker } from './spritePicker';
+import { hasSpritePicker, targetUnderPointer } from './spritePicker';
 import { setStageRendererFactory } from './GameStage3D';
 import { BancRenderer, brancherArdoise } from './banc-volumique';
 
@@ -94,7 +94,7 @@ describe('Le monde de l’écran de jeu est VOLUMIQUE, et lui seul (#1176 C5a)',
 
 /**
  * COUTURE DU HIT-TEST DE SPRITE (P2-3) : c'est le MONTAGE de la voie volumique qui bascule le
- * pointeur, rien d'autre. Sans inscription, `cidUnderPointer` retombe sur le hit-test natif — le
+ * pointeur, rien d'autre. Sans inscription, `targetUnderPointer` retombe sur le hit-test natif — le
  * chemin de la voie affine, inchangé.
  */
 describe('Hit-test de sprite — la voie qui peint est celle qui répond (#1176 P2-3)', () => {
@@ -106,7 +106,7 @@ describe('Hit-test de sprite — la voie qui peint est celle qui répond (#1176 
     jeton.setAttribute('data-cid', 'h1');
     document.body.appendChild(jeton);
     document.elementFromPoint = () => jeton; // jsdom n'a pas de mise en page : le hit-test natif se stubbe
-    expect(cidUnderPointer(10, 10)).toBe('h1');
+    expect(targetUnderPointer(10, 10)).toEqual({ kind: 'combatant', id: 'h1' });
     delete (document as Partial<Document>).elementFromPoint;
     jeton.remove();
   });
@@ -117,7 +117,7 @@ describe('Hit-test de sprite — la voie qui peint est celle qui répond (#1176 
     document.elementFromPoint = () => {
       throw new Error('le DOM ne doit plus être interrogé en volumique');
     };
-    expect(cidUnderPointer(10, 10)).toBeNull(); // aucun contexte WebGL en jsdom : aucune frame, donc aucune caméra
+    expect(targetUnderPointer(10, 10)).toBeNull(); // aucun contexte WebGL en jsdom : aucune frame, donc aucune caméra
     delete (document as Partial<Document>).elementFromPoint;
   });
 

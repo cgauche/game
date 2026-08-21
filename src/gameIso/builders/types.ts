@@ -24,7 +24,7 @@ export interface GP {
  *  L'orientation d'une face (sol/paroi/pente) est dérivée par chaque backend depuis `domain`+`part`
  *  (et `side`), pas stockée. */
 export interface MaterialRef {
-  domain: 'terrain' | 'relief' | 'structure' | 'roof';
+  domain: 'terrain' | 'relief' | 'structure' | 'roof' | 'prop';
   id: string;
   part?: string;
 }
@@ -40,6 +40,9 @@ export interface Face {
   /** Arête de la case qui porte la face (relief/wedge/mur) — les backends en dérivent l'orientation
    *  (arête écran en affine, normale en perspective) sans re-scanner la scène. */
   side?: CellSide;
+  /** Id de l'ENTITÉ de scène dont la face vient (décor volumique, `builders/propVolumes.ts`) — ce que
+   *  le picking résout une fois la face fondue dans la géométrie commune du monde. */
+  entId?: string;
 }
 
 /** VÉRITÉS DE SCÈNE d'un élément (camera-free) — calculées par les builders, consommées par TOUS les
@@ -143,7 +146,7 @@ export interface RoofEl extends ElBase {
  *  anim) ; 'terrain' = décor dérivé d'un terrain (`overlayProp`, ex. bois → arbre — 1×1, jamais fouillable) ;
  *  'ornament' = ornement d'IDENTITÉ d'un bâtiment (clocheton/cheminée/enseigne/étal — dérivé de `ArchitectureBody.style`
  *  via `buildingFeatures`) ; 'architecture' = feature authorée d'une façade. */
-export interface PropEl extends ElBase {
+export interface BillboardPropEl extends ElBase {
   kind: 'prop';
   source: 'entity' | 'terrain' | 'ornament' | 'architecture';
   /** Id stable qualifié `bodyId:facadeSectionId:featureId`. */
@@ -163,6 +166,22 @@ export interface PropEl extends ElBase {
   /** Id de l'entité source (flags `__fouille_<id>`, clés d'affordance). Absent pour un overlay terrain. */
   entId?: string;
 }
+/** Élément de décor à FACES : un type de décor qui porte une recette volumique (`PropData.volume`) est
+ *  compilé en géométrie MONDE (`builders/propVolumes.ts`) et cuit dans la masse commune — il n'a donc
+ *  ni vignette ni empreinte de billboard à porter. Ses dimensions restent celles de son TYPE. */
+export interface VolumePropEl extends ElBase {
+  kind: 'prop';
+  source: 'entity';
+  ref: string;
+  entId: string;
+  facing: Dir8;
+  interact: boolean;
+  faces: Face[];
+}
+export type PropEl = BillboardPropEl | VolumePropEl;
+
+/** Ce décor est-il rendu en VOLUME (par opposition au billboard) ? Le seul discriminant : ses faces. */
+export const estPropVolumique = (el: PropEl): el is VolumePropEl => 'faces' in el;
 /** Le SUJET d'un token — la donnée d'identité que le stage transforme en corps React (tokenBodyKind/
  *  le pion-disque). La position INTERPOLÉE de marche est PAR-FRAME : elle reste au stage ; l'élément ne
  *  porte que la position LOGIQUE (`cell`) et les décisions de scène (filtres, ordre d'anneau héros). */

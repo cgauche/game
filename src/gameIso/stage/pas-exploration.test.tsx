@@ -23,7 +23,7 @@ import { useGame } from '../../state/store';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import type { Combatant } from '../../engine/types';
-import type { PropEl } from '../builders/types';
+import type { BillboardPropEl } from '../builders/types';
 import type { ActorPose, KeepEl, SceneBillboardEls, TintAt } from '../backends/webgl/sceneMeshes';
 import * as sceneMeshes from '../backends/webgl/sceneMeshes';
 import * as visibilityTint from '../backends/webgl/visibilityTint';
@@ -193,12 +193,13 @@ const anim: StageWalkAnim = {
   cam: () => ({ x: 6, y: 6 }),
 };
 
-const décor = (id: string, x: number): PropEl => ({
+const décor = (id: string, x: number): BillboardPropEl => ({
   kind: 'prop', source: 'entity', key: `prop:${id}`, ref: 'tonneau', facing: 'S',
   cell: { x, y: 4, z: 0 }, foot: { offX: 0, offY: 0, scale: 1 }, interact: false,
   states: { visible: true },
-} as unknown as PropEl);
-const ELS: SceneBillboardEls = { tokens: [], props: [décor('a', 6), décor('b', 7), décor('c', 8)] };
+} as unknown as BillboardPropEl);
+const DECORS: BillboardPropEl[] = [décor('a', 6), décor('b', 7), décor('c', 8)];
+const ELS: SceneBillboardEls = { tokens: [], props: DECORS };
 
 /** TEINTE PLEINE partout, puis TEINTE SORTIE DU CHAMP pour la case du décor `b` (x = 7). */
 const PLEINE: TintAt = () => 1;
@@ -322,7 +323,7 @@ describe('Écran nu — un pas d’acteur et un lot d’éléments neuf ne remon
     expect(avant.length, 'aucun board monté : rien à mesurer').toBeGreaterThan(0);
     const disposeMat = vi.spyOn(THREE.Material.prototype, 'dispose');
     // Le cas COURANT de l'éditeur : les builders rendent un tableau neuf à chaque tick d'outil.
-    const neuf: SceneBillboardEls = { tokens: [], props: ELS.props.map((p) => ({ ...p, cell: { ...p.cell }, foot: { ...p.foot } })) };
+    const neuf: SceneBillboardEls = { tokens: [], props: DECORS.map((p) => ({ ...p, cell: { ...p.cell }, foot: { ...p.foot } })) };
 
     await act(async () => {
       root!.render(

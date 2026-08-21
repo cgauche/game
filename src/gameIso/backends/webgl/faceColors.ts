@@ -27,6 +27,7 @@ import { roofMaterial } from '../../catalog/roofs';
 import { facadeStructureAppearance } from '../../catalog/facades';
 import { wallPartColor, type WallPart } from '../../catalog/structures';
 import { TERRAIN_DEFS } from '../../../state/terrain';
+import { findPropMaterialById } from '../../../data';
 import { TINT_SPREAD } from '../../detail/expand';
 import { coursesPeriodM, groundPeriodM } from '../../detail/courses';
 import { hash32 } from '../../detail/hash';
@@ -68,6 +69,9 @@ export interface FaceSurface {
   /** Taille MÉTRIQUE d'une période de texture (m). Absente quand la recette n'a pas d'assises : rien
    *  ne se répète, l'UV monde n'a pas d'échelle propre. */
   uvScaleM?: { u: number; v: number };
+  /** Réponse à la lumière d'un matériau de DÉCOR (`propMaterials.json`) : le seul domaine qui l'authore.
+   *  Absente ailleurs — les autres surfaces sont lambertiennes, sans rugosité ni métal authorés. */
+  pbr?: { roughness: number; metalness: number };
 }
 
 /** Recette de détail du matériau d'une face, prise à SA def d'apparence. */
@@ -82,6 +86,8 @@ function faceRecipe(face: Face): DetailRecipe | undefined {
       return roofMaterial(id).detail;
     case 'terrain':
       return TERRAIN_BY_ID.get(id)?.detail;
+    case 'prop':
+      return undefined;
   }
 }
 
@@ -96,6 +102,8 @@ function faceBaseColor(face: Face): string {
       return roofColor(id, part);
     case 'terrain':
       return TERRAIN_BY_ID.get(id)?.swatch ?? FLOOR_FALLBACK;
+    case 'prop':
+      return findPropMaterialById(id)?.color ?? FLOOR_FALLBACK;
   }
 }
 
@@ -118,11 +126,13 @@ export function surfaceKeyOf(color: string, recipe?: DetailRecipe): string {
 export function faceSurface(face: Face): FaceSurface {
   const color = faceBaseColor(face);
   const recipe = faceRecipe(face);
+  const mat = face.material.domain === 'prop' ? findPropMaterialById(face.material.id) : undefined;
   return {
     color,
     recipe,
     surfaceKey: surfaceKeyOf(color, recipe),
     uvScaleM: faceUvScaleM(face, recipe),
+    ...(mat ? { pbr: { roughness: mat.roughness, metalness: mat.metalness } } : {}),
   };
 }
 

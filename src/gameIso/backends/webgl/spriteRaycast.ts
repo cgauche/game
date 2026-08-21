@@ -4,8 +4,10 @@
  * redevient un RAYON, et c'est la DISTANCE CAMÉRA qui tranche l'empilement — là où le peintre affine
  * tranchait par son tri de profondeur (`stage/objs.ts`).
  *
- * CIBLES : les QUADS de billboard, et eux seuls — ceux d'un combattant portent son id, ceux du DÉCOR
- * n'en portent aucun (`cid: null`). La masse triangulée du monde n'est PAS une cible.
+ * CIBLES : les QUADS de billboard — ceux d'un combattant portent son id, ceux du DÉCOR n'en portent
+ * aucun (`cid: null`) — et, dans la masse du monde, les SEULES faces qu'une plage de décor volumique
+ * (`PropVertexRange`) sait nommer. Une face de mur, de sol ou de toit n'entre jamais dans les
+ * candidats : elle ne masque donc pas le clic d'un acteur derrière elle (#1297).
  *
  * LA RÈGLE (#1297) : « ce qui se voit se clique ». Le plus PROCHE touché tranche, et un DÉCOR qui gagne
  * rend `null` — le clic retombe sur la tuile, comme un sprite qui cache un corps le rend inatteignable.
@@ -50,35 +52,68 @@ function emporteAEgalite(candidat: string, tenant: string): boolean {
   return candidat < tenant;
 }
 
+/** PLAGE de sommets ORIGINAUX d'un décor volumique dans la géométrie cuite du monde. Plusieurs plages
+ *  disjointes peuvent porter le même `entId` : la cuisson groupe par matériau. */
+export interface PropVertexRange { entId: string; vertexStart: number; vertexCount: number }
+
 /**
- * Id du combattant sous le rayon : la cible la plus PROCHE de la caméra tranche — son id si c'est un
- * JETON, `null` si c'est un DÉCOR (§ en-tête : ce qui se voit se clique). À distance ÉGALE, deux jetons
- * se départagent par `emporteAEgalite`, et un jeton l'emporte sur un décor coplanaire. L'ordre du
- * tableau de cibles n'entre JAMAIS dans le verdict.
+ * Le décor que porte une face touchée, ou `null` (mur, sol, toit — toute face hors plage).
  *
- * UNE PASSE sur les seuls QUADS (deux triangles chacun) : la masse triangulée de la carte n'est pas
- * une cible, donc jamais balayée au `pointermove`.
+ * Sur les SOMMETS, jamais sur `faceIndex` : un cutaway réécrit l'index de dessin du monde, si bien
+ * qu'un rang de triangle ne désigne plus rien de stable, là où les sommets, eux, ne bougent pas.
+ * Les trois sommets doivent tomber dans la MÊME plage — un triangle à cheval n'appartient à personne.
  */
-export function pickNearestCid(
+export function propEntityAtHit(ranges: readonly PropVertexRange[], face: { a: number; b: number; c: number }): string | null {
+  return ranges.find((r) => [face.a, face.b, face.c].every((i) => i >= r.vertexStart && i < r.vertexStart + r.vertexCount))?.entId ?? null;
+}
+
+/** Ce que le pixel désigne : un COMBATTANT (jeton), une ENTITÉ de scène (décor volumique), ou rien. */
+export type PickResult = { kind: 'combatant'; id: string } | { kind: 'entity'; id: string } | null;
+
+/** Maillage du monde cuit, tel que le picking le lit : sa géométrie porte les plages de décor. */
+export interface WorldPickMesh extends THREE.Object3D {
+  userData: { propVertexRanges?: PropVertexRange[] };
+}
+
+/**
+ * Ce que le rayon désigne : le candidat le plus PROCHE de la caméra tranche — l'id de son JETON, celui
+ * de son DÉCOR VOLUMIQUE, ou `null` si c'est un décor billboardé (§ en-tête : ce qui se voit se clique).
+ * À distance ÉGALE, deux candidats nommés se départagent par `emporteAEgalite`, et un candidat nommé
+ * l'emporte sur un décor coplanaire. L'ordre du tableau de cibles n'entre JAMAIS dans le verdict.
+ *
+ * UNE PASSE : les QUADS (deux triangles chacun), plus les seules faces du monde qu'une plage de décor
+ * nomme. La géométrie non-prop du monde est balayée mais jamais candidate — un acteur derrière un mur
+ * reste cliquable (#1297).
+ */
+export function pickNearestTarget(
   camera: THREE.Camera,
   targets: readonly PickTarget[],
+  worldMesh: WorldPickMesh | null,
   ndc: { x: number; y: number },
-): string | null {
+): PickResult {
   rayon.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), camera);
-  let gagnant: string | null = null;
+  let gagnant: PickResult = null;
   let plusProche = Infinity;
-  for (const cible of targets) {
-    for (const touche of rayon.intersectObject(cible.object, true)) {
-      if (touche.distance > plusProche) continue;
-      if (touche.distance === plusProche) {
-        // Égalité EXACTE : un décor ne prend jamais la place du tenant (un jeton coplanaire d'un
-        // décor reste cliquable), et entre deux jetons c'est l'id lexicographique qui tranche.
-        if (cible.cid === null) continue;
-        if (gagnant !== null && !emporteAEgalite(cible.cid, gagnant)) continue;
-      }
-      plusProche = touche.distance;
-      gagnant = cible.cid;
+  /** Retient le candidat s'il bat le tenant — `id` nul = décor billboardé, qui occulte sans nommer. */
+  const juger = (distance: number, candidat: PickResult) => {
+    if (distance > plusProche) return;
+    if (distance === plusProche) {
+      // Égalité EXACTE : un décor ne prend jamais la place du tenant (un jeton coplanaire d'un
+      // décor reste cliquable), et entre deux candidats nommés c'est l'id lexicographique qui tranche.
+      if (candidat === null) return;
+      if (gagnant !== null && !emporteAEgalite(candidat.id, gagnant.id)) return;
     }
-  }
+    plusProche = distance;
+    gagnant = candidat;
+  };
+  for (const cible of targets)
+    for (const touche of rayon.intersectObject(cible.object, true))
+      juger(touche.distance, cible.cid === null ? null : { kind: 'combatant', id: cible.cid });
+  const ranges = worldMesh?.userData.propVertexRanges;
+  if (worldMesh && ranges?.length)
+    for (const touche of rayon.intersectObject(worldMesh, true)) {
+      const entId = touche.face ? propEntityAtHit(ranges, touche.face) : null;
+      if (entId) juger(touche.distance, { kind: 'entity', id: entId });
+    }
   return gagnant;
 }

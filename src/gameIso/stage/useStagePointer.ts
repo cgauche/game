@@ -4,7 +4,7 @@
  *    souris↔clavier), puis `activeZ`, puis fallback CROSS-COUCHE (`screenToTileAtLift` +
  *    `resolveCursorZ`). Les trois chemins inversent la projection du STAGE (`stage/projection.ts`,
  *    `stage/stageCam.ts`) — la même que le peintre, affine ou volumique ;
- *  - `pickTile` : picking SPRITE-aware en combat, hit-test délégué à la voie de rendu (`cidUnderPointer`) ;
+ *  - `pickTile` : picking SPRITE-aware, hit-test délégué à la voie de rendu (`targetUnderPointer`) ;
  *  - glisser-caméra (seuil PAN_THRESHOLD, l'action de clic est DIFFÉRÉE au relâchement) — bouton
  *    principal : panoramique posé HORS de React (`state/stagePan`, un battement de frame par
  *    mouvement) et commis au store en UN `set` au relâchement ; bouton MILIEU : lacet libre de la vue ;
@@ -41,7 +41,7 @@ import { type Dims } from '../../geometry/iso';
 import { STEP_MS } from '../../geometry/walk';
 import { poseFromDims, screenToTileAtLift } from './projection';
 import { stagePointAt, viewBoxPointAt } from './stageCam';
-import { cidUnderPointer } from './spritePicker';
+import { hasSpritePicker, targetUnderPointer } from './spritePicker';
 import type { RoomPortal } from '../../state/roomPortals';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
@@ -186,18 +186,28 @@ export function useStagePointer({
     return null;
   };
 
-  // Picking SPRITE-aware (combat) : si un TOKEN est réellement dessiné sous le curseur, on cible SA
-  // tuile — pas la tuile « derrière » le sprite (ancré au-dessus de sa case en iso, d'où l'ancienne
-  // « chasse aux pieds »). Le hit-test lui-même appartient à la VOIE DE RENDU (`cidUnderPointer` :
-  // `elementFromPoint` en affine, lancer de rayon en volumique) — l'empilement s'y tranche, de la
-  // seule façon que la voie sait trancher. Hors d'un token (sol visible) → la tuile du sol
-  // (tileFromEvent) pour le déplacement. Hors combat → sol direct.
+  // Picking SPRITE-aware : si un TOKEN (ou un décor volumique) est réellement dessiné sous le curseur,
+  // on cible SA tuile — pas la tuile « derrière » le sprite (ancré au-dessus de sa case en iso, d'où
+  // l'ancienne « chasse aux pieds »). Le hit-test lui-même appartient à la VOIE DE RENDU
+  // (`targetUnderPointer` : `elementFromPoint` en affine, lancer de rayon en volumique) — l'empilement
+  // s'y tranche, de la seule façon que la voie sait trancher. Sans cible dessinée → la tuile du sol
+  // (tileFromEvent) pour le déplacement.
   const pickTile = (ev: React.PointerEvent): Pt | null => {
     const st = useGame.getState();
-    if (st.mode === 'battle' && st.battle) {
-      const cid = cidUnderPointer(ev.clientX, ev.clientY);
-      const c = cid ? st.battle.combatants.find((x) => x.id === cid) : undefined;
+    // On n'interroge la voie de rendu que là où sa réponse peut changer le verdict : un COMBATTANT en
+    // combat, ou une ENTITÉ — que seule une voie volumique inscrite sait nommer. Ailleurs, la tuile du
+    // sol suffit, et le hit-test natif n'est pas même sollicité.
+    const enCombat = st.mode === 'battle' && !!st.battle;
+    const visé = enCombat || hasSpritePicker() ? targetUnderPointer(ev.clientX, ev.clientY) : null;
+    if (visé?.kind === 'combatant' && enCombat && st.battle) {
+      const c = st.battle.combatants.find((x) => x.id === visé.id);
       if (c?.pos) return c.pos.z ? { x: c.pos.x, y: c.pos.y, z: c.pos.z } : { x: c.pos.x, y: c.pos.y };
+    }
+    // DÉCOR VOLUMIQUE : c'est le MEUBLE qui est dessiné sous le pixel, pas la tuile derrière lui — on
+    // cible sa case d'ancrage, d'où l'interaction d'exploration le reprend comme n'importe quel décor.
+    if (visé?.kind === 'entity') {
+      const ent = useGame.getState().scene?.entities.find((e) => e.id === visé.id);
+      if (ent) return ent.z ? { x: ent.pos.x, y: ent.pos.y, z: ent.z } : { x: ent.pos.x, y: ent.pos.y };
     }
     return tileFromEvent(ev);
   };
