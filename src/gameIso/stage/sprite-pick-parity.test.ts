@@ -222,8 +222,8 @@ describe('Coin de la boîte d’un billboard — la voie volumique y répond ENC
  * ÉGALITÉ EXACTE DE DISTANCE — le cas où la distance caméra ne tranche plus rien : deux jetons posés
  * sur la MÊME case y ont des quads COPLANAIRES (même ancre aux pieds, même orientation écran), donc
  * touchés au même millimètre par le rayon. Le verdict doit alors rester le même quel que soit l'ordre
- * du tableau de cibles — c'est ce que promet le JSDoc de `pickNearestCid`, et ce que son départage
- * (l'id lexicographique entre jetons) rend vrai.
+ * du tableau de cibles — c'est ce que promet le JSDoc de `pickNearestTarget`, et ce que son départage
+ * (l'id lexicographique entre candidats nommés) rend vrai.
  */
 describe('Cibles à distance ÉGALE — le verdict ne dépend pas de l’ordre du tableau (#1176 P2-3)', () => {
   const scene = emptyScene(6, 6);

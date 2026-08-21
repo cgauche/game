@@ -70,9 +70,11 @@ export function propEntityAtHit(ranges: readonly PropVertexRange[], face: { a: n
 /** Ce que le pixel désigne : un COMBATTANT (jeton), une ENTITÉ de scène (décor volumique), ou rien. */
 export type PickResult = { kind: 'combatant'; id: string } | { kind: 'entity'; id: string } | null;
 
-/** Maillage du monde cuit, tel que le picking le lit : sa géométrie porte les plages de décor. */
+/** Maillage du monde cuit, tel que le picking le lit. SOURCE UNIQUE des plages : la GÉOMÉTRIE, où la
+ *  cuisson les a posées (`sceneMeshes.bakeWorldGeometry`) — rien n'est recopié sur le maillage au
+ *  montage, et le maillage n'est ici qu'un PORTEUR de géométrie et de matrice monde. */
 export interface WorldPickMesh extends THREE.Object3D {
-  userData: { propVertexRanges?: PropVertexRange[] };
+  geometry: { userData: { propVertexRanges?: PropVertexRange[] } };
 }
 
 /**
@@ -109,7 +111,7 @@ export function pickNearestTarget(
   for (const cible of targets)
     for (const touche of rayon.intersectObject(cible.object, true))
       juger(touche.distance, cible.cid === null ? null : { kind: 'combatant', id: cible.cid });
-  const ranges = worldMesh?.userData.propVertexRanges;
+  const ranges = worldMesh?.geometry.userData.propVertexRanges;
   if (worldMesh && ranges?.length)
     for (const touche of rayon.intersectObject(worldMesh, true)) {
       const entId = touche.face ? propEntityAtHit(ranges, touche.face) : null;

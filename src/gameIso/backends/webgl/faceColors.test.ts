@@ -195,3 +195,41 @@ describe('tintVarFactor — la variance de teinte par case, à l’identité MON
     }
   });
 });
+
+/**
+ * DOMAINE `prop` — la surface d'une face de décor volumique vient de `propMaterials.json`, et de rien
+ * d'autre : sa teinte EST la couleur authorée (aucun ombrage cuit, aucune recette d'appareillage), et
+ * sa réponse à la lumière voyage avec elle jusqu'au matériau que le monde monte.
+ * Attendus LUS DANS LA DONNÉE : `src/data/propMaterials.json` « bois-chene » et « fer-noirci ».
+ */
+describe('faceSurface — matériau de DÉCOR volumique (domaine `prop`)', () => {
+  const faceProp = (id: string): Face => ({
+    poly: [{ x: 0, y: 0, h: 0 }, { x: 1, y: 0, h: 0 }, { x: 1, y: 0, h: 1 }],
+    material: { domain: 'prop', id },
+    entId: 'meuble-1',
+  });
+
+  it('rend la teinte et la réponse à la lumière AUTHORÉES, sans recette ni échelle d’UV', () => {
+    expect(faceSurface(faceProp('bois-chene'))).toMatchObject({
+      color: '#5b3a22',
+      pbr: { roughness: 0.82, metalness: 0 },
+    });
+    expect(faceSurface(faceProp('bois-chene')).recipe).toBeUndefined();
+    expect(faceSurface(faceProp('bois-chene')).uvScaleM).toBeUndefined();
+    expect(faceSurface(faceProp('fer-noirci'))).toMatchObject({
+      color: '#2e2f33',
+      pbr: { roughness: 0.52, metalness: 0.85 },
+    });
+  });
+
+  it('un matériau ABSENT retombe sur le repli visible, et n’invente aucune réponse à la lumière', () => {
+    const surface = faceSurface(faceProp('materiau-fantome'));
+    expect(surface.color).toBe(reliefMaterial('sol-inconnu').face);
+    expect(surface.pbr).toBeUndefined();
+  });
+
+  it('deux matériaux de décor ne partagent pas une clé de surface', () => {
+    expect(faceSurface(faceProp('bois-chene')).surfaceKey)
+      .not.toBe(faceSurface(faceProp('fer-noirci')).surfaceKey);
+  });
+});

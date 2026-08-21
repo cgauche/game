@@ -15,6 +15,7 @@ import type { Combatant } from '../../engine/types';
 import type { RoomPortal } from '../../state/roomPortals';
 import { VH, VW } from './useStageCamera';
 import { useStagePointer, type StagePointer } from './useStagePointer';
+import { setSpritePicker } from './spritePicker';
 import { SENSIBILITE_DRAG_DEG_PX, getStageYaw, poserYaw, resetStageYaw } from '../../state/stageYaw';
 import { getStagePan, resetStagePan } from '../../state/stagePan';
 
@@ -766,5 +767,87 @@ describe('useStagePointer — glisser-tourner au bouton MILIEU', () => {
     expect(useGame.getState().camPan.x).toBeCloseTo(getStagePan().x, 9);
     expect(useGame.getState().camPan.x).not.toBe(0);
     vi.unstubAllGlobals();
+  });
+});
+
+/**
+ * DÉCOR VOLUMIQUE SOUS LE POINTEUR — le meuble n'est ni un jeton ni un billboard : il est cuit dans la
+ * masse du monde, et c'est la voie de rendu qui le nomme (`targetUnderPointer` → `{kind:'entity'}`).
+ * Le pointeur route ce verdict vers la CASE D'ANCRAGE du meuble, d'où l'interaction d'exploration le
+ * reprend comme n'importe quel décor — sans quoi le clic retomberait sur la tuile DERRIÈRE le meuble.
+ *
+ * Et il le fait SANS payer le rayon quand il n'y a rien à nommer : le hit-test tourne à chaque
+ * `pointermove`, et le rayon MONDE coûte (1,30 ms mesuré à 39 780 triangles). Hors combat, une scène
+ * sans mobilier volumique ne le sollicite donc pas du tout.
+ */
+describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que là où il existe', () => {
+  let root: Root | null = null;
+
+  afterEach(() => {
+    setSpritePicker(null);
+    if (root) {
+      act(() => root!.unmount());
+      root = null;
+    }
+    vi.useRealTimers();
+  });
+
+  /** Scène d'un meuble à recette (fouillable) posé en (2,3), le groupe à portée de bras. */
+  const sceneMeuble = (ref: string) => {
+    const scene = emptyScene(8, 8);
+    scene.entities = [{
+      id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref, facing: 'S',
+      interact: { flow: { kind: 'seq', steps: [] } },
+    }] as typeof scene.entities;
+    return scene;
+  };
+
+  const monter = (scene: ReturnType<typeof sceneMeuble>) => {
+    let pointer: StagePointer | undefined;
+    const Probe = () => {
+      const svgRef = useRef(stageEl());
+      const camRef = useRef({ x: 0, y: 0 });
+      pointer = useStagePointer({ svgRef, scene, dims, zoom: 1, camRef, hoverTracking: false, partyLeader: undefined, activeZ: 0 });
+      return null;
+    };
+    renderToStaticMarkup(<Probe />);
+    return pointer!;
+  };
+
+  it('un verdict `entity` cible la case du MEUBLE, pas la tuile sous le pixel', () => {
+    vi.useFakeTimers();
+    const scene = sceneMeuble('table-ronde-4-tabourets');
+    const interactEntity = vi.fn();
+    useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null, interactEntity, setPendingInteract: vi.fn() });
+    setSpritePicker(() => ({ kind: 'entity', id: 'table-1' }));
+
+    const pointer = monter(scene);
+    // Un pixel VOLONTAIREMENT loin de la case du meuble : sans le routage, le clic irait à cette tuile.
+    const ailleurs = tileCenter(6, 6, dims);
+    const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
+    pointer.handlers.onPointerDown(ev);
+    pointer.handlers.onPointerUp(ev);
+    vi.runAllTimers();
+
+    expect(interactEntity).toHaveBeenCalledWith('table-1'); // adjacent (2,2)→(2,3) : fouille immédiate
+  });
+
+  it('hors combat, le hit-test n’est PAS sollicité sur une scène sans mobilier volumique', () => {
+    const picker = vi.fn(() => null);
+    setSpritePicker(picker);
+    const sansVolume = sceneMeuble('tonneau'); // décor BILLBOARD : rien que le rayon monde puisse nommer
+    useGame.setState({ scene: sansVolume, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null });
+    const p1 = monter(sansVolume);
+    const centre = tileCenter(3, 3, dims);
+    p1.handlers.onPointerMove(pointerEvent(centre.cx, centre.cy));
+    expect(picker).not.toHaveBeenCalled();
+
+    // TÉMOIN : la MÊME scène avec un meuble à recette le sollicite — l'écart vient du mobilier, pas du
+    // fait qu'aucun pointeur n'ait bougé.
+    const avecVolume = sceneMeuble('table-ronde-4-tabourets');
+    useGame.setState({ scene: avecVolume });
+    const p2 = monter(avecVolume);
+    p2.handlers.onPointerMove(pointerEvent(centre.cx, centre.cy));
+    expect(picker).toHaveBeenCalled();
   });
 });

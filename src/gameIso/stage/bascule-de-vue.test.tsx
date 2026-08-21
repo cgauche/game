@@ -248,8 +248,9 @@ describe('Bascule de regard — la molette survit à l’aller-retour (#1385)', 
 // ————————————————————————————————————————————————
 
 /**
- * CE QUI MORD ICI, MESURÉ : la rétention est keyée sur les SIX tranches de `worldBakeDeps`
- * (`layers`, `dimensions`, `walls`, `architecture`, `metresPerTile`, `mpt`), comparées par identité.
+ * CE QUI MORD ICI, MESURÉ : la rétention est keyée sur les tranches de `worldBakeDeps` — les six
+ * historiques (`layers`, `dimensions`, `walls`, `architecture`, `metresPerTile`, `mpt`), comparées par
+ * identité, plus la SIGNATURE du mobilier volumique et les recettes qu'il fait lire.
  * Reforger l'objet `scene` en surface (`{ ...scene }`) ne recuit donc RIEN — mesuré : mutation VERTE,
  * et c'est la force du patron. Ce qui recuit, c'est une TRANCHE reforgée (`{ ...scene, layers: [...] }`)
  * — mutation ROUGE, 10 cuissons. Une bascule de regard n'en touche aucune : c'est ce que ce banc tient.

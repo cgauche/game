@@ -336,6 +336,11 @@ export function shadeSousSoleil(shade: number, fade: number): number {
  *
  * DÉRIVÉE DU READ-SET, pas devinée — et gardée champ par champ (`bake-retention.test.ts`), parce
  * qu'un champ manquant = un monde périmé à l'écran, invisible autrement.
+ * `scene.entities` n'y entre PAS par sa référence : le décor VOLUMIQUE y contribue par une SIGNATURE
+ * (`propVolumeSignature`, une chaîne) et par les objets de recette/matériau qu'il fait lire
+ * (`propRecipeDeps`). Un tableau d'entités reforgé sans que le mobilier bouge — le cas COURANT du
+ * combat (despawn, déplacement forcé) — ne recuit donc rien, et la garde discriminante vit dans
+ * `prop-picking.test.ts`.
  * `scene.effectZones` en est ABSENT sciemment : `buildRoofs` le lit (`massRoomZoneIds`), mais il
  * n'entre dans AUCUNE face, aucun sommet, aucun groupe de surface — seulement dans le champ
  * `roomZoneIds` des éléments de toit ET de façade. Ce champ ne SURVIT PLUS à la cuisson (`elCuit`
@@ -345,18 +350,32 @@ export function shadeSousSoleil(shade: number, fade: number): number {
  */
 export function worldBakeDeps(scene: Scene, mpt: number): readonly unknown[] {
   return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.metresPerTile, mpt,
-    scene.entities, ...propRecipeDeps(scene)];
+    propVolumeSignature(scene), ...propRecipeDeps(scene)];
+}
+
+/** Ce que la cuisson retient des ENTITÉS : la signature des seuls décors à recette — id, ref, case,
+ *  couche, cap. `scene.entities` ENTIER n'entrerait pas ici : un despawn de combat ou un déplacement
+ *  forcé en reforge la référence à chaque tour, et recuirait un monde que rien n'a déplacé. */
+function propVolumeSignature(scene: Scene): string {
+  const parts: string[] = [];
+  for (const ent of scene.entities) {
+    if (ent.kind !== 'prop' || !findPropById(ent.ref ?? 'tonneau')?.volume) continue;
+    parts.push(`${ent.id}|${ent.ref ?? 'tonneau'}|${ent.pos.x},${ent.pos.y}|${ent.z ?? 0}|${ent.facing ?? 'S'}`);
+  }
+  return parts.join(';');
 }
 
 /** Ce que la cuisson lit du CATALOGUE pour les décors volumiques de la scène : leur recette et les
- *  matériaux qu'elle nomme, à PLAT (une dep par objet, comparée par identité comme les autres). */
+ *  matériaux qu'elle nomme, à PLAT (une dep par objet, comparée par identité comme les autres) — une
+ *  retouche de recette au Codex change l'objet, donc la dep, sans que la scène ait bougé. */
 function propRecipeDeps(scene: Scene): readonly unknown[] {
   const out: unknown[] = [];
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
     const volume = findPropById(ent.ref ?? 'tonneau')?.volume;
+    if (!volume) continue;
     out.push(volume);
-    for (const primitive of volume?.primitives ?? []) out.push(findPropMaterialById(primitive.material));
+    for (const primitive of volume.primitives) out.push(findPropMaterialById(primitive.material));
   }
   return out;
 }

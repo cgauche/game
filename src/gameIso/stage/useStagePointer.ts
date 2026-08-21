@@ -42,6 +42,7 @@ import { STEP_MS } from '../../geometry/walk';
 import { poseFromDims, screenToTileAtLift } from './projection';
 import { stagePointAt, viewBoxPointAt } from './stageCam';
 import { hasSpritePicker, targetUnderPointer } from './spritePicker';
+import { sceneAUnPropVolumique } from '../builders/props';
 import type { RoomPortal } from '../../state/roomPortals';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
@@ -194,11 +195,15 @@ export function useStagePointer({
   // (tileFromEvent) pour le déplacement.
   const pickTile = (ev: React.PointerEvent): Pt | null => {
     const st = useGame.getState();
-    // On n'interroge la voie de rendu que là où sa réponse peut changer le verdict : un COMBATTANT en
-    // combat, ou une ENTITÉ — que seule une voie volumique inscrite sait nommer. Ailleurs, la tuile du
-    // sol suffit, et le hit-test natif n'est pas même sollicité.
+    // On n'interroge la voie de rendu que là où sa réponse peut changer le verdict, et le hit-test
+    // tourne À CHAQUE `pointermove` : en COMBAT, pour le jeton sous le pixel (le chemin historique,
+    // quads seuls) ; hors combat, seulement si une voie volumique est inscrite ET que la scène porte
+    // un meuble à recette — c'est la seule chose que le rayon MONDE puisse nommer, et c'est lui qui
+    // coûte (la masse triangulée de la carte). Une scène sans mobilier volumique ne paie donc rien,
+    // et le survol garde son affordance là où il y a un meuble à désigner.
     const enCombat = st.mode === 'battle' && !!st.battle;
-    const visé = enCombat || hasSpritePicker() ? targetUnderPointer(ev.clientX, ev.clientY) : null;
+    const meublesVolumiques = !!st.scene && hasSpritePicker() && sceneAUnPropVolumique(st.scene);
+    const visé = enCombat || meublesVolumiques ? targetUnderPointer(ev.clientX, ev.clientY) : null;
     if (visé?.kind === 'combatant' && enCombat && st.battle) {
       const c = st.battle.combatants.find((x) => x.id === visé.id);
       if (c?.pos) return c.pos.z ? { x: c.pos.x, y: c.pos.y, z: c.pos.z } : { x: c.pos.x, y: c.pos.y };

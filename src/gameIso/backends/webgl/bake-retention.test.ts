@@ -81,7 +81,7 @@ const MUTATIONS: Record<keyof Scene, (s: Scene) => Scene> = {
 };
 
 /** Le read-set DÉCLARÉ, champ par champ — la liste que la garde confronte à la réalité. */
-const DANS_LE_READ_SET = new Set<keyof Scene>(['dimensions', 'metresPerTile', 'layers', 'walls', 'architecture', 'entities']);
+const DANS_LE_READ_SET = new Set<keyof Scene>(['dimensions', 'metresPerTile', 'layers', 'walls', 'architecture']);
 
 const memesDeps = (a: readonly unknown[], b: readonly unknown[]) => a.length === b.length && a.every((d, i) => d === b[i]);
 

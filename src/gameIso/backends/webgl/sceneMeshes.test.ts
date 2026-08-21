@@ -1060,3 +1060,46 @@ describe('reposerActeurs — case et cap sont de la POSE, jamais de l’identit�
     expect(caps).toEqual([]);
   });
 });
+
+/**
+ * DÉCOR VOLUMIQUE DANS LA MASSE — la couture entre la recette (donnée) et le dessin : ses faces entrent
+ * dans `worldFaces` comme celles d'un mur, et le groupement les scinde PAR MATÉRIAU (aucune période,
+ * aucune cuisson par face — mais une réponse à la lumière propre, que le groupe doit porter jusqu'au
+ * matériau monté). C'est ce découpage qui donne au même décor plusieurs plages de picking disjointes.
+ */
+describe('GROUPES DE SURFACE — un décor à recette se groupe par MATÉRIAU', () => {
+  const scèneMeuble = () => {
+    const s = emptyScene(8, 8);
+    s.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof s.entities;
+    return s;
+  };
+
+  it('les faces du décor entrent dans `worldFaces`, chacune porteuse de son entité', () => {
+    const facesProp = worldFaces(scèneMeuble()).filter((wf) => wf.face.material.domain === 'prop');
+    expect(facesProp.length).toBeGreaterThan(0);
+    expect(facesProp.every((wf) => wf.face.entId === 'table-1')).toBe(true);
+    expect(facesProp.every((wf) => wf.el.kind === 'prop')).toBe(true);
+  });
+
+  it('un groupe par matériau de recette, porteur de la réponse à la lumière AUTHORÉE', () => {
+    const listées = worldFaces(scèneMeuble());
+    const { groups } = surfaceGrouping(listées, 2);
+    const groupesProp = groups.filter((g) => g.key.startsWith('prop|'));
+    expect(groupesProp.map((g) => g.key).sort()).toEqual(['prop|bois-chene', 'prop|fer-noirci']);
+    for (const g of groupesProp) {
+      expect(g.kind).toBeNull(); // aucune période : la couleur de sommet suffit
+      expect(g.recipe).toBeUndefined();
+      expect(g.pbr).toBeDefined();
+    }
+    expect(groupesProp.find((g) => g.key === 'prop|fer-noirci')!.pbr)
+      .toEqual({ roughness: 0.52, metalness: 0.85 }); // `src/data/propMaterials.json`
+  });
+
+  it('deux matériaux ⇒ le décor occupe DEUX plages de picking disjointes dans la géométrie cuite', () => {
+    const world = buildWorldGeometry(scèneMeuble(), 2, () => 1);
+    const plages = world.userData.propVertexRanges.filter((r) => r.entId === 'table-1');
+    expect(plages.length).toBe(2);
+    const [a, b] = [...plages].sort((x, y) => x.vertexStart - y.vertexStart);
+    expect(a.vertexStart + a.vertexCount).toBeLessThanOrEqual(b.vertexStart); // disjointes, jamais fusionnées
+  });
+});

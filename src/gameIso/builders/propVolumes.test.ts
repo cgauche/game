@@ -86,6 +86,35 @@ describe('buildPropVolumes — la recette locale devient de la géométrie monde
     }
   });
 
+  /**
+   * CAP D'IDENTITÉ (contrat de donnée, `data/props.types.ts`) : une recette s'authore FACE AU NORD, et
+   * `N` est le seul cap qui la rende telle qu'écrite. Le piège que ce test matérialise : une entité
+   * SANS `facing` vaut `S` — un DEMI-TOUR — donc un meuble à dos posé sans cap explicite montre son dos
+   * là où l'auteur a dessiné sa face.
+   */
+  it('le cap `N` est l’identité de rotation ; l’absence de cap vaut `S`, soit un DEMI-TOUR', () => {
+    /** L'emprise en x/y d'un matériau, RAMENÉE au repère local de la case d'ancrage. */
+    const emprise = (facing: Dir8 | undefined, material: string) => {
+      const ent = { id: 'meuble', kind: 'prop', pos: { x: 4, y: 6 }, ref: PROP_TROIS_PRIMITIVES.id, ...(facing ? { facing } : {}) } as SceneEntity;
+      const pts = buildPropVolumes(ent, PROP_TROIS_PRIMITIVES, 0)
+        .filter((f) => f.material.id === material)
+        .flatMap((f) => f.poly.map((p) => ({ x: p.x - 4, y: p.y - 6 })));
+      return {
+        x: [r3(Math.min(...pts.map((p) => p.x))), r3(Math.max(...pts.map((p) => p.x)))],
+        y: [r3(Math.min(...pts.map((p) => p.y))), r3(Math.max(...pts.map((p) => p.y)))],
+      };
+    };
+    // Au cap `N`, chaque primitive occupe EXACTEMENT l'emprise que la recette déclare (centre ± demi-
+    // dimension, centre ± rayon) : aucune rotation ne s'est appliquée.
+    expect(emprise('N', 'bois-chene')).toEqual({ x: [-0.4, 0.4], y: [-0.2, 0.2] }); // box (0,0) × (0.8, 0.4)
+    expect(emprise('N', 'fer-noirci')).toEqual({ x: [0.14, 0.26], y: [-0.06, 0.06] }); // cyl (0.2, 0) r 0.06
+    expect(emprise('N', 'pierre-atre')).toEqual({ x: [-0.35, -0.05], y: [0, 0.2] }); // prism (−0.2, 0.1) × (0.3, 0.2)
+    // …et l'ABSENCE de cap vaut `S` : un DEMI-TOUR, pas l'identité. Le pied change de bord.
+    expect(emprise(undefined, 'fer-noirci')).toEqual(emprise('S', 'fer-noirci'));
+    expect(emprise(undefined, 'fer-noirci')).toEqual({ x: [-0.26, -0.14], y: [-0.06, 0.06] });
+    expect(emprise(undefined, 'pierre-atre')).toEqual({ x: [0.05, 0.35], y: [-0.2, 0] });
+  });
+
   it('la hauteur du sol s’ajoute UNE fois à chaque hauteur locale', () => {
     const ent = propEntity({ id: 'meuble', pos: { x: 4, y: 6 }, facing: 'S' });
     const auSol = buildPropVolumes(ent, PROP_TROIS_PRIMITIVES, 0);

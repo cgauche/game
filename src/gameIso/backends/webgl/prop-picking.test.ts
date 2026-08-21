@@ -1,8 +1,9 @@
-import { BufferAttribute, BufferGeometry, Mesh, MeshBasicMaterial, OrthographicCamera, PlaneGeometry, Raycaster, Vector2, type Intersection } from 'three';
+import { BufferAttribute, BufferGeometry, Mesh, MeshBasicMaterial, OrthographicCamera, PlaneGeometry, Raycaster, Vector2, Vector3, type Intersection } from 'three';
 import { describe, expect, it } from 'vitest';
-import { emptyScene, type Scene, type SceneEntity } from '../../../state/scene';
-import { findPropById } from '../../../data';
+import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../../state/scene';
+import { findPropById, findPropMaterialById } from '../../../data';
 import { buildWorldGeometry, wholeSceneBillboardEls, worldBakeDeps, type WorldGeometry } from './sceneMeshes';
+import { worldSurfaceMaterials } from './worldMaterials';
 import { pickNearestTarget, propEntityAtHit, type PickTarget, type PropVertexRange, type WorldPickMesh } from './spriteRaycast';
 
 /**
@@ -22,6 +23,10 @@ const volumeEntity = (id: string): SceneEntity =>
   ({ id, kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }) as SceneEntity;
 const legacyEntity = (id: string): SceneEntity =>
   ({ id, kind: 'prop', pos: { x: 5, y: 5 }, ref: 'tonneau' }) as SceneEntity;
+const figurant = (id: string): SceneEntity =>
+  ({ id, kind: 'personnage', pos: { x: 6, y: 6 } }) as SceneEntity;
+/** Deux listes de deps sont-elles la MÊME ? — par IDENTITÉ, terme à terme : le patron de rétention. */
+const memesDeps = (a: readonly unknown[], b: readonly unknown[]) => a.length === b.length && a.every((d, i) => d === b[i]);
 const patchEntity = (scene: Scene, id: string, patch: Partial<SceneEntity>): Scene =>
   ({ ...scene, entities: scene.entities.map((e) => (e.id === id ? { ...e, ...patch } as SceneEntity : e)) });
 
@@ -61,7 +66,92 @@ describe('Cuisson d’un décor volumique — une seule voie, et son id de picki
       patchEntity(base, 'table-1', { pos: { x: 3, y: 4 } }),
       patchEntity(base, 'table-1', { ref: 'comptoir-droit' }),
       patchEntity(base, 'table-1', { facing: 'E' }),
-    ]) expect(worldBakeDeps(changed, 2)).not.toEqual(worldBakeDeps(base, 2));
+    ]) expect(memesDeps(worldBakeDeps(changed, 2), worldBakeDeps(base, 2))).toBe(false);
+  });
+
+  /**
+   * L'AUTRE MOITIÉ, celle qui coûte : `scene.entities` est reforgé à chaque tour de combat (despawn,
+   * déplacement forcé) sur des scènes qui ne bougent pas d'un meuble. Keyer la cuisson dessus la
+   * rejouait — 634 ms mesurés sur La Diligence par le module lui-même. La dep n'est donc PAS le
+   * tableau : c'est la signature des seuls décors à recette.
+   */
+  it('ce qui n’est pas un décor volumique ne recuit RIEN — tableau reforgé, personnage déplacé, décor billboardé déplacé', () => {
+    const base = sceneWith(volumeEntity('table-1'), legacyEntity('tonneau-1'), figurant('pnj-1'));
+    for (const inerte of [
+      { ...base, entities: [...base.entities] }, // même contenu, tableau NEUF
+      patchEntity(base, 'pnj-1', { pos: { x: 7, y: 7 } }), // un corps qui marche
+      { ...base, entities: base.entities.filter((e) => e.id !== 'pnj-1') }, // un despawn de combat
+      patchEntity(base, 'tonneau-1', { pos: { x: 1, y: 1 } }), // un décor BILLBOARD, hors de la masse cuite
+    ]) expect(memesDeps(worldBakeDeps(inerte, 2), worldBakeDeps(base, 2))).toBe(true);
+  });
+
+  /** La RECETTE elle-même est une dep : une retouche au Codex périme la cuisson sans que la scène bouge. */
+  it('worldBakeDeps porte la recette ET ses matériaux, pas seulement la signature de placement', () => {
+    const scene = sceneWith(volumeEntity('table-1'));
+    const prop = findPropById('table-ronde-4-tabourets')!;
+    expect(worldBakeDeps(scene, 2)).toEqual(expect.arrayContaining([prop.volume]));
+    for (const primitive of prop.volume!.primitives)
+      expect(worldBakeDeps(scene, 2)).toEqual(expect.arrayContaining([findPropMaterialById(primitive.material)]));
+  });
+});
+
+/**
+ * CÂBLAGE — l'assemblage EXACT de l'écran (`stage/GameStage3D`, groupe MONDE) : la cuisson pose les
+ * plages sur la GÉOMÉTRIE, le montage n'en recopie RIEN sur le maillage (il n'y écrit que `emprunte`),
+ * et le picking doit malgré tout nommer le meuble. Sans ce test, cinq assertions vertes tenaient sur un
+ * objet forgé par le test — que la production ne construit jamais.
+ */
+describe('Le picking lit le monde que l’écran monte VRAIMENT', () => {
+  /** Le maillage monde tel que `GameStage3D` l'assemble : géométrie cuite + matériaux de surface. */
+  function mondeDeLEcran(scene: Scene) {
+    const geometry = buildWorldGeometry(scene, sceneMetresPerTile(scene), () => 1);
+    const { materials } = worldSurfaceMaterials(geometry, 1, { enFile: true });
+    const mesh = new Mesh(geometry, materials);
+    mesh.userData.emprunte = true; // …et RIEN d'autre : le montage ne recopie aucune plage
+    mesh.updateMatrixWorld(true);
+    return { geometry, mesh };
+  }
+
+  /** Caméra braquée sur le barycentre des sommets d'un décor : le rayon central traverse son volume. */
+  function cameraSur(geometry: WorldGeometry, entId: string) {
+    const pos = geometry.getAttribute('position');
+    let n = 0, sx = 0, sy = 0, sz = 0;
+    for (const r of geometry.userData.propVertexRanges) {
+      if (r.entId !== entId) continue;
+      for (let v = r.vertexStart; v < r.vertexStart + r.vertexCount; v++, n++) {
+        sx += pos.getX(v); sy += pos.getY(v); sz += pos.getZ(v);
+      }
+    }
+    expect(n, 'aucun sommet relevé pour ce décor : rien à viser').toBeGreaterThan(0);
+    const c = { x: sx / n, y: sy / n, z: sz / n };
+    const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 400);
+    camera.position.set(c.x, c.y, c.z + 40);
+    camera.lookAt(c.x, c.y, c.z);
+    camera.updateMatrixWorld(true);
+    return camera;
+  }
+
+  it('le maillage monté ne porte AUCUNE plage sur son userData — la géométrie est la seule source', () => {
+    const { geometry, mesh } = mondeDeLEcran(sceneWith(volumeEntity('table-1')));
+    expect(mesh.userData.propVertexRanges).toBeUndefined();
+    expect(geometry.userData.propVertexRanges.some((r) => r.entId === 'table-1')).toBe(true);
+  });
+
+  it('sur CE maillage, le rayon nomme le décor volumique', () => {
+    const scene = sceneWith(volumeEntity('table-1'));
+    const { geometry, mesh } = mondeDeLEcran(scene);
+    expect(pickNearestTarget(cameraSur(geometry, 'table-1'), [], mesh, NDC)).toEqual({ kind: 'entity', id: 'table-1' });
+  });
+
+  it('…et un jeton PLUS PROCHE que le meuble le reprend, sur ce même maillage', () => {
+    const scene = sceneWith(volumeEntity('table-1'));
+    const { geometry, mesh } = mondeDeLEcran(scene);
+    const camera = cameraSur(geometry, 'table-1');
+    const quad = new Mesh(new PlaneGeometry(4, 4), new MeshBasicMaterial());
+    quad.position.copy(camera.position).add(camera.getWorldDirection(new Vector3()).multiplyScalar(5));
+    quad.quaternion.copy(camera.quaternion);
+    quad.updateMatrixWorld(true);
+    expect(pickNearestTarget(camera, [{ cid: 'hero-1', object: quad }], mesh, NDC)).toEqual({ kind: 'combatant', id: 'hero-1' });
   });
 });
 
@@ -87,8 +177,8 @@ function mondeCuit(quads: readonly number[], retirés: readonly number[], ranges
     for (let k = 0; k < 6; k++) index.push(q * 6 + k);
   });
   geo.setIndex(new BufferAttribute(new Uint32Array(index), 1));
+  geo.userData = { propVertexRanges: ranges }; // comme la cuisson : les plages voyagent dans la GÉOMÉTRIE
   const mesh = new Mesh(geo, new MeshBasicMaterial()) as WorldPickMesh & Mesh;
-  mesh.userData = { propVertexRanges: ranges };
   mesh.updateMatrixWorld(true);
   return mesh;
 }
@@ -129,7 +219,7 @@ describe('pickNearestTarget — le décor volumique se clique par ses sommets', 
     // Quad 0 = MUR devant (aucune plage) ; quad 1 = un décor loin derrière — le monde EST donc balayé.
     const wallFirst = mondeCuit([-2, -8], [], [{ entId: 'table-1', vertexStart: 6, vertexCount: 6 }]);
     const wallHit = raycastProp(wallFirst);
-    expect(propEntityAtHit(wallFirst.userData.propVertexRanges!, wallHit.face!)).toBeNull();
+    expect(propEntityAtHit(wallFirst.geometry.userData.propVertexRanges!, wallHit.face!)).toBeNull();
     expect(pickNearestTarget(CAMERA, [combatantBillboard('hero-1')], wallFirst, NDC)).toEqual({ kind: 'combatant', id: 'hero-1' });
   });
 });

@@ -87,8 +87,10 @@ export interface StyleVue {
    *  EXCLUSIF, et c'est le point : sous lui le monde ne monte AUCUN sujet `kind:'personnage'`
    *  (`collectBillboards`/`actorBillboards`), donc plus de jumeau de silhouette, plus d'ombre de
    *  contact, plus de quad à percer et plus de cible de rayon — le clic retombe sur la CASE, où le
-   *  disque est centré. Le décor (`kind:'prop'`) reste un billboard : vu du dessus il montre sa vraie
-   *  emprise, là où un personnage ne montrerait que le sommet de son crâne.
+   *  disque est centré. Le DÉCOR, lui, n'est jamais un pion : vu du dessus il montre sa vraie emprise,
+   *  là où un personnage ne montrerait que le sommet de son crâne — celui qui se dessine en billboard
+   *  le reste, celui qui porte une recette volumique reste dans la masse cuite du monde
+   *  (`builders/propVolumes.ts`).
    *
    *  C'est aussi ce qui referme l'écart d'ORDRE de la composition du dessus : grille, murs au trait,
    *  affordances et pions vivent alors dans le MÊME arbre SVG, où le rang de calque se décide

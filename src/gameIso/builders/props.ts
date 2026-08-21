@@ -30,6 +30,15 @@ import { wallEnds } from './walls';
  *  l'historique du stage, pas de fantôme pour le décor). `visible` absent ⇒ tout visible ; un prop de
  *  scène en vue est tagué `visible` (dessiné AU-DESSUS du voile), mémorisé → dessous (grisé). Les
  *  overlays de terrain restent TOUJOURS sous le voile (décor « mémorisé », convention des sols). */
+/** Un type de décor rend-il en VOLUME (recette authorée) plutôt qu'en billboard ? RÈGLE UNIQUE, lue
+ *  par le builder ci-dessous comme par ses appelants — aucun site ne la redevine. */
+export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref ?? 'tonneau')?.volume;
+
+/** La scène porte-t-elle AU MOINS un décor volumique ? Ce que le pointeur demande pour savoir si une
+ *  face du monde peut nommer une entité sous le pixel — sinon il n'y a rien à lancer de rayon vers. */
+export const sceneAUnPropVolumique = (scene: Scene): boolean =>
+  scene.entities.some((ent) => ent.kind === 'prop' && refEstVolumique(ent.ref));
+
 export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: FloorView): PropEl[] {
   const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
@@ -78,7 +87,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       interact: !!ent.interact,
       states,
     };
-    const prop = findPropById(ref);
+    const prop = refEstVolumique(ref) ? findPropById(ref) : undefined;
     if (prop?.volume) {
       // VOLUME : la recette du type devient de la géométrie MONDE, cuite dans la masse commune. La
       // hauteur du sol de la case se résout ICI, une seule fois par entité.

@@ -5,6 +5,16 @@
  *
  * Repère LOCAL d'une recette : origine au CENTRE de la case d'ancrage (coin NO de l'empreinte), `x`/`y`
  * en cases, `h` en mètres depuis le sol de la case. L'orientation vient de `SceneEntity.facing`.
+ *
+ * CAP D'IDENTITÉ = `N` — contrat de DONNÉE, à connaître pour authorer : une recette (et les
+ * `seatSlots` qui l'accompagnent) s'écrit FACE AU NORD, front vers `y` négatif, et c'est à ce cap
+ * seul qu'elle sort telle qu'authorée. Les sept autres caps la tournent de 45° par cran, en sens
+ * horaire (l'ordre de `DIR8_ORDER`).
+ *
+ * PIÈGE QUI EN DÉCOULE : une instance de scène SANS `facing` vaut `S` (le défaut canonique du monde),
+ * donc un DEMI-TOUR par rapport à la recette. Un meuble à dos (comptoir, âtre, lit) placé sans cap
+ * explicite présente donc son dos là où l'auteur a dessiné sa face : l'auteur pose le cap, il ne le
+ * laisse pas au défaut. Matérialisé par `builders/propVolumes.test.ts`.
  */
 import type { Dir8 } from '../state/dir8';
 

@@ -1659,8 +1659,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     const profondeurPercée = materiauProfondeurPerce();
     mesh.customDepthMaterial = profondeurPercée;
     groupe.add(withRenderRank(mesh, 'monde'));
-    // Le picking d'ENTITÉ lit ce maillage : ses faces de décor volumique y sont les seules nommées.
-    mondeMeshRef.current = mesh as unknown as WorldPickMesh;
+    // Le picking d'ENTITÉ lit ce maillage : les plages de décor volumique voyagent dans SA GÉOMÉTRIE,
+    // où la cuisson les a posées — rien n'est recopié ici, il n'y a qu'une source.
+    mondeMeshRef.current = mesh;
     ombresARefaire.current = true;
     dessiner();
     // VOILE D'ENTRÉE EN SCÈNE : les faces du monde sont le SOL VISUEL de la carte — TOUTES les cuissons
