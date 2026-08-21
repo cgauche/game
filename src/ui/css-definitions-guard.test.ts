@@ -21,7 +21,7 @@ function walk(dir: string, acc: string[] = []): string[] {
 /**
  * Retire les commentaires d'un source TS avant le scan des `--x` POSÉS par le code : une mention en
  * PROSE (`// la gouttière lit --af-pulse`) ne pose aucune variable et ne doit blanchir personne.
- * Le `[^:]` devant `//` épargne les protocoles (`https://…`) au milieu d'une chaîne.
+ * Le `[^:]` devant `//` : un protocole (`https://…`) au milieu d'une chaîne n'est pas un commentaire.
  */
 function stripCodeComments(src: string): string {
   return src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1');

@@ -34,4 +34,4 @@ future : le jour où le fonctionnement/le journal/l'affichage des jets change, c
   rien en dette de son propre chef.
 - Corollaire du credo « le socle RÉSOUT, les feuilles ADRESSENT » : l'élément N+1 coûte une ligne
   déclarative, jamais la recopie d'un patron.
-Lié : [[game-doctrine-contrat-affichage-jet-unique]], [[exemption-structurelle-re-triee-quand-invariant-bouge]].
+Lié : [[game-doctrine-contrat-affichage-jet-unique]], [[feedback-exemption-structurelle-re-triee-quand-invariant-bouge]].

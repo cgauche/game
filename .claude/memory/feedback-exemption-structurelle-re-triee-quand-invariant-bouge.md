@@ -23,7 +23,7 @@ pas la finir »
    comme « migration finie ». Découvert par l'utilisateur un mois plus tard.
 
 **Why** : une whitelist comptée SE VOIT et décroît ; une exemption de forme ne laisse AUCUNE liste
-à regarder — c'est [[un-detecteur-ne-mesure-que-sa-couverture]] sous sa forme la plus vicieuse.
+à regarder — c'est [[feedback-un-detecteur-ne-mesure-que-sa-couverture]] sous sa forme la plus vicieuse.
 L'exemption est un JUGEMENT DATÉ rendu contre un PÉRIMÈTRE DATÉ, pas un acquis.
 
 **How to apply** : à CHAQUE directive/arbitrage qui redéfinit un invariant (qui contrôle quoi, qui
@@ -31,5 +31,5 @@ possède quoi, ce qui compte comme X) : inventorier les exemptions/formes/exclus
 accordées sous l'ancien invariant (greps des scanners : `isWorldDie`, CORE-sets, formes (S)/(M),
 baselines « canonique ») et les RE-JUGER une à une contre le nouveau périmètre — dans le MÊME lot
 que la directive, pas plus tard. Une exemption re-confirmée se re-date ; une exemption caduque
-devient le stock du lot suivant. Lié : [[registre-fossiles-transition]],
-[[jamais-de-demi-migration]].
+devient le stock du lot suivant. Lié : [[feedback-registre-fossiles-transition]],
+[[feedback-jamais-de-demi-migration]].
