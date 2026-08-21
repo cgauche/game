@@ -18,13 +18,22 @@ function walk(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
+/**
+ * Retire les commentaires d'un source TS avant le scan des `--x` POSÉS par le code : une mention en
+ * PROSE (`// la gouttière lit --af-pulse`) ne pose aucune variable et ne doit blanchir personne.
+ * Le `[^:]` devant `//` épargne les protocoles (`https://…`) au milieu d'une chaîne.
+ */
+function stripCodeComments(src: string): string {
+  return src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+}
+
 const root = process.cwd();
 const files = walk(path.join(root, 'src'));
 const cssFiles = files.filter((f) => f.endsWith('.css'));
 const cssTexts = cssFiles.map((f) => [path.relative(root, f), fs.readFileSync(f, 'utf8')] as const);
 const codeTexts = files
   .filter((f) => /\.tsx?$/.test(f) && !/\.test\./.test(f))
-  .map((f) => fs.readFileSync(f, 'utf8'));
+  .map((f) => stripCodeComments(fs.readFileSync(f, 'utf8')));
 
 /** Retire commentaires puis appels de fonction (`cubic-bezier(…)`, `steps(…)`) d'une valeur. */
 function strip(value: string): string {
