@@ -5936,16 +5936,7 @@ export function openContractionCascade(get: Get, set: SetFn, patient: Combatant,
  *  Les JETS HÉROS de fin de combat (maladie/Corruption) sont résolus AVANT (cascade `openCombatEndCascade`
  *  ou inline) — ici, on ne fait QUE le writeback (les marqueurs ont déjà été consommés). */
 /**
- * Un combat MET DEBOUT ceux qu'il enrôle : chaque corps devenu combattant quitte la place assise
- * qu'il tenait — le PNJ attablé comme le MENEUR, dont le combattant porte l'id du héros de `party`
- * (les deux formes d'occupant se lèvent donc pour un même combattant, et il n'y a pas deux coutures).
- * PURE — rend la scène à écrire, que l'appelant fond dans SA propre écriture (l'ouverture de combat
- * en a déjà une), donc AVANT toute capture de mutation ; la SUPPRESSION des corps hors d'action
- * passe, elle, par `removeEntities`, qui renormalise à son tour.
- * Rend la scène d'entrée, même référence, si personne n'était assis.
- */
-/**
- * COUTURE UNIQUE « la mort ou l'indisponibilité libère la place » (spec §5) — le seul endroit qui
+ * COUTURE UNIQUE « la mort ou l'indisponibilité libère la place » — le seul endroit qui
  * traduise « ce corps est hors d'action » en « sa chaise est rendue ». Appelée là où la mise hors de
  * combat est ACTÉE : `notifySlain` (tous les chemins de mort d'un combattant, garde d'unicité
  * `slainNotified`) et l'entretien hors combat de `advanceTime` (agonie, Hémorragie, Poison, Flammes —
@@ -5973,6 +5964,15 @@ export function releaseSeatsOfDowned(get: Get, set: SetFn): void {
   if (next !== scene) set({ scene: next });
 }
 
+/**
+ * Un combat MET DEBOUT ceux qu'il enrôle : chaque corps devenu combattant quitte la place assise
+ * qu'il tenait — le PNJ attablé comme le MENEUR, dont le combattant porte l'id du héros de `party`
+ * (les deux formes d'occupant se lèvent donc pour un même combattant, et il n'y a pas deux coutures).
+ * PURE — rend la scène à écrire, que l'appelant fond dans SA propre écriture (l'ouverture de combat
+ * en a déjà une), donc AVANT toute capture de mutation ; la SUPPRESSION des corps hors d'action
+ * passe, elle, par `removeEntities`, qui renormalise à son tour.
+ * Rend la scène d'entrée, même référence, si personne n'était assis.
+ */
 export function releaseSeatsOfCombatants<S extends Scene | null>(scene: S, combatants: readonly Pick<Combatant, 'id'>[]): S {
   if (!scene?.seatAssignments) return scene;
   let next: Scene = scene;

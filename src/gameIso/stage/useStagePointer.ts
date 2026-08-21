@@ -21,7 +21,7 @@ import { Scene as GameScene, heightAt, isWalkable, toggleDoorIn } from '../../st
 import { metricToLift } from '../../state/relief';
 import { memoByRef } from '../../state/sceneMemo';
 import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
-import { exploreMovePlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
+import { exploreMovePlan, exploreSeatPlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
 import { memeCase, seatPoseOf, seatSlotsOf } from '../../state/seating';
 // `t` est déjà le nom local de la TUILE survolée dans ce module : la traduction s'y importe sous son
 // rôle, sans rebaptiser trente sites de pointeur.
@@ -359,23 +359,37 @@ export function useStagePointer({
     const plan = exploreMovePlan(sc, st.partyPos, t, pathOpts());
     // MEUBLE À PLACES : le MÊME `pendingInteract` que la fouille, mais la marche va jusqu'à l'ABORD
     // de la place (`exploreSeatPlan` via `exploreMovePlan`), jamais à la case d'ancrage du meuble.
-    // Aucun second pending, aucune route `sit`/`seat` : le geste reste `interactEntity`.
+    // Aucun second pending, aucune route `sit`/`seat` : le geste reste `interactEntity`. Cette branche
+    // n'INTERCEPTE rien : sans place servable elle repasse la main à la chaîne fouille/marchand/dialogue.
     if (ent && ent.kind === 'prop' && seatSlotsOf(sc, ent.id).length) {
-      setHover(null);
       const meneur = st.party[0]?.id;
       const assisIci = !!meneur && seatPoseOf(sc, { kind: 'party', heroId: meneur })?.propId === ent.id;
       const surAbord = seatSlotsOf(sc, ent.id).some((s) => memeCase(s.approach, st.partyPos));
       if (assisIci || surAbord) {
+        // Sur place : le store arbitre entre se relever, servir la fouille/le marchand, et s'asseoir.
+        setHover(null);
         st.setPendingInteract(null);
-        st.interactEntity(ent.id); // se relever, ou prendre la place sous ses pieds
-      } else if (plan) {
+        st.interactEntity(ent.id);
+        return;
+      }
+      // Une place SERVABLE au loin : on marche jusqu'à son ABORD (jamais la case d'ancrage), et le
+      // MÊME `pendingInteract` que la fouille se consomme à l'arrivée.
+      if (plan && exploreSeatPlan(sc, st.partyPos, ent.id, pathOpts())) {
+        setHover(null);
         st.setPendingInteract(ent.id);
         moveAlong(sc.id, plan);
-      } else {
+        return;
+      }
+      // REPLI — aucune place servable (toutes prises, ou aucun abord atteignable) : les places
+      // AJOUTENT une affordance, elles n'en retirent AUCUNE. La chaîne fouille/marchand/dialogue
+      // ci-dessous reprend la main (et `exploreMovePlan` a déjà rendu la marche vers une case
+      // adjacente). Un meuble qui n'a QUE des places, lui, dit pourquoi il ne sert pas.
+      if (!ent.dialogueId && !ent.interact && !ent.merchant) {
+        setHover(null);
         st.setPendingInteract(null);
         st.log(message('seating.noReachableSeat'));
+        return;
       }
-      return;
     }
     if (ent && (ent.dialogueId || !!ent.interact || !!ent.merchant)) {
       if (chebyshev(st.partyPos, ent.pos) <= 1) {

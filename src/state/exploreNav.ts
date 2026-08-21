@@ -93,13 +93,16 @@ export function exploreMovePlan(
   tile: Pt,
   opts: PathOpts,
 ): ExploreMovePlan | null {
-  // MEUBLE À PLACES : on ne marche ni dessus ni « à côté » — on rejoint l'ABORD d'une place libre.
-  // Ici, et pas seulement au clic : l'aperçu de chemin au survol lit la MÊME source (le divergence
-  // ferait disparaître le tracé sous le curseur d'un meuble parfaitement joignable).
+  // MEUBLE À PLACES : on rejoint l'ABORD d'une place libre plutôt qu'une case « à côté ». Ici, et pas
+  // seulement au clic : l'aperçu de chemin au survol lit la MÊME source (diverger ferait disparaître
+  // le tracé sous le curseur d'un meuble parfaitement joignable).
+  // Les places AJOUTENT une destination, elles n'en retirent AUCUNE : sans place servable (toutes
+  // prises, aucun abord atteignable), on REPASSE la main à la marche générique — un meuble plein qui
+  // porte une fouille se rejoint encore par une case adjacente.
   const meuble = scene.entities.find((e) => e.kind === 'prop' && e.pos.x === tile.x && e.pos.y === tile.y && (e.z ?? 0) === (tile.z ?? 0));
   if (meuble && seatSlotsOf(scene, meuble.id).length) {
-    const plan = exploreSeatPlan(scene, partyPos, meuble.id, opts);
-    return plan && plan.path.length >= 2 ? { dest: plan.approach, path: plan.path } : null;
+    const place = exploreSeatPlan(scene, partyPos, meuble.id, opts);
+    if (place && place.path.length >= 2) return { dest: place.approach, path: place.path };
   }
   const dest = exploreMoveDest(scene, partyPos, tile);
   if (!dest) return null;

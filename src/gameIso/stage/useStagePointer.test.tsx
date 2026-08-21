@@ -9,6 +9,7 @@ import { metricToLift } from '../../state/relief';
 import { walkNeighbors } from '../../state/path';
 import { resolveCursorZ } from '../../state/combatCursor';
 import { seatPoseOf, seatSlotsOf } from '../../state/seating';
+import { interactionHalos } from '../builders/interactHalos';
 import { useGame } from '../../state/store';
 import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
@@ -793,6 +794,15 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     vi.useRealTimers();
   });
 
+  /** Meneur MINIMAL mais JOUABLE : le pointeur mesure son Mouvement (`pathOpts`) avant de planifier. */
+  const meneurJouable = (): Combatant => ({
+    id: 'h', label: 'H', kind: 'hero', wounds: { current: 10, max: 10 }, conditions: [], movement: 4,
+    characteristics: { force: 30, endurance: 30, agilite: 30, initiative: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30, 'capacite-de-combat': 30, 'capacite-de-tir': 30 },
+    weapons: [], armour: {}, items: [], skills: [], talents: [],
+  } as unknown as Combatant);
+
+  const pnjAssis = (id: string) => ({ kind: 'entity' as const, entityId: id });
+
   /** Scène d'un meuble à recette (fouillable) posé en (2,3), le groupe à portée de bras. */
   const sceneMeuble = (ref: string) => {
     const scene = emptyScene(8, 8);
@@ -842,11 +852,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     vi.useFakeTimers();
     const scene = emptyScene(8, 8);
     scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
-    const meneur = {
-      id: 'h', label: 'H', kind: 'hero', wounds: { current: 10, max: 10 }, conditions: [], movement: 4,
-      characteristics: { force: 30, endurance: 30, agilite: 30, initiative: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30, 'capacite-de-combat': 30, 'capacite-de-tir': 30 },
-      weapons: [], armour: {}, items: [], skills: [], talents: [],
-    } as unknown as Combatant;
+    const meneur = meneurJouable();
     // Bout en bout = ACTIONS RÉELLES : un test voisin a substitué des `vi.fn()` dans le store, et un
     // pending armé sur un espion ne prouverait rien.
     const vierge = useGame.getInitialState();
@@ -870,6 +876,49 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     expect(arrivee).not.toEqual({ x: 2, y: 3 });                // jamais la case du meuble
     expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', heroId: 'h' })).toMatchObject({ propId: 'table-1' });
     expect(useGame.getState().pendingInteract).toBeNull();
+  });
+
+  /**
+   * SONDE promue de la revue (2026-08-21) : un meuble PLEIN qui porte une fouille NON épuisée gardait
+   * son halo allumé, et le clic répondait « aucune place accessible » — la branche meuble-à-places
+   * INTERCEPTAIT tout. Elle ne doit rien intercepter : sans place servable, la chaîne
+   * fouille/marchand/dialogue reprend la main, et le groupe marche jusqu'à une case adjacente.
+   */
+  it('meuble à places PLEIN mais fouillable : le clic replie sur la FOUILLE, jamais un refus d’assise', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    const prises = { nord: pnjAssis('a'), est: pnjAssis('b'), sud: pnjAssis('c'), ouest: pnjAssis('d') };
+    scene.entities = [{
+      id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S',
+      interact: { flow: { kind: 'seq', steps: [] } },
+    }] as typeof scene.entities;
+    scene.seatAssignments = { 'table-1': prises };
+    const vierge = useGame.getInitialState();
+    useGame.setState({
+      scene, mode: 'exploration', partyPos: { x: 6, y: 6 }, party: [meneurJouable()], dialogue: null, battle: null,
+      pendingInteract: null, journal: [], flags: {},
+      interactEntity: vierge.interactEntity, setPendingInteract: vierge.setPendingInteract, moveParty: vierge.moveParty,
+    });
+    setSpritePicker(() => ({ kind: 'entity', id: 'table-1' }));
+    // PRÉCONDITION : le halo appelle — il n'y a plus de place, mais la fouille n'est pas épuisée.
+    expect(interactionHalos(
+      [{ kind: 'prop', key: 'prop:table-1', cell: { x: 2, y: 3, z: 0 }, source: 'entity', entId: 'table-1',
+        ref: 'table-ronde-4-tabourets', foot: { offX: 0, offY: 0, scale: 1 }, interact: true, states: { visible: true } } as never],
+      useGame.getState().scene!, {}, null, { exploring: true, combat: false },
+    ).fouilles, 'le halo DOIT appeler pour que le test morde').toHaveLength(1);
+
+    const pointer = monter(scene);
+    const ailleurs = tileCenter(7, 7, dims);
+    const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
+    pointer.handlers.onPointerDown(ev);
+    pointer.handlers.onPointerUp(ev);
+    expect(useGame.getState().pendingInteract, 'la fouille est ARMÉE, pas refusée').toBe('table-1');
+    act(() => { vi.runAllTimers(); });
+
+    const arrivee = useGame.getState().partyPos;
+    expect(Math.max(Math.abs(arrivee.x - 2), Math.abs(arrivee.y - 3)), 'on s’arrête à côté du meuble').toBe(1);
+    expect(useGame.getState().journal.join(' | '), 'la fouille a bien été servie').toContain('Vous fouillez');
+    expect(useGame.getState().journal.join(' | ')).not.toContain('Aucune place libre');
   });
 
   it('hors combat, le hit-test n’est PAS sollicité sur une scène sans mobilier volumique', () => {

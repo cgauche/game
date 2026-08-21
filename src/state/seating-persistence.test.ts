@@ -11,7 +11,7 @@ const AUTHORED_NPC_SEAT: SeatAssignments = { [PROP]: { nord: NPC } };
 function sceneWithAssignments(seatAssignments?: SeatAssignments): Scene {
   const s = emptyScene(10, 10);
   s.id = 'taverne';
-  // Table en (4,4) cap `N` — la `pos` d'un attablé est l'ABORD de sa place (spec §5 l.213) :
+  // Table en (4,4) cap `N`. RÈGLE : la `pos` d'un attablé EST l'abord de sa place —
   // nord (4,3), sud (4,5).
   s.entities = [
     { id: PROP, kind: 'prop', pos: { x: 4, y: 4 }, ref: TABLE, facing: 'N' },

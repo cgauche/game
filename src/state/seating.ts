@@ -164,18 +164,18 @@ function placesResolues(scene: Scene): Map<string, ResolvedSeatSlot[]> {
   return out;
 }
 
+/** Arbitrage de la scène, MÉMOÏSÉ par référence (patron canonique `state/sceneMemo`) : il porte sur la
+ *  scène ENTIÈRE, et `interactHalos`/`placesOccupees` l'interrogent meuble par meuble — sans mémo, une
+ *  frame de halos re-résolvait toute la salle une fois par décor. Aucune invalidation manuelle : toute
+ *  mutation de scène rend une référence neuve. */
+const placesResoluesMemo = memoByRef(placesResolues);
+
 /**
  * Les places du meuble `propId`, résolues dans le monde : ancre tournée au cap de l'instance
  * (`facing ?? 'S'`, le défaut canonique de la scène), cap du corps assis tourné du même nombre de
  * crans, case d'abord EFFECTIVE (arbitrée à l'échelle de la SCÈNE, cf. `placesResolues`). ORDRE DU
  * CATALOGUE conservé. `[]` si le meuble ou son type est absent, ou si le type n'offre aucune place.
  */
-/** MÉMOÏSÉ par référence de scène (patron canonique `state/sceneMemo`) : l'arbitrage porte sur la
- *  scène ENTIÈRE, et `interactHalos`/`placesOccupees` interrogent meuble par meuble — sans mémo, une
- *  frame de halos re-résolvait toute la salle une fois par décor. Aucune invalidation manuelle : toute
- *  mutation de scène rend une référence neuve. */
-const placesResoluesMemo = memoByRef(placesResolues);
-
 export function seatSlotsOf(scene: Scene, propId: string): ResolvedSeatSlot[] {
   return placesResoluesMemo(scene).get(propId) ?? [];
 }

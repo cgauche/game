@@ -121,6 +121,34 @@ describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () =>
     expect(exploreSeatPlan(sc, { x: 5, y: 5 }, 'table-1')).toBeNull();
   });
 
+  /**
+   * SONDE promue de la revue (2026-08-21) : un meuble PLEIN qui porte une fouille NON épuisée gardait
+   * son halo allumé pendant que la seule route de marche rendait `null` — le clic répondait « aucune
+   * place accessible » et la fouille n'était JAMAIS servie. Les places AJOUTENT une destination,
+   * elles n'en retirent aucune : sans place servable, la marche générique reprend la main.
+   */
+  it('table PLEINE mais FOUILLABLE : le plan retombe sur une case adjacente, jamais sur null', () => {
+    const prises = Object.fromEntries(seatSlotsOf(scèneTable(), 'table-1')
+      .map((s) => [s.slotId, { kind: 'entity' as const, entityId: `pnj-${s.slotId}` }]));
+    const sc = scèneTable({ 'table-1': prises });
+    (sc.entities[0] as SceneEntity).interact = { flow: emptyFlow };
+
+    expect(exploreSeatPlan(sc, { x: 5, y: 5 }, 'table-1'), 'précondition : plus une seule place').toBeNull();
+    for (const depart of [{ x: 5, y: 5 }, { x: 12, y: 12 }]) { // au loin, et adjacent HORS abord
+      const plan = exploreMovePlan(sc, depart, { x: 10, y: 10 }, { blocked: new Set() });
+      expect(plan, `depuis (${depart.x},${depart.y}) : la fouille reste joignable`).not.toBeNull();
+      expect(plan!.dest, 'jamais la case du meuble').not.toEqual({ x: 10, y: 10 });
+      expect(cheb(plan!.dest, { x: 10, y: 10 }), 'une case ADJACENTE, d’où l’on fouille').toBe(1);
+      expect(plan!.path[plan!.path.length - 1]).toEqual(plan!.dest);
+    }
+  });
+
+  it('table PLEINE et SANS fouille : rien à joindre, le plan reste null', () => {
+    const prises = Object.fromEntries(seatSlotsOf(scèneTable(), 'table-1')
+      .map((s) => [s.slotId, { kind: 'entity' as const, entityId: `pnj-${s.slotId}` }]));
+    expect(exploreMovePlan(scèneTable({ 'table-1': prises }), { x: 5, y: 5 }, { x: 10, y: 10 }, { blocked: new Set() })).toBeNull();
+  });
+
   it('exploreMovePlan route le clic d’un meuble à places vers CE plan (survol et clic, une seule source)', () => {
     const scene = scèneTable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } });
     const seat = exploreSeatPlan(scene, { x: 8, y: 8 }, 'table-1')!;
