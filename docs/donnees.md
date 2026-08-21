@@ -95,7 +95,7 @@ garantie, pas la justesse de sa glose.
 | `water-exposure.json` | Exposition à l'eau (noyade, maladies) (objet à sous-catalogues) |
 | `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) (objet à sous-catalogues · objet à sous-catalogues) |
 | `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`) (15 entrée(s)) |
-| `voyage-stakes.json` | Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`) (43 entrée(s)) |
+| `voyage-stakes.json` | Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`) (42 entrée(s)) |
 | `flow-stakes.json` | Enjeu d'un JET DE MODALE MONO (#1117), keyé par l'id de jet `{flow, phase}` — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `flowStakeRef`/`resolveStake` (`src/data/index.ts`) (34 entrée(s)) |
 | `combat-stakes.json` | Enjeu d'une étape de cascade de COMBAT (#1117), keyé par le `kind` de son applier — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `combatStakeRef`/`resolveStake` (`src/data/index.ts`) (35 entrée(s)) |
 

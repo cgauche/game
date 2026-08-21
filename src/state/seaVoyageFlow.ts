@@ -50,6 +50,7 @@ import { vehicleCombatant } from '../engine/vehicle';
 import { voyageStakeRef, conditionLabel, findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, diseaseLabel, refLabel } from '../data';
 import { installCost, rollSteamBreakdown, steamBreakdownTriggered, shipSizeOfLength, vesselPropulsion, type SteamBreakdownEntry, type PropulsionKind } from '../engine/shipBuild';
 import { d10, roll as rollDice, type RNG } from '../engine/dice';
+import { findTableEntry } from '../engine/tables';
 import { rollTest, isDoubleRoll, extendedTestStep, difficultyFromModifier } from '../engine/tests';
 import { testValue, partyAssisted, partyBest } from '../engine/skills';
 import { buildWeapon } from '../engine/items';
@@ -76,7 +77,7 @@ import { addCondition } from '../engine/conditions';
 import { effectiveChar } from '../engine/characteristics';
 import { findWhirlpool, pickSeaHazard, rollStranding, strandingPenalty, rollDebrisEntangle } from '../engine/seaPerils';
 import {
-  rollBoardEvent, rollPortEvent, rollDaysToNextEvent, addManann, MANANN_BASE, seaBoardEventById,
+  BOARD_EVENTS, rollPortEvent, rollDaysToNextEvent, addManann, MANANN_BASE, seaBoardEventById,
   removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoTotalEnc, cargoOverload, resolveFastVoyage, FAST_VOYAGE_PALIERS,
   type SeaEventDef, type ManannMood, type PortProfile,
 } from '../engine/seaVoyage';
@@ -95,8 +96,8 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
-import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, monoStep, bandStep, choiceStep, openChoice, pousseSi, type RollRequest, type Consequence, type BuiltCascadeStep } from './rollSeam';
-import { registerCascadeApplier, registerCascadeSuccessRule, startCascade, runCascadeImmediate } from './cascade';
+import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, monoStep, tableStep, bandStep, choiceStep, openChoice, pousseSi, type RollRequest, type Consequence, type BuiltCascadeStep } from './rollSeam';
+import { registerCascadeApplier, registerCascadeSuccessRule, registerTableStep, startCascade, runCascadeImmediate } from './cascade';
 import { exposureWaveBand } from './nightBands';
 import { dataLabel } from '../data';
 import { t, t as tr } from '../i18n'; // `tr` : alias pour les portées où `t` est un identifiant local (résultat de jet)
@@ -1117,7 +1118,7 @@ registerTableStep(SEA_BOARD_EVENT_TABLE, {
   label: t('step.seaBoardEvent'),
   die: 100,
   rows: BOARD_EVENTS.map((e) => ({ id: e.id, min: e.min, max: e.max })),
-  lines: (die) => [t('sv.boardEvent', { label: findTableEntry(BOARD_EVENTS, die).label })],
+  lines: (die) => [t('sv.boardEventLine', { label: findTableEntry(BOARD_EVENTS, die).label })],
 });
 
 registerCascadeApplier(SEA_BOARD_EVENT_KIND, (get, set, step) => {
