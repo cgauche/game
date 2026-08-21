@@ -18,7 +18,7 @@ export { soutienMod, supportSplit, testValueSplit } from '../engine/skills';
 export function testBreakdown(
   label: string,
   base: number,
-  r: { roll: number; target?: number; sl?: number; success?: boolean; clamped?: number },
+  r: { roll: number; target?: number; sl?: number; success?: boolean; clamped?: number; evaluation?: 'test' | 'seuil' },
   difficulty?: Difficulty,
   extraMods?: ModLine[],
   easedBy?: string,
@@ -35,6 +35,9 @@ export function testBreakdown(
     target,
     // L'écrêtage voyage tel que le résolveur l'a MESURÉ (`TestResult.clamped`) — jamais redevine ici.
     ...(r.clamped ? { clamped: r.clamped } : {}),
+    // SEUIL PUR (#1426) : la rangée rend « dé / nombre visé → trouvé / pas trouvé ». Aucun DR n'existe
+    // sur un pourcentage — l'afficher en inventerait un (cf. `CascadeStep.evaluation`).
+    ...(r.evaluation === 'seuil' ? { evaluation: 'seuil' as const } : {}),
     roll: r.roll,
     success: r.success ?? r.roll <= target,
     sl: r.sl ?? 0,

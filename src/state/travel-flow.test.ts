@@ -16,6 +16,8 @@ import { WorldMap } from './worldMap';
 import { CAMPAIGN_START } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
 import { buildWeatherResistanceSteps, buildStageSteps } from './travelPostes';
+import { seasonOfMonth } from '../engine/travelStages';
+import { toDate } from '../engine/clock';
 import { creditBourse } from './bourseFlow';
 import { DIFFICULTY_MODIFIERS, type Combatant, type ItemInstance } from '../engine/types';
 import { cascadeAppliers } from './cascade';
@@ -59,6 +61,7 @@ function drainCascade(): void {
     const p = get().pendingCascade!;
     const cur = p.participants[p.cursor];
     if (cur?.participants && cur.participants.some((part) => !part.result)) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
+    else if (cur?.table && !cur.table.result) get().cascadeTableRoll(cur.id); // étape à TABLE (Météo d'Étape…)
     else if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
     else get().cascadeNext();
   }
@@ -81,13 +84,39 @@ afterEach(() => { resetRule('travel-etapes'); resetRule('travel-attraper-froid')
 describe('cascade du JOUR terrestre — les jets d’Étape sont influençables (purpose travelDay)', () => {
   beforeEach(() => setRule('travel-etapes', true));
 
+/** Franchit la Météo d'Étape — étape à TABLE en tête du jour (#1426) dont l'applier INSÈRE les pas qui
+ *  dépendent du temps qu'il fait (Résistance de traversée, postes). Sans elle, la séquence du jour n'a
+ *  encore qu'une étape : c'est le dé de monde qui fait exister la suite. */
+function passerLaMeteo(): void {
+  const cur = get().pendingCascade?.participants[get().pendingCascade!.cursor];
+  if (!cur?.table || cur.table.result) return;
+  get().cascadeTableRoll(cur.id);
+  get().cascadeNext();
+}
+
+  it('la Météo d’Étape déclare la table de SA SAISON, SANS modificateur (#1426)', () => {
+    seedBattleRng(1);
+    setup(map({ km: 12, perilDie: 0 }), [hero({ travelRole: 'approvisionnement', items: [] })]);
+    get().startTravel('r1', 'pied');
+    const meteo = get().pendingCascade!.participants.find((st) => st.kind === 'stageWeather')!;
+    expect(meteo, 'la Météo est une étape à TABLE de monde').toBeTruthy();
+    expect(meteo.worldOwner).toBe(true);
+    // La SAISON choisit la TABLE — jamais un `mod` : un décalage saisonnier rendrait des lignes
+    // faussement inatteignables à la pose (les N premiers naturels seraient morts).
+    const saison = seasonOfMonth(toDate(get().gameTime).month);
+    expect(meteo.table!.tableId).toBe(`stage-weather-${saison}`);
+    expect(meteo.table!.mod ?? 0).toBe(0);
+  });
+
   it('les postes AVEC Test = UN pas BATCH (arbitrage user : jets indépendants), une rangée par héros', () => {
     seedBattleRng(1);
     const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 40 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     get().startTravel('r1', 'pied');
+    const pc0 = get().pendingCascade;
+    expect(pc0?.purpose).toBe('travelDay'); // le jour ne s'auto-résout plus
+    passerLaMeteo();
     const pc = get().pendingCascade;
-    expect(pc?.purpose).toBe('travelDay'); // le jour ne s'auto-résout plus
     const batch = pc!.participants.find((s) => s.kind === 'stagePosteBatch');
     expect(batch?.participants?.length).toBe(1); // une rangée pour le seul héros posté
     const part = batch!.participants![0];
@@ -100,9 +129,9 @@ describe('cascade du JOUR terrestre — les jets d’Étape sont influençables 
     const h = hero({ id: 'h', travelRole: 'approvisionnement', resilience: 2, items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 40 } as any] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     get().startTravel('r1', 'pied');
-    const pc = get().pendingCascade!;
-    expect(pc.purpose).toBe('travelDay');
-    const batch = pc.participants.find((s) => s.kind === 'stagePosteBatch')!;
+    expect(get().pendingCascade!.purpose).toBe('travelDay');
+    passerLaMeteo();
+    const batch = get().pendingCascade!.participants.find((s) => s.kind === 'stagePosteBatch')!;
     get().cascadeBatchForceSuccess(batch.participants![0].id); // Résilience « Je ne faillirai pas ! » par rangée
     const after = get().pendingCascade!.participants.find((s) => s.kind === 'stagePosteBatch')!;
     expect(after.participants![0].result?.success).toBe(true);

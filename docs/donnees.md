@@ -76,7 +76,7 @@ garantie, pas la justesse de sa glose.
 | `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) (objet à sous-catalogues) |
 | `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos (20 entrée(s)) |
 | `grapple.json` | Lutte / empoignade (objet à sous-catalogues) |
-| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (81 entrée(s)) |
+| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (84 entrée(s)) |
 | `reglesOptionnelles.json` | Registre des RÈGLES OPTIONNELLES (« règles maison ») : id STABLE (clé de surcharge, de persistance et de `variants[].when.rule`), libellé/aide/groupe d'affichage, forme du contrôle auto-rendu (`flag`/`param`/`mode`), défaut et bornes, action de jeu attachée — lu par `src/engine/policy.ts` (`rule(id)`), rendu par le panneau in-game (81 entrée(s)) |
 | `damage-types.json` | Types de dégâts (poison, feu, électrique) (4 entrée(s)) |
 | `sizes.json` · `encumbranceTiers.json` | Modif. de Taille au tir · paliers d'Encombrement (objet à sous-catalogues · 4 entrée(s)) |
@@ -95,8 +95,8 @@ garantie, pas la justesse de sa glose.
 | `water-exposure.json` | Exposition à l'eau (noyade, maladies) (objet à sous-catalogues) |
 | `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) (objet à sous-catalogues · objet à sous-catalogues) |
 | `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`) (15 entrée(s)) |
-| `voyage-stakes.json` | Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`) (41 entrée(s)) |
-| `flow-stakes.json` | Enjeu d'un JET DE MODALE MONO (#1117), keyé par l'id de jet `{flow, phase}` — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `flowStakeRef`/`resolveStake` (`src/data/index.ts`) (33 entrée(s)) |
+| `voyage-stakes.json` | Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`) (43 entrée(s)) |
+| `flow-stakes.json` | Enjeu d'un JET DE MODALE MONO (#1117), keyé par l'id de jet `{flow, phase}` — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `flowStakeRef`/`resolveStake` (`src/data/index.ts`) (34 entrée(s)) |
 | `combat-stakes.json` | Enjeu d'une étape de cascade de COMBAT (#1117), keyé par le `kind` de son applier — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `combatStakeRef`/`resolveStake` (`src/data/index.ts`) (35 entrée(s)) |
 
 ### Objets & équipement
@@ -153,7 +153,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 | Fichier | Contient |
 |---|---|
 | `raceAppearance.json` | Apparence par race (gabarit, palette, tenue) — rig (21 entrée(s)) |
-| `structureAppearance.json` | Apparence de structure (murs, portes) (17 entrée(s)) |
+| `structureAppearance.json` | Apparence de structure (murs, portes) (18 entrée(s)) |
 | `props.json` | Props de décor (feu de camp, brasero…) (59 entrée(s)) |
 | `decorPalette.json` | Palette de couleurs de décor (objet à sous-catalogues) |
 | `reliefMaterials.json` · `roofMaterials.json` | Matériaux de relief · de toit (6 entrée(s) · 4 entrée(s)) |

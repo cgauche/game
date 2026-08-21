@@ -23,6 +23,8 @@
  * aucun Test de Marchandage au RAW, MDG 15 l.399).
  */
 import { battleRng } from './battleRng';
+import type { RNG } from '../engine/dice';
+import { ouvrirEtal, registerEtalGenerateur } from './etalLotFlow';
 import { placeOfScene } from './worldMap';
 import { partyAssisted } from '../engine/skills';
 import { resolveOpposed, bumpSL, SL_ASTOUNDING, type TestResult } from '../engine/tests';
@@ -40,11 +42,10 @@ import {
 } from '../engine/seaVoyage';
 import { seasonOfMonth } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
-import { registerCascadeApplier } from './cascade';
+import { registerCascadeApplier, chainStep } from './cascade';
 import type { CascadeStep } from './pendings';
 import { openPartyTest, openWorldTest, freeCons } from './rollSeam';
 import { actorIn } from './combatants';
-import { scheduleFlowTimer } from './combatTimers';
 import { traceLineOf } from '../engine/traceLine';
 import type { Get, Set } from './flowTypes';
 
@@ -108,7 +109,13 @@ export function vesselMaxLoadEnc(get: Get): number {
 export function openPort(get: Get, set: Set): void {
   const cur = currentPort(get);
   if (!cur || !get().vessel) return;
-  const rng = battleRng();
+  ouvrirEtal(get, set, 'port', `Port — ${cur.label}`);
+}
+
+/** Le GÉNÉRATEUR de l'étal portuaire : même contrat que la halle (aléa injecté, dés nommés). */
+function genererEtalPort(get: Get, set: Set, rng: RNG, phase: (label: string) => void): void {
+  const cur = currentPort(get);
+  if (!cur || !get().vessel) return;
   const season = seasonOfMonth(toDate(get().gameTime).month);
   const { port } = cur;
   const ids = new Set<string>();
@@ -119,14 +126,16 @@ export function openPort(get: Get, set: Set): void {
   // « commerce » → cargaison(s) aléatoire(s) (l.321/347).
   if (isSeaTradeHub(port.production)) {
     const draws = cur.cosmopolite ? 3 : 1;
-    for (let i = 0; i < draws; i++) ids.add(rollRandomCargo(season, rng).id);
+    for (let i = 0; i < draws; i++) { phase(`Cargaison de commerce ${i + 1}`); ids.add(rollRandomCargo(season, rng).id); }
   }
   const offers: PortOffer[] = [];
   for (const cargoId of ids) {
     const cargo = findCargoById(cargoId);
     if (!cargo) continue;
+    phase(`Disponibilité — ${cargo.label}`);
     const avail = rollCargoAvailability(port, cargoId, rng);
     if (avail.enc <= 0) continue; // 1 sur le d10 → aucune de ce type (l.327)
+    phase(`Prix de base — ${cargo.label}`);
     offers.push({
       cargoId, label: cargo.label, enc: avail.enc,
       basePrice: cargoBasePrice(cargo, season, rng), // le Vin fige son 3d10 ici (l.436)
@@ -135,6 +144,8 @@ export function openPort(get: Get, set: Set): void {
   }
   set({ port: { placeId: cur.placeId, label: cur.label, ref: cur.ref, port, freeEnc: vesselFreeEnc(get), maxLoadEnc: vesselMaxLoadEnc(get), offers } });
 }
+
+registerEtalGenerateur('port', genererEtalPort);
 
 export function closePort(_get: Get, set: Set): void {
   set({ port: null });
@@ -243,12 +254,6 @@ registerCascadeApplier(PORT_BUY_BARGAIN_KIND, (get, set, step) => {
   return { consequences: freeCons(finalizePortBuy(get, set, cargoId, want, basePrice, pct, bargainLine)) };
 });
 
-/** Ouvre la cascade différée si la cascade EN COURS n'a pas fini de committer son étape (patron
- *  `seaVoyageFlow.ts` `sea-desertion`) — sinon exécute directement (chemin inline/immédiat). */
-function chainStep(get: Get, open: () => void): void {
-  if (get().pendingCascade) scheduleFlowTimer(open, 0);
-  else open();
-}
 
 /** Finalise la vente : gross = Enc × prix de base × Prix d'offre % × (1 + Marchandage %), retire le
  *  lot (ou la fraction vendue) de la cale, crédite la bourse. SOURCE UNIQUE du dénouement, partagée
@@ -333,7 +338,6 @@ function openPortSellBuyerStep(get: Get, set: Set, cargoIndex: number, sellEnc: 
   const milles = vessel.lastVoyageMilles ?? 0;
   const chance = sellChance(st.port, lot.cargoId, milles);
   openWorldTest(get, set, {
-    ownerId: vessel.vehicleId,
     actionLabel: t('port.buyerSearch'),
     difficulty: 'intermediaire',
   }, PORT_SELL_BUYER_KIND, { cargoIndex, sellEnc, retryHalf: allowHalfRetry, attempt, baseValue: chance.target });

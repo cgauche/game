@@ -37,8 +37,11 @@ import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import { toRecapLines, type RecapEvent } from './recapLine';
 import type { BatchParticipant } from './pendings';
 import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss, resolveShoreLeaveDesertion, shipboardSouls, shipUndercrew } from './shipCrew';
-import { applyEffects, applyEffectsLoot } from './combatEffects';
-import type { Effect, Scene } from './scene';
+import { buildAuthorPerilSteps, registerPerilInterrupt, applyPerilEffectsNow } from './authorPerils';
+
+/** Id du protocole de reprise MARITIME (effets appliqués SUR-LE-CHAMP, `resumeTravel` rejoue). */
+const SEA_PERIL_INTERRUPT = 'voyage-mer';
+import type { Scene } from './scene';
 import { buildScene } from './mapSpec';
 import type { AuthoredEnemy } from './encounterAuthoring';
 import { registerScene } from './store';
@@ -46,7 +49,7 @@ import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { vehicleCombatant } from '../engine/vehicle';
 import { voyageStakeRef, conditionLabel, findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, diseaseLabel, refLabel } from '../data';
 import { installCost, rollSteamBreakdown, steamBreakdownTriggered, shipSizeOfLength, vesselPropulsion, type SteamBreakdownEntry, type PropulsionKind } from '../engine/shipBuild';
-import { d10, d100, roll as rollDice, type RNG } from '../engine/dice';
+import { d10, roll as rollDice, type RNG } from '../engine/dice';
 import { rollTest, isDoubleRoll, extendedTestStep, difficultyFromModifier } from '../engine/tests';
 import { testValue, partyAssisted, partyBest } from '../engine/skills';
 import { buildWeapon } from '../engine/items';
@@ -764,6 +767,14 @@ function buildPostProgressionSteps(get: Get, set: Set): BuiltCascadeStep[] {
  */
 function buildSeaDayCascade(get: Get, set: Set): { steps: BuiltCascadeStep[]; log: string[] } {
   const steps: BuiltCascadeStep[] = [];
+  // Périls d'AUTEUR de la route (MÊME source que le terrestre) : une étape de MONDE par péril, EN TÊTE
+  // du jour — leurs dés tombent donc avant tout autre dé de la journée, comme dans la boucle qu'elles
+  // remplacent. Un péril qui interrompt TRONQUE la séquence (`stopSequence`) : les suivants ne tirent pas.
+  const routeDuJour = (get().worldMap as WorldMap | undefined)?.routes.find((r) => r.id === get().travelPlan!.routeId);
+  const toLabel = get().worldMap ? placeById(get().worldMap!, get().travelPlan!.toPlaceId)?.label ?? '' : '';
+  if (routeDuJour) steps.push(...buildAuthorPerilSteps(routeDuJour, toLabel, SEA_PERIL_INTERRUPT));
+  // Événement de bord (l.89) : APRÈS les périls d'auteur, comme dans la résolution d'avant #1426.
+  pousseSi(steps, buildSeaBoardEventStep(get));
   // ÉCHOUÉ (MDG 13 l.471-473, #444) : « il s'arrête net… ne peut plus bouger jusqu'à ce qu'il soit
   // dégagé » — AUCUNE Progression tant que le Test de Force n'a pas réussi ; le reste de la journée
   // (crise/embuscade/entretien…) continue quand même (miroir Encalminé/Affaler ci-dessous).
@@ -1051,22 +1062,10 @@ function finalizeFastVoyage(get: Get, set: Set): void {
  *  (travelFlow) : tirage à `chancePct` %, effets appliqués (butin attribué hors combat) ; un effet
  *  `startCombat`/`transition` INTERROMPT la traversée (reprise via `resumeTravel`). Renvoie `true` si
  *  la traversée s'est arrêtée là (combat/transition d'auteur). */
-function resolveSeaDayPerils(get: Get, set: Set, rng: RNG): boolean {
-  const plan = get().travelPlan!;
-  const route = (get().worldMap as WorldMap | undefined)?.routes.find((r) => r.id === plan.routeId);
-  for (const peril of route?.perils ?? []) {
-    if (d100(rng) > Math.max(0, Math.min(100, peril.chancePct))) continue;
-    tell(get, set, [t('sv.peril', { label: peril.label })]);
-    const interrupts = (peril.effects ?? []).some((e: Effect) => e.type === 'startCombat' || e.type === 'transition');
-    if (interrupts) {
-      set({ travelPlan: { ...get().travelPlan!, interrupted: true } });
-      applyEffects(get, set, peril.effects); // combat/transition d'auteur → la traversée s'arrête là
-      return true;
-    }
-    applyEffectsLoot(get, set, peril.effects, peril.label); // trouvaille d'auteur → fenêtre d'attribution
-  }
-  return false;
-}
+// PROTOCOLE DE REPRISE MARITIME : les effets d'un péril interrompant s'appliquent SUR-LE-CHAMP —
+// `resumeTravel` rejoue la traversée après le combat/la transition. Déclaré au flux ; la chance de
+// chaque péril, elle, est une étape de MONDE construite par la source unique (`authorPerils.ts`).
+registerPerilInterrupt(SEA_PERIL_INTERRUPT, applyPerilEffectsNow);
 
 /** Événement de bord tous les 1d10 jours (ch.15 l.89) — résolu AVANT la cascade du jour (ne dépend
  *  d'aucune Progression). La Prière d'un Présage (`sea-priere`) et l'Ouragan (`sea-ouragan-affaler`,
@@ -1084,21 +1083,56 @@ function resolveSeaDayEvent(get: Get, set: Set, rng: RNG): boolean {
       return !!get().pendingCascade;
     }
   }
-  let days = sea.daysToEvent - 1;
-  let firing: { event: SeaEventDef; roll: number; mood: ManannMood } | null = null;
-  if (days <= 0) {
-    const mood = vesselManann(get().vessel);
-    const { roll, event } = rollBoardEvent(mood.score, rng);
-    firing = { event, roll, mood };
-    days = rollDaysToNextEvent(rng);
-  }
-  // `daysToEvent` avance AVANT `resolveBoardEvent` (peut surfacer une mini-cascade) : sans quoi une
-  // reprise re-déclencherait CE même tirage (le garde `days <= 0` retomberait sur la même valeur).
-  patchSea(get, set, { daysToEvent: days });
-  if (!firing) return false;
-  resolveBoardEvent(get, set, firing.event, rng, firing.roll);
-  return !!get().pendingCascade;
+  const days = sea.daysToEvent - 1;
+  // Jour antérieur à celui de l'événement : rien à tirer, le compteur avance et c'est tout.
+  if (days > 0) { patchSea(get, set, { daysToEvent: days }); return false; }
+  // Jour d'événement : le tirage est un dé de MONDE, donc une ÉTAPE (`buildSeaBoardEventStep`,
+  // poussée dans la cascade du jour juste après les périls d'auteur — l'ordre RAW). Le compteur, lui,
+  // n'avance qu'à la résolution : c'est l'applier qui tire le délai suivant, à la MÊME position RNG.
+  return false;
 }
+
+/** L'ÉVÉNEMENT DE BORD du jour (MDG 15 l.89) quand le compteur y arrive — une étape à TABLE de monde,
+ *  dont le `mod` est l'Humeur de Manann (elle DÉCALE le dé, l.85 : c'est bien un modificateur, pas une
+ *  autre table). `undefined` les autres jours. */
+function buildSeaBoardEventStep(get: Get): BuiltCascadeStep | undefined {
+  const sea = get().travelPlan?.sea;
+  if (!sea || sea.daysToEvent - 1 > 0) return undefined;
+  const mood = vesselManann(get().vessel);
+  return tableStep({
+    id: SEA_BOARD_EVENT_STEP_ID, kind: SEA_BOARD_EVENT_KIND, worldOwner: true, icon: 'travel/wave',
+    label: t('step.seaBoardEvent'),
+    table: { tableId: SEA_BOARD_EVENT_TABLE, die: 100, ...(mood.score ? { mod: mood.score } : {}) },
+    stake: voyageStakeRef(SEA_BOARD_EVENT_KIND),
+  });
+}
+
+const SEA_BOARD_EVENT_KIND = 'seaBoardEvent';
+const SEA_BOARD_EVENT_STEP_ID = 'sea-board-event';
+const SEA_BOARD_EVENT_TABLE = 'sea-board-events';
+
+// Table DÉRIVÉE du catalogue (`sea-events.json` : chaque entrée porte déjà `min`/`max`/`id`) — aucune
+// plage réécrite à la main.
+registerTableStep(SEA_BOARD_EVENT_TABLE, {
+  label: t('step.seaBoardEvent'),
+  die: 100,
+  rows: BOARD_EVENTS.map((e) => ({ id: e.id, min: e.min, max: e.max })),
+  lines: (die) => [t('sv.boardEvent', { label: findTableEntry(BOARD_EVENTS, die).label })],
+});
+
+registerCascadeApplier(SEA_BOARD_EVENT_KIND, (get, set, step) => {
+  const tiree = step.table?.result;
+  if (!tiree) return {};
+  const rng = battleRng();
+  const event = seaBoardEventById(tiree.id);
+  // Le délai du PROCHAIN événement se tire ICI, juste après le dé d'événement — MÊME position RNG que
+  // la résolution synchrone d'avant #1426 — et il est posé AVANT la conséquence : celle-ci peut
+  // surfacer sa propre cascade, et une reprise re-déclencherait sinon CE même tirage.
+  patchSea(get, set, { daysToEvent: rollDaysToNextEvent(rng) });
+  if (!event) return {};
+  resolveBoardEvent(get, set, event, rng, tiree.die);
+  return { consequences: freeCons(tiree.lines) };
+});
 
 /**
  * Boucle maritime — appelée par `runTravelDays`/`resumeTravel` (plan `sea`) et la reprise de nuit.
@@ -1124,7 +1158,6 @@ export function runSeaDay(get: Get, set: Set): void {
   // la CLÔTURE du jour précédent, `continueSeaDayAfterCascade` — décision 1 #275 Ronde 2 cran 3, aligné
   // sur le fluvial `tickRiverWindDay`/`finishRiverDay`) — cette ligne l'ANNONCE seulement.
   tell(get, set, [t('sv.weatherOfDay', { weather: seaWeatherLabel(sea.weather), from: sea.windFrom, heading: sea.heading })]);
-  if (resolveSeaDayPerils(get, set, rng)) return;
   if (resolveSeaDayEvent(get, set, rng)) return;
   const { steps, log: lines } = buildSeaDayCascade(get, set);
   for (const l of lines) log(get, set, [l]);
@@ -1426,7 +1459,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   });
   const diseaseSteps: BuiltCascadeStep[] = [...buildBarrelSteps(get, sea, vessel0), ...buildSeasicknessSteps(get, sea), ...scurvySteps];
   if (diseaseSteps.length) {
-    const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: t('sv.diseases'), test: {}, difficulty: 'intermediaire', klass: 'subi' };
+    const subiReq: RollRequest = { side: { worldSide: 'world' }, actionLabel: t('sv.diseases'), test: {}, difficulty: 'intermediaire', klass: 'subi' };
     if (resolveSurface(get, subiReq, 'sea-scorbut') === 'I') {
       const resolved = runCascadeImmediate(get, set, diseaseSteps);
       tell(get, set, resolved.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
@@ -1525,7 +1558,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
     // 3ᵉ producteur d'Exposition à passer par la fabrique de vagues (#1117 L3).
     const band = exposureWaveBand(steps, tdef.exposure, expCount);
     if (band.length) {
-      const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: t('sv.exposure'), test: {}, difficulty: 'intermediaire', klass: 'subi' };
+      const subiReq: RollRequest = { side: { worldSide: 'world' }, actionLabel: t('sv.exposure'), test: {}, difficulty: 'intermediaire', klass: 'subi' };
       if (resolveSurface(get, subiReq, 'sea-exposition') === 'I') {
         const resolved = runCascadeImmediate(get, set, band);
         tell(get, set, resolved.flatMap((s) => (s.participants ?? []).flatMap((p) => (p.outcome ?? []).map((l) => l.text))));
@@ -1579,7 +1612,7 @@ export function continueSeaDayAfterExposure(get: Get, set: Set, doneSteps?: Casc
         ligne: { test: { skill: 'resistance', char: 'endurance' } },
         stake: voyageStakeRef('sea-epuisement', { condition: conditionLabel('extenue') }),
       }) ?? []);
-      const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: t('sv.exhaustion'), test: {}, difficulty: 'intermediaire', klass: 'subi' };
+      const subiReq: RollRequest = { side: { worldSide: 'world' }, actionLabel: t('sv.exhaustion'), test: {}, difficulty: 'intermediaire', klass: 'subi' };
       if (resolveSurface(get, subiReq, 'sea-epuisement') === 'I') {
         const resolved = runCascadeImmediate(get, set, steps);
         tell(get, set, resolved.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
@@ -2702,7 +2735,6 @@ export function resolveShoreLeave(get: Get, set: Set, allow: boolean): void {
   const threshold = allow && vessel ? moraleBand(vessel.morale.score).desertionRoll : 0;
   if (threshold) {
     openWorldTest(get, set, {
-      ownerId: vessel!.vehicleId,
       actionLabel: t('sv.desertion'),
       difficulty: 'intermediaire',
     }, 'sea-desertion', { baseValue: threshold });

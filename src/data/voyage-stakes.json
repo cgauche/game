@@ -486,5 +486,16 @@
       "page": 132,
       "note": "MDG 15 l.197-198 (albatros, −2d10/−1d10) et l.230-232 (feu bleu, +2d10/+1d10)"
     }
+  },
+  {
+    "id": "stage-weather",
+    "label": "Météo de l'Étape",
+    "kind": "stageWeather",
+    "template": "Le temps de l'Étape : il commande le Test de Résistance de traversée (Neige/Blizzard) et les postes praticables du jour.",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 33,
+      "note": "EDOC 8 l.50-59 (tableau Météo par saison)"
+    }
   }
 ]

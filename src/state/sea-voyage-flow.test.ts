@@ -730,6 +730,9 @@ describe('Périls d’AUTEUR lus au fil des jours en mer — C.22 (route.perils)
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', combatPeril.routes[0])!;
     set({ travelPlan: plan } as never);
     runSeaDay(get, set);
+    // Le péril d'auteur est une ÉTAPE de monde (#1426) : son dé se joue dans la cascade du jour, comme
+    // celui du péril à 100 % du cas précédent — on la déroule jusqu'à ce que le combat prenne la main.
+    for (let i = 0; i < 30 && get().pendingCascade && !get().battle; i++) stepCascade();
     expect(get().travelPlan!.interrupted).toBe(true); // la traversée s’arrête sur le combat d’auteur
     expect(get().battle).toBeTruthy();
     expect(get().journal.some((l) => l.includes('Péripétie : Kraken'))).toBe(true);

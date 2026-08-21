@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scanRollSeamExclusivity, ROLL_SEAM_RX, scanPendingJetFabrication, engineRollerExports, engineHomonyms, scanEngineDelegatedRoll } from '../../scripts/guards/lib/rollSeamExclusivity.mjs';
-import { rollSeamExcluded, ROLL_SEAM_PHASE2_STOCK, PENDING_JET_FABRICATION_STOCK, ENGINE_DELEGATED_ROLL_STOCK, SEAM_CALLERS } from '../../scripts/guards/lib/rollSeamWhitelist.mjs';
+import { rollSeamExcluded, ROLL_SEAM_PHASE2_STOCK, WORLD_DIE_SUBTRACTED_STOCK, PENDING_JET_FABRICATION_STOCK, ENGINE_DELEGATED_ROLL_STOCK, SEAM_CALLERS } from '../../scripts/guards/lib/rollSeamWhitelist.mjs';
 import { scanBattleRngEngineLeak } from '../../scripts/guards/lib/battleRngEngineLeak.mjs';
 import { battleRngEngineLeakExcluded } from '../../scripts/guards/lib/battleRngEngineLeakWhitelist.mjs';
 
@@ -206,6 +206,78 @@ describe('garde-fou « seam de jet » — exclusivité de rollTest/d100/TestOutc
     expect(
       ecarts,
       `Stock de phase 2 périmé — un site de plus est une régression, un site migré se solde ICI (ROLL_SEAM_PHASE2_STOCK, scripts/guards/lib/rollSeamWhitelist.mjs) :\n${ecarts.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  /**
+   * (M) PUBLIE CE QU'ELLE SOUSTRAIT (#1426). La forme « dé de monde » est une exemption STRUCTURELLE :
+   * elle ne laisse par construction AUCUNE liste à relire, et c'est exactement ce qui lui a permis
+   * d'absorber 11 sites hors moteur pendant que le garde restait vert. Le compte par fichier est donc
+   * gelé ICI, au MÊME patron que `ROLL_SEAM_PHASE2_STOCK`, et mesuré par le scanner CANONIQUE en mode
+   * `includeExcluded` — jamais par un fork instrumenté, qui serait un second socle de scan.
+   *
+   * PÉRIMÈTRE : hors `src/engine/**`. Le moteur reçoit un rng et ne décide pas du surfaçage ; ses sites
+   * sont déjà comptés à leur CALL-SITE dans `ENGINE_DELEGATED_ROLL_STOCK`, les compter deux fois
+   * ferait mentir les deux listes.
+   */
+  it('(M) dé de monde : le compte SOUSTRAIT par fichier est le compte MESURÉ (cliquet à cible zéro)', () => {
+    const mesure = new Map<string, number>();
+    for (const f of scanFiles()) {
+      const rel = relative(ROOT, f).split('\\').join('/');
+      if (/\.test\.[tj]sx?$/.test(rel) || rel.startsWith('src/engine/')) continue;
+      const n = scanRollSeamExclusivity(rel, readFileSync(f, 'utf8'), { includeExcluded: true })
+        .filter((s: { excludedBy?: string }) => s.excludedBy === 'M').length;
+      if (n > 0) mesure.set(rel, n);
+    }
+    const ecarts: string[] = [];
+    for (const [rel, { n }] of WORLD_DIE_SUBTRACTED_STOCK) {
+      const vu = mesure.get(rel) ?? 0;
+      if (vu !== n) ecarts.push(`${rel} : ${vu} site(s) mesuré(s), ${n} déclaré(s)${vu === 0 ? ' — entrée PÉRIMÉE, à retirer' : ''}`);
+    }
+    for (const [rel, n] of mesure) {
+      if (!WORLD_DIE_SUBTRACTED_STOCK.has(rel)) ecarts.push(`${rel} : ${n} dé(s) de monde HORS compteur — router par une porte du canal (openWorldTest / rollTableStep / deMonde), ou entrer ICI avec sa raison`);
+    }
+    expect(
+      ecarts,
+      `Ce que (M) soustrait a bougé — une exemption structurelle qui absorbe en silence est le défaut même que ce compteur ferme (WORLD_DIE_SUBTRACTED_STOCK, scripts/guards/lib/rollSeamWhitelist.mjs) :\n${ecarts.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('chaque entrée du compteur (M) nomme le lot qui l\u2019emporte (dette à cible zéro, jamais un registre d\u2019équilibre)', () => {
+    const nues = [...WORLD_DIE_SUBTRACTED_STOCK]
+      .filter(([, v]) => !/#\d+/.test(v.why ?? ''))
+      .map(([rel]) => rel);
+    expect(nues, `Entrée du compteur (M) sans ticket — une population qui doit tomber à zéro nomme le lot qui l'emporte :\n${nues.join('\n')}`).toEqual([]);
+  });
+
+  it('fail-closed : `includeExcluded` rend bien les sites (M), et le mode NU du garde ne les voit jamais', () => {
+    const monde = 'if (d100(rng) <= chance.target) { found = true; }';
+    expect(scanRollSeamExclusivity('src/state/x.ts', monde)).toEqual([]);
+    const avec = scanRollSeamExclusivity('src/state/x.ts', monde, { includeExcluded: true });
+    expect(avec.map((s: { excludedBy?: string }) => s.excludedBy)).toEqual(['M']);
+  });
+
+  it('fail-closed : `includeExcluded` marque (S) sans le confondre avec (M)', () => {
+    const spec = 'export const F = makeRollFlow({ resolve: (p) => rollTest(p.skillValue, p.difficulty, battleRng()) });';
+    const avec = scanRollSeamExclusivity('src/state/x.ts', spec, { includeExcluded: true });
+    expect(avec.map((s: { excludedBy?: string }) => s.excludedBy)).toEqual(['S']);
+  });
+
+  /**
+   * CLAUSE DE COMPLÉTUDE (#1426) — le `why` d'une entrée de registre qui invoque « dé de monde » ou
+   * « aucun acteur » plaide une prémisse que #1262 (sentinel `worldOwner`) puis #939 (« tout jet qu'on
+   * contrôle — héros / PNJ / environnement ») ont périmée : « personne ne le porte » n'est plus une
+   * raison de rester hors de la porte. Une telle justification doit donc être confrontée au lot qui a
+   * redéfini le périmètre, et le DIRE. Sans cette clause, le test ne vérifiait que la FORME du champ.
+   */
+  it('complétude : un `why` qui plaide « dé de monde / aucun acteur » cite le lot qui a redéfini le périmètre', () => {
+    const PLAIDE = /d[eé]s? de MONDE|aucun acteur/i;
+    const orphelines = [...PENDING_JET_FABRICATION_STOCK, ...ENGINE_DELEGATED_ROLL_STOCK]
+      .filter(([, e]) => PLAIDE.test(e.why ?? '') && !/#1426/.test(e.why ?? ''))
+      .map(([rel]) => rel);
+    expect(
+      orphelines,
+      `Justification « dé de monde / aucun acteur » non confrontée au canal des dés de monde (#1426) — la prémisse « personne ne le porte » n'exempte plus de la porte depuis le sentinel \`worldOwner\` (#1262) :\n${orphelines.join('\n')}`,
     ).toEqual([]);
   });
 });

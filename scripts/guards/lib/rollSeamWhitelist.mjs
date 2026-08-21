@@ -18,10 +18,18 @@
 //     shipwreck 2→0, travelFlow 7→6).
 //
 // Les formes (S) « position de spec » et (M) « dé de monde » ne sont PLUS des entrées de liste : elles
-// sont reconnues STRUCTURELLEMENT par le scanner (cf. en-tête de `rollSeamExclusivity.mjs`). C'est ce
-// qui a retiré `src/data/mutations.ts`, `landMarketFlow.ts`, `shipCrew.ts` (tous leurs sites sont des
-// dés de monde) ; `rollFlowFactory.ts` a rejoint le noyau, et `encounterPsychFlow.ts`/`restFlow.ts`
-// n'avaient plus AUCUN site (leurs occurrences vivaient dans des commentaires).
+// sont reconnues STRUCTURELLEMENT par le scanner (cf. en-tête de `rollSeamExclusivity.mjs`).
+// `rollFlowFactory.ts` a rejoint le noyau, et `encounterPsychFlow.ts`/`restFlow.ts` n'avaient plus
+// AUCUN site (leurs occurrences vivaient dans des commentaires).
+//
+// (M) N'EST PLUS UN TROU MUET (#1426) : une exemption STRUCTURELLE ne laisse par construction aucune
+// liste visible, et celle-ci a absorbé jusqu'à 11 sites hors moteur sans qu'un seul chiffre bouge.
+// `WORLD_DIE_SUBTRACTED_STOCK` (plus bas) PUBLIE désormais ce qu'elle soustrait, fichier par fichier ;
+// il est une DETTE À CIBLE ZÉRO (patron `ROLL_SEAM_PHASE2_STOCK`), jamais un registre d'équilibre :
+// chaque entrée porte sa raison et MEURT par migration vers l'une des trois portes du canal
+// (`rollSeam.openWorldTest` surfacé, `cascade.rollTableStep` en table, `engine/dice.deMonde`
+// silencieux). Une fois la liste vide, le compteur reste comme garde ANTI-RÉCIDIVE : tout nouveau
+// `d100(` blanchi par (M) hors `src/engine/**` est rouge NOMINATIVEMENT.
 
 /** Le seam lui-même — exclusion de principe, sans compte. @type {Set<string>} */
 export const ROLL_SEAM_CORE = new Set([
@@ -49,6 +57,29 @@ export const ROLL_SEAM_PHASE2_STOCK = new Map([
   ['src/state/travelPostes.ts', 1],
   ['src/state/triggeredEffects.ts', 1],
   ['src/state/upkeep.ts', 2],
+]);
+
+/**
+ * (M) CE QUE L'EXEMPTION « DÉ DE MONDE » SOUSTRAIT (#1426) — fichier → nombre de sites `d100(` que le
+ * scanner blanchit STRUCTURELLEMENT, hors `src/engine/**` (le moteur reçoit un rng, il ne décide pas
+ * du surfaçage : ses sites sont déjà inventoriés à leur CALL-SITE dans `ENGINE_DELEGATED_ROLL_STOCK`,
+ * les compter ici serait un double compte).
+ *
+ * DETTE À CIBLE ZÉRO, comme `ROLL_SEAM_PHASE2_STOCK` : chaque entrée nomme le ticket qui l'emporte et
+ * disparaît par migration vers une porte du canal — jamais par relèvement du compte. Le test
+ * (`roll-seam-exclusivity-guard.test.ts`) vérifie le compte À L'UNITÉ dans les DEUX sens : un site de
+ * plus est une régression NOMMÉE, un site migré doit être soldé ici, une entrée retombée à 0 est
+ * PÉRIMÉE. Mesure au scanner CANONIQUE (`scanRollSeamExclusivity(..., { includeExcluded: true })`),
+ * jamais un fork instrumenté — deux comptes du même stock divergent toujours.
+ *
+ * @type {Map<string, { n: number, why: string }>}
+ */
+export const WORLD_DIE_SUBTRACTED_STOCK = new Map([
+  // VIDE — la forme (M) ne soustrait plus RIEN hors `src/engine/**` (#1426 soldé). Le compteur RESTE :
+  // il est désormais une garde ANTI-RÉCIDIVE, et c'est le test qui le rend mordant (tout fichier
+  // mesuré et absent d'ici est rouge NOMINATIVEMENT). Une entrée ne se rajoute pas pour « faire
+  // passer » un site : elle se rajoute avec le ticket qui l'emporte, ou le site se route par une des
+  // trois portes du canal.
 ]);
 
 /** @type {Set<string>} */
@@ -112,17 +143,19 @@ export const ENGINE_DELEGATED_ROLL_STOCK = new Map([
   ['src/state/combatSetup.ts', { n: 1, kind: 'dette', why: '`initiativeOrder` — l\'Initiative de mise en place roule la ligne entière d\'un coup -> #1064.' }],
   ['src/state/combatSlice.ts', { n: 9, kind: 'mixte', why: 'canonique pour 7 sites : la Volée en table (`resolveVolley` :208), le Test d\'équipage d\'un navire piloté par l\'IA (`resolveCrewTestByRoles` :1378), et les jets affichés (`rollDisengageAttack` :727, `rollGrappleForce` :792, `rollOups` :2433, `resolveMagicMissile` :2945, `resolveCasting` :2946). Dettes : `rollMeleeDefender` :560 (défense au désengagement) -> #1097 ; `animositeOrHaine` :130 (Animosité acquise sur un Destin dépensé) -> #1098.' }],
   ['src/state/devtools.ts', { n: 1, kind: 'canonique', why: 'canonique : `tickDisease` appelé par l\'outil de DEV (avance forcée d\'une maladie) — hors partie jouée, aucune surface de jet à offrir.' }],
-  ['src/state/landMarketFlow.ts', { n: 5, kind: 'mixte', why: 'canonique pour 4 sites : `rollFindMerchant`/`rollCargoQuantity`/`rollRandomLandCargo` sont des dés de MONDE et des tables (MSRC 13 l.22-42/l.129-160), et `rollTradeRumour` tire sa rumeur dans l\'applier d\'un `openPartyTest` DÉJÀ surfacé (MSRC 13 l.176-180). Dette : le Marchandage opposé n\'a plus qu\'UN site physique, `bargainOpposed` (:222) — source unique achat + vente, ordre RNG inchangé -> #1099.' }],
+  ['src/state/interludeFlow.ts', { n: 3, kind: 'canonique', why: 'canonique : les 3 `deMonde` (:1048-1050) tirent le Générateur de mission du contremaître (AA 12 l.63-144) dans l\'applier d\'un Test de Ragot DÉJÀ surfacé — contenu de CONSÉQUENCE, porte SILENCIEUSE du canal (#1426) ; visibles ici depuis leur migration, là où la forme (M) les blanchissait.' }],
+  ['src/state/landMarketFlow.ts', { n: 5, kind: 'mixte', why: 'canonique pour 4 sites : `rollFindMerchant`/`rollCargoQuantity`/`rollRandomLandCargo` peuplent la HALLE à l\'arrivée (`openLandMarket`, MSRC 13 l.22-42) et passent par le CANAL des dés de monde — la fenêtre de LOT (#1426, `etalLotFlow`) : chaque dé y est une rangée posable, nommée par ce qu\'elle décide. `rollTradeRumour` tire sa rumeur dans l\'applier d\'un `openPartyTest` DÉJÀ surfacé (MSRC 13 l.176-180). Dette : le Marchandage opposé n\'a plus qu\'UN site physique, `bargainOpposed` — source unique achat + vente, ordre RNG inchangé -> #1099.' }],
   ['src/state/massBattleFlow.ts', { n: 1, kind: 'dette', why: '`resolveClash` (massBattleFlow.ts:845) → `rollMightTest` (engine/massBattle.ts:124) → `rollTest` : LE site fondateur du trou engine-délégué -> #1067.' }],
   ['src/state/merchantFlow.ts', { n: 1, kind: 'canonique', why: 'canonique : `rollStock` (:208) est le Test de DISPONIBILITÉ de l\'étal (LDB 59 l.50) — un dé d\'ÉTAL sur RNG seedé, sans valeur de PJ à influencer, et sa révélation passe déjà par la porte MJ `openStockRevealCascade`.' }],
   ['src/state/outOfCombatUpkeep.ts', { n: 1, kind: 'dette', why: '`bleedDeathRoll` hors combat (entretien quotidien) -> #1064.' }],
-  ['src/state/portFlow.ts', { n: 3, kind: 'mixte', why: 'canonique : `rollRandomCargo` (:118) est un tirage de TABLE de cargaison. Dettes : les 2 `rollMerchantOpposition` (:228, :305) sont des Marchandages opposés résolus en silence -> #580.' }],
+  ['src/state/portFlow.ts', { n: 3, kind: 'mixte', why: 'canonique : `rollRandomCargo` peuple l\'ÉTAL à l\'arrivée (`openPort`) et passe par le CANAL des dés de monde — la fenêtre de LOT (#1426, `etalLotFlow`) : ses tirages sont posables d\'un bloc avant l\'écran quand l\'option « Dés fixés » est active, et strictement identiques sinon. Dettes : les 2 `rollMerchantOpposition` sont des Marchandages opposés résolus en silence -> #580.' }],
   ['src/state/restFlow.ts', { n: 2, kind: 'dette', why: 'les 2 sites du chemin EAGER de la nuit (`sleepParty`) : `restRecovery` (:163, Test de Résistance Accessible +20, LDB 18 l.296) et `rollContraction` (:203, contagion de promiscuité, LDB 20 l.206) — 118 Tests silencieux mesurés sur une nuit de groupe, `rollContraction` sans même un dé rendu ; le chemin à cascade passe déjà par `onDeferTest` -> #1101.' }],
-  ['src/state/riverVoyageFlow.ts', { n: 2, kind: 'canonique', why: 'canonique : les 2 `resolveRiverImpact` tirent les dégâts d\'un péril sur d100 (MSRC 7 l.138-144), le pilote humain ayant DÉJÀ joué son `riverPerilDetect`. Le redressement d\'un chavirage est passé en étapes Round par Round (#1104a) : plus aucun Test de HÉROS roulé en boucle ici.' }],
-  ['src/state/seaVoyageFlow.ts', { n: 5, kind: 'mixte', why: 'canonique pour 4 sites : `rollBoardEvent` (événement de bord, MDG 15 l.89), `rollSteamBreakdown` (MDG 12 l.313, tiré APRÈS un Test surfacé), `rollDebrisEntangle` et `rollStranding` (périls de mer, MDG 13 l.485-499). L\'Exposition du jour est passée en étapes influençables (#1104b). Dette restante : `rollWeeklyFouling` (40,22 % sans trace) -> #1105.' }],
+  ['src/state/riverVoyageFlow.ts', { n: 3, kind: 'canonique', why: 'canonique : les 2 `resolveRiverImpact` tirent les dégâts d\'un péril sur d100 (MSRC 7 l.138-144), le pilote humain ayant DÉJÀ joué son `riverPerilDetect`. Le redressement d\'un chavirage est passé en étapes Round par Round (#1104a) : plus aucun Test de HÉROS roulé en boucle ici. 3ᵉ site (#1426) : `deMonde` (:677) rejoue la chance du péril dans l\'applier de l\'étape `riverPerilCheck` DÉJÀ posée — porte SILENCIEUSE du canal, rendue VISIBLE ici par sa migration.' }],
+  ['src/state/seaVoyageFlow.ts', { n: 4, kind: 'mixte', why: 'canonique pour 3 sites : `rollSteamBreakdown` (MDG 12 l.313, tiré APRÈS un Test surfacé), `rollDebrisEntangle` et `rollStranding` (périls de mer, MDG 13 l.485-499). L\'événement de bord a QUITTÉ ce stock : il est une étape à TABLE de monde (`sea-board-events`, `mod` = Humeur de Manann), poussée dans la cascade du jour après les périls d\'auteur. L\'Exposition du jour est passée en étapes influençables (#1104b). Dette restante : `rollWeeklyFouling` (40,22 % sans trace) -> #1105.' }],
   ['src/state/shipBattery.ts', { n: 1, kind: 'dette', why: '`resolveCrewTestByRoles` — Test d\'équipage de la batterie -> #1067 (même famille navale qu\'`openCrewTestPending`).' }],
+  ['src/state/shipCrew.ts', { n: 1, kind: 'canonique', why: 'canonique : `deMonde` (:479) rejoue la désertion à la relâche, un dé par membre présent (MDG 14 l.192-202), dans l\'applier de l\'étape `sea-desertion` que `seaVoyageFlow` a DÉJÀ ouverte par `openWorldTest` — porte SILENCIEUSE du canal (#1426), le site est visible ici au lieu d\'être blanchi par la forme (M).' }],
   ['src/state/tavernFlow.ts', { n: 2, kind: 'canonique', why: 'canonique : `rollTavernTest` est la primitive `roll*` à UN SEUL jet extraite en #370 — elle ne roule QUE le côté ADVERSAIRE ABSTRAIT (la salle), et seulement quand aucun héros ne tient ce camp : deux héros ouvrent une BANDE où chacun joue SON jet par le seam (#1279 S1). Deux sites : le gel à l\'ouverture de la manche (fabrique du socle de séquence) et son repli dans le réducteur de clôture si le gel manque.' }],
-  ['src/state/travelFlow.ts', { n: 3, kind: 'mixte', why: 'canonique : `rollStageWeather` (:610) est un d100 de MONDE sur la table de saison (EDOC 8 l.50) — aucun acteur ne le porte. Dettes : `forcedMarchTest` (:712, marche forcée) -> #1102 ; `resolveMountedDay` (:863, journée en selle EDOC 07 l.142-146 dont le Test de Chevaucher du CAVALIER l.165-174, rendu en lecture seule, 69,96 % d\'échecs) -> #1106.' }],
+  ['src/state/travelFlow.ts', { n: 2, kind: 'dette', why: 'la Météo d\'Étape a QUITTÉ ce stock : elle est une étape à TABLE de monde (`stage-weather-<saison>`, posable), son applier insérant ce qui dépend du temps qu\'il fait. Restent deux dettes : `forcedMarchTest` (marche forcée) -> #1102 ; `resolveMountedDay` (journée en selle EDOC 07 l.142-146 dont le Test de Chevaucher du CAVALIER l.165-174, rendu en lecture seule, 69,96 % d\'échecs) -> #1106.' }],
   ['src/state/upkeep.ts', { n: 4, kind: 'canonique', why: 'canonique : `dailyFoodUpkeep`/`dailyWaterUpkeep`/`dailyDiseaseUpkeep`/`tickTraumaRecovery` reçoivent `onDeferTest`, qui transforme chaque Test d\'entretien en étape de cascade influençable sur les chemins principaux (store.ts:2564, :2570) ; le seul appelant sans defer est le chemin eager de `restFlow.ts` (:154), ticketé #1101 côté restFlow.' }],
 ]);
 

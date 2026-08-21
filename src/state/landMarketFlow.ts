@@ -19,10 +19,11 @@ import { placeOfScene } from './worldMap';
 import { dayIndex } from './upkeep';
 import { partyAssisted, partyBest, testValue, skillBaseValue } from '../engine/skills';
 import { opposedTest, SL_ASTOUNDING, shiftDifficulty, type OpposedResult } from '../engine/tests';
-import { d100, type RNG } from '../engine/dice';
+import { type RNG } from '../engine/dice';
+import { ouvrirEtal, registerEtalGenerateur } from './etalLotFlow';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
-import { registerCascadeApplier } from './cascade';
-import { openPartyTest, freeCons } from './rollSeam';
+import { registerCascadeApplier, chainStep } from './cascade';
+import { openPartyTest, openWorldTest, freeCons } from './rollSeam';
 import { actorIn } from './combatants';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, toMoney } from '../engine/money';
 import { partyMoneyTotal, payFromGroup, distributeCredit } from './bourseFlow';
@@ -88,29 +89,47 @@ export function currentMarket(get: Get): { placeId: string; label: string; marke
 export function openLandMarket(get: Get, set: Set): void {
   const cur = currentMarket(get);
   if (!cur) return;
-  const rng = battleRng();
+  ouvrirEtal(get, set, 'land', `Halle — ${cur.label}`);
+}
+
+/** Le GÉNÉRATEUR de la halle : tout son aléa vient du `rng` reçu, et chaque dé DIT ce qu'il décide
+ *  (`phase`) — c'est ce qui le rend posable dans la fenêtre de lot (#1426), sans rien changer d'autre. */
+function genererHalle(get: Get, set: Set, rng: RNG, phase: (label: string) => void): void {
+  const cur = currentMarket(get);
+  if (!cur) return;
   const season = seasonOfMonth(toDate(get().gameTime).month);
   const { market } = cur;
+  phase('Marchand présent');
   const find = rollFindMerchant(market, rng);
   const offers: LandOffer[] = [];
   const addOffer = (cargoId: string) => {
     const cargo = findLandCargoById(cargoId);
     if (!cargo || offers.some((o) => o.cargoId === cargoId)) return;
+    phase(`Quantité — ${cargo.label}`);
     const { enc } = rollCargoQuantity(market, rng);
     if (enc <= 0) return;
-    offers.push({ cargoId, label: cargo.label, enc, basePrice: landCargoBasePrice(cargo, season, market, rng), wine: !!cargo.wine });
+    phase(`Prix de base — ${cargo.label}`);
+    const basePrice = landCargoBasePrice(cargo, season, market, rng);
+    offers.push({ cargoId, label: cargo.label, enc, basePrice, wine: !!cargo.wine });
   };
   // Marchandises LOCALES (colonne Produits) : un marqueur de l'Index (`echangeable: false`) n'est pas
   // résolu par `findLandCargoById`, donc il n'ouvre aucune offre.
   if (find.localFound) for (const id of market.produits.filter((p) => findLandCargoById(p))) addOffer(id);
   // « Commerce » (l.32-34) : une cargaison ALÉATOIRE de la table saisonnière en plus.
-  if (find.randomFound) addOffer(rollRandomLandCargo(season, rng).id);
+  if (find.randomFound) { phase('Cargaison de Commerce'); addOffer(rollRandomLandCargo(season, rng).id); }
   // Identité de HALLE (#371) : hôte + décor. Défaut partagé au catalogue `marche` (`lieux-services.json`),
   // surchargé PAR LIEU par le profil de marché — la halle a un visage et une voix comme le marchand.
   const marcheDef = findLieuServiceById('marche');
   const hostLine = market.hostLine ?? marcheDef?.hostLine;
   const backdrop = market.backdrop ?? marcheDef?.backdrop;
   set({ landMarket: { placeId: cur.placeId, label: cur.label, market, offers, hostLine, backdrop } });
+}
+
+/** Ce qui SUIT l'étal : le Test de Ragot des rumeurs commerciales. Il ne s'ouvre qu'une fois l'étal
+ *  arrêté (sinon sa modale se disputerait la place avec la fenêtre de lot). */
+function apresHalle(get: Get, set: Set): void {
+  const cur = currentMarket(get);
+  if (!cur) return;
   // Rumeurs commerciales (MSRC 13 l.176-180) : Test de Ragot Complexe (−10) au marché ; sur un succès, on
   // tire un AUTRE Emplacement puis une rumeur (Tableau des rumeurs) → les biens visés s'y vendent au DOUBLE
   // du prix de base (l.180). L'« index géographique du Reikland » (l.180) est ici la liste des Lieux de la
@@ -123,6 +142,8 @@ export function openLandMarket(get: Get, set: Set): void {
     stake: combatStakeRef(LAND_GOSSIP_KIND),
   }, LAND_GOSSIP_KIND, { placeId: cur.placeId });
 }
+
+registerEtalGenerateur('land', genererHalle, apresHalle);
 
 const LAND_GOSSIP_KIND = 'land-market-gossip';
 registerCascadeApplier(LAND_GOSSIP_KIND, (get, set, step) => {
@@ -275,32 +296,78 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   log(get, set, [`${want} Enc de ${offer.label} chargés sur ${carrier.label} — ${bargainLine}${partial ? ' Lot partiel : +10 % (l.131).' : ''} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`]);
 }
 
-/** VENTE d'un lot du convoi (MSRC 13 l.133-160) : trouver un acheteur (Demande = Taille×10, +30 si Commerce),
- *  Mise à prix (% du prix de base par Richesse), Marchandage opposé. Un échec autorise une 2ᵉ tentative sur
- *  la moitié du lot (l.146). Retire le lot vendu, crédite la bourse. */
+/**
+ * VENTE d'un lot du convoi (MSRC 13 l.133-160) : trouver un acheteur (Demande = Taille×10, +30 si
+ * Commerce), Mise à prix (% du prix de base par Richesse), Marchandage opposé. Un échec autorise une
+ * 2ᵉ tentative sur la MOITIÉ DU LOT — la Demande visée, elle, ne bouge pas (l.146 verbatim : « ils
+ * peuvent proposer la moitié de la cargaison à la place : lancez à nouveau le dé en l'opposant au
+ * nombre précédemment obtenu »). Retire le lot vendu, crédite la bourse.
+ *
+ * Le dé d'acheteur est un dé de MONDE routé par la porte (`openWorldTest`, `klass:'subi'`,
+ * `worldSide`) — MÊME chemin que son jumeau maritime (`portFlow.openPortSellBuyerStep`) : le siège qui
+ * possède le monde le POSE quand l'option « Dés fixés » est active, et le voit passer sinon. Avant
+ * #1426 ce d100 était résolu au journal en silence, seule asymétrie terre/mer du commerce.
+ */
 export function landSellCargo(get: Get, set: Set, carrierId: string, cargoIndex: number): void {
-  const st = get().landMarket;
-  if (!st) return;
   const carrier = carrierById(get(), carrierId);
-  if (!carrier) return;
-  const lots = carrier.cargo;
-  const lot = lots[cargoIndex];
-  if (!lot) return;
+  const lot = carrier?.cargo[cargoIndex];
+  if (!get().landMarket || !carrier || !lot) return;
+  openLandSellBuyerStep(get, set, carrierId, cargoIndex, lot.enc, true, 1);
+}
+
+/** 1. Trouver un acheteur (dé de MONDE, l.146) : cible = la Demande du Lieu, posée en `meta.baseValue`
+ *  (difficulté Intermédiaire = modificateur nul, la cible passe telle quelle). Échec sur la 1ʳᵉ
+ *  tentative → 2ᵉ tentative sur la MOITIÉ du lot, MÊME cible (`attempt:2`) ; le message « la moitié
+ *  trouve preneur » ne s'affiche QUE si cette 2ᵉ tentative réussit. */
+function openLandSellBuyerStep(get: Get, set: Set, carrierId: string, cargoIndex: number, sellEnc: number, allowHalfRetry: boolean, attempt: 1 | 2): void {
+  const st = get().landMarket;
+  const carrier = carrierById(get(), carrierId);
+  const lot = carrier?.cargo[cargoIndex];
+  if (!st || !carrier || !lot) return;
+  openWorldTest(get, set, {
+    actionLabel: 'Trouver un acheteur',
+    difficulty: 'intermediaire',
+  }, LAND_SELL_BUYER_KIND, { carrierId, cargoIndex, sellEnc, retryHalf: allowHalfRetry, attempt, baseValue: sellDemandTarget(st.market) });
+}
+
+const LAND_SELL_BUYER_KIND = 'land-sell-buyer';
+registerCascadeApplier(LAND_SELL_BUYER_KIND, (get, set, step) => {
+  if (!step.result) return {};
+  const carrierId = String(step.meta?.carrierId ?? '');
+  const cargoIndex = Number(step.meta?.cargoIndex ?? -1);
+  const sellEnc = Number(step.meta?.sellEnc ?? 0);
+  const retryHalf = !!step.meta?.retryHalf;
+  const attempt = Number(step.meta?.attempt ?? 1);
+  const st = get().landMarket;
+  const carrier = carrierById(get(), carrierId);
+  const lot = carrier?.cargo[cargoIndex];
+  if (!st || !carrier || !lot) return {};
   const label = findLandCargoById(lot.cargoId)?.label ?? lot.cargoId;
-  const rng = battleRng();
-  const target = sellDemandTarget(st.market); // Taille × 10 (+30 si Commerce), l.146
-
-  // Trouver un acheteur (d100 ≤ Demande). Échec → proposer la moitié du lot une fois.
-  let sellEnc = lot.enc;
-  let found = d100(rng) <= target;
-  if (!found) {
-    sellEnc = Math.max(1, Math.floor(lot.enc / 2));
-    found = d100(rng) <= target;
-    if (found) log(get, set, [`${label} : pas d’acheteur pour tout le lot — la moitié (${sellEnc} Enc) trouve preneur.`]);
+  if (step.result.success) {
+    const demi = attempt === 2 ? [`${label} : pas d’acheteur pour tout le lot — la moitié (${sellEnc} Enc) trouve preneur.`] : [];
+    chainStep(get, () => finishLandSale(get, set, carrierId, cargoIndex, sellEnc, demi));
+    return {};
   }
-  if (!found) { log(get, set, [`${label} : aucun acheteur intéressé à ${st.label} (Demande ${target}).`]); return; }
+  if (attempt === 1 && retryHalf) {
+    chainStep(get, () => openLandSellBuyerStep(get, set, carrierId, cargoIndex, Math.max(1, Math.floor(lot.enc / 2)), false, 2));
+    return {};
+  }
+  return { consequences: freeCons([`${label} : aucun acheteur intéressé à ${st.label} (Demande ${step.result.target}).`]) };
+});
 
-  // Mise à prix (% du prix de base par Richesse, l.148-156) puis Marchandage opposé (l.127).
+/** 2-3. Mise à prix (l.148-156) puis Marchandage opposé (l.127), une fois l'acheteur trouvé — retire le
+ *  lot (ou la fraction vendue) du porteur et crédite la bourse. `avant` = les lignes déjà dues au
+ *  moment de la vente (« la moitié trouve preneur »), journalisées AVANT la ligne de vente comme dans
+ *  la résolution synchrone d'origine. */
+function finishLandSale(get: Get, set: Set, carrierId: string, cargoIndex: number, sellEnc: number, avant: string[]): void {
+  const st = get().landMarket;
+  const carrier = carrierById(get(), carrierId);
+  const lots = carrier?.cargo ?? [];
+  const lot = lots[cargoIndex];
+  if (!st || !carrier || !lot) return;
+  const label = findLandCargoById(lot.cargoId)?.label ?? lot.cargoId;
+  if (avant.length) log(get, set, avant);
+  const rng = battleRng();
   const offerPct = sellOfferPct(st.market);
   const best = partyAssisted(get().party, 'marchandage');
   const merchant = rollMerchantSkill(rng);

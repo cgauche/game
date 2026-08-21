@@ -48,9 +48,9 @@ import { testValue } from '../engine/skills';
 import { pushReveal } from './combatFlow';
 import { checkPartyWiped } from './partyWipe';
 import { evLines } from './combatLog';
-import { pilotedByHuman, canFixDie } from './netOwnership';
+import { pilotedByHuman } from './netOwnership';
 import { followsCharacterRules } from '../engine/relations';
-import { resultLine, freeCons, tableStep, type BuiltCascadeStep } from './rollSeam';
+import { resultLine, freeCons, tableStep, poseOfferte, type BuiltCascadeStep } from './rollSeam';
 import { t } from '../i18n';
 import { stepDetail } from './rollSeam';
 
@@ -235,11 +235,11 @@ export function applyMutation(get: Get, set: Set, hero: Combatant, _test?: { rol
   // (et une 2ᵉ mutation) que la séquence en cours exclut.
   hero.corruption = Math.max(0, (hero.corruption ?? 0) - bonus(effectiveChar(hero, 'force-mentale')));
   // FENÊTRE DE POSE des dés de la mutation (#942 L5) — option « Dés fixés » + siège qui contrôle la
-  // VICTIME (`canFixDie`, même gate que la sévérité d'un Critique) : les tirages deviennent des étapes
+  // VICTIME (`poseOfferte`, même politique de socle que la sévérité d'un Critique) : les tirages deviennent des étapes
   // à table CHAÎNÉES, poussées NON RÉSOLUES, et AUCUNE mutation n'est attachée avant la pose du dernier
   // dé (parité avec l'offre de Déviation). Sans l'option ni le contrôle : les dés sont tirés ici, dans
   // le MÊME ordre et par le MÊME résolveur — zéro friction, flux RNG identique.
-  if (canFixDie(get(), hero.id)) {
+  if (poseOfferte(get, hero.id)) {
     pushStep(set, (index) => natureStep(hero, align, index), mutationPurpose(get));
     return [];
   }

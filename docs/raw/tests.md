@@ -99,7 +99,7 @@ Ces bandes automatiques s'appliquent à *tous* les tests, simples ou spectaculai
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.25-28, l.31-32, l.119-121) → `canReroll`, `test-auto-bands`, `TestPolicy`, `test-critiques-doubles`, `getTestPolicy`, `test-fast-sl`, `ChanceButtons`, `amazingTestLabel`, `useTestJetProps`, `test-auto-band-width`, +24 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/crewMorale.ts`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, +9 fichiers
+- `LDB 12` (l.25-28, l.31-32, l.119-121) → `canReroll`, `test-auto-bands`, `TestPolicy`, `test-critiques-doubles`, `getTestPolicy`, `test-fast-sl`, `ChanceButtons`, `amazingTestLabel`, `useTestJetProps`, `test-auto-band-width`, +26 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/crewMorale.ts`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, +10 fichiers
 
 ---
 
@@ -123,7 +123,7 @@ Cette règle optionnelle fonctionne particulièrement bien avec les Tests simple
 
 **Voir aussi** : chapitre Combat (Critiques et Maladresses en combat)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.38, l.124-127) → `canReroll`, `test-auto-bands`, `TestPolicy`, `test-critiques-doubles`, `getTestPolicy`, `test-fast-sl`, `ChanceButtons`, `amazingTestLabel`, `useTestJetProps`, `test-auto-band-width`, +22 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, +8 fichiers
+- `LDB 12` (l.38, l.124-127) → `canReroll`, `test-auto-bands`, `TestPolicy`, `test-critiques-doubles`, `getTestPolicy`, `test-fast-sl`, `ChanceButtons`, `amazingTestLabel`, `useTestJetProps`, `test-auto-band-width`, +24 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, +9 fichiers
 
 ---
 

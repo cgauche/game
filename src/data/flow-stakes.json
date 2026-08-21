@@ -493,5 +493,20 @@
       "page": 154,
       "note": "LDB 12 l.170-174"
     }
+  },
+  {
+    "id": "etal-lot",
+    "label": "Les dés de l’étal",
+    "flow": "etalLot",
+    "phase": "pose",
+    "template": "Ce que l’étal aura : présence d’un marchand, cargaisons proposées, leur quantité et leur prix de base — un dé par ligne, tous posables avant l’ouverture.",
+    "form": "descripteur",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 71,
+      "note": "MSRC 13 l.22-26 (disponibilité en deux temps)"
+    },
+    "rule": "disponibilite-des-biens",
+    "ruleCategory": "regles"
   }
 ]

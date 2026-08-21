@@ -808,5 +808,35 @@
       "page": 51,
       "note": "LDB 08 « Charme » — modificateur de Statut aux Tests sociaux (la phrase est à cheval sur les folios 50-51)"
     }
+  },
+  {
+    "id": "meteo-etape",
+    "label": "Météo",
+    "desc": "Le mauvais temps est le plus grand ennemi des voyageurs (si l'on omet les véritable antagonistes des voyageurs, en particulier ceux qui sont armés de tromblons, d'arbalètes et dotés d'une moralité douteuse). Le MJ doit effectuer un jet de Météo au début de chaque étape.\n\n| Météo            | Printemps | Été   | Automne | Hiver |\n|------------------|-----------|-------|---------|-------|\n| Temps sec        | 01-10     | 01-40 | 01-30   | -     |\n| Beau temps       | 11-30     | 41-70 | 31-60   | 01-10 |\n| Pluie            | 31-90     | 71-95 | 61-90   | 11-60 |\n| Pluie diluvienne | 91-95     | 96-00 | 91-98   | 61-65 |\n| Neige            | 96-00     | -     | 99-00   | 66-90 |\n| Blizzard         | -         | -     | -       | 91-00 |",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 32,
+      "note": "EDOC 8 l.50-59"
+    }
+  },
+  {
+    "id": "evenements-de-bord",
+    "label": "Événements de bord",
+    "desc": "Tous les 1d10 jours, le MJ doit lancer les dés dans le tableau des événements pour déterminer quelles sont les surprises inattendues. Les lancers dans ce tableau sont modifiés par le score actuel d'Humeur de Manann du navire, donc un vaisseau qui a suscité le déplaisir du dieu marin risque beaucoup plus de rencontrer des circonstances difficiles.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 130,
+      "note": "MDG 15 l.89"
+    }
+  },
+  {
+    "id": "disponibilite-des-biens",
+    "label": "Disponibilité des biens",
+    "desc": "Pour savoir si une cargaison doit être transportée, il faut se référer à la colonne Produits de l'Index géographique du Reikland (p. 75). Toute mention autre que Subsistance signifie qu'il existe une cargaison de ce type. La mention Commerce signifie qu'il peut y avoir une variété de biens disponibles. Ces marchandises « volumineuses » sont généralement considérées comme communes (**WFJDR**, Chapitre XI). Pour déterminer si une cargaison est disponible, consultez les colonnes Taille et Richesse pour cet emplacement.\n\nLes notes de Taille et de Richesse sont additionnées, puis multipliées par 10 pour déterminer les chances de trouver une cargaison à échanger. Par exemple, un hameau dont la population ne compte que 72 personnes de Taille (1) et dont l'Indice de Richesse est Moyen (2) aurait un total combiné de 3 × 10 = 30 % de chances d'avoir une cargaison à échanger un jour donné. Lancez 1d100, et si le résultat est inférieur ou égal à ce chiffre, les Personnages localisent un marchand ayant une cargaison à vendre.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 71,
+      "note": "MSRC 13 l.22-26"
+    }
   }
 ]

@@ -120,7 +120,7 @@ import type {
   PendingVictory, PendingLoot, PendingTest, PendingSteamSave, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingHandGate, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingFall, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, PendingRenounce, PendingDefense,
-  PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
+  PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingEtalLot, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect, DialogueTransition, CascadeStepMeta, CounterDeclaration,
 } from './pendings';
 import { openEncounterPsych } from './encounterPsychFlow';
@@ -148,6 +148,7 @@ import { dayIndex, runDailyUpkeep } from './upkeep';
 import type { DeferredUpkeepTest } from './upkeep';
 import * as travelFlow from './travelFlow';
 import { DEFAULT_VOYAGE_ORDERS } from './voyageCadence';
+import { appliquerLotEtal } from './etalLotFlow';
 import * as portFlow from './portFlow';
 import * as landMarketFlow from './landMarketFlow';
 import * as innFlow from './innFlow';
@@ -526,6 +527,8 @@ export interface GameState extends RollFlowActionsMap {
   /** Enfoncer une porte à PLUSIEURS (EDO Appendice 2 : objet BE/B) : flux multi PARALLÈLE — chaque
    *  héros frappe (`FLOWS.forceDoor`), cumul des dégâts vs B dans `forceDoorConfirm`. */
   pendingForceDoor: PendingForceDoor | null;
+  /** LOT DE DÉS d'un étal (#1426) : les tirages d'ouverture d'un marché/port, posables d'un bloc. */
+  pendingEtalLot: PendingEtalLot | null;
   /** CASCADE séquentielle influençable (jets de NUIT / VOYAGE) : une étape à la fois (`FLOWS.cascade`),
    *  conséquence par `kind` + avancée du curseur dans `cascadeNext` (state/cascade.ts). */
   pendingCascade: PendingCascade | null;
@@ -1062,6 +1065,10 @@ export interface GameState extends RollFlowActionsMap {
   /** Applique les dégâts du Round (somme) ; porte à ≤ 0 B → cède (flag posé) ; sinon nouveau Round. */
   forceDoorConfirm: () => void;
   forceDoorCancel: () => void;
+  /** LOT DE DÉS d'un étal (#1426) : valide le lot d'un bloc (rejoue le générateur avec les dés posés,
+   *  puis ouvre l'écran) / renonce (l'étal reste celui des dés naturels). */
+  etalLotConfirm: () => void;
+  etalLotCancel: () => void;
   /** CASCADE séquentielle (`FLOWS.cascade`) : jet de l'étape courante + cycle Chance/+1 DR/Pacte/
    *  Résilience (ciblé par `pid` = id d'étape). `Resist` = Résistance (Menace, LDB 10).
    *  Délégués `cascade{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll,Resist}` : générés (RollFlowActionsMap, MULTI). */
@@ -2487,6 +2494,13 @@ export const useGame = create<GameState>((set, get) => ({
     }
   },
   forceDoorCancel: () => { set({ pendingForceDoor: null, pendingCascade: null }); }, // renonce : ferme data + cascade hôte
+
+  // LOT DE DÉS d'un étal (#1426) — les deux gestes de BLOC. « Valider » rejoue le générateur avec les
+  // dés du lot (posés ou naturels) : c'est le MÊME code que l'ouverture sans fenêtre, nourri par un rng
+  // rejoueur qui ne consomme aucun aléa vivant. « Renoncer » applique le lot TEL QU'IL EST TOMBÉ — un
+  // étal existe de toute façon, la fenêtre n'est qu'une offre de pose.
+  etalLotConfirm: () => { appliquerLotEtal(get, set); },
+  etalLotCancel: () => { appliquerLotEtal(get, set); },
 
   // Résilience « Je ne faillirai pas ! » (LDB 17 l.68) sur un Test de scène (hors combat) — cycle
   // UNIFIÉ par la fabrique rollFlow (les variantes combat attack/defense/cast vivent dans combatSlice).

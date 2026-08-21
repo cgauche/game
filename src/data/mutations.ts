@@ -11,7 +11,7 @@
  * (carac), `ap` (armure naturelle), `grantNaturalWeapon` (arme), `grantTrait`/`grantPsychTrait` (traits) ;
  * descriptif non modélisable en `note`.
  */
-import { RNG, d100 } from '../engine/dice';
+import { RNG, deMonde } from '../engine/dice';
 import { findTableEntry } from '../engine/tables';
 import type { Mutation } from '../engine/corruption';
 import mutationsJson from './mutations.json';
@@ -126,7 +126,7 @@ export function mutationSubTableFor(table: string, m: { subTable?: string }): st
  *  niveau par niveau. Sans `forcedRoll`, la sous-table est ré-tirée dans la foulée. */
 export function rollMutation(table: string, rng: RNG, forcedRoll?: number): Mutation {
   if (forcedRoll != null) return mutationAt(table, forcedRoll); // dé POSÉ : aucun dé consommé, arrêt AVANT la sous-table
-  const roll = d100(rng);
+  const roll = deMonde(rng); // porte du dé de monde (`engine/dice`) : la fenêtre de pose vit chez l'appelant (`corruptionFlow`, étape à table)
   const m = mutationOfRange(table, roll, findTableEntry(tableOf(table).ranges, roll));
   const sub = mutationSubTableFor(table, m);
   return sub ? rollMutation(sub, rng) : m;

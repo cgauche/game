@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
  * combat, IA, cadence des beats), pas du rendu. Extraits vers `src/geometry/` (projection iso,
  * interpolation de marche — zéro dépendance framework), `state/dir8.ts` (Dir8 est déjà un type
  * `state`), `state/viewLevel.ts` (override d'étage affiché, désormais SOURCE dans `state`, lu par
- * `gameIso/IsoStage`), `state/combatLog.ts` (tonalité/importance d'un évènement, colocées avec
+ * `gameIso/SurcoucheIso`), `state/combatLog.ts` (tonalité/importance d'un évènement, colocées avec
  * `CombatEventKind`) et `engine/dice.ts` (`hashSeed`, utilitaire générique de seed).
  */
 

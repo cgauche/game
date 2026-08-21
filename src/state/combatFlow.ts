@@ -250,7 +250,7 @@ export * from './combatManeuvers';
 export * from './combatHooks';
 export * from './combatSetup';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
-import { pilotedByHuman, controlsCombatant, canFixDie, defenseSurfaced, jetSurfaced } from './netOwnership';
+import { pilotedByHuman, controlsCombatant, defenseSurfaced, jetSurfaced } from './netOwnership';
 import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
@@ -272,7 +272,7 @@ import { nightBands, splitBandRows } from './nightBands';
 import { combatEndBands, combatEndRowMeta } from './combatEndBands';
 import type { CascadeStepMeta } from './pendings';
 import {
-  freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, monoStep, pousseSi,
+  freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, poseOfferte, monoStep, pousseSi,
   hostStep, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, tableStep, makeBandFactory,
   type Consequence, type TableSpec,
 } from './rollSeam';
@@ -2131,7 +2131,7 @@ export function applyAttackResult(
     ? (res.critLocation ??= critWoundLocation(battleRng(), target.bodyShape))
     : (res.location ?? 'corps'); // dépassement (≠ double) : loc de touche, pas de re-tirage
   // FENÊTRE DE POSE du d100 de SÉVÉRITÉ (#942 L4) — option « Dés fixés » + siège qui contrôle la
-  // VICTIME (`canFixDie`) : l'étape à table est poussée NON RÉSOLUE et la résolution du coup est
+  // VICTIME (`poseOfferte`, LA politique de pose du socle) : l'étape à table est poussée NON RÉSOLUE et la résolution du coup est
   // SUSPENDUE, exactement comme l'offre de Déviation (aucune mutation de la cible ici). Le dé posé
   // revient par l'applier `critSeverity`, qui re-entre ici avec le Critique construit dessus
   // (`prerolledCrit`) — d'où la garde `!prerolledCrit` (une seule fenêtre par coup). Sans l'option ni
@@ -2142,7 +2142,7 @@ export function applyAttackResult(
   // Coque/Structure ont leurs propres tables (non déclarées ici) → jamais de fenêtre.
   const twice = critRollTwiceFor(attacker);
   if (deviated === undefined && !prerolledCrit && res.hit && res.woundsLost && (res.critical || overkill0 > 0)
-      && !isStructure(target) && target.bodyShape !== 'vehicule' && critSeverityInSeam(twice) && canFixDie(get(), target.id)) {
+      && !isStructure(target) && target.bodyShape !== 'vehicule' && critSeverityInSeam(twice) && poseOfferte(get, target.id)) {
     const cloc = res.critical ? critWoundLocation(battleRng(), target.bodyShape, res.critLocation) : dloc;
     if (res.critical) res.critLocation = cloc; // LDB 18 l.55 (#80) : loc FIGÉE avant la suspension (jamais re-tirée)
     pushTable(set, {
@@ -3876,10 +3876,10 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     ...(opts?.suppressReveal ? { suppressReveal: true } : {}),
   };
   // FENÊTRE DE POSE du dé (#942 L6) — option « Dés fixés » + siège qui contrôle le LANCEUR
-  // (`canFixDie` : c'est SON Imparfaite) : le tirage devient une étape à table poussée NON RÉSOLUE,
+  // (`poseOfferte` : c'est SON Imparfaite) : le tirage devient une étape à table poussée NON RÉSOLUE,
   // et AUCUN effet n'est appliqué avant la pose du dernier dé (relances comprises). Sans l'option ni
   // le contrôle : le dé est tiré ici, par le MÊME résolveur — zéro friction, flux RNG identique.
-  if (canFixDie(get(), caster.id)) {
+  if (poseOfferte(get, caster.id)) {
     pushTable(set, (index) => miscastTableSpec(caster, ctx, `miscast-table-${caster.id}-${index}`));
     return emitMiscastTriggered(get, set, caster); // l'Imparfaite EST déclenchée, seule sa ligne reste à tirer
   }

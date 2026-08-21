@@ -22,7 +22,10 @@
  */
 import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
-import { applyEffectsLoot } from './combatFlow';
+import { buildAuthorPerilSteps, registerPerilInterrupt } from './authorPerils';
+
+/** Id du protocole de reprise TERRESTRE (effets DIFFÉRÉS dans `travelPlan.land.interrupt`). */
+const LAND_PERIL_INTERRUPT = 'travel-land';
 import { openRest, placesOfKind } from './restFlow';
 import { placeById, placeOfScene, otherEnd, type MapRoute, type WorldMap } from './worldMap';
 import {
@@ -39,7 +42,7 @@ import { rollVehicleProblem, mountIncidentEffects } from '../engine/travelTables
 import { applyOps } from '../engine/ops';
 import { applyFall } from './combatEffects';
 import { applyHealWounds } from '../engine/healing';
-import { findVehicleById, voyageStakeRef } from '../data';
+import { findVehicleById, voyageStakeRef, weather } from '../data';
 import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
 import { partyAssisted, supportSplit, testValue, type SupportDetail } from '../engine/skills';
@@ -50,11 +53,11 @@ import { d10, d100 } from '../engine/dice';
 import { rule } from '../engine/policy';
 import { toDate, isTravelDaylight, DAWN_MINUTE, minutesUntilNext } from '../engine/clock';
 import { dayIndex } from './upkeep';
-import { seasonOfMonth, rollStageWeather, WEATHER_LABEL, type Season } from '../engine/travelStages';
+import { seasonOfMonth, weatherFromRoll, WEATHER_LABEL, type Season, type Weather } from '../engine/travelStages';
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { buildStageSteps, buildWeatherResistanceSteps, type StageContext } from './travelPostes';
-import { startCascade, registerCascadeApplier } from './cascade';
-import { freeCons, rollSansPilote, monoStep, displayStep, surfaceOf } from './rollSeam';
+import { startCascade, registerCascadeApplier, registerTableStep } from './cascade';
+import { freeCons, rollSansPilote, monoStep, displayStep, surfaceOf, tableStep, pousseSi } from './rollSeam';
 import { t } from '../i18n';
 import type { CascadeStep, PendingCascade } from './pendings';
 import type { RecapLine } from './recapLine';
@@ -599,28 +602,70 @@ function currentSeason(get: Get): Season {
  * étapes / appliers) : le build ne consomme pas d'aléa. Renvoie `[]` s'il n'y a AUCUN jet
  * (règle Étapes éteinte ET pas de péripétie testable) : l'appelant finalise alors directement.
  */
+/**
+ * MÉTÉO D'ÉTAPE (#1426) — UNE table par SAISON, DÉRIVÉE de la donnée (`weather.json` : des plages
+ * cumulatives `{max, weather}`), jamais réécrite à la main. La saison choisit la TABLE ; elle n'est
+ * donc JAMAIS un modificateur de dé — conséquence directe : `mod` vaut 0 sur ces tables, et aucune
+ * rangée n'est rendue inatteignable par un décalage (`naturalRollForTableRow` rend un naturel pour
+ * chacune de ses lignes, cf. `de-monde-surface.test.ts`).
+ */
+const STAGE_WEATHER_KIND = 'stageWeather';
+const STAGE_WEATHER_STEP_ID = 'stage-weather';
+const stageWeatherTableId = (season: Season): string => `stage-weather-${season}`;
+
+for (const saison of weather) {
+  let min = 1;
+  const rows = saison.ranges.map((r) => { const row = { id: r.weather, min, max: r.max }; min = r.max + 1; return row; });
+  registerTableStep(stageWeatherTableId(saison.id as Season), {
+    label: t('step.stageWeather'),
+    die: 100,
+    rows,
+    lines: (die) => [t('out.stageWeather', { weather: WEATHER_LABEL[weatherFromRoll(die, saison.id as Season)] })],
+  });
+}
+
+registerCascadeApplier(STAGE_WEATHER_KIND, (get, set, step) => {
+  const tiree = step.table?.result;
+  if (!tiree) return {};
+  const w = tiree.id as Weather;
+  const season = currentSeason(get);
+  // CONTEXTE DU JOUR : il vit dans l'état (`plan.recap.days[dernier]`, poussé avant le build) — une
+  // fenêtre de pose peut s'intercaler entre le dé et la suite, donc la pile ne peut pas le porter.
+  const jours = get().travelPlan?.recap?.days ?? [];
+  const recapDay = jours.length ? jours[jours.length - 1] : undefined;
+  if (recapDay) {
+    recapDay.weather = { id: w, roll: tiree.roll };
+    recapDay.lines.push({ text: t('out.stageWeather', { weather: WEATHER_LABEL[w] }) });
+  }
+  // Les étapes qui DÉPENDENT du temps qu'il fait : elles n'existaient pas avant que le dé tombe.
+  // La ligne de météo vient de la TABLE (source unique de son libellé) et rejoint le journal comme
+  // toute conséquence — le dé, lui, reste sur la rangée : la prose ne le répète pas.
+  return {
+    consequences: freeCons(tiree.lines),
+    insert: [...buildWeatherResistanceSteps(get, w), ...buildStageSteps(get, set, w, season)],
+  };
+});
+
 function buildTravelDayCascade(
   get: Get, set: Set, route: MapRoute, recapDay: TravelRecapDay, marchHeroes: string[],
   dest: { toScene: string; toEntry?: string; toLabel: string; destLabel: string },
 ): CascadeStep[] {
-  const steps: CascadeStep[] = [];
+  const steps: BuiltCascadeStep[] = [];
 
-  // Météo « au début de chaque étape » (l.42) : dé de MONDE sur la table de saison — aucun acteur ne le
-  // porte, rien n'y est influençable, donc PAS de pas de cascade. Tiré ici (même RNG), porté en CONTEXTE DU JOUR (`recapDay.weather`
-  // — en-tête/tuile de la vague 2 ; d100 INTERNE, jamais montré au joueur) ; le journal en garde une
-  // ligne STRUCTURÉE (libellé météo seul). Puis les postes + l'agrégation (fourrage/camp/carte/Rencontre)
-  // qui insère l'Exposition.
+  // Météo « au début de chaque étape » (l.42, EDOC 8 l.50) : dé de MONDE sur la table de SA SAISON —
+  // une étape à TABLE, en tête du jour. Le siège qui possède l'environnement la POSE (option « Dés
+  // fixés ») ou la voit passer, au lieu du d100 muet d'avant #1426.
+  //
+  // Ce qui DÉPEND du résultat (contexte de jour, Test de Résistance de traversée, postes d'Étape) vit
+  // dans son APPLIER, qui l'`insert` derrière elle : c'est le canal du séquenceur pour « ces étapes-là
+  // n'existent qu'une fois le dé connu ». L'ordre des dés reste météo → Résistance → postes.
   if (rule('travel-etapes')) {
-    const season = currentSeason(get);
-    const w = rollStageWeather(battleRng(), season);
-    recapDay.weather = { id: w.weather, roll: w.roll };
-    const weatherLine = t('out.stageWeather', { weather: WEATHER_LABEL[w.weather] });
-    log(get, set, [weatherLine]);
-    recapDay.lines.push({ text: weatherLine }); // hors-cascade (météo = CONTEXTE, jamais une phase)
-    // Test de Résistance de traversée (Neige/Blizzard, l.86/127) au DÉMARRAGE du jour — un jet PAR héros
-    // (BATCH influençable), avant les Activités ; DISTINCT de l'Exposition de fin d'Étape.
-    steps.push(...buildWeatherResistanceSteps(get, w.weather));
-    steps.push(...buildStageSteps(get, set, w.weather, season));
+    pousseSi(steps, tableStep({
+      id: STAGE_WEATHER_STEP_ID, kind: STAGE_WEATHER_KIND, worldOwner: true, icon: 'travel/wave',
+      label: t('step.stageWeather'),
+      table: { tableId: stageWeatherTableId(currentSeason(get)), die: 100 },
+      stake: voyageStakeRef(STAGE_WEATHER_KIND),
+    }));
   }
 
   // PÉRIPÉTIES du jour (LDB 51 l.208) : un pas de VÉRIFICATION dont l'applier tire les péripéties d'auteur
@@ -628,8 +673,11 @@ function buildTravelDayCascade(
   // propose un Test (Survie/Perception), INSÈRE le jet influençable juste après. N'est ajouté que s'il
   // y a des péripéties À TIRER (auteur ou table d10) — sinon le jour n'a pas de pas de péripétie (le
   // chemin de base sans péripétie reste sans cascade quand la règle Étapes est éteinte).
+  // Péripéties d'AUTEUR : une étape de MONDE par péril (dé posable, tracée), AVANT le pas de table —
+  // l'ordre RNG d'origine (d100 d'auteur ×N, puis d10 de seuil, puis d10 de table) est celui-ci.
+  steps.push(...buildAuthorPerilSteps(route, dest.destLabel, LAND_PERIL_INTERRUPT));
   const perilDie = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
-  if ((route.perils ?? []).length > 0 || perilDie >= 1) {
+  if (perilDie >= 1) {
     // Le tirage des péripéties n'est le pas d'AUCUN héros : c'est la route qui le lance (étape MONDE,
     // routée au siège MJ) — les Tests qu'elle appelle, eux, nomment leur jeteur à l'insertion.
     steps.push(displayStep({
@@ -766,26 +814,21 @@ function markLandInterrupt(get: Get, set: Set, then: TravelThen, destLabel: stri
   return [t('tf.travelInterrupted', { to: destLabel })];
 }
 
+// PROTOCOLE DE REPRISE TERRESTRE : les effets d'un péril interrompant ne s'appliquent PAS tout de
+// suite — ils sont DIFFÉRÉS dans `travelPlan.land.interrupt` (`TravelThen`), que la fin de journée
+// rejouera (`continueTravelDayAfterCascade`). Déclaré au flux, jamais deviné par le module partagé.
+registerPerilInterrupt(LAND_PERIL_INTERRUPT, (get, set, effects, destLabel) =>
+  markLandInterrupt(get, set, { kind: 'effects', effects }, destLabel));
+
 registerCascadeApplier('landPeril', (get, set, step) => {
   const worldMap = get().worldMap;
   const route = worldMap?.routes.find((r) => r.id === get().travelPlan?.routeId);
   if (!route) return;
   const destLabel = String(step.meta?.destLabel ?? '');
   const j: string[] = [];
-  const before = { sceneId: get().scene?.id };
-  const interrupted = () => get().scene?.id !== before.sceneId;
 
-  // 1. Péripéties d'AUTEUR (probabilité par jour, effets d'éditeur). startCombat/transition → DIFFÉRÉ.
-  for (const peril of route.perils ?? []) {
-    if (d100(battleRng()) > Math.max(0, Math.min(100, peril.chancePct))) continue;
-    j.push(t('tf.perilAuthor', { label: peril.label }));
-    if ((peril.effects ?? []).some((e) => e.type === 'startCombat' || e.type === 'transition')) {
-      j.push(...markLandInterrupt(get, set, { kind: 'effects', effects: peril.effects }, destLabel));
-      return { consequences: freeCons(j) };
-    }
-    applyEffectsLoot(get, set, peril.effects, peril.label); // trouvaille d'auteur → fenêtre d'attribution
-    if (interrupted()) { j.push(...markLandInterrupt(get, set, { kind: 'effects', effects: peril.effects }, destLabel)); return { consequences: freeCons(j) }; }
-  }
+  // Les péripéties d'AUTEUR ne sont plus ici : chacune est SON étape de monde (`buildAuthorPerilSteps`,
+  // `authorPerils.ts`), poussée AVANT ce pas — leurs dés tombent donc toujours avant la table d10.
 
   // 2. Table d10 RAW (LDB 51 l.210-221). L'entrée à Test (éreintant/attaque) INSÈRE un jet influençable ; les kinds
   //    sans jet (reposant/narratif) sont résolus inline (mêmes sous-jets, même ordre).

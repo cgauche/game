@@ -1,3 +1,4 @@
+import { EtalLotModal } from './EtalLotModal';
 import { useGame } from '../state/store';
 import { ownsLocal } from './ownership';
 import { modalOwnerOf } from '../state/modalArbiter';
@@ -43,6 +44,7 @@ export { pickActiveModalKey } from '../state/modalArbiter';
 import { pickActiveModalKey, voyageHubActive, type ModalKey } from '../state/modalArbiter';
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
+  etalLot: () => <EtalLotModal />,
   fateSave: FateSaveModal, renounce: RenounceModal,
   battement: BattementModal, distraire: DistraireModal, maneuver: ManeuverModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, auContact: AuContactModal, grapple: GrappleModal, approach: ApproachModal, ward: WardModal, run: RunModal, fall: FallModal, shipManeuver: ShipManeuverModal, shipBattery: ShipBatteryModal, crewTest: CrewTestModal, shanty: ShantyModal, focus: FocusModal, dispel: DispelModal,

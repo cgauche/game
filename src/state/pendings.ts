@@ -1152,6 +1152,29 @@ export interface PendingForceDoor extends MultiPending<ForceDoorParticipant> {
   flag?: string;
 }
 
+/** UN dé du lot d'étal : une rangée POSABLE, sans acteur — c'est le MONDE qui le lance. `value` est
+ *  le dé courant (naturel à l'ouverture, reposé si le siège le fixe) ; `min`/`max` sont ses faces
+ *  RÉELLES, pour que le champ ne propose pas un 73 sur un d10. */
+export interface EtalLotRow extends RollParticipant {
+  /** Ce que CE dé décide, en clair (« Marchand présent », « Quantité — Vin »). */
+  label: string;
+  min: number;
+  max: number;
+  value: number;
+  /** Aucun jet à relancer : le dé est TOMBÉ, il se REPOSE (pas de cycle Chance/Pacte/Résilience). */
+  result: null;
+}
+
+/** LE LOT DE DÉS D'UN ÉTAL (#1426) — flux multi PARALLÈLE dégénéré : N dés du MONDE, tous déjà tombés,
+ *  chacun reposable, validés d'un bloc. `cible` dit QUEL étal se rejouera à la validation ; le lot ne
+ *  connaît rien d'autre du domaine (le générateur, lui, est rejoué avec les dés posés). */
+export interface PendingEtalLot extends MultiPending<EtalLotRow> {
+  /** Titre de la fenêtre (« Halle de Grünburg », « Port de Marienburg »). */
+  label: string;
+  /** Quel générateur rejouer : la halle terrestre ou l'étal portuaire. */
+  cible: 'land' | 'port';
+}
+
 /** Test Étendu (LDB 12 l.172-174 : « atteindre un certain DR … les DR obtenus à chaque Round sont
  *  additionnés jusqu'à atteindre une valeur cible … Si le DR total passe en dessous de 0, recommencer
  *  depuis le début »). Flux multi SÉQUENTIEL : un Round à la fois (chacun son cycle Chance/Pacte/
@@ -1525,6 +1548,9 @@ export type CascadeTableDone = CascadeTableDecl & { result: CascadeTableResult }
  * Les RANGÉES gardent le leur (`BatchParticipant`, homonyme mais autre champ : il dit qui JOUE, et
  * c'est `surfaceRow` qui le pose).
  */
+/** Les deux LECTURES d'un dé d'étape (#1426) — cf. `CascadeStep.evaluation`. */
+export type StepEvaluation = 'test' | 'seuil';
+
 export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
   /** Sous-titre de l'étape — CHAMP PILOTE du murage du texte joueur (#1318 V8a₀). RESSERRÉ ici et non
    *  sur `RollParticipant` : la marque entre par l'ÉTAPE de cascade, pas par toutes les rangées de tous
@@ -1587,6 +1613,20 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
   mods?: ModLine[];
   /** Cible EFFECTIVE (difficulté déjà appliquée → Test « +0 » sur `target`). Absent → étape sans jet. */
   target?: number;
+  /**
+   * COMMENT le dé se LIT (#1426). Absent = `'test'` : la lecture WFRP complète — bandes automatiques
+   * (LDB 12 l.28), Degrés de Réussite, écrêtage de la cible aux bornes de `TestPolicy`.
+   *
+   * `'seuil'` = POURCENTAGE PUR : `dé ≤ nombre visé`, RIEN d'autre. Aucune bande, aucun DR, aucun
+   * écrêtage. C'est ce que le RAW décrit quand il écrit « Lancez un d100 : si le résultat est
+   * inférieur ou égal au chiffre final, un acheteur est trouvé » (MSRC 13 l.146) ou « Lancez 1d100 et
+   * si le résultat est inférieur ou égal au nombre visé, vous trouvez un acheteur » (MDG 15 l.362) —
+   * les mêmes pages écrivent « Test de Ragot Complexe (–10) » trois lignes plus haut quand elles
+   * veulent un Test. Un nombre visé de 100 vaut donc 100 %, et un 03 ne réussit pas d'office.
+   *
+   * Le champ est ABSENT partout où le comportement ne change pas : aucune étape existante à migrer.
+   */
+  evaluation?: StepEvaluation;
   /** ÉCRÊTAGE réellement subi par `target` aux bornes de `TestPolicy` (`engine/tests.clampTarget`) —
    *  une base SOUTENUE peut dépasser le plafond, et l'écart doit se NOMMER (« plafond 99 ») au lieu
    *  d'être avoué « autres » par le réconciliateur de `RollLine`. Mesuré à la construction. */

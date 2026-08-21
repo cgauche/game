@@ -44,7 +44,7 @@ import type { ModLine } from '../engine/combat';
 import { RULE_REF } from '../engine/ruleRefs';
 import { testValue } from '../engine/skills';
 import { addCondition } from '../engine/conditions';
-import { d100, rollExpr, type RNG } from '../engine/dice';
+import { deMonde, rollExpr, type RNG } from '../engine/dice';
 import { difficultyFromModifier } from '../engine/tests';
 import { effectiveChar } from '../engine/characteristics';
 import {
@@ -58,7 +58,7 @@ import {
 } from '../engine/riverNavigation';
 import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
 import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
-import { freeCons, monoStep, choiceStep, displayStep, refusePorte, surfaceOf, pousseSi, type Consequence, type BandLigne } from './rollSeam';
+import { freeCons, monoStep, choiceStep, displayStep, refusePorte, surfaceOf, pousseSi, openWorldTest, type Consequence, type BandLigne } from './rollSeam';
 import type { BuiltCascadeStep } from './stepBrand';
 import { actorIn } from './combatants';
 import { riverAutoResolves, DEFAULT_VOYAGE_ORDERS, type VoyageCadence, type VoyageOrders } from './voyageCadence';
@@ -460,16 +460,17 @@ export function continueRiverDayAfterCascade(get: Get, set: Set): void {
   // (purpose générique `test`) n'a plus de continuation → la journée suivante ne se ré-arme jamais (#344).
   // Patron du sibling maritime (`seaScorbut`/`seaExhaustion`) : un purpose DÉDIÉ (`riverExposure`) dont la
   // clôture (`dispatchCascadeDone`) reprend la fin du jour (`continueRiverDayAfterExposure`).
-  if (maybeRiverExposure(get, set, route, () => sunk)) {
-    const pc = get().pendingCascade!;
-    set({
-      pendingCascade: { ...pc, purpose: 'riverExposure' },
-      travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, pendingFinish: { kmDay, dayLines } } },
-    });
-    return;
-  }
-
-  finishRiverDay(get, set, to, kmDay, dayLines);
+  // La progression du jour est FIGÉE avant le dé d'Exposition : celui-ci peut ouvrir une FENÊTRE (siège
+  // qui possède le monde, option « Dés fixés ») aussi bien que se résoudre d'un trait, et dans les deux
+  // cas la halte/l'arrivée se rejoue depuis ce point figé (`continueRiverDayAfterExposure`).
+  set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, pendingFinish: { kmDay, dayLines } } } });
+  openRiverExposureChance(get, set, route, sunk);
+  // Quelque chose s'est SURFACÉ (la fenêtre du dé, ou l'Effet d'Exposition qu'il vient d'ouvrir) : la fin
+  // de jour est DIFFÉRÉE à la clôture de cette cascade — sans ce report, la modale de Repos et celle
+  // d'Exposition coexistent et la journée suivante ne se ré-arme jamais (#344).
+  const pc = get().pendingCascade;
+  if (pc) { set({ pendingCascade: { ...pc, purpose: 'riverExposure' } }); return; }
+  continueRiverDayAfterExposure(get, set);
 }
 
 /** Reprise de la FIN du jour fluvial après la cascade d'Exposition hydrique (purpose `riverExposure`,
@@ -487,19 +488,38 @@ export function continueRiverDayAfterExposure(get: Get, set: Set): void {
   finishRiverDay(get, set, to, fin?.kmDay ?? 0, fin?.dayLines ?? []);
 }
 
-/** EXPOSITION HYDRIQUE d'une étape (MSRC 16, l.5-13) : tirage d'auteur (`MapRoute.riverExposure`) qui
- *  déclenche l'Effet EXISTANT `waterExposure` sur TOUT le groupe (`applyEffects`) — aucune mécanique neuve.
- *  Sauté si le bateau a coulé (plus de fleuve sous les pieds). L'Effet ouvre la cascade influençable. */
-function maybeRiverExposure(get: Get, set: Set, route: MapRoute, sunk: () => boolean): boolean {
+/**
+ * EXPOSITION HYDRIQUE d'une étape (MSRC 16, l.5-13) : tirage d'auteur (`MapRoute.riverExposure`) qui
+ * déclenche l'Effet EXISTANT `waterExposure` sur TOUT le groupe — aucune mécanique neuve. Sautée si le
+ * bateau a coulé (plus de fleuve sous les pieds).
+ *
+ * Le d100 d'auteur est un dé de MONDE : il DÉCIDE si l'Exposition a lieu, et se pose donc comme les
+ * autres (`worldStep`, évaluation `'seuil'` : `dé ≤ chancePct`, ni bande ni DR). Il est poussé EN FIN
+ * de la cascade du jour, là où il se tirait — sa conséquence ouvre l'Effet et pose `river.pendingFinish`.
+ * La chaîne halte/arrivée ne change PAS de forme : elle reste le différé de clôture
+ * (`continueRiverDayAfterExposure`, fix #344), jamais une interruption de trajet.
+ */
+function openRiverExposureChance(get: Get, set: Set, route: MapRoute, sunk: boolean): void {
   const ex = route.riverExposure;
-  if (!ex || sunk()) return false;
-  if (d100(battleRng()) > Math.max(0, Math.min(100, ex.chancePct))) return false;
-  const before = get().pendingCascade;
-  applyEffects(get, set, [{ type: 'waterExposure', mode: ex.mode, source: ex.source, target: 'party' }]);
-  // `true` seulement si l'Effet a bel et bien OUVERT une cascade (héros exposés, `startCascade`) — sinon
-  // (tout le groupe hors d'eau, aucune étape) la fin de jour enchaîne normalement.
-  return !!get().pendingCascade && get().pendingCascade !== before;
+  if (!ex || sunk) return;
+  openWorldTest(get, set, {
+    actionLabel: t('rv.exposureLabel'),
+    difficulty: 'intermediaire',
+  }, RIVER_EXPOSURE_KIND, {
+    baseValue: Math.max(0, Math.min(100, ex.chancePct)),
+    exposureMode: ex.mode, exposureSource: ex.source,
+  });
 }
+
+const RIVER_EXPOSURE_KIND = 'riverExposureChance';
+registerCascadeApplier(RIVER_EXPOSURE_KIND, (get, set, step) => {
+  if (!step.result) return {};
+  if (!step.result.success) return { consequences: freeCons([{ text: t('rv.exposureNone'), tone: 'info' }]) };
+  const mode = step.meta?.exposureMode as import('../data').WaterExposureMode;
+  const source = step.meta?.exposureSource as string | undefined;
+  applyEffects(get, set, [{ type: 'waterExposure', mode, source, target: 'party' }]);
+  return {};
+});
 
 function controlLabel(kept: boolean, success: boolean): string {
   if (success) return t('rv.controlKept');
@@ -672,7 +692,9 @@ registerCascadeApplier('riverPerilCheck', (get, set, step) => {
   const chancePct = Number(step.meta?.chancePct ?? 0);
   const peril = findRiverPeril(perilId);
   if (!peril) return;
-  if (d100(rng) > Math.max(0, Math.min(100, chancePct))) return; // un d100 par péril (comme inline)
+  // Rejeu POST-POSE de la chance du péril : l'étape `riverPerilCheck` est déjà posée, ce dé en est la
+  // conséquence — porte du canal (`deMonde`), un dé par péril (même position RNG qu'inline).
+  if (deMonde(rng) > Math.max(0, Math.min(100, chancePct))) return;
   if (peril.kind === 'navTest') {
     // Le Test d'évitement est INFLUENÇABLE → étape-jet insérée juste après (chance PUIS jet, ordre inline).
     const hasPilot = !!step.meta?.hasPilot;

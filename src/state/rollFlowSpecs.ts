@@ -15,7 +15,7 @@ import type {
   PendingReload, PendingStateRecovery, PendingTest, PendingSteamSave, PendingAppraise, PendingBargain, PendingHeal, PendingSurgery,
   PendingCorruption, PendingAttack, PendingHandGate, PendingDefense, PendingCast, PendingDisengage, FleeSlot, FleeBackstabSlot, PendingAuContact, PendingGrapple,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
-  PendingForceDoor, ForceDoorParticipant,
+  PendingForceDoor, PendingEtalLot, EtalLotRow, ForceDoorParticipant,
   PendingCastOpposition, OppositionParticipant,
   PendingCascade, CascadeStep, BatchParticipant,
 } from './store';
@@ -50,7 +50,7 @@ import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { d100, defaultRNG, type RNG } from '../engine/dice';
 import { resolveRun, resolveDeliberateFall, runFromTest, fallFromTest } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
-import { rollBatchParticipant, forceBatchParticipant, opposedCascadeRoll, stepOpposedFreeze } from './cascade';
+import { rollBatchParticipant, forceBatchParticipant, opposedCascadeRoll, stepOpposedFreeze, lireDeEtape, roulerDeEtape } from './cascade';
 import { rollLine } from './rollSeam';
 import { activityModLines } from '../engine/activities';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
@@ -993,6 +993,7 @@ export const FLOWS = {
       write: (_s, st, _a, _g, tr) => {
         if (st.target == null) return null;
         const opp = stepOpposedFreeze(st);
+        if (st.evaluation === 'seuil') return { result: lireDeEtape(tr.roll, st.target, st.evaluation) };
         return opp
           ? { result: opposedCascadeRoll(tr, opp, st.target, st.base) }
           : { result: { roll: tr.roll, target: st.target, sl: tr.sl, success: tr.success } };
@@ -1018,10 +1019,14 @@ export const FLOWS = {
         // Sur une étape BINAIRE (Terreur, Test de scène), le dé choisi ne change QUE le DR affiché :
         // `success` reste vrai — c'est la réussite achetée par le point de Résilience. Le dé FIXÉ, lui
         // (branche `forced.fixed` plus haut), n'achète rien : son issue est celle du dé, échec compris.
+        // Mode SEUIL : aucun DR à maximiser — la Résilience achète la seule chose qu'un pourcentage
+        // offre, la réussite, sur le dé le plus bas.
+        if (st.evaluation === 'seuil') return { result: { roll: 1, target: st.target, sl: 0, success: true } };
         const die = bestForcedRoll(st.target);
         const e = evaluateTest(die, st.target);
         return { result: { roll: die, target: st.target, sl: e.sl, success: true } };
       }
+      if (st.evaluation === 'seuil') return { result: roulerDeEtape(st.target, battleRng(), st.evaluation) };
       const t = rollTest(st.target, 'intermediaire', battleRng());
       // Test OPPOSÉ : l'issue success/sl du défenseur vient de `resolveOpposed(jetDéfenseur, aT figé)`
       // (l'attaquant garde son jet — calque `recover`/`disengage`), PAS de `roll ≤ target`. Le défenseur
@@ -1061,6 +1066,37 @@ export const FLOWS = {
         return bumpResultSL(st);
       },
     },
+  }),
+
+  /**
+   * LOT DE DÉS D'UN ÉTAL (#1426) — flux multi PARALLÈLE dégénéré : les dés sont DÉJÀ TOMBÉS (le
+   * générateur les a tirés à l'ouverture), chaque rangée n'offre donc que la POSE, jamais un
+   * relancement. D'où `rolled: () => true` (aucune phase pré-jet, aucun bouton « Lancer ») et
+   * `resolve: () => null` (rien à résoudre — le dé ne se re-jette pas, il se REMPLACE).
+   *
+   * Aucun acteur : ce sont des dés du MONDE. `actor` rend `undefined`, et c'est le sentinel
+   * `WORLD_STEP_OWNER` qui porte la fenêtre (cf. `modalArbiter`) — même possession que toute étape de
+   * monde. Le cycle d'influence (Chance/Pacte/Résilience) n'existe pas ici : on n'influence pas la
+   * météo d'un étal, on la POSE ou on la subit.
+   */
+  etalLot: makeRollFlow<PendingEtalLot, EtalLotRow>({
+    key: 'pendingEtalLot',
+    multi: { slots: (p) => p.participants, idOf: (r) => r.id, replace: (p, parts) => ({ ...p, participants: parts }) },
+    rolled: () => true,
+    actor: () => undefined,
+    die: {
+      read: (r) => ({ roll: r.value, target: r.max, critable: false, max: r.max }),
+      write: (_s, _r, _a, _g, tr) => ({ value: Math.max(1, Math.min(tr.roll, tr.target)) } as unknown as Partial<EtalLotRow>),
+    },
+    // La POSE passe par l'ACCESSEUR (`die.write` ci-dessus), jamais par ici : le socle réévalue le dé
+    // saisi lui-même. `resolve` n'a donc rien à faire — le dé est déjà tombé, il ne se re-jette pas.
+    resolve: () => null,
+    // `caps.forced` OUVRE le geste de pose (`setForcedRoll` y est gardé). La Résilience, elle, n'est pas
+    // offerte : le flux ne déclare pas le verbe `forceSuccess` — on n'achète pas la marchandise d'un étal.
+    caps: { forced: true },
+    // Un dé de lot ne REUSSIT ni n’ECHOUE : il tombe. L’issue est scellée neutre sur sa valeur —
+    // le socle exige une issue, le domaine n’en a pas à donner.
+    outcome: (r) => sealOutcome(true, 0, r.value, r.max),
   }),
 
   /**
@@ -2089,7 +2125,7 @@ export const FLOW_HANDLERS = {
   activity: FLOWS.activity, bargain: FLOWS.bargain, appraise: FLOWS.appraise, shanty: FLOWS.shanty,
   counterspell: FLOWS.counterspell, cascade: FLOWS.cascade, opposition: FLOWS.castOpposition, extendedTest: FLOWS.extendedTest,
   forceDoor: FLOWS.forceDoor, shipManeuver: FLOWS.shipManeuver, shipBattery: FLOWS.battery, crewTest: FLOWS.crewTest,
-  cascadeBatch: FLOWS.cascadeBatch,
+  cascadeBatch: FLOWS.cascadeBatch, etalLot: FLOWS.etalLot,
 } satisfies Record<keyof typeof FLOW_VERBS, RollFlowHandlers>;
 
 /** Un flux → ses délégués (Mono ou Multi selon `kind`) ; verbes lus depuis `FLOW_VERBS`. */

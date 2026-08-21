@@ -40,6 +40,7 @@ import type { PairedSense, GameOp } from '../engine/ops';
 import type {
   CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate, CascadeSecondRead, PendingCascade, CascadeTableDecl, CascadeTableResult, RevealEntry,
   PendingDeviation, PendingBladeTrap, PendingCritSeverity, PendingMiscastStep, PendingMutationStep,
+  StepEvaluation,
 } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
 import type { PlayerText } from '../i18n/playerText';
@@ -53,7 +54,7 @@ import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepResolved, clampStepAmount } from './cascade';
 import { testValue, partyBest, partyAssisted, testValueSplit, testValueParts, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
 import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
-import { jetSurfaced, pilotedByHuman } from './netOwnership';
+import { jetSurfaced, pilotedByHuman, canFixDie, WORLD_STEP_OWNER } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { findSkillById, conditionLabel, dataLabel, type StakeRef } from '../data';
@@ -79,8 +80,8 @@ export interface RollRequest {
   side:
     | { actorId: string }
     | { partyBest: { skill?: string; char?: CharKey; assisted?: boolean } }
-    | { worldSide: 'enemy' | 'world'; ownerId?: string }
-    | { participants: BatchParticipant[]; ownerId?: string };
+    | { worldSide: 'enemy' | 'world' }
+    | { participants: BatchParticipant[] };
   /** Le NOM DE L'ACTION SEUL (« Forcer le rythme », « Prière », « Désertion »…) — CHAMP STRUCTURÉ
    *  DISTINCT de `test` (fix de classe #352 : l'ancien `test.label` texte-libre pouvait se confondre
    *  avec la compétence). Rendu UNIQUEMENT en position de TITRE (`rollTitle`) — jamais recomposé avec
@@ -97,6 +98,10 @@ export interface RollRequest {
   klass: RollClass;
   /** Requis pour un `batch`/multi ; défaut `summed-dr` (Test d'équipage, MDG 14). */
   aggregate?: RollAggregate;
+  /** COMMENT le dé se LIT (#1426) — `'seuil'` = pourcentage pur (`dé ≤ nombre visé`, ni bande ni DR ni
+   *  écrêtage), tel que le RAW l'écrit pour la recherche d'acheteur (MSRC 13 l.146 / MDG 15 l.362) et
+   *  les chances d'auteur. Absent = `'test'` : rien ne change pour les appelants existants. */
+  evaluation?: StepEvaluation;
   /** ENJEU du jet (#1117) — RÉFÉRENCE de donnée produite par une porte d'enjeu (`combatStakeRef`,
    *  `nightStakeRef`, `voyageStakeRef`…), jamais un texte : la porte du seam la POSE telle quelle sur
    *  l'étape qu'elle construit (mono comme batch). C'est ici que le flux appelant dit ce qu'il met en
@@ -343,8 +348,12 @@ export function resolveSurface(get: Get, req: RollRequest, kind: string): Surfac
   }
 
   if (req.side && 'worldSide' in req.side) {
-    // Ennemi/monde sans acteur unique : le MJ voit/lance (V) ; sans MJ, résolu en silence de fond (I).
-    return gmSeat != null ? 'V' : 'I';
+    // Ennemi/monde sans acteur unique : le MJ voit/lance (V). Sans MJ, le siège qui POSSÈDE le monde
+    // (`WORLD_STEP_OWNER` → l'hôte/le solo, `netOwnership.seatOwns`) reçoit la fenêtre dès que la pose
+    // de dé lui est offerte (#1426) — possession et surface se dérivent du MÊME prédicat, sans quoi un
+    // siège possédait un jet qu'il ne voyait JAMAIS. Sinon : silence de fond (I).
+    if (gmSeat != null) return 'V';
+    return poseOfferte(get, WORLD_STEP_OWNER) ? 'M' : 'I';
   }
 
   const actor = resolveMonoSide(get, req).actor;
@@ -383,6 +392,24 @@ export function resolveSurface(get: Get, req: RollRequest, kind: string): Surfac
  */
 export function surfaceOf(get: Get, actor: Combatant | undefined): boolean {
   return !!actor && !cadenceAuto() && jetSurfaced(get(), actor);
+}
+
+/**
+ * LA POLITIQUE DE POSE (#1426) — ce dé s'OFFRE-t-il à la pose (fenêtre / étape non résolue) plutôt que
+ * de se tirer sur place ? EXPRESSION UNIQUE, employée par la porte elle-même (`resolveSurface`, côté
+ * `worldSide`) ET par les étapes à TABLE que les flux poussent (sévérité de Critique, Imparfaite,
+ * mutation, Événement d'interlude) : le socle décide, les feuilles déclarent. Avant #1426 ce `if`
+ * était recopié en quatre exemplaires, chacun libre de dériver.
+ *
+ * Elle compose le prédicat de contrôle EXISTANT (`netOwnership.canFixDie` : option de confort active
+ * ET le siège qui décide possède le porteur) et RIEN d'autre. `ownerId` absent ou `WORLD_STEP_OWNER` :
+ * le porteur est le monde (`seatOwns` → le siège MJ s'il existe, l'hôte sinon).
+ *
+ * La CADENCE n'entre pas ici : `resolveSurface` la tranche avant tout (auto → I partout), et une étape
+ * à table reste cadence-agnostique — elle s'ouvre et se tranche à son `defaultChoice`.
+ */
+export function poseOfferte(get: Get, ownerId: string | undefined): boolean {
+  return canFixDie(get(), ownerId);
 }
 
 /**
@@ -890,6 +917,7 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
     ...(line.mods.length ? { mods: line.mods } : {}),
     target: line.target,
     ...(line.clamped ? { clamped: line.clamped } : {}),
+    ...(req.evaluation ? { evaluation: req.evaluation } : {}),
     result: null,
     menace: req.test.menace,
     ...(req.stake ? { stake: req.stake } : {}),
@@ -972,22 +1000,30 @@ export function openPartyTest(
 }
 
 /**
- * FORME STÉRÉOTYPÉE 2/2 (#352 extension) : Test SUBI par le siège MONDE (`klass:'subi'`, side
- * `worldSide`) — désertion/recherche d'acheteur : aucune compétence (la cible est posée par
- * l'appelant via `meta.baseValue`), seul `ownerId` varie. SOURCE UNIQUE, cf. `openPartyTest`.
+ * FORME STÉRÉOTYPÉE 2/2 (#352 extension) : jet SUBI par le siège MONDE (`klass:'subi'`, side
+ * `worldSide`) — désertion, recherche d'acheteur, chance d'un péril d'auteur : aucune compétence (la
+ * cible est posée par l'appelant via `meta.baseValue`). La POSSESSION ne se déclare pas ici : une
+ * étape sans acteur est routée au sentinel `WORLD_STEP_OWNER` par `buildMonoStep`+`modalArbiter`, qui
+ * la rend au siège MJ s'il existe et à l'hôte sinon. SOURCE UNIQUE, cf. `openPartyTest`.
+ *
+ * ÉVALUATION `'seuil'` (#1426) : ces dés ne sont PAS des Tests — le RAW dit « lancez un d100 [...] si
+ * le résultat est inférieur ou égal au chiffre final » (MSRC 13 l.146, MDG 15 l.362) et écrit « Test »
+ * trois lignes plus haut quand il en veut un. La porte le déclare donc pour toute sa famille ; un
+ * appelant qui veut un vrai Test de monde passe par `openRoll`.
  */
 export function openWorldTest(
   get: Get, set: Set,
-  spec: { ownerId: string; actionLabel: string; difficulty: Difficulty; stake?: StakeRef },
+  spec: { actionLabel: string; difficulty: Difficulty; stake?: StakeRef },
   kind: string,
   meta?: CascadeStepMeta,
 ): void {
   openRoll(get, set, {
-    side: { worldSide: 'world', ownerId: spec.ownerId },
+    side: { worldSide: 'world' },
     actionLabel: spec.actionLabel,
     test: {},
     difficulty: spec.difficulty,
     klass: 'subi',
+    evaluation: 'seuil',
     ...(spec.stake ? { stake: spec.stake } : {}),
   }, kind, meta);
 }
@@ -1407,8 +1443,14 @@ export interface TableSpec {
   kind: string;
   label: PlayerText;
   icon?: string;
-  /** PORTEUR du tirage : l'arbitre route la fenêtre à son siège (un d100 subi a son sujet). */
-  actorId: string;
+  /** PORTEUR du tirage : l'arbitre route la fenêtre à son siège (un d100 subi a son sujet). Absent
+   *  UNIQUEMENT sur une table de MONDE (`worldOwner`), où aucun personnage n'est concerné. */
+  actorId?: string;
+  /** Tirage de MONDE (#1426) — Météo d'étape, événement de bord, cargaison disponible : la table
+   *  n'appartient à AUCUN personnage. L'arbitre route sa fenêtre au sentinel `WORLD_STEP_OWNER`
+   *  (siège MJ s'il existe, hôte sinon), exactement comme un `worldStep`. EXCLUSIF avec `actorId` :
+   *  une table a un sujet, ou elle est au monde — jamais les deux, jamais aucun des deux. */
+  worldOwner?: boolean;
   table: CascadeTableDecl;
   /** ENJEU du tirage — REQUIS au TYPE (#1117/#1262 V2 L6) : la famille des étapes à table est le seul
    *  mint dont TOUS les sites de production sont dotés (mesure du lot : 0 site muet hors tests), donc
@@ -1459,7 +1501,7 @@ export function tableStep(spec: TableSpec): BuiltCascadeStep | undefined {
     kind: spec.kind,
     label: spec.label,
     ...(spec.icon ? { icon: spec.icon } : {}),
-    actorId: spec.actorId,
+    ...(spec.worldOwner ? { worldOwner: true } : { actorId: spec.actorId }),
     table: spec.table,
     stake: spec.stake,
     ...(spec.critSeverity ? { critSeverity: spec.critSeverity } : {}),
@@ -1549,6 +1591,47 @@ export function displayStep(spec: DisplaySpec): BuiltCascadeStep {
     ...(spec.worldOwner ? { worldOwner: true } : { actorId: spec.actorId }),
     ...(spec.outcome ? { outcome: spec.outcome } : {}),
     ...(spec.fleeMove ? { fleeMove: spec.fleeMove } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  } as BuiltCascadeStep;
+}
+
+/** DÉCLARATION d'un dé de MONDE en ÉTAPE (#1426) — le nombre visé, ce qui se joue, rien d'autre. */
+export interface WorldStepSpec {
+  id: string;
+  kind: string;
+  label: PlayerText;
+  icon?: string;
+  /** Le NOMBRE VISÉ du pourcentage (`dé ≤ cible`). Aucune Difficulté ne s'y applique : ce n'est pas un Test. */
+  cible: number;
+  /** Intitulé rendu en position de « compétence » sur la rangée. Défaut : le libellé de la situation. */
+  rollLabel?: string;
+  stake?: StakeRef;
+  meta?: CascadeStepMeta;
+}
+
+/**
+ * CONSTRUCTEUR d'un dé de MONDE (#1426) — la JUMELLE DÉCLARATIVE d'`openWorldTest` : même étape, même
+ * possession (sentinel `WORLD_STEP_OWNER` via `worldOwner`), même évaluation `'seuil'` ; `openWorldTest`
+ * l'OUVRE seule, `worldStep` la rend à un flux qui compose SA séquence (périls d'auteur d'une route,
+ * Exposition hydrique d'une étape). Sans elle, un flux qui veut N dés de monde dans une même cascade
+ * n'avait que le littéral monté à la main — la porte le refuse par le type (`BuiltCascadeStep`).
+ *
+ * Aucune Difficulté n'entre ici : un pourcentage d'auteur n'en a pas, et `evaluation:'seuil'` interdit
+ * qu'on lui en fabrique une (ni bande, ni DR, ni écrêtage — cf. `CascadeStep.evaluation`).
+ */
+export function worldStep(spec: WorldStepSpec): BuiltCascadeStep {
+  return {
+    id: spec.id,
+    kind: spec.kind,
+    label: spec.label,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    worldOwner: true,
+    ...(spec.rollLabel ? { rollLabel: spec.rollLabel } : {}),
+    base: spec.cible,
+    target: spec.cible,
+    evaluation: 'seuil',
+    result: null,
+    ...(spec.stake ? { stake: spec.stake } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   } as BuiltCascadeStep;
 }

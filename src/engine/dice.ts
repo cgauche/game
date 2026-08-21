@@ -49,6 +49,23 @@ export const roll = (n: number, sides: number, rng: RNG = defaultRNG) => {
   return total;
 };
 
+/**
+ * LE DÉ DU MONDE (#1426) — porte UNIQUE de tout tirage que l'ENVIRONNEMENT produit et qui se résout
+ * SANS fenêtre de pose : chance d'occurrence d'un péril rejouée dans l'applier de son étape, contenu
+ * narratif tiré en conséquence d'un Test déjà joué, descente de sous-table d'un dé déjà posé.
+ *
+ * Sa JUMELLE SURFACÉE est `state/rollSeam.openWorldTest` (une étape que le siège possédant le monde
+ * peut poser) ; le tirage en TABLE surfacé est `state/cascade.rollTableStep`. Un site choisit entre
+ * ces trois portes — il n'y a pas de quatrième voie : un `d100(` nu dans `src/state`/`src/ui`/
+ * `src/data` est une régression, comptée nominativement par `WORLD_DIE_SUBTRACTED_STOCK`
+ * (`scripts/guards/lib/rollSeamWhitelist.mjs`).
+ *
+ * Elle vit ICI, dans le moteur PUR (rng injecté), et pas dans le seam : `src/data` en dépend, et une
+ * donnée ne peut pas importer le store. Le CONTRAT du canal — l'élément N+1 coûte UNE ligne
+ * déclarative, jamais un dé recopié — vaut pour les trois portes.
+ */
+export const deMonde = (rng: RNG = defaultRNG): number => d100(rng);
+
 /** Descripteur de jet de dés en DONNÉE (forme canonique partagée : « NdM(+P ») — `n`d`sides`+`plus`).
  *  Source UNIQUE réutilisée par la Formula `{dice}` (ops), les maladies (incubation/durée) et les
  *  Imparfaites (miscast, qui l'étend d'un `sinPlus`). */

@@ -61,6 +61,8 @@ const STATE_FIELDS = {
   pendingCast: { init: null, resetOn: ['combatStart'] },
   pendingCounterspell: { init: null, resetOn: ['combatStart'] },
   pendingExtendedTest: { init: null, resetOn: [] },
+  /** LOT DE DÉS d'un étal (#1426) : ouvert AVANT l'écran de marché/port, refermé à sa validation. */
+  pendingEtalLot: { init: null, resetOn: ['scene'] },
   pendingForceDoor: { init: null, resetOn: [] },
   pendingCascade: { init: null, resetOn: ['scene', 'combatStart'] },
   // Pile de cascades SUSPENDUES (state/cascade.ts) : DOIT survivre à `scene`/`combatStart` (c'est

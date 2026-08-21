@@ -140,7 +140,7 @@ export function rowForcedDie(
   // Résilience en cours : le dé CHOISI prime (le point est dépensé, l'issue reste une réussite).
   if (slot.forced && pick) return { forcedRoll: { ...pick, onSet }, fixedMark: mark };
   if (!canFixDie(s, row.actor?.id)) return { fixedMark: mark };
-  if (isRolled) return pick ? { forcedRoll: { roll: pick.roll, target: pick.target, onSet, fixed: true }, fixedMark: mark } : { fixedMark: mark };
+  if (isRolled) return pick ? { forcedRoll: { roll: pick.roll, target: pick.target, ...(pick.max != null ? { max: pick.max } : {}), onSet, fixed: true }, fixedMark: mark } : { fixedMark: mark };
   // AVANT le jet : la saisie LANCE puis substitue — même geste que la Résilience pré-jet (`preRollForce`).
   // Sans déclencheur de jet, la rangée n'a rien à substituer : aucun champ n'est offert. Le couple
   // (jet naturel, substitution) est ATOMIQUE côté moteur (`withPreRollFixedDie`, #1029) : aucun

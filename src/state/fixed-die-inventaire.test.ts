@@ -198,6 +198,13 @@ const FIXTURES: Partial<Record<FlowKey, Fixture>> = {
       return { roll: r.roll, success: r.success };
     },
   },
+  // LOT DE DÉS d'un étal (#1426) : le seul verbe est la POSE. La rangée n'a ni cible ni réussite —
+  // ce qu'on vérifie est le SEUL contrat qui existe ici : la valeur SAISIE est la valeur APPLIQUÉE.
+  etalLot: {
+    state: { pendingEtalLot: { label: 'Halle', cible: 'land', participants: [{ id: 'de-1', label: 'Marchand présent', min: 1, max: 100, value: 88, interactive: true, result: null }] } },
+    pid: 'de-1',
+    read: () => { const v = P<{ participants: { value: number }[] }>('pendingEtalLot').participants[0].value; return { roll: v, success: v <= T }; },
+  },
   forceDoor: {
     state: { pendingForceDoor: { doorId: 'd', participants: [{ id: 'H', interactive: true, result: { roll: 88, target: T, sl: -4, damage: 0 } }] } },
     pid: 'H',
@@ -280,9 +287,14 @@ describe('socle du dé fixé — les flux passent TOUS par le même chemin', () 
  * Deux régressions que cette garde ferme : les Tests opposés binaires RELANÇAIENT un dé aléatoire (point de
  * Résilience perdu, réussite détruite) ; quatorze flux rendaient le sélecteur en IGNORANT la saisie.
  */
+// Le dé CHOISI est un geste de RÉSILIENCE : il n'a de sens que pour les flux qui la déclarent. Un
+// flux qui n'offre que la POSE (lot de dés d'étal : `verbs: ['setForcedRoll']`) n'a pas de
+// `forceSuccess` à appeler — l'itérer ici mesurerait un verbe qui n'existe pas.
+const FLUX_RESILIENCE = FLUX.filter((k) => (FLOW_VERBS[k].verbs as readonly string[]).includes('forceSuccess'));
+
 describe('socle du dé choisi (Résilience) — même chemin, politique en paramètre', () => {
   const CHOISI = 11; // ≤ cible (45) : le plus bas double réussi — le dé de l'exemple Salundra (l.70)
-  for (const k of FLUX) {
+  for (const k of FLUX_RESILIENCE) {
     it(`${k} — le dé choisi s'applique, la réussite achetée tient, le point n'est pas re-dépensé`, () => {
       const f = FIXTURES[k]!;
       // Acteur FRAIS par fixture : un objet partagé verrait sa Résilience épuisée par les cas précédents,

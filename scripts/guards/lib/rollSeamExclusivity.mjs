@@ -150,10 +150,18 @@ function isWorldDie(node, kind, sf) {
 /**
  * Scan complet d'un fichier source : chaque APPEL de roulage/scellement brut qui n'est ni en position
  * de spec (S) ni un dé de monde (M).
- * @param {string} relPath @param {string} contenu
- * @returns {{ line: number, detail: string }[]}
+ *
+ * `opts.includeExcluded` (#1426) — rend AUSSI les sites que les formes (S)/(M) écartent, chacun marqué
+ * `excludedBy: 'S'|'M'`. Ce paramètre existe parce qu'une exemption STRUCTURELLE ne laisse, par
+ * construction, aucune liste visible : sans lui, (M) a pu absorber un stock illimité sans qu'aucun
+ * chiffre ne bouge. Un FORK instrumenté du scanner aurait été un second socle de scan — la maladie
+ * même que la reconnaissance structurelle (#918-B) avait soignée. Le garde d'exclusivité continue
+ * d'appeler la forme NUE : les sites écartés ne sont jamais des violations, seulement des sites
+ * COMPTÉS (`WORLD_DIE_SUBTRACTED_STOCK`).
+ * @param {string} relPath @param {string} contenu @param {{ includeExcluded?: boolean }} [opts]
+ * @returns {{ line: number, detail: string, excludedBy?: 'S'|'M' }[]}
  */
-export function scanRollSeamExclusivity(relPath, contenu) {
+export function scanRollSeamExclusivity(relPath, contenu, opts = {}) {
   if (!ROLL_SEAM_RX.test(contenu)) return [];
   const sf = ts.createSourceFile(
     relPath, contenu, ts.ScriptTarget.Latest, true,
@@ -162,11 +170,15 @@ export function scanRollSeamExclusivity(relPath, contenu) {
   const findings = [];
   const visit = (node) => {
     const kind = siteKind(node);
-    if (kind && !inSpecCallback(node) && !isWorldDie(node, kind, sf)) {
-      findings.push({
-        line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
-        detail: node.getText(sf).replace(/\s+/g, ' ').trim(),
-      });
+    if (kind) {
+      const excludedBy = inSpecCallback(node) ? 'S' : isWorldDie(node, kind, sf) ? 'M' : null;
+      if (!excludedBy || opts.includeExcluded) {
+        findings.push({
+          line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
+          detail: node.getText(sf).replace(/\s+/g, ' ').trim(),
+          ...(excludedBy ? { excludedBy } : {}),
+        });
+      }
     }
     ts.forEachChild(node, visit);
   };

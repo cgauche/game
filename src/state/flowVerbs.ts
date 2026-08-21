@@ -129,6 +129,10 @@ export const FLOW_VERBS = {
   opposition:   { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], coop: true, resolution: ['oppositionConfirm'] },
   // `pid` = id de ROUND (`ExtendedTestRound.id`), pas un combattant : même politique que `cascade`.
   extendedTest: { kind: 'multi', pidIsActor: false, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, resolution: ['extendedTestNext', 'extendedTestCancel'] },
+  // LOT DE DÉS d'un étal (#1426) : des dés du MONDE, déjà tombés — le seul verbe est la POSE
+  // (`setForcedRoll`). Ni `roll` (rien à lancer), ni Chance/Pacte/Résilience (on n'influence pas la
+  // marchandise d'un étal). `pidIsActor: false` : un `pid` est un DÉ, jamais un combattant.
+  etalLot:      { kind: 'multi', pidIsActor: false, verbs: ['setForcedRoll'], coop: true, resolution: ['etalLotConfirm', 'etalLotCancel'] },
   forceDoor:    { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, resolution: ['forceDoorConfirm', 'forceDoorCancel'] },
   shipManeuver: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: ['shipManeuverConfirm', 'shipManeuverCancel'] },
   shipBattery:  { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: ['shipBatteryConfirm', 'shipBatteryCancel'] },

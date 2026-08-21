@@ -13,7 +13,7 @@ d'affichage chaque consommateur remplit, et quelles particularités MÉCANIQUES 
 Le contrat lui-même (ce que chaque zone doit porter, et où) est DÉFINI par `docs/charte-ui.md` : ce
 document ne le redéfinit pas, il MESURE qui en consomme quoi.
 
-**Population mesurée : 36 consommateurs** — 47 sites JSX `<RollShell …>` (J) et 6 producteurs de
+**Population mesurée : 37 consommateurs** — 48 sites JSX `<RollShell …>` (J) et 6 producteurs de
 props `ComponentProps<typeof RollShell>` (H, les hooks qui paramètrent la coquille sans la rendre).
 
 ## Zones de COQUILLE (légende des colonnes)
@@ -60,6 +60,7 @@ sa définition vit à la charte. Une prop non encore taguée affiche « — » e
 | `src/ui/DisengageModal.tsx` | `DisengageModal` (J) ×2 | variable / 2 | ✓ | · | · | · | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | · | ✓ |
 | `src/ui/DispelModal.tsx` | `DispelModal` (J) | 1 | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/DistraireModal.tsx` | `DistraireModal` (J) | 2 | ✓ | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
+| `src/ui/EtalLotModal.tsx` | `EtalLotModal` (J) | variable | ✓ | · | ✓ | · | · | ✓ | · | · | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/FallModal.tsx` | `FallModal` (J) ×2 | 0 / 1 | ✓ | ✓ | · | · | · | ✓ | · | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/FocusModal.tsx` | `FocusModal` (J) | 1 | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/ForceDoorModal.tsx` | `ForceDoorModal` (J) | variable | ✓ | ✓ | ✓ | · | · | · | · | · | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | ✓ |
@@ -99,7 +100,7 @@ qu'il étale. La matrice ci-dessus le montre par une ligne quasi vide — c'est 
 |---|---|
 | `src/ui/CascadeModal.tsx` | `attackProps`, `defenseProps`, `extendedProps`, `fumbleProps`, `stakeProps`, `testProps`, `trampleProps` |
 
-_1 consommateurs sur 36._
+_1 consommateurs sur 37._
 
 ## Matrice — consommateur × zones de RANGÉE
 
@@ -122,6 +123,7 @@ seraient une colonne vide de bout en bout.
 | `src/ui/DisengageModal.tsx` | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | · | · | · | · | · | · | · |
 | `src/ui/DispelModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | ✓ |
 | `src/ui/DistraireModal.tsx` | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/EtalLotModal.tsx` | · | · | · | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/FallModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/FocusModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | ✓ |
 | `src/ui/ForceDoorModal.tsx` | · | · | · | ✓ | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
@@ -168,6 +170,7 @@ Aucune n'est déclarée par un nom de fichier : chacune est la conjonction de zo
 | `src/ui/DisengageModal.tsx` | ✓ | · | · | · | · | · | · | — |
 | `src/ui/DispelModal.tsx` | · | · | · | ✓ | · | · | · | `Icon` |
 | `src/ui/DistraireModal.tsx` | ✓ | · | · | · | · | · | · | `OptionChooser`, `VsHeader` |
+| `src/ui/EtalLotModal.tsx` | · | · | · | · | · | · | · | `Icon` |
 | `src/ui/FallModal.tsx` | · | · | · | · | · | · | · | `ChoiceButtons`, `Icon` |
 | `src/ui/FocusModal.tsx` | · | · | · | ✓ | · | · | · | `Icon` |
 | `src/ui/ForceDoorModal.tsx` | · | ✓ | · | · | · | · | · | `Icon` |

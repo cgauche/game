@@ -748,7 +748,7 @@ Lancer 1d10 pour chaque aspect (Précipitations, Température, Visibilité, Vent
 **Voir aussi :** [Vents (MDG)](#vents-mdg), [Orientation et phares (MDG)](#orientation-et-phares-mdg), [`etats.md`](etats.md) (Exposition).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.162-243) → `carte`, `PendingTest`, `FoulingLevel`, `aucune`, `applyExposureFailure`, `legeres`, `exposureNight`, `voyageTiles`, `abondantes`, `seaWeatherTestMod`, +24 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/exposure.ts`, +7 fichiers
+- `MDG 13` (l.162-243) → `carte`, `PendingTest`, `FoulingLevel`, `aucune`, `applyExposureFailure`, `legeres`, `exposureNight`, `voyageTiles`, `abondantes`, `tres-abondantes`, +24 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/exposure.ts`, +7 fichiers
 
 ---
 
@@ -979,7 +979,7 @@ Pour un voyage de plusieurs semaines : on calcule la vitesse moyenne (modifiée 
 **Voir aussi :** [Humeur de Manann et événements en mer (MDG)](#humeur-de-manann-et-événements-en-mer-mdg), [Commerce maritime (MDG)](#commerce-maritime-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.3-78) → `vaincre-stromfels`, `grand-sacrifice`, `coiffe-de-naissance`, `sacrifice-moyen`, `pretre-sans-peche`, `prieres-jouees`, `WorldMapView`, `mannslieb-pleine`, `chat-heureux`, `petit-sacrifice`, +36 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-events.ts`, `src/data/sea-events.json`, `src/data/sea-navigation.json`, `src/data/trappings.json`, +7 fichiers
+- `MDG 15` (l.3-78) → `vaincre-stromfels`, `grand-sacrifice`, `coiffe-de-naissance`, `sacrifice-moyen`, `pretre-sans-peche`, `prieres-jouees`, `WorldMapView`, `mannslieb-pleine`, `chat-heureux`, `petit-sacrifice`, +37 — `src/data/activities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-events.ts`, `src/data/sea-events.json`, `src/data/sea-navigation.json`, +8 fichiers
 
 ---
 
@@ -998,7 +998,7 @@ Chaque jour en mer, on tient un **total cumulé d'Humeur de Manann** (chaque mod
 **Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Moral de l'équipage (MDG)](#moral-de-léquipage-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.81-263) → `ShoreLeaveBody`, `ManannBody`, `vaincre-stromfels`, `SeaActivitiesModal`, `grand-sacrifice`, `openEmbrigadementRecovery`, `coiffe-de-naissance`, `EscaleTab`, `SEA_ACTIVITIES_INTRO`, `sacrifice-moyen`, +122 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-events.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/sea-navigation.json`, +17 fichiers
+- `MDG 15` (l.81-263) → `ShoreLeaveBody`, `ManannBody`, `vaincre-stromfels`, `SeaActivitiesModal`, `grand-sacrifice`, `openEmbrigadementRecovery`, `coiffe-de-naissance`, `EscaleTab`, `SEA_ACTIVITIES_INTRO`, `sacrifice-moyen`, +124 — `src/data/activities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-events.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, +18 fichiers
 
 ---
 
@@ -1051,5 +1051,5 @@ Deux actes : **acheter** une cargaison, la **vendre** ailleurs. Chaque port a un
 **Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Activités en mer (MDG)](#activités-en-mer-mdg) (Commerce d'opportunité), [`merchantFlow.ts`](../../src/state/merchantFlow.ts) (Marchandage).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `schema`, `cargoMarqueur`, `PortHeader`, `PORT_PRODUITS`, `cereales`, `MapPlace`, `CargoMarkerDef`, `marienburg`, +59 — `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs/naval-ports.ts`, `src/data/schemas/defs/sea-cargo.ts`, +22 fichiers
+- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `schema`, `cargoMarqueur`, `PortHeader`, `PORT_PRODUITS`, `cereales`, `MapPlace`, `CargoMarkerDef`, `marienburg`, +62 — `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs/naval-ports.ts`, `src/data/schemas/defs/sea-cargo.ts`, +23 fichiers
 

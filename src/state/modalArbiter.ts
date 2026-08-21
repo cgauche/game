@@ -63,6 +63,9 @@ export const MODAL_DEFS = [
   //  unique lue par `fumbleRoll` ; `fumbleConfirm` applique les Oups ! et enchaîne le curseur.)
   // (Le Renversement (Déstabilisante) n'ouvre AUCUNE modale et ne pose aucun `pending*` : il se résout
   //  dans l'attribution d'Avantage de `applyAttackResult` (`reversalStealOne`, `combat/advantagePool.ts`).)
+  // LOT DE DÉS d'un étal (#1426) : aucun personnage n'est concerné — c'est le MONDE qui tire. Owner =
+  // le sentinel `WORLD_STEP_OWNER` (siège MJ s'il existe, hôte sinon), comme toute étape de monde.
+  { key: 'etalLot', when: (s) => !!s.pendingEtalLot, owner: () => WORLD_STEP_OWNER, auto: { mode: 'self', drive: ['etalLotConfirm'] }, covers: ['pendingEtalLot'] },
   { key: 'renounce', when: (s) => !!s.pendingRenounce, owner: (s) => s.pendingRenounce?.heroId, auto: { mode: 'choice' }, covers: ['pendingRenounce'] },
   // (Le Piétinement est une étape `jet:'trample'` de la cascade `combat`, rendue par `cascade` ci-dessous
   //  (CascadeModal → useTrampleJetProps) — `pendingTrample` coexiste comme porteur de données. Le jet ET

@@ -1,10 +1,16 @@
 export interface Finding {
   line: number;
   detail: string;
+  /** Présent seulement en mode `includeExcluded` : la forme qui a écarté ce site (#1426). */
+  excludedBy?: 'S' | 'M';
 }
 
 export const ROLL_SEAM_RX: RegExp;
-export function scanRollSeamExclusivity(relPath: string, contenu: string): Finding[];
+export function scanRollSeamExclusivity(
+  relPath: string,
+  contenu: string,
+  opts?: { includeExcluded?: boolean },
+): Finding[];
 
 /** Registre des chemins de jet (#1066) — famille (F) « fabrication d'un pending de jet ». */
 export const PENDING_JET_RX: RegExp;

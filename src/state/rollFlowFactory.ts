@@ -156,6 +156,9 @@ export interface ForcedPick {
   base?: number;
   /** Le double (11) a un effet (Coup/Incantation Critique) → bouton « 11 · Critique ». */
   critable?: boolean;
+  /** FACES du dé quand ce n'est pas un d100 (dé de lot d'étal : d10…). Le champ s'y borne — sans quoi
+   *  il accepterait un 73 sur un dé à 10 faces et afficherait une valeur intirable. */
+  max?: number;
 }
 
 /**

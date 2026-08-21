@@ -13,12 +13,11 @@
  */
 import type { GameState } from './store';
 import { battleRng } from './battleRng';
-import { d100, roll as rollDice } from '../engine/dice';
+import { d100, deMonde, roll as rollDice } from '../engine/dice';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure } from '../engine/tests';
 import { INTERLUDE_EVENTS, interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
-import { canFixDie } from './netOwnership';
 import { registerCascadeApplier, registerTableStep, rollTableStep, startCascade } from './cascade';
-import { freeCons, rollLine } from './rollSeam';
+import { freeCons, rollLine, poseOfferte } from './rollSeam';
 import type { CascadeStep, CascadeTableDecl } from './pendings';
 import { fromBrass, toBrass, formatMoney, priceToMoney, canAfford, parseStatus, PA_PER_CO, PA_PER_SC } from '../engine/money';
 import { partyMoneyTotal, bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse, debitBourse } from './bourseFlow';
@@ -215,13 +214,13 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
   set({ interlude: { weeks: w, phase: 'tirage', perHero }, bank: get().bank ?? [], pendingOrders: [], screen: 'interlude' });
   for (const l of lines) get().log(l);
   // FENÊTRE DE POSE du dé d'Événement (#942 L7) — option « Dés fixés » + siège qui contrôle CE héros
-  // (`canFixDie`) : son tirage devient une étape à table poussée NON RÉSOLUE, et AUCUN effet ne lui
+  // (`poseOfferte`, LA politique de pose du socle) : son tirage devient une étape à table poussée NON RÉSOLUE, et AUCUN effet ne lui
   // est appliqué avant la pose. Sans l'option ni le contrôle : le dé est tiré ici, par le MÊME
   // résolveur — zéro friction, flux RNG identique. Chaque héros a SA fenêtre (en coop, chaque siège
   // pose pour les siens) ; le dénouement de GROUPE ferme la séquence.
   const steps: CascadeStep[] = [];
   for (const h of party) {
-    if (canFixDie(get(), h.id)) { steps.push(eventStep(h)); continue; }
+    if (poseOfferte(get, h.id)) { steps.push(eventStep(h)); continue; }
     for (const l of finishInterludeEvent(get, set, h, rollTableStep(INTERLUDE_EVENT_DECL, battleRng()).roll)) get().log(l);
   }
   if (steps.length) startCascade(get, set, { title: msg('if.drawTitle'), icon: 'nav/dice', purpose: INTERLUDE_PURPOSE, steps: [...steps, purseStep()] });
@@ -1044,9 +1043,11 @@ function runActivityResolver(get: Get, set: Set, resolver: ActivityResolver, pa:
       // combat) — mesuré, non fabriqué (#510).
       if (!pa.success) return { lines: [msg('if.contremaitreKo', { name: h.label })] };
       const rng = battleRng();
-      const lieu = findTableEntry(findEffectTableById('contremaitre-lieu').rows, d100(rng));
-      const objectif = findTableEntry(findEffectTableById('contremaitre-objectif').rows, d100(rng));
-      const perso = findTableEntry(findEffectTableById('contremaitre-personnalite').rows, d100(rng));
+      // Trois tirages de MONDE par la porte du canal (`deMonde`, `engine/dice`) : ils sont la
+      // CONSÉQUENCE du Test de Ragot déjà joué et surfacé (`pa`), pas une occasion de pose de plus.
+      const lieu = findTableEntry(findEffectTableById('contremaitre-lieu').rows, deMonde(rng));
+      const objectif = findTableEntry(findEffectTableById('contremaitre-objectif').rows, deMonde(rng));
+      const perso = findTableEntry(findEffectTableById('contremaitre-personnalite').rows, deMonde(rng));
       return {
         lines: [
           msg('if.contremaitreOk', { name: h.label, lieu: lieu.label ?? '', objectif: objectif.label ?? '', perso: perso.label ?? '' }),

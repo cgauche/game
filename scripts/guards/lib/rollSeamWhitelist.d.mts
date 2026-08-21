@@ -1,6 +1,8 @@
 export const ROLL_SEAM_CORE: Set<string>;
 export const ROLL_SEAM_PHASE2_STOCK: Map<string, number>;
 export const ROLL_SEAM_FILE_WHITELIST: Set<string>;
+/** (M) ce que l'exemption « dé de monde » soustrait (#1426) — fichier → sites, hors `src/engine/**`. */
+export const WORLD_DIE_SUBTRACTED_STOCK: Map<string, { n: number; why: string }>;
 export function rollSeamExcluded(rel: string): boolean;
 
 /** Registre des chemins de jet (#1066) — entrée de stock : compte MESURÉ + justification ÉCRITE. */

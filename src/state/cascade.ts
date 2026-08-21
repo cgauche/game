@@ -18,9 +18,9 @@
 import type { Get, Set } from './flowTypes';
 import type { GameState } from './store';
 import type { Combatant, Difficulty } from '../engine/types';
-import { roll, type RNG } from '../engine/dice';
+import { roll, d100, type RNG } from '../engine/dice';
 import { findTableEntry } from '../engine/tables';
-import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeSecondRead, CascadeTableDecl, CascadeTableResult, OpposedRowFreeze } from './pendings';
+import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeSecondRead, CascadeTableDecl, CascadeTableResult, OpposedRowFreeze, StepEvaluation } from './pendings';
 import type { StakeRef } from '../data';
 import type { Consequence } from './rollSeam';
 import type { BuiltCascadeStep } from './stepBrand';
@@ -31,6 +31,19 @@ import { rollTest, evaluateTest, evaluateCombinedTest, bestForcedRoll, resolveOp
 import { battleRng } from './battleRng';
 import { traceLineOf } from '../engine/traceLine';
 import { dataLabel } from '../data';
+import { scheduleFlowTimer } from './combatTimers';
+
+/**
+ * ENCHAÎNEMENT d'une étape depuis l'applier de la PRÉCÉDENTE — le séquenceur est la maison de ce
+ * geste, et sa SOURCE UNIQUE (`portFlow`, `landMarketFlow`). Une conséquence qui veut OUVRIR l'étape
+ * suivante ne peut pas le faire pendant que la cascade courante commite encore la sienne : d'où le
+ * report d'un tour de boucle. Sur le chemin INLINE (surface I, aucune cascade ouverte) l'ouverture est
+ * DIRECTE et le flux reste synchrone — c'est ce que voit un jet non surfacé, et donc ses tests.
+ */
+export function chainStep(get: Get, open: () => void): void {
+  if (get().pendingCascade) scheduleFlowTimer(open, 0);
+  else open();
+}
 
 /**
  * Conséquence d'une étape, appliquée à la VALIDATION. Mute le héros (via get/set), renvoie les
@@ -48,6 +61,16 @@ import { dataLabel } from '../data';
  * d'un constructeur de la porte (`rollSeam`/`revealStep`) — un littéral d'étape monté à la main dans
  * une conséquence ne compile plus. C'est le second canal d'entrée d'étapes du moteur, après la file
  * (`openSequence`) : les deux sont désormais fermés par le type.
+ *
+ * `stopSequence` (#1426) — LE VERBE SYMÉTRIQUE D'`insert` : la conséquence a repris la main sur la
+ * suite du monde (un péril d'auteur ouvre un combat, une transition de scène), et les étapes qui
+ * RESTAIENT n'ont plus lieu d'être. Le séquenceur TRONQUE alors la séquence à l'étape courante, au
+ * goulot UNIQUE (`commitStep`) que partagent les trois pilotes.
+ *
+ * C'est la troncature — et non l'ouverture du combat — qui garantit la PARITÉ DE FLUX RNG avec la
+ * boucle `for … break` qu'elle remplace : sans elle, les périls suivants rejoueraient leurs dés
+ * (au retour du combat pour le pilote interactif, immédiatement pour les deux autres), là où la
+ * boucle d'origine sortait sans les tirer.
  */
 export type CascadeApplier = (
   get: Get,
@@ -55,7 +78,7 @@ export type CascadeApplier = (
   step: CascadeStep,
   hero: Combatant | undefined,
   ctx: { steps: CascadeStep[]; index: number },
-) => { consequences?: Consequence[]; insert?: readonly BuiltCascadeStep[] } | void;
+) => { consequences?: Consequence[]; insert?: readonly BuiltCascadeStep[]; stopSequence?: true } | void;
 
 /** Une entrée de registre : la conséquence appliquée (`apply`) seule. L'affichage de l'issue de
  *  modale a pour source UNIQUE `resultLine`/`Consequence[]` (#295 Lot 2 : `cons` vide ⇒ `''`, la
@@ -355,6 +378,31 @@ export function opposedCascadeRoll(def: TestResult, opp: OpposedRowFreeze, targe
   };
 }
 
+/**
+ * LA LECTURE D'UN DÉ D'ÉTAPE (#1426) — expression UNIQUE des deux évaluations (`CascadeStep.evaluation`),
+ * lue par les TROIS pilotes (interactif `FLOWS.cascade`, « tout résoudre », immédiat) et par les
+ * rangées batch. Deux lectures, jamais une troisième :
+ *  - `'test'` (défaut) : la lecture WFRP complète, déléguée à `evaluateTest` (bandes LDB 12 l.28 + DR) ;
+ *  - `'seuil'` : `dé ≤ nombre visé`, DR nul, aucune bande — le pourcentage tel que le RAW l'écrit.
+ * La CIBLE n'est jamais écrêtée en mode seuil : un nombre visé de 100 vaut 100 %.
+ */
+export function lireDeEtape(roll: number, target: number, evaluation?: StepEvaluation): CascadeRoll {
+  if (evaluation === 'seuil') return { roll, target, sl: 0, success: roll <= target };
+  const ev = evaluateTest(roll, target);
+  return { roll, target, sl: ev.sl, success: ev.success };
+}
+
+/**
+ * LE ROULAGE d'un dé d'étape — UN d100 dans les deux modes (parité de flux RNG garantie), puis
+ * `lireDeEtape`. En mode `'test'` la cible passe par `rollTest` (qui l'écrête aux bornes de
+ * `TestPolicy`) ; en mode `'seuil'` le dé est NU et la cible intacte.
+ */
+export function roulerDeEtape(target: number, rng: RNG, evaluation?: StepEvaluation): CascadeRoll {
+  if (evaluation === 'seuil') return lireDeEtape(d100(rng), target, evaluation);
+  const t = rollTest(target, 'intermediaire', rng);
+  return { roll: t.roll, target, sl: t.sl, success: t.success };
+}
+
 /** Jet d'UN participant batch — GÉNÉRIQUE : d100 contre sa cible EFFECTIVE (`target`, difficulté déjà
  *  appliquée à la construction), + `bonusSlOnSuccess` sur une réussite (Talent baké par le flux
  *  propriétaire). PUR (RNG injecté), aucun concept de domaine.
@@ -362,7 +410,8 @@ export function opposedCascadeRoll(def: TestResult, opp: OpposedRowFreeze, targe
  *  `opposed` — jet d'adversaire FIGÉ de l'étape (`meta.opposed`) : la rangée est alors un Test OPPOSÉ
  *  et son issue vient d'`opposedCascadeRoll`, pas de `roll ≤ cible`. UNE opposition figée vaut pour
  *  TOUTES les rangées de l'étape (LDB 13 l.77) — c'est le producteur qui l'a jetée, une seule fois. */
-export function rollBatchParticipant(p: BatchParticipant, rng: RNG, opposed?: OpposedRowFreeze): CascadeRoll {
+export function rollBatchParticipant(p: BatchParticipant, rng: RNG, opposed?: OpposedRowFreeze, evaluation?: StepEvaluation): CascadeRoll {
+  if (evaluation === 'seuil') return lireDeEtape(d100(rng), p.target, evaluation);
   const t = rollTest(p.target, 'intermediaire', rng);
   if (opposed) return opposedCascadeRoll(t, opposed, p.target, p.base);
   return { roll: t.roll, target: t.target, sl: t.sl + (t.success ? (p.bonusSlOnSuccess ?? 0) : 0), success: t.success };
@@ -370,7 +419,10 @@ export function rollBatchParticipant(p: BatchParticipant, rng: RNG, opposed?: Op
 
 /** Résilience « Je ne faillirai pas ! » (LDB 17 l.68) pour UN participant batch : DR MAXIMAL policy-aware
  *  sur sa cible (réussite forcée). PUR, générique. */
-export function forceBatchParticipant(p: BatchParticipant): CascadeRoll {
+export function forceBatchParticipant(p: BatchParticipant, evaluation?: StepEvaluation): CascadeRoll {
+  // Mode SEUIL : il n'y a pas de « meilleur DR » à choisir (aucun DR n'existe) — la Résilience achète
+  // la seule chose que le pourcentage offre, la réussite, sur le dé le plus bas.
+  if (evaluation === 'seuil') return { roll: 1, target: p.target, sl: 0, success: true };
   const die = bestForcedRoll(p.target);
   const ev = evaluateTest(die, p.target);
   return { roll: die, target: p.target, sl: ev.sl + (p.bonusSlOnSuccess ?? 0), success: true };
@@ -463,7 +515,7 @@ function rollBatchParticipants(step: CascadeStep, autoResolved = false) {
   return step.participants!.map((p) => (p.result ? p : {
     ...p,
     ...(autoResolved ? { meta: { ...p.meta, autoResolved: true } } : {}),
-    result: rollBatchParticipant(p, battleRng(), opp),
+    result: rollBatchParticipant(p, battleRng(), opp, step.evaluation),
   }));
 }
 
@@ -492,6 +544,8 @@ function unwitnessedTraceLines(get: Get, step: CascadeStep, unwitnessed: boolean
       who: actorIn(get(), row.id)?.label ?? row.id,
       label: row.label ?? step.rollLabel ?? undefined,
       ...row.result,
+      // SEUIL PUR : le dériveur omet le DR quand le jet n'en porte pas — un pourcentage n'en a pas.
+      ...(step.evaluation === 'seuil' ? { sl: undefined } : {}),
     }));
   }
   if (unwitnessed && !step.participants && step.result && stepInteraction(step) === 'jet') {
@@ -499,6 +553,7 @@ function unwitnessedTraceLines(get: Get, step: CascadeStep, unwitnessed: boolean
       ...(step.actorId ? { who: actorIn(get(), step.actorId)?.label ?? step.actorId } : {}),
       label: step.rollLabel ?? step.label ?? undefined,
       ...step.result,
+      ...(step.evaluation === 'seuil' ? { sl: undefined } : {}),
     }));
   }
   return out;
@@ -811,6 +866,11 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   const base = live && live.length >= steps.length && live[i]?.id === step.id ? live : steps;
   let next = base.map((x, k) => (k === i ? { ...x, ...(step.result ? { result: step.result } : {}), committed: true, outcome: shown } : x));
   if (out?.insert?.length) next = [...next.slice(0, i + 1), ...out.insert, ...next.slice(i + 1)];
+  // TRONCATURE (`stopSequence`) : les étapes restantes n'existent plus — aucun pilote n'a de « reste »
+  // à résoudre, à préserver dans `suspendedCascades`, ni à rejouer. Lue ICI, une seule fois, pour les
+  // trois. `insert` d'une même conséquence reste honoré : on tronque APRÈS lui (une conséquence peut
+  // vouloir sa suite immédiate et rien d'autre).
+  if (out?.stopSequence) next = next.slice(0, i + 1 + (out.insert?.length ?? 0));
   // NOTRE cascade a été PARQUÉE pendant l'exécution de l'applier — `suspendActiveCascade` (couture
   // universelle `startCombat`/`transitionTo`, qui vide le slot ; ou `startCascade` d'un AUTRE `purpose`,
   // #942 L1, qui le rend à la nouvelle cascade) : elle est dans `suspendedCascades`. Le retour l'expose,
@@ -944,8 +1004,7 @@ export function resolveRemainingCascade(get: Get, set: Set): PendingCascade | nu
   for (let i = p.cursor; i < steps.length; i++) {
     const st = steps[i];
     if (stepInteraction(st) === 'jet' && !st.result) {
-      const t = rollTest(st.target!, 'intermediaire', battleRng());
-      const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
+      const result = roulerDeEtape(st.target!, battleRng(), st.evaluation);
       steps = steps.map((x, k) => (k === i ? { ...x, result } : x));
     } else if (stepInteraction(st) === 'table') {
       // TIRAGE SUR TABLE sans influence (« Tout lancer ») : mêmes résolveur ET composition de
@@ -1013,8 +1072,7 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
     // sa ligne de dé. Une étape qui ARRIVE déjà résolue (jet montré ailleurs) n'en reçoit pas.
     let unwitnessed = false;
     if (stepInteraction(st) === 'jet' && !st.result) {
-      const t = rollTest(st.target!, 'intermediaire', battleRng());
-      const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
+      const result = roulerDeEtape(st.target!, battleRng(), st.evaluation);
       cur = cur.map((x, k) => (k === i ? { ...x, result } : x));
       unwitnessed = true;
     } else if (stepInteraction(st) === 'table') {
