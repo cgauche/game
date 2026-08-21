@@ -115,6 +115,7 @@ export const EXEMPT_DATASETS = {
   'actions.json': "registre de ROUTAGE des actions de combat (id → icône, surface, gate/candidates/run) : aucune table CHIFFRÉE, la règle vit dans la fiche pointée par `rule`+`ruleCategory` (regles/talents/etats/qualities/skills) qui porte SA citation. `source` n'y est posée que sur les entrées dont le COÛT est adossé à un verbatim (LDB 13 l.106, 15 l.35-49, 14 « Viser »…).",
   'characteristics.json': "vocabulaire des 10 Caractéristiques (clés/labels), pas une table de valeurs RAW à citer par entrée (base SUPPRIMÉE #310, table morte).",
   'decorPalette.json': 'palette de couleurs de RENDU (hex), pas une donnée RAW.',
+  'teintesJeu.json': "teintes de RENDU du terrain (surbrillances tactiques et identité d'unité, hex), pas une donnée RAW.",
   'ambiance.json': 'config de rendu (éclairage iso/POV), pas une donnée RAW.',
   'details.json': "presets d'authoring (âge/taille par race) dérivés de tables LDB déjà citées ailleurs (species.json) — vocabulaire de génération, pas une table RAW autonome.",
   'localisation.json': 'table de dé inversé (mapping résultat→zone de touche) — vocabulaire structurel du moteur, pas une table RAW à citer en tant que telle (les zones sont LDB, déjà couvertes par `hitLocationSchema`).',

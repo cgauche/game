@@ -1,32 +1,49 @@
 /**
- * Source UNIQUE des couleurs d'identité d'équipe (anneaux des pions + portraits HUD)
- * et de la couleur d'une barre de vie. Utilisée par le rendu de carte (`SurcoucheIso`, surcouche de jetons)
- * ET par le HUD React (ActionBar, CampaignView) — pas de duplication.
+ * FAÇADE des couleurs d'IDENTITÉ d'unité (anneaux des pions + portraits HUD) et de la couleur d'une
+ * barre de vie. Utilisée par le rendu de carte (`SurcoucheIso`, surcouche de jetons) ET par le HUD
+ * React (ActionBar, CampaignView) — pas de duplication. La DONNÉE vit dans `src/data/teintesJeu.json`
+ * (schéma et invariants : `src/data/schemas/defs/teintesJeu.ts`), qui sert aussi les surbrillances
+ * d'arène par l'autre façade (`highlightTints.ts`).
  */
+import { teintesJeu } from '../data';
 
 /** Anneau jaune de l'unité active sur le terrain (réservé : ne JAMAIS l'utiliser pour une équipe). */
-export const ACTIVE_RING = '#ffe066';
+export const ACTIVE_RING = teintesJeu['anneau-actif'];
 
-/** Anneau des ennemis (rouge — réservé : ne JAMAIS l'utiliser pour un héros). */
-export const ENEMY_RING = '#c0392b';
+/** Anneau des ennemis (rouge — réservé : ne JAMAIS l'utiliser pour un héros) : le cran NON-HÉROS de
+ *  l'axe d'identité par unité, frère des quatre `HERO_RING`. Son octet égale celui d'`ENEMY_TINT`
+ *  (axe d'APPARTENANCE) ; le partage est déclaré au schéma (`PARTAGES_NOMMES`) et les deux entrées
+ *  restent distinctes — retirer le rouge de l'anneau ne retire pas le rouge de la case. */
+export const ENEMY_RING = teintesJeu['anneau-ennemi'];
 
 /**
  * Anneaux d'identité des héros (un par héros, cyclique). 4 couleurs FROIDES distinctes,
  * choisies pour qu'AUCUNE ne puisse se confondre avec le rouge ennemi ni le jaune actif
  * (c'était le bug « un allié a un rond rouge » : l'or et le magenta tiraient vers le chaud).
+ * La séparation des quatre est un INVARIANT mesuré au schéma (`SEUIL_IDENTITE_HEROS`).
  */
-export const HERO_RING = ['#4f8fe0', '#37c07a', '#36b6c0', '#7a6cff'];
+export const HERO_RING = [
+  teintesJeu['identite-heros-1'],
+  teintesJeu['identite-heros-2'],
+  teintesJeu['identite-heros-3'],
+  teintesJeu['identite-heros-4'],
+];
 
 /**
  * Teintes SÉMANTIQUES d'équipe (Lot 1) — case sous le pion + voile léger sur le modèle :
  * allié = vert, ennemi = rouge, unité active = jaune (prime sur la couleur d'équipe pour la case).
  * Distinct des anneaux d'IDENTITÉ par héros (HERO_RING), qui restent un indice secondaire.
  */
-export const ALLY_TINT = '#37c07a';
-export const ENEMY_TINT = '#c0392b';
-export const ACTIVE_TINT = '#ffe066';
-/** Cible NEUTRE (npc) : or/jaune — distinct du jaune ACTIF réservé (#ffe066). */
-export const NEUTRAL_TINT = '#ffd75e';
+export const ALLY_TINT = teintesJeu['equipe-allie'];
+/** Appartenance ENNEMIE d'une case, d'un voile, d'un marqueur de station (`topoMarkers.stationTint`) —
+ *  axe distinct de l'anneau d'unité `ENEMY_RING`, avec lequel elle partage son octet (partage déclaré). */
+export const ENEMY_TINT = teintesJeu['equipe-ennemi'];
+/** MÊME entrée que `ACTIVE_RING` et que le halo de case (`ACTIVE_HALO_TINT`, `highlightTints.ts`) :
+ *  un seul signal « voici l'unité qui joue », trois surfaces. */
+export const ACTIVE_TINT = teintesJeu['anneau-actif'];
+/** Cible NEUTRE (npc) : or/jaune — distinct du jaune ACTIF réservé (`anneau-actif`) ; son partage
+ *  d'octet avec l'or du joueur est NOMMÉ au schéma (`PARTAGES_NOMMES`, `schemas/defs/teintesJeu.ts`). */
+export const NEUTRAL_TINT = teintesJeu['equipe-neutre'];
 
 /** Couleur de la RELATION d'une cible au survol/visée (réticule + halo) : adversaire rouge, allié
  *  vert, neutre or. Source unique consommée par le rendu de ciblage (`SurcoucheIso`). */

@@ -156,6 +156,8 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   // ── Vocabulaire app-interne (permanent) ──────────────────────────────────────────────────────
   'ambiance.json': 'config de rendu (éclairage iso/POV), pas une fiche de contenu.',
   'decorPalette.json': 'palette de couleurs de rendu (hex), pas une fiche de contenu.',
+  'teintesJeu.json':
+    "teintes de jeu du terrain (surbrillances tactiques + identité d'unité, hex) servies aux peintres par `gameIso/highlightTints.ts` et `gameIso/teamColors.ts` — vocabulaire app-interne de rendu, pas une fiche de contenu.",
   'renduMonte.json': "réglage de rendu (id du set d'équipement servi par défaut à une monture portée, #1128), pas une fiche de contenu — le set lui-même s'expose par la créature qui le porte.",
   'reliefMaterials.json': 'catalogue de matériaux de relief (rendu iso), pas une fiche de contenu.',
   'roofMaterials.json': 'catalogue de matériaux de toiture (rendu iso), pas une fiche de contenu.',

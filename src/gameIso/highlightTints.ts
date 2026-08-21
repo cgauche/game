@@ -1,78 +1,90 @@
 /**
- * Source UNIQUE des teintes de SURBRILLANCE d'arène (grilles de portée, zones, anneaux de cible,
- * bandes de portée, halos d'interaction/d'actif, lien d'engagement). Catalogue TS et non variables
- * CSS : le backend volumique (`THREE.Color`) ne résout pas `var(--x)`, et l'environnement de test
- * `node` n'a pas de CSS — un peintre volumique doit pouvoir lire la valeur (#1176 P3-0a).
+ * FAÇADE des teintes de SURBRILLANCE d'arène (grilles de portée, zones, anneaux de cible, bandes de
+ * portée, halos d'interaction/d'actif, lien d'engagement, refus de visée). La DONNÉE vit dans
+ * `src/data/teintesJeu.json` (schéma et invariants : `src/data/schemas/defs/teintesJeu.ts`) ; ce
+ * module la NOMME pour les peintres. Catalogue TS et non variables CSS : le backend volumique
+ * (`THREE.Color`) ne résout pas `var(--x)`, et l'environnement de test `node` n'a pas de CSS.
  *
- * Les valeurs sont celles des vars CSS homonymes de `src/ui/styles/base.css`, dont
- * `highlightTints.test.ts` garde l'égalité. MORT PLANIFIÉE : les tokens CSS `--combat-*`/`--iso-*` de
- * surbrillance disparaissent avec la voie affine SVG (#1176 lot P3-4) ; la garde d'égalité tombe avec eux,
- * ce catalogue reste seul.
+ * Les vars CSS homonymes de `src/ui/styles/base.css` servent les feuilles de style ;
+ * `HIGHLIGHT_TINTS` en est la projection `id de teinte → var CSS`, et `highlightTints.test.ts` garde
+ * l'égalité des deux valeurs — une retouche d'un seul côté ferait diverger la couleur à l'écran.
  *
- * `teamColors.ts` porte l'IDENTITÉ d'équipe (anneaux, teintes allié/ennemi/actif) — rôles disjoints, alors
- * même que deux octets coïncident : `ACTIVE_HALO_TINT` == `ACTIVE_RING`/`ACTIVE_TINT` (#ffe066) et
- * `WALK_TINT` == `HERO_RING[0]` (#4f8fe0). Même octet, deux rôles : coïncidence de palette, pas une
- * dépendance — aucune garde ne les lie, chaque source bouge de son côté.
+ * `teamColors.ts` sert l'autre moitié du même JSON : l'IDENTITÉ d'unité (anneaux réservés, teintes
+ * d'équipe, couleurs par héros). Les deux familles ne partagent aucun octet, sauf partage NOMMÉ au
+ * schéma (`PARTAGES_NOMMES`) ou entrée UNIQUE lue des deux côtés — c'est le cas de `anneau-actif`,
+ * le MÊME signal « voici l'unité qui joue », servi ici en halo de case et là en anneau/voile.
  */
+import { teintesJeu } from '../data';
+import type { TeinteId } from '../data/schemas/defs/teintesJeu';
 
-/** Teinte par var CSS homonyme — l'entrée de catalogue, clé de la garde d'égalité. */
+/** Teinte → var CSS de repli homonyme (`src/ui/styles/base.css`), la table de la garde d'égalité.
+ *  CRITÈRE d'entrée : la var est DÉCLARÉE dans `base.css`. Une teinte sans var déclarée n'y figure
+ *  pas (les huit teintes d'identité, que seul le volumique peint) ; le NOMBRE de feuilles qui
+ *  consomment la var n'est pas le critère — `base.css` est une base de tokens, et la mesure du
+ *  2026-08-21 donne 5 vars consommées sur les 19 projetées (`--combat-gold` 10, `--combat-enemy` 4,
+ *  `--combat-ally` 3, `--combat-walk` 1, `--iso-active-halo` 1). Ce que la table garde est l'ÉGALITÉ
+ *  des deux valeurs, pas la popularité de la var. */
 export const HIGHLIGHT_TINTS = {
-  '--combat-walk': '#4f8fe0',
-  '--combat-run': '#9b6be0',
-  '--combat-intent': '#3fd0c9',
-  '--combat-target': '#ff5a4d',
-  '--combat-enemy': '#e0533a',
-  '--combat-crowd': '#ff7a3c',
-  '--combat-ally': '#5db87a',
-  '--combat-range-bonus': '#5db87a',
-  '--combat-range-neutre': '#d9b23c',
-  '--combat-range-malus': '#e0533a',
-  '--combat-gold': '#ffd75e',
-  '--combat-gold-dk': '#7a5b16',
-  '--combat-halo': '#ffe27a',
-  '--iso-zone-smoke': '#9aa0a6',
-  '--iso-zone-fire': '#e2641e',
-  '--iso-engage': '#d98a3a',
-  '--iso-threat': '#d11a1a',
-  '--iso-active-halo': '#ffe066',
-} as const;
+  'zone-marche': '--combat-walk',
+  'zone-course': '--combat-run',
+  'zone-intention': '--combat-intent',
+  'zone-fumee': '--iso-zone-smoke',
+  'zone-feu': '--iso-zone-fire',
+  'bande-bonus': '--combat-range-bonus',
+  'bande-neutre': '--combat-range-neutre',
+  'bande-malus': '--combat-range-malus',
+  'signal-cible': '--combat-target',
+  'signal-foule': '--combat-crowd',
+  'signal-allie': '--combat-ally',
+  'signal-ennemi': '--combat-enemy',
+  'signal-engagement': '--iso-engage',
+  'signal-menace': '--iso-threat',
+  'signal-invalide': '--iso-invalid',
+  'or-surbrillance': '--combat-gold',
+  'or-contour': '--combat-gold-dk',
+  'or-halo': '--combat-halo',
+  'anneau-actif': '--iso-active-halo',
+} as const satisfies Partial<Record<TeinteId, string>>;
 
 /** Portée de Marche. */
-export const WALK_TINT = HIGHLIGHT_TINTS['--combat-walk'];
+export const WALK_TINT = teintesJeu['zone-marche'];
 /** Portée de Course. */
-export const RUN_TINT = HIGHLIGHT_TINTS['--combat-run'];
+export const RUN_TINT = teintesJeu['zone-course'];
 /** Portée de l'INTENTION armée depuis l'interface (spec HUD zone 4) — distincte de Marche et Course :
  *  elle se superpose à elles pour dire « voilà jusqu'où porte LE geste que j'ai choisi ». */
-export const INTENT_TINT = HIGHLIGHT_TINTS['--combat-intent'];
+export const INTENT_TINT = teintesJeu['zone-intention'];
 /** Anneau d'une cible d'attaque. */
-export const RING_TARGET_TINT = HIGHLIGHT_TINTS['--combat-target'];
+export const RING_TARGET_TINT = teintesJeu['signal-cible'];
 /** Repère ENNEMI d'un télégraphe d'IA (tracé de déplacement, réticule de visée) — distinct de
  *  `ENEMY_TINT` (teamColors), qui est la couleur d'IDENTITÉ d'équipe. */
-export const ENEMY_CUE_TINT = HIGHLIGHT_TINTS['--combat-enemy'];
+export const ENEMY_CUE_TINT = teintesJeu['signal-ennemi'];
 /** Anneau d'une cible éligible à la Foule. */
-export const RING_CROWD_TINT = HIGHLIGHT_TINTS['--combat-crowd'];
+export const RING_CROWD_TINT = teintesJeu['signal-foule'];
 /** Anneau d'une cible alliée. */
-export const RING_ALLY_TINT = HIGHLIGHT_TINTS['--combat-ally'];
+export const RING_ALLY_TINT = teintesJeu['signal-allie'];
+/** Gabarit de visée REFUSÉ : case hors portée ou hors Ligne de Vue. */
+export const INVALID_TINT = teintesJeu['signal-invalide'];
 /** Surbrillance or : trajet d'aperçu, réticule héros, halo d'interaction. */
-export const GOLD_TINT = HIGHLIGHT_TINTS['--combat-gold'];
+export const GOLD_TINT = teintesJeu['or-surbrillance'];
 /** Contour sombre du glyphe or. */
-export const GOLD_DARK_TINT = HIGHLIGHT_TINTS['--combat-gold-dk'];
+export const GOLD_DARK_TINT = teintesJeu['or-contour'];
 /** Halo d'interaction (survol PNJ/objet). */
-export const HALO_TINT = HIGHLIGHT_TINTS['--combat-halo'];
+export const HALO_TINT = teintesJeu['or-halo'];
 /** Zone persistante opaque (fumée). */
-export const ZONE_SMOKE_TINT = HIGHLIGHT_TINTS['--iso-zone-smoke'];
+export const ZONE_SMOKE_TINT = teintesJeu['zone-fumee'];
 /** Zone de feu/effet. */
-export const ZONE_FIRE_TINT = HIGHLIGHT_TINTS['--iso-zone-fire'];
+export const ZONE_FIRE_TINT = teintesJeu['zone-feu'];
 /** Lien d'engagement (tether de mêlée). */
-export const ENGAGE_TINT = HIGHLIGHT_TINTS['--iso-engage'];
+export const ENGAGE_TINT = teintesJeu['signal-engagement'];
 /** Télégraphe de ZONE ennemie (l'aire annoncée avant résolution). */
-export const THREAT_TINT = HIGHLIGHT_TINTS['--iso-threat'];
-/** Contour de case active / position du groupe. */
-export const ACTIVE_HALO_TINT = HIGHLIGHT_TINTS['--iso-active-halo'];
+export const THREAT_TINT = teintesJeu['signal-menace'];
+/** Contour de case active / position du groupe — MÊME entrée que l'anneau d'unité active
+ *  (`ACTIVE_RING`/`ACTIVE_TINT`, `teamColors.ts`) : un seul signal, trois surfaces. */
+export const ACTIVE_HALO_TINT = teintesJeu['anneau-actif'];
 
 /** Bande de portée d'un tir, par ton de modificateur (`builders/highlights`, kind `rangeBand`). */
 export const RANGE_BAND_TINT: Record<'bonus' | 'neutre' | 'malus', string> = {
-  bonus: HIGHLIGHT_TINTS['--combat-range-bonus'],
-  neutre: HIGHLIGHT_TINTS['--combat-range-neutre'],
-  malus: HIGHLIGHT_TINTS['--combat-range-malus'],
+  bonus: teintesJeu['bande-bonus'],
+  neutre: teintesJeu['bande-neutre'],
+  malus: teintesJeu['bande-malus'],
 };

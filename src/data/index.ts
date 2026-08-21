@@ -37,6 +37,7 @@ import structureAppearanceJson from './structureAppearance.json';
 import reliefMaterialsJson from './reliefMaterials.json';
 import roofMaterialsJson from './roofMaterials.json';
 import ambianceJson from './ambiance.json';
+import teintesJeuJson from './teintesJeu.json';
 import navalTraitsJson from './naval-traits.json';
 import navalPortsJson from './naval-ports.json';
 import lieuxServicesJson from './lieux-services.json';
@@ -2307,6 +2308,11 @@ export const roofMaterials = roofMaterialsJson as import('../gameIso/catalog/roo
 
 /** AMBIANCE de rendu partagée iso ⇄ POV (ciel/brumes/vignette/voile chaud/filtre d'étage) — donnée pure. */
 export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').AmbianceDef;
+
+/** TEINTES DE JEU du terrain (surbrillances tactiques + identité d'unité), `id → #rrggbb` — donnée
+ *  pure, servie aux peintres par les deux façades `gameIso/highlightTints.ts` et
+ *  `gameIso/teamColors.ts` (schéma et invariants : `schemas/defs/teintesJeu.ts`). */
+export const teintesJeu: Record<import('./schemas/defs/teintesJeu').TeinteId, string> = teintesJeuJson;
 
 /** Traits & Améliorations de navire (MDG 12) — catalogue app-owned éditable au Codex. La DONNÉE (`desc`
  *  verbatim + effet) vit ici ; `engine/navalTraits.ts` ne fait que la LIRE (aucune valeur codée en dur).

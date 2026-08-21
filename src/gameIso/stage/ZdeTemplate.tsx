@@ -12,7 +12,7 @@ import { placingZoneOf, placedZoneValidAt, castSightBlocked } from '../../state/
 import { Dims, diamondPath, diamondCorners } from '../../geometry/iso';
 import { chebyshev } from '../../state/path';
 import type { Pt } from '../../state/path';
-import { ENEMY_CUE_TINT } from '../highlightTints';
+import { ENEMY_CUE_TINT, INVALID_TINT } from '../highlightTints';
 
 export function ZdeTemplate({ battle, hover, pendingCast, pendingSiegeAim, activeC, dims }: {
   battle: BattleState;
@@ -43,7 +43,9 @@ export function ZdeTemplate({ battle, hover, pendingCast, pendingSiegeAim, activ
     }
   }
   if (radius == null || !caster?.pos || ok == null) return null;
-  const col = ok ? ENEMY_CUE_TINT : 'var(--iso-invalid)';
+  // Les deux branches lisent le MÊME régime (la façade de teintes) : une valeur hexa, lisible par le
+  // SVG comme par le volumique — jamais un `var(--x)` que `THREE.Color` ne résout pas.
+  const col = ok ? ENEMY_CUE_TINT : INVALID_TINT;
   const tiles: JSX.Element[] = [];
   for (let dy = -radius; dy <= radius; dy++)
     for (let dx = -radius; dx <= radius; dx++) {

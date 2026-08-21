@@ -580,6 +580,12 @@
         },
         {
           "files": [
+            "teintesJeu.json"
+          ],
+          "desc": "TEINTES DE JEU du terrain — surbrillances tactiques (portées, zones, bandes de tir, anneaux de cible, halos, télégraphes) et identité d'unité (anneaux réservés, équipes, une couleur par héros), `id → #rrggbb` groupé par préfixe ; servi aux peintres par `src/gameIso/highlightTints.ts` et `src/gameIso/teamColors.ts`"
+        },
+        {
+          "files": [
             "reliefMaterials.json",
             "roofMaterials.json"
           ],

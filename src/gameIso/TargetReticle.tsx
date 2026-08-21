@@ -2,12 +2,16 @@
  * Réticule de ciblage PARTAGÉ (télégraphe ennemi + visée du joueur) : cercles + croix sur la
  * cible, ligne buste-à-buste optionnelle — POINTILLÉE pour tir/sort, PLEINE pour mêlée/mouvement.
  * Entrées en pixels écran (tileCenter déjà appliqué) ; offset « buste » −34 px. Pur SVG, sans état.
+ * Défaut de la LIGNE : le repère ennemi du catalogue (`highlightTints.ENEMY_CUE_TINT`), dont le
+ * télégraphe d'IA est justement l'usage nommé.
  */
+import { ENEMY_CUE_TINT } from './highlightTints';
+
 export function TargetReticle({
   from,
   to,
   line,
-  lineColor = '#e0533a',
+  lineColor = ENEMY_CUE_TINT,
   color = '#ffd34d',
 }: {
   from?: { cx: number; cy: number } | null;
