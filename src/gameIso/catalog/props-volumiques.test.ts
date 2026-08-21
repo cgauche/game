@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { propSvg } from './decor';
-import { findPropById } from '../../data';
+import { findPropById, props } from '../../data';
+import type { PropPrimitive } from '../../data/props.types';
 import { buildProps } from '../builders/props';
 import { collectBillboards, wholeSceneBillboardEls } from '../backends/webgl/sceneMeshes';
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../state/scene';
@@ -16,6 +17,25 @@ const IDS = ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle', 'table-r
 const propEntity = ({ id, ref, pos, facing }: { id: string; ref: string; pos: { x: number; y: number }; facing: 'N' | 'E' | 'S' | 'O' }): SceneEntity =>
   ({ id, kind: 'prop', pos, ref, facing }) as SceneEntity;
 const sceneWith = (...entities: SceneEntity[]): Scene => ({ ...emptyScene(8, 8), entities });
+const METRES_PAR_CASE = 2;
+
+/** Emprise d'une primitive : sa boîte englobante au sol (cases) et ses deux hauteurs (mètres). */
+function emprise(p: PropPrimitive): { x0: number; x1: number; y0: number; y1: number; bas: number; haut: number } {
+  const dx = p.kind === 'cylinder' ? p.radius : p.size.x / 2;
+  const dy = p.kind === 'cylinder' ? p.radius : p.size.y / 2;
+  const dh = (p.kind === 'cylinder' ? p.heightM : p.size.h) / 2;
+  return { x0: p.center.x - dx, x1: p.center.x + dx, y0: p.center.y - dy, y1: p.center.y + dy, bas: p.center.h - dh, haut: p.center.h + dh };
+}
+type Emprise = ReturnType<typeof emprise>;
+const seChevauchent = (a: Emprise, b: Emprise): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+
+/** Distance HORIZONTALE d'un point à un segment, en cases — le bord d'une face, pas ses seuls sommets. */
+function distanceAuSegment(p: { x: number; y: number }, a: { x: number; y: number }, b: { x: number; y: number }): number {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len2 = dx * dx + dy * dy;
+  const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
 
 describe('mobilier volumique — cinq refs, leur vignette et leur corps monde', () => {
   it.each(IDS)('%s possède vignette et volume monde, jamais billboard monde', (id) => {
@@ -29,7 +49,12 @@ describe('mobilier volumique — cinq refs, leur vignette et leur corps monde', 
   });
 
   it('la table ronde offre quatre places, la table murale deux, le reste aucune', () => {
-    expect(findPropById('table-ronde-4-tabourets')!.seatSlots?.map((s) => s.id)).toEqual(['nord', 'est', 'sud', 'ouest']);
+    expect(findPropById('table-ronde-4-tabourets')!.seatSlots).toEqual([
+      { id: 'nord', anchor: { x: 0, y: -0.43, h: 0.49 }, facing: 'S', approach: { x: 0, y: -1 } },
+      { id: 'est', anchor: { x: 0.43, y: 0, h: 0.49 }, facing: 'O', approach: { x: 1, y: 0 } },
+      { id: 'sud', anchor: { x: 0, y: 0.43, h: 0.49 }, facing: 'N', approach: { x: 0, y: 1 } },
+      { id: 'ouest', anchor: { x: -0.43, y: 0, h: 0.49 }, facing: 'E', approach: { x: -1, y: 0 } },
+    ]);
     expect(findPropById('table-murale-2-tabourets')!.seatSlots?.map((s) => s.id)).toEqual(['gauche', 'droite']);
     for (const id of ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle'])
       expect(findPropById(id)!.seatSlots, id).toBeUndefined();
@@ -41,6 +66,43 @@ describe('mobilier volumique — cinq refs, leur vignette et leur corps monde', 
       { id: 'gauche', anchor: { x: -0.22, y: 0.34, h: 0.49 }, facing: 'N', approach: { x: -1, y: 1 } },
       { id: 'droite', anchor: { x: 0.22, y: 0.34, h: 0.49 }, facing: 'N', approach: { x: 1, y: 1 } },
     ]);
+  });
+
+  /**
+   * ASSISE SERVIE PAR SON MEUBLE — deux mesures sur les `Face[]` réelles, pour TOUT décor du catalogue
+   * qui offre une place : le corps porte au SOL (aucun meuble suspendu à un mur qui n'est pas dans sa
+   * case) et le plan de travail est à portée de bras de l'ancre du bassin. Sans elles, une recette peut
+   * déclarer des places qu'aucun corps assis n'atteint.
+   */
+  const propsAvecPlaces = props.filter((p) => (p.seatSlots?.length ?? 0) > 0);
+
+  it.each(propsAvecPlaces.map((p) => p.id))('%s : chaque volume porte, au sol ou sur un appui', (id) => {
+    const primitives = findPropById(id)!.volume!.primitives.map(emprise);
+    // Un volume PORTE s'il touche terre, ou s'il repose sur un volume déjà porté qui monte jusqu'à lui.
+    const portes = primitives.map((p) => p.bas <= 1e-6);
+    for (let passe = 0; passe < primitives.length; passe++)
+      primitives.forEach((p, i) => {
+        if (portes[i]) return;
+        portes[i] = primitives.some((q, k) => portes[k] && k !== i && q.haut >= p.bas - 1e-6 && q.bas <= p.bas && seChevauchent(p, q));
+      });
+    const suspendus = primitives.filter((_, i) => !portes[i]).map((p) => `bas à ${p.bas} m`);
+    expect(suspendus, `${id} : volumes suspendus dans le vide`).toEqual([]);
+  });
+
+  it.each(propsAvecPlaces.map((p) => p.id))('%s : chaque ancre est à portée du plan de travail', (id) => {
+    const scene = sceneWith(propEntity({ id: 'e-1', ref: id, pos: { x: 3, y: 4 }, facing: 'N' }));
+    const el = buildProps(scene)[0] as { faces: { poly: { x: number; y: number; h: number }[] }[] };
+    for (const slot of findPropById(id)!.seatSlots!) {
+      const ancre = { x: 3 + slot.anchor.x, y: 4 + slot.anchor.y };
+      let ecart = Number.POSITIVE_INFINITY;
+      for (const face of el.faces)
+        for (let i = 0; i < face.poly.length; i++) {
+          const a = face.poly[i], b = face.poly[(i + 1) % face.poly.length];
+          if (a.h <= slot.anchor.h || b.h <= slot.anchor.h) continue; // sous l'assise : ce n'est pas le plan de travail
+          ecart = Math.min(ecart, distanceAuSegment(ancre, a, b) * METRES_PAR_CASE);
+        }
+      expect(ecart, `${id}/${slot.id} : écart ancre → bord du plan (m)`).toBeLessThanOrEqual(0.3);
+    }
   });
 
   /** Le corps monde tient dans la case du meuble : une empreinte 1×1 ne déborde pas chez le voisin. */

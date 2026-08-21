@@ -7,6 +7,7 @@ import { P } from '../../decorPalette';
 export const prop: PropViz = {
   id: 'cheminee-interieure',
   label: 'Cheminée intérieure',
+  searchable: true,
   render: () =>
     `<g><ellipse cx="60" cy="147" rx="46" ry="8" fill="${P.ombre}" opacity="0.22"/>` +
     // manteau débordant

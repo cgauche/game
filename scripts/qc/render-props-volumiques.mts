@@ -133,7 +133,7 @@ ${lignes}
 
 mkdirSync('public', { recursive: true });
 writeFileSync('public/props-volumiques.html', html);
-console.log(`OK: public/props-volumiques.html — ${IDS.length} lignes × ${COLONNES.length + 1} vues`);
+console.log(`OK: public/props-volumiques.html — ${IDS.length} lignes × ${COLONNES.length} vues monde + vignette de palette`);
 if (vides.length) {
   console.error(`VUES MONDE VIDES : ${vides.join(', ')}`);
   process.exitCode = 1;
