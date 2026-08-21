@@ -226,7 +226,7 @@ Arme d'équipe → **tous les servants** sont touchés (`l.464`).
 Dangereuse = Incident).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.440-464) → `crewedPenalty`, `warMachineCrewPenalty`, `ReloadModalView`, `placementPenalty`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `ActionBar`, `Weapon`, `tir-de-zone`, +4 — `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/engine/warMachineCrew.ts`, `src/state/combatArea.ts`, +7 fichiers
+- `MDG 12` (l.440-464) → `crewedPenalty`, `warMachineCrewPenalty`, `ReloadModalView`, `placementPenalty`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `tir-de-zone`, `attackModifiers`, +3 — `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/engine/warMachineCrew.ts`, `src/state/combatArea.ts`, +6 fichiers
 
 **État du code.** ✅ (R1) `resolveVolley` dérive l'arme effective de chaque pièce via `crewedFireWeapon(item,
 servantsPrésents)` (exposés non-incapacités) AVANT le calcul de Dégâts → un Canon moyen (Arme d'équipe 3) à 1 servant
@@ -266,7 +266,7 @@ peut aussi considérer un résultat de 0 comme un succès en fonction des circon
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.656) → `VolleyShot`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `voie-d-eau` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`
-- `MDG 14` (l.13, l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +74 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +19 fichiers
+- `MDG 14` (l.13, l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +73 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +18 fichiers
 
 **État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte : Test d'équipage multi (Artilleur ★) → DR partagé →
 chaque pièce préparée comme le tir individuel (effectif via `crewedFireWeapon`, munition via `weaponWithAmmo`) → Dégâts
@@ -308,7 +308,7 @@ générique (cible = personnage, distance via `sceneMetresPerTile`) l'attrape. L
 [Tir de batterie](#tir-de-batterie-la-bordee) · [Pièces et munitions](#artillerie--pieces-et-munitions).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.466-472) → `crewedPenalty`, `ReloadModalView`, `crewedFireWeapon`, `firedWeapon`, `ActionBar`, `Weapon`, `tir-de-zone`, `attackModifiers`, `GameState`, `createCombatSlice`, +1 — `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, +4 fichiers
+- `MDG 12` (l.466-472) → `crewedPenalty`, `ReloadModalView`, `crewedFireWeapon`, `firedWeapon`, `Weapon`, `tir-de-zone`, `attackModifiers`, `GameState`, `createCombatSlice`, `applyOups` — `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, +3 fichiers
 
 **État du code.** ✅ Tir de zone (3 bandes RAW, corrige l'ancien +Indice Blessures brut → +Indice Dégâts ; ajoute la
 bande Extrême) ; ✅ Explosion (rayon Indice + États propagés) ; ✅ branche navale (équipage exposé) ; ✅ extensibilité
@@ -369,7 +369,7 @@ De plus, tous les coups qui touchent une fois que le score de Blessures… est t
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.654-674) → `VolleyShot`, `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `voie-d-eau`, `finalizeFastVoyage`, `runSeaDay`, `fr`, `checkBattleOver` — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/sea-navigation.json`, `src/data/voyage-stakes.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, +5 fichiers
-- `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +74 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +19 fichiers
+- `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +73 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +18 fichiers
 
 **État du code.** ✅ `applyHullCritical` (localisation, Équipage, Éclats, Voie d'eau, En flammes en GameOp, Critiques
 de Coque récursifs). ✅ (R1) **« tout coup à B=0 = Critique »** : `resolveVolley` critique sur `wounds.current ≤ 0`.
@@ -401,7 +401,7 @@ d'une **Rude épreuve** réduisent le Moral d'autant.
 **Sources RAW** : `MDG 14 l.110` (Rude épreuve → Moral) · `l.133-141` (Moral 75).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.110) → `schema`, `manoeuvre`, `perception`, `orientation`, `affaler`, `extermination-nuisibles`, `rude-epreuve`, `entretien`, `batterie`, `crew-progression`, +22 — `src/data/crew-test-types.json`, `src/data/index.ts`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/schemas/defs/crew-test-types.ts`, `src/data/voyage-stakes.json`, +5 fichiers
+- `MDG 14` (l.110) → `schema`, `manoeuvre`, `perception`, `orientation`, `affaler`, `extermination-nuisibles`, `rude-epreuve`, `entretien`, `batterie`, `crew-progression`, +21 — `src/data/crew-test-types.json`, `src/data/index.ts`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/schemas/defs/crew-test-types.ts`, `src/data/voyage-stakes.json`, +4 fichiers
 
 **État du code.** ✅ Moral 75 par défaut, bande de DR au Test d'équipage, pont campagne→combat. ⬜ évolution du
 Moral en combat (Rude épreuve, mutinerie).
