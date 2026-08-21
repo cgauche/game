@@ -16,7 +16,19 @@
  * explicite présente donc son dos là où l'auteur a dessiné sa face : l'auteur pose le cap, il ne le
  * laisse pas au défaut. Matérialisé par `builders/propVolumes.test.ts`.
  */
-import type { Dir8 } from '../state/dir8';
+import { DIR8_ORDER, type Dir8 } from '../state/dir8';
+
+/**
+ * Rotation d'un point du repère LOCAL d'une recette vers le repère de la scène, au cap d'auteur —
+ * l'UNIQUE définition de ce que `SceneEntity.facing` fait subir à une géométrie de décor (volumes,
+ * ancres de place, cases d'abord). Vit ici, à l'étage NEUTRE, pour être servie aussi bien au
+ * builder volumique (`gameIso`) qu'à la résolution d'assise (`state`) : deux copies divergeraient.
+ * `N` (index 0 de `DIR8_ORDER`) est l'identité ; chaque cran vaut 45° horaires. PURE.
+ */
+export function rotatePropLocal(x: number, y: number, facing: Dir8): [number, number] {
+  const a = DIR8_ORDER.indexOf(facing) * Math.PI / 4;
+  return [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
+}
 
 /** Id d'un matériau de `propMaterials.json`. */
 export type PropMaterialId = string;

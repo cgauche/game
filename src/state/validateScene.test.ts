@@ -514,3 +514,38 @@ describe('validateScene — POI de plan (#345 phase 5)', () => {
     expect(msgs(w).some((m) => /service inconnu/.test(m))).toBe(true);
   });
 });
+
+describe('validateScene — assise authorée (`Scene.seatAssignments`)', () => {
+  /** Meuble du catalogue app-owned : 4 places, ancres à ±0,43 case → la case du siège EST celle du meuble. */
+  function attable(seatAssignments: Record<string, Record<string, { kind: 'entity'; entityId: string } | { kind: 'party'; heroId: string }>>, pnjPos = { x: 2, y: 2 }) {
+    const s = base();
+    s.entities.push({ id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' });
+    s.entities.push({ id: 'pnj-1', kind: 'personnage', pos: pnjPos });
+    s.seatAssignments = seatAssignments;
+    return s;
+  }
+
+  it('assise saine = 0 avertissement', () => {
+    expect(validateScene([attable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } })])).toEqual([]);
+  });
+
+  it('meuble, place et personnage inexistants portent chacun leur erreur NOMMÉE', () => {
+    const absent = attable({ 'nulle-part': { nord: { kind: 'entity', entityId: 'pnj-1' } } });
+    expect(msgs(validateScene([absent])).some((m) => /« nulle-part\/nord ».*« pnj-1 ».*aucun décor/.test(m))).toBe(true);
+
+    const place = attable({ 'table-1': { plafond: { kind: 'entity', entityId: 'pnj-1' } } });
+    expect(msgs(validateScene([place])).some((m) => /« table-1\/plafond ».*n'offre pas de place « plafond »/.test(m))).toBe(true);
+
+    const corps = attable({ 'table-1': { nord: { kind: 'entity', entityId: 'fantome' } } });
+    expect(msgs(validateScene([corps])).some((m) => /« table-1\/nord ».*aucun personnage « fantome »/.test(m))).toBe(true);
+  });
+
+  it('un PNJ assis POSÉ ailleurs que sur sa place est une erreur qui dit les deux cases', () => {
+    const w = validateScene([attable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } }, { x: 4, y: 0 })]);
+    expect(w.some((x) => x.refId === 'pnj-1' && /est posé en \(4,0\) alors que sa place est en \(2,2\)/.test(x.message))).toBe(true);
+  });
+
+  it('une place tenue par le GROUPE ne réclame aucune entité de scène', () => {
+    expect(validateScene([attable({ 'table-1': { est: { kind: 'party', heroId: 'hero-1' } } })])).toEqual([]);
+  });
+});

@@ -9,6 +9,7 @@
 import type { FacadeFeature, SceneEntity, WallSide } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import type { Dir8 } from '../../state/dir8';
+import type { SeatPose } from '../../state/seating';
 
 /** Point MONDE : (x,y) en unités de GRILLE continues (coins de case à ±0.5), `h` en MÈTRES.
  *  Jamais de rotation ni d'écran ici — backend affine : `tileCenter(x, y, dims, metricToLift(h))` ;
@@ -186,8 +187,10 @@ export const estPropVolumique = (el: PropEl): el is VolumePropEl => 'faces' in e
  *  le pion-disque). La position INTERPOLÉE de marche est PAR-FRAME : elle reste au stage ; l'élément ne
  *  porte que la position LOGIQUE (`cell`) et les décisions de scène (filtres, ordre d'anneau héros). */
 export type TokenSubjectEl =
-  /** PNJ/créature d'AMBIANCE — `inBattle` : rendu estompé + non interactif. */
-  | { kind: 'figurant'; ent: SceneEntity; enrolled: boolean; inBattle: boolean }
+  /** PNJ/créature d'AMBIANCE — `inBattle` : rendu estompé + non interactif. `seat` : la place assise
+   *  que ce corps tient (`state/seating`), ancre métrique et cap COMPRIS — aucun `mountId`, aucun
+   *  porteur : un attablé n'est pas un cavalier. Absent = debout sur sa case. */
+  | { kind: 'figurant'; ent: SceneEntity; enrolled: boolean; inBattle: boolean; seat?: SeatPose }
   /** Combattant (branche combat). `heroIndex` = ordinal d'anneau héros ; `overhang` = jeton de
    *  muraille rendu AU-DESSUS de la zone active (chemin de ronde vu d'en bas). */
   | { kind: 'combatant'; c: Combatant; heroIndex?: number; overhang: boolean }

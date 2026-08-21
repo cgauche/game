@@ -223,6 +223,7 @@ import {
   applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf,
 } from './combatGeometry';
 export * from './combatGeometry';
+import { releaseSeat } from './seating';
 // --- Résolveur d'aire des munitions/armes à effet de zone (Tir de zone / Explosion) extrait → combatArea.ts (baril) ---
 export * from './combatArea';
 import { resolveWeaponArea, areaTargets, blastRadiusTiles, type AreaTargets } from './combatArea';
@@ -5933,6 +5934,20 @@ export function openContractionCascade(get: Get, set: SetFn, patient: Combatant,
  *  persistants) vers `party`. Idempotent ; les champs non persistants du membre party sont conservés.
  *  Les JETS HÉROS de fin de combat (maladie/Corruption) sont résolus AVANT (cascade `openCombatEndCascade`
  *  ou inline) — ici, on ne fait QUE le writeback (les marqueurs ont déjà été consommés). */
+/**
+ * Un combat MET DEBOUT ceux qu'il enrôle : chaque entité de scène devenue combattante quitte la
+ * place assise qu'elle tenait. PURE — rend la scène à écrire, que l'appelant fond dans SA propre
+ * écriture (l'ouverture de combat en a déjà une), donc AVANT toute capture de mutation ; la
+ * SUPPRESSION des corps hors d'action passe, elle, par `removeEntities`, qui renormalise à son tour.
+ * Rend la scène d'entrée, même référence, si personne n'était assis.
+ */
+export function releaseSeatsOfCombatants<S extends Scene | null>(scene: S, combatants: readonly Pick<Combatant, 'id'>[]): S {
+  if (!scene?.seatAssignments) return scene;
+  let next: Scene = scene;
+  for (const c of combatants) next = releaseSeat(next, { kind: 'entity', entityId: c.id });
+  return next as S;
+}
+
 export function finalizeBattle(get: Get, set: SetFn): void {
   const { battle, party } = get();
   if (!battle) return;

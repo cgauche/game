@@ -2911,7 +2911,11 @@ export function createCombatSlice(get: Get, set: Set) {
       // Ouverture = pause de début du Round 1 (pendingRoundStart) : champ visible, ordre d'Initiative dans la
       // frise, pré-emption « agir en premier » (Chance, #12a) — IA gelée. Un seul bouton « Commencer le combat »
       // (pas de phase « plan d'ensemble » séparée : c'était redondant avec la pause de Round).
-      set({ ...resetFields('combatStart'), battle, mode: 'battle', pendingRoundStart: { round: battle.round } });
+      // Un combat MET DEBOUT ceux qu'il enrôle : un PNJ attablé qui devient combattant ne peut pas
+      // rester assis sur sa place. Fondu dans l'écriture de pose du combat — donc avant toute capture
+      // de mutation, et sans une seconde écriture de scène.
+      const deboutScene = releaseSeatsOfCombatants(get().scene, enemies);
+      set({ ...resetFields('combatStart'), battle, mode: 'battle', pendingRoundStart: { round: battle.round }, scene: deboutScene });
       // Effets « début de combat » authorés de chaque combattant (inerte tant qu'aucune donnée ne porte
       // un effet `onCombatStart`) — APRÈS la pose du `battle`, journalisés dans le journal de combat.
       emitCombatEvent('onCombatStart', {

@@ -24,7 +24,7 @@
  */
 import type { RuleValue } from '../engine/policy';
 
-export const SAVE_VERSION = 27;
+export const SAVE_VERSION = 28;
 
 export interface SaveMeta {
   version: number;

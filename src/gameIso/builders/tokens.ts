@@ -12,6 +12,7 @@ import type { BattleState } from '../../state/store';
 import { combatantAtTile } from '../../state/combatGeometry';
 import { isPassengerInBattle } from '../../state/shipPostes';
 import { isRider, isMount, riderOf } from '../../state/mount';
+import { seatPoseOf } from '../../state/seating';
 import { isStructure } from '../../engine/structures';
 import { isOverhang } from './floors';
 import type { TokenEl } from './types';
@@ -71,12 +72,15 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefin
     if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // isole ; sinon couche active + dessous
     if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par combattant ne vaut qu'au sol
     if (visible && !visible.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue; // hors-vue → coupé
+    // ASSISE : un PNJ authored attablé (`Scene.seatAssignments`) porte son ancre et son cap depuis la
+    // SOURCE UNIQUE `state/seating` — le builder ne recalcule aucune géométrie de meuble.
+    const assis = seatPoseOf(scene, { kind: 'entity', entityId: ent.id });
     out.push({
       kind: 'token',
       key: `fig:${ent.id}`,
       id: ent.id,
       cell: { x: ent.pos.x, y: ent.pos.y, z: ez },
-      subject: { kind: 'figurant', ent, enrolled: enrolledIds.has(ent.id), inBattle },
+      subject: { kind: 'figurant', ent, enrolled: enrolledIds.has(ent.id), inBattle, ...(assis ? { seat: assis } : {}) },
       states: { visible: true },
     });
   }

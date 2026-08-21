@@ -12,6 +12,7 @@ import { placeServices, type WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
 import roofMaterials from '../data/roofMaterials.json';
 import { scenePlanDefects, type PlanDefectAt, type PlanDefectFamily } from './planDefects';
+import { seatSlotsOf } from './seating';
 
 /** Clés valides de `CustomStatblock.char` : les 10 `CharKey` (slugs pleins, #311) ∪ `M`/`B`
  *  (Mouvement/Blessures, hors `CharKey` — cf. `CustomStatblock` dans `./scene`). */
@@ -126,6 +127,25 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (e.statblock?.char)
         for (const k of Object.keys(e.statblock.char))
           if (!VALID_STATBLOCK_CHAR_KEYS.has(k)) add('error', 'entity', e.id, `${e.label ?? e.id} : statblock.char porte une clé étrangère « ${k} » (format canonique = CharKey slug plein, cf. #311)`);
+    }
+    // ASSISE AUTHORÉE (`Scene.seatAssignments`, résolue par `state/seating`) : chaque place occupée
+    // doit désigner un meuble POSÉ, une place que son type déclare, et un corps présent — et le PNJ
+    // assis se tient sur la case qui porte sa place, pas ailleurs sur la carte.
+    for (const [propId, parMeuble] of Object.entries(s.seatAssignments ?? {})) {
+      const places = seatSlotsOf(s, propId);
+      const propPose = s.entities.some((e) => e.id === propId && e.kind === 'prop');
+      for (const [slotId, occupant] of Object.entries(parMeuble)) {
+        const occupantId = occupant.kind === 'party' ? occupant.heroId : occupant.entityId;
+        if (!propPose) { add('error', 'entity', propId, `Assise « ${propId}/${slotId} » (« ${occupantId} ») : aucun décor « ${propId} » dans la scène`); continue; }
+        const place = places.find((p) => p.slotId === slotId);
+        if (!place) { add('error', 'entity', propId, `Assise « ${propId}/${slotId} » (« ${occupantId} ») : le décor « ${propId} » n'offre pas de place « ${slotId} »`); continue; }
+        if (occupant.kind === 'party') continue; // le groupe n'appartient pas au document de scène
+        const pnj = s.entities.find((e) => e.id === occupant.entityId && e.kind === 'personnage');
+        if (!pnj) { add('error', 'entity', propId, `Assise « ${propId}/${slotId} » : aucun personnage « ${occupantId} » dans la scène`); continue; }
+        const cx = Math.round(place.anchor.x), cy = Math.round(place.anchor.y);
+        if (pnj.pos.x !== cx || pnj.pos.y !== cy)
+          add('error', 'entity', occupant.entityId, `Assise « ${propId}/${slotId} » : « ${occupantId} » est posé en (${pnj.pos.x},${pnj.pos.y}) alors que sa place est en (${cx},${cy})`);
+      }
     }
     const validRect = (rect: { x: number; y: number; w: number; h: number }) =>
       Number.isInteger(rect.x) && Number.isInteger(rect.y) && Number.isInteger(rect.w) && Number.isInteger(rect.h)

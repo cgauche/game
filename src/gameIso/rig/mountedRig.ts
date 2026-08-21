@@ -13,6 +13,7 @@ import { addPose, type Pose } from './poses';
 import type { View } from './facing';
 import { apply, type Matrix } from './kinematics';
 import { handlingClass, type Handling } from './anim/handling';
+import { seatedPose, weaponRest } from './anim/weaponClips';
 import type { Weapon } from '../../engine/types';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { planOptsForRecord, type ResolveOpts } from './bodyPlan';
@@ -37,7 +38,7 @@ export function riderZForQuad(view: View): (b: ResolvedBone) => number {
 // épaule→avantBras→main, la main reste attachée au poignet.
 // Rig 2D : de FACE/DOS une rotation de torse penche de CÔTÉ → pas d'inclinaison hors profil ;
 // et les jambes straddlent par angles MIROIR (G+/D−), sinon elles partent du même côté.
-function seatedBody(view: View): Pose {
+export function seatedBodyPose(view: View): Pose {
   if (view === 'profile') {
     return { torse: 6, tete: -4, cuisseG: 16, cuisseD: 12, tibiaG: -8, tibiaD: -6, piedG: 2, piedD: 0, epauleG: -36, avantBrasG: -14, avantBrasD: -12 };
   }
@@ -62,7 +63,16 @@ function mountedWeaponHold(h: Handling, view: View): Pose {
 /** Pose complète du cavalier au repos monté = corps assis + tenue d'arme, par vue. */
 export function mountedRest(view: View, weapon?: Weapon): Pose {
   const h = weapon ? handlingClass(weapon) : 'lame1m';
-  return addPose(seatedBody(view), mountedWeaponHold(h, view));
+  return addPose(seatedBodyPose(view), mountedWeaponHold(h, view));
+}
+
+/**
+ * Pose d'un corps ASSIS HORS MONTURE (figurant attablé) : le même corps assis, avec la tenue d'arme
+ * AU REPOS du fantassin (`weaponRest`) — jamais une tenue montée, jamais un geste. La prise passe par
+ * `seatedPose` : les jambes restent celles de l'assise, l'arme ne peut pas redéplier le corps.
+ */
+export function seatedRest(view: View, weapon?: Weapon): Pose {
+  return addPose(seatedBodyPose(view), seatedPose(weaponRest(weapon)));
 }
 
 export interface SeatOpts {

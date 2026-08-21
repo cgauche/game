@@ -70,6 +70,7 @@ const MUTATIONS: Record<keyof Scene, (s: Scene) => Scene> = {
   layers: (s) => ({ ...s, layers: cloneLayers(s) }),
   walls: (s) => ({ ...s, walls: [...(s.walls ?? [])] }),
   entities: (s) => ({ ...s, entities: [...s.entities] }),
+  seatAssignments: (s) => ({ ...s, seatAssignments: { 'table-1': { nord: { kind: 'entity', entityId: 'attable' } } } }),
   architecture: (s) => ({ ...s, architecture: [...(s.architecture ?? [])] }),
   dialogues: (s) => ({ ...s, dialogues: [...s.dialogues] }),
   triggers: (s) => ({ ...s, triggers: [...s.triggers] }),

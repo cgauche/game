@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { checkBattleOver } from './combatFlow';
 import { removeEntities } from './combatGeometry';
+import { seatPoseOf } from './seating';
 import { createHero } from '../engine/character';
 import { inanimateCombatant } from '../engine/inanimate';
 import { makeRNG } from '../engine/dice';
@@ -156,9 +157,59 @@ describe('removeEntities — retrait par lot (brique partagée)', () => {
       dialogues: [], triggers: [], encounters: [], flags: {},
     };
     let stored: Scene = scene;
-    const get = (() => ({ scene: stored })) as never;
+    const get = (() => ({ scene: stored, party: [] })) as never;
     const set = ((patch: { scene: Scene }) => { stored = patch.scene; }) as never;
     removeEntities(get, set, ['a', 'c', 'inconnu']);
     expect(stored.entities.map((e) => e.id)).toEqual(['b']);
+  });
+
+  it('une suppression NETTOIE l’assise dans la MÊME écriture de scène (meuble ou corps)', () => {
+    const assis = { kind: 'entity' as const, entityId: 'pnj-1' };
+    const fixture = (): Scene => ({
+      id: 's', nom: '', description: '', dimensions: { w: 6, h: 6 },
+      layers: [{ z: 0, tiles: new Array(36).fill('herbe') }],
+      entities: [
+        { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
+        { id: 'pnj-1', kind: 'personnage', pos: { x: 2, y: 2 } },
+      ] as SceneEntity[],
+      dialogues: [], triggers: [], encounters: [], flags: {},
+      seatAssignments: { 'table-1': { nord: assis } },
+    });
+    for (const retire of ['table-1', 'pnj-1']) {
+      let stored: Scene = fixture();
+      const get = (() => ({ scene: stored, party: [] })) as never;
+      const set = ((patch: { scene: Scene }) => { stored = patch.scene; }) as never;
+      removeEntities(get, set, [retire]);
+      expect(seatPoseOf(stored, assis), `« ${retire} » retiré`).toBeNull();
+      expect(stored.seatAssignments, `« ${retire} » retiré`).toEqual({});
+    }
+  });
+});
+
+describe('ouverture de combat — un PNJ enrôlé ASSIS se lève', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it('sa place est libérée AVANT la pose du combat ; le voisin non enrôlé reste attablé', () => {
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [hero], battle: null });
+    useGame.getState().startScene(testScene);
+    const sc = useGame.getState().scene!;
+    const enrole = sc.encounters.find((e) => e.id === 'enc-mutants')!.members![0].entityId;
+    const pos = sc.entities.find((e) => e.id === enrole)!.pos;
+    const entities: SceneEntity[] = [
+      ...sc.entities,
+      { id: 'table-1', kind: 'prop', pos: { ...pos }, ref: 'table-ronde-4-tabourets', facing: 'N' },
+      { id: 'badaud', kind: 'personnage', pos: { ...pos }, ref: 'mutant' },
+    ];
+    const combattant = { kind: 'entity' as const, entityId: enrole };
+    const badaud = { kind: 'entity' as const, entityId: 'badaud' };
+    useGame.setState({ scene: { ...sc, entities, seatAssignments: { 'table-1': { nord: combattant, sud: badaud } } } });
+    expect(seatPoseOf(useGame.getState().scene!, combattant)).not.toBeNull();
+
+    useGame.getState().startCombat('enc-mutants');
+
+    expect(seatPoseOf(useGame.getState().scene!, combattant)).toBeNull();
+    expect(seatPoseOf(useGame.getState().scene!, badaud)).toMatchObject({ slotId: 'sud' });
   });
 });

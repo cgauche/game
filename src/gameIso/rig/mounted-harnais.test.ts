@@ -11,7 +11,9 @@
  * sur les DEUX issues du set : servi, ou REFUSÉ visiblement (espèce dont l'art n'est pas cuit).
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { mountedPlanOpts } from './mountedRig';
+import { mountedPlanOpts, mountedRest, seatedBodyPose, seatedRest } from './mountedRig';
+import { weaponRest } from './anim/weaponClips';
+import { buildWeapon } from '../../engine/items';
 import { resolveById, planById, planOptsForRecord } from './bodyPlan';
 import { QUAD_HARNAIS, DEFAUT_HARNAIS_MONTE } from './quadruped/harnais';
 import { QUAD_REST } from './quadruped/quadPose';
@@ -80,5 +82,32 @@ describe('une monture dont l\'espèce n\'est pas cuite pour le set : ALARME visi
     const msg = warn.mock.calls.flat().join(' ');
     expect(msg).toContain(DEFAUT_HARNAIS_MONTE);
     expect(msg).toContain('blaireau');
+  });
+});
+
+/**
+ * CORPS ASSIS SANS MONTURE (figurant attablé) : la même assise que le cavalier — bassin ancré,
+ * jambes fléchies — mais la tenue d'arme AU REPOS du fantassin, jamais une tenue montée ni un geste.
+ */
+describe('seatedRest — un attablé n’est pas un cavalier', () => {
+  const HAMPE = buildWeapon({ label: 'Hallebarde', hands: 2, reach: 'Longue', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'empalement' }] });
+
+  it('le corps assis vient de la primitive NEUTRE (jambes fléchies), pas de la tenue d’arme', () => {
+    const corps = seatedBodyPose('profile');
+    const pose = seatedRest('profile', HAMPE);
+    for (const os of ['cuisseG', 'cuisseD', 'tibiaG', 'tibiaD', 'piedG', 'piedD'] as const) {
+      expect(corps[os], `l'assise doit poser ${os}`).toBeDefined();
+      expect(pose[os], `${os} appartient à l'assise`).toBe(corps[os]);
+    }
+  });
+
+  it('la tenue est celle du REPOS à pied, PAS la tenue montée', () => {
+    const repos = weaponRest(HAMPE);
+    expect(seatedRest('profile', HAMPE).arme).toBe(repos.arme);
+    expect(mountedRest('profile', HAMPE).arme).not.toBe(repos.arme); // la hampe montée est AU PORT
+  });
+
+  it('sans arme, il ne reste que l’assise', () => {
+    expect(seatedRest('profile')).toEqual(seatedBodyPose('profile'));
   });
 });

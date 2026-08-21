@@ -53,6 +53,25 @@ describe('buildTokens — figurants (PNJ d’ambiance)', () => {
     expect(buildTokens(scene(), new Set(), null, VIEW)).toHaveLength(0);
   });
 
+  it('un figurant ASSIS porte sa place (ancre métrique + cap), sans aucun porteur', () => {
+    const s = scene();
+    s.entities = [
+      { id: 'table-1', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
+      { id: 'f1', kind: 'personnage', pos: { x: 1, y: 1 } },
+      { id: 'f2', kind: 'personnage', pos: { x: 4, y: 4 } }, // debout : aucune place
+    ] as SceneEntity[];
+    s.encounters = [] as Scene['encounters'];
+    s.seatAssignments = { 'table-1': { est: { kind: 'entity', entityId: 'f1' } } };
+    const par = new Map(buildTokens(s, allVisible(s), null, VIEW).map((e) => [e.id, e.subject]));
+    const assis = par.get('f1') as { kind: string; seat?: { slotId: string; facing: string; anchor: { x: number; y: number; h: number } } };
+    expect(assis.seat?.slotId).toBe('est');
+    expect(assis.seat?.facing).toBe('O');           // recette face au N : le corps de l'est regarde l'ouest
+    expect(assis.seat?.anchor.x).toBeCloseTo(1.43, 4);
+    expect(assis.seat?.anchor.h).toBeCloseTo(0.49, 4);
+    expect(assis).not.toHaveProperty('mountId');
+    expect(par.get('f2')).not.toHaveProperty('seat'); // debout : aucun champ d'assise
+  });
+
   it('en combat : saute un figurant enrôlé (rendu par son combattant) ou couvert par un combattant', () => {
     const s = scene();
     // f1 enrôlé dans la bataille → c'est le combattant qui le rend.

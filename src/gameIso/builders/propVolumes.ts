@@ -12,16 +12,9 @@
  * ORIENTATION : chaque polygone sort tourné vers le DEHORS de la primitive qui le porte — la cuisson
  * (`backends/webgl/sceneMeshes`) propage ce sens tel quel pour la carte d'ombre.
  */
-import { DIR8_ORDER, type Dir8 } from '../../state/dir8';
-import type { PropData, PropPoint3, PropPrimitive } from '../../data/props.types';
+import { rotatePropLocal, type PropData, type PropPoint3, type PropPrimitive } from '../../data/props.types';
 import type { SceneEntity } from '../../state/scene';
 import type { Face, GP } from './types';
-
-/** Rotation du repère local au cap d'auteur — l'UNIQUE endroit où `facing` tourne une géométrie de décor. */
-const rotateLocal = (x: number, y: number, facing: Dir8): [number, number] => {
-  const a = DIR8_ORDER.indexOf(facing) * Math.PI / 4;
-  return [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
-};
 
 /** Sommet LOCAL d'une primitive, avant cap et avant sol. */
 interface Sommet { x: number; y: number; h: number }
@@ -140,7 +133,7 @@ export function buildPropVolumes(ent: SceneEntity, prop: PropData, groundHeightM
     const material = { domain: 'prop' as const, id: primitive.material };
     for (const poly of polygonesLocaux(primitive)) {
       const monde: GP[] = poly.map((p) => {
-        const [rx, ry] = rotateLocal(p.x, p.y, facing);
+        const [rx, ry] = rotatePropLocal(p.x, p.y, facing);
         return { x: ent.pos.x + rx, y: ent.pos.y + ry, h: groundHeightM + p.h };
       });
       out.push({ poly: monde, material, entId: ent.id });

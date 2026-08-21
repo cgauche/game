@@ -23,6 +23,7 @@ import { battleRng } from './battleRng';
 import { ev } from './combatLog';
 import { t } from '../i18n';
 import { bus, EVT } from './bus';
+import { pruneSeatAssignments } from './seating';
 // Type-only (effacé à la compilation) : la FORME du Flow gaté posé pour une zone `crossTest` — ce
 // module reste BAS NIVEAU (aucun import de `combat/triggeredTest`/`combatEffects`, qui remonteraient
 // vers lui → cycle) ; la résolution cadence-aware est déléguée au hook `setZoneCrossTestHook`
@@ -195,14 +196,19 @@ function nearestFreeOutside(scene: Scene, battle: BattleState, c: Combatant, mov
   return undefined;
 }
 
-/** Retrait par lot d'entités de scène (un seul `set` + un seul SCENE_DIRTY). No-op si rien à retirer. */
+/** Retrait par lot d'entités de scène (un seul `set` + un seul SCENE_DIRTY). No-op si rien à retirer.
+ *  FUNNEL PARTAGÉ de toute suppression d'entité : l'assise (`Scene.seatAssignments`) y est renormalisée
+ *  DANS LA MÊME écriture de scène — un meuble ou un PNJ qui disparaît ne laisse pas sa place derrière
+ *  lui, et aucun appelant n'a à s'en souvenir. */
 export function removeEntities(get: Get, set: SetFn, ids: string[]) {
   const scene = get().scene;
   if (!scene || !ids.length) return;
   const drop = new Set(ids);
   const next = scene.entities.filter((e) => !drop.has(e.id));
   if (next.length === scene.entities.length) return; // aucun id présent → rien à faire
-  set({ scene: { ...scene, entities: next } });
+  const elague: Scene = { ...scene, entities: next };
+  const seatAssignments = pruneSeatAssignments(elague, new Set(get().party.map((h) => h.id)));
+  set({ scene: scene.seatAssignments === undefined && !Object.keys(seatAssignments).length ? elague : { ...elague, seatAssignments } });
   bus.emit(EVT.SCENE_DIRTY);
 }
 

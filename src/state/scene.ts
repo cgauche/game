@@ -34,6 +34,7 @@ export type EntityKind = 'heroStart' | 'personnage' | 'prop';
 
 /** Statbloc personnalisé (PNJ/bête custom d'éditeur) — moteur pur, `engine/statblock.ts` (#614) :
  *  `LivingRef` (`engine/possession.ts`) porte la même dualité bestiaire|custom que ce type. */
+import type { SeatAssignments } from './seating';
 import type { CustomStatblock } from '../engine/statblock';
 import type { LivingRef } from '../engine/possession';
 import { chebyshev } from '../engine/grid';
@@ -736,6 +737,11 @@ export interface Scene {
    *  et (x,y-1) ; `side:'E'` = arête entre (x,y) et (x+1,y). `door` = arête franchissable (porte). */
   walls?: WallSeg[];
   entities: SceneEntity[];
+  /** OCCUPATION des places assises offertes par le mobilier posé : `propId → slotId → occupant`
+   *  (`state/seating.ts`, source UNIQUE de sa résolution et de sa mutation). Absent = personne
+   *  n'est assis ; `{}` explicite dit la même chose, et se distingue de l'absence à la CAPTURE de
+   *  mutation (un effacement complet ne doit pas ressusciter l'assise authorée). */
+  seatAssignments?: SeatAssignments;
   /** Corps architecturaux authorés : volumes, façades et toitures intentionnels. */
   architecture?: ArchitectureBody[];
   dialogues: Dialogue[];

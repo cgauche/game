@@ -231,7 +231,10 @@ export function weaponParryClip(w?: Weapon, hasShield = false): Clip {
 // leurs deltas bassin/jambes faisaient basculer le corps assis (ancré à la selle par le bassin).
 // Règle : un clip monté ne touche JAMAIS bassin/cuisse/tibia/pied — le geste vit dans le buste.
 const SEATED_LOCKED = /^(bassin|cuisse|tibia|pied)/;
-const seatedPose = (p: Pose): Pose => Object.fromEntries(Object.entries(p).filter(([k]) => !SEATED_LOCKED.test(k)));
+/** Variante ASSISE d'une pose : purge les deltas bassin/jambes. SOURCE UNIQUE du verrou d'assise —
+ *  servie aussi bien aux clips montés qu'à la tenue d'arme AU REPOS d'un corps attablé, dont les
+ *  jambes appartiennent à l'assise et non à l'arme. */
+export const seatedPose = (p: Pose): Pose => Object.fromEntries(Object.entries(p).filter(([k]) => !SEATED_LOCKED.test(k)));
 /** Variante ASSISE d'un clip : purge les deltas bassin/jambes (le cavalier reste en selle). */
 export const seatedClip = (cl: Clip): Clip => ({ ...cl, steps: cl.steps.map((s) => ({ ...s, pose: seatedPose(s.pose) })) });
 

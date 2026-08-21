@@ -119,6 +119,10 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(parseSave({ ...cur, version: SAVE_VERSION - 1 })).toBeNull();
     expect(parseSave({ ...cur, version: 1 })).toBeNull();
   });
+  it('la forme persistée COURANTE porte l’assise des places (`Scene.seatAssignments`) : 28, et 27 se jette', () => {
+    expect(SAVE_VERSION).toBe(28);
+    expect(parseSave({ ...cur, version: 27 })).toBeNull();
+  });
   it('objet malformé / version absente → null', () => {
     expect(parseSave(null)).toBeNull();
     expect(parseSave('pas un objet')).toBeNull();
