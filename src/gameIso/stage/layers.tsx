@@ -62,7 +62,6 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, lod: number, detailOpt
       ...(acc ? { acc } : {}),
       el: <g
         key={el.key}
-        style={{ opacity: 1, transition: 'opacity 0.25s' }}
         {...(lazySvg ? {} : { dangerouslySetInnerHTML: { __html: svg() } })}
       />,
     };

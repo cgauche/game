@@ -103,6 +103,8 @@ function plaque(position: 'above' | 'below') {
   };
 }
 
+type Plaque = ReturnType<typeof plaque>;
+
 function baseProps() {
   return {
     pushSnapshot: () => {},
@@ -175,6 +177,9 @@ async function monter(
   } = {},
 ) {
   let scene = opts.scene ?? sceneAtelier();
+  // La plaque de l'auteur telle que le panneau la tient : une RÉFÉRENCE neuve à chaque réglage (c'est
+  // ce que fait `TraceLayerPanel` — un cran de curseur = un objet de plus).
+  let trace: Plaque | null = opts.traceLayer ? plaque(opts.traceLayer.position) : null;
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
@@ -188,7 +193,7 @@ async function monter(
         currentLayer={opts.currentLayer ?? 0}
         lowerLayerMode={opts.lowerLayerMode ?? 'gabarit'}
         lowerLayerOpacity={opts.lowerLayerOpacity ?? 0.22}
-        traceLayer={opts.traceLayer ? plaque(opts.traceLayer.position) : null}
+        traceLayer={trace}
         layers={{ ...DEFAULT_LAYERS, roofs: opts.roofs ?? DEFAULT_LAYERS.roofs }}
         tool={tool as never}
         setScene={(s) => { scene = s; rendre(); }}
@@ -253,6 +258,8 @@ async function monter(
       });
       return n ? somme / n : 0;
     },
+    /** UN RÉGLAGE de la plaque, par le chemin du panneau : référence neuve, un rendu. */
+    régler: (patch: Partial<Plaque>) => act(async () => { trace = { ...trace!, ...patch }; rendre(); }),
     /** La plaque de décalquage montée dans le volume (`null` si aucune). */
     decalque: () => {
       let trouve: THREE.Mesh | null = null;
@@ -491,6 +498,57 @@ describe('Éditeur — plaque de décalquage et marqueurs d’auteur (#1176, P3-
       // Une seule plaque : le SVG ne porte plus la sienne (elle serait doublée, et à un autre ancrage).
       expect(h.svg.querySelector('image')).toBeNull();
     });
+
+  /**
+   * #1404 — l'opacité de la plaque est un CURSEUR (`ui/editor/TraceLayerPanel`) : chaque cran passait
+   * une référence neuve à l'écran, qui libérait géométrie, matériau et texture puis RE-DÉCODAIT le
+   * `data:` URL. Un réglage scalaire est une REPOSE : rien ne se remonte, l'opacité s'écrit en place.
+   */
+  it('un cran d’OPACITÉ s’écrit en place : mêmes objets, image jamais re-décodée', async () => {
+    const h = await monter({ mode: 'select' }, { traceLayer: { position: 'above' } });
+    const mesh = h.decalque()!;
+    const mat = mesh.material as THREE.MeshBasicMaterial;
+    const avant = [mesh.uuid, mesh.geometry.uuid, mat.uuid, mat.map!.uuid];
+    expect(mat.opacity, 'PRÉMISSE : la plaque part à l’opacité authored').toBe(0.6);
+
+    await h.régler({ opacity: 0.15 });
+
+    const après = h.decalque()!;
+    const matAprès = après.material as THREE.MeshBasicMaterial;
+    expect([après.uuid, après.geometry.uuid, matAprès.uuid, matAprès.map!.uuid], 'un cran de curseur a remonté la plaque')
+      .toEqual(avant);
+    expect(matAprès.opacity, 'l’opacité du curseur n’est pas arrivée au matériau').toBe(0.15);
+  });
+
+  it('une AUTRE planche, elle, se recharge — et elle seule (le quad et son matériau restent)', async () => {
+    const h = await monter({ mode: 'select' }, { traceLayer: { position: 'above' } });
+    const mesh = h.decalque()!;
+    const mat = mesh.material as THREE.MeshBasicMaterial;
+    const texAvant = mat.map!.uuid;
+
+    await h.régler({ imageDataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==' });
+
+    const après = h.decalque()!;
+    const matAprès = après.material as THREE.MeshBasicMaterial;
+    expect(matAprès.map!.uuid, 'une planche neuve doit Être décodée').not.toBe(texAvant);
+    expect([après.uuid, matAprès.uuid], 'seule l’image change : le quad et son matériau restent en place')
+      .toEqual([mesh.uuid, mat.uuid]);
+  });
+
+  it('un CALAGE déplacé rebâtit la forme, et rien d’autre', async () => {
+    const h = await monter({ mode: 'select' }, { traceLayer: { position: 'above' } });
+    const mesh = h.decalque()!;
+    const mat = mesh.material as THREE.MeshBasicMaterial;
+    const géoAvant = mesh.geometry.uuid;
+
+    await h.régler({ transform: { tx: 60, ty: -10, scale: 0.5, rotateDeg: 0 } });
+
+    const après = h.decalque()!;
+    const matAprès = après.material as THREE.MeshBasicMaterial;
+    expect(après.geometry.uuid, 'les quatre coins ont bougé : la géométrie se rebâtit').not.toBe(géoAvant);
+    expect([après.uuid, matAprès.uuid, matAprès.map!.uuid], 'un calage ne re-décode aucune image')
+      .toEqual([mesh.uuid, mat.uuid, mat.map!.uuid]);
+  });
 
   it('les SOURCES LUMINEUSES posées portent un marqueur d’auteur (en plein jour, rien ne les trahirait)', async () => {
     const h = await monter({ mode: 'select' }, { scene: sceneLampe() });

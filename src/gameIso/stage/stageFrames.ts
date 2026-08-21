@@ -11,9 +11,10 @@
  * Trois façons de le faire battre, jamais deux boucles concurrentes : `battreStageFrames` pour qui
  * tient déjà une horloge (la boucle de marche `fx/useWalkAnim`, un `pointermove` que le navigateur
  * cadence déjà à l'image), `demanderFrames`/`relacherFrames` pour ce qui n'en a aucune
- * (l'adoucissement de focale, `useBattementContinu` pour un motif qui dure), et `demanderUneImage`
- * pour un geste PONCTUEL qui n'a besoin que d'être VU (la relève d'une texture de billboard). La
- * boucle de demande comme la demande ponctuelle CÈDENT le pas à ce qui vient d'avoir lieu, mais PAS à
+ * (l'adoucissement de focale, le fondu de la découpe locale `stage/percage`, `useBattementContinu`
+ * pour un motif qui dure), et `demanderUneImage` pour un geste PONCTUEL qui n'a besoin que d'être VU
+ * (la relève d'une texture de billboard). La boucle de demande comme la demande ponctuelle CÈDENT le
+ * pas à ce qui vient d'avoir lieu, mais PAS à
  * la même chose — cf. les deux horloges ci-dessous.
  *
  * Une image a DEUX temps : le PRÉLUDE avance la vue (`subscribeStagePrelude`), les abonnés la lisent

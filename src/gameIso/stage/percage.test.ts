@@ -11,7 +11,7 @@ import { heightAt } from '../../state/scene';
 import { actorCapsuleOf } from './actorCapsule';
 import { diligenceCampaign } from '../../scenes/campaign';
 import type { Lid } from './architectureVisibility';
-import { avancerRayon, centrePercage, clePercage, creerPercage, verdictPercage, type ActeurPerce } from './percage';
+import { avancerRayon, centrePercage, clePercage, creerPercage, verdictPercage, type ActeurPerce, type Percage } from './percage';
 import { PERCAGE_FONDU_MS, PERCAGE_MAX_HEROS, PERCAGE_RAYON_PX, trousPercage } from '../backends/webgl/percageLocal';
 
 const scene = diligenceCampaign.scenes[0];
@@ -80,15 +80,26 @@ describe('cadence — le verdict ne se rejoue qu’à la CLÉ', () => {
   it('à clé CONSTANTE le pilote ne retire pas — cent frames, un seul verdict', () => {
     const percage = creerPercage();
     expect(percage.majVerdict(entree('a'))).toBe(true);
+    let horloge = 0;
     for (let i = 0; i < 100; i++) {
       expect(percage.majVerdict(entree('a'))).toBe(false);
-      percage.avancer(16, camera, 1280, 720);
+      horloge += 16;
+      percage.avancer(horloge, camera, 1280, 720);
     }
     expect(percage.verdictsJoues()).toBe(1);
     expect(percage.majVerdict(entree('b'))).toBe(true);
     expect(percage.verdictsJoues()).toBe(2);
   });
 });
+
+/** Sert des IMAGES au pilote jusqu'à ce que le fondu ait convergé : il tient SON horloge (`avancer`
+ *  reçoit l'horodatage de l'image et borne son propre pas), une seule avance ne le mène nulle part.
+ *  Rend l'horodatage de la dernière image servie. */
+function fondreEnEntier(percage: Percage): number {
+  let t = 0;
+  for (; t <= PERCAGE_FONDU_MS + 100; t += 50) percage.avancer(t, camera, 1280, 720);
+  return t - 50;
+}
 
 describe('fondu et écriture des trous', () => {
   it('le rayon atteint sa cible en exactement `PERCAGE_FONDU_MS`, et se referme de même', () => {
@@ -103,7 +114,7 @@ describe('fondu et écriture des trous', () => {
     const percage = creerPercage();
     const acteurs = [acteur(17, 2), acteur(31, 0)];
     percage.majVerdict({ cle: 'x', lids, acteurs });
-    percage.avancer(PERCAGE_FONDU_MS, camera, 1280, 720);
+    fondreEnEntier(percage);
     const trous = trousPercage();
     expect(trous).toHaveLength(PERCAGE_MAX_HEROS);
     const attendu = centrePercage(camera, acteurs[0].monde, 1280, 720);
@@ -121,7 +132,7 @@ describe('fondu et écriture des trous', () => {
     const percage = creerPercage();
     const acteurs = [acteur(17, 2)];
     percage.majVerdict({ cle: 'y', lids, acteurs });
-    percage.avancer(PERCAGE_FONDU_MS, camera, 1280, 720);
+    const fin = fondreEnEntier(percage);
     const avant = trousPercage()[0].clone();
     const autre = new THREE.OrthographicCamera(-16, 16, 12, -12, 0.1, 200);
     autre.position.set(-20, 30, 40);
@@ -129,7 +140,7 @@ describe('fondu et écriture des trous', () => {
     autre.updateMatrixWorld();
     autre.updateProjectionMatrix();
     expect(percage.majVerdict({ cle: 'y', lids, acteurs }), 'la clé n’a pas bougé').toBe(false);
-    percage.avancer(16, autre, 1280, 720);
+    percage.avancer(fin + 16, autre, 1280, 720);
     const apres = trousPercage()[0];
     const attendu = centrePercage(autre, acteurs[0].monde, 1280, 720);
     expect(apres.x, 'la nouvelle caméra déplace réellement le sujet').not.toBeCloseTo(avant.x, 1);

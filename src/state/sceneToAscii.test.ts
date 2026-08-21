@@ -68,7 +68,16 @@ function expectGeometryEqual(original: Scene, rebuilt: Scene) {
 }
 
 describe('sceneToAscii — round-trip doré (buildScene → export → réimport → buildScene)', () => {
-  it('La Diligence (32×38, 2 niveaux) : tout revient à l’identique SAUF ce que l’export déclare perdu', () => {
+  /** La Diligence est EN AUTHORING : le doré ne PEUT PAS y épingler un compte authoré (nombre
+   *  d'ouvertures à matériau distinct, nombre d'avertissements d'export) — il rougirait à chaque coup
+   *  de pinceau d'une session d'authoring et bloquerait le tronc. Arbitrage 2026-08-21 (#1447),
+   *  verbatim de l'utilisateur : « C'est absurde d'avoir un guard qui bloque totalement la diligence
+   *  alors qu'elle n'est même pas finalisé ».
+   *  RÉ-ENTRÉE : ré-étalonner à la FINALISATION de la carte — recopier les comptes REÇUS (portes et
+   *  fenêtres divergentes, avertissements) et dire dans le commit ce qui les a déplacés. Ce qui NE
+   *  dépend d'aucun compte authoré — identité des surfaces, identité des murs modulo le matériau
+   *  d'ouverture que l'export déclare perdu — reste verrouillé ci-dessous. */
+  it('La Diligence (EN AUTHORING) : tout revient à l’identique SAUF ce que l’export déclare perdu', () => {
     const original = diligenceScene();
     expect(original.walls?.length ?? 0).toBeGreaterThan(0);
     const exp = sceneToAscii(original);
@@ -77,20 +86,16 @@ describe('sceneToAscii — round-trip doré (buildScene → export → réimport
 
     // Le grillage `walled` n'a qu'UN glyphe par ouverture : l'export déclare les matériaux de porte
     // et de fenêtre qu'il ne peut pas représenter.
-    expect(exp.warnings).toHaveLength(2);
-    expect(exp.warnings).toEqual(expect.arrayContaining([
-      expect.stringMatching(/porte\(s\) avec un matériau distinct de « solide-porte-en-bois »/),
-      expect.stringMatching(/fenêtre\(s\) avec un matériau distinct de « mur-a-ossature-en-bois »/),
-    ]));
     const before = normWalls(original);
     const after = normWalls(rebuilt);
     const sansMateriauPerdu = (w: ReturnType<typeof normWalls>[number]) => (w.door || w.window ? { ...w, structure: null } : w);
     expect(after.map(sansMateriauPerdu)).toEqual(before.map(sansMateriauPerdu));
     const divergents = before.filter((w, i) => w.structure !== after[i].structure);
     expect(divergents.every((w) => w.door || w.window)).toBe(true);
-    expect(divergents.filter((w) => w.door)).toHaveLength(5);
-    expect(divergents.filter((w) => w.window)).toHaveLength(1);
-    expect(divergents).toHaveLength(6);
+    for (const w of divergents)
+      expect(exp.warnings.join(' | ')).toMatch(
+        w.door ? /porte\(s\) avec un matériau distinct de « solide-porte-en-bois »/ : /fenêtre\(s\) avec un matériau distinct de « mur-a-ossature-en-bois »/,
+      );
   });
 
   it('un plan simple (1 étage, portes/fenêtres/matériau/diagonale/rampe/zones) : géométrie identique', () => {
@@ -156,8 +161,13 @@ describe('sceneToAscii — honnêteté de la portée (#énoncé)', () => {
   it('les hauteurs d’une RAMPE peinte survivent via `relief`', () => {
     const original = diligenceScene();
     const exp = sceneToAscii(original);
-    // Marche intermédiaire de la rampe ouest de La Diligence : sa hauteur doit être réémise.
-    const cell = exp.relief.find((r) => r.cell?.[0] === 14 && r.cell?.[1] === 24 && (r.z ?? 0) === 0);
-    expect(cell?.height).toBe(heightAt(original, 14, 24, 0));
+    // La carte étant EN AUTHORING (#1447), la sonde se DÉRIVE de l'export au lieu d'épingler la case
+    // d'une marche : toute case de relief réémise porte la hauteur de la scène d'origine.
+    const cellules = exp.relief.filter((r) => r.cell);
+    expect(cellules.length).toBeGreaterThan(0);
+    for (const r of cellules)
+      expect(r.height, `relief cell ${r.cell![0]},${r.cell![1]} z${r.z ?? 0}`).toBe(
+        heightAt(original, r.cell![0], r.cell![1], r.z ?? 0),
+      );
   });
 });

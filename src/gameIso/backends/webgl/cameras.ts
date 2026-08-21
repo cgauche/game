@@ -24,6 +24,18 @@ import { FOV_X, NEAR, makeCamera } from '../../pov/camera';
 import { pxPerM } from './worldTris';
 import { ISO_PX_PER_M } from '../../iso';
 
+/**
+ * TAMPONS DE MODULE (#1404) — une image ne doit rien allouer : la pose d'une caméra s'écrit dans ces
+ * vecteurs, jamais dans des neufs. Tous sont ÉCRITS avant lecture par la passe qui les emprunte, et
+ * aucun ne sort d'ici : `reposerAffineCamera` copie ses résultats DANS la caméra (`position.copy`,
+ * `up.copy`), elle ne les lui prête pas — un appelant qui retiendrait une réf verrait la frame
+ * suivante l'écraser.
+ */
+const ÉTIREMENT = /*@__PURE__*/ new Matrix4();
+const CIBLE = /*@__PURE__*/ new Vector3();
+const AVANT = /*@__PURE__*/ new Vector3();
+const HAUT = /*@__PURE__*/ new Vector3();
+
 /** Viewport en pixels — le cadre dans lequel la projection est comparable à l'affine. */
 export interface Viewport {
   w: number;
@@ -44,8 +56,16 @@ export class StretchedOrthographicCamera extends OrthographicCamera {
     super.updateProjectionMatrix();
     // Le constructeur de three appelle CE code avant l'initialisation du champ : repli à 1.
     const k = this.stretch || 1;
-    this.projectionMatrix.premultiply(new Matrix4().makeScale(1, k, 1));
+    this.projectionMatrix.premultiply(ÉTIREMENT.makeScale(1, k, 1));
     this.projectionMatrixInverse.copy(this.projectionMatrix).invert();
+  }
+
+  /** `stretch` est un champ PROPRE : la copie de three ne connaît que les siens, et une caméra clonée
+   *  (bancs, instantanés) retomberait à 1 — donc à une projection isotrope, qui n'est pas celle-ci. */
+  override copy(source: this, recursive?: boolean): this {
+    super.copy(source, recursive);
+    this.stretch = source.stretch;
+    return this;
   }
 }
 
@@ -122,20 +142,44 @@ export function affineCamera(
   viewport: Viewport,
   opts: { target?: Vector3; distance?: number; radius?: number } = {},
 ): AffineCam {
+  return reposerAffineCamera(new StretchedOrthographicCamera(), kind, yawDeg, mpt, viewport, opts);
+}
+
+/**
+ * LA MÊME CAMÉRA, REPOSÉE (#1404) — tout ce qu'une image change d'une vue affine s'ÉCRIT sur la
+ * caméra en place : bornes du frustum, anisotropie, position, verticale, orientation. Une image n'a
+ * aucune raison d'en construire une neuve, et l'écran de jeu en construisait une par frame.
+ *
+ * `affineCamera` ci-dessus reste la porte des appelants qui montent une vue et la jettent (bancs,
+ * planches QC, instantanés) : c'est CETTE fonction qu'elle appelle, donc une seule loi de pose.
+ */
+export function reposerAffineCamera(
+  camera: StretchedOrthographicCamera,
+  kind: ProjKind,
+  yawDeg: number,
+  mpt: number,
+  viewport: Viewport,
+  opts: { target?: Vector3; distance?: number; radius?: number } = {},
+): AffineCam {
   const { sx, sy, pitch, stretch } = affineScales(kind, mpt);
-  const target = opts.target ?? new Vector3(0, 0, 0);
+  const target = opts.target ? CIBLE.copy(opts.target) : CIBLE.set(0, 0, 0);
   const distance = opts.distance ?? 2000;
   const { near, far } = orthoDepthRange(distance, opts.radius ?? distance);
 
   // Repère écran : `right` horizontal, `fwd` = −rot90(right) (la case la plus « avant » est la plus basse).
   const r = rightTiles(kind, yawDeg);
   const fwd = { x: r.y, y: -r.x };
-  const forward = new Vector3(fwd.x * Math.cos(pitch), -Math.sin(pitch), fwd.y * Math.cos(pitch));
-  const up = new Vector3(fwd.x * Math.sin(pitch), Math.cos(pitch), fwd.y * Math.sin(pitch));
+  const forward = AVANT.set(fwd.x * Math.cos(pitch), -Math.sin(pitch), fwd.y * Math.cos(pitch));
+  const up = HAUT.set(fwd.x * Math.sin(pitch), Math.cos(pitch), fwd.y * Math.sin(pitch));
 
   const halfW = viewport.w / (2 * sx);
   const halfH = viewport.h / (2 * sx); // cadence HORIZONTALE : l'anisotropie vit dans `stretch`
-  const camera = new StretchedOrthographicCamera(-halfW, halfW, halfH, -halfH, near, far);
+  camera.left = -halfW;
+  camera.right = halfW;
+  camera.top = halfH;
+  camera.bottom = -halfH;
+  camera.near = near;
+  camera.far = far;
   camera.stretch = stretch;
   camera.position.copy(target).addScaledVector(forward, -distance);
   camera.up.copy(up);
@@ -197,9 +241,25 @@ export function povCamera(
   viewport: Viewport,
   far = 4000,
 ): PerspectiveCamera {
+  return reposerPovCamera(new PerspectiveCamera(), scene, partyPos, facing, viewport, far);
+}
+
+/** LA MÊME, REPOSÉE (#1404) : un pas, un cap, une portée de brume qui se resserre écrivent l'œil et
+ *  le cap sur la caméra en place — c'est la même loi de pose que `povCamera`, qui l'appelle. */
+export function reposerPovCamera(
+  camera: PerspectiveCamera,
+  scene: Scene,
+  partyPos: { x: number; y: number; z?: number },
+  facing: Dir8,
+  viewport: Viewport,
+  far = 4000,
+): PerspectiveCamera {
   const pose = makeCamera(scene, partyPos, facing);
   const fovY = 2 * Math.atan((viewport.h / viewport.w) * Math.tan(FOV_X / 2));
-  const camera = new PerspectiveCamera((fovY * 180) / Math.PI, viewport.w / viewport.h, NEAR, far);
+  camera.fov = (fovY * 180) / Math.PI;
+  camera.aspect = viewport.w / viewport.h;
+  camera.near = NEAR;
+  camera.far = far;
   // Monde POV : (x, y) métriques au sol + z vertical → repère three Y-haut.
   camera.position.set(pose.eye.x, pose.eye.z, pose.eye.y);
   camera.up.set(0, 1, 0);

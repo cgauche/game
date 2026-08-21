@@ -1411,14 +1411,8 @@ function ambientDimmed(base: THREE.Color, lum: number): THREE.Color {
  *  des sols assombris. Le PALIER d'ambiance (`ambianceLum`) atténue ensuite les deux bouts ET la
  *  teinte météo : le ciel de nuit s'éteint avec le monde, il n'a pas de luminosité propre. */
 export function skyTexture(meteo: WeatherLight = METEO_SANS_EFFET, ambianceLum = 1): THREE.DataTexture {
-  const haut = ambientDimmed(weatherTinted(srgb(AMBIANCE.pov.skyTop), meteo), ambianceLum);
-  const horizon = ambientDimmed(weatherTinted(srgb(AMBIANCE.pov.fogOutdoor), meteo), ambianceLum);
   const data = new Uint8Array(SKY_STEPS * 4);
-  for (let i = 0; i < SKY_STEPS; i++) {
-    const v = i / (SKY_STEPS - 1); // 0 = bas de l'image
-    const c = horizon.clone().lerp(haut, Math.max(0, (v - 0.5) * 2));
-    data.set([Math.round(c.r * 255), Math.round(c.g * 255), Math.round(c.b * 255), 255], i * 4);
-  }
+  écrireCielTexels(data, meteo, ambianceLum);
   const tex = new THREE.DataTexture(data, 1, SKY_STEPS, THREE.RGBAFormat);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.magFilter = THREE.LinearFilter;
@@ -1427,23 +1421,51 @@ export function skyTexture(meteo: WeatherLight = METEO_SANS_EFFET, ambianceLum =
   return tex;
 }
 
-/** FOND de la première personne : le dégradé de ciel dehors, la brume d'intérieur dedans (le POV n'y
- *  dessine aucun plafond — ce qui n'est pas peint est cette nappe sombre). DEUX couleurs, et c'est
- *  structurel : le fond porte la brume du CIEL (`fogOutdoor`), les surfaces la leur (`povFog`
- *  ci-dessous) — cf. le JSDoc de `AMBIANCE.pov.fogOutdoorSurface`.
- *  La météo ne touche QUE le dehors : entré sous un toit, on est sorti d'elle. Le palier d'ambiance,
- *  lui, touche les deux : la nappe d'intérieur est une nappe du monde et en suit la lumière (elle part
- *  de si bas — `fogIndoor` #0a0a10 — que le geste ne s'y voit qu'au bord du noir). */
-export function povBackground(
-  indoor: boolean,
+/** Les TEXELS du dégradé, écrits dans le tampon qu'on lui donne. Rend `true` si un octet a changé —
+ *  c'est ce verdict que la repose ci-dessous transmet au téléversement. */
+function écrireCielTexels(data: Uint8Array, meteo: WeatherLight, ambianceLum: number): boolean {
+  const haut = ambientDimmed(weatherTinted(srgb(AMBIANCE.pov.skyTop), meteo), ambianceLum);
+  const horizon = ambientDimmed(weatherTinted(srgb(AMBIANCE.pov.fogOutdoor), meteo), ambianceLum);
+  const mélange = new THREE.Color();
+  let changé = false;
+  for (let i = 0; i < SKY_STEPS; i++) {
+    const v = i / (SKY_STEPS - 1); // 0 = bas de l'image
+    const c = mélange.copy(horizon).lerp(haut, Math.max(0, (v - 0.5) * 2));
+    const octets = [Math.round(c.r * 255), Math.round(c.g * 255), Math.round(c.b * 255), 255];
+    for (let k = 0; k < 4; k++) {
+      if (data[i * 4 + k] !== octets[k]) { data[i * 4 + k] = octets[k]; changé = true; }
+    }
+  }
+  return changé;
+}
+
+/**
+ * LE MÊME CIEL, REPOSÉ (#1404) — un palier d'heure ou un changement de météo réécrit les texels de la
+ * texture EN PLACE et redemande son téléversement ; la `DataTexture` est montée une fois pour la vie de
+ * l'écran. Une texture recréée à chaque palier libérait la sienne sur le GPU et en réallouait une pour
+ * 256 octets de dégradé. Rend `true` si le dégradé a changé (donc s'il faut repeindre).
+ */
+export function reposerCiel(
+  tex: THREE.DataTexture,
   meteo: WeatherLight = METEO_SANS_EFFET,
   ambianceLum = 1,
-): THREE.DataTexture | THREE.Color {
-  // La couleur d'intérieur est DÉCODÉE (composantes de travail linéaires) : le facteur d'ambiance s'y
-  // multiplie donc dans le même espace que celui du ciel ci-dessus.
-  return indoor
-    ? new THREE.Color(AMBIANCE.pov.fogIndoor).multiplyScalar(ambianceLum)
-    : skyTexture(meteo, ambianceLum);
+): boolean {
+  const changé = écrireCielTexels(tex.image.data as Uint8Array, meteo, ambianceLum);
+  if (changé) tex.needsUpdate = true;
+  return changé;
+}
+
+/** FOND de la première personne SOUS UN TOIT : le POV n'y dessine aucun plafond — ce qui n'est pas
+ *  peint est cette nappe sombre. DEHORS, le fond est le dégradé de ciel monté pour la vie de l'écran
+ *  (`skyTexture`, reposé par `reposerCiel`), et il porte la brume du CIEL (`fogOutdoor`) là où les
+ *  surfaces portent la leur (`povFog` ci-dessous) — cf. le JSDoc de `AMBIANCE.pov.fogOutdoorSurface`.
+ *  La météo n'entre pas ici : entré sous un toit, on est sorti d'elle. Le palier d'ambiance, lui, y
+ *  entre : la nappe d'intérieur est une nappe du monde et en suit la lumière (elle part de si bas —
+ *  `fogIndoor` #0a0a10 — que le geste ne s'y voit qu'au bord du noir). La couleur est DÉCODÉE
+ *  (composantes de travail linéaires) : le facteur s'y multiplie dans le même espace que celui du
+ *  ciel ci-dessus. */
+export function povBackgroundIndoor(ambianceLum = 1): THREE.Color {
+  return new THREE.Color(AMBIANCE.pov.fogIndoor).multiplyScalar(ambianceLum);
 }
 
 /** Brume atmosphérique des SURFACES du POV : la courbe du milieu (`povDepth`, en CASES → mètres) et
@@ -1469,13 +1491,49 @@ export function povBackground(
 export function povFog(
   mpt: number,
   indoor: boolean,
-  brume?: { color: string; povTightenK?: number } | null,
+  brume?: BrumeAuthorée,
   ambianceLum = 1,
 ): THREE.Fog {
+  const p = paramsBrume(mpt, indoor, brume, ambianceLum);
+  return new THREE.Fog(p.couleur, p.near, p.far);
+}
+
+/** La brume AUTHORÉE d'une météo, telle que la scène la porte (`AMBIANCE.iso.weather.*.brume`). */
+type BrumeAuthorée = { color: string; povTightenK?: number } | null;
+
+/** Les trois paramètres d'une brume de POV : une seule dérivation, pour la fabriquer comme pour la
+ *  reposer. */
+function paramsBrume(
+  mpt: number,
+  indoor: boolean,
+  brume: BrumeAuthorée | undefined,
+  ambianceLum: number,
+): { couleur: THREE.Color; near: number; far: number } {
   const c = povDepth(indoor, brume?.povTightenK).curve;
   const teinte = !indoor && brume ? brume.color : indoor ? AMBIANCE.pov.fogIndoor : AMBIANCE.pov.fogOutdoorSurface;
-  const couleur = new THREE.Color(teinte).multiplyScalar(ambianceLum);
-  return new THREE.Fog(couleur, c.start * mpt, c.end * mpt);
+  return { couleur: new THREE.Color(teinte).multiplyScalar(ambianceLum), near: c.start * mpt, far: c.end * mpt };
+}
+
+/**
+ * LA MÊME BRUME, REPOSÉE (#1394) — au patron de `reposerCiel` : la brume de la première personne est
+ * montée une fois pour la durée du regard, et un palier d'heure, une météo ou une échelle de carte
+ * n'en réécrivent que les paramètres, sur l'objet déjà posé. Rend `true` si l'un d'eux a changé, et
+ * c'est le SEUL témoin de ce changement : la scène porte la même `THREE.Fog` de part et d'autre,
+ * qu'aucune comparaison de référence ne distinguerait.
+ */
+export function reposerBrume(
+  fog: THREE.Fog,
+  mpt: number,
+  indoor: boolean,
+  brume?: BrumeAuthorée,
+  ambianceLum = 1,
+): boolean {
+  const p = paramsBrume(mpt, indoor, brume, ambianceLum);
+  if (fog.color.equals(p.couleur) && fog.near === p.near && fog.far === p.far) return false;
+  fog.color.copy(p.couleur);
+  fog.near = p.near;
+  fog.far = p.far;
+  return true;
 }
 
 /** Nom du `#define` par lequel un matériau réclame le gamma de la courbe POV. Un matériau qui ne le

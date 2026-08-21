@@ -155,7 +155,7 @@ describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {
   /** #1176 (correctif de la bascule C4) : à la nuit, l'ÉCRAN rendait un sol au palier sous un horizon
    *  resté à la brume de ciel de PLEIN JOUR (sonde du juge : #7f9ab4 mesuré). Le ciel et les brumes
    *  prennent désormais le MÊME scalaire que les lampes (`ambianceLum`) — c'est le CÂBLAGE de bout en
-   *  bout que ce cas mesure : store `lightLevel` → `stageLightScalars` → `povBackground`/`povFog`. */
+   *  bout que ce cas mesure : store `lightLevel` → `stageLightScalars` → `reposerCiel`/`povFog`. */
   it('NUIT : le CIEL et la brume suivent le palier de la scène — plus d’horizon de plein jour à minuit', () => {
     poser('exterieur');
     useGame.setState({ lightLevel: 0.18 } as never); // le palier `nuit` de `lightLevels.json`
@@ -171,6 +171,33 @@ describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {
     expect(hex((s.fog as THREE.Fog).color), 'la brume des surfaces suit le même palier').toBe(
       commeUneFace(AMBIANCE.pov.fogOutdoorSurface),
     );
+  });
+
+  /** #1404 — le ciel est une `DataTexture` de 64 paliers : un franchissement d'heure en RÉÉCRIT les
+   *  texels, il ne libère pas la texture pour en allouer une autre. */
+  it('un PALIER franchi réécrit le ciel EN PLACE : même texture, texels neufs, image peinte', () => {
+    poser('exterieur');
+    monter(<MondeDeCampagne />);
+    const ciel = dernièreScène().background as THREE.DataTexture;
+    expect(ciel?.isTexture, 'dehors, le fond est le dégradé de ciel').toBe(true);
+    const avant = Array.from(ciel.image.data as Uint8Array);
+    const versionAvant = ciel.version;
+    const imagesAvant = scènes.length;
+
+    // Le palier `nuit` de `lightLevels.json` — la même entrée que celle du cas précédent.
+    act(() => { useGame.setState({ lightLevel: 0.18 } as never); });
+
+    const après = dernièreScène().background as THREE.DataTexture;
+    expect(après.uuid, 'le ciel se RÉÉCRIT : aucune texture libérée, aucune allouée').toBe(ciel.uuid);
+    expect(Array.from(après.image.data as Uint8Array), 'les texels n’ont pas suivi le palier').not.toEqual(avant);
+    expect(après.version, 'des texels neufs sans téléversement = un ciel de plein jour à l’écran')
+      .toBeGreaterThan(versionAvant);
+    // ATTRIBUTION (grief du juge de cumul, #1394) : « une image a été peinte » n'est pas un verdict du
+    // CIEL — trois autres effets de cet écran réagissent au même palier (pose du soleil, exposition du
+    // monde, remontage) et repeignent de toute façon. C'est donc le COMPTE qui attribue : quatre
+    // images, dont celle que le ciel peint pour son compte. Un compte qui bouge se relit ici, il ne se
+    // recale pas : c'est la seule mesure qui distingue le repeint du ciel de celui de ses voisins.
+    expect(scènes.length - imagesAvant, 'le ciel n’a peint aucune image POUR SON COMPTE').toBe(4);
   });
 
   it('le GAMMA de la courbe est posé sur TOUS les matériaux embrumés, et c’est celui du milieu', () => {

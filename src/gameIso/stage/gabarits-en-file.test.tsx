@@ -13,7 +13,7 @@
  *  3. le SYNCHRONE reste entier (`enFile` absent) : c'est ce dont vit la planche QC (`planSnapshot`) ;
  *  4. le VOILE d'entrée en scène attend les gabarits FROIDS du monde, et ne tombe qu'une fois servis ;
  *  5. …et il attend AUSSI la population des billboards, même quand les gabarits n'ont rien à faire
- *     attendre : une population qui n'a pas encore parlé n'est pas une population sans clés ;
+ *     attendre : une population NON DÉCLARÉE n'est pas une population sans clés ;
  *  6. la RELÈVE repeint au point de vue COURANT, jamais à celui du montage ;
  *  7. le gabarit s'enfile SOUS la vue courante : un billboard le double, même enfilé après lui ;
  *  8. une cuisson EN VOL ne survit pas au changement de scène : sa tâche ne cuit pas, et la clé
@@ -224,7 +224,7 @@ describe('#1399 — le VOILE d’entrée en scène attend les gabarits du monde'
   it('gabarits tous CHAUDS : le voile tient quand même sur le billboard proche', async () => {
     // COURSE DES POPULATIONS : l'effet du monde est monté AVANT celui des billboards, et il n'a ici
     // RIEN à faire attendre. Un jeu d'attente vide à cet instant ne dit pas que la scène est prête —
-    // il dit que la population des billboards n'a pas encore parlé.
+    // il dit que la population des billboards reste NON DÉCLARÉE à ce moment.
     const { images } = froidsSauf(0);
     const ras: Rasterisation = simulerRasterisation('retenue');
     monterSync(false, GROUPE, { tokens: [], props: [décor('près', GROUPE.x + 1)] });

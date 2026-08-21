@@ -68,7 +68,7 @@ import * as THREE from 'three';
 import { freeYaw, type ActorCapsule, type Dims, type Rot } from '../../geometry/iso';
 import { heightAt, type Scene } from '../../state/scene';
 import { DIR8_DELTA, DIR8_ORDER, type Dir8 } from '../../state/dir8';
-import { affineCamera, povCamera } from '../backends/webgl/cameras';
+import { reposerAffineCamera, reposerPovCamera, StretchedOrthographicCamera } from '../backends/webgl/cameras';
 import { fogCurveOf, povDepth } from '../pov/camera';
 import { pxPerM } from '../backends/webgl/worldTris';
 import {
@@ -78,7 +78,7 @@ import {
 } from '../backends/webgl/billboardMath';
 import { clearPeriodTextures } from '../backends/webgl/periodTexture';
 import { clearFaceBakes } from '../backends/webgl/faceBake';
-import { materiauPlanTransparent, worldSurfaceMaterials } from '../backends/webgl/worldMaterials';
+import { worldSurfaceMaterials } from '../backends/webgl/worldMaterials';
 import {
   actorBillboards,
   actorIdentityKey,
@@ -90,8 +90,11 @@ import {
   bakeWorldGeometry,
   collectBillboards,
   contactShadow,
-  povBackground,
+  povBackgroundIndoor,
   povFog,
+  reposerBrume,
+  reposerCiel,
+  skyTexture,
   stageClearColor,
   wantsContactShadow,
   type ActorPose,
@@ -199,8 +202,7 @@ import {
   type ShelteredAt,
 } from '../backends/webgl/weatherParticles';
 import { withRenderRank } from '../backends/webgl/renderRanks';
-import { buildTraceQuad, TRACE_LIFT_M } from '../backends/webgl/traceQuad';
-import type { TraceTransform } from '../../state/traceCalibration';
+import { dimsKey, poserDecalque, type DecalquePosé, type PlaqueDecalque } from './stageDecalque';
 import { signalerWebglRefusé } from './webglSupport';
 import { materiauProfondeurPerce, percerMateriau, PERCAGE_MAX_HEROS } from '../backends/webgl/percageLocal';
 import { creerPercage, type ActeurPerce, type Percage } from './percage';
@@ -209,11 +211,6 @@ import { demanderUneImage, signalerImagePeinte, subscribeStageFrames, useBatteme
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
 export const CONVENTION = 'jeu' as const;
-
-/** Pas de temps MAXIMAL (ms) servi au fondu des trous de découpe locale. Même borne que le semis de
- *  chute et que la boucle de lacet : un onglet revenu au premier plan reprend le fondu, il ne le
- *  téléporte pas d'un bout à l'autre. */
-const PERCAGE_PAS_MAX_MS = 100;
 
 /** Clé de verdict des frames SANS découpe locale (première personne, éditeur) : constante, donc le
  *  verdict ne s'y rejoue jamais, et la liste vide y ramène toutes les cibles à zéro. */
@@ -388,14 +385,7 @@ export interface GameStage3DProps {
   /** PLAQUE DE DÉCALQUAGE de l'ÉDITEUR (#1176, P3-3, vague B) — la planche calée sous la carte
    *  (#830), montée en QUAD MONDE : `below` sous la matière (le sol la couvre là où il en écrit),
    *  `above` par-dessus tout (rang chrome, sans test de profondeur). Absente en jeu. */
-  decalque?: {
-    imageDataUrl: string;
-    naturalWidth: number;
-    naturalHeight: number;
-    opacity: number;
-    position: 'above' | 'below';
-    transform: TraceTransform;
-  } | null;
+  decalque?: PlaqueDecalque | null;
   /** Cet écran inscrit-il son lanceur de rayon auprès de la couture de picking de sprite
    *  (`stage/spritePicker.ts`) ? Défaut OUI, la vue de plateau du jeu. L'ÉDITEUR (#1176, P3-3) dit
    *  NON : son picking est PUREMENT GÉOMÉTRIQUE (`screenToTileAtZ` sur le SVG d'authoring), et un
@@ -497,13 +487,6 @@ function viderGroupe(groupe: THREE.Group): void {
  *  donnerait `r+1` aux quatre vues de face, et l'atlas y peindrait le cran voisin. PUR. */
 export function artRot(dims: Dims): Rot {
   return ((Math.floor((freeYaw(dims) ?? (dims.rot ?? 0) * 90) / 90) % 4 + 4) % 4) as Rot;
-}
-
-/** IDENTITÉ de cadrage d'une carte : tout ce dont une géométrie ancrée à l'ÉCRAN dépend (taille de
- *  grille, cran, edge-on, lacet libre, projection). Ce qu'elle sert : ne re-bâtir la plaque de
- *  décalquage qu'au changement de VUE, jamais à chaque rendu de l'éditeur. PUR. */
-function dimsKey(dims: Dims): string {
-  return `${dims.w}x${dims.h}|${dims.rot ?? 0}|${dims.edge ? 'e' : ''}|${dims.yawDeg ?? ''}|${dims.view ?? 'iso'}`;
 }
 
 // ————————————————————————————————————————————————————————————————
@@ -655,15 +638,12 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const clésStatiquesRef = useRef(new Map<BillboardSubject, string[]>());
   const cameraRef = useRef<THREE.Camera | null>(null);
   /** PILOTE de la découpe locale (#1176, M3) — un par écran monté, comme sa scène three. Il tient la
-   *  clé du dernier verdict et le fondu des rayons ; les quatre trous qu'il écrit sont, eux, partagés
-   *  par tous les matériaux percés du module. La fonction qu'il reçoit est SA demande de frame (le
-   *  fondu n'a pas d'horloge à lui) : elle CÈDE le pas à une image déjà peinte, qui ne se redessine pas. */
+   *  clé du dernier verdict, l'horloge et le fondu des rayons ; les quatre trous qu'il écrit sont, eux,
+   *  partagés par tous les matériaux percés du module. Tant qu'un rayon court après sa cible, il tient
+   *  une source du battement unique (`stageFrames`) — l'écran y est abonné, et c'est sa passe de dessin
+   *  qui fait avancer le fondu. */
   const percageRef = useRef<Percage | null>(null);
-  if (!percageRef.current) {
-    percageRef.current = creerPercage(() => {
-      if (performance.now() - dernierRendu.current > 4) dessinerRef.current();
-    });
-  }
+  if (!percageRef.current) percageRef.current = creerPercage();
   useEffect(() => () => percageRef.current?.arreter(), []);
   /** Acteurs du verdict, RÉUTILISÉS d'une frame à l'autre : la passe n'alloue ni tableau ni vecteur. */
   const acteursPercésRef = useRef<ActeurPerce[]>([]);
@@ -738,6 +718,16 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const marquesDyn = useRef<THREE.Group>();
   const halosGroupe = useRef<THREE.Group>();
   const decalques = useRef<THREE.Group>();
+  /** LES DEUX CAMÉRAS DE L'ÉCRAN (#1404) — une par regard, montées avec la scène et REPOSÉES à chaque
+   *  image (`reposerAffineCamera`/`reposerPovCamera`). Elles ne portent aucune ressource GPU : rien à
+   *  libérer, rien à recompiler — la seule chose qu'une image en changeait était leur IDENTITÉ. */
+  const camAffine = useRef<StretchedOrthographicCamera>();
+  const camPov = useRef<THREE.PerspectiveCamera>();
+  /** Le CIEL de la première personne (#1404) : une `DataTexture` montée pour la vie de l'écran, dont
+   *  les texels se réécrivent au palier (`reposerCiel`). */
+  const cielRef = useRef<THREE.DataTexture | null>(null);
+  /** La plaque de décalquage de l'auteur, posée dans son groupe (`stageDecalque.poserDecalque`). */
+  const plaqueRef = useRef<DecalquePosé | null>(null);
   if (!three.current) {
     three.current = new THREE.Scene();
     monde.current = new THREE.Group();
@@ -768,6 +758,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // Groupe de la PLAQUE DE DÉCALQUAGE (éditeur, P3-3) : à part de tout le reste — elle ne vit ni de
     // la scène, ni de la lumière, ni du combat, mais du calage de l'auteur et du cran de vue.
     decalques.current = new THREE.Group();
+    camAffine.current = new StretchedOrthographicCamera();
+    camPov.current = new THREE.PerspectiveCamera();
     three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, brumes.current, marques.current, marquesDyn.current, halosGroupe.current, decalques.current);
   }
 
@@ -1079,7 +1071,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const precipMesh = useRef<THREE.InstancedMesh | null>(null);
   const precipBase = useRef<Float32Array | null>(null);
   const dernierPas = useRef(0); // horodatage du dernier pas de chute
-  const dernierRendu = useRef(0); // horodatage de la dernière frame dessinée
 
   /**
    * LA FRAME QU'UN BOARD DOIT MONTRER, à l'instant de l'image (#1176, L3/L4).
@@ -1232,7 +1223,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // plus bas, sur le MÊME `povDepth`) : rien n'arrive à la coupure autrement qu'entièrement
       // délavé, et l'horizon n'est jamais tranché.
       const portee = povDepth(frame.indoor, brumePov?.povTightenK).farTiles;
-      camera = povCamera(scene, pos, frame.facing, { w, h }, portee * mpt);
+      camera = reposerPovCamera(camPov.current!, scene, pos, frame.facing, { w, h }, portee * mpt);
     } else {
       // CADRE D'ÉCRAN de l'hôte : les deux conventions du dépôt (`stage3dCamera.ts`) — caméra de
       // groupe sur viewBox FIXE (le jeu), ou viewBox MOBILE mesuré sur le rendu (l'éditeur).
@@ -1248,7 +1239,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       const boite = geometry.boundingBox;
       const rayon = boite ? boite.getSize(new THREE.Vector3()).length() / 2 : 100;
       const distance = Math.max(50, rayon * 4);
-      camera = affineCamera(f.kind, f.yawDeg, mpt, f.viewport, {
+      camera = reposerAffineCamera(camAffine.current!, f.kind, f.yawDeg, mpt, f.viewport, {
         target: cible,
         distance,
         radius: rayon + (boite ? cible.distanceTo(boite.getCenter(new THREE.Vector3())) : 0) + 8,
@@ -1328,7 +1319,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // de lui-même tant qu'elle ne bouge pas), puis le RAYON et le CENTRE à la frame, tenus par le
     // pilote. Le centre n'est pas un luxe : sous lacet LIBRE (#1176), un demi-tour de caméra ne
     // franchit aucun cran, donc ne change aucune clé.
-    const pasPercage = Math.min(PERCAGE_PAS_MAX_MS, Math.max(0, maintenant - dernierRendu.current));
     const pilote = percageRef.current!;
     const acteursPercés = acteursPercésRef.current;
     acteursPercés.length = 0;
@@ -1373,9 +1363,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       acteurs: acteursPercés,
     });
     // Le rayon comme le CENTRE appartiennent au pilote : il tient les positions monde par référence et
-    // les reprojette avec la caméra de CETTE frame (`Percage.avancer`).
-    pilote.avancer(pasPercage, camera, w, h);
-    dernierRendu.current = maintenant;
+    // les reprojette avec la caméra de CETTE frame (`Percage.avancer`). Le PAS DE TEMPS aussi lui
+    // appartient : il reçoit l'horodatage de l'image, jamais un écart calculé ici.
+    pilote.avancer(maintenant, camera, w, h);
     // GAMMA de la courbe de brume (P3-1c) : `THREE.Fog` s'arrête au smoothstep, la courbe du POV est
     // smoothstep^gamma (`fogAt`, `pov/camera.ts`). Le `#define` se pose ici, et pas à un montage : les
     // quads de billboard naissent APRÈS coup (rasterisation asynchrone) et un matériau neuf arriverait
@@ -1425,36 +1415,23 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // géométrie : SOUS le monde, la plaque garde le test de profondeur — le sol la couvre là où il en
   // écrit un, et elle ne se voit que sur le vide (l'usage « carte neuve ») ; AU-DESSUS, elle passe au
   // rang du chrome SANS test de profondeur, donc par-dessus tout ce que la carte porte déjà.
+  // POSÉE UNE FOIS pour la vie de l'écran (`poserDecalque`), puis REPOSÉE (#1404) : l'opacité de la
+  // plaque est un CURSEUR, et chaque cran en re-décodait l'image.
   useEffect(() => {
     const groupe = decalques.current;
-    if (!groupe || !decalque || frame.mode === 'pov') return;
-    const au_dessus = decalque.position === 'above';
-    const geo = buildTraceQuad(
-      decalque.transform,
-      { width: decalque.naturalWidth, height: decalque.naturalHeight },
-      frame.dims,
-      mpt,
-      au_dessus ? TRACE_LIFT_M : 0,
+    if (!groupe) return;
+    const posée = poserDecalque(groupe);
+    plaqueRef.current = posée;
+    return () => { plaqueRef.current = null; posée.déposer(); };
+  }, []);
+
+  useEffect(() => {
+    const posée = plaqueRef.current;
+    if (!posée) return;
+    const écrit = posée.reposer(
+      decalque && frame.mode !== 'pov' ? { plaque: decalque, dims: frame.dims, mpt } : null,
     );
-    const texture = new THREE.TextureLoader().load(decalque.imageDataUrl);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    const mat = materiauPlanTransparent({
-      map: texture,
-      opacity: decalque.opacity,
-      depthWrite: false,
-      depthTest: !au_dessus,
-      toneMapped: false,
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.name = 'decalque';
-    groupe.add(withRenderRank(mesh, au_dessus ? 'chrome' : 'decalque'));
-    dessiner();
-    return () => {
-      groupe.remove(mesh);
-      geo.dispose();
-      mat.dispose();
-      texture.dispose();
-    };
+    if (écrit) dessiner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decalque, mpt, frame.mode === 'pov' ? null : dimsKey(frame.dims)]);
 
@@ -1568,7 +1545,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // ── BRUME & CIEL (P3-1c) : la première personne a un HORIZON, la vue de plateau n'en a pas — hors
   // POV, `scene.fog` reste NUL (une brume de distance y délaverait le bord de carte, et les planches
   // QC de l'iso avec). DEUX couleurs, et c'est structurel : les SURFACES se fondent dans la brume de
-  // surface du milieu (`povFog`), le FOND porte celle du ciel (`povBackground`) — sans quoi les sols
+  // surface du milieu (`povFog`), le FOND porte celle du ciel (`skyTexture`) — sans quoi les sols
   // lointains se relèvent vers le bleu froid (cf. le JSDoc d'`AMBIANCE.pov.fogOutdoorSurface`).
   // Les sprites d'entité s'embrument AVEC le monde (three embrume tout matériau `fog`), là où le POV
   // SVG les laissait nets — réf juge de design P3-1.
@@ -1578,21 +1555,58 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // AMBIANCE (#1176) : ciel ET brume prennent le PALIER de la scène (`lumière.ambianceLum`, le scalaire
   // même qui dose les lampes) — sans lui, une scène de nuit gardait un horizon de plein jour au-dessus
   // d'un sol obéissant, et les sols lointains se relevaient vers une brume diurne.
+  // CIEL MONTÉ UNE FOIS (#1404) : la texture du dégradé vit pour l'écran, et un palier d'heure n'en
+  // réécrit que les texels (`reposerCiel`). Déclaré AVANT l'effet qui l'emprunte : les effets courent
+  // dans l'ordre de déclaration — le ciel est donc monté quand l'atmosphère se pose, et c'est lui qui
+  // rend le fond, la brume et le gamma quand l'écran s'en va.
+  useEffect(() => {
+    const ciel = skyTexture();
+    cielRef.current = ciel;
+    return () => {
+      cielRef.current = null;
+      // L'écran s'en va : l'atmosphère qu'il portait s'en va avec son ciel. Le GAMMA en fait partie —
+      // les matériaux du monde survivent à cet écran (leur montage a sa propre clé) et garderaient un
+      // `#define` sans brume au retour en vue de plateau, une clé de programme de plus pour un
+      // exposant que plus personne n'applique.
+      const scène3d = three.current;
+      if (scène3d) {
+        scène3d.background = null;
+        scène3d.fog = null;
+        applyFogGamma(scène3d, null);
+      }
+      ciel.dispose();
+    };
+  }, []);
+
   useEffect(() => {
     const scène3d = three.current!;
-    const fond = povIndoor === null ? null : povBackground(povIndoor, lumière.meteo, lumière.ambianceLum);
-    scène3d.fog = povIndoor === null ? null : povFog(mpt, povIndoor, brumePov, lumière.ambianceLum);
+    const ciel = cielRef.current;
+    if (!ciel) return;
+    // DEHORS : le dégradé de ciel, réécrit EN PLACE dans la texture montée. DEDANS : une couleur, qui
+    // ne coûte rien à fabriquer (aucune ressource GPU derrière).
+    const cielRéécrit = povIndoor === false ? reposerCiel(ciel, lumière.meteo, lumière.ambianceLum) : false;
+    const fond = povIndoor === null ? null : povIndoor ? povBackgroundIndoor(lumière.ambianceLum) : ciel;
+    const fondAvant = scène3d.background;
+    const brumeAvant = scène3d.fog as THREE.Fog | null;
+    // Ciel et brume vivent pour la durée du regard : ni l'un ni l'autre ne se rend à chaque reprise de
+    // cet effet (c'est le ciel qui les rend, au démontage de l'écran). `fondAvant`/`brumeAvant` sont
+    // donc l'état RÉEL de la scène, et une brume déjà posée se REPOSE au lieu d'être réallouée.
+    const brumeRéécrite = povIndoor !== null && brumeAvant !== null
+      && reposerBrume(brumeAvant, mpt, povIndoor, brumePov, lumière.ambianceLum);
+    if (povIndoor === null) scène3d.fog = null;
+    else if (!brumeAvant) scène3d.fog = povFog(mpt, povIndoor, brumePov, lumière.ambianceLum);
     scène3d.background = fond;
-    dessiner();
-    return () => {
-      if (fond instanceof THREE.DataTexture) fond.dispose();
-      scène3d.background = null;
-      scène3d.fog = null;
-      // Le gamma part AVEC la brume : les matériaux du monde survivent à cet effet (leur montage a sa
-      // propre clé) et garderaient un `#define` sans brume au retour en vue de plateau — une clé de
-      // programme de plus, pour un exposant que plus personne n'applique.
-      applyFogGamma(scène3d, null);
-    };
+    // Un gamma ne survit pas à sa brume (une clé de programme de plus, pour un exposant que plus
+    // personne n'applique) : sortir de la première personne le retire des matériaux du monde, qui
+    // survivent à cet effet. Le POSER, lui, appartient à la passe de dessin — les quads de billboard
+    // naissent après coup.
+    const gammaRetiré = !scène3d.fog && applyFogGamma(scène3d, null);
+    // On peint sur un changement RÉEL de l'état de la scène, et chaque canal a son témoin : les deux
+    // comparaisons de référence voient l'ENTRÉE et la SORTIE de la première personne (fond du ciel ou
+    // nappe d'intérieur, brume posée ou retirée) ; les verdicts de repose et de gamma voient ce
+    // qu'elles ne peuvent pas voir — mêmes objets, contenu neuf (texels du ciel, paramètres de la
+    // brume, `#define` des matériaux du monde).
+    if (cielRéécrit || brumeRéécrite || gammaRetiré || fond !== fondAvant || scène3d.fog !== brumeAvant) dessiner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [povIndoor, mpt, brumePov, lumière.meteo, lumière.ambianceLum]);
 

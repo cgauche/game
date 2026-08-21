@@ -18,6 +18,7 @@
 import * as THREE from 'three';
 import { occludesActor, type ActorCapsule } from '../../geometry/iso';
 import type { Lid } from './architectureVisibility';
+import { demanderFrames, relacherFrames } from './stageFrames';
 import {
   PERCAGE_FONDU_MS,
   PERCAGE_MAX_HEROS,
@@ -64,6 +65,11 @@ export function centrePercage(
   return new THREE.Vector3((ndc.x * 0.5 + 0.5) * largeurPx, (ndc.y * 0.5 + 0.5) * hauteurPx, ndc.z * 0.5 + 0.5);
 }
 
+/** Pas de temps MAXIMAL (ms) d'une avance de fondu. Même borne que le semis de chute et que la boucle
+ *  de lacet : un onglet revenu au premier plan reprend le fondu, il ne le téléporte pas d'un bout à
+ *  l'autre. */
+const PERCAGE_PAS_MAX_MS = 100;
+
 /** Le rayon d'un trou vers sa cible, à vitesse CONSTANTE : le trou s'ouvre en grand en exactement
  *  `PERCAGE_FONDU_MS`, et se referme dans le même temps. Aucun ressort, aucune exponentielle — une
  *  ouverture qui traîne indéfiniment se lit comme un bug de rémanence. */
@@ -82,53 +88,61 @@ export interface Percage {
     lids: readonly Lid[];
     acteurs: readonly ActeurPerce[];
   }): boolean;
-  /** Fait vivre le fondu, REPROJETTE les centres avec la caméra de CETTE frame, et pousse l'état aux
-   *  uniformes. À appeler à la frame.
+  /** Fait vivre le fondu à l'horodatage de l'image (`now`), REPROJETTE les centres avec la caméra de
+   *  CETTE frame, et pousse l'état aux uniformes. À appeler à la frame.
+   *
+   *  LE PAS DE TEMPS EST À LA SOURCE : le pilote tient la date de sa dernière avance et en dérive son
+   *  pas, borné par `PERCAGE_PAS_MAX_MS` (même patron que le lacet continu, `state/stageYaw.avancerLacet`).
+   *  Aucun appelant ne tient plus la date du dernier dessin.
    *
    *  Le centre d'un trou est une grandeur de FRAME, pas de verdict : sous lacet libre et sous la
    *  boucle de marche, le cadrage et le sujet vivent hors des rendus React, sans qu'aucune clé bouge.
    *  Le pilote reprojette donc SES sujets ; l'hôte ne tient aucun centre. */
-  avancer(dtMs: number, camera: THREE.Camera, largeurPx: number, hauteurPx: number): void;
+  avancer(now: number, camera: THREE.Camera, largeurPx: number, hauteurPx: number): void;
   /** Rayons courants (px) — ce que le shader lit, en lecture pour les bancs. */
   rayons(): number[];
   /** Nombre de verdicts RÉELLEMENT rejoués depuis la création : la mesure de la cadence. */
   verdictsJoues(): number;
-  /** La pompe demande-t-elle des frames en ce moment ? En lecture pour les bancs. */
+  /** Le fondu tient-il une source du battement en ce moment ? En lecture pour les bancs. */
   pompeEnVol(): boolean;
-  /** Coupe la pompe : l'écran se démonte. */
+  /** Relâche les images : l'écran se démonte. */
   arreter(): void;
 }
 
 /**
- * LA POMPE DE FRAMES. Le fondu suppose une horloge, et l'hôte volumique n'en a pas : son rendu est
- * ÉVÉNEMENTIEL (il ne dessine qu'aux invalidations — rendu React, battement de marche, averse,
- * flamme). Scène immobile, personne ne marche : le verdict s'ouvre, puis plus une seule frame ne
- * vient, et le rayon reste où le dernier dessin l'a laissé (mesuré : 0,672 px, figé).
+ * LE FONDU DEMANDE SES IMAGES AU BATTEMENT UNIQUE du stage (`stage/stageFrames`). Il suppose une
+ * horloge, et l'hôte volumique n'en a pas : son rendu est ÉVÉNEMENTIEL (il ne dessine qu'aux
+ * invalidations — rendu React, battement de marche, averse, flamme). Scène immobile, personne ne
+ * marche : le verdict s'ouvre, puis plus une seule frame ne vient, et le rayon reste où le dernier
+ * dessin l'a laissé (mesuré : 0,672 px, figé).
  *
- * Le pilote est le SEUL à savoir qu'il n'est pas convergé — c'est donc lui qui redemande la frame,
- * par la fonction de dessin que l'hôte lui donne. UNE boucle, jamais deux : même patron que le lacet
- * continu (`state/stageYaw.ts`), armée tant qu'un rayon court après sa cible et éteinte à l'instant
- * où tous l'ont rejointe. Sans fonction de dessin (bancs du verdict, hors navigateur), rien ne bat.
+ * Le pilote est le SEUL à savoir qu'il n'est pas convergé : il tient donc une SOURCE du battement
+ * (`demanderFrames`, clé d'INSTANCE — deux écrans montés ne se relâchent pas les images l'un de
+ * l'autre) tant qu'un rayon court après sa cible, et la relâche à l'instant où tous l'ont rejointe.
+ * RÉGIME CONTINU, jamais une image ponctuelle : `avancer` court dans la passe de dessin de l'image,
+ * et c'est de ce dessin-là que la convergence se lit.
  */
-export function creerPercage(dessiner?: () => void): Percage {
+export function creerPercage(): Percage {
   let cle: string | null = null;
   let verdicts = 0;
   let enVol = false;
+  let derniereAvanceMs: number | null = null;
+  /** La clé d'INSTANCE sous laquelle ce pilote tient ses images au battement. */
+  const source = Symbol('percage');
   const cibles = new Array<number>(PERCAGE_MAX_HEROS).fill(0);
   const rayons = new Array<number>(PERCAGE_MAX_HEROS).fill(0);
   const centres = Array.from({ length: PERCAGE_MAX_HEROS }, () => new THREE.Vector3());
   const mondes = new Array<THREE.Vector3 | null>(PERCAGE_MAX_HEROS).fill(null);
   const converge = (): boolean => rayons.every((r, i) => r === cibles[i]);
-  const battre = (): void => {
-    if (!enVol) return;
-    dessiner!();
-    if (!enVol) return; // le dessin a fait avancer le fondu jusqu'à sa cible : la pompe s'éteint ici
-    requestAnimationFrame(battre);
-  };
-  const armer = (): void => {
-    if (enVol || !dessiner || typeof requestAnimationFrame !== 'function') return;
+  const tenirImages = (): void => {
+    if (enVol) return;
     enVol = true;
-    requestAnimationFrame(battre);
+    demanderFrames(source);
+  };
+  const relacherImages = (): void => {
+    if (!enVol) return;
+    enVol = false;
+    relacherFrames(source);
   };
   return {
     majVerdict({ cle: nouvelle, lids, acteurs }) {
@@ -144,10 +158,12 @@ export function creerPercage(dessiner?: () => void): Percage {
         // sienne — son trou se referme là où il était, il ne saute pas à l'origine.
         if (acteur) mondes[i] = acteur.monde;
       }
-      if (!converge()) armer();
+      if (!converge()) tenirImages();
       return true;
     },
-    avancer(dtMs, camera, largeurPx, hauteurPx) {
+    avancer(now, camera, largeurPx, hauteurPx) {
+      const dtMs = derniereAvanceMs === null ? 0 : Math.min(PERCAGE_PAS_MAX_MS, Math.max(0, now - derniereAvanceMs));
+      derniereAvanceMs = now;
       // Le CADRE d'écran est une grandeur de FRAME, comme les centres : la passe d'OMBRE partage le
       // discard et n'a aucun autre moyen de savoir où le trou tombe à l'écran du joueur (son propre
       // raster est celui du soleil, cf. `percageLocal`).
@@ -159,12 +175,12 @@ export function creerPercage(dessiner?: () => void): Percage {
         if (monde) centres[i].copy(centrePercage(camera, monde, largeurPx, hauteurPx));
         trous[i].set(centres[i].x, centres[i].y, centres[i].z, rayons[i]);
       }
-      if (converge()) enVol = false;
-      else armer();
+      if (converge()) relacherImages();
+      else tenirImages();
     },
     rayons: () => [...rayons],
     verdictsJoues: () => verdicts,
     pompeEnVol: () => enVol,
-    arreter() { enVol = false; },
+    arreter() { relacherImages(); },
   };
 }

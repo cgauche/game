@@ -14,8 +14,9 @@ import {
   contentBox,
   applyFogGamma,
   installFogGamma,
-  povBackground,
+  povBackgroundIndoor,
   povFog,
+  reposerBrume,
   skyTexture,
   FOG_GAMMA_DEFINE,
   sunContrast,
@@ -410,11 +411,30 @@ describe('CIEL & BRUME — les couleurs du POV, jamais des teintes propres au sp
     expect(`#${fog.color.getHexString(THREE.SRGBColorSpace)}`).toBe(AMBIANCE.pov.fogOutdoorSurface.toLowerCase());
   });
 
+  it('la brume se REPOSE : même objet, paramètres neufs, et un verdict qui dit lequel a bougé', () => {
+    const fog = povFog(mpt, false);
+    const objet = fog;
+    expect(reposerBrume(fog, mpt, false), 'rien n’a bougé : rien à repeindre').toBe(false);
+    // Le palier d'ambiance : seule la COULEUR bouge, et le verdict la voit.
+    expect(reposerBrume(fog, mpt, false, null, 0.3)).toBe(true);
+    expect(fog).toBe(objet);
+    expect(`#${fog.color.getHexString(THREE.SRGBColorSpace)}`)
+      .toBe(`#${povFog(mpt, false, null, 0.3).color.getHexString(THREE.SRGBColorSpace)}`);
+    // La météo authorée : la portée se resserre sur le MÊME objet.
+    const serrée = povFog(mpt, false, { color: '#8fa6bb', povTightenK: 0.5 }, 0.3);
+    expect(reposerBrume(fog, mpt, false, { color: '#8fa6bb', povTightenK: 0.5 }, 0.3)).toBe(true);
+    expect(fog.near).toBe(serrée.near);
+    expect(fog.far).toBe(serrée.far);
+    expect(fog.color.equals(serrée.color)).toBe(true);
+    // …et une repose à l'identique ne réclame plus d'image.
+    expect(reposerBrume(fog, mpt, false, { color: '#8fa6bb', povTightenK: 0.5 }, 0.3)).toBe(false);
+  });
+
   it('DEUX couleurs : la brume des SURFACES n’est pas celle du CIEL (les sols ne se relèvent pas)', () => {
     const surface = `#${povFog(mpt, false).color.getHexString(THREE.SRGBColorSpace)}`;
     expect(surface).toBe(AMBIANCE.pov.fogOutdoorSurface.toLowerCase());
     expect(surface).not.toBe(AMBIANCE.pov.fogOutdoor.toLowerCase());
-    const ciel = povBackground(false) as THREE.DataTexture;
+    const ciel = skyTexture();
     const d = ciel.image.data as Uint8Array;
     // Bas de la texture = l'horizon : c'est la brume de CIEL qui s'y trouve, pas celle des surfaces.
     expect(`#${[0, 1, 2].map((k) => d[k].toString(16).padStart(2, '0')).join('')}`).toBe(AMBIANCE.pov.fogOutdoor.toLowerCase());
@@ -427,9 +447,9 @@ describe('CIEL & BRUME — les couleurs du POV, jamais des teintes propres au sp
     expect(fog.far).toBeCloseTo(d.farTiles * mpt, 9);
     expect(`#${fog.color.getHexString(THREE.SRGBColorSpace)}`).toBe(AMBIANCE.pov.fogIndoor.toLowerCase());
     expect(fog.far, 'la brume d’intérieur est plus COURTE que celle du dehors').toBeLessThan(povFog(mpt, false).far);
-    const fond = povBackground(true);
-    expect((fond as THREE.Color).isColor).toBe(true);
-    expect(`#${(fond as THREE.Color).getHexString(THREE.SRGBColorSpace)}`).toBe(AMBIANCE.pov.fogIndoor.toLowerCase());
+    const fond = povBackgroundIndoor();
+    expect(fond.isColor).toBe(true);
+    expect(`#${fond.getHexString(THREE.SRGBColorSpace)}`).toBe(AMBIANCE.pov.fogIndoor.toLowerCase());
   });
 });
 
@@ -499,7 +519,7 @@ describe('PALIER D’AMBIANCE (#1176) — le ciel et les brumes n’ont pas de l
   });
 
   it('INTÉRIEUR : le fond suit le palier lui aussi (nappe du monde, pas décor autonome)', () => {
-    const fond = povBackground(true, undefined, LUM_NUIT) as THREE.Color;
+    const fond = povBackgroundIndoor(LUM_NUIT);
     expect(`#${fond.getHexString(THREE.SRGBColorSpace)}`).toBe(commeUneFace(AMBIANCE.pov.fogIndoor, LUM_NUIT));
   });
 

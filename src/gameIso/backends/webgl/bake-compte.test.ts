@@ -50,8 +50,25 @@ function compteursDe(scene: Scene): { sommets: number; triangles: number; spans:
  *  IDENTITÉ (aucun sommet partagé, donc exactement 3 par triangle). */
 const ETALONS: [string, () => Scene, { sommets: number; triangles: number; spans: number }][] = [
   ['arene-hub', () => sceneDuProjet('arene-hub'), { sommets: 50694, triangles: 16898, spans: 4149 }],
-  ['la-diligence', () => diligence.scene, { sommets: 119340, triangles: 39780, spans: 6779 }],
   ['arene-zone13', () => sceneDuProjet('arene-zone13'), { sommets: 8640, triangles: 2880, spans: 1440 }],
+];
+
+/** EN AUTHORING — scènes SORTIES du compte exact le temps que leur carte bouge sous le pinceau : un
+ *  témoin chiffré n'a de sens que sur une carte stabilisée, sinon il rougit à chaque coup de pinceau
+ *  d'une session d'authoring et bloque le tronc. Arbitrage 2026-08-21 (#1447), verbatim de
+ *  l'utilisateur : « C'est absurde d'avoir un guard qui bloque totalement la diligence alors qu'elle
+ *  n'est même pas finalisé ».
+ *  RÉ-ENTRÉE : ré-étalonner à la FINALISATION de la carte — recopier les valeurs REÇUES dans
+ *  `ETALONS` et dire dans le commit ce qui les a déplacées. Les invariants SANS chiffre ci-dessous
+ *  (index identité, hiérarchie des régimes) continuent de couvrir ces scènes. */
+const EN_AUTHORING: [string, () => Scene, string][] = [
+  ['la-diligence', () => diligence.scene, 'carte en cours d’authoring'],
+];
+
+/** Toutes les scènes couvertes — étalonnées au chiffre ou en authoring. */
+const SCENES: [string, () => Scene][] = [
+  ...ETALONS.map(([id, charger]): [string, () => Scene] => [id, charger]),
+  ...EN_AUTHORING.map(([id, charger]): [string, () => Scene] => [id, charger]),
 ];
 
 const GUIDE =
@@ -66,16 +83,23 @@ describe('COMPTEURS DU BAKE — la masse de géométrie de chaque scène étalon
       expect(compteursDe(charger()), GUIDE).toEqual(attendu);
     });
 
+  it('une scène EN AUTHORING quitte le compte exact SANS quitter la couverture', () => {
+    for (const [id, , raison] of EN_AUTHORING) {
+      expect(ETALONS.some(([n]) => n === id), `${id} — ${raison}`).toBe(false);
+      expect(SCENES.some(([n]) => n === id), `${id} — ${raison}`).toBe(true);
+    }
+  });
+
   it('l’index reste IDENTITÉ sur les trois : 3 sommets par triangle, aucun partage', () => {
-    for (const [id, charger] of ETALONS) {
+    for (const [id, charger] of SCENES) {
       const c = compteursDe(charger());
       expect(c.sommets, id).toBe(c.triangles * 3);
     }
   });
 
   it('les trois régimes sont bien DISTINCTS (une salle nue ne pèse pas une ville meublée)', () => {
-    const [hub, route, salle] = ETALONS.map(([, charger]) => compteursDe(charger()).triangles);
-    expect(salle).toBeLessThan(hub);
-    expect(hub).toBeLessThan(route);
+    const triangles = (id: string) => compteursDe(SCENES.find(([n]) => n === id)![1]()).triangles;
+    expect(triangles('arene-zone13')).toBeLessThan(triangles('arene-hub'));
+    expect(triangles('arene-hub')).toBeLessThan(triangles('la-diligence'));
   });
 });

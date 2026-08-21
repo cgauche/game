@@ -26,7 +26,16 @@ import { viderTexturesStatiques } from './texturesStatiques';
 /** Les scènes three DESSINÉES, dans l'ordre — accumulateur de MODULE : plusieurs écrans montés à la
  *  fois y versent leurs frames, et un banc peut donc compter les rendus de tout ce qui vit. */
 export const scènes: THREE.Scene[] = [];
-/** La caméra de CHAQUE frame dessinée, appariée à `scènes` par l'index. */
+/**
+ * La caméra de CHAQUE frame dessinée, appariée à `scènes` par l'index — une COPIE, pose et projection
+ * figées à l'instant du rendu (#1404).
+ *
+ * L'écran REPOSE ses deux caméras au lieu d'en construire par image : sans copie, toutes les entrées de
+ * ce tableau seraient le MÊME objet, et un banc qui relit `caméras[i].position` après coup lirait la
+ * dernière image pour toutes (`gabarits-en-file`, verrou G1 : « un seul point de vue peint » y serait
+ * vrai par construction). La copie porte l'`uuid` de sa SOURCE : l'identité de la caméra reste donc
+ * mesurable image par image, et c'est par elle que se compte la repose.
+ */
 export const caméras: THREE.Camera[] = [];
 
 /** Ardoise neuve des captures (les tableaux gardent leur identité : ils sont exportés). */
@@ -54,7 +63,9 @@ export class BancRenderer implements StageRenderer {
 
   render(scene: THREE.Scene, camera: THREE.Camera): void {
     scènes.push(scene);
-    caméras.push(camera);
+    const copie = camera.clone();
+    copie.uuid = camera.uuid;
+    caméras.push(copie);
     this.surRendu?.(scene, camera);
   }
 }
