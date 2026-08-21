@@ -2465,13 +2465,17 @@ export function createCombatSlice(get: Get, set: Set) {
           resolveFreeAttacks(get, set, attacker, 'onHit', victim);
         }
         // Tir IMMOBILE (LDB 14 l.70) : le héros a renoncé à bouger pour annuler le −10 → on consomme son
-        // Mouvement du Tour (il ne pourra plus se déplacer après ce tir). La posture PRÉ-ARMÉE tombe du
-        // même geste (spec HUD §1a G5) : le tir l'a dépensée, elle ne se reconduit pas en silence.
+        // Mouvement du Tour (il ne pourra plus se déplacer après ce tir). Seule CETTE posture tombe : elle
+        // a un PRIX (le Mouvement), le tir l'a dépensée. « Dans le tas » ne coûte rien (`LDB 14 l.106` :
+        // un modificateur de Test, aucune dépense) — elle vit jusqu'à la fin du Tour, où `stances` se vide.
         // HÉROS SEUL — parité stricte avec `attackEnv` et `heldGroundStanceBlock` : un tireur piloté par
         // l'IA n'obtient aucun gain de la posture, il ne doit donc pas en payer le Mouvement.
         if (pa.heldGround && weapon.type === 'ranged' && attacker.kind === 'hero') {
           const b2 = get().battle;
-          if (b2) set({ battle: { ...b2, movementUsed: mountMovement(b2, attacker), stances: { ...b2.stances, [attacker.id]: {} } } });
+          if (b2) {
+            const { heldGround: _depensee, ...restantes } = b2.stances?.[attacker.id] ?? {};
+            set({ battle: { ...b2, movementUsed: mountMovement(b2, attacker), stances: { ...b2.stances, [attacker.id]: restantes } } });
+          }
         }
       }
       // Séquence de combat (jet = étape 0) : enchaîner sur les conséquences empilées par applyAttackResult,

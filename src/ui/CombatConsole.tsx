@@ -582,7 +582,7 @@ export function CombatConsole() {
     // G5 — postures de tir PRÉ-ARMÉES (`battle.stances`, spec §1a G5) : les cases portent le choix, la
     // fenêtre de jet n'en garde que l'affichage. Bascule (re-clic = désarmer), gate en texte visible.
     // Les DEUX cases existent dès qu'une arme de tir est au poing — « Dans le tas » se grise hors
-    // contexte (aucun groupe serré), elle ne disparaît pas : une case ne décale jamais ses voisines.
+    // contexte (aucun groupe serré), elle ne disparaît pas. Géométrie de la travée : arbitrage #1434.
     rangedW ? cellFor('posture-tir', 'arme', { on: posture('heldGround'), off: busy }) : undefined,
     rangedW ? cellFor('posture-tas', 'arme', { on: posture('intoCrowd'), off: busy }) : undefined,
     // G6bis — gestes d'ÉTAT du porteur (surface `geste-d-etat` du registre, spec §1a) : ce que sa
@@ -602,8 +602,8 @@ export function CombatConsole() {
     vehicule ? cellFor('ship-reload', 'geste', { off: !reloadable, args: { shipId: active.id, posteUid: reloadable?.item.uid } }) : undefined,
   ];
   // La rangée BASSE est LIBRE (placement joueur — spec §1c-bis) et son remplissage PAR DÉFAUT est le
-  // DÉBORD des gestes déduits (spec §1b) : une case pré-remplie reste remplaçable, mais plus AUCUN geste
-  // ne tombe hors de la travée. Six cases couvrent le pire set (arme de tir à Recharge + geste d'arme).
+  // DÉBORD des gestes déduits (spec §1b), tronqué à `LEFT_CELLS` : au-delà, le geste déduit ne paraît
+  // pas (mesuré : jusqu'à 10 déduits pour 6 slots). Arbitrage de géométrie de la travée : #1434.
   const left: (Cell | undefined)[] = deduced.filter((c): c is Cell => !!c).slice(0, LEFT_CELLS);
 
   // ── ACCÈS RAPIDE (2×2) : le nécessaire du héros — consommables à compteur, Soin, aspersion ──────

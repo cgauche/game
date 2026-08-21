@@ -265,6 +265,34 @@ describe('G5 — posture « Dans le tas » (`intoCrowd`)', () => {
     expect(ligne?.value).toBe(20);
   });
 
+  /**
+   * DÉPENSE PAR POSTURE. Le tir immobile a un PRIX (le Mouvement du Tour, `LDB 14 l.70`) : le tir le
+   * consomme. « Dans le tas » n'en a aucun (`LDB 14 l.106` : un modificateur de Test, rien à dépenser)
+   * — elle tient jusqu'au changement de Tour, qui vide `stances`. Une purge en bloc les confondait.
+   */
+  it('un tir IMMOBILE ne désarme que SA posture : « Dans le tas » survit au coup', () => {
+    const { H, E } = setup(true);
+    runAction('posture-tir', useGame.getState);
+    runAction('posture-tas', useGame.getState);
+    const armees = () => useGame.getState().battle!.stances?.[H.id] ?? {};
+    expect(armees().heldGround, 'tir immobile armé').toBe(true);
+    expect(armees().intoCrowd, '« Dans le tas » armée').toBe(true);
+
+    openAttackCascade(useGame.getState, useGame.setState, { attackerId: H.id, targetId: E.id, location: null, result: null }, 'Tir', 'action/shoot');
+    const pa = useGame.getState().pendingAttack!;
+    expect(pa.heldGround, 'le coup part immobile').toBe(true);
+    useGame.setState({
+      pendingAttack: { ...pa, result: { hit: true, attackerRoll: 30, netSL: 1, location: 'corps', damage: 3, woundsLost: 3, critical: false, advantageTo: 'attacker', defenderDefeated: false, log: '' } } as never,
+    });
+    useGame.getState().attackConfirm();
+
+    expect(useGame.getState().battle!.movementUsed, 'le tir immobile a bien payé son Mouvement').toBeGreaterThan(0);
+    expect(armees().heldGround, 'la posture DÉPENSÉE tombe').toBeFalsy();
+    expect(armees().intoCrowd, 'la posture SANS PRIX reste armée').toBe(true);
+    useGame.getState().battleEndTurn();
+    expect(useGame.getState().battle!.stances?.[H.id]?.intoCrowd, 'et le Tour, lui, la vide').toBeFalsy();
+  });
+
   it('la posture se refuse hors contexte : sans groupe, le store ne l’arme pas', () => {
     const { H } = setup(false);
     runAction('posture-tas', useGame.getState);

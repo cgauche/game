@@ -89,7 +89,7 @@ afterEach(() => {
  * Localisation visée, tir en mouvement, États et AVANTAGE du jeteur. Défaut = duel de mêlée nu, par
  * temps clair, tireur immobile.
  */
-function renderAttack(opts: { ranged?: boolean; cases?: number; fog?: boolean; location?: HitLocation; enMouvement?: boolean; avantage?: number; conditions?: { id: string; value: number }[] } = {}): HTMLDivElement {
+function renderAttack(opts: { ranged?: boolean; cases?: number; fog?: boolean; location?: HitLocation; enMouvement?: boolean; avantage?: number; conditions?: { id: string; value: number }[]; badauds?: number; tasArme?: boolean } = {}): HTMLDivElement {
   const weapon = opts.ranged ? bow : sword;
   // Tir : 20 cases = 40 m avec une Portée de 60 m → bande « Moyenne » (+0, aucune chip de portée) ;
   // 5 cases = 10 m → « Courte portée » (+20, entrée de la table). Mêlée : au contact. La distance est
@@ -97,10 +97,15 @@ function renderAttack(opts: { ranged?: boolean; cases?: number; fog?: boolean; l
   const attacker = combatant('attacker', 'Elsa', 'hero', 0, [weapon], opts.avantage ?? 0);
   const target = combatant('target', 'Gobelin', 'enemy', opts.cases ?? (opts.ranged ? 20 : 1));
   if (opts.conditions) (attacker as unknown as { conditions: unknown[] }).conditions = opts.conditions;
+  // Badauds AU CONTACT de la cible (`crowdEligible` : distance ≤ 1, la cible comprise) — c'est eux qui
+  // font, ou non, le « groupe serré » du seuil de `crowdMod`.
+  const badauds = Array.from({ length: opts.badauds ?? 0 }, (_, i) => combatant(`badaud-${i}`, `Badaud ${i}`, 'enemy', (target.pos!.x) + (i % 2 === 0 ? 1 : -1)));
+  const combatants = [attacker, target, ...badauds];
   const battle = {
-    combatants: [attacker, target],
-    order: [attacker.id, target.id],
-    baseOrder: [attacker.id, target.id],
+    combatants,
+    order: combatants.map((c) => c.id),
+    baseOrder: combatants.map((c) => c.id),
+    ...(opts.tasArme ? { stances: { [attacker.id]: { intoCrowd: true } } } : {}),
     turn: 0,
     round: 1,
     action: null,
@@ -171,15 +176,38 @@ describe('Attaque — contrat d’affichage Z0–Z15', () => {
     expect(ligne.querySelector('button')).toBeNull();
   });
 
+  /**
+   * « Dans le tas » ARMÉE à la console mais SANS OBJET sur la cible visée (`LDB 14 l.106` : le bonus
+   * n'existe que face à un groupe) : la case de console ne connaît pas la cible, la fenêtre de jet SI.
+   * Elle est donc le siège du verdict par cible — et elle le DIT, avec la raison du prédicat partagé
+   * (`intoCrowdStanceBlock`), au lieu de taire la posture.
+   */
+  it('« Dans le tas » armée + cible ISOLÉE : la ligne est là, sans objet, avec sa raison', () => {
+    const v = renderAttack({ ranged: true, tasArme: true });
+    const ligne = v.querySelector('[data-posture="intoCrowd"]')!;
+    expect(ligne, 'une posture armée ne disparaît pas en silence').toBeTruthy();
+    expect(ligne.hasAttribute('data-armee'), 'sans groupe, elle ne mord pas').toBe(false);
+    expect(ligne.textContent).toContain('sans objet sur cette cible');
+    expect(ligne.textContent).toContain('aucun groupe serré en vue');
+    expect(ligne.querySelector('button')).toBeNull();
+  });
+
+  it('« Dans le tas » armée + cible EN GROUPE : la ligne de bonus normale (+20, 3 au contact)', () => {
+    const v = renderAttack({ ranged: true, tasArme: true, badauds: 2 });
+    const ligne = v.querySelector('[data-posture="intoCrowd"]')!;
+    expect(ligne.hasAttribute('data-armee')).toBe(true);
+    expect(ligne.textContent).toContain('Dans le tas — armée (+20)');
+    expect(ligne.textContent).toContain('3 au contact');
+    expect(ligne.textContent).not.toContain('sans objet');
+  });
+
   it('MÊLÉE : aucune ligne de posture de tir dans la fenêtre', () => {
     const v = renderAttack();
     expect(v.querySelector('[data-posture]'), 'une attaque au contact n’a pas de posture de tir').toBeNull();
   });
 
-  it('les setters de posture n’existent plus dans le store (contrôle = console SEULE)', () => {
+  it('le contrôle des postures vit dans la console (bascule de posture du store)', () => {
     const store = useGame.getState() as unknown as Record<string, unknown>;
-    expect(store.attackSetHeldGround, '`attackSetHeldGround` doit être mort').toBeUndefined();
-    expect(store.attackSetIntoCrowd, '`attackSetIntoCrowd` doit être mort').toBeUndefined();
     expect(typeof store.battleToggleStance, 'le contrôle vit dans la bascule de posture').toBe('function');
   });
 });

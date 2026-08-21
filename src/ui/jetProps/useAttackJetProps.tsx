@@ -89,7 +89,13 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // recodage local. Une posture ARMÉE s'affiche toujours (le Tir rapide arme `heldGround` d'office).
   const tir = weapon?.type === 'ranged'; // une posture de TIR ne se lit que sur un tir
   const showHoldGround = !res && tir && (!!pa.heldGround || (!pa.interrupt && !heldGroundStanceBlock(battle, attacker, weapon)));
-  const showCrowd = !res && tir && (!!pa.intoCrowd || !intoCrowdStanceBlock(battle, attacker, weapon, target));
+  // La case de console arme la posture SANS cible ; ce coup-ci en a une. La fenêtre est donc le seul
+  // siège où le verdict PAR CIBLE existe : une posture armée que la cible visée rend sans objet
+  // s'affiche avec la raison du prédicat, jamais en silence.
+  const crowdArme = !!battle.stances?.[attacker.id]?.intoCrowd;
+  const crowdBlock = !res && tir ? intoCrowdStanceBlock(battle, attacker, weapon, target) : null;
+  const crowdSansObjet = !pa.intoCrowd && crowdArme && !!crowdBlock;
+  const showCrowd = !res && tir && (!!pa.intoCrowd || !crowdBlock || crowdSansObjet);
   // ADE II 02 l.677
   const weaponItem = weapon ? attacker.items?.find((it) => it.uid === weapon.uid) : undefined;
   const canHarpoonRopeCut = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && !!weaponItem && itemCapability(weaponItem, 'ropeMode');
@@ -236,13 +242,15 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
           {showCrowd && (
             <div className="rm-crowd" data-posture="intoCrowd" data-armee={pa.intoCrowd ? '' : undefined}>
               <span className="rm-posture-etat">
-                <Icon id="action/aim" size="sm" /> Dans le tas {pa.intoCrowd ? `— armée${cm ? ` (+${cm.value})` : ''}` : '— non armée'}
+                <Icon id="action/aim" size="sm" /> Dans le tas {pa.intoCrowd ? `— armée${cm ? ` (+${cm.value})` : ''}` : crowdSansObjet ? '— sans objet sur cette cible' : '— non armée'}
               </span>
               <CodexRef category="regles" id="tirer-dans-le-tas" label="Tirer dans le tas" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
               <span className="rm-crowd-note">
                 {pa.intoCrowd
                   ? `${crowd.length} au contact — touche au hasard, 0 DR si sauvé par le bonus.`
-                  : 'Tir visé : la cible désignée, sans le bonus de groupe.'}
+                  : crowdSansObjet
+                    ? `Posture armée à la console : ${crowdBlock}. Ce tir reste visé.`
+                    : 'Tir visé : la cible désignée, sans le bonus de groupe.'}
               </span>
             </div>
           )}
