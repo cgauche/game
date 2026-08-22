@@ -42,8 +42,11 @@ import type { QuadBoneId, QuadPose, QuadProps } from './quadSkeleton';
  * INTERFACE HORS CADRE (le pivot se projette hors de la boîte 120×150) ne l'est pas — elle se
  * solde par la boîte ou par la pose. Les mélanger ferait payer à l'artiste une dette qui n'est
  * pas la sienne.
- * COÛT : 25 espèces × 8 poses × jusqu'à 5 masques ≈ 1000 rendus (~3 min). C'est le prix d'une
- * mesure au pixel sur tout le parc ; les pixels bruts de resvg sont lus sans passer par un PNG.
+ * COÛT : 25 espèces × 8 poses × jusqu'à 5 masques ≈ 1000 rendus (1,7 s de balayage, 12 s de
+ * fichier — mesuré 2026-08-23). Les pixels bruts de resvg sont lus sans passer par un PNG, et le
+ * rendu n'ouvre AUCUNE police système (`loadSystemFonts: false`) : un rig ne porte pas de texte
+ * (contrat vérifié dans `masqueSolo`), et le scan des polices coûtait 122 ms par instanciation de
+ * `Resvg` — 99 % des 126 ms d'un masque, soit 125 s sur le balayage.
  * Le balayage est PARESSEUX (`toutes()`) : au niveau du module, il se payait à la COLLECTE de
  * vitest, donc sur tout run filtré ailleurs dans le dépôt.
  */
@@ -200,7 +203,9 @@ const boneGroup = (b: ResolvedBone) =>
 function masqueSolo(bones: ResolvedBone[], os: QuadBoneId): Uint8Array {
   const body = bones.filter((b) => b.id === os).map(boneGroup).join('');
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VB_W} ${VB_H}" width="${VB_W}" height="${VB_H}"><defs>${DEFS}</defs>${body}</svg>`;
-  const px = new Resvg(svg, { fitTo: { mode: 'width', value: RENDER_W }, font: { loadSystemFonts: true } }).render().pixels;
+  // Le rendu se fait SANS polices système : ce contrat le vérifie sur chaque SVG mesuré.
+  expect(svg, `SVG de rig porteur de texte (${os}) : le masque exige des polices`).not.toMatch(/<text[\s>]|font-family/);
+  const px = new Resvg(svg, { fitTo: { mode: 'width', value: RENDER_W }, font: { loadSystemFonts: false } }).render().pixels;
   const m = new Uint8Array(RENDER_W * RENDER_H);
   for (let i = 0; i < m.length; i++) if (px[i * 4 + 3] >= ALPHA_MIN) m[i] = 1;
   return m;
