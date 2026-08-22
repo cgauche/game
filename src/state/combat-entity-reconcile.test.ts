@@ -198,7 +198,7 @@ describe('ouverture de combat — un PNJ enrôlé ASSIS se lève', () => {
     const enrole = sc.encounters.find((e) => e.id === 'enc-mutants')!.members![0].entityId;
     const pos = sc.entities.find((e) => e.id === enrole)!.pos;
     // Table posée au NORD de l'enrôlé, cap `N` : son abord SUD est exactement la case de l'enrôlé, et
-    // son abord NORD celle du badaud — la `pos` d'un attablé EST son abord (spec §5 l.213).
+    // son abord NORD celle du badaud. RÈGLE : la `pos` d'un attablé EST l'abord de sa place.
     const table = { x: pos.x, y: pos.y - 1 };
     const entities: SceneEntity[] = [
       ...sc.entities,

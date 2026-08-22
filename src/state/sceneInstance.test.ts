@@ -141,7 +141,9 @@ describe('sceneInstance — câblage store, REVISIT (#707)', () => {
     expect(useGame.getState().sceneInstances).toEqual({});
   });
 
-  it('transitionTo : l’assise AUTHORÉE d’un héros hors groupe est élaguée à l’entrée en scène (spec §4.2)', () => {
+  // RÈGLE : à l'entrée en scène, l'assise se NORMALISE — ne survit que la place dont le meuble est
+  // posé, la place déclarée au catalogue, et le corps disponible.
+  it('transitionTo : l’assise AUTHORÉE d’un héros hors groupe est élaguée à l’entrée en scène', () => {
     useGame.setState({ party: [hero()] });
     const a = fixtureScene('scene-t1');
     const b = fixtureScene('scene-t2');
@@ -181,7 +183,9 @@ describe('sceneInstance — câblage store, REVISIT (#707)', () => {
       expect(useGame.getState().scene!.entities.map((e) => e.id)).not.toContain('decor-retire');
     });
 
-    it('une save v28 portant une place INVALIDE arrive ÉLAGUÉE en état (spec §4.2)', () => {
+    // MÊME RÈGLE au CHARGEMENT : une save dont l'assise ment (meuble disparu, place inconnue, héros
+    // hors groupe) arrive normalisée, jamais telle quelle.
+    it('une save v28 portant une place INVALIDE arrive ÉLAGUÉE en état', () => {
       useGame.setState({ party: [hero()] });
       const s = fixtureScene('scene-assise');
       s.entities.push({ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'N' });

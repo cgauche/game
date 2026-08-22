@@ -5931,10 +5931,6 @@ export function openContractionCascade(get: Get, set: SetFn, patient: Combatant,
   });
 }
 
-/** Fin de combat : réécrit l'état persistant de chaque héros (Blessures, critiques, mort, États
- *  persistants) vers `party`. Idempotent ; les champs non persistants du membre party sont conservés.
- *  Les JETS HÉROS de fin de combat (maladie/Corruption) sont résolus AVANT (cascade `openCombatEndCascade`
- *  ou inline) — ici, on ne fait QUE le writeback (les marqueurs ont déjà été consommés). */
 /**
  * COUTURE UNIQUE « la mort ou l'indisponibilité libère la place » — le seul endroit qui
  * traduise « ce corps est hors d'action » en « sa chaise est rendue ». Appelée là où la mise hors de
@@ -5983,6 +5979,10 @@ export function releaseSeatsOfCombatants<S extends Scene | null>(scene: S, comba
   return next as S;
 }
 
+/** Fin de combat : réécrit l'état persistant de chaque héros (Blessures, critiques, mort, États
+ *  persistants) vers `party`. Idempotent ; les champs non persistants du membre party sont conservés.
+ *  Les JETS HÉROS de fin de combat (maladie/Corruption) sont résolus AVANT (cascade `openCombatEndCascade`
+ *  ou inline) — ici, on ne fait QUE le writeback (les marqueurs ont déjà été consommés). */
 export function finalizeBattle(get: Get, set: SetFn): void {
   const { battle, party } = get();
   if (!battle) return;

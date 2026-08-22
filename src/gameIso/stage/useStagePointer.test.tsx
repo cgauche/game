@@ -10,6 +10,7 @@ import { walkNeighbors } from '../../state/path';
 import { resolveCursorZ } from '../../state/combatCursor';
 import { seatPoseOf, seatSlotsOf } from '../../state/seating';
 import { interactionHalos } from '../builders/interactHalos';
+import { exploreMovePlan, exploreSeatPlan } from '../../state/exploreNav';
 import { useGame } from '../../state/store';
 import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
@@ -919,6 +920,51 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     expect(Math.max(Math.abs(arrivee.x - 2), Math.abs(arrivee.y - 3)), 'on s’arrête à côté du meuble').toBe(1);
     expect(useGame.getState().journal.join(' | '), 'la fouille a bien été servie').toContain('Vous fouillez');
     expect(useGame.getState().journal.join(' | ')).not.toContain('Aucune place libre');
+  });
+
+  /**
+   * MOITIÉ LOAD-BEARING du repli : en DIAGONALE adjacente, `exploreMovePlan` rend `null` (on est déjà
+   * à portée, rien à marcher) ET aucune place n'est servable — la branche meuble-à-places n'a donc NI
+   * abord sous les pieds NI plan à suivre. Si elle retournait là, le clic serait muet (ou un refus
+   * d'assise) alors que la fouille est à portée de bras : c'est la fallthrough, et elle seule, qui
+   * sert la fouille SUR PLACE.
+   */
+  it('table PLEINE + fouillable, groupe en DIAGONALE adjacente : le clic fouille SUR PLACE', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    scene.entities = [{
+      id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S',
+      interact: { flow: { kind: 'seq', steps: [] } },
+    }] as typeof scene.entities;
+    scene.seatAssignments = { 'table-1': { nord: pnjAssis('a'), est: pnjAssis('b'), sud: pnjAssis('c'), ouest: pnjAssis('d') } };
+    const vierge = useGame.getInitialState();
+    const DIAG = { x: 1, y: 2 }; // diagonale du meuble, et AUCUN des quatre abords
+    useGame.setState({
+      scene, mode: 'exploration', partyPos: { ...DIAG }, party: [meneurJouable()], dialogue: null, battle: null,
+      pendingInteract: null, journal: [], flags: {},
+      interactEntity: vierge.interactEntity, setPendingInteract: vierge.setPendingInteract, moveParty: vierge.moveParty,
+    });
+    setSpritePicker(() => ({ kind: 'entity', id: 'table-1' }));
+    // PRÉCONDITIONS — sans elles, le test ne mordrait pas sur la fallthrough.
+    const sc = useGame.getState().scene!;
+    expect(seatSlotsOf(sc, 'table-1').some((s) => s.approach.x === DIAG.x && s.approach.y === DIAG.y),
+      'la case du groupe NE DOIT PAS être un abord').toBe(false);
+    expect(exploreSeatPlan(sc, DIAG, 'table-1'), 'aucune place servable : table pleine').toBeNull();
+    expect(exploreMovePlan(sc, DIAG, { x: 2, y: 3 }, { blocked: new Set() }),
+      'déjà à portée : aucun plan de marche — c’est CE trou que la fallthrough couvre').toBeNull();
+
+    const pointer = monter(scene);
+    const ailleurs = tileCenter(7, 7, dims);
+    const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
+    pointer.handlers.onPointerDown(ev);
+    pointer.handlers.onPointerUp(ev);
+    act(() => { vi.runAllTimers(); });
+
+    const journal = useGame.getState().journal.join(' | ');
+    expect(journal, 'la fouille est servie SUR PLACE').toContain('Vous fouillez');
+    expect(journal, 'aucun refus d’assise').not.toContain('Aucune place libre');
+    expect(useGame.getState().partyPos, 'personne n’a marché : on était déjà à portée').toEqual(DIAG);
+    expect(useGame.getState().pendingInteract).toBeNull();
   });
 
   it('hors combat, le hit-test n’est PAS sollicité sur une scène sans mobilier volumique', () => {
