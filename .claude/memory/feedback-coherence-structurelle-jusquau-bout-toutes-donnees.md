@@ -1,18 +1,15 @@
 ---
 name: feedback-coherence-structurelle-jusquau-bout-toutes-donnees
-description: "Directive 2026-08-23 (GÉNÉRALE, pas seulement les spécialisations) : tout CONCEPT a UNE structure, identique dans tous les datasets (carrières, races, créatures, talents…) et le moteur — jamais une forme par dataset, un reste en texte, ni un champ homonyme de forme différente"
+description: "Rappel 2026-08-23 : le credo (réutiliser le canonique, zéro duplication) vaut pour les STRUCTURES DE DONNÉE — l'inventaire d'un lot se fait par CONCEPT sur tous les datasets, jamais par fichier du ticket"
 metadata: 
   node_type: memory
   type: feedback
   originSessionId: 032f0876-8eb3-421a-bddc-50a550c9bc09
-  modified: 2026-08-23T08:15:36.670Z
+  modified: 2026-08-23T08:16:51.376Z
 ---
 
-Verbatim utilisateur (2026-08-23, à propos des « Savoir (Au choix) » : créatures en texte pur, carrières déjà en `{wildcard}` mais re-parsées par regex au créateur, `specOptions` en libellés, talents/stars en littéral) :
-« Ca serait bien que l'application soit cohérente dans sa structure non et jusqu'au bout, que ce soit les carrières que les races, les creatures, etc ... »
+Verbatim utilisateur (2026-08-23) : « Ca serait bien que l'application soit cohérente dans sa structure non et jusqu'au bout, que ce soit les carrières que les races, les creatures, etc ... » — « Cette remarque ce n'est pas seulement pour les spécialisations par contre » — « Tu sais c'est deja dans le credo ... ».
 
-Précision du même jour, verbatim : « Cette remarque ce n'est pas seulement pour les spécialisations par contre » → la règle vaut pour TOUTE structure (refs de compétence/talent/trait, args, sources, options, coûts…), pas pour l'exemple qui l'a déclenchée.
+**Why :** ce n'est PAS une règle nouvelle (credo : réutiliser le canonique, zéro duplication ; [[feedback-jamais-de-demi-migration]] ; [[game-doctrine-une-entite-n-livres-n-variantes]]). Le défaut était le mien : j'ai traité le concept « choix de spécialisation » sur le dataset du ticket (créatures, 53 textes) alors que carrières (`specOptions` en libellés), talents/signes astraux (littéral dans une op), créateur (regex sur le libellé) et traits (args « deux au choix ») portaient le même concept sous d'autres formes — et le même schéma (`advancementRefSchema`) existait déjà.
 
-**Why :** un concept (le choix d'une spécialisation) modélisé trois fois (forme structurée ici, littéral FR là, libellés dans une liste d'options ailleurs) = trois gardes, trois éditeurs, trois chemins de bug ; et un nettoyage qui s'arrête au dataset du ticket laisse la dette vivante à côté (#1342/#1456 : les créatures étaient le gros stock, mais carrières/talents/stars/traits portaient le même défaut sous d'autres formes).
-
-**How to apply :** quand un lot pose ou migre une FORME de donnée, l'inventaire se fait sur TOUS les datasets qui portent le concept (grep du concept, pas du fichier) et le lot couvre le moteur jusqu'au bout (plus de regex sur libellé, ids partout, un seul schéma réutilisé — ex. `advancementRefSchema {wildcard, specOptions}`) ; une forme « par dataset » ou un reste en texte = demi-migration, refusée (cf. [[feedback-jamais-de-demi-migration]], [[game-ids-internes-libelles-display-multilangue]]). Corollaire : un audit de cohérence structurelle INTER-datasets (même concept ⇒ même schéma zod partagé, `schemas/common.ts` ; champ homonyme à forme divergente = bug d'AXE) est un chantier à part entière — ticket ouvert le 2026-08-23. Précédent : #1456 lots L4/L5 élargis à careerLevels/species/talents/stars/tables/traits sur cette directive.
+**How to apply :** l'inventaire d'un lot de forme se fait par CONCEPT (grep du concept dans tous les `src/data/*.json` + schémas + moteur), jamais par fichier ; la forme cible est le schéma partagé existant (`schemas/common.ts`), et le lot va jusqu'au moteur (une porte). Chantier d'audit inter-datasets ouvert en conséquence : #1463.
