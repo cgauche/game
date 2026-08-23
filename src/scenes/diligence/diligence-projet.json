@@ -4910,6 +4910,156 @@
       "x": 17,
       "y": 2
      }
+    },
+    {
+     "id": "diligence-salle-cheminee",
+     "kind": "prop",
+     "ref": "cheminee-interieure",
+     "pos": {
+      "x": 10,
+      "y": 8
+     },
+     "facing": "E"
+    },
+    {
+     "id": "diligence-salle-comptoir-1",
+     "kind": "prop",
+     "ref": "comptoir-droit",
+     "pos": {
+      "x": 10,
+      "y": 24
+     },
+     "facing": "S"
+    },
+    {
+     "id": "diligence-salle-comptoir-2",
+     "kind": "prop",
+     "ref": "comptoir-angle",
+     "pos": {
+      "x": 11,
+      "y": 24
+     },
+     "facing": "S"
+    },
+    {
+     "id": "diligence-salle-comptoir-3",
+     "kind": "prop",
+     "ref": "comptoir-droit",
+     "pos": {
+      "x": 11,
+      "y": 23
+     },
+     "facing": "E"
+    },
+    {
+     "id": "diligence-salle-comptoir-4",
+     "kind": "prop",
+     "ref": "comptoir-droit",
+     "pos": {
+      "x": 11,
+      "y": 22
+     },
+     "facing": "E"
+    },
+    {
+     "id": "diligence-salle-comptoir-5",
+     "kind": "prop",
+     "ref": "comptoir-droit",
+     "pos": {
+      "x": 11,
+      "y": 21
+     },
+     "facing": "E"
+    },
+    {
+     "id": "diligence-salle-comptoir-6",
+     "kind": "prop",
+     "ref": "comptoir-droit",
+     "pos": {
+      "x": 11,
+      "y": 20
+     },
+     "facing": "E"
+    },
+    {
+     "id": "diligence-salle-comptoir-7",
+     "kind": "prop",
+     "ref": "comptoir-droit",
+     "pos": {
+      "x": 11,
+      "y": 19
+     },
+     "facing": "E"
+    },
+    {
+     "id": "diligence-salle-comptoir-8",
+     "kind": "prop",
+     "ref": "comptoir-droit",
+     "pos": {
+      "x": 10,
+      "y": 19
+     },
+     "facing": "N"
+    },
+    {
+     "id": "diligence-salle-table-ronde-1",
+     "kind": "prop",
+     "ref": "table-ronde-4-tabourets",
+     "pos": {
+      "x": 10,
+      "y": 23
+     },
+     "facing": "N"
+    },
+    {
+     "id": "diligence-salle-table-ronde-2",
+     "kind": "prop",
+     "ref": "table-ronde-4-tabourets",
+     "pos": {
+      "x": 12,
+      "y": 14
+     },
+     "facing": "N"
+    },
+    {
+     "id": "diligence-salle-table-ronde-3",
+     "kind": "prop",
+     "ref": "table-ronde-4-tabourets",
+     "pos": {
+      "x": 10,
+      "y": 10
+     },
+     "facing": "N"
+    },
+    {
+     "id": "diligence-salle-table-murale-1",
+     "kind": "prop",
+     "ref": "table-murale-2-tabourets",
+     "pos": {
+      "x": 13,
+      "y": 10
+     },
+     "facing": "O"
+    },
+    {
+     "id": "diligence-salle-table-murale-2",
+     "kind": "prop",
+     "ref": "table-murale-2-tabourets",
+     "pos": {
+      "x": 13,
+      "y": 14
+     },
+     "facing": "O"
+    },
+    {
+     "id": "diligence-salle-table-murale-3",
+     "kind": "prop",
+     "ref": "table-murale-2-tabourets",
+     "pos": {
+      "x": 13,
+      "y": 19
+     },
+     "facing": "O"
     }
    ],
    "dialogues": [],

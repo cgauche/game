@@ -1867,7 +1867,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 10,
       "y": 8,
       "z": 0,
@@ -2315,7 +2315,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 10,
       "y": 10,
       "z": 0,
@@ -2336,7 +2336,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 13,
       "y": 10,
       "z": 0,
@@ -3225,14 +3225,14 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 12,
       "y": 14,
       "z": 0,
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 13,
       "y": 14,
       "z": 0,
@@ -4331,14 +4331,14 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 10,
       "y": 19,
       "z": 0,
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 11,
       "y": 19,
       "z": 0,
@@ -4352,7 +4352,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 13,
       "y": 19,
       "z": 0,
@@ -4562,7 +4562,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 11,
       "y": 20,
       "z": 0,
@@ -4786,7 +4786,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 11,
       "y": 21,
       "z": 0,
@@ -5010,7 +5010,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 11,
       "y": 22,
       "z": 0,
@@ -5227,14 +5227,14 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 10,
       "y": 23,
       "z": 0,
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 11,
       "y": 23,
       "z": 0,
@@ -5451,14 +5451,14 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 10,
       "y": 24,
       "z": 0,
     },
     {
       "height": 0,
-      "walkable": true,
+      "walkable": false,
       "x": 11,
       "y": 24,
       "z": 0,
@@ -17033,6 +17033,141 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     "w": 32,
   },
   "entities": [
+    {
+      "id": "diligence-salle-cheminee",
+      "kind": "prop",
+      "pos": {
+        "x": 10,
+        "y": 8,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-comptoir-1",
+      "kind": "prop",
+      "pos": {
+        "x": 10,
+        "y": 24,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-comptoir-2",
+      "kind": "prop",
+      "pos": {
+        "x": 11,
+        "y": 24,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-comptoir-3",
+      "kind": "prop",
+      "pos": {
+        "x": 11,
+        "y": 23,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-comptoir-4",
+      "kind": "prop",
+      "pos": {
+        "x": 11,
+        "y": 22,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-comptoir-5",
+      "kind": "prop",
+      "pos": {
+        "x": 11,
+        "y": 21,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-comptoir-6",
+      "kind": "prop",
+      "pos": {
+        "x": 11,
+        "y": 20,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-comptoir-7",
+      "kind": "prop",
+      "pos": {
+        "x": 11,
+        "y": 19,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-comptoir-8",
+      "kind": "prop",
+      "pos": {
+        "x": 10,
+        "y": 19,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-table-murale-1",
+      "kind": "prop",
+      "pos": {
+        "x": 13,
+        "y": 10,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-table-murale-2",
+      "kind": "prop",
+      "pos": {
+        "x": 13,
+        "y": 14,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-table-murale-3",
+      "kind": "prop",
+      "pos": {
+        "x": 13,
+        "y": 19,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-table-ronde-1",
+      "kind": "prop",
+      "pos": {
+        "x": 10,
+        "y": 23,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-table-ronde-2",
+      "kind": "prop",
+      "pos": {
+        "x": 12,
+        "y": 14,
+      },
+      "z": 0,
+    },
+    {
+      "id": "diligence-salle-table-ronde-3",
+      "kind": "prop",
+      "pos": {
+        "x": 10,
+        "y": 10,
+      },
+      "z": 0,
+    },
     {
       "id": "heroStart-0",
       "kind": "heroStart",
