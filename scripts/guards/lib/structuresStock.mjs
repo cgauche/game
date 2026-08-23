@@ -411,7 +411,7 @@ export const STRUCTURES_FORMES = [
   // #1443 : `propPrimitiveSchema` (`src/data/schemas/common.ts`) — chaque volume d'une recette réfère
   // son matériau de `propMaterials.json`. Même graphie que le reste de la géométrie authorée
   // (`masses[].material`, `walls[].structure`/`appearance` : 662 occurrences en scène), même lot L3.
-  { concept: "reference", dataset: "props.json", champ: "primitives", signature: "material+…", statut: "divergente", strate: "Référence", occurrences: 44, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "props.json", champ: "primitives", signature: "material+…", statut: "divergente", strate: "Référence", occurrences: 50, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "psychology.json", champ: "becomes", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "psychology.json", champ: "failCondition", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "psychology.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },

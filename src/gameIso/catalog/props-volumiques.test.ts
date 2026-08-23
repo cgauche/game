@@ -7,12 +7,12 @@ import { collectBillboards, wholeSceneBillboardEls } from '../backends/webgl/sce
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../state/scene';
 
 /**
- * LE PREMIER LOT DE MOBILIER VOLUMIQUE — cinq refs de `props.json` dont le corps MONDE est leur
+ * LE MOBILIER VOLUMIQUE — six refs de `props.json` dont le corps MONDE est leur
  * recette, et dont le SVG de catalogue n'est plus qu'une vignette de palette. Ce fichier tient les
  * deux moitiés du contrat : l'identité (vignette + recette + places) et l'EXCLUSIVITÉ de la voie
  * monde (une ref volumique n'a plus aucun sujet de billboard).
  */
-const IDS = ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle', 'table-ronde-4-tabourets', 'table-murale-2-tabourets'] as const;
+const IDS = ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle', 'table-ronde-4-tabourets', 'table-murale-2-tabourets', 'armoire'] as const;
 
 const propEntity = ({ id, ref, pos, facing }: { id: string; ref: string; pos: { x: number; y: number }; facing: 'N' | 'E' | 'S' | 'O' }): SceneEntity =>
   ({ id, kind: 'prop', pos, ref, facing }) as SceneEntity;
@@ -37,7 +37,7 @@ function distanceAuSegment(p: { x: number; y: number }, a: { x: number; y: numbe
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
 }
 
-describe('mobilier volumique — cinq refs, leur vignette et leur corps monde', () => {
+describe('mobilier volumique — six refs, leur vignette et leur corps monde', () => {
   it.each(IDS)('%s possède vignette et volume monde, jamais billboard monde', (id) => {
     expect(propSvg(id).length).toBeGreaterThan(120);
     const prop = findPropById(id)!;
@@ -56,7 +56,7 @@ describe('mobilier volumique — cinq refs, leur vignette et leur corps monde', 
       { id: 'place-ouest', anchor: { x: -0.43, y: 0, h: 0.49 }, facing: 'E', approach: { x: -1, y: 0 } },
     ]);
     expect(findPropById('table-murale-2-tabourets')!.seatSlots?.map((s) => s.id)).toEqual(['place-gauche', 'place-droite']);
-    for (const id of ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle'])
+    for (const id of ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle', 'armoire'])
       expect(findPropById(id)!.seatSlots, id).toBeUndefined();
   });
 

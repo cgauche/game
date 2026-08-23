@@ -560,7 +560,7 @@ nombre d’entrées qui la portent.
 | `src/data/problemes-vehicule.json` | object | config (objet unique) | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) |
 | `src/data/progression-schemas.derived.json` | object | config (objet unique) | config | 1 | `__genere`:string(1) `__lecture`:string(1) `__livres`:array(1) `schemas`:array(1) |
 | `src/data/propMaterials.json` | array | liste | entité | 4 | `color`:string(4) `id`:string(4) `label`:string(4) `metalness`:number(4) `roughness`:number(4) |
-| `src/data/props.json` | array | liste | entité | 78 | `cover`:string(15) `foot`:object(26) `id`:string(78) `light`:object(5) `opaque`:boolean(2) `seatSlots`:array(2) `solid`:boolean(65) `volume`:object(5) |
+| `src/data/props.json` | array | liste | entité | 78 | `cover`:string(15) `foot`:object(26) `id`:string(78) `light`:object(5) `opaque`:boolean(2) `seatSlots`:array(2) `solid`:boolean(65) `volume`:object(6) |
 | `src/data/psychology.json` | array | liste | entité | 9 | `attackDR`:object(5) `becomes`:string(1) `containedSocialMod`:number(2) `desc`:string(9) `effects`:array(1) `endedByOtherPsych`:boolean(2) `failAmount`:object(1) `failCondition`:string(1) `icon`:string(9) `id`:string(9) `immuneToFromTarget`:array(1) `immuneWhileActive`:array(1) `label`:string(9) `passive`:array(1) `psychImmune`:boolean(1) `resolution`:string(7) `source`:object(9) `stake`:string(7) `stakeForm`:string(7) `targetCauses`:object(1) `targeted`:boolean(6) `test`:object(7) `triggerOn`:string(2) |
 | `src/data/qualities.json` | array | liste | entité | 59 | `alsoIn`:array(2) `capabilities`:object(31) `desc`:string(59) `effects`:array(10) `id`:string(59) `indice`:object(1) `label`:string(59) `passive`:array(17) `source`:object(59) `subType`:string(59) `type`:string(59) |
 | `src/data/qualitySubtypes.json` | array | liste | entité | 3 | `id`:string(3) `label`:string(3) |
@@ -617,7 +617,7 @@ nombre d’entrées qui la portent.
 
 ### 2.2 Fréquence globale des signatures d’entrée
 
-Signatures distinctes d’entrée de document : **569**. Les 40 plus fréquentes :
+Signatures distinctes d’entrée de document : **570**. Les 40 plus fréquentes :
 
 | Signature d’entrée | Entrées |
 |---|---|
@@ -642,7 +642,7 @@ Signatures distinctes d’entrée de document : **569**. Les 40 plus fréquentes
 | `alsoIn,cn,curated,desc,domainId,duration,effects,family,id,label,range,source,subType,target,type` | 38 |
 | `appearance,char,desc,folder,followsCharacterRules,id,label,named,optionals,skills,source,spells,talents,title,traits,trappings` | 34 |
 | `blessings,desc,id,label,miracles,source,title` | 34 |
-| `id,solid` | 34 |
+| `id,solid` | 33 |
 | `availability,desc,enc,id,label,price,qualities,source,subType,type` | 33 |
 | `flow,form,id,label,phase,rule,ruleCategory,source,template` | 32 |
 | `concept,fichier,id,nom,perimetre,verrou` | 28 |
@@ -945,12 +945,12 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **825** (cible 144 · declaree 6 · historique 235 · divergente 440). Objets JSON parcourus : **51940**, dont **35866** portent une forme
+Lignes concept × dataset × champ × forme : **825** (cible 144 · declaree 6 · historique 235 · divergente 440). Objets JSON parcourus : **51959**, dont **35872** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **92**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-470 ligne(s), 28695 occurrence(s).
+470 ligne(s), 28701 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1225,7 +1225,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `career` | `id-nu` | historique | `pregens.json` | 8 | — | `careers.json` `creatures.json` `groups.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `species` | `id-nu` | historique | `pregens.json` | 8 | — | `obsessions.json` `skills.json` `species.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `light` | `tone+…` | divergente | `props.json` | 3 | — | `lightTones.json` `spells.json` `trappings.json` |  |
-| entité | `primitives` | `material+…` | divergente | `props.json` | 44 | — | `propMaterials.json` |  |
+| entité | `primitives` | `material+…` | divergente | `props.json` | 50 | — | `propMaterials.json` |  |
 | entité | `becomes` | `id-nu` | historique | `psychology.json` | 1 | — | `mass-battle.json` `psychology.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `failCondition` | `id-nu` | historique | `psychology.json` | 1 | — | `etats.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `ops` | `id+…` | divergente | `psychology.json` | 1 | — | `etats.json` |  |
@@ -2223,7 +2223,7 @@ clé annonçait une FK (`clé de référence non résolue`), `L1b #1467` pour le
 | `tavernGames.json` | `dice` | `count,faces` | clé réservée | 1 |
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 
-Au-delà des orphelines, **11749** objets sur **51940** ne sont portés par AUCUNE
+Au-delà des orphelines, **11762** objets sur **51959** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures

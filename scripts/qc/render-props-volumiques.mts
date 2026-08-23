@@ -13,7 +13,7 @@ import { DEFS } from '../../src/gameIso/sprites';
 import type { SceneEntity } from '../../src/state/scene';
 import type { Face } from '../../src/gameIso/builders/types';
 
-const IDS = ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle', 'table-ronde-4-tabourets', 'table-murale-2-tabourets'] as const;
+const IDS = ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle', 'table-ronde-4-tabourets', 'table-murale-2-tabourets', 'armoire'] as const;
 const METRES_PAR_CASE = 2; // `Scene.metresPerTile` de La Diligence
 const PX_PAR_METRE = 44;
 const CELL_W = 230, CELL_H = 250;

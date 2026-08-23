@@ -245,7 +245,95 @@
   },
   {
     "id": "armoire",
-    "solid": true
+    "solid": true,
+    "volume": {
+      "primitives": [
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.06
+          },
+          "size": {
+            "x": 0.47,
+            "y": 0.24,
+            "h": 0.12
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 0.9
+          },
+          "size": {
+            "x": 0.45,
+            "y": 0.225,
+            "h": 1.56
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": 0,
+            "h": 1.74
+          },
+          "size": {
+            "x": 0.5,
+            "y": 0.26,
+            "h": 0.12
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0,
+            "y": -0.115,
+            "h": 0.9
+          },
+          "size": {
+            "x": 0.02,
+            "y": 0.02,
+            "h": 1.56
+          },
+          "material": "bois-chene"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": -0.035,
+            "y": -0.125,
+            "h": 0.95
+          },
+          "size": {
+            "x": 0.015,
+            "y": 0.03,
+            "h": 0.05
+          },
+          "material": "fer-noirci"
+        },
+        {
+          "kind": "box",
+          "center": {
+            "x": 0.035,
+            "y": -0.125,
+            "h": 0.95
+          },
+          "size": {
+            "x": 0.015,
+            "y": 0.03,
+            "h": 0.05
+          },
+          "material": "fer-noirci"
+        }
+      ]
+    }
   },
   {
     "id": "bureau",
