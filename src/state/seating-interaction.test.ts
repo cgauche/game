@@ -210,14 +210,35 @@ describe('marcher, c’est se lever — et le déplacement-puis-assise arrive su
 
   it('pendingInteract armé sur un meuble à places se consomme À L’ARRIVÉE sur l’abord', () => {
     poser({ x: 5, y: 2 });
-    useGame.getState().setPendingInteract(PROP);
+    useGame.getState().setPendingInteract({ id: PROP, at: ABORD_NORD });
     useGame.getState().moveParty({ x: 5, y: 3 }); // hors de tout abord : rien ne se déclenche
-    expect(useGame.getState().pendingInteract).toBe(PROP);
+    expect(useGame.getState().pendingInteract).toMatchObject({ id: PROP });
     expect(poseDuMeneur()).toBeNull();
 
     useGame.getState().moveParty(ABORD_NORD); // sur l'abord → assise automatique
     expect(useGame.getState().pendingInteract).toBeNull();
     expect(poseDuMeneur()).toMatchObject({ slotId: 'nord' });
+  });
+
+  /**
+   * REPRO MESURÉE AU NAVIGATEUR (recette #1443, `la-diligence`) : le chemin vers l'abord d'une place
+   * LONGE la table, et l'ancienne consommation « à l'arrivée ADJACENTE » ouvrait l'interaction à une
+   * case voisine qui n'est PAS un abord — le meneur s'y voyait refuser l'assise (« Vous devez rejoindre
+   * la place »), le pending était brûlé, et il fallait un SECOND clic une fois sur place.
+   */
+  it('une case ADJACENTE au meuble mais SANS place ne consomme pas le pending armé sur l’abord', () => {
+    poser({ x: 4, y: 3 });
+    const abords = seatSlotsOf(useGame.getState().scene!, PROP).map((s) => `${s.approach.x},${s.approach.y}`);
+    const CROISEE = { x: 4, y: 4 }; // diagonale de la table (5,5) — et AUCUN de ses abords
+    expect(abords, 'la case croisée ne doit pas être un abord, sinon le test ne mord pas').not.toContain(`${CROISEE.x},${CROISEE.y}`);
+
+    useGame.getState().setPendingInteract({ id: PROP, at: ABORD_NORD });
+    useGame.getState().moveParty(CROISEE);
+    expect(useGame.getState().pendingInteract, 'le pending survit au passage').toMatchObject({ id: PROP });
+    expect(journalEntier(), 'aucun refus d’assise en passant').not.toContain('Vous devez rejoindre la place');
+
+    useGame.getState().moveParty(ABORD_NORD);
+    expect(poseDuMeneur(), 'un seul geste : le meneur est assis à l’arrivée').toMatchObject({ slotId: 'nord' });
   });
 
   it('les 4 abords de la table mènent chacun à LEUR place', () => {

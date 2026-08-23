@@ -543,8 +543,11 @@ export interface GameState extends RollFlowActionsMap {
   pendingAuContact: PendingAuContact | null;
   /** Empoignade (LDB 14 l.161) : action à son tour — Test opposé de Force OU « Briser » (Avantage supérieur). */
   pendingGrapple: PendingGrapple | null;
-  /** Déplacement-puis-fouille : id du décor interactif visé, déclenché à l'arrivée adjacente (P5). */
-  pendingInteract: string | null;
+  /** Déplacement-puis-interaction (P5) : le décor visé ET la case où la marche PLANIFIÉE se termine
+   *  (`ExploreMovePlan.dest` — abord d'une place, ou case adjacente d'un décor fouillable). L'interaction
+   *  se consomme À CETTE CASE : une adjacence CROISÉE en chemin ne l'ouvre pas (le chemin vers l'abord
+   *  d'une place longe la table, et la fouille/assise s'y déclenchait à mi-parcours, hors de l'abord). */
+  pendingInteract: { id: string; at: Pt } | null;
   pendingCast: PendingCast | null;
   /** Contre-sort à PLUSIEURS (réaction au Sort figé dans `pendingCast`) : les contre-lanceurs
    *  enrôlés par `routeCounterspell`, chacun son jet (flux multi `FLOWS.counterspell`). Null = pas de réaction. */
@@ -884,7 +887,7 @@ export interface GameState extends RollFlowActionsMap {
    *  pas ≠ avant (un pas latéral/arrière ne réoriente pas le meneur). */
   stepPartyRelative: (rel: 'forward' | 'back' | 'left' | 'right') => void;
   interactEntity: (entityId: string) => void;
-  setPendingInteract: (id: string | null) => void;
+  setPendingInteract: (pending: { id: string; at: Pt } | null) => void;
   chooseDialogue: (choiceIndex: number) => void;
   closeDialogue: () => void;
   openMerchant: (entityId: string) => void;
@@ -2114,17 +2117,16 @@ export const useGame = create<GameState>((set, get) => ({
     if (leadId) get().faceFromPath(leadId, [from, pt]);
     bus.emit(EVT.SCENE_DIRTY);
     checkTriggers(get, set);
-    // P5 (déplacement-puis-fouille) : à l'arrivée adjacente au décor visé, déclenche l'interaction.
+    // P5 (déplacement-puis-interaction) : l'interaction s'ouvre à la case D'ARRIVÉE du plan qui l'a
+    // armée (`pendingInteract.at`), jamais à une adjacence croisée en chemin — le chemin vers l'abord
+    // d'une place passe par des cases voisines du meuble qui ne SONT pas cet abord.
     const pi = get().pendingInteract;
     if (pi) {
-      const target = scene.entities.find((e) => e.id === pi);
-      // ARRIVÉE : à côté du décor visé — ou EXACTEMENT sur l'abord d'une de ses places, car un meuble
-      // à places s'aborde par sa place, qui peut tomber hors du voisinage de sa case d'ancrage.
-      const surUnAbord = !!target && seatSlotsOf(get().scene ?? scene, pi).some((s) => memeCase(s.approach, pt));
+      const target = scene.entities.find((e) => e.id === pi.id);
       if (!target) set({ pendingInteract: null });
-      else if (surUnAbord || (chebyshev(pt, target.pos) <= 1 && (pt.z ?? 0) === (target.z ?? 0))) {
+      else if (memeCase(pt, pi.at)) {
         set({ pendingInteract: null });
-        get().interactEntity(pi);
+        get().interactEntity(pi.id);
       }
     }
   },
@@ -2322,9 +2324,10 @@ export const useGame = create<GameState>((set, get) => ({
     if (!horsPortee && ent.interact) get().log(t('store.searchedAlready', { what: ent.label ?? t('store.searchedFallback') }));
   },
 
-  /** Arme (ou annule via null) un déplacement-puis-fouille : l'UI le pose au clic d'un décor interactif
-   *  éloigné, consommé par `moveParty` à l'arrivée adjacente ; annulé sur tout autre clic (P5). */
-  setPendingInteract: (id) => set({ pendingInteract: id }),
+  /** Arme (ou annule via null) un déplacement-puis-interaction : l'UI le pose au clic d'un décor
+   *  éloigné AVEC la case d'arrivée du plan de marche, consommé par `moveParty` à CETTE case ;
+   *  annulé sur tout autre clic (P5). */
+  setPendingInteract: (pending) => set({ pendingInteract: pending }),
 
   chooseDialogue: (choiceIndex) => {
     const st = get();

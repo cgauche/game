@@ -868,7 +868,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
     pointer.handlers.onPointerDown(ev);
     pointer.handlers.onPointerUp(ev);
-    expect(useGame.getState().pendingInteract).toBe('table-1'); // pending ARMÉ, marche lancée
+    expect(useGame.getState().pendingInteract).toMatchObject({ id: 'table-1' }); // pending ARMÉ, marche lancée
     act(() => { vi.runAllTimers(); });
 
     const abords = seatSlotsOf(useGame.getState().scene!, 'table-1').map((s) => `${s.approach.x},${s.approach.y}`);
@@ -876,6 +876,78 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     expect(abords, 'le groupe s’arrête SUR un abord de place').toContain(`${arrivee.x},${arrivee.y}`);
     expect(arrivee).not.toEqual({ x: 2, y: 3 });                // jamais la case du meuble
     expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 })).toMatchObject({ propId: 'table-1' });
+    expect(useGame.getState().pendingInteract).toBeNull();
+  });
+
+  /**
+   * REPRO PROMUE de la recette navigateur (#1443, `la-diligence`) : deux clics MUETS sur un meuble
+   * à places. (a) plateau FIN — le rayon ne touche aucune face (`null`), et la résolution de tuile
+   * retombait sur sa boucle cross-couche : la table murale (13,10) rendait (16,13,z1), un autre
+   * ÉTAGE, et le groupe partait à l'autre bout. (b) OCCULTATION — le rayon nomme le comptoir dessiné
+   * devant la table (10,23). Dans les deux cas la case DESSINÉE sous le pixel est celle du meuble
+   * visé : elle lui appartient.
+   */
+  it('la case d’un meuble lui appartient : rayon MUET ou rayon OCCULTÉ, le clic vise CE meuble', () => {
+    const scene = emptyScene(8, 8);
+    // ÉTAGE au-dessus : c'est lui que la boucle cross-couche servait à la place du meuble (cas (a)).
+    scene.layers = [scene.layers[0], { z: 1, tiles: new Array(8 * 8).fill('bois') }];
+    scene.entities = [
+      { id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' },
+      { id: 'comptoir-1', kind: 'prop', pos: { x: 5, y: 5 }, ref: 'comptoir-droit', facing: 'S' },
+    ] as typeof scene.entities;
+    const surLaTable = tileCenter(2, 3, dims);
+
+    for (const [cas, rayon] of [
+      ['rayon MUET (plateau fin)', () => null],
+      ['rayon OCCULTÉ (meuble devant)', () => ({ kind: 'entity' as const, id: 'comptoir-1' })],
+    ] as const) {
+      const interactEntity = vi.fn();
+      useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null, interactEntity, setPendingInteract: vi.fn() });
+      setSpritePicker(rayon);
+      const pointer = monter(scene);
+      const ev = pointerEvent(surLaTable.cx, surLaTable.cy);
+      pointer.handlers.onPointerDown(ev);
+      pointer.handlers.onPointerUp(ev);
+      expect(interactEntity, cas).toHaveBeenCalledWith('table-1'); // adjacent (2,2)→(2,3) : servi sur place
+    }
+  });
+
+  /**
+   * REPRO PROMUE de la recette navigateur (#1443, `la-diligence`) : s'asseoir prenait DEUX clics.
+   * Le chemin vers l'abord d'une place LONGE le meuble ; l'ancienne consommation du pending « à
+   * l'arrivée adjacente » ouvrait l'interaction sur une case croisée en route (l'abord d'une place
+   * DÉJÀ PRISE ici), qui refusait l'assise et brûlait le pending — le groupe finissait sa marche sur
+   * le bon abord, debout, et il fallait recliquer. UN geste doit suffire.
+   */
+  it('le chemin croise l’abord d’une place PRISE : un seul clic assoit quand même à l’arrivée', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
+    // Seule la place SUD reste libre : la marche vers son abord passe par celui de la place NORD.
+    scene.seatAssignments = { 'table-1': { nord: pnjAssis('a'), est: pnjAssis('b'), ouest: pnjAssis('d') } };
+    const vierge = useGame.getInitialState();
+    useGame.setState({
+      scene, mode: 'exploration', partyPos: { x: 6, y: 6 }, party: [meneurJouable()], dialogue: null, battle: null,
+      pendingInteract: null, journal: [], flags: {},
+      interactEntity: vierge.interactEntity, setPendingInteract: vierge.setPendingInteract, moveParty: vierge.moveParty,
+    });
+    setSpritePicker(() => ({ kind: 'entity', id: 'table-1' }));
+    // PRÉCONDITION : le chemin planifié croise bien une case adjacente au meuble qui n'est PAS l'abord visé.
+    const sc = useGame.getState().scene!;
+    const plan = exploreSeatPlan(sc, { x: 6, y: 6 }, 'table-1')!;
+    expect(plan.slotId, 'la seule place libre est au sud').toBe('sud');
+    const croisees = plan.path.slice(0, -1).filter((p) => Math.max(Math.abs(p.x - 2), Math.abs(p.y - 3)) <= 1);
+    expect(croisees.length, 'le chemin DOIT longer le meuble, sinon le test ne mord pas').toBeGreaterThan(0);
+
+    const pointer = monter(scene);
+    const ailleurs = tileCenter(7, 7, dims);
+    const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
+    pointer.handlers.onPointerDown(ev);
+    pointer.handlers.onPointerUp(ev);
+    act(() => { vi.runAllTimers(); });
+
+    expect(useGame.getState().journal.join(' | '), 'aucun refus d’assise en chemin').not.toContain('Vous devez rejoindre la place');
+    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 }), 'assis EN UN GESTE').toMatchObject({ propId: 'table-1', slotId: 'sud' });
     expect(useGame.getState().pendingInteract).toBeNull();
   });
 
@@ -913,7 +985,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
     pointer.handlers.onPointerDown(ev);
     pointer.handlers.onPointerUp(ev);
-    expect(useGame.getState().pendingInteract, 'la fouille est ARMÉE, pas refusée').toBe('table-1');
+    expect(useGame.getState().pendingInteract, 'la fouille est ARMÉE, pas refusée').toMatchObject({ id: 'table-1' });
     act(() => { vi.runAllTimers(); });
 
     const arrivee = useGame.getState().partyPos;

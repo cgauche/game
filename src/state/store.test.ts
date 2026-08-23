@@ -1635,21 +1635,34 @@ describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
     useGame.setState({ partyPos: { x: 0, y: 0 } });
   }
 
-  it('moveParty arrivant adjacent au décor visé déclenche la fouille et purge pendingInteract', () => {
+  it('moveParty arrivant SUR la case d’arrivée armée déclenche la fouille et purge pendingInteract', () => {
     armedScene();
-    useGame.getState().setPendingInteract('cadavre');
+    useGame.getState().setPendingInteract({ id: 'cadavre', at: { x: 4, y: 0 } });
     useGame.getState().moveParty({ x: 1, y: 0 }); // encore loin → pas de fouille
-    expect(useGame.getState().pendingInteract).toBe('cadavre');
+    expect(useGame.getState().pendingInteract).toMatchObject({ id: 'cadavre' });
     expect(partyMoneyTotal(useGame.getState).gold).toBe(0);
 
-    useGame.getState().moveParty({ x: 4, y: 0 }); // adjacent à (5,0) → fouille auto
+    useGame.getState().moveParty({ x: 4, y: 0 }); // case d'arrivée du plan → fouille auto
+    expect(useGame.getState().pendingInteract).toBeNull();
+    expect(partyMoneyTotal(useGame.getState).gold).toBe(3);
+  });
+
+  it('une adjacence CROISÉE en chemin n’ouvre pas l’interaction : seule la case d’arrivée armée le fait', () => {
+    armedScene();
+    // Plan : rejoindre (4,1) — (4,0), croisée en route, est adjacente au cadavre SANS être l'arrivée.
+    useGame.getState().setPendingInteract({ id: 'cadavre', at: { x: 4, y: 1 } });
+    useGame.getState().moveParty({ x: 4, y: 0 });
+    expect(useGame.getState().pendingInteract, 'le pending survit au passage').toMatchObject({ id: 'cadavre' });
+    expect(partyMoneyTotal(useGame.getState).gold, 'rien n’a été fouillé en passant').toBe(0);
+
+    useGame.getState().moveParty({ x: 4, y: 1 });
     expect(useGame.getState().pendingInteract).toBeNull();
     expect(partyMoneyTotal(useGame.getState).gold).toBe(3);
   });
 
   it('annulation : setPendingInteract(null) empêche la fouille à l’arrivée (clic ailleurs)', () => {
     armedScene();
-    useGame.getState().setPendingInteract('cadavre');
+    useGame.getState().setPendingInteract({ id: 'cadavre', at: { x: 4, y: 0 } });
     useGame.getState().setPendingInteract(null);
     useGame.getState().moveParty({ x: 4, y: 0 });
     expect(partyMoneyTotal(useGame.getState).gold).toBe(0);

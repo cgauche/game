@@ -167,13 +167,43 @@ export function useStagePointer({
     return null;
   };
 
-  // Écran → tuile : le pixel de l'élément remonte la chaîne d'affichage à l'envers par les DEUX
-  // étages de `stageCam` (recouvrement `slice`, puis caméra du groupe), et retombe dans le repère de
-  // projection où `tileCenter`/`worldToScreen` dessinent.
-  const tileFromEvent = (ev: React.PointerEvent): Pt | null => {
+  /** Case du MEUBLE réellement dessinée sous le pixel, à la couche `z` : la MÊME inversion par LIFT
+   *  que `walkableAtScreen`, mais pour une case qu'un décor `prop` OCCUPE — donc justement celle que
+   *  la marchabilité écarte (l'empreinte d'un meuble solide n'est pas marchable). Sans elle, le pixel
+   *  d'un plateau FIN que le rayon ne touche pas retombait sur la boucle CROSS-COUCHE de
+   *  `tileFromEvent`, qui rendait une case d'un AUTRE ÉTAGE : mesuré sur `la-diligence`, le clic de la
+   *  table murale (13,10) résolvait (16,13,z1) et envoyait le groupe à l'autre bout de la salle. */
+  const propAtScreen = (gx: number, gy: number, z: number): Pt | null => {
+    if (!scene) return null;
+    for (const lift of sceneLifts(scene)) {
+      const { x, y } = screenToTileAtLift(pose, { x: gx, y: gy }, lift);
+      if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
+      if (metricToLift(heightAt(scene, x, y, z)) !== lift) continue; // cette case n'est pas dessinée à ce lift
+      // PREMIÈRE case dessinée sous le pixel (lift le plus haut) : c'est celle qu'on VOIT, et elle
+      // décide seule — porte-t-elle un meuble ou non. Continuer à sonder les lifts plus bas
+      // rendrait un meuble d'AILLEURS, la maladie même qu'on soigne.
+      return scene.entities.some((e) => e.kind === 'prop' && e.pos.x === x && e.pos.y === y && (e.z ?? 0) === z)
+        ? (z ? { x, y, z } : { x, y })
+        : null;
+    }
+    return null;
+  };
+
+  /** Point de PROJECTION du stage sous le pixel : le pixel de l'élément remonte la chaîne d'affichage
+   *  à l'envers par les DEUX étages de `stageCam` (recouvrement `slice`, puis caméra du groupe), et
+   *  retombe dans le repère où `tileCenter`/`worldToScreen` dessinent. Entrée COMMUNE de la résolution
+   *  de tuile (`tileFromEvent`) et de celle de meuble (`propAtScreen`). */
+  const stagePointOf = (ev: React.PointerEvent): { x: number; y: number } | null => {
     const vb = clientToSvg(ev);
     if (!vb || !scene) return null;
-    const { x: gx, y: gy } = stagePointAt(vb, camRef.current!, zoom);
+    return stagePointAt(vb, camRef.current!, zoom);
+  };
+
+  // Écran → tuile.
+  const tileFromEvent = (ev: React.PointerEvent): Pt | null => {
+    const p = stagePointOf(ev);
+    if (!p || !scene) return null;
+    const { x: gx, y: gy } = p;
     if (useGame.getState().mode === 'exploration') {
       const step = stepFromScreen(gx, gy);
       if (step) return step;
@@ -212,6 +242,15 @@ export function useStagePointer({
       const c = st.battle.combatants.find((x) => x.id === visé.id);
       if (c?.pos) return c.pos.z ? { x: c.pos.x, y: c.pos.y, z: c.pos.z } : { x: c.pos.x, y: c.pos.y };
     }
+    // LA CASE D'UN MEUBLE LUI APPARTIENT : hors combat, si la case DESSINÉE sous le pixel porte un
+    // décor `prop`, c'est LUI qu'on vise — avant le rayon. Deux silences mesurés sur `la-diligence`
+    // s'y referment d'un coup : le plateau FIN que le rayon rate (aucune face sous le pixel), et le
+    // meuble VOISIN plus proche de la caméra que le rayon nomme à la place (le comptoir devant la
+    // table (10,23)) — une occultation ne prend pas à un meuble la case qu'il occupe. Le rayon garde
+    // tout le reste : au-dessus d'une case de SOL, c'est lui qui dit quel corps s'y dessine.
+    const p = st.mode !== 'battle' ? stagePointOf(ev) : null;
+    const meuble = p ? propAtScreen(p.x, p.y, activeZ) : null;
+    if (meuble) return meuble;
     // DÉCOR VOLUMIQUE : c'est le MEUBLE qui est dessiné sous le pixel, pas la tuile derrière lui — on
     // cible sa case d'ancrage, d'où l'interaction d'exploration le reprend comme n'importe quel décor.
     if (visé?.kind === 'entity') {
@@ -376,7 +415,7 @@ export function useStagePointer({
       // MÊME `pendingInteract` que la fouille se consomme à l'arrivée.
       if (plan && exploreSeatPlan(sc, st.partyPos, ent.id, pathOpts())) {
         setHover(null);
-        st.setPendingInteract(ent.id);
+        st.setPendingInteract({ id: ent.id, at: plan.dest });
         moveAlong(sc.id, plan);
         return;
       }
@@ -399,7 +438,7 @@ export function useStagePointer({
       } else if (plan) {
         // Déplacement-puis-fouille (P5) : marche vers la case adjacente libre, puis fouille à l'arrivée.
         setHover(null);
-        st.setPendingInteract(ent.id);
+        st.setPendingInteract({ id: ent.id, at: plan.dest });
         moveAlong(sc.id, plan);
       }
       return;
