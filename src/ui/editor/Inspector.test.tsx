@@ -506,20 +506,20 @@ describe('Inspector — places assises d’un décor', () => {
   it('expose les places de la ref et écrit l’occupant par id', () => {
     const { container, sceneOf } = mountTable();
     expect(container.textContent).toContain('4 places');
-    const place = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('Place nord'));
+    const place = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('place-nord'));
     const select = place?.querySelector('select') as HTMLSelectElement;
     expect(select).toBeTruthy();
     act(() => {
       select.value = 'entity:pnj-aubergiste';
       select.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    expect(sceneOf().seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } });
+    expect(sceneOf().seatAssignments).toEqual({ 'table-1': { 'place-nord': { kind: 'entity', entityId: 'pnj-aubergiste' } } });
     expect(sceneOf().entities.find((e) => e.id === 'pnj-aubergiste')?.pos).toEqual({ x: 2, y: 1 });
   });
 
   it('changer la ref du décor élague l’assise dans la même mutation', () => {
     const { container, sceneOf } = mountTable();
-    const place = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('Place nord'));
+    const place = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('place-nord'));
     const select = place!.querySelector('select') as HTMLSelectElement;
     act(() => {
       select.value = 'entity:pnj-aubergiste';

@@ -703,7 +703,7 @@ describe('éditeur — les places assises suivent le geste, atomiquement', () =>
       { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
       { id: 'pnj-aubergiste', kind: 'personnage', pos: { x: 2, y: 1 }, label: 'Aubergiste' },
     ];
-    s.seatAssignments = { 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } };
+    s.seatAssignments = { 'table-1': { 'place-nord': { kind: 'entity', entityId: 'pnj-aubergiste' } } };
     return s;
   }
 
@@ -728,12 +728,12 @@ describe('éditeur — les places assises suivent le geste, atomiquement', () =>
 
   it('reposer le PNJ sur l’abord de SA place le laisse assis', () => {
     const moved = moveSel(attablee(), { type: 'entity', id: 'pnj-aubergiste' }, { x: 2, y: 1 });
-    expect(moved.seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } });
+    expect(moved.seatAssignments).toEqual({ 'table-1': { 'place-nord': { kind: 'entity', entityId: 'pnj-aubergiste' } } });
   });
 
   it('déplacer le MEUBLE emporte les corps attablés sur les nouveaux abords', () => {
     const moved = moveSel(attablee(), { type: 'entity', id: 'table-1' }, { x: 5, y: 5 });
-    expect(moved.seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } });
+    expect(moved.seatAssignments).toEqual({ 'table-1': { 'place-nord': { kind: 'entity', entityId: 'pnj-aubergiste' } } });
     expect(moved.entities.find((e) => e.id === 'pnj-aubergiste')?.pos).toEqual({ x: 5, y: 4 });
     expect(validateScene([moved]).filter((w) => w.level === 'error')).toEqual([]);
   });
