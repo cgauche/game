@@ -22,7 +22,7 @@ import { metricToLift } from '../../state/relief';
 import { memoByRef } from '../../state/sceneMemo';
 import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
 import { exploreMovePlan, exploreSeatPlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
-import { memeCase, seatPoseOf, seatSlotsOf } from '../../state/seating';
+import { memeCase, RANG_MENEUR, seatPoseOf, seatSlotsOf } from '../../state/seating';
 // `t` est déjà le nom local de la TUILE survolée dans ce module : la traduction s'y importe sous son
 // rôle, sans rebaptiser trente sites de pointeur.
 import { t as message } from '../../i18n';
@@ -363,7 +363,7 @@ export function useStagePointer({
     // n'INTERCEPTE rien : sans place servable elle repasse la main à la chaîne fouille/marchand/dialogue.
     if (ent && ent.kind === 'prop' && seatSlotsOf(sc, ent.id).length) {
       const meneur = st.party[0]?.id;
-      const assisIci = !!meneur && seatPoseOf(sc, { kind: 'party', heroId: meneur })?.propId === ent.id;
+      const assisIci = !!meneur && seatPoseOf(sc, { kind: 'party', rang: RANG_MENEUR })?.propId === ent.id;
       const surAbord = seatSlotsOf(sc, ent.id).some((s) => memeCase(s.approach, st.partyPos));
       if (assisIci || surAbord) {
         // Sur place : le store arbitre entre se relever, servir la fouille/le marchand, et s'asseoir.

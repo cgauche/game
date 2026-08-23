@@ -150,7 +150,7 @@ describe('sceneInstance — câblage store, REVISIT (#707)', () => {
     b.entities.push({ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'N' });
     b.entities.push({ id: 'attable', kind: 'personnage', pos: { x: 2, y: 2 } }); // abord NORD
     b.seatAssignments = {
-      'table-1': { nord: { kind: 'entity', entityId: 'attable' }, sud: { kind: 'party', heroId: 'heros-jamais-recrute' } },
+      'table-1': { nord: { kind: 'entity', entityId: 'attable' }, sud: { kind: 'party', rang: 4 } },
     };
     useGame.getState().loadProject([a, b], 'scene-t1', undefined);
     useGame.getState().transitionTo('scene-t2');
@@ -201,7 +201,7 @@ describe('sceneInstance — câblage store, REVISIT (#707)', () => {
       data.scene.seatAssignments = {
         'table-1': { nord: { kind: 'entity', entityId: 'attable' }, plafond: { kind: 'entity', entityId: 'attable' } },
         'meuble-disparu': { nord: { kind: 'entity', entityId: 'attable' } },
-        'table-2': { nord: { kind: 'party', heroId: 'heros-fantome' } },
+        'table-2': { nord: { kind: 'party', rang: 4 } },
       };
       saveToSlot(1, brut);
 

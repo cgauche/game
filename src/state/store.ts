@@ -56,7 +56,7 @@ import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlo
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
 import { captureMutation, applyMutation as applySceneMutation, type SceneMutation } from './sceneInstance';
-import { assignSeat, memeCase, pruneSeatAssignments, releaseSeat, seatPoseOf, seatSlotsOf, type SeatPose } from './seating';
+import { assignSeat, memeCase, pruneSeatAssignments, RANG_MENEUR, releaseSeat, seatPoseOf, seatSlotsOf, type SeatPose } from './seating';
 import type { ClueState } from './clues';
 import { togglePin } from './clues';
 import type { CodexFocus } from './codexFocus';
@@ -84,7 +84,7 @@ function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): 
   // état, par la même source unique que la superposition de mutation.
   const chargee = data.scene as Scene | null | undefined;
   const scene = chargee
-    ? { ...chargee, seatAssignments: pruneSeatAssignments(chargee, new Set((data.party ?? []).map((h) => h.id))) }
+    ? { ...chargee, seatAssignments: pruneSeatAssignments(chargee, (data.party ?? []).length) }
     : chargee;
   set({ ...base, ...data, ...(chargee ? { scene } : {}), screen: 'campaign', camEdge: false, net: useGame.getState().net });
   // Paquet de campagne snapshotté (#766) : RÉ-ENREGISTRE toutes ses scènes (le `sceneRegistry` en mémoire
@@ -2053,7 +2053,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Le GROUPE quitte la scène : plus personne du groupe n'y tient de place (une scène quittée ne
     // garde pas un héros absent). Libéré AVANT la capture, sinon l'instance persistée rappellerait le
     // meneur à sa chaise au revisit — et l'assise des PNJ authorés, elle, s'y capture normalement.
-    const leaving = partyFlow.releaseHeroSeats(get().scene, get().party.map((h) => h.id));
+    const leaving = partyFlow.releaseHeroSeats(get().scene);
     const sceneInstances = { ...get().sceneInstances };
     if (leaving) {
       const leavingAuthored = sceneRegistry[leaving.id];
@@ -2062,8 +2062,9 @@ export const useGame = create<GameState>((set, get) => ({
       else delete sceneInstances[leaving.id];
     }
     // Le groupe est passé : l'assise superposée est élaguée au moment même où la scène entre en état
-    // (meuble retiré par la mutation, slot disparu du catalogue, héros qui n'est plus du groupe).
-    const scene = applySceneMutation(JSON.parse(JSON.stringify(target)), sceneInstances[target.id], new Set(get().party.map((h) => h.id)));
+    // (meuble retiré par la mutation, slot disparu du catalogue, emplacement de héros que le groupe
+    // courant n'atteint pas).
+    const scene = applySceneMutation(JSON.parse(JSON.stringify(target)), sceneInstances[target.id], get().party.length);
     set((s) => ({
       scene,
       sceneInstances,
@@ -2105,8 +2106,7 @@ export const useGame = create<GameState>((set, get) => ({
     // MARCHER, C'EST SE LEVER : le meneur assis qui fait un pas quitte sa place. Libéré AVANT
     // l'écriture de `partyPos`, dans la MÊME écriture — aucun état intermédiaire ne le montre assis
     // à une place dont il s'est déjà éloigné. Scène sans assise → aucun delta (même référence).
-    const lead0 = get().party[0]?.id;
-    const debout = lead0 ? releaseSeat(scene, { kind: 'party', heroId: lead0 }) : scene;
+    const debout = get().party.length ? releaseSeat(scene, { kind: 'party', rang: RANG_MENEUR }) : scene;
     set(debout === scene ? { partyPos: pt } : { partyPos: pt, scene: debout });
     const leadId = get().party[0]?.id;
     if (leadId) get().faceFromPath(leadId, [from, pt]);
@@ -2251,9 +2251,11 @@ export const useGame = create<GameState>((set, get) => ({
     // On loote la table, PUIS on s'y attable : aucune des deux affordances n'est inatteignable.
     // La portée d'une place ne se mesure pas au meuble mais à son ABORD (`slot.approach`, seule
     // couture `state/seating`), qui peut tomber hors du voisinage de la case d'ancrage.
+    // Le MENEUR est l'emplacement 1 du groupe ; son id ne sert qu'à re-vérifier, à l'écriture, que
+    // le meneur n'a pas changé entre le clic et le commit (coop).
     const leaderId = get().party[0]?.id;
     const places = ent.kind === 'prop' ? seatSlotsOf(scene, entityId) : [];
-    const occupant = leaderId ? ({ kind: 'party', heroId: leaderId } as const) : null;
+    const occupant = leaderId ? ({ kind: 'party', rang: RANG_MENEUR } as const) : null;
     if (places.length && occupant && seatPoseOf(scene, occupant)?.propId === entityId) {
       set({ scene: releaseSeat(scene, occupant) });
       get().log(t('seating.stood'));
@@ -2294,7 +2296,7 @@ export const useGame = create<GameState>((set, get) => ({
           if (!s.scene || s.party[0]?.id !== leaderId) return {};
           const place = seatSlotsOf(s.scene, entityId).find((p) => p.slotId === cible.slotId);
           if (!place || !memeCase(s.partyPos, place.approach)) return {};
-          const res = assignSeat(s.scene, entityId, place.slotId, occupant, new Set(s.party.map((h) => h.id)));
+          const res = assignSeat(s.scene, entityId, place.slotId, occupant, s.party.length);
           if (!res.ok) return {};
           gagnee.pose = res.pose;
           return { scene: res.scene };

@@ -56,9 +56,51 @@ function exportedBodies(rel: string): Map<string, string> {
   return out;
 }
 
-/** Écrit-elle une entité EXISTANTE ? (réécriture/filtre d'`entities`, ou patch d'entité) */
-const muteUneEntite = (body: string) =>
-  /entities:\s*\w+\.entities\.(map|filter)\(/.test(body) || /\bpatchEntity(Combat)?\(/.test(body);
+/** Verbes qui DÉRIVENT une nouvelle liste d’entités : la valeur posée sur `entities:` en porte un
+ *  → c’est une réécriture de la collection, pas un ajout. Un `filter` glissé dans un spread
+ *  (`entities: [...s.entities.filter(...)]`) est un RETRAIT, pas un ajout : le premier caractère de
+ *  la valeur ne dit RIEN, seul le contenu compte. */
+const VERBES_DE_LISTE = /\.entities\s*(?:\n\s*)?\.\s*(?:map|filter|slice|sort|splice|reduce|concat|flatMap|toSorted|toSpliced|with)\s*\(/;
+
+/**
+ * Écrit-on `entities` en DIRECT dans ce texte de module ? Rend les motifs fautifs, vides sinon.
+ *
+ * Quatre pièges MESURÉS, tous fermés ici :
+ *  - le scan PAR LIGNE laissait passer la forme en DEUX temps (`const suivantes = scene.entities
+ *    .map(…)` puis `entities: suivantes`) — l’analyse porte donc sur le texte ENTIER ;
+ *  - `scene.entities.map(…)` est aussi la lecture LICITE d’une liste à afficher : seule la valeur
+ *    posée SUR la clé `entities:` d’un littéral compte, directement ou par sa variable ;
+ *  - le CHAÎNAGE peut passer à la ligne (`entities: scene.entities` puis `.map(…)` en dessous) :
+ *    la valeur se lit donc jusqu’à la fin du littéral, sauts de ligne compris ;
+ *  - `map`/`filter` ne sont pas les seuls verbes destructeurs : `slice`/`sort`/`splice`/`reduce`
+ *    et leurs cousins réécrivent aussi la collection.
+ *
+ * Un AJOUT pur (`entities: [...scene.entities, ent]`) reste licite : il n’invalide aucune assise.
+ * L’exemption teste l’ABSENCE de verbe de liste dans la valeur, jamais son premier caractère —
+ * `entities: [...s.entities.filter((e) => e.id !== id)]` est un RETRAIT déguisé en ajout.
+ */
+function ecrituresDirectes(texte: string): string[] {
+  const src = sansCommentaires(texte);
+  const fautifs: string[] = [];
+  for (const m of src.matchAll(/\bpatchEntity(?:Combat)?\(/g)) fautifs.push(m[0]);
+  for (const m of src.matchAll(/(?<![.\w$])entities\s*:([\s\S]*?)(?:,\s*\n|;|\n\s*\}\)?)/g)) {
+    const valeur = m[1];
+    const apercu = valeur.trim().split("\n")[0].slice(0, 90);
+    if (VERBES_DE_LISTE.test(valeur)) { fautifs.push(`entities:${apercu}`); continue; }
+    // La valeur peut traîner la ponctuation fermante du littéral (`suivantes });`) : on ne garde
+    // que l'identifiant, puis on va lire CE QUI L'A REMPLI.
+    const via = /^\s*(\w+)\s*[)}\];,]*\s*$/.exec(valeur.split('\n')[0]);
+    if (!via) continue;
+    const decl = new RegExp(`(?:const|let|var)\\s+${via[1]}\\s*(?::[^=]+)?=([\\s\\S]*?);`);
+    const assignee = decl.exec(src);
+    if (assignee && VERBES_DE_LISTE.test(assignee[1])) fautifs.push(`entities:${apercu}  (via ${via[1]})`);
+  }
+  return fautifs;
+}
+
+/** Écrit-elle une entité EXISTANTE ? MÊME analyseur que le balayage d’interface : une seule
+ *  définition de « écrire `entities` », donc un seul endroit où la règle N+1 s’ajoute. */
+const muteUneEntite = (body: string) => ecrituresDirectes(body).length > 0;
 
 /** Traverse-t-elle le seam ? Directement, ou par une primitive qui le fait (fermeture transitive). */
 function traverseLeSeam(bodies: Map<string, string>, nom: string, vus = new Set<string>()): boolean {
@@ -103,7 +145,10 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
       vus.set(rel, [...exportedBodies(rel)].filter(([, body]) => muteUneEntite(body)).map(([nom]) => nom));
     for (const attendu of ['patchEntity', 'patchEntityCombat', 'editEntity', 'editEntityCombat', 'moveEntityTo', 'removeEntity'])
       expect(vus.get('src/state/sceneEdit.ts'), `${attendu} devrait être vu comme écrivain d’entité`).toContain(attendu);
-    expect(vus.get('src/ui/editor/editorState.ts')).toContain('deleteSel');
+    // `deleteSel` ne figure PAS ici : il délègue à `removeEntity` et n'écrit plus `entities`
+    // lui-même — c'est le résultat recherché, pas un angle mort (le balayage structurel le suit
+    // par fermeture d'appels).
+    expect(vus.get('src/ui/editor/editorState.ts')).toEqual([]);
   });
 
   it('le cliquet ne porte aucune entrée PÉRIMÉE (primitive disparue ou rentrée dans le rang)', () => {
@@ -115,42 +160,11 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
     }
   });
 
-  /**
-   * Écrit-on `entities` en DIRECT dans ce texte de module ? Rend les motifs fautifs, vides sinon.
-   *
-   * Trois pièges mesurés, tous fermés ici :
-   *  - le scan PAR LIGNE laissait passer la forme en DEUX temps (`const suivantes = scene.entities
-   *    .map(…)` puis `entities: suivantes`) — l'analyse porte donc sur le texte ENTIER ;
-   *  - `scene.entities.map(…)` est aussi la lecture LICITE d'une liste à afficher : seule la
-   *    valeur posée SUR la clé `entities:` d'un littéral compte, directement ou par sa variable ;
-   *  - un ajout (`entities: […scene.entities, ent]`) ne peut invalider aucune assise : il passe.
-   */
-  function ecrituresDirectes(texte: string): string[] {
-    const src = sansCommentaires(texte);
-    const fautifs: string[] = [];
-    for (const m of src.matchAll(/\bpatchEntity(?:Combat)?\(/g)) fautifs.push(m[0]);
-    for (const m of src.matchAll(/(?<![.\w$])entities\s*:\s*([^,;\n]+)/g)) {
-      const valeur = m[1].trim();
-      if (/^\[/.test(valeur)) continue; // ajout : jamais destructeur pour une assise
-      if (/\.entities\s*\.\s*(map|filter)\s*\(/.test(valeur)) { fautifs.push(m[0].trim()); continue; }
-      const via = /^(\w+)/.exec(valeur);
-      if (via && new RegExp(`(?:const|let|var)\\s+${via[1]}\\s*(?::[^=]+)?=[^;\\n]*\\.entities\\s*\\.\\s*(?:map|filter)\\s*\\(`).test(src))
-        fautifs.push(`${m[0].trim()}  (via ${via[1]})`);
-    }
-    return fautifs;
-  }
-
-  /**
-   * CLIQUET NOMMÉ du balayage d'interface. `editorState.ts` EST le module de primitives d'édition de
-   * `src/ui` : ses écritures d'`entities` sont couvertes par le balayage structurel ci-dessus, qui
-   * exige d'elles la traversée du seam. Aucun autre fichier de `src/ui/**` n'a le droit d'écrire.
-   */
-  const UI_PRIMITIVES = ['src/ui/editor/editorState.ts'];
-
   it('aucun fichier de `src/ui/**` n’écrit `entities` en direct', () => {
     // Le défaut I1 était exactement là : un `onChange` de composant réécrivait `scene.entities` sans
-    // passer par une primitive. Le balayage couvre `.ts` ET `.tsx` : un module utilitaire de
-    // `src/ui/**` n'est pas moins une porte qu'un composant.
+    // passer par une primitive. AUCUNE exemption ici : `editorState.ts` lui-même ne pose plus que des
+    // AJOUTS (`placeEntity`), ses retraits passent par `removeEntity`. Le balayage couvre `.ts` ET
+    // `.tsx` : un module utilitaire de `src/ui/**` n'est pas moins une porte qu'un composant.
     const fautifs: string[] = [];
     const walk = (dir: string) => {
       for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -158,7 +172,6 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
         if (e.isDirectory()) { walk(p); continue; }
         if (!/\.tsx?$/.test(e.name) || /\.test\.tsx?$/.test(e.name)) continue;
         const rel = path.relative(ROOT, p).replace(/\\/g, '/');
-        if (UI_PRIMITIVES.includes(rel)) continue;
         for (const motif of ecrituresDirectes(fs.readFileSync(p, 'utf8'))) fautifs.push(`${rel} :: ${motif}`);
       }
     };
@@ -166,26 +179,21 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
     expect(fautifs, `écriture d’entité en direct depuis l’interface :\n${fautifs.join('\n')}`).toEqual([]);
   });
 
-  it('le cliquet d’interface ne porte aucune entrée PÉRIMÉE', () => {
-    for (const rel of UI_PRIMITIVES) {
-      expect(fs.existsSync(path.join(ROOT, rel)), `${rel} n’existe plus`).toBe(true);
-      expect(
-        ecrituresDirectes(fs.readFileSync(path.join(ROOT, rel), 'utf8')).length,
-        `${rel} n’écrit plus d’entité — retire-le de UI_PRIMITIVES`,
-      ).toBeGreaterThan(0);
-    }
-  });
-
-  it('le balayage d’interface voit les TROIS formes du défaut, et laisse passer la lecture', () => {
-    // (a) une ligne, (b) deux lignes par variable, (c) l'écriture mécanique.
-    expect(ecrituresDirectes('setScene({ ...s, entities: s.entities.map((e) => e) });')).toHaveLength(1);
-    expect(ecrituresDirectes('const suivantes = scene.entities.map((e) => e);\nsetScene({ ...s, entities: suivantes });')).toHaveLength(1);
-    expect(ecrituresDirectes('setScene(patchEntity(s, id, patch));')).toHaveLength(1);
-    // Lecture d'une liste à afficher, et ajout : licites.
-    expect(ecrituresDirectes('const pnjs = scene.entities.filter((e) => e.kind === 1);')).toEqual([]);
-    expect(ecrituresDirectes('return { ...scene, entities: [...scene.entities, ent] };')).toEqual([]);
-    // Un motif CITÉ en commentaire n'est pas une écriture.
-    expect(ecrituresDirectes('// jamais entities: scene.entities.map((e) => e) ici')).toEqual([]);
+  it('l’analyseur voit les CINQ formes du défaut, et laisse passer les trois licites', () => {
+    // H1..H5 — sondes adversariales : chacune a déjà PASSÉ une version précédente de cette garde.
+    const H = [
+      ['H1 retrait déguisé en ajout', 'const vire = (s, id) => ({ ...s, entities: [...s.entities.filter((e) => e.id !== id)] });'],
+      ['H2 chaînage multi-ligne', 'const t = (scene) => ({ ...scene, entities: scene.entities\n  .map((e) => ({ ...e })) });'],
+      ['H3 verbe slice/sort', 'const tri = (s) => ({ ...s, entities: s.entities.slice().sort((a, b) => a.id < b.id ? -1 : 1) });'],
+      ['H4 map en UNE ligne', 'setScene({ ...s, entities: s.entities.map((e) => e) });'],
+      ['H5 via une VARIABLE', 'const suivantes = scene.entities.map((e) => e);\nsetScene({ ...s, entities: suivantes });'],
+    ] as const;
+    for (const [nom, code] of H) expect(ecrituresDirectes(code).length, nom).toBeGreaterThan(0);
+    expect(ecrituresDirectes('setScene(patchEntity(s, id, patch));').length, 'écriture mécanique').toBeGreaterThan(0);
+    // NEG-A/B/C — les formes LICITES : lire pour afficher, ajouter, citer en commentaire.
+    expect(ecrituresDirectes('const pnjs = scene.entities.filter((e) => e.kind === 1);'), 'NEG-A lecture').toEqual([]);
+    expect(ecrituresDirectes('return { ...scene, entities: [...scene.entities, ent] };'), 'NEG-B ajout').toEqual([]);
+    expect(ecrituresDirectes('// jamais entities: scene.entities.map((e) => e) ici'), 'NEG-C commentaire').toEqual([]);
   });
 
   /**
@@ -208,7 +216,7 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
       s.seatAssignments = { 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } };
       return s;
     }
-    const AUCUN_HEROS: ReadonlySet<string> = new Set();
+    const HORS_PARTIE = 0; // l'éditeur n'a pas de groupe : les emplacements ne tiennent personne
     const erreurs = (s: Scene) => validateScene([s]).filter((w) => w.level === 'error').map((w) => w.message);
 
     const GESTES: Record<string, (s: Scene) => Scene> = {
@@ -227,7 +235,7 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
       'setPosteCrew — arme l’affût': (s) => setPosteCrew(s, 'affut-1', ['pnj-1']),
       'setPosteSide — pose l’arc de tir': (s) => setPosteSide(s, 'affut-1', 'babord'),
       'setPosteEngine — change l’engin': (s) => setPosteEngine(s, 'affut-1', 'canon-petit'),
-      'seatOccupant — rassoit le corps': (s) => seatOccupant(s, 'table-1', 'est', { kind: 'entity', entityId: 'pnj-1' }, AUCUN_HEROS).scene,
+      'seatOccupant — rassoit le corps': (s) => seatOccupant(s, 'table-1', 'est', { kind: 'entity', entityId: 'pnj-1' }, HORS_PARTIE).scene,
     };
 
     // Sans cela, un « 0 erreur » ne prouverait rien : la scène de départ doit déjà être valide.

@@ -11,7 +11,6 @@ import {
   gableSpanMaxTiles,
   localCrossSpans,
   maxCrossSpan,
-  documentHeroIds,
   editEntity,
   moveEntityTo,
   normaliseAssises,
@@ -20,6 +19,7 @@ import {
   ridgeAxisOf,
   seatOccupant,
 } from './sceneEdit';
+import { PARTY_MAX } from './combatants';
 import { validateScene } from './validateScene';
 import { perimeterWallSegs } from './sceneEdit.testkit';
 import { stairFlightCells } from './planDefects';
@@ -593,7 +593,7 @@ describe('addArchitectureBody — le corps naît BORNÉ à l’emprise du geste'
  * (`seatAssignmentDefects`, le même validateur que `validateScene` et `buildScene`).
  */
 describe('normaliseAssises / seatOccupant — le seam unique d’assise', () => {
-  const AUCUN_HEROS: ReadonlySet<string> = new Set();
+  const HORS_PARTIE = 0; // l'éditeur n'a pas de groupe : aucun emplacement n'est TENU
 
   /** Table ronde en (2,2) cap `N` → abords : nord (2,1), est (3,2), sud (2,3), ouest (1,2). */
   function attablee(seatAssignments?: Scene['seatAssignments']): Scene {
@@ -618,7 +618,7 @@ describe('normaliseAssises / seatOccupant — le seam unique d’assise', () => 
   }
 
   it('assoit un PNJ et pose sa `pos` sur l’abord, en une écriture', () => {
-    const res = seatOccupant(attablee(), 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' }, AUCUN_HEROS);
+    const res = seatOccupant(attablee(), 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' }, HORS_PARTIE);
     expect(res.ok).toBe(true);
     expect(res.scene.seatAssignments).toEqual(NORD);
     expect(res.scene.entities.find((e) => e.id === 'pnj-1')?.pos).toEqual({ x: 2, y: 1 });
@@ -626,41 +626,49 @@ describe('normaliseAssises / seatOccupant — le seam unique d’assise', () => 
   });
 
   it('refuse par une RAISON stable, sans rien écrire', () => {
-    const res = seatOccupant(attablee(), 'table-1', 'plafond', { kind: 'entity', entityId: 'pnj-1' }, AUCUN_HEROS);
+    const res = seatOccupant(attablee(), 'table-1', 'plafond', { kind: 'entity', entityId: 'pnj-1' }, HORS_PARTIE);
     expect(res).toMatchObject({ ok: false, reason: 'slot-absent' });
     expect(res.scene.seatAssignments).toBeUndefined();
   });
 
-  it('un HÉROS que l’appelant ne déclare pas n’est pas assis', () => {
-    expect(seatOccupant(attablee(), 'table-1', 'nord', { kind: 'party', heroId: 'h1' }, AUCUN_HEROS)).toMatchObject({
+  it('un EMPLACEMENT que le groupe courant n’atteint pas n’est pas assis', () => {
+    expect(seatOccupant(attablee(), 'table-1', 'nord', { kind: 'party', rang: 2 }, 1)).toMatchObject({
       ok: false,
       reason: 'occupant-absent',
     });
   });
 
-  it('un héros que l’APPELANT déclare s’assoit — et `documentHeroIds` le retrouve ensuite', () => {
-    const res = seatOccupant(attablee(), 'table-1', 'nord', { kind: 'party', heroId: 'h1' }, new Set(['h1']));
+  it('un emplacement DANS le groupe s’assoit — le rang est ce qui est écrit, jamais un id', () => {
+    const res = seatOccupant(attablee(), 'table-1', 'nord', { kind: 'party', rang: 2 }, 2);
     expect(res.ok).toBe(true);
-    expect([...documentHeroIds(res.scene)]).toEqual(['h1']);
+    expect(res.scene.seatAssignments).toEqual({ 'table-1': { nord: { kind: 'party', rang: 2 } } });
+  });
+
+  it('un rang HORS BORNE du groupe canonique est refusé quel que soit le groupe', () => {
+    expect(seatOccupant(attablee(), 'table-1', 'nord', { kind: 'party', rang: PARTY_MAX + 1 }, 99)).toMatchObject({
+      ok: false,
+      reason: 'occupant-absent',
+    });
   });
 
   it('normaliseAssises retire la place dont le meuble n’offre plus le slot', () => {
     const s = attablee({ 'table-1': { plafond: { kind: 'entity', entityId: 'pnj-1' } } });
-    expect(normaliseAssises(s, AUCUN_HEROS).seatAssignments).toEqual({});
+    expect(normaliseAssises(s, HORS_PARTIE).seatAssignments).toEqual({});
   });
 
-  it('normaliseAssises garde un héros que l’appelant déclare', () => {
-    const s = attablee({ 'table-1': { nord: { kind: 'party', heroId: 'h1' } } });
-    expect(normaliseAssises(s, new Set(['h1'])).seatAssignments).toEqual({ 'table-1': { nord: { kind: 'party', heroId: 'h1' } } });
+  it('normaliseAssises garde l’emplacement que le groupe fourni atteint', () => {
+    const s = attablee({ 'table-1': { nord: { kind: 'party', rang: 1 } } });
+    expect(normaliseAssises(s, 1).seatAssignments).toEqual({ 'table-1': { nord: { kind: 'party', rang: 1 } } });
+    expect(normaliseAssises(s, 0).seatAssignments).toEqual({});
   });
 
   it('normaliseAssises ne fabrique aucun champ sur une scène sans assise', () => {
-    expect(normaliseAssises(attablee(), AUCUN_HEROS).seatAssignments).toBeUndefined();
+    expect(normaliseAssises(attablee(), HORS_PARTIE).seatAssignments).toBeUndefined();
   });
 
   // ── C2 (sonde B du juge, promue) ────────────────────────────────────────────────────────────────
   it('un meuble poussé dans un recoin muré LÈVE la place — jamais un corps posé dans un mur', () => {
-    const assis = seatOccupant(attablee(), 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' }, AUCUN_HEROS);
+    const assis = seatOccupant(attablee(), 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' }, HORS_PARTIE);
     const cerne = murerSauf(assis.scene, [[9, 9]]);
     const pousse = moveEntityTo(cerne, 'table-1', { x: 9, y: 9 });
     expect(pousse.seatAssignments).toEqual({});
@@ -671,8 +679,8 @@ describe('normaliseAssises / seatOccupant — le seam unique d’assise', () => 
   it('deux corps attablés ne se retrouvent JAMAIS sur la même case', () => {
     let s = attablee();
     s.entities.push({ id: 'pnj-2', kind: 'personnage', pos: { x: 7, y: 7 } });
-    s = seatOccupant(s, 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' }, AUCUN_HEROS).scene;
-    s = seatOccupant(s, 'table-1', 'est', { kind: 'entity', entityId: 'pnj-2' }, AUCUN_HEROS).scene;
+    s = seatOccupant(s, 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' }, HORS_PARTIE).scene;
+    s = seatOccupant(s, 'table-1', 'est', { kind: 'entity', entityId: 'pnj-2' }, HORS_PARTIE).scene;
     const deplacee = moveEntityTo(s, 'table-1', { x: 5, y: 5 });
     const cases = deplacee.entities.filter((e) => e.kind === 'personnage').map((e) => `${e.pos.x},${e.pos.y}`);
     expect(new Set(cases).size).toBe(cases.length);
@@ -681,7 +689,7 @@ describe('normaliseAssises / seatOccupant — le seam unique d’assise', () => 
 
   // ── I1 (sonde S5 du juge, promue) ───────────────────────────────────────────────────────────────
   it('TOURNER un meuble attablé recale le corps dans la même mutation', () => {
-    const assis = seatOccupant(attablee(), 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' }, AUCUN_HEROS).scene;
+    const assis = seatOccupant(attablee(), 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' }, HORS_PARTIE).scene;
     const tournee = editEntity(assis, 'table-1', { facing: 'E' });
     expect(erreurs(tournee)).toEqual([]);
     expect(tournee.entities.find((e) => e.id === 'pnj-1')?.pos).not.toEqual({ x: 2, y: 1 });
@@ -690,7 +698,7 @@ describe('normaliseAssises / seatOccupant — le seam unique d’assise', () => 
   it('MONTER un meuble attablé sur un étage VIDE lève la place plutôt que d’inventer un abord', () => {
     const s = attablee();
     s.layers = [...s.layers, { z: 1, tiles: new Array(100).fill('vide') }];
-    const assis = seatOccupant(s, 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' }, AUCUN_HEROS).scene;
+    const assis = seatOccupant(s, 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' }, HORS_PARTIE).scene;
     const monte = editEntity(assis, 'table-1', { z: 1 });
     expect(monte.seatAssignments).toEqual({});
     expect(erreurs(monte)).toEqual([]);

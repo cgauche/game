@@ -12,7 +12,7 @@ import type { BattleState } from '../../state/store';
 import { combatantAtTile } from '../../state/combatGeometry';
 import { isPassengerInBattle } from '../../state/shipPostes';
 import { isRider, isMount, riderOf } from '../../state/mount';
-import { seatPoseOf, type SeatPose } from '../../state/seating';
+import { RANG_MENEUR, seatPoseOf, type SeatPose } from '../../state/seating';
 import type { Combatant } from '../../engine/types';
 import { isStructure } from '../../engine/structures';
 import { isOverhang } from './floors';
@@ -33,7 +33,7 @@ export function partyTokenOf(
   partyPos: { x: number; y: number; z?: number },
 ): { leader: Combatant; pos: { x: number; y: number; z?: number }; seat?: SeatPose } | null {
   if (!leader) return null;
-  const seat = seatPoseOf(scene, { kind: 'party', heroId: leader.id });
+  const seat = seatPoseOf(scene, { kind: 'party', rang: RANG_MENEUR });
   if (!seat) return { leader, pos: partyPos };
   return { leader, pos: { x: seat.anchor.x, y: seat.anchor.y, ...(partyPos.z ? { z: partyPos.z } : {}) }, seat };
 }

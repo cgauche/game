@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { useGame, type GameState } from './store';
 import { emptyScene, type Scene } from './scene';
-import { seatPoseOf, type SeatOccupant } from './seating';
+import { assignSeat, seatPoseOf, type SeatOccupant } from './seating';
 import { intentAllowedFor, ROUTES } from './netOwnership';
 import { GUEST_INTENTS } from '../net/intents';
 import { netSnapshot, applyNetSnapshot } from './netFlow';
@@ -70,24 +70,39 @@ describe('un seul gagnant sur la DERNIÈRE place', () => {
     derniereePlaceLibre();
     const perimee = useGame.getState().scene!;
     useGame.getState().interactEntity(PROP);
-    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', heroId: 'h1' })).toMatchObject({ slotId: 'nord' });
+    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 })).toMatchObject({ slotId: 'nord' });
 
     useGame.setState({ scene: perimee }); // snapshot périmé remis en place (rattrapage réseau)
     useGame.getState().interactEntity(PROP);
     const sc = useGame.getState().scene!;
     expect(occupants(sc)).toHaveLength(4);                       // 3 PNJ + UN seul corps de groupe
     expect(occupants(sc).filter((o) => o.kind === 'party')).toHaveLength(1);
-    expect(sc.seatAssignments![PROP].nord).toEqual({ kind: 'party', heroId: 'h1' });
+    expect(sc.seatAssignments![PROP].nord).toEqual({ kind: 'party', rang: 1 });
   });
 
-  it('un second héros du groupe ne peut pas s’y glisser : la place est prise', () => {
+  it('un second EMPLACEMENT ne peut pas s’y glisser : la place est prise', () => {
     derniereePlaceLibre();
     useGame.getState().interactEntity(PROP);
-    // Le siège invité pilote h2 ; même en le portant en tête de groupe, la place n'est plus libre.
-    useGame.setState((s) => ({ party: [s.party[1], s.party[0]] }));
+    // La place tenue l'est par un EMPLACEMENT (rang 1). Un autre emplacement du même groupe qui
+    // tenterait la même place est refusé par la transaction elle-même, sur l'état COURANT.
+    const sc = useGame.getState().scene!;
+    expect(assignSeat(sc, PROP, 'nord', { kind: 'party', rang: 2 }, useGame.getState().party.length))
+      .toMatchObject({ ok: false, reason: 'slot-occupe' });
+    expect(occupants(sc)).toHaveLength(4);
+  });
+
+  it('permuter l’ordre du groupe ne transmet pas la chaise à un autre corps — le RANG reste le rang', () => {
+    derniereePlaceLibre();
     useGame.getState().interactEntity(PROP);
-    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', heroId: 'h2' })).toBeNull();
-    expect(occupants(useGame.getState().scene!)).toHaveLength(4);
+    // Le siège invité pilote h2 ; le porter en tête ne crée AUCUNE seconde occupation de groupe.
+    useGame.setState((s) => ({ party: [s.party[1], s.party[0]] }));
+    const sc = useGame.getState().scene!;
+    expect(occupants(sc).filter((o) => o.kind === 'party')).toHaveLength(1);
+    expect(sc.seatAssignments![PROP].nord).toEqual({ kind: 'party', rang: 1 });
+    // …et le geste du meneur sur SA propre place le remet debout (il ne double pas l'occupation).
+    useGame.getState().interactEntity(PROP);
+    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 })).toBeNull();
+    expect(occupants(useGame.getState().scene!)).toHaveLength(3);
   });
 });
 
@@ -99,11 +114,11 @@ describe('parité hôte → invité', () => {
 
     // L'invité part d'un état DIVERGENT (personne d'assis) puis reçoit le snapshot.
     useGame.setState((s) => ({ scene: { ...s.scene!, seatAssignments: {} } }));
-    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', heroId: 'h1' })).toBeNull();
+    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 })).toBeNull();
 
     applyNetSnapshot(useGame.setState, snap);
     const sc = useGame.getState().scene!;
-    expect(seatPoseOf(sc, { kind: 'party', heroId: 'h1' })).toMatchObject({ propId: PROP, slotId: 'nord' });
+    expect(seatPoseOf(sc, { kind: 'party', rang: 1 })).toMatchObject({ propId: PROP, slotId: 'nord' });
     expect(occupants(sc)).toHaveLength(4);
   });
 });

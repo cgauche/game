@@ -42,6 +42,7 @@ import { spellCost } from '../engine/grimoire';
 import { levelsForCareer, findSkillById, findCareerById, findSpellById, findTrappingById, findTalentById, refLabel, dataLabel } from '../data/index';
 import { t } from '../i18n';
 import { seatSlotsRemaining } from './netOwnership';
+import { PARTY_MAX } from './combatants';
 import { releaseSeat } from './seating';
 import type { Scene } from './scene';
 import { rosterUpdate } from './roster';
@@ -701,7 +702,7 @@ export function changeCareer(get: Get, set: Set, heroId: string, newCareer: stri
  *  (LDB 05 l.578-583) crédite SA propre Bourse (SOCLE POSSESSIONS §8, #531) — plus de bourse de groupe. */
 export function partyAddHero(get: Get, set: Set, hero: Combatant, wealth?: Money, seat = 0): void {
   const s = get();
-  if (s.party.length >= 4 || s.party.some((h) => h.id === hero.id)) return;
+  if (s.party.length >= PARTY_MAX || s.party.some((h) => h.id === hero.id)) return;
   if (seatSlotsRemaining(s, seat) <= 0) return;
   const copy: Combatant = ensureBourse(structuredClone(hero));
   set({
@@ -722,31 +723,40 @@ export function partyAddHero(get: Get, set: Set, hero: Combatant, wealth?: Money
  *  (groupe vidé ou tout-morts) → repli : rien à hériter, la Bourse/les Possessions du partant
  *  restent SUR LUI (il quitte le groupe avec son bien, aucun héritier vivant à défausser dessus). */
 /**
- * Lève de leur place les héros `heroIds` — PURE, rend la scène à écrire. Couture UNIQUE des
- * libérations de GROUPE : un héros qui sort du groupe (retrait, remplacement du meneur) et le groupe
- * ENTIER qui quitte une scène (`transitionTo` : une scène quittée ne garde pas un héros absent).
+ * Lève de leur place les emplacements de groupe à partir du rang `rangMin` — PURE, rend la scène à
+ * écrire. Couture UNIQUE des libérations de GROUPE : recomposition (retrait, remplacement) et groupe
+ * ENTIER qui quitte une scène (`transitionTo`, `rangMin = 1` : une scène quittée ne garde pas un
+ * héros absent).
+ *
+ * À PARTIR DE, et pas seulement le partant : une place de groupe désigne un RANG, et retirer le
+ * héros d'indice i DÉCALE tous les suivants — « Héros 3 » ne désignerait plus le même corps. Les
+ * rangs AVANT lui sont intacts et gardent leur chaise ; aucune chaise ne change de propriétaire en
+ * silence, et aucune ne se lève sans raison.
  * Rend la scène d'entrée, même référence, si personne n'était assis — aucun delta d'instance.
  */
-export function releaseHeroSeats<S extends Scene | null>(scene: S, heroIds: readonly string[]): S {
+export function releaseHeroSeats<S extends Scene | null>(scene: S, rangMin = 1): S {
   if (!scene?.seatAssignments) return scene;
   let next: Scene = scene;
-  for (const id of heroIds) next = releaseSeat(next, { kind: 'party', heroId: id });
+  for (let rang = rangMin; rang <= PARTY_MAX; rang++) next = releaseSeat(next, { kind: 'party', rang });
   return next as S;
 }
 
 /** Le même geste, appliqué à l'état : la scène n'est réécrite que si elle a VRAIMENT changé. */
-function libererPlace(get: Get, set: Set, heroId: string): void {
+function libererPlace(get: Get, set: Set, rangMin: number): void {
   const sc = get().scene;
   if (!sc) return;
-  const next = releaseHeroSeats(sc, [heroId]);
+  const next = releaseHeroSeats(sc, rangMin);
   if (next !== sc) set({ scene: next });
 }
 
 export function partyRemoveHero(get: Get, set: Set, heroId: string): void {
   const s = get();
-  const hero = s.party.find((h) => h.id === heroId);
-  if (!hero) return;
-  libererPlace(get, set, heroId); // le corps qui sort du groupe ne reste pas assis à sa table
+  const idx = s.party.findIndex((h) => h.id === heroId);
+  if (idx < 0) return;
+  const hero = s.party[idx];
+  // Le partant et TOUS ceux qui vont glisser d'un rang se lèvent : après coup, « Héros idx+1 »
+  // désignerait le corps suivant, et une chaise ne se transmet pas.
+  libererPlace(get, set, idx + 1);
   const remaining = s.party.filter((h) => h.id !== heroId);
   const heir = remaining.find((h) => !h.dead);
   if (heir) {
@@ -770,7 +780,7 @@ export function partyReplaceHero(get: Get, set: Set, oldId: string, hero: Combat
   const idx = s.party.findIndex((h) => h.id === oldId);
   if (idx < 0) return;                                                    // l'ancien n'est plus là
   if (hero.id !== oldId && s.party.some((h) => h.id === hero.id)) return; // doublon d'id
-  if (hero.id !== oldId) libererPlace(get, set, oldId); // changement de meneur : l'ancien corps quitte sa place
+  if (hero.id !== oldId) libererPlace(get, set, idx + 1); // corps remplacé : SON emplacement se lève, les autres tiennent
   const copy: Combatant = structuredClone(hero);
   const ownership = { ...s.net.ownership };
   delete ownership[oldId];

@@ -16,7 +16,7 @@ const TABLE = 'table-ronde-4-tabourets';
 const PROP = 'table-1';
 /** Table en (5,5) au cap N : abords déclarés nord (5,4), est (6,5), sud (5,6), ouest (4,5). */
 const ABORD_NORD = { x: 5, y: 4 };
-const MENEUR: SeatOccupant = { kind: 'party', heroId: 'h' };
+const MENEUR: SeatOccupant = { kind: 'party', rang: 1 };
 
 const hero = (id = 'h'): Combatant =>
   ({ id, label: id.toUpperCase(), kind: 'hero', xp: 0, wounds: { current: 12, max: 12 }, conditions: [], movement: 4 }) as unknown as Combatant;

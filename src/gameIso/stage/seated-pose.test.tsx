@@ -112,9 +112,9 @@ describe('MENEUR attablé — l’acteur du monde volumique consomme la même pl
 describe('partyTokenOf — la dérivation UNIQUE du jeton de groupe', () => {
   it('meneur assis : la position de RENDU devient l’ancre, la place voyage avec lui', () => {
     const scene = scèneAttablée(false);
-    scene.seatAssignments = { [PROP]: { est: { kind: 'party', heroId: 'h' } } };
+    scene.seatAssignments = { [PROP]: { est: { kind: 'party', rang: 1 } } };
     const jeton = partyTokenOf(scene, meneur(), { x: 3, y: 2 })!;
-    const place = seatPoseOf(scene, { kind: 'party', heroId: 'h' })!;
+    const place = seatPoseOf(scene, { kind: 'party', rang: 1 })!;
     expect(jeton.seat).toEqual(place);
     expect(jeton.pos.x).toBeCloseTo(place.anchor.x, 6);
     expect(jeton.pos.y).toBeCloseTo(place.anchor.y, 6);

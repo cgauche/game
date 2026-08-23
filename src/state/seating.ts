@@ -32,14 +32,25 @@
 import { findPropById } from '../data';
 import { rotatePropLocal } from '../data/props.types';
 import { DIR8_DELTA, DIR8_ORDER, rotateDir8, type Dir8 } from './dir8';
+import { PARTY_MAX } from './combatants';
 import { heightAt, isWalkable, type Scene, type SceneEntity } from './scene';
 import { memoByRef } from './sceneMemo';
 import type { Pt } from './path';
 
-/** Qui occupe une place : un héros du groupe (corps du meneur) ou un PNJ de la scène (authoré). */
+/**
+ * Qui occupe une place : un EMPLACEMENT du groupe, ou un PNJ de la scène (authoré).
+ *
+ * Côté groupe, l'occupant est un RANG (1..`PARTY_MAX`), jamais un id de héros : le document
+ * d'une scène ne peut pas nommer un personnage que le joueur créera plus tard. « Héros 1 » désigne
+ * l'emplacement ; le runtime y résout `party[rang - 1]`, et un rang qu'aucun héros n'occupe est
+ * simplement élagué au chargement — jamais une erreur de document.
+ */
 export type SeatOccupant =
-  | { kind: 'party'; heroId: string }
+  | { kind: 'party'; rang: number }
   | { kind: 'entity'; entityId: string };
+
+/** Emplacement du MENEUR corporel — le seul héros qui ait un corps en exploration aujourd'hui. */
+export const RANG_MENEUR = 1;
 
 /** Occupation persistée d'une Scène : `propId → slotId → occupant`. */
 export type SeatAssignments = Record<string, Record<string, SeatOccupant>>;
@@ -62,7 +73,8 @@ export type SeatAssignmentResult =
 
 /** Deux occupants désignent-ils le même corps ? */
 function sameOccupant(a: SeatOccupant, b: SeatOccupant): boolean {
-  return a.kind === b.kind && (a.kind === 'party' ? a.heroId === (b as { heroId: string }).heroId : a.entityId === (b as { entityId: string }).entityId);
+  if (a.kind !== b.kind) return false;
+  return a.kind === 'party' ? a.rang === (b as { rang: number }).rang : a.entityId === (b as { entityId: string }).entityId;
 }
 
 /** Le meuble POSÉ (entité `prop` de la scène) qui porte les places de `propId`. */
@@ -219,10 +231,16 @@ export function seatIsOccupiable(scene: Scene, slot: ResolvedSeatSlot): boolean 
   return isWalkable(scene, slot.approach.x, slot.approach.y, z);
 }
 
-/** L'occupant désigne-t-il un corps RÉELLEMENT disponible dans cette scène ? */
-function occupantExiste(scene: Scene, occupant: SeatOccupant, partyHeroIds: ReadonlySet<string>): boolean {
+/** L'emplacement de groupe est-il un rang DÉCLARABLE ? Borne d'AUTHORING : elle ne dit pas qu'un
+ *  héros y est assis aujourd'hui, elle dit que « Héros N » existe comme emplacement. */
+export const rangDeGroupeValide = (rang: number): boolean =>
+  Number.isInteger(rang) && rang >= 1 && rang <= PARTY_MAX;
+
+/** L'occupant désigne-t-il un corps RÉELLEMENT présent ? `partySize` = taille du groupe COURANT
+ *  (0 hors partie, à l'éditeur) : un emplacement au-delà ne tient personne. */
+function occupantExiste(scene: Scene, occupant: SeatOccupant, partySize: number): boolean {
   return occupant.kind === 'party'
-    ? partyHeroIds.has(occupant.heroId)
+    ? rangDeGroupeValide(occupant.rang) && occupant.rang <= partySize
     : scene.entities.some((e) => e.id === occupant.entityId && e.kind === 'personnage');
 }
 
@@ -236,12 +254,12 @@ export function assignSeat(
   propId: string,
   slotId: string,
   occupant: SeatOccupant,
-  partyHeroIds: ReadonlySet<string>,
+  partySize: number,
 ): SeatAssignmentResult {
   if (!propEntity(scene, propId)) return { ok: false, scene, reason: 'prop-absent' };
   const slot = seatSlotsOf(scene, propId).find((s) => s.slotId === slotId);
   if (!slot) return { ok: false, scene, reason: 'slot-absent' };
-  if (!occupantExiste(scene, occupant, partyHeroIds)) return { ok: false, scene, reason: 'occupant-absent' };
+  if (!occupantExiste(scene, occupant, partySize)) return { ok: false, scene, reason: 'occupant-absent' };
   if (seatPoseOf(scene, occupant)) return { ok: false, scene, reason: 'occupant-assis' };
   if (scene.seatAssignments?.[propId]?.[slotId]) return { ok: false, scene, reason: 'slot-occupe' };
   if (!seatIsOccupiable(scene, slot)) return { ok: false, scene, reason: 'approche-invalide' };
@@ -306,7 +324,7 @@ export function seatAssignmentDefects(scene: Scene): SeatAssignmentDefect[] {
     const places = seatSlotsOf(scene, propId);
     const propPose = !!propEntity(scene, propId);
     for (const [slotId, occupant] of Object.entries(parMeuble)) {
-      const occupantId = occupant.kind === 'party' ? occupant.heroId : occupant.entityId;
+      const occupantId = occupant.kind === 'party' ? `Héros ${occupant.rang}` : occupant.entityId;
       if (!propPose) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » (« ${occupantId} ») : aucun décor « ${propId} » dans la scène` }); continue; }
       const place = places.find((p) => p.slotId === slotId);
       if (!place) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » (« ${occupantId} ») : le décor « ${propId} » n'offre pas de place « ${slotId} »` }); continue; }
@@ -315,7 +333,13 @@ export function seatAssignmentDefects(scene: Scene): SeatAssignmentDefect[] {
         out.push({ at: propId, message: `Assise « ${propId}/${slotId} » (« ${occupantId} ») : aucun abord praticable ne dessert cette place (abord résolu en (${rx},${ry}), infranchissable)` });
         continue;
       }
-      if (occupant.kind === 'party') continue;
+      if (occupant.kind === 'party') {
+        // Le GROUPE n'appartient pas au document : seul le RANG se vérifie. Un emplacement que
+        // personne n'occupe encore n'est pas un défaut — il s'élague au chargement.
+        if (!rangDeGroupeValide(occupant.rang))
+          out.push({ at: propId, message: `Assise « ${propId}/${slotId} » : emplacement de héros ${occupant.rang} hors du groupe (1 à ${PARTY_MAX})` });
+        continue;
+      }
       const pnj = scene.entities.find((e) => e.id === occupant.entityId && e.kind === 'personnage');
       if (!pnj) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » : aucun personnage « ${occupantId} » dans la scène` }); continue; }
       const { x: ax, y: ay } = place.approach;
@@ -328,15 +352,15 @@ export function seatAssignmentDefects(scene: Scene): SeatAssignmentDefect[] {
 
 /**
  * Occupation NORMALISÉE de la scène : ne survivent que les places dont le meuble est posé, dont la
- * place est déclarée par le catalogue et dont le corps est disponible (héros du groupe fourni, ou
- * PNJ encore présent). Parcours déterministe (entités, puis places déclarées) ; un occupant apparu
+ * place est déclarée par le catalogue et dont le corps est disponible (emplacement tenu par un
+ * héros PRÉSENT à ce rang dans le groupe fourni). Parcours déterministe (entités, puis places déclarées) ; un occupant apparu
  * deux fois garde son PREMIER siège. Rend toujours une valeur — `{}` = plus personne d'assis.
  */
-export function pruneSeatAssignments(scene: Scene, partyHeroIds: ReadonlySet<string>): SeatAssignments {
+export function pruneSeatAssignments(scene: Scene, partySize: number): SeatAssignments {
   const out: SeatAssignments = {};
   const vus: SeatOccupant[] = [];
   for (const { slot, occupant } of placesOccupees(scene)) {
-    if (!occupantExiste(scene, occupant, partyHeroIds)) continue;
+    if (!occupantExiste(scene, occupant, partySize)) continue;
     if (vus.some((v) => sameOccupant(v, occupant))) continue;
     vus.push(occupant);
     (out[slot.propId] ??= {})[slot.slotId] = occupant;

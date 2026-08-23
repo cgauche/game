@@ -207,7 +207,7 @@ export function removeEntities(get: Get, set: SetFn, ids: string[]) {
   const next = scene.entities.filter((e) => !drop.has(e.id));
   if (next.length === scene.entities.length) return; // aucun id présent → rien à faire
   const elague: Scene = { ...scene, entities: next };
-  const seatAssignments = pruneSeatAssignments(elague, new Set(get().party.map((h) => h.id)));
+  const seatAssignments = pruneSeatAssignments(elague, get().party.length);
   set({ scene: scene.seatAssignments === undefined && !Object.keys(seatAssignments).length ? elague : { ...elague, seatAssignments } });
   bus.emit(EVT.SCENE_DIRTY);
 }

@@ -14,6 +14,13 @@
 import type { Combatant } from '../engine/types';
 import type { GameState } from './store';
 
+/**
+ * TAILLE MAXIMALE du groupe — les quatre aventuriers de la campagne. Constante CANONIQUE : elle
+ * vivait en `4` littéral sur cinq sites (recrutement, créateur, écran d'équipe) sans nom ; toute
+ * borne d'emplacement de héros la cite désormais, jamais un chiffre.
+ */
+export const PARTY_MAX = 4;
+
 /** Acteur d'une action joueur résolu dans le bon ensemble : file de combat si en combat, sinon le groupe. */
 export function actorIn(state: GameState, id: string): Combatant | undefined {
   return (state.battle?.combatants ?? state.party).find((c) => c.id === id);

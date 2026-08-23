@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildScene, type MapSpec } from './mapSpec';
 import { sceneToAscii } from './sceneToAscii';
 import type { SeatAssignments } from './seating';
+import { PARTY_MAX } from './combatants';
 import { validateScene } from './validateScene';
 
 /**
@@ -102,5 +103,25 @@ describe('sceneToAscii — l’export dit ce qu’il ne restitue pas', () => {
     for (const champ of ['entities', 'bind', 'seatAssignments'])
       expect(exp.notRestored.join('\n'), champ).toContain(`\`${champ}\``);
     expect(exp.text).toContain('seatAssignments');
+  });
+});
+
+describe('MapSpec.seatAssignments — les places de GROUPE s’authorent par EMPLACEMENT', () => {
+  it('un rang du groupe canonique se compile tel quel, sans jamais nommer de héros', () => {
+    const s = buildScene({ ...BASE, entities: [{ ...TABLE }], seatAssignments: { 'table-1': { est: { kind: 'party', rang: 2 } } } });
+    expect(s.seatAssignments).toEqual({ 'table-1': { est: { kind: 'party', rang: 2 } } });
+    expect(validateScene([s]).filter((w) => w.level === 'error')).toEqual([]);
+  });
+
+  it('un rang HORS du groupe canonique est refusé fail-fast', () => {
+    expect(() =>
+      buildScene({ ...BASE, entities: [{ ...TABLE }], seatAssignments: { 'table-1': { est: { kind: 'party', rang: PARTY_MAX + 1 } } } }),
+    ).toThrow(/emplacement de héros/);
+  });
+
+  it('une place de groupe n’exige AUCUN id fixe : elle ne désigne pas une entité', () => {
+    expect(() =>
+      buildScene({ ...BASE, entities: [{ ...TABLE }], seatAssignments: { 'table-1': { ouest: { kind: 'party', rang: 1 } } } }),
+    ).not.toThrow();
   });
 });

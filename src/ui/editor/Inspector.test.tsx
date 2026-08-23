@@ -3,7 +3,6 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Inspector } from './Inspector';
-import type { Sel } from './editorState';
 import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
 import { lightTones } from '../../data';
 
@@ -516,62 +515,6 @@ describe('Inspector — places assises d’un décor', () => {
     });
     expect(sceneOf().seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } });
     expect(sceneOf().entities.find((e) => e.id === 'pnj-aubergiste')?.pos).toEqual({ x: 2, y: 1 });
-  });
-
-  // ── G1 (sonde S-B du juge, promue) ──────────────────────────────────────────────────────────────
-  it('libérer la dernière place d’un héros le laisse proposable APRÈS démontage/remontage du panneau', () => {
-    const scene: Scene = {
-      ...emptyScene(8, 8),
-      entities: [
-        { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
-        { id: 'pnj-aubergiste', kind: 'personnage', pos: { x: 6, y: 6 }, label: 'Aubergiste' },
-      ],
-      seatAssignments: { 'table-1': { nord: { kind: 'party', heroId: 'h1' } } },
-    };
-    let latest = scene;
-    let selection: Sel = { type: 'entity', id: 'table-1' };
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    const root: Root = createRoot(container);
-    const render = (s: Scene) =>
-      root.render(
-        <Inspector
-          scene={s}
-          otherScenes={[]}
-          worldMap={null}
-          setScene={(next) => { latest = next; render(next); }}
-          sel={selection}
-          setSel={() => undefined}
-          enemyCreatures={[]}
-          openLogic={() => undefined}
-          resizeScene={() => undefined}
-          narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
-          tool={{ mode: 'select' }}
-          armZoneTiles={() => undefined}
-          zoneFocusKey={null}
-        />,
-      );
-    act(() => render(scene));
-
-    const placeNord = () =>
-      [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('Place nord'))!.querySelector('select') as HTMLSelectElement;
-    expect([...placeNord().options].map((o) => o.value)).toContain('party:h1');
-
-    // Libération : le document ne nomme plus AUCUN héros.
-    act(() => { const sel = placeNord(); sel.value = ''; sel.dispatchEvent(new Event('change', { bubbles: true })); });
-    expect(latest.seatAssignments).toEqual({});
-
-    // Le panneau se DÉMONTE (autre sélection) puis se remonte — l'option doit avoir survécu.
-    selection = { type: 'entity', id: 'pnj-aubergiste' };
-    act(() => render(latest));
-    expect(container.textContent).not.toContain('Places assises');
-    selection = { type: 'entity', id: 'table-1' };
-    act(() => render(latest));
-    expect([...placeNord().options].map((o) => o.value)).toContain('party:h1');
-
-    // …et il se rassoit vraiment.
-    act(() => { const sel = placeNord(); sel.value = 'party:h1'; sel.dispatchEvent(new Event('change', { bubbles: true })); });
-    expect(latest.seatAssignments).toEqual({ 'table-1': { nord: { kind: 'party', heroId: 'h1' } } });
   });
 
   it('changer la ref du décor élague l’assise dans la même mutation', () => {

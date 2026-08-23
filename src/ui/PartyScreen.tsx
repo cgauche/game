@@ -4,6 +4,7 @@ import type { NetState } from '../state/netFlow';
 import { ownsLocalNet } from './ownership';
 import { makePregensWithWealth } from '../data/pregens';
 import { rosterLoad, rosterRemove, rosterAdd, rosterExport, rosterImport } from '../state/roster';
+import { PARTY_MAX } from '../state/combatants';
 import { downloadText, fileSlug } from '../state/fileIo';
 import { campaign, builtinCampaigns } from '../scenes/campaign';
 import { publishedProjects } from '../state/projectLibrary';
@@ -394,7 +395,7 @@ export function PartyScreenView({
     if (!selector) return;
     if (selector.mode === 'replace') {
       onReplaceHero?.(selector.heroId, h, wealth);
-    } else if (party.length < 4 && !party.some((p) => p.id === h.id)) {
+    } else if (party.length < PARTY_MAX && !party.some((p) => p.id === h.id)) {
       onAddHero(h, wealth);
     }
     setSelector(null);
@@ -415,7 +416,7 @@ export function PartyScreenView({
             {t('party.back.menu')}
           </button>
         )}
-        <h2>{title} ({party.length}/4)</h2>
+        <h2>{title} ({party.length}/{PARTY_MAX})</h2>
         {onPossessions && (
           <button className="btn small" onClick={onPossessions}>
             <Icon id="travel/mount" size="sm" /> Possessions
@@ -437,7 +438,7 @@ export function PartyScreenView({
         <div className="party-acts-header row-flex">
           <h3 className="party-acts-title">{t('party.acts.title')}</h3>
           <span className="party-acts-subtitle">
-            {t(party.length <= 1 ? 'party.acts.subtitle.one' : 'party.acts.subtitle', { seats: NUM_WORDS_FR[4], sealed: NUM_WORDS_FR[Math.min(party.length, 4)] })}
+            {t(party.length <= 1 ? 'party.acts.subtitle.one' : 'party.acts.subtitle', { seats: NUM_WORDS_FR[PARTY_MAX], sealed: NUM_WORDS_FR[Math.min(party.length, PARTY_MAX)] })}
           </span>
         </div>
         <div className="party-roster" aria-label={t('party.acts.title')}>

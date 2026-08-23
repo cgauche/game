@@ -8,7 +8,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
 import { siegeEngines } from '../../data';
 import { propRefPatch } from './propDefaults';
-import { type Rect, type Pt, type Edge4, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, documentHeroIds, editEntity, moveEntityTo, normaliseAssises } from '../../state/sceneEdit';
+import { type Rect, type Pt, type Edge4, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, editEntity, moveEntityTo, removeEntity } from '../../state/sceneEdit';
 
 export {
   addArchitectureBody,
@@ -54,7 +54,6 @@ export {
   editEntity,
   editEntityCombat,
   normaliseAssises,
-  documentHeroIds,
 } from '../../state/sceneEdit';
 export type { Rect, Pt, Edge4, EffectZoneSeed } from '../../state/sceneEdit';
 export { planStairFlight, applyStairFlight, minFlightCells } from '../../state/stairFlight';
@@ -460,7 +459,7 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
       if (members.length === (e.members ?? []).length) return e;
       return { ...e, members: members.map((m) => (m.ridesEntityId === sel.id ? { ...m, ridesEntityId: undefined } : m)) };
     });
-    return normaliseAssises({ ...scene, entities: scene.entities.filter((e) => e.id !== sel.id), encounters }, documentHeroIds(scene));
+    return { ...removeEntity({ ...scene, encounters }, sel.id) };
   }
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.filter((t) => t.id !== sel.id) };
   // #841 FU-C : les CONTENEURS (corps/étage) étaient inatteignables (audit #835 les avait

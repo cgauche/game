@@ -22,8 +22,8 @@ const ABORD_NORD = { x: 5, y: 4 };
 const hero = (id: string): Combatant =>
   ({ id, label: id.toUpperCase(), kind: 'hero', xp: 0, wounds: { current: 12, max: 12 }, conditions: [], movement: 4 }) as unknown as Combatant;
 
-const place = (heroId: string): SeatOccupant => ({ kind: 'party', heroId });
-const poseDe = (heroId: string) => seatPoseOf(useGame.getState().scene!, place(heroId));
+const place = (rang: number): SeatOccupant => ({ kind: 'party', rang });
+const poseDe = (rang: number) => seatPoseOf(useGame.getState().scene!, place(rang));
 
 function scèneDeTaverne(id: string): Scene {
   const s = emptyScene(12, 12);
@@ -43,23 +43,22 @@ function meneurAssis(party: Combatant[], sceneId = 'taverne'): void {
 describe('composition du groupe — le corps qui sort quitte sa place', () => {
   it('party[0] REMPLACÉ : l’ancien meneur ne garde pas sa chaise', () => {
     meneurAssis([hero('h'), hero('b')]);
-    expect(poseDe('h')).not.toBeNull();
+    expect(poseDe(1)).not.toBeNull();
     useGame.getState().partyReplaceHero('h', hero('neuf'));
-    expect(poseDe('h')).toBeNull();
-    expect(poseDe('neuf')).toBeNull(); // le remplaçant n'HÉRITE pas de la place : il entre debout
+    expect(poseDe(1)).toBeNull(); // l'emplacement 1 est vide : ni l'ancien ni le remplaçant ne l'occupe
     expect(useGame.getState().scene!.seatAssignments).toEqual({});
   });
 
   it('un remplacement À MÊME ID (édition en place) ne fait PAS lever le meneur', () => {
     meneurAssis([hero('h')]);
     useGame.getState().partyReplaceHero('h', { ...hero('h'), label: 'Retouché' } as Combatant);
-    expect(poseDe('h')).toMatchObject({ slotId: 'nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
   });
 
   it('héros RETIRÉ du groupe : sa place est rendue', () => {
     meneurAssis([hero('h'), hero('b')]);
     useGame.getState().partyRemoveHero('h');
-    expect(poseDe('h')).toBeNull();
+    expect(poseDe(1)).toBeNull();
     expect(useGame.getState().scene!.seatAssignments).toEqual({});
   });
 
@@ -67,7 +66,7 @@ describe('composition du groupe — le corps qui sort quitte sa place', () => {
     meneurAssis([hero('h'), hero('b')]);
     const avant = useGame.getState().scene!;
     useGame.getState().partyRemoveHero('b');
-    expect(poseDe('h')).toMatchObject({ slotId: 'nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
     expect(useGame.getState().scene).toBe(avant); // aucune écriture inutile
   });
 });
@@ -82,13 +81,13 @@ describe('transition de scène — une scène quittée ne garde pas un héros ab
     useGame.getState().loadProject([a, b], 'scene-a', undefined);
     useGame.setState({ partyPos: { ...ABORD_NORD } });
     useGame.getState().interactEntity(PROP);
-    expect(poseDe('h')).not.toBeNull();
+    expect(poseDe(1)).not.toBeNull();
 
     useGame.getState().transitionTo('scene-b');
     expect(useGame.getState().scene!.id).toBe('scene-b');
     // Retour : la scène quittée a été capturée SANS le meneur assis.
     useGame.getState().transitionTo('scene-a');
-    expect(poseDe('h')).toBeNull();
+    expect(poseDe(1)).toBeNull();
     expect(useGame.getState().scene!.seatAssignments).toEqual({});
   });
 });
@@ -106,10 +105,10 @@ describe('mort / indisponibilité d’un occupant', () => {
       (h: Combatant) => ({ ...h, conditions: [{ id: 'inconscient', value: 1 }] }) as Combatant,
     ]) {
       meneurAssis([hero('h')]);
-      expect(poseDe('h')).not.toBeNull();
+      expect(poseDe(1)).not.toBeNull();
       useGame.setState((s) => ({ party: s.party.map((x) => (x.id === 'h' ? tuer(x) : x)) }));
       releaseSeatsOfDowned(useGame.getState, useGame.setState);
-      expect(poseDe('h')).toBeNull();
+      expect(poseDe(1)).toBeNull();
       expect(useGame.getState().scene!.seatAssignments).toEqual({});
     }
   });
@@ -118,7 +117,7 @@ describe('mort / indisponibilité d’un occupant', () => {
     meneurAssis([hero('h')]);
     const avant = useGame.getState().scene!;
     releaseSeatsOfDowned(useGame.getState, useGame.setState);
-    expect(poseDe('h')).toMatchObject({ slotId: 'nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
     expect(useGame.getState().scene).toBe(avant);
   });
 
@@ -126,7 +125,7 @@ describe('mort / indisponibilité d’un occupant', () => {
     meneurAssis([hero('h')]);
     useGame.setState((s) => ({ party: s.party.map((x) => ({ ...x, dead: true })), battle: null }));
     useGame.getState().advanceTime(TIME_COST.combatRound);
-    expect(poseDe('h')).toBeNull();
+    expect(poseDe(1)).toBeNull();
   });
 
   it('un PNJ attablé mis hors de combat libère sa place par `notifySlain`', () => {
@@ -162,9 +161,9 @@ describe('ouverture de combat — le MENEUR assis se lève avec les autres enrô
     const entities: SceneEntity[] = [...sc.entities, { id: PROP, kind: 'prop', pos: table, ref: TABLE, facing: 'N' }];
     useGame.setState({ scene: { ...sc, entities } });
     useGame.getState().interactEntity(PROP);
-    expect(poseDe(h.id)).toMatchObject({ slotId: 'sud' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'sud' });
 
     useGame.getState().startCombat('enc-mutants');
-    expect(poseDe(h.id)).toBeNull();
+    expect(poseDe(1)).toBeNull();
   });
 });

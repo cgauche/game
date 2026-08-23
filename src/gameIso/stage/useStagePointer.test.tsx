@@ -875,7 +875,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const arrivee = useGame.getState().partyPos;
     expect(abords, 'le groupe s’arrête SUR un abord de place').toContain(`${arrivee.x},${arrivee.y}`);
     expect(arrivee).not.toEqual({ x: 2, y: 3 });                // jamais la case du meuble
-    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', heroId: 'h' })).toMatchObject({ propId: 'table-1' });
+    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 })).toMatchObject({ propId: 'table-1' });
     expect(useGame.getState().pendingInteract).toBeNull();
   });
 

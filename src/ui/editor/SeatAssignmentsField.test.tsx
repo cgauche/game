@@ -4,7 +4,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SeatAssignmentsField } from './SeatAssignmentsField';
 import { emptyScene, type Scene } from '../../state/scene';
-import { documentHeroIds } from '../../state/sceneEdit';
+import { PARTY_MAX } from '../../state/combatants';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -25,11 +25,8 @@ function mount(scene: Scene, propId = 'table-1') {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root: Root = createRoot(container);
-  // Le champ ne TIENT pas les héros proposables (il se démonte au changement de sélection) : la
-  // session d'édition les lui passe. Ici, le harnais joue ce rôle avec l'ensemble du document chargé.
-  const herosConnus = documentHeroIds(scene);
   const render = (s: Scene) =>
-    root.render(<SeatAssignmentsField scene={s} propId={propId} herosConnus={herosConnus} onChange={(next) => { latest = next; render(next); }} />);
+    root.render(<SeatAssignmentsField scene={s} propId={propId} onChange={(next) => { latest = next; render(next); }} />);
   act(() => render(scene));
   const selects = () => [...container.querySelectorAll('select')] as HTMLSelectElement[];
   return {
@@ -59,7 +56,8 @@ describe('SeatAssignmentsField — authoring des places assises (id-only)', () =
   it('affiche les slots de la ref et écrit un occupant par id', () => {
     const ui = mount(sceneWithTableAndNpc());
     expect(ui.text()).toContain('4 places');
-    expect([...ui.selectOf('Place nord').options].map((o) => o.value)).toEqual(['', 'entity:pnj-aubergiste']);
+    expect([...ui.selectOf('Place nord').options].map((o) => o.value))
+      .toEqual(['', 'entity:pnj-aubergiste', ...Array.from({ length: PARTY_MAX }, (_, i) => `party:${i + 1}`)]);
     ui.choose('Place nord', 'entity:pnj-aubergiste');
     expect(ui.sceneOf().seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } });
   });
@@ -77,7 +75,7 @@ describe('SeatAssignmentsField — authoring des places assises (id-only)', () =
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root: Root = createRoot(container);
-    act(() => root.render(<SeatAssignmentsField scene={depart} propId="table-1" herosConnus={new Set()} onChange={() => { publications += 1; }} />));
+    act(() => root.render(<SeatAssignmentsField scene={depart} propId="table-1" onChange={() => { publications += 1; }} />));
     const sel = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('Place sud'))!.querySelector('select') as HTMLSelectElement;
     act(() => { sel.value = ''; sel.dispatchEvent(new Event('change', { bubbles: true })); });
     expect(publications).toBe(0);
@@ -99,11 +97,15 @@ describe('SeatAssignmentsField — authoring des places assises (id-only)', () =
     expect(ui.sceneOf().entities.find((e) => e.id === 'pnj-aubergiste')?.pos).toEqual({ x: 3, y: 2 });
   });
 
-  it('n’offre AUCUNE saisie libre : les options sont des ids d’entités de la scène', () => {
+  it('n’offre AUCUNE saisie libre : chaque option est un id d’entité ou un EMPLACEMENT du groupe', () => {
     const ui = mount(sceneWithTableAndNpc());
     expect(ui.container.querySelectorAll('input').length).toBe(0);
-    for (const opt of [...ui.selectOf('Place sud').options].filter((o) => o.value))
-      expect(ui.sceneOf().entities.some((e) => `entity:${e.id}` === opt.value)).toBe(true);
+    for (const opt of [...ui.selectOf('Place sud').options].filter((o) => o.value)) {
+      const rang = Number(opt.value.replace('party:', ''));
+      const estEmplacement = opt.value.startsWith('party:') && rang >= 1 && rang <= PARTY_MAX;
+      const estEntite = ui.sceneOf().entities.some((e) => `entity:${e.id}` === opt.value);
+      expect(estEmplacement || estEntite, opt.value).toBe(true);
+    }
   });
 
   it('un décor sans place n’affiche rien', () => {
@@ -112,26 +114,33 @@ describe('SeatAssignmentsField — authoring des places assises (id-only)', () =
     expect(mount(s).text()).toBe('');
   });
 
-  // ── I2 (sonde S4 du juge, promue) ────────────────────────────────────────────────────────────────
-  it('déplacer un HÉROS d’une place à l’autre est ACCEPTÉ — la source des héros est le DOCUMENT, pas l’occupation', () => {
-    const s = sceneWithTableAndNpc();
-    s.seatAssignments = { 'table-1': { nord: { kind: 'party', heroId: 'h1' } } };
-    const ui = mount(s);
-    expect([...ui.selectOf('Place sud').options].map((o) => o.value)).toContain('party:h1');
-    ui.choose('Place sud', 'party:h1');
-    expect(ui.sceneOf().seatAssignments).toEqual({ 'table-1': { sud: { kind: 'party', heroId: 'h1' } } });
+  // ── R11 : l'authoring parle EMPLACEMENTS, jamais héros ───────────────────────────────────────────
+  it('propose les EMPLACEMENTS du groupe, liste FIXE, sur un document qui n’assoit personne', () => {
+    const ui = mount(sceneWithTableAndNpc());
+    const valeurs = [...ui.selectOf('Place nord').options].map((o) => o.value);
+    for (let rang = 1; rang <= PARTY_MAX; rang++) expect(valeurs).toContain(`party:${rang}`);
+    expect(ui.text()).toContain(`Héros ${PARTY_MAX}`);
+    // …et AUCUN id de héros : la liste ne dépend ni du document ni d'une partie.
+    expect(valeurs.filter((v) => v.startsWith('party:'))).toHaveLength(PARTY_MAX);
+  });
+
+  it('assigne un EMPLACEMENT par rang, et le déplacer d’une place à l’autre est ACCEPTÉ', () => {
+    const ui = mount(sceneWithTableAndNpc());
+    ui.choose('Place nord', 'party:2');
+    expect(ui.sceneOf().seatAssignments).toEqual({ 'table-1': { nord: { kind: 'party', rang: 2 } } });
+    ui.choose('Place sud', 'party:2');
+    expect(ui.sceneOf().seatAssignments).toEqual({ 'table-1': { sud: { kind: 'party', rang: 2 } } });
     expect(ui.text()).not.toContain('Place refusée');
   });
 
-  it('libérer la place d’un héros ne le fait PAS disparaître de la liste', () => {
-    const s = sceneWithTableAndNpc();
-    s.seatAssignments = { 'table-1': { nord: { kind: 'party', heroId: 'h1' } } };
-    const ui = mount(s);
+  it('libérer un emplacement le laisse proposable — la liste ne dépend pas de l’occupation', () => {
+    const ui = mount(sceneWithTableAndNpc());
+    ui.choose('Place nord', 'party:1');
     ui.choose('Place nord', '');
     expect(ui.sceneOf().seatAssignments).toEqual({});
-    expect([...ui.selectOf('Place nord').options].map((o) => o.value)).toContain('party:h1');
-    ui.choose('Place nord', 'party:h1');
-    expect(ui.sceneOf().seatAssignments).toEqual({ 'table-1': { nord: { kind: 'party', heroId: 'h1' } } });
+    expect([...ui.selectOf('Place nord').options].map((o) => o.value)).toContain('party:1');
+    ui.choose('Place nord', 'party:1');
+    expect(ui.sceneOf().seatAssignments).toEqual({ 'table-1': { nord: { kind: 'party', rang: 1 } } });
   });
 
   it('un abord introuvable REFUSE la place, en toutes lettres, sans écrire', () => {

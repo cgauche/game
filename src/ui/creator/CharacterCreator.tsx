@@ -163,6 +163,7 @@ import {
   splitTopLevelOu,
 } from './draft';
 import { XP_CAREER_FIRST, XP_CAREER_TOP3, XP_STAR_ROLLED, parseStatus, speciesAllowed } from '../../engine/creation';
+import { PARTY_MAX } from '../../state/combatants';
 
 /** Métadonnées d'étape : libellé FR + ÉCRAN de plein rendu. Les HUIT pas passent par la MÊME porte —
  *  un pas pose ses propres hooks puis compose `CreatorStepFrame` (seule Présentation garde un
@@ -333,7 +334,7 @@ export function CharacterCreator() {
     <div className="screen creator">
       <header className="bar">
         <button className="btn small row-flex" onClick={closeCreator}>
-          ← <Icon id="nav/seat-owner" size="sm" /> Groupe ({party.length}/4)
+          ← <Icon id="nav/seat-owner" size="sm" /> Groupe ({party.length}/{PARTY_MAX})
         </button>
         <h2>{editing ? 'Modifier le personnage' : 'Créateur de personnage'}</h2>
         <div className="wizard-steps">
@@ -393,7 +394,7 @@ export function CharacterCreator() {
             Suivant →
           </button>
         ) : (
-          <button className="btn btn-primary" disabled={(!editing && party.length >= 4) || !canNext} onClick={create}>
+          <button className="btn btn-primary" disabled={(!editing && party.length >= PARTY_MAX) || !canNext} onClick={create}>
             {editing ? 'Enregistrer les modifications' : 'Engager ce héros →'}
           </button>
         )}

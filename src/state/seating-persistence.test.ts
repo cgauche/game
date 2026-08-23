@@ -34,7 +34,7 @@ describe('SceneMutation — l’assise se persiste en OVERRIDE COMPLET', () => {
   it('un déplacement de place se capture en entier et se réapplique tel quel', () => {
     const authored = sceneWithAssignments(AUTHORED_NPC_SEAT);
     const leve = releaseSeat(authored, NPC);
-    const rassis = assignSeat(leve, PROP, 'sud', NPC, new Set());
+    const rassis = assignSeat(leve, PROP, 'sud', NPC, 0);
     expect(rassis.ok).toBe(true);
     const mutation = captureMutation(rassis.scene, authored);
     expect(mutation?.seatAssignments).toEqual({ [PROP]: { sud: NPC } });
@@ -74,27 +74,27 @@ describe('SceneMutation — l’assise se persiste en OVERRIDE COMPLET', () => {
 describe('applyMutation — élagage de l’assise quand le groupe est fourni', () => {
   it('la mutation qui RETIRE le meuble emporte la place, dans la même application', () => {
     const authored = sceneWithAssignments(AUTHORED_NPC_SEAT);
-    const out = applyMutation(structuredClone(authored), { removedEntityIds: [PROP], flags: {} }, new Set());
+    const out = applyMutation(structuredClone(authored), { removedEntityIds: [PROP], flags: {} }, 0);
     expect(out.entities.map((e) => e.id)).not.toContain(PROP);
     expect(out.seatAssignments).toEqual({});
   });
 
   it('la mutation qui RETIRE le PNJ emporte sa place', () => {
     const authored = sceneWithAssignments(AUTHORED_NPC_SEAT);
-    const out = applyMutation(structuredClone(authored), { removedEntityIds: ['pnj-1'], flags: {} }, new Set());
+    const out = applyMutation(structuredClone(authored), { removedEntityIds: ['pnj-1'], flags: {} }, 0);
     expect(out.seatAssignments).toEqual({});
   });
 
-  it('un héros HORS du groupe fourni perd sa place ; le meneur du groupe garde la sienne', () => {
-    const authored = sceneWithAssignments({ [PROP]: { nord: { kind: 'party', heroId: 'hero-1' } } });
-    expect(applyMutation(structuredClone(authored), undefined, new Set()).seatAssignments).toEqual({});
-    expect(applyMutation(structuredClone(authored), undefined, new Set(['hero-1'])).seatAssignments)
-      .toEqual({ [PROP]: { nord: { kind: 'party', heroId: 'hero-1' } } });
+  it('un EMPLACEMENT que le groupe n’atteint pas perd sa place ; celui qu’il atteint la garde', () => {
+    const authored = sceneWithAssignments({ [PROP]: { nord: { kind: 'party', rang: 2 } } });
+    expect(applyMutation(structuredClone(authored), undefined, 1).seatAssignments).toEqual({});
+    expect(applyMutation(structuredClone(authored), undefined, 2).seatAssignments)
+      .toEqual({ [PROP]: { nord: { kind: 'party', rang: 2 } } });
   });
 
   it('un slot que le catalogue n’offre pas est élagué, les autres survivent', () => {
     const authored = sceneWithAssignments({ [PROP]: { nord: NPC, plafond: { kind: 'entity', entityId: 'pnj-2' } } });
-    expect(applyMutation(structuredClone(authored), undefined, new Set()).seatAssignments).toEqual({ [PROP]: { nord: NPC } });
+    expect(applyMutation(structuredClone(authored), undefined, 0).seatAssignments).toEqual({ [PROP]: { nord: NPC } });
   });
 
   it('SANS groupe fourni, aucun élagage : la superposition reste NUE (comportement d’origine)', () => {

@@ -15,6 +15,7 @@ import { nextEntityId } from './entityId';
 import { findTrappingById, findCreatureById, creatureLabel } from '../data';
 import { siegeEmplacementEntity } from './siegeEmplacement';
 import { stairFlightCells, interiorCells } from './planDefects';
+import { PARTY_MAX } from './combatants';
 import {
   assignSeat,
   pruneSeatAssignments,
@@ -529,14 +530,12 @@ export function patchEntity(scene: Scene, id: string, patch: Partial<SceneEntity
 // d'`entities` en direct depuis `src/ui/**`. La Scène rendue par un geste est donc TOUJOURS un
 // document que `seatAssignmentDefects` accepte — jamais une correction différée au chargement.
 
-/** Les héros que le DOCUMENT nomme lui-même. L'éditeur ne connaît PAS le groupe de la partie : ce
- *  sont les seuls ids de héros qu'il puisse tenir pour disponibles. */
-export function documentHeroIds(scene: Scene): ReadonlySet<string> {
-  const out = new Set<string>();
-  for (const parMeuble of Object.values(scene.seatAssignments ?? {}))
-    for (const occupant of Object.values(parMeuble)) if (occupant.kind === 'party') out.add(occupant.heroId);
-  return out;
-}
+/**
+ * TAILLE de groupe que l'ÉDITEUR fait valoir. Un document authore des EMPLACEMENTS (« Héros 1 »…
+ * « Héros N »), pas des héros : les quatre emplacements sont donc tous tenus pour déclarables, et
+ * aucun ne s'élague à l'authoring. C'est au CHARGEMENT que la taille réelle du groupe tranche.
+ */
+const GROUPE_A_L_AUTHORING = PARTY_MAX;
 
 /**
  * SEAM UNIQUE D'ASSISE — la scène rendue est normalisée en trois temps, dans cet ordre :
@@ -550,9 +549,9 @@ export function documentHeroIds(scene: Scene): ReadonlySet<string> {
  *     peuvent pas se retrouver sur la même case.
  * Une scène qui n'a jamais porté d'assise n'en gagne pas le champ (même référence rendue).
  */
-export function normaliseAssises(scene: Scene, partyHeroIds: ReadonlySet<string>): Scene {
+export function normaliseAssises(scene: Scene, partySize: number): Scene {
   if (!scene.seatAssignments) return scene;
-  const existants = pruneSeatAssignments(scene, partyHeroIds);
+  const existants = pruneSeatAssignments(scene, partySize);
   const apresExistence = { ...scene, seatAssignments: existants };
   const occupables: SeatAssignments = {};
   for (const [propId, parMeuble] of Object.entries(existants)) {
@@ -590,35 +589,35 @@ function rebaseSeatedBodies(scene: Scene): Scene {
 }
 
 /** Assoit `occupant` à la place `slotId` du meuble `propId` ET pose la `pos` du corps sur l'abord
- *  résolu, dans la MÊME écriture. `partyHeroIds` vient de l'APPELANT (jamais re-dérivé en cours de
- *  geste : un déplacement de place libère d'abord, et un héros ne doit pas disparaître entre-temps).
+ *  résolu, dans la MÊME écriture. `partySize` vient de l'APPELANT (l'éditeur fait valoir les
+ *  emplacements déclarables, le jeu la taille réelle du groupe).
  *  Refus (raison stable) → scène d'entrée inchangée. */
 export function seatOccupant(
   scene: Scene,
   propId: string,
   slotId: string,
   occupant: SeatOccupant,
-  partyHeroIds: ReadonlySet<string>,
+  partySize: number,
 ): SeatAssignmentResult {
-  const res = assignSeat(scene, propId, slotId, occupant, partyHeroIds);
-  return res.ok ? { ...res, scene: normaliseAssises(res.scene, partyHeroIds) } : res;
+  const res = assignSeat(scene, propId, slotId, occupant, partySize);
+  return res.ok ? { ...res, scene: normaliseAssises(res.scene, partySize) } : res;
 }
 
 /** Patch d'AUTHORING d'une entité (libellé, orientation, étage, ref, statblock…) : la seule porte
  *  d'écriture d'entité ouverte à `src/ui/**`. Traverse le seam — tourner ou monter d'un étage un
  *  meuble attablé recale ou lève ses places dans la MÊME mutation. */
 export function editEntity(scene: Scene, id: string, patch: Partial<SceneEntity>): Scene {
-  return normaliseAssises(patchEntity(scene, id, patch), documentHeroIds(scene));
+  return normaliseAssises(patchEntity(scene, id, patch), GROUPE_A_L_AUTHORING);
 }
 
 /** Idem pour le sous-objet `combat` (fusion non écrasante) — même porte, même seam. */
 export function editEntityCombat(scene: Scene, id: string, patch: Partial<NonNullable<SceneEntity['combat']>>): Scene {
-  return normaliseAssises(patchEntityCombat(scene, id, patch), documentHeroIds(scene));
+  return normaliseAssises(patchEntityCombat(scene, id, patch), GROUPE_A_L_AUTHORING);
 }
 
 /** Suppression d'AUTHORING d'une entité — traverse le seam. */
 export function removeEntity(scene: Scene, id: string): Scene {
-  return normaliseAssises({ ...scene, entities: scene.entities.filter((e) => e.id !== id) }, documentHeroIds(scene));
+  return normaliseAssises({ ...scene, entities: scene.entities.filter((e) => e.id !== id) }, GROUPE_A_L_AUTHORING);
 }
 
 /** Déplacement d'AUTHORING d'une entité : pose la case demandée, lève le corps de sa place s'il quitte
@@ -629,7 +628,7 @@ export function moveEntityTo(scene: Scene, id: string, to: Pt): Scene {
   const occupant: SeatOccupant = { kind: 'entity', entityId: id };
   const pose = seatPoseOf(scene, occupant);
   const quitte = !!pose && (pose.approach.x !== to.x || pose.approach.y !== to.y);
-  return normaliseAssises(quitte ? releaseSeat(deplacee, occupant) : deplacee, documentHeroIds(scene));
+  return normaliseAssises(quitte ? releaseSeat(deplacee, occupant) : deplacee, GROUPE_A_L_AUTHORING);
 }
 
 /** Patche le sous-objet `combat` d'une entité SANS écraser l'existant (fusionne skills/spells/optionals/

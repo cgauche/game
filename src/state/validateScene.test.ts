@@ -524,7 +524,7 @@ describe('validateScene — POI de plan (#345 phase 5)', () => {
 describe('validateScene — assise authorée (`Scene.seatAssignments`)', () => {
   /** Table ronde en (2,2) cap `N` → abords : nord (2,1), est (3,2), sud (2,3), ouest (1,2). */
   const ABORD = { nord: { x: 2, y: 1 }, est: { x: 3, y: 2 }, sud: { x: 2, y: 3 }, ouest: { x: 1, y: 2 } };
-  function attable(seatAssignments: Record<string, Record<string, { kind: 'entity'; entityId: string } | { kind: 'party'; heroId: string }>>, pnjPos = ABORD.nord) {
+  function attable(seatAssignments: Record<string, Record<string, { kind: 'entity'; entityId: string } | { kind: 'party'; rang: number }>>, pnjPos = ABORD.nord) {
     const s = base();
     s.entities.push({ id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' });
     s.entities.push({ id: 'pnj-1', kind: 'personnage', pos: pnjPos });
@@ -565,6 +565,6 @@ describe('validateScene — assise authorée (`Scene.seatAssignments`)', () => {
   });
 
   it('une place tenue par le GROUPE ne réclame aucune entité de scène', () => {
-    expect(validateScene([attable({ 'table-1': { est: { kind: 'party', heroId: 'hero-1' } } })])).toEqual([]);
+    expect(validateScene([attable({ 'table-1': { est: { kind: 'party', rang: 1 } } })])).toEqual([]);
   });
 });

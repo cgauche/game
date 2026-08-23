@@ -38,7 +38,7 @@ import { walkPoseAt, type WalkPos } from '../fx/walkPose';
 import { buildRoofs, clearedSpace } from '../builders/roofs';
 import { buildProps } from '../builders/props';
 import { buildTokens, partyTokenOf } from '../builders/tokens';
-import { seatPoseOf } from '../../state/seating';
+import { RANG_MENEUR, seatPoseOf } from '../../state/seating';
 import { seatedEyeH } from '../pov/camera';
 import { elOccluder } from './occluders';
 import { tireurSurvole, type HighlightOpts } from './highlightLayer';
@@ -249,7 +249,7 @@ function CorpsDuMonde() {
   // PLACE ASSISE du meneur — résolue UNE fois pour tout l'écran (corps, chrome, caméra, POV). Le
   // point de RENDU du meneur en découle : son ancre s'il est attablé, sa case sinon. `partyPos`, lui,
   // ne bouge jamais : c'est la case d'abord, celle du brouillard, des chemins et des déclencheurs.
-  const partySeat = scene && partyLeader ? seatPoseOf(scene, { kind: 'party', heroId: partyLeader.id }) : null;
+  const partySeat = scene && partyLeader ? seatPoseOf(scene, { kind: 'party', rang: RANG_MENEUR }) : null;
   const posDeRendu = partySeat ? { x: partySeat.anchor.x, y: partySeat.anchor.y, z: partyPos.z } : partyPos;
   const wnow = performance.now();
   // Position VISUELLE des jetons à un instant donné : le rendu la demande au sien, les boucles hors

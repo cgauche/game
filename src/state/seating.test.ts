@@ -8,9 +8,9 @@ const TABLE = 'table-ronde-4-tabourets';
 const PROP = 'table-1';
 const POS = { x: 5, y: 5 };
 
-const PARTY: SeatOccupant = { kind: 'party', heroId: 'hero-1' };
+const PARTY: SeatOccupant = { kind: 'party', rang: 1 };
 const NPC: SeatOccupant = { kind: 'entity', entityId: 'pnj-1' };
-const HEROS = new Set(['hero-1']);
+const GROUPE = 1; // un groupe d'UN héros : seul l'emplacement 1 est tenu
 
 /**
  * POSITIONS des PNJ : la `pos` d'un attablé est sa case d'ABORD, jamais la case du meuble
@@ -90,10 +90,10 @@ describe('seatSlotsOf — transformation des places au cap de l’instance', () 
 describe('assignSeat / releaseSeat — exclusivités et raisons stables', () => {
   it('assigne une seule place par occupant et un seul occupant par slot', () => {
     const scene = seatingScene({ propFacing: 'N' });
-    const first = assignSeat(scene, PROP, 'nord', PARTY, HEROS);
+    const first = assignSeat(scene, PROP, 'nord', PARTY, GROUPE);
     expect(first.ok).toBe(true);
-    const sameOccupant = assignSeat(first.scene, PROP, 'est', PARTY, HEROS);
-    const sameSlot = assignSeat(first.scene, PROP, 'nord', NPC, HEROS);
+    const sameOccupant = assignSeat(first.scene, PROP, 'est', PARTY, GROUPE);
+    const sameSlot = assignSeat(first.scene, PROP, 'nord', NPC, GROUPE);
     expect(sameOccupant).toMatchObject({ ok: false, reason: 'occupant-assis' });
     expect(sameSlot).toMatchObject({ ok: false, reason: 'slot-occupe' });
     // Un refus rend la scène d'ENTRÉE, intacte.
@@ -103,7 +103,7 @@ describe('assignSeat / releaseSeat — exclusivités et raisons stables', () => 
 
   it('la place occupée porte son occupant, et la scène d’entrée n’est jamais mutée', () => {
     const scene = seatingScene({ propFacing: 'N' });
-    const res = assignSeat(scene, PROP, 'est', NPC, HEROS);
+    const res = assignSeat(scene, PROP, 'est', NPC, GROUPE);
     expect(res.ok).toBe(true);
     if (!res.ok) return;
     expect(res.pose).toMatchObject({ propId: PROP, slotId: 'est', occupant: NPC });
@@ -115,15 +115,15 @@ describe('assignSeat / releaseSeat — exclusivités et raisons stables', () => 
 
   it('chaque refus porte SA raison', () => {
     const scene = seatingScene({ propFacing: 'N' });
-    expect(assignSeat(scene, 'nulle-part', 'nord', NPC, HEROS)).toMatchObject({ ok: false, reason: 'prop-absent' });
-    expect(assignSeat(scene, PROP, 'nulle-part', NPC, HEROS)).toMatchObject({ ok: false, reason: 'slot-absent' });
-    expect(assignSeat(scene, PROP, 'nord', { kind: 'entity', entityId: 'fantome' }, HEROS)).toMatchObject({ ok: false, reason: 'occupant-absent' });
-    expect(assignSeat(scene, PROP, 'nord', { kind: 'party', heroId: 'hero-9' }, HEROS)).toMatchObject({ ok: false, reason: 'occupant-absent' });
+    expect(assignSeat(scene, 'nulle-part', 'nord', NPC, GROUPE)).toMatchObject({ ok: false, reason: 'prop-absent' });
+    expect(assignSeat(scene, PROP, 'nulle-part', NPC, GROUPE)).toMatchObject({ ok: false, reason: 'slot-absent' });
+    expect(assignSeat(scene, PROP, 'nord', { kind: 'entity', entityId: 'fantome' }, GROUPE)).toMatchObject({ ok: false, reason: 'occupant-absent' });
+    expect(assignSeat(scene, PROP, 'nord', { kind: 'party', rang: 9 }, GROUPE)).toMatchObject({ ok: false, reason: 'occupant-absent' });
   });
 
   it('releaseSeat lève l’occupant et vide le meuble ; debout = scène INCHANGÉE', () => {
     const scene = seatingScene({ propFacing: 'N' });
-    const assis = assignSeat(scene, PROP, 'sud', NPC, HEROS);
+    const assis = assignSeat(scene, PROP, 'sud', NPC, GROUPE);
     expect(assis.ok).toBe(true);
     const debout = releaseSeat(assis.scene, NPC);
     expect(debout.seatAssignments).toEqual({}); // le meuble vidé perd son objet
@@ -183,7 +183,7 @@ describe('approche EFFECTIVE — une chaise contre un comptoir reste occupable',
     const occupants: SeatOccupant[] = [PARTY, NPC, { kind: 'entity', entityId: 'pnj-2' }, { kind: 'entity', entityId: 'pnj-3' }];
     let courant: Scene = scene;
     slots.forEach((s, i) => {
-      const res = assignSeat(courant, PROP, s.slotId, occupants[i], HEROS);
+      const res = assignSeat(courant, PROP, s.slotId, occupants[i], GROUPE);
       expect(res, `place « ${s.slotId} »`).toMatchObject({ ok: true });
       courant = res.scene;
     });
@@ -201,7 +201,7 @@ describe('approche EFFECTIVE — une chaise contre un comptoir reste occupable',
     const murs = [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => ({ x: POS.x + dx, y: POS.y + dy })))
       .filter((p) => p.x !== POS.x || p.y !== POS.y);
     const scene = seatingScene({ propFacing: 'N', blocs: murs });
-    expect(assignSeat(scene, PROP, 'nord', NPC, HEROS)).toMatchObject({ ok: false, reason: 'approche-invalide' });
+    expect(assignSeat(scene, PROP, 'nord', NPC, GROUPE)).toMatchObject({ ok: false, reason: 'approche-invalide' });
   });
 });
 
@@ -246,9 +246,9 @@ describe('abords réservés à l’échelle de la SCÈNE — un repli ne vole pa
 
   it('deux corps ne se posent jamais sur la même case d’abord', () => {
     const scene = deuxTables();
-    const a = assignSeat(scene, PROP, 'nord', NPC, HEROS);
+    const a = assignSeat(scene, PROP, 'nord', NPC, GROUPE);
     expect(a).toMatchObject({ ok: true });
-    const b = assignSeat(a.scene, 'table-2', 'sud', { kind: 'entity', entityId: 'pnj-2' }, HEROS);
+    const b = assignSeat(a.scene, 'table-2', 'sud', { kind: 'entity', entityId: 'pnj-2' }, GROUPE);
     expect(b).toMatchObject({ ok: true });
     const nord = seatSlotsOf(b.scene, PROP).find((s) => s.slotId === 'nord')!;
     const sud2 = seatSlotsOf(b.scene, 'table-2').find((s) => s.slotId === 'sud')!;
@@ -260,16 +260,16 @@ describe('pruneSeatAssignments — normalisation déterministe', () => {
   it('jette meuble absent, place absente, corps absent ; garde le PREMIER siège d’un occupant', () => {
     const scene = seatingScene({ propFacing: 'N' });
     scene.seatAssignments = {
-      [PROP]: { nord: NPC, sud: NPC, est: { kind: 'party', heroId: 'hero-1' }, nulle: NPC, ouest: { kind: 'entity', entityId: 'fantome' } },
+      [PROP]: { nord: NPC, sud: NPC, est: { kind: 'party', rang: 1 }, nulle: NPC, ouest: { kind: 'entity', entityId: 'fantome' } },
       'meuble-disparu': { nord: NPC },
     };
-    expect(pruneSeatAssignments(scene, HEROS)).toEqual({ [PROP]: { nord: NPC, est: { kind: 'party', heroId: 'hero-1' } } });
+    expect(pruneSeatAssignments(scene, GROUPE)).toEqual({ [PROP]: { nord: NPC, est: { kind: 'party', rang: 1 } } });
   });
 
   it('un héros hors du groupe fourni perd sa place', () => {
     const scene = seatingScene({ propFacing: 'N' });
     scene.seatAssignments = { [PROP]: { nord: PARTY } };
-    expect(pruneSeatAssignments(scene, new Set())).toEqual({});
-    expect(pruneSeatAssignments(scene, HEROS)).toEqual({ [PROP]: { nord: PARTY } });
+    expect(pruneSeatAssignments(scene, 0)).toEqual({});
+    expect(pruneSeatAssignments(scene, GROUPE)).toEqual({ [PROP]: { nord: PARTY } });
   });
 });

@@ -2915,7 +2915,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // rester assis sur sa place — ni le MENEUR, qui entre au combat depuis sa chaise. Fondu dans
       // l'écriture de pose du combat — donc avant toute capture de mutation, et sans une seconde
       // écriture de scène. `all` = tous les participants, groupe compris.
-      const deboutScene = releaseSeatsOfCombatants(get().scene, all);
+      const deboutScene = releaseSeatsOfCombatants(get().scene, all, get().party);
       set({ ...resetFields('combatStart'), battle, mode: 'battle', pendingRoundStart: { round: battle.round }, scene: deboutScene });
       // Effets « début de combat » authorés de chaque combattant (inerte tant qu'aucune donnée ne porte
       // un effet `onCombatStart`) — APRÈS la pose du `battle`, journalisés dans le journal de combat.

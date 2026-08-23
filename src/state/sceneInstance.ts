@@ -27,7 +27,7 @@ function seatShape(assignments: SeatAssignments | undefined): string {
     const parMeuble = assignments![propId];
     const places = Object.keys(parMeuble).sort().map((slotId): [string, string] => {
       const o = parMeuble[slotId];
-      return [slotId, o.kind === 'party' ? `party:${o.heroId}` : `entity:${o.entityId}`];
+      return [slotId, o.kind === 'party' ? `party:${o.rang}` : `entity:${o.entityId}`];
     });
     if (places.length) out.push([propId, places]);
   }
@@ -52,17 +52,17 @@ export function captureMutation(current: Scene, authored: Scene): SceneMutation 
 /** Superpose une mutation sur une scène FRAÎCHEMENT clonée (filtre les entités retirées + fusionne
  *  les flags delta). PUR (nouvelle Scène).
  *
- *  `partyHeroIds` FOURNI = l'assise superposée est ÉLAGUÉE dans la foulée (`pruneSeatAssignments`) :
+ *  `partySize` FOURNIE = l'assise superposée est ÉLAGUÉE dans la foulée (`pruneSeatAssignments`) :
  *  une place dont le meuble sort par CETTE mutation, dont le slot manque au catalogue, ou dont le
  *  héros n'est pas du groupe fourni, n'entre pas en état. Paramètre EXPLICITE et non un défaut :
  *  sans le groupe, on ne peut pas distinguer « héros parti » de « groupe inconnu », et un élagage
  *  muet supprimerait l'assise du meneur. Absent = superposition nue.
  *  No-op complet si `mutation` absente ET aucun élagage demandé. */
-export function applyMutation(cloned: Scene, mutation: SceneMutation | undefined, partyHeroIds?: ReadonlySet<string>): Scene {
-  if (!mutation && !partyHeroIds) return cloned;
+export function applyMutation(cloned: Scene, mutation: SceneMutation | undefined, partySize?: number): Scene {
+  if (!mutation && partySize === undefined) return cloned;
   const entities = mutation ? cloned.entities.filter((e) => !mutation.removedEntityIds.includes(e.id)) : cloned.entities;
   const flags = mutation ? { ...cloned.flags, ...mutation.flags } : cloned.flags;
   const assise = mutation?.seatAssignments === undefined ? {} : { seatAssignments: mutation.seatAssignments };
   const out: Scene = { ...cloned, entities, flags, ...assise };
-  return partyHeroIds ? { ...out, seatAssignments: pruneSeatAssignments(out, partyHeroIds) } : out;
+  return partySize === undefined ? out : { ...out, seatAssignments: pruneSeatAssignments(out, partySize) };
 }

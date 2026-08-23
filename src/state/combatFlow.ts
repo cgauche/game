@@ -5951,7 +5951,7 @@ export function releaseSeatsOfDowned(get: Get, set: SetFn): void {
   const combattants = get().battle?.combatants;
   const next = releaseUnavailableSeats(scene, (o) => {
     if (o.kind === 'party') {
-      const hero = party.find((h) => h.id === o.heroId);
+      const hero = party[o.rang - 1];
       return !!hero && !hero.dead && !isOutOfAction(hero);
     }
     const c = combattants?.find((x) => x.id === o.entityId);
@@ -5962,19 +5962,25 @@ export function releaseSeatsOfDowned(get: Get, set: SetFn): void {
 
 /**
  * Un combat MET DEBOUT ceux qu'il enrôle : chaque corps devenu combattant quitte la place assise
- * qu'il tenait — le PNJ attablé comme le MENEUR, dont le combattant porte l'id du héros de `party`
+ * qu'il tenait — le PNJ attablé comme un HÉROS, dont le combattant porte l'id du membre de `party` :
+ * son EMPLACEMENT (rang) se déduit de `party`, puisqu'une place de groupe désigne un rang, pas un id
  * (les deux formes d'occupant se lèvent donc pour un même combattant, et il n'y a pas deux coutures).
  * PURE — rend la scène à écrire, que l'appelant fond dans SA propre écriture (l'ouverture de combat
  * en a déjà une), donc AVANT toute capture de mutation ; la SUPPRESSION des corps hors d'action
  * passe, elle, par `removeEntities`, qui renormalise à son tour.
  * Rend la scène d'entrée, même référence, si personne n'était assis.
  */
-export function releaseSeatsOfCombatants<S extends Scene | null>(scene: S, combatants: readonly Pick<Combatant, 'id'>[]): S {
+export function releaseSeatsOfCombatants<S extends Scene | null>(
+  scene: S,
+  combatants: readonly Pick<Combatant, 'id'>[],
+  party: readonly Pick<Combatant, 'id'>[],
+): S {
   if (!scene?.seatAssignments) return scene;
   let next: Scene = scene;
   for (const c of combatants) {
     next = releaseSeat(next, { kind: 'entity', entityId: c.id });
-    next = releaseSeat(next, { kind: 'party', heroId: c.id });
+    const rang = party.findIndex((h) => h.id === c.id) + 1;
+    if (rang) next = releaseSeat(next, { kind: 'party', rang });
   }
   return next as S;
 }
