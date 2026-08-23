@@ -367,7 +367,7 @@ export function applyTriggeredEffects(
       // jet caché (la sortie rationnelle de l'IA — plus d'ennemi en vue — est déjà l'effet AUTO de
       // psychology.json). MÊME prédicat que la porte du choix (`resolveFlowChoice`) et que celle du Test
       // (`resolveFlowTest`) : décider, dépenser et rouler appartiennent au MÊME siège.
-      if (eff.optional && !surfaceOf(get, t)) continue;
+      if (eff.optional && !surfaceOf(get, t.id)) continue;
       // Flow PORTANT un nœud `test` (à n'importe quelle profondeur — top-level Mâchoires, ou enfoui sous
       // `if`/`seq` : Venin/Hurlement/2 enchants) routé vers la voie cadence-aware (héros manuel → cascade
       // influençable ; ennemi/auto → inline) plutôt qu'avalé silencieusement — seulement si l'appelant
@@ -386,7 +386,7 @@ export function applyTriggeredEffects(
         // Prédicat MIROIR de celui du collecteur : le décaler d'un côté PERD le Test (ni différé ni collecté)
         // ou le DOUBLE (inline + étape).
         if (ctx.deferInteractiveTest) {
-          if (surfaceOf(get, t)) continue;
+          if (surfaceOf(get, t.id)) continue;
           lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx, get));
           continue;
         }

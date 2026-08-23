@@ -86,7 +86,7 @@ describe('#1262 lot 5c — la BANDE se compose sur la SURFACE, pas sur l’écra
   it('Surprise (LDB 13 l.77) : DEUX guetteurs de sièges DIFFÉRENTS → une seule fenêtre, partagée', () => {
     const { H } = setupCoop({ heros: 2, invites: [1] }); // H[0] à l'hôte, H[1] à l'invité
     expect(humanControlled(g(), H[1]), 'chez l’hôte, il ne pilote pas le héros de l’invité…').toBe(false);
-    expect(surfaceOf(g, H[1]), '…mais un siège humain le tient').toBe(true);
+    expect(surfaceOf(g, H[1].id), '…mais un siège humain le tient').toBe(true);
 
     applySurprise(g, useGame.setState, 'party'); // les ennemis embusquent : les héros sont les guetteurs
 
@@ -254,7 +254,7 @@ describe('#1262 lot 5c — la Déviation Critique appartient à la VICTIME (LDB 
       setCadence('auto');
       expect(pilotedByHuman(g(), cible), 'ancien prédicat : cadence-agnostique').toBe(true);
       expect(jetSurfaced(g(), cible), 'nouveau prédicat : cadence-agnostique lui aussi').toBe(true);
-      expect(surfaceOf(g, cible), 'surfaceOf TOMBE en auto — il aurait supprimé l’étape').toBe(false);
+      expect(surfaceOf(g, cible.id), 'surfaceOf TOMBE en auto — il aurait supprimé l’étape').toBe(false);
     });
 
     it('en AUTO l’étape se pose quand même et se tranche à `devier` (−1 PA, aucun Critique subi)', () => {

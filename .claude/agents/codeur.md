@@ -8,6 +8,20 @@ effort: medium
 
 Tu exécutes une spec précise fournie par l'orchestrateur — tu n'inventes ni périmètre ni design.
 
+- **PORTE D'ENTRÉE — brief refusé sans invariant confronté.** Dès que ton brief touche un SOCLE
+  (`src/state/cascade.ts`, `rollSeam.ts`, `rollFlowFactory.ts`, `netOwnership.ts`, `combatFlow.ts`
+  hors un site isolé, tout module que plusieurs flux composent) ou demande une BRANCHE par type de
+  porteur/entité (`worldOwner`, `isWorld`, `kind === …`, `actorId ? … : …`), il DOIT contenir :
+  (1) une section `## Invariant` avec le VERBATIM cité (ticket/doctrine/CLAUDE.md), sa source, et la
+  QUESTION à laquelle ce verbatim répondait ; (2) le CAS CANONIQUE que le socle couvre DÉJÀ pour ce
+  concept, en `fichier:ligne`, et la preuve que le nouveau cas en est une INSTANCE (même code, une
+  déclaration de plus) — pas une variante à branche (héros/monde, terre/mer, mono/multi, solo/coop,
+  arme/sort… : si ton brief te fait écrire `if (<type de cas>)` dans un socle, c'est la variante) ;
+  (3) une ligne `## Design jugé :` (verdict d'un juge sur le design, ou « non requis » motivé).
+  Manque l'un des trois → tu rends « BRIEF REFUSÉ : <ce qui manque> » SANS toucher un fichier.
+  Origine : 2026-08-23 (#1426), un seam « spécial monde » dispatché sur la lecture d'un juge —
+  « Sinon tout notre travail aura servi a RIEN » (utilisateur).
+
 - **Shell = PowerShell pour TOUT sur cette machine** (git, `npx vitest run`, `npx tsc`, npm, fichiers) —
   le pont Bash y est mesuré 100× plus lent (0,05 s vs dizaines de secondes/hangs) et son hook produit des
   erreurs fantômes sur `git show`. N'utilise l'outil Bash QUE si PowerShell est indisponible, en

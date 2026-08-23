@@ -475,7 +475,7 @@ function runTravelDays(get: Get, set: Set): void {
     // successives jusqu'au premier échec (`buildForcedPaceDaySteps`) — gameTime/kmDone sont alors
     // DIFFÉRÉS à la clôture (`continueTravelDayAfterCascade`), comme la progression fluviale.
     // Repli : pas de conducteur / aucun siège humain ne le tient → chemin SYNCHRONE (`forcedPaceDay`).
-    const premierKm = forcedEligible && forcedDriver && surfaceOf(get, forcedDriver.actor)
+    const premierKm = forcedEligible && forcedDriver && surfaceOf(get, forcedDriver.actor.id)
       ? buildForcedPaceStep(forcedDriver, kmLeft)
       : undefined;
     if (premierKm) {
@@ -654,7 +654,7 @@ function buildTravelDayCascade(
 
   // Météo « au début de chaque étape » (l.42, EDOC 8 l.50) : dé de MONDE sur la table de SA SAISON —
   // une étape à TABLE, en tête du jour. Le siège qui possède l'environnement la POSE (option « Dés
-  // fixés ») ou la voit passer, au lieu du d100 muet d'avant #1426.
+  // fixés ») ou la voit passer.
   //
   // Ce qui DÉPEND du résultat (contexte de jour, Test de Résistance de traversée, postes d'Étape) vit
   // dans son APPLIER, qui l'`insert` derrière elle : c'est le canal du séquenceur pour « ces étapes-là

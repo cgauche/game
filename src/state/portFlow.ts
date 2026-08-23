@@ -12,8 +12,8 @@
  * à l'achat, `sellChance.sellerDR` à la vente) s'ajoutent au DR de LEUR camp.
  *
  * VENTE (`portSellCargo`, dernier reliquat #275/#274) : CASCADE (`state/rollSeam.ts` `openRoll` +
- * `state/cascade.ts`) — Ragot (hero-test), recherche d'acheteur (dé de MONDE, `klass:'subi'`,
- * `worldSide`), Marchandage opposé (hero-test pour le héros, le marchand roule via
+ * `state/cascade.ts`) — Ragot (hero-test), recherche d'acheteur (dé de MONDE par `openWorldTest`,
+ * côté `worldSide`), Marchandage opposé (hero-test pour le héros, le marchand roule via
  * `engine/seaVoyage.rollMerchantOpposition`, moteur pur) sont chacun une étape routée par la policy
  * M/V/I (`resolveSurface`) — chaque continuation ENCHAÎNE l'étape suivante depuis l'applier de la
  * précédente (patron `merchantFlow.ts` Ragot→réassort ; défère via `setTimeout` si la cascade est
@@ -325,7 +325,7 @@ registerCascadeApplier(PORT_SELL_BARGAIN_KIND, (get, set, step) => {
   return { consequences: freeCons([finalizePortSale(get, set, cargoIndex, sellEnc, offerPct, bargainPctVal, bargainLine)]) };
 });
 
-/** 2. Trouver un acheteur (dé de MONDE, `klass:'subi'`, `worldSide` — l.362) : cible = `chance.target`
+/** 2. Trouver un acheteur (dé de MONDE par `openWorldTest`, côté `worldSide` — l.362) : cible = `chance.target`
  *  (posé en `meta.baseValue`, difficulté Intermédiaire = modificateur nul, la cible passe telle
  *  quelle). Échec sur la 1ʳᵉ tentative SANS Ragot préalable → 2ᵉ tentative sur la moitié du lot
  *  (`attempt:2`) ; le message « la moitié trouve preneur » ne s'affiche QUE si cette 2ᵉ tentative

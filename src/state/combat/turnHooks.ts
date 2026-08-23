@@ -96,7 +96,7 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
   for (const char of chars) {
     const gate = gates.find((e) => e.actGate!.char === char);
     const label = gate?.label ?? 'Effet';
-    if (surfaceOf(get, c)) {
+    if (surfaceOf(get, c.id)) {
       // ENJEU (#1117) : le gabarit dit la mécanique du gate ; le RENVOI descend à l'ENTITÉ qui l'exige
       // (`ActiveEffect.source`, estampillée génériquement par `applyOps`) — la Racine de mandragore
       // ouvre SA fiche d'objet, jamais une fiche de règle générique. La catégorie vient de la table

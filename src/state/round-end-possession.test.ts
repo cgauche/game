@@ -84,7 +84,7 @@ describe('#1262 lot 2 — l’entretien de fin de Round du héros d’un INVITÉ
     expect({
       ownsLocally: ownsLocally(g(), H.id),
       humanControlled: humanControlled(g(), H),
-      surfaceOf: surfaceOf(g, H),
+      surfaceOf: surfaceOf(g, H.id),
     }).toEqual({ ownsLocally: false, humanControlled: false, surfaceOf: true });
   });
 
@@ -198,7 +198,7 @@ describe('#1262 lot 2 — les deux prédicats du circuit sont COUPLÉS (le déca
     expect(stacks(h, COND.empoisonne), 'la voie inline a bien sauté ce porteur').toBe(1);
 
     expect(humanControlled(g(), h), 'affordance LOCALE : chez l’hôte, il ne pilote pas ce héros').toBe(false);
-    expect(surfaceOf(g, h), 'SURFACE : un siège humain le tient, donc son jet remonte').toBe(true);
+    expect(surfaceOf(g, h.id), 'SURFACE : un siège humain le tient, donc son jet remonte').toBe(true);
 
     const collecteurRegate = humanControlled(g(), h) ? collectHeroRoundEndUpkeep(g, h, () => {}) : [];
     expect(collecteurRegate, 'le Test n’est nulle part : perdu entre les deux voies').toHaveLength(0);
@@ -297,7 +297,7 @@ describe('#1262 lot 2 — le garde-fou du socle nommait déjà le bug que ce lot
   it('`rollSansPilote` sur le héros d’un invité : la garde DEV mord (le hook pré-lot y passait)', () => {
     const H = setupCoop();
     expect(humanControlled(g(), H), 'le gate pré-lot laissait donc entrer ce porteur dans la voie inline').toBe(false);
-    expect(surfaceOf(g, H)).toBe(true);
+    expect(surfaceOf(g, H.id)).toBe(true);
     expect(() => rollSansPilote(g, H, 40, 'intermediaire', makeRNG(3))).toThrow(/jet silencieux/);
   });
 });

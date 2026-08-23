@@ -931,7 +931,7 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
   if (!step) return undefined;
   return {
     title, icon: 'nav/dice', steps: [step],
-    immediate: !surfaceOf(get, challenger),
+    immediate: !surfaceOf(get, challenger.id),
   };
 }
 

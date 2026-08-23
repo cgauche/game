@@ -11,6 +11,7 @@ import { rollMerchantOpposition, type PortProfile } from '../engine/seaVoyage';
 import { rollMerchantSkill as rollLandMerchantSkill } from '../engine/landCargo';
 import { landBuyCargo, landSellCargo } from './landMarketFlow';
 import { persistCarriersCargo } from './carriers';
+import { draineCascadeDifferee } from './cascadeTestKit';
 import { createHero } from '../engine/character';
 import { d100, makeRNG } from '../engine/dice';
 import { evaluateTest } from '../engine/tests';
@@ -88,6 +89,15 @@ function soutenuStep(kind: string, actorId: string, helperId: string, sl: number
     result: { roll: 30, target: 55, sl, success: true },
     meta,
   } as CascadeStep;
+}
+
+/** Vend le lot 0 du convoi et JOUE la fenêtre du dé d'acheteur (dé de MONDE, #1426), puis les
+ *  maillons différés que sa conséquence enchaîne (mise à prix, Marchandage opposé). */
+function vendLotTerrestre(): void {
+  vi.useFakeTimers();
+  landSellCargo(get, set, LAND_CARRIER, 0);
+  draineCascadeDifferee(get, () => vi.runAllTimers());
+  vi.useRealTimers();
 }
 
 describe('Marchandage PORTUAIRE soutenu : le Soutien ne départage pas (LDB 12 l.160 / l.189-190)', () => {
@@ -218,7 +228,7 @@ describe('Marchandage TERRESTRE soutenu : `resolveOpposed` est le seul juge (MSR
     expect(testValue(setupLand(nue), 'marchandage')).toBe(nue);
     set(persistCarriersCargo(get(), [{ carrierId: LAND_CARRIER, cargo: [{ cargoId: 'vin', enc: 40, basePriceGold: 10 }] }]));
     seedBattleRng(seed);
-    landSellCargo(get, set, LAND_CARRIER, 0);
+    vendLotTerrestre();
     expect(bargainLineOf()).toMatch(/Marchandage \(.*\) : -\d+ %/);
   });
 });

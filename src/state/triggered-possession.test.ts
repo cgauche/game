@@ -133,7 +133,7 @@ describe('#1262 lot 3 — un Test déclenché HORS fin de Round ne se roule pas 
   it('Surprise (LDB 13 l.67-77) : le héros de l’invité tient SA rangée dans la bande, au lieu d’un jet muet', () => {
     const { H } = setupCoop();
     expect(humanControlled(g(), H), 'chez l’hôte, il ne pilote pas ce héros…').toBe(false);
-    expect(surfaceOf(g, H), '…mais un siège humain le tient : son jet doit remonter').toBe(true);
+    expect(surfaceOf(g, H.id), '…mais un siège humain le tient : son jet doit remonter').toBe(true);
 
     applySurprise(g, useGame.setState, 'party'); // les ennemis embusquent : le héros est le guetteur
 
@@ -174,7 +174,7 @@ describe('#1262 lot 3 — un Test déclenché HORS fin de Round ne se roule pas 
     } as unknown as TriggeredEffect;
 
     expect(isOutOfAction(H), 'sonde inerte sans ça : le porteur DOIT être hors d’action').toBe(true);
-    expect(surfaceOf(g, H), 'et rester surfacé — hors d’action ne veut pas dire sans joueur').toBe(true);
+    expect(surfaceOf(g, H.id), 'et rester surfacé — hors d’action ne veut pas dire sans joueur').toBe(true);
 
     applyTriggeredEffects(g, H, [eff], 'onWoundLoss', { set: useGame.setState });
 

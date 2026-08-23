@@ -6,6 +6,7 @@
  * périmètre runtime.
  */
 import { registerCascadeApplier, type CascadeApplier } from './cascade';
+import type { GameState } from './store';
 import type { CascadeStep } from './pendings';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import type { ModLine } from '../engine/combat';
@@ -46,6 +47,63 @@ export function soutienDe(st: LigneJugeable): number {
   return (st.mods ?? [])
     .filter((m) => m.ref?.id === RULE_REF.soutien.id)
     .reduce((sum, m) => sum + m.value, 0);
+}
+
+/**
+ * JOUE UNE ÉTAPE de la cascade active, comme un joueur : elle est TRANCHÉE (choix → son défaut
+ * authoré), LANCÉE (bande → chaque rangée non roulée ; table non tirée → son dé ; jet → son dé), puis
+ * VALIDÉE. Rend le `kind` de l'étape jouée (`undefined` si aucune cascade active).
+ *
+ * SOURCE UNIQUE du pilotage de cascade en test (#1426) — `travel-flow`, `sea-voyage-flow`, `voyage`,
+ * `14-voyage-maritime` et les sondes jouent tous CE pilote : une copie par fichier dérive, et c'est
+ * ainsi qu'un flux refondu se voit reproché SA refonte par un pilote périmé.
+ *
+ * Une table que le socle a résolue lui-même (cadence déférée à un automate, `cascade.poserLeCurseur`)
+ * se présente ici en `'affichage'` : rien à lancer, on valide — le kit n'a AUCUNE branche pour la
+ * politique du socle, il joue ce que la fenêtre offre.
+ */
+export function avanceEtapeCascade(get: () => GameState): string | undefined {
+  const p = get().pendingCascade;
+  if (!p) return undefined;
+  const cur = p.participants[p.cursor];
+  if (cur) {
+    if (cur.options && cur.chosen == null) get().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key);
+    else if (cur.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
+    else if (cur.table && !cur.table.result) get().cascadeTableRoll(cur.id);
+    else if (cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+  }
+  get().cascadeNext();
+  return cur?.kind;
+}
+
+/** DRAINE la cascade active jusqu'à sa clôture (ou `max` étapes — garde d'emballement), en jouant
+ *  chaque étape par `avanceEtapeCascade`. Rend les `kind` rencontrés, dans l'ordre. */
+export function draineCascade(get: () => GameState, max = 200): string[] {
+  const kinds: string[] = [];
+  for (let i = 0; i < max && get().pendingCascade; i++) {
+    const k = avanceEtapeCascade(get);
+    if (k !== undefined) kinds.push(k);
+  }
+  return kinds;
+}
+
+/**
+ * DRAINE une séquence dont la SUITE est DIFFÉRÉE (`cascade.chainStep` → timer 0) : chaque étape est
+ * jouée par `avanceEtapeCascade`, puis l'appelant fait tourner son horloge (`avancerTimers`, typiquement
+ * `() => vi.runAllTimers()` sous faux timers) pour que la continuation ouvre l'étape suivante.
+ *
+ * C'est le pilote des flux où un dé de MONDE commande la suite (vente terrestre : acheteur → mise à
+ * prix → Marchandage) : sans l'horloge, le drainage rendrait la main entre deux maillons et le geste
+ * du joueur paraîtrait sans effet. Le kit ne POSSÈDE pas l'horloge du test — il la demande.
+ */
+export function draineCascadeDifferee(get: () => GameState, avancerTimers: () => void, max = 20): string[] {
+  const kinds: string[] = [];
+  for (let i = 0; i < max && get().pendingCascade; i++) {
+    const k = avanceEtapeCascade(get);
+    if (k !== undefined) kinds.push(k);
+    avancerTimers();
+  }
+  return kinds;
 }
 
 /** Enregistre un applier-espion `kind` : `mapper(step)` alimente `applied`, `out(step)` (défaut : rien)

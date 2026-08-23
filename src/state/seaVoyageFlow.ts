@@ -96,7 +96,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
-import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, monoStep, tableStep, bandStep, choiceStep, openChoice, pousseSi, type RollRequest, type Consequence, type BuiltCascadeStep } from './rollSeam';
+import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, monoStep, tableStep, bandStep, buildBand, choiceStep, openChoice, pousseSi, type RollRequest, type Consequence, type FreeConsLine, type BuiltCascadeStep } from './rollSeam';
 import { registerCascadeApplier, registerCascadeSuccessRule, registerTableStep, startCascade, runCascadeImmediate } from './cascade';
 import { exposureWaveBand } from './nightBands';
 import { dataLabel } from '../data';
@@ -110,6 +110,8 @@ function seaAspectLabel(aspect: WindAspect): string {
   return t(SEA_ASPECT_KEY[aspect]);
 }
 import { stepPrecision } from './rollSeam';
+import { actorIn } from './combatants';
+import type { PlayerText } from '../i18n/playerText';
 
 /** Id du prédicat de succès des Tests d'équipage résolus PAR CASCADE (MDG 14 l.13) — le flux naval
  *  injecte `crewTestSuccess` (socle unique, règle optionnelle `crew-test-zero-success` comprise) dans
@@ -262,13 +264,16 @@ function tell(get: Get, set: Set, lines: string[]): void {
   if (plan?.sea) set({ travelPlan: { ...plan, sea: { ...plan.sea, lines: [...plan.sea.lines, ...lines] } } });
 }
 
-/** Écrit un ÉVÉNEMENT RACONTÉ (#371 LOT 4) — au JOURNAL (résumé texte, même patron que `tell`) ET au
- *  recap du jour EN CARTE (`sea.events`, distinct de `sea.lines`) : le titre + texte verbatim de
- *  l'événement se rendent en `ParchmentCard` (`SeaVoyageBody`), pas en ligne de routine. */
-function tellEvent(get: Get, set: Set, event: RecapEvent): void {
-  log(get, set, [`${event.title} — ${event.text}`]);
+/** POSE un ÉVÉNEMENT RACONTÉ (#371 LOT 4) au recap du jour EN CARTE (`sea.events`, distinct de
+ *  `sea.lines`) : le titre + texte verbatim de l'événement se rendent en `ParchmentCard`
+ *  (`SeaVoyageBody`), pas en ligne de routine. REND la ligne qui le nomme au lieu de l'écrire : depuis
+ *  un applier de cascade, cette ligne est la CONSÉQUENCE de l'étape (`commitStep` la journalise ET la
+ *  garde dans `outcome`, donc dans la pile à l'écran) ; hors cascade, l'appelant la passe à `log`.
+ *  Même partage des voix que `noteSeaLine` ci-dessous — un applier n'écrit jamais au journal en direct. */
+function noteEvent(get: Get, set: Set, event: RecapEvent): string {
   const plan = get().travelPlan;
   if (plan?.sea) set({ travelPlan: { ...plan, sea: { ...plan.sea, events: [...(plan.sea.events ?? []), event] } } });
+  return `${event.title} — ${event.text}`;
 }
 
 /** Écrit SEULEMENT au recap du jour (`sea.lines`) — le JOURNAL des appliers de cascade migrés (#295
@@ -774,7 +779,7 @@ function buildSeaDayCascade(get: Get, set: Set): { steps: BuiltCascadeStep[]; lo
   const routeDuJour = (get().worldMap as WorldMap | undefined)?.routes.find((r) => r.id === get().travelPlan!.routeId);
   const toLabel = get().worldMap ? placeById(get().worldMap!, get().travelPlan!.toPlaceId)?.label ?? '' : '';
   if (routeDuJour) steps.push(...buildAuthorPerilSteps(routeDuJour, toLabel, SEA_PERIL_INTERRUPT));
-  // Événement de bord (l.89) : APRÈS les périls d'auteur, comme dans la résolution d'avant #1426.
+  // Événement de bord (l.89) : APRÈS les périls d'auteur — les dés d'auteur du jour tombent devant lui.
   pousseSi(steps, buildSeaBoardEventStep(get));
   // ÉCHOUÉ (MDG 13 l.471-473, #444) : « il s'arrête net… ne peut plus bouger jusqu'à ce qu'il soit
   // dégagé » — AUCUNE Progression tant que le Test de Force n'a pas réussi ; le reste de la journée
@@ -1080,7 +1085,9 @@ function resolveSeaDayEvent(get: Get, set: Set, rng: RNG): boolean {
     const forced = seaBoardEventById(sea.forcedEventId);
     patchSea(get, set, { forcedEventId: undefined });
     if (forced) {
-      resolveBoardEvent(get, set, forced, rng);
+      // Hors cascade (recette `forceEncounter`) : personne ne journalise pour nous — la ligne rendue
+      // par `resolveBoardEvent` s'écrit ICI, une fois.
+      log(get, set, [resolveBoardEvent(get, set, forced, rng)]);
       return !!get().pendingCascade;
     }
   }
@@ -1126,13 +1133,18 @@ registerCascadeApplier(SEA_BOARD_EVENT_KIND, (get, set, step) => {
   if (!tiree) return {};
   const rng = battleRng();
   const event = seaBoardEventById(tiree.id);
-  // Le délai du PROCHAIN événement se tire ICI, juste après le dé d'événement — MÊME position RNG que
-  // la résolution synchrone d'avant #1426 — et il est posé AVANT la conséquence : celle-ci peut
-  // surfacer sa propre cascade, et une reprise re-déclencherait sinon CE même tirage.
+  // Le délai du PROCHAIN événement se tire ICI, juste après le dé d'événement, et il est posé AVANT la
+  // conséquence : celle-ci peut surfacer sa propre cascade, et une reprise re-déclencherait sinon CE
+  // même tirage.
   patchSea(get, set, { daysToEvent: rollDaysToNextEvent(rng) });
   if (!event) return {};
-  resolveBoardEvent(get, set, event, rng, tiree.die);
-  return { consequences: freeCons(tiree.lines) };
+  // UNE ligne par événement, et c'est la CONSÉQUENCE de l'étape (titre + texte VERBATIM de
+  // `sea-events.json`, CLAUDE.md règle 5) : `commitStep` la journalise ET la garde en `outcome`, donc
+  // la rangée reste lisible dans la pile après validation (« on ne perd pas les conséquences »,
+  // `CascadeModal`). Même patron que la Météo d'Étape (`travelFlow`, applier `stageWeather`), qui rend
+  // sa ligne en conséquence au lieu de l'écrire à côté. La ligne de la TABLE, elle, reste l'issue de la
+  // RANGÉE (`table.result.lines`) et ne se re-verse pas au journal : une seule voix par étape.
+  return { consequences: freeCons([resolveBoardEvent(get, set, event, rng, tiree.die)]) };
 });
 
 /**
@@ -1248,11 +1260,17 @@ registerCascadeApplier('sea-scorbut', (get, set, step, hero) => {
 /** Mal de mer (MDG 14 l.217-220, `klass:'subi'`) : échec → contracté. `applyContraction` dédoublonne si
  *  DEUX étapes ratées le même jour pour le même héros (premier voyage ET mauvais temps cumulés,
  *  `buildSeasicknessSteps`). */
-registerCascadeApplier('sea-mal-de-mer', (get, set, step, hero) => {
-  if (!step.result || !hero) return;
-  const j = step.result.success ? [] : applyContraction(hero, 'mal-de-mer', false, battleRng());
+registerCascadeApplier('sea-mal-de-mer', (get, set, step) => {
+  const lignes: FreeConsLine[] = [];
+  // BANDE : le verdict se lit RANGÉE PAR RANGÉE, dans l'ordre de la partie — le dé de contraction
+  // d'un porteur qui échoue tombe au rang de SA rangée.
+  for (const row of step.participants ?? []) {
+    const hero = actorIn(get(), row.id);
+    if (!hero || !row.result || row.result.success) continue;
+    if (applyContraction(hero, 'mal-de-mer', false, battleRng()).length) lignes.push({ text: t('sv.seasickGot', { name: hero.label }), tone: 'bad' });
+  }
   touchParty(get, set);
-  return { consequences: freeCons(j.length ? [{ text: t('sv.seasickGot', { name: hero.label }), tone: 'bad' }] : []) };
+  return { consequences: freeCons(lignes) };
 });
 
 /** Tonneau d'eau — EXPOSITION (MDG 14 l.209, `klass:'subi'`) : boire au tonneau contaminé la veille
@@ -1363,31 +1381,19 @@ function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): BuiltCascadeStep[
   const firstDay = sea.daysAtSea === 0;
   const badWeather = WIND_FORCES.indexOf(sea.weather.vent) >= WIND_FORCES.indexOf('vent-violent');
   if (!firstDay && !badWeather) return [];
-  const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
+  const appeles = get().party.filter((h) => !h.dead && !isElfSpecies(h.species) && contractionDue(h, 'mal-de-mer'));
+  if (!appeles.length) return [];
+  // UNE SITUATION = UNE FENÊTRE : chaque déclencheur est UNE bande dont les Personnages appelés sont
+  // les RANGÉES (jets indépendants), jamais N étapes MONO qui défilent pour le MÊME Test.
+  const bande = (id: string, label: PlayerText, difficulty: Difficulty): BuiltCascadeStep | undefined => buildBand(get, {
+    id, kind: 'sea-mal-de-mer', label,
+    stake: voyageStakeRef('sea-mal-de-mer', { disease: diseaseLabel('mal-de-mer') }),
+    difficulty,
+    porteurs: appeles.map((h) => ({ actor: h, ligne: { test: { skill: 'resistance', char: 'endurance' } } })),
+  });
   const out: BuiltCascadeStep[] = [];
-  for (const h of get().party) {
-    if (h.dead || isElfSpecies(h.species) || !contractionDue(h, 'mal-de-mer')) continue;
-    if (firstDay) {
-      pousseSi(out, monoStep({
-        id: `sea-mal-de-mer-premier-${h.id}`, kind: 'sea-mal-de-mer', actor: h,
-        label: composeRollLabel(h, t('sv.seasickFirst'), test), difficulty: 'complexe',
-        // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
-        rollLabel: t('sv.seasick'),
-        ligne: { test: { skill: 'resistance', char: 'endurance' } },
-        stake: voyageStakeRef('sea-mal-de-mer', { disease: diseaseLabel('mal-de-mer') }),
-      }));
-    }
-    if (badWeather) {
-      pousseSi(out, monoStep({
-        id: `sea-mal-de-mer-tempete-${h.id}`, kind: 'sea-mal-de-mer', actor: h,
-        label: composeRollLabel(h, t('sv.seasickStorm'), test), difficulty: 'intermediaire',
-        // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
-        rollLabel: t('sv.seasick'),
-        ligne: { test: { skill: 'resistance', char: 'endurance' } },
-        stake: voyageStakeRef('sea-mal-de-mer', { disease: diseaseLabel('mal-de-mer') }),
-      }));
-    }
-  }
+  if (firstDay) pousseSi(out, bande('sea-mal-de-mer-premier', t('sv.seasickFirst'), 'complexe'));
+  if (badWeather) pousseSi(out, bande('sea-mal-de-mer-tempete', t('sv.seasickStorm'), 'intermediaire'));
   return out;
 }
 
@@ -2317,9 +2323,13 @@ function eventParam(event: SeaEventDef, k: string, rng: RNG, dflt = 0): number {
   return dflt;
 }
 
-function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, roll?: number): void {
+/** Applique un événement de bord et REND la ligne qui le raconte (titre + texte verbatim de
+ *  `sea-events.json`) — son écriture appartient à l'appelant : conséquence d'étape sous cascade,
+ *  `log` direct hors cascade. Les lignes MÉCANIQUES de la conséquence (dégâts, Moral, avarie) restent
+ *  du ressort des sites qui les produisent (`tell`), comme ailleurs dans ce flux. */
+function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, roll?: number): string {
   const num = (k: string, dflt = 0): number => eventParam(event, k, rng, dflt);
-  tellEvent(get, set, { title: event.label, text: event.desc, roll });
+  const ligne = noteEvent(get, set, { title: event.label, text: event.desc, roll });
   const vessel = get().vessel;
   const ship = get().travelPlan?.vehicle;
   switch (event.kind) {
@@ -2390,7 +2400,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
           // réussissant ; funeste, il ne s'évite qu'ainsi (applier `sea-priere`).
           stake: voyageStakeRef('sea-priere', { manann: signedD10(manannD), moral: signedD10(moraleD) }),
         }, 'sea-priere', { manannD, moraleD });
-        return;
+        return ligne;
       }
       // Pas de Test de Prière requis, ou aucun prêtre : bon/mauvais présage s'applique d'office
       // (MDG 15 l.197-198 / l.231-232 : « sauf si … réussit un Test de Prière »).
@@ -2516,6 +2526,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
     default:
       break; // narratif : le desc verbatim au journal suffit — rien d'inventé
   }
+  return ligne;
 }
 
 function tellManann(get: Get, set: Set, deltaD10: number): void {
@@ -2724,8 +2735,8 @@ export function resolveShoreLeave(get: Get, set: Set, allow: boolean): void {
     ? t('sv.shoreLeaveGranted')
     : t('sv.shoreLeaveDenied')]);
   // Désertion à la relâche ACCORDÉE (MDG 14 l.192-202) — retour de permission = moment du tirage. Seam
-  // de jet (#275 Ronde 1, delta « désertion ») : `klass:'subi'`, côté `worldSide` (aucun `actorId` — un
-  // marin PNJ n'est pas un `Combatant`) ; `meta.baseValue` = le SEUIL d100 posé par la bande de Moral
+  // de jet (#275 Ronde 1, delta « désertion ») : dé de MONDE par `openWorldTest` (côté `worldSide`,
+  // aucun `actorId` — un marin PNJ n'est pas un `Combatant`) ; `meta.baseValue` = le SEUIL d100 posé par la bande de Moral
   // (obligation `rollSeam.ts` : un côté sans acteur DOIT le fournir, sinon `buildMonoStep` poserait
   // `base=0`). Le RÉSULTAT MÉCANIQUE (nombre de déserteurs) reste la boucle d100/marin INCHANGÉE,
   // exécutée dans l'applier `sea-desertion` — même patron que `rollShipCritical` dans les appliers
@@ -2762,7 +2773,7 @@ export function finalizePortArrival(get: Get, set: Set, arrival: { toPlaceId: st
   if (to) finalizePortArrivalTo(get, set, to, arrival.allow);
 }
 
-/** Désertion (MDG 14 l.192-202, `klass:'subi'`) : la boucle d100/marin réelle (INCHANGÉE, même seuil,
+/** Désertion (MDG 14 l.192-202, dé de MONDE par `openWorldTest`) : la boucle d100/marin réelle (INCHANGÉE, même seuil,
  *  mêmes tirages via `battleRng()`) vit ICI — l'étape `sea-desertion` n'est que le vecteur de visibilité
  *  MJ. La FINALISATION de l'accostage (`finalizePortArrival`) est portée par le champ `portArrival` de la
  *  cascade et jouée à sa clôture par `dispatchCascadeDone` (#387) — plus de `setTimeout` de reprise. */

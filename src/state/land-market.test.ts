@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { seedBattleRng } from './battleRng';
+import { draineCascadeDifferee } from './cascadeTestKit';
 import { toBrass } from '../engine/money';
 import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { WINE_QUALITY } from '../engine/landCargo';
@@ -70,6 +71,15 @@ function freshState(withCarrier = true) {
   creditBourse(get, set, party[0].id, { gold: 5000, silver: 0, brass: 0 });
 }
 
+/** Vend le lot 0 du convoi et JOUE la fenêtre du dé de monde (#1426) : « Lancer », puis les maillons
+ *  différés (mise à prix, Marchandage) que la continuation enchaîne. */
+function vendLot0(index = 0): void {
+  vi.useFakeTimers();
+  get().landSellCargo(CARRIER_ID, index);
+  draineCascadeDifferee(get, () => vi.runAllTimers());
+  vi.useRealTimers();
+}
+
 describe('#58 — commerce de cargaison terrestre (MSRC 13)', () => {
   beforeEach(() => freshState());
 
@@ -124,7 +134,7 @@ describe('#58 — commerce de cargaison terrestre (MSRC 13)', () => {
     useGame.setState({ landMarket: { placeId: 'A', label: 'Grünburg', market: landMap.places[0].market!, offers: [] } } as never);
     seedBattleRng(2);
     const before = partyMoneyTotal(get).gold;
-    get().landSellCargo(CARRIER_ID, 0);
+    vendLot0();
     const cargo = carrierCargo();
     expect(cargo.length === 0 || cargo[0].enc < 40).toBe(true);
     expect(partyMoneyTotal(get).gold).toBeGreaterThan(before);
@@ -179,13 +189,13 @@ describe('#58 — commerce de cargaison terrestre (MSRC 13)', () => {
     useGame.setState({ tradeRumours: [], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [] } } as never);
     seedBattleRng(2);
     const b0 = toBrass(partyMoneyTotal(get));
-    get().landSellCargo(CARRIER_ID, 0);
+    vendLot0();
     const base = toBrass(partyMoneyTotal(get)) - b0;
     setCarrierCargo([lot]);
     useGame.setState({ tradeRumours: [rum], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [] } } as never);
     seedBattleRng(2);
     const b1 = toBrass(partyMoneyTotal(get));
-    get().landSellCargo(CARRIER_ID, 0);
+    vendLot0();
     const withRumour = toBrass(partyMoneyTotal(get)) - b1;
     expect(base).toBeGreaterThan(0);
     expect(withRumour).toBe(base * 2);
@@ -202,13 +212,13 @@ describe('#58 — commerce de cargaison terrestre (MSRC 13)', () => {
     useGame.setState({ tradeRumours: [], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [] } } as never);
     seedBattleRng(2);
     const b0 = toBrass(partyMoneyTotal(get));
-    get().landSellCargo(CARRIER_ID, 0);
+    vendLot0();
     const base = toBrass(partyMoneyTotal(get)) - b0;
     setCarrierCargo([lot]);
     useGame.setState({ tradeRumours: rums, landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [] } } as never);
     seedBattleRng(2);
     const b1 = toBrass(partyMoneyTotal(get));
-    get().landSellCargo(CARRIER_ID, 0);
+    vendLot0();
     expect(toBrass(partyMoneyTotal(get)) - b1).toBe(base);
   });
 });

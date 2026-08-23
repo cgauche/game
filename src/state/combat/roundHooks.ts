@@ -67,7 +67,7 @@ registerCombatHook({
       // de Force Mentale à chaque offre) — résolu INLINE ici. Porteur SURFACÉ (`surfaceOf` : un siège humain
       // QUELCONQUE le tient, cadence manuelle) : différé en étape de cascade influençable (Chance/
       // Résilience), collectée par `collectHeroRoundEndUpkeep` — MIROIR strict de son prédicat.
-      if (!surfaceOf(get, c)) {
+      if (!surfaceOf(get, c.id)) {
         for (const e of pendingPlusExtensions(c)) {
           const res = rollSansPilote(get, c, testValue(c, undefined, 'force-mentale'), 'intermediaire', battleRng());
           resolvePlusExtension(c, e, res.success).forEach((l) => sink(l, c));
@@ -233,7 +233,7 @@ registerCombatHook({
   run: ({ get, battle, sink }) => {
     if (rule('combat-aa-blessures') !== 'aa') return; // inerte en LDB (aucun RNG consommé → golden préservé)
     for (const c of battle.combatants) {
-      if (!aaBleedUnconsciousDue(c) || surfaceOf(get, c)) continue; // porteur surfacé → étape de cascade (MIROIR du collecteur)
+      if (!aaBleedUnconsciousDue(c) || surfaceOf(get, c.id)) continue; // porteur surfacé → étape de cascade (MIROIR du collecteur)
       const res = rollSansPilote(get, c, testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = aaBleedUnconsciousApply(c, res.success);
       if (line) sink(line, c);
@@ -337,7 +337,7 @@ registerCombatHook({
       c.effortRounds = (c.effortRounds ?? 0) + 1;
       if (c.effortRounds < fatigueThreshold(c)) continue;
       // Porteur SURFACÉ au seuil : différé à la cascade influençable (MIROIR du collecteur). Sinon (monstre/rapide/auto) : silence ici.
-      if (surfaceOf(get, c)) continue;
+      if (surfaceOf(get, c.id)) continue;
       const t = rollSansPilote(get, c, testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = fatigueApply(c, t.success, t.sl);
       if (line) sink(line, c);
@@ -370,7 +370,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
   // Étapes de cascade SEULEMENT pour un porteur SURFACÉ (`surfaceOf` : un siège humain QUELCONQUE le tient,
   // cadence manuelle) ; en rapide/auto, ou sans siège pour le tenir, il est auto-résolu COMME un monstre →
   // ses Tests se résolvent silencieusement dans les hooks ci-dessus, qui portent le prédicat MIROIR.
-  if (!surfaceOf(get, c) || isOutOfAction(c)) return [];
+  if (!surfaceOf(get, c.id) || isOutOfAction(c)) return [];
   const steps: BuiltCascadeStep[] = [];
   // 0) Récupération d'États en DONNÉES (Empoisonné Résistance LDB 16 l.70-72 ; plus tard En Flammes/Sonné) —
   //    chaque État porté dont la donnée déclare un `effects: onRoundEnd` à nœud `test` devient une étape

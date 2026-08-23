@@ -268,7 +268,7 @@ import {
   setManeuverPostHitHook,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
-import { registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep } from './cascade';
+import { registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep, poserCurseurCascade } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
 import { combatEndBands, combatEndRowMeta } from './combatEndBands';
 import type { CascadeStepMeta } from './pendings';
@@ -539,11 +539,11 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
   // SURFACE (#1262), pas affordance locale : le guetteur d'un AUTRE siège entre dans la bande — c'est SON
   // joueur qui roulera sa rangée. Les deux boucles lisent le MÊME prédicat : décaler l'une perdrait le
   // Test (ni rangée ni inline) ou le doublerait.
-  const bande = surprised.filter((c) => surfaceOf(get, c));
+  const bande = surprised.filter((c) => surfaceOf(get, c.id));
   const step = bande.length ? frozenOpposedBatchStep(bande, test, branches, EMPTY_FLOW, difficulty, sneak, aT) : undefined;
   if (step) pushCombatStep(set, step);
   for (const c of surprised) {
-    if (surfaceOf(get, c)) continue; // sa rangée est dans la bande
+    if (surfaceOf(get, c.id)) continue; // sa rangée est dans la bande
     runCombatFlow({ mode: 'combat', get, set, target: c, caster: sneak, label: 'Surprise', opposedFreeze: aT }, testFlow(test, branches.onSuccess, branches.onFail));
   }
   // Inline (embusqué ennemi / héros auto) : les lignes partent dans la file différée → on les folde dans le
@@ -4666,7 +4666,7 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
   if (castStepIdx >= 0) {
     const casc = get().pendingCascade;
     if (casc && casc.purpose === 'combat' && casc.cursor === castStepIdx) {
-      if (casc.participants.length > castStepIdx + 1) set({ pendingCascade: { ...casc, cursor: castStepIdx + 1 } });
+      if (casc.participants.length > castStepIdx + 1) poserCurseurCascade(get, set, casc, castStepIdx + 1);
       else set({ pendingCascade: null });
     }
   }
@@ -5840,7 +5840,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   // est, c'est SON joueur qui roule) et pas hors d'action. `isOutOfAction` est le critère MÉTIER du
   // site : ici il fait tomber le Test dans la voie RÉSOLUE D'OFFICE (il est jeté), là où la fin de Round
   // le SAUTE tout court (`openRoundEndCascade`) — divergence MESURÉE, en attente d'arbitrage (#1265).
-  const manual = (id: string) => { const c = actorIn(get(), id); return !!c && surfaceOf(get, c) && !isOutOfAction(c); };
+  const manual = (id: string) => { const c = actorIn(get(), id); return !!c && surfaceOf(get, c.id) && !isOutOfAction(c); };
   if (inlineLines.length) get().log(inlineLines);
   for (const band of combatEndBands(monos)) routeBandByPilot(get, set, band, steps, manual);
   // Tests d'entretien du FRANCHISSEMENT DE JOUR mis en file pendant le combat (#253) : consommés ICI, à la
@@ -6599,7 +6599,7 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
   const bandes = new Map<number, Combatant[]>();
   for (const d of dues) {
     // SURFACE (#1262), pas affordance locale : le craintif d'un AUTRE siège a SA rangée dans la bande.
-    if (!surfaceOf(get, d.c)) continue; // sa résolution reste inline (ci-dessous)
+    if (!surfaceOf(get, d.c.id)) continue; // sa résolution reste inline (ci-dessous)
     bandes.set(d.indice, [...(bandes.get(d.indice) ?? []), d.c]);
   }
   for (const [indice, craintifs] of bandes) {
@@ -6612,7 +6612,7 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
     ));
   }
   for (const d of dues) {
-    if (surfaceOf(get, d.c)) continue; // sa rangée est dans la bande
+    if (surfaceOf(get, d.c.id)) continue; // sa rangée est dans la bande
     runCombatFlow({ mode: 'combat', get, set, target: d.c, caster: d.c, label: 'Approche menaçante' }, testFlow(testFor(d.indice), branches.onSuccess, branches.onFail));
   }
   // Inline (mover ennemi → héros auto/ennemi craintif) : les lignes partent dans la file différée. Le héros
@@ -6826,7 +6826,7 @@ function openCombatPsychCascade(
   for (const c of get().battle!.combatants) {
     // SURFACE (#1262), pas affordance locale : le porteur d'un AUTRE siège entre dans la cascade — sa
     // rangée l'attend, c'est SON joueur qui la roule. `isOutOfAction` reste le critère MÉTIER du site.
-    if (!surfaceOf(get, c) || isOutOfAction(c)) continue;
+    if (!surfaceOf(get, c.id) || isOutOfAction(c)) continue;
     const due = psychDueFor(get, c, collect);
     if (due) dues.push(due);
   }
@@ -6876,7 +6876,7 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
     // (`deferInteractiveTest`) : décaler l'un des deux perdrait ou doublerait le Test. `isOutOfAction`
     // reste le critère MÉTIER du site : ici le porteur hors d'action est SAUTÉ, là où la fin de combat
     // (`openCombatEndCascade`) le fait tomber dans la voie INLINE — divergence préservée (#1265).
-    if (!surfaceOf(get, c) || isOutOfAction(c)) continue;
+    if (!surfaceOf(get, c.id) || isOutOfAction(c)) continue;
     // 1) Upkeep du combattant (effets RNG-free). 2) Peur de fin de Round, regroupée en bandes ci-dessous.
     //    (La sortie de Frénésie est un effet `onTurnStart` en données, jouée au début du tour du héros.)
     steps.push(...collectHeroRoundEndUpkeep(get, c, sink));

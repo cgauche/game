@@ -19,7 +19,7 @@
 import seaEventsJson from '../data/sea-events.json';
 import seaCargoJson from '../data/sea-cargo.json';
 import { findTableEntry } from './tables';
-import { d10, d100, roll as rollDice, type RNG, defaultRNG } from './dice';
+import { d10, roll as rollDice, type RNG, defaultRNG } from './dice';
 import { rollTest, type TestResult } from './tests';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
@@ -185,12 +185,6 @@ export function rollDaysToNextEvent(rng: RNG = defaultRNG): number {
  *  ex. `navire-hostile` = Langskip skaeling / Cogue pirate). Pour forcer un tirage en recette (#332). */
 export const seaBoardEventById = (idOrKind: string): SeaEventDef | undefined =>
   EVENTS.boardEvents.find((e) => e.id === idOrKind) ?? EVENTS.boardEvents.find((e) => e.kind === idOrKind);
-
-/** Tire un ÉVÉNEMENT DE BORD (l.89) : d100 + Humeur de Manann du navire. PUR. */
-export function rollBoardEvent(manannScore: number, rng: RNG = defaultRNG): { roll: number; event: SeaEventDef } {
-  const roll = d100(rng) + manannScore;
-  return { roll, event: findTableEntry(EVENTS.boardEvents, roll) };
-}
 
 /** Tire un ÉVÉNEMENT DE PORT à l'accostage (l.127-129) : 2d10, ±1 selon le signe de l'Humeur ;
  *  il « se produit dans les 2d10 heures après accostage ». PUR. */

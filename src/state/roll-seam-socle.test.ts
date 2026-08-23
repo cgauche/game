@@ -33,8 +33,8 @@ describe('#1262 — surfaceRow : rangée SURFACÉE ou TÉMOIN né roulé', () =>
   it('porteur tenu par un siège → rangée SURFACÉE : interactive, sans résultat', () => {
     const h = hero('H1');
     useGame.setState({ party: [h] } as never);
-    expect(surfaceOf(useGame.getState, h)).toBe(true);
-    const r = surfaceRow(useGame.getState, h, rang('H1'));
+    expect(surfaceOf(useGame.getState, h.id)).toBe(true);
+    const r = surfaceRow(useGame.getState, h.id, rang('H1'));
     expect(r.interactive).toBe(true);
     expect(r.result).toBeNull();
   });
@@ -42,8 +42,8 @@ describe('#1262 — surfaceRow : rangée SURFACÉE ou TÉMOIN né roulé', () =>
   it('porteur qu’AUCUN siège ne tient (héros conduit par l’IA) → TÉMOIN né roulé : result posé à la construction', () => {
     const h = hero('H2', { aiControlled: true } as Partial<Combatant>);
     useGame.setState({ party: [h] } as never);
-    expect(surfaceOf(useGame.getState, h)).toBe(false);
-    const r = surfaceRow(useGame.getState, h, rang('H2'));
+    expect(surfaceOf(useGame.getState, h.id)).toBe(false);
+    const r = surfaceRow(useGame.getState, h.id, rang('H2'));
     expect(r.interactive).toBe(false);
     expect(r.result, 'un témoin sans résultat suspendrait sa bande').toBeTruthy();
     expect(typeof r.result!.roll).toBe('number');
@@ -59,7 +59,7 @@ describe('#1262 — surfaceRow : rangée SURFACÉE ou TÉMOIN né roulé', () =>
     const h = hero('H3');
     useGame.setState({ party: [h] } as never);
     const deja = { ...rang('H3'), result: { roll: 42, target: 40, sl: 0, success: false } } as BatchParticipant;
-    expect(surfaceRow(useGame.getState, h, deja).result).toEqual(deja.result);
+    expect(surfaceRow(useGame.getState, h.id, deja).result).toEqual(deja.result);
     expect(surfaceRow(useGame.getState, undefined, deja).result).toEqual(deja.result);
   });
 });

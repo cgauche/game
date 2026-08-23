@@ -24,7 +24,8 @@ import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, Cascad
 import type { StakeRef } from '../data';
 import type { Consequence } from './rollSeam';
 import type { BuiltCascadeStep } from './stepBrand';
-import { resultLines } from './rollSeam';
+import { resultLines, surfaceOf } from './rollSeam';
+import { WORLD_STEP_OWNER } from './netOwnership';
 import { toRecapLines } from './recapLine';
 import { actorIn } from './combatants';
 import { rollTest, evaluateTest, evaluateCombinedTest, bestForcedRoll, resolveOpposed, opposedBranchSuccess, type TestResult } from '../engine/tests';
@@ -707,8 +708,12 @@ export function pushStep(set: Set, step: CascadeStep | ((index: number) => Casca
     const st = typeof step === 'function' ? step(same ? same.participants.length : 0) : step;
     if (!st) return {};
     assertBandeDeclarePossession([st]);
-    if (same) return { pendingCascade: { ...same, participants: [...same.participants, st] } };
-    const fresh: PendingCascade = { title: st.label ?? 'Conséquences', icon: st.icon ?? 'action/attack', purpose: p, cursor: 0, log: [], participants: [st] };
+    // L'append est une PORTE du curseur : une étape qui atterrit SOUS le curseur passe par le seam
+    // (`poserLeCurseur`), comme à l'ouverture. `pushStep` n'a pas de `get` — l'état de CE `set` fait
+    // office de lecture, il est celui qui reçoit l'étape.
+    const g = (() => s) as Get;
+    if (same) return { pendingCascade: poserLeCurseur(g, { ...same, participants: [...same.participants, st] }) };
+    const fresh: PendingCascade = poserLeCurseur(g, { title: st.label ?? 'Conséquences', icon: st.icon ?? 'action/attack', purpose: p, cursor: 0, log: [], participants: [st] });
     // Slot occupé par un AUTRE purpose : on le SUSPEND (jamais un écrasement) — même `set` atomique
     // que `suspendActiveCascade`, dont `pushStep` n'a pas le `get`.
     return cur ? { pendingCascade: fresh, suspendedCascades: [...s.suspendedCascades, cur] } : { pendingCascade: fresh };
@@ -767,8 +772,10 @@ export function startCascade(
   assertBandeDeclarePossession(opts.steps);
   const cur = get().pendingCascade;
   if (cur && cur.purpose === opts.purpose) {
+    // APPEND au fragment en place : le curseur en BILAN (`cursor === participants.length`) se retrouve
+    // POSÉ sur la première étape appendue — même porte que l'ouverture (`poserLeCurseur`).
     set({
-      pendingCascade: {
+      pendingCascade: poserLeCurseur(get, {
         ...cur,
         participants: [...cur.participants, ...opts.steps],
         log: [...cur.log, ...(opts.log ?? [])],
@@ -776,16 +783,16 @@ export function startCascade(
         roundBoundary: cur.roundBoundary || opts.roundBoundary,
         combatEndBoundary: cur.combatEndBoundary || opts.combatEndBoundary,
         restNights: cur.restNights ?? opts.restNights,
-      },
+      }),
     });
     return;
   }
   if (cur) suspendActiveCascade(get, set);
   set({
-    pendingCascade: {
+    pendingCascade: poserLeCurseur(get, {
       title: opts.title, icon: opts.icon, purpose: opts.purpose,
       participants: opts.steps, cursor: 0, log: opts.log ?? [], travelHalt: opts.travelHalt, roundBoundary: opts.roundBoundary, combatEndBoundary: opts.combatEndBoundary, restNights: opts.restNights,
-    },
+    }),
   });
 }
 
@@ -920,7 +927,9 @@ export function resumeSuspendedCascade(get: Get, set: Set): boolean {
   const stack = get().suspendedCascades;
   if (!stack.length) return false;
   const top = stack[stack.length - 1];
-  set({ pendingCascade: top, suspendedCascades: stack.slice(0, -1) });
+  // La REPRISE est une porte du curseur : la séquence parquée revient peut-être SUR une table (son
+  // applier a ouvert un combat en plein vol) — elle passe par le même seam que l'ouverture.
+  set({ pendingCascade: poserLeCurseur(get, top), suspendedCascades: stack.slice(0, -1) });
   return true;
 }
 
@@ -951,12 +960,95 @@ export function dropSceneEntrySteps(get: Get, set: Set): void {
 }
 
 /**
+ * LE PORTEUR d'une étape — l'id qui route sa possession, sa surface et son affordance d'influence.
+ * Une étape sans acteur nommé est portée par le MONDE (`WORLD_STEP_OWNER`, `worldOwner` posé au mint) :
+ * c'est la MÊME convention que `netOwnership.seatInfluences`/`canFixDie`, jamais un cas à part.
+ */
+function porteurDe(st: CascadeStep): string {
+  return st.actorId ?? WORLD_STEP_OWNER;
+}
+
+/**
+ * L'étape est-elle une table qu'AUCUN siège ne joue ? Le seul cas où le socle tire à la place d'une
+ * fenêtre (cf. `poserLeCurseur` ci-dessous) — et il se juge au MÊME appel que les JETS, pour TOUT
+ * porteur : `rollSeam.surfaceOf(porteurDe(st))`. Un héros conduit par l'IA, un ennemi sans siège MJ,
+ * un acteur inconnu ne tiennent aucune fenêtre ; le monde, lui, est toujours tenu par un siège humain
+ * (`netOwnership.worldSeat`) — seule la cadence déférée à un automate l'en dessaisit.
+ */
+function tableSansSiege(get: Get, st: CascadeStep | undefined): boolean {
+  if (!st || stepInteraction(st) !== 'table') return false;
+  return !surfaceOf(get, porteurDe(st));
+}
+
+/**
+ * LE CURSEUR SE POSE SUR UNE ÉTAPE — seam UNIQUE du pilote INTERACTIF (#1426), joué PARTOUT où le
+ * curseur atteint une étape : ouverture (`startCascade`), APPEND (`pushStep`), avancée
+ * (`advanceCascade`) et REPRISE d'une séquence parquée (`resumeSuspendedCascade`).
+ *
+ * UNE règle, quel que soit le PORTEUR de l'étape — un héros, un ennemi, le MONDE (`worldOwner`) : une
+ * table se JOUE dans la fenêtre. Sa rangée s'affiche, « Lancer » est servi au siège qui la possède
+ * (`modalArbiter` entrée `cascade` → `ActiveModal`), et l'option « Dés fixés » n'y ajoute que la POSE
+ * du dé (`forcedDieRow.tableStepForcedDie`, gate `canFixDie`). Un siège possesseur DISTANT tient la
+ * fenêtre : l'hôte attend, il ne tire pas à sa place.
+ *
+ * EXCEPTION UNIQUE, et elle n'est pas une exception au porteur : AUCUN siège humain ne tient l'étape
+ * (`tableSansSiege`, donc `rollSeam.surfaceOf`) — cadence déférée à un automate, héros conduit par l'IA,
+ * ennemi sans siège MJ, porteur introuvable. Le socle tire l'étape ICI, et `advanceCascade` la
+ * FRANCHIT dans le même geste.
+ *
+ * Résolveur et composition sont ceux de la modale (`liveTableDecl` + `rollTableStep` +
+ * `tableStepResolved`, calque `runCascadeImmediate`) : le dé est consommé au RANG de l'étape, jamais
+ * au build, et l'étape porte son résultat — le bilan le montre.
+ */
+function poserLeCurseur(get: Get, p: PendingCascade): PendingCascade {
+  const st = p.participants[p.cursor];
+  if (!tableSansSiege(get, st)) return p;
+  const decl = liveTableDecl(get(), st);
+  const result = rollTableStep(decl, battleRng(), { get });
+  return { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? tableStepResolved(x, decl, result) : x)) };
+}
+
+/**
+ * PORTE PUBLIQUE du curseur (#1426) — poser le curseur d'une cascade OUVERTE sur l'étape `i`. Tout
+ * site qui reprend la main sur une cascade hôte (fold d'incantation, re-ciblage du lanceur d'un Test)
+ * passe par ICI : un `set({ pendingCascade: { …casc, cursor: i } })` écrit à la main court-circuite le
+ * pilote, et une table qu'aucun siège ne joue reste alors non tirée — `cascadeNext` en no-op définitif.
+ */
+export function poserCurseurCascade(get: Get, set: Set, casc: PendingCascade, i: number): void {
+  set({ pendingCascade: curseurPose(get, casc, i) });
+}
+
+/**
+ * LA MÊME PORTE, rendue en VALEUR (#1426) — pour un site qui doit publier `pendingCascade` DANS LE
+ * MÊME `set` qu'un autre champ : `store.testSetActor` change le porteur du Test ET celui de l'étape,
+ * et deux `set` successifs publient entre eux un état où les deux porteurs divergent (un abonné rend
+ * cet inter-état). Une seule implémentation — `poserCurseurCascade` délègue ici.
+ */
+export function curseurPose(get: Get, casc: PendingCascade, i: number): PendingCascade {
+  return poserLeCurseur(get, { ...casc, cursor: i });
+}
+
+/**
  * Pilote INTERACTIF : valide l'étape courante (conséquence + insertions), avance le curseur. À la
  * fin, ferme le pending et RENVOIE la cascade finalisée (pour la suite propre au `purpose` — reprise
  * de voyage, bilan… — gérée par le store). Renvoie `null` tant qu'on avance encore. L'étape courante
  * influençable doit être lancée (sinon no-op : la modale force d'abord le jet).
  */
 export function advanceCascade(get: Get, set: Set): PendingCascade | null {
+  // BOUCLE, jamais récursion : une séquence enchaîne autant d'étapes résolues d'office que sa donnée
+  // en déclare (cadence déférée, périls d'auteur, journée de voyage) — une récursion y épuise la pile
+  // (`RangeError`) et laisse la cascade OUVERTE sur son curseur, sans dénouement.
+  for (;;) {
+    const rendu = avanceUnPas(get, set);
+    if (rendu !== ENCORE) return rendu;
+  }
+}
+
+/** Sentinelle « le socle a franchi l'étape lui-même, il reste du chemin » — distincte de `null` (on
+ *  rend la main à la fenêtre) et d'une cascade finalisée. */
+const ENCORE = Symbol('cascade.encore');
+
+function avanceUnPas(get: Get, set: Set): PendingCascade | null | typeof ENCORE {
   const p = get().pendingCascade;
   if (!p) return null;
   const cur = p.participants[p.cursor];
@@ -984,7 +1076,12 @@ export function advanceCascade(get: Get, set: Set): PendingCascade | null {
     set({ pendingCascade: null });
     return { ...p, participants: steps, log: p.log };
   }
-  set({ pendingCascade: { ...p, participants: steps, cursor: next } });
+  const suite = poserLeCurseur(get, { ...p, participants: steps, cursor: next });
+  set({ pendingCascade: suite });
+  // Table résolue D'OFFICE par le seam — aucun siège humain ne la tient (`tableSansSiege` : cadence
+  // déférée, héros conduit par l'IA, ennemi sans siège MJ, porteur introuvable), donc aucune fenêtre ne
+  // la joue : la séquence la FRANCHIT au même geste, comme le « Suivant » du joueur l'aurait fait.
+  if (suite.participants[next] !== steps[next]) return ENCORE;
   return null;
 }
 

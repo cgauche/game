@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { useGame } from './store';
 import { openLandMarket, landSellCargo } from './landMarketFlow';
 import { persistCarriersCargo } from './carriers';
@@ -99,7 +99,18 @@ function sellAtB(board: TradeRumour[]): number {
     ...persistCarriersCargo(get(), [{ carrierId: CARRIER_ID, cargo: [{ ...lot }] }]),
   });
   seedBattleRng(3);
+  vi.useFakeTimers();
   landSellCargo(get, set, CARRIER_ID, 0);
+  // Le dé d'acheteur est un dé de MONDE : le siège qui possède le monde le LANCE dans sa fenêtre
+  // (#1426). La vente se conclut donc au geste, jamais à l'appel.
+  let g = 0;
+  while (get().pendingCascade && g++ < 5) {
+    const p = get().pendingCascade!;
+    get().cascadeRoll(p.participants[p.cursor].id);
+    get().cascadeNext();
+    vi.runAllTimers();
+  }
+  vi.useRealTimers();
   return toBrass(partyMoneyTotal(get));
 }
 

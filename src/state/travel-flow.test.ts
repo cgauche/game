@@ -21,7 +21,7 @@ import { toDate } from '../engine/clock';
 import { creditBourse } from './bourseFlow';
 import { DIFFICULTY_MODIFIERS, type Combatant, type ItemInstance } from '../engine/types';
 import { cascadeAppliers } from './cascade';
-import { inexplique, soutienDe } from './cascadeTestKit';
+import { inexplique, soutienDe, draineCascade, avanceEtapeCascade } from './cascadeTestKit';
 import { skillBaseValue, testValue, soutienDetail, partyAssisted } from '../engine/skills';
 
 const get = () => useGame.getState();
@@ -54,17 +54,9 @@ function setup(wm: WorldMap, party: Combatant[]) {
   useGame.setState({ gameTime: CAMPAIGN_START });
 }
 
-/** Déroule la cascade OUVERTE (jour ou nuit) : roule chaque étape-jet puis avance jusqu'à sa clôture. */
+/** Déroule la cascade OUVERTE (jour ou nuit) — pilote PARTAGé `cascadeTestKit.draineCascade`. */
 function drainCascade(): void {
-  let g = 0;
-  while (get().pendingCascade && g++ < 200) {
-    const p = get().pendingCascade!;
-    const cur = p.participants[p.cursor];
-    if (cur?.participants && cur.participants.some((part) => !part.result)) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
-    else if (cur?.table && !cur.table.result) get().cascadeTableRoll(cur.id); // étape à TABLE (Météo d'Étape…)
-    else if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
-    else get().cascadeNext();
-  }
+  draineCascade(get);
 }
 /** Va au bout d'un voyage : draine cascades du jour, dort les haltes, jusqu'à l'arrivée (ou blocage). */
 function runToEnd(maxSteps = 60): void {
@@ -86,12 +78,12 @@ describe('cascade du JOUR terrestre — les jets d’Étape sont influençables 
 
 /** Franchit la Météo d'Étape — étape à TABLE en tête du jour (#1426) dont l'applier INSÈRE les pas qui
  *  dépendent du temps qu'il fait (Résistance de traversée, postes). Sans elle, la séquence du jour n'a
- *  encore qu'une étape : c'est le dé de monde qui fait exister la suite. */
+ *  encore qu'une étape : c'est le dé de monde qui fait exister la suite. En cadence MANUELLE la table
+ *  attend sa fenêtre : le pilote partagé (`cascadeTestKit.avanceEtapeCascade`) la LANCE puis valide,
+ *  exactement comme le joueur qui voit la rangée et clique. */
 function passerLaMeteo(): void {
-  const cur = get().pendingCascade?.participants[get().pendingCascade!.cursor];
-  if (!cur?.table || cur.table.result) return;
-  get().cascadeTableRoll(cur.id);
-  get().cascadeNext();
+  if (get().pendingCascade?.participants[get().pendingCascade!.cursor]?.kind !== 'stageWeather') return;
+  avanceEtapeCascade(get);
 }
 
   it('la Météo d’Étape déclare la table de SA SAISON, SANS modificateur (#1426)', () => {

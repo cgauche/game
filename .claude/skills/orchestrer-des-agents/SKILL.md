@@ -26,7 +26,15 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    projet, une asymétrie bonus/malus, une liste RAW fermée à tort, une dispense gatée par spec, une
    prémisse de brief invalidée). Aucune autre pratique n'a ce rendement — et je ne l'emploie que
    quand quelque chose cloche DÉJÀ.
-2. **Brief d'agent** — un brief contient : périmètre de fichiers exact, primitives cibles nommées,
+2. **Brief d'agent** — ⚠ **Brief de SOCLE = trois sections OBLIGATOIRES, le codeur le REFUSE sinon**
+   (`.claude/agents/codeur.md`, porte d'entrée) : `## Invariant` (VERBATIM cité + source + la
+   QUESTION à laquelle il répondait — jamais la lecture d'un juge/lecteur : 2026-08-23, « OFF =
+   silence » répondait à « fenêtre de POSE ? », un juge l'a généralisé, j'ai dispatché un seam
+   « spécial monde » contraire à #939 « SANS nouveau système de jet »), le CAS CANONIQUE déjà
+   couvert par le socle pour ce concept en `fichier:ligne` + la preuve que le nouveau cas en est une
+   INSTANCE (une déclaration de plus, même code) et non une VARIANTE à branche (héros/monde,
+   terre/mer, mono/multi, solo/coop… — un `if (<type de cas>)` dans un socle EST la variante), et
+   `## Design jugé :` (verdict d'un juge sur le design AVANT le codeur). Un brief contient : périmètre de fichiers exact, primitives cibles nommées,
    réfs RAW nues (`LDB 13 l.142` — jamais paraphrasées), le chemin ABSOLU du worktree à utiliser
    tel quel, l'interdit de tout `git checkout/restore/reset/stash/add/commit`, et « ton rendu
    final = données brutes, pas un message ».

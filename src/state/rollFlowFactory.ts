@@ -562,7 +562,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
   // posé (`spec.rolled`, ci-dessous). Un `passive = rolled` fermerait le cas nominal et tuerait le
   // renversement entier. C'est la POSSESSION qui tranche, pas la seule présence du dé.
   const passive = (slot: Slot, s: GameState, get: Get, p: P) =>
-    !!spec.multi && spec.rolled(slot) && !surfaceOf(get, spec.actor(s, slot, p));
+    !!spec.multi && spec.rolled(slot) && !surfaceOf(get, spec.actor(s, slot, p)?.id);
   const reresolveOf = (s: GameState, slot: Slot, actor: Combatant, get: Get, p: P) =>
     spec.reresolve ? spec.reresolve(s, slot, actor, get, p) : spec.resolve(s, slot, actor, get, undefined, p);
   const L = spec.lens; // lentille de dérivation des verbes d'influence (Chance/Résilience/Résistance)

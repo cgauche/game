@@ -193,7 +193,7 @@ describe('#1262 V2 — la descente FLUVIALE : le barreur garde sa fenêtre, le p
     set({ travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
     deuxSieges(gunnar.id, otto.id); // tout le bord est à l'invité
     expect(humanControlled(get(), gunnar), 'chez l’hôte, il ne pilote pas le batelier de l’invité…').toBe(false);
-    expect(surfaceOf(get, gunnar), '…mais un siège humain le tient').toBe(true);
+    expect(surfaceOf(get, gunnar.id), '…mais un siège humain le tient').toBe(true);
 
     get().startTravel('r-reik', 'barge');
     const jour = etapes().filter((s) => s.target != null);
@@ -284,12 +284,12 @@ describe('#1262 V2 — l’allure FORCÉE ouvre sa cascade pour le conducteur d�
     // 1. SOLO (aucun siège invité) : les deux prédicats disent VRAI.
     useGame.setState({ net: { ...NET0, mode: 'local', mySeat: 0, ownership: {} } } as never);
     expect(humanControlled(get(), h)).toBe(true);
-    expect(surfaceOf(get, h)).toBe(true);
+    expect(surfaceOf(get, h.id)).toBe(true);
 
     // 2. CADENCE non manuelle : les deux tombent ENSEMBLE (aucun écart à exploiter).
     for (const c of ['rapide', 'auto'] as const) {
       setCadence(c);
-      expect(surfaceOf(get, h), `cadence ${c} : rien à surfacer`).toBe(false);
+      expect(surfaceOf(get, h.id), `cadence ${c} : rien à surfacer`).toBe(false);
       expect(humanControlled(get(), h) && !cadenceAuto(), `cadence ${c} : le gate d’avant ne surfaçait pas non plus`).toBe(false);
     }
     resetCadence();
@@ -297,13 +297,13 @@ describe('#1262 V2 — l’allure FORCÉE ouvre sa cascade pour le conducteur d�
     // 3. COOP — le héros est à l'INVITÉ : c'est LÀ que les deux divergent (le bug de la classe).
     useGame.setState({ net: { ...NET0, mode: 'host', mySeat: 0, slots: [0, 1, 0, 0], ownership: { [h.id]: 1 } } } as never);
     expect(humanControlled(get(), h), 'l’ancien gate : « pas ma main » → jet roulé en silence').toBe(false);
-    expect(surfaceOf(get, h), 'le nouveau : un siège humain le tient → sa fenêtre lui revient').toBe(true);
+    expect(surfaceOf(get, h.id), 'le nouveau : un siège humain le tient → sa fenêtre lui revient').toBe(true);
 
     // 4. ACTEUR CONDUIT PAR L'IA (aucun siège) : les deux disent FAUX — le repli inline reste le bon.
     const pnj = { ...h, id: 'tv-ia', aiControlled: true } as Combatant;
     useGame.setState({ party: [pnj], net: { ...NET0, mode: 'host', mySeat: 0, slots: [0, 1, 0, 0], ownership: {} } } as never);
     expect(humanControlled(get(), pnj)).toBe(false);
-    expect(surfaceOf(get, pnj)).toBe(false);
+    expect(surfaceOf(get, pnj.id)).toBe(false);
   });
 });
 

@@ -1,16 +1,26 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { resolveSurface, type RollRequest } from './rollSeam';
-import { runCascadeImmediate, lireDeEtape, tableStepDefs, naturalRollForTableRow, rollTableStep } from './cascade';
+import { resolveSurface, surfaceOf, tableStep, displayStep, type RollRequest } from './rollSeam';
+import { actorIn } from './combatants';
+import { runCascadeImmediate, lireDeEtape, tableStepDefs, naturalRollForTableRow, rollTableStep, registerTableStep, startCascade, pushStep, registerCascadeApplier, suspendActiveCascade, poserCurseurCascade, stepReady } from './cascade';
+import { fixtureText } from '../i18n/fixtureText';
+import { makePregens } from '../data/pregens';
+import { emptyScene, type Scene } from './scene';
+import { CAMPAIGN_START } from '../engine/clock';
+import { setRule, resetRule } from '../engine/policy';
+import { buildSeaPlan, runSeaDay } from './seaVoyageFlow';
+import type { CascadeStep } from './pendings';
 import { weather } from '../data';
 import { weatherFromRoll, type Season } from '../engine/travelStages';
 import { buildAuthorPerilSteps } from './authorPerils';
 import { DE_NON_NOMME } from './etalLot';
 import type { MapRoute } from './worldMap';
-import { WORLD_STEP_OWNER, seatOwns } from './netOwnership';
+import { WORLD_STEP_OWNER, seatOwns, canFixDie } from './netOwnership';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { setCadence, resetCadence } from '../engine/cadence';
-import { seedBattleRng } from './battleRng';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { seedBattleRng, battleRng } from './battleRng';
 import { landSellCargo, openLandMarket } from './landMarketFlow';
 import { persistCarriersCargo } from './carriers';
 import { createHero, skillCharacteristicById } from '../engine/character';
@@ -25,18 +35,18 @@ import type { Possession } from '../engine/possession';
 /**
  * LE DÉ DE MONDE SOUS CONTRÔLE DU SIÈGE ENVIRONNEMENT (#1426).
  *
- * Le socle portait deux prédicats qui se CONTREDISAIENT : `netOwnership` donne le monde au siège 0 en
- * solo (`seatOwns(…, WORLD_STEP_OWNER)`, verrouillé par `fixed-die.test.ts`), mais `resolveSurface`
- * rendait `I` (silence de fond) à tout côté `worldSide` dès qu'aucun siège MJ n'existait — un siège
- * qui POSSÈDE un jet et ne le voit JAMAIS. Les `openWorldTest` de l'arbre (recherche d'acheteur,
- * désertion) étaient donc muets en solo, option « Dés fixés » comprise.
+ * UN SEUL prédicat décide qu'un jet se joue dans une fenêtre : `rollSeam.surfaceOf`, keyé par le
+ * PORTEUR. Le monde (`WORLD_STEP_OWNER`) est toujours tenu par un siège humain — le siège MJ s'il
+ * existe, l'hôte sinon (`netOwnership.worldSeat`) — donc son dé se VOIT et se JOUE comme celui d'un
+ * héros. L'option de confort « Dés fixés » n'entre pas dans cette surface : elle n'ajoute que la POSE
+ * du dé (`poseOfferte`/`canFixDie`). Seule la cadence déférée à un automate rend le monde muet.
  *
  * Ce que ces cas verrouillent, dans l'ordre où ils peuvent casser :
- *  1. le CONTRÔLE POSITIF — option OFF, RIEN ne change (la surface d'origine, à l'identique) ;
- *  2. le fix — option ON + le siège local possède le monde → la fenêtre s'ouvre ;
- *  3. la DOMINATION de la cadence auto, qui ne se renverse pas ;
- *  4. la coop — la fenêtre suit le siège MJ, jamais « l'hôte par défaut » ;
- *  5. la PARITÉ terre/mer du commerce (`landSellCargo`), migré vers la porte dans ce lot.
+ *  1. la surface d'un jet de monde en solo — la fenêtre s'ouvre, option OFF comme ON ;
+ *  2. la DOMINATION de la cadence auto, qui ne se renverse pas ;
+ *  3. la coop — la fenêtre suit le siège MJ, jamais « l'hôte par défaut » ;
+ *  4. la PARITÉ terre/mer du commerce (`landSellCargo`), passé par la porte ;
+ *  5. le FLUX RNG, identique quelle que soit l'option de pose.
  */
 
 const get = useGame.getState.bind(useGame);
@@ -48,7 +58,7 @@ const requeteMonde = (): RollRequest => ({
   actionLabel: 'Trouver un acheteur',
   test: {},
   difficulty: 'intermediaire',
-  klass: 'subi',
+  klass: 'hero-test',
 });
 
 describe('#1426 socle — un siège qui POSSÈDE le monde VOIT son dé (resolveSurface, côté worldSide)', () => {
@@ -59,14 +69,30 @@ describe('#1426 socle — un siège qui POSSÈDE le monde VOIT son dé (resolveS
   });
   afterEach(() => { resetDesFixes(); resetCadence(); });
 
-  it('CONTRÔLE POSITIF — option « Dés fixés » OFF : la surface d’origine, inchangée (I en solo)', () => {
+  it('le siège local possède le monde → M : il VOIT son dé, option de pose ÉTEINTE (elle ne gate que la POSE)', () => {
     expect(seatOwns(get(), 0, WORLD_STEP_OWNER), 'précondition : le siège 0 possède le monde en solo').toBe(true);
-    expect(resolveSurface(get, requeteMonde(), 'x')).toBe('I');
+    expect(canFixDie(get(), WORLD_STEP_OWNER), 'option OFF : rien à poser').toBe(false);
+    expect(resolveSurface(get, requeteMonde(), 'x'), 'et pourtant la fenêtre s’ouvre : posséder, c’est voir').toBe('M');
   });
 
-  it('option ON + le siège local possède le monde → M : la fenêtre de pose existe', () => {
-    setDesFixes(true);
-    expect(resolveSurface(get, requeteMonde(), 'x')).toBe('M');
+  it('CONTRÔLE POSITIF — la surface d’un jet de monde est celle d’un jet de HÉROS, même montage', () => {
+    const h = makePregens()[0];
+    set({ party: [h], battle: null });
+    const requeteHeros = (): RollRequest => ({
+      side: { actorId: h.id }, actionLabel: 'Test de héros', test: {}, difficulty: 'intermediaire', klass: 'hero-test',
+    });
+    const series = (r: () => RollRequest) => {
+      resetDesFixes(); resetCadence();
+      const manuelOff = resolveSurface(get, r(), 'x');
+      setDesFixes(true);
+      const manuelOn = resolveSurface(get, r(), 'x');
+      setCadence('rapide');
+      const auto = resolveSurface(get, r(), 'x');
+      resetDesFixes(); resetCadence();
+      return { manuelOff, manuelOn, auto };
+    };
+    expect(series(requeteMonde), 'un porteur MONDE et un porteur HÉROS traversent le MÊME prédicat').toEqual(series(requeteHeros));
+    expect(series(requeteMonde), 'et la série discrimine bien la cadence').toEqual({ manuelOff: 'M', manuelOn: 'M', auto: 'I' });
   });
 
   it('la cadence AUTO domine toujours : auto + option ON reste I (le précédent ne se renverse pas)', () => {
@@ -82,6 +108,80 @@ describe('#1426 socle — un siège qui POSSÈDE le monde VOIT son dé (resolveS
     expect(seatOwns(get(), 0, WORLD_STEP_OWNER), 'et plus à l’hôte').toBe(false);
     setDesFixes(true);
     expect(resolveSurface(get, requeteMonde(), 'x'), 'l’option ne déplace pas une fenêtre déjà due au MJ').toBe('V');
+  });
+
+  /**
+   * LA CLASSE TRANCHE AVANT LE CÔTÉ (#1426) — `subi` est une classe de JET, pas une propriété du
+   * porteur : un jet subi rend la MÊME surface qu'il soit porté par un héros ou par le monde. C'est
+   * l'autre face de la règle ci-dessus (un dé que le siège du monde TIENT ET JOUE n'est pas `subi` :
+   * `openWorldTest` déclare la classe ordinaire).
+   */
+  it('un jet `subi` PORTÉ PAR LE MONDE rend la MÊME série qu’un `subi` porté par un HÉROS', () => {
+    const h = makePregens()[0];
+    set({ party: [h], battle: null });
+    const subi = (side: RollRequest['side']) => (): RollRequest => ({ side, actionLabel: 'Subi', test: {}, difficulty: 'intermediaire', klass: 'subi' });
+    const serie = (r: () => RollRequest) => {
+      resetCadence();
+      set({ net: { ...get().net, mode: 'local', mySeat: 0, gmSeat: undefined } });
+      const solo = resolveSurface(get, r(), 'x');
+      set({ net: { ...get().net, mode: 'host', mySeat: 0, gmSeat: 1 } });
+      const mj = resolveSurface(get, r(), 'x');
+      set({ net: { ...get().net, mode: 'local', mySeat: 0, gmSeat: undefined } });
+      setCadence('rapide');
+      const auto = resolveSurface(get, r(), 'x');
+      resetCadence();
+      return { solo, mj, auto };
+    };
+    const parMonde = serie(subi({ worldSide: 'world' }));
+    expect(parMonde, 'une surface qui diverge par le PORTEUR est une branche « spéciale monde »').toEqual(serie(subi({ actorId: h.id })));
+    expect(parMonde, 'et un subi ne s’ouvre JAMAIS en fenêtre influençable').toEqual({ solo: 'I', mj: 'V', auto: 'I' });
+    // Sans cet écart, l'égalité ci-dessus passerait aussi si tout rendait la même chose : le dé de
+    // monde ORDINAIRE (celui qu'`openWorldTest` monte) s'ouvre bien, lui, en solo.
+    expect(serie(requeteMonde), 'le dé de monde ordinaire garde SA fenêtre').toEqual({ solo: 'M', mj: 'V', auto: 'I' });
+  });
+});
+
+/** Un ennemi minimal EN FILE — de quoi juger qui le TIENT, rien de plus. */
+const ennemiDeSonde = (): Combatant =>
+  ({ id: 'e-sonde', kind: 'enemy', name: 'Sonde', pos: { x: 0, y: 0 }, conditions: [], skills: [], wounds: { current: 5, max: 5 } } as unknown as Combatant);
+const enFile = (cs: Combatant[]) => ({ combatants: cs, order: cs.map((c) => c.id), turn: 0, round: 1, log: [], over: null } as never);
+
+/**
+ * LA SURFACE SE JUGE SUR L'ID DU PORTEUR (#1426) — `surfaceOf` ne reçoit qu'un id, et la résolution de
+ * cet id (`netOwnership.tenuParUnHumain`) décide seule. Deux vérités que cette résolution doit tenir,
+ * et qu'une recherche « file de combat OU groupe » (`actorIn`) ou une lecture de possession brute
+ * (`seatOwns`) rendraient fausses :
+ *  - un héros du GROUPE resté hors de la file d'un combat ouvert reste tenu par son siège ;
+ *  - un ennemi sans siège MJ est POSSÉDÉ par repli (l'hôte exécute pour l'automate qui le conduit) sans
+ *    être TENU par un humain — son étape se résout d'office.
+ */
+describe('#1426 socle — la surface se juge sur l’ID du porteur (combat comme hors combat)', () => {
+  beforeEach(() => {
+    resetDesFixes();
+    resetCadence();
+    set({ net: { ...get().net, mode: 'local', mySeat: 0, gmSeat: undefined }, pendingCascade: null });
+  });
+  afterEach(() => { resetDesFixes(); resetCadence(); set({ battle: null }); });
+
+  it('héros du GROUPE resté hors de la file d’un combat OUVERT : son siège le tient → surfacé', () => {
+    const [h1, h2] = makePregens();
+    set({ party: [h1!, h2!], battle: enFile([h1!, ennemiDeSonde()]) });
+    expect(actorIn(get(), h2!.id), 'précondition : la recherche « file OU groupe » ne le trouve pas').toBeUndefined();
+    expect(surfaceOf(get, h2!.id), 'il est pourtant dans le groupe, tenu par le siège 0').toBe(true);
+  });
+
+  it('ennemi sans siège MJ : possédé par REPLI, tenu par personne → d’office (et surfacé dès qu’un MJ siège)', () => {
+    const e = ennemiDeSonde();
+    set({ party: makePregens().slice(0, 1), battle: enFile([e]) });
+    expect(seatOwns(get(), 0, e.id), 'le repli de possession rend vrai — c’est l’ACTION, pas la tenue du dé').toBe(true);
+    expect(surfaceOf(get, e.id), 'aucun humain ne le tient : son étape se résout d’office').toBe(false);
+    set({ net: { ...get().net, mode: 'host', mySeat: 0, gmSeat: 1 } });
+    expect(surfaceOf(get, e.id), 'un siège MJ le tient : elle se surface').toBe(true);
+  });
+
+  it('porteur nommé mais INCONNU (mort, hors partie) : aucun siège → d’office', () => {
+    set({ party: makePregens().slice(0, 1), battle: null });
+    expect(surfaceOf(get, 'porteur-fantome')).toBe(false);
   });
 });
 
@@ -133,23 +233,35 @@ function poser(roll: number): void {
   vi.runAllTimers();
 }
 
+/** Le geste SANS option de pose : « Lancer » puis valider — tout ce que la fenêtre offre alors. */
+function lancer(): void {
+  const p = get().pendingCascade!;
+  const cur = p.participants[p.cursor];
+  get().cascadeRoll(cur.id);
+  get().cascadeNext();
+  vi.runAllTimers();
+}
+
 /**
- * FLUX RNG, OPTION OFF — l'invariant que la migration ne doit PAS payer : la cadence est portée par
- * l'OPTION, pas par le call-site. Sans fenêtre, la vente consomme la MÊME séquence de dés qu'avant
- * (acheteur → marchand → Marchandage opposé), donc rend le MÊME gain sous la MÊME graine. Aucun test
- * du dépôt ne verrouillait cet ordre pour le marché TERRESTRE : `land-market-flow.test.ts` compare des
+ * FLUX RNG — l'invariant que la surface ne doit PAS payer : l'ordre des dés consommés par la vente
+ * (acheteur → marchand → Marchandage opposé) ne dépend NI de l'option de pose, NI de la fenêtre. Le
+ * dé d'acheteur est un dé de MONDE : il se joue dans sa fenêtre (« Lancer ») au lieu de tomber en
+ * silence, mais il tombe au MÊME rang — donc le MÊME gain sous la MÊME graine. Aucun autre test du
+ * dépôt ne verrouille cet ordre pour le marché TERRESTRE : `land-market-flow.test.ts` compare des
  * gains ENTRE EUX (rumeur ×2), ce qu'un décalage de flux laisse passer intact.
  */
-describe('#1426 — option OFF : le flux RNG de la vente terrestre est celui d’avant la porte', () => {
-  beforeEach(() => { resetDesFixes(); resetCadence(); set({ net: { ...get().net, mode: 'local', mySeat: 0, gmSeat: undefined } }); });
-  afterEach(() => { resetDesFixes(); resetCadence(); });
+describe('#1426 — le flux RNG de la vente terrestre ne dépend pas de l’option de pose', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetDesFixes(); resetCadence(); set({ net: { ...get().net, mode: 'local', mySeat: 0, gmSeat: undefined } }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetDesFixes(); resetCadence(); });
 
-  it('sous graine FIXE, la vente est SYNCHRONE et rend un gain EXACT (un dé de plus/de moins le change)', () => {
+  it('sous graine FIXE, la vente jouée AU LANCER rend un gain EXACT (un dé de plus/de moins le change)', () => {
     marcheAvecLot();
     resetDesFixes(); // `marcheAvecLot` ne pose rien : c'est le `beforeEach` qui décide de l'option
     seedBattleRng(3);
     landSellCargo(get, set, CARRIER_ID, 0);
-    expect(get().pendingCascade, 'option OFF : aucune fenêtre, la vente se dénoue d’un trait').toBeNull();
+    expect(get().pendingCascade, 'le siège du monde tient la fenêtre : elle s’ouvre même sans option de pose').toBeTruthy();
+    lancer(); // 1ʳᵉ tentative : le dé se LANCE (aucune pose), c'est le geste sans option
+    if (get().pendingCascade) lancer(); // 2ᵉ tentative (moitié du lot) quand la 1ʳᵉ rate
     const vente = get().journal.find((l) => l.includes('vendus'));
     expect(vente, 'la vente a bien eu lieu').toBeTruthy();
     // Valeur MESURÉE sur la graine 3 : elle ne vaut que par sa STABILITÉ — inverser deux tirages
@@ -339,14 +451,32 @@ describe('#1426 Q2 — le pourcentage d’auteur se lit « dé ≤ nombre visé 
     expect(lireDeEtape(11, 70).sl).toBe(6);
   });
 
-  it('la recherche d’acheteur ne parle JAMAIS de DR au journal', () => {
+  it('la recherche d’acheteur ne parle JAMAIS de DR — ni sur l’étape jouée, ni au journal', () => {
     marcheAvecLot();
     resetDesFixes();
     seedBattleRng(3);
+    vi.useFakeTimers();
     landSellCargo(get, set, CARRIER_ID, 0);
-    const lignes = get().journal.filter((l) => l.includes('Trouver un acheteur'));
-    expect(lignes.length, 'le dé d’acheteur laisse sa ligne au journal').toBeGreaterThan(0);
-    for (const l of lignes) expect(l).not.toMatch(/\bDR\b/);
+    // Le dé d'acheteur est un dé de MONDE : il se joue dans SA fenêtre (#1426). Ce que le joueur LIT
+    // de ce dé, c'est donc l'étape (sa rangée + son dénouement), pas une ligne de journal.
+    const jouees: CascadeStep[] = [];
+    let g = 0;
+    while (get().pendingCascade && g++ < 5) {
+      const p = get().pendingCascade!;
+      const cur = p.participants[p.cursor];
+      get().cascadeRoll(cur.id);                                  // « Lancer » : le geste offert SANS option de pose
+      jouees.push(get().pendingCascade!.participants[p.cursor]);  // l'étape AVEC son dé tombé
+      get().cascadeNext();
+      vi.runAllTimers();
+    }
+    vi.useRealTimers();
+    const des = jouees.filter((st) => st.kind === 'land-sell-buyer');
+    expect(des.length, 'le dé d’acheteur a bien été joué dans sa fenêtre').toBeGreaterThan(0);
+    for (const st of des) {
+      expect(st.evaluation, 'un pourcentage RAW n’est pas un Test').toBe('seuil');
+      expect(st.result!.sl, 'et un seuil n’a aucun Degré de Réussite').toBe(0);
+    }
+    for (const l of get().journal) expect(l).not.toMatch(/\bDR\b/);
   });
 });
 
@@ -526,5 +656,420 @@ describe('#1426 — la fenêtre de LOT d’un étal (halle terrestre)', () => {
       expect(r.value).toBeGreaterThanOrEqual(r.min);
       expect(r.value).toBeLessThanOrEqual(r.max);
     }
+  });
+});
+
+/**
+ * UNE TABLE SE JOUE DANS SA FENÊTRE, QUEL QUE SOIT SON PORTEUR (#1426).
+ *
+ * Météo d'Étape (`travelFlow`) et Événement de bord (`seaVoyageFlow`) poussent une étape à TABLE de
+ * MONDE. Elle est une ÉTAPE comme celle d'un héros : sa rangée s'affiche, le siège qui la POSSÈDE
+ * lance (`CascadeModal`, branche `'table'`), et l'option « Dés fixés » n'ajoute que la POSE. Quand
+ * aucun siège n'est à la manœuvre (`cadenceAuto`), le SEAM du pilote (`cascade.poserLeCurseur`, joué
+ * par les quatre portes du curseur) la résout au RANG de l'étape — jamais au build — et
+ * `advanceCascade` la franchit dans le même geste : une porte qui l'oublierait laisserait la séquence
+ * plantée dessus, `cascadeNext` en no-op.
+ */
+const carteMonde: WorldMap = {
+  id: 'cm', nom: 'Reikland',
+  places: [
+    { id: 'pa', label: 'A', pos: { x: 20, y: 50 }, scene: 'monde-a' },
+    { id: 'pb', label: 'B', pos: { x: 70, y: 40 }, scene: 'monde-b' },
+  ],
+  routes: [{ id: 'rt', a: 'pa', b: 'pb', km: 400, modes: ['pied'], perilDie: 0 }],
+};
+const carteMer: WorldMap = {
+  id: 'cmer', nom: 'Mer des Griffes',
+  places: [
+    { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'monde-a' },
+    { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'monde-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
+  ],
+  routes: [{ id: 'rmer', a: 'A', b: 'B', km: 550, modes: ['mer'], sea: true, seaHeading: 'est' }],
+};
+const scenePlate = (id: string): Scene => { const s = emptyScene(6, 6); s.id = id; s.nom = id; return s; };
+
+/** Siège local qui POSSÈDE le monde (solo : siège 0). L'OPTION de pose n'est PAS touchée ici : elle se
+ *  pose AVANT l'ouverture de la journée — c'est à l'ouverture que le socle tranche. */
+function siegeDuMonde(): void {
+  set({ net: { ...get().net, mode: 'local', mySeat: 0, gmSeat: undefined } });
+  expect(seatOwns(get(), 0, WORLD_STEP_OWNER), 'le siège local possède bien le monde').toBe(true);
+}
+
+/**
+ * État d'un voyage TERRESTRE prêt à partir (règle « Voyage par Étapes » active, RNG ensemencé).
+ *
+ * LE RNG S'ENSEMENCE EN TÊTE, avant tout montage — un montage qui TIRE (la mer : `buildSeaPlan`
+ * roule la météo du 1ᵉʳ jour) partirait sinon de l'état laissé par le fichier de test précédent, et
+ * la mesure changerait selon les voisins qui tournent devant (suite `isolate:false`). Le bloc porte
+ * son état COMPLET : il n'hérite de rien.
+ */
+function prepareJourTerrestre(seed: number): void {
+  seedBattleRng(seed);
+  siegeDuMonde();
+  setRule('travel-etapes', true);
+  set({ party: makePregens().slice(0, 3), gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, suspendedCascades: [], travelRecap: null, journal: [], battle: null });
+  get().loadProject([scenePlate('monde-a'), scenePlate('monde-b')], 'monde-a', carteMonde);
+  set({ gameTime: CAMPAIGN_START });
+}
+const ouvreJourTerrestre = (seed: number): void => { prepareJourTerrestre(seed); get().startTravel('rt', 'pied'); };
+
+/** État d'une traversée dont le compteur d'événement de bord échoit AUJOURD'HUI (l'étape à table
+ *  existe). RNG ensemencé EN TÊTE, pour la raison dite sur `prepareJourTerrestre` : `buildSeaPlan`
+ *  TIRE la météo du 1ᵉʳ jour, et c'est elle qui décide du contenu de la journée (Affaler, Mal de mer
+ *  de tempête…). */
+function prepareJourMaritime(seed: number): void {
+  seedBattleRng(seed);
+  siegeDuMonde();
+  set({
+    party: makePregens().slice(0, 3),
+    scene: scenePlate('monde-a') as never,
+    battle: null, worldMap: carteMer, travelPlan: null, travelRecap: null,
+    pendingCrewTest: null, pendingRest: null, pendingCascade: null, suspendedCascades: [],
+    gameTime: 8 * 60, lastUpkeepDay: 0, journal: [],
+    vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } },
+  } as never);
+  const plan = buildSeaPlan(get, 'rmer', 'A', 'B', carteMer.routes[0])!;
+  set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysToEvent: 1, forcedEventId: undefined } } });
+}
+const ouvreJourMaritime = (seed: number): void => { prepareJourMaritime(seed); runSeaDay(get, set); };
+
+/** L'étape SOUS LE CURSEUR (celle que la fenêtre montre), ou `undefined`. */
+const etapeCourante = (): CascadeStep | undefined => {
+  const p = get().pendingCascade;
+  return p ? p.participants[p.cursor] : undefined;
+};
+
+/**
+ * ENREGISTRE tous les tirages du RNG PARTAGÉ (`battleRng`, source unique) à partir de maintenant —
+ * le FLUX lui-même, pas les résultats d'étapes : l'option de pose déplace des jets de héros de
+ * l'inline vers la fenêtre (c'est son objet), une comparaison bâtie sur les seules étapes prendrait ce
+ * changement de SURFACE pour un changement de FLUX. À installer APRÈS le dernier `seedBattleRng`
+ * (réensemencer remplace l'objet RNG).
+ */
+function traceDesTirages(): number[] {
+  const rng = battleRng() as { int: (min: number, max: number) => number };
+  const brut = rng.int.bind(rng);
+  const trace: number[] = [];
+  rng.int = (min, max) => { const v = brut(min, max); trace.push(v); return v; };
+  return trace;
+}
+
+/**
+ * Pilote de test d'UNE JOURNÉE de voyage (la halte de nuit la clôt) — `pose:false` REFUSE de poser :
+ * il tranche les choix, roule les jets et les bandes, mais n'appelle JAMAIS `cascadeTableRoll`. Une
+ * journée qui se draine ainsi prouve que la table de MONDE a été résolue par le SOCLE, pas par un
+ * geste. `pose:true` = le geste du joueur qui ne triche pas (il TIRE, il ne force aucune valeur).
+ * Rend le `kind` de l'étape sur laquelle la séquence a BLOQUÉ (`undefined` = la journée est allée
+ * au bout).
+ */
+function draineJour(pose: boolean, jusqua?: string, max = 200): string | undefined {
+  for (let i = 0; i < max && get().pendingCascade && !get().pendingRest; i++) {
+    const cur = etapeCourante();
+    if (cur?.options && cur.chosen == null) get().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key);
+    else if (cur?.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
+    else if (pose && cur?.table && !cur.table.result) get().cascadeTableRoll(cur.id);
+    else if (cur?.target != null && !cur.result) get().cascadeRoll(cur.id);
+    const avant = get().pendingCascade;
+    get().cascadeNext();
+    if (get().pendingCascade === avant) return etapeCourante()?.kind; // no-op : la séquence est BLOQUÉE
+    if (jusqua && cur?.kind === jusqua) return undefined;
+  }
+  return undefined;
+}
+
+/** Table de sonde : deux lignes, un d100 — de quoi observer le PILOTE, jamais une règle. */
+const TABLE_SONDE = 'table-sonde-porteur';
+function tableDeSonde(): void {
+  registerTableStep(TABLE_SONDE, {
+    label: fixtureText('Table de sonde'),
+    die: 100,
+    rows: [{ id: 'basse', min: 1, max: 50 }, { id: 'haute', min: 51, max: 100 }],
+    lines: () => ['ligne de sonde'],
+  });
+}
+/** Étape à TABLE portée par le MONDE (aucun acteur nommé). */
+const etapeTableMonde = (id: string): CascadeStep => tableStep({
+  id, kind: 'sonde-table', worldOwner: true,
+  label: fixtureText('Table de monde'), table: { tableId: TABLE_SONDE, die: 100 },
+  stake: { key: { dataset: 'combat', kind: 'mutation' } },
+})!;
+/** Étape d'AFFICHAGE (rien à lancer) — `kind` libre : c'est lui qui route l'applier de sonde. */
+const etapeAffichage = (id: string, kind = 'sonde-affichage'): CascadeStep =>
+  displayStep({ id, kind, label: fixtureText('Étape muette'), worldOwner: true });
+
+// ── LES PORTES DU CURSEUR : une seule, et elle tient la charge ───────────────────────────────
+
+/** Tous les modules de PRODUCTION sous `racine` (récursif) : `.ts`/`.tsx`, tests exclus. */
+function fichiersSource(racine: string): string[] {
+  const out: string[] = [];
+  for (const e of readdirSync(racine, { withFileTypes: true })) {
+    const p = join(racine, e.name);
+    if (e.isDirectory()) out.push(...fichiersSource(p));
+    else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) out.push(p);
+  }
+  return out;
+}
+
+/** Le LITTÉRAL objet qui suit la position `depuis` (accolades équilibrées), ou `undefined` si la
+ *  valeur n'en est pas un (appel de la porte, variable, `null`). */
+function litteralApres(src: string, depuis: number): string | undefined {
+  let i = depuis;
+  while (i < src.length && /\s/.test(src[i]!)) i++;
+  if (src[i] !== '{') return undefined;
+  let prof = 0;
+  for (let j = i; j < src.length; j++) {
+    if (src[j] === '{') prof++;
+    else if (src[j] === '}' && --prof === 0) return src.slice(i, j + 1);
+  }
+  return src.slice(i);
+}
+
+/** Les sites `fichier:ligne` qui publient un `pendingCascade` LITTÉRAL portant son propre `cursor:`. */
+function sitesCurseurALaMain(racine: string): string[] {
+  const pilote = join('src', 'state', 'cascade.ts');
+  const fautifs: string[] = [];
+  for (const f of fichiersSource(racine)) {
+    if (relative(process.cwd(), f) === pilote) continue;
+    const src = readFileSync(f, 'utf8');
+    const re = /pendingCascade\s*:/g;
+    for (let m = re.exec(src); m; m = re.exec(src)) {
+      const bloc = litteralApres(src, m.index + m[0].length);
+      if (bloc && /\bcursor\s*:/.test(bloc)) fautifs.push(`${relative(process.cwd(), f)}:${src.slice(0, m.index).split('\n').length}`);
+    }
+  }
+  return fautifs;
+}
+
+/**
+ * LE CURSEUR NE SE POSE QUE PAR LA PORTE (#1426).
+ *
+ * `cascade.poserLeCurseur` est le seam qui décide ce qui se passe quand le curseur ATTEINT une étape
+ * (une table qu'aucun siège ne joue s'y résout d'office). Un site qui écrit `cursor:` à la main dans
+ * `pendingCascade` court-circuite ce seam : la table reste non tirée, `stepReady` la refuse et
+ * `cascadeNext` devient un no-op DÉFINITIF — la séquence est perdue avec le geste du joueur.
+ *
+ * Deux cas : la PORTE publique (`poserCurseurCascade`) fait le travail, et AUCUN site du store ne
+ * l'écrit à la main (garde STRUCTURELLE, `src/state/*.ts` — un `cursor:` de plus la rougit).
+ */
+describe('#1426 — les portes du curseur', () => {
+  beforeEach(() => { resetDesFixes(); resetCadence(); });
+  afterEach(() => { resetDesFixes(); resetCadence(); set({ pendingCascade: null, suspendedCascades: [] }); });
+
+  it('la PORTE publique pose le curseur ET résout la table qu’aucun siège ne joue', () => {
+    setCadence('rapide');
+    seedBattleRng(11);
+    tableDeSonde();
+    set({ party: makePregens().slice(0, 1), pendingCascade: null, suspendedCascades: [], battle: null });
+    startCascade(get, set, {
+      title: 'Portes', purpose: 'test',
+      steps: [etapeAffichage('p0'), etapeTableMonde('p1')],
+    });
+    const casc = get().pendingCascade!;
+    expect(casc.participants[1].table!.result, 'la table n’est pas tirée au BUILD').toBeUndefined();
+    poserCurseurCascade(get, set, casc, 1);
+    const apres = get().pendingCascade!;
+    expect(apres.cursor).toBe(1);
+    expect(apres.participants[1].table!.result, 'posé le curseur, le socle a tiré au RANG de l’étape').toBeTruthy();
+    expect(stepReady(apres.participants[1]), 'et l’étape est franchissable : « Suivant » n’est pas un no-op').toBe(true);
+  });
+
+  /**
+   * PÉRIMÈTRE : TOUT `src/**\/*.ts(x)` — récursif, tests exclus, et le PILOTE lui-même
+   * (`state/cascade.ts`) exclu puisque la porte y vit. Le scan lit le LITTÉRAL entier qui suit
+   * `pendingCascade:` (accolades équilibrées), pas la ligne : un `cursor:` posé une ligne plus bas que
+   * le `pendingCascade: {` passait sous un scan ligne à ligne, et c'est la forme qu'un auteur écrit
+   * naturellement dès que l'objet dépasse la marge.
+   * ANGLE MORT du scan textuel : un objet monté en VARIABLE puis publié (`const suite = { ...p,
+   * cursor: i }; set({ pendingCascade: suite })`) n'est pas vu — seule la forme littérale l'est.
+   */
+  it('GARDE STRUCTURELLE — aucun site de `src/**` n’écrit `cursor:` dans un littéral `pendingCascade` hors du pilote', () => {
+    const fautifs = sitesCurseurALaMain(join(process.cwd(), 'src'));
+    expect(fautifs, 'poser le curseur passe par `cascade.poserCurseurCascade`/`curseurPose` — sinon le seam du pilote est court-circuité').toEqual([]);
+  });
+
+  it('CHARGE — une séquence de 20 000 tables résolues d’office se FERME (jamais une pile épuisée)', () => {
+    setCadence('rapide');
+    seedBattleRng(13);
+    tableDeSonde();
+    set({ party: makePregens().slice(0, 1), pendingCascade: null, suspendedCascades: [], battle: null });
+    const steps = [...Array(20000)].map((_, i) => etapeTableMonde(`charge-${i}`));
+    startCascade(get, set, { title: 'Charge', purpose: 'test', steps });
+    expect(get().pendingCascade!.participants[0].table!.result, 'la 1ʳᵉ est tirée à l’ouverture').toBeTruthy();
+    get().cascadeNext(); // UN geste : le socle franchit les 19 999 restantes
+    expect(get().pendingCascade, 'la séquence est allée jusqu’à son dénouement').toBeNull();
+  });
+});
+
+describe('#1426 LOT 1 — table sous le curseur : la fenêtre la joue, la cadence auto la résout', () => {
+  beforeEach(() => { resetDesFixes(); resetCadence(); });
+  afterEach(() => { resetDesFixes(); resetCadence(); resetRule('travel-etapes'); });
+
+  it('(a) TERRE — cadence manuelle, option OFF : la Météo d’Étape ATTEND sa fenêtre, « Lancer » la franchit', () => {
+    ouvreJourTerrestre(11);
+    expect(get().pendingCascade?.purpose).toBe('travelDay');
+    const meteo = get().pendingCascade!.participants[0];
+    expect(meteo.kind).toBe('stageWeather');
+    expect(meteo.worldOwner, 'aucun acteur ne la porte : le sentinel la route au siège').toBe(true);
+    expect(meteo.table!.result, 'le socle ne tire pas à la place du siège qui possède le monde').toBeUndefined();
+    expect(canFixDie(get(), undefined), 'option OFF : la POSE n’est pas offerte — seul « Lancer » l’est').toBe(false);
+    expect(draineJour(false), 'sans geste, la séquence tient sur sa table (comme un jet de Critique)').toBe('stageWeather');
+    expect(get().pendingRest, 'et la journée n’est pas allée à la halte').toBeFalsy();
+    expect(draineJour(true), 'le « Lancer » de la fenêtre la franchit').toBeUndefined();
+    expect(get().pendingRest, 'la journée va jusqu’à la halte de nuit').toBeTruthy();
+    expect(get().journal.some((l) => l.includes('Météo')), 'la Météo d’Étape est au journal').toBe(true);
+  });
+
+  it('(a) MER — même contrat pour l’Événement de bord (le socle ne tire pas, la fenêtre lance)', () => {
+    ouvreJourMaritime(4);
+    const evt = get().pendingCascade!.participants.find((s) => s.kind === 'seaBoardEvent')!;
+    expect(evt.worldOwner).toBe(true);
+    expect(evt.table!.result).toBeUndefined();
+    const arret = draineJour(false);
+    expect(etapeCourante()!.table, `la séquence attend une table (étape « ${arret} »)`).toBeTruthy();
+    expect(draineJour(true)).toBeUndefined();
+    // Le jour CLOS déplace ses events dans sa carte de récap (`sea.events` repart à vide).
+    expect(get().travelPlan!.log![0].events, 'l’événement de bord a été raconté').toHaveLength(1);
+  });
+
+  it('(b) option ON : la POSE s’AJOUTE au « Lancer » — le socle ne tire toujours pas', () => {
+    setDesFixes(true);
+    ouvreJourTerrestre(11);
+    const meteo = get().pendingCascade!.participants[0];
+    expect(meteo.kind).toBe('stageWeather');
+    expect(canFixDie(get(), undefined), 'option ON + siège qui possède le monde : la pose est offerte').toBe(true);
+    expect(meteo.table!.result, 'la pose ne tire pas non plus : c’est le joueur qui pose').toBeUndefined();
+    const avant = get().pendingCascade;
+    get().cascadeNext();
+    expect(get().pendingCascade, 'aucune avancée tant que la table n’est pas tirée').toBe(avant);
+    get().cascadeTableSetForcedRoll(meteo.id, 7);
+    expect(etapeCourante()!.table!.result!.roll).toBe(7);
+    get().cascadeNext();
+    expect(get().pendingCascade!.cursor, 'la pose débloque la séquence').toBeGreaterThan(0);
+  });
+
+  it('(b) COOP — le siège MJ (distant) tient la fenêtre : l’hôte n’a PAS tiré à sa place', () => {
+    setDesFixes(true);
+    prepareJourTerrestre(11);
+    set({ net: { ...get().net, mode: 'host', mySeat: 0, gmSeat: 1 } });
+    expect(seatOwns(get(), 1, WORLD_STEP_OWNER), 'le monde appartient au siège MJ').toBe(true);
+    expect(seatOwns(get(), 0, WORLD_STEP_OWNER), 'et plus à l’hôte').toBe(false);
+    expect(canFixDie(get(), undefined), 'l’hôte ne pose pas le dé d’un siège qu’il ne tient pas').toBe(false);
+    get().startTravel('rt', 'pied');
+    const meteo = get().pendingCascade!.participants[0];
+    expect(meteo.kind).toBe('stageWeather');
+    expect(meteo.table!.result, 'la pose viendra de CE client : l’hôte attend').toBeUndefined();
+    expect(draineJour(false), 'et rien ne franchit l’étape sans son geste').toBe('stageWeather');
+  });
+
+  it('(c) cadence AUTO — aucun siège à la manœuvre : le socle résout au rang de l’étape, sans geste', () => {
+    setCadence('rapide');
+    ouvreJourTerrestre(11);
+    const meteo = get().pendingCascade!.participants[0];
+    expect(meteo.table!.result, 'le socle l’a tirée quand le curseur s’y est posé').toBeTruthy();
+    expect(draineJour(false), 'la journée entière se draine sans qu’un seul dé soit posé').toBeUndefined();
+    expect(get().pendingRest).toBeTruthy();
+  });
+
+  it('(c) cadence AUTO — la table est FRANCHIE dans le même geste que l’étape qui la précède', () => {
+    setCadence('rapide');
+    seedBattleRng(3);
+    tableDeSonde();
+    set({ party: makePregens().slice(0, 1), pendingCascade: null, suspendedCascades: [], battle: null });
+    startCascade(get, set, {
+      title: 'Franchissement', purpose: 'test',
+      steps: [etapeAffichage('av'), etapeTableMonde('t'), etapeAffichage('ap')],
+    });
+    expect(get().pendingCascade!.cursor).toBe(0);
+    get().cascadeNext();
+    expect(get().pendingCascade!.cursor, 'la table n’a pas retenu le curseur : franchie au même geste').toBe(2);
+    expect(get().pendingCascade!.participants[1].table!.result, 'et elle porte bien son dé').toBeTruthy();
+    set({ pendingCascade: null, suspendedCascades: [] });
+  });
+
+  it('(c) REPRISE — une séquence parquée qui revient SUR une table (cadence auto) avance encore', () => {
+    setCadence('rapide');
+    seedBattleRng(5);
+    tableDeSonde();
+    registerCascadeApplier('sonde-suspend', (g, s2) => { suspendActiveCascade(g, s2); });
+    set({ party: makePregens().slice(0, 1), pendingCascade: null, suspendedCascades: [], battle: null });
+    startCascade(get, set, {
+      title: 'Reprise', purpose: 'test',
+      steps: [etapeAffichage('sus', 'sonde-suspend'), etapeTableMonde('t2'), etapeAffichage('fin')],
+    });
+    // L'applier SUSPEND la séquence en plein vol ; la couture de CLÔTURE (`dispatchCascadeDone`,
+    // combatSlice) la REPREND aussitôt — slot libre, hors combat : c'est la reprise du jeu réel.
+    get().cascadeNext();
+    expect(get().suspendedCascades, 'la pile est rendue').toHaveLength(0);
+    expect(get().pendingCascade!.cursor, 'la reprise se pose SUR la table').toBe(1);
+    expect(etapeCourante()!.table!.result, 'que le seam de reprise a résolue').toBeTruthy();
+    get().cascadeNext();
+    expect(get().pendingCascade!.cursor, 'et la séquence continue (jamais un no-op définitif)').toBe(2);
+    set({ pendingCascade: null, suspendedCascades: [] });
+  });
+
+  it('(c) `pushStep` — une table APPENDUE sous le curseur (cadence auto) naît résolue', () => {
+    setCadence('rapide');
+    seedBattleRng(7);
+    tableDeSonde();
+    set({ party: makePregens().slice(0, 1), pendingCascade: null, suspendedCascades: [], battle: null });
+    pushStep(set, etapeTableMonde('t3'), 'test');
+    expect(get().pendingCascade!.cursor).toBe(0);
+    expect(etapeCourante()!.table!.result, 'l’append est une porte du curseur comme les autres').toBeTruthy();
+    set({ pendingCascade: null, suspendedCascades: [] });
+  });
+
+  it('(d) CONTRÔLE POSITIF — cadence manuelle : une table d’ACTEUR attend sa fenêtre, exactement comme celle du monde', () => {
+    siegeDuMonde();
+    seedBattleRng(3);
+    tableDeSonde();
+    const heros = makePregens()[0];
+    set({ party: [heros], pendingCascade: null, suspendedCascades: [], battle: null });
+    const etape = tableStep({
+      id: 'ctrl-1', kind: 'ctrl-table', actorId: heros.id,
+      label: fixtureText('Table d’acteur'), table: { tableId: TABLE_SONDE, die: 100 },
+      stake: { key: { dataset: 'combat', kind: 'mutation' } },
+    })!;
+    startCascade(get, set, { title: 'Contrôle', purpose: 'test', steps: [etape] });
+    expect(etapeCourante()!.table!.result, 'une table d’ACTEUR reste à la main de son porteur').toBeUndefined();
+    const avant = get().pendingCascade;
+    get().cascadeNext();
+    expect(get().pendingCascade, 'et elle continue de retenir la séquence').toBe(avant);
+    set({ pendingCascade: null, suspendedCascades: [] });
+  });
+
+  it('(e) PARITÉ RNG terre — le FLUX de dés est le même, option OFF et option ON', () => {
+    prepareJourTerrestre(23);
+    const off = traceDesTirages();
+    get().startTravel('rt', 'pied');
+    const arretOff = draineJour(true);
+    const offGele = [...off]; // la trace est VIVANTE : la geler avant que le second montage ne tire
+
+    setDesFixes(true);
+    prepareJourTerrestre(23);
+    const on = traceDesTirages();
+    get().startTravel('rt', 'pied');
+    const arretOn = draineJour(true);
+    expect({ arretOff, arretOn }, 'les deux journées vont jusqu’à la halte').toEqual({ arretOff: undefined, arretOn: undefined });
+    expect(offGele.length, 'la journée a bien consommé des dés').toBeGreaterThan(3);
+    expect([...on]).toEqual(offGele);
+  });
+
+  it('(e) PARITÉ RNG mer — idem sur la journée maritime', () => {
+    prepareJourMaritime(6);
+    const off = traceDesTirages();
+    runSeaDay(get, set);
+    const arretOff = draineJour(true);
+    const offGele = [...off]; // la trace est VIVANTE : la geler avant que le second montage ne tire
+
+    setDesFixes(true);
+    prepareJourMaritime(6);
+    const on = traceDesTirages();
+    runSeaDay(get, set);
+    const etape = get().pendingCascade!.participants.find((x) => x.kind === 'seaBoardEvent')!;
+    expect(etape.table!.result, 'option ON : le socle laisse la main').toBeUndefined();
+    const arretOn = draineJour(true);
+    expect({ arretOff, arretOn }, 'les deux journées vont jusqu’à la halte').toEqual({ arretOff: undefined, arretOn: undefined });
+    expect(offGele.length, 'la journée a bien consommé des dés').toBeGreaterThan(3);
+    expect([...on]).toEqual(offGele);
   });
 });

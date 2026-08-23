@@ -468,9 +468,22 @@ export function continueRiverDayAfterCascade(get: Get, set: Set): void {
   // Quelque chose s'est SURFACÉ (la fenêtre du dé, ou l'Effet d'Exposition qu'il vient d'ouvrir) : la fin
   // de jour est DIFFÉRÉE à la clôture de cette cascade — sans ce report, la modale de Repos et celle
   // d'Exposition coexistent et la journée suivante ne se ré-arme jamais (#344).
-  const pc = get().pendingCascade;
-  if (pc) { set({ pendingCascade: { ...pc, purpose: 'riverExposure' } }); return; }
+  if (marqueExpositionDuJour(get, set)) return;
   continueRiverDayAfterExposure(get, set);
+}
+
+/**
+ * Marque la cascade ouverte par l'Exposition du purpose DÉDIÉ `riverExposure` — c'est lui qui rend la
+ * fin du jour à `continueRiverDayAfterExposure` (#344) au lieu du purpose générique `test`, sans
+ * continuation. Posé aux DEUX endroits où l'Exposition peut ouvrir une fenêtre : le dé d'auteur
+ * lui-même (dé de MONDE, joué par le siège qui possède le monde) et l'Effet que sa réussite ouvre.
+ * Rend `false` quand rien n'est ouvert : la fin du jour se joue alors tout de suite.
+ */
+function marqueExpositionDuJour(get: Get, set: Set): boolean {
+  const pc = get().pendingCascade;
+  if (!pc) return false;
+  set({ pendingCascade: { ...pc, purpose: 'riverExposure' } });
+  return true;
 }
 
 /** Reprise de la FIN du jour fluvial après la cascade d'Exposition hydrique (purpose `riverExposure`,
@@ -518,6 +531,7 @@ registerCascadeApplier(RIVER_EXPOSURE_KIND, (get, set, step) => {
   const mode = step.meta?.exposureMode as import('../data').WaterExposureMode;
   const source = step.meta?.exposureSource as string | undefined;
   applyEffects(get, set, [{ type: 'waterExposure', mode, source, target: 'party' }]);
+  marqueExpositionDuJour(get, set);
   return {};
 });
 
@@ -840,7 +854,7 @@ function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoy
     // Éclats à un membre d'équipage exposé (l.78-94) : le barreur/premier héros vivant encaisse. Le RAW
     // gréement/superstructure OFFRE un Test d'Initiative pour ÉVITER les +5 Dégâts (et l'Empêtré, l.78).
     const victim = get().party.find((h) => !h.dead);
-    const dodgeStep = victim && crit.initiativeTest && surfaceOf(get, victim)
+    const dodgeStep = victim && crit.initiativeTest && surfaceOf(get, victim.id)
       ? monoStep({
         id: `${idPrefix}-splinter`, kind: 'riverSplinterDodge', actor: victim, icon: 'ui/warning',
         label: stepDetail(t('step.critiqueAu', { loc: riverLocLabel(location) }), t('step.eclats')), rollLabel: t('char.initiative'), difficulty: 'intermediaire',
@@ -906,7 +920,7 @@ function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => v
   tell(spoilVesselCargoOnLeak(get, set)); // la coque prend l'eau → voie d'eau gâte 1d10 Enc (lot D #327)
   const minutes = holeSinkMinutes(effectiveChar(plan.vehicle!, 'endurance')); // « coule en E minutes » (l.103)
   const repair = bestShipwright(get);
-  if (repair && surfaceOf(get, repair.actor)) {
+  if (repair && surfaceOf(get, repair.actor.id)) {
     tell([t('rv.holed', { min: minutes })]);
     const st = monoStep({
       id: `${idPrefix}-hole`, kind: 'riverHoleRepair', actor: repair.actor, icon: 'travel/repair',
@@ -970,7 +984,7 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
     const skilled = pilot && (pilot.skills ?? []).some((s) => (s.skillId === 'voile' || s.skillId === 'ramer') && s.advances > 0);
     if (skilled) {
       j.push(t('rv.pilotKnows', { peril: peril.label }));
-    } else if (pilot && surfaceOf(get, pilot)) {
+    } else if (pilot && surfaceOf(get, pilot.id)) {
       const st = monoStep({
         id: `${step.id}-detect`, kind: 'riverPerilDetect', actor: pilot, icon: 'nautical/snag', label: stepDetail(dataLabel(peril.label), t('step.detection')),
         rollLabel: t('char.agilite'), difficulty: 'intermediaire',
@@ -1028,7 +1042,7 @@ function echouageDifficulty(get: Get): { difficulty: Difficulty; encTxt: string 
  *  sinon délègue à `applyEchouage` (chemin IA/synchrone inchangé). */
 function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: import('./rollSeam').FreeConsLine[]): BuiltCascadeStep[] {
   const force = partyAssisted(get().party, undefined, 'force');
-  if (!force || !surfaceOf(get, force.actor)) {
+  if (!force || !surfaceOf(get, force.actor.id)) {
     applyEchouage(get, set, (l) => j.push(...l));
     return [];
   }

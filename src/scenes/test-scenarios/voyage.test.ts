@@ -4,6 +4,7 @@ import { setRule, resetRule } from '../../engine/policy';
 import { seedBattleRng } from '../../state/battleRng';
 import { distributeCredit } from '../../state/bourseFlow';
 import { currentPlaceId, interludeCatalog } from '../../state/interludeFlow';
+import { draineCascade } from '../../state/cascadeTestKit';
 import { scenario } from './voyage';
 
 /** Les 5 sous-scènes sont désormais produites par `buildScene(MapSpec)` (WorldMap/extraScenes restent sur
@@ -62,14 +63,7 @@ describe('16-voyage — intégration Voyage par Étapes', () => {
     expect(plan?.vehicle?.bodyShape).toBe('vehicule'); // diligence E45/B50
     // Les jets d'Étape du jour sont une cascade influençable (`travelDay`) : la drainer pour que les
     // lignes de postes/Exposition arrivent au journal (comme la halte de nuit du fluvial).
-    let guard = 0;
-    while (useGame.getState().pendingCascade && guard++ < 200) {
-      const p = useGame.getState().pendingCascade!;
-      const cur = p.participants[p.cursor];
-      if (cur?.participants && cur.participants.some((part) => !part.result)) { for (const part of cur.participants) if (!part.result) useGame.getState().cascadeBatchRoll(part.id); }
-      else if (cur && cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
-      else useGame.getState().cascadeNext();
-    }
+    draineCascade(useGame.getState);
     const j = useGame.getState().journal;
     expect(j.some((l) => l.includes('Météo'))).toBe(true);
     // Postes résolus : leurs conséquences arrivent au journal en lignes STRUCTURÉES (batch #328 + #295) —

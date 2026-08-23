@@ -4,7 +4,7 @@ import { useGame } from './store';
 import { buildRiverPlan, buildRiverDayCascade, runRiverDays, hasBatelier, applyEchouage } from './riverVoyageFlow';
 import { buildApi } from './devtools';
 import { cascadeAppliers } from './cascade';
-import { inexplique, soutienDe } from './cascadeTestKit';
+import { inexplique, soutienDe, avanceEtapeCascade } from './cascadeTestKit';
 import { findSkillById, resolveStake, voyageStakeRef, VOYAGE_STAKES, regles, skills, etats } from '../data';
 import { creditBourse } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
@@ -316,12 +316,15 @@ describe('exposition hydrique de la descente (MSRC 16) — l\'Effet waterExposur
     get().startTravel('r-reik', 'barge');
     // On draine d'abord la cascade du JOUR (travelDay) ; sa clôture ouvre la cascade d'Exposition (test).
     let g = 0;
-    while (get().pendingCascade?.purpose === 'travelDay' && g++ < 200) {
-      const p = get().pendingCascade!;
-      const cur = p.participants[p.cursor];
-      if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
-      else get().cascadeNext();
-    }
+    // Pilote PARTAGÉ (`cascadeTestKit.avanceEtapeCascade`) : il joue CHAQUE forme d'étape — jet, table
+    // de monde (Météo d'Étape), choix — comme la fenêtre le ferait ; un drainage qui ne saurait lancer
+    // que les jets resterait planté sur la première table.
+    while (get().pendingCascade?.purpose === 'travelDay' && g++ < 200) avanceEtapeCascade(get);
+    // Le d100 d'auteur est un dé de MONDE : le siège qui possède le monde le JOUE (#1426), il ne se
+    // tire pas en silence — c'est SA conséquence qui ouvre l'Exposition du groupe.
+    const chance = get().pendingCascade!;
+    expect(chance.participants[chance.cursor].kind).toBe('riverExposureChance');
+    avanceEtapeCascade(get);
     const pc = get().pendingCascade;
     // Purpose DÉDIÉ (#344) : la clôture de l'Exposition reprend la fin du jour (halte différée), au lieu du
     // purpose générique `test` qui n'a aucune continuation (→ soft-lock quand le Repos la court-circuite).

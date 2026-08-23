@@ -77,7 +77,7 @@ describe('#1262 — sonde B : le gate d’Action d’un héros d’INVITÉ ne se
     expect({
       ownsLocally: ownsLocally(g(), 'H1'),
       humanControlled: humanControlled(g(), hero),
-      surfaceOf: surfaceOf(g, hero),
+      surfaceOf: surfaceOf(g, hero.id),
     }).toEqual({ ownsLocally: false, humanControlled: false, surfaceOf: true });
 
     const out = resolveActGates(g, useGame.setState, hero);
@@ -111,7 +111,7 @@ describe('#1262 — sonde B : le gate d’Action d’un héros d’INVITÉ ne se
 
   it('porteur qu’AUCUN siège ne tient (héros conduit par l’IA) → jet INLINE, aucune fenêtre', () => {
     const hero = setup(mk('H1', { aiControlled: true } as Partial<Combatant>), COOP);
-    expect(surfaceOf(g, hero)).toBe(false);
+    expect(surfaceOf(g, hero.id)).toBe(false);
     const out = resolveActGates(g, useGame.setState, hero);
     expect(out.lines.length, 'l’IA roule son gate en ligne, journalisé').toBeGreaterThan(0);
     expect(out.loseMovement, 'FM 20, graine 3 : le Test échoue → l’Action est gardée, le Mouvement perdu').toBe(true);

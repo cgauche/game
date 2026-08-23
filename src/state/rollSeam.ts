@@ -5,8 +5,8 @@
  *
  * `openRoll` DÉCRIT un jet (`RollRequest`) et une CONTINUATION enregistrée par `kind`
  * (`registerCascadeApplier`, `cascade.ts:57`) ; la porte RÉSOUT la policy `klass × contrôleur ×
- * cadence` (Décision 3) via les prédicats EXISTANTS (`humanControlled`/`pilotedByHuman`/`cadenceAuto`/
- * `seaAutoResolves`) et choisit la surface :
+ * cadence` (Décision 3) via les prédicats EXISTANTS (`surfaceOf`/`cadenceAuto`/`seaAutoResolves`) et
+ * choisit la surface :
  *   M = modale influençable (`startCascade`, propriétaire = l'acteur humain) ;
  *   V = étape visible-lançable MJ (`startCascade`, propriétaire = le siège `gmSeat` — un `actorId`
  *       d'ennemi EN BATAILLE via `seatOwns` (`netOwnership.ts:19`), un côté `worldSide` sans acteur via
@@ -50,11 +50,10 @@ import type { RecapLine, RecapTone } from './recapLine';
 import type { ModLine } from '../engine/combat';
 import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey, combineMods, composeDifficulty } from '../engine/combat';
 import { volatileCharLines } from '../engine/characteristics';
-import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepResolved, clampStepAmount } from './cascade';
 import { testValue, partyBest, partyAssisted, testValueSplit, testValueParts, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
 import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
-import { jetSurfaced, pilotedByHuman, canFixDie, WORLD_STEP_OWNER } from './netOwnership';
+import { tenuParUnHumain, canFixDie, porteurParId, WORLD_STEP_OWNER } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { findSkillById, conditionLabel, dataLabel, type StakeRef } from '../data';
@@ -64,8 +63,8 @@ import { defaultRNG, type RNG } from '../engine/dice';
 import type { TestResult } from '../engine/tests';
 import { battleRng } from './battleRng';
 
-/** Les 4 classes déclaratives (mandat #275). Pilotent la POLICY, jamais le call-site. */
-export type RollClass = 'hero-test' | 'enemy' | 'subi' | 'batch';
+/** Les classes déclaratives (mandat #275). Pilotent la POLICY, jamais le call-site. */
+export type RollClass = 'hero-test' | 'subi' | 'batch';
 
 /** Agrégation d'un jet multi (porte/contresort/équipage) — SEULE variation de la famille multi.
  *  Canonique dans `pendings.ts` (`CascadeAggregate`, ré-exportée ici pour compat des call-sites du
@@ -301,7 +300,7 @@ export const freeCons = (texts: FreeConsLine[]): Consequence[] => texts
  *   - `worldSide` : aucun acteur — `meta.baseValue` (seuil posé par le call-site, ex. désertion d100). */
 function resolveMonoSide(get: Get, req: RollRequest, meta?: CascadeStepMeta): { actorId?: string; actor?: Combatant; baseValue?: number; support?: SupportDetail } {
   if ('actorId' in req.side) {
-    return { actorId: req.side.actorId, actor: actorIn(get(), req.side.actorId) };
+    return { actorId: req.side.actorId, actor: porteurParId(get(), req.side.actorId) };
   }
   if ('partyBest' in req.side) {
     const { skill, char, assisted } = req.side.partyBest;
@@ -330,9 +329,10 @@ function resolveMonoSide(get: Get, req: RollRequest, meta?: CascadeStepMeta): { 
 /** EXPORTÉ pour les call-sites qui bâtissent une cascade à PLUSIEURS étapes `subi` d'un même geste
  *  (scorbut/épuisement — Résistance PAR héros, `seaVoyageFlow.ts`) : `CascadeStep.participants`
  *  (Décision 4, Ronde 2) n'existe pas encore, donc `openRoll` (mono/batch) ne peut pas porter N étapes
- *  indépendantes. La policy `subi` ne dépend PAS de `req.side` (cf. ci-dessous) → un seul appel avec un
- *  `side` `worldSide` de convenance donne la MÊME surface que N appels `openRoll` individuels — source
- *  UNIQUE de policy (jamais dupliquée), pas de nouveau chemin. */
+ *  indépendantes. La policy `subi` se tranche AVANT le côté (#1426) et ne dépend donc PAS de `req.side` :
+ *  un seul appel, `side` `worldSide` de convenance, donne la MÊME surface que N appels `openRoll`
+ *  individuels (V sous siège MJ, I sinon) — source UNIQUE de policy (jamais dupliquée), pas de nouveau
+ *  chemin. */
 export function resolveSurface(get: Get, req: RollRequest, kind: string): Surface {
   const s = get();
   const autoC = cadenceAuto();
@@ -347,59 +347,62 @@ export function resolveSurface(get: Get, req: RollRequest, kind: string): Surfac
     return 'M';
   }
 
-  if (req.side && 'worldSide' in req.side) {
-    // Ennemi/monde sans acteur unique : le MJ voit/lance (V). Sans MJ, le siège qui POSSÈDE le monde
-    // (`WORLD_STEP_OWNER` → l'hôte/le solo, `netOwnership.seatOwns`) reçoit la fenêtre dès que la pose
-    // de dé lui est offerte (#1426) — possession et surface se dérivent du MÊME prédicat, sans quoi un
-    // siège possédait un jet qu'il ne voyait JAMAIS. Sinon : silence de fond (I).
-    if (gmSeat != null) return 'V';
-    return poseOfferte(get, WORLD_STEP_OWNER) ? 'M' : 'I';
-  }
-
-  const actor = resolveMonoSide(get, req).actor;
-
-  if (req.klass === 'enemy') {
-    if (actor && pilotedByHuman(s, actor) && gmSeat != null) return 'V';
-    return 'I';
-  }
-
   if (req.klass === 'subi') {
-    // « Subi » = jamais une décision du sujet → jamais M. Le MJ VOIT/LANCE (read-only) s'il est présent.
+    // MESURÉ : `subi` ne rend JAMAIS M — V si un siège MJ existe (il voit/lance, read-only), I sinon.
+    // La classe se tranche AVANT le côté : le MÊME jet subi rend la MÊME surface qu'il soit porté par
+    // un héros ou par le monde (#1426) — la classe dit COMMENT le jet se joue, le porteur dit QUI le
+    // tient. Un dé que le siège du monde TIENT ET JOUE n'est donc pas déclaré `subi` (`openWorldTest`).
     return gmSeat != null ? 'V' : 'I';
   }
 
-  // hero-test
+  // PORTEUR du dé : l'acteur nommé par le côté, ou la SENTINELLE du monde (`WORLD_STEP_OWNER`) — un id
+  // de porteur comme un autre. La suite ne connaît plus que cet id : UNE seule queue (cadence de voyage,
+  // puis le prédicat de surface commun `surfaceOf`) pour le monde comme pour le héros (#1426). Sous siège
+  // MJ, le dé du monde lui revient (V) : c'est lui qui le voit et le lance.
+  const monde = !!req.side && 'worldSide' in req.side;
+  if (monde && gmSeat != null) return 'V';
+  const porteurId = monde ? WORLD_STEP_OWNER : resolveMonoSide(get, req).actor?.id;
+
   if (autoV) return 'I'; // routine de voyage COMMANDÉE (cf. batch)
   // SURFACE, pas affordance locale (#1262) : le héros d'un AUTRE siège garde sa fenêtre — c'est SON
   // joueur qui la roulera. `pilotedByHuman`/`humanControlled` répondent « qui a la main ICI » et
   // volaient donc le jet de l'invité, résolu en silence chez l'hôte.
-  if (surfaceOf(get, actor)) return 'M';
+  if (surfaceOf(get, porteurId)) return 'M';
   return 'I';
 }
 
 /**
  * LA DÉFINITION DE SURFACE (#1262) — un jet se surface (fenêtre/rangée à jouer) quand un siège humain
- * QUELCONQUE possède son porteur (`jetSurfaced`, SEAT-AGNOSTIQUE) ET que la cadence n'est pas déférée
+ * TIENT son porteur (`netOwnership.tenuParUnHumain`, SEAT-AGNOSTIQUE) ET que la cadence n'est pas déférée
  * à un automate (`cadenceAuto`, cadence GLOBALE : il n'existe pas de cadence par siège — #1264).
  *
  * SOURCE UNIQUE pour le MONO (`resolveSurface`, `rollSansPilote`) comme pour les RANGÉES
- * (`surfaceRow`). Ce qu'elle N'EST PAS : un prédicat d'affordance LOCALE (`pilotedByHuman`,
- * `humanControlled`) — ceux-là disent « qui a la main devant CET écran », et bâtir le surfaçage
- * dessus fait rouler en silence, chez l'hôte, le jet du héros d'un invité.
+ * (`surfaceRow`) et pour les ÉTAPES À TABLE (`cascade.tableSansSiege`). Ce qu'elle N'EST PAS : un
+ * prédicat d'affordance LOCALE (`pilotedByHuman`, `humanControlled`) — ceux-là disent « qui a la main
+ * devant CET écran », et bâtir le surfaçage dessus fait rouler en silence, chez l'hôte, le jet du
+ * héros d'un invité.
+ *
+ * ELLE EST KEYÉE PAR LE PORTEUR (#1426), jamais par son TYPE — un héros (en combat comme hors
+ * combat), un ennemi, le MONDE passent par le MÊME appel, et la RÉSOLUTION du porteur comme celle du
+ * siège qui le tient appartiennent au module de possession (`netOwnership.tenuParUnHumain`, qui y
+ * route la sentinelle du monde). Cette fonction n'ajoute donc QUE la cadence : la fenêtre s'ouvre si
+ * un siège humain tient le porteur et que la cadence n'est pas déférée à un automate. L'option de
+ * confort « Dés fixés » n'entre PAS dans la surface : elle ne gate que la POSE du dé
+ * (`poseOfferte`/`canFixDie`), jamais le fait de VOIR le jet.
  *
  * `isOutOfAction` n'entre PAS ici : « le sujet peut-il encore jouer » est un critère MÉTIER, tranché
  * au site (les sites divergent aujourd'hui — arbitrage #1265).
  */
-export function surfaceOf(get: Get, actor: Combatant | undefined): boolean {
-  return !!actor && !cadenceAuto() && jetSurfaced(get(), actor);
+export function surfaceOf(get: Get, porteurId: string | undefined): boolean {
+  if (cadenceAuto()) return false;
+  return tenuParUnHumain(get(), porteurId);
 }
 
 /**
  * LA POLITIQUE DE POSE (#1426) — ce dé s'OFFRE-t-il à la pose (fenêtre / étape non résolue) plutôt que
- * de se tirer sur place ? EXPRESSION UNIQUE, employée par la porte elle-même (`resolveSurface`, côté
- * `worldSide`) ET par les étapes à TABLE que les flux poussent (sévérité de Critique, Imparfaite,
- * mutation, Événement d'interlude) : le socle décide, les feuilles déclarent. Avant #1426 ce `if`
- * était recopié en quatre exemplaires, chacun libre de dériver.
+ * de se tirer sur place ? EXPRESSION UNIQUE des étapes à TABLE que les flux poussent (sévérité de
+ * Critique, Imparfaite, mutation, Événement d'interlude, Météo d'Étape, événement de bord) : le socle
+ * décide, les feuilles déclarent.
  *
  * Elle compose le prédicat de contrôle EXISTANT (`netOwnership.canFixDie` : option de confort active
  * ET le siège qui décide possède le porteur) et RIEN d'autre. `ownerId` absent ou `WORLD_STEP_OWNER` :
@@ -421,8 +424,8 @@ export function poseOfferte(get: Get, ownerId: string | undefined): boolean {
  * Une rangée qui porte DÉJÀ un résultat (bande restaurée d'une sauvegarde) le garde : pas de second
  * dé, pas de seconde voie de témoin.
  */
-export function surfaceRow(get: Get, actor: Combatant | undefined, row: BatchParticipant): BatchParticipant {
-  if (surfaceOf(get, actor)) return { ...row, interactive: true, result: row.result ?? null };
+export function surfaceRow(get: Get, porteurId: string | undefined, row: BatchParticipant): BatchParticipant {
+  if (surfaceOf(get, porteurId)) return { ...row, interactive: true, result: row.result ?? null };
   return { ...row, interactive: false, result: row.result ?? rollBatchParticipant(row, battleRng()) };
 }
 
@@ -1000,11 +1003,16 @@ export function openPartyTest(
 }
 
 /**
- * FORME STÉRÉOTYPÉE 2/2 (#352 extension) : jet SUBI par le siège MONDE (`klass:'subi'`, side
- * `worldSide`) — désertion, recherche d'acheteur, chance d'un péril d'auteur : aucune compétence (la
- * cible est posée par l'appelant via `meta.baseValue`). La POSSESSION ne se déclare pas ici : une
- * étape sans acteur est routée au sentinel `WORLD_STEP_OWNER` par `buildMonoStep`+`modalArbiter`, qui
- * la rend au siège MJ s'il existe et à l'hôte sinon. SOURCE UNIQUE, cf. `openPartyTest`.
+ * FORME STÉRÉOTYPÉE 2/2 (#352 extension) : dé du siège MONDE (side `worldSide`) — désertion, recherche
+ * d'acheteur, chance d'un péril d'auteur : aucune compétence (la cible est posée par l'appelant via
+ * `meta.baseValue`). La POSSESSION ne se déclare pas ici : une étape sans acteur est routée au sentinel
+ * `WORLD_STEP_OWNER` par `buildMonoStep`+`modalArbiter`, qui la rend au siège MJ s'il existe et à
+ * l'hôte sinon. SOURCE UNIQUE, cf. `openPartyTest`.
+ *
+ * CLASSE ORDINAIRE, jamais `subi` (#1426) : le siège qui possède le monde TIENT ce dé et le JOUE — sa
+ * fenêtre s'ouvre (M en solo, V sous siège MJ, I en cadence déférée), exactement comme celle du jet
+ * d'un héros. `subi` est la classe du jet qu'un porteur SUBIT (jamais M), et `resolveSurface` la
+ * tranche AVANT le côté : la déclarer ici rendrait ces dés muets.
  *
  * ÉVALUATION `'seuil'` (#1426) : ces dés ne sont PAS des Tests — le RAW dit « lancez un d100 [...] si
  * le résultat est inférieur ou égal au chiffre final » (MSRC 13 l.146, MDG 15 l.362) et écrit « Test »
@@ -1022,7 +1030,7 @@ export function openWorldTest(
     actionLabel: spec.actionLabel,
     test: {},
     difficulty: spec.difficulty,
-    klass: 'subi',
+    klass: 'hero-test',
     evaluation: 'seuil',
     ...(spec.stake ? { stake: spec.stake } : {}),
   }, kind, meta);
@@ -1137,13 +1145,13 @@ export type BandOpenSpec = BandRowsSpec & { title: string; purpose: PendingCasca
  * propriétaire fantôme ; en témoin, elle roulerait un dé pour personne.
  */
 function rowSurfacee(get: Get, r: Omit<BatchParticipant, 'interactive'>, cle: string): BatchParticipant | undefined {
-  const actor = actorIn(get(), r.id);
+  const actor = porteurParId(get(), r.id);
   if (!actor) {
     refusePorte(`bande « ${cle} » : rangée « ${r.id} » sans combattant — ni jet, ni propriétaire à lui donner. Rangée écartée.`);
     return undefined;
   }
   if (r.result) return { ...r, interactive: false };
-  return surfaceRow(get, actor, { ...r, interactive: true });
+  return surfaceRow(get, actor.id, { ...r, interactive: true });
 }
 
 /**
@@ -1156,7 +1164,7 @@ function rowSurfacee(get: Get, r: Omit<BatchParticipant, 'interactive'>, cle: st
  */
 export function buildBand(get: Get, spec: BandRowsSpec): BuiltCascadeStep | undefined {
   const rows = spec.porteurs
-    ? spec.porteurs.map((p) => surfaceRow(get, p.actor, bandRow(p, spec.difficulty)))
+    ? spec.porteurs.map((p) => surfaceRow(get, p.actor?.id, bandRow(p, spec.difficulty)))
     : (spec.rows ?? []).flatMap((r) => rowSurfacee(get, r, spec.id) ?? []);
   return bandStep(spec, rows);
 }
@@ -1814,7 +1822,7 @@ export function rollSansPilote(
   rng: RNG = defaultRNG,
   modifier = 0,
 ): TestResult {
-  if (actor && surfaceOf(get, actor)) {
+  if (actor && surfaceOf(get, actor.id)) {
     const msg = `[seam] jet silencieux d'un acteur piloté (« ${actor.label} ») — router par openRoll/flow.`;
     console.error(msg);
     if (import.meta.env?.DEV) throw new Error(msg);

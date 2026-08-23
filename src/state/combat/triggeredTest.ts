@@ -548,7 +548,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   const btFreeze = ctx.bladeTrap && aT ? { ...ctx.bladeTrap, attackerSL: aT.sl } : ctx.bladeTrap;
   // La SURFACE est le seul critère de cette porte : un porteur hors d'action reçoit son étape (un Test
   // déclenché le vise LUI, il ne demande pas d'agir — le gate d'Action du tour, lui, filtre ; #1265).
-  if (surfaceOf(ctx.get, c)) {
+  if (surfaceOf(ctx.get, c.id)) {
     // Porteur SURFACÉ (un siège humain QUELCONQUE le tient, cadence manuelle) : étape INFLUENÇABLE,
     // suspendue dans la cascade et routée à SON siège. Branche + `after` (et,
     // pour une réaction, le contexte sérialisable `freeAttack`/`bladeTrap`) voyagent dans le meta → rejoués
@@ -684,7 +684,7 @@ function choiceAffordable(decider: Combatant | undefined, cost?: { advantage: nu
  */
 export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'choice' }>, after: Flow): void {
   const decider = ctx.caster ?? ctx.target;
-  if (ctx.mode === 'combat' && decider && surfaceOf(ctx.get, decider)) {
+  if (ctx.mode === 'combat' && decider && surfaceOf(ctx.get, decider.id)) {
     // Décideur surfacé : étape de CHOIX influençable (rendue par le chemin CHOIX générique de CascadeModal),
     // routée au siège qui tient le décideur — l'hôte ne tranche ni ne dépense l'Avantage d'autrui.
     // Le coût (en libellé) est joint au « Oui » ; l'option est tranchée par `cascadeChoose`.

@@ -25,7 +25,7 @@ import type { CascadeStep } from './pendings';
 import { resumeTravel } from './travelFlow';
 import { applyEffects } from './combatEffects';
 import { cascadeAppliers } from './cascade';
-import { inexplique, soutienDe } from './cascadeTestKit';
+import { inexplique, soutienDe, avanceEtapeCascade, draineCascade } from './cascadeTestKit';
 import { crewRoleValue } from '../engine/crewMorale';
 import { findCrewRoleById, resolveStake } from '../data';
 import { resultLine } from './rollSeam';
@@ -77,18 +77,9 @@ function freshState() {
   } as never);
 }
 
-/** Fait avancer LA cascade active d'UNE étape (lance ses jets — mono ou batch — puis valide). No-op si
- *  aucune cascade active. */
+/** Fait avancer LA cascade active d'UNE étape — pilote PARTAGÉ `cascadeTestKit.avanceEtapeCascade`. */
 function stepCascade(): void {
-  const p = get().pendingCascade;
-  if (!p) return;
-  const cur = p.participants[p.cursor];
-  // Étape de CHOIX (Progression : équipage ou Navigation, MDG 14 l.63) : le pilote de test répond
-  // comme le joueur par défaut — jamais de saut silencieux, une cascade ne franchit pas un choix seule.
-  if (cur?.options && !cur.chosen) get().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key);
-  else if (cur?.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
-  else if (cur && !cur.result) get().cascadeRoll(cur.id);
-  get().cascadeNext();
+  avanceEtapeCascade(get);
 }
 
 describe('buildSeaPlan — appareillage sur le navire de campagne', () => {
@@ -955,6 +946,17 @@ describe('Cogue pirate (#327 A5.3) — l’événement navire-hostile PRÉSENTE 
   });
 });
 
+/** Joue la journée étape par étape JUSQU'À la validation de l'étape d'événement de bord (incluse) : le
+ *  `RecapEvent` du jour vit dans `sea.events` tant que le jour n'est pas CLOS (la clôture le déplace
+ *  dans `travelPlan.log`, cf. le bloc « Clôture du jour de mer » ci-dessous). */
+function jusquApresEvenementDeBord(max = 40): void {
+  for (let i = 0; i < max && get().pendingCascade; i++) {
+    const joue = get().pendingCascade!.participants[get().pendingCascade!.cursor];
+    avanceEtapeCascade(get);
+    if (joue?.kind === 'seaBoardEvent') return;
+  }
+}
+
 describe('Événement de bord RACONTÉ → carte-parchemin (#371 LOT 4, non couvert avant #383)', () => {
   beforeEach(freshState);
 
@@ -968,16 +970,73 @@ describe('Événement de bord RACONTÉ → carte-parchemin (#371 LOT 4, non couv
     expect(events[0]).toEqual({ title: def.label, text: def.desc, roll: undefined }); // forcé → pas de tirage (recapLine.ts)
   });
 
-  it('un tirage NATUREL (non forcé, `daysToEvent` échu) capture le d100 dans le `RecapEvent` — label+texte SOURCÉS (`BOARD_EVENTS`, pas de copie en dur)', () => {
+  /** CONTRAT (#1426) : l'événement de bord n'est plus résolu inline — c'est une ÉTAPE À TABLE du canal
+   *  de cascade (`sea-board-event`, dé de MONDE). Le `RecapEvent` naît donc quand l'étape est DRAINÉE,
+   *  pas à l'appel de `runSeaDay` : le test joue la journée comme un joueur (pilote partagé) au lieu de
+   *  lire l'état à mi-course. */
+  it('un tirage NATUREL (non forcé, `daysToEvent` échu) : l’étape à TABLE drainée capture le d100 dans le `RecapEvent` — label+texte SOURCÉS (`BOARD_EVENTS`, pas de copie en dur)', () => {
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
     set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysToEvent: 1, forcedEventId: undefined } } });
     runSeaDay(get, set);
+    const etape = get().pendingCascade!.participants.find((s) => s.kind === 'seaBoardEvent')!;
+    expect(etape.worldOwner, 'dé de MONDE : aucun acteur ne le porte').toBe(true);
+    // La table se JOUE dans sa fenêtre (le siège qui possède le monde lance) : elle naît non tirée.
+    expect(etape.table!.result, 'le socle ne tire pas à la place de la fenêtre').toBeUndefined();
+    jusquApresEvenementDeBord();
     const events = get().travelPlan!.sea!.events ?? [];
     expect(events).toHaveLength(1);
     const ev = events[0];
     expect(typeof ev.roll).toBe('number'); // tirage capturé (chemin non forcé)
     const def = BOARD_EVENTS.find((e) => e.label === ev.title && e.desc === ev.text);
     expect(def).toBeTruthy(); // titre + texte VERBATIM d'une entrée RÉELLE de sea-events.json
+  });
+
+  /** L'Humeur de Manann DÉCALE le d100 de l'événement (MDG 15 l.85) : elle est le `mod` de la table
+   *  d'étape, versé par `liveTableDecl` au rang du tirage. */
+  it('l’Humeur de Manann du navire est le `mod` de la table d’événement de bord', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ vessel: { ...get().vessel!, manann: { score: -40, applied: [] } } });
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysToEvent: 1, forcedEventId: undefined } } });
+    runSeaDay(get, set);
+    jusquApresEvenementDeBord(); // la table se joue dans sa fenêtre : c'est le geste qui la tire
+    const etape = get().pendingCascade!.participants.find((s) => s.kind === 'seaBoardEvent')!;
+    expect(etape.table!.mod).toBe(-40);
+    expect(etape.table!.result!.die).toBe(etape.table!.result!.roll - 40); // le dé EFFECTIF est décalé
+  });
+
+  /** La FOURCHETTE 48-80 de la table (`sea-events.json`) rend « Navigation ordinaire », l'entrée
+   *  `kind:'rien'` — mesurée SUR LE FLUX réel, dé posé par la fenêtre. */
+  it('dé posé à 60 (Humeur neutre) → l’entrée « Navigation ordinaire », et la journée ne raconte aucun incident', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysToEvent: 1, forcedEventId: undefined } } });
+    runSeaDay(get, set);
+    const etape = get().pendingCascade!.participants.find((s) => s.kind === 'seaBoardEvent')!;
+    expect(etape.table!.mod ?? 0, 'Humeur de Manann neutre : le dé posé est le dé effectif').toBe(0);
+    get().cascadeTableSetForcedRoll(etape.id, 60);
+    const tiree = get().pendingCascade!.participants.find((s) => s.kind === 'seaBoardEvent')!.table!.result!;
+    expect(tiree.id).toBe('navigation-ordinaire');
+    expect(seaBoardEventById(tiree.id)!.kind).toBe('rien');
+  });
+
+  /** LOT 3 (#1426) : UNE voix par événement, et elle est la CONSÉQUENCE de l'étape. Deux exigences que
+   *  seule la conséquence satisfait ENSEMBLE : (a) le joueur ne lit qu'une ligne au journal, portant le
+   *  texte VERBATIM de `sea-events.json` (la ligne de TABLE reste l'issue de la RANGÉE, elle ne se
+   *  re-verse pas) ; (b) la rangée validée GARDE son `outcome`, donc reste dans la pile à l'écran
+   *  (« on ne perd pas les conséquences », `CascadeModal`) — une étape à table dont l'applier raconte à
+   *  côté et rend `{}` DISPARAÎT du bilan (`CascadeModal.rowOf` : ni `result` mono, ni `outcome`). */
+  it('l’événement de bord ne s’écrit QU’UNE fois au journal, et la rangée validée GARDE sa conséquence', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysToEvent: 1, forcedEventId: undefined } } });
+    set({ journal: [] });
+    runSeaDay(get, set);
+    jusquApresEvenementDeBord(); // la table se joue dans sa fenêtre : c'est le geste qui la tire
+    const etape = get().pendingCascade!.participants.find((s) => s.kind === 'seaBoardEvent')!;
+    const def = BOARD_EVENTS.find((e) => e.id === etape.table!.result!.id)!;
+    const portantes = get().journal.filter((l) => l.includes(def.label));
+    expect(portantes).toHaveLength(1);
+    expect(portantes[0]).toBe(`${def.label} — ${def.desc}`); // texte VERBATIM, pas le titre nu
+    expect(etape.committed, 'précondition : l’étape a bien été validée').toBe(true);
+    expect(etape.outcome?.map((l) => l.text), 'la pile garde la conséquence de l’étape').toEqual([`${def.label} — ${def.desc}`]);
   });
 });
 
@@ -1161,15 +1220,23 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
     expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(false); // pas encore tiré
     resolveShoreLeave(get, set, true);
     expect(get().pendingShoreLeave).toBeNull();
+    draineCascade(get); // le dé de Désertion se joue dans SA fenêtre (siège du monde), puis la suite s'enchaîne
     expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(true); // tiré APRÈS le choix
   });
 
-  it('seam de jet (#275 Ronde 1) — Désertion : SANS siège MJ résout INLINE (même journée, événement de port tiré direct)', () => {
+  /**
+   * #1426 — le dé de Désertion est un dé de MONDE : le siège qui POSSÈDE le monde (ici l'hôte solo,
+   * `netOwnership.worldSeat`) le VOIT et le lance, comme le jet d'un héros. L'option de confort
+   * « Dés fixés » n'entre pas dans cette surface : elle n'ajoute que la POSE du dé.
+   */
+  it('seam de jet — Désertion : SANS siège MJ, le siège du monde tient la fenêtre (la journée reprend quand il l\'a jouée)', () => {
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
     set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, milesToday: 5 } } });
     continueSeaDayAfterCascade(get, set);
     resolveShoreLeave(get, set, true);
-    expect(get().pendingCascade).toBeNull(); // 'I' (inline) — aucun siège MJ
+    expect(get().pendingCascade, 'le siège local possède le monde : son dé se joue, il ne se tire pas en silence').toBeTruthy();
+    expect(get().journal.some((l) => l.includes('Événement de port')), 'la suite attend le geste').toBe(false);
+    draineCascade(get);
     expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(true);
   });
 
@@ -1248,23 +1315,32 @@ describe('Entretien-survie maritime — #272 résiduel (Scorbut/Épuisement, pol
 describe('Mal de mer — #460 (MDG 14 l.211-222, câblage jamais branché, cycle de maladie réutilisé)', () => {
   beforeEach(freshState);
 
-  it('applier `sea-mal-de-mer` : échec → contracté (malaise/nausée/persistant)', () => {
-    const hero = get().party[0];
-    hero.diseases = [];
-    cascadeAppliers['sea-mal-de-mer'].apply(get, set, { id: 'x', kind: 'sea-mal-de-mer', label: fixtureText('x'), result: { roll: 99, target: 40, sl: -6, success: false }}, hero, { steps: [], index: 0 });
-    const found = get().party.find((h) => h.id === hero.id)!.diseases?.find((d) => d.id === 'mal-de-mer');
+  /** Bande du mal de mer : une rangée par porteur, chacune avec SON verdict. */
+  const bandeMalDeMer = (rows: { id: string; success: boolean }[]): CascadeStep => ({
+    id: 'x', kind: 'sea-mal-de-mer', label: fixtureText('x'), groupOwner: true,
+    participants: rows.map((r) => ({ id: r.id, interactive: true, base: 40, target: 40, result: { roll: r.success ? 1 : 99, target: 40, sl: r.success ? 6 : -6, success: r.success } })),
+  });
+
+  it('applier `sea-mal-de-mer` : la rangée en échec contracte (malaise/nausée/persistant), pas sa voisine', () => {
+    const [a, b] = get().party;
+    a.diseases = [];
+    b.diseases = [];
+    cascadeAppliers['sea-mal-de-mer'].apply(get, set, bandeMalDeMer([{ id: a.id, success: false }, { id: b.id, success: true }]), a, { steps: [], index: 0 });
+    const found = get().party.find((h) => h.id === a.id)!.diseases?.find((d) => d.id === 'mal-de-mer');
     expect(found).toBeTruthy();
     expect(found!.symptoms.map((s) => s.symptomId).sort()).toEqual(['malaise', 'nausee', 'persistant']);
+    expect(get().party.find((h) => h.id === b.id)!.diseases ?? [], 'la réussite ne contracte rien').toHaveLength(0);
   });
 
-  it('applier `sea-mal-de-mer` : réussite → rien', () => {
-    const hero = get().party[0];
-    hero.diseases = [];
-    cascadeAppliers['sea-mal-de-mer'].apply(get, set, { id: 'x', kind: 'sea-mal-de-mer', label: fixtureText('x'), result: { roll: 1, target: 40, sl: 6, success: true }}, hero, { steps: [], index: 0 });
-    expect(get().party.find((h) => h.id === hero.id)!.diseases ?? []).toHaveLength(0);
+  it('applier `sea-mal-de-mer` : bande TOUTE réussie → rien', () => {
+    const [a, b] = get().party;
+    a.diseases = [];
+    b.diseases = [];
+    cascadeAppliers['sea-mal-de-mer'].apply(get, set, bandeMalDeMer([{ id: a.id, success: true }, { id: b.id, success: true }]), a, { steps: [], index: 0 });
+    expect(get().party.flatMap((h) => h.diseases ?? [])).toHaveLength(0);
   });
 
-  it('1er jour de traversée (`daysAtSea === 0`) → une étape `sea-mal-de-mer` par PJ non-elfe', async () => {
+  it('1er jour de traversée (`daysAtSea === 0`) → UNE bande `sea-mal-de-mer`, une RANGÉE par PJ non-elfe', async () => {
     const { setGmSeat } = await import('./netFlow');
     setGmSeat(get, set, 1);
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
@@ -1272,11 +1348,14 @@ describe('Mal de mer — #460 (MDG 14 l.211-222, câblage jamais branché, cycle
     continueSeaDayAfterCascade(get, set);
     expect(get().pendingCascade).toBeTruthy();
     expect(get().pendingCascade!.purpose).toBe('seaScorbut'); // MÊME cascade « Entretien — Maladies » (#460)
-    const kinds = get().pendingCascade!.participants.map((s) => s.kind);
-    expect(kinds.filter((k) => k === 'sea-mal-de-mer')).toHaveLength(get().party.length); // 1 par PJ
+    // UNE SITUATION = UNE FENÊTRE : un seul Test (MDG 14 l.219), donc UNE étape — les PJ appelés y
+    // tiennent chacun leur rangée, jamais N modales pour le même jet.
+    const bandes = get().pendingCascade!.participants.filter((s) => s.kind === 'sea-mal-de-mer');
+    expect(bandes).toHaveLength(1);
+    expect(bandes[0].participants!.map((r) => r.id)).toEqual(get().party.map((h) => h.id));
   });
 
-  it('mauvais temps (Vent violent ou plus, l.218) → une étape `sea-mal-de-mer`, même hors 1er jour', async () => {
+  it('mauvais temps (Vent violent ou plus, l.218) → une bande `sea-mal-de-mer`, même hors 1er jour', async () => {
     const { setGmSeat } = await import('./netFlow');
     setGmSeat(get, set, 1);
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;

@@ -6,6 +6,7 @@ import { distributeCredit, partyMoneyTotal } from '../../state/bourseFlow';
 import { findSpell } from '../../data';
 import { knowsCastingSkill, isArcaneSpell, isMagicMissile } from '../../engine/magic';
 import { spellEffectOps } from '../../engine/flowCore';
+import { avanceEtapeCascade, draineCascade } from '../../state/cascadeTestKit';
 
 const scen = testScenarios.find((s) => s.id === 'voyage-maritime')!;
 const get = () => useGame.getState();
@@ -21,19 +22,13 @@ function launch(seed = 1) {
   // La carte d'ENTRÉE de zone est une étape d'AFFICHAGE de cascade (#942 L8) : comme toute fenêtre de
   // cascade, elle gèle les actions du bord (`startTravel` compris) tant qu'elle n'est pas acquittée.
   // Le scénario l'acquitte donc, comme un joueur, AVANT d'appareiller.
-  while (get().pendingCascade) get().cascadeNext();
+  draineCascade(get);
 }
 
 /** Dort à une halte de nuit (« Dormir » → cascade de nuit → reprise de la route au matin). */
 function sleepThroughHalt(): void {
   get().restSleep();
-  let guard = 0;
-  while (get().pendingCascade && guard++ < 80) {
-    const p = get().pendingCascade!;
-    const cur = p.participants[p.cursor];
-    if (cur.target != null && !cur.result) get().cascadeRoll(cur.id);
-    get().cascadeNext();
-  }
+  draineCascade(get, 80);
 }
 
 /** Déroule la traversée jusqu'à l'ACCOSTAGE (travelPlan retombé à null + scène du port d'arrivée) —
@@ -44,18 +39,9 @@ function sailToPort(maxSteps = 400): string[] {
   const kinds: string[] = [];
   for (let i = 0; i < maxSteps; i++) {
     if (!get().travelPlan && get().scene?.id === 'test-mer-arrivee') break; // arrivé
-    const casc = get().pendingCascade;
-    if (casc) {
-      const cur = casc.participants[casc.cursor];
-      if (cur) {
-        kinds.push(cur.kind);
-        // Étape de CHOIX (Progression : Test d'équipage ou Test de Navigation, MDG 14 l.63) : le joueur
-        // TRANCHE — une cascade ne franchit jamais un choix seule. Le pilote répond le défaut.
-        if (cur.options && !cur.chosen) get().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key);
-        else if (cur.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
-        else if (!cur.result) get().cascadeRoll(cur.id);
-      }
-      get().cascadeNext();
+    if (get().pendingCascade) {
+      const k = avanceEtapeCascade(get);
+      if (k !== undefined) kinds.push(k);
       continue;
     }
     if (get().pendingSeaActivities) { get().seaActivitiesConfirm({}); continue; }

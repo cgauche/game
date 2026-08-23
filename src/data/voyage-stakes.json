@@ -498,5 +498,17 @@
       "page": 32,
       "note": "EDOC 8 l.50-59 (tableau Météo par saison)"
     }
+  },
+  {
+    "id": "sea-board-event",
+    "label": "Événement de bord",
+    "kind": "seaBoardEvent",
+    "template": "Ce que le d100 décide pour la journée : l'événement de bord appliqué au navire — l'Humeur de Manann en est le modificateur — puis le délai de 1d10 jours avant le prochain.",
+    "rule": "evenements-de-bord",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 130,
+      "note": "MDG 15 l.89 (règle) ; tableau l.132-189"
+    }
   }
 ]

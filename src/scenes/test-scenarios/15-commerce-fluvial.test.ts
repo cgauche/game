@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGame } from '../../state/store';
 import { testScenarios } from './index';
 import { seedBattleRng } from '../../state/battleRng';
 import { toBrass } from '../../engine/money';
 import { distributeCredit, partyMoneyTotal } from '../../state/bourseFlow';
 import { primaryCargoCarrier } from '../../state/carriers';
+import { draineCascadeDifferee } from '../../state/cascadeTestKit';
 import { carrierFreeEnc } from '../../engine/cargo';
 import { REIK_INDEX } from './_reik-index';
 
@@ -103,7 +104,12 @@ describe('Scénario Commerce fluvial — boucle acheter → barge → revendre a
     get().openLandMarket();
     drainCascade();
     const purseBeforeSell = toBrass(partyMoneyTotal(get));
+    // Le dé d'acheteur est un dé de MONDE : le joueur le LANCE dans sa fenêtre (#1426), et la vente
+    // s'enchaîne sur ses maillons différés (mise à prix, Marchandage).
+    vi.useFakeTimers();
     get().landSellCargo(carrierId, 0);
+    draineCascadeDifferee(get, () => vi.runAllTimers());
+    vi.useRealTimers();
     const earned = toBrass(partyMoneyTotal(get)) - purseBeforeSell;
     expect(earned).toBeGreaterThan(0);
     // La cargaison a rapporté PLUS qu'elle n'a coûté à l'achat → profit prouvé (boucle MSRC 13 l.11-13).

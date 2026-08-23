@@ -158,16 +158,18 @@ export function scanRollLabels(src: string): ActionLabelHit[] {
 
 /** STOCK NOMINATIF (#1109) — les six sites mesurés le 2026-08-05, chacun nommé par son fichier et son
  *  TEXTE exact. Plafond COLLÉ (longueur exacte) : un site assaini l'abaisse, un site neuf rougit nominativement.
- *  #1318 V8c₃ : les six ont été passés au catalogue (`sv.*`) SANS changer un octet de leur texte — ils
- *  sont donc TOUJOURS LÀ, et le scan les suit désormais jusqu'à leur clé. La dette #1109 n'a pas bougé. */
+ *  #1318 V8c₃ : le stock est passé au catalogue (`sv.*`) SANS changer un octet de son texte — il est
+ *  donc TOUJOURS LÀ, et le scan le suit désormais jusqu'à sa clé. */
 const ROLL_LABEL_SITUATION_STOCK: { file: string; text: string }[] = [
   { file: 'src/state/seaVoyageFlow.ts', text: 'Tonneau contaminé' },
   { file: 'src/state/seaVoyageFlow.ts', text: "Tonneau d'eau" },
-  { file: 'src/state/seaVoyageFlow.ts', text: 'Mal de mer' }, // deux sites (premier voyage / mauvais temps)
   { file: 'src/state/seaVoyageFlow.ts', text: 'Scorbut' },
   { file: 'src/state/seaVoyageFlow.ts', text: 'Épuisement' },
 ];
-const ROLL_LABEL_SITUATION_PLAFOND = 6;
+// Les deux sites « Mal de mer » (premier voyage / mauvais temps) sont sortis du stock : le Test est
+// une BANDE (une fenêtre, une rangée par porteur), et la SITUATION y est portée par le libellé de la
+// bande — la rangée nomme la Compétence, comme le veut Z5.
+const ROLL_LABEL_SITUATION_PLAFOND = 4;
 
 describe('CLIQUET — un `rollLabel` nomme la COMPÉTENCE, pas la situation (#1109)', () => {
   const situationSites = (): string[] => {

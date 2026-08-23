@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  MANANN_BASE, applyManannFactor, addManann, rollBoardEvent, rollPortEvent, rollDaysToNextEvent,
+  MANANN_BASE, applyManannFactor, addManann, rollPortEvent, rollDaysToNextEvent,
   rollRandomCargo, cargoBasePrice, rollCargoAvailability, rollMerchantSkill, buySellerDR,
   sellRelation, sellChance, offerPricePct, dumpingPricePct, opportunityTradePct,
   cargoTotalEnc, removeCargo, resolveFastVoyage, type PortProfile,
@@ -38,14 +38,8 @@ describe('Humeur de Manann (MDG 15 l.83-125)', () => {
 });
 
 describe('événements de bord & de port (MDG 15 l.89 + l.127-129)', () => {
-  it('tous les 1d10 jours ; le d100 est modifié par l’Humeur — Humeur −40 + jet 20 → bande négative', () => {
+  it('le délai du prochain événement de bord est un d10 (l.89)', () => {
     expect(rollDaysToNextEvent(seq(7))).toBe(7);
-    const bad = rollBoardEvent(-40, seq(20));
-    expect(bad.roll).toBe(-20);
-    expect(bad.event.min).toBeLessThanOrEqual(-20);
-    expect(bad.event.max).toBeGreaterThanOrEqual(-20);
-    const calm = rollBoardEvent(0, seq(60));
-    expect(calm.event.kind).toBe('rien'); // 48-80 : Navigation ordinaire
   });
 
   it('port : 2d10 ±1 selon le signe de l’Humeur ; l’événement survient dans les 2d10 heures', () => {

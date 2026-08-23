@@ -9,7 +9,7 @@ import { seatOwns } from './netOwnership';
 import type { Combatant } from '../engine/types';
 
 /**
- * SEAM DE JET UNIQUE — Ronde 0 (#275 substrat). Couvre les 4 classes déclaratives (`RollClass`) ×
+ * SEAM DE JET UNIQUE — Ronde 0 (#275 substrat). Couvre les classes déclaratives (`RollClass`) ×
  * leurs 3 surfaces (M/V/I, Décision 3) via `openRoll`, sans aucun call-site réel migré (hors périmètre
  * Ronde 0). Chaque test enregistre un applier DÉDIÉ (kind unique, namespacé) et observe : (a) si une
  * modale/cascade s'est ouverte (`pendingCascade`) — surface M/V ; (b) si l'applier a tourné d'office —
@@ -54,22 +54,21 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     expect(applied).toHaveLength(0);
   });
 
-  it('enemy, côté ennemi/monde SOUS siège MJ, manuel → V (étape visible-lançable MJ)', () => {
+  it('porteur ENNEMI — personne ne le tient → I (inline-PV, résolu d’office ; surfacé dès qu’un MJ siège)', () => {
     useGame.setState({ party: [enemy()] });
-    setGmSeat(useGame.getState, useGame.setState, 0);
-    const req: RollRequest = { side: { actorId: 'E' }, actionLabel: 'Perception', test: { skill: 'perception', char: 'initiative' }, difficulty: 'intermediaire', klass: 'enemy' };
-    openRoll(useGame.getState, useGame.setState, req, 'seam-enemy');
-    expect(useGame.getState().pendingCascade).toBeTruthy(); // surfacé chez le MJ (V)
-    expect(applied).toHaveLength(0);
-  });
-
-  it('enemy, SANS siège MJ (IA) → I (inline-PV, résolu d’office)', () => {
-    useGame.setState({ party: [enemy()] });
-    const req: RollRequest = { side: { actorId: 'E' }, actionLabel: 'Perception', test: { skill: 'perception', char: 'initiative' }, difficulty: 'intermediaire', klass: 'enemy' };
+    const req: RollRequest = { side: { actorId: 'E' }, actionLabel: 'Perception', test: { skill: 'perception', char: 'initiative' }, difficulty: 'intermediaire', klass: 'hero-test' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-enemy');
     expect(useGame.getState().pendingCascade).toBeNull();
     expect(applied).toHaveLength(1);
     expect(applied[0].kind).toBe('seam-enemy');
+    // La CLASSE ne connaît pas le camp (#1426) : c'est le PORTEUR qui décide — un siège MJ tient les
+    // ennemis, la même requête se surface alors.
+    applied.length = 0;
+    useGame.setState({ pendingCascade: null });
+    setGmSeat(useGame.getState, useGame.setState, 0);
+    openRoll(useGame.getState, useGame.setState, req, 'seam-enemy');
+    expect(useGame.getState().pendingCascade).toBeTruthy();
+    expect(applied).toHaveLength(0);
   });
 
   it('subi, porté par un héros SANS MJ → I (jamais M — « subi » n’est jamais une décision du sujet)', () => {

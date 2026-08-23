@@ -6,7 +6,7 @@
 import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 import { modalOwnerOf, horsModalOwnedIntents, horsModalByPending, type HorsModalDef } from './modalArbiter';
-import { inBattleId, actorIn } from './combatants';
+import { inBattleId } from './combatants';
 import { targetingHolder } from './targetingHolder';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 import { desFixes } from '../engine/fixedDie';
@@ -79,11 +79,20 @@ type _JetOwnerFieldReal = [_JetOwnerFieldBad] extends [never]
 const _jetOwnerFieldCheck: _JetOwnerFieldReal = true;
 void _jetOwnerFieldCheck;
 
+/**
+ * LE SIÈGE DU MONDE — celui qui tient l'environnement (météo, périls, marché, désertion) : le siège
+ * MJ quand il existe (bac-à-sable), l'hôte (siège 0) sinon. Il existe TOUJOURS, et il est humain :
+ * c'est ce qui rend un jet de monde surfaçable au même titre que celui d'un héros (`rollSeam.surfaceOf`).
+ */
+export function worldSeat(s: GameState): number {
+  return s.net.gmSeat ?? 0;
+}
+
 /** Le siège possède-t-il ce combattant ? (héros non attribué → hôte, siège 0). */
 export function seatOwns(s: GameState, seat: number, combatantId: string | undefined): boolean {
-  // Étape MONDE sans acteur (désertion, Moral…) : le siège MJ la possède quand il existe, l'hôte sinon
-  // (bac-à-sable MJ — même politique que l'ennemi `kind:'enemy'` ci-dessous, étendue au hors-combat).
-  if (combatantId === WORLD_STEP_OWNER) return s.net.gmSeat != null ? seat === s.net.gmSeat : seat === 0;
+  // Étape MONDE sans acteur (désertion, Moral…) : le siège du monde (`worldSeat` — MJ s'il existe,
+  // hôte sinon ; même politique que l'ennemi `kind:'enemy'` ci-dessous, étendue au hors-combat).
+  if (combatantId === WORLD_STEP_OWNER) return seat === worldSeat(s);
   if (!combatantId) return seat === 0;
   // Bac-à-sable MJ : un combattant NON-héros (ennemi/monde) est conduit par le siège MJ (`gmSeat`), pas
   // par `ownership` (réservé aux héros) — les intents de son tour/ses modales remontent donc au MJ.
@@ -185,6 +194,43 @@ export function jetSurfaced(s: GameState, c: Combatant): boolean {
   return false;
 }
 
+/**
+ * Le porteur d'un dé, résolu par ID dans TOUT l'univers de jeu : la file de combat ET le groupe.
+ * DISTINCT d'`actorIn`, qui choisit l'un OU l'autre (`battle?.combatants ?? party`) : un héros du
+ * groupe resté HORS de la file d'un combat ouvert (allié en réserve, héros non engagé) y est
+ * introuvable, et un porteur introuvable ne se surface pas — son dé se résoudrait d'office alors
+ * qu'un siège le tient. La possession, elle, ne connaît pas cette frontière : `net.ownership` est
+ * keyée par id, sans égard au combat en cours.
+ *
+ * EXPORTÉ (#1426) pour la porte des jets (`rollSeam`), qui résout les MÊMES porteurs : le côté d'une
+ * requête (`resolveMonoSide`) et le porteur d'une rangée de bande (`rowSurfacee`). Possession, surface
+ * et valeur d'un dé ne peuvent pas répondre depuis deux univers différents.
+ */
+export function porteurParId(s: GameState, id: string): Combatant | undefined {
+  return inBattleId(s.battle, id) ?? s.party.find((c) => c.id === id);
+}
+
+/**
+ * UN SIÈGE HUMAIN TIENT-IL CE PORTEUR ? (#1426) — LE prédicat de possession HUMAINE, keyé par ID, pour
+ * TOUT porteur de dé : héros (en combat COMME hors combat), ennemi, et le MONDE (`WORLD_STEP_OWNER`).
+ * C'est `jetSurfaced` ci-dessus, atteint par id plutôt que par objet ; le surfaçage d'un jet
+ * (`rollSeam.surfaceOf`) n'y ajoute que la cadence.
+ *
+ * « TENU PAR UN HUMAIN » N'EST PAS « POSSÉDÉ » : `seatOwns(s, 0, ennemi)` rend vrai par REPLI quand
+ * aucun siège MJ n'existe — ce repli sert l'ACTION (l'hôte exécute pour l'automate qui conduit cet
+ * ennemi), pas la TENUE du dé. Un ennemi sans siège MJ, un héros `aiControlled`, un porteur inconnu
+ * ne tiennent donc aucune fenêtre : leur étape se résout d'office et se montre au bilan.
+ * Le MONDE fait exception par construction : `worldSeat` existe TOUJOURS et est humain — la
+ * résolution de ce siège reste ici (`seatOwns` route déjà la sentinelle vers lui), jamais recopiée
+ * chez un appelant.
+ */
+export function tenuParUnHumain(s: GameState, porteurId: string | undefined): boolean {
+  if (!porteurId) return false;
+  if (porteurId === WORLD_STEP_OWNER) return seatOwns(s, worldSeat(s), porteurId);
+  const c = porteurParId(s, porteurId);
+  return !!c && jetSurfaced(s, c);
+}
+
 /** Surfaçage de la DÉFENSE (#989) — nom de domaine des sites d'attaque (`maybeOpenDefense`,
  *  `resolveAttack`, `surfacedDefensePending`), qui DÉLÈGUE au prédicat général ci-dessus : une seule
  *  implémentation du surfaçage réactif, jamais deux tables de vérité. */
@@ -215,7 +261,7 @@ export function pilotedByHuman(s: GameState, c: Combatant): boolean {
  */
 export function rolledLocally(s: GameState, ownerId: string | undefined): boolean {
   if (!ownerId) return false;
-  const c = actorIn(s, ownerId);
+  const c = porteurParId(s, ownerId);
   return !!c && pilotedByHuman(s, c) && ownsLocally(s, c.id);
 }
 
@@ -275,7 +321,7 @@ export function humanControlled(s: GameState, c: Combatant): boolean {
  */
 export function seatInfluences(s: GameState, seat: number, ownerId: string | undefined): boolean {
   if (ownerId == null || ownerId === WORLD_STEP_OWNER) return seatOwns(s, seat, WORLD_STEP_OWNER);
-  const c = actorIn(s, ownerId);
+  const c = porteurParId(s, ownerId);
   if (!c) return false;
   const solo = s.net.mode === 'local';
   if (c.kind === 'hero') return !c.aiControlled && (solo || seatOwns(s, seat, c.id));

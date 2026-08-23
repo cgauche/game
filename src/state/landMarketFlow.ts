@@ -303,10 +303,9 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
  * peuvent proposer la moitié de la cargaison à la place : lancez à nouveau le dé en l'opposant au
  * nombre précédemment obtenu »). Retire le lot vendu, crédite la bourse.
  *
- * Le dé d'acheteur est un dé de MONDE routé par la porte (`openWorldTest`, `klass:'subi'`,
- * `worldSide`) — MÊME chemin que son jumeau maritime (`portFlow.openPortSellBuyerStep`) : le siège qui
- * possède le monde le POSE quand l'option « Dés fixés » est active, et le voit passer sinon. Avant
- * #1426 ce d100 était résolu au journal en silence, seule asymétrie terre/mer du commerce.
+ * Le dé d'acheteur est un dé de MONDE routé par la porte (`openWorldTest`, côté `worldSide`) — MÊME
+ * chemin que son jumeau maritime (`portFlow.openPortSellBuyerStep`) : le siège qui possède le monde
+ * le POSE quand l'option « Dés fixés » est active, et le voit passer sinon.
  */
 export function landSellCargo(get: Get, set: Set, carrierId: string, cargoIndex: number): void {
   const carrier = carrierById(get(), carrierId);
