@@ -2334,6 +2334,9 @@ export const fr = {
   // se disent en UNE phrase, ici : le nom accessible de l'alvéole la compose, aucune recopie.
   'cc.geste2eSurfaces': 'geste secondaire (clic droit, appui long, touche Menu, RB à la manette) : {gestes}',
   'cc.geste2eIndisponible': 'geste secondaire : {geste} — indisponible : {raison}',
+  // Alvéole VIDE : rien ne s'y écrit à l'écran (arbitrage user 2026-08-24) — ce nom n'existe que pour
+  // le lecteur d'écran, qui ne voit pas le creux.
+  'cc.caseVide': 'emplacement vide',
 
   // Postures de tir : le refus vient du prédicat partagé `STANCE_BLOCK` (`state/combatFlow.ts`), lu
   // par le gate du registre, le store et la fenêtre de jet. Même famille de texte JOUEUR que ci-dessus

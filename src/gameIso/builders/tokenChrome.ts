@@ -26,8 +26,14 @@ import { teamRingDecor, type MarkCell } from './dynamicMarks';
 import type { Offre, OffresParPorteur } from '../../state/registreOffres';
 import type { PropEl, TokenEl, TokenSubjectEl } from './types';
 
-/** Icônes d'états montrées avant le report « +N » (`summarizeEffects`). */
-export const CHROME_ICON_MAX = 3;
+/** ALVÉOLES RÉSERVÉES du chrome d'un jeton — autant de places que le rack d'États du portrait
+ *  (`PortraitTile maxStates`) : les deux surfaces montrent le même nombre d'États d'un combattant.
+ *  Le peintre (`TokenChromeMarks`) place la place `i` à une abscisse FIXE, déduite de ce compte et
+ *  jamais du contenu — un État qui apparaît n'en pousse aucun autre. SOURCE UNIQUE du compte. */
+export const CHROME_SLOTS = 4;
+/** Icônes d'états montrées avant le report « +N » (`summarizeEffects`) : la réserve entière — le
+ *  report prend une place quand il y en a un (même règle que `StateChips reserve`). */
+export const CHROME_ICON_MAX = CHROME_SLOTS;
 
 /** Ce qu'un jeton de combat MONTRE de son combattant. */
 export interface TokenChrome {
@@ -61,7 +67,12 @@ const NEUTRE: TokenChrome = { hp: null, icons: [], iconsMore: 0, endState: null,
 
 /** Le chrome d'un COMBATTANT posté. */
 export function tokenChrome(c: Combatant, ctx: ChromeCtx): TokenChrome {
-  const fx = summarizeEffects(c.conditions, c.activeEffects, CHROME_ICON_MAX, combatantFlags(c));
+  // Le report « +N » OCCUPE une place de la réserve : au débordement, une icône de moins est montrée
+  // pour qu'il tienne dans la dernière — le rang ne déborde jamais de ses alvéoles.
+  const plein = summarizeEffects(c.conditions, c.activeEffects, CHROME_ICON_MAX, combatantFlags(c));
+  const fx = plein.moreCount > 0
+    ? summarizeEffects(c.conditions, c.activeEffects, CHROME_ICON_MAX - 1, combatantFlags(c))
+    : plein;
   return {
     hp: c.inert ? null : c.wounds ?? null,
     icons: fx.visible.map((v) => v.icon),

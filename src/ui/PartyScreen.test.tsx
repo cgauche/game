@@ -145,7 +145,7 @@ describe('PartyScreen — LA COMPAGNIE SEULE (aucune galerie inline) : coop, hô
     expect(html).toContain('Quitter');
   });
 
-  it('hôte : select de siège sur les sièges vides, « Commencer » grisé + RAISON visible tant qu’un siège invité est vide', () => {
+  it('hôte : select de siège sur les sièges vides, « Commencer » grisé + RAISON portée tant qu’un siège invité est vide', () => {
     const html = render([], {
       ...initialNet(), mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: {}, slots: [0, 1, 0, 0],
     });
@@ -153,7 +153,11 @@ describe('PartyScreen — LA COMPAGNIE SEULE (aucune galerie inline) : coop, hô
     expect(html).toContain('Antoine');
     expect(html).toMatch(/Commencer[^<]*→<\/button>/);
     expect(html).toContain('disabled');
-    expect(html).toContain('gated-action-reason'); // raison VISIBLE (a11y), plus un simple title
+    // EXCEPTION nommée à l'arbitrage user 2026-08-24 (qui vise les CASES) : en coop, l'attente d'un
+    // invité est le SEUL signal de l'écran — la raison reste EN CLAIR sous le bouton (`raisonInline`),
+    // liée par `aria-describedby`.
+    expect(html).toContain('gated-action-reason');
+    expect(html).toContain('aria-describedby');
     expect(html).toContain('Des emplacements attribués aux autres joueurs sont encore vides.');
   });
 

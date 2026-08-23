@@ -96,7 +96,8 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.rm-stake` | Zone Z3b — l'ENJEU d'un jet et le renvoi vers sa règle | Classe PROPRIÉTAIRE de la zone, écrite par la SEULE primitive `StakeNote` (`src/ui/StakeNote.tsx`, composée par la prop `stake` de `RollShell`). Ton NEUTRE (liseré, pas de fond d'alerte) : un enjeu ANNONCE — la menace SUBIE reste à `.rm-threat`. Icône flottante, prose de bloc sans marges propres. |
 | `.entity-chip` (+ `.entity-badge`, `.entity-choice`) | Chip d'ENTITÉ unifié (compétence/talent/sort/objet) avec déclencheur popover CodexRef | Source unique = `EntityChip.tsx` — remplace `.tag`/`.codex-chip` pour toute entité de règle ; ne pas recréer un badge ad hoc pour un nom de sort/talent. |
 | `.tag` (+ `.tag.talent`) | Badge historique (alias de `.chip`) | Ne pas en créer de nouveaux usages — préférer `.chip` ou `.entity-chip` selon le contenu (texte libre vs entité de règle). |
-| `.gated-action` (+ `.gated-action-reason`, variante `.gated-action.dense`) | Action GATÉE : bouton d'engagement + RAISON d'indisponibilité en texte visible dessous (a11y `aria-describedby`) ; `dense` = graduation réduite pour une COLONNE étroite (pied de la frise d'initiative) | Composée par la primitive `GatedAction` (`src/ui/GatedAction.tsx`, CLAUDE.md) — tout bouton principal désactivé pour un motif intelligible (hub de ville « Entrer », écran d'équipe « Commencer ») la COMPOSE au lieu d'un `<button disabled title=…>` muet ; la densité se demande par la prop, jamais en redéfinition de `.btn` chez l'appelant. |
+| `.gated-action` (+ `.gated-action-reason`, variante `.gated-action.dense`) | Action GATÉE : bouton d'engagement dont la RAISON d'indisponibilité se lit au SURVOL/FOCUS (voir « Raison d'un refus » ci-dessous), sa copie hors écran (`.hors-ecran`) servant l'`aria-describedby` ; `.gated-action-reason` = la même raison RENDUE EN CLAIR, par l'opt-in `raisonInline` (attente d'un invité en coop, diagnostic d'authoring, activité refusée) ; `dense` = graduation réduite pour une COLONNE étroite (pied de la frise d'initiative) | Composée par la primitive `GatedAction` (`src/ui/GatedAction.tsx`, CLAUDE.md) — tout bouton principal désactivé pour un motif intelligible (hub de ville « Entrer », écran d'équipe « Commencer ») la COMPOSE au lieu d'un `<button disabled title=…>` muet ; la densité se demande par la prop, jamais en redéfinition de `.btn` chez l'appelant. |
+| `.hors-ecran` | Texte destiné au SEUL lecteur d'écran (nom d'un emplacement vide, raison d'un refus) : hors flux, clippé, JAMAIS `display:none` — l'arbre a11y le perdrait | Définition UNIQUE dans `src/ui/styles/base.css` — aucune recopie du clip par module de domaine. |
 
 ### Conteneurs / surfaces
 
@@ -341,6 +342,29 @@ trois règles :
    dorés/sang du menu principal, `.menu`) s'applique au CONTENEUR HÔTE partagé (`.worldmap-overlay`,
    coquille de `ScreenShell` — pas écran par écran) pour habiller ces marges sur toute la famille
    d'écrans plein-champ qui la composent.
+
+## Raison d'un refus, et emplacement vide (arbitrages user 2026-08-24)
+
+Deux règles NON NÉGOCIABLES, tranchées à l'écran par l'utilisateur sur une capture de la console de
+combat — elles supplantent la spec HUD datée (`docs/plans/2026-08-16-spec-hud-combat.md` l.291 et
+l.206-210), qui n'avait jamais été validée en rendu :
+
+1. **La raison d'un refus vit au SURVOL et au FOCUS, jamais en texte inline.** Verbatim (2026-08-24) :
+   « Je n'ai jamais validé ces "textes" impossible a lire sous le nom des capacités, même Rogue
+   Trader qui est notre interface de départ n'a pas un tel comportement. » Une case, une pastille, un
+   bouton fermés restent PROPRES (icône + libellé + touche, encre d'état grisé tenant AA ≥ 4,5:1) ; la
+   raison naît de l'infobulle PARTAGÉE (`CodexRef` prop `refus`, rendue en tête du popover) au survol
+   souris comme au focus clavier/manette — une seule infobulle par ancrage, jamais une 2ᵉ boîte
+   concurrente. Sa copie HORS ÉCRAN (`.hors-ecran`) reste au DOM, cible de l'`aria-describedby` : un
+   lecteur d'écran reçoit la raison sans avoir à survoler quoi que ce soit.
+2. **Un emplacement vide ne porte AUCUN mot.** Verbatim (2026-08-24) : « Et je ne connais aucune
+   interface, même pas Rogue Trader, qui dans les emplacement de capacité met "Libre" ». L'alvéole
+   vide est un CREUX : verre en retrait, liseré en retrait, ombre interne — reconnaissable sans
+   texte. Le nom (« emplacement vide ») n'existe que hors écran, pour le lecteur d'écran. Un texte
+   d'aide au placement ne paraît que PENDANT un geste d'édition/dépôt, jamais au repos.
+
+Corollaire mesuré : rendre au libellé la hauteur que la bande de raison lui volait (les capacités aux
+noms longs — Détermination — étaient tronquées DEUX fois : le nom ET la raison).
 
 ## Densité et contrôles stylisés
 

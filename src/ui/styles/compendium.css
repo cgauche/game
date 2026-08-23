@@ -336,6 +336,15 @@
   font-weight: 400;
   pointer-events: none;
 }
+/* RAISON DE REFUS en tête du popover (arbitrage user 2026-08-24 : la raison vit au SURVOL, jamais en
+   texte permanent sous le nom d'une capacité). Teinte d'avertissement du jeu, jamais l'encre de prose.
+   Sélecteur d'ATTRIBUT : le popover ne gagne aucune classe pour porter une ligne de plus. */
+.codex-pop [data-refus] {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--tooltip-warn);
+}
 .codex-pop-title {
   font-family: var(--font-display);
   font-size: 15px;

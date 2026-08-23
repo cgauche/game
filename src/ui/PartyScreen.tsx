@@ -529,9 +529,12 @@ export function PartyScreenView({
                 {t('party.action.resume')}
               </button>
             )}
-            {/* « Commencer » gaté (`GatedAction`) : la raison d'indisponibilité est VISIBLE sous le bouton. */}
+            {/* « Commencer » gaté : raison EN CLAIR (`raisonInline`) — en coop, c'est le SEUL signal que
+                la table attend un invité ; personne ne survole un bouton pour savoir pourquoi on n'a pas
+                encore commencé (exception nommée à l'arbitrage user 2026-08-24, qui vise les CASES). */}
             <GatedAction
               id="party-start"
+              raisonInline
               className="party-start"
               label={t('party.action.start')}
               enabled={party.length > 0 && !guestPending}

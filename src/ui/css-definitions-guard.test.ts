@@ -106,8 +106,10 @@ describe('CSS — toute consommation a sa définition', () => {
     expect(mortes.sort()).toEqual([...MORTES_CONNUES].sort());
   });
 
-  it('le scan VOIT le cas de la gouttière (non-vacuité nominative)', () => {
-    expect(animUsed.get('af-pulse')).toBe(path.join('src', 'ui', 'styles', 'combat-console.css'));
-    expect(varsUsed.get('--af-pulse')).toBe(path.join('src', 'ui', 'styles', 'combat-console.css'));
+  it('le scan VOIT un cas RÉEL de chaque famille (non-vacuité nominative)', () => {
+    // Témoin d'ANIMATION et témoin de VARIABLE, tous deux dans la même feuille : le scan les nomme,
+    // donc il regarde bien les deux consommations.
+    expect(animUsed.get('reveal-timer-drain')).toBe(path.join('src', 'ui', 'styles', 'combat-ui.css'));
+    expect(varsUsed.get('--chip-malus-bg')).toBe(path.join('src', 'ui', 'styles', 'combat-ui.css'));
   });
 });

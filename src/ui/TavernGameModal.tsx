@@ -293,7 +293,9 @@ export function TavernGameModal() {
           )}
           <div className="modal-actions">
             <button className="btn" onClick={close}>Fermer</button>
-            <GatedAction id="tavern-play" label="Jouer" enabled={canPlay} reason={raison} onClick={onPlay} />
+            {/* Raison EN CLAIR (`raisonInline`) : dans une modale d'activité, le refus d'entrer en jeu est
+                le seul texte qui explique l'écran — il ne se cache pas derrière un survol. */}
+            <GatedAction id="tavern-play" raisonInline label="Jouer" enabled={canPlay} reason={raison} onClick={onPlay} />
           </div>
         </div>
       )}

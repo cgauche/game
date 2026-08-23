@@ -127,15 +127,17 @@ function mountPalette(scene: Scene, stairRun: Pt[], onStairApply = () => {}) {
 const applyButton = (container: HTMLElement) =>
   [...container.querySelectorAll('button')].find((b) => b.textContent?.includes('Poser la volée')) as HTMLButtonElement;
 
-describe('outil Volée — le refus est LISIBLE à l’écran (jamais absorbé)', () => {
-  it('file ramifiée : bouton indisponible + raison en français rendue sous le bouton', async () => {
+describe('outil Volée — le refus est ATTEIGNABLE (jamais absorbé)', () => {
+  it('file ramifiée : bouton indisponible + raison en français portée par le bouton', async () => {
     const ui = mountPalette(editorBase(), [...RUN, { x: 2, y: 0 }]);
     await ui.mount();
     const btn = applyButton(ui.container);
     expect(btn.disabled).toBe(true);
+    // DIAGNOSTIC D'AUTHORING : la raison reste EN CLAIR sous le bouton (`raisonInline`) — l'auteur
+    // corrige sa file d'après ce texte, il ne le découvre pas au survol (exception nommée à l'arbitrage
+    // user 2026-08-24, qui vise les cases de jeu).
     const reason = ui.container.querySelector('.gated-action-reason');
     expect(reason?.textContent).toMatch(/non-linéaire\/ramifiée/);
-    // La raison est LIÉE au bouton (lisible par un lecteur d'écran, pas seulement à l'œil).
     expect(btn.getAttribute('aria-describedby')).toBe(reason?.id);
     await ui.unmount();
   });

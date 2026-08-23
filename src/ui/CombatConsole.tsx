@@ -83,9 +83,10 @@ type Cell = {
    *  écrite ici (CLAUDE.md règles 5 & 6) — la case NOMME, la donnée EXPLIQUE. */
   rule?: CodexTarget;
   /** RAISON d'inéligibilité, quand la case se DESSINE quoi qu'il arrive mais que la situation en
-   *  interdit l'usage (Charger alors qu'on est Engagé — `regles/charger`). Rendue en texte VISIBLE dans
-   *  l'alvéole et liée par `aria-describedby` (idiome `GatedAction` : un `title` seul est invisible à
-   *  l'arbre a11y). Le compte de cases ne bouge jamais. */
+   *  interdit l'usage (Charger alors qu'on est Engagé — `regles/charger`). Elle se lit AU SURVOL et AU
+   *  FOCUS (souris, clavier, manette) dans l'infobulle partagée (`CodexRef refus`), et reste liée par
+   *  `aria-describedby` à sa copie hors écran — jamais gravée sous le nom de la capacité (arbitrage
+   *  user 2026-08-24). Le compte de cases ne bouge jamais. */
   gate?: string;
   /** GESTES SECONDAIRES portés par CETTE alvéole (entrées `surface: 'geste-secondaire'` du registre
    *  dont l'`hote` est l'entrée de la case et dont la population couvre son candidat) : ils naissent
@@ -96,15 +97,17 @@ type Cell = {
   run?: () => void;
 };
 
-/** L'alvéole vide PORTE son mot, dans les DEUX travées : la case est offerte au placement du joueur
- *  (planche 2026-08-17, « LIBRE »), elle n'est pas un trou de composition. Une seule grammaire de case
- *  vide — le mot partout (grief vision : la travée droite ne disait rien).
+/** L'alvéole vide est un CREUX MUET, dans les DEUX travées : sa matière (verre sombre, cadre, ombre
+ *  interne) dit qu'elle est offerte au placement du joueur — aucun mot ne s'y grave (arbitrage user
+ *  2026-08-24 : « Et je ne connais aucune interface, même pas Rogue Trader, qui dans les emplacement
+ *  de capacité met "Libre" »). Seul un lecteur d'écran l'entend nommer, par son texte hors écran.
  *
  *  ZÉRO `title` : l'infobulle native est proscrite (charte + grief du juge vision « la raison n'est
  *  qu'en title »). Ce que la case doit dire passe par TROIS véhicules VISIBLES ou accessibles :
- *  le libellé (+ `aria-label` pour le libellé entier quand l'ellipse le tronque), la RAISON de gate en
- *  texte dans l'alvéole, et le popover `CodexRef` (mode `wrap` : le bouton EST l'affordance de sa
- *  règle, sans ⓘ voisin — #1078) pour le verbatim de la donnée.
+ *  le libellé (+ `aria-label` pour le libellé entier quand l'ellipse le tronque), la copie hors écran
+ *  de la RAISON de gate liée par `aria-describedby`, et le popover `CodexRef` (mode `wrap` : le bouton
+ *  EST l'affordance de sa règle, sans ⓘ voisin — #1078) qui porte, au survol comme au focus, CETTE
+ *  raison (`refus`) puis le verbatim de la donnée.
  *
  *  `ciblageArme` MET CE POPOVER EN SOURDINE (`suppressPopover`) : tant qu'on VISE — intention locale
  *  qui peint sa portée sur le terrain (spec zone 4) ou mode de ciblage armé au registre
@@ -128,7 +131,7 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
   const atteignable = !!cell && !cell.disabled && !!cell.run;
   const secondaires = atteignable ? cell!.secondaires ?? [] : [];
   // N=1 REFUSÉ : à un seul geste fermé, rien ne s'ouvre — un panneau à un item désactivé n'est pas un
-  // paramètre. Le refus se lit À LA CASE (bande de raison + nom accessible), comme toute case gatée.
+  // paramètre. Le refus se lit À LA CASE (infobulle de survol/focus + nom accessible), comme tout gate.
   const refus2e = secondaires.length === 1 && !(secondaires[0].run && !secondaires[0].disabled) ? secondaires[0] : undefined;
   const geste2e = secondaires.length > 0 && !refus2e ? onGeste2e : undefined;
   // L'appui long AVALE la salve qu'il précède (`consomme`, lu par `click` ET `contextmenu`) : sans
@@ -137,16 +140,22 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
   if (!cell) {
     return (
       <span className="chip cc-cell cc-empty">
-        <span className="cc-lbl">LIBRE</span>
+        <span className="hors-ecran">{t('cc.caseVide')}</span>
       </span>
     );
   }
   const inert = !cell.run;
-  // UNE bande de raison par alvéole (la géométrie de la case est la loi) : celle de la CASE, sinon
+  // UNE raison par alvéole (une seule infobulle par ancrage) : celle de la CASE, sinon
   // celle de son geste secondaire unique refusé, qui se NOMME (« Focaliser : … »).
   const raison2e = refus2e?.gate;
   const raison = cell.gate ?? (raison2e ? `${refus2e!.label} : ${raison2e}` : undefined);
   const gateId = raison ? `cc-gate-${cell.key}` : undefined;
+  // FERMETURE de l'alvéole : `disabled` HTML tant qu'elle n'a RIEN à dire (maquette non branchée), mais
+  // `aria-disabled` dès qu'elle PORTE UNE RAISON — l'attribut HTML la retirerait de l'ordre de
+  // tabulation, du filtre de la manette (`visibleFocusables`) et de tout événement de pointeur : sa
+  // raison, qui vit au survol/focus, ne serait lisible qu'à la souris. Le clic reste INERTE.
+  const ferme = !!cell.disabled || inert;
+  const fermeParlante = ferme && !!raison;
   const nom = secondaires.length === 0
     ? cell.label
     : refus2e && raison2e
@@ -169,20 +178,20 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
          raison) : sur un libellé long, le chiffre passait sous les mots (grief du juge vision,
          « Immunité Psychologie (2) »). La géométrie de la case, elle, ne bouge pas. */
       data-hotkey={touche ? '' : undefined}
+      aria-disabled={fermeParlante || undefined}
       /* Les gestes SECONDAIRES de l'alvéole, nommés en structure : le geste est un CHEMIN, pas une
          case — c'est le seul marqueur par lequel une sonde (ou la garde de surface) le mesure. */
       data-geste-2e={cell.secondaires?.length ? cell.secondaires.map((g) => g.id).join(' ') : undefined}
       className={`chip cc-cell${cell.on ? ' on' : ''}${inert ? ' cc-inert' : ''}`}
-      disabled={cell.disabled || inert}
+      disabled={ferme && !fermeParlante}
       /* Le geste secondaire se DIT dans le nom accessible : un glyphe de coin ne se lit pas au
          lecteur d'écran, et l'infobulle native est proscrite (charte). */
       aria-label={nom}
       aria-describedby={gateId}
-      /* La bande de raison au pied est rendue DANS LES DEUX CAS (`data-gated` : le libellé s'y clampe,
-         sinon un nom long mord la bande dans une case à hauteur fixe). Ce marqueur-ci dit LAQUELLE :
-         le geste refusé, sur une case qui reste OFFERTE — elle ne s'éteint donc pas. */
+      /* `data-gated` dit qu'une raison est portée ; ce marqueur-ci dit LAQUELLE : celle du geste
+         secondaire refusé, sur une case qui reste OFFERTE — elle ne s'éteint donc pas. */
       data-refus-2e={raison2e && !cell.gate ? '' : undefined}
-      onClick={() => { if (appuiLong.consomme()) return; cell.run?.(); }}
+      onClick={() => { if (appuiLong.consomme() || ferme) return; cell.run?.(); }}
       /* Un `contextmenu` qui SUIT un appui long déjà déclenché (le navigateur le dérive de l'appui au
          doigt) est avalé : sans quoi le geste partirait deux fois — et se rebasculerait à N≥2. */
       onContextMenu={geste2e ? (e) => { e.preventDefault(); if (appuiLong.consomme()) return; geste2e(); } : undefined}
@@ -197,12 +206,13 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
     >
       {touche ? <span className="cc-key">{touche}</span> : null}
       {/* Le geste secondaire SE VOIT : son glyphe gravé au coin de l'alvéole (marqueur structurel,
-          comme la bande de touche et la bande de raison — aucune classe de plus). */}
+          comme la bande de touche — aucune classe de plus). */}
       {secondaires.length ? <span data-glyphe-2e="" aria-hidden="true">{secondaires.length > 1 ? `+${secondaires.length}` : secondaires[0].icon}</span> : null}
       <span className="cc-ico">{cell.icon}</span>
       <span className="cc-lbl">{cell.label}</span>
-      {/* RAISON d'indisponibilité : VISIBLE dans l'alvéole (idiome `GatedAction`), jamais un title. */}
-      {raison ? <span className="cc-lbl" data-gate="" data-gate-2e={cell.gate ? undefined : ''} id={gateId}>{raison}</span> : null}
+      {/* RAISON d'indisponibilité : lue au SURVOL/FOCUS dans l'infobulle partagée (`CodexRef refus`,
+          plus bas) ; ce qui reste ICI est sa copie HORS ÉCRAN, cible de l'`aria-describedby`. */}
+      {raison ? <span className="hors-ecran" data-gate="" data-gate-2e={cell.gate ? undefined : ''} id={gateId}>{raison}</span> : null}
       {cell.adv ? (
         <span className="cc-cost" aria-label={`Coût : ${cell.adv} Avantage (${Math.min(advantage, cell.adv)} couvert${Math.min(advantage, cell.adv) > 1 ? 's' : ''})`}>
           {Array.from({ length: cell.adv }, (_, i) => (
@@ -213,9 +223,16 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
     </button>
   );
   // Le FOYER de règle enveloppe le bouton sans rien lui prendre (`wrap` : ni clic, ni rôle, ni
-  // tabindex) — c'est l'idiome des boutons de dépense (`ChanceButtons`, `DeterminationButton`).
-  return cell.rule
-    ? <CodexRef category={cell.rule.category} id={cell.rule.id} label={cell.label} wrap suppressPopover={ciblageArme}>{button}</CodexRef>
+  // tabindex) — c'est l'idiome des boutons de dépense (`ChanceButtons`, `DeterminationButton`). C'est
+  // la MÊME enveloppe qui porte la RAISON du refus : une seule infobulle par alvéole, jamais deux
+  // boîtes concurrentes sur le même ancrage — et une case gatée sans foyer de règle l'ouvre à elle
+  // seule (`refus` suffit à faire naître le popover).
+  return cell.rule || raison
+    ? (
+      <CodexRef category={cell.rule?.category} id={cell.rule?.id} label={cell.label} refus={raison} wrap suppressPopover={ciblageArme}>
+        {button}
+      </CodexRef>
+    )
     : button;
 }
 
@@ -370,6 +387,21 @@ function actorStateChips(active: Combatant, battle: BattleState): EffectChip[] {
  * travée DROITE = la grille de capacités du personnage ; hors du tour du joueur la console reste
  * en LECTURE (mêmes cases, inertes) sous un bandeau de phase SUPERPOSÉ (le pont ne bouge pas).
  */
+/** COMBATTANT du pont à l'OUVERTURE d'un combat (pause de Round : personne n'agit encore). Le pont est
+ *  celui du JOUEUR : il montre d'abord un combattant VIVANT qu'il pilote (`controlsCombatant` +
+ *  `isOutOfAction` — un héros KO ou mort à l'ouverture ne porte pas le pont, il n'agira pas), à défaut
+ *  un héros vivant du groupe (partie entièrement conduite par l'IA), et seulement en dernier recours la
+ *  tête de l'initiative — qui, sur une embuscade, est un ENNEMI. */
+function pontDOuverture(battle: BattleState): Combatant | undefined {
+  const s = useGame.getState();
+  const ordonnes = battle.order.map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
+  const debout = ordonnes.filter((c) => !isOutOfAction(c));
+  return debout.find((c) => controlsCombatant(s, c))
+    ?? debout.find((c) => c.kind === 'hero')
+    ?? ordonnes.find((c) => controlsCombatant(s, c))
+    ?? inBattleId(battle, battle.order[0]);
+}
+
 export function CombatConsole() {
   const battle = useGame((s) => s.battle);
   const party = useGame((s) => s.party);
@@ -480,9 +512,12 @@ export function CombatConsole() {
         }
       : null;
   // Pendant la PAUSE de Round, `battle.turn` vaut -1 : personne n'agit encore. La console ne
-  // DISPARAÎT pas pour autant (loi 1 : la géométrie ne bouge jamais) — elle passe en LECTURE sur
-  // le combattant qui ouvrira le round (tête de l'ordre), sous le bandeau de phase (spec zone 7).
-  const active = activeCombatant(battle) ?? (phase ? inBattleId(battle, battle.order[0]) : undefined);
+  // DISPARAÎT pas pour autant (loi 1 : la géométrie ne bouge jamais) — elle passe en LECTURE, sous le
+  // bandeau de phase (spec zone 7), sur un combattant que le JOUEUR CONTRÔLE. Elle montrait la tête de
+  // l'INITIATIVE : sur une embuscade, un ENNEMI (Knud) portait portrait, stats et arsenal dans le
+  // cadre du joueur. Le pont est celui du joueur — le premier contrôlé, sinon le premier héros du
+  // groupe (partie entièrement en Auto-combat), sinon seulement la tête d'ordre.
+  const active = activeCombatant(battle) ?? (phase ? pontDOuverture(battle) : undefined);
   if (!active) {
     return phase ? (
       <div className="combat-console" onContextMenu={avalerMenuNatif}>
@@ -620,6 +655,10 @@ export function CombatConsole() {
 
   // ── Travée GAUCHE : l'arsenal du set au poing + le nécessaire ──────────────────────────────
   const loadouts = active.loadouts ?? [];
+  // Le SÉLECTEUR de sets n'existe que pour qui peut en porter : un combattant sans aucun set (toute
+  // créature, tout ennemi) n'a rien à y sélectionner — trois vignettes vides seraient une affordance
+  // morte. Le héros CONTRÔLÉ garde ses places même à vide : sa géométrie ne bat pas avec son sac.
+  const montreSets = loadouts.length > 0 || controlled;
   // ARMES À DISTANCE du porteur — le SÉLECTEUR DU REGISTRE (`armes-a-distance`, déclaré par l'entrée
   // `reload`), jamais un filtre recopié : deux pistolets sont DEUX armes, chacune avec son cycle de
   // charge (`weaponLoad.ts`, registre par `uid`) et sa munition — ce que les dispatchers mesurent déjà
@@ -1071,7 +1110,7 @@ export function CombatConsole() {
                 {munitions.map((m) => (
                   <Fragment key={m.w.uid}>
                     {' · '}
-                    <CodexRef category="trappings" id={m.ammo.trappingId ?? ''} label={m.ammo.label} wrap suppressPopover={ciblageArme || ammoOuvert === m.w.uid}>
+                    <CodexRef category="trappings" id={m.ammo.trappingId ?? ''} label={m.ammo.label} refus={m.raison} wrap suppressPopover={ciblageArme || ammoOuvert === m.w.uid}>
                       {m.choisissable || m.raison ? (
                         <button
                           ref={(el) => { if (el) ammoChipRefs.current.set(m.w.uid!, el); else ammoChipRefs.current.delete(m.w.uid!); }}
@@ -1083,8 +1122,8 @@ export function CombatConsole() {
                           aria-expanded={ammoOuvert === m.w.uid}
                           aria-label={`Munition de ${m.w.label} : ${m.ammo.label} — choisir parmi ${m.choix.length}`}
                           aria-describedby={m.raison ? `cc-ammo-gate-${m.w.uid}` : undefined}
-                          disabled={!!m.raison}
-                          onClick={() => setAmmoOuvert((v) => (v === m.w.uid ? null : m.w.uid!))}
+                          aria-disabled={m.raison ? true : undefined}
+                          onClick={() => { if (m.raison) return; setAmmoOuvert((v) => (v === m.w.uid ? null : m.w.uid!)); }}
                         >
                           {m.ammo.label}{m.ammo.qty ? ` ×${m.ammo.qty}` : ''}
                         </button>
@@ -1092,14 +1131,20 @@ export function CombatConsole() {
                         <span data-ammo={m.w.uid}>{m.ammo.label}{m.ammo.qty ? ` ×${m.ammo.qty}` : ''}</span>
                       )}
                     </CodexRef>
-                    {/* RAISON du refus : VISIBLE à côté du chip (idiome `GatedAction`), jamais un title. */}
-                    {m.raison ? <i data-gate="" id={`cc-ammo-gate-${m.w.uid}`}>{m.raison}</i> : null}
+                    {/* RAISON du refus : au SURVOL/FOCUS du chip (`CodexRef refus`) ; ici, sa copie
+                        HORS ÉCRAN, cible de l'`aria-describedby` du bouton. */}
+                    {m.raison ? <i className="hors-ecran" data-gate="" id={`cc-ammo-gate-${m.w.uid}`}>{m.raison}</i> : null}
                   </Fragment>
                 ))}
               </span>
               <div className="cc-arsenal-body">
                 {/* COLONNE DE SETS : SET_SLOTS vignettes, toujours dessinées (un set absent est une
                     vignette vide) — set au poing en relief, état de charge de l'arme mentionné. */}
+                {/* … et cette colonne n'existe QUE pour qui peut en avoir : un combattant sans set (toute
+                    créature, tout ennemi — aucun `loadouts`) rendait TROIS vignettes vides, un sélecteur
+                    qui ne sélectionne rien (affordance morte). Le héros CONTRÔLÉ, lui, garde ses places
+                    même à vide : c'est SON pont, sa géométrie ne doit pas battre au fil de son équipement. */}
+                {montreSets && (
                 <div className="cc-sets" role="group" aria-label="Sets d’armes">
                   {Array.from({ length: SET_SLOTS }, (_, i) => {
                     const lo = loadouts[i];
@@ -1141,6 +1186,7 @@ export function CombatConsole() {
                       : vignette;
                   })}
                 </div>
+                )}
                 <div className="cc-grid cc-grid-left" aria-label="Arsenal">
                   {Array.from({ length: LEFT_CELLS }, (_, i) => (
                     <ConsoleCell key={i} cell={left[i]} hotkey={hotkeyOf(left[i])} ciblageArme={ciblageArme} cellRef={ancreDePanneau(left[i])} onGeste2e={left[i] ? () => declencher2e(left[i]!) : undefined} />

@@ -61,8 +61,11 @@
   gap: 8px;
   flex-wrap: wrap;
 }
-/* ── ACTION GATÉE (primitive GatedAction.tsx) : bouton d'engagement + raison d'indisponibilité en
-   texte VISIBLE empilée dessous (a11y `aria-describedby`) — hub de ville, écran d'équipe. ── */
+/* ── ACTION GATÉE (primitive GatedAction.tsx) : bouton d'engagement dont la raison d'indisponibilité
+   se lit AU SURVOL/FOCUS, dans l'infobulle partagée (`.codex-pop [data-refus]`) — arbitrage user
+   2026-08-24. Sa copie accessible est alors HORS ÉCRAN (`.hors-ecran`, base.css). L'OPT-IN
+   `raisonInline` la rend en clair sous le bouton (`.gated-action-reason`), pour les rares écrans dont
+   le refus est le seul signal : attente d'un invité en coop, diagnostic d'authoring, entrée refusée. ── */
 .gated-action {
   display: flex;
   flex-direction: column;

@@ -292,18 +292,21 @@ describe('Pastille d’entité — le geste vit sur ce qui l’offre (#1411 P2-C
     const hull = mkHull([poste], { x: 4, y: 3 });
     const el = monter({ party: [h], battle: combat([h, hull]) });
     const btn = boutonDe(el, 'hull')!;
-    expect(btn.disabled, 'le geste est refusé').toBe(true);
-    expect(pastille(el, 'hull')!.textContent, 'et sa raison est lisible au point du geste').toContain('équipe');
+    // Refusé par `aria-disabled` (jamais `disabled`) : la pastille reste FOCALISABLE, donc sa raison —
+    // qui naît au survol/focus/tap dans l'infobulle partagée — est atteignable au clavier, à la manette
+    // et au doigt. Elle reste par ailleurs LUE au point du geste (copie `aria-describedby`).
+    expect(btn.getAttribute('aria-disabled'), 'le geste est refusé').toBe('true');
+    expect(btn.disabled, 'un geste refusé `disabled` couperait toute lecture de sa raison').toBe(false);
+    expect(pastille(el, 'hull')!.textContent, 'et sa raison est portée au point du geste').toContain('équipe');
     act(() => btn.click());
     expect(useGame.getState().battle!.action, 'rien n’est armé').toBeNull();
   });
 
   it('CHEF SONNÉ : Pousser coûte le MOUVEMENT, pas l’Action — le geste MORD (sonde du juge, R1)', () => {
-    // LDB (État Sonné, verbatim `etats.json`) : « Vous êtes incapable d'effectuer votre Action au cours
-    // de votre tour et vous ne pouvez vous déplacer que de la moitié de votre Mouvement. » Le coût
-    // déclaré au registre pour « Pousser » est le MOUVEMENT (arbitrage maison assumé — ADE II 8 l.256/258
-    // ne décrit que des roues, aucun coût) : un chef Sonné pousse donc, à demi-budget. Exiger la
-    // capacité d'ACTION au dispatcher faisait mentir ce coût — et rendait le clic MUET.
+    // L'État Sonné (`etats.json`, LDB 08) laisse le déplacement à demi-budget et retire l'Action. L'entrée
+    // « Pousser » du registre déclare `cost: 'mouvement'` (`actions.json`, `costNote` à l'appui ; ADE II 8
+    // l.256/258) : un chef Sonné pousse donc, à demi-budget. Exiger la capacité d'ACTION au dispatcher
+    // faisait mentir ce coût déclaré — et rendait le clic MUET.
     const poste = mkPoste('belier-ade2', ['h1', 's1', 's2']);
     const h = hero('h1', { x: 4, y: 4 }, { mannedPoste: poste, conditions: [{ id: 'sonne', stacks: 1 }] } as unknown as Partial<Combatant>);
     const s1 = hero('s1', { x: 5, y: 4 }, { kind: 'npc' } as Partial<Combatant>);
@@ -328,7 +331,7 @@ describe('Pastille d’entité — le geste vit sur ce qui l’offre (#1411 P2-C
     // terminerait (défaite) avant qu'aucune affordance ne se peigne — ce n'est pas ce qu'on mesure.
     const debout = hero('h2', { x: 2, y: 2 });
     const el = monter({ party: [h, debout], battle: combat([h, hull, s1, s2, debout]) });
-    expect(boutonDe(el, 'hull')!.disabled, 'geste fermé').toBe(true);
+    expect(boutonDe(el, 'hull')!.getAttribute('aria-disabled'), 'geste fermé').toBe('true');
     expect(pastille(el, 'hull')!.textContent, 'la raison est lisible').toContain('mouvoir');
     expect(useGame.getState().battle!.action, 'rien n’est armé').toBeNull();
   });
@@ -339,7 +342,7 @@ describe('Pastille d’entité — le geste vit sur ce qui l’offre (#1411 P2-C
     // Mouvement déjà dépensé : le verdict `mouvement-intact` refuse « Monter ».
     const el = monter({ party: [h], battle: combat([h, m], { movementUsed: 4 }) });
     const btn = boutonDe(el, 'm1')!;
-    expect(btn.disabled, 'le geste refusé n’est pas cliquable').toBe(true);
+    expect(btn.getAttribute('aria-disabled'), 'le geste refusé doit être inerte').toBe('true');
     expect(pastille(el, 'm1')!.textContent, 'la raison est LISIBLE au point du geste').toContain('Mouvement');
     act(() => btn.click());
     expect(useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!.mountId, 'rien n’est commis').toBeUndefined();

@@ -390,8 +390,11 @@ export function Palette({
                 {stairPlan.from} m → {stairPlan.to} m · cotes {stairPlan.steps.map((s) => Math.round(s.height * 100) / 100).join(' · ')} m
               </p>
             )}
+            {/* DIAGNOSTIC D'AUTHORING : la raison reste EN CLAIR (`raisonInline`) — l'auteur corrige sa
+                file d'après ce texte, il ne le découvre pas au survol. */}
             <GatedAction
               id="ed-stair-apply"
+              raisonInline
               label="Poser la volée"
               enabled={!!stairPlan?.ok}
               reason={stairPlan && !stairPlan.ok ? stairPlan.reason : ''}

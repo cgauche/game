@@ -53,7 +53,9 @@ function monter(parts: unknown[]) {
 
 /** Le CTA « Contre-sort » de la rangée A, tel que le voit le joueur (bouton + son état). */
 const ctaA = () => [...host.querySelectorAll('button')].find((b) => b.textContent?.includes('Contre-sort'));
-const raisons = () => [...host.querySelectorAll('.gated-action-reason')].map((n) => n.textContent?.trim());
+/** Raisons PORTÉES par les CTA éteints — leur copie hors écran (`aria-describedby`), le texte visible
+ *  naissant au survol dans l'infobulle partagée (arbitrage user 2026-08-24). */
+const raisons = () => [...host.querySelectorAll('.gated-action .hors-ecran, .gated-action-reason')].map((n) => n.textContent?.trim());
 
 beforeEach(() => {
   seedBattleRng(7);
@@ -75,7 +77,9 @@ describe('#1042/#1059 — le CTA de Contre-sort ne ment jamais sur ce qu’il fe
     ]);
     const btn = ctaA()!;
     expect(btn, 'la rangée déclarée montre bien son CTA').toBeTruthy();
-    expect(btn.disabled, 'le jet est refusé tant que la fenêtre n’a pas déclaré').toBe(true);
+    // Refusé par `aria-disabled` et non par `disabled` : le CTA garde le focus, donc sa raison reste
+    // atteignable au clavier, à la manette et au doigt (arbitrage user 2026-08-24).
+    expect(btn.getAttribute('aria-disabled'), 'le jet est refusé tant que la fenêtre n’a pas déclaré').toBe('true');
     expect(raisons()).toContain('En attente des déclarations de la fenêtre');
     const id = btn.getAttribute('aria-describedby');
     expect(id, 'la raison est LIÉE au bouton (lecteur d’écran)').toBeTruthy();
@@ -87,7 +91,7 @@ describe('#1042/#1059 — le CTA de Contre-sort ne ment jamais sur ce qu’il fe
       { id: 'A', interactive: true, declared: 'solo', result: null },
       { id: 'B', interactive: true, declared: 'solo', result: DISSIPE },
     ]);
-    expect(ctaA()!.disabled).toBe(true);
+    expect(ctaA()!.getAttribute('aria-disabled')).toBe('true');
     expect(raisons()).toContain('Déjà dissipé par B');
   });
 
@@ -96,7 +100,8 @@ describe('#1042/#1059 — le CTA de Contre-sort ne ment jamais sur ce qu’il fe
       { id: 'A', interactive: true, declared: 'solo', result: null },
       { id: 'B', interactive: true, declared: 'pass', result: null },
     ]);
-    expect(ctaA()!.disabled, 'rien ne s’oppose au jet : le CTA est vivant').toBe(false);
+    expect(ctaA()!.getAttribute('aria-disabled'), 'rien ne s’oppose au jet : le CTA est vivant').toBeNull();
+    expect(ctaA()!.disabled).toBe(false);
     expect(raisons()).toEqual([]);
   });
 });

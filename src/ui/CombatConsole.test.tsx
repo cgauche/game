@@ -14,6 +14,7 @@ import type { Combatant, ConditionInstance, ItemInstance, ShipPoste, Weapon } fr
 import { itemFromTrappingById, recomputeLoadout, loadoutLabel, loadedAmmo, selectedAmmo, loadWeapon } from '../engine/items';
 import { weaponLoaded } from '../engine/weaponLoad';
 import { t } from '../i18n';
+import { visibleFocusables } from './Modal';
 import { hotbar } from '../state/hotbarBridge';
 import { regles, findQualityById, findActionById, findVehicleById, ACTIONS, type ActionDef } from '../data/index';
 import { ActiveModal } from './ActiveModal';
@@ -99,7 +100,65 @@ function survol(dataCell: string) {
     /** La PORTE vers la fiche complète (le popover borne son corps, cf. `truncate` dans `CodexRef`). */
     porte: pop.querySelector('.codex-pop-open')?.textContent ?? null,
     source: pop.querySelector('.codex-src')?.textContent ?? null,
+    /** La RAISON DU REFUS, quand la case est fermée : elle vit ICI et nulle part ailleurs à l'écran. */
+    refus: pop.querySelector("[data-refus]")?.textContent ?? null,
   };
+}
+
+/** RAISON DE REFUS lue AU SURVOL d'un contrôle quelconque (alvéole, chip de munition) — arbitrage user
+ *  2026-08-24 : « Je n'ai jamais validé ces "textes" impossible a lire sous le nom des capacités […] ».
+ *  Le contrôle est enveloppé par l'infobulle partagée (`CodexRef refus`, mode `wrap`) ; `mouseover` est
+ *  l'événement dont React dérive `onMouseEnter`. Rend `null` si aucune infobulle ne s'ouvre. */
+function refusAuSurvol(el: Element): string | null {
+  const enveloppe = el.closest('.codex-ref');
+  if (!enveloppe) return null;
+  act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+  act(() => { enveloppe.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+  return document.body.querySelector('.codex-pop[role="tooltip"] [data-refus]')?.textContent ?? null;
+}
+
+/** … et AU FOCUS RÉEL : c'est le chemin du CLAVIER et de la MANETTE (le pad déplace le focus DOM,
+ *  `useGamepad`), qui ne survolent rien. On appelle `el.focus()` — jamais un événement forgé : un
+ *  `<button disabled>` ne prendrait PAS le focus, et un `focusin` fabriqué masquerait exactement ce
+ *  défaut. Le contrôle doit devenir l'élément actif, sinon la sonde échoue ici. */
+function refusAuFocus(el: HTMLElement): string | null {
+  act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+  act(() => { el.focus(); });
+  expect(document.activeElement, 'le contrôle refusé n’a pas pris le focus (`disabled` ?)').toBe(el);
+  return document.body.querySelector('.codex-pop[role="tooltip"] [data-refus]')?.textContent ?? null;
+}
+
+/** TAP au doigt : ni survol ni focus préalable — le clic sur un contrôle REFUSÉ montre sa raison. */
+function refusAuTap(el: HTMLElement): string | null {
+  act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+  act(() => { el.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+  return document.body.querySelector('.codex-pop[role="tooltip"] [data-refus]')?.textContent ?? null;
+}
+
+/** Le pointeur QUITTE le contrôle : l'infobulle meurt (le pont de survol différé, quand le popover
+ *  porte une porte vers la fiche, est laissé s'écouler). Rend l'infobulle survivante, ou `null`. */
+function quitterRefus(el: Element): Element | null {
+  const enveloppe = el.closest('.codex-ref')!;
+  vi.useFakeTimers();
+  try {
+    act(() => { enveloppe.dispatchEvent(new MouseEvent('mouseout', { bubbles: true })); });
+    act(() => { vi.advanceTimersByTime(400); });
+  } finally {
+    vi.useRealTimers();
+  }
+  return document.body.querySelector('.codex-pop[role="tooltip"]');
+}
+
+/** Une alvéole FERMÉE, dans les DEUX écritures : `disabled` HTML (maquette muette, rien à atteindre)
+ *  ou `aria-disabled` (elle PORTE une raison, donc elle reste focalisable — clavier, manette, doigt). */
+const estFermee = (b: HTMLButtonElement) => b.disabled || b.getAttribute('aria-disabled') === 'true';
+
+/** TEXTE VISIBLE d'un nœud : son contenu MOINS les copies HORS ÉCRAN (`.hors-ecran`, cibles des
+ *  `aria-describedby`). C'est la mesure de « la case reste propre » : aucune raison gravée à l'écran. */
+function texteVisible(el: Element): string {
+  const clone = el.cloneNode(true) as Element;
+  for (const n of [...clone.querySelectorAll('.hors-ecran')]) n.remove();
+  return clone.textContent ?? '';
 }
 
 /** Le VERBATIM d'une donnée tel que le popover le rend : prose démarquée (`mdToText`) puis bornée par la
@@ -598,7 +657,7 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     expect(CC_CSS).not.toMatch(/word-break:\s*break-all/);
     // Le libellé complet reste le NOM ACCESSIBLE de l'alvéole (`aria-label`) : l'infobulle native est
     // proscrite (cf. `console-no-title-only.test.ts`), l'ellipse ne doit pas pour autant amputer
-    // l'information. (Une case VIDE porte le mot « LIBRE » : elle ne nomme aucune capacité.)
+    // l'information. (Une case VIDE ne porte aucun libellé : elle ne nomme aucune capacité.)
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
     monter(h);
@@ -921,16 +980,19 @@ describe('CombatConsole — travée gauche : sets, gestes déduits, accès rapid
     expect(host.querySelector('[data-set="lo-tir"]')!.querySelector('.cc-set-load')).toBeNull();
   });
 
-  it('(b) rangée DÉDUITE d’un set ARMÉ : aucune case d’Empoignade (LDB 14 l.155), rangée basse LIBRE', () => {
+  it('(b) rangée DÉDUITE d’un set ARMÉ : aucune case d’Empoignade (LDB 14 l.155), rangée basse VIDE', () => {
     const h = deuxSets();
     monter(h);
     // 2×3 : rangée haute = les gestes pertinents pour CE set (une dague en ouvre deux : frapper,
-    // charger), rangée basse LIBRE — et toute case non pertinente est DESSINÉE, pas absente.
+    // charger), rangée basse VIDE — et toute case non pertinente est DESSINÉE, pas absente.
     expect(casesGauche().length).toBe(6);
     const basse = casesGauche().slice(3);
     expect(basse.every((c) => c.classList.contains('cc-empty'))).toBe(true);
+    // L'alvéole vide est un CREUX MUET : aucun mot n'y est gravé (arbitrage user 2026-08-24, « je ne
+    // connais aucune interface […] qui dans les emplacement de capacité met "Libre" »).
     for (const l of casesGauche().filter((c) => c.classList.contains('cc-empty'))) {
-      expect(l.querySelector('.cc-lbl')!.textContent).toBe('LIBRE');
+      expect(l.querySelector('.cc-lbl'), 'une case vide ne porte aucun libellé').toBeNull();
+      expect(texteVisible(l).trim(), 'une case vide n’écrit rien à l’écran').toBe('');
     }
     // L'Empoignade est une option du combat à MAINS NUES : elle n'est pas un geste d'arme.
     const labels = casesGauche().map((c) => c.querySelector('.cc-lbl')?.textContent ?? '');
@@ -952,7 +1014,7 @@ describe('CombatConsole — travée gauche : sets, gestes déduits, accès rapid
     expect(host.querySelector('[data-cell="g4-recharger"] .cc-lbl')!.textContent).toBe('Recharger 1/2');
   });
 
-  it('(c) ACCÈS RAPIDE : consommables GROUPÉS ×N + Soigner, cases restantes dessinées LIBRE', () => {
+  it('(c) ACCÈS RAPIDE : consommables GROUPÉS ×N + Soigner, cases restantes dessinées VIDES', () => {
     const h = deuxSets();
     h.wounds = { current: 5, max: 12 }; // blessé → cible soignable (moteur `healableTargets`)
     h.skills = [...(h.skills ?? []), { skillId: 'guerison', advances: 10 } as never];
@@ -964,8 +1026,9 @@ describe('CombatConsole — travée gauche : sets, gestes déduits, accès rapid
     expect(labels.filter((l) => l.startsWith('Potion de guérison')).length).toBe(1);
     expect(labels).toContain('Potion de guérison ×2');
     expect(labels).toContain('Soigner');
-    // Les deux restantes sont dessinées, et disent qu'elles sont libres.
-    expect(labels.filter((l) => l === 'LIBRE').length).toBe(2);
+    // Les deux restantes sont dessinées, et MUETTES : une alvéole vide ne nomme rien (2026-08-24).
+    expect(casesRapide().filter((c) => c.classList.contains('cc-empty')).length).toBe(2);
+    expect(casesRapide().filter((c) => texteVisible(c).trim() === '').length).toBe(2);
     // La case d'objet est BRANCHÉE (elle consomme l'objet réel du store), pas une maquette.
     const potion = casesRapide().find((c) => (c.querySelector('.cc-lbl')?.textContent ?? '').startsWith('Potion'))!;
     expect(potion.classList.contains('cc-inert')).toBe(false);
@@ -1121,19 +1184,26 @@ describe('CombatConsole — droit de la travée et du coin (juge vision 2026-08-
       expect(host.querySelector(`[data-cell="${k}"]`)!.getAttribute('title')).toBeNull();
     }
 
-    // GATE : héros Engagé → la case reste DESSINÉE, sa raison est VISIBLE dans l'alvéole et liée par
-    // `aria-describedby` (idiome `GatedAction`), jamais cachée dans une infobulle.
+    // GATE : héros Engagé → la case reste DESSINÉE et PROPRE — sa raison ne se grave PAS sous son nom
+    // (arbitrage user 2026-08-24), elle naît au SURVOL dans la MÊME infobulle que sa règle (une seule
+    // boîte par ancrage), et le lecteur d'écran la reçoit par `aria-describedby`.
     const engage = unSet('dague');
     engage.engagedWith = ['e1'];
     monter(engage, { foes: [foe('e1', 5, 6)] });
     const gate = host.querySelector('[data-cell="g2-charge"]')!;
     expect(gate, 'la case doit rester DESSINÉE (géométrie constante)').not.toBeNull();
     expect(gate.hasAttribute('data-gated')).toBe(true);
-    const raison = gate.querySelector('.cc-lbl[data-gate]');
-    expect(raison, 'la raison de gate doit être un TEXTE dans l’alvéole').not.toBeNull();
-    expect(raison!.textContent).toContain('Engagé');
-    expect(gate.getAttribute('aria-describedby')).toBe(raison!.id);
+    expect(texteVisible(gate), 'aucune raison ne doit être gravée dans l’alvéole').not.toContain('Engagé');
+    const copie = gate.querySelector('.hors-ecran[data-gate]');
+    expect(copie, 'la copie accessible de la raison doit rester au DOM').not.toBeNull();
+    expect(copie!.textContent).toContain('Engagé');
+    expect(gate.getAttribute('aria-describedby')).toBe(copie!.id);
     expect(gate.getAttribute('title')).toBeNull();
+    const popGate = survol('g2-charge');
+    expect(popGate.refus, 'la raison se lit au survol').toContain('Engagé');
+    expect(popGate.body, 'la même boîte porte encore le verbatim de la règle').toBe(verbatimAttendu(fiche.desc));
+    expect(quitterRefus(gate), 'l’infobulle meurt quand le pointeur s’en va').toBeNull();
+    expect(refusAuFocus(gate as HTMLElement), 'le FOCUS (clavier, manette) l’ouvre aussi').toContain('Engagé');
     expect(casesGauche().length).toBe(6);
   });
 
@@ -1280,60 +1350,82 @@ describe('CombatConsole — les cases sont des ENTRÉES du registre (branchement
     expect(useGame.getState().battle!.combatants[0].resolve).toBe(0);
     expect(useGame.getState().battle!.combatants[0].activeEffects?.some((e) => e.ignoreCritMods)).toBe(true);
     // Réserve épuisée : le gate du registre referme les deux alvéoles, avec sa raison.
-    expect(caseAction('resolve-psych-immune')!.disabled).toBe(true);
-    expect(caseAction('resolve-ignore-crit')!.disabled).toBe(true);
+    expect(estFermee(caseAction('resolve-psych-immune')!)).toBe(true);
+    expect(estFermee(caseAction('resolve-ignore-crit')!)).toBe(true);
   });
 
-  it('R-4 — une case gatée porte la RAISON du registre, visible, et ne s’exécute pas', () => {
+  it('R-4 — une case gatée porte la RAISON du registre AU SURVOL/FOCUS, et ne s’exécute pas', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
     h.resolve = 0; // aucun point : le gate `determination-en-reserve` refuse, avec sa raison
     monter(h, { foes: [foe('e1', 9, 9)] });
     const det = caseAction('resolve-psych-immune')!;
     expect(det.hasAttribute('data-gated')).toBe(true);
-    const raison = det.querySelector('.cc-lbl[data-gate]')!;
-    expect(raison.textContent).toBe(actionGate('resolve-psych-immune', { active: h, battle: useGame.getState().battle! }).reason);
-    expect(det.getAttribute('aria-describedby')).toBe(raison.id);
-    expect(det.disabled).toBe(true);
+    const attendue = actionGate('resolve-psych-immune', { active: h, battle: useGame.getState().battle! }).reason;
+    // La raison du REGISTRE (jamais une chaîne recopiée ici) se lit au survol ET au focus…
+    expect(refusAuSurvol(det)).toBe(attendue);
+    expect(refusAuFocus(det)).toBe(attendue);
+    // … et nulle part à l'écran au repos : seule sa copie hors écran reste, pour l'`aria-describedby`.
+    expect(texteVisible(det)).not.toContain(attendue);
+    const copie = det.querySelector('.hors-ecran[data-gate]')!;
+    expect(copie.textContent).toBe(attendue);
+    expect(det.getAttribute('aria-describedby')).toBe(copie.id);
+    // FERMÉE par `aria-disabled`, JAMAIS par `disabled` : l'attribut HTML la retirerait du focus, donc
+    // de la manette et du doigt — sa raison ne serait lisible qu'à la souris. Le clic reste inerte.
+    expect(det.disabled, 'une case qui porte une raison ne doit pas être `disabled`').toBe(false);
+    expect(det.getAttribute('aria-disabled')).toBe('true');
+    const avant = useGame.getState().battle!.combatants[0].resolve;
+    act(() => det.click());
+    expect(useGame.getState().battle!.combatants[0].resolve, 'le clic d’une case fermée a dépensé').toBe(avant);
+    expect(useGame.getState().battle!.action, 'le clic d’une case fermée a armé un mode').toBeNull();
   });
 
-  // Défaut MESURÉ en recette (capture `01b`, 2026-08-17) : la raison de gate enflait dans la boîte et
-  // chassait le NOM du geste hors de l'alvéole (« Détermination 0 » invisible, seul « AUCUN POINT »
-  // lisible), pendant que le badge de touche « 4 » se collait à cette raison — une touche promise que
-  // le pont publie pourtant `disabled`. Trois contrats, DOM + CSS déclaré.
-  it('R-7 — case gatée : le NOM reste lisible, la RAISON plie (1 ligne, ellipse), le badge s’éteint', () => {
+  // Deux défauts MESURÉS sur la capture user 2026-08-24 : les cases de Détermination — les libellés les
+  // PLUS LONGS du registre — avaient leur NOM tronqué (« Immunité… », « Ignorer les… ») parce que la
+  // bande de raison inline mangeait la hauteur, et la raison ÉTAIT ELLE-MÊME tronquée (« AUCUN POINT DE
+  // DÉTE… ») : illisible deux fois. La raison partie au survol, la hauteur rendue au nom, la case gatée
+  // redevient une case NORMALE — même boîte, même glyphe, deux lignes de nom, encre AA.
+  it('R-7 — case gatée : le NOM ENTIER reste lisible (2 lignes, encre AA), la RAISON n’est plus dans la boîte', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
     h.resolve = 0;
     monter(h, { foes: [foe('e1', 9, 9)] });
-    const det = caseAction('resolve-psych-immune')!;
-    // (a) DOM : le nom du geste est bien un nœud À PART, porteur du libellé de l'entrée + sa réserve.
-    const nom = det.querySelector('.cc-lbl:not([data-gate])')!;
-    expect(nom.textContent).toBe(`${findActionById('resolve-psych-immune')!.label} (0)`);
-    // (b) CSS : le nom garde sa ligne pleine et incompressible ; la RAISON vit dans sa bande au pied,
-    // HORS FLUX (patron `.cc-set-load`) — elle ne peut donc ni chasser le nom hors de la boîte
-    // (défaut de la capture `01b`), ni tomber à zéro de haut (défaut de la capture `06`).
-    const regleNom = ruleOf(CC_BASE, '.cc-cell[data-gated] .cc-lbl:not([data-gate])');
-    expect(decl(regleNom, 'flex'), 'le nom doit être incompressible (flex: 0 0 auto)').toBe('0 0 auto');
-    expect(decl(regleNom, 'line-clamp')).toBe('1');
-    const regleCase = ruleOf(CC_BASE, '.cc-cell[data-gated]');
-    expect(decl(regleCase, 'padding-bottom'), 'la case doit RÉSERVER la place de sa bande de raison').toBe('11px');
-    const regleRaison = ruleOf(CC_BASE, '.cc-lbl[data-gate]');
-    expect(decl(regleRaison, 'position'), 'la raison prend sa bande au pied, hors flux').toBe('absolute');
-    expect(decl(regleRaison, 'bottom')).toBe('1px');
-    expect(decl(regleRaison, 'white-space')).toBe('nowrap');
-    expect(decl(regleRaison, 'text-overflow'), 'une raison trop longue s’ellipse, elle ne pousse rien').toBe('ellipsis');
-    // (c) l'encre de la raison tient 3:1 sur la carte de la case (fond dégradé, pire arrêt).
+    // PIRE CAS mesuré, jamais une fixture courte : le plus long libellé des gestes de Détermination.
+    const detIds = ['resolve-psych-immune', 'resolve-ignore-crit'];
+    const pire = detIds.reduce((a, b) => (findActionById(a)!.label.length >= findActionById(b)!.label.length ? a : b));
+    expect(findActionById(pire)!.label.length, 'le pire cas doit être un libellé long').toBeGreaterThan(18);
+    for (const id of detIds) {
+      const c = caseAction(id)!;
+      // (a) DOM : le nom du geste est un nœud À PART, porteur du libellé ENTIER de l'entrée + sa réserve
+      // — aucune troncature à la source, et plus AUCUN texte de raison à côté de lui.
+      const nom = c.querySelector('.cc-lbl:not([data-gate])')!;
+      expect(nom.textContent).toBe(`${findActionById(id)!.label} (0)`);
+      expect(texteVisible(c).trim(), 'l’alvéole ne montre QUE son nom').toBe(nom.textContent);
+    }
+    const det = caseAction(pire)!;
+    // (b) CSS : la case gatée n'a plus AUCUNE règle qui rétrécit son contenu — ni bande réservée, ni
+    // clamp à une ligne, ni glyphe à 0,75× ; le libellé garde les DEUX lignes de la primitive.
+    expect(CC_CSS, 'plus aucune règle ne rogne le libellé d’une case gatée')
+      .not.toMatch(/\.cc-cell\[data-gated\][^{]*\.cc-(lbl|ico)/);
+    expect(CC_CSS, 'plus de bande de raison dans l’alvéole').not.toMatch(/\.cc-lbl\[data-gate\]/);
+    expect(decl(ruleOf(CC_BASE, '.cc-lbl'), 'line-clamp'), 'le nom garde ses deux lignes').toBe('2');
+    // (c) l'ENCRE de la case fermée tient AA (≥ 4,5:1) sur les deux arrêts de l'alvéole : le grief vision
+    // « Recharger 2,94:1 » (spec HUD l.85-86) se ferme au TOKEN, pas à l'œil.
     const travee = ruleOf(CC_BASE, '.cc-bay-right');
     const fonds = [decl(travee, '--cc-cell-hi')!, decl(travee, '--cc-cell-lo')!].map(parseColor);
-    expect(worst(parseColor(decl(regleRaison, 'color')!), fonds)).toBeGreaterThanOrEqual(3);
+    const regleGatee = ruleOf(CC_BASE, '.cc-cell[data-gated]:not([data-refus-2e])');
+    const encre = parseColor(decl(regleGatee, '--cc-cell-ink')!);
+    expect(worst(encre, fonds), 'le nom d’une capacité refusée doit rester LU').toBeGreaterThanOrEqual(4.5);
+    // … tout en restant NETTEMENT sous la case vivante : refusée ne veut pas dire égale.
+    const vive = parseColor(decl(travee, '--cc-cell-ink')!);
+    expect(worst(vive, fonds) / worst(encre, fonds), 'l’écart vivant/fermé n’est pas net').toBeGreaterThanOrEqual(2);
     // (d) aucun badge de touche sur une case refusée — il ne promet pas une touche qui ne fait rien.
     expect(det.querySelector('.cc-key'), 'badge de touche sur une case gatée').toBeNull();
   });
 
   // Le badge de touche est posé HORS FLUX au pied de l'alvéole : sur un libellé long il passait SOUS
   // les mots (sonde du juge vision, « Immunité Psychologie (2) » captures 01/07/15). La case qui
-  // IMPRIME sa touche lui réserve donc sa bande, comme la case gatée réserve celle de sa raison.
+  // IMPRIME sa touche lui réserve donc sa bande au pied.
   it('R-7bis — la case qui imprime sa touche RÉSERVE sa bande au pied (le chiffre ne mord plus le nom)', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
@@ -1398,16 +1490,11 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
   const BAYS = ['.cc-bay-left', '.cc-bay-right'];
   /** Fonds possibles d'une alvéole PLEINE : les deux arrêts du dégradé de `.cc-cell`. */
   const cellBgOf = (bay: string) => [bayVar(bay, '--cc-cell-hi'), bayVar(bay, '--cc-cell-lo')].map(parseColor);
-  /** Fonds possibles d'une alvéole VIDE : ses deux arrêts, nus ET sous le voile blanc de la carte à vitre. */
-  function voidBgOf(bay: string) {
-    const stops = [bayVar(bay, '--cc-void-hi'), bayVar(bay, '--cc-void-lo')].map(parseColor);
-    const voile = parseColor(/rgba\([^)]*\)/.exec(decl(ruleOf(CC_BASE, '.cc-cell.cc-empty'), 'background')!)![0]);
-    return [...stops, ...stops.map((s) => over(voile, s))];
-  }
 
-  // Sondes du juge : « LIBRE » à 1,65:1 (5× sous le seuil) ET hiérarchie INVERSÉE — une case morte
-  // (« Dague », 8,66:1 sous un simple voile d'opacité 0,88) plus lumineuse que tout le pont.
-  it('E-1 — hiérarchie des encres d’alvéole : vivant ≫ inerte ≥ 3:1, et « LIBRE » ≥ 3:1', () => {
+  // Sonde du juge : hiérarchie INVERSÉE — une case morte (« Dague », 8,66:1 sous un simple voile
+  // d'opacité 0,88) plus lumineuse que tout le pont. Le CREUX, lui, ne se juge plus à son encre : il
+  // n'a plus de mot (2026-08-24), il se juge à sa MATIÈRE (fond + cadre en retrait).
+  it('E-1 — hiérarchie des encres d’alvéole : vivant ≫ inerte ≥ 3:1, et le CREUX recule sans mot', () => {
     const inerte = ruleOf(CC_BASE, '.cc-cell.cc-inert');
     // L'inerte ne se joue plus à l'opacité (invisible au token, non mesurable) : c'est une ENCRE.
     expect(decl(inerte, 'opacity')).toBe('1');
@@ -1419,26 +1506,38 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
       expect(vivant, `${bay} : une case vivante doit être franche`).toBeGreaterThanOrEqual(7);
       expect(mort, `${bay} : une case dessinée reste lisible`).toBeGreaterThanOrEqual(3);
       expect(vivant / mort, `${bay} : l’écart vivant/mort n’est pas net`).toBeGreaterThanOrEqual(2);
-      // Le mot « LIBRE » d'une case vide, sur le verre sombre : seuil d'élément graphique.
-      const libre = worst(parseColor(bayVar(bay, '--cc-void-ink')), voidBgOf(bay));
-      expect(libre, `${bay} : « LIBRE » illisible`).toBeGreaterThanOrEqual(3);
-      // … et il reste SOUS la case morte : une case vide n'est pas plus présente qu'une maquette.
-      expect(libre).toBeLessThan(mort);
+      // Le CREUX se lit SANS MOT : son verre RECULE sous celui d'une alvéole pleine, et son liseré
+      // recule sous celui d'une alvéole pleine — deux reculs, mesurés au token (le cadre était
+      // jusqu'ici IDENTIQUE : seul le mot distinguait la case vide, et le mot est parti).
+      const verre = contrast(parseColor(bayVar(bay, '--cc-cell-hi')), parseColor(bayVar(bay, '--cc-void-hi')));
+      expect(verre, `${bay} : le verre du creux ne recule pas sous l’alvéole pleine`).toBeGreaterThan(1.15);
+      const cadre = contrast(parseColor(bayVar(bay, '--cc-cell-edge')), parseColor(bayVar(bay, '--cc-void-edge')));
+      expect(cadre, `${bay} : le liseré du creux est celui d’une case pleine`).toBeGreaterThan(1.3);
     }
   });
 
-  // Une seule GRAMMAIRE de case vide : le mot partout (la travée droite ne disait rien).
-  it('E-2 — les DEUX travées disent « LIBRE » avec la même encre, à l’écran comme au token', () => {
+  // Une seule GRAMMAIRE de case vide, dans les DEUX travées — et c'est le SILENCE : « je ne connais
+  // aucune interface, même pas Rogue Trader, qui dans les emplacement de capacité met "Libre" »
+  // (arbitrage user 2026-08-24). L'œil voit un creux ; seul le lecteur d'écran l'entend nommer.
+  it('E-2 — les DEUX travées rendent une case vide MUETTE, nommée pour le seul lecteur d’écran', () => {
     expect(bayVar('.cc-bay-left', '--cc-void-ink')).toBe(bayVar('.cc-bay-right', '--cc-void-ink'));
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
     monter(h);
-    const vides = [...host.querySelectorAll('.cc-bay-right .cc-cell.cc-empty')];
-    expect(vides.length, 'la grille de capacités n’a aucune case vide à juger').toBeGreaterThan(0);
-    for (const v of vides) expect(v.querySelector('.cc-lbl')!.textContent).toBe('LIBRE');
-    for (const v of host.querySelectorAll('.cc-bay-left .cc-cell.cc-empty')) {
-      expect(v.querySelector('.cc-lbl')!.textContent).toBe('LIBRE');
+    const vides = [...host.querySelectorAll('.cc-cell.cc-empty')];
+    expect(host.querySelectorAll('.cc-bay-right .cc-cell.cc-empty').length, 'aucune case vide à droite').toBeGreaterThan(0);
+    expect(host.querySelectorAll('.cc-bay-left .cc-cell.cc-empty').length, 'aucune case vide à gauche').toBeGreaterThan(0);
+    for (const v of vides) {
+      expect(texteVisible(v).trim(), 'une case vide écrit encore un mot à l’écran').toBe('');
+      const nom = v.querySelector('.hors-ecran');
+      expect(nom?.textContent, 'une case vide doit rester NOMMÉE pour le lecteur d’écran').toBe(t('cc.caseVide'));
     }
+    // La règle du hors-écran est structurelle : jamais `display: none` (l'arbre a11y le perdrait).
+    // La primitive est PARTAGÉE (base.css) : jamais une recopie du clip par module.
+    const horsEcran = ruleOf(BASE_CSS, '.hors-ecran');
+    expect(decl(horsEcran, 'clip-path')).toBe('inset(50%)');
+    expect(decl(horsEcran, 'position')).toBe('absolute');
+    expect(decl(horsEcran, 'display'), 'hors écran ≠ retiré de l’arbre a11y').toBeNull();
   });
 
   // Sonde du juge : liseré du pont à y=595 avec la rangée de munition, y=598 sans — 3px de dérive selon le
@@ -1938,7 +2037,7 @@ describe('CombatConsole — tour du NAVIRE contrôlé : ses Tests d’équipage 
     });
     act(() => { root.render(<CombatConsole />); });
     expect(caseAction('ship-reload'), 'la géométrie ne perd jamais une case').not.toBeNull();
-    expect(caseAction('ship-reload')!.disabled).toBe(true);
+    expect(estFermee(caseAction('ship-reload')!)).toBe(true);
   });
 
   // Une coque n'a « ni arme tenue, ni sort, ni marche de fantassin » (`engine/vehicle.ts`) : les
@@ -1949,12 +2048,13 @@ describe('CombatConsole — tour du NAVIRE contrôlé : ses Tests d’équipage 
     for (const id of ['defend', 'course', 'mouvement']) {
       const c = caseAction(id);
       expect(c, `la géométrie garde sa case « ${id} »`).not.toBeNull();
-      expect(c!.disabled, `« ${id} » reste cliquable au tour d’une coque`).toBe(true);
-      const raison = c!.querySelector('.cc-lbl[data-gate]');
-      expect(raison?.textContent, `« ${id} » se ferme sans dire pourquoi`).toBe(
-        actionGate(id, { active: useGame.getState().battle!.combatants[0], battle: useGame.getState().battle! }).reason,
-      );
-      expect(c!.getAttribute('aria-describedby')).toBe(raison!.id);
+      expect(estFermee(c!), `« ${id} » reste cliquable au tour d’une coque`).toBe(true);
+      const attendue = actionGate(id, { active: useGame.getState().battle!.combatants[0], battle: useGame.getState().battle! }).reason;
+      expect(refusAuSurvol(c!), `« ${id} » se ferme sans dire pourquoi au survol`).toBe(attendue);
+      const copie = c!.querySelector('.hors-ecran[data-gate]');
+      expect(copie?.textContent, `« ${id} » : rien à lire pour un lecteur d’écran`).toBe(attendue);
+      expect(texteVisible(c!), `« ${id} » grave encore sa raison dans la case`).not.toContain(attendue);
+      expect(c!.getAttribute('aria-describedby')).toBe(copie!.id);
     }
     // … et le clic ne mange PAS l'Action du navire (elle reste à la Bordée).
     act(() => caseAction('defend')!.click());
@@ -2199,15 +2299,21 @@ describe('CombatConsole — munition : le chip de l’en-tête est le DÉCLENCHE
     expect(host.querySelector('.cc-bay-head [data-ammo]'), 'la munition reste LUE dans l’en-tête').not.toBeNull();
   });
 
-  it('FRÉNÉSIE : le choix est REFUSÉ et le refus se VOIT (raison du registre), jamais escamoté', () => {
+  it('FRÉNÉSIE : le choix est REFUSÉ et le refus se LIT au survol (raison du registre), jamais escamoté', () => {
     const h = tireur();
     h.psychState = [{ type: 'frenesie' }] as never;
     monter(h);
     expect(chip(), 'le chip reste à l’écran : le refus ne fait pas disparaître l’affordance').not.toBeNull();
-    expect(chip()!.disabled).toBe(true);
-    const raison = host.querySelector('.cc-bay-head [data-gate]');
-    expect(raison?.textContent, 'la raison est VISIBLE, pas dans un title').toBe(t('agate.frenzyOnly'));
-    expect(chip()!.getAttribute('aria-describedby')).toBe(raison!.id);
+    expect(chip()!.getAttribute('aria-disabled'), 'le chip refusé doit rester focalisable, donc `aria-disabled`').toBe('true');
+    expect(chip()!.disabled).toBe(false);
+    // Le chip garde sa ligne d'en-tête PROPRE : la raison naît de son survol, dans la même infobulle que
+    // sa fiche de munition (arbitrage user 2026-08-24), et son `aria-describedby` reste câblé.
+    expect(refusAuSurvol(chip()!), 'la raison ne se lit pas au survol du chip').toBe(t('agate.frenzyOnly'));
+    const copie = host.querySelector('.cc-bay-head [data-gate]')!;
+    expect(copie.textContent).toBe(t('agate.frenzyOnly'));
+    expect(copie.className, 'la copie de la raison doit être HORS ÉCRAN').toContain('hors-ecran');
+    expect(chip()!.getAttribute('aria-describedby')).toBe(copie.id);
+    expect(chip()!.getAttribute('title'), 'infobulle native proscrite').toBeNull();
   });
 
   // Le panneau appartient à l'ARME qui l'a ouvert. Commuter de set refait l'arme au poing : le chip
@@ -2380,9 +2486,10 @@ describe('CombatConsole — Avantage au plafond : la case reste, FERMÉE, avec s
     act(() => { root.render(<CombatConsole />); });
     const fermees = casesAdv();
     expect(fermees.length, 'la case a DISPARU au plafond : le refus est devenu muet').toBe(offertes.length);
-    expect(fermees.every((b) => b.disabled), 'case au plafond encore cliquable').toBe(true);
+    expect(fermees.every((b) => estFermee(b)), 'case au plafond encore cliquable').toBe(true);
+    expect(refusAuSurvol(fermees[0]), 'la raison du refus ne s’ouvre pas au survol').toBe(t('agate.advantageCapped', { n: cap }));
     const raison = host.querySelector('[data-action="gain-advantage"] [data-gate]');
-    expect(raison?.textContent, 'la raison du refus n’est pas à l’écran').toBe(t('agate.advantageCapped', { n: cap }));
+    expect(raison?.textContent, 'la copie accessible de la raison a disparu').toBe(t('agate.advantageCapped', { n: cap }));
     expect(fermees[0].getAttribute('aria-describedby')).toBe(raison!.id);
   });
 });
@@ -2793,17 +2900,18 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     monter(mage(['benediction-de-chance']));
     const cellule = alveole('benediction-de-chance');
     const journal = useGame.getState().battle!.log.length;
+    const refus = refusAuSurvol(cellule);
+    expect(refus, 'le refus du geste unique se lit au SURVOL de l’alvéole').toContain(t('agate.spellNotFocusable'));
+    expect(refus, 'le refus NOMME le geste fermé').toContain('Focaliser');
     const bande = cellule.querySelector('[data-gate-2e]') as HTMLElement;
-    expect(bande, 'le refus du geste unique est ÉCRIT dans l’alvéole').toBeTruthy();
-    expect(bande.textContent).toContain(t('agate.spellNotFocusable'));
-    expect(bande.textContent, 'la bande NOMME le geste refusé').toContain('Focaliser');
+    expect(bande.className, 'la copie de la raison est HORS ÉCRAN, pas gravée sous le nom').toContain('hors-ecran');
+    expect(texteVisible(cellule), 'la case reste PROPRE').not.toContain(t('agate.spellNotFocusable'));
     expect(cellule.getAttribute('aria-describedby'), 'la raison est liée au nom accessible').toBe(bande.id);
     expect(cellule.getAttribute('aria-label'), 'le nom accessible ne promet pas un geste qu’il refuse')
       .toBe(`Bénédiction de Chance — ${t('cc.geste2eIndisponible', { geste: 'Focaliser', raison: t('agate.spellNotFocusable') })}`);
     expect(cellule.disabled, 'la CASE reste offerte : c’est son geste secondaire qui est fermé').toBe(false);
-    // La bande occupe la même place quelle que soit son origine : sans `data-gated`, le libellé n'est
-    // plus clampé et un nom long vient mordre la raison dans une case à hauteur fixe.
-    expect(cellule.getAttribute('data-gated'), 'la case RÉSERVE la bande de raison de son geste').toBe('');
+    // `data-gated` dit qu'une raison est PORTÉE (elle naît au survol) — quelle que soit son origine.
+    expect(cellule.getAttribute('data-gated'), 'la case ne déclare pas porter la raison de son geste').toBe('');
     expect(cellule.getAttribute('data-refus-2e'), '… en disant que c’est le GESTE qui est fermé, pas elle').toBe('');
     act(() => { cellule.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
     expect(panneau(), 'un panneau à UN item désactivé n’est pas un paramètre : rien ne s’ouvre').toBeNull();
@@ -3004,12 +3112,12 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     }
   });
 
-  it('case FERMÉE (Action dépensée) : aucun glyphe, aucun geste promis — `<button disabled>` ne reçoit rien', () => {
+  it('case FERMÉE (Action dépensée) : aucun glyphe, aucun geste promis — aucune surface ne peut le prendre', () => {
     monter(mage(['carreau']));
     expect(alveole('carreau').querySelector('[data-glyphe-2e]'), 'témoin : la case ouverte annonce son geste').toBeTruthy();
     act(() => { useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } }); });
     const cellule = alveole('carreau');
-    expect(cellule.disabled, 'témoin : l’Action dépensée ferme la case').toBe(true);
+    expect(estFermee(cellule), 'témoin : l’Action dépensée ferme la case').toBe(true);
     expect(cellule.querySelector('[data-glyphe-2e]'), 'une case fermée ne promet pas un geste que rien ne peut prendre').toBeNull();
     expect(cellule.getAttribute('aria-label'), 'le nom accessible n’annonce pas les quatre surfaces non plus').toBe('Carreau');
     expect(cellule.getAttribute('data-geste-2e'), 'le CHEMIN reste nommé en structure (mesure de surface)').toBe('focus-spell');
@@ -3047,5 +3155,152 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     } finally {
       ACTIONS.splice(ACTIONS.indexOf(fabrique), 1);
     }
+  });
+});
+
+/**
+ * OUVERTURE DU COMBAT et affordances MORTES du pont — trois défauts mesurés sur une embuscade réelle
+ * (diagnostic 2026-08-24) : pendant la pause de Round (`turn = -1`) le pont rendait le premier de
+ * l'INITIATIVE, c'est-à-dire un ENNEMI (portrait, États, Avantage, arsenal de l'adversaire dans le
+ * cadre du joueur) ; et un combattant sans aucun set de combat se voyait rendre TROIS vignettes de
+ * sets vides — un sélecteur qui ne sélectionne rien.
+ */
+describe('CombatConsole — le pont d’OUVERTURE est celui du JOUEUR, et n’offre rien de mort', () => {
+  /** Ouverture : `turn = -1`, la tête de l'initiative est l'ENNEMI (embuscade). */
+  function ouverture(h: Combatant, e: Combatant) {
+    const order = [e.id, h.id];
+    act(() => {
+      useGame.setState({
+        party: [h],
+        pendingRoundStart: { round: 1, readyBySeat: {} } as never,
+        battle: {
+          combatants: [e, h], order, baseOrder: order, turn: -1, round: 1,
+          action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
+          acted: false, runBudget: 4, log: [], over: null,
+        } as unknown as BattleState,
+      });
+    });
+    act(() => { root.render(<CombatConsole />); });
+  }
+
+  afterEach(() => { act(() => { useGame.setState({ pendingRoundStart: null }); }); });
+
+  it('tête d’initiative ENNEMIE : le pont montre le héros contrôlé, jamais l’adversaire', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    const knud = foe('e1', 9, 9);
+    knud.label = 'Knud';
+    ouverture(h, knud);
+    // Le bandeau de phase est bien là (la géométrie ne bouge pas), mais l'identité du pont est CELLE
+    // DU JOUEUR : c'est son portrait, son nom, ses ressources — pas l'inventaire d'un ennemi.
+    expect(host.querySelector('.cc-phase'), 'la pause de Round garde son bandeau').toBeTruthy();
+    expect(host.querySelector('.cc-arch-name')?.textContent).toBe('Gunnar');
+    expect(host.querySelector('.cc-arch .ptile')?.classList.contains('team-enemy'),
+      'le cadre du joueur portait un ennemi').toBe(false);
+  });
+
+  it('un combattant SANS set ne rend AUCUN sélecteur de sets (trois vignettes mortes)', () => {
+    // Tour d'un ennemi : la console est en LECTURE sur lui. Il n'a pas de `loadouts` (aucun ennemi
+    // n'en a) — la colonne de sets n'a alors rien à offrir, elle n'existe pas.
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    const bete = foe('e1', 9, 9);
+    delete (bete as { loadouts?: unknown }).loadouts; // aucune créature du bestiaire n'en porte
+    monter(h, { foes: [bete], turn: 1 });
+    expect(host.querySelector('.cc-arsenal-body'), 'témoin : la travée gauche est bien rendue').toBeTruthy();
+    expect(host.querySelector('.cc-sets'), 'un sélecteur de sets sans aucun set à sélectionner').toBeNull();
+    // CONTRE-ÉPREUVE : le héros CONTRÔLÉ garde ses places, même sans set équipé — sa géométrie ne
+    // doit pas battre au fil de son équipement.
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    expect(host.querySelectorAll('.cc-sets .cc-set').length).toBe(3);
+  });
+});
+
+/**
+ * RIEN NE BAT SUR LE PONT (arbitrage user 2026-08-16 : « je ne veux pas que la taille de l'interface
+ * ou les boutons bougent », étendu par l'analyse d'état de l'art RT : une interface de combat ne fait
+ * pas clignoter ses ressources). Deux pulsations infinies vivaient ici : les crans d'Avantage/Mouvement
+ * qui vont partir, et la plaque « Fin du tour ». Elles disent la MÊME chose en statique.
+ */
+describe('CombatConsole — aucune animation permanente sur le pont', () => {
+  it('la feuille du pont ne porte AUCUNE animation infinie', () => {
+    const anims = [...CC_CSS.matchAll(/animation\s*:([^;}]*)/g)].map((m) => m[1].trim());
+    expect(anims.filter((a) => /infinite/.test(a)), 'une pulsation permanente subsiste sur le pont').toEqual([]);
+    expect(CC_CSS, 'plus aucune horloge de pulsation ne se définit ici').not.toMatch(/@keyframes\s+(af-pulse|cc-end-pulse)/);
+  });
+
+  it('les crans qui VONT PARTIR se lisent en segment fantôme STATIQUE, à pleine opacité', () => {
+    const spend = ruleOf(CC_BASE, '.cc-gutter-rail > i.spend');
+    expect(decl(spend, 'opacity'), 'le cran fantôme ne se joue plus à l’opacité battante').toBe('1');
+    expect(decl(spend, 'outline'), 'le cran qui part doit rester nommé par un filet').toBeTruthy();
+  });
+
+  it('la plaque « Fin du tour » appelle par sa TEINTE, en état allumé statique', () => {
+    const pulse = ruleOf(CC_BASE, '.cc-end.pulse');
+    expect(decl(pulse, 'animation'), 'la plaque bat encore').toBeNull();
+    expect(decl(pulse, 'box-shadow'), 'la plaque doit garder son halo, fixe').toBeTruthy();
+    expect(decl(pulse, 'border-color')).toBe('var(--tooltip-warn)');
+  });
+});
+
+/**
+ * ATTEIGNABILITÉ de la raison d'un refus (grief du juge, 2026-08-24) — la raison ne vaut que si les
+ * TROIS entrées y mènent. `<button disabled>` les coupait toutes sauf la souris : Tab le saute,
+ * `.focus()` est un no-op, la manette le filtre (`visibleFocusables`), et aucun événement de pointeur
+ * ne l'atteint au doigt. La case fermée QUI A UNE RAISON porte donc `aria-disabled` et reste inerte.
+ */
+describe('CombatConsole — la raison d’une case fermée s’atteint au clavier, à la manette et au doigt', () => {
+  const caseAction = (id: string) => host.querySelector(`[data-action="${id}"]`) as HTMLButtonElement | null;
+
+  /** Héros sans réserve de Détermination : ses deux alvéoles sont fermées, avec leur raison. */
+  function consoleGatee() {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.resolve = 0;
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    const det = caseAction('resolve-psych-immune')!;
+    expect(det, 'la sonde ne mesure rien sans case fermée').toBeTruthy();
+    return det;
+  }
+
+  it('FOCUS RÉEL (clavier) : la case gatée prend le focus et ouvre sa raison ; le blur la referme', () => {
+    const det = consoleGatee();
+    const attendue = actionGate('resolve-psych-immune', {
+      active: useGame.getState().battle!.combatants[0], battle: useGame.getState().battle!,
+    }).reason;
+    expect(refusAuFocus(det)).toBe(attendue);
+    // La boîte de CETTE case porte aussi la porte vers sa fiche de règle : elle survit au temps du pont
+    // de survol, puis meurt. (Un refus SEUL, sans règle, se ferme net — `CodexRef.hooks.test.tsx`.)
+    expect(quitterRefus(det), 'la boîte doit mourir quand on quitte la case').toBeNull();
+  });
+
+  it('MANETTE : la case gatée est DANS le filtre de focus du pad (`visibleFocusables`)', () => {
+    consoleGatee();
+    // jsdom ne pose aucune boîte : on mesure le filtre `disabled` de la manette sur les alvéoles, en
+    // neutralisant la seule autre condition (`getClientRects`), qui est un fait de navigateur.
+    const rects = HTMLElement.prototype.getClientRects;
+    HTMLElement.prototype.getClientRects = function fake() { return [{}] as unknown as DOMRectList; };
+    try {
+      const pont = host.querySelector('.combat-console') as HTMLElement;
+      const focusables = visibleFocusables(pont);
+      const gatees = [...host.querySelectorAll('button.cc-cell[aria-disabled="true"]')];
+      expect(gatees.length, 'aucune case gatée : la sonde ne mesurerait rien').toBeGreaterThan(0);
+      for (const g of gatees) {
+        expect(focusables, 'le pad ne peut pas se poser sur cette case, sa raison lui est invisible').toContain(g);
+      }
+    } finally {
+      HTMLElement.prototype.getClientRects = rects;
+    }
+  });
+
+  it('TACTILE : un tap sur la case fermée MONTRE sa raison — et n’exécute rien', () => {
+    const det = consoleGatee();
+    const attendue = actionGate('resolve-psych-immune', {
+      active: useGame.getState().battle!.combatants[0], battle: useGame.getState().battle!,
+    }).reason;
+    const avant = useGame.getState().battle!.combatants[0].resolve;
+    expect(refusAuTap(det), 'au doigt, la raison reste introuvable').toBe(attendue);
+    expect(useGame.getState().battle!.combatants[0].resolve, 'le tap a dépensé quelque chose').toBe(avant);
+    expect(useGame.getState().battle!.action, 'le tap a armé un mode').toBeNull();
   });
 });

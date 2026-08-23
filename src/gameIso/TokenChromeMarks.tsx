@@ -9,12 +9,22 @@
  * la TÊTE — le rayon du disque pour un pion, la hauteur du quad pour un billboard (`chromeHeadPx`).
  */
 import { hpColor } from './teamColors';
+import { CHROME_SLOTS } from './builders/tokenChrome';
 import { IconG } from '../ui/Icon';
 import type { IconId } from '../ui/icons';
 import type { EndState } from '../engine/conditions';
 import { END_STATE_VISUAL } from '../ui/endStateVisual';
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+
+/** Les places de la réserve sont FIXES : la place `i` est à la même abscisse quel que soit le nombre
+ *  d'États portés, donc un État qui apparaît n'en pousse AUCUN autre (le rang se RECENTRAIT à chaque
+ *  ajout : toutes les icônes se déplaçaient pour une seule qui arrive). Les places vides ne se peignent
+ *  pas — un jeton du monde n'est pas un rack : elles sont réservées, pas dessinées. */
+/** Pas d'une alvéole (px écran, repère du jeton). */
+const SLOT_W = 11;
+/** Abscisse du CENTRE de la place `i` — fonction de la RÉSERVE, jamais du contenu. */
+const slotX = (i: number) => -(CHROME_SLOTS * SLOT_W) / 2 + SLOT_W / 2 + i * SLOT_W;
 
 export interface TokenChromeMarksProps {
   /** Barre de PV au-dessus de la tête ; absente = aucune jauge (engin inerte, décor). */
@@ -33,7 +43,6 @@ export function TokenChromeMarks({ hp, icons, iconsMore = 0, endState, badgeY }:
   const hpRatio = hp && hp.max > 0 ? clamp01(hp.current / hp.max) : null;
   const iconList = icons ?? [];
   const nIcons = iconList.length + (iconsMore > 0 ? 1 : 0);
-  const iconStart = -(nIcons * 11) / 2 + 5.5;
   const endMark = endState ? END_STATE_VISUAL[endState] : null;
   if (hpRatio == null && nIcons === 0 && !endMark) return null;
   return (
@@ -43,10 +52,10 @@ export function TokenChromeMarks({ hp, icons, iconsMore = 0, endState, badgeY }:
           {nIcons > 0 && (
             <g style={{ color: '#f2eef8' }}>
               {iconList.map((ic, i) => (
-                <IconG key={i} id={ic} x={iconStart + i * 11 - 5} y={-13} size={10} />
+                <IconG key={i} id={ic} x={slotX(i) - 5} y={-13} size={10} />
               ))}
               {iconsMore > 0 && (
-                <text x={iconStart + iconList.length * 11} y={-4} fontSize={8} fill="#cdb8d8" textAnchor="middle">+{iconsMore}</text>
+                <text x={slotX(iconList.length)} y={-4} fontSize={8} fill="#cdb8d8" textAnchor="middle">+{iconsMore}</text>
               )}
             </g>
           )}

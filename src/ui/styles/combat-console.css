@@ -207,9 +207,8 @@
   --cc-void-hi: var(--cc-void-brass-hi);
   --cc-void-lo: var(--cc-void-brass-lo);
   --cc-void-edge: var(--cc-void-brass-edge);
-  /* Le mot « LIBRE » d'une case vide : MÊME encre dans les deux travées (une seule grammaire de case
-     vide) et assez présente pour se lire sur le verre sombre — l'ancienne encre tombait à 1,65:1
-     (sonde du juge vision 2026-08-17), cinq fois sous le seuil d'un élément graphique. */
+  /* Encre d'une case vide : MÊME valeur dans les deux travées (une seule grammaire de creux). Elle ne
+     porte plus de mot — seulement ce qu'une alvéole vide peut encore graver (touche imprimée). */
   --cc-void-ink: var(--atelier-brass-meta);
 }
 
@@ -344,7 +343,10 @@
 .cc-cell.on::before {
   background: var(--cc-cell-lit);
 }
-.cc-cell:disabled {
+/* Une alvéole fermée porte `disabled` (maquette muette) OU `aria-disabled` (elle a une raison à dire,
+   donc elle reste focalisable) : même apparence pour les deux écritures. */
+.cc-cell:disabled,
+.cc-cell[aria-disabled='true'] {
   cursor: default;
 }
 /* Case DESSINÉE non branchée : elle doit se lire MORTE. Un simple voile d'opacité (0,88) laissait une
@@ -359,62 +361,31 @@
 .cc-cell.cc-inert::before {
   opacity: 0.55;
 }
-/* Case dessinée dont la SITUATION ferme l'usage (Charger alors qu'on est Engagé) : un cran encore plus
-   bas que la maquette — la case est là, sa raison est ÉCRITE dans l'alvéole, et elle ne se confond pas
-   avec une case qui n'attend qu'un branchement. */
-.cc-cell[data-gated] {
-  /* Place RÉSERVÉE au pied pour la bande de raison (voir plus bas) : le nom ne descend jamais dessous. */
-  padding-bottom: 11px;
-}
-/* L'EXTINCTION, elle, ne vise que la case dont l'usage est fermé : celle qui porte la raison de son
-   seul GESTE secondaire (`data-refus-2e`) reste offerte, donc allumée. */
+/* Case dessinée dont la SITUATION ferme l'usage (Charger alors qu'on est Engagé) : un cran plus bas que
+   la case vivante, sans rien perdre de sa boîte — sa RAISON ne s'écrit plus sous son nom (arbitrage user
+   2026-08-24), elle se lit au survol/focus dans l'infobulle partagée. La case gatée rend donc au libellé
+   TOUTE la hauteur de l'alvéole : plus de rembourrage réservé, plus de clamp à une ligne, plus de glyphe
+   rétréci — « Immunité à la Psychologie » y tient enfin en entier (capture user 2026-08-24). */
+/* L'EXTINCTION ne vise que la case dont l'usage est fermé : celle qui porte la raison de son seul GESTE
+   secondaire (`data-refus-2e`) reste offerte, donc allumée. Son encre tient AA (≥ 4,5:1) sur les deux
+   arrêts de l'alvéole : le nom d'une capacité refusée reste un nom LU, pas une trace (grief vision
+   « Recharger 2,94:1 », spec HUD l.85-86 — l'encre du vide n'y suffisait pas). */
 .cc-cell[data-gated]:not([data-refus-2e]) {
-  --cc-cell-ink: var(--cc-void-ink);
+  --cc-cell-ink: var(--cc-gated-ink);
 }
 .cc-cell[data-gated]:not([data-refus-2e])::before {
   background: var(--cc-cell-edge);
   opacity: 0.4;
 }
-/* RAISON d'indisponibilité, rendue DANS l'alvéole (idiome `GatedAction` : « un `title` seul reste
-   invisible à l'arbre a11y »).
-   DEUX DÉFAUTS MESURÉS EN RECETTE (2026-08-17, captures `01b` puis `06`) : en FLUX, la raison et le nom
-   se disputaient une boîte trop courte — d'abord le nom était chassé hors de la case, puis la raison
-   tombait à 0 de haut. Elle prend donc SA BANDE au pied de l'alvéole (même patron que l'état de charge
-   d'une vignette de set, `.cc-set-load`) : hors flux, hauteur garantie, et le NOM garde sa ligne pleine
-   au-dessus (le rembourrage bas de la case lui réserve la place — la GÉOMÉTRIE de la case, elle, ne
-   bouge pas d'un pixel). Une raison trop longue s'ellipse ; jamais elle ne pousse quoi que ce soit. */
-.cc-cell[data-gated] .cc-lbl:not([data-gate]) {
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  flex: 0 0 auto;
-}
-/* Le glyphe cède la place à la bande de raison, sans jamais disparaître : la case reste identifiable. */
-.cc-cell[data-gated] .cc-ico {
-  width: calc(var(--cc-ico) * 0.75);
-  height: calc(var(--cc-ico) * 0.75);
-}
-.cc-lbl[data-gate] {
-  font-family: ui-monospace, monospace;
-  font-size: 7px;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--tooltip-warn);
-  position: absolute;
-  bottom: 1px;
-  left: 2px;
-  right: 2px;
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-/* Case VIDE : dessinée, jamais absente — le compte de cases est la loi. C'est une CARTE À VITRE
-   (spécimen C) : même cadre que ses voisines, verre sombre dessous, jamais une hachure grise. */
+/* Case VIDE : dessinée, jamais absente — le compte de cases est la loi. C'est un CREUX MUET : aucun mot
+   ne s'y grave (arbitrage user 2026-08-24), la MATIÈRE seule dit qu'il est offert — verre plus sombre
+   que l'alvéole pleine, liseré en RETRAIT (`--cc-void-edge`, dessiné pour ça) et ombre interne qui
+   creuse. Deux reculs mesurables, donc : le fond ET le cadre.  */
 .cc-cell.cc-empty {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 46%),
     linear-gradient(180deg, var(--cc-void-hi), var(--cc-void-lo));
-  border-color: var(--cc-cell-edge);
+  border-color: var(--cc-void-edge);
   border-style: solid;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6);
   color: var(--cc-void-ink);
@@ -427,7 +398,7 @@
 }
 /* La case qui IMPRIME sa touche lui RÉSERVE sa bande au pied — sans quoi un libellé long descend
    sous le chiffre et les deux se chevauchent (sonde du juge vision : « Immunité Psychologie (2) »).
-   Même patron que la bande de raison : la hauteur de l'alvéole, elle, ne bouge pas. */
+   Même patron que l'état de charge d'une vignette de set : la hauteur de l'alvéole ne bouge pas. */
 .cc-cell[data-hotkey] {
   padding-bottom: 10px;
 }
@@ -628,15 +599,12 @@
 .cc-bay-head button[data-ammo]::after {
   content: '▾';
 }
-.cc-bay-head button[data-ammo]:disabled {
+.cc-bay-head button[data-ammo]:disabled,
+.cc-bay-head button[data-ammo][aria-disabled='true'] {
   cursor: not-allowed;
-  opacity: 0.55;
-}
-/* RAISON du refus : elle PARTAGE la ligne de l'en-tête (elle ne l'ajoute pas) et s'ellipse avec elle. */
-.cc-bay-head [data-gate] {
-  color: var(--tooltip-warn);
-  font-style: normal;
-  margin-left: 6px;
+  /* Refus du chip : ENCRE, jamais un voile d'opacité (invisible au token, et il passait sous AA) —
+     la même que celle d'une alvéole fermée. */
+  color: var(--cc-gated-ink);
 }
 
 /* L'arche est le FRONTON DU PONT (spec §1c-ter), pas un panneau posé devant : elle s'élève de
@@ -810,20 +778,16 @@
 }
 .cc-gutter-action { --gc: var(--gauge-action); }
 .cc-gutter-move { --gc: var(--gauge-move); }
-/* Aperçu du geste en cours : les crans qui vont partir clignotent. UNE horloge par gouttière
-   (`af-pulse`, définie ICI, chez son unique consommateur) → tous les crans qui partent battent EN
-   PHASE ; le `@property` typé en `<number>` est ce qui rend la variable INTERPOLABLE. */
-@property --af-pulse { syntax: '<number>'; inherits: true; initial-value: 1; }
-@keyframes af-pulse { 0%, 100% { --af-pulse: 1; } 50% { --af-pulse: 0.28; } }
-.cc-gutter-rail:has(i.spend) {
-  animation: af-pulse 0.7s ease-in-out infinite;
-}
+/* Aperçu du geste en cours : les crans qui vont partir se lisent en SEGMENT FANTÔME — teinte éteinte
+   sous un filet clair, STATIQUE (patron BG3/Solasta). Rien ne clignote sur ce pont : « je ne veux pas
+   que la taille de l'interface ou les boutons bougent » (arbitrage user 2026-08-16) vaut aussi pour ce
+   qui bat — un cran qui pulse est un mouvement permanent dans le champ de lecture. L'information est
+   la MÊME (ces crans-là partent), elle se lit d'un coup d'œil au lieu d'attendre une phase. */
 .cc-gutter-rail > i.spend {
-  opacity: var(--af-pulse);
-}
-@media (prefers-reduced-motion: reduce) {
-  .cc-gutter-rail { animation: none; }
-  .cc-gutter-rail > i.spend { opacity: 1; outline: 1px solid rgba(255, 255, 255, 0.85); outline-offset: -1px; }
+  opacity: 1;
+  background: var(--cc-arch-well-lo);
+  outline: 1px solid rgba(255, 255, 255, 0.85);
+  outline-offset: -1px;
 }
 /* SOCLE au pied de la gouttière (spécimen D, rappel user 2026-08-17 : « en dessous de chaque
    indicateur il y avait la valeur affichée en dessous ») : BADGE franc, pas un ornement — plaque
@@ -1017,23 +981,18 @@ button.cc-socle svg {
 .cc-end.pulse .cc-key {
   color: var(--tooltip-warn);
 }
-/* Plus aucune option utile au tour (`hasMeaningfulOption`) : la plaque passe à l'ambre du
-   spécimen F — c'est un APPEL à sortir, pas une alerte. */
+/* Plus aucune option utile au tour (`hasMeaningfulOption`) : la plaque passe à l'ambre du spécimen F
+   — c'est un APPEL à sortir, pas une alerte. ÉTAT ALLUMÉ STATIQUE : rien ne bat sur ce pont (arbitrage
+   user 2026-08-16, « je ne veux pas que la taille de l'interface ou les boutons bougent ») — une
+   pulsation permanente tire l'œil en boucle sans rien ajouter à ce que la teinte dit déjà. */
 .cc-end.pulse {
   background: linear-gradient(180deg, var(--cc-end-warn-hi), var(--cc-end-warn-lo));
   border-color: var(--tooltip-warn);
-  animation: cc-end-pulse 1.2s ease-in-out infinite;
+  box-shadow: 0 0 0 3px rgba(224, 165, 58, 0.45);
 }
 .cc-end.pulse .cc-ico {
   background: radial-gradient(circle at 35% 30%, var(--tooltip-warn), var(--atelier-or-lo) 70%);
   border-color: var(--combat-gold);
-}
-@keyframes cc-end-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(224, 165, 58, 0.25); }
-  50% { box-shadow: 0 0 0 3px rgba(224, 165, 58, 0.6); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .cc-end.pulse { animation: none; box-shadow: 0 0 0 3px rgba(224, 165, 58, 0.45); }
 }
 
 /* ── Responsive : seul le CÔTÉ de l'alvéole (et l'écart de région) change, jamais le compte de

@@ -4,6 +4,9 @@
  * description + sa source ; un clic ouvre le Codex sur la fiche. C'est LA primitive popover du
  * jeu (il n'y en avait pas) — remplace les `title=desc` bruts et les libellés « nus ».
  *
+ * C'est aussi l'UNIQUE porteur de la RAISON D'UN REFUS (`refus`) : une case, une pastille ou un
+ * bouton fermés restent PROPRES à l'écran, et disent pourquoi au survol/focus.
+ *
  * Le popover est rendu en PORTAL (document.body) en `position: fixed`, positionné depuis le rect
  * du déclencheur : il échappe ainsi à TOUT clipping `overflow` (fiche, panneaux…) et à tout
  * contexte d'empilement. `pointer-events: none` → pur tooltip, pas de pont de survol ; le clic
@@ -74,6 +77,7 @@ export function computePopoverPos(
 
 export function CodexRef({
   category,
+  refus,
   id,
   label,
   children,
@@ -88,7 +92,15 @@ export function CodexRef({
   provenances,
   fallback,
 }: {
-  category: string;
+  category?: string;
+  /** RAISON DE REFUS du contrôle englobé — rendue EN TÊTE du popover, jamais en texte permanent sous
+   *  le libellé (arbitrage user 2026-08-24 : « Je n'ai jamais validé ces "textes" impossible a lire
+   *  sous le nom des capacités, même Rogue Trader qui est notre interface de départ n'a pas un tel
+   *  comportement. »). C'est l'UNIQUE infobulle du jeu qui la porte : une case de console gatée, une
+   *  action de `GatedAction` désactivée, une pastille refusée passent toutes par ici — le texte visible
+   *  naît au survol ET au focus (clavier comme manette), et l'`aria-describedby` du contrôle reste
+   *  câblé sur sa propre copie accessible. Un popover peut n'avoir QUE cela (aucune cible au Codex). */
+  refus?: string;
   /** Identité STABLE de la cible — PRÉFÉRÉE quand fournie (`codexLookupById`) ; `label` reste requis
    *  (affichage + repli de résolution pour les cas SANS id stable : `EntityChoice` — entrées « A ou B »
    *  éclatées d'un libellé brut — et l'auto-liage de prose depuis une donnée sans id). */
@@ -137,7 +149,13 @@ export function CodexRef({
   fallback?: { sub?: string; body?: string };
 }) {
   const openCodex = useGame((s) => s.openCodex);
-  const item = (id ? codexLookupById(category, id) : undefined) ?? codexLookup(category, label);
+  const item = category ? (id ? codexLookupById(category, id) : undefined) ?? codexLookup(category, label) : undefined;
+  // La PORTE vers la fiche (`openFiche` plus bas) se sait dès la résolution : le pont de survol en
+  // dépend, et il se décide AVANT les hooks qui le portent.
+  const porte = !tooltipOnly && !!item;
+  // La BOÎTE doit-elle rester atteignable au pointeur (pont de survol + événements) ? Sous `wrap`, oui
+  // dès qu'elle porte quelque chose à atteindre : la porte vers la fiche, ou un corps de secours.
+  const boiteAtteignable = wrap && (porte || !!fallback);
   const ref = useRef<HTMLSpanElement>(null);
   const popRef = useRef<HTMLSpanElement>(null);
   const openBtnRef = useRef<HTMLButtonElement>(null);
@@ -163,10 +181,13 @@ export function CodexRef({
   // annulée dès que le pointeur entre dedans. Hors `wrap` : fermeture immédiate (pur tooltip).
   const hide = useCallback(() => {
     if (pinned) return;
-    if (!wrap) { setPos(null); return; }
+    // Le pont n'existe QUE pour laisser le pointeur ATTEINDRE la boîte : celle qui porte la porte vers
+    // la fiche, et celle de SECOURS (`fallback`), qui n'a pas d'entrée au catalogue mais reste du
+    // contenu à lire. Un refus seul est un pur tooltip : il se ferme net au `blur`/`mouseleave`.
+    if (!boiteAtteignable) { setPos(null); return; }
     cancelHide();
     hideTimer.current = setTimeout(() => setPos(null), HOVER_BRIDGE_MS);
-  }, [pinned, wrap, cancelHide]);
+  }, [pinned, boiteAtteignable, cancelHide]);
   const unpin = useCallback(() => { cancelHide(); setPinned(false); setPos(null); }, [cancelHide]);
 
   useEffect(() => cancelHide, [cancelHide]);
@@ -218,7 +239,7 @@ export function CodexRef({
   // Sans entrée catalogue NI fallback : icône-déclencheur → rien ; libellé → texte simple. La classe
   // `codex-ref` reste portée — elle habille l'affordance (`.codex-ref.ab-codex-info`), et sans elle
   // le repli perdrait sa mise en forme au lieu de rester la même surface, muette.
-  if (!item && !fallback) return hideIfUnknown ? null : <span className={`codex-ref codex-static${className ? ` ${className}` : ''}`}>{children ?? label}</span>;
+  if (!item && !fallback && !refus) return hideIfUnknown ? null : <span className={`codex-ref codex-static${className ? ` ${className}` : ''}`}>{children ?? label}</span>;
 
   const title = item?.label ?? label;
   const body = item ? (item.desc ? truncate(mdToText(item.desc)) : null) : (fallback?.body || null);
@@ -233,13 +254,17 @@ export function CodexRef({
   // déclencheur enveloppe un contrôle qui a DÉJÀ son action (dépenser une ressource) — la surface
   // ne prend donc aucune interaction, et la porte devient un vrai bouton DANS le popover, atteint
   // au pointeur ou par ↓ depuis le contrôle (#1078).
-  const openFiche = !tooltipOnly && !!item;
+  const openFiche = porte;
   const wrapperOpens = !wrap && openFiche;
   const togglePopover = !wrap && tooltipOnly && (!!item || !!fallback);
   const clickable = wrapperOpens || togglePopover;
-  const open = () => { if (item) openCodex({ category, id: item.id, label: item.label, instance: inst }); };
+  const open = () => { if (item && category) openCodex({ category, id: item.id, label: item.label, instance: inst }); };
   const toggle = () => { if (pinned) unpin(); else if (!suppressPopover) { showAt(); setPinned(true); } };
   const activate = wrapperOpens ? open : togglePopover ? toggle : undefined;
+  // TAP sur un contrôle REFUSÉ : au doigt, il n'y a ni survol ni focus — le tap MONTRE la raison (il
+  // n'agit pas : le contrôle englobé est `aria-disabled`, son clic est inerte). Patron mobile standard.
+  // L'enveloppe ne devient pas pour autant un contrôle (ni rôle, ni tabindex) : elle écoute, c'est tout.
+  const tapRefus = wrap && !!refus && !activate;
   // La porte clavier du popover (↓) suit le popover : mise en sourdine, elle n'est ni annoncée ni
   // active — jamais un raccourci qui n'ouvre rien.
   const pinFromWrap = wrap && openFiche && !suppressPopover;
@@ -261,7 +286,7 @@ export function CodexRef({
         'aria-keyshortcuts': 'ArrowDown',
         title: `${title} — ↓ : fiche`,
       } : null)}
-      onClick={activate}
+      onClick={activate ?? (tapRefus ? toggle : undefined)}
       onKeyDown={(e) => {
         // ↓ épingle et entre dans le popover (le contrôle englobé ignore cette touche : son
         // Entrée/Espace reste SA dépense). Même idiome qu'un bouton de menu.
@@ -296,12 +321,15 @@ export function CodexRef({
             className="codex-pop"
             // Sous `wrap` le popover est ACTIONNABLE (il porte la porte) : il reprend les
             // événements de pointeur que `.codex-pop` neutralise pour le pur tooltip.
-            style={{ top: pos.top, bottom: pos.bottom, left: pos.left, maxWidth: pos.width, maxHeight: pos.maxHeight, ...(wrap ? { pointerEvents: 'auto' as const } : null) }}
+            style={{ top: pos.top, bottom: pos.bottom, left: pos.left, maxWidth: pos.width, maxHeight: pos.maxHeight, ...(boiteAtteignable ? { pointerEvents: 'auto' as const } : null) }}
             role="tooltip"
             onMouseEnter={cancelHide}
             onMouseLeave={hide}
           >
-            <span className="codex-pop-title">{inst ?? title}</span>
+            {/* Le REFUS ouvre le popover : c'est la réponse à « pourquoi je ne peux pas ? », avant
+                toute règle. Il ne s'écrit nulle part ailleurs à l'écran (arbitrage 2026-08-24). */}
+            {refus && <span data-refus="">{refus}</span>}
+            {(inst ?? title) ? <span className="codex-pop-title">{inst ?? title}</span> : null}
             {inst && <span className="codex-pop-sub">{title}</span>}
             {popSub && <span className="codex-pop-sub">{popSub}</span>}
             {metaLine && <span className="codex-pop-meta">{metaLine}</span>}

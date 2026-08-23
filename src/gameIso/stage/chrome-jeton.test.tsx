@@ -67,11 +67,13 @@ function hero(id: string, pos: { x: number; y: number }): Combatant {
   } as unknown as Combatant;
 }
 
-/** Un héros BLESSÉ portant quatre états-drapeaux (trois montrés + un reporté), et un ennemi MORT. */
+/** Un héros BLESSÉ portant CINQ états-drapeaux — la réserve d'alvéoles en tient quatre (`CHROME_SLOTS`,
+ *  autant que le rack du portrait) : trois états montrés + le report « +2 » dans la dernière. Et un
+ *  ennemi MORT. */
 function combatChromé(): BattleState {
   return {
     combatants: [
-      { ...hero('h1', { x: 3, y: 3 }), wounds: PV, defensiveStance: true, aiming: true, focus: { dr: 2 }, hunger: { days: 2, failures: 0 } },
+      { ...hero('h1', { x: 3, y: 3 }), wounds: PV, defensiveStance: true, aiming: true, focus: { dr: 2 }, hunger: { days: 2, failures: 0 }, psychState: [{ type: 'frenesie' }] },
       { ...hero('e1', { x: 5, y: 3 }), kind: 'enemy', dead: true },
     ],
     order: ['h1', 'e1'],
@@ -163,12 +165,12 @@ afterEach(() => {
 });
 
 describe('Chrome des jetons — UNE dérivation, UN peintre (#1176 P3-0f)', () => {
-  it('le chrome est peint à l’écran : une barre par combattant posté, « +1 », pastille de mort', () => {
+  it('le chrome est peint à l’écran : une barre par combattant posté, « +2 », pastille de mort', () => {
     const el = monter();
     const barres = barresPV(el);
     expect(barres, 'une barre par combattant posté').toHaveLength(2);
     expect(barres.map((b) => b.getAttribute('fill'))).toContain(hpColor(PV.current / PV.max));
-    expect([...el.querySelectorAll('svg.iso-stage text')].map((t) => t.textContent)).toContain('+1');
+    expect([...el.querySelectorAll('svg.iso-stage text')].map((t) => t.textContent)).toContain('+2');
     const marques = pastilles(el);
     expect(marques, 'le mort porte SA pastille, et lui seul').toHaveLength(1);
     expect(marques[0].querySelector('title')?.textContent).toBe('Mort');
@@ -185,9 +187,10 @@ describe('Chrome des jetons — UNE dérivation, UN peintre (#1176 P3-0f)', () =
     const barre = [...h1!.querySelectorAll('rect')].find((r) => r.getAttribute('fill') !== '#000');
     expect(barre?.getAttribute('fill')).toBe(hpColor(PV.current / PV.max));
     expect(Number(barre?.getAttribute('width'))).toBeCloseTo(26 * (PV.current / PV.max), 6);
-    // Icônes d'États : trois montrées, la quatrième reportée en « +1 ».
+    // Icônes d'États : la réserve tient QUATRE places — trois états montrés, le report « +2 » dans la
+    // dernière. Le rang ne déborde jamais de ses alvéoles, et aucune ne se déplace quand il se remplit.
     expect(h1!.querySelectorAll('g[aria-hidden="true"]')).toHaveLength(3);
-    expect([...h1!.querySelectorAll('text')].map((t) => t.textContent)).toEqual(['+1']);
+    expect([...h1!.querySelectorAll('text')].map((t) => t.textContent)).toEqual(['+2']);
     // Pastille d'état de fin, avec son `<title>` — l'accessibilité ne se perd pas au changement de voie.
     expect(h1!.querySelector('g.token-endmark'), 'un héros en état n’en porte pas').toBeNull();
     const marque = e1!.querySelector('g.token-endmark');

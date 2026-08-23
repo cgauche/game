@@ -206,17 +206,18 @@
   --cc-steel-key: #6f8098; /* touche imprimée dans le coin de la case */
   --cc-steel-lit: #7fa8c8; /* alvéole d'acier ARMÉE (liseré + cran de coût) */
   --cc-steel-lit-ink: #bcd8ee; /* encre d'une alvéole d'acier armée */
-  --cc-void-steel-hi: #151a1f; /* case VIDE côté acier — haut */
+  --cc-void-steel-hi: #0d1014; /* case VIDE côté acier — haut (creusé : le vide n'a plus de mot) */
   --cc-void-steel-lo: #0a0d10; /* case vide côté acier — bas */
   --cc-void-steel-edge: #20262d; /* liseré d'une case vide d'acier */
   --cc-void-steel-ink: #333c45; /* encre éteinte d'une case vide d'acier */
   --cc-brass-lo: #100b07; /* plaque de laiton — bas (haut = --atelier-wood-top) */
   --cc-brass-cell-hi: #2a2014; /* alvéole de laiton — haut */
   --cc-brass-cell-lo: #120d08; /* alvéole de laiton — bas */
-  --cc-void-brass-hi: #1b160f; /* case VIDE côté laiton — haut */
+  --cc-void-brass-hi: #141009; /* case VIDE côté laiton — haut (creusé : le vide n'a plus de mot) */
   --cc-void-brass-lo: #0c0906; /* case vide côté laiton — bas */
   --cc-void-brass-edge: #2a2218; /* liseré d'une case vide de laiton */
   --cc-void-brass-ink: #463c2c; /* encre éteinte d'une case vide de laiton */
+  --cc-gated-ink: #9d875c; /* encre d'une alvéole FERMÉE par la situation — AA sur ses deux arrêts */
   --cc-conduit-edge: #6f5828; /* colliers du conduit d'Avantage */
   --cc-conduit-track-hi: #0d0906; /* rail creusé du conduit — haut */
   --cc-conduit-track-lo: #1a130d; /* rail creusé du conduit — bas */
@@ -372,6 +373,21 @@ h3 {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+/* HORS ÉCRAN — texte destiné au SEUL lecteur d'écran : le nom d'un emplacement vide, la RAISON d'un
+   refus (cible de l'`aria-describedby`, alors que le texte VISIBLE naît au survol/focus dans l'infobulle
+   partagée — arbitrage user 2026-08-24). Jamais `display: none` (l'arbre a11y le perdrait), jamais dans
+   le flux : la géométrie de ce qui l'accueille ne bouge pas d'un pixel. UNE définition pour tout le
+   dépôt (`GatedAction`, alvéoles de la console) — jamais une recopie du clip par module. */
+.hors-ecran {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 /* ══════════════════ RESPONSIVE — STRUCTURE GLOBALE ══════════════════
    Breakpoints canon du projet : 900px (empilement des colonnes latérales),
@@ -460,11 +476,15 @@ h3 {
   cursor: pointer;
   transition: 0.15s;
 }
-.btn:hover:not(:disabled) {
+.btn:hover:not(:disabled):not([aria-disabled='true']) {
   border-color: var(--gold);
   background: #382c1e;
 }
-.btn:disabled {
+/* Un contrôle REFUSÉ porte `aria-disabled` (et non `disabled`) dès que sa raison est à ATTEINDRE au
+   survol/focus/tap — il reste focalisable, donc lisible au clavier, à la manette et au doigt. Les DEUX
+   écritures partagent la même apparence : l'utilisateur voit un contrôle mort, pas deux grammaires. */
+.btn:disabled,
+.btn[aria-disabled='true'] {
   opacity: 0.4;
   cursor: not-allowed;
 }

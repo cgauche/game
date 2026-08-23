@@ -145,3 +145,75 @@ describe('CodexRef — chemin ÉPINGLÉ et interception de clic (#1117)', () => 
     expect(document.querySelector('.codex-pop')).toBeNull();
   });
 });
+
+/**
+ * RAISON D'UN REFUS (arbitrage user 2026-08-24) — l'infobulle partagée la porte, donc elle doit être
+ * ATTEIGNABLE par les trois entrées : souris (survol), clavier/manette (focus RÉEL du contrôle, pas un
+ * événement forgé), et DOIGT (un tap MONTRE la raison — le contrôle refusé n'agit pas). Et la boîte de
+ * SECOURS (`fallback` sans entrée au catalogue) reste, elle, atteignable au pointeur : sans quoi son
+ * contenu serait affiché mais inaccessible.
+ */
+describe('CodexRef — la raison d’un refus s’atteint au survol, au FOCUS et au TAP', () => {
+  beforeAll(() => {
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+  });
+  let container: HTMLDivElement;
+  let root: Root;
+  afterEach(() => {
+    act(() => { root.unmount(); });
+    container.remove();
+  });
+
+  /** Un contrôle REFUSÉ tel que `GatedAction` le rend : `aria-disabled` (pas `disabled`), donc
+   *  focalisable — enveloppé de l'infobulle qui porte sa raison. */
+  const refuse = (
+    <CodexRef label="Charger" refus="Vous êtes Engagé." wrap>
+      <button type="button" aria-disabled="true">Charger</button>
+    </CodexRef>
+  );
+  const raison = () => document.querySelector('.codex-pop [data-refus]')?.textContent ?? null;
+
+  it('FOCUS RÉEL du contrôle (clavier, manette) : la raison s’ouvre, le blur la referme', () => {
+    ({ container, root } = mount(refuse));
+    const btn = container.querySelector('button') as HTMLButtonElement;
+    expect(btn.disabled, 'un contrôle `disabled` ne prendrait JAMAIS le focus').toBe(false);
+    act(() => { btn.focus(); });
+    expect(document.activeElement, 'le contrôle refusé doit prendre le focus').toBe(btn);
+    expect(raison(), 'le focus n’ouvre pas la raison').toBe('Vous êtes Engagé.');
+    act(() => { btn.blur(); });
+    expect(document.querySelector('.codex-pop'), 'le blur doit refermer').toBeNull();
+  });
+
+  it('TAP (aucun survol, aucun focus préalable) : le clic MONTRE la raison au lieu d’agir', () => {
+    let agi = 0;
+    ({ container, root } = mount(
+      <CodexRef label="Charger" refus="Vous êtes Engagé." wrap>
+        <button type="button" aria-disabled="true" onClick={() => { agi += 1; }}>Charger</button>
+      </CodexRef>,
+    ));
+    const btn = container.querySelector('button') as HTMLButtonElement;
+    act(() => { btn.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(raison(), 'au doigt, rien n’ouvrait la raison').toBe('Vous êtes Engagé.');
+    // Le tap reste ÉPINGLÉ (il n'y a pas de survol au doigt pour la maintenir), et un 2ᵉ tap referme.
+    act(() => { btn.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(document.querySelector('.codex-pop')).toBeNull();
+    expect(agi, 'le contrôle refusé n’a agi (son propre `onClick` est le no-op de l’appelant)').toBe(2);
+  });
+
+  it('boîte de SECOURS (`fallback` sous `wrap`) : elle reste atteignable au pointeur', () => {
+    ({ container, root } = mount(
+      <CodexRef category="trappings" id="arme-invoquee-xyz" label="Lame invoquée" wrap
+        fallback={{ sub: 'invoquée', body: 'Profil temporaire.' }}>
+        <button type="button">Lame invoquée</button>
+      </CodexRef>,
+    ));
+    const trigger = container.querySelector('.codex-ref') as HTMLElement;
+    act(() => { trigger.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+    const pop = document.querySelector('.codex-pop') as HTMLElement;
+    expect(pop, 'le repli doit s’afficher').toBeTruthy();
+    expect(pop.style.pointerEvents, 'une boîte affichée mais inatteignable au pointeur').toBe('auto');
+    // … et le pont de survol la maintient le temps que le pointeur y arrive.
+    act(() => { trigger.dispatchEvent(new MouseEvent('mouseout', { bubbles: true })); });
+    expect(document.querySelector('.codex-pop'), 'le pont de survol ne tient pas').toBeTruthy();
+  });
+});

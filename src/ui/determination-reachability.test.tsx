@@ -95,17 +95,25 @@ describe('Détermination — les trois usages sont ATTEIGNABLES depuis la consol
     expect(actif().activeEffects?.some((e) => e.ignoreCritMods)).toBe(true);
   });
 
-  it('réserve VIDE — les deux alvéoles restent DESSINÉES et portent leur raison, visible', () => {
+  it('réserve VIDE — les deux alvéoles restent DESSINÉES et portent leur raison, au SURVOL', () => {
     const h = heros({ resolve: 0, conditions: [] });
     monter(h);
     const attendue = actionGate('resolve-psych-immune', { active: h, battle: useGame.getState().battle! }).reason;
     for (const id of ['resolve-psych-immune', 'resolve-ignore-crit']) {
       const c = alveole(id)!;
       expect(c, `l’alvéole ${id} a disparu — la géométrie ne bouge jamais`).toBeTruthy();
-      expect(c.disabled).toBe(true);
-      const raison = c.querySelector('.cc-lbl[data-gate]')!;
-      expect(raison.textContent).toBe(attendue);
-      expect(c.getAttribute('aria-describedby')).toBe(raison.id);
+      // Fermée par `aria-disabled` : elle porte une raison, elle doit rester focalisable (clavier,
+      // manette, doigt) pour que cette raison soit atteignable.
+      expect(c.getAttribute('aria-disabled')).toBe('true');
+      expect(c.disabled).toBe(false);
+      // La raison ne se grave PAS sous le nom du geste (arbitrage user 2026-08-24) : elle naît de
+      // l'infobulle partagée au survol, et sa copie HORS ÉCRAN sert l'`aria-describedby`.
+      act(() => { c.closest('.codex-ref')!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+      expect(document.body.querySelector('.codex-pop[role="tooltip"] [data-refus]')?.textContent).toBe(attendue);
+      act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+      const copie = c.querySelector('.hors-ecran[data-gate]')!;
+      expect(copie.textContent).toBe(attendue);
+      expect(c.getAttribute('aria-describedby')).toBe(copie.id);
     }
   });
 
