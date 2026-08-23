@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `HealRollFlow`, `redaction`, `buySkillAdvance`, +38 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +29 fichiers
+- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `specEntrySchema`, `BargainModalView`, `HealRollFlow`, `redaction`, +43 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, +32 fichiers
 
 ---
 
@@ -98,7 +98,7 @@ la description, ou en crée une avec l'accord du MJ.
 **Sources RAW :** LDB 09 l.34-46
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `combatBaseValue`, `weaponUnmastered`, `createHero`, `entrainementOptions`, +4 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +9 fichiers
+- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `specEntrySchema`, `redaction`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, `buildAdvancementView`, `combatBaseValue`, `weaponUnmastered`, +9 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, +12 fichiers
 
 ---
 

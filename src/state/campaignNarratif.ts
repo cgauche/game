@@ -5,7 +5,8 @@
 // invariant est GARDÉ ici (`validateNarratif` refuse toute collision d'id narratif ↔ id global).
 
 import type { TrappingData, CreatureData } from '../data/index';
-import { findCreatureById, findTrappingById } from '../data/index';
+import { findCreatureById, findTrappingById, findSkillById, findTalentById, specResolves } from '../data/index';
+import type { SpecEntry, SpecsSource } from '../data/index';
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { SourceRef } from '../data/schemas/common';
 
@@ -125,6 +126,23 @@ export function validateNarratif(n: unknown): asserts n is NarratifBlock {
       if (!p.profil!.char || typeof p.profil!.char !== 'object') throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » a un profil sans base et sans « char ».`);
       if (!Array.isArray(p.profil!.traits)) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » a un profil sans base et sans « traits ».`);
     }
+    // Référence PAR ID jusque dans la spécialisation : une `spec` de Compétence OU de Talent du profil
+    // doit être VALIDE au catalogue global (`specResolves` — pool ou hors pool, cf. #1342 L3). La
+    // sentinelle « (Au choix) » reste admise : elle désigne un choix, pas une spécialisation.
+    const specValide = (
+      kind: { indefini: string; defini: string },
+      find: (id: string) => { specsSource?: SpecsSource; specs?: SpecEntry[] } | undefined,
+      refs: { id: string; spec?: string }[],
+    ): void => {
+      for (const r of refs) {
+        if (typeof r.spec !== 'string' || /au choix/i.test(r.spec)) continue;
+        const def = find(r.id);
+        if (!def) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » référence ${kind.indefini} inconnu(e) « ${r.id} ».`);
+        if (!specResolves(def, r.spec)) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » porte une spécialisation inconnue « ${r.spec} » pour ${kind.defini} « ${r.id} ».`);
+      }
+    };
+    specValide({ indefini: 'une Compétence', defini: 'la Compétence' }, findSkillById, p.profil?.skills ?? []);
+    specValide({ indefini: 'un Talent', defini: 'le Talent' }, findTalentById, p.profil?.talents ?? []);
     presetIds.add(p.id);
   }
 

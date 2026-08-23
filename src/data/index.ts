@@ -835,8 +835,11 @@ export interface CareerLevelData {
 }
 /** Entrée `specs[]` d'une Compétence/Talent — id STABLE (résolu par `specLabel`, cf. `langue`/
  *  `chevaucher`/`discretion`/`art`/talent `resistance`) + libellé d'affichage FR. Un domaine
- *  `specsSource` n'a PAS de `specs[]` (le pool DÉRIVE du registre partagé, cf. `specIdsOf`). */
-export type SpecEntry = { id: string; label: string; source?: SourceRef; alsoIn?: SecondaryRef[] };
+ *  `specsSource` n'a PAS de `specs[]` (le pool DÉRIVE du registre partagé, cf. `specPoolOf`).
+ *  `pool: false` — l'entrée est VALIDE (résolution, `testValue`, bonus de règle) mais n'est pas
+ *  PROPOSÉE d'office par le créateur/l'avancement (`LDB 09 l.40`) ; les écrans de RÉFÉRENCE
+ *  l'impriment (`specCatalogOf`). Absente = dans le pool. VALIDITÉ ⊇ POOL, cf. `specResolves`. */
+export type SpecEntry = { id: string; label: string; source?: SourceRef; alsoIn?: SecondaryRef[]; pool?: false };
 /** id d'une entrée `specs[]`. */
 export function specEntryId(e: SpecEntry): string {
   return e.id;
@@ -885,9 +888,9 @@ export interface SkillData {
   characteristic: import('../engine/types').CharKey;
   type: string;
   /** Spécialisations inline (`SpecEntry[]`) — ABSENT quand `specsSource` est présent (le pool DÉRIVE
-   *  alors du registre partagé, cf. `specIdsOf` : plus de liste maintenue à la main). */
+   *  alors du registre partagé, cf. `specPoolOf` : plus de liste maintenue à la main). */
   specs?: SpecEntry[];
-  /** Source du pool de spéc (via `SPEC_SOURCES`/`specIdsOf`/`specLabel`) : FERMÉE. Si présent, les `spec`
+  /** Source du pool de spéc (via `SPEC_SOURCES`/`specPoolOf`/`specLabel`) : FERMÉE. Si présent, les `spec`
    *  des instances de cette Compétence sont des ids résolus via ce registre partagé — `weaponGroupsMelee`/
    *  `weaponGroupsRanged` (Corps à corps / Projectiles → ids de `weaponGroups.json` filtrés par `combat`)
    *  ou `winds` (Focalisation → Domaines à Vent de `domains.json`, AFFICHE le Vent) — et `specs[]` est
@@ -982,7 +985,7 @@ export interface TalentData {
   /** Catégorie de Taille CONFÉRÉE par le talent (Massif → `grande`, Petit → `petite`, LDB 85 p.342) —
    *  lue par `createHero` (#572), même vocabulaire que la Taille de créature (`SizeCategory`). */
   size?: import('../engine/size').SizeCategory;
-  /** Source du pool de spéc (via `SPEC_SOURCES`/`specIdsOf`/`specLabel`) : `arcaneDomains` (Magie des
+  /** Source du pool de spéc (via `SPEC_SOURCES`/`specPoolOf`/`specLabel`) : `arcaneDomains` (Magie des
    *  Arcanes → Domaines `arcane` de `domains.json`, AFFICHE le Lore), `cultBlessings`/`cultMiracles`/
    *  `cultChaos` (Béni / Invocation / Magie du Chaos → `gods.id` filtrés, AFFICHE le nom du dieu) ou
    *  `seaShanties` (Chanson de marin). Quand présent, `specs[]` est ABSENT (le pool dérive). */
@@ -2842,12 +2845,12 @@ export function findTalent(label: string): TalentData | undefined {
 export function talentIdByLabel(label: string): string {
   return findTalent(label)?.id ?? slugId(label);
 }
-/** Specs valides d'un libellé d'AUTHORING à joker (« Nom (Au choix) ») — résout Compétence OU
- *  Talent par libellé puis délègue à `specIdsOf` (hoisté plus bas dans ce module). `[]` si le nom
+/** Specs PROPOSÉES par un libellé d'AUTHORING à joker (« Nom (Au choix) ») — résout Compétence OU
+ *  Talent par libellé puis délègue à `specPoolOf` (hoisté plus bas dans ce module). `[]` si le nom
  *  ne porte aucune spec ou n'est pas au catalogue. */
 export function wildcardSpecIds(name: string): string[] {
   const def = findSkill(name) ?? findTalent(name);
-  return def ? specIdsOf(def) : [];
+  return def ? specPoolOf(def) : [];
 }
 const TALENT_BY_ID = new Map(talents.map((t) => [t.id, t]));
 /** Résout un Talent par son `id` STABLE (référence structurée — fin du lookup par libellé parsé). */
@@ -3150,11 +3153,29 @@ export const SPEC_SOURCES: Record<SpecsSource, { pool(): string[]; label(id: str
   weaponsMelee:  { pool: () => trappings.filter((t) => t.type === 'melee').map((t) => t.id),  label: (id) => findTrappingById(id)?.label ?? id, resolves: (id) => findTrappingById(id)?.type === 'melee' },
   weaponsRanged: { pool: () => trappings.filter((t) => t.type === 'ranged').map((t) => t.id), label: (id) => findTrappingById(id)?.label ?? id, resolves: (id) => findTrappingById(id)?.type === 'ranged' },
 };
-/** Ids de spéc d'une def (Compétence/Talent) : pool DÉRIVÉ du registre partagé si `specsSource` (SSOT
- *  `SPEC_SOURCES`), sinon les ids de ses `specs[]` inline. SOURCE UNIQUE du pool — consommée par
- *  `wildcardSpecs` (créateur/avancement), `resolveSpecId` (round-trip label→id) et l'affichage Compendium. */
-export function specIdsOf(def: { specsSource?: SpecsSource; specs?: SpecEntry[] }): string[] {
+/** POOL d'une def (Compétence/Talent) — ce qu'un choix joueur PROPOSE d'office (`LDB 09 l.40`) :
+ *  pool DÉRIVÉ du registre partagé si `specsSource` (SSOT `SPEC_SOURCES`), sinon les entrées `specs[]`
+ *  inline SANS `pool: false`. Consommé par `wildcardSpecs` (créateur, avancement, Entraînement).
+ *  Ne JAMAIS l'utiliser pour juger de la VALIDITÉ d'une spec (cf. `specResolves`). */
+export function specPoolOf(def: { specsSource?: SpecsSource; specs?: SpecEntry[] }): string[] {
+  return def.specsSource
+    ? SPEC_SOURCES[def.specsSource].pool()
+    : (def.specs ?? []).filter((e) => e.pool !== false).map(specEntryId);
+}
+/** CATALOGUE ÉNUMÉRABLE d'une def : toutes les entrées `specs[]` (y compris `pool: false`), sinon le
+ *  pool du registre partagé. C'est la liste qu'un écran de RÉFÉRENCE imprime (Codex/éditeur) et la
+ *  base des round-trips libellé→id. `specsSource` résout AU-DELÀ de cet énumérable (registre entier,
+ *  cf. `specResolves`) : ce qui est énumérable ⊆ ce qui est valide. */
+export function specCatalogOf(def: { specsSource?: SpecsSource; specs?: SpecEntry[] }): string[] {
   return def.specsSource ? SPEC_SOURCES[def.specsSource].pool() : (def.specs ?? []).map(specEntryId);
+}
+/** VALIDITÉ d'une spéc pour une def : l'id existe au catalogue inline (pool ou non) OU dans le REGISTRE
+ *  d'une `specsSource` (⊇ son pool joueur — un statbloc RAW porte une spéc réelle non choisissable).
+ *  Porte de la RÉSOLUTION (`resolveSpecId`, `testValue` par id, bonus de règle) et des gardes. */
+export function specResolves(def: { specsSource?: SpecsSource; specs?: SpecEntry[] }, specId: string): boolean {
+  return def.specsSource
+    ? SPEC_SOURCES[def.specsSource].resolves(specId)
+    : (def.specs ?? []).some((e) => specEntryId(e) === specId);
 }
 /** Libellé d'affichage d'une spéc (`Ref.spec`) : si la def désigne une `specsSource`, résout via le
  *  catalogue `SPEC_SOURCES` (registre partagé d'ids : Groupe d'arme → libellé, Vent, Lore, dieu, chanson) ;

@@ -6,7 +6,7 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  * Garde-fou « obtenabilité réelle » (#321 lentille 1, cliquet baseline patron `scripts/guards/lib/`) :
  * fige le compte de Talents/Sorts JAMAIS-obtenables en jeu (aucune carrière/espèce/créature-statblock/
  * Table aléatoire/GameOp `grantTalent`/scène `learnSpell`/Talent de lanceur ne les confère — mécanique
- * dans `scripts/data/lib/obtainabilityGraph.ts`, RAPPORT DATÉ `docs/plans/2026-07-11-chasse-3-synthese.md`).
+ * dans `scripts/data/lib/obtainabilityGraph.ts`).
  * Baseline gelée au recensement (2026-07-11) : 6 Talents / 11 Sorts.
  *
  * Triage RAW #326 (2026-07-11) — DESCEND à 1 Talent / 0 Sort, verdict par entrée :

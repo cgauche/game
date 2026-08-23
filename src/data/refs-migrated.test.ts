@@ -11,7 +11,7 @@ import {
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
   findCreatureById, findVehicleById, findGroupById, findPsychologyById, findTraitById, findCrewTestTypeById, findLightToneById,
   mutationTables,
-  specLabel, refLabel, specEntryId, specEntryLabel, SPEC_SOURCES, type SpecsSource, books,
+  specLabel, refLabel, specEntryId, specEntryLabel, specResolves, SPEC_SOURCES, type SpecsSource, books,
 } from './index';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
@@ -503,9 +503,7 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
 
   const resolves = (skillId: string, spec: string): boolean => {
     const def = findSkillById(skillId);
-    if (!def) return false;
-    if (def.specsSource) return SPEC_SOURCES[def.specsSource].resolves(spec);
-    return (def.specs ?? []).some((e) => specEntryId(e) === spec);
+    return !!def && specResolves(def, spec); // porte UNIQUE de validité (#1342 L3) : pool ou hors pool
   };
 
   const hors: { where: string; key: string; book: string; skillId: string; spec: string }[] = [];

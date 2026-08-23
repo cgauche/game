@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { allAxes, findSkillById, findTalentById, specIdsOf } from './index';
+import { allAxes, findSkillById, findTalentById, specResolves } from './index';
 
 /**
  * Garde d'INTÉGRITÉ de `axes.json` (#409) — patron `book-source-integrity.test.ts` : chaque
  * `skillId`/`talentId` DOIT être un `id` STABLE de `skills.json`/`talents.json`, chaque `spec` DOIT
- * résoudre dans le pool de spéc de sa Compétence/Talent (`specIdsOf`, inline OU `specsSource`). Un id
+ * être VALIDE pour sa Compétence/Talent (`specResolves`, inline OU `specsSource`). Un id
  * qui ne résout plus (renommage/suppression amont) casse le moteur (`axisScore`) en silence sans
  * cette garde.
  */
@@ -16,7 +16,7 @@ describe('#409 — intégrité de axes.json', () => {
           const skill = findSkillById(ref.skillId);
           expect(skill, `skillId « ${ref.skillId} » introuvable dans skills.json`).toBeDefined();
           if (ref.spec && skill) {
-            expect(specIdsOf(skill), `spec « ${ref.spec} » absente du pool de « ${ref.skillId} »`).toContain(ref.spec);
+            expect(specResolves(skill, ref.spec), `spec « ${ref.spec} » ne résout pas pour « ${ref.skillId} »`).toBe(true);
           }
         });
       }
@@ -25,7 +25,7 @@ describe('#409 — intégrité de axes.json', () => {
           const talent = findTalentById(ref.talentId);
           expect(talent, `talentId « ${ref.talentId} » introuvable dans talents.json`).toBeDefined();
           if (ref.spec && talent) {
-            expect(specIdsOf(talent), `spec « ${ref.spec} » absente du pool de « ${ref.talentId} »`).toContain(ref.spec);
+            expect(specResolves(talent, ref.spec), `spec « ${ref.spec} » ne résout pas pour « ${ref.talentId} »`).toBe(true);
           }
         });
       }

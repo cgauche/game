@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:3198` |
-| `spec` | 1 | `src/data/index.ts:3199` |
+| `id` | 3 | `src/data/index.ts:3219` |
+| `spec` | 1 | `src/data/index.ts:3220` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3210` |
+| `id` | 1 | `src/data/index.ts:3231` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3210` |
+| `value` | 2 | `src/data/index.ts:3231` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -75,7 +75,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `round` | 2 | `src/engine/castingNumber.ts:110` |
 | `delta` | 2 | `src/engine/castingNumber.ts:111` |
 | `min` | 2 | `src/engine/castingNumber.ts:112` |
-| `scope` | 1 | `src/ui/compendium/registry.ts:1019` |
+| `scope` | 1 | `src/ui/compendium/registry.ts:1020` |
 | `maison` | **0 — JAMAIS LU** | — |
 | `source` | **0 — JAMAIS LU** | — |
 | `desc` | **0 — JAMAIS LU** | — |
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3256` |
+| `id` | 4 | `src/data/index.ts:3277` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3257` |
-| `qualities` | 2 | `src/data/index.ts:3260` |
-| `qualityChoice` | 2 | `src/data/index.ts:3258` |
-| `text` | 1 | `src/data/index.ts:3251` |
-| `vehicleId` | 2 | `src/data/index.ts:3253` |
+| `count` | 3 | `src/data/index.ts:3278` |
+| `qualities` | 2 | `src/data/index.ts:3281` |
+| `qualityChoice` | 2 | `src/data/index.ts:3279` |
+| `text` | 1 | `src/data/index.ts:3272` |
+| `vehicleId` | 2 | `src/data/index.ts:3274` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3255` |
-| `choice` | 3 | `src/data/index.ts:3248` |
-| `wildcard` | 1 | `src/data/index.ts:3249` |
+| `creatureId` | 2 | `src/data/index.ts:3276` |
+| `choice` | 3 | `src/data/index.ts:3269` |
+| `wildcard` | 1 | `src/data/index.ts:3270` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:3230` |
-| `wildcard` | 5 | `src/data/index.ts:3232` |
-| `specOptions` | 3 | `src/data/index.ts:3231` |
-| `choice` | 4 | `src/data/index.ts:3234` |
-| `random` | 2 | `src/data/index.ts:3235` |
+| `ref` | 4 | `src/data/index.ts:3251` |
+| `wildcard` | 5 | `src/data/index.ts:3253` |
+| `specOptions` | 3 | `src/data/index.ts:3252` |
+| `choice` | 4 | `src/data/index.ts:3255` |
+| `random` | 2 | `src/data/index.ts:3256` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -162,14 +162,14 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:671` |
-| `max` | 1 | `src/ui/compendium/registry.ts:671` |
+| `min` | 1 | `src/ui/compendium/registry.ts:672` |
+| `max` | 1 | `src/ui/compendium/registry.ts:672` |
 | `id` | 2 | `src/engine/mountTravel.ts:214` |
 | `label` | 2 | `src/engine/mountTravel.ts:198` |
-| `text` | 1 | `src/ui/compendium/registry.ts:672` |
+| `text` | 1 | `src/ui/compendium/registry.ts:673` |
 | `stageOutcome` | **0 — JAMAIS LU** | — |
-| `vehicleWounds` | 1 | `src/ui/compendium/registry.ts:673` |
-| `occupantOps` | 1 | `src/ui/compendium/registry.ts:674` |
+| `vehicleWounds` | 1 | `src/ui/compendium/registry.ts:674` |
+| `occupantOps` | 1 | `src/ui/compendium/registry.ts:675` |
 | `mount` | 1 | `src/engine/mountTravel.ts:199` |
 
 ### `ShipCrewTest` (src/data/shipCriticals.ts)
@@ -185,15 +185,15 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:685` |
-| `max` | 1 | `src/ui/compendium/registry.ts:685` |
-| `id` | 1 | `src/ui/compendium/registry.ts:684` |
-| `label` | 1 | `src/ui/compendium/registry.ts:684` |
-| `ops` | 1 | `src/ui/compendium/registry.ts:692` |
-| `shrapnel` | 1 | `src/ui/compendium/registry.ts:688` |
-| `hullCrits` | 1 | `src/ui/compendium/registry.ts:689` |
-| `crewTest` | 1 | `src/ui/compendium/registry.ts:682` |
-| `note` | 1 | `src/ui/compendium/registry.ts:686` |
+| `min` | 1 | `src/ui/compendium/registry.ts:686` |
+| `max` | 1 | `src/ui/compendium/registry.ts:686` |
+| `id` | 1 | `src/ui/compendium/registry.ts:685` |
+| `label` | 1 | `src/ui/compendium/registry.ts:685` |
+| `ops` | 1 | `src/ui/compendium/registry.ts:693` |
+| `shrapnel` | 1 | `src/ui/compendium/registry.ts:689` |
+| `hullCrits` | 1 | `src/ui/compendium/registry.ts:690` |
+| `crewTest` | 1 | `src/ui/compendium/registry.ts:683` |
+| `note` | 1 | `src/ui/compendium/registry.ts:687` |
 
 ### `CritEscalation` (src/data/criticals.ts)
 

@@ -103,4 +103,32 @@ describe('paquet de campagne schema 3 — bloc narratif', () => {
   it('(i) LÈVE si meta est malformé (id vide)', () => {
     expect(() => parseProject(doc(emptyNarratif(), { id: '', label: 'X', version: 1 }))).toThrow(/meta/i);
   });
+
+  // ── #1342 L3 : la référence PAR ID va jusqu'à la spécialisation d'une Compétence de profil.
+  const presetSkill = (spec: string) => {
+    const n = validNarratif();
+    n.presetsPnj.push({ id: 'pnj-savant', base: GLOBAL_CREATURE, profil: { skills: [{ id: 'savoir', spec, value: 40 }] } as NarratifBlock['presetsPnj'][number]['profil'] });
+    return n;
+  };
+
+  it('(j) preset PNJ : une spec VALIDE passe, y compris HORS pool (statbloc-only, `pool: false`)', () => {
+    expect(parseProject(doc(presetSkill('local'))).narratif.presetsPnj.length).toBe(2);
+    expect(parseProject(doc(presetSkill('reikland'))).narratif.presetsPnj.length).toBe(2);
+  });
+
+  it('(k) preset PNJ : LÈVE sur une spec qui ne résout pas ; la sentinelle « Au choix » reste admise', () => {
+    expect(() => parseProject(doc(presetSkill('Rivières')))).toThrow(/spécialisation inconnue « Rivières »/);
+    expect(parseProject(doc(presetSkill('Au choix'))).narratif.presetsPnj.length).toBe(2);
+  });
+
+  const presetTalent = (spec: string) => {
+    const n = validNarratif();
+    n.presetsPnj.push({ id: 'pnj-mondain', base: GLOBAL_CREATURE, profil: { talents: [{ id: 'savoir-vivre', spec }] } as NarratifBlock['presetsPnj'][number]['profil'] });
+    return n;
+  };
+
+  it('(l) preset PNJ : la spec d’un TALENT est validée au même titre', () => {
+    expect(() => parseProject(doc(presetTalent('PAS-UN-ID')))).toThrow(/spécialisation inconnue « PAS-UN-ID » pour le Talent/);
+    expect(parseProject(doc(presetTalent('Au choix'))).narratif.presetsPnj.length).toBe(2);
+  });
 });

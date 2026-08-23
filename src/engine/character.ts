@@ -37,7 +37,9 @@ import {
   talentIdByLabel,
   talentConcrete,
   advancementLabel,
-  specIdsOf,
+  specPoolOf,
+  specCatalogOf,
+  specResolves,
   specLabel,
   refConcrete,
   talents as talentTable,
@@ -62,14 +64,15 @@ export function skillCharacteristicById(id: string): CharKey {
  *  dès qu'une entrée de carrière/espèce FIXE (non « Au choix ») traverse ce round-trip. Compare via
  *  `specLabel` (résolveur UNIQUE, gère `specsSource` — `specEntryLabel` seul ne suffit PAS pour ces
  *  domaines : l'entrée `specs[]` y est un id nu, PAS le libellé d'affichage réel, cf. bug « Corps à
- *  corps (Base) » stocké « Base » au lieu de « base »). Une valeur DÉJÀ un id (résolution par choix
- *  via `wildcardSpecs`) matche direct ; une spec libre (domaine ouvert, hors catalogue) ne matche
- *  rien → renvoyée verbatim (inchangé). */
+ *  corps (Base) » stocké « Base » au lieu de « base »). Une valeur DÉJÀ un id matche direct par la
+ *  porte de VALIDITÉ (`specResolves` — y compris une entrée hors pool, `SpecEntry.pool: false`) ; une
+ *  spec libre (domaine ouvert, hors catalogue) ne matche rien → renvoyée verbatim (inchangé). */
 function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: string): string {
   const def = category === 'skills' ? findSkillById(defId) : findTalentById(defId);
   if (!def) return raw;
-  for (const id of specIdsOf(def)) {
-    if (id === raw || specLabel(category, defId, id) === raw) return id;
+  if (specResolves(def, raw)) return raw;
+  for (const id of specCatalogOf(def)) {
+    if (specLabel(category, defId, id) === raw) return id;
   }
   return raw;
 }
@@ -136,7 +139,7 @@ export function rollRandomTalent(
     const r = roll(1, 100, rng);
     const entry = table.find((t) => r <= (t.rand as number));
     if (!entry) continue;
-    const specs = specIdsOf(entry);
+    const specs = specPoolOf(entry); // tirage JOUEUR : ce que le Talent PROPOSE
     if (specs.length) {
       const free = specs.filter((s) => !owned.has(refKey(entry.id, s)));
       if (!free.length) continue; // toutes les specs possédées → relance

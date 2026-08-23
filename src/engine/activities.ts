@@ -25,7 +25,7 @@ import type { ModLine } from './combat';
 import { resolveSkillBest, bestSkilledOption, testValue, type SkillRef, type TestSpec } from './skills';
 import { DIFFICULTY_MODIFIERS } from './types';
 import { easeDifficulty } from './tests';
-import { trappings, talents, levelsForCareer, skills, specIdsOf, refLabel, findCareerById, type TrappingData } from '../data';
+import { trappings, talents, levelsForCareer, skills, specPoolOf, specCatalogOf, refLabel, findCareerById, type TrappingData } from '../data';
 import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached, skillSlots, availableChars } from './careerSlots';
 import { talentCost, advanceCost, inCareerChar } from './advancement';
 import { careerSkillAdditions } from './talentEffects';
@@ -752,7 +752,7 @@ export function entrainementOptions(hero: Combatant): EntrainementOption[] {
 
   const skillOptions: EntrainementOption[] = [];
   for (const s of skills) {
-    const specs = specIdsOf(s);
+    const specs = specPoolOf(s); // options OFFERTES au joueur (Entraînement)
     for (const spec of specs.length ? specs : [undefined]) {
       if (inCareerStatus(sSlots, designations, s.id, spec) != null) continue; // de carrière → Avancement normal
       const addedExact = additions.some((a) => a.id === s.id && (!a.spec || /au choix/i.test(a.spec) || (a.spec ?? '') === (spec ?? '')));
@@ -869,7 +869,7 @@ export interface LearnOption {
 /** Talents apprenables par Apprentissage particulier : « apprendre un Talent en dehors de
  *  votre Carrière » (ch.23 l.59) → exclut les talents offerts par la Carrière courante
  *  (jusqu'au Niveau atteint — eux s'achètent par l'Avancement), ceux au Maxi (LDB 10), et ceux
- *  à spécialisation (`specIdsOf(t).length > 0`) : le catalogue n'a aucun sélecteur de spec
+ *  à spécialisation (`specCatalogOf(t).length > 0`) : le catalogue n'a aucun sélecteur de spec
  *  (`LearnOption` n'en porte pas), l'achat via cette Activité ne peut donc pas produire une
  *  identité `(talentId, spec)` cohérente — le gate `arcaneDomainGate` (`careerSlots.ts`) et le
  *  Maxi par spécialisation resteraient contournables sinon. */
@@ -879,7 +879,7 @@ export function learnableTalents(hero: Combatant): LearnOption[] {
   const desig = designationsFor(hero, hero.career ?? '');
   return talents
     .filter((t) => {
-      if (specIdsOf(t).length > 0) return false; // pas de sélecteur de spec dans ce catalogue
+      if (specCatalogOf(t).length > 0) return false; // pas de sélecteur de spec dans ce catalogue
       if (inCareerStatus(slots, desig, t.id) != null) return false; // de carrière → Avancement
       if (talentMaxReached(hero, t.id)) return false;
       return true;

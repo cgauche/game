@@ -16,7 +16,7 @@ import {
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
-  isNamed, specIdsOf, specLabel,
+  isNamed, specCatalogOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
   conditionLabel, traitProjectingManeuver,
@@ -203,10 +203,11 @@ const join = (...parts: (string | null | undefined)[]): string | undefined => {
   return s || undefined;
 };
 
-/** Fait « Spécialisations » d'une Compétence/Talent : pool DÉRIVÉ (`specIdsOf` — registre partagé si
- *  `specsSource`, sinon `specs[]`) rendu en libellés FR via `specLabel`. Null si le domaine n'a aucune spec. */
+/** Fait « Spécialisations » d'une Compétence/Talent : catalogue ÉNUMÉRABLE (`specCatalogOf` — registre
+ *  partagé si `specsSource`, sinon TOUTES les `specs[]`, hors-pool comprises : le Codex est un écran de
+ *  RÉFÉRENCE) rendu en libellés FR via `specLabel`. Null si le domaine n'a aucune spec. */
 const specsFact = (cat: 'skills' | 'talents', def: { id: string; specsSource?: import('../../data').SpecsSource; specs?: import('../../data').SpecEntry[] }): string | null => {
-  const ids = specIdsOf(def);
+  const ids = specCatalogOf(def);
   return ids.length ? ids.map((id) => specLabel(cat, def.id, id)).join(', ') : null;
 };
 

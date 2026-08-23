@@ -3,8 +3,8 @@
  * chaque Talent (talents.json) et chaque Sort (spells.json) — chemins RÉELS de carrière/niveau,
  * espèce, créature-statblock, Table des Talents aléatoires (LDB), Table d'effets (`tables.json`),
  * GameOp `grantTalent` (mutations/étoiles/possessions/sorts/scènes), Effet de scène `learnSpell`, ou
- * achat PX légal (Talent de lanceur + Domaine/Culte atteignable, cf. `engine/grimoire.ts`). Réutilise `specIdsOf`
- * (src/data/index.ts, SOURCE UNIQUE de résolution de spéc) plutôt que ré-implémenter la mécanique
+ * achat PX légal (Talent de lanceur + Domaine/Culte atteignable, cf. `engine/grimoire.ts`). Réutilise `specPoolOf`
+ * (src/data/index.ts, SOURCE UNIQUE du pool de spéc) plutôt que ré-implémenter la mécanique
  * des Talents de lanceur. Module PUR — consommé par le CLI (`obtainability-graph.mts`) ET par la
  * garde (`src/data/obtainability-guard.test.ts`).
  *
@@ -17,7 +17,7 @@ import { readFileSync, globSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   talents, spells, careerLevels, species, creatures, mutations, stars, trappings, gods, effectTables,
-  findTalentById, specIdsOf,
+  findTalentById, specPoolOf,
   type AdvancementRef, type TalentData,
 } from '../../../src/data/index';
 import { META_CATALOG_ENTRIES } from '../../guards/lib/entityConsumers.mjs';
@@ -113,7 +113,7 @@ export function computeObtainability(root: string): ObtainabilityResult {
     }
     if (anyUnspecialized) {
       const def = findTalentById(talentId);
-      if (def) for (const s of specIdsOf(def)) specs.add(s);
+      if (def) for (const s of specPoolOf(def)) specs.add(s); // spéc ATTEIGNABLE par achat PX = ce que le pool propose
     }
     return { specs, anyUnspecialized, obtainable: true };
   }

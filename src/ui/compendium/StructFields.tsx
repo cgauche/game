@@ -22,6 +22,7 @@ import { parseTraitInstance, formatTrait, optionalLabel } from '../../engine/tra
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
 import { NumberField } from '../NumberField';
+import { OptionChooser } from '../OptionChooser';
 import type { OptionalRule, RuleValue } from '../../engine/policy';
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
@@ -451,15 +452,30 @@ export function StarSubField({ value, onChange }: { value: [number, number] | un
 export function SpecsField({ value, onChange }: { value: SpecEntry[] | undefined; onChange: (v: SpecEntry[]) => void }) {
   const list = value ?? [];
   const set = (next: SpecEntry[]) => onChange(next);
+  // Renommer = changer le LIBELLÉ et l'id qui en dérive ; les autres champs de l'entrée
+  // (`source`, `alsoIn`, `pool`) sont PORTÉS, jamais reconstruits.
   const setLabel = (i: number, label: string) =>
-    set(list.map((s, j) => (j === i ? { id: slugId(label), label } : s)));
+    set(list.map((s, j) => (j === i ? { ...s, id: slugId(label), label } : s)));
+  const setPool = (i: number, propose: boolean) =>
+    set(list.map((s, j) => {
+      if (j !== i) return s;
+      const { pool: _pool, ...rest } = s;
+      return propose ? rest : { ...rest, pool: false as const };
+    }));
   return (
     <div className="ed-field">
-      <span>spécialisations (id auto-dérivé du libellé)</span>
+      <span>spécialisations (id auto-dérivé du libellé ; « proposée d’office » = offerte au créateur/à l’avancement, `LDB 09 l.40`)</span>
       {list.map((s, i) => (
         <div key={i} className="de-reflrow">
           <input value={specEntryLabel(s)} onChange={(e) => setLabel(i, e.target.value)} />
           <em className="de-hint">{specEntryId(s)}</em>
+          <OptionChooser
+            layout="seg"
+            options={[
+              { key: `pool-${i}-oui`, label: 'proposée d’office', selected: s.pool !== false, onSelect: () => setPool(i, true) },
+              { key: `pool-${i}-non`, label: 'hors pool', selected: s.pool === false, onSelect: () => setPool(i, false) },
+            ]}
+          />
           <button className="btn small danger" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}

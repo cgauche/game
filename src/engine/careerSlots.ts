@@ -107,11 +107,12 @@ export function parseEntry(raw: string): SlotOption[] {
 
 /**
  * Specs valides d'un libellé à joker (« (Au choix) ») — SOURCE UNIQUE, partagée par le CRÉATEUR (dont
- * l'étape de dépense de PX) ET l'AVANCEMENT. Le pool DÉRIVE de `specIdsOf` (SSOT `SPEC_SOURCES`) : un
+ * l'étape de dépense de PX) ET l'AVANCEMENT. Le pool DÉRIVE de `specPoolOf` (SSOT `SPEC_SOURCES`) : un
  * domaine `specsSource` (Corps à corps/Projectiles → Groupes d'arme filtrés par `combat` ; Focalisation →
  * Vents ; Magie des Arcanes → Domaines arcanes ; Béni/Invocation/Magie du Chaos → cultes filtrés par
  * Bénédictions/Miracles/Sorts du Chaos) énumère son registre ; sinon les ids des `specs[]` inline. Les
  * valeurs sont des IDS (jamais le libellé FR d'affichage) — c'est la `spec` PERSISTÉE de l'instance créée.
+ * Une entrée `SpecEntry.pool: false` reste VALIDE mais n'est pas proposée ici (`LDB 09 l.40`).
  * `[]` si le nom ne porte aucune spec.
  */
 export function wildcardSpecs(name: string): string[] {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { findSpeciesById, talentConcrete, talents, specIdsOf, specLabel } from '../data';
+import { findSpeciesById, talentConcrete, talents, specPoolOf, specLabel } from '../data';
 import {
   speciesSkillAdvanceMap,
   rollRandomTalent,
@@ -59,8 +59,8 @@ describe('rollRandomTalent — Tableau des Talents aléatoires (table d100)', ()
   // le MÊME couple (talent, spec) écrit sous ses deux formes (id de spec / libellé d'affichage) donne UNE
   // clé ; deux specs distinctes d'un talent groupé restent deux entités (LDB 10 l.13-20).
   it('identité de spécialisation : même (talent, spec) sous ses deux écritures = une seule clé', () => {
-    const grouped = talents.find((t) => t.rand != null && specIdsOf(t).length > 1)!;
-    const [specA, specB] = specIdsOf(grouped);
+    const grouped = talents.find((t) => t.rand != null && specPoolOf(t).length > 1)!;
+    const [specA, specB] = specPoolOf(grouped);
     const asId = talentRefKeyOf(`${grouped.label} (${specA})`);
     const asLabel = talentRefKeyOf(`${grouped.label} (${specLabel('talents', grouped.id, specA)})`);
     expect(asId).toBe(`${grouped.id}|${specA}`);
@@ -69,8 +69,8 @@ describe('rollRandomTalent — Tableau des Talents aléatoires (table d100)', ()
   });
 
   it('une spec possédée ne bloque pas les AUTRES specs du même talent groupé', () => {
-    const grouped = talents.find((t) => t.rand != null && specIdsOf(t).length > 1)!;
-    const [specA] = specIdsOf(grouped);
+    const grouped = talents.find((t) => t.rand != null && specPoolOf(t).length > 1)!;
+    const [specA] = specPoolOf(grouped);
     const out = resolveSpeciesTalents(sp(), {
       rng: makeRNG(7),
       owned: [`${grouped.label} (${specLabel('talents', grouped.id, specA)})`],
