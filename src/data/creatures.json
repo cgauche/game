@@ -18697,8 +18697,7 @@
       },
       {
         "id": "corps-a-corps",
-        "value": 30,
-        "spec": "sans spécialisation"
+        "value": 30
       },
       {
         "id": "orientation",
@@ -18904,8 +18903,7 @@
       },
       {
         "id": "corps-a-corps",
-        "value": 30,
-        "spec": "sans spécialisation"
+        "value": 30
       },
       {
         "id": "orientation",
@@ -26354,8 +26352,7 @@
       },
       {
         "id": "projectiles",
-        "value": 30,
-        "spec": "Toile"
+        "value": 30
       },
       {
         "id": "athletisme",
@@ -26506,8 +26503,7 @@
       },
       {
         "id": "projectiles",
-        "value": 45,
-        "spec": "Toile"
+        "value": 45
       },
       {
         "id": "athletisme",
@@ -26666,8 +26662,7 @@
       },
       {
         "id": "projectiles",
-        "value": 70,
-        "spec": "Toile"
+        "value": 70
       },
       {
         "id": "athletisme",
@@ -26843,8 +26838,7 @@
       },
       {
         "id": "projectiles",
-        "value": 90,
-        "spec": "Toile"
+        "value": 90
       }
     ],
     "talents": [
@@ -33167,8 +33161,7 @@
       },
       {
         "id": "projectiles",
-        "value": 75,
-        "spec": "Souffle"
+        "value": 75
       }
     ],
     "talents": [],
@@ -33280,8 +33273,7 @@
       },
       {
         "id": "projectiles",
-        "value": 85,
-        "spec": "Souffle"
+        "value": 85
       }
     ],
     "talents": [],
@@ -49612,8 +49604,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 55,
-        "spec": "Bois"
+        "value": 55
       }
     ],
     "talents": [],
@@ -49703,8 +49694,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 75,
-        "spec": "Bois"
+        "value": 75
       }
     ],
     "talents": [
@@ -50184,8 +50174,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 75,
-        "spec": "Crocs"
+        "value": 75
       }
     ],
     "talents": [
@@ -50562,8 +50551,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 70,
-        "spec": "Cornes nasales"
+        "value": 70
       }
     ],
     "talents": [
@@ -50899,8 +50887,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 75,
-        "spec": "Griffes semblables à des racines"
+        "value": 75
       },
       {
         "id": "discretion",
@@ -51006,8 +50993,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 110,
-        "spec": "Griffes recouvertes de gromril"
+        "value": 110
       },
       {
         "id": "evaluation",
@@ -52573,8 +52559,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 75,
-        "spec": "Dents"
+        "value": 75
       }
     ],
     "talents": [
@@ -53432,8 +53417,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 95,
-        "spec": "Griffes incurvées"
+        "value": 95
       },
       {
         "id": "pistage",
@@ -54525,8 +54509,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 65,
-        "spec": "Griffes"
+        "value": 65
       },
       {
         "id": "discretion",
@@ -54916,8 +54899,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 80,
-        "spec": "Pinces"
+        "value": 80
       }
     ],
     "talents": [],
@@ -55259,8 +55241,7 @@
     "skills": [
       {
         "id": "corps-a-corps",
-        "value": 73,
-        "spec": "Griffes recourbées"
+        "value": 73
       },
       {
         "id": "discretion",

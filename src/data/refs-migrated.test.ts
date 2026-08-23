@@ -410,8 +410,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   // passive/test.matches d'un talent vers un AUTRE domaine, ex. Oreille absolue → Divertissement) et les
   // pré-tirés RUNTIME (`makePregens()`, via import). AUCUNE exception silencieuse :
   //  - domaine FERMÉ (`specsOpen` absent/falsy) : toute instance DOIT résoudre à un id connu (ou la
-  //    sentinelle « (Au choix) », ou — SEUL report explicite conservé — un descripteur d'attaque NATURELLE
-  //    du bestiaire pour corps-a-corps/projectiles, cf. whitelist historique) ; sinon le test ÉCHOUE.
+  //    sentinelle « (Au choix) ») ; sinon le test ÉCHOUE. AUCUNE exception nominative.
   //  - domaine OUVERT (`specsOpen:true`) : une instance DOIT être soit un id connu, soit un texte
   //    GENUINEMENT hors catalogue (texte libre toléré) — mais SI son normalisé correspond à un libellé
   //    FR CONNU de sa `specs[]`, c'est une RÉGRESSION de migration (devrait être l'id) → le test ÉCHOUE.
@@ -434,18 +433,8 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       else CLOSED.set(def.id, ids);
     }
 
-    // Descripteurs d'attaque NATURELLE du bestiaire (corps-a-corps/projectiles) — PAS des Spés de Groupe
-    // (`grantNaturalWeapon` ne pose jamais de `subType`/`weaponGroup`, donc jamais comparés à rien).
-    // Liste EXHAUSTIVE (prouvée par énumération de creatures.json) — cf. historique Phase 3 sous-commit 1.
-    const CREATURE_NATURAL_SPEC_WHITELIST = new Set([
-      'Bois', 'Cornes nasales', 'Crocs', 'Dents', 'Griffes', 'Griffes incurvées', 'Griffes recourbées',
-      'Griffes recouvertes de gromril', 'Griffes semblables à des racines', 'Pinces', 'Souffle', 'Toile',
-      'sans spécialisation',
-    ]);
-    const NATURAL_WEAPON_SKILLS = new Set(['corps-a-corps', 'projectiles']);
-
     const unresolved: string[] = [];
-    function checkSpec(defId: string, spec: unknown, where: string, inCreatures: boolean): void {
+    function checkSpec(defId: string, spec: unknown, where: string): void {
       if (typeof spec !== 'string' || isSentinel(spec)) return;
       const source = SOURCE_OF.get(defId);
       if (source) {
@@ -453,9 +442,6 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
         // pool (le Triton FOCALISE « magie-des-mers-de-triton », un domaine RÉEL non choisissable par un PC).
         // Data-driven, plus aucune exception au cas par cas.
         if (SPEC_SOURCES[source].resolves(spec)) return;
-        // Descripteurs d'attaque naturelle (Crocs/Griffes…) posés en `spec` de corps-a-corps/projectiles : pas
-        // des Groupes d'arme (`grantNaturalWeapon` ne les compare jamais) → tolérés.
-        if (inCreatures && NATURAL_WEAPON_SKILLS.has(defId) && CREATURE_NATURAL_SPEC_WHITELIST.has(spec)) return;
         unresolved.push(`${where} : ${defId} → ${JSON.stringify(spec)} (specsSource ${source}, id inconnu du registre)`);
         return;
       }
@@ -473,34 +459,66 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
         // sinon texte libre GENUINEMENT hors catalogue — toléré (domaine OUVERT).
       }
     }
-    function walk(node: unknown, where: string, inCreatures: boolean): void {
-      if (Array.isArray(node)) { node.forEach((x) => walk(x, where, inCreatures)); return; }
+    function walk(node: unknown, where: string): void {
+      if (Array.isArray(node)) { node.forEach((x) => walk(x, where)); return; }
       if (!isObj(node)) return;
       const idLike = (node.id ?? node.skillId ?? node.talentId ?? node.skill) as string | undefined;
       if (typeof idLike === 'string') {
-        if (isObj(node.spec)) { for (const [k, v] of Object.entries(node.spec)) checkSpec(k, v, `${where}.spec{${k}}`, inCreatures); }
-        else checkSpec(idLike, node.spec, where, inCreatures);
+        if (isObj(node.spec)) { for (const [k, v] of Object.entries(node.spec)) checkSpec(k, v, `${where}.spec{${k}}`); }
+        else checkSpec(idLike, node.spec, where);
       }
       const wcId = (node.wildcard as { id?: string } | undefined)?.id;
-      if (wcId && Array.isArray(node.specOptions)) for (const so of node.specOptions as unknown[]) checkSpec(wcId, so, `${where}.wildcard{${wcId}}.specOptions`, inCreatures);
-      for (const v of Object.values(node)) walk(v, where, inCreatures);
+      if (wcId && Array.isArray(node.specOptions)) for (const so of node.specOptions as unknown[]) checkSpec(wcId, so, `${where}.wildcard{${wcId}}.specOptions`);
+      for (const v of Object.values(node)) walk(v, where);
     }
 
     it('creatures/careerLevels/species/stars/traits/trappings/talents/skills/crewRoles/tavernGames/seaWeather/pregens(runtime) : toute spec resout (fermé) ou id/texte-libre valide (ouvert)', () => {
-      walk(creatures, 'creatures', true);
-      walk(careerLevels, 'careerLevels', false);
-      walk(species, 'species', false);
-      walk(stars, 'stars', false);
-      walk(traits, 'traits', false);
-      walk(trappings, 'trappings', false);
-      walk(talents, 'talents(self-réf)', false); // ex. Oreille absolue.passive → Divertissement (Chant)
-      walk(skills, 'skills(self-réf)', false);
-      walk(crewRoles, 'crewRoles', false);
-      walk(tavernGamesJson, 'tavernGames', false);
-      walk(seaWeatherJson, 'seaWeather', false);
-      walk(makePregens(), 'pregens(runtime — makePregens)', false); // composition réelle career/species → Combatant
+      walk(creatures, 'creatures');
+      walk(careerLevels, 'careerLevels');
+      walk(species, 'species');
+      walk(stars, 'stars');
+      walk(traits, 'traits');
+      walk(trappings, 'trappings');
+      walk(talents, 'talents(self-réf)'); // ex. Oreille absolue.passive → Divertissement (Chant)
+      walk(skills, 'skills(self-réf)');
+      walk(crewRoles, 'crewRoles');
+      walk(tavernGamesJson, 'tavernGames');
+      walk(seaWeatherJson, 'seaWeather');
+      walk(makePregens(), 'pregens(runtime — makePregens)'); // composition réelle career/species → Combatant
       expect(unresolved, unresolved.join('\n')).toEqual([]);
     });
+  });
+});
+
+// ── CONTRAT POSITIF — Corps à corps / Projectiles sont des Compétences GROUPÉES (LDB 62 l.138) : la
+// seule `spec` admissible est un id de `weaponGroups.json`. L'armement naturel d'une créature est porté
+// par son TRAIT (LDB 85 l.33), pas par un descripteur posé en `spec`. Contrat SANS liste d'exception :
+// une nouvelle entrée de bestiaire qui réintroduirait « Griffes » y échoue.
+describe('spec de Compétence GROUPÉE — corps-a-corps/projectiles ne portent QUE des Groupes d’armes', () => {
+  const GROUPED_COMBAT_SKILLS = new Set(['corps-a-corps', 'projectiles']);
+
+  function collect(node: unknown, where: string, arrKey: string | null, out: { where: string; skillId: string; spec: string }[], seen: { n: number }): void {
+    if (Array.isArray(node)) { node.forEach((x) => collect(x, where, arrKey, out, seen)); return; }
+    if (!isObj(node)) return;
+    if (arrKey === 'skills' && typeof node.id === 'string' && GROUPED_COMBAT_SKILLS.has(node.id)) {
+      seen.n++;
+      if (typeof node.spec === 'string') out.push({ where, skillId: node.id, spec: node.spec });
+    }
+    for (const [k, v] of Object.entries(node)) collect(v, where, Array.isArray(v) ? k : (k === 'ref' ? arrKey : null), out, seen);
+  }
+
+  it('creatures/careerLevels/species : toute spec de corps-a-corps/projectiles résout dans weaponGroups', () => {
+    const specs: { where: string; skillId: string; spec: string }[] = [];
+    const seen = { n: 0 };
+    collect(creatures, 'creatures', null, specs, seen);
+    collect(careerLevels, 'careerLevels', null, specs, seen);
+    collect(species, 'species', null, specs, seen);
+    // NON-VACUITÉ : sans lignes scannées, le contrat serait vert à vide.
+    expect(seen.n).toBeGreaterThan(0);
+    expect(weaponGroups.length).toBeGreaterThan(0);
+    const hors = specs.filter((s) => !findWeaponGroupById(s.spec))
+      .map((s) => `${s.where} : ${s.skillId} → ${JSON.stringify(s.spec)}`);
+    expect(hors, hors.join('\n')).toEqual([]);
   });
 });
 
