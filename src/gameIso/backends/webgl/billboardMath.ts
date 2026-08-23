@@ -32,6 +32,10 @@ export const JEU_ENT_H_M = 2.3;
  *  `JEU_ENT_H_M` — toute autre famille (props…) s'y met à l'échelle, sans second nombre posé. */
 export const JEU_SCALE = JEU_ENT_H_M / ENT_H_M;
 
+/** Convention RENDUE par le monde volumique (#1160) — la taille des corps y est celle du JEU.
+ *  Elle appartient à la mathématique des billboards, pas à l'écran qui les monte. */
+export const CONVENTION = 'jeu' as const;
+
 /**
  * Hauteur MONDE (m) d'un billboard selon la convention rendue.
  * - `jeu` : `JEU_ENT_H_M` pour un personnage, métrique × `JEU_SCALE` pour le reste.
@@ -133,6 +137,16 @@ export interface QuadSubject {
 export function subjectQuad(convention: BillboardConvention, sub: QuadSubject): BillboardQuad {
   const heightM = (billboardHeightM(convention, sub.kind) * sub.scaleK * sub.box.h) / BB_H;
   return anchorAndSize(heightM, sub.box.w / sub.box.h);
+}
+
+/**
+ * Unités de la BOÎTE de corps par MÈTRE, pour un sujet rendu — la réciproque exacte de l'échelle
+ * art→monde de `subjectQuad` (`heightM / box.h` mètres par unité). C'est la conversion qui permet à
+ * une hauteur du MONDE (la hauteur d'assise d'un siège) d'entrer dans le repère du RIG, où vit la
+ * `Pose`. Un corps deux fois plus grand voit le même tabouret deux fois plus bas : `scaleK` y entre.
+ */
+export function boxUnitsPerM(kind: BillboardKind, scaleK: number): number {
+  return BB_H / (billboardHeightM(CONVENTION, kind) * scaleK);
 }
 
 // ————————————————————————————————————————————————————————————————

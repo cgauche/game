@@ -6,6 +6,7 @@
  * vers l'avant à l'attaque, carapace retournée à la mort. Réutilise la machinerie (FK générique,
  * palette tokenisée, rendu) — comme composeSpider, dont c'est le pendant à pinces.
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -161,7 +162,7 @@ export const CRAB_DEATH: Record<string, number> = { corps: 176 };
 export function resolveCrabFromProps(
   p: CrabProps,
   view: View = 'front',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = buildSkeleton();
@@ -180,7 +181,7 @@ export const CRAB_DEFAULT: CrabProps = {
   stored: { corps: '#9a4a36', corpsO: '#5a261a', corpsH: '#d08660', cheveux: '#5a261a', cheveuxO: '#34140d', cuir: '#caa890' },
 };
 
-export function resolveCrab(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveCrab(species: string, view: View = 'front', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveCrabFromProps(CRAB_SPECIES[species] ?? CRAB_DEFAULT, view, pose, colors);
 }
 

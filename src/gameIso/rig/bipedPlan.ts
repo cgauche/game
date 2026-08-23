@@ -3,6 +3,7 @@
  * Le rendu des héros/PNJ humanoïdes continue via AnimatedRigToken ; ce plan expose le
  * bipède au registre de gabarits (parité d'interface avec quadruped/winged).
  */
+import type { BonePose } from './poses';
 import type { BodyPlan, ResolveOpts } from './bodyPlan';
 import type { View } from './facing';
 import type { Appearance, RigSpeciesId } from './appearance';
@@ -12,7 +13,7 @@ import { resolveRig, type ResolvedBone } from './composeRig';
 const DEFAULT_APPEARANCE: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 1 };
 const EMPTY_EQUIP: EquipCtx = { weapons: [], armour: [] };
 
-function resolveBiped(species: string, view: View, pose: Record<string, number>, opts?: ResolveOpts): ResolvedBone[] {
+function resolveBiped(species: string, view: View, pose: BonePose, opts?: ResolveOpts): ResolvedBone[] {
   const appearance: Appearance = opts?.appearance ?? { ...DEFAULT_APPEARANCE, species: species as RigSpeciesId, colors: opts?.colors };
   const equip: EquipCtx = opts?.equip ?? EMPTY_EQUIP;
   return resolveRig(appearance, equip, pose, opts?.tenue, view);

@@ -9,6 +9,7 @@
  * du rig vivent donc ici — un corps au sol ne se redresse pas selon le renderer qui le dessine.
  */
 import type { Combatant } from '../engine/types';
+import { lerpPose, type BonePose } from './rig/poses';
 import { hasCondition, isOutOfAction } from '../engine/conditions';
 
 export type GroundState = 'corpse' | 'prone' | null;
@@ -20,8 +21,8 @@ export function groundStateOf(c: Combatant): GroundState {
   return null;
 }
 
-/** Pose d'os (degrés par os) — la forme que `resolveRig` et `BodyPlan.resolve` consomment. */
-export type Pose = Record<string, number>;
+/** Pose d'os keyée par gabarit — la forme que `resolveRig` et `BodyPlan.resolve` consomment. */
+export type Pose = BonePose;
 
 /** Pose de CADAVRE d'un rig bipède (sprawl doux : tête qui roule, bras/jambes écartés). Override DUR
  *  (indépendant des clips) pour qu'aucun événement (touché, idle) ne « relève » le mort. */
@@ -42,13 +43,6 @@ export function rigGroundTiltDeg(ground: GroundState): number {
 
 /** Pivot LOCAL de la bascule dans le repère 120×150 du corps : les pieds. */
 export const RIG_GROUND_PIVOT = { x: 60, y: 150 } as const;
-
-/** Interpolation de deux poses (union des os, absent = 0). */
-export function lerpPose(a: Pose, b: Pose, t: number): Pose {
-  const out: Pose = {};
-  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) out[k] = (a[k] ?? 0) * (1 - t) + (b[k] ?? 0) * t;
-  return out;
-}
 
 /** Pose couchée d'un GABARIT non-bipède : sa pose de mort, ou — À Terre VIVANT — un affaissement à
  *  85 % vers elle (un peu moins effondré qu'un mort). `null` = debout. */

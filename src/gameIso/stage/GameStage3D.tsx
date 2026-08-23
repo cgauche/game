@@ -72,6 +72,7 @@ import { reposerAffineCamera, reposerPovCamera, StretchedOrthographicCamera } fr
 import { fogCurveOf, povDepth } from '../pov/camera';
 import { pxPerM } from '../backends/webgl/worldTris';
 import {
+  CONVENTION,
   billboardView,
   subjectQuad,
   type BillboardCamera,
@@ -210,7 +211,7 @@ import type { Lid } from './architectureVisibility';
 import { demanderUneImage, signalerImagePeinte, subscribeStageFrames, useBattementContinu } from './stageFrames';
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
-export const CONVENTION = 'jeu' as const;
+export { CONVENTION };
 
 /** Clé de verdict des frames SANS découpe locale (première personne, éditeur) : constante, donc le
  *  verdict ne s'y rejoue jamais, et la liste vide y ramène toutes les cibles à zéro. */

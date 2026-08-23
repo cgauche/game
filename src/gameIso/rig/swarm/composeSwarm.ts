@@ -5,6 +5,7 @@
  * dont la silhouette d'UN constituant tapisse l'amas + une palette par défaut. Pas d'if-par-nom : la
  * forme vient de la table, et `appearance.colors` la surcharge. Anim propre : frémissement au repos.
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -54,7 +55,7 @@ function formFor(species: string): SwarmForm {
   return SWARM_FORMS[species] ?? swarmFormOf(species) ?? DEFAULT_FORM;
 }
 
-function resolveSwarm(species: string, view: View, pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+function resolveSwarm(species: string, view: View, pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   const form = formFor(species);
   const sk = buildSkeleton();
   const world = worldTransformsG(sk, pose) as Record<SwarmBoneId, Matrix>;

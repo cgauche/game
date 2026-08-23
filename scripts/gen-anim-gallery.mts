@@ -4,6 +4,7 @@
  * « parade ». 1 rig + @keyframes CSS par os mobile (cf. _lib-anim-rig). Famille résolue depuis
  * trappings.subType. Lancer : npx tsx scripts/gen-anim-gallery.mts → public/anim-gallery.html
  */
+import type { Pose } from '../src/gameIso/rig/poses';
 import { writeFileSync } from 'node:fs';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
@@ -36,11 +37,11 @@ function svgTile(inner: string, label: string, css = '', bg = '#1d2230') {
     <figcaption style="color:#bcd;font:10px sans-serif">${label}</figcaption></figure>`;
 }
 /** Tuile STATIQUE (pose figée). */
-function still(_w: Weapon, equip: EquipCtx, pose: Record<string, number>, label: string, bg?: string) {
+function still(_w: Weapon, equip: EquipCtx, pose: Pose, label: string, bg?: string) {
   return svgTile(bonesToSvg(resolveRig(app, equip, pose, MANNEQUIN)), label, '', bg);
 }
 /** Tuile ANIMÉE (clip joué en boucle). */
-function anim(_w: Weapon, equip: EquipCtx, hold: Record<string, number>, clip: Clip, label: string, bg?: string) {
+function anim(_w: Weapon, equip: EquipCtx, hold: Pose, clip: Clip, label: string, bg?: string) {
   const dur = Math.max(clipDuration(clip), 1);
   const samples = sampleTimes(dur, N).map((t) => resolveRig(app, equip, addPose(hold, sampleClip(clip, t).pose), MANNEQUIN));
   const uid = `w${uidN++}`;

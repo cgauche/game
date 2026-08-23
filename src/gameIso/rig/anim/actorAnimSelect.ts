@@ -19,7 +19,8 @@ import { mountedAttackClip, mountedParryClip, seatedClip, weaponAttackClip, weap
 import { isSupportiveCast, spellCastClip, spellCastStyle } from './spellClips';
 import { isShield } from '../parts/equipment';
 import type { BodyPlan, WingState } from '../bodyPlan';
-import { lerpPose, planGroundPose, rigGroundPose, type GroundState, type Pose } from '../../groundPose';
+import { planGroundPose, rigGroundPose, type GroundState, type Pose } from '../../groundPose';
+import { lerpPose, scalePose } from '../poses';
 import { STEP_MS } from '../../../geometry/walk';
 
 // ————————————————————————————————————————————————————————————————
@@ -258,9 +259,6 @@ export function planFlinchDef(): PlanClipDef {
 export function planDyingDef(ground: Exclude<GroundState, null>): PlanClipDef {
   return { voie: 'plan', key: `plan:dying:${ground}`, kind: 'dying', durationMs: COLLAPSE_MS, ground, wings: 'spread' };
 }
-
-/** Mise à l'échelle d'une pose (amplitude) — sert au repli générique de recul. */
-const scalePose = (p: Pose, k: number): Pose => Object.fromEntries(Object.entries(p).map(([b, v]) => [b, v * k]));
 
 /**
  * Pose d'un gabarit à `elapsedMs` du début de son geste. PUR.

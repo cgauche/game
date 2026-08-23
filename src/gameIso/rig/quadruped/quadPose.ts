@@ -1,5 +1,6 @@
 /** Poses/clips du gabarit QUADRUPÈDE — propres au plan (démarche diagonale, morsure, mort). */
 import type { QuadPose } from './quadSkeleton';
+import { scalePose } from '../poses';
 
 export const QUAD_REST: QuadPose = {};
 
@@ -27,9 +28,7 @@ const QUAD_FLINCH: QuadPose = { tronc: -7, encolure: -13, tete: -8, croupe: 3 };
 
 /** Recul quad/ailé à l'amplitude `k` (0..1, modulée en cloche par l'appelant). PUR. */
 export function quadFlinchPose(k: number): QuadPose {
-  const out: QuadPose = {};
-  for (const [b, v] of Object.entries(QUAD_FLINCH)) out[b as keyof QuadPose] = (v ?? 0) * k;
-  return out;
+  return scalePose(QUAD_FLINCH, k);
 }
 
 /** BOND (trait LDB 85) : démarche BONDISSANTE — cycle ramassé (pattes sous le corps, dos

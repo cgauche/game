@@ -5,6 +5,7 @@
  * ample à l'attaque (« Queue mortelle »), affaissement à la mort. Réutilise la machinerie (FK générique,
  * palette tokenisée, rendu) — comme composeSerpent, mais squelette HORIZONTAL (≠ son tas lové).
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -95,7 +96,7 @@ export const FISH_DEATH: Record<string, number> = { corps: 10, caudale: -22 };
 export function resolveFishFromProps(
   p: FishProps,
   _view: View = 'profile',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = buildSkeleton();
@@ -114,7 +115,7 @@ export const FISH_DEFAULT: FishProps = {
   stored: { corps: '#5a6850', corpsO: '#32402a', corpsH: '#b2bea2', cheveux: '#32402a', cheveuxO: '#1e2818', cuir: '#7c8868' },
 };
 
-export function resolveFish(species: string, view: View = 'profile', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveFish(species: string, view: View = 'profile', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveFishFromProps(FISH_SPECIES[species] ?? FISH_DEFAULT, view, pose, colors);
 }
 

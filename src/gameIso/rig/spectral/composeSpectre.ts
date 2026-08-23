@@ -5,6 +5,7 @@
  * des volutes au repos, ruée spectrale à l'attaque, dissipation à la « mort ». Réutilise la
  * machinerie (FK générique, palette tokenisée, rendu) ; translucidité bakée dans l'art.
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -253,7 +254,7 @@ export const SPECTRE_DEATH: Record<string, number> = { corps: 18, brasG: 40, bra
 export function resolveSpectreFromProps(
   p: SpectreProps,
   view: View = 'front',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = buildSkeleton();
@@ -287,7 +288,7 @@ export const SPECTRE_DEFAULT: SpectreProps = {
   stored: { corps: '#9fb8c8', corpsO: '#5a7282', corpsH: '#d8e8f0', cheveux: '#3a4a54', cheveuxO: '#222e34', cuir: '#7a90a0' },
 };
 
-export function resolveSpectre(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveSpectre(species: string, view: View = 'front', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveSpectreFromProps(SPECTRE_SPECIES[species] ?? SPECTRE_DEFAULT, view, pose, colors);
 }
 

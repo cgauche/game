@@ -41,7 +41,7 @@ import { DEFS } from '../../sprites';
 import { propSvg } from '../../catalog/decor';
 import { AMBIANCE, METEO_SANS_EFFET, type WeatherLight } from '../../catalog/ambiance';
 import { bonesToSvg } from '../../rig/renderBones';
-import { resolveRig } from '../../rig/composeRig';
+import { resolveRig, rigComposition } from '../../rig/composeRig';
 import type { RigOverlay } from '../../rig/bones';
 import { entityRigProfileFor, enemyRigProfile, rendersFromOwnInventory } from '../../rig/enemyProfile';
 import { planById, planOptsForRecord, type RenderResolution, type ResolveOpts, type WingState } from '../../rig/bodyPlan';
@@ -49,10 +49,11 @@ import { defaultAppearance, type Appearance } from '../../rig/appearance';
 import { equipFromCombatant, isShield, type EquipCtx } from '../../rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from '../../rig/parts/combatantVisuals';
 import { mountedPlanOpts, mountedRest, seatPlacement, seatRiderOnMount, seatedRest } from '../../rig/mountedRig';
-import type { SeatPose } from '../../../state/seating';
+import { seatSitHeight, type SeatPose } from '../../../state/seating';
 import { diagOnce } from '../../rig/devDiag';
 import { addPose } from '../../rig/poses';
 import { seatedPose, weaponRest } from '../../rig/anim/weaponClips';
+import { boxUnitsPerM } from './billboardMath';
 import { COLLAPSE_MS, clipTotalMs, easeOutCubic, frameSampleMs, planPoseAt, rigPoseAtFrame, type ClipDef } from '../../rig/anim/actorAnimSelect';
 import { isStructure } from '../../../engine/structures';
 import type { Combatant, Weapon } from '../../../engine/types';
@@ -722,7 +723,7 @@ function mainWeaponOf(equip: EquipCtx): Weapon | undefined {
  *  équipement que l'iso (`entityRigProfileFor`, dont l'appartenance à une rencontre : `enrolled`).
  *  Rend le corps AU REPOS (`draw`) et la couture de flipbook du MÊME corps (`frame`).
  *  `null` = aucune apparence résoluble. */
-function personnageDraw(ent: SceneEntity, enrolled: boolean, assis: boolean): {
+function personnageDraw(ent: SceneEntity, enrolled: boolean, assis: number | null): {
   voie: 'rig' | 'plan';
   /** Ce corps sait-il jouer une boucle d'ambiance ? Un gabarit sans `idlePose` cuirait N frames
    *  identiques — il reste statique. */
@@ -741,12 +742,14 @@ function personnageDraw(ent: SceneEntity, enrolled: boolean, assis: boolean): {
     const hold = weaponRest(arme);
     const at = (view: View, mirror: boolean, pose: Pose) =>
       bonesToSvg(resolveRig(prof.appearance, prof.equip, pose, prof.tenue, view, [], mirror));
-    // ASSIS (`Scene.seatAssignments`) : le corps est PLIÉ sur sa place, arme RANGÉE (`seatedRest`).
-    // Un geste d'ambiance s'y compose par le dessus, filtré par `seatedPose` — les jambes restent
-    // celles de l'assise, aucune boucle authorée ne peut redresser un attablé.
-    const repos = (view: View): Pose => (assis ? seatedRest(view, arme) : {});
+    // ASSIS (`Scene.seatAssignments`) : le corps est POSÉ sur sa place à la hauteur d'assise reçue
+    // (`assis`, unités de boîte), arme RANGÉE (`seatedRest`). Un geste d'ambiance s'y compose par le
+    // dessus, filtré par `seatedPose` — les jambes restent celles de l'assise, aucune boucle
+    // authorée ne peut redresser un attablé.
+    const repos = (view: View): Pose =>
+      (assis === null ? {} : seatedRest(view, rigComposition(prof.appearance, prof.equip, prof.tenue, view), assis, arme));
     const geste = (view: View, def: Parameters<typeof rigPoseAtFrame>[0], k: number, n: number): Pose =>
-      assis
+      assis !== null
         ? addPose(repos(view), seatedPose(addPose(hold, rigPoseAtFrame(def, k, n))))
         : addPose(hold, rigPoseAtFrame(def, k, n));
     return {
@@ -807,13 +810,19 @@ export function collectBillboards(scene: Scene, mpt: number, els: SceneBillboard
     if (tk.subject.kind !== 'figurant') continue;
     const { ent, enrolled, seat } = tk.subject;
     if (ent.kind !== 'personnage') continue;
-    const corps = personnageDraw(ent, enrolled, !!seat);
+    const scaleK = entityTokenScale(ent);
+    // Hauteur d'ASSISE portée par la POSTURE, dans le repère du RIG : la mesure du monde (mètres au
+    // catalogue de décor) entre dans la boîte de corps par l'échelle du quad (`boxUnitsPerM`) — un
+    // ogre voit le même tabouret plus bas que ne le voit un halfling.
+    const assise = seat ? seatSitHeight(seat) * boxUnitsPerM('personnage', scaleK) : null;
+    const corps = personnageDraw(ent, enrolled, assise);
     if (!corps) continue;
     // Empreinte multi-cases : le corps se centre sur l'empreinte.
     const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
-    // ASSIS : le corps se POSE sur l'ancre de sa place (fraction de case, hauteur d'assise), pas sur
-    // sa case logique — celle-ci reste sa case d'abord (`SceneEntity.pos`), d'où il se lève. La CASE
-    // (`cell`, teinte de visibilité) ne bouge pas : un corps est éclairé par la case qu'il occupe.
+    // ASSIS : le corps se POSE sur l'ancre de sa place (fraction de case), pas sur sa case logique —
+    // celle-ci reste sa case d'abord (`SceneEntity.pos`), d'où il se lève. En HAUTEUR il reste ancré
+    // au SOL : la hauteur d'assise (`seatSitHeight`) est portée par la POSTURE, pas par l'ancre. La
+    // CASE (`cell`, teinte de visibilité) ne bouge pas : un corps est éclairé par la case qu'il occupe.
     const gx = seat ? seat.anchor.x : ent.pos.x + off;
     const gy = seat ? seat.anchor.y : ent.pos.y + off;
     const z = tk.cell.z;
@@ -829,9 +838,9 @@ export function collectBillboards(scene: Scene, mpt: number, els: SceneBillboard
       identity: `perso:${ent.id}${ambient ? `|${ambient}` : ''}${seat ? `|assis:${seat.propId}:${seat.slotId}` : ''}`,
       ...(ambient ? { eid: ent.id, anim: { voie: corps.voie, ambient } } : {}),
       kind: 'personnage',
-      anchor: new THREE.Vector3(gx * mpt, seat ? seat.anchor.h : heightAt(scene, ent.pos.x, ent.pos.y, z), gy * mpt),
+      anchor: new THREE.Vector3(gx * mpt, seat ? seat.ground : heightAt(scene, ent.pos.x, ent.pos.y, z), gy * mpt),
       facing: seat ? seat.facing : ent.facing ?? 'S',
-      scaleK: entityTokenScale(ent),
+      scaleK,
       cell: { x: ent.pos.x, y: ent.pos.y, z },
       box: { w: BB_W, h: BB_H },
       svg: (view, mirror) => defs + corps.draw(view, mirror),
@@ -886,7 +895,7 @@ export function collectBillboards(scene: Scene, mpt: number, els: SceneBillboard
 function memePlace(a: SeatPose | undefined, b: SeatPose | undefined): boolean {
   if (!a || !b) return !a && !b;
   return a.propId === b.propId && a.slotId === b.slotId && a.facing === b.facing
-    && a.anchor.x === b.anchor.x && a.anchor.y === b.anchor.y && a.anchor.h === b.anchor.h;
+    && a.anchor.x === b.anchor.x && a.anchor.y === b.anchor.y && a.anchor.h === b.anchor.h && a.ground === b.ground;
 }
 
 export function memesBillboardEls(a: SceneBillboardEls, b: SceneBillboardEls): boolean {
@@ -1064,9 +1073,10 @@ export function actorIdentityKey(p: ActorPose): string {
 function ancreActeur(p: ActorPose, scene: Scene, mpt: number): { anchor: THREE.Vector3; cell: { x: number; y: number; z: number } } {
   const off = (sizeFootprint(p.c.size) - 1) / 2;
   const cell = { x: Math.round(p.x), y: Math.round(p.y), z: p.z };
-  // ASSIS : l'ancre est celle de la PLACE (fraction de case, hauteur d'assise) ; la case, elle, reste
-  // la case logique du corps — c'est elle qui porte la teinte de visibilité et la profondeur de tri.
-  if (p.seat) return { anchor: new THREE.Vector3(p.seat.anchor.x * mpt, p.seat.anchor.h, p.seat.anchor.y * mpt), cell };
+  // ASSIS : l'ancre est celle de la PLACE en plan (fraction de case) et le SOL en hauteur — la
+  // hauteur d'assise appartient à la posture (`seatSitHeight`). La case, elle, reste la case logique
+  // du corps : c'est elle qui porte la teinte de visibilité et la profondeur de tri.
+  if (p.seat) return { anchor: new THREE.Vector3(p.seat.anchor.x * mpt, p.seat.ground, p.seat.anchor.y * mpt), cell };
   return {
     anchor: new THREE.Vector3((p.x + off) * mpt, heightAt(scene, cell.x, cell.y, cell.z), (p.y + off) * mpt),
     cell,
@@ -1313,7 +1323,10 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
       };
       // ASSIS (le meneur attablé) : corps plié sur sa place, arme RANGÉE (`seatedRest`). Un corps AU
       // SOL n'est jamais assis — l'effondrement prime, et `releaseSeat` l'aura de toute façon levé.
-      const assise = !ground && seat ? (view: View) => seatedRest(view, mainWeaponOf(equip)) : null;
+      const drop = seat ? seatSitHeight(seat) * boxUnitsPerM('personnage', inputs.scaleK) : 0;
+      const assise = !ground && seat
+        ? (view: View) => seatedRest(view, rigComposition(appearance, equip, tenue, view, overlays), drop, mainWeaponOf(equip))
+        : null;
       draw = (view, mirror) => drawAt(view, mirror, assise ? assise(view) : couché ?? {}, 1);
       voie = 'rig';
       // PRISE D'ARME composée à CHAQUE frame, comme sur un corps de rig (`RigToken`) : la pose de geste

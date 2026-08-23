@@ -6,6 +6,7 @@
  * `plans/defs/` — AJOUTER un gabarit = un module compose (BodyPlan exporté) + un `plans/defs/<id>.ts`
  * d'une ligne + des defs de créatures. ZÉRO édition de ce fichier.
  */
+import type { BonePose } from './poses';
 import type { ResolvedBone } from './composeRig';
 import type { View } from './facing';
 import type { Palette } from './palette';
@@ -48,19 +49,19 @@ export interface ResolveOpts {
 export interface BodyPlan {
   id: BodyPlanId;
   /** (espèce, vue, pose, opts) → os résolus (boîte 120×150, pieds au sol), triés z. */
-  resolve(species: string, view: View, pose: Record<string, number>, opts?: ResolveOpts): ResolvedBone[];
+  resolve(species: string, view: View, pose: BonePose, opts?: ResolveOpts): ResolvedBone[];
   speciesNames(): string[];
-  restPose(): Record<string, number>;
-  walkPose(phase: number): Record<string, number>;
-  attackPose(phase: number): Record<string, number>;
-  deathPose(): Record<string, number>;
+  restPose(): BonePose;
+  walkPose(phase: number): BonePose;
+  attackPose(phase: number): BonePose;
+  deathPose(): BonePose;
   /** Pose d'attaque propre au TYPE d'attaque de créature (`AttackKind` : morsure, caudale, souffle…).
    *  `null`/absente → `attackPose` du plan. Un gabarit déclare ainsi son propre jeu de gestes, sans
    *  que l'animateur ait à connaître l'id du gabarit. */
-  attackKindPose?(kind: string, phase: number): Record<string, number> | null;
+  attackKindPose?(kind: string, phase: number): BonePose | null;
   /** RECUL d'impact (touché / attaque esquivée) à l'amplitude `k` (0..1). Absente → repli générique :
    *  l'INVERSE atténué du geste d'attaque du plan (retrait anatomiquement juste sans connaître ses os). */
-  flinchPose?(k: number): Record<string, number>;
+  flinchPose?(k: number): BonePose;
   /** viewBox du DISQUE-PORTRAIT (vue du dessus / inspection / VsHeader) cadrant ce gabarit, dans le
    *  repère de corps 120×150. Absent → défaut générique créature (`CREATURE_BOX`, haut-avant). Un corps
    *  STATIQUE ANCRÉ AU SOL (engin de siège) occupe le BAS de la boîte → il cadre son PROPRE bloc, sinon
@@ -68,10 +69,10 @@ export interface BodyPlan {
   portraitBox?: string;
   /** Anim de repos jouée EN CONTINU par AnimatedPlanToken (battement d'ailes, ondulation de
    *  serpent/pieuvre, dodelinement d'oiseau, frémissement d'araignée). Absente → idle figé. */
-  idlePose?(phase: number): Record<string, number>;
+  idlePose?(phase: number): BonePose;
   /** BOND (trait LDB 85) : démarche bondissante jouée à la place de walkPose quand le
    *  combattant a le trait — ramassé/détente cyclique. Absente → walkPose (repli). */
-  leapPose?(phase: number): Record<string, number>;
+  leapPose?(phase: number): BonePose;
   hasView(species: string, view: View): boolean;
 }
 

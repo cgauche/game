@@ -11,7 +11,10 @@
  * sur les DEUX issues du set : servi, ou REFUSÉ visiblement (espèce dont l'art n'est pas cuit).
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { mountedPlanOpts, mountedRest, seatedBodyPose, seatedRest } from './mountedRig';
+import { mountedPlanOpts, mountedRest, riderBodyPose, seatedBodyPose, seatedRest, type SeatedBody } from './mountedRig';
+import { baseSkeleton, groundSkeleton } from './skeletons';
+import { gabaritById } from './gabarits';
+import { xfOf } from './poses';
 import { weaponRest } from './anim/weaponClips';
 import { buildWeapon } from '../../engine/items';
 import { resolveById, planById, planOptsForRecord } from './bodyPlan';
@@ -86,28 +89,40 @@ describe('une monture dont l\'espèce n\'est pas cuite pour le set : ALARME visi
 });
 
 /**
- * CORPS ASSIS SANS MONTURE (figurant attablé) : la même assise que le cavalier — bassin ancré,
- * jambes fléchies — mais la tenue d'arme AU REPOS du fantassin, jamais une tenue montée ni un geste.
+ * CORPS ASSIS SANS MONTURE (figurant attablé) : une CHAISE N'EST PAS UNE SELLE — le corps n'enfourche
+ * rien, il pose son bassin à la hauteur d'assise et garde ses pieds par terre (`seatedBodyPose`,
+ * résolue sur le squelette) — et il porte la tenue d'arme AU REPOS du fantassin, jamais une tenue
+ * montée ni un geste.
  */
 describe('seatedRest — un attablé n’est pas un cavalier', () => {
   const HAMPE = buildWeapon({ label: 'Hallebarde', hands: 2, reach: 'Longue', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'empalement' }] });
+  const SK: SeatedBody = { sk: groundSkeleton(baseSkeleton(gabaritById('humain'), 'M')), speciesPose: {}, viewPose: {}, };
+  const ASSISE = 32; // unités de boîte — un tabouret, cf. `boxUnitsPerM`
 
-  it('le corps assis vient de la primitive NEUTRE (jambes fléchies), pas de la tenue d’arme', () => {
-    const corps = seatedBodyPose('profile');
-    const pose = seatedRest('profile', HAMPE);
-    for (const os of ['cuisseG', 'cuisseD', 'tibiaG', 'tibiaD', 'piedG', 'piedD'] as const) {
+  it('le corps assis vient de la primitive NEUTRE (jambes résolues), pas de la tenue d’arme', () => {
+    const corps = seatedBodyPose('profile', SK, ASSISE);
+    const pose = seatedRest('profile', SK, ASSISE, HAMPE);
+    for (const os of ['bassin', 'cuisseG', 'cuisseD', 'tibiaG', 'tibiaD', 'piedG', 'piedD'] as const) {
       expect(corps[os], `l'assise doit poser ${os}`).toBeDefined();
-      expect(pose[os], `${os} appartient à l'assise`).toBe(corps[os]);
+      expect(pose[os], `${os} appartient à l'assise`).toEqual(corps[os]);
     }
+  });
+
+  it('l’assise n’est PAS la pose du cavalier : le bassin descend, aucun straddle', () => {
+    const assis = seatedBodyPose('profile', SK, ASSISE);
+    const cavalier = riderBodyPose('profile');
+    expect(cavalier.bassin).toBeUndefined();          // en selle, le bassin est ancré par le composite
+    expect(xfOf(assis, 'bassin').ty).toBeGreaterThan(20); // assis, il DESCEND à la hauteur du siège
+    expect(assis.cuisseG).not.toEqual(cavalier.cuisseG);
   });
 
   it('la tenue est celle du REPOS à pied, PAS la tenue montée', () => {
     const repos = weaponRest(HAMPE);
-    expect(seatedRest('profile', HAMPE).arme).toBe(repos.arme);
+    expect(seatedRest('profile', SK, ASSISE, HAMPE).arme).toBe(repos.arme);
     expect(mountedRest('profile', HAMPE).arme).not.toBe(repos.arme); // la hampe montée est AU PORT
   });
 
   it('sans arme, il ne reste que l’assise', () => {
-    expect(seatedRest('profile')).toEqual(seatedBodyPose('profile'));
+    expect(seatedRest('profile', SK, ASSISE)).toEqual(seatedBodyPose('profile', SK, ASSISE));
   });
 });

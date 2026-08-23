@@ -4,6 +4,7 @@
  * clips de sort (bolt arcane / bénédiction divine). Chaque tuile = un rig + des @keyframes CSS
  * par os mobile (cf. _lib-anim-rig). Lancer : npx tsx scripts/gen-clip-anim-gallery.mts
  */
+import type { Pose } from '../src/gameIso/rig/poses';
 import { writeFileSync } from 'node:fs';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
@@ -30,7 +31,7 @@ const N = 16; // échantillons par cycle
 const styles: string[] = [];
 let uidN = 0;
 
-function tile(label: string, clip: Clip, app: Appearance, equip: EquipCtx, career: string, hold: Record<string, number> = {}, bg = '#1d2230') {
+function tile(label: string, clip: Clip, app: Appearance, equip: EquipCtx, career: string, hold: Pose = {}, bg = '#1d2230') {
   const dur = Math.max(clipDuration(clip), 1);
   const samples = sampleTimes(dur, N).map((t) => resolveRig(app, equip, addPose(hold, sampleClip(clip, t).pose), career));
   const uid = `k${uidN++}`;

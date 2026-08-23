@@ -1,4 +1,5 @@
 /** Cohérence garde / attaque / parade par arme (toutes composées sur weaponRest). → public/qc/attack-parry.png */
+import type { Pose } from '../src/gameIso/rig/poses';
 import { writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -18,7 +19,7 @@ assertWardrobeId(MANNEQUIN, 'qc-attack-parry');
 
 const WEAPONS = ['Épée', 'Rapière', 'Zweihänder', 'Fléau d\'armes', 'Hallebarde', 'Main Gauche', 'Mains nues'];
 const wpn = (name: string): Weapon => ({ label: name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [] });
-const peak = (steps: { pose: Record<string, number> }[]) => steps.reduce((a, s) => (Object.keys(s.pose).length > Object.keys(a).length ? s.pose : a), {} as Record<string, number>);
+const peak = (steps: { pose: Pose }[]) => steps.reduce((a, s) => (Object.keys(s.pose).length > Object.keys(a).length ? s.pose : a), {} as Pose);
 
 const CW = 118, CH = 168;
 const cells: string[] = [];

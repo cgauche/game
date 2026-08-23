@@ -64,14 +64,26 @@ export const labelEmplacement = (rang: number): string => `Héros ${rang}`;
 /** Occupation persistée d'une Scène : `propId → slotId → occupant`. */
 export type SeatAssignments = Record<string, Record<string, SeatOccupant>>;
 
-/** Place assise d'un meuble POSÉ : ancre monde du corps, cap du corps assis, case d'abord EFFECTIVE. */
+/**
+ * Place assise d'un meuble POSÉ : ancre monde du corps, cap du corps assis, case d'abord EFFECTIVE.
+ *
+ * DEUX HAUTEURS, deux lecteurs. `ground` est le SOL de la case du meuble : c'est là que le corps
+ * s'ancre au rendu (un corps assis pose ses pieds par terre, pas sur son siège). `anchor.h` est la
+ * hauteur d'ASSISE en monde (sol + assise du catalogue) : elle est la donnée de POSTURE (le bassin
+ * s'y descend) et d'ŒIL POV. Confondre les deux hissait le corps entier au-dessus du sol.
+ */
 export interface ResolvedSeatSlot {
   propId: string;
   slotId: string;
   anchor: { x: number; y: number; h: number };
+  /** Sol de la case du meuble (monde) — l'ancre de RENDU du corps. */
+  ground: number;
   facing: Dir8;
   approach: Pt;
 }
+
+/** Hauteur d'ASSISE au-dessus du sol (m) d'une place résolue — ce que la POSTURE consomme. */
+export const seatSitHeight = (s: Pick<ResolvedSeatSlot, 'anchor' | 'ground'>): number => s.anchor.h - s.ground;
 
 /** Une place résolue et son occupant. */
 export interface SeatPose extends ResolvedSeatSlot { occupant: SeatOccupant }
@@ -105,6 +117,8 @@ interface PlacePartielle {
   propId: string;
   slotId: string;
   anchor: { x: number; y: number; h: number };
+  /** Sol de la case du meuble (monde). */
+  ground: number;
   facing: Dir8;
   z: number;
   /** Abord DÉCLARÉ par le catalogue, tourné au cap de l'instance. */
@@ -133,6 +147,7 @@ function placesPartielles(scene: Scene): PlacePartielle[] {
         propId: ent.id,
         slotId: slot.id,
         anchor,
+        ground: sol,
         facing: rotateDir8(slot.facing, crans),
         z,
         declaree: caseDe(ent.pos.x + px, ent.pos.y + py),
@@ -208,7 +223,7 @@ function placesResolues(scene: Scene): Map<string, ResolvedSeatSlot[]> {
     declareeGagnee.add(i);
   });
   const out = new Map<string, ResolvedSeatSlot[]>();
-  partiels.forEach(({ propId, slotId, anchor, facing, z, declaree, siege }, i) => {
+  partiels.forEach(({ propId, slotId, anchor, ground, facing, z, declaree, siege }, i) => {
     const enCase = (p: { x: number; y: number }): Pt => (z ? { x: p.x, y: p.y, z } : { x: p.x, y: p.y });
     let approach = enCase(declaree);
     if (!declareeGagnee.has(i)) {
@@ -223,7 +238,7 @@ function placesResolues(scene: Scene): Map<string, ResolvedSeatSlot[]> {
       }
     }
     const liste = out.get(propId) ?? [];
-    liste.push({ propId, slotId, anchor, facing, approach });
+    liste.push({ propId, slotId, anchor, ground, facing, approach });
     out.set(propId, liste);
   });
   return out;

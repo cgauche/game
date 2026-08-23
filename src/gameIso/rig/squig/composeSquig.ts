@@ -5,6 +5,7 @@
  * mâchoire au repos, bonds (lean) au déplacement, gueule grande ouverte à l'attaque, sur le dos
  * à la mort. Réutilise la machinerie (FK générique, palette tokenisée, rendu).
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -92,7 +93,7 @@ export const SQUIG_DEATH: Record<string, number> = { corps: 165, machoire: 8 };
 export function resolveSquigFromProps(
   p: SquigProps,
   view: View = 'front',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = buildSkeleton();
@@ -112,7 +113,7 @@ export const SQUIG_DEFAULT: SquigProps = {
   stored: { corps: '#a82828', corpsO: '#6e1616', corpsH: '#d85a4a', cheveux: '#5a1010', cheveuxO: '#3a0a0a', cuir: '#2a2018' },
 };
 
-export function resolveSquig(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveSquig(species: string, view: View = 'front', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveSquigFromProps(SQUIG_SPECIES[species] ?? SQUIG_DEFAULT, view, pose, colors);
 }
 

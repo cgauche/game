@@ -10,6 +10,7 @@
  * jamais sur un générique silencieux. La teinte vient de la palette du record (`appearance.colors`) ;
  * `ship.lengthM` donne l'échelle au point d'appel.
  */
+import { rotOf, type BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -40,12 +41,12 @@ const shipRoll = (phase: number): Record<string, number> => ({ coque: Math.sin(p
 const shipRam = (phase: number): Record<string, number> => ({ coque: Math.sin(Math.min(1, phase) * Math.PI) * 6 });
 const SHIP_DEATH: Record<string, number> = { coque: 22 };
 
-function resolveShip(species: string, view: View, pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+function resolveShip(species: string, view: View, pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   // La vue demandée est CONSOMMÉE via le contrat d'art orienté PARTAGÉ (`pickView`). `pose.coque` = angle
   // de roulis/gîte (deg) ⇒ `tilt` autour de la quille (au sol), via la fondation PARTAGÉE `groundedBody`.
   // Les defs sont dessinées quille à y=0 (origine = contact) ⇒ baseY 0.
   const svg = pickView(shipArtOf(species), view)();
-  return groundedBody(svg, SHIP_DEFAULT, colors, { id: 'coque', baseY: 0, tilt: pose.coque ?? 0 });
+  return groundedBody(svg, SHIP_DEFAULT, colors, { id: 'coque', baseY: 0, tilt: rotOf(pose, 'coque') });
 }
 
 export const shipPlan: BodyPlan = {

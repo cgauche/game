@@ -7,7 +7,10 @@
  */
 import { describe, expect, it } from 'vitest';
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../state/scene';
-import { seatPoseOf, type SeatPose } from '../../state/seating';
+import { seatPoseOf, seatSitHeight, type SeatPose } from '../../state/seating';
+import { boxUnitsPerM } from '../backends/webgl/billboardMath';
+import { entityTokenScale } from '../sizeScale';
+import { GROUND_Y } from '../rig/composeRig';
 import { dynamicMarks } from '../builders/dynamicMarks';
 import { EYE_H, EYE_H_ASSIS, makeCamera, seatedEyeH } from '../pov/camera';
 import { buildTokens, partyTokenOf } from '../builders/tokens';
@@ -45,24 +48,67 @@ const meneur = (): Combatant =>
     career: 'soldat', species: 'Humain',
   }) as unknown as Combatant;
 
+/**
+ * MESURE D'UNE SILHOUETTE ASSISE — sondes A (toise) et C (sommet) prises sur le FRAGMENT RENDU, os
+ * par os : chaque os du rig y porte sa matrice monde (`data-bone` + `matrix(a b c d e f)`, `f` = son
+ * origine en y dans la boîte 120×150). Comparer deux chaînes SVG ne prouvait rien — la pose de
+ * cavalier passait ce contrat à 0,8 % près, un corps DEBOUT hissé sur son siège.
+ */
+const originY = (svg: string, os: string): number => {
+  const m = new RegExp(`data-bone="${os}" transform="matrix\\(([^)]*)\\)"`).exec(svg);
+  expect(m, `os « ${os} » absent du fragment`).not.toBeNull();
+  return Number(m![1].trim().split(/\s+/)[5]);
+};
+
+/** Toise d'un fragment : du sommet de la TÊTE à l'appui des PIEDS (origines d'os, même squelette
+ *  des deux côtés — c'est la DIFFÉRENCE qui porte le sens). */
+const toise = (svg: string) => Math.max(originY(svg, 'piedG'), originY(svg, 'piedD')) - originY(svg, 'tete');
+
+/**
+ * Contrats MÉTRIQUES de l'assise, tous DÉRIVÉS de la hauteur d'assise du catalogue (`seatSitHeight`)
+ * et de l'échelle art→monde du quad (`boxUnitsPerM`) — aucun nombre posé à la main.
+ */
+function mesureAssise(assis: string, debout: string, place: SeatPose, entId: string) {
+  const ent = scèneAttablée(true).entities.find((e) => e.id === entId)!;
+  const assiseUnites = seatSitHeight(place) * boxUnitsPerM('personnage', entityTokenScale(ent));
+  // Hauteur de HANCHE d'un corps debout, dans sa boîte : c'est de là que le bassin tombe au siège.
+  const hancheDebout = GROUND_Y - originY(debout, 'cuisseD');
+  expect(assiseUnites).toBeLessThan(hancheDebout); // un tabouret est plus bas qu'une hanche
+
+  // SONDE C — le SOMMET descend, et il descend d'EXACTEMENT ce que le siège retire à la hanche.
+  expect(originY(assis, 'tete') - originY(debout, 'tete')).toBeCloseTo(hancheDebout - assiseUnites, 0);
+  // PIEDS AU SOL — l'appui ne bouge pas : le corps s'assoit, il ne lévite pas avec son siège.
+  expect(Math.max(originY(assis, 'piedG'), originY(assis, 'piedD')))
+    .toBeCloseTo(Math.max(originY(debout, 'piedG'), originY(debout, 'piedD')), 0);
+  // SONDE A — la toise assise est nettement plus courte (la pose de cavalier n'en retirait que 0,8 %).
+  expect(toise(assis)).toBeLessThan(toise(debout) * 0.85);
+  expect(toise(assis)).toBeGreaterThan(toise(debout) * 0.6);
+}
+
 describe('PNJ authoré attablé — le billboard de figurant consomme sa place', () => {
   it('ancre, cap et corps viennent de la PLACE, pas de la case du PNJ', () => {
     const assis = sujetFigurant(scèneAttablée(true));
     const debout = sujetFigurant(scèneAttablée(false));
     const place = seatPoseOf(scèneAttablée(true), { kind: 'entity', entityId: 'f1' })!;
 
-    // ANCRE : le point posé est celui de la place (fraction de case × mètres/case, hauteur d'assise).
+    // ANCRE — EN PLAN, le point posé est celui de la place (fraction de case × mètres/case)…
     expect(assis.anchor.x).toBeCloseTo(place.anchor.x * mpt, 6);
     expect(assis.anchor.z).toBeCloseTo(place.anchor.y * mpt, 6);
-    expect(assis.anchor.y).toBeCloseTo(place.anchor.h, 6);
-    expect(assis.anchor.x).not.toBeCloseTo(debout.anchor.x, 6); // …et pas celui de sa case
+    expect(assis.anchor.x).not.toBeCloseTo(debout.anchor.x, 6); // …et pas celui de sa case.
+    // …EN HAUTEUR, c'est le SOL : un corps assis a les pieds par terre. La hauteur d'assise du
+    // catalogue (`seatSitHeight`) est l'écart MESURÉ entre le siège et cette ancre — elle appartient
+    // à la posture, jamais à l'ancre, sinon le corps entier lévite d'une hauteur de tabouret.
+    expect(assis.anchor.y).toBeCloseTo(place.ground, 6);
+    expect(assis.anchor.y).toBeCloseTo(debout.anchor.y, 6);
+    expect(place.anchor.h - assis.anchor.y).toBeCloseTo(seatSitHeight(place), 6);
+    expect(seatSitHeight(place)).toBeGreaterThan(0);
 
     // CAP : celui du corps assis (place « est » d'une recette face au N → regard à l'ouest).
     expect(assis.facing).toBe('O');
     expect(debout.facing).toBe('S'); // témoin : debout, c'est le `facing` authoré de l'entité
 
-    // CORPS : le fragment DIFFÈRE — sans consommation de la place, ce seraient deux fois le même.
-    expect(assis.svg('front', false, 0)).not.toBe(debout.svg('front', false, 0));
+    // CORPS : la POSTURE porte l'assise, et elle se MESURE sur le fragment rendu (sonde A/C).
+    mesureAssise(assis.svg('front', false, 0), debout.svg('front', false, 0), place, 'f1');
 
     // CASE : inchangée — c'est elle qui porte la teinte de visibilité et le tri.
     expect(assis.cell).toEqual(debout.cell);
@@ -90,10 +136,11 @@ describe('MENEUR attablé — l’acteur du monde volumique consomme la même pl
 
     expect(assis.anchor.x).toBeCloseTo(place().anchor.x * mpt, 6);
     expect(assis.anchor.z).toBeCloseTo(place().anchor.y * mpt, 6);
-    expect(assis.anchor.y).toBeCloseTo(place().anchor.h, 6);
+    expect(assis.anchor.y).toBeCloseTo(place().ground, 6); // au SOL, comme le figurant
+    expect(place().anchor.h - assis.anchor.y).toBeCloseTo(seatSitHeight(place()), 6);
     expect(assis.facing).toBe('O');
     expect(debout.facing).toBe('S');
-    expect(assis.svg('front', false, 0)).not.toBe(debout.svg('front', false, 0));
+    mesureAssise(assis.svg('front', false, 0), debout.svg('front', false, 0), place(), 'f1');
     expect(assis.cell).toEqual(debout.cell); // brouillard et tri restent sur la case d'abord
     expect(assis.identity).not.toBe(debout.identity);
   });

@@ -8,6 +8,7 @@ import type { Dir8 } from '../state/dir8';
 import { walkMs } from '../geometry/walk';
 import { isTileVisible } from './viewport';
 import type { GroundState } from './groundPose';
+import type { BonePose } from './rig/poses';
 import {
   clipTotalMs,
   planAttackDef,
@@ -35,7 +36,7 @@ const restMode = (): Mode => ({ def: planRestDef(), start: performance.now() });
 export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dead?: boolean, facing?: Dir8, pos?: { x: number; y: number }, prone?: boolean): {
   plan: BodyPlan | null;
   species: string;
-  pose: Record<string, number>;
+  pose: BonePose;
   view: View;
   mirror: boolean;
   /** Gabarit AILÉ : ailes PLIÉES au repos, DÉPLOYÉES en vol/attaque/mort étalée — à passer
@@ -116,7 +117,7 @@ export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dea
   // geste en BOUCLE (repos, marche) prend sa phase sur l'horloge globale — tous les gabarits y
   // battent en phase commune.
   const ground: GroundState = dead ? 'corpse' : prone ? 'prone' : null;
-  const pose: Record<string, number> = plan ? planRenderPose(plan, m.def, ground, now, m.start) : {};
+  const pose: BonePose = plan ? planRenderPose(plan, m.def, ground, now, m.start) : {};
   // AILES : pliées posé/flinch, DÉPLOYÉES dès que la bête vole (marche/bond), attaque, ou
   // s'effondre (QUAD_DEATH les étale au sol).
   const wings: WingState = dead || prone || m.def.wings === 'spread' ? 'spread' : 'folded';

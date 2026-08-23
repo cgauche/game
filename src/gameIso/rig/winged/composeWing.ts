@@ -5,6 +5,7 @@
  * Le dragon est un ailé à grande taille (sl) — la taille est un simple paramètre, pas un modèle
  * dédié, conformément au but « ajouter facilement des monstres de toute taille ».
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -25,7 +26,7 @@ export { WINGED_SPECIES, wingedSpeciesNames };
 export function resolveWing(
   species: string,
   view: View = 'profile',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
   wings: 'folded' | 'spread' = 'folded',
   eyes?: { G?: string; D?: string },

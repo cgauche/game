@@ -11,6 +11,7 @@
  * partagé (#223, `orientedArtOr`), jamais sur un générique silencieux. Silhouettes de BROADSIDE : la
  * couverture réelle est DÉCLARÉE (galerie QC) ; face/dos REPLIENT via `pickView`/`foldView`.
  */
+import { rotOf, type BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -37,8 +38,8 @@ function art(species: string, view: View): string {
 
 /** (espèce, vue, pose, couleurs) → un os statique ancré au sol. `pose.cahot` = tangage de roulage /
  *  renversement (mort). */
-function resolveLand(species: string, view: View, pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
-  return groundedBody(art(species, view), LAND_DEFAULT, colors, { id: 'chariot', tilt: pose.cahot ?? 0 });
+function resolveLand(species: string, view: View, pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
+  return groundedBody(art(species, view), LAND_DEFAULT, colors, { id: 'chariot', tilt: rotOf(pose, 'cahot') });
 }
 
 export const landPlan: BodyPlan = {

@@ -13,6 +13,7 @@
  * `beak` = tête de coq/rapace à bec crochu (remplace la gueule dentée), `plumage` = cou/échine
  * emplumés hirsutes, `serpentTail` = queue serpentine effilée (remplace le balancier à crête).
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -354,7 +355,7 @@ export const THEROPOD_DEATH: Record<string, number> = {
 export function resolveTheropodFromProps(
   p: TheropodProps,
   view: View = 'front',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = skeletonForView(buildSkeleton(p), view);
@@ -378,7 +379,7 @@ export const THEROPOD_DEFAULT: TheropodProps = {
   stored: { corps: '#55703c', corpsO: '#28381d', corpsH: '#a3bd68', cheveux: '#39502a', cheveuxO: '#1c2a13', cuir: '#7a755c' },
 };
 
-export function resolveTheropod(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveTheropod(species: string, view: View = 'front', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveTheropodFromProps(THEROPOD_SPECIES[species] ?? THEROPOD_DEFAULT, view, pose, colors);
 }
 

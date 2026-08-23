@@ -4,6 +4,7 @@
  * facing sont gérés au rendu. Réutilise la FK générique (kinematics.worldTransformsG).
  */
 import { worldTransformsG, type FKBone } from '../kinematics';
+import type { BonePose } from '../poses';
 import type { StoredPalette } from '../palette';
 import type { View } from '../facing';
 import { QUAD_Z } from './quadZ';
@@ -31,7 +32,7 @@ export interface QBone extends FKBone {
   head?: boolean;
 }
 export type QuadSkeleton = Record<QuadBoneId, QBone>;
-export type QuadPose = Partial<Record<QuadBoneId, number>>;
+export type QuadPose = BonePose<QuadBoneId>;
 
 /**
  * Fragment de DÉCOR posé sur un os : son `plan` est RELATIF au plan de l'os porteur (`QUAD_Z`),

@@ -1,3 +1,4 @@
+import { rotOf, type BonePose } from '../poses';
 import { describe, it, expect } from 'vitest';
 import {
   COLLAPSE_MS,
@@ -96,11 +97,11 @@ describe('sélection BIPÈDE — le geste rendu est celui que les résolveurs d�
   it('EFFONDREMENT bipède : part du repos, ARRIVE sur la pose au sol partagée (jamais un saut)', () => {
     expect(rigCollapsePoseAt(null, 0)).toBeNull();
     const debut = rigCollapsePoseAt('corpse', 0)!;
-    expect(Object.values(debut.pose).every((v) => v === 0)).toBe(true);
+    expect(Object.keys(debut.pose).every((os) => rotOf(debut.pose, os) === 0)).toBe(true);
     expect(debut.done).toBe(false);
     const fin = rigCollapsePoseAt('corpse', COLLAPSE_MS)!;
-    for (const [os, deg] of Object.entries(CORPSE_POSE)) expect(fin.pose[os]).toBeCloseTo(deg, 10);
-    expect(rigCollapsePoseAt('prone', COLLAPSE_MS)!.pose.tete).toBeCloseTo(PRONE_POSE.tete, 10);
+    for (const os of Object.keys(CORPSE_POSE)) expect(rotOf(fin.pose, os)).toBeCloseTo(rotOf(CORPSE_POSE, os), 10);
+    expect(rotOf(rigCollapsePoseAt('prone', COLLAPSE_MS)!.pose, 'tete')).toBeCloseTo(rotOf(PRONE_POSE, 'tete'), 10);
     expect(rigCollapsePoseAt('corpse', COLLAPSE_MS + 1)!.done).toBe(true);
   });
 });
@@ -109,8 +110,8 @@ describe('gestes de GABARIT — durées nommées et échantillonnage pur', () =>
   const plan = planById('quadruped'); // pattes + morsure, sans idle
   const aile = planById('winged'); // le seul à porter un idle (frémissement d'ailes)
   /** Poses égales OS PAR OS (`lerpPose` réunit les os des deux poses : un os absent y vaut 0). */
-  const memePose = (a: Record<string, number>, b: Record<string, number>) => {
-    for (const os of new Set([...Object.keys(a), ...Object.keys(b)])) expect(a[os] ?? 0, os).toBeCloseTo(b[os] ?? 0, 10);
+  const memePose = (a: BonePose, b: BonePose) => {
+    for (const os of new Set([...Object.keys(a), ...Object.keys(b)])) expect(rotOf(a, os), os).toBeCloseTo(rotOf(b, os), 10);
   };
 
   it('les durées jadis en dur de `usePlanAnim` sont ces constantes', () => {
@@ -151,7 +152,7 @@ describe('gestes de GABARIT — durées nommées et échantillonnage pur', () =>
 
   it('recul : amplitude en cloche (nulle aux bords, maximale au milieu)', () => {
     const def = planFlinchDef();
-    const amp = (ms: number) => Math.max(...Object.values(planPoseAt(plan, def, ms).pose).map(Math.abs));
+    const amp = (ms: number) => { const p = planPoseAt(plan, def, ms).pose; return Math.max(...Object.keys(p).map((os) => Math.abs(rotOf(p, os)))); };
     expect(amp(0)).toBeCloseTo(0, 10);
     expect(amp(PLAN_FLINCH_MS)).toBeCloseTo(0, 10);
     expect(amp(PLAN_FLINCH_MS / 2)).toBeGreaterThan(0);
@@ -186,8 +187,8 @@ describe('gestes de GABARIT — durées nommées et échantillonnage pur', () =>
   });
 
   /** Écart maximal os par os entre deux poses (degrés) — mesure la DISTANCE de deux gestes. */
-  const ecartMax = (a: Record<string, number>, b: Record<string, number>) =>
-    Math.max(...[...new Set([...Object.keys(a), ...Object.keys(b)])].map((os) => Math.abs((a[os] ?? 0) - (b[os] ?? 0))));
+  const ecartMax = (a: BonePose, b: BonePose) =>
+    Math.max(...[...new Set([...Object.keys(a), ...Object.keys(b)])].map((os) => Math.abs(rotOf(a, os) - rotOf(b, os))));
 
   it('DEBOUT pendant la fenêtre d’effondrement (acteur relevé en vol) : la pose rendue est le REPOS', () => {
     const def = planDyingDef('prone'); // mode posé à la mise À Terre, encore vivant dans la fenêtre

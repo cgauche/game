@@ -1,11 +1,12 @@
 import type { BoneId, Skeleton } from './bones';
-import type { Pose } from './poses';
+import { xfOf, type BonePose, type Pose } from './poses';
 
 /** Matrice affine SVG : [a,b,c,d,e,f] → x'=ax+cy+e, y'=bx+dy+f. */
 export type Matrix = [number, number, number, number, number, number];
 
 export const identity = (): Matrix => [1, 0, 0, 1, 0, 0];
 export const translate = (x: number, y: number): Matrix => [1, 0, 0, 1, x, y];
+export const scale = (x: number, y: number): Matrix => [x, 0, 0, y, 0, 0];
 export function rotate(deg: number): Matrix {
   const r = (deg * Math.PI) / 180, c = Math.cos(r), s = Math.sin(r);
   return [c, s, -s, c, 0, 0];
@@ -38,19 +39,26 @@ export interface FKBone {
 }
 
 /**
- * Transform monde de chaque os (FK, racine = os sans parent), pour TOUT squelette keyé par
- * chaîne. `pose` = deltas d'angle additifs. Générique sur la liste d'os du gabarit.
+ * Transform monde de chaque os (FK, racine = os sans parent), pour TOUT squelette keyé par chaîne.
+ * Générique sur la liste d'os du gabarit.
+ *
+ * La matrice LOCALE d'un os est celle des moteurs à squelette : `translate(pivot + t) ∘ rotate ∘
+ * scale`. Les trois canaux de la `Pose` y entrent ensemble, donc les trois sont HÉRITÉS par les
+ * enfants — descendre le bassin descend toute la chaîne, raccourcir la cuisse remonte genou, tibia
+ * et pied. Une pose de ROTATION seule compose `scale(1,1)` et `translate(pivot)` : elle rend la
+ * MÊME matrice qu'avant les canaux, au bit près.
  */
 export function worldTransformsG<K extends string>(
   sk: Record<K, FKBone>,
-  pose: Partial<Record<K, number>>,
+  pose: BonePose<K>,
 ): Record<K, Matrix> {
   const out = {} as Record<K, Matrix>;
   const world = (id: K): Matrix => {
     if (out[id]) return out[id];
     const b = sk[id];
-    const ang = b.angle + (pose[id] ?? 0); // pose = DELTA additif sur l'angle de repos
-    const local = mul(translate(b.pivot.x, b.pivot.y), rotate(ang));
+    const xf = xfOf(pose, id);
+    const ang = b.angle + xf.r; // rotation = DELTA additif sur l'angle de repos
+    const local = mul(translate(b.pivot.x + xf.tx, b.pivot.y + xf.ty), mul(rotate(ang), scale(xf.sx, xf.sy)));
     out[id] = b.parent ? mul(world(b.parent as K), local) : local;
     return out[id];
   };

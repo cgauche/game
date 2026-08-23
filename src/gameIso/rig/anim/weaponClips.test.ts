@@ -1,3 +1,5 @@
+import { rotOf, type Pose } from '../poses';
+import type { BoneId } from '../bones';
 import { describe, it, expect } from 'vitest';
 import { weaponRest, weaponAttackClip, weaponParryClip, mountedAttackClip, mountedParryClip, seatedClip, isRangedFamily } from './weaponClips';
 import { clipDuration, CLIPS } from './clips';
@@ -10,29 +12,30 @@ const w = (name: string, type: 'melee' | 'ranged' = 'melee', extra: Partial<Weap
   ({ label: name, type, damage: { plusBF: false, flat: 4 }, qualities: [], shape: findTrappingByLabel(name)?.shape, ...extra } as Weapon);
 
 const windUp = (clip: ReturnType<typeof weaponAttackClip>) => clip.steps[0].pose;
-const anyStep = (clip: ReturnType<typeof weaponAttackClip>, pred: (p: Record<string, number>) => boolean) =>
-  clip.steps.some((s) => pred(s.pose as Record<string, number>));
+const anyStep = (clip: ReturnType<typeof weaponAttackClip>, pred: (p: Pose) => boolean) =>
+  clip.steps.some((s) => pred(s.pose));
+const r = (p: Pose, id: BoneId) => rotOf(p, id);
 
 describe('weaponAttackClip — gestes distincts par CLASSE DE MANIEMENT', () => {
   it('lourde 2 mains (Grande hache) lève plus haut que la lame 1 main (Dague)', () => {
-    expect(windUp(weaponAttackClip(w('Grande hache'))).epauleD!)
-      .toBeLessThan(windUp(weaponAttackClip(w('Dague'))).epauleD!);
+    expect(r(windUp(weaponAttackClip(w('Grande hache'))), 'epauleD'))
+      .toBeLessThan(r(windUp(weaponAttackClip(w('Dague'))), 'epauleD'));
   });
 
   it('hampe (Lance) perce : fente du buste/bassin vers l’avant, peu de lever de bras', () => {
     const lance = weaponAttackClip(w('Lance'));
-    expect(anyStep(lance, (p) => (p.torse ?? 0) >= 6 && (p.bassin ?? 0) >= 3)).toBe(true);
-    expect(Math.abs(windUp(lance).epauleD ?? 0)).toBeLessThan(40);
+    expect(anyStep(lance, (p) => r(p, 'torse') >= 6 && r(p, 'bassin') >= 3)).toBe(true);
+    expect(Math.abs(r(windUp(lance), 'epauleD'))).toBeLessThan(40);
   });
 
   it('hampe : la hampe se ramène pointe en avant (gros delta `arme` à l’apex)', () => {
-    expect(anyStep(weaponAttackClip(w('Lance')), (p) => (p.arme ?? 0) >= 90)).toBe(true);
+    expect(anyStep(weaponAttackClip(w('Lance')), (p) => r(p, 'arme') >= 90)).toBe(true);
   });
 
   it('Arc utilise le bras GAUCHE tendu en avant (pousse l’arc) et tire en arrière', () => {
     const arc = weaponAttackClip(w('Arc long', 'ranged'));
-    expect(anyStep(arc, (p) => (p.epauleG ?? 0) > 20)).toBe(true);
-    expect(anyStep(arc, (p) => (p.epauleD ?? 0) < -20)).toBe(true);
+    expect(anyStep(arc, (p) => r(p, 'epauleG') > 20)).toBe(true);
+    expect(anyStep(arc, (p) => r(p, 'epauleD') < -20)).toBe(true);
   });
 
   it('Escrime (Rapière) frappe plus vite qu’une lourde 2 mains', () => {
@@ -42,7 +45,7 @@ describe('weaponAttackClip — gestes distincts par CLASSE DE MANIEMENT', () => 
 
   it('Arme à feu (Pistolet) : recul vers le haut (tête/torse reculent)', () => {
     const pistol = weaponAttackClip(w('Pistolet', 'ranged'));
-    expect(anyStep(pistol, (p) => (p.tete ?? 0) <= -4 && (p.torse ?? 0) <= -6)).toBe(true);
+    expect(anyStep(pistol, (p) => r(p, 'tete') <= -4 && r(p, 'torse') <= -6)).toBe(true);
   });
 
   it('la FORME prime : bec-de-corbin (Groupe Cavalerie) frappe comme une lame 1 main, pas comme une lance', () => {
@@ -80,23 +83,23 @@ describe('weaponRest — l’arme est tenue/orientée selon la classe', () => {
 
 describe('weaponParryClip — garde adaptée à la classe', () => {
   it('avec bouclier → garde du bras gauche', () => {
-    const p = weaponParryClip(w('Rapière'), true).steps[0].pose as Record<string, number>;
+    const p = weaponParryClip(w('Rapière'), true).steps[0].pose;
     expect(p.epauleG).toBeDefined();
   });
   it('escrime sans bouclier → opposition du bras d’arme (droit)', () => {
-    const p = weaponParryClip(w('Rapière'), false).steps[0].pose as Record<string, number>;
+    const p = weaponParryClip(w('Rapière'), false).steps[0].pose;
     expect(p.epauleD).toBeDefined();
   });
   it('mêlée à deux mains (Bâton de combat) → blocage des deux bras, coudes fléchis', () => {
-    const p = weaponParryClip(w('Bâton de combat'), false).steps[0].pose as Record<string, number>;
+    const p = weaponParryClip(w('Bâton de combat'), false).steps[0].pose;
     expect(p.epauleG).toBeDefined();
     expect(p.epauleD).toBeDefined();
     // hampe relevée en travers : les DEUX avant-bras plient (coudes), pas juste les épaules.
-    expect(p.avantBrasG).toBeLessThan(0);
-    expect(p.avantBrasD).toBeLessThan(0);
+    expect(r(p, 'avantBrasG')).toBeLessThan(0);
+    expect(r(p, 'avantBrasD')).toBeLessThan(0);
   });
   it('un tireur (Arc) esquive au lieu de parer', () => {
-    const p = weaponParryClip(w('Arc long', 'ranged'), false).steps[0].pose as Record<string, number>;
+    const p = weaponParryClip(w('Arc long', 'ranged'), false).steps[0].pose;
     expect(p.bassin).toBeDefined();
   });
 });
@@ -116,26 +119,26 @@ describe('clips MONTÉS — gestes en selle (deltas sur mountedRest, jamais bass
   });
 
   // Angle MONDE de l'arme (delta) = arme + epauleD + avantBrasD — l'os `arme` suit la main.
-  const worldArme = (p: Record<string, number>) => (p.arme ?? 0) + (p.epauleD ?? 0) + (p.avantBrasD ?? 0);
+  const worldArme = (p: Pose) => r(p, 'arme') + r(p, 'epauleD') + r(p, 'avantBrasD');
 
   it('charge lance couchée ≠ clip à pied : l’épaule projette mais la lance RESTE en arrêt (angle monde quasi constant)', () => {
     const lance = w('Lance de cavalerie');
     const monte = mountedAttackClip(lance);
     expect(monte).not.toEqual(weaponAttackClip(lance)); // le clip à pied abaisse la lance (arme +125)
-    expect(monte.steps.every((s) => Math.abs(worldArme(s.pose as Record<string, number>)) <= 12)).toBe(true);
+    expect(monte.steps.every((s) => Math.abs(worldArme(s.pose)) <= 12)).toBe(true);
     // l'épaule PROJETTE le poing en AVANT (profil natif : négatif = avant, sonde FK).
-    expect(monte.steps.some((s) => ((s.pose as Record<string, number>).epauleD ?? 0) <= -20)).toBe(true);
+    expect(monte.steps.some((s) => r(s.pose, 'epauleD') <= -20)).toBe(true);
   });
 
   it('taille à cheval (1 main) : la pointe BALAIE un grand arc monde (armé arrière → fauche avant)', () => {
-    const worlds = mountedAttackClip(w('Dague')).steps.map((s) => worldArme(s.pose as Record<string, number>));
+    const worlds = mountedAttackClip(w('Dague')).steps.map((s) => worldArme(s.pose));
     expect(Math.max(...worlds) - Math.min(...worlds)).toBeGreaterThanOrEqual(100);
     expect(Math.max(...worlds)).toBeLessThanOrEqual(140); // jamais pointe vers l’ARRIÈRE (> 180 monde)
   });
 
   it('recul monté d’une arme à feu : le bras d’arme plie au coude (avantBrasD)', () => {
     const clip = mountedAttackClip(w('Pistolet', 'ranged'));
-    expect(clip.steps.some((s) => ((s.pose as Record<string, number>).avantBrasD ?? 0) < 0)).toBe(true);
+    expect(clip.steps.some((s) => r(s.pose, 'avantBrasD') < 0)).toBe(true);
   });
 
   it('le geste monté se joue sur le bras qui tient l’arme : tentacule → miroir gauche', () => {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { ease, lerpPose } from './tween';
+import { ease } from './tween';
+import { lerpPose } from '../poses';
 
 describe('ease', () => {
   it('borne les extrêmes (0→0, 1→1)', () => {

@@ -2,6 +2,7 @@
  * Compose du gabarit QUADRUPÈDE → ResolvedBone[] (MÊME format que le rig héros) : chaque
  * créature devient des os animables par-bone, recoloriés via le moteur de palette partagé.
  */
+import { addPose, type BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -76,7 +77,7 @@ export function quadPropsWithHarnais(p: QuadProps, espece: string, harnais?: str
 export function resolveQuad(
   species: string,
   view: View = 'profile',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
   wings: 'folded' | 'spread' = 'folded',
   eyes?: { G?: string; D?: string },
@@ -91,7 +92,7 @@ export function resolveQuad(
 export function resolveQuadFromProps(
   p: QuadProps,
   view: View = 'profile',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
   wings: 'folded' | 'spread' = 'folded',
   eyes?: { G?: string; D?: string },
@@ -99,9 +100,7 @@ export function resolveQuadFromProps(
   // Posture propre (p.stance) : deltas additifs SOUS la pose d'anim, en PROFIL seulement
   // (les vues de bout refigent leurs angles dans quadSkeletonForView).
   if (p.stance && view === 'profile') {
-    const merged: Record<string, number> = { ...p.stance } as Record<string, number>;
-    for (const [id, d] of Object.entries(pose)) merged[id] = (merged[id] ?? 0) + (d ?? 0);
-    pose = merged;
+    pose = addPose(p.stance as BonePose, pose);
   }
   const sk = groundQuad(quadSkeletonForView(buildQuadSkeleton(p), view), pose);
   const world = worldTransformsG(sk, pose) as Record<QuadBoneId, Matrix>;

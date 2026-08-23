@@ -4,6 +4,7 @@
  * Anim propre au plan : pulsation de l'abdomen + frémissement au repos, ruée à l'attaque, pattes
  * recroquevillées à la mort. Réutilise la machinerie (FK générique, palette tokenisée, rendu).
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -140,7 +141,7 @@ export const SPIDER_DEATH: Record<string, number> = { corps: 168 };
 export function resolveSpiderFromProps(
   p: SpiderProps,
   view: View = 'front',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = buildSkeleton();
@@ -159,7 +160,7 @@ export const SPIDER_DEFAULT: SpiderProps = {
   stored: { corps: '#2e2622', corpsO: '#181210', corpsH: '#574438', cheveux: '#181210', cheveuxO: '#0e0a08', cuir: '#7a1010' },
 };
 
-export function resolveSpider(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveSpider(species: string, view: View = 'front', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveSpiderFromProps(SPIDER_SPECIES[species] ?? SPIDER_DEFAULT, view, pose, colors);
 }
 export const arachnidPlan: BodyPlan = {

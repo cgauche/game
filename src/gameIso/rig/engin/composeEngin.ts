@@ -9,6 +9,7 @@
  * — JAMAIS de name-matcher/regex (règle de rendu : « espèce explicite → record »). Les 3 vues (face /
  * profil / dos) sont des arts dédiés en coords LOCALES (origine = contact sol au centre, y NÉGATIF vers le haut).
  */
+import { rotOf, type BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -35,8 +36,8 @@ function art(species: string, view: View): string {
 }
 
 /** (espèce, vue, pose, couleurs) → un os statique ancré au sol. `pose.recul` = recul (tir) / bascule (mort). */
-function resolveEngin(species: string, view: View, pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
-  return groundedBody(art(species, view), ENGIN_DEFAULT, colors, { id: 'engin', tilt: pose.recul ?? 0 });
+function resolveEngin(species: string, view: View, pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
+  return groundedBody(art(species, view), ENGIN_DEFAULT, colors, { id: 'engin', tilt: rotOf(pose, 'recul') });
 }
 
 export const enginPlan: BodyPlan = {

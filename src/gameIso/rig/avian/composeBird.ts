@@ -4,6 +4,7 @@
  * hochement de tête au repos, sautillement+frémissement d'aile au déplacement, coup de bec à
  * l'attaque, sur le flanc à la mort. Réutilise la machinerie (FK, palette tokenisée, rendu).
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -263,7 +264,7 @@ export const BIRD_DEATH: Record<string, number> = { corps: 84, tete: 20 };
 export function resolveBirdFromProps(
   p: BirdProps,
   view: View = 'profile',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = buildSkeleton();
@@ -295,7 +296,7 @@ export const BIRD_DEFAULT: BirdProps = {
   stored: { corps: '#7c8a99', corpsO: '#4e5a66', corpsH: '#c2ccd4', cheveux: '#3a444e', cheveuxO: '#222a30', cuir: '#d06a26' },
 };
 
-export function resolveBird(species: string, view: View = 'profile', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveBird(species: string, view: View = 'profile', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveBirdFromProps(BIRD_SPECIES[species] ?? BIRD_DEFAULT, view, pose, colors);
 }
 export const avianPlan: BodyPlan = {

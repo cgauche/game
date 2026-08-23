@@ -8,6 +8,7 @@
  * Anim propre : battement d'ailes + ondulation du cou au repos, bond au déplacement, fouet de
  * langue/cou à l'attaque, effondrement à la mort.
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -206,7 +207,7 @@ export const JABBER_DEATH: Record<string, number> = { corps: 20, cou: 60, tete: 
 export function resolveJabberFromProps(
   p: JabberProps,
   view: View = 'front',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = buildSkeleton();
@@ -225,7 +226,7 @@ export const JABBER_DEFAULT: JabberProps = {
   stored: { corps: '#c8682a', corpsO: '#8a4216', corpsH: '#e89a52', cheveux: '#6a3210', cheveuxO: '#3a1c08', cuir: '#caa23a' },
 };
 
-export function resolveJabber(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveJabber(species: string, view: View = 'front', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveJabberFromProps(JABBER_SPECIES[species] ?? JABBER_DEFAULT, view, pose, colors);
 }
 

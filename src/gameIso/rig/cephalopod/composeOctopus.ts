@@ -7,6 +7,7 @@
  * au repos, projection à l'attaque, affaissement à la mort. Réutilise la machinerie (FK, palette
  * tokenisée, rendu).
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -167,7 +168,7 @@ export const OCTO_DEATH: Record<string, number> = { corps: 22, tentacules: 30, b
 export function resolveOctopusFromProps(
   p: OctopusProps,
   view: View = 'front',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = buildSkeleton();
@@ -186,7 +187,7 @@ export const OCTOPUS_DEFAULT: OctopusProps = {
   stored: { corps: '#8a6238', corpsO: '#452e16', corpsH: '#c2a068', cheveux: '#6b6d3a', cheveuxO: '#3a3c1f', cuir: '#b98f47' },
 };
 
-export function resolveOctopus(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveOctopus(species: string, view: View = 'front', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveOctopusFromProps(OCTOPUS_SPECIES[species] ?? OCTOPUS_DEFAULT, view, pose, colors);
 }
 export const cephalopodPlan: BodyPlan = {

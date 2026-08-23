@@ -14,6 +14,7 @@
  * Anim commune au plan : tremblotement/pulsation au repos, embardée au déplacement, abattage des
  * bras à l'attaque, affaissement à la mort.
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -241,7 +242,7 @@ export const HULK_DEATH: Record<string, number> = { corps: 16, brasG: 46, brasD:
 export function resolveHulkFromProps(
   p: HulkProps,
   view: View = 'front',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = buildSkeleton(p);
@@ -264,7 +265,7 @@ export const HULK_DEFAULT: HulkProps = {
   stored: { corps: '#5a5236', corpsO: '#362f1e', corpsH: '#7c7150', cheveux: '#2a2416', cheveuxO: '#181206', cuir: '#3a3320' },
 };
 
-export function resolveHulk(species: string, view: View = 'front', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveHulk(species: string, view: View = 'front', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveHulkFromProps(HULK_SPECIES[species] ?? HULK_DEFAULT, view, pose, colors);
 }
 

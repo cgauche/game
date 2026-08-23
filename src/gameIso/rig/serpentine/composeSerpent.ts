@@ -4,6 +4,7 @@
  * l'anim propre au plan : balancement de cobra au repos, lunge à l'attaque, tête affaissée à la
  * mort. Réutilise INTÉGRALEMENT la machinerie (FK worldTransformsG, palette tokenisée, rendu).
  */
+import type { BonePose } from '../poses';
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
@@ -164,7 +165,7 @@ export const SERPENT_DEATH: Record<string, number> = { cou: 74, tete: 36, queue:
 export function resolveSerpentFromProps(
   p: SerpentProps,
   view: View = 'profile',
-  pose: Record<string, number> = {},
+  pose: BonePose = {},
   colors?: Palette,
 ): ResolvedBone[] {
   const sk = buildSkeleton(p) as Record<SerpentBoneId, SBone>;
@@ -188,7 +189,7 @@ export const SERPENT_DEFAULT: SerpentProps = {
 };
 
 /** (espèce, vue, pose, couleurs) → os résolus, depuis la table d'espèces du registre. */
-export function resolveSerpent(species: string, view: View = 'profile', pose: Record<string, number> = {}, colors?: Palette): ResolvedBone[] {
+export function resolveSerpent(species: string, view: View = 'profile', pose: BonePose = {}, colors?: Palette): ResolvedBone[] {
   return resolveSerpentFromProps(SERPENT_SPECIES[species] ?? SERPENT_DEFAULT, view, pose, colors);
 }
 /** Gabarit serpentin enregistrable. L'ondulation de cobra est l'IDLE du plan (animée en continu

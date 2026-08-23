@@ -305,7 +305,7 @@ describe('abord ATTEIGNABLE — un mur entre le siège et son abord déclaré n�
 
   it('l’occupabilité se juge sur l’ATTEIGNABILITÉ, pas sur la seule marchabilité', () => {
     const scene = cloisonnee();
-    const barree = { propId: PROP, slotId: 'place-ouest', anchor: { x: 4.57, y: 5, h: 0.49 }, facing: 'E' as Dir8, approach: { x: 4, y: 5 } };
+    const barree = { propId: PROP, slotId: 'place-ouest', anchor: { x: 4.57, y: 5, h: 0.49 }, ground: 0, facing: 'E' as Dir8, approach: { x: 4, y: 5 } };
     expect(isWalkable(scene, barree.approach.x, barree.approach.y, 0)).toBe(true);
     expect(seatIsOccupiable(scene, barree)).toBe(false);
   });

@@ -1,5 +1,6 @@
 import type { Pose } from '../poses';
-import { ease, lerpPose, type Easing } from './tween';
+import { ease, type Easing } from './tween';
+import { lerpPose } from '../poses';
 
 export interface ClipStep {
   pose: Pose;
