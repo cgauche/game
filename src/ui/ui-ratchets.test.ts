@@ -1350,8 +1350,6 @@ const NUMBER_INPUT_BASELINE: Record<string, number> = {
   // -2 (25 → 23) : les deux `<input type="number">` de l'empreinte de décor disparaissent avec le
   // champ lui-même (empreinte verrouillée à la source). Stock baissé, détecteur inchangé.
   'editor/Inspector.tsx': 23,
-  'editor/LogicDock.tsx': 10,
-  'editor/NarratifEditor.tsx': 3,
   'editor/Palette.tsx': 1,
 };
 
