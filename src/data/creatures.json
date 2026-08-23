@@ -51015,8 +51015,7 @@
       },
       {
         "id": "intimidation",
-        "value": 95,
-        "spec": "+3 DR grâce à Menaçant"
+        "value": 95
       },
       {
         "id": "langue",
@@ -51767,8 +51766,7 @@
     "skills": [
       {
         "id": "pistage",
-        "value": 60,
-        "spec": "+4 DR grâce à Pisteur"
+        "value": 60
       }
     ],
     "talents": [],
@@ -53439,8 +53437,7 @@
       },
       {
         "id": "pistage",
-        "value": 62,
-        "spec": "+4 DR grâce au Trait Pisteur"
+        "value": 62
       }
     ],
     "talents": [
