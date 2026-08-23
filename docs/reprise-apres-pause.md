@@ -8,7 +8,7 @@ longue pause. Chaque chemin/symbole cité existe dans le repo — vérifié via 
 ```bash
 git clone <url> && cd Game
 npm install     # pose core.hooksPath via le script "postinstall" (package.json)
-npm test        # vitest run — suite du moteur
+npm test        # suite du moteur — deux processus Vitest (node + jsdom) si ≥ 7 cœurs, sinon un seul
 npm run dev     # http://localhost:5173
 ```
 
