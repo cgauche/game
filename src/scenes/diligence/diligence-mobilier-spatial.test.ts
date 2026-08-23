@@ -9,41 +9,48 @@ import { findPropById } from '../../data';
 import { buildPropVolumes } from '../../gameIso/builders/propVolumes';
 
 /**
- * MEUBLEMENT DE LA SALLE PRINCIPALE — preuve SPATIALE des quinze poses de `zone-S-z0`.
+ * IMPLANTATION DE LA SALLE PRINCIPALE — preuve SPATIALE des dix-neuf poses de `zone-S-z0`, telles
+ * que la carte de la salle les arrête (#1443).
  *
  * Ce fichier tient deux promesses distinctes :
- *  1. le meublement n'a RIEN touché de l'architecture — digests témoins figés, calculés au commit
- *     83d02a10, celui qui précède la pose, et jamais régénérés depuis ;
- *  2. la salle meublée reste JOUABLE : 89 tuiles libres d'une seule composante, dix-huit places
- *     dont l'abord effectif est marchable et exclusif, volumes contenus dans leur case, coutures
- *     obligatoires (portes, fenêtres, rampe) intactes.
+ *  1. l'implantation n'a RIEN touché de l'architecture — digests témoins figés, calculés au commit
+ *     83d02a10, celui qui précède la première pose, et jamais régénérés depuis ;
+ *  2. la salle meublée reste JOUABLE : 85 tuiles libres d'une seule composante, seize places dont
+ *     l'abord effectif est marchable et exclusif, comptoir joint à joint, espace du tenancier tenu
+ *     ouvert sur la salle ET sur la cuisine, coutures obligatoires (portes, fenêtres, rampe) intactes.
  */
 const scene: Scene = diligenceCampaign.scenes[0];
 
-/** Les quinze ancres, dans leur ordre d'inscription au document. */
-const EXPECTED = [
-  ['cheminee-interieure', 10, 8],
-  ['comptoir-droit', 10, 24], ['comptoir-angle', 11, 24],
-  ['comptoir-droit', 11, 23], ['comptoir-droit', 11, 22], ['comptoir-droit', 11, 21],
-  ['comptoir-droit', 11, 20], ['comptoir-droit', 11, 19], ['comptoir-droit', 10, 19],
-  ['table-ronde-4-tabourets', 10, 23], ['table-ronde-4-tabourets', 12, 14], ['table-ronde-4-tabourets', 10, 10],
-  ['table-murale-2-tabourets', 13, 10], ['table-murale-2-tabourets', 13, 14], ['table-murale-2-tabourets', 13, 19],
+/** Les dix-neuf poses : id, ref, case, cap — dans leur ordre d'inscription au document.
+ *
+ *  CAP DES PIÈCES DE COMPTOIR (contrat de `data/props.types.ts` : recette FACE AU NORD, cap `N` =
+ *  identité, un cran = 45° horaires) : le cap NOMME la face de service, celle que la recette dessine
+ *  au nord (barre de pied et panneaux en y négatif). Le module d'ANGLE joint une branche à sa face de
+ *  service et une branche à sa gauche : cap `E` raccorde le retour haut (ouest) à la barre (sud) ;
+ *  cap `S` raccorde la barre (nord) au pied bas (est). */
+const POSES = [
+  ['diligence-salle-table-ronde-1', 'table-ronde-4-tabourets', 11, 8, 'S'],
+  ['diligence-salle-comptoir-1', 'comptoir-droit', 10, 9, 'N'],
+  ['diligence-salle-comptoir-2', 'comptoir-angle', 11, 9, 'E'],
+  ['diligence-salle-comptoir-3', 'comptoir-droit', 12, 9, 'N'],
+  ['diligence-salle-comptoir-4', 'comptoir-droit', 11, 10, 'E'],
+  ['diligence-salle-comptoir-5', 'comptoir-droit', 11, 11, 'E'],
+  ['diligence-salle-comptoir-6', 'comptoir-droit', 11, 12, 'E'],
+  ['diligence-salle-comptoir-7', 'comptoir-droit', 11, 13, 'E'],
+  ['diligence-salle-comptoir-8', 'comptoir-droit', 11, 14, 'E'],
+  ['diligence-salle-comptoir-9', 'comptoir-droit', 11, 15, 'E'],
+  ['diligence-salle-comptoir-10', 'comptoir-angle', 11, 16, 'S'],
+  ['diligence-salle-comptoir-11', 'comptoir-droit', 12, 16, 'S'],
+  ['diligence-salle-cheminee', 'cheminee-interieure', 10, 18, 'E'],
+  ['diligence-salle-table-murale-1', 'table-murale-2-tabourets', 14, 11, 'E'],
+  ['diligence-salle-table-murale-2', 'table-murale-2-tabourets', 14, 16, 'E'],
+  ['diligence-salle-table-ronde-2', 'table-ronde-4-tabourets', 12, 18, 'S'],
+  ['diligence-salle-table-ronde-3', 'table-ronde-4-tabourets', 10, 21, 'S'],
+  ['diligence-salle-meuble-1', 'armoire', 14, 20, 'O'],
+  ['diligence-salle-meuble-2', 'armoire', 9, 19, 'E'],
 ] as const;
 
-/** Cap EXPLICITE attendu de chaque pose, dans le même ordre — un meuble à dos ne se laisse pas au défaut. */
-const CAPS = ['E', 'S', 'S', 'E', 'E', 'E', 'E', 'E', 'N', 'N', 'N', 'N', 'O', 'O', 'O'] as const;
-
-/** Ids stables des quinze poses, dans le même ordre. */
-const IDS = [
-  'diligence-salle-cheminee',
-  'diligence-salle-comptoir-1', 'diligence-salle-comptoir-2', 'diligence-salle-comptoir-3',
-  'diligence-salle-comptoir-4', 'diligence-salle-comptoir-5', 'diligence-salle-comptoir-6',
-  'diligence-salle-comptoir-7', 'diligence-salle-comptoir-8',
-  'diligence-salle-table-ronde-1', 'diligence-salle-table-ronde-2', 'diligence-salle-table-ronde-3',
-  'diligence-salle-table-murale-1', 'diligence-salle-table-murale-2', 'diligence-salle-table-murale-3',
-] as const;
-
-/** Empreinte figée de l'ARCHITECTURE au commit qui précède la pose (83d02a10). Un meublement qui
+/** Empreinte figée de l'ARCHITECTURE au commit qui précède la pose (83d02a10). Une implantation qui
  *  déplace un mur, une ouverture, un terrain ou une zone fait bouger l'un de ces témoins. */
 const TOPOLOGY_BEFORE = {
   walls: 668,
@@ -53,6 +60,9 @@ const TOPOLOGY_BEFORE = {
   effectZonesDigest: '007e9059756e689d',
   architectureDigest: 'f55715704e6a6e5f',
 };
+
+/** Espace de service du tenancier : la ruelle derrière le comptoir, tenue LIBRE. */
+const RUELLE = [10, 11, 12, 13, 14, 15].map((y) => ({ x: 10, y }));
 
 const digest = (valeurs: readonly string[]) =>
   createHash('sha256').update([...valeurs].sort().join('|')).digest('hex').slice(0, 16);
@@ -67,25 +77,49 @@ const layersDigest = (couches: Scene['layers']) =>
 const zonesDigest = (zones: NonNullable<Scene['effectZones']>) =>
   digest(zones.map((z) => `${z.id}:${z.z ?? 0}:${JSON.stringify(z.area)}:${sceneZoneTiles(z).map((p) => `${p.x},${p.y},${p.z ?? z.z ?? 0}`).sort().join(';')}`));
 
-/** Les ancres de mobilier du document : `[ref, x, y]`, dans l'ordre des entités. */
-const furnitureAnchors = (on: Scene) =>
-  on.entities.filter((e) => e.kind === 'prop').map((e) => [e.ref ?? '', e.pos.x, e.pos.y]);
+/** Les ancres de mobilier du document : `[id, ref, x, y, facing]`, dans l'ordre des entités. */
+const implantation = (on: Scene) =>
+  on.entities.filter((e) => e.kind === 'prop').map((e) => [e.id, e.ref ?? '', e.pos.x, e.pos.y, e.facing]);
 
-const furnitureAt = (on: Scene, x: number, y: number): SceneEntity =>
-  on.entities.find((e) => e.kind === 'prop' && e.pos.x === x && e.pos.y === y && (e.z ?? 0) === 0)!;
+const meubles = () => scene.entities.filter((e) => e.kind === 'prop');
+
+const meubleAt = (x: number, y: number): SceneEntity =>
+  scene.entities.find((e) => e.kind === 'prop' && e.pos.x === x && e.pos.y === y && (e.z ?? 0) === 0)!;
 
 interface Boite { x0: number; x1: number; y0: number; y1: number; h0: number; h1: number }
 
 /** AABB monde du meuble, dérivée de ses FACES réelles (`buildPropVolumes`) — pas d'une relecture
- *  parallèle de la recette : ce que le test mesure est ce que le monde cuit. */
-function propBounds(ent: SceneEntity): Boite {
+ *  parallèle de la recette : ce que le test mesure est ce que le monde cuit. Un décor SANS recette
+ *  volumique (billboard) n'a pas de corps monde : `null`. */
+function propBounds(ent: SceneEntity): Boite | null {
   const prop = findPropById(ent.ref ?? '')!;
   const faces = buildPropVolumes(ent, prop, heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0));
   const pts = faces.flatMap((f) => f.poly);
+  if (!pts.length) return null;
   return {
     x0: Math.min(...pts.map((p) => p.x)), x1: Math.max(...pts.map((p) => p.x)),
     y0: Math.min(...pts.map((p) => p.y)), y1: Math.max(...pts.map((p) => p.y)),
     h0: Math.min(...pts.map((p) => p.h)), h1: Math.max(...pts.map((p) => p.h)),
+  };
+}
+
+const corpsMonde = (id: string): Boite => propBounds(scene.entities.find((e) => e.id === id)!)!;
+
+/**
+ * Décalage du FER d'un module de comptoir par rapport à son ancre, en cases. Les recettes de comptoir
+ * ne portent de `fer-noirci` que du côté du SERVICE : barre de pied et ses deux montants pour le
+ * module droit, montant du coin extérieur pour le module d'angle. Ce décalage NOMME donc la face de
+ * service telle que le monde la cuit — c'est ce que le cap de l'entité décide, et ce qu'un cap faux
+ * retourne vers la ruelle du tenancier.
+ */
+function ferDuComptoir(id: string): { x: number; y: number } {
+  const ent = scene.entities.find((e) => e.id === id)!;
+  const faces = buildPropVolumes(ent, findPropById(ent.ref ?? '')!, heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0))
+    .filter((f) => f.material.id === 'fer-noirci');
+  const pts = faces.flatMap((f) => f.poly);
+  return {
+    x: pts.reduce((s, p) => s + p.x, 0) / pts.length - ent.pos.x,
+    y: pts.reduce((s, p) => s + p.y, 0) / pts.length - ent.pos.y,
   };
 }
 
@@ -123,13 +157,31 @@ function cloisonEntre(a: { x: number; y: number }, b: { x: number; y: number }):
     || wallBetween(scene, a.x, a.y, a.x, a.y + dy, 0) || wallBetween(scene, a.x, a.y + dy, b.x, b.y, 0);
 }
 
-/** Toutes les places de la salle, meuble par meuble, dans l'ordre du document. */
-const placesDeLaSalle = (): ResolvedSeatSlot[] =>
-  scene.entities.filter((e) => e.kind === 'prop').flatMap((e) => seatSlotsOf(scene, e.id));
+const cle = (p: Pt) => `${p.x},${p.y},${p.z ?? 0}`;
 
-describe('La Diligence — meublement de la salle principale', () => {
-  it('pose les quinze ancres sans toucher la topologie', () => {
-    expect(furnitureAnchors(scene)).toEqual(EXPECTED.map(([ref, x, y]) => [ref, x, y]));
+/** Composante du PAS (`walkNeighbors`, SOURCE UNIQUE : anti coupe-de-coin comprise) atteinte depuis
+ *  une case, à tous les étages. */
+function composante(depart: Pt): Set<string> {
+  const vus = new Set([cle(depart)]);
+  const file: Pt[] = [depart];
+  while (file.length) {
+    const p = file.shift()!;
+    for (const n of walkNeighbors(scene, p)) if (!vus.has(cle(n))) { vus.add(cle(n)); file.push(n); }
+  }
+  return vus;
+}
+
+/** Toutes les places de la salle, meuble par meuble, dans l'ordre du document. */
+const placesDeLaSalle = (): ResolvedSeatSlot[] => meubles().flatMap((e) => seatSlotsOf(scene, e.id));
+
+/** Les deux cases que dessert une PORTE — un abord posé là condamne le passage. */
+const PORTES = [[14, 8, 'E'], [14, 9, 'E'], [9, 11, 'E'], [8, 20, 'E']] as const;
+const SEUILS = new Set(PORTES.flatMap(([x, y]) => [`${x},${y}`, `${x + 1},${y}`]));
+const RAMPE = [[14, 23], [14, 24], [14, 25], [13, 25]] as const;
+
+describe('La Diligence — implantation de la salle principale', () => {
+  it('pose les dix-neuf meubles de la carte sans toucher la topologie', () => {
+    expect(implantation(scene)).toEqual(POSES.map(([id, ref, x, y, facing]) => [id, ref, x, y, facing]));
     expect(scene.walls).toHaveLength(TOPOLOGY_BEFORE.walls);
     expect(edgeDigest(scene.walls!)).toBe(TOPOLOGY_BEFORE.edgeDigest);
     expect(layersDigest(scene.layers)).toBe(TOPOLOGY_BEFORE.layersDigest);
@@ -138,20 +190,16 @@ describe('La Diligence — meublement de la salle principale', () => {
     expect(digest((scene.architecture ?? []).map((a) => JSON.stringify(a)))).toBe(TOPOLOGY_BEFORE.architectureDigest);
   });
 
-  it('chaque meuble porte un id stable, un cap explicite, et repose au niveau du sol de la salle', () => {
-    const meubles = scene.entities.filter((e) => e.kind === 'prop');
-    expect(meubles.map((e) => e.id)).toEqual([...IDS]);
-    expect(meubles.map((e) => e.facing)).toEqual([...CAPS]);
-    expect(meubles.map((e) => e.z ?? 0)).toEqual(new Array(15).fill(0));
-    expect(meubles.map((e) => heightAt(scene, e.pos.x, e.pos.y, 0))).toEqual(new Array(15).fill(0));
-    expect(meubles.filter((e) => !dansSalle.has(`${e.pos.x},${e.pos.y}`)).map((e) => e.id)).toEqual([]);
+  it('chaque meuble repose au niveau du sol de la salle, et dans la salle', () => {
+    expect(meubles().map((e) => e.z ?? 0)).toEqual(new Array(POSES.length).fill(0));
+    expect(meubles().map((e) => heightAt(scene, e.pos.x, e.pos.y, 0))).toEqual(new Array(POSES.length).fill(0));
+    expect(meubles().filter((e) => !dansSalle.has(`${e.pos.x},${e.pos.y}`)).map((e) => e.id)).toEqual([]);
   });
 
-  it('la salle meublée garde 89 tuiles libres sur 104, en une seule composante', () => {
+  it('la salle meublée garde 85 tuiles libres sur 104, en une seule composante', () => {
     expect(tuilesSalle).toHaveLength(104);
     const libres = tuilesSalle.filter((t) => isWalkable(scene, t.x, t.y, 0));
-    expect(libres).toHaveLength(89);
-    const cle = (p: Pt) => `${p.x},${p.y},${p.z ?? 0}`;
+    expect(libres).toHaveLength(85);
     const vues = new Set([cle(libres[0])]);
     const file: Pt[] = [libres[0]];
     while (file.length) {
@@ -165,39 +213,92 @@ describe('La Diligence — meublement de la salle principale', () => {
     expect(libres.filter((t) => !vues.has(cle(t))).map((t) => `${t.x},${t.y}`)).toEqual([]);
   });
 
+  /**
+   * L'ESPACE DU TENANCIER est un couloir de service, pas un cul-de-sac : la ruelle derrière le
+   * comptoir reste libre, s'ouvre sur la salle par (10,16)-(10,17) — les cases laissées entre le
+   * module d'angle du bas et l'âtre — et sur la CUISINE par la porte (9,11). Sans cette bouche, la
+   * ruelle et l'aile de cuisine entière (67 tuiles) ne se rejoignent plus depuis la salle.
+   */
+  it('la ruelle du tenancier est libre, ouverte sur la salle et sur la cuisine', () => {
+    expect(RUELLE.filter((p) => !isWalkable(scene, p.x, p.y, 0))).toEqual([]);
+    expect(doorAt(scene, 9, 11, 'E', 0)).toBeTruthy();
+    const depuisLaSalle = composante({ x: 12, y: 20 });
+    expect(RUELLE.filter((p) => !depuisLaSalle.has(`${p.x},${p.y},0`))).toEqual([]);
+    expect(depuisLaSalle.has('10,16,0')).toBe(true);
+    expect(depuisLaSalle.has('10,17,0')).toBe(true);
+    // La cuisine (derrière la porte (9,11)) est dans la MÊME composante que la salle.
+    expect(depuisLaSalle.has('9,11,0')).toBe(true);
+    expect(depuisLaSalle.has('5,7,0')).toBe(true);
+  });
+
   it('les coutures obligatoires de la salle restent libres', () => {
-    for (const [x, y] of [[14, 8], [14, 9], [9, 11], [8, 20]] as const)
-      expect(doorAt(scene, x, y, 'E', 0)).toBeTruthy();
+    for (const [x, y, side] of PORTES) expect(doorAt(scene, x, y, side, 0)).toBeTruthy();
     for (const [x, y] of [[14, 12], [14, 16], [14, 20], [14, 24]] as const)
       expect(scene.walls!.find((m) => m.x === x && m.y === y && m.side === 'E' && (m.z ?? 0) === 0)?.window).toBe(true);
     for (const [x, y] of [[11, 7], [10, 26], [13, 26]] as const)
       expect(scene.walls!.find((m) => m.x === x && m.y === y && m.side === 'N' && (m.z ?? 0) === 0)?.window).toBe(true);
-    const rampe = [[14, 23], [14, 24], [14, 25], [13, 25]] as const;
-    expect(rampe.map(([x, y]) => heightAt(scene, x, y, 0))).toEqual([1, 2, 3, 4]);
-    expect(rampe.every(([x, y]) => isWalkable(scene, x, y, 0))).toBe(true);
-    expect(furnitureAnchors(scene).filter(([, x, y]) => rampe.some(([rx, ry]) => rx === x && ry === y))).toEqual([]);
+    expect(RAMPE.map(([x, y]) => heightAt(scene, x, y, 0))).toEqual([1, 2, 3, 4]);
+    expect(RAMPE.every(([x, y]) => isWalkable(scene, x, y, 0))).toBe(true);
+    expect(meubles().filter((e) => RAMPE.some(([rx, ry]) => rx === e.pos.x && ry === e.pos.y)).map((e) => e.id)).toEqual([]);
+    // Aucune case de SEUIL n'est meublée : une porte s'ouvre sur du sol.
+    expect(meubles().filter((e) => SEUILS.has(`${e.pos.x},${e.pos.y}`)).map((e) => e.id)).toEqual([]);
   });
 
-  it('chaque volume tient dans sa propre case et aucun meuble n’en recoupe un autre', () => {
-    const meubles = scene.entities.filter((e) => e.kind === 'prop');
-    expect(meubles.filter((e) => !contenu(propBounds(e), caseBox(e.pos.x, e.pos.y))).map((e) => e.id)).toEqual([]);
-    const boites = meubles.map((e) => ({ id: e.id, boite: propBounds(e) }));
+  it('chaque volume tient dans sa propre case, n’en recoupe aucun autre et laisse le plan des ouvertures libre', () => {
+    const corps = meubles().map((e) => ({ id: e.id, pos: e.pos, boite: propBounds(e) }))
+      .filter((c): c is { id: string; pos: { x: number; y: number }; boite: Boite } => c.boite !== null);
+    expect(corps.filter((c) => !contenu(c.boite, caseBox(c.pos.x, c.pos.y))).map((c) => c.id)).toEqual([]);
     const collisions: string[] = [];
-    for (let i = 0; i < boites.length; i++)
-      for (let j = i + 1; j < boites.length; j++)
-        if (intersects(boites[i].boite, boites[j].boite)) collisions.push(`${boites[i].id} × ${boites[j].id}`);
+    for (let i = 0; i < corps.length; i++)
+      for (let j = i + 1; j < corps.length; j++)
+        if (intersects(corps[i].boite, corps[j].boite)) collisions.push(`${corps[i].id} × ${corps[j].id}`);
     expect(collisions).toEqual([]);
+    // Le mur EST porte quatre fenêtres : aucun corps ne vient toucher leur plan (x = 14,5).
+    expect(corps.filter((c) => c.pos.x === 14 && c.boite.x1 >= 14.5 - 1e-9).map((c) => c.id)).toEqual([]);
   });
 
-  it('les dix-huit places sont occupables : abord marchable, exclusif, et corps assis dans la salle', () => {
+  /**
+   * COMPTOIR D'UN SEUL TENANT — les deux modules d'ANGLE raccordent leurs voisins JOINT À JOINT : le
+   * cap de l'angle est ce qui se vérifie ici, pas un commentaire. Un cap faux ouvre une fente ou fait
+   * mordre deux caissons l'un dans l'autre (le recoupement, lui, est déjà refusé plus haut).
+   */
+  it('les deux angles du comptoir raccordent leurs deux segments sans fente', () => {
+    const joint = (a: string, b: string, axe: 'x' | 'y') => {
+      const A = corpsMonde(a), B = corpsMonde(b);
+      return axe === 'x' ? Math.min(Math.abs(A.x1 - B.x0), Math.abs(B.x1 - A.x0)) : Math.min(Math.abs(A.y1 - B.y0), Math.abs(B.y1 - A.y0));
+    };
+    // Angle haut (11,9) : retour de l'ouest, barre vers le sud.
+    expect(joint('diligence-salle-comptoir-1', 'diligence-salle-comptoir-2', 'x')).toBeLessThan(1e-9);
+    expect(joint('diligence-salle-comptoir-2', 'diligence-salle-comptoir-4', 'y')).toBeLessThan(1e-9);
+    // Angle bas (11,16) : barre du nord, pied vers l'est.
+    expect(joint('diligence-salle-comptoir-9', 'diligence-salle-comptoir-10', 'y')).toBeLessThan(1e-9);
+    expect(joint('diligence-salle-comptoir-10', 'diligence-salle-comptoir-11', 'x')).toBeLessThan(1e-9);
+    // …et les deux modules d'un joint présentent leur FER — donc leur face de service — du MÊME côté
+    // de la ligne de joint : c'est le cap de chaque angle qui se mesure ici.
+    const memeCote = (a: string, b: string, axe: 'x' | 'y') => Math.sign(ferDuComptoir(a)[axe]) === Math.sign(ferDuComptoir(b)[axe]);
+    expect(memeCote('diligence-salle-comptoir-1', 'diligence-salle-comptoir-2', 'y'), 'retour haut ↔ angle haut').toBe(true);
+    expect(memeCote('diligence-salle-comptoir-2', 'diligence-salle-comptoir-4', 'x'), 'angle haut ↔ barre').toBe(true);
+    expect(memeCote('diligence-salle-comptoir-9', 'diligence-salle-comptoir-10', 'x'), 'barre ↔ angle bas').toBe(true);
+    expect(memeCote('diligence-salle-comptoir-10', 'diligence-salle-comptoir-11', 'y'), 'angle bas ↔ pied bas').toBe(true);
+    // La face de service de la BARRE regarde la salle (est), jamais la ruelle du tenancier (ouest).
+    for (const n of [4, 5, 6, 7, 8, 9]) expect(ferDuComptoir(`diligence-salle-comptoir-${n}`).x, `comptoir-${n}`).toBeGreaterThan(0);
+    // Les six modules droits de la barre sont alignés sur la même bande de x, au millimètre…
+    const barre = [4, 5, 6, 7, 8, 9].map((n) => corpsMonde(`diligence-salle-comptoir-${n}`));
+    expect(new Set(barre.map((b) => `${b.x0.toFixed(6)},${b.x1.toFixed(6)}`)).size).toBe(1);
+    // …et se touchent bout à bout, du nord au sud.
+    for (let i = 1; i < barre.length; i++) expect(Math.abs(barre[i].y0 - barre[i - 1].y1)).toBeLessThan(1e-9);
+  });
+
+  it('les seize places sont occupables : abord marchable, exclusif, hors seuil et hors rampe', () => {
     const places = placesDeLaSalle();
-    expect(places).toHaveLength(18);
+    expect(places).toHaveLength(16);
     expect(places.filter((s) => !seatIsOccupiable(scene, s)).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
     const abords = places.map((s) => `${s.approach.x},${s.approach.y}`);
-    expect(new Set(abords).size).toBe(18);
-    const meubles = new Set(scene.entities.filter((e) => e.kind === 'prop').map((e) => `${e.pos.x},${e.pos.y}`));
-    expect(abords.filter((a) => meubles.has(a))).toEqual([]);
-    const rampe = new Set(['14,23', '14,24', '14,25', '13,25']);
+    expect(new Set(abords).size).toBe(16);
+    const cases = new Set(meubles().map((e) => `${e.pos.x},${e.pos.y}`));
+    expect(abords.filter((a) => cases.has(a))).toEqual([]);
+    expect(abords.filter((a) => SEUILS.has(a))).toEqual([]);
+    const rampe = new Set(RAMPE.map(([x, y]) => `${x},${y}`));
     expect(abords.filter((a) => rampe.has(a))).toEqual([]);
     expect(places.filter((s) => !dansSalle.has(caseDuCorps(s))).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
   });
@@ -208,9 +309,8 @@ describe('La Diligence — meublement de la salle principale', () => {
    * marchable mais derrière le mur bâti (9,10,E) — dans la CUISINE : la place était tenue pour
    * occupable et personne ne pouvait s'y asseoir.
    */
-  it('les dix-huit abords sont voisins de leur siège, sans cloison entre eux, et tous dans la salle', () => {
+  it('les seize abords sont voisins de leur siège, sans cloison entre eux, et tous dans la salle', () => {
     const places = placesDeLaSalle();
-    expect(places).toHaveLength(18);
     const lointains = places.filter((s) => {
       const siege = caseDuSiege(s);
       return Math.max(Math.abs(s.approach.x - siege.x), Math.abs(s.approach.y - siege.y)) !== 1;
@@ -223,20 +323,14 @@ describe('La Diligence — meublement de la salle principale', () => {
   /**
    * SONDE promue (revue de la Task 4bis) : l'absence de CLOISON entre un siège et son abord ne dit
    * pas que le GROUPE peut y venir. Ce contrat-là se mesure par la connectivité RÉELLE du pas
-   * (`walkNeighbors`, SOURCE UNIQUE : anti coupe-de-coin comprise) : les dix-huit abords appartiennent
-   * à la composante jouable, celle qui porte aussi la cour d'arrivée.
+   * (`walkNeighbors`, SOURCE UNIQUE) : les seize abords appartiennent à la composante jouable, celle
+   * qui porte aussi la cour d'arrivée.
    */
-  it('les dix-huit abords sont dans la composante jouable — 975 tuiles au rez, 422 à l’étage', () => {
-    const cle = (p: Pt) => `${p.x},${p.y},${p.z ?? 0}`;
+  it('les seize abords sont dans la composante jouable — 971 tuiles au rez, 422 à l’étage', () => {
     const depart = tuilesSalle.find((t) => isWalkable(scene, t.x, t.y, 0))!;
-    const vus = new Set([cle({ ...depart, z: 0 })]);
-    const file: Pt[] = [{ x: depart.x, y: depart.y }];
-    while (file.length) {
-      const p = file.shift()!;
-      for (const n of walkNeighbors(scene, p)) if (!vus.has(cle(n))) { vus.add(cle(n)); file.push(n); }
-    }
+    const vus = composante({ x: depart.x, y: depart.y });
     const parEtage = [...vus].reduce<Record<string, number>>((acc, k) => ({ ...acc, [k.split(',')[2]]: (acc[k.split(',')[2]] ?? 0) + 1 }), {});
-    expect(parEtage).toEqual({ 0: 975, 1: 422 });
+    expect(parEtage).toEqual({ 0: 971, 1: 422 });
     expect(placesDeLaSalle().filter((s) => !vus.has(`${s.approach.x},${s.approach.y},0`)).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
     // La cour d'arrivée est HORS de la salle et dans la MÊME composante : ce qui joint les places
     // joint le dehors — le groupe entre à pied et va s'asseoir.
@@ -244,27 +338,26 @@ describe('La Diligence — meublement de la salle principale', () => {
     expect(vus.has('17,2,0')).toBe(true);
   });
 
-  it('la table adossée au mur de la cuisine assoit quatre convives DU CÔTÉ SALLE', () => {
-    const table = furnitureAt(scene, 10, 10);
-    expect(table.id).toBe('diligence-salle-table-ronde-3');
-    expect(wallBetween(scene, 10, 10, 9, 10, 0), 'le mur de la cuisine DOIT séparer le siège de (9,10) pour que le test morde').toBe(true);
-    expect(isWalkable(scene, 9, 10, 0), '(9,10) DOIT rester marchable pour que le test morde').toBe(true);
+  it('la table ronde coincée entre le mur nord et le comptoir assoit quand même quatre convives', () => {
+    const table = meubleAt(11, 8);
+    expect(table.id).toBe('diligence-salle-table-ronde-1');
+    expect(isWalkable(scene, 11, 9, 0), 'le comptoir DOIT fermer le sud de la table pour que le test morde').toBe(false);
     const places = seatSlotsOf(scene, table.id);
     expect(places.every((s) => seatIsOccupiable(scene, s))).toBe(true);
     expect(places.map((s) => `${s.slotId}:${s.approach.x},${s.approach.y}`))
-      .toEqual(['nord:10,9', 'est:11,10', 'sud:10,11', 'ouest:11,9']);
+      .toEqual(['nord:12,7', 'est:10,8', 'sud:11,7', 'ouest:12,8']);
   });
 
-  it('la table frontière et ses quatre corps tiennent contre le comptoir', () => {
-    const table = furnitureAt(scene, 10, 23);
-    expect(table.ref).toBe('table-ronde-4-tabourets');
-    const places = seatSlotsOf(scene, table.id);
-    expect(places).toHaveLength(4);
-    expect(intersects(propBounds(table), propBounds(furnitureAt(scene, 10, 24)))).toBe(false);
-    expect(intersects(propBounds(table), propBounds(furnitureAt(scene, 11, 23)))).toBe(false);
-    expect(places.every((slot) => dansSalle.has(caseDuCorps(slot)))).toBe(true);
-    expect(places.every((slot) => seatIsOccupiable(scene, slot))).toBe(true);
-    expect(places.map((slot) => `${slot.slotId}:${slot.approach.x},${slot.approach.y}`))
-      .toEqual(['nord:10,22', 'est:9,24', 'sud:9,22', 'ouest:9,23']);
+  it('les deux tables murales assoient leurs convives DU CÔTÉ SALLE, jamais dans le mur est', () => {
+    for (const [x, y] of [[14, 11], [14, 16]] as const) {
+      const table = meubleAt(x, y);
+      expect(table.ref).toBe('table-murale-2-tabourets');
+      expect(wallBetween(scene, x, y, x + 1, y, 0), 'le mur est DOIT longer la table pour que le test morde').toBe(true);
+      const places = seatSlotsOf(scene, table.id);
+      expect(places).toHaveLength(2);
+      expect(places.every((s) => seatIsOccupiable(scene, s))).toBe(true);
+      expect(places.map((s) => `${s.slotId}:${s.approach.x},${s.approach.y}`))
+        .toEqual([`gauche:13,${y - 1}`, `droite:13,${y + 1}`]);
+    }
   });
 });

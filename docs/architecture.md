@@ -170,6 +170,11 @@ src/state/
                               son propre couple `EXPORT_VERSION`/`ROSTER_MIGRATIONS` (même primitive
                               `migrateDoc`), indépendant de `saves.ts` (le roster ne voyage PAS dans
                               la save de partie)
+  seating.ts                  ASSISE — source UNIQUE des places assises d'une Scène : `seatSlotsOf`
+                              (places déclarées par le TYPE de décor → abord EFFECTIF, jamais partagé
+                              avec une autre place de la scène), `seatIsOccupiable`/`seatPoseOf`,
+                              `assignSeat`/`releaseSeat` et l'élagage (`pruneSeatAssignments`,
+                              `releaseUnavailableSeats`). PUR : aucun store, aucun rendu, aucun `gameIso`
   projectLibrary.ts           Bibliothèque des projets de campagne de l'éditeur (`SavedProject`).
                               Backend IndexedDB (db `wfrp4-library`, store `projects`, une source de
                               vérité — supporte les grandes campagnes qui dépassent le quota
@@ -186,7 +191,10 @@ src/gameIso/                Rendu du monde. Le moteur est le monde VOLUMIQUE thr
   builders/                 GÉOMÉTRIE PURE en espace MONDE : types.ts (`SceneEl` = floor/wall/roof/prop/
                             token, discriminé par kind) + floors/walls/roofs/props/tokens/highlights/
                             dynamicMarks/interactHalos/tokenChrome. Un builder n'importe NI caméra NI
-                            Dims — sa sortie survit à toute rotation et sert les deux vues
+                            Dims — sa sortie survit à toute rotation et sert les deux vues.
+                            propVolumes.ts = compilation PURE de la recette volumique d'un décor
+                            (`buildPropVolumes` : primitives locales × cap de l'entité × sol de la case
+                            → `Face[]` monde) ; un décor sans recette reste un billboard
   backends/webgl/           SEUL backend du monde : cuisson des SceneEl en géométrie three (sceneMeshes,
                             faceBake, periodTexture, atlasBake des billboards) + caméras réelles
                             (cameras.ts, ortho pour les vues de plateau, perspective en POV)

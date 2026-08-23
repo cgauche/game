@@ -41,7 +41,7 @@ describe('PERÇABILITÉ cuite — le SOL ne se troue pas, et c’est structurel'
     }
     // PRÉMISSE : les deux camps sont réellement représentés sur la carte mesurée. Le MOBILIER
     // volumique de la salle y ajoute le `kind` « prop » : un meuble se troue comme un mur ou un
-    // toit — seul le SOL est épargné, et c'est la seule frontière que le canal connaît.
+    // toit. Le SOL reste hors du canal : c'est la seule frontière que le canal connaît.
     expect([...vus].sort()).toEqual(['floor', 'prop', 'roof', 'wall']);
     const camps = { épargnés: new Set<string>(), percés: new Set<string>() };
     for (const span of baked.spans)
