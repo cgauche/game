@@ -11,8 +11,15 @@
 // alimente vit dans scripts/guards/lib/structuresStock.mjs (garde src/data/structures-contrat.test.ts).
 import { execFileSync } from 'node:child_process';
 import { emitOrCheck } from './lib/jsdocUnion.mjs';
-import { scannerDonnees, scannerRedeclarations, listerDocuments, empreintesDefs, RACINES } from './lib/structures-scan.mjs';
-import { ANGLES_MORTS, CONCEPTS, ROLES_ENVELOPPE, clesDuRole } from './lib/structures-lexique.mjs';
+import {
+  scannerDonnees,
+  scannerRedeclarations,
+  listerDocuments,
+  empreintesDefs,
+  MARQUE_HORS_STRATE,
+  RACINES,
+} from './lib/structures-scan.mjs';
+import { ANGLES_MORTS, CONCEPTS, GRAPHIES_ENVELOPPANTES, ROLES_ENVELOPPE, clesDuRole } from './lib/structures-lexique.mjs';
 import { choixDeclares, introspecterDefs } from './lib/zod-introspect.mjs';
 import { SCHEMA_DEFS } from '../../src/data/schemas/_registry.generated';
 
@@ -255,6 +262,35 @@ for (const c of CONCEPTS) {
       f.note || '',
     ]),
   );
+  if (c.id !== 'reference') continue;
+  // Réconciliation des graphies ENVELOPPANTES : une même graphie se lit sous sa signature NUE et
+  // sous le chemin `enveloppe>graphie`. Le total par graphie ne se lit donc sur aucune ligne seule.
+  const rangs = GRAPHIES_ENVELOPPANTES.map((g) => {
+    const nue = lignes.filter((f) => f.signature === g);
+    const sous = lignes.filter((f) => f.signature.endsWith(`>${g}`));
+    const somme = (xs: typeof lignes) => xs.reduce((a, f) => a + f.occurrences, 0);
+    return {
+      graphie: g,
+      brut: scan.graphiesBrutes[g] ?? 0,
+      nue: somme(nue),
+      sous: somme(sous),
+      chemins:
+        sous
+          .map((f) => `\`${f.signature}\` ${f.occurrences} (\`${f.dataset}\` › \`${f.champ}\`)`)
+          .join(' · ') || '—',
+    };
+  }).filter((r) => r.sous > 0);
+  if (rangs.length) {
+    out += 'Une graphie ENVELOPPANTE se compte sous sa signature NUE **et** sous le chemin\n';
+    out += '`enveloppe>graphie` : le total par graphie ne se lit sur aucune ligne seule de la table\n';
+    out += 'ci-dessus. La colonne BRUT compte la clé dans la donnée, tout classement confondu : ce qu’elle\n';
+    out += 'dépasse de `nue + sous` est hors du périmètre du concept (champ porteur non mesuré, objet orphelin\n';
+    out += `ou hors strate, §${SECTION.orphelines}).\n\n`;
+    out += tableau(
+      ['Graphie', 'Clé dans la donnée (brut)', 'Signature nue', 'Sous une enveloppe', 'Nue + sous', 'Chemins composés'],
+      rangs.map((r) => [`\`${r.graphie}\``, r.brut, r.nue, r.sous, r.nue + r.sous, r.chemins]),
+    );
+  }
 }
 
 out += `### ${SECTION.homonymes} Homonymes nominatifs\n\n`;
@@ -337,12 +373,16 @@ out += 'clé annonçait une FK (`clé de référence non résolue`), `L1b #1467`
   out += `\`{text}\` sous un champ porteur mesuré est une FORME, §${SECTION.concept(CONCEPTS[0])}). Restent trois familles : les CHARGES UTILES pures\n`;
   out += '(`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`\n';
   out += `ou d’une \`Formula\` (\`{kind,steps}\`, \`{bonusOf}\`) et les objets à \`op\`, dont la grammaire est mesurée en §5.\n`;
-  out += 'Ils ne sont pas au stock — ils se lisent ici, par\n';
-  out += `signature, les ${Math.min(30, scan.invisibles.length)} plus fréquentes sur ${scan.invisibles.length} :\n\n`;
+  out += 'Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les\n';
+  out += `**${scan.invisibles.length}** signatures hors strate, triées par occurrences décroissantes. Le diff de cette\n`;
+  out += 'table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans\n';
+  out += '`src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).\n\n';
+  out += `${MARQUE_HORS_STRATE.debut}\n`;
   out += tableau(
     ['Dataset', 'Champ', 'Signature', 'Occurrences'],
-    scan.invisibles.slice(0, 30).map((o) => [`\`${o.dataset}\``, `\`${o.champ}\``, `\`${o.signature}\``, o.occurrences]),
+    scan.invisibles.map((o) => [`\`${o.dataset}\``, `\`${o.champ}\``, `\`${o.signature}\``, o.occurrences]),
   );
+  out += `${MARQUE_HORS_STRATE.fin}\n\n`;
 }
 
 // ---------------------------------------------------------------------------
@@ -358,7 +398,15 @@ out += 'ce compte lève l’angle mort du classement ordonné.\n';
   const nMonnaie = money?.litteraux ?? 0;
   out += `Le DoD de #1463 annonçait « 5 defs redéclarent la monnaie » : la mesure en trouve **${nMonnaie}** littéraux\n`;
   out += `dans **${money?.defs.length ?? 0}** defs (${(money?.defs ?? []).map((d) => `\`${d}\``).join(' ')}).\n`;
-  out += nMonnaie === 5 ? 'Le chiffre du DoD est CONFIRMÉ par la mesure.\n\n' : 'Le chiffre du DoD n’a pas ce porteur dans l’arbre : il ne se recopie pas.\n\n';
+  out += nMonnaie === 5 ? 'Le chiffre du DoD est CONFIRMÉ par la mesure.\n' : 'Le chiffre du DoD n’a pas ce porteur dans l’arbre : il ne se recopie pas.\n';
+  // Le critère est NOMMÉ, sites compris : un littéral PARTIEL du noyau compte (noyauMin), et c'est
+  // ce qui sépare cette mesure d'une mesure à noyau COMPLET.
+  const partiels = (money?.sites ?? []).filter((s) => s.cles.length < (money?.noyau.split(',').length ?? 0));
+  out += `Critère : ≥ **${money?.noyauMin ?? 0}** clé(s) du noyau \`${money?.noyau ?? ''}\`. Sites : `;
+  out += `${(money?.sites ?? []).map((s) => `\`${s.site}\`${s.champ ? ` (\`${s.champ}\`)` : ''} \`{${s.cles.join(',')}}\``).join(' · ') || '—'}.\n`;
+  out += `Dont **${partiels.length}** littéral(aux) PARTIEL(s) du noyau — `;
+  out += `${partiels.map((s) => `\`${s.site}\``).join(' ') || '—'} : une mesure qui exigerait le noyau COMPLET `;
+  out += `\`${money?.noyau ?? ''}\` en compterait **${nMonnaie - partiels.length}**, pas ${nMonnaie}. Le compte du DoD se lit avec le critère.\n\n`;
 }
 out += tableau(
   ['Concept', 'Noyau', 'Littéraux', 'Defs', 'Liste des defs'],

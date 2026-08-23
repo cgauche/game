@@ -58,6 +58,16 @@ export const RACINES: readonly Racine[] = [
 
 export type Document = { racine: string; chemin: string; nom: string };
 
+/**
+ * Bornes de la table EXHAUSTIVE des signatures hors strate dans `docs/structures-donnees.md`.
+ * Le doc est la LISTE DE RÉFÉRENCE du cliquet de `src/data/structures-contrat.test.ts` : le
+ * générateur pose les bornes, la garde lit entre elles.
+ */
+export const MARQUE_HORS_STRATE = {
+  debut: '<!-- HORS-STRATE:DEBUT -->',
+  fin: '<!-- HORS-STRATE:FIN -->',
+} as const;
+
 /** Classe de type d'une valeur JSON (jamais `typeof` nu : `null` et les tableaux comptent à part). */
 const classeDeType = (v: unknown): string =>
   v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v === 'object' ? 'object' : typeof v;
@@ -582,6 +592,8 @@ export function scannerDonnees(
   /** Objets qu'AUCUNE strate ne porte : ni document, ni forme mesurée, ni orpheline recensée. */
   let objetsInvisibles = 0;
   const invisibles = new Map<string, number>();
+  /** Clé-graphie enveloppante → occurrences BRUTES de la clé dans la donnée (tout classement confondu). */
+  const graphiesBrutes = new Map<string, number>();
 
   /**
    * Classement d'une occurrence de référence : la signature PROJETÉE telle quelle, sauf sous une
@@ -649,6 +661,9 @@ export function scannerDonnees(
     parcourir(p.brut, (o, champ, chemin, dansTableau) => {
       objetsVus += 1;
       const cles = Object.keys(o);
+      // Compte BRUT des clés-graphies enveloppantes, indépendant de tout classement : il borne par
+      // le haut ce que les formes du concept `reference` en portent.
+      for (const g of GRAPHIES_ENVELOPPANTES) if (g in o) inc(graphiesBrutes, g);
       const sig = signature(cles);
       const estRacine = p.racineEntrees.has(o);
       const estEmbarque = documentsEmbarques.has(o);
@@ -903,6 +918,7 @@ export function scannerDonnees(
       documentsEmbarques: documentsEmbarques.size,
       entreesDeRacine: prepares.reduce((a, p) => a + p.entrees.length, 0),
     },
+    graphiesBrutes: Object.fromEntries(graphiesBrutes),
     invisibles: [...invisibles]
       .map(([k, occurrences]) => {
         const [dataset, champ, sig] = k.split(' | ');
@@ -1087,8 +1103,17 @@ export function empreintesDefs(root: string) {
     return {
       concept: c.id,
       noyau: c.noyau!.join(','),
+      noyauMin: c.noyauMin ?? c.noyau!.length,
       litteraux: hits.length,
       defs: [...new Set(hits.map((h) => h.def))].sort(),
+      /** Site NOMINATIF de chaque littéral : `def:ligne`, champ porteur, clés PRÉSENTES du noyau. */
+      sites: hits
+        .map((h) => ({
+          site: `${h.def}:${h.ligne}`,
+          champ: h.champ,
+          cles: c.noyau!.filter((k) => h.cles.includes(k)),
+        }))
+        .sort((a, b) => a.site.localeCompare(b.site)),
     };
   });
 }

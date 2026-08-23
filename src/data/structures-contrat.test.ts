@@ -3,7 +3,13 @@ import { execFileSync } from 'node:child_process';
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { classerValeur, mesurerEnveloppe, scannerDonnees, scannerRedeclarations } from '../../scripts/docs/lib/structures-scan.mjs';
+import {
+  classerValeur,
+  mesurerEnveloppe,
+  scannerDonnees,
+  scannerRedeclarations,
+  MARQUE_HORS_STRATE,
+} from '../../scripts/docs/lib/structures-scan.mjs';
 import {
   ANGLES_MORTS,
   CONCEPTS,
@@ -87,6 +93,39 @@ const cleForme = (
 const cleOrpheline = (o: { dataset: string; champ: string; signature: string; motif: string; occurrences: number } & Trace) =>
   `${o.dataset} | ${o.champ} | ${o.signature} | ${o.motif} | ${o.occurrences}` +
   trace(o, o.motif === 'clé de référence non résolue' ? 'L1a #1466' : 'L1b #1467');
+/**
+ * CLIQUET des signatures hors strate (#1465) : elles ne sont pas au stock — la table EXHAUSTIVE
+ * de `docs/structures-donnees.md` EST la liste de référence, et ce plafond garde son COMPTE.
+ */
+const PLAFOND_HORS_STRATE = 1116;
+const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
+  `${o.dataset} | ${o.champ} | ${o.signature}`;
+
+/** La table hors strate du doc COMMITTÉ (HEAD), bornée par `MARQUE_HORS_STRATE`. */
+const horsStrateDuDoc = (): Set<string> => {
+  const chemin = 'docs/structures-donnees.md';
+  const versions: string[] = [];
+  try {
+    versions.push(execFileSync('git', ['show', `HEAD:${chemin}`], { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 28 }));
+  } catch {
+    /* pas de HEAD lisible (worktree neuf) : la version de travail fait référence. */
+  }
+  versions.push(readFileSync(join(ROOT, chemin), 'utf8'));
+  const cles = new Set<string>();
+  for (const md of versions) {
+    const debut = md.indexOf(MARQUE_HORS_STRATE.debut);
+    const fin = md.indexOf(MARQUE_HORS_STRATE.fin);
+    if (debut < 0 || fin <= debut) continue;
+    for (const ligne of md.slice(debut, fin).split('\n')) {
+      const cellules = ligne.split('|').map((c) => c.trim().replace(/^`|`$/g, '').replace(/\\\|/g, '|'));
+      if (cellules.length !== 6 || !/^\d+$/.test(cellules[4])) continue;
+      cles.add(`${cellules[1]} | ${cellules[2]} | ${cellules[3]}`);
+    }
+    if (cles.size) break;
+  }
+  return cles;
+};
+
 const cleOp = (o: { op: string; signature: string; dataset: string; occurrences: number } & Trace) =>
   `${o.op} | ${o.signature} | ${o.dataset} | ${o.occurrences}` + trace(o, 'L1c #1468');
 
@@ -126,6 +165,22 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       lignes(scan.orphelines.map(cleOrpheline)),
       'écart entre les signatures ORPHELINES observées et `STRUCTURES_ORPHELINES` — un objet qui annonce une référence et ne résout vers rien se compte, il ne se tait pas.',
     ).toEqual(lignes(STRUCTURES_ORPHELINES.map(cleOrpheline)));
+  });
+
+  it('cliquet HORS STRATE : le COMPTE de signatures ne fait que décroître, les neuves sont NOMMÉES', () => {
+    const reference = horsStrateDuDoc();
+    expect(
+      reference.size,
+      'la table EXHAUSTIVE des signatures hors strate est introuvable dans `docs/structures-donnees.md` ' +
+        '(bornes `MARQUE_HORS_STRATE`) — sans elle le cliquet n’a plus de liste de référence : régénérer le doc.',
+    ).toBeGreaterThan(0);
+    const neuves = lignes(scan.invisibles.filter((o) => !reference.has(cleInvisible(o))).map(cleInvisible));
+    expect(
+      scan.invisibles.length,
+      `signatures HORS STRATE en HAUSSE (${scan.invisibles.length} > ${PLAFOND_HORS_STRATE}) — une structure neuve ` +
+        'se pose à la forme CIBLE du lexique. Signature(s) NEUVE(s), absentes de la table du doc de référence :\n' +
+        (neuves.join('\n') || '(aucune : la hausse vient d’occurrences reventilées, comparer la table du doc)'),
+    ).toBeLessThanOrEqual(PLAFOND_HORS_STRATE);
   });
 
   it('signatures d’OPS : observé == stock (dénominateur du lot L1c #1468)', () => {
