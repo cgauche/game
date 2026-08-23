@@ -22,11 +22,7 @@ import { hoverTargeting, tilePreviewAt } from '../../state/targeting';
 import { modalBlocksMapHover } from '../../state/modalArbiter';
 import { mapTargetingActive } from '../../state/targetingHolder';
 import type { RoomPortal } from '../../state/roomPortals';
-import { findActionById } from '../../data/index';
-
-/** Entrée de registre qui ARME l'incantation : c'est elle qui déclare le mode posé dans
- *  `battle.action` (`armed`), et donc la SEULE source de cette valeur côté lecture. */
-const ACTION_INCANTER = 'cast';
+import { CAST_MODE } from '../../state/targetingModes';
 
 export interface HoverAim {
   fromId: string | null; // départ de la ligne (résolu en pixels au rendu — suit le glissement)
@@ -97,9 +93,9 @@ export function useHoverTargeting(
   const ghostIds = useMemo<Set<string>>(() => {
     if (mode !== 'battle' || !battle || battle.over) return new Set();
     // Mode incantation : grisage hors-LdV du SORT (LDB 46 l.121), indépendant de l'arme portée. Le mode
-    // armé se lit à l'entrée du REGISTRE qui l'arme (`armed`, `actions.json`) — aucune valeur d'état
-    // recopiée ici.
-    if (battle.action === findActionById(ACTION_INCANTER)?.armed && battle.selectedSpellId) return castOutOfSightTargetIds(useGame.getState);
+    // armé se lit au REGISTRE DES MODES (`CAST_MODE.id`), jamais à un id d'action recopié : l'entrée qui
+    // arme ce mode porte son propre id, distinct du mode qu'elle pose.
+    if (battle.action === CAST_MODE.id && battle.selectedSpellId) return castOutOfSightTargetIds(useGame.getState);
     if (battle.acted || battle.action !== null) return new Set();
     return outOfSightTargetIds(useGame.getState);
   }, [scene, mode, battle]);

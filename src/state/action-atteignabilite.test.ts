@@ -29,7 +29,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ACTIONS } from '../data/index';
 import { ACTION_GATES, ACTION_CANDIDATES, ACTION_RUN, MODES_HORS_REGISTRE, BATTLE_ACTION_MODES, actionGate, runAction } from './actionRegistry';
-import { TARGETING_MODES, targetingModeLabel } from './targetingModes';
+import { TARGETING_MODES, targetingModeLabel, CAST_MODE } from './targetingModes';
 import { KEYBINDINGS } from './keybindings';
 import { useGame, type BattleState } from './store';
 import { emptyScene } from './scene';
@@ -130,6 +130,24 @@ describe('registre des actions — cohérence interne (ids de code résolus)', (
       `mode(s) de ciblage qu'aucune action ne porte (armer/sortir ce mode n'a aucune surface) :\n  ${orphelins.join('\n  ')}`,
     ).toEqual([]);
   });
+  /**
+   * ARMEMENT — la valeur qu'une action pose dans `battle.action` (`armed`) est un MODE de ciblage du
+   * catalogue, et c'est le `mode` que la MÊME entrée déclare. Conséquence lue par les consommateurs :
+   * « quel geste arme le mode X ? » se résout par le champ `mode`/`armed`, l'id de l'entrée porteuse
+   * étant libre (`cast-spell` arme `cast`, `push-engine` arme `push`).
+   */
+  it('tout `armed` déclaré est un mode du catalogue, égal au `mode` de son entrée (mode incantation → `cast-spell`)', () => {
+    const armantes = ACTIONS.filter((a) => a.armed);
+    expect(armantes.length, 'aucune action armante mesurée : la garde serait verte à vide').toBeGreaterThan(0);
+    const bad = armantes
+      .filter((a) => !TARGETING_MODES.some((m) => m.id === a.armed) || a.mode !== a.armed)
+      .map((a) => `${a.id} → armed:${a.armed} / mode:${a.mode ?? '—'}`);
+    expect(bad, `action(s) dont l'armement ne désigne pas son propre mode de ciblage :\n  ${bad.join('\n  ')}`).toEqual([]);
+    // Résolution NOMMÉE du mode incantation : une seule entrée l'arme, et c'est `cast-spell`.
+    const incantation = armantes.filter((a) => a.armed === CAST_MODE.id).map((a) => a.id);
+    expect(incantation, `le mode ${CAST_MODE.id} doit être armé par une entrée unique`).toEqual(['cast-spell']);
+  });
+
   it('un mode d’INTERLUDE porte son nom de phase, et sa sortie dit si Échap peut la prendre', () => {
     const interludes = ACTIONS.filter((a) => a.surface === 'interlude');
     expect(interludes.length, 'aucune action d’interlude : le bandeau n’aurait rien à rendre').toBeGreaterThan(0);

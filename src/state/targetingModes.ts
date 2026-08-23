@@ -741,7 +741,10 @@ function placingCommitCombatant(get: Get, _set: Set, _active: Combatant, id: str
 // ───────────────────────────────────────────────────────────────────────────
 
 const ATTACK_MODE: TargetingMode = { id: 'attack', affordance: attackAffordance, commitCombatant: attackClickCommit };
-const CAST_MODE: TargetingMode = {
+/** Mode INCANTATION — exporté parce que son IDENTITÉ est ce que `battle.action` porte quand le geste
+ *  est armé : tout consommateur qui demande « le mode incantation est-il armé ? » compare à CE mode
+ *  (`CAST_MODE.id`). L'entrée du registre d'actions qui l'arme (`armed`) est libre de son propre id. */
+export const CAST_MODE: TargetingMode = {
   id: 'cast', affordance: castAffordance, commitCombatant: castClickCommit, commitTile: castCommitTile,
 };
 const BATTERY_MODE: TargetingMode = {
