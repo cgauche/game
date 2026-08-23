@@ -10,6 +10,11 @@ import { availabilitySchema, sourceRefSchema } from '../common';
 
 export const file = 'disponibilite.json';
 
+/** Les Disponibilités qui portent un % (LDB 59 l.25-30) — SÉLECTION du canon, pas une union recopiée :
+ *  `extract` borne son argument aux paliers de `availabilitySchema`. Jumeau runtime de
+ *  `TestedAvailability` (`src/engine/types.ts`), égalité verrouillée par `unions-canon.test.ts`. */
+export const dispoPctAvailabilitySchema = availabilitySchema.extract(['Limitée', 'Rare']);
+
 const ratioSchema = z.strictObject({ give: z.number(), get: z.number() });
 
 export const schema = z.strictObject({
@@ -17,7 +22,7 @@ export const schema = z.strictObject({
    *  (toujours en stock) et Exotique (jamais) n'ont pas de %, donc absentes de la table. */
   dispoPct: z.array(
     z.strictObject({
-      availability: availabilitySchema.extract(['Limitée', 'Rare']),
+      availability: dispoPctAvailabilitySchema,
       pct: z.strictObject({ village: z.number(), ville: z.number(), cite: z.number() }),
       source: sourceRefSchema,
     }),

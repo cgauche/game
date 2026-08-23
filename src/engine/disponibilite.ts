@@ -6,7 +6,7 @@
  *  - Quantité de base si en stock : Village 1 / Ville 1d10 / Cité illimité ; ×2 Commune, ÷2 Rare (ceil).
  */
 import { d100, d10, type RNG } from './dice';
-import type { Availability } from './types';
+import { AVAILABILITIES, type Availability, type TestedAvailability } from './types';
 import { disponibilite as dispoJson } from '../data/index';
 import { rule } from './policy';
 import { t } from '../i18n';
@@ -16,9 +16,9 @@ export interface CatalogItem { id: string; label: string; availability: Availabi
 export interface StockLine { id: string; label: string; qty: number; test?: { roll: number; target: number } }
 
 /** % de Disponibilité (réussite si d100 ≤ %). Donnée : `src/data/disponibilite.json` (LDB 59 l.25-30). */
-export const DISPO_PCT: Record<'Limitée' | 'Rare', Record<Settlement, number>> = Object.fromEntries(
+export const DISPO_PCT: Record<TestedAvailability, Record<Settlement, number>> = Object.fromEntries(
   dispoJson.dispoPct.map((e) => [e.availability, e.pct]),
-) as Record<'Limitée' | 'Rare', Record<Settlement, number>>;
+) as Record<TestedAvailability, Record<Settlement, number>>;
 
 /** Quantité en Cité (LDB 59 l.34) — non chiffrée par le RAW : règle éditable `market-cite-stock`. */
 function citeQty(): number {
@@ -71,10 +71,6 @@ export function rollAvailability(av: Availability, settlement: Settlement, rng: 
 }
 
 // ── Recherche active de Disponibilité (LDB 59 l.50) ─────────────────────────────────────────────
-/** Ordre de RARETÉ, du plus courant (indice 0) au plus rare : sert au Troc (l.66-76) ET à la « Baisse
- *  des prix » (l.60). Un cran « plus disponible » = descendre d'un indice (vers Commune). */
-export const AVAILABILITY_RANK: Availability[] = ['Commune', 'Limitée', 'Rare', 'Exotique'];
-
 /**
  * Bonus de % à un Test de Disponibilité (LDB 59 l.50) : « Les pourcentages de Disponibilité peuvent
  * être augmentés de +10 % ou +20 % si un Personnage est particulièrement assidu, appartient à une
@@ -94,9 +90,9 @@ export function availabilitySearchBonus(opts: { diligent?: boolean; coherentCare
  * (Exotique → Rare → Limitée → Commune). Exemple canon (l.62) : Exotique + 2 baisses = Limitée.
  */
 export function availabilityAfterHalvings(av: Availability, halvings: number): Availability {
-  const i = AVAILABILITY_RANK.indexOf(av);
+  const i = AVAILABILITIES.indexOf(av);
   if (i < 0) return av;
-  return AVAILABILITY_RANK[Math.max(0, i - Math.max(0, Math.floor(halvings)))];
+  return AVAILABILITIES[Math.max(0, i - Math.max(0, Math.floor(halvings)))];
 }
 
 /** Prix effectif d'un acheteur après `halvings` divisions de moitié (LDB 59 l.60) : base ÷ 2^halvings. */

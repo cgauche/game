@@ -119,12 +119,19 @@ export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'):
 
 /** Paliers de Disponibilité, dans l'ordre IMPRIMÉ par le tableau (LDB 59 « Disponibilité »). Tuple
  *  RUNTIME : les schémas zod le consomment tel quel (`availabilitySchema`, `src/data/schemas/common.ts`),
- *  donc la donnée et le type ne peuvent plus diverger d'un palier. */
+ *  donc la donnée et le type ne peuvent plus diverger d'un palier. L'ORDRE porte l'échelle de rareté
+ *  (indice 0 = le plus courant) : le Troc (`LDB 59 l.66-76`) et la « Baisse des prix » (`l.60`) s'y
+ *  indexent, l'artisanat y décale d'un cran (`craftEconomy`) — aucune échelle recopiée à côté. */
 export const AVAILABILITIES = ['Commune', 'Limitée', 'Rare', 'Exotique'] as const;
 /** Disponibilité d'un objet/équipement (LDB 59 « Disponibilité ») — FOYER UNIQUE du concept :
  *  Test de Disponibilité au marché (`disponibilite`), Difficulté d'Artisanat (`activities`),
  *  décalage par qualité (`craftEconomy`). `HarvestRarity` l'étend de `'Unique'` (récolte/trophées). */
 export type Availability = (typeof AVAILABILITIES)[number];
+/** Les Disponibilités qui se TESTENT au d100 (LDB 59 l.25-30) : Commune est toujours en stock,
+ *  Exotique jamais — seules ces deux-là portent un %. Sous-ensemble NOMMÉ dérivé du canon : c'est le
+ *  SEUL site qui nomme ce couple, et `unions-canon.test.ts` verrouille son égalité avec le schéma zod
+ *  qui le sélectionne (`availabilitySchema.extract([…])`). */
+export type TestedAvailability = Extract<Availability, 'Limitée' | 'Rare'>;
 
 /** Propulsion d'un véhicule/embarcation — pilote la table de localisation des dégâts (terre : roues/
  *  attelage ; fleuve/mer : voiles/avirons/coque). EDOC 7 (terrestre), MoR ch.5 (fluvial), MDG 13 (maritime). */

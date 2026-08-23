@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { makeRNG } from './dice';
+import { AVAILABILITIES } from './types';
 import {
   rollAvailability, rollStock, fullStock, DISPO_PCT, type CatalogItem,
   barterRatio, BARTER_RATIOS, availabilityAfterHalvings, priceAfterHalvings, availabilitySearchBonus,
@@ -179,7 +180,7 @@ describe('fullStock — le stock garanti (`curated`) passe outre la Disponibilit
  */
 describe('hors commerce — `isTradable` et le chemin ACHAT', () => {
   it('les 4 classes RAW sont commerçables ; « ND », null et undefined ne le sont pas', () => {
-    for (const av of ['Commune', 'Limitée', 'Rare', 'Exotique'] as const) expect(isTradable(av)).toBe(true);
+    for (const av of AVAILABILITIES) expect(isTradable(av)).toBe(true);
     expect(isTradable('ND')).toBe(false);
     expect(isTradable(null)).toBe(false);
     expect(isTradable(undefined)).toBe(false);

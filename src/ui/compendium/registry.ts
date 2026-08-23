@@ -55,7 +55,7 @@ import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef, TrappingRef, WaterExposureModifier, SpellData } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { POWER_ESTIMATE, MIGHT_MODIFIERS, WAR_MACHINES, STRUCTURES as MASS_BATTLE_STRUCTURES, BATTLE_HAZARDS } from '../../engine/massBattle';
-import { AVAILABILITY_RANK } from '../../engine/disponibilite';
+import { AVAILABILITIES } from '../../engine/types';
 import { ACTIVITIES } from '../../engine/activities';
 import type { ActivityContext, OutcomeBand, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond } from '../../engine/activities';
 import { traitLabels, optionalLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
@@ -873,7 +873,7 @@ function barterRatiosSection(rows: (typeof disponibilite)['barterRatios']): Code
   const rowsOut: CodexRow[] = [];
   for (const r of rows) {
     rowsOut.push({ t: 'sub', label: `Donné : ${r.give}` } as CodexRow);
-    for (const acquired of AVAILABILITY_RANK) {
+    for (const acquired of AVAILABILITIES) {
       const ratio = r.ratios[acquired];
       rowsOut.push({ t: 'kv', k: `Acquis : ${acquired}`, v: `${ratio.give} : ${ratio.get}` } as CodexRow);
     }

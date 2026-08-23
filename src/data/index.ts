@@ -98,7 +98,7 @@ import seaPerilsJson from './sea-perils.json';
 import seaWeatherJson from './sea-weather.json';
 import shipConstructionJson from './ship-construction.json';
 import riverNavigationJson from './river-navigation.json';
-import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability, Difficulty, type NightTestKind, type StakeForm } from '../engine/types';
+import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability, type TestedAvailability, Difficulty, type NightTestKind, type StakeForm } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
 import type { PowerEstimateRow, MightModifierRow, WarMachineRow, StructureRow as MassBattleStructureRow, HazardRow } from '../engine/massBattle'; // type-only (le runtime de massBattle.ts importe ces tableaux d'ici)
@@ -2200,7 +2200,7 @@ export interface RegleData {
 export const regles = reglesJson as RegleData[];
 /** Tables numériques de Disponibilité & de Troc (LDB 59 « Faire son marché » p.290-291) — app-owned
  *  éditable ; consommé par `engine/disponibilite` (mêmes références). */
-export interface DispoPctRow { availability: 'Limitée' | 'Rare'; pct: Record<'village' | 'ville' | 'cite', number>; source: SourceRef }
+export interface DispoPctRow { availability: TestedAvailability; pct: Record<'village' | 'ville' | 'cite', number>; source: SourceRef }
 export interface BarterRatioRow { give: Availability; ratios: Record<Availability, { give: number; get: number }>; source: SourceRef }
 export interface DispoData { dispoPct: DispoPctRow[]; barterRatios: BarterRatioRow[] }
 export const disponibilite = disponibiliteJson as DispoData;

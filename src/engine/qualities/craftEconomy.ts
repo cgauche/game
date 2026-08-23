@@ -4,11 +4,8 @@
  * N'agit que sur les qualités `subType: 'objet'` (les qualités d'arme/armure n'altèrent pas le prix).
  */
 import { resolveQualities, type QualityCarrier } from './dispatch';
-import type { Availability } from '../types';
+import { AVAILABILITIES, type Availability } from '../types';
 import { t, type MsgKey } from '../../i18n';
-
-/** Échelle du plus COURANT au plus RARE (LDB 59). */
-export const AVAILABILITY_LADDER: Availability[] = ['Commune', 'Limitée', 'Rare', 'Exotique'];
 
 const craftDefs = (c: QualityCarrier | undefined) => resolveQualities(c).filter((r) => r.data?.subType === 'objet');
 
@@ -40,7 +37,7 @@ export function craftEncDelta(c: QualityCarrier | undefined): number {
 export function shiftAvailability(base: Availability, c: QualityCarrier | undefined, opts: { guild?: boolean } = {}): Availability {
   const atouts = craftAtoutCount(c);
   const defauts = craftDefautCount(c);
-  let idx = AVAILABILITY_LADDER.indexOf(base);
+  let idx = AVAILABILITIES.indexOf(base);
   if (idx < 0) return base;
   if (opts.guild) {
     idx += Math.max(0, atouts - 1); // le 1er Atout ne réduit pas la dispo
@@ -49,7 +46,7 @@ export function shiftAvailability(base: Availability, c: QualityCarrier | undefi
     idx += atouts;
     if (base !== 'Exotique') idx -= defauts; // Exotique : non rendu plus courant par un Défaut
   }
-  return AVAILABILITY_LADDER[Math.max(0, Math.min(AVAILABILITY_LADDER.length - 1, idx))];
+  return AVAILABILITIES[Math.max(0, Math.min(AVAILABILITIES.length - 1, idx))];
 }
 
 /** Classe de qualité, en id STABLE (LDB 60 l.7/11/42) — l'affichage vit au catalogue

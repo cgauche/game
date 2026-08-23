@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import trappings from './trappings.json';
 import { validateDataset } from './schemas/validate';
-import { REACH_LABELS, REACH_VARIABLE } from '../engine/types';
+import { AVAILABILITIES, REACH_LABELS, REACH_VARIABLE } from '../engine/types';
 import { priceToMoney, toBrass } from '../engine/money';
 
 /**
@@ -113,10 +113,10 @@ describe('trappings — vocabulaire d’Allonge FERMÉ au CHARGEMENT (fail-fast)
  * (`isTradable`), mais ne se confondent pas en donnée.
  */
 describe('trappings — Disponibilité : les 4 classes, la marque « ND », ou rien', () => {
-  const AVAILABILITIES = new Set(['Commune', 'Limitée', 'Rare', 'Exotique']);
+  const CLASSES = new Set<string>(AVAILABILITIES);
 
   it('aucune entrée ne porte une valeur hors du vocabulaire (4 classes + « ND » + null)', () => {
-    const bad = rows.filter((t) => t.availability !== null && t.availability !== 'ND' && !AVAILABILITIES.has(t.availability as string));
+    const bad = rows.filter((t) => t.availability !== null && t.availability !== 'ND' && !CLASSES.has(t.availability as string));
     expect(bad.map((t) => `${t.id}=${JSON.stringify(t.availability)}`)).toEqual([]);
   });
 

@@ -14,6 +14,7 @@
 import { describe, it, expect } from 'vitest';
 import type { RNG } from './dice';
 import { toBrass } from './money';
+import { AVAILABILITIES } from './types';
 import { craftTarget, apprenticeshipTutorCost, entrainementTutorCost, entrainementTutorRange, entrainementOptions, bankWithdrawOutcome, statusIncome, ACTIVITIES, activitiesFor, activityById, resolveTravelActivity,
   resolveStageActivities, aggregateActivityOutcomes, STAGE_OUTCOME_AGG, type TravelActivityResult,
   defaultTravelRole, stageAssignmentFromRoles, matchOutcomes, activityAvailableAt } from './activities';
@@ -102,7 +103,7 @@ describe('craftSpecOf — dérivation partagée flux/catalogue', () => {
     expect(['bronze', 'argent', 'or']).toContain(spec.tier);
   });
   it('les 4 classes RAW (LDB 59 l.15) donnent une spec ; la Disponibilité est reportée telle quelle', () => {
-    for (const av of ['Commune', 'Limitée', 'Rare', 'Exotique'] as const) {
+    for (const av of AVAILABILITIES) {
       expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: av })?.avail).toBe(av);
     }
   });
@@ -128,7 +129,7 @@ describe('craftCatalog / orderCatalog', () => {
     expect(cat.length).toBeGreaterThan(0);
     for (const o of cat) expect(o.priceBrass).toBeGreaterThan(0);
     // Aucune Commune/Limitée/Rare : celles-là se tiennent en stock (LDB 59 l.17-19) → marchand.
-    expect(cat.filter((o) => ['Commune', 'Limitée', 'Rare'].includes(findTrappingById(o.id)!.availability as string))).toEqual([]);
+    expect(cat.filter((o) => AVAILABILITIES.filter((a) => a !== 'Exotique').includes(findTrappingById(o.id)!.availability as never))).toEqual([]);
     // Tous les Exotiques chiffrés y sont (LDB 59 l.21).
     const exotiques = trappings.filter((t) => t.availability === 'Exotique' && toBrass(priceToMoney(t.price)) > 0).map((t) => t.id);
     const ids = new Set(cat.map((o) => o.id));
