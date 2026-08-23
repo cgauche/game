@@ -20,7 +20,7 @@ import { resultLine, freeCons } from '../state/rollSeam';
  * + Moral + Manque de bras + sabotage. **Rude épreuve** (l.106-114) : un total NÉGATIF réduit le Moral d'autant
  * (l.110) — la perte est prévisualisée dans le bandeau avant « Appliquer ». Les Tests d'équipage de VOYAGE
  * (hors combat) sont désormais des étapes de la cascade du jour (#275 Ronde 2 cran 3, `CascadeModal`) —
- * CETTE modale ne sert plus qu'au combat.
+ * CETTE modale sert au SEUL combat.
  */
 export function CrewTestModal() {
   const p = useGame((s) => s.pendingCrewTest);

@@ -14,6 +14,20 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { otherAbbrAlternation } from '../../raw/_lib.mjs';
+import { LEGACY_VOCAB_SITES } from './legacyVocabStock.mjs';
+
+/** PÉRIMÈTRE des gardes anti-poison — SOURCE UNIQUE des trois portes (suite Vitest, pre-commit,
+ *  hook au stylo). Un fichier hors de ces racines/extensions n'est scanné par aucune ; un fichier
+ *  dedans l'est par les TROIS, tests compris (le poison écrit dans un test est du poison). */
+export const POISON_DIRS = ['src', 'scripts'];
+export const POISON_EXTS = ['.ts', '.tsx', '.mts', '.mjs'];
+
+/** @param {string} cheminRelatifOuAbsolu @returns {boolean} */
+export function estFichierScanne(cheminRelatifOuAbsolu) {
+  const p = String(cheminRelatifOuAbsolu).replace(/\\/g, '/');
+  if (!POISON_EXTS.some((e) => p.endsWith(e))) return false;
+  return POISON_DIRS.some((d) => p === d || p.startsWith(`${d}/`) || p.includes(`/${d}/`));
+}
 
 /**
  * @typedef {{ text: string, line: number }} Comment
@@ -180,6 +194,29 @@ const NO_MORE_ARTIFACT_RX = new RegExp(
 // aucune restriction de vocabulaire n'est nécessaire ici (locution sans emploi de jeu).
 const OF_YORE_RX = new RegExp('\\bd' + APOS + 'antan\\b', 'i');
 
+// Le RAPPEL D'ANCIEN ÉTAT le plus courant du dépôt : la locution de cessation suivie d'un artefact
+// de CODE nommé, sans négation verbale (« … — plus de X », « (plus de X en dur) »). Même exigence
+// que la famille voisine : le complément doit nommer un artefact de code, jamais une ressource de
+// JEU (un pion, un créneau, un marqueur d'affichage), d'où le vocabulaire FERMÉ ci-dessous.
+// Population mesurée 2026-08-23 sur `src/**`+`scripts/**` hors tests ; formes couvertes et faux
+// positifs écartés : LITTÉRAUX dans `src/comment-poison-guard.test.ts`.
+const CODE_ARTIFACT_NOUN =
+  '(?:name-match|if-chain|hook-fonction|regex|liste|littéra(?:l|ux)|chaîne|clé|copie|doublon|parsing' +
+  '|prédicat|dispatch|ternaire|hack|tableau|table|record|map|devinette|garde|gate|planner|match' +
+  '|handler|hook|repli|fallback|bouton|ancre|drapeaux|drapeau|flag|champ|branche|module|registre' +
+  '|entrée|helper|conversion|set|fsm|applier|wrapper|alias|surcharge|slot|méthode|fonction' +
+  '|propriété|paramètre|argument|mode)';
+// Locutions de QUANTITÉ et de COMPARAISON (« en plus de », « d'autant plus de », « pas plus de … que »)
+// et le renvoi documentaire (« plus de détails dans … », dont le complément n'est pas un artefact) :
+// écartés STRUCTURELLEMENT, jamais par liste de sites.
+const QUANTITE_AVANT =
+  '(?<!(?:\\ben|\\bde|\\bnon|\\bau|autant|beaucoup|peu|bien|toujours|encore|tant|jamais|guère|pas)[\\s*/]{1,24})';
+const NAMED_ARTIFACT_TOMBSTONE_RX = new RegExp(
+  QUANTITE_AVANT + '\\bplus' + GAP + 'd(?:e' + GAP + '|' + APOS + ')' +
+    CODE_ARTIFACT_NOUN + 's?(?![\\wÀ-ÿ-])(?!' + GAP + 'que\\b)',
+  'i',
+);
+
 // L'ORIGINE d'un module ne se lit plus : le fichier dont il fut extrait a changé de nom, de forme ou
 // n'existe plus — git porte cette histoire, le lecteur a besoin du contrat COURANT.
 // La CIBLE doit être un MODULE ou un SYMBOLE de module : back-ticks portant une majuscule interne ou
@@ -247,12 +284,35 @@ export const TOMBSTONE_FAMILIES = [
   { rx: EXTRACTED_FROM_RX, label: 'extrait de X (origine révolue du module)' },
   { rx: NO_MORE_ARTIFACT_RX, label: 'négation temporelle + artefact de code (état révolu)' },
   { rx: OF_YORE_RX, label: 'passé nostalgique (état révolu)' },
+  // #1486 : la locution de cessation NUE devant un artefact de code nommé — 8 vraies tombales sur les
+  // 10 sites échantillonnés du 2026-08-23, sur une population de 248 commentaires ; le vocabulaire
+  // fermé et les exclusions de quantité/comparaison ramènent cette population aux seuls artefacts.
+  { rx: NAMED_ARTIFACT_TOMBSTONE_RX, label: 'plus de <artefact de code> (état révolu)' },
 ];
 
 /** @param {string} text @returns {string[]} labels des familles matchées */
 export function tombstonesIn(text) {
   return TOMBSTONE_FAMILIES.filter((f) => f.rx.test(text)).map((f) => f.label);
 }
+
+export const MOTIF_ARTEFACT_NOMME = 'plus de <artefact de code> (état révolu)';
+
+/** ÉCHAFAUDAGE de 24 h, pas une liste d'exception : les fichiers ci-dessous portaient le travail NON
+ *  COMMITÉ d'autres sessions au moment où le motif `MOTIF_ARTEFACT_NOMME` est entré en garde
+ *  (2026-08-23). Leurs tombales sont RECENSÉES dans le rendu de #1486 et routées vers ces sessions ;
+ *  ici elles ne bloquent pas leur commit en vol. La liste doit être VIDE — le test échoue dès qu'une
+ *  entrée dépasse 7 jours, et la garde mord alors sur ces fichiers comme sur les autres.
+ * @type {{ fichier: string, raison: string, date: string }[]} */
+export const ATTENTE_WIP = [
+  { fichier: 'src/state/combatFlow.ts', raison: 'WIP session voisine 2026-08-23', date: '2026-08-23' },
+  { fichier: 'src/state/rollSeam.ts', raison: 'WIP session voisine 2026-08-23', date: '2026-08-23' },
+  { fichier: 'src/state/store.test.ts', raison: 'WIP session voisine 2026-08-23', date: '2026-08-23' },
+];
+
+const enAttenteWip = (/** @type {string} */ relPath) => {
+  const p = normPath(relPath);
+  return ATTENTE_WIP.some((e) => p === normPath(e.fichier) || p.endsWith(`/${normPath(e.fichier)}`));
+};
 
 /**
  * Scan complet d'un fichier source : toutes les pierres tombales trouvées dans ses commentaires.
@@ -262,8 +322,10 @@ export function tombstonesIn(text) {
  */
 export function scanTombstones(relPath, contenu) {
   const findings = [];
+  const gele = enAttenteWip(relPath);
   for (const c of extractComments(contenu)) {
     for (const fam of TOMBSTONE_FAMILIES) {
+      if (gele && fam.label === MOTIF_ARTEFACT_NOMME) continue;
       const m = fam.rx.exec(c.text);
       if (m) findings.push({ line: matchLine(c, m.index), detail: `[${fam.label}] ${excerptAt(c, m.index)}` });
     }
@@ -317,6 +379,109 @@ export function scanExcuses(relPath, contenu) {
   for (const c of extractComments(contenu)) {
     const m = untaggedExcuseMatch(c.text);
     if (m) findings.push({ line: matchLine(c, m.index), detail: excerptAt(c, m.index) });
+  }
+  return findings;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Famille (e) — VOCABULAIRE DE L'ANCIEN ÉTAT (#1486, credo règle 1 : ni code mort, ni chemin de
+// compatibilité, ni dette non comptée). Un commentaire qui NOMME l'état d'avant, ou le pont qui le
+// fait survivre, décrit soit du code que le lecteur ne peut plus ouvrir, soit une dette que personne
+// ne compte : le site MEURT, ou il porte le tag `[entériné AAAA-MM-JJ]` (mot réservé de
+// l'utilisateur) dans le MÊME commentaire. Les mots couverts ne sont PAS écrits ici en prose — ce
+// module est scanné par sa propre famille (#828) : ils vivent en LITTÉRAUX dans
+// `src/comment-poison-guard.test.ts` (formes couvertes, faux positifs écartés) et dans le stock
+// nominatif daté `scripts/guards/lib/legacyVocabStock.mjs`.
+// ---------------------------------------------------------------------------------------------
+
+// Frontière ALPHANUMÉRIQUE, jamais `\b` : le tiret bas n'en est pas une, pour qu'une CONSTANTE citée
+// en commentaire reste un site, tandis qu'un identifiant chameau (`xxxCounts`, `charKeyXxx`) ou un
+// nom de fichier cité en chemin n'en soit pas un — faux positifs plantés dans le test.
+const NB_AVANT = '(?<![a-zA-ZÀ-ÿ0-9])';
+const NB_APRES = '(?![a-zA-ZÀ-ÿ0-9])';
+const FICHIER_APRES = '(?!\\.(?:mjs|mts|tsx?|jsx?|json))';
+
+/** @type {{ rx: RegExp, label: string }[]} */
+export const LEGACY_VOCAB_FAMILIES = [
+  { rx: new RegExp(NB_AVANT + 'legacy' + NB_APRES + FICHIER_APRES, 'i'), label: 'legacy' },
+  { rx: new RegExp(NB_AVANT + '(?:rétro|retro)-?compat\\w*', 'i'), label: 'rétro-compat' },
+  { rx: new RegExp(NB_AVANT + 'backward[- ]?compat\\w*', 'i'), label: 'backward-compat' },
+  { rx: new RegExp(NB_AVANT + 'deprecated' + NB_APRES, 'i'), label: 'deprecated' },
+  { rx: new RegExp(NB_AVANT + 'déprécié\\w*', 'i'), label: 'déprécié' },
+  { rx: new RegExp(NB_AVANT + 'obsol[eè]tes?' + NB_APRES, 'i'), label: 'obsolète' },
+  { rx: new RegExp(NB_AVANT + 'shims?' + NB_APRES, 'i'), label: 'shim' },
+  // La coupure de ligne ne met pas la locution hors de portée (même `GAP` que les familles ci-dessus).
+  { rx: new RegExp('ne' + GAP + 'sert' + GAP + 'plus' + GAP + 'qu' + APOS, 'i'), label: 'ne sert plus qu’à' },
+];
+
+// EMPLOIS VIVANTS du mot, écartés par le CONTEXTE IMMÉDIAT (jamais par une liste de fichiers) : le
+// mot y qualifie autre chose que du code de ce dépôt — une dépendance npm à monter de version, une
+// couture de test montée pour Playwright, l'entrée d'une liste de garde sans correspondance. Aucun de
+// ces sites ne peut « mourir » : la famille (e) veut des sites qui se soldent, pas des occurrences.
+// L'exclusion ne vaut que si elle RECOUVRE le match : chaque motif est planté en littéral dans le test.
+/** @type {{ rx: RegExp, label: string }[]} */
+export const LEGACY_VOCAB_EXCLUSIONS = [
+  { rx: new RegExp('shims?' + GAP + 'DEV', 'gi'), label: 'couture DEV (Playwright)' },
+  { rx: new RegExp('obsol[eè]tes?' + GAP + '\\(npm', 'gi'), label: 'dépendance npm à monter de version' },
+  { rx: new RegExp('motifs?' + GAP + 'obsol[eè]tes?', 'gi'), label: 'entrée de garde sans correspondance' },
+];
+
+/** Le match `[index, index+len)` est-il RECOUVERT par un emploi vivant ? (frontière stricte : une
+ *  exclusion adjacente ne couvre rien)
+ * @param {string} text @param {number} index @param {number} len @returns {boolean} */
+function emploiVivant(text, index, len) {
+  for (const { rx } of LEGACY_VOCAB_EXCLUSIONS) {
+    rx.lastIndex = 0;
+    let m;
+    while ((m = rx.exec(text))) {
+      if (m.index <= index && index + len <= m.index + m[0].length) return true;
+      if (m.index === rx.lastIndex) rx.lastIndex++;
+    }
+  }
+  return false;
+}
+
+/** @param {string} text @returns {string[]} labels des familles matchées */
+export function legacyVocabIn(text) {
+  const labels = [];
+  for (const f of LEGACY_VOCAB_FAMILIES) {
+    const m = f.rx.exec(text);
+    if (m && !emploiVivant(text, m.index, m[0].length)) labels.push(f.label);
+  }
+  return labels;
+}
+
+/**
+ * Vocabulaire de l'ancien état HORS du stock nominatif daté de #1486 : ce que les PORTES BLOQUANTES
+ * (pre-commit, hook au stylo) doivent refuser. Les sites déjà recensés partent avec leur lot ; seul
+ * un site NEUF arrête le commit. Le contrat inverse (une entrée de stock sans site = à purger) se
+ * juge sur le corpus ENTIER, donc dans la suite Vitest, jamais sur un diff.
+ * @param {string} relPath @param {string} contenu
+ * @returns {{ line: number, detail: string }[]}
+ */
+export function scanLegacyVocabHorsStock(relPath, contenu) {
+  return scanLegacyVocab(relPath, contenu).filter((f) => {
+    const motif = /^\[([^\]]+)\]/.exec(f.detail)?.[1] ?? '';
+    return !LEGACY_VOCAB_SITES.some(
+      (s) => s.motif === motif && matchesBaselineEntry({ file: relPath, line: f.line, detail: f.detail }, s),
+    );
+  });
+}
+
+/**
+ * Scan complet d'un fichier : vocabulaire de l'ancien état dans les commentaires NON tagués.
+ * @param {string} relPath @param {string} contenu
+ * @returns {{ line: number, detail: string }[]}
+ */
+export function scanLegacyVocab(relPath, contenu) {
+  const findings = [];
+  for (const c of extractComments(contenu)) {
+    if (ENTERINE_TAG_RX.test(c.text)) continue;
+    for (const fam of LEGACY_VOCAB_FAMILIES) {
+      const m = fam.rx.exec(c.text);
+      if (!m || emploiVivant(c.text, m.index, m[0].length)) continue;
+      findings.push({ line: matchLine(c, m.index), detail: `[${fam.label}] ${excerptAt(c, m.index)}` });
+    }
   }
   return findings;
 }

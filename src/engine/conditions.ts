@@ -339,7 +339,7 @@ export function combatTestPenalty(c: Combatant): number {
 }
 
 // Tests « impliquant un déplacement » (LDB 16 l.35/l.64) — classification DÉRIVÉE de la donnée
-// (`SkillData.movement`, éditable au Codex), plus de liste d'ids en dur. Acrobaties (spé de
+// (`SkillData.movement`, éditable au Codex), jamais une liste d'ids en dur. Acrobaties (spé de
 // Représentation) non classables à l'id de base → non couvertes.
 const MOVEMENT_SKILL = new Set(skills.filter((s) => s.movement).map((s) => s.id));
 // Tests « impliquant l'audition » (Assourdi −10, LDB 16 l.29) — même patron DONNÉE (`SkillData.hearing`).
@@ -489,7 +489,7 @@ export function conditionGating(c: Combatant): { noAction: boolean; cannotDefend
 }
 
 /** Ne peut pas se défendre lors d'un Test opposé (Surpris LDB 16 l.135 / Inconscient l.113 « rien faire
- *  de votre tour ») — lu du `gating.cannotDefend` des statuts portés (données, plus de liste par-nom). */
+ *  de votre tour ») — lu du `gating.cannotDefend` des statuts portés (données, jamais une liste par-nom). */
 export function cannotDefend(c: Combatant): boolean {
   return conditionGating(c).cannotDefend;
 }

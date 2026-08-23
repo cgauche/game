@@ -323,7 +323,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   // ── Phase 3 — sanité de CATALOGUE (structure des defs skills.json/talents.json) : ces quelques
   // `it` fixent des exemples représentatifs de chaque MÉCANISME de specsSource/specsOpen. La
   // RÉSOLUTION EXHAUSTIVE de toutes les INSTANCES (creatures/careerLevels/species/…) est déléguée à
-  // LA GARDE UNIQUE ci-dessous (§ Phase 3 complétude) — plus de liste de domaines à maintenir ici.
+  // LA GARDE UNIQUE ci-dessous (§ Phase 3 complétude) : aucune liste de domaines n'est tenue ici.
   describe('sanité de catalogue — specsSource déclaré, specs[] bien formées (Phase 3)', () => {
     it('skills.json/talents.json : specsSource migré → pool DÉRIVÉ (aucun specs[] inline), ids connus du registre', () => {
       const WEAPON_GROUP_IDS = new Set(weaponGroups.map((g) => g.id));

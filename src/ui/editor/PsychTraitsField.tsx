@@ -8,7 +8,7 @@ import { psychologies, psychologyLabel } from '../../data';
 import { NumberField } from '../NumberField';
 
 // Types conférables = ceux de `psychology.json` (exclut `trauma`, marqueur INTERNE) ; libellés/ciblage
-// DÉRIVÉS de la donnée (source UNIQUE, plus de map ni de Set codés en dur).
+// DÉRIVÉS de la donnée (source UNIQUE, jamais une map ni un Set codés en dur).
 const PSYCH_TYPES: PsychType[] = psychologies.map((p) => p.id as PsychType);
 const TARGETED = CIBLE_TYPES;
 /** Types À INDICE (Peur 2…) — pour n'afficher le champ Indice que quand il est utile. */

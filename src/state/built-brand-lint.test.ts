@@ -408,7 +408,7 @@ describe('#1318 V8a₀ — le murage du CHAMP PILOTE (`CascadeStep.label`) est T
 });
 
 /**
- * LES PORTES DU SEAM NE PRENNENT PLUS DE LITTÉRAL (#1318 V8a₀) — LE contrat du lot, et celui qui
+ * LES PORTES DU SEAM N'ACCEPTENT AUCUN LITTÉRAL (#1318 V8a₀) — LE contrat du lot, et celui qui
  * manquait : marquer `CascadeStep.label` ne mordait QUE sur la déclaration directe d'une étape. La voie
  * CANONIQUE passe par les constructeurs de `rollSeam` (`monoStep`/`tableStep`/`choiceStep`/
  * `quantityStep`/`displayStep`/`bandStep`/`hostStep`), dont le cast interne `as BuiltCascadeStep`

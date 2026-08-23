@@ -76,7 +76,7 @@ export interface BodyPlan {
 }
 
 /** Table des gabarits DÉRIVÉE des fichiers `plans/defs/` (auto-enregistrés via le codegen) —
- *  plus de registre central à éditer. Ajouter un gabarit = déposer `plans/defs/<id>.ts`. */
+ *  sans registre central à éditer. Ajouter un gabarit = déposer `plans/defs/<id>.ts`. */
 const PLANS: Record<string, BodyPlan> = Object.fromEntries(PLAN_LIST.map((p) => [p.id, p]));
 export function planById(id: BodyPlanId): BodyPlan {
   return PLANS[id];
@@ -164,7 +164,7 @@ export function resolveRender(species: string | undefined, traits: import('../..
     const sp = species ?? rec?.appearance?.species ?? swarmSp;
     return { kind: 'plan', plan: 'swarm', species: sp, scale: speciesScale(sp) };
   }
-  // Résolution par la DONNÉE : espèce EXPLICITE (arg) → espèce du record. PLUS de repli par libellé.
+  // Résolution par la DONNÉE : espèce EXPLICITE (arg) → espèce du record, jamais un repli par libellé.
   const resolved = species ?? rec?.appearance?.species;
   if (resolved) {
     const d = defById(resolved);

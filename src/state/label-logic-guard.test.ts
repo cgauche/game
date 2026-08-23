@@ -39,7 +39,7 @@ import { LABEL_RESOLVER_CALL_STOCK, labelResolverCallStockDrift } from '../../sc
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
 // `STRICT_DIRS`/`RATCHET_DIRS`/`RATCHET_EXCEPTIONS` : SOURCE UNIQUE `scripts/guards/lib/labelLogic.mjs`
-// (importés ci-dessus), consommée à l'identique par le hook pre-commit — plus de copie locale ici.
+// (importés ci-dessus), consommée à l'identique par le hook pre-commit : aucune copie locale ici.
 
 // `src/data/index.ts` = couture label→id tolérée au CHARGEMENT (conversion depuis du texte) — hors
 // périmètre du garde-fou, aucune LOGIQUE keyée par label. (`instanceIdMigration.ts` est SCANNÉ comme

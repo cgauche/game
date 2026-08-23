@@ -36,7 +36,7 @@ import { effectiveEntry } from './variants';
 import { t } from '../i18n';
 
 // `splitLabel` (split nom↔spécialisation) est la primitive UNIQUE de `statEntry` — ré-exportée ici
-// pour ses nombreux importeurs historiques (advancement/talentEffects/draft…). Plus de copie locale.
+// pour ses nombreux importeurs historiques (advancement/talentEffects/draft…) : aucune copie locale.
 export { splitLabel };
 
 /** Une possibilité concrète ou ouverte couverte par un slot. */
@@ -327,7 +327,7 @@ export function talentMaxById(hero: Combatant, talentId: string): number | null 
   return bonus(hero.characteristics[max.bonusOf]); // Maxi = Bonus de carac (valeur de base du héros)
 }
 
-/** Affichage FR du Maxi d'un talent (Compendium), DÉRIVÉ de la donnée structurée — plus de chaîne stockée. */
+/** Affichage FR du Maxi d'un talent (Compendium), DÉRIVÉ de la donnée structurée, jamais stocké en chaîne. */
 export function talentMaxLabel(max: number | { bonusOf: CharKey } | null): string {
   if (max == null) return t('slot.maxNone');
   return typeof max === 'number' ? String(max) : t('slot.maxBonusOf', { char: CHAR_LABELS[max.bonusOf] });

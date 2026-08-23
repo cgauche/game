@@ -17,7 +17,7 @@ import { inanimateCombatant } from './inanimate';
 import { rollVehicleProblem, type TravelTableEntry } from './travelTables';
 
 /** Ce combattant est-il un VÉHICULE-coque (navire, chariot, barge) — `bodyShape:'vehicule'` ? Prédicat NOMMÉ
- *  (source UNIQUE — plus de littéral `'vehicule'` dispersé) : un véhicule agit en UNITÉ (Tests d'équipage) ; il
+ *  (source UNIQUE — jamais un littéral `'vehicule'` dispersé) : un véhicule agit en UNITÉ (Tests d'équipage) ; il
  *  n'a ni arme tenue, ni sort, ni marche de fantassin → les barres/chemins « héros-attaquant » doivent l'ignorer. */
 export function isVehicle(c: Pick<Combatant, 'bodyShape'>): boolean {
   return c.bodyShape === 'vehicule';

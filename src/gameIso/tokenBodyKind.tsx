@@ -165,7 +165,7 @@ export function tokenBodyKind(subject: TokenSubject, view: ViewMode = 'iso'): To
   // Résolution UNIQUE par la donnée (espèce explicite de l'entité + trait Nuée du record), par id.
   const r = withDiagSubject(sujet, () => entityRender(ent));
   // Garde DEV : un personnage dont la `ref` n'est PAS un id de créature valide ET sans espèce explicite
-  // tombe silencieusement en bipède Humain (plus de devinette par le nom). Signale l'apparence perdue.
+  // tombe silencieusement en bipède Humain (jamais une devinette par le nom). Signale l'apparence perdue.
   // Un engin de siège (ref = trapping à art d'affût `siegeRig`) est résolu via la ref → pas un défaut perdu.
   // Une coque de véhicule (ref = id `vehicles.json` à facette `hull`, ex. navire) est résolue via la
   // même ref (`resolveRender`, branche véhicule ci-dessus l.117) → pas non plus un défaut perdu (#224).

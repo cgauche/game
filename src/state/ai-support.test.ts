@@ -1,6 +1,6 @@
 /**
- * IA — SORTS de SOUTIEN / INVOCATION, évalués op-driven (plus de planner par-catégorie ni
- * d'`outnumberedFactor`). La valeur d'un soin/buff/invocation = Σ valeur de ses `GameOp`
+ * IA — SORTS de SOUTIEN / INVOCATION, évalués op-driven (aucun planner par-catégorie, aucun
+ * `outnumberedFactor`). La valeur d'un soin/buff/invocation = Σ valeur de ses `GameOp`
  * (`opValue`/`spellActionValue`) ; l'Unicité RAW (un effet/une invocation de CE sort déjà actif) retire
  * le sort des candidats. Tout passe par le MÊME `cast` (résolu par `castSpell` côté store). PUR/déterministe.
  */

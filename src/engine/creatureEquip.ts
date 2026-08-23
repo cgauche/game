@@ -126,7 +126,7 @@ export function weaponsFromTraits(traits: TraitList): Weapon[] {
 }
 
 /** PA plats du trait « Armure (Indice) » (LDB 85, profils d'éditeur) — lus par le REGISTRE des
- *  Traits (Indice ou argument), plus de regex propre. 0 si absent. */
+ *  Traits (Indice ou argument), jamais par une regex propre. 0 si absent. */
 export function armourFromTraits(traits: TraitList): ArmourPoints {
   const r = findResolvedTrait(traits, 'armure');
   const n = r ? Number(r.indice ?? r.arg ?? 0) : 0;

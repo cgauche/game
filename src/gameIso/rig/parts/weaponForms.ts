@@ -16,7 +16,7 @@ export interface ShieldForm { label: string; slug: string; target: string; }
 /** Source de vérité = registre des armes (`weapons/defs/`). Vue forme (l'`art` reste porté par le def). */
 export const WEAPON_FORMS: WeaponForm[] = WEAPON_DEFS;
 
-// Dérivé du registre data-driven `shields/defs/` (même source que les armes) — plus de tableau en dur.
+// Dérivé du registre data-driven `shields/defs/` (même source que les armes), jamais un tableau en dur.
 export const SHIELD_FORMS: ShieldForm[] = SHIELD_DEFS.map((d) => ({ label: d.label, slug: d.slug, target: d.target }));
 
 const FORM_LABEL_BY_SLUG = new Map(WEAPON_FORMS.map((f) => [f.slug, f.label]));

@@ -95,7 +95,7 @@ describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {
 
   // Vague « lisibilité du voyage » 2/2 : le bilan du jour CLOS d'une halte de nuit EN COURS sort du
   // panneau de nuit — il devient une carte SÉLECTIONNABLE (comme un jour passé) ; `current` bascule sur
-  // la Nuit elle-même (plus de doublon jour/nuit sous un même index).
+  // la Nuit elle-même (aucun doublon jour/nuit sous un même index).
   it('chronique : une halte de nuit EN COURS ajoute une carte SÉLECTIONNABLE pour le jour clos, « Nuit » devient la carte current', () => {
     const plan: TravelPlan = { ...seaPlan(), log: [
       { kmFrom: 0, kmTo: 32, hours: 24, lines: [{ text: 'Départ, vent portant' }], entries: [] },

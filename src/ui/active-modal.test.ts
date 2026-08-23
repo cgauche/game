@@ -21,7 +21,7 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
   });
 
   it('la défense n’est PLUS une modale propre : étape `jet:\'defense\'` de la cascade `combat` (wrapper-fold)', () => {
-    // pendingDefense SEUL (sans cascade) → plus d'entrée 'defense' (retirée) → null. La SITUATION est portée
+    // pendingDefense SEUL (sans cascade) → aucune entrée 'defense' → null. La SITUATION est portée
     // par la cascade-hôte ouverte par maybeOpenDefense (CascadeModal → useDefenseJetProps).
     expect(pickActiveModalKey({ pendingDefense: {} })).toBeNull();
     const defCascade = { participants: [{ jet: 'defense', actorId: 'h1' }], cursor: 0 };
@@ -58,7 +58,7 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
   });
 
   it('l’attaque n’est PLUS une modale propre : étape `jet:\'attack\'` de la cascade `combat` (charge/normale/gratuite + cleave/dual)', () => {
-    // pendingAttack SEUL (sans cascade) → plus d'entrée 'attack' (retirée) → null. TOUS les chemins d'attaque
+    // pendingAttack SEUL (sans cascade) → aucune entrée 'attack' → null. TOUS les chemins d'attaque
     // ouvrent une cascade (Charge incluse) ; cleave/dual réutilisent celle déjà ouverte.
     expect(pickActiveModalKey({ pendingAttack: {} })).toBeNull();
     const atkCascade = { participants: [{ jet: 'attack', actorId: 'h1' }], cursor: 0 };
@@ -68,7 +68,7 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
   });
 
   it('le Piétinement n’est PLUS une modale propre : étape `jet:\'trample\'` de la cascade `combat` (Critique foldé)', () => {
-    // pendingTrample SEUL (sans cascade) → plus d'entrée 'trample' (retirée) → null. `battleTrample`
+    // pendingTrample SEUL (sans cascade) → aucune entrée 'trample' → null. `battleTrample`
     // ouvre une cascade `jet:'trample'` (comme l'attaque) → le Coup Critique se fold dans LA MÊME fenêtre.
     expect(pickActiveModalKey({ pendingTrample: {} })).toBeNull();
     const trampleCascade = { participants: [{ jet: 'trample', actorId: 'h1' }], cursor: 0 };
@@ -89,7 +89,7 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
 
   it('le Contre-sort n’est PLUS une modale propre : la réaction est rendue DANS la cascade `cast` (Sort ennemi figé)', () => {
     // pendingCounterspell coexiste avec le pendingCast (+ cascade) du Sort ennemi → c'est la modale
-    // `cascade` (→ CastModal) qui s'affiche (elle héberge les rangées de contre-lanceurs). Plus d'entrée `counterspell`.
+    // `cascade` (→ CastModal) qui s'affiche (elle héberge les rangées de contre-lanceurs) : aucune entrée `counterspell`.
     const enemyCast = { participants: [{ jet: 'cast', groupOwner: true }], cursor: 0 };
     expect(pickActiveModalKey({ pendingCast: {}, pendingCascade: enemyCast, pendingCounterspell: { participants: [] } })).toBe('cascade');
     // Un pendingCounterspell SANS pendingCast/cascade (impossible en pratique) ne déclenche aucune modale.

@@ -3,7 +3,7 @@ import type { EffectTrigger, TriggeredEffect } from '../../state/flow';
 /** SOURCE UNIQUE des libellés FR d'un effet déclenché (`TriggeredEffect`) — partagée par l'affichage
  *  lecture seule (`describe.ts`) ET l'éditeur (`CodexEdit.tsx`). Le type `Record<EffectTrigger, …>`
  *  force l'exhaustivité : ajouter un trigger à l'union ⇒ le compilateur exige son libellé ICI (un seul
- *  endroit), plus de map recopiée à maintenir en parallèle. */
+ *  endroit), sans map recopiée à maintenir en parallèle. */
 export const TRIGGER_LABEL: Record<EffectTrigger, string> = {
   onHit: 'À la touche',
   onCrit: 'Sur un Critique',

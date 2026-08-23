@@ -23,7 +23,7 @@ import type { GameOp } from './ops';
 import type { DeckCoverClass, DeckPosteSlot, NavalTraitRef } from './types';
 
 /** Indice (niveau) du Trait naval `id` dans une liste de réfs : `value` de la réf (défaut 1 si présent sans
- *  Indice explicite), absent → 0. PUR. Source UNIQUE de lecture de l'Indice (plus de parsing de libellé). */
+ *  Indice explicite), absent → 0. PUR. Source UNIQUE de lecture de l'Indice (jamais un parsing de libellé). */
 export function navalTraitLevel(traits: NavalTraitRef[] | undefined, id: string): number {
   const ref = (traits ?? []).find((t) => t.id === id);
   return ref ? ref.value ?? 1 : 0;

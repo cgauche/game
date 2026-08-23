@@ -131,7 +131,7 @@ export function useHoverTargeting(
       if (ft && ft.id !== occ.id) return null;
     }
     // Piétinement / zone / mêlée : tout l'aperçu (réticule + chemin + tip) passe par hoverTargeting,
-    // qui lit l'`AttackOption` armée (selectedAttack) — plus de branche par mode.
+    // qui lit l'`AttackOption` armée (selectedAttack), jamais une branche par mode.
     const ht = hoverTargeting(st, activeH, occ);
     if (ht.kind !== 'ok') return null;
     return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, difficulty: ht.difficulty }, preview: ht.preview };

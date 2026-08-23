@@ -188,7 +188,7 @@ export function sectionsOf(text, splitLevel = 2) {
       k++
     }
   }
-  // #604 : plus de fallback « (intégral) » silencieux quand `splitLevel` ne trouve rien — l'appelant
+  // #604 : aucun fallback « (intégral) » silencieux quand `splitLevel` ne trouve rien — l'appelant
   // (`classify`) est responsable de DESCENDRE de niveau avant d'accepter une capitulation ; ici on ne
   // capitule QUE s'il n'y a vraiment aucun heading exploitable (chapitre court, réellement monolithique).
   if (!sections.length) sections.push({ title: '(intégral)', lo: 1, hi: eof, enfoui: false, isIntro: true })

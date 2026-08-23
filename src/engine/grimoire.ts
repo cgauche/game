@@ -33,7 +33,7 @@ export interface CasterTalent {
 }
 
 /** Talents de lanceur du héros — lus du REGISTRE de talents (castingKind), specs = `ctx.spec`
- *  (« Invocation (Sigmar) » → 'Sigmar'). Plus de name-match : ajouter un Talent de lanceur = une def. */
+ *  (« Invocation (Sigmar) » → 'Sigmar'), jamais un name-match : ajouter un Talent de lanceur = une def. */
 export function casterTalents(c: Combatant): CasterTalent[] {
   const out: CasterTalent[] = [];
   for (const { def, ctx } of featuresOf(c)) {

@@ -4,7 +4,7 @@
  * ombre d'orientation, occlusion, spéculaire). `#hex` / `rgb()` littéraux capturent aussi les anciennes
  * tables hex-valuées. Deux niveaux de couverture :
  *   1) balayage RÉCURSIF des arborescences pivot/backend/authoring/pov/catalog/stage — auto-couvre tout NOUVEAU
- *      fichier (plus de liste à tenir à la main) ;
+ *      fichier (aucune liste à tenir à la main) ;
  *   2) les renderers à la RACINE de `gameIso/`, nommés explicitement par FICHIER (`SurcoucheIso.tsx`,
  *      `sprites.ts`) — l'hôte du monde et ses surcouches de `stage/` sont pris par le balayage.
  * `catalog/decor/defs/` (les 97 defs de props) a son propre bloc plus bas (dessin par def, MAIS couleurs

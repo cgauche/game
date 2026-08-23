@@ -12,8 +12,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_GUARD_ACTIVE,
-  loadDecisionsBaseline, partitionBaseline, formatBaselineReport,
+  scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, scanLegacyVocabHorsStock, EXCUSE_GUARD_ACTIVE,
+  estFichierScanne, loadDecisionsBaseline, partitionBaseline, formatBaselineReport,
 } from '../guards/lib/commentPoison.mjs';
 import {
   scanLabelLogic, scanLabelAsIdArg, collectIdParamFnsAcrossDirs, effectiveIdParamFns,
@@ -70,7 +70,16 @@ const scannedTs = [];
 
 for (const f of staged) {
   const rel = f.replace(/\\/g, '/');
-  if (!/^src\/.*\.(ts|tsx)$/.test(rel) || /\.test\.[tj]sx?$/.test(rel)) continue;
+  // MÊME périmètre que la suite Vitest et le hook au stylo : `estFichierScanne` (source unique,
+  // `commentPoison.mjs`) — `src/**` ET `scripts/**`, quatre extensions, tests compris.
+  if (!estFichierScanne(rel)) continue;
+  // Familles de COMMENTAIRES (tombale / excuse / vocabulaire de l'ancien état / revendications RAW / revendications d'autorité) : tests compris,
+  // « le poison écrit dans un test est du poison » (commentPoison.mjs). Familles CODE (label-logic,
+  // hardcode, emoji, seam de jet, rng) : leur périmètre canonique EXCLUT les fichiers de test — ce
+  // sont eux qui plantent les FIXTURES littérales de ces gardes (label-logic-guard.test.ts EXCLUDED,
+  // combat-hardcode-guard.test.ts EXCLUDED, roll-seam-exclusivity-guard.test.ts EXCLUDED,
+  // no-emoji-affordance.test.ts EXCLUDED) — un fichier de test stagé ne doit PAS y rougir.
+  const isTestFile = /\.test\.[tj]sx?$/.test(rel);
   let text;
   try {
     // Mode stagé : scanner le BLOB DE L'INDEX (`:<chemin>`), pas le working tree — sur l'arbre
@@ -83,18 +92,22 @@ for (const f of staged) {
     if (EXCUSE_GUARD_ACTIVE) offenders.push(`${rel}:${x.line} [excuse sans tag] ${x.detail}`);
     else warnings.push({ file: rel, line: x.line, detail: `[excuse sans tag] ${x.detail}` });
   }
+  // Famille (e) — #1486 (credo règle 1) : un mot qui nomme l'état d'avant bloque, où qu'il vive
+  // (`src/**` comme `scripts/**`) ; les sites déjà recensés vivent au stock décroissant du test.
+  for (const x of scanLegacyVocabHorsStock(rel, text))
+    offenders.push(`${rel}:${x.line} [vocabulaire de l'ancien état] ${x.detail}`);
   for (const x of scanRawClaims(rel, text))
     warnings.push({ file: rel, line: x.line, detail: `[affirmation RAW non ancrée] ${x.detail}` });
   for (const x of scanDecisionClaims(rel, text))
     warnings.push({ file: rel, line: x.line, detail: `[revendication d'autorité sans trace] ${x.detail}` });
-  if (strictRe.test(rel)) {
+  if (!isTestFile && strictRe.test(rel)) {
     for (const x of scanLabelLogic(rel, text)) offenders.push(`${rel}:${x.line} [logique par label] ${x.detail}`);
     for (const x of scanLabelAsIdArg(rel, text, effectiveIdParamFns(text, ID_PARAM_FNS))) offenders.push(`${rel}:${x.line} [logique par label — id STABLE attendu] ${x.detail}`);
     // hardcode.mjs porte des BASELINES par-fichier (policy dans combat-hardcode-guard.test.ts, PAS
     // dupliquée ici) — un nouveau site réactif par-nom peut rester SOUS une baseline tolérée : simple
     // signal, la CI (cliquet complet) reste la porte bloquante pour cette famille.
     for (const x of scanHardcode(rel, text)) warnings.push({ file: rel, line: x.line, detail: `[hardcode réactif par-nom] ${x.detail}` });
-  } else if (ratchetRe.test(rel)) {
+  } else if (!isTestFile && ratchetRe.test(rel)) {
     // MÊME périmètre RATCHET que `label-logic-guard.test.ts` (STRICT_DIRS/RATCHET_DIRS/RATCHET_EXCEPTIONS
     // partagés via labelLogic.mjs) : un site nouveau dans src/gameIso|ui BLOQUE le commit sauf entrée
     // JUSTIFIÉE dans la MÊME table d'exceptions que le test — jamais un périmètre plus étroit ici.
@@ -108,19 +121,19 @@ for (const f of staged) {
   // stock PAR FICHIER que `label-logic-guard.test.ts` (`LABEL_LITERAL_STOCK`, partagé par la lib).
   // Le hook ne voit qu'un fichier à la fois : seul un compte SUPÉRIEUR au stock y bloque — le volet
   // « dette soldée non retirée » reste à la CI, qui scanne le corpus entier.
-  if (strictRe.test(rel) || ratchetRe.test(rel)) {
+  if (!isTestFile && (strictRe.test(rel) || ratchetRe.test(rel))) {
     const n = scanLabelLiteralCompare(rel, text).length;
     if (n > (LABEL_LITERAL_STOCK[rel] ?? 0)) offenders.push(`${rel} [logique par LIBELLÉ] ${n} site(s), stock = ${LABEL_LITERAL_STOCK[rel] ?? 0}`);
   }
-  if (/^src\/(ui|state|gameIso)\//.test(rel))
+  if (!isTestFile && /^src\/(ui|state|gameIso)\//.test(rel))
     for (const emoji of emojisIn(text)) offenders.push(`${rel} [emoji d'affordance] ${emoji}`);
   // #274 — exclusivité du seam de jet : rollTest(/d100(/TestOutcome.seal( hors whitelist (double
   // détente avec src/state/roll-seam-exclusivity-guard.test.ts, SOURCE UNIQUE de la whitelist).
-  if (!rollSeamExcluded(rel))
+  if (!isTestFile && !rollSeamExcluded(rel))
     for (const x of scanRollSeamExclusivity(rel, text)) offenders.push(`${rel}:${x.line} [seam de jet contourné] ${x.detail}`);
   // #370 — rng vivant → résolveur moteur : resolveXxx(…, battleRng()) hors whitelist (double détente
   // avec src/state/roll-seam-exclusivity-guard.test.ts, SOURCE UNIQUE de la whitelist).
-  if (!battleRngEngineLeakExcluded(rel))
+  if (!isTestFile && !battleRngEngineLeakExcluded(rel))
     for (const x of scanBattleRngEngineLeak(rel, text)) offenders.push(`${rel}:${x.line} [rng vivant → résolveur moteur] ${x.detail}`);
 }
 

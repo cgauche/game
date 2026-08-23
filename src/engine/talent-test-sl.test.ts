@@ -5,7 +5,7 @@ import type { Combatant } from './types';
 
 /**
  * Règle LDB 10 (« Tests » : +1 DR par acquisition d'un Talent lié, sur un Test RÉUSSI) appliquée
- * UNIVERSELLEMENT via le matcher STRUCTURÉ `talent.test.matches` (id-based ; plus de match par libellé).
+ * UNIVERSELLEMENT via le matcher STRUCTURÉ `talent.test.matches` (id-based ; jamais un match par libellé).
  * `talentTestSLBonus` est la SOURCE UNIQUE du bonus (Tests de compétence ET incantation). Les contextes
  * `when` (Condition, couche state) sont injectés par `whenHolds` → le moteur reste pur.
  */

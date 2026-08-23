@@ -1,6 +1,6 @@
 /**
  * Dispatcher PUR des qualités d'objet : lit les `QualityInstance` STRUCTURÉES (`{id, value?}`) portées
- * par l'objet (plus de chaîne « id value » re-parsée), résout leur donnée mécanique PAR ID, puis expose
+ * par l'objet (jamais une chaîne « id value » re-parsée), résout leur donnée mécanique PAR ID, puis expose
  * des helpers que combat.ts/items.ts/combatFlow appellent au lieu de tester des chaînes en dur. Aucune
  * mutation. Accepte tout porteur de `qualities` (Weapon ou ItemInstance).
  *

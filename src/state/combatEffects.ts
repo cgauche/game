@@ -131,7 +131,7 @@ export function drainPendingLog(get: Get, set: SetFn): import('./combatLog').Com
  *  MURAGE (#1262 B4) : la marque est REQUISE ici — un littéral d'étape monté à la main ne compile
  *  plus. Les étapes de combat se déclarent aux portes (`pushBand`/`pushChoice`/`pushMono`/`pushTable`/
  *  `pushTableDone`/`pushDisplay`/`pushHost`), qui montent, surfacent et possèdent ; ce point d'entrée
- *  ne sert plus qu'aux étapes déjà mintées par une fabrique tierce (bandes de `combat/triggeredTest`,
+ *  sert aux SEULES étapes déjà mintées par une fabrique tierce (bandes de `combat/triggeredTest`,
  *  révélations). */
 export function pushCombatStep(set: SetFn, step: BuiltCascadeStep | ((index: number) => BuiltCascadeStep | undefined)): void {
   pushStep(set, step, 'combat');

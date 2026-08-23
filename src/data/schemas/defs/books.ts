@@ -1,9 +1,9 @@
 /**
  * Schéma de `books.json` — SOURCE UNIQUE des acronymes de livres (ref #585) :
- * `abbr` est l'UNIQUE champ d'acronyme (affichage Compendium ET Atlas RAW), plus de doublon `abr`.
+ * `abbr` est l'UNIQUE champ d'acronyme (affichage Compendium ET Atlas RAW), sans doublon `abr`.
  * `id` = relation id-pure vers `source.book` (migration `21aa4881`). `dir` = chemin d'extraction
  * `Source/…` pour les 15 livres couverts par l'Atlas RAW ; absent pour les 14 autres. `BOOKS` de
- * `scripts/raw/_lib.mjs` DÉRIVE de `books.json` (filtre les entrées `dir`) — plus de liste en dur
+ * `scripts/raw/_lib.mjs` DÉRIVE de `books.json` (filtre les entrées `dir`), sans liste en dur
  * à synchroniser. `language`/`folder` sont typés nullable par l'interface mais toujours renseignés
  * (string) sur les 29 entrées observées ; `desc` est le seul champ réellement null (1/29).
  */

@@ -1,6 +1,6 @@
 /**
  * Constructeur d'arme UNIQUE (`engine/items.buildWeapon`) : stocke la `WeaponDamageSpec` STRUCTURÉE telle
- * quelle (plus de chaîne re-parsée). Le token `BF` est désormais porté par le flag `plusBF` (lu par
+ * quelle (jamais une chaîne re-parsée). Le token `BF` est désormais porté par le flag `plusBF` (lu par
  * `effectiveWeaponDamage` sans regex) ; le formateur `damageString` reste la source unique de l'écriture
  * canonique (« +BF+N »/« +N »/« +BF »/« -2 ») — vérifiée ici en round-trip.
  */

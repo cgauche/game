@@ -16,8 +16,8 @@ export const BLOCK_START = /^<!-- ([A-Z0-9_-]+-INTEGRATION) -->/
 const blockEnd = (tag) => new RegExp(`^<!-- /${tag} -->\\s*$`)
 
 // Extrait les blocs préservés (délimités par `<!-- X-INTEGRATION -->` … `<!-- /X-INTEGRATION -->`,
-// précédés d'un séparateur `---` isolé) d'un catalogue EXISTANT. Si un bloc n'a pas encore de
-// marqueur de fin (ancien format, courait jusqu'à l'EOF), on le ferme ici — auto-guérison au premier run.
+// précédés d'un séparateur `---` isolé) d'un catalogue EXISTANT. Un bloc sans marqueur de fin sur
+// disque court jusqu'à l'EOF : on le ferme ici — auto-guérison au premier run.
 export function extractPreservedBlocks(path) {
   if (!existsSync(path)) return []
   const lines = readText(path).split('\n')

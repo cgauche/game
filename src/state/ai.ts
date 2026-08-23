@@ -894,7 +894,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     if (v > 0) candidates.push({ action: { kind: 'selfManeuver', maneuverId: def.id }, kind: 'selfManeuver', utility: v, targetId: enemy.id, coord: pos });
   }
 
-  // === SORTS (énumération UNIFIÉE, op-driven) — un évaluateur unique, plus de planner par-catégorie ====
+  // === SORTS (énumération UNIFIÉE, op-driven) — un évaluateur unique, aucun planner par-catégorie ====
   // Pour CHAQUE sort connu NON déjà actif (Unicité RAW, LDB 46 l.116-121 / 40 l.16-19), on dérive des
   // candidats `cast`/`castArea`/`focus` scorés par `spellActionValue` (Σ valeur des GameOp × fiabilité ×
   // opposition). La POLARITÉ (offensif/bénéfique) et la valeur viennent des OPS, jamais d'un nom de sort
@@ -990,7 +990,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     }
   }
   // === MÊLÉE / APPROCHE / REPOSITION =================================================================
-  // Plus de gate `!canCast && !canShoot` : un lanceur/tireur peut AUSSI frapper au contact (acculé) ou se
+  // Aucun gate `!canCast && !canShoot` : un lanceur/tireur peut AUSSI frapper au contact (acculé) ou se
   // REPOSITIONNER (kiting/repli). Le biais `TIER` (cast < shoot < melee < move) garantit qu'un coup jouable
   // prime à utilité comparable.
   const meleeWeapon = enemy.weapons.find((w) => w.type === 'melee') ?? enemy.weapons[0];

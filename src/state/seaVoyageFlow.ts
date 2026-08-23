@@ -136,8 +136,8 @@ export type SeaCrisis =
   | { kind: 'tourbillon'; label: string; whirlpoolId: string; need: number; progress: number };
 
 /** État NAVAL d'un TravelPlan (route `sea`) — persiste dans la save avec le plan. Un jour de voyage
- *  (`runSeaDay`) est désormais UNE cascade `purpose:'travelDay'` (#275 Ronde 2 cran 3) — plus de FSM
- *  `step` persisté : le point de reprise EST `pendingCascade`/`suspendedCascades` (state/cascade.ts). */
+ *  (`runSeaDay`) est UNE cascade `purpose:'travelDay'` (#275 Ronde 2 cran 3), sans FSM
+ *  `step` persistée : le point de reprise EST `pendingCascade`/`suspendedCascades` (state/cascade.ts). */
 export interface SeaVoyageState {
   /** Cap dominant du trajet (aspect du vent) — d'auteur (`MapRoute.seaHeading`), requis (#416). */
   heading: WindDirection;
@@ -1157,7 +1157,7 @@ registerCascadeApplier(SEA_BOARD_EVENT_KIND, (get, set, step) => {
 export function runSeaDay(get: Get, set: Set): void {
   const plan = get().travelPlan;
   // Une cascade est déjà active (ou suspendue derrière un combat) : l'arbitre la montre, rien à faire —
-  // `resumeTravel` (couture d'événement) ne ré-entre PLUS de FSM (#275 Ronde 2 cran 3, Décision c).
+  // `resumeTravel` (couture d'événement) ne ré-entre dans AUCUNE FSM (#275 Ronde 2 cran 3, Décision c).
   if (!plan?.sea || plan.interrupted || get().pendingCrewTest || get().pendingSteamSave || get().pendingCascade) return;
   // NAUFRAGE (MDG 13 l.674) : coque à 0 (Tourbillon/Collision/usure) → séquence de survie, jamais la
   // suite de la traversée sur une épave.

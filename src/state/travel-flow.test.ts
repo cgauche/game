@@ -163,7 +163,7 @@ describe('GOLDEN — issues figées à graine égale', () => {
     const st = get();
     expect((st.party[0].items ?? []).length).toBe(0);
     expect(st.party[0].conditions.some((c) => c.id === 'extenue')).toBe(true);
-    // La conséquence est DÉRIVÉE de l'op `condition` appliqué (#295, opConsequenceLine) — plus de
+    // La conséquence est DÉRIVÉE de l'op `condition` appliqué (#295, opConsequenceLine), jamais une
     // chaîne composée « Nom — Activité : Exténué. » : ligne structurée (l'État surfacé sur la rangée).
     expect(st.journal.join('\n')).toContain('État Exténué subi.');
   });

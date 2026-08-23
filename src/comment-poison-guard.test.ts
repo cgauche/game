@@ -1,12 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { statSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
 import {
   EXCUSE_GUARD_ACTIVE,
-  TOMBSTONE_FAMILIES,
+  POISON_DIRS,
+  POISON_EXTS,
+  ATTENTE_WIP,
   tombstonesIn,
+  scanTombstones,
   untaggedExcuseMatch,
+  legacyVocabIn,
+  scanLegacyVocab,
   scanRawClaims,
   scanDecisionClaims,
   extractComments,
@@ -19,41 +25,104 @@ import {
   DECISIONS_BASELINE_PATH,
   type BaselineEntry,
 } from '../scripts/guards/lib/commentPoison.mjs';
+import { LEGACY_VOCAB_SITES } from '../scripts/guards/lib/legacyVocabStock.mjs';
 
 /**
- * Garde-fou commentaires (#136) — l'app détecte elle-même le poison de commentaires (CLAUDE.md règle 6).
- * Deux familles scannées, dans les COMMENTAIRES de `src/**\/*.ts(x)` ET de `scripts/guards/lib/**`
- * (jamais les chaînes ni le texte de scénario) :
- *   1. PIERRE TOMBALE (règle 6c) — rappelle un état de code qui n'existe plus. Tolérance ZÉRO, aucune
- *      liste d'exception : un cas légitime se reformule plutôt que d'être toléré.
- *   2. Commentaire-EXCUSE (règle 6b) — justifie une exception ou une déviation sans validation
- *      traçable. Seul un tag `[entériné AAAA-MM-JJ]` porté par le MÊME commentaire la neutralise.
- * MÉCANIQUE de scan (extraction de commentaires, familles de regex) dans
- * `scripts/guards/lib/commentPoison.mjs` — module .mjs pur, partagé avec un futur hook pre-commit
- * (exécutable par `node` nu, sans tsx), et SOUMIS au scan comme le reste (#828). Ici : uniquement les
- * données de POLICY (EXCUSE_GUARD_ACTIVE), le parcours fs, et les formes plantées en littéraux.
+ * EN-TÊTE STRUCTURÉ de la garde (#1475).
  */
+const GARDE = {
+  question:
+    'A — quel COMMENTAIRE du dépôt porte du poison (CLAUDE.md règle 6, credo règle 1) : excuse sans tag, ' +
+    'pierre tombale, revendication d’autorité, vocabulaire de l’ANCIEN ÉTAT ? ' +
+    'B — pour la seule famille (e), le stock NOMINATIF DATÉ des sites restants, nommés par fichier + ancre. ' +
+    'C — chaque ligne du stock porte le LOT qui l’éteint (#1486) et part avec lui ; les familles excuse et ' +
+    'tombale n’ont AUCUN stock (tolérance zéro : le site se reformule dans le geste).',
+  primitive:
+    '`extractComments` + `scanTombstones`/`scanExcuses`/`scanLegacyVocab`/`scanDecisionClaims` ' +
+    '(`scripts/guards/lib/commentPoison.mjs`), sur le corpus de `readCorpus` ' +
+    '(`scripts/guards/lib/sourceCorpus.mjs`, #1462) — plus aucun parcours de dossiers local.',
+  perimetre:
+    '`src/**` + `scripts/**`, extensions `.ts`, `.tsx`, `.mts`, `.mjs`. Familles excuse et tombale : TESTS INCLUS ' +
+    '(le poison écrit dans un test est du poison). Famille (e) : hors tests, périmètre de mesure de #1486. ' +
+    'Cliquet des revendications d’autorité : les tests de `src/**`.',
+  angleMort: [
+    'Les commentaires HTML/JSX (`<!-- … -->`, `{/* … */}` hors TS), les `.css` et les `.md` ne sont pas scannés (#593).',
+    'Un énoncé de règle qui n’emploie AUCUN mot des familles passe : la garde mesure un vocabulaire, pas une intention.',
+    'Une occurrence en CHAÎNE est invisible par construction (`extractComments` ne lit que les commentaires) — dont ' +
+      'les DONNÉES d’une garde : `scripts/guards/lib/labelLogic.mjs` porte un site de #1486 dans une valeur de `RATCHET_EXCEPTIONS`.',
+    'Le cliquet des revendications d’autorité ne couvre que les tests de `src/**` : un test de `scripts/**` y échappe — ' +
+      '12 sites mesurés le 2026-08-23 dans `scripts/**` (dont `structures-lexique.mts`, `registryIdBranch.mjs`, les ateliers `*.dessin.mts`) ne sont vus par AUCUN canal.',
+    'La famille (e) ne mesure QUE le code de production : 17 sites vivent dans des tests le 2026-08-23, dont une dette ' +
+      'gelée réelle (`src/gameIso/rig/parts/tenues/jambes-gabarit-ratchet.test.ts:14`, `JAMBE_LEGACY`).',
+    'Motifs NON couverts par la famille (e), mesurés le 2026-08-23 : « obsolescence », « hérité », « transitoire », ' +
+      '« provisoire », « compatibilité ascendante » — aucun n’est détecté.',
+    'Les motifs « fin du/de la <nom> » et « était <participe> » restent HORS des familles : mesurés le 2026-08-23 à ' +
+      '71 et 2 commentaires, pour respectivement 1/10 et 0/2 vraies tombales dans l’échantillon — leur entrée coûterait plus de faux positifs que de sites.',
+  ],
+  baseline: {
+    fichier: 'scripts/guards/lib/legacyVocabStock.mjs',
+    decroissant: true,
+    raison:
+      'Le stock est le dénominateur des COMMENTAIRES de #1486 (credo règle 1) : chaque ligne se solde par la mort du site ' +
+      'dans le commit de son lot. Il ne couvre PAS les sites de #1486 portés par du CODE — identifiants et chaînes : ' +
+      '`charKeyLegacy.mjs`, les budgets `legacy:` de `gameOpRefFk.mjs`, `LEGACY_KEY` (`saves.ts`), `labelLogic.mjs:765`, ' +
+      '`scripts/agents/compat-core.mjs` — invisibles à `extractComments` par construction : ceux-là meurent avec leurs lots, ' +
+      'listés au ticket, jamais par cette garde. Une ligne neuve est une dérive, jamais une exception à inscrire — seul le ' +
+      'tag `[entériné AAAA-MM-JJ]` de l’utilisateur soustrait un commentaire à la famille.',
+  },
+  ticket: '#1486',
+} as const;
+
+/** Cliquet : le nombre de FINDINGS ne peut que DÉCROÎTRE (un commentaire à deux motifs = deux
+ *  findings, donc deux lignes de stock — le compte de LIGNES, lui, masquait ce cumul). Mesure du
+ *  2026-08-23 : 47 findings bruts, 7 sortis en emplois vivants, 3 sites tués au geste → 37. */
+const PLAFOND_FINDINGS = 37;
+
+/** Ensemble FERMÉ des lots de #1486 (relevé au ticket le 2026-08-23) : le `lot` d’une ligne de stock
+ *  est un ou plusieurs de ces jetons séparés par ` / `. Aucun placeholder n’est admis. */
+const LOTS_1486 = [
+  'L1b #1467',
+  'L1c #1468',
+  'L2',
+  'L3',
+  'L4',
+  'L5',
+  'L6',
+  '#1473',
+  '#1474',
+  'chantier rig',
+  'lot rendu',
+] as const;
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)); // racine du projet (src/ → ..)
-const SRC_DIR = join(ROOT, 'src');
 // #828 : les gardes sont soumises à la règle qu'elles font respecter — la mécanique de détection est
 // scannée par elle-même. Un détecteur qui doit citer un motif le plante en LITTÉRAL DE CHAÎNE ici
 // (jamais lu par `extractComments`), il ne l'écrit pas dans sa prose.
-const GUARD_LIB_DIR = join(ROOT, 'scripts', 'guards', 'lib');
+const CORPUS = readCorpus([...POISON_DIRS], { exts: [...POISON_EXTS], tests: true });
+const EST_TEST = /\.test\./;
+/** Périmètre de mesure de #1486 : le code de production des deux racines. */
+const HORS_TESTS = CORPUS.filter((f) => !EST_TEST.test(f.rel));
+/** Fichiers de test de `src/**` : périmètre du cliquet famille 4. */
+const TESTS_SRC = CORPUS.filter((f) => EST_TEST.test(f.rel) && f.rel.startsWith('src/'));
 
-function scanSrcFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string, exts: RegExp) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p, exts);
-      else if (exts.test(e)) files.push(p);
-    }
-  };
-  walk(SRC_DIR, /\.(ts|tsx)$/);
-  walk(GUARD_LIB_DIR, /\.(mjs|js|ts)$/);
-  return files;
-}
+describe('garde-fou commentaires — en-tête structuré (#1475)', () => {
+  it('la garde se déclare : question A→B→C, primitive, périmètre, angles morts, baseline décroissante, ticket', () => {
+    expect(GARDE.question).toMatch(/A —.*B —.*C —/s);
+    expect(GARDE.primitive).toContain('sourceCorpus.mjs');
+    expect(GARDE.perimetre, 'le périmètre doit NOMMER les deux racines scannées.').toMatch(/src\/\*\*.*scripts\/\*\*/s);
+    expect(GARDE.angleMort.length).toBeGreaterThanOrEqual(4);
+    expect(GARDE.baseline).toMatchObject({ fichier: 'scripts/guards/lib/legacyVocabStock.mjs', decroissant: true });
+    expect(GARDE.ticket).toBe('#1486');
+  });
+
+  it('le corpus scanné couvre bien les DEUX racines et les quatre extensions (preuve de câblage)', () => {
+    const exts = new Set(CORPUS.map((f) => f.rel.slice(f.rel.lastIndexOf('.'))));
+    expect([...exts].sort()).toEqual(['.mjs', '.mts', '.ts', '.tsx']);
+    expect(CORPUS.some((f) => f.rel.startsWith('src/'))).toBe(true);
+    expect(CORPUS.some((f) => f.rel.startsWith('scripts/') && !f.rel.startsWith('scripts/guards/lib/'))).toBe(true);
+    expect(TESTS_SRC.length).toBeGreaterThan(0);
+  });
+});
 
 // ---------------------------------------------------------------------------------------------
 // Famille 1 — PIERRE TOMBALE (CLAUDE.md règle 6c). Tolérance ZÉRO, pas d'exception.
@@ -194,17 +263,52 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
     expect(tombstonesIn('// Calcule le total des dégâts appliqués à la cible.')).toEqual([]);
   });
 
-  it('aucun commentaire de src/** ni de scripts/guards/lib/** ne porte une pierre tombale (tolérance ZÉRO)', () => {
+  it('cas plantés : la locution de cessation devant un artefact de CODE nommé est une tombale (#1486)', () => {
+    const L = 'plus de <artefact de code> (état révolu)';
+    expect(tombstonesIn('// Amputation déclarée STRUCTURELLEMENT (plus de regex sur `desc`).')).toContain(L);
+    expect(tombstonesIn('// le pool DÉRIVE du registre : plus de liste maintenue à la main.')).toContain(L);
+    expect(tombstonesIn('// `id` porte la LOGIQUE — le titre FR ne sert plus de clé (#602).')).toContain(L);
+    expect(tombstonesIn('// un évaluateur unique, plus de planner par-catégorie')).toContain(L);
+    expect(tombstonesIn('// Sélection vue PARTAGÉE — plus de\n // ternaire ad hoc par vue.')).toContain(L);
+  });
+
+  it('faux positifs écartés : la QUANTITÉ, la COMPARAISON, le renvoi documentaire et les locutions (#1486)', () => {
+    expect(tombstonesIn('// à plus de 3 cases, la portée longue s’applique')).toEqual([]);
+    expect(tombstonesIn('// une charge couvre plus de cases que la marche')).toEqual([]);
+    expect(tombstonesIn('// plus de détails dans docs/architecture.md')).toEqual([]);
+    expect(tombstonesIn('// en plus de la branche par défaut, le registre porte les variantes')).toEqual([]);
+    expect(tombstonesIn('// d’autant plus de mode que la scène en déclare')).toEqual([]);
+    expect(tombstonesIn('// la cible ne peut plus se déplacer ce Round : vocabulaire de JEU')).toEqual([]);
+    expect(tombstonesIn('// si le héros n’a plus de créneau, la journée se clôt.')).toEqual([]);
+  });
+
+  it('échafaudage `ATTENTE_WIP` : un fichier gelé échappe au SEUL motif « plus de <artefact> », jamais aux autres', () => {
+    const gele = ATTENTE_WIP[0]?.fichier ?? 'src/state/combatFlow.ts';
+    expect(scanTombstones(gele, '// un évaluateur unique, plus de planner par-catégorie')).toEqual([]);
+    expect(scanTombstones('src/state/autre.ts', '// un évaluateur unique, plus de planner par-catégorie')).toHaveLength(1);
+    // Les familles historiques mordent MÊME sur un fichier gelé (le gel ne vaut que pour le motif neuf).
+    expect(scanTombstones(gele, '// Cette logique vivait anciennement dans un autre module.')).toHaveLength(1);
+  });
+
+  it('échafaudage `ATTENTE_WIP` : chaque entrée est datée, nominative, et périme au bout de 7 jours', () => {
+    // La liste est un échafaudage de 24 h posé le 2026-08-23 (WIP de sessions voisines sur l’arbre
+    // partagé), pas une liste d’exception : elle doit DISPARAÎTRE, et la garde le mesure.
+    for (const e of ATTENTE_WIP) {
+      expect(statSync(join(ROOT, e.fichier)).isFile(), `${e.fichier} introuvable`).toBe(true);
+      expect(e.raison, JSON.stringify(e)).toMatch(/WIP session voisine \d{4}-\d{2}-\d{2}/);
+      expect(e.date, JSON.stringify(e)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      const jours = (Date.now() - Date.parse(e.date)) / 86_400_000;
+      expect(
+        jours,
+        `${e.fichier} attend depuis ${Math.floor(jours)} jours : router la tombale vers sa session et VIDER l’entrée (jamais la re-dater).`,
+      ).toBeLessThanOrEqual(7);
+    }
+  });
+
+  it('aucun commentaire de src/** ni de scripts/** ne porte une pierre tombale (tolérance ZÉRO)', () => {
     const offenders: string[] = [];
-    for (const f of scanSrcFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
-      const text = readFileSync(f, 'utf8');
-      for (const c of extractComments(text)) {
-        for (const fam of TOMBSTONE_FAMILIES) {
-          const m = fam.rx.exec(c.text);
-          if (m) offenders.push(`${rel}:${matchLine(c, m.index)} [${fam.label}] ${excerptAt(c, m.index)}`);
-        }
-      }
+    for (const { rel, text } of CORPUS) {
+      for (const x of scanTombstones(rel, text)) offenders.push(`${rel}:${x.line} ${x.detail}`);
     }
     expect(
       offenders,
@@ -305,12 +409,10 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
   });
 
   (EXCUSE_GUARD_ACTIVE ? it : it.skip)(
-    'aucune excuse de src/** ni de scripts/guards/lib/** sans tag [entériné AAAA-MM-JJ] (ACTIVE depuis #177)',
+    'aucune excuse de src/** ni de scripts/** sans tag [entériné AAAA-MM-JJ] (ACTIVE depuis #177)',
     () => {
       const offenders: string[] = [];
-      for (const f of scanSrcFiles()) {
-        const rel = relative(ROOT, f).split('\\').join('/');
-        const text = readFileSync(f, 'utf8');
+      for (const { rel, text } of CORPUS) {
         for (const c of extractComments(text)) {
           const m = untaggedExcuseMatch(c.text);
           if (m) offenders.push(`${rel}:${matchLine(c, m.index)} ${excerptAt(c, m.index)}`);
@@ -322,6 +424,134 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
       ).toEqual([]);
     },
   );
+});
+
+// ---------------------------------------------------------------------------------------------
+// Famille (e) — VOCABULAIRE DE L'ANCIEN ÉTAT (#1486, credo règle 1). Les mots couverts sont plantés
+// ici en LITTÉRAUX DE CHAÎNE (jamais lus par `extractComments`) : c'est la spécification exécutable
+// du détecteur. Stock nominatif daté : `scripts/guards/lib/legacyVocabStock.mjs`.
+// ---------------------------------------------------------------------------------------------
+
+describe('garde-fou commentaires — vocabulaire de l’ancien état (#1486, credo règle 1)', () => {
+  it('cas plantés : chaque mot qui nomme l’état d’avant est détecté (preuve TDD)', () => {
+    expect(legacyVocabIn('// repli conservé pour le stock legacy des projets')).toContain('legacy');
+    expect(legacyVocabIn('// `target` (optionnel — rétro-compat) sert le combat au contact')).toContain('rétro-compat');
+    expect(legacyVocabIn('// Absent = tous les pas alloués (défaut, IA/rétrocompatibilité).')).toContain('rétro-compat');
+    expect(legacyVocabIn('// kept for backward compatibility with the old export')).toContain('backward-compat');
+    expect(legacyVocabIn('// @deprecated — passer par le registre')).toContain('deprecated');
+    expect(legacyVocabIn('// `PCFSoftShadowMap` est DÉPRÉCIÉ depuis three 0.185')).toContain('déprécié');
+    expect(legacyVocabIn('// une entrée obsolète est refusée à la lecture')).toContain('obsolète');
+    expect(legacyVocabIn('// enrobé en `ViewSet` par le shim `toViewSet`')).toContain('shim');
+    expect(legacyVocabIn('// ce point d’entrée ne sert plus qu’aux étapes déjà mintées')).toContain('ne sert plus qu’à');
+  });
+
+  it('cas planté : une CONSTANTE citée en commentaire est un site (le tiret bas n’est pas une frontière)', () => {
+    expect(legacyVocabIn('// `LEGACY_KEY` nettoie les clés des versions antérieures')).toContain('legacy');
+  });
+
+  it('cas planté : la coupure de ligne ne met pas la locution hors de portée', () => {
+    expect(legacyVocabIn('/** ce point d’entrée ne sert\n *  plus qu’aux étapes mintées. */')).toContain(
+      'ne sert plus qu’à',
+    );
+  });
+
+  it('faux positifs écartés : l’IDENTIFIANT et le NOM DE FICHIER cités en commentaire ne sont pas des sites', () => {
+    expect(legacyVocabIn('// `legacyCounts` compte les entrées non résolues')).toEqual([]);
+    expect(legacyVocabIn('// scanner `charKeyLegacy.mjs` (clés de caractéristique)')).toEqual([]);
+    expect(legacyVocabIn('// stock nominatif : `legacyVocabStock.mjs`')).toEqual([]);
+    expect(legacyVocabIn('// Message du joueur par CAUSE de rejet (`ObsoleteCause`)')).toEqual([]);
+  });
+
+  it('faux positif écarté : le mot dans une CHAÎNE n’est pas un commentaire (preuve TDD)', () => {
+    expect(scanLegacyVocab('x.ts', "const mode = 'legacy';\nconst n = 1; // compteur")).toEqual([]);
+  });
+
+  it('hors périmètre mesuré : la quantité, le vocabulaire de JEU et la citation RAW ne sont pas des sites', () => {
+    expect(legacyVocabIn('// à plus de 3 cases, la portée longue s’applique')).toEqual([]);
+    expect(legacyVocabIn('// remis à zéro à la fin du tour (LDB 13 l.106)')).toEqual([]);
+    expect(legacyVocabIn('// « le personnage était étourdi »')).toEqual([]);
+  });
+
+  it('cas planté : le tag [entériné AAAA-MM-JJ] du MÊME commentaire neutralise la famille (preuve TDD)', () => {
+    expect(scanLegacyVocab('x.ts', '// repli du stock legacy conservé')).toHaveLength(1);
+    expect(scanLegacyVocab('x.ts', '// repli du stock legacy conservé [entériné 2026-08-23]')).toEqual([]);
+  });
+
+  it('cas planté : un commentaire neutre ne matche aucune famille (contrôle négatif)', () => {
+    expect(legacyVocabIn('// Calcule le total des dégâts appliqués à la cible.')).toEqual([]);
+  });
+
+  it('emplois VIVANTS écartés : la dépendance npm, la couture DEV Playwright, l’entrée de garde sans correspondance', () => {
+    // Aucun de ces sites ne peut « mourir » : le mot n'y nomme pas un état révolu de CE dépôt.
+    expect(legacyVocabIn('// dépendances inutilisées (knip) + majeures obsolètes (npm outdated), en issue')).toEqual([]);
+    expect(legacyVocabIn('// Simule un BOUTON de manette en passant par le shim DEV installé par `useGamepad`')).toEqual([]);
+    expect(legacyVocabIn('// le hook (vraie manette) ET le shim DEV (Playwright, `__wfrpPad`)')).toEqual([]);
+    expect(legacyVocabIn('// un motif de cette liste sans AUCUNE correspondance est une erreur (motif obsolète).')).toEqual([]);
+    // L'exclusion ne vaut que si elle RECOUVRE le match : le mot NU reste un site.
+    expect(legacyVocabIn('// le shim `toViewSet` enrobe l’art partiel')).toContain('shim');
+    expect(legacyVocabIn('// une entrée obsolète est refusée à la lecture')).toContain('obsolète');
+  });
+
+  it('tout site de src/** et scripts/** (hors tests) est au stock nominatif daté, et aucune ligne du stock n’est périmée', () => {
+    const findings: { file: string; line: number; detail: string }[] = [];
+    const scanned: string[] = [];
+    for (const { rel, text } of HORS_TESTS) {
+      scanned.push(rel);
+      for (const x of scanLegacyVocab(rel, text)) findings.push({ file: rel, line: x.line, detail: x.detail });
+    }
+    const stock: BaselineEntry[] = LEGACY_VOCAB_SITES.map(({ fichier, motif, ancre, lot, date }) => ({
+      fichier,
+      motif,
+      ancre,
+      raison: lot,
+      date,
+    }));
+    // Clé = fichier + ancre + MOTIF : le rangement se fait motif par motif, sinon une entrée couvre
+    // les DEUX findings d'un commentaire à deux motifs et tuer l'un des deux laisse la garde verte.
+    const motifDe = (detail: string) => /^\[([^\]]+)\]/.exec(detail)?.[1] ?? '';
+    const motifs = new Set([...findings.map((f) => motifDe(f.detail)), ...stock.map((s) => s.motif)]);
+    const nouveaux: string[] = [];
+    const perimees: string[] = [];
+    for (const motif of motifs) {
+      const v = partitionBaseline(
+        findings.filter((f) => motifDe(f.detail) === motif),
+        stock.filter((s) => s.motif === motif),
+        scanned,
+      );
+      nouveaux.push(...v.nouveaux.map((f) => `${f.file}:${f.line} ${f.detail}`));
+      perimees.push(...v.perimees.map((e) => `${e.fichier} — ${e.motif} : ${e.ancre}`));
+    }
+    expect(
+      nouveaux,
+      'Vocabulaire de l’ancien état hors stock : tuer le site (credo règle 1), ou le faire couvrir par un tag `[entériné AAAA-MM-JJ]` de l’utilisateur. Le stock ne s’allonge JAMAIS (#1486).',
+    ).toEqual([]);
+    expect(
+      perimees,
+      'Ligne(s) du stock sans site correspondant : purger `scripts/guards/lib/legacyVocabStock.mjs` dans le MÊME commit.',
+    ).toEqual([]);
+    expect(
+      findings.length,
+      'le nombre de FINDINGS de #1486 ne peut que décroître — abaisser `PLAFOND_FINDINGS` avec le site soldé.',
+    ).toBeLessThanOrEqual(PLAFOND_FINDINGS);
+    expect(LEGACY_VOCAB_SITES.length, 'une ligne de stock par finding : un commentaire à 2 motifs = 2 lignes.').toBe(
+      findings.length,
+    );
+  });
+
+  it('chaque ligne du stock est bien formée : fichier existant, ancre, LOT de l’ensemble fermé de #1486, date ISO', () => {
+    for (const s of LEGACY_VOCAB_SITES) {
+      expect(statSync(join(ROOT, s.fichier)).isFile(), `${s.fichier} introuvable`).toBe(true);
+      expect(s.motif, JSON.stringify(s)).toBeTruthy();
+      expect(s.ancre, JSON.stringify(s)).toBeTruthy();
+      expect(s.date, JSON.stringify(s)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      for (const jeton of s.lot.split(' / ')) {
+        expect(
+          LOTS_1486 as readonly string[],
+          `lot inconnu « ${jeton} » sur ${s.fichier} — un site se rattache à un lot RÉEL de #1486, jamais à un placeholder.`,
+        ).toContain(jeton);
+      }
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -439,30 +669,23 @@ const TEST_DECISION_SITES: BaselineEntry[] = [
     raison: 'même verbatim, même fiche mémoire : l’écran doit DIRE le rejet que l’arbitrage ordonne',
     date: '2026-08-17',
   },
+  {
+    fichier: 'src/data/manual-docs-ratchet.test.ts',
+    motif: 'listes décroissantes = liste d’exception (garde de routage SANS stock)',
+    ancre: 'Arbitrage utilisateur (2026-07-27, verbatim)',
+    raison:
+      'verbatim utilisateur du 2026-07-27 cité en toutes lettres dans le MÊME commentaire (« avoir des listes qui doivent diminuer avec le temps… on a juste une liste d’exception qui empoisonne ») : c’est lui qui interdit à cette garde d’avoir un stock cliqueté',
+    date: '2026-07-27',
+  },
 ];
-
-function scanTestFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.test\.(ts|tsx)$/.test(e)) files.push(p);
-    }
-  };
-  walk(SRC_DIR);
-  return files;
-}
 
 describe('cliquet : revendications d’autorité dans les fichiers de test (#136, famille 4)', () => {
   it('aucun site famille 4 dans src/**/*.test.ts(x) hors liste nominative, et aucune entrée périmée', () => {
     const findings: { file: string; line: number; detail: string }[] = [];
     const scanned: string[] = [];
-    for (const f of scanTestFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const { rel, text } of TESTS_SRC) {
       scanned.push(rel);
-      for (const x of scanDecisionClaims(rel, readFileSync(f, 'utf8')))
-        findings.push({ file: rel, line: x.line, detail: x.detail });
+      for (const x of scanDecisionClaims(rel, text)) findings.push({ file: rel, line: x.line, detail: x.detail });
     }
     const v = partitionBaseline(findings, TEST_DECISION_SITES, scanned);
     expect(

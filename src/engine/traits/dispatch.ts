@@ -77,8 +77,8 @@ function resolveTraitArg(def: TraitData | undefined, arg: string): string {
  *  Indice gardent « Nom (Spec) N » (« Immunité (Poison) »), les sauvegardes « Nom N+ » (« Démoniaque 8+ »). */
 /** Rendu lisible et FIDÈLE d'un trait structuré (inverse exact de `parseTraitInstance` pour l'affichage)
  *  — inspecteur / Codex / éditeur / libellé d'attaque. Restitue le signe « + » des Dégâts (attaques),
- *  le « + » de seuil des sauvegardes, sinon l'Indice nu. La NATURE est lue en DONNÉE (plus de liste en
- *  dur) : une attaque = trait qui octroie des Manœuvres (`grantsManeuvers`, mêlée) OU est une arme
+ *  le « + » de seuil des sauvegardes, sinon l'Indice nu. La NATURE est lue en DONNÉE (jamais une liste
+ *  en dur) : une attaque = trait qui octroie des Manœuvres (`grantsManeuvers`, mêlée) OU est une arme
  *  naturelle (`capabilities.naturalWeapon`, dont le tir) → sa valeur s'affiche « +Dégâts ». */
 export function formatTrait(t: TraitInstance): string {
   const td = traitById.get(t.id);
@@ -267,7 +267,7 @@ export function wardSaves(traits: TraitList | undefined): number[] {
 }
 
 // Défense du champion (LDB 85) : capacité GÉNÉRIQUE `counterOnDefenseWin` (traits ET talents), lue par
-// `canCounterOnDefenseWin` (combatFeatures/dispatch) — plus de prédicat par-nom `hasChampionDefense`.
+// `canCounterOnDefenseWin` (combatFeatures/dispatch), jamais un prédicat par-nom `hasChampionDefense`.
 
 
 /** AURAS de combat déclarées par les traits du porteur (Perturbant : −20 à BE m, LDB 85 p.341 ; toute

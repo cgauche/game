@@ -264,7 +264,7 @@ export function rollCritical(
   // portent leur `kind` → on instancie à la localisation du coup.
   const traumas = traumaRefs.map((id) =>
     traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
-  // Amputation (LDB 18 l.237) : DÉCLARÉE STRUCTURELLEMENT (`entry.amputation`, plus de regex sur le texte).
+  // Amputation (LDB 18 l.237) : DÉCLARÉE STRUCTURELLEMENT (`entry.amputation`, jamais lue par regex sur le texte).
   // Résolue par `resolveAmputation` (SOURCE UNIQUE LDB/AA/post-rencontre). Placée en DERNIER (rien ne tire
   // après) pour ne décaler le flux RNG que des critiques d'amputation. `timing: 'postEncounter'` (« Coupure à
   // l'orteil », l.171 : « Une fois la rencontre terminée… ») → aucun jet ICI : marqueur `pendingAmputation`

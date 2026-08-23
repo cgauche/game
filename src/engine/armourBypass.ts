@@ -17,7 +17,7 @@ export type { ArmourBypass };
 const piecePA = (i: NonNullable<Combatant['items']>[number]): number => Math.max(0, (i.pa ?? 0) - (i.damageTaken ?? 0));
 
 /** Matériau TYPÉ d'une pièce d'armure, dérivé de son Groupe (`subType` → `WeaponGroupData.material`) —
- *  SOURCE UNIQUE, plus de devinette par regex sur le nom. `undefined` = armure naturelle/synthétique. */
+ *  SOURCE UNIQUE, jamais une devinette par regex sur le nom. `undefined` = armure naturelle/synthétique. */
 export function armourMaterialOf(item: ItemInstance): 'metal' | 'leather' | 'chaos' | undefined {
   return findWeaponGroupById(item.subType)?.material;
 }

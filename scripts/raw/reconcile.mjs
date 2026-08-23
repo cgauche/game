@@ -3,7 +3,7 @@
 //   livres `<ABRÉV> NN l.X`) dont le chapitre n'est PAS couvert par l'Atlas (trou dur), ou dont la
 //   ligne n'est pinée par aucune citation Atlas du même chapitre à ±TOL (trou fin) → l'app applique
 //   une règle absente de l'Atlas. Étendu aux 14 livres hors LDB (#434 défaut 9) : `codeOther`/
-//   `atlasOther` indexent désormais PAR CHAPITRE (miroir de `codeLDB`/`atlasLDB`), plus une loose
+//   `atlasOther` indexent PAR CHAPITRE (miroir de `codeLDB`/`atlasLDB`), plus une loose
 //   scan `atlasOtherChLoose` (miroir de `atlasCh`) faute d'export d'une alternation tolérante par
 //   `_lib.mjs` (otherRe() couvre les graphies tronquées — Midd\w*, ADE ?[12]… — non ré-exposées ;
 //   `atlasOtherChLoose` ne teste que l'abréviation CANONIQUE de BOOKS, pas ces graphies).

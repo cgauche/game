@@ -178,7 +178,7 @@ export function mutationNatureRows(species: string | undefined): MutationNatureR
 
 /**
  * Corps ou esprit, selon l'espèce (`id` STABLE) et le d100 (Tableau l.78-81) — lookup sur les lignes
- * ci-dessus (`findTableEntry`, brique partagée), plus de match sur le nom. Seuils SOURCÉS : Elfe 0,
+ * ci-dessus (`findTableEntry`, brique partagée), jamais un match sur le nom. Seuils SOURCÉS : Elfe 0,
  * Nain 5, Halfling 10, Humain 50 (LDB 19) ; Ogre 10 (ADE II « Ogres et Mutations ») ; Gnome 50 =
  * Humain (NADJ « Gnomes et Corruption »).
  */
@@ -261,7 +261,7 @@ export function dropExpiredGrantedMutations(c: Combatant, expired: { grantedMuta
 // ---------------------------------------------------------------------------
 
 // charMods/Mouvement des mutations : lus DIRECT par le collecteur passif unifié (engine/trauma `passiveMods`
-// → passiveCharSum/passiveMoveMod). Plus de helpers `mutationCharDelta`/`mutationMovementDelta` dédiés.
+// → passiveCharSum/passiveMoveMod), sans helper `mutationCharDelta`/`mutationMovementDelta` dédié.
 
 /** PA naturels de mutation à `loc` (Peau d'acier, Écailles épineuses, Cornes…) — op `ap` du `passive`
  *  (loc absent = toutes les Localisations) ; additifs. */

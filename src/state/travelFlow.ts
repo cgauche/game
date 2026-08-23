@@ -406,7 +406,7 @@ export function resumeTravel(get: Get, set: Set): void {
   }
   set({ travelPlan: { ...plan, interrupted: false, ...(vehicle ? { vehicle } : {}) }, worldMapOpen: false, travelRecap: null });
   log(get, set, [t('tf.resume')]);
-  // Mer (#275 Ronde 2 cran 3, Décision c) : `runSeaDay` ne ré-entre PLUS de FSM — si une cascade de
+  // Mer (#275 Ronde 2 cran 3, Décision c) : `runSeaDay` ne ré-entre dans AUCUNE FSM — si une cascade de
   // voyage vit ENCORE (suspendue derrière le combat qui vient de finir), son garde de tête est un no-op
   // (l'arbitre la remontre) ; sinon elle enchaîne le jour suivant (`buildSeaDayCascade`).
   if (plan.sea) { runSeaDay(get, set); return; }
@@ -749,7 +749,7 @@ export function continueTravelDayAfterCascade(get: Get, set: Set, done?: Pending
     if (recapDay) { recapDay.kmTo = get().travelPlan?.kmDone ?? recapDay.kmTo; recapDay.hours = fp.hours; }
   }
   // Arrivée recalculée depuis `plan.kmDone` À JOUR (posé au build sur le chemin synchrone, ci-dessus
-  // sur le chemin différé) — source UNIQUE, plus de champ `LandDayContext.arrived` figé au build.
+  // sur le chemin différé) — source UNIQUE, sans champ `LandDayContext.arrived` figé au build.
   const arrived = (get().travelPlan?.km ?? 0) - (get().travelPlan?.kmDone ?? 0) < 1e-9;
 
   // Efface les contextes transitoires du jour (jamais persistés au-delà de la journée).

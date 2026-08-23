@@ -308,7 +308,7 @@ export function knowsCastingSkill(c: Combatant, skillName: string, spec?: string
 
 /**
  * Dégâts d'un Projectile magique, LUS DANS LA DONNÉE (`SpellData.missile`/`damage`/`ignorePA`/
- * `ignoreBE`) — plus de regex sur la desc FR (data-driven + multilangue). `null` si non-missile.
+ * `ignoreBE`), jamais par regex sur la desc FR (data-driven + multilangue). `null` si non-missile.
  * Les Dégâts sont ADDITIFS (+ DR + BFM) — cf. `evaluateMissile`.
  */
 export function missileDamage(

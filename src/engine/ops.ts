@@ -591,7 +591,7 @@ export type GameOp =
    *  `narration` choisit la prose : défaut/`'chaos'` = Démoniaque banni (« son âme retourne dans les
    *  Royaumes du Chaos », LDB 85 p.339) ; `'unravel'` = Instable qui se délite (« les magies la maintenant
    *  s'effondrent », LDB 85 l.177). Op IMPURE (marque `dead`), portée par l'`effects` du trait (édité au
-   *  Codex) — plus de branche en dur. L'unicité est garantie en amont (déclencheur `onSlain` / `if` à 0 PB).
+   *  Codex), jamais une branche en dur. L'unicité est garantie en amont (déclencheur `onSlain` / `if` à 0 PB).
    *  `onlyGroups` : gaté par Groupe (Fauche-démon → cible Démoniaque seulement). */
   | { op: 'banish'; narration?: 'chaos' | 'unravel'; onlyGroups?: string[] }
   /** « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) —

@@ -65,7 +65,7 @@ export interface PsychAffliction {
 }
 
 /** Types de Traits psy CIBLÉS (résolution binaire de Calme, pilotés par un Groupe-Cible, LDB 21) —
- *  DÉRIVÉ de `psychology.json` (`targeted:true`), plus de Set codé en dur. */
+ *  DÉRIVÉ de `psychology.json` (`targeted:true`), jamais un Set codé en dur. */
 export const CIBLE_TYPES = new Set<PsychType>(psychologies.filter((p) => p.targeted).map((p) => p.id as PsychType));
 
 /** Libellés (icône + nom) des Traits psy ciblés — DÉRIVÉS de `psychology.json` (SOURCE UNIQUE, comme

@@ -223,7 +223,7 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
   reresolve?: (s: GameState, slot: Slot, actor: Combatant, get: Get, p?: P) => Partial<Slot> | null;
   /**
    * ISSUE CANONIQUE du slot (cf. `RollOutcome`) : SOURCE UNIQUE de « réussi + de combien ». La fabrique
-   * DÉRIVE d'elle le gating de la Chance/Pacte/Résistance (`failed = !outcome(slot).won`) — plus de
+   * DÉRIVE d'elle le gating de la Chance/Pacte/Résistance (`failed = !outcome(slot).won`), sans
    * prédicat `failed` séparé qui pourrait DIVERGER de l'issue réelle du flux. `won` lit un jet EXISTANT ;
    * le « a-t-il été lancé ? » reste porté par `rolled(slot)` (Chance : LDB 12, jet propre raté, 1× max).
    */
@@ -566,7 +566,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
   const reresolveOf = (s: GameState, slot: Slot, actor: Combatant, get: Get, p: P) =>
     spec.reresolve ? spec.reresolve(s, slot, actor, get, p) : spec.resolve(s, slot, actor, get, undefined, p);
   const L = spec.lens; // lentille de dérivation des verbes d'influence (Chance/Résilience/Résistance)
-  // « Échec » (gating de la Chance/Pacte/Résistance) DÉRIVÉ de l'issue canonique : plus de prédicat
+  // « Échec » (gating de la Chance/Pacte/Résistance) DÉRIVÉ de l'issue canonique, sans prédicat
   // `failed` séparé qui pourrait diverger de l'issue réelle du flux (`won`). `won` est lu sur un jet
   // EXISTANT — les consommateurs (opReroll/opDarkPact/opResist) court-circuitent tous sur `rolled` d'abord.
   const isFailed = (slot: Slot) => !spec.outcome(slot).won;

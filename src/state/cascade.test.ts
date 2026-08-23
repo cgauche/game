@@ -69,7 +69,7 @@ describe('Cascade séquentielle influençable', () => {
     spyApplier('shelter', applied, (step) => ({ kind: step.kind, success: !!step.result?.success }),
       // Abri raté → 2 jets d'Exposition insérés ; réussi → aucun.
       (step) => ({ insert: step.result?.success ? [] : [step1Insert(h, 'expo-a'), step1Insert(h, 'expo-b')] }));
-    // Une étape insérée passe par un mint de la porte (`insert` n'accepte plus de littéral) : valeur
+    // Une étape insérée passe par un mint de la porte (`insert` n'accepte aucun littéral) : valeur
     // FOURNIE (40) à Intermédiaire (+0) — base 40, cible 40, comme le montage à la main d'avant.
     function step1Insert(actor: Combatant, id: string): BuiltCascadeStep {
       return monoStep({ id, kind: 'tally', actor, label: fixtureText(id), rollLabel: 'Résistance', difficulty: 'intermediaire', stake: combatStakeRef('fatigue'), ligne: { valeur: 40, valeurEtrangere: true } })!;

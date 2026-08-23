@@ -2487,7 +2487,7 @@ export const categoriesIn = (group: CodexGroup): CodexCategory[] => CODEX.filter
 
 /** Un sous-groupe repliable de catégories (barre de catégories du Compendium). */
 /** Sous-groupe replié de la barre de catégories : `id` STABLE (slug du `cluster` authoré) porte la
- *  LOGIQUE (clé de repli, clé React), `label` l'AFFICHAGE — le titre FR ne sert plus de clé (#602). */
+ *  LOGIQUE (clé de repli, clé React), `label` l'AFFICHAGE — le titre FR n'est jamais une clé (#602). */
 export interface CodexCluster { id: string; label: string; cats: CodexCategory[] }
 /** Éclate les catégories d'une famille en pastilles À PLAT (sans `cluster`) + sous-groupes repliables
  *  (par `cluster`), dans l'ordre de déclaration. Anti-avalanche des familles touffues (Effets/Tables) :

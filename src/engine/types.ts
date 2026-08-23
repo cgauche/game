@@ -835,7 +835,7 @@ export interface ActiveEffect {
    *  Durée portée par `duration` (Rounds) → décrémentée/expirée par le système de Durée unifié. */
   psychImmune?: boolean;
   /** Détermination (LDB 17 l.60) : ignore les modificateurs de Blessure critique (traumatismes), 1 Round.
-   *  Durée portée par `duration` → expirée par le système de Durée unifié (plus de flag round-scopé). */
+   *  Durée portée par `duration` → expirée par le système de Durée unifié (jamais un flag round-scopé). */
   ignoreCritMods?: boolean;
   /** Traits psychologiques SUSPENDUS par l'effet (Baume pour un esprit blessé, LDB 42 : « Tous les
    *  Traits Psychologiques sont retirés pour la durée ») — restitués à l'expiration (rounds OU horloge). */

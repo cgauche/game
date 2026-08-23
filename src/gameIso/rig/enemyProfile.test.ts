@@ -47,7 +47,7 @@ describe('classifyEnemy (cosmétique : humanoïde peau-humaine → rig, sinon cr
     }
   });
   it('un NOM générique sans record ni espèce (rôle) → bipède Humain par défaut → rig', () => {
-    // Plus de devinette par le nom : un rôle inconnu (sans record/def) tombe sur le bipède Humain (rig).
+    // Aucune devinette par le nom : un rôle inconnu (sans record/def) tombe sur le bipède Humain (rig).
     for (const n of ['Bandit', 'Cultiste', 'Mutant', "Soldat de l'Empire", 'Rôle inconnu xyz'])
       expect(classifyEnemy(n), n).toBe('rig');
   });
@@ -124,7 +124,7 @@ describe('enemyRigProfile', () => {
   it('armure de statblock SANS armurePortee → PA mécaniques PURS, AUCUN item d’art synthétisé (#774)', () => {
     // Un combattant SANS creatureId (donc sans record → armurePortee toujours absent) : les PA restent
     // lisibles côté mécanique (`c.armour`) mais ne produisent plus AUCUN item d'armure côté rendu —
-    // ni torse, ni tête, ni bras/jambes (plus de garde partielle façon zones-dérivées seulement, #736).
+    // ni torse, ni tête, ni bras/jambes (aucune garde partielle façon zones-dérivées seulement, #736).
     const c = mkEnemy('Soldat', { armour: { ...noArmour, corps: 4, tete: 2 } });
     const p = enemyRigProfile(c)!;
     expect(p.equip.armour).toEqual([]);
@@ -204,7 +204,7 @@ describe('enemyRigProfile', () => {
 
   it('mutation visuelle = DONNÉE (c.mutations), plus jamais le nom (POC isMutant retiré)', () => {
     // enemyRigProfile ne fabrique plus AUCUN calque depuis le nom : un combattant nommé « Mutant »
-    // SANS mutations dans sa donnée n'a pas de calque (le profil ne porte plus de champ overlays).
+    // SANS mutations dans sa donnée n'a pas de calque (le profil ne porte aucun champ overlays).
     expect(enemyRigProfile(mkEnemy('Mutant'))).not.toHaveProperty('overlays');
     // Le visuel de mutation vient des mutations RÉELLES du combattant (combatantOverlays), résolu PAR ID :
     const mute = mkEnemy('Humain', { mutations: [mutationById('cornes-asymetriques')!] });

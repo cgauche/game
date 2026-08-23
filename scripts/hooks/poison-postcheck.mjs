@@ -6,8 +6,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_GUARD_ACTIVE,
-  loadDecisionsBaseline, partitionBaseline, formatBaselineReport,
+  scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, scanLegacyVocabHorsStock, EXCUSE_GUARD_ACTIVE,
+  estFichierScanne, loadDecisionsBaseline, partitionBaseline, formatBaselineReport,
 } from '../guards/lib/commentPoison.mjs';
 import { scanLabelLogic } from '../guards/lib/labelLogic.mjs';
 
@@ -19,8 +19,11 @@ let fp = '';
 try { fp = String(JSON.parse(raw)?.tool_input?.file_path ?? ''); } catch { /* stdin illisible → silence */ }
 
 const norm = fp.replace(/\\/g, '/');
-const rel = norm.includes('/src/') ? norm.slice(norm.lastIndexOf('/src/') + 1) : norm;
-const isSrcTs = /(^|\/)src\/.*\.(ts|tsx)$/.test(norm) && !/\.test\.[tj]sx?$/.test(norm);
+// MÊME périmètre que la suite Vitest et le pre-commit : `estFichierScanne` (source unique,
+// `commentPoison.mjs`) — les deux racines, les quatre extensions, tests compris.
+const coupe = ['/src/', '/scripts/'].map((d) => norm.lastIndexOf(d)).filter((i) => i >= 0).sort((a, b) => b - a)[0];
+const rel = coupe === undefined ? norm : norm.slice(coupe + 1);
+const isSrcTs = estFichierScanne(norm);
 
 if (isSrcTs) {
   const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -32,6 +35,10 @@ if (isSrcTs) {
       lines.push(`POISON pierre tombale (règle 6c, tolérance zéro) — ${rel}:${f.line} ${f.detail}`);
     for (const f of scanExcuses(rel, text))
       lines.push(`${EXCUSE_GUARD_ACTIVE ? 'POISON' : 'ALERTE'} commentaire-excuse sans tag [entériné AAAA-MM-JJ] (règle 6b) — ${rel}:${f.line} ${f.detail}`);
+    // Famille (e) — #1486 : un mot qui nomme l'état d'avant se solde par la mort du site (stock
+    // nominatif décroissant `legacyVocabStock.mjs`), ou par un tag `[entériné]` de l'utilisateur.
+    for (const f of scanLegacyVocabHorsStock(rel, text))
+      lines.push(`POISON vocabulaire de l'ancien état (credo règle 1, #1486) — ${rel}:${f.line} ${f.detail}`);
     // Familles 3 et 4 : le canal ALERTE passe par la baseline nominative — un site déjà tranché
     // (decisions-baseline.json) sort en une ligne compacte, la trouvaille NOUVELLE garde sa consigne.
     const signaux = [
@@ -49,7 +56,9 @@ if (isSrcTs) {
     // le rappel des sites tenus pour intentionnels sort à part, sans consigne de correction.
     lines.push(...formatBaselineReport({ ...verdict, connus: [] }));
     const rappelBaseline = formatBaselineReport({ nouveaux: [], connus: verdict.connus, perimees: [] });
-    if (/(^|\/)src\/(engine|state)\//.test(norm))
+    // Même exclusion que label-logic-guard.test.ts (EXCLUDED) et le pre-commit : un fichier de test
+    // plante les FIXTURES littérales de ce garde, il ne doit pas y rougir.
+    if (/(^|\/)src\/(engine|state)\//.test(norm) && !/\.test\.[tj]sx?$/.test(norm))
       for (const f of scanLabelLogic(rel, text))
         lines.push(`POISON logique par label (#142, id STABLE seulement) — ${rel}:${f.line} ${f.detail}`);
     if (lines.length)

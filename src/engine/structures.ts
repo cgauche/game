@@ -25,7 +25,7 @@ import { inanimateCombatant } from './inanimate';
 import { chebyshev } from './grid';
 
 /** Cette cible est-elle une STRUCTURE de siège (`bodyShape:'structure'`) ? Prédicat NOMMÉ (source UNIQUE —
- *  plus de littéral `'structure'` dispersé) : une structure est inerte (Tableau de Localisation propre,
+ *  jamais un littéral `'structure'` dispersé) : une structure est inerte (Tableau de Localisation propre,
  *  Psychologie ignorée) et porte les Atouts Résistant/Impénétrable. */
 export function isStructure(c: Pick<Combatant, 'bodyShape'>): boolean {
   return c.bodyShape === 'structure';

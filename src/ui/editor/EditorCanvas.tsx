@@ -141,8 +141,8 @@ function zoneInk(zone: SceneEffectZone, isSel: boolean) {
 }
 
 /** Dessin prêt à poser d'une zone : son emprise RÉELLE (`sceneZoneTiles`, la même source que le
- *  combat et le cutaway) en remplissage + contour, et sa case d'ancrage. Le rectangle englobant ne
- *  sert plus qu'à la poignée de redimensionnement. */
+ *  combat et le cutaway) en remplissage + contour, et sa case d'ancrage. Le rectangle englobant sert
+ *  à la SEULE poignée de redimensionnement. */
 type ZoneDraw = {
   zone: SceneEffectZone;
   idx: number;

@@ -15,8 +15,8 @@ import { diligenceCampaign } from '../../scenes/campaign';
  * mosaïque/zigzag ») — un polygone par pan, cellules-selles scindées en triangles PLANS le long de
  * l'arêtier —, les lignes sémantiques (faîte/arêtier/égout/rangs), les hauteurs en MÈTRES, les vérités
  * de scène (visible, roofOccupied), et la dérivation par MASSE (#823) : `hip` par BFS (noues/croupes
- * automatiques sur un corps en L, plus de boîte englobante) et `roomZoneIds` DÉRIVÉS des zones
- * intérieures que l'emprise recouvre (plus de champ authoré).
+ * automatiques sur un corps en L, jamais une boîte englobante) et `roomZoneIds` DÉRIVÉS des zones
+ * intérieures que l'emprise recouvre (jamais un champ authoré).
  */
 
 const S = ROOF_SLOPE_M;

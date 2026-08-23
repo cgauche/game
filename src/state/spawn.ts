@@ -72,7 +72,7 @@ function charsFrom(src: Partial<Record<string, number | null>>, fallback = 30): 
 export { weaponFromTrait } from '../engine/creatureEquip';
 
 /** Catégorie de Taille depuis le trait « Taille (X) » (LDB 85) — lue par le REGISTRE des Traits
- *  (`findResolvedTrait` → arg), plus de regex propre. Une plage (« Taille (de Petite à Énorme) ») est
+ *  (`findResolvedTrait` → arg), jamais par une regex propre. Une plage (« Taille (de Petite à Énorme) ») est
  *  résolue à sa borne haute par `parseSizeLabel`. null si absent ou argument non reconnu. */
 export function sizeFromTraits(traits: TraitList): SizeCategory | null {
   const arg = findResolvedTrait(traits, 'taille')?.arg;
@@ -122,7 +122,7 @@ function spawnMutations(traits: TraitList | undefined, id: string) {
  *  de LDB 09 : Test = Caractéristique + avances). Les avances se calculent sur le profil IMPRIMÉ —
  *  un profil retouché ensuite (carac. aléatoires LDB 77 l.108, Taille) garde les mêmes avances.
  *  Entrée sans valeur chiffrée : ignorée (rien d'inventé). Réf STRUCTURÉE `SkillRef` (id stable +
- *  valeur imprimée) — plus de parsing de chaînes. */
+ *  valeur imprimée), jamais un parsing de chaînes. */
 /** Une `SkillInstance` (id + spec) depuis l'`id` STABLE (pour la Caractéristique) + valeur de Test
  *  IMPRIMÉE. Carac résolue par id (`skillCharacteristicById`, ≠ re-lookup par libellé — multilangue-safe). */
 function skillInstance(skillId: string, spec: string | undefined, value: number, printedChars: Characteristics): SkillInstance {

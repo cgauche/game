@@ -424,7 +424,7 @@ export function createCombatSlice(get: Get, set: Set) {
     // Mini-cascade AUTONOME d'un événement de bord maritime (`purpose:'test'` : Cogue pirate, Ouragan,
     // Prière d'un Présage — `resolveSeaDayEvent` a mis le jour EN ATTENTE) : sa clôture REPREND la conduite
     // du jour. Couture GÉNÉRIQUE (toute la classe, pas seulement « fuir ») : ici `pendingCascade` est DÉJÀ
-    // null (post-`advanceCascade`), plus de garde de synchronisation. Gaté sur `travelPlan.sea` : à
+    // null (post-`advanceCascade`), sans garde de synchronisation. Gaté sur `travelPlan.sea` : à
     // l'accostage `travelPlan` est nul (la désertion `purpose:'test'`
     // a sa propre reprise `resolvePortArrival`) ; `runSeaDay` re-garde de son côté combat/steamSave.
     else if (done?.purpose === 'test' && get().travelPlan?.sea && !get().pendingSteamSave) { runSeaDay(get, set); handled = true; }
@@ -2258,7 +2258,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || !controlsCombatant(get(), active) || (active.resolve ?? 0) <= 0) return;
       active.resolve = (active.resolve ?? 0) - 1;
       // Détermination (LDB 17 l.60) : `ActiveEffect` à durée 1 Round (système de Durée unifié) — ignore les
-      // modifs de Critique ce Round, expiré au passage de Round. Plus de flag round-scopé + hook dédié.
+      // modifs de Critique ce Round, expiré au passage de Round, sans flag round-scopé ni hook dédié.
       active.activeEffects = [
         ...(active.activeEffects ?? []).filter((e) => e.effectId !== 'determination-crit'),
         { label: 'Détermination (Critique)', effectId: 'determination-crit', bonus: 0, duration: { scale: 'rounds', left: 1 }, ignoreCritMods: true },
@@ -2957,7 +2957,7 @@ export function createCombatSlice(get: Get, set: Set) {
         return;
       }
       // Pas d'Action ce tour (Sonné LDB 16 l.125 / Surpris l.135 — lu en DONNÉES via `canTakeAction`/gating,
-      // plus de branche par-nom) ; les manœuvres gratuites (Se relever, Se désengager…) sont des slots
+      // jamais une branche par-nom) ; les manœuvres gratuites (Se relever, Se désengager…) sont des slots
       // DIRECTS qui n'appellent pas battleSelectAction. Surpris : message dédié (UX), le reste silencieux.
       if (a !== null && !canTakeAction(active)) {
         if (hasCondition(active, COND.surpris)) get().log(t('cs.surprised', { name: active.label }));

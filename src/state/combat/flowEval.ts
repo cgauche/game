@@ -2,7 +2,7 @@
  * Évaluation d'un `FlowTest`/`Condition` EN COMBAT — briques PURES partagées par les trois voies de
  * résolution d'un Test déclenché (étape de cascade héros `triggeredTest`, jet inline ennemi/auto
  * `resolveFlowTest`, jet inline hors-cascade `resolveInlineFlowTest`). SOURCE UNIQUE : la vue d'acteur,
- * le `ConditionCtx` de combat et le calcul de gate vivent ICI (plus de copie par site).
+ * le `ConditionCtx` de combat et le calcul de gate vivent ICI (aucune copie par site).
  *
  * Module FEUILLE : n'importe RIEN de combatFlow/combatEffects (que des briques engine + le modèle `flow`)
  * → aucun cycle. Réutilisé par `combatEffects` (runPureFlowLines), `triggeredEffects` (resolveInlineFlowTest)

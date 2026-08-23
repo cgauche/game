@@ -1,7 +1,8 @@
 /**
  * Valide un ou plusieurs `src/data/*.json` contre leur schéma zod (`src/data/schemas/`, contrat de
- * donnée Lot 1). Un fichier SANS schéma enregistré (`SCHEMA_DEFS`) est ignoré SILENCIEUSEMENT tant
- * que la migration n'est pas terminée (cf. `PENDING` dans `src/data/schema-contract.test.ts`).
+ * donnée Lot 1). Un chemin dont le nom de fichier n'est pas au registre `SCHEMA_DEFS` est ignoré :
+ * l'exhaustivité de `src/data/*.json` se juge ailleurs, au volet EXHAUSTIVITÉ de
+ * `src/data/schema-contract.test.ts` (dont la liste `PENDING` est vide).
  * Destiné au hook pre-commit (branché par l'orchestrateur) : reçoit des chemins en arguments.
  *
  *   npx tsx scripts/guards/validate-data.mts src/data/characteristics.json [...]
@@ -25,7 +26,7 @@ let checked = 0;
 for (const p of paths) {
   const file = basename(p);
   const schema = SCHEMA_BY_FILE.get(file);
-  if (!schema) continue; // pas encore migré (PENDING) — ignoré silencieusement
+  if (!schema) continue; // aucun schéma au registre pour ce fichier (`PENDING`) — ignoré silencieusement
   checked++;
   let raw: unknown;
   try {

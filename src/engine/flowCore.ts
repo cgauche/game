@@ -526,7 +526,7 @@ export type EffectTrigger =
 /** Effet DÉCLENCHÉ authoré (donnée éditable) : un Flow d'ops appliqué à `on` quand `trigger` se produit.
  *  GÉNÉRIQUE — porté indifféremment par `TraitData.effects` (Toile, Sang corrosif…) ET `QualityData.effects`
  *  (Atout d'arme : « à la touche, 1d10 + Empêtré »). Même vocabulaire que les sorts (réutilise
- *  `runPureFlowLines`/`applyOps`) → plus de handler en dur. `on` : le porteur lui-même (`self`), la victime
+ *  `runPureFlowLines`/`applyOps`), jamais un handler en dur. `on` : le porteur lui-même (`self`), la victime
  *  touchée (`victim`), ou les adversaires Engagés du porteur (`engaged`). */
 /** CIBLE(S) d'un effet déclenché : le porteur (`self`), la victime touchée (`victim`), les adversaires
  *  Engagés (`engaged`), les adversaires que le porteur EMPOIGNE actuellement (`grappled`, = ses

@@ -104,7 +104,7 @@ bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastR
  *                           que le pad réel ; __wfrp.padDir('up'|'down'|'left'|'right') → croix/stick
  *   __wfrp.battle()       → snapshot combat (round, actif, modales, combattants en une ligne chacun)
  *   __wfrp.lastRoll()     → DERNIER Test résolu {actorId,success,sl,roll,target} (observation pure,
- *                           lecture seule, `null` si aucun depuis le chargement) — plus de regex sur `innerText`
+ *                           lecture seule, `null` si aucun depuis le chargement) — jamais une regex sur `innerText`
  *   __wfrp.log(n)         → queue lisible des journaux (exploration + feed de combat)
  *   __wfrp.aiLog(n)       → DIAGNOSTIC IA : action choisie + classement des candidats (intention) par tour
  *   __wfrp.turn('id')     → TRICHE : donne le tour à un combattant ; __wfrp.place('id',{x,y}) → téléporte

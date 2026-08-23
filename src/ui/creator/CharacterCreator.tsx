@@ -452,7 +452,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
   const gridRef = useRef<HTMLDivElement>(null);
   const lineageRef = useRef<HTMLDivElement>(null);
 
-  // Groupes par race (`SpeciesData.family` — donnée, plus de regex sur le libellé),
+  // Groupes par race (`SpeciesData.family` — donnée, jamais une regex sur le libellé),
   // les races du Livre de base d'abord — l'ordre des familles suit les données ; au sein d'une
   // famille, la 1ʳᵉ lignée des données EST la canonique (ex. Reiklander pour Humains, LDB 04 l.91).
   // Une espèce gatée par une règle optionnelle inactive (`SpeciesData.gatedByRule`) n'apparaît pas

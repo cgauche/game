@@ -84,7 +84,7 @@ function pickGranted(ids: string[], arg?: string): ManeuverDef | undefined {
 /** Attaques naturelles d'une créature à partir de ses traits : chaque trait d'attaque OCTROIE sa/ses
  *  manœuvre(s) (`grantsManeuvers`) ; on résout chaque octroi en `CreatureAttack` portant la `ManeuverDef`
  *  + l'Indice/compte/type lus de l'INSTANCE. Le libellé est reconstruit par `formatTrait`. Ajouter une
- *  attaque naturelle = un dataset `maneuvers` + un `grantsManeuvers` dans `traits.json` (plus de table). */
+ *  attaque naturelle = un dataset `maneuvers` + un `grantsManeuvers` dans `traits.json` (jamais une table). */
 export function creatureAttacks(traits: TraitList): CreatureAttack[] {
   const out: CreatureAttack[] = [];
   for (const x of traits) {

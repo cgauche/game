@@ -10,7 +10,7 @@ export { soutienMod, supportSplit, testValueSplit } from '../engine/skills';
 
 /**
  * Ligne de jet (RollLine) d'un Test simple : base + modificateurs = cible · d100 · DR — la même
- * présentation que l'Attaque/Défense, pour TOUS les flux de jet (fin du verdict legacy `.test-result`).
+ * présentation que l'Attaque/Défense, pour TOUS les flux de jet.
  * `target` peut manquer (résultat synthétique d'une Résilience pré-jet) → on retombe sur la base.
  * `difficulty` (optionnelle) est une donnée de LIGNE, jamais une chip (#1072) : `RollLine` la rend en
  * texte + valeur ; sa valeur reste comprise dans `modifier`/`target`. `easedBy` l'annote.

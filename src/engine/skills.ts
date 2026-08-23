@@ -38,7 +38,7 @@ function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
 }
 
 /** Caractéristique (CharKey STABLE) d'une compétence par son `id`. `SkillData.characteristic` EST
- *  une CharKey ('Dex'…), multilangue-safe — plus de conversion par libellé. */
+ *  une CharKey ('Dex'…), multilangue-safe — jamais une conversion par libellé. */
 export function skillCharKeyById(skillId: string): CharKey | undefined {
   return findSkillById(skillId)?.characteristic;
 }

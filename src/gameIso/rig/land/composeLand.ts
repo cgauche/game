@@ -31,7 +31,7 @@ export function landArtOf(species: string): ViewArt {
 }
 
 function art(species: string, view: View): string {
-  // Sélection vue + repli PARTAGÉS (`pickView`) — plus de ternaire ad hoc par vue.
+  // Sélection vue + repli PARTAGÉS (`pickView`), jamais un ternaire ad hoc par vue.
   return pickView(landArtOf(species), view)();
 }
 

@@ -1777,7 +1777,7 @@ export const FLOWS = {
     },
     // Issue CANONIQUE = `activityWon` (la MÊME source que la narration/l'Appliquer) : combiné `full`
     // seulement (un `partial` = ÉCHEC GLOBAL RAW), tenue tenue (opposition), ou simple réussi. Le gating
-    // Chance/Pacte/Résilience en DÉRIVE — plus de prédicat `failed` séparé qui lisait skill-1 (bug corrigé).
+    // Chance/Pacte/Résilience en DÉRIVE, sans prédicat `failed` séparé qui lirait skill-1.
     outcome: (p) => sealOutcome(activityWon(p), p.sl ?? 0, p.roll ?? 0, p.target ?? 0),
     bonus: {
       // Chance « +1 DR » (LDB 17 l.24) : `success` n'est jamais réécrit ici (il reste dérivé du d100, LDB 12 l.11).

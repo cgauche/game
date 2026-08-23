@@ -38,7 +38,7 @@ const mk = (over: Partial<Combatant>): Combatant => ({
 
 /**
  * Garde-fou du THREADING data-driven (P5/5c) : `tokenBodyKind` résout le rendu par `resolveRender`
- * (espèce explicite + trait Nuée) et passe `planId`/`species`/`scale` au token — plus de match par
+ * (espèce explicite + trait Nuée) et passe `planId`/`species`/`scale` au token — jamais un match par
  * nom dans la dispatch. Les goldens ne couvrent PAS tokenBodyKind (ils testent plan.resolve direct).
  */
 describe('tokenBodyKind — threading resolveRender → token (P5/5c)', () => {

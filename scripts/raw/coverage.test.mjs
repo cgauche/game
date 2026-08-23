@@ -129,7 +129,8 @@ test('sectionsOf : titre H2 orné qui EST le premier heading du fichier → faux
 })
 
 test('sectionsOf : un chapitre enfoui suivi de N sections H2 ABSORBE ces sections jusqu\'au prochain enfoui ou EOF (#454 juge)', () => {
-  // Patron réel `AA 09` : « LES INTÉRIMAIRES DE L'AVENTURE » (H2 enfoui, ex-H1) est suivi de 10 H2
+  // Patron réel `AA 09` : « LES INTÉRIMAIRES DE L'AVENTURE » (H2 enfoui : titre de CHAPITRE ornementé
+  // `•`) est suivi de 10 H2
   // normaux (COMBLER LES LACUNES, Embaucher des gros bras…) qui sont SES sous-sections, pas des
   // sœurs du chapitre hôte — sinon la plage se réduit à 4 lignes de titre au lieu des ~300 réelles.
   const text = [

@@ -97,7 +97,7 @@ export interface PendingTest {
    *  jet (RollLine), comme « Calme » pour la Psychologie. À défaut, on retombe sur `label`. */
   skill?: string;
   /** Réf STRUCTURÉE du Test (≠ `skill` libellé d'affichage) : id de Compétence + spec, ou Caractéristique —
-   *  lue par `talentTestSLBonus` (LDB 10 : +DR de Talent par id, plus de match par libellé). Threadée du
+   *  lue par `talentTestSLBonus` (LDB 10 : +DR de Talent par id, jamais un match par libellé). Threadée du
    *  `FlowTest` (skill/spec/characteristic) au build du pending. */
   skillId?: string;
   spec?: string;
@@ -1736,6 +1736,12 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
   /** Agrégation de `participants` (défaut `summed-dr`, Test d'équipage MDG 14 l.13 ; `'none'` = jets
    *  indépendants, #351). */
   aggregate?: CascadeAggregate;
+  /** MÉMO du PLI post-dé de CETTE étape, keyé par la valeur du dé (`cascade.tableStepResolved`) : ce que
+   *  le `kind` a dérivé la PREMIÈRE fois que ce dé est tombé sur cette étape. Existe parce qu'un pli peut
+   *  être IMPUR (la sévérité d'un Critique consomme du RNG) : sans mémo, re-poser le MÊME dé rendrait une
+   *  AUTRE conséquence. Porté par l'ÉTAPE (jamais un cache global) — il naît et meurt avec elle, et
+   *  survit au snapshot JSON (sauvegarde, coop) comme le reste de l'étape. */
+  foldMemo?: Record<string, CascadeStep>;
 }
 
 /** Étape qui LANCE un dé : `target` (cible effective) et `rollLabel` (compétence lancée) vont

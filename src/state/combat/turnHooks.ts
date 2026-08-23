@@ -160,7 +160,7 @@ registerCascadeApplier('actGateChoice', (get, set, step, hero) => {
 /** L'IA tente d'entrer en Frénésie au début de son tour (LDB 21 l.31) : combattant capable, pas déjà
  *  frénétique ni immunisé à la Psychologie, avec un adversaire vivant en Ligne de Vue → Test de Force
  *  Mentale ; sur un succès, il entre en Frénésie (état psy `frenesie` posé en `psychState`). La SORTIE est
- *  un effet déclenché `onTurnStart` en DONNÉES (`psychology.json`) — plus de hook `end-frenzy` par-nom. */
+ *  un effet déclenché `onTurnStart` en DONNÉES (`psychology.json`), jamais un hook `end-frenzy` par-nom. */
 export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
   if (!aiDriven(get(), enemy) || isFrenzied(enemy) || enemy.psychImmune || isOutOfAction(enemy) || !isFrenzyCapable(enemy)) return;
   if (!hasFoeInLoS(get, enemy)) return; // adversaire vivant en Ligne de Vue (primitive partagée, sens acteur→foe)
@@ -256,7 +256,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
 // Chaque `run()` appelle au RUNTIME la fonction/le bloc correspondant (pas de souci de cycle à l'import).
 // ============================================================================================
 
-// Sortie de Frénésie (LDB 21 l.35) : plus de hook `end-frenzy` par-nom — c'est un effet déclenché
+// Sortie de Frénésie (LDB 21 l.35) : aucun hook `end-frenzy` par-nom — c'est un effet déclenché
 // `onTurnStart` en DONNÉES (`psychology.json` : Sonné/Inconscient ∨ plus d'ennemi en LdV → Exténué),
 // diffusé UNIFORMÉMENT (héros + IA) par `fireTurnStartTriggers` AVANT les hooks d'entrée ci-dessous.
 registerCombatHook({

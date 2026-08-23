@@ -473,7 +473,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
     const activeSellId = (sellHero && sellHeroes.some((h) => h.id === sellHero) ? sellHero : sellHeroes[0]?.id) ?? '';
     const sellHeroObj = party.find((h) => h.id === activeSellId);
     const heroItems = sellHeroObj?.items ?? [];
-    // « équipé » = armure portée (`equipped`) OU arme tenue dans le set actif (loadout) — plus de flag d'arme.
+    // « équipé » = armure portée (`equipped`) OU arme tenue dans le set actif (loadout), jamais un flag d'arme.
     const isEquippedForSell = (it: ItemInstance) =>
       it.kind === 'melee' || it.kind === 'ranged' ? !!sellHeroObj && isWeaponActive(sellHeroObj, it.uid) : !!it.equipped;
     return (

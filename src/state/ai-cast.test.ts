@@ -11,7 +11,7 @@ import type { Combatant, Weapon } from '../engine/types';
 
 /**
  * IA — ÉVALUATEUR DE SORT op-driven (remplace `aiBestMissile`/`aiFocusPlan`/`aiAreaSpell`, supprimés).
- * Plus de planner par-catégorie : la valeur d'un sort = Σ valeur de ses `GameOp` (`opValue`/
+ * Aucun planner par-catégorie : la valeur d'un sort = Σ valeur de ses `GameOp` (`opValue`/
  * `spellActionValue`, src/state/aiSpellValue.ts) × fiabilité × opposition. `chooseEnemyAction` reçoit
  * `spells: CastableSpell[]` et en dérive des décisions `cast`/`castArea`/`focus`. `aiOvercastPlan`
  * (Surincantation auto, LDB 47) reste inchangé.

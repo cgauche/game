@@ -261,7 +261,7 @@ export const fr = {
   'interlude.recap.confirm': "Clore l'interlude",
   // ── Phase C : narration moteur (États/upkeep). Patrons byte-identiques aux littéraux d'origine. ──
   // (Les Résistances Empoisonné/Sonné sont désormais data-driven — leur journal vient des ops
-  //  `removeCondition`/`condition` ; plus de clés `cond.poison*`/`cond.stun*` dédiées.)
+  //  `removeCondition`/`condition`, sans clé `cond.poison*`/`cond.stun*` dédiée.)
   'cond.dissipate': '{name} : un État {cond} se dissipe.',
   'cond.effectExpire': '{name} : {label} se dissipe.',
   'cond.effectExtended': '{name} : {label} est prolongé (Test de Force Mentale réussi, +1 Round).',

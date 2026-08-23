@@ -105,7 +105,7 @@ export interface Ctx {
   personas?: { id: string; label?: string }[];
 }
 
-/** Libellé / icône d'un type d'effet — dérivés du REGISTRE unique (plus de Record parallèle à
+/** Libellé / icône d'un type d'effet — dérivés du REGISTRE unique (aucun Record parallèle à
  *  maintenir : la source de vérité est `EFFECT_HANDLERS[t].label/icon`). */
 export const EFFECT_LABEL = Object.fromEntries(
   EFFECT_TYPES.map((t) => [t, EFFECT_HANDLERS[t].label]),

@@ -74,7 +74,7 @@ type SpeciesRule = { prefix?: string[]; includes?: string[]; all?: string[]; any
 const SPECIES_RACE = speciesRaceJson as { default: string; rules: SpeciesRule[] };
 
 /** Espèce (slug/libellé) → RACE-ID du rig (carrure/palette/features/posture). Règles ORDONNÉES
- *  pilotées par `data/speciesRace.json` (ajouter un mapping = une ligne JSON, plus d'if-chain) ;
+ *  pilotées par `data/speciesRace.json` (ajouter un mapping = une ligne JSON, jamais une if-chain) ;
  *  première qui matche gagne, sinon `default`. `s` déjà en minuscules (préfixes ASCII → `homme`
  *  matche `homme-bete`). Garde-fou : `creatures.unique.test.ts` vérifie que chaque slug mappe vers
  *  une race EXISTANTE. */

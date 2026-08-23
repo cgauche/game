@@ -13,7 +13,7 @@ const bySlot = (slot: MonsterPartSlot): MonsterPartDef[] =>
 const toMap = (slot: MonsterPartSlot): Record<string, PartArt> =>
   Object.fromEntries(bySlot(slot).map((p) => [p.key, p.art]));
 
-/** Tables DÉRIVÉES des fichiers defs/ (plus de Record codé en dur). Clé libre → art. */
+/** Tables DÉRIVÉES des fichiers defs/ (jamais un Record codé en dur). Clé libre → art. */
 export const HEADS: Record<string, PartArt> = toMap('tete');
 export const ARMS: Record<string, PartArt> = toMap('bras');
 export const LEGS: Record<string, PartArt> = toMap('jambe');

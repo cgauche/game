@@ -893,7 +893,7 @@ export interface SkillData {
   characteristic: import('../engine/types').CharKey;
   type: string;
   /** Spécialisations inline (`SpecEntry[]`) — ABSENT quand `specsSource` est présent (le pool DÉRIVE
-   *  alors du registre partagé, cf. `specPoolOf` : plus de liste maintenue à la main). */
+   *  alors du registre partagé, cf. `specPoolOf` : aucune liste tenue à la main). */
   specs?: SpecEntry[];
   /** Source du pool de spéc (via `SPEC_SOURCES`/`specPoolOf`/`specLabel`) : FERMÉE. Si présent, les `spec`
    *  des instances de cette Compétence sont des ids résolus via ce registre partagé — `weaponGroupsMelee`/
@@ -909,7 +909,7 @@ export interface SkillData {
   source: SourceRef;
   /** Test « impliquant un déplacement » (LDB 16 l.35/64) : ciblé par les pénalités d'État À Terre /
    *  Empêtré (`movementOnly`). Classification de COMPÉTENCE portée par la DONNÉE (éditable au Codex),
-   *  lue par `engine/conditions.testStatePenalty` — plus de liste d'ids en dur. */
+   *  lue par `engine/conditions.testStatePenalty`, jamais par une liste d'ids en dur. */
   movement?: boolean;
   /** Test « impliquant l'audition » (LDB 16 l.29) : ciblé par la pénalité d'État Assourdi (`hearingOnly`).
    *  Classification de COMPÉTENCE portée par la DONNÉE (Perception — l'ouïe est un de ses sens), lue par
@@ -1233,7 +1233,7 @@ export interface TrappingData {
   alsoIn?: SecondaryRef[];
   /** Arme DÉRIVÉE conférée tant que l'objet est ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est
    *  considéré comme une Dague » en mêlée). Lue par recomputeLoadout : ajouter une prothèse-arme =
-   *  remplir ce champ dans la donnée, plus de name-match `i.name === 'Crochet'`. */
+   *  remplir ce champ dans la donnée, jamais un name-match `i.name === 'Crochet'`. */
   derivedWeapon?: Weapon;
   /** Capacités IRRÉDUCTIBLES de l'objet (drapeaux NON exprimables en GameOp) — canal `capabilities`,
    *  MÊME logique que `TraitCapabilities`/`QualityCapabilities` : règles que le moteur INTERROGE par id
@@ -1312,7 +1312,7 @@ export interface CreatureData {
   folder: string | null;
   char: Record<string, number | null>;
   /** Traits STRUCTURÉS (`TraitInstance[]`) — source app-owned migrée du parsing de chaînes (de-POC).
-   *  Lus sans aucun parsing (`resolveTraits`/`hasTraitKey`) ; plus de chaîne legacy. */
+   *  Lus sans aucun parsing (`resolveTraits`/`hasTraitKey`). */
   traits: import('../engine/statEntry').TraitList;
   /** OPTIONNELS (LDB 76) — affichés au Codex, choisissables au spawn : `TraitInstance` ordinaires OU
    *  NOTES composées (joker « tous les traits », variante « remplacer des Traits par un bonus », ZI). */
@@ -1372,8 +1372,8 @@ export interface StatusData {
   effects?: import('../state/flow').TriggeredEffect[];
   /** Restriction d'Action / de Mouvement / de défense imposée par le STATUT (États : À Terre/Sonné/
    *  Inconscient/Surpris/Empêtré ; et Psychologie — « Etat comme Psy »), lue en DONNÉES par les prédicats
-   *  moteur `canTakeAction`/`effectiveMovement`/`cannotDefend` via le collecteur `conditionGating` (plus de
-   *  branche par-nom). Sur `StatusData` → partagée par `EtatData` ET `PsychologyData`. */
+   *  moteur `canTakeAction`/`effectiveMovement`/`cannotDefend` via le collecteur `conditionGating` (jamais
+   *  une branche par-nom). Sur `StatusData` → partagée par `EtatData` ET `PsychologyData`. */
   gating?: { action?: 'none'; movement?: 'none' | 'half' | 'crawl'; cannotDefend?: true };
 }
 
@@ -1428,7 +1428,7 @@ export interface PsychologyData extends StatusData {
    *  `isPsychImmune` (jamais codé par-nom), à l'égal du drapeau de trait « Immunité (Psychologie) ». */
   psychImmune?: boolean;
   /** Trait psychologique CIBLÉ (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie, LDB 21) : résolution
-   *  binaire de Calme pilotée par un Groupe-Cible. Dérive `CIBLE_TYPES` de la donnée (plus de Set codé). */
+   *  binaire de Calme pilotée par un Groupe-Cible. Dérive `CIBLE_TYPES` de la donnée (jamais un Set codé). */
   targeted?: boolean;
   /** RAW LDB 21 : cette affliction CIBLÉE cesse dès que son porteur tombe sous un AUTRE effet psychologique
    *  « dominant » (Peur/Terreur/Haine…) — « Animosité est annulé par Peur et Terreur » ; Préjugé idem. */
@@ -1462,8 +1462,8 @@ export interface PsychologyData extends StatusData {
    *  (Amour l.75 ; Camaraderie l.81 « si ce groupe est menacé ») — un tiers doit être agressif envers
    *  le membre de la Cible (`agressifEnvers`). */
   triggerOn?: 'encounter' | 'threatened';
-  /** Mode de RÉSOLUTION du Test de Psychologie (LDB 21), lu par l'applier GÉNÉRIQUE `combatPsych` (plus de
-   *  dispatch `kind === 'terreur'` codé) : `'extended'` = Test ÉTENDU de Calme cumulant le DR vers l'Indice
+  /** Mode de RÉSOLUTION du Test de Psychologie (LDB 21), lu par l'applier GÉNÉRIQUE `combatPsych` (jamais
+   *  un dispatch `kind === 'terreur'` codé) : `'extended'` = Test ÉTENDU de Calme cumulant le DR vers l'Indice
    *  (Peur, l.27) ; `'terreur'` = Test BINAIRE dont l'échec inflige `failCondition` (Indice + |DR négatifs|)
    *  puis pose l'état `becomes` (Terreur → Peur, l.55-57) ; `'binary'` = Test BINAIRE activant l'affliction
    *  CIBLÉE (traits ciblés). Absent (Frénésie/trauma) = pas de Test de résolution surmontable. */
@@ -1519,8 +1519,8 @@ export interface DetailsData {
 /** MANŒUVRE de combat (attaque naturelle activée — LDB 85) — ENTITÉ ÉDITABLE de PREMIÈRE CLASSE (au
  *  même titre qu'un Sort) : son propre dataset `maneuvers.json`, sa catégorie Codex, ses effets
  *  AUTHORÉS en GameOp (`effects`). Un trait l'OCTROIE (`TraitData.grantsManeuvers`) ; le résolveur
- *  générique (`state/combatManeuvers.resolveManeuver`) la joue ENTIÈREMENT depuis cette donnée — plus
- *  de table en dur ni d'applier par type. `kind` ne sert QU'À l'anim/pose/icône (jamais à résoudre).
+ *  générique (`state/combatManeuvers.resolveManeuver`) la joue ENTIÈREMENT depuis cette donnée — jamais
+ *  une table en dur ni un applier par type. `kind` ne sert QU'À l'anim/pose/icône (jamais à résoudre).
  *  La géométrie/portée/opposition restent moteur (règle 3) ; Dégâts (`wounds`) + États = data. */
 /** Mesure de géométrie de manœuvre en MÈTRES (Portée/Souffle) : `bonus(ref)` de la carac `bonusOf` (référent
  *  = Attaquant pour la Portée, Cible au centre pour le Souffle, RAW l.251) + constante `plus`. Résolue par
@@ -1708,7 +1708,7 @@ export interface TraitData {
   /** L'instance porte-t-elle un champ `range` (portée en mètres/cases : Souffle, Aura…) ? Absent/`false` = non. */
   range?: boolean;
   /** Registre de l'ARGUMENT `arg` du trait (catalogue `SPEC_SOURCES` : `groups`/`diseases`/`sizes`/
-   *  `mutations`/`breathTypes`/`weaponGroups*`…). Le pool DÉRIVE alors du registre — plus de liste en dur. */
+   *  `mutations`/`breathTypes`/`weaponGroups*`…). Le pool DÉRIVE alors du registre, jamais d'une liste en dur. */
   specsSource?: SpecsSource;
   /** L'`arg` accepte un TEXTE LIBRE (argument authentiquement descriptif, hors registre). Absent/`false`
    *  = FERMÉ (l'`arg` DOIT être un id du pool `specsSource`). */
@@ -1725,7 +1725,7 @@ export interface TraitData {
    *  ET 134). Accessors `allLocations`/`sourceBooks` (`src/data/sourceRefs.ts`). */
   alsoIn?: SecondaryRef[];
   /** Effets MÉCANIQUES authorés (déclencheur → ops du Flow) — Traits « effet sur événement » (Toile,
-   *  Sang corrosif, Régénération…) appliqués par `state/triggeredEffects`, plus de handler en dur.
+   *  Sang corrosif, Régénération…) appliqués par `state/triggeredEffects`, jamais par un handler en dur.
    *  Type-only (le moteur reste pur : la donnée référence le Flow sans en dépendre à l'exécution). */
   effects?: import('../state/flow').TriggeredEffect[];
   /** Manœuvres OCTROYÉES par ce trait (Morsure, Attaque caudale, Souffle…) — `Ref[]` vers le dataset
@@ -2391,7 +2391,7 @@ export interface NavalTraitData {
 export const NAVAL_TRAITS = navalTraitsJson as NavalTraitData[];
 const navalTraitById = new Map(NAVAL_TRAITS.map((t) => [t.id, t]));
 /** Entrée du catalogue pour une réf par id STABLE (`NavalTraitRef.id`) — l'Indice vit dans `NavalTraitRef.value`,
- *  PAS dans la clé (plus de parsing de libellé « Renforcé 2 »). PUR. */
+ *  PAS dans la clé (jamais un parsing de libellé « Renforcé 2 »). PUR. */
 export function findNavalTrait(id: string): NavalTraitData | undefined {
   return navalTraitById.get(id);
 }
@@ -2712,7 +2712,7 @@ export function conditionLabel(id: string): string {
   return ETAT_BY_ID.get(id)?.label ?? id;
 }
 /** Libellé d'affichage d'un état psychologique par son `id` (`PsychType`), repli sur l'id — délègue au
- *  résolveur de libellé GÉNÉRIQUE (`refLabel`), plus de copie locale du motif `MAP.get(id)?.label ?? id`. */
+ *  résolveur de libellé GÉNÉRIQUE (`refLabel`), jamais une copie locale du motif `MAP.get(id)?.label ?? id`. */
 export function psychologyLabel(id: string): string {
   return refLabel('psychologies', { id });
 }
@@ -3038,7 +3038,7 @@ const TRAIT_BY_GRANTED_MANEUVER = new Map<string, TraitData>(
 /** Le Trait de créature dont la manœuvre est la PROJECTION mécanique — porteur de la prose VERBATIM et
  *  de l'ancrage `source` (LDB 85 = « TRAITS DE CRÉATURE », folios 338-343). Une entité, une prose :
  *  l'affichage d'une manœuvre lit la `desc` du trait résolu ici, la manœuvre n'en porte aucune. La
- *  prose est repérée au FOLIO chez le trait ; les manœuvres ne portent plus d'ancre `l.<ligne>` (#1228). */
+ *  prose est repérée au FOLIO chez le trait, jamais à la ligne chez la manœuvre (#1228). */
 export function traitProjectingManeuver(id: string): TraitData | undefined {
   return TRAIT_BY_GRANTED_MANEUVER.get(id);
 }

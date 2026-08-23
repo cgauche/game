@@ -53,7 +53,7 @@ export const REGISTRIES = [
   },
   {
     // Têtes QUADRUPÈDES (art 3 vues + canaux de forme portés par la tête) : 1 tête = 1 fichier defs/.
-    // L'union `QuadHeadId` GÉNÉRÉE remplace l'ancienne union littérale `QuadHead` du socle.
+    // L'union `QuadHeadId` est GÉNÉRÉE depuis les defs : le socle n'énumère aucune clé à la main.
     dir: 'src/gameIso/rig/quadruped/heads/defs',
     out: 'src/gameIso/rig/quadruped/heads/_registry.generated.ts',
     exportName: 'quadHead',
@@ -63,8 +63,8 @@ export const REGISTRIES = [
     idUnion: { typeName: 'QuadHeadId', field: 'key' },
   },
   {
-    // Queues QUADRUPÈDES (art profil + dos) : 1 queue = 1 fichier defs/. L'union `QuadTailId`
-    // GÉNÉRÉE remplace l'ancienne union littérale `QuadTail` du socle.
+    // Queues QUADRUPÈDES (art profil + dos) : 1 queue = 1 fichier defs/. L'union `QuadTailId` est
+    // GÉNÉRÉE depuis les defs : le socle n'énumère aucune clé à la main.
     dir: 'src/gameIso/rig/quadruped/tails/defs',
     out: 'src/gameIso/rig/quadruped/tails/_registry.generated.ts',
     exportName: 'quadTail',
@@ -272,7 +272,7 @@ export const REGISTRIES = [
   },
   {
     // Gabarits corporels AUTO-ENREGISTRÉS : 1 plan = 1 fichier defs/ (ré-exporte son BodyPlan).
-    // bodyPlan.ts dérive la table PLANS de cette liste → plus de registre central à éditer.
+    // bodyPlan.ts dérive la table PLANS de cette liste → aucun registre central à éditer.
     dir: 'src/gameIso/rig/plans/defs',
     out: 'src/gameIso/rig/plans/_registry.generated.ts',
     exportName: 'plan',

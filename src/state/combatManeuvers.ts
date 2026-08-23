@@ -429,7 +429,7 @@ export function resolveManeuver(
     if (!center) { flushLog(); return false; }
     faceTarget(center); // le centre de la zone = ce que l'attaquant vise (cliqué, ou recentré sur le plus proche)
     // Rayon de Souffle : `blast` résolu contre la CIBLE au centre (« Bonus de Force » → BF de la cible, RAW l.251 ;
-    // Vomi « 2 mètres » → littéral, 1 case). Plus de regex `/force/i` — la mesure structurée porte le référent.
+    // Vomi « 2 mètres » → littéral, 1 case). Aucune regex `/force/i` — la mesure structurée porte le référent.
     const blast = tilesOf(measureMeters(def.blast, center)) ?? 1;
     emitAoe(get, center.pos!, blast, def.kind, def.label);
     affected = combatantsWithinRadius(center.pos!, blast, battle.combatants, alive);

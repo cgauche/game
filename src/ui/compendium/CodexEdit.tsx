@@ -1828,7 +1828,7 @@ function RecordTextField({ label, value, onChange }: { label: string; value: Rec
 
 /** Objet de config hétérogène (`interludeEvents.fx`, `raceAppearance.eyes`…) : SOUS-FORMULAIRE inféré
  *  (récursif) — chaque sous-champ retrouve son kind structuré (number/checkbox/stringList/recordText/…)
- *  via le MÊME `inferFields` + `Field`. Plus de repli JSON pour les objets plats. */
+ *  via le MÊME `inferFields` + `Field`, sans repli JSON pour les objets plats. */
 function ObjectField({ label, value, onChange }: { label: string; value: Record<string, unknown> | undefined; onChange: (v: Record<string, unknown>) => void }) {
   const obj = value ?? {};
   const subFields = useMemo(() => inferFields([obj]), [obj]);

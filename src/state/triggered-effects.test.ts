@@ -1,7 +1,7 @@
 /**
  * Effets DÉCLENCHÉS génériques (`TriggeredEffect`) — preuve que le MÊME système flow+déclencheur sert
  * les Traits de créature (Toile) ET les Atouts d'arme (Immobilisante), via UN dispatcher (`fireTriggers`)
- * réutilisant l'exécuteur des sorts (`runPureFlowLines`). Plus de handler en dur par trait/atout.
+ * réutilisant l'exécuteur des sorts (`runPureFlowLines`), sans handler en dur par trait/atout.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fireTriggers, applyTriggeredEffects } from './triggeredEffects';

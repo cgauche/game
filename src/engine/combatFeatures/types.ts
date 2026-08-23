@@ -25,7 +25,7 @@ export interface CombatFeatureCtx {
  */
 export interface CombatFeature {
   /** Pénalité de main secondaire transformée par niveau (Ambidextre, LDB 10 : -20 → -10 à 1×, 0 à `zeroAt`).
-   *  DÉCLARATIF (`offHandPenalty(c)` l'interprète) — plus de hook-fonction, 100 % donnée éditable. */
+   *  DÉCLARATIF (`offHandPenalty(c)` l'interprète) — jamais une hook-fonction, 100 % donnée éditable. */
   offHandPenalty?: { perLevel: number; zeroAt: number };
   /** Modes d'attaque ajoutés par la capacité (Maniement de deux armes → ['dual-wield']). */
   attackModes?: string[];
@@ -139,9 +139,9 @@ export interface CombatFeature {
   causesFear?: boolean;
   // ── Tests hors combat ──────────────────────────────────────────────────────
   // (Le +DR de Talent — Menaçant → Intimidation — est désormais la règle UNIVERSELLE `talentTestSLBonus`
-  //  pilotée par `TalentData.test.matches` ; plus de descripteur `testDR` par-libellé.)
+  //  pilotée par `TalentData.test.matches`, jamais par un descripteur `testDR` par-libellé.)
   /** Inverse un Test RATÉ de la Compétence référencée s'il devient réussi (Sociable → Ragot, Studieux →
-   *  Recherche…). Réf STRUCTURÉE par id (plus de match par libellé) ; `capDR` plafonne le DR (Pansement +1).
+   *  Recherche…). Réf STRUCTURÉE par id (jamais un match par libellé) ; `capDR` plafonne le DR (Pansement +1).
    *  `skill` accepte un TABLEAU pour un Talent couvrant plusieurs Compétences en « ou » (Pilote → Ramer
    *  OU Voile, LDB 10 l.964) — `spec` s'applique alors identiquement à chaque Compétence du tableau. */
   reverseFailed?: { skill: string | string[]; spec?: string; capDR?: number };

@@ -292,7 +292,7 @@ describe('parité — registre des Traits dérivé de traits.json', () => {
     expect(parseTrait('Trait inconnu')).toBeNull();
   });
 
-  // La nature d'affichage est DÉRIVÉE de la donnée (plus de liste en dur PLUS_DISPLAY) :
+  // La nature d'affichage est DÉRIVÉE de la donnée (jamais une liste en dur) :
   //  attaque (grantsManeuvers mêlée OU capabilities.naturalWeapon, dont le tir) → « +Dégâts » ;
   //  wardSave → « N+ » ; sinon Indice nu « N ».
   it('formatTrait : nature « +N » dérivée de la donnée', () => {

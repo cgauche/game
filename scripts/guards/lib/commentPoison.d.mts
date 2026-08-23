@@ -12,9 +12,21 @@ export function extractComments(src: string): Comment[];
 export function matchLine(comment: Comment, matchIndex: number): number;
 export function excerptAt(comment: Comment, matchIndex: number): string;
 
+export const POISON_DIRS: string[];
+export const POISON_EXTS: string[];
+export function estFichierScanne(cheminRelatifOuAbsolu: string): boolean;
+
 export const TOMBSTONE_FAMILIES: { rx: RegExp; label: string }[];
 export function tombstonesIn(text: string): string[];
 export function scanTombstones(relPath: string, contenu: string): Finding[];
+export const MOTIF_ARTEFACT_NOMME: string;
+export const ATTENTE_WIP: { fichier: string; raison: string; date: string }[];
+
+export const LEGACY_VOCAB_FAMILIES: { rx: RegExp; label: string }[];
+export const LEGACY_VOCAB_EXCLUSIONS: { rx: RegExp; label: string }[];
+export function legacyVocabIn(text: string): string[];
+export function scanLegacyVocab(relPath: string, contenu: string): Finding[];
+export function scanLegacyVocabHorsStock(relPath: string, contenu: string): Finding[];
 
 export const EXCUSE_GUARD_ACTIVE: boolean;
 export const EXCUSE_RX: RegExp;

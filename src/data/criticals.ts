@@ -30,7 +30,7 @@ export interface CritEntry {
   /** Test de Résistance (LDB 18) : ÉCHEC → ses `onFail` ops s'ajoutent à l'effet. Auto-résolu (seedé). */
   resist?: { difficulty: Difficulty; onFail: GameOp[] };
   lethal?: boolean;
-  /** Amputation (LDB 18 l.237) déclarée STRUCTURELLEMENT (plus de regex sur `desc`). */
+  /** Amputation (LDB 18 l.237) déclarée STRUCTURELLEMENT, jamais lue par regex sur `desc`. */
   amputation?: Amputation;
   /** Traumatismes ENGENDRÉS (LDB 18) — refs d'id de fiches `traumas.json` ; la localisation vient de la table. */
   traumas?: string[];
