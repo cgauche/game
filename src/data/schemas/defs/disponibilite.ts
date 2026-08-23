@@ -7,6 +7,7 @@
  */
 import { z } from 'zod';
 import { availabilitySchema, sourceRefSchema } from '../common';
+import { AVAILABILITIES, type Availability } from '../../../engine/types';
 
 export const file = 'disponibilite.json';
 
@@ -32,12 +33,7 @@ export const schema = z.strictObject({
   barterRatios: z.array(
     z.strictObject({
       give: availabilitySchema,
-      ratios: z.strictObject({
-        Commune: ratioSchema,
-        Limitée: ratioSchema,
-        Rare: ratioSchema,
-        Exotique: ratioSchema,
-      }),
+      ratios: z.strictObject(Object.fromEntries(AVAILABILITIES.map((a) => [a, ratioSchema])) as Record<Availability, typeof ratioSchema>),
       source: sourceRefSchema,
     }),
   ),

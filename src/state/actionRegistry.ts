@@ -34,6 +34,7 @@ import { mountableNear } from './mount';
 import { servablePostes } from './shipPostes';
 import { ACTIONS, type ActionDef } from '../data/index';
 import { t } from '../i18n';
+import { chebyshev } from '../engine/grid';
 
 /** Verdict d'un gate : l'indisponibilité PORTE SA RAISON (patron `GatedAction`, charte UI). */
 export interface ActionGate {
@@ -235,7 +236,7 @@ export const ACTION_CANDIDATES: Record<string, (ctx: ActionSelectorCtx) => unkno
       .filter(
         (e) =>
           e.kind === 'prop' && !!e.interact &&
-          Math.max(Math.abs(e.pos.x - active.pos!.x), Math.abs(e.pos.y - active.pos!.y)) <= 1 &&
+          chebyshev(e.pos, active.pos!) <= 1 &&
           (e.z ?? 0) === (active.pos!.z ?? 0) &&
           !flags[`__fouille_${e.id}`],
       )

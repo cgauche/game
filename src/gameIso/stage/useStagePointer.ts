@@ -238,7 +238,7 @@ export function useStagePointer({
         return;
       }
       const cur = path[i];
-      const dist = Math.max(Math.abs(cur.x - prev.x), Math.abs(cur.y - prev.y));
+      const dist = chebyshev(cur, prev);
       if (dist > 1) {
         // SAUT par-dessus un gouffre. Élan = pas contigus en ligne droite menant au décollage.
         const jdx = Math.sign(cur.x - prev.x), jdy = Math.sign(cur.y - prev.y);

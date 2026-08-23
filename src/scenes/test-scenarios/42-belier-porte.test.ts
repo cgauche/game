@@ -10,6 +10,7 @@ import { rule } from '../../engine/policy';
 import { pushSlot } from '../../state/siegePush';
 import { hoverTargeting } from '../../state/targeting';
 import type { Combatant } from '../../engine/types';
+import { chebyshev } from '../../engine/grid';
 
 /**
  * BÉLIER — PORTE : consommateur LIVE du modèle ENGIN DE SIÈGE CREWÉ (poste `ShipPoste`, ADE II 8
@@ -149,7 +150,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     const cap = Number(rule('siege-engine-push-speed'));
     for (const k of reach.keys()) {
       const [x, y] = k.split(',').map(Number);
-      expect(Math.max(Math.abs(x - start.x), Math.abs(y - start.y))).toBeLessThanOrEqual(cap);
+      expect(chebyshev({ x, y }, start)).toBeLessThanOrEqual(cap);
     }
     // La case juste au nord (vers la porte) EST une destination proposée.
     expect(reach.has(`${start.x},${start.y - 1}`)).toBe(true);

@@ -132,6 +132,10 @@ export type Availability = (typeof AVAILABILITIES)[number];
  *  SEUL site qui nomme ce couple, et `unions-canon.test.ts` verrouille son égalité avec le schéma zod
  *  qui le sélectionne (`availabilitySchema.extract([…])`). */
 export type TestedAvailability = Extract<Availability, 'Limitée' | 'Rare'>;
+/** Les Disponibilités dont l'Évaluation ne rend qu'une FOURCHETTE (LDB 59 l.41) — 2ᵉ et dernier
+ *  sous-ensemble MÉTIER du canon, nommé ICI comme le premier : `satisfies` le tuple, donc un palier
+ *  renommé ou retiré ne compile plus. Consommé par `engine/appraisal`. */
+export const APPRAISED_AVAILABILITIES = ['Rare', 'Exotique'] as const satisfies readonly Availability[];
 
 /** Propulsion d'un véhicule/embarcation — pilote la table de localisation des dégâts (terre : roues/
  *  attelage ; fleuve/mer : voiles/avirons/coque). EDOC 7 (terrestre), MoR ch.5 (fluvial), MDG 13 (maritime). */

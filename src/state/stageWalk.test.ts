@@ -14,6 +14,7 @@ import { flowFromEffects } from './flow';
 import { resetStageGestes } from './stageGestes';
 import { STEP_MS } from '../geometry/walk';
 import { demarrerMarche, arreterMarche, resetStageWalk, marcheEnVol } from './stageWalk';
+import { chebyshev } from '../engine/grid';
 
 const get = useGame.getState;
 
@@ -76,7 +77,7 @@ describe('UN PAS À LA FOIS — la cadence est la durée du glissement', () => {
     expect(t.cases.length, 'relâché : le pas en vol arrive, et rien ne s’enchaîne').toBe(3);
     // Cases ADJACENTES (aucun saut) et entières (aucune fraction de case).
     for (let i = 1; i < t.cases.length; i++) {
-      const d = Math.max(Math.abs(t.cases[i].x - t.cases[i - 1].x), Math.abs(t.cases[i].y - t.cases[i - 1].y));
+      const d = chebyshev(t.cases[i], t.cases[i - 1]);
       expect(d, `saut entre la case ${i - 1} et la case ${i}`).toBe(1);
     }
     const fin = get().partyPos;

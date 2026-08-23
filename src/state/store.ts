@@ -1683,7 +1683,7 @@ export const useGame = create<GameState>((set, get) => ({
       let best: Pt | undefined;
       let bd = Infinity;
       for (const o of foes) {
-        const d = Math.max(Math.abs(o.pos!.x - c.pos.x), Math.abs(o.pos!.y - c.pos.y));
+        const d = chebyshev(o.pos!, c.pos);
         if (d < bd) { bd = d; best = o.pos!; }
       }
       if (best) next[c.id] = facingToward(c.pos, best);

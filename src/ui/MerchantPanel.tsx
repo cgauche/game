@@ -31,12 +31,15 @@ import { Tabs } from './Tabs';
 import { SpeakerBanner } from './SpeakerBanner';
 import { TradeTable, type TradeColumn, type TradeGroup } from './TradeTable';
 import { QtyStepper } from './QtyStepper';
+import { AVAILABILITIES } from '../engine/types';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
-const AVAIL_RANK: Record<string, number> = { Commune: 0, Limitée: 1, Rare: 2, Exotique: 3 };
+/** Rang de rareté d'une ligne de catalogue = son INDICE dans le canon ordonné ; hors canon (« ND »,
+ *  absence) → après le dernier palier. */
 function availRank(id: string): number {
-  return AVAIL_RANK[catalogEntryOf(id)?.availability ?? ''] ?? 4;
+  const i = (AVAILABILITIES as readonly string[]).indexOf(catalogEntryOf(id)?.availability ?? '');
+  return i < 0 ? AVAILABILITIES.length : i;
 }
 
 /** Colonnes de stats par famille (tableau comparatif). `get` prend directement l'`id` de la ligne —

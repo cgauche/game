@@ -3,10 +3,15 @@ export interface Finding {
   detail: string;
 }
 
-export function tsSources(root: string, dirs: string[]): { rel: string; code: string }[];
+/** Fichier de corpus, tel que rendu par `readCorpus` (`sourceCorpus.mjs`). */
+export interface ScannedFile {
+  rel: string;
+  text: string;
+}
+
+export const SCHEMAS_DU_CANON: string[];
 export function scanUnionRecopies(
-  relPath: string,
-  contenu: string,
+  file: ScannedFile,
   canons: { nom: string; membres: readonly string[] }[],
 ): Finding[];
-export function scanDefinitions(relPath: string, contenu: string, nom: string): Finding[];
+export function scanChebyshevFormula(file: ScannedFile): Finding[];

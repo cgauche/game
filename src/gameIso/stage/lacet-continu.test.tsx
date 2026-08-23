@@ -8,6 +8,7 @@ import { LEVEL_H, screenToTileAtZ, tileCenter, type Dims, type Rot } from '../..
 import { affineCamera, projectToScreen } from '../backends/webgl/cameras';
 import { yawStep, yawTarget } from '../../state/stageYaw';
 import type { RoomPortal } from '../../state/roomPortals';
+import { chebyshev } from '../../engine/grid';
 
 /**
  * LACET CONTINU du stage (#1176, P2-7). Ce qui se mesure ici n'est pas la projection nue (c'est
@@ -75,7 +76,7 @@ function boutsDePorte(dims: Dims): { x: number; y: number }[] {
 const COINS: [number, number][] = [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]];
 
 const ecart = (a: { x: number; y: number }[], b: { x: number; y: number }[]): number =>
-  Math.max(...a.map((p, i) => Math.max(Math.abs(p.x - b[i].x), Math.abs(p.y - b[i].y))));
+  Math.max(...a.map((p, i) => chebyshev(p, b[i])));
 
 describe('Au CRAN, le lacet libre EST la projection crantée', () => {
   it('`tileCenter` rend le pixel du cran, case par case, aux quatre quarts de tour', () => {

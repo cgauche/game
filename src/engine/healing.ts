@@ -12,6 +12,7 @@ import { isAstoundingFailure } from './tests';
 import { rule } from './policy';
 import { t } from '../i18n';
 import type { RNG } from './dice';
+import { chebyshev } from './grid';
 
 /** Pions d'un État (local — `stacks` n'est pas exporté par conditions.ts). */
 const condStacks = (c: Combatant, name: string) => c.conditions.find((x) => x.id === name)?.value ?? 0;
@@ -83,7 +84,7 @@ export function healableTargets(healer: Combatant, pool: Combatant[], opts: { ad
     if (!isHealable(t)) return false;
     if (!opts.adjacency || t.id === healer.id) return true;
     if (!healer.pos || !t.pos) return false;
-    return Math.max(Math.abs(healer.pos.x - t.pos.x), Math.abs(healer.pos.y - t.pos.y)) <= 1;
+    return chebyshev(healer.pos, t.pos) <= 1;
   });
 }
 

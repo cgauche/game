@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { emptyScene, isWalkable, type Scene, type SceneEntity } from './scene';
 import type { Flow } from './flow';
 import { exploreMoveDest, exploreMovePlan, exploreStepDest, spawnFacing } from './exploreNav';
+import { chebyshev } from '../engine/grid';
 
 const emptyFlow: Flow = { kind: 'seq', steps: [] };
-const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 function sceneWith(entities: SceneEntity[]): Scene {
   const sc = emptyScene(10, 10); // grille entièrement 'herbe' (marchable)
@@ -27,7 +27,7 @@ describe('exploreMoveDest — case d’arrivée partagée survol/clic (explorati
     const dest = exploreMoveDest(sc, { x: 1, y: 1 }, { x: 5, y: 5 });
     expect(dest).not.toBeNull();
     expect(dest).not.toEqual({ x: 5, y: 5 });
-    expect(cheb(dest!, { x: 5, y: 5 })).toBe(1);
+    expect(chebyshev(dest!, { x: 5, y: 5 })).toBe(1);
     expect(isWalkable(sc, dest!.x, dest!.y, dest!.z ?? 0)).toBe(true);
   });
 
@@ -42,13 +42,13 @@ describe('exploreMoveDest — case d’arrivée partagée survol/clic (explorati
     expect(isWalkable(sc, 5, 5)).toBe(true); // un personnage ne bloque pas sa case…
     const dest = exploreMoveDest(sc, { x: 1, y: 1 }, { x: 5, y: 5 });
     expect(dest).not.toEqual({ x: 5, y: 5 }); // …mais on ne marche pas dessus (cohérent avec le clic)
-    expect(cheb(dest!, { x: 5, y: 5 })).toBe(1);
+    expect(chebyshev(dest!, { x: 5, y: 5 })).toBe(1);
   });
 
   it('figurant (sans dialogue) à distance : on s’approche d’une case adjacente', () => {
     const fig: SceneEntity = { id: 'badaud', kind: 'personnage', pos: { x: 5, y: 5 } };
     const dest = exploreMoveDest(sceneWith([fig]), { x: 1, y: 1 }, { x: 5, y: 5 });
-    expect(cheb(dest!, { x: 5, y: 5 })).toBe(1);
+    expect(chebyshev(dest!, { x: 5, y: 5 })).toBe(1);
   });
 
   it('figurant déjà adjacent : aucune marche', () => {

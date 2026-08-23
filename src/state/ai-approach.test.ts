@@ -3,6 +3,7 @@ import { aiApproachPlan } from './combatFlow';
 import { chooseEnemyAction, type EnemyTurnInput } from './ai';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
+import { chebyshev } from '../engine/grid';
 
 /**
  * Parité héros/IA sur l'approche (LDB 15 l.35-41) : Charge à portée de Course (2M) quand la Marche
@@ -40,7 +41,7 @@ describe('aiApproachPlan — Charge à portée de Course / Course au-delà', () 
     expect(ran).toBeNull(); // une charge ne demande pas de Test
     expect(plan.kind).toBe('move');
     const to = (plan as { to: { x: number; y: number } }).to;
-    expect(Math.max(Math.abs(to.x - 8), Math.abs(to.y - 10))).toBe(1); // adjacent au héros
+    expect(chebyshev(to, { x: 8, y: 10 })).toBe(1); // adjacent au héros
   });
 
   it('cible hors de portée de Course : COURT (Test d’Athlétisme) et avance plus loin que la Marche', () => {

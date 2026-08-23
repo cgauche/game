@@ -10,6 +10,7 @@ import { TERRAINS } from './terrain';
 import { findPropById } from '../data';
 import { Pt } from './path';
 import type { Combatant } from '../engine/types';
+import { chebyshev } from '../engine/grid';
 
 export type CoverClass = 'none' | 'imparfaite' | 'moyenne' | 'totale';
 
@@ -38,7 +39,7 @@ export function tilesBetween(a: Pt, b: Pt): Pt[] {
   return out;
 }
 
-const adjacent = (p: Pt, q: Pt): boolean => Math.max(Math.abs(p.x - q.x), Math.abs(p.y - q.y)) <= 1;
+const adjacent = (p: Pt, q: Pt): boolean => chebyshev(p, q) <= 1;
 
 /** Un mur d'arête (`Scene.walls`) est-il franchi par la ligne `from`→`to` ? Bloque la vue
  *  (« pas à travers les murs »). Le test PAR ARÊTE est injectable (`edgeBlocks`) : défaut = `wallBetween`
@@ -50,7 +51,7 @@ export function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0, edgeBlocks?: 
   // Supercover de `from` à `to`, extrémités incluses (ce que `tilesBetween`, strictement entre, ne
   // donne pas), parcouru EN PLACE : ce chemin est le plus chaud du brouillard — un rayon par case
   // vue, une case par pas — et n'a besoin d'aucun tableau ni point intermédiaire matérialisé.
-  const steps = Math.max(Math.abs(to.x - from.x), Math.abs(to.y - from.y));
+  const steps = chebyshev(to, from);
   let ax = from.x, ay = from.y;
   for (let i = 1; i <= steps; i++) {
     const bx = Math.round(from.x + ((to.x - from.x) * i) / steps);
@@ -155,7 +156,7 @@ export function lineOfSightCover(
   // dépression > 45°. Au-delà de ce seuil, la vue par-dessus le parapet redevient dégagée (tests cross-z).
   if (!sameFloor) {
     const dzM = Math.abs(heightAt(scene, from.x, from.y, from.z ?? 0) - heightAt(scene, to.x, to.y, to.z ?? 0));
-    const horizM = Math.max(Math.abs(from.x - to.x), Math.abs(from.y - to.y)) * sceneMetresPerTile(scene);
+    const horizM = chebyshev(from, to) * sceneMetresPerTile(scene);
     if (dzM > horizM) return { blocked: true, cover: 'totale' };
   }
   let cover: CoverClass = 'none';

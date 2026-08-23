@@ -5,6 +5,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { effectiveMovement } from '../engine/encumbrance';
+import { chebyshev } from '../engine/grid';
 
 /**
  * Modèle de clic IMPLICITE (spec 2026-06-10) : déplacement par défaut au clic-case, attaque au
@@ -206,7 +207,7 @@ describe('clic-ennemi implicite', () => {
     const st = useGame.getState();
     const hh = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(hh.advantage).toBe(1);
-    expect(Math.max(Math.abs(hh.pos!.x - e.pos!.x), Math.abs(hh.pos!.y - e.pos!.y))).toBe(1); // au contact
+    expect(chebyshev(hh.pos!, e.pos!)).toBe(1); // au contact
     expect(st.pendingAttack?.fromCharge).toBe(true);
   });
 

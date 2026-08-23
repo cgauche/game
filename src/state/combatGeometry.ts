@@ -30,6 +30,7 @@ import { bus, EVT } from './bus';
 import type { Flow as CoreFlow, EffectOp } from '../engine/flowCore';
 import type { EffectSource } from '../engine/types';
 import { EMPTY_FLOW } from '../engine/flowCore';
+import { chebyshev } from '../engine/grid';
 
 /**
  * Tuiles qui BLOQUENT le déplacement de `mover` : l'empreinte (LDB 15 l.12) de chaque AUTRE
@@ -237,7 +238,7 @@ export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number })
 export function combatantsWithinRadius(
   center: Pt, radiusTiles: number, combatants: Combatant[], filter?: (c: Combatant) => boolean,
   dist: (center: Pt, c: Combatant) => number = (ctr, c) =>
-    (ctr.z ?? 0) === (c.pos!.z ?? 0) ? Math.max(Math.abs(ctr.x - c.pos!.x), Math.abs(ctr.y - c.pos!.y)) : Infinity,
+    (ctr.z ?? 0) === (c.pos!.z ?? 0) ? chebyshev(ctr, c.pos!) : Infinity,
 ): Combatant[] {
   return combatants
     .filter((c) => c.pos && dist(center, c) <= radiusTiles && (!filter || filter(c)))

@@ -51,7 +51,7 @@ function classQty(av: Availability | null, base: number): number {
  *  des quatre chemins de commerce (achat, vente, troc, fabrication) : aucun ne se replie sur une classe
  *  inventée. */
 export function isTradable(av: unknown): av is Availability {
-  return av === 'Commune' || av === 'Limitée' || av === 'Rare' || av === 'Exotique';
+  return typeof av === 'string' && (AVAILABILITIES as readonly string[]).includes(av);
 }
 
 /** Raison AFFICHABLE d'un refus de commerce — le refus porte sa cause, jamais un silence. */

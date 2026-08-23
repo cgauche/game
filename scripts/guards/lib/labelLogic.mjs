@@ -409,7 +409,6 @@ export const LABEL_LITERAL_STOCK = {
   // ses consommateurs suivent.
   'src/engine/activities.ts': 3,
   'src/engine/disponibilite.ts': 1,
-  'src/ui/MerchantPanel.tsx': 1,
   // Axes de récolte (Rareté / Danger / Taille / Conservation) — quatre vocabulaires FR en clés de table.
   'src/engine/harvest.ts': 5,
   // Axe Statut social (Bronze/Argent/Or) — `Status.tier` porte le libellé, lu du texte des carrières.

@@ -5,8 +5,7 @@ import { sceneZoneTiles } from './zones';
 import { screenStepDot, type ScreenDir } from './combatCursor';
 import { type Dims } from '../geometry/iso';
 import { DIR8_ORDER, DIR8_DELTA, type Dir8 } from './dir8';
-
-const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+import { chebyshev } from '../engine/grid';
 
 /** Case adjacente (8-voisins) libre et ATTEIGNABLE la plus proche d'une cible, pour le move-to-interact
  *  (P5). À l'ÉTAGE de la cible (un PNJ de loge s'aborde depuis une case voisine, même z). */
@@ -42,7 +41,7 @@ export function exploreMoveDest(sc: Scene, partyPos: Pt, tile: Pt): Pt | null {
   // On ne marche jamais SUR un personnage ou un objet interactif : on s'approche d'une case adjacente
   // (sinon le groupe entrerait dans le corps du PNJ, et la case d'un objet interactif est bloquée).
   if (ent && (!!ent.dialogueId || !!ent.interact || !!ent.merchant || ent.kind === 'personnage')) {
-    if (cheb(partyPos, ent.pos) <= 1) return null; // déjà à portée → interaction/échange/badaud sur place
+    if (chebyshev(partyPos, ent.pos) <= 1) return null; // déjà à portée → interaction/échange/badaud sur place
     return adjacentWalkable(sc, ent.pos, partyPos);
   }
   // Déplacement simple : on renvoie la case cliquée telle quelle. Le franchissement vertical s'auto-dérive

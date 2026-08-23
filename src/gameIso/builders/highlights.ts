@@ -14,6 +14,7 @@ import { footprintN } from '../../state/footprint';
 import { rangeBandModifier } from '../../engine/combat';
 import type { BattleState } from '../../state/store';
 import type { Pt } from '../../state/path';
+import { chebyshev } from '../../engine/grid';
 
 /** Élément sémantique de surbrillance : case + hauteur métrique + nature. Les clés reprennent les clés
  *  React historiques (stables entre frames). */
@@ -143,7 +144,7 @@ export function buildHighlights(scene: Scene, battle: BattleState, view: Highlig
     const z = pos.z ?? 0;
     for (let x = x0; x <= x1; x++)
       for (let y = y0; y <= y1; y++) {
-        const distanceTiles = Math.max(Math.abs(x - pos.x), Math.abs(y - pos.y));
+        const distanceTiles = chebyshev({ x, y }, pos);
         const tone = rangeBandTone(distanceTiles, rangeM, mpt);
         if (!tone) continue;
         out.push({ key: `rb-${x}-${y}`, cell: { x, y, z }, h: hAt(x, y, z), kind: 'rangeBand', tone });

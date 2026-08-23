@@ -26,6 +26,7 @@ import { runAction } from './actionRegistry';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
+import { chebyshev } from '../engine/grid';
 
 const get = () => useGame.getState();
 
@@ -74,7 +75,7 @@ describe('(A) RÉ-ENTRÉE — un geste ARMÉ puis DIFFÉRÉ par un gate se comme
     vi.runOnlyPendingTimers(); // joue le glissé d'approche → ouvre la frappe
     const h = get().battle!.combatants.find((c) => c.id === H.id)!;
     expect(get().refus, 'le geste GAGNÉ au jet a été refusé à la relance').toBeNull();
-    expect(Math.max(Math.abs(h.pos!.x - E.pos!.x), Math.abs(h.pos!.y - E.pos!.y)), 'le héros n’a pas rejoint sa cible').toBe(1);
+    expect(chebyshev(h.pos!, E.pos!), 'le héros n’a pas rejoint sa cible').toBe(1);
     expect(get().pendingAttack?.fromCharge, 'la frappe de Charge n’a pas suivi').toBe(true);
   });
 
@@ -93,7 +94,7 @@ describe('(A) RÉ-ENTRÉE — un geste ARMÉ puis DIFFÉRÉ par un gate se comme
     vi.runOnlyPendingTimers();
     const h = get().battle!.combatants.find((c) => c.id === H.id)!;
     expect(get().refus, 'le geste armé avant la modale a été refusé à la relance').toBeNull();
-    expect(Math.max(Math.abs(h.pos!.x - E.pos!.x), Math.abs(h.pos!.y - E.pos!.y)), 'la relance n’a pas approché').toBe(1);
+    expect(chebyshev(h.pos!, E.pos!), 'la relance n’a pas approché').toBe(1);
   });
 
   it('MONTURE : sans verdict, la relance REFUSE et le héros reste immobile (la modale ne fabrique rien)', () => {
@@ -136,7 +137,7 @@ describe('(B) COOP — le verdict se calcule chez l’ÉMETTEUR et voyage dans l
     vi.runOnlyPendingTimers();
     const h = get().battle!.combatants.find((c) => c.id === H.id)!;
     expect(get().refus, 'l’hôte a refusé le geste que l’invité avait armé').toBeNull();
-    expect(Math.max(Math.abs(h.pos!.x - E.pos!.x), Math.abs(h.pos!.y - E.pos!.y))).toBe(1);
+    expect(chebyshev(h.pos!, E.pos!)).toBe(1);
   });
 
   it('HÔTE armé : sa case NE DÉBLOQUE PAS le geste d’un invité qui n’a rien armé', () => {

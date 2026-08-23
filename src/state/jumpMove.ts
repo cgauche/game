@@ -3,6 +3,7 @@ import { type Flow, EMPTY_FLOW, flowFromEffects, testFlow } from './flow';
 import type { Pt } from './path';
 import { jumpNeedsTest } from '../engine/movement';
 import { combatStakeRef } from '../data';
+import { chebyshev } from '../engine/grid';
 
 export type JumpPlan = { kind: 'free' } | { kind: 'test'; flow: Flow };
 
@@ -16,7 +17,7 @@ export type JumpPlan = { kind: 'free' } | { kind: 'test'; flow: Flow };
  */
 export function planJump(scene: Scene, takeoff: Pt, landing: Pt, movement: number, runUpCases: number): JumpPlan {
   const tz = takeoff.z ?? 0;
-  const dist = Math.max(Math.abs(landing.x - takeoff.x), Math.abs(landing.y - takeoff.y));
+  const dist = chebyshev(landing, takeoff);
   if (!jumpNeedsTest(movement, dist)) return { kind: 'free' };
   const dx = Math.sign(landing.x - takeoff.x), dy = Math.sign(landing.y - takeoff.y);
   const gap = { x: takeoff.x + dx, y: takeoff.y + dy }; // 1re case du gouffre franchi

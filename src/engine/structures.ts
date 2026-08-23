@@ -22,6 +22,7 @@ import { resolveQualities } from './qualities/dispatch';
 import { hasCapability } from './capabilities';
 import { findStructureById } from '../data';
 import { inanimateCombatant } from './inanimate';
+import { chebyshev } from './grid';
 
 /** Cette cible est-elle une STRUCTURE de siège (`bodyShape:'structure'`) ? Prédicat NOMMÉ (source UNIQUE —
  *  plus de littéral `'structure'` dispersé) : une structure est inerte (Tableau de Localisation propre,
@@ -118,7 +119,7 @@ export function structureFaceCells(c: Pick<Combatant, 'structureEdge'>): { x: nu
 export function structureAimCell(from: { x: number; y: number }, target: Pick<Combatant, 'structureEdge' | 'pos'>): { x: number; y: number } {
   const faces = structureFaceCells(target);
   if (!faces.length) return target.pos ?? from;
-  const cheb = (p: { x: number; y: number }) => Math.max(Math.abs(p.x - from.x), Math.abs(p.y - from.y));
+  const cheb = (p: { x: number; y: number }) => chebyshev(p, from);
   return faces.reduce((best, f) => (cheb(f) < cheb(best) ? f : best));
 }
 

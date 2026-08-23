@@ -13,6 +13,7 @@ import { chooseEnemyAction, pickDoctrine, type EnemyTurnInput, type CastableSpel
 import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
 import type { SpellData } from '../data';
+import { chebyshev } from '../engine/grid';
 
 const MELEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 const RANGED: Weapon = { label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
@@ -176,7 +177,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
     const a = chooseEnemyAction(input(e, [h], { facing: { h: 'N' } }));
     expect(a.kind).toBe('move');
     if (a.kind === 'move') {
-      expect(Math.max(Math.abs(a.to.x - 10), Math.abs(a.to.y - 10))).toBe(1); // au contact
+      expect(chebyshev(a.to, { x: 10, y: 10 })).toBe(1); // au contact
       expect(`${a.to.x},${a.to.y}`).not.toBe('10,9'); // pas plein front (nord)
     }
   });
@@ -229,7 +230,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
     // La racaille fuit (s’éloigne du héros) ; l’embuscade fonce dessus (s’en rapproche). Distinction nette.
     expect(aRab.kind).toBe('move');
     expect(aAmb.kind).toBe('move');
-    const dist = (p: { x: number; y: number }) => Math.max(Math.abs(p.x - h.pos!.x), Math.abs(p.y - h.pos!.y));
+    const dist = (p: { x: number; y: number }) => chebyshev(p, h.pos!);
     const d0 = dist({ x: 5, y: 5 }); // distance de départ au héros
     if (aRab.kind === 'move' && aAmb.kind === 'move') {
       expect(dist(aRab.to)).toBeGreaterThan(d0); // racaille S'ÉLOIGNE (repli)
@@ -246,7 +247,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
     const a = chooseEnemyAction(input(e, [h], { facing: { h: 'N' } }));
     expect(a.kind).toBe('move');
     if (a.kind === 'move') {
-      expect(Math.max(Math.abs(a.to.x - 10), Math.abs(a.to.y - 10))).toBe(1); // au contact
+      expect(chebyshev(a.to, { x: 10, y: 10 })).toBe(1); // au contact
       expect(`${a.to.x},${a.to.y}`).not.toBe('10,9'); // pas plein front (nord)
     }
   });

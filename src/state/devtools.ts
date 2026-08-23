@@ -44,6 +44,7 @@ import { makeRNG } from '../engine/dice';
 import { partyMoneyTotal, creditBourse, distributeCredit } from './bourseFlow';
 import { t } from '../i18n';
 import { diamondCorners, type Dims } from '../geometry/iso';
+import { chebyshev } from '../engine/grid';
 
 /** Trace du DERNIER Test résolu (`resolveTest`, `EVT.TEST_RESOLVED`) — observation pure pour la
  *  recette navigateur (`__wfrp.lastRoll()`), JAMAIS dans l'état de jeu persisté (module DEV seul,
@@ -1103,7 +1104,7 @@ export function buildApi() {
         ? heroes.find((c) => c.id === heroId)
         : (enemy.pos
             ? heroes.slice().sort((a, c) => {
-                const d = (h: Combatant) => h.pos ? Math.max(Math.abs(h.pos.x - enemy.pos!.x), Math.abs(h.pos.y - enemy.pos!.y)) : 1e9;
+                const d = (h: Combatant) => h.pos ? chebyshev(h.pos, enemy.pos!) : 1e9;
                 return d(a) - d(c);
               })[0]
             : heroes[0]);

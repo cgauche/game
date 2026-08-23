@@ -36,6 +36,7 @@ export type EntityKind = 'heroStart' | 'personnage' | 'prop';
  *  `LivingRef` (`engine/possession.ts`) porte la même dualité bestiaire|custom que ce type. */
 import type { CustomStatblock } from '../engine/statblock';
 import type { LivingRef } from '../engine/possession';
+import { chebyshev } from '../engine/grid';
 export type { CustomStatblock };
 
 export interface SceneEntity {
@@ -840,7 +841,7 @@ export function surfaceLink(
   a: { x: number; y: number; z?: number },
   b: { x: number; y: number; z?: number },
 ): { grade: Grade; drop: number } | null {
-  if (Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) !== 1) return null; // adjacent (cardinal ou diagonal)
+  if (chebyshev(a, b) !== 1) return null; // adjacent (cardinal ou diagonal)
   const ha = heightAt(scene, a.x, a.y, a.z ?? 0);
   const hb = heightAt(scene, b.x, b.y, b.z ?? 0);
   return { grade: gradeBetween(ha, hb), drop: hb - ha };

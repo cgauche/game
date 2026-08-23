@@ -22,6 +22,7 @@ import type { Pt } from './path';
 import type { BattleState } from './store';
 import { inBattleId } from './combatants';
 import { t } from '../i18n';
+import { chebyshev } from '../engine/grid';
 
 /** Ce combattant chevauche-t-il une monture (= cavalier) ? */
 export const isRider = (c: Combatant): boolean => !!c.mountId;
@@ -304,7 +305,7 @@ export function mountableNear(battle: BattleState, rider: Combatant): Combatant 
   let bestD = Infinity;
   for (const m of battle.combatants) {
     if (!m.mountable || m.kind !== rider.kind || !canMount(battle, rider, m)) continue;
-    const d = m.pos && rider.pos ? Math.max(Math.abs(m.pos.x - rider.pos.x), Math.abs(m.pos.y - rider.pos.y)) : Infinity;
+    const d = m.pos && rider.pos ? chebyshev(m.pos, rider.pos) : Infinity;
     if (d < bestD) { bestD = d; best = m; }
   }
   return best;

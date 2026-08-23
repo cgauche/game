@@ -17,6 +17,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { NIGHT_STAKES, FLOW_STAKES, ACTIVITY_STAKES, books, regles } from './index';
 import { ACTIVITIES } from '../engine/activities';
+import { STAKE_FORMS, type StakeForm } from '../engine/types';
 
 const RULE_IDS = new Set(regles.map((r) => r.id));
 
@@ -63,7 +64,7 @@ describe('night-stakes — la FORME de chaque enjeu est déclarée et tenue (#11
 
   it('les 15 entrées sont couvertes par l’un des deux régimes (aucune zone grise)', () => {
     expect(NIGHT_STAKES).toHaveLength(15);
-    const inconnus = NIGHT_STAKES.filter((e) => e.form != null && e.form !== 'verbatim' && e.form !== 'descripteur');
+    const inconnus = NIGHT_STAKES.filter((e) => e.form != null && !STAKE_FORMS.includes(e.form as StakeForm));
     expect(inconnus).toEqual([]);
     // Le stock d'assemblages est NOMMÉ et borné : chaque `descripteur` est un choix motivé, pas un repli.
     expect(NIGHT_STAKES.filter((e) => e.form === 'descripteur').map((e) => e.id).sort())
@@ -110,7 +111,7 @@ describe('flow-stakes — la FORME de chaque enjeu de modale mono est déclarée
 
   it('chaque entrée est couverte par l’un des deux régimes, et son id de jet est UNIQUE', () => {
     expect(FLOW_STAKES.length).toBeGreaterThan(0);
-    const inconnus = FLOW_STAKES.filter((e) => e.form !== 'verbatim' && e.form !== 'descripteur').map((e) => e.id);
+    const inconnus = FLOW_STAKES.filter((e) => !STAKE_FORMS.includes(e.form as StakeForm)).map((e) => e.id);
     expect(inconnus, 'régime de forme inconnu').toEqual([]);
     const kinds = FLOW_STAKES.map((e) => `${e.flow}/${e.phase}`);
     expect(kinds.length, 'deux entrées se disputent le MÊME id de jet {flow, phase}').toBe(new Set(kinds).size);
@@ -130,7 +131,7 @@ describe('activities — la FORME de chaque enjeu d’Activité est déclarée e
   const avecEnjeu = ACTIVITY_STAKES.filter((a) => a.stake);
 
   it('toute Activité qui porte un enjeu DÉCLARE sa forme', () => {
-    const sans = avecEnjeu.filter((a) => a.stakeForm !== 'verbatim' && a.stakeForm !== 'descripteur').map((a) => a.id);
+    const sans = avecEnjeu.filter((a) => !STAKE_FORMS.includes(a.stakeForm as StakeForm)).map((a) => a.id);
     expect(sans, 'un assemblage qui ne dit pas ce qu’il est').toEqual([]);
   });
 
