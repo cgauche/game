@@ -7,32 +7,36 @@
  *    type moteur sont mutuellement assignables — un palier ajouté d'un seul côté ne compile pas ;
  *  - au RUNTIME : les options du schéma sont EXACTEMENT le tuple canon, et aucun def ne re-tape le
  *    littéral à côté (c'était l'état d'avant : 6 recopies pour `StakeForm`, 4 pour `Availability`).
+ *
+ * Le volet « re-tape » se lit à l'AST (`scanUnionRecopies`, TypeScript compiler API) : un littéral de
+ * tableau ou une union de types littéraux portant ≥2 membres du canon est une recopie, quelle que soit
+ * sa mise en page. Une SÉLECTION dérivée (`availabilitySchema.extract([…])`) n'en est pas une : le
+ * compilateur borne son argument au canon.
  */
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { z } from 'zod';
+import { tsSources, scanUnionRecopies } from '../../../scripts/guards/lib/canonUnique.mjs';
 import { AVAILABILITIES, STAKE_FORMS, type Availability, type StakeForm } from '../../engine/types';
 import { availabilitySchema, harvestRaritySchema, stakeFormSchema } from './common';
 import type { HarvestRarity } from '../index';
 
-const SCHEMAS_DIR = fileURLToPath(new URL('.', import.meta.url));
+const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
+const SCHEMAS = 'src/data/schemas';
+/** Les deux canons verrouillés, sous la forme attendue par le scan. */
+const CANONS = [
+  { nom: 'AVAILABILITIES', membres: AVAILABILITIES },
+  { nom: 'STAKE_FORMS', membres: STAKE_FORMS },
+];
+/** Defs scannés : tout `.ts` de `schemas/`, SAUF le foyer `common.ts` (il DÉRIVE du tuple moteur) et
+ *  les tests (dont celui-ci, qui porte des fixtures de recopie). */
+const schemaDefs = () => tsSources(ROOT, [SCHEMAS]).filter(({ rel }) => !rel.endsWith('.test.ts') && rel !== `${SCHEMAS}/common.ts`);
 
 type Eq<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 const _availabilityExact: Eq<Availability, z.infer<typeof availabilitySchema>> = true;
 const _stakeFormExact: Eq<StakeForm, z.infer<typeof stakeFormSchema>> = true;
 const _harvestRarityExact: Eq<HarvestRarity, z.infer<typeof harvestRaritySchema>> = true;
 void _availabilityExact; void _stakeFormExact; void _harvestRarityExact;
-
-function schemaSources(dir = SCHEMAS_DIR, rel = ''): { rel: string; code: string }[] {
-  const out: { rel: string; code: string }[] = [];
-  for (const ent of readdirSync(dir, { withFileTypes: true })) {
-    const relPath = rel ? `${rel}/${ent.name}` : ent.name;
-    if (ent.isDirectory()) out.push(...schemaSources(`${dir}/${ent.name}`, relPath));
-    else if (ent.name.endsWith('.ts') && !ent.name.endsWith('.test.ts')) out.push({ rel: relPath, code: readFileSync(`${dir}/${ent.name}`, 'utf8') });
-  }
-  return out;
-}
 
 describe('unions partagées moteur ⇄ schémas de donnée (#1440)', () => {
   it('`availabilitySchema` expose EXACTEMENT les paliers de `AVAILABILITIES`', () => {
@@ -48,18 +52,37 @@ describe('unions partagées moteur ⇄ schémas de donnée (#1440)', () => {
   });
 
   it('aucun def ne re-tape le littéral des unions partagées — il importe le schéma dérivé', () => {
-    const fautifs: string[] = [];
-    for (const { rel, code } of schemaSources()) {
-      if (rel === 'common.ts') continue; // le foyer DÉRIVE du tuple moteur, il ne tape aucun littéral
-      for (const [concept, first, last] of [['Availability', 'Commune', 'Exotique'], ['StakeForm', 'verbatim', 'descripteur']] as const) {
-        const re = new RegExp(`z\\.enum\\(\\[[^\\]]*'${first}'[^\\]]*'${last}'`);
-        code.split('\n').forEach((l, i) => { if (re.test(l)) fautifs.push(`${rel}:${i + 1} — ${concept} recopiée`); });
-      }
-    }
+    const fautifs = schemaDefs().flatMap(({ rel, code }) => scanUnionRecopies(rel, code, CANONS).map((f) => `${rel}:${f.line} — ${f.detail}`));
     expect(fautifs, 'importer `availabilitySchema`/`stakeFormSchema` de `schemas/common.ts` (#1440)').toEqual([]);
   });
 
+  it('le scan LIT L’AST : une recopie MULTI-LIGNE et DIVERGENTE est vue (une regex de ligne ne la voit pas)', () => {
+    const multi = `export const s = z.enum([
+      'verbatim',
+      'descripteur',
+      'resume',
+    ]);`;
+    expect(scanUnionRecopies('fixture.ts', multi, CANONS)).toEqual([{ line: 1, detail: "STAKE_FORMS recopiée ('verbatim', 'descripteur')" }]);
+    const union = `type F =
+      | 'verbatim'
+      | 'descripteur';`;
+    expect(scanUnionRecopies('fixture.ts', union, CANONS)).toHaveLength(1);
+    const partiel = `const a = [
+      'Rare',
+      'Exotique',
+    ];`;
+    expect(scanUnionRecopies('fixture.ts', partiel, CANONS)).toHaveLength(1);
+  });
+
+  it('une SÉLECTION dérivée du canon n’est pas une recopie (le compilateur borne l’argument)', () => {
+    const derive = `const s = availabilitySchema.extract([
+      'Limitée',
+      'Rare',
+    ]);`;
+    expect(scanUnionRecopies('fixture.ts', derive, CANONS)).toEqual([]);
+  });
+
   it('le scan couvre bien les defs (sanity : > 40 schémas)', () => {
-    expect(schemaSources().length).toBeGreaterThan(40);
+    expect(schemaDefs().length).toBeGreaterThan(40);
   });
 });

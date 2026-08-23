@@ -26,7 +26,7 @@ sous le concept « Création de personnage : Carrière aléatoire (tirage), esp�
 - Le lexique `CROSS_CONCEPTS` (recherche transversale) est un filet de sens, pas une taxonomie exhaustive du domaine :
   une notion absente du lexique reste findable via le concept de fichier, jamais introuvable.
 
-_2005 exports publics mesurés (154 fichiers de `src/engine`, hors tests) — 1723 documentés (JSDoc exploitable), 282 sans JSDoc._
+_2007 exports publics mesurés (155 fichiers de `src/engine`, hors tests) — 1725 documentés (JSDoc exploitable), 282 sans JSDoc._
 
 ## Index par concept (français)
 
@@ -80,7 +80,7 @@ _2005 exports publics mesurés (154 fichiers de `src/engine`, hors tests) — 17
 | Dés : tirage, expressions | `d10` (dice.ts:44), `d100` (dice.ts:45), `defaultRNG` (dice.ts:40), `deMonde` (dice.ts:67), `DiceSpec` (dice.ts:72), `formatDice` (dice.ts:81), `hashSeed` (dice.ts:13), `makeRNG` (dice.ts:23), `parseDice` (dice.ts:83), `RNG` (dice.ts:5), `roll` (dice.ts:46), `rollDice` (dice.ts:78), `rollExpr` (dice.ts:93) |
 | Dés fixés | `clampFixedRoll` (fixedDie.ts:33), `DES_FIXES_DEFAULT` (fixedDie.ts:11), `desFixes` (fixedDie.ts:16), `FIXED_ROLL_MAX` (fixedDie.ts:30), `resetDesFixes` (fixedDie.ts:24), `setDesFixes` (fixedDie.ts:19) |
 | Description des qualités | `describeQuality` (qualities/describe.ts:36), `QUALITY_DESC` (qualities/describe.ts:19), `QualityInfo` (qualities/describe.ts:21) |
-| Dispersion (tir raté) | `Pt` (scatter.ts:19), `scatter` (scatter.ts:42) |
+| Dispersion (tir raté) | `Pt` (scatter.ts:20), `scatter` (scatter.ts:41) |
 | Disponibilité des objets (achat) | `AVAILABILITY_RANK` (disponibilite.ts:76), `availabilityAfterHalvings` (disponibilite.ts:96), `availabilitySearchBonus` (disponibilite.ts:84), `BARTER_RATIOS` (disponibilite.ts:111), `barterRatio` (disponibilite.ts:120), `CatalogItem` (disponibilite.ts:15), `DISPO_PCT` (disponibilite.ts:19), `fullStock` (disponibilite.ts:130), `isTradable` (disponibilite.ts:53), `outOfTradeReason` (disponibilite.ts:58), `priceAfterHalvings` (disponibilite.ts:103), `rollAvailability` (disponibilite.ts:62), `rollStock` (disponibilite.ts:147), `Settlement` (disponibilite.ts:14), `StockLine` (disponibilite.ts:16) |
 | Dissipation de magie | `DispellableSpell` (dispel.ts:17), `dispellableSpellsOn` (dispel.ts:28), `dissipateSpell` (dispel.ts:52), `isFromSpell` (dispel.ts:46) |
 | Drapeaux d'effet actif : consommation, relance gratuite | `ActiveFlag` (activeFlags.ts:14), `consumeActiveFlag` (activeFlags.ts:22), `freeRerollOf` (activeFlags.ts:30), `hasActiveFlag` (activeFlags.ts:17) |
@@ -108,6 +108,7 @@ _2005 exports publics mesurés (154 fichiers de `src/engine`, hors tests) — 17
 | Gabarit corporel par espèce | `bodyShapeForSpecies` (bodyForm.ts:39), `SPECIES_BODY_SHAPE` (bodyForm.ts:19) |
 | GameOp : vocabulaire d'effet unifié | `applyActiveEffect` (ops.ts:1187), `applyOps` (ops.ts:1225), `attackHasKeyword` (ops.ts:293), `charDRBonusOf` (ops.ts:266), `durationFromCtx` (ops.ts:1167), `Formula` (ops.ts:76), `FORMULA_OBJECT_KEYS` (ops.ts:127), `formulaExpectation` (ops.ts:168), `GameOp` (ops.ts:322), `incomingAttackMod` (ops.ts:281), `incomingDamageNullified` (ops.ts:301), `isValidFormula` (ops.ts:132), `normalizePassiveKind` (ops.ts:1029), `offTerrainMoveCap` (ops.ts:239), `offTerrainSuffocates` (ops.ts:258), `offTerrainTestDR` (ops.ts:249), `OpsCtx` (ops.ts:1055), `PairedSense` (ops.ts:320), `PassiveKind` (ops.ts:1004), `PassiveMod` (ops.ts:1043), `PerSL` (ops.ts:146), `requiredTerrains` (ops.ts:231), `resolveFormula` (ops.ts:109), `skillDRBonus` (ops.ts:186), `slBonus` (ops.ts:156) |
 | Génération de noms | `generateName` (names.ts:32) |
+| Grille : distance de cases | `chebyshev` (grid.ts:21), `GridPt` (grid.ts:12) |
 | Grimoire, sorts connus | `arcaneDomainsOf` (grimoire.ts:80), `canCastFromGrimoire` (grimoire.ts:185), `carriedGrimoire` (grimoire.ts:179), `CasterTalent` (grimoire.ts:29), `casterTalents` (grimoire.ts:37), `domainSpellsKnown` (grimoire.ts:65), `eligibleTalent` (grimoire.ts:87), `knownCount` (grimoire.ts:54), `learnableSpells` (grimoire.ts:163), `RitualReduced` (grimoire.ts:107), `ritualReduction` (grimoire.ts:115), `spellCost` (grimoire.ts:140) |
 | Groupe d'arme | `weaponGroup` (weaponGroup.ts:60), `weaponGroupFromText` (weaponGroup.ts:49), `weaponGroupKey` (weaponGroup.ts:66) |
 | Groupes de créatures/joueurs | `groupMatch` (groups.ts:66), `groupsFor` (groups.ts:18), `hiddenGroupsOf` (groups.ts:51) |
@@ -1230,6 +1231,13 @@ _2005 exports publics mesurés (154 fichiers de `src/engine`, hors tests) — 17
 | `grappleTierMod` | 55 | function | Bonus de tiers (LDB 14 l.169) : un attaquant qui n'est PAS partie à l'Empoignade gagne **+20** pour toucher l'Empoigné dont l'Avantage est le PLUS FAIBLE des deux, **+10** pour celui dont l'Avantage est le plus IMPORTANT. | Empoignade, entrave, Combat : attaque, Avantage, engagement, Coups Critiques |
 | `grappleEnvMod` | 63 | function | Résout le partenaire d'Empoignade de `target` dans la liste de combat puis applique `grappleTierMod` (LDB 14 l.169). | Empoignade, entrave, Combat : attaque, Avantage, engagement, Coups Critiques |
 
+### `grid.ts` — Grille : distance de cases
+
+| Export | Ligne | Genre | Rôle | Concepts |
+|---|---|---|---|---|
+| `GridPt` | 12 | interface | Point de grille. | Grille : distance de cases |
+| `chebyshev` | 21 | function | Distance « roi d'échecs » (Chebyshev) sur la grille carrée : la diagonale vaut 1. | Grille : distance de cases |
+
 ### `grimoire.ts` — Grimoire, sorts connus
 
 | Export | Ligne | Genre | Rôle | Concepts |
@@ -2088,8 +2096,8 @@ _2005 exports publics mesurés (154 fichiers de `src/engine`, hors tests) — 17
 
 | Export | Ligne | Genre | Rôle | Concepts |
 |---|---|---|---|---|
-| `Pt` | 19 | interface | — | Dispersion (tir raté) |
-| `scatter` | 42 | function | Tuile d'atterrissage d'une arme de jet ratée (LDB 14 l.144-151). | Dispersion (tir raté) |
+| `Pt` | 20 | interface | — | Dispersion (tir raté) |
+| `scatter` | 41 | function | Tuile d'atterrissage d'une arme de jet ratée (LDB 14 l.144-151). | Dispersion (tir raté) |
 
 ### `seaNavigation.ts` — Navigation maritime
 

@@ -444,7 +444,7 @@ Enfoncer une porte (ou fenêtre…) se résout par un **Test de Corps à corps (
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.4, l.113-118, l.122-129, l.132-147, l.150-153, l.156-163, l.166-167, l.170-171, l.174-175) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `engage`, `secondsPerRound`, `markAttacked`, `agressifEnvers`, `FLOW_VERBS`, `entityBlockedAt`, `useHoverTargeting`, +38 — `src/data/actions.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/actions.ts`, `src/engine/combat.ts`, +24 fichiers
-- `LDB 14` (l.37-53, l.65-115, l.118-131, l.134-135) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `fr`, `10-a-votre-action-au-prochain-round`, `sceneCombatModifiers`, `scatter`, `combat-deux-armes`, +83 — `src/data/actions.json`, `src/data/grapple.json`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +28 fichiers
+- `LDB 14` (l.37-53, l.65-115, l.118-131, l.134-135) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `fr`, `10-a-votre-action-au-prochain-round`, `scatter`, `sceneCombatModifiers`, `combat-deux-armes`, +83 — `src/data/actions.json`, `src/data/grapple.json`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +28 fichiers
 - `LDB 16` (l.15-17) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, +4 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`
 - `EDO 11` (l.86-101) → `delire`, `fievre-cerebrale-pourpre` — `src/data/maladies.json`, `src/data/symptoms.json`
 
@@ -3668,7 +3668,7 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 **Voir aussi** : Taille des créatures et modificateurs de combat · Charge, Course et Désengagement · Bandes de portée (À distance) · Initiative et Avantage · Traits d'attaque de créature (Arme, Morsure, Cornes, Attaque Caudale)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370, l.428-439) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `useTrampleJetProps`, `StatblockEditor`, `TraverseCapability`, +124 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +25 fichiers
+- `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370, l.428-439) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `useTrampleJetProps`, `StatblockEditor`, `cannotStopOn`, +124 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +25 fichiers
 - `ZI 2` (l.66-70) → `fouissement`, `coup-puissant` — `src/data/creatures.json`, `src/data/traits.json`
 - `ZI 14` (l.1029-1035) → `fouissement` — `src/data/traits.json`
 - sans code : `AU1 4` (l.17)

@@ -3,6 +3,7 @@ import { Scene, isWalkable, edgeOf, surfaceLink, climbEdgeBetween, wallIsOpen } 
 import { hasTrait, hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
 import type { Combatant } from '../engine/types';
 import { memoByRef } from './sceneMemo';
+import { chebyshev } from '../engine/grid';
 
 export interface Pt {
   x: number;
@@ -451,10 +452,6 @@ export function manhattan(a: Pt, b: Pt): number {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
-/** Distance « roi d'échecs » (Chebyshev) sur la grille carrée : la diagonale vaut 1.
- *  C'est la distance de COMBAT (portée de mêlée, bandes de tir) — un ennemi en diagonale
- *  est à portée de contact. Le DÉPLACEMENT suit désormais la MÊME métrique (grille 8-connexe,
- *  cf. NEIGHBORS) : une diagonale = 1 pas → portée et déplacement s'accordent enfin. */
-export function chebyshev(a: Pt, b: Pt): number {
-  return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
-}
+/** Distance de combat sur la grille — canon `engine/grid`, réexporté ici pour ses ~30 appelants
+ *  du store (`Pt` est structurellement un `GridPt`). */
+export { chebyshev };

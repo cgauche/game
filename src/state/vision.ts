@@ -16,7 +16,7 @@ import { wallOnSight } from './lineOfSight';
 import { TERRAINS, terrainSolidHeightM } from './terrain';
 import { METRES_PER_LEVEL } from './relief';
 import { sceneIsDark } from './sceneRules';
-import { Pt } from './path';
+import { Pt, chebyshev } from './path';
 import { LIGHT_LEVEL_BY_ID, findTraitById, findPropById, findTrappingById } from '../data';
 import { memoByRef } from './sceneMemo';
 
@@ -60,8 +60,6 @@ export interface LightField {
 
 /** Seuil d'éclairement (MAISON) au-dessus duquel une case est « éclairée » pour la vue. */
 export const LIT_THRESHOLD = 0.18;
-
-const chebyshev = (a: Pt, b: Pt): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 /** Grille d'opacité de la scène (1 = bloque la vue), précalculée UNE FOIS par recompute → lookups O(1)
  *  dans le rayon, au lieu d'un `.find` O(entités) par échantillon (la cause des 64 ms/recompute).

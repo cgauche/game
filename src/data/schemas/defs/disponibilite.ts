@@ -17,7 +17,7 @@ export const schema = z.strictObject({
    *  (toujours en stock) et Exotique (jamais) n'ont pas de %, donc absentes de la table. */
   dispoPct: z.array(
     z.strictObject({
-      availability: z.enum(['Limitée', 'Rare']),
+      availability: availabilitySchema.extract(['Limitée', 'Rare']),
       pct: z.strictObject({ village: z.number(), ville: z.number(), cite: z.number() }),
       source: sourceRefSchema,
     }),

@@ -66,6 +66,7 @@ export const FILE_CONCEPTS = new Map([
   ['src/engine/exposure.ts', 'Exposition météo'],
   ['src/engine/flowCore.ts', 'Flux authorés : Condition, Flow, déclencheurs, ciblage'],
   ['src/engine/fortune.ts', 'Points de Chance'],
+  ['src/engine/grid.ts', 'Grille : distance de cases'],
   ['src/engine/grantedResources.ts', 'Ressources octroyées'],
   ['src/engine/grantedTraits.ts', 'Traits octroyés'],
   ['src/engine/grapple.ts', 'Empoignade, entrave'],

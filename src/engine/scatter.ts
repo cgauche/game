@@ -15,6 +15,7 @@
  * requise ») : RNG injecté, aucun effet de bord. Le câblage (FX/journal) vit dans `state/combatFlow`.
  */
 import { RNG, d10 } from './dice';
+import { chebyshev } from './grid';
 
 export interface Pt {
   x: number;
@@ -27,8 +28,6 @@ const SCATTER_DIRS: Record<number, Pt> = {
   4: { x: -1, y: 0 }, /*       T        */ 5: { x: 1, y: 0 },
   6: { x: -1, y: 1 }, 7: { x: 0, y: 1 }, 8: { x: 1, y: 1 },
 };
-
-const chebyshev = (a: Pt, b: Pt): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 /**
  * Tuile d'atterrissage d'une arme de jet ratée (LDB 14 l.144-151). PURE.
