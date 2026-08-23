@@ -20,6 +20,8 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MANUAL_DOCS_STOCK } from '../../scripts/guards/lib/manualDocsStock.mjs';
+// @ts-expect-error - orchestrateur ESM JS (pas de types)
+import { NON_GENERATOR_CHECKS, checkedScripts } from '../../scripts/docs/build-all.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const DOCS_DIR = join(ROOT, 'docs');
@@ -83,10 +85,6 @@ function extractGeneratorScript(head: string): string | null {
   return token ?? null;
 }
 
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 function generatedDocs(): { file: string; head: string }[] {
   return readdirSync(DOCS_DIR)
     .filter((f) => f.endsWith('.md'))
@@ -100,6 +98,9 @@ describe('le marqueur GÉNÉRÉ engage réellement son générateur (#903 suite)
     scripts?: Record<string, string>;
   };
   const DOCS_CHECK_SCRIPT = PACKAGE_JSON.scripts?.['docs:check'] ?? '';
+  // Source UNIQUE des générateurs vérifiés : `docs:check` ne les nomme plus un à un, il délègue à
+  // `build-all.mjs --check`. Parser la chaîne npm ne mesurerait plus rien.
+  const CHECKED: Set<string> = checkedScripts();
 
   it('tout doc `GÉNÉRÉ par` cite un script qui existe et qui est chaîné en --check dans docs:check', () => {
     const violations = generatedDocs().flatMap(({ file, head }) => {
@@ -115,15 +116,20 @@ describe('le marqueur GÉNÉRÉ engage réellement son générateur (#903 suite)
           `docs/${file} se déclare GÉNÉRÉ par "${script}" — ce script n'existe pas sur disque : le marqueur pourrit en silence`,
         );
       }
-      const wiredInCheck = new RegExp(`${escapeRegExp(script)}\\s+--check`).test(DOCS_CHECK_SCRIPT);
-      if (!wiredInCheck) {
+      if (!CHECKED.has(script)) {
         violationsForDoc.push(
-          `docs/${file} se déclare GÉNÉRÉ par "${script}" — absent (ou sans --check) du script "docs:check" de package.json : le marqueur pourrit en silence, non gardé par la CI`,
+          `docs/${file} se déclare GÉNÉRÉ par "${script}" — absent (ou sans mode --check) de GENERATORS dans scripts/docs/build-all.mjs, la source unique que docs:check exécute : le marqueur pourrit en silence, non gardé par la CI`,
         );
       }
       return violationsForDoc;
     });
     expect(violations).toEqual([]);
+  });
+
+  it('docs:check exécute BIEN la source unique et ses vérificateurs purs', () => {
+    expect(DOCS_CHECK_SCRIPT).toContain('scripts/docs/build-all.mjs --check');
+    const manquants = (NON_GENERATOR_CHECKS as string[]).filter((s) => !DOCS_CHECK_SCRIPT.includes(s));
+    expect(manquants.map((s) => `${s} n'est plus chaîné par docs:check`)).toEqual([]);
   });
 });
 

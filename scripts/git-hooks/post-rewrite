@@ -1,0 +1,7 @@
+#!/bin/sh
+# scripts/git-hooks/post-rewrite — régénère les docs dérivés après un REBASE ($1 = "rebase").
+# `amend` réécrit un commit déjà régénéré par son auteur : rien à faire. Même corps que post-merge
+# (docs-rebuild.mjs). Contrat de post-hook : ne fait jamais échouer l'opération qui vient d'avoir lieu.
+[ "${1:-}" = "rebase" ] || exit 0
+node "$(dirname "$0")/docs-rebuild.mjs" || true
+exit 0

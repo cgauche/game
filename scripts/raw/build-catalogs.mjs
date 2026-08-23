@@ -7,16 +7,18 @@
 // connue de l'extraction Marker, aucun mécanisme `inc` ne la couvre encore) — préservé tel quel par
 // extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
 // node scripts/raw/build-catalogs.mjs
-import { existsSync, writeFileSync } from 'node:fs'
-import { chapterFile as chapterFileLib, readText } from './_lib.mjs'
+import { existsSync, readdirSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { BOOKS, chapterFile as chapterFileLib, readText } from './_lib.mjs'
 
-const BLOCK_START = /^<!-- ([A-Z0-9_-]+-INTEGRATION) -->/
+export const BLOCK_START = /^<!-- ([A-Z0-9_-]+-INTEGRATION) -->/
 const blockEnd = (tag) => new RegExp(`^<!-- /${tag} -->\\s*$`)
 
 // Extrait les blocs préservés (délimités par `<!-- X-INTEGRATION -->` … `<!-- /X-INTEGRATION -->`,
 // précédés d'un séparateur `---` isolé) d'un catalogue EXISTANT. Si un bloc n'a pas encore de
 // marqueur de fin (ancien format, courait jusqu'à l'EOF), on le ferme ici — auto-guérison au premier run.
-function extractPreservedBlocks(path) {
+export function extractPreservedBlocks(path) {
   if (!existsSync(path)) return []
   const lines = readText(path).split('\n')
   const blocks = []
@@ -76,6 +78,15 @@ function chapterFile(abbr, nn, range) {
   return { title, text }
 }
 
+function main() {
+// Fail-fast : sans extraction sur disque, `chapterFile` rend null pour TOUT chapitre et le
+// catalogue s'écrirait VIDE, écrasant le committé. On refuse avant la moindre écriture.
+const dirsVides = BOOKS.filter(([, dir]) => !existsSync(dir) || !readdirSync(dir).some((f) => f.endsWith('.md')))
+if (dirsVides.length) {
+  console.error(`build-catalogs — ${dirsVides.length} extraction(s) Source/ absente(s) ou vide(s) : aucun catalogue écrit.`)
+  for (const [abbr, dir] of dirsVides) console.error(`  ${abbr} → ${dir}`)
+  process.exit(1)
+}
 const log = []
 for (const dom of DOMAINS) {
   const parts = [], refs = [], missing = []
@@ -98,3 +109,7 @@ for (const dom of DOMAINS) {
   log.push(`${dom.file} : ${refs.length} ch., ${Math.round(body.length / 1024)} Ko${missing.length ? ' · MANQUE ' + missing.join(', ') : ''}${preserved.length ? ` · ${preserved.length} bloc(s) préservé(s)` : ''}`)
 }
 console.log(log.join('\n'))
+}
+
+const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+if (isMain) main()

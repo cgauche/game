@@ -64,6 +64,15 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 > Garde `npm run docs:check` (`scripts/docs/check-doc-refs.mjs`) : chaque chemin `src/…`/`scripts/…` et
 > chaque symbole backtiqué cités par `docs/*.md` (hors `docs/plans/` et `docs/raw/`) doivent exister —
 > exit 1 avec la liste `fichier:ligne` sinon. Une référence vivante qui ment ne se tague pas, elle se corrige.
+> **Fusion des docs DÉRIVÉS** (`.gitattributes`, trois familles) : `merge=docs-generes` pour les docs
+> 100 % générés, `merge=docs-catalogue` pour `docs/raw/catalogue-*.md` (dérivés sauf leurs blocs
+> `<!-- X-INTEGRATION -->`, correctifs manuels), `merge=docs-fiche-raw` pour les fiches `docs/raw/*.md`
+> mixtes (prose manuscrite + champ `**Implémente :**` dérivé). Pilote `scripts/git-hooks/merge-docs.mjs`
+> (déclaré par `npm run postinstall`) : famille générée = version courante retenue ; fiche = fusion
+> 3-voies de la PROSE seule, chaque champ étant réinjecté PAR IDENTITÉ (heading porteur), donc une
+> section ajoutée par l'entrant garde SON champ ; un conflit restant est un vrai conflit humain.
+> Après toute fusion / tout rebase : `npm run docs:build` (`scripts/docs/build-all.mjs`) régénère et
+> nomme ce qui a bougé — les hooks `post-merge`/`post-rewrite` le lancent, le commit reste à toi.
 
 ## Règles strictes (NE PAS déroger)
 
