@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { seedBattleRng, battleRng } from './battleRng';
 import { d100 } from '../engine/dice';
 import { evaluateTest } from '../engine/tests';
+import { bonus, effectiveChar } from '../engine/characteristics';
 import { pregenParty, PREGEN } from '../data/pregens';
 import { massBattleTrackHit, armyMight, armyStartMight, type MassBattleSpec, type MassBattleState } from './massBattleFlow';
 import type { PendingActivity } from './interludeFlow';
@@ -702,19 +703,43 @@ describe('Activité SOUTENABLE — Planification (l.81 : « peut aider au Test �
   });
 });
 
-describe('Rassemblement (l.122)', () => {
-  it('un PJ blessé récupère DR + BE Blessures sur un Test de Résistance réussi', () => {
+describe('Rassemblement (ADE II 8 l.122)', () => {
+  /** Ouvre un Round avec le premier PJ à 1 Blessure, puis déclenche le Rassemblement. */
+  function rallyBlesse() {
     start({ situations: [['motivation']] });
     const party = useGame.getState().party.map((h, i) => i === 0 ? { ...h, wounds: { ...h.wounds, current: 1 } } : h);
     useGame.setState({ party });
-    const mb = mbState();
-    useGame.setState({ massBattle: { ...mb, phase: 'round', awaitingNext: true } });
+    useGame.setState({ massBattle: { ...mbState(), phase: 'round', awaitingNext: true } });
     useGame.getState().massBattleRally();
     const pa = pending()!;
     expect(pa.activityId).toBe('rassemblement');
-    resolveBattleTest({ roll: 10, success: true, sl: 3 });
-    expect(useGame.getState().party[0].wounds.current).toBeGreaterThan(1);
+    const hero = useGame.getState().party.find((h) => h.id === pa.heroId)!;
+    return { pa, hero, be: bonus(effectiveChar(hero, 'endurance')) };
+  }
+
+  it('Test réussi : le PJ regagne EXACTEMENT DR + Bonus d’Endurance Blessures', () => {
+    const { pa, hero, be } = rallyBlesse();
+    const sl = 3;
+    expect(be).toBeGreaterThan(0); // le pré-tiré a bien un BE — sinon la somme ne mesurerait que le DR
+    expect(1 + sl + be).toBeLessThanOrEqual(hero.wounds.max); // sous le plafond : la somme est lisible telle quelle
+    resolveBattleTest({ roll: 10, success: true, sl });
+    expect(useGame.getState().party.find((h) => h.id === pa.heroId)!.wounds.current).toBe(1 + sl + be);
     expect(mbState().ralliedHeroes).toContain(pa.heroId);
+  });
+
+  it('Test échoué : aucune Blessure regagnée, et le PJ a consommé son Rassemblement du Round', () => {
+    const { pa } = rallyBlesse();
+    resolveBattleTest({ roll: 90, success: false, sl: -2 });
+    expect(useGame.getState().party.find((h) => h.id === pa.heroId)!.wounds.current).toBe(1);
+    expect(mbState().ralliedHeroes).toContain(pa.heroId);
+  });
+
+  it('le soin est BORNÉ par le maximum de Blessures', () => {
+    const { pa, hero, be } = rallyBlesse();
+    const sl = hero.wounds.max; // DR délibérément énorme : 1 + DR + BE dépasse le plafond
+    expect(1 + sl + be).toBeGreaterThan(hero.wounds.max);
+    resolveBattleTest({ roll: 1, success: true, sl });
+    expect(useGame.getState().party.find((h) => h.id === pa.heroId)!.wounds.current).toBe(hero.wounds.max);
   });
 });
 

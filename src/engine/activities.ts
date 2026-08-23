@@ -118,19 +118,22 @@ export type ActivityResolver =
   | 'ritualFocus' | 'masterWeapon' | 'identifyByResearch' | 'memorizeDiscount' | 'combatTraining'
   | 'punchausen' | 'knowledgeResearch' | 'reputation' | 'wrathOfTheGods' | 'dissensionScout'
   | 'dissensionEmeute' | 'contremaitre'
-  // Voyage (EDOC 8) · Mer (MDG) · Bataille de masse (ADE II 8)
-  | 'forage' | 'seaChart' | 'opportunityTrade' | 'crewTraining' | 'battleRally';
+  // Voyage (EDOC 8) · Mer (MDG)
+  | 'forage' | 'seaChart' | 'opportunityTrade' | 'crewTraining';
 
-/** Familles de flux qui POSSÈDENT des résolveurs — un propriétaire = un dispatch, un seul. */
-export type ResolverOwner = 'interlude' | 'mer' | 'voyage' | 'bataille';
+/** Familles de flux qui POSSÈDENT des résolveurs — un propriétaire = un dispatch, un seul. Un
+ *  contexte d'Activité sans famille ici (`bataille`, `bataille-round`, `auberge`) n'a AUCUN résolveur
+ *  à offrir : c'est l'absence, pas une famille vide (`OWNERS_BY_CONTEXT`, `CodexEdit`). */
+export type ResolverOwner = 'interlude' | 'mer' | 'voyage';
 
 /**
  * PROPRIÉTAIRE de chaque résolveur, MESURÉ sur ses consommateurs (#1318 V6) :
  *  - `interlude` → `runActivityResolver`/`openCatalogActivity` (`src/state/interludeFlow.ts`) et les
  *    volets dédiés d'`InterludeScreen` (`entrainement`, `mecenat` : gate amont / volet, pas de branche
  *    dans le dispatch) ;
- *  - `mer` → `src/state/seaActivities.ts` (+ `SeaActivitiesModal`) ; `voyage` → `travelPostes.ts` ;
- *  - `bataille` → ADE II 8 : **aucun consommateur de production** à ce jour.
+ *  - `mer` → `src/state/seaActivities.ts` (+ `SeaActivitiesModal`) ; `voyage` → `travelPostes.ts`.
+ * La bataille de masse n'est PAS une famille : ses Scènes se résolvent par `sceneKind`
+ * (`massBattleFlow.confirmBattleActivity`), le Rassemblement par `rallyHealAmount` (ADE II 8 l.122).
  * Table EXHAUSTIVE (`satisfies Record<ActivityResolver, …>`) : un résolveur ajouté sans propriétaire
  * ne compile pas.
  */
@@ -143,10 +146,6 @@ export const RESOLVER_OWNER = {
   contremaitre: 'interlude',
   seaChart: 'mer', opportunityTrade: 'mer', crewTraining: 'mer',
   forage: 'voyage',
-  /** DETTE #1329 : porté par la donnée (`rassemblement`, `activities.json`) mais AUCUN consommateur de
-   *  production ne le lit — l'issue de Rassemblement passe par ses bandes `outcomes`/`battle`. Reste
-   *  au vocabulaire (la donnée le porte), listé en exception nominative par la garde de dispatch. */
-  battleRally: 'bataille',
 } as const satisfies Record<ActivityResolver, ResolverOwner>;
 
 /** Membres d'`ActivityResolver` possédés par une famille donnée (type). */

@@ -163,11 +163,15 @@ describe('Scènes cinématiques de bataille (ADE II 08 l.137-225) — données R
     expect(intrus.threat?.penalty).toBe(-20);
   });
 
-  it('Rassemblement (l.122) : sceneKind rally, Test de Résistance, résolveur de soin', () => {
+  it('Rassemblement (l.122) : sceneKind rally, Test de Résistance — sa résolution passe par le genre de Scène', () => {
     const r = activityById('rassemblement')!;
     expect(r.sceneKind).toBe('rally');
     expect(r.skills).toEqual([{ skillId: 'resistance' }]);
-    expect(r.resolver).toBe('battleRally');
+    expect(r.difficulty).toBe('intermediaire');
+    // Le genre 'rally' est la SEULE clé de résolution (branche `sceneKind === 'rally'` de
+    // `massBattleFlow.confirmBattleActivity`) : aucune bande d'issue, aucun résolveur.
+    expect(r.outcomes ?? []).toEqual([]);
+    expect(r.resolver).toBeUndefined();
   });
 });
 

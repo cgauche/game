@@ -44,8 +44,8 @@ const activityResolverSchema = z.enum([
   'ritualFocus', 'masterWeapon', 'identifyByResearch', 'memorizeDiscount', 'combatTraining',
   'punchausen', 'knowledgeResearch', 'reputation', 'wrathOfTheGods', 'dissensionScout',
   'dissensionEmeute', 'contremaitre',
-  // Voyage (EDOC 8) · Mer (MDG) · Bataille de masse (ADE II 8)
-  'forage', 'seaChart', 'opportunityTrade', 'crewTraining', 'battleRally',
+  // Voyage (EDOC 8) · Mer (MDG)
+  'forage', 'seaChart', 'opportunityTrade', 'crewTraining',
 ]);
 
 const outcomeBandSchema = z.strictObject({

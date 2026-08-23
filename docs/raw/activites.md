@@ -564,7 +564,7 @@ Contexte : préparation d'une bataille (siège, campagne militaire). Les Activit
 **Option coût de la guerre** : entretien = Σ Statuts des soldats/jour (réduction 50 % → −10 à tous les Tests de Puissance ; aucun entretien → armée se disperse en 2 jours).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ADE II 8` (l.89-131) → `scene`, `MassBattleView`, `ActivityContext`, `schema`, `inspire`, `planification`, `infiltration`, `rassembler-des-forces`, `reperage`, `sabotage`, +1 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/activities.ts`, `src/engine/activities.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/state/combatFlow.ts`, +1 fichiers
+- `ADE II 8` (l.89-131) → `scene`, `MassBattleView`, `ActivityContext`, `schema`, `RESOLVER_OWNER`, `inspire`, `planification`, `infiltration`, `rassembler-des-forces`, `reperage`, +2 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/activities.ts`, `src/engine/activities.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/state/combatFlow.ts`, +1 fichiers
 
 ---
 

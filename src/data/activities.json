@@ -1405,7 +1405,6 @@
     ],
     "difficulty": "intermediaire",
     "desc": "Entre deux Rounds de bataille, un Personnage blessé peut se rassembler pour reprendre des forces. En réussissant un Test de Résistance Intermédiaire (+0), il guérit un nombre de Blessures égal au DR obtenu plus son Bonus d'Endurance.",
-    "resolver": "battleRally",
     "stake": "Réussite : tu regagnes autant de Blessures que ton DR plus ton Bonus d'Endurance.",
     "stakeForm": "descripteur"
   },

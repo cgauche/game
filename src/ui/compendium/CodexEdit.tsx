@@ -1526,27 +1526,39 @@ function ChainsField({ value, onChange }: { value: string[] | undefined; onChang
   );
 }
 
-/** Familles de résolveurs (`RESOLVER_OWNER`) atteignables depuis un contexte d'Activité — le
- *  sélecteur de résolveur s'y restreint. `auberge` n'a pas de dispatch propre : aucun filtre. */
-const OWNERS_BY_CONTEXT: Partial<Record<ActivityContext, ResolverOwner>> = {
-  interlude: 'interlude', mer: 'mer', voyage: 'voyage', bataille: 'bataille', 'bataille-round': 'bataille',
+/** Famille de résolveurs (`RESOLVER_OWNER`) atteignable depuis chaque contexte d'Activité. Table
+ *  TOTALE (`Record<ActivityContext, …>`) : un contexte de plus doit se classer. `null` = contexte sans
+ *  dispatch de résolveur — `bataille`/`bataille-round` se résolvent par `sceneKind` (ADE II 8),
+ *  `auberge` n'a pas de flux propre. */
+const OWNERS_BY_CONTEXT: Record<ActivityContext, ResolverOwner | null> = {
+  interlude: 'interlude', mer: 'mer', voyage: 'voyage',
+  bataille: null, 'bataille-round': null, auberge: null,
 };
 
+export interface ResolverChoices { options: ActivityResolver[]; familles: ResolverOwner[] }
+
+/** Choix de résolveur offerts pour des `contexts` donnés, et la valeur courante à préserver. PURE.
+ *  `null` = AUCUN champ à rendre : tous les contextes déclarés sont sans famille, il n'y a rien à
+ *  choisir (jamais un sélecteur à zéro option). Sans contexte déclaré, rien ne filtre ⇒ vocabulaire
+ *  complet. La valeur courante est toujours proposée (une entrée authorée ne se perd pas au rendu). */
+export function resolverChoicesFor(contexts: ActivityContext[], cur?: ActivityResolver): ResolverChoices | null {
+  const familles = [...new Set(contexts.map((c) => OWNERS_BY_CONTEXT[c]).filter((o): o is ResolverOwner => !!o))];
+  if (!contexts.length) return { options: [...ACTIVITY_RESOLVERS], familles: [] };
+  if (!familles.length) return cur ? { options: [cur], familles: [] } : null;
+  const choix = familles.flatMap(resolversOwnedBy);
+  return { options: cur && !choix.includes(cur) ? [cur, ...choix] : choix, familles };
+}
+
 /** Résolveur BESPOKE d'une Activité — vocabulaire FERMÉ (`ACTIVITY_RESOLVERS`), jamais une saisie
- *  libre : un nom inventé ici serait un no-op silencieux à l'exécution. Le choix est restreint aux
- *  familles atteignables depuis les `contexts` déclarés (`RESOLVER_OWNER`) ; contextes absents ou sans
- *  famille (`auberge`) ⇒ liste COMPLÈTE. La valeur courante reste toujours proposée (une entrée déjà
- *  authorée ne se perd pas au premier rendu). */
+ *  libre : un nom inventé ici serait un no-op silencieux à l'exécution. */
 function ActivityResolverField({ entry, edit }: { entry: Record<string, unknown>; edit: (k: string, v: unknown) => void }) {
   const cur = entry.resolver as ActivityResolver | undefined;
-  const contexts = (entry.contexts as ActivityContext[] | undefined) ?? [];
-  const owners = [...new Set(contexts.map((c) => OWNERS_BY_CONTEXT[c]).filter((o): o is ResolverOwner => !!o))];
-  const filtre = owners.length && owners.length === contexts.length;
-  const choix = filtre ? owners.flatMap(resolversOwnedBy) : [...ACTIVITY_RESOLVERS];
-  const options = cur && !choix.includes(cur) ? [cur, ...choix] : choix;
+  const choix = resolverChoicesFor((entry.contexts as ActivityContext[] | undefined) ?? [], cur);
+  if (!choix) return null;
+  const { options, familles } = choix;
   return (
     <label className="ed-field">
-      <span>résolveur (bespoke) — logique nommée du flux propriétaire{filtre ? ` (familles : ${owners.join(', ')})` : ''}</span>
+      <span>résolveur (bespoke) — logique nommée du flux propriétaire{familles.length ? ` (familles : ${familles.join(', ')})` : ''}</span>
       <select value={cur ?? ''} onChange={(e) => edit('resolver', (e.target.value || undefined) as ActivityResolver | undefined)}>
         <option value="">— aucun (issue par ops/outcomes) —</option>
         {options.map((r) => <option key={r} value={r}>{r} · {RESOLVER_OWNER[r]}</option>)}

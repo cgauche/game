@@ -27,16 +27,9 @@ const DEFINITION_FILES = new Set([
   'src/data/schemas/defs/activities.ts',
 ]);
 
-/**
- * Résolveurs ENCORE sans consommateur de production. Ce n'est PAS une exemption : chaque entrée est
- * une dette ouverte, avec son ticket. Retirer une entrée est le geste de solde.
- */
-const SANS_CONSOMMATEUR: Record<string, string> = {
-  // `rassemblement` (ADE II 8) porte `resolver: "battleRally"` en donnée, mais AUCUN code de
-  // production ne le lit : l'issue de l'Activité vient de ses bandes `outcomes`/`battle`. Le membre
-  // reste au vocabulaire (la donnée le porte, le schéma la valide) — la branche est à écrire. #1329
-  battleRally: '#1329 — Rassemblement : résolveur authoré, dispatch de bataille jamais écrit.',
-};
+/** Mot HORS vocabulaire, forgé au runtime pour les fixtures de MORSURE — jamais un membre réel, dont
+ *  le zéro consommateur serait un vrai défaut. */
+const MOT_FORGE = 'resolveurQuiNExistePas' as ActivityResolver;
 
 function sourceFiles(): string[] {
   const out: string[] = [];
@@ -83,52 +76,51 @@ export function consumersByResolver(
   return out;
 }
 
-describe('garde — un résolveur d’Activité a un CONSOMMATEUR (#1318 V6)', () => {
-  const corpus = sourceFiles().map((f) => ({
-    rel: relative(ROOT, f).split('\\').join('/'),
-    contenu: readFileSync(f, 'utf8'),
-  }));
+/**
+ * Consommateurs du corpus RÉEL. COÛT MESURÉ (2026-08-23, 1880 fichiers / 15,2 Mo) : 2,0 s par
+ * balayage, dont 1,6 s de `ts.createSourceFile`. Les deux `it` de cliquet lisent la MÊME carte :
+ * elle est mémoïsée, et PARESSEUSE — au premier `it` qui la demande, jamais à la collecte de
+ * vitest. Les `it` de MORSURE passent leur propre corpus FORGÉ au comparateur pur, hors mémo.
+ */
+let consumersMemo: Map<ActivityResolver, string[]> | undefined;
+function consommateursReels(): Map<ActivityResolver, string[]> {
+  return (consumersMemo ??= consumersByResolver(
+    sourceFiles().map((f) => ({
+      rel: relative(ROOT, f).split('\\').join('/'),
+      contenu: readFileSync(f, 'utf8'),
+    })),
+    ACTIVITY_RESOLVERS,
+  ));
+}
 
-  it('chaque membre d’ACTIVITY_RESOLVERS est lu par au moins un consommateur de production', () => {
-    const consumers = consumersByResolver(corpus, ACTIVITY_RESOLVERS);
-    const orphelins = [...consumers.entries()]
-      .filter(([r, files]) => files.length === 0 && !(r in SANS_CONSOMMATEUR))
-      .map(([r]) => `${r} (famille ${RESOLVER_OWNER[r]})`);
+describe('garde — un résolveur d’Activité a un CONSOMMATEUR (#1318 V6)', () => {
+  it('chaque membre d’ACTIVITY_RESOLVERS est lu par au moins un consommateur de production — SANS exception', () => {
+    const consumers = consommateursReels();
+    expect(consumers.size, 'le balayage n’a pas couvert tout le vocabulaire').toBe(ACTIVITY_RESOLVERS.length);
+    const mesure = ACTIVITY_RESOLVERS.map((r) => `${r} (famille ${RESOLVER_OWNER[r]}) : ${(consumers.get(r) ?? []).length}`);
+    const orphelins = ACTIVITY_RESOLVERS
+      .filter((r) => (consumers.get(r) ?? []).length === 0)
+      .map((r) => `${r} (famille ${RESOLVER_OWNER[r]})`);
     expect(
       orphelins,
       'Résolveur(s) SANS consommateur — un membre du vocabulaire que personne ne lit est un no-op\n' +
-        'silencieux : écrire sa branche chez son propriétaire, ou le retirer de l’enum ET de la donnée :\n' +
-        orphelins.join('\n'),
+        'silencieux : écrire sa branche chez son propriétaire, ou le retirer de l’enum ET de la donnée.\n' +
+        'Consommateurs mesurés :\n' + mesure.join('\n'),
     ).toEqual([]);
-  });
-
-  it('CLIQUET : une dette de SANS_CONSOMMATEUR soldée se retire de la liste', () => {
-    const consumers = consumersByResolver(corpus, ACTIVITY_RESOLVERS);
-    const soldes = Object.keys(SANS_CONSOMMATEUR)
-      .filter((r) => (consumers.get(r as ActivityResolver) ?? []).length > 0)
-      .map((r) => `${r} : ${(consumers.get(r as ActivityResolver) ?? []).join(', ')}`);
-    expect(soldes, 'Dette(s) SOLDÉE(s) — retirer ces entrées de SANS_CONSOMMATEUR :\n' + soldes.join('\n')).toEqual([]);
-  });
-
-  it('toute entrée de SANS_CONSOMMATEUR porte un ticket, et reste un membre du vocabulaire', () => {
-    for (const [r, motif] of Object.entries(SANS_CONSOMMATEUR)) {
-      expect(ACTIVITY_RESOLVERS, `${r} : dette listée hors du vocabulaire`).toContain(r);
-      expect(motif, `${r} : dette sans référence de ticket`).toMatch(/#\d+/);
-    }
   });
 
   it('MORSURE : le détecteur voit un résolveur absent, et ne s’émeut pas d’un présent (fixture)', () => {
     const fixture = [
       { rel: 'src/state/fauxFlow.ts', contenu: "export const f = (d: Def) => d.resolver === 'forage' ? 1 : 0;" },
-      { rel: 'src/engine/activities.ts', contenu: "export const X = ['forage', 'battleRally'];" }, // définition : ignorée
+      { rel: 'src/engine/activities.ts', contenu: `export const X = ['forage', '${MOT_FORGE}'];` }, // définition : ignorée
     ];
-    const consumers = consumersByResolver(fixture, ['forage', 'battleRally']);
+    const consumers = consumersByResolver(fixture, ['forage', MOT_FORGE]);
     expect(consumers.get('forage')).toEqual(['src/state/fauxFlow.ts']);
-    expect(consumers.get('battleRally')).toEqual([]);
+    expect(consumers.get(MOT_FORGE)).toEqual([]);
   });
 
   it('MORSURE : un littéral de COMMENTAIRE ne compte pas comme consommation', () => {
-    const fixture = [{ rel: 'src/state/fauxFlow.ts', contenu: "// mentionne 'battleRally' en prose\nexport const f = 1;" }];
-    expect(consumersByResolver(fixture, ['battleRally']).get('battleRally')).toEqual([]);
+    const fixture = [{ rel: 'src/state/fauxFlow.ts', contenu: `// mentionne '${MOT_FORGE}' en prose\nexport const f = 1;` }];
+    expect(consumersByResolver(fixture, [MOT_FORGE]).get(MOT_FORGE)).toEqual([]);
   });
 });

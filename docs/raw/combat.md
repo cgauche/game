@@ -2319,7 +2319,7 @@ Les groupes d'armes à distance et leurs spécialisations conditionnent l'usage 
 **Voir aussi** : Bandes de portée et modificateurs de tir (Bout portant +60 / Courte +40 / Moyenne +0 / Longue -10 / Extrême -30) ; Engagement et déplacement (1 case = 2 m) ; Atouts et Défauts d'arme ; Groupes d'armes et spécialisations ; Maladresses au combat.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.20-102, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-215, l.260-262) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `REACH_OPTIONS`, `reachTiles`, `AuContactModal`, `moneySchema`, `woundsFromHit`, `bagarre`, `REACH_VARIABLE`, +142 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +44 fichiers
+- `LDB 62` (l.20-102, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-215, l.260-262) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `reachTiles`, `REACH_OPTIONS`, `AuContactModal`, `moneySchema`, `woundsFromHit`, `bagarre`, `REACH_VARIABLE`, +142 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +44 fichiers
 
 ---
 
@@ -5687,7 +5687,7 @@ Note spéciale : le **Canon à flammes nain** inflige **2 + DR États *En flamme
 **Voir aussi** : aa-structures-sieges (armes de siège *maniables* d'AA, stats distinctes — Baliste +12 / Recharge 3 vs ici +14 / Recharge 2) ; les entrées Combat (Tests spectaculaires, DR, États En flammes/Empoisonné/Empêtré/Surpris/À Terre/Sans défense) ; Corruption (Facteurs Environnementaux, influence corruptrice) ; Psychologie (Peur/Terreur/Animosité/Haine, Horreurs de la Guerre).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ADE II 8` (l.13-19, l.24-33, l.34-47, l.48, l.55-56, l.65-110, l.112-135, l.138-178, l.207-225, l.227-270, l.281-304, l.307-321) → `insignifiante`, `scene`, `desavantagee`, `warMachineCrewPenalty`, `MassBattleView`, `egale`, `RAM_CREW`, `isMeleeWarMachine`, `conditionalDamageNote`, `ActivityContext`, +101 — `src/data/activities.json`, `src/data/index.ts`, `src/data/mass-battle.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +32 fichiers
+- `ADE II 8` (l.13-19, l.24-33, l.34-47, l.48, l.55-56, l.65-110, l.112-135, l.138-178, l.207-225, l.227-270, l.281-304, l.307-321) → `insignifiante`, `scene`, `desavantagee`, `warMachineCrewPenalty`, `MassBattleView`, `egale`, `RAM_CREW`, `isMeleeWarMachine`, `conditionalDamageNote`, `ActivityContext`, +102 — `src/data/activities.json`, `src/data/index.ts`, `src/data/mass-battle.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +32 fichiers
 - sans code : `ADE II 8` (l.174-175, l.181-186)
 
 ---

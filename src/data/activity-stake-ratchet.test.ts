@@ -94,8 +94,10 @@ describe('cliquet — une Activité à JET dit son ENJEU (#1117 L3)', () => {
     expect(activityRolls({ freeSkill: true })).toBe(true);
     expect(activityRolls({ resolver: 'income' })).toBe(true); // compétence dérivée du héros
     // Un résolveur QUELCONQUE ne suffit pas : seuls ceux qui DÉRIVENT la compétence comptent
-    // (`rassemblement` lance par ses `skills` en donnée, pas par son résolveur `battleRally`).
-    expect(activityRolls({ resolver: 'battleRally' })).toBe(false);
+    // (`identify` lance par ses `skills` authorées, pas par son résolveur).
+    expect(activityRolls({ resolver: 'identify' })).toBe(false);
+    // Le Rassemblement (ADE II 8 l.122) lance par ses `skills` en donnée : Résistance.
+    expect(activityRolls(ACTIVITIES.find((a) => a.id === 'rassemblement')!)).toBe(true);
     expect(activityRolls({})).toBe(false);
     expect(activityRolls({ skills: [] })).toBe(false);
   });
