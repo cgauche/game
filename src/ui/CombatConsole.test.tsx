@@ -2801,6 +2801,10 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     expect(cellule.getAttribute('aria-label'), 'le nom accessible ne promet pas un geste qu’il refuse')
       .toBe(`Bénédiction de Chance — ${t('cc.geste2eIndisponible', { geste: 'Focaliser', raison: t('agate.spellNotFocusable') })}`);
     expect(cellule.disabled, 'la CASE reste offerte : c’est son geste secondaire qui est fermé').toBe(false);
+    // La bande occupe la même place quelle que soit son origine : sans `data-gated`, le libellé n'est
+    // plus clampé et un nom long vient mordre la raison dans une case à hauteur fixe.
+    expect(cellule.getAttribute('data-gated'), 'la case RÉSERVE la bande de raison de son geste').toBe('');
+    expect(cellule.getAttribute('data-refus-2e'), '… en disant que c’est le GESTE qui est fermé, pas elle').toBe('');
     act(() => { cellule.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
     expect(panneau(), 'un panneau à UN item désactivé n’est pas un paramètre : rien ne s’ouvre').toBeNull();
     expect(useGame.getState().pendingFocus, 'une Prière ne se focalise pas').toBeNull();
@@ -2915,6 +2919,41 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     const surPont = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
     act(() => { host.querySelector('.combat-console')!.dispatchEvent(surPont); });
     expect(surPont.defaultPrevented, 'y compris hors alvéole (le pont lui-même)').toBe(true);
+  });
+
+  it('CLIC DROIT MAINTENU (contextmenu À L’APPUI, macOS/Linux) : le minuteur d’appui long ne rejoue pas le geste', () => {
+    const fabrique: ActionDef = {
+      id: 'test-geste-2e-fabrique', label: 'Geste fabriqué', icon: 'flag/focus',
+      surface: 'geste-secondaire', hote: 'cast-spell', gate: 'toujours',
+      run: 'battleFocusSpell', candidates: 'sorts-du-heros', cost: 'gratuit',
+    };
+    ACTIONS.push(fabrique);
+    vi.useFakeTimers();
+    try {
+      monter(mage(['carreau']));
+      const cellule = alveole('carreau');
+      // ORDRE INVERSE de l’appui long au doigt : le bouton DROIT s’enfonce, le navigateur émet son
+      // `contextmenu` AVANT l’échéance du minuteur — qui ne doit jamais avoir été armé.
+      act(() => { cellule.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10, button: 2 })); });
+      act(() => { cellule.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
+      expect(panneau(), 'témoin : le clic droit ouvre le panneau des deux gestes').toBeTruthy();
+      act(() => { vi.advanceTimersByTime(900); });
+      expect(panneau(), 'le minuteur ne rebascule pas ce que le clic droit vient d’ouvrir').toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+      ACTIONS.splice(ACTIONS.indexOf(fabrique), 1);
+    }
+  });
+
+  it('case FERMÉE (Action dépensée) : aucun glyphe, aucun geste promis — `<button disabled>` ne reçoit rien', () => {
+    monter(mage(['carreau']));
+    expect(alveole('carreau').querySelector('[data-glyphe-2e]'), 'témoin : la case ouverte annonce son geste').toBeTruthy();
+    act(() => { useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } }); });
+    const cellule = alveole('carreau');
+    expect(cellule.disabled, 'témoin : l’Action dépensée ferme la case').toBe(true);
+    expect(cellule.querySelector('[data-glyphe-2e]'), 'une case fermée ne promet pas un geste que rien ne peut prendre').toBeNull();
+    expect(cellule.getAttribute('aria-label'), 'le nom accessible n’annonce pas les quatre surfaces non plus').toBe('Carreau');
+    expect(cellule.getAttribute('data-geste-2e'), 'le CHEMIN reste nommé en structure (mesure de surface)').toBe('focus-spell');
   });
 
   /** RENDEUR GÉNÉRIQUE (grief G2) : le calcul des gestes secondaires vit dans `cellFor`, pas au site

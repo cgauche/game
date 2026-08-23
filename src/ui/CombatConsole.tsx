@@ -120,7 +120,12 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
    *  la console dit ce que le geste FAIT (dispatch direct ou panneau), la case ne fait que l'appeler. */
   onGeste2e?: () => void;
 }) {
-  const secondaires = cell?.secondaires ?? [];
+  // Une case FERMÉE (verdict refusé, restriction de site, console en lecture) ne porte AUCUN geste
+  // secondaire ATTEIGNABLE : `<button disabled>` ne reçoit ni `contextmenu` ni `pointerdown` dans un
+  // vrai navigateur. Les quatre surfaces se taisent donc avec elle — et le glyphe qui les annonce
+  // aussi, sinon il promet un geste que rien ne peut prendre.
+  const atteignable = !!cell && !cell.disabled && !!cell.run;
+  const secondaires = atteignable ? cell!.secondaires ?? [] : [];
   // N=1 REFUSÉ : à un seul geste fermé, rien ne s'ouvre — un panneau à un item désactivé n'est pas un
   // paramètre. Le refus se lit À LA CASE (bande de raison + nom accessible), comme toute case gatée.
   const refus2e = secondaires.length === 1 && !(secondaires[0].run && !secondaires[0].disabled) ? secondaires[0] : undefined;
@@ -158,22 +163,23 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
       data-cell={cell.key}
       data-action={cell.id}
       data-family={cell.family}
-      data-gated={cell.gate ? '' : undefined}
+      data-gated={raison ? '' : undefined}
       /* La case qui IMPRIME sa touche lui RÉSERVE sa bande au pied (même patron que la bande de
          raison) : sur un libellé long, le chiffre passait sous les mots (grief du juge vision,
          « Immunité Psychologie (2) »). La géométrie de la case, elle, ne bouge pas. */
       data-hotkey={touche ? '' : undefined}
       /* Les gestes SECONDAIRES de l'alvéole, nommés en structure : le geste est un CHEMIN, pas une
          case — c'est le seul marqueur par lequel une sonde (ou la garde de surface) le mesure. */
-      data-geste-2e={secondaires.length ? secondaires.map((g) => g.id).join(' ') : undefined}
+      data-geste-2e={cell.secondaires?.length ? cell.secondaires.map((g) => g.id).join(' ') : undefined}
       className={`chip cc-cell${cell.on ? ' on' : ''}${inert ? ' cc-inert' : ''}`}
       disabled={cell.disabled || inert}
       /* Le geste secondaire se DIT dans le nom accessible : un glyphe de coin ne se lit pas au
          lecteur d'écran, et l'infobulle native est proscrite (charte). */
       aria-label={nom}
       aria-describedby={gateId}
-      /* La bande de raison au pied est RÉSERVÉE aussi quand c'est le geste secondaire qui est refusé :
-         la case, elle, reste OFFERTE (elle ne s'éteint pas — seul son geste est fermé). */
+      /* La bande de raison au pied est rendue DANS LES DEUX CAS (`data-gated` : le libellé s'y clampe,
+         sinon un nom long mord la bande dans une case à hauteur fixe). Ce marqueur-ci dit LAQUELLE :
+         le geste refusé, sur une case qui reste OFFERTE — elle ne s'éteint donc pas. */
       data-refus-2e={raison2e && !cell.gate ? '' : undefined}
       onClick={() => { if (appuiLong.consomme()) return; cell.run?.(); }}
       /* Un `contextmenu` qui SUIT un appui long déjà déclenché (le navigateur le dérive de l'appui au

@@ -2,7 +2,7 @@
  * APPUI LONG — primitive PARTAGÉE du geste secondaire au doigt (spec HUD combat, geste secondaire
  * d'une alvéole : clic droit à la souris, appui long au tactile, touche Menu au clavier).
  *
- * Le geste s'ARME au `pointerdown`, se DÉCLENCHE au bout de `delai`, et s'ANNULE au relâchement
+ * Le geste s'ARME au `pointerdown` du BOUTON PRINCIPAL, se DÉCLENCHE au bout de `delai`, et s'ANNULE au relâchement
  * comme au mouvement au-delà de `TOLERANCE` (un glissement n'est pas un appui). L'appui qui a
  * déclenché AVALE la salve d'événements natifs qui le suit (`consomme`, lu par `click` ET par
  * `contextmenu`) : sans quoi le doigt lèverait le geste secondaire PUIS l'action primaire de
@@ -21,7 +21,7 @@ export const FENETRE_AVALEMENT = 700;
 
 export interface LongPress {
   handlers: {
-    onPointerDown: (e: { clientX: number; clientY: number }) => void;
+    onPointerDown: (e: { clientX: number; clientY: number; button?: number }) => void;
     onPointerMove: (e: { clientX: number; clientY: number }) => void;
     onPointerUp: () => void;
     onPointerLeave: () => void;
@@ -49,8 +49,12 @@ export function useLongPress(action: (() => void) | undefined, delai = DELAI_APP
   useEffect(() => annuler, [annuler]);
 
   const onPointerDown = useCallback(
-    (e: { clientX: number; clientY: number }) => {
+    (e: { clientX: number; clientY: number; button?: number }) => {
       if (!geste.current) return;
+      // BOUTON PRINCIPAL seulement. Là où le `contextmenu` naît À L'APPUI (macOS, Linux), un clic
+      // droit maintenu déclencherait le geste une 2ᵉ fois au bout du délai — à N≥2, le panneau que
+      // le clic droit vient d'ouvrir se refermerait tout seul.
+      if ((e.button ?? 0) !== 0) return;
       annuler();
       declenche.current = 0;
       depart.current = { x: e.clientX, y: e.clientY };

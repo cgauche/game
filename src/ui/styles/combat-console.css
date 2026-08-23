@@ -363,11 +363,15 @@
    bas que la maquette — la case est là, sa raison est ÉCRITE dans l'alvéole, et elle ne se confond pas
    avec une case qui n'attend qu'un branchement. */
 .cc-cell[data-gated] {
-  --cc-cell-ink: var(--cc-void-ink);
   /* Place RÉSERVÉE au pied pour la bande de raison (voir plus bas) : le nom ne descend jamais dessous. */
   padding-bottom: 11px;
 }
-.cc-cell[data-gated]::before {
+/* L'EXTINCTION, elle, ne vise que la case dont l'usage est fermé : celle qui porte la raison de son
+   seul GESTE secondaire (`data-refus-2e`) reste offerte, donc allumée. */
+.cc-cell[data-gated]:not([data-refus-2e]) {
+  --cc-cell-ink: var(--cc-void-ink);
+}
+.cc-cell[data-gated]:not([data-refus-2e])::before {
   background: var(--cc-cell-edge);
   opacity: 0.4;
 }
@@ -426,11 +430,6 @@
    Même patron que la bande de raison : la hauteur de l'alvéole, elle, ne bouge pas. */
 .cc-cell[data-hotkey] {
   padding-bottom: 10px;
-}
-/* Case OFFERTE dont le seul GESTE SECONDAIRE est refusé : même bande de raison réservée au pied, sans
-   éteindre la case — c'est le geste qui est fermé, pas elle. */
-.cc-cell[data-refus-2e] {
-  padding-bottom: 11px;
 }
 /* Touche IMPRIMÉE dans la case (spec zone 8) — coin bas-gauche, gravure de tôle. */
 .cc-key {
