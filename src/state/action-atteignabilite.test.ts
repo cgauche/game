@@ -46,8 +46,6 @@ const CHANTIER_BRANCHEMENTS_OUVERT = true;
 
 /** Actions SANS surface vivante — nominatif, DÉCROISSANT, cible `{}` (voir en-tête). */
 const SANS_SURFACE: Record<string, string> = {
-  cast: 'le mode disparaît comme slot : alvéoles de sorts + grimoire (spec §1d).',
-  'focus-spell': 'affordance secondaire de l’alvéole du sort (spec §1d).',
   mount: 'pastille sur la MONTURE (zone 4, tranché 2026-08-16).',
   'man-poste': 'pastille sur la PIÈCE (zone 4).',
   'push-engine': 'pastille sur la PIÈCE (zone 4).',
@@ -85,8 +83,19 @@ const KEYBINDING_IDS = KEYBINDINGS.map((b) => b.id);
 const INTERLUDE_BRANCHE = /currentInterludeAction/.test(CONSOLE_SRC);
 const INTERLUDE_KEYS = INTERLUDE_BRANCHE ? ACTIONS.filter((a) => a.surface === 'interlude').map((a) => a.id) : [];
 
-/** Surfaces VIVANTES : la console, le bandeau d'interlude qu'elle rend, la FRISE, et le clavier. */
-const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...FRISE_KEYS, ...INTERLUDE_KEYS, ...KEYBINDING_IDS]);
+/** Un GESTE SECONDAIRE n'a pas de case nommée : la console le rend depuis le registre, par l'alvéole
+ *  de son HÔTE (rendeur unique `gestes2e`), et son id n'apparaît donc dans aucun `cellFor('…')`
+ *  littéral. Sa surface est CE branchement, ET la présence d'une case pour l'hôte. La preuve
+ *  structurelle (l'alvéole hôte porte `data-geste-2e`, le clic droit dispatche, le refus se lit) est
+ *  au DOM dans `CombatConsole.test.tsx` : débrancher le rendeur y vire rouge. */
+const GESTE_2E_BRANCHE = /surface === 'geste-secondaire'/.test(CONSOLE_SRC);
+const GESTE_2E_KEYS = GESTE_2E_BRANCHE
+  ? ACTIONS.filter((a) => a.surface === 'geste-secondaire' && a.hote && CONSOLE_KEYS.includes(a.hote)).map((a) => a.id)
+  : [];
+
+/** Surfaces VIVANTES : la console, le bandeau d'interlude qu'elle rend, les gestes secondaires de ses
+ *  alvéoles, la FRISE, et le clavier. */
+const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...FRISE_KEYS, ...INTERLUDE_KEYS, ...GESTE_2E_KEYS, ...KEYBINDING_IDS]);
 
 /** Les clés qu'une action revendique : son id + ses clés de surface encore forkées. */
 const claimedKeys = (a: (typeof ACTIONS)[number]) => [a.id, ...(a.keys ?? [])];

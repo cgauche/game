@@ -200,6 +200,11 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `aiLog(n=50)` | diagnostic IA : action choisie + classement des candidats par tour | `(forcé)` = garde psychologie/RAW hors scoring |
 | `auto()` | diagnostic auto-cadence (mode, modale active, `willAutoResolve`, `pending*` ouverts) | pour investiguer un soft-lock, pas pour agir |
 
+**La grille de capacités est PLAFONNÉE** à `RIGHT_CELLS = 12` (`src/ui/CombatConsole.tsx`), sans
+défilement : un gros grimoire déborde et ses derniers sorts n'ont aucune alvéole. Pour recetter un
+sort précis, réordonner `combatants[].spells` au SETUP (ou passer par le scénario court quand il
+existera).
+
 **Flux HORS convention `<flux>Roll/Confirm/Cancel`** (`devDriveModal`/`roll()`/`confirm()`/`cancel()` ne
 les couvrent PAS — cliquer les VRAIS boutons) : `pendingCorruption` (Exposition/Seuil de Corruption,
 LDB 19) se résout par l'action `resolveCorruption` — bouton **« Continuer »** de la modale

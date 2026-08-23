@@ -32,7 +32,8 @@ import { combatAdvantageSkills } from '../engine/skillCombatApps';
 import { availableAttacks, placingZoneOf, STANCE_BLOCK } from './combatFlow';
 import { mountableNear } from './mount';
 import { servablePostes } from './shipPostes';
-import { ACTIONS, type ActionDef } from '../data/index';
+import { ACTIONS, findSpellById, type ActionDef } from '../data/index';
+import { isArcaneSpell, castBlockedBy, focusSkillFor, focusWindLabel } from '../engine/magic';
 import { t } from '../i18n';
 import { chebyshev } from '../engine/grid';
 
@@ -175,6 +176,25 @@ export const ACTION_GATES: Record<string, (ctx: ActionCtx) => ActionGate> = {
    *  offerte si et seulement si `battleDistraire` a un adversaire à traiter. */
   'distraire-cible-eligible': ({ active, battle }) =>
     distraireFoes(active, battle).length > 0 ? ok : no(t('agate.noDistraireTarget')),
+  /** Focalisation (`LDB 46` — fiche `regles/focalisation-etendue`) : le SORT visé vient des ARGS de
+   *  l'alvéole (le geste secondaire de la case d'un sort), et le verdict porte donc sur CE sort.
+   *  MÊMES prédicats que le dispatcher `battleFocusSpell` (`isArcaneSpell`, `castBlockedBy`) et que
+   *  `resolveFocus` (`focusSkillFor`) : le refus se DIT au point du geste au lieu de partir au
+   *  journal. */
+  'sort-focalisable': ({ active, args }) => {
+    const spell = args?.spellId ? findSpellById(args.spellId) : undefined;
+    if (!spell || !isArcaneSpell(spell)) return no(t('agate.spellNotFocusable'));
+    // Focalisation est une Compétence AVANCÉE (`LDB 09 l.30`), spécialisée par Vent (`LDB 46`) : le
+    // MÊME prédicat que l'offre de l'IA (`combatFlow.ts`) et que `resolveFocus`.
+    if (!focusSkillFor(active, spell)) {
+      const wind = focusWindLabel(spell);
+      return no(wind
+        ? t('agate.noFocusSkillWind', { name: active.label, wind })
+        : t('agate.noFocusSkill', { name: active.label }));
+    }
+    const bloque = castBlockedBy(active, 'focalisation');
+    return bloque ? no(t('agate.focusBlocked', { reason: bloque })) : ok;
+  },
   coop: ({ netMode }) => (netMode && netMode !== 'local' ? ok : no(t('agate.localGame'))),
   'navire-action': ({ active, battle }) =>
     !isVehicle(active) ? no(t('agate.notAVessel')) : battle.acted ? no(t('agate.vesselActionSpent')) : ok,
@@ -292,7 +312,12 @@ export const ACTION_RUN: Record<string, Dispatcher> = {
   battleUseItem: (get, ctx) => { if (ctx.itemUid) get().battleUseItem(ctx.itemUid); },
   battleDefendTotal: (get) => get().battleDefendTotal(),
   battleDisengage: (get) => get().battleDisengage(),
-  battleSelectSpell: (get, ctx) => { if (ctx.spellId) get().battleSelectSpell(ctx.spellId); },
+  /** L'alvéole d'un sort ARME le mode d'incantation sur CE sort (`armed`) : le re-clic le désarme,
+   *  comme toute case à mode armé — annulation gratuite, rien n'est engagé avant le clic-cible. */
+  battleSelectSpell: (get, ctx) => {
+    if (ctx.toggleOff) { get().battleSelectAction(null); return; }
+    if (ctx.spellId) get().battleSelectSpell(ctx.spellId);
+  },
   battleFocusSpell: (get, ctx) => { if (ctx.spellId) get().battleFocusSpell(ctx.spellId); },
   battleDispelSpell: (get, ctx) => { if (ctx.spellId && ctx.casterId) get().battleDispelSpell(ctx.spellId, ctx.casterId); },
   battleGainAdvantage: (get, ctx) => { if (ctx.skillId) get().battleGainAdvantage(ctx.skillId); },

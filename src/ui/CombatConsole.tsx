@@ -6,7 +6,7 @@ import { wastesAction, endTurnArmed } from '../state/endTurnGuard';
 import { advantageCapFor } from '../engine/advantage';
 import { attackWeapon } from '../engine/combat';
 import { availableAttacks, selfManeuversOf, selfManeuverApplicable, previewResourceDelta, STANCE_BLOCK } from '../state/combatFlow';
-import { findSpellById, findSkillById, findActionById, type ActionDef } from '../data/index';
+import { findSpellById, findSkillById, findActionById, ACTIONS, type ActionDef } from '../data/index';
 import { type CodexTarget } from '../engine/ruleRefs';
 import { actionGate, runAction, currentInterludeAction, ACTION_CANDIDATES, type ActionCtx, type ActionRunCtx } from '../state/actionRegistry';
 import { targetingModeLabel, dispellableOnCarrier } from '../state/targetingModes';
@@ -19,6 +19,7 @@ import { canPushback } from '../engine/qualities/dispatch';
 import { hasBattement, hasDistraire, knownShanties } from '../engine/combatFeatures/dispatch';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { PanneauParametre, type ParamOption } from './PanneauParametre';
+import { useLongPress } from './useLongPress';
 import { ReadyRow } from './ReadyRow';
 import { SpectatorChip } from './SpectatorChip';
 import { spectatorSeatOfModal } from './ownership';
@@ -85,6 +86,12 @@ type Cell = {
    *  l'alvéole et liée par `aria-describedby` (idiome `GatedAction` : un `title` seul est invisible à
    *  l'arbre a11y). Le compte de cases ne bouge jamais. */
   gate?: string;
+  /** GESTES SECONDAIRES portés par CETTE alvéole (entrées `surface: 'geste-secondaire'` du registre
+   *  dont l'`hote` est l'entrée de la case et dont la population couvre son candidat) : ils naissent
+   *  du clic droit, de l'appui long, de la touche Menu ou de RB à la manette — jamais d'une case de
+   *  plus (la géométrie de la console ne bouge pas). Un seul geste = dispatch direct s'il est offert,
+   *  refus LU À LA CASE s'il est fermé ; à partir de deux = panneau-paramètre ancré à l'alvéole. */
+  secondaires?: Cell[];
   run?: () => void;
 };
 
@@ -104,11 +111,23 @@ type Cell = {
  *  ouverte par le focus que le clic vient de donner au bouton — recouvrait exactement ce que le
  *  joueur a demandé à voir (sonde du juge vision : le pavé de règle sur la bandelette de refus de
  *  Dissiper). Le ciblage dissous, la règle revient. */
-function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef }: { cell?: Cell; hotkey?: number; advantage?: number; ciblageArme?: boolean;
+function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef, onGeste2e }: { cell?: Cell; hotkey?: number; advantage?: number; ciblageArme?: boolean;
   /** ANCRE de l'alvéole, quand un panneau-paramètre doit NAÎTRE d'elle (`PanneauParametre`, spec
    *  zone 10) : le panneau se pose sur le rect de CE bouton, il ne flotte pas au centre de l'écran. */
   cellRef?: Ref<HTMLButtonElement>;
+  /** GESTE SECONDAIRE de l'alvéole : QUATRE surfaces pour un seul chemin — clic droit, appui long,
+   *  touche Menu (ou Maj+F10) sur l'alvéole focalisée, RB à la manette. L'alvéole n'en décide rien :
+   *  la console dit ce que le geste FAIT (dispatch direct ou panneau), la case ne fait que l'appeler. */
+  onGeste2e?: () => void;
 }) {
+  const secondaires = cell?.secondaires ?? [];
+  // N=1 REFUSÉ : à un seul geste fermé, rien ne s'ouvre — un panneau à un item désactivé n'est pas un
+  // paramètre. Le refus se lit À LA CASE (bande de raison + nom accessible), comme toute case gatée.
+  const refus2e = secondaires.length === 1 && !(secondaires[0].run && !secondaires[0].disabled) ? secondaires[0] : undefined;
+  const geste2e = secondaires.length > 0 && !refus2e ? onGeste2e : undefined;
+  // L'appui long AVALE la salve qu'il précède (`consomme`, lu par `click` ET `contextmenu`) : sans
+  // quoi le doigt lèverait le geste secondaire PUIS l'action primaire de la case.
+  const appuiLong = useLongPress(geste2e);
   if (!cell) {
     return (
       <span className="chip cc-cell cc-empty">
@@ -117,7 +136,16 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
     );
   }
   const inert = !cell.run;
-  const gateId = cell.gate ? `cc-gate-${cell.key}` : undefined;
+  // UNE bande de raison par alvéole (la géométrie de la case est la loi) : celle de la CASE, sinon
+  // celle de son geste secondaire unique refusé, qui se NOMME (« Focaliser : … »).
+  const raison2e = refus2e?.gate;
+  const raison = cell.gate ?? (raison2e ? `${refus2e!.label} : ${raison2e}` : undefined);
+  const gateId = raison ? `cc-gate-${cell.key}` : undefined;
+  const nom = secondaires.length === 0
+    ? cell.label
+    : refus2e && raison2e
+      ? `${cell.label} — ${t('cc.geste2eIndisponible', { geste: refus2e.label, raison: raison2e })}`
+      : `${cell.label} — ${t('cc.geste2eSurfaces', { gestes: secondaires.map((g) => g.label).join(', ') })}`;
   // Touche imprimée SEULEMENT quand elle marche : la case branchée est publiée au pont clavier
   // (`hotbar`), une case de maquette n'a aucune touche — jamais de badge mort. Une case REFUSÉE
   // (gate du registre, ou situation qui la ferme) publie son slot `disabled` : son badge s'éteint
@@ -135,17 +163,39 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
          raison) : sur un libellé long, le chiffre passait sous les mots (grief du juge vision,
          « Immunité Psychologie (2) »). La géométrie de la case, elle, ne bouge pas. */
       data-hotkey={touche ? '' : undefined}
+      /* Les gestes SECONDAIRES de l'alvéole, nommés en structure : le geste est un CHEMIN, pas une
+         case — c'est le seul marqueur par lequel une sonde (ou la garde de surface) le mesure. */
+      data-geste-2e={secondaires.length ? secondaires.map((g) => g.id).join(' ') : undefined}
       className={`chip cc-cell${cell.on ? ' on' : ''}${inert ? ' cc-inert' : ''}`}
       disabled={cell.disabled || inert}
-      aria-label={cell.label}
+      /* Le geste secondaire se DIT dans le nom accessible : un glyphe de coin ne se lit pas au
+         lecteur d'écran, et l'infobulle native est proscrite (charte). */
+      aria-label={nom}
       aria-describedby={gateId}
-      onClick={cell.run}
+      /* La bande de raison au pied est RÉSERVÉE aussi quand c'est le geste secondaire qui est refusé :
+         la case, elle, reste OFFERTE (elle ne s'éteint pas — seul son geste est fermé). */
+      data-refus-2e={raison2e && !cell.gate ? '' : undefined}
+      onClick={() => { if (appuiLong.consomme()) return; cell.run?.(); }}
+      /* Un `contextmenu` qui SUIT un appui long déjà déclenché (le navigateur le dérive de l'appui au
+         doigt) est avalé : sans quoi le geste partirait deux fois — et se rebasculerait à N≥2. */
+      onContextMenu={geste2e ? (e) => { e.preventDefault(); if (appuiLong.consomme()) return; geste2e(); } : undefined}
+      /* Touche MENU (et Maj+F10) : le geste secondaire au clavier, sur l'alvéole focalisée. Le
+         `preventDefault` empêche le navigateur d'en dériver son propre `contextmenu` (double chemin). */
+      onKeyDown={geste2e ? (e) => {
+        if (e.key !== 'ContextMenu' && !(e.shiftKey && e.key === 'F10')) return;
+        e.preventDefault();
+        geste2e();
+      } : undefined}
+      {...(geste2e ? appuiLong.handlers : null)}
     >
       {touche ? <span className="cc-key">{touche}</span> : null}
+      {/* Le geste secondaire SE VOIT : son glyphe gravé au coin de l'alvéole (marqueur structurel,
+          comme la bande de touche et la bande de raison — aucune classe de plus). */}
+      {secondaires.length ? <span data-glyphe-2e="" aria-hidden="true">{secondaires.length > 1 ? `+${secondaires.length}` : secondaires[0].icon}</span> : null}
       <span className="cc-ico">{cell.icon}</span>
       <span className="cc-lbl">{cell.label}</span>
       {/* RAISON d'indisponibilité : VISIBLE dans l'alvéole (idiome `GatedAction`), jamais un title. */}
-      {cell.gate ? <span className="cc-lbl" data-gate="" id={gateId}>{cell.gate}</span> : null}
+      {raison ? <span className="cc-lbl" data-gate="" data-gate-2e={cell.gate ? undefined : ''} id={gateId}>{raison}</span> : null}
       {cell.adv ? (
         <span className="cc-cost" aria-label={`Coût : ${cell.adv} Avantage (${Math.min(advantage, cell.adv)} couvert${Math.min(advantage, cell.adv) > 1 ? 's' : ''})`}>
           {Array.from({ length: cell.adv }, (_, i) => (
@@ -165,6 +215,11 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
 function icon(id: IconIdInput) {
   return <Icon id={id} />;
 }
+
+/** Le MENU NATIF du navigateur n'a rien à faire en plein HUD : le clic droit est le geste secondaire
+ *  de la console, même là où l'alvéole n'en porte aucun (elle ne répond alors rien). Avalé UNE fois,
+ *  à la racine du pont — jamais case par case. */
+const avalerMenuNatif = (e: { preventDefault: () => void }) => e.preventDefault();
 
 /** Le BANDEAU DE PHASE (`.cc-phase`, superposé au parapet) : ce que le pont dit quand le tour n'est
  *  pas ordinaire — pause de Round, interlude de ciblage par la carte, tour d'un autre. Ses actions
@@ -328,12 +383,24 @@ export function CombatConsole() {
   // panneau la relit par l'id de son action. Une 2ᵉ action qui déclarerait `panneau` marcherait sans
   // une ligne de plus ici.
   const ancresPanneau = useRef(new Map<string, HTMLButtonElement>());
+  // … et l'ancre des GESTES SECONDAIRES est celle de l'ALVÉOLE, pas de l'action : une entrée rendue N
+  // fois (un sort par case) a N ancres. La clé est donc celle de la case.
+  const ancres2e = useRef(new Map<string, HTMLButtonElement>());
   const ancreDePanneau = (c?: Cell): Ref<HTMLButtonElement> | undefined => {
-    if (!c || !findActionById(c.id)?.panneau) return undefined;
+    if (!c) return undefined;
+    const parAction = !!findActionById(c.id)?.panneau;
+    const parAlveole = (c.secondaires?.length ?? 0) > 0;
+    if (!parAction && !parAlveole) return undefined;
     const id = c.id;
+    const cle = c.key;
     return (el: HTMLButtonElement | null) => {
-      if (el) ancresPanneau.current.set(id, el);
-      else ancresPanneau.current.delete(id);
+      if (el) {
+        if (parAction) ancresPanneau.current.set(id, el);
+        if (parAlveole) ancres2e.current.set(cle, el);
+      } else {
+        if (parAction) ancresPanneau.current.delete(id);
+        if (parAlveole) ancres2e.current.delete(cle);
+      }
     };
   };
   // INTERLUDE de ciblage en cours : l'ID de son action de sortie, lu au registre depuis le mode de
@@ -353,7 +420,9 @@ export function CombatConsole() {
   const ammoChipRefs = useRef(new Map<string, HTMLButtonElement>());
   const [ammoOuvert, setAmmoOuvert] = useState<string | null>(null);
   const [rechargeOuverte, setRechargeOuverte] = useState(false);
-  useEffect(() => { setAmmoOuvert(null); setRechargeOuverte(false); }, [battle?.turn, battle?.round]);
+  // … et le panneau des GESTES SECONDAIRES d'une alvéole, porté par la CLÉ de cette alvéole.
+  const [geste2eOuvert, setGeste2eOuvert] = useState<string | null>(null);
+  useEffect(() => { setAmmoOuvert(null); setRechargeOuverte(false); setGeste2eOuvert(null); }, [battle?.turn, battle?.round]);
   // …et il appartient à l'ARME qui l'a ouvert : commuter de set change l'arme au poing (`uid` refait
   // par `recomputeLoadout`), donc le chip déclencheur disparaît. Sans cette remise à zéro le panneau
   // survivait à son ancre (panneau fantôme) et gardait le popover de règle en sourdine
@@ -363,7 +432,7 @@ export function CombatConsole() {
     const a = b ? activeCombatant(b) : undefined;
     return a ? `${activeLoadout(a)?.id ?? ''}|${a.weapons.filter((w) => w.type === 'ranged').map((w) => w.uid).join(',')}` : '';
   });
-  useEffect(() => { setAmmoOuvert(null); setRechargeOuverte(false); }, [armeDuPanneau]);
+  useEffect(() => { setAmmoOuvert(null); setRechargeOuverte(false); setGeste2eOuvert(null); }, [armeDuPanneau]);
 
   if (!battle || battle.over) return null;
   // LE BANDEAU DE PHASE, source unique : la pause de Round, ou l'INTERLUDE de ciblage par la carte
@@ -409,7 +478,7 @@ export function CombatConsole() {
   const active = activeCombatant(battle) ?? (phase ? inBattleId(battle, battle.order[0]) : undefined);
   if (!active) {
     return phase ? (
-      <div className="combat-console">
+      <div className="combat-console" onContextMenu={avalerMenuNatif}>
         <PhaseBanner {...phase} />
       </div>
     ) : null;
@@ -459,7 +528,45 @@ export function CombatConsole() {
   /** CE MODE-LÀ est-il armé ? Le mode qu'une case arme est une donnée de SON entrée (`armed`,
    *  `actions.json`) : la console compare `battle.action` à ce que le REGISTRE déclare, elle ne recopie
    *  aucune valeur d'état. Une entrée sans `armed` n'arme rien — elle ne s'allume donc jamais par ici. */
-  const modeArme = (def?: ActionDef) => !!def?.armed && battle.action === def.armed;
+  /*  Une entrée rendue N FOIS (une par candidat — un sort par alvéole) n'allume que l'alvéole du
+   *  candidat ÉLU : le mode seul ne distingue pas deux sorts, la SÉLECTION du combat le fait
+   *  (`selectedSpellId`, écrite par le dispatcher qui arme le mode). Une case sans candidat en args
+   *  s'allume sur le mode, comme avant. */
+  const modeArme = (def?: ActionDef, args?: ActionRunCtx) =>
+    !!def?.armed && battle.action === def.armed && (!args?.spellId || battle.selectedSpellId === args.spellId);
+  /** CANDIDATS portés par une alvéole : les valeurs d'identité de ses ARGS (`spellId`, `weaponUid`,
+   *  `stateId`…). Aucun nom d'argument n'est cité ici — la case dit CE qu'elle paramètre, le registre
+   *  dit qui le couvre. */
+  const candidatsDe = (args?: ActionRunCtx): string[] =>
+    Object.values(args ?? {}).filter((v): v is string => typeof v === 'string');
+  /** L'entrée couvre-t-elle CES candidats ? Sa population est celle qu'elle DÉCLARE (`candidates` du
+   *  registre, sélecteur partagé) — jamais un prédicat recopié : un geste secondaire n'est offert que
+   *  sur les alvéoles dont un candidat appartient à sa liste (id nu, ou objet à `id`/`uid`). */
+  const couvreLesCandidats = (def: ActionDef, candidats: readonly string[]) => {
+    const selecteur = def.candidates ? ACTION_CANDIDATES[def.candidates] : undefined;
+    return !!selecteur && selecteur({ active, battle, netMode: net.mode }).some((c) => {
+      const o = c as { id?: string; uid?: string } | null;
+      const cle = typeof c === 'string' ? c : o?.id ?? o?.uid;
+      return !!cle && candidats.includes(cle);
+    });
+  };
+  /** GESTES SECONDAIRES d'une alvéole — RENDEUR UNIQUE (aucun id d'action ici), appelé pour TOUTE
+   *  case : les entrées `surface: 'geste-secondaire'` dont l'`hote` est l'entrée de la case et dont la
+   *  population couvre l'un de ses candidats. Chacune EST une entrée du registre habillée par
+   *  `cellFor` : même verdict d'offre, même dispatcher, même foyer de règle qu'une alvéole. Un geste
+   *  de plus = une ligne de JSON. Un geste secondaire n'en porte pas lui-même (le registre le refuse
+   *  déjà : `hote` d'un geste secondaire, schéma `actions.ts`).
+   *  `progres` = la progression du Test étendu EN COURS sur ce candidat, portée par le libellé du
+   *  geste qui l'alimente (même patron que l'alvéole Dissiper, qui porte la sienne). */
+  const gestes2e = (def: ActionDef, family: CellFamily, args?: ActionRunCtx, progres?: string): Cell[] => {
+    if (def.surface === 'geste-secondaire') return [];
+    const candidats = candidatsDe(args);
+    if (!candidats.length) return [];
+    return ACTIONS.filter((a) => a.surface === 'geste-secondaire' && a.hote === def.id && couvreLesCandidats(a, candidats))
+      .map((a) => cellFor(a.id, family, { key: `${a.id}-${candidats.join('-')}`, args, label: progres ? `${a.label} (${progres})` : undefined }))
+      .filter((c): c is Cell => !!c);
+  };
+
   /** UNE CASE = UNE ENTRÉE de `src/data/actions.json` : libellé, icône, foyer de règle Codex, verdict
    *  d'offre (`actionGate` → raison VISIBLE) et dispatcher (`runAction`) viennent tous de l'action.
    *  La console ne décide QUE de la pertinence (le site dit quand la case existe), de sa MATIÈRE
@@ -470,6 +577,9 @@ export function CombatConsole() {
     actionId: string,
     family: CellFamily,
     over: { key?: string; label?: string; icon?: ReactNode; rule?: CodexTarget; on?: boolean; off?: boolean; adv?: number; args?: ActionRunCtx;
+      /** PROGRESSION du Test étendu en cours sur le candidat de la case, portée par le libellé du
+       *  geste secondaire qui l'alimente. */
+      progres?: string;
       /** La case OUVRE son panneau-paramètre au lieu de dispatcher : le geste est décidé, il lui
        *  manque un paramètre que la situation borne (quelle arme recharger). L'ouverture n'engage
        *  rien — le commit reste le dispatcher du registre, appelé par le candidat élu. */
@@ -485,7 +595,7 @@ export function CombatConsole() {
     // le dissout — même patron, MÊME CODE, que les modes armés de `battle.action` (Soigner, Dissiper,
     // Bordée) : les deux armements se lisent à la déclaration de l'entrée (`intent` / `armed`).
     const armedIntent = !!def.intent && localIntent?.actionId === def.id;
-    const arme = armedIntent || modeArme(def);
+    const arme = armedIntent || modeArme(def, over.args);
     return {
       key: over.key ?? def.keys?.[0] ?? def.id,
       id: def.id,
@@ -494,6 +604,7 @@ export function CombatConsole() {
       label: over.label ?? def.label,
       rule: over.rule ?? (def.rule && def.ruleCategory ? ({ category: def.ruleCategory, id: def.rule } as CodexTarget) : undefined),
       gate: verdict.ok ? undefined : verdict.reason,
+      secondaires: gestes2e(def, family, over.args, over.progres),
       on: over.on ?? (arme || undefined),
       adv: over.adv,
       disabled: !live || !verdict.ok || !!over.off,
@@ -780,9 +891,18 @@ export function CombatConsole() {
         ? cellFor('maneuver-area', 'attaque', { ...habillage, args: { attackKind: a.kind } })
         : cellFor('select-attack', 'attaque', { ...habillage, args: { attackId: a.id } });
     }),
-    ...spells.map((sp) =>
-      cellFor('cast-spell', 'magie', { key: `sort-${sp.id}`, icon: icon('magic/power'), label: sp.label, rule: { category: 'spells', id: sp.id }, off: busy || frenzied, args: { spellId: sp.id } }),
-    ),
+    // L'alvéole d'un SORT arme l'incantation de CE sort (entrée `cast-spell`, `armed: 'cast'`) et
+    // porte ses GESTES SECONDAIRES (Focaliser : clic droit / appui long / touche Menu / RB). La
+    // progression de la Focalisation en cours se lit sur le geste, comme le cumul de Dissipation sur
+    // la sienne : `active.focus` ne vaut que pour le sort qu'il NOMME.
+    ...spells.map((sp) => {
+      const dr = active.focus?.spell === sp.id ? active.focus.dr : null;
+      const progres = dr != null && sp.cn ? `DR ${dr}/${sp.cn}` : undefined;
+      return cellFor('cast-spell', 'magie', {
+        key: `sort-${sp.id}`, icon: icon('magic/power'), label: sp.label, rule: { category: 'spells', id: sp.id },
+        off: busy || frenzied, args: { spellId: sp.id }, progres,
+      });
+    }),
   ].filter((c): c is Cell => !!c);
   const right = candidates.slice(0, RIGHT_CELLS);
   // PONT CLAVIER de la console (`keybindings.ts`, section hotbar : « 1-9 = n-ième slot VISIBLE,
@@ -795,6 +915,33 @@ export function CombatConsole() {
   hotbar.slots = bridged.map((c) => ({ actionId: c.id, run: c.run!, disabled: !!c.disabled }));
   const keyRank = new Map(bridged.slice(0, PRINTED_KEYS).map((c, i) => [c.key, i + 1]));
   const hotkeyOf = (c?: Cell) => (c ? keyRank.get(c.key) : undefined);
+
+  // ── GESTE SECONDAIRE d'une alvéole (spec §1d + zone 10) ────────────────────────────────────────
+  // N=1 : JAMAIS de panneau. Un seul geste OFFERT = dispatch direct (demander « lequel ? » quand il
+  // n'y a qu'une réponse est un menu, pas un paramètre) ; un seul geste REFUSÉ = rien ne s'ouvre, sa
+  // raison se lit déjà À LA CASE (`ConsoleCell`). Le panneau-paramètre ancré à l'alvéole naît à partir
+  // de DEUX gestes : annulation gratuite, rien n'est engagé.
+  const declencher2e = (c: Cell) => {
+    const gestes = c.secondaires ?? [];
+    if (gestes.length <= 1) {
+      const seul = gestes[0];
+      if (seul?.run && !seul.disabled) seul.run();
+      return;
+    }
+    setGeste2eOuvert((v) => (v === c.key ? null : c.key));
+  };
+  const alveole2e = geste2eOuvert
+    ? [...left, ...quick, ...right].find((c) => c?.key === geste2eOuvert)
+    : undefined;
+  // Chaque candidat EST l'entrée de registre du geste : son verdict d'offre porte SA raison, RENDUE
+  // (jamais un candidat qui disparaît, jamais un clic muet).
+  const options2e: ParamOption[] = (alveole2e?.secondaires ?? []).map((g) => ({
+    key: g.key,
+    label: g.label,
+    meta: g.gate,
+    disabled: !g.run || !!g.disabled,
+    onSelect: g.run,
+  }));
 
   const advCap = advantageCapFor(active);
   const meaningfulLeft = controlled && hasMeaningfulOption(active, battle);
@@ -883,7 +1030,7 @@ export function CombatConsole() {
   return (
     // LE PONT : la bande porteuse. Le bandeau de phase est son seul enfant HORS FLUX (superposé au
     // parapet, `.cc-phase`) — une phase qui va et vient ne déplace donc aucune case.
-    <div className="combat-console">
+    <div className="combat-console" onContextMenu={avalerMenuNatif}>
       {phase && <PhaseBanner {...phase} />}
       {!phase && !controlled && (
         <div className="cc-phase">
@@ -992,7 +1139,7 @@ export function CombatConsole() {
                 </div>
                 <div className="cc-grid cc-grid-left" aria-label="Arsenal">
                   {Array.from({ length: LEFT_CELLS }, (_, i) => (
-                    <ConsoleCell key={i} cell={left[i]} hotkey={hotkeyOf(left[i])} ciblageArme={ciblageArme} cellRef={ancreDePanneau(left[i])} />
+                    <ConsoleCell key={i} cell={left[i]} hotkey={hotkeyOf(left[i])} ciblageArme={ciblageArme} cellRef={ancreDePanneau(left[i])} onGeste2e={left[i] ? () => declencher2e(left[i]!) : undefined} />
                   ))}
                 </div>
               </div>
@@ -1003,7 +1150,7 @@ export function CombatConsole() {
               <span className="cc-bay-head">ACCÈS RAPIDE</span>
               <div className="cc-grid cc-grid-quick" aria-label="Accès rapide">
                 {Array.from({ length: QUICK_CELLS }, (_, i) => (
-                  <ConsoleCell key={i} cell={quick[i]} hotkey={hotkeyOf(quick[i])} ciblageArme={ciblageArme} />
+                  <ConsoleCell key={i} cell={quick[i]} hotkey={hotkeyOf(quick[i])} ciblageArme={ciblageArme} cellRef={ancreDePanneau(quick[i])} onGeste2e={quick[i] ? () => declencher2e(quick[i]!) : undefined} />
                 ))}
               </div>
             </div>
@@ -1074,6 +1221,7 @@ export function CombatConsole() {
                 advantage={active.advantage}
                 ciblageArme={ciblageArme}
                 cellRef={ancreDePanneau(right[i])}
+                onGeste2e={right[i] ? () => declencher2e(right[i]!) : undefined}
               />
             ))}
           </div>
@@ -1131,6 +1279,16 @@ export function CombatConsole() {
           intitule="Quelle arme recharger ?"
           options={rechargeOptions}
           onClose={() => setRechargeOuverte(false)}
+        />
+      )}
+      {/* … et celui des GESTES SECONDAIRES naît de l'alvéole qui les porte (`ancres2e`, une par
+          case) : il n'a lieu d'être qu'à partir de DEUX gestes. */}
+      {alveole2e && (
+        <PanneauParametre
+          anchor={ancres2e.current.get(alveole2e.key) ?? null}
+          intitule={`Autres gestes : ${alveole2e.label}`}
+          options={options2e}
+          onClose={() => setGeste2eOuvert(null)}
         />
       )}
     </div>

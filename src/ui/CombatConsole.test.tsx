@@ -4,7 +4,7 @@
  * (rack d'alvéoles réservées) et les deux gouttières sont DESSINÉES quoi qu'il arrive. Montée pour de
  * vrai (`createRoot`/`act`) sur le VRAI store et de VRAIS héros (`createHero`) — aucun module mocké.
  */
-import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame, movementRemaining, type BattleState } from '../state/store';
@@ -2544,6 +2544,10 @@ describe('CombatConsole — contrat SURFACE ⇄ RENDEUR', () => {
     'pastille-etat': '.cc-arch',
     'pastille-entite': null,
     frise: null,
+    // Un GESTE SECONDAIRE n'a AUCUNE alvéole propre : il vit sur celle de son hôte (clic droit,
+    // appui long, touche Menu, RB) et ne pose donc jamais de `[data-action]`. Son rendeur RÉEL est
+    // mesuré à part, plus bas (l'alvéole hôte porte `data-geste-2e`).
+    'geste-secondaire': null,
   };
   const ANCRES = [...new Set(Object.values(RENDEUR).filter((s): s is string => !!s))];
 
@@ -2720,5 +2724,230 @@ describe('CombatConsole — tour d’un siège distant : exactement UNE puce de 
     coop(1, { pendingFall: { actorId: 'h2', from: { x: 1, y: 1 }, to: { x: 1, y: 3 }, height: 2 } });
     expect(useGame.getState().pendingFall, 'témoin : la modale distante doit être ouverte').not.toBeNull();
     expect(puces(), 'deux puces (arbitre + bande) ou aucune').toBe(1);
+  });
+});
+
+/**
+ * GESTE SECONDAIRE D'UNE ALVÉOLE (#1411 P2-B) — Focaliser n'est plus une case : c'est le geste
+ * secondaire de l'alvéole du SORT (`surface: 'geste-secondaire'`, `hote: 'cast-spell'`), atteint au
+ * clic droit, à l'appui long, à la touche Menu et à RB. Le rendeur est GÉNÉRIQUE : la console ne
+ * nomme aucun id — elle apparie `hote` et population de candidats. Un geste de plus = une ligne de
+ * JSON, ce que mesure ici une entrée FABRIQUÉE.
+ */
+describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () => {
+  const panneau = () => document.body.querySelector('[data-panneau-parametre]');
+  const candidats = () => [...(panneau()?.querySelectorAll('button') ?? [])];
+  const alveole = (spellId: string) => host.querySelector(`[data-cell="sort-${spellId}"]`) as HTMLButtonElement;
+
+  /** Lanceur de sorts NU de Compétences (les alvéoles d'Avantage mangeraient les 12 cases de la
+   *  grille avant les sorts) — SAUF Focalisation, Compétence AVANCÉE sans laquelle aucun Test de
+   *  Focalisation n'est possible (`LDB 09 l.30`) : `focalisation: false` fait le lanceur qui ne l'a pas. */
+  function mage(spells: string[], opts: { focalisation?: boolean } = {}) {
+    const h = hero('h1', 'Magister');
+    h.skills = opts.focalisation === false ? [] : [{ skillId: 'focalisation', characteristic: 'force-mentale', advances: 10 }];
+    h.talents = [];
+    h.spells = spells;
+    return h;
+  }
+
+  afterEach(() => {
+    act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+    useGame.setState({ battle: null, pendingFocus: null });
+  });
+
+  it('un sort ARCANE : l’alvéole porte le geste, le clic droit le DISPATCHE (N=1 → aucun panneau)', () => {
+    monter(mage(['carreau']));
+    const cellule = alveole('carreau');
+    expect(cellule, 'témoin : l’alvéole du sort est bien rendue').toBeTruthy();
+    expect(cellule.getAttribute('data-geste-2e'), 'le geste secondaire est nommé en structure').toBe('focus-spell');
+    act(() => { cellule.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
+    expect(useGame.getState().pendingFocus?.spellId, 'le clic droit ouvre la Focalisation du sort de SON alvéole').toBe('carreau');
+    expect(panneau(), 'un seul geste offert ne se choisit pas : dispatch direct').toBeNull();
+  });
+
+  it('la touche MENU (et Maj+F10) prend le MÊME chemin que le clic droit', () => {
+    monter(mage(['carreau']));
+    act(() => { alveole('carreau').dispatchEvent(new KeyboardEvent('keydown', { key: 'ContextMenu', bubbles: true })); });
+    expect(useGame.getState().pendingFocus?.spellId).toBe('carreau');
+    act(() => { useGame.setState({ pendingFocus: null }); });
+    act(() => { alveole('carreau').dispatchEvent(new KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true })); });
+    expect(useGame.getState().pendingFocus?.spellId).toBe('carreau');
+  });
+
+  it('l’APPUI LONG déclenche le geste, et le clic qui le suit est AVALÉ (pas d’incantation armée)', () => {
+    monter(mage(['carreau']));
+    const cellule = alveole('carreau');
+    vi.useFakeTimers();
+    try {
+      act(() => { cellule.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 })); });
+      act(() => { vi.advanceTimersByTime(600); });
+      expect(useGame.getState().pendingFocus?.spellId, 'l’appui tenu ouvre la Focalisation').toBe('carreau');
+      act(() => { cellule.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(useGame.getState().battle!.action, 'le clic de relâchement ne doit PAS armer l’incantation').toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('une PRIÈRE : N=1 REFUSÉ — aucun panneau, la raison se lit À LA CASE, rien au journal', () => {
+    monter(mage(['benediction-de-chance']));
+    const cellule = alveole('benediction-de-chance');
+    const journal = useGame.getState().battle!.log.length;
+    const bande = cellule.querySelector('[data-gate-2e]') as HTMLElement;
+    expect(bande, 'le refus du geste unique est ÉCRIT dans l’alvéole').toBeTruthy();
+    expect(bande.textContent).toContain(t('agate.spellNotFocusable'));
+    expect(bande.textContent, 'la bande NOMME le geste refusé').toContain('Focaliser');
+    expect(cellule.getAttribute('aria-describedby'), 'la raison est liée au nom accessible').toBe(bande.id);
+    expect(cellule.getAttribute('aria-label'), 'le nom accessible ne promet pas un geste qu’il refuse')
+      .toBe(`Bénédiction de Chance — ${t('cc.geste2eIndisponible', { geste: 'Focaliser', raison: t('agate.spellNotFocusable') })}`);
+    expect(cellule.disabled, 'la CASE reste offerte : c’est son geste secondaire qui est fermé').toBe(false);
+    act(() => { cellule.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
+    expect(panneau(), 'un panneau à UN item désactivé n’est pas un paramètre : rien ne s’ouvre').toBeNull();
+    expect(useGame.getState().pendingFocus, 'une Prière ne se focalise pas').toBeNull();
+    expect(useGame.getState().battle!.log.length, 'un refus se DIT à l’écran, il ne part pas au journal').toBe(journal);
+    act(() => { cellule.dispatchEvent(new KeyboardEvent('keydown', { key: 'ContextMenu', bubbles: true })); });
+    expect(panneau(), 'la touche Menu n’ouvre rien non plus').toBeNull();
+  });
+
+  /** `LDB 09 l.30` (verbatim, `docs/raw/competences.md`) : « Vous ne pouvez effectuer de Test de
+   *  Compétence Avancée que si vous y avez ajouté au moins une Augmentation. » Focalisation EST
+   *  Avancée (`skills.json`, type « avancée ») — le geste doit se fermer AVANT le journal. */
+  it('SANS la Compétence Focalisation : le geste est refusé à la CASE, et le journal reste muet', () => {
+    monter(mage(['carreau'], { focalisation: false }));
+    const cellule = alveole('carreau');
+    const journal = useGame.getState().battle!.log.length;
+    const bande = cellule.querySelector('[data-gate-2e]') as HTMLElement;
+    expect(bande, 'le refus est ÉCRIT dans l’alvéole').toBeTruthy();
+    expect(bande.textContent).toContain(t('agate.noFocusSkill', { name: 'Magister' }));
+    act(() => { cellule.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
+    expect(useGame.getState().pendingFocus, 'aucune modale de Focalisation ne s’ouvre').toBeNull();
+    expect(panneau(), 'rien ne s’ouvre : le geste unique est fermé').toBeNull();
+    expect(useGame.getState().battle!.log.length, 'le refus ne part pas au journal').toBe(journal);
+    // TÉMOIN : la MÊME alvéole, chez un lanceur qui a la Compétence, dispatche.
+    act(() => { useGame.setState({ battle: null }); });
+    monter(mage(['carreau']));
+    act(() => { alveole('carreau').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
+    expect(useGame.getState().pendingFocus?.spellId).toBe('carreau');
+  });
+
+  it('MODE ARMÉ discriminé : le sort ÉLU allume SON alvéole, pas celle du voisin', () => {
+    monter(mage(['carreau', 'bouclier-magique']));
+    act(() => { alveole('carreau').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(useGame.getState().battle!.selectedSpellId, 'témoin : le clic arme bien l’incantation de CE sort').toBe('carreau');
+    expect(alveole('carreau').classList.contains('on'), 'le sort élu s’allume').toBe(true);
+    expect(alveole('bouclier-magique').classList.contains('on'), 'le mode `cast` seul n’allume pas les autres sorts').toBe(false);
+  });
+
+  it('DEUX gestes secondaires sur le même hôte (entrée FABRIQUÉE) : panneau ancré, 2 candidats, Échap gratuit', () => {
+    const fabrique: ActionDef = {
+      id: 'test-geste-2e-fabrique', label: 'Geste fabriqué', icon: 'flag/focus',
+      surface: 'geste-secondaire', hote: 'cast-spell', gate: 'toujours',
+      run: 'battleFocusSpell', candidates: 'sorts-du-heros', cost: 'gratuit',
+    };
+    ACTIONS.push(fabrique);
+    try {
+      monter(mage(['carreau']));
+      const cellule = alveole('carreau');
+      expect(cellule.getAttribute('data-geste-2e'), 'les DEUX gestes se lisent sur l’alvéole').toBe('focus-spell test-geste-2e-fabrique');
+      expect(cellule.querySelector('[data-glyphe-2e]')!.textContent, 'à N≥2 le coin porte le COMPTE, pas le glyphe du premier').toBe('+2');
+      expect(cellule.getAttribute('aria-label'), 'les QUATRE surfaces se disent en UNE phrase (source i18n unique)')
+        .toBe(`Carreau — ${t('cc.geste2eSurfaces', { gestes: 'Focaliser, Geste fabriqué' })}`);
+      act(() => { cellule.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
+      expect(useGame.getState().pendingFocus, 'à plusieurs gestes, rien n’est engagé avant le choix').toBeNull();
+      expect(candidats().length, 'un candidat par geste offert').toBe(2);
+      act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+      expect(panneau(), 'Échap referme sans rien engager').toBeNull();
+      expect(useGame.getState().pendingFocus).toBeNull();
+    } finally {
+      ACTIONS.splice(ACTIONS.indexOf(fabrique), 1);
+    }
+  });
+
+  it('SURFACE ⇄ RENDEUR : le geste secondaire n’a pas d’alvéole propre — son rendeur est celle de son HÔTE', () => {
+    monter(mage(['carreau']));
+    expect(findActionById('focus-spell')!.surface).toBe('geste-secondaire');
+    expect(findActionById('focus-spell')!.hote).toBe('cast-spell');
+    expect(host.querySelector('[data-action="focus-spell"]'), 'aucune case propre : le geste n’est pas une alvéole').toBeNull();
+    const porteur = host.querySelector('[data-action="cast-spell"][data-geste-2e~="focus-spell"]');
+    expect(porteur, 'l’alvéole de l’hôte PORTE le geste').toBeTruthy();
+  });
+
+  it('la PROGRESSION du Test étendu se lit sur le geste (DR cumulé / NI du sort)', () => {
+    const h = mage(['carreau']);
+    h.focus = { spell: 'carreau', dr: 2 };
+    monter(h);
+    expect(alveole('carreau').getAttribute('aria-label')).toContain('Focaliser (DR 2/4)');
+  });
+
+  it('APPUI LONG puis `contextmenu` NATIF : UN seul déclenchement (le doigt ne bascule pas le panneau)', () => {
+    const fabrique: ActionDef = {
+      id: 'test-geste-2e-fabrique', label: 'Geste fabriqué', icon: 'flag/focus',
+      surface: 'geste-secondaire', hote: 'cast-spell', gate: 'toujours',
+      run: 'battleFocusSpell', candidates: 'sorts-du-heros', cost: 'gratuit',
+    };
+    ACTIONS.push(fabrique);
+    vi.useFakeTimers();
+    try {
+      monter(mage(['carreau']));
+      const cellule = alveole('carreau');
+      act(() => { cellule.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 })); });
+      act(() => { vi.advanceTimersByTime(600); });
+      expect(panneau(), 'témoin : l’appui tenu ouvre le panneau des deux gestes').toBeTruthy();
+      // Le navigateur DÉRIVE un `contextmenu` de l’appui long au doigt : il est AVALÉ, sinon la
+      // bascule refermerait ce que l’appui vient d’ouvrir.
+      act(() => { cellule.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); });
+      expect(panneau(), 'le contextmenu qui SUIT l’appui long ne rejoue pas le geste').toBeTruthy();
+      act(() => { cellule.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(useGame.getState().battle!.action, 'le clic de relâchement reste avalé lui aussi').toBeNull();
+    } finally {
+      vi.useRealTimers();
+      ACTIONS.splice(ACTIONS.indexOf(fabrique), 1);
+    }
+  });
+
+  it('CLIC DROIT sur une case SANS geste secondaire : aucun menu natif en plein HUD', () => {
+    monter(mage(['carreau']));
+    const sansGeste = host.querySelector('[data-action="course"]') as HTMLButtonElement;
+    expect(sansGeste?.getAttribute('data-geste-2e'), 'témoin : cette case ne porte aucun geste secondaire').toBeNull();
+    const surCase = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    act(() => { sansGeste.dispatchEvent(surCase); });
+    expect(surCase.defaultPrevented, 'la racine de la console avale le menu natif').toBe(true);
+    const surPont = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    act(() => { host.querySelector('.combat-console')!.dispatchEvent(surPont); });
+    expect(surPont.defaultPrevented, 'y compris hors alvéole (le pont lui-même)').toBe(true);
+  });
+
+  /** RENDEUR GÉNÉRIQUE (grief G2) : le calcul des gestes secondaires vit dans `cellFor`, pas au site
+   *  des sorts — une entrée déclarée sur un AUTRE hôte est rendue SANS une ligne de code. */
+  it('un geste secondaire déclaré sur `reload` (entrée FABRIQUÉE) est rendu par l’alvéole de SON hôte', () => {
+    const objet = (id: string, uid: string) => Object.assign(itemFromTrappingById(id)!, { uid }) as ItemInstance;
+    const tireur = () => {
+      const h = hero('h1', 'Gunnar');
+      h.conditions = [];
+      h.skills = [];
+      h.talents = [];
+      h.items = [objet('pistolet', 'i-p1')];
+      h.loadouts = [{ id: 'lo-p', main: 'i-p1' }];
+      h.activeLoadoutId = 'lo-p';
+      recomputeLoadout(h);
+      return h;
+    };
+    const fabrique: ActionDef = {
+      id: 'test-geste-2e-reload', label: 'Geste de recharge', icon: 'flag/focus',
+      surface: 'geste-secondaire', hote: 'reload', gate: 'toujours',
+      run: 'battleReload', candidates: 'armes-a-distance', cost: 'gratuit',
+    };
+    monter(tireur());
+    expect(host.querySelector('[data-action="reload"]'), 'témoin : l’alvéole hôte est bien rendue').toBeTruthy();
+    expect(host.querySelector('[data-action="reload"]')!.getAttribute('data-geste-2e'), 'témoin : aucun geste avant l’entrée').toBeNull();
+    ACTIONS.push(fabrique);
+    try {
+      monter(tireur());
+      const hote = host.querySelector('[data-action="reload"]') as HTMLButtonElement;
+      expect(hote.getAttribute('data-geste-2e'), 'l’hôte porte le geste : le rendeur ne connaît AUCUN id').toBe('test-geste-2e-reload');
+      expect(hote.getAttribute('aria-label')).toContain('Geste de recharge');
+    } finally {
+      ACTIONS.splice(ACTIONS.indexOf(fabrique), 1);
+    }
   });
 });

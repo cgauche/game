@@ -35,10 +35,15 @@ export const file = 'actions.json';
  *   • `pastille-etat` → la PASTILLE de l'État concerné dans la niche d'États (`StateChips`, slot
  *     `action`) : la réaction que cet État ouvre vit sur LUI (arbitrage HUD 2026-08-16) ;
  *   • `pastille-entite` → la pastille de l'ENTITÉ sur le champ (zone 4), hors console ;
- *   • `frise` → la frise d'initiative (`InitiativeStrip`), hors console. */
+ *   • `frise` → la frise d'initiative (`InitiativeStrip`), hors console ;
+ *   • `geste-secondaire` → AUCUNE alvéole propre : l'action naît du GESTE SECONDAIRE de l'alvéole
+ *     d'une AUTRE entrée, qu'elle nomme (`hote`) — clic droit, appui long, touche Menu, RB manette.
+ *     Elle exige donc `hote` et `candidates` (la population qu'elle couvre : le geste n'est offert
+ *     que sur les alvéoles dont le candidat en fait partie). Un seul geste offert = dispatch direct,
+ *     plusieurs = panneau-paramètre ancré à l'alvéole hôte (`CombatConsole`). */
 const surfaceSchema = z.enum([
   'deduite-du-set', 'geste-d-etat', 'grille', 'gouttiere-arche', 'selecteur-de-sets', 'coin-de-tour',
-  'bandeau-de-phase', 'interlude', 'pastille-etat', 'pastille-entite', 'frise',
+  'bandeau-de-phase', 'interlude', 'pastille-etat', 'pastille-entite', 'frise', 'geste-secondaire',
 ]);
 
 /** Ce que l'acte consomme dans l'économie du Tour. */
@@ -99,6 +104,9 @@ export const schema = z.array(
      *  (« Renoncer », « Retour », « Annuler »). C'est un rôle, PAS un style : la proéminence du
      *  bouton s'en DÉDUIT au rendu (même doctrine que `RollShell`), elle ne se déclare pas ici. */
     role: z.enum(['valide', 'renonce']).optional(),
+    /** ENTRÉE HÔTE d'un geste secondaire (`surface: 'geste-secondaire'` uniquement, requis) : l'id de
+     *  l'action dont l'alvéole porte le geste. Déclaré ICI pour qu'aucune console ne teste un id. */
+    hote: z.string().optional(),
     /** L'action FAIT NAÎTRE un panneau-paramètre (`PanneauParametre`) de SON alvéole : la surface qui
      *  la rend y pose l'ANCRE du panneau. Déclaré ICI pour qu'aucune console ne teste un id. */
     panneau: z.boolean().optional(),
@@ -134,5 +142,22 @@ export const schema = z.array(
     if (a.role && a.surface !== 'interlude') {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : role hors d’une action d’interlude (aucun bandeau de phase ne la rend)` });
     }
+    if (a.surface === 'geste-secondaire' && (!a.hote || !a.candidates)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : geste secondaire sans entrée hôte (hote) ou sans population couverte (candidates)` });
+    }
+    if (a.hote && a.surface !== 'geste-secondaire') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : hote hors d’un geste secondaire (aucune alvéole ne le porterait)` });
+    }
   }),
-);
+).superRefine((actions, ctx) => {
+  const par = new Map(actions.map((a) => [a.id, a]));
+  for (const a of actions) {
+    if (!a.hote) continue;
+    const hote = par.get(a.hote);
+    if (!hote) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : hote « ${a.hote} » absent du registre` });
+    } else if (hote.surface === 'geste-secondaire') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : hote « ${a.hote} » est lui-même un geste secondaire (aucune alvéole au bout)` });
+    }
+  }
+});

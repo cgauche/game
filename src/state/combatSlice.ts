@@ -3475,10 +3475,9 @@ export function createCombatSlice(get: Get, set: Set) {
       // On ne laisse PAS le joueur focaliser pendant le tour d'un acteur auto-piloté.
       if (!active || battle.acted || (!controlsCombatant(get(), active) && !aiDriven(get(), active))) return;
       const spell = findSpellById(spellId);
-      if (!spell || !isArcaneSpell(spell)) {
-        get().log(t('cs.cannotFocus'));
-        return;
-      }
+      // Sort non focalisable : le REFUS est rendu au point du geste par le gate `sort-focalisable`
+      // (registre des actions) — le dispatcher ne garde que sa garde de validité.
+      if (!spell || !isArcaneSpell(spell)) return;
       // Contrecoup bloquant la Focalisation (LDB 46/40), s'il y en a un d'actif.
       const fblocked = castBlockedBy(active, 'focalisation');
       if (fblocked) {

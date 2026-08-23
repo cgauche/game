@@ -2312,6 +2312,16 @@ export const fr = {
   'agate.notAVessel': 'pas un navire',
   'agate.vesselActionSpent': 'Action du navire déjà dépensée',
   'agate.advantageCapped': 'Avantage au plafond ({n})',
+  'agate.spellNotFocusable': 'ce Sort ne se focalise pas',
+  'agate.focusBlocked': 'Focalisation bloquée : {reason}',
+  // Focalisation est une Compétence AVANCÉE (`LDB 09 l.30`), spécialisée par Vent (`LDB 46`).
+  'agate.noFocusSkill': '{name} ne maîtrise pas Focalisation',
+  'agate.noFocusSkillWind': '{name} ne maîtrise pas Focalisation ({wind})',
+
+  // GESTE SECONDAIRE d'une alvéole de la console (spec HUD §1d) — les QUATRE surfaces qui l'ouvrent
+  // se disent en UNE phrase, ici : le nom accessible de l'alvéole la compose, aucune recopie.
+  'cc.geste2eSurfaces': 'geste secondaire (clic droit, appui long, touche Menu, RB à la manette) : {gestes}',
+  'cc.geste2eIndisponible': 'geste secondaire : {geste} — indisponible : {raison}',
 
   // Postures de tir : le refus vient du prédicat partagé `STANCE_BLOCK` (`state/combatFlow.ts`), lu
   // par le gate du registre, le store et la fenêtre de jet. Même famille de texte JOUEUR que ci-dessus

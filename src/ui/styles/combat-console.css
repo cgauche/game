@@ -305,6 +305,11 @@
   color: var(--cc-cell-ink);
   cursor: pointer;
   text-align: center;
+  /* APPUI LONG au doigt (geste secondaire) : ni double-tap-zoom, ni loupe de sélection, ni
+     callout iOS ne doivent naître de l'appui tenu sur une alvéole. */
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  user-select: none;
   clip-path: polygon(
     var(--cc-notch) 0, 100% 0, 100% calc(100% - var(--cc-notch)),
     calc(100% - var(--cc-notch)) 100%, 0 100%, 0 var(--cc-notch)
@@ -422,6 +427,11 @@
 .cc-cell[data-hotkey] {
   padding-bottom: 10px;
 }
+/* Case OFFERTE dont le seul GESTE SECONDAIRE est refusé : même bande de raison réservée au pied, sans
+   éteindre la case — c'est le geste qui est fermé, pas elle. */
+.cc-cell[data-refus-2e] {
+  padding-bottom: 11px;
+}
 /* Touche IMPRIMÉE dans la case (spec zone 8) — coin bas-gauche, gravure de tôle. */
 .cc-key {
   position: absolute;
@@ -433,6 +443,28 @@
 }
 .cc-cell.cc-empty .cc-key {
   color: var(--cc-void-ink);
+}
+/* GESTE SECONDAIRE de la case : le glyphe du geste, gravé au coin haut-droit — l'affordance se VOIT
+   (clic droit, appui long, touche Menu, RB), et le nom accessible de l'alvéole la DIT. Marqueur de
+   coin : la géométrie de la case ne bouge pas. */
+.cc-cell [data-glyphe-2e] {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 9px;
+  height: 9px;
+  /* À DEUX gestes ou plus, le coin porte leur COMPTE (« +2 ») : un glyphe seul mentirait sur ce que
+     l'alvéole offre. Même gravure que la touche imprimée. */
+  font: 700 7px ui-monospace, monospace;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.75;
+  color: var(--cc-cell-key);
+}
+.cc-cell [data-glyphe-2e] svg {
+  width: 100%;
+  height: 100%;
 }
 /* GLYPHE de la case : sa boîte vaut `--cc-ico`, une FRACTION de la hauteur d'alvéole — l'icône suit donc
    la case à toute largeur, jamais une taille figée au call-site (arbitrage « icones disproportionnés »).

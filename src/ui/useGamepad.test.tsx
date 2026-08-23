@@ -13,7 +13,7 @@ import { emptyScene } from '../state/scene';
 import { STEP_MS } from '../geometry/walk';
 import { resetStageWalk } from '../state/stageWalk';
 import { getStageYaw, resetStageYaw } from '../state/stageYaw';
-import { useGamepad } from './useGamepad';
+import { useGamepad, padButton } from './useGamepad';
 
 const DPAD = { up: 12, down: 13, left: 14, right: 15 } as const;
 const BOUTON = { LB: 4, RB: 5, LT: 6, RT: 7 } as const;
@@ -157,5 +157,39 @@ describe('manette — gestes MAINTENUS armés ET relâchés par la boucle', () =
     pad.presser(DPAD.up); // vrai nouveau front
     h.jouer(2);
     expect(useGame.getState().partyPos, 'après un vrai front, la marche doit repartir').not.toEqual(arret);
+  });
+});
+
+/**
+ * GESTE SECONDAIRE À LA MANETTE (#1411 P2-B) — l'alvéole focalisée de la console écoute
+ * `contextmenu` (clic droit, touche Menu) : RB, qui n'a AUCUN geste en contexte menu, y émet
+ * exactement cet événement. Aucun chemin parallèle, et rien de volé — A reste le geste primaire.
+ */
+describe('manette — RB en contexte MENU = geste secondaire de l’alvéole focalisée', () => {
+  let pont: HTMLDivElement;
+  let bouton: HTMLButtonElement;
+  beforeEach(() => {
+    pont = document.createElement('div');
+    pont.className = 'combat-console';
+    bouton = document.createElement('button');
+    pont.appendChild(bouton);
+    document.body.appendChild(pont);
+  });
+  afterEach(() => { pont.remove(); });
+
+  it('RB émet `contextmenu` sur l’alvéole qui a le focus', () => {
+    bouton.focus();
+    const vus: string[] = [];
+    bouton.addEventListener('contextmenu', () => vus.push('contextmenu'));
+    padButton('RB');
+    expect(vus, 'RB doit prendre le MÊME chemin que le clic droit').toEqual(['contextmenu']);
+  });
+
+  it('hors console (contexte CARTE), RB ne l’émet pas : il reste la cible suivante', () => {
+    bouton.blur();
+    const vus: string[] = [];
+    bouton.addEventListener('contextmenu', () => vus.push('contextmenu'));
+    padButton('RB');
+    expect(vus, 'aucun focus dans la console : RB pilote la carte').toEqual([]);
   });
 });

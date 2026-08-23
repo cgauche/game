@@ -110,8 +110,12 @@ export function padButton(name: PadButton): void {
     case 'LB': // carte : cible précédente (combat) / pas latéral gauche (POV) — gardes `when` disjointes
       if (ctx === 'map') { runBindingById('target-prev', get); runBindingById('pov-strafe-l', get); }
       break;
-    case 'RB': // carte : cible suivante (combat) / pas latéral droit (POV)
+    case 'RB': // carte : cible suivante (combat) / pas latéral droit (POV) ; menu : GESTE SECONDAIRE
+      // de l'alvéole focalisée — le MÊME chemin que le clic droit et la touche Menu (l'alvéole écoute
+      // `contextmenu`), sans rien voler : RB n'a aucun geste en contexte menu. A reste le geste
+      // primaire — l'y doubler d'un appui long ferait attendre le seuil à TOUT bouton de la console.
       if (ctx === 'map') { runBindingById('target-next', get); runBindingById('pov-strafe-r', get); }
+      else if (ctx === 'menu') ae?.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
       break;
     case 'LT': // caméra : tourner à gauche (carte et menu)
       if (ctx !== 'modal') runBindingById('cam-left', get);

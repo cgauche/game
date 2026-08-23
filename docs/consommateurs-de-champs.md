@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:3221` |
-| `spec` | 1 | `src/data/index.ts:3222` |
+| `id` | 3 | `src/data/index.ts:3224` |
+| `spec` | 1 | `src/data/index.ts:3225` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3233` |
+| `id` | 1 | `src/data/index.ts:3236` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3233` |
+| `value` | 2 | `src/data/index.ts:3236` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3279` |
+| `id` | 4 | `src/data/index.ts:3282` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3280` |
-| `qualities` | 2 | `src/data/index.ts:3283` |
-| `qualityChoice` | 2 | `src/data/index.ts:3281` |
-| `text` | 1 | `src/data/index.ts:3274` |
-| `vehicleId` | 2 | `src/data/index.ts:3276` |
+| `count` | 3 | `src/data/index.ts:3283` |
+| `qualities` | 2 | `src/data/index.ts:3286` |
+| `qualityChoice` | 2 | `src/data/index.ts:3284` |
+| `text` | 1 | `src/data/index.ts:3277` |
+| `vehicleId` | 2 | `src/data/index.ts:3279` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3278` |
-| `choice` | 3 | `src/data/index.ts:3271` |
-| `wildcard` | 1 | `src/data/index.ts:3272` |
+| `creatureId` | 2 | `src/data/index.ts:3281` |
+| `choice` | 3 | `src/data/index.ts:3274` |
+| `wildcard` | 1 | `src/data/index.ts:3275` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:3253` |
-| `wildcard` | 5 | `src/data/index.ts:3255` |
-| `specOptions` | 3 | `src/data/index.ts:3254` |
-| `choice` | 4 | `src/data/index.ts:3257` |
-| `random` | 2 | `src/data/index.ts:3258` |
+| `ref` | 4 | `src/data/index.ts:3256` |
+| `wildcard` | 5 | `src/data/index.ts:3258` |
+| `specOptions` | 3 | `src/data/index.ts:3257` |
+| `choice` | 4 | `src/data/index.ts:3260` |
+| `random` | 2 | `src/data/index.ts:3261` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 

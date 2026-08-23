@@ -257,27 +257,14 @@
     ]
   },
   {
-    "id": "cast",
-    "label": "Incanter",
-    "icon": "action/cast",
-    "surface": "grille",
-    "gate": "action-libre-hors-frenesie",
-    "run": "battleSelectAction",
-    "armed": "cast",
-    "mode": "cast",
-    "candidates": "sorts-du-heros",
-    "cost": "action",
-    "keys": [
-      "cast"
-    ]
-  },
-  {
     "id": "cast-spell",
     "label": "Lancer ce sort",
     "icon": "action/cast",
     "surface": "grille",
     "gate": "action-libre-hors-frenesie",
     "run": "battleSelectSpell",
+    "armed": "cast",
+    "mode": "cast",
     "candidates": "sorts-du-heros",
     "cost": "action",
     "keys": [
@@ -288,8 +275,12 @@
     "id": "focus-spell",
     "label": "Focaliser",
     "icon": "flag/focus",
-    "surface": "grille",
-    "gate": "action-libre-hors-frenesie",
+    "surface": "geste-secondaire",
+    "hote": "cast-spell",
+    "gate": [
+      "action-libre-hors-frenesie",
+      "sort-focalisable"
+    ],
     "run": "battleFocusSpell",
     "candidates": "sorts-du-heros",
     "cost": "action",

@@ -281,7 +281,8 @@ export interface ActionDef {
   icon: string;
   surface:
     | 'deduite-du-set' | 'geste-d-etat' | 'grille' | 'gouttiere-arche' | 'selecteur-de-sets'
-    | 'coin-de-tour' | 'bandeau-de-phase' | 'interlude' | 'pastille-etat' | 'pastille-entite' | 'frise';
+    | 'coin-de-tour' | 'bandeau-de-phase' | 'interlude' | 'pastille-etat' | 'pastille-entite' | 'frise'
+    | 'geste-secondaire';
   /** Un id de prédicat, ou plusieurs — composés par l'ET séquentiel d'`actionGate`. */
   gate: string | string[];
   candidates?: string;
@@ -307,6 +308,8 @@ export interface ActionDef {
   role?: 'valide' | 'renonce';
   /** L'action fait naître un panneau-paramètre de SON alvéole : la surface y pose l'ancre. */
   panneau?: boolean;
+  /** Entrée HÔTE d'un `surface: 'geste-secondaire'` : l'alvéole de CETTE action porte le geste. */
+  hote?: string;
 }
 export const ACTIONS = actionsJson as ActionDef[];
 /** Action par id STABLE (jamais par libellé). */

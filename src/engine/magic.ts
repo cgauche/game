@@ -269,6 +269,14 @@ export function focusSpecOf(spell: SpellLike): string | undefined {
   return spell.domainId ?? undefined;
 }
 
+/** VENT à AFFICHER pour la Focalisation de ce sort (id de domaine « bete » → « Ghur ») — source
+ *  UNIQUE du libellé, partagée par le refus de `resolveFocus` et par la gate `sort-focalisable`
+ *  (`state/actionRegistry.ts`). Aucun Vent pour un Sort d'Arcane commun. */
+export function focusWindLabel(spell: SpellLike): string | undefined {
+  const spec = focusSpecOf(spell);
+  return spec ? (findDomainById(spec)?.wind ?? findDomainById(spec)?.label ?? spec) : undefined;
+}
+
 /** Compétence Focalisation utilisable pour CE sort : spécialisation du Vent
  *  correspondante (LDB 46 — Focalisation est spécialisée par Domaine). Une
  *  compétence SANS spécialisation (données historiques) reste acceptée. */
@@ -1136,8 +1144,7 @@ export function resolveFocus(
   const sk = focusSkillFor(caster, spell);
   if (!sk) {
     // AFFICHAGE : Focalisation est spécialisée par VENT → montre le Vent du Domaine (id bete → « Ghur »).
-    const spec = focusSpecOf(spell);
-    const wind = spec ? (findDomainById(spec)?.wind ?? findDomainById(spec)?.label ?? spec) : undefined;
+    const wind = focusWindLabel(spell);
     return {
       dr: 0, isCritical: false, isFumble: false, roll: 0,
       log: `${caster.label} ne maîtrise pas Focalisation${wind ? ` (${wind})` : ''}.`,

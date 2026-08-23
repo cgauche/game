@@ -67,7 +67,7 @@ garantie, pas la justesse de sa glose.
 ### Combat & résolution
 | Fichier | Contient |
 |---|---|
-| `actions.json` | Registre des ACTIONS de combat (id stable → libellé, icône, coût, règle Codex, surface, gate/candidates/run) (56 entrée(s)) |
+| `actions.json` | Registre des ACTIONS de combat (id stable → libellé, icône, coût, règle Codex, surface, gate/candidates/run) (55 entrée(s)) |
 | `qualities.json` | Atouts/défauts d'arme & armure (`belier`, `siege`… = la QUALITÉ, pas l'arme) (59 entrée(s)) |
 | `qualityTypes.json` · `qualitySubtypes.json` | atout/defaut · arme/armure/objet (2 entrée(s) · 3 entrée(s)) |
 | `weaponGroups.json` | Groupes d'armes (Base, Escrime, Parade…) (38 entrée(s)) |
