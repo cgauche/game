@@ -4,7 +4,7 @@
  * `SpecsSource`, `engine/skillCombatApps`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { secondarySourceRefSchema, sourceRefSchema } from '../common';
 
 export const file = 'skills.json';
 
@@ -37,8 +37,10 @@ const specsSourceSchema = z.enum([
   'weaponsRanged',
 ]);
 
-/** `SpecEntry` (`src/data/index.ts`) — entrée de spécialisation inline. */
-const specEntrySchema = z.strictObject({ id: z.string(), label: z.string() });
+/** `SpecEntry` (`src/data/index.ts`) — entrée de spécialisation inline. `source` optionnelle : une
+ *  spéc qu'AUCUNE liste « Spécialisations : » n'énumère mais qu'un statbloc IMPRIME cite le passage
+ *  qui l'atteste (#1342 L2-a) ; sa `note` est confrontée au folio par `folio-line-align.test.ts`. */
+const specEntrySchema = z.strictObject({ id: z.string(), label: z.string(), source: sourceRefSchema.optional(), alsoIn: z.array(secondarySourceRefSchema).optional() });
 
 /** Entrée de `skills.json`. */
 const skillEntrySchema = z.strictObject({

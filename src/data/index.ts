@@ -836,7 +836,7 @@ export interface CareerLevelData {
 /** Entrée `specs[]` d'une Compétence/Talent — id STABLE (résolu par `specLabel`, cf. `langue`/
  *  `chevaucher`/`discretion`/`art`/talent `resistance`) + libellé d'affichage FR. Un domaine
  *  `specsSource` n'a PAS de `specs[]` (le pool DÉRIVE du registre partagé, cf. `specIdsOf`). */
-export type SpecEntry = { id: string; label: string };
+export type SpecEntry = { id: string; label: string; source?: SourceRef; alsoIn?: SecondaryRef[] };
 /** id d'une entrée `specs[]`. */
 export function specEntryId(e: SpecEntry): string {
   return e.id;

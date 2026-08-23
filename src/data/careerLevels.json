@@ -503,7 +503,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       }
     ],
@@ -1434,7 +1434,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       }
     ],
@@ -6383,7 +6383,7 @@
       {
         "ref": {
           "id": "divertissement",
-          "spec": "Beuglement"
+          "spec": "beuglement"
         }
       },
       {
@@ -8582,7 +8582,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "ranger"
+          "spec": "rodeur"
         }
       }
     ],
@@ -10413,7 +10413,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "ranger"
+          "spec": "rodeur"
         }
       }
     ],
@@ -12075,7 +12075,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       }
     ],
@@ -12213,7 +12213,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Boucher"
+          "spec": "boucher"
         }
       },
       {
@@ -12308,7 +12308,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisine"
+          "spec": "cuisinier"
         }
       },
       {
@@ -12320,13 +12320,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "La Gueule"
+          "spec": "la-gueule"
         }
       },
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "La Gueule"
+          "spec": "la-gueule"
         }
       }
     ],
@@ -12999,7 +12999,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       }
     ],
@@ -13226,7 +13226,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       },
       {
@@ -20585,7 +20585,7 @@
       {
         "ref": {
           "id": "dressage",
-          "spec": "Rhinox"
+          "spec": "rhinox"
         }
       },
       {
@@ -20607,7 +20607,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Rhinox"
+          "spec": "rhinox"
         }
       },
       {
@@ -23254,7 +23254,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "Soleil flamboyant"
+          "spec": "soleil-flamboyant"
         }
       }
     ],
@@ -23581,7 +23581,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "Ulric"
+          "spec": "ulric"
         }
       }
     ],
@@ -23917,7 +23917,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "Chevaliers Panthères"
+          "spec": "chevaliers-pantheres"
         }
       }
     ],
@@ -24401,7 +24401,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Fletcher"
+          "spec": "fabricant-de-fleches"
         }
       },
       {
@@ -24649,7 +24649,7 @@
       {
         "ref": {
           "id": "representation",
-          "spec": "Parade"
+          "spec": "parade"
         }
       },
       {
@@ -26730,7 +26730,7 @@
       {
         "ref": {
           "id": "signes-secrets",
-          "spec": "Guilde"
+          "spec": "guilde"
         }
       }
     ],
@@ -30115,7 +30115,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Médecine"
+          "spec": "medecine"
         }
       },
       {
@@ -30947,7 +30947,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Néhékhara"
+          "spec": "nehekhara"
         }
       }
     ],

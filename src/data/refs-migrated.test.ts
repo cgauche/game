@@ -11,7 +11,7 @@ import {
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
   findCreatureById, findVehicleById, findGroupById, findPsychologyById, findTraitById, findCrewTestTypeById, findLightToneById,
   mutationTables,
-  specLabel, refLabel, specEntryId, specEntryLabel, SPEC_SOURCES, type SpecsSource,
+  specLabel, refLabel, specEntryId, specEntryLabel, SPEC_SOURCES, type SpecsSource, books,
 } from './index';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
@@ -35,6 +35,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import {
   GAMEOP_FIELD_TARGETS, auditFieldCoverage, collectJsonFiles, scanGameOpRefs, slackRatchets, formatOffender,
 } from '../../scripts/guards/lib/gameOpRefFk.mjs';
+import { extractedBooks, frenchSourceDirs, isSentinel, walkSkillRefs } from '../../scripts/data/lib/skillSpecWalk.mjs';
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x != null;
 
@@ -487,6 +488,303 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       walk(makePregens(), 'pregens(runtime — makePregens)'); // composition réelle career/species → Combatant
       expect(unresolved, unresolved.join('\n')).toEqual([]);
     });
+  });
+});
+
+// ── CONTRAT POSITIF (#1342 L2-a) — `skills[].spec` d'une entrée SOURCÉE d'un livre EXTRAIT dans
+// `Source/` : la spéc RÉSOUT au catalogue, toujours. Le statbloc est citable ligne à ligne, donc la
+// spéc imprimée est soit une entrée du catalogue, soit une entrée à y créer (`skills.json#specs[]`,
+// `source` à l'appui) — jamais du texte libre. Le périmètre et la marche des `skills[]` viennent du
+// module PARTAGÉ avec la migration (`scripts/data/lib/skillSpecWalk.mjs`) : une garde qui remarcherait
+// la donnée à sa façon mesurerait autre chose que le geste qu'elle garde.
+describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#1342 L2-a)', () => {
+  const ROOT = fileURLToPath(new URL('../../', import.meta.url));
+  const { extraits: EXTRAITS, dirManquant } = extractedBooks(books, ROOT);
+
+  const resolves = (skillId: string, spec: string): boolean => {
+    const def = findSkillById(skillId);
+    if (!def) return false;
+    if (def.specsSource) return SPEC_SOURCES[def.specsSource].resolves(spec);
+    return (def.specs ?? []).some((e) => specEntryId(e) === spec);
+  };
+
+  const hors: { where: string; key: string; book: string; skillId: string; spec: string }[] = [];
+  const nues: { where: string; book: string; skillId: string }[] = [];
+  const seen = { n: 0 };
+  for (const [file, list] of [
+    ['creatures', creatures], ['careerLevels', careerLevels], ['species', species],
+  ] as [string, { id?: string; label?: string; source?: { book?: string } }[]][]) {
+    for (const entry of list) {
+      const book = entry.source?.book ?? '(sans source)';
+      const owner = entry.id ?? entry.label ?? '?';
+      walkSkillRefs(entry, (node) => {
+        const def = findSkillById(node.id);
+        const groupee = !!def?.specsSource || (Array.isArray(def?.specs) && def.specs.length > 0);
+        if (node.spec == null) { if (groupee) nues.push({ where: `${file}(${owner})`, book, skillId: node.id }); return; }
+        if (isSentinel(node.spec)) return;
+        seen.n++;
+        if (!resolves(node.id, node.spec))
+          hors.push({ where: `${file}(${owner})`, key: `${file}|${owner}|${node.id}|${node.spec}`, book, skillId: node.id, spec: node.spec });
+      });
+    }
+  }
+
+  it('creatures/careerLevels/species : zéro spec hors catalogue sous un livre extrait dans Source/', () => {
+    // NON-VACUITÉ : sans lignes scannées ni extraction sur disque, le contrat serait vert à vide.
+    expect(seen.n).toBeGreaterThan(500);
+    expect(EXTRAITS.size).toBeGreaterThan(10);
+    expect(dirManquant, `books.json#dir sans extraction sur disque : ${dirManquant.join(', ')}`).toEqual([]);
+    const bad = hors.filter((h) => EXTRAITS.has(h.book)).map((h) => `${h.where} [${h.book}] : ${h.skillId} → ${JSON.stringify(h.spec)}`);
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
+  // Le périmètre se DÉDUIT de `books.json#dir` : un livre FR extrait mais sans `dir` y serait INVISIBLE.
+  // Ce volet nomme les dossiers d'extraction FR qu'aucun `dir` ne réclame — mesure du 2026-08-23.
+  it('extractions FR de Source/ : chaque dossier est réclamé par un books.json#dir, hors liste nominative', () => {
+    const NON_RECLAMES = new Set<string>([
+      'Source/Boîte d\'Initiation WFRP 4e Edition VF',
+    ]);
+    const dirs = frenchSourceDirs(ROOT);
+    expect(dirs.length).toBeGreaterThan(10);
+    const claimed = new Set(books.map((b) => b.dir).filter(Boolean) as string[]);
+    const orphelins = dirs.filter((d) => !claimed.has(d));
+    const inattendus = orphelins.filter((d) => !NON_RECLAMES.has(d));
+    expect(inattendus, `extraction FR sans books.json#dir — l'ajouter, ou nommer ici :\n${inattendus.join('\n')}`).toEqual([]);
+    const perimes = [...NON_RECLAMES].filter((d) => !orphelins.includes(d));
+    expect(perimes, `dossier(s) désormais réclamé(s) — retirer de NON_RECLAMES :\n${perimes.join('\n')}`).toEqual([]);
+  });
+
+  // CLIQUET NOMINATIF du reste (mesure 2026-08-23) : `frenchy.bzh` n'a pas d'extraction dans `Source/`,
+  // donc aucune ligne « **Compétences :** » citable — ses specs restent du texte libre. Lot d'extinction :
+  // #1342 L2-b. Deux volets, patron `FOLIO_LINE_ALIGN_RATCHET` : aucune clé NOUVELLE, aucune clé PÉRIMÉE.
+  it('livres sans extraction : stock de specs hors catalogue = la liste nominative, ni plus ni moins', () => {
+    const RATCHET = new Set<string>([
+    'creatures|affreuse-vieille-sorciere-troll-des-marais|savoir|Rivières',
+    'creatures|ancien|divertissement|Conteur',
+    'creatures|apothicaire|savoir|Plante',
+    'creatures|apprenti-technomage|metier|Engingneur',
+    'creatures|apprenti-technomage|savoir|Engingneur',
+    'creatures|archer-gobelin|metier|Archerie',
+    'creatures|archer-orc|metier|Archerie',
+    'creatures|architechnomage|savoir|Engingneur',
+    'creatures|avocat|savoir|Droit',
+    'creatures|batelier|divertissement|Conteur',
+    'creatures|batelier|savoir|Rivières',
+    'creatures|batonnier|divertissement|Plaidoirie',
+    'creatures|batonnier|savoir|Droit',
+    'creatures|bourgmestre|divertissement|Conteur',
+    'creatures|bourgmestre|savoir|Droit',
+    'creatures|capitaine-du-guet|savoir|Droit',
+    'creatures|capitaine-patrouilleurs-fluviaux|savoir|Droit',
+    'creatures|capitaine-patrouilleurs-fluviaux|savoir|Rivières',
+    'creatures|capitaine-patrouilleurs-fluviaux|savoir|Zone Patrouille',
+    'creatures|charlatan|divertissement|Comédien',
+    'creatures|charlatan|divertissement|Conteur',
+    'creatures|chef-contrebandier|savoir|RivièresouChemins',
+    'creatures|chef-d-escadron|savoir|Bataille',
+    'creatures|chef-de-clan-orc|divertissement|Insultes',
+    'creatures|chef-de-clan|representation|Victimisation',
+    'creatures|chef-de-guerre-gobelin|savoir|Bataille',
+    'creatures|chef-de-guerre-orc|divertissement|Insultes',
+    'creatures|chef-de-guerre-orc|savoir|Bataille',
+    'creatures|chef-de-guerre-orc|savoir|Siège',
+    'creatures|chef-de-la-garde-du-village|divertissement|Conteur',
+    'creatures|chef-de-portee|representation|Victimisation',
+    'creatures|chef-veteran-de-la-garde-du-village|divertissement|Conteur',
+    'creatures|chef-veteran-de-la-garde-du-village|savoir|Bataille',
+    'creatures|citadin|divertissement|Conteur',
+    'creatures|comte-vampire|savoir|Bataille',
+    'creatures|contremaitre|dressage|Rats',
+    'creatures|daemonette-de-slaanesh|divertissement|Séduction',
+    'creatures|detective|savoir|Droit',
+    'creatures|druide-de-la-foi-antique|divertissement|Conteur',
+    'creatures|eclaireur-orc|divertissement|Insultes',
+    'creatures|enqueteur-chevronne|savoir|Droit',
+    'creatures|erudit-de-renom|divertissement|Conteur',
+    'creatures|erudit|divertissement|Conteur',
+    'creatures|escroc|divertissement|Comédien',
+    'creatures|escroc|divertissement|Conteur',
+    'creatures|escroc|signes-secrets|Voleurs',
+    'creatures|fanatique-gobelin|representation|Danse Tribale',
+    'creatures|faussaire|signes-secrets|Voleurs',
+    'creatures|fongus-de-gork|divertissement|Cérémonie',
+    'creatures|fongus-de-mork|divertissement|Conteur',
+    'creatures|fongus-de-mork|savoir|Bataille',
+    'creatures|fongus-de-mork|savoir|Magie Peaux-Verte',
+    'creatures|fourgue|metier|Gravure',
+    'creatures|fourgue|signes-secrets|Voleurs',
+    'creatures|garde-du-village|divertissement|Conteur',
+    'creatures|gardien-des-secrets-de-slaanesh|divertissement|Séduction',
+    'creatures|gardien-des-secrets-exalte-de-slaanesh|divertissement|Séduction',
+    'creatures|grand-inquisiteur|savoir|Droit',
+    'creatures|grand-inquisiteur|savoir|Sorcellerie',
+    'creatures|grand-maitre-des-hybridations|dressage|Rats',
+    'creatures|grand-maitre-des-hybridations|savoir|Engingneurie',
+    'creatures|grand-moine-de-la-peste|savoir|Maladies',
+    'creatures|grand-shaman-gobelin|divertissement|Conteur',
+    'creatures|grand-shaman-gobelin|savoir|Magie Peaux-Verte',
+    'creatures|grand-shaman-orc|divertissement|Cérémonie',
+    'creatures|grande-pretresse-de-rhya|divertissement|Chants',
+    'creatures|grande-pretresse-de-rhya|divertissement|Sermons',
+    'creatures|guerrier-du-chaos-chef-de-guerre|savoir|Bataille',
+    'creatures|guerrier-gobelin|divertissement|Fanfaron',
+    'creatures|guerrier-orc|divertissement|Insultes',
+    'creatures|guide-racoleur|divertissement|Urbain',
+    'creatures|guide-racoleur|savoir|Droit',
+    'creatures|haut-druide-de-la-foi-antique|divertissement|Conteur',
+    'creatures|haut-druide-de-la-foi-antique|divertissement|Sermons',
+    'creatures|haut-juge|divertissement|Plaidoirie',
+    'creatures|haut-juge|savoir|Droit',
+    'creatures|haut-pretre-rodeur-de-taal|divertissement|Sermons',
+    'creatures|heraut-de-slaanesh|divertissement|Séduction',
+    'creatures|heraut-de-tzeentch|divertissement|Grimaces & Mimes',
+    'creatures|heraut-exalte-de-slaanesh|divertissement|Séduction',
+    'creatures|heraut-exalte-de-tzeentch|divertissement|Grimaces & Mimes',
+    'creatures|horreur-rose-de-tzeentch|divertissement|Grimaces & Mimes',
+    'creatures|inquisiteur|savoir|Droit',
+    'creatures|inquisiteur|savoir|Sorcellerie',
+    'creatures|jeune-citadin-citadins|divertissement|Conteur',
+    'creatures|jeune-citadin-i-b-habitants-des-villes|divertissement|Conteur',
+    'creatures|jeune-gobelin|divertissement|Conteur',
+    'creatures|jeune-moine-de-la-peste|savoir|Maladies',
+    'creatures|jeune-orc|divertissement|Insultes',
+    'creatures|jeune-recrue-de-la-garde-du-village|divertissement|Conteur',
+    'creatures|jeune-recrue-soldats-mercenaires|divertissement|Anecdotes Militaires',
+    'creatures|jeune-skaven|representation|Victimisation',
+    'creatures|jeune-villageois|divertissement|Conteur',
+    'creatures|juge|savoir|Droit',
+    'creatures|magister-mortis|metier|Embaumement',
+    'creatures|magister-mortis|savoir|Bataille',
+    'creatures|maistre-apothicaire|savoir|Plante',
+    'creatures|maistre-faussaire|signes-secrets|Voleurs',
+    'creatures|maitre-assassin|metier|Poison',
+    'creatures|maitre-des-hybridation|dressage|Rats',
+    'creatures|maitre-des-hybridation|savoir|Engingneurie',
+    'creatures|maitre-des-taillis|signes-secrets|Rebouteux',
+    'creatures|moine-d-ulric|divertissement|Conteur',
+    'creatures|moine-de-la-peste|savoir|Maladies',
+    'creatures|moine-de-sigmar|divertissement|Conteur',
+    'creatures|moine-de-taal|divertissement|Conteur',
+    'creatures|moine-de-taal|metier|Herboristerie',
+    'creatures|moine-novice-de-taal|divertissement|Conteur',
+    'creatures|nautonier|divertissement|Chants de Marins',
+    'creatures|nautonier|divertissement|Conteur',
+    'creatures|nautonier|savoir|Rivières',
+    'creatures|necromancien-puissant|metier|Embaumement',
+    'creatures|necromancien-puissant|savoir|Bataille',
+    'creatures|necromancien|metier|Embaumement',
+    'creatures|notable|divertissement|Conteur',
+    'creatures|notable|savoir|Droit',
+    'creatures|officier|divertissement|Anecdotes Militaires',
+    'creatures|officier|savoir|Bataille',
+    'creatures|patrouilleur-fluvial|savoir|Rivières',
+    'creatures|predicateur-de-la-peste|savoir|Maladies',
+    'creatures|pretre-d-ulric|divertissement|Conteur',
+    'creatures|pretre-d-ulric|divertissement|Sermons',
+    'creatures|pretre-de-sigmar|divertissement|Conteur',
+    'creatures|pretre-de-sigmar|divertissement|Sermons',
+    'creatures|pretre-voleur-de-ranald-i-c-criminalite-urbaine|divertissement|Conteur',
+    'creatures|pretre-voleur-de-ranald-i-c-criminalite-urbaine|savoir|Ranald',
+    'creatures|pretre-voleur-de-ranald-i-c-criminalite-urbaine|signes-secrets|Voleurs',
+    'creatures|pretresse-de-rhya|divertissement|Chants',
+    'creatures|pretresse-de-shallya|divertissement|Conteur',
+    'creatures|pretresse-de-verena|divertissement|Conteur',
+    'creatures|pretresse-de-verena|divertissement|Sermons',
+    'creatures|prophete-gris-ancien|savoir|Bataille',
+    'creatures|prophete-gris|savoir|Bataille',
+    'creatures|protagoniste|divertissement|Moqueries',
+    'creatures|quadrilleur-gobelin|savoir|Engingneurie',
+    'creatures|racoleur|divertissement|Urbain',
+    'creatures|rebouteux|signes-secrets|Rebouteux',
+    'creatures|receleur|divertissement|Conteur',
+    'creatures|receleur|metier|Gravure',
+    'creatures|receleur|signes-secrets|Voleurs',
+    'creatures|religieuse-de-rhya|divertissement|Conteur',
+    'creatures|religieuse-de-rhya|metier|Brasserie',
+    'creatures|religieuse-de-rhya|metier|Herboristerie',
+    'creatures|religieuse-de-shallya|divertissement|Conteur',
+    'creatures|religieuse-de-shallya|metier|Herboristerie',
+    'creatures|religieuse-de-verena|divertissement|Conteur',
+    'creatures|religieuse-de-verena|metier|Enluminure',
+    'creatures|religieuse-de-verena|metier|Reliure',
+    'creatures|religieuse-novice-de-rhya|divertissement|Conteur',
+    'creatures|repurgateur|savoir|Sorcellerie',
+    'creatures|riverain-respecte|divertissement|Conteur',
+    'creatures|riverain-respecte|savoir|Rivières',
+    'creatures|riverain|divertissement|Conteur',
+    'creatures|riverain|savoir|Rivières',
+    'creatures|roi-du-trafic|savoir|RivièresouChemins',
+    'creatures|seigneur-pirate|savoir|Rivières',
+    'creatures|seigneur-vampire|savoir|Bataille',
+    'creatures|sergent-du-guet|savoir|Droit',
+    'creatures|sergent-patrouilleurs-fluviaux|savoir|Rivières',
+    'creatures|sergent-patrouilleurs-fluviaux|savoir|Zone Patrouille',
+    'creatures|shaman-gobelin|divertissement|Conteur',
+    'creatures|shaman-orc|divertissement|Cérémonie',
+    'creatures|skaven|representation|Victimisation',
+    'creatures|soldat-mercenaire-aguerri|divertissement|Anecdotes Militaires',
+    'creatures|sorcier-du-chaos-effroyable|divertissement|Conteur',
+    'creatures|sorcier-du-chaos-effroyable|savoir|Divinité',
+    'creatures|sorcier-du-chaos-effroyable|signes-secrets|Cultistes',
+    'creatures|sorcier-du-chaos-terrifiant|divertissement|Conteur',
+    'creatures|sorcier-du-chaos-terrifiant|savoir|Divinité',
+    'creatures|sorcier-du-chaos-terrifiant|signes-secrets|Cultistes',
+    'creatures|sorcier-du-chaos|savoir|Divinité',
+    'creatures|sorcier-du-chaos|signes-secrets|Cultistes',
+    'creatures|sous-officier|divertissement|Anecdotes Militaires',
+    'creatures|technomage-experimente|savoir|Engingneur',
+    'creatures|technomage|savoir|Engingneur',
+    'creatures|tueur-a-gages|divertissement|Moqueries',
+    'creatures|ungor-adulte|metier|Armurier OU Forgeron',
+    'creatures|venerable|divertissement|Conteur',
+    'creatures|vieille-sorciere-troll-des-marais|savoir|Rivières',
+    'creatures|villageois|divertissement|Conteur',
+    'creatures|voleur-aguerri|signes-secrets|Voleurs',
+    'creatures|voleur|signes-secrets|Voleurs',
+    ]);
+    const reste = hors.filter((h) => !EXTRAITS.has(h.book));
+    expect(reste.length).toBeGreaterThan(0); // non-vacuité : le stock existe, il est nommé
+    const nouvelles = reste.filter((h) => !RATCHET.has(h.key)).map((h) => `${h.key}  [${h.book}]`);
+    expect(nouvelles, `spec hors catalogue NOUVELLE — migrer, jamais ajouter :\n${nouvelles.join('\n')}`).toEqual([]);
+    const vues = new Set(reste.map((h) => h.key));
+    const perimees = [...RATCHET].filter((k) => !vues.has(k));
+    expect(perimees, `clé(s) RÉSOLUE(S) — retirer du RATCHET (#1342 L2-b) :\n${perimees.join('\n')}`).toEqual([]);
+  });
+
+  // Une `ref` de Compétence GROUPÉE SANS `spec` est une forme RAW LÉGITIME, mesurée : LDB 08 l.3259
+  // « Calme, Discrétion (Rurale), Escamotage, Focalisation, Intimidation … » (Ensorceleur) et LDB 08
+  // l.3683 « Focalisation, *Intuition*, Langue (Magick) … » (Apprenti Sorcier de Village) impriment
+  // Focalisation nue là où LDB 08 l.2390 imprime « Focalisation (Couleur au choix) » ; MCLB 07 l.238
+  // imprime « Charme 57, Discrétion 43, Escamotage 45 … ». Le contrat est donc un CLIQUET : le compte
+  // ne croît pas — c'est lui qui attrape une migration qui effacerait une `spec` sans retirer sa `ref`.
+  it('refs de Compétence groupée SANS spec : compte stable (forme RAW attestée, jamais un résidu de migration)', () => {
+    const BASELINE = 341;
+    const parFichier = new Map<string, number>();
+    for (const n of nues) parFichier.set(n.where.split('(')[0], (parFichier.get(n.where.split('(')[0]) ?? 0) + 1);
+    expect(nues.length).toBeGreaterThan(0);
+    expect(
+      nues.length,
+      `${[...parFichier.entries()].map(([f, n]) => `${f}:${n}`).join(', ')} — une ref nue de PLUS = une spec effacée sans sa ref`,
+    ).toBeLessThanOrEqual(BASELINE);
+  });
+
+  // CONTRAT POSITIF NOMINATIF — `humains-tileens` porte EXACTEMENT les 12 Compétences de AA 05 l.122 :
+  // « Calme, Charme, Corps à Corps (Base), Évaluation, Langue (Arabéen), Langue (Estalien), Langue
+  // (Reikspiel), Langue (Tiléen), Marchandage, Projectiles (Arbalète), Ragot, Voile (Au choix) ».
+  // Le `Savoir (Tilée)` retiré par le lot L2-a n'y était pas ; `Langue (Estalien)` y manquait.
+  it('species humains-tileens : les 12 Compétences imprimées AA 05 l.122, sans trou ni surnombre', () => {
+    const sp = species.find((s) => s.id === 'humains-tileens');
+    expect(sp, 'humains-tileens absente de species.json').toBeTruthy();
+    const rendu = sp!.skills.map((a) => {
+      const r = (a as { ref?: { id: string; spec?: string }; wildcard?: { id: string } });
+      const w = r.wildcard ? `${r.wildcard.id}(*)` : `${r.ref!.id}${r.ref!.spec ? `(${r.ref!.spec})` : ''}`;
+      return w;
+    });
+    expect(rendu).toEqual([
+      'calme', 'charme', 'corps-a-corps(base)', 'evaluation',
+      'langue(arabien)', 'langue(estalien)', 'langue(reikspiel)', 'langue(tileen)',
+      'marchandage', 'projectiles(arbalete)', 'ragot', 'voile(*)',
+    ]);
   });
 });
 

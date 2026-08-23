@@ -5659,7 +5659,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "commandement",
@@ -5813,7 +5813,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "discretion",
@@ -5983,7 +5983,7 @@
       {
         "id": "savoir",
         "value": 80,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -6433,7 +6433,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "guerison",
@@ -6616,7 +6616,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -8370,7 +8370,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "guerison",
@@ -8544,7 +8544,7 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -8718,7 +8718,7 @@
       {
         "id": "signes-secrets",
         "value": 50,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "calme",
@@ -8858,7 +8858,7 @@
       {
         "id": "signes-secrets",
         "value": 70,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "calme",
@@ -8981,7 +8981,7 @@
       {
         "id": "signes-secrets",
         "value": 50,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "calme",
@@ -9120,7 +9120,7 @@
       {
         "id": "signes-secrets",
         "value": 70,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "calme",
@@ -10196,7 +10196,7 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "athletisme",
@@ -10366,7 +10366,7 @@
       {
         "id": "savoir",
         "value": 60,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "athletisme",
@@ -10545,7 +10545,7 @@
       {
         "id": "savoir",
         "value": 80,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -10703,7 +10703,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Médecine"
+        "spec": "medecine"
       },
       {
         "id": "savoir",
@@ -10852,7 +10852,7 @@
       {
         "id": "savoir",
         "value": 75,
-        "spec": "Médecine"
+        "spec": "medecine"
       },
       {
         "id": "savoir",
@@ -10867,7 +10867,7 @@
       {
         "id": "signes-secrets",
         "value": 60,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "guerison",
@@ -11012,7 +11012,7 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Médecine"
+        "spec": "medecine"
       },
       {
         "id": "guerison",
@@ -11170,7 +11170,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Médecine"
+        "spec": "medecine"
       },
       {
         "id": "guerison",
@@ -11595,7 +11595,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "divertissement",
@@ -11752,12 +11752,12 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "signes-secrets",
         "value": 35,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "divertissement",
@@ -11902,7 +11902,7 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "soin-aux-animaux",
@@ -12061,12 +12061,12 @@
       {
         "id": "savoir",
         "value": 66,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "signes-secrets",
         "value": 60,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "soin-aux-animaux",
@@ -13985,7 +13985,7 @@
       {
         "id": "savoir",
         "value": 60,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "signes-secrets",
@@ -14127,7 +14127,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "athletisme",
@@ -14271,7 +14271,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -14414,7 +14414,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -14563,7 +14563,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "projectiles",
@@ -14707,7 +14707,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "athletisme",
@@ -14858,7 +14858,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "projectiles",
@@ -15581,7 +15581,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "signes-secrets",
@@ -15741,7 +15741,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "signes-secrets",
@@ -15883,7 +15883,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Médecine"
+        "spec": "medecine"
       },
       {
         "id": "athletisme",
@@ -16026,7 +16026,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Médecine"
+        "spec": "medecine"
       },
       {
         "id": "savoir",
@@ -16309,7 +16309,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "soin-aux-animaux",
@@ -16478,7 +16478,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "soin-aux-animaux",
@@ -16652,7 +16652,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "soin-aux-animaux",
@@ -16832,7 +16832,7 @@
       {
         "id": "savoir",
         "value": 90,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -17008,7 +17008,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "divertissement",
@@ -17165,12 +17165,12 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "signes-secrets",
         "value": 35,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "divertissement",
@@ -17319,7 +17319,7 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "soin-aux-animaux",
@@ -17482,12 +17482,12 @@
       {
         "id": "savoir",
         "value": 66,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "signes-secrets",
         "value": 60,
-        "spec": "Guilde"
+        "spec": "guilde"
       },
       {
         "id": "soin-aux-animaux",
@@ -17805,7 +17805,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "guerison",
@@ -17953,7 +17953,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -18137,7 +18137,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -18296,7 +18296,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "guerison",
@@ -18469,12 +18469,12 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Médecine"
+        "spec": "medecine"
       },
       {
         "id": "guerison",
@@ -18640,7 +18640,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "signes-secrets",
@@ -18835,7 +18835,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -19432,7 +19432,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -19601,7 +19601,7 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -20067,7 +20067,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -20249,7 +20249,7 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -21246,7 +21246,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "guerison",
@@ -21408,7 +21408,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "guerison",
@@ -21575,7 +21575,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -21870,7 +21870,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "signes-secrets",
@@ -22031,7 +22031,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -22207,7 +22207,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -23344,7 +23344,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -23700,7 +23700,7 @@
       {
         "id": "savoir",
         "value": 15,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "discretion",
@@ -24086,7 +24086,7 @@
       {
         "id": "savoir",
         "value": 20,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -24235,7 +24235,7 @@
       {
         "id": "savoir",
         "value": 25,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -24389,7 +24389,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -24529,7 +24529,7 @@
       {
         "id": "savoir",
         "value": 15,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -24687,7 +24687,7 @@
       {
         "id": "savoir",
         "value": 20,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -24831,7 +24831,7 @@
       {
         "id": "savoir",
         "value": 30,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -24987,7 +24987,7 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -25526,7 +25526,7 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Local"
+        "spec": "local"
       }
     ],
     "talents": [
@@ -25988,7 +25988,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -26155,7 +26155,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -26344,7 +26344,7 @@
       {
         "id": "savoir",
         "value": 20,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -26495,7 +26495,7 @@
       {
         "id": "savoir",
         "value": 30,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -26654,7 +26654,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -26830,7 +26830,7 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -27087,7 +27087,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "divertissement",
@@ -27357,7 +27357,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -34207,7 +34207,7 @@
       {
         "id": "savoir",
         "value": 20,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -34373,7 +34373,7 @@
       {
         "id": "savoir",
         "value": 25,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "calme",
@@ -34537,7 +34537,7 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "corps-a-corps",
@@ -34717,7 +34717,7 @@
       {
         "id": "savoir",
         "value": 75,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -35198,7 +35198,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -35384,7 +35384,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -37666,7 +37666,7 @@
       {
         "id": "savoir",
         "value": 95,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "guerison",
@@ -40627,7 +40627,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -41716,7 +41716,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -42679,7 +42679,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -43368,7 +43368,7 @@
       {
         "id": "savoir",
         "value": 30,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -43996,7 +43996,7 @@
       {
         "id": "savoir",
         "value": 90,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "escalade",
@@ -44181,7 +44181,7 @@
       {
         "id": "savoir",
         "value": 15,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "calme",
@@ -44358,7 +44358,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "projectiles",
@@ -44539,7 +44539,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "projectiles",
@@ -46484,7 +46484,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Nehekhara"
+        "spec": "nehekhara"
       },
       {
         "id": "guerison",
@@ -46674,7 +46674,7 @@
       {
         "id": "savoir",
         "value": 25,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -46801,7 +46801,7 @@
       {
         "id": "savoir",
         "value": 30,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -46955,7 +46955,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -47139,7 +47139,7 @@
       {
         "id": "savoir",
         "value": 110,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -47965,7 +47965,7 @@
       {
         "id": "savoir",
         "value": 25,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "calme",
@@ -48883,7 +48883,7 @@
       {
         "id": "savoir",
         "value": 20,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "survie-en-exterieur",
@@ -51147,12 +51147,12 @@
       {
         "id": "savoir",
         "value": 46,
-        "spec": "Montagnes du Bord du Monde"
+        "spec": "montagnes-du-bord-du-monde"
       },
       {
         "id": "signes-secrets",
         "value": 31,
-        "spec": "Rôdeur"
+        "spec": "rodeur"
       },
       {
         "id": "subornation",
@@ -52082,7 +52082,7 @@
       {
         "id": "signes-secrets",
         "value": 45,
-        "spec": "Voleurs"
+        "spec": "voleur"
       }
     ],
     "talents": [
@@ -53552,7 +53552,7 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Peaux-de-loup"
+        "spec": "peaux-de-loup"
       },
       {
         "id": "signes-secrets",
@@ -55963,7 +55963,7 @@
       {
         "id": "savoir",
         "value": 25,
-        "spec": "Ogres"
+        "spec": "ogres"
       },
       {
         "id": "subornation",
@@ -56135,7 +56135,7 @@
       {
         "id": "savoir",
         "value": 30,
-        "spec": "Ogres"
+        "spec": "ogres"
       },
       {
         "id": "savoir",
@@ -56428,7 +56428,7 @@
       {
         "id": "savoir",
         "value": 30,
-        "spec": "Ogres"
+        "spec": "ogres"
       }
     ],
     "talents": [
@@ -57734,7 +57734,7 @@
       {
         "id": "savoir",
         "value": 59,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "subornation",
@@ -57898,7 +57898,7 @@
       {
         "id": "savoir",
         "value": 63,
-        "spec": "Médecine"
+        "spec": "medecine"
       },
       {
         "id": "savoir",
@@ -58133,7 +58133,7 @@
       {
         "id": "savoir",
         "value": 58,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "subornation",
@@ -58235,7 +58235,7 @@
       {
         "id": "metier",
         "value": 44,
-        "spec": "Frappeur de monnaie"
+        "spec": "frappeur-de-monnaie"
       },
       {
         "id": "resistance",
@@ -58244,7 +58244,7 @@
       {
         "id": "savoir",
         "value": 37,
-        "spec": "Local"
+        "spec": "local"
       }
     ],
     "talents": [
@@ -58728,7 +58728,7 @@
       {
         "id": "savoir",
         "value": 72,
-        "spec": "Tzeentch"
+        "spec": "tzeentch"
       },
       {
         "id": "subornation",
@@ -58894,7 +58894,7 @@
       {
         "id": "savoir",
         "value": 51,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -59269,7 +59269,7 @@
       {
         "id": "savoir",
         "value": 56,
-        "spec": "Local"
+        "spec": "local"
       }
     ],
     "talents": [
@@ -59468,7 +59468,7 @@
       {
         "id": "savoir",
         "value": 69,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "subornation",
@@ -59959,7 +59959,7 @@
       {
         "id": "metier",
         "value": 65,
-        "spec": "Imprimeur"
+        "spec": "imprimerie"
       },
       {
         "id": "perception",
@@ -59984,7 +59984,7 @@
       {
         "id": "savoir",
         "value": 58,
-        "spec": "Local"
+        "spec": "local"
       },
       {
         "id": "savoir",
@@ -60094,7 +60094,7 @@
       {
         "id": "metier",
         "value": 50,
-        "spec": "Imprimeur"
+        "spec": "imprimerie"
       },
       {
         "id": "ragot",
@@ -61796,7 +61796,7 @@
       {
         "id": "savoir",
         "value": 59,
-        "spec": "Elfes"
+        "spec": "elfes"
       },
       {
         "id": "savoir",
@@ -62098,7 +62098,7 @@
       {
         "id": "savoir",
         "value": 103,
-        "spec": "Navigation"
+        "spec": "navigation"
       },
       {
         "id": "savoir",
@@ -62325,7 +62325,7 @@
       {
         "id": "dressage",
         "value": 55,
-        "spec": "Perroquet"
+        "spec": "perroquet"
       },
       {
         "id": "escalade",
@@ -62403,7 +62403,7 @@
       {
         "id": "savoir",
         "value": 90,
-        "spec": "Navigation"
+        "spec": "navigation"
       },
       {
         "id": "survie-en-exterieur",
@@ -62694,12 +62694,12 @@
       {
         "id": "savoir",
         "value": 84,
-        "spec": "Navigation"
+        "spec": "navigation"
       },
       {
         "id": "savoir",
         "value": 49,
-        "spec": "Religion"
+        "spec": "religion"
       },
       {
         "id": "survie-en-exterieur",
@@ -62994,7 +62994,7 @@
       {
         "id": "savoir",
         "value": 105,
-        "spec": "Navigation"
+        "spec": "navigation"
       },
       {
         "id": "savoir",

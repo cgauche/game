@@ -598,6 +598,12 @@
       {
         "ref": {
           "id": "langue",
+          "spec": "estalien"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
           "spec": "reikspiel"
         }
       },
@@ -621,12 +627,6 @@
       {
         "ref": {
           "id": "ragot"
-        }
-      },
-      {
-        "ref": {
-          "id": "savoir",
-          "spec": "Tilée"
         }
       },
       {
@@ -756,7 +756,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Norsca"
+          "spec": "norsca"
         }
       },
       {
@@ -906,7 +906,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Norsca"
+          "spec": "norsca"
         }
       },
       {
@@ -3511,7 +3511,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Ogres"
+          "spec": "ogres"
         }
       },
       {
