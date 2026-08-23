@@ -54,7 +54,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { SeatAssignmentsField } from './SeatAssignmentsField';
-import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, changePropRef, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
+import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, changePropRef, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, editEntity, editEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
 import { scrollElementIntoPort } from './useEditorView';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
@@ -218,11 +218,13 @@ export function Inspector({
     setScene(patchWall(scene, sel.x, sel.y, sel.side, sel.z, patch));
   };
 
-  const updateSel = (patch: Partial<SceneEntity>) =>
-    setScene({ ...scene, entities: scene.entities.map((e) => (ent && e.id === ent.id ? { ...e, ...patch } : e)) });
+  // Toute écriture d'entité de l'inspecteur (libellé, orientation, étage, ref, apparence, statblock…)
+  // passe par le seam d'assise : tourner ou monter d'un étage un meuble attablé recale ou lève ses
+  // places dans la MÊME mutation. Aucun `entities:` en direct ici.
+  const updateSel = (patch: Partial<SceneEntity>) => { if (ent) setScene(editEntity(scene, ent.id, patch)); };
   const updateSelCombat = (patch: Partial<NonNullable<SceneEntity['combat']>>) => {
     if (!ent) return;
-    setScene(patchEntityCombat(scene, ent.id, patch));
+    setScene(editEntityCombat(scene, ent.id, patch));
   };
   const updateSelT = (patch: Partial<Trigger>) =>
     setScene({ ...scene, triggers: scene.triggers.map((t) => (selT && t.id === selT.id ? { ...t, ...patch } : t)) });
@@ -1526,8 +1528,7 @@ function EntityPanel({
 function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Scene; setScene: (s: Scene) => void }) {
   const poste = ent.postes?.[0]; // absent — coque sans emplacement d'artillerie (Blindage/Lissage seuls, MDG 12) : les Améliorations restent authorables
   const directional = !!poste?.side;
-  const setUpgrades = (upgrades: NavalTraitRef[] | undefined) =>
-    setScene({ ...scene, entities: scene.entities.map((e) => (e.id === ent.id ? { ...e, upgrades } : e)) });
+  const setUpgrades = (upgrades: NavalTraitRef[] | undefined) => setScene(editEntity(scene, ent.id, { upgrades }));
   return (
     <Fold title={<><Icon id="scenario/siege" size="sm" /> Emplacement de siège, équipage & Améliorations</>} open>
       {poste && (
@@ -1589,7 +1590,7 @@ function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Sc
         ent={ent}
         scene={scene}
         ids={ent.crewIds ?? []}
-        onChange={(next) => setScene(patchEntity(scene, ent.id, { crewIds: next.length ? next : undefined }))}
+        onChange={(next) => setScene(editEntity(scene, ent.id, { crewIds: next.length ? next : undefined }))}
         caption={<>Équipage exposé à bord <em className="de-hint">(MDG 14 — encaisse les critiques de coque)</em></>}
         addLabel="+ Embarquer un membre d'équipage"
         emptyHint="Posez des personnages sur la carte, puis embarquez-les ici."

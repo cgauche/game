@@ -3,6 +3,7 @@ import { emptyScene, isDescriptiveZone, Scene } from '../../state/scene';
 import { validateScene } from '../../state/validateScene';
 import { findCreatureById, creatureLabel } from '../../data';
 import {
+  eraseAt,
   hitAt,
   moveSel,
   resizeSel,
@@ -709,6 +710,10 @@ describe('éditeur — les places assises suivent le geste, atomiquement', () =>
   it('changer la ref ou supprimer le prop élague dans la même mutation', () => {
     expect(changePropRef(attablee(), 'table-1', 'tonneau').seatAssignments).toEqual({});
     expect(deleteSel(attablee(), { type: 'entity', id: 'table-1' }).seatAssignments).toEqual({});
+  });
+
+  it('la gomme passe par le même seam que la suppression par sélection', () => {
+    expect(eraseAt(attablee(), { x: 2, y: 2 }).seatAssignments).toEqual({});
   });
 
   it('supprimer le PNJ assis emporte sa place', () => {

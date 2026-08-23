@@ -8,7 +8,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
 import { siegeEngines } from '../../data';
 import { propRefPatch } from './propDefaults';
-import { type Rect, type Pt, type Edge4, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, moveEntityTo, patchEntity, pruneAuthoredSeats } from '../../state/sceneEdit';
+import { type Rect, type Pt, type Edge4, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, documentHeroIds, editEntity, moveEntityTo, normaliseAssises } from '../../state/sceneEdit';
 
 export {
   addArchitectureBody,
@@ -53,6 +53,10 @@ export {
   entityAt,
   patchEntity,
   patchEntityCombat,
+  editEntity,
+  editEntityCombat,
+  normaliseAssises,
+  documentHeroIds,
 } from '../../state/sceneEdit';
 export type { Rect, Pt, Edge4, EffectZoneSeed } from '../../state/sceneEdit';
 export { planStairFlight, applyStairFlight, minFlightCells } from '../../state/stairFlight';
@@ -458,7 +462,7 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
       if (members.length === (e.members ?? []).length) return e;
       return { ...e, members: members.map((m) => (m.ridesEntityId === sel.id ? { ...m, ridesEntityId: undefined } : m)) };
     });
-    return pruneAuthoredSeats({ ...scene, entities: scene.entities.filter((e) => e.id !== sel.id), encounters });
+    return normaliseAssises({ ...scene, entities: scene.entities.filter((e) => e.id !== sel.id), encounters }, documentHeroIds(scene));
   }
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.filter((t) => t.id !== sel.id) };
   // #841 FU-C : les CONTENEURS (corps/étage) étaient inatteignables (audit #835 les avait
@@ -501,14 +505,15 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
   return scene;
 }
 
-/** Arête la plus proche du centre de la case, depuis l'offset (ox,oy) ∈ [-0.5,0.5] du pointeur. */
-/** Change le TYPE de décor d'une entité `prop` (avec ses défauts de pose, `propRefPatch`) et élague
- *  l'assise dans la MÊME mutation : le nouveau type n'offre pas les places de l'ancien. */
+/** Change le TYPE de décor d'une entité `prop` (avec ses défauts de pose, `propRefPatch`) et traverse
+ *  le seam d'assise : le nouveau type n'offre pas les places de l'ancien, elles tombent dans la MÊME
+ *  mutation. */
 export function changePropRef(scene: Scene, propId: string, ref: string): Scene {
   const ent = scene.entities.find((e) => e.id === propId && e.kind === 'prop');
-  return ent ? pruneAuthoredSeats(patchEntity(scene, propId, propRefPatch(ref, !!ent.interact))) : scene;
+  return ent ? editEntity(scene, propId, propRefPatch(ref, !!ent.interact)) : scene;
 }
 
+/** Arête la plus proche du centre de la case, depuis l'offset (ox,oy) ∈ [-0.5,0.5] du pointeur. */
 export function nearestEdge(ox: number, oy: number): Edge4 {
   const d: Record<Edge4, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
   return (['N', 'E', 'S', 'O'] as Edge4[]).reduce((a, b) => (d[b] < d[a] ? b : a));

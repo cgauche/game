@@ -13,16 +13,18 @@
 import { useState } from 'react';
 import type { Scene } from '../../state/scene';
 import { releaseSeat, seatSlotsOf, type SeatAssignmentResult, type SeatOccupant } from '../../state/seating';
-import { seatOccupant } from '../../state/sceneEdit';
+import { documentHeroIds, normaliseAssises, seatOccupant } from '../../state/sceneEdit';
 
-/** Motif de refus d'`assignSeat`, dit à l'auteur. */
+/** Motif de refus d'`assignSeat`, dit à l'auteur. Chaque libellé énonce le fait MESURÉ par la raison
+ *  qu'il traduit — `occupant-absent` ne peut désigner qu'un corps que la scène ne porte pas (les héros
+ *  proposés viennent du document, cf. `herosDuDocument`). */
 const REFUS: Record<Exclude<SeatAssignmentResult, { ok: true }>['reason'], string> = {
   'prop-absent': 'ce décor n’est plus dans la scène',
   'slot-absent': 'ce type de décor n’offre pas cette place',
-  'occupant-absent': 'ce corps n’est pas dans la scène',
+  'occupant-absent': 'ce corps n’est ni un personnage de la scène ni un héros que ce document nomme',
   'occupant-assis': 'ce corps tient déjà une autre place',
   'slot-occupe': 'cette place est déjà tenue',
-  'approche-invalide': 'aucun abord libre et praticable ne dessert cette place',
+  'approche-invalide': 'aucun abord praticable ne dessert cette place',
 };
 
 /** Valeur de `<select>` d'un occupant : préfixée par sa nature, pour qu'un id de héros et un id
@@ -43,28 +45,30 @@ export function SeatAssignmentsField({
   onChange: (scene: Scene) => void;
 }) {
   const [refus, setRefus] = useState<string | null>(null);
+  /** Héros que ce DOCUMENT nomme — capturés UNE fois, à l'ouverture du panneau. Les dériver de
+   *  l'occupation courante les faisait disparaître de la liste dès qu'on libérait leur place, et
+   *  faisait refuser tout déplacement de place (le héros n'était plus « disponible » entre la
+   *  libération et l'assignation). La source est stable : le geste ne la modifie pas. */
+  const [herosDuDocument] = useState<ReadonlySet<string>>(() => documentHeroIds(scene));
   const places = seatSlotsOf(scene, propId);
   if (!places.length) return null;
 
   const parMeuble = scene.seatAssignments?.[propId] ?? {};
   const pnjs = scene.entities.filter((e) => e.kind === 'personnage');
-  /** Héros nommés par le document lui-même — jamais une liste de groupe, que l'éditeur ne connaît pas. */
-  const heros = [
-    ...new Set(
-      Object.values(scene.seatAssignments ?? {}).flatMap((occupation) =>
-        Object.values(occupation).flatMap((occupant) => (occupant.kind === 'party' ? [occupant.heroId] : [])),
-      ),
-    ),
-  ];
 
   const choisir = (slotId: string, value: string) => {
     setRefus(null);
     const tenant = parMeuble[slotId];
-    let base = tenant ? releaseSeat(scene, tenant) : scene;
-    if (!value) { onChange(base); return; }
+    if (!value) {
+      onChange(tenant ? normaliseAssises(releaseSeat(scene, tenant), herosDuDocument) : scene);
+      return;
+    }
     const occupant = occupantOf(value);
-    base = releaseSeat(base, occupant); // rasseoir un corps le DÉPLACE : un corps, une place
-    const res = seatOccupant(base, propId, slotId, occupant);
+    // Un corps, une place : libérer le tenant de la place VISÉE et l'ancienne place du corps CHOISI
+    // fait partie du MÊME geste — la scène n'est publiée qu'une fois, et seulement si elle est prise.
+    let base = tenant ? releaseSeat(scene, tenant) : scene;
+    base = releaseSeat(base, occupant);
+    const res = seatOccupant(base, propId, slotId, occupant, herosDuDocument);
     if (!res.ok) { setRefus(REFUS[res.reason]); return; }
     onChange(res.scene);
   };
@@ -84,7 +88,7 @@ export function SeatAssignmentsField({
                 {pnj.label ? `${pnj.label} (${pnj.id})` : pnj.id}
               </option>
             ))}
-            {heros.map((heroId) => (
+            {[...herosDuDocument].map((heroId) => (
               <option key={heroId} value={`party:${heroId}`}>
                 Héros {heroId}
               </option>

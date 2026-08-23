@@ -19,9 +19,11 @@ import {
   assignSeat,
   pruneSeatAssignments,
   releaseSeat,
+  seatIsOccupiable,
   seatPoseOf,
   seatSlotsOf,
   type SeatAssignmentResult,
+  type SeatAssignments,
   type SeatOccupant,
 } from './seating';
 import { METRES_PER_LEVEL } from './relief';
@@ -285,10 +287,8 @@ export function placeEmplacement(scene: Scene, trappingId: string, p: Pt, z = 0,
 
 /** Patche le poste UNIQUE (postes[0]) de l'emplacement `entityId` (no-op si l'entité n'en porte pas). */
 function patchPoste0(scene: Scene, entityId: string, fn: (p: AuthoredShipPoste) => AuthoredShipPoste): Scene {
-  return {
-    ...scene,
-    entities: scene.entities.map((e) => (e.id === entityId && e.postes?.length ? { ...e, postes: e.postes.map((p, i) => (i === 0 ? fn(p) : p)) } : e)),
-  };
+  const ent = scene.entities.find((e) => e.id === entityId && e.postes?.length);
+  return ent ? editEntity(scene, entityId, { postes: ent.postes!.map((p, i) => (i === 0 ? fn(p) : p)) }) : scene;
 }
 
 /** Affecte l'équipage du poste (ids d'entités, ORDRE = chef de pièce en tête → `crewIds[0]`). */
@@ -314,13 +314,13 @@ export function setPosteSide(scene: Scene, entityId: string, side: FireArc | und
 export function setPosteEngine(scene: Scene, entityId: string, trappingId: string): Scene {
   const t = findTrappingById(trappingId);
   if (!t?.siegeRig) return scene;
-  return {
-    ...scene,
-    entities: scene.entities.map((e) =>
-      e.id === entityId && e.postes?.length
-        ? { ...e, label: t.label, ref: trappingId, postes: e.postes.map((p, i) => (i === 0 ? { ...p, trappingId, item: undefined } : p)) }
-        : e),
-  };
+  const ent = scene.entities.find((e) => e.id === entityId && e.postes?.length);
+  if (!ent) return scene;
+  return editEntity(scene, entityId, {
+    label: t.label,
+    ref: trappingId,
+    postes: ent.postes!.map((p, i) => (i === 0 ? { ...p, trappingId, item: undefined } : p)),
+  });
 }
 
 /** Colle une copie de `data` (id frais) à la case p, sur la couche `z` (défaut 0 — jamais le z SOURCE
@@ -470,7 +470,7 @@ export function addEnemyMember(scene: Scene, encId: string, ref: string, p: Pt, 
 /** Gomme : retire l'entité posée sur p à l'étage `z` (les autres couches se suppriment via leur sélection). */
 export function eraseAt(scene: Scene, p: Pt, z = 0): Scene {
   const ent = entityAt(scene, p, z);
-  return ent ? pruneAuthoredSeats({ ...scene, entities: scene.entities.filter((e) => e !== ent) }) : scene;
+  return ent ? removeEntity(scene, ent.id) : scene;
 }
 
 // ── Scalaires de scène (headless-editor) : champs sans widget SceneProps, posés par `buildScene`. Chacun
@@ -523,29 +523,58 @@ export function patchEntity(scene: Scene, id: string, patch: Partial<SceneEntity
   return { ...scene, entities: scene.entities.map((e) => (e.id === id ? { ...e, ...patch } : e)) };
 }
 
-// ── ASSISE AUTHORÉE ────────────────────────────────────────────────────────────────────────────────
-// Trois primitives d'authoring composées sur `state/seating` (source unique de la résolution). Toute
-// mutation d'éditeur qui touche un meuble, une place ou un corps les traverse : la Scène rendue par le
-// geste est déjà un document valide (`seatAssignmentDefects`), sans renormalisation différée.
+// ── ASSISE AUTHORÉE — LE SEAM UNIQUE ───────────────────────────────────────────────────────────────
+// INVARIANT : toute mutation d'éditeur qui touche une entité (pos, facing, z, ref, suppression —
+// meuble OU corps) traverse `normaliseAssises`. Un seul point d'appel par primitive ; aucune écriture
+// d'`entities` en direct depuis `src/ui/**`. La Scène rendue par un geste est donc TOUJOURS un
+// document que `seatAssignmentDefects` accepte — jamais une correction différée au chargement.
 
-/** Héros que le DOCUMENT lui-même nomme dans son occupation. L'éditeur ne connaît PAS le groupe de la
- *  partie : c'est le seul ensemble d'ids de héros qu'il puisse tenir pour disponible. */
-function authoredHeroIds(scene: Scene): ReadonlySet<string> {
+/** Les héros que le DOCUMENT nomme lui-même. L'éditeur ne connaît PAS le groupe de la partie : ce
+ *  sont les seuls ids de héros qu'il puisse tenir pour disponibles. */
+export function documentHeroIds(scene: Scene): ReadonlySet<string> {
   const out = new Set<string>();
   for (const parMeuble of Object.values(scene.seatAssignments ?? {}))
     for (const occupant of Object.values(parMeuble)) if (occupant.kind === 'party') out.add(occupant.heroId);
   return out;
 }
 
-/** Recale chaque corps AUTHORÉ assis sur l'abord EFFECTIF de sa place — l'invariant de document que
- *  déplacer un meuble (ou rouvrir un passage) déferait. Scène INCHANGÉE si personne n'a bougé. */
+/**
+ * SEAM UNIQUE D'ASSISE — la scène rendue est normalisée en trois temps, dans cet ordre :
+ *  1. ÉLAGAGE d'existence (`pruneSeatAssignments`) : meuble déposé, slot que la ref n'offre plus,
+ *     corps disparu ;
+ *  2. ÉLAGAGE d'OCCUPABILITÉ : une place que le prédicat unique `seatIsOccupiable` refuse (abord
+ *     effectif devenu infranchissable — meuble poussé dans un recoin, passage muré) est LEVÉE, jamais
+ *     honorée en posant un corps dans un mur ;
+ *  3. REBASE : chaque corps authoré encore assis se tient sur l'abord RE-RÉSOLU de sa place. La
+ *     résolution est celle de `seatSlotsOf` (réservation à l'échelle de la SCÈNE) : deux corps ne
+ *     peuvent pas se retrouver sur la même case.
+ * Une scène qui n'a jamais porté d'assise n'en gagne pas le champ (même référence rendue).
+ */
+export function normaliseAssises(scene: Scene, partyHeroIds: ReadonlySet<string>): Scene {
+  if (!scene.seatAssignments) return scene;
+  const existants = pruneSeatAssignments(scene, partyHeroIds);
+  const apresExistence = { ...scene, seatAssignments: existants };
+  const occupables: SeatAssignments = {};
+  for (const [propId, parMeuble] of Object.entries(existants)) {
+    const places = seatSlotsOf(apresExistence, propId);
+    for (const [slotId, occupant] of Object.entries(parMeuble)) {
+      const place = places.find((candidate) => candidate.slotId === slotId);
+      if (place && seatIsOccupiable(apresExistence, place)) (occupables[propId] ??= {})[slotId] = occupant;
+    }
+  }
+  return rebaseSeatedBodies({ ...scene, seatAssignments: occupables });
+}
+
+/** Recale chaque corps AUTHORÉ assis sur l'abord RE-RÉSOLU de sa place. Appelé UNIQUEMENT par
+ *  `normaliseAssises`, après les deux élagages : toute place encore là est occupable, donc l'abord
+ *  posé est praticable. Scène INCHANGÉE (même référence) si personne n'a bougé. */
 function rebaseSeatedBodies(scene: Scene): Scene {
   const cibles = new Map<string, Pt>();
   for (const [propId, parMeuble] of Object.entries(scene.seatAssignments ?? {})) {
     const places = seatSlotsOf(scene, propId);
     for (const [slotId, occupant] of Object.entries(parMeuble)) {
       if (occupant.kind !== 'entity') continue;
-      const place = places.find((p) => p.slotId === slotId);
+      const place = places.find((candidate) => candidate.slotId === slotId);
       if (place) cibles.set(occupant.entityId, { x: place.approach.x, y: place.approach.y });
     }
   }
@@ -560,29 +589,47 @@ function rebaseSeatedBodies(scene: Scene): Scene {
   return touche ? { ...scene, entities } : scene;
 }
 
-/** Occupation NORMALISÉE après un geste d'authoring : ne survivent que les places dont le meuble est
- *  posé, dont le slot est déclaré par le catalogue et dont le corps est présent. Une scène qui n'a
- *  jamais porté d'assise n'en gagne pas le champ. */
-export function pruneAuthoredSeats(scene: Scene): Scene {
-  if (!scene.seatAssignments) return scene;
-  return rebaseSeatedBodies({ ...scene, seatAssignments: pruneSeatAssignments(scene, authoredHeroIds(scene)) });
+/** Assoit `occupant` à la place `slotId` du meuble `propId` ET pose la `pos` du corps sur l'abord
+ *  résolu, dans la MÊME écriture. `partyHeroIds` vient de l'APPELANT (jamais re-dérivé en cours de
+ *  geste : un déplacement de place libère d'abord, et un héros ne doit pas disparaître entre-temps).
+ *  Refus (raison stable) → scène d'entrée inchangée. */
+export function seatOccupant(
+  scene: Scene,
+  propId: string,
+  slotId: string,
+  occupant: SeatOccupant,
+  partyHeroIds: ReadonlySet<string>,
+): SeatAssignmentResult {
+  const res = assignSeat(scene, propId, slotId, occupant, partyHeroIds);
+  return res.ok ? { ...res, scene: normaliseAssises(res.scene, partyHeroIds) } : res;
 }
 
-/** Assoit `occupant` à la place `slotId` du meuble `propId` ET pose la `pos` du corps sur l'abord
- *  résolu, dans la MÊME écriture. Refus (raison stable) → scène d'entrée inchangée. */
-export function seatOccupant(scene: Scene, propId: string, slotId: string, occupant: SeatOccupant): SeatAssignmentResult {
-  const res = assignSeat(scene, propId, slotId, occupant, authoredHeroIds(scene));
-  return res.ok ? { ...res, scene: rebaseSeatedBodies(res.scene) } : res;
+/** Patch d'AUTHORING d'une entité (libellé, orientation, étage, ref, statblock…) : la seule porte
+ *  d'écriture d'entité ouverte à `src/ui/**`. Traverse le seam — tourner ou monter d'un étage un
+ *  meuble attablé recale ou lève ses places dans la MÊME mutation. */
+export function editEntity(scene: Scene, id: string, patch: Partial<SceneEntity>): Scene {
+  return normaliseAssises(patchEntity(scene, id, patch), documentHeroIds(scene));
+}
+
+/** Idem pour le sous-objet `combat` (fusion non écrasante) — même porte, même seam. */
+export function editEntityCombat(scene: Scene, id: string, patch: Partial<NonNullable<SceneEntity['combat']>>): Scene {
+  return normaliseAssises(patchEntityCombat(scene, id, patch), documentHeroIds(scene));
+}
+
+/** Suppression d'AUTHORING d'une entité — traverse le seam. */
+export function removeEntity(scene: Scene, id: string): Scene {
+  return normaliseAssises({ ...scene, entities: scene.entities.filter((e) => e.id !== id) }, documentHeroIds(scene));
 }
 
 /** Déplacement d'AUTHORING d'une entité : pose la case demandée, lève le corps de sa place s'il quitte
- *  l'abord de son siège, et emmène les attablés quand c'est le MEUBLE qui bouge. */
+ *  l'abord de son siège, puis traverse le seam (qui emmène les attablés quand c'est le MEUBLE qui
+ *  bouge, et lève les places devenues inoccupables). */
 export function moveEntityTo(scene: Scene, id: string, to: Pt): Scene {
   const deplacee = { ...scene, entities: scene.entities.map((e) => (e.id === id ? { ...e, pos: { ...e.pos, x: to.x, y: to.y } } : e)) };
   const occupant: SeatOccupant = { kind: 'entity', entityId: id };
   const pose = seatPoseOf(scene, occupant);
   const quitte = !!pose && (pose.approach.x !== to.x || pose.approach.y !== to.y);
-  return pruneAuthoredSeats(quitte ? releaseSeat(deplacee, occupant) : deplacee);
+  return normaliseAssises(quitte ? releaseSeat(deplacee, occupant) : deplacee, documentHeroIds(scene));
 }
 
 /** Patche le sous-objet `combat` d'une entité SANS écraser l'existant (fusionne skills/spells/optionals/

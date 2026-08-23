@@ -203,6 +203,22 @@ export function seatPoseOf(scene: Scene, occupant: SeatOccupant): SeatPose | nul
   return null;
 }
 
+/**
+ * PRÉDICAT UNIQUE D'OCCUPABILITÉ — « ce siège se tient-il ? ». Une place n'est occupable que si son
+ * abord EFFECTIF est praticable : `isWalkable` écarte déjà l'empreinte des décors solides, les
+ * terrains impassables et les cases effondrées. Quand `placesResolues` n'a trouvé AUCUNE candidate
+ * (siège cerné), elle rend l'abord déclaré tel quel — c'est ici, et ici seulement, que ce cas se
+ * traduit en refus.
+ *
+ * `assignSeat` (le GESTE), `seatAssignmentDefects` (le DOCUMENT) et `normaliseAssises`
+ * (les mutations d'éditeur) l'appellent tous les trois : ce qu'un geste refuse, le validateur et le
+ * compilateur le refusent aussi, et la règle N+1 s'écrit ICI, une fois.
+ */
+export function seatIsOccupiable(scene: Scene, slot: ResolvedSeatSlot): boolean {
+  const z = propEntity(scene, slot.propId)?.z ?? 0;
+  return isWalkable(scene, slot.approach.x, slot.approach.y, z);
+}
+
 /** L'occupant désigne-t-il un corps RÉELLEMENT disponible dans cette scène ? */
 function occupantExiste(scene: Scene, occupant: SeatOccupant, partyHeroIds: ReadonlySet<string>): boolean {
   return occupant.kind === 'party'
@@ -228,8 +244,7 @@ export function assignSeat(
   if (!occupantExiste(scene, occupant, partyHeroIds)) return { ok: false, scene, reason: 'occupant-absent' };
   if (seatPoseOf(scene, occupant)) return { ok: false, scene, reason: 'occupant-assis' };
   if (scene.seatAssignments?.[propId]?.[slotId]) return { ok: false, scene, reason: 'slot-occupe' };
-  const z = propEntity(scene, propId)!.z ?? 0;
-  if (!isWalkable(scene, slot.approach.x, slot.approach.y, z)) return { ok: false, scene, reason: 'approche-invalide' };
+  if (!seatIsOccupiable(scene, slot)) return { ok: false, scene, reason: 'approche-invalide' };
   const seatAssignments: SeatAssignments = { ...scene.seatAssignments };
   seatAssignments[propId] = { ...seatAssignments[propId], [slotId]: occupant };
   return { ok: true, scene: { ...scene, seatAssignments }, pose: { ...slot, occupant } };
@@ -269,12 +284,6 @@ export function releaseUnavailableSeats(scene: Scene, disponible: (occupant: Sea
   return scèneCourante;
 }
 
-/**
- * Occupation NORMALISÉE de la scène : ne survivent que les places dont le meuble est posé, dont la
- * place est déclarée par le catalogue et dont le corps est disponible (héros du groupe fourni, ou
- * PNJ encore présent). Parcours déterministe (entités, puis places déclarées) ; un occupant apparu
- * deux fois garde son PREMIER siège. Rend toujours une valeur — `{}` = plus personne d'assis.
- */
 /** Un défaut d'assise du DOCUMENT : le message français à afficher, et l'entité à blâmer (pour que
  *  l'éditeur y emmène au clic). */
 export interface SeatAssignmentDefect { at: string; message: string }
@@ -285,10 +294,11 @@ export interface SeatAssignmentDefect { at: string; message: string }
  * d'authoring `mapSpec.buildScene` (qui échoue fail-fast dessus).
  *
  * Chaque place occupée doit désigner un meuble POSÉ, une place que son type déclare, et un corps
- * présent ; et la `pos` d'un PNJ assis est EXACTEMENT la case d'abord résolue de sa place (sa
- * position LOGIQUE : c'est de là qu'il s'est assis et là qu'il se relève ; l'ancre fractionnaire
+ * présent ; la place doit être OCCUPABLE au sens du prédicat unique `seatIsOccupiable` (le même que
+ * le geste applique) ; et la `pos` d'un PNJ assis est EXACTEMENT la case d'abord résolue de sa place
+ * (sa position LOGIQUE : c'est de là qu'il s'est assis et là qu'il se relève ; l'ancre fractionnaire
  * n'est que du rendu). Le groupe n'appartient pas au document : une place `kind:'party'` ne se
- * vérifie que jusqu'au meuble et au slot.
+ * vérifie que jusqu'au meuble, au slot et à l'occupabilité.
  */
 export function seatAssignmentDefects(scene: Scene): SeatAssignmentDefect[] {
   const out: SeatAssignmentDefect[] = [];
@@ -300,6 +310,11 @@ export function seatAssignmentDefects(scene: Scene): SeatAssignmentDefect[] {
       if (!propPose) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » (« ${occupantId} ») : aucun décor « ${propId} » dans la scène` }); continue; }
       const place = places.find((p) => p.slotId === slotId);
       if (!place) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » (« ${occupantId} ») : le décor « ${propId} » n'offre pas de place « ${slotId} »` }); continue; }
+      if (!seatIsOccupiable(scene, place)) {
+        const { x: rx, y: ry } = place.approach;
+        out.push({ at: propId, message: `Assise « ${propId}/${slotId} » (« ${occupantId} ») : aucun abord praticable ne dessert cette place (abord résolu en (${rx},${ry}), infranchissable)` });
+        continue;
+      }
       if (occupant.kind === 'party') continue;
       const pnj = scene.entities.find((e) => e.id === occupant.entityId && e.kind === 'personnage');
       if (!pnj) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » : aucun personnage « ${occupantId} » dans la scène` }); continue; }
@@ -311,6 +326,12 @@ export function seatAssignmentDefects(scene: Scene): SeatAssignmentDefect[] {
   return out;
 }
 
+/**
+ * Occupation NORMALISÉE de la scène : ne survivent que les places dont le meuble est posé, dont la
+ * place est déclarée par le catalogue et dont le corps est disponible (héros du groupe fourni, ou
+ * PNJ encore présent). Parcours déterministe (entités, puis places déclarées) ; un occupant apparu
+ * deux fois garde son PREMIER siège. Rend toujours une valeur — `{}` = plus personne d'assis.
+ */
 export function pruneSeatAssignments(scene: Scene, partyHeroIds: ReadonlySet<string>): SeatAssignments {
   const out: SeatAssignments = {};
   const vus: SeatOccupant[] = [];

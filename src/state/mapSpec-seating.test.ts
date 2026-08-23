@@ -61,6 +61,34 @@ describe('MapSpec.seatAssignments — le même meuble, mais une assise à ids FI
     ).toThrow(/abord de sa place/);
   });
 
+  /** Recoin d'UNE case en (2,6) : la table y tient, mais aucun abord n'est praticable. */
+  const GRILLE_CERNEE = [
+    '........',
+    '........',
+    '........',
+    '........',
+    '........',
+    '........',
+    '..P.....',
+    '........',
+  ].join('\n');
+
+  // ── C1 (sonde S3 du juge, promue) ────────────────────────────────────────────────────────────────
+  it('un PNJ attablé dans un recoin MURÉ ne se compile pas — le compilateur refuse ce que le geste refuse', () => {
+    const CERNE: MapSpec = {
+      ...BASE,
+      terrain: 'mur',
+      legend: { P: 'plancher' },
+      levels: { z0: GRILLE_CERNEE },
+      entities: [
+        { id: 'table-1', kind: 'prop', pos: { x: 2, y: 6 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
+        { id: 'pnj-aubergiste', kind: 'personnage', pos: { x: 2, y: 5 }, label: 'Aubergiste' },
+      ],
+      seatAssignments: FIXED_ASSIGNMENT,
+    };
+    expect(() => buildScene(CERNE)).toThrow(/aucun abord praticable/);
+  });
+
   it('la Scène compilée passe le validateur de document', () => {
     const s = buildScene({ ...BASE, entities: [{ ...TABLE }, { ...AUBERGISTE }], seatAssignments: FIXED_ASSIGNMENT });
     expect(validateScene([s]).filter((w) => w.level === 'error')).toEqual([]);

@@ -95,6 +95,28 @@ describe('SeatAssignmentsField — authoring des places assises (id-only)', () =
     expect(mount(s).text()).toBe('');
   });
 
+  // ── I2 (sonde S4 du juge, promue) ────────────────────────────────────────────────────────────────
+  it('déplacer un HÉROS d’une place à l’autre est ACCEPTÉ — la source des héros est le DOCUMENT, pas l’occupation', () => {
+    const s = sceneWithTableAndNpc();
+    s.seatAssignments = { 'table-1': { nord: { kind: 'party', heroId: 'h1' } } };
+    const ui = mount(s);
+    expect([...ui.selectOf('Place sud').options].map((o) => o.value)).toContain('party:h1');
+    ui.choose('Place sud', 'party:h1');
+    expect(ui.sceneOf().seatAssignments).toEqual({ 'table-1': { sud: { kind: 'party', heroId: 'h1' } } });
+    expect(ui.text()).not.toContain('Place refusée');
+  });
+
+  it('libérer la place d’un héros ne le fait PAS disparaître de la liste', () => {
+    const s = sceneWithTableAndNpc();
+    s.seatAssignments = { 'table-1': { nord: { kind: 'party', heroId: 'h1' } } };
+    const ui = mount(s);
+    ui.choose('Place nord', '');
+    expect(ui.sceneOf().seatAssignments).toEqual({});
+    expect([...ui.selectOf('Place nord').options].map((o) => o.value)).toContain('party:h1');
+    ui.choose('Place nord', 'party:h1');
+    expect(ui.sceneOf().seatAssignments).toEqual({ 'table-1': { nord: { kind: 'party', heroId: 'h1' } } });
+  });
+
   it('un abord introuvable REFUSE la place, en toutes lettres, sans écrire', () => {
     const s = sceneWithTableAndNpc();
     // Table cernée de murs : aucune case voisine du siège n'est marchable, aucun abord ne se résout.
@@ -104,6 +126,6 @@ describe('SeatAssignmentsField — authoring des places assises (id-only)', () =
     const ui = mount(s);
     ui.choose('Place nord', 'entity:pnj-aubergiste');
     expect(ui.sceneOf().seatAssignments).toBeUndefined();
-    expect(ui.text()).toContain('abord');
+    expect(ui.text()).toContain('aucun abord praticable ne dessert cette place');
   });
 });
