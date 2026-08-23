@@ -15,8 +15,6 @@ import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import { findTrappingById } from '../data';
 
 export interface SiegeEmplacementOpts {
-  /** Étage de pose (chemin de ronde = 1). Sol (0/absent) = clé omise. */
-  z?: number;
   /** Équipage du poste (ORDRE = chef de pièce en tête → `crewIds[0]`). Vide par défaut (assigné ensuite). */
   crewIds?: string[];
   /** Arc de tir du créneau (relatif à l'orientation-monde du chef) ; absent = tir omni (pivot libre). */
@@ -50,6 +48,5 @@ export function siegeEmplacementEntity(
     postes: [poste],
   };
   if (opts.facing) ent.facing = opts.facing;
-  if (opts.z) ent.z = opts.z;
   return ent;
 }

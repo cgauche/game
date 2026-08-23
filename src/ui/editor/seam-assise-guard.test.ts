@@ -166,9 +166,9 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
   });
 
   it('aucun fichier de `src/ui/**` ne pose la propriété `entities` dans un littéral', () => {
-    // Le défaut I1 était exactement là : un `onChange` de composant réécrivait `scene.entities` sans
-    // passer par une primitive. AUCUNE exemption : l'ajout depuis la palette (`placeEntity`) passe
-    // lui aussi par `addEntity`. Le balayage couvre `.ts` ET `.tsx` — un module utilitaire de
+    // L'interface APPELLE les primitives d'état, elle ne fabrique jamais la liste d'entités —
+    // `onChange` de composant compris. AUCUNE exemption : l'ajout depuis la palette (`placeEntity`)
+    // passe lui aussi par `addEntity`. Le balayage couvre `.ts` ET `.tsx` — un module utilitaire de
     // `src/ui/**` n'est pas moins une porte qu'un composant.
     const fautifs: string[] = [];
     const walk = (dir: string) => {

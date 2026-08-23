@@ -2867,11 +2867,16 @@ bus.on(EVT.TIME_ADVANCED, () => fireScheduledEffects(useGame.getState, useGame.s
 // test, un snapshot coop, une permutation écrite à la main — y passe sans le savoir : le corps
 // présent à chaque emplacement ASSIS est comparé avant/après, et l'emplacement dont le corps a
 // changé (ou disparu) se lève.
-// La scène REMPLACÉE dans la même écriture est hors sujet : chargement de save, `startScene`,
-// `transitionTo` et snapshot coop apportent leur propre occupation (élaguée à leur source) — il n'y
-// a alors aucune recomposition à réconcilier, seulement un monde qui change.
+// Ce qui décide n'est PAS la scène (une scène patchée dans la même écriture reste la même partie),
+// c'est l'OCCUPATION EN VIGUEUR : on réconcilie quand l'écriture n'a pas apporté une occupation
+// NEUVE. Une occupation neuve — chargement de save, `startScene`, `transitionTo`, snapshot coop,
+// élagage, geste d'assise — arrive avec sa propre vérité, déjà élaguée à sa source ; il n'y a alors
+// rien à réconcilier. C'est aussi ce qui rend la réentrance structurelle : l'écriture de libération
+// ci-dessous produit une occupation neuve, donc ne se rejoue pas.
 useGame.subscribe((s, prev) => {
-  if (s.party === prev.party || s.scene !== prev.scene || !s.scene?.seatAssignments) return;
-  const debout = releaseRecomposedRanks(s.scene, prev.party, s.party);
-  if (debout !== s.scene) useGame.setState({ scene: debout });
+  const scene = s.scene;
+  if (s.party === prev.party || !scene?.seatAssignments) return;
+  if (scene.seatAssignments !== prev.scene?.seatAssignments) return;
+  const debout = releaseRecomposedRanks(scene, prev.party, s.party);
+  if (debout !== scene) useGame.setState({ scene: debout });
 });

@@ -108,6 +108,32 @@ describe('recomposition du groupe — l’emplacement dont le corps change se l�
     expect(placesDeGroupe()).toEqual([]);
   });
 
+  it('scène PATCHÉE et groupe permuté dans la MÊME écriture : la chaise se lève quand même', () => {
+    // Ce n'est pas la scène (l'objet) qui décide, c'est l'OCCUPATION en vigueur : patcher un champ de
+    // la scène ne rend pas l'écriture invisible à la couture. Un écrivain qui touche les deux d'un
+    // seul `set` ne peut donc pas transmettre une chaise en silence.
+    attable([1], [hero('h1'), hero('h2')]);
+    const sc = useGame.getState().scene!;
+    useGame.setState((s) => ({ party: [s.party[1], s.party[0]], scene: { ...sc, nom: 'Taverne patchée' } }));
+    expect(useGame.getState().scene!.nom).toBe('Taverne patchée');
+    expect(poseDe(1)).toBeNull();
+    expect(placesDeGroupe()).toEqual([]);
+  });
+
+  it('une OCCUPATION NEUVE fait foi : la save chargée garde la sienne, quel que soit le groupe précédent', () => {
+    // Le pendant du test ci-dessus, et la raison de la clause : une écriture qui APPORTE une
+    // occupation (chargement, entrée en scène, élagage) porte sa propre vérité. La comparer au
+    // groupe de la partie PRÉCÉDENTE lèverait la chaise que la save vient de restaurer.
+    attable([1], [hero('h1')]);
+    expect(useGame.getState().saveGame(1)).toBe(true);
+
+    attable([1], [hero('h9')]);           // une AUTRE partie, même scène, même place, autre corps
+    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
+    expect(useGame.getState().loadGame(1)).toBe(true);
+    expect(useGame.getState().party.map((h) => h.id)).toEqual(['h1']);
+    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
+  });
+
   it('RECRUTER un héros au rang suivant ne touche à rien de ce qui est assis', () => {
     attable([1], [hero('h1')]);
     useGame.getState().partyAddHero(hero('h2'));
@@ -163,10 +189,10 @@ describe('la couture d’occupation est UNIQUE', () => {
     expect(appelants).toEqual(['src/state/store.ts']);
   });
 
-  it('le module qui RECOMPOSE le groupe n’écrit plus l’assise lui-même', () => {
-    // `partyFlow` ajoute, retire, remplace — et ne touche PAS la scène : s'il la touchait, la
-    // politique d'occupation aurait deux auteurs, et c'est exactement le défaut fermé ici (le
-    // remplacement libérait les rangs SUIVANTS, que personne n'avait quittés).
+  it('le module qui RECOMPOSE le groupe n’écrit PAS l’assise lui-même', () => {
+    // `partyFlow` ajoute, retire, remplace : il écrit le GROUPE, jamais la scène. La politique
+    // d'occupation n'a donc qu'un auteur — un `set({ scene })` ici en ferait un second, libre de
+    // diverger de la couture rang par rang.
     const src = lire('src/state/partyFlow.ts');
     const ecritures = [...src.matchAll(/set\(\s*(?:\([^)]*\)\s*=>\s*)?\(?\{[^}]*\bscene\s*:/g)].map((m) => m[0]);
     expect(ecritures).toEqual([]);
