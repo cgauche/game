@@ -52,6 +52,10 @@ export type SeatOccupant =
 /** Emplacement du MENEUR corporel — le seul héros qui ait un corps en exploration aujourd'hui. */
 export const RANG_MENEUR = 1;
 
+/** Libellé d'AFFICHAGE d'un emplacement du groupe — un seul, partagé par le champ d'authoring et
+ *  par les messages du validateur : l'auteur lit le même mot des deux côtés. */
+export const labelEmplacement = (rang: number): string => `Héros ${rang}`;
+
 /** Occupation persistée d'une Scène : `propId → slotId → occupant`. */
 export type SeatAssignments = Record<string, Record<string, SeatOccupant>>;
 
@@ -302,6 +306,33 @@ export function releaseUnavailableSeats(scene: Scene, disponible: (occupant: Sea
   return scèneCourante;
 }
 
+/**
+ * OCCUPATION AU RUNTIME — la chaise appartient au CORPS qui l'occupe. Compare, pour chaque
+ * emplacement ASSIS, le corps présent AVANT et APRÈS une recomposition du groupe (permutation,
+ * retrait avec glissement des rangs suivants, remplacement, écriture en bloc) : l'emplacement dont
+ * le corps a changé d'id, ou dont le corps a disparu, est LEVÉ. Une chaise ne change jamais de
+ * propriétaire en silence, et un emplacement dont le corps n'a pas bougé garde la sienne.
+ *
+ * Un emplacement que PERSONNE n'occupait encore (`avant[rang - 1]` absent) est une RÉSERVATION
+ * d'authoring : le héros qui arrive à ce rang la prend, sans quoi « commencer la scène avec des PJs
+ * déjà assis » n'aurait aucun sens. Les rangs que le groupe n'atteint pas sont, eux, élagués au
+ * chargement (`pruneSeatAssignments`).
+ *
+ * PURE. Rend la scène d'entrée, MÊME RÉFÉRENCE, si aucun emplacement n'a changé de corps.
+ */
+export function releaseRecomposedRanks(
+  scene: Scene,
+  avant: readonly { id: string }[],
+  apres: readonly { id: string }[],
+): Scene {
+  if (!scene.seatAssignments) return scene;
+  return releaseUnavailableSeats(scene, (occupant) => {
+    if (occupant.kind !== 'party') return true;
+    const corpsAvant = avant[occupant.rang - 1]?.id;
+    return corpsAvant === undefined || corpsAvant === apres[occupant.rang - 1]?.id;
+  });
+}
+
 /** Un défaut d'assise du DOCUMENT : le message français à afficher, et l'entité à blâmer (pour que
  *  l'éditeur y emmène au clic). */
 export interface SeatAssignmentDefect { at: string; message: string }
@@ -324,7 +355,7 @@ export function seatAssignmentDefects(scene: Scene): SeatAssignmentDefect[] {
     const places = seatSlotsOf(scene, propId);
     const propPose = !!propEntity(scene, propId);
     for (const [slotId, occupant] of Object.entries(parMeuble)) {
-      const occupantId = occupant.kind === 'party' ? `Héros ${occupant.rang}` : occupant.entityId;
+      const occupantId = occupant.kind === 'party' ? labelEmplacement(occupant.rang) : occupant.entityId;
       if (!propPose) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » (« ${occupantId} ») : aucun décor « ${propId} » dans la scène` }); continue; }
       const place = places.find((p) => p.slotId === slotId);
       if (!place) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » (« ${occupantId} ») : le décor « ${propId} » n'offre pas de place « ${slotId} »` }); continue; }
@@ -337,7 +368,7 @@ export function seatAssignmentDefects(scene: Scene): SeatAssignmentDefect[] {
         // Le GROUPE n'appartient pas au document : seul le RANG se vérifie. Un emplacement que
         // personne n'occupe encore n'est pas un défaut — il s'élague au chargement.
         if (!rangDeGroupeValide(occupant.rang))
-          out.push({ at: propId, message: `Assise « ${propId}/${slotId} » : emplacement de héros ${occupant.rang} hors du groupe (1 à ${PARTY_MAX})` });
+          out.push({ at: propId, message: `Assise « ${propId}/${slotId} » : l'emplacement « ${labelEmplacement(occupant.rang)} » est hors du groupe (« ${labelEmplacement(1)} » à « ${labelEmplacement(PARTY_MAX)} »)` });
         continue;
       }
       const pnj = scene.entities.find((e) => e.id === occupant.entityId && e.kind === 'personnage');

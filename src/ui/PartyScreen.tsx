@@ -239,7 +239,7 @@ function partySummaryText(party: Combatant[], axisIds: string[]): string {
       ? t('party.acts.summary.engaged.one')
       : t('party.acts.summary.engaged.many', { n });
   const ready = n > 0 ? t('party.acts.summary.ready') : t('party.acts.summary.notReady');
-  const vierges = 4 - n;
+  const vierges = PARTY_MAX - n;
   const missingAxes = partyCoverageWithHero(party, axisIds).filter((c) => c.value === 0).map((c) => c.label);
   const viergePart = vierges === 0
     ? t('party.acts.summary.vierge.zero')
@@ -359,8 +359,8 @@ export function PartyScreenView({
   // Solo : carte siège→héros STABLE — le siège d'un héros retiré RESTE en place (le trou ne file plus
   // à droite). Réconciliée avec `party`. En coop, on garde `slotViews` (sièges attribués).
   const [slotMap, setSlotMap] = useState<(string | null)[]>(() => {
-    const m: (string | null)[] = [null, null, null, null];
-    party.forEach((h, i) => { if (i < 4) m[i] = h.id; });
+    const m: (string | null)[] = Array.from({ length: PARTY_MAX }, () => null);
+    party.forEach((h, i) => { if (i < PARTY_MAX) m[i] = h.id; });
     return m;
   });
   useEffect(() => {

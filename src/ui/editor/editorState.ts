@@ -8,7 +8,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
 import { siegeEngines } from '../../data';
 import { propRefPatch } from './propDefaults';
-import { type Rect, type Pt, type Edge4, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, editEntity, moveEntityTo, removeEntity } from '../../state/sceneEdit';
+import { type Rect, type Pt, type Edge4, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, addEntity, editEntity, moveEntityTo, removeEntity } from '../../state/sceneEdit';
 
 export {
   addArchitectureBody,
@@ -555,6 +555,5 @@ export function placeEntity(scene: Scene, kind: EntityKind, ref: string | undefi
   if (ref && kind === 'prop') ent = { ...ent, ...propRefPatch(ref, false), label: PROPS[ref]?.label };
   // Personnage d'ambiance : `ref` porte l'id d'ESPÈCE rig (sélecteur Palette) → apparence + libellé.
   else if (ref && kind === 'personnage') ent = { ...ent, appearance: { species: ref }, label: speciesLabel(ref) };
-  if (z) ent = { ...ent, z }; // pose sur l'étage courant ; sol (0) = champ absent
-  return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
+  return { scene: addEntity(scene, ent, z), id }; // l'étage se pose à la porte d'ajout
 }

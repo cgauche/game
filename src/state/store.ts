@@ -56,7 +56,7 @@ import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlo
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
 import { captureMutation, applyMutation as applySceneMutation, type SceneMutation } from './sceneInstance';
-import { assignSeat, memeCase, pruneSeatAssignments, RANG_MENEUR, releaseSeat, seatPoseOf, seatSlotsOf, type SeatPose } from './seating';
+import { assignSeat, memeCase, pruneSeatAssignments, RANG_MENEUR, releaseRecomposedRanks, releaseSeat, seatPoseOf, seatSlotsOf, type SeatPose } from './seating';
 import type { ClueState } from './clues';
 import { togglePin } from './clues';
 import type { CodexFocus } from './codexFocus';
@@ -82,8 +82,10 @@ function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): 
   // ASSISE : la scène persistée peut porter des places dont le meuble, le slot ou le héros n'existent
   // plus dans CE snapshot (paquet de campagne édité, groupe recomposé) — élaguée AVANT d'entrer en
   // état, par la même source unique que la superposition de mutation.
+  // Une scène qui n'a jamais porté d'assise n'en gagne pas le champ (même invariant que le seam
+  // d'authoring `normaliseAssises`) : rien à élaguer, rien à écrire.
   const chargee = data.scene as Scene | null | undefined;
-  const scene = chargee
+  const scene = chargee?.seatAssignments
     ? { ...chargee, seatAssignments: pruneSeatAssignments(chargee, (data.party ?? []).length) }
     : chargee;
   set({ ...base, ...data, ...(chargee ? { scene } : {}), screen: 'campaign', camEdge: false, net: useGame.getState().net });
@@ -2857,3 +2859,19 @@ export const useGame = create<GameState>((set, get) => ({
 // que soit le chemin (advanceTime, rest, travel, sea émettent tous EVT.TIME_ADVANCED) — seam UNIQUE,
 // plus de dépendance à advanceTime seul (bug de recette : repos/voyage sautaient les échéances).
 bus.on(EVT.TIME_ADVANCED, () => fireScheduledEffects(useGame.getState, useGame.setState));
+
+// ── OCCUPATION AU RUNTIME — LA CHAISE SUIT LE CORPS ────────────────────────────────────────────
+// COUTURE UNIQUE, et PAR CONSTRUCTION : elle ne s'accroche pas aux écrivains de `party` (un seul
+// oublié rouvrirait le défaut), elle observe la TRANSITION d'état. Tout ce qui recompose le groupe
+// — `partyAddHero`/`partyRemoveHero`/`partyReplaceHero`, `setParty` en bloc, devtools, un écran de
+// test, un snapshot coop, une permutation écrite à la main — y passe sans le savoir : le corps
+// présent à chaque emplacement ASSIS est comparé avant/après, et l'emplacement dont le corps a
+// changé (ou disparu) se lève.
+// La scène REMPLACÉE dans la même écriture est hors sujet : chargement de save, `startScene`,
+// `transitionTo` et snapshot coop apportent leur propre occupation (élaguée à leur source) — il n'y
+// a alors aucune recomposition à réconcilier, seulement un monde qui change.
+useGame.subscribe((s, prev) => {
+  if (s.party === prev.party || s.scene !== prev.scene || !s.scene?.seatAssignments) return;
+  const debout = releaseRecomposedRanks(s.scene, prev.party, s.party);
+  if (debout !== s.scene) useGame.setState({ scene: debout });
+});

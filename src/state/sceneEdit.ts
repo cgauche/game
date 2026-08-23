@@ -281,9 +281,9 @@ export function paintCrenellated(scene: Scene, p: Pt, structure: string | null, 
  *  (`siegeRig`) ; sinon → null (pas d'entité fantôme). */
 export function placeEmplacement(scene: Scene, trappingId: string, p: Pt, z = 0, facing?: Dir8): { scene: Scene; id: string } | null {
   const id = nextEntityId('personnage', scene.entities.map((e) => e.id));
-  const ent = siegeEmplacementEntity(id, trappingId, p, { ...(z ? { z } : {}), ...(facing ? { facing } : {}) });
+  const ent = siegeEmplacementEntity(id, trappingId, p, facing ? { facing } : {});
   if (!ent) return null; // posable ⇔ a un art d'affût (`siegeRig`)
-  return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
+  return { scene: addEntity(scene, ent, z), id };
 }
 
 /** Patche le poste UNIQUE (postes[0]) de l'emplacement `entityId` (no-op si l'entité n'en porte pas). */
@@ -329,8 +329,7 @@ export function setPosteEngine(scene: Scene, entityId: string, trappingId: strin
 export function pasteEntity(scene: Scene, data: SceneEntity, p: Pt, z = 0): { scene: Scene; id: string } {
   const id = nextEntityId(data.kind, scene.entities.map((e) => e.id));
   const ent: SceneEntity = { ...(JSON.parse(JSON.stringify(data)) as SceneEntity), id, pos: { ...p } };
-  if (z) ent.z = z; else delete ent.z;
-  return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
+  return { scene: addEntity(scene, ent, z), id };
 }
 
 /** Pose un point d'entrée nommé `entree-N` (premier libre) à p, sur l'étage `z` (défaut 0) — comble le
@@ -458,12 +457,11 @@ export function addEnemyMember(scene: Scene, encId: string, ref: string, p: Pt, 
     id,
     kind: 'personnage',
     pos: { ...p },
-    ...(z ? { z } : {}),
     combat: { hiddenUntilCombat: true },
     ref,
     label: creatureLabel(ref),
   };
-  const withEnt = { ...scene, entities: [...scene.entities, ent] };
+  const withEnt = addEntity(scene, ent, z);
   const { scene: out, encId: usedEnc } = addMember(withEnt, encId, id);
   return { scene: out, encId: usedEnc, entityId: id };
 }
@@ -613,6 +611,17 @@ export function editEntity(scene: Scene, id: string, patch: Partial<SceneEntity>
 /** Idem pour le sous-objet `combat` (fusion non écrasante) — même porte, même seam. */
 export function editEntityCombat(scene: Scene, id: string, patch: Partial<NonNullable<SceneEntity['combat']>>): Scene {
   return normaliseAssises(patchEntityCombat(scene, id, patch), GROUPE_A_L_AUTHORING);
+}
+
+/** Pose d'AUTHORING d'une entité NEUVE (palette, collage, builder d'emplacement) — la seule porte
+ *  d'AJOUT ouverte à `src/ui/**`. L'ajout ne casse aucune assise, mais il n'est pas moins une
+ *  écriture d'`entities` : il passe par la même porte, et l'interface n'a plus aucun motif d'en
+ *  fabriquer la liste. L'ÉTAGE se pose ICI, une fois (`z` = couche demandée ; sol (0) = champ
+ *  absent, convention du modèle) — l'appelant ne le recolle plus sur l'entité. */
+export function addEntity(scene: Scene, ent: SceneEntity, z = 0): Scene {
+  const pose: SceneEntity = { ...ent, z };
+  if (!z) delete pose.z;
+  return normaliseAssises({ ...scene, entities: [...scene.entities, pose] }, GROUPE_A_L_AUTHORING);
 }
 
 /** Suppression d'AUTHORING d'une entité — traverse le seam. */

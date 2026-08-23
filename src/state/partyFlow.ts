@@ -715,6 +715,22 @@ export function partyAddHero(get: Get, set: Set, hero: Combatant, wealth?: Money
   }
 }
 
+/**
+ * Lève de leur place TOUS les emplacements du groupe — PURE, rend la scène à écrire. Le groupe
+ * ENTIER quitte le lieu (`transitionTo`) : une scène quittée ne garde pas un héros absent, et le
+ * revisit ne rassoit personne.
+ *
+ * La RECOMPOSITION du groupe (retrait, remplacement, permutation) ne passe PAS par ici : elle est
+ * réconciliée par la couture d'occupation du store, qui compare les corps rang par rang.
+ * Rend la scène d'entrée, même référence, si personne n'était assis — aucun delta d'instance.
+ */
+export function releaseHeroSeats<S extends Scene | null>(scene: S): S {
+  if (!scene?.seatAssignments) return scene;
+  let next: Scene = scene;
+  for (let rang = 1; rang <= PARTY_MAX; rang++) next = releaseSeat(next, { kind: 'party', rang });
+  return next as S;
+}
+
 /** Retire un héros du groupe (écran d'équipe) et nettoie sa possession réseau.
  *  SUCCESSION (§6/§19, décision №3, SOCLE POSSESSIONS #615) — jamais d'orphelin gelé : les
  *  Possessions du héros retiré ET sa Bourse passent à un héritier VIVANT, défaut = le DOYEN (1er
@@ -722,41 +738,11 @@ export function partyAddHero(get: Get, set: Set, hero: Combatant, wealth?: Money
  *  idiome `party.filter(h => !h.dead)` du repo : un cadavre n'hérite pas). Aucun vivant restant
  *  (groupe vidé ou tout-morts) → repli : rien à hériter, la Bourse/les Possessions du partant
  *  restent SUR LUI (il quitte le groupe avec son bien, aucun héritier vivant à défausser dessus). */
-/**
- * Lève de leur place les emplacements de groupe à partir du rang `rangMin` — PURE, rend la scène à
- * écrire. Couture UNIQUE des libérations de GROUPE : recomposition (retrait, remplacement) et groupe
- * ENTIER qui quitte une scène (`transitionTo`, `rangMin = 1` : une scène quittée ne garde pas un
- * héros absent).
- *
- * À PARTIR DE, et pas seulement le partant : une place de groupe désigne un RANG, et retirer le
- * héros d'indice i DÉCALE tous les suivants — « Héros 3 » ne désignerait plus le même corps. Les
- * rangs AVANT lui sont intacts et gardent leur chaise ; aucune chaise ne change de propriétaire en
- * silence, et aucune ne se lève sans raison.
- * Rend la scène d'entrée, même référence, si personne n'était assis — aucun delta d'instance.
- */
-export function releaseHeroSeats<S extends Scene | null>(scene: S, rangMin = 1): S {
-  if (!scene?.seatAssignments) return scene;
-  let next: Scene = scene;
-  for (let rang = rangMin; rang <= PARTY_MAX; rang++) next = releaseSeat(next, { kind: 'party', rang });
-  return next as S;
-}
-
-/** Le même geste, appliqué à l'état : la scène n'est réécrite que si elle a VRAIMENT changé. */
-function libererPlace(get: Get, set: Set, rangMin: number): void {
-  const sc = get().scene;
-  if (!sc) return;
-  const next = releaseHeroSeats(sc, rangMin);
-  if (next !== sc) set({ scene: next });
-}
-
 export function partyRemoveHero(get: Get, set: Set, heroId: string): void {
   const s = get();
   const idx = s.party.findIndex((h) => h.id === heroId);
   if (idx < 0) return;
   const hero = s.party[idx];
-  // Le partant et TOUS ceux qui vont glisser d'un rang se lèvent : après coup, « Héros idx+1 »
-  // désignerait le corps suivant, et une chaise ne se transmet pas.
-  libererPlace(get, set, idx + 1);
   const remaining = s.party.filter((h) => h.id !== heroId);
   const heir = remaining.find((h) => !h.dead);
   if (heir) {
@@ -780,7 +766,6 @@ export function partyReplaceHero(get: Get, set: Set, oldId: string, hero: Combat
   const idx = s.party.findIndex((h) => h.id === oldId);
   if (idx < 0) return;                                                    // l'ancien n'est plus là
   if (hero.id !== oldId && s.party.some((h) => h.id === hero.id)) return; // doublon d'id
-  if (hero.id !== oldId) libererPlace(get, set, idx + 1); // corps remplacé : SON emplacement se lève, les autres tiennent
   const copy: Combatant = structuredClone(hero);
   const ownership = { ...s.net.ownership };
   delete ownership[oldId];

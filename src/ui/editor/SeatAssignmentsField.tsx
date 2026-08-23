@@ -15,7 +15,7 @@
 import { useState } from 'react';
 import type { Scene } from '../../state/scene';
 import { PARTY_MAX } from '../../state/combatants';
-import { releaseSeat, seatSlotsOf, type SeatAssignmentResult, type SeatOccupant } from '../../state/seating';
+import { labelEmplacement, releaseSeat, seatSlotsOf, type SeatAssignmentResult, type SeatOccupant } from '../../state/seating';
 import { normaliseAssises, seatOccupant } from '../../state/sceneEdit';
 
 /** Motif de refus d'`assignSeat`, dit à l'auteur. Chaque libellé énonce le fait MESURÉ par la raison
@@ -93,7 +93,7 @@ export function SeatAssignmentsField({
             ))}
             {EMPLACEMENTS.map((rang) => (
               <option key={rang} value={`party:${rang}`}>
-                Héros {rang}
+                {labelEmplacement(rang)}
               </option>
             ))}
           </select>

@@ -36,6 +36,7 @@
  * matériau de surface vers son matériau de profondeur.
  */
 import * as THREE from 'three';
+import { PARTY_MAX } from '../../../state/combatants';
 
 /** Nom de l'attribut de perçabilité, cuit par sommet (`BakedWorld.percables`). */
 export const PERCABLE_ATTRIBUT = 'aPercable';
@@ -44,9 +45,10 @@ export const PERCABLE_ATTRIBUT = 'aPercable';
  *  rendent le shader d'origine — la surcharge est globale au module three, la découpe ne l'est pas. */
 export const PERCAGE_DEFINE = 'PERCAGE_LOCAL';
 
-/** Nombre de trous simultanés — un par héros du groupe (4). C'est une borne de COMPILATION (la boucle
- *  du fragment se déroule), pas une file : au-delà, un héros de plus ne troue rien. */
-export const PERCAGE_MAX_HEROS = 4;
+/** Nombre de trous simultanés — un par héros du groupe, donc `PARTY_MAX` : une seule vérité, celle
+ *  du groupe. C'est une borne de COMPILATION (la boucle du fragment se déroule), pas une file :
+ *  au-delà, un héros de plus ne troue rien. */
+export const PERCAGE_MAX_HEROS = PARTY_MAX;
 
 // ————————————————————————————————————————————————————————————————
 // MOLETTES — les réglages que le juge de goût tourne

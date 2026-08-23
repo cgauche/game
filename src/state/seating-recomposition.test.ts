@@ -1,0 +1,174 @@
+/**
+ * OCCUPATION AU RUNTIME — LA CHAISE SUIT LE CORPS.
+ *
+ * À l'AUTHORING, une place de groupe désigne un EMPLACEMENT (« Héros 1 »… « Héros N ») : qui entre
+ * au rang r s'y assoit. Au RUNTIME, la chaise appartient au CORPS qui l'occupe — dès que le héros
+ * présent à un rang ASSIS change (permutation, retrait avec glissement, remplacement, écriture en
+ * bloc), cette place se lève : une chaise ne change jamais de propriétaire en silence.
+ *
+ * La couture est UNIQUE et ne dépend d'AUCUN appelant : elle observe la transition d'état du store
+ * (`useGame.subscribe`) et compare les corps rang par rang. Ces tests l'attaquent donc par des
+ * écrivains qui ne la connaissent pas — `setState` brut, `setParty` en bloc — autant que par les
+ * primitives de recomposition.
+ */
+import { describe, it, expect, beforeEach } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import { useGame } from './store';
+import { emptyScene, type Scene } from './scene';
+import { assignSeat, seatPoseOf } from './seating';
+import { readSlot } from './saves';
+import type { Combatant } from '../engine/types';
+
+const TABLE = 'table-ronde-4-tabourets';
+const PROP = 'table-1';
+/** Les places de la table, dans l'ordre du catalogue : une par rang, pour lire le résultat d'un œil. */
+const SLOT_DU_RANG = ['nord', 'est', 'sud', 'ouest'];
+
+const hero = (id: string): Combatant =>
+  ({ id, label: id.toUpperCase(), kind: 'hero', xp: 0, wounds: { current: 12, max: 12 }, conditions: [], movement: 4 }) as unknown as Combatant;
+
+const poseDe = (rang: number) => seatPoseOf(useGame.getState().scene!, { kind: 'party', rang });
+const placesDeGroupe = () =>
+  Object.values(useGame.getState().scene?.seatAssignments ?? {}).flatMap((m) => Object.values(m)).filter((o) => o.kind === 'party');
+
+/** Attable les `rangs` demandés par la primitive RÉELLE (`assignSeat`), puis entre en scène. */
+function attable(rangs: number[], party: Combatant[]): void {
+  let sc: Scene = emptyScene(12, 12);
+  sc.id = 'taverne';
+  sc.entities.push({ id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N' });
+  for (const rang of rangs) {
+    const r = assignSeat(sc, PROP, SLOT_DU_RANG[rang - 1], { kind: 'party', rang }, party.length);
+    if (!r.ok) throw new Error(`assignSeat refusé (rang ${rang}) : ${r.reason}`);
+    sc = r.scene;
+  }
+  useGame.setState({ party, scene: null, mode: 'exploration', journal: [], battle: null, dialogue: null });
+  useGame.getState().startScene(sc);
+}
+
+/** Stockage de save en mémoire — le chemin de save/chargement est le RÉEL, sur un support jetable. */
+function fakeStorage(): Storage {
+  const m = new Map<string, string>();
+  return {
+    getItem: (k: string) => m.get(k) ?? null,
+    setItem: (k: string, v: string) => void m.set(k, String(v)),
+    removeItem: (k: string) => void m.delete(k),
+    clear: () => m.clear(),
+    key: (i: number) => [...m.keys()][i] ?? null,
+    get length() { return m.size; },
+  } as Storage;
+}
+
+describe('recomposition du groupe — l’emplacement dont le corps change se lève', () => {
+  beforeEach(() => {
+    (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
+    useGame.setState({ battle: null, dialogue: null });
+  });
+
+  it('PERMUTER l’ordre du groupe lève la chaise : elle ne se transmet pas au corps suivant', () => {
+    attable([1], [hero('h1'), hero('h2')]);
+    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
+    // Écriture BRUTE : cet appelant ne connaît pas la couture, et n'a pas à la connaître.
+    useGame.setState((s) => ({ party: [s.party[1], s.party[0]] }));
+    expect(poseDe(1)).toBeNull();
+    expect(placesDeGroupe()).toEqual([]);
+  });
+
+  it('RETIRER le premier héros lève les rangs qui glissent, et EUX SEULS', () => {
+    attable([2, 3], [hero('h1'), hero('h2'), hero('h3')]);
+    expect(poseDe(2)).toMatchObject({ slotId: 'est' });
+    expect(poseDe(3)).toMatchObject({ slotId: 'sud' });
+    useGame.getState().partyRemoveHero('h1');
+    // h2 et h3 ont glissé d'un cran : « Héros 2 » désigne un AUTRE corps, « Héros 3 » plus personne.
+    expect(useGame.getState().party.map((h) => h.id)).toEqual(['h2', 'h3']);
+    expect(poseDe(2)).toBeNull();
+    expect(poseDe(3)).toBeNull();
+  });
+
+  it('REMPLACER un héros EN PLACE ne lève que SON emplacement — les rangs suivants tiennent', () => {
+    attable([2, 3], [hero('h1'), hero('h2'), hero('h3')]);
+    useGame.getState().partyReplaceHero('h2', hero('neuf'));
+    expect(useGame.getState().party.map((h) => h.id)).toEqual(['h1', 'neuf', 'h3']);
+    expect(poseDe(2)).toBeNull();
+    expect(poseDe(3)).toMatchObject({ slotId: 'sud' }); // son corps n'a pas bougé : il garde sa chaise
+  });
+
+  it('un remplacement À MÊME ID (édition en place) ne lève personne, et n’écrit pas la scène', () => {
+    attable([1], [hero('h1')]);
+    const avant = useGame.getState().scene!;
+    useGame.getState().partyReplaceHero('h1', { ...hero('h1'), label: 'Retouché' } as Combatant);
+    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
+    expect(useGame.getState().scene).toBe(avant); // aucune écriture inutile
+  });
+
+  it('`setParty` en BLOC (devtools, écran de scénarios) lève la place du corps remplacé', () => {
+    attable([1], [hero('h1')]);
+    useGame.getState().setParty([hero('autre')]);
+    expect(poseDe(1)).toBeNull();
+    expect(placesDeGroupe()).toEqual([]);
+  });
+
+  it('RECRUTER un héros au rang suivant ne touche à rien de ce qui est assis', () => {
+    attable([1], [hero('h1')]);
+    useGame.getState().partyAddHero(hero('h2'));
+    expect(useGame.getState().party.map((h) => h.id)).toEqual(['h1', 'h2']);
+    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
+  });
+
+  it('CHARGEMENT d’une save dont le groupe n’atteint pas le rang assis : élagage SILENCIEUX', () => {
+    // Save dont la scène attable l'emplacement 2 alors que la partie n'a qu'un héros — la forme
+    // qu'un paquet de campagne réédité entre deux sessions produit. Au chargement, rien à afficher
+    // et rien à corriger à la main : le rang est élagué (`pruneSeatAssignments`).
+    attable([2], [hero('h1'), hero('h2')]);
+    expect(useGame.getState().saveGame(1)).toBe(true);
+    const save = readSlot(1)!;
+    const data = save.data as { party: Combatant[] };
+    data.party = data.party.slice(0, 1);
+
+    useGame.setState({ party: [], scene: null });
+    expect(useGame.getState().importGame(JSON.stringify(save))).toBe(true);
+    expect(useGame.getState().party.map((h) => h.id)).toEqual(['h1']);
+    expect(poseDe(2)).toBeNull();
+    expect(placesDeGroupe()).toEqual([]);
+  });
+
+  it('une scène qui n’a JAMAIS porté d’assise n’en gagne pas le champ au chargement', () => {
+    attable([], [hero('h1')]);
+    expect(useGame.getState().scene!.seatAssignments).toBeUndefined();
+    expect(useGame.getState().saveGame(1)).toBe(true);
+    useGame.setState({ party: [], scene: null });
+    expect(useGame.getState().loadGame(1)).toBe(true);
+    expect(useGame.getState().scene!.seatAssignments).toBeUndefined();
+  });
+});
+
+describe('la couture d’occupation est UNIQUE', () => {
+  const ROOT = path.resolve(__dirname, '..', '..');
+  const lire = (rel: string) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+  const sources = (dir: string): string[] => {
+    const out: string[] = [];
+    const walk = (d: string) => {
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const p = path.join(d, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) out.push(path.relative(ROOT, p).replace(/\\/g, '/'));
+      }
+    };
+    walk(path.join(ROOT, dir));
+    return out;
+  };
+
+  it('un SEUL site de `src/**` réconcilie l’occupation d’une recomposition', () => {
+    const appelants = sources('src').filter((rel) => rel !== 'src/state/seating.ts' && /releaseRecomposedRanks\(/.test(lire(rel)));
+    expect(appelants).toEqual(['src/state/store.ts']);
+  });
+
+  it('le module qui RECOMPOSE le groupe n’écrit plus l’assise lui-même', () => {
+    // `partyFlow` ajoute, retire, remplace — et ne touche PAS la scène : s'il la touchait, la
+    // politique d'occupation aurait deux auteurs, et c'est exactement le défaut fermé ici (le
+    // remplacement libérait les rangs SUIVANTS, que personne n'avait quittés).
+    const src = lire('src/state/partyFlow.ts');
+    const ecritures = [...src.matchAll(/set\(\s*(?:\([^)]*\)\s*=>\s*)?\(?\{[^}]*\bscene\s*:/g)].map((m) => m[0]);
+    expect(ecritures).toEqual([]);
+  });
+});

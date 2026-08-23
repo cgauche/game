@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import ts from 'typescript';
 import { emptyScene, type Scene } from '../../state/scene';
 import { validateScene } from '../../state/validateScene';
-import { changePropRef, deleteSel, moveSel, eraseAt } from './editorState';
+import { changePropRef, deleteSel, moveSel, eraseAt, placeEntity } from './editorState';
 import {
   editEntity,
   editEntityCombat,
@@ -18,108 +19,119 @@ import {
 /**
  * INVARIANT DE SOCLE #2 — UN SEUL SEAM D'ASSISE.
  *
- * Toute mutation d'éditeur qui touche une entité EXISTANTE (pos, facing, z, ref, suppression — meuble
- * OU corps) traverse `normaliseAssises`. Le défaut que cette garde ferme n'est pas une liste de
- * primitives : c'est la CLASSE « une Nᵉ porte d'écriture d'`entities` s'ouvre et contourne l'assise ».
- * Précédent mesuré : le `<select>` Orientation de l'inspecteur écrivait `entities` en direct, et
- * tourner un meuble attablé produisait un document que `validateScene` refuse.
+ * CE QUE CETTE GARDE MESURE, exactement, sur l'ARBRE SYNTAXIQUE (`typescript`, jamais une regex) :
  *
- * Deux propriétés la rendent réfutable :
- *  - le périmètre se DÉRIVE de la SOURCE (toute fonction exportée de `sceneEdit.ts`/`editorState.ts`
- *    dont le corps réécrit/filtre `entities` ou patche une entité) — aucune liste tenue à la main ;
- *  - l'oracle est le VALIDATEUR DU DOCUMENT (`validateScene`), pas une reformulation de la règle.
+ *  1. `src/ui/**` (`.ts` + `.tsx`, tests exclus) : ZÉRO propriété `entities` posée dans un littéral
+ *     d'objet, QUELLE QUE SOIT sa valeur. L'interface ne fabrique jamais la liste d'entités — même
+ *     un ajout passe par une primitive d'état (`addEntity`). Une règle sans exception ne s'évade
+ *     pas : la forme de l'écriture (variable intermédiaire, destructuration, clé entre guillemets,
+ *     `splice` sur une copie, absence de `;`) ne change rien au FAIT qu'une propriété `entities`
+ *     est posée.
+ *  2. `src/state/sceneEdit.ts` : toute fonction EXPORTÉE (déclaration ou const fléchée) qui pose
+ *     `entities` dans un littéral — ou qui appelle une écriture mécanique — traverse
+ *     `normaliseAssises`, directement ou par fermeture d'appels ; sauf les écritures mécaniques
+ *     elles-mêmes, nommées au cliquet `HORS_SEAM`.
+ *  3. ORACLE COMPORTEMENTAL : chaque geste d'édition d'entité, appliqué à une scène HOSTILE, rend
+ *     un document que `validateScene` accepte. L'oracle est le VALIDATEUR, pas une reformulation.
+ *
+ * ANGLE MORT RÉSIDUEL, mesuré et assumé : l'analyse est SYNTAXIQUE et intra-module. Elle ne voit
+ * pas une liste d'entités posée SANS littéral d'objet (`scene.entities = liste`, écriture par
+ * index, `structuredClone` retouché), ni une clé calculée qui n'est pas une chaîne littérale, ni
+ * une primitive de `sceneEdit.ts` atteinte par un alias importé sous un autre nom : la fermeture
+ * d'appels ne suit que les identifiants appelés PAR NOM dans le module analysé. Le filet de
+ * dernier ressort de ces formes est le troisième test — un document invalide y échoue, quelle que
+ * soit la route par laquelle il a été fabriqué.
  */
 const ROOT = path.resolve(__dirname, '..', '..', '..');
-const SOURCES = ['src/state/sceneEdit.ts', 'src/ui/editor/editorState.ts'];
+const SCENE_EDIT = 'src/state/sceneEdit.ts';
+const CLE = 'entities';
+const SEAM = 'normaliseAssises';
 
-/** Retire commentaires de ligne et de bloc — un motif interdit CITé en prose n'est pas une écriture. */
-const sansCommentaires = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+/** Écritures MÉCANIQUES : le seam les COMPOSE, elles ne peuvent pas le composer. */
+const MECANIQUES = ['patchEntity', 'patchEntityCombat'];
 
-/**
- * Découpe un module en primitives EXPORTées : nom → corps (jusqu'à l'export suivant, quel qu'il
- * soit — `type`, `interface`, `const`… : la borne doit être la plus proche, sans quoi un corps
- * avale le voisin). Les deux formes réelles du dépôt sont couvertes : `export function f(…)` ET
- * `export const f = (…) => …` — une garde qui ne connaît que la première s'évalue à la syntaxe
- * choisie par l'écrivain, pas à ce qu'il fait.
- */
-function exportedBodies(rel: string): Map<string, string> {
-  const src = sansCommentaires(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
-  const out = new Map<string, string>();
-  const bornes = [...src.matchAll(/^export\b.*$/gm)];
-  bornes.forEach((m, i) => {
-    const nomme = /^export (?:async )?function (\w+)/.exec(m[0]) ?? /^export const (\w+)\s*[:=]/.exec(m[0]);
-    if (!nomme) return;
-    const debut = m.index!;
-    const fin = i + 1 < bornes.length ? bornes[i + 1].index! : src.length;
-    out.set(nomme[1], src.slice(debut, fin));
+const parse = (code: string, nom: string): ts.SourceFile =>
+  ts.createSourceFile(nom, code, ts.ScriptTarget.Latest, true, /\.tsx$/.test(nom) ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+
+function visiter(node: ts.Node, f: (n: ts.Node) => void): void {
+  f(node);
+  node.forEachChild((enfant) => visiter(enfant, f));
+}
+
+/** Nom de propriété RÉELLEMENT posé — identifiant, chaîne entre guillemets, ou clé calculée dont
+ *  l'expression est une chaîne littérale. Rien d'autre ne nomme une propriété à coup sûr. */
+function nomDeProp(name: ts.PropertyName): string | null {
+  if (ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name)) return name.text;
+  if (ts.isComputedPropertyName(name) && ts.isStringLiteralLike(name.expression)) return name.expression.text;
+  return null;
+}
+
+/** Les propriétés `entities` posées dans un littéral d'objet SOUS ce nœud, avec leur aperçu. Les
+ *  commentaires et les chaînes n'en sont pas : l'AST ne les confond avec rien. Un `...spread` n'en
+ *  est pas non plus — il recopie une scène, il ne fabrique pas la liste. */
+function proprietesEntites(racine: ts.Node, sf: ts.SourceFile): string[] {
+  const out: string[] = [];
+  visiter(racine, (n) => {
+    if (!ts.isObjectLiteralExpression(n)) return;
+    for (const p of n.properties) {
+      const cle = ts.isShorthandPropertyAssignment(p) ? p.name.text : p.name ? nomDeProp(p.name) : null;
+      if (cle !== CLE) continue;
+      out.push(`entities → ${p.getText(sf).replace(/\s+/g, ' ').slice(0, 90)}`);
+    }
   });
   return out;
 }
 
-/** Verbes qui DÉRIVENT une nouvelle liste d’entités : la valeur posée sur `entities:` en porte un
- *  → c’est une réécriture de la collection, pas un ajout. Un `filter` glissé dans un spread
- *  (`entities: [...s.entities.filter(...)]`) est un RETRAIT, pas un ajout : le premier caractère de
- *  la valeur ne dit RIEN, seul le contenu compte. */
-const VERBES_DE_LISTE = /\.entities\s*(?:\n\s*)?\.\s*(?:map|filter|slice|sort|splice|reduce|concat|flatMap|toSorted|toSpliced|with)\s*\(/;
-
-/**
- * Écrit-on `entities` en DIRECT dans ce texte de module ? Rend les motifs fautifs, vides sinon.
- *
- * Quatre pièges MESURÉS, tous fermés ici :
- *  - le scan PAR LIGNE laissait passer la forme en DEUX temps (`const suivantes = scene.entities
- *    .map(…)` puis `entities: suivantes`) — l’analyse porte donc sur le texte ENTIER ;
- *  - `scene.entities.map(…)` est aussi la lecture LICITE d’une liste à afficher : seule la valeur
- *    posée SUR la clé `entities:` d’un littéral compte, directement ou par sa variable ;
- *  - le CHAÎNAGE peut passer à la ligne (`entities: scene.entities` puis `.map(…)` en dessous) :
- *    la valeur se lit donc jusqu’à la fin du littéral, sauts de ligne compris ;
- *  - `map`/`filter` ne sont pas les seuls verbes destructeurs : `slice`/`sort`/`splice`/`reduce`
- *    et leurs cousins réécrivent aussi la collection.
- *
- * Un AJOUT pur (`entities: [...scene.entities, ent]`) reste licite : il n’invalide aucune assise.
- * L’exemption teste l’ABSENCE de verbe de liste dans la valeur, jamais son premier caractère —
- * `entities: [...s.entities.filter((e) => e.id !== id)]` est un RETRAIT déguisé en ajout.
- */
-function ecrituresDirectes(texte: string): string[] {
-  const src = sansCommentaires(texte);
-  const fautifs: string[] = [];
-  for (const m of src.matchAll(/\bpatchEntity(?:Combat)?\(/g)) fautifs.push(m[0]);
-  for (const m of src.matchAll(/(?<![.\w$])entities\s*:([\s\S]*?)(?:,\s*\n|;|\n\s*\}\)?)/g)) {
-    const valeur = m[1];
-    const apercu = valeur.trim().split("\n")[0].slice(0, 90);
-    if (VERBES_DE_LISTE.test(valeur)) { fautifs.push(`entities:${apercu}`); continue; }
-    // La valeur peut traîner la ponctuation fermante du littéral (`suivantes });`) : on ne garde
-    // que l'identifiant, puis on va lire CE QUI L'A REMPLI.
-    const via = /^\s*(\w+)\s*[)}\];,]*\s*$/.exec(valeur.split('\n')[0]);
-    if (!via) continue;
-    const decl = new RegExp(`(?:const|let|var)\\s+${via[1]}\\s*(?::[^=]+)?=([\\s\\S]*?);`);
-    const assignee = decl.exec(src);
-    if (assignee && VERBES_DE_LISTE.test(assignee[1])) fautifs.push(`entities:${apercu}  (via ${via[1]})`);
-  }
-  return fautifs;
+/** Les identifiants APPELÉS sous ce nœud (fermeture d'appels par nom). */
+function appelsDe(racine: ts.Node): Set<string> {
+  const out = new Set<string>();
+  visiter(racine, (n) => {
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression)) out.add(n.expression.text);
+  });
+  return out;
 }
 
-/** Écrit-elle une entité EXISTANTE ? MÊME analyseur que le balayage d’interface : une seule
- *  définition de « écrire `entities` », donc un seul endroit où la règle N+1 s’ajoute. */
-const muteUneEntite = (body: string) => ecrituresDirectes(body).length > 0;
+interface Fonction { node: ts.Node; exportee: boolean }
 
-/** Traverse-t-elle le seam ? Directement, ou par une primitive qui le fait (fermeture transitive). */
-function traverseLeSeam(bodies: Map<string, string>, nom: string, vus = new Set<string>()): boolean {
+/** Les fonctions de PREMIER NIVEAU d'un module — déclarations ET const fléchées, exportées ou non
+ *  (les non exportées portent la fermeture d'appels : une primitive publique peut passer par elles
+ *  pour atteindre le seam). */
+function fonctionsDuModule(rel: string): { sf: ts.SourceFile; fns: Map<string, Fonction> } {
+  const sf = parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'), rel);
+  const fns = new Map<string, Fonction>();
+  const exporte = (n: ts.Node): boolean =>
+    ts.canHaveModifiers(n) && !!ts.getModifiers(n)?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+  for (const st of sf.statements) {
+    if (ts.isFunctionDeclaration(st) && st.name) fns.set(st.name.text, { node: st, exportee: exporte(st) });
+    else if (ts.isVariableStatement(st))
+      for (const d of st.declarationList.declarations)
+        if (ts.isIdentifier(d.name) && d.initializer) fns.set(d.name.text, { node: d, exportee: exporte(st) });
+  }
+  return { sf, fns };
+}
+
+/** Écrit-elle une entité ? Elle pose `entities` dans un littéral, OU elle appelle une écriture
+ *  mécanique — une seule définition, partagée par les deux balayages. */
+function ecritUneEntite(fn: Fonction, sf: ts.SourceFile): string[] {
+  const appels = appelsDe(fn.node);
+  return [...proprietesEntites(fn.node, sf), ...MECANIQUES.filter((m) => appels.has(m)).map((m) => `${m}()`)];
+}
+
+/** Traverse-t-elle le seam ? Directement, ou par une fonction du module qui le fait. */
+function traverseLeSeam(fns: Map<string, Fonction>, nom: string, vus = new Set<string>()): boolean {
   if (vus.has(nom)) return false;
   vus.add(nom);
-  const body = bodies.get(nom);
-  if (!body) return false;
-  if (/\bnormaliseAssises\(/.test(body)) return true;
-  for (const autre of bodies.keys())
-    if (autre !== nom && new RegExp(`\\b${autre}\\(`).test(body) && traverseLeSeam(bodies, autre, vus)) return true;
+  const fn = fns.get(nom);
+  if (!fn) return false;
+  const appels = appelsDe(fn.node);
+  if (appels.has(SEAM)) return true;
+  for (const autre of appels) if (fns.has(autre) && traverseLeSeam(fns, autre, vus)) return true;
   return false;
 }
 
 /**
  * CLIQUET NOMMÉ — les écrivains d'entité qui NE traversent PAS le seam. Chacun porte sa raison ; la
  * liste ne peut que décroître, et un écrivain nouveau y échoue tant qu'il n'est pas classé.
- * `patchEntity`/`patchEntityCombat` sont les écritures MÉCANIQUES sur lesquelles le seam est bâti :
- * elles ne peuvent pas se composer à travers lui. Leur usage direct depuis `src/ui/**` est fermé par
- * le troisième test.
  */
 const HORS_SEAM: Record<string, string> = {
   patchEntity: 'écriture mécanique — le seam la compose (editEntity), elle ne peut pas le composer',
@@ -127,44 +139,37 @@ const HORS_SEAM: Record<string, string> = {
 };
 
 describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entité', () => {
-  it('toute primitive exportée qui mute une entité existante traverse `normaliseAssises`', () => {
+  it('toute primitive exportée de `sceneEdit` qui écrit une entité traverse `normaliseAssises`', () => {
+    const { sf, fns } = fonctionsDuModule(SCENE_EDIT);
     const manquantes: string[] = [];
-    for (const rel of SOURCES) {
-      const bodies = exportedBodies(rel);
-      for (const [nom, body] of bodies) {
-        if (!muteUneEntite(body) || HORS_SEAM[nom]) continue;
-        if (!traverseLeSeam(bodies, nom)) manquantes.push(`${rel} :: ${nom}`);
-      }
+    for (const [nom, fn] of fns) {
+      if (!fn.exportee || HORS_SEAM[nom] || !ecritUneEntite(fn, sf).length) continue;
+      if (!traverseLeSeam(fns, nom)) manquantes.push(`${SCENE_EDIT} :: ${nom}`);
     }
     expect(manquantes, `écrivain(s) d’entité hors seam :\n${manquantes.join('\n')}`).toEqual([]);
   });
 
-  it('le balayage n’est PAS vacant — il voit les écrivains réels des deux modules', () => {
-    const vus = new Map<string, string[]>();
-    for (const rel of SOURCES)
-      vus.set(rel, [...exportedBodies(rel)].filter(([, body]) => muteUneEntite(body)).map(([nom]) => nom));
-    for (const attendu of ['patchEntity', 'patchEntityCombat', 'editEntity', 'editEntityCombat', 'moveEntityTo', 'removeEntity'])
-      expect(vus.get('src/state/sceneEdit.ts'), `${attendu} devrait être vu comme écrivain d’entité`).toContain(attendu);
-    // `deleteSel` ne figure PAS ici : il délègue à `removeEntity` et n'écrit plus `entities`
-    // lui-même — c'est le résultat recherché, pas un angle mort (le balayage structurel le suit
-    // par fermeture d'appels).
-    expect(vus.get('src/ui/editor/editorState.ts')).toEqual([]);
+  it('le balayage n’est PAS vacant — il voit les écrivains réels du module', () => {
+    const { sf, fns } = fonctionsDuModule(SCENE_EDIT);
+    const vus = [...fns].filter(([, fn]) => ecritUneEntite(fn, sf).length).map(([nom]) => nom);
+    for (const attendu of ['patchEntity', 'patchEntityCombat', 'addEntity', 'editEntity', 'editEntityCombat', 'moveEntityTo', 'removeEntity'])
+      expect(vus, `${attendu} devrait être vu comme écrivain d’entité`).toContain(attendu);
   });
 
   it('le cliquet ne porte aucune entrée PÉRIMÉE (primitive disparue ou rentrée dans le rang)', () => {
-    const tous = new Map<string, string>();
-    for (const rel of SOURCES) for (const [nom, body] of exportedBodies(rel)) tous.set(nom, body);
+    const { sf, fns } = fonctionsDuModule(SCENE_EDIT);
     for (const nom of Object.keys(HORS_SEAM)) {
-      expect(tous.has(nom), `${nom} n’existe plus — retire-le de HORS_SEAM`).toBe(true);
-      expect(muteUneEntite(tous.get(nom)!), `${nom} ne mute plus d’entité — retire-le de HORS_SEAM`).toBe(true);
+      const fn = fns.get(nom);
+      expect(fn, `${nom} n’existe plus — retire-le de HORS_SEAM`).toBeDefined();
+      expect(ecritUneEntite(fn!, sf).length, `${nom} n’écrit plus d’entité — retire-le de HORS_SEAM`).toBeGreaterThan(0);
     }
   });
 
-  it('aucun fichier de `src/ui/**` n’écrit `entities` en direct', () => {
+  it('aucun fichier de `src/ui/**` ne pose la propriété `entities` dans un littéral', () => {
     // Le défaut I1 était exactement là : un `onChange` de composant réécrivait `scene.entities` sans
-    // passer par une primitive. AUCUNE exemption ici : `editorState.ts` lui-même ne pose plus que des
-    // AJOUTS (`placeEntity`), ses retraits passent par `removeEntity`. Le balayage couvre `.ts` ET
-    // `.tsx` : un module utilitaire de `src/ui/**` n'est pas moins une porte qu'un composant.
+    // passer par une primitive. AUCUNE exemption : l'ajout depuis la palette (`placeEntity`) passe
+    // lui aussi par `addEntity`. Le balayage couvre `.ts` ET `.tsx` — un module utilitaire de
+    // `src/ui/**` n'est pas moins une porte qu'un composant.
     const fautifs: string[] = [];
     const walk = (dir: string) => {
       for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -172,28 +177,47 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
         if (e.isDirectory()) { walk(p); continue; }
         if (!/\.tsx?$/.test(e.name) || /\.test\.tsx?$/.test(e.name)) continue;
         const rel = path.relative(ROOT, p).replace(/\\/g, '/');
-        for (const motif of ecrituresDirectes(fs.readFileSync(p, 'utf8'))) fautifs.push(`${rel} :: ${motif}`);
+        const sf = parse(fs.readFileSync(p, 'utf8'), rel);
+        for (const motif of proprietesEntites(sf, sf)) fautifs.push(`${rel} :: ${motif}`);
       }
     };
     walk(path.join(ROOT, 'src', 'ui'));
     expect(fautifs, `écriture d’entité en direct depuis l’interface :\n${fautifs.join('\n')}`).toEqual([]);
   });
 
-  it('l’analyseur voit les CINQ formes du défaut, et laisse passer les trois licites', () => {
-    // H1..H5 — sondes adversariales : chacune a déjà PASSÉ une version précédente de cette garde.
-    const H = [
+  it('l’analyseur voit les ONZE formes mesurées du défaut, et laisse passer ce qui ne pose rien', () => {
+    // H1..H5 : formes qui ont PASSÉ une version antérieure de cette garde (analyseur de FORME).
+    // E1..E6 : évasions mesurées CONTRE cette version-là (sonde `probe-garde.mjs`, round 3).
+    const ATTRAPE: readonly (readonly [string, string])[] = [
       ['H1 retrait déguisé en ajout', 'const vire = (s, id) => ({ ...s, entities: [...s.entities.filter((e) => e.id !== id)] });'],
       ['H2 chaînage multi-ligne', 'const t = (scene) => ({ ...scene, entities: scene.entities\n  .map((e) => ({ ...e })) });'],
       ['H3 verbe slice/sort', 'const tri = (s) => ({ ...s, entities: s.entities.slice().sort((a, b) => a.id < b.id ? -1 : 1) });'],
       ['H4 map en UNE ligne', 'setScene({ ...s, entities: s.entities.map((e) => e) });'],
       ['H5 via une VARIABLE', 'const suivantes = scene.entities.map((e) => e);\nsetScene({ ...s, entities: suivantes });'],
-    ] as const;
-    for (const [nom, code] of H) expect(ecrituresDirectes(code).length, nom).toBeGreaterThan(0);
-    expect(ecrituresDirectes('setScene(patchEntity(s, id, patch));').length, 'écriture mécanique').toBeGreaterThan(0);
-    // NEG-A/B/C — les formes LICITES : lire pour afficher, ajouter, citer en commentaire.
-    expect(ecrituresDirectes('const pnjs = scene.entities.filter((e) => e.kind === 1);'), 'NEG-A lecture').toEqual([]);
-    expect(ecrituresDirectes('return { ...scene, entities: [...scene.entities, ent] };'), 'NEG-B ajout').toEqual([]);
-    expect(ecrituresDirectes('// jamais entities: scene.entities.map((e) => e) ici'), 'NEG-C commentaire').toEqual([]);
+      ['E1 renommage en deux temps', 'let liste = scene.entities;\nliste = liste.filter((e) => e.id !== id);\nsetScene({ ...s, entities: liste });'],
+      ['E2 destructuration', 'const { entities } = scene;\nsetScene({ ...s, entities: entities.filter((e) => e.id !== id) });'],
+      ['E3 spread d’une variable', 'const restants = scene.entities.filter((e) => e.id !== id);\nsetScene({ ...s, entities: [...restants] });'],
+      ['E4 clé entre guillemets', "setScene({ ...s, 'entities': s.entities.filter((e) => e.id !== id) });"],
+      ['E5 copie + splice', 'const cp = [...scene.entities];\ncp.splice(i, 1);\nsetScene({ ...s, entities: cp });'],
+      ['E6 valeur sans ponctuation finale', 'f({ ...s, entities: s.entities.filter(g) })'],
+    ];
+    const analyse = (code: string) => {
+      const sf = parse(code, 'sonde.tsx');
+      return proprietesEntites(sf, sf);
+    };
+    for (const [nom, code] of ATTRAPE) expect(analyse(code).length, nom).toBeGreaterThan(0);
+    // La forme ABRÉGÉE pose la propriété tout autant ; une clé CALCULÉE non littérale est hors de
+    // portée d'une analyse syntaxique, et c'est l'angle mort déclaré en tête.
+    expect(analyse('const entities = f();\nsetScene({ ...s, entities });').length, 'abrégé').toBeGreaterThan(0);
+    expect(analyse('setScene({ ...s, ["enti" + "ties"]: liste });').length, 'clé calculée — angle mort déclaré').toBe(0);
+
+    // NEG — ce qui ne POSE aucune propriété : lire pour afficher, citer en commentaire, citer dans
+    // une chaîne, recevoir en paramètre. L'ajout pur (`entities: [...scene.entities, ent]`) n'est
+    // PLUS un témoin vert : depuis ce round, l'interface ne fabrique pas la liste, même pour ajouter.
+    expect(analyse('const pnjs = scene.entities.filter((e) => e.kind === 1);'), 'NEG-A lecture').toEqual([]);
+    expect(analyse('// jamais entities: scene.entities.map((e) => e) ici'), 'NEG-C commentaire').toEqual([]);
+    expect(analyse('const aide = "entities: s.entities.map(e => e)";'), 'NEG-D chaîne').toEqual([]);
+    expect(analyse('function f({ entities }) { return entities.length; }'), 'NEG-E paramètre destructuré').toEqual([]);
   });
 
   /**
@@ -227,6 +251,7 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
       'deleteSel — retire le corps': (s) => deleteSel(s, { type: 'entity', id: 'pnj-1' }),
       'removeEntity — retire le meuble': (s) => removeEntity(s, 'table-1'),
       'eraseAt — gomme le meuble': (s) => eraseAt(s, { x: 2, y: 2 }),
+      'placeEntity — pose un décor neuf sur l’abord de la place': (s) => placeEntity(s, 'prop', 'tonneau', { x: 2, y: 1 }).scene,
       'changePropRef — le nouveau type n’offre plus de place': (s) => changePropRef(s, 'table-1', 'tonneau'),
       'editEntity — TOURNE le meuble': (s) => editEntity(s, 'table-1', { facing: 'SE' }),
       'editEntity — MONTE le meuble d’un étage': (s) => editEntity(s, 'table-1', { z: 1 }),

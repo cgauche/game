@@ -91,18 +91,18 @@ describe('un seul gagnant sur la DERNIÈRE place', () => {
     expect(occupants(sc)).toHaveLength(4);
   });
 
-  it('permuter l’ordre du groupe ne transmet pas la chaise à un autre corps — le RANG reste le rang', () => {
+  it('permuter l’ordre du groupe LÈVE la chaise : elle ne se transmet pas au corps qui prend le rang', () => {
     derniereePlaceLibre();
     useGame.getState().interactEntity(PROP);
-    // Le siège invité pilote h2 ; le porter en tête ne crée AUCUNE seconde occupation de groupe.
+    // Le siège invité pilote h2 ; le porter en tête change le corps présent au rang 1. La place se
+    // lève — elle ne passe pas de main en main, et aucune seconde occupation de groupe n'apparaît.
     useGame.setState((s) => ({ party: [s.party[1], s.party[0]] }));
     const sc = useGame.getState().scene!;
-    expect(occupants(sc).filter((o) => o.kind === 'party')).toHaveLength(1);
-    expect(sc.seatAssignments![PROP].nord).toEqual({ kind: 'party', rang: 1 });
-    // …et le geste du meneur sur SA propre place le remet debout (il ne double pas l'occupation).
+    expect(occupants(sc).filter((o) => o.kind === 'party')).toEqual([]);
+    expect(occupants(sc)).toHaveLength(3); // les trois PNJ authorés gardent la leur
+    // …et la place ainsi rendue est de nouveau prenable par le geste du meneur.
     useGame.getState().interactEntity(PROP);
-    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 })).toBeNull();
-    expect(occupants(useGame.getState().scene!)).toHaveLength(3);
+    expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 })).toMatchObject({ slotId: 'nord' });
   });
 });
 
