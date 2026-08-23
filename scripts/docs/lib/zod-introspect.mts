@@ -132,3 +132,72 @@ export function introspecterDefs(defs: readonly SchemaDef[]): DefIntrospectee[] 
     })
     .sort((a, b) => a.file.localeCompare(b.file));
 }
+
+/**
+ * LITTÉRAUX D'ENUM déclarés par un schéma, clé par clé, à TOUTE profondeur de son arbre : une clé
+ * dont la valeur est l'un de ces littéraux est un DISCRIMINANT (`kind`, `type`, `class`, `op`…),
+ * jamais une référence à une entité — même quand la chaîne collisionne avec l'id d'un document
+ * (#1463, arbitrage de design L0 du 2026-08-23, point 3).
+ */
+export function choixDeclares(defs: readonly SchemaDef[]): Map<string, Map<string, Set<string>>> {
+  const out = new Map<string, Map<string, Set<string>>>();
+  for (const { file, schema } of defs) {
+    const parCle = new Map<string, Set<string>>();
+    const vus = new Set<unknown>();
+    /** Littéraux de chaîne portés par le nœud (littéral, enum, ou union/enveloppe qui en contient). */
+    const litteraux = (n: unknown, profondeur = 0): string[] => {
+      const def = defDe(n);
+      if (!def || profondeur > 8) return [];
+      switch (def.type) {
+        case 'literal':
+          return [def.values, def.value].flatMap((v) => (Array.isArray(v) ? v : [v])).filter((v): v is string => typeof v === 'string');
+        case 'enum':
+          return Object.values(def.entries ?? {}).filter((v): v is string => typeof v === 'string');
+        case 'union':
+          return (def.options ?? []).flatMap((o) => litteraux(o, profondeur + 1));
+        case 'array':
+          return litteraux(def.element, profondeur + 1);
+        case 'optional':
+        case 'nullable':
+        case 'default':
+        case 'catch':
+          return litteraux(def.innerType, profondeur + 1);
+        case 'lazy':
+          try {
+            return litteraux(def.getter?.(), profondeur + 1);
+          } catch {
+            return [];
+          }
+        case 'pipe':
+          return litteraux(def.out ?? def.in, profondeur + 1);
+        default:
+          return [];
+      }
+    };
+    const marche = (n: unknown, profondeur = 0): void => {
+      if (!n || typeof n !== 'object' || profondeur > 12 || vus.has(n)) return;
+      vus.add(n);
+      const def = defDe(n);
+      if (!def) return;
+      for (const [k, v] of Object.entries(def.shape ?? {})) {
+        for (const lit of litteraux(v)) {
+          if (!parCle.has(k)) parCle.set(k, new Set());
+          parCle.get(k)!.add(lit);
+        }
+        marche(v, profondeur + 1);
+      }
+      for (const enfant of [def.element, def.innerType, def.valueType, def.value, def.in, def.out, ...(def.options ?? []), ...(def.items ?? [])])
+        marche(enfant, profondeur + 1);
+      if (def.type === 'lazy') {
+        try {
+          marche(def.getter?.(), profondeur + 1);
+        } catch {
+          /* schéma récursif non résoluble : la clé reste ouverte */
+        }
+      }
+    };
+    marche(schema);
+    out.set(file, parCle);
+  }
+  return out;
+}

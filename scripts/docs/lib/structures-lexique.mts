@@ -23,8 +23,77 @@ export const signature = (cles: readonly string[]): string => [...cles].sort().j
 export type StatutSignature = 'cible' | 'historique' | 'declaree';
 export type SignatureLexique = { sig: string; statut: StatutSignature; note?: string };
 
-/** Strate de la grammaire (#1463, design 2026-08-23) à laquelle une forme appartient. */
+/**
+ * Strate de la grammaire (#1463, design 2026-08-23) à laquelle une forme appartient.
+ * QUATRE strates : la strate `Instance` du design v2 (SkillInstance, ItemInstance, snapshot de
+ * sauvegarde) est HORS PÉRIMÈTRE PAR CONSTRUCTION — les deux racines mesurées ne portent que des
+ * documents AUTHORÉS ; son dénominateur se mesurera sur le runtime et un snapshot de test
+ * (#1463, arbitrage de design L0 du 2026-08-23, point 1).
+ */
 export type Strate = 'Référence' | 'Valeur' | 'Ops' | 'Document';
+
+/** Le dataset dont les références sont lotées L2 (les refs de Compétence) — #1463 design v2. */
+export const CIBLE_COMPETENCE = 'skills.json';
+
+/**
+ * LOT d'extinction d'une ligne de stock : il se DÉDUIT du CONCEPT, il ne s'assigne pas à la main.
+ * Un concept vit dans UN SEUL lot sur TOUS ses porteurs (#1463, arbitrage de design L0 du
+ * 2026-08-23, point 2) : `source` → L1d ; une référence → L2 quand sa cible est la Compétence,
+ * L3 sinon ; toute autre valeur du lexique → L4 ; une structure hors lexique → L1a.
+ */
+export const lotDeForme = (concept: string, signature: string, cibles: readonly string[] = []): string =>
+  concept === 'source'
+    ? 'L1d #1469'
+    : concept === 'reference' || concept === 'refs'
+      ? cibles.includes(CIBLE_COMPETENCE) || /skill/i.test(signature)
+        ? 'L2 #1463'
+        : 'L3 #1463'
+      : concept
+        ? 'L4 #1463'
+        : 'L1a #1466';
+
+/** Lot d'extinction de chaque clé RÉSERVÉE : celui du concept qui POSSÈDE le nom (#1463 S2). */
+export const LOT_CLE_RESERVEE: Readonly<Record<string, string>> = {
+  skill: 'L2 #1463',
+  talent: 'L3 #1463',
+  char: 'L4 #1463',
+  price: 'L4 #1463',
+  cost: 'L4 #1463',
+  count: 'L4 #1463',
+  source: 'L1d #1469',
+};
+
+/** Les 7 lots d'extinction du chantier — un `lot` de stock hors de cette liste est une dérive. */
+export const LOTS_CONNUS = ['L1a #1466', 'L1b #1467', 'L1c #1468', 'L1d #1469', 'L2 #1463', 'L3 #1463', 'L4 #1463'] as const;
+
+/**
+ * ANGLES MORTS de la mesure — SOURCE UNIQUE, consommée par la garde
+ * (`src/data/structures-contrat.test.ts`, `GARDE.angleMort`), par le générateur
+ * (`docs/structures-donnees.md`, § « Périmètre mesuré et angles morts ») et par l'en-tête de
+ * `scripts/guards/lib/structuresStock.mjs` (la garde vérifie que l'en-tête les porte TOUS).
+ */
+export const ANGLES_MORTS: readonly string[] = [
+  'La référence est ANCRÉE SUR L’INDEX DES IDS, scopé par DATASET : une occurrence de référence est une paire (objet, clé) dont la valeur RÉSOUT vers un document indexé d’une CIBLE MAJORITAIRE de son site. Le CHAMP PORTEUR (`skills`, `ops`, `members`…) est MESURÉ, jamais déclaré.',
+  'La RÉSOLUTION est PAR SITE `(dataset, champ, clé)` : cible(s) MAJORITAIRE(S) = les datasets qui couvrent ≥ 50 % des valeurs résolvantes du site. Une valeur qui ne résout QUE vers une cible non majoritaire est comptée AMBIGUË (§1bis, imprimée avec son site et son dataset parasite) et n’ouvre PAS de référence.',
+  'Les COLLISIONS d’ids restent un angle mort du PILOTAGE, pas de la résolution : la colonne « cibles » d’une forme liste tous les datasets atteignables par les valeurs de la ligne.',
+  'La RÉSOLVABILITÉ d’un `{text}` se mesure sur le LIBELLÉ NORMALISÉ (casse, accents, ponctuation, espaces) d’une entité d’un dataset de la CIBLE MAJORITAIRE de son site — de n’importe quel dataset quand le site n’a pas de cible ; elle ne vérifie AUCUN type d’entité attendu, et un `label` qui est aussi un id peut la faire mordre sur un homonyme : la forme `text (résolvable)` est un candidat à migrer en `{id}`, pas un verdict.',
+  'Le partage d’un SITE tranche entre référence cassée et document embarqué, mais les TELLS de document passent avant le ratio (`label` + `source`, ou `label` + ≥ 2 clés de charge utile) et l’égalité tranche pour le DOCUMENT ; un site à UNE seule valeur est un document, sauf si la clé est `…Id`/`…Ids`/`…Ref`.',
+  'L’ORDRE DES PASSES est un angle mort déclaré : l’index est complété par les documents EMBARQUÉS (passe 3) AVANT que la résolution ne soit mesurée (passe 4) — un site comme `arene-projet.json › members {entityId}` ne résout que grâce à cet ordre.',
+  'Une clé dont la valeur est un LITTÉRAL D’ENUM du schéma zod du document n’ouvre jamais de référence (discriminants `kind`/`type`/`class`/`op`…) ; les documents HORS registre (les scènes) n’ont pas de schéma, leurs discriminants échappent donc à cette fermeture.',
+  'Les clés de PROSE `label`/`nom`/`desc`/`title` n’ouvrent jamais de référence ; `text` sous un champ de dotation est l’exception unique (résolution NARRATIVE #624).',
+  'La strate `Instance` du design v2 (SkillInstance, ItemInstance, saves) est HORS PÉRIMÈTRE PAR CONSTRUCTION : les deux racines ne portent que des documents AUTHORÉS, et `saves` a sa propre politique de version (`src/state/saves.ts`).',
+  'Les ABSENCES d’enveloppe ne se comptent que sur les ENTRÉES DE RACINE (`id` et `source` partout, `label` sur les familles `entité`/`table`) : un document EMBARQUÉ n’est jamais sommé de porter un `id`.',
+  'Le RÉGIME D’ENTRÉES vient de la famille DÉCLARÉE par le schéma zod (`liste` → les éléments, `record` → les valeurs, `config` → le document EST son entrée) ; un document hors registre est classé par sa racine JSON. La FAMILLE mesurée (`entité`/`table`/`config`/`record`), elle, est observée.',
+  'Une valeur mesurée hors de sa forme propre est enregistrée sous sa PROJECTION sur le vocabulaire du concept, suffixée `+…` ; de même pour une référence (clés de graphie + clés qui résolvent, charge utile repliée).',
+  'La candidature `plage` est STRUCTURELLE : élément d’un TABLEAU portant `min` ET `max` NUMÉRIQUES. Un `{min,max}` porté par un champ hors tableau n’est pas mesuré comme plage.',
+  'Un concept exprimé en SCALAIRE hors liste (`species: "humain"`) est mesuré sous la forme `id-nu`, sans signature d’objet.',
+  '`kind` est polysémique et n’est pas dédoublonné (Condition, Flow, événement de mer, pion de scène).',
+  'Le classement est ORDONNÉ : une VALEUR (reconnue à son noyau) passe avant une RÉFÉRENCE ; un objet qui recoupe deux concepts n’est compté qu’une fois.',
+  'Deux comparateurs de `water-exposure.json` (`<=`/`>=` sous `woundsRemaining`/`woundsLost`) échappent à `conditionSchema` et restent comptés en op.',
+  'Le scan AST est borné aux littéraux `z.object`/`z.strictObject`/`z.looseObject` des `src/data/schemas/defs/*.ts` : il ne voit ni les clés ajoutées par `.extend(...)`, ni un schéma composé par une fabrique, ni les defs hors de ce dossier. Le « schéma commun candidat » est apparié par SIGNATURE EXACTE.',
+  'Les portes MOTEUR (`src/engine`, `src/state`) et les JSON hors documents (outillage, `public/qc/*`, baselines de gardes) ne sont pas mesurés : ce contrat parle de la DONNÉE authorée et de ses schémas.',
+  'Les CACHES de parse AST (`CACHE_SOURCE`, `CACHE_LITTERAUX`) sont module-level et ne sont jamais invalidés : en mode watch, une édition d’un `defs/*.ts` n’est pas re-mesurée sans redémarrage.',
+];
 
 export type Concept = {
   id: string;
@@ -107,6 +176,7 @@ export const CONCEPTS: readonly Concept[] = [
       { sig: 'gold,silver', statut: 'historique' },
     ],
     noyau: ['gold', 'silver'],
+    noyauMin: 1,
   },
   {
     id: 'prix',
@@ -195,6 +265,21 @@ export const GRAPHIE_REFERENCE: ReadonlySet<string> = new Set(
   CONCEPT_REFERENCE.signatures.flatMap((s) => s.sig.split(',')).filter((k) => !k.includes('-')),
 );
 
+/**
+ * Graphies ENVELOPPANTES : une clé de graphie sous laquelle pend un OBJET (ou un tableau d'objets)
+ * plutôt qu'un id nu. L'intérieur porte le CHEMIN de graphie dans sa signature (`ref>id`,
+ * `wildcard>id`, `choice>id`) et HÉRITE du statut de l'enveloppe : `{ref:{id}}` se lit
+ * `ref>id / historique`, jamais `id / cible` (#1463, arbitrage de design L0, point 4).
+ */
+export const GRAPHIES_ENVELOPPANTES = ['ref', 'wildcard', 'choice', 'random'] as const;
+
+/**
+ * Clés de PROSE : leur valeur est un texte d'affichage, jamais une référence — même quand le texte
+ * égale par homonymie l'id ou le libellé d'une entité. Exception unique : `text` sous un champ de
+ * dotation, dont la résolution NARRATIVE est déclarée (#624).
+ */
+export const CLES_PROSE_SANS_REFERENCE = ['label', 'nom', 'desc', 'title'] as const;
+
 /** Clés d'IDENTITÉ d'un document (la cible `id`, ses graphies divergentes). */
 export const CLES_IDENTITE = ['id', 'key', 'nom'] as const;
 
@@ -238,3 +323,11 @@ export const ROLES_ENVELOPPE: Record<string, RoleEnveloppe> = {
 
 /** Toutes les clés recensées d'un rôle, cible comprise (l'ordre du doc : cible d'abord). */
 export const clesDuRole = (role: RoleEnveloppe): string[] => [...(role.cible ? [role.cible] : []), ...role.divergentes];
+
+/** Vocabulaire propre des concepts de VALEUR : toutes les clés que leurs signatures et noyaux nomment. */
+export const CLES_DE_VALEUR: ReadonlySet<string> = new Set(
+  CONCEPTS.filter((c) => !c.resolvables && !c.listeIdsNus).flatMap((c) => [
+    ...c.signatures.flatMap((s) => s.sig.split(',')),
+    ...(c.noyau ?? []),
+  ]),
+);

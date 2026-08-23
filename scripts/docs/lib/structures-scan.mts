@@ -6,27 +6,36 @@
 // Deux RACINES de documents, déclarées UNE fois dans `RACINES` (consommée par `listerDocuments`).
 // Les JSON sont lus UNE fois par run ; toutes les passes ci-dessous travaillent en mémoire.
 //
-// LE CŒUR EST L'INDEX DES IDS. Quatre passes, dans cet ordre (ordre = angle mort déclaré) :
+// LE CŒUR EST L'INDEX DES IDS, SCOPÉ PAR DATASET (`id → Set<dataset>`) : la résolution se mesure
+// PAR SITE `(dataset, champ, clé)`, jamais par chaîne globale. Cinq passes, dans cet ordre
+// (l'ordre est un angle mort déclaré) :
 //   1. INDEX RACINE   — l'identité de chaque entrée de racine (`id`/`key`/`nom`, ou la clé du
 //      record) : `id → Set<dataset>`.
-//   2. CHAMPS DE RÉFÉRENCE MESURÉS — tout objet portant une valeur chaîne qui résout dans l'index
-//      racine fait de la clé de son parent un CHAMP porteur de références (mesuré, jamais déclaré).
-//   3. DOCUMENTS EMBARQUÉS — objet à clé d'identité, sans `op`, dont le SITE (dataset, champ, clé
-//      d'identité) ne porte pas majoritairement des références. Leurs ids complètent l'index.
-//      C'est le SITE qui tranche, jamais la seule valeur : un id de spécialisation qui collisionne
-//      avec l'id d'une carrière ne fait pas d'un `{id,label}` une référence.
-//   4. MESURE — occurrences de référence, formes de valeur, ops, enveloppe, orphelines.
+//   2. SITES          — pour chaque site `(dataset, champ, clé)`, combien de ses valeurs résolvent
+//      et vers QUELS datasets. Cible(s) MAJORITAIRE(S) = celles qui couvrent ≥ 50 % des valeurs
+//      résolvantes du site ; une valeur qui ne résout que hors d'elles est AMBIGUË.
+//   3. DOCUMENTS EMBARQUÉS — objet à clé d'identité, sans `op`, sans `kind` de Condition, qui ne
+//      porte pas les TELLS d'un document et dont le SITE porte majoritairement des références.
+//      Leurs ids complètent l'index. C'est le SITE qui tranche, jamais la seule valeur : un id de
+//      spécialisation qui collisionne avec l'id d'une carrière ne fait pas d'un `{id,label}` une
+//      référence — et les tells (`label` + `source`, ou `label` + charge utile) passent avant lui.
+//   4. SITES, RE-MESURÉS sur l'index complété par la passe 3 (les pions de scène sont indexés
+//      AVANT que `members {entityId}` ne soit résolu).
+//   5. MESURE — occurrences de référence, formes de valeur, ops, enveloppe, orphelines, ambiguës.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import ts from 'typescript';
 import {
   CLES_IDENTITE,
+  CLES_PROSE_SANS_REFERENCE,
   CLES_RESERVEES,
   CONCEPTS,
   CONCEPT_REFERENCE,
   GRAPHIE_REFERENCE,
+  GRAPHIES_ENVELOPPANTES,
   ROLES_ENVELOPPE,
   RX_CLE_REFERENCE,
+  CLES_DE_VALEUR,
   signature,
   type Concept,
   type Strate,
@@ -109,13 +118,16 @@ const regimePrix = (v: unknown): string =>
               ? 'booléen'
               : 'autre';
 
-/** Texte normalisé pour la résolution d'un `{text}` vers un libellé d'entité (casse/accents/espaces). */
+/**
+ * Texte normalisé pour la résolution d'un `{text}` vers un libellé d'entité : casse, accents,
+ * PONCTUATION (repliée en espace) et espaces multiples.
+ */
 const normaliserLibelle = (s: string): string =>
   s
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/\s+/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
 /** NATURE devinée d'une valeur d'`arg` — dénominateur A11 de #1466 (motif, jamais un verdict). */
@@ -239,6 +251,16 @@ export type SignatureOrpheline = {
   occurrences: number;
 };
 export type OpObservee = { op: string; signature: string; dataset: string; occurrences: number };
+/** Valeur qui résout, mais SEULEMENT vers un dataset hors des cibles majoritaires de son site. */
+export type ResolutionAmbigue = {
+  dataset: string;
+  champ: string;
+  cle: string;
+  valeur: string;
+  parasites: string[];
+  majoritaires: string[];
+  occurrences: number;
+};
 export type DocumentObserve = Document & {
   racineJson: string;
   familleDeclaree: string;
@@ -270,6 +292,22 @@ const trieCles = (cles: Map<string, CleNiveau1>): CleNiveau1[] =>
     .sort((a, b) => a.cle.localeCompare(b.cle))
     .map((c) => ({ ...c, parClasse: [...c.parClasse].sort((a, b) => a.classe.localeCompare(b.classe)) }));
 
+/**
+ * Graphies dont la valeur n'est PAS un id (objet enveloppé, texte narratif) : un objet dont la
+ * signature n'est faite QUE de celles-là est une forme de référence même quand rien ne résout —
+ * `{wildcard:{…}}`, `{choice:[…]}`, `{text:"…"}` (#1463, arbitrage de design L0, point 4).
+ */
+const GRAPHIES_SANS_ID: ReadonlySet<string> = new Set<string>([...GRAPHIES_ENVELOPPANTES, 'text']);
+
+/** Clés d'ENVELOPPE d'un document : elles ne comptent pas comme charge utile dans les tells. */
+const CLES_HORS_CHARGE: ReadonlySet<string> = new Set<string>([
+  ...CLES_IDENTITE,
+  ...CLES_PROSE_SANS_REFERENCE,
+  'desc',
+  'source',
+  'text',
+]);
+
 type Obj = Record<string, unknown>;
 const estObjet = (v: unknown): v is Obj => !!v && typeof v === 'object' && !Array.isArray(v);
 
@@ -299,8 +337,15 @@ function parcourir(racine: unknown, visite: (o: Obj, champ: string, chemin: stri
  * @param famillesDeclarees nom de document → famille déclarée par son schéma zod
  *   (`introspecterDefs`), qui donne le RÉGIME D'ENTRÉES. Absente = régime déduit de la racine JSON
  *   seule (documents hors registre).
+ * @param choixDeclares nom de document → clé → littéraux d'enum déclarés par son schéma zod
+ *   (`choixDeclares`) : une clé dont la valeur est l'un d'eux est un DISCRIMINANT, jamais une
+ *   référence. Absente = aucune fermeture d'enum (les documents hors registre).
  */
-export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<string, string> = new Map()) {
+export function scannerDonnees(
+  root: string,
+  famillesDeclarees: ReadonlyMap<string, string> = new Map(),
+  choixDeclares: ReadonlyMap<string, ReadonlyMap<string, ReadonlySet<string>>> = new Map(),
+) {
   const docs = listerDocuments(root);
   const brutParDocument = new Map<string, unknown>(
     docs.map((d) => [d.chemin, JSON.parse(readFileSync(join(root, d.chemin), 'utf8')) as unknown]),
@@ -348,41 +393,99 @@ export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<stri
     return { ...doc, brut, racineJson, familleDeclaree, regime, entrees, racineEntrees: new Set(entrees), famille };
   });
 
-  /** Libellés d'entité de TOUS les datasets (résolution des `{text}`, normalisés). */
-  const libelles = new Set<string>();
+  /**
+   * Libellés d'entité, normalisés, SCOPÉS PAR DATASET (`libellé → Set<dataset>`) : c'est ce qui
+   * permet de dire vers QUEL dataset un `{text}` résout, donc de le confronter aux cibles
+   * majoritaires de son site (#1463 L0, forme `text (résolvable)`).
+   */
+  const libelles = new Map<string, Set<string>>();
   for (const p of prepares)
     parcourir(p.brut, (o) => {
-      if (typeof o.label === 'string' && o.label.trim()) libelles.add(normaliserLibelle(o.label));
+      if (typeof o.label !== 'string' || !o.label.trim()) return;
+      const k = normaliserLibelle(o.label);
+      if (!libelles.has(k)) libelles.set(k, new Set());
+      libelles.get(k)!.add(p.nom);
     });
 
-  const resoutIndex = (k: string, v: unknown): boolean =>
-    typeof v === 'string' && (index.has(v) || (k === 'text' && libelles.has(normaliserLibelle(v))));
+  const kindsCondition = kindsDeCondition(root);
+  /** Un objet dont le `kind` est un kind de Condition n'est pas un document : son `id` est un
+   *  paramètre de comparaison, il n'entre pas à l'index (même exclusion que les objets à `op`). */
+  const estCondition = (o: Obj) => typeof o.kind === 'string' && kindsCondition.has(o.kind);
 
-  // --- passe 2 : CHAMPS de référence MESURÉS --------------------------------
-  // `champsDeReference` = les clés de parent sous lesquelles pend au moins un objet qui résout.
-  // `sitesDeCle` mesure, pour chaque SITE (dataset, champ, clé), la part des valeurs qui résolvent :
-  // c'est ce qui distingue une RÉFÉRENCE CASSÉE d'un DOCUMENT embarqué. Sous `creatures.json|skills`,
-  // la clé `id` résout partout — un `{id:"zzz", value:10}` y est donc une référence orpheline, jamais
-  // un document. Sous `arene-projet.json|entities`, c'est `ref` qui résout et jamais `id` — un pion
-  // de scène EST un document. (Angle mort : un site dont la part de résolution frôle la moitié.)
-  /** `dataset|champ|clé` → combien de valeurs chaîne de cette clé résolvent, sur combien. */
-  const sitesDeCle = new Map<string, { resolvent: number; total: number }>();
-  for (const p of prepares)
-    parcourir(p.brut, (o, champ) => {
-      if (p.racineEntrees.has(o) || !champ) return;
-      for (const [k, v] of Object.entries(o)) {
-        if (typeof v !== 'string') continue;
-        const k2 = `${p.nom}|${champ}|${k}`;
-        if (!sitesDeCle.has(k2)) sitesDeCle.set(k2, { resolvent: 0, total: 0 });
-        const s = sitesDeCle.get(k2)!;
-        s.total += 1;
-        if (resoutIndex(k, v)) s.resolvent += 1;
-      }
-    });
-  /** Un SITE (dataset, champ, clé) porte-t-il des références ? Mesuré : la majorité y résout. */
+  /**
+   * La clé OUVRE-T-ELLE une référence ? Non pour une clé de PROSE, non quand la valeur est un
+   * LITTÉRAL D'ENUM du schéma du document (un discriminant `kind`/`type`/`op`… n'est pas une FK).
+   */
+  const ouvreReference = (dataset: string, k: string, v: string): boolean =>
+    !(CLES_PROSE_SANS_REFERENCE as readonly string[]).includes(k) && !choixDeclares.get(dataset)?.get(k)?.has(v);
+
+  /** Résolution BRUTE (l'id est indexé quelque part, ou le `{text}` égale un libellé). */
+  const resoutIndex = (dataset: string, k: string, v: unknown): boolean =>
+    typeof v === 'string' &&
+    ouvreReference(dataset, k, v) &&
+    (index.has(v) || (k === 'text' && libelles.has(normaliserLibelle(v))));
+
+  // --- passe 2 : SITES ------------------------------------------------------
+  // `sitesDeCle` mesure, pour chaque SITE (dataset, champ, clé), la part des valeurs qui résolvent
+  // ET vers quels datasets : c'est ce qui distingue une RÉFÉRENCE CASSÉE d'un DOCUMENT embarqué, et
+  // c'est ce qui scope la résolution. Sous `creatures.json|skills`, la clé `id` résout partout vers
+  // `skills.json` — un `{id:"zzz", value:10}` y est une référence orpheline, jamais un document, et
+  // un `id` qui ne résout QUE vers `careers.json` y est AMBIGU. Sous `arene-projet.json|entities`,
+  // c'est `ref` qui résout et jamais `id` — un pion de scène EST un document.
+  type Site = { resolvent: number; total: number; cibles: Map<string, number> };
+  /** Le champ sous lequel un objet est MESURÉ : `(racine)` pour une entrée de racine. */
+  const champDeSite = (p: Prepare, o: Obj, champ: string) => (p.racineEntrees.has(o) ? '(racine)' : champ);
+  const mesurerSites = (embarque: ReadonlySet<Obj>): Map<string, Site> => {
+    const sites = new Map<string, Site>();
+    for (const p of prepares)
+      parcourir(p.brut, (o, champ) => {
+        const champSite = champDeSite(p, o, champ);
+        if (!champSite) return;
+        // La clé d'IDENTITÉ d'un document ne se résout pas elle-même : sans cette exclusion, un
+        // document embarqué indexé en passe 3 ferait de son propre site un site de RÉFÉRENCE.
+        const identite = p.racineEntrees.has(o) || embarque.has(o) ? identiteDe(o)?.cle : undefined;
+        for (const [k, v] of Object.entries(o)) {
+          if (typeof v !== 'string' || k === identite) continue;
+          const k2 = `${p.nom}|${champSite}|${k}`;
+          if (!sites.has(k2)) sites.set(k2, { resolvent: 0, total: 0, cibles: new Map() });
+          const s = sites.get(k2)!;
+          s.total += 1;
+          if (!resoutIndex(p.nom, k, v)) continue;
+          s.resolvent += 1;
+          for (const d of index.get(v) ?? []) inc(s.cibles, d);
+        }
+      });
+    return sites;
+  };
+  let sitesDeCle = mesurerSites(new Set<Obj>());
+  /** Cibles MAJORITAIRES d'un site : les datasets qui couvrent ≥ 50 % de ses valeurs résolvantes. */
+  const ciblesMajoritaires = (s: Site | undefined): string[] =>
+    s && s.resolvent ? [...s.cibles].filter(([, n]) => n * 2 >= s.resolvent).map(([d]) => d).sort() : [];
+
+  /**
+   * Un SITE porte-t-il des références ? Mesuré : la MAJORITÉ STRICTE de ses valeurs y résout
+   * (l'égalité tranche pour le DOCUMENT). Un site à UNE seule valeur ne tranche rien : c'est un
+   * document, sauf si le NOM de la clé annonce une FK (`…Id`/`…Ids`/`…Ref`).
+   */
   const siteDeReference = (dataset: string, champ: string, cle: string) => {
     const s = sitesDeCle.get(`${dataset}|${champ}|${cle}`);
-    return !!s && s.resolvent > 0 && s.resolvent * 2 >= s.total;
+    if (!s || s.resolvent === 0) return false;
+    if (s.total === 1) return RX_CLE_REFERENCE.test(cle);
+    return s.resolvent * 2 > s.total;
+  };
+
+  /**
+   * TELLS d'un DOCUMENT, qui passent AVANT le ratio du site : un `label` ET (une `source` OU au
+   * moins deux clés de CHARGE UTILE — hors graphie de référence, hors vocabulaire de valeur, hors
+   * enveloppe). Un `{id,label,price,crew,…,source}` de `mass-battle.json` est un document RAW, même
+   * quand ses ids collisionnent avec ceux de `trappings.json`.
+   */
+  const tellsDeDocument = (o: Obj): boolean => {
+    if (typeof o.label !== 'string' || !o.label.trim()) return false;
+    if ('source' in o) return true;
+    return (
+      Object.keys(o).filter((k) => !GRAPHIE_REFERENCE.has(k) && !CLES_DE_VALEUR.has(k) && !CLES_HORS_CHARGE.has(k)).length >= 2
+    );
   };
 
   // --- passe 3 : DOCUMENTS EMBARQUÉS ---------------------------------------
@@ -390,15 +493,71 @@ export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<stri
   for (const p of prepares)
     parcourir(p.brut, (o, champ) => {
       if (p.racineEntrees.has(o)) return;
-      if (typeof o.op === 'string') return;
+      if (typeof o.op === 'string' || estCondition(o)) return;
       const ident = identiteDe(o);
-      if (!ident || siteDeReference(p.nom, champ, ident.cle)) return;
+      if (!ident) return;
+      if (!tellsDeDocument(o) && siteDeReference(p.nom, champ, ident.cle)) return;
       documentsEmbarques.add(o);
       ajouteIndex(ident.valeur, p.nom);
     });
 
-  // --- passe 4 : MESURE -----------------------------------------------------
-  const kindsCondition = kindsDeCondition(root);
+  // --- passe 4 : SITES RE-MESURÉS sur l'index complété ----------------------
+  sitesDeCle = mesurerSites(documentsEmbarques);
+
+  /**
+   * Résolution SCOPÉE au SITE. La valeur résout comme avant ; ce qui est nouveau, c'est qu'une
+   * valeur qui ne résout QUE vers un dataset HORS des cibles majoritaires de son site est COMPTÉE
+   * ambiguë (§1bis) : c'est le seul endroit où une collision d'ids se voit ligne à ligne, et c'est
+   * ce compte qui bouge quand un id collisionné meurt dans l'un de ses datasets.
+   */
+  const ambigues = new Map<string, ResolutionAmbigue>();
+
+  /**
+   * Datasets vers lesquels un `{text}` RÉSOUT : ceux où son texte normalisé est le `label` d'une
+   * entité, RESTREINTS aux cibles majoritaires du site quand le site en a une. Un site sans cible
+   * (aucune de ses valeurs ne résout vers un id indexé) accepte n'importe quel dataset. Liste vide
+   * = le texte est du narratif irréductible, forme `text` `declaree` (#1463 L0, #624).
+   */
+  const datasetsDuTexte = (p: Prepare, o: Obj, champ: string, v: string): string[] => {
+    const trouves = libelles.get(normaliserLibelle(v));
+    if (!trouves) return [];
+    const maj = ciblesMajoritaires(sitesDeCle.get(`${p.nom}|${champDeSite(p, o, champ)}|text`));
+    return (maj.length ? [...trouves].filter((d) => maj.includes(d)) : [...trouves]).sort();
+  };
+
+  const resoutSite = (p: Prepare, o: Obj, champ: string, k: string, v: unknown): boolean => {
+    if (!resoutIndex(p.nom, k, v)) return false;
+    const datasets = index.get(v as string);
+    // `{text}` résolu vers un LIBELLÉ : la résolution est scopée aux cibles majoritaires du site.
+    if (!datasets) return k === 'text' && datasetsDuTexte(p, o, champ, v as string).length > 0;
+    const champSite = champDeSite(p, o, champ);
+    const maj = ciblesMajoritaires(sitesDeCle.get(`${p.nom}|${champSite}|${k}`));
+    if (maj.length && !maj.some((d) => datasets.has(d))) {
+      const cle = `${p.nom} | ${champSite} | ${k} | ${v as string}`;
+      if (!ambigues.has(cle))
+        ambigues.set(cle, {
+          dataset: p.nom,
+          champ: champSite,
+          cle: k,
+          valeur: v as string,
+          parasites: [...datasets].sort(),
+          majoritaires: maj,
+          occurrences: 0,
+        });
+      ambigues.get(cle)!.occurrences += 1;
+    }
+    return true;
+  };
+
+  // --- passe 5 : MESURE -----------------------------------------------------
+  /** CHAMPS PORTEURS de référence, MESURÉS : les clés de parent dont au moins un site (quel que
+   *  soit le dataset) porte majoritairement des références. C'est sous eux qu'une GRAPHIE compte
+   *  comme forme même sans résoudre — ailleurs, un `{text}` est de la prose. */
+  const champsPorteurs = new Set<string>();
+  for (const [k2] of sitesDeCle) {
+    const [dataset, champ, cle] = k2.split('|');
+    if (champ !== '(racine)' && siteDeReference(dataset, champ, cle)) champsPorteurs.add(champ);
+  }
   /** clé `concept | dataset | champ | signature` → ligne de forme observée. */
   const formes = new Map<string, FormeObservee & { ciblesSet: Set<string> }>();
   const orphelines = new Map<string, SignatureOrpheline>();
@@ -423,6 +582,25 @@ export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<stri
   /** Objets qu'AUCUNE strate ne porte : ni document, ni forme mesurée, ni orpheline recensée. */
   let objetsInvisibles = 0;
   const invisibles = new Map<string, number>();
+
+  /**
+   * Classement d'une occurrence de référence : la signature PROJETÉE telle quelle, sauf sous une
+   * graphie ENVELOPPANTE (`ref`, `wildcard`, `choice`, `random`), où l'intérieur porte le CHEMIN
+   * de graphie (`ref>id`, `wildcard>id`) et HÉRITE du statut de l'enveloppe : `{ref:{id}}` se lit
+   * `ref>id / historique`, jamais `id / cible`.
+   */
+  const classementDeGraphie = (champ: string, sig: string) =>
+    (GRAPHIES_ENVELOPPANTES as readonly string[]).includes(champ)
+      ? { ...statutDe(CONCEPT_REFERENCE, champ), signature: `${champ}>${sig}` }
+      : statutDe(CONCEPT_REFERENCE, sig);
+
+  /**
+   * Une signature dont le `text` RÉSOUT porte le suffixe ` (résolvable)` : le lexique ne la connaît
+   * pas, elle sort donc `divergente` — la forme `text` `declaree` ne couvre QUE l'irréductible
+   * narratif (#1463 design v2, #624).
+   */
+  const resolvableTexte = (cl: Classement, resolvantes: ReadonlySet<string>): Classement =>
+    resolvantes.has('text') ? statutDe(CONCEPT_REFERENCE, `${cl.signature} (résolvable)`) : cl;
 
   const ligneForme = (
     concept: Concept,
@@ -478,24 +656,26 @@ export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<stri
 
       // ---- Ops et Conditions
       const kind = typeof o.kind === 'string' ? o.kind : '';
-      const estCondition = !!kind && kindsCondition.has(kind);
+      const condition = estCondition(o);
       if (typeof o.op === 'string') {
-        if (estCondition) inc(conditionsAvecOp, kind);
+        if (condition) inc(conditionsAvecOp, kind);
         else {
           totalOps += 1;
           inc(ops, `${o.op} | ${sig} | ${p.nom}`);
           if (!/^[A-Za-z]/.test(o.op)) inc(opsComparateurs, `${o.op} | ${kind || '—'} | ${p.nom}`);
         }
-      } else if (estCondition) inc(conditionsSansOp, kind);
+      } else if (condition) inc(conditionsSansOp, kind);
 
       // ---- Résolution vers l'index
       const identite = estDocument ? identiteDe(o)?.cle : undefined;
       const resolvantes = new Set<string>();
       const cibles = new Set<string>();
       for (const [k, v] of Object.entries(o)) {
-        if (k === identite || !resoutIndex(k, v)) continue;
+        if (k === identite || !resoutSite(p, o, champ, k, v)) continue;
         resolvantes.add(k);
-        if (typeof v === 'string') for (const d of index.get(v) ?? []) cibles.add(d);
+        if (typeof v !== 'string') continue;
+        for (const d of index.get(v) ?? []) cibles.add(d);
+        if (k === 'text') for (const d of datasetsDuTexte(p, o, champ, v)) cibles.add(d);
       }
 
       // ---- `{text}` : mesuré même quand il ne résout pas (T6)
@@ -503,7 +683,7 @@ export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<stri
         if (!textes.has(sig)) textes.set(sig, { occurrences: 0, resolvables: 0 });
         const t = textes.get(sig)!;
         t.occurrences += 1;
-        if (libelles.has(normaliserLibelle(o.text))) t.resolvables += 1;
+        if (datasetsDuTexte(p, o, champ, o.text).length) t.resolvables += 1;
       }
 
       // ---- VALEUR d'abord (noyau propre), RÉFÉRENCE ensuite (index des ids)
@@ -515,12 +695,18 @@ export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<stri
         ligneForme(c, p, champ, valeur).occurrences += 1;
         classe = true;
       } else if (resolvantes.size && !estDocument) {
-        const ligne = ligneForme(CONCEPT_REFERENCE, p, champ, {
-          ...statutDe(CONCEPT_REFERENCE, signatureProjetee(cles, resolvantes)),
-        });
+        // Un `{text}` qui RÉSOUT est une forme à part entière : `text (résolvable)`, divergente, à
+        // migrer en `{id}` (#624). Seul le `{text}` NON résolvable reste la forme `declaree`.
+        const ligne = ligneForme(CONCEPT_REFERENCE, p, champ, resolvableTexte(classementDeGraphie(champ, signatureProjetee(cles, resolvantes)), resolvantes));
         ligne.occurrences += 1;
         for (const d of cibles) ligne.ciblesSet.add(d);
         if (resolvantes.has('text')) ligne.resolvables += 1;
+        classe = true;
+      } else if (!estDocument && cles.length && cles.every((k) => GRAPHIES_SANS_ID.has(k)) && champsPorteurs.has(champ)) {
+        // GRAPHIE de référence sous un champ porteur MESURÉ, qu'elle résolve ou non : l'enveloppe
+        // `{ref:{…}}` et la dotation `{text:"…"}` sont des FORMES, pas des objets hors strate.
+        const ligne = ligneForme(CONCEPT_REFERENCE, p, champ, classementDeGraphie(champ, sig));
+        ligne.occurrences += 1;
         classe = true;
       } else if (resolvantes.size && estDocument) {
         // Référence portée par un CHAMP SCALAIRE d'un document (`species: "humain"`).
@@ -536,7 +722,7 @@ export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<stri
       const conceptRefs = CONCEPTS.find((c) => c.listeIdsNus)!;
       for (const [k, v] of Object.entries(o)) {
         if (!Array.isArray(v) || !v.length || !v.every((x) => typeof x === 'string')) continue;
-        if (!(v as string[]).some((x) => index.has(x))) continue;
+        if (!(v as string[]).some((x) => index.has(x) && ouvreReference(p.nom, k, x))) continue;
         const ligne = ligneForme(conceptRefs, p, k, statutDe(conceptRefs, 'ids-nus'));
         ligne.occurrences += 1;
         for (const x of v as string[]) for (const d of index.get(x) ?? []) ligne.ciblesSet.add(d);
@@ -547,7 +733,7 @@ export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<stri
 
       // ---- ORPHELINES : ce qui annonce une référence et ne résout pas
       let orpheline = false;
-      if (!estDocument && !classe) {
+      if (!estDocument && !classe && typeof o.op !== 'string') {
         const cleRef = cles.find((k) => RX_CLE_REFERENCE.test(k));
         const cleReservee = cles.find((k) => (CLES_RESERVEES as readonly string[]).includes(k));
         const cleIdentite = cles.find((k) => (CLES_IDENTITE as readonly string[]).includes(k));
@@ -650,6 +836,10 @@ export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<stri
   return {
     documents,
     index: { ids: index.size, libelles: libelles.size, collisions, labelsQuiSontDesIds },
+    /** Valeurs qui ne résolvent QUE vers un dataset hors des cibles majoritaires de leur site. */
+    ambigues: [...ambigues.values()].sort(
+      (a, b) => b.occurrences - a.occurrences || a.dataset.localeCompare(b.dataset) || a.valeur.localeCompare(b.valeur),
+    ),
     groupesEnveloppe,
     enveloppe,
     enveloppeParMotif: [...enveloppeParMotif].sort().map(([k, n]) => ({ role: k.split(' | ')[0], motif: k.split(' | ')[1], documents: n })),
@@ -663,9 +853,9 @@ export function scannerDonnees(root: string, famillesDeclarees: ReadonlyMap<stri
           a.champ.localeCompare(b.champ) ||
           a.signature.localeCompare(b.signature),
       ),
-    /** Champs porteurs de référence MESURÉS : les clés de parent sous lesquelles une occurrence de
-     *  référence a été mesurée — jamais une déclaration du lexique, jamais un seuil de vocabulaire. */
-    champsDeReference: [...new Set([...formes.values()].filter((f) => f.strate === 'Référence').map((f) => f.champ))].sort(),
+    /** Champs porteurs de référence MESURÉS : les clés de parent dont au moins un SITE porte
+     *  majoritairement des références — jamais une déclaration du lexique, jamais un seuil. */
+    champsDeReference: [...champsPorteurs].sort(),
     orphelines: [...orphelines.values()].sort(
       (a, b) => b.occurrences - a.occurrences || a.dataset.localeCompare(b.dataset) || a.signature.localeCompare(b.signature),
     ),
@@ -772,7 +962,7 @@ export function mesurerEnveloppe(groupes: readonly GroupeEnveloppe[]): Divergenc
 // looseObject dont la signature recoupe le lexique ou un schéma commun de `common.ts`.
 // ---------------------------------------------------------------------------
 
-/** Un `createSourceFile` par fichier et par run (T9) : `common.ts` était parsé deux fois. */
+/** Un `createSourceFile` par fichier et par run (T9). */
 const CACHE_SOURCE = new Map<string, ts.SourceFile>();
 const sourceDe = (fichier: string, texte: () => string) => {
   const vu = CACHE_SOURCE.get(fichier);

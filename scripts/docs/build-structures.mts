@@ -12,8 +12,8 @@
 import { execFileSync } from 'node:child_process';
 import { emitOrCheck } from './lib/jsdocUnion.mjs';
 import { scannerDonnees, scannerRedeclarations, listerDocuments, empreintesDefs, RACINES } from './lib/structures-scan.mjs';
-import { CONCEPTS, ROLES_ENVELOPPE, clesDuRole } from './lib/structures-lexique.mjs';
-import { introspecterDefs } from './lib/zod-introspect.mjs';
+import { ANGLES_MORTS, CONCEPTS, ROLES_ENVELOPPE, clesDuRole } from './lib/structures-lexique.mjs';
+import { choixDeclares, introspecterDefs } from './lib/zod-introspect.mjs';
 import { SCHEMA_DEFS } from '../../src/data/schemas/_registry.generated';
 
 const OUT = 'docs/structures-donnees.md';
@@ -21,7 +21,7 @@ const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: '
 
 const declares = introspecterDefs(SCHEMA_DEFS);
 const parFichierDeclare = new Map(declares.map((d) => [d.file, d]));
-const scan = scannerDonnees(ROOT, new Map(declares.map((d) => [d.file, d.famille])));
+const scan = scannerDonnees(ROOT, new Map(declares.map((d) => [d.file, d.famille])), choixDeclares(SCHEMA_DEFS));
 const { redeclarations, totalLitteraux } = scannerRedeclarations(ROOT);
 
 /** Numérotation des sous-sections de §3 — table UNIQUE : titres ET renvois s'y lisent. */
@@ -55,24 +55,7 @@ out += '## Périmètre mesuré et angles morts (à dire pour ne pas se lire comm
 out += 'Périmètre : les documents AUTHORÉS des deux racines (`src/data`, `src/scenes`), leurs schémas zod\n';
 out += 'du registre, et les littéraux d’objet zod des `src/data/schemas/defs/*.ts`.\n';
 out += 'Ce que la mesure ci-dessous **ne voit pas** — un compte n’a de sens qu’avec son périmètre.\n\n';
-out += [
-  '- **La référence est ANCRÉE SUR L’INDEX DES IDS.** Une occurrence de référence est une paire (objet, clé) dont la valeur RÉSOUT vers un document indexé (ou, pour `{text}`, vers un `label`). Le CHAMP PORTEUR (`skills`, `ops`, `members`…) est donc MESURÉ, jamais déclaré : aucun vocabulaire de clés, aucun seuil ne décide qu’un objet est une référence.',
-  '- **Les COLLISIONS d’ids rendent une résolution AMBIGUË** (jamais fausse) : le même id vit dans plusieurs datasets (§1bis). La colonne « cibles » d’une forme liste donc TOUS les datasets atteignables, pas un seul.',
-  '- **Un `label` qui est aussi un id** (mesuré en §1bis) peut faire résoudre un `{text}` narratif vers une entité homonyme : la résolvabilité d’un `{text}` est un CANDIDAT, pas un verdict — elle ne vérifie aucun TYPE d’entité attendu.',
-  '- **Le partage d’un SITE (dataset, champ, clé) tranche entre référence cassée et document embarqué** : un objet à clé d’identité qui ne résout pas est une référence ORPHELINE si la majorité des valeurs de cette clé, à ce site, résolvent ; c’est un DOCUMENT embarqué sinon. Un site dont la part de résolution frôle la moitié est un angle mort.',
-  '- **Les ABSENCES d’enveloppe ne se comptent que sur les ENTRÉES DE RACINE** (`id` et `source` partout, `label` sur les familles `entité`/`table`). Un document EMBARQUÉ n’est jamais sommé de porter un `id` : on n’y compte que les clés DIVERGENTES.',
-  '- **Les sauvegardes ne sont pas comptées.** Le périmètre est le document AUTHORÉ (2 racines) ; l’état persisté (`saves`) a sa propre politique de version (`src/state/saves.ts`).',
-  '- **Le RÉGIME D’ENTRÉES d’un document vient de la famille DÉCLARÉE par son schéma zod** : famille `liste` → une entrée par élément du tableau racine ; famille `record` → une entrée par valeur de l’objet racine ; famille `config` → le document EST son entrée, ses clés de premier niveau sont celles de sa RACINE. Un document hors registre (les scènes) est classé par sa racine JSON, même règle. La FAMILLE de document (`entité`/`table`/`config`/`record`) est, elle, mesurée : une liste dont la moitié des entrées portent une plage est une `table`.',
-  '- **Une valeur mesurée hors de sa forme propre est enregistrée sous sa PROJECTION** sur le vocabulaire du concept, suffixée `+…` quand l’objet porte d’autres clés. De même pour une référence : on garde les clés de la graphie et celles qui résolvent, la charge utile est repliée. Sans cette projection, une même graphie produirait autant de lignes que la table a de variantes de charge utile.',
-  '- **La candidature `plage` est STRUCTURELLE** : un objet n’est candidat que s’il est ÉLÉMENT D’UN TABLEAU et porte `min` ET `max` NUMÉRIQUES. Côté schémas (§4), déclarer `min`+`max` vaut candidature. Un `{min,max}` porté par un CHAMP hors tableau n’est donc pas mesuré comme plage.',
-  '- **`kind` est polysémique et n’est pas dédoublonné** : la même clé porte le discriminant d’une `Condition`, d’un `Flow`, d’un événement de mer, d’un pion de scène. Aucun regroupement n’est tenté.',
-  '- **Le classement est ordonné** : une VALEUR (reconnue à son noyau) est classée avant une RÉFÉRENCE ; le premier concept du lexique qui matche gagne. Un objet qui recoupe deux concepts n’est compté qu’une fois.',
-  '- **Deux comparateurs de `water-exposure.json` échappent à `conditionSchema`** (`<=`/`>=` sous `woundsRemaining`/`woundsLost`) : ils sont encore comptés en op (§5, table des comparateurs).',
-  '- **Le scan AST (§4) lit les littéraux d’objet argument de `z.object` / `z.strictObject` / `z.looseObject` dans `src/data/schemas/defs/*.ts`** (parcours TypeScript complet, toutes profondeurs). Il ne voit pas les clés ajoutées par `.extend(...)`, ni un schéma composé par une fabrique, ni les defs déclarés hors de ce dossier.',
-  '- **Le candidat « schéma commun » (§4) est apparié par SIGNATURE EXACTE** avec un littéral de `src/data/schemas/common.ts`. Une signature à une seule clé générique (`{kind}`, `{dice}`) s’apparie donc à la première branche d’union qui la porte : c’est un candidat à examiner, jamais un verdict.',
-  '- **Les portes MOTEUR ne sont pas mesurées ici** : ce doc parle de la DONNÉE et de ses schémas. Les occurrences de `skillId` / `skill` dans `src/engine` et `src/state` relèvent des lots de migration, pas de cette carte.',
-  '- **Les fichiers JSON hors documents ne sont pas lus** : outillage (`package.json`, `tsconfig`, `.claude`), artefacts `public/qc/*`, baselines de gardes (les `*-baseline.json` de `scripts/guards/lib`).',
-].join('\n');
+out += ANGLES_MORTS.map((a) => `- ${a}`).join('\n');
 out += '\n\n';
 
 // ---------------------------------------------------------------------------
@@ -101,6 +84,30 @@ out += tableau(
   ['Id', 'Datasets'],
   scan.index.collisions.map((c) => [`\`${c.id}\``, c.datasets.map((d) => `\`${d}\``).join(' ')]),
 );
+
+out += '#### Résolutions AMBIGUËS (la collision qui MORD)\n\n';
+{
+  const total = scan.ambigues.reduce((a, x) => a + x.occurrences, 0);
+  out += 'La résolution est mesurée PAR SITE `(dataset, champ, clé)` : les cibles MAJORITAIRES d’un site\n';
+  out += 'sont les datasets qui couvrent ≥ 50 % de ses valeurs résolvantes. Une valeur qui ne résout QUE\n';
+  out += 'vers un dataset HORS de ces cibles est AMBIGUË : elle compte encore comme référence, mais le\n';
+  out += 'dataset atteint n’est pas celui que le site vise — c’est là qu’une collision d’ids peut mentir.\n\n';
+  out += `**${scan.ambigues.length}** valeurs ambiguës, **${total}** occurrences. Les ${Math.min(40, scan.ambigues.length)} plus fréquentes :\n\n`;
+  out += tableau(
+    ['Dataset', 'Champ', 'Clé', 'Valeur', 'Résout vers', 'Cibles majoritaires du site', 'Occurrences'],
+    scan.ambigues
+      .slice(0, 40)
+      .map((a) => [
+        `\`${a.dataset}\``,
+        `\`${a.champ}\``,
+        `\`${a.cle}\``,
+        `\`${a.valeur}\``,
+        a.parasites.map((d) => `\`${d}\``).join(' '),
+        a.majoritaires.map((d) => `\`${d}\``).join(' '),
+        a.occurrences,
+      ]),
+  );
+}
 
 // ---------------------------------------------------------------------------
 out += '## 2. Enveloppe des documents\n\n';
@@ -164,6 +171,11 @@ out += 'dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGE
     ['Rôle', 'Motif', 'Groupes'],
     scan.enveloppeParMotif.map((m) => [m.role, m.motif, m.documents]),
   );
+  const sourceAbsente = scan.enveloppe.filter((e) => e.role === 'source' && e.motif === 'clé absente');
+  out += `Documents dont AUCUNE ENTRÉE DE RACINE ne porte \`source\` : **${sourceAbsente.length}** (lot \`L1d #1469\`) —\n`;
+  out += `${sourceAbsente.map((e) => `\`${e.document}\`(${e.entrees})`).join(' ')}\n\n`;
+  out += 'Le DoD ajouté de #1465 annonçait « 13 datasets sans `source` » : la mesure en trouve\n';
+  out += `**${sourceAbsente.length}** — le chiffre de 13 n’a pas de porteur dans l’arbre, il ne se recopie pas.\n\n`;
   out += `Documents de racine ne portant AUCUNE clé \`source\` à quelque profondeur que ce soit : **${scan.documentsSansSource.length}**\n`;
   out += `(lot \`L1d #1469\`) — ${scan.documentsSansSource.map((d) => `\`${d}\``).join(' ')}\n\n`;
   out += 'Documents EMBARQUÉS mesurés, par chemin :\n\n';
@@ -224,7 +236,7 @@ for (const c of CONCEPTS) {
   const total = lignes.reduce((a, f) => a + f.occurrences, 0);
   out += `### ${SECTION.concept(c)} ${c.label} — \`${c.id}\` (strate ${c.strate})\n\n`;
   out += `${lignes.length} ligne(s), ${total} occurrence(s).\n`;
-  out += `Reconnu par : ${c.resolvables ? 'RÉSOLUTION vers l’index des ids' : c.listeIdsNus ? 'tableau de chaînes dont au moins un élément résout' : c.champs?.length ? `la clé porteuse ${c.champs.map((x) => `\`${x}\``).join(' ')}` : `son noyau ${(c.noyau ?? []).map((k) => `\`${k}\``).join(' ')}${c.noyauMin ? ` (≥ ${c.noyauMin})` : ''}`}\n\n`;
+  out += `Reconnu par : ${c.resolvables ? 'RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré' : c.listeIdsNus ? 'tableau de chaînes dont au moins un élément résout' : c.champs?.length ? `la clé porteuse ${c.champs.map((x) => `\`${x}\``).join(' ')}` : `son noyau ${(c.noyau ?? []).map((k) => `\`${k}\``).join(' ')}${c.noyauMin ? ` (≥ ${c.noyauMin})` : ''}`}\n\n`;
   if (!lignes.length) {
     out += '_aucune occurrence observée._\n\n';
     continue;
@@ -287,9 +299,11 @@ out += tableau(
 );
 
 out += `### ${SECTION.textes} Dotations narratives \`{text}\`\n\n`;
-out += 'Un `{text}` n’est une occurrence de référence que si son texte normalisé (casse, accents, espaces)\n';
-out += 'égale le `label` d’une entité — sans vérification du TYPE attendu (angle mort). Les autres sont du\n';
-out += 'narratif irréductible, mesuré ici et nulle part ailleurs (#1463, #624).\n\n';
+out += 'Un `{text}` n’est une occurrence de référence que si son texte normalisé (casse, accents, ponctuation,\n';
+out += 'espaces) égale le `label` d’une entité d’un dataset de la CIBLE MAJORITAIRE de son site — de n’importe\n';
+out += 'quel dataset quand le site n’a pas de cible, et sans vérification du TYPE attendu (angle mort). Ces\n';
+out += 'occurrences-là portent la forme `text (résolvable)` (divergente, à migrer en `{id}`, #624) ; les autres\n';
+out += 'sont le narratif irréductible que la forme `text` DÉCLARE (#1463, #624).\n\n';
 out += tableau(
   ['Signature de l’objet', 'Occurrences', 'Résolvables'],
   scan.textes.map((t) => [`\`${t.signature}\``, t.occurrences, t.resolvables || '—']),
@@ -297,22 +311,33 @@ out += tableau(
 
 out += `### ${SECTION.orphelines} Hors strate — signatures ORPHELINES\n\n`;
 out += 'Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé réservée, clé d’identité) et qui ne\n';
-out += 'résout vers RIEN, sans être un document. Aucune strate ne le porte : c’est ce que le détecteur ne\n';
-out += 'sait pas nommer, et il se compte au lieu de se taire. Stock `STRUCTURES_ORPHELINES`, lot `L1a #1466`\n';
-out += 'quand le NOM de la clé annonçait une FK, `L1b #1467` sinon.\n\n';
+out += 'résout vers RIEN, sans être un document, et qui ne porte pas d’`op` (la strate Ops le porterait).\n';
+out += 'Aucune strate ne le porte : c’est ce que le détecteur ne sait pas nommer, et il se compte au lieu\n';
+out += 'de se taire. Stock `STRUCTURES_ORPHELINES` ; le LOT suit le motif — `L1a #1466` quand le NOM de la\n';
+out += 'clé annonçait une FK (`clé de référence non résolue`), `L1b #1467` pour les autres motifs.\n\n';
 {
   const total = scan.orphelines.reduce((a, o) => a + o.occurrences, 0);
-  out += `**${scan.orphelines.length}** signatures orphelines, **${total}** occurrences.\n\n`;
+  const parMotif = new Map<string, { lignes: number; occurrences: number }>();
+  for (const o of scan.orphelines) {
+    const vu = parMotif.get(o.motif) ?? { lignes: 0, occurrences: 0 };
+    parMotif.set(o.motif, { lignes: vu.lignes + 1, occurrences: vu.occurrences + o.occurrences });
+  }
+  const motifs = ['clé de référence non résolue', 'clé réservée', 'identité non résolue'] as const;
+  out += `**${scan.orphelines.length}** signatures orphelines, **${total}** occurrences. Par motif : `;
+  out += motifs.map((m) => `\`${m}\` ${parMotif.get(m)?.lignes ?? 0}`).join(' · ');
+  out += `. Le lot \`L1a #1466\` porte donc ${parMotif.get('clé de référence non résolue')?.lignes ?? 0} ligne(s) ici, `;
+  out += `\`L1b #1467\` en porte ${scan.orphelines.length - (parMotif.get('clé de référence non résolue')?.lignes ?? 0)}.\n\n`;
   out += tableau(
     ['Dataset', 'Champ', 'Signature', 'Motif', 'Occurrences'],
     scan.orphelines.map((o) => [`\`${o.dataset}\``, `\`${o.champ}\``, `\`${o.signature}\``, o.motif, o.occurrences]),
   );
   out += `Au-delà des orphelines, **${scan.objets.invisibles}** objets sur **${scan.objets.vus}** ne sont portés par AUCUNE\n`;
   out += 'strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des\n';
-  out += 'documents. On y trouve trois familles : les ENVELOPPES d’un objet dont l’intérieur est, lui, mesuré\n';
-  out += '(`{ref: {id,spec}}` compte sous le champ `ref`, jamais deux fois), les `{text}` narratifs qui ne\n';
-  out += `résolvent vers aucun libellé (comptés en §${SECTION.textes}), et les charges utiles pures (`;
-  out += '`{x,y}`, blocs de caractéristiques). Ils ne sont pas au stock — ils se lisent ici, par\n';
+  out += 'documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation\n';
+  out += `\`{text}\` sous un champ porteur mesuré est une FORME, §${SECTION.concept(CONCEPTS[0])}). Restent trois familles : les CHARGES UTILES pures\n`;
+  out += '(`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`\n';
+  out += `ou d’une \`Formula\` (\`{kind,steps}\`, \`{bonusOf}\`) et les objets à \`op\`, dont la grammaire est mesurée en §5.\n`;
+  out += 'Ils ne sont pas au stock — ils se lisent ici, par\n';
   out += `signature, les ${Math.min(30, scan.invisibles.length)} plus fréquentes sur ${scan.invisibles.length} :\n\n`;
   out += tableau(
     ['Dataset', 'Champ', 'Signature', 'Occurrences'],
@@ -330,9 +355,10 @@ out += 'Un littéral qui porte le noyau d’un concept, même s’il a été cla
 out += 'ce compte lève l’angle mort du classement ordonné.\n';
 {
   const money = empreintesDefs(ROOT).find((e) => e.concept === 'monnaie');
-  out += `Le DoD de #1463 annonçait « 5 defs redéclarent la monnaie » : la mesure en trouve **${money?.litteraux ?? 0}** littéraux\n`;
-  out += `dans **${money?.defs.length ?? 0}** defs (${(money?.defs ?? []).map((d) => `\`${d}\``).join(' ')}). Le 5ᵉ n’a jamais été mesurable — le chiffre du DoD\n`;
-  out += 'n’a pas de porteur dans l’arbre, il ne se recopie pas.\n\n';
+  const nMonnaie = money?.litteraux ?? 0;
+  out += `Le DoD de #1463 annonçait « 5 defs redéclarent la monnaie » : la mesure en trouve **${nMonnaie}** littéraux\n`;
+  out += `dans **${money?.defs.length ?? 0}** defs (${(money?.defs ?? []).map((d) => `\`${d}\``).join(' ')}).\n`;
+  out += nMonnaie === 5 ? 'Le chiffre du DoD est CONFIRMÉ par la mesure.\n\n' : 'Le chiffre du DoD n’a pas ce porteur dans l’arbre : il ne se recopie pas.\n\n';
 }
 out += tableau(
   ['Concept', 'Noyau', 'Littéraux', 'Defs', 'Liste des defs'],
@@ -344,6 +370,16 @@ out += tableau(
     e.defs.map((d) => `\`${d}\``).join(' ') || '—',
   ]),
 );
+
+{
+  const idSpec = redeclarations.filter((r) => {
+    const cles = r.signature.replace('+…', '').split(',');
+    return cles.includes('id') && cles.includes('spec');
+  });
+  out += `Le DoD de #1463 annonçait « 5 \`{id,spec}\` » : la mesure en trouve **${idSpec.length}** littéral(aux) —\n`;
+  out += `${idSpec.map((r) => `\`${r.def}\`${r.champ ? ` › \`${r.champ}\`` : ''} \`{${r.signature}}\` (${r.statut})`).join(' · ')}. Les autres n’ont pas de\n`;
+  out += 'porteur dans l’arbre, le chiffre ne se recopie pas.\n\n';
+}
 
 out += '### 4.2 Littéral par littéral\n\n';
 out += tableau(
