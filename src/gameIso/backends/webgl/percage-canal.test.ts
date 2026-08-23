@@ -39,8 +39,15 @@ describe('PERÇABILITÉ cuite — le SOL ne se troue pas, et c’est structurel'
       for (let v = span.start; v < span.start + span.count; v++)
         expect(baked.percables[v], `${span.el.kind} @${span.el.key}`).toBe(attendu);
     }
-    // PRÉMISSE : les deux camps sont réellement représentés sur la carte mesurée.
-    expect([...vus].sort()).toEqual(['floor', 'roof', 'wall']);
+    // PRÉMISSE : les deux camps sont réellement représentés sur la carte mesurée. Le MOBILIER
+    // volumique de la salle y ajoute le `kind` « prop » : un meuble se troue comme un mur ou un
+    // toit — seul le SOL est épargné, et c'est la seule frontière que le canal connaît.
+    expect([...vus].sort()).toEqual(['floor', 'prop', 'roof', 'wall']);
+    const camps = { épargnés: new Set<string>(), percés: new Set<string>() };
+    for (const span of baked.spans)
+      camps[baked.percables[span.start] === 0 ? 'épargnés' : 'percés'].add(span.el.kind);
+    expect([...camps.épargnés].sort()).toEqual(['floor']);
+    expect([...camps.percés].sort()).toEqual(['prop', 'roof', 'wall']);
   });
 
   it('l’attribut voyage dans LA géométrie fusionnée, un flottant par sommet', () => {

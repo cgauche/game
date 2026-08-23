@@ -162,11 +162,13 @@ function cloisonEntre(scene: Scene, a: { x: number; y: number }, b: { x: number;
  * case `siege`, à l'étage `z` : les huit voisines (plus la case du siège elle-même quand elle est
  * marchable — banc à même le sol) qui soient MARCHABLES et qu'aucune CLOISON ne sépare du siège.
  *
- * L'abord n'est pas un PAS : le corps ne traverse jamais le siège, il se tient à côté et s'assoit —
- * d'où la garde anti coupe-de-coin de `path.neighborsOf` (qui exige en plus des FLANCS marchables)
- * volontairement absente : une chaise poussée dans l'angle d'un comptoir reste une chaise où l'on
- * s'assoit. Ce qui sépare vraiment, et que ce prédicat refuse, c'est la CLOISON : un abord marchable
- * de l'autre côté d'un mur est dans une autre pièce.
+ * La règle de MUR est celle du pas, au segment près (`cloisonEntre` : les deux chemins en L en
+ * diagonale, comme `path.neighborsOf`) — jamais plus permissive que lui. Ce qui tombe ici est sa
+ * garde de FLANC (`path.neighborsOf` exige en plus que les deux cases latérales soient MARCHABLES,
+ * pour qu'un corps ne se glisse pas entre deux obstacles) : l'abord n'est pas un PAS, le corps ne
+ * traverse jamais le siège, il se tient à côté et s'assoit — une chaise poussée dans l'angle d'un
+ * comptoir reste une chaise où l'on s'assoit. Ce qui sépare vraiment, et que ce prédicat refuse,
+ * c'est la CLOISON : un abord marchable de l'autre côté d'un mur est dans une autre pièce.
  *
  * L'usage est un ENSEMBLE de clés de case : les deux passes de `placesResolues` et
  * `seatIsOccupiable` y testent une appartenance.

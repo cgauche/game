@@ -220,6 +220,30 @@ describe('La Diligence — meublement de la salle principale', () => {
     expect(places.filter((s) => !dansSalle.has(`${s.approach.x},${s.approach.y}`)).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
   });
 
+  /**
+   * SONDE promue (revue de la Task 4bis) : l'absence de CLOISON entre un siège et son abord ne dit
+   * pas que le GROUPE peut y venir. Ce contrat-là se mesure par la connectivité RÉELLE du pas
+   * (`walkNeighbors`, SOURCE UNIQUE : anti coupe-de-coin comprise) : les dix-huit abords appartiennent
+   * à la composante jouable, celle qui porte aussi la cour d'arrivée.
+   */
+  it('les dix-huit abords sont dans la composante jouable — 975 tuiles au rez, 422 à l’étage', () => {
+    const cle = (p: Pt) => `${p.x},${p.y},${p.z ?? 0}`;
+    const depart = tuilesSalle.find((t) => isWalkable(scene, t.x, t.y, 0))!;
+    const vus = new Set([cle({ ...depart, z: 0 })]);
+    const file: Pt[] = [{ x: depart.x, y: depart.y }];
+    while (file.length) {
+      const p = file.shift()!;
+      for (const n of walkNeighbors(scene, p)) if (!vus.has(cle(n))) { vus.add(cle(n)); file.push(n); }
+    }
+    const parEtage = [...vus].reduce<Record<string, number>>((acc, k) => ({ ...acc, [k.split(',')[2]]: (acc[k.split(',')[2]] ?? 0) + 1 }), {});
+    expect(parEtage).toEqual({ 0: 975, 1: 422 });
+    expect(placesDeLaSalle().filter((s) => !vus.has(`${s.approach.x},${s.approach.y},0`)).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
+    // La cour d'arrivée est HORS de la salle et dans la MÊME composante : ce qui joint les places
+    // joint le dehors — le groupe entre à pied et va s'asseoir.
+    expect(dansSalle.has('17,2')).toBe(false);
+    expect(vus.has('17,2,0')).toBe(true);
+  });
+
   it('la table adossée au mur de la cuisine assoit quatre convives DU CÔTÉ SALLE', () => {
     const table = furnitureAt(scene, 10, 10);
     expect(table.id).toBe('diligence-salle-table-ronde-3');

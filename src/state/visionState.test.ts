@@ -79,20 +79,34 @@ describe('« La Diligence » — la lumière PORTÉE éclaire l’étage de son 
   };
   // Case marchable de l'ÉTAGE du relais (z1), mesurée sur le plan authoré.
   const surLeChemin = { x: 13, y: 6, z: 1 };
+  /** Ce que le DOCUMENT éclaire déjà tout seul — les mesures de ce banc comptent le porteur EN PLUS.
+   *  Dérivé de la scène, jamais recopié : meubler la salle d'une lampe de plus le dit ici même. */
+  const posesDuDocument = sceneLightSources({ scene, battle: null, party: [], partyPos: { x: 0, y: 0 } });
+  const signature = (s: LightSource) => [s.srcId, s.z ?? 0, s.radiusTiles, s.carried];
+
+  it('le document éclaire la salle par son ÂTRE, au rez, sans porteur', () => {
+    // Le meublement de la salle a posé la cheminée (`cheminee-interieure`) : sa `PropData.light`
+    // (rayon 5, ton flamme) en fait une source du document, comme un brasero authoré.
+    expect(posesDuDocument.map(signature)).toEqual([['diligence-salle-cheminee', 0, 5, undefined]]);
+  });
 
   it('la lanterne d’un combattant à l’étage inscrit ses 70 cases à z1, aucune au rez', () => {
     const battle = { combatants: [{ ...porteur('h1', surLeChemin.x, surLeChemin.y, true), pos: surLeChemin }] } as never;
     const sources = sceneLightSources({ scene, battle, party: [], partyPos: { x: 0, y: 0 } });
-    expect(sources.map((s) => [s.srcId, s.z, s.radiusTiles, s.carried])).toEqual([['h1', 1, 10, true]]);
-    expect(parÉtage(sources)).toEqual({ 0: 0, 1: 70 });
+    expect(sources.map(signature)).toEqual([...posesDuDocument.map(signature), ['h1', 1, 10, true]]);
+    const lanterne = sources.filter((s) => s.carried);
+    expect(lanterne.map((s) => s.srcId)).toEqual(['h1']);
+    expect(parÉtage(lanterne)).toEqual({ 0: 0, 1: 70 });
     // Le halo de la MÊME source privée de son étage tomberait tout entier au rez — 70 cases déplacées.
-    expect(parÉtage(sources.map((s) => ({ ...s, z: 0 })))).toEqual({ 0: 70, 1: 0 });
+    expect(parÉtage(lanterne.map((s) => ({ ...s, z: 0 })))).toEqual({ 0: 70, 1: 0 });
   });
 
   it('la source POSÉE, elle, n’est pas portée (le rendu arbitre son budget là-dessus)', () => {
     const avecTorche: Scene = { ...scene, entities: [...scene.entities, { id: 't1', kind: 'prop', pos: { x: 13, y: 6 }, z: 1, ref: 'brasero' }] } as unknown as Scene;
     const posées = sceneLightSources({ scene: avecTorche, battle: null, party: [], partyPos: { x: 0, y: 0 } });
-    expect(posées.map((s) => [s.srcId, s.z, s.carried])).toEqual([['t1', 1, undefined]]);
+    expect(posées.map((s) => [s.srcId, s.z, s.carried]))
+      .toEqual([...posesDuDocument.map((s) => [s.srcId, s.z, s.carried]), ['t1', 1, undefined]]);
+    expect(posées.every((s) => s.carried === undefined)).toBe(true);
   });
 });
 
