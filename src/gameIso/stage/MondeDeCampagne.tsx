@@ -42,7 +42,8 @@ import { elOccluder } from './occluders';
 import { tireurSurvole, type HighlightOpts } from './highlightLayer';
 import { dynamicMarks } from '../builders/dynamicMarks';
 import { interactionHalos, NO_INTERACTION_HALOS, type InteractionHalos } from '../builders/interactHalos';
-import { tokenChromes, type TokenChromeMark } from '../builders/tokenChrome';
+import { tokenChromes, tokenGesteMarks, type GesteMark, type TokenChromeMark } from '../builders/tokenChrome';
+import { entityGestes } from '../../state/registreOffres';
 import { actorCapsuleOf } from './actorCapsule';
 import { VolumetricWorld, type WorldFrame } from './VolumetricWorld';
 import { viewPolicy } from './viewPolicy';
@@ -574,6 +575,18 @@ function CorpsDuMonde() {
     () => tokenChromes(tokenEls, { ghostIds: visée.ghostIds, hoveredId: visée.hoveredId }, partyToken),
     [tokenEls, visée.ghostIds, visée.hoveredId, partyToken],
   );
+  // PASTILLES D'ENTITÉ (#1411 P2-C, spec zone 4) : ce que les CHOSES du champ offrent à l'actif
+  // contrôlé — lu au REGISTRE (`state/entityGestes`, aucun id d'action ici), puis posé sur son porteur
+  // par le même ancrage que le chrome. Les offres se relisent quand change ce dont elles dépendent :
+  // le combat, la scène (les objets au sol y vivent), les drapeaux de fouille, et le siège qui joue.
+  const offresDEntite = useMemo(
+    () => (combatBattle && myTurn ? entityGestes(useGame.getState()) : []),
+    [combatBattle, scene, flags, myTurn],
+  );
+  const gesteEls = useMemo<GesteMark[]>(
+    () => tokenGesteMarks(tokenEls, propEls, offresDEntite),
+    [tokenEls, propEls, offresDEntite],
+  );
   // HALOS D'INTERACTION (P3-0g) : même partage que les marques dynamiques — dérivés UNE fois
   // (`builders/interactHalos`) ; le contexte qui les autorise (exploration, combat ouvert) se tranche
   // ici, et nulle part ailleurs.
@@ -646,6 +659,7 @@ function CorpsDuMonde() {
             liftAt={liftAt}
             politique={politique}
             chromes={chromes}
+            gestes={gesteEls}
             walkPosAt={walkPosAt}
             activeC={activeC}
             battle={combatBattle}

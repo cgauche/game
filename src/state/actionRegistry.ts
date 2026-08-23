@@ -30,8 +30,9 @@ import { waterSprayCandidates } from '../engine/suffocation';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { combatAdvantageSkills } from '../engine/skillCombatApps';
 import { availableAttacks, placingZoneOf, STANCE_BLOCK } from './combatFlow';
-import { mountableNear } from './mount';
-import { servablePostes } from './shipPostes';
+import { mountablesNear, mountMovement } from './mount';
+import { servablePostes, crewPosteOf, type ShipPoste } from './shipPostes';
+import { pushSlot } from './siegePush';
 import { ACTIONS, findSpellById, type ActionDef } from '../data/index';
 import { isArcaneSpell, castBlockedBy, focusSkillFor, focusWindLabel } from '../engine/magic';
 import { t } from '../i18n';
@@ -88,7 +89,11 @@ export function freeDisengage({ active, battle }: ActionCtx): boolean {
 }
 
 /** Le Mouvement du Tour est-il ENCORE INTACT ? Prédicat PARTAGÉ (gestes qui exigent l'élan complet). */
-function mouvementIntact({ battle }: ActionCtx): ActionGate {
+function mouvementIntact({ active, battle }: ActionCtx): ActionGate {
+  // Un porteur qu'un État CLOUE (`gating.movement: 'none'` — Inconscient, Surpris ; LDB 16 l.113/l.132)
+  // n'a aucun Mouvement à dépenser : le geste qui en coûte se REFUSE en le disant, au lieu de laisser
+  // le dispatcher rendre en silence. Le budget est celui de la monture s'il en a une (`mountMovement`).
+  if (mountMovement(battle, active) <= 0) return no(t('agate.cannotMove'));
   return battle.movementUsed > 0 ? no(t('agate.movementStarted')) : ok;
 }
 
@@ -196,6 +201,11 @@ export const ACTION_GATES: Record<string, (ctx: ActionCtx) => ActionGate> = {
     return bloque ? no(t('agate.focusBlocked', { reason: bloque })) : ok;
   },
   coop: ({ netMode }) => (netMode && netMode !== 'local' ? ok : no(t('agate.localGame'))),
+  /** ÉQUIPAGE de poussée SUFFISANT — verdict de la source unique (`pushSlot.undercrew`, seuil ADE II
+   *  8 l.233). Le geste reste OFFERT et porte sa raison : un engin sous-servi se voit, il ne disparaît
+   *  pas (loi du refus visible au point du geste, arbitrage 2026-08-19). */
+  'equipage-suffisant': ({ active, battle }) =>
+    (pushSlot(active, battle.combatants).undercrew ? no(t('agate.pushUndercrew')) : ok),
   'navire-action': ({ active, battle }) =>
     !isVehicle(active) ? no(t('agate.notAVessel')) : battle.acted ? no(t('agate.vesselActionSpent')) : ok,
 };
@@ -223,11 +233,18 @@ export interface ActionSelectorCtx extends ActionCtx {
 /** Les SÉLECTEURS de candidats, par id (`candidates` de `actions.json`) — enveloppes nommées des
  *  fonctions déjà écrites (la liste manuscrite de l'IA n'a plus lieu d'être). */
 export const ACTION_CANDIDATES: Record<string, (ctx: ActionSelectorCtx) => unknown[]> = {
-  'montures-adjacentes': ({ active, battle }) => {
-    const m = mountableNear(battle, active);
-    return m ? [m] : [];
-  },
+  'montures-adjacentes': ({ active, battle }) => mountablesNear(battle, active),
   'pieces-servables': ({ active, battle }) => servablePostes(active, battle.combatants),
+  /** La pièce POUSSABLE que l'actif sert — l'entité qui porte le geste de Pousser (spec zone 4 : le
+   *  geste vit sur ce qui l'offre). Le verdict d'AFFORDANCE est celui de la source unique déjà écrite
+   *  (`pushSlot.show` : chef d'un engin à roues résolu, arme + affût présents, ADE II 8 l.258) — une
+   *  pièce non poussable (pierrier naval) n'est donc pas un candidat, et n'ouvre aucune pastille muette.
+   *  La coque, elle, se lit à la source unique de l'appartenance à un équipage (`crewPosteOf`). */
+  'piece-poussable': ({ active, battle }) => {
+    if (!pushSlot(active, battle.combatants).show) return [];
+    const sp = crewPosteOf(active.id, battle.combatants);
+    return sp ? [sp] : [];
+  },
   'cibles-soin': ({ active, battle }) =>
     healableTargets(active, battle.combatants.filter((c) => c.kind === active.kind), { adjacency: true }),
   'cibles-aspersion': ({ active, battle }) =>
@@ -263,6 +280,59 @@ export const ACTION_CANDIDATES: Record<string, (ctx: ActionSelectorCtx) => unkno
       .flatMap((e) => entityPickables(e).map((p) => ({ entityId: e.id, ...p })));
   },
 };
+
+/** L'IDENTITÉ DÉCLARÉE d'un candidat : QUI le PORTE (`porteurId` — une entité du champ pour une
+ *  pastille, l'objet paramètre d'une alvéole pour un geste secondaire), les PARAMÈTRES que son
+ *  dispatcher attend, et le nom du candidat quand un même porteur en offre plusieurs (deux pièces
+ *  d'une coque, deux objets d'un tas). */
+export interface ActionPorteur {
+  porteurId: string;
+  args: ActionRunCtx;
+  /** Nom du CANDIDAT (pas de l'action) — porté par le panneau-paramètre quand le porteur en offre N. */
+  label?: string;
+}
+
+/** Les PORTEURS, par id de SÉLECTEUR (`candidates`) : une enveloppe NOMMÉE par sélecteur, qui traduit
+ *  SON candidat en identité + arguments de dispatch. Même patron qu'`ACTION_RUN` (une entrée = une
+ *  forme, jamais un aiguillage par type de candidat écrit dans une surface). C'est ce qui remplace la
+ *  DEVINETTE d'identité (`o?.id ?? o?.uid`) : le registre la DÉCLARE, les deux surfaces qui offrent
+ *  des candidats (pastilles du champ, gestes secondaires de la console) la LISENT. Toute action dont
+ *  la surface offre par candidat doit avoir la sienne — garde `action-atteignabilite`. */
+export const ACTION_PORTEURS: Record<string, (candidat: unknown) => ActionPorteur | null> = {
+  'montures-adjacentes': (c) => {
+    const m = c as Combatant;
+    return { porteurId: m.id, args: { targetId: m.id } };
+  },
+  'pieces-servables': (c) => {
+    const sp = c as { hull: Combatant; poste: ShipPoste };
+    return { porteurId: sp.hull.id, args: { shipId: sp.hull.id, posteUid: sp.poste.item.uid }, label: sp.poste.item.label };
+  },
+  'piece-poussable': (c) => {
+    const sp = c as { hull: Combatant; poste: ShipPoste };
+    return { porteurId: sp.hull.id, args: {}, label: sp.poste.item.label };
+  },
+  'objets-au-sol': (c) => {
+    const o = c as { entityId: string; key: string; label: string };
+    return { porteurId: o.entityId, args: { entityId: o.entityId, pickKey: o.key }, label: o.label };
+  },
+  /** Un SORT du héros — le candidat EST son id (`Combatant.spells: string[]`) : c'est lui que porte
+   *  l'alvéole du sort, et lui que le geste secondaire de Focalisation paramètre. */
+  'sorts-du-heros': (c) => {
+    const id = c as string;
+    return { porteurId: id, args: { spellId: id } };
+  },
+  /** Une ARME à distance : son `uid` porte le candidat (l'alvéole de recharge en est paramétrée). */
+  'armes-a-distance': (c) => {
+    const w = c as { uid: string; label?: string };
+    return { porteurId: w.uid, args: { weaponUid: w.uid }, label: w.label };
+  },
+};
+
+/** Ce que l'acte prend dans l'économie du tour, en toutes lettres — la donnée `cost` du registre, dite
+ *  à l'endroit du geste (spec HUD zone 4 : « coût de l'Action affiché »). `null` = rien à annoncer. */
+export function actionCostLabel(def: ActionDef): string | null {
+  return def.cost === 'aucun' ? null : t(`acost.${def.cost}`);
+}
 
 /** Paramètres d'exécution — l'action nomme SA cible ; jamais une closure qui la capture. */
 export interface ActionRunCtx {
@@ -330,7 +400,7 @@ export const ACTION_RUN: Record<string, Dispatcher> = {
   battleResolvePsychImmune: (get) => get().battleResolvePsychImmune(),
   battleResolveIgnoreCrit: (get) => get().battleResolveIgnoreCrit(),
   battleSpendResolve: (get, ctx) => { if (ctx.conditionId) get().battleSpendResolve(ctx.conditionId); },
-  battleMount: (get) => get().battleMount(),
+  battleMount: (get, ctx) => get().battleMount(ctx.targetId),
   battleDismount: (get) => get().battleDismount(),
   battleManPoste: (get, ctx) =>
     get().battleManPoste(ctx.shipId && ctx.posteUid ? { hullId: ctx.shipId, posteUid: ctx.posteUid } : undefined),

@@ -142,6 +142,9 @@ export const schema = z.array(
     if (a.role && a.surface !== 'interlude') {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : role hors d’une action d’interlude (aucun bandeau de phase ne la rend)` });
     }
+    if (a.surface === 'pastille-entite' && !a.candidates) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : pastille d'entité sans population portée (candidates) — aucune entité ne pourrait la porter` });
+    }
     if (a.surface === 'geste-secondaire' && (!a.hote || !a.candidates)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : geste secondaire sans entrée hôte (hote) ou sans population couverte (candidates)` });
     }

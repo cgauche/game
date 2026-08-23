@@ -28,7 +28,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ACTIONS } from '../data/index';
-import { ACTION_GATES, ACTION_CANDIDATES, ACTION_RUN, MODES_HORS_REGISTRE, BATTLE_ACTION_MODES, actionGate, runAction } from './actionRegistry';
+import { ACTION_GATES, ACTION_CANDIDATES, ACTION_PORTEURS, ACTION_RUN, MODES_HORS_REGISTRE, BATTLE_ACTION_MODES, actionGate, runAction } from './actionRegistry';
 import { TARGETING_MODES, targetingModeLabel, CAST_MODE } from './targetingModes';
 import { KEYBINDINGS } from './keybindings';
 import { useGame, type BattleState } from './store';
@@ -42,15 +42,10 @@ const FRISE_SRC = src('../ui/InitiativeStrip.tsx');
 const TARGETING_SRC = src('./targetingModes.ts');
 
 /** Le chantier des BRANCHEMENTS est-il ouvert ? Voir l'en-tête : `false` verrouille la baseline à vide. */
-const CHANTIER_BRANCHEMENTS_OUVERT = true;
+const CHANTIER_BRANCHEMENTS_OUVERT = false;
 
 /** Actions SANS surface vivante — nominatif, DÉCROISSANT, cible `{}` (voir en-tête). */
-const SANS_SURFACE: Record<string, string> = {
-  mount: 'pastille sur la MONTURE (zone 4, tranché 2026-08-16).',
-  'man-poste': 'pastille sur la PIÈCE (zone 4).',
-  'push-engine': 'pastille sur la PIÈCE (zone 4).',
-  pickup: 'pastille ⓘ de l’objet au sol (zone 4).',
-};
+const SANS_SURFACE: Record<string, string> = {};
 
 /** Clés littérales d'un motif `key:`/`id:` — une clé TEMPLATE se réduit à son préfixe littéral. */
 function keysFrom(source: string, re: RegExp): string[] {
@@ -93,9 +88,31 @@ const GESTE_2E_KEYS = GESTE_2E_BRANCHE
   ? ACTIONS.filter((a) => a.surface === 'geste-secondaire' && a.hote && CONSOLE_KEYS.includes(a.hote)).map((a) => a.id)
   : [];
 
+/** Une PASTILLE D'ENTITÉ n'a pas de case : elle naît de la chose qui l'offre, sur le champ (spec zone
+ *  4). Sa surface est le lecteur du registre qui la fabrique — `state/entityGestes`, qui énumère les
+ *  entrées `surface: 'pastille-entite'`, appelle leur sélecteur ET leur porteur de pastille, et
+ *  regroupe par entité ; une entrée sans porteur déclaré n'atteindrait donc AUCUNE entité. Comme pour
+ *  le bandeau d'interlude, la lecture se fait sur la SOURCE (ce fichier tourne en environnement `node`,
+ *  sans DOM) : la preuve STRUCTURELLE — une entrée `pastille-entite` FABRIQUÉE rend une pastille au DOM
+ *  sans une ligne de code — est dans `gameIso/stage/pastille-entite.test.tsx`, où débrancher le rendeur
+ *  vire rouge. */
+const OFFRES_SRC = src('./registreOffres.ts');
+/** Les surfaces que le SOCLE lit réellement (`offresDuRegistre('<surface>'`, `state/registreOffres` et ses
+ *  appelants) : une entrée de ces surfaces SANS porteur déclaré est skippée EN SILENCE par le socle — elle
+ *  n'atteindrait donc personne. C'est ce que la garde de porteur ci-dessous refuse. */
+const OFFRES_CONSOMMEES = [...new Set(
+  [OFFRES_SRC, src('../ui/CombatConsole.tsx')]
+    .flatMap((s) => s.split("offresDuRegistre(").slice(1).map((suite) => suite.split("'")[1]))
+    .filter((s) => ACTIONS.some((a) => a.surface === s)), // écarte la DÉCLARATION du socle (son paramètre)
+)];
+const PASTILLE_BRANCHE = OFFRES_CONSOMMEES.includes('pastille-entite');
+const PASTILLE_KEYS = PASTILLE_BRANCHE
+  ? ACTIONS.filter((a) => a.surface === 'pastille-entite' && a.candidates && a.candidates in ACTION_PORTEURS).map((a) => a.id)
+  : [];
+
 /** Surfaces VIVANTES : la console, le bandeau d'interlude qu'elle rend, les gestes secondaires de ses
- *  alvéoles, la FRISE, et le clavier. */
-const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...FRISE_KEYS, ...INTERLUDE_KEYS, ...GESTE_2E_KEYS, ...KEYBINDING_IDS]);
+ *  alvéoles, les PASTILLES des entités du champ, la FRISE, et le clavier. */
+const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...FRISE_KEYS, ...INTERLUDE_KEYS, ...GESTE_2E_KEYS, ...PASTILLE_KEYS, ...KEYBINDING_IDS]);
 
 /** Les clés qu'une action revendique : son id + ses clés de surface encore forkées. */
 const claimedKeys = (a: (typeof ACTIONS)[number]) => [a.id, ...(a.keys ?? [])];
@@ -108,6 +125,20 @@ describe('registre des actions — cohérence interne (ids de code résolus)', (
   it('chaque `candidates` déclaré existe dans ACTION_CANDIDATES', () => {
     const bad = ACTIONS.filter((a) => a.candidates && !(a.candidates in ACTION_CANDIDATES)).map((a) => `${a.id} → ${a.candidates}`);
     expect(bad, `sélecteur(s) inconnu(s) :\n  ${bad.join('\n  ')}`).toEqual([]);
+  });
+  it('toute surface CONSOMMÉE PAR LE SOCLE déclare sa population ET son porteur (`ACTION_PORTEURS`)', () => {
+    // Le socle (`state/registreOffres.offresDuRegistre`) SKIPPE EN SILENCE une entrée dont le sélecteur
+    // n'a pas d'enveloppe de porteur : personne ne saurait identifier ses candidats, et l'action
+    // n'atteindrait aucune surface sans que rien ne le dise. La garde porte donc sur TOUTES les surfaces
+    // que le socle lit — lues à SA source (`OFFRES_CONSOMMEES`), jamais recopiées : brancher une 3ᵉ
+    // surface dessus l’amène automatiquement ici.
+    expect(OFFRES_CONSOMMEES.length, 'aucune surface branchée au socle : sa lecture serait morte').toBeGreaterThan(1);
+    const parCandidat = ACTIONS.filter((a) => OFFRES_CONSOMMEES.includes(a.surface));
+    expect(parCandidat.length, 'aucune action offerte par candidat').toBeGreaterThan(0);
+    const orphelines = parCandidat
+      .filter((a) => !a.candidates || !(a.candidates in ACTION_PORTEURS))
+      .map((a) => `${a.id} (${a.surface}) → ${a.candidates ?? "—"}`);
+    expect(orphelines, `action(s) offerte(s) par candidat sans porteur déclaré (le socle les skipperait en silence) :\n  ${orphelines.join('\n  ')}`).toEqual([]);
   });
   it('chaque `run` déclaré existe dans ACTION_RUN', () => {
     const bad = ACTIONS.filter((a) => a.run && !(a.run in ACTION_RUN)).map((a) => `${a.id} → ${a.run}`);

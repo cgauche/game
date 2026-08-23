@@ -26,7 +26,7 @@
  * d'un voisin. Sous `pionsEnDisques` il n'y a plus de tête à surmonter : le chrome se pose au bord du
  * disque (`badgeY = −discR`).
  */
-import { useEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { tileCenter, type Dims } from '../../geometry/iso';
 import type { Dir8 } from '../../state/dir8';
 import { useGame } from '../../state/store';
@@ -39,7 +39,10 @@ import { tokenBodyKind } from '../tokenBodyKind';
 import { discCapPath, discR } from '../builders/dynamicMarks';
 import { NEUTRAL_TINT } from '../teamColors';
 import { subscribeStageFrames } from './stageFrames';
-import type { TokenChromeMark } from '../builders/tokenChrome';
+import { viewBoxUnitPx, type StageCanvas } from './stageCam';
+import { VH, VW } from './useStageCamera';
+import type { GesteMark, TokenChromeMark } from '../builders/tokenChrome';
+import { PastilleEntite } from './PastilleEntite';
 import type { WalkPos } from '../fx/walkPose';
 
 /** Lift d'étage d'une case (mêmes unités que le `z` de `tileCenter`). */
@@ -60,7 +63,7 @@ export function chromeHeadPx(pions: boolean, mark: { scaleK: number; n: number; 
  *  de marche compris. Un seul calcul, partagé par le rendu React et le battement de marche — deux
  *  formules divergeraient au premier pas. C'est aussi ce qui rend le clic JUSTE sous `pionsEnDisques` :
  *  le disque est centré sur sa case, donc `tileFromEvent` y répond le même jeton. */
-export function chromeTransform(m: TokenChromeMark, dims: Dims, liftAt: LiftAt, wp: WalkPos): string {
+export function chromeTransform(m: Pick<TokenChromeMark, 'id' | 'cell' | 'n'>, dims: Dims, liftAt: LiftAt, wp: WalkPos): string {
   const p = wp(m.id, m.cell.x, m.cell.y, m.cell.z);
   const off = (m.n - 1) / 2;
   const x = p.x + off;
@@ -166,10 +169,48 @@ export interface TokenChromeOverlayProps {
   /** Position visuelle des jetons à un instant DONNÉ — le rendu la demande au sien, la boucle de
    *  marche la redemande à chaque frame (c'est là que le glissement se lit). */
   walkPosAt: (now: number) => WalkPos;
+  /** PASTILLES d'entité de la frame (`builders/tokenChrome.tokenGesteMarks`) : les gestes que les
+   *  choses du champ offrent à l'actif contrôlé. Elles vivent DANS ce groupe par-porteur, donc au
+   *  même transform et au même battement de marche que le chrome — une pastille ne décroche jamais
+   *  de son entité. Absentes hors combat, hors de son tour, et pour un siège qui ne contrôle pas. */
+  gestes?: readonly GesteMark[];
 }
 
-export function TokenChromeOverlay({ chromes, dims, liftAt, pions, tintAt, walkPosAt }: TokenChromeOverlayProps): JSX.Element {
+/** L'ancrage de POSE d'une pastille : la case et l'empreinte de SON entité, sous l'identité de marche
+ *  de celle-ci (`entityId`) — c'est ce qui la fait glisser avec une monture qui marche. */
+const ancreDeGeste = (g: GesteMark) => ({ id: g.entityId, cell: g.cell, n: g.n });
+
+/** CONTRE-ÉCHELLE du chrome CLIQUABLE : tout ce qui vit dans le groupe caméra est agrandi par
+ *  `zoom × viewBoxScale(canvas)` (`stage/stageCam`, la chaîne même de `stageScreenPixel`). Une cible
+ *  tactile doit, elle, mesurer ses pixels d'ÉCRAN — elle se contre-échelonne donc de ce facteur, mesuré
+ *  sur le SVG porteur (son cadre EST celui du rendu). Le viewBox nominal sert de repli tant que
+ *  l'élément n'est pas mesuré (montage, environnement sans mise en page). */
+function useEchelleEcran(porteur: { current: SVGGElement | null }): number {
+  const zoom = useGame((s) => s.zoom);
+  const [canvas, setCanvas] = useState<StageCanvas>({ w: VW, h: VH });
+  useEffect(() => {
+    const svg = porteur.current?.ownerSVGElement;
+    if (!svg) return;
+    const mesurer = () => {
+      const w = svg.clientWidth;
+      const h = svg.clientHeight;
+      if (!w || !h) return;
+      setCanvas((p) => (p.w === w && p.h === h ? p : { w, h }));
+    };
+    mesurer();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(mesurer);
+    ro.observe(svg);
+    return () => ro.disconnect();
+  }, [porteur]);
+  const px = viewBoxUnitPx(zoom, canvas);
+  return px > 0 ? 1 / px : 1;
+}
+
+export function TokenChromeOverlay({ chromes, dims, liftAt, pions, tintAt, walkPosAt, gestes = [] }: TokenChromeOverlayProps): JSX.Element {
   const groupes = useRef(new Map<string, SVGGElement>());
+  const mesure = useRef<SVGGElement | null>(null);
+  const echelle = useEchelleEcran(mesure);
   // ORIENTATION MONDE (`store.facing`) : AUCUN abonnement ici — `setFacing` reforge la référence de la
   // table à chaque pas et à chaque attaque, et cette surcouche vit sous les DEUX regards. L'abonnement
   // vit dans `TokenDisc`, monté sous le seul verdict `pionsEnDisques`, et n'y porte que la case du pion
@@ -184,11 +225,18 @@ export function TokenChromeOverlay({ chromes, dims, liftAt, pions, tintAt, walkP
         const g = groupes.current.get(m.id);
         if (g) g.setAttribute('transform', chromeTransform(m, dims, liftAt, wp));
       }
+      for (const m of gestes) {
+        const g = groupes.current.get(m.id);
+        if (g) g.setAttribute('transform', chromeTransform(ancreDeGeste(m), dims, liftAt, wp));
+      }
     }),
   );
   const wp = walkPosAt(performance.now());
   return (
     <>
+      {/* Groupe TÉMOIN : il ne peint rien — il donne au chrome cliquable l'élément SVG où se mesure le
+          cadre de rendu (contre-échelle de taille écran). */}
+      <g ref={mesure} data-chrome-mesure="" pointerEvents="none" />
       {chromes.filter((m) => aPeindre(m, pions)).map((m) => (
         <g
           key={m.id}
@@ -207,6 +255,19 @@ export function TokenChromeOverlay({ chromes, dims, liftAt, pions, tintAt, walkP
             </g>
           )}
           <TokenChromeMarks hp={m.hp} icons={m.icons} iconsMore={m.iconsMore} endState={m.endState} badgeY={-chromeHeadPx(pions, m)} />
+        </g>
+      ))}
+      {gestes.map((m) => (
+        <g
+          key={m.id}
+          ref={(g) => {
+            if (g) groupes.current.set(m.id, g);
+            else groupes.current.delete(m.id);
+          }}
+          data-geste-cid={m.entityId}
+          transform={chromeTransform(ancreDeGeste(m), dims, liftAt, wp)}
+        >
+          <PastilleEntite mark={m} headY={-chromeHeadPx(pions, m)} echelle={echelle} />
         </g>
       ))}
     </>

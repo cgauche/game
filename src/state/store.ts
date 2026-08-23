@@ -1346,7 +1346,8 @@ export interface GameState extends RollFlowActionsMap {
    *  Coût = MOUVEMENT sans jet ni Action — MAISON [entériné 2026-07-17] (« Met les en Maison pour le
    *  moment », #526 ; aucune clause de coût citable, LDB 14/15/09 + AA 9 fouillés en entier) ;
    *  Chevaucher sans Test : LDB 09 l.112. */
-  battleMount: () => void;
+  /** `mountId` = la monture DÉSIGNÉE (sa pastille sur le champ) ; absent = la plus proche. */
+  battleMount: (mountId?: string) => void;
   battleDismount: () => void;
   /** Combat monté (AA 9 l.36) : clic sur un couple cavalier+monture (deux ennemis) → choisir lequel
    *  frapper (le cavalier −10 si l'on est plus petit que la monture ; abattre la monture désarçonne). */

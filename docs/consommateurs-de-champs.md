@@ -55,7 +55,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:3224` |
+| `id` | 4 | `src/data/index.ts:3224` |
 | `spec` | 1 | `src/data/index.ts:3225` |
 
 ### `QualityRef` (src/data/index.ts)

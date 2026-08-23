@@ -17,7 +17,9 @@ import { useCombatFx } from './fx/useCombatFx';
 import { type WalkPos } from './fx/walkPose';
 import { FxLayer } from './fx/FxLayer';
 import { TokenChromeOverlay } from './stage/TokenChromeOverlay';
-import { type TokenChromeMark } from './builders/tokenChrome';
+// SONDE DE PICKING de la recette : son import l'enregistre auprès de l'outillage (`__wfrp.pickTileAt`).
+import './stage/pickProbe';
+import { type GesteMark, type TokenChromeMark } from './builders/tokenChrome';
 import { viewPolicy } from './stage/viewPolicy';
 import { wallTraitObjs } from './stage/layers';
 import { gridLines } from '../geometry/grid';
@@ -61,6 +63,8 @@ export type VueDePlateau = {
   liftAt: (x: number, y: number, z?: number) => number;
   politique: ReturnType<typeof viewPolicy>;
   chromes: readonly TokenChromeMark[];
+  /** PASTILLES d'ENTITÉ (spec zone 4) : déjà dérivées par l'hôte, comme le chrome des jetons. */
+  gestes: readonly GesteMark[];
   walkPosAt: (now: number) => WalkPos;
   activeC: Combatant | undefined;
   /** Le combat EN COURS, ou `null` hors combat (déjà tranché par l'hôte). */
@@ -79,7 +83,7 @@ export type VueDePlateau = {
 };
 
 export function SurcoucheIso({
-  scene, dims, turning, activeZ, visible, tintAt, liftAt, politique, chromes, walkPosAt,
+  scene, dims, turning, activeZ, visible, tintAt, liftAt, politique, chromes, gestes, walkPosAt,
   activeC, battle, myTurn, partyPos, mode, targeting, anyWalking, camTransform, camGRef,
   poserSvg, pointeur, visée,
 }: VueDePlateau) {
@@ -196,7 +200,7 @@ export function SurcoucheIso({
         {/* JETONS (P3-0f, P3-5c) : ils se peignent APRÈS les affordances de SOL (portes, télégraphes,
             gabarits) — l'état d'un combattant se lit par-dessus ce qui est peint sur le sol, jamais
             dessous — et, sous `pionsEnDisques`, c'est ICI que vit le pion lui-même. */}
-        <TokenChromeOverlay chromes={chromes} dims={dims} liftAt={liftAt} pions={politique.pionsEnDisques} tintAt={tintAt} walkPosAt={walkPosAt} />
+        <TokenChromeOverlay chromes={chromes} gestes={gestes} dims={dims} liftAt={liftAt} pions={politique.pionsEnDisques} tintAt={tintAt} walkPosAt={walkPosAt} />
         {/* Curseur LIBRE : il se tait dès qu'un ciblage carte tient la scène (verdict du registre
             `mapTargetingActive`) — le réticule/le gabarit du mode prennent alors le relais. */}
         {battle && combatCursor

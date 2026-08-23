@@ -9,6 +9,7 @@ import { availableAttacks, selfManeuversOf, selfManeuverApplicable, previewResou
 import { findSpellById, findSkillById, findActionById, ACTIONS, type ActionDef } from '../data/index';
 import { type CodexTarget } from '../engine/ruleRefs';
 import { actionGate, runAction, currentInterludeAction, ACTION_CANDIDATES, type ActionCtx, type ActionRunCtx } from '../state/actionRegistry';
+import { offresDuRegistre } from '../state/registreOffres';
 import { targetingModeLabel, dispellableOnCarrier } from '../state/targetingModes';
 import { CodexRef } from './compendium/CodexRef';
 import { isConsumable } from '../engine/consumables';
@@ -545,17 +546,11 @@ export function CombatConsole() {
    *  dit qui le couvre. */
   const candidatsDe = (args?: ActionRunCtx): string[] =>
     Object.values(args ?? {}).filter((v): v is string => typeof v === 'string');
-  /** L'entrée couvre-t-elle CES candidats ? Sa population est celle qu'elle DÉCLARE (`candidates` du
-   *  registre, sélecteur partagé) — jamais un prédicat recopié : un geste secondaire n'est offert que
-   *  sur les alvéoles dont un candidat appartient à sa liste (id nu, ou objet à `id`/`uid`). */
-  const couvreLesCandidats = (def: ActionDef, candidats: readonly string[]) => {
-    const selecteur = def.candidates ? ACTION_CANDIDATES[def.candidates] : undefined;
-    return !!selecteur && selecteur({ active, battle, netMode: net.mode }).some((c) => {
-      const o = c as { id?: string; uid?: string } | null;
-      const cle = typeof c === 'string' ? c : o?.id ?? o?.uid;
-      return !!cle && candidats.includes(cle);
-    });
-  };
+  /** LES OFFRES de la surface des gestes secondaires, par PORTEUR — socle PARTAGÉ avec les pastilles
+   *  du champ (`state/registreOffres`). L'identité d'un candidat n'est plus DEVINÉE ici (`id ?? uid`) :
+   *  l'enveloppe de sélecteur du registre la DÉCLARE, et une alvéole n'a plus qu'à se reconnaître dans
+   *  ses propres paramètres. */
+  const offres2e = offresDuRegistre('geste-secondaire', { active, battle, netMode: net.mode });
   /** GESTES SECONDAIRES d'une alvéole — RENDEUR UNIQUE (aucun id d'action ici), appelé pour TOUTE
    *  case : les entrées `surface: 'geste-secondaire'` dont l'`hote` est l'entrée de la case et dont la
    *  population couvre l'un de ses candidats. Chacune EST une entrée du registre habillée par
@@ -568,7 +563,10 @@ export function CombatConsole() {
     if (def.surface === 'geste-secondaire') return [];
     const candidats = candidatsDe(args);
     if (!candidats.length) return [];
-    return ACTIONS.filter((a) => a.surface === 'geste-secondaire' && a.hote === def.id && couvreLesCandidats(a, candidats))
+    const couvertes = new Set(
+      offres2e.filter((p) => candidats.includes(p.porteurId)).flatMap((p) => p.offres.map((o) => o.actionId)),
+    );
+    return ACTIONS.filter((a) => a.surface === 'geste-secondaire' && a.hote === def.id && couvertes.has(a.id))
       .map((a) => cellFor(a.id, family, { key: `${a.id}-${candidats.join('-')}`, args, label: progres ? `${a.label} (${progres})` : undefined }))
       .filter((c): c is Cell => !!c);
   };

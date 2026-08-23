@@ -23,7 +23,8 @@ import { HERO_RING, relationColor } from '../teamColors';
 import { combatantBodyTopFrac, combatantTokenScale, entityTokenScale } from '../sizeScale';
 import type { TokenSubject } from '../tokenBodyKind';
 import { teamRingDecor, type MarkCell } from './dynamicMarks';
-import type { TokenEl, TokenSubjectEl } from './types';
+import type { Offre, OffresParPorteur } from '../../state/registreOffres';
+import type { PropEl, TokenEl, TokenSubjectEl } from './types';
 
 /** Icônes d'états montrées avant le report « +N » (`summarizeEffects`). */
 export const CHROME_ICON_MAX = 3;
@@ -102,6 +103,87 @@ export interface TokenChromeMark extends TokenChrome {
   subject: TokenSubject;
 }
 
+/** ANCRAGE d'une chose postée sur le champ : sa case, son empreinte et les deux échelles dont se tire
+ *  la hauteur de tête. TOUTE marque de cette chose s'y pose — le chrome d'écran comme la pastille de
+ *  ses gestes — et c'est structurel : deux calculs d'ancrage divergeraient d'une case au premier pas. */
+export interface Ancrage {
+  cell: MarkCell;
+  n: number;
+  scaleK: number;
+  bodyTopFrac: number;
+}
+
+/** L'ancrage d'un JETON posté (combattant, monture d'un couple, figurant). `null` = rien à poser (une
+ *  unité sans case n'est pas sur le champ). */
+export function ancrageDuJeton(tk: TokenEl): Ancrage | null {
+  const s = tk.subject;
+  if (s.kind === 'figurant')
+    return {
+      cell: { x: s.ent.pos.x, y: s.ent.pos.y, z: tk.cell.z },
+      n: sizeFootprint(entitySize(s.ent)),
+      scaleK: entityTokenScale(s.ent),
+      bodyTopFrac: 1,
+    };
+  const unit = s.kind === 'combatant' ? s.c : s.mount;
+  if (!unit.pos) return null;
+  return {
+    cell: { x: unit.pos.x, y: unit.pos.y, z: tk.cell.z },
+    n: footprintN(unit),
+    scaleK: combatantTokenScale(unit),
+    bodyTopFrac: combatantBodyTopFrac(unit),
+  };
+}
+
+/** L'ancrage d'un DÉCOR posté (`PropEl` : le tas d'objets, le tonneau fouillé) — même repère que celui
+ *  d'un jeton, tiré de l'empreinte et de l'échelle au pied que le builder de décors a déjà calculées. */
+export function ancrageDuDecor(pr: PropEl): Ancrage {
+  return {
+    cell: { x: pr.cell.x, y: pr.cell.y, z: pr.cell.z },
+    n: Math.max(pr.span?.w ?? 1, pr.span?.h ?? 1),
+    scaleK: pr.foot.scale,
+    bodyTopFrac: 1,
+  };
+}
+
+/** UNE PASTILLE : ce qu'une entité du champ OFFRE, et où la poser. La donnée des gestes vient du
+ *  registre (`state/entityGestes`) ; ce builder ne fait que la POSER, au même ancrage que le chrome. */
+export interface GesteMark extends Ancrage {
+  /** Clé de groupe SVG — préfixée, pour ne jamais entrer en collision avec le chrome du même porteur. */
+  id: string;
+  entityId: string;
+  gestes: readonly Offre[];
+}
+
+/** Les pastilles de la frame : une par ENTITÉ qui offre au moins un geste, posée sur SON porteur —
+ *  un jeton (monture, coque servie) ou un décor (objets au sol). Une offre dont le porteur n'est pas
+ *  posté (hors champ, filtré, non dessiné à cet étage) n'a pas de pastille : rien à montrer sur rien.
+ *  PUR et camera-free, comme `tokenChromes` : la surcouche projette, ce module ne connaît que le monde. */
+export function tokenGesteMarks(
+  tokens: readonly TokenEl[],
+  props: readonly PropEl[],
+  offres: readonly OffresParPorteur[],
+): GesteMark[] {
+  const out: GesteMark[] = [];
+  for (const groupe of offres) {
+    if (!groupe.offres.length) continue;
+    const tk = tokens.find((t) => porteurDuJeton(t) === groupe.porteurId);
+    const pr = tk ? undefined : props.find((p) => p.entId === groupe.porteurId);
+    const a = tk ? ancrageDuJeton(tk) : pr ? ancrageDuDecor(pr) : null;
+    if (!a) continue;
+    out.push({ id: `geste-${groupe.porteurId}`, entityId: groupe.porteurId, gestes: groupe.offres, ...a });
+  }
+  return out;
+}
+
+/** L'ENTITÉ que porte un jeton : l'unité pour un combattant, la MONTURE pour un couple (c'est elle
+ *  qu'on enfourche et elle qui tient la case), l'entité de scène pour un figurant. */
+function porteurDuJeton(tk: TokenEl): string {
+  const s = tk.subject;
+  if (s.kind === 'combatant') return s.c.id;
+  if (s.kind === 'mounted') return s.mount.id;
+  return s.ent.id;
+}
+
 /** Le sujet de rendu d'un élément de jeton — la traduction UNIQUE `TokenSubjectEl` → `TokenSubject`.
  *  Un couple MONTÉ se lit à sa MONTURE : c'est elle qui porte la case, l'empreinte et le chrome. */
 function subjectOf(s: TokenSubjectEl): TokenSubject {
@@ -125,28 +207,16 @@ export function tokenChromes(
   const out: TokenChromeMark[] = [];
   for (const tk of tokens) {
     const s = tk.subject;
+    const a = ancrageDuJeton(tk);
+    if (!a) continue;
     if (s.kind === 'figurant') {
-      const ent = s.ent;
-      out.push({
-        id: `e-${ent.id}`,
-        cell: { x: ent.pos.x, y: ent.pos.y, z: tk.cell.z },
-        n: sizeFootprint(entitySize(ent)),
-        scaleK: entityTokenScale(ent),
-        bodyTopFrac: 1,
-        team: null,
-        subject: subjectOf(s),
-        ...NEUTRE,
-      });
+      out.push({ id: `e-${s.ent.id}`, ...a, team: null, subject: subjectOf(s), ...NEUTRE });
       continue;
     }
     const unit = s.kind === 'combatant' ? s.c : s.mount;
-    if (!unit.pos) continue;
     out.push({
       id: unit.id,
-      cell: { x: unit.pos.x, y: unit.pos.y, z: tk.cell.z },
-      n: footprintN(unit),
-      scaleK: combatantTokenScale(unit),
-      bodyTopFrac: combatantBodyTopFrac(unit),
+      ...a,
       team: teamRingDecor(s.kind === 'mounted' ? s.rider : s.c, s.heroIndex),
       subject: subjectOf(s),
       ...(s.kind === 'combatant' ? tokenChrome(s.c, ctx) : mountChrome(unit)),

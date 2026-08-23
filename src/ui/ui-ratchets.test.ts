@@ -797,7 +797,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
 // Couche PARTAGÉE gardée par xiii (chemins relatifs à `src/ui/`) : la couche atomique
 // (`base`/`components`), la primitive d'onglets `tabs`, et l'orchestrateur d'`@import` `styles.css`
 // (top-level) qui porte aussi les règles TRANSVERSES manette + le bandeau DEV du collecteur d'erreurs.
-const SHARED_CSS_FILES = ['styles/base.css', 'styles/components.css', 'styles/tabs.css', 'styles.css'];
+// #1411 P2-C : `../gameIso/anim.css` entre au radar — c'est la feuille du CHROME DU MONDE (marques de
+// jeton, pastille d'état de fin, pastille d'ENTITÉ), consommée par plusieurs modules de `gameIso`, et
+// elle échappait aux DEUX cliquets (xii ne voit que `src/ui/styles/`, xiv ne parcourt que `src/ui`).
+// Une classe qui s'y planquerait sans être partagée ni cataloguée compte donc désormais comme fuite.
+const SHARED_CSS_FILES = ['styles/base.css', 'styles/components.css', 'styles/tabs.css', 'styles.css', '../gameIso/anim.css'];
 const SHARED_LEAK_BASELINE: Record<string, number> = {
   // #1372 : 16 → 15 — `.lazy-fallback` cesse d'être mono-consommateur (le voile d'entrée en scène du
   // monde volumique le REPREND au lieu de définir sa propre classe, `stage/VolumetricWorld.tsx`).
@@ -813,6 +817,10 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   'styles/components.css': 10,
   'styles/tabs.css': 1,
   'styles.css': 6,
+  // Chrome du MONDE : les classes y sont mono-consommateur PAR NATURE (un peintre unique par marque —
+  // `TokenChromeMarks`, `PastilleEntite`, les animations de FX). Baseline posée à l'entrée au radar,
+  // GELÉE et DÉCROISSANTE comme les autres.
+  '../gameIso/anim.css': 26,
 };
 
 /** Classes `.foo` citées entre backticks dans le catalogue de la charte (contrat de couche atomique). */
@@ -1097,7 +1105,7 @@ describe('#236 — cliquets d’hygiène UI', () => {
         if ((usage.get(c)?.size ?? 0) >= 2) continue; // usage transversal réel (≥2 modules)
         leaks++;
       }
-      counts[rel(f)] = leaks;
+      counts[file] = leaks; // clé = le chemin DÉCLARÉ (une feuille partagée peut vivre hors `src/ui`)
     }
     assertRatchet(counts, SHARED_LEAK_BASELINE, 'classe de domaine planquée en couche partagée — la déplacer dans un module de domaine (cliqueté par xii) ou la documenter au catalogue de charte-ui.md (#371)');
   });

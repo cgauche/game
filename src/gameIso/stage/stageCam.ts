@@ -85,6 +85,15 @@ export function viewBoxScale(canvas: StageCanvas): number {
   return Math.max(canvas.w / VW, canvas.h / VH);
 }
 
+/** PIXELS ÉCRAN que vaut UNE unité de viewBox pour ce qui vit DANS le groupe caméra : les deux étages
+ *  de la chaîne, la caméra du groupe (`k`) puis le recouvrement du viewBox — le même facteur que
+ *  `stageScreenPixel` applique aux distances. Ce qui doit rester à TAILLE ÉCRAN dans ce groupe (chrome
+ *  cliquable) s'en contre-échelonne ; sans quoi une cible de 44 unités ne mesure que 39 px à 1280×720
+ *  et 15,6 px à zoom 0,4. */
+export function viewBoxUnitPx(zoom: number, canvas: StageCanvas): number {
+  return stageCamAffine({ x: 0, y: 0 }, zoom).k * viewBoxScale(canvas);
+}
+
 /** VIEWBOX MOBILE — la seconde convention du dépôt (`ui/editor/EditorCanvas.tsx` : viewBox de taille
  *  variable `${vb.x} ${vb.y} ${w/zoom} ${h/zoom}`, `preserveAspectRatio` par DÉFAUT donc
  *  `xMidYMid meet`). Le rectangle rendu est le viewBox lui-même, à l'échelle MIN des deux rapports

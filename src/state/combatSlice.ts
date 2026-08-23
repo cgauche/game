@@ -32,7 +32,7 @@ import { emitCombatEvent } from './combatEvents';
 import { turnEconomyStamp } from './endTurnGuard';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
-import { mountMovement, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
+import { mountMovement, mountUp, dismount, mountOf, mountablesNear, isControlledMount, insertByInitiative } from './mount';
 import { heroCombatMount } from '../engine/mountTravel';
 import { ev, evLines } from './combatLog';
 import { viewYawDeg } from './stageYaw';
@@ -483,13 +483,16 @@ export function createCombatSlice(get: Get, set: Set) {
     // Enfourcher/descendre ne demande AUCUN jet (Chevaucher sans Test si l'on a la Compétence, LDB 09 l.112)
     // → ce n'est PAS une Action (critère : tout jet = une Action) : c'est juste du MOUVEMENT (repositionnement
     // sur/hors la monture). On consomme donc le Mouvement du tour, pas l'Action — on peut enfourcher PUIS attaquer.
-    battleMount: () => {
+    battleMount: (mountId?: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle, scene } = get();
       if (!battle || !scene || battle.over || battle.movementUsed > 0) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || active.mountId) return;
-      const mount = mountableNear(battle, active);
+      const montures = mountablesNear(battle, active);
+      // Monture EXPLICITE (pastille de CETTE monture) → elle, et seulement si elle est enfourchable ;
+      // sinon (touche du registre) → la plus proche. Même patron que `battleManPoste`.
+      const mount = mountId ? montures.find((m) => m.id === mountId) : montures[0];
       if (!mount) return;
       mountUp(active, mount);
       // Monture Nerveux chevauchée : elle perd son tour propre (LDB 14 l.182) → la retirer de l'ordre
@@ -1664,8 +1667,13 @@ export function createCombatSlice(get: Get, set: Set) {
       if (battle.action === 'push') { set({ battle: { ...battle, action: null, reachable: new Map(), preview: null } }); bus.emit(EVT.SCENE_DIRTY); return; }
       const active = activeCombatant(battle);
       // Pousser = le MOUVEMENT (pas l'Action) : bloqué si le Mouvement du chef est déjà dépensé, PAS si l'Action
-      // a été prise (on peut pousser puis assener, ou l'inverse — ordre libre, LDB 13 l.79).
-      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active) || !pushEligible(active) || (battle.movementUsed ?? 0) >= mountMovement(battle, active)) return;
+      // a été prise (on peut pousser puis assener, ou l'inverse — ordre libre, LDB 13 l.79). Et pas davantage
+      // si l'Action lui est INTERDITE : un chef Sonné garde son Mouvement (LDB 16 l.125 — « incapable
+      // d'effectuer votre Action […] vous ne pouvez vous déplacer que de la moitié de votre Mouvement »),
+      // il pousse donc, à demi-budget. Ce que l'engin exige, c'est du MOUVEMENT — et le budget d'un
+      // porteur cloué (Inconscient/Surpris, `gating.movement:'none'`) vaut déjà 0, ce que la ligne suivante
+      // refuse. Exiger `canTakeAction` ici faisait mentir le coût déclaré au registre.
+      if (!active || !controlsCombatant(get(), active) || !pushEligible(active) || (battle.movementUsed ?? 0) >= mountMovement(battle, active)) return;
       const poste = active.mannedPoste!;
       const hull = posteHullOf(poste, battle.combatants);
       const w = mannedPosteWeapon(active, poste);

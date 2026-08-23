@@ -59,13 +59,13 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 |---|---|---|---|---|
 | `src/state/combatEffects.ts` | 1 | canonique | 471 | canonique : le corps d'`openSkillTest` (combatEffects.ts:308) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
 | `src/state/combatFlow.ts` | 2 | mixte | 3103, 7355 | 1 gate de main (`pendingHandGate`, `openAttackCascade`) monté à la main -> #1064 ; 1 `PendingReload` d'ennemi construit APRÈS un `rollSansPilote` déjà scellé — canonique : objet de RENDU (journal/popin), aucun jet à ouvrir. |
-| `src/state/combatSlice.ts` | 5 | dette | 1952, 1998, 2107, 2558, 2961 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
+| `src/state/combatSlice.ts` | 5 | dette | 1960, 2006, 2115, 2566, 2969 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
 | `src/state/interludeFlow.ts` | 1 | dette | 749 | `pendingActivity` du catalogue d'Activités (`openCatalogActivity`) — fabrique UNIQUE de toutes les Activités à jet d'interlude -> #1064. |
 | `src/state/massBattleFlow.ts` | 1 | dette | 369 | `openBattleActivity` — fabrique PARTAGÉE, atteinte par 6 call-sites (prep ×3/round ×2/resistance) -> #1067 (surfaçage massBattle). |
 | `src/state/medicFlow.ts` | 2 | dette | 175, 201 | `pendingHeal` et `pendingSurgery` du soigneur PNJ hors combat -> #1064. |
 | `src/state/merchantFlow.ts` | 1 | dette | 879 | `pendingAppraise` (Évaluation / Intuition de détection) -> #1064. |
 | `src/state/seaVoyageFlow.ts` | 1 | dette | 2081 | `pendingSteamSave` (`openSteamSave`, Test d'Initiative de l'ingénieur) -> #1064. |
-| `src/state/store.ts` | 1 | canonique | 2547 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
+| `src/state/store.ts` | 1 | canonique | 2548 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
 
 _15 sites mesurés dans 9 fichiers — par nature : 11 dette, 2 canonique, 2 mixte._
 

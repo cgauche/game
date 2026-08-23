@@ -482,6 +482,17 @@ h3 {
   border-radius: 0;
   box-shadow: none;
 }
+/* Variante TACTILE (`GatedAction tactile`) : la cible de la charte (≥ 40 px, cf. « RESPONSIVE »
+   ci-dessus) tenue à TOUT pointeur — un contrôle posé dans le monde n'a pas la densité d'un panneau
+   autour de lui, et son échelle ne dépend pas du média. Elle vit ICI, chez la primitive. */
+.btn.btn-tactile {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  min-width: 40px;
+  white-space: nowrap;
+}
 .btn-primary {
   background: linear-gradient(180deg, var(--accent2), var(--accent));
   border-color: #c9573f;

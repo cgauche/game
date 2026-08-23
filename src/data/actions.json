@@ -594,8 +594,12 @@
     "label": "Pousser",
     "icon": "action/serve-engine",
     "surface": "pastille-entite",
-    "gate": "mouvement-intact",
+    "gate": [
+      "mouvement-intact",
+      "equipage-suffisant"
+    ],
     "run": "battlePushEngine",
+    "candidates": "piece-poussable",
     "armed": "push",
     "mode": "push",
     "cost": "mouvement",

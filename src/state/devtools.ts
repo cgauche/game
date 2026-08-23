@@ -1,4 +1,20 @@
 import { useGame, SCREENS } from './store';
+
+/** Ce que la SONDE DE PICKING du rendu rend (`gameIso/stage/pickProbe`) : la case que le picking
+ *  résoudrait sous un pixel CLIENT, le combattant dont le corps s'y trouve, et par quelle voie. */
+export type PickProbe = (px: { x: number; y: number }) => {
+  tile: { x: number; y: number; z: number } | null;
+  cid: string | null;
+  via: 'sprite' | 'sol' | 'aucune';
+} | null;
+
+let sondeDePicking: PickProbe | null = null;
+
+/** Le RENDU déclare sa sonde à l'outillage de recette (jamais l'inverse : `src/state` ne va pas
+ *  chercher `src/gameIso`, règle 3). Appelée à l'import de `gameIso/stage/pickProbe`. */
+export function setPickProbe(p: PickProbe | null): void {
+  sondeDePicking = p;
+}
 import { portRepairVessel, portCareenVessel, portInstallUpgrade, damageVesselHull, setVesselHull } from './seaVoyageFlow';
 import { seaBoardEventById } from '../engine/seaVoyage';
 import { beginShipwreck } from './shipwreck';
@@ -66,6 +82,8 @@ bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastR
  *                           seule (`getBoundingClientRect`), `null` si absent du DOM
  *   __wfrp.tileScreenPos({x,y,z?}) → même bounding box ÉCRAN pour une CASE (vide comprise), là où
  *                           `screenPos` exige un token `data-cid` — viser un déplacement au clic réel
+ *   __wfrp.pickTileAt({x,y}) → l'INVERSE : ce que le PICKING RÉEL résoudrait sous ce pixel écran
+ *                           ({tile, cid, via:'sprite'|'sol'|'aucune'}) — lecture seule, aucun clic
  *   __wfrp.talk('id')     → téléporte le groupe à côté de l'entité et l'interpelle (dialogue/marchand)
  *   __wfrp.goto('id')     → place le groupe sur la case de l'entité (déclenche portes/triggers au pas)
  *   __wfrp.screen('menu') → navigue vers un écran
@@ -508,6 +526,18 @@ export function buildApi() {
       const x = Math.min(...xs), y = Math.min(...ys);
       return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
     },
+
+    /** OBSERVATION seule : CE QUE LE PICKING RÉEL RÉSOUDRAIT sous un pixel d'écran — l'INVERSE exact de
+     *  `tileScreenPos`, et le miroir de la chaîne que le stage exécute au clic (`useStagePointer` :
+     *  `clientToSvg` → `stagePointAt` → hit-test sprite puis sol). Ne clique RIEN : il DIT quelle case
+     *  (et quel combattant, si un corps est dessiné sous le pixel) recevrait le geste. C'est l'instrument
+     *  qui tranche « ma case est-elle visée ? » sans tâtonner au clic — un clic qui « ne fait rien » y
+     *  montre soit un `cid` inattendu (le corps d'un voisin/engin couvre la case, et le clic part alors
+     *  sur l'ENTITÉ), soit `tile: null` (aucune surface résolue à ce pixel).
+     *  La SONDE elle-même vit dans le rendu (`gameIso/stage/pickProbe`) et s'enregistre ici : `src/state`
+     *  ne dépend jamais de `src/gameIso` (règle 3). `null` tant que le stage n'est pas monté.
+     */
+    pickTileAt: (px: { x: number; y: number }) => (sondeDePicking ? sondeDePicking(px) : null),
 
     /** ACCÈS DIRECT : ouvre le dialogue/marchand d'une entité (téléporte le groupe à côté puis interagit). */
     talk: (id: string) => {

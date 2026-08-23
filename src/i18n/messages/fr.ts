@@ -2296,6 +2296,7 @@ export const fr = {
   'agate.notEngaged': 'pas Engagé',
   'agate.actionSpentNoFreeDisengage': 'Action déjà dépensée (désengagement gratuit indisponible)',
   'agate.movementStarted': 'Mouvement déjà entamé ce tour',
+  'agate.cannotMove': 'hors d’état de se mouvoir',
   'agate.noMoveToUndo': 'aucun déplacement à annuler',
   'agate.hullHasNoBody': 'une coque n’a pas de corps : geste de fantassin',
   'agate.frenzyOnly': 'Frénésie : seuls la Capacité de Combat et l’Athlétisme',
@@ -2317,6 +2318,17 @@ export const fr = {
   // Focalisation est une Compétence AVANCÉE (`LDB 09 l.30`), spécialisée par Vent (`LDB 46`).
   'agate.noFocusSkill': '{name} ne maîtrise pas Focalisation',
   'agate.noFocusSkillWind': '{name} ne maîtrise pas Focalisation ({wind})',
+  // ADE II 8 l.233 (seuil de la moitié de l'Équipe requise, `state/siegePush.pushCrewOk`).
+  'agate.pushUndercrew': 'équipe trop réduite pour pousser l’engin',
+  // ── PASTILLES D'ENTITÉ (spec HUD zone 4) : ce qu'une chose du champ offre, dit au joueur.
+  'pastille.nGestes': '{n} gestes',
+  'pastille.intitule': 'Que faire ?',
+  // ── COÛTS D'ACTE du registre (`cost` de `actions.json`) : ce que le geste prend dans l'économie du
+  // tour, dit à l'endroit du geste (pastille d'entité, spec HUD zone 4).
+  'acost.action': 'Action',
+  'acost.mouvement': 'Mouvement',
+  'acost.gratuit': 'gratuit',
+  'acost.aucun': '',
 
   // GESTE SECONDAIRE d'une alvéole de la console (spec HUD §1d) — les QUATRE surfaces qui l'ouvrent
   // se disent en UNE phrase, ici : le nom accessible de l'alvéole la compose, aucune recopie.

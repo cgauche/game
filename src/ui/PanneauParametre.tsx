@@ -38,8 +38,10 @@ export interface ParamOption extends RollOption {
 
 export interface PanneauParametreProps {
   /** DÉCLENCHEUR du panneau (l'alvéole cliquée, la pastille) : il l'ancre. `null` = rien à ancrer,
-   *  donc rien à rendre — le panneau ne flotte jamais tout seul au milieu de l'écran. */
-  anchor: HTMLElement | null;
+   *  donc rien à rendre — le panneau ne flotte jamais tout seul au milieu de l'écran.
+   *  `Element` et non `HTMLElement` : une pastille d'ENTITÉ vit dans le SVG du plateau, et le panneau
+   *  ne lui demande que son rectangle et son appartenance — les deux existent sur tout élément. */
+  anchor: Element | null;
   /** Ce que le panneau DEMANDE, en une ligne (« Quel Sort dissiper ? ») — c'est aussi son nom
    *  accessible. Nommé `intitule` et non `title` : la prose du panneau est RENDUE à l'écran, jamais
    *  déposée dans une infobulle native (garde `console-no-title-only`). */
@@ -65,7 +67,7 @@ export function PanneauParametre({ anchor, intitule, options, onClose }: Panneau
   return <PanneauBoite anchor={anchor} intitule={intitule} options={options} onClose={onClose} pos={pos} />;
 }
 
-function PanneauBoite({ anchor, intitule, options, onClose, pos }: Omit<PanneauParametreProps, 'anchor'> & { anchor: HTMLElement; pos: PopoverPlacement }) {
+function PanneauBoite({ anchor, intitule, options, onClose, pos }: Omit<PanneauParametreProps, 'anchor'> & { anchor: Element; pos: PopoverPlacement }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;

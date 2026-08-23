@@ -298,15 +298,19 @@ export function mountedDodgePenalty(defender: Combatant): number {
   return defender.mountId && !hasAcrobatiesEquestres(defender) ? -20 : 0;
 }
 
-/** Monture LIBRE la plus proche que `rider` (à pied) peut enfourcher : marquée `mountable`, du MÊME camp
- *  (on n'enfourche pas la monture d'un ennemi), sans cavalier, à une case de son empreinte (LDB 14). */
+/** Montures LIBRES que `rider` (à pied) peut enfourcher, de la plus proche à la plus lointaine :
+ *  marquées `mountable`, du MÊME camp (on n'enfourche pas la monture d'un ennemi), sans cavalier, à une
+ *  case de leur empreinte (LDB 14). SOURCE UNIQUE de la disponibilité de « Monter » — la pastille de
+ *  CHAQUE monture en naît, et le dispatcher y retrouve celle qu'on a désignée. */
+export function mountablesNear(battle: BattleState, rider: Combatant): Combatant[] {
+  return battle.combatants
+    .filter((m) => m.mountable && m.kind === rider.kind && canMount(battle, rider, m))
+    .map((m) => ({ m, d: m.pos && rider.pos ? chebyshev(m.pos, rider.pos) : Infinity }))
+    .sort((a, b) => a.d - b.d)
+    .map((x) => x.m);
+}
+
+/** La PLUS PROCHE des montures enfourchables (`mountablesNear`) — le défaut quand aucune n'est désignée. */
 export function mountableNear(battle: BattleState, rider: Combatant): Combatant | undefined {
-  let best: Combatant | undefined;
-  let bestD = Infinity;
-  for (const m of battle.combatants) {
-    if (!m.mountable || m.kind !== rider.kind || !canMount(battle, rider, m)) continue;
-    const d = m.pos && rider.pos ? chebyshev(m.pos, rider.pos) : Infinity;
-    if (d < bestD) { bestD = d; best = m; }
-  }
-  return best;
+  return mountablesNear(battle, rider)[0];
 }

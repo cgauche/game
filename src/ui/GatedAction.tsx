@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 
 /**
  * Action GATÉE — bouton d'engagement dont l'indisponibilité porte sa RAISON en texte VISIBLE sous le
@@ -28,6 +28,9 @@ export function GatedAction({
   btnClassName,
   bare = false,
   dense = false,
+  tactile = false,
+  arretePointeur = false,
+  btnRef,
 }: {
   id: string;
   label: ReactNode;
@@ -50,6 +53,18 @@ export function GatedAction({
    *  raison. Même règle que `bare` : la densité vit chez la primitive, jamais chez l'appelant. Porte
    *  sur le CONTENEUR, donc sans effet dans la forme `reasonId` (rendue sans conteneur). */
   dense?: boolean;
+  /** Variante TACTILE (`.btn.btn-tactile`, base.css) : le bouton tient la cible de la charte (≥ 40 px)
+   *  à TOUT pointeur, et pas seulement sous `pointer: coarse` — pour un contrôle posé dans le monde,
+   *  où rien ne garantit la densité d'un panneau. Comme `bare`/`dense` : la variante vit chez la
+   *  primitive, jamais en neutralisation de `.btn` depuis la feuille d'un écran. */
+  tactile?: boolean;
+  /** Le bouton CONSOMME ses événements de pointeur (`stopPropagation` sur pointerdown/up/click) — pour
+   *  un contrôle posé SUR une surface de picking (le SVG du monde, qui écoute tout à sa racine) : sans
+   *  cela un clic vaudrait le geste ET le clic-monde qui est dessous. */
+  arretePointeur?: boolean;
+  /** Référence sur le BOUTON — pour l'ancrer à ce qu'il ouvre (un panneau-paramètre naît de son
+   *  déclencheur, jamais du conteneur qui l'entoure). */
+  btnRef?: Ref<HTMLButtonElement>;
 } & (
   | {
       /** Raison d'indisponibilité — rendue sous le bouton quand `enabled=false` (info de DÉCISION). */
@@ -65,15 +80,19 @@ export function GatedAction({
     }
 )) {
   const describedBy = enabled ? undefined : (reasonId ?? `${id}-reason`);
+  const arret = arretePointeur ? (e: { stopPropagation: () => void }) => e.stopPropagation() : undefined;
   const button = (
     <button
       type="button"
-      className={`btn ${primary ? 'btn-primary' : ''}${bare ? ' btn-nu' : ''}${btnClassName ? ` ${btnClassName}` : ''}`}
+      ref={btnRef}
+      className={`btn ${primary ? 'btn-primary' : ''}${bare ? ' btn-nu' : ''}${tactile ? ' btn-tactile' : ''}${btnClassName ? ` ${btnClassName}` : ''}`}
       disabled={!enabled}
       aria-label={ariaLabel}
       title={ariaLabel}
       aria-describedby={describedBy}
-      onClick={onClick}
+      onPointerDown={arret}
+      onPointerUp={arret}
+      onClick={(e) => { arret?.(e); onClick(); }}
     >
       {label}
     </button>
