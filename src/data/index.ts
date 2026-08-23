@@ -2128,6 +2128,7 @@ export interface BookData {
   label: string;
   abbr: string;
   dir?: string | null;
+  extractionDir?: string | null;
   language: string | null;
   folder: string | null;
   desc: string | null;

@@ -5808,7 +5808,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -5978,7 +5978,7 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -6090,7 +6090,7 @@
       {
         "id": "divertissement",
         "value": 35,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "intuition",
@@ -6223,7 +6223,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "intuition",
@@ -6380,7 +6380,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "esquive",
@@ -6563,7 +6563,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "esquive",
@@ -6621,7 +6621,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "guerison",
@@ -7569,7 +7569,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "projectiles",
@@ -7730,12 +7730,12 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Zone Patrouille"
+        "spec": "zone-de-patrouille"
       },
       {
         "id": "projectiles",
@@ -7905,7 +7905,7 @@
       {
         "id": "savoir",
         "value": 80,
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "projectiles",
@@ -7920,12 +7920,12 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Zone Patrouille"
+        "spec": "zone-de-patrouille"
       },
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -8197,7 +8197,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Sorcellerie"
+        "spec": "sorcieres"
       },
       {
         "id": "guerison",
@@ -8360,12 +8360,12 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Sorcellerie"
+        "spec": "sorcieres"
       },
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -8534,12 +8534,12 @@
       {
         "id": "savoir",
         "value": 80,
-        "spec": "Sorcellerie"
+        "spec": "sorcieres"
       },
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -8708,7 +8708,7 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -8800,7 +8800,7 @@
       {
         "id": "divertissement",
         "value": 55,
-        "spec": "Plaidoirie"
+        "spec": "plaidoirie"
       },
       {
         "id": "intimidation",
@@ -8843,7 +8843,7 @@
       {
         "id": "savoir",
         "value": 80,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -8971,7 +8971,7 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -9062,7 +9062,7 @@
       {
         "id": "divertissement",
         "value": 60,
-        "spec": "Plaidoirie"
+        "spec": "plaidoirie"
       },
       {
         "id": "intimidation",
@@ -9105,7 +9105,7 @@
       {
         "id": "savoir",
         "value": 80,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -9203,7 +9203,7 @@
       {
         "id": "divertissement",
         "value": 35,
-        "spec": "Anecdotes Militaires"
+        "spec": "anecdotes-militaires"
       },
       {
         "id": "escalade",
@@ -9359,7 +9359,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Anecdotes Militaires"
+        "spec": "anecdotes-militaires"
       },
       {
         "id": "escalade",
@@ -9531,7 +9531,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Anecdotes Militaires"
+        "spec": "anecdotes-militaires"
       },
       {
         "id": "escalade",
@@ -9708,7 +9708,7 @@
       {
         "id": "divertissement",
         "value": 90,
-        "spec": "Anecdotes Militaires"
+        "spec": "anecdotes-militaires"
       },
       {
         "id": "escalade",
@@ -9760,7 +9760,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "guerison",
@@ -9935,7 +9935,7 @@
       {
         "id": "divertissement",
         "value": 35,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "intimidation",
@@ -10063,7 +10063,7 @@
       {
         "id": "divertissement",
         "value": 35,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "intimidation",
@@ -10218,7 +10218,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "intimidation",
@@ -10361,7 +10361,7 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -10388,7 +10388,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "intimidation",
@@ -10540,7 +10540,7 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -10572,7 +10572,7 @@
       {
         "id": "divertissement",
         "value": 65,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "corps-a-corps",
@@ -10708,7 +10708,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Plante"
+        "spec": "plantes"
       },
       {
         "id": "savoir",
@@ -10857,7 +10857,7 @@
       {
         "id": "savoir",
         "value": 75,
-        "spec": "Plante"
+        "spec": "plantes"
       },
       {
         "id": "savoir",
@@ -11252,7 +11252,7 @@
       {
         "id": "metier",
         "value": 45,
-        "spec": "Herboristerie"
+        "spec": "herboriste"
       },
       {
         "id": "recherche",
@@ -11269,7 +11269,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "corps-a-corps",
@@ -11391,7 +11391,7 @@
       {
         "id": "divertissement",
         "value": 65,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "intimidation",
@@ -12181,7 +12181,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "intuition",
@@ -12302,7 +12302,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "divertissement",
@@ -12484,7 +12484,7 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "intimidation",
@@ -12627,7 +12627,7 @@
       {
         "id": "savoir",
         "value": 60,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -12742,7 +12742,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "corps-a-corps",
@@ -12871,12 +12871,12 @@
       {
         "id": "divertissement",
         "value": 60,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "divertissement",
         "value": 55,
-        "spec": "Sermons"
+        "spec": "sermons"
       },
       {
         "id": "intimidation",
@@ -13064,7 +13064,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "corps-a-corps",
@@ -13193,12 +13193,12 @@
       {
         "id": "divertissement",
         "value": 60,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "divertissement",
         "value": 55,
-        "spec": "Sermons"
+        "spec": "sermons"
       },
       {
         "id": "intimidation",
@@ -13362,12 +13362,12 @@
       {
         "id": "metier",
         "value": 45,
-        "spec": "Reliure"
+        "spec": "reliure"
       },
       {
         "id": "metier",
         "value": 45,
-        "spec": "Enluminure"
+        "spec": "enluminure"
       },
       {
         "id": "recherche",
@@ -13384,7 +13384,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "langue",
@@ -13518,12 +13518,12 @@
       {
         "id": "divertissement",
         "value": 60,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "divertissement",
         "value": 55,
-        "spec": "Sermons"
+        "spec": "sermons"
       },
       {
         "id": "intimidation",
@@ -13790,7 +13790,7 @@
       {
         "id": "metier",
         "value": 45,
-        "spec": "Gravure"
+        "spec": "graveur"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -13844,7 +13844,7 @@
       {
         "id": "signes-secrets",
         "value": 35,
-        "spec": "Voleurs"
+        "spec": "voleur"
       },
       {
         "id": "athletisme",
@@ -13917,7 +13917,7 @@
       {
         "id": "metier",
         "value": 60,
-        "spec": "Gravure"
+        "spec": "graveur"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -13934,7 +13934,7 @@
       {
         "id": "divertissement",
         "value": 55,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "esquive",
@@ -13990,7 +13990,7 @@
       {
         "id": "signes-secrets",
         "value": 60,
-        "spec": "Voleurs"
+        "spec": "voleur"
       },
       {
         "id": "athletisme",
@@ -14081,7 +14081,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Urbain"
+        "spec": "urbain"
       },
       {
         "id": "esquive",
@@ -14216,7 +14216,7 @@
       {
         "id": "divertissement",
         "value": 70,
-        "spec": "Urbain"
+        "spec": "urbain"
       },
       {
         "id": "esquive",
@@ -14276,7 +14276,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Droit"
+        "spec": "loi"
       },
       {
         "id": "athletisme",
@@ -14367,7 +14367,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Moqueries"
+        "spec": "raillerie"
       },
       {
         "id": "esquive",
@@ -14508,7 +14508,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Moqueries"
+        "spec": "raillerie"
       },
       {
         "id": "escalade",
@@ -14959,12 +14959,12 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "divertissement",
         "value": 45,
-        "spec": "Comédien"
+        "spec": "comedie"
       },
       {
         "id": "escamotage",
@@ -15091,12 +15091,12 @@
       {
         "id": "divertissement",
         "value": 70,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "divertissement",
         "value": 60,
-        "spec": "Comédien"
+        "spec": "comedie"
       },
       {
         "id": "escamotage",
@@ -15147,7 +15147,7 @@
       {
         "id": "signes-secrets",
         "value": 35,
-        "spec": "Voleurs"
+        "spec": "voleur"
       },
       {
         "id": "athletisme",
@@ -15282,7 +15282,7 @@
       {
         "id": "signes-secrets",
         "value": 35,
-        "spec": "Voleurs"
+        "spec": "voleur"
       },
       {
         "id": "athletisme",
@@ -15437,7 +15437,7 @@
       {
         "id": "signes-secrets",
         "value": 60,
-        "spec": "Voleurs"
+        "spec": "voleur"
       },
       {
         "id": "athletisme",
@@ -15586,7 +15586,7 @@
       {
         "id": "signes-secrets",
         "value": 35,
-        "spec": "Voleurs"
+        "spec": "voleur"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -15746,7 +15746,7 @@
       {
         "id": "signes-secrets",
         "value": 40,
-        "spec": "Voleurs"
+        "spec": "voleur"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -16131,7 +16131,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "escalade",
@@ -16169,12 +16169,12 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Ranald"
+        "spec": "ranald"
       },
       {
         "id": "signes-secrets",
         "value": 40,
-        "spec": "Voleurs"
+        "spec": "voleur"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -16334,7 +16334,7 @@
       {
         "id": "divertissement",
         "value": 30,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -16447,7 +16447,7 @@
       {
         "id": "divertissement",
         "value": 35,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "esquive",
@@ -16613,7 +16613,7 @@
       {
         "id": "divertissement",
         "value": 60,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "esquive",
@@ -16789,7 +16789,7 @@
       {
         "id": "divertissement",
         "value": 80,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "esquive",
@@ -17601,7 +17601,7 @@
       {
         "id": "divertissement",
         "value": 35,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "esquive",
@@ -17643,7 +17643,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "calme",
@@ -17749,12 +17749,12 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "divertissement",
         "value": 35,
-        "spec": "Chants de Marins"
+        "spec": "chants-de-marins"
       },
       {
         "id": "escalade",
@@ -17800,7 +17800,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "savoir",
@@ -17924,7 +17924,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "esquive",
@@ -17958,7 +17958,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "survie-en-exterieur",
@@ -18095,7 +18095,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "esquive",
@@ -18142,7 +18142,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "survie-en-exterieur",
@@ -18645,7 +18645,7 @@
       {
         "id": "signes-secrets",
         "value": 50,
-        "spec": "Rebouteux"
+        "spec": "rebouteux"
       },
       {
         "id": "guerison",
@@ -18855,7 +18855,7 @@
       {
         "id": "signes-secrets",
         "value": 70,
-        "spec": "Rebouteux"
+        "spec": "rebouteux"
       },
       {
         "id": "guerison",
@@ -19398,7 +19398,7 @@
       {
         "id": "divertissement",
         "value": 45,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "intimidation",
@@ -19562,12 +19562,12 @@
       {
         "id": "divertissement",
         "value": 60,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "divertissement",
         "value": 55,
-        "spec": "Sermons"
+        "spec": "sermons"
       },
       {
         "id": "intimidation",
@@ -19743,7 +19743,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "divertissement",
@@ -19869,12 +19869,12 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Brasserie"
+        "spec": "brasseur"
       },
       {
         "id": "metier",
         "value": 45,
-        "spec": "Herboristerie"
+        "spec": "herboriste"
       },
       {
         "id": "metier",
@@ -19896,7 +19896,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "divertissement",
@@ -20034,7 +20034,7 @@
       {
         "id": "divertissement",
         "value": 50,
-        "spec": "Chants"
+        "spec": "chant"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -20211,12 +20211,12 @@
       {
         "id": "divertissement",
         "value": 65,
-        "spec": "Chants"
+        "spec": "chant"
       },
       {
         "id": "divertissement",
         "value": 60,
-        "spec": "Sermons"
+        "spec": "sermons"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -20417,7 +20417,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "corps-a-corps",
@@ -20544,7 +20544,7 @@
       {
         "id": "metier",
         "value": 45,
-        "spec": "Herboristerie"
+        "spec": "herboriste"
       },
       {
         "id": "athletisme",
@@ -20570,7 +20570,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -20887,7 +20887,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Sermons"
+        "spec": "sermons"
       },
       {
         "id": "dressage",
@@ -22036,7 +22036,7 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "RivièresouChemins"
+        "spec": "Rivières ou Chemins"
       },
       {
         "id": "signes-secrets",
@@ -22212,7 +22212,7 @@
       {
         "id": "savoir",
         "value": 75,
-        "spec": "RivièresouChemins"
+        "spec": "Rivières ou Chemins"
       },
       {
         "id": "signes-secrets",
@@ -22818,7 +22818,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "survie-en-exterieur",
@@ -26601,6 +26601,10 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "arme",
+        "value": 4
       }
     ],
     "optionals": [],
@@ -26765,6 +26769,10 @@
       },
       {
         "id": "vision-nocturne"
+      },
+      {
+        "id": "arme",
+        "value": 5
       }
     ],
     "optionals": [],
@@ -29996,7 +30004,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "savoir",
@@ -30154,7 +30162,7 @@
       {
         "id": "signes-secrets",
         "value": 0,
-        "spec": "Cultistes"
+        "spec": "cultistes"
       },
       {
         "id": "athletisme",
@@ -30298,7 +30306,7 @@
       {
         "id": "divertissement",
         "value": 55,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "escamotage",
@@ -30350,7 +30358,7 @@
       {
         "id": "signes-secrets",
         "value": 0,
-        "spec": "Cultistes"
+        "spec": "cultistes"
       },
       {
         "id": "athletisme",
@@ -30500,7 +30508,7 @@
       {
         "id": "divertissement",
         "value": 70,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "escamotage",
@@ -30562,7 +30570,7 @@
       {
         "id": "signes-secrets",
         "value": 0,
-        "spec": "Cultistes"
+        "spec": "cultistes"
       },
       {
         "id": "athletisme",
@@ -31346,7 +31354,7 @@
       {
         "id": "divertissement",
         "value": 55,
-        "spec": "Séduction"
+        "spec": "seduction"
       },
       {
         "id": "esquive",
@@ -31478,7 +31486,7 @@
       {
         "id": "divertissement",
         "value": 75,
-        "spec": "Séduction"
+        "spec": "seduction"
       },
       {
         "id": "esquive",
@@ -31636,7 +31644,7 @@
       {
         "id": "divertissement",
         "value": 95,
-        "spec": "Séduction"
+        "spec": "seduction"
       },
       {
         "id": "esquive",
@@ -31815,7 +31823,7 @@
       {
         "id": "divertissement",
         "value": 105,
-        "spec": "Séduction"
+        "spec": "seduction"
       },
       {
         "id": "esquive",
@@ -32015,7 +32023,7 @@
       {
         "id": "divertissement",
         "value": 125,
-        "spec": "Séduction"
+        "spec": "seduction"
       },
       {
         "id": "esquive",
@@ -33239,6 +33247,10 @@
       },
       {
         "id": "infravision"
+      },
+      {
+        "id": "arme",
+        "value": 9
       }
     ],
     "optionals": [],
@@ -33359,7 +33371,7 @@
       {
         "id": "divertissement",
         "value": 30,
-        "spec": "Grimaces & Mimes"
+        "spec": "grimaces-et-mimes"
       },
       {
         "id": "esquive",
@@ -33496,7 +33508,7 @@
       {
         "id": "divertissement",
         "value": 35,
-        "spec": "Grimaces & Mimes"
+        "spec": "grimaces-et-mimes"
       },
       {
         "id": "esquive",
@@ -33655,7 +33667,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Grimaces & Mimes"
+        "spec": "grimaces-et-mimes"
       },
       {
         "id": "esquive",
@@ -34847,7 +34859,7 @@
       {
         "id": "representation",
         "value": 45,
-        "spec": "Victimisation"
+        "spec": "victimisation"
       },
       {
         "id": "survie-en-exterieur",
@@ -35006,7 +35018,7 @@
       {
         "id": "representation",
         "value": 50,
-        "spec": "Victimisation"
+        "spec": "victimisation"
       },
       {
         "id": "subornation",
@@ -35185,7 +35197,7 @@
       {
         "id": "representation",
         "value": 70,
-        "spec": "Victimisation"
+        "spec": "victimisation"
       },
       {
         "id": "subornation",
@@ -35379,7 +35391,7 @@
       {
         "id": "representation",
         "value": 95,
-        "spec": "Victimisation"
+        "spec": "victimisation"
       },
       {
         "id": "savoir",
@@ -36056,7 +36068,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "survie-en-exterieur",
@@ -36153,7 +36165,7 @@
       {
         "id": "metier",
         "value": 40,
-        "spec": "Engingneur"
+        "spec": "ingenieur"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -36188,7 +36200,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Engingneur"
+        "spec": "ingenierie"
       },
       {
         "id": "projectiles",
@@ -36371,7 +36383,7 @@
       {
         "id": "savoir",
         "value": 60,
-        "spec": "Engingneur"
+        "spec": "ingenierie"
       },
       {
         "id": "projectiles",
@@ -36584,7 +36596,7 @@
       {
         "id": "savoir",
         "value": 85,
-        "spec": "Engingneur"
+        "spec": "ingenierie"
       },
       {
         "id": "projectiles",
@@ -36799,7 +36811,7 @@
       {
         "id": "savoir",
         "value": 105,
-        "spec": "Engingneur"
+        "spec": "ingenierie"
       },
       {
         "id": "savoir",
@@ -37579,7 +37591,7 @@
       {
         "id": "metier",
         "value": 70,
-        "spec": "Poison"
+        "spec": "poisons"
       },
       {
         "id": "athletisme",
@@ -37875,7 +37887,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Maladies"
+        "spec": "maladies"
       },
       {
         "id": "guerison",
@@ -38034,7 +38046,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Maladies"
+        "spec": "maladies"
       },
       {
         "id": "savoir",
@@ -38225,7 +38237,7 @@
       {
         "id": "savoir",
         "value": 90,
-        "spec": "Maladies"
+        "spec": "maladies"
       },
       {
         "id": "savoir",
@@ -38427,7 +38439,7 @@
       {
         "id": "savoir",
         "value": 110,
-        "spec": "Maladies"
+        "spec": "maladies"
       },
       {
         "id": "savoir",
@@ -38730,7 +38742,7 @@
       {
         "id": "dressage",
         "value": 35,
-        "spec": "Rats"
+        "spec": "rats"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -38901,7 +38913,7 @@
       {
         "id": "dressage",
         "value": 0,
-        "spec": "Rats"
+        "spec": "rats"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -38954,7 +38966,7 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Engingneurie"
+        "spec": "ingenierie"
       },
       {
         "id": "guerison",
@@ -39103,7 +39115,7 @@
       {
         "id": "dressage",
         "value": 0,
-        "spec": "Rats"
+        "spec": "rats"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -39164,7 +39176,7 @@
       {
         "id": "savoir",
         "value": 105,
-        "spec": "Engingneurie"
+        "spec": "ingenierie"
       },
       {
         "id": "guerison",
@@ -40021,7 +40033,7 @@
       {
         "id": "savoir",
         "value": 85,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "soin-aux-animaux",
@@ -40266,7 +40278,7 @@
       {
         "id": "savoir",
         "value": 100,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "savoir",
@@ -40451,7 +40463,7 @@
       {
         "id": "divertissement",
         "value": 30,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "esquive",
@@ -40725,7 +40737,7 @@
       {
         "id": "metier",
         "value": 35,
-        "spec": "Archerie"
+        "spec": "fabricant-d-arcs"
       },
       {
         "id": "athletisme",
@@ -40892,7 +40904,7 @@
       {
         "id": "divertissement",
         "value": 30,
-        "spec": "Fanfaron"
+        "spec": "fanfaron"
       },
       {
         "id": "escalade",
@@ -41083,7 +41095,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Engingneurie"
+        "spec": "ingenierie"
       },
       {
         "id": "survie-en-exterieur",
@@ -41351,7 +41363,7 @@
       {
         "id": "representation",
         "value": 40,
-        "spec": "Danse Tribale"
+        "spec": "danse-tribale"
       },
       {
         "id": "resistance",
@@ -41711,7 +41723,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "savoir",
@@ -41840,7 +41852,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "escamotage",
@@ -42029,7 +42041,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "escamotage",
@@ -42088,7 +42100,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Magie Peaux-Verte"
+        "spec": "magie-peaux-verte"
       },
       {
         "id": "athletisme",
@@ -42243,7 +42255,7 @@
       {
         "id": "divertissement",
         "value": 0,
-        "spec": "Conteur"
+        "spec": "narration"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -42307,12 +42319,12 @@
       {
         "id": "savoir",
         "value": 100,
-        "spec": "Magie Peaux-Verte"
+        "spec": "magie-peaux-verte"
       },
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "athletisme",
@@ -42497,7 +42509,7 @@
       {
         "id": "divertissement",
         "value": 25,
-        "spec": "Insultes"
+        "spec": "raillerie"
       },
       {
         "id": "esquive",
@@ -42640,7 +42652,7 @@
       {
         "id": "divertissement",
         "value": 30,
-        "spec": "Insultes"
+        "spec": "raillerie"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -42776,7 +42788,7 @@
       {
         "id": "metier",
         "value": 25,
-        "spec": "Archerie"
+        "spec": "fabricant-d-arcs"
       },
       {
         "id": "athletisme",
@@ -42953,7 +42965,7 @@
       {
         "id": "divertissement",
         "value": 30,
-        "spec": "Insultes"
+        "spec": "raillerie"
       },
       {
         "id": "escalade",
@@ -43112,7 +43124,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Insultes"
+        "spec": "raillerie"
       },
       {
         "id": "chevaucher",
@@ -43306,7 +43318,7 @@
       {
         "id": "divertissement",
         "value": 90,
-        "spec": "Insultes"
+        "spec": "raillerie"
       },
       {
         "id": "chevaucher",
@@ -43373,12 +43385,12 @@
       {
         "id": "savoir",
         "value": 30,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "savoir",
         "value": 30,
-        "spec": "Siège"
+        "spec": "siege"
       },
       {
         "id": "survie-en-exterieur",
@@ -43517,7 +43529,7 @@
       {
         "id": "divertissement",
         "value": 40,
-        "spec": "Cérémonie"
+        "spec": "ceremonie"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -43722,7 +43734,7 @@
       {
         "id": "divertissement",
         "value": 70,
-        "spec": "Cérémonie"
+        "spec": "ceremonie"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -43936,7 +43948,7 @@
       {
         "id": "divertissement",
         "value": 100,
-        "spec": "Cérémonie"
+        "spec": "ceremonie"
       },
       {
         "id": "emprise-sur-les-animaux",
@@ -44990,7 +45002,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "athletisme",
@@ -45254,7 +45266,7 @@
       {
         "id": "savoir",
         "value": 80,
-        "spec": "Rivières"
+        "spec": "voies-fluviales"
       },
       {
         "id": "savoir",
@@ -45984,7 +45996,7 @@
       {
         "id": "metier",
         "value": 40,
-        "spec": "Embaumement"
+        "spec": "embaumeur"
       },
       {
         "id": "calme",
@@ -46171,7 +46183,7 @@
       {
         "id": "metier",
         "value": 50,
-        "spec": "Embaumement"
+        "spec": "embaumeur"
       },
       {
         "id": "calme",
@@ -46253,7 +46265,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "guerison",
@@ -46392,7 +46404,7 @@
       {
         "id": "metier",
         "value": 60,
-        "spec": "Embaumement"
+        "spec": "embaumeur"
       },
       {
         "id": "calme",
@@ -46479,7 +46491,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "savoir",
@@ -49102,7 +49114,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "guerison",
@@ -49419,7 +49431,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Bataille"
+        "spec": "guerre"
       },
       {
         "id": "savoir",

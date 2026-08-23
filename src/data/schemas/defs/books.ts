@@ -18,6 +18,10 @@ export const schema = z.array(
     abbr: z.string(),
     /** Chemin d'extraction `Source/…` — présent sur les 15 livres couverts par l'Atlas RAW. */
     dir: z.string().nullable().optional(),
+    /** Chemin d'extraction `Source/…` d'un livre HORS Atlas RAW (`scripts/raw/_lib.mjs#BOOK_ORDER`
+     *  ne le porte pas, donc pas de pont folio ni de fiche RAW) dont les chapitres sont néanmoins
+     *  sur disque et citables — `frenchy-bzh`. Lu par `skillSpecWalk.mjs#sourceDirOf`. */
+    extractionDir: z.string().nullable().optional(),
     language: z.string().nullable(),
     folder: z.string().nullable(),
     /** HTML de présentation (bibliographie) — hors du périmètre `<Prose>` (pas un texte de règle

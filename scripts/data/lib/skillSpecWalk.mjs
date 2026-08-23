@@ -8,7 +8,7 @@
  *
  * Module ESM pur (`node` nu, aucun import TS) — typé par `skillSpecWalk.d.mts`.
  */
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /** Casse/accents neutralisés — comparaison de LIBELLÉS uniquement. */
@@ -50,6 +50,17 @@ export function skillArraysOf(entry) {
   return out;
 }
 
+/**
+ * Dossier d'extraction d'un livre, quel que soit le champ qui le porte : `dir` pour les livres de
+ * l'Atlas RAW (`scripts/raw/_lib.mjs#BOOK_ORDER` les exige, pont folio compris), `extractionDir`
+ * pour une extraction citable HORS Atlas (`frenchy-bzh`). Une seule lecture, partagée par le
+ * périmètre `extractedBooks` et par le volet « dossier FR réclamé » de la garde.
+ */
+export function sourceDirOf(book) {
+  const d = book?.dir ?? book?.extractionDir;
+  return typeof d === 'string' && d ? d : null;
+}
+
 /** Un chapitre d'extraction est un `NN - ….md` à la racine du dossier du livre. */
 function aDesChapitres(dir) {
   try { return readdirSync(dir).some((f) => /^\d{2} - .+\.md$/.test(f)); } catch { return false; }
@@ -64,21 +75,40 @@ export function extractedBooks(books, root) {
   const extraits = new Set();
   const dirManquant = [];
   for (const b of books) {
-    if (typeof b.dir !== 'string' || !b.dir) continue;
-    const abs = join(root, b.dir);
+    const dir = sourceDirOf(b);
+    if (!dir) continue;
+    const abs = join(root, dir);
     if (existsSync(abs) && aDesChapitres(abs)) extraits.add(b.id);
     else dirManquant.push(b.id);
   }
   return { extraits, dirManquant };
 }
 
-/** Dossiers d'extraction FR présents sous `Source/` — préfixes du dépôt, ou suffixe « VF ». */
+/** Mots-outils français, comptés sur un échantillon de chapitres : mesure du 2026-08-23 sur les 90
+ *  dossiers de `Source/` — 10,5 à 21,0 pour les 20 extractions FR, 0,0 pour les 70 VO. */
+const FR_MOTS_OUTILS = /\b(les|des|une|dans|vous|est|sont|avec|pour|qui)\b/gi;
+const FR_SEUIL = 5;
+
+/** Densité de mots-outils FR pour 1000 caractères, sur les 3 premiers chapitres d'un dossier. */
+function densiteFR(dir) {
+  const ech = readdirSync(dir)
+    .filter((f) => /^\d{2} - .+\.md$/.test(f))
+    .sort()
+    .slice(0, 3)
+    .map((f) => readFileSync(join(dir, f), 'utf8').slice(0, 20000))
+    .join('\n');
+  return (ech.match(FR_MOTS_OUTILS) ?? []).length / Math.max(1, ech.length / 1000);
+}
+
+/** Dossiers d'extraction FR présents sous `Source/`, reconnus au CONTENU (le nom ne dit pas la
+ *  langue : `Warhammer - Habitants & Créatures  du Vieux-Monde (Discord) PDF` est FR sans porter
+ *  aucun préfixe du dépôt). */
 export function frenchSourceDirs(root) {
   try {
     return readdirSync(join(root, 'Source'), { withFileTypes: true })
-      .filter((e) => e.isDirectory() && (/^(Warhammer v4|WH - V4)\b/.test(e.name) || / VF$/.test(e.name)))
+      .filter((e) => e.isDirectory())
       .map((e) => `Source/${e.name}`)
-      .filter((d) => aDesChapitres(join(root, d)))
+      .filter((d) => aDesChapitres(join(root, d)) && densiteFR(join(root, d)) >= FR_SEUIL)
       // NFC EN DERNIER : le disque rend « Boîte » en décomposé (o + U+0302) et `books.json` en
       // composé — normaliser AVANT le `filter` donnerait un chemin que `readdirSync` ne trouve pas.
       .map((d) => d.normalize('NFC'))
