@@ -1,6 +1,6 @@
 ---
 name: project-1318-programme-prevention
-description: "#1318 programme de prévention (audit vision 2026-08-14) : verrous TOUS posés, E5+E2 ÉTEINTS, S4-c arbitré — l'état de reprise est AU TICKET"
+description: "#1318 programme de prévention (audit vision 2026-08-14) : verrous TOUS posés, E2/E3/E4/E5/E7/E8 ÉTEINTS, E1 en cours (editor/** seul) — l'état de reprise est AU TICKET"
 metadata:
   type: project
 ---
@@ -19,6 +19,8 @@ Audit de conformité à la vision (#1318, né de la directive utilisateur 2026-0
 
 **S4-c ARBITRÉ** (2026-08-17, caa579bc + 95bdb72a — `docs/plans/2026-08-17-s4c-roster-pnj.md`) : design doc du roster de PNJ à fiche jugé (3 bloquants mesurés : mutation en place sans notification, L2/L3 incompatibles, 'lieu' sans id) puis amendé (régime IMMUTABLE, geste d'écriture unique withNpc, raccord combat §3.3ter, ids frappés au rang de tirage). **Les 4 arbitrages utilisateur tranchés via AskUserQuestion** : portée LIEU (persist:'place', ancre MapPlace en L1, +1 j), horloge « le monde vit » (seam advanceTime), les deux bornes d'économie (marchand ruiné + habitué borné, table de richesse en donnée = livrable L3), Chance des PNJ en donnée éditable (lettre LDB 17 l.9, livrable L4, réserve : la DÉPENSE = seam #1306). 6 lots, 9,5 j (11 avec L6), L1 seul bloquant. Le rédacteur a RÉFUTÉ un amendement du juge au Source (LDB 17 l.9 autorise les PNJ importants — le commentaire du code disait l'inverse).
 
-**Reprise** : micro-lot hygiène en vol (roundHooks LDB 14 l.149→l.110, 61 réfs de ligne defs/ sans numéro, NUL du garde effective-values), puis V8d-B/C/D (#1330 — l'appariement ligne↔id = LE design à trancher, + ARRAY_SEED élargi), E1 (194 NumberField), E3 (108 réfs aveugles au Source), E4 (60 KNOWN), E6, E7 (139 fixtureText), E8 (55 folios), gatedByRule, #1342, #1346 (arbitrage user), chantier S4-c L1-L6. Le ticket fait foi.
+**ÉTAT 2026-08-23 (session game-56)** : E3 CLOS (0dfba76e, registre des réfs aveugles VIDE, 11 lots), E4 CLOS (211d1df5, KNOWN → donnée), E7 MORT (06d50cf6, module rawText supprimé), E8 CLOS (07c14c51, folios 54→0 + cliquet folio-line-align). E1 tranche 1 livrée (4fd61662 : 13 écrans hors éditeur, cliquet xvii 195/29→153/16, NumberField étendue variant/vide/commit) ; reste editor/** (tranche 2 en cours, tranche 3 = Inspector+Palette après le merge de la branche #1443). Restent ensuite : E6 (exemptions), V8d-B/C/D (#1330), #1342.
+
+**Reprise (historique)** : micro-lot hygiène en vol (roundHooks LDB 14 l.149→l.110, 61 réfs de ligne defs/ sans numéro, NUL du garde effective-values), puis V8d-B/C/D (#1330 — l'appariement ligne↔id = LE design à trancher, + ARRAY_SEED élargi), E1 (194 NumberField), E3 (108 réfs aveugles au Source), E4 (60 KNOWN), E6, E7 (139 fixtureText), E8 (55 folios), gatedByRule, #1342, #1346 (arbitrage user), chantier S4-c L1-L6. Le ticket fait foi.
 
 #1279 (socle de séquence + 15 jeux de taverne #578) est CLOS — solde `.claude/soldes/1279.md`.
