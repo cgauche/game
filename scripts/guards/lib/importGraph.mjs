@@ -29,31 +29,53 @@ export function resolveImport(fromFile, spec) {
 }
 
 /**
- * Closure transitive des imports RELATIFS depuis un jeu de modules racines, bornée à `src/`.
- * @param {string[]} roots @returns {Set<string>} chemins POSIX relatifs à la racine du repo
+ * Enfants `src/` d'un module : ses imports relatifs résolus. `null` = fichier absent (hors closure) ;
+ * `[]` = membre sans graphe à lire (`.json`, #487) ou illisible.
+ * @param {string} abs @param {string} rel @returns {string[]|null}
  */
-export function closureOf(roots) {
+function enfantsDe(abs, rel) {
+  if (!existsSync(abs)) return null;
+  if (rel.endsWith('.json')) return [];
+  let text;
+  try {
+    text = readFileSync(abs, 'utf8');
+  } catch {
+    return [];
+  }
+  const enfants = [];
+  for (const m of text.matchAll(IMPORT_RE)) {
+    const resolved = resolveImport(abs, m[1] ?? m[2]);
+    if (resolved && resolved.includes('/src/')) enfants.push(resolved);
+  }
+  return enfants;
+}
+
+/**
+ * Closure transitive des imports RELATIFS depuis un jeu de modules racines, bornée à `src/`.
+ * `cache` (module -> enfants résolus) est PARTAGEABLE entre plusieurs closures d'un MÊME appelant :
+ * les 16 systèmes de `systemes.manifest.json` visitent 21 197 modules pour 1 859 distincts (mesuré le
+ * 2026-08-23) — sans partage, chaque fichier est relu et re-résolu 11 fois. Par défaut le cache naît
+ * et meurt avec l'appel : aucun état ne survit entre deux closures indépendantes.
+ * @param {string[]} roots @param {Map<string, string[]|null>} [cache]
+ * @returns {Set<string>} chemins POSIX relatifs à la racine du repo
+ */
+export function closureOf(roots, cache = new Map()) {
   const seen = new Set();
+  const cwdPosix = resolve('.').split('\\').join('/') + '/';
   const stack = [...roots.map((r) => resolve(r).split('\\').join('/'))];
   while (stack.length) {
     const abs = stack.pop();
-    const cwdPosix = resolve('.').split('\\').join('/') + '/';
     // Racine HORS repo (fixtures de test en tmpdir) : chemin absolu POSIX, jamais tronque a l aveugle.
     const rel = abs.startsWith(cwdPosix) ? abs.slice(cwdPosix.length) : abs;
     if (seen.has(rel)) continue;
-    if (!existsSync(abs)) continue;
+    let enfants = cache.get(abs);
+    if (enfants === undefined) {
+      enfants = enfantsDe(abs, rel);
+      cache.set(abs, enfants);
+    }
+    if (enfants === null) continue;
     seen.add(rel);
-    if (rel.endsWith('.json')) continue; // membre de la closure, mais pas de graphe d'imports à lire (#487)
-    let text;
-    try {
-      text = readFileSync(abs, 'utf8');
-    } catch {
-      continue;
-    }
-    for (const m of text.matchAll(IMPORT_RE)) {
-      const resolved = resolveImport(abs, m[1] ?? m[2]);
-      if (resolved && resolved.includes('/src/')) stack.push(resolved);
-    }
+    for (const e of enfants) stack.push(e);
   }
   return seen;
 }

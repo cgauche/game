@@ -241,29 +241,40 @@ function scanFiles(dirs: string[]): string[] {
   return files;
 }
 
-function findingsIn(dirs: string[]): { rel: string; line: number; detail: string; rule: string }[] {
-  const out: { rel: string; line: number; detail: string; rule: string }[] = [];
-  for (const f of scanFiles(dirs)) {
-    const rel = relative(ROOT, f).split('\\').join('/');
-    if (isRegistryIdBranchExcluded(rel)) continue;
-    const raw = lireSiPresent(f);
-    if (raw === null) continue;
-    for (const fd of scanRegistryIdBranch(rel, raw)) out.push({ rel, ...fd });
+/** Les DEUX détecteurs passent sur le MÊME corpus, fichier par fichier et l'un après l'autre : un
+ *  seul parcours de dossiers, une seule lecture, et l'arbre syntaxique d'un fichier sert aux deux
+ *  scans (cache de taille un, `registryIdBranch.mjs`). Mémoïsation PARESSEUSE par jeu de dossiers —
+ *  le corpus est marché au 1ᵉʳ `it` qui le demande, jamais à la collecte des tests. */
+const _analyses = new Map<string, {
+  principal: { rel: string; line: number; detail: string; rule: string }[];
+  brut: { rel: string; line: number; detail: string }[];
+}>();
+
+function analyse(dirs: string[]) {
+  const cle = dirs.join('|');
+  let a = _analyses.get(cle);
+  if (!a) {
+    a = { principal: [], brut: [] };
+    for (const f of scanFiles(dirs)) {
+      const rel = relative(ROOT, f).split('\\').join('/');
+      if (isRegistryIdBranchExcluded(rel)) continue;
+      const raw = lireSiPresent(f);
+      if (raw === null) continue;
+      for (const fd of scanRegistryIdBranch(rel, raw)) a.principal.push({ rel, ...fd });
+      for (const fd of scanRawIdEqualities(rel, raw)) a.brut.push({ rel, ...fd });
+    }
+    _analyses.set(cle, a);
   }
-  return out;
+  return a;
+}
+
+function findingsIn(dirs: string[]): { rel: string; line: number; detail: string; rule: string }[] {
+  return analyse(dirs).principal;
 }
 
 /** MÊME corpus, MÊMES exclusions, détecteur BRUT (`scanRawIdEqualities`) — le cliquet anti-évasion. */
 function rawFindingsIn(dirs: string[]): { rel: string; line: number; detail: string }[] {
-  const out: { rel: string; line: number; detail: string }[] = [];
-  for (const f of scanFiles(dirs)) {
-    const rel = relative(ROOT, f).split('\\').join('/');
-    if (isRegistryIdBranchExcluded(rel)) continue;
-    const raw = lireSiPresent(f);
-    if (raw === null) continue;
-    for (const fd of scanRawIdEqualities(rel, raw)) out.push({ rel, ...fd });
-  }
-  return out;
+  return analyse(dirs).brut;
 }
 
 const rules = (src: string, name = 'fixture.ts') => scanRegistryIdBranch(name, src).map((f) => f.rule);

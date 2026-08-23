@@ -36,7 +36,13 @@
 // ANGLE MORT résiduel de la DÉTECTION (mesuré, fail-open assumé) : un import RENOMMÉ
 // (`import { d100 as des } from '../engine/dice'`) échappe au scan — le motif est reconnu par le nom
 // APPELÉ, sans résolution de liaison. Aucun site du dépôt n'use de cette forme au 2026-07-29.
-import ts from 'typescript';
+import tsModule from 'typescript';
+
+// Liaison LOCALE de l'API du compilateur — FAIT mesuré 2026-08-23 : sous Vitest ce module passe par
+// vite-node, et chaque `ts.x` d'un visiteur AST se relit alors sur l'objet d'import du runner. Même
+// socle, même mesure qu'en tête de `sceneMutation.mjs` : à la seule liaison ci-dessous,
+// `scene-mutation-guard.test.ts` tombe de 7,46 s à 3,60 s.
+const ts = tsModule;
 
 /** Les 3 motifs de forgeage/roulage bruts d'un Test — PRÉ-FILTRE lexical bon marché (un fichier sans
  *  aucun motif n'est jamais parsé). Tolère les formes que l'AST sait lire mais qu'un `\(` collé
@@ -344,6 +350,22 @@ export function engineHomonyms(engineFiles) {
   return out;
 }
 
+/** PRÉ-FILTRE lexical de (D) : un fichier qui ne CITE aucun nom de rouleur n'est jamais parsé. Le
+ *  motif est strictement plus large que le critère AST (un appel `nom(` cite `nom`), donc sans faux
+ *  négatif. La clé du cache est le CONTENU du jeu de noms (triés, joints) : le `Set` de l'appelant
+ *  est mutable, un nom qu'on y ajoute change la clé, donc le motif rendu. Cache de taille UN — les
+ *  ~1 100 fichiers d'un scan partagent le même jeu (81 rouleurs dérivés), et rien ne s'accumule d'un
+ *  scan au suivant.
+ *  @type {{ cle: string, rx: RegExp } | null} */
+let _rollerRx = null;
+function rollerNameRx(names) {
+  const cle = [...names].sort().join('\u0000');
+  if (_rollerRx && _rollerRx.cle === cle) return _rollerRx.rx;
+  const rx = names.size ? new RegExp(`\\b(?:${[...names].map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`) : /$^/;
+  _rollerRx = { cle, rx };
+  return rx;
+}
+
 /**
  * (D) partie 2 — CALL-SITES d'un rouleur d'engine dans un fichier consommateur. La forme (S)
  * « position de spec » garde son exclusion STRUCTURELLE (le callback `resolve` d'une spec de flux est
@@ -354,6 +376,7 @@ export function engineHomonyms(engineFiles) {
  */
 export function scanEngineDelegatedRoll(relPath, contenu, rollerNames) {
   const names = rollerNames instanceof Set ? rollerNames : new Set(rollerNames);
+  if (!rollerNameRx(names).test(contenu)) return [];
   const sf = ts.createSourceFile(
     relPath, contenu, ts.ScriptTarget.Latest, true,
     relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,

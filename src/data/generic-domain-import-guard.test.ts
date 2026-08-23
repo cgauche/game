@@ -26,11 +26,17 @@ import { scanAllPrimitives, scanGenericDomainImport } from '../../scripts/guards
 /** Baseline gelée : `primitiveId -> nombre de cibles domaniales tolérées` (renvoi #329 par entrée). */
 const BASELINES: Record<string, number> = {};
 
-/** `scanAllPrimitives` lit les fichiers via des chemins relatifs à la racine repo (cwd du runner). */
+/** `scanAllPrimitives` lit les fichiers via des chemins relatifs à la racine repo (cwd du runner).
+ *  Scan de l'arbre RÉEL, donc mémoïsé PARESSEUSEMENT : les deux `it` du cliquet lisent le même
+ *  résultat, et rien n'est payé à la collecte des tests. */
+let _findings: ReturnType<typeof scanAllPrimitives> | undefined;
 function loadFindings() {
-  const primitives = JSON.parse(readFileSync('src/data/primitives.manifest.json', 'utf8'));
-  const systemes = JSON.parse(readFileSync('src/data/systemes.manifest.json', 'utf8'));
-  return scanAllPrimitives(primitives, systemes);
+  if (!_findings) {
+    const primitives = JSON.parse(readFileSync('src/data/primitives.manifest.json', 'utf8'));
+    const systemes = JSON.parse(readFileSync('src/data/systemes.manifest.json', 'utf8'));
+    _findings = scanAllPrimitives(primitives, systemes);
+  }
+  return _findings;
 }
 
 describe('garde-fou « le générique n’importe pas le domanial » (cliquet, #329)', () => {

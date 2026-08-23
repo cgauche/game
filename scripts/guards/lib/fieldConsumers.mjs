@@ -24,7 +24,11 @@
 //     est anonyme côté appelant sans réannotation) ;
 //   - un spread (`{ ...ref }`) ne cite aucun champ nommé et ne compte donc AUCUNE lecture — correct
 //     pour ce détecteur, mais un tel site peut légitimement consommer tous les champs en aval.
-import ts from 'typescript'
+import tsModule from 'typescript'
+
+// Liaison LOCALE de l'API du compilateur — même FAIT mesuré qu'en tête de `sceneMutation.mjs`
+// (2026-08-23) : sous Vitest, un `ts.x` de visiteur AST se relit sur l'objet d'import de vite-node.
+const ts = tsModule
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 
@@ -41,6 +45,25 @@ export function listProdFiles(dir, out = []) {
     out.push(p)
   }
   return out
+}
+
+/** Entrée de cache d'un fichier de PRODUCTION : son texte, et son AST une fois construit. La MAP est
+ *  fournie par l'APPELANT (patron de `closureOf`, `importGraph.mjs`) : elle naît et meurt avec son
+ *  appel, rien n'est retenu par le module. Un rapport complet mesure 17 types sur le MÊME corpus —
+ *  une map partagée entre ces 17 appels y vaut 175 ms de lecture et 1,8 s d'analyse (1 880 fichiers,
+ *  mesuré 2026-08-23), et ses ~160 Mo d'AST sont libérés au retour de l'appel. Le contenu vient
+ *  toujours du DISQUE (aucun appelant ne fournit de texte) — le chemin absolu identifie la source. */
+function entreeDe(cache, file) {
+  let e = cache.get(file)
+  if (e === undefined) {
+    e = { text: readFileSync(file, 'utf8'), sf: null }
+    cache.set(file, e)
+  }
+  return e
+}
+
+function sourceFileOf(entree, file) {
+  return (entree.sf ??= ts.createSourceFile(file, entree.text, ts.ScriptTarget.Latest, true))
 }
 
 function typeMentions(typeNode, sf, typeName) {
@@ -115,14 +138,14 @@ function directDestructureHits(bindingPattern, sf, fieldSet, hits, relFile) {
  * Sites de lecture de `fields` sur le type `typeName`, à travers `files` (chemins absolus,
  * `listProdFiles`). Rend `[{ field, file, line }]` — `file` relatif à `rootDir`.
  */
-export function scanFieldReads(typeName, fields, files, rootDir) {
+export function scanFieldReads(typeName, fields, files, rootDir, cache = new Map()) {
   const fieldSet = new Set(fields)
   const hits = []
   const wordRe = new RegExp(`\\b${typeName}\\b`)
   for (const file of files) {
-    const text = readFileSync(file, 'utf8')
-    if (!wordRe.test(text)) continue
-    const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true)
+    const entree = entreeDe(cache, file)
+    if (!wordRe.test(entree.text)) continue
+    const sf = sourceFileOf(entree, file)
     const relFile = relative(rootDir, file).split(sep).join('/')
 
     function visit(node) {

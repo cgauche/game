@@ -6,7 +6,11 @@
 // ne divergent jamais.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, isAbsolute } from 'node:path';
-import ts from 'typescript';
+import tsModule from 'typescript';
+
+// Liaison LOCALE de l'API du compilateur — même FAIT mesuré qu'en tête de `sceneMutation.mjs`
+// (2026-08-23) : sous Vitest, un `ts.x` de visiteur AST se relit sur l'objet d'import de vite-node.
+const ts = tsModule;
 // Substrat AST PARTAGÉ (portées, alias, opérateurs d'égalité, littéralité) — SOURCE UNIQUE
 // `registryIdBranch.mjs` : le suivi d'alias `const k = def.id` y existe déjà, on l'importe.
 import { Scopes, bindingNames, unwrap, isEntryLiteral, EQUALITY_OPS } from './registryIdBranch.mjs';

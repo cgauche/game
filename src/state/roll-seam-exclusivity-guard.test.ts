@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scanRollSeamExclusivity, ROLL_SEAM_RX, scanPendingJetFabrication, engineRollerExports, engineHomonyms, scanEngineDelegatedRoll } from '../../scripts/guards/lib/rollSeamExclusivity.mjs';
 import { rollSeamExcluded, ROLL_SEAM_PHASE2_STOCK, WORLD_DIE_SUBTRACTED_STOCK, PENDING_JET_FABRICATION_STOCK, ENGINE_DELEGATED_ROLL_STOCK, SEAM_CALLERS } from '../../scripts/guards/lib/rollSeamWhitelist.mjs';
 import { scanBattleRngEngineLeak } from '../../scripts/guards/lib/battleRngEngineLeak.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { battleRngEngineLeakExcluded } from '../../scripts/guards/lib/battleRngEngineLeakWhitelist.mjs';
 
 /**
@@ -32,25 +33,32 @@ const SCAN_DIRS = ['src'];
 
 const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rollSeamExcluded(rel);
 
-function scanFiles(): string[] {
-  const files: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e)) files.push(p);
-    }
-  };
-  for (const d of SCAN_DIRS) walk(join(ROOT, d));
-  return files;
+/** Corpus SOURCE de tous les scans de ce fichier : `src/**` en `.ts(x)`, TESTS COMPRIS (les vues
+ *  `prodFiles`/`EXCLUDED` filtrent ensuite), chemin RELATIF POSIX + texte, LU UNE FOIS. Marche et
+ *  lecture par `scripts/guards/lib/sourceCorpus.mjs`. Mémoïsation PARESSEUSE : la collecte Vitest ne
+ *  paie rien, et les 13 assertions de corpus de ce fichier partagent une seule lecture. */
+let _corpus: { rel: string; text: string }[] | null = null;
+function corpus(): { rel: string; text: string }[] {
+  if (_corpus) return _corpus;
+  return (_corpus = readCorpus(SCAN_DIRS, { tests: true }).map(({ rel, text }) => ({ rel, text })));
+}
+
+/** Sites de roulage brut du corpus entier, mode `includeExcluded` — SUR-ENSEMBLE dont la forme NUE du
+ *  garde est le sous-ensemble sans `excludedBy` (rollSeamExclusivity.mjs, `opts.includeExcluded`) :
+ *  un seul parcours nourrit le garde d'exclusivité ET le compteur (M). */
+let _sites: Map<string, { line: number; detail: string; excludedBy?: string }[]> | null = null;
+function sitesByFile(): Map<string, { line: number; detail: string; excludedBy?: string }[]> {
+  if (_sites) return _sites;
+  const m = new Map<string, { line: number; detail: string; excludedBy?: string }[]>();
+  for (const { rel, text } of corpus()) m.set(rel, scanRollSeamExclusivity(rel, text, { includeExcluded: true }));
+  return (_sites = m);
 }
 
 function countsByFile(): Record<string, number> {
   const counts: Record<string, number> = {};
-  for (const f of scanFiles()) {
-    const rel = relative(ROOT, f).split('\\').join('/');
+  for (const [rel, sites] of sitesByFile()) {
     if (EXCLUDED(rel)) continue;
-    const n = scanRollSeamExclusivity(rel, readFileSync(f, 'utf8')).length;
+    const n = sites.filter((s) => !s.excludedBy).length;
     if (n > 0) counts[rel] = n;
   }
   return counts;
@@ -222,11 +230,9 @@ describe('garde-fou « seam de jet » — exclusivité de rollTest/d100/TestOutc
    */
   it('(M) dé de monde : le compte SOUSTRAIT par fichier est le compte MESURÉ (cliquet à cible zéro)', () => {
     const mesure = new Map<string, number>();
-    for (const f of scanFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const [rel, sites] of sitesByFile()) {
       if (/\.test\.[tj]sx?$/.test(rel) || rel.startsWith('src/engine/')) continue;
-      const n = scanRollSeamExclusivity(rel, readFileSync(f, 'utf8'), { includeExcluded: true })
-        .filter((s: { excludedBy?: string }) => s.excludedBy === 'M').length;
+      const n = sites.filter((s: { excludedBy?: string }) => s.excludedBy === 'M').length;
       if (n > 0) mesure.set(rel, n);
     }
     const ecarts: string[] = [];
@@ -297,10 +303,9 @@ describe('garde-fou « seam de jet » — exclusivité de rollTest/d100/TestOutc
 describe('garde-fou « rng vivant → résolveur moteur » — un flux state/** ne peut plus appeler un resolveXxx(…) moteur avec battleRng() en direct (#370)', () => {
   it('aucun fichier hors whitelist ne remet un rng vivant à un résolveur moteur', () => {
     const offenders: string[] = [];
-    for (const f of scanFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const { rel, text } of corpus()) {
       if (/\.test\.[tj]sx?$/.test(rel) || battleRngEngineLeakExcluded(rel)) continue;
-      const findings = scanBattleRngEngineLeak(rel, readFileSync(f, 'utf8'));
+      const findings = scanBattleRngEngineLeak(rel, text);
       for (const x of findings) offenders.push(`${rel}:${x.line} [rng vivant → ${x.name}] ${x.detail}`);
     }
     expect(
@@ -369,22 +374,15 @@ const SEAM_CORE = new Set([
   'src/state/rollFlowSpecs.ts', 'src/state/combat/triggeredTest.ts',
 ]);
 
-/** Fichiers de PRODUCTION scannables (hors tests), en chemin relatif POSIX. */
+/** Fichiers de PRODUCTION scannables (hors tests), en chemin relatif POSIX — vue du `corpus()`. */
 function prodFiles(...dirs: string[]): { rel: string; text: string }[] {
-  const out: { rel: string; text: string }[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e)) {
-        const rel = relative(ROOT, p).split('\\').join('/');
-        if (!/\.test\.[tj]sx?$/.test(rel)) out.push({ rel, text: readFileSync(p, 'utf8') });
-      }
-    }
-  };
-  for (const d of dirs) walk(join(ROOT, d));
-  return out;
+  return corpus().filter(({ rel }) => !/\.test\.[tj]sx?$/.test(rel) && dirs.some((d) => rel === d || rel.startsWith(`${d}/`)));
 }
+
+/** Rouleurs d'engine DÉRIVÉS (clôture transitive) — mémoïsés : 4 `it` de deux `describe` les
+ *  demandent, la dérivation reparse tout `src/engine` à chaque appel. */
+let _rollers: ReturnType<typeof engineRollerExports> | null = null;
+const rollers = () => (_rollers ??= engineRollerExports(prodFiles('src/engine')));
 
 type Stock = Map<string, { n: number; kind: string; why: string }>;
 
@@ -489,7 +487,6 @@ describe('REGISTRE des chemins de jet (#1066) — (F) fabrication d’un pending
 });
 
 describe('REGISTRE des chemins de jet (#1066) — (D) roulage délégué à un export de src/engine', () => {
-  const rollers = () => engineRollerExports(prodFiles('src/engine'));
 
   const mesure = (names: Set<string>) => {
     const m = new Map<string, number>();
@@ -569,9 +566,8 @@ describe('REGISTRE des chemins de jet (#1066) — les angles morts DÉCLARÉS so
 
   it('SURVEILLANCE : aucun rouleur d’engine n’a d’HOMONYME dans un autre module (l’index est à plat)', () => {
     const files = prodFiles('src/engine');
-    const rollers = engineRollerExports(files);
     const collisions = [...engineHomonyms(files)]
-      .filter(([name, h]) => h.rollsDirectly || rollers.has(name))
+      .filter(([name, h]) => h.rollsDirectly || rollers().has(name))
       .map(([name, h]) => `${name} déclaré dans ${h.files.join(' + ')}`);
     expect(
       collisions,
@@ -581,12 +577,12 @@ describe('REGISTRE des chemins de jet (#1066) — les angles morts DÉCLARÉS so
 
   it('faux négatif ASSUMÉ : un dé qui n’est ni `rollTest` ni `d100` (ex. `d10`) n’est vu par AUCUN des trois scanners', () => {
     const src = readFileSync(join(ROOT, 'src/state/massBattleFlow.ts'), 'utf8');
-    const rollers = new Set(engineRollerExports(prodFiles('src/engine')).keys());
+    const rollerNames = new Set(rollers().keys());
     const hazard = /export function massBattleSetHazard[\s\S]*?\n}/.exec(src)?.[0] ?? '';
     expect(hazard, 'massBattleSetHazard a bougé — l’exemple d’angle mort cité par la doc doit rester mesurable').toContain('d10(battleRng())');
     expect(scanRollSeamExclusivity('src/state/massBattleFlow.ts', hazard)).toEqual([]);
     expect(scanPendingJetFabrication('src/state/massBattleFlow.ts', hazard)).toEqual([]);
-    expect(scanEngineDelegatedRoll('src/state/massBattleFlow.ts', hazard, rollers)).toEqual([]);
+    expect(scanEngineDelegatedRoll('src/state/massBattleFlow.ts', hazard, rollerNames)).toEqual([]);
   });
 });
 
@@ -640,33 +636,23 @@ const LIGNE_A_LA_MAIN_STOCK: Record<string, number> = {
   'src/state/rollFlowSpecs.ts': 2, // cible du dé d'une MANŒUVRE d'attaque + cible de repli d'un Test opposé — COMBAT
   // HORS COMBAT — les sites de jet sont routés par `rollLine`/`rollStep` ; ce qui reste n'est pas une cible.
   'src/state/seaVoyageFlow.ts': 1, // reste : conversion Difficulté→DR d'une infestation (pas une cible)
-  'src/ui/editor/LogicDock.tsx': 1, // éditeur : APERÇU d'une difficulté authorée, aucun jet
   'src/state/cascadeTestKit.ts': 1, // le cliquet lui-même (`inexplique`)
 };
 
-/** Dette TOTALE MESURÉE sur `HEAD` + ce lot : 6 occurrences / 5 fichiers, dont 3 en combat — verrou
- *  global : un site déplacé d'un fichier à l'autre ne s'y cache pas. */
+/** Dette TOTALE MESURÉE sur `HEAD` + ce lot : 5 occurrences / 4 fichiers, dont 3 en combat — verrou
+ *  global : un site déplacé d'un fichier à l'autre ne s'y cache pas. `ui/editor/LogicDock.tsx` n'y
+ *  figure pas : son aperçu de difficulté mesure 0 site, la borne du champ vit dans `NumberField`. */
 const TOTAL_DECLARE = Object.values(LIGNE_A_LA_MAIN_STOCK).reduce((s, n) => s + n, 0);
 
 describe('CLIQUET — l’arithmétique de ligne vit dans le monteur, pas dans les flux (#1153)', () => {
   const LIGNE_RX = /DIFFICULTY_MODIFIERS\s*[.[]|Math\.min\(99/g;
   const HORS_CLIQUET = ['src/engine/', 'src/state/rollSeam.ts', 'src/ui/breakdown.ts', 'src/ui/RollLine.tsx'];
 
-  const walk = (dir: string, out: string[] = []): string[] => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p, out);
-      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
-    }
-    return out;
-  };
-
   it('aucun NOUVEAU site ne recalcule une cible à la main (le stock ne peut que décroître)', () => {
     const mesure: Record<string, number> = {};
-    for (const abs of walk(join(ROOT, 'src'))) {
-      const rel = relative(ROOT, abs).replace(/\\/g, '/');
+    for (const { rel, text } of prodFiles('src')) {
       if (HORS_CLIQUET.some((p) => rel.startsWith(p))) continue;
-      const n = (readFileSync(abs, 'utf8').match(LIGNE_RX) ?? []).length;
+      const n = (text.match(LIGNE_RX) ?? []).length;
       if (n > 0) mesure[rel] = n;
     }
     const ecarts: string[] = [];
@@ -771,14 +757,6 @@ function etapesALaMain(src: string): number {
 }
 
 describe('CLIQUET 2 — une étape-JET ne se monte plus à la main, même sans arithmétique (#1153)', () => {
-  const walk = (dir: string, out: string[] = []): string[] => {
-    for (const e of readdirSync(dir)) {
-      const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p, out);
-      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
-    }
-    return out;
-  };
 
   it('le scanner VOIT bien la famille qu’il prétend mesurer (les 5 sites de restFlow d’avant migration)', () => {
     // Preuve de couverture sur PIÈCE : le montage à base FONDUE tel qu'il s'écrivait (abri de fortune,
@@ -822,11 +800,10 @@ describe('CLIQUET 2 — une étape-JET ne se monte plus à la main, même sans a
 
   it('aucune NOUVELLE étape montée à la main (le stock ne peut que décroître)', () => {
     const mesure: Record<string, number> = {};
-    for (const abs of walk(join(ROOT, 'src'))) {
-      const rel = relative(ROOT, abs).replace(/\\/g, '/');
+    for (const { rel, text } of prodFiles('src')) {
       if (rel === 'src/state/rollSeam.ts') continue; // le monteur lui-même
       if (HORS_PERIMETRE_COMBAT.some((p) => rel.startsWith(p))) continue; // frontière déclarée, lot dédié
-      const n = etapesALaMain(readFileSync(abs, 'utf8'));
+      const n = etapesALaMain(text);
       if (n > 0) mesure[rel] = n;
     }
     const ecarts: string[] = [];

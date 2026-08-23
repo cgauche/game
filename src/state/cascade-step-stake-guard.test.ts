@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, sep } from 'node:path';
 import { stripLiterals } from './cascade-step-difficulty-guard.test';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * CLIQUET — une étape de cascade qui LANCE dit son ENJEU (#1117, arbitrage user : « Louvoyage… ça
@@ -27,20 +28,63 @@ import { stripLiterals } from './cascade-step-difficulty-guard.test';
 const SRC = join(process.cwd(), 'src');
 const SCAN_ROOTS = [join(SRC, 'state'), join(SRC, 'scenes')];
 
-function sourceFiles(dir: string): string[] {
-  const out: string[] = [];
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) { out.push(...sourceFiles(p)); continue; }
-    if (e.endsWith('.ts') && !e.includes('.test.')) out.push(p);
+/** Corpus RÉEL d'un jeu de racines (marche + lecture : `scripts/guards/lib/sourceCorpus.mjs`), pris
+ *  UNE fois puis mémoïsé — PARESSEUX : payé au 1ᵉʳ `it` qui le demande, jamais à la collecte des
+ *  tests. Le PÉRIMÈTRE reste ici : `.ts` seuls (aucun `.tsx` sous `state/`+`scenes/`), hors tests. */
+const _corpus = new Map<string, { file: string; src: string }[]>();
+function corpus(roots: string[]): { file: string; src: string }[] {
+  const cle = roots.join('|');
+  let v = _corpus.get(cle);
+  if (!v) {
+    v = readCorpus(roots, { exts: ['.ts'] }).map(({ abs, text }) => ({ file: abs, src: text }));
+    _corpus.set(cle, v);
   }
-  return out;
+  return v;
 }
 
 /** Tous les fichiers scannés, tous dossiers de couverture confondus. */
-const scanned = () => SCAN_ROOTS.flatMap(sourceFiles);
+const scanned = () => corpus(SCAN_ROOTS);
 /** Clé de baseline d'un fichier scanné : chemin RELATIF à `src/` (`state/combatFlow.ts`). */
 const keyOf = (f: string) => f.slice(SRC.length + 1).split(sep).join('/');
+
+/** `stripLiterals` mémoïsé par CONTENU — jamais par chemin : une fixture ne peut pas usurper le
+ *  résultat d'un fichier réel. Les quatre scans lisent le même corpus, la neutralisation est une. */
+const _strip = new Map<string, string>();
+function strip(src: string): string {
+  let v = _strip.get(src);
+  if (v === undefined) { v = stripLiterals(src); _strip.set(src, v); }
+  return v;
+}
+
+/** Le DÉLIMITEUR de propriété (`{` ou `,`) est REGARDÉ par un lookbehind de largeur FIXE, ses blancs
+ *  sont CAPTURÉS. Un délimiteur consommé se retirerait du texte offert au site SUIVANT : le `{` pris
+ *  comme première lettre d'une valeur (`target: {`) rendrait la propriété imbriquée invisible (morsure
+ *  plus bas). Coût des trois motifs sur le corpus (243 fichiers, 4,3 Mo, mesuré le 2026-08-23) :
+ *  34 ms en largeur FIXE contre 66 ms en largeur VARIABLE (`(?<=[{,]\s*)`), à MATCHS IDENTIQUES
+ *  (482 / 6 / 148 sites). L'index du site est celui du nom de propriété : `m.index` décalé des blancs
+ *  capturés. */
+const siteDe = (m: RegExpMatchArray): number => m.index! + (m[1]?.length ?? 0);
+
+/** Les trois motifs de PROPRIÉTÉ des scans, et l'énumération de leurs sites (index du nom de
+ *  propriété dans `s`). Nommés pour être MORDUS directement : c'est ici que se joue le repérage. */
+export const RX_TARGET = /(?<=[{,])(\s*)target\s*(?::\s*[^\s,}]|[,}])|\.\.\.rollStep\(/g;
+export const RX_KLASS = /(?<=[{,])(\s*)klass\s*:\s*[^\s,}]/g;
+export const RX_LITERAL = /(?<=[{,])(\s*)(?:skill|characteristic)\s*:\s*[^\s,}]/g;
+export const sitesDe = (s: string, rx: RegExp): number[] => [...s.matchAll(rx)].map(siteDe);
+
+/** L'accolade en `start` OUVRE-t-elle un littéral ? Celle d'un corps de fonction, d'une interface ou
+ *  d'un bloc est précédée d'autre chose que `ouvreurs` ou `return`. Lecture à REBOURS depuis `start`,
+ *  en O(blancs) : la question ne porte que sur le dernier caractère non blanc. La même décision prise
+ *  sur `s.slice(0, start)` copie le préfixe ENTIER du fichier à CHAQUE site — le fichier passe alors
+ *  de 1,0 s à 11,1 s, soit 91 % de son coût (mesuré le 2026-08-23, les deux formes vertes). */
+function ouvreUnLitteral(s: string, start: number, ouvreurs: string): boolean {
+  let k = start - 1;
+  while (k >= 0 && /\s/.test(s[k])) k--;
+  if (k < 0) return false;
+  if (ouvreurs.includes(s[k])) return true;
+  if (k < 5 || s.slice(k - 5, k + 1) !== 'return') return false;
+  return k === 5 || !/[A-Za-z0-9_]/.test(s[k - 6]);
+}
 
 /** La propriété `name` est-elle posée au PREMIER niveau du littéral `lit` ? (Un `kind` enfoui dans un
  *  sous-objet — `outcome: { kind }` d'un Test étendu — ne fait pas de son porteur une étape.) */
@@ -56,7 +100,7 @@ function hasTopLevelKey(lit: string, name: string): boolean {
 
 /** Étapes qui LANCENT (cible posée), sans `stake` — renvoie leurs numéros de ligne (1-based). */
 export function stepsWithoutStake(src: string): number[] {
-  const s = stripLiterals(src);
+  const s = strip(src);
   // Le scan lit des DÉCLARATIONS : un enjeu se pose au montage (`monoStep({ …, stake })`), jamais
   // après coup — aucun site de `src/state`/`src/scenes` n'affecte `stake` sur une étape construite
   // (mesuré : 0 occurrence de `.stake =`). La pose différée n'est donc pas un angle mort du scan.
@@ -81,8 +125,8 @@ export function stepsWithoutStake(src: string): number[] {
   //    exemptée du lint, `revealToStep`, n'en produit aucune : son `opts.table` est une déclaration
   //    RÉSOLUE au type (`CascadeTableDone`, `revealStep.ts`), mesuré par `reveal.test.ts`
   //    (« `revealToStep` ne produit jamais un tirage À FAIRE »).
-  for (const m of s.matchAll(/(?<=[{,]\s*)target\s*(?::\s*[^\s,}]|[,}])|\.\.\.rollStep\(/g)) {
-    const i = m.index!;
+  for (const m of s.matchAll(RX_TARGET)) {
+    const i = siteDe(m);
     let depth = 0;
     let start = -1;
     for (let j = i; j >= 0; j--) {
@@ -91,9 +135,7 @@ export function stepsWithoutStake(src: string): number[] {
     }
     if (start < 0 || seen.has(start)) continue;
     seen.add(start);
-    // Seule une accolade OUVRANT UN LITTÉRAL est une étape : celle d'un corps de fonction, d'une
-    // interface ou d'un bloc est précédée d'autre chose que `(`/`,`/`[`/`=`/`?`/`return`.
-    if (!/(?:[([,=?]|\breturn)$/.test(s.slice(0, start).replace(/\s+$/, ''))) continue;
+    if (!ouvreUnLitteral(s, start, '([,=?')) continue;
     depth = 0;
     let end = -1;
     for (let j = i; j < s.length; j++) {
@@ -123,11 +165,11 @@ export function stepsWithoutStake(src: string): number[] {
  * rend le critère mesurable : tout site soldé s'y retire, tout site neuf muet ROUGIT.
  */
 export function rollRequestsWithoutStake(src: string): number[] {
-  const s = stripLiterals(src);
+  const s = strip(src);
   const lines: number[] = [];
   const seen = new Set<number>();
-  for (const m of s.matchAll(/(?<=[{,]\s*)klass\s*:\s*[^\s,}]/g)) {
-    const i = m.index!;
+  for (const m of s.matchAll(RX_KLASS)) {
+    const i = siteDe(m);
     let depth = 0;
     let start = -1;
     for (let j = i; j >= 0; j--) {
@@ -136,7 +178,7 @@ export function rollRequestsWithoutStake(src: string): number[] {
     }
     if (start < 0 || seen.has(start)) continue;
     seen.add(start);
-    if (!/(?:[([,=?]|\breturn)$/.test(s.slice(0, start).replace(/\s+$/, ''))) continue;
+    if (!ouvreUnLitteral(s, start, '([,=?')) continue;
     depth = 0;
     let end = -1;
     for (let j = i; j < s.length; j++) {
@@ -178,7 +220,7 @@ const BASELINE_REQ: Record<string, number> = {
  * sa couverture : celle-ci est le 1ᵉʳ argument littéral de `testFlow(`.
  */
 export function flowTestsWithoutStake(src: string): number[] {
-  const s = stripLiterals(src);
+  const s = strip(src);
   const lines: number[] = [];
   for (const m of s.matchAll(/\btestFlow\s*\(\s*\{/g)) {
     const start = s.indexOf('{', m.index!);
@@ -214,11 +256,11 @@ export function flowTestsWithoutStake(src: string): number[] {
  * exiger rétrécirait la mesure au sous-ensemble le mieux authoré — l'inverse du but.
  */
 export function literalTestsWithoutStake(src: string): number[] {
-  const s = stripLiterals(src);
+  const s = strip(src);
   const lines: number[] = [];
   const seen = new Set<number>();
-  for (const m of s.matchAll(/(?<=[{,]\s*)(?:skill|characteristic)\s*:\s*[^\s,}]/g)) {
-    const i = m.index!;
+  for (const m of s.matchAll(RX_LITERAL)) {
+    const i = siteDe(m);
     let depth = 0;
     let start = -1;
     for (let j = i; j >= 0; j--) {
@@ -227,7 +269,7 @@ export function literalTestsWithoutStake(src: string): number[] {
     }
     if (start < 0 || seen.has(start)) continue;
     seen.add(start);
-    if (!/(?:[([,=?:]|\breturn)$/.test(s.slice(0, start).replace(/\s+$/, ''))) continue; // pas un littéral
+    if (!ouvreUnLitteral(s, start, '([,=?:')) continue; // pas un littéral
     depth = 0;
     let end = -1;
     for (let j = i; j < s.length; j++) {
@@ -288,12 +330,20 @@ const BASELINE: Record<string, number> = {
   // `src/data/*.json` est mesurée par `flowtest-derived-stake.test.ts`.
 };
 
+describe('MORSURE du repérage de site — le délimiteur se REGARDE, il ne se consomme pas', () => {
+  it('deux propriétés IMBRIQUÉES de même nom rendent DEUX sites', () => {
+    expect(sitesDe("{ target: { target: 'x' } }", RX_TARGET)).toHaveLength(2);
+    expect(sitesDe("{ klass: { klass: 'x' } }", RX_KLASS)).toHaveLength(2);
+    expect(sitesDe("{ skill: {skill: 'y'} }", RX_LITERAL)).toHaveLength(2);
+  });
+});
+
 describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', () => {
   it('aucun site NEUF sans enjeu, et toute baseline assainie est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
-    for (const f of scanned()) {
-      const found = stepsWithoutStake(readFileSync(f, 'utf8'));
-      if (found.length) counts[keyOf(f)] = found;
+    for (const { file, src } of scanned()) {
+      const found = stepsWithoutStake(src);
+      if (found.length) counts[keyOf(file)] = found;
     }
     const over: string[] = [];
     for (const [f, l] of Object.entries(counts)) {
@@ -311,9 +361,9 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
 
   it('aucune `RollRequest` NEUVE sans enjeu, et toute baseline soldée est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
-    for (const f of scanned()) {
-      const found = rollRequestsWithoutStake(readFileSync(f, 'utf8'));
-      if (found.length) counts[keyOf(f)] = found;
+    for (const { file, src } of scanned()) {
+      const found = rollRequestsWithoutStake(src);
+      if (found.length) counts[keyOf(file)] = found;
     }
     const over: string[] = [];
     for (const [f, l] of Object.entries(counts)) {
@@ -331,9 +381,9 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
 
   it('4ᵉ FORME : aucun DESCRIPTEUR de jet littéral neuf sans enjeu, et toute baseline soldée est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
-    for (const f of scanned()) {
-      const found = literalTestsWithoutStake(readFileSync(f, 'utf8'));
-      if (found.length) counts[keyOf(f)] = found;
+    for (const { file, src } of scanned()) {
+      const found = literalTestsWithoutStake(src);
+      if (found.length) counts[keyOf(file)] = found;
     }
     const over: string[] = [];
     for (const [f, l] of Object.entries(counts)) {
@@ -382,14 +432,13 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
     // (b) ARBRE COURANT — le sur-ensemble ne perd aucun site réel.
     const manquants: string[] = [];
     let ancien = 0;
-    for (const f of scanned()) {
-      const src = readFileSync(f, 'utf8');
+    for (const { file, src } of scanned()) {
       const old = flowTestsWithoutStake(src);
       if (!old.length) continue;
       ancien += old.length;
       const neuf = new Set(literalTestsWithoutStake(src));
       const perdus = old.filter((l) => !neuf.has(l));
-      if (perdus.length) manquants.push(`${keyOf(f)} : lignes ${perdus.join(', ')} vues par testFlow, PERDUES par la forme`);
+      if (perdus.length) manquants.push(`${keyOf(file)} : lignes ${perdus.join(', ')} vues par testFlow, PERDUES par la forme`);
     }
     expect(manquants, ['Sites de l’ancien périmètre non retrouvés :', ...manquants].join('\n')).toEqual([]);
     // Compte EXACT de l'ancien périmètre (somme de `BASELINE_FLOW`) — s'il bouge, la comparaison
@@ -414,9 +463,9 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
 
   it('aucun `FlowTest` NEUF sans enjeu, et toute baseline soldée est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
-    for (const f of scanned()) {
-      const found = flowTestsWithoutStake(readFileSync(f, 'utf8'));
-      if (found.length) counts[keyOf(f)] = found;
+    for (const { file, src } of scanned()) {
+      const found = flowTestsWithoutStake(src);
+      if (found.length) counts[keyOf(file)] = found;
     }
     const over: string[] = [];
     for (const [f, l] of Object.entries(counts)) {
@@ -548,9 +597,8 @@ describe('l’enjeu AUTHORÉ reste au contenu — le moteur passe par les datase
 
   it('aucun enjeu authoré à la main dans `src/state` / `src/engine`', () => {
     const fautifs: string[] = [];
-    for (const f of MOTEUR.flatMap(sourceFiles)) {
-      const s = stripLiterals(readFileSync(f, 'utf8'));
-      if (AUTHORED.test(s)) fautifs.push(keyOf(f));
+    for (const { file, src } of corpus(MOTEUR)) {
+      if (AUTHORED.test(strip(src))) fautifs.push(keyOf(file));
     }
     expect(fautifs, ['Enjeu AUTHORÉ dans le moteur — un jet du moteur nomme son dataset (`combatStakeRef`…), il n’écrit pas sa phrase :', ...fautifs].join('\n')).toEqual([]);
   });

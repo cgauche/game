@@ -20,8 +20,9 @@ import { closureOf, directImportsOf } from './importGraph.mjs';
  */
 export function computeOwnerSystems(systemes) {
   const owners = new Map();
+  const cache = new Map(); // les closures des N systèmes se recouvrent : un module résolu une fois
   for (const s of systemes) {
-    for (const rel of closureOf(s.modules)) {
+    for (const rel of closureOf(s.modules, cache)) {
       const list = owners.get(rel) ?? [];
       list.push(s.id);
       owners.set(rel, list);

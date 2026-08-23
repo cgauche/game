@@ -47,13 +47,21 @@ function scanFiles(): string[] {
   return files;
 }
 
+/** Corpus SCANNÉ une fois pour les deux assertions (l'invariant et la réalité de son exclusion) :
+ *  chaque fichier de `src/**` avec ses sites de mutation, chemin RELATIF POSIX. Mémoïsation
+ *  PARESSEUSE — la collecte Vitest ne paie rien, le premier `it` qui mesure paie le scan. */
+let _sites: { rel: string; findings: { line: number; detail: string }[] }[] | null = null;
+const sites = () =>
+  (_sites ??= scanFiles().map((f) => {
+    const rel = relative(ROOT, f).split('\\').join('/');
+    return { rel, findings: scanSceneMutation(rel, readFileSync(f, 'utf8')) };
+  }));
+
 describe('garde-fou « immutabilité de la scène du store » (AST, tolérance zéro)', () => {
   it('aucun code de src/** (hors authoring de test-scenarios) ne mute un champ d’un porteur de `scene` en place', () => {
     const offenders: string[] = [];
-    for (const f of scanFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const { rel, findings } of sites()) {
       if (AUTHORING_EXCLUDED(rel)) continue;
-      const findings = scanSceneMutation(rel, readFileSync(f, 'utf8'));
       for (const finding of findings) offenders.push(`${rel}:${finding.line} — ${finding.detail}`);
     }
     expect(
@@ -65,10 +73,9 @@ describe('garde-fou « immutabilité de la scène du store » (AST, tolérance z
 
   it('l’exclusion authoring de src/scenes/test-scenarios/ reste RÉELLE (sinon c’est un mort à retirer)', () => {
     const offenders: string[] = [];
-    for (const f of scanFiles()) {
-      const rel = relative(ROOT, f).split('\\').join('/');
+    for (const { rel, findings } of sites()) {
       if (!AUTHORING_EXCLUDED(rel)) continue;
-      offenders.push(...scanSceneMutation(rel, readFileSync(f, 'utf8')).map((f2) => `${rel}:${f2.line}`));
+      offenders.push(...findings.map((f2) => `${rel}:${f2.line}`));
     }
     expect(offenders.length).toBeGreaterThan(0);
   });

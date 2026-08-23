@@ -6,7 +6,13 @@
 // scène par spread (`set({ scene: { ...scene, champ: nouvelleValeur } })`). Module ESM pur, AST
 // réelle (compilateur TypeScript, pas un grep textuel) — consommé par
 // `src/state/scene-mutation-guard.test.ts`.
-import ts from 'typescript';
+import tsModule from 'typescript';
+
+// Liaison LOCALE de l'API du compilateur — FAIT mesuré 2026-08-23 : sous Vitest, ce module est
+// transformé par vite-node et chaque `ts.x` d'un visiteur AST se relit alors sur l'objet d'import du
+// runner. Le scan de `src/**` coûte 1,35 s en `node` nu ; `scene-mutation-guard.test.ts` passe de
+// 7,46 s à 3,60 s à la seule liaison ci-dessous, tout le reste égal.
+const ts = tsModule;
 
 /** Méthodes de tableau qui mutent leur récepteur EN PLACE. */
 export const MUTATING_ARRAY_METHODS = new Set([

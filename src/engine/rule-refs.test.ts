@@ -166,9 +166,28 @@ export function modLineLiterals(path: string, raw: string): ModLiteral[] {
   return found;
 }
 
-/** TOUS les sites de `ModLine` de `src/**` (hors tests), `fichier · label`, avec l'état de leur `ref`. */
-function modLineSites(): { at: string; where: string; hasRef: boolean; famille: ModLiteral['famille']; ruleKey: string | null }[] {
-  const out: { at: string; where: string; hasRef: boolean; famille: ModLiteral['famille']; ruleKey: string | null }[] = [];
+interface ModSite {
+  at: string;
+  where: string;
+  hasRef: boolean;
+  famille: ModLiteral['famille'];
+  ruleKey: string | null;
+}
+
+/**
+ * TOUS les sites de `ModLine` de `src/**` (hors tests), `fichier · label`, avec l'état de leur `ref`.
+ * COÛT MESURÉ (2026-08-23, 1880 fichiers / 15,2 Mo) : 2,04 s par balayage — 1,62 s de
+ * `ts.createSourceFile`, 0,19 s de lecture, 0,03 s de parcours de dossiers, 0,21 s de visite. Les
+ * neuf `it` de ce fichier interrogent le MÊME corpus : le balayage est mémoïsé, et PARESSEUX — au
+ * premier `it` qui le demande, jamais à la collecte de vitest.
+ */
+let sitesMemo: ModSite[] | undefined;
+function modLineSites(): ModSite[] {
+  return (sitesMemo ??= scanModLineSites());
+}
+
+function scanModLineSites(): ModSite[] {
+  const out: ModSite[] = [];
   for (const f of tsFiles(SRC)) {
     const rel = 'src/' + f.slice(SRC.length).replace(/\\/g, '/');
     const raw = lireSiPresent(f);

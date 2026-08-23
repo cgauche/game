@@ -78,8 +78,10 @@ const RIG_PART_MODULES = import.meta.glob<Record<string, unknown>>(
 );
 
 /** Poids d'une valeur d'art : somme des longueurs de ses chaînes et de ses clés, en profondeur.
- *  N'alloue rien (contrairement à `JSON.stringify`) → 0,17 ms par empreinte au lieu de 6,4 ms sur les
- *  ~4,3 Mo d'art mesurés (2026-07-29), donc négligeable à chaque `afterEach`. */
+ *  N'alloue rien (contrairement à `JSON.stringify`) : 1,17 ms l'empreinte des 42 registres (~4,37 Mo
+ *  d'art) contre 9,55 ms pour un `JSON.stringify` équivalent — mesuré 2026-08-23, régime établi sur
+ *  3 148 tests. Prise à CHAQUE `afterEach` (granularité = LE TEST), elle coûte 3,7 s des 40 s de
+ *  `src/engine` en mono-worker, soit ~23 s de CPU cumulés sur les 19 584 tests de la suite. */
 const artWeight = (v: unknown, depth = 0): number => {
   if (typeof v === 'string') return v.length;
   if (v === null || v === undefined || typeof v === 'boolean') return 1;

@@ -20,13 +20,36 @@
 // n'est pas un critère de branchement ici : c'est le NOM du champ qui dit « identité ».
 // Le détail de ce que la garde ne voit pas est écrit noir sur blanc dans l'en-tête de
 // `scanRegistryIdBranch`.
-import ts from 'typescript';
+import tsModule from 'typescript';
+
+/** Liaison LOCALE du compilateur : sous le transformeur SSR de Vitest, chaque `ts.x` d'un import est
+ *  une traversée de module (`__vite_ssr_import_N__.default.x`) — sur le visiteur d'AST, chaud, elle
+ *  coûte le gros du scan. Une liaison locale la paie UNE fois. */
+const ts = tsModule;
 
 /** Dossiers scannés. `src/ui` est le trou d'origine (les deux cas réels y vivent, et `hardcode.mjs`
  *  ne l'a jamais scanné) ; `src/engine`/`src/state` complètent le périmètre des gardes de doctrine ;
  *  `src/gameIso` et `src/data` portent les ROUTAGES D'ART et les registres chargés (le dépôt a déjà
  *  payé un routage d'art d'arme par id) ; `scripts` porte les compilateurs d'authoring, qui écrivent
  *  de la donnée de scène — un branchement par id y produit du contenu non généralisable. */
+/** Dernier arbre construit (chemin ET contenu) — les deux scans d'un même fichier se suivent sur le
+ *  corpus, l'analyse syntaxique est donc faite UNE fois pour deux : 1,7 s économisée sur les 2 116
+ *  fichiers de `SCAN_DIRS`, mesuré le 2026-08-23. Cache de taille UN : rien ne s'accumule, et la
+ *  clé porte le CONTENU — une fixture au chemin d'un fichier réel ne peut pas hériter de son arbre.
+ *  @type {{ rel: string, src: string, sf: import('typescript').SourceFile } | null} */
+let _dernierArbre = null;
+
+/** @param {string} relPath @param {string} contenu @returns {import('typescript').SourceFile} */
+function arbreDe(relPath, contenu) {
+  if (_dernierArbre && _dernierArbre.rel === relPath && _dernierArbre.src === contenu) return _dernierArbre.sf;
+  const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX
+    : /\.[cm]?js$/.test(relPath) ? ts.ScriptKind.JS // outillage `scripts/**` (.mjs) : même AST, sans annotations
+      : ts.ScriptKind.TS;
+  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
+  _dernierArbre = { rel: relPath, src: contenu, sf };
+  return sf;
+}
+
 export const SCAN_DIRS = ['src/ui', 'src/engine', 'src/state', 'src/gameIso', 'src/data', 'scripts'];
 
 /** Extensions scannées : TypeScript du jeu ET JavaScript d'outillage (`scripts/**` est en `.mjs`). */
@@ -370,10 +393,7 @@ function collectLiteralHolders(sf, origins) {
  * @returns {{ line: number, detail: string, rule: 'id-equality'|'id-switch'|'id-membership'|'id-record' }[]}
  */
 export function scanRegistryIdBranch(relPath, contenu) {
-  const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX
-    : /\.[cm]?js$/.test(relPath) ? ts.ScriptKind.JS // outillage `scripts/**` (.mjs) : même AST, sans annotations
-      : ts.ScriptKind.TS;
-  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
+  const sf = arbreDe(relPath, contenu);
   const { collections, records } = collectLiteralHolders(sf, collectImportOrigins(sf, relPath));
   const lines = contenu.split('\n');
   const findings = [];
@@ -501,10 +521,7 @@ export function countRegistryIdBranch(rel, contenu) {
  * @returns {{ line: number, detail: string }[]}
  */
 export function scanRawIdEqualities(relPath, contenu) {
-  const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX
-    : /\.[cm]?js$/.test(relPath) ? ts.ScriptKind.JS
-      : ts.ScriptKind.TS;
-  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
+  const sf = arbreDe(relPath, contenu);
   const lines = contenu.split('\n');
   const findings = [];
 

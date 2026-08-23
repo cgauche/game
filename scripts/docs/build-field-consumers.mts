@@ -61,7 +61,7 @@
  *     ex. `difficultySchema`, `charKeySchema`) : aucun champ objet à consommer, hors du périmètre
  *     de la question « qui lit CE CHAMP ? ».
  */
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
 import { listProdFiles, scanFieldReads, groupByField } from '../guards/lib/fieldConsumers.mjs'
@@ -71,66 +71,86 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url)).replace(/\/$/, ''
 const SRC_DIR = join(ROOT, 'src')
 const OUT = 'docs/consommateurs-de-champs.md'
 
-const files = listProdFiles(SRC_DIR)
+type Hit = { file: string; line: number }
 
-let out = `# Consommateurs par champ — GÉNÉRÉ\n\n`
-out += `> ⚠️ Fichier GÉNÉRÉ par \`npx tsx scripts/docs/build-field-consumers.mts\` (\`npm run docs:field-consumers\`) — NE PAS ÉDITER À LA MAIN.\n`
-out += `> Pour chaque type de référence PARTAGÉ, qui LIT chaque champ (annotation de type explicite +\n`
-out += `> accès/déstructuration, cf. \`scripts/guards/lib/fieldConsumers.mjs\`). Complète\n`
-out += `> \`docs/orphelines-donnees.md\` (consommateurs d'ENTITÉ) — ici, consommateurs de CHAMP.\n\n`
-out += `## Périmètre mesuré / angles morts\n\n`
-out += `39 schémas NOMMÉS mesurés dans \`src/data/schemas/common.ts\` (37) + \`src/data/schemas/defs/criticals.ts\` (2) ; `
-out += `**17 retenus** (voir en-tête du générateur pour le détail des 22 exclus). Les 109 catalogues `
-out += `\`src/data/schemas/defs/*.ts\` (schéma d'entrée ANONYME par fichier) restent HORS PÉRIMÈTRE — `
-out += `sans alias TS nommé, ce détecteur ne peut pas y borner une lecture.\n\n`
-out += `Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant doit être `
-out += `EXPLICITEMENT annoté du type cible. **Vérification manuelle des 16 champs « 0 lecteur »** de la `
-out += `première mesure (échantillon COMPLET, pas partiel) : 9/16 (56 %) sont des FAUX NÉGATIFS — un `
-out += `lecteur réel existe via une variable de type INFÉRÉ, un accès chaîné à travers un champ `
-out += `intermédiaire non annoté, ou une boucle \`for…of\` sur un tableau typé (détail + fichiers : `
-out += `en-tête du générateur). Taux trop élevé pour un cliquet CI fiable — ce rapport reste une mesure `
-out += `BRUTE, non ratchetée.\n\n`
+/**
+ * Le rapport, EN MÉMOIRE : le `.md` à écrire + les sites mesurés par type et par champ. UN SEUL
+ * balayage du corpus nourrit les deux consommateurs — la fraîcheur du `.md` et le cas fondateur de
+ * `src/data/field-consumers.test.ts`, qui appelle cette fonction EN PROCESSUS (le CLI ci-dessous
+ * n'est qu'un autre appelant). Le cache de lecture/AST vit le temps de l'appel : il est créé ici,
+ * partagé par les 17 types mesurés, et libéré au retour.
+ */
+export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<string, Hit[]>>; totalFields: number; totalUnread: number } {
+  const files = listProdFiles(SRC_DIR)
+  const cache = new Map<string, { text: string; sf: unknown }>()
 
-let totalFields = 0
-let totalUnread = 0
-let trappingRefSpecReaders = 0
+  let out = `# Consommateurs par champ — GÉNÉRÉ\n\n`
+  out += `> ⚠️ Fichier GÉNÉRÉ par \`npx tsx scripts/docs/build-field-consumers.mts\` (\`npm run docs:field-consumers\`) — NE PAS ÉDITER À LA MAIN.\n`
+  out += `> Pour chaque type de référence PARTAGÉ, qui LIT chaque champ (annotation de type explicite +\n`
+  out += `> accès/déstructuration, cf. \`scripts/guards/lib/fieldConsumers.mjs\`). Complète\n`
+  out += `> \`docs/orphelines-donnees.md\` (consommateurs d'ENTITÉ) — ici, consommateurs de CHAMP.\n\n`
+  out += `## Périmètre mesuré / angles morts\n\n`
+  out += `39 schémas NOMMÉS mesurés dans \`src/data/schemas/common.ts\` (37) + \`src/data/schemas/defs/criticals.ts\` (2) ; `
+  out += `**17 retenus** (voir en-tête du générateur pour le détail des 22 exclus). Les 109 catalogues `
+  out += `\`src/data/schemas/defs/*.ts\` (schéma d'entrée ANONYME par fichier) restent HORS PÉRIMÈTRE — `
+  out += `sans alias TS nommé, ce détecteur ne peut pas y borner une lecture.\n\n`
+  out += `Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant doit être `
+  out += `EXPLICITEMENT annoté du type cible. **Vérification manuelle des 16 champs « 0 lecteur »** de la `
+  out += `première mesure (échantillon COMPLET, pas partiel) : 9/16 (56 %) sont des FAUX NÉGATIFS — un `
+  out += `lecteur réel existe via une variable de type INFÉRÉ, un accès chaîné à travers un champ `
+  out += `intermédiaire non annoté, ou une boucle \`for…of\` sur un tableau typé (détail + fichiers : `
+  out += `en-tête du générateur). Taux trop élevé pour un cliquet CI fiable — ce rapport reste une mesure `
+  out += `BRUTE, non ratchetée.\n\n`
 
-for (const { schema, type, home } of TARGETS) {
-  const fields = fieldsOf(schema)
-  const hits = scanFieldReads(type, fields, files, ROOT)
-  const byField = groupByField(fields, hits)
-  totalFields += fields.length
-  out += `### \`${type}\` (${home})\n\n`
-  out += `| Champ | Lecteurs | Exemple |\n|---|---|---|\n`
-  for (const f of fields) {
-    const list = byField.get(f) ?? []
-    if (type === 'TrappingRef' && f === 'spec') trappingRefSpecReaders = list.length
-    if (list.length === 0) {
-      totalUnread++
-      out += `| \`${f}\` | **0 — JAMAIS LU** | — |\n`
-    } else {
-      const uniqSites = [...new Set(list.map((h: { file: string; line: number }) => `${h.file}:${h.line}`))]
-      out += `| \`${f}\` | ${uniqSites.length} | \`${uniqSites[0]}\` |\n`
+  let totalFields = 0
+  let totalUnread = 0
+  let trappingRefSpecReaders = 0
+  const byType = new Map<string, Map<string, Hit[]>>()
+
+  for (const { schema, type, home } of TARGETS) {
+    const fields = fieldsOf(schema)
+    const hits = scanFieldReads(type, fields, files, ROOT, cache)
+    const byField = groupByField(fields, hits)
+    byType.set(type, byField)
+    totalFields += fields.length
+    out += `### \`${type}\` (${home})\n\n`
+    out += `| Champ | Lecteurs | Exemple |\n|---|---|---|\n`
+    for (const f of fields) {
+      const list = byField.get(f) ?? []
+      if (type === 'TrappingRef' && f === 'spec') trappingRefSpecReaders = list.length
+      if (list.length === 0) {
+        totalUnread++
+        out += `| \`${f}\` | **0 — JAMAIS LU** | — |\n`
+      } else {
+        const uniqSites = [...new Set(list.map((h: { file: string; line: number }) => `${h.file}:${h.line}`))]
+        out += `| \`${f}\` | ${uniqSites.length} | \`${uniqSites[0]}\` |\n`
+      }
     }
+    out += `\n`
   }
-  out += `\n`
+
+  out += `## Synthèse\n\n`
+  out += `${TARGETS.length} types, ${totalFields} champs mesurés, **${totalUnread} avec « 0 lecteur » mesuré** `
+  out += `(56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de `
+  out += `cliquet CI sur ce total).\n\n`
+  out += `## Cas fondateur\n\n`
+  out += `\`TrappingRef.spec\` : ${trappingRefSpecReaders} lecteur(s) mesuré(s) — \`trappingRefLabel\` `
+  out += `(\`src/data/index.ts\`, SOURCE UNIQUE du libellé affiché d'une \`TrappingRef\`) ne lit PAS \`ref.spec\` ; `
+  out += `l'unique lecteur est \`resolveOne\` (\`src/engine/trappingChoices.ts\`), qui le RECOPIE sans le consommer.\n`
+
+  return { md: out, byType, totalFields, totalUnread }
 }
 
-out += `## Synthèse\n\n`
-out += `${TARGETS.length} types, ${totalFields} champs mesurés, **${totalUnread} avec « 0 lecteur » mesuré** `
-out += `(56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de `
-out += `cliquet CI sur ce total).\n\n`
-out += `## Cas fondateur\n\n`
-out += `\`TrappingRef.spec\` : ${trappingRefSpecReaders} lecteur(s) mesuré(s) — \`trappingRefLabel\` `
-out += `(\`src/data/index.ts\`, SOURCE UNIQUE du libellé affiché d'une \`TrappingRef\`) ne lit PAS \`ref.spec\` ; `
-out += `l'unique lecteur est \`resolveOne\` (\`src/engine/trappingChoices.ts\`), qui le RECOPIE sans le consommer.\n`
-
-emitOrCheck({
-  out,
-  path: OUT,
-  check: process.argv.includes('--check'),
-  staleMsg: `docs:field-consumers — ${OUT} est PÉRIMÉ (les schémas/le code source ont changé).`,
-  rerunMsg: '  → relancer `npm run docs:field-consumers` et committer le résultat.',
-  okMsg: `docs:field-consumers — OK (${OUT} à jour, ${totalUnread}/${totalFields} champs « 0 lecteur »)`,
-  writeMsg: `${OUT} — ${totalUnread}/${totalFields} champs « 0 lecteur » sur ${TARGETS.length} types.`,
-})
+/** CLI : écriture du `.md`, ou `--check` (chaîné dans `npm run docs:check`). */
+if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
+  const { md, totalFields, totalUnread } = buildFieldConsumersMd()
+  emitOrCheck({
+    out: md,
+    path: OUT,
+    check: process.argv.includes('--check'),
+    staleMsg: `docs:field-consumers — ${OUT} est PÉRIMÉ (les schémas/le code source ont changé).`,
+    rerunMsg: '  → relancer `npm run docs:field-consumers` et committer le résultat.',
+    okMsg: `docs:field-consumers — OK (${OUT} à jour, ${totalUnread}/${totalFields} champs « 0 lecteur »)`,
+    writeMsg: `${OUT} — ${totalUnread}/${totalFields} champs « 0 lecteur » sur ${TARGETS.length} types.`,
+  })
+}

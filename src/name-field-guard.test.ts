@@ -111,7 +111,17 @@ function nameFieldLines(path: string, raw: string): number[] {
   return found;
 }
 
+/**
+ * COÛT MESURÉ (2026-08-23, 1880 fichiers / 15,2 Mo) : 2,0 s par balayage, dont 1,6 s de
+ * `ts.createSourceFile`. Les deux `it` de cliquet interrogent le MÊME corpus : balayage mémoïsé,
+ * et PARESSEUX — au premier `it` qui le demande, jamais à la collecte de vitest.
+ */
+let sitesMemo: string[] | undefined;
 function nameFieldSites(): string[] {
+  return (sitesMemo ??= scanNameFieldSites());
+}
+
+function scanNameFieldSites(): string[] {
   const out: string[] = [];
   for (const f of tsFiles(SRC)) {
     const rel = 'src/' + f.slice(SRC.length).replace(/\\/g, '/');

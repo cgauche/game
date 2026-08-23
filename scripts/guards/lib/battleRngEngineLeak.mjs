@@ -33,7 +33,11 @@
 //    dans ce cas précis, la garde bascule en FAIL-CLOSED (signale quand même) plutôt que d'exempter
 //    silencieusement un résolveur qu'elle n'a pas pu lire — mesuré : au 2026-07-27, tous les imports
 //    `resolveXxx` de `src/state/**` résolvent en un fichier direct (`../engine/<module>`), zéro barrel.
-import ts from 'typescript';
+import tsModule from 'typescript';
+
+// Liaison LOCALE de l'API du compilateur — même FAIT mesuré qu'en tête de `sceneMutation.mjs`
+// (2026-08-23) : sous Vitest, un `ts.x` de visiteur AST se relit sur l'objet d'import de vite-node.
+const ts = tsModule;
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

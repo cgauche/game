@@ -9,6 +9,7 @@ import {
   STRICT_DIRS, RATCHET_DIRS, RATCHET_EXCEPTIONS,
   collectLabelEntityResolvers, labelEntityResolverNames, scanLabelResolverCalls,
 } from '../../scripts/guards/lib/labelLogic.mjs';
+import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { LABEL_RESOLVER_CALL_STOCK, labelResolverCallStockDrift } from '../../scripts/guards/lib/labelResolverCallStock.mjs';
 
 /**
@@ -67,20 +68,44 @@ function scanFiles(dirs: string[]): string[] {
 }
 
 const ALL_DIRS = [...STRICT_DIRS, ...RATCHET_DIRS];
+
+/** Fichiers SCANNABLES d'un jeu de dossiers (chemin relatif POSIX + texte), LUS UNE FOIS par jeu
+ *  — marche et lecture par `scripts/guards/lib/sourceCorpus.mjs`, le PÉRIMÈTRE (`EXCLUDED`) reste ici.
+ *  Les dossiers de fixtures des tests de CÂBLAGE sont des `mkdtemp` uniques à chaque run — leur clé
+ *  ne peut donc pas répondre pour un corpus réel. */
+const _corpus = new Map<string, { rel: string; text: string }[]>();
+function corpus(dirs: string[]): { rel: string; text: string }[] {
+  const cle = dirs.join('|');
+  const cached = _corpus.get(cle);
+  if (cached) return cached;
+  const out = readCorpus(dirs, { tests: true })
+    .map(({ rel, text }) => ({ rel, text }))
+    .filter(({ rel }) => !EXCLUDED(rel));
+  _corpus.set(cle, out);
+  return out;
+}
+
 // Fonctions à paramètre `id` (5ᵉ forme, LOT 5) — collecte GLOBALE sur src/engine+state+gameIso+ui
 // (déclaration et appel peuvent vivre dans des fichiers différents, ex. `bodyShapeOf` déclarée dans
-// `state/spawn.ts`, appelée depuis le même module).
-const ID_PARAM_FNS = collectIdParamFnsAcrossDirs(ROOT, ALL_DIRS);
+// `state/spawn.ts`, appelée depuis le même module). PARESSEUSE : au top-level, cette collecte se
+// paierait à la phase de COLLECTE de Vitest, hors de tout `it` (patron
+// `src/gameIso/rig/quadruped/quad-couture.test.ts`).
+let _idParamFns: ReturnType<typeof collectIdParamFnsAcrossDirs> | null = null;
+const ID_PARAM_FNS = () => (_idParamFns ??= collectIdParamFnsAcrossDirs(ROOT, ALL_DIRS));
 
+/** Sites des deux détecteurs `.label` sur un jeu de dossiers — mémoïsé : trois `it` (STRICT, RATCHET,
+ *  CLIQUET des exceptions) demandent le MÊME scan. */
+const _findings = new Map<string, { rel: string; line: number; detail: string }[]>();
 function findingsIn(dirs: string[]): { rel: string; line: number; detail: string }[] {
+  const cle = dirs.join('|');
+  const cached = _findings.get(cle);
+  if (cached) return cached;
   const out: { rel: string; line: number; detail: string }[] = [];
-  for (const f of scanFiles(dirs)) {
-    const rel = relative(ROOT, f).split('\\').join('/');
-    if (EXCLUDED(rel)) continue;
-    const contenu = readFileSync(f, 'utf8');
-    for (const finding of scanLabelLogic(rel, contenu)) out.push({ rel, line: finding.line, detail: finding.detail });
-    for (const finding of scanLabelAsIdArg(rel, contenu, effectiveIdParamFns(contenu, ID_PARAM_FNS))) out.push({ rel, line: finding.line, detail: finding.detail });
+  for (const { rel, text } of corpus(dirs)) {
+    for (const finding of scanLabelLogic(rel, text)) out.push({ rel, line: finding.line, detail: finding.detail });
+    for (const finding of scanLabelAsIdArg(rel, text, effectiveIdParamFns(text, ID_PARAM_FNS()))) out.push({ rel, line: finding.line, detail: finding.detail });
   }
+  _findings.set(cle, out);
   return out;
 }
 
@@ -323,10 +348,8 @@ describe('garde-fou « logique par label interdite » (#142)', () => {
 describe('garde-fou « logique par LIBELLÉ hors du champ label » (#142 LOT 7)', () => {
   const literalFindings = () => {
     const counts = new Map<string, number>();
-    for (const f of scanFiles(ALL_DIRS)) {
-      const rel = relative(ROOT, f).split('\\').join('/');
-      if (EXCLUDED(rel)) continue;
-      const n = scanLabelLiteralCompare(rel, readFileSync(f, 'utf8')).length;
+    for (const { rel, text } of corpus(ALL_DIRS)) {
+      const n = scanLabelLiteralCompare(rel, text).length;
       if (n > 0 || rel in LABEL_LITERAL_STOCK) counts.set(rel, n);
     }
     return counts;
@@ -405,10 +428,8 @@ describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)
 
   function resolverCallCounts(): Map<string, number> {
     const counts = new Map<string, number>();
-    for (const f of scanFiles(STRICT_DIRS)) {
-      const rel = relative(ROOT, f).split('\\').join('/');
-      if (EXCLUDED(rel)) continue;
-      const n = scanLabelResolverCalls(rel, readFileSync(f, 'utf8'), RESOLVER_NAMES).length;
+    for (const { rel, text } of corpus(STRICT_DIRS)) {
+      const n = scanLabelResolverCalls(rel, text, RESOLVER_NAMES).length;
       if (n > 0 || rel in LABEL_RESOLVER_CALL_STOCK) counts.set(rel, n);
     }
     return counts;
