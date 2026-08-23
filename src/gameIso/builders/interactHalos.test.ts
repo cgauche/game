@@ -111,7 +111,7 @@ describe('Halos d’interaction — le PNJ INTERLOCUTEUR (#1176 P3-0g)', () => {
     const libre = scèneAvec(table);
     expect(interactionHalos([el], libre, {}, null, EXPLORE).fouilles.map((h) => h.id)).toEqual(['table-1']);
 
-    const pleine = { ...libre, seatAssignments: { 'table-1': Object.fromEntries(['nord', 'est', 'sud', 'ouest'].map((s) => [s, { kind: 'entity' as const, entityId: `pnj-${s}` }])) } };
+    const pleine = { ...libre, seatAssignments: { 'table-1': Object.fromEntries(['place-nord', 'place-est', 'place-sud', 'place-ouest'].map((s) => [s, { kind: 'entity' as const, entityId: `pnj-${s}` }])) } };
     expect(interactionHalos([el], pleine, {}, null, EXPLORE).fouilles).toHaveLength(0);
 
     // Le flag de FOUILLE n'a aucune prise sur une place : ce n'est pas une ressource qui s'épuise.

@@ -181,11 +181,15 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
 
   it('les sept stocks ne font que DÉCROÎTRE (aucune ligne neuve hors migration)', () => {
     const mesure = [
+      // #1443 (mobilier volumique) : trois lignes s'ajoutent au dénominateur, chacune INSTANCE d'une
+      // famille déjà stockée et rangée dans son lot — `ref` id-nu d'un pion de scène (L3, comme les
+      // 306 des trois autres scènes), `primitives {material+…}` (L3, comme `walls`/`masses`),
+      // `source` absente de `propMaterials.json` (L1d, comme `lightTones.json`).
       ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 15],
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 673],
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 675],
       ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES.length, 6],
       ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 102],
-      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 164],
+      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 165],
       ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 93],
       ['STRUCTURES_OPS', STRUCTURES_OPS.length, 403],
     ] as const;
@@ -242,16 +246,16 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       'L1a #1466': 16,
       'L1b #1467': 205,
       'L1c #1468': 403,
-      'L1d #1469': 65,
+      'L1d #1469': 66,
       'L2 #1463': 138,
-      'L3 #1463': 390,
+      'L3 #1463': 392,
       'L4 #1463': 224,
     };
     expect(
       [...parLot].filter(([lot, n]) => n > plafonds[lot]).map(([lot, n]) => `${lot} ${n} > ${plafonds[lot]}`),
       'lot(s) qui ont GONFLÉ — une ligne ne change pas de lot sans revue, et un lot ne grossit pas sans dérive.',
     ).toEqual([]);
-    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(1441);
+    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(1444);
   });
 
   it('les ANGLES MORTS ont UNE source : le lexique, recopié nulle part (test, stock, doc)', () => {

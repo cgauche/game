@@ -312,6 +312,10 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "criticals.json", champ: "recoveryPenalty", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "criticals.json", champ: "subject", signature: "condition+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "ambiance", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  // #1443 (mobilier volumique) : 18 meubles posés dans la salle de La Diligence. `ref` d'un pion de
+  // scène s'écrit id-nu dans les 4 scènes (`arene` 291, `loup-et-saumure` 10, `barge-du-sel` 5) ;
+  // la famille part entière au lot L3, jamais une scène seule.
+  { concept: "reference", dataset: "diligence-projet.json", champ: "ref", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 18, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "walls", signature: "appearance,structure+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "diligence-projet.json", champ: "walls", signature: "structure+…", statut: "divergente", strate: "Référence", occurrences: 662, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "domains.json", champ: "amount", signature: "bonusOf", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
@@ -403,7 +407,11 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "night-stakes.json", champ: "rule", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 15, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "pregens.json", champ: "career", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 8, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "pregens.json", champ: "species", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 8, lot: "L2 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "props.json", champ: "light", signature: "tone+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "props.json", champ: "light", signature: "tone+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
+  // #1443 : `propPrimitiveSchema` (`src/data/schemas/common.ts`) — chaque volume d'une recette réfère
+  // son matériau de `propMaterials.json`. Même graphie que le reste de la géométrie authorée
+  // (`masses[].material`, `walls[].structure`/`appearance` : 662 occurrences en scène), même lot L3.
+  { concept: "reference", dataset: "props.json", champ: "primitives", signature: "material+…", statut: "divergente", strate: "Référence", occurrences: 44, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "psychology.json", champ: "becomes", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "psychology.json", champ: "failCondition", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "psychology.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
@@ -937,7 +945,7 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "identité", cle: "nom", motif: "clé divergente", detail: "", document: "primitives.manifest.json", chemin: "(entrées)", entrees: 28, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "nom", motif: "clé divergente", detail: "", document: "systemes.manifest.json", chemin: "(entrées)", entrees: 16, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "primitives.manifest.json", chemin: "(entrées)", entrees: 28, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "props.json", chemin: "(entrées)", entrees: 59, lot: "L1b #1467", date: "2026-08-23" },
+  { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "props.json", chemin: "(entrées)", entrees: 78, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "raceAppearance.json", chemin: "(entrées)", entrees: 21, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 8, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "reliefMaterials.json", chemin: "(entrées)", entrees: 6, lot: "L1b #1467", date: "2026-08-23" },
@@ -1023,7 +1031,11 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "pregens.json", chemin: "(entrées)", entrees: 8, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "primitives.manifest.json", chemin: "(entrées)", entrees: 28, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "progression-schemas.derived.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "props.json", chemin: "(entrées)", entrees: 59, lot: "L1d #1469", date: "2026-08-23" },
+  // #1443 : `propMaterials.json`, dataset app-owned de rendu. Même classe que `lightTones.json`
+  // ci-dessus (aucune page de livre ne décrit une couleur de matériau) : le lot L1d tranche la forme
+  // de `source` d'un document maison pour les deux à la fois.
+  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "propMaterials.json", chemin: "(entrées)", entrees: 4, lot: "L1d #1469", date: "2026-08-23" },
+  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "props.json", chemin: "(entrées)", entrees: 78, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualitySubtypes.json", chemin: "(entrées)", entrees: 3, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "qualityTypes.json", chemin: "(entrées)", entrees: 2, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "raceAppearance.json", chemin: "(entrées)", entrees: 21, lot: "L1d #1469", date: "2026-08-23" },

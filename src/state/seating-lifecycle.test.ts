@@ -52,7 +52,7 @@ describe('composition du groupe — le corps qui sort quitte sa place', () => {
   it('un remplacement À MÊME ID (édition en place) ne fait PAS lever le meneur', () => {
     meneurAssis([hero('h')]);
     useGame.getState().partyReplaceHero('h', { ...hero('h'), label: 'Retouché' } as Combatant);
-    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'place-nord' });
   });
 
   it('héros RETIRÉ du groupe : sa place est rendue', () => {
@@ -66,7 +66,7 @@ describe('composition du groupe — le corps qui sort quitte sa place', () => {
     meneurAssis([hero('h'), hero('b')]);
     const avant = useGame.getState().scene!;
     useGame.getState().partyRemoveHero('b');
-    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'place-nord' });
     expect(useGame.getState().scene).toBe(avant); // aucune écriture inutile
   });
 });
@@ -117,7 +117,7 @@ describe('mort / indisponibilité d’un occupant', () => {
     meneurAssis([hero('h')]);
     const avant = useGame.getState().scene!;
     releaseSeatsOfDowned(useGame.getState, useGame.setState);
-    expect(poseDe(1)).toMatchObject({ slotId: 'nord' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'place-nord' });
     expect(useGame.getState().scene).toBe(avant);
   });
 
@@ -136,7 +136,7 @@ describe('mort / indisponibilité d’un occupant', () => {
     const badaud: SceneEntity = { id: 'badaud', kind: 'personnage', pos: { x: 5, y: 4 } };
     const entities: SceneEntity[] = [...sc.entities, { id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N' }, badaud];
     const occupant: SeatOccupant = { kind: 'entity', entityId: 'badaud' };
-    useGame.setState({ scene: { ...sc, entities, seatAssignments: { [PROP]: { nord: occupant } } } });
+    useGame.setState({ scene: { ...sc, entities, seatAssignments: { [PROP]: { 'place-nord': occupant } } } });
     expect(seatPoseOf(useGame.getState().scene!, occupant)).not.toBeNull();
 
     // Le badaud est enrôlé au combat en cours et tombe : `notifySlain` acte la mise hors de combat.
@@ -161,7 +161,7 @@ describe('ouverture de combat — le MENEUR assis se lève avec les autres enrô
     const entities: SceneEntity[] = [...sc.entities, { id: PROP, kind: 'prop', pos: table, ref: TABLE, facing: 'N' }];
     useGame.setState({ scene: { ...sc, entities } });
     useGame.getState().interactEntity(PROP);
-    expect(poseDe(1)).toMatchObject({ slotId: 'sud' });
+    expect(poseDe(1)).toMatchObject({ slotId: 'place-sud' });
 
     useGame.getState().startCombat('enc-mutants');
     expect(poseDe(1)).toBeNull();

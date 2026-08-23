@@ -173,7 +173,7 @@ describe('removeEntities — retrait par lot (brique partagée)', () => {
         { id: 'pnj-1', kind: 'personnage', pos: { x: 2, y: 1 } }, // abord NORD : la `pos` d'un attablé
       ] as SceneEntity[],
       dialogues: [], triggers: [], encounters: [], flags: {},
-      seatAssignments: { 'table-1': { nord: assis } },
+      seatAssignments: { 'table-1': { 'place-nord': assis } },
     });
     for (const retire of ['table-1', 'pnj-1']) {
       let stored: Scene = fixture();
@@ -207,9 +207,9 @@ describe('ouverture de combat — un PNJ enrôlé ASSIS se lève', () => {
     ];
     const combattant = { kind: 'entity' as const, entityId: enrole };
     const badaud = { kind: 'entity' as const, entityId: 'badaud' };
-    useGame.setState({ scene: { ...sc, entities, seatAssignments: { 'table-1': { sud: combattant, nord: badaud } } } });
+    useGame.setState({ scene: { ...sc, entities, seatAssignments: { 'table-1': { 'place-sud': combattant, 'place-nord': badaud } } } });
     // Les deux attablés sont bien posés sur l'abord de LEUR place (le document est sain).
-    for (const [slotId, o] of [['sud', combattant], ['nord', badaud]] as const) {
+    for (const [slotId, o] of [['place-sud', combattant], ['place-nord', badaud]] as const) {
       const place = seatSlotsOf(useGame.getState().scene!, 'table-1').find((p) => p.slotId === slotId)!;
       const ent = useGame.getState().scene!.entities.find((e) => e.id === o.entityId)!;
       expect({ x: ent.pos.x, y: ent.pos.y }, `« ${o.entityId} »`).toEqual({ x: place.approach.x, y: place.approach.y });
@@ -219,6 +219,6 @@ describe('ouverture de combat — un PNJ enrôlé ASSIS se lève', () => {
     useGame.getState().startCombat('enc-mutants');
 
     expect(seatPoseOf(useGame.getState().scene!, combattant)).toBeNull();
-    expect(seatPoseOf(useGame.getState().scene!, badaud)).toMatchObject({ slotId: 'nord' });
+    expect(seatPoseOf(useGame.getState().scene!, badaud)).toMatchObject({ slotId: 'place-nord' });
   });
 });

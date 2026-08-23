@@ -46,7 +46,7 @@ _Aucune._
 ### MDG 3 — 5 réf(s) code, 0 dans l'Atlas
 - `src/state/restFlow.ts:68` (l.71) — /** À bord du navire de campagne (hamacs/quartiers, MDG 03 l.71 · 09 l.87) — couchage ABRITÉ (pas
 - `src/state/restFlow.ts:632` (l.71) — if (places.bord) out.push('bord'); // à bord = hamacs (MDG 03 l.71) ; par défaut si offert
-- `src/state/riverVoyageFlow.ts:1095` (l.71) — // Sur la rivière on peut mouiller le long de la berge : coucher À BORD (hamacs, MDG 03 l.71) offert
+- `src/state/riverVoyageFlow.ts:1109` (l.71) — // Sur la rivière on peut mouiller le long de la berge : coucher À BORD (hamacs, MDG 03 l.71) offert
 - `src/state/seaActivities.ts:246` (l.71) — // dort à bord (hamacs, MDG 03 l.71) : couchage unique et abrité.
 
 ### NADJ 4 — 6 réf(s) code, 0 dans l'Atlas
@@ -108,7 +108,7 @@ _Aucune._
 - l.184 — `src/ui/mono-stake-ratchet.test.ts:67` — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
 
 ### MSRC 5 — 1/1 ligne(s) code hors couverture
-- l.113 — `src/state/riverVoyageFlow.ts:889` — // Réparateur de SUBSTITUTION (`MSRC 5 l.113-117`) : le −10 est DÉJÀ fondu dans la valeur jetée,
+- l.113 — `src/state/riverVoyageFlow.ts:903` — // Réparateur de SUBSTITUTION (`MSRC 5 l.113-117`) : le −10 est DÉJÀ fondu dans la valeur jetée,
 
 ### NADJ 16 — 1/19 ligne(s) code hors couverture
 - l.119 — `src/engine/combat.ts:893` — *  (Middenball NADJ 16 l.119 : « en utilisant les règles habituelles relatives à l'Avantage »).

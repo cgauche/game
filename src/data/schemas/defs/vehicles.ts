@@ -6,7 +6,7 @@
  * 22/25, `ship` 20/25, `travel` 3/25, `deck` 1/25).
  */
 import { z } from 'zod';
-import { availabilitySchema, sourceRefSchema } from '../common';
+import { availabilitySchema, cell2Schema, sourceRefSchema } from '../common';
 
 export const file = 'vehicles.json';
 
@@ -15,7 +15,7 @@ const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronz
 const navalTraitRefSchema = z.strictObject({ id: z.string(), value: z.number().optional() });
 
 const deckPosteSlotSchema = z.strictObject({
-  pos: z.strictObject({ x: z.number(), y: z.number() }),
+  pos: cell2Schema,
   side: z.enum(['proue', 'tribord', 'poupe', 'babord']),
   cover: z.enum(['imparfaite', 'moyenne', 'totale']).optional(),
 });

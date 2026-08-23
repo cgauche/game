@@ -50,12 +50,12 @@ describe('mobilier volumique — cinq refs, leur vignette et leur corps monde', 
 
   it('la table ronde offre quatre places, la table murale deux, le reste aucune', () => {
     expect(findPropById('table-ronde-4-tabourets')!.seatSlots).toEqual([
-      { id: 'nord', anchor: { x: 0, y: -0.43, h: 0.49 }, facing: 'S', approach: { x: 0, y: -1 } },
-      { id: 'est', anchor: { x: 0.43, y: 0, h: 0.49 }, facing: 'O', approach: { x: 1, y: 0 } },
-      { id: 'sud', anchor: { x: 0, y: 0.43, h: 0.49 }, facing: 'N', approach: { x: 0, y: 1 } },
-      { id: 'ouest', anchor: { x: -0.43, y: 0, h: 0.49 }, facing: 'E', approach: { x: -1, y: 0 } },
+      { id: 'place-nord', anchor: { x: 0, y: -0.43, h: 0.49 }, facing: 'S', approach: { x: 0, y: -1 } },
+      { id: 'place-est', anchor: { x: 0.43, y: 0, h: 0.49 }, facing: 'O', approach: { x: 1, y: 0 } },
+      { id: 'place-sud', anchor: { x: 0, y: 0.43, h: 0.49 }, facing: 'N', approach: { x: 0, y: 1 } },
+      { id: 'place-ouest', anchor: { x: -0.43, y: 0, h: 0.49 }, facing: 'E', approach: { x: -1, y: 0 } },
     ]);
-    expect(findPropById('table-murale-2-tabourets')!.seatSlots?.map((s) => s.id)).toEqual(['gauche', 'droite']);
+    expect(findPropById('table-murale-2-tabourets')!.seatSlots?.map((s) => s.id)).toEqual(['place-gauche', 'place-droite']);
     for (const id of ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle'])
       expect(findPropById(id)!.seatSlots, id).toBeUndefined();
   });
@@ -63,8 +63,8 @@ describe('mobilier volumique — cinq refs, leur vignette et leur corps monde', 
   /** Ancres FIGÉES de la table murale : la sonde d'implantation de la salle les attend au millimètre. */
   it('la table murale porte ses deux ancres canoniques, caps N et approches en diagonale', () => {
     expect(findPropById('table-murale-2-tabourets')!.seatSlots).toEqual([
-      { id: 'gauche', anchor: { x: -0.22, y: 0.34, h: 0.49 }, facing: 'N', approach: { x: -1, y: 1 } },
-      { id: 'droite', anchor: { x: 0.22, y: 0.34, h: 0.49 }, facing: 'N', approach: { x: 1, y: 1 } },
+      { id: 'place-gauche', anchor: { x: -0.22, y: 0.34, h: 0.49 }, facing: 'N', approach: { x: -1, y: 1 } },
+      { id: 'place-droite', anchor: { x: 0.22, y: 0.34, h: 0.49 }, facing: 'N', approach: { x: 1, y: 1 } },
     ]);
   });
 

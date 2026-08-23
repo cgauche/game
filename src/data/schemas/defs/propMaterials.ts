@@ -10,6 +10,7 @@ export const file = 'propMaterials.json';
 export const schema = z.array(
   z.strictObject({
     id: z.string().min(1),
+    label: z.string().min(1),
     color: z.string().regex(/^#[0-9a-f]{6}$/),
     roughness: z.number().min(0).max(1),
     metalness: z.number().min(0).max(1),

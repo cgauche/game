@@ -533,38 +533,38 @@ describe('validateScene — assise authorée (`Scene.seatAssignments`)', () => {
   }
 
   it('assise saine (PNJ posé sur l’abord de sa place) = 0 avertissement', () => {
-    expect(validateScene([attable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } })])).toEqual([]);
-    expect(validateScene([attable({ 'table-1': { ouest: { kind: 'entity', entityId: 'pnj-1' } } }, ABORD.ouest)])).toEqual([]);
+    expect(validateScene([attable({ 'table-1': { 'place-nord': { kind: 'entity', entityId: 'pnj-1' } } })])).toEqual([]);
+    expect(validateScene([attable({ 'table-1': { 'place-ouest': { kind: 'entity', entityId: 'pnj-1' } } }, ABORD.ouest)])).toEqual([]);
   });
 
   it('meuble, place et personnage inexistants portent chacun leur erreur NOMMÉE', () => {
-    const absent = attable({ 'nulle-part': { nord: { kind: 'entity', entityId: 'pnj-1' } } });
-    expect(msgs(validateScene([absent])).some((m) => /« nulle-part\/nord ».*« pnj-1 ».*aucun décor/.test(m))).toBe(true);
+    const absent = attable({ 'nulle-part': { 'place-nord': { kind: 'entity', entityId: 'pnj-1' } } });
+    expect(msgs(validateScene([absent])).some((m) => /« nulle-part\/place-nord ».*« pnj-1 ».*aucun décor/.test(m))).toBe(true);
 
     const place = attable({ 'table-1': { plafond: { kind: 'entity', entityId: 'pnj-1' } } });
     expect(msgs(validateScene([place])).some((m) => /« table-1\/plafond ».*n'offre pas de place « plafond »/.test(m))).toBe(true);
 
-    const corps = attable({ 'table-1': { nord: { kind: 'entity', entityId: 'fantome' } } });
-    expect(msgs(validateScene([corps])).some((m) => /« table-1\/nord ».*aucun personnage « fantome »/.test(m))).toBe(true);
+    const corps = attable({ 'table-1': { 'place-nord': { kind: 'entity', entityId: 'fantome' } } });
+    expect(msgs(validateScene([corps])).some((m) => /« table-1\/place-nord ».*aucun personnage « fantome »/.test(m))).toBe(true);
   });
 
   it('un PNJ assis POSÉ ailleurs que sur l’ABORD de sa place est une erreur qui dit les deux cases', () => {
-    const w = validateScene([attable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } }, { x: 4, y: 0 })]);
+    const w = validateScene([attable({ 'table-1': { 'place-nord': { kind: 'entity', entityId: 'pnj-1' } } }, { x: 4, y: 0 })]);
     expect(w.some((x) => x.refId === 'pnj-1' && /est posé en \(4,0\) alors que l’abord de sa place est en \(2,1\)/.test(x.message))).toBe(true);
   });
 
   it('un PNJ posé sur la case du MEUBLE est REFUSÉ (l’ancienne règle inversée ne doit pas revenir)', () => {
-    const w = validateScene([attable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } }, { x: 2, y: 2 })]);
+    const w = validateScene([attable({ 'table-1': { 'place-nord': { kind: 'entity', entityId: 'pnj-1' } } }, { x: 2, y: 2 })]);
     expect(w.some((x) => x.refId === 'pnj-1' && /est posé en \(2,2\) alors que l’abord de sa place est en \(2,1\)/.test(x.message))).toBe(true);
   });
 
   it('chaque place a SON abord : la même `pos` ne vaut pas pour deux places différentes', () => {
     // `pnj-1` posé sur l'abord NORD mais affecté à l'EST → refus nommant l'abord de l'est.
-    const w = validateScene([attable({ 'table-1': { est: { kind: 'entity', entityId: 'pnj-1' } } }, ABORD.nord)]);
-    expect(w.some((x) => x.refId === 'pnj-1' && /« table-1\/est ».*\(2,1\).*l’abord de sa place est en \(3,2\)/.test(x.message))).toBe(true);
+    const w = validateScene([attable({ 'table-1': { 'place-est': { kind: 'entity', entityId: 'pnj-1' } } }, ABORD.nord)]);
+    expect(w.some((x) => x.refId === 'pnj-1' && /« table-1\/place-est ».*\(2,1\).*l’abord de sa place est en \(3,2\)/.test(x.message))).toBe(true);
   });
 
   it('une place tenue par le GROUPE ne réclame aucune entité de scène', () => {
-    expect(validateScene([attable({ 'table-1': { est: { kind: 'party', rang: 1 } } })])).toEqual([]);
+    expect(validateScene([attable({ 'table-1': { 'place-est': { kind: 'party', rang: 1 } } })])).toEqual([]);
   });
 });

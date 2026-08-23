@@ -10,7 +10,7 @@ describe('props.json — formes strictes de la recette volumique et des places a
     expect(() => propsSchema.parse([{ id: 'x', volume: { primitives: [{ kind: 'sphere' }] } }])).toThrow();
     expect(validatePropCatalog(
       [{ id: 'x', volume: { primitives: [{ kind: 'box', center: { x: 0, y: 0, h: 0.5 }, size: { x: 1, y: 1, h: 1 }, material: 'absent' }] } }],
-      [{ id: 'bois-chene', color: '#5b3a22', roughness: 0.82, metalness: 0 }],
+      [{ id: 'bois-chene', label: 'Chêne', color: '#5b3a22', roughness: 0.82, metalness: 0 }],
     )).toContain('x: matériau inconnu « absent »');
   });
 
@@ -100,7 +100,7 @@ describe('propMaterials.json — matériaux du décor', () => {
       expect(m.roughness, m.id).toBeLessThanOrEqual(1);
       expect(m.metalness, m.id).toBeGreaterThanOrEqual(0);
       expect(m.metalness, m.id).toBeLessThanOrEqual(1);
-      expect(Object.keys(m).sort(), m.id).toEqual(['color', 'id', 'metalness', 'roughness']);
+      expect(Object.keys(m).sort(), m.id).toEqual(['color', 'id', 'label', 'metalness', 'roughness']);
     }
   });
 

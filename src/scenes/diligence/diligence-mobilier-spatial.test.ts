@@ -354,7 +354,7 @@ describe('La Diligence — implantation de la salle principale', () => {
     const places = seatSlotsOf(scene, table.id);
     expect(places.every((s) => seatIsOccupiable(scene, s))).toBe(true);
     expect(places.map((s) => `${s.slotId}:${s.approach.x},${s.approach.y}`))
-      .toEqual(['nord:12,7', 'est:10,8', 'sud:11,7', 'ouest:12,8']);
+      .toEqual(['place-nord:12,7', 'place-est:10,8', 'place-sud:11,7', 'place-ouest:12,8']);
   });
 
   it('les deux tables murales assoient leurs convives DU CÔTÉ SALLE, jamais dans le mur est', () => {
@@ -366,7 +366,7 @@ describe('La Diligence — implantation de la salle principale', () => {
       expect(places).toHaveLength(2);
       expect(places.every((s) => seatIsOccupiable(scene, s))).toBe(true);
       expect(places.map((s) => `${s.slotId}:${s.approach.x},${s.approach.y}`))
-        .toEqual([`gauche:13,${y - 1}`, `droite:13,${y + 1}`]);
+        .toEqual([`place-gauche:13,${y - 1}`, `place-droite:13,${y + 1}`]);
     }
   });
 });

@@ -83,7 +83,7 @@ export function SeatAssignmentsField({
       </span>
       {places.map((place) => (
         <label className="ed-field" key={place.slotId}>
-          Place {place.slotId}
+          {place.slotId}
           <select value={parMeuble[place.slotId] ? valueOf(parMeuble[place.slotId]) : ''} onChange={(e) => choisir(place.slotId, e.target.value)}>
             <option value="">— personne —</option>
             {pnjs.map((pnj) => (

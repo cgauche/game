@@ -765,6 +765,9 @@ export const shipCritEntrySchema = z.strictObject({
 /** `PropPoint3` / `PropSize3` (`src/data/props.types.ts`) — repère LOCAL d'une recette de décor :
  *  `x`/`y` en cases depuis le centre de la case d'ancrage, `h` en mètres depuis le sol de la case. */
 export const propPoint3Schema = z.strictObject({ x: z.number().finite(), y: z.number().finite(), h: z.number().finite() });
+/** `{x,y}` en CASES de grille — position d'un poste de pont (`vehicles.json`) comme case d'ABORD
+ *  d'une place assise (`props.json`). */
+export const cell2Schema = z.strictObject({ x: z.number().finite(), y: z.number().finite() });
 export const propSize3Schema = z.strictObject({ x: z.number().finite(), y: z.number().finite(), h: z.number().finite() });
 
 /** `PropPrimitive` (`src/data/props.types.ts`) — volume élémentaire d'une recette : caisse droite,
@@ -787,7 +790,7 @@ export const propSeatSlotSchema = z.strictObject({
   id: z.string().min(1),
   anchor: propPoint3Schema,
   facing: z.enum(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']),
-  approach: z.strictObject({ x: z.number().finite(), y: z.number().finite() }),
+  approach: cell2Schema,
 });
 
 /** `PropData` (`src/data/props.types.ts`) — type de décor app-owned : vérité UNIQUE de l'empreinte,
