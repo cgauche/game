@@ -138,7 +138,7 @@ export const isConsumed = (corpus, id) => corpus.includes(`"${id}"`) || corpus.i
  *  Clé = `catégorie:id`, même convention que `entityOrphanStock.mjs`. Mesuré exhaustivement sur les
  *  7 catalogues retenus (grep `aleatoire|au-choix|table-des|choix-libre` sur
  *  traits/talents/qualities/maneuvers/skills/props/vehicles, 2026-07) : SEULE `talents:talent-aleatoire`
- *  qualifie (`skills:guilde-au-choix` est une entrée normale, déjà consommée — cf. `weaponsMelee`/
+ *  qualifie (`skills:signes-secrets` est une entrée normale, déjà consommée — cf. `weaponsMelee`/
  *  wildcard de compétence, hors ce fait structurel).
  * @type {ReadonlySet<string>} */
 export const META_CATALOG_ENTRIES = new Set(['talents:talent-aleatoire']);

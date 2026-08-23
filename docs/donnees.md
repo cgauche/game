@@ -254,6 +254,19 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 - **`desc`** et tout champ de prose (effet, règles) = **copié/collé VERBATIM** de la source, en **Markdown**
   (`**gras**`, `*ital*`, listes `-`), jamais en HTML, jamais reformulé (règle stricte 5 ; garde
   `src/data/no-html-in-prose.test.ts`).
+- **Réf de Compétence** = UNE forme, dans tous les datasets et les statblocs de scène (#1463,
+  `skillRefSchema` de `src/data/schemas/common.ts`, composé par les defs — jamais recopié) :
+  ```json
+  { "id": "savoir", "spec": "loi" }                  // spécialisation DÉSIGNÉE (un id)
+  { "id": "savoir", "choix": ["loi", "theologie"] }   // emplacement BORNÉ (des ids)
+  { "id": "savoir", "choix": true }                   // emplacement LIBRE
+  ```
+  `value` s'ajoute là où un statbloc imprime une valeur de Test
+  (`{"id":"savoir","choix":true,"value":65}`) — un champ optionnel, pas une autre structure.
+  `spec` et `choix` sont EXCLUSIFS, et le littéral « au choix » (ni « un/une/deux au choix »)
+  n'est JAMAIS une `spec` : refusé au schéma (`specSchema`). Au spawn, `choix` est DÉSIGNÉ par
+  tirage seedé et l'instance runtime (`SkillInstance`) est toujours concrète (`skillsFromBook`,
+  `src/state/spawn.ts`). `LDB 09 l.40`, `LDB 09 l.44` ; #1456.
 - **Formes de champ** = copiées des entrées voisines (`damage:{plusBF,flat}`, `qualities:[{id}]`,
   `passive: GameOp[]`…). Toute logique est keyée par **id stable** ; le `label` est de l'affichage.
 - **Forme du fichier** : la plupart sont des tableaux plats d'entrées `{id,label,…}`, mais certains sont des

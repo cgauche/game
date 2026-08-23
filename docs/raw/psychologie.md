@@ -396,7 +396,7 @@ La créature cause la Peur (Indice) aux adversaires. Applique les règles de Peu
 **Sources RAW** : `LDB 85 l.266` — renvoi LDB 21 + Indice défini dans le statbloc
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.253, l.266) → `morsure`, `StatblockEditor`, `applySwarmBuild`, `traitEntrySchema`, `resolvePsychAI`, `empetre`, `creatureToCombatant`, `combatTestPenaltyParts`, `sonne`, `souffle-feu`, +45 — `src/data/maneuvers.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/state/combat/roundHooks.ts`, +5 fichiers
+- `LDB 85` (l.253, l.266) → `morsure`, `applySwarmBuild`, `StatblockEditor`, `traitEntrySchema`, `resolvePsychAI`, `empetre`, `creatureToCombatant`, `combatTestPenaltyParts`, `sonne`, `souffle-feu`, +45 — `src/data/maneuvers.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/state/combat/roundHooks.ts`, +5 fichiers
 
 ---
 
@@ -448,7 +448,7 @@ Les créatures agressives de grande Taille inspirent automatiquement Peur ou Ter
 - `LDB 85 l.382-383` — règle Peur/Terreur par Taille
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.274, l.282, l.382-384) → `StatblockEditor`, `cannotStopOn`, `agressifEnvers`, `markAttacked`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, `resolvePsychAI`, `creatureToCombatant`, +47 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, +15 fichiers
+- `LDB 85` (l.274, l.282, l.382-384) → `cannotStopOn`, `agressifEnvers`, `markAttacked`, `StatblockEditor`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, `resolvePsychAI`, `creatureToCombatant`, +47 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, +15 fichiers
 
 ---
 

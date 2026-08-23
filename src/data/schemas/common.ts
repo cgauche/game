@@ -328,6 +328,35 @@ export type RefCareerId = z.infer<typeof refCareerIdSchema>;
  */
 export const refSchema = z.strictObject({ id: z.string(), spec: z.string().optional() });
 
+/** Le littéral « au choix » (et ses formes « un/une/deux au choix ») posé en `spec` : un EMPLACEMENT
+ *  de choix, jamais une spécialisation. Sa forme STABLE est `{ wildcard: Ref, specOptions?: string[] }`
+ *  (`advancementRefSchema` ci-dessous). `LDB 09 l.40`, `LDB 09 l.42`. #1456 */
+export const SENTINELLE_CHOIX = /^(un |une |deux )?au choix$/i;
+
+/** `spec` d'une réf de Compétence : le littéral sentinelle y est REFUSÉ au schéma. */
+export const specSchema = z.string().refine((s) => !SENTINELLE_CHOIX.test(s.trim()), {
+  message: 'spec sentinelle : poser `choix: true` (ou `choix: [ids]`), cf. skillRefSchema (#1456)',
+});
+
+/**
+ * `SkillRef` (`src/data/index.ts`) — LA référence à une Compétence, forme UNIQUE de tous les datasets
+ * (directive utilisateur 2026-08-23, #1463) : `{ id }` + AU PLUS l'un de `spec` (spécialisation
+ * DÉSIGNÉE) ou `choix` (emplacement NON désigné : `true` = libre, `string[]` = borné par des ids),
+ * + `value` OPTIONNELLE là où un statbloc imprime une valeur de Test. `LDB 09 l.40`, `LDB 09 l.44`.
+ *
+ * Composé par les defs plutôt que recopié : deux graphies pour un même concept, c'est deux portes de
+ * lecture. Les graphies historiques restantes (`{ref:{id,spec}}`, `{wildcard:{id},specOptions}`,
+ * `{skillId,spec}`, `{skill,spec}`) migrent vers celle-ci dans les lots suivants de #1463.
+ */
+export const skillRefSchema = z.strictObject({
+  id: z.string(),
+  spec: specSchema.optional(),
+  choix: z.union([z.literal(true), z.array(z.string())]).optional(),
+  value: z.number().optional(),
+}).refine((r) => !(r.spec != null && r.choix != null), {
+  message: '`spec` et `choix` sont exclusifs : une spécialisation est désignée, ou elle reste à choisir',
+});
+
 /** `QualityRef` (`src/data/index.ts`) — `Ref` + Indice éventuel (« Solide 3 » → `value`). Dupliqué à
  *  l'identique dans `defs/trappings.ts` (catalogue `trappings.json` lui-même) — cette vue COMMUNE sert
  *  au joker de qualité d'une dotation (`TrappingRef.qualities`, #657 Lot 1). */

@@ -94,7 +94,12 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   it('creatures : spells (Ref) résolvent ; skills/talents/optionals/trappings structurés (zéro chaîne)', () => {
     for (const c of creatures) {
       for (const s of c.spells) { expect(isObj(s)).toBe(true); expect(findSpellById(s.id)).toBeTruthy(); }
-      for (const sk of c.skills) expect(isObj(sk) && typeof sk.id === 'string').toBe(true);
+      // `SkillRef` (forme UNIQUE #1463) : `id` TOUJOURS présent et résolvant, `spec` et `choix` exclusifs.
+      for (const sk of c.skills) {
+        expect(isObj(sk) && typeof sk.id === 'string').toBe(true);
+        expect(findSkillById(sk.id), `${c.id} → ${sk.id}`).toBeTruthy();
+        expect(sk.spec != null && sk.choix != null, `${c.id} : ${JSON.stringify(sk)}`).toBe(false);
+      }
       for (const t of c.talents) expect(isObj(t) && typeof t.id === 'string').toBe(true);
       for (const o of c.optionals) expect(isObj(o)).toBe(true); // OptionalEntry : TraitInstance OU note composée (#174)
       for (const tr of c.trappings) {
@@ -418,7 +423,6 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   // Ajouter un domaine à `specs[]` = automatiquement couvert ici ; plus JAMAIS besoin d'étendre une liste.
   describe('GARDE EXHAUSTIVE — toute compétence/talent à specs[] non vide (Phase 3 complétude)', () => {
     const norm = (s: string): string => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
-    const isSentinel = (s: string): boolean => norm(s) === 'au choix';
 
     const ALL_SPEC_DEFS = [...skills, ...talents].filter((d) => d.specsSource || (Array.isArray(d.specs) && d.specs.length > 0));
     const CLOSED = new Map<string, Set<string>>();
@@ -436,6 +440,12 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
 
     const unresolved: string[] = [];
     function checkSpec(defId: string, spec: unknown, where: string): void {
+      // Bypass de la sentinelle CONSERVÉ pour les seuls porteurs qu'elle habite encore — inventaire
+      // EXHAUSTIF re-mesuré le 2026-08-23 sur les 11 datasets marchés ici : 12 `creatures.talents[]
+      // .spec` (dont `vhargulf/bon-marcheur` « Environnement au choix », que `isSentinel` ne reconnaît
+      // PAS et qui tombe donc dans le domaine OUVERT), 1 `stars[].effect[].spec` et 2 `talents.json
+      // .passive[].spec` — lot L4 de #1456. Les `skills[]` de creatures n'en portent plus (L2 :
+      // `{wildcard, specOptions?}`).
       if (typeof spec !== 'string' || isSentinel(spec)) return;
       const source = SOURCE_OF.get(defId);
       if (source) {
@@ -470,6 +480,8 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       }
       const wcId = (node.wildcard as { id?: string } | undefined)?.id;
       if (wcId && Array.isArray(node.specOptions)) for (const so of node.specOptions as unknown[]) checkSpec(wcId, so, `${where}.wildcard{${wcId}}.specOptions`);
+      // `SkillRef.choix` (forme UNIQUE #1463) : chaque id BORNÉ est une spéc du même domaine que `id`.
+      if (typeof idLike === 'string' && Array.isArray(node.choix)) for (const o of node.choix as unknown[]) checkSpec(idLike, o, `${where}.choix{${idLike}}`);
       for (const v of Object.values(node)) walk(v, where);
     }
 
@@ -518,8 +530,10 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
       walkSkillRefs(entry, (node) => {
         const def = findSkillById(node.id);
         const groupee = !!def?.specsSource || (Array.isArray(def?.specs) && def.specs.length > 0);
+        // `choix` (#1463) = emplacement DÉCLARÉ, pas une ref nue : il dit explicitement qu'aucune
+        // spécialisation n'est désignée. Le cliquet ci-dessous ne compte que les refs SILENCIEUSES.
+        if (node.choix != null) return;
         if (node.spec == null) { if (groupee) nues.push({ where: `${file}(${owner})`, book, skillId: node.id }); return; }
-        if (isSentinel(node.spec)) return;
         seen.n++;
         if (!resolves(node.id, node.spec))
           hors.push({ where: `${file}(${owner})`, key: `${file}|${owner}|${node.id}|${node.spec}`, book, skillId: node.id, spec: node.spec });
@@ -527,30 +541,16 @@ describe('spec de Compétence d’un livre EXTRAIT — résout au catalogue (#13
     }
   }
 
-  // La ligne du statbloc imprime un CHOIX de spécialisation, pas une spéc : « Artisanat (Armurier
-  // OU Forgeron) » (frenchy.bzh 43 l.95), « Savoir (Rivières_ou_Chemins) » (frenchy.bzh 29 l.83),
-  // « Savoir (Divinité) » (frenchy.bzh 46 l.37, l.99, l.187 — Annexe D 83 l.25 : « Béni (Divinité) |
-  // Béni (Divers) | *Blessed (Various)* »). Le catalogue n'a pas d'emplacement de choix BORNÉ : la
-  // sentinelle « (Au choix) » ne borne rien. Mesure du 2026-08-23, extinction #1456.
-  const CHOIX_IMPRIME = new Set<string>([
-    'creatures|chef-contrebandier|savoir|Rivières ou Chemins',
-    'creatures|roi-du-trafic|savoir|Rivières ou Chemins',
-    'creatures|ungor-adulte|metier|Armurier OU Forgeron',
-    'creatures|sorcier-du-chaos|savoir|Divinité',
-    'creatures|sorcier-du-chaos-terrifiant|savoir|Divinité',
-    'creatures|sorcier-du-chaos-effroyable|savoir|Divinité',
-  ]);
-
   it('creatures/careerLevels/species : zéro spec hors catalogue sous un livre extrait dans Source/', () => {
     // NON-VACUITÉ : sans lignes scannées ni extraction sur disque, le contrat serait vert à vide.
     expect(seen.n).toBeGreaterThan(500);
     expect(EXTRAITS.size).toBeGreaterThan(10);
     expect(dirManquant, `books.json#dir sans extraction sur disque : ${dirManquant.join(', ')}`).toEqual([]);
-    const vus = hors.filter((h) => EXTRAITS.has(h.book));
-    const bad = vus.filter((h) => !CHOIX_IMPRIME.has(h.key)).map((h) => `${h.where} [${h.book}] : ${h.skillId} → ${JSON.stringify(h.spec)}`);
+    // Contrat SANS liste d'exception depuis #1456 : le choix imprimé (« Armurier OU Forgeron »,
+    // « Rivières_ou_Chemins », « Divinité ») se dit `{wildcard, specOptions}`, dont les ids sont
+    // marchés par la GARDE EXHAUSTIVE ci-dessus.
+    const bad = hors.filter((h) => EXTRAITS.has(h.book)).map((h) => `${h.where} [${h.book}] : ${h.skillId} → ${JSON.stringify(h.spec)}`);
     expect(bad, bad.join('\n')).toEqual([]);
-    const rendus = [...CHOIX_IMPRIME].filter((k) => !vus.some((h) => h.key === k));
-    expect(rendus, `choix désormais tranché — retirer de CHOIX_IMPRIME :\n${rendus.join('\n')}`).toEqual([]);
   });
 
   // Le périmètre se DÉDUIT du dossier déclaré par le livre (`dir` pour l'Atlas RAW, `extractionDir`

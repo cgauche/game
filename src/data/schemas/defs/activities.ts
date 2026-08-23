@@ -6,7 +6,7 @@
  * ci-dessous sont observés au moins une fois ; aucun champ de l'interface n'est ABSENT du JSON.
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, difficultySchema, stageOutcomeSchema, stakeFormSchema } from '../common';
+import { gameOpSchema, sourceRefSchema, difficultySchema, specSchema, stageOutcomeSchema, stakeFormSchema } from '../common';
 
 export const file = 'activities.json';
 
@@ -14,7 +14,7 @@ export const file = 'activities.json';
 // Compétence (Punchausen, AA 12 l.45-49) — absente, la voie retombe sur `difficulty` de l'Activité.
 const skillRefSchema = z.strictObject({
   skillId: z.string(),
-  spec: z.string().optional(),
+  spec: specSchema.optional(),
   difficulty: difficultySchema.optional(),
 });
 

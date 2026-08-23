@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `specEntrySchema`, `BargainModalView`, `HealRollFlow`, `redaction`, +43 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, +32 fichiers
+- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `specEntrySchema`, `BargainModalView`, `HealRollFlow`, `redaction`, +49 — `src/data/index.ts`, `src/data/schemas/common.ts`, `src/data/schemas/defs/skills.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +35 fichiers
 
 ---
 
@@ -98,7 +98,7 @@ la description, ou en crée une avec l'accord du MJ.
 **Sources RAW :** LDB 09 l.34-46
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `specEntrySchema`, `redaction`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, `buildAdvancementView`, `combatBaseValue`, `weaponUnmastered`, +9 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, +12 fichiers
+- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `specEntrySchema`, `redaction`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, `designateSpec`, `buildAdvancementView`, `combatBaseValue`, +15 — `src/data/index.ts`, `src/data/schemas/common.ts`, `src/data/schemas/defs/skills.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +15 fichiers
 
 ---
 
@@ -183,7 +183,7 @@ Soin aux animaux, Voile**
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-574) → `GearAssignList`, `rollDrivingMishap` ⚠sans-appelant, `altCharKey`, `drivingAccidentDamage` ⚠sans-appelant, `essieu-casse`, `DRUNK_CARACS`, `actBlockReason`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +89 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, +33 fichiers
+- `LDB 9` (l.65-574) → `GearAssignList`, `rollDrivingMishap` ⚠sans-appelant, `altCharKey`, `drivingAccidentDamage` ⚠sans-appelant, `essieu-casse`, `DRUNK_CARACS`, `actBlockReason`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +90 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, +33 fichiers
 
 ---
 

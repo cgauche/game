@@ -5,7 +5,7 @@
  * (Poudre noire), Chansonnier = Divertissement (Chant)).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema, specSchema } from '../common';
 
 export const file = 'crew-roles.json';
 
@@ -15,7 +15,7 @@ export const schema = z.array(
   z.strictObject({
     id: z.string(),
     label: z.string(),
-    skills: z.array(z.strictObject({ skillId: z.string(), spec: z.string().optional() })),
+    skills: z.array(z.strictObject({ skillId: z.string(), spec: specSchema.optional() })),
     desc: z.string(),
     // Barème de solde (MDG 14 l.293-302 « Exemples de mercenaires ») : coûts quotidien ET hebdomadaire
     // verbatim (colonnes non-multiples l'une de l'autre). `source` = correspondance RAW explicite ;

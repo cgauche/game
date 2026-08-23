@@ -10,7 +10,7 @@
  * caractère n'est réécrit (garde : `src/data/tavern-desc-verbatim.test.ts`).
  */
 import { z } from 'zod';
-import { difficultySchema, gameOpSchema, sourceRefSchema } from '../common';
+import { difficultySchema, gameOpSchema, sourceRefSchema, specSchema } from '../common';
 
 export const file = 'tavernGames.json';
 
@@ -32,7 +32,7 @@ export const schema = z.array(
     label: z.string(),
     desc: z.string(),
     skill: z.string().nullable(),
-    spec: z.string().optional(),
+    spec: specSchema.optional(),
     characteristic: charKeySchema.optional(),
     /** RÉGIME RAPIDE (règle optionnelle `tavern-games-rapides`) — le Test qu'il joue pour CETTE
      *  entrée, quand la table veut autre chose que la lettre. DÉFAUT (absent) = `NADJ 16 l.11` mot à
@@ -43,7 +43,7 @@ export const schema = z.array(
      *  arbitrage de code qui dévierait du verbatim. */
     fastSkill: z.strictObject({
       skill: z.string().optional(),
-      spec: z.string().optional(),
+      spec: specSchema.optional(),
       char: charKeySchema.optional(),
       /** Tag MAISON obligatoire : cet override n'est pas dans la source. */
       maison: z.string(),
@@ -75,7 +75,7 @@ export const schema = z.array(
      *  va au joueur ; la 1ʳᵉ option est celle que suivent les porteurs sans siège et les figurants. */
     options: z.array(z.strictObject({
       skill: z.string().optional(),
-      spec: z.string().optional(),
+      spec: specSchema.optional(),
       char: charKeySchema.optional(),
       difficulty: difficultySchema,
       /** Test de COMBAT : l'Avantage s'y applique (« +10 à un Test de Combat ou de Psychologie
@@ -124,7 +124,7 @@ export const schema = z.array(
     combined: z.strictObject({
       second: z.strictObject({
         skill: z.string().optional(),
-        spec: z.string().optional(),
+        spec: specSchema.optional(),
         char: charKeySchema.optional(),
       }),
       failEvery: z.number().optional(),
@@ -142,7 +142,7 @@ export const schema = z.array(
     throwerPenalty: z.strictObject({
       test: z.strictObject({
         skill: z.string().optional(),
-        spec: z.string().optional(),
+        spec: specSchema.optional(),
         char: charKeySchema.optional(),
       }),
       difficulty: difficultySchema,

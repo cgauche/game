@@ -183,6 +183,19 @@ out += `  11 talents d'Aux Armes Annexe III.\n`
 out += `- **\`desc\`** et tout champ de prose (effet, règles) = **copié/collé VERBATIM** de la source, en **Markdown**\n`
 out += `  (\`**gras**\`, \`*ital*\`, listes \`-\`), jamais en HTML, jamais reformulé (règle stricte 5 ; garde\n`
 out += `  \`src/data/no-html-in-prose.test.ts\`).\n`
+out += `- **Réf de Compétence** = UNE forme, dans tous les datasets et les statblocs de scène (#1463,\n`
+out += `  \`skillRefSchema\` de \`src/data/schemas/common.ts\`, composé par les defs — jamais recopié) :\n`
+out += '  ```json\n'
+out += `  { "id": "savoir", "spec": "loi" }                  // spécialisation DÉSIGNÉE (un id)\n`
+out += `  { "id": "savoir", "choix": ["loi", "theologie"] }   // emplacement BORNÉ (des ids)\n`
+out += `  { "id": "savoir", "choix": true }                   // emplacement LIBRE\n`
+out += '  ```\n'
+out += `  \`value\` s'ajoute là où un statbloc imprime une valeur de Test\n`
+out += `  (\`{"id":"savoir","choix":true,"value":65}\`) — un champ optionnel, pas une autre structure.\n`
+out += `  \`spec\` et \`choix\` sont EXCLUSIFS, et le littéral « au choix » (ni « un/une/deux au choix »)\n`
+out += `  n'est JAMAIS une \`spec\` : refusé au schéma (\`specSchema\`). Au spawn, \`choix\` est DÉSIGNÉ par\n`
+out += `  tirage seedé et l'instance runtime (\`SkillInstance\`) est toujours concrète (\`skillsFromBook\`,\n`
+out += `  \`src/state/spawn.ts\`). \`LDB 09 l.40\`, \`LDB 09 l.44\` ; #1456.\n`
 out += `- **Formes de champ** = copiées des entrées voisines (\`damage:{plusBF,flat}\`, \`qualities:[{id}]\`,\n`
 out += `  \`passive: GameOp[]\`…). Toute logique est keyée par **id stable** ; le \`label\` est de l'affichage.\n`
 out += `- **Forme du fichier** : la plupart sont des tableaux plats d'entrées \`{id,label,…}\`, mais certains sont des\n`

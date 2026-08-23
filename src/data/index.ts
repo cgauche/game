@@ -5,6 +5,7 @@
  */
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { PlayerText } from '../i18n/playerText';
+import { t } from '../i18n';
 import type { RigSpeciesId } from '../gameIso/rig/appearance';
 import type { SourceRef, SecondaryRef, RaceKey, RefCareerId } from './schemas/common';
 import type { MerchantArchetypeDef } from '../state/merchants/types';
@@ -2830,13 +2831,25 @@ export interface Ref {
   id: string;
   spec?: string;
 }
-/** Référence STRUCTURÉE à une Compétence (`Ref` + valeur de Test IMPRIMÉE) — fin des chaînes « Calme 58 ». */
+/**
+ * LA référence à une Compétence — forme UNIQUE de tous les datasets et des statblocs de scène
+ * (directive utilisateur 2026-08-23, #1463) : `id` + AU PLUS l'un de `spec` (spécialisation DÉSIGNÉE)
+ * ou `choix` (emplacement NON désigné : `true` libre, `string[]` borné par des ids), + `value`
+ * OPTIONNELLE là où un statbloc imprime une valeur de Test. Schéma : `skillRefSchema`
+ * (`schemas/common.ts`). `LDB 09 l.40`, `LDB 09 l.44`.
+ *
+ * `choix` ne survit PAS au spawn : `skillsFromBook` (`state/spawn.ts`) DÉSIGNE une spécialisation et
+ * l'instance runtime (`SkillInstance`) est toujours concrète.
+ */
 export interface SkillRef extends Ref {
-  value: number;
+  choix?: true | string[];
+  value?: number;
 }
-/** Libellé d'affichage d'une `SkillRef` : « Langue (Magick) 63 » (base+spec via `refLabel`, + valeur). */
+/** Libellé d'affichage d'une `SkillRef` : « Langue (Magick) 63 », « Savoir (Au choix) 65 »,
+ *  « Métier (Armurier ou Forgeron) 50 ». */
 export function skillRefLabel(ref: SkillRef): string {
-  return `${refLabel('skills', ref)} ${ref.value}`;
+  const base = ref.choix != null ? choixLabel('skills', ref.id, ref.choix) : refLabel('skills', ref);
+  return ref.value != null ? `${base} ${ref.value}` : base;
 }
 export function findTalent(label: string): TalentData | undefined {
   return talents.find((t) => t.label === label);
@@ -3241,6 +3254,17 @@ export function qualityRefLabel(q: QualityRef): string {
 export function skillInstanceLabel(s: { skillId: string; spec?: string }): string {
   return refConcrete('skills', { id: s.skillId, spec: s.spec });
 }
+
+/** Libellé d'un EMPLACEMENT de spécialisation NON désigné : « Savoir (Au choix) », ou la liste bornée
+ *  « Métier (Armurier ou Forgeron) » (options résolues en LIBELLÉS, jamais des ids bruts). SOURCE
+ *  UNIQUE du rendu — `SkillRef.choix` (`skillRefLabel`) ET le joker d'avancement encore en graphie
+ *  `{wildcard, specOptions}` (`advancementLabel`, migration #1463 à suivre). `LDB 09 l.42`. */
+export function choixLabel(category: string, id: string, choix: true | string[]): string {
+  const base = refConcrete(category, { id });
+  return Array.isArray(choix) && choix.length
+    ? `${base} (${choix.map((o) => specLabel(category, id, o)).join(' ou ')})`
+    : t('ref.auChoix', { base });
+}
 /** Libellé CONCRET d'une `TalentInstance` (id+spec → « Magie des Arcanes (Bête) ») — clé du registre
  *  combatFeatures + affichage. Repli sur l'id. CLÉ d'abord, donc `refConcrete`. */
 export function talentConcrete(t: { talentId: string; spec?: string }): string {
@@ -3251,9 +3275,7 @@ export function talentConcrete(t: { talentId: string; spec?: string }): string {
  *  Passe par `refConcrete` : ce texte INDEXE `opts.skillAdvances` (`engine/character.ts`). */
 export function advancementLabel(category: string, a: AdvancementRef): string {
   if ('ref' in a) return refConcrete(category, a.ref);
-  if ('wildcard' in a) return a.specOptions?.length
-    ? `${refConcrete(category, a.wildcard)} (${a.specOptions.join(' ou ')})`
-    : `${refConcrete(category, a.wildcard)} (Au choix)`;
+  if ('wildcard' in a) return choixLabel(category, a.wildcard.id, a.specOptions ?? true);
   if ('choice' in a) return a.choice.map((x) => advancementLabel(category, x)).join(' ou ');
   return a.random === 1 ? 'Talent aléatoire' : `${a.random} Talent aléatoire`;
 }

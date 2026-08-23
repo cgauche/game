@@ -2277,6 +2277,10 @@ export const fr = {
 
   // ── #1318 V8c₅ — EMPLACEMENTS DE CARRIÈRE et Domaines d'Arcane (`engine/careerSlots.ts`, `slot.*`,
   // LDB 10 « Schéma des Talents » / LDB 46 l.177, repris VDM 02 l.190-192). `reason` → `pf.designateRefused`.
+  // Emplacement de spécialisation NON désigné (joker), `LDB 09 l.42` — rendu de `{wildcard}`
+  // (`AdvancementRef`, `SkillRef`, `SkillInstance`) par `data/index.ts#advancementLabel`/
+  // `skillRefLabel`/`skillInstanceLabel`. #1456
+  'ref.auChoix': '{base} (Au choix)',
   'slot.notCovered': "ce choix n'est pas couvert par cet emplacement",
   'slot.alreadyDesignated': 'emplacement déjà désigné',
   'slot.takenByOther': 'déjà pris par un autre emplacement de cette carrière',

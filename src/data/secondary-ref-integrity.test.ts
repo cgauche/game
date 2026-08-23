@@ -87,10 +87,10 @@ describe('auditSecondaryRef — attestation POSITIVE (#563 Lot 1 item 2, morsure
   });
 });
 
-describe('auditSecondaries — 71 entrées `alsoIn` réelles sur src/data/*.json (Lot 2, #563 ; +1 VDM #734 ; +7 Hysh #729 ; +6 Chamon #729 ; +5 attributs de Domaine republiés #729 ; +6 Ghyran #729 ; +7 Azyr #729 ; +5 Ulgu #729 ; +6 Shyish #729 ; +2 Aqshy #729 ; +5 Ghur #729 et son attribut de Domaine ; +2 VDM #731 : Bête des marais et Prédateur sanglant ; +1 VDM couronne-de-flammes ; +1 ZI #1225 : Halagrundsor, récit en folio 34 et statblock en folio 35 ; +1 ADE I #1342 : la spéc `signes-secrets/rodeur`, dont ADE I 07 l.197 imprime la variante « Ranger »)', () => {
+describe('auditSecondaries — 71 entrées `alsoIn` réelles sur src/data/*.json (Lot 2, #563 ; +1 VDM #734 ; +7 Hysh #729 ; +6 Chamon #729 ; +5 attributs de Domaine republiés #729 ; +6 Ghyran #729 ; +7 Azyr #729 ; +5 Ulgu #729 ; +6 Shyish #729 ; +2 Aqshy #729 ; +5 Ghur #729 et son attribut de Domaine ; +2 VDM #731 : Bête des marais et Prédateur sanglant ; +1 VDM couronne-de-flammes ; +1 ZI #1225 : Halagrundsor, récit en folio 34 et statblock en folio 35 ; +1 ADE I #1342 : la spéc `signes-secrets/rodeur`, dont ADE I 07 l.197 imprime la variante « Ranger » ; +1 LDB #1456 : la spéc `signes-secrets/guilde`, que LDB 09 l.504 énumère « Guildes (au choix) »)', () => {
   it('toutes les entrées `alsoIn` réelles sont ATTESTÉES (aucune violation)', () => {
     const { violations, total } = auditSecondaries(DIR);
-    expect(total).toBe(72);
+    expect(total).toBe(73);
     expect(violations).toEqual([]);
   });
 

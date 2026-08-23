@@ -5,7 +5,7 @@
 import { Combatant, Characteristics, CHAR_KEYS, BodyShape, SkillInstance, TalentInstance, type AuthoredShipPoste, type NavalTraitRef } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
 import { isOptionalNote, type TraitInstance, type TraitList, type OptionalEntry, type OptionalSwap } from '../engine/statEntry';
-import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, findTrappingById, CreatureData, type SkillRef, type TalentRef } from '../data';
+import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, findTrappingById, specPoolOf, CreatureData, type SkillData, type SkillRef, type TalentRef } from '../data';
 import { vehicleCombatant } from '../engine/vehicle';
 import { inanimateCombatant } from '../engine/inanimate';
 import { hullArmourBonus } from '../engine/navalTraits';
@@ -123,6 +123,20 @@ function spawnMutations(traits: TraitList | undefined, id: string) {
  *  un profil retouché ensuite (carac. aléatoires LDB 77 l.108, Taille) garde les mêmes avances.
  *  Entrée sans valeur chiffrée : ignorée (rien d'inventé). Réf STRUCTURÉE `SkillRef` (id stable +
  *  valeur imprimée) — plus de parsing de chaînes. */
+/**
+ * DÉSIGNATION au spawn de la spécialisation qu'un statbloc laisse à choisir (`SkillRef.choix`) :
+ * tirage SEEDÉ (déterministe et rejouable, même idiome que `spawnMutations`) parmi les ids que la
+ * donnée BORNE (`choix: [ids]`), sinon parmi le POOL de la Compétence (`specPoolOf`). L'instance qui
+ * en sort est CONCRÈTE : aucun emplacement non désigné ne survit au spawn. `LDB 09 l.40`,
+ * `LDB 09 l.44` ; ARBITRAGE #1456 (règle 7 — le RAW confie ce choix au MJ, et il n'y a pas de MJ).
+ * Pool VIDE = arrêt : il n'y a rien à désigner et rien à inventer.
+ */
+function designateSpec(sk: SkillData, choix: true | string[], seed: string): string {
+  const pool = Array.isArray(choix) && choix.length ? choix : specPoolOf(sk);
+  if (!pool.length) throw new Error(`spawn : la Compétence « ${sk.id} » n'offre aucune spécialisation à désigner (réf à choix).`);
+  return pool[makeRNG(hashSeed(seed)).int(0, pool.length - 1)];
+}
+
 /** Une `SkillInstance` (id + spec) depuis l'`id` STABLE (pour la Caractéristique) + valeur de Test
  *  IMPRIMÉE. Carac résolue par id (`skillCharacteristicById`, ≠ re-lookup par libellé — multilangue-safe). */
 function skillInstance(skillId: string, spec: string | undefined, value: number, printedChars: Characteristics): SkillInstance {
@@ -132,12 +146,14 @@ function skillInstance(skillId: string, spec: string | undefined, value: number,
 
 /** Compétences du BESTIAIRE — refs structurées `SkillRef` (id + valeur de Test imprimée). Réf. inconnue
  *  du catalogue ignorée (rien d'inventé). */
-export function skillsFromBook(list: SkillRef[] | undefined, printedChars: Characteristics): SkillInstance[] {
+export function skillsFromBook(list: SkillRef[] | undefined, printedChars: Characteristics, seed: string): SkillInstance[] {
   const out: SkillInstance[] = [];
-  for (const ref of list ?? []) {
+  (list ?? []).forEach((ref, i) => {
     const sk = findSkillById(ref.id);
-    if (sk) out.push(skillInstance(sk.id, ref.spec, ref.value, printedChars));
-  }
+    if (!sk) return;
+    const spec = ref.choix != null ? designateSpec(sk, ref.choix, `${seed}:${sk.id}:${i}`) : ref.spec;
+    out.push(skillInstance(sk.id, spec, ref.value ?? 0, printedChars));
+  });
   return out;
 }
 
@@ -215,7 +231,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   // Compétences/talents de la donnée (PNJ nommés : Eusapia, Horreurs…) — avances dérivées du profil IMPRIMÉ.
   // + compétences d'AUTEUR ajoutées (extras.skills : qualifier un servant de pièce pour le Groupe de
   // Projectiles de son engin, AA 10 p.122-124).
-  const bookSkills = [...skillsFromBook(creature.skills, chars), ...skillsFromBook(extras?.skills, chars)];
+  const bookSkills = [...skillsFromBook(creature.skills, chars, `spec:${id}`), ...skillsFromBook(extras?.skills, chars, `spec:auteur:${id}`)];
   // Compétences octroyées par une variante « swap » (ZI, Vouivre : Discrétion (Rurale) 65) — dérivées
   // PLUS BAS, sur le profil FINAL (après Taille facultative éventuelle) : la valeur de Test IMPRIMÉE par
   // la variante doit tenir compte du ∓5 Ag qu'elle-même inflige (LDB 85 l.276-277), sinon la variante se
@@ -249,7 +265,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   const swapWounds = swaps.map((s) => s.wounds).find((w): w is number => w != null);
   let wounds = swapWounds ?? (typeof creature.char.B === 'number' && !profileChanged ? creature.char.B : maxWounds(charsEff, size, traits));
   if (swapWounds == null && traitBonusWoundsBE(optTraits)) wounds += bonus(charsEff.endurance); // Endurant facultatif : +BE Blessures (LDB 85)
-  const skills = [...bookSkills, ...skillsFromBook(swapSkillRefs, chars)]; // swap : dérivée sur le profil FINAL (post-Taille)
+  const skills = [...bookSkills, ...skillsFromBook(swapSkillRefs, chars, `spec:swap:${id}`)]; // swap : dérivée sur le profil FINAL (post-Taille)
   const swarm = isSwarm(traits);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // ×5 PB + 10 CC (la nuée = 5 créatures)
   const movement = typeof creature.char.M === 'number' ? creature.char.M : 4; // facultatifs → liveTraits (effectiveMovement)
@@ -294,7 +310,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   const traits = [...(sb.traits ?? []), ...learnedTraits];
   let chars = charsFrom(sb.char);
   // Compétences (refs `SkillRef` structurées, avances dérivées du profil SAISI) + talents du statbloc.
-  const skills = skillsFromBook(sb.skills, chars);
+  const skills = skillsFromBook(sb.skills, chars, `spec:${id}`);
   const talents = talentsFromBook(sb.talents);
   // Tirage FIGÉ d'une Possession (`charsRolled`, LDB 77 l.108 — seedé sur l'uid, jamais relancé) PRIME
   // sur `sb.randomChars` (deux projections successives avec le MÊME `charsRolled` → mêmes stats).

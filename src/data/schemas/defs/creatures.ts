@@ -5,7 +5,7 @@
  * ci-dessus suit le fichier, il ne le fige pas.
  */
 import { z } from 'zod';
-import { availabilitySchema, harvestRaritySchema, sourceRefSchema, secondarySourceRefSchema, refSchema, trappingRefSchema, entityAppearanceSchema, traitInstanceSchema } from '../common';
+import { availabilitySchema, harvestRaritySchema, sourceRefSchema, secondarySourceRefSchema, refSchema, skillRefSchema, specSchema, trappingRefSchema, entityAppearanceSchema, traitInstanceSchema } from '../common';
 
 export const file = 'creatures.json';
 
@@ -19,7 +19,7 @@ const optionalWildcardSchema = z.strictObject({
 });
 const swapGrantSchema = z.union([
   z.strictObject({ char: z.string(), value: z.number() }),
-  z.strictObject({ skillId: z.string(), spec: z.string().optional(), value: z.number() }),
+  z.strictObject({ skillId: z.string(), spec: specSchema.optional(), value: z.number() }),
 ]);
 const optionalSwapSchema = z.strictObject({
   note: z.literal('swap'),
@@ -32,8 +32,6 @@ const optionalSwapSchema = z.strictObject({
 });
 const optionalEntrySchema = z.union([traitInstanceSchema, optionalWildcardSchema, optionalSwapSchema]);
 
-/** `SkillRef` (`src/data/index.ts`) — `Ref` + valeur de Test imprimée. */
-const skillRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), value: z.number() });
 
 /** `TalentRef` (`src/data/index.ts`) — `Ref` + niveau facultatif. */
 const talentRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), times: z.number().optional() });
@@ -60,6 +58,7 @@ export const schema = z.array(
     char: z.record(z.string(), z.union([z.number(), z.null()])),
     traits: z.array(traitInstanceSchema),
     optionals: z.array(optionalEntrySchema),
+    /** `SkillRef` COMMUNE (`../common.ts`) — forme unique `{id, spec?|choix?, value?}` (#1463). */
     skills: z.array(skillRefSchema),
     talents: z.array(talentRefSchema),
     trappings: z.array(trappingRefSchema),

@@ -10,7 +10,7 @@
  */
 import { CustomStatblock } from '../../state/scene';
 import { CHAR_KEYS, CHAR_LABELS, CharKey } from '../../engine/types';
-import { creatures, findCreatureById, findSkill, findTalent, skillRefLabel, talentRefLabel, type SkillRef, type TalentRef } from '../../data';
+import { creatures, findCreatureById, findSkill, findSkillById, findTalent, skillRefLabel, specCatalogOf, specLabel, talentRefLabel, type SkillRef, type TalentRef } from '../../data';
 import { slugId } from '../../data/slug';
 import { parseStatEntry } from '../../engine/statEntry';
 import { woundsForSize, resizeBySteps, stepSize, SIZE_LABEL, SIZE_ORDER } from '../../engine/size';
@@ -21,10 +21,29 @@ import { TraitListField } from '../compendium/StructFields';
 import { Icon } from '../Icon';
 import { NumberField } from '../NumberField';
 
-/** Parse une saisie « Compétence (Spéc) Valeur » → `SkillRef` (id stable + spec + valeur de Test). */
-function parseSkillRef(text: string): SkillRef {
+/** Sentinelle de saisie « (Au choix) » — un EMPLACEMENT, jamais une spécialisation (#1456). */
+const SAISIE_AU_CHOIX = /^(un |une |deux )?au choix$/i;
+
+/** Libellé FR d'une spécialisation → son `id` de catalogue ; verbatim si le domaine est ouvert et que
+ *  le texte n'y figure pas (spéc libre saisie par l'auteur). */
+function specIdOf(skillId: string, label: string): string {
+  const def = findSkillById(skillId);
+  if (!def) return label;
+  return specCatalogOf(def).find((id) => specLabel('skills', skillId, id) === label) ?? label;
+}
+
+/** Parse une saisie « Compétence (Spéc) Valeur » → `SkillRef` (forme UNIQUE `{id, spec?|choix?, value?}`,
+ *  #1463). « (Au choix) » rend `choix: true` et « (A ou B) » rend `choix: [ids]` — jamais le littéral en
+ *  `spec` (#1456) ; une spéc concrète revient à son `id` (le round-trip passe par le libellé d'affichage). */
+export function parseSkillRef(text: string): SkillRef {
   const p = parseStatEntry(text);
-  return { id: findSkill(p.name)?.id ?? slugId(p.name), spec: p.arg, value: p.indice ?? 0 };
+  const id = findSkill(p.name)?.id ?? slugId(p.name);
+  const value = p.indice ?? 0;
+  const arg = p.arg?.trim();
+  if (!arg) return { id, value };
+  if (SAISIE_AU_CHOIX.test(arg)) return { id, choix: true, value };
+  if (/\sou\s/i.test(arg)) return { id, choix: arg.split(/\s+ou\s+/i).map((x) => specIdOf(id, x.trim())), value };
+  return { id, spec: specIdOf(id, arg), value };
 }
 /** Parse une saisie « Talent (Spéc) » → `TalentRef` (id stable + spec ; niveau par défaut 1 au spawn). */
 function parseTalentRef(text: string): TalentRef {

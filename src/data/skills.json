@@ -1682,6 +1682,24 @@
           "note": "frenchy.bzh 16 l.141"
         },
         "pool": false
+      },
+      {
+        "id": "slaanesh",
+        "label": "Slaanesh",
+        "source": {
+          "book": "frenchy-bzh",
+          "page": 269,
+          "note": "frenchy.bzh 46 l.110 (Talent) — entrée de Savoir inférée, arbitrage maison #1456"
+        }
+      },
+      {
+        "id": "nurgle",
+        "label": "Nurgle",
+        "source": {
+          "book": "frenchy-bzh",
+          "page": 269,
+          "note": "frenchy.bzh 46 l.110 (Talent) — entrée de Savoir inférée, arbitrage maison #1456"
+        }
       }
     ],
     "desc": "Posséder une Compétence Savoir signifie que vous avez officiellement étudié, ou avez appris d'une façon ou d'une autre, une branche de connaissances avancées. Vous possédez des données approfondies dans une spécialisation et n'avez donc pas besoin d'effectuer de Test pour que le MJ vous donne les éléments d'information utiles. Si vous recherchez des informations spécifiques moins connues, vous aurez besoin d'effectuer un Test de Savoir, modifié selon la nature obscure de l'information, où les DR indiqueront de combien de détails vous vous souvenez.\n\nEn combat, un Test de Savoir réussi peut éventuellement vous accorder +1 Avantage (avec l'accord de votre MJ). Par exemple, Savoir (Géologie) peut vous donner un Avantage si vous combattez dans une caverne, ou Savoir (Ingénierie) peut vous aider si vous combattez un ennemi armé d'un appareil mécanique complexe. Vous pouvez continuer à renforcer votre Avantage lors des tours ultérieurs, à condition que les circonstances le permettent (déterminé par le MJ) et que vous ne soyez pas interrompu ; de cette façon, vous pouvez gagner un maximum d'Avantages, égal à votre Bonus d'Intelligence.",
@@ -1708,10 +1726,6 @@
       {
         "id": "contrebandier",
         "label": "Contrebandier"
-      },
-      {
-        "id": "guilde-au-choix",
-        "label": "Guilde (Au choix)"
       },
       {
         "id": "mineur",
@@ -1748,7 +1762,15 @@
           "book": "livre-de-base",
           "page": 54,
           "note": "LDB 08 l.250"
-        }
+        },
+        "alsoIn": [
+          {
+            "book": "livre-de-base",
+            "page": 130,
+            "note": "LDB 09 l.504",
+            "quote": "Guildes (au choix)"
+          }
+        ]
       },
       {
         "id": "rodeur",
