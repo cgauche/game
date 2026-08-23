@@ -48,6 +48,7 @@ import type { ThreatTier } from '../engine/advantagePool';
 import type { Dir8 } from './dir8';
 import { parseAsciiRows, parseWalledAscii, scanMarkers } from './asciiMap';
 import { buildEncounter, type AuthoredEnemy } from './encounterAuthoring';
+import { chebyshev } from '../engine/grid';
 import {
   type Pt,
   type Edge4,
@@ -308,7 +309,7 @@ function applyRelief(s: Scene, r: ReliefSpec): Scene {
   }
   // ramp : interpolation linéaire axiale du (from) au (to) le long de la ligne (x0,y0)→(x1,y1).
   const [x0, y0, x1, y1] = r.ramp;
-  const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+  const steps = chebyshev({ x: x1, y: y1 }, { x: x0, y: y0 });
   let out = s;
   for (let i = 0; i <= steps; i++) {
     const t = steps === 0 ? 0 : i / steps;

@@ -24,6 +24,7 @@ import { resolveFormula, slBonus, type GameOp } from '../engine/ops';
 import { isOutOfAction } from '../engine/conditions';
 import { RNG, defaultRNG } from '../engine/dice';
 import { t } from '../i18n';
+import { chebyshev } from '../engine/grid';
 
 /** Descripteur d'invocation = la charge utile de l'op `summon` du Flow (donnée éditable du sort) ;
  *  le discriminant `op` est superflu pour cette fonction dédiée → l'op complète s'assigne quand même. */
@@ -39,8 +40,8 @@ function freeTilesNear(scene: Scene, battle: BattleState, center: Pt, n: number)
   for (let r = 1; r <= 8 && out.length < n; r++)
     for (let dy = -r; dy <= r && out.length < n; dy++)
       for (let dx = -r; dx <= r && out.length < n; dx++) {
-        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; // seulement l'anneau de rayon r
         const x = center.x + dx, y = center.y + dy;
+        if (chebyshev({ x, y }, center) !== r) continue; // seulement l'anneau de rayon r
         if (isWalkable(scene, x, y, z) && !blocked.has(tileKey(x, y, z))) out.push(z ? { x, y, z } : { x, y });
       }
   return out;

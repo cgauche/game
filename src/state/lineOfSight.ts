@@ -31,7 +31,7 @@ const decorCover = (ref: string | undefined): CoverClass | undefined => (ref ? f
 export function tilesBetween(a: Pt, b: Pt): Pt[] {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
-  const steps = Math.max(Math.abs(dx), Math.abs(dy));
+  const steps = chebyshev(a, b);
   const out: Pt[] = [];
   for (let i = 1; i < steps; i++) {
     out.push({ x: Math.round(a.x + (dx * i) / steps), y: Math.round(a.y + (dy * i) / steps) });

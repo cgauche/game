@@ -324,7 +324,7 @@ export function flyReachable(scene: Scene, start: Pt, range: number, env: MoveEn
       const ny = start.y + dy;
       if (!footFits(scene, nx, ny, sz, foot, blocked, swim)) continue; // l'atterrissage doit tenir
       if (noStop?.has(key(nx, ny, sz))) continue; // ne peut pas atterrir sur une autre créature
-      dist.set(key(nx, ny, sz), Math.max(Math.abs(dx), Math.abs(dy)));
+      dist.set(key(nx, ny, sz), chebyshev({ x: nx, y: ny }, start));
     }
   return dist;
 }

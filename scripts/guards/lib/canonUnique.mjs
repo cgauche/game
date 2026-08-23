@@ -72,7 +72,10 @@ function estSelectionDerivee(n) {
  *  sont pas des membres re-tapés mais les clés d'une table que le COMPILATEUR exige complètes — un
  *  palier ajouté, renommé ou retiré du canon casse la compilation de la table. `Record<string, …>`
  *  n'en est pas une (aucune exhaustivité exigée), ni un `as Record<…>` (une assertion ne vérifie pas
- *  les clés manquantes) : seules l'ANNOTATION et le `satisfies` valent verrou.
+ *  les clés manquantes) : seules l'ANNOTATION et le `satisfies` valent verrou. LIMITE assumée d'un
+ *  scan SYNTAXIQUE : le compilateur n'exige les clés que si la clé est une vraie union nommée — un
+ *  `Record<MonAlias, …>` dont `MonAlias` est un alias de `string` passerait ici sans être vérifié
+ *  là-bas ; le trancher demanderait un checker de types, pas un AST.
  * @param {ts.TypeNode | undefined} t @returns {boolean} */
 function estRecordDUnionNommee(t) {
   if (!t || !ts.isTypeReferenceNode(t) || !ts.isIdentifier(t.typeName)) return false;
@@ -183,22 +186,47 @@ function axes(n) {
   return out;
 }
 
-/** `Math.abs(<a> - <b>)` → les axes de la soustraction ; `null` si ce n'en est pas un.
+/** SCALAIRES NOMMÉS PAR L'AXE : `x1 - x0`, `xa - xb` — la soustraction de deux identifiants dont les
+ *  noms commencent par la MÊME lettre d'axe (`x`/`y`) mesure bien cet axe, sans point ni `.x`. Les
+ *  DEUX opérandes sont exigés (un seul suffixé laisserait passer `yaw - x0`).
+ * @param {ts.Node} arg @returns {string | null} */
+function axeDeScalaires(arg) {
+  if (!ts.isBinaryExpression(arg) || arg.operatorToken.kind !== ts.SyntaxKind.MinusToken) return null;
+  const lettre = (e) => (ts.isIdentifier(e) ? (/^([xy])[0-9A-Za-z_$]*$/.exec(e.text)?.[1] ?? null) : null);
+  const g = lettre(arg.left), d = lettre(arg.right);
+  return g && g === d ? g : null;
+}
+
+/** `Math.abs(<quoi que ce soit>)` → les axes portés par l'argument. La soustraction n'est PAS exigée :
+ *  l'écart est souvent PRÉ-CALCULÉ (`Math.abs(dx)`, `Math.abs(delta.x)`, boucle d'anneau) et c'est la
+ *  même mesure. `null` si ce n'est pas un `Math.abs(…)` à un argument.
  * @param {ts.Expression} n @returns {Set<string> | null} */
 function absDelta(n) {
   if (!ts.isCallExpression(n) || n.arguments.length !== 1) return null;
   const f = n.expression;
   if (!ts.isPropertyAccessExpression(f) || f.name.text !== 'abs' || !ts.isIdentifier(f.expression) || f.expression.text !== 'Math') return null;
   const arg = n.arguments[0];
-  if (!ts.isBinaryExpression(arg) || arg.operatorToken.kind !== ts.SyntaxKind.MinusToken) return null;
-  return axes(arg);
+  const out = axes(arg);
+  const scalaire = axeDeScalaires(arg);
+  if (scalaire) out.add(scalaire);
+  return out;
 }
+
+/** Les DEUX arguments d'un `Math.max` portent-ils les deux axes du plan, l'un chacun ? Trois
+ *  vocabulaires reconnus, et trois seulement : les composantes `.x`/`.y` (points, deltas d'objet), les
+ *  écarts nommés `dx`/`dy` (boucles d'anneau, supercover) et les scalaires nommés par l'axe
+ *  (`x1 - x0`, cf. `axeDeScalaires`). `z` n'en fait pas partie : une distance verticale n'est pas la
+ *  métrique de la grille.
+ * @param {Set<string>} a @param {Set<string>} b @returns {boolean} */
+const paireDAxes = (a, b) => [['x', 'y'], ['dx', 'dy']].some(([u, v]) => (a.has(u) && b.has(v)) || (a.has(v) && b.has(u)));
 
 /**
  * La FORMULE de la distance de Chebyshev recopiée INLINE : `Math.max(Math.abs(a.x - b.x),
- * Math.abs(a.y - b.y))` et ses commutations (ordre des axes, ordre des opérandes, opérandes nus ou
- * propriétés). Le NOM n'entre pas dans le scan : `cheb`, `dist`, ou aucun nom du tout, c'est la même
- * recopie du canon `chebyshev` (`src/engine/grid.ts`).
+ * Math.abs(a.y - b.y))`, ses commutations (ordre des axes, ordre des opérandes, opérandes nus ou
+ * propriétés) ET sa forme à écarts PRÉ-CALCULÉS (`Math.max(Math.abs(dx), Math.abs(dy))`, où la
+ * soustraction a eu lieu plus haut — la mesure est la même, la garde ne s'arrête pas à l'emballage).
+ * Le NOM n'entre pas dans le scan : `cheb`, `dist`, ou aucun nom du tout, c'est la même recopie du
+ * canon `chebyshev` (`src/engine/grid.ts`).
  * @param {{ rel: string, text: string }} file
  * @returns {{ line: number, detail: string }[]}
  */
@@ -214,7 +242,7 @@ export function scanChebyshevFormula(file) {
       if (ts.isPropertyAccessExpression(f) && f.name.text === 'max' && ts.isIdentifier(f.expression) && f.expression.text === 'Math') {
         const a = absDelta(n.arguments[0]);
         const b = absDelta(n.arguments[1]);
-        if (a && b && ((a.has('x') && b.has('y')) || (a.has('y') && b.has('x')))) {
+        if (a && b && paireDAxes(a, b)) {
           findings.push({ line: lineOf(sf, n), detail: 'formule de Chebyshev recopiée inline' });
         }
       }

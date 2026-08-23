@@ -2,8 +2,9 @@
  * `chebyshev` : la métrique de distance de la grille, et SA SOURCE UNIQUE (#1440).
  *
  * La garde ne cherche pas un NOM (une copie s'appelle `cheb`, `dist`, ou rien du tout) : elle
- * cherche la FORMULE — `Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y))` et ses commutations.
- * Trois définitions nommées et vingt-six formules inline vivaient à côté du canon ; il n'en reste
+ * cherche la FORMULE — `Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y))`, ses commutations, et sa
+ * variante à écarts PRÉ-CALCULÉS (`Math.max(Math.abs(dx), Math.abs(dy))`, la soustraction ayant eu
+ * lieu plus haut) comme celle sur SCALAIRES nommés par l'axe (`x1 - x0`). Trois définitions nommées et trente et une formules inline vivaient à côté du canon ; il n'en reste
  * qu'une, ici, dans le MOTEUR (règle 3 : `src/engine` ne dépend pas de `src/state`, c'est donc au
  * moteur de porter la primitive — `state/path` la réexporte pour ses appelants).
  */
@@ -43,7 +44,12 @@ describe('grille — distance de Chebyshev (#1440)', () => {
     expect(vu('const cheb = (p, q) => Math.max(Math.abs(q.y - p.y), Math.abs(q.x - p.x));'), 'axes commutés, opérandes inversés').toBe(1);
     expect(vu('const d = Math.max(Math.abs(x - pos.x), Math.abs(y - pos.y));'), 'opérandes NUS').toBe(1);
     expect(vu('const d = Math.max(\n  Math.abs(a.x - b.x),\n  Math.abs(a.y - b.y),\n);'), 'étalée sur trois lignes').toBe(1);
+    expect(vu('const d = Math.max(Math.abs(delta.x), Math.abs(delta.y));'), 'delta PRÉ-CALCULÉ, en composantes').toBe(1);
+    expect(vu('if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;'), 'écarts PRÉ-CALCULÉS `dx`/`dy` (anneau)').toBe(1);
+    expect(vu('const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));'), 'SCALAIRES nommés par l’axe').toBe(1);
     expect(vu('const d = Math.max(Math.abs(a.x - b.x), Math.abs(a.z - b.z));'), 'autre paire d’axes : pas la métrique de la grille').toBe(0);
+    expect(vu('const d = Math.max(Math.abs(yaw - x0), Math.abs(y1 - y0));'), 'un seul opérande nommé par l’axe : pas une soustraction d’axe').toBe(0);
+    expect(vu('const m = Math.max(Math.abs(gauche), Math.abs(droite));'), 'deux écarts SANS axe : pas une distance de grille').toBe(0);
     expect(vu('const d = Math.abs(a.x - b.x) + Math.abs(a.y - b.y);'), 'Manhattan : autre métrique').toBe(0);
   });
 

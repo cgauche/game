@@ -45,6 +45,7 @@ import { chargeArmee } from './localIntent';
 import { t } from '../i18n';
 import { bus, EVT } from './bus';
 import type { GameState } from './store';
+import { chebyshev } from '../engine/grid';
 import {
   attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption,
   trampleTarget, auContactEligible, grappleActionEligible, firedAttackBlock,
@@ -705,7 +706,7 @@ function pushCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void {
     placeCombatant(m, scene, { x: from.x + delta.x, y: from.y + delta.y });
     bus.emit(EVT.ANIM_MOVE, { id: m.id, path: [from, { ...m.pos }] });
   }
-  const dist = Math.max(Math.abs(delta.x), Math.abs(delta.y));
+  const dist = chebyshev(delta, { x: 0, y: 0 });
   // Pousser = le MOUVEMENT de TOUT l'équipage (LDB 13 l.106 : locomotion, aucun Test → le Mouvement, pas
   // l'Action). Le chef dépense son Mouvement MAINTENANT ; chaque autre servant dépensera le sien à son tour
   // (`loseNextMovement`) — tous poussent, tous en paient le Mouvement. L'Action du chef reste libre (il peut

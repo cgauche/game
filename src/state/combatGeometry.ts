@@ -187,8 +187,8 @@ function nearestFreeOutside(scene: Scene, battle: BattleState, c: Combatant, mov
   for (let r = 1; r <= 6; r++)
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {
-        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; // seulement l'anneau de rayon r
         const x = c.pos!.x + dx, y = c.pos!.y + dy;
+        if (chebyshev({ x, y }, c.pos!) !== r) continue; // seulement l'anneau de rayon r
         if (occupiesTile(mover.pos!, footprintN(mover), x, y)) continue; // garder hors empreinte du mover
         if (isWalkable(scene, x, y, cz) && !blocked.has(tileKey(x, y, cz))) return cz ? { x, y, z: cz } : { x, y }; // même étage que `c`
       }
