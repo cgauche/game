@@ -2,8 +2,19 @@
  * APPUI LONG — primitive PARTAGÉE du geste secondaire au doigt (spec HUD combat, geste secondaire
  * d'une alvéole : clic droit à la souris, appui long au tactile, touche Menu au clavier).
  *
- * Le geste s'ARME au `pointerdown` du BOUTON PRINCIPAL, se DÉCLENCHE au bout de `delai`, et s'ANNULE au relâchement
- * comme au mouvement au-delà de `TOLERANCE` (un glissement n'est pas un appui). L'appui qui a
+ * Le geste s'ARME au `pointerdown` du BOUTON PRINCIPAL, se DÉCLENCHE au bout de `delai`, et s'ANNULE
+ * au relâchement comme au mouvement au-delà de `TOLERANCE` (un glissement n'est pas un appui).
+ *
+ * La SUITE de l'appui s'écoute À LA FENÊTRE, jamais sur l'élément : dès que le pointeur SORT de
+ * l'alvéole, les `pointermove`/`pointerup` ne lui sont plus destinés (ils ne sont dispatchés qu'aux
+ * ancêtres de la CIBLE), et le glissement n'annulait donc rien — mesuré en recette navigateur
+ * (2026-08-23 : glissements de 25 px puis 60 px, modale ouverte quand même). La capture de pointeur
+ * (`setPointerCapture`) est demandée en plus, là où le navigateur la porte. Le franchissement de
+ * BORDURE (`pointerleave`) n'est plus, lui, un signal d'annulation : il ment dans les deux sens —
+ * muet quand le pointeur part sous une surface qui capte le survol, et ÉMIS sous un pointeur immobile
+ * dès qu'un re-rendu déplace la case sous lui. Seule la DISTANCE parcourue décide.
+ *
+ * L'appui qui a
  * déclenché AVALE la salve d'événements natifs qui le suit (`consomme`, lu par `click` ET par
  * `contextmenu`) : sans quoi le doigt lèverait le geste secondaire PUIS l'action primaire de
  * l'alvéole, et le `contextmenu` que le navigateur dérive de l'appui long rappellerait le geste.
@@ -19,13 +30,22 @@ export const DELAI_APPUI_LONG = 450;
  *  verdict, et la fenêtre expire d'elle-même — une activation clavier ultérieure n'est pas avalée. */
 export const FENETRE_AVALEMENT = 700;
 
+/** Les trois événements de FENÊTRE qui composent la suite d'un appui armé. */
+const SUITE = ['pointermove', 'pointerup', 'pointercancel'] as const;
+
+/** L'appui tel que la primitive le lit : position, bouton, et l'élément à qui demander la CAPTURE.
+ *  Type STRUCTUREL (jamais `React.PointerEvent`) — la primitive ne dépend d'aucun typage de React. */
+export interface AppuiPointeur {
+  clientX: number;
+  clientY: number;
+  button?: number;
+  pointerId?: number;
+  currentTarget?: { setPointerCapture?(id: number): void; releasePointerCapture?(id: number): void } | null;
+}
+
 export interface LongPress {
   handlers: {
-    onPointerDown: (e: { clientX: number; clientY: number; button?: number }) => void;
-    onPointerMove: (e: { clientX: number; clientY: number }) => void;
-    onPointerUp: () => void;
-    onPointerLeave: () => void;
-    onPointerCancel: () => void;
+    onPointerDown: (e: AppuiPointeur) => void;
   };
   /** L'événement en cours suit-il un appui long DÉJÀ déclenché ? Lisible par CHACUN des événements
    *  natifs de la salve (`contextmenu` PUIS `click` au doigt) : la réponse tient `FENETRE_AVALEMENT`
@@ -37,6 +57,10 @@ export function useLongPress(action: (() => void) | undefined, delai = DELAI_APP
   const minuteur = useRef<ReturnType<typeof setTimeout> | null>(null);
   const depart = useRef<{ x: number; y: number } | null>(null);
   const declenche = useRef(0);
+  /** Capture de pointeur EN COURS, à rendre à l'annulation. */
+  const capture = useRef<{ cible: NonNullable<AppuiPointeur['currentTarget']>; id: number } | null>(null);
+  /** Écouteur de fenêtre POSÉ (donc à retirer) : sa présence EST l'état « appui armé ». */
+  const suite = useRef<((e: Event) => void) | null>(null);
   const geste = useRef(action);
   geste.current = action;
 
@@ -44,12 +68,39 @@ export function useLongPress(action: (() => void) | undefined, delai = DELAI_APP
     if (minuteur.current) clearTimeout(minuteur.current);
     minuteur.current = null;
     depart.current = null;
+    const ecoute = suite.current;
+    suite.current = null;
+    if (ecoute) for (const type of SUITE) window.removeEventListener(type, ecoute);
+    const prise = capture.current;
+    capture.current = null;
+    // Le navigateur rend la capture de lui-même dans plusieurs cas (élément retiré, `pointercancel`).
+    try {
+      prise?.cible.releasePointerCapture?.(prise.id);
+    } catch {
+      capture.current = null;
+    }
   }, []);
 
   useEffect(() => annuler, [annuler]);
 
+  /** La SUITE de l'appui, lue à la fenêtre : seul le DÉPLACEMENT au-delà du seuil — ou la fin du
+   *  contact — annule. Le pointeur peut avoir quitté l'alvéole depuis longtemps. */
+  const surLaSuite = useCallback(
+    (e: Event) => {
+      if (e.type !== 'pointermove') {
+        annuler();
+        return;
+      }
+      const d = depart.current;
+      if (!d) return;
+      const { clientX, clientY } = e as unknown as { clientX: number; clientY: number };
+      if (Math.abs(clientX - d.x) > TOLERANCE || Math.abs(clientY - d.y) > TOLERANCE) annuler();
+    },
+    [annuler],
+  );
+
   const onPointerDown = useCallback(
-    (e: { clientX: number; clientY: number; button?: number }) => {
+    (e: AppuiPointeur) => {
       if (!geste.current) return;
       // BOUTON PRINCIPAL seulement. Là où le `contextmenu` naît À L'APPUI (macOS, Linux), un clic
       // droit maintenu déclencherait le geste une 2ᵉ fois au bout du délai — à N≥2, le panneau que
@@ -58,28 +109,29 @@ export function useLongPress(action: (() => void) | undefined, delai = DELAI_APP
       annuler();
       declenche.current = 0;
       depart.current = { x: e.clientX, y: e.clientY };
+      // CAPTURE (là où le navigateur la porte) : le pointeur reste rattaché à l'alvéole jusqu'au
+      // relâchement — au doigt, c'est ce qui fait arriver la suite du geste à la bonne cible.
+      const cible = e.currentTarget;
+      if (cible?.setPointerCapture && typeof e.pointerId === 'number') {
+        try {
+          cible.setPointerCapture(e.pointerId);
+          capture.current = { cible, id: e.pointerId };
+        } catch {
+          capture.current = null;
+        }
+      }
+      suite.current = surLaSuite;
+      for (const type of SUITE) window.addEventListener(type, surLaSuite);
       minuteur.current = setTimeout(() => {
         minuteur.current = null;
         declenche.current = Date.now();
         geste.current?.();
       }, delai);
     },
-    [annuler, delai],
-  );
-
-  const onPointerMove = useCallback(
-    (e: { clientX: number; clientY: number }) => {
-      const d = depart.current;
-      if (!d) return;
-      if (Math.abs(e.clientX - d.x) > TOLERANCE || Math.abs(e.clientY - d.y) > TOLERANCE) annuler();
-    },
-    [annuler],
+    [annuler, delai, surLaSuite],
   );
 
   const consomme = useCallback(() => declenche.current > 0 && Date.now() - declenche.current < FENETRE_AVALEMENT, []);
 
-  return {
-    handlers: { onPointerDown, onPointerMove, onPointerUp: annuler, onPointerLeave: annuler, onPointerCancel: annuler },
-    consomme,
-  };
+  return { handlers: { onPointerDown }, consomme };
 }

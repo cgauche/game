@@ -2921,6 +2921,65 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
     expect(surPont.defaultPrevented, 'y compris hors alvéole (le pont lui-même)').toBe(true);
   });
 
+  /** RECETTE NAVIGATEUR du 2026-08-23 (reproduite 2×, 25 px puis 60 px) : `mouse.down` sur l'alvéole,
+   *  glissement HORS de sa bbox, maintien 650 ms, `up` — la modale s'ouvrait quand même. Le
+   *  `pointermove` n'est plus destiné à l'alvéole dès que le pointeur en est sorti : la séquence se
+   *  rejoue donc ICI À LA FENÊTRE, comme le navigateur la livre. */
+  it('APPUI LONG GLISSÉ hors de la case : le geste est ANNULÉ (un glissement n’est pas un appui)', () => {
+    monter(mage(['carreau']));
+    const cellule = alveole('carreau');
+    vi.useFakeTimers();
+    try {
+      act(() => { cellule.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 100, clientY: 100 })); });
+      act(() => { vi.advanceTimersByTime(50); });
+      act(() => { window.dispatchEvent(new MouseEvent('pointermove', { clientX: 160, clientY: 100 })); });
+      act(() => { vi.advanceTimersByTime(650); });
+      act(() => { window.dispatchEvent(new MouseEvent('pointerup', { clientX: 160, clientY: 100 })); });
+      expect(useGame.getState().pendingFocus, 'le pointeur a glissé de 60 px : aucun geste secondaire').toBeNull();
+      // TÉMOIN : la MÊME séquence SANS glissement déclenche — le contrat n'est pas mort, il discrimine.
+      act(() => { cellule.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 100, clientY: 100 })); });
+      act(() => { vi.advanceTimersByTime(650); });
+      expect(useGame.getState().pendingFocus?.spellId, 'témoin : l’appui IMMOBILE ouvre bien la Focalisation').toBe('carreau');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  /** Le franchissement de BORDURE n'annule plus : le navigateur émet `pointerleave` sous un pointeur
+   *  IMMOBILE dès qu'un re-rendu déplace la case sous lui (friction B de la recette : appui long
+   *  aussitôt après la fermeture d'une modale, classé clic court). Seule la DISTANCE décide. */
+  it('un `pointerleave` sous un pointeur IMMOBILE n’annule pas l’appui (une case qui bouge n’est pas un glissement)', () => {
+    monter(mage(['carreau']));
+    const cellule = alveole('carreau');
+    vi.useFakeTimers();
+    try {
+      act(() => { cellule.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 100, clientY: 100 })); });
+      act(() => { cellule.dispatchEvent(new MouseEvent('pointerleave', { bubbles: false, clientX: 100, clientY: 100 })); });
+      act(() => { cellule.dispatchEvent(new MouseEvent('pointerout', { bubbles: true, clientX: 100, clientY: 100 })); });
+      act(() => { vi.advanceTimersByTime(650); });
+      expect(useGame.getState().pendingFocus?.spellId, 'le pointeur n’a pas bougé d’un pixel : l’appui tient').toBe('carreau');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('l’alvéole demande la CAPTURE du pointeur : la suite du geste lui revient même hors de sa bbox', () => {
+    const prise: number[] = [];
+    const proto = HTMLButtonElement.prototype as unknown as { setPointerCapture?: (id: number) => void };
+    const avant = proto.setPointerCapture;
+    proto.setPointerCapture = function capter(id: number) { prise.push(id); };
+    try {
+      monter(mage(['carreau']));
+      const appui = new MouseEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 });
+      Object.defineProperty(appui, 'pointerId', { value: 3 });
+      act(() => { alveole('carreau').dispatchEvent(appui); });
+      expect(prise, 'la capture est demandée pour LE pointeur qui appuie').toEqual([3]);
+    } finally {
+      if (avant) proto.setPointerCapture = avant;
+      else delete proto.setPointerCapture;
+    }
+  });
+
   it('CLIC DROIT MAINTENU (contextmenu À L’APPUI, macOS/Linux) : le minuteur d’appui long ne rejoue pas le geste', () => {
     const fabrique: ActionDef = {
       id: 'test-geste-2e-fabrique', label: 'Geste fabriqué', icon: 'flag/focus',
