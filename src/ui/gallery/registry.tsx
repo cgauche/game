@@ -199,16 +199,41 @@ function QtyStepperDemo() {
 
 function NumberFieldDemo() {
   const [n, setN] = useState(3);
+  const [de, setDe] = useState<number | null>(null);
+  const [page, setPage] = useState<number | null>(null);
   return (
-    <NumberField
-      id="gallery-number-field"
-      label="Joueurs autour de la table"
-      min={2}
-      max={8}
-      value={n}
-      unit="joueurs"
-      onChange={setN}
-    />
+    <>
+      <NumberField
+        id="gallery-number-field"
+        label="Joueurs autour de la table"
+        min={2}
+        max={8}
+        value={n}
+        unit="joueurs"
+        onChange={setN}
+      />
+      {/* `champ` : le compteur et la plage dite ne tiennent pas dans une rangée de jet. Le commit
+          DIFFÉRÉ (`geste`) refuse une saisie hors domaine au lieu de la caler. */}
+      <div className="rm-die-pick">
+        <NumberField
+          variant="champ"
+          label="Fixer le dé"
+          min={1}
+          max={100}
+          placeholder="d100"
+          commit="geste"
+          vide
+          value={de}
+          onChange={setDe}
+        />
+      </div>
+      {/* `nu` : rangée dense de l'atelier du Codex, le libellé appartient à l'appelant et devient le
+          nom accessible du champ ; borne absente = valeur libre de donnée, jamais calée. */}
+      <label className="dr">
+        page
+        <NumberField variant="nu" label="page de la source" placeholder="page" width={72} vide value={page} onChange={setPage} />
+      </label>
+    </>
   );
 }
 

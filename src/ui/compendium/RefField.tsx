@@ -13,6 +13,7 @@
  */
 import { useMemo } from 'react';
 import { datasetArray, type DatasetKey } from '../../data/overrides';
+import { NumberField } from '../NumberField';
 
 /** Config d'un champ-réf, par (catégorie, champ). Dataset réel (liste/single) OU vocabulaire d'un champ. */
 export type RefFieldCfg =
@@ -198,8 +199,10 @@ function ListRefField(
             {options.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
           </select>
           {cfg.value && (
-            <input type="number" placeholder="Indice" style={{ width: 64 }} value={ref.value ?? ''}
-              onChange={(e) => set(list.map((r, j) => (j === i ? { ...r, value: e.target.value === '' ? undefined : Number(e.target.value) } : r)))} />
+            <NumberField
+              variant="nu" label={`Indice — ${label}`} placeholder="Indice" width={64}
+              vide value={ref.value} onChange={(n) => set(list.map((r, j) => (j === i ? { ...r, value: n ?? undefined } : r)))}
+            />
           )}
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>

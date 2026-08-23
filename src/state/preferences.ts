@@ -16,7 +16,7 @@ import { DES_FIXES_DEFAULT, desFixes, setDesFixes } from '../engine/fixedDie';
 import { useGame } from './store';
 
 export type PrefValue = boolean | number | string;
-export type PrefKind = 'flag' | 'param' | 'mode';
+export type PrefKind = 'flag' | 'mode';
 
 export interface Preference {
   /** Identifiant stable (clé de persistance). */
@@ -25,14 +25,10 @@ export interface Preference {
   label: string;
   /** Aide courte (infobulle). */
   hint?: string;
-  /** Forme du contrôle auto-rendu : flag=case à cocher, param=nombre, mode=liste. */
+  /** Forme du contrôle auto-rendu : flag=case à cocher, mode=liste. */
   kind: PrefKind;
   /** Valeurs possibles (kind='mode'). */
   options?: string[];
-  /** Bornes (kind='param'). */
-  min?: number;
-  max?: number;
-  step?: number;
   /** Valeur par défaut. */
   default: PrefValue;
   /** Lecture de la valeur effective (la valeur vit dans son module métier, jamais en double ici). */

@@ -310,7 +310,7 @@
    sheet.css) : aucune classe de domaine de plus pour un simple espacement (cliquet xii). */
 /* Saisie libre de la valeur du dé (« Je ne faillirai pas ! », LDB 17 l.68 ; option « Dés fixés »).
    Largeur = 3 chiffres d'un d100 + le pas du contrôle ; même matière que les `.btn small` voisins. */
-.rm-die-input {
+.rm-die-pick > label > input {
   width: 76px;
   padding: 5px 8px;
   background: var(--panel2);
@@ -324,7 +324,7 @@
 }
 /* Le champ ACTIF s'allume au liseré `--gold` ; l'anneau de focus clavier partagé (base.css) reste
    par-dessus, et distingue « je suis ici » de « valeur retenue ». */
-.rm-die-input:focus {
+.rm-die-pick > label > input:focus {
   border-color: var(--gold);
 }
 /* RANGÉE de jet (`.prow`, `RollRow`) — CONTENEUR : le ferrage est déclaré ICI, une fois, pour tous ses

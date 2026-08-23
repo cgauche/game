@@ -111,7 +111,7 @@ function typeAndCommit(input: HTMLInputElement, value: string) {
   pressEnter(input);
 }
 
-const dieInput = () => host.querySelector('input.rm-die-input') as HTMLInputElement | null;
+const dieInput = () => host.querySelector('.rm-die-pick input[type="number"]') as HTMLInputElement | null;
 
 describe('« Dé fixé » PRÉ-jet — le champ écrit vraiment (option ON, héros piloté)', () => {
   it('la saisie LANCE le jet puis substitue la valeur au d100', () => {
@@ -247,7 +247,7 @@ describe('« Dé fixé » PRÉ-jet — le champ écrit vraiment (option ON, hér
     const label = host.querySelector('.rm-die-pick > label')!;
     expect(label.textContent).toContain('Dé fixé');
     expect(label.textContent).not.toContain('Fixer le dé');
-    expect((host.querySelector('input.rm-die-input') as HTMLInputElement).value).toBe('33');
+    expect((host.querySelector('.rm-die-pick input[type="number"]') as HTMLInputElement).value).toBe('33');
     expect(host.querySelector('.prow-fixed-mark'), 'pastille EN PLUS du champ : deux surfaces pour un seul fait').toBeNull();
     expect((host.textContent ?? '').split('Dé fixé').length - 1).toBe(1);
   });
@@ -384,7 +384,7 @@ describe('« Fixer le dé » — un nom accessible PAR LIGNE (#1117)', () => {
         </>,
       );
     });
-    return [...host.querySelectorAll('input.rm-die-input')] as HTMLInputElement[];
+    return [...host.querySelectorAll('.rm-die-pick input[type="number"]')] as HTMLInputElement[];
   }
 
   it('chaque champ porte le nom de SA ligne — plus deux spinbuttons homonymes', () => {
@@ -646,7 +646,7 @@ describe('« Tout lancer » d’une fenêtre MULTI — chaque rangée consomme S
       );
     });
     const cta = [...host.querySelectorAll('.modal-actions button')].find((b) => /Tout lancer/.test(b.textContent ?? '')) as HTMLButtonElement;
-    return { inputs: [...host.querySelectorAll('input.rm-die-input')] as HTMLInputElement[], cta, rolls };
+    return { inputs: [...host.querySelectorAll('.rm-die-pick input[type="number"]')] as HTMLInputElement[], cta, rolls };
   }
 
   it('taper 95 dans la rangée 2 puis « Tout lancer » : elle part à 95, les autres en naturel, chacune UNE fois', () => {
@@ -740,7 +740,7 @@ describe('ORDRE RÉEL blur → clic : les 3 hôtes consomment quand même le dé
           onCancel={() => {}} />,
       );
     });
-    const inputs = [...host.querySelectorAll('input.rm-die-input')] as HTMLInputElement[];
+    const inputs = [...host.querySelectorAll('.rm-die-pick input[type="number"]')] as HTMLInputElement[];
     const cta = [...host.querySelectorAll('.modal-actions button')].find((b) => /Tout lancer/.test(b.textContent ?? '')) as HTMLButtonElement;
     act(() => inputs[1].focus());
     type(inputs[1], '95');

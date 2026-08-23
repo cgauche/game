@@ -18,6 +18,7 @@ import type { ActivityContext, OutcomeBand, BattleOutcome, BattleSide, BattleOut
 import { WEATHER_LABEL } from '../../engine/travelStages';
 import { RefField, refFieldCfg } from './RefField';
 import { Icon } from '../Icon';
+import { NumberField } from '../NumberField';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { FlowEditor } from '../editor/FlowEditor';
 import { GameOpEditor, FormulaField, opsMissingRefs } from '../editor/GameOpEditor';
@@ -922,14 +923,14 @@ function TriggeredEffectsField({ value, onChange, label = 'effets déclenchés (
               </select>
             </label>
             {typeof eff.on === 'object' && 'near' in eff.on && (
-              <label className="dr">à ≤ <input type="number" min={1} style={{ width: '3.4em' }} value={eff.on.radiusMeters} onChange={(e) => set(i, { on: { near: (eff.on as { near: 'self' | 'victim' }).near, radiusMeters: Math.max(1, Number(e.target.value) || 1) } })} /> m de
+              <label className="dr">à ≤ <NumberField variant="nu" label="Rayon de la zone (m)" min={1} width="3.4em" value={eff.on.radiusMeters} onChange={(radiusMeters) => set(i, { on: { near: (eff.on as { near: 'self' | 'victim' }).near, radiusMeters } })} /> m de
               <select value={eff.on.near} onChange={(e) => set(i, { on: { near: e.target.value as 'self' | 'victim', radiusMeters: (eff.on as { radiusMeters: number }).radiusMeters } })}>
                 <option value="victim">la victime</option>
                 <option value="self">soi</option>
               </select></label>
             )}
             {typeof eff.on === 'object' && 'pick' in eff.on && (
-              <label className="dr">max <input type="number" min={1} style={{ width: '3.4em' }} value={eff.on.max} onChange={(e) => set(i, { on: { pick: 'engaged', ...((eff.on as { sizeAtMost?: 'self' }).sizeAtMost ? { sizeAtMost: 'self' as const } : {}), max: Math.max(1, Number(e.target.value) || 1) } })} />
+              <label className="dr">max <NumberField variant="nu" label="Nombre maximum de cibles" min={1} width="3.4em" value={eff.on.max} onChange={(max) => set(i, { on: { pick: 'engaged', ...((eff.on as { sizeAtMost?: 'self' }).sizeAtMost ? { sizeAtMost: 'self' as const } : {}), max } })} />
               <input type="checkbox" checked={(eff.on as { sizeAtMost?: 'self' }).sizeAtMost === 'self'} onChange={(e) => set(i, { on: { pick: 'engaged', ...(e.target.checked ? { sizeAtMost: 'self' as const } : {}), max: (eff.on as { max: number }).max } })} /> Taille ≤ la sienne</label>
             )}
             <label className="dr" title="RAW « Vous pouvez… » (Contrôle de la Frénésie) : le héros CHOISIT de déclencher (étape de choix en fin de Round) ; l’IA ne l’exerce jamais">
@@ -975,7 +976,7 @@ function MeasureField({ label, value, onChange }: { label: string; value: Maneuv
         <option value="">— (aucun)</option>
         {CHAR_KEYS.map((k) => <option key={k} value={k}>Bonus de {CHAR_LABELS[k]}</option>)}
       </select>
-      <input type="number" placeholder="+ m" style={{ width: 64 }} value={v.plus ?? ''} onChange={(e) => upd({ plus: e.target.value === '' ? undefined : (Number(e.target.value) || 0) })} /> m
+      <NumberField variant="nu" label={`${label} — bonus fixe (m)`} placeholder="+ m" width={64} vide value={v.plus} onChange={(n) => upd({ plus: n ?? undefined })} /> m
     </label>
   );
 }
@@ -995,7 +996,7 @@ function ManeuverDefField({ entry, edit }: { entry: Entry; edit: (key: string, v
             {(Object.keys(MANEUVER_ACTIVATION_LABEL) as ManeuverDef['activation'][]).map((a) => <option key={a} value={a}>{MANEUVER_ACTIVATION_LABEL[a]}</option>)}
           </select>
         </label>
-        <label className="dr">Coût d’Avantage<input type="number" min={0} value={m.advantageCost ?? 0} onChange={(e) => edit('advantageCost', Math.max(0, Number(e.target.value) || 0))} /></label>
+        <label className="dr">Coût d’Avantage<NumberField variant="nu" label="Coût d’Avantage" min={0} value={m.advantageCost ?? 0} onChange={(n) => edit('advantageCost', n)} /></label>
         <label className="dr">Avantage
           <select value={m.advantageMode ?? 'fixed'} onChange={(e) => edit('advantageMode', e.target.value === 'fixed' ? undefined : (e.target.value as ManeuverDef['advantageMode']))}>
             {(Object.keys(ADV_MODE_LABEL) as NonNullable<ManeuverDef['advantageMode']>[]).map((a) => <option key={a} value={a}>{ADV_MODE_LABEL[a]}</option>)}
@@ -1185,7 +1186,7 @@ function SourceSubForm({ value, onChange }: { value: { book?: string; page?: num
   return (
     <div className="de-source">
       <input placeholder="livre" value={value.book ?? ''} onChange={(e) => onChange({ ...value, book: e.target.value })} />
-      <input type="number" placeholder="page" value={value.page ?? ''} onChange={(e) => onChange({ ...value, page: Number(e.target.value) || 0 })} />
+      <NumberField variant="nu" label="page" placeholder="page" vide value={value.page} onChange={(n) => onChange({ ...value, page: n ?? 0 })} />
       <input placeholder="note (facultatif)" value={value.note ?? ''} onChange={(e) => onChange({ ...value, note: e.target.value || undefined })} />
     </div>
   );
@@ -1295,7 +1296,7 @@ function RestartTestField({ value, onChange }: { value: { skillId: string; spec?
           <select value={r.difficulty} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, difficulty: e.target.value as Difficulty } : x)))}>
             {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
           </select>
-          <input type="number" min={1} placeholder="DR cumulés (étendu)" style={{ width: 64 }} value={r.extendedDR ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, extendedDR: e.target.value === '' ? undefined : Number(e.target.value) } : x)))} />
+          <NumberField variant="nu" label="DR cumulés (étendu)" min={1} placeholder="DR cumulés (étendu)" width={64} vide value={r.extendedDR} onChange={(n) => set(list.map((x, j) => (j === i ? { ...x, extendedDR: n ?? undefined } : x)))} />
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
@@ -1392,7 +1393,7 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
           <div className="tf-row">
             <input placeholder="id" style={{ width: 140 }} value={m.id} onChange={(e) => set(i, { id: e.target.value })} />
             <input placeholder="libellé" value={m.label} onChange={(e) => set(i, { label: e.target.value })} />
-            <input type="number" style={{ width: 64 }} value={m.mod} onChange={(e) => set(i, { mod: Number(e.target.value) || 0 })} />
+            <NumberField variant="nu" label={`Modificateur — ${m.label || m.id || 'sans libellé'}`} width={64} value={m.mod} onChange={(mod) => set(i, { mod })} />
             <select value={m.table} onChange={(e) => set(i, { table: e.target.value as WaterExposureModifier['table'] })}>
               {WATER_TABLE_OPTS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
             </select>
@@ -1418,13 +1419,12 @@ function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['dis
   const list = value ?? [];
   const maladieOpts = datasetArray('maladies') as { id: string; label: string }[];
   const set = (i: number, patch: Partial<WaterExposureData['diseases'][number]>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
-  const clampD100 = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
   return (
     <div className="ed-field">
       <span>maladies contractées — jet d100 après échec du Test de Résistance (MSRC 16 p.91)</span>
       {list.map((r, i) => (
         <div className="tf-row" key={i}>
-          <label className="dr">d100&nbsp;<input type="number" min={1} max={100} value={r.min} onChange={(e) => set(i, { min: clampD100(e.target.value) })} />–<input type="number" min={1} max={100} value={r.max} onChange={(e) => set(i, { max: clampD100(e.target.value) })} /></label>
+          <label className="dr">d100&nbsp;<NumberField variant="nu" label="Plage d100 — borne basse" min={1} max={100} value={r.min} onChange={(min) => set(i, { min })} />–<NumberField variant="nu" label="Plage d100 — borne haute" min={1} max={100} value={r.max} onChange={(max) => set(i, { max })} /></label>
           <select value={r.disease} onChange={(e) => set(i, { disease: e.target.value })}>
             <option value="">— (choisir une maladie) —</option>
             {maladieOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
@@ -1496,7 +1496,7 @@ function BattleOutcomeListField({ value, onChange }: { value: BattleOutcome[] | 
           <select value={o.scale} onChange={(e) => set(i, { scale: e.target.value as BattleOutcomeScale })}>
             {BATTLE_SCALE_KEYS.map((s) => <option key={s} value={s}>{BATTLE_SCALE_LABEL[s]}</option>)}
           </select>
-          <label className="dr">montant<input type="number" style={{ width: 72 }} value={o.amount} onChange={(e) => set(i, { amount: Number(e.target.value) || 0 })} /></label>
+          <label className="dr">montant<NumberField variant="nu" label="montant" width={72} value={o.amount} onChange={(amount) => set(i, { amount })} /></label>
           <select value={o.side ?? ''} onChange={(e) => set(i, { side: (e.target.value || undefined) as BattleSide | undefined })}>
             <option value="">— camp (auto) —</option>
             {BATTLE_SIDE_KEYS.map((s) => <option key={s} value={s}>{BATTLE_SIDE_LABEL[s]}</option>)}
@@ -1561,7 +1561,6 @@ function ActivityResolverField({ entry, edit }: { entry: Record<string, unknown>
 function OutcomeBandsField({ value, onChange }: { value: OutcomeBand[] | undefined; onChange: (v: OutcomeBand[]) => void }) {
   const list = value ?? [];
   const set = (i: number, patch: Partial<OutcomeBand>) => onChange(list.map((b, j) => (j === i ? { ...b, ...patch } : b)));
-  const numOrUndef = (s: string): number | undefined => (s === '' ? undefined : Number(s));
   return (
     <div className="ed-field">
       <span>issues par Degrés de Réussite (bandes DR → résultat) — Maladresse remplace toute autre issue ; sans « issue » la bande matche par DR seul (ACE Annexe I)</span>
@@ -1574,8 +1573,8 @@ function OutcomeBandsField({ value, onChange }: { value: OutcomeBand[] | undefin
                 {OUTCOME_ON_KEYS.map((o) => <option key={o} value={o}>{OUTCOME_ON_LABEL[o]}</option>)}
               </select>
             </label>
-            <label className="dr">DR min<input type="number" style={{ width: 64 }} value={b.minSL ?? ''} onChange={(e) => set(i, { minSL: numOrUndef(e.target.value) })} /></label>
-            <label className="dr">DR max<input type="number" style={{ width: 64 }} value={b.maxSL ?? ''} onChange={(e) => set(i, { maxSL: numOrUndef(e.target.value) })} /></label>
+            <label className="dr">DR min<NumberField variant="nu" label="DR min" width={64} vide value={b.minSL} onChange={(n) => set(i, { minSL: n ?? undefined })} /></label>
+            <label className="dr">DR max<NumberField variant="nu" label="DR max" width={64} vide value={b.maxSL} onChange={(n) => set(i, { maxSL: n ?? undefined })} /></label>
             <label className="dr">gate bataille
               <select value={b.when ?? ''} onChange={(e) => set(i, { when: (e.target.value || undefined) as BattleCond | undefined })}>
                 <option value="">— aucun —</option>
@@ -1594,7 +1593,7 @@ function OutcomeBandsField({ value, onChange }: { value: OutcomeBand[] | undefin
                 {ACTIVITY_RESOLVERS.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
             </label>
-            <label className="dr">rendu %<input type="number" style={{ width: 64 }} value={b.payoutPct ?? ''} onChange={(e) => set(i, { payoutPct: numOrUndef(e.target.value) })} /></label>
+            <label className="dr">rendu %<NumberField variant="nu" label="rendu %" width={64} vide value={b.payoutPct} onChange={(n) => set(i, { payoutPct: n ?? undefined })} /></label>
           </div>
           <div className="ed-subfield">
             <span>effet mécanique sur le Personnage (GameOp[])</span>
@@ -1623,14 +1622,13 @@ interface MutationRange { min: number; max: number; mutation: string; }
 function WeatherRangesField({ value, onChange }: { value: { max: number; weather: string }[] | undefined; onChange: (v: { max: number; weather: string }[]) => void }) {
   const list = value ?? [];
   const set = (i: number, patch: Partial<{ max: number; weather: string }>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
-  const clampD100 = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
   return (
     <div className="ed-field">
       <span>plages d100 → météo (jusqu'à `max` inclus, ordonnées ; la dernière doit finir à 100)</span>
       {list.map((r, i) => (
         <div className="ed-subfield" key={i}>
           <div className="tf-row">
-            <label className="dr">d100 ≤&nbsp;<input type="number" min={1} max={100} value={r.max} onChange={(e) => set(i, { max: clampD100(e.target.value) })} /></label>
+            <label className="dr">d100 ≤&nbsp;<NumberField variant="nu" label="Plage d100 — borne haute" min={1} max={100} value={r.max} onChange={(max) => set(i, { max })} /></label>
             <select value={r.weather} onChange={(e) => set(i, { weather: e.target.value })}>
               {(Object.keys(WEATHER_LABEL) as (keyof typeof WEATHER_LABEL)[]).map((w) => <option key={w} value={w}>{WEATHER_LABEL[w]}</option>)}
             </select>
@@ -1647,14 +1645,13 @@ function MutationTableField({ value, onChange }: { value: MutationRange[] | unde
   const list = value ?? [];
   const mutationOpts = datasetArray('mutations') as { id: string; label: string }[];
   const set = (i: number, patch: Partial<MutationRange>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
-  const clampD100 = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
   return (
     <div className="ed-field">
       <span>plages d100 → mutation (la table renvoie la mutation dont l'intervalle contient le jet)</span>
       {list.map((r, i) => (
         <div className="ed-subfield" key={i}>
           <div className="tf-row">
-            <label className="dr">d100&nbsp;<input type="number" min={1} max={100} value={r.min} onChange={(e) => set(i, { min: clampD100(e.target.value) })} />–<input type="number" min={1} max={100} value={r.max} onChange={(e) => set(i, { max: clampD100(e.target.value) })} /></label>
+            <label className="dr">d100&nbsp;<NumberField variant="nu" label="Plage d100 — borne basse" min={1} max={100} value={r.min} onChange={(min) => set(i, { min })} />–<NumberField variant="nu" label="Plage d100 — borne haute" min={1} max={100} value={r.max} onChange={(max) => set(i, { max })} /></label>
             <select value={r.mutation} onChange={(e) => set(i, { mutation: e.target.value })}>
               <option value="">— (choisir une mutation) —</option>
               {mutationOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
@@ -1751,7 +1748,7 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
         <span>{key}</span>
         {list.map((item, i) => (
           <div key={i} className="de-reflrow">
-            <input type="number" value={item} onChange={(e) => set(list.map((x, j) => (j === i ? Number(e.target.value) : x)))} />
+            <NumberField variant="nu" label={`${key} — valeur ${i + 1}`} value={item} onChange={(n) => set(list.map((x, j) => (j === i ? n : x)))} />
             <button className="btn small danger" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
           </div>
         ))}
@@ -1762,17 +1759,17 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
   if (kind === 'textarea')
     return <label className="ed-field"><span>{key}</span><textarea rows={3} value={(value as string) ?? ''} onChange={(e) => onChange(e.target.value)} /></label>;
   if (kind === 'number')
-    return <label className="ed-field"><span>{key}</span><input type="number" value={value == null ? '' : (value as number)} onChange={(e) => onChange(e.target.value === '' ? (field.nullable ? null : 0) : Number(e.target.value))} /></label>;
+    return <label className="ed-field"><span>{key}</span><NumberField variant="nu" label={key} vide value={value as number | null} onChange={(n) => onChange(n ?? (field.nullable ? null : 0))} /></label>;
   if (kind === 'checkbox')
     return <label className="ed-check"><input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} /><span>{key}</span></label>;
   if (kind === 'source') {
     const s = (value as { book?: string; page?: number }) ?? {};
-    return <div className="ed-field"><span>{key}</span><div className="de-source"><input placeholder="livre" value={s.book ?? ''} onChange={(e) => onChange({ ...s, book: e.target.value })} /><input type="number" placeholder="page" value={s.page ?? ''} onChange={(e) => onChange({ ...s, page: Number(e.target.value) || 0 })} /></div></div>;
+    return <div className="ed-field"><span>{key}</span><div className="de-source"><input placeholder="livre" value={s.book ?? ''} onChange={(e) => onChange({ ...s, book: e.target.value })} /><NumberField variant="nu" label={`${key} — page`} placeholder="page" vide value={s.page} onChange={(n) => onChange({ ...s, page: n ?? 0 })} /></div></div>;
   }
   if (kind === 'recordNumber') {
     const rec = (value as Record<string, number | null>) ?? {};
     const keys = Object.keys(rec);
-    return <div className="ed-field"><span>{key}</span>{keys.length === 0 ? <em className="de-hint">vide</em> : <div className="de-grid">{keys.map((k) => <label key={k} className="de-cell"><span>{k}</span><input type="number" value={rec[k] ?? ''} onChange={(e) => onChange({ ...rec, [k]: e.target.value === '' ? null : Number(e.target.value) })} /></label>)}</div>}</div>;
+    return <div className="ed-field"><span>{key}</span>{keys.length === 0 ? <em className="de-hint">vide</em> : <div className="de-grid">{keys.map((k) => <label key={k} className="de-cell"><span>{k}</span><NumberField variant="nu" label={`${key} — ${k}`} vide value={rec[k]} onChange={(n) => onChange({ ...rec, [k]: n })} /></label>)}</div>}</div>;
   }
   if (kind === 'recordText') return <RecordTextField label={key} value={value as Record<string, string> | undefined} onChange={onChange} />;
   if (kind === 'object') return <ObjectField label={key} value={value as Record<string, unknown> | undefined} onChange={onChange} />;
@@ -1884,8 +1881,8 @@ function LengthRangeField({ value, onChange }: { value: [number, number] | undef
     <div className="ed-field">
       <span>lengthM — longueur (m)</span>
       <div className="tf-row">
-        <input type="number" min={1} value={lo} onChange={(e) => onChange([Number(e.target.value) || 1, hi])} />–
-        <input type="number" min={1} value={hi} onChange={(e) => onChange([lo, Number(e.target.value) || 1])} />
+        <NumberField variant="nu" label="lengthM — longueur minimale (m)" min={1} value={lo} onChange={(n) => onChange([n, hi])} />–
+        <NumberField variant="nu" label="lengthM — longueur maximale (m)" min={1} value={hi} onChange={(n) => onChange([lo, n])} />
       </div>
     </div>
   );

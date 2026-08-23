@@ -86,7 +86,7 @@ export function SymptomTickField({ value, onChange }: { value: SymptomTick | und
             <option value="">— inconditionnel (pas de jet) —</option>
             {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
           </select>
-          <label>à partir du jour de phase active <input type="number" min={1} value={value.afterDays ?? ''} onChange={(e) => patch({ afterDays: e.target.value ? Number(e.target.value) : undefined })} /></label>
+          <label>à partir du jour de phase active <NumberField variant="nu" label="Jour de phase active" min={1} vide value={value.afterDays} onChange={(n) => patch({ afterDays: n ?? undefined })} /></label>
           <label><input type="checkbox" checked={!!value.once} onChange={(e) => patch({ once: e.target.checked || undefined })} /> une seule fois (au jour exact)</label>
           <GameOpEditor ops={value.onFail ?? []} onChange={(ops) => patch({ onFail: ops })} />
         </>
@@ -226,8 +226,8 @@ export function CombatField(
         <label className="dr"><input type="checkbox" checked={!!offHand} onChange={(e) => emit({ ...c, offHandPenalty: e.target.checked ? { perLevel: 10, zeroAt: 2 } : undefined })} /> Pénalité de main secondaire</label>
         {offHand && (
           <>
-            <label className="dr">par niveau<input type="number" value={offHand.perLevel} onChange={(e) => emit({ ...c, offHandPenalty: { ...offHand, perLevel: Number(e.target.value) || 0 } })} /></label>
-            <label className="dr">nulle à<input type="number" value={offHand.zeroAt} onChange={(e) => emit({ ...c, offHandPenalty: { ...offHand, zeroAt: Number(e.target.value) || 0 } })} /></label>
+            <label className="dr">par niveau<NumberField variant="nu" label="Pénalité de main secondaire — par niveau" value={offHand.perLevel} onChange={(perLevel) => emit({ ...c, offHandPenalty: { ...offHand, perLevel } })} /></label>
+            <label className="dr">nulle à<NumberField variant="nu" label="Pénalité de main secondaire — nulle à" value={offHand.zeroAt} onChange={(zeroAt) => emit({ ...c, offHandPenalty: { ...offHand, zeroAt } })} /></label>
           </>
         )}
       </div>
@@ -242,7 +242,7 @@ export function CombatField(
               {datasetArray('skills').map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
             </select>
             <input className="dr" placeholder="spec" value={c.reverseFailed.spec ?? ''} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, spec: e.target.value || undefined } })} />
-            <label className="dr">cap DR<input type="number" value={c.reverseFailed.capDR ?? 0} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, capDR: Number(e.target.value) || undefined } })} /></label>
+            <label className="dr">cap DR<NumberField variant="nu" label="Inverse un Test raté — cap DR" value={c.reverseFailed.capDR ?? 0} onChange={(n) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, capDR: n || undefined } })} /></label>
           </>
         )}
       </div>
@@ -306,7 +306,7 @@ export function AdvancementRefField(
               <ChoiceList ds={ds} value={a.choice} onChange={(choice) => set(i, { choice })} />
             )}
             {'random' in a && (
-              <label className="dr">nombre aléatoire<input type="number" min={1} value={a.random} onChange={(e) => set(i, { random: Math.max(1, Number(e.target.value) || 1) })} /></label>
+              <label className="dr">nombre aléatoire<NumberField variant="nu" label="nombre aléatoire" min={1} value={a.random} onChange={(random) => set(i, { random })} /></label>
             )}
           </div>
         );
@@ -427,7 +427,6 @@ export function StarSubField({ value, onChange }: { value: [number, number] | un
   const on = value != null;
   const lo = value?.[0] ?? 1;
   const hi = value?.[1] ?? 1;
-  const clamp = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
   return (
     <div className="ed-field">
       <span>sous-fourchette du 1d10 interne (Étoile du Sorcier — ADE II) : décocher = signe simple</span>
@@ -435,8 +434,8 @@ export function StarSubField({ value, onChange }: { value: [number, number] | un
         <label className="dr"><input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked ? [lo, hi] : undefined)} /> sous-tirage</label>
         {on && (
           <label className="dr">d100&nbsp;
-            <input type="number" min={1} max={100} value={lo} onChange={(e) => onChange([clamp(e.target.value), hi])} />–
-            <input type="number" min={1} max={100} value={hi} onChange={(e) => onChange([lo, clamp(e.target.value)])} />
+            <NumberField variant="nu" label="Sous-fourchette d100 — borne basse" min={1} max={100} value={lo} onChange={(n) => onChange([n, hi])} />–
+            <NumberField variant="nu" label="Sous-fourchette d100 — borne haute" min={1} max={100} value={hi} onChange={(n) => onChange([lo, n])} />
           </label>
         )}
       </div>
@@ -511,7 +510,7 @@ export function DomainEffectsField(
                 {CHAR_KEYS.map((k) => <option key={k} value={k}>{CHAR_LABELS[k]}</option>)}
               </select>
             </label>
-            <label className="dr">bonus<input type="number" value={castBonus.bonus} onChange={(e) => onCastBonus({ ...castBonus, bonus: Number(e.target.value) || 0 })} /></label>
+            <label className="dr">bonus<NumberField variant="nu" label="Bonus à l'Incantation" value={castBonus.bonus} onChange={(bonus) => onCastBonus({ ...castBonus, bonus })} /></label>
           </div>
         )}
       </div>

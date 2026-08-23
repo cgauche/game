@@ -42,6 +42,19 @@ function rulesFor(cls: string): { file: string; body: string }[] {
   return found;
 }
 
+/** Corps des règles dont le SÉLECTEUR contient `needle` — pour cibler une règle DESCENDANTE, qui
+ *  n'a pas de classe propre : la matière du champ du dé se déclare au CONTENEUR du site, la
+ *  primitive `NumberField` ne portant aucune classe d'écran. */
+function rulesForSelector(needle: string): string[] {
+  const found: string[] = [];
+  for (const { css } of SHEETS) {
+    for (const m of css.matchAll(/(^|[,{}])([^{}]*)\{([^{}]*)\}/g)) {
+      if (m[2].includes(needle) && /[a-z-]+\s*:/.test(m[3])) found.push(m[3]);
+    }
+  }
+  return found;
+}
+
 /** Corps d'un bloc `@media …{…}` (accolades APPARIÉES — une règle imbriquée ne coupe pas la tranche).
  *  null si l'en-tête est absent. */
 function mediaSlice(css: string, header: RegExp): string | null {
@@ -59,7 +72,7 @@ describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées
   // `rm-range` (#942 L7) : la FOURCHETTE portée par chaque tuile de tableau — posée en JSX sans
   // règle, elle se collait au libellé (« Trahison !07-10 »), soit exactement le défaut que cette
   // garde existe pour attraper. `prow-line` : le conteneur qui ancre la marque à SA ligne.
-  for (const cls of ['prow', 'prow-line', 'prow-act', 'prow-fixed-mark', 'rm-die-pick', 'rm-die-input', 'rm-range']) {
+  for (const cls of ['prow', 'prow-line', 'prow-act', 'prow-fixed-mark', 'rm-die-pick', 'rm-range']) {
     it(`\`.${cls}\` porte au moins une règle CSS`, () => {
       const rules = rulesFor(cls);
       expect(
@@ -142,10 +155,11 @@ describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées
     expect(bodies, '`.rm-range` sans ton propre : la fourchette pèse autant que le nom de la ligne.').toMatch(/(color|font-size):/);
   });
 
-  it('`.rm-die-input` est dimensionné à son contenu — jamais une cellule pleine largeur', () => {
-    const bodies = rulesFor('rm-die-input').map((r) => r.body).join('\n');
+  it('le champ du dé est dimensionné à son contenu, jamais une cellule pleine largeur', () => {
+    const bodies = rulesForSelector('.rm-die-pick > label > input').join('\n');
+    expect(bodies, 'aucune règle ne vise le champ du dé (`.rm-die-pick > label > input`)').toBeTruthy();
     const width = bodies.match(/width:\s*([^;]+);/)?.[1]?.trim();
-    expect(width, '`.rm-die-input` sans `width`').toBeTruthy();
+    expect(width, 'le champ du dé sans `width`').toBeTruthy();
     expect(width, 'un champ de 3 chiffres ne prend pas 100 % de sa rangée').not.toBe('100%');
   });
 

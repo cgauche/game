@@ -51,7 +51,7 @@ function render() {
   act(() => { root.render(<CascadeBody />); });
 }
 
-const dieInput = () => host.querySelector('input.rm-die-input') as HTMLInputElement | null;
+const dieInput = () => host.querySelector('.rm-die-pick input[type="number"]') as HTMLInputElement | null;
 const rowButtons = () => [...host.querySelectorAll('.rm-loc-grid button')] as HTMLButtonElement[];
 const rowButton = (text: string) => rowButtons().find((b) => (b.textContent ?? '').includes(text));
 const step = () => useGame.getState().pendingCascade!.participants[0];
@@ -343,7 +343,7 @@ describe('Mode table — le dé montré est celui qui RÉSOUT (table à modifica
     setDesFixes(true);
     openTable(-10);
     render();
-    const order = () => [...host.querySelectorAll('.rm-roll.table, .rm-loc-grid, input.rm-die-input')]
+    const order = () => [...host.querySelectorAll('.rm-roll.table, .rm-loc-grid, .rm-die-pick input[type="number"]')]
       .map((e) => (e.classList.contains('rm-loc-grid') ? 'grille' : e.tagName === 'INPUT' ? 'champ' : 'table'));
     const avant = order();
     act(() => { rowButton('Ligne basse')!.click(); });

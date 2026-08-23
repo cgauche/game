@@ -340,7 +340,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // (`.action-bar.targeting-interlude` + `.targeting-interlude`/`.ti-icon`/`.ti-title`/`.ti-badge`
   // et la densité `.btn`/`.small` de sa tranche `pointer: coarse`), la méta de son sélecteur de sort
   // (`.bp-spell-ni`, `.ab-spell-meta`) et le masquage `.ab-actor-top:empty` de sa rangée d'Avantage.
-  'styles/combat-modals.css': 133,
+  // #1318 E1 : 133 → 132 — `.rm-die-input` meurt, la matière du champ du dé se déclare au CONTENEUR
+  // du site (`.rm-die-pick > label > input`), la primitive `NumberField` ne portant aucune classe d'écran.
+  'styles/combat-modals.css': 132,
   // -35 (110 → 75), mort de la barre v7 : le module ne définit plus AUCUNE classe de la barre
   // (`.action-bar`, `.commencer-btn`, `.coop-ready`, la famille `.ab-*` — cadre acteur, hotbar,
   // slots, tiroirs) ni du cadre actif `ActiveFrame` (`.aframe`, famille `.af-*`, `[data-slot=…]`).
@@ -1314,32 +1316,22 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
 // ── (xvii) `<input type="number">` codé à la main (#1318 V5) — volet JUMEAU du cliquet (x) `<button>`
 //    nu : la primitive canonique du champ nombre borné est `NumberField` (table « Primitives partagées »
 //    du CLAUDE.md — saisie clavier + `QtyStepper` + plage dite). Un `<input type="number">` posé
-//    directement rejoue à la main la borne, les pas et l'affordance. BASELINE PAR FICHIER gelée à la
-//    mesure du 2026-08-16 (194 sites / 28 fichiers), DÉCROISSANTE : aucun site n'est supprimé dans ce
-//    lot, seule la hausse est interdite. EXEMPTÉ : `NumberField.tsx`, la primitive elle-même (c'est
-//    elle qui a le droit — et le devoir — de poser l'`<input type="number">` canonique).
+//    directement rejoue à la main la borne, les pas et l'affordance. BASELINE PAR FICHIER DÉCROISSANTE :
+//    la tranche 1 de la migration (#1318 E1) a vidé 13 fichiers, qui ont quitté la table — mesure du
+//    scan ci-dessous : 195 balises / 29 fichiers avant, 153 / 16 après, stock restant entièrement
+//    `editor/**` (tranche 2). EXEMPTÉ : `NumberField.tsx`, la primitive elle-même (c'est elle qui a le
+//    droit — et le devoir — de poser l'`<input type="number">` canonique).
 //    COUVERTURE du détecteur (à énoncer, pas à supposer) : il lit la balise OUVRANTE `<input …>` et
-//    n'accepte que `type` en littéral (`"number"`, `'number'`, `{'number'}`) — un `type` calculé
-//    (`type={kind}`) lui échappe, comme lui échappe un `<input>` produit par un helper. Le trou a des
-//    ADRESSES : `creator/CharacterCreator.tsx:2237` (Âge) et `:2238` (Taille) passent `type="number"`
-//    au wrapper local `IdentityField` (`:2150`), qui pose `<input type={type}>` (`:2160`) — 2 champs
-//    nombre RÉELS invisibles au compte, stock effectif 196 pour 194 gelés. Les commentaires sont
-//    neutralisés avant le scan ; les `.test.tsx` sont hors périmètre (un harnais qui pilote un champ
-//    n'est pas une réinvention de primitive).
+//    compte `type="number"` en littéral OU en expression CALCULÉE (`type={kind}`, `type={t ? 'number'
+//    : 'text'}`) — un `type` dynamique PEUT valoir `"number"`, et le compter au pire cas ferme le trou
+//    des wrappers locaux (`IdentityField` du créateur, dont les champs Âge/Taille étaient invisibles au
+//    compte). L'unité mesurée est la BALISE ÉCRITE, pas le champ rendu : un wrapper local posé une fois
+//    et appelé N fois vaut 1 (c'était le cas d'`IdentityField`, 1 balise pour 4 champs dont 2 nombres),
+//    et un `<input>` produit par une FABRIQUE (`createElement('input')`) échappe au scan — 0 occurrence
+//    mesurée. Les commentaires sont neutralisés avant le scan ; les `.test.tsx` sont hors périmètre (un
+//    harnais qui pilote un champ n'est pas une réinvention de primitive).
 const NUMBER_INPUT_EXEMPT_FILES = new Set(['NumberField.tsx']);
 const NUMBER_INPUT_BASELINE: Record<string, number> = {
-  'CargoTransferPanel.tsx': 1,
-  'ForcedRollPicker.tsx': 1,
-  'HouseRulesModal.tsx': 1,
-  'InterludeScreen.tsx': 1,
-  'LandMarketView.tsx': 1,
-  'MerchantPanel.tsx': 1,
-  'PortView.tsx': 1,
-  'PreferencesPanel.tsx': 1,
-  'SeaActivitiesModal.tsx': 2,
-  'compendium/CodexEdit.tsx': 22,
-  'compendium/RefField.tsx': 1,
-  'compendium/StructFields.tsx': 8,
   'editor/ConditionEditor.tsx': 11,
   'editor/DialogueDetail.tsx': 1,
   'editor/EffectList.tsx': 48,
@@ -1386,7 +1378,7 @@ function scanNumberInputs(files: string[]): Record<string, number> {
       .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
       .replace(/(^|[^:])\/\/.*$/gm, (_m, p) => p);
     for (const tag of openTags(src, 'input')) {
-      if (!/type\s*=\s*(["']number["']|\{\s*["']number["']\s*\})/.test(tag)) continue;
+      if (!/type\s*=\s*(["']number["']|\{)/.test(tag)) continue;
       counts[r] = (counts[r] ?? 0) + 1;
     }
   }

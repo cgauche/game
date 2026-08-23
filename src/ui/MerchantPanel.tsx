@@ -20,6 +20,7 @@ import { resolveQualities } from '../engine/qualities/dispatch';
 import type { SceneEntity } from '../state/scene';
 import { MERCHANTS } from '../state/merchants';
 import { Coins } from './Coins';
+import { NumberField } from './NumberField';
 import { Prose, mdToText } from './Prose';
 import { CharFrame } from './CharFrame';
 import { TeamPortrait } from './TeamPortrait';
@@ -602,7 +603,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
               </select>
             </label>
             <label className="tavern-amount">Quantité acquise
-              <input type="number" min={1} max={getStockQty || 1} value={count} onChange={(e) => setBarterCount(Math.max(1, Number(e.target.value) || 1))} />
+              <NumberField variant="nu" label="Quantité acquise" min={1} max={getStockQty || 1} value={count} onChange={setBarterCount} />
             </label>
             {quote && give && (
               <p className="tavern-detail">

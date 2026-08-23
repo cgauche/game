@@ -13,6 +13,7 @@ import { cargoTotalEnc } from '../engine/seaVoyage';
 import { toBrass, PA_PER_CO } from '../engine/money';
 import { partyMoneyTotal, bourseOf } from '../state/bourseFlow';
 import { Coins } from './Coins';
+import { NumberField } from './NumberField';
 import { Icon } from './Icon';
 
 /**
@@ -76,24 +77,26 @@ export function SeaActivitiesModal() {
                   {catalog.find((d) => d.id === chosen)?.resolver === 'opportunityTrade' && (
                     <label className="sea-act-invest">
                       Mise (CO, max {investCap})
-                      <input
-                        type="number"
+                      <NumberField
+                        variant="nu"
+                        label={`Mise (CO, max ${investCap})`}
                         min={0}
                         max={investCap}
                         value={pick?.investGold ?? 0}
-                        onChange={(e) => set(h.id, { activityId: chosen, investGold: Math.max(0, Math.min(investCap, Number(e.target.value) || 0)) })}
+                        onChange={(investGold) => set(h.id, { activityId: chosen, investGold })}
                       />
                     </label>
                   )}
                   {catalog.find((d) => d.id === chosen)?.resolver === 'seaChart' && (
                     <label className="sea-act-invest">
                       Planque gratuite (CO, max {stashCap})
-                      <input
-                        type="number"
+                      <NumberField
+                        variant="nu"
+                        label={`Planque gratuite (CO, max ${stashCap})`}
                         min={0}
                         max={stashCap}
                         value={pick?.stashGold ?? 0}
-                        onChange={(e) => set(h.id, { activityId: chosen, stashGold: Math.max(0, Math.min(stashCap, Number(e.target.value) || 0)) })}
+                        onChange={(stashGold) => set(h.id, { activityId: chosen, stashGold })}
                       />
                     </label>
                   )}

@@ -22,6 +22,27 @@ const stubHero = (id: string, label: string, items: ItemInstance[] = []) =>
   }) as unknown as Combatant;
 
 describe('MerchantPanel (#2 — panier)', () => {
+  // #1318 E1 : le champ de quantité du Troc passe par `NumberField` — la borne n'est plus rejouée à la
+  // main au site, elle est DÉCLARÉE, et ce qu'elle déclare doit rester le domaine réel (le stock).
+  it('Troc : la borne du champ « Quantité acquise » est le STOCK du marchand, plancher 1', () => {
+    const porteur = stubHero('h', 'H', [{ uid: 'u1', trappingId: 'hallebarde' } as unknown as ItemInstance]);
+    const html = renderToStaticMarkup(
+      <MerchantPanelView
+        merchant={{ ...base, stock: [{ id: 'epee', qty: 3 }] }}
+        party={[porteur]}
+        money={{ gold: 5, silver: 0, brass: 0 }}
+        initialTab="barter"
+        onBarter={() => {}}
+        {...noop}
+      />,
+    );
+    const champ = [...html.matchAll(/<input[^>]*type="number"[^>]*>/g)].map((m) => m[0])
+      .find((t) => t.includes('aria-label="Quantité acquise"'));
+    expect(champ, 'aucun champ de quantité au Troc').toBeTruthy();
+    expect(champ).toContain('min="1"');
+    expect(champ).toContain('max="3"');
+  });
+
   it('Parcourir : tableau par famille + bouton « Ajouter » + barre panier', () => {
     const party = [{ id: 'h', label: 'H', items: [] } as unknown as Combatant];
     const html = renderToStaticMarkup(

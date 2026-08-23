@@ -38,6 +38,7 @@ import { ParchmentCard } from './ParchmentCard';
 import { RuleDivider, OrnateFrame } from './Ornaments';
 import { GameDate } from './GameDate';
 import { Icon } from './Icon';
+import { NumberField } from './NumberField';
 import type { IconId } from './icons';
 import { type PendingRoll } from './RollLine';
 import { testPending, optionPending } from './breakdown';
@@ -971,7 +972,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Com
       <div className="interlude-actions">
         <label className="ed-field interlude-amount">
           Montant (pistoles d'argent)
-          <input type="number" min={1} value={amountPa} onChange={(e) => setAmountPa(Math.max(1, Number(e.target.value) || 1))} />
+          <NumberField variant="nu" label="Montant (pistoles d'argent)" min={1} value={amountPa} onChange={setAmountPa} />
         </label>
         <button className="btn small" onClick={() => quick(0.25)} title="Un quart de la bourse">¼</button>
         <button className="btn small" onClick={() => quick(0.5)} title="La moitié de la bourse">½</button>

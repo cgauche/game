@@ -11,6 +11,7 @@ import { moraleBand } from '../engine/crewMorale';
 import type { CampaignVessel } from '../state/store';
 import type { PendingShoreLeave, PendingManannPriest } from '../state/seaVoyageFlow';
 import { Coins } from './Coins';
+import { NumberField } from './NumberField';
 import { Prose } from './Prose';
 import { Icon } from './Icon';
 import { NotchGauge } from './NotchGauge';
@@ -252,9 +253,10 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                     const wouldOverload = want > port.freeEnc; // achat qui pousse en zone de surcharge (#243)
                     return (
                       <div className={`market-offer-buy ${affordable ? '' : 'unaffordable'}`}>
-                        <input
-                          type="number" min={1} max={Math.min(o.enc, port.maxLoadEnc)} value={want}
-                          onChange={(e) => setBuyEnc((s) => ({ ...s, [o.cargoId]: Math.max(1, Math.min(o.enc, port.maxLoadEnc, Number(e.target.value) || 1)) }))}
+                        <NumberField
+                          variant="nu" label={`Enc à embarquer — ${o.label}`}
+                          min={1} max={Math.min(o.enc, port.maxLoadEnc)} value={want}
+                          onChange={(n) => setBuyEnc((s) => ({ ...s, [o.cargoId]: n }))}
                         />
                         <span className="market-offer-total">≈ <Coins money={estCost} /></span>
                         <button

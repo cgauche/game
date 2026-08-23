@@ -15,6 +15,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useGame } from '../../state/store';
 import { rovingKeyDown } from '../rovingFocus';
+import { NumberField } from '../NumberField';
 import { rosterAdd, rosterLoad } from '../../state/roster';
 import {
   species as allSpecies,
@@ -2146,24 +2147,47 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
   return <CreatorStepFrame d={d} step={stepIdx} label="Possessions" zones={{ action, choice }} />;
 }
 
-/** Champ IDENTITÉ du registre d'état civil (nom/âge/taille/yeux/cheveux) — libellé au-dessus, contrôle
- *  + bouton d'effacement (`ui/undo`, mineur/réversible) en fin de rangée (étalon `finale-mock8-details.png`). */
-function IdentityField({ label, value, onChange, onClear, type = 'text' }: {
-  label: string;
-  value: string | number;
-  onChange: (v: string) => void;
-  onClear: () => void;
-  type?: 'text' | 'number';
-}) {
+/** Rangée du registre d'état civil — libellé au-dessus, contrôle + bouton d'effacement (`ui/undo`,
+ *  mineur/réversible) en fin de rangée (étalon `finale-mock8-details.png`). */
+function IdentityRow({ label, control, onClear }: { label: string; control: ReactNode; onClear: () => void }) {
   return (
     <PlaqueRow
       label={label}
-      content={<input type={type} aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} />}
+      content={control}
       meta={
         <button type="button" className="btn small" title={`${label} : effacer`} onClick={onClear}>
           <Icon id="ui/undo" size="sm" />
         </button>
       }
+    />
+  );
+}
+
+/** Champ IDENTITÉ TEXTE du registre d'état civil (yeux, cheveux). */
+function IdentityField({ label, value, onChange, onClear }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  onClear: () => void;
+}) {
+  return <IdentityRow label={label} onClear={onClear} control={<input aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} />} />;
+}
+
+/** Champ IDENTITÉ NOMBRE du registre d'état civil (âge, taille) — la grandeur passe par la primitive
+ *  partagée, jamais par un `<input type="number">` du site. `details.json` ne chiffre que le TIRAGE
+ *  (`ageBase`/`ageRoll`, `heightBase`/`heightRoll`) : aucun plafond n'est authoré, seul le plancher
+ *  structurel de la grandeur (un entier strictement positif) est posé. */
+function IdentityNumberField({ label, value, onChange, onClear }: {
+  label: string;
+  value: number | undefined;
+  onChange: (n: number | undefined) => void;
+  onClear: () => void;
+}) {
+  return (
+    <IdentityRow
+      label={label}
+      onClear={onClear}
+      control={<NumberField variant="nu" label={label} min={1} vide value={value} onChange={(n) => onChange(n ?? undefined)} />}
     />
   );
 }
@@ -2235,8 +2259,8 @@ export function DetailsScreen({ d, setD }: StepProps): ReactNode {
             </button>
           }
         />
-        <IdentityField label="Âge" type="number" value={d.age ?? ''} onChange={(v) => setD({ ...d, age: Number(v) || undefined })} onClear={() => setD({ ...d, age: undefined })} />
-        <IdentityField label="Taille (cm)" type="number" value={d.height ?? ''} onChange={(v) => setD({ ...d, height: Number(v) || undefined })} onClear={() => setD({ ...d, height: undefined })} />
+        <IdentityNumberField label="Âge" value={d.age} onChange={(age) => setD({ ...d, age })} onClear={() => setD({ ...d, age: undefined })} />
+        <IdentityNumberField label="Taille (cm)" value={d.height} onChange={(height) => setD({ ...d, height })} onClear={() => setD({ ...d, height: undefined })} />
         <IdentityField label="Yeux" value={d.eyes ?? ''} onChange={(v) => setD({ ...d, eyes: v })} onClear={() => setD({ ...d, eyes: undefined })} />
         <IdentityField label="Cheveux" value={d.hair ?? ''} onChange={(v) => setD({ ...d, hair: v })} onClear={() => setD({ ...d, hair: undefined })} />
       </PlaqueGrid>

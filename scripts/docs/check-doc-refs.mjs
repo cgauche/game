@@ -102,7 +102,10 @@ if (existsSync(CLAUDE_MD)) {
     for (let i = headerIdx + 2; i < lines.length; i++) {
       const row = lines[i]
       if (!row.startsWith('|')) break
-      const cols = row.split('|').map((c) => c.trim())
+      // Découpe GFM : un `\|` échappé est du CONTENU (ex. une union TS `number \| null`), pas une
+      // frontière de colonne — un split naïf décale les colonnes et fait lire de la PROSE comme des
+      // symboles de primitive.
+      const cols = row.split(/(?<!\\)\|/).map((c) => c.trim())
       const primitiveCol = cols[2] ?? ''
       for (const span of primitiveCol.matchAll(/`([^`\n]+)`/g)) {
         if (/\.(ts|tsx|mjs|mts)\b/.test(span[1])) continue // mention de FICHIER (ex. `seaVoyageFlow.ts`), pas un symbole

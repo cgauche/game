@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { CargoCarrier } from '../engine/cargo';
 import { carriersColocated, carrierFreeEnc } from '../engine/cargo';
+import { NumberField } from './NumberField';
 
 /**
  * SURFACE DE TRANSFERT de cargaison entre porteurs CO-LOCALISÉS (#327, décision 9) — composée dans les
@@ -20,7 +21,7 @@ export function CargoTransferPanel({ carriers, onMove, labelOf, disabled, classN
   const [rawFrom, setFrom] = useState('');
   const [rawTo, setTo] = useState('');
   const [rawCargo, setCargo] = useState('');
-  const [rawEnc, setEnc] = useState('');
+  const [encSaisi, setEncSaisi] = useState<number | null>(null);
 
   const sources = carriers.filter((c) => c.cargo.length > 0);
   if (sources.length === 0 || carriers.length < 2) return null;
@@ -30,7 +31,7 @@ export function CargoTransferPanel({ carriers, onMove, labelOf, disabled, classN
   const to = dests.find((c) => c.id === rawTo) ?? dests[0];
   const lot = from.cargo.find((l) => l.cargoId === rawCargo) ?? from.cargo[0];
   const maxEnc = lot && to ? Math.min(lot.enc, carrierFreeEnc(to)) : 0;
-  const amount = rawEnc === '' ? maxEnc : Math.max(0, Math.min(Math.floor(Number(rawEnc) || 0), maxEnc));
+  const amount = encSaisi == null ? maxEnc : Math.max(0, Math.min(Math.floor(encSaisi), maxEnc));
 
   return (
     <details className={`fold cargo-transfer-fold${className ? ` ${className}` : ''}`}>
@@ -56,11 +57,13 @@ export function CargoTransferPanel({ carriers, onMove, labelOf, disabled, classN
               </select>
             </label>
             <label>Enc
-              <input type="number" min={0} max={maxEnc} value={rawEnc} placeholder={String(maxEnc)} disabled={disabled}
-                onChange={(e) => setEnc(e.target.value)} />
+              <NumberField
+                variant="nu" label="Enc à transférer" vide value={encSaisi} onChange={setEncSaisi}
+                min={0} max={maxEnc} placeholder={String(maxEnc)} disabled={disabled}
+              />
             </label>
             <button type="button" className="btn small" disabled={disabled || !to || !lot || amount <= 0}
-              onClick={() => { if (to && lot && amount > 0) { onMove(from.id, to.id, lot.cargoId, amount); setEnc(''); } }}>
+              onClick={() => { if (to && lot && amount > 0) { onMove(from.id, to.id, lot.cargoId, amount); setEncSaisi(null); } }}>
               Transférer
             </button>
           </div>

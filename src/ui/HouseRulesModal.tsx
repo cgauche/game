@@ -3,6 +3,7 @@ import { rule, type OptionalRule, type RuleValue } from '../engine/policy';
 import { setHouseRule, resetHouseRule, houseRulesMutability } from '../state/houseRules';
 import { useGame } from '../state/store';
 import { Icon } from './Icon';
+import { NumberField } from './NumberField';
 import { Tabs } from './Tabs';
 import { GatedAction } from './GatedAction';
 import { houseRuleTabs } from './houseRuleTabs';
@@ -131,10 +132,10 @@ function HouseRuleRow({
             </select>
           )}
           {def.kind === 'param' && (
-            <input
-              type="number" aria-label={def.label} value={Number(val)} min={def.min} max={def.max} step={def.step ?? 1}
-              disabled={!mutable} aria-describedby={describedBy}
-              onChange={(e) => onChange(def.id, Number(e.target.value))}
+            <NumberField
+              variant="nu" label={def.label} value={Number(val)} min={def.min} max={def.max} step={def.step ?? 1}
+              disabled={!mutable} describedBy={describedBy}
+              onChange={(n) => onChange(def.id, n)}
             />
           )}
         </span>

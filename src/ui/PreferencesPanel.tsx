@@ -36,12 +36,6 @@ export function PreferencesPanel() {
                     {(p.options ?? []).map((o) => <option key={o} value={o}>{o}</option>)}
                   </select>
                 )}
-                {p.kind === 'param' && (
-                  <input
-                    type="number" aria-label={p.label} value={Number(val)} min={p.min} max={p.max} step={p.step ?? 1}
-                    onChange={(e) => change(p.id, Number(e.target.value))}
-                  />
-                )}
               </span>
             </div>
           );

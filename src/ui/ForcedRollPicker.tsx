@@ -1,5 +1,5 @@
 import type { HitLocation, BodyShape } from '../engine/types';
-import { useId, useRef, useState } from 'react';
+import { NumberField } from './NumberField';
 import { locationLabel } from '../engine/combat';
 import { maxForcedRoll } from '../engine/tests';
 import { FIXED_ROLL_MAX } from '../engine/fixedDie';
@@ -84,92 +84,40 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
   // Borne : dé fixé → les faces du dé (d100 par défaut) ; Résilience → ≤ cible ET hors bande d'échec
   // auto (dérivé de la policy).
   const maxRoll = fixed ? Math.min(max ?? FIXED_ROLL_MAX, FIXED_ROLL_MAX) : maxForcedRoll(target);
-  // La frappe reste LOCALE : le dé ne se commet qu'au geste TERMINAL (Entrée, et la perte de focus
-  // quand `commitOnBlur`). Un commit par frappe rendrait tout nombre à deux chiffres insaisissable
-  // avant le jet — la branche pré-jet LANCE au commit (`forcedDieRow`), le « 5 » de « 50 » résoudrait
-  // le Test.
-  const [draft, setDraft] = useState(roll != null ? String(roll) : '');
-  // Dernière valeur COMMISE : un second geste terminal sur la même valeur (Entrée puis blur) ne
-  // rejoue pas le commit. Quand le dé du MODÈLE change (jet, Résilience, ligne de table cliquée), le
-  // champ le reflète — ajustement dérivé fait AU RENDU, pas dans un effet différé.
-  const committed = useRef<number | null>(roll);
-  if (committed.current !== roll) {
-    committed.current = roll;
-    setDraft(roll != null ? String(roll) : '');
-  }
-
-  const commit = (n: number) => {
-    if (n === committed.current) return;
-    committed.current = n;
-    setDraft(String(n));
-    onSet(n);
-  };
-  // REFUS honnête hors domaine (jamais un clamp silencieux) : une saisie qui sortirait des faces
-  // n'est pas commise — le champ revient à la dernière valeur valide.
-  // Saisie HORS DOMAINE : refus honnête ET VISIBLE (recette #1117 — le champ se vidait sans un mot, le
-  // jet partait en dé naturel). L'état invalide est ANNONCÉ (`aria-invalid`), le domaine reste le seul
-  // fait dit (les bornes du dé), jamais un texte d'aide rédigé.
-  const [invalid, setInvalid] = useState(false);
-  const commitDraft = (): boolean => {
-    const n = Number(draft);
-    if (draft !== '' && Number.isInteger(n) && n >= 1 && n <= maxRoll) { commit(n); setInvalid(false); return true; }
-    setInvalid(draft !== ''); // champ VIDE = pas de saisie à refuser
-    setDraft(committed.current != null ? String(committed.current) : '');
-    return false;
-  };
-  // La rangée tient la poignée de commit TANT QUE ce champ est monté (rendu, pas effet différé : le
-  // clic « Lancer » peut suivre la frappe dans le même tick).
-  if (commitRef) commitRef.current = commitDraft;
+  // Le dé se commet au geste TERMINAL (`commit: 'geste'`), et une saisie hors des faces est REFUSÉE
+  // plutôt que calée : la politique vit dans `NumberField`, elle n'est pas rejouée ici.
   const stateLabel = !fixed ? 'Dé choisi' : marked ? 'Dé fixé' : 'Fixer le dé';
-  const domainId = useId();
+  // Un second clic sur le MÊME dé ne rejoue pas le commit : poser le dé (re)LANCE côté flux.
+  const poser = (n: number) => { if (n !== roll) onSet(n); };
   return (
     <div className="rm-die-pick">
       {!fixed && (
-        <button className={`btn small ${roll === 1 ? 'btn-primary' : ''}`} title="Le score le plus bas → DR maximum" onClick={() => commit(1)}>
+        <button className={`btn small ${roll === 1 ? 'btn-primary' : ''}`} title="Le score le plus bas → DR maximum" onClick={() => poser(1)}>
           01 · DR max
         </button>
       )}
       {!fixed && critable && maxRoll >= 11 && (
-        <button className={`btn small ${roll === 11 ? 'btn-primary' : ''}`} title="Le plus bas double réussi → Critique au meilleur DR" onClick={() => commit(11)}>
+        <button className={`btn small ${roll === 11 ? 'btn-primary' : ''}`} title="Le plus bas double réussi → Critique au meilleur DR" onClick={() => poser(11)}>
           11 · Critique
         </button>
       )}
       {/* UNE surface par ÉTAT : « Fixer le dé » tant que rien n'est commis (une OFFRE), « Dé fixé » une
           fois le dé saisi (la MARQUE de provenance, sa valeur restant éditable en place). */}
-      <label className="field">
-        <span>{stateLabel}</span>
-        <input
-          className="rm-die-input"
-          type="number"
-          aria-label={rowName ? `${stateLabel} — ${rowName}` : stateLabel}
-          min={1}
-          max={maxRoll}
-          value={draft}
-          placeholder={`d${maxRoll}`}
-          aria-invalid={invalid || undefined}
-          aria-describedby={invalid ? domainId : undefined}
-          onChange={(e) => { setInvalid(false); setDraft(e.target.value); }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              // Entrée est CONSOMMÉE par le champ : elle pose le dé, et rien d'autre. Sans
-              // `stopPropagation`, l'écouteur clavier de `Modal` la reçoit à son tour et clique le
-              // bouton primaire — le jet posé partirait avec la validation de la boîte.
-              e.preventDefault();
-              e.stopPropagation();
-              commitDraft();
-            }
-          }}
-          // Le blur ne COMMET pas quand `commitOnBlur:false` (quitter le champ ne doit rien rouler) —
-          // mais il n'EFFACE rien non plus : cliquer « Lancer » blur d'abord, et un brouillon effacé
-          // à cet instant faisait partir le jet en dé naturel (recette #1117, cause racine). Le
-          // brouillon SURVIT donc au blur ; c'est le CTA qui décide de le consommer (`withPickedDie`).
-          onBlur={commitOnBlur ? commitDraft : undefined}
-          title={fixed ? `Saisir la valeur du dé (1 à ${maxRoll}), validée par Entrée` : `Choisir librement la valeur du dé (1 à ${maxRoll}), validée par Entrée`}
-        />
-        {/* Le DOMAINE, rendu apparent quand la saisie est refusée — un fait (les bornes du dé), pas
-            une phrase d'aide. */}
-        {invalid && <span id={domainId} className="hint" role="status">1–{maxRoll}</span>}
-      </label>
+      <NumberField
+        variant="champ"
+        label={stateLabel}
+        ariaLabel={rowName ? `${stateLabel} — ${rowName}` : stateLabel}
+        min={1}
+        max={maxRoll}
+        placeholder={`d${maxRoll}`}
+        title={fixed ? `Saisir la valeur du dé (1 à ${maxRoll}), validée par Entrée` : `Choisir librement la valeur du dé (1 à ${maxRoll}), validée par Entrée`}
+        commit="geste"
+        commitOnBlur={commitOnBlur}
+        commitRef={commitRef}
+        vide
+        value={roll}
+        onChange={(n) => { if (n != null) onSet(n); }}
+      />
       {/* Le dé qui RÉSOUT n'est pas celui qui est saisi dès qu'un modificateur s'applique : on montre
           l'opération en clair, à côté de la saisie. Sans elle, la valeur affichée ment sur l'issue. */}
       {mod !== 0 && roll != null && effective != null && (

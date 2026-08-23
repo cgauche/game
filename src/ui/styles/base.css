@@ -311,7 +311,7 @@ input[type='radio']:disabled {
 }
 /* Focus CLAVIER par DÉFAUT de tout contrôle interactif (#1135) — anneau `--gold2` DÉTACHÉ
    (outline + offset), distinct du liseré `--gold` 1px qui marque l'option RETENUE (`.set-card.active`,
-   `.rm-die-input`) : le focus ne se lit plus comme une sélection. Même encre que les focus maison
+   `.rm-die-pick > label > input`) : le focus ne se lit plus comme une sélection. Même encre que les focus maison
    déjà posés (`.talent-option`, `.creator-band-title-link`). Spécificité VOLONTAIREMENT nulle
    (`:where`) : tout focus maison spécifique (anneau SVG de `MapCanvas`, `.btn`, `.talent-option`) prime
    sans `!important`. Les descendants de `<svg>` sont exclus : en espace zoomé, l'outline encadre la

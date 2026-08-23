@@ -7,6 +7,7 @@ import { placeById } from '../state/worldMap';
 import { canAfford, toMoney } from '../engine/money';
 import { partyMoneyTotal } from '../state/bourseFlow';
 import { Coins } from './Coins';
+import { NumberField } from './NumberField';
 import { ScreenShell } from './ScreenShell';
 import { SpeakerBanner } from './SpeakerBanner';
 import { CargoTransferPanel } from './CargoTransferPanel';
@@ -122,9 +123,10 @@ export function LandMarketView() {
                   const fits = want <= free;
                   return (
                     <div className={`market-offer-buy ${affordable ? '' : 'unaffordable'}`}>
-                      <input
-                        type="number" min={1} max={o.enc} value={want}
-                        onChange={(e) => setBuyEnc((s) => ({ ...s, [o.cargoId]: Math.max(1, Math.min(o.enc, Number(e.target.value) || 1)) }))}
+                      <NumberField
+                        variant="nu" label={`Enc à acheter — ${o.label}`}
+                        min={1} max={o.enc} value={want}
+                        onChange={(n) => setBuyEnc((s) => ({ ...s, [o.cargoId]: n }))}
                       />
                       <span className="market-offer-total">≈ <Coins money={estCost} /></span>
                       <button

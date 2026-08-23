@@ -452,6 +452,23 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(html).toContain('appear-panel'); // Apparence (AppearancePanel) dans le même panneau
   });
 
+  // #1318 E1 : l'état civil ne pose plus d'`<input type="number">` au site (le wrapper `IdentityField`
+  // le faisait, invisible au cliquet xvii). `details.json` ne chiffre que le TIRAGE (`ageBase`/`ageRoll`,
+  // `heightBase`/`heightRoll`) : aucun plafond n'est authoré — seul le plancher structurel est posé, et
+  // une donnée absente laisse le champ VIDE (jamais un 0 fabriqué qui se persisterait comme un âge).
+  it('étape Détails — Âge et Taille : plancher 1, aucun plafond inventé, champ VIDE quand la donnée manque', () => {
+    const d = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
+    const html = renderToStaticMarkup(<DetailsScreen d={d} setD={() => {}} />);
+    const nombres = [...html.matchAll(/<input[^>]*type="number"[^>]*>/g)].map((m) => m[0]);
+    for (const nom of ['Âge', 'Taille (cm)']) {
+      const champ = nombres.find((t) => t.includes(`aria-label="${nom}"`));
+      expect(champ, `pas de champ nombre pour « ${nom} »`).toBeTruthy();
+      expect(champ).toContain('min="1"');
+      expect(champ, 'un plafond ici serait une valeur maison non sourcée').not.toContain('max=');
+      expect(champ).toContain('value=""');
+    }
+  });
+
   it('étape Détails — bouton « Visage → Variante » (appSeed) change réellement le rig rendu (#bug visage figé)', () => {
     const d1 = withCareer(withSpecies(newDraft(7), SP.id), 'soldat');
     const html1 = renderToStaticMarkup(<DetailsScreen d={d1} setD={() => {}} />);
