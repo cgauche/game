@@ -27,8 +27,8 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `book` | 1 | `src/ui/creator/CharacterCreator.tsx:1257` |
-| `page` | 1 | `src/ui/creator/CharacterCreator.tsx:1257` |
+| `book` | 1 | `src/ui/creator/CharacterCreator.tsx:1258` |
+| `page` | 1 | `src/ui/creator/CharacterCreator.tsx:1258` |
 | `note` | **0 — JAMAIS LU** | — |
 
 ### `DetailRecipe` (src/gameIso/detail/types.ts)
