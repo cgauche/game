@@ -85,8 +85,8 @@ const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...INTERLUDE_KEYS, ...KEYBIN
 const claimedKeys = (a: (typeof ACTIONS)[number]) => [a.id, ...(a.keys ?? [])];
 
 describe('registre des actions — cohérence interne (ids de code résolus)', () => {
-  it('chaque `gate` déclaré existe dans ACTION_GATES', () => {
-    const bad = ACTIONS.filter((a) => !(a.gate in ACTION_GATES)).map((a) => `${a.id} → ${a.gate}`);
+  it('chaque `gate` déclaré existe dans ACTION_GATES (un id, ou chacun des ids composés)', () => {
+    const bad = ACTIONS.filter((a) => [a.gate].flat().some((g) => !(g in ACTION_GATES))).map((a) => `${a.id} → ${a.gate}`);
     expect(bad, `gate(s) inconnu(s) :\n  ${bad.join('\n  ')}`).toEqual([]);
   });
   it('chaque `candidates` déclaré existe dans ACTION_CANDIDATES', () => {

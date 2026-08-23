@@ -592,8 +592,8 @@ export function bestDefenseMode(defender: Combatant): 'parade' | 'esquive' {
 // Manœuvres de TALENT liées à l'Avantage (Battement / Distraire) — LDB 10 / AA
 // ---------------------------------------------------------------------------
 
-/** Battement (LDB 10 l.103 / AA 13 l.17) est-il déclarable par `attacker` contre `foe` ? Le porteur du
- *  Talent doit être Engagé, `foe` doit PORTER une arme et ne pas être d'une Taille SUPÉRIEURE (l.103). */
+/** Battement (`LDB 10 l.103` · `AA 13 l.15-17` · `LDB 13 l.114`) est-il déclarable par `attacker` contre
+ *  `foe` ? Conditions mesurées ici : camp opposé et actif, `foe` armé, `sizeGap`, Engagement. */
 export function battementEligible(attacker: Combatant, foe: Combatant): boolean {
   if (foe.kind === attacker.kind || isOutOfAction(foe)) return false;
   const foeArmed = (foe.weapons ?? []).some((w) => w.type === 'melee' || w.type === 'ranged');
@@ -621,8 +621,8 @@ export function resolveBattement(get: Get, attacker: Combatant, foe: Combatant, 
   return t('manv.battement', { name: attacker.label, foe: foe.label, n });
 }
 
-/** Distraire (LDB 10 l.364 / AA 13 l.51) est-il déclarable par `attacker` contre `foe` ? Un adversaire
- *  vivant en Ligne de vue (l'appelant vérifie la LdV) ; ici : camp opposé, actif. */
+/** Distraire (`LDB 10 l.364` · `AA 13 l.51`) est-il déclarable par `attacker` contre `foe` ? Conditions
+ *  mesurées ici : camp opposé, `foe` actif. */
 export function distraireEligible(attacker: Combatant, foe: Combatant): boolean {
   return foe.kind !== attacker.kind && !isOutOfAction(foe);
 }
@@ -656,11 +656,10 @@ export function battementFoes(attacker: Combatant, battle: BattleState): Combata
   return battle.combatants.filter((c) => battementEligible(attacker, c));
 }
 
-/** Adversaires ÉLIGIBLES au Distraire de `mover` EN LIGNE DE VUE (LDB 10 l.364, « adversaire qu'il peut
- *  voir ») — SOURCE UNIQUE : gate de la hotbar, défaut de l'ouverture, picker de la modale. `los` = prédicat
- *  de Ligne de Vue injecté (le module ne connaît pas la scène/les fumées). Pur. */
-export function distraireFoes(mover: Combatant, battle: BattleState, los: (foe: Combatant) => boolean): Combatant[] {
-  return battle.combatants.filter((c) => distraireEligible(mover, c) && !!c.pos && los(c));
+/** Adversaires ÉLIGIBLES au Distraire de `mover` (`LDB 10 l.364` · `AA 13 l.51`) — SOURCE UNIQUE : gate
+ *  de la hotbar, défaut de l'ouverture, picker de la modale. Pur. */
+export function distraireFoes(mover: Combatant, battle: BattleState): Combatant[] {
+  return battle.combatants.filter((c) => distraireEligible(mover, c) && !!c.pos);
 }
 
 /** Ouvre la modale de Battement d'un héros (LDB 10 l.103 / AA 13 l.17) : Action, Test de Corps à corps

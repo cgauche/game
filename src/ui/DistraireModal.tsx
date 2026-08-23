@@ -1,8 +1,6 @@
 import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
 import { distraireAttackValue, distraireDefenseValue, distraireFoes } from '../state/combatFlow';
-import { losClear } from '../state/lineOfSight';
-import { smokeOf } from '../state/combatGeometry';
 import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
@@ -24,7 +22,6 @@ import { buildRollRow, frozenOpposedRow } from './rollRowBuild';
 export function DistraireModal() {
   const pd = useGame((s) => s.pendingDistraire);
   const battle = useGame((s) => s.battle);
-  const scene = useGame((s) => s.scene);
   const roll = useGame((s) => s.distraireRoll);
   const reroll = useGame((s) => s.distraireReroll);
   const bonusSL = useGame((s) => s.distraireBonusSL);
@@ -38,8 +35,8 @@ export function DistraireModal() {
   const foe = battle.combatants.find((c) => c.id === pd.foeId);
   if (!mover || !foe) return null;
   const rolled = !!pd.atk;
-  // Adversaires éligibles au Distraire EN LIGNE DE VUE — MÊME source que l'ouverture (`distraireFoes`).
-  const foes = mover.pos && scene ? distraireFoes(mover, battle, (c) => losClear(scene, mover.pos!, c.pos!, smokeOf(battle))) : [foe];
+  // Adversaires éligibles au Distraire — MÊME source que l'ouverture (`distraireFoes`).
+  const foes = distraireFoes(mover, battle);
   const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
 
   // Rangée TÉMOIN : Calme du foe, figé à l'ouverture (jamais relancé) — MASQUÉ tant que le mover n'a

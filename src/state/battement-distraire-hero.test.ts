@@ -8,6 +8,8 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { actionGate } from './actionRegistry';
+import { t } from '../i18n';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -41,7 +43,7 @@ describe('Battement & Distraire — flux HÉROS (par modale, pas l’IA)', () =>
     enemies.slice(1).forEach((e) => (e.dead = true));
     const E = enemies[0];
     H.pos = { x: 10, y: 10 };
-    E.pos = { x: 11, y: 10 }; // adjacent (Engagé pour le Battement, en Ligne de vue pour le Distraire)
+    E.pos = { x: 11, y: 10 }; // adjacent : Engagé pour le Battement
     // Ennemi ARMÉ (prérequis Battement l.103) + pourvu d'Avantage à retirer/nier.
     E.weapons = [{ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [], uid: 'sw' }] as Combatant['weapons'];
     E.advantage = 3;
@@ -110,5 +112,89 @@ describe('Battement & Distraire — flux HÉROS (par modale, pas l’IA)', () =>
     useGame.getState().battementConfirm();
     const e2 = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
     expect(e2.advantage).toBe(3); // rien retiré sur un échec (manv.battementFail)
+  });
+});
+
+/**
+ * GATES DE CIBLE du registre (#1411 P1, `actions.json` : `gate` COMPOSÉ). Le verdict d'offre porte la
+ * CONDITION DE CIBLE, mesurée par les MÊMES prédicats que le dispatcher (`battementFoes` /
+ * `distraireFoes`) : la case est offerte si et seulement si le dispatcher a un adversaire à traiter,
+ * sinon refusée AVEC sa raison. La composition rend la PREMIÈRE raison refusée — l'économie du tour
+ * se dit avant la cible.
+ */
+describe('Battement & Distraire — le verdict d’offre porte la condition de CIBLE', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllTimers();
+    useGame.setState({ battle: null, pendingBattement: null, pendingDistraire: null });
+  });
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
+  /** Un héros portant les deux Talents, face à UN ennemi armé, et la scène réelle du combat. */
+  function terrain() {
+    useGame.getState().seedRng(1);
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
+    h.talents = [{ talentId: 'battement', times: 1 }, { talentId: 'distraire', times: 1 }] as Combatant['talents'];
+    useGame.setState({ party: [h] });
+    useGame.getState().startScene(testScene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const H = b.combatants.find((c) => c.kind === 'hero')!;
+    const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+    enemies.slice(1).forEach((e) => (e.dead = true));
+    const E = enemies[0];
+    H.pos = { x: 5, y: 10 };
+    E.pos = { x: 11, y: 10 };
+    E.weapons = [{ label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [], uid: 'sw' }] as Combatant['weapons'];
+    useGame.setState({ battle: { ...b, turn: b.order.indexOf(H.id), movementUsed: 0, acted: false } });
+    return { H, E };
+  }
+  const ctx = (H: Combatant) => ({ active: H, battle: useGame.getState().battle! });
+
+  it('BATTEMENT : sans adversaire ENGAGÉ, la case est refusée AVEC sa raison ; l’Engagement l’ouvre', () => {
+    const { H, E } = terrain();
+    const refus = actionGate('battement', ctx(H));
+    expect(refus.ok, 'aucun Engagement : le dispatcher n’ouvrirait rien').toBe(false);
+    expect(refus.reason).toBe(t('agate.noBattementTarget'));
+    engage(H, E);
+    expect(actionGate('battement', ctx(H)).ok, 'un adversaire armé et Engagé ouvre le geste').toBe(true);
+  });
+
+  it('DISTRAIRE : un adversaire ACTIF ouvre la case, même masqué par une fumée ; plus aucun, elle est refusée AVEC sa raison', () => {
+    const { H, E } = terrain();
+    expect(actionGate('distraire', ctx(H)).ok, 'un adversaire actif ouvre le geste').toBe(true);
+    // Aucune Ligne de vue au prédicat (`distraireFoes`) — sources : `LDB 10 l.364` · `AA 13 l.51`.
+    const b = useGame.getState().battle!;
+    useGame.setState({
+      battle: { ...b, zones: [{ id: 'fumee', label: 'Fumée', tiles: [{ x: 8, y: 10 }], rounds: 1, permanent: true, blocksLoS: true }] } as typeof b,
+    });
+    expect(actionGate('distraire', ctx(H)).ok, 'une fumée entre les deux ne ferme pas le geste').toBe(true);
+    useGame.getState().battleDistraire();
+    expect(useGame.getState().pendingDistraire?.foeId, 'le dispatcher ouvre bien sur cet adversaire').toBe(E.id);
+    useGame.getState().distraireCancel();
+    const b2 = useGame.getState().battle!;
+    b2.combatants.filter((c) => c.kind === 'enemy').forEach((c) => (c.dead = true));
+    useGame.setState({ battle: { ...b2 } });
+    const refus = actionGate('distraire', ctx(H));
+    expect(refus.ok, 'plus aucun adversaire actif : le dispatcher n’aurait rien à traiter').toBe(false);
+    expect(refus.reason).toBe(t('agate.noDistraireTarget'));
+  });
+
+  it('COMPOSITION : toutes les conditions passent, sinon la PREMIÈRE raison refusée est rendue', () => {
+    const { H, E } = terrain();
+    engage(H, E); // la cible est éligible : seule l'économie du tour peut refuser
+    expect(actionGate('battement', ctx(H)).ok).toBe(true);
+    const b = useGame.getState().battle!;
+    useGame.setState({ battle: { ...b, acted: true } });
+    expect(actionGate('battement', ctx(H)).reason, 'l’Action dépensée se dit AVANT la cible').toBe(t('agate.actionSpent'));
+    // … et la 2ᵉ condition reste mesurée quand la 1re passe : le Mouvement se dit avant la cible.
+    const b2 = useGame.getState().battle!;
+    useGame.setState({ battle: { ...b2, movementUsed: 1 } });
+    expect(actionGate('distraire', ctx(H)).reason, 'le Mouvement entamé se dit AVANT la cible').toBe(t('agate.movementStarted'));
   });
 });

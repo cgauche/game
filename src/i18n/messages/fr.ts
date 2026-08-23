@@ -2303,6 +2303,8 @@ export const fr = {
   'agate.noResolve': 'aucun point de Détermination',
   'agate.noFreeWeaponAttack': 'aucune attaque d’Arme gratuite disponible',
   'agate.noTrampleTarget': 'aucune cible piétinable',
+  'agate.noBattementTarget': 'aucun adversaire où battre le fer',
+  'agate.noDistraireTarget': 'aucun adversaire à distraire',
   'agate.singleLoadout': 'un seul set d’armes',
   'agate.loadoutSwapped': 'set d’armes déjà changé ce tour',
   'agate.localGame': 'partie locale',

@@ -280,7 +280,8 @@ export interface ActionDef {
   label: string;
   icon: string;
   surface: 'deduite-du-set' | 'geste-d-etat' | 'grille' | 'pastille-entite' | 'pastille-etat' | 'hors-console' | 'interlude';
-  gate: string;
+  /** Un id de prédicat, ou plusieurs — composés par l'ET séquentiel d'`actionGate`. */
+  gate: string | string[];
   candidates?: string;
   run?: string;
   mode?: string;

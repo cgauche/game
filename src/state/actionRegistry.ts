@@ -22,7 +22,7 @@ import { isFrenzied } from '../engine/psychology';
 import { isVehicle } from '../engine/vehicle';
 import { compatibleAmmo } from '../engine/items';
 import { isConsumable } from '../engine/consumables';
-import { hasFreeWeaponAttack, selfManeuversOf, selfManeuverApplicable } from './combatManeuvers';
+import { hasFreeWeaponAttack, selfManeuversOf, selfManeuverApplicable, battementFoes, distraireFoes } from './combatManeuvers';
 import { inBattleId } from './combatants';
 import { healableTargets } from '../engine/healing';
 import { waterSprayCandidates } from '../engine/suffocation';
@@ -164,17 +164,31 @@ export const ACTION_GATES: Record<string, (ctx: ActionCtx) => ActionGate> = {
     const refus = STANCE_BLOCK.intoCrowd(battle, active);
     return refus ? no(refus) : ok;
   },
+  /** Battement (`LDB 10 l.103` · `AA 13 l.11-17` · `LDB 13 l.114`) : la case porte le prédicat du
+   *  dispatcher (`battementFoes`, `combatManeuvers.ts`) — offerte si et seulement si `battleBattement`
+   *  a un adversaire à traiter, sinon refusée AVEC sa raison. */
+  'battement-cible-eligible': ({ active, battle }) =>
+    battementFoes(active, battle).length > 0 ? ok : no(t('agate.noBattementTarget')),
+  /** Distraire (`LDB 10 l.364` · `AA 13 l.46-51`) : même prédicat que le dispatcher (`distraireFoes`) —
+   *  offerte si et seulement si `battleDistraire` a un adversaire à traiter. */
+  'distraire-cible-eligible': ({ active, battle }) =>
+    distraireFoes(active, battle).length > 0 ? ok : no(t('agate.noDistraireTarget')),
   coop: ({ netMode }) => (netMode && netMode !== 'local' ? ok : no(t('agate.localGame'))),
   'navire-action': ({ active, battle }) =>
     !isVehicle(active) ? no(t('agate.notAVessel')) : battle.acted ? no(t('agate.vesselActionSpent')) : ok,
 };
 
-/** Verdict d'offre d'une action, par son id — porte de lecture UNIQUE pour les surfaces. */
+/** Verdict d'offre d'une action, par son id — porte de lecture UNIQUE pour les surfaces.
+ *  Le champ `gate` de l'entrée peut nommer PLUSIEURS prédicats : ils se composent par l'ET séquentiel
+ *  déjà écrit (`et`) — toutes passent, sinon la PREMIÈRE raison refusée est rendue (aucune raison
+ *  fabriquée). Une condition de plus sur une action = une ligne de JSON, jamais un gate composé à la main. */
 export function actionGate(actionId: string, ctx: ActionCtx): ActionGate {
   const def = ACTIONS.find((a) => a.id === actionId);
   if (!def) return no(`action inconnue : ${actionId}`);
-  const gate = ACTION_GATES[def.gate];
-  return gate ? gate(ctx) : no(`gate inconnu : ${def.gate}`);
+  const noms = Array.isArray(def.gate) ? def.gate : [def.gate];
+  const inconnu = noms.find((g) => !ACTION_GATES[g]);
+  if (inconnu) return no(`gate inconnu : ${inconnu}`);
+  return et(...noms.map((g) => ACTION_GATES[g]))(ctx);
 }
 
 /** Contexte des sélecteurs : impurs par nature (ils lisent le combat, parfois la scène). */

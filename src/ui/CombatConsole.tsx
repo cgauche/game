@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
+import { Fragment, useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
 import { useGame, activeCombatant, movementRemaining, type BattleState, type ShootingStanceKey } from '../state/store';
 import type { Combatant, Weapon, WeaponLoadout } from '../engine/types';
 import { hasMeaningfulOption } from '../state/turnEconomy';
@@ -179,6 +179,12 @@ const bandeauDiscret = (def: ActionDef) => def.role === 'renonce';
  *  est posée génériquement sur toute case dont la def porte `panneau`. */
 const ACTION_DISSIPER = 'dispel';
 
+/** Entrée de registre du RECHARGEMENT : la case qui déclare (champ `panneau`) faire naître le panneau
+ *  des armes à recharger, et qui déclare la liste d'armes à distance (`candidates`) lue par l'en-tête.
+ *  Les sites `cellFor` gardent l'id LITÉRAL : c'est lui que lit la garde d'atteignabilité du registre
+ *  (`action-atteignabilite.test.ts:66`). */
+const ACTION_RECHARGER = 'reload';
+
 function PhaseBanner({ label, actions }: PhaseBanner) {
   return (
     <div className="cc-phase">
@@ -331,12 +337,15 @@ export function CombatConsole() {
   // AUCUN dispatcher n'est capté ici : toute exécution passe par `runAction` (registre des actions).
   // Garde-fou « tour gâché » ARMÉ (2ᵉ clic attendu) — état d'UI local, remis à zéro à chaque tour/Round.
   const [confirmEnd, setConfirmEnd] = useState(false);
-  // PANNEAU-PARAMÈTRE de la MUNITION : son déclencheur est le chip de l'en-tête de travée, donc son
-  // ancre est le rect de CE chip. L'ouverture est un état d'ÉCRAN (rien n'est engagé tant qu'aucun
-  // candidat n'est cliqué) — elle se referme au tour suivant comme le garde-fou de fin de tour.
-  const ammoChipRef = useRef<HTMLButtonElement>(null);
-  const [ammoOuvert, setAmmoOuvert] = useState(false);
-  useEffect(() => { setConfirmEnd(false); setAmmoOuvert(false); }, [battle?.turn, battle?.round]);
+  // PANNEAUX-PARAMÈTRES de la travée gauche : la MUNITION (déclencheur = le chip d'en-tête de CETTE
+  // arme — deux pistolets, deux chips, deux ancres) et l'ARME À RECHARGER (déclencheur = l'alvéole
+  // `reload`, ancre posée génériquement par `ancreDePanneau`). L'ouverture est un état d'ÉCRAN (rien
+  // n'est engagé tant qu'aucun candidat n'est cliqué) — elle se referme au tour suivant comme le
+  // garde-fou de fin de tour. L'état porte l'`uid` de l'arme dont le panneau est ouvert.
+  const ammoChipRefs = useRef(new Map<string, HTMLButtonElement>());
+  const [ammoOuvert, setAmmoOuvert] = useState<string | null>(null);
+  const [rechargeOuverte, setRechargeOuverte] = useState(false);
+  useEffect(() => { setConfirmEnd(false); setAmmoOuvert(null); setRechargeOuverte(false); }, [battle?.turn, battle?.round]);
   // …et il appartient à l'ARME qui l'a ouvert : commuter de set change l'arme au poing (`uid` refait
   // par `recomputeLoadout`), donc le chip déclencheur disparaît. Sans cette remise à zéro le panneau
   // survivait à son ancre (panneau fantôme) et gardait le popover de règle en sourdine
@@ -344,9 +353,9 @@ export function CombatConsole() {
   const armeDuPanneau = useGame((s) => {
     const b = s.battle;
     const a = b ? activeCombatant(b) : undefined;
-    return a ? `${activeLoadout(a)?.id ?? ''}|${a.weapons.find((w) => w.type === 'ranged')?.uid ?? ''}` : '';
+    return a ? `${activeLoadout(a)?.id ?? ''}|${a.weapons.filter((w) => w.type === 'ranged').map((w) => w.uid).join(',')}` : '';
   });
-  useEffect(() => { setAmmoOuvert(false); }, [armeDuPanneau]);
+  useEffect(() => { setAmmoOuvert(null); setRechargeOuverte(false); }, [armeDuPanneau]);
 
   if (!battle || battle.over) return null;
   // LE BANDEAU DE PHASE, source unique : la pause de Round, ou l'INTERLUDE de ciblage par la carte
@@ -433,7 +442,11 @@ export function CombatConsole() {
   const cellFor = (
     actionId: string,
     family: CellFamily,
-    over: { key?: string; label?: string; icon?: ReactNode; rule?: CodexTarget; on?: boolean; off?: boolean; adv?: number; args?: ActionRunCtx } = {},
+    over: { key?: string; label?: string; icon?: ReactNode; rule?: CodexTarget; on?: boolean; off?: boolean; adv?: number; args?: ActionRunCtx;
+      /** La case OUVRE son panneau-paramètre au lieu de dispatcher : le geste est décidé, il lui
+       *  manque un paramètre que la situation borne (quelle arme recharger). L'ouverture n'engage
+       *  rien — le commit reste le dispatcher du registre, appelé par le candidat élu. */
+      ouvre?: () => void } = {},
   ): Cell | undefined => {
     const def = findActionById(actionId);
     if (!def) return undefined;
@@ -458,14 +471,18 @@ export function CombatConsole() {
       adv: over.adv,
       disabled: !live || !verdict.ok || !!over.off,
       run: live && (def.run || def.intent)
-        ? () => runAction(def.id, useGame.getState, { ...(over.args ?? {}), ...(arme ? { toggleOff: true } : null) })
+        ? over.ouvre ?? (() => runAction(def.id, useGame.getState, { ...(over.args ?? {}), ...(arme ? { toggleOff: true } : null) }))
         : undefined,
     };
   };
 
   // ── Travée GAUCHE : l'arsenal du set au poing + le nécessaire ──────────────────────────────
   const loadouts = active.loadouts ?? [];
-  const rangedW = active.weapons.find((w) => w.type === 'ranged');
+  // ARMES À DISTANCE du porteur — le SÉLECTEUR DU REGISTRE (`armes-a-distance`, déclaré par l'entrée
+  // `reload`), jamais un filtre recopié : deux pistolets sont DEUX armes, chacune avec son cycle de
+  // charge (`weaponLoad.ts`, registre par `uid`) et sa munition — ce que les dispatchers mesurent déjà
+  // (`combatSlice.ts:1928` `battleReload`, `:2139` `battleSelectAmmo`, tous deux paramétrés par l'arme).
+  const rangedWs = ACTION_CANDIDATES['armes-a-distance']({ active, battle, netMode: net.mode }) as Weapon[];
   const heldSet = activeLoadout(active);
   // G1 porte l'arme DU SET, lue par `uid` — jamais la première arme de `c.weapons`, dont l'ordre ne dit
   // rien de ce qui est TENU. Sans set (statbloc de créature) : l'arme que le moteur ferait parler à
@@ -475,21 +492,59 @@ export function CombatConsole() {
   // En-tête de travée = le SET AU POING, libellé DÉRIVÉ de son contenu (`loadoutLabel`) ; un acteur
   // sans set (statbloc de créature) porte le nom de son arme tenue.
   const setLabel = heldSet ? loadoutLabel(heldSet, active) : (setWeapon?.label ?? 'Mains nues');
-  const needsReload = !!rangedW && (rangedW.reload ?? 0) > 0 && !weaponLoaded(active, rangedW);
-  const reloadProg = rangedW ? reloadProgressOf(active, rangedW) : 0;
-  // MUNITION : celle qui est RÉELLEMENT dans l'arme (`loadedAmmo` → `loadRegister`, `items.ts:1005`),
-  // jamais la première compatible du sac. Elle vit dans l'EN-TÊTE de travée, à côté du nom du set
-  // (arbitrage #1348, spec § « BUDGET DE HAUTEUR » complément a) : le bandeau réservé qu'elle occupait
-  // sous la travée coûtait sa bande de plaque nue à TOUS les sets, même sans arme de tir.
-  const ammo = rangedW ? loadedAmmo(active, rangedW) : undefined;
-  // … et le CHOIX est borné aux munitions compatibles de CETTE arme (`compatibleAmmo`, source unique :
+  // RECHARGE — le cycle de charge appartient à CHAQUE arme (`weaponLoad.ts`, registre par `uid`). La
+  // case s'allume dès qu'UNE arme est à recharger ; la progression du Test étendu ne s'imprime sur
+  // l'alvéole que s'il n'y a qu'un cycle à montrer — à deux armes, elle se lit au panneau, par arme.
+  const rechargeables = rangedWs.filter((w) => (w.reload ?? 0) > 0);
+  const aRecharger = rechargeables.filter((w) => !weaponLoaded(active, w));
+  const needsReload = aRecharger.length > 0;
+  const reloadProg = rechargeables.length === 1 ? reloadProgressOf(active, rechargeables[0]) : 0;
+  // Deux armes à Recharge ou plus : l'alvéole OUVRE un panneau-paramètre borné (quelle arme ?) au lieu
+  // de dispatcher — la géométrie de la travée ne bouge pas (arbitrage HUD 2026-08-16 : une case, jamais
+  // un bouton-liste). Une seule arme : dispatch direct sur SON `uid`.
+  const rechargeChoisissable = rechargeables.length >= 2;
+  // MUNITION par ARME : celle qui est RÉELLEMENT dans l'arme (`loadedAmmo` → `loadRegister`,
+  // `items.ts:1005`), jamais la première compatible du sac. Elle vit dans l'EN-TÊTE de travée, à côté
+  // du nom du set (arbitrage #1348, spec § « BUDGET DE HAUTEUR » complément a) — et l'en-tête n'est pas
+  // la grille : deux pistolets y portent DEUX chips, chacune déclenchant SON panneau.
+  // Le CHOIX est borné aux munitions compatibles de CETTE arme (`compatibleAmmo`, source unique :
   // besace du porteur ∪ coffre de la pièce servie). Deux candidats ou plus = le chip devient le
   // DÉCLENCHEUR d'un panneau-paramètre ; un seul (ou aucun) = il reste informatif, un panneau à une
   // valeur ne choisit rien.
-  const ammoChoices = rangedW ? compatibleAmmo(active, rangedW) : [];
-  // Chambre PLEINE : c'est ce que MESURE le dispatcher pour décider s'il décharge (`combatSlice.ts:2136`,
-  // mêmes prédicats) — donc ce que le panneau doit annoncer au candidat qui n'est pas celui en chambre.
-  const armeChargee = !!rangedW && (rangedW.reload ?? 0) > 0 && weaponLoaded(active, rangedW);
+  const munitions = rangedWs.flatMap((w) => {
+    const ammo = loadedAmmo(active, w);
+    if (!ammo) return [];
+    const choix = compatibleAmmo(active, w);
+    const choisissable = live && !frenzied && choix.length >= 2;
+    // Chambre PLEINE : c'est ce que MESURE le dispatcher pour décider s'il décharge (`combatSlice.ts:2136`,
+    // mêmes prédicats) — donc ce que le panneau doit annoncer au candidat qui n'est pas celui en chambre.
+    const chargee = (w.reload ?? 0) > 0 && weaponLoaded(active, w);
+    const options: ParamOption[] = choisissable
+      ? choix.map((a) => {
+          const cell = cellFor('select-ammo', 'arme', {
+            key: `munition-${w.uid}-${a.uid}`,
+            label: a.label,
+            args: { ammoUid: a.uid, weaponUid: w.uid },
+          });
+          const enChambre = ammo.uid === a.uid;
+          return {
+            key: `munition-${w.uid}-${a.uid}`,
+            label: a.label,
+            meta: `×${a.qty ?? 0}`,
+            // La CONSÉQUENCE est RENDUE sur le candidat (jamais un `title`) : elle se mesure aux mêmes
+            // prédicats que le dispatcher, et ne s'affiche donc que là où il déchargera vraiment.
+            consequence: chargee && !enChambre ? 'décharge — rechargement à refaire' : undefined,
+            selected: enChambre,
+            disabled: !cell?.run || !!cell.disabled,
+            onSelect: cell?.run,
+          };
+        })
+      : [];
+    // FRÉNÉSIE : le refus est VISIBLE, avec la raison du registre (`agate.frenzyOnly`) — un choix qui
+    // disparaît est une perte muette.
+    const raison = live && frenzied && choix.length >= 2 ? t('agate.frenzyOnly') : undefined;
+    return [{ w, ammo, choix, choisissable, raison, options }];
+  });
   const canPush = active.weapons.some((w) => w.type === 'melee' && canPushback(w));
   // G5 — postures de tir ARMÉES : elles ne s'allument que tant qu'elles ont un effet (le MÊME prédicat
   // que le gate de la case et que le versement dans le `PendingAttack`) — une posture périmée ne se
@@ -561,19 +616,20 @@ export function CombatConsole() {
         : cellFor('attaque', 'arme', { icon: icon('melee/grapple'), label: 'Mains nues', rule: { category: 'trappings', id: 'mains-nues' }, args: { attackId: 'arme' } }),
     // G4 — Recharger : le porteur de l'état est l'ARME (progression du Test étendu), et c'est ELLE
     // que le dispatcher reçoit.
-    rangedW && (rangedW.reload ?? 0) > 0
+    rechargeables.length > 0
       ? cellFor('reload', 'arme', {
-          label: `Recharger${reloadProg ? ` ${reloadProg}/${rangedW.reload}` : ''}`,
+          label: `Recharger${reloadProg ? ` ${reloadProg}/${rechargeables[0].reload}` : ''}`,
           on: needsReload,
           off: busy || !needsReload || frenzied,
-          args: { weaponUid: rangedW.uid },
+          args: { weaponUid: rechargeables[0].uid },
+          ouvre: rechargeChoisissable ? () => setRechargeOuverte((v) => !v) : undefined,
         })
       : undefined,
     // G2 — Charge (bouton d'intention : portée M×2 visible avant le clic). Le verdict d'offre vient
     // du registre (`charge-possible`), le verbatim du popover de sa fiche.
     chargeDeduite && !vehicule ? cellFor('charge', 'geste') : undefined,
     // G3 — Viser
-    rangedW ? cellFor('aim', 'arme', { label: active.aiming ? 'En joue' : 'Viser', on: !!active.aiming, off: busy || !!active.aiming || frenzied }) : undefined,
+    rangedWs.length > 0 ? cellFor('aim', 'arme', { label: active.aiming ? 'En joue' : 'Viser', on: !!active.aiming, off: busy || !!active.aiming || frenzied }) : undefined,
     // G6 — geste d'ARME : la jauge est l'ARSENAL tenu (`canPushback`). L'Empoignade n'en est PAS un
     // (LDB 14 l.155, l.159) : elle reste à la modale d'attaque à mains nues (`useAttackJetProps.tsx:96`).
     canPush ? cellFor('pushback', 'geste', { on: !!active.pushbackMode }) : undefined,
@@ -581,8 +637,8 @@ export function CombatConsole() {
     // fenêtre de jet n'en garde que l'affichage. Bascule (re-clic = désarmer), gate en texte visible.
     // Les DEUX cases existent dès qu'une arme de tir est au poing — « Dans le tas » se grise hors
     // contexte (aucun groupe serré), elle ne disparaît pas. Géométrie de la travée : arbitrage #1434.
-    rangedW ? cellFor('posture-tir', 'arme', { on: posture('heldGround'), off: busy }) : undefined,
-    rangedW ? cellFor('posture-tas', 'arme', { on: posture('intoCrowd'), off: busy }) : undefined,
+    rangedWs.length > 0 ? cellFor('posture-tir', 'arme', { on: posture('heldGround'), off: busy }) : undefined,
+    rangedWs.length > 0 ? cellFor('posture-tas', 'arme', { on: posture('intoCrowd'), off: busy }) : undefined,
     // G6bis — gestes d'ÉTAT du porteur (surface `geste-d-etat` du registre, spec §1a) : ce que sa
     // SITUATION ouvre — en selle, à une pièce servie, à la barre — jamais ce que son arme offre.
     active.mountId ? cellFor('dismount', 'geste', { off: broken }) : undefined,
@@ -772,37 +828,31 @@ export function CombatConsole() {
       })
     : [];
 
-  // ── PANNEAU-PARAMÈTRE de la MUNITION (spec §1a + zone 10) ──────────────────────────────────────
-  // Le geste est déjà décidé (l'arme au poing tirera), il ne manque QUE la munition : liste BORNÉE à
-  // ce que CETTE arme accepte. Chaque candidat EST l'entrée de registre `select-ammo` — même verdict
-  // d'offre, même dispatcher (`battleSelectAmmo`) que n'importe quelle alvéole.
-  // Re-choisir la munition en chambre est SANS EFFET : c'est le dispatcher qui le garantit
-  // (`combatSlice.ts:2136`) — le panneau la MARQUE, il ne la ferme pas (aucune garde parallèle ici).
-  const ammoChoisissable = live && !frenzied && ammoChoices.length >= 2;
-  const ammoOptions: ParamOption[] = rangedW && ammoChoisissable
-    ? ammoChoices.map((a) => {
-        const cell = cellFor('select-ammo', 'arme', {
-          key: `munition-${a.uid}`,
-          label: a.label,
-          args: { ammoUid: a.uid, weaponUid: rangedW.uid },
-        });
-        const enChambre = ammo?.uid === a.uid;
+  // ── PANNEAU-PARAMÈTRE de l'ARME À RECHARGER (spec §1a + zone 10) ───────────────────────────────
+  // Le geste est décidé (recharger), il ne manque QUE l'arme : liste BORNÉE aux armes à Recharge du
+  // porteur. Chaque candidat EST l'entrée de registre `reload` avec SON `weaponUid` — même verdict
+  // d'offre, même dispatcher (`battleReload`) que l'alvéole à une seule arme.
+  // Une arme DÉJÀ CHARGÉE est un candidat INERTE, avec son état dit : c'est exactement ce que mesure
+  // le dispatcher pour refuser (`combatSlice.ts:1936`, prédicat `reloadable`).
+  const rechargeOptions: ParamOption[] = rechargeChoisissable
+    ? rechargeables.map((w) => {
+        const cell = cellFor('reload', 'arme', { key: `recharge-${w.uid}`, label: w.label, args: { weaponUid: w.uid } });
+        const chargee = weaponLoaded(active, w);
+        const prog = reloadProgressOf(active, w);
         return {
-          key: `munition-${a.uid}`,
-          label: a.label,
-          meta: `×${a.qty ?? 0}`,
-          // La CONSÉQUENCE est RENDUE sur le candidat (jamais un `title`) : elle se mesure aux mêmes
-          // prédicats que le dispatcher, et ne s'affiche donc que là où il déchargera vraiment.
-          consequence: armeChargee && !enChambre ? 'décharge — rechargement à refaire' : undefined,
-          selected: enChambre,
-          disabled: !cell?.run || !!cell.disabled,
+          key: `recharge-${w.uid}`,
+          label: w.label,
+          // Deux pistolets portent le MÊME libellé : la MAIN du set les distingue (le set dit ce qui est
+          // tenu, `heldSet`), et l'état de charge dit lequel a besoin du geste.
+          meta: [
+            heldSet?.main === w.uid ? 'main directrice' : heldSet?.off === w.uid ? 'main gauche' : undefined,
+            chargee ? 'chargée' : `à recharger${prog ? ` ${prog}/${w.reload}` : ''}`,
+          ].filter(Boolean).join(' · '),
+          disabled: chargee || !cell?.run || !!cell.disabled,
           onSelect: cell?.run,
         };
       })
     : [];
-  // FRÉNÉSIE : le refus est VISIBLE, avec la raison du registre (`agate.frenzyOnly`) — un choix qui
-  // disparaît est une perte muette.
-  const ammoRaison = live && frenzied && ammoChoices.length >= 2 ? t('agate.frenzyOnly') : undefined;
 
   return (
     // LE PONT : la bande porteuse. Le bandeau de phase est son seul enfant HORS FLUX (superposé au
@@ -826,43 +876,45 @@ export function CombatConsole() {
         <div className="cc-bay cc-bay-left">
           <div className="cc-bay-body">
             <div className="cc-arsenal">
-              {/* En-tête de travée = le set AU POING (jamais un littéral) ET, quand l'arme au poing
-                  consomme des munitions, celle qui est CHARGÉE avec sa réserve — « ARBALÈTE · Carreau ×12 ».
-                  Elle porte sa fiche (popover `CodexRef`), comme toute possession de la console.
-                  Le chip est AUSSI le DÉCLENCHEUR du choix dès que l'arme accepte plus d'une munition :
+              {/* En-tête de travée = le set AU POING (jamais un littéral) ET, pour CHAQUE arme à
+                  distance qui consomme des munitions, celle qui est CHARGÉE avec sa réserve —
+                  « PISTOLETS · Balle ×6 · Balle bénie ×2 ». Deux pistolets = DEUX chips : l'en-tête
+                  n'est pas la grille, la géométrie des alvéoles ne bouge pas (arbitrage HUD 2026-08-16).
+                  Chaque chip porte sa fiche (popover `CodexRef`), comme toute possession de la console,
+                  et devient le DÉCLENCHEUR du choix dès que SON arme accepte plus d'une munition :
                   bouton (affordance visible, cible ≥44px au doigt) d'où NAÎT le panneau-paramètre. À un
                   seul candidat il redevient un chip informatif — même adresse, même matière : la
                   distinction actionnable/informatif se lit, elle ne se devine pas. */}
               <span className="cc-bay-head">
                 {setLabel}
-                {ammo ? (
-                  <>
+                {munitions.map((m) => (
+                  <Fragment key={m.w.uid}>
                     {' · '}
-                    <CodexRef category="trappings" id={ammo.trappingId ?? ''} label={ammo.label} wrap suppressPopover={ciblageArme || ammoOuvert}>
-                      {ammoChoisissable || ammoRaison ? (
+                    <CodexRef category="trappings" id={m.ammo.trappingId ?? ''} label={m.ammo.label} wrap suppressPopover={ciblageArme || ammoOuvert === m.w.uid}>
+                      {m.choisissable || m.raison ? (
                         <button
-                          ref={ammoChipRef}
+                          ref={(el) => { if (el) ammoChipRefs.current.set(m.w.uid!, el); else ammoChipRefs.current.delete(m.w.uid!); }}
                           type="button"
                           className="chip"
-                          data-ammo=""
-                          data-gated={ammoRaison ? '' : undefined}
+                          data-ammo={m.w.uid}
+                          data-gated={m.raison ? '' : undefined}
                           aria-haspopup="dialog"
-                          aria-expanded={ammoOuvert}
-                          aria-label={`Munition : ${ammo.label} — choisir parmi ${ammoChoices.length}`}
-                          aria-describedby={ammoRaison ? 'cc-ammo-gate' : undefined}
-                          disabled={!!ammoRaison}
-                          onClick={() => setAmmoOuvert((v) => !v)}
+                          aria-expanded={ammoOuvert === m.w.uid}
+                          aria-label={`Munition de ${m.w.label} : ${m.ammo.label} — choisir parmi ${m.choix.length}`}
+                          aria-describedby={m.raison ? `cc-ammo-gate-${m.w.uid}` : undefined}
+                          disabled={!!m.raison}
+                          onClick={() => setAmmoOuvert((v) => (v === m.w.uid ? null : m.w.uid!))}
                         >
-                          {ammo.label}{ammo.qty ? ` ×${ammo.qty}` : ''}
+                          {m.ammo.label}{m.ammo.qty ? ` ×${m.ammo.qty}` : ''}
                         </button>
                       ) : (
-                        <span data-ammo="">{ammo.label}{ammo.qty ? ` ×${ammo.qty}` : ''}</span>
+                        <span data-ammo={m.w.uid}>{m.ammo.label}{m.ammo.qty ? ` ×${m.ammo.qty}` : ''}</span>
                       )}
                     </CodexRef>
                     {/* RAISON du refus : VISIBLE à côté du chip (idiome `GatedAction`), jamais un title. */}
-                    {ammoRaison ? <i data-gate="" id="cc-ammo-gate">{ammoRaison}</i> : null}
-                  </>
-                ) : null}
+                    {m.raison ? <i data-gate="" id={`cc-ammo-gate-${m.w.uid}`}>{m.raison}</i> : null}
+                  </Fragment>
+                ))}
               </span>
               <div className="cc-arsenal-body">
                 {/* COLONNE DE SETS : SET_SLOTS vignettes, toujours dessinées (un set absent est une
@@ -909,7 +961,7 @@ export function CombatConsole() {
                 </div>
                 <div className="cc-grid cc-grid-left" aria-label="Arsenal">
                   {Array.from({ length: LEFT_CELLS }, (_, i) => (
-                    <ConsoleCell key={i} cell={left[i]} hotkey={hotkeyOf(left[i])} ciblageArme={ciblageArme} />
+                    <ConsoleCell key={i} cell={left[i]} hotkey={hotkeyOf(left[i])} ciblageArme={ciblageArme} cellRef={ancreDePanneau(left[i])} />
                   ))}
                 </div>
               </div>
@@ -1029,14 +1081,25 @@ export function CombatConsole() {
         />
       )}
 
-      {/* … et celui de la MUNITION naît du chip de l'en-tête (`ammoChipRef`) : même primitive, même
-          annulation gratuite. Le clic COMMET `select-ammo` et referme. */}
-      {ammoOuvert && rangedW && (
+      {/* … celui de la MUNITION naît du chip de SON arme (`ammoChipRefs`, une ancre par arme à
+          distance) : même primitive, même annulation gratuite. Le clic COMMET `select-ammo` et referme. */}
+      {munitions.filter((m) => ammoOuvert === m.w.uid).map((m) => (
         <PanneauParametre
-          anchor={ammoChipRef.current}
-          intitule={`Quelle munition pour ${rangedW.label} ?`}
-          options={ammoOptions}
-          onClose={() => setAmmoOuvert(false)}
+          key={m.w.uid}
+          anchor={ammoChipRefs.current.get(m.w.uid!) ?? null}
+          intitule={`Quelle munition pour ${m.w.label} ?`}
+          options={m.options}
+          onClose={() => setAmmoOuvert(null)}
+        />
+      ))}
+      {/* … et celui de l'ARME À RECHARGER naît de l'alvéole `reload` elle-même (ancre posée par
+          `ancreDePanneau`, champ `panneau` du registre) : une seule case, deux pistolets. */}
+      {rechargeOuverte && (
+        <PanneauParametre
+          anchor={ancresPanneau.current.get(ACTION_RECHARGER) ?? null}
+          intitule="Quelle arme recharger ?"
+          options={rechargeOptions}
+          onClose={() => setRechargeOuverte(false)}
         />
       )}
     </div>

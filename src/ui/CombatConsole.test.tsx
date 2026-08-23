@@ -2420,3 +2420,103 @@ describe('CombatConsole — l’allumage d’une case armée vient du REGISTRE',
     expect(caseCell('q-soigner')!.className).not.toContain(' on');
   });
 });
+
+/**
+ * DEUX ARMES À DISTANCE (#1411 P1-7, spec §1a + zone 10) : la géométrie de la travée ne bouge pas —
+ * UNE case `Recharger` quel que soit le nombre d'armes. À plusieurs, elle ouvre un panneau-paramètre
+ * BORNÉ (quelle arme ?) dont le clic COMMET `reload` avec SON `weaponUid` ; à une seule, elle
+ * dispatche directement. La munition, elle, est une chip PAR arme dans l'EN-TÊTE (pas la grille).
+ */
+describe('CombatConsole — deux armes à distance : une case, un paramètre à élire', () => {
+  const objet = (id: string, uid: string, over: Partial<ItemInstance> = {}) =>
+    Object.assign(itemFromTrappingById(id)!, { uid }, over) as ItemInstance;
+
+  /** Bretteur à DEUX pistolets (Recharge 1 chacun) et deux munitions compatibles au sac. */
+  function bretteur(opts: { deux?: boolean; charges?: boolean } = {}) {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    h.items = [
+      objet('pistolet', 'i-p1'),
+      ...(opts.deux === false ? [] : [objet('pistolet', 'i-p2')]),
+      objet('balle-et-poudre', 'i-a1', { qty: 12 }),
+      objet('balle-et-poudre', 'i-a2', { label: 'Balle bénie', qty: 4 }),
+    ];
+    h.loadouts = [{ id: 'lo-2p', main: 'i-p1', ...(opts.deux === false ? {} : { off: 'i-p2' }) }];
+    h.activeLoadoutId = 'lo-2p';
+    recomputeLoadout(h);
+    if (opts.charges) h.weapons.filter((w) => w.type === 'ranged').forEach((w) => loadWeapon(h, w));
+    return h;
+  }
+
+  const panneau = () => document.body.querySelector('[data-panneau-parametre]');
+  const candidats = () => [...(panneau()?.querySelectorAll('button') ?? [])];
+  const caseRecharger = () => host.querySelector('[data-cell="g4-recharger"]') as HTMLButtonElement;
+  const acteur = () => useGame.getState().battle!.combatants[0];
+
+  afterEach(() => { useGame.setState({ battle: null, pendingReload: null }); });
+
+  it('DEUX pistolets : UNE seule case Recharger (géométrie inchangée), et le clic OUVRE le choix de l’arme', () => {
+    const h = bretteur();
+    expect(h.weapons.filter((w) => w.type === 'ranged').length, 'témoin : les DEUX pistolets sont au set').toBe(2);
+    monter(h);
+    expect(host.querySelectorAll('[data-cell="g4-recharger"]').length, 'une arme de plus n’ajoute pas une case').toBe(1);
+    expect(panneau(), 'aucun panneau avant le clic').toBeNull();
+    act(() => { caseRecharger().dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(useGame.getState().pendingReload, 'le clic ne doit RIEN engager : l’arme reste à élire').toBeNull();
+    expect(candidats().map((b) => b.textContent)).toEqual([
+      'Pistoletmain directrice · à recharger',
+      'Pistoletmain gauche · à recharger',
+    ]);
+  });
+
+  it('le candidat élu COMMET `reload` avec SON uid (la 2ᵉ arme, pas la première du sac)', () => {
+    monter(bretteur());
+    act(() => { caseRecharger().dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    act(() => { candidats()[1].dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(useGame.getState().pendingReload?.weaponUid, 'le Test étendu doit porter l’arme CHOISIE').toBe('i-p2');
+    expect(panneau(), 'le panneau se referme sur son commit').toBeNull();
+  });
+
+  it('ÉCHAP referme sans rien engager (annulation gratuite)', () => {
+    monter(bretteur());
+    act(() => { caseRecharger().dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(panneau()).toBeTruthy();
+    act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+    expect(panneau()).toBeNull();
+    expect(useGame.getState().pendingReload).toBeNull();
+  });
+
+  it('UNE arme à distance : dispatch DIRECT sur son uid — aucun panneau à un candidat', () => {
+    monter(bretteur({ deux: false }));
+    act(() => { caseRecharger().dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(panneau(), 'un panneau à une valeur ne choisit rien').toBeNull();
+    expect(useGame.getState().pendingReload?.weaponUid).toBe('i-p1');
+  });
+
+  it('une arme DÉJÀ CHARGÉE reste au panneau, INERTE et son état dit (même mesure que le dispatcher)', () => {
+    const h = bretteur();
+    loadWeapon(h, h.weapons.find((w) => w.uid === 'i-p1')!);
+    monter(h);
+    act(() => { caseRecharger().dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(candidats().map((b) => b.textContent)).toEqual([
+      'Pistoletmain directrice · chargée',
+      'Pistoletmain gauche · à recharger',
+    ]);
+    expect(candidats().map((b) => (b as HTMLButtonElement).disabled)).toEqual([true, false]);
+  });
+
+  it('MUNITION : une chip PAR arme dans l’en-tête, et la 2ᵉ commet `select-ammo` sur SON arme', () => {
+    const h = bretteur({ charges: true });
+    monter(h);
+    const chips = [...host.querySelectorAll('.cc-bay-head button[data-ammo]')] as HTMLButtonElement[];
+    expect(chips.map((c) => c.getAttribute('data-ammo')), 'deux armes à distance = deux chips').toEqual(['i-p1', 'i-p2']);
+    act(() => { chips[1].dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(panneau()!.textContent).toContain('Balle bénie');
+    act(() => { candidats()[1].dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const c = acteur();
+    const p1 = c.weapons.find((w) => w.uid === 'i-p1')!;
+    const p2 = c.weapons.find((w) => w.uid === 'i-p2')!;
+    expect(selectedAmmo(c, p2)?.uid, 'la munition élue va à l’arme de SA chip').toBe('i-a2');
+    expect(selectedAmmo(c, p1)?.uid, 'l’autre arme n’a pas bougé').toBe('i-a1');
+  });
+});

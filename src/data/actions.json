@@ -95,6 +95,7 @@
     "gate": "action-libre-hors-frenesie",
     "run": "battleReload",
     "candidates": "armes-a-distance",
+    "panneau": true,
     "cost": "action",
     "rule": "recharge",
     "ruleCategory": "qualities",
@@ -401,7 +402,10 @@
     "label": "Battement",
     "icon": "melee/close-in",
     "surface": "grille",
-    "gate": "action-libre-hors-frenesie",
+    "gate": [
+      "action-libre-hors-frenesie",
+      "battement-cible-eligible"
+    ],
     "run": "battleBattement",
     "cost": "action",
     "rule": "battement",
@@ -419,7 +423,10 @@
     "label": "Distraire",
     "icon": "flag/focus",
     "surface": "grille",
-    "gate": "mouvement-intact",
+    "gate": [
+      "mouvement-intact",
+      "distraire-cible-eligible"
+    ],
     "run": "battleDistraire",
     "cost": "mouvement",
     "rule": "distraire",

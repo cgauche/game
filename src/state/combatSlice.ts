@@ -1214,21 +1214,21 @@ export function createCombatSlice(get: Get, set: Set) {
     //    consomme le MOUVEMENT (pas l'Action). ──
     battleDistraire: (foeId?: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
-      const { battle, scene } = get();
-      if (!battle || !scene || battle.over || battle.movementUsed > 0) return; // le Distraire coûte le Mouvement
+      const { battle } = get();
+      if (!battle || battle.over || battle.movementUsed > 0) return; // le Distraire coûte le Mouvement
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || !active.pos || !hasDistraire(active)) return;
-      const foes = distraireFoes(active, battle, (c) => losClear(scene, active.pos!, c.pos!, smokeOf(battle)));
+      const foes = distraireFoes(active, battle);
       const foe = foeId ? foes.find((c) => c.id === foeId) : foes[0]; // défaut = 1er éligible ; picker via `distraireSetFoe`
       if (!foe) return;
       startDistraire(get, set, active, foe);
     },
     // Change la cible du Distraire AVANT le jet (picker OptionChooser) — re-fige le Calme du foe choisi.
     distraireSetFoe: (foeId: string) => {
-      const { battle, scene, pendingDistraire: pd } = get();
-      if (!battle || !scene || !pd || pd.atk) return; // verrouillé une fois lancé
+      const { battle, pendingDistraire: pd } = get();
+      if (!battle || !pd || pd.atk) return; // verrouillé une fois lancé
       const mover = inBattleId(battle, pd.moverId);
-      const foe = mover && mover.pos && distraireFoes(mover, battle, (c) => losClear(scene, mover.pos!, c.pos!, smokeOf(battle))).find((c) => c.id === foeId);
+      const foe = mover && mover.pos && distraireFoes(mover, battle).find((c) => c.id === foeId);
       if (!mover || !foe) return;
       startDistraire(get, set, mover, foe);
     },

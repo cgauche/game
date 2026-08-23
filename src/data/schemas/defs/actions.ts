@@ -38,8 +38,10 @@ export const schema = z.array(
     /** Id d'icône du registre `src/ui/icons` (garde `data-wellformed`, cas 9). */
     icon: z.string(),
     surface: surfaceSchema,
-    /** Id de PRÉDICAT enregistré dans `ACTION_GATES` (`src/state/actionRegistry.ts`). */
-    gate: z.string(),
+    /** Id de PRÉDICAT enregistré dans `ACTION_GATES` (`src/state/actionRegistry.ts`), ou LISTE d'ids :
+     *  ils se composent alors par l'ET séquentiel d'`actionGate` (toutes passent, sinon la première
+     *  raison refusée est rendue). Une condition de plus sur une action = un id de plus ici. */
+    gate: z.union([z.string(), z.array(z.string()).min(2)]),
     /** Id de SÉLECTEUR impur enregistré dans `ACTION_CANDIDATES` (liste des cibles/objets offerts). */
     candidates: z.string().optional(),
     /** Id de DISPATCHER enregistré dans `ACTION_RUN` (méthode `battle*` du store). Absent = `blocked`. */
