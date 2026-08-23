@@ -44,9 +44,6 @@ export interface ModalDef {
   owner: (s: ArbiterState) => string | undefined | '*';
   /** Politique d'automatisation (Cadence de combat) — REQUISE. */
   auto: AutoPolicy;
-  /** Modale PILOTÉE PAR LA CARTE : son ciblage vit sur la scène (le survol doit RESTER actif) —
-   *  absent = la modale bloque l'interaction carte (cf. `modalBlocksMapHover`). */
-  mapDriven?: (s: ArbiterState) => boolean;
   /** Clé(s) `pending*` que CETTE modale possède/rend — REQUISE (patron `auto` ci-dessus, #284). Une
    *  entrée normale porte SA seule clé (`'fateSave'` → `['pendingFateSave']`) ; `cascade`/`medic`
    *  couvrent en plus les pendings COEXISTANTS qu'elles rendent (porteurs de données d'une étape —
@@ -144,10 +141,6 @@ export const MODAL_DEFS = [
     if (!cur?.actorId && cur?.worldOwner) return WORLD_STEP_OWNER;
     return cur?.actorId;
   }, auto: { mode: 'partial' },
-  // Étape `jet:'cast'` en CIBLAGE : le lanceur désigne ses cibles SUR LA CARTE (`pickingTargets`) et la
-  // modale s'efface (`return null` du renderer `cast`) → le survol reste actif. La POSE de zone n'en est
-  // pas : son gabarit (`ZdeTemplate`) ne passe pas par le survol de ciblage.
-  mapDriven: (s) => !!s.pendingCast?.pickingTargets,
   covers: [
     'pendingCascade',
     // Porteurs de données des étapes-jet (cf. `CascadeStep.jet`), rendues par CETTE entrée :
@@ -202,16 +195,10 @@ export function autoPolicyOf(s: ArbiterState): AutoPolicy | null {
   return def ? def.auto : null;
 }
 
-/**
- * SOURCE UNIQUE de « la carte est-elle inerte ? » : une modale du registre est active ET son ciblage ne
- * vit pas sur la carte (`mapDriven`) → survol, piste, réticule et intention de déplacement se taisent
- * (spec HUD 2026-07-31 §6). Une modale NOUVELLE coûte UNE entrée au registre, jamais une ligne dans N
- * listes locales. `pendingRoundStart` (pause « Commencer le combat ») est HORS registre : le joueur
- * arpente le champ avant d'engager, le survol y RESTE actif.
- */
-export function modalBlocksMapHover(s: ArbiterState): boolean {
-  const def = (MODAL_DEFS as readonly ModalDef[]).find((d) => d.when(s));
-  return !!def && !def.mapDriven?.(s);
+/** Une modale du registre tient-elle la fenêtre ? (Le verdict « la carte est-elle inerte ? » y ajoute
+ *  l'exception des interludes pilotés par la carte : `state/mapHover.ts`.) */
+export function modalHolds(s: ArbiterState): boolean {
+  return (MODAL_DEFS as readonly ModalDef[]).some((d) => d.when(s));
 }
 
 /**

@@ -54,6 +54,7 @@ import {
   defenseTargetMods,
   composeAttack,
   frozenDifficulty,
+  type DifficultyShown,
   defenseValue,
   DEFENSE_LABEL,
   attackHandGate,
@@ -639,6 +640,27 @@ function isBlackPowderWeapon(w: Weapon): boolean {
   return k === 'poudre' || k === 'ingenierie';
 }
 
+/**
+ * Le combat VU AVEC l'attaquant à la position qu'il OCCUPERA au moment de frapper.
+ *
+ * Un geste combiné (Charge, rejoindre-puis-attaquer) s'aperçoit depuis sa case d'ARRIVÉE : les
+ * appelants passent un attaquant `{ ...actif, pos: destination }`. Or l'environnement du Test se lit
+ * sur `battle.combatants` — Surnombre (`LDB 14 l.110`), Empoignade, occupants de la Ligne de Vue, monture :
+ * sans substitution, l'attaquant y reste à sa case de DÉPART et ne se compte pas au contact de sa
+ * propre cible, si bien que l'aperçu annonce un palier que le jet contredit (mesuré 2026-08-23,
+ * #1411 P2-D : survol « Intermédiaire (+0) », modale « Accessible (+20) »).
+ *
+ * Substitution PAR ID, à l'identité près : quand l'attaquant EST déjà l'objet du combat, le `battle`
+ * repart tel quel (aucune copie, aucun changement de comportement pour les appelants sur place).
+ */
+export function withAttackerAt(battle: BattleState, attacker: Combatant): BattleState {
+  const i = battle.combatants.findIndex((c) => c.id === attacker.id);
+  if (i < 0 || battle.combatants[i] === attacker) return battle;
+  const combatants = battle.combatants.slice();
+  combatants[i] = attacker;
+  return { ...battle, combatants };
+}
+
 export interface AttackEnv { env: ModLine[]; blocked: boolean; inMelee: boolean; crowd: Combatant[]; cm: ModLine | null; sc: ReturnType<typeof sceneCombatModifiers>; flankRear?: boolean; }
 export function attackEnv(
   get: Get,
@@ -648,7 +670,8 @@ export function attackEnv(
   opts?: { intoCrowd?: boolean; heldGround?: boolean },
 ): AttackEnv {
   const scene = get().scene!;
-  const battle = get().battle!;
+  // Environnement composé sur le combat où l'attaquant est DÉJÀ à sa case d'attaque (Charge/rejoindre).
+  const battle = withAttackerAt(get().battle!, attacker);
   const sc = sceneCombatModifiers(scene, get().gameTime);
   const dayW = activeDayWeather(get);
   const env: ModLine[] = [];
@@ -929,6 +952,16 @@ export function previewAttack(
     ...(line.difficultyCombined != null ? { difficultyCombined: line.difficultyCombined } : {}),
     ...(line.difficultyParts ? { difficultyParts: line.difficultyParts } : {}),
   };
+}
+
+/** La Difficulté d'une attaque APERÇUE, telle que la modale du jet la dira — la DONNÉE (cran de
+ *  l'échelle + modificateur combiné quand la composition ne tombe sur aucun cran), que l'affichage met
+ *  en mots par l'unique `ui/difficultyText`. `undefined` sur un aperçu sans cible atteignable (hors
+ *  portée / LdV coupée), où `previewAttack` ne compose aucune Difficulté. SOURCE UNIQUE de la question
+ *  « que dira le jet de ce geste ? » : réticule au survol comme badge de l'aperçu tap-1. PUR. */
+export function difficultyOf(p: AttackPreview): DifficultyShown | undefined {
+  if (p.blocked || !p.inRange) return undefined;
+  return { difficulty: p.difficulty, ...(p.difficultyCombined != null ? { difficultyCombined: p.difficultyCombined } : {}) };
 }
 
 /** Pénalité d'ESQUIVE que le contexte impose au défenseur — SOURCE UNIQUE du jet résolu (`attackAt`

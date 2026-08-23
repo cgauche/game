@@ -4,15 +4,30 @@
  * pas de badge). Tous sur la MÊME source de tracé (movePreviewEls) et la même géométrie (diamondPath +
  * lift métrique) que les autres surbrillances.
  */
-import { Dims, diamondPath } from '../../geometry/iso';
+import { Dims, diamondPath, tileCenter } from '../../geometry/iso';
 import { footprintN, footprintTiles } from '../../state/footprint';
-import { mountOf } from '../../state/mount';
+import { mountOf, movementRemaining } from '../../state/mount';
 import { inBattleId } from '../../state/combatants';
+import { previewResourceDelta } from '../../state/combatFlow';
 import { movePreviewEls } from './movePreview';
 import { GOLD_TINT } from '../highlightTints';
 import type { Combatant } from '../../engine/types';
+import type { DifficultyShown } from '../../engine/combat';
+import { difficultyShownText } from '../../ui/difficultyText';
 import type { BattleState } from '../../state/store';
 import type { Pt } from '../../state/path';
+
+/** Ce que le geste APERÇU fait du Mouvement du Tour, « avant → après » — le coût vient de la SOURCE
+ *  UNIQUE (`previewResourceDelta`, celle des jauges de l'arche) et le solde de `movementRemaining` :
+ *  aucune 2ᵉ formule. `null` quand le geste ne coûte aucun Mouvement, ou que le solde de l'actif n'est
+ *  pas un nombre fini. */
+export function mouvementLigne(battle: BattleState, active: Combatant | undefined, preview: BattleState['preview']): string | null {
+  if (!active) return null;
+  const { move } = previewResourceDelta({ ...battle, preview });
+  const avant = movementRemaining(battle, active);
+  if (!Number.isFinite(move) || !Number.isFinite(avant) || move <= 0) return null;
+  return `Mouvement ${avant} → ${Math.max(0, avant - move)}`;
+}
 
 /** Losange du CURSEUR clavier/manette : repère de case TOUJOURS visible tant qu'aucune modale de jet à
  *  cible n'est ouverte ET que hoverAim ne peint pas déjà un réticule (anti-doublon quand le curseur est
@@ -30,12 +45,30 @@ export function CursorOverlay({ tile, footN, dims, liftAt }: { tile: Pt; footN: 
 
 /** Aperçu de DÉPLACEMENT au survol (desktop) ET sous le curseur clavier/manette (effHover) en combat —
  *  déplacement NORMAL (Marche/Course) ou mode-CASE du catalogue (Pousser/Téléportation/pose de zone,
- *  `tilePreviewAt` #198) : même primitive de tracé (`movePreviewEls`), `move.label` porte le badge
- *  (« Aller (N) »/« Courir »/« Pousser (N) »/« Téléporter »/« Poser la zone »). */
-export function HoverMovePreview({ move, at, footN, dims, lift }: { move: { path: Pt[]; label: string }; at: Pt; footN: number; dims: Dims; lift: (p: Pt) => number }) {
+ *  `tilePreviewAt` #198) : même primitive de tracé (`movePreviewEls`), `move.label` porte la 1ᵉʳᵉ ligne du
+ *  badge (« Aller (N) »/« Courir »/« Pousser (N) »/« Téléporter »/« Poser la zone »), la 2ᵉ disant ce que
+ *  le geste fait du Mouvement du Tour (#1411 P2-D). `kind: 'refus'` : le badge ne dit QUE le refus. */
+export function HoverMovePreview({ move, at, footN, dims, lift, battle, activeC }: {
+  move: { kind: 'move' | 'run' | 'tile' | 'refus'; path: Pt[]; cost?: number; label: string };
+  at: Pt;
+  footN: number;
+  dims: Dims;
+  lift: (p: Pt) => number;
+  battle?: BattleState;
+  activeC?: Combatant;
+}) {
+  // REFUS (Course non armée) : le badge dit la raison AU POINT DU GESTE et rien d'autre — ni chemin ni
+  // losange d'arrivée, qui promettraient un déplacement que le clic refusera (`state/refusVisible`).
+  if (move.kind === 'refus') {
+    const c0 = tileCenter(at.x, at.y, dims, lift(at));
+    return <text x={c0.cx} y={c0.cy - 28} textAnchor="middle" className="pv-badge" pointerEvents="none">{move.label}</text>;
+  }
+  // Le geste survolé est un aperçu de la MÊME forme que le tap-1 : il passe par la même source de coût.
+  const pv = battle && move.kind !== 'tile' ? { kind: move.kind, tile: at, path: move.path, cost: move.cost ?? 0 } : null;
+  const mouvement = battle && pv ? mouvementLigne(battle, activeC, pv as BattleState['preview']) : null;
   return (
     <g pointerEvents="none">
-      {movePreviewEls(move.path, at, move.label, dims, 'hmv', GOLD_TINT, footN, lift)}
+      {movePreviewEls(move.path, at, [move.label, ...(mouvement ? [mouvement] : [])], dims, 'hmv', GOLD_TINT, footN, lift)}
     </g>
   );
 }
@@ -52,14 +85,16 @@ export function ExplorePathPreview({ path, dims, lift, walking = false }: { path
 /** APERÇU TAP-1 (tactile) : le geste en deux temps — une première touche montre où l'on ira et ce que
  *  cela coûte (`battle.preview`), la seconde commet. MÊME tracé que le survol desktop
  *  (`movePreviewEls`, source unique) plus l'EMPREINTE de la cible quand l'aperçu vise un combattant.
- *  Il vivait dans la couche de surbrillances affine (`stage/highlightLayer.tapPreviewObjs`) et a suivi
- *  les overlays d'interaction quand la voie affine est morte (#1176 P3-4, commit C5a). */
-export function TapPreview({ battle, activeC, dims, liftAt, myTurn }: {
+ *  Le badge dit AUSSI ce que le geste fait du Mouvement du Tour et la Difficulté qu'il produira. */
+export function TapPreview({ battle, activeC, dims, liftAt, myTurn, difficulty }: {
   battle: BattleState;
   activeC: Combatant | undefined;
   dims: Dims;
   liftAt: (x: number, y: number, z?: number) => number;
   myTurn: boolean;
+  /** Difficulté que dira le jet de ce geste (`previewDifficultyOf`, résolue par l'appelant qui tient
+   *  le store — MÊME chemin que le réticule au survol), mise en mots par `ui/difficultyText`. */
+  difficulty?: DifficultyShown;
 }) {
   const pv = myTurn ? battle.preview : null;
   if (!pv) return null;
@@ -71,9 +106,10 @@ export function TapPreview({ battle, activeC, dims, liftAt, myTurn }: {
       : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger')
         : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
   const footN = pv.kind === 'attack' ? 1 : activeC ? footprintN(mountOf(battle, activeC) ?? activeC) : 1;
+  const lignes = [label, ...[mouvementLigne(battle, activeC, pv), difficultyShownText(difficulty)].filter((l): l is string => !!l)];
   return (
     <g pointerEvents="none">
-      {movePreviewEls(pv.kind === 'attack' ? [] : pv.path, dest ?? null, label, dims, 'pv', GOLD_TINT, footN, liftOf)}
+      {movePreviewEls(pv.kind === 'attack' ? [] : pv.path, dest ?? null, lignes, dims, 'pv', GOLD_TINT, footN, liftOf)}
       {cible?.pos && footprintTiles(cible.pos, footprintN(cible)).map((t) => (
         <path
           key={`pv-tgt-${t.x}-${t.y}`}

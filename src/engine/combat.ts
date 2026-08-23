@@ -561,6 +561,11 @@ export interface DifficultyComposition {
   circCombined: number;
 }
 
+/** La Difficulté d'un jet réduite à ce qui la NOMME : le cran de l'échelle, plus le modificateur RÉEL
+ *  quand la composition n'en atteint aucun. DÉRIVÉE de `DifficultyComposition` — même paire, mêmes noms
+ *  de champs : ce que le moteur transporte est ce que l'affichage met en mots (`ui/difficultyText`). */
+export type DifficultyShown = Pick<DifficultyComposition, 'difficulty' | 'difficultyCombined'>;
+
 /**
  * COMPOSE la Difficulté d'un jet de combat à partir de ce qui pèse sur sa cible (`LDB 14 l.91-96`,
  * verbatim cité au-dessus de `combineMods`). Quatre conditions, toutes nécessaires :

@@ -35,8 +35,10 @@ describe('ExplorePathPreview', () => {
  * suivi les overlays d'interaction à la mort de cette voie (#1176 P3-4, commit C5a).
  */
 describe('TapPreview — le premier appui montre où l’on va, et ce que ça coûte', () => {
-  const héros = { id: 'h1', label: 'h1', kind: 'hero', pos: { x: 1, y: 0 }, size: 'moyenne', conditions: [] } as unknown as Combatant;
-  const battleAvec = (preview: unknown): BattleState => ({ combatants: [héros], preview } as unknown as BattleState);
+  const héros = { id: 'h1', label: 'h1', kind: 'hero', pos: { x: 1, y: 0 }, size: 'moyenne', conditions: [], characteristics: {}, liveTraits: [], items: [] } as unknown as Combatant;
+  // `order`/`turn`/`movementUsed` : le badge dit désormais ce que le geste fait du Mouvement du Tour
+  // (`previewResourceDelta` → `activeCombatant`), il lui faut donc un Tour.
+  const battleAvec = (preview: unknown): BattleState => ({ combatants: [héros], order: ['h1'], turn: 0, movementUsed: 0, preview } as unknown as BattleState);
 
   it('un aperçu de MARCHE porte son tracé et le badge de coût', () => {
     const html = renderToStaticMarkup(
@@ -49,7 +51,7 @@ describe('TapPreview — le premier appui montre où l’on va, et ce que ça co
   it('un aperçu d’ATTAQUE marque l’EMPREINTE de la cible', () => {
     const cible = { ...héros, id: 'e1', pos: { x: 3, y: 0 } } as unknown as Combatant;
     const html = renderToStaticMarkup(
-      <svg><TapPreview battle={{ combatants: [héros, cible], preview: { kind: 'attack', targetId: 'e1', path: [] } } as unknown as BattleState} activeC={héros} dims={dims} liftAt={() => 0} myTurn /></svg>,
+      <svg><TapPreview battle={{ combatants: [héros, cible], order: ['h1'], turn: 0, movementUsed: 0, preview: { kind: 'attack', targetId: 'e1', path: [] } } as unknown as BattleState} activeC={héros} dims={dims} liftAt={() => 0} myTurn /></svg>,
     );
     expect(html).toContain('Attaquer');
     // L'empreinte de la cible : le losange de SA case, à l'opacité de marquage (aucune autre forme de

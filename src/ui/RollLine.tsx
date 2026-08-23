@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import type { ModLine, RollBreakdown, RollMask, SecondReadLine } from '../engine/combat';
 import type { VerdictReason } from '../engine/tests';
-import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
+import { difficultyText } from './difficultyText';
 import { Dice } from './Dice';
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
@@ -81,9 +82,7 @@ function RollLabel({ label, labelRef }: { label: ReactNode; labelRef?: RollLabel
  *  « Combiner les Difficultés » et porte l'`InfoDot` à sa SUITE ; seule la composition au popover varie. */
 function DifficultyText({ difficulty, easedBy, parts, combined }: { difficulty?: Difficulty; easedBy?: string; parts?: ModLine[]; combined?: number }) {
   if (!difficulty) return null;
-  const texte = combined != null
-    ? t('difficulty.combinee', { mod: `${combined >= 0 ? '+' : '−'}${Math.abs(combined)}` })
-    : DIFFICULTY_LABELS[difficulty];
+  const texte = difficultyText(difficulty, combined);
   const ref = RULE_REF['combiner-les-difficultes'];
   return (
     <span className="rm-roll-diff">

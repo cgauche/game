@@ -1829,3 +1829,4 @@ export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   presqueImpossible: t('difficulty.presqueImpossible'),
   impossible: t('difficulty.impossible'),
 };
+

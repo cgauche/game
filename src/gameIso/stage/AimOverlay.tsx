@@ -11,6 +11,7 @@ import { TargetReticle } from '../TargetReticle';
 import { relationColor } from '../teamColors';
 import { GOLD_TINT, ENEMY_CUE_TINT, RING_ALLY_TINT } from '../highlightTints';
 import { IconG } from '../../ui/Icon';
+import { difficultyShownText } from '../../ui/difficultyText';
 import type { HoverAim } from './useHoverTargeting';
 
 export function AimOverlay({ battle, hoverAim, anchor, dims, pendingAttack, pendingDefense, pendingTrample, pendingHeal, pendingCast }: {
@@ -88,10 +89,13 @@ export function AimOverlay({ battle, hoverAim, anchor, dims, pendingAttack, pend
         const eff = tip.base + tip.mod;
         const modTxt = tip.mod ? ` (${tip.mod > 0 ? '+' : '−'}${Math.abs(tip.mod)})` : '';
         const l2 = `${tip.skill}  ${eff}${modTxt}`;
+        // Difficulté que dira le jet de CE geste, mise en mots par l'UNIQUE fonction d'affichage que
+        // la modale emploie (`ui/difficultyText`) : jamais un cran voisin, jamais une 2ᵉ formulation.
+        const lDiff = difficultyShownText(tip.difficulty);
         const l3 = tip.dmg != null ? `Dégâts +${tip.dmg}` : null;
         const l4 = tip.note ?? null;
-        const w = Math.max(tip.targetName.length * 6.6, tip.title.length * 6, l2.length * 6, (l3 ?? '').length * 6, (l4 ?? '').length * 6) + 20;
-        const h = 52 + (l3 ? 14 : 0) + (l4 ? 14 : 0);
+        const w = Math.max(tip.targetName.length * 6.6, tip.title.length * 6, l2.length * 6, (lDiff ?? '').length * 6.6, (l3 ?? '').length * 6, (l4 ?? '').length * 6) + 20;
+        const h = 52 + (lDiff ? 14 : 0) + (l3 ? 14 : 0) + (l4 ? 14 : 0);
         const x0 = -w / 2 + 10;
         let y = -h + 44; // la compétence démarre sous nom+titre ; chaque ligne suivante descend de 14
         return (
@@ -104,6 +108,12 @@ export function AimOverlay({ battle, hoverAim, anchor, dims, pendingAttack, pend
               <tspan fill="var(--tooltip-fg)" fontWeight={700}>{`  ${eff}`}</tspan>
               {tip.mod !== 0 && <tspan fill={tip.mod > 0 ? RING_ALLY_TINT : ENEMY_CUE_TINT} fontWeight={700}>{modTxt}</tspan>}
             </text>
+            {lDiff && (
+              <text x={x0} y={(y += 14)} fontSize={10.5}>
+                <tspan fill="var(--tooltip-muted)">Difficulté</tspan>
+                <tspan fill="var(--tooltip-fg)" fontWeight={700}>{`  ${lDiff}`}</tspan>
+              </text>
+            )}
             {l3 && (
               <text x={x0} y={(y += 14)} fontSize={10.5}>
                 <tspan fill="var(--tooltip-muted)">Dégâts</tspan>

@@ -8,11 +8,13 @@ import { footprintTiles } from '../../state/footprint';
 import type { Pt } from '../../state/path';
 import { GOLD_TINT } from '../highlightTints';
 
-// `lift` = élévation-écran (px) d'un point selon son étage z (multi-niveau) ; défaut `() => 0` ⇒ tracé
-// plan-sol byte-identique pour tous les appelants mono-niveau (z absent ⇒ lift 0 ⇒ tileCenter/diamondPath
-// sans 4ᵉ argument). Un appelant de COMBAT passe `(p) => p.z ? liftAt(...) : 0` → chemin/destination posés
-// au bon étage (rempart) au lieu d'être écrasés sur la cour.
-export function movePreviewEls(path: Pt[], dest: Pt | null, label: string | null, d: Dims, keyPrefix: string, color: string = GOLD_TINT, footN = 1, lift: (p: Pt) => number = () => 0): JSX.Element[] {
+// `lift` = élévation-écran (px) d'un point selon son étage z (multi-niveau) ; défaut `() => 0` pour un
+// appelant mono-niveau. Un appelant de COMBAT passe `(p) => p.z ? liftAt(...) : 0` → chemin et
+// destination se posent au bon étage (rempart) au lieu d'être écrasés sur la cour.
+// `label` accepte PLUSIEURS lignes : le badge dit le geste (« Aller (2) ») puis ce qu'il fait de la
+// ressource (« Mouvement 4 → 2 ») / le palier qu'il produirait — empilées vers le HAUT depuis la case,
+// même classe `pv-badge` (aucun style neuf).
+export function movePreviewEls(path: Pt[], dest: Pt | null, label: string | string[] | null, d: Dims, keyPrefix: string, color: string = GOLD_TINT, footN = 1, lift: (p: Pt) => number = () => 0): JSX.Element[] {
   const els: JSX.Element[] = [];
   if (path.length > 1) {
     const pts = path.map((p) => tileCenter(p.x, p.y, d, lift(p))).map((p) => `${p.cx},${p.cy}`).join(' ');
@@ -23,9 +25,12 @@ export function movePreviewEls(path: Pt[], dest: Pt | null, label: string | null
   const dz = dest ? lift(dest) : 0; // toute l'empreinte est au même étage que la destination
   if (dest) for (const t of footprintTiles(dest, footN)) els.push(<path key={`${keyPrefix}-dest-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, d, dz)} fill="none" stroke={color} strokeWidth={3} opacity={0.95} pointerEvents="none" />);
   const at = dest ?? (path.length ? path[path.length - 1] : null);
-  if (label && at) {
+  const lignes = (typeof label === 'string' ? [label] : label ?? []).filter(Boolean);
+  if (lignes.length && at) {
     const c0 = tileCenter(at.x, at.y, d, lift(at));
-    els.push(<text key={`${keyPrefix}-lbl`} x={c0.cx} y={c0.cy - 28} textAnchor="middle" className="pv-badge" pointerEvents="none">{label}</text>);
+    lignes.forEach((ligne, i) => els.push(
+      <text key={`${keyPrefix}-lbl-${i}`} x={c0.cx} y={c0.cy - 28 - (lignes.length - 1 - i) * 14} textAnchor="middle" className="pv-badge" pointerEvents="none">{ligne}</text>,
+    ));
   }
   return els;
 }

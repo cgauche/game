@@ -9,7 +9,8 @@ import { useGame } from '../state/store';
 import { Combatant } from '../engine/types';
 import { footprintN, sizeFootprint } from '../state/footprint';
 import { mountOf } from '../state/mount';
-import { modalBlocksMapHover } from '../state/modalArbiter';
+import { previewDifficultyOf } from '../state/targetingModes';
+import { modalBlocksMapHover } from '../state/mapHover';
 import { mapTargetingActive } from '../state/targetingHolder';
 import { Dims, tileCenter } from '../geometry/iso';
 import { useCombatFx } from './fx/useCombatFx';
@@ -144,6 +145,14 @@ export function SurcoucheIso({
   const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
   // Empreinte du MOBILE actif (sa MONTURE si cavalier) → aperçus/curseur à la BONNE taille.
   const activeMoveN = activeC && battle ? footprintN(mountOf(battle, activeC) ?? activeC) : 1;
+  /** Difficulté de l'aperçu tap-1 : résolue par la MÊME couture que le réticule au survol
+   *  (`previewDifficultyLabel` → option armée + arme épinglée + case d'arrivée), lue ICI parce que le
+   *  stage tient le store, l'overlay restant pur. Memoïsée sur `battle.preview` : jamais par frame. */
+  const previewDifficulty = useMemo(
+    () => previewDifficultyOf(useGame.getState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [battle?.preview, activeC],
+  );
   const camTransition = 'opacity 0.13s ease-out';
   const camOpacity = turning ? 0.6 : 1;
 
@@ -193,9 +202,9 @@ export function SurcoucheIso({
         {battle && combatCursor
           && !mapInert && !mapTargeting
           && !hoverAim?.reticle && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dims} liftAt={liftAt} />}
-        {battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dims} lift={liftOf} />}
+        {battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dims} lift={liftOf} battle={battle} activeC={activeC} />}
         {mode === 'exploration' && explorePath && (hover || hoveredPortal) && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} walking={anyWalking} />}
-        {battle && <TapPreview battle={battle} activeC={activeC} dims={dims} liftAt={liftAt} myTurn={myTurn} />}
+        {battle && <TapPreview battle={battle} activeC={activeC} dims={dims} liftAt={liftAt} myTurn={myTurn} difficulty={previewDifficulty} />}
         {battle && (
           <AimOverlay battle={battle} hoverAim={hoverAim} anchor={reticleAnchor} dims={dims}
             pendingAttack={pendingAttack} pendingDefense={pendingDefense} pendingTrample={pendingTrample} pendingHeal={pendingHeal} pendingCast={pendingCast} />

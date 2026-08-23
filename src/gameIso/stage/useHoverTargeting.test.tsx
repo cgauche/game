@@ -8,6 +8,9 @@ import { testScene } from '../../scenes/test-fixture';
 import { useGame } from '../../state/store';
 import { startCascade } from '../../state/cascade';
 import { useHoverTargeting } from './useHoverTargeting';
+import { armedIntentPortee, PORTEE_COURSE } from '../../state/localIntent';
+import { effectiveMovement } from '../../engine/encumbrance';
+import { t } from '../../i18n';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -175,6 +178,106 @@ describe('useHoverTargeting — modale bloquante (arbitre modal)', () => {
     useGame.setState({ pendingSiegeAim: { gunnerId: active.id, weaponUid: 'w-1', radius: 1, rangeTiles: 2 } as never });
     expect(probe(loin).hoverMove, 'une piste de déplacement se trace pendant qu’on vise une case').toBeNull();
     useGame.setState({ pendingSiegeAim: null });
+  });
+});
+
+/**
+ * COURSE À ARMER (spec HUD § ARBITRAGE 2026-08-19, école BG3) — le survol DIT LA VÉRITÉ DU CLIC :
+ * au-delà de la Marche, le clic-sol est refusé tant que la case Course n'est pas armée, donc le badge
+ * porte ce refus (mot du registre) au lieu de promettre « Courir ». La Frénésie, elle, IMPOSE la course
+ * (`LDB 21 l.33`) : ce que la règle impose ne s'arme pas, et n'est donc jamais refusé.
+ */
+describe('useHoverTargeting — au-delà de la Marche, le survol porte le refus du clic', () => {
+  beforeEach(() => useGame.setState({ battle: null, hoverDelta: null, localIntent: null }));
+  afterEach(() => {
+    if (root) act(() => root!.unmount());
+    root = null;
+    useGame.setState({ localIntent: null });
+  });
+
+  function probeRun(hover: { x: number; y: number }) {
+    let result: ReturnType<typeof useHoverTargeting> | undefined;
+    const Probe = () => {
+      result = useHoverTargeting(testScene, hover, true);
+      return null;
+    };
+    root = createRoot(document.createElement('div'));
+    act(() => root!.render(<Probe />));
+    act(() => root!.unmount());
+    root = null;
+    return result!;
+  }
+
+  /** Une case DANS la zone de Course mais HORS de la Marche : le Mouvement du héros, +2 cases. */
+  const caseDeCourse = (active: ReturnType<typeof setup>) => ({ x: active.pos!.x + effectiveMovement(active) + 2, y: active.pos!.y });
+
+  it('Course NON armée : le badge dit le refus du registre, sans chemin promis', () => {
+    const active = setup();
+    const refus = probeRun(caseDeCourse(active)).hoverMove;
+    expect(refus).toMatchObject({ kind: 'refus', label: t('cs.refusCourseNonArmee') });
+    expect(refus!.path, 'aucun chemin : le clic ne le parcourra pas').toHaveLength(0);
+  });
+
+  it('Course ARMÉE : le badge redevient l’aperçu « Courir »', () => {
+    const active = setup();
+    useGame.setState({ localIntent: { actionId: 'course' } });
+    expect(armedIntentPortee(useGame.getState), 'l’action « course » doit armer la portée de Course').toBe(PORTEE_COURSE);
+    expect(probeRun(caseDeCourse(active)).hoverMove).toMatchObject({ kind: 'run' });
+  });
+
+  it('FRÉNÉSIE : la course imposée par la règle n’a rien à armer — aucun refus', () => {
+    const active = setup();
+    active.psychState = [...(active.psychState ?? []), { type: 'frenesie' } as never];
+    expect(probeRun(caseDeCourse(active)).hoverMove).toMatchObject({ kind: 'run' });
+  });
+});
+
+/**
+ * INTERLUDE PILOTÉ PAR LA CARTE (recette 2026-08-23, #1411 P2-D) — une étape de cascade qui efface sa
+ * modale et rend la main au champ (2ᵉ frappe des Deux armes, Frappe Mortelle, cibles de
+ * Surincantation, pose de zone, bordée) laisse le SURVOL vivant : le réticule y dit ce que le clic
+ * commettra, Difficulté comprise. Le verdict vient du REGISTRE (`currentInterludeAction` →
+ * `modalArbiter.mapDriven`), pas d'une liste de `pending*`.
+ */
+describe('useHoverTargeting — pendant un interlude piloté par la carte, le survol reste vivant', () => {
+  beforeEach(() => useGame.setState({ battle: null, hoverDelta: null, pendingDualStrike: null }));
+  afterEach(() => {
+    if (root) act(() => root!.unmount());
+    root = null;
+    useGame.setState({ pendingDualStrike: null, pendingCascade: null });
+  });
+
+  function probeAim(hover: { x: number; y: number }) {
+    let result: ReturnType<typeof useHoverTargeting> | undefined;
+    const Probe = () => {
+      result = useHoverTargeting(testScene, hover, true);
+      return null;
+    };
+    root = createRoot(document.createElement('div'));
+    act(() => root!.render(<Probe />));
+    act(() => root!.unmount());
+    root = null;
+    return result!;
+  }
+
+  it('2ᵉ frappe (Deux armes) : le survol de la cible porte le réticule ET sa Difficulté', () => {
+    const active = setup();
+    const battle = useGame.getState().battle!;
+    const foe = battle.combatants.find((c) => c.kind === 'enemy')!;
+    foe.pos = { x: active.pos!.x + 1, y: active.pos!.y };
+    const off = { label: 'Dague', name: 'Dague', type: 'melee', uid: 'off-1', hand: 'off', damage: { plusBF: true, flat: 2 }, qualities: [] };
+    active.weapons = [...active.weapons, off as never];
+    // L'interlude tel que le flux le pose : la cascade de combat tient la fenêtre, la 2ᵉ frappe attend
+    // une cible SUR LA CARTE (`pendingDualStrike`) — la modale s'est effacée.
+    useGame.setState({
+      pendingDualStrike: { attackerId: active.id, offWeaponUid: 'off-1', mainRoll: 30 },
+      pendingCascade: { id: 'combat', cursor: 0, participants: [{ actorId: active.id }] } as never,
+    });
+
+    const aim = probeAim({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim;
+    expect(aim?.reticle, 'la carte est rendue et cliquable : le survol ne peut pas être muet').toBe(true);
+    expect(aim?.tip?.kind).toBe('info');
+    expect(aim?.tip?.kind === 'info' && aim.tip.difficulty, 'le survol dit la Difficulté que la modale dira').toBeDefined();
   });
 });
 

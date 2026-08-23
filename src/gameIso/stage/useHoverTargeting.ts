@@ -19,7 +19,11 @@ import { combatantAtTile } from '../../state/combatGeometry';
 import { controlsCombatant } from '../../state/netOwnership';
 import { outOfSightTargetIds, castOutOfSightTargetIds, resolveMovement, previewResourceDelta, frenzyTarget, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { hoverTargeting, tilePreviewAt } from '../../state/targeting';
-import { modalBlocksMapHover } from '../../state/modalArbiter';
+import type { DifficultyShown } from '../../engine/combat';
+import { courseArmee } from '../../state/localIntent';
+import { activeCombatant } from '../../state/store';
+import { t } from '../../i18n';
+import { modalBlocksMapHover } from '../../state/mapHover';
 import { mapTargetingActive } from '../../state/targetingHolder';
 import type { RoomPortal } from '../../state/roomPortals';
 import { CAST_MODE } from '../../state/targetingModes';
@@ -30,8 +34,8 @@ export interface HoverAim {
   line: 'dashed' | 'solid' | null;
   /** Chemin RÉEL d'un déplacement combiné (Charge / rejoindre) — tracé à la place de la ligne droite. */
   path?: { x: number; y: number }[];
-  /** Carte d'infobulle : nom / compétence + valeur / dégâts / manœuvre — ou erreur courte. */
-  tip: { kind: 'info'; title: string; targetName: string; skill: string; base: number; mod: number; dmg: number | null; note?: string } | { kind: 'err'; text: string } | null;
+  /** Carte d'infobulle : nom / compétence + valeur / palier / dégâts / manœuvre — ou erreur courte. */
+  tip: { kind: 'info'; title: string; targetName: string; skill: string; base: number; mod: number; dmg: number | null; note?: string; difficulty?: DifficultyShown } | { kind: 'err'; text: string } | null;
   /** Aperçu synthétisé (forme battle.preview) pour le clignotant des jauges (previewResourceDelta). */
   preview?: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
   reticle: boolean;
@@ -121,7 +125,7 @@ export function useHoverTargeting(
       const ht = hoverTargeting(st, shooter, occ);
       if (ht.kind === 'none') return null;
       if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht) }, reticle: false };
-      return { fromId: shooter.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
+      return { fromId: shooter.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note, difficulty: ht.difficulty }, preview: ht.preview, reticle: true };
     }
     // Flux différés (bandeau TargetPrompt — Frappe Mortelle / 2ᵉ frappe / Surincantation +Cible) : le
     // réticule vient du MODE courant (targetingModes via hoverTargeting), AVANT les verrous acted/
@@ -130,7 +134,12 @@ export function useHoverTargeting(
       const actor = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
       if (!actor) return null;
       const ht = hoverTargeting(st, actor, occ);
-      return ht.kind === 'ok' ? { fromId: actor.id, toId: occ.id, line: ht.line, tip: null, reticle: true } : null;
+      // L'infobulle vaut ici comme au ciblage ordinaire : ces interludes ouvrent un JET (2ᵉ frappe,
+      // enchaînement), et le survol en dit la valeur et la Difficulté. Les modes qui ne jettent rien
+      // (cibles de Surincantation) laissent leurs zones à 0 — la carte s'adapte, elle n'invente pas.
+      return ht.kind === 'ok'
+        ? { fromId: actor.id, toId: occ.id, line: ht.line, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note, difficulty: ht.difficulty }, reticle: true }
+        : null;
     }
     if (!myTurn) return null; // le ciblage NORMAL (ci-dessous) exige Mon Tour ; la pré-emption (ci-dessus) non
     const activeH = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
@@ -149,7 +158,7 @@ export function useHoverTargeting(
     const ht = hoverTargeting(st, activeH, occ);
     if (ht.kind === 'none') return null;
     if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht) }, reticle: false };
-    return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
+    return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note, difficulty: ht.difficulty }, preview: ht.preview, reticle: true };
   }, [combatCursor, hover, hoverCombatantId, mode, battle, scene, myTurn, preemptAiming, mapInert, pendingCast, pendingCleave, pendingDualStrike]);
 
   // Combattant SOUS le focus (tuile survolée OU portrait de frise/Tab) — INDÉPENDANT du ciblage
@@ -181,11 +190,19 @@ export function useHoverTargeting(
     return occ ? null : resolveMovement(useGame.getState, effHover);
   }, [combatCursor, hover, mode, battle, myTurn, mapInert, mapTargeting]);
 
-  const hoverMove = useMemo<{ kind: 'move' | 'run' | 'tile'; path: Pt[]; cost?: number; label: string } | null>(() => {
+  const hoverMove = useMemo<{ kind: 'move' | 'run' | 'tile' | 'refus'; path: Pt[]; cost?: number; label: string } | null>(() => {
     if (mode !== 'battle' || !battle || battle.over || !effHover || battle.preview || !myTurn) return null;
     const tp = tilePreviewAt(useGame.getState, effHover);
     if (tp) return { kind: 'tile', path: tp.path ?? [], cost: tp.cost, label: tp.label };
     if (hoverMovementResolution?.status !== 'ok') return null;
+    // LE SURVOL DIT LA VÉRITÉ DU CLIC : au-delà de la Marche, le clic-sol est REFUSÉ tant que la Course
+    // n'est pas armée (mêmes prédicats qu'au commit, `combatSlice` — exemption Frénésie comprise). Le
+    // badge porte alors le refus du REGISTRE, mot pour mot, au lieu de promettre « Courir ».
+    if (hoverMovementResolution.kind === 'run') {
+      const active = activeCombatant(battle);
+      if (!courseArmee(useGame.getState) && !(active && isFrenzied(active)))
+        return { kind: 'refus', path: [], label: t('cs.refusCourseNonArmee') };
+    }
     return {
       kind: hoverMovementResolution.kind,
       path: hoverMovementResolution.path,
@@ -210,7 +227,7 @@ export function useHoverTargeting(
   // l'intention SOUS LA SOURIS — un aperçu de la forme tap-1 est synthétisé du survol et passe par la
   // MÊME source (`previewResourceDelta`). Écrit au store seulement quand le delta CHANGE.
   useEffect(() => {
-    const pvLike = hoverAim?.preview ?? (hoverMove && effHover && hoverMove.kind !== 'tile' ? { kind: hoverMove.kind, tile: { ...effHover }, path: hoverMove.path, cost: hoverMove.cost } : null);
+    const pvLike = hoverAim?.preview ?? (hoverMove && effHover && hoverMove.kind !== 'tile' && hoverMove.kind !== 'refus' ? { kind: hoverMove.kind, tile: { ...effHover }, path: hoverMove.path, cost: hoverMove.cost } : null);
     const delta = pvLike && battle ? previewResourceDelta({ ...battle, preview: pvLike as never }) : null;
     const next = delta
       ? { ...delta, ...(hoverMovementResolution ? { movement: hoverMovementResolution } : {}) }

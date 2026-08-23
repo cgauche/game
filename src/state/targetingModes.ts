@@ -12,6 +12,7 @@
  */
 import type { Get, Set } from './flowTypes';
 import type { Combatant, Weapon } from '../engine/types';
+import type { DifficultyShown } from '../engine/combat';
 import { attackTestLabel, isHelplessTarget } from '../engine/combat';
 import { castInfo, isMagicMissile, missileDamage, spellRangeTiles } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
@@ -52,7 +53,7 @@ import {
   displaceSmaller, fearedSourceTowards, frenzyTarget, applyZoneCrossings, noteApproachMove,
   placingZoneOf, placedZoneValidAt, commitPlacedZone, overcastTargetCandidates,
   cleaveTargets, dualStrikeTargets, castZoneSpell, castSpell, spellSightOf, openAttackCascade,
-  captureMoveSnapshot, firedWeapon,
+  captureMoveSnapshot, firedWeapon, difficultyOf, activeCombatant, type AttackPreview, type AttackOption,
 } from './combatFlow';
 
 export type HoverTargeting =
@@ -89,6 +90,9 @@ export type HoverTargeting =
       path?: { x: number; y: number }[];
       /** Nature de la manœuvre combinée (« Charge (+1 Avantage) », « Rejoindre + attaquer ») — info de décision. */
       note?: string;
+      /** Difficulté que dira le jet de ce geste (`difficultyOf` sur l'aperçu qui a fait `base`/`mod`) :
+       *  le cran de l'échelle, ou le modificateur combiné quand elle n'en atteint aucun. */
+      difficulty?: DifficultyShown;
       /** Aperçu SYNTHÉTISÉ de la forme `battle.preview` — pour le clignotant des jauges
        *  (`previewResourceDelta`) : MÊME source de coût/gain que le tap-1 tactile. */
       preview: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
@@ -276,6 +280,50 @@ function castAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
 }
 
 /** Mode ATTAQUE : l'`AttackOption` armée (selectedAttack / ancien mode maneuver/tentacle/trample). */
+/**
+ * Ce geste se résout-il par un Test d'ARME — donc par `previewAttack`, donc par une Difficulté de
+ * combat composée (`LDB 14 l.91-96`) ?
+ *
+ * PRÉDICAT UNIQUE, consommé par le réticule (`attackAffordance`) ET par le badge de l'aperçu tap-1
+ * (`previewDifficultyOf`) : sans lui, chacun tenait SA liste de `targeting`, et le badge nommait une
+ * Difficulté d'arme là où le réticule se taisait — mesuré sur l'Empoignade (Test opposé de FORCE,
+ * `LDB 14 l.161`) : réticule « Empoignade · Force » sans Difficulté, badge « Intermédiaire (+0) ».
+ * Les gestes qui n'en sont PAS : servir une pièce (on rejoint une équipe), Piétinement (`LDB 85`),
+ * zone (Souffle/Vomi/Langue/Regard), « Au contact » (Corps à corps opposé, `LDB 62 l.176`) et
+ * Empoignade — tous des Tests dont la Difficulté ne se compose pas depuis une arme.
+ */
+export function gesteAuTestDArme(get: Get, active: Combatant, target: Combatant, option: AttackOption): boolean {
+  const battle = get().battle;
+  if (target.postes?.length && battle && serveTargetPoste(active, target, battle.combatants)) return false;
+  return option.targeting === 'melee';
+}
+
+/**
+ * L'aperçu d'attaque DU GESTE — SOURCE UNIQUE des deux choses qu'un geste combiné change par rapport
+ * à une frappe sur place : l'attaquant est à sa case d'ARRIVÉE (`dest`), et l'arme est celle que
+ * l'option ARMÉE épingle (`option.weaponUid`). Le réticule au survol et le badge de l'aperçu tap-1
+ * passent tous deux par ici — sinon ils annoncent deux armes, donc deux Difficultés, pour un seul clic.
+ */
+export function apercuDuGeste(get: Get, active: Combatant, target: Combatant, option: AttackOption, dest?: Pt): AttackPreview {
+  return previewAttack(get, dest ? { ...active, pos: dest } : active, target, undefined, { weaponUid: option.weaponUid });
+}
+
+/**
+ * La Difficulté que dira le jet de l'aperçu tap-1 ARMÉ (`battle.preview`) — MÊME chemin que le
+ * réticule (option armée, arme épinglée, case d'arrivée). `undefined` hors aperçu à cible.
+ */
+export function previewDifficultyOf(get: Get): DifficultyShown | undefined {
+  const battle = get().battle;
+  const pv = battle?.preview;
+  if (!battle || !pv || !('targetId' in pv)) return undefined;
+  const active = activeCombatant(battle);
+  const target = inBattleId(battle, pv.targetId);
+  if (!active || !target) return undefined;
+  const option = selectedAttackOption(active, battle);
+  if (!option || !gesteAuTestDArme(get, active, target, option)) return undefined;
+  return difficultyOf(apercuDuGeste(get, active, target, option, 'dest' in pv ? pv.dest : undefined));
+}
+
 function attackAffordance(get: Get, active: Combatant, target: Combatant): HoverTargeting {
   const battle = get().battle!;
   // Pièce de siège SERVABLE (poste, MDG 12 / AA 10 p.124) : un poste-porteur qu'on peut REJOINDRE (chef si non
@@ -311,6 +359,9 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
       : { kind: 'none' };
   // === MÊLÉE (Arme + gratuites) : approche-puis-frappe — chemin réel + réticule au survol (le clic commet) ;
   // l'aperçu est calculé depuis la case d'ARRIVÉE (modificateurs honnêtes au contact). L'Allonge suit l'option.
+  // La chute ici est EXPLICITE : c'est le seul geste dont la Difficulté se compose depuis une arme, et
+  // c'est le MÊME prédicat qui autorise le badge de l'aperçu tap-1 à en nommer une.
+  if (!gesteAuTestDArme(get, active, target, option)) return { kind: 'none' };
   const plan = attackPlan(get, active, target, { reach: option.reach, forceMelee: option.forceMelee, weaponUid: option.weaponUid });
   if (plan.kind === 'blocked') {
     const p = previewAttack(get, active, target, undefined, { weaponUid: option.weaponUid });
@@ -331,10 +382,10 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
     const block = firedAttackBlock(get, active, target, option.weaponUid);
     if (block) return { kind: 'invalid', reason: block.reason, ...(block.need ? { need: block.need } : {}) };
   }
-  const from = plan.kind === 'attack' ? active : { ...active, pos: plan.dest };
   // `option.weaponUid` ÉPINGLE l'arme du poste servi pour l'option DÉDIÉE « Servir » (jamais pour 'arme',
   // qui reste auto-choisie parmi les armes PERSONNELLES — `pickAttackWeaponList`/addendum « un intent, une entrée »).
-  const p = previewAttack(get, from, target, undefined, { weaponUid: option.weaponUid });
+  const p = apercuDuGeste(get, active, target, option, plan.kind === 'attack' ? undefined : plan.dest);
+  const palier = difficultyOf(p);
   return {
     kind: 'ok',
     // Gratuite (Morsure/Caudale/Tentacule) = toujours mêlée (trait solide) ; Arme = tir pointillé si à distance.
@@ -347,6 +398,9 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
     // lit l'écart base→cible, il ne recombine rien (une 2ᵉ passe de `combineMods` amputerait la
     // ligne de plafond que l'aperçu vient de nommer).
     mod: p.target - p.base,
+    // Difficulté du geste : celle que le SOCLE a composée pour CETTE cible (`previewAttack` →
+    // `rollLine` → `composeDifficulty`), dans les termes de la modale — jamais recomposée ici.
+    ...(palier ? { difficulty: palier } : {}),
     dmg: p.dmg, // (gratuite : Dégâts de l'arme tenue = cosmétique ; le chemin/réticule, lui, est exact)
     path: plan.kind === 'attack' ? undefined : plan.path,
     note: plan.kind === 'charge' ? `Charge${plan.adv ? ' (+1 Avantage)' : ''}` : plan.kind === 'moveAttack' ? 'Rejoindre + attaquer' : undefined,
@@ -401,7 +455,10 @@ function cleaveAffordance(get: Get, _active: Combatant, target: Combatant): Hove
   const atk = inBattleId(battle, pc.attackerId);
   if (!atk || !cleaveTargets(battle, atk, pc.hitIds).some((c) => c.id === target.id)) return { kind: 'none' };
   const weapon = firedWeapon(atk, target, undefined, battle.combatants); // MÊME résolution que la chaîne (resolveAttack, aucun weaponUid)
-  return { kind: 'ok', line: 'solid', title: 'Frappe Mortelle', targetName: target.label, skill: attackTestLabel(weapon, 'melee'), base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  // L'enchaînement est une VRAIE frappe : son réticule porte la valeur et la Difficulté du jet qu'il
+  // ouvrira, comme le ciblage ordinaire (`attackAffordance`) — un interlude n'est pas un ciblage aveugle.
+  const p = previewAttack(get, atk, target);
+  return { kind: 'ok', line: 'solid', title: 'Frappe Mortelle', targetName: target.label, skill: attackTestLabel(weapon, 'melee'), base: p.base, mod: p.target - p.base, dmg: p.dmg, ...(difficultyOf(p) ? { difficulty: difficultyOf(p)! } : {}), preview: { kind: 'attack', targetId: target.id } };
 }
 
 /** Mode 2ᵉ FRAPPE (deux armes, LDB 10 l.767-773) : cibles à portée de la main secondaire. */
@@ -412,7 +469,10 @@ function dualAffordance(get: Get, _active: Combatant, target: Combatant): HoverT
   const atk = inBattleId(battle, ds.attackerId);
   const off = atk?.weapons.find((w) => w.uid === ds.offWeaponUid);
   if (!atk || !off || !dualStrikeTargets(battle, atk, off).some((c) => c.id === target.id)) return { kind: 'none' };
-  return { kind: 'ok', line: 'solid', title: 'Deux armes', targetName: target.label, skill: attackTestLabel(off, 'melee'), base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  // 2ᵉ frappe = une frappe : le réticule porte la valeur et la Difficulté de SON jet — celui de la main
+  // SECONDAIRE (`LDB 14 l.181`, pénalité comprise), pas celui de l'arme principale déjà résolue.
+  const p = previewAttack(get, atk, target, undefined, { weaponUid: off.uid });
+  return { kind: 'ok', line: 'solid', title: 'Deux armes', targetName: target.label, skill: attackTestLabel(off, 'melee'), base: p.base, mod: p.target - p.base, dmg: p.dmg, ...(difficultyOf(p) ? { difficulty: difficultyOf(p)! } : {}), preview: { kind: 'attack', targetId: target.id } };
 }
 
 // ───────────────────────────────────────────────────────────────────────────

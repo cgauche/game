@@ -10,7 +10,8 @@
 import type { GameState } from './store';
 import { useGame, activeCombatant } from './store';
 import { controlsActive } from './netOwnership';
-import { pickActiveModalKey, modalBlocksMapHover } from './modalArbiter';
+import { pickActiveModalKey } from './modalArbiter';
+import { modalBlocksMapHover } from './mapHover';
 import { hotbar } from './hotbarBridge';
 import { runAction, currentInterludeAction, actionGate } from './actionRegistry';
 import { validTargets, preemptShooterIds } from './targeting';
@@ -77,7 +78,7 @@ const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pick
 /** La CARTE accepte-t-elle un geste de ciblage ? MÊME verdict que la souris (`modalBlocksMapHover`,
  *  arbitre) : une modale PILOTÉE PAR LA CARTE (désignation de cibles d'un sort) laisse la scène
  *  vivante — la souris y cible, le curseur clavier/manette doit pouvoir en faire autant. */
-const mapLive = (s: GameState) => !modalBlocksMapHover(s as Parameters<typeof modalBlocksMapHover>[0]);
+const mapLive = (s: GameState) => !modalBlocksMapHover(s);
 /** Minuterie qui transforme l'appui en MAINTIEN — une seule, le geste de rotation est unique. */
 let minuterieMaintien: ReturnType<typeof setTimeout> | null = null;
 /** APPUI de rotation caméra — SOURCE UNIQUE du geste de l'écran de jeu, au CLAVIER (Q/E) : la caméra
