@@ -15,12 +15,17 @@
  * APPROCHE — la case d'abord déclarée par le catalogue est un chemin PRÉFÉRÉ, pas une condition
  * d'occupation : une chaise poussée contre un mur ou un comptoir reste une chaise où l'on s'assoit.
  * `seatSlotsOf` rend donc l'approche EFFECTIVE (deux passes décrites à la fonction) : la case
- * déclarée si la scène la dit marchable, sinon un repli voisin du siège, jamais partagé avec l'abord
- * d'une AUTRE place de la SCÈNE. RÈGLE : deux places simultanément occupables n'ont jamais le même
- * abord — la portée en est la SCÈNE, pas le meuble (un repli qui volait l'abord déclaré d'un meuble
- * voisin posait deux corps sur la même case). `isWalkable` écarte déjà les empreintes de décor solide, les
- * terrains impassables et les cases effondrées. Une place sans AUCUNE case voisine libre et marchable
- * est la seule qui reste inoccupable (`approche-invalide`).
+ * déclarée si elle est ATTEIGNABLE DEPUIS LE SIÈGE, sinon un repli voisin du siège, jamais partagé
+ * avec l'abord d'une AUTRE place de la SCÈNE. RÈGLE : deux places simultanément occupables n'ont
+ * jamais le même abord — la portée en est la SCÈNE, pas le meuble (un repli qui volait l'abord
+ * déclaré d'un meuble voisin posait deux corps sur la même case).
+ *
+ * ATTEIGNABLE, pas seulement marchable : l'abord d'une place est une case d'où l'on s'assoit, donc
+ * une case voisine du SIÈGE qu'aucune CLOISON n'en sépare (`abordsDuSiege` — `isWalkable` pour le
+ * terrain, l'empreinte des décors solides et les cases effondrées ; `wallBetween` pour les arêtes
+ * murées et les portes). Un abord marchable derrière un mur est dans une AUTRE pièce : personne n'y
+ * prendra jamais ce siège. Une place dont AUCUNE case voisine du siège n'est atteignable est la
+ * seule qui reste inoccupable (`approche-invalide`).
  *
  * DISPONIBILITÉ — un corps mis hors d'action ne tient pas sa chaise : `releaseUnavailableSeats` lève
  * les occupants que l'appelant déclare indisponibles (lui seul connaît le groupe et le combat).
@@ -33,7 +38,7 @@ import { findPropById } from '../data';
 import { rotatePropLocal } from '../data/props.types';
 import { DIR8_DELTA, DIR8_ORDER, rotateDir8, type Dir8 } from './dir8';
 import { PARTY_MAX } from './combatants';
-import { heightAt, isWalkable, type Scene, type SceneEntity } from './scene';
+import { heightAt, isWalkable, wallBetween, type Scene, type SceneEntity } from './scene';
 import { memoByRef } from './sceneMemo';
 import type { Pt } from './path';
 
@@ -139,23 +144,64 @@ function placesPartielles(scene: Scene): PlacePartielle[] {
 }
 
 /**
+ * Une CLOISON sépare-t-elle la case du siège de sa candidate d'abord ? Lecture d'arête déléguée à
+ * `wallBetween` (`state/scene`, SOURCE UNIQUE : mur plein, porte selon son état, structure tant
+ * qu'elle tient) — aucune règle de mur n'est relue ici. En DIAGONALE, où il n'existe pas d'arête
+ * canonique, la même lecture s'applique aux DEUX chemins en L, comme le pas du joueur l'exige
+ * (`path.neighborsOf`) : la cloison passe entre les deux cases dès que l'un des L est muré.
+ */
+function cloisonEntre(scene: Scene, a: { x: number; y: number }, b: { x: number; y: number }, z: number): boolean {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  if (dx === 0 || dy === 0) return wallBetween(scene, a.x, a.y, b.x, b.y, z);
+  return wallBetween(scene, a.x, a.y, a.x + dx, a.y, z) || wallBetween(scene, a.x + dx, a.y, b.x, b.y, z)
+    || wallBetween(scene, a.x, a.y, a.x, a.y + dy, z) || wallBetween(scene, a.x, a.y + dy, b.x, b.y, z);
+}
+
+/**
+ * PRÉDICAT UNIQUE D'ATTEIGNABILITÉ — les cases d'où l'on peut s'asseoir sur le siège porté par la
+ * case `siege`, à l'étage `z` : les huit voisines (plus la case du siège elle-même quand elle est
+ * marchable — banc à même le sol) qui soient MARCHABLES et qu'aucune CLOISON ne sépare du siège.
+ *
+ * L'abord n'est pas un PAS : le corps ne traverse jamais le siège, il se tient à côté et s'assoit —
+ * d'où la garde anti coupe-de-coin de `path.neighborsOf` (qui exige en plus des FLANCS marchables)
+ * volontairement absente : une chaise poussée dans l'angle d'un comptoir reste une chaise où l'on
+ * s'assoit. Ce qui sépare vraiment, et que ce prédicat refuse, c'est la CLOISON : un abord marchable
+ * de l'autre côté d'un mur est dans une autre pièce.
+ *
+ * L'usage est un ENSEMBLE de clés de case : les deux passes de `placesResolues` et
+ * `seatIsOccupiable` y testent une appartenance.
+ */
+function abordsDuSiege(scene: Scene, siege: { x: number; y: number }, z: number): Set<string> {
+  const out = new Set<string>();
+  if (isWalkable(scene, siege.x, siege.y, z)) out.add(cleCase(siege, z));
+  for (const dir of DIR8_ORDER) {
+    const { gx, gy } = DIR8_DELTA[dir];
+    const candidate = { x: siege.x + gx, y: siege.y + gy };
+    if (isWalkable(scene, candidate.x, candidate.y, z) && !cloisonEntre(scene, siege, candidate, z))
+      out.add(cleCase(candidate, z));
+  }
+  return out;
+}
+
+/**
  * Toutes les places de la SCÈNE, abord EFFECTIF arbitré, indexées par meuble.
  *
  * ARBITRAGE en DEUX PASSES sur la population ENTIÈRE — la portée est la scène, pas le meuble : les
  * abords se réservent entre meubles voisins comme entre places d'une même table.
- *  1. les abords DÉCLARÉS marchables sont retenus et RÉSERVÉS, premier arrivé premier servi ;
+ *  1. les abords DÉCLARÉS ATTEIGNABLES depuis leur siège sont retenus et RÉSERVÉS, premier arrivé
+ *     premier servi ;
  *  2. les autres se replient sur la première case voisine du SIÈGE (ordre `DIR8_ORDER` :
- *     N, NE, E, SE, S, SO, O, NO) qui soit marchable ET non encore réservée.
+ *     N, NE, E, SE, S, SO, O, NO) qui soit ATTEIGNABLE depuis lui ET non encore réservée.
  * Aucune candidate → l'abord déclaré est rendu tel quel, et `assignSeat` refuse `approche-invalide`.
  */
 function placesResolues(scene: Scene): Map<string, ResolvedSeatSlot[]> {
   const partiels = placesPartielles(scene);
+  const joignables = partiels.map((p) => abordsDuSiege(scene, p.siege, p.z));
   const reservees = new Set<string>();
   const declareeGagnee = new Set<number>();
   partiels.forEach((p, i) => {
-    if (!isWalkable(scene, p.declaree.x, p.declaree.y, p.z)) return;
     const cle = cleCase(p.declaree, p.z);
-    if (reservees.has(cle)) return;
+    if (!joignables[i].has(cle) || reservees.has(cle)) return;
     reservees.add(cle);
     declareeGagnee.add(i);
   });
@@ -167,8 +213,9 @@ function placesResolues(scene: Scene): Map<string, ResolvedSeatSlot[]> {
       for (const dir of DIR8_ORDER) {
         const { gx, gy } = DIR8_DELTA[dir];
         const voisine = { x: siege.x + gx, y: siege.y + gy };
-        if (!isWalkable(scene, voisine.x, voisine.y, z) || reservees.has(cleCase(voisine, z))) continue;
-        reservees.add(cleCase(voisine, z));
+        const cle = cleCase(voisine, z);
+        if (!joignables[i].has(cle) || reservees.has(cle)) continue;
+        reservees.add(cle);
         approach = enCase(voisine);
         break;
       }
@@ -221,10 +268,9 @@ export function seatPoseOf(scene: Scene, occupant: SeatOccupant): SeatPose | nul
 
 /**
  * PRÉDICAT UNIQUE D'OCCUPABILITÉ — « ce siège se tient-il ? ». Une place n'est occupable que si son
- * abord EFFECTIF est praticable : `isWalkable` écarte déjà l'empreinte des décors solides, les
- * terrains impassables et les cases effondrées. Quand `placesResolues` n'a trouvé AUCUNE candidate
- * (siège cerné), elle rend l'abord déclaré tel quel — c'est ici, et ici seulement, que ce cas se
- * traduit en refus.
+ * abord EFFECTIF est ATTEIGNABLE DEPUIS SON SIÈGE (`abordsDuSiege`) : un abord marchable mais séparé
+ * du siège par une arête murée est une place où personne ne s'assied jamais. Quand `placesResolues` n'a trouvé AUCUNE candidate (siège cerné), elle rend
+ * l'abord déclaré tel quel — c'est ici, et ici seulement, que ce cas se traduit en refus.
  *
  * `assignSeat` (le GESTE), `seatAssignmentDefects` (le DOCUMENT) et `normaliseAssises`
  * (les mutations d'éditeur) l'appellent tous les trois : ce qu'un geste refuse, le validateur et le
@@ -232,7 +278,8 @@ export function seatPoseOf(scene: Scene, occupant: SeatOccupant): SeatPose | nul
  */
 export function seatIsOccupiable(scene: Scene, slot: ResolvedSeatSlot): boolean {
   const z = propEntity(scene, slot.propId)?.z ?? 0;
-  return isWalkable(scene, slot.approach.x, slot.approach.y, z);
+  const siege = caseDe(slot.anchor.x, slot.anchor.y);
+  return abordsDuSiege(scene, siege, z).has(cleCase(slot.approach, z));
 }
 
 /** L'emplacement de groupe est-il un rang DÉCLARABLE ? Borne d'AUTHORING : elle ne dit pas qu'un

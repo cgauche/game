@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createHash } from 'node:crypto';
 import { diligenceCampaign } from '../campaign';
-import { doorAt, heightAt, isWalkable, type Scene, type SceneEntity } from '../../state/scene';
+import { doorAt, heightAt, isWalkable, wallBetween, type Scene, type SceneEntity } from '../../state/scene';
 import { walkNeighbors, type Pt } from '../../state/path';
 import { sceneZoneTiles } from '../../state/zones';
 import { seatSlotsOf, seatIsOccupiable, type ResolvedSeatSlot } from '../../state/seating';
@@ -108,6 +108,21 @@ const dansSalle = new Set(tuilesSalle.map((t) => `${t.x},${t.y}`));
  *  fractionnaire n'est que du rendu). */
 const caseDuCorps = (slot: ResolvedSeatSlot) => `${Math.round(slot.anchor.x)},${Math.round(slot.anchor.y)}`;
 
+/** La case du SIÈGE d'une place — l'origine dont son abord doit être voisin. */
+const caseDuSiege = (slot: ResolvedSeatSlot) => ({ x: Math.round(slot.anchor.x), y: Math.round(slot.anchor.y) });
+
+/**
+ * Une CLOISON sépare-t-elle ces deux cases ? Lu ici directement au document (`wallBetween`,
+ * `state/scene`), sans passer par `seating.ts` : c'est le fait de la SCÈNE que ce test vérifie, pas
+ * la parole du module. En diagonale, les deux chemins en L doivent être libres de mur.
+ */
+function cloisonEntre(a: { x: number; y: number }, b: { x: number; y: number }): boolean {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  if (dx === 0 || dy === 0) return wallBetween(scene, a.x, a.y, b.x, b.y, 0);
+  return wallBetween(scene, a.x, a.y, a.x + dx, a.y, 0) || wallBetween(scene, a.x + dx, a.y, b.x, b.y, 0)
+    || wallBetween(scene, a.x, a.y, a.x, a.y + dy, 0) || wallBetween(scene, a.x, a.y + dy, b.x, b.y, 0);
+}
+
 /** Toutes les places de la salle, meuble par meuble, dans l'ordre du document. */
 const placesDeLaSalle = (): ResolvedSeatSlot[] =>
   scene.entities.filter((e) => e.kind === 'prop').flatMap((e) => seatSlotsOf(scene, e.id));
@@ -185,6 +200,35 @@ describe('La Diligence — meublement de la salle principale', () => {
     const rampe = new Set(['14,23', '14,24', '14,25', '13,25']);
     expect(abords.filter((a) => rampe.has(a))).toEqual([]);
     expect(places.filter((s) => !dansSalle.has(caseDuCorps(s))).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
+  });
+
+  /**
+   * SONDE promue (Task 4bis, 2026-08-23) : un abord marchable ne suffit pas, il doit être VOISIN du
+   * siège et qu'aucune CLOISON ne l'en sépare. `table-ronde-3/ouest` résolvait son abord en (9,10),
+   * marchable mais derrière le mur bâti (9,10,E) — dans la CUISINE : la place était tenue pour
+   * occupable et personne ne pouvait s'y asseoir.
+   */
+  it('les dix-huit abords sont voisins de leur siège, sans cloison entre eux, et tous dans la salle', () => {
+    const places = placesDeLaSalle();
+    expect(places).toHaveLength(18);
+    const lointains = places.filter((s) => {
+      const siege = caseDuSiege(s);
+      return Math.max(Math.abs(s.approach.x - siege.x), Math.abs(s.approach.y - siege.y)) !== 1;
+    });
+    expect(lointains.map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
+    expect(places.filter((s) => cloisonEntre(caseDuSiege(s), s.approach)).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
+    expect(places.filter((s) => !dansSalle.has(`${s.approach.x},${s.approach.y}`)).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
+  });
+
+  it('la table adossée au mur de la cuisine assoit quatre convives DU CÔTÉ SALLE', () => {
+    const table = furnitureAt(scene, 10, 10);
+    expect(table.id).toBe('diligence-salle-table-ronde-3');
+    expect(wallBetween(scene, 10, 10, 9, 10, 0), 'le mur de la cuisine DOIT séparer le siège de (9,10) pour que le test morde').toBe(true);
+    expect(isWalkable(scene, 9, 10, 0), '(9,10) DOIT rester marchable pour que le test morde').toBe(true);
+    const places = seatSlotsOf(scene, table.id);
+    expect(places.every((s) => seatIsOccupiable(scene, s))).toBe(true);
+    expect(places.map((s) => `${s.slotId}:${s.approach.x},${s.approach.y}`))
+      .toEqual(['nord:10,9', 'est:11,10', 'sud:10,11', 'ouest:11,9']);
   });
 
   it('la table frontière et ses quatre corps tiennent contre le comptoir', () => {

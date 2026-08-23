@@ -90,6 +90,26 @@ describe('MapSpec.seatAssignments — le même meuble, mais une assise à ids FI
     expect(() => buildScene(CERNE)).toThrow(/aucun abord praticable/);
   });
 
+  // ── C2 (défaut mesuré à La Diligence, 2026-08-23) ──────────────────────────────────────────
+  /** Même table en (2,2), mais l'arête (2,2,N) — entre le siège et l'abord déclaré du nord — est
+   *  bâtie : l'aubergiste posé en (2,1) est de l'AUTRE côté du mur, dans la pièce voisine. */
+  const CLOISONNE = (door?: boolean): MapSpec => ({
+    ...BASE,
+    entities: [{ ...TABLE }, { ...AUBERGISTE }],
+    walls: [{ x: 2, y: 2, side: 'N', ...(door ? { door: true } : {}) }],
+    seatAssignments: FIXED_ASSIGNMENT,
+  });
+
+  it('un PNJ attablé depuis l’autre côté d’un MUR ne se compile pas — un abord marchable ne suffit pas', () => {
+    expect(() => buildScene(CLOISONNE())).toThrow(/abord de sa place/);
+  });
+
+  it('la même arête percée d’une PORTE compile, et le validateur de document l’accepte', () => {
+    const s = buildScene(CLOISONNE(true));
+    expect(s.seatAssignments).toEqual(FIXED_ASSIGNMENT);
+    expect(validateScene([s]).filter((w) => w.level === 'error')).toEqual([]);
+  });
+
   it('la Scène compilée passe le validateur de document', () => {
     const s = buildScene({ ...BASE, entities: [{ ...TABLE }, { ...AUBERGISTE }], seatAssignments: FIXED_ASSIGNMENT });
     expect(validateScene([s]).filter((w) => w.level === 'error')).toEqual([]);

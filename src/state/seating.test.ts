@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, isWalkable, type Scene, type SceneEntity } from './scene';
+import { emptyScene, isWalkable, type Scene, type SceneEntity, type WallSeg } from './scene';
 import { DIR8_ORDER, type Dir8 } from './dir8';
-import { assignSeat, pruneSeatAssignments, releaseSeat, seatPoseOf, seatSlotsOf, type SeatOccupant } from './seating';
+import { assignSeat, pruneSeatAssignments, releaseSeat, seatIsOccupiable, seatPoseOf, seatSlotsOf, type SeatOccupant } from './seating';
 
 /** Meuble de référence du catalogue app-owned : 4 places cardinales, ancres à ±0,43 case, assise 0,49 m. */
 const TABLE = 'table-ronde-4-tabourets';
@@ -253,6 +253,61 @@ describe('abords réservés à l’échelle de la SCÈNE — un repli ne vole pa
     const nord = seatSlotsOf(b.scene, PROP).find((s) => s.slotId === 'nord')!;
     const sud2 = seatSlotsOf(b.scene, 'table-2').find((s) => s.slotId === 'sud')!;
     expect(`${nord.approach.x},${nord.approach.y}`).not.toBe(`${sud2.approach.x},${sud2.approach.y}`);
+  });
+});
+
+/**
+ * DÉFAUT MESURÉ à La Diligence (2026-08-23) : `table-ronde-3/ouest` (10,10) résolvait son abord en
+ * (9,10) — marchable, mais DERRIÈRE le mur bâti `(9,10,E)`, dans la cuisine. Aucun héros ne pouvait
+ * s'y asseoir alors que le prédicat d'occupabilité l'acceptait. RÈGLE : un abord n'est pas seulement
+ * MARCHABLE, il est ATTEIGNABLE depuis la case du siège — même connectivité que le pas du joueur
+ * (`walkNeighbors`), donc portes comprises.
+ */
+describe('abord ATTEIGNABLE — un mur entre le siège et son abord déclaré n’est pas un abord', () => {
+  /** Table en (5,5) cap `N` ; l'arête (4,5,E) — entre l'abord déclaré de l’ouest et le siège — porte
+   *  un mur, plein ou percé d’une porte. */
+  const cloisonnee = (seg: Partial<WallSeg> = {}): Scene => {
+    const s = seatingScene({ propFacing: 'N' });
+    s.walls = [{ x: 4, y: 5, side: 'E', ...seg }];
+    return s;
+  };
+
+  it('mur PLEIN : l’abord déclaré marchable est refusé, la place se replie et reste occupable', () => {
+    const scene = cloisonnee();
+    expect(isWalkable(scene, 4, 5, 0), 'la case derrière le mur DOIT être marchable pour que le test morde').toBe(true);
+    const ouest = seatSlotsOf(scene, PROP).find((s) => s.slotId === 'ouest')!;
+    expect(ouest.approach).not.toMatchObject({ x: 4, y: 5 });
+    expect(ouest.approach).toMatchObject({ x: 6, y: 4 }); // N/E/S déclarés réservés → premier libre : NE
+    expect(seatIsOccupiable(scene, ouest)).toBe(true);
+    expect(assignSeat(scene, PROP, 'ouest', NPC, GROUPE)).toMatchObject({ ok: true });
+    // Les trois autres places gardent leur abord déclaré : un mur ne déplace que la place qu’il coupe.
+    expect(seatSlotsOf(scene, PROP).filter((s) => s.slotId !== 'ouest').map((s) => `${s.approach.x},${s.approach.y}`))
+      .toEqual(['5,4', '6,5', '5,6']);
+  });
+
+  it('même arête, mais PORTE : l’abord déclaré est gardé', () => {
+    const scene = cloisonnee({ door: true });
+    const ouest = seatSlotsOf(scene, PROP).find((s) => s.slotId === 'ouest')!;
+    expect(ouest.approach).toMatchObject({ x: 4, y: 5 });
+    expect(assignSeat(scene, PROP, 'ouest', NPC, GROUPE)).toMatchObject({ ok: true });
+  });
+
+  it('une place que les MURS cernent est inoccupable, comme celle que les meubles cernent', () => {
+    const scene = seatingScene({ propFacing: 'N' });
+    // Les quatre arêtes cardinales du siège : les diagonales tombent avec elles (anti coupe-de-coin).
+    scene.walls = [
+      { x: POS.x, y: POS.y, side: 'N' }, { x: POS.x, y: POS.y + 1, side: 'N' },
+      { x: POS.x, y: POS.y, side: 'E' }, { x: POS.x - 1, y: POS.y, side: 'E' },
+    ];
+    for (const slot of seatSlotsOf(scene, PROP)) expect(seatIsOccupiable(scene, slot), slot.slotId).toBe(false);
+    expect(assignSeat(scene, PROP, 'nord', NPC, GROUPE)).toMatchObject({ ok: false, reason: 'approche-invalide' });
+  });
+
+  it('l’occupabilité se juge sur l’ATTEIGNABILITÉ, pas sur la seule marchabilité', () => {
+    const scene = cloisonnee();
+    const barree = { propId: PROP, slotId: 'ouest', anchor: { x: 4.57, y: 5, h: 0.49 }, facing: 'E' as Dir8, approach: { x: 4, y: 5 } };
+    expect(isWalkable(scene, barree.approach.x, barree.approach.y, 0)).toBe(true);
+    expect(seatIsOccupiable(scene, barree)).toBe(false);
   });
 });
 
