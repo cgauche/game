@@ -1,6 +1,6 @@
 ---
 name: feedback-coherence-structurelle-jusquau-bout-toutes-donnees
-description: "Directive 2026-08-23 : une structure de donnée (ex. choix de spécialisation) est la MÊME dans tous les datasets et le moteur — carrières, races, créatures, talents… — jamais une forme propre par dataset ni un reste en texte"
+description: "Directive 2026-08-23 (GÉNÉRALE, pas seulement les spécialisations) : tout CONCEPT a UNE structure, identique dans tous les datasets (carrières, races, créatures, talents…) et le moteur — jamais une forme par dataset, un reste en texte, ni un champ homonyme de forme différente"
 metadata: 
   node_type: memory
   type: feedback
@@ -11,6 +11,8 @@ metadata:
 Verbatim utilisateur (2026-08-23, à propos des « Savoir (Au choix) » : créatures en texte pur, carrières déjà en `{wildcard}` mais re-parsées par regex au créateur, `specOptions` en libellés, talents/stars en littéral) :
 « Ca serait bien que l'application soit cohérente dans sa structure non et jusqu'au bout, que ce soit les carrières que les races, les creatures, etc ... »
 
+Précision du même jour, verbatim : « Cette remarque ce n'est pas seulement pour les spécialisations par contre » → la règle vaut pour TOUTE structure (refs de compétence/talent/trait, args, sources, options, coûts…), pas pour l'exemple qui l'a déclenchée.
+
 **Why :** un concept (le choix d'une spécialisation) modélisé trois fois (forme structurée ici, littéral FR là, libellés dans une liste d'options ailleurs) = trois gardes, trois éditeurs, trois chemins de bug ; et un nettoyage qui s'arrête au dataset du ticket laisse la dette vivante à côté (#1342/#1456 : les créatures étaient le gros stock, mais carrières/talents/stars/traits portaient le même défaut sous d'autres formes).
 
-**How to apply :** quand un lot pose ou migre une FORME de donnée, l'inventaire se fait sur TOUS les datasets qui portent le concept (grep du concept, pas du fichier) et le lot couvre le moteur jusqu'au bout (plus de regex sur libellé, ids partout, un seul schéma réutilisé — ex. `advancementRefSchema {wildcard, specOptions}`) ; une forme « par dataset » ou un reste en texte = demi-migration, refusée (cf. [[feedback-jamais-de-demi-migration]], [[game-ids-internes-libelles-display-multilangue]]). Précédent : #1456 lots L4/L5 élargis à careerLevels/species/talents/stars/tables/traits sur cette directive.
+**How to apply :** quand un lot pose ou migre une FORME de donnée, l'inventaire se fait sur TOUS les datasets qui portent le concept (grep du concept, pas du fichier) et le lot couvre le moteur jusqu'au bout (plus de regex sur libellé, ids partout, un seul schéma réutilisé — ex. `advancementRefSchema {wildcard, specOptions}`) ; une forme « par dataset » ou un reste en texte = demi-migration, refusée (cf. [[feedback-jamais-de-demi-migration]], [[game-ids-internes-libelles-display-multilangue]]). Corollaire : un audit de cohérence structurelle INTER-datasets (même concept ⇒ même schéma zod partagé, `schemas/common.ts` ; champ homonyme à forme divergente = bug d'AXE) est un chantier à part entière — ticket ouvert le 2026-08-23. Précédent : #1456 lots L4/L5 élargis à careerLevels/species/talents/stars/tables/traits sur cette directive.
