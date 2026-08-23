@@ -3,7 +3,7 @@ import { useGame } from '../state/store';
 import { ownsLocal } from './ownership';
 import { harvestProfileFor } from '../engine/harvest';
 import { Coins } from './Coins';
-import { TeamPortrait } from './TeamPortrait';
+import { ReadyRow } from './ReadyRow';
 import { GearAssignList } from './GearAssignList';
 import { RuleDivider } from './Ornaments';
 import { Icon } from './Icon';
@@ -51,7 +51,6 @@ export function VictoryScreen() {
   const continueAction = online ? (ready[net.mySeat] ? undefined : () => victoryReady(net.mySeat)) : dismiss;
   useModalA11y(boxRef, continueAction);
   if (!battle || battle.over !== 'victory' || !revealed) return null;
-  const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
   const assignable = party.filter((h) => ownsLocal(state, h.id)); // solo : tous (#1262)
 
   const xp = pv?.xp ?? 0;
@@ -133,17 +132,7 @@ export function VictoryScreen() {
 
         {online ? (
           <>
-            <div className="ready-row">
-              {seats.map(({ seat, name }) => {
-                const h = party.find((x) => !x.dead && (net.ownership[x.id] ?? 0) === seat);
-                return (
-                  <span key={seat} className={`ready-chip${ready[seat] ? ' ok' : ''}`} title={name}>
-                    {h ? <TeamPortrait combatant={h} size={28} /> : <span className="ready-noportrait"><Icon id="nav/seat-owner" size="sm" /></span>}
-                    {ready[seat] ? '✓' : '…'}
-                  </span>
-                );
-              })}
-            </div>
+            <ReadyRow ready={ready} />
             <button className="btn btn-primary victory-continue" disabled={!!ready[net.mySeat]} onClick={() => victoryReady(net.mySeat)}>
               {ready[net.mySeat] ? <><Icon id="ui/wait" size="sm" /> En attente des autres…</> : 'Continuer'}
             </button>

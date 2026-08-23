@@ -16,15 +16,30 @@ import { sourceRefSchema } from '../common';
 
 export const file = 'actions.json';
 
-/** Surface d'accueil PAR DÉFAUT (spec §1a / §1c-bis / zone 4). Le placement joueur reste libre :
- *  ce champ dit d'où l'action NAÎT quand rien n'a été posé. `geste-d-etat` = la case G6bis de la
- *  travée gauche (spec §1a, G6bis) : ce que l'ÉTAT du porteur ouvre, pas ce que son arme offre.
- *  `interlude` = le bandeau de phase de la console (`.cc-phase`) : l'action s'affiche tant que le
- *  mode de ciblage courant (`currentTargetingMode`) est celui de son `mode`, et SON dispatcher est
- *  la SORTIE de ce ciblage. Elle exige donc `mode`, `run` et `exitSafe`. `pastille-etat` = la
- *  PASTILLE de l'État concerné dans la niche d'États (`StateChips`, slot `action`) : la réaction que
- *  cet État ouvre vit sur LUI, jamais dans une case de la grille (arbitrage HUD 2026-08-16). */
-const surfaceSchema = z.enum(['deduite-du-set', 'geste-d-etat', 'grille', 'pastille-entite', 'pastille-etat', 'hors-console', 'interlude']);
+/** RENDEUR d'accueil PAR DÉFAUT (spec §1a / §1c-bis / zone 4). Le placement joueur reste libre :
+ *  ce champ dit d'où l'action NAÎT quand rien n'a été posé — et il nomme un rendeur RÉEL, mesuré au
+ *  DOM par le contrat « surface ⇄ rendeur » (`src/ui/CombatConsole.test.tsx`). Correspondances :
+ *   • `deduite-du-set` / `geste-d-etat` → la travée GAUCHE (`.cc-bay-left` : cases déduites du set,
+ *     rubrique ACCÈS RAPIDE) ; `geste-d-etat` = la case G6bis (spec §1a) : ce que l'ÉTAT du porteur
+ *     ouvre, pas ce que son arme offre ;
+ *   • `grille` → la travée DROITE (`.cc-bay-right`), grille de capacités ;
+ *   • `gouttiere-arche` → la GOUTTIÈRE de ressource de l'arche (`.cc-gutter`) : le geste adossé à la
+ *     jauge qu'il défait (spec §1c) ;
+ *   • `selecteur-de-sets` → la COLONNE de vignettes de sets (`.cc-sets`) : chaque vignette commute
+ *     SON set ;
+ *   • `coin-de-tour` → le coin de fin de tour (`.cc-corner`), isolé des deux travées ;
+ *   • `bandeau-de-phase` → le bandeau `.cc-phase` HORS ciblage : la pause d'initiative de Round ;
+ *   • `interlude` → le MÊME bandeau, pendant un ciblage par la carte : l'action s'affiche tant que
+ *     le mode courant (`currentTargetingMode`) est celui de son `mode`, et SON dispatcher est la
+ *     SORTIE de ce ciblage. Elle exige donc `mode`, `run` et `exitSafe` ;
+ *   • `pastille-etat` → la PASTILLE de l'État concerné dans la niche d'États (`StateChips`, slot
+ *     `action`) : la réaction que cet État ouvre vit sur LUI (arbitrage HUD 2026-08-16) ;
+ *   • `pastille-entite` → la pastille de l'ENTITÉ sur le champ (zone 4), hors console ;
+ *   • `frise` → la frise d'initiative (`InitiativeStrip`), hors console. */
+const surfaceSchema = z.enum([
+  'deduite-du-set', 'geste-d-etat', 'grille', 'gouttiere-arche', 'selecteur-de-sets', 'coin-de-tour',
+  'bandeau-de-phase', 'interlude', 'pastille-etat', 'pastille-entite', 'frise',
+]);
 
 /** Ce que l'acte consomme dans l'économie du Tour. */
 const costSchema = z.enum(['action', 'mouvement', 'gratuit', 'aucun']);

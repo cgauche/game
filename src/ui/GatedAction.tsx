@@ -27,6 +27,7 @@ export function GatedAction({
   className,
   btnClassName,
   bare = false,
+  dense = false,
 }: {
   id: string;
   label: ReactNode;
@@ -44,6 +45,11 @@ export function GatedAction({
    *  ombre) — pour une alvéole qui porte déjà sa géométrie (rack d'États de la console). La variante
    *  vit DANS la primitive (`base.css`), jamais en neutralisation de `.btn` depuis un conteneur. */
   bare?: boolean;
+  /** Variante DENSE (`.gated-action.dense`, components.css) : l'action tient dans une colonne étroite
+   *  (pied de la frise d'initiative) — texte enroulé, graduation réduite pour le bouton comme pour la
+   *  raison. Même règle que `bare` : la densité vit chez la primitive, jamais chez l'appelant. Porte
+   *  sur le CONTENEUR, donc sans effet dans la forme `reasonId` (rendue sans conteneur). */
+  dense?: boolean;
 } & (
   | {
       /** Raison d'indisponibilité — rendue sous le bouton quand `enabled=false` (info de DÉCISION). */
@@ -74,7 +80,7 @@ export function GatedAction({
   );
   if (reasonId) return button;
   return (
-    <div className={`gated-action${className ? ` ${className}` : ''}`}>
+    <div className={`gated-action${dense ? ' dense' : ''}${className ? ` ${className}` : ''}`}>
       {button}
       {!enabled && <p className="gated-action-reason" id={`${id}-reason`}>{reason}</p>}
     </div>

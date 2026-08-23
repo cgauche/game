@@ -1,7 +1,6 @@
 import { EtalLotModal } from './EtalLotModal';
 import { useGame } from '../state/store';
-import { ownsLocal } from './ownership';
-import { modalOwnerOf } from '../state/modalArbiter';
+import { spectatorSeatOfModal } from './ownership';
 import { willAutoResolve } from '../state/combatAuto';
 import type { JSX } from 'react';
 import { SpectatorChip } from './SpectatorChip';
@@ -69,18 +68,11 @@ export function ActiveModal(): JSX.Element | null {
   // Cadence Rapide/Auto : si le driver va auto-résoudre cette modale, NE PAS la rendre (fini le flash
   // de quelques ms). Le BILAN voyage/nuit et les vrais choix (surincantation/Destin en Rapide) restent rendus.
   if (willAutoResolve(s)) return null;
-  if (s.net.mode !== 'local') {
-    const ownerId = modalOwnerOf(s);
-    if (ownerId !== '*' && ownerId !== null && !ownsLocal(s, ownerId)) {
-      // Anti-doublon : pendant le TOUR d'un héros distant, la barre d'action affiche déjà
-      // « X joue Héros… » — la puce ne sert que si la modale concerne un AUTRE combattant
-      // (ex. défense réactive d'un héros distant pendant un tour ennemi).
-      const activeId = s.battle && !s.battle.over ? s.battle.order[s.battle.turn] : undefined;
-      if (ownerId !== undefined && ownerId === activeId) return null;
-      const seat = ownerId ? s.net.ownership[ownerId] ?? 0 : 0;
-      return <SpectatorChip label={s.net.seatNames[seat] ?? 'L’hôte'} />;
-    }
-  }
+  // La modale ne s'affiche que chez le propriétaire du combattant concerné ; ailleurs, la puce NOMME
+  // le siège attendu. Qui la pose est UNE décision (`spectatorSeatOfModal`, `ui/ownership`) que la
+  // bande d'attente de la console lit aussi : une seule puce à l'écran.
+  const seat = spectatorSeatOfModal(s);
+  if (seat !== null) return <SpectatorChip label={s.net.seatNames[seat] ?? 'L’hôte'} />;
   const Comp = COMPONENT[key];
   return <Comp />;
 }

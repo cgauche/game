@@ -12,6 +12,8 @@ import { weatherExposure, exposureTestCount, exposureShelterFromTent } from '../
 import { hasCondition } from '../engine/conditions';
 import { toBrass } from '../engine/money';
 import { ownsLocal } from './ownership';
+import { ReadyRow } from './ReadyRow';
+import { quorumAtteint } from '../state/netOwnership';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 import type { Combatant } from '../engine/types';
@@ -77,8 +79,9 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
   const exposureTests = exposureTestCount(severity, sheltered);
   const online = net.mode !== 'local';
   const ready = p.readyBySeat ?? {};
-  const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
-  const allReady = !online || seats.every(({ seat }) => ready[seat]);
+  // Le QUORUM est celui du dispatcher (`siegesRequis`) : un siège nommé sans héros vivant ne bloque
+  // pas la nuit, et la rangée ne l'affiche pas non plus (même source, `ReadyRow`).
+  const allReady = !online || quorumAtteint({ party, net }, ready);
   const canPay = toBrass(cost) === 0 || toBrass(money) >= toBrass(cost);
   const reglagesTitle = <>{title}{p.days > 1 ? ` — ${p.days} nuits` : ''}{p.quality === 'pietre' ? ' (piètre)' : ''}</>;
 
@@ -180,17 +183,7 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
         )}
       </div>
       {online && (
-        <div className="ready-row">
-          {seats.map(({ seat, name }) => {
-            const h = party.find((x) => !x.dead && (net.ownership[x.id] ?? 0) === seat);
-            return (
-              <span key={seat} className={`ready-chip${ready[seat] ? ' ok' : ''}`} title={name}>
-                {h ? <CharFrame c={h} variant="identity" size="xs" /> : <Icon id="nav/seat-owner" size="sm" />}
-                {ready[seat] ? '✓' : '…'}
-              </span>
-            );
-          })}
-        </div>
+        <ReadyRow ready={ready} />
       )}
       <div className="modal-actions">
         {!p.travelHalt && <button className="btn btn-ghost" onClick={() => restCancel()}>Annuler</button>}

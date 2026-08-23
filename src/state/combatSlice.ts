@@ -29,6 +29,7 @@ import { smokeOf, captureMoveSnapshot } from './combatGeometry';
 import { discreetPrayerDifficulty } from '../engine/prayer';
 import { setTriggeredTestRouter, fireOwnTestFailed } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
+import { turnEconomyStamp } from './endTurnGuard';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
 import { mountMovement, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
@@ -95,7 +96,7 @@ import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { seaMagicContext, windsMagicModOf } from './combatOrParty';
 import { actorIn, inBattleId } from './combatants';
-import { controlsCombatant, pilotedByHuman, defenseSurfaced, influencesLocally } from './netOwnership';
+import { controlsCombatant, pilotedByHuman, defenseSurfaced, influencesLocally, quorumAtteint } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
 import { currentTargetingMode, type BattleClickOpts, type TileClickOpts } from './targetingModes';
@@ -988,7 +989,9 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       set({
         facing: { ...snap.facing },
-        battle: { ...battle, movementUsed: 0, movedPreAction: snap.movedPreAction, moveSnapshot: null, action: null, reachable: new Map(), preview: null },
+        // `cancelMove` est l'INVERSE de l'économie du tour : il la rend à son état d'avant le segment,
+        // empreinte comprise (`endTurnGuard.ts`) — donc il désarme la fin de tour.
+        battle: { ...battle, movementUsed: 0, movedPreAction: snap.movedPreAction, moveSnapshot: null, action: null, reachable: new Map(), preview: null, endTurnArmed: undefined },
       });
       bus.emit(EVT.SCENE_DIRTY);
     },
@@ -1699,6 +1702,15 @@ export function createCombatSlice(get: Get, set: Set) {
       if (combatBusy(get())) return; // finir le tour sous un flux différé corromprait l'état
       advanceTurn(get, set);
     },
+    /** ARMEMENT du garde-fou « tour gâché » : le 1er geste de fin de tour EMPREINT l'économie du tour
+     *  (`turnEconomyStamp`), le 2ᵉ passe la main. L'état vit dans `battle` — donc répliqué (l'invité
+     *  voit son propre armement revenir de l'hôte) et lisible par la plaque de sortie. La POLITIQUE
+     *  (quand armer) appartient à l'entrée de registre `end-turn`, porte unique des deux surfaces. */
+    armEndTurn: () => {
+      const b = get().battle;
+      if (!b || b.over) return;
+      set({ battle: { ...b, endTurnArmed: turnEconomyStamp(b) } });
+    },
 
     // ── Chance, 3e usage : pré-emption d'initiative en début de Round (LDB 17 l.25) ──
     roundStartPromote: (heroId: string) => {
@@ -1750,16 +1762,10 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!prs) return;
       const readyBySeat = { ...(prs.readyBySeat ?? {}), [seat]: true };
       set({ pendingRoundStart: { ...prs, readyBySeat } });
-      // L'HÔTE lance quand TOUS les sièges requis ont validé (sièges possédant ≥1 héros vivant + l'hôte).
+      // L'HÔTE lance quand TOUS les sièges requis ont validé (quorum UNIQUE : `siegesRequis`).
       const s = get();
       if (s.net.mode === 'guest') return; // l'invité ne fait que marquer (l'intent porte son siège)
-      const required = new Set<number>([0]);
-      for (const h of s.party) {
-        if (h.dead || h.outOfRencontre) continue;
-        const owner = s.net.ownership[h.id] ?? 0;
-        if (s.net.seatNames[owner] != null) required.add(owner);
-      }
-      if ([...required].every((st) => readyBySeat[st])) get().confirmRoundStart();
+      if (quorumAtteint(s, readyBySeat)) get().confirmRoundStart();
     },
     confirmRoundStart: () => {
       set({ pendingRoundStart: null, preemptAiming: null }); // la pause se ferme → toute visée Tir rapide armée retombe
@@ -1925,7 +1931,9 @@ export function createCombatSlice(get: Get, set: Set) {
 
     // ── Rechargement = Test étendu de Projectiles (LDB 62 l.335 + LDB 12 l.170-174) — par modale ──
     // `weaponUid` DÉSIGNE l'arme rechargée : chaque arme à distance a son cycle (arbitrage utilisateur
-    // 2026-08-16, cas nommé « deux pistolets »). Absent → la 1re arme à distance DÉCHARGÉE du set.
+    // 2026-08-16 : « si j ai 2 armes à distance elles gèrent chacune leur propre rechargement et
+    // munition » — `.claude/memory/game-arbitrage-hud-console-rt-2026-08-16.md:34-35`).
+    // Absent → la 1re arme à distance DÉCHARGÉE du set.
     battleReload: (weaponUid?: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();
@@ -2030,7 +2038,9 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!a) return;
       a.aiming = false; // recharger est une autre action → la visée est perdue
       // ARME rechargée = celle du pending (chaque arme à distance a SON cycle — arbitrage utilisateur
-      // 2026-08-16) ; repli sur la 1re arme à distance pour un pending sans uid (état antérieur).
+      // 2026-08-16 : « si j ai 2 armes à distance elles gèrent chacune leur propre rechargement et
+      // munition », `.claude/memory/game-arbitrage-hud-console-rt-2026-08-16.md:34-35`) ;
+      // repli sur la 1re arme à distance pour un pending sans uid (état antérieur).
       const rw = a.weapons.find((x) => x.uid === pr.weaponUid) ?? a.weapons.find((x) => x.type === 'ranged');
       // Rechargement rapide / Artilleur (LDB 10) : +niveau DR au Test de rechargement (sur un jet réussi).
       const reloadTalent = pr.success ? reloadDRBonus(a, rw) : 0;
@@ -2129,8 +2139,10 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingSteamSave: null });
       resolveSteamSave(get, set, p); // échec → ébouillanté (scaldOps), puis la boucle maritime reprend
     },
-    // La munition se fixe au CHARGEMENT (arbitrage utilisateur 2026-08-16 « La munition se fixe au CHARGEMENT »,
-    // `docs/plans/2026-08-16-hud-combat.md` §1) : sur une arme à Recharge DÉJÀ chargée, changer de munition la
+    // La munition se fixe au CHARGEMENT — arbitrage utilisateur 2026-08-16 par AskUserQuestion, consigné
+    // `.claude/memory/game-arbitrage-hud-console-rt-2026-08-16.md:39-42`, verbatim de la demande qui
+    // l'ouvre : « on doit pouvoir choisir ses munitions avec nos armes de tir facilement depuis sa barre
+    // d'action ». Sur une arme à Recharge DÉJÀ chargée, changer de munition la
     // DÉCHARGE — le Test étendu de rechargement est à refaire (LDB 62 l.335), et le chargeur d'une arme À
     // Répétition se vide avec (conséquence assumée de l'arbitrage). Re-choisir la munition déjà chargée est
     // sans effet. Rien n'est détruit : le stock n'est décompté qu'au tir (`consumeAmmo`).
@@ -2700,7 +2712,10 @@ export function createCombatSlice(get: Get, set: Set) {
         if (c.items?.length) recomputeLoadout(c);
         // Armes à distance CHARGÉES au début du combat (le cycle de charge ne joue que pour les armes à
         // Recharge) — CHACUNE la sienne. Le CHOIX de munition n'est PAS réinitialisé : la munition est un
-        // état de l'ARME et se fixe au chargement (arbitrage utilisateur 2026-08-16), donc celui posé au
+        // état de l'ARME (arbitrage utilisateur 2026-08-16 : « si j ai 2 armes à distance elles gèrent
+        // chacune leur propre rechargement et munition » —
+        // `.claude/memory/game-arbitrage-hud-console-rt-2026-08-16.md:34-35`) et se fixe au chargement
+        // (AskUserQuestion 2026-08-16, même fiche `:39-42`), donc celui posé au
         // combat précédent (ou à l'équipement) tient ; `loadWeapon` capture le choix courant, et
         // `selectedAmmo` retombe sur la 1re compatible quand il n'y en a aucun.
         for (const rw of c.weapons.filter((w) => w.type === 'ranged')) loadWeapon(c, rw);

@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState, type ReactNode, type Ref } from 
 import { useGame, activeCombatant, movementRemaining, type BattleState, type ShootingStanceKey } from '../state/store';
 import type { Combatant, Weapon, WeaponLoadout } from '../engine/types';
 import { hasMeaningfulOption } from '../state/turnEconomy';
+import { wastesAction, endTurnArmed } from '../state/endTurnGuard';
 import { advantageCapFor } from '../engine/advantage';
 import { attackWeapon } from '../engine/combat';
 import { availableAttacks, selfManeuversOf, selfManeuverApplicable, previewResourceDelta, STANCE_BLOCK } from '../state/combatFlow';
@@ -18,6 +19,9 @@ import { canPushback } from '../engine/qualities/dispatch';
 import { hasBattement, hasDistraire, knownShanties } from '../engine/combatFeatures/dispatch';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { PanneauParametre, type ParamOption } from './PanneauParametre';
+import { ReadyRow } from './ReadyRow';
+import { SpectatorChip } from './SpectatorChip';
+import { spectatorSeatOfModal } from './ownership';
 import { actorHasSkill } from '../engine/skills';
 import { hasHealSkill, healableTargets } from '../engine/healing';
 import { canTakeAction, hasCondition, isOutOfAction } from '../engine/conditions';
@@ -165,8 +169,10 @@ function icon(id: IconIdInput) {
 /** Le BANDEAU DE PHASE (`.cc-phase`, superposé au parapet) : ce que le pont dit quand le tour n'est
  *  pas ordinaire — pause de Round, interlude de ciblage par la carte, tour d'un autre. Ses actions
  *  sont des ENTRÉES DU REGISTRE (ou le geste de pause), jamais des closures anonymes. */
-type PhaseAction = { key: string; label: string; icon: ReactNode; primary: boolean; run: () => void };
-type PhaseBanner = { label: ReactNode; actions: PhaseAction[] };
+type PhaseAction = { key: string; label: string; icon: ReactNode; primary: boolean; disabled?: boolean; run: () => void };
+/** `ready` = état du READY-CHECK de la phase (coop) : la bande porte alors la rangée des sièges
+ *  REQUIS (`ReadyRow`, même quorum que le dispatcher) au-dessus de son geste. */
+type PhaseBanner = { label: ReactNode; actions: PhaseAction[]; ready?: Record<number, boolean> };
 
 /** Proéminence DÉDUITE du RÔLE de la sortie — même doctrine que `RollShell` (rôle → style DANS la
  *  coquille) : l'entrée du registre déclare ce que le joueur FAIT en la prenant (`role`, gaté par le
@@ -185,12 +191,13 @@ const ACTION_DISSIPER = 'dispel';
  *  (`action-atteignabilite.test.ts:66`). */
 const ACTION_RECHARGER = 'reload';
 
-function PhaseBanner({ label, actions }: PhaseBanner) {
+function PhaseBanner({ label, actions, ready }: PhaseBanner) {
   return (
     <div className="cc-phase">
       <span className="cc-phase-label">{label}</span>
+      {ready && <ReadyRow ready={ready} />}
       {actions.map((a) => (
-        <button key={a.key} type="button" data-action={a.key} className={`btn ${a.primary ? 'btn-primary' : 'btn-ghost'}`} onClick={a.run}>
+        <button key={a.key} type="button" data-action={a.key} className={`btn ${a.primary ? 'btn-primary' : 'btn-ghost'}`} disabled={a.disabled} onClick={a.run}>
           {a.icon} {a.label}
         </button>
       ))}
@@ -333,10 +340,11 @@ export function CombatConsole() {
   // ciblage courant. La console ne nomme aucun état de flux — elle ne connaît que des ids d'action ;
   // et le sélecteur rend une CHAÎNE, donc il ne re-rend que quand l'interlude change.
   const interludeId = useGame((s) => currentInterludeAction(() => s)?.id);
-  const confirmRoundStart = useGame((s) => s.confirmRoundStart);
   // AUCUN dispatcher n'est capté ici : toute exécution passe par `runAction` (registre des actions).
-  // Garde-fou « tour gâché » ARMÉ (2ᵉ clic attendu) — état d'UI local, remis à zéro à chaque tour/Round.
-  const [confirmEnd, setConfirmEnd] = useState(false);
+  // SIÈGE nommé par l'arbitre de modales (`spectatorSeatOfModal`) : lu par un SÉLECTEUR ABONNÉ — une
+  // modale distante qui s'ouvre APRÈS le montage doit faire taire la bande d'attente, sinon deux puces
+  // coexistent à l'écran. Le sélecteur rend un nombre ou `null` : référentiellement stable.
+  const siegeModale = useGame(spectatorSeatOfModal);
   // PANNEAUX-PARAMÈTRES de la travée gauche : la MUNITION (déclencheur = le chip d'en-tête de CETTE
   // arme — deux pistolets, deux chips, deux ancres) et l'ARME À RECHARGER (déclencheur = l'alvéole
   // `reload`, ancre posée génériquement par `ancreDePanneau`). L'ouverture est un état d'ÉCRAN (rien
@@ -345,7 +353,7 @@ export function CombatConsole() {
   const ammoChipRefs = useRef(new Map<string, HTMLButtonElement>());
   const [ammoOuvert, setAmmoOuvert] = useState<string | null>(null);
   const [rechargeOuverte, setRechargeOuverte] = useState(false);
-  useEffect(() => { setConfirmEnd(false); setAmmoOuvert(null); setRechargeOuverte(false); }, [battle?.turn, battle?.round]);
+  useEffect(() => { setAmmoOuvert(null); setRechargeOuverte(false); }, [battle?.turn, battle?.round]);
   // …et il appartient à l'ARME qui l'a ouvert : commuter de set change l'arme au poing (`uid` refait
   // par `recomputeLoadout`), donc le chip déclencheur disparaît. Sans cette remise à zéro le panneau
   // survivait à son ancre (panneau fantôme) et gardait le popover de règle en sourdine
@@ -362,15 +370,25 @@ export function CombatConsole() {
   // (l'action `surface: 'interlude'` du mode courant, § registre). Un interlude sans bandeau serait un
   // ciblage SANS SORTIE — le joueur n'aurait plus que le clic-carte pour en sortir.
   const interlude = interludeId ? findActionById(interludeId) : undefined;
-  const phase: PhaseBanner | null = pendingRoundStart
+  // PAUSE DE ROUND : le geste est l'ENTRÉE `round-start` du registre — la MÊME porte que la touche
+  // (`keybindings.round-start`), donc le même arbitrage solo/coop. En réseau, le bouton ne lance rien :
+  // il marque CE siège prêt, et la bande montre les sièges REQUIS et leur état (`ReadyRow`).
+  const roundStartDef = pendingRoundStart ? findActionById('round-start') : undefined;
+  const enReseau = net.mode !== 'local';
+  const dejaPret = !!pendingRoundStart?.readyBySeat?.[net.mySeat];
+  const phase: PhaseBanner | null = pendingRoundStart && roundStartDef
     ? {
         label: pendingRoundStart.round <= 1 ? 'Ouverture du combat' : `Début du Round ${pendingRoundStart.round}`,
+        ready: enReseau ? (pendingRoundStart.readyBySeat ?? {}) : undefined,
         actions: [{
-          key: 'round-start',
-          label: pendingRoundStart.round <= 1 ? 'Commencer le combat' : `Commencer le round ${pendingRoundStart.round}`,
-          icon: <Icon id="ui/round-start" size="sm" />,
+          key: roundStartDef.id,
+          label: enReseau
+            ? (dejaPret ? 'En attente des autres…' : 'Prêt')
+            : pendingRoundStart.round <= 1 ? 'Commencer le combat' : `Commencer le round ${pendingRoundStart.round}`,
+          icon: <Icon id={roundStartDef.icon as IconIdInput} size="sm" />,
           primary: true,
-          run: confirmRoundStart,
+          disabled: enReseau && dejaPret,
+          run: () => runAction(roundStartDef.id, useGame.getState),
         }],
       }
     : interlude
@@ -410,6 +428,15 @@ export function CombatConsole() {
   // chip de munition, vignettes de set) : intention LOCALE armée (spec zone 4) OU mode de ciblage
   // armé, quel qu'il soit (`battle.action` — Soigner, Dissiper, Bordée…). Aucun cas nommé ici.
   const ciblageArme = !!localIntent || battle.action !== null;
+
+  // SIÈGE DISTANT qui tient le tour (coop) : la console le NOMME dans sa bande d'attente, par la
+  // puce de spectateur partagée — c'est la seule surface qui dise « qui joue » depuis la mort de la
+  // barre v7 (e4bf4d73). UNE puce à l'écran : quand l'arbitre de modales en pose une (il dit ce que
+  // le siège FAIT, information plus précise), la bande lui laisse la parole (`spectatorSeatOfModal`).
+  const siegeDistant =
+    net.mode !== 'local' && active.kind === 'hero' && siegeModale === null
+      ? net.ownership[active.id] ?? 0
+      : null;
 
   const frenzied = controlled && isFrenzied(active);
   // Ressources du Tour EN COURS : `movementRemaining`/`battle.movementUsed`/`battle.acted` portent
@@ -771,17 +798,16 @@ export function CombatConsole() {
 
   const advCap = advantageCapFor(active);
   const meaningfulLeft = controlled && hasMeaningfulOption(active, battle);
-  // Garde-fou « tour gâché » (spec §1c-bis COIN) : finir avec l'Action NON DÉPENSÉE demande deux clics.
-  const wastingAction = controlled && !battle.acted && canTakeAction(active);
-  const onEndTurn = () => {
-    if (wastingAction && !confirmEnd) { setConfirmEnd(true); return; }
-    setConfirmEnd(false);
-    runAction('end-turn', useGame.getState);
-  };
-  // 3ᵉ ligne de la plaque de sortie : elle dit l'état VRAI du tour — l'armement du 2ᵉ clic, sinon
+  // Garde-fou « tour gâché » (spec §1c-bis COIN) : finir avec l'Action NON DÉPENSÉE demande deux gestes.
+  // La POLITIQUE est celle de l'entrée de registre `end-turn` (`battleEndTurn` arme puis finit) : la
+  // plaque ne décide rien, elle passe par `runAction` comme la touche et LIT l'armement du combat.
+  const wastingAction = controlled && wastesAction(active, battle);
+  const arme = endTurnArmed(battle);
+  const onEndTurn = () => runAction('end-turn', useGame.getState);
+  // 3ᵉ ligne de la plaque de sortie : elle dit l'état VRAI du tour — l'armement du 2ᵉ geste, sinon
   // l'avertissement « Action non dépensée », sinon « Tour fini », sinon SA touche (Espace,
   // `keybindings.ts` `end-turn`). Un héros Sonné n'a rien à dépenser : il lit la touche, pas un reproche.
-  const endNote = confirmEnd ? 'Finir quand même ?' : wastingAction ? 'Action non dépensée' : battle.acted ? 'Tour fini' : 'ESPACE';
+  const endNote = arme ? 'Finir quand même ?' : wastingAction ? 'Action non dépensée' : battle.acted ? 'Tour fini' : 'ESPACE';
 
   /** « Retirez un État » (LDB 17 l.61) — la 3ᵉ dépense de Détermination est le geste de L'ÉTAT, porté
    *  par SA pastille (arbitrage HUD 2026-08-16 : « Réactions d'État sur la PASTILLE »), jamais une
@@ -861,9 +887,13 @@ export function CombatConsole() {
       {phase && <PhaseBanner {...phase} />}
       {!phase && !controlled && (
         <div className="cc-phase">
-          <span className="cc-phase-label">
-            <Icon id="ui/wait" size="sm" /> {active.kind === 'enemy' ? 'Tour de l’ennemi' : `Tour de ${active.label}`}
-          </span>
+          {siegeDistant !== null ? (
+            <SpectatorChip inline label={net.seatNames[siegeDistant] ?? 'L’hôte'} action={`joue ${active.label}…`} />
+          ) : (
+            <span className="cc-phase-label">
+              <Icon id="ui/wait" size="sm" /> {active.kind === 'enemy' ? 'Tour de l’ennemi' : `Tour de ${active.label}`}
+            </span>
+          )}
         </div>
       )}
 
@@ -940,6 +970,7 @@ export function CombatConsole() {
                         key={lo.id}
                         type="button"
                         data-set={lo.id}
+                        data-action="switch-loadout"
                         className={`chip cc-set${held ? ' on' : ''}`}
                         disabled={!live || (!!battle.loadoutSwapped && !held)}
                         aria-label={loadoutLabel(lo, active)}
@@ -1054,16 +1085,16 @@ export function CombatConsole() {
             type="button"
             data-cell="end-turn"
             data-action="end-turn"
-            data-armed={confirmEnd ? '' : undefined}
+            data-armed={arme ? '' : undefined}
             className={`chip cc-cell cc-end${!meaningfulLeft ? ' pulse' : ''}`}
             disabled={!live}
-            aria-label={confirmEnd ? 'Finir le tour quand même' : 'Finir le tour'}
+            aria-label={arme ? 'Finir le tour quand même' : 'Finir le tour'}
             onClick={onEndTurn}
           >
             <span className="cc-ico">
-              <Icon id={confirmEnd ? 'ui/warning' : 'ui/turn-end'} />
+              <Icon id={arme ? 'ui/warning' : 'ui/turn-end'} />
             </span>
-            <span className="cc-lbl">{confirmEnd ? 'Finir quand même' : 'Fin du tour'}</span>
+            <span className="cc-lbl">{arme ? 'Finir quand même' : 'Fin du tour'}</span>
             <span className="cc-key">{endNote}</span>
           </button>
         </div>

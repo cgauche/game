@@ -23,7 +23,6 @@ export function carryOverState(c: Combatant): {
   conditions: ConditionInstance[];
   criticalWounds: number;
   dead: boolean;
-  outOfRencontre: boolean;
   soinRencontreUtilise: boolean;
   traumas: Trauma[];
   diseases?: Disease[];
@@ -44,7 +43,10 @@ export function carryOverState(c: Combatant): {
     conditions: c.conditions.filter((x) => isPersistentCondition(x.id)).map((x) => ({ ...x })),
     criticalWounds: c.criticalWounds ?? 0,
     dead: c.dead === true,
-    outOfRencontre: c.outOfRencontre === true,
+    // `outOfRencontre` n'y est PAS : il désigne l'éjection de LA rencontre (`LDB 17 l.31` — le
+    // Personnage « ne prendra plus part à la rencontre actuelle », `l.35` — il « se battra à nouveau à
+    // un moment ultérieur »), donc il ne SURVIT pas au combat : le teardown (`finalizeBattle`) le remet
+    // à zéro avec `exitReason`.
     // Limite « 1 soin de Blessures par patient et par rencontre » (LDB 09 l.260) : le soin
     // reçu en combat bloque un re-soin juste après ; remis à zéro au prochain startCombat.
     soinRencontreUtilise: c.soinRencontreUtilise === true,

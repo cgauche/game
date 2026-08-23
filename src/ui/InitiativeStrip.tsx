@@ -4,8 +4,10 @@ import { strikesLast } from '../engine/qualities/dispatch';
 import { baseWithTraits } from '../engine/characteristics';
 import { talentInitiativeBonus } from '../engine/combatFeatures/dispatch';
 import { rule } from '../engine/policy';
+import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import { Icon } from './Icon';
+import { GatedAction } from './GatedAction';
 
 /** LDB 13 l.40. */
 function initiativeTitle(c: Combatant): string {
@@ -59,6 +61,14 @@ export interface InitiativeStripProps {
   preemptArmedId?: string | null;
   /** LDB 10. */
   onPreempt?: (id: string) => void;
+  /** INTERRUPTEUR de la demande de pause au prochain Round (entrée `raise-hand` du registre) : il vit
+   *  ICI parce que c'est l'ENCHAÎNEMENT DES ROUNDS qu'il suspend, pas une action du tour. État
+   *  RÉPLIQUÉ (`battle.handRaisedBy` voyage dans le snapshot) : chaque siège voit qui demande la
+   *  pause, et chacun ne retire que la SIENNE (bascule gratuite). ABSENT = le siège n'est pas dessiné :
+   *  la commande s'adresse aux AUTRES joueurs (non-pertinence de site en partie locale, comme la
+   *  rangée de ready-check `ReadyRow`). `reason` = refus VISIBLE du registre quand le geste est
+   *  dessiné mais non offert. */
+  hand?: { label: ReactNode; ariaLabel: string; raised: boolean; reason?: string; onToggle: () => void };
 }
 
 export function InitiativeStrip(p: InitiativeStripProps) {
@@ -127,6 +137,23 @@ export function InitiativeStrip(p: InitiativeStripProps) {
           );
         })}
       </div>
+      {/* PIED DE LA FRISE : l'interrupteur de pause de Round. `data-action` = son entrée du registre —
+          c'est CE marqueur que lit la garde d'atteignabilité des actions (la frise est une surface au
+          même titre que la console). */}
+      {p.hand && (
+        <span className="is-hand" data-action="raise-hand" data-raised={p.hand.raised ? '' : undefined}>
+          <GatedAction
+            id="raise-hand"
+            label={p.hand.label}
+            ariaLabel={p.hand.ariaLabel}
+            enabled={!p.hand.reason}
+            reason={p.hand.reason ?? ''}
+            primary={p.hand.raised}
+            dense
+            onClick={p.hand.onToggle}
+          />
+        </span>
+      )}
     </div>
   );
 }

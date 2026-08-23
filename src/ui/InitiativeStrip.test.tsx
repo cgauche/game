@@ -16,13 +16,15 @@ function fixtures() {
   return { h, foe };
 }
 const noop = () => {};
+/** Interrupteur de pause de Round (pied de frise) : les contrats existants n'en dépendent pas. */
+const HAND = { label: 'Pause', ariaLabel: 'Pause au prochain Round', raised: false, onToggle: noop };
 
 describe('InitiativeStrip', () => {
   it('rend les tuiles dans l’ordre de battle.order et marque l’actif', () => {
     const { h, foe } = fixtures();
     const html = renderToStaticMarkup(
       <InitiativeStrip order={['e1', 'h1']} turn={1} round={3} combatants={[h, foe]} over={false}
-        canFirstIds={[]} onActivate={noop} onPromote={noop} />,
+        canFirstIds={[]} onActivate={noop} onPromote={noop} hand={HAND} />,
     );
     expect(html.indexOf('Brigand')).toBeGreaterThan(-1);
     expect(html.indexOf('Brigand')).toBeLessThan(html.indexOf('Gunnar'));
@@ -40,7 +42,7 @@ describe('InitiativeStrip', () => {
     h.conditions = [{ id: 'assourdi', value: 1 }];
     const html = renderToStaticMarkup(
       <InitiativeStrip order={['e1', 'h1']} turn={1} round={2} combatants={[h, foe]} over={false}
-        canFirstIds={[]} onActivate={noop} onPromote={noop} />,
+        canFirstIds={[]} onActivate={noop} onPromote={noop} hand={HAND} />,
     );
     expect(html).not.toContain('ptile-gauge');
     expect(html).not.toContain('7/11');
@@ -65,7 +67,7 @@ describe('InitiativeStrip', () => {
     const reinforcement = { ...foe, id: 'e2', label: 'Renfort' };
     const html = renderToStaticMarkup(
       <InitiativeStrip order={['e1', 'h1', 'e2']} turn={1} round={2} combatants={[h, foe, reinforcement]} over={false}
-        canFirstIds={[]} onActivate={noop} onPromote={noop} />,
+        canFirstIds={[]} onActivate={noop} onPromote={noop} hand={HAND} />,
     );
     expect(html).toMatch(/data-phase="future"[^>]*>.*Renfort/s);
   });
@@ -74,7 +76,7 @@ describe('InitiativeStrip', () => {
     const { h, foe } = fixtures();
     const html = renderToStaticMarkup(
       <InitiativeStrip order={['e1', 'h1']} turn={-1} round={1} combatants={[h, foe]} over={false}
-        canFirstIds={[]} onActivate={noop} onPromote={noop} />,
+        canFirstIds={[]} onActivate={noop} onPromote={noop} hand={HAND} />,
     );
     expect(html).toContain('is-score');
     expect(html).toContain('42');
@@ -85,7 +87,7 @@ describe('InitiativeStrip', () => {
     const { h, foe } = fixtures();
     const html = renderToStaticMarkup(
       <InitiativeStrip order={['e1', 'h1']} turn={1} round={1} combatants={[h, foe]} over={false}
-        canFirstIds={[]} onActivate={noop} onPromote={noop} />,
+        canFirstIds={[]} onActivate={noop} onPromote={noop} hand={HAND} />,
     );
     expect(html).not.toContain('is-score');
   });
@@ -95,7 +97,7 @@ describe('InitiativeStrip', () => {
     h.fortune = 2;
     const html = renderToStaticMarkup(
       <InitiativeStrip order={['e1', 'h1']} turn={0} round={1} combatants={[h, foe]} over={false}
-        canFirstIds={['h1']} onActivate={noop} onPromote={noop} />,
+        canFirstIds={['h1']} onActivate={noop} onPromote={noop} hand={HAND} />,
     );
     expect(html).toContain('is-first');
     expect(html).not.toContain('is-first free');
@@ -106,7 +108,7 @@ describe('InitiativeStrip', () => {
     h.fortune = 2;
     const html = renderToStaticMarkup(
       <InitiativeStrip order={['e1', 'h1']} turn={0} round={1} combatants={[h, foe]} over={false}
-        canFirstIds={['h1']} freeFirstIds={['h1']} onActivate={noop} onPromote={noop} />,
+        canFirstIds={['h1']} freeFirstIds={['h1']} onActivate={noop} onPromote={noop} hand={HAND} />,
     );
     expect(html).toContain('is-first free');
   });
@@ -138,5 +140,44 @@ describe('InitiativeStrip', () => {
       }
     }
     expect(fautes, `Entrées futures atténuées :\n${fautes.join('\n')}`).toEqual([]);
+  });
+});
+
+/**
+ * PIED DE FRISE — l'interrupteur « pause au prochain Round » (#1411 P2-A). `raise-hand` était une
+ * entrée du registre SANS surface : posée, la demande ne pouvait plus être retirée avant la pause
+ * suivante. Elle vit ici (c'est l'enchaînement des Rounds qu'elle suspend), en interrupteur, avec un
+ * refus VISIBLE quand le geste n'est pas offert (hors coop).
+ */
+describe('InitiativeStrip — interrupteur de pause de Round', () => {
+  const rendu = (hand: Partial<Parameters<typeof InitiativeStrip>[0]['hand']> = {}) => {
+    const { h, foe } = fixtures();
+    return renderToStaticMarkup(
+      <InitiativeStrip order={['e1', 'h1']} turn={-1} round={2} combatants={[h, foe]} over={false}
+        canFirstIds={[]} onActivate={noop} onPromote={noop} hand={{ ...HAND, ...hand }} />,
+    );
+  };
+
+  it('la frise PORTE l’entrée du registre (c’est SA surface, au même marqueur que la console)', () => {
+    expect(rendu()).toContain('data-action="raise-hand"');
+  });
+
+  it('OFFERT : le geste est cliquable et se nomme', () => {
+    const html = rendu({ ariaLabel: 'Pause au prochain Round' });
+    expect(html).toContain('aria-label="Pause au prochain Round"');
+    expect(html).not.toContain('disabled');
+  });
+
+  it('DEMANDE POSÉE : l’état est visible sur la frise (tous les clients la voient)', () => {
+    const html = rendu({ raised: true, label: 'Pause demandée', ariaLabel: 'Pause au prochain Round : retirer la demande' });
+    expect(html).toContain('data-raised');
+    expect(html).toContain('retirer la demande');
+  });
+
+  it('REFUSÉ (hors coop) : la commande reste DESSINÉE, inerte, et DIT pourquoi', () => {
+    const html = rendu({ reason: 'partie locale' });
+    expect(html).toContain('disabled');
+    expect(html).toContain('partie locale');
+    expect(html, 'la raison doit être liée au bouton (a11y), jamais un title muet').toContain('aria-describedby="raise-hand-reason"');
   });
 });

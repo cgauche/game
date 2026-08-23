@@ -74,6 +74,18 @@
   font-size: 0.9em;
   font-style: italic;
 }
+/* Variante DENSE (`GatedAction dense`) : l'action tient dans une COLONNE étroite (pied de la frise
+   d'initiative) — le libellé s'enroule et la graduation descend à celle de la colonne. Elle vit ICI,
+   chez la primitive, jamais en redéfinition de `.btn` depuis le conteneur d'un écran. */
+.gated-action.dense .btn {
+  padding: 2px 6px;
+  font-size: 10px;
+  line-height: 1.35;
+  white-space: normal;
+}
+.gated-action.dense .gated-action-reason {
+  font-size: 10px;
+}
 
 /* ── SECTION REPLIABLE ── <details class="fold"><summary><span class="fold-title">…</span></summary><div class="fold-body">…</div></details> */
 .fold {

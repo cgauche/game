@@ -19,6 +19,7 @@ import { QtyStepper } from '../QtyStepper';
 import { PanneauParametre } from '../PanneauParametre';
 import { NumberField } from '../NumberField';
 import { GatedAction } from '../GatedAction';
+import { ReadyRow } from '../ReadyRow';
 import { PortraitTile } from '../PortraitTile';
 import { LifeBar } from '../LifeBar';
 import { CharacterPreview } from '../CharacterPreview';
@@ -502,7 +503,26 @@ function ScreenMetaDemo() {
 }
 
 function GatedActionDemo() {
-  return <GatedAction id="gal-gated" label="Entrer" enabled={false} reason="Bourse insuffisante." onClick={() => {}} />;
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+      <GatedAction id="gal-gated" label="Entrer" enabled={false} reason="Bourse insuffisante." onClick={() => {}} />
+      {/* Variante DENSE : la même action dans une COLONNE étroite (pied de la frise d'initiative). */}
+      <div style={{ width: 84 }}>
+        <GatedAction id="gal-gated-dense" label="Pause au prochain Round" enabled reason="" dense onClick={() => {}} />
+      </div>
+    </div>
+  );
+}
+
+/** Rangée de ready-check VIVANTE : les sièges qu'elle montre sont ceux que le dispatcher ATTEND
+ *  (`siegesRequis`, lu sur le store réel — hors coop, l'hôte seul). Deux poses : attendu, puis validé. */
+function ReadyRowDemo() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <ReadyRow ready={{}} />
+      <ReadyRow ready={{ 0: true }} />
+    </div>
+  );
 }
 
 /** Trois Sorts RÉELS du catalogue portant un NI (`cn`) — la matière du panneau « Quel Sort
@@ -788,6 +808,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { label: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },
   { label: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
   { label: 'HeroSheet', file: 'src/ui/HeroSheet.tsx', category: 'Personnages', render: HeroSheetDemo },
+  { label: 'ReadyRow', file: 'src/ui/ReadyRow.tsx', category: 'Écrans & layout', render: ReadyRowDemo },
 ];
 
 export const GALLERY_CATEGORIES = [...new Set(GALLERY_SPECIMENS.map((s) => s.category))];

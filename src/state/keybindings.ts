@@ -191,15 +191,12 @@ export const KEYBINDINGS: KeyBinding[] = [
   // Pause d'initiative de début de Round (LDB 17 l.25) : Espace/Entrée = « Commencer le round » (le SEUL
   // geste possible) → passage de Round jouable SANS souris. AVANT les bindings curseur/fin-de-tour (mêmes
   // touches) : sa garde `pendingRoundStart` arbitre. notWhenControlFocused : si le bouton « Commencer » est
-  // focalisé, son activation native suffit (pas de double appel). Solo = confirmRoundStart ; coop = ready du siège.
+  // focalisé, son activation native suffit (pas de double appel). La touche est un CONSOMMATEUR du
+  // registre d'actions (`round-start`) : l'arbitrage solo/coop vit dans SON dispatcher, une seule fois.
   {
     id: 'round-start', codes: ['Space', 'Enter', 'NumpadEnter'], labelKey: 'key.roundStart', section: 'combat', notWhenControlFocused: true, sharedBy: ['end-turn', 'cursor-commit'],
     when: (s) => inBattle(s) && !!s.pendingRoundStart && !s.preemptAiming, // visée Tir rapide armée → Entrée TIRE (curseur), pas « commencer »
-    run: (g) => {
-      const s = g();
-      if (s.net.mode === 'local') { s.confirmRoundStart(); return; }
-      if (!s.pendingRoundStart?.readyBySeat?.[s.net.mySeat]) s.roundStartReady(s.net.mySeat);
-    },
+    run: (g) => runAction('round-start', g),
   },
   // Tir rapide (talent, LDB 11 l.97-103) au CLAVIER : pendant la pause, `T` arme la visée d'interruption du 1ᵉʳ tireur
   // éligible (puis cycle les suivants, puis désarme) et pose le curseur sur la cible la plus proche → flèches/Tab

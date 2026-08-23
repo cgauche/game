@@ -38,6 +38,7 @@ import { makeRNG } from '../engine/dice';
 
 const src = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
 const CONSOLE_SRC = src('../ui/CombatConsole.tsx');
+const FRISE_SRC = src('../ui/InitiativeStrip.tsx');
 const TARGETING_SRC = src('./targetingModes.ts');
 
 /** Le chantier des BRANCHEMENTS est-il ouvert ? Voir l'en-tête : `false` verrouille la baseline à vide. */
@@ -51,7 +52,6 @@ const SANS_SURFACE: Record<string, string> = {
   'man-poste': 'pastille sur la PIÈCE (zone 4).',
   'push-engine': 'pastille sur la PIÈCE (zone 4).',
   pickup: 'pastille ⓘ de l’objet au sol (zone 4).',
-  'raise-hand': 'passe à la FRISE (spec §1d).',
 };
 
 /** Clés littérales d'un motif `key:`/`id:` — une clé TEMPLATE se réduit à son préfixe littéral. */
@@ -65,7 +65,14 @@ function keysFrom(source: string, re: RegExp): string[] {
 const CONSOLE_KEYS = [
   ...keysFrom(CONSOLE_SRC, /cellFor\(\s*'([^']+)'()/g),
   ...keysFrom(CONSOLE_SRC, /data-action="([^"]+)"()/g),
+  // La console EXÉCUTE aussi des entrées sans alvéole (vignette de set, geste du bandeau de pause) :
+  // son appel au registre est la surface, au même titre qu'une case.
+  ...keysFrom(CONSOLE_SRC, /runAction\(\s*'([^']+)'()/g),
 ];
+
+/** La FRISE d'initiative est une surface d'accueil du registre (spec §1d : `raise-hand` y vit) : elle
+ *  marque l'entrée qu'elle rend par le MÊME attribut structurel que la console (`data-action`). */
+const FRISE_KEYS = keysFrom(FRISE_SRC, /data-action="([^"]+)"()/g);
 const KEYBINDING_IDS = KEYBINDINGS.map((b) => b.id);
 
 /** Le bandeau de phase de la console consomme-t-il les actions d'INTERLUDE ? Elles n'ont pas de case
@@ -78,8 +85,8 @@ const KEYBINDING_IDS = KEYBINDINGS.map((b) => b.id);
 const INTERLUDE_BRANCHE = /currentInterludeAction/.test(CONSOLE_SRC);
 const INTERLUDE_KEYS = INTERLUDE_BRANCHE ? ACTIONS.filter((a) => a.surface === 'interlude').map((a) => a.id) : [];
 
-/** Surfaces VIVANTES : la console, le bandeau d'interlude qu'elle rend, et le registre clavier. */
-const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...INTERLUDE_KEYS, ...KEYBINDING_IDS]);
+/** Surfaces VIVANTES : la console, le bandeau d'interlude qu'elle rend, la FRISE, et le clavier. */
+const SURFACES_VIVANTES = new Set([...CONSOLE_KEYS, ...FRISE_KEYS, ...INTERLUDE_KEYS, ...KEYBINDING_IDS]);
 
 /** Les clés qu'une action revendique : son id + ses clés de surface encore forkées. */
 const claimedKeys = (a: (typeof ACTIONS)[number]) => [a.id, ...(a.keys ?? [])];

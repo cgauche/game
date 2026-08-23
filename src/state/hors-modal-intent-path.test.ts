@@ -283,14 +283,16 @@ const EMISSION: Record<string, { parUI: true } | { interne: string; dans: string
   cleaveEnd: { parUI: true },
   dualStrikeSkip: { parUI: true },
   roundStartPromote: { parUI: true },
-  confirmRoundStart: { parUI: true },
-  roundStartReady: { parUI: true },
+  // Pause de Round : le bandeau de la console et la touche passent tous deux par l'entrée
+  // `round-start` du registre (#1411 P2-A) — c'est SON dispatcher qui arbitre solo (ouvrir) et coop
+  // (marquer le siège prêt). Aucun écran ne nomme plus ces deux verbes : la porte est unique.
+  confirmRoundStart: { interne: 'actionRegistry.ACTION_RUN.roundStart — porte unique du geste « commencer » (solo)', dans: 'src/state/actionRegistry.ts' },
+  roundStartReady: { interne: 'actionRegistry.ACTION_RUN.roundStart — porte unique du geste « prêt » (coop)', dans: 'src/state/actionRegistry.ts' },
   victoryReady: { parUI: true },
-  // La demande de pause de Round n'a PLUS d'émetteur : son entrée `raise-hand` du registre attend sa
-  // surface à la FRISE d'initiative (même destination que `SANS_SURFACE` d'`action-atteignabilite`).
-  // La route reste POSÉE (le verbe est dans `GUEST_INTENTS`) ; le verdict ci-dessous est VÉRIFIÉ : si
-  // l'entrée retrouve une case, une touche ou un bandeau, il vire ROUGE « périmé ».
-  raiseHand: { sansSurface: 'entrée `raise-hand` sans case, sans touche et sans bandeau — destination : la frise d’initiative (spec HUD §1d).' },
+  // Demande de pause au prochain Round : l'interrupteur du pied de FRISE (`raise-hand`, relais du
+  // registre). Les deux sens passent par le même dispatcher, d'où le retrait `interne`.
+  raiseHand: { parUI: true },
+  lowerHand: { interne: 'actionRegistry.ACTION_RUN.raiseHand — le retrait est le `toggleOff` de la même entrée', dans: 'src/state/actionRegistry.ts' },
   assignVictoryGear: { parUI: true },
   partyAddHero: { parUI: true },
   partyRemoveHero: { parUI: true },
@@ -338,9 +340,12 @@ function ecranSources(): string[] {
  *  touche du registre clavier. Même définition que la garde `action-atteignabilite`. */
 function actionsAvecSurface(): Set<string> {
   const src = readFileSync(join(process.cwd(), 'src', 'ui', 'CombatConsole.tsx'), 'utf8');
+  const frise = readFileSync(join(process.cwd(), 'src', 'ui', 'InitiativeStrip.tsx'), 'utf8');
   const cles = [
     ...[...src.matchAll(/cellFor\(\s*'([^']+)'/g)].map((m) => m[1]),
     ...[...src.matchAll(/data-action="([^"]+)"/g)].map((m) => m[1]),
+    ...[...src.matchAll(/runAction\(\s*'([^']+)'/g)].map((m) => m[1]),
+    ...[...frise.matchAll(/data-action="([^"]+)"/g)].map((m) => m[1]),
     ...KEYBINDINGS.map((b) => b.id),
   ];
   if (/currentInterludeAction/.test(src)) for (const a of ACTIONS) if (a.surface === 'interlude') cles.push(a.id);

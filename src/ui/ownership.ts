@@ -19,6 +19,28 @@
 import { useGame } from '../state/store';
 import type { GameState } from '../state/store';
 import { ownsLocally, WORLD_STEP_OWNER } from '../state/netOwnership';
+import { modalOwnerOf, pickActiveModalKey, voyageHubActive } from '../state/modalArbiter';
+import { willAutoResolve } from '../state/combatAuto';
+
+/**
+ * SIÈGE que l'ARBITRE DE MODALES nomme par une puce de spectateur (`SpectatorChip`) — `null` = il
+ * n'en pose aucune. Décision UNIQUE, lue par les DEUX surfaces qui pourraient nommer un siège : la
+ * modale (ce que le siège FAIT) et la bande d'attente de la console (le tour qu'il tient). La modale
+ * l'emporte quand les deux s'appliquent — son information est la plus précise — et la console se
+ * tait : il n'y a jamais deux puces à l'écran, jamais zéro.
+ * Les trois préconditions sont celles du RENDU de l'arbitre : une modale prioritaire existe, elle
+ * n'est pas hébergée par le hub de voyage, et le pilote d'auto-cadence ne va pas la résoudre seul.
+ */
+export function spectatorSeatOfModal(s: GameState): number | null {
+  if (s.net.mode === 'local') return null;
+  const key = pickActiveModalKey(s);
+  if (!key) return null;
+  if ((key === 'cascade' || key === 'rest') && voyageHubActive(s)) return null;
+  if (willAutoResolve(s)) return null;
+  const ownerId = modalOwnerOf(s);
+  if (ownerId === '*' || ownerId === null || ownsLocally(s, ownerId)) return null;
+  return ownerId ? s.net.ownership[ownerId] ?? 0 : 0;
+}
 
 /**
  * Le siège LOCAL possède-t-il ce combattant ? SOLO : toujours vrai (un seul siège tient tout).

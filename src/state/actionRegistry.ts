@@ -24,6 +24,7 @@ import { compatibleAmmo } from '../engine/items';
 import { isConsumable } from '../engine/consumables';
 import { hasFreeWeaponAttack, selfManeuversOf, selfManeuverApplicable, battementFoes, distraireFoes } from './combatManeuvers';
 import { inBattleId } from './combatants';
+import { wastesAction, endTurnArmed } from './endTurnGuard';
 import { healableTargets } from '../engine/healing';
 import { waterSprayCandidates } from '../engine/suffocation';
 import { dispellableSpellsOn } from '../engine/dispel';
@@ -316,9 +317,31 @@ export const ACTION_RUN: Record<string, Dispatcher> = {
   battleSingShanty: (get, ctx) => { if (ctx.shipId) get().battleSingShanty(ctx.shipId); },
   battleShipReload: (get, ctx) => { if (ctx.shipId && ctx.posteUid) get().battleShipReload(ctx.shipId, ctx.posteUid); },
   battleSwitchLoadout: (get, ctx) => { if (ctx.loadoutId) get().battleSwitchLoadout(ctx.loadoutId); },
-  battleEndTurn: (get) => get().battleEndTurn(),
+  /** FIN DU TOUR — porte unique de la plaque de sortie de la console ET de la touche. Le garde-fou
+   *  « tour gâché » (spec §1c-bis COIN) est la POLITIQUE DE CETTE ENTRÉE : finir avec l'Action intacte
+   *  ARME (empreinte de l'économie du tour, répliquée), le geste suivant passe la main. `battleEndTurn`
+   *  reste le verbe BRUT (l'IA et les flux internes passent, eux, par `advanceTurn`). */
+  battleEndTurn: (get) => {
+    const s = get();
+    const b = s.battle;
+    const active = b ? activeCombatant(b) : undefined;
+    if (b && active && wastesAction(active, b) && !endTurnArmed(b)) { s.armEndTurn(); return; }
+    s.battleEndTurn();
+  },
   cancelMove: (get) => get().cancelMove(),
-  raiseHand: (get) => get().raiseHand(),
+  /** PORTE UNIQUE de la pause d'initiative (LDB 17 l.25) : le bandeau de phase de la console ET la
+   *  touche du registre (`keybindings.round-start`) passent ICI. Solo, le geste OUVRE le Round ; en
+   *  réseau, il ne fait que marquer le siège PRÊT — c'est le quorum (`roundStartReady`, sièges requis)
+   *  qui lance, jamais un client. Deux branchements séparés laissaient le bouton court-circuiter le
+   *  ready-check que la touche, elle, respectait. */
+  roundStart: (get) => {
+    const s = get();
+    if (s.net.mode === 'local') { s.confirmRoundStart(); return; }
+    if (!s.pendingRoundStart?.readyBySeat?.[s.net.mySeat]) s.roundStartReady(s.net.mySeat);
+  },
+  /** Demande de pause au prochain Round — INTERRUPTEUR : `toggleOff` retire la demande (annulation
+   *  gratuite, `lowerHand`), même porte et même routage réseau que la pose. */
+  raiseHand: (get, ctx) => (ctx.toggleOff ? get().lowerHand() : get().raiseHand()),
   // ── SORTIES D'INTERLUDE (`surface: 'interlude'`) : une enveloppe NOMMÉE par entrée, jamais un
   //    dispatcher mutualisé — deux interludes ne partagent ni leur verbe ni ses gardes (`cleaveEnd`
   //    clôt l'étape-jet de la cascade, `battleSelectAction` est avalé sous `combatBusy`).

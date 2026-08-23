@@ -31,7 +31,7 @@ import { planClimb } from './climbMove';
 import { planFall } from './fallMove';
 import { climbMovementCost } from '../engine/movement';
 import { hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
-import { controlsCombatant } from './netOwnership';
+import { controlsCombatant, quorumAtteint, decidingSeat } from './netOwnership';
 import { viewYawDeg } from './stageYaw';
 import { resetStagePan } from './stagePan';
 import { resetStageGestes } from './stageGestes';
@@ -279,9 +279,13 @@ export interface BattleState {
   /** Test de Calme d'APPROCHE d'une source de Peur (LDB 21 l.27) — une tentative par Tour :
    *  'passed' = approches libres ce Tour ; 'failed' = aucune approche ce Tour. Purgé au Tour/Round. */
   fearGate?: 'passed' | 'failed' | null;
-  /** COOP : un joueur demande la PAUSE du prochain début de Round (fenêtre Chance « agir en
-   *  premier ») — sinon les rounds s'enchaînent sans gate (arbitrage). Purgé à la pause. */
-  handRaised?: boolean;
+  /** COOP : les SIÈGES qui demandent la PAUSE du prochain début de Round (fenêtre Chance « agir en
+   *  premier ») — sinon les rounds s'enchaînent sans gate (arbitrage). Un siège n'ajoute et ne retire
+   *  que LE SIEN (`decidingSeat`) ; la pause obtenue vide la liste. */
+  handRaisedBy?: number[];
+  /** GARDE-FOU « tour gâché » : empreinte de l'économie du tour (`turnEconomyStamp`) au moment où le
+   *  1er geste de fin de tour a été posé — le 2ᵉ finit le tour tant qu'elle vaut encore. */
+  endTurnArmed?: string;
   /** Aperçu « tap 1 » du modèle de clic implicite (tap aperçu → tap confirme). Purgé au commit,
    *  à chaque changement de Tour/Round, et remplacé par tout nouveau tap. */
   preview?:
@@ -689,6 +693,7 @@ export interface GameState extends RollFlowActionsMap {
   victoryReady: (seat: number) => void;
   /** Coop : demande la pause du prochain début de Round (fenêtre Chance). */
   raiseHand: () => void;
+  lowerHand: () => void;
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
   previousScene: { id: string; pos: Pt } | null;
@@ -1127,6 +1132,7 @@ export interface GameState extends RollFlowActionsMap {
    *  restaure positions/orientation depuis `battle.moveSnapshot`. No-op après l'Action. */
   cancelMove: () => void;
   battleEndTurn: () => void;
+  armEndTurn: () => void;
   /** Reprise après un changement de Cadence de combat en plein combat (passage en Auto/Rapide) :
    *  ré-entre la boucle (auto-résolution de modale + tour de l'IA). No-op en manuel / hors combat. */
   resumeCadence: () => void;
@@ -2390,10 +2396,26 @@ export const useGame = create<GameState>((set, get) => ({
   /** Attribue un objet d'équipement du butin de victoire au héros choisi (qualités/skin conservés). */
   assignVictoryGear: (index, heroId) => assignGearAt(get, set, 'pendingVictory', index, heroId),
   harvestCreature: (creatureId) => harvestVictoryCreature(get, set, creatureId),
+  /** DEMANDE DE PAUSE au prochain Round, POSÉE PAR SON SIÈGE : le siège vient de `decidingSeat` (le
+   *  siège agissant quand l'hôte applique l'intent d'un invité, sinon le siège local), jamais d'un
+   *  argument — la demande d'un joueur ne peut pas être signée d'un autre. */
   raiseHand: () => {
     const b = get().battle;
-    if (!b || b.handRaised) return;
-    set({ battle: { ...b, handRaised: true, log: [...b.log, ev('info', t('store.handRaised'))] } });
+    if (!b) return;
+    const seat = decidingSeat(get());
+    const deja = b.handRaisedBy ?? [];
+    if (deja.includes(seat)) return;
+    set({ battle: { ...b, handRaisedBy: [...deja, seat], log: [...b.log, ev('info', t('store.handRaised'))] } });
+  },
+  /** RETRAIT de la demande de pause (interrupteur de la frise) : symétrique de `raiseHand`, gratuit —
+   *  tant que le Round n'a pas tourné, un joueur qui s'est ravisé rend la table à son enchaînement. Il
+   *  ne retire QUE son siège : la pause tient tant qu'un autre siège la demande. */
+  lowerHand: () => {
+    const b = get().battle;
+    if (!b) return;
+    const seat = decidingSeat(get());
+    if (!(b.handRaisedBy ?? []).includes(seat)) return;
+    set({ battle: { ...b, handRaisedBy: (b.handRaisedBy ?? []).filter((s) => s !== seat), log: [...b.log, ev('info', t('store.handLowered'))] } });
   },
   victoryReady: (seat) => {
     const pv = get().pendingVictory;
@@ -2402,13 +2424,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingVictory: { ...pv, readyBySeat } });
     const s = get();
     if (s.net.mode === 'guest') return; // l'invité ne fait que marquer
-    const required = new Set<number>([0]);
-    for (const h of s.party) {
-      if (h.dead || h.outOfRencontre) continue;
-      const owner = s.net.ownership[h.id] ?? 0;
-      if (s.net.seatNames[owner] != null) required.add(owner);
-    }
-    if ([...required].every((st) => readyBySeat[st])) get().dismissVictory();
+    if (quorumAtteint(s, readyBySeat)) get().dismissVictory(); // quorum UNIQUE : `siegesRequis`
   },
 
   openMedic: (opts) => medicFlow.openMedic(get, set, opts),
@@ -2719,8 +2735,10 @@ export const useGame = create<GameState>((set, get) => ({
     if (!b || !poste) return;
     // Le poste est PARTAGÉ par référence avec `mannedPoste` du chef (serveChef) → muter la même instance
     // suffit ; le `set` re-render (pattern combat : mutation + refresh).
-    // La munition se fixe au CHARGEMENT (arbitrage utilisateur 2026-08-16 « La munition se fixe au CHARGEMENT »,
-    // `docs/plans/2026-08-16-hud-combat.md` §1) : changer celle d'une pièce CHARGÉE la DÉCHARGE — Test étendu de
+    // La munition se fixe au CHARGEMENT — arbitrage utilisateur 2026-08-16 par AskUserQuestion, consigné
+    // `.claude/memory/game-arbitrage-hud-console-rt-2026-08-16.md:39-42`, verbatim de la demande qui
+    // l'ouvre : « on doit pouvoir choisir ses munitions avec nos armes de tir facilement depuis sa barre
+    // d'action ». Changer celle d'une pièce CHARGÉE la DÉCHARGE — Test étendu de
     // recharge à refaire (LDB 62 l.335) ; re-sélectionner la même est sans effet ; rien n'est détruit (décompte
     // au tir). Le CHEF qui la sert perd aussi son gate de tir : la pièce n'a plus de coup.
     if (poste.loaded !== false && (poste.loadedAmmoUid ?? poste.ammoUid) !== (ammoUid ?? undefined)) {

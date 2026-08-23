@@ -15,7 +15,8 @@ import { itemFromTrappingById, recomputeLoadout, loadoutLabel, loadedAmmo, selec
 import { weaponLoaded } from '../engine/weaponLoad';
 import { t } from '../i18n';
 import { hotbar } from '../state/hotbarBridge';
-import { regles, findQualityById, findActionById, findVehicleById } from '../data/index';
+import { regles, findQualityById, findActionById, findVehicleById, ACTIONS, type ActionDef } from '../data/index';
+import { ActiveModal } from './ActiveModal';
 import { vehicleCombatant } from '../engine/vehicle';
 import { actionGate, ACTION_CANDIDATES } from '../state/actionRegistry';
 import { emptyScene } from '../state/scene';
@@ -2518,5 +2519,206 @@ describe('CombatConsole — deux armes à distance : une case, un paramètre à 
     const p2 = c.weapons.find((w) => w.uid === 'i-p2')!;
     expect(selectedAmmo(c, p2)?.uid, 'la munition élue va à l’arme de SA chip').toBe('i-a2');
     expect(selectedAmmo(c, p1)?.uid, 'l’autre arme n’a pas bougé').toBe('i-a1');
+  });
+});
+
+/**
+ * LE CHAMP `surface` DU REGISTRE DIT VRAI (#1411 P2, lot 0) — il NOMME le rendeur qui offre l'action,
+ * et ce contrat le MESURE au DOM : pour chaque `[data-action]` rendu par la console, l'ancêtre
+ * porteur trouvé doit être celui que sa `surface` déclare. Une entrée dont la surface n'est PAS de
+ * console (pastille d'entité, frise) n'a par conséquent aucun bouton ici.
+ * Le champ mentait sur quatre entrées (`hors-console` pour la gouttière d'annulation, le coin de fin
+ * de tour, la colonne de sets, la frise) : la valeur fourre-tout est morte, chaque rendeur est nommé.
+ */
+describe('CombatConsole — contrat SURFACE ⇄ RENDEUR', () => {
+  /** Le RENDEUR de chaque surface, par son ancre DOM. `null` = hors console (aucun bouton ici). */
+  const RENDEUR: Record<ActionDef['surface'], string | null> = {
+    'deduite-du-set': '.cc-bay-left',
+    'geste-d-etat': '.cc-bay-left',
+    grille: '.cc-bay-right',
+    'gouttiere-arche': '.cc-gutter',
+    'selecteur-de-sets': '.cc-sets',
+    'coin-de-tour': '.cc-corner',
+    'bandeau-de-phase': '.cc-phase',
+    interlude: '.cc-phase',
+    'pastille-etat': '.cc-arch',
+    'pastille-entite': null,
+    frise: null,
+  };
+  const ANCRES = [...new Set(Object.values(RENDEUR).filter((s): s is string => !!s))];
+
+  /** Pour chaque action rendue : son id, la surface DÉCLARÉE et le rendeur MESURÉ. */
+  function mesure() {
+    return [...host.querySelectorAll('[data-action]')].map((el) => {
+      const id = el.getAttribute('data-action')!;
+      const def = findActionById(id);
+      const ancetre = el.closest(ANCRES.join(', '));
+      return { id, surface: def?.surface ?? null, rendeur: ANCRES.find((sel) => ancetre?.matches(sel)) ?? null };
+    });
+  }
+
+  /** Un porteur de set d'armes, ayant DÉJÀ marché (la gouttière offre alors son geste d'annulation). */
+  function porteurAyantMarche() {
+    const h = hero('h1', 'Gunnar');
+    h.items = [Object.assign(itemFromTrappingById('epee-batarde')!, { uid: 'i-e1' }) as ItemInstance];
+    h.loadouts = [{ id: 'lo-1', main: 'i-e1' }];
+    h.activeLoadoutId = 'lo-1';
+    recomputeLoadout(h);
+    monter(h);
+    act(() => {
+      const b = useGame.getState().battle!;
+      useGame.setState({ battle: { ...b, movementUsed: 1, moveSnapshot: { pos: { x: 5, y: 5 }, movementUsed: 0 } } as unknown as BattleState });
+    });
+    return h;
+  }
+
+  it('toute action rendue par la console l’est par LE rendeur que sa surface déclare', () => {
+    porteurAyantMarche();
+    const rendues = mesure();
+    // Méta : sans cases lues, la garde serait verte à vide.
+    expect(rendues.length, 'aucune action rendue : la mesure ne prouverait rien').toBeGreaterThan(5);
+    const inconnues = rendues.filter((r) => r.surface === null).map((r) => r.id);
+    expect(inconnues, 'case rendue par la console et INCONNUE du registre').toEqual([]);
+    const menteuses = rendues
+      .filter((r) => r.rendeur !== RENDEUR[r.surface!])
+      .map((r) => `${r.id} : surface « ${r.surface} » (rendeur attendu ${RENDEUR[r.surface!] ?? 'AUCUN — hors console'}), rendu par ${r.rendeur ?? 'un conteneur non ancré'}`);
+    expect(menteuses, `le champ \`surface\` ne décrit pas le rendeur réel :\n  ${menteuses.join('\n  ')}`).toEqual([]);
+  });
+
+  it('les rendeurs HORS-GRILLE sont bien couverts par la mesure (témoins nommés)', () => {
+    porteurAyantMarche();
+    const par = (id: string) => mesure().find((r) => r.id === id);
+    expect(par('undo-move')?.rendeur, 'le geste d’annulation vit sur la gouttière de Mouvement').toBe('.cc-gutter');
+    expect(par('end-turn')?.rendeur, 'la fin de tour vit au coin, isolée des travées').toBe('.cc-corner');
+    expect(par('switch-loadout')?.rendeur, 'la commutation de set vit sur la vignette de set').toBe('.cc-sets');
+    expect(par('attaque')?.rendeur, 'le geste déduit du set vit dans la travée gauche').toBe('.cc-bay-left');
+  });
+
+  it('aucune entrée à surface HORS CONSOLE n’a de bouton dans la console', () => {
+    porteurAyantMarche();
+    const horsConsole = ACTIONS.filter((a) => RENDEUR[a.surface] === null).map((a) => a.id);
+    expect(horsConsole.length, 'méta : au moins une action vit hors de la console').toBeGreaterThan(0);
+    const intruses = horsConsole.filter((id) => host.querySelector(`[data-action="${id}"]`));
+    expect(intruses, 'action déclarée hors console mais rendue par elle').toEqual([]);
+  });
+});
+
+/**
+ * PAUSE DE ROUND EN COOP (#1411 P2-A) — le bouton du bandeau passait DIRECTEMENT par
+ * `confirmRoundStart`, là où la touche (`keybindings.round-start`) routait vers `roundStartReady` en
+ * réseau : deux branchements pour un geste, dont un qui ignorait le ready-check. Le bandeau consomme
+ * désormais l'entrée `round-start` du registre — LA porte, pour la souris comme pour la touche.
+ */
+describe('CombatConsole — pause de Round : UNE porte pour le bouton et la touche', () => {
+  const bouton = () => host.querySelector('.cc-phase [data-action="round-start"]') as HTMLButtonElement | null;
+
+  /** Combat en PAUSE de Round (personne n'agit : `turn: -1`), dans le mode réseau demandé. */
+  function pause(mode: 'local' | 'host' | 'guest', round = 2) {
+    const a = hero('h1', 'Gunnar');
+    const b = hero('h2', 'Rolf');
+    act(() => {
+      useGame.setState({
+        party: [a, b], scene: emptyScene(20, 20),
+        net: { ...useGame.getState().net, mode, mySeat: mode === 'guest' ? 1 : 0, ownership: { h1: 0, h2: 1 }, seatNames: mode === 'local' ? {} : { 0: 'L’hôte', 1: 'Rolf' } },
+        pendingRoundStart: { round },
+        battle: {
+          combatants: [a, b], order: [a.id, b.id], baseOrder: [a.id, b.id], turn: -1, round,
+          action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
+          acted: false, runBudget: 4, log: [], over: null,
+        } as unknown as BattleState,
+      });
+    });
+    act(() => { root.render(<CombatConsole />); });
+  }
+
+  afterEach(() => {
+    act(() => { useGame.setState({ pendingRoundStart: null, net: { ...useGame.getState().net, mode: 'local', mySeat: 0, ownership: {}, seatNames: {} } }); });
+  });
+
+  it('SOLO — le bouton OUVRE le Round (aucun ready-check à respecter)', () => {
+    pause('local');
+    expect(bouton(), 'la pause de Round doit porter son geste').not.toBeNull();
+    act(() => bouton()!.click());
+    expect(useGame.getState().pendingRoundStart, 'le Round ne s’est pas ouvert').toBeNull();
+  });
+
+  it('COOP invité — le bouton MARQUE le siège prêt et n’ouvre RIEN (le quorum décide)', () => {
+    pause('guest');
+    act(() => bouton()!.click());
+    const prs = useGame.getState().pendingRoundStart;
+    expect(prs, 'un invité a lancé le Round pour toute la table').not.toBeNull();
+    expect(prs!.readyBySeat, 'le clic de l’invité n’a pas marqué SON siège').toEqual({ 1: true });
+  });
+
+  it('COOP hôte — même porte : le clic marque le siège 0, et le Round attend l’autre siège requis', () => {
+    pause('host');
+    act(() => bouton()!.click());
+    expect(useGame.getState().pendingRoundStart!.readyBySeat).toEqual({ 0: true });
+    act(() => { useGame.getState().roundStartReady(1); });
+    expect(useGame.getState().pendingRoundStart, 'quorum atteint : le Round devait s’ouvrir').toBeNull();
+  });
+
+  it('COOP — la bande porte la rangée des sièges REQUIS et éteint le bouton une fois ce siège prêt', () => {
+    pause('host');
+    expect(host.querySelectorAll('.cc-phase .ready-chip').length, 'deux sièges requis, deux chips').toBe(2);
+    act(() => bouton()!.click());
+    expect(bouton()!.disabled, 'un siège déjà prêt ne re-clique pas').toBe(true);
+    expect(host.querySelectorAll('.cc-phase .ready-chip[data-pret]').length).toBe(1);
+  });
+
+  it('SOLO — aucune rangée de ready-check (personne à attendre)', () => {
+    pause('local');
+    expect(host.querySelector('.cc-phase .ready-row')).toBeNull();
+  });
+});
+
+/**
+ * QUI JOUE ? (#1411 P2-A) — depuis la mort de la barre v7 (e4bf4d73), le tour d'un siège DISTANT ne
+ * s'annonçait plus nulle part : la console disait « Tour de X » sans nommer le JOUEUR qui le tient.
+ * Elle compose la puce partagée (`SpectatorChip`). UNE seule puce à l'écran : quand l'arbitre de
+ * modales en pose une (il dit ce que le siège FAIT), la bande d'attente lui laisse la parole.
+ */
+describe('CombatConsole — tour d’un siège distant : exactement UNE puce de spectateur', () => {
+  const puces = () => host.querySelectorAll('.spectator-chip').length;
+
+  function coop(turn: number, over: Partial<Record<string, unknown>> = {}) {
+    const a = hero('h1', 'Gunnar');
+    const b = hero('h2', 'Rolf');
+    act(() => {
+      useGame.setState({
+        party: [a, b], scene: emptyScene(20, 20),
+        net: { ...useGame.getState().net, mode: 'host', mySeat: 0, ownership: { h1: 0, h2: 1 }, seatNames: { 0: 'L’hôte', 1: 'Rolf' } },
+        battle: {
+          combatants: [a, b], order: [a.id, b.id], baseOrder: [a.id, b.id], turn, round: 1,
+          action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
+          acted: false, runBudget: 4, log: [], over: null,
+        } as unknown as BattleState,
+        ...over,
+      });
+    });
+    act(() => { root.render(<><CombatConsole /><ActiveModal /></>); });
+  }
+
+  afterEach(() => {
+    act(() => { useGame.setState({ pendingFall: null, net: { ...useGame.getState().net, mode: 'local', mySeat: 0, ownership: {}, seatNames: {} } }); });
+  });
+
+  it('tour DISTANT : une puce, qui NOMME le siège et le héros qu’il joue', () => {
+    coop(1);
+    expect(puces(), 'ni zéro (personne ne dit qui joue) ni deux').toBe(1);
+    const puce = host.querySelector('.spectator-chip')!;
+    expect(puce.textContent).toContain('Rolf');
+    expect(puce.textContent).toContain('joue');
+  });
+
+  it('MON tour : aucune puce (la console vit)', () => {
+    coop(0);
+    expect(puces()).toBe(0);
+  });
+
+  it('modale DISTANTE ouverte pendant un tour distant : toujours UNE puce (l’arbitre parle, la bande se tait)', () => {
+    coop(1, { pendingFall: { actorId: 'h2', from: { x: 1, y: 1 }, to: { x: 1, y: 3 }, height: 2 } });
+    expect(useGame.getState().pendingFall, 'témoin : la modale distante doit être ouverte').not.toBeNull();
+    expect(puces(), 'deux puces (arbitre + bande) ou aucune').toBe(1);
   });
 });

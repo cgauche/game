@@ -5910,9 +5910,13 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   // et PERMANENTE (plus aucun porteur pour la détacher). Détachement propre AVANT writeback, comme une
   // expiration normale (`removeActiveEffects` : MÊME couture que `tickDurations`).
   for (const c of battle.combatants) removeActiveEffects(c, (e) => e.duration.scale === 'rounds');
+  // `outOfRencontre` est l'état de LA rencontre (éjection par le Destin, reddition, homme à la mer) :
+  // il tombe avec elle — `LDB 17 l.31` / `LDB 17 l.35`. Sans cette remise à zéro AU TEARDOWN, le
+  // héros éjecté restait exclu de tout ce qui filtre le groupe hors combat (quorum des ready-checks,
+  // nuit de repos, voyage) ET du carry-in du combat suivant (`startCombat`).
   const newParty = party.map((h) => {
     const c = battle.combatants.find((x) => x.id === h.id && x.kind === 'hero');
-    return c ? { ...h, ...carryOverState(c) } : h;
+    return c ? { ...h, ...carryOverState(c), outOfRencontre: false, exitReason: undefined } : h;
   });
   set({ party: newParty });
   if (endLines.length) get().log(endLines);
@@ -6492,7 +6496,7 @@ export function enterRoundStartPause(get: Get, set: SetFn): void {
   if (!b || b.over) return;
   for (const c of b.combatants) if (c.shotsThisTurn) c.shotsThisTurn = 0; // Salve : compteur de tirs réinitialisé à chaque Round
   const reset = { ...b, action: null, selectedAttack: undefined, movementUsed: 0, movedPreAction: false, acted: false, crewActed: {}, loadoutSwapped: false, stances: {}, reachable: new Map(), preview: null, runBudget: null, fearGate: null };
-  if (get().net.mode !== 'local' && b.round > 1 && !b.handRaised) {
+  if (get().net.mode !== 'local' && b.round > 1 && !(b.handRaisedBy?.length)) {
     set({ battle: reset, pendingRoundStart: null });
     get().confirmRoundStart();
     return;
@@ -6505,7 +6509,7 @@ export function enterRoundStartPause(get: Get, set: SetFn): void {
     return;
   }
   // Pause de début de Round : PERSONNE n'est actif (turn -1) — confirmRoundStart posera le tour.
-  set({ battle: { ...reset, turn: -1, handRaised: false }, pendingRoundStart: { round: b.round } });
+  set({ battle: { ...reset, turn: -1, handRaisedBy: [] }, pendingRoundStart: { round: b.round } });
 }
 
 /** IA : si le combattant actif est PILOTÉ par l'IA (ennemi, ou héros en Auto-combat possédé localement),

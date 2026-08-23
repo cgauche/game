@@ -93,6 +93,31 @@ export function seatOwns(s: GameState, seat: number, combatantId: string | undef
 }
 
 /**
+ * SIÈGES REQUIS par un READY-CHECK (source UNIQUE : pause de Round, écran de Victoire, nuit de repos).
+ * Deux conditions, et rien d'autre :
+ *  - le siège HÔTE (0) est toujours requis — c'est lui qui applique le geste unanime ;
+ *  - tout siège NOMMÉ (présent dans `net.seatNames`) qui tient au moins un héros ENCORE EN JEU (ni
+ *    mort, ni hors rencontre).
+ * Un siège nommé sans héros vivant n'a rien à valider : l'attendre bloquerait la table, l'afficher en
+ * « en attente » mentirait. Le verdict est le MÊME pour les trois dispatchers et pour la rangée qui
+ * les montre (`ReadyRow`) — afficher et décider ne peuvent pas répondre différemment.
+ */
+export function siegesRequis(s: Pick<GameState, 'party' | 'net'>): number[] {
+  const requis = new Set<number>([0]);
+  for (const h of s.party) {
+    if (h.dead || h.outOfRencontre) continue;
+    const owner = s.net.ownership[h.id] ?? 0;
+    if (s.net.seatNames[owner] != null) requis.add(owner);
+  }
+  return [...requis].sort((a, b) => a - b);
+}
+
+/** Tous les sièges requis ont-ils validé ? (même quorum, une seule lecture) */
+export function quorumAtteint(s: Pick<GameState, 'party' | 'net'>, readyBySeat: Record<number, boolean> = {}): boolean {
+  return siegesRequis(s).every((seat) => readyBySeat[seat]);
+}
+
+/**
  * SIÈGE AGISSANT (#1017) — quel siège joue le geste EN COURS. Normalement `net.mySeat` (le joueur
  * devant l'écran) ; mais l'HÔTE exécute aussi les gestes des AUTRES sièges quand il applique un
  * intent reçu (`netFlow.applyIntent`), et il les exécute DANS SON PROPRE store. Sans ce contexte,
@@ -119,8 +144,11 @@ export function withActingSeat<T>(seat: number, fn: () => T): T {
   }
 }
 
-/** Le siège au nom duquel on décide MAINTENANT : celui qui agit s'il y en a un, sinon le siège local. */
-function decidingSeat(s: GameState): number {
+/** Le siège au nom duquel on décide MAINTENANT : celui qui agit s'il y en a un, sinon le siège local.
+ *  Exporté pour les gestes qui MARQUENT leur siège dans l'état partagé (demande de pause de Round) :
+ *  le siège vient du TRANSPORT (`withActingSeat`, posé par `netFlow.applyIntent`), jamais des arguments
+ *  de l'émetteur — un siège ne peut donc marquer ni démarquer que lui-même. */
+export function decidingSeat(s: GameState): number {
   return actingSeat ?? s.net.mySeat;
 }
 
@@ -452,10 +480,12 @@ const routeHorsModal = (def: HorsModalDef): Route => ({
  */
 export const ROUTES: ReadonlyMap<string, Route> = buildRoutes(
   [
-    // Ready-checks et levée de main : le siège marque le SIEN.
+    // Ready-checks et levée de main : le siège marque le SIEN. `raiseHand`/`lowerHand` sont NULLAIRES et
+    // lisent leur siège au transport (`decidingSeat`) : il n'y a aucun argument à valider ici.
     ['roundStartReady', TOUJOURS],
     ['victoryReady', TOUJOURS],
     ['raiseHand', TOUJOURS],
+    ['lowerHand', TOUJOURS],
     // Butin de victoire : un siège n'attribue qu'à SES héros (le bénéficiaire est le 2ᵉ argument).
     ['assignVictoryGear', { rule: (s, seat, args) => seatOwns(s, seat, idArg(args[1])) }],
     // Composition du groupe : un siège remplit SES emplacements (quota attribué par l'hôte) et

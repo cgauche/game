@@ -43,7 +43,6 @@ import { useGame } from '../../state/store';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { parseProject } from '../../state/worldMap';
-import { runAction } from '../../state/actionRegistry';
 import { testScene } from '../../scenes/test-fixture';
 import type { Combatant } from '../../engine/types';
 import type { Scene } from '../../state/scene';
@@ -393,7 +392,7 @@ const BATTERIE: readonly Geste[] = [
     nom: 'un tour de combat',
     monter: monterCombat,
     témoin: () => String(useGame.getState().battle?.turn ?? '—'),
-    agir: async () => { await act(async () => { runAction('end-turn', useGame.getState); }); },
+    agir: async () => { await act(async () => { useGame.getState().battleEndTurn(); }); },
     respirerMs: 900,
   },
 ];

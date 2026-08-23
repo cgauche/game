@@ -196,7 +196,11 @@ const RAW_KNOWN: Record<string, number> = {
   'src/state/travelFlow.ts': 6,
   'src/state/travelPostes.ts': 2,
   'src/state/vision.ts': 1,
-  'src/ui/ActiveModal.tsx': 1,
+  // Le site de `ui/ownership.ts` est la comparaison au sentinel `'*'` de l'arbitre de modales (owner =
+  //  tous les sièges) dans la porte de possession `spectatorSeatOfModal` : un mot du VOCABULAIRE du
+  //  protocole de modales, jamais un id d'entité — c'est la décision « qui nomme le siège attendu »,
+  //  et elle est UNE (`ActiveModal.tsx` la lit sans la refaire, il ne compte donc aucun site).
+  'src/ui/ownership.ts': 1,
   'src/ui/HealModal.tsx': 2,
   'src/ui/InterludeScreen.tsx': 2,
   'src/ui/MedicModal.tsx': 2,

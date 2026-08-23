@@ -27,7 +27,9 @@ import { coopFlowIntents } from '../state/flowVerbs';
 /** Intents qui ne sont PAS des verbes de flux (`<prefix><Verbe>` de `FLOW_VERBS`) — non dérivables. */
 export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   // tour, ciblage, déplacement tactique
-  'battleClickEntity', 'battleClickTile', 'battleEndTurn', 'cancelMove', 'battleSelectAction',
+  // `armEndTurn` = 1er temps du garde-fou « tour gâché » : l'armement vit dans `battle` (état d'hôte),
+  // donc l'invité le DEMANDE comme tout geste de son tour — sinon son 1er appui serait sans effet.
+  'battleClickEntity', 'battleClickTile', 'battleEndTurn', 'armEndTurn', 'cancelMove', 'battleSelectAction',
   // actions de la hotbar — rendues dès `controlsCombatant` (le combattant ACTIF), et autorisées par
   // le REPLI universel de `intentAllowedFor` (aucune modale ouverte → le propriétaire de l'actif).
   'battleAim', 'battleDefendTotal', 'battleDisengage', 'battleRun', 'battleTrample',
@@ -125,7 +127,9 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'armPreempt', 'preemptRangedShot',
   'resolveCorruption',
   // (dismissVictory volontairement ABSENT : un invité passe par victoryReady — l'hôte ferme à l'unanimité.)
-  'victoryReady', 'assignVictoryGear', 'raiseHand',
+  // Demande de pause au prochain Round : POSER et RETIRER passent par le même chemin (interrupteur
+  // de la frise) — une bascule dont un seul sens serait répliqué laisserait la table bloquée.
+  'victoryReady', 'assignVictoryGear', 'raiseHand', 'lowerHand',
 ];
 
 export const COMBAT_INTENTS: ReadonlySet<string> = new Set([...MANUAL_COMBAT_INTENTS, ...coopFlowIntents()]);

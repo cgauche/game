@@ -570,7 +570,12 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // le tiroir ne flotte plus au coin du champ) et `.worldmap-btn` (l'ouvreur du rail dissous ≤700 se
   // pose lui-même : sans ancrage il retombait dans le flux du stage). Deux noms CITÉS, aucun défini
   // en propre ici, et aucun décoratif — chacun porte un ancrage que le HUD n'avait pas.
-  'styles/hud.css': 153,
+  // +1 (153 → 154), #1411 P2-A : `.is-hand` — l'ANCRAGE de l'interrupteur de pause de Round
+  // (`raise-hand`, spec §1d) au pied de la frise (il s'aligne sur la colonne sans l'élargir). Un seul
+  // nom, aucun décoratif : sans lui la commande déborde la colonne. La GRADUATION de sa raison de
+  // refus appartient à sa primitive (`GatedAction` variante `dense`, components.css) — ce module ne
+  // redéfinit aucune taille de texte pour elle.
+  'styles/hud.css': 154,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
   'styles/ornaments.css': 13,

@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { preemptShooterIds } from '../state/targeting';
+import { findActionById } from '../data/index';
+import { actionGate, runAction } from '../state/actionRegistry';
+import { inBattleId } from '../state/combatants';
+import type { IconIdInput } from './icons';
 import { ciblageEntiteArme } from '../state/targetingModes';
 import { MondeDeCampagne } from '../gameIso/stage/MondeDeCampagne';
 import { SceneErrorBoundary } from './SceneErrorBoundary';
@@ -146,6 +150,25 @@ export function CampaignView() {
   const preemptAiming = useGame((s) => s.preemptAiming);
   const armPreempt = useGame((s) => s.armPreempt);
   const canPreemptIds = preemptShooterIds(useGame.getState); // source UNIQUE (partagée avec le ciblage clavier)
+  // PAUSE AU PROCHAIN ROUND (`raise-hand`) : l'interrupteur du pied de frise. Verdict d'offre et
+  // dispatcher viennent du REGISTRE — la vue ne connaît qu'un id d'action, et la bascule repasse par
+  // la MÊME porte que la pose (`toggleOff`), ce qui rend l'annulation gratuite et symétrique.
+  // La commande n'est DESSINÉE qu'en coop (pertinence de SITE : elle s'adresse aux autres joueurs,
+  // comme la rangée de ready-check) ; le gate `coop` du registre reste la politique de l'entrée —
+  // aucune surface, dessinée ou non, ne franchit la porte hors coop.
+  // « Ma » main est celle de MON siège ; le compte des autres dit ce que la table demande déjà.
+  const mySeat = useGame((s) => s.net.mySeat);
+  const mainsLevees = battle?.handRaisedBy ?? [];
+  const handRaised = mainsLevees.includes(mySeat);
+  const autresMains = mainsLevees.filter((s) => s !== mySeat).length;
+  const handDef = findActionById('raise-hand')!;
+  const handVerdict = battle
+    ? actionGate(handDef.id, {
+        active: (inBattleId(battle, battle.order[battle.turn]) ?? battle.combatants[0])!,
+        battle,
+        netMode,
+      })
+    : { ok: false, reason: '' };
   // #21 : pendant un ciblage d'ENTITÉ, cliquer un PORTRAIT (frise ou dock) cible ce combattant —
   // même validation/portée que cliquer son pion sur le champ. Le « quels ciblages » vient du REGISTRE
   // (`ciblageEntiteArme`, dérivé de `currentTargetingMode`), jamais d'une liste d'ids recopiée ici :
@@ -211,6 +234,13 @@ export function CampaignView() {
               canPreemptIds={canPreemptIds}
               preemptArmedId={preemptAiming}
               onPreempt={armPreempt}
+              hand={netMode === 'local' ? undefined : {
+                raised: handRaised,
+                reason: handVerdict.ok ? undefined : handVerdict.reason,
+                label: <><Icon id={handDef.icon as IconIdInput} size="sm" /> {handRaised ? 'Pause demandée' : 'Pause'}{autresMains > 0 ? ` +${autresMains}` : ''}</>,
+                ariaLabel: `${handRaised ? `${handDef.label} : retirer ma demande` : handDef.label}${autresMains > 0 ? ` — déjà demandée par ${autresMains} autre${autresMains > 1 ? 's' : ''} joueur${autresMains > 1 ? 's' : ''}` : ''}`,
+                onToggle: () => runAction(handDef.id, useGame.getState, { toggleOff: handRaised }),
+              }}
             />
             <CombatStartSplash />
           </>

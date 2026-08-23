@@ -54,9 +54,11 @@ describe('persistence — carryOverState', () => {
     expect(s.conditions.some((x) => x.id === 'extenue')).toBe(true);
     expect(s.conditions.some((x) => x.id === 'surpris')).toBe(false);
   });
-  it('reporte la mort (dead / outOfRencontre)', () => {
+  it('reporte la mort ; l’éjection de la RENCONTRE n’en fait pas partie (LDB 17 l.31/l.35)', () => {
     expect(carryOverState(baseCombatant({ dead: true })).dead).toBe(true);
-    expect(carryOverState(baseCombatant({ outOfRencontre: true })).outOfRencontre).toBe(true);
+    // Le sac de ce qui SURVIT au combat ne porte pas `outOfRencontre` : la rencontre finie, le héros
+    // éjecté se bat à nouveau (le teardown le remet à zéro, cf. `finalizeBattle`).
+    expect('outOfRencontre' in carryOverState(baseCombatant({ outOfRencontre: true }))).toBe(false);
   });
   it('ne partage pas les références de conditions (copie défensive)', () => {
     const c = baseCombatant({ conditions: [{ id: 'hemorragique', value: 1 }] });
