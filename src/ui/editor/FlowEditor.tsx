@@ -15,6 +15,7 @@ import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
 import { menaceIds } from '../../engine/menace';
 import { RefField } from '../compendium/RefField';
+import { NumberField } from '../NumberField';
 import { refLabel } from '../../data';
 import {
   EffectFields,
@@ -60,7 +61,7 @@ export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: F
             <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>
           ))}
         </select>
-        <label className="dr">DR≥<input type="number" value={test.requireSL ?? 0} onChange={(e) => upd({ requireSL: Number(e.target.value) })} /></label>
+        <label className="dr">DR≥<NumberField variant="nu" label="Degrés de Réussite requis" value={test.requireSL ?? 0} onChange={(requireSL) => upd({ requireSL })} /></label>
         {/* Outil : picker catalogue (stocke l'id) avec repli nom pour les objets CUSTOM. */}
         <RefField cfg={{ ds: 'trappings', freeText: true }} value={test.tool} onChange={(v) => upd({ tool: v as string | undefined })} />
       </div>
@@ -98,7 +99,7 @@ export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: F
         <span className="dr">Plus facile si</span>
         <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="compétence" value={test.easierIf?.hasSkill} onChange={(v) => setEase({ hasSkill: (v as { id: string; spec?: string } | null) ?? undefined })} nullable />
         <input placeholder="ou talent" value={test.easierIf?.hasTalent ?? ''} onChange={(e) => setEase({ hasTalent: e.target.value || undefined })} />
-        <label className="dr">−<input type="number" min={1} value={test.easierIf?.steps ?? 1} onChange={(e) => setEase({ steps: Number(e.target.value) })} /> cran(s)</label>
+        <label className="dr">−<NumberField variant="nu" label="Crans de facilité" min={1} value={test.easierIf?.steps ?? 1} onChange={(steps) => setEase({ steps })} /> cran(s)</label>
         {/* Menace du talent « Résistance (Menace) » (LDB 10) : tag qui offre son auto-succès sur CE Test.
             Les options sont les SPECS AUTHORÉES du talent (`menaceIds`, lues au catalogue) — l'auteur
             choisit un id, jamais du texte ; une spec ajoutée au Compendium apparaît ici sans code. */}

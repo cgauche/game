@@ -1,4 +1,5 @@
 import { IMPERIAL_MONTHS, ScheduleSpec } from '../../engine/clock';
+import { NumberField } from '../NumberField';
 
 /** Mode d'échéance dérivé de la `ScheduleSpec` posée (aucun état local — l'appelant est source de
  *  vérité). Priorité identique à `scheduleAt` (engine/clock) : atDate > afterDays > afterMinutes >
@@ -42,12 +43,12 @@ export function ScheduleSpecFields({ spec, onPatch }: { spec: ScheduleSpec; onPa
         <option value="hour">Heure du jour (prochaine occurrence)</option>
       </select>
       {mode === 'rel' && (
-        <label className="dr">dans <input type="number" min={0} value={spec.afterMinutes ?? 0} onChange={(ev) => onPatch({ afterMinutes: Number(ev.target.value) })} /> min</label>
+        <label className="dr">dans <NumberField variant="nu" label="Échéance (minutes)" min={0} value={spec.afterMinutes ?? 0} onChange={(afterMinutes) => onPatch({ afterMinutes })} /> min</label>
       )}
       {mode === 'days' && (
         <>
-          <label className="dr">dans <input type="number" min={0} value={spec.afterDays ?? 0} onChange={(ev) => onPatch({ afterDays: Math.max(0, Number(ev.target.value) || 0) })} /> j</label>
-          <label className="dr">à <input type="number" min={0} max={23} value={spec.atHour ?? 0} onChange={(ev) => onPatch({ atHour: Number(ev.target.value) })} />:<input type="number" min={0} max={59} value={spec.atMinute ?? 0} onChange={(ev) => onPatch({ atMinute: Number(ev.target.value) })} /></label>
+          <label className="dr">dans <NumberField variant="nu" label="Échéance (jours)" min={0} value={spec.afterDays ?? 0} onChange={(afterDays) => onPatch({ afterDays })} /> j</label>
+          <label className="dr">à <NumberField variant="nu" label="Heure (0-23)" min={0} max={23} value={spec.atHour ?? 0} onChange={(atHour) => onPatch({ atHour })} />:<NumberField variant="nu" label="Minute (0-59)" min={0} max={59} value={spec.atMinute ?? 0} onChange={(atMinute) => onPatch({ atMinute })} /></label>
         </>
       )}
       {mode === 'date' && (
@@ -58,12 +59,12 @@ export function ScheduleSpecFields({ spec, onPatch }: { spec: ScheduleSpec; onPa
           >
             {IMPERIAL_MONTHS.map((m, i) => <option key={m.label} value={i}>{m.label}</option>)}
           </select>
-          <label className="dr">jour <input type="number" min={1} value={spec.atDate?.day ?? 1} onChange={(ev) => onPatch({ atDate: { ...(spec.atDate ?? { month: 0 }), day: Math.max(1, Number(ev.target.value) || 1) } })} /></label>
-          <label className="dr">à <input type="number" min={0} max={23} value={spec.atDate?.hour ?? 0} onChange={(ev) => onPatch({ atDate: { ...(spec.atDate ?? { month: 0, day: 1 }), hour: Number(ev.target.value) } })} />:<input type="number" min={0} max={59} value={spec.atDate?.minute ?? 0} onChange={(ev) => onPatch({ atDate: { ...(spec.atDate ?? { month: 0, day: 1 }), minute: Number(ev.target.value) } })} /></label>
+          <label className="dr">jour <NumberField variant="nu" label="Jour du mois" min={1} value={spec.atDate?.day ?? 1} onChange={(day) => onPatch({ atDate: { ...(spec.atDate ?? { month: 0 }), day } })} /></label>
+          <label className="dr">à <NumberField variant="nu" label="Heure (0-23)" min={0} max={23} value={spec.atDate?.hour ?? 0} onChange={(hour) => onPatch({ atDate: { ...(spec.atDate ?? { month: 0, day: 1 }), hour } })} />:<NumberField variant="nu" label="Minute (0-59)" min={0} max={59} value={spec.atDate?.minute ?? 0} onChange={(minute) => onPatch({ atDate: { ...(spec.atDate ?? { month: 0, day: 1 }), minute } })} /></label>
         </>
       )}
       {mode === 'hour' && (
-        <label className="dr">à <input type="number" min={0} max={23} value={spec.atHour ?? 0} onChange={(ev) => onPatch({ atHour: Number(ev.target.value) })} />:<input type="number" min={0} max={59} value={spec.atMinute ?? 0} onChange={(ev) => onPatch({ atMinute: Number(ev.target.value) })} /></label>
+        <label className="dr">à <NumberField variant="nu" label="Heure (0-23)" min={0} max={23} value={spec.atHour ?? 0} onChange={(atHour) => onPatch({ atHour })} />:<NumberField variant="nu" label="Minute (0-59)" min={0} max={59} value={spec.atMinute ?? 0} onChange={(atMinute) => onPatch({ atMinute })} /></label>
       )}
     </div>
   );

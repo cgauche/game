@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { Tabs } from '../Tabs';
 import { Icon } from '../Icon';
+import { NumberField } from '../NumberField';
 import { Scene } from '../../state/scene';
 import { type WorldMap, type MapRoute, placeById } from '../../state/worldMap';
 import { type TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
@@ -39,7 +40,7 @@ export function WorldMapRoutePanel({ route, map, scenes, updRoute, effCtx, toggl
             Route : {placeById(map, route.a)?.label} ↔ {placeById(map, route.b)?.label}
           </div>
           <label className="ed-field">Distance (km)
-            <input type="number" min={1} value={route.km} onChange={(e) => updRoute(route.id, { km: Math.max(1, Number(e.target.value) || 1) })} />
+            <NumberField variant="nu" label="Distance (km)" min={1} value={route.km} onChange={(km) => updRoute(route.id, { km })} />
           </label>
           <label className="ed-field">Sens (route à sens unique : n'est offerte que depuis ce lieu ; le retour passe par une autre route)
             <select
@@ -61,26 +62,26 @@ export function WorldMapRoutePanel({ route, map, scenes, updRoute, effCtx, toggl
           {TRAVEL_VEHICLES.filter((v) => route.modes.includes(v.id)).map((v) => (
             <div key={v.id}>
               <label className="ed-field">{v.label} — prix (sous/km/passager, RAW : {v.travel!.classes.map((c) => `${c.label} ${c.brassPerKm}`).join(' / ')})
-                <input
-                  type="number" min={0} placeholder="défaut RAW par classe"
-                  value={route.prices?.[v.id] ?? ''}
-                  onChange={(e) => updRoute(route.id, { prices: { ...route.prices, [v.id]: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)) } })}
+                <NumberField
+                  variant="nu" label={`${v.label} — prix (sous/km/passager)`} min={0} placeholder="défaut RAW par classe"
+                  vide value={route.prices?.[v.id]}
+                  onChange={(n) => updRoute(route.id, { prices: { ...route.prices, [v.id]: n ?? undefined } })}
                 />
               </label>
               <label className="ed-field">{v.label} — Déplacement (km/h, RAW : {v.travel!.movement} ; ±1 modèle rapide/lent)
-                <input
-                  type="number" min={1} placeholder={String(v.travel!.movement)}
-                  value={route.speed?.[v.id] ?? ''}
-                  onChange={(e) => updRoute(route.id, { speed: { ...route.speed, [v.id]: e.target.value === '' ? undefined : Math.max(1, Number(e.target.value)) } })}
+                <NumberField
+                  variant="nu" label={`${v.label} — Déplacement (km/h)`} min={1} placeholder={String(v.travel!.movement)}
+                  vide value={route.speed?.[v.id]}
+                  onChange={(n) => updRoute(route.id, { speed: { ...route.speed, [v.id]: n ?? undefined } })}
                 />
               </label>
             </div>
           ))}
           <label className="ed-field">Péripétie : seuil du d10 (vide = défaut carte ; 0 = désactivé)
-            <input
-              type="number" min={0} max={10} placeholder={String(map.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie)}
-              value={route.perilDie ?? ''}
-              onChange={(e) => updRoute(route.id, { perilDie: e.target.value === '' ? undefined : Math.max(0, Math.min(10, Number(e.target.value))) })}
+            <NumberField
+              variant="nu" label="Péripétie : seuil du d10 de la route" min={0} max={10} placeholder={String(map.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie)}
+              vide value={route.perilDie}
+              onChange={(n) => updRoute(route.id, { perilDie: n ?? undefined })}
             />
           </label>
           <label className="ed-check">
@@ -147,10 +148,10 @@ export function WorldMapRoutePanel({ route, map, scenes, updRoute, effCtx, toggl
               </label>
               {route.sea && (
                 <label className="ed-field">Ancrage en mer (% de la route, défaut 50 %)
-                  <input
-                    type="number" min={0} max={100}
+                  <NumberField
+                    variant="nu" label="Ancrage en mer (% de la route)" min={0} max={100}
                     value={Math.round((route.ambush.at ?? 0.5) * 100)}
-                    onChange={(e) => updRoute(route.id, { ambush: { ...route.ambush!, at: Math.max(0, Math.min(100, Number(e.target.value) || 0)) / 100 } })}
+                    onChange={(pct) => updRoute(route.id, { ambush: { ...route.ambush!, at: pct / 100 } })}
                   />
                 </label>
               )}
@@ -167,9 +168,9 @@ export function WorldMapRoutePanel({ route, map, scenes, updRoute, effCtx, toggl
                 />
               </label>
               <label className="ed-field">Probabilité par jour (%)
-                <input
-                  type="number" min={0} max={100} value={peril.chancePct}
-                  onChange={(e) => updRoute(route.id, { perils: route.perils!.map((x, j) => (j === i ? { ...x, chancePct: Math.max(0, Math.min(100, Number(e.target.value) || 0)) } : x)) })}
+                <NumberField
+                  variant="nu" label="Probabilité par jour (%)" min={0} max={100} value={peril.chancePct}
+                  onChange={(chancePct) => updRoute(route.id, { perils: route.perils!.map((x, j) => (j === i ? { ...x, chancePct } : x)) })}
                 />
               </label>
               <EffectList

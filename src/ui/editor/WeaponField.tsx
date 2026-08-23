@@ -8,6 +8,7 @@ import { REACH_LABELS, REACH_VARIABLE } from '../../engine/types';
 import { damageString, parseDamage, REACH_IDS } from '../../engine/items';
 import { parseQualityInstance } from '../../engine/qualities/normalize';
 import { qualityRefLabel } from '../../data';
+import { NumberField } from '../NumberField';
 
 /** Valeurs sélectionnables de l'Allonge = le vocabulaire FERMÉ `ReachValue` lui-même (les sept
  *  longueurs de l'axe, LDB 62 l.156-164, puis « Variable », l.31) : la `<option>` et la valeur
@@ -26,7 +27,7 @@ export function WeaponField({ value, onChange }: { value: Weapon | undefined; on
   const patch = (p: Partial<Weapon>) => onChange({ ...w, ...p });
   // Portée : SPEC (mètres fixes OU `{bf}` = BF×N, arme de jet). Toggle « ×BF » + valeur, sans perte de donnée.
   const rangeBf = typeof w.range === 'object' && w.range != null;
-  const rangeNum: number | '' = rangeBf ? (w.range as { bf: number }).bf : typeof w.range === 'number' ? w.range : '';
+  const rangeNum: number | undefined = rangeBf ? (w.range as { bf: number }).bf : typeof w.range === 'number' ? w.range : undefined;
   return (
     <div className="ed-field ed-weapon">
       <label className="dr"><input type="checkbox" checked onChange={() => onChange(undefined)} /> ARME conférée</label>
@@ -57,8 +58,8 @@ export function WeaponField({ value, onChange }: { value: Weapon | undefined; on
           </label>
         ) : (
           <label className="dr">Portée {rangeBf ? '(×BF)' : '(m)'}
-            <input type="number" min={0} value={rangeNum}
-              onChange={(e) => patch({ range: e.target.value === '' ? undefined : (rangeBf ? { bf: Math.max(0, Number(e.target.value) || 0) } : Math.max(0, Number(e.target.value) || 0)) })} />
+            <NumberField variant="nu" label={`Portée ${rangeBf ? '(×BF)' : '(m)'}`} min={0} vide value={rangeNum}
+              onChange={(n) => patch({ range: n == null ? undefined : rangeBf ? { bf: n } : n })} />
             <label className="bf-toggle"><input type="checkbox" checked={rangeBf}
               onChange={(e) => { const n = typeof rangeNum === 'number' ? rangeNum : 0; patch({ range: e.target.checked ? { bf: n } : n }); }} /> ×BF</label>
           </label>

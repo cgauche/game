@@ -21,6 +21,7 @@ import { ValidationPanel } from './ValidationPanel';
 import { Icon } from '../Icon';
 import { Tabs } from '../Tabs';
 import { ListRow } from '../ListRow';
+import { NumberField } from '../NumberField';
 
 export type LogicTab = 'triggers' | 'dialogues' | 'encounters' | 'validation';
 
@@ -482,8 +483,8 @@ function EncountersTab({
             const vc = enc.victoryCondition!;
             return (
               <div className="enemy-mount">
-                <label>X <input type="number" value={vc.edge.x} onChange={(e) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, x: Number(e.target.value) } } })} /></label>
-                <label>Y <input type="number" value={vc.edge.y} onChange={(e) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, y: Number(e.target.value) } } })} /></label>
+                <label>X <NumberField variant="nu" label="Structure à détruire — X" value={vc.edge.x} onChange={(x) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, x } } })} /></label>
+                <label>Y <NumberField variant="nu" label="Structure à détruire — Y" value={vc.edge.y} onChange={(y) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, y } } })} /></label>
                 <label>
                   Arête{' '}
                   <select
@@ -496,7 +497,7 @@ function EncountersTab({
                     <option value="/">/</option>
                   </select>
                 </label>
-                <label>Z <input type="number" value={vc.edge.z ?? 0} onChange={(e) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, z: Number(e.target.value) || undefined } } })} /></label>
+                <label>Z <NumberField variant="nu" label="Structure à détruire — Z (étage)" value={vc.edge.z ?? 0} onChange={(z) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, z: z || undefined } } })} /></label>
               </div>
             );
           })()}
@@ -504,7 +505,7 @@ function EncountersTab({
             const vc = enc.victoryCondition!;
             return (
               <div className="enemy-mount">
-                <label>Rounds à tenir <input type="number" min={1} value={vc.rounds} onChange={(e) => upd({ victoryCondition: { type: 'surviveRounds', rounds: Math.max(1, Number(e.target.value)) } })} /></label>
+                <label>Rounds à tenir <NumberField variant="nu" label="Rounds à tenir" min={1} value={vc.rounds} onChange={(rounds) => upd({ victoryCondition: { type: 'surviveRounds', rounds } })} /></label>
               </div>
             );
           })()}
@@ -512,10 +513,10 @@ function EncountersTab({
             const vc = enc.victoryCondition!;
             return (
               <div className="enemy-mount">
-                <label>X <input type="number" value={vc.rect.x} onChange={(e) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, x: Number(e.target.value) } } })} /></label>
-                <label>Y <input type="number" value={vc.rect.y} onChange={(e) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, y: Number(e.target.value) } } })} /></label>
-                <label>L <input type="number" min={1} value={vc.rect.w} onChange={(e) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, w: Math.max(1, Number(e.target.value)) } } })} /></label>
-                <label>H <input type="number" min={1} value={vc.rect.h} onChange={(e) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, h: Math.max(1, Number(e.target.value)) } } })} /></label>
+                <label>X <NumberField variant="nu" label="Zone à atteindre — X" value={vc.rect.x} onChange={(x) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, x } } })} /></label>
+                <label>Y <NumberField variant="nu" label="Zone à atteindre — Y" value={vc.rect.y} onChange={(y) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, y } } })} /></label>
+                <label>L <NumberField variant="nu" label="Zone à atteindre — largeur" min={1} value={vc.rect.w} onChange={(w) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, w } } })} /></label>
+                <label>H <NumberField variant="nu" label="Zone à atteindre — hauteur" min={1} value={vc.rect.h} onChange={(h) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, h } } })} /></label>
                 <label>
                   Camp{' '}
                   <select
@@ -546,9 +547,9 @@ function EncountersTab({
                 </label>
                 <label>
                   Sous{' '}
-                  <input
-                    type="number" min={1} max={99} value={vc.belowPercent}
-                    onChange={(e) => upd({ victoryCondition: { type: 'woundsThreshold', targetId: vc.targetId, belowPercent: Math.min(99, Math.max(1, Number(e.target.value))) } })}
+                  <NumberField
+                    variant="nu" label="Seuil de Blessures (%)" min={1} max={99} value={vc.belowPercent}
+                    onChange={(belowPercent) => upd({ victoryCondition: { type: 'woundsThreshold', targetId: vc.targetId, belowPercent } })}
                   />
                   % de ses Blessures
                 </label>
@@ -561,9 +562,9 @@ function EncountersTab({
               <div className="enemy-mount">
                 <label title="Le premier coup qui cause une perte de plus de ce nombre de Blessures met fin au duel (NADJ 06 l.175-177). Défaut 3 Blessures (seule valeur chiffrée par le RAW).">
                   Seuil{' '}
-                  <input
-                    type="number" min={1} value={vc.threshold ?? 3}
-                    onChange={(e) => upd({ victoryCondition: { type: 'firstBlood', threshold: Math.max(1, Number(e.target.value)) } })}
+                  <NumberField
+                    variant="nu" label="Seuil de premier sang" min={1} value={vc.threshold ?? 3}
+                    onChange={(threshold) => upd({ victoryCondition: { type: 'firstBlood', threshold } })}
                   />
                   {' '}Blessures en un coup
                 </label>

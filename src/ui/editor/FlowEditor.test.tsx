@@ -39,3 +39,12 @@ describe('FlowEditor — menu « + Bloc » : effets, condition et test', () => {
     expect(html).toContain('ALORS');
   });
 });
+
+describe('#1318 E1 — le domaine des crans de facilité atteint le champ (cale de NumberField)', () => {
+  it('le champ « cran(s) » porte sa borne basse (au moins un cran)', () => {
+    const flow: Flow = { kind: 'test', test: { skill: 'escalade', easierIf: { hasSkill: { id: 'escalade' }, steps: 2 } }, success: EMPTY_FLOW, fail: EMPTY_FLOW };
+    const html = renderToStaticMarkup(<FlowEditor flow={flow} onChange={() => {}} ctx={ctx} />);
+    expect(html).toMatch(/min="1"[^>]*value="2"|value="2"[^>]*min="1"/);
+  });
+});
+

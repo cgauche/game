@@ -707,12 +707,12 @@ button.insp-row.active {
   font-size: 11px;
   color: var(--muted);
 }
-/* Largeur par défaut d'un input numérique compact `.dr` (rangée `.dr Label <input>`, ou `input.dr` posé
-   directement sur un input SANS libellé attenant) — NON scopée à `.tf-row` : couvre aussi les rangées
-   `.cond-time`/`.cond-node` de ConditionEditor et remplace les ~30 `style={{width:'…'}}` inline qui
-   redisaient la même chose. */
+/* Largeur d'un champ numérique compact d'atelier, dite au CONTENEUR (jamais un `style={{width}}` par
+   site) : la rangée `.dr Label <input>`, l'`input.dr` posé sans libellé attenant, et les rangées
+   `.cond-time` de ConditionEditor, dont le libellé est du texte nu sans `<label class="dr">`. */
 .dr input,
-input.dr {
+input.dr,
+.cond-time input[type='number'] {
   width: 44px;
 }
 .branch {

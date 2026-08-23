@@ -11,6 +11,7 @@ import type { NarratifBlock, PresetPnj, Affaire, Indice, IndiceStade } from '../
 import type { CreatureData } from '../../data';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { ListRow } from '../ListRow';
+import { NumberField } from '../NumberField';
 
 /**
  * Éditeur du bloc NARRATIF d'un paquet de campagne (#765) — overlay plein-champ (`ScreenShell`, même
@@ -446,12 +447,13 @@ function IndiceForm({ indice, affaires, otherIndices, onRename, onPatch, onRemov
                   updateStade(s.id, { source: book || s.source?.page ? { book, page: s.source?.page ?? 0 } : undefined });
                 }}
               />
-              <input
-                type="number"
+              <NumberField
+                variant="nu"
+                label="Page de la source du stade"
                 placeholder="Page"
-                value={s.source?.page ?? ''}
-                onChange={(e) => {
-                  const page = e.target.value === '' ? undefined : Number(e.target.value);
+                vide
+                value={s.source?.page}
+                onChange={(page) => {
                   updateStade(s.id, { source: s.source?.book || page != null ? { book: s.source?.book ?? '', page: page ?? 0 } : undefined });
                 }}
               />
@@ -495,10 +497,10 @@ function PresetForm({ preset, onRename, onPatch, onRemove }: {
     onPatch({ profil: Object.keys(next).length ? next : undefined });
   };
   /** Surcharge d'une carac (vide = héritée de la base) — retire `char` s'il redevient vide. */
-  const setChar = (k: CharKey, raw: string) => {
+  const setChar = (k: CharKey, v: number | null) => {
     const char = { ...(profil.char ?? {}) };
-    if (raw.trim() === '') delete char[k];
-    else char[k] = Number(raw);
+    if (v == null) delete char[k];
+    else char[k] = v;
     patchProfil({ char: Object.keys(char).length ? char : undefined });
   };
   /** Fusionne un patch d'apparence (retire `apparence` si elle redevient vide). */
@@ -536,11 +538,13 @@ function PresetForm({ preset, onRename, onPatch, onRemove }: {
           {CHAR_KEYS.map((k) => (
             <label key={k} className="ed-subfield" title={CHAR_LABELS[k]}>
               {k}
-              <input
-                type="number"
-                value={profil.char?.[k] ?? ''}
+              <NumberField
+                variant="nu"
+                label={CHAR_LABELS[k]}
+                vide
+                value={profil.char?.[k]}
                 placeholder={base ? String(base.char[k] ?? '') : ''}
-                onChange={(e) => setChar(k, e.target.value)}
+                onChange={(n) => setChar(k, n)}
               />
             </label>
           ))}
@@ -598,11 +602,12 @@ function PresetForm({ preset, onRename, onPatch, onRemove }: {
         </label>
         <label className="ed-subfield">
           Page
-          <input
-            type="number"
-            value={preset.source?.page ?? ''}
-            onChange={(e) => {
-              const page = e.target.value === '' ? undefined : Number(e.target.value);
+          <NumberField
+            variant="nu"
+            label="Page de la source du PNJ"
+            vide
+            value={preset.source?.page}
+            onChange={(page) => {
               onPatch({ source: preset.source?.book || page != null ? { book: preset.source?.book ?? '', page: page ?? 0 } : undefined });
             }}
           />

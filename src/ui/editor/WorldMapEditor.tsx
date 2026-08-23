@@ -7,6 +7,7 @@ import { Icon, IconG } from '../Icon';
 import { ICON_DEFS } from '../icons';
 import { ScreenShell } from '../ScreenShell';
 import { planChrome } from '../PlanChrome';
+import { NumberField } from '../NumberField';
 import { WorldMapPlacePanel } from './WorldMapPlacePanel';
 import { WorldMapRoutePanel } from './WorldMapRoutePanel';
 
@@ -229,24 +230,24 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                 <img src={m.background} alt="Aperçu du fond de carte" style={{ maxWidth: '100%', maxHeight: 96, borderRadius: 6, border: '1px solid var(--border)', margin: '2px 0 6px' }} />
               )}
               <label className="ed-field">Heures de voyage/jour sans Test (RAW : 6)
-                <input
-                  type="number" min={1} max={24}
+                <NumberField
+                  variant="nu" label="Heures de voyage par jour sans Test" min={1} max={24} vide
                   value={m.params?.hoursPerDay ?? TRAVEL_DEFAULTS.hoursPerDay}
-                  onChange={(e) => upd({ params: { ...m.params, hoursPerDay: Number(e.target.value) || TRAVEL_DEFAULTS.hoursPerDay } })}
+                  onChange={(n) => upd({ params: { ...m.params, hoursPerDay: n ?? TRAVEL_DEFAULTS.hoursPerDay } })}
                 />
               </label>
               <label className="ed-field">Plafond de marche forcée (h/jour)
-                <input
-                  type="number" min={1} max={24}
+                <NumberField
+                  variant="nu" label="Plafond de marche forcée (h/jour)" min={1} max={24} vide
                   value={m.params?.forcedMaxHours ?? TRAVEL_DEFAULTS.forcedMaxHours}
-                  onChange={(e) => upd({ params: { ...m.params, forcedMaxHours: Number(e.target.value) || TRAVEL_DEFAULTS.forcedMaxHours } })}
+                  onChange={(n) => upd({ params: { ...m.params, forcedMaxHours: n ?? TRAVEL_DEFAULTS.forcedMaxHours } })}
                 />
               </label>
               <label className="ed-field">Péripétie : seuil du d10 quotidien (RAW : 8 ; 0 = désactivé)
-                <input
-                  type="number" min={0} max={10}
+                <NumberField
+                  variant="nu" label="Péripétie : seuil du d10 quotidien" min={0} max={10}
                   value={m.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie}
-                  onChange={(e) => upd({ params: { ...m.params, perilDie: Math.max(0, Math.min(10, Number(e.target.value) || 0)) } })}
+                  onChange={(perilDie) => upd({ params: { ...m.params, perilDie } })}
                 />
               </label>
               {setActiveAxes && (

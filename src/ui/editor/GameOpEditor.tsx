@@ -20,6 +20,7 @@ import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 import { AddMenu, TypeMenu, pickable, type TypeMenuGroup } from './AddMenu';
 import { JsonField } from './JsonField';
 import { Icon } from '../Icon';
+import { NumberField } from '../NumberField';
 import type { IconIdInput } from '../icons';
 
 const SIZES = Object.keys(SIZE_LABEL) as SizeCategory[];
@@ -268,8 +269,8 @@ export function FormulaField({ label, value, onChange, min }: {
           <option value="rolled">Dé du jet (paliers)</option>
         </select>
         {shape === 'lit' && (
-          <input type="number" min={min} value={typeof value === 'number' ? value : 0}
-            onChange={(e) => onChange(Number(e.target.value))} />
+          <NumberField variant="nu" label={label ? `${label} — nombre` : 'Nombre'} min={min} value={typeof value === 'number' ? value : 0}
+            onChange={onChange} />
         )}
         {(shape === 'bonus' || shape === 'char') && (
           <select value={charOfFormula(value)}
@@ -279,14 +280,14 @@ export function FormulaField({ label, value, onChange, min }: {
         )}
         {shape === 'dice' && typeof value === 'object' && value != null && 'dice' in value && (
           <span className="fml-dice">
-            <input type="number" min={1} title="nombre de dés" value={value.dice.n}
-              onChange={(e) => onChange({ dice: { ...value.dice, n: Math.max(1, Number(e.target.value) || 1) } })} />
+            <NumberField variant="nu" label="nombre de dés" title="nombre de dés" min={1} value={value.dice.n}
+              onChange={(n) => onChange({ dice: { ...value.dice, n } })} />
             d
-            <input type="number" min={1} title="faces" value={value.dice.sides}
-              onChange={(e) => onChange({ dice: { ...value.dice, sides: Math.max(1, Number(e.target.value) || 1) } })} />
+            <NumberField variant="nu" label="faces" title="faces" min={1} value={value.dice.sides}
+              onChange={(sides) => onChange({ dice: { ...value.dice, sides } })} />
             +
-            <input type="number" title="offset" value={value.dice.plus ?? 0}
-              onChange={(e) => { const p = Number(e.target.value) || 0; onChange({ dice: { ...value.dice, plus: p || undefined } }); }} />
+            <NumberField variant="nu" label="offset" title="offset" value={value.dice.plus ?? 0}
+              onChange={(p) => onChange({ dice: { ...value.dice, plus: p || undefined } })} />
           </span>
         )}
         {/* `times` = PRODUIT de deux Formules (« (Force Mentale) × 1d10 minutes », VDM 05) : les deux
@@ -581,8 +582,8 @@ function RollTableRowsField({ rows, onChange }: { rows: { min: number; max: numb
       {rows.map((r, i) => (
         <div className="ed-subfield" key={i}>
           <div className="tf-row">
-            <label className="dr">min<input type="number" style={{ width: 64 }} value={r.min} onChange={(e) => set(i, { min: Number(e.target.value) || 0 })} /></label>
-            <label className="dr">max<input type="number" style={{ width: 64 }} value={r.max} onChange={(e) => set(i, { max: Number(e.target.value) || 0 })} /></label>
+            <label className="dr">min<NumberField variant="nu" label="Fourchette — borne basse" width={64} value={r.min} onChange={(min) => set(i, { min })} /></label>
+            <label className="dr">max<NumberField variant="nu" label="Fourchette — borne haute" width={64} value={r.max} onChange={(max) => set(i, { max })} /></label>
             <button className="btn small" title="Monter" disabled={i === 0} onClick={() => swap(i, i - 1)}>↑</button>
             <button className="btn small" title="Descendre" disabled={i === rows.length - 1} onClick={() => swap(i, i + 1)}>↓</button>
             <button className="btn small danger" title="Supprimer la rangée" onClick={() => onChange(rows.filter((_, j) => j !== i))}>✕</button>
@@ -618,15 +619,15 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
           <FormulaField label="PA (±)" value={o.amount} onChange={(amount) => upd({ amount })} />
         )}
         {op.op === 'sinMod' && (
-          <label className="dr">Péché ±<input type="number" value={o.amount ?? 1} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+          <label className="dr">Péché ±<NumberField variant="nu" label="Points de Péché (±)" value={o.amount ?? 1} onChange={(amount) => upd({ amount })} /></label>
         )}
         {op.op === 'corruptionExposure' && (
           <>
             {/* Sens ABRI (VDM 05, Bouclier en acier doré) : `easeSteps` pose une protection en CRANS ;
                 le niveau et la compétence ne servent qu'au sens POSE. */}
             <label className="dr">Abri (crans)
-              <input type="number" min={1} placeholder="—" value={typeof o.easeSteps === 'number' ? o.easeSteps : ''}
-                onChange={(e) => upd({ easeSteps: e.target.value === '' ? undefined : Math.max(1, Number(e.target.value) || 1) })} />
+              <NumberField variant="nu" label="Abri (crans)" min={1} placeholder="—" vide value={typeof o.easeSteps === 'number' ? o.easeSteps : undefined}
+                onChange={(n) => upd({ easeSteps: n ?? undefined })} />
             </label>
             {o.easeSteps == null && (
               <>
@@ -646,7 +647,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'corruption' && (
           <>
-            <label className="dr">Points<input type="number" value={o.amount ?? 1} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+            <label className="dr">Points<NumberField variant="nu" label="Points de Corruption" value={o.amount ?? 1} onChange={(amount) => upd({ amount })} /></label>
             <select value={o.align ?? ''} onChange={(e) => upd({ align: (e.target.value || undefined) as ChaosAlign | undefined })}>
               <option value="">Mutation : règle globale</option>
               {(Object.keys(CHAOS_ALIGN_LABELS) as ChaosAlign[]).map((k) => (
@@ -661,15 +662,15 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
               <option value="fortune">Chance</option>
               <option value="fate">Destin</option>
             </select>
-            <label className="dr">Points<input type="number" min={1} value={o.amount ?? 1} onChange={(e) => upd({ amount: Math.max(1, Number(e.target.value) || 1) })} /></label>
+            <label className="dr">Points<NumberField variant="nu" label="Points" min={1} value={o.amount ?? 1} onChange={(amount) => upd({ amount })} /></label>
             <label className="dr"><input type="checkbox" checked={!!o.temporary} onChange={(e) => upd({ temporary: e.target.checked || undefined })} /> le temps du Sort</label>
           </>
         )}
         {op.op === 'sbBonus' && (
-          <label className="dr">+BF<input type="number" value={o.amount ?? 0} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+          <label className="dr">+BF<NumberField variant="nu" label="Bonus de Force (±)" value={o.amount ?? 0} onChange={(amount) => upd({ amount })} /></label>
         )}
         {op.op === 'incomingSpellDRMod' && (
-          <label className="dr">DR de Sort / point<input type="number" value={typeof o.amount === 'number' ? o.amount : 0} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+          <label className="dr">DR de Sort / point<NumberField variant="nu" label="Degrés de Réussite de Sort par point" value={typeof o.amount === 'number' ? o.amount : 0} onChange={(amount) => upd({ amount })} /></label>
         )}
         {op.op === 'endPsych' && (
           <label className="dr">Type psy<input value={o.type ?? ''} onChange={(e) => upd({ type: e.target.value })} /></label>
@@ -686,7 +687,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'testMod' && (
           <>
-            <label className="dr">Modif.<input type="number" value={o.amount ?? 0} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+            <label className="dr">Modif.<NumberField variant="nu" label="Modificateur de Test" value={o.amount ?? 0} onChange={(amount) => upd({ amount })} /></label>
             <label className="dr">Carac.
               <select value={o.char ?? ''} onChange={(e) => upd({ char: (e.target.value || undefined) as CharKey | undefined })}>
                 <option value="">— tous les Tests —</option>
@@ -709,8 +710,8 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                 <label className="dr"><input type="checkbox" checked={o.valuePerSL != null} onChange={(e) => upd({ valuePerSL: e.target.checked ? { every: 1, amount: 1 } : undefined })} /> par DR</label>
                 {o.valuePerSL != null && (
                   <>
-                    <label className="dr">tous les<input type="number" min={1} title="DR" value={o.valuePerSL.every ?? 1} onChange={(e) => upd({ valuePerSL: { ...o.valuePerSL, every: Math.max(1, Number(e.target.value) || 1) } })} /> DR</label>
-                    <label className="dr">+<input type="number" title="quantité par palier" value={o.valuePerSL.amount ?? 1} onChange={(e) => upd({ valuePerSL: { ...o.valuePerSL, amount: Number(e.target.value) || 0 } })} /></label>
+                    <label className="dr">tous les<NumberField variant="nu" label="Palier en Degrés de Réussite" title="DR" min={1} value={o.valuePerSL.every ?? 1} onChange={(every) => upd({ valuePerSL: { ...o.valuePerSL, every } })} /> DR</label>
+                    <label className="dr">+<NumberField variant="nu" label="quantité par palier" title="quantité par palier" value={o.valuePerSL.amount ?? 1} onChange={(amount) => upd({ valuePerSL: { ...o.valuePerSL, amount } })} /></label>
                     <label className="dr"><input type="checkbox" checked={!!o.valuePerSL.onFailure} onChange={(e) => upd({ valuePerSL: { ...o.valuePerSL, onFailure: e.target.checked || undefined } })} /> sur l'échec (niveau d'échec)</label>
                   </>
                 )}
@@ -732,14 +733,14 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             <select value={o.char} onChange={(e) => upd({ char: e.target.value as CharKey })}>
               {CHARS.map((c) => <option key={c} value={c}>{CHAR_LABELS[c]}</option>)}
             </select>
-            <label className="dr">Modif.<input type="number" value={o.mod} onChange={(e) => upd({ mod: Number(e.target.value) || 0 })} /></label>
-            <label className="dr">Rounds<input type="number" min={1} placeholder="durée" value={typeof o.durationRounds === 'number' ? o.durationRounds : ''} onChange={(e) => upd({ durationRounds: e.target.value === '' ? undefined : Math.max(1, Number(e.target.value)) })} /></label>
+            <label className="dr">Modif.<NumberField variant="nu" label="Modificateur de caractéristique" value={o.mod} onChange={(mod) => upd({ mod })} /></label>
+            <label className="dr">Rounds<NumberField variant="nu" label="Durée en Rounds" min={1} placeholder="durée" vide value={typeof o.durationRounds === 'number' ? o.durationRounds : undefined} onChange={(n) => upd({ durationRounds: n ?? undefined })} /></label>
           </>
         )}
         {op.op === 'skillMod' && (
           <>
             <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence" value={o.skill} onChange={(v) => upd({ skill: (v as string) ?? '' })} />
-            <label className="dr">Modif.<input type="number" value={o.mod ?? 0} onChange={(e) => upd({ mod: Number(e.target.value) || 0 })} /></label>
+            <label className="dr">Modif.<NumberField variant="nu" label="Modificateur de Compétence" value={o.mod ?? 0} onChange={(mod) => upd({ mod })} /></label>
             <label className="dr">Sens{/* Surdité, LDB 18 : restreint au Test de Perception basé sur ce sens */}
               <select value={o.sense ?? ''} onChange={(e) => upd({ sense: (e.target.value || undefined) as 'vue' | 'ouie' | undefined })}>
                 <option value="">— tous les Tests —</option>
@@ -750,7 +751,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
           </>
         )}
         {op.op === 'moveMod' && (
-          <label className="dr">Mouvement (±)<input type="number" value={o.mod ?? 0} onChange={(e) => upd({ mod: Number(e.target.value) || 0 })} /></label>
+          <label className="dr">Mouvement (±)<NumberField variant="nu" label="Modificateur de Mouvement" value={o.mod ?? 0} onChange={(mod) => upd({ mod })} /></label>
         )}
         {op.op === 'grantTrait' && (
           <>
@@ -797,8 +798,8 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         {op.op === 'light' && (
           <>
             <label className="dr">Rayon (cases)
-              <input type="number" min={1} value={o.radiusTiles ?? 1}
-                onChange={(e) => upd({ radiusTiles: Math.max(1, Number(e.target.value) || 1) })} />
+              <NumberField variant="nu" label="Rayon (cases)" min={1} value={o.radiusTiles ?? 1}
+                onChange={(radiusTiles) => upd({ radiusTiles })} />
             </label>
             <label className="dr">Ton
               <select value={o.tone ?? ''} onChange={(e) => upd({ tone: e.target.value || undefined })}>
@@ -811,9 +812,9 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         {op.op === 'lifeSteal' && (
           <>
             <label className="dr">Fraction
-              <input type="number" min={1} title="numérateur" value={o.num ?? 1} onChange={(e) => upd({ num: Math.max(1, Number(e.target.value) || 1) })} />
+              <NumberField variant="nu" label="numérateur" title="numérateur" min={1} value={o.num ?? 1} onChange={(num) => upd({ num })} />
               /
-              <input type="number" min={1} title="dénominateur" value={o.den ?? 2} onChange={(e) => upd({ den: Math.max(1, Number(e.target.value) || 1) })} />
+              <NumberField variant="nu" label="dénominateur" title="dénominateur" min={1} value={o.den ?? 2} onChange={(den) => upd({ den })} />
             </label>
             <label className="dr">Arrondi
               <select value={o.round ?? 'floor'} onChange={(e) => upd({ round: e.target.value })}>
@@ -838,7 +839,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             <label className="dr"><input type="checkbox" checked={o.perSL != null} onChange={(e) => upd({ perSL: e.target.checked ? { every: 2, metersFormula: { bonusOf: 'force-mentale' } } : undefined })} /> bonus par DR</label>
             {o.perSL != null && (
               <>
-                <label className="dr">tous les<input type="number" min={1} title="DR" value={o.perSL.every ?? 2} onChange={(e) => upd({ perSL: { ...o.perSL, every: Math.max(1, Number(e.target.value) || 1) } })} /> DR</label>
+                <label className="dr">tous les<NumberField variant="nu" label="Palier en Degrés de Réussite" title="DR" min={1} value={o.perSL.every ?? 2} onChange={(every) => upd({ perSL: { ...o.perSL, every } })} /> DR</label>
                 <FormulaField label="Bonus (m)" value={o.perSL.metersFormula} min={0} onChange={(metersFormula) => upd({ perSL: { ...o.perSL, metersFormula } })} />
               </>
             )}
@@ -849,7 +850,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'armourPierce' && (
           <>
-            <label className="dr">PA retirés (plat)<input type="number" min={0} value={o.amount ?? 1} onChange={(e) => upd({ amount: Math.max(0, Number(e.target.value) || 0) })} /></label>
+            <label className="dr">PA retirés (plat)<NumberField variant="nu" label="Points d’Armure retirés" min={0} value={o.amount ?? 1} onChange={(amount) => upd({ amount })} /></label>
             <label className="dr">Matériau ignoré
               <select value={o.bypass ?? ''} onChange={(e) => upd({ bypass: (e.target.value || undefined) as ArmourBypass | undefined })}>
                 <option value="">— aucun —</option>
@@ -874,7 +875,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
               </select>
             </label>
             <label className="dr"><input type="checkbox" checked={!!o.addNegativeSL} onChange={(e) => upd({ addNegativeSL: e.target.checked || undefined })} /> + |DR négatif| au jet (échec)</label>
-            <label className="dr">+<input type="number" min={0} style={{ width: 56 }} value={o.extraRollsPerStep ?? 0} onChange={(e) => upd({ extraRollsPerStep: Math.max(0, Number(e.target.value) || 0) || undefined })} /> jet(s) par pas de Surincantation (Durée)</label>
+            <label className="dr">+<NumberField variant="nu" label="Jets supplémentaires par pas de Surincantation" min={0} width={56} value={o.extraRollsPerStep ?? 0} onChange={(n) => upd({ extraRollsPerStep: n || undefined })} /> jet(s) par pas de Surincantation (Durée)</label>
             {'tableId' in o ? (
               <label className="dr">Table
                 <select value={o.tableId} onChange={(e) => upd({ tableId: e.target.value })}>

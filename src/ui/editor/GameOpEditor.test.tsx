@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { GameOpEditor, opSummary, newOp, formulaSummary, shapeOf, formulaForShape, OP_LABEL, OP_REF_FIELDS, opMissingRefs, opsMissingRefs } from './GameOpEditor';
+import { GameOpEditor, FormulaField, opSummary, newOp, formulaSummary, shapeOf, formulaForShape, OP_LABEL, OP_REF_FIELDS, opMissingRefs, opsMissingRefs } from './GameOpEditor';
 import { datasetArray } from '../../data/overrides';
 import { lightTones } from '../../data';
 import type { GameOp } from '../../engine/ops';
@@ -151,3 +151,13 @@ describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () =
     expect(opSummary(ops[0])).toContain('1 rangée');
   });
 });
+
+describe('#1318 E1 — la borne d’une Formula littérale atteint le champ (cale de NumberField)', () => {
+  it('FormulaField propage son `min` au champ nombre', () => {
+    const avec = renderToStaticMarkup(<FormulaField label="Bonus (m)" value={3} min={0} onChange={() => {}} />);
+    expect(avec).toMatch(/min="0"/);
+    const sans = renderToStaticMarkup(<FormulaField label="Bonus (m)" value={3} onChange={() => {}} />);
+    expect(sans).not.toMatch(/min="/);
+  });
+});
+

@@ -13,6 +13,7 @@ import { ICON_DEFS } from '../icons';
 import { FlowEditor } from './FlowEditor';
 import { WhenEditor, condSummary } from './ConditionEditor';
 import { ListRow } from '../ListRow';
+import { NumberField } from '../NumberField';
 
 /** Ids posables au clic pour `DialogueChoice.icon` — DÉRIVÉS du registre d'icônes (`ICON_DEFS`,
  *  généré depuis `icons/defs/`), jamais une liste tenue à la main. */
@@ -168,14 +169,16 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                       <span className="choice-cost" title="Coût de l’option (service payant : auberge, péage, pot-de-vin) — CO / pa / sc">
                         <Icon id="resource/gold-purse" size="sm" />
                         {(['gold', 'silver', 'brass'] as const).map((k) => (
-                          <input
+                          <NumberField
                             key={k}
-                            type="number"
+                            variant="nu"
+                            label={k === 'gold' ? 'Coût en Couronnes d’or' : k === 'silver' ? 'Coût en pistoles d’argent' : 'Coût en sous de cuivre'}
                             min={0}
                             placeholder={k === 'gold' ? 'CO' : k === 'silver' ? 'pa' : 'sc'}
-                            value={c.cost?.[k] ?? ''}
-                            onChange={(e) => {
-                              const merged = { ...c.cost, [k]: e.target.value === '' ? undefined : Number(e.target.value) };
+                            vide
+                            value={c.cost?.[k]}
+                            onChange={(n) => {
+                              const merged = { ...c.cost, [k]: n ?? undefined };
                               const any = merged.gold || merged.silver || merged.brass;
                               updChoice(ci, { cost: any ? merged : undefined });
                             }}

@@ -1317,9 +1317,8 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
 //    nu : la primitive canonique du champ nombre borné est `NumberField` (table « Primitives partagées »
 //    du CLAUDE.md — saisie clavier + `QtyStepper` + plage dite). Un `<input type="number">` posé
 //    directement rejoue à la main la borne, les pas et l'affordance. BASELINE PAR FICHIER DÉCROISSANTE :
-//    la tranche 1 de la migration (#1318 E1) a vidé 13 fichiers, qui ont quitté la table — mesure du
-//    scan ci-dessous : 195 balises / 29 fichiers avant, 153 / 16 après, stock restant entièrement
-//    `editor/**` (tranche 2). EXEMPTÉ : `NumberField.tsx`, la primitive elle-même (c'est elle qui a le
+//    stock COURANT mesuré par le scan ci-dessous : 26 balises / 2 fichiers, `editor/Inspector.tsx` et
+//    `editor/Palette.tsx` (migration #1318 E1, tranche 3). EXEMPTÉ : `NumberField.tsx`, la primitive elle-même (c'est elle qui a le
 //    droit — et le devoir — de poser l'`<input type="number">` canonique).
 //    COUVERTURE du détecteur (à énoncer, pas à supposer) : il lit la balise OUVRANTE `<input …>` et
 //    compte `type="number"` en littéral OU en expression CALCULÉE (`type={kind}`, `type={t ? 'number'
@@ -1332,22 +1331,8 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
 //    harnais qui pilote un champ n'est pas une réinvention de primitive).
 const NUMBER_INPUT_EXEMPT_FILES = new Set(['NumberField.tsx']);
 const NUMBER_INPUT_BASELINE: Record<string, number> = {
-  'editor/ConditionEditor.tsx': 11,
-  'editor/DialogueDetail.tsx': 1,
-  'editor/EffectList.tsx': 48,
-  'editor/FlowEditor.tsx': 2,
-  'editor/GameOpEditor.tsx': 25,
   'editor/Inspector.tsx': 25,
-  'editor/LogicDock.tsx': 10,
-  'editor/NarratifEditor.tsx': 3,
   'editor/Palette.tsx': 1,
-  'editor/PsychTraitsField.tsx': 1,
-  'editor/ScheduleSpecFields.tsx': 9,
-  'editor/StatblockEditor.tsx': 4,
-  'editor/WeaponField.tsx': 1,
-  'editor/WorldMapEditor.tsx': 3,
-  'editor/WorldMapPlacePanel.tsx': 3,
-  'editor/WorldMapRoutePanel.tsx': 6,
 };
 
 /** Balise ouvrante `<input …>` complète (les `{…}` d'attribut peuvent contenir des `>`). */

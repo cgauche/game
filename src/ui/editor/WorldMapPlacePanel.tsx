@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Tabs } from '../Tabs';
 import { Icon, IconG } from '../Icon';
 import { Prose } from '../Prose';
+import { NumberField } from '../NumberField';
 import { MapCanvas } from '../MapCanvas';
 import { planChrome } from '../PlanChrome';
 import { VB_W, VB_H } from '../worldMapViewport';
@@ -136,10 +137,10 @@ export function WorldMapPlacePanel({ place, scenes, updPlace }: {
                   </label>
                 ))}
                 <label className="ed-field">Vin supérieur : bonus de qualité (échelons, l.95 — Kemperbad : 2)
-                  <input
-                    type="number" min={0} max={5} placeholder="0"
-                    value={mk.wineBonusEchelons ?? ''}
-                    onChange={(e) => updMarket({ wineBonusEchelons: e.target.value === '' ? undefined : Math.max(0, Math.min(5, Number(e.target.value))) })}
+                  <NumberField
+                    variant="nu" label="Vin supérieur : bonus de qualité (échelons)" min={0} max={5} placeholder="0"
+                    vide value={mk.wineBonusEchelons}
+                    onChange={(n) => updMarket({ wineBonusEchelons: n ?? undefined })}
                   />
                 </label>
               </>
@@ -232,10 +233,10 @@ export function WorldMapPlacePanel({ place, scenes, updPlace }: {
                     <input type="checkbox" checked={c.id in (pt.surplus ?? {})} onChange={() => toggleTable('surplus', c.id)} />
                     {c.label}
                     {c.id in (pt.surplus ?? {}) && (
-                      <input
-                        type="number" min={1} max={3} style={{ width: '3.2em', marginLeft: '0.4em' }}
+                      <NumberField
+                        variant="nu" label={`Surplus — ${c.label} (niveau)`} min={1} max={3} width="3.2em"
                         value={pt.surplus![c.id]}
-                        onChange={(e) => setTableLevel('surplus', c.id, Number(e.target.value) || 1)}
+                        onChange={(n) => setTableLevel('surplus', c.id, n)}
                       />
                     )}
                   </label>
@@ -246,10 +247,10 @@ export function WorldMapPlacePanel({ place, scenes, updPlace }: {
                     <input type="checkbox" checked={c.id in (pt.demande ?? {})} onChange={() => toggleTable('demande', c.id)} />
                     {c.label}
                     {c.id in (pt.demande ?? {}) && (
-                      <input
-                        type="number" min={1} max={3} style={{ width: '3.2em', marginLeft: '0.4em' }}
+                      <NumberField
+                        variant="nu" label={`Demande — ${c.label} (niveau)`} min={1} max={3} width="3.2em"
                         value={pt.demande![c.id]}
-                        onChange={(e) => setTableLevel('demande', c.id, Number(e.target.value) || 1)}
+                        onChange={(n) => setTableLevel('demande', c.id, n)}
                       />
                     )}
                   </label>

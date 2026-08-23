@@ -19,6 +19,7 @@ import { sizeFromTraits } from '../../state/spawn';
 import { SpellsField } from './OptionalTraitsPicker';
 import { TraitListField } from '../compendium/StructFields';
 import { Icon } from '../Icon';
+import { NumberField } from '../NumberField';
 
 /** Parse une saisie « Compétence (Spéc) Valeur » → `SkillRef` (id stable + spec + valeur de Test). */
 function parseSkillRef(text: string): SkillRef {
@@ -62,10 +63,10 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
   const size = stat.size ?? sizeFromTraits(stat.traits ?? []) ?? 'moyenne';
   const formulaWounds = woundsForSize(bonus(stat.char.force ?? 30), bonus(stat.char.endurance ?? 30), bonus(stat.char['force-mentale'] ?? 30), size);
   /** Champ Blessures optionnel : vide → `char.B` retiré (formule au spawn) ; rempli → surcharge fixe. */
-  const setB = (raw: string) => {
+  const setB = (v: number | null) => {
     const char = { ...stat.char };
-    if (raw.trim() === '') delete char.B;
-    else char.B = Number(raw);
+    if (v == null) delete char.B;
+    else char.B = v;
     onChange({ ...stat, char });
   };
   /** « Utiliser les Tailles » (LDB 85 l.276-277) : agrandir/réduire de `steps` catégories ajuste F/E
@@ -100,22 +101,24 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
         {(CHAR_KEYS as CharKey[]).map((k) => (
           <label key={k} className="ed-subfield" title={CHAR_LABELS[k]}>
             {k}
-            <input type="number" value={stat.char[k] ?? 30} onChange={(e) => setChar(k, Number(e.target.value))} />
+            <NumberField variant="nu" label={CHAR_LABELS[k]} value={stat.char[k] ?? 30} onChange={(v) => setChar(k, v)} />
           </label>
         ))}
         {EXTRA.map(({ key, label, def }) => (
           <label key={key} className="ed-subfield" title={label}>
             {key}
-            <input type="number" value={stat.char[key] ?? def} onChange={(e) => setChar(key, Number(e.target.value))} />
+            <NumberField variant="nu" label={label} value={stat.char[key] ?? def} onChange={(v) => setChar(key, v)} />
           </label>
         ))}
         <label className="ed-subfield" title={`Blessures — laisser vide = formule par Taille (${formulaWounds}) ; remplir = surcharge fixe`}>
           B
-          <input
-            type="number"
-            value={stat.char.B ?? ''}
+          <NumberField
+            variant="nu"
+            label="Blessures"
+            vide
+            value={stat.char.B}
             placeholder={String(formulaWounds)}
-            onChange={(e) => setB(e.target.value)}
+            onChange={setB}
           />
         </label>
       </div>
@@ -188,10 +191,11 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
       </label>
       <label className="ed-field">
         Armure (PA uniforme)
-        <input
-          type="number"
+        <NumberField
+          variant="nu"
+          label="Armure (PA uniforme)"
           value={stat.armour ?? 0}
-          onChange={(e) => onChange({ ...stat, armour: Number(e.target.value) || undefined })}
+          onChange={(n) => onChange({ ...stat, armour: n || undefined })}
         />
       </label>
     </div>

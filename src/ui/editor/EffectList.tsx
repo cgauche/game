@@ -22,9 +22,11 @@ import { AddMenu, TypeMenu, pickable, type TypeMenuGroup } from './AddMenu';
 import { GameOpEditor, opSummary } from './GameOpEditor';
 import { ScheduleSpecFields } from './ScheduleSpecFields';
 import { RefField } from '../compendium/RefField';
+import { NumberField } from '../NumberField';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
 import { POWER_ESTIMATE, clampMight } from '../../engine/massBattle';
+import { PURSUIT_ESCAPE_DISTANCE } from '../../engine/pursuit';
 import { battleSceneById, type MassBattleSpec } from '../../state/massBattleFlow';
 import { activitiesFor } from '../../engine/activities';
 import { formatMoney } from '../../engine/money';
@@ -46,7 +48,7 @@ function CrewRosterFields({ e, upd }: { e: any; upd: (patch: any) => void }) {
           <select value={h.roleId} onChange={(ev) => upd({ crew: (e.crew ?? []).map((x: { roleId: string; count: number }, j: number) => (j === i ? { ...x, roleId: ev.target.value } : x)) })}>
             {crewRoles.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
           </select>
-          <label className="dr">×<input type="number" min={1} value={h.count} onChange={(ev) => upd({ crew: (e.crew ?? []).map((x: { roleId: string; count: number }, j: number) => (j === i ? { ...x, count: Math.max(1, Number(ev.target.value) || 1) } : x)) })} /></label>
+          <label className="dr">×<NumberField variant="nu" label="Effectif du rôle" min={1} value={h.count} onChange={(count) => upd({ crew: (e.crew ?? []).map((x: { roleId: string; count: number }, j: number) => (j === i ? { ...x, count } : x)) })} /></label>
           <button type="button" className="btn small" onClick={() => upd({ crew: (e.crew ?? []).filter((_: unknown, j: number) => j !== i) })}>Retirer</button>
         </div>
       ))}
@@ -366,7 +368,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             {e.target === 'hero' && (
               <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
             )}
-            <label className="dr">Jours affamés <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <label className="dr">Jours affamés <NumberField variant="nu" label="Jours affamés" min={1} value={e.days ?? 1} onChange={(days) => upd({ days })} /></label>
           </div>
         )}
         {effect.type === 'inflictThirst' && (
@@ -378,7 +380,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             {e.target === 'hero' && (
               <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
             )}
-            <label className="dr">Jours assoiffés <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <label className="dr">Jours assoiffés <NumberField variant="nu" label="Jours assoiffés" min={1} value={e.days ?? 1} onChange={(days) => upd({ days })} /></label>
           </div>
         )}
         {effect.type === 'exposureNight' && (
@@ -394,7 +396,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             {e.target === 'hero' && (
               <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
             )}
-            <label className="dr">Tests <input type="number" min={1} value={e.count ?? 2} onChange={(ev) => upd({ count: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <label className="dr">Tests <NumberField variant="nu" label="Tests" min={1} value={e.count ?? 2} onChange={(count) => upd({ count })} /></label>
           </div>
         )}
         {effect.type === 'inflictTrauma' && (
@@ -438,11 +440,11 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
                 <option value="pietre">Piètre (½ prix, à risque)</option>
               </select>
             </label>
-            <label className="dr">Nuits <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <label className="dr">Nuits <NumberField variant="nu" label="Nuits" min={1} value={e.days ?? 1} onChange={(days) => upd({ days })} /></label>
           </div>
         )}
         {effect.type === 'interlude' && (
-          <label>Semaines d'interlude <input type="number" min={1} max={12} value={e.weeks ?? 1} onChange={(ev) => upd({ weeks: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+          <label>Semaines d'interlude <NumberField variant="nu" label="Semaines d'interlude" min={1} max={12} value={e.weeks ?? 1} onChange={(weeks) => upd({ weeks })} /></label>
         )}
         {effect.type === 'grantFavor' && (
           <>
@@ -458,7 +460,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         )}
         {effect.type === 'giveSin' && (
           <>
-            <label>Péchés (1-3 selon gravité) <input type="number" min={1} max={3} value={e.amount ?? 1} onChange={(ev) => upd({ amount: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <label>Péchés (1-3 selon gravité) <NumberField variant="nu" label="Péchés" min={1} max={3} value={e.amount ?? 1} onChange={(amount) => upd({ amount })} /></label>
             <input placeholder="id du héros (vide = premier sachant Prier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
           </>
         )}
@@ -468,7 +470,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               <option value="peur">Peur</option>
               <option value="terreur">Terreur</option>
             </select>
-            <label className="dr">Indice <input type="number" min={1} value={e.indice ?? 1} onChange={(ev) => upd({ indice: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <label className="dr">Indice <NumberField variant="nu" label="Indice" min={1} value={e.indice ?? 1} onChange={(indice) => upd({ indice })} /></label>
             <input placeholder="Source (apparition, présage…)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value })} />
             <select value={e.target ?? 'party'} onChange={(ev) => upd({ target: ev.target.value })}>
               <option value="party">Tout le groupe</option>
@@ -589,13 +591,13 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             </select>
             <input placeholder="Nom du navire (ex. « Le Cormoran » — vide = nom du type)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value || undefined })} />
             <div className="tf-row">
-              <label className="dr">Moral initial <input type="number" min={0} max={100} value={e.morale ?? 75} onChange={(ev) => upd({ morale: Math.max(0, Math.min(100, Number(ev.target.value) || 0)) })} /></label>
-              <label className="dr">Coque max (vide = intacte) <input type="number" min={1} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>
+              <label className="dr">Moral initial <NumberField variant="nu" label="Moral initial" min={0} max={100} value={e.morale ?? 75} onChange={(morale) => upd({ morale })} /></label>
+              <label className="dr">Coque max (vide = intacte) <NumberField variant="nu" label="Coque maximale" min={1} vide value={e.hullMax} onChange={(n) => upd({ hullMax: n ?? undefined })} /></label>
               {e.hullMax != null && (
-                <label className="dr">Coque actuelle <input type="number" min={0} value={e.hullCurrent ?? e.hullMax} onChange={(ev) => upd({ hullCurrent: Math.max(0, Number(ev.target.value) || 0) })} /></label>
+                <label className="dr">Coque actuelle <NumberField variant="nu" label="Coque actuelle" min={0} value={e.hullCurrent ?? e.hullMax} onChange={(hullCurrent) => upd({ hullCurrent })} /></label>
               )}
-              <label className="dr">Sabotage DR (vide = aucun, MDG 14 l.45-47) <input type="number" min={-5} max={0} value={e.saboteurDR ?? ''} onChange={(ev) => upd({ saboteurDR: ev.target.value === '' ? undefined : Math.max(-5, Math.min(0, Number(ev.target.value) || 0)) })} /></label>
-              <label className="dr">Eau douce L (vide = ravitaillement réputé assuré) <input type="number" min={0} value={e.waterLitres ?? ''} onChange={(ev) => upd({ waterLitres: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
+              <label className="dr">Sabotage DR (vide = aucun, MDG 14 l.45-47) <NumberField variant="nu" label="Sabotage — modificateur de DR" min={-5} max={0} vide value={e.saboteurDR} onChange={(n) => upd({ saboteurDR: n ?? undefined })} /></label>
+              <label className="dr">Eau douce L (vide = ravitaillement réputé assuré) <NumberField variant="nu" label="Eau douce (litres)" min={0} vide value={e.waterLitres} onChange={(n) => upd({ waterLitres: n ?? undefined })} /></label>
             </div>
             <CrewRosterFields e={e} upd={upd} />
           </>
@@ -605,11 +607,11 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             <div className="mini-title">Navire de campagne courant — champs vides = INCHANGÉS (#233)</div>
             <input placeholder="Nom du navire (vide = inchangé)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value || undefined })} />
             <div className="tf-row">
-              <label className="dr">Moral (vide = inchangé) <input type="number" min={0} max={100} value={e.morale ?? ''} onChange={(ev) => upd({ morale: ev.target.value === '' ? undefined : Math.max(0, Math.min(100, Number(ev.target.value) || 0)) })} /></label>
-              <label className="dr">Coque max (vide = inchangée) <input type="number" min={1} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>
-              <label className="dr">Coque actuelle (vide = inchangée) <input type="number" min={0} value={e.hullCurrent ?? ''} onChange={(ev) => upd({ hullCurrent: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
-              <label className="dr">Sabotage DR (vide = inchangé, MDG 14 l.45-47) <input type="number" min={-5} max={0} value={e.saboteurDR ?? ''} onChange={(ev) => upd({ saboteurDR: ev.target.value === '' ? undefined : Math.max(-5, Math.min(0, Number(ev.target.value) || 0)) })} /></label>
-              <label className="dr">Eau douce L (vide = inchangée) <input type="number" min={0} value={e.waterLitres ?? ''} onChange={(ev) => upd({ waterLitres: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
+              <label className="dr">Moral (vide = inchangé) <NumberField variant="nu" label="Moral" min={0} max={100} vide value={e.morale} onChange={(n) => upd({ morale: n ?? undefined })} /></label>
+              <label className="dr">Coque max (vide = inchangée) <NumberField variant="nu" label="Coque maximale" min={1} vide value={e.hullMax} onChange={(n) => upd({ hullMax: n ?? undefined })} /></label>
+              <label className="dr">Coque actuelle (vide = inchangée) <NumberField variant="nu" label="Coque actuelle" min={0} vide value={e.hullCurrent} onChange={(n) => upd({ hullCurrent: n ?? undefined })} /></label>
+              <label className="dr">Sabotage DR (vide = inchangé, MDG 14 l.45-47) <NumberField variant="nu" label="Sabotage — modificateur de DR" min={-5} max={0} vide value={e.saboteurDR} onChange={(n) => upd({ saboteurDR: n ?? undefined })} /></label>
+              <label className="dr">Eau douce L (vide = inchangée) <NumberField variant="nu" label="Eau douce (litres)" min={0} vide value={e.waterLitres} onChange={(n) => upd({ waterLitres: n ?? undefined })} /></label>
             </div>
             <CrewRosterFields e={e} upd={upd} />
           </>
@@ -631,23 +633,23 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
                   <option value={1}>+</option>
                   <option value={-1}>−</option>
                 </select>
-                <label className="dr">Fixe <input type="number" min={0} value={e.delta?.flat ?? 0} onChange={(ev) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), flat: Math.max(0, Number(ev.target.value) || 0) } })} /></label>
-                <label className="dr">d10 <input type="number" min={0} value={e.delta?.d10 ?? 0} onChange={(ev) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), d10: Math.max(0, Number(ev.target.value) || 0) } })} /></label>
+                <label className="dr">Fixe <NumberField variant="nu" label="Part fixe" min={0} value={e.delta?.flat ?? 0} onChange={(flat) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), flat } })} /></label>
+                <label className="dr">d10 <NumberField variant="nu" label="Nombre de d10" min={0} value={e.delta?.d10 ?? 0} onChange={(d10) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), d10 } })} /></label>
               </div>
             )}
           </>
         )}
         {effect.type === 'giveMoney' && (
           <div className="money-fields">
-            <label>CO<input type="number" value={e.gold ?? 0} onChange={(ev) => upd({ gold: Number(ev.target.value) })} /></label>
-            <label>SC<input type="number" value={e.silver ?? 0} onChange={(ev) => upd({ silver: Number(ev.target.value) })} /></label>
-            <label>PA<input type="number" value={e.brass ?? 0} onChange={(ev) => upd({ brass: Number(ev.target.value) })} /></label>
+            <label>CO<NumberField variant="nu" label="Couronnes d’or" value={e.gold ?? 0} onChange={(gold) => upd({ gold })} /></label>
+            <label>pa<NumberField variant="nu" label="Pistoles d’argent" value={e.silver ?? 0} onChange={(silver) => upd({ silver })} /></label>
+            <label>sc<NumberField variant="nu" label="Sous de cuivre" value={e.brass ?? 0} onChange={(brass) => upd({ brass })} /></label>
           </div>
         )}
         {effect.type === 'giveXp' && (
           <label className="dr">
             PX (groupe)
-            <input type="number" value={e.amount ?? 0} onChange={(ev) => upd({ amount: Number(ev.target.value) })} />
+            <NumberField variant="nu" label="Points d’Expérience (groupe)" value={e.amount ?? 0} onChange={(amount) => upd({ amount })} />
           </label>
         )}
         {effect.type === 'setTime' && (
@@ -719,18 +721,18 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             {e.target === 'hero' && (
               <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
             )}
-            <label className="dr">Hauteur (m) <input type="number" min={0} value={e.metres ?? 0} onChange={(ev) => upd({ metres: Number(ev.target.value) })} /></label>
+            <label className="dr">Hauteur (m) <NumberField variant="nu" label="Hauteur (m)" min={0} value={e.metres ?? 0} onChange={(metres) => upd({ metres })} /></label>
             <label className="dr">
               <input type="checkbox" checked={!!e.to} onChange={(ev) => upd({ to: ev.target.checked ? { x: 0, y: 0, z: 0 } : undefined })} /> Reposer le groupe
             </label>
             {e.to && (
-              <label className="dr">→ <input type="number" value={e.to.x} onChange={(ev) => upd({ to: { ...e.to, x: Number(ev.target.value) } })} />,<input type="number" value={e.to.y} onChange={(ev) => upd({ to: { ...e.to, y: Number(ev.target.value) } })} /> z<input type="number" value={e.to.z ?? 0} onChange={(ev) => upd({ to: { ...e.to, z: Number(ev.target.value) } })} /></label>
+              <label className="dr">→ <NumberField variant="nu" label="Destination — X" value={e.to.x} onChange={(x) => upd({ to: { ...e.to, x } })} />,<NumberField variant="nu" label="Destination — Y" value={e.to.y} onChange={(y) => upd({ to: { ...e.to, y } })} /> z<NumberField variant="nu" label="Destination — Z (étage)" value={e.to.z ?? 0} onChange={(z) => upd({ to: { ...e.to, z } })} /></label>
             )}
           </div>
         )}
         {effect.type === 'setDoor' && (
           <div className="tf-row">
-            <label className="dr">Porte <input type="number" value={e.x ?? 0} onChange={(ev) => upd({ x: Number(ev.target.value) })} />,<input type="number" value={e.y ?? 0} onChange={(ev) => upd({ y: Number(ev.target.value) })} /></label>
+            <label className="dr">Porte <NumberField variant="nu" label="Porte — X" value={e.x ?? 0} onChange={(x) => upd({ x })} />,<NumberField variant="nu" label="Porte — Y" value={e.y ?? 0} onChange={(y) => upd({ y })} /></label>
             <select value={e.side ?? 'N'} onChange={(ev) => upd({ side: ev.target.value })}>
               <option value="N">arête N</option>
               <option value="E">arête E</option>
@@ -741,8 +743,8 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         {effect.type === 'zoneBlast' && (
           <div className="test-fields">
             <div className="tf-row">
-              <label className="dr">Centre <input type="number" value={e.center?.x ?? 0} onChange={(ev) => upd({ center: { x: Number(ev.target.value), y: e.center?.y ?? 0 } })} />,<input type="number" value={e.center?.y ?? 0} onChange={(ev) => upd({ center: { x: e.center?.x ?? 0, y: Number(ev.target.value) } })} /></label>
-              <label className="dr">Rayon <input type="number" min={0} value={e.radius ?? 0} onChange={(ev) => upd({ radius: Number(ev.target.value) })} /></label>
+              <label className="dr">Centre <NumberField variant="nu" label="Centre — X" value={e.center?.x ?? 0} onChange={(x) => upd({ center: { x, y: e.center?.y ?? 0 } })} />,<NumberField variant="nu" label="Centre — Y" value={e.center?.y ?? 0} onChange={(y) => upd({ center: { x: e.center?.x ?? 0, y } })} /></label>
+              <label className="dr">Rayon <NumberField variant="nu" label="Rayon" min={0} value={e.radius ?? 0} onChange={(radius) => upd({ radius })} /></label>
             </div>
             <GameOpEditor ops={e.ops ?? []} onChange={(ops) => upd({ ops })} />
           </div>
@@ -765,11 +767,11 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
                 <option value="pursuing">Le groupe poursuit</option>
               </select>
             </label>
-            <label>Distance de départ (1-8)
-              <input type="number" min={1} max={9} value={e.distance ?? 4} onChange={(ev) => upd({ distance: Number(ev.target.value) })} />
+            <label>Distance de départ (1-{(e.escapeAt ?? PURSUIT_ESCAPE_DISTANCE) - 1})
+              <NumberField variant="nu" label="Distance de départ" min={1} max={(e.escapeAt ?? PURSUIT_ESCAPE_DISTANCE) - 1} value={e.distance ?? 4} onChange={(distance) => upd({ distance })} />
             </label>
-            <label>Seuil d'évasion (défaut 10)
-              <input type="number" min={2} value={e.escapeAt ?? 10} onChange={(ev) => upd({ escapeAt: Number(ev.target.value) })} />
+            <label>Seuil d'évasion (défaut {PURSUIT_ESCAPE_DISTANCE})
+              <NumberField variant="nu" label="Seuil d'évasion" min={2} value={e.escapeAt ?? PURSUIT_ESCAPE_DISTANCE} onChange={(escapeAt) => upd({ escapeAt })} />
             </label>
             <label>Compétence de Mouvement (id)
               <input value={e.skill ?? ''} placeholder="athletisme / chevaucher / conduite-d-attelage" onChange={(ev) => upd({ skill: ev.target.value })} />
@@ -788,8 +790,8 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               return (
                 <div key={i} className="eff-row">
                   <input value={f.label} placeholder="Nom" onChange={(ev) => patchFoe({ label: ev.target.value })} />
-                  <input type="number" title="Mouvement" value={f.movement} onChange={(ev) => patchFoe({ movement: Number(ev.target.value) })} />
-                  <input type="number" title="Test de Mouvement" value={f.skill} onChange={(ev) => patchFoe({ skill: Number(ev.target.value) })} />
+                  <NumberField variant="nu" label="Mouvement" title="Mouvement" value={f.movement} onChange={(movement) => patchFoe({ movement })} />
+                  <NumberField variant="nu" label="Test de Mouvement" title="Test de Mouvement" value={f.skill} onChange={(skill) => patchFoe({ skill })} />
                   <button type="button" className="btn small" onClick={() => upd({ foes: (e.foes ?? []).filter((_: typeof f, k: number) => k !== i) })}>×</button>
                 </div>
               );
@@ -892,17 +894,17 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
                     </label>
                     {en && (
                       <>
-                        <label className="dr">CO<input type="number" min={0} value={en.cost?.gold ?? 0} onChange={(ev) => setCost(key, 'gold', Number(ev.target.value))} /></label>
-                        <label className="dr">pa<input type="number" min={0} value={en.cost?.silver ?? 0} onChange={(ev) => setCost(key, 'silver', Number(ev.target.value))} /></label>
-                        <label className="dr">sc<input type="number" min={0} value={en.cost?.brass ?? 0} onChange={(ev) => setCost(key, 'brass', Number(ev.target.value))} /></label>
+                        <label className="dr">CO<NumberField variant="nu" label="Tarif — Couronnes d’or" min={0} value={en.cost?.gold ?? 0} onChange={(n) => setCost(key, 'gold', n)} /></label>
+                        <label className="dr">pa<NumberField variant="nu" label="Tarif — pistoles d’argent" min={0} value={en.cost?.silver ?? 0} onChange={(n) => setCost(key, 'silver', n)} /></label>
+                        <label className="dr">sc<NumberField variant="nu" label="Tarif — sous de cuivre" min={0} value={en.cost?.brass ?? 0} onChange={(n) => setCost(key, 'brass', n)} /></label>
                       </>
                     )}
                   </div>
                 );
               })}
               <div className="tf-row">
-                <label className="dr">Guérison (PNJ)<input type="number" value={e.skill ?? 50} onChange={(ev) => upd({ skill: Number(ev.target.value) })} /></label>
-                <label className="dr">Bonus Int<input type="number" value={e.intBonus ?? 4} onChange={(ev) => upd({ intBonus: Number(ev.target.value) })} /></label>
+                <label className="dr">Guérison (PNJ)<NumberField variant="nu" label="Guérison du PNJ" value={e.skill ?? 50} onChange={(skill) => upd({ skill })} /></label>
+                <label className="dr">Bonus Int<NumberField variant="nu" label="Bonus d’Intelligence du PNJ" value={e.intBonus ?? 4} onChange={(intBonus) => upd({ intBonus })} /></label>
               </div>
               <input placeholder="id du PNJ soigneur (son label = nom affiché ; vide = « Soigneur »)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value || undefined })} />
               <span className="branch-label">Le PNJ soigne dans son infirmerie : chaque acte coché est proposé à son tarif, débité au lancement de l’acte.</span>
@@ -925,7 +927,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
                   {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
                 </select>
               </label>
-              <label className="dr">DR cible<input type="number" value={e.targetDR ?? 5} onChange={(ev) => upd({ targetDR: Number(ev.target.value) || 0 })} /></label>
+              <label className="dr">DR cible<NumberField variant="nu" label="Degrés de Réussite cibles" value={e.targetDR ?? 5} onChange={(targetDR) => upd({ targetDR })} /></label>
             </div>
             <input placeholder="flag posé à la réussite (option)" value={e.flag ?? ''} onChange={(ev) => upd({ flag: ev.target.value || undefined })} />
           </>
@@ -1000,8 +1002,8 @@ function MassBattleFields({ battle, onChange, ctx }: { battle: MassBattleSpec; o
         <label className="dr" style={{ flex: 1 }}>Ennemis<input value={b.enemyName ?? ''} placeholder="Armée ennemie" onChange={(ev) => set({ enemyName: ev.target.value || undefined })} /></label>
       </div>
       <div className="tf-row">
-        <label className="dr">Puissance alliée<input type="number" min={0} max={100} value={b.allyMight ?? 0} onChange={(ev) => set({ allyMight: clampMight(Number(ev.target.value) || 0) })} /></label>
-        <label className="dr">Puissance ennemie<input type="number" min={0} max={100} value={b.enemyMight ?? 0} onChange={(ev) => set({ enemyMight: clampMight(Number(ev.target.value) || 0) })} /></label>
+        <label className="dr">Puissance alliée<NumberField variant="nu" label="Puissance alliée" min={0} max={100} value={b.allyMight ?? 0} onChange={(n) => set({ allyMight: clampMight(n) })} /></label>
+        <label className="dr">Puissance ennemie<NumberField variant="nu" label="Puissance ennemie" min={0} max={100} value={b.enemyMight ?? 0} onChange={(n) => set({ enemyMight: clampMight(n) })} /></label>
         <label className="dr">Estimer (force relative)
           <select value="" onChange={(ev) => { const r = POWER_ESTIMATE.find((p) => p.id === ev.target.value); if (r) set({ allyMight: r.ally, enemyMight: r.enemy }); }}>
             <option value="">— remplir les Puissances —</option>
@@ -1010,9 +1012,9 @@ function MassBattleFields({ battle, onChange, ctx }: { battle: MassBattleSpec; o
         </label>
       </div>
       <div className="tf-row">
-        <label className="dr">Rounds prévus<input type="number" min={1} value={rounds} onChange={(ev) => set({ plannedRounds: Math.max(1, Number(ev.target.value) || 1) })} /></label>
-        <label className="dr">Taille de tirage<input type="number" min={1} value={b.situationSize ?? 3} onChange={(ev) => set({ situationSize: Math.max(1, Number(ev.target.value) || 1) })} /></label>
-        <label className="dr">Modif. permanent (Planification)<input type="number" value={b.allyMod ?? 0} onChange={(ev) => set({ allyMod: Number(ev.target.value) || 0 })} /></label>
+        <label className="dr">Rounds prévus<NumberField variant="nu" label="Rounds prévus" min={1} value={rounds} onChange={(plannedRounds) => set({ plannedRounds })} /></label>
+        <label className="dr">Taille de tirage<NumberField variant="nu" label="Taille de tirage" min={1} value={b.situationSize ?? 3} onChange={(situationSize) => set({ situationSize })} /></label>
+        <label className="dr">Modif. permanent (Planification)<NumberField variant="nu" label="Modificateur permanent (Planification)" value={b.allyMod ?? 0} onChange={(allyMod) => set({ allyMod })} /></label>
       </div>
       <label className="dr">Terrain (description)<input value={b.terrain ?? ''} placeholder="Configuration du terrain (narratif)" onChange={(ev) => set({ terrain: ev.target.value || undefined })} /></label>
       <div className="branch">

@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ConditionEditor, WhenEditor, condSummary, recast } from './ConditionEditor';
 import type { Condition } from '../../state/flow';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 describe('condSummary — résumé humain de l’algèbre de Condition', () => {
   it('rend chaque forme (flag / horaire / ET / OU / NON) en clair', () => {
@@ -90,5 +92,23 @@ describe('ConditionEditor — éditeur récursif de l’algèbre close', () => {
     const html = renderToStaticMarkup(<WhenEditor when={undefined} onChange={() => {}} />);
     expect(html).toContain('Toujours');
     expect(html).toContain('value="always"'); // le select est positionné sur « always »
+  });
+});
+
+describe('#1318 E1 — le domaine du créneau horaire atteint le champ (cale de NumberField)', () => {
+  it('les quatre champs d’heure/minute portent leurs bornes (0-23 / 0-59)', () => {
+    const cond: Condition = { kind: 'time', window: { afterHour: 20, afterMinute: 30, beforeHour: 2, beforeMinute: 15 } };
+    const html = renderToStaticMarkup(<ConditionEditor cond={cond} onChange={() => {}} />);
+    expect(html.match(/max="23"/g)).toHaveLength(2);
+    expect(html.match(/max="59"/g)).toHaveLength(2);
+    expect(html.match(/min="0"/g)).toHaveLength(4);
+  });
+});
+
+
+describe('#1318 E1 — la largeur des champs nombre du bloc Condition vit dans le CSS, pas au site', () => {
+  it('editor.css borne `.cond-time input[type=number]` à la largeur compacte d’atelier', () => {
+    const css = readFileSync(fileURLToPath(new URL('../styles/editor.css', import.meta.url)), 'utf8');
+    expect(css).toMatch(/\.cond-time input\[type='number'\][^{]*\{[^}]*width:\s*44px/);
   });
 });

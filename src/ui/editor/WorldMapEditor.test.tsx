@@ -24,6 +24,7 @@ import { WorldMapEditor } from './WorldMapEditor';
 import { emptyWorldMap, type WorldMap, type MapPlace, type MapRoute } from '../../state/worldMap';
 import { emptyScene, type Scene } from '../../state/scene';
 import { lieuxServices, navalPorts } from '../../data';
+import { TRAVEL_DEFAULTS } from '../../engine/travel';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -322,6 +323,22 @@ describe('WorldMapEditor — paramètres de carte (aucune sélection, #419)', ()
 
     setValue(input('Péripétie : seuil du d10 quotidien'), '6');
     expect(lastMap!.params?.perilDie).toBe(6);
+  });
+
+  it('paramètres de voyage : la saisie est calée, le champ VIDE retombe sur le défaut RAW (#1318 E1)', () => {
+    mount();
+    setValue(input('Heures de voyage/jour sans Test'), '48');
+    expect(lastMap!.params?.hoursPerDay).toBe(24);
+    setValue(input('Heures de voyage/jour sans Test'), '');
+    expect(lastMap!.params?.hoursPerDay).toBe(TRAVEL_DEFAULTS.hoursPerDay);
+
+    setValue(input('Plafond de marche forcée'), '99');
+    expect(lastMap!.params?.forcedMaxHours).toBe(24);
+    setValue(input('Plafond de marche forcée'), '');
+    expect(lastMap!.params?.forcedMaxHours).toBe(TRAVEL_DEFAULTS.forcedMaxHours);
+
+    setValue(input('Péripétie : seuil du d10 quotidien'), '42');
+    expect(lastMap!.params?.perilDie).toBe(10);
   });
 });
 

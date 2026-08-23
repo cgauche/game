@@ -176,3 +176,87 @@ describe('changer le type d’un effet CONVERTIT — un seul vocabulaire, un seu
     container.remove();
   });
 });
+
+describe('#1318 E1 — les bornes des rangées d’atelier sont TENUES à la saisie (cale de NumberField)', () => {
+  it('startPursuit : la distance de départ reste dans 1–9 et le seuil d’évasion au-dessus de 2', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    let dernier: Effect[] = [];
+    function ListeControlee() {
+      const [effects, setEffects] = useState<Effect[]>([
+        { type: 'startPursuit', distance: 4, escapeAt: 10 } as unknown as Effect,
+      ]);
+      return <EffectList effects={effects} ctx={ctx} onChange={(next) => { dernier = next; setEffects(next); }} />;
+    }
+    await act(async () => { root.render(<ListeControlee />); });
+
+    const champ = (nom: string): HTMLInputElement => {
+      const el = container.querySelector(`input[aria-label="${nom}"]`);
+      if (!el) throw new Error(`champ « ${nom} » introuvable`);
+      return el as HTMLInputElement;
+    };
+    const saisir = async (el: HTMLInputElement, valeur: string) => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+      await act(async () => {
+        setter.call(el, valeur);
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    };
+
+    // La borne haute est VIVANTE : le moteur borne la distance à `escapeAt - 1` (pursuitFlow.ts l.234).
+    await saisir(champ('Distance de départ'), '99');
+    expect((dernier[0] as unknown as { distance: number }).distance).toBe(9);
+    await saisir(champ('Distance de départ'), '0');
+    expect((dernier[0] as unknown as { distance: number }).distance).toBe(1);
+
+    await saisir(champ("Seuil d'évasion"), '6');
+    expect((dernier[0] as unknown as { escapeAt: number }).escapeAt).toBe(6);
+    await saisir(champ('Distance de départ'), '99');
+    expect((dernier[0] as unknown as { distance: number }).distance).toBe(5);
+
+    await saisir(champ("Seuil d'évasion"), '1');
+    expect((dernier[0] as unknown as { escapeAt: number }).escapeAt).toBe(2);
+
+    await act(async () => { root.unmount(); });
+    container.remove();
+  });
+
+  it('giveMoney : chaque champ écrit SA clé de `Money` (pistole = silver, sou = brass, money.ts l.9)', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    let dernier: Effect[] = [];
+    function ListeControlee() {
+      const [effects, setEffects] = useState<Effect[]>([{ type: 'giveMoney', gold: 0, silver: 0, brass: 0 } as unknown as Effect]);
+      return <EffectList effects={effects} ctx={ctx} onChange={(next) => { dernier = next; setEffects(next); }} />;
+    }
+    await act(async () => { root.render(<ListeControlee />); });
+    const champ = (nom: string): HTMLInputElement => {
+      const el = container.querySelector(`input[aria-label="${nom}"]`);
+      if (!el) throw new Error(`champ « ${nom} » introuvable`);
+      return el as HTMLInputElement;
+    };
+    const saisir = async (el: HTMLInputElement, valeur: string) => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+      await act(async () => {
+        setter.call(el, valeur);
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    };
+    await saisir(champ('Sous de cuivre'), '7');
+    expect(dernier[0]).toMatchObject({ brass: 7, silver: 0, gold: 0 });
+    await saisir(champ('Pistoles d’argent'), '3');
+    expect(dernier[0]).toMatchObject({ silver: 3, brass: 7 });
+    await saisir(champ('Couronnes d’or'), '2');
+    expect(dernier[0]).toMatchObject({ gold: 2, silver: 3, brass: 7 });
+    // Le libellé VISIBLE suit la même clé (notation LDB 57 : CO / pa / sc).
+    const rangee = container.querySelector('.money-fields')!;
+    expect([...rangee.querySelectorAll('label')].map((l) => l.textContent?.trim())).toEqual(['CO', 'pa', 'sc']);
+
+    await act(async () => { root.unmount(); });
+    container.remove();
+  });
+});

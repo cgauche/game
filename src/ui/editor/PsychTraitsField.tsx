@@ -5,6 +5,7 @@
  */
 import { CIBLE_TYPES, type PsychTrait, type PsychType } from '../../engine/psychology';
 import { psychologies, psychologyLabel } from '../../data';
+import { NumberField } from '../NumberField';
 
 // Types conférables = ceux de `psychology.json` (exclut `trauma`, marqueur INTERNE) ; libellés/ciblage
 // DÉRIVÉS de la donnée (source UNIQUE, plus de map ni de Set codés en dur).
@@ -29,7 +30,7 @@ export function PsychTraitsField({ value, onChange }: { value: PsychTrait[] | un
             <input placeholder="cible (Elfes, Serpents…)" value={t.cible ?? ''} onChange={(e) => upd(i, { cible: e.target.value || undefined })} />
           )}
           {INDEXED.has(t.type) && (
-            <label className="dr">Indice<input type="number" min={0} value={t.indice ?? ''} onChange={(e) => upd(i, { indice: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value) || 0) })} /></label>
+            <label className="dr">Indice<NumberField variant="nu" label="Indice" min={0} vide value={t.indice} onChange={(n) => upd(i, { indice: n ?? undefined })} /></label>
           )}
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
