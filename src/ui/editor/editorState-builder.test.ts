@@ -5,15 +5,15 @@ import {
   setAmbientLight,
   setEnvironment,
   setSceneFlags,
-  patchEntity,
-  patchEntityCombat,
   addEffectZone,
   EFFECT_ZONE_SEEDS,
   renameEffectZone,
 } from './editorState';
 // `putLayer` n'est plus ré-exporté par `editorState.ts` : sans appelant en `src/ui/**` (#855), seul
-// `state/mapSpec.ts` (compilateur `buildScene`) l'appelle — import direct de sa source.
-import { putLayer } from '../../state/sceneEdit';
+// `state/mapSpec.ts` (compilateur `buildScene`) l'appelle — import direct de sa source. Même raison
+// pour `patchEntity`/`patchEntityCombat` : l'interface passe par le seam d'assise (`editEntity`),
+// ces écritures mécaniques ne sont plus joignables depuis l'éditeur, même à un import près.
+import { patchEntity, patchEntityCombat, putLayer } from '../../state/sceneEdit';
 
 /** Primitives pures consommées par le headless-editor `buildScene`. */
 

@@ -54,6 +54,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { SeatAssignmentsField } from './SeatAssignmentsField';
+import { useHerosConnus } from './herosConnus';
 import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, changePropRef, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, editEntity, editEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
 import { scrollElementIntoPort } from './useEditorView';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
@@ -221,6 +222,10 @@ export function Inspector({
   // Toute écriture d'entité de l'inspecteur (libellé, orientation, étage, ref, apparence, statblock…)
   // passe par le seam d'assise : tourner ou monter d'un étage un meuble attablé recale ou lève ses
   // places dans la MÊME mutation. Aucun `entities:` en direct ici.
+  // Les héros proposables à l'assise sont tenus ICI, au-dessus du panneau d'entité : celui-ci se
+  // démonte à chaque changement de sélection, et le document ne nomme un héros que tant qu'il est
+  // assis (`useHerosConnus`).
+  const herosConnus = useHerosConnus(scene);
   const updateSel = (patch: Partial<SceneEntity>) => { if (ent) setScene(editEntity(scene, ent.id, patch)); };
   const updateSelCombat = (patch: Partial<NonNullable<SceneEntity['combat']>>) => {
     if (!ent) return;
@@ -338,7 +343,7 @@ export function Inspector({
             </button>
           </div>
 
-          {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} worldMap={worldMap} setScene={setScene} updateSel={updateSel} removeSel={removeSel} />}
+          {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} worldMap={worldMap} setScene={setScene} herosConnus={herosConnus} updateSel={updateSel} removeSel={removeSel} />}
 
           {sel?.type === 'architectureBody' && architectureBody && (
             <>
@@ -1191,6 +1196,7 @@ function EntityPanel({
   otherScenes,
   worldMap,
   setScene,
+  herosConnus,
   updateSel,
   removeSel,
 }: {
@@ -1199,6 +1205,7 @@ function EntityPanel({
   otherScenes: Scene[];
   worldMap: WorldMap | null;
   setScene: (s: Scene) => void;
+  herosConnus: ReadonlySet<string>;
   updateSel: (patch: Partial<SceneEntity>) => void;
   removeSel: () => void;
 }) {
@@ -1448,7 +1455,7 @@ function EntityPanel({
               ))}
             </select>
           </label>
-          <SeatAssignmentsField scene={scene} propId={ent.id} onChange={setScene} />
+          <SeatAssignmentsField scene={scene} propId={ent.id} herosConnus={herosConnus} onChange={setScene} />
           <label className="ed-check">
             <input
               type="checkbox"

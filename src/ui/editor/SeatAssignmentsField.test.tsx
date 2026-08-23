@@ -4,6 +4,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { SeatAssignmentsField } from './SeatAssignmentsField';
 import { emptyScene, type Scene } from '../../state/scene';
+import { documentHeroIds } from '../../state/sceneEdit';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -24,8 +25,11 @@ function mount(scene: Scene, propId = 'table-1') {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root: Root = createRoot(container);
+  // Le champ ne TIENT pas les héros proposables (il se démonte au changement de sélection) : la
+  // session d'édition les lui passe. Ici, le harnais joue ce rôle avec l'ensemble du document chargé.
+  const herosConnus = documentHeroIds(scene);
   const render = (s: Scene) =>
-    root.render(<SeatAssignmentsField scene={s} propId={propId} onChange={(next) => { latest = next; render(next); }} />);
+    root.render(<SeatAssignmentsField scene={s} propId={propId} herosConnus={herosConnus} onChange={(next) => { latest = next; render(next); }} />);
   act(() => render(scene));
   const selects = () => [...container.querySelectorAll('select')] as HTMLSelectElement[];
   return {
@@ -64,6 +68,19 @@ describe('SeatAssignmentsField — authoring des places assises (id-only)', () =
     const ui = mount(sceneWithTableAndNpc());
     ui.choose('Place nord', 'entity:pnj-aubergiste');
     expect(ui.sceneOf().entities.find((e) => e.id === 'pnj-aubergiste')?.pos).toEqual({ x: 2, y: 1 });
+  });
+
+  // ── G4 ───────────────────────────────────────────────────────────────────────────────────────────
+  it('« — personne — » sur une place DÉJÀ vide ne publie RIEN — aucun cran d’undo à vide', () => {
+    const depart = sceneWithTableAndNpc();
+    let publications = 0;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    act(() => root.render(<SeatAssignmentsField scene={depart} propId="table-1" herosConnus={new Set()} onChange={() => { publications += 1; }} />));
+    const sel = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('Place sud'))!.querySelector('select') as HTMLSelectElement;
+    act(() => { sel.value = ''; sel.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(publications).toBe(0);
   });
 
   it('« — personne — » libère la place et laisse le PNJ où il se tient', () => {

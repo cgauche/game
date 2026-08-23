@@ -13,11 +13,11 @@
 import { useState } from 'react';
 import type { Scene } from '../../state/scene';
 import { releaseSeat, seatSlotsOf, type SeatAssignmentResult, type SeatOccupant } from '../../state/seating';
-import { documentHeroIds, normaliseAssises, seatOccupant } from '../../state/sceneEdit';
+import { normaliseAssises, seatOccupant } from '../../state/sceneEdit';
 
 /** Motif de refus d'`assignSeat`, dit à l'auteur. Chaque libellé énonce le fait MESURÉ par la raison
  *  qu'il traduit — `occupant-absent` ne peut désigner qu'un corps que la scène ne porte pas (les héros
- *  proposés viennent du document, cf. `herosDuDocument`). */
+ *  proposés viennent de la session d'édition, cf. `herosConnus`). */
 const REFUS: Record<Exclude<SeatAssignmentResult, { ok: true }>['reason'], string> = {
   'prop-absent': 'ce décor n’est plus dans la scène',
   'slot-absent': 'ce type de décor n’offre pas cette place',
@@ -38,18 +38,17 @@ const occupantOf = (value: string): SeatOccupant =>
 export function SeatAssignmentsField({
   scene,
   propId,
+  herosConnus,
   onChange,
 }: {
   scene: Scene;
   propId: string;
+  /** Héros proposables — tenus par la SESSION d'édition (`useHerosConnus`), pas par ce champ : il se
+   *  démonte à chaque changement de sélection, et l'occupation courante n'est pas une source stable. */
+  herosConnus: ReadonlySet<string>;
   onChange: (scene: Scene) => void;
 }) {
   const [refus, setRefus] = useState<string | null>(null);
-  /** Héros que ce DOCUMENT nomme — capturés UNE fois, à l'ouverture du panneau. Les dériver de
-   *  l'occupation courante les faisait disparaître de la liste dès qu'on libérait leur place, et
-   *  faisait refuser tout déplacement de place (le héros n'était plus « disponible » entre la
-   *  libération et l'assignation). La source est stable : le geste ne la modifie pas. */
-  const [herosDuDocument] = useState<ReadonlySet<string>>(() => documentHeroIds(scene));
   const places = seatSlotsOf(scene, propId);
   if (!places.length) return null;
 
@@ -60,7 +59,9 @@ export function SeatAssignmentsField({
     setRefus(null);
     const tenant = parMeuble[slotId];
     if (!value) {
-      onChange(tenant ? normaliseAssises(releaseSeat(scene, tenant), herosDuDocument) : scene);
+      // « — personne — » sur une place DÉJÀ vide ne publie rien : un cran d'undo à vide se paie au
+      // clavier de l'auteur, qui doit défaire deux fois pour revenir sur son geste précédent.
+      if (tenant) onChange(normaliseAssises(releaseSeat(scene, tenant), herosConnus));
       return;
     }
     const occupant = occupantOf(value);
@@ -68,7 +69,7 @@ export function SeatAssignmentsField({
     // fait partie du MÊME geste — la scène n'est publiée qu'une fois, et seulement si elle est prise.
     let base = tenant ? releaseSeat(scene, tenant) : scene;
     base = releaseSeat(base, occupant);
-    const res = seatOccupant(base, propId, slotId, occupant, herosDuDocument);
+    const res = seatOccupant(base, propId, slotId, occupant, herosConnus);
     if (!res.ok) { setRefus(REFUS[res.reason]); return; }
     onChange(res.scene);
   };
@@ -88,7 +89,7 @@ export function SeatAssignmentsField({
                 {pnj.label ? `${pnj.label} (${pnj.id})` : pnj.id}
               </option>
             ))}
-            {[...herosDuDocument].map((heroId) => (
+            {[...herosConnus].map((heroId) => (
               <option key={heroId} value={`party:${heroId}`}>
                 Héros {heroId}
               </option>

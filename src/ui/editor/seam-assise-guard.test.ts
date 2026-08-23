@@ -32,15 +32,26 @@ import {
 const ROOT = path.resolve(__dirname, '..', '..', '..');
 const SOURCES = ['src/state/sceneEdit.ts', 'src/ui/editor/editorState.ts'];
 
-/** Découpe un module en fonctions exportées : nom → corps (jusqu'à l'export suivant). */
+/** Retire commentaires de ligne et de bloc — un motif interdit CITé en prose n'est pas une écriture. */
+const sansCommentaires = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+
+/**
+ * Découpe un module en primitives EXPORTées : nom → corps (jusqu'à l'export suivant, quel qu'il
+ * soit — `type`, `interface`, `const`… : la borne doit être la plus proche, sans quoi un corps
+ * avale le voisin). Les deux formes réelles du dépôt sont couvertes : `export function f(…)` ET
+ * `export const f = (…) => …` — une garde qui ne connaît que la première s'évalue à la syntaxe
+ * choisie par l'écrivain, pas à ce qu'il fait.
+ */
 function exportedBodies(rel: string): Map<string, string> {
-  const src = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+  const src = sansCommentaires(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
   const out = new Map<string, string>();
-  const heads = [...src.matchAll(/^export function (\w+)\s*(?:<[^>]*>)?\(/gm)];
-  heads.forEach((m, i) => {
+  const bornes = [...src.matchAll(/^export\b.*$/gm)];
+  bornes.forEach((m, i) => {
+    const nomme = /^export (?:async )?function (\w+)/.exec(m[0]) ?? /^export const (\w+)\s*[:=]/.exec(m[0]);
+    if (!nomme) return;
     const debut = m.index!;
-    const fin = i + 1 < heads.length ? heads[i + 1].index! : src.length;
-    out.set(m[1], src.slice(debut, fin));
+    const fin = i + 1 < bornes.length ? bornes[i + 1].index! : src.length;
+    out.set(nomme[1], src.slice(debut, fin));
   });
   return out;
 }
@@ -104,33 +115,77 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
     }
   });
 
-  it('aucun COMPOSANT de `src/ui/**` n’écrit `entities` en direct', () => {
+  /**
+   * Écrit-on `entities` en DIRECT dans ce texte de module ? Rend les motifs fautifs, vides sinon.
+   *
+   * Trois pièges mesurés, tous fermés ici :
+   *  - le scan PAR LIGNE laissait passer la forme en DEUX temps (`const suivantes = scene.entities
+   *    .map(…)` puis `entities: suivantes`) — l'analyse porte donc sur le texte ENTIER ;
+   *  - `scene.entities.map(…)` est aussi la lecture LICITE d'une liste à afficher : seule la
+   *    valeur posée SUR la clé `entities:` d'un littéral compte, directement ou par sa variable ;
+   *  - un ajout (`entities: […scene.entities, ent]`) ne peut invalider aucune assise : il passe.
+   */
+  function ecrituresDirectes(texte: string): string[] {
+    const src = sansCommentaires(texte);
+    const fautifs: string[] = [];
+    for (const m of src.matchAll(/\bpatchEntity(?:Combat)?\(/g)) fautifs.push(m[0]);
+    for (const m of src.matchAll(/(?<![.\w$])entities\s*:\s*([^,;\n]+)/g)) {
+      const valeur = m[1].trim();
+      if (/^\[/.test(valeur)) continue; // ajout : jamais destructeur pour une assise
+      if (/\.entities\s*\.\s*(map|filter)\s*\(/.test(valeur)) { fautifs.push(m[0].trim()); continue; }
+      const via = /^(\w+)/.exec(valeur);
+      if (via && new RegExp(`(?:const|let|var)\\s+${via[1]}\\s*(?::[^=]+)?=[^;\\n]*\\.entities\\s*\\.\\s*(?:map|filter)\\s*\\(`).test(src))
+        fautifs.push(`${m[0].trim()}  (via ${via[1]})`);
+    }
+    return fautifs;
+  }
+
+  /**
+   * CLIQUET NOMMÉ du balayage d'interface. `editorState.ts` EST le module de primitives d'édition de
+   * `src/ui` : ses écritures d'`entities` sont couvertes par le balayage structurel ci-dessus, qui
+   * exige d'elles la traversée du seam. Aucun autre fichier de `src/ui/**` n'a le droit d'écrire.
+   */
+  const UI_PRIMITIVES = ['src/ui/editor/editorState.ts'];
+
+  it('aucun fichier de `src/ui/**` n’écrit `entities` en direct', () => {
     // Le défaut I1 était exactement là : un `onChange` de composant réécrivait `scene.entities` sans
-    // passer par une primitive. Deux formes interdites — l'écriture mécanique (`patchEntity`) et le
-    // littéral `entities:` qui remappe/filtre la collection. Les primitives elles-mêmes (`.ts` de
-    // `editorState`/`sceneEdit`) sont couvertes par le balayage structurel ci-dessus.
-    const INTERDIT = [/\bpatchEntity(Combat)?\(/, /entities:\s*\w+\.entities\.(map|filter)\(/];
+    // passer par une primitive. Le balayage couvre `.ts` ET `.tsx` : un module utilitaire de
+    // `src/ui/**` n'est pas moins une porte qu'un composant.
     const fautifs: string[] = [];
     const walk = (dir: string) => {
       for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
         const p = path.join(dir, e.name);
         if (e.isDirectory()) { walk(p); continue; }
-        if (!/\.tsx$/.test(e.name) || /\.test\.tsx$/.test(e.name)) continue;
-        fs.readFileSync(p, 'utf8').split('\n').forEach((ligne, i) => {
-          if (/^\s*(\/\/|\*|\/\*)/.test(ligne) || /^import\b/.test(ligne.trim())) return;
-          if (INTERDIT.some((re) => re.test(ligne)))
-            fautifs.push(`${path.relative(ROOT, p).replace(/\\/g, '/')}:${i + 1}`);
-        });
+        if (!/\.tsx?$/.test(e.name) || /\.test\.tsx?$/.test(e.name)) continue;
+        const rel = path.relative(ROOT, p).replace(/\\/g, '/');
+        if (UI_PRIMITIVES.includes(rel)) continue;
+        for (const motif of ecrituresDirectes(fs.readFileSync(p, 'utf8'))) fautifs.push(`${rel} :: ${motif}`);
       }
     };
     walk(path.join(ROOT, 'src', 'ui'));
-    expect(fautifs, `écriture d’entité en direct depuis un composant :\n${fautifs.join('\n')}`).toEqual([]);
+    expect(fautifs, `écriture d’entité en direct depuis l’interface :\n${fautifs.join('\n')}`).toEqual([]);
   });
 
-  it('ce balayage de composants n’est PAS vacant — il rougit sur la forme qu’il interdit', () => {
-    const INTERDIT = [/\bpatchEntity(Combat)?\(/, /entities:\s*\w+\.entities\.(map|filter)\(/];
-    const forme = "    setScene({ ...scene, entities: scene.entities.map((e) => (e.id === ent.id ? { ...e, ...patch } : e)) });";
-    expect(INTERDIT.some((re) => re.test(forme))).toBe(true);
+  it('le cliquet d’interface ne porte aucune entrée PÉRIMÉE', () => {
+    for (const rel of UI_PRIMITIVES) {
+      expect(fs.existsSync(path.join(ROOT, rel)), `${rel} n’existe plus`).toBe(true);
+      expect(
+        ecrituresDirectes(fs.readFileSync(path.join(ROOT, rel), 'utf8')).length,
+        `${rel} n’écrit plus d’entité — retire-le de UI_PRIMITIVES`,
+      ).toBeGreaterThan(0);
+    }
+  });
+
+  it('le balayage d’interface voit les TROIS formes du défaut, et laisse passer la lecture', () => {
+    // (a) une ligne, (b) deux lignes par variable, (c) l'écriture mécanique.
+    expect(ecrituresDirectes('setScene({ ...s, entities: s.entities.map((e) => e) });')).toHaveLength(1);
+    expect(ecrituresDirectes('const suivantes = scene.entities.map((e) => e);\nsetScene({ ...s, entities: suivantes });')).toHaveLength(1);
+    expect(ecrituresDirectes('setScene(patchEntity(s, id, patch));')).toHaveLength(1);
+    // Lecture d'une liste à afficher, et ajout : licites.
+    expect(ecrituresDirectes('const pnjs = scene.entities.filter((e) => e.kind === 1);')).toEqual([]);
+    expect(ecrituresDirectes('return { ...scene, entities: [...scene.entities, ent] };')).toEqual([]);
+    // Un motif CITÉ en commentaire n'est pas une écriture.
+    expect(ecrituresDirectes('// jamais entities: scene.entities.map((e) => e) ici')).toEqual([]);
   });
 
   /**

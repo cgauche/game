@@ -51,8 +51,6 @@ export {
   setEnvironment,
   setSceneFlags,
   entityAt,
-  patchEntity,
-  patchEntityCombat,
   editEntity,
   editEntityCombat,
   normaliseAssises,
