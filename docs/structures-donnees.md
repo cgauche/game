@@ -1,0 +1,2857 @@
+# Structures de la donnée — carte GÉNÉRÉE (observé × déclaré)
+
+> ⚠️ Fichier GÉNÉRÉ par `npx tsx scripts/docs/build-structures.mts` (`npm run docs:structures`) — NE PAS ÉDITER À LA MAIN.
+> Toute correction se fait dans le générateur, dans le lexique `scripts/docs/lib/structures-lexique.mts`
+> ou dans la donnée. `npm run docs:check` échoue si ce fichier diverge de la mesure.
+>
+> Question à laquelle ce doc répond : **sous quelle forme ce concept est-il écrit, dans quel dataset, sous quel CHAMP ?**
+> Stock nominatif décroissant des formes à éteindre : `scripts/guards/lib/structuresStock.mjs`
+> (garde `src/data/structures-contrat.test.ts`).
+
+## Périmètre mesuré et angles morts (à dire pour ne pas se lire comme exhaustif)
+
+Périmètre : les documents AUTHORÉS des deux racines (`src/data`, `src/scenes`), leurs schémas zod
+du registre, et les littéraux d’objet zod des `src/data/schemas/defs/*.ts`.
+Ce que la mesure ci-dessous **ne voit pas** — un compte n’a de sens qu’avec son périmètre.
+
+- **La référence est ANCRÉE SUR L’INDEX DES IDS.** Une occurrence de référence est une paire (objet, clé) dont la valeur RÉSOUT vers un document indexé (ou, pour `{text}`, vers un `label`). Le CHAMP PORTEUR (`skills`, `ops`, `members`…) est donc MESURÉ, jamais déclaré : aucun vocabulaire de clés, aucun seuil ne décide qu’un objet est une référence.
+- **Les COLLISIONS d’ids rendent une résolution AMBIGUË** (jamais fausse) : le même id vit dans plusieurs datasets (§1bis). La colonne « cibles » d’une forme liste donc TOUS les datasets atteignables, pas un seul.
+- **Un `label` qui est aussi un id** (mesuré en §1bis) peut faire résoudre un `{text}` narratif vers une entité homonyme : la résolvabilité d’un `{text}` est un CANDIDAT, pas un verdict — elle ne vérifie aucun TYPE d’entité attendu.
+- **Le partage d’un SITE (dataset, champ, clé) tranche entre référence cassée et document embarqué** : un objet à clé d’identité qui ne résout pas est une référence ORPHELINE si la majorité des valeurs de cette clé, à ce site, résolvent ; c’est un DOCUMENT embarqué sinon. Un site dont la part de résolution frôle la moitié est un angle mort.
+- **Les ABSENCES d’enveloppe ne se comptent que sur les ENTRÉES DE RACINE** (`id` et `source` partout, `label` sur les familles `entité`/`table`). Un document EMBARQUÉ n’est jamais sommé de porter un `id` : on n’y compte que les clés DIVERGENTES.
+- **Les sauvegardes ne sont pas comptées.** Le périmètre est le document AUTHORÉ (2 racines) ; l’état persisté (`saves`) a sa propre politique de version (`src/state/saves.ts`).
+- **Le RÉGIME D’ENTRÉES d’un document vient de la famille DÉCLARÉE par son schéma zod** : famille `liste` → une entrée par élément du tableau racine ; famille `record` → une entrée par valeur de l’objet racine ; famille `config` → le document EST son entrée, ses clés de premier niveau sont celles de sa RACINE. Un document hors registre (les scènes) est classé par sa racine JSON, même règle. La FAMILLE de document (`entité`/`table`/`config`/`record`) est, elle, mesurée : une liste dont la moitié des entrées portent une plage est une `table`.
+- **Une valeur mesurée hors de sa forme propre est enregistrée sous sa PROJECTION** sur le vocabulaire du concept, suffixée `+…` quand l’objet porte d’autres clés. De même pour une référence : on garde les clés de la graphie et celles qui résolvent, la charge utile est repliée. Sans cette projection, une même graphie produirait autant de lignes que la table a de variantes de charge utile.
+- **La candidature `plage` est STRUCTURELLE** : un objet n’est candidat que s’il est ÉLÉMENT D’UN TABLEAU et porte `min` ET `max` NUMÉRIQUES. Côté schémas (§4), déclarer `min`+`max` vaut candidature. Un `{min,max}` porté par un CHAMP hors tableau n’est donc pas mesuré comme plage.
+- **`kind` est polysémique et n’est pas dédoublonné** : la même clé porte le discriminant d’une `Condition`, d’un `Flow`, d’un événement de mer, d’un pion de scène. Aucun regroupement n’est tenté.
+- **Le classement est ordonné** : une VALEUR (reconnue à son noyau) est classée avant une RÉFÉRENCE ; le premier concept du lexique qui matche gagne. Un objet qui recoupe deux concepts n’est compté qu’une fois.
+- **Deux comparateurs de `water-exposure.json` échappent à `conditionSchema`** (`<=`/`>=` sous `woundsRemaining`/`woundsLost`) : ils sont encore comptés en op (§5, table des comparateurs).
+- **Le scan AST (§4) lit les littéraux d’objet argument de `z.object` / `z.strictObject` / `z.looseObject` dans `src/data/schemas/defs/*.ts`** (parcours TypeScript complet, toutes profondeurs). Il ne voit pas les clés ajoutées par `.extend(...)`, ni un schéma composé par une fabrique, ni les defs déclarés hors de ce dossier.
+- **Le candidat « schéma commun » (§4) est apparié par SIGNATURE EXACTE** avec un littéral de `src/data/schemas/common.ts`. Une signature à une seule clé générique (`{kind}`, `{dice}`) s’apparie donc à la première branche d’union qui la porte : c’est un candidat à examiner, jamais un verdict.
+- **Les portes MOTEUR ne sont pas mesurées ici** : ce doc parle de la DONNÉE et de ses schémas. Les occurrences de `skillId` / `skill` dans `src/engine` et `src/state` relèvent des lots de migration, pas de cette carte.
+- **Les fichiers JSON hors documents ne sont pas lus** : outillage (`package.json`, `tsconfig`, `.claude`), artefacts `public/qc/*`, baselines de gardes (les `*-baseline.json` de `scripts/guards/lib`).
+
+## 1. Racines
+
+| Racine | Fichiers retenus | Documents | Au registre zod |
+|---|---|---|---|
+| `src/data` | `*.json` | 120 | 120 / 120 |
+| `src/scenes` | `*-projet.json` (récursif) | 4 | 0 — aucune scène n’est au registre (#1463 L1) |
+
+### 1bis. Index des ids (le cœur du détecteur)
+
+Identités indexées : **5253** (entrées de racine + documents embarqués) ; libellés
+normalisés : **4718**. Un id vu dans PLUSIEURS datasets rend la résolution
+AMBIGUË (jamais fausse) : **346** collisions, et **1334** ids
+sont aussi le libellé d’une entité (faux positif possible sur la résolvabilité d’un `{text}`).
+
+| Id | Datasets |
+|---|---|
+| `herboriste` | `careers.json` `creatures.json` `merchants.json` `skills.json` `talents.json` |
+| `apothicaire` | `careers.json` `creatures.json` `skills.json` `talents.json` |
+| `armurier` | `loup-et-saumure-projet.json` `merchants.json` `skills.json` `talents.json` |
+| `corruption` | `characteristics.json` `systemes.manifest.json` `talents.json` `traits.json` |
+| `feu` | `breath-types.json` `damage-types.json` `domains.json` `obsessions.json` |
+| `forgeron` | `arene-projet.json` `lieux-services.json` `skills.json` `talents.json` |
+| `ingenierie` | `axes.json` `skills.json` `talents.json` `weaponGroups.json` |
+| `magie` | `obsessions.json` `skills.json` `systemes.manifest.json` `talents.json` |
+| `magique` | `damage-types.json` `lightTones.json` `qualities.json` `traits.json` |
+| `medecin` | `arene-projet.json` `careers.json` `creatures.json` `merchants.json` |
+| `nains` | `obsessions.json` `skills.json` `species.json` `talents.json` |
+| `noble` | `careers.json` `groups.json` `skills.json` `talents.json` |
+| `poison` | `breath-types.json` `damage-types.json` `skills.json` `talents.json` |
+| `alchimiste` | `careers.json` `skills.json` `talents.json` |
+| `arme` | `maneuvers.json` `qualitySubtypes.json` `traits.json` |
+| `artilleur` | `careers.json` `crew-roles.json` `talents.json` |
+| `belier` | `naval-traits.json` `qualities.json` `spells.json` |
+| `cartographe` | `careers.json` `skills.json` `talents.json` |
+| `cartographie` | `activities.json` `skills.json` `talents.json` |
+| `chaland` | `arene-projet.json` `skills.json` `vehicles.json` |
+| `chandelier` | `props.json` `skills.json` `talents.json` |
+| `charpentier` | `loup-et-saumure-projet.json` `skills.json` `talents.json` |
+| `charrette` | `props.json` `structures.json` `vehicles.json` |
+| `cogue` | `loup-et-saumure-projet.json` `skills.json` `vehicles.json` |
+| `commerce` | `land-cargo.json` `sea-cargo.json` `systemes.manifest.json` |
+| `contrebandier` | `careers.json` `creatures.json` `skills.json` |
+| `crepuscule` | `arene-projet.json` `calendarPhases.json` `lightLevels.json` |
+| `cuisinier` | `crew-roles.json` `skills.json` `talents.json` |
+| `demonologie` | `domains.json` `skills.json` `talents.json` |
+| `explosifs` | `skills.json` `talents.json` `weaponGroups.json` |
+| `frenesie` | `psychology.json` `talents.json` `traits.json` |
+| `garde` | `arene-projet.json` `careers.json` `groups.json` |
+| `haine` | `psychology.json` `talents.json` `traits.json` |
+| `halfling` | `creatures.json` `groups.json` `skills.json` |
+| `ingenieur` | `careers.json` `skills.json` `talents.json` |
+| `khorne` | `gods.json` `groups.json` `skills.json` |
+| `maladie` | `obsessions.json` `talents.json` `traits.json` |
+| `mauvais-oeil` | `mutations.json` `spells.json` `traits.json` |
+| `mort-vivant` | `groups.json` `skills.json` `traits.json` |
+| `mouvement` | `actions.json` `characteristics.json` `regles.json` |
+| `necromancie` | `domains.json` `skills.json` `talents.json` |
+| `ogre` | `creatures.json` `groups.json` `traits.json` |
+| `p0` | `arene-projet.json` `barge-du-sel-projet.json` `loup-et-saumure-projet.json` |
+| `peur` | `mass-battle.json` `psychology.json` `traits.json` |
+| `protection` | `activities.json` `spells.json` `traits.json` |
+| `rapide` | `qualities.json` `ship-construction.json` `traits.json` |
+| `reikland` | `locations.json` `skills.json` `talents.json` |
+| `rocher` | `props.json` `sea-perils.json` `trappings.json` |
+| `sigmar` | `gods.json` `skills.json` `talents.json` |
+| `skaven` | `creatures.json` `groups.json` `talents.json` |
+| `start` | `arene-projet.json` `barge-du-sel-projet.json` `loup-et-saumure-projet.json` |
+| `tatouage` | `skills.json` `talents.json` `trappings.json` |
+| `tzeentch` | `gods.json` `groups.json` `skills.json` |
+| `voleur` | `careers.json` `creatures.json` `skills.json` |
+| `amour` | `psychology.json` `traits.json` |
+| `anatomie` | `skills.json` `talents.json` |
+| `animaux` | `skills.json` `talents.json` |
+| `animosite` | `psychology.json` `traits.json` |
+| `arbalete` | `trappings.json` `weaponGroups.json` |
+| `arc` | `trappings.json` `weaponGroups.json` |
+| `armes-de-siege` | `mass-battle.json` `weaponGroups.json` |
+| `armure` | `qualitySubtypes.json` `traits.json` |
+| `art` | `skills.json` `talents.json` |
+| `artiste` | `careers.json` `talents.json` |
+| `astrologie` | `skills.json` `talents.json` |
+| `augure` | `activities.json` `skills.json` |
+| `avitailleur` | `loup-et-saumure-projet.json` `merchants.json` |
+| `bailli` | `careers.json` `groups.json` |
+| `barbier` | `skills.json` `talents.json` |
+| `barque` | `props.json` `vehicles.json` |
+| `bateau-de-patrouille` | `structures.json` `vehicles.json` |
+| `batelier` | `careers.json` `creatures.json` |
+| `battement` | `actions.json` `talents.json` |
+| `batteur-d-armure` | `skills.json` `talents.json` |
+| `beni` | `talents.json` `traits.json` |
+| `bete` | `domains.json` `groups.json` |
+| `betes-sauvages` | `skills.json` `talents.json` |
+| `blaireau` | `creatures.json` `skills.json` |
+| `blizzard` | `spells.json` `weather.json` |
+| `bois` | `land-cargo.json` `sea-cargo.json` |
+| `bouclier` | `spells.json` `trappings.json` |
+| `brasseur` | `skills.json` `talents.json` |
+| `bricoleur` | `skills.json` `talents.json` |
+| `broyeur-d-os` | `spells.json` `trappings.json` |
+| `calligraphe` | `skills.json` `talents.json` |
+| `calligraphie` | `skills.json` `talents.json` |
+| `calme-plat` | `sea-events.json` `sea-weather.json` |
+| `camaraderie` | `psychology.json` `traits.json` |
+| `carreau` | `spells.json` `trappings.json` |
+| `chaise` | `props.json` `vehicles.json` |
+| `chaloupe` | `structures.json` `vehicles.json` |
+| `chansonnier` | `careers.json` `crew-roles.json` |
+| `chaos` | `skills.json` `talents.json` |
+| `charge` | `actions.json` `activities.json` |
+| `chariot-leger` | `structures.json` `vehicles.json` |
+| `chariot-lourd` | `structures.json` `vehicles.json` |
+| `chariot-moyen` | `structures.json` `vehicles.json` |
+| `charlatan` | `careers.json` `creatures.json` |
+| `charpentier-naval` | `skills.json` `talents.json` |
+| `chasseur` | `careers.json` `skills.json` |
+| `cheval` | `creatures.json` `skills.json` |
+| `chevalier` | `careers.json` `groups.json` |
+| `chien` | `creatures.json` `skills.json` |
+| `chimie` | `skills.json` `talents.json` |
+| `chute` | `regles.json` `spells.json` |
+| `cirier` | `skills.json` `talents.json` |
+| `cloture-en-clayonnage` | `structureAppearance.json` `structures.json` |
+| `cogue-gun` | `barge-du-sel-projet.json` `loup-et-saumure-projet.json` |
+| `cogue-helm` | `barge-du-sel-projet.json` `loup-et-saumure-projet.json` |
+| `cogue-pirate` | `barge-du-sel-projet.json` `sea-events.json` |
+| `colifichets` | `skills.json` `talents.json` |
+| `colporteur` | `careers.json` `interludeEvents.json` |
+| `combat` | `skills.json` `systemes.manifest.json` |
+| `construction-de-bateaux` | `skills.json` `talents.json` |
+| `cordonnier` | `skills.json` `talents.json` |
+| `cornes` | `maneuvers.json` `traits.json` |
+| `cotes-et-marees` | `skills.json` `talents.json` |
+| `course` | `actions.json` `regles.json` |
+| `couvert` | `lightLevels.json` `trappings.json` |
+| `criminel` | `groups.json` `talents.json` |
+| `cultiste` | `creatures.json` `groups.json` |
+| `cultistes` | `skills.json` `talents.json` |
+| `debris-marins` | `sea-events.json` `sea-perils.json` |
+| `demigriffon` | `creatures.json` `skills.json` |
+| `diligence` | `structures.json` `vehicles.json` |
+| `discretion` | `axes.json` `skills.json` |
+| `distraire` | `actions.json` `talents.json` |
+| `dragons` | `skills.json` `talents.json` |
+| `dressage` | `activities.json` `skills.json` |
+| `eclaireur` | `careers.json` `skills.json` |
+| `ecriture` | `skills.json` `talents.json` |
+| `effrayant` | `spells.json` `talents.json` |
+| `electrique` | `breath-types.json` `damage-types.json` |
+| `elfes` | `obsessions.json` `skills.json` |
+| `embaumeur` | `skills.json` `talents.json` |
+| `empire` | `skills.json` `talents.json` |
+| `empoisonneur` | `skills.json` `talents.json` |
+| `epaves` | `skills.json` `talents.json` |
+| `equipage` | `systemes.manifest.json` `talents.json` |
+| `erudit` | `careers.json` `creatures.json` |
+| `esprits` | `skills.json` `talents.json` |
+| `etreinte-glaciale` | `maneuvers.json` `traits.json` |
+| `explosion` | `spells.json` `steam-breakdown.json` |
+| `exposure` | `night-stakes.json` `voyage-stakes.json` |
+| `fabricant-d-arcs` | `skills.json` `talents.json` |
+| `ferronnier` | `skills.json` `talents.json` |
+| `filet` | `qualities.json` `trappings.json` |
+| `flagellant` | `careers.json` `talents.json` |
+| `flamme` | `lightTones.json` `spells.json` |
+| `fleau` | `trappings.json` `weaponGroups.json` |
+| `flechette` | `spells.json` `trappings.json` |
+| `folklore` | `skills.json` `talents.json` |
+| `frisson-paralysant` | `maneuvers.json` `traits.json` |
+| `fronde` | `trappings.json` `weaponGroups.json` |
+| `fuite` | `regles.json` `talents.json` |
+| `geants` | `skills.json` `talents.json` |
+| `genealogie` | `skills.json` `talents.json` |
+| `geographie` | `skills.json` `talents.json` |
+| `geologie` | `skills.json` `talents.json` |
+| `Gnome` | `names.json` `raceAppearance.json` |
+| `gouvernail-brise` | `etats.json` `ship-criticals.json` |
+| `grand-loup` | `creatures.json` `skills.json` |
+| `graveur` | `skills.json` `talents.json` |
+| `gravure` | `skills.json` `talents.json` |
+| `griffon` | `creatures.json` `skills.json` |
+| `gris` | `eyes.json` `hairs.json` |
+| `guerre` | `skills.json` `talents.json` |
+| `guilde` | `lieux-services.json` `skills.json` |
+| `Halfling` | `names.json` `raceAppearance.json` |
+| `halflings` | `obsessions.json` `species.json` |
+| `heraldique` | `skills.json` `talents.json` |
+| `herbes` | `skills.json` `talents.json` |
+| `herse` | `structureAppearance.json` `structures.json` |
+| `histoire` | `skills.json` `talents.json` |
+| `hors-la-loi` | `careers.json` `talents.json` |
+| `humain` | `creatures.json` `groups.json` |
+| `Humain` | `names.json` `raceAppearance.json` |
+| `hurlement-de-la-bete-indomptable` | `maneuvers.json` `traits.json` |
+| `hurlement-fantomatique` | `maneuvers.json` `traits.json` |
+| `icones` | `skills.json` `talents.json` |
+| `imprimerie` | `skills.json` `talents.json` |
+| `inconscient` | `etats.json` `water-exposure.json` |
+| `infecte` | `qualities.json` `traits.json` |
+| `intrus` | `activities.json` `talents.json` |
+| `itineraires` | `skills.json` `talents.json` |
+| `joallier` | `skills.json` `talents.json` |
+| `juriste` | `careers.json` `groups.json` |
+| `la-gueule` | `skills.json` `spells.json` |
+| `laine` | `land-cargo.json` `sea-cargo.json` |
+| `langue-prehensile` | `maneuvers.json` `traits.json` |
+| `lanterne` | `lightTones.json` `trappings.json` |
+| `lapidaire` | `skills.json` `talents.json` |
+| `le-moot` | `skills.json` `talents.json` |
+| `loi` | `skills.json` `talents.json` |
+| `loup` | `creatures.json` `skills.json` |
+| `lumiere` | `domains.json` `spells.json` |
+| `macon` | `skills.json` `talents.json` |
+| `maelstrom` | `sea-events.json` `sea-perils.json` |
+| `magick` | `skills.json` `talents.json` |
+| `magie-noire` | `skills.json` `talents.json` |
+| `mal-de-mer` | `maladies.json` `spells.json` |
+| `manann` | `gods.json` `skills.json` |
+| `mantelet-de-bois` | `structureAppearance.json` `structures.json` |
+| `marechal-ferrant` | `skills.json` `talents.json` |
+| `marmite` | `props.json` `trappings.json` |
+| `maroquinier` | `skills.json` `talents.json` |
+| `materiel-artistique` | `skills.json` `talents.json` |
+| `maudit` | `qualities.json` `spells.json` |
+| `mauvaise-influence` | `peripeties.json` `rencontres-edoc.json` |
+| `melee` | `axes.json` `merchantFamilies.json` |
+| `metal` | `domains.json` `land-cargo.json` |
+| `metallurgie` | `skills.json` `talents.json` |
+| `middenheim` | `books.json` `skills.json` |
+| `mineur` | `careers.json` `skills.json` |
+| `monstres` | `obsessions.json` `talents.json` |
+| `morsure` | `maneuvers.json` `traits.json` |
+| `mosaique` | `skills.json` `talents.json` |
+| `moyen` | `sea-perils.json` `ship-construction.json` |
+| `mur-a-ossature-en-bois` | `structureAppearance.json` `structures.json` |
+| `mur-de-chateau` | `structureAppearance.json` `structures.json` |
+| `mur-de-forteresse-naine` | `structureAppearance.json` `structures.json` |
+| `mur-de-pierre-aa` | `structureAppearance.json` `structures.json` |
+| `mur-en-bois` | `structureAppearance.json` `structures.json` |
+| `mur-en-pierre` | `structureAppearance.json` `structures.json` |
+| `mur-en-pierres-seches` | `structureAppearance.json` `structures.json` |
+| `mutation` | `talents.json` `traits.json` |
+| `nain` | `creatures.json` `groups.json` |
+| `Nain` | `names.json` `raceAppearance.json` |
+| `nautonier` | `careers.json` `creatures.json` |
+| `navigation` | `axes.json` `skills.json` |
+| `noir` | `eyes.json` `hairs.json` |
+| `nuee` | `spells.json` `traits.json` |
+| `nuit` | `calendarPhases.json` `lightLevels.json` |
+| `nurgle` | `gods.json` `groups.json` |
+| `officier` | `careers.json` `creatures.json` |
+| `Ogre` | `names.json` `raceAppearance.json` |
+| `ogres` | `skills.json` `species.json` |
+| `orfevre` | `skills.json` `talents.json` |
+| `orientation` | `crew-test-types.json` `skills.json` |
+| `palissade-de-pieux` | `structureAppearance.json` `structures.json` |
+| `parade` | `skills.json` `weaponGroups.json` |
+| `patrouilleur-fluvial` | `careers.json` `creatures.json` |
+| `pegase` | `creatures.json` `skills.json` |
+| `peintre` | `skills.json` `talents.json` |
+| `peinture` | `skills.json` `talents.json` |
+| `percee` | `activities.json` `structure-criticals.json` |
+| `perception` | `crew-test-types.json` `skills.json` |
+| `perturbant` | `spells.json` `traits.json` |
+| `phobie` | `psychology.json` `traits.json` |
+| `pieces-detachees-de-navire` | `sea-cargo.json` `trappings.json` |
+| `pieuvre-des-tourbieres` | `creatures.json` `groups.json` |
+| `pigeon` | `creatures.json` `skills.json` |
+| `pilleur-de-tombes` | `careers.json` `creatures.json` |
+| `pirate-1` | `barge-du-sel-projet.json` `loup-et-saumure-projet.json` |
+| `pirate-2` | `barge-du-sel-projet.json` `loup-et-saumure-projet.json` |
+| `pistolet` | `qualities.json` `trappings.json` |
+| `plantes` | `skills.json` `talents.json` |
+| `poisons` | `skills.json` `talents.json` |
+| `politique` | `skills.json` `talents.json` |
+| `pont` | `spells.json` `vehicles.json` |
+| `porte` | `structureAppearance.json` `structures.json` |
+| `porte-blindee` | `structureAppearance.json` `structures.json` |
+| `porte-de-ville` | `structureAppearance.json` `structures.json` |
+| `potier` | `skills.json` `talents.json` |
+| `poudre-impregnee-d-aqshy` | `qualities.json` `trappings.json` |
+| `poulet` | `creatures.json` `trappings.json` |
+| `prejuge` | `psychology.json` `traits.json` |
+| `produits-de-luxe` | `land-cargo.json` `sea-cargo.json` |
+| `prophetie` | `skills.json` `talents.json` |
+| `puissant-vortex` | `sea-events.json` `sea-perils.json` |
+| `rage-meurtriere` | `spells.json` `symptoms.json` |
+| `ranald` | `gods.json` `skills.json` |
+| `rat-ogre` | `creatures.json` `skills.json` |
+| `rats` | `skills.json` `talents.json` |
+| `rebouteux` | `creatures.json` `skills.json` |
+| `receleur` | `careers.json` `creatures.json` |
+| `regard-petrifiant` | `maneuvers.json` `traits.json` |
+| `regeneration` | `spells.json` `traits.json` |
+| `region` | `skills.json` `talents.json` |
+| `religion` | `groups.json` `skills.json` |
+| `remedes` | `skills.json` `talents.json` |
+| `repurgateur` | `careers.json` `creatures.json` |
+| `resistance` | `skills.json` `talents.json` |
+| `resistance-a-la-magie` | `talents.json` `traits.json` |
+| `rhinox` | `creatures.json` `skills.json` |
+| `robuste` | `naval-traits.json` `talents.json` |
+| `salzenmund` | `books.json` `naval-ports.json` |
+| `sang-corrosif` | `spells.json` `traits.json` |
+| `sanglier` | `creatures.json` `skills.json` |
+| `savoir` | `axes.json` `skills.json` |
+| `savoir-vivre` | `skills.json` `talents.json` |
+| `science` | `skills.json` `talents.json` |
+| `sculpture` | `skills.json` `talents.json` |
+| `sea-shipwreck-swim` | `reglesOptionnelles.json` `voyage-stakes.json` |
+| `serpent` | `creatures.json` `groups.json` |
+| `siege` | `qualities.json` `skills.json` |
+| `silence` | `spells.json` `trappings.json` |
+| `singe` | `creatures.json` `trappings.json` |
+| `slaanesh` | `gods.json` `groups.json` |
+| `soins` | `axes.json` `spells.json` |
+| `soldat` | `careers.json` `groups.json` |
+| `soleil-flamboyant` | `skills.json` `spells.json` |
+| `solide` | `naval-traits.json` `qualities.json` |
+| `solide-porte-en-bois` | `structureAppearance.json` `structures.json` |
+| `sorcier` | `careers.json` `talents.json` |
+| `sorcieres` | `skills.json` `talents.json` |
+| `souffle` | `spells.json` `traits.json` |
+| `squig` | `creatures.json` `skills.json` |
+| `stromfels` | `gods.json` `skills.json` |
+| `sulpteur-sur-bois` | `skills.json` `talents.json` |
+| `taille` | `qualities.json` `traits.json` |
+| `tailleur` | `skills.json` `talents.json` |
+| `tailleur-de-pierre` | `skills.json` `talents.json` |
+| `tanneur` | `skills.json` `talents.json` |
+| `taverniere` | `arene-projet.json` `merchants.json` |
+| `taxes` | `skills.json` `talents.json` |
+| `tempete` | `mass-battle.json` `sea-events.json` |
+| `tentacules` | `maneuvers.json` `traits.json` |
+| `tente` | `props.json` `trappings.json` |
+| `terrassement` | `structureAppearance.json` `structures.json` |
+| `terreur` | `psychology.json` `traits.json` |
+| `theologie` | `skills.json` `talents.json` |
+| `tileen` | `groups.json` `skills.json` |
+| `tissage` | `skills.json` `talents.json` |
+| `tisseur` | `skills.json` `talents.json` |
+| `tonneau` | `props.json` `trappings.json` |
+| `tonnelier` | `skills.json` `talents.json` |
+| `torture` | `skills.json` `talents.json` |
+| `tourbillon` | `sea-perils.json` `spells.json` |
+| `triton` | `creatures.json` `sea-events.json` |
+| `trolls` | `skills.json` `talents.json` |
+| `tueur` | `careers.json` `talents.json` |
+| `ulric` | `gods.json` `skills.json` |
+| `vents-favorables` | `sea-events.json` `spells.json` |
+| `verrier` | `skills.json` `talents.json` |
+| `vers` | `creatures.json` `trappings.json` |
+| `vers-de-carie` | `maladies.json` `symptoms.json` |
+| `vers-du-reik` | `maladies.json` `symptoms.json` |
+| `vigneron` | `skills.json` `talents.json` |
+| `villageois` | `careers.json` `creatures.json` |
+| `vin` | `land-cargo.json` `sea-cargo.json` |
+| `vision-nocturne` | `talents.json` `traits.json` |
+| `voies-fluviales` | `skills.json` `talents.json` |
+| `vol` | `spells.json` `traits.json` |
+| `voleurs` | `peripeties.json` `rencontres-edoc.json` |
+| `vomissement` | `maneuvers.json` `traits.json` |
+
+## 2. Enveloppe des documents
+
+### 2.1 Un document, sa racine, ses clés de premier niveau
+
+Racine JSON = forme réelle du fichier ; famille déclarée = ce que dit son schéma zod (vide si le
+document n’est pas au registre) ; famille MESURÉE = `entité` / `table` (liste dont la moitié des
+entrées portent une plage) / `config` / `record`. C’est la famille déclarée qui donne le RÉGIME
+D’ENTRÉES, donc à qui appartiennent les clés. Chaque clé porte ses classes de type observées et le
+nombre d’entrées qui la portent.
+
+| Document | Racine JSON | Famille déclarée | Famille mesurée | Entrées | Clés de 1er niveau |
+|---|---|---|---|---|---|
+| `src/data/aa-criticals.json` | object | config (objet unique) | config | 1 | `_source`:string(1) `bras`:array(1) `corps`:array(1) `jambe`:array(1) `tete`:array(1) |
+| `src/data/actions.json` | array | liste | entité | 55 | `armed`:string(5) `candidates`:string(20) `cost`:string(55) `costNote`:string(29) `exitSafe`:boolean(6) `gate`:array/string(55) `icon`:string(55) `id`:string(55) `intent`:string(4) `keys`:array(42) `label`:string(55) `maison`:boolean(29) `mode`:string(12) `panneau`:boolean(2) `role`:string(6) `rule`:string(32) `ruleCategory`:string(32) `run`:string(52) `source`:object(12) `stance`:string(2) `surface`:string(55) |
+| `src/data/activities.json` | array | liste | entité | 62 | `assisted`:boolean(1) `blocked`:object(7) `classGate`:object(12) `combined`:boolean(2) `contexts`:array(62) `desc`:string(61) `difficulty`:string(51) `difficultyFrom`:object(1) `encounter`:string(3) `extended`:object(1) `failExtenue`:boolean(7) `freeSkill`:boolean(1) `generalDownOn`:string(2) `grantsFlag`:string(2) `hold`:object(1) `icon`:string(62) `id`:string(62) `label`:string(62) `maison`:string(8) `minInvest`:object(1) `onSuccess`:array(1) `outcomes`:array(35) `requires`:array(2) `resolver`:string(21) `rounds`:number(7) `rule`:string(1) `ruleCategory`:string(1) `sceneKind`:string(13) `skills`:array(48) `source`:object(62) `stageOutcome`:string(7) `stake`:string(46) `stakeForm`:string(46) `testModFrom`:string(1) `threat`:object(1) `unavailableIfExtenue`:boolean(1) `weatherMod`:object(2) `where`:array(5) |
+| `src/data/advancementCosts.json` | array | liste | entité | 15 | `char`:number(15) `id`:string(15) `label`:string(15) `max`:null/number(15) `skill`:number(15) `source`:object(15) |
+| `src/data/ambiance.json` | object | config (objet unique) | config | 1 | `ambientFloor`:number(1) `entreeEnScene`:object(1) `faceShade`:object(1) `fogTint`:object(1) `iso`:object(1) `pov`:object(1) |
+| `src/data/arcane-phenomena.json` | object | config (objet unique) | config | 1 | `phenomena`:array(1) `saturationLevels`:array(1) `tables`:array(1) `windSaturationEffects`:array(1) |
+| `src/data/artillery-misfire.json` | object | config (objet unique) | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) |
+| `src/data/astrology.json` | array | liste | entité | 5 | `desc`:string(5) `id`:string(5) `label`:string(5) `rand`:number(5) `source`:object(5) |
+| `src/data/axes.json` | array | liste | entité | 9 | `core`:boolean(6) `desc`:string(9) `id`:string(9) `label`:string(9) `skills`:array(9) `source`:string(9) `talents`:array(3) |
+| `src/data/books.json` | array | liste | entité | 29 | `abbr`:string(29) `desc`:null/string(29) `dir`:string(16) `extractionDir`:string(1) `folder`:string(29) `id`:string(29) `label`:string(29) `language`:string(29) |
+| `src/data/breath-types.json` | array | liste | entité | 6 | `id`:string(6) `label`:string(6) |
+| `src/data/calendarIntercalary.json` | array | liste | entité | 6 | `afterMonth`:number(6) `id`:string(6) `label`:string(6) `source`:object(6) |
+| `src/data/calendarMonths.json` | array | liste | entité | 12 | `days`:number(12) `id`:string(12) `label`:string(12) `source`:object(12) |
+| `src/data/calendarPhases.json` | array | liste | entité | 7 | `icon`:string(7) `key`:string(7) `label`:string(7) `start`:number(7) |
+| `src/data/calendarWeekdays.json` | array | liste | entité | 8 | `id`:string(8) `label`:string(8) `source`:object(8) |
+| `src/data/careerLevels.json` | array | liste | entité | 432 | `career`:string(432) `characteristics`:array(432) `label`:string(432) `labelF`:string(297) `level`:number(432) `skills`:array(432) `source`:object(432) `status`:string(432) `talents`:array(432) `trappings`:array(432) |
+| `src/data/careers.json` | array | liste | entité | 108 | `class`:string(108) `desc`:string(108) `grantGroups`:array(6) `id`:string(108) `label`:string(108) `labelF`:string(79) `rand`:object(108) `source`:object(108) `tenue`:string(15) |
+| `src/data/characteristics.json` | array | liste | entité | 19 | `abr`:string(19) `desc`:string(19) `id`:string(19) `label`:string(19) `options`:array(1) `source`:object(19) `type`:string(19) |
+| `src/data/classes.json` | array | liste | entité | 9 | `desc`:string(9) `grantGroups`:array(1) `id`:string(9) `label`:string(9) `source`:object(9) `trappings`:array(9) |
+| `src/data/combat-stakes.json` | array | liste | entité | 35 | `entryCategory`:string(11) `entryFromSource`:boolean(1) `form`:string(32) `id`:string(35) `kind`:string(35) `label`:string(35) `rule`:string(23) `ruleCategory`:string(23) `source`:object(35) `template`:string(32) |
+| `src/data/creatures.json` | array | liste | entité | 490 | `alsoIn`:array(3) `appearance`:object(484) `char`:object(490) `desc`:null/string(490) `folder`:string(490) `followsCharacterRules`:boolean(163) `grantGroups`:array(87) `harvest`:object(54) `id`:string(490) `label`:string(490) `maison`:string(1) `named`:boolean(66) `optionals`:array(490) `purchase`:object(10) `skills`:array(490) `source`:object(490) `spells`:array(490) `talents`:array(490) `title`:null/string(490) `traits`:array(490) `trappings`:array(490) |
+| `src/data/crew-morale.json` | object | config (objet unique) | config | 1 | `bands`:array(1) `base`:number(1) `factors`:array(1) `source`:object(1) |
+| `src/data/crew-roles.json` | array | liste | entité | 9 | `desc`:string(9) `id`:string(9) `label`:string(9) `maison`:string(7) `skills`:array(9) `source`:object(2) `wage`:object(9) |
+| `src/data/crew-test-types.json` | object | config (objet unique) | config | 1 | `types`:array(1) |
+| `src/data/criticals.json` | object | config (objet unique) | config | 1 | `bras`:array(1) `corps`:array(1) `jambe`:array(1) `tete`:array(1) |
+| `src/data/damage-types.json` | array | liste | entité | 4 | `id`:string(4) `label`:string(4) |
+| `src/data/decorPalette.json` | object | record | record | 0 | — |
+| `src/data/details.json` | object | config (objet unique) | config | 1 | `ageBase`:object(1) `ageRoll`:object(1) `heightBase`:object(1) `heightRoll`:object(1) `texts`:object(1) |
+| `src/data/disponibilite.json` | object | config (objet unique) | config | 1 | `barterRatios`:array(1) `dispoPct`:array(1) |
+| `src/data/domains.json` | array | liste | entité | 20 | `alsoIn`:array(6) `arcane`:boolean(18) `breathType`:string(4) `castBonus`:object(1) `casterOps`:array(1) `castingChar`:string(1) `dark`:boolean(2) `desc`:string(14) `effects`:array(5) `environmentBonus`:object(1) `id`:string(20) `label`:string(20) `missile`:object(3) `seaModifier`:object(4) `sorcery`:boolean(1) `source`:object(20) `tables`:object(8) `wind`:string(9) `windModifiers`:array(8) |
+| `src/data/donnees.manifest.json` | object | config (objet unique) | config | 1 | `homonymes`:object(1) `narratifNote`:string(1) `reglesOr`:string(1) `rubriques`:array(1) |
+| `src/data/driving-mishap.json` | object | config (objet unique) | config | 1 | `source`:object(1) `table`:array(1) |
+| `src/data/drunkenness.json` | object | config (objet unique) | config | 1 | `source`:object(1) `table`:array(1) |
+| `src/data/encumbranceTiers.json` | array | liste | entité | 4 | `agilityPenalty`:number(4) `id`:string(4) `immobile`:boolean(4) `label`:string(4) `moveFloor`:number(4) `movePenalty`:null/number(4) `source`:object(4) `tier`:number(4) `travelFatigue`:number(4) |
+| `src/data/etats.json` | array | liste | entité | 21 | `aiThreat`:number(10) `desc`:string(21) `effects`:array(11) `gating`:object(5) `icon`:string(12) `id`:string(21) `label`:string(21) `maison`:string(1) `passive`:array(9) `persistsAfterCombat`:boolean(7) `perStack`:boolean(7) `recover`:object(2) `restrictsAction`:boolean(1) `severity`:number(12) `source`:object(21) `stacksReducedBy`:string(1) |
+| `src/data/eyes.json` | array | liste | entité | 10 | `color`:object(10) `id`:string(10) `label`:string(10) `rand`:number(10) `source`:object(10) |
+| `src/data/flow-stakes.json` | array | liste | entité | 34 | `entryCategory`:string(2) `flow`:string(34) `form`:string(34) `id`:string(34) `label`:string(34) `phase`:string(34) `rule`:string(33) `ruleCategory`:string(33) `source`:object(34) `template`:string(34) |
+| `src/data/gods.json` | array | liste | entité | 41 | `blessings`:array(41) `chaosSpells`:array(3) `desc`:string(40) `grantGroups`:array(2) `id`:string(41) `label`:string(41) `miracles`:array(41) `sinLocks`:object(1) `source`:object(41) `title`:string(40) |
+| `src/data/grapple.json` | object | config (objet unique) | config | 1 | `_comment`:string(1) `init`:array(1) `source`:object(1) `win`:object(1) |
+| `src/data/groups.json` | array | liste | entité | 38 | `exceptGroups`:array(1) `id`:string(38) `label`:string(38) `matchesAll`:boolean(2) |
+| `src/data/hairs.json` | array | liste | entité | 10 | `color`:object(10) `id`:string(10) `label`:string(10) `rand`:number(10) `randByRace`:object(2) `source`:object(10) |
+| `src/data/incidents-monture.json` | object | config (objet unique) | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) |
+| `src/data/interludeEvents.json` | array | liste | table | 31 | `atelierNote`:string(10) `fx`:object(15) `id`:string(31) `label`:string(31) `max`:number(31) `min`:number(31) `source`:object(31) `text`:string(31) |
+| `src/data/land-cargo.json` | object | config (objet unique) | config | 1 | `buy`:object(1) `cargoes`:array(1) `gossip`:object(1) `rumours`:array(1) `sell`:object(1) `wineQuality`:array(1) |
+| `src/data/lieux-services.json` | array | liste | entité | 7 | `backdrop`:string(4) `desc`:string(2) `editorNote`:string(1) `enterLabel`:string(1) `hostLine`:string(3) `icon`:string(7) `id`:string(7) `label`:string(7) `merchantArchetype`:string(1) `opensScreen`:string(1) |
+| `src/data/lightLevels.json` | array | liste | entité | 5 | `baseSightTiles`:number(5) `id`:string(5) `label`:string(5) `scalar`:number(5) |
+| `src/data/lightTones.json` | array | liste | entité | 4 | `color`:string(4) `flicker`:object(2) `id`:string(4) `intensity`:number(4) `label`:string(4) |
+| `src/data/localisation.json` | object | config (objet unique) | config | 1 | `navire`:object(1) `navire-fluvial`:object(1) `personnage`:object(1) |
+| `src/data/locations.json` | array | liste | entité | 55 | `desc`:string(55) `id`:string(55) `label`:string(55) `parent`:null/string(55) `prefix`:null(55) `source`:object(55) `suffix`:null/string(55) |
+| `src/data/maladies.json` | array | liste | entité | 16 | `contaminatesWaterBarrel`:boolean(4) `contractDifficulty`:string(16) `desc`:string(16) `duration`:object(16) `id`:string(16) `immuneAfterCure`:boolean(2) `incubation`:object(16) `infectionPassive`:array(1) `label`:string(16) `source`:object(16) `symptoms`:array(16) |
+| `src/data/maneuvers.json` | array | liste | entité | 20 | `activation`:string(20) `advantageCost`:number(20) `advantageMode`:string(2) `blast`:object(7) `defense`:string(18) `effects`:array(20) `id`:string(20) `kind`:string(20) `label`:string(20) `magic`:boolean(8) `range`:object(8) `source`:object(20) `stake`:string(20) `stakeForm`:string(20) `stat`:string(16) `targeting`:string(20) |
+| `src/data/mass-battle.json` | object | config (objet unique) | config | 1 | `hazards`:array(1) `mightModifiers`:array(1) `powerEstimate`:array(1) `structures`:array(1) `warMachines`:array(1) |
+| `src/data/merchantFamilies.json` | array | liste | entité | 7 | `columns`:array(7) `id`:string(7) `label`:string(7) `match`:object(7) |
+| `src/data/merchants.json` | array | liste | entité | 6 | `bargainSkill`:number(6) `boniment`:string(6) `category`:object(6) `curated`:array(3) `id`:string(6) `label`:string(6) `resaleRate`:number(6) `settlement`:string(6) `unitKinds`:array(1) |
+| `src/data/miscast.json` | object | config (objet unique) | config | 1 | `major`:array(1) `majorVdm`:array(1) `minor`:array(1) `minorVdm`:array(1) `tables`:array(1) `wrath`:array(1) |
+| `src/data/montures.json` | object | config (objet unique) | config | 1 | `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) |
+| `src/data/mutations.json` | array | liste | entité | 116 | `appearance`:object(73) `desc`:string(116) `id`:string(116) `kind`:string(116) `label`:string(116) `nonVisual`:boolean(5) `note`:string(58) `passive`:array(84) `source`:object(116) `subTable`:string(1) |
+| `src/data/mutationTables.json` | array | liste | entité | 17 | `id`:string(17) `label`:string(17) `ranges`:array(17) `source`:object(17) |
+| `src/data/names.json` | object | record | record | 7 | `femaleFirstNames`:array(7) `lastNames`:array(7) `lastNameSuffixes`:object(1) `maleFirstNames`:array(7) |
+| `src/data/naval-ports.json` | array | liste | entité | 39 | `cosmopolite`:boolean(2) `demande`:object(32) `desc`:string(29) `dirigeant`:string(39) `id`:string(39) `label`:string(39) `production`:array(38) `region`:string(39) `richesse`:number(39) `source`:object(39) `surplus`:object(20) `taille`:number(39) |
+| `src/data/naval-progression.json` | object | config (objet unique) | config | 1 | `table`:array(1) |
+| `src/data/naval-traits.json` | array | liste | entité | 26 | `alsoIn`:array(1) `deckCover`:string(3) `desc`:string(26) `id`:string(26) `install`:object(21) `kind`:string(26) `label`:string(26) `maison`:string(2) `navTestMod`:number(2) `passive`:array(9) `ram`:object(1) `ranked`:boolean(4) `source`:object(25) |
+| `src/data/night-stakes.json` | array | liste | entité | 15 | `form`:string(2) `id`:string(15) `kind`:string(15) `label`:string(15) `rule`:string(15) `ruleCategory`:string(2) `source`:object(15) `stake`:string(15) |
+| `src/data/obsessions.json` | object | config (objet unique) | config | 1 | `ref`:string(1) `source`:object(1) `table`:array(1) |
+| `src/data/oups.json` | array | liste | table | 8 | `id`:string(8) `kind`:string(8) `label`:string(8) `max`:number(7) `min`:number(7) `source`:object(8) |
+| `src/data/peripeties.json` | array | liste | entité | 10 | `id`:string(10) `kind`:string(10) `label`:string(10) `roll`:number(10) `source`:object(10) `text`:string(10) |
+| `src/data/pregens.json` | array | liste | entité | 8 | `ambitionLong`:string(8) `ambitionShort`:string(8) `build`:number(2) `career`:string(8) `careerTalent`:string(2) `id`:string(8) `label`:string(8) `motivation`:string(8) `pettySpells`:array(1) `seed`:number(8) `sex`:string(2) `species`:string(8) |
+| `src/data/primitives.manifest.json` | array | liste | entité | 28 | `concept`:string(28) `fichier`:string(28) `id`:string(28) `nom`:string(28) `perimetre`:string(28) `verrou`:string(28) |
+| `src/data/problemes-vehicule.json` | object | config (objet unique) | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) |
+| `src/data/progression-schemas.derived.json` | object | config (objet unique) | config | 1 | `__genere`:string(1) `__lecture`:string(1) `__livres`:array(1) `schemas`:array(1) |
+| `src/data/props.json` | array | liste | entité | 59 | `cover`:string(12) `id`:string(59) `light`:object(4) `opaque`:boolean(1) `solid`:boolean(57) |
+| `src/data/psychology.json` | array | liste | entité | 9 | `attackDR`:object(5) `becomes`:string(1) `containedSocialMod`:number(2) `desc`:string(9) `effects`:array(1) `endedByOtherPsych`:boolean(2) `failAmount`:object(1) `failCondition`:string(1) `icon`:string(9) `id`:string(9) `immuneToFromTarget`:array(1) `immuneWhileActive`:array(1) `label`:string(9) `passive`:array(1) `psychImmune`:boolean(1) `resolution`:string(7) `source`:object(9) `stake`:string(7) `stakeForm`:string(7) `targetCauses`:object(1) `targeted`:boolean(6) `test`:object(7) `triggerOn`:string(2) |
+| `src/data/qualities.json` | array | liste | entité | 59 | `alsoIn`:array(2) `capabilities`:object(31) `desc`:string(59) `effects`:array(10) `id`:string(59) `indice`:object(1) `label`:string(59) `passive`:array(17) `source`:object(59) `subType`:string(59) `type`:string(59) |
+| `src/data/qualitySubtypes.json` | array | liste | entité | 3 | `id`:string(3) `label`:string(3) |
+| `src/data/qualityTypes.json` | array | liste | entité | 2 | `id`:string(2) `label`:string(2) |
+| `src/data/raceAppearance.json` | array | liste | entité | 21 | `colors`:object(4) `dropHeadgear`:boolean(1) `extremites`:string(3) `eyes`:object(1) `featureKeys`:array(13) `gabarit`:string(21) `gabaritOverride`:object(6) `head`:string(13) `id`:string(21) `legs`:string(3) `palette`:object(20) `paletteF`:object(5) `parts`:object(1) `pose`:object(9) `sex`:string(1) `tenue`:string(21) |
+| `src/data/raw.manifest.json` | array | liste | entité | 8 | `bloque`:string(2) `ticket`:string(6) `topic`:string(8) |
+| `src/data/regles.json` | array | liste | entité | 84 | `desc`:string(84) `id`:string(84) `label`:string(84) `source`:object(84) |
+| `src/data/reglesOptionnelles.json` | array | liste | entité | 81 | `action`:object(1) `default`:boolean/number/string(81) `group`:string(81) `hint`:string(81) `id`:string(81) `kind`:string(81) `label`:string(81) `maison`:string(27) `max`:number(23) `min`:number(23) `options`:array(12) `ref`:string(81) `source`:object(54) `step`:number(13) |
+| `src/data/reliefMaterials.json` | array | liste | entité | 6 | `built`:boolean(4) `detail`:object(2) `face`:string(6) `foot`:string(2) `id`:string(6) `shadeDark`:number(2) `slopeTop`:string(2) |
+| `src/data/rencontres-edoc.json` | object | config (objet unique) | config | 1 | `die`:string(1) `id`:string(1) `label`:string(1) `source`:object(1) `tables`:object(1) |
+| `src/data/renduMonte.json` | object | config (objet unique) | config | 1 | `_doc`:string(1) `harnaisParDefaut`:string(1) |
+| `src/data/river-criticals.json` | object | config (objet unique) | config | 1 | `id`:string(1) `label`:string(1) `shrapnelHit`:array(1) `source`:object(1) `tables`:object(1) |
+| `src/data/river-navigation.json` | object | config (objet unique) | config | 1 | `capsize`:object(1) `driftNavPenalty`:number(1) `driftPctOfSpeed`:number(1) `echouage`:object(1) `navBaseDifficulty`:string(1) `outOfControl`:object(1) `rowingAgility`:object(1) `savoirVoiesFluvialesDR`:number(1) `source`:object(1) `tackDifficulty`:string(1) `temporaryRepair`:object(1) `windDirections`:array(1) `windEffect`:object(1) `windForces`:array(1) `windTicksPerDay`:number(1) `windTickThreshold`:number(1) |
+| `src/data/river-perils.json` | object | config (objet unique) | config | 1 | `perils`:array(1) |
+| `src/data/roofMaterials.json` | array | liste | entité | 4 | `detail`:object(3) `E`:string(3) `eaveOverhangM`:number(3) `fascia`:string(2) `fasciaDropM`:number(2) `id`:string(4) `line`:string(3) `N`:string(3) `O`:string(3) `planBody`:string(1) `planEdge`:string(1) `planInner`:string(1) `planText`:string(1) `ridgeCap`:string(2) `S`:string(3) `soffite`:string(3) |
+| `src/data/sea-cargo.json` | object | config (objet unique) | config | 1 | `buy`:object(1) `cargoes`:array(1) `opportunite`:object(1) `overload`:object(1) `sell`:object(1) |
+| `src/data/sea-events.json` | object | config (objet unique) | config | 1 | `boardEvents`:array(1) `fastVoyage`:object(1) `manann`:object(1) `portEvents`:array(1) |
+| `src/data/sea-navigation.json` | object | config (objet unique) | config | 1 | `epuisement`:object(1) `forcerLeRythme`:array(1) `longsVoyages`:object(1) `orientation`:object(1) `phares`:object(1) `poursuite`:object(1) `reparation`:object(1) `salissures`:object(1) `vitesseMax`:object(1) `workPeriodHours`:object(1) |
+| `src/data/sea-perils.json` | object | config (objet unique) | config | 1 | `detroits`:array(1) `echouer`:object(1) `gestionDesPerils`:array(1) `hazards`:array(1) `hazardsWeightNote`:string(1) `tourbillons`:array(1) `tourbillonSwim`:object(1) |
+| `src/data/sea-shanties.json` | array | liste | entité | 7 | `captainOps`:array(1) `crewOps`:array(6) `desc`:string(7) `id`:string(7) `label`:string(7) `note`:string(4) `source`:object(7) |
+| `src/data/sea-weather.json` | object | config (objet unique) | config | 1 | `affaler`:object(1) `effetDuVent`:object(1) `effetDuVentClinfoc`:object(1) `effetDuVentGreementDelta`:object(1) `encalmine`:object(1) `precipitations`:array(1) `roseDesVents`:array(1) `seasonMod`:object(1) `table`:array(1) `temperatures`:array(1) `vents`:array(1) `visibilites`:array(1) `warmSeaMod`:number(1) |
+| `src/data/ship-construction.json` | object | config (objet unique) | config | 1 | `constructionTraits`:array(1) `manoeuvrability`:array(1) `propulsion`:object(1) `speedTraits`:array(1) `standard`:array(1) |
+| `src/data/ship-criticals.json` | object | config (objet unique) | config | 1 | `die`:string(1) `id`:string(1) `label`:string(1) `shrapnelHit`:array(1) `source`:object(1) `tables`:object(1) |
+| `src/data/sizes.json` | object | config (objet unique) | config | 1 | `footprintSide`:object(1) `rangedMod`:object(1) `shipboardEnc`:object(1) |
+| `src/data/skills.json` | array | liste | entité | 48 | `altChar`:object(2) `characteristic`:string(48) `combatAdvantage`:object(4) `combatSubstitute`:object(2) `desc`:string(48) `hearing`:boolean(1) `id`:string(48) `label`:string(48) `movement`:boolean(5) `source`:object(48) `specs`:array(43) `specsOpen`:boolean(6) `specsSource`:string(3) `tool`:object(1) `type`:string(48) |
+| `src/data/species.json` | array | liste | entité | 27 | `arcaneDomainsBonusOf`:string(2) `baseChar`:object(27) `desc`:string(27) `family`:string(27) `fate`:object(27) `gatedByRule`:string(1) `grantGroups`:array(27) `id`:string(27) `label`:string(27) `movement`:number(27) `mutationBodyMax`:number(18) `preview`:object(27) `rand`:number(27) `refCareer`:string(27) `refChar`:string(27) `skills`:array(27) `source`:object(27) `talents`:array(27) `traits`:array(1) `variant`:string(21) |
+| `src/data/speciesRace.json` | object | config (objet unique) | config | 1 | `_doc`:string(1) `default`:string(1) `rules`:array(1) |
+| `src/data/spells.json` | array | liste | entité | 576 | `alsoIn`:array(46) `breathAttack`:boolean(2) `cn`:null/number(576) `curated`:boolean(438) `damage`:number(22) `desc`:string(576) `domainId`:string(256) `duration`:null/object(576) `effects`:object(576) `family`:string(576) `id`:string(576) `ignoreBE`:boolean(2) `ignorePA`:boolean(6) `isRitual`:boolean(17) `label`:string(576) `missile`:boolean(40) `opposed`:object(4) `range`:null/object(576) `ritual`:object(17) `source`:object(576) `subType`:null/string(576) `target`:null/object(576) `type`:string(576) `variants`:array(18) |
+| `src/data/stars.json` | array | liste | entité | 23 | `apparence`:string(23) `ascendant`:string(23) `classique`:string(23) `dates`:string(23) `desc`:string(23) `dieux`:string(23) `effect`:array(23) `id`:string(23) `label`:string(23) `rand`:number(23) `signe`:string(23) `source`:object(23) `sub`:array(4) |
+| `src/data/steam-breakdown.json` | array | liste | table | 6 | `compartmentDamage`:number(1) `coolMinutes`:string(1) `desc`:string(6) `durationRounds`:string(1) `engineDestroyed`:boolean(1) `failDamage`:string(1) `hullCritical`:boolean(1) `id`:string(6) `label`:string(6) `max`:number(6) `min`:number(6) `mMod`:number(2) `mSet`:number(2) `restart`:array(3) `source`:object(6) |
+| `src/data/structure-criticals.json` | object | config (objet unique) | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) |
+| `src/data/structureAppearance.json` | array | liste | entité | 18 | `band`:string(5) `cap`:string(5) `detail`:object(17) `door`:object(5) `face`:string(18) `id`:string(18) `label`:string(18) `material`:string(18) `parapet`:object(4) `post`:string(18) `recess`:string(1) `rubble`:string(7) `rubbleHi`:string(7) `wallHeightM`:number(2) `window`:object(5) `wood`:object(10) |
+| `src/data/structures.json` | array | liste | entité | 24 | `char`:object(24) `couvertPenalty`:string(17) `desc`:string(19) `edgeKind`:string(1) `enc`:number(10) `encLimit`:number(15) `fortified`:boolean(2) `id`:string(24) `kind`:string(24) `label`:string(24) `source`:object(24) `traits`:array(24) `vehicle`:boolean(8) |
+| `src/data/surincantation.json` | object | config (objet unique) | config | 1 | `ref`:string(1) `source`:object(1) `table`:array(1) |
+| `src/data/symptoms.json` | array | liste | entité | 18 | `capabilities`:object(7) `desc`:string(18) `effects`:array(1) `id`:string(18) `label`:string(18) `onTick`:object(4) `passive`:array(9) `severePassive`:array(1) `source`:object(18) `visibleLocations`:array(1) `visiblePassive`:array(1) |
+| `src/data/systemes.manifest.json` | array | liste | entité | 16 | `etat`:string(16) `id`:string(16) `modules`:array(16) `nom`:string(16) `notes`:string(16) `ticket`:null/string(16) |
+| `src/data/tables.json` | array | liste | entité | 20 | `die`:string(20) `id`:string(20) `label`:string(20) `rows`:array(20) `source`:object(20) |
+| `src/data/talents.json` | array | liste | entité | 187 | `alsoIn`:array(1) `codexOnly`:boolean(6) `combat`:object(54) `desc`:string(187) `effects`:array(4) `grantsArcaneDomain`:boolean(1) `grantSpecGroups`:boolean(1) `id`:string(187) `label`:string(187) `maison`:string(9) `max`:null/number/object(187) `passive`:array(21) `rand`:null/number(187) `size`:string(2) `source`:object(187) `specs`:array(182) `specsOpen`:boolean(8) `specsSource`:string(5) `test`:null/object(187) `variants`:array(12) |
+| `src/data/tavernGames.json` | array | liste | entité | 13 | `campScore`:string(3) `characteristic`:string(6) `combined`:object(1) `dancers`:number(1) `desc`:string(13) `drBonus`:string(4) `drCap`:number(1) `id`:string(13) `label`:string(13) `mode`:string(12) `options`:array(5) `phases`:object(2) `pot`:object(1) `roundOps`:object(2) `roundShape`:string(7) `scoreThreshold`:number(1) `scoreUnit`:string(5) `sides`:array(1) `skill`:null/string(13) `source`:object(13) `spec`:string(6) `table`:array(1) `target`:number(3) `team`:object(2) `throwerPenalty`:object(1) `tieBreak`:string(2) `volley`:object(4) |
+| `src/data/teintesJeu.json` | object | record | record | 0 | — |
+| `src/data/traits.json` | array | liste | entité | 131 | `alsoIn`:array(4) `aura`:object(3) `capabilities`:object(51) `desc`:string(131) `effects`:array(24) `grantsManeuvers`:array(14) `id`:string(131) `indice`:object(22) `label`:string(131) `maison`:string(3) `nonTransferable`:boolean(1) `passive`:array(25) `range`:boolean(2) `source`:object(131) `specsMulti`:boolean(9) `specsOpen`:boolean(7) `specsSource`:string(18) `standard`:boolean(15) `suppressesCapabilities`:array(1) |
+| `src/data/trappings.json` | array | liste | entité | 440 | `alsoIn`:array(8) `ammoRangeMod`:object(13) `availability`:null/string(440) `bladed`:boolean(26) `capabilities`:object(20) `consumable`:object(40) `consumableDuration`:object(19) `container`:object(10) `damage`:null/object(380) `defaultAmmo`:string(9) `derivedWeapon`:object(1) `desc`:null/string(440) `enc`:null/number/string(423) `formChoices`:array(1) `hands`:number(44) `id`:string(440) `improvised`:boolean(1) `indirect`:boolean(8) `label`:string(440) `loc`:null/string(380) `maison`:string(2) `minRangeBand`:string(9) `niConsumedPerDR`:number(2) `niPerGram`:number(2) `onHitEffects`:array(6) `organicProjectile`:boolean(14) `pa`:null/number(380) `packSize`:number(15) `passive`:array(15) `price`:null/object/string(440) `prosthesisTraining`:array(2) `qualities`:array(440) `range`:null/number/object(68) `reach`:null/string(380) `service`:boolean(3) `shape`:string(109) `siegeFootprint`:number(1) `siegeRig`:string(22) `sizeFor`:string(9) `soloSimple`:boolean(1) `source`:object(440) `subType`:string(440) `type`:string(440) `unarmed`:boolean(1) `weaponGroup`:string(22) |
+| `src/data/traumas.json` | array | liste | entité | 29 | `amputation`:boolean(12) `cosmetic`:boolean(2) `cumul`:object(5) `desc`:string(29) `id`:string(29) `kind`:string(12) `label`:string(29) `maison`:string(2) `needsSurgery`:boolean(2) `ops`:array(17) `passiveKind`:string(2) `prosthesis`:array(7) `rig`:object(3) `severity`:string(12) `source`:object(29) |
+| `src/data/vehicles.json` | array | liste | entité | 31 | `chargement`:number(11) `deck`:object(1) `desc`:string(12) `enc`:null/number(12) `hull`:object(29) `icon`:string(31) `id`:string(31) `label`:string(31) `purchase`:object(31) `ship`:object(20) `source`:object(31) `travel`:object(3) |
+| `src/data/vents-tourbillonnants.json` | object | config (objet unique) | config | 1 | `source`:object(1) `table`:array(1) |
+| `src/data/voyage-stakes.json` | array | liste | entité | 43 | `id`:string(43) `kind`:string(43) `label`:string(43) `rule`:string(32) `ruleCategory`:string(7) `source`:object(43) `template`:string(43) |
+| `src/data/water-exposure.json` | object | config (objet unique) | config | 1 | `desc`:string(1) `diseases`:array(1) `id`:string(1) `label`:string(1) `modifiers`:array(1) `rollModPerNegativeSL`:number(1) `source`:object(1) `test`:object(1) |
+| `src/data/weaponGroups.json` | array | liste | entité | 38 | `combat`:string(18) `id`:string(38) `kind`:string(38) `label`:string(38) `material`:string(5) `qualities`:array(3) `source`:object(38) |
+| `src/data/weather.json` | object | config (objet unique) | config | 1 | `conditions`:array(1) `physicalTestChars`:array(1) `physicalTestCharsSource`:object(1) `seasons`:array(1) |
+| `src/scenes/arene/arene-projet.json` | object | — | config | 1 | `meta`:object(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) `worldMap`:object(1) |
+| `src/scenes/barge-du-sel/barge-du-sel-projet.json` | object | — | config | 1 | `meta`:object(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) `worldMap`:object(1) |
+| `src/scenes/diligence/diligence-projet.json` | object | — | config | 1 | `meta`:object(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) |
+| `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` | object | — | config | 1 | `meta`:object(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) `worldMap`:object(1) |
+
+### 2.2 Fréquence globale des signatures d’entrée
+
+Signatures distinctes d’entrée de document : **561**. Les 40 plus fréquentes :
+
+| Signature d’entrée | Entrées |
+|---|---|
+| `career,characteristics,label,labelF,level,skills,source,status,talents,trappings` | 297 |
+| `cn,curated,desc,duration,effects,family,id,label,range,source,subType,target,type` | 176 |
+| `appearance,char,desc,folder,id,label,optionals,skills,source,spells,talents,title,traits,trappings` | 163 |
+| `availability,damage,desc,enc,id,label,loc,pa,price,qualities,reach,source,subType,type` | 160 |
+| `cn,curated,desc,domainId,duration,effects,family,id,label,range,source,subType,target,type` | 157 |
+| `career,characteristics,label,level,skills,source,status,talents,trappings` | 135 |
+| `appearance,char,desc,folder,followsCharacterRules,id,label,optionals,skills,source,spells,talents,title,traits,trappings` | 126 |
+| `cn,desc,duration,effects,family,id,label,range,source,subType,target,type` | 113 |
+| `desc,id,label,source` | 109 |
+| `desc,id,label,max,rand,source,specs,test` | 84 |
+| `class,desc,id,label,labelF,rand,source` | 72 |
+| `appearance,char,desc,folder,grantGroups,id,label,optionals,skills,source,spells,talents,title,traits,trappings` | 69 |
+| `desc,id,label,parent,prefix,source,suffix` | 55 |
+| `id,label` | 51 |
+| `id,solid` | 43 |
+| `appearance,char,desc,folder,harvest,id,label,optionals,skills,source,spells,talents,title,traits,trappings` | 42 |
+| `default,group,hint,id,kind,label,ref,source` | 39 |
+| `combat,desc,id,label,max,rand,source,specs,test` | 39 |
+| `appearance,desc,id,kind,label,passive,source` | 38 |
+| `alsoIn,cn,curated,desc,domainId,duration,effects,family,id,label,range,source,subType,target,type` | 38 |
+| `appearance,char,desc,folder,followsCharacterRules,id,label,named,optionals,skills,source,spells,talents,title,traits,trappings` | 34 |
+| `blessings,desc,id,label,miracles,source,title` | 34 |
+| `availability,desc,enc,id,label,price,qualities,source,subType,type` | 33 |
+| `flow,form,id,label,phase,rule,ruleCategory,source,template` | 32 |
+| `concept,fichier,id,nom,perimetre,verrou` | 28 |
+| `capabilities,desc,id,label,source` | 28 |
+| `characteristic,desc,id,label,source,specs,type` | 26 |
+| `id,kind,label,rule,source,template` | 25 |
+| `capabilities,desc,id,label,source,subType,type` | 24 |
+| `form,id,kind,label,rule,ruleCategory,source,template` | 20 |
+| `appearance,char,desc,folder,id,label,named,optionals,skills,source,spells,talents,title,traits,trappings` | 20 |
+| `die,id,label,rows,source` | 20 |
+| `desc,id,label,max,passive,rand,source,specs,test` | 20 |
+| `apparence,ascendant,classique,dates,desc,dieux,effect,id,label,rand,signe,source` | 19 |
+| `abr,desc,id,label,source,type` | 18 |
+| `desc,effects,id,label,source` | 18 |
+| `color,id,label,rand,source` | 18 |
+| `availability,damage,desc,enc,id,label,loc,pa,price,qualities,range,reach,shape,source,subType,type` | 18 |
+| `appearance,desc,id,kind,label,note,source` | 17 |
+| `id,label,ranges,source` | 17 |
+
+### 2.3 Divergences nominatives d’enveloppe (strate Document)
+
+Un même RÔLE porté par des noms de clé différents selon le document — l’objet du lot L1b (#1467).
+Les ENTRÉES DE RACINE doivent porter `id` et `source` (et `label` sur les familles `entité`/`table`) :
+leur absence est une divergence. Un DOCUMENT EMBARQUÉ (étape de Flow, rangée de table, nœud de
+dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
+
+| Rôle | Clé | Statut de la clé | Documents | Documents (n entrées) |
+|---|---|---|---|---|
+| identité | `id` | cible (`string`) | 81 | actions.json(55) activities.json(62) advancementCosts.json(15) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) calendarMonths.json(12) calendarWeekdays.json(8) careers.json(108) … |
+| identité | `key` | divergente | 1 | calendarPhases.json(7) |
+| identité | `nom` | divergente | 2 | primitives.manifest.json(28) systemes.manifest.json(16) |
+| libellé | `label` | cible (`string`) | 77 | actions.json(55) activities.json(62) advancementCosts.json(15) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) calendarMonths.json(12) calendarPhases.json(7) calendarWeekdays.json(8) … |
+| libellé | `nom` | divergente | 2 | primitives.manifest.json(28) systemes.manifest.json(16) |
+| libellé | `title` | divergente | 2 | creatures.json(490) gods.json(40) |
+| prose | `desc` | cible | 36 | activities.json(61) astrology.json(5) axes.json(9) books.json(29) careers.json(108) characteristics.json(19) classes.json(9) creatures.json(490) crew-roles.json(9) domains.json(14) etats.json(21) gods.json(40) … |
+| prose | `text` | divergente | 2 | interludeEvents.json(31) peripeties.json(10) |
+| prose | `description` | divergente | 0 | — |
+| prose | `effect` | divergente | 1 | stars.json(23) |
+| prose | `rules` | divergente | 1 | speciesRace.json(1) |
+| prose | `hint` | divergente | 1 | reglesOptionnelles.json(81) |
+| source | `source` | cible (`object`) | 71 | actions.json(12) activities.json(62) advancementCosts.json(15) artillery-misfire.json(1) astrology.json(5) axes.json(9) calendarIntercalary.json(6) calendarMonths.json(12) calendarWeekdays.json(8) careerLevels.json(432) careers.json(108) characteristics.json(19) … |
+| maison | `maison` | cible (`string`) | 11 | actions.json(29) activities.json(8) creatures.json(1) crew-roles.json(7) etats.json(1) naval-traits.json(2) reglesOptionnelles.json(27) talents.json(9) traits.json(3) trappings.json(2) traumas.json(2) |
+| méta libre | `_source` | divergente | 1 | aa-criticals.json(1) |
+| méta libre | `_comment` | divergente | 1 | grapple.json(1) |
+| méta libre | `_doc` | divergente | 2 | renduMonte.json(1) speciesRace.json(1) |
+| méta libre | `__genere` | divergente | 1 | progression-schemas.derived.json(1) |
+| méta libre | `__lecture` | divergente | 1 | progression-schemas.derived.json(1) |
+| méta libre | `__livres` | divergente | 1 | progression-schemas.derived.json(1) |
+
+Groupes mesurés : **124** jeux d’ENTRÉES DE RACINE et **122** chemins de
+DOCUMENTS EMBARQUÉS (**2048** objets). **160** divergences
+(rôle × clé × document × chemin) au stock `STRUCTURES_ENVELOPPE` (`scripts/guards/lib/structuresStock.mjs`,
+garde `src/data/structures-contrat.test.ts`) — une ligne se solde en migrant l’enveloppe, la ligne part
+dans le MÊME commit :
+
+| Rôle | Motif | Groupes |
+|---|---|---|
+| identité | clé absente | 40 |
+| identité | clé divergente | 12 |
+| libellé | clé absente | 7 |
+| libellé | clé divergente | 12 |
+| maison | type divergent | 1 |
+| méta libre | clé divergente | 7 |
+| prose | clé divergente | 29 |
+| source | clé absente | 51 |
+| source | type divergent | 1 |
+
+Documents de racine ne portant AUCUNE clé `source` à quelque profondeur que ce soit : **36**
+(lot `L1d #1469`) — `aa-criticals.json` `ambiance.json` `arene-projet.json` `barge-du-sel-projet.json` `books.json` `breath-types.json` `calendarPhases.json` `damage-types.json` `decorPalette.json` `details.json` `diligence-projet.json` `donnees.manifest.json` `groups.json` `lieux-services.json` `lightLevels.json` `lightTones.json` `loup-et-saumure-projet.json` `merchantFamilies.json` `merchants.json` `names.json` `pregens.json` `primitives.manifest.json` `progression-schemas.derived.json` `props.json` `qualitySubtypes.json` `qualityTypes.json` `raceAppearance.json` `raw.manifest.json` `reliefMaterials.json` `renduMonte.json` `roofMaterials.json` `sizes.json` `speciesRace.json` `structureAppearance.json` `systemes.manifest.json` `teintesJeu.json`
+
+Documents EMBARQUÉS mesurés, par chemin :
+
+| Document | Chemin | Objets | Clés |
+|---|---|---|---|
+| `aa-criticals.json` | `bras` | 20 | `amputation`(4) `blessures`(19) `desc`(20) `escalation`(3) `id`(20) `label`(20) `lethal`(1) `max`(20) `min`(20) `ops`(18) `resist`(4) `traumas`(7) `trivial`(2) |
+| `aa-criticals.json` | `corps` | 20 | `blessures`(19) `desc`(20) `escalation`(3) `id`(20) `label`(20) `lethal`(1) `max`(20) `min`(20) `ops`(16) `resist`(5) `traumas`(6) `trivial`(1) |
+| `aa-criticals.json` | `jambe` | 20 | `amputation`(4) `blessures`(19) `desc`(20) `escalation`(3) `id`(20) `label`(20) `lethal`(1) `max`(20) `min`(20) `ops`(15) `resist`(6) `traumas`(6) `trivial`(2) |
+| `aa-criticals.json` | `tete` | 20 | `amputation`(5) `blessures`(19) `desc`(20) `escalation`(1) `id`(20) `label`(20) `lethal`(1) `max`(20) `min`(20) `ops`(18) `resist`(2) `traumas`(4) `trivial`(1) |
+| `arcane-phenomena.json` | `phenomena` | 25 | `cancelsTraitId`(1) `controlFlux`(1) `critOnTens`(1) `daemonsDoubled`(1) `desc`(25) `draws`(2) `fluxTableId`(1) `id`(25) `influenceMalveillante`(3) `kind`(25) `label`(25) `niMods`(3) `overcastPerSpell`(1) `refractedWindsOnly`(1) `saturation`(10) `singleWind`(1) `source`(25) `stonePropertySlots`(1) `tableId`(2) `testMods`(20) |
+| `arcane-phenomena.json` | `saturationLevels` | 5 | `corrupts`(1) `desc`(5) `effectsMax`(5) `effectsMin`(5) `id`(5) `label`(5) `order`(5) `source`(5) `testMods`(3) |
+| `arcane-phenomena.json` | `tables` | 3 | `desc`(3) `die`(3) `id`(3) `label`(3) `rows`(3) `source`(3) |
+| `arcane-phenomena.json` | `windSaturationEffects` | 8 | `domainId`(8) `effects`(8) `environments`(8) `id`(8) `source`(8) `surnoms`(8) `wind`(8) |
+| `arene-projet.json` | `scenes` | 18 | `ambiance`(18) `ambientLight`(18) `architecture`(2) `description`(18) `dialogues`(18) `dimensions`(18) `effectZones`(2) `encounters`(18) `entities`(18) `entryPoints`(1) `flags`(18) `id`(18) `layers`(18) `metresPerTile`(18) `music`(1) `nom`(18) `rest`(14) `startMessage`(18) `triggers`(18) `walls`(2) `weather`(3) |
+| `arene-projet.json` | `scenes.architecture` | 2 | `facades`(2) `id`(2) `label`(2) `masses`(2) `storeys`(2) `style`(2) |
+| `arene-projet.json` | `scenes.architecture.facades` | 3 | `appearance`(3) `edges`(3) `features`(3) `id`(3) `roomZoneIds`(3) `z`(3) |
+| `arene-projet.json` | `scenes.architecture.facades.features` | 3 | `edge`(3) `id`(3) `kind`(3) `offset`(3) `width`(1) |
+| `arene-projet.json` | `scenes.architecture.masses` | 9 | `footprint`(9) `id`(9) `levels`(9) `material`(9) `pitchDeg`(9) `profile`(9) `ridge`(4) `z`(9) |
+| `arene-projet.json` | `scenes.architecture.storeys` | 9 | `id`(9) `parts`(9) `roomZoneIds`(9) `z`(9) |
+| `arene-projet.json` | `scenes.architecture.storeys.parts` | 9 | `foot`(9) `id`(9) |
+| `arene-projet.json` | `scenes.dialogues` | 9 | `id`(9) `nodes`(9) `start`(9) |
+| `arene-projet.json` | `scenes.dialogues.nodes` | 16 | `choices`(16) `id`(16) `text`(16) |
+| `arene-projet.json` | `scenes.effectZones` | 9 | `area`(9) `id`(9) `label`(9) `presentation`(9) `z`(9) |
+| `arene-projet.json` | `scenes.encounters` | 20 | `id`(20) `members`(20) `onVictory`(20) `surprise`(6) |
+| `arene-projet.json` | `scenes.entities` | 442 | `anim`(10) `appearance`(20) `combat`(41) `dialogueId`(9) `facing`(16) `foot`(11) `id`(442) `interact`(29) `kind`(442) `label`(85) `merchant`(4) `pos`(442) `ref`(404) `statblock`(3) `weapon`(6) |
+| `arene-projet.json` | `scenes.triggers` | 27 | `flow`(27) `id`(27) `once`(25) `rect`(27) |
+| `arene-projet.json` | `worldMap` | 1 | `id`(1) `nom`(1) `places`(1) `routes`(1) |
+| `arene-projet.json` | `worldMap.places` | 4 | `entry`(1) `icon`(4) `id`(4) `label`(4) `pos`(4) `scene`(4) |
+| `arene-projet.json` | `worldMap.routes` | 4 | `a`(4) `ambush`(4) `b`(4) `id`(4) `inns`(1) `km`(4) `modes`(4) `perilDie`(1) `perils`(3) |
+| `artillery-misfire.json` | `entries` | 4 | `destroyed`(4) `id`(4) `label`(4) `location`(4) `max`(4) `min`(4) `note`(4) `perSalveIndex`(4) `strayFire`(1) |
+| `barge-du-sel-projet.json` | `meta` | 1 | `icon`(1) `id`(1) `label`(1) `version`(1) |
+| `barge-du-sel-projet.json` | `scenes` | 3 | `ambiance`(3) `description`(3) `dialogues`(3) `dimensions`(3) `encounters`(3) `entities`(3) `entryPoints`(1) `flags`(3) `id`(3) `layers`(3) `metresPerTile`(1) `nom`(3) `triggers`(3) `weather`(1) |
+| `barge-du-sel-projet.json` | `scenes.encounters` | 1 | `id`(1) `members`(1) `onVictory`(1) `surprise`(1) `victoryCondition`(1) |
+| `barge-du-sel-projet.json` | `scenes.encounters.onVictory.steps.effect` | 1 | `id`(1) `text`(1) `type`(1) |
+| `barge-du-sel-projet.json` | `scenes.entities` | 13 | `crewIds`(2) `facing`(2) `id`(13) `interact`(1) `kind`(13) `label`(10) `pos`(13) `postes`(2) `ref`(5) `statblock`(4) `upgrades`(1) |
+| `barge-du-sel-projet.json` | `scenes.triggers` | 2 | `flow`(2) `id`(2) `once`(2) `rect`(2) |
+| `barge-du-sel-projet.json` | `scenes.triggers.flow.steps.effect` | 1 | `id`(1) `text`(1) `type`(1) |
+| `barge-du-sel-projet.json` | `worldMap` | 1 | `id`(1) `nom`(1) `places`(1) `routes`(1) |
+| `barge-du-sel-projet.json` | `worldMap.places` | 2 | `icon`(2) `id`(2) `label`(2) `pos`(2) `scene`(2) |
+| `barge-du-sel-projet.json` | `worldMap.routes` | 1 | `a`(1) `ambush`(1) `b`(1) `id`(1) `km`(1) `modes`(1) `sea`(1) `seaHeading`(1) |
+| `characteristics.json` | `options` | 2 | `desc`(2) `id`(2) `label`(2) `source`(2) |
+| `crew-morale.json` | `bands` | 4 | `captainCmdDR`(4) `crewTestDR`(4) `desc`(4) `desertionRoll`(2) `id`(4) `max`(4) `min`(4) `source`(4) |
+| `crew-morale.json` | `factors` | 28 | `effect`(28) `id`(28) `label`(28) `recommendedPay`(1) `source`(28) `wageMul`(4) |
+| `crew-test-types.json` | `types` | 10 | `essential`(10) `id`(10) `label`(10) `moraleOnNegativeDR`(1) `roles`(10) `rule`(10) `source`(10) `steering`(1) |
+| `criticals.json` | `bras` | 20 | `amputation`(4) `desc`(20) `escalation`(4) `id`(20) `label`(20) `lethal`(1) `max`(20) `min`(20) `ops`(19) `resist`(5) `source`(20) `traumas`(7) |
+| `criticals.json` | `corps` | 20 | `desc`(20) `escalation`(3) `id`(20) `label`(20) `lethal`(1) `max`(20) `min`(20) `ops`(19) `resist`(5) `source`(20) `traumas`(6) |
+| `criticals.json` | `jambe` | 20 | `amputation`(4) `desc`(20) `escalation`(3) `id`(20) `label`(20) `lethal`(1) `maison`(1) `max`(20) `min`(20) `ops`(19) `resist`(8) `source`(20) `traumas`(6) |
+| `criticals.json` | `tete` | 20 | `amputation`(5) `desc`(20) `escalation`(4) `id`(20) `label`(20) `lethal`(1) `max`(20) `min`(20) `ops`(19) `resist`(3) `source`(20) `traumas`(4) |
+| `diligence-projet.json` | `meta` | 1 | `icon`(1) `id`(1) `label`(1) `version`(1) |
+| `diligence-projet.json` | `scenes` | 1 | `ambiance`(1) `architecture`(1) `description`(1) `dialogues`(1) `dimensions`(1) `effectZones`(1) `encounters`(1) `entities`(1) `flags`(1) `id`(1) `layers`(1) `metresPerTile`(1) `nom`(1) `rest`(1) `restZones`(1) `triggers`(1) `walls`(1) |
+| `diligence-projet.json` | `scenes.architecture.facades` | 41 | `appearance`(41) `edges`(41) `features`(25) `id`(41) `roomZoneIds`(37) `z`(41) |
+| `diligence-projet.json` | `scenes.architecture.facades.features` | 71 | `edge`(71) `id`(71) `kind`(71) `offset`(3) `width`(2) |
+| `diligence-projet.json` | `scenes.architecture.storeys` | 2 | `id`(2) `parts`(2) `roomZoneIds`(2) `z`(2) |
+| `diligence-projet.json` | `scenes.effectZones` | 39 | `area`(39) `id`(39) `label`(39) `presentation`(39) `tiles`(10) `z`(37) |
+| `diligence-projet.json` | `scenes.entities` | 1 | `id`(1) `kind`(1) `pos`(1) |
+| `donnees.manifest.json` | `rubriques` | 11 | `entrees`(11) `nom`(11) |
+| `driving-mishap.json` | `table` | 4 | `desc`(4) `effect`(4) `id`(4) `label`(4) `max`(4) `min`(4) |
+| `drunkenness.json` | `table` | 5 | `desc`(5) `effect`(5) `id`(5) `label`(5) `max`(5) `min`(5) `ops`(3) |
+| `etats.json` | `effects.flow.test.gate.of.of` | 1 | `id`(1) `kind`(1) `who`(1) |
+| `incidents-monture.json` | `entries` | 4 | `id`(4) `label`(4) `max`(4) `min`(4) `mount`(4) `text`(4) |
+| `land-cargo.json` | `cargoes` | 9 | `avail`(7) `echangeable`(2) `hint`(2) `id`(9) `label`(9) `price`(7) `source`(9) `tradeHub`(1) `wine`(1) |
+| `loup-et-saumure-projet.json` | `meta` | 1 | `icon`(1) `id`(1) `label`(1) `version`(1) |
+| `loup-et-saumure-projet.json` | `scenes` | 5 | `ambiance`(5) `description`(5) `dialogues`(5) `dimensions`(5) `encounters`(5) `entities`(5) `entryPoints`(5) `flags`(5) `id`(5) `layers`(5) `metresPerTile`(2) `nom`(5) `rest`(2) `triggers`(5) `weather`(4) |
+| `loup-et-saumure-projet.json` | `scenes.dialogues` | 8 | `id`(8) `nodes`(8) `start`(8) |
+| `loup-et-saumure-projet.json` | `scenes.dialogues.nodes` | 17 | `choices`(17) `id`(17) `text`(17) |
+| `loup-et-saumure-projet.json` | `scenes.dialogues.nodes.choices.flow.steps.effect` | 1 | `id`(1) `text`(1) `type`(1) |
+| `loup-et-saumure-projet.json` | `scenes.encounters` | 2 | `id`(2) `members`(2) `onVictory`(2) `surprise`(2) `threat`(1) `victoryCondition`(2) |
+| `loup-et-saumure-projet.json` | `scenes.encounters.onVictory.steps.effect` | 1 | `id`(1) `text`(1) `type`(1) |
+| `loup-et-saumure-projet.json` | `scenes.entities` | 36 | `appearance`(11) `crewIds`(4) `dialogueId`(8) `facing`(15) `id`(36) `interact`(2) `kind`(36) `label`(31) `merchant`(3) `pos`(36) `postes`(4) `ref`(10) `statblock`(8) `upgrades`(1) `weapon`(1) |
+| `loup-et-saumure-projet.json` | `scenes.entities.interact.flow.steps.effect` | 1 | `id`(1) `text`(1) `type`(1) |
+| `loup-et-saumure-projet.json` | `scenes.triggers` | 2 | `flow`(2) `id`(2) `once`(2) `rect`(2) `when`(1) |
+| `loup-et-saumure-projet.json` | `scenes.triggers.flow.steps.effect` | 1 | `id`(1) `text`(1) `type`(1) |
+| `loup-et-saumure-projet.json` | `worldMap` | 1 | `id`(1) `nom`(1) `places`(1) `routes`(1) |
+| `loup-et-saumure-projet.json` | `worldMap.places.poi` | 8 | `id`(8) `label`(8) `pos`(8) `serviceKind`(8) |
+| `loup-et-saumure-projet.json` | `worldMap.routes` | 2 | `a`(2) `ambush`(2) `b`(2) `from`(2) `id`(2) `km`(2) `modes`(2) `sea`(2) `seaHeading`(2) |
+| `mass-battle.json` | `hazards` | 10 | `id`(10) `label`(10) `max`(10) `min`(10) `source`(10) `text`(10) |
+| `mass-battle.json` | `mightModifiers` | 9 | `example`(9) `id`(9) `label`(9) `mod`(9) `source`(9) |
+| `mass-battle.json` | `powerEstimate` | 5 | `ally`(5) `enemy`(5) `example`(5) `id`(5) `label`(5) `source`(5) |
+| `miscast.json` | `major` | 20 | `id`(20) `label`(20) `max`(20) `min`(20) `ops`(10) `source`(20) `test`(2) |
+| `miscast.json` | `majorVdm` | 20 | `id`(20) `label`(20) `max`(20) `min`(20) `ops`(8) `source`(20) `test`(2) |
+| `miscast.json` | `minor` | 20 | `id`(20) `label`(20) `max`(20) `min`(20) `ops`(9) `reroll`(2) `source`(20) `test`(3) |
+| `miscast.json` | `minorVdm` | 20 | `domainTable`(1) `id`(20) `label`(20) `max`(20) `min`(20) `ops`(9) `reroll`(2) `source`(20) `test`(3) |
+| `miscast.json` | `tables` | 5 | `codexCategory`(3) `id`(5) `label`(5) `rows`(5) `source`(5) |
+| `miscast.json` | `wrath` | 31 | `id`(31) `label`(31) `max`(31) `min`(31) `ops`(15) `source`(31) `test`(5) |
+| `naval-progression.json` | `table` | 5 | `desc`(5) `id`(5) `max`(5) `min`(5) `mode`(5) `source`(5) |
+| `obsessions.json` | `table` | 19 | `id`(19) `label`(19) `max`(19) `min`(19) |
+| `problemes-vehicule.json` | `entries` | 4 | `id`(4) `label`(4) `max`(4) `min`(4) `occupantOps`(2) `text`(4) `vehicleWounds`(4) |
+| `rencontres-edoc.json` | `tables.dangereuses` | 9 | `id`(9) `label`(9) `max`(9) `min`(9) `stageOutcome`(1) `text`(9) |
+| `rencontres-edoc.json` | `tables.fortuites` | 10 | `id`(10) `label`(10) `max`(10) `min`(10) `text`(10) |
+| `rencontres-edoc.json` | `tables.positives` | 7 | `id`(7) `label`(7) `max`(7) `min`(7) `stageOutcome`(3) `text`(7) |
+| `river-criticals.json` | `tables.avirons` | 1 | `crewTest`(1) `id`(1) `label`(1) `max`(1) `min`(1) `note`(1) `ops`(1) |
+| `river-criticals.json` | `tables.coque` | 1 | `id`(1) `label`(1) `max`(1) `min`(1) `note`(1) `ops`(1) |
+| `river-criticals.json` | `tables.gouvernail` | 1 | `id`(1) `label`(1) `max`(1) `min`(1) `note`(1) `ops`(1) `shrapnel`(1) |
+| `river-criticals.json` | `tables.greement` | 1 | `crewTest`(1) `id`(1) `label`(1) `max`(1) `min`(1) `note`(1) `ops`(1) |
+| `river-criticals.json` | `tables.superstructure` | 1 | `crewTest`(1) `id`(1) `label`(1) `max`(1) `min`(1) `note`(1) |
+| `river-navigation.json` | `windDirections` | 3 | `id`(3) `label`(3) `max`(3) `min`(3) `source`(3) |
+| `river-perils.json` | `perils` | 4 | `clear`(1) `id`(4) `kind`(4) `label`(4) `obstacle`(1) `onFail`(1) `onHit`(2) `ref`(4) `source`(4) |
+| `sea-cargo.json` | `cargoes` | 13 | `avail`(11) `echangeable`(2) `hint`(2) `id`(13) `label`(13) `price`(11) `source`(13) `tradeHub`(1) |
+| `sea-cargo.json` | `overload.paliers` | 3 | `fromPct`(3) `id`(3) `label`(3) `manoeuvreDR`(3) `mMod`(3) |
+| `sea-events.json` | `boardEvents` | 40 | `desc`(40) `id`(40) `kind`(40) `label`(40) `max`(40) `min`(40) `params`(40) `source`(40) |
+| `sea-events.json` | `fastVoyage.paliers` | 5 | `cargoLostPct`(5) `crewLostPct`(5) `criticals`(5) `desc`(5) `hullLostPct`(5) `id`(5) `label`(5) `max`(5) `min`(5) `source`(5) |
+| `sea-events.json` | `manann.factors` | 26 | `effect`(26) `id`(26) `label`(26) `source`(26) |
+| `sea-events.json` | `portEvents` | 18 | `desc`(18) `id`(18) `kind`(18) `label`(18) `max`(18) `min`(18) `params`(18) `source`(18) |
+| `sea-navigation.json` | `poursuite.escapeDistances` | 5 | `distance`(5) `id`(5) `label`(5) `source`(5) |
+| `sea-perils.json` | `detroits` | 3 | `id`(3) `label`(3) `m`(3) `navDR`(3) `source`(3) |
+| `sea-perils.json` | `hazards` | 4 | `desc`(4) `entangleChancePct`(1) `entanglePenalties`(1) `freeTest`(1) `ic`(4) `id`(4) `label`(4) `m`(2) `source`(4) `strandChancePct`(2) `weight`(4) |
+| `sea-perils.json` | `tourbillons` | 5 | `evasion`(5) `ic`(5) `id`(5) `label`(5) `m`(5) `manDR`(5) `source`(5) `zoneRadiusM`(5) `zoneSpiralM`(5) |
+| `sea-weather.json` | `precipitations` | 4 | `desc`(3) `id`(4) `label`(4) `otherMod`(1) `skillMods`(3) `source`(4) |
+| `sea-weather.json` | `temperatures` | 5 | `difficulty`(4) `exposure`(4) `id`(5) `label`(5) `litresParJour`(2) `source`(5) `testEveryHours`(4) |
+| `sea-weather.json` | `vents` | 6 | `id`(6) `label`(6) `source`(6) |
+| `sea-weather.json` | `visibilites` | 4 | `beyondM`(3) `drPenalty`(3) `id`(4) `label`(4) `source`(4) |
+| `ship-construction.json` | `speedTraits` | 7 | `capacityPct`(7) `costPct`(7) `id`(7) `label`(7) `manDR`(7) `mMod`(7) `source`(7) |
+| `ship-construction.json` | `standard` | 7 | `b`(7) `capacity`(7) `costGold`(7) `crew`(7) `e`(7) `id`(7) `lengthM`(7) `oars`(5) `sail`(7) `size`(7) `source`(7) |
+| `ship-criticals.json` | `tables.avirons` | 5 | `id`(5) `label`(5) `max`(5) `min`(5) `note`(5) `shrapnel`(4) |
+| `ship-criticals.json` | `tables.cargaison` | 5 | `hullCrits`(1) `id`(5) `label`(5) `max`(5) `min`(5) `note`(5) `ops`(2) `shrapnel`(3) |
+| `ship-criticals.json` | `tables.coque` | 10 | `id`(10) `label`(10) `max`(10) `min`(10) `note`(10) `ops`(3) `shrapnel`(6) |
+| `ship-criticals.json` | `tables.equipements` | 5 | `crewTest`(1) `id`(5) `label`(5) `max`(5) `min`(5) `note`(5) `ops`(1) |
+| `ship-criticals.json` | `tables.greement` | 10 | `id`(10) `label`(10) `max`(10) `min`(10) `note`(10) `shrapnel`(4) |
+| `skills.json` | `specs` | 253 | `alsoIn`(1) `id`(253) `label`(253) `pool`(30) `source`(47) |
+| `structure-criticals.json` | `entries` | 8 | `destroyed`(1) `id`(8) `label`(8) `max`(8) `min`(8) `note`(8) `trivial`(1) `wounds`(8) |
+| `surincantation.json` | `table` | 7 | `damage`(7) `dr`(7) `duration`(7) `id`(7) `label`(7) `range`(7) `targets`(7) `zone`(7) |
+| `talents.json` | `specs` | 215 | `id`(215) `label`(215) |
+| `vehicles.json` | `travel.classes` | 6 | `brassPerKm`(6) `key`(6) `label`(6) |
+| `vents-tourbillonnants.json` | `table` | 5 | `id`(5) `label`(5) `max`(5) `min`(5) `mod`(5) |
+| `water-exposure.json` | `modifiers` | 12 | `appliesTo`(12) `auto`(7) `id`(12) `label`(12) `mod`(12) `table`(12) |
+| `weather.json` | `conditions` | 6 | `desc`(4) `id`(6) `label`(6) `lightningNervous`(1) `movementWalkOnly`(2) `physicalTestMod`(1) `powderUseless`(1) `rangedMod`(2) `rangedUseless`(1) `resistanceTest`(2) `source`(6) `visibiliteM`(4) |
+| `weather.json` | `seasons` | 4 | `id`(4) `label`(4) `ranges`(4) `source`(4) |
+
+### 2.4 Formes DÉCLARÉES jamais observées
+
+Clé déclarée par le schéma zod d’un document mais portée par AUCUNE entrée du JSON — schéma plus
+large que la donnée (un champ à retirer, ou une donnée à écrire).
+
+**13** documents portent au moins une clé déclarée jamais observée.
+
+| Document | Clés | Détail |
+|---|---|---|
+| `actions.json` | 1 | `blocked` |
+| `activities.json` | 1 | `char` |
+| `creatures.json` | 1 | `group` |
+| `maneuvers.json` | 1 | `priority` |
+| `merchants.json` | 2 | `buyMarkup` `restockDays` |
+| `pregens.json` | 2 | `age` `weaponChoice` |
+| `psychology.json` | 1 | `gating` |
+| `raceAppearance.json` | 3 | `armD` `armG` `scale` |
+| `roofMaterials.json` | 1 | `fasciaThickM` |
+| `structureAppearance.json` | 2 | `bayPanel` `relief` |
+| `tavernGames.json` | 1 | `fastSkill` |
+| `traits.json` | 2 | `appearance` `variants` |
+| `trappings.json` | 1 | `requiresMastery` |
+
+Même règle pour le LEXIQUE : une signature qu’il déclare et que la donnée ne porte nulle part.
+Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit ici, jamais en silence.
+
+| Concept | Signature du lexique | Statut | Occurrences |
+|---|---|---|---|
+| reference | `id` | cible | 8827 |
+| reference | `id,spec` | cible | 1236 |
+| reference | `choix,id` | cible | 0 |
+| reference | `id,type` | cible | 0 |
+| reference | `count,id,type` | cible | 0 |
+| reference | `of,pick` | cible | 0 |
+| reference | `pick,table` | cible | 0 |
+| reference | `id,value` | historique | 5654 |
+| reference | `id,spec,value` | historique | 1434 |
+| reference | `arg,id` | historique | 545 |
+| reference | `arg,id,value` | historique | 125 |
+| reference | `count,id` | historique | 19 |
+| reference | `count,text` | historique | 4 |
+| reference | `id,times` | historique | 48 |
+| reference | `id,qualityChoice` | historique | 38 |
+| reference | `ref` | historique | 2 |
+| reference | `wildcard` | historique | 7 |
+| reference | `specOptions,wildcard` | historique | 0 |
+| reference | `skillId` | historique | 69 |
+| reference | `skillId,spec` | historique | 17 |
+| reference | `skill,spec` | historique | 15 |
+| reference | `talentId` | historique | 3 |
+| reference | `trappingId` | historique | 0 |
+| reference | `creatureId` | historique | 55 |
+| reference | `vehicleId` | historique | 15 |
+| reference | `career` | historique | 27 |
+| reference | `choice` | historique | 0 |
+| reference | `random` | historique | 0 |
+| reference | `text` | declaree | 56 |
+| reference | `id-nu` | historique | 3009 |
+| refs | `ids-nus` | historique | 1124 |
+| monnaie | `brass,gold,silver` | cible | 0 |
+| monnaie | `bronze,gold,silver` | historique | 451 |
+| monnaie | `gold,silver` | historique | 0 |
+| prix | `automne,ete,hiver,printemps` | declaree | 17 |
+| prix | `dice` | declaree | 1 |
+| de | `n,sides` | cible | 105 |
+| de | `n,plus,sides` | cible | 18 |
+| source | `book,page` | cible | 3260 |
+| source | `book,note,page` | cible | 1090 |
+| source | `book,chapter` | historique | 24 |
+| source | `book,chapter,page` | historique | 0 |
+| test | `difficulty,skill` | historique | 37 |
+| test | `char,difficulty` | historique | 3 |
+| test | `characteristic,difficulty` | historique | 6 |
+| test | `difficulty,skillId` | historique | 2 |
+| plage | `max,min` | cible | 0 |
+| quantite | `fixed` | cible | 47 |
+| quantite | `roll` | cible | 0 |
+
+## 3. Concepts transverses (lexique FERMÉ)
+
+Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUCTURES_CIBLES`) ·
+**historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
+conservée · **divergente** = graphie inconnue du lexique.
+
+Lignes concept × dataset × champ × forme : **938** (cible 153 · declaree 5 · historique 263 · divergente 517). Objets JSON parcourus : **51724**, dont **32873** portent une forme
+mesurée. Champs porteurs de référence MESURÉS : **265**.
+
+### 3.1 référence à une entité — `reference` (strate Référence)
+
+585 ligne(s), 26087 occurrence(s).
+Reconnu par : RÉSOLUTION vers l’index des ids
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|---|
+| config | `apresDelai` | `versTraumaId+…` | divergente | `aa-criticals.json` | 1 | — | `traumas.json` |  |
+| config | `of` | `bonusOf` | divergente | `aa-criticals.json` | 1 | — | `characteristics.json` |  |
+| config | `onFail` | `char+…` | divergente | `aa-criticals.json` | 1 | — | `characteristics.json` |  |
+| config | `onFail` | `id,value+…` | divergente | `aa-criticals.json` | 17 | — | `etats.json` `water-exposure.json` |  |
+| config | `ops` | `char+…` | divergente | `aa-criticals.json` | 3 | — | `characteristics.json` |  |
+| config | `ops` | `id,value+…` | divergente | `aa-criticals.json` | 82 | — | `etats.json` `water-exposure.json` |  |
+| config | `perRound` | `versTraumaId` | divergente | `aa-criticals.json` | 1 | — | `traumas.json` |  |
+| config | `recoveryPenalty` | `char+…` | divergente | `aa-criticals.json` | 2 | — | `characteristics.json` |  |
+| entité | `armed` | `id-nu` | historique | `actions.json` | 4 | — | `actions.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `cost` | `id-nu` | historique | `actions.json` | 7 | — | `actions.json` `characteristics.json` `regles.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `gate` | `id-nu` | historique | `actions.json` | 2 | — | `regles.json` `systemes.manifest.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `mode` | `id-nu` | historique | `actions.json` | 5 | — | `actions.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `rule` | `id-nu` | historique | `actions.json` | 32 | — | `actions.json` `characteristics.json` `etats.json` `psychology.json` `qualities.json` `regles.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `surface` | `id-nu` | historique | `actions.json` | 6 | — | `systemes.manifest.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `ops` | `id+…` | divergente | `activities.json` | 1 | — | `etats.json` |  |
+| entité | `ops` | `skill+…` | divergente | `activities.json` | 1 | — | `skills.json` `talents.json` |  |
+| entité | `ops` | `tableId+…` | divergente | `activities.json` | 15 | — | `tables.json` |  |
+| entité | `resolver` | `id-nu` | historique | `activities.json` | 2 | — | `activities.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `sceneKind` | `id-nu` | historique | `activities.json` | 6 | — | `skills.json` `systemes.manifest.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `skills` | `skillId` | historique | `activities.json` | 51 | — | `activities.json` `axes.json` `crew-test-types.json` `skills.json` `talents.json` |  |
+| entité | `skills` | `skillId,spec` | historique | `activities.json` | 10 | — | `axes.json` `careers.json` `obsessions.json` `skills.json` `systemes.manifest.json` `talents.json` … |  |
+| config | `neige` | `particles+…` | divergente | `ambiance.json` | 1 | — | `weather.json` |  |
+| config | `pluie` | `particles+…` | divergente | `ambiance.json` | 1 | — | `weather.json` |  |
+| config | `cancelsTraitId` | `id-nu` | historique | `arcane-phenomena.json` | 1 | — | `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `domainId` | `id-nu` | historique | `arcane-phenomena.json` | 8 | — | `breath-types.json` `damage-types.json` `domains.json` `groups.json` `land-cargo.json` `obsessions.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `effects` | `tier+…` | divergente | `arcane-phenomena.json` | 8 | — | `arcane-phenomena.json` |  |
+| config | `fluxTableId` | `id-nu` | historique | `arcane-phenomena.json` | 1 | — | `arcane-phenomena.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `kind` | `id-nu` | historique | `arcane-phenomena.json` | 3 | — | `characteristics.json` `mass-battle.json` `sea-events.json` `systemes.manifest.json` `talents.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `tableId` | `id-nu` | historique | `arcane-phenomena.json` | 2 | — | `arcane-phenomena.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `a` | `id-nu` | historique | `arene-projet.json` | 4 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `acts` | `act+…` | divergente | `arene-projet.json` | 1 | — | `regles.json` |  |
+| config | `ambiance` | `id-nu` | historique | `arene-projet.json` | 18 | — | `vehicles.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `ambush` | `encounter,scene` | divergente | `arene-projet.json` | 4 | — | `arene-projet.json` |  |
+| config | `appearance` | `id-nu` | historique | `arene-projet.json` | 2 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `appearance` | `species,tenue` | divergente | `arene-projet.json` | 5 | — | `careers.json` `creatures.json` `obsessions.json` `skills.json` `species.json` `talents.json` |  |
+| config | `appearance` | `species,tenue+…` | divergente | `arene-projet.json` | 12 | — | `careers.json` `creatures.json` `groups.json` `obsessions.json` `skills.json` `species.json` … |  |
+| config | `appearance` | `tenue` | divergente | `arene-projet.json` | 1 | — | `careers.json` `talents.json` |  |
+| config | `appearance` | `tenue+…` | divergente | `arene-projet.json` | 2 | — | `careers.json` `talents.json` |  |
+| config | `b` | `id-nu` | historique | `arene-projet.json` | 4 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `choices` | `next,text` | divergente | `arene-projet.json` | 11 | — | `arene-projet.json` |  |
+| config | `choices` | `next,text+…` | divergente | `arene-projet.json` | 3 | — | `arene-projet.json` |  |
+| config | `dialogueId` | `id-nu` | historique | `arene-projet.json` | 9 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `effect` | `dialogue,speakerId,type` | divergente | `arene-projet.json` | 1 | — | `arene-projet.json` |  |
+| config | `effect` | `encounter,type` | divergente | `arene-projet.json` | 20 | — | `arene-projet.json` |  |
+| config | `effect` | `entityId,skill,type+…` | divergente | `arene-projet.json` | 2 | — | `arene-projet.json` `careers.json` `creatures.json` `merchants.json` |  |
+| config | `effect` | `entityId,type` | divergente | `arene-projet.json` | 4 | — | `arene-projet.json` `careers.json` `creatures.json` `lieux-services.json` `merchants.json` `skills.json` … |  |
+| config | `effect` | `lodging,type` | divergente | `arene-projet.json` | 1 | — | `lieux-services.json` |  |
+| config | `effect` | `phase,type` | divergente | `arene-projet.json` | 2 | — | `arene-projet.json` `calendarPhases.json` `lightLevels.json` |  |
+| config | `effect` | `scene,type` | divergente | `arene-projet.json` | 13 | — | `arene-projet.json` |  |
+| config | `effect` | `scene,type+…` | divergente | `arene-projet.json` | 13 | — | `arene-projet.json` |  |
+| config | `effect` | `skill,type+…` | divergente | `arene-projet.json` | 1 | — | `skills.json` |  |
+| config | `effect` | `spell,type` | divergente | `arene-projet.json` | 1 | — | `spells.json` |  |
+| config | `effect` | `type+…` | divergente | `arene-projet.json` | 1 | — | `systemes.manifest.json` |  |
+| config | `material` | `id-nu` | historique | `arene-projet.json` | 9 | — | `roofMaterials.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `members` | `entityId` | divergente | `arene-projet.json` | 110 | — | `arene-projet.json` |  |
+| config | `members` | `entityId,ridesEntityId` | divergente | `arene-projet.json` | 2 | — | `arene-projet.json` |  |
+| config | `members` | `entityId+…` | divergente | `arene-projet.json` | 4 | — | `arene-projet.json` |  |
+| config | `merchant` | `archetype` | divergente | `arene-projet.json` | 4 | — | `arene-projet.json` `careers.json` `creatures.json` `loup-et-saumure-projet.json` `merchants.json` `skills.json` … |  |
+| config | `meta` | `id+…` | divergente | `arene-projet.json` | 1 | — | `tavernGames.json` |  |
+| config | `optionals` | `arg,id` | historique | `arene-projet.json` | 1 | — | `skills.json` `talents.json` `traits.json` | paramètre d’entité non déclaré (#1463 S2 A11) |
+| config | `optionals` | `id` | cible | `arene-projet.json` | 7 | — | `obsessions.json` `psychology.json` `talents.json` `traits.json` |  |
+| config | `optionals` | `id,value` | historique | `arene-projet.json` | 5 | — | `qualitySubtypes.json` `traits.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| config | `ref` | `id-nu` | historique | `arene-projet.json` | 291 | — | `creatures.json` `groups.json` `props.json` `sea-perils.json` `skills.json` `structures.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `scene` | `id-nu` | historique | `arene-projet.json` | 4 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `start` | `id-nu` | historique | `arene-projet.json` | 9 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `statblock` | `size+…` | divergente | `arene-projet.json` | 1 | — | `ship-construction.json` |  |
+| config | `style` | `id-nu` | historique | `arene-projet.json` | 2 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `traits` | `arg,id` | historique | `arene-projet.json` | 3 | — | `qualities.json` `ship-construction.json` `traits.json` | paramètre d’entité non déclaré (#1463 S2 A11) |
+| config | `traits` | `arg,id,value` | historique | `arene-projet.json` | 1 | — | `spells.json` `traits.json` |  |
+| config | `traits` | `id` | cible | `arene-projet.json` | 3 | — | `spells.json` `traits.json` |  |
+| config | `traits` | `id,value` | historique | `arene-projet.json` | 4 | — | `maneuvers.json` `psychology.json` `qualitySubtypes.json` `traits.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| config | `walls` | `structure+…` | divergente | `arene-projet.json` | 235 | — | `structureAppearance.json` `structures.json` |  |
+| config | `weapon` | `id-nu` | historique | `arene-projet.json` | 6 | — | `trappings.json` `weaponGroups.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `weather` | `id-nu` | historique | `arene-projet.json` | 3 | — | `sea-weather.json` `weather.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `skills` | `skillId` | historique | `axes.json` | 11 | — | `axes.json` `skills.json` |  |
+| entité | `skills` | `skillId,spec` | historique | `axes.json` | 4 | — | `axes.json` `careers.json` `skills.json` `talents.json` `weaponGroups.json` |  |
+| entité | `talents` | `spec,talentId` | divergente | `axes.json` | 1 | — | `careers.json` `skills.json` `talents.json` |  |
+| entité | `talents` | `talentId` | historique | `axes.json` | 3 | — | `talents.json` |  |
+| config | `a` | `id-nu` | historique | `barge-du-sel-projet.json` | 1 | — | `barge-du-sel-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `ambiance` | `id-nu` | historique | `barge-du-sel-projet.json` | 3 | — | `vehicles.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `ambush` | `encounter,scene+…` | divergente | `barge-du-sel-projet.json` | 1 | — | `barge-du-sel-projet.json` |  |
+| config | `ammo` | `kind,subType,trappingId+…` | divergente | `barge-du-sel-projet.json` | 8 | — | `merchantFamilies.json` `trappings.json` `weaponGroups.json` |  |
+| config | `b` | `id-nu` | historique | `barge-du-sel-projet.json` | 1 | — | `barge-du-sel-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `crew` | `count,roleId` | divergente | `barge-du-sel-projet.json` | 1 | — | `crew-roles.json` |  |
+| config | `effect` | `type,vehicleId+…` | divergente | `barge-du-sel-projet.json` | 1 | — | `vehicles.json` |  |
+| config | `members` | `entityId+…` | divergente | `barge-du-sel-projet.json` | 7 | — | `barge-du-sel-projet.json` `loup-et-saumure-projet.json` `sea-events.json` |  |
+| config | `postes` | `trappingId+…` | divergente | `barge-du-sel-projet.json` | 6 | — | `trappings.json` |  |
+| config | `qualities` | `id` | cible | `barge-du-sel-projet.json` | 7 | — | `qualities.json` |  |
+| config | `qualities` | `id,value` | historique | `barge-du-sel-projet.json` | 8 | — | `qualities.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| config | `ref` | `id-nu` | historique | `barge-du-sel-projet.json` | 5 | — | `creatures.json` `loup-et-saumure-projet.json` `skills.json` `vehicles.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `scene` | `id-nu` | historique | `barge-du-sel-projet.json` | 2 | — | `barge-du-sel-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `skills` | `id,spec,value` | historique | `barge-du-sel-projet.json` | 2 | — | `skills.json` `weaponGroups.json` | #1463 « Cible précisée » l’énumère parmi les 5 graphies historiques, son 1er paragraphe la dit champ optionnel de la MÊME structure — L0 retient l’énumération (une ligne de stock se retire, elle ne se devine pas) |
+| config | `skills` | `id,value` | historique | `barge-du-sel-projet.json` | 4 | — | `skills.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| config | `upgrades` | `id,value` | historique | `barge-du-sel-projet.json` | 1 | — | `naval-traits.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| config | `victoryCondition` | `targetId,type+…` | divergente | `barge-du-sel-projet.json` | 1 | — | `barge-du-sel-projet.json` `sea-events.json` |  |
+| config | `weather` | `id-nu` | historique | `barge-du-sel-projet.json` | 1 | — | `sea-weather.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `career` | `id-nu` | historique | `careerLevels.json` | 432 | — | `arene-projet.json` `careers.json` `creatures.json` `crew-roles.json` `groups.json` `interludeEvents.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `choice` | `id` | cible | `careerLevels.json` | 25 | — | `qualities.json` `spells.json` `trappings.json` |  |
+| entité | `choice` | `id,qualityChoice` | historique | `careerLevels.json` | 2 | — | `trappings.json` |  |
+| entité | `ref` | `id` | cible | `careerLevels.json` | 2877 | — | `actions.json` `activities.json` `careers.json` `crew-roles.json` `crew-test-types.json` `groups.json` … |  |
+| entité | `ref` | `id,spec` | cible | `careerLevels.json` | 858 | — | `activities.json` `arene-projet.json` `axes.json` `breath-types.json` `careers.json` `creatures.json` … |  |
+| entité | `trappings` | `count,id` | historique | `careerLevels.json` | 16 | — | `spells.json` `trappings.json` |  |
+| entité | `trappings` | `count,id,qualityChoice` | divergente | `careerLevels.json` | 1 | — | `trappings.json` |  |
+| entité | `trappings` | `count,text` | historique | `careerLevels.json` | 4 | 4 | — |  |
+| entité | `trappings` | `count,vehicleId+…` | divergente | `careerLevels.json` | 1 | — | `structures.json` `vehicles.json` |  |
+| entité | `trappings` | `creatureId` | historique | `careerLevels.json` | 54 | — | `creatures.json` `skills.json` |  |
+| entité | `trappings` | `creatureId+…` | divergente | `careerLevels.json` | 5 | — | `creatures.json` `skills.json` |  |
+| entité | `trappings` | `id` | cible | `careerLevels.json` | 547 | — | `lightTones.json` `props.json` `qualities.json` `spells.json` `trappings.json` `weaponGroups.json` |  |
+| entité | `trappings` | `id,qualityChoice` | historique | `careerLevels.json` | 36 | — | `trappings.json` `weaponGroups.json` |  |
+| entité | `trappings` | `text` | declaree | `careerLevels.json` | 55 | 55 | — | dotation narrative — occurrence de référence seulement quand le texte normalisé résout vers un `label` (#1463, #624) |
+| entité | `trappings` | `vehicleId` | historique | `careerLevels.json` | 15 | — | `props.json` `structures.json` `vehicles.json` |  |
+| entité | `trappings` | `vehicleId+…` | divergente | `careerLevels.json` | 11 | — | `arene-projet.json` `props.json` `skills.json` `structures.json` `vehicles.json` |  |
+| entité | `trappings` | `wildcard` | historique | `careerLevels.json` | 7 | — | `maneuvers.json` `qualitySubtypes.json` `traits.json` |  |
+| entité | `wildcard` | `id` | cible | `careerLevels.json` | 237 | — | `activities.json` `axes.json` `careers.json` `psychology.json` `skills.json` `talents.json` … |  |
+| entité | `class` | `id-nu` | historique | `careers.json` | 108 | — | `classes.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `tenue` | `id-nu` | historique | `careers.json` | 15 | — | `arene-projet.json` `careers.json` `creatures.json` `groups.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `trappings` | `count,id` | historique | `classes.json` | 2 | — | `trappings.json` |  |
+| entité | `trappings` | `id` | cible | `classes.json` | 48 | — | `trappings.json` |  |
+| entité | `entryCategory` | `id-nu` | historique | `combat-stakes.json` | 1 | — | `skills.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `kind` | `id-nu` | historique | `combat-stakes.json` | 7 | — | `combat-stakes.json` `spells.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `rule` | `id-nu` | historique | `combat-stakes.json` | 23 | — | `etats.json` `qualities.json` `regles.json` `skills.json` `spells.json` `talents.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `appearance` | `species` | divergente | `creatures.json` | 225 | — | `creatures.json` `groups.json` `skills.json` `talents.json` `trappings.json` |  |
+| entité | `appearance` | `species,tenue` | divergente | `creatures.json` | 107 | — | `arene-projet.json` `careers.json` `creatures.json` `groups.json` `interludeEvents.json` `merchants.json` … |  |
+| entité | `appearance` | `species,tenue+…` | divergente | `creatures.json` | 70 | — | `arene-projet.json` `careers.json` `creatures.json` `groups.json` `skills.json` `talents.json` … |  |
+| entité | `appearance` | `species+…` | divergente | `creatures.json` | 52 | — | `creatures.json` `groups.json` `skills.json` `talents.json` |  |
+| entité | `grant` | `char,value` | divergente | `creatures.json` | 5 | — | `characteristics.json` |  |
+| entité | `grant` | `skillId,spec,value` | divergente | `creatures.json` | 1 | — | `axes.json` `skills.json` |  |
+| entité | `label` | `id-nu` | historique | `creatures.json` | 16 | — | `names.json` `raceAppearance.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `monster` | `tete` | divergente | `creatures.json` | 1 | — | `creatures.json` `skills.json` |  |
+| entité | `optionals` | `arg,id` | historique | `creatures.json` | 133 | — | `activities.json` `breath-types.json` `characteristics.json` `creatures.json` `damage-types.json` `domains.json` … | paramètre d’entité non déclaré (#1463 S2 A11) |
+| entité | `optionals` | `arg,id,value` | historique | `creatures.json` | 6 | — | `breath-types.json` `damage-types.json` `maneuvers.json` `skills.json` `spells.json` `talents.json` … |  |
+| entité | `optionals` | `arg,id,value+…` | divergente | `creatures.json` | 1 | — | `qualities.json` `traits.json` `trappings.json` |  |
+| entité | `optionals` | `count,id,value` | divergente | `creatures.json` | 2 | — | `maneuvers.json` `traits.json` |  |
+| entité | `optionals` | `id` | cible | `creatures.json` | 472 | — | `damage-types.json` `groups.json` `lightTones.json` `maneuvers.json` `mass-battle.json` `obsessions.json` … |  |
+| entité | `optionals` | `id,value` | historique | `creatures.json` | 23 | — | `activities.json` `maneuvers.json` `mass-battle.json` `psychology.json` `qualitySubtypes.json` `spells.json` … | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| entité | `optionals` | `id,value+…` | divergente | `creatures.json` | 7 | — | `traits.json` |  |
+| entité | `optionals` | `id+…` | divergente | `creatures.json` | 1 | — | `talents.json` `traits.json` |  |
+| entité | `optionals` | `size+…` | divergente | `creatures.json` | 2 | — | `ship-construction.json` |  |
+| entité | `skills` | `id,spec,value` | historique | `creatures.json` | 1428 | — | `activities.json` `arene-projet.json` `axes.json` `careers.json` `creatures.json` `domains.json` … | #1463 « Cible précisée » l’énumère parmi les 5 graphies historiques, son 1er paragraphe la dit champ optionnel de la MÊME structure — L0 retient l’énumération (une ligne de stock se retire, elle ne se devine pas) |
+| entité | `skills` | `id,value` | historique | `creatures.json` | 4554 | — | `activities.json` `axes.json` `crew-test-types.json` `skills.json` `talents.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| entité | `spells` | `id` | cible | `creatures.json` | 599 | — | `activities.json` `axes.json` `domains.json` `lightTones.json` `mutations.json` `naval-traits.json` … |  |
+| entité | `talents` | `id` | cible | `creatures.json` | 1455 | — | `actions.json` `careers.json` `crew-roles.json` `groups.json` `naval-traits.json` `psychology.json` … |  |
+| entité | `talents` | `id,spec` | cible | `creatures.json` | 221 | — | `arene-projet.json` `careers.json` `creatures.json` `domains.json` `gods.json` `groups.json` … |  |
+| entité | `talents` | `id,times` | historique | `creatures.json` | 48 | — | `careers.json` `naval-traits.json` `spells.json` `talents.json` |  |
+| entité | `traits` | `arg,id` | historique | `creatures.json` | 408 | — | `breath-types.json` `careers.json` `characteristics.json` `creatures.json` `damage-types.json` `domains.json` … | paramètre d’entité non déclaré (#1463 S2 A11) |
+| entité | `traits` | `arg,id,value` | historique | `creatures.json` | 118 | — | `breath-types.json` `damage-types.json` `domains.json` `maneuvers.json` `merchantFamilies.json` `obsessions.json` … |  |
+| entité | `traits` | `arg,id,value+…` | divergente | `creatures.json` | 43 | — | `maneuvers.json` `qualities.json` `qualitySubtypes.json` `traits.json` `trappings.json` `weaponGroups.json` |  |
+| entité | `traits` | `arg,id+…` | divergente | `creatures.json` | 1 | — | `maneuvers.json` `mutations.json` `qualitySubtypes.json` `traits.json` |  |
+| entité | `traits` | `count,id,value` | divergente | `creatures.json` | 3 | — | `maneuvers.json` `traits.json` |  |
+| entité | `traits` | `id` | cible | `creatures.json` | 1555 | — | `creatures.json` `damage-types.json` `groups.json` `lightTones.json` `maneuvers.json` `obsessions.json` … |  |
+| entité | `traits` | `id,value` | historique | `creatures.json` | 913 | — | `activities.json` `maneuvers.json` `mass-battle.json` `psychology.json` `qualitySubtypes.json` `spells.json` … | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| entité | `traits` | `id,value+…` | divergente | `creatures.json` | 3 | — | `maneuvers.json` `qualitySubtypes.json` `traits.json` |  |
+| entité | `trappings` | `count,id` | historique | `creatures.json` | 1 | — | `trappings.json` |  |
+| entité | `trappings` | `creatureId` | historique | `creatures.json` | 1 | — | `creatures.json` |  |
+| entité | `trappings` | `id` | cible | `creatures.json` | 87 | — | `props.json` `qualities.json` `spells.json` `trappings.json` `weaponGroups.json` |  |
+| entité | `trappings` | `text` | declaree | `creatures.json` | 1 | 1 | — | dotation narrative — occurrence de référence seulement quand le texte normalisé résout vers un `label` (#1463, #624) |
+| entité | `skills` | `skillId` | historique | `crew-roles.json` | 7 | — | `crew-test-types.json` `skills.json` |  |
+| entité | `skills` | `skillId,spec` | historique | `crew-roles.json` | 3 | — | `crew-roles.json` `skills.json` `talents.json` `weaponGroups.json` |  |
+| config | `essential` | `id-nu` | historique | `crew-test-types.json` | 10 | — | `careers.json` `crew-roles.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `rule` | `id-nu` | historique | `crew-test-types.json` | 10 | — | `regles.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `apresDelai` | `versTraumaId+…` | divergente | `criticals.json` | 1 | — | `traumas.json` |  |
+| config | `of` | `bonusOf` | divergente | `criticals.json` | 1 | — | `characteristics.json` |  |
+| config | `onFail` | `char+…` | divergente | `criticals.json` | 1 | — | `characteristics.json` |  |
+| config | `onFail` | `id,value+…` | divergente | `criticals.json` | 23 | — | `etats.json` `water-exposure.json` |  |
+| config | `onHealGrant` | `scar+…` | divergente | `criticals.json` | 2 | — | `traumas.json` |  |
+| config | `onNextCritWhileCondition` | `whileCondition+…` | divergente | `criticals.json` | 1 | — | `etats.json` |  |
+| config | `ops` | `char+…` | divergente | `criticals.json` | 3 | — | `characteristics.json` |  |
+| config | `ops` | `disease+…` | divergente | `criticals.json` | 2 | — | `maladies.json` |  |
+| config | `ops` | `id,value+…` | divergente | `criticals.json` | 83 | — | `etats.json` `water-exposure.json` |  |
+| config | `perRound` | `versTraumaId` | divergente | `criticals.json` | 1 | — | `traumas.json` |  |
+| config | `recoveryPenalty` | `char+…` | divergente | `criticals.json` | 2 | — | `characteristics.json` |  |
+| config | `subject` | `condition+…` | divergente | `criticals.json` | 1 | — | `etats.json` |  |
+| config | `ambiance` | `id-nu` | historique | `diligence-projet.json` | 1 | — | `vehicles.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `architecture` | `id+…` | divergente | `diligence-projet.json` | 1 | — | `structures.json` `vehicles.json` |  |
+| config | `walls` | `appearance,structure+…` | divergente | `diligence-projet.json` | 6 | — | `structureAppearance.json` `structures.json` |  |
+| config | `walls` | `structure+…` | divergente | `diligence-projet.json` | 662 | — | `structureAppearance.json` `structures.json` |  |
+| entité | `amount` | `bonusOf` | divergente | `domains.json` | 3 | — | `characteristics.json` |  |
+| entité | `castBonus` | `perCondition,radiusStat+…` | divergente | `domains.json` | 1 | — | `characteristics.json` `etats.json` |  |
+| entité | `casterOps` | `traitId+…` | divergente | `domains.json` | 1 | — | `mass-battle.json` `psychology.json` `traits.json` |  |
+| entité | `castingChar` | `id-nu` | historique | `domains.json` | 1 | — | `characteristics.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `missile` | `bypass` | divergente | `domains.json` | 1 | — | `domains.json` `land-cargo.json` |  |
+| entité | `missile` | `bypass+…` | divergente | `domains.json` | 1 | — | `domains.json` `land-cargo.json` |  |
+| entité | `of` | `spec,value+…` | divergente | `domains.json` | 3 | — | `breath-types.json` `damage-types.json` `domains.json` `obsessions.json` `spells.json` `talents.json` |  |
+| entité | `of` | `value+…` | divergente | `domains.json` | 14 | — | `groups.json` `skills.json` `traits.json` |  |
+| entité | `ops` | `bypassArmour+…` | divergente | `domains.json` | 1 | — | `domains.json` `land-cargo.json` |  |
+| entité | `ops` | `id,value+…` | divergente | `domains.json` | 2 | — | `etats.json` |  |
+| entité | `ops` | `id+…` | divergente | `domains.json` | 3 | — | `etats.json` |  |
+| entité | `requiresSkill` | `id,spec` | cible | `domains.json` | 2 | — | `domains.json` `skills.json` `spells.json` |  |
+| entité | `subject` | `condition+…` | divergente | `domains.json` | 1 | — | `etats.json` |  |
+| entité | `tables` | `arcaneMark` | divergente | `domains.json` | 8 | — | `tables.json` |  |
+| config | `ops` | `cible,psychType+…` | divergente | `drunkenness.json` | 1 | — | `groups.json` `psychology.json` `traits.json` |  |
+| config | `ops` | `skill+…` | divergente | `drunkenness.json` | 1 | — | `skills.json` |  |
+| entité | `gating` | `movement` | divergente | `etats.json` | 1 | — | `naval-progression.json` |  |
+| entité | `gating` | `movement+…` | divergente | `etats.json` | 1 | — | `naval-progression.json` |  |
+| entité | `ops` | `id,value+…` | divergente | `etats.json` | 5 | — | `etats.json` |  |
+| entité | `ops` | `id+…` | divergente | `etats.json` | 9 | — | `etats.json` |  |
+| entité | `passive` | `mode+…` | divergente | `etats.json` | 5 | — | `axes.json` `merchantFamilies.json` |  |
+| entité | `recover` | `characteristic,opposedBy` | divergente | `etats.json` | 1 | — | `characteristics.json` `spells.json` |  |
+| entité | `recover` | `skill` | divergente | `etats.json` | 1 | — | `skills.json` |  |
+| entité | `subject` | `condition+…` | divergente | `etats.json` | 10 | — | `etats.json` |  |
+| entité | `test` | `skill+…` | divergente | `etats.json` | 1 | — | `skills.json` |  |
+| entité | `value` | `char+…` | divergente | `etats.json` | 2 | — | `characteristics.json` |  |
+| entité | `flow` | `id-nu` | historique | `flow-stakes.json` | 16 | — | `actions.json` `characteristics.json` `systemes.manifest.json` `talents.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `phase` | `id-nu` | historique | `flow-stakes.json` | 6 | — | `etats.json` `merchantFamilies.json` `night-stakes.json` `regles.json` `skills.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `rule` | `id-nu` | historique | `flow-stakes.json` | 33 | — | `actions.json` `characteristics.json` `etats.json` `psychology.json` `qualities.json` `regles.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `blessings` | `id` | cible | `gods.json` | 90 | — | `spells.json` |  |
+| entité | `chaosSpells` | `id` | cible | `gods.json` | 17 | — | `spells.json` |  |
+| entité | `miracles` | `id` | cible | `gods.json` | 96 | — | `maladies.json` `sea-events.json` `skills.json` `spells.json` |  |
+| config | `amount` | `bonusOf` | divergente | `grapple.json` | 1 | — | `characteristics.json` |  |
+| config | `entangle` | `id,value+…` | divergente | `grapple.json` | 1 | — | `etats.json` |  |
+| config | `free` | `id,value+…` | divergente | `grapple.json` | 1 | — | `etats.json` |  |
+| config | `init` | `id,value+…` | divergente | `grapple.json` | 1 | — | `etats.json` |  |
+| entité | `label` | `id-nu` | historique | `groups.json` | 8 | — | `names.json` `raceAppearance.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `backdrop` | `id-nu` | historique | `lieux-services.json` | 2 | — | `arene-projet.json` `lieux-services.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `merchantArchetype` | `id-nu` | historique | `lieux-services.json` | 1 | — | `loup-et-saumure-projet.json` `merchants.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `opensScreen` | `id-nu` | historique | `lieux-services.json` | 1 | — | `lieux-services.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `parent` | `id-nu` | historique | `locations.json` | 46 | — | `locations.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `a` | `id-nu` | historique | `loup-et-saumure-projet.json` | 2 | — | `books.json` `naval-ports.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `ambiance` | `id-nu` | historique | `loup-et-saumure-projet.json` | 5 | — | `vehicles.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `ambush` | `encounter,scene` | divergente | `loup-et-saumure-projet.json` | 2 | — | `loup-et-saumure-projet.json` |  |
+| config | `ammo` | `kind,subType,trappingId+…` | divergente | `loup-et-saumure-projet.json` | 16 | — | `merchantFamilies.json` `trappings.json` `weaponGroups.json` |  |
+| config | `appearance` | `species,tenue+…` | divergente | `loup-et-saumure-projet.json` | 11 | — | `careers.json` `groups.json` `skills.json` `species.json` `talents.json` |  |
+| config | `b` | `id-nu` | historique | `loup-et-saumure-projet.json` | 2 | — | `naval-ports.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `choices` | `next,text` | divergente | `loup-et-saumure-projet.json` | 12 | — | `loup-et-saumure-projet.json` |  |
+| config | `choices` | `next,text+…` | divergente | `loup-et-saumure-projet.json` | 11 | — | `loup-et-saumure-projet.json` |  |
+| config | `crew` | `count,roleId` | divergente | `loup-et-saumure-projet.json` | 6 | — | `careers.json` `crew-roles.json` `skills.json` `talents.json` |  |
+| config | `dialogueId` | `id-nu` | historique | `loup-et-saumure-projet.json` | 8 | — | `loup-et-saumure-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `effect` | `factorId,type` | divergente | `loup-et-saumure-projet.json` | 4 | — | `sea-events.json` |  |
+| config | `effect` | `scene,type+…` | divergente | `loup-et-saumure-projet.json` | 1 | — | `loup-et-saumure-projet.json` |  |
+| config | `effect` | `type,vehicleId+…` | divergente | `loup-et-saumure-projet.json` | 1 | — | `vehicles.json` |  |
+| config | `from` | `id-nu` | historique | `loup-et-saumure-projet.json` | 2 | — | `books.json` `naval-ports.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `members` | `entityId+…` | divergente | `loup-et-saumure-projet.json` | 18 | — | `barge-du-sel-projet.json` `loup-et-saumure-projet.json` `skills.json` `vehicles.json` |  |
+| config | `merchant` | `archetype` | divergente | `loup-et-saumure-projet.json` | 3 | — | `arene-projet.json` `loup-et-saumure-projet.json` `merchants.json` `skills.json` `talents.json` |  |
+| config | `places` | `backdrop,id,scene+…` | divergente | `loup-et-saumure-projet.json` | 2 | — | `books.json` `lieux-services.json` `loup-et-saumure-projet.json` `naval-ports.json` |  |
+| config | `port` | `ref` | historique | `loup-et-saumure-projet.json` | 2 | — | `books.json` `naval-ports.json` | ref emboîtée {ref:{id,spec}} ou id nu sous `ref` |
+| config | `postes` | `trappingId+…` | divergente | `loup-et-saumure-projet.json` | 12 | — | `trappings.json` |  |
+| config | `qualities` | `id` | cible | `loup-et-saumure-projet.json` | 14 | — | `qualities.json` |  |
+| config | `qualities` | `id,value` | historique | `loup-et-saumure-projet.json` | 16 | — | `qualities.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| config | `ref` | `id-nu` | historique | `loup-et-saumure-projet.json` | 10 | — | `creatures.json` `loup-et-saumure-projet.json` `skills.json` `vehicles.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `serviceKind` | `id-nu` | historique | `loup-et-saumure-projet.json` | 8 | — | `arene-projet.json` `lieux-services.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `services` | `kind` | divergente | `loup-et-saumure-projet.json` | 6 | — | `arene-projet.json` `lieux-services.json` `skills.json` `talents.json` |  |
+| config | `skills` | `id,spec,value` | historique | `loup-et-saumure-projet.json` | 4 | — | `skills.json` `weaponGroups.json` | #1463 « Cible précisée » l’énumère parmi les 5 graphies historiques, son 1er paragraphe la dit champ optionnel de la MÊME structure — L0 retient l’énumération (une ligne de stock se retire, elle ne se devine pas) |
+| config | `skills` | `id,value` | historique | `loup-et-saumure-projet.json` | 8 | — | `skills.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| config | `start` | `id-nu` | historique | `loup-et-saumure-projet.json` | 8 | — | `loup-et-saumure-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `threat` | `tier+…` | divergente | `loup-et-saumure-projet.json` | 1 | — | `qualities.json` |  |
+| config | `upgrades` | `id` | cible | `loup-et-saumure-projet.json` | 1 | — | `naval-traits.json` |  |
+| config | `victoryCondition` | `targetId,type+…` | divergente | `loup-et-saumure-projet.json` | 2 | — | `loup-et-saumure-projet.json` `skills.json` `vehicles.json` |  |
+| config | `weapon` | `id-nu` | historique | `loup-et-saumure-projet.json` | 1 | — | `trappings.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `weather` | `id-nu` | historique | `loup-et-saumure-projet.json` | 4 | — | `mass-battle.json` `sea-events.json` `sea-weather.json` `weather.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `symptoms` | `spec,symptomId` | divergente | `maladies.json` | 1 | — | `symptoms.json` |  |
+| entité | `symptoms` | `symptomId` | divergente | `maladies.json` | 42 | — | `maladies.json` `spells.json` `symptoms.json` |  |
+| entité | `symptoms` | `symptomId+…` | divergente | `maladies.json` | 6 | — | `symptoms.json` |  |
+| entité | `activation` | `id-nu` | historique | `maneuvers.json` | 1 | — | `actions.json` `activities.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `amount` | `bonusOf` | divergente | `maneuvers.json` | 1 | — | `characteristics.json` |  |
+| entité | `blast` | `bonusOf` | divergente | `maneuvers.json` | 6 | — | `characteristics.json` |  |
+| entité | `defense` | `id-nu` | historique | `maneuvers.json` | 9 | — | `skills.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `escapeStrength` | `charOf` | divergente | `maneuvers.json` | 2 | — | `characteristics.json` |  |
+| entité | `kind` | `id-nu` | historique | `maneuvers.json` | 12 | — | `maneuvers.json` `qualitySubtypes.json` `skills.json` `spells.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `ops` | `char+…` | divergente | `maneuvers.json` | 8 | — | `characteristics.json` |  |
+| entité | `ops` | `id,unlessCondition+…` | divergente | `maneuvers.json` | 2 | — | `etats.json` |  |
+| entité | `ops` | `id,value+…` | divergente | `maneuvers.json` | 4 | — | `etats.json` |  |
+| entité | `ops` | `id+…` | divergente | `maneuvers.json` | 9 | — | `etats.json` |  |
+| entité | `ops` | `morphRef+…` | divergente | `maneuvers.json` | 1 | — | `creatures.json` |  |
+| entité | `ops` | `traitId+…` | divergente | `maneuvers.json` | 6 | — | `maneuvers.json` `mass-battle.json` `psychology.json` `qualitySubtypes.json` `talents.json` `traits.json` |  |
+| entité | `range` | `bonusOf` | divergente | `maneuvers.json` | 2 | — | `characteristics.json` |  |
+| entité | `range` | `bonusOf+…` | divergente | `maneuvers.json` | 6 | — | `characteristics.json` |  |
+| entité | `stat` | `id-nu` | historique | `maneuvers.json` | 16 | — | `characteristics.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `targeting` | `id-nu` | historique | `maneuvers.json` | 9 | — | `axes.json` `merchantFamilies.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `structures` | `id+…` | divergente | `mass-battle.json` | 5 | — | `structureAppearance.json` `structures.json` |  |
+| config | `warMachines` | `id+…` | divergente | `mass-battle.json` | 5 | — | `naval-traits.json` `qualities.json` `spells.json` `trappings.json` |  |
+| entité | `match` | `trappingType` | divergente | `merchantFamilies.json` | 3 | — | `axes.json` `merchantFamilies.json` |  |
+| entité | `settlement` | `id-nu` | historique | `merchants.json` | 2 | — | `arene-projet.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `onFail` | `id,value+…` | divergente | `miscast.json` | 11 | — | `etats.json` |  |
+| config | `onFail` | `op+…` | divergente | `miscast.json` | 4 | — | `characteristics.json` `systemes.manifest.json` `talents.json` `traits.json` |  |
+| config | `ops` | `id,value+…` | divergente | `miscast.json` | 28 | — | `etats.json` `water-exposure.json` |  |
+| config | `ops` | `id+…` | divergente | `miscast.json` | 6 | — | `etats.json` `water-exposure.json` |  |
+| config | `ops` | `op+…` | divergente | `miscast.json` | 4 | — | `characteristics.json` `systemes.manifest.json` `talents.json` `traits.json` |  |
+| config | `ops` | `skill+…` | divergente | `miscast.json` | 13 | — | `skills.json` |  |
+| config | `entries` | `id+…` | divergente | `montures.json` | 5 | — | `creatures.json` `skills.json` |  |
+| entité | `eyes` | `G` | divergente | `mutations.json` | 1 | — | `ship-construction.json` |  |
+| entité | `kind` | `id-nu` | historique | `mutations.json` | 116 | — | `mutationTables.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `passive` | `arg,traitId+…` | divergente | `mutations.json` | 5 | — | `breath-types.json` `damage-types.json` `domains.json` `groups.json` `maneuvers.json` `obsessions.json` … |  |
+| entité | `passive` | `char+…` | divergente | `mutations.json` | 56 | — | `characteristics.json` |  |
+| entité | `passive` | `psychType+…` | divergente | `mutations.json` | 1 | — | `psychology.json` `talents.json` `traits.json` |  |
+| entité | `passive` | `skill+…` | divergente | `mutations.json` | 2 | — | `skills.json` |  |
+| entité | `passive` | `spec,talentId+…` | divergente | `mutations.json` | 5 | — | `talents.json` |  |
+| entité | `passive` | `talentId+…` | divergente | `mutations.json` | 2 | — | `careers.json` `talents.json` |  |
+| entité | `passive` | `traitId+…` | divergente | `mutations.json` | 37 | — | `maneuvers.json` `mass-battle.json` `psychology.json` `qualities.json` `spells.json` `talents.json` … |  |
+| entité | `label` | `id-nu` | historique | `mutationTables.json` | 2 | — | `mutationTables.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `deckCover` | `id-nu` | historique | `naval-traits.json` | 1 | — | `ship-construction.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `passive` | `skill+…` | divergente | `naval-traits.json` | 3 | — | `crew-test-types.json` `skills.json` |  |
+| entité | `passive` | `testType+…` | divergente | `naval-traits.json` | 2 | — | `crew-test-types.json` |  |
+| entité | `kind` | `id-nu` | historique | `night-stakes.json` | 9 | — | `night-stakes.json` `voyage-stakes.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `rule` | `id-nu` | historique | `night-stakes.json` | 15 | — | `regles.json` `skills.json` `symptoms.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `kind` | `id-nu` | historique | `peripeties.json` | 2 | — | `actions.json` `sea-events.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `career` | `id-nu` | historique | `pregens.json` | 8 | — | `careers.json` `creatures.json` `groups.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `species` | `id-nu` | historique | `pregens.json` | 8 | — | `obsessions.json` `skills.json` `species.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `nom` | `id-nu` | historique | `primitives.manifest.json` | 6 | — | `primitives.manifest.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `1` | `key+…` | divergente | `progression-schemas.derived.json` | 333 | — | `characteristics.json` |  |
+| config | `2` | `key+…` | divergente | `progression-schemas.derived.json` | 111 | — | `characteristics.json` |  |
+| config | `3` | `key+…` | divergente | `progression-schemas.derived.json` | 111 | — | `characteristics.json` |  |
+| config | `4` | `key+…` | divergente | `progression-schemas.derived.json` | 111 | — | `characteristics.json` |  |
+| entité | `cover` | `id-nu` | historique | `props.json` | 8 | — | `ship-construction.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `light` | `tone+…` | divergente | `props.json` | 2 | — | `lightTones.json` `trappings.json` |  |
+| entité | `attackDR` | `vs+…` | divergente | `psychology.json` | 1 | — | `spells.json` |  |
+| entité | `becomes` | `id-nu` | historique | `psychology.json` | 1 | — | `mass-battle.json` `psychology.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `failCondition` | `id-nu` | historique | `psychology.json` | 1 | — | `etats.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `ops` | `id+…` | divergente | `psychology.json` | 1 | — | `etats.json` |  |
+| entité | `ops` | `type+…` | divergente | `psychology.json` | 1 | — | `psychology.json` `talents.json` `traits.json` |  |
+| entité | `resolution` | `id-nu` | historique | `psychology.json` | 1 | — | `psychology.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `subject` | `condition+…` | divergente | `psychology.json` | 2 | — | `etats.json` `water-exposure.json` |  |
+| entité | `targetCauses` | `kind+…` | divergente | `psychology.json` | 1 | — | `mass-battle.json` `psychology.json` `traits.json` |  |
+| entité | `effects` | `attackType+…` | divergente | `qualities.json` | 1 | — | `merchantFamilies.json` |  |
+| entité | `escapeStrength` | `charOf` | divergente | `qualities.json` | 1 | — | `characteristics.json` |  |
+| entité | `opposed` | `attacker` | divergente | `qualities.json` | 1 | — | `characteristics.json` |  |
+| entité | `opposed` | `attacker,attackerSkill+…` | divergente | `qualities.json` | 1 | — | `characteristics.json` `skills.json` |  |
+| entité | `ops` | `disease+…` | divergente | `qualities.json` | 1 | — | `maladies.json` |  |
+| entité | `ops` | `id,unlessCondition,value+…` | divergente | `qualities.json` | 4 | — | `etats.json` |  |
+| entité | `ops` | `id+…` | divergente | `qualities.json` | 5 | — | `etats.json` |  |
+| entité | `passive` | `char+…` | divergente | `qualities.json` | 1 | — | `characteristics.json` |  |
+| entité | `subType` | `id-nu` | historique | `qualities.json` | 59 | — | `maneuvers.json` `qualitySubtypes.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `test` | `characteristic,skill+…` | divergente | `qualities.json` | 1 | — | `characteristics.json` `skills.json` |  |
+| entité | `test` | `skill+…` | divergente | `qualities.json` | 1 | — | `skills.json` `talents.json` |  |
+| entité | `type` | `id-nu` | historique | `qualities.json` | 59 | — | `qualityTypes.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `gabarit` | `id-nu` | historique | `raceAppearance.json` | 6 | — | `creatures.json` `groups.json` `sea-perils.json` `ship-construction.json` `skills.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `head` | `id-nu` | historique | `raceAppearance.json` | 7 | — | `creatures.json` `groups.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `tenue` | `id-nu` | historique | `raceAppearance.json` | 14 | — | `careers.json` `creatures.json` `groups.json` `talents.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `default` | `id-nu` | historique | `reglesOptionnelles.json` | 1 | — | `naval-progression.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `onFail` | `id,value+…` | divergente | `river-criticals.json` | 1 | — | `etats.json` |  |
+| config | `ops` | `id,value+…` | divergente | `river-criticals.json` | 4 | — | `etats.json` `ship-criticals.json` |  |
+| config | `escalation` | `vents+…` | divergente | `sea-events.json` | 1 | — | `sea-weather.json` |  |
+| config | `params` | `bribeDifficulty+…` | divergente | `sea-events.json` | 1 | — | `sea-events.json` |  |
+| config | `params` | `chefRef,crewRef,ship+…` | divergente | `sea-events.json` | 1 | — | `creatures.json` `loup-et-saumure-projet.json` `skills.json` `vehicles.json` |  |
+| config | `params` | `crewRef,ship+…` | divergente | `sea-events.json` | 1 | — | `creatures.json` `vehicles.json` |  |
+| config | `params` | `precipitations,temperature,vents,visibilite+…` | divergente | `sea-events.json` | 1 | — | `sea-weather.json` |  |
+| config | `params` | `precipitations,vents,visibilite+…` | divergente | `sea-events.json` | 1 | — | `sea-weather.json` |  |
+| config | `params` | `precipitations,visibilite+…` | divergente | `sea-events.json` | 2 | — | `sea-weather.json` |  |
+| config | `params` | `talent+…` | divergente | `sea-events.json` | 1 | — | `talents.json` |  |
+| config | `params` | `temperature+…` | divergente | `sea-events.json` | 1 | — | `sea-weather.json` |  |
+| config | `forcerLeRythme` | `avirons+…` | divergente | `sea-navigation.json` | 1 | — | `sea-events.json` |  |
+| config | `entanglePenalties` | `maxSize,minSize+…` | divergente | `sea-perils.json` | 1 | — | `ship-construction.json` |  |
+| config | `entanglePenalties` | `maxSize+…` | divergente | `sea-perils.json` | 1 | — | `ship-construction.json` |  |
+| config | `gestionDesPerils` | `spot+…` | divergente | `sea-perils.json` | 1 | — | `sea-events.json` |  |
+| entité | `captainOps` | `char+…` | divergente | `sea-shanties.json` | 1 | — | `characteristics.json` |  |
+| entité | `crewOps` | `char+…` | divergente | `sea-shanties.json` | 1 | — | `characteristics.json` |  |
+| entité | `crewOps` | `skill+…` | divergente | `sea-shanties.json` | 3 | — | `crew-test-types.json` `skills.json` |  |
+| config | `spec` | `projectiles` | divergente | `sea-weather.json` | 3 | — | `weaponGroups.json` |  |
+| config | `constructionTraits` | `id+…` | divergente | `ship-construction.json` | 4 | — | `naval-traits.json` `qualities.json` `talents.json` |  |
+| config | `size` | `id-nu` | historique | `ship-construction.json` | 7 | — | `ship-construction.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `ops` | `id,value+…` | divergente | `ship-criticals.json` | 5 | — | `etats.json` |  |
+| entité | `altChar` | `from,gatedByRule+…` | divergente | `skills.json` | 1 | — | `characteristics.json` `reglesOptionnelles.json` |  |
+| entité | `altChar` | `gatedByRule+…` | divergente | `skills.json` | 1 | — | `reglesOptionnelles.json` |  |
+| entité | `characteristic` | `id-nu` | historique | `skills.json` | 48 | — | `characteristics.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `chars` | `FM,Int+…` | divergente | `skills.json` | 1 | — | `characteristics.json` |  |
+| entité | `chars` | `true` | divergente | `skills.json` | 1 | — | `characteristics.json` |  |
+| entité | `combatAdvantage` | `cap` | divergente | `skills.json` | 4 | — | `characteristics.json` |  |
+| entité | `label` | `id-nu` | historique | `skills.json` | 1 | — | `names.json` `raceAppearance.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `type` | `id-nu` | historique | `skills.json` | 25 | — | `weaponGroups.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `arcaneDomainsBonusOf` | `id-nu` | historique | `species.json` | 2 | — | `characteristics.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `gatedByRule` | `id-nu` | historique | `species.json` | 1 | — | `reglesOptionnelles.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `preview` | `career` | historique | `species.json` | 27 | — | `careers.json` `creatures.json` `groups.json` `interludeEvents.json` `skills.json` `talents.json` |  |
+| entité | `ref` | `id` | cible | `species.json` | 281 | — | `crew-test-types.json` `groups.json` `regles.json` `skills.json` `talents.json` `traits.json` |  |
+| entité | `ref` | `id,spec` | cible | `species.json` | 150 | — | `axes.json` `books.json` `characteristics.json` `creatures.json` `crew-roles.json` `domains.json` … |  |
+| entité | `refCareer` | `id-nu` | historique | `species.json` | 25 | — | `books.json` `creatures.json` `groups.json` `skills.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `refChar` | `id-nu` | historique | `species.json` | 25 | — | `creatures.json` `groups.json` `skills.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `traits` | `id` | cible | `species.json` | 1 | — | `creatures.json` `groups.json` `traits.json` |  |
+| entité | `wildcard` | `id` | cible | `species.json` | 39 | — | `axes.json` `skills.json` `talents.json` |  |
+| config | `default` | `id-nu` | historique | `speciesRace.json` | 1 | — | `names.json` `raceAppearance.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `rules` | `race+…` | divergente | `speciesRace.json` | 22 | — | `names.json` `raceAppearance.json` |  |
+| entité | `addTraits` | `id` | cible | `spells.json` | 4 | — | `damage-types.json` `lightTones.json` `psychology.json` `qualities.json` `spells.json` `talents.json` … |  |
+| entité | `addTraits` | `id,value` | historique | `spells.json` | 1 | — | `mass-battle.json` `psychology.json` `traits.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| entité | `amount` | `bonusOf` | divergente | `spells.json` | 11 | — | `characteristics.json` |  |
+| entité | `cond` | `is+…` | divergente | `spells.json` | 3 | — | `gods.json` `groups.json` `skills.json` |  |
+| entité | `count` | `bonusOf` | divergente | `spells.json` | 1 | — | `characteristics.json` |  |
+| entité | `damage` | `bonusOf` | divergente | `spells.json` | 2 | — | `characteristics.json` |  |
+| entité | `damageBonus` | `bonusOf` | divergente | `spells.json` | 2 | — | `characteristics.json` |  |
+| entité | `domainId` | `id-nu` | historique | `spells.json` | 256 | — | `breath-types.json` `damage-types.json` `domains.json` `groups.json` `land-cargo.json` `obsessions.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `durationHours` | `bonusOf` | divergente | `spells.json` | 2 | — | `characteristics.json` |  |
+| entité | `durationRounds` | `bonusOf` | divergente | `spells.json` | 11 | — | `characteristics.json` |  |
+| entité | `escapeStrength` | `charOf` | divergente | `spells.json` | 7 | — | `characteristics.json` |  |
+| entité | `family` | `id-nu` | historique | `spells.json` | 167 | — | `skills.json` `talents.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `hopMeters` | `bonusOf` | divergente | `spells.json` | 1 | — | `characteristics.json` |  |
+| entité | `indice` | `charOf` | divergente | `spells.json` | 1 | — | `characteristics.json` |  |
+| entité | `lengthMeters` | `bonusOf` | divergente | `spells.json` | 1 | — | `characteristics.json` |  |
+| entité | `maxBounces` | `bonusOf` | divergente | `spells.json` | 1 | — | `characteristics.json` |  |
+| entité | `meters` | `bonusOf` | divergente | `spells.json` | 67 | — | `characteristics.json` |  |
+| entité | `meters` | `charOf` | divergente | `spells.json` | 16 | — | `characteristics.json` |  |
+| entité | `metersFormula` | `bonusOf` | divergente | `spells.json` | 2 | — | `characteristics.json` |  |
+| entité | `metersFormula` | `charOf` | divergente | `spells.json` | 1 | — | `characteristics.json` |  |
+| entité | `of` | `bonusOf` | divergente | `spells.json` | 7 | — | `characteristics.json` |  |
+| entité | `of` | `charOf` | divergente | `spells.json` | 11 | — | `characteristics.json` |  |
+| entité | `of` | `spec,value+…` | divergente | `spells.json` | 3 | — | `domains.json` `spells.json` `talents.json` |  |
+| entité | `of` | `value+…` | divergente | `spells.json` | 5 | — | `groups.json` `skills.json` `traits.json` |  |
+| entité | `onCross` | `id+…` | divergente | `spells.json` | 4 | — | `etats.json` |  |
+| entité | `opposed` | `attacker` | divergente | `spells.json` | 3 | — | `characteristics.json` |  |
+| entité | `opposed` | `char+…` | divergente | `spells.json` | 4 | — | `characteristics.json` |  |
+| entité | `ops` | `arg,traitId+…` | divergente | `spells.json` | 3 | — | `groups.json` `psychology.json` `skills.json` `talents.json` `traits.json` |  |
+| entité | `ops` | `char+…` | divergente | `spells.json` | 38 | — | `characteristics.json` |  |
+| entité | `ops` | `count,ref,size+…` | divergente | `spells.json` | 1 | — | `creatures.json` `ship-construction.json` `skills.json` |  |
+| entité | `ops` | `count,ref+…` | divergente | `spells.json` | 14 | — | `creatures.json` `skills.json` |  |
+| entité | `ops` | `disease+…` | divergente | `spells.json` | 1 | — | `maladies.json` `spells.json` |  |
+| entité | `ops` | `form,subType+…` | divergente | `spells.json` | 2 | — | `trappings.json` `weaponGroups.json` |  |
+| entité | `ops` | `id,onlyIfCondition+…` | divergente | `spells.json` | 1 | — | `etats.json` `water-exposure.json` |  |
+| entité | `ops` | `id,unlessCondition+…` | divergente | `spells.json` | 1 | — | `etats.json` |  |
+| entité | `ops` | `id,value+…` | divergente | `spells.json` | 25 | — | `etats.json` |  |
+| entité | `ops` | `id+…` | divergente | `spells.json` | 68 | — | `etats.json` `water-exposure.json` |  |
+| entité | `ops` | `op` | divergente | `spells.json` | 1 | — | `spells.json` |  |
+| entité | `ops` | `op+…` | divergente | `spells.json` | 17 | — | `actions.json` `characteristics.json` `systemes.manifest.json` `talents.json` `traits.json` |  |
+| entité | `ops` | `psychType+…` | divergente | `spells.json` | 3 | — | `psychology.json` `talents.json` `traits.json` |  |
+| entité | `ops` | `ref+…` | divergente | `spells.json` | 2 | — | `creatures.json` `skills.json` |  |
+| entité | `ops` | `removeType+…` | divergente | `spells.json` | 1 | — | `qualityTypes.json` |  |
+| entité | `ops` | `requiresWeapon+…` | divergente | `spells.json` | 1 | — | `trappings.json` |  |
+| entité | `ops` | `skill,spec+…` | divergente | `spells.json` | 3 | — | `arene-projet.json` `lieux-services.json` `loup-et-saumure-projet.json` `merchants.json` `skills.json` `talents.json` |  |
+| entité | `ops` | `skill+…` | divergente | `spells.json` | 14 | — | `axes.json` `crew-test-types.json` `skills.json` |  |
+| entité | `ops` | `spec,talentId+…` | divergente | `spells.json` | 6 | — | `breath-types.json` `damage-types.json` `obsessions.json` `skills.json` `talents.json` `traits.json` |  |
+| entité | `ops` | `tableId+…` | divergente | `spells.json` | 4 | — | `tables.json` |  |
+| entité | `ops` | `talentId+…` | divergente | `spells.json` | 15 | — | `talents.json` `traits.json` |  |
+| entité | `ops` | `tone+…` | divergente | `spells.json` | 2 | — | `damage-types.json` `lightTones.json` `qualities.json` `traits.json` |  |
+| entité | `ops` | `traitId+…` | divergente | `spells.json` | 34 | — | `activities.json` `damage-types.json` `lightTones.json` `mass-battle.json` `psychology.json` `qualities.json` … |  |
+| entité | `ops` | `trappingId+…` | divergente | `spells.json` | 3 | — | `trappings.json` |  |
+| entité | `perRound` | `id,unlessCondition+…` | divergente | `spells.json` | 1 | — | `etats.json` |  |
+| entité | `perRound` | `id+…` | divergente | `spells.json` | 3 | — | `etats.json` |  |
+| entité | `perRound` | `op+…` | divergente | `spells.json` | 2 | — | `actions.json` |  |
+| entité | `radius` | `bonusOf` | divergente | `spells.json` | 3 | — | `characteristics.json` |  |
+| entité | `radiusFormula` | `bonusOf` | divergente | `spells.json` | 1 | — | `characteristics.json` |  |
+| entité | `radiusMeters` | `bonusOf` | divergente | `spells.json` | 7 | — | `characteristics.json` |  |
+| entité | `radiusMeters` | `charOf` | divergente | `spells.json` | 3 | — | `characteristics.json` |  |
+| entité | `range` | `text+…` | divergente | `spells.json` | 22 | 22 | `raceAppearance.json` |  |
+| entité | `rounds` | `bonusOf` | divergente | `spells.json` | 2 | — | `characteristics.json` |  |
+| entité | `subject` | `condition+…` | divergente | `spells.json` | 1 | — | `etats.json` |  |
+| entité | `target` | `text+…` | divergente | `spells.json` | 16 | 16 | `raceAppearance.json` |  |
+| entité | `test` | `characteristic` | divergente | `spells.json` | 1 | — | `characteristics.json` |  |
+| entité | `test` | `characteristic+…` | divergente | `spells.json` | 4 | — | `characteristics.json` |  |
+| entité | `value` | `bonusOf` | divergente | `spells.json` | 258 | — | `characteristics.json` |  |
+| entité | `value` | `charOf` | divergente | `spells.json` | 154 | — | `characteristics.json` |  |
+| entité | `when` | `rule` | divergente | `spells.json` | 18 | — | `reglesOptionnelles.json` |  |
+| entité | `ascendant` | `id-nu` | historique | `stars.json` | 11 | — | `weather.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `effect` | `char+…` | divergente | `stars.json` | 42 | — | `characteristics.json` |  |
+| entité | `effect` | `spec,talentId+…` | divergente | `stars.json` | 2 | — | `obsessions.json` `skills.json` `talents.json` `traits.json` |  |
+| entité | `effect` | `talentId+…` | divergente | `stars.json` | 11 | — | `careers.json` `talents.json` |  |
+| entité | `material` | `id-nu` | historique | `structureAppearance.json` | 18 | — | `land-cargo.json` `reliefMaterials.json` `sea-cargo.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `couvertPenalty` | `id-nu` | historique | `structures.json` | 5 | — | `sea-events.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `edgeKind` | `id-nu` | historique | `structures.json` | 1 | — | `structureAppearance.json` `structures.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `kind` | `id-nu` | historique | `structures.json` | 4 | — | `structureAppearance.json` `structures.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `traits` | `id` | cible | `structures.json` | 5 | — | `traits.json` |  |
+| entité | `onFail` | `disease+…` | divergente | `symptoms.json` | 1 | — | `maladies.json` |  |
+| entité | `onFail` | `id+…` | divergente | `symptoms.json` | 1 | — | `etats.json` |  |
+| entité | `ops` | `char+…` | divergente | `symptoms.json` | 4 | — | `characteristics.json` |  |
+| entité | `ops` | `id+…` | divergente | `symptoms.json` | 3 | — | `etats.json` `water-exposure.json` |  |
+| entité | `ops` | `traitId+…` | divergente | `symptoms.json` | 3 | — | `traits.json` |  |
+| entité | `passive` | `char+…` | divergente | `symptoms.json` | 23 | — | `characteristics.json` |  |
+| entité | `passive` | `cible,psychType+…` | divergente | `symptoms.json` | 1 | — | `groups.json` `psychology.json` `talents.json` `traits.json` |  |
+| entité | `passive` | `psychType+…` | divergente | `symptoms.json` | 1 | — | `psychology.json` `talents.json` `traits.json` |  |
+| entité | `severePassive` | `char+…` | divergente | `symptoms.json` | 6 | — | `characteristics.json` |  |
+| entité | `visiblePassive` | `char+…` | divergente | `symptoms.json` | 1 | — | `characteristics.json` |  |
+| entité | `ops` | `arg,traitId+…` | divergente | `tables.json` | 7 | — | `maneuvers.json` `obsessions.json` `spells.json` `talents.json` `traits.json` |  |
+| entité | `ops` | `char+…` | divergente | `tables.json` | 15 | — | `characteristics.json` |  |
+| entité | `ops` | `cible,psychType+…` | divergente | `tables.json` | 1 | — | `groups.json` `psychology.json` `traits.json` |  |
+| entité | `ops` | `disease+…` | divergente | `tables.json` | 5 | — | `maladies.json` |  |
+| entité | `ops` | `id,value+…` | divergente | `tables.json` | 2 | — | `etats.json` |  |
+| entité | `ops` | `skill,spec+…` | divergente | `tables.json` | 1 | — | `skills.json` `talents.json` |  |
+| entité | `ops` | `skill+…` | divergente | `tables.json` | 14 | — | `activities.json` `axes.json` `skills.json` |  |
+| entité | `ops` | `table+…` | divergente | `tables.json` | 4 | — | `mutationTables.json` |  |
+| entité | `ops` | `tableId+…` | divergente | `tables.json` | 1 | — | `tables.json` |  |
+| entité | `ops` | `talentId+…` | divergente | `tables.json` | 12 | — | `talents.json` `traits.json` |  |
+| entité | `ops` | `tone+…` | divergente | `tables.json` | 1 | — | `damage-types.json` `lightTones.json` `qualities.json` `traits.json` |  |
+| entité | `ops` | `traitId+…` | divergente | `tables.json` | 30 | — | `damage-types.json` `lightTones.json` `maneuvers.json` `mass-battle.json` `psychology.json` `qualities.json` … |  |
+| entité | `combat` | `castingKind` | divergente | `talents.json` | 3 | — | `skills.json` `talents.json` `traits.json` |  |
+| entité | `effects` | `condition+…` | divergente | `talents.json` | 1 | — | `etats.json` |  |
+| entité | `gate` | `value+…` | divergente | `talents.json` | 1 | — | `psychology.json` `talents.json` `traits.json` |  |
+| entité | `label` | `id-nu` | historique | `talents.json` | 1 | — | `raceAppearance.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `matches` | `char+…` | divergente | `talents.json` | 7 | — | `characteristics.json` |  |
+| entité | `matches` | `exceptSpec,skill` | divergente | `talents.json` | 1 | — | `skills.json` `talents.json` |  |
+| entité | `matches` | `skill` | divergente | `talents.json` | 22 | — | `axes.json` `crew-test-types.json` `skills.json` |  |
+| entité | `matches` | `skill,spec` | historique | `talents.json` | 13 | — | `axes.json` `careers.json` `creatures.json` `skills.json` `talents.json` `weaponGroups.json` |  |
+| entité | `matches` | `skill,spec+…` | divergente | `talents.json` | 6 | — | `creatures.json` `skills.json` `weaponGroups.json` |  |
+| entité | `matches` | `skill+…` | divergente | `talents.json` | 74 | — | `axes.json` `crew-test-types.json` `skills.json` `talents.json` |  |
+| entité | `max` | `bonusOf` | divergente | `talents.json` | 139 | — | `characteristics.json` |  |
+| entité | `mod` | `bonusOf` | divergente | `talents.json` | 1 | — | `characteristics.json` |  |
+| entité | `ops` | `id,value+…` | divergente | `talents.json` | 1 | — | `etats.json` |  |
+| entité | `ops` | `id+…` | divergente | `talents.json` | 1 | — | `etats.json` |  |
+| entité | `ops` | `type+…` | divergente | `talents.json` | 1 | — | `psychology.json` `talents.json` `traits.json` |  |
+| entité | `passive` | `char+…` | divergente | `talents.json` | 10 | — | `characteristics.json` |  |
+| entité | `passive` | `skillId,spec+…` | divergente | `talents.json` | 5 | — | `axes.json` `skills.json` `talents.json` |  |
+| entité | `passive` | `talentId+…` | divergente | `talents.json` | 1 | — | `psychology.json` `talents.json` `traits.json` |  |
+| entité | `reverseFailed` | `skill` | divergente | `talents.json` | 4 | — | `skills.json` |  |
+| entité | `reverseFailed` | `skill,spec` | historique | `talents.json` | 2 | — | `axes.json` `careers.json` `creatures.json` `skills.json` `talents.json` |  |
+| entité | `reverseFailed` | `skill+…` | divergente | `talents.json` | 1 | — | `skills.json` |  |
+| entité | `size` | `id-nu` | historique | `talents.json` | 2 | — | `ship-construction.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `when` | `rule` | divergente | `talents.json` | 12 | — | `reglesOptionnelles.json` |  |
+| entité | `attrition` | `id,value+…` | divergente | `tavernGames.json` | 1 | — | `etats.json` |  |
+| entité | `attritionEvery` | `charBonus` | divergente | `tavernGames.json` | 1 | — | `characteristics.json` |  |
+| entité | `characteristic` | `id-nu` | historique | `tavernGames.json` | 5 | — | `characteristics.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `combined` | `stopCondition+…` | divergente | `tavernGames.json` | 1 | — | `etats.json` `water-exposure.json` |  |
+| entité | `drBonus` | `id-nu` | historique | `tavernGames.json` | 4 | — | `characteristics.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `second` | `char` | divergente | `tavernGames.json` | 1 | — | `characteristics.json` |  |
+| entité | `sides` | `id+…` | divergente | `tavernGames.json` | 2 | — | `creatures.json` `groups.json` |  |
+| entité | `skill` | `id-nu` | historique | `tavernGames.json` | 7 | — | `axes.json` `skills.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `spec` | `id-nu` | historique | `tavernGames.json` | 3 | — | `weaponGroups.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `test` | `skill` | divergente | `tavernGames.json` | 1 | — | `skills.json` |  |
+| entité | `amount` | `bonusOf` | divergente | `traits.json` | 1 | — | `characteristics.json` |  |
+| entité | `aura` | `rangeChar+…` | divergente | `traits.json` | 1 | — | `characteristics.json` |  |
+| entité | `bonus` | `bonusOf` | divergente | `traits.json` | 3 | — | `characteristics.json` |  |
+| entité | `capabilities` | `mutationAtSpawn` | divergente | `traits.json` | 2 | — | `mutationTables.json` |  |
+| entité | `capabilities` | `psychCible,psychType+…` | divergente | `traits.json` | 2 | — | `gods.json` `groups.json` `psychology.json` `traits.json` |  |
+| entité | `capabilities` | `psychType` | divergente | `traits.json` | 7 | — | `mass-battle.json` `psychology.json` `talents.json` `traits.json` |  |
+| entité | `capabilities` | `psychType+…` | divergente | `traits.json` | 2 | — | `psychology.json` `traits.json` |  |
+| entité | `capabilities` | `spellDomainImmunity` | divergente | `traits.json` | 1 | — | `domains.json` `groups.json` |  |
+| entité | `cond` | `is+…` | divergente | `traits.json` | 3 | — | `maneuvers.json` `traits.json` |  |
+| entité | `escapeStrength` | `charOf` | divergente | `traits.json` | 4 | — | `characteristics.json` |  |
+| entité | `grantsManeuvers` | `id` | cible | `traits.json` | 20 | — | `maneuvers.json` `qualitySubtypes.json` `traits.json` |  |
+| entité | `label` | `id-nu` | historique | `traits.json` | 1 | — | `names.json` `raceAppearance.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `markMutations` | `first,mentalTable,physTable+…` | divergente | `traits.json` | 1 | — | `mutationTables.json` |  |
+| entité | `of` | `value+…` | divergente | `traits.json` | 2 | — | `traits.json` |  |
+| entité | `ops` | `count,ref+…` | divergente | `traits.json` | 1 | — | `creatures.json` |  |
+| entité | `ops` | `disease+…` | divergente | `traits.json` | 1 | — | `maladies.json` |  |
+| entité | `ops` | `id,unlessCondition,value+…` | divergente | `traits.json` | 5 | — | `etats.json` |  |
+| entité | `ops` | `id,value+…` | divergente | `traits.json` | 5 | — | `etats.json` `water-exposure.json` |  |
+| entité | `ops` | `id+…` | divergente | `traits.json` | 3 | — | `etats.json` |  |
+| entité | `ops` | `op+…` | divergente | `traits.json` | 2 | — | `actions.json` |  |
+| entité | `ops` | `tableId+…` | divergente | `traits.json` | 1 | — | `tables.json` |  |
+| entité | `ops` | `traitId+…` | divergente | `traits.json` | 2 | — | `mass-battle.json` `psychology.json` `qualitySubtypes.json` `traits.json` |  |
+| entité | `passive` | `attackKind,subType+…` | divergente | `traits.json` | 1 | — | `maneuvers.json` `traits.json` `weaponGroups.json` |  |
+| entité | `passive` | `char+…` | divergente | `traits.json` | 20 | — | `characteristics.json` |  |
+| entité | `passive` | `mode+…` | divergente | `traits.json` | 1 | — | `axes.json` `merchantFamilies.json` |  |
+| entité | `passive` | `skill,spec+…` | divergente | `traits.json` | 3 | — | `skills.json` `talents.json` |  |
+| entité | `passive` | `skill+…` | divergente | `traits.json` | 14 | — | `axes.json` `crew-test-types.json` `skills.json` |  |
+| entité | `passive` | `spec,talentId+…` | divergente | `traits.json` | 4 | — | `gods.json` `groups.json` `obsessions.json` `skills.json` `systemes.manifest.json` `talents.json` |  |
+| entité | `passive` | `talentId+…` | divergente | `traits.json` | 19 | — | `careers.json` `talents.json` `traits.json` |  |
+| entité | `passive` | `terrain+…` | divergente | `traits.json` | 3 | — | `obsessions.json` |  |
+| entité | `subject` | `condition+…` | divergente | `traits.json` | 6 | — | `etats.json` `water-exposure.json` |  |
+| entité | `value` | `bonusOf` | divergente | `traits.json` | 1 | — | `characteristics.json` |  |
+| entité | `value` | `charOf` | divergente | `traits.json` | 1 | — | `characteristics.json` |  |
+| entité | `amount` | `bonusOf` | divergente | `trappings.json` | 1 | — | `characteristics.json` |  |
+| entité | `cond` | `value+…` | divergente | `trappings.json` | 1 | — | `groups.json` |  |
+| entité | `defaultAmmo` | `id-nu` | historique | `trappings.json` | 9 | — | `trappings.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `derivedWeapon` | `subType,type+…` | divergente | `trappings.json` | 1 | — | `axes.json` `merchantFamilies.json` `weaponGroups.json` |  |
+| entité | `minRangeBand` | `id-nu` | historique | `trappings.json` | 2 | — | `ship-construction.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `of` | `bonusOf` | divergente | `trappings.json` | 1 | — | `characteristics.json` |  |
+| entité | `ops` | `char+…` | divergente | `trappings.json` | 24 | — | `characteristics.json` |  |
+| entité | `ops` | `disease+…` | divergente | `trappings.json` | 3 | — | `maladies.json` |  |
+| entité | `ops` | `id,value+…` | divergente | `trappings.json` | 11 | — | `etats.json` |  |
+| entité | `ops` | `id+…` | divergente | `trappings.json` | 7 | — | `etats.json` `water-exposure.json` |  |
+| entité | `ops` | `op+…` | divergente | `trappings.json` | 2 | — | `actions.json` |  |
+| entité | `ops` | `skill+…` | divergente | `trappings.json` | 5 | — | `skills.json` `talents.json` |  |
+| entité | `ops` | `symptomId+…` | divergente | `trappings.json` | 1 | — | `symptoms.json` |  |
+| entité | `ops` | `tableId+…` | divergente | `trappings.json` | 1 | — | `tables.json` |  |
+| entité | `ops` | `talentId+…` | divergente | `trappings.json` | 1 | — | `psychology.json` `talents.json` `traits.json` |  |
+| entité | `ops` | `traitId+…` | divergente | `trappings.json` | 3 | — | `spells.json` `traits.json` |  |
+| entité | `passive` | `skill+…` | divergente | `trappings.json` | 12 | — | `axes.json` `crew-test-types.json` `skills.json` |  |
+| entité | `passive` | `tone+…` | divergente | `trappings.json` | 4 | — | `lightTones.json` `trappings.json` |  |
+| entité | `qualities` | `id` | cible | `trappings.json` | 318 | — | `damage-types.json` `lightTones.json` `naval-traits.json` `qualities.json` `skills.json` `spells.json` … |  |
+| entité | `qualities` | `id,spec` | cible | `trappings.json` | 5 | — | `qualities.json` |  |
+| entité | `qualities` | `id,value` | historique | `trappings.json` | 115 | — | `qualities.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| entité | `shape` | `id-nu` | historique | `trappings.json` | 43 | — | `props.json` `qualities.json` `sea-perils.json` `spells.json` `traits.json` `trappings.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `siegeRig` | `id-nu` | historique | `trappings.json` | 15 | — | `naval-traits.json` `qualities.json` `spells.json` `trappings.json` `weaponGroups.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `sizeFor` | `id-nu` | historique | `trappings.json` | 9 | — | `ship-construction.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `subject` | `condition+…` | divergente | `trappings.json` | 2 | — | `etats.json` |  |
+| entité | `subType` | `id-nu` | historique | `trappings.json` | 440 | — | `axes.json` `mass-battle.json` `skills.json` `talents.json` `trappings.json` `weaponGroups.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `test` | `skill+…` | divergente | `trappings.json` | 3 | — | `skills.json` `talents.json` |  |
+| entité | `type` | `id-nu` | historique | `trappings.json` | 161 | — | `axes.json` `merchantFamilies.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `weaponGroup` | `id-nu` | historique | `trappings.json` | 22 | — | `axes.json` `skills.json` `talents.json` `trappings.json` `weaponGroups.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `byProsthesis` | `art,trappingId` | divergente | `traumas.json` | 1 | — | `trappings.json` |  |
+| entité | `byProsthesis` | `trappingId+…` | divergente | `traumas.json` | 2 | — | `trappings.json` |  |
+| entité | `escalade` | `versTraumaId+…` | divergente | `traumas.json` | 3 | — | `traumas.json` |  |
+| entité | `ops` | `char+…` | divergente | `traumas.json` | 12 | — | `characteristics.json` |  |
+| entité | `ops` | `sense,skill+…` | divergente | `traumas.json` | 2 | — | `crew-test-types.json` `skills.json` `talents.json` |  |
+| entité | `ops` | `sense+…` | divergente | `traumas.json` | 2 | — | `talents.json` |  |
+| entité | `ops` | `skill+…` | divergente | `traumas.json` | 11 | — | `skills.json` |  |
+| entité | `prosthesis` | `trappingId+…` | divergente | `traumas.json` | 9 | — | `trappings.json` |  |
+| entité | `rig` | `art+…` | divergente | `traumas.json` | 2 | — | `traumas.json` |  |
+| entité | `severity` | `id-nu` | historique | `traumas.json` | 6 | — | `careers.json` `skills.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `draft` | `count,montureId` | divergente | `vehicles.json` | 1 | — | `creatures.json` |  |
+| entité | `hull` | `criticalTable+…` | divergente | `vehicles.json` | 2 | — | `river-criticals.json` |  |
+| entité | `hull` | `rig+…` | divergente | `vehicles.json` | 7 | — | `skills.json` |  |
+| entité | `traits` | `id` | cible | `vehicles.json` | 17 | — | `naval-traits.json` `qualities.json` `spells.json` `talents.json` |  |
+| entité | `traits` | `id,value` | historique | `vehicles.json` | 2 | — | `naval-traits.json` `qualities.json` | charge utile `value` à plat sur la référence — la cible la porte sous `advances` (#1463 S2) |
+| entité | `kind` | `id-nu` | historique | `voyage-stakes.json` | 15 | — | `crew-test-types.json` `night-stakes.json` `regles.json` `sea-perils.json` `skills.json` `spells.json` … | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `rule` | `id-nu` | historique | `voyage-stakes.json` | 32 | — | `axes.json` `etats.json` `regles.json` `skills.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `auto` | `condition+…` | divergente | `water-exposure.json` | 4 | — | `etats.json` `water-exposure.json` |  |
+| entité | `combat` | `id-nu` | historique | `weaponGroups.json` | 18 | — | `axes.json` `merchantFamilies.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `kind` | `id-nu` | historique | `weaponGroups.json` | 1 | — | `merchantFamilies.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `material` | `id-nu` | historique | `weaponGroups.json` | 3 | — | `domains.json` `land-cargo.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `qualities` | `id` | cible | `weaponGroups.json` | 5 | — | `qualities.json` `ship-construction.json` `traits.json` |  |
+| config | `ranges` | `weather+…` | divergente | `weather.json` | 19 | — | `spells.json` `weather.json` |  |
+
+### 3.2 liste de références (ids nus) — `refs` (strate Référence)
+
+80 ligne(s), 1124 occurrence(s).
+Reconnu par : tableau de chaînes dont au moins un élément résout
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `sequels` | `ids-nus` | historique | `aa-criticals.json` | 13 | `traumas.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `traumas` | `ids-nus` | historique | `aa-criticals.json` | 24 | `traumas.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `keys` | `ids-nus` | historique | `actions.json` | 28 | `actions.json` `characteristics.json` `regles.json` `talents.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `chains` | `ids-nus` | historique | `activities.json` | 4 | `actions.json` `activities.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `classes` | `ids-nus` | historique | `activities.json` | 12 | `classes.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `contexts` | `ids-nus` | historique | `activities.json` | 39 | `lieux-services.json` `skills.json` `systemes.manifest.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `where` | `ids-nus` | historique | `activities.json` | 5 | `locations.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `domainIds` | `ids-nus` | historique | `arcane-phenomena.json` | 10 | `breath-types.json` `damage-types.json` `domains.json` `groups.json` `land-cargo.json` `obsessions.json` … | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `domains` | `ids-nus` | historique | `arcane-phenomena.json` | 12 | `breath-types.json` `damage-types.json` `domains.json` `groups.json` `land-cargo.json` `obsessions.json` … | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `domainsExcept` | `ids-nus` | historique | `arcane-phenomena.json` | 1 | `breath-types.json` `damage-types.json` `domains.json` `groups.json` `land-cargo.json` `obsessions.json` … | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `environments` | `ids-nus` | historique | `arcane-phenomena.json` | 3 | `arene-projet.json` `talents.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `spellIds` | `ids-nus` | historique | `arcane-phenomena.json` | 1 | `spells.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `tests` | `ids-nus` | historique | `arcane-phenomena.json` | 13 | `regles.json` `skills.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `modes` | `ids-nus` | historique | `arene-projet.json` | 1 | `structures.json` `vehicles.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `roomZoneIds` | `ids-nus` | historique | `arene-projet.json` | 12 | `arene-projet.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `spells` | `ids-nus` | historique | `arene-projet.json` | 2 | `spells.json` `trappings.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `tiles` | `ids-nus` | historique | `arene-projet.json` | 11 | `land-cargo.json` `obsessions.json` `reliefMaterials.json` `sea-cargo.json` `structureAppearance.json` `structures.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `crewIds` | `ids-nus` | historique | `barge-du-sel-projet.json` | 2 | `barge-du-sel-projet.json` `loup-et-saumure-projet.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `tiles` | `ids-nus` | historique | `barge-du-sel-projet.json` | 3 | `obsessions.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `characteristics` | `ids-nus` | historique | `careerLevels.json` | 432 | `characteristics.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `specOptions` | `ids-nus` | historique | `careerLevels.json` | 12 | `axes.json` `domains.json` `groups.json` `loup-et-saumure-projet.json` `merchants.json` `skills.json` … | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `grantGroups` | `ids-nus` | historique | `careers.json` | 6 | `arene-projet.json` `careers.json` `groups.json` `skills.json` `talents.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `grantGroups` | `ids-nus` | historique | `classes.json` | 1 | `groups.json` `talents.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `features` | `ids-nus` | historique | `creatures.json` | 1 | `mutations.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `grantGroups` | `ids-nus` | historique | `creatures.json` | 87 | `creatures.json` `domains.json` `gods.json` `groups.json` `skills.json` `talents.json` … | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `remove` | `ids-nus` | historique | `creatures.json` | 3 | `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `roles` | `ids-nus` | historique | `crew-test-types.json` | 10 | `careers.json` `crew-roles.json` `skills.json` `talents.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `sequels` | `ids-nus` | historique | `criticals.json` | 13 | `traumas.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `traumas` | `ids-nus` | historique | `criticals.json` | 24 | `traumas.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `whenClear` | `ids-nus` | historique | `criticals.json` | 2 | `etats.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `roomZoneIds` | `ids-nus` | historique | `diligence-projet.json` | 38 | `diligence-projet.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `tiles` | `ids-nus` | historique | `diligence-projet.json` | 2 | `reliefMaterials.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `environments` | `ids-nus` | historique | `domains.json` | 1 | `skills.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `tests` | `ids-nus` | historique | `domains.json` | 21 | `skills.json` `talents.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `when` | `ids-nus` | historique | `domains.json` | 2 | `books.json` `skills.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `exceptSkills` | `ids-nus` | historique | `etats.json` | 1 | `axes.json` `skills.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `grantGroups` | `ids-nus` | historique | `gods.json` | 2 | `groups.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `exceptGroups` | `ids-nus` | historique | `groups.json` | 1 | `groups.json` `skills.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| table | `revenueBlockedClasses` | `ids-nus` | historique | `interludeEvents.json` | 4 | `classes.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| table | `revenueClasses` | `ids-nus` | historique | `interludeEvents.json` | 3 | `classes.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `biens` | `ids-nus` | historique | `land-cargo.json` | 20 | `domains.json` `land-cargo.json` `sea-cargo.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `rigs` | `ids-nus` | historique | `localisation.json` | 2 | `skills.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `crewIds` | `ids-nus` | historique | `loup-et-saumure-projet.json` | 4 | `barge-du-sel-projet.json` `loup-et-saumure-projet.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `tiles` | `ids-nus` | historique | `loup-et-saumure-projet.json` | 5 | `obsessions.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `columns` | `ids-nus` | historique | `merchantFamilies.json` | 1 | `activities.json` `spells.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `curated` | `ids-nus` | historique | `merchants.json` | 3 | `sea-cargo.json` `trappings.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `subTypes` | `ids-nus` | historique | `merchants.json` | 5 | `weaponGroups.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `types` | `ids-nus` | historique | `merchants.json` | 1 | `axes.json` `merchantFamilies.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `unitKinds` | `ids-nus` | historique | `merchants.json` | 1 | `domains.json` `groups.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `creatureIds` | `ids-nus` | historique | `montures.json` | 8 | `creatures.json` `skills.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `features` | `ids-nus` | historique | `mutations.json` | 54 | `mutations.json` `spells.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `production` | `ids-nus` | historique | `naval-ports.json` | 38 | `land-cargo.json` `sea-cargo.json` `systemes.manifest.json` `trappings.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `__livres` | `ids-nus` | historique | `progression-schemas.derived.json` | 1 | `books.json` `skills.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `titresPage` | `ids-nus` | historique | `progression-schemas.derived.json` | 2 | `careers.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `immuneToFromTarget` | `ids-nus` | historique | `psychology.json` | 1 | `mass-battle.json` `psychology.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `immuneWhileActive` | `ids-nus` | historique | `psychology.json` | 1 | `mass-battle.json` `psychology.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `beats` | `ids-nus` | historique | `qualities.json` | 2 | `qualities.json` `ship-construction.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `featureKeys` | `ids-nus` | historique | `raceAppearance.json` | 5 | `mutations.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `options` | `ids-nus` | historique | `reglesOptionnelles.json` | 3 | `gods.json` `groups.json` `naval-progression.json` `sea-events.json` `skills.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `skills` | `ids-nus` | historique | `sea-events.json` | 1 | `skills.json` `talents.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `skills` | `ids-nus` | historique | `sea-weather.json` | 5 | `crew-test-types.json` `skills.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `max` | `ids-nus` | historique | `skills.json` | 1 | `characteristics.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `grantGroups` | `ids-nus` | historique | `species.json` | 27 | `creatures.json` `groups.json` `skills.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `specOptions` | `ids-nus` | historique | `species.json` | 1 | `talents.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `all` | `ids-nus` | historique | `speciesRace.json` | 1 | `skills.json` `talents.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `any` | `ids-nus` | historique | `speciesRace.json` | 1 | `careers.json` `groups.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `prefix` | `ids-nus` | historique | `speciesRace.json` | 17 | `creatures.json` `groups.json` `skills.json` `talents.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `addQualities` | `ids-nus` | historique | `spells.json` | 8 | `damage-types.json` `lightTones.json` `qualities.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `domains` | `ids-nus` | historique | `spells.json` | 12 | `breath-types.json` `damage-types.json` `domains.json` `groups.json` `land-cargo.json` `obsessions.json` … | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `exceptGroups` | `ids-nus` | historique | `spells.json` | 2 | `groups.json` `skills.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `onlyGroups` | `ids-nus` | historique | `spells.json` | 7 | `groups.json` `skills.json` `talents.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `qualities` | `ids-nus` | historique | `spells.json` | 5 | `damage-types.json` `lightTones.json` `qualities.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `skill` | `ids-nus` | historique | `talents.json` | 1 | `skills.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `affectsGroups` | `ids-nus` | historique | `traits.json` | 2 | `gods.json` `groups.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `grantGroups` | `ids-nus` | historique | `traits.json` | 4 | `gods.json` `groups.json` `skills.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `suppressesCapabilities` | `ids-nus` | historique | `traits.json` | 1 | `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `diseases` | `ids-nus` | historique | `trappings.json` | 5 | `maladies.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `exceptGroups` | `ids-nus` | historique | `trappings.json` | 1 | `groups.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| entité | `onlyGroups` | `ids-nus` | historique | `trappings.json` | 2 | `groups.json` `skills.json` `traits.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+| config | `physicalTestChars` | `ids-nus` | historique | `weather.json` | 1 | `characteristics.json` | tableau de chaînes dont au moins un élément résout — la cible est une liste d’objets de référence (#1463 S2) |
+
+### 3.3 somme d’argent — `monnaie` (strate Valeur)
+
+6 ligne(s), 454 occurrence(s).
+Reconnu par : son noyau `gold` `silver`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `effect` | `gold,silver+…` | divergente | `arene-projet.json` | 3 | — |  |
+| entité | `price` | `bronze,gold,silver` | historique | `creatures.json` | 10 | — | bronze = erreur de traduction, collisionne StatusTier |
+| entité | `daily` | `bronze,gold,silver` | historique | `crew-roles.json` | 9 | — | bronze = erreur de traduction, collisionne StatusTier |
+| entité | `weekly` | `bronze,gold,silver` | historique | `crew-roles.json` | 9 | — | bronze = erreur de traduction, collisionne StatusTier |
+| entité | `price` | `bronze,gold,silver` | historique | `trappings.json` | 392 | — | bronze = erreur de traduction, collisionne StatusTier |
+| entité | `price` | `bronze,gold,silver` | historique | `vehicles.json` | 31 | — | bronze = erreur de traduction, collisionne StatusTier |
+
+### 3.4 prix (Money | saisonnier | dé | ND) — `prix` (strate Valeur)
+
+3 ligne(s), 18 occurrence(s).
+Reconnu par : la clé porteuse `price`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `price` | `automne,ete,hiver,printemps` | declaree | `land-cargo.json` | 7 | — | coefficient SAISONNIER — `Price = Money \| {saison} \| {dice} \| "ND"` (DESIGN v2 S4) : ce n’est pas une bourse à éteindre |
+| config | `price` | `automne,ete,hiver,printemps` | declaree | `sea-cargo.json` | 10 | — | coefficient SAISONNIER — `Price = Money \| {saison} \| {dice} \| "ND"` (DESIGN v2 S4) : ce n’est pas une bourse à éteindre |
+| config | `price` | `dice` | declaree | `sea-cargo.json` | 1 | — | prix TIRÉ (DESIGN v2 S4) |
+
+### 3.5 lancer de dés — `de` (strate Valeur)
+
+19 ligne(s), 129 occurrence(s).
+Reconnu par : son noyau `n` `sides`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `dice` | `n,sides` | cible | `aa-criticals.json` | 10 | — |  |
+| entité | `roll` | `n,sides` | cible | `careerLevels.json` | 5 | — |  |
+| entité | `roll` | `n,sides` | cible | `classes.json` | 2 | — |  |
+| config | `dice` | `n,sides` | cible | `criticals.json` | 12 | — |  |
+| entité | `dice` | `n,sides` | cible | `domains.json` | 1 | — |  |
+| entité | `dice` | `n,sides` | cible | `etats.json` | 1 | — |  |
+| entité | `dice` | `n,plus,sides` | cible | `maladies.json` | 11 | — |  |
+| entité | `dice` | `n,sides` | cible | `maladies.json` | 21 | — |  |
+| entité | `dice` | `n,sides` | cible | `maneuvers.json` | 2 | — |  |
+| config | `dice` | `n,sides` | cible | `miscast.json` | 18 | — |  |
+| config | `dice` | `n,sides+…` | divergente | `miscast.json` | 6 | — |  |
+| entité | `dice` | `n,plus,sides` | cible | `spells.json` | 1 | — |  |
+| entité | `dice` | `n,sides` | cible | `spells.json` | 10 | — |  |
+| entité | `dice` | `n,sides` | cible | `symptoms.json` | 4 | — |  |
+| entité | `dice` | `n,plus,sides` | cible | `tables.json` | 3 | — |  |
+| entité | `dice` | `n,sides` | cible | `tables.json` | 1 | — |  |
+| entité | `dice` | `n,sides` | cible | `traits.json` | 3 | — |  |
+| entité | `dice` | `n,plus,sides` | cible | `trappings.json` | 3 | — |  |
+| entité | `dice` | `n,sides` | cible | `trappings.json` | 15 | — |  |
+
+### 3.6 référence de source (livre/folio) — `source` (strate Valeur)
+
+110 ligne(s), 4550 occurrence(s).
+Reconnu par : son noyau `book`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| entité | `source` | `book,note,page` | cible | `actions.json` | 9 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `actions.json` | 3 | — |  |
+| entité | `source` | `book,note,page` | cible | `activities.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `activities.json` | 61 | — |  |
+| entité | `source` | `book,note,page` | cible | `advancementCosts.json` | 15 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,page` | cible | `arcane-phenomena.json` | 85 | — |  |
+| config | `source` | `book,page` | cible | `artillery-misfire.json` | 1 | — |  |
+| entité | `source` | `book,page` | cible | `astrology.json` | 5 | — |  |
+| entité | `source` | `book,note,page` | cible | `calendarIntercalary.json` | 6 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,note,page` | cible | `calendarMonths.json` | 12 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,note,page` | cible | `calendarWeekdays.json` | 8 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `careerLevels.json` | 432 | — |  |
+| entité | `source` | `book,note,page` | cible | `careers.json` | 12 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `careers.json` | 96 | — |  |
+| entité | `source` | `book,note,page` | cible | `characteristics.json` | 3 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `characteristics.json` | 18 | — |  |
+| entité | `source` | `book,page` | cible | `classes.json` | 9 | — |  |
+| entité | `source` | `book,note,page` | cible | `combat-stakes.json` | 35 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `alsoIn` | `book,page` | cible | `creatures.json` | 3 | — |  |
+| entité | `source` | `book,page` | cible | `creatures.json` | 490 | — |  |
+| config | `source` | `book,note,page` | cible | `crew-morale.json` | 33 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `crew-roles.json` | 4 | — |  |
+| config | `source` | `book,note,page` | cible | `crew-test-types.json` | 10 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `criticals.json` | 80 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `disponibilite.json` | 6 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `alsoIn` | `book,page+…` | divergente | `domains.json` | 6 | — |  |
+| entité | `source` | `book,page` | cible | `domains.json` | 43 | — |  |
+| config | `source` | `book,note,page` | cible | `driving-mishap.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `drunkenness.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,note,page` | cible | `encumbranceTiers.json` | 4 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `etats.json` | 21 | — |  |
+| entité | `source` | `book,note,page` | cible | `eyes.json` | 10 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,note,page` | cible | `flow-stakes.json` | 34 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `gods.json` | 41 | — |  |
+| config | `source` | `book,note,page` | cible | `grapple.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,note,page` | cible | `hairs.json` | 10 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,page` | cible | `incidents-monture.json` | 1 | — |  |
+| table | `source` | `book,note,page` | cible | `interludeEvents.json` | 31 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `land-cargo.json` | 38 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,page` | cible | `localisation.json` | 3 | — |  |
+| entité | `source` | `book,page` | cible | `locations.json` | 55 | — |  |
+| entité | `source` | `book,note,page` | cible | `maladies.json` | 11 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `maladies.json` | 5 | — |  |
+| entité | `source` | `book,page` | cible | `maneuvers.json` | 20 | — |  |
+| config | `source` | `book,note,page` | cible | `mass-battle.json` | 39 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `miscast.json` | 116 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,page` | cible | `montures.json` | 1 | — |  |
+| entité | `source` | `book,page` | cible | `mutations.json` | 116 | — |  |
+| entité | `source` | `book,note,page` | cible | `mutationTables.json` | 17 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `naval-ports.json` | 39 | — |  |
+| config | `source` | `book,note,page` | cible | `naval-progression.json` | 5 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `alsoIn` | `book,page+…` | divergente | `naval-traits.json` | 1 | — |  |
+| entité | `source` | `book,page` | cible | `naval-traits.json` | 25 | — |  |
+| entité | `source` | `book,note,page` | cible | `night-stakes.json` | 15 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,page` | cible | `obsessions.json` | 1 | — |  |
+| table | `source` | `book,note,page` | cible | `oups.json` | 8 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,note,page` | cible | `peripeties.json` | 10 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,page` | cible | `problemes-vehicule.json` | 1 | — |  |
+| config | `schemas` | `book+…` | divergente | `progression-schemas.derived.json` | 111 | — |  |
+| entité | `source` | `book,page` | cible | `psychology.json` | 9 | — |  |
+| entité | `alsoIn` | `book,page` | cible | `qualities.json` | 1 | — |  |
+| entité | `alsoIn` | `book,page+…` | divergente | `qualities.json` | 1 | — |  |
+| entité | `source` | `book,note,page` | cible | `qualities.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `qualities.json` | 58 | — |  |
+| entité | `source` | `book,note,page` | cible | `regles.json` | 84 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `reglesOptionnelles.json` | 54 | — |  |
+| config | `source` | `book,page` | cible | `rencontres-edoc.json` | 1 | — |  |
+| config | `source` | `book,page` | cible | `river-criticals.json` | 1 | — |  |
+| config | `source` | `book,note,page` | cible | `river-navigation.json` | 14 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `river-perils.json` | 4 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `sea-cargo.json` | 17 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `sea-events.json` | 91 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `sea-navigation.json` | 47 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `sea-perils.json` | 17 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `sea-shanties.json` | 7 | — |  |
+| config | `source` | `book,note,page` | cible | `sea-weather.json` | 35 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `ship-construction.json` | 23 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,page` | cible | `ship-criticals.json` | 1 | — |  |
+| entité | `alsoIn` | `book,note,page+…` | divergente | `skills.json` | 1 | — |  |
+| entité | `source` | `book,note,page` | cible | `skills.json` | 49 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `skills.json` | 46 | — |  |
+| entité | `source` | `book,page` | cible | `species.json` | 27 | — |  |
+| entité | `alsoIn` | `book,page+…` | divergente | `spells.json` | 46 | — |  |
+| entité | `source` | `book,page` | cible | `spells.json` | 594 | — |  |
+| entité | `source` | `book,page` | cible | `stars.json` | 23 | — |  |
+| table | `source` | `book,note,page` | cible | `steam-breakdown.json` | 6 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,page` | cible | `structure-criticals.json` | 1 | — |  |
+| entité | `source` | `book,chapter` | historique | `structures.json` | 24 | — | folio obligatoire (#1463, 2026-08-23) |
+| config | `source` | `book,note,page` | cible | `surincantation.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `symptoms.json` | 18 | — |  |
+| entité | `source` | `book,note,page` | cible | `tables.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `tables.json` | 19 | — |  |
+| entité | `alsoIn` | `book,page+…` | divergente | `talents.json` | 1 | — |  |
+| entité | `source` | `book,note,page` | cible | `talents.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `talents.json` | 198 | — |  |
+| entité | `source` | `book,page` | cible | `tavernGames.json` | 13 | — |  |
+| entité | `alsoIn` | `book,page` | cible | `traits.json` | 3 | — |  |
+| entité | `alsoIn` | `book,page+…` | divergente | `traits.json` | 1 | — |  |
+| entité | `source` | `book,page` | cible | `traits.json` | 131 | — |  |
+| entité | `alsoIn` | `book,page+…` | divergente | `trappings.json` | 8 | — |  |
+| entité | `source` | `book,page` | cible | `trappings.json` | 440 | — |  |
+| entité | `source` | `book,note,page` | cible | `traumas.json` | 29 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `vehicles.json` | 31 | — |  |
+| config | `source` | `book,note,page` | cible | `vents-tourbillonnants.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,note,page` | cible | `voyage-stakes.json` | 43 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,page` | cible | `water-exposure.json` | 1 | — |  |
+| entité | `source` | `book,note,page` | cible | `weaponGroups.json` | 34 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| entité | `source` | `book,page` | cible | `weaponGroups.json` | 4 | — |  |
+| config | `physicalTestCharsSource` | `book,note,page` | cible | `weather.json` | 1 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+| config | `source` | `book,note,page` | cible | `weather.json` | 10 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`) |
+
+### 3.7 jet à faire (compétence/caractéristique + difficulté) — `test` (strate Valeur)
+
+64 ligne(s), 301 occurrence(s).
+Reconnu par : son noyau `difficulty`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `amputation` | `difficulty+…` | divergente | `aa-criticals.json` | 13 | — |  |
+| config | `loss` | `difficulty` | divergente | `aa-criticals.json` | 1 | — |  |
+| config | `resist` | `difficulty,skill+…` | divergente | `aa-criticals.json` | 1 | — |  |
+| config | `resist` | `difficulty+…` | divergente | `aa-criticals.json` | 16 | — |  |
+| entité | `(racine)` | `difficulty+…` | divergente | `activities.json` | 51 | — |  |
+| entité | `skills` | `difficulty,skillId` | historique | `activities.json` | 1 | — |  |
+| entité | `skills` | `difficulty,skillId+…` | divergente | `activities.json` | 1 | — |  |
+| config | `controlFlux` | `difficulty+…` | divergente | `arcane-phenomena.json` | 1 | — |  |
+| config | `test` | `difficulty,skill+…` | divergente | `arene-projet.json` | 9 | — |  |
+| config | `amputation` | `difficulty+…` | divergente | `criticals.json` | 13 | — |  |
+| config | `loss` | `difficulty` | divergente | `criticals.json` | 1 | — |  |
+| config | `resist` | `difficulty+…` | divergente | `criticals.json` | 22 | — |  |
+| entité | `test` | `difficulty,skill+…` | divergente | `domains.json` | 2 | — |  |
+| entité | `difficultyBy` | `difficulty+…` | divergente | `etats.json` | 2 | — |  |
+| entité | `test` | `difficulty,skill+…` | divergente | `etats.json` | 2 | — |  |
+| config | `riderTest` | `char,difficulty,skillId+…` | divergente | `incidents-monture.json` | 2 | — |  |
+| config | `gossip` | `difficulty+…` | divergente | `land-cargo.json` | 1 | — |  |
+| config | `effect` | `difficulty,skill+…` | divergente | `loup-et-saumure-projet.json` | 1 | — |  |
+| config | `test` | `difficulty,skill+…` | divergente | `loup-et-saumure-projet.json` | 2 | — |  |
+| entité | `symptoms` | `difficulty+…` | divergente | `maladies.json` | 8 | — |  |
+| entité | `test` | `difficulty,skill` | historique | `maneuvers.json` | 2 | — |  |
+| config | `test` | `characteristic,difficulty+…` | divergente | `miscast.json` | 2 | — |  |
+| config | `test` | `difficulty,skill+…` | divergente | `miscast.json` | 13 | — |  |
+| entité | `test` | `difficulty,skill` | historique | `psychology.json` | 7 | — |  |
+| config | `crewTest` | `difficulty,skillId+…` | divergente | `river-criticals.json` | 2 | — |  |
+| config | `rowingAgility` | `difficulty+…` | divergente | `river-navigation.json` | 1 | — |  |
+| config | `temporaryRepair` | `difficulty+…` | divergente | `river-navigation.json` | 1 | — |  |
+| config | `producesGossip` | `difficulty+…` | divergente | `sea-cargo.json` | 1 | — |  |
+| config | `surplusGossip` | `difficulty+…` | divergente | `sea-cargo.json` | 1 | — |  |
+| config | `test` | `difficulty,skillId+…` | divergente | `sea-cargo.json` | 1 | — |  |
+| config | `params` | `difficulty+…` | divergente | `sea-events.json` | 3 | — |  |
+| config | `epuisement` | `difficulty+…` | divergente | `sea-navigation.json` | 1 | — |  |
+| config | `table` | `difficulty+…` | divergente | `sea-navigation.json` | 5 | — |  |
+| config | `voirLaLumiere` | `difficulty+…` | divergente | `sea-navigation.json` | 3 | — |  |
+| config | `evasion` | `difficulty+…` | divergente | `sea-perils.json` | 5 | — |  |
+| config | `freeTest` | `difficulty,skillId+…` | divergente | `sea-perils.json` | 1 | — |  |
+| config | `tourbillonSwim` | `difficulty,skillId+…` | divergente | `sea-perils.json` | 1 | — |  |
+| config | `affaler` | `difficulty+…` | divergente | `sea-weather.json` | 1 | — |  |
+| config | `temperatures` | `difficulty+…` | divergente | `sea-weather.json` | 4 | — |  |
+| config | `crewTest` | `difficulty,skillId+…` | divergente | `ship-criticals.json` | 1 | — |  |
+| entité | `crossTest` | `characteristic,difficulty+…` | divergente | `spells.json` | 2 | — |  |
+| entité | `test` | `characteristic,difficulty` | historique | `spells.json` | 5 | — |  |
+| entité | `test` | `characteristic,difficulty+…` | divergente | `spells.json` | 3 | — |  |
+| entité | `test` | `difficulty,skill` | historique | `spells.json` | 25 | — |  |
+| entité | `test` | `difficulty,skill+…` | divergente | `spells.json` | 8 | — |  |
+| table | `restart` | `difficulty,skillId+…` | divergente | `steam-breakdown.json` | 6 | — |  |
+| entité | `onTick` | `difficulty+…` | divergente | `symptoms.json` | 3 | — |  |
+| entité | `test` | `characteristic,difficulty+…` | divergente | `symptoms.json` | 1 | — |  |
+| entité | `test` | `characteristic,difficulty+…` | divergente | `talents.json` | 1 | — |  |
+| entité | `test` | `difficulty,skill` | historique | `talents.json` | 1 | — |  |
+| entité | `test` | `difficulty,skill+…` | divergente | `talents.json` | 1 | — |  |
+| entité | `options` | `char,difficulty` | historique | `tavernGames.json` | 3 | — |  |
+| entité | `options` | `difficulty,skill` | historique | `tavernGames.json` | 2 | — |  |
+| entité | `options` | `difficulty,skill+…` | divergente | `tavernGames.json` | 2 | — |  |
+| entité | `rows` | `difficulty+…` | divergente | `tavernGames.json` | 14 | — |  |
+| entité | `throwerPenalty` | `difficulty+…` | divergente | `tavernGames.json` | 1 | — |  |
+| entité | `test` | `characteristic,difficulty` | historique | `traits.json` | 1 | — |  |
+| entité | `test` | `characteristic,difficulty,skill+…` | divergente | `traits.json` | 1 | — |  |
+| entité | `test` | `characteristic,difficulty+…` | divergente | `traits.json` | 1 | — |  |
+| entité | `test` | `characteristic,difficulty,skill+…` | divergente | `trappings.json` | 3 | — |  |
+| entité | `test` | `characteristic,difficulty+…` | divergente | `trappings.json` | 2 | — |  |
+| entité | `test` | `difficulty,skill+…` | divergente | `trappings.json` | 6 | — |  |
+| config | `test` | `difficulty,skillId` | historique | `water-exposure.json` | 1 | — |  |
+| config | `resistanceTest` | `difficulty+…` | divergente | `weather.json` | 2 | — |  |
+
+### 3.8 plage de tirage (min,max) — `plage` (strate Valeur)
+
+65 ligne(s), 1421 occurrence(s).
+Reconnu par : son noyau `min` `max`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| config | `bras` | `max,min+…` | divergente | `aa-criticals.json` | 20 | — |  |
+| config | `corps` | `max,min+…` | divergente | `aa-criticals.json` | 20 | — |  |
+| config | `jambe` | `max,min+…` | divergente | `aa-criticals.json` | 20 | — |  |
+| config | `tete` | `max,min+…` | divergente | `aa-criticals.json` | 20 | — |  |
+| config | `rows` | `max,min+…` | divergente | `arcane-phenomena.json` | 50 | — |  |
+| config | `entries` | `max,min+…` | divergente | `artillery-misfire.json` | 4 | — |  |
+| config | `bands` | `max,min+…` | divergente | `crew-morale.json` | 4 | — |  |
+| config | `bras` | `max,min+…` | divergente | `criticals.json` | 20 | — |  |
+| config | `corps` | `max,min+…` | divergente | `criticals.json` | 20 | — |  |
+| config | `jambe` | `max,min+…` | divergente | `criticals.json` | 20 | — |  |
+| config | `tete` | `max,min+…` | divergente | `criticals.json` | 20 | — |  |
+| config | `table` | `max,min+…` | divergente | `driving-mishap.json` | 4 | — |  |
+| config | `table` | `max,min+…` | divergente | `drunkenness.json` | 5 | — |  |
+| config | `entries` | `max,min+…` | divergente | `incidents-monture.json` | 4 | — |  |
+| table | `(racine)` | `max,min+…` | divergente | `interludeEvents.json` | 31 | — |  |
+| config | `rumours` | `max,min+…` | divergente | `land-cargo.json` | 20 | — |  |
+| config | `wineQuality` | `max,min+…` | divergente | `land-cargo.json` | 6 | — |  |
+| config | `araignee` | `max,min+…` | divergente | `localisation.json` | 3 | — |  |
+| config | `entries` | `max,min+…` | divergente | `localisation.json` | 11 | — |  |
+| config | `humanoide` | `max,min+…` | divergente | `localisation.json` | 6 | — |  |
+| config | `serpent` | `max,min+…` | divergente | `localisation.json` | 2 | — |  |
+| config | `hazards` | `max,min+…` | divergente | `mass-battle.json` | 10 | — |  |
+| config | `major` | `max,min+…` | divergente | `miscast.json` | 20 | — |  |
+| config | `majorVdm` | `max,min+…` | divergente | `miscast.json` | 20 | — |  |
+| config | `minor` | `max,min+…` | divergente | `miscast.json` | 20 | — |  |
+| config | `minorVdm` | `max,min+…` | divergente | `miscast.json` | 20 | — |  |
+| config | `wrath` | `max,min+…` | divergente | `miscast.json` | 31 | — |  |
+| entité | `ranges` | `max,min+…` | divergente | `mutationTables.json` | 486 | — |  |
+| config | `table` | `max,min+…` | divergente | `naval-progression.json` | 5 | — |  |
+| config | `table` | `max,min+…` | divergente | `obsessions.json` | 19 | — |  |
+| table | `(racine)` | `max,min+…` | divergente | `oups.json` | 7 | — |  |
+| config | `entries` | `max,min+…` | divergente | `problemes-vehicule.json` | 4 | — |  |
+| entité | `(racine)` | `max,min+…` | divergente | `reglesOptionnelles.json` | 23 | — |  |
+| config | `dangereuses` | `max,min+…` | divergente | `rencontres-edoc.json` | 9 | — |  |
+| config | `fortuites` | `max,min+…` | divergente | `rencontres-edoc.json` | 10 | — |  |
+| config | `positives` | `max,min+…` | divergente | `rencontres-edoc.json` | 7 | — |  |
+| config | `avirons` | `max,min+…` | divergente | `river-criticals.json` | 1 | — |  |
+| config | `coque` | `max,min+…` | divergente | `river-criticals.json` | 1 | — |  |
+| config | `gouvernail` | `max,min+…` | divergente | `river-criticals.json` | 1 | — |  |
+| config | `greement` | `max,min+…` | divergente | `river-criticals.json` | 1 | — |  |
+| config | `superstructure` | `max,min+…` | divergente | `river-criticals.json` | 1 | — |  |
+| config | `windDirections` | `max,min+…` | divergente | `river-navigation.json` | 3 | — |  |
+| config | `windForces` | `max,min+…` | divergente | `river-navigation.json` | 5 | — |  |
+| config | `boardEvents` | `max,min+…` | divergente | `sea-events.json` | 40 | — |  |
+| config | `paliers` | `max,min+…` | divergente | `sea-events.json` | 5 | — |  |
+| config | `portEvents` | `max,min+…` | divergente | `sea-events.json` | 18 | — |  |
+| config | `changementDeCap` | `max,min+…` | divergente | `sea-navigation.json` | 5 | — |  |
+| config | `drDeltas` | `max,min+…` | divergente | `sea-navigation.json` | 4 | — |  |
+| config | `reperes` | `max,min+…` | divergente | `sea-navigation.json` | 5 | — |  |
+| config | `roseDesVents` | `max,min+…` | divergente | `sea-weather.json` | 5 | — |  |
+| config | `table` | `max,min+…` | divergente | `sea-weather.json` | 10 | — |  |
+| config | `avirons` | `max,min+…` | divergente | `ship-criticals.json` | 5 | — |  |
+| config | `cargaison` | `max,min+…` | divergente | `ship-criticals.json` | 5 | — |  |
+| config | `coque` | `max,min+…` | divergente | `ship-criticals.json` | 10 | — |  |
+| config | `equipements` | `max,min+…` | divergente | `ship-criticals.json` | 5 | — |  |
+| config | `greement` | `max,min+…` | divergente | `ship-criticals.json` | 10 | — |  |
+| entité | `rows` | `max,min+…` | divergente | `spells.json` | 13 | — |  |
+| table | `(racine)` | `max,min+…` | divergente | `steam-breakdown.json` | 6 | — |  |
+| config | `entries` | `max,min+…` | divergente | `structure-criticals.json` | 8 | — |  |
+| entité | `rows` | `max,min+…` | divergente | `symptoms.json` | 8 | — |  |
+| entité | `rows` | `max,min+…` | divergente | `tables.json` | 225 | — |  |
+| entité | `rows` | `max,min+…` | divergente | `tavernGames.json` | 5 | — |  |
+| entité | `table` | `max,min+…` | divergente | `tavernGames.json` | 3 | — |  |
+| config | `table` | `max,min+…` | divergente | `vents-tourbillonnants.json` | 5 | — |  |
+| config | `diseases` | `max,min+…` | divergente | `water-exposure.json` | 7 | — |  |
+
+### 3.9 quantité (CountSpec : fixe ou tirée) — `quantite` (strate Valeur)
+
+3 ligne(s), 47 occurrence(s).
+Reconnu par : son noyau `fixed`
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| entité | `count` | `fixed` | cible | `careerLevels.json` | 45 | — |  |
+| entité | `count` | `fixed` | cible | `classes.json` | 1 | — |  |
+| entité | `count` | `fixed` | cible | `creatures.json` | 1 | — |  |
+
+### 3.10 paramètres de séquence jouée en manches — `sequence` (strate Valeur)
+
+3 ligne(s), 3 occurrence(s).
+Reconnu par : son noyau `target` `drCap` `table` `rounds` `phases` `pot` `volley` `sides` `combined` `throwerPenalty` (≥ 2)
+
+| Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
+|---|---|---|---|---|---|---|---|
+| entité | `(racine)` | `drCap,volley+…` | divergente | `tavernGames.json` | 1 | — |  |
+| entité | `(racine)` | `phases,target+…` | divergente | `tavernGames.json` | 1 | — |  |
+| entité | `(racine)` | `table,throwerPenalty+…` | divergente | `tavernGames.json` | 1 | — |  |
+
+### 3.11 Homonymes nominatifs
+
+Une clé RÉSERVÉE à un concept qui porte ≥ 2 classes de type dans la donnée : le NOM ne dit plus le
+type. Cible #1463 S2 : un nom de concept est réservé à son type. Une clé réservée encore homonyme
+ne FORCE aucun concept — seul `price` nomme le concept `prix`, parce que `Price` est un type.
+
+| Clé | Classes | Occurrences | Détail par classe |
+|---|---|---|---|
+| `skill` | array \\| null \\| number \\| string | 355 | **array** talents.json:1 — **null** tavernGames.json:4 — **number** advancementCosts.json:15 arene-projet.json:2 — **string** talents.json:125 spells.json:52 trappings.json:29 miscast.json:26 traits.json:18 tables.json:15 tavernGames.json:14 traumas.json:13 … |
+| `char` | number \\| object \\| string | 871 | **number** advancementCosts.json:15 — **object** creatures.json:490 vehicles.json:29 structures.json:24 loup-et-saumure-projet.json:8 barge-du-sel-projet.json:4 arene-projet.json:3 — **string** mutations.json:56 spells.json:42 stars.json:42 symptoms.json:34 trappings.json:24 traits.json:20 talents.json:17 tables.json:15 … |
+| `price` | null \\| number \\| object \\| string | 515 | **null** trappings.json:45 — **number** land-cargo.json:6 — **object** trappings.json:392 vehicles.json:31 sea-cargo.json:11 creatures.json:10 land-cargo.json:7 — **string** mass-battle.json:10 trappings.json:3 |
+| `cost` | number \\| object \\| string | 93 | **number** trappings.json:6 talents.json:1 — **object** naval-traits.json:20 arene-projet.json:8 qualities.json:1 talents.json:1 — **string** actions.json:55 naval-traits.json:1 |
+| `count` | number \\| object | 92 | **number** spells.json:16 loup-et-saumure-projet.json:6 creatures.json:5 tavernGames.json:3 traits.json:2 sea-shanties.json:1 trappings.json:1 vehicles.json:1 … — **object** careerLevels.json:50 classes.json:3 creatures.json:1 spells.json:1 traits.json:1 |
+| `source` | object \\| string | 4375 | **object** spells.json:594 creatures.json:490 trappings.json:440 careerLevels.json:432 talents.json:199 traits.json:131 miscast.json:116 mutations.json:116 … — **string** axes.json:9 |
+
+### 3.12 Paramètres d’entité (`arg`) et régimes de `price`
+
+Valeurs distinctes d’`arg` sur un objet porteur d’`id` : **187** (715 occurrences) — **185** vues en `src/data`, **2** propres aux scènes (`chaos`, `Ténèbres`). Aucun schéma ne les DÉCLARE aujourd’hui :
+cette table EST le dénominateur A11 de #1466. La « nature » est devinée par MOTIF (id d’entité,
+enum-libellé, taille, seuil `N+`, prose, nombre) : un candidat à examiner, jamais un verdict.
+
+| Valeur d’`arg` | Nature (motif) | Occurrences | Datasets |
+|---|---|---|---|
+| `grande` | id d’entité | 87 | `creatures.json` |
+| `enorme` | taille | 55 | `creatures.json` |
+| `fievre-du-rongeur` | id d’entité | 53 | `creatures.json` |
+| `petite` | id d’entité | 37 | `arene-projet.json` `creatures.json` |
+| `peau-verte` | id d’entité | 30 | `creatures.json` |
+| `Mineure` | enum-libellé | 27 | `creatures.json` |
+| `Modérée` | enum-libellé | 27 | `creatures.json` |
+| `monstrueuse` | id d’entité | 26 | `arene-projet.json` `creatures.json` |
+| `8+` | seuil `N+` | 19 | `creatures.json` |
+| `elfe` | id d’entité | 17 | `creatures.json` |
+| `tresPetite` | enum-libellé | 16 | `creatures.json` |
+| `moyenne` | id d’entité | 12 | `creatures.json` |
+| `Majeure` | enum-libellé | 10 | `creatures.json` |
+| `Griffes` | enum-libellé | 9 | `creatures.json` |
+| `Épée` | enum-libellé | 8 | `creatures.json` |
+| `feu` | id d’entité | 8 | `creatures.json` |
+| `dague` | id d’entité | 7 | `creatures.json` |
+| `khorne` | id d’entité | 7 | `creatures.json` |
+| `minuscule` | id d’entité | 7 | `creatures.json` |
+| `poison` | id d’entité | 7 | `creatures.json` |
+| `Serres` | enum-libellé | 7 | `creatures.json` |
+| `Bois` | enum-libellé | 5 | `creatures.json` |
+| `Défenses` | enum-libellé | 5 | `creatures.json` |
+| `tout` | id d’entité | 5 | `creatures.json` |
+| `un au choix` | enum-libellé | 5 | `creatures.json` |
+| `9+` | seuil `N+` | 4 | `creatures.json` |
+| `Crocs` | enum-libellé | 4 | `creatures.json` |
+| `sigmarite` | id d’entité | 4 | `creatures.json` |
+| `verole-du-tanneur` | id d’entité | 4 | `creatures.json` |
+| `Dents` | enum-libellé | 3 | `creatures.json` |
+| `massue` | id d’entité | 3 | `creatures.json` |
+| `Peau 1` | enum-libellé | 3 | `creatures.json` |
+| `taal` | id d’entité | 3 | `creatures.json` |
+| `vivant` | id d’entité | 3 | `creatures.json` |
+| `arc-court` | id d’entité | 2 | `creatures.json` |
+| `au choix` | enum-libellé | 2 | `creatures.json` |
+| `baton-de-combat` | id d’entité | 2 | `creatures.json` |
+| `Bec` | enum-libellé | 2 | `creatures.json` |
+| `Bec crochu` | enum-libellé | 2 | `creatures.json` |
+| `BF +3` | enum-libellé | 2 | `creatures.json` |
+| `Chaos` | enum-libellé | 2 | `creatures.json` |
+| `Cornes nasales` | enum-libellé | 2 | `creatures.json` |
+| `coup-de-poing` | id d’entité | 2 | `creatures.json` |
+| `Crochet` | enum-libellé | 2 | `creatures.json` |
+| `Crocs gigantesques` | enum-libellé | 2 | `creatures.json` |
+| `Cuir 2` | enum-libellé | 2 | `creatures.json` |
+| `deesse-araignee` | id d’entité | 2 | `creatures.json` |
+| `Dents aiguisées comme des rasoirs` | prose | 2 | `creatures.json` |
+| `Flammes d’AEthyr` | enum-libellé | 2 | `creatures.json` |
+| `Fouet pseudopode` | enum-libellé | 2 | `creatures.json` |
+| `Griffes recourbées` | enum-libellé | 2 | `creatures.json` |
+| `Gueule bardée de crocs` | prose | 2 | `creatures.json` |
+| `Gueule caverneuse` | enum-libellé | 2 | `creatures.json` |
+| `Hache` | enum-libellé | 2 | `creatures.json` |
+| `hallebarde` | id d’entité | 2 | `creatures.json` |
+| `Lame spectrale` | enum-libellé | 2 | `creatures.json` |
+| `Mâchoires tenailles` | enum-libellé | 2 | `creatures.json` |
+| `Malelame` | enum-libellé | 2 | `creatures.json` |
+| `Mandibules` | enum-libellé | 2 | `creatures.json` |
+| `modérée` | enum-libellé | 2 | `creatures.json` |
+| `nain` | id d’entité | 2 | `creatures.json` |
+| `Pince` | enum-libellé | 2 | `creatures.json` |
+| `pistolet` | id d’entité | 2 | `creatures.json` |
+| `Plastron et heaume` | enum-libellé | 2 | `creatures.json` |
+| `sorcellerie` | id d’entité | 2 | `creatures.json` |
+| `Tzeentch` | enum-libellé | 2 | `creatures.json` |
+| `ulric` | id d’entité | 2 | `creatures.json` |
+| `verena` | id d’entité | 2 | `creatures.json` |
+| `Veste de cuir` | enum-libellé | 2 | `creatures.json` |
+| `3 mètres` | enum-libellé | 1 | `creatures.json` |
+| `6 mètres` | enum-libellé | 1 | `creatures.json` |
+| `7-9` | enum-libellé | 1 | `creatures.json` |
+| `acide ou gaz` | enum-libellé | 1 | `creatures.json` |
+| `Ailerons tranchants` | enum-libellé | 1 | `creatures.json` |
+| `arc` | id d’entité | 1 | `creatures.json` |
+| `arc-long` | id d’entité | 1 | `creatures.json` |
+| `Armes rouillées ou griffes` | prose | 1 | `creatures.json` |
+| `bailli, juriste` | enum-libellé | 1 | `creatures.json` |
+| `Bâton de la Déesse-araignée` | prose | 1 | `creatures.json` |
+| `Bâton en bois mort` | prose | 1 | `creatures.json` |
+| `Bave gluante` | enum-libellé | 1 | `creatures.json` |
+| `Bec muni de crocs` | prose | 1 | `creatures.json` |
+| `Becs vicieux` | enum-libellé | 1 | `creatures.json` |
+| `belette` | id d’entité | 1 | `creatures.json` |
+| `Bête intérieure` | enum-libellé | 1 | `creatures.json` |
+| `Bêtes` | enum-libellé | 1 | `creatures.json` |
+| `Bêtes, n’importe laquelle du Chaos, Mort ou Ombres` | prose | 1 | `creatures.json` |
+| `BF +4` | enum-libellé | 1 | `creatures.json` |
+| `bosse-d-os` | id d’entité | 1 | `creatures.json` |
+| `Bouches multiples` | enum-libellé | 1 | `creatures.json` |
+| `bouclier` | id d’entité | 1 | `creatures.json` |
+| `bras-multiples` | id d’entité | 1 | `creatures.json` |
+| `buveur-de-saumure` | id d’entité | 1 | `creatures.json` |
+| `canon-ratling` | id d’entité | 1 | `creatures.json` |
+| `Cauchemars` | enum-libellé | 1 | `creatures.json` |
+| `chaos` | id d’entité | 1 | `arene-projet.json` |
+| `Chemise de mailles` | enum-libellé | 1 | `creatures.json` |
+| `Complexe` | enum-libellé | 1 | `creatures.json` |
+| `Cornes en dents de scie` | prose | 1 | `creatures.json` |
+| `cornes-asymetriques` | id d’entité | 1 | `creatures.json` |
+| `corrosif` | id d’entité | 1 | `creatures.json` |
+| `Corrosion` | enum-libellé | 1 | `creatures.json` |
+| `Crocs acérés` | enum-libellé | 1 | `creatures.json` |
+| `Crocs dentelés` | enum-libellé | 1 | `creatures.json` |
+| `Crocs et griffes` | enum-libellé | 1 | `creatures.json` |
+| `Crocs horribles` | enum-libellé | 1 | `creatures.json` |
+| `de Très Facile à Très Difficile` | prose | 1 | `creatures.json` |
+| `demon, demonologue` | enum-libellé | 1 | `creatures.json` |
+| `demonologie` | id d’entité | 1 | `creatures.json` |
+| `Dents et cornes` | enum-libellé | 1 | `creatures.json` |
+| `deux au choix` | enum-libellé | 1 | `creatures.json` |
+| `Difficile` | enum-libellé | 1 | `creatures.json` |
+| `divers` | id d’entité | 1 | `creatures.json` |
+| `Divers` | enum-libellé | 1 | `creatures.json` |
+| `Écailles changeant de couleur` | prose | 1 | `creatures.json` |
+| `elfe-noir` | id d’entité | 1 | `creatures.json` |
+| `Énorme épieu` | enum-libellé | 1 | `creatures.json` |
+| `Enroulement écrasant` | enum-libellé | 1 | `creatures.json` |
+| `epee-batarde` | id d’entité | 1 | `creatures.json` |
+| `Épines dorsales crochues` | enum-libellé | 1 | `creatures.json` |
+| `filet` | id d’entité | 1 | `creatures.json` |
+| `fouet` | id d’entité | 1 | `creatures.json` |
+| `froid` | id d’entité | 1 | `creatures.json` |
+| `Ghyran` | enum-libellé | 1 | `creatures.json` |
+| `griffes` | id d’entité | 1 | `creatures.json` |
+| `Griffes de la taille de faux` | prose | 1 | `creatures.json` |
+| `Griffes incurvées` | enum-libellé | 1 | `creatures.json` |
+| `Griffes recouvertes de gromril` | prose | 1 | `creatures.json` |
+| `Griffes renforcées de métal` | prose | 1 | `creatures.json` |
+| `Griffes semblables à des racines` | prose | 1 | `creatures.json` |
+| `Grosse chope` | enum-libellé | 1 | `creatures.json` |
+| `Gueule cachée` | enum-libellé | 1 | `creatures.json` |
+| `Gueule pleine de crocs` | prose | 1 | `creatures.json` |
+| `Heaume 2, Plates 3` | prose | 1 | `creatures.json` |
+| `Hurlements` | enum-libellé | 1 | `creatures.json` |
+| `Jade` | enum-libellé | 1 | `creatures.json` |
+| `Lame à dents` | enum-libellé | 1 | `creatures.json` |
+| `Lames rouillées` | enum-libellé | 1 | `creatures.json` |
+| `lance` | id d’entité | 1 | `creatures.json` |
+| `Lance de fortune` | enum-libellé | 1 | `creatures.json` |
+| `Légère 2` | enum-libellé | 1 | `creatures.json` |
+| `manann` | id d’entité | 1 | `creatures.json` |
+| `Mandibules acérées` | enum-libellé | 1 | `creatures.json` |
+| `Marteau de cavalier` | enum-libellé | 1 | `creatures.json` |
+| `marteau-de-guerre` | id d’entité | 1 | `creatures.json` |
+| `Merlin grossier` | enum-libellé | 1 | `creatures.json` |
+| `Morsure de dents aiguisées` | prose | 1 | `creatures.json` |
+| `mort` | id d’entité | 1 | `creatures.json` |
+| `Mort et Nécromancie` | enum-libellé | 1 | `creatures.json` |
+| `Mort ou Nécromancie` | enum-libellé | 1 | `creatures.json` |
+| `Moyen` | taille | 1 | `creatures.json` |
+| `noble` | id d’entité | 1 | `creatures.json` |
+| `noble, homme-bete` | enum-libellé | 1 | `creatures.json` |
+| `Nurgle` | enum-libellé | 1 | `creatures.json` |
+| `Pattes arrières 1, Tête, Corps et Pattes avant 3` | prose | 1 | `creatures.json` |
+| `Peau 2` | enum-libellé | 1 | `creatures.json` |
+| `peste-noire` | id d’entité | 1 | `creatures.json` |
+| `pieuvre-des-tourbieres` | id d’entité | 1 | `creatures.json` |
+| `Pinces` | enum-libellé | 1 | `creatures.json` |
+| `Pinces antérieures` | enum-libellé | 1 | `creatures.json` |
+| `Pistolets` | enum-libellé | 1 | `creatures.json` |
+| `Plume` | enum-libellé | 1 | `creatures.json` |
+| `Poids super-lourd` | enum-libellé | 1 | `creatures.json` |
+| `Poing à pistons` | enum-libellé | 1 | `creatures.json` |
+| `Poings` | enum-libellé | 1 | `creatures.json` |
+| `Poison, Difficulté Difficile (–20)` | prose | 1 | `creatures.json` |
+| `predateur` | id d’entité | 1 | `creatures.json` |
+| `Queue mortelle` | enum-libellé | 1 | `creatures.json` |
+| `rapiere` | id d’entité | 1 | `creatures.json` |
+| `Sabots ardents` | enum-libellé | 1 | `creatures.json` |
+| `serpent` | id d’entité | 1 | `creatures.json` |
+| `Slaanesh` | enum-libellé | 1 | `creatures.json` |
+| `son propre corps` | enum-libellé | 1 | `creatures.json` |
+| `Soporifique` | enum-libellé | 1 | `creatures.json` |
+| `Ténèbres` | enum-libellé | 1 | `arene-projet.json` |
+| `teutogen` | id d’entité | 1 | `creatures.json` |
+| `tileen` | id d’entité | 1 | `creatures.json` |
+| `Totalement déséquilibré et 2 autres lancers` | prose | 1 | `creatures.json` |
+| `Trident de Triton` | enum-libellé | 1 | `creatures.json` |
+| `tzeentch` | id d’entité | 1 | `creatures.json` |
+| `une au choix` | enum-libellé | 1 | `creatures.json` |
+| `Venin` | enum-libellé | 1 | `creatures.json` |
+| `verole-cerebrale-a-taches-vertes` | id d’entité | 1 | `creatures.json` |
+| `verole-urticante` | id d’entité | 1 | `creatures.json` |
+| `Volée de rasoirs` | enum-libellé | 1 | `creatures.json` |
+| `Vomi d’ivrogne` | enum-libellé | 1 | `creatures.json` |
+| `zweihander` | id d’entité | 1 | `creatures.json` |
+
+`Price = Money | {saison} | {dice} | "ND"` (DESIGN v2 S4) : les régimes ci-dessous sont la colonne
+Prix du RAW, pas une bourse unique — un coefficient saisonnier n’est pas une monnaie à éteindre.
+
+| Régime de `price` | Occurrences |
+|---|---|
+| objet {bronze,gold,silver} | 433 |
+| absent (null) | 45 |
+| objet {automne,ete,hiver,printemps} | 17 |
+| chaîne libre | 10 |
+| nombre | 6 |
+| littéral « ND » | 3 |
+| objet {dice} | 1 |
+
+### 3.13 Dotations narratives `{text}`
+
+Un `{text}` n’est une occurrence de référence que si son texte normalisé (casse, accents, espaces)
+égale le `label` d’une entité — sans vérification du TYPE attendu (angle mort). Les autres sont du
+narratif irréductible, mesuré ici et nulle part ailleurs (#1463, #624).
+
+| Signature de l’objet | Occurrences | Résolvables |
+|---|---|---|
+| `text` | 622 | 56 |
+| `op,text` | 507 | — |
+| `kind,text` | 260 | 38 |
+| `text,type` | 94 | — |
+| `choices,id,text` | 33 | — |
+| `count,text` | 33 | 4 |
+| `flow,icon,text,when` | 25 | — |
+| `next,text` | 23 | — |
+| `id,label,max,min,text` | 22 | — |
+| `biens,max,min,source,text` | 20 | — |
+| `flow,text` | 20 | — |
+| `id,label,max,min,source,text` | 16 | — |
+| `fx,id,label,max,min,source,text` | 15 | — |
+| `atelierNote,id,label,max,min,source,text` | 10 | — |
+| `id,kind,label,roll,source,text` | 10 | — |
+| `text,title,type` | 8 | — |
+| `flow,icon,text` | 7 | — |
+| `flow,next,text` | 7 | — |
+| `id,text,type` | 6 | — |
+| `id,label,max,min,mount,text` | 4 | — |
+| `id,label,max,min,stageOutcome,text` | 4 | — |
+| `kind,plus,text` | 4 | — |
+| `flow,next,text,when` | 3 | — |
+| `icon,next,text` | 3 | — |
+| `cost,flow,icon,text` | 2 | — |
+| `id,label,max,min,occupantOps,text,vehicleWounds` | 2 | — |
+| `id,label,max,min,text,vehicleWounds` | 2 | — |
+| `flow,text,when` | 1 | — |
+| `next,text,when` | 1 | — |
+
+### 3.14 Hors strate — signatures ORPHELINES
+
+Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé réservée, clé d’identité) et qui ne
+résout vers RIEN, sans être un document. Aucune strate ne le porte : c’est ce que le détecteur ne
+sait pas nommer, et il se compte au lieu de se taire. Stock `STRUCTURES_ORPHELINES`, lot `L1a #1466`
+quand le NOM de la clé annonçait une FK, `L1b #1467` sinon.
+
+**90** signatures orphelines, **268** occurrences.
+
+| Dataset | Champ | Signature | Motif | Occurrences |
+|---|---|---|---|---|
+| `careerLevels.json` | `trappings` | `count,text` | clé réservée | 28 |
+| `naval-traits.json` | `install` | `cost,weightEnc` | clé réservée | 20 |
+| `vehicles.json` | `purchase` | `price` | clé réservée | 17 |
+| `vehicles.json` | `purchase` | `availability,price` | clé réservée | 14 |
+| `spells.json` | `variants` | `desc,source,when` | clé réservée | 11 |
+| `vehicles.json` | `hull` | `bodyShape,char,propulsion,rig` | clé réservée | 11 |
+| `creatures.json` | `purchase` | `availability,price` | clé réservée | 10 |
+| `vehicles.json` | `hull` | `bodyShape,char,propulsion` | clé réservée | 9 |
+| `loup-et-saumure-projet.json` | `statblock` | `char,label,skills` | clé réservée | 8 |
+| `arcane-phenomena.json` | `testMods` | `desc,dr,scope,source,tests` | clé réservée | 5 |
+| `arcane-phenomena.json` | `testMods` | `desc,dr,source,tests` | clé réservée | 5 |
+| `arene-projet.json` | `acts` | `act,cost` | clé réservée | 5 |
+| `mass-battle.json` | `warMachines` | `availability,crew,damage,id,label,price,range,siege,source,traits` | identité non résolue | 5 |
+| `sea-navigation.json` | `levels` | `desc,level,mMod,manDR,navDR,repairPctOfBase,source` | clé réservée | 5 |
+| `spells.json` | `variants` | `desc,effects,source,when` | clé réservée | 5 |
+| `talents.json` | `variants` | `combat,desc,source,when` | clé réservée | 5 |
+| `barge-du-sel-projet.json` | `statblock` | `char,label,skills` | clé réservée | 4 |
+| `disponibilite.json` | `barterRatios` | `give,ratios,source` | clé réservée | 4 |
+| `ship-construction.json` | `manoeuvrability` | `costPct,manDR,source` | clé réservée | 4 |
+| `arcane-phenomena.json` | `saturation` | `desc,levelsPerMonth,source` | clé réservée | 3 |
+| `sea-navigation.json` | `lowMPenalty` | `dr,m,source` | clé réservée | 3 |
+| `trappings.json` | `prosthesisTraining` | `cost,label,reduces` | clé réservée | 3 |
+| `arcane-phenomena.json` | `niMods` | `desc,divide,round,scope,source` | clé réservée | 2 |
+| `arcane-phenomena.json` | `testMods` | `desc,dr,drDie,drMax,source,tests` | clé réservée | 2 |
+| `arcane-phenomena.json` | `saturation` | `desc,levelsPerYear,source` | clé réservée | 2 |
+| `arene-projet.json` | `statblock` | `char,label,traits` | clé réservée | 2 |
+| `arene-projet.json` | `choices` | `cost,flow,icon,text` | clé réservée | 2 |
+| `crew-roles.json` | `wage` | `daily,source,weekly` | clé réservée | 2 |
+| `disponibilite.json` | `dispoPct` | `availability,pct,source` | clé réservée | 2 |
+| `domains.json` | `cancelledBy` | `circumstance,desc,requiresSkill,source,sustained,test` | clé réservée | 2 |
+| `sea-perils.json` | `gestionDesPerils` | `avoid,distanceM,source,spot` | clé réservée | 2 |
+| `spells.json` | `ops` | `count,countPerSL,op` | clé réservée | 2 |
+| `talents.json` | `variants` | `combat,desc,max,source,when` | clé réservée | 2 |
+| `talents.json` | `variants` | `combat,desc,source,test,when` | clé réservée | 2 |
+| `talents.json` | `variants` | `desc,source,when` | clé réservée | 2 |
+| `tavernGames.json` | `phases` | `count,rounds` | clé réservée | 2 |
+| `traits.json` | `ops` | `count,op` | clé réservée | 2 |
+| `trappings.json` | `prosthesisTraining` | `cost,grants,label` | clé réservée | 2 |
+| `arcane-phenomena.json` | `saturation` | `blocksPropagation,desc,source` | clé réservée | 1 |
+| `arcane-phenomena.json` | `niMods` | `delta,desc,scope,source` | clé réservée | 1 |
+| `arcane-phenomena.json` | `overcastPerSpell` | `desc,dice,source` | clé réservée | 1 |
+| `arcane-phenomena.json` | `testMods` | `desc,dr,drMax,maison,source,tests` | clé réservée | 1 |
+| `arcane-phenomena.json` | `testMods` | `desc,dr,drMax,source,tests` | clé réservée | 1 |
+| `arcane-phenomena.json` | `saturation` | `desc,levels,source` | clé réservée | 1 |
+| `arcane-phenomena.json` | `saturation` | `desc,levelsPerYear,source,whenOffLine` | clé réservée | 1 |
+| `arcane-phenomena.json` | `stonePropertySlots` | `desc,max,source` | clé réservée | 1 |
+| `arcane-phenomena.json` | `saturation` | `desc,preventsJonctionSaturee,source` | clé réservée | 1 |
+| `arcane-phenomena.json` | `refractedWindsOnly` | `desc,source` | clé réservée | 1 |
+| `arcane-phenomena.json` | `saturation` | `desc,source,viaGrandVortex` | clé réservée | 1 |
+| `classes.json` | `trappings` | `count,text` | clé réservée | 1 |
+| `details.json` | `texts` | `age,ambitionLong,ambitionShort,nom,taille` | identité non résolue | 1 |
+| `land-cargo.json` | `buy` | `availabilityMultiplier,merchantSkill,minEnc,partialSurchargePct,source,wineAlcoholResistThreshold,wineEvalDifficulty,wineEvalEasyDifficulty` | clé réservée | 1 |
+| `land-cargo.json` | `sell` | `commerceBonus,dumpingPctOfBase,offerByRichesse,source,targetPerSize` | clé réservée | 1 |
+| `localisation.json` | `personnage` | `shapes,source` | clé réservée | 1 |
+| `maneuvers.json` | `ops` | `id,op` | identité non résolue | 1 |
+| `naval-traits.json` | `install` | `cost` | clé réservée | 1 |
+| `qualities.json` | `flow` | `cost,icon,kind,no,prompt,yes` | clé réservée | 1 |
+| `river-navigation.json` | `echouage` | `hullDamage,source` | clé réservée | 1 |
+| `river-navigation.json` | `outOfControl` | `navPenalty,source` | clé réservée | 1 |
+| `river-navigation.json` | `capsize` | `removeSailDifficulty,rightCumulativePenalty,rightDifficulty,source` | clé réservée | 1 |
+| `sea-cargo.json` | `buy` | `availabilityMultiplier,bigPortSkill,merchantSkill,partialPurchaseSellerDR,source,surplusSellerDR` | clé réservée | 1 |
+| `sea-cargo.json` | `sell` | `commerceBonus,dumpingPctOfBase,noProduceTargetPerSize,offerPrice,producesGossip,sellerDR,source,surplusGossip` | clé réservée | 1 |
+| `sea-cargo.json` | `overload` | `hardCapPct,paliers,source` | clé réservée | 1 |
+| `sea-cargo.json` | `opportunite` | `investMaxEnc,outcomes,source,test` | clé réservée | 1 |
+| `sea-events.json` | `manann` | `base,factors,portEventMod,source` | clé réservée | 1 |
+| `sea-events.json` | `fastVoyage` | `paliers,source` | clé réservée | 1 |
+| `sea-navigation.json` | `forcerLeRythme` | `avirons,bonusM,source` | clé réservée | 1 |
+| `sea-navigation.json` | `workPeriodHours` | `avirons,source,voile` | clé réservée | 1 |
+| `sea-navigation.json` | `orientation` | `changementDeCap,driftMajorBonus,driftSide,reperes,source,testsPerDay` | clé réservée | 1 |
+| `sea-navigation.json` | `reparation` | `charpentierPenalty,entretienCrewTestDR,lissageRepairSurcoutPct,portCostGoldPerWound,source,temporaire,testHours,woundsPerTest` | clé réservée | 1 |
+| `sea-navigation.json` | `phares` | `clocher,perilSpotBonus,source,voirLaLumiere` | clé réservée | 1 |
+| `sea-navigation.json` | `clocher` | `distanceDiviseur,orientationDR,source` | clé réservée | 1 |
+| `sea-navigation.json` | `poursuite` | `distanceUnitM,drDeltas,escapeDistances,lowMPenalty,source` | clé réservée | 1 |
+| `sea-navigation.json` | `salissures` | `levels,source,weeklyTest` | clé réservée | 1 |
+| `sea-navigation.json` | `longsVoyages` | `millesParJourParM,progressionPctParDR,sansVoguerDeNuitDiviseur,source` | clé réservée | 1 |
+| `sea-navigation.json` | `vitesseMax` | `safeBonus,source,table` | clé réservée | 1 |
+| `sea-perils.json` | `echouer` | `desc,source` | clé réservée | 1 |
+| `sea-shanties.json` | `crewOps` | `count,op` | clé réservée | 1 |
+| `sea-weather.json` | `seasonMod` | `automne,ete,hiver,printemps,source` | clé réservée | 1 |
+| `ship-construction.json` | `propulsion` | `secondaryMalus,secondaryMinM,source` | clé réservée | 1 |
+| `spells.json` | `ops` | `blocked,op,rounds,skill` | clé réservée | 1 |
+| `spells.json` | `variants` | `cn,desc,source,when` | clé réservée | 1 |
+| `spells.json` | `variants` | `desc,duration,source,when` | clé réservée | 1 |
+| `spells.json` | `ops` | `mod,op,rounds,skill` | clé réservée | 1 |
+| `talents.json` | `advantageDefenseReaction` | `cost` | clé réservée | 1 |
+| `talents.json` | `ops` | `cost,op,weapon,when` | clé réservée | 1 |
+| `talents.json` | `variants` | `desc,source,test,when` | clé réservée | 1 |
+| `tavernGames.json` | `dice` | `count,faces` | clé réservée | 1 |
+| `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
+| `trappings.json` | `ops` | `count,op` | clé réservée | 1 |
+
+Au-delà des orphelines, **15787** objets sur **51724** ne sont portés par AUCUNE
+strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
+documents. On y trouve trois familles : les ENVELOPPES d’un objet dont l’intérieur est, lui, mesuré
+(`{ref: {id,spec}}` compte sous le champ `ref`, jamais deux fois), les `{text}` narratifs qui ne
+résolvent vers aucun libellé (comptés en §3.13), et les charges utiles pures (`{x,y}`, blocs de caractéristiques). Ils ne sont pas au stock — ils se lisent ici, par
+signature, les 30 plus fréquentes sur 1062 :
+
+| Dataset | Champ | Signature | Occurrences |
+|---|---|---|---|
+| `careerLevels.json` | `skills` | `ref` | 2066 |
+| `careerLevels.json` | `talents` | `ref` | 1658 |
+| `diligence-projet.json` | `tiles` | `x,y` | 673 |
+| `spells.json` | `effects` | `kind,steps` | 581 |
+| `spells.json` | `effect` | `on,ops,type` | 551 |
+| `careerLevels.json` | `trappings` | `text` | 518 |
+| `creatures.json` | `char` | `B,M,agilite,capacite-de-combat,capacite-de-tir,dexterite,endurance,force,force-mentale,initiative,intelligence,sociabilite` | 487 |
+| `spells.json` | `steps` | `effect,kind` | 475 |
+| `arene-projet.json` | `pos` | `x,y` | 446 |
+| `spells.json` | `ops` | `op,text` | 378 |
+| `diligence-projet.json` | `edges` | `side,x,y` | 305 |
+| `species.json` | `skills` | `ref` | 281 |
+| `arene-projet.json` | `steps` | `effect,kind` | 278 |
+| `spells.json` | `range` | `kind,unit,value` | 263 |
+| `diligence-projet.json` | `tiles` | `x,y,z` | 241 |
+| `spells.json` | `range` | `kind` | 191 |
+| `spells.json` | `duration` | `kind,value` | 187 |
+| `spells.json` | `target` | `kind,n` | 179 |
+| `careerLevels.json` | `skills` | `wildcard` | 160 |
+| `trappings.json` | `damage` | `flat,plusBF` | 145 |
+| `spells.json` | `duration` | `kind` | 141 |
+| `spells.json` | `duration` | `kind,unit,value` | 130 |
+| `talents.json` | `test` | `matches,raw` | 128 |
+| `spells.json` | `target` | `kind,text` | 123 |
+| `tables.json` | `ops` | `op,text` | 119 |
+| `progression-schemas.derived.json` | `lv` | `1,2,3,4` | 111 |
+| `spells.json` | `target` | `kind` | 105 |
+| `naval-traits.json` | `bands` | `maxLengthM,value` | 103 |
+| `arene-projet.json` | `flow` | `kind,steps` | 94 |
+| `donnees.manifest.json` | `entrees` | `desc,files` | 92 |
+
+## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
+
+Littéraux d’objet zod lus : **493** ; **110** recoupent le lexique
+ou un littéral de `src/data/schemas/common.ts`. « Schéma commun candidat » = même signature EXACTE
+qu’un littéral de `common.ts` (candidat à examiner, cf. angles morts).
+
+### 4.1 Empreinte par concept, critère SUPERSET (indépendant du classement ordonné)
+
+Un littéral qui porte le noyau d’un concept, même s’il a été classé sous un autre concept en §4.2 :
+ce compte lève l’angle mort du classement ordonné.
+Le DoD de #1463 annonçait « 5 defs redéclarent la monnaie » : la mesure en trouve **4** littéraux
+dans **4** defs (`creatures.ts` `crew-roles.ts` `trappings.ts` `vehicles.ts`). Le 5ᵉ n’a jamais été mesurable — le chiffre du DoD
+n’a pas de porteur dans l’arbre, il ne se recopie pas.
+
+| Concept | Noyau | Littéraux | Defs | Liste des defs |
+|---|---|---|---|---|
+| monnaie | `gold,silver` | 4 | 4 | `creatures.ts` `crew-roles.ts` `trappings.ts` `vehicles.ts` |
+| de | `n,sides` | 3 | 2 | `maladies.ts` `miscast.ts` |
+| source | `book` | 2 | 2 | `progression-schemas-derived.ts` `structures.ts` |
+| test | `difficulty` | 31 | 19 | `aa-criticals.ts` `activities.ts` `arcane-phenomena.ts` `criticals.ts` `etats.ts` `land-cargo.ts` `maladies.ts` `miscast.ts` `psychology.ts` `river-navigation.ts` `sea-cargo.ts` `sea-navigation.ts` `sea-perils.ts` `sea-weather.ts` `steam-breakdown.ts` `symptoms.ts` `tavernGames.ts` `water-exposure.ts` `weather.ts` |
+| plage | `min,max` | 36 | 27 | `aa-criticals.ts` `arcane-phenomena.ts` `artillery-misfire.ts` `crew-morale.ts` `criticals.ts` `driving-mishap.ts` `drunkenness.ts` `interludeEvents.ts` `land-cargo.ts` `localisation.ts` `mass-battle.ts` `miscast.ts` `mutationTables.ts` `naval-progression.ts` `obsessions.ts` `oups.ts` `reglesOptionnelles.ts` `river-navigation.ts` `sea-events.ts` `sea-navigation.ts` `sea-weather.ts` `steam-breakdown.ts` `structure-criticals.ts` `tables.ts` `tavernGames.ts` `vents-tourbillonnants.ts` `water-exposure.ts` |
+| quantite | `fixed` | 0 | 0 | — |
+| sequence | `target,drCap,table,rounds,phases,pot,volley,sides,combined,throwerPenalty` | 2 | 2 | `activities.ts` `tavernGames.ts` |
+
+### 4.2 Littéral par littéral
+
+| Def | Ligne | Champ | Concept | Statut | Empreinte | Schéma commun candidat |
+|---|---|---|---|---|---|---|
+| `aa-criticals.ts` | 15 | — | plage | divergente | `max,min+…` | — |
+| `aa-criticals.ts` | 25 | `resist` | test | divergente | `difficulty,skill+…` | — |
+| `activities.ts` | 15 | — | test | divergente | `difficulty,skillId+…` | — |
+| `activities.ts` | 65 | — | test | divergente | `char,difficulty+…` | — |
+| `arcane-phenomena.ts` | 148 | `controlFlux` | test | divergente | `difficulty+…` | — |
+| `arcane-phenomena.ts` | 164 | `rows` | plage | divergente | `max,min+…` | — |
+| `artillery-misfire.ts` | 11 | — | plage | divergente | `max,min+…` | — |
+| `axes.ts` | 18 | — | reference | historique | `skillId,spec` | — |
+| `creatures.ts` | 36 | — | reference | historique | `id,spec,value` | — |
+| `creatures.ts` | 44 | — | monnaie | historique | `bronze,gold,silver` | — |
+| `crew-morale.ts` | 34 | `bands` | plage | divergente | `max,min+…` | — |
+| `crew-roles.ts` | 12 | — | monnaie | historique | `bronze,gold,silver` | — |
+| `crew-roles.ts` | 18 | `skills` | reference | historique | `skillId,spec` | — |
+| `criticals.ts` | 49 | `resist` | test | divergente | `difficulty+…` | — |
+| `criticals.ts` | 61 | — | test | divergente | `difficulty+…` | — |
+| `criticals.ts` | 71 | `loss` | test | divergente | `difficulty+…` | — |
+| `criticals.ts` | 74 | — | plage | divergente | `max,min+…` | — |
+| `criticals.ts` | 81 | `resist` | test | divergente | `difficulty+…` | — |
+| `domains.ts` | 90 | `requiresSkill` | reference | cible | `id,spec` | `refSchema` |
+| `driving-mishap.ts` | 13 | `table` | plage | divergente | `max,min+…` | — |
+| `drunkenness.ts` | 15 | `table` | plage | divergente | `max,min+…` | — |
+| `etats.ts` | 20 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
+| `interludeEvents.ts` | 24 | — | plage | divergente | `max,min+…` | — |
+| `land-cargo.ts` | 23 | `price` | prix | declaree | `dice` | `formulaSchema` |
+| `land-cargo.ts` | 47 | `wineQuality` | plage | divergente | `max,min+…` | — |
+| `land-cargo.ts` | 66 | `gossip` | test | divergente | `difficulty+…` | — |
+| `land-cargo.ts` | 68 | `rumours` | plage | divergente | `max,min+…` | — |
+| `localisation.ts` | 25 | — | plage | divergente | `max,min+…` | — |
+| `localisation.ts` | 26 | — | plage | divergente | `max,min+…` | — |
+| `maladies.ts` | 12 | — | de | cible | `n,plus,sides` | `diceSpecSchema` |
+| `maladies.ts` | 23 | — | test | divergente | `difficulty+…` | — |
+| `mass-battle.ts` | 50 | — | plage | divergente | `max,min+…` | — |
+| `miscast.ts` | 22 | — | de | divergente | `n,plus,sides+…` | — |
+| `miscast.ts` | 32 | — | — | hors lexique | `dice` | `formulaSchema` |
+| `miscast.ts` | 43 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
+| `miscast.ts` | 44 | — | — | hors lexique | `charOf` | `formulaSchema` |
+| `miscast.ts` | 45 | — | — | hors lexique | `dice` | `formulaSchema` |
+| `miscast.ts` | 45 | `dice` | de | cible | `n,plus,sides` | `diceSpecSchema` |
+| `miscast.ts` | 46 | — | — | hors lexique | `rolled` | `formulaSchema` |
+| `miscast.ts` | 47 | — | — | hors lexique | `indiceOf` | `formulaSchema` |
+| `miscast.ts` | 48 | — | — | hors lexique | `stacks` | `formulaSchema` |
+| `miscast.ts` | 49 | — | — | hors lexique | `engagedAdvantageGap` | `formulaSchema` |
+| `miscast.ts` | 50 | — | — | hors lexique | `woundsDealt` | `formulaSchema` |
+| `miscast.ts` | 51 | — | — | hors lexique | `sum` | `formulaSchema` |
+| `miscast.ts` | 52 | — | — | hors lexique | `times` | `formulaSchema` |
+| `miscast.ts` | 52 | `times` | — | hors lexique | `factor,of` | `formulaSchema` |
+| `miscast.ts` | 88 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
+| `miscast.ts` | 97 | — | plage | divergente | `max,min+…` | — |
+| `mutationTables.ts` | 17 | `ranges` | plage | divergente | `max,min+…` | — |
+| `naval-progression.ts` | 14 | `table` | plage | divergente | `max,min+…` | — |
+| `obsessions.ts` | 17 | `table` | plage | divergente | `max,min+…` | — |
+| `oups.ts` | 13 | — | plage | divergente | `max,min+…` | — |
+| `progression-schemas-derived.ts` | 29 | `schemas` | source | divergente | `book+…` | — |
+| `psychology.ts` | 53 | `test` | test | historique | `difficulty,skill` | — |
+| `raceAppearance.ts` | 28 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
+| `raceAppearance.ts` | 30 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
+| `reglesOptionnelles.ts` | 28 | — | plage | divergente | `max,min+…` | — |
+| `river-navigation.ts` | 15 | — | plage | divergente | `max,min+…` | — |
+| `river-navigation.ts` | 40 | `rowingAgility` | test | divergente | `difficulty+…` | — |
+| `river-navigation.ts` | 55 | `temporaryRepair` | test | divergente | `difficulty+…` | — |
+| `sea-cargo.ts` | 21 | `price` | prix | declaree | `dice` | `formulaSchema` |
+| `sea-cargo.ts` | 55 | `producesGossip` | test | divergente | `difficulty+…` | — |
+| `sea-cargo.ts` | 56 | `surplusGossip` | test | divergente | `difficulty+…` | — |
+| `sea-cargo.ts` | 70 | `test` | test | divergente | `difficulty,skillId+…` | — |
+| `sea-events.ts` | 27 | — | plage | divergente | `max,min+…` | — |
+| `sea-events.ts` | 41 | — | plage | divergente | `max,min+…` | — |
+| `sea-navigation.ts` | 13 | — | plage | cible | `max,min` | — |
+| `sea-navigation.ts` | 17 | `epuisement` | test | divergente | `difficulty+…` | — |
+| `sea-perils.ts` | 32 | `freeTest` | test | divergente | `difficulty,skillId+…` | — |
+| `sea-perils.ts` | 57 | `evasion` | test | divergente | `difficulty+…` | — |
+| `sea-perils.ts` | 68 | `tourbillonSwim` | test | divergente | `difficulty,skillId+…` | — |
+| `sea-weather.ts` | 38 | `table` | plage | divergente | `max,min+…` | — |
+| `sea-weather.ts` | 76 | `temperatures` | test | divergente | `difficulty+…` | — |
+| `sea-weather.ts` | 97 | `roseDesVents` | plage | divergente | `max,min+…` | — |
+| `sea-weather.ts` | 108 | `affaler` | test | divergente | `difficulty+…` | — |
+| `species.ts` | 45 | `preview` | reference | historique | `career` | — |
+| `spells.ts` | 15 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 16 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 24 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 33 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 36 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `steam-breakdown.ts` | 11 | — | plage | divergente | `max,min+…` | — |
+| `steam-breakdown.ts` | 27 | `restart` | test | divergente | `difficulty,skillId+…` | — |
+| `structure-criticals.ts` | 11 | — | plage | divergente | `max,min+…` | — |
+| `structures.ts` | 16 | — | reference | historique | `id,value` | — |
+| `structures.ts` | 42 | `source` | source | historique | `book,chapter` | — |
+| `symptoms.ts` | 41 | `onTick` | test | divergente | `difficulty+…` | — |
+| `tables.ts` | 18 | `rows` | plage | divergente | `max,min+…` | — |
+| `talents.ts` | 47 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
+| `tavernGames.ts` | 30 | — | sequence | divergente | `combined,drCap,phases,pot,sides,table,target,throwerPenalty,volley+…` | — |
+| `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
+| `tavernGames.ts` | 94 | `table` | plage | divergente | `max,min+…` | — |
+| `tavernGames.ts` | 104 | `rows` | test | divergente | `difficulty+…` | — |
+| `tavernGames.ts` | 115 | `libre` | plage | cible | `max,min` | — |
+| `tavernGames.ts` | 142 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
+| `tavernGames.ts` | 178 | `targetRange` | plage | cible | `max,min` | — |
+| `tavernGames.ts` | 182 | `rows` | plage | divergente | `max,min+…` | — |
+| `trappings.ts` | 19 | — | monnaie | historique | `bronze,gold,silver` | — |
+| `trappings.ts` | 26 | — | reference | historique | `id,spec,value` | — |
+| `trappings.ts` | 75 | `qualities` | reference | historique | `id,value` | — |
+| `vehicles.ts` | 13 | — | monnaie | historique | `bronze,gold,silver` | — |
+| `vehicles.ts` | 15 | — | reference | historique | `id,value` | — |
+| `vehicles.ts` | 69 | `traits` | reference | historique | `arg,id,value` | — |
+| `vents-tourbillonnants.ts` | 12 | `table` | plage | divergente | `max,min+…` | — |
+| `water-exposure.ts` | 14 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
+| `water-exposure.ts` | 15 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
+| `water-exposure.ts` | 16 | — | plage | divergente | `max,min+…` | — |
+| `water-exposure.ts` | 25 | `test` | test | historique | `difficulty,skillId` | — |
+| `water-exposure.ts` | 41 | `diseases` | plage | divergente | `max,min+…` | — |
+| `weather.ts` | 59 | `resistanceTest` | test | divergente | `difficulty+…` | — |
+
+## 5. Ops en donnée (strate Ops)
+
+`gameOpSchema` est un `looseObject` (`src/data/schemas/common.ts`) : seul `op` est contraint.
+Mesure : **2181** objets portent un `op` = **2123** ops de jeu + **58**
+Conditions dont l’`op` est un COMPARATEUR (`kind` reconnu par `conditionSchema`, kinds lus par AST).
+**243** Conditions au total, dont **185** sans `op` :
+celles-là n’ont jamais été comptées en op — le retrait des Conditions du compte d’ops vaut
+2181 → 2123, jamais 2181 → 1938.
+Noms d’op distincts : **100**, signatures distinctes : **228**.
+
+| `kind` de Condition | Avec `op` | Sans `op` |
+|---|---|---|
+| `flag` | — | 78 |
+| `compare` | 29 | — |
+| `has` | — | 29 |
+| `slThreshold` | 20 | — |
+| `all` | — | 18 |
+| `relation` | — | 18 |
+| `not` | — | 15 |
+| `any` | — | 8 |
+| `woundsDealt` | 6 | — |
+| `casterChaosDomain` | — | 4 |
+| `engaged` | — | 4 |
+| `attackKind` | — | 3 |
+| `hiddenFromFoes` | — | 2 |
+| `startleCause` | — | 2 |
+| `capability` | — | 1 |
+| `crewTest` | — | 1 |
+| `engagedAdvantageGap` | 1 | — |
+| `engagedAdvantageLead` | 1 | — |
+| `foeInLoS` | — | 1 |
+| `location` | — | 1 |
+| `nearestFoe` | 1 | — |
+
+Restent **2** occurrence(s) dont le nom d’op n’est pas alphabétique (un COMPARATEUR) sous un
+`kind` étranger à `conditionSchema` : elles sont encore comptées en op ci-dessous, mesurées ici.
+
+| Op | `kind` porté | Dataset | Occurrences |
+|---|---|---|---|
+| `<=` | `woundsRemaining` | `water-exposure.json` | 1 |
+| `>=` | `woundsLost` | `water-exposure.json` | 1 |
+
+Une ligne par (op, signature, dataset) — stock `STRUCTURES_OPS`, lot `L1c #1468` : la cible est une
+union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, spec}`).
+
+| Op | Signature | Dataset | Occurrences | Clés de ref à plat |
+|---|---|---|---|---|
+| `<=` | `kind,op,value` | `water-exposure.json` | 1 | — |
+| `>=` | `kind,op,value` | `water-exposure.json` | 1 | — |
+| `actGate` | `char,op` | `spells.json` | 1 | — |
+| `actGate` | `char,op` | `trappings.json` | 1 | — |
+| `ap` | `amount,op` | `spells.json` | 8 | — |
+| `ap` | `amount,loc,op` | `mutations.json` | 7 | — |
+| `ap` | `amount,loc,op` | `naval-traits.json` | 2 | — |
+| `ap` | `amount,noDeviation,op` | `mutations.json` | 2 | — |
+| `ap` | `amount,op` | `mutations.json` | 2 | — |
+| `ap` | `amount,atHitLocation,op` | `spells.json` | 1 | — |
+| `armourPierce` | `amount,bypass,op` | `qualities.json` | 1 | — |
+| `arrowWard` | `op,radius` | `spells.json` | 1 | — |
+| `attackKeyword` | `keyword,op` | `traits.json` | 3 | — |
+| `attackWardFM` | `op` | `spells.json` | 1 | — |
+| `attrMod` | `attr,mod,op` | `talents.json` | 3 | — |
+| `attrMod` | `attr,mod,op` | `trappings.json` | 1 | — |
+| `augmentWeapon` | `addQualities,onHitEffects,op` | `spells.json` | 2 | — |
+| `augmentWeapon` | `onHitEffects,op` | `trappings.json` | 2 | — |
+| `augmentWeapon` | `addQualities,bypass,onHitEffects,op,requiresWeapon` | `spells.json` | 1 | — |
+| `augmentWeapon` | `addQualities,damageBonus,onHitEffects,op` | `spells.json` | 1 | — |
+| `augmentWeapon` | `addQualities,damageBonus,op` | `spells.json` | 1 | — |
+| `augmentWeapon` | `addQualities,onHitEffects,op,requiresWeapon` | `spells.json` | 1 | — |
+| `augmentWeapon` | `addQualities,op` | `spells.json` | 1 | — |
+| `augmentWeapon` | `addQualities,op,requiresWeapon` | `spells.json` | 1 | — |
+| `augmentWeapon` | `op,passive,removeType` | `spells.json` | 1 | — |
+| `banish` | `narration,onlyGroups,op` | `spells.json` | 1 | — |
+| `banish` | `narration,op` | `spells.json` | 1 | — |
+| `banish` | `narration,op` | `traits.json` | 1 | — |
+| `banish` | `op` | `spells.json` | 1 | — |
+| `banish` | `op` | `traits.json` | 1 | — |
+| `between` | `kind,max,min,op` | `water-exposure.json` | 1 | — |
+| `castPenalty` | `blocked,op,rounds,skill` | `miscast.json` | 5 | `skill` |
+| `castPenalty` | `mod,op,rounds,skill` | `miscast.json` | 3 | `skill` |
+| `castPenalty` | `blocked,minutes,op,skill` | `miscast.json` | 2 | `skill` |
+| `castPenalty` | `blocked,op,skill` | `traits.json` | 2 | `skill` |
+| `castPenalty` | `hours,mod,op,skill` | `miscast.json` | 2 | `skill` |
+| `castPenalty` | `blocked,op,rounds,skill` | `spells.json` | 1 | `skill` |
+| `castPenalty` | `days,maxZeroDR,op,skill` | `miscast.json` | 1 | `skill` |
+| `castPenalty` | `mod,op,rounds,skill` | `spells.json` | 1 | `skill` |
+| `castWard` | `op,perSL,radius` | `spells.json` | 1 | — |
+| `chain` | `hopMeters,maxBounces,op` | `spells.json` | 1 | — |
+| `charDamage` | `amount,char,op` | `symptoms.json` | 4 | — |
+| `charDamage` | `amount,char,op` | `spells.json` | 2 | — |
+| `charDRBonus` | `bonus,char,op` | `tables.json` | 8 | — |
+| `charDRBonus` | `bonus,char,op` | `trappings.json` | 8 | — |
+| `charDRBonus` | `bonus,char,op` | `sea-shanties.json` | 1 | — |
+| `charMod` | `char,mod,op` | `mutations.json` | 55 | — |
+| `charMod` | `char,mod,op` | `stars.json` | 42 | — |
+| `charMod` | `char,mod,op` | `spells.json` | 32 | — |
+| `charMod` | `char,mod,op` | `symptoms.json` | 30 | — |
+| `charMod` | `char,mod,op` | `traits.json` | 20 | — |
+| `charMod` | `char,mod,op` | `traumas.json` | 12 | — |
+| `charMod` | `char,mod,op` | `talents.json` | 10 | — |
+| `charMod` | `char,mod,op` | `trappings.json` | 9 | — |
+| `charMod` | `char,mod,op` | `maneuvers.json` | 8 | — |
+| `charMod` | `char,mod,op` | `tables.json` | 7 | — |
+| `charMod` | `char,durationRounds,mod,op` | `aa-criticals.json` | 3 | — |
+| `charMod` | `char,durationRounds,mod,op` | `criticals.json` | 3 | — |
+| `charMod` | `char,durationHours,mod,op` | `spells.json` | 2 | — |
+| `charMod` | `char,durationHours,mod,op` | `aa-criticals.json` | 1 | — |
+| `charMod` | `char,durationHours,mod,op` | `criticals.json` | 1 | — |
+| `charMod` | `char,durationHours,mod,op` | `trappings.json` | 1 | — |
+| `charMod` | `char,durationRounds,mod,op` | `spells.json` | 1 | — |
+| `condition` | `id,op,value` | `criticals.json` | 98 | — |
+| `condition` | `id,op,value` | `aa-criticals.json` | 92 | — |
+| `condition` | `id,op` | `spells.json` | 58 | — |
+| `condition` | `id,op,value` | `miscast.json` | 37 | — |
+| `condition` | `durationRounds,id,op` | `spells.json` | 9 | — |
+| `condition` | `id,op` | `maneuvers.json` | 8 | — |
+| `condition` | `id,op,value` | `spells.json` | 8 | — |
+| `condition` | `id,op,value` | `trappings.json` | 7 | — |
+| `condition` | `id,op` | `etats.json` | 6 | — |
+| `condition` | `id,op,unlockBy,value` | `aa-criticals.json` | 6 | — |
+| `condition` | `id,op,unlockBy,value` | `criticals.json` | 6 | — |
+| `condition` | `id,op` | `qualities.json` | 5 | — |
+| `condition` | `id,op,value` | `river-criticals.json` | 5 | — |
+| `condition` | `id,op,value` | `ship-criticals.json` | 5 | — |
+| `condition` | `id,op,value,valuePerSL` | `spells.json` | 5 | — |
+| `condition` | `id,op` | `symptoms.json` | 4 | — |
+| `condition` | `escapeStrength,grapple,id,op,unlessCondition,value` | `traits.json` | 3 | — |
+| `condition` | `escapeStrength,id,op` | `spells.json` | 3 | — |
+| `condition` | `escapeStrength,id,op,value,valuePerSL` | `spells.json` | 3 | — |
+| `condition` | `id,op` | `domains.json` | 3 | — |
+| `condition` | `id,op` | `traits.json` | 3 | — |
+| `condition` | `id,op,sinPlus1Value` | `miscast.json` | 3 | — |
+| `condition` | `id,op,value` | `maneuvers.json` | 3 | — |
+| `condition` | `durationHours,id,op` | `trappings.json` | 2 | — |
+| `condition` | `durationRounds,id,op` | `miscast.json` | 2 | — |
+| `condition` | `escapeStrength,id,op,unlessCondition,value` | `qualities.json` | 2 | — |
+| `condition` | `escapeStrength,id,op,value` | `miscast.json` | 2 | — |
+| `condition` | `escapeStrength,id,op,valuePerSL` | `spells.json` | 2 | — |
+| `condition` | `id,op,unlessCondition` | `spells.json` | 2 | — |
+| `condition` | `id,op,value` | `tables.json` | 2 | — |
+| `condition` | `id,op,value` | `traits.json` | 2 | — |
+| `condition` | `durationHours,id,op,value` | `aa-criticals.json` | 1 | — |
+| `condition` | `durationHours,id,op,value` | `criticals.json` | 1 | — |
+| `condition` | `durationRounds,id,onlyIfCondition,op` | `spells.json` | 1 | — |
+| `condition` | `entangleOnFail,escapeThreshold,id,op,struggleDamage,unlessCondition,value` | `qualities.json` | 1 | — |
+| `condition` | `entangleOnFail,escapeThreshold,id,op,unlessCondition,value` | `qualities.json` | 1 | — |
+| `condition` | `escapeStrength,grapple,id,op` | `maneuvers.json` | 1 | — |
+| `condition` | `escapeStrength,grapple,id,op,unlessCondition` | `maneuvers.json` | 1 | — |
+| `condition` | `escapeStrength,id,op,unlessCondition,value` | `traits.json` | 1 | — |
+| `condition` | `escapeStrength,id,op,value` | `spells.json` | 1 | — |
+| `condition` | `grapple,id,op,value` | `grapple.json` | 1 | — |
+| `condition` | `grapple,id,op,value` | `traits.json` | 1 | — |
+| `condition` | `id,lockedUntil,op,value` | `criticals.json` | 1 | — |
+| `condition` | `id,onlyGroups,op` | `spells.json` | 1 | — |
+| `condition` | `id,onlyGroups,op,value` | `spells.json` | 1 | — |
+| `condition` | `id,onlyGroups,op,value` | `trappings.json` | 1 | — |
+| `condition` | `id,op` | `activities.json` | 1 | — |
+| `condition` | `id,op` | `miscast.json` | 1 | — |
+| `condition` | `id,op` | `psychology.json` | 1 | — |
+| `condition` | `id,op` | `talents.json` | 1 | — |
+| `condition` | `id,op,perRound` | `spells.json` | 1 | — |
+| `condition` | `id,op,unlessCondition` | `maneuvers.json` | 1 | — |
+| `condition` | `id,op,unlessCondition,value` | `traits.json` | 1 | — |
+| `condition` | `id,op,value` | `etats.json` | 1 | — |
+| `condition` | `id,op,value` | `grapple.json` | 1 | — |
+| `condition` | `id,op,value` | `tavernGames.json` | 1 | — |
+| `condition` | `id,op,value,valuePerSL` | `maneuvers.json` | 1 | — |
+| `condition` | `id,op,value,valuePerSL` | `traits.json` | 1 | — |
+| `condition` | `id,op,value,valuePerSL` | `trappings.json` | 1 | — |
+| `condition` | `id,op,valuePerSL` | `maneuvers.json` | 1 | — |
+| `contractDisease` | `disease,op` | `tables.json` | 5 | — |
+| `contractDisease` | `disease,op` | `criticals.json` | 2 | — |
+| `contractDisease` | `disease,op` | `spells.json` | 1 | — |
+| `contractDisease` | `disease,op` | `symptoms.json` | 1 | — |
+| `contractDisease` | `disease,op` | `trappings.json` | 1 | — |
+| `corruption` | `amount,op` | `miscast.json` | 8 | — |
+| `corruption` | `amount,op` | `spells.json` | 6 | — |
+| `corruption` | `amount,op,perSL` | `spells.json` | 1 | — |
+| `corruptionExposure` | `level,op` | `spells.json` | 5 | — |
+| `corruptionExposure` | `level,op,skill` | `trappings.json` | 2 | `skill` |
+| `corruptionExposure` | `easeSteps,op` | `spells.json` | 1 | — |
+| `corruptionExposure` | `level,op,skill` | `activities.json` | 1 | `skill` |
+| `crewTestMod` | `mod,op` | `sea-shanties.json` | 1 | — |
+| `critOnRoll` | `equals,mod,op` | `qualities.json` | 1 | — |
+| `critTwice` | `op` | `spells.json` | 1 | — |
+| `cureCriticalWound` | `count,op` | `traits.json` | 2 | — |
+| `cureCriticalWound` | `count,countPerSL,op` | `spells.json` | 1 | — |
+| `cureDisease` | `count,countPerSL,op` | `spells.json` | 1 | — |
+| `cureDisease` | `count,op` | `trappings.json` | 1 | — |
+| `damageArmour` | `material,op` | `maneuvers.json` | 2 | — |
+| `damageArmour` | `material,op` | `spells.json` | 1 | — |
+| `delayed` | `afterDuration,op,ops` | `spells.json` | 3 | — |
+| `delayed` | `afterDuration,op,ops` | `trappings.json` | 2 | — |
+| `delayed` | `afterHours,forHours,op,ops` | `trappings.json` | 1 | — |
+| `delayed` | `afterMinutes,op,ops` | `trappings.json` | 1 | — |
+| `disarm` | `op` | `criticals.json` | 9 | — |
+| `disarm` | `op` | `aa-criticals.json` | 8 | — |
+| `diseaseTestMod` | `amount,diseases,op` | `trappings.json` | 5 | — |
+| `diseaseTestMod` | `amount,op` | `maladies.json` | 1 | — |
+| `domeWard` | `op,radius` | `spells.json` | 1 | — |
+| `endPsych` | `op,type` | `psychology.json` | 1 | — |
+| `endPsych` | `op,type` | `talents.json` | 1 | — |
+| `endTransform` | `op,tag` | `maneuvers.json` | 1 | — |
+| `exposeDisease` | `disease,op` | `traits.json` | 2 | — |
+| `exposeDisease` | `difficultyShift,disease,incubation,op` | `traits.json` | 1 | — |
+| `exposeDisease` | `disease,op` | `qualities.json` | 1 | — |
+| `freeReroll` | `op` | `spells.json` | 3 | — |
+| `gainAdvantage` | `amount,op` | `tavernGames.json` | 2 | — |
+| `gainAdvantage` | `amount,feedOpposingPool,op` | `traits.json` | 1 | — |
+| `gainResource` | `amount,op,perSL,resource,temporary` | `spells.json` | 3 | — |
+| `gainResource` | `amount,op,perSL,resource` | `spells.json` | 1 | — |
+| `gainResource` | `amount,op,resource` | `trappings.json` | 1 | — |
+| `gainResource` | `amount,op,resource,temporary` | `spells.json` | 1 | — |
+| `giveTrapping` | `op,trappingId` | `spells.json` | 2 | `trappingId` |
+| `giveTrapping` | `op,perSL,trappingId` | `spells.json` | 1 | `trappingId` |
+| `grantCareerSkill` | `op,skillId,spec` | `talents.json` | 5 | `skillId` `spec` |
+| `grantCareerTalent` | `op,talentId` | `traits.json` | 18 | `talentId` |
+| `grantCareerTalent` | `op,spec,talentId` | `traits.json` | 2 | `talentId` `spec` |
+| `grantCareerTalent` | `op,talentId` | `talents.json` | 1 | `talentId` |
+| `grantFreeAttack` | `cost,op,weapon,when` | `talents.json` | 1 | — |
+| `grantFreeAttack` | `op,perChargerOncePerRound,weapon,when` | `talents.json` | 1 | — |
+| `grantFreeAttack` | `op,weapon,when` | `psychology.json` | 1 | — |
+| `grantNaturalWeapon` | `bare,damage,label,op,plusBF,qualities` | `mutations.json` | 2 | — |
+| `grantNaturalWeapon` | `damage,label,op` | `spells.json` | 2 | — |
+| `grantNaturalWeapon` | `damage,label,op,qualities` | `spells.json` | 2 | — |
+| `grantNaturalWeapon` | `attackKind,bare,damage,label,op,plusBF,subType,uid` | `traits.json` | 1 | — |
+| `grantPsychTrait` | `op,psychType` | `spells.json` | 3 | — |
+| `grantPsychTrait` | `cible,op,psychType` | `drunkenness.json` | 1 | — |
+| `grantPsychTrait` | `cible,op,psychType` | `symptoms.json` | 1 | — |
+| `grantPsychTrait` | `cible,op,psychType` | `tables.json` | 1 | — |
+| `grantPsychTrait` | `op,psychType` | `mutations.json` | 1 | — |
+| `grantPsychTrait` | `op,psychType` | `symptoms.json` | 1 | — |
+| `grantReverseToken` | `op` | `activities.json` | 1 | — |
+| `grantTalent` | `op,talentId` | `spells.json` | 15 | `talentId` |
+| `grantTalent` | `op,talentId` | `tables.json` | 12 | `talentId` |
+| `grantTalent` | `op,talentId` | `stars.json` | 11 | `talentId` |
+| `grantTalent` | `op,spec,talentId` | `spells.json` | 6 | `talentId` `spec` |
+| `grantTalent` | `op,spec,talentId` | `mutations.json` | 5 | `talentId` `spec` |
+| `grantTalent` | `op,spec,talentId` | `stars.json` | 2 | `talentId` `spec` |
+| `grantTalent` | `op,spec,talentId` | `traits.json` | 2 | `talentId` `spec` |
+| `grantTalent` | `op,talentId` | `mutations.json` | 2 | `talentId` |
+| `grantTalent` | `op,talentId` | `traits.json` | 1 | `talentId` |
+| `grantTalent` | `op,talentId` | `trappings.json` | 1 | `talentId` |
+| `grantTrait` | `op,traitId` | `mutations.json` | 19 | `traitId` |
+| `grantTrait` | `op,traitId` | `spells.json` | 17 | `traitId` |
+| `grantTrait` | `indice,op,traitId` | `mutations.json` | 16 | `traitId` |
+| `grantTrait` | `op,traitId` | `tables.json` | 16 | `traitId` |
+| `grantTrait` | `indice,op,traitId` | `spells.json` | 14 | `traitId` |
+| `grantTrait` | `indice,op,traitId` | `tables.json` | 14 | `traitId` |
+| `grantTrait` | `arg,op,traitId` | `mutations.json` | 4 | `traitId` |
+| `grantTrait` | `arg,op,traitId` | `tables.json` | 4 | `traitId` |
+| `grantTrait` | `indice,op,traitId` | `maneuvers.json` | 4 | `traitId` |
+| `grantTrait` | `arg,indice,op,traitId` | `tables.json` | 3 | `traitId` |
+| `grantTrait` | `arg,op,traitId` | `spells.json` | 3 | `traitId` |
+| `grantTrait` | `op,traitId` | `symptoms.json` | 3 | `traitId` |
+| `grantTrait` | `argFrom,op,traitId` | `mutations.json` | 2 | `traitId` |
+| `grantTrait` | `indice,indicePerSL,op,traitId` | `spells.json` | 2 | `traitId` |
+| `grantTrait` | `indice,op,traitId` | `traits.json` | 2 | `traitId` |
+| `grantTrait` | `op,traitId` | `maneuvers.json` | 2 | `traitId` |
+| `grantTrait` | `op,traitId` | `trappings.json` | 2 | `traitId` |
+| `grantTrait` | `arg,indice,op,traitId` | `mutations.json` | 1 | `traitId` |
+| `grantTrait` | `durationRounds,indice,op,traitId` | `domains.json` | 1 | `traitId` |
+| `grantTrait` | `indice,op,traitId` | `trappings.json` | 1 | `traitId` |
+| `grantTrait` | `onlyGroups,op,traitId` | `spells.json` | 1 | `traitId` |
+| `grantWeapon` | `chooseForm,damage,label,op,qualities,skin` | `spells.json` | 1 | — |
+| `grantWeapon` | `damage,damagePlus,form,hands,label,op,qualities,reach,skin,subType` | `spells.json` | 1 | — |
+| `grantWeapon` | `damage,form,hands,label,onHitEffects,op,qualities,reach,skin,subType` | `spells.json` | 1 | — |
+| `handGate` | `op` | `aa-criticals.json` | 1 | — |
+| `handGate` | `op` | `criticals.json` | 1 | — |
+| `heal` | `amount,op` | `spells.json` | 11 | — |
+| `heal` | `amount,op` | `traits.json` | 2 | — |
+| `heal` | `amount,op` | `trappings.json` | 2 | — |
+| `heal` | `amount,op,perSL` | `spells.json` | 1 | — |
+| `healCaster` | `amount,op` | `spells.json` | 1 | — |
+| `ignoreAnimosity` | `op` | `drunkenness.json` | 1 | — |
+| `ignoreStatePenalties` | `op` | `spells.json` | 2 | — |
+| `ignoreStatePenalties` | `count,op` | `sea-shanties.json` | 1 | — |
+| `incomingAdvantage` | `amount,mode,op` | `etats.json` | 1 | — |
+| `incomingAttackMod` | `amount,mode,op` | `etats.json` | 3 | — |
+| `incomingAttackMod` | `amount,flankRear,mode,op` | `etats.json` | 1 | — |
+| `incomingAttackMod` | `amount,mode,op` | `traits.json` | 1 | — |
+| `incomingSpellDRMod` | `amount,op` | `talents.json` | 1 | — |
+| `incomingSpellDRMod` | `amount,op` | `traits.json` | 1 | — |
+| `intoxicate` | `op` | `tavernGames.json` | 2 | — |
+| `intoxicate` | `op` | `trappings.json` | 2 | — |
+| `kill` | `op` | `symptoms.json` | 2 | — |
+| `kill` | `op` | `spells.json` | 1 | — |
+| `lifeSteal` | `den,num,op` | `traits.json` | 2 | — |
+| `lifeSteal` | `den,num,op,round` | `spells.json` | 2 | — |
+| `light` | `op,radiusTiles,tone` | `trappings.json` | 4 | — |
+| `light` | `op,radiusTiles,tone` | `spells.json` | 2 | — |
+| `light` | `op,radiusTiles,tone` | `tables.json` | 1 | — |
+| `loseTurn` | `op,what` | `maneuvers.json` | 2 | — |
+| `loseTurn` | `op,what` | `spells.json` | 2 | — |
+| `loseTurn` | `op` | `spells.json` | 1 | — |
+| `loseTurn` | `op` | `traits.json` | 1 | — |
+| `martyr` | `op` | `spells.json` | 1 | — |
+| `maxWeaponHands` | `durationRounds,hands,op` | `aa-criticals.json` | 3 | — |
+| `maxWeaponHands` | `durationRounds,hands,op` | `criticals.json` | 3 | — |
+| `maxWeaponHands` | `hands,op` | `aa-criticals.json` | 1 | — |
+| `maxWeaponHands` | `hands,op` | `criticals.json` | 1 | — |
+| `maxWeaponHands` | `hands,op` | `traumas.json` | 1 | — |
+| `mitigateIncoming` | `mode,op,unlessKeyword` | `traits.json` | 1 | — |
+| `moveMod` | `mod,op` | `mutations.json` | 7 | — |
+| `moveMod` | `mod,op` | `spells.json` | 3 | — |
+| `moveMod` | `mod,op` | `naval-traits.json` | 2 | — |
+| `moveMod` | `mod,op` | `traits.json` | 2 | — |
+| `moveMod` | `mod,op` | `trappings.json` | 2 | — |
+| `moveMod` | `mod,op` | `maneuvers.json` | 1 | — |
+| `moveMod` | `mod,op` | `tables.json` | 1 | — |
+| `moveMod` | `mod,op` | `talents.json` | 1 | — |
+| `moveScale` | `den,num,op` | `traumas.json` | 7 | — |
+| `moveScale` | `den,num,op` | `spells.json` | 3 | — |
+| `moveScale` | `den,num,op` | `aa-criticals.json` | 2 | — |
+| `moveScale` | `den,num,op` | `criticals.json` | 2 | — |
+| `moveScale` | `den,durationRounds,num,op` | `criticals.json` | 1 | — |
+| `moveScale` | `den,num,op` | `naval-traits.json` | 1 | — |
+| `moveScale` | `den,num,op` | `trappings.json` | 1 | — |
+| `narrative` | `op,text` | `spells.json` | 378 | — |
+| `narrative` | `op,text` | `tables.json` | 119 | — |
+| `narrative` | `op,text` | `trappings.json` | 10 | — |
+| `noBreath` | `op` | `spells.json` | 5 | — |
+| `noHunger` | `op` | `spells.json` | 1 | — |
+| `offTerrainMod` | `mSet,op,suffocates,terrain,testDR` | `traits.json` | 1 | — |
+| `offTerrainMod` | `mSet,op,terrain` | `traits.json` | 1 | — |
+| `offTerrainMod` | `op,terrain` | `traits.json` | 1 | — |
+| `perRound` | `op,ops` | `spells.json` | 2 | — |
+| `polymorph` | `op,ref` | `spells.json` | 2 | — |
+| `preventInfection` | `op` | `trappings.json` | 2 | — |
+| `preventInfection` | `op` | `spells.json` | 1 | — |
+| `push` | `meters,op` | `spells.json` | 4 | — |
+| `reduceDiseaseDays` | `days,daysPerSL,disease,op` | `trappings.json` | 1 | — |
+| `reduceDiseaseDays` | `days,oncePerDisease,op` | `spells.json` | 1 | — |
+| `reduceDiseaseDays` | `dice,disease,op` | `trappings.json` | 1 | — |
+| `reduceToZero` | `op` | `miscast.json` | 2 | — |
+| `reduceToZero` | `op` | `maneuvers.json` | 1 | — |
+| `removeCondition` | `id,op,value` | `spells.json` | 6 | — |
+| `removeCondition` | `all,id,op` | `trappings.json` | 5 | — |
+| `removeCondition` | `id,op` | `etats.json` | 3 | — |
+| `removeCondition` | `id,op,value,valuePerSL` | `etats.json` | 3 | — |
+| `removeCondition` | `id,op,value` | `domains.json` | 2 | — |
+| `removeCondition` | `id,op,value` | `trappings.json` | 2 | — |
+| `removeCondition` | `op` | `spells.json` | 2 | — |
+| `removeCondition` | `all,id,op` | `spells.json` | 1 | — |
+| `removeCondition` | `id,op,value` | `etats.json` | 1 | — |
+| `removeCondition` | `id,op,value` | `traits.json` | 1 | — |
+| `removeCondition` | `id,op,value,valuePerSL` | `grapple.json` | 1 | — |
+| `removeCondition` | `id,op,value,valuePerSL` | `spells.json` | 1 | — |
+| `removeCondition` | `id,op,value,valuePerSL` | `talents.json` | 1 | — |
+| `removePsychTrait` | `op` | `activities.json` | 1 | — |
+| `removeShipPoste` | `op` | `ship-criticals.json` | 1 | — |
+| `rollMutation` | `op,table` | `tables.json` | 4 | — |
+| `rollTable` | `op,tableId` | `activities.json` | 12 | `tableId` |
+| `rollTable` | `extraRollsPerStep,op,tableId` | `spells.json` | 4 | `tableId` |
+| `rollTable` | `die,op,rows` | `spells.json` | 3 | — |
+| `rollTable` | `addNegativeSL,op,tableId` | `activities.json` | 2 | `tableId` |
+| `rollTable` | `addNegativeSL,die,op,rows` | `symptoms.json` | 1 | — |
+| `rollTable` | `addNegativeSL,mod,op,tableId` | `activities.json` | 1 | `tableId` |
+| `rollTable` | `die,op,tableId` | `trappings.json` | 1 | `tableId` |
+| `rollTable` | `op,tableId` | `tables.json` | 1 | `tableId` |
+| `rollTable` | `op,tableId` | `traits.json` | 1 | `tableId` |
+| `rollThreshold` | `op,sides,thresholds` | `traits.json` | 2 | — |
+| `sbBonus` | `amount,op` | `psychology.json` | 1 | — |
+| `scheduleRespawn` | `cancelFlag,delayDays,op,ref` | `traits.json` | 1 | — |
+| `senseLoss` | `op,sense` | `traumas.json` | 2 | — |
+| `sinMod` | `amount,op` | `activities.json` | 2 | — |
+| `skillDRBonus` | `bonus,op,skill` | `spells.json` | 14 | `skill` |
+| `skillDRBonus` | `bonus,op,skill` | `tables.json` | 14 | `skill` |
+| `skillDRBonus` | `bonus,op,skill` | `traits.json` | 9 | `skill` |
+| `skillDRBonus` | `bonus,op,skill` | `trappings.json` | 6 | `skill` |
+| `skillDRBonus` | `bonus,op,skill` | `naval-traits.json` | 3 | `skill` |
+| `skillDRBonus` | `bonus,op,skill` | `traumas.json` | 3 | `skill` |
+| `skillDRBonus` | `bonus,op,skill,spec` | `spells.json` | 3 | `skill` `spec` |
+| `skillDRBonus` | `bonus,op,skill,spec` | `traits.json` | 3 | `skill` `spec` |
+| `skillDRBonus` | `bonus,op,skill` | `sea-shanties.json` | 2 | `skill` |
+| `skillDRBonus` | `bonus,op,testType` | `naval-traits.json` | 2 | — |
+| `skillDRBonus` | `bonus,op,skill,spec` | `tables.json` | 1 | `skill` `spec` |
+| `skillMod` | `mod,op,skill` | `trappings.json` | 9 | `skill` |
+| `skillMod` | `mod,op,skill` | `traumas.json` | 8 | `skill` |
+| `skillMod` | `mod,op,skill` | `traits.json` | 3 | `skill` |
+| `skillMod` | `mod,op,sense,skill` | `traumas.json` | 2 | `skill` |
+| `skillMod` | `mod,op,skill` | `mutations.json` | 2 | `skill` |
+| `skillMod` | `mod,op,skill` | `drunkenness.json` | 1 | `skill` |
+| `skillMod` | `mod,op,skill` | `sea-shanties.json` | 1 | `skill` |
+| `suffocate` | `op` | `spells.json` | 8 | — |
+| `summon` | `allyOfCaster,count,op,ref` | `spells.json` | 8 | — |
+| `summon` | `addTraits,allyOfCaster,count,op,ref` | `spells.json` | 2 | — |
+| `summon` | `allyOfCaster,count,countPerSL,despawnIfCasterDown,op,ref` | `spells.json` | 2 | — |
+| `summon` | `addTraits,allyOfCaster,count,op,ref,size` | `spells.json` | 1 | — |
+| `summon` | `allyOfCaster,count,despawnIfCasterDown,op,ref` | `spells.json` | 1 | — |
+| `summon` | `count,countPerSL,op,ref` | `spells.json` | 1 | — |
+| `summon` | `count,op,ref` | `traits.json` | 1 | — |
+| `suppressPsych` | `op` | `spells.json` | 2 | — |
+| `suppressSymptom` | `op,symptomId` | `trappings.json` | 1 | — |
+| `teleport` | `meters,op,perSL` | `spells.json` | 4 | — |
+| `teleport` | `meters,op` | `spells.json` | 2 | — |
+| `testMod` | `amount,char,op` | `trappings.json` | 5 | — |
+| `testMod` | `amount,op` | `etats.json` | 3 | — |
+| `testMod` | `amount,op` | `spells.json` | 3 | — |
+| `testMod` | `amount,movementOnly,op` | `etats.json` | 2 | — |
+| `testMod` | `amount,op` | `symptoms.json` | 2 | — |
+| `testMod` | `amount,char,movementOnly,op` | `aa-criticals.json` | 1 | — |
+| `testMod` | `amount,char,movementOnly,op` | `criticals.json` | 1 | — |
+| `testMod` | `amount,char,op` | `aa-criticals.json` | 1 | — |
+| `testMod` | `amount,char,op` | `criticals.json` | 1 | — |
+| `testMod` | `amount,char,op` | `mutations.json` | 1 | — |
+| `testMod` | `amount,char,op` | `qualities.json` | 1 | — |
+| `testMod` | `amount,char,op` | `sea-shanties.json` | 1 | — |
+| `testMod` | `amount,combatOnly,op` | `etats.json` | 1 | — |
+| `testMod` | `amount,exceptSkills,op` | `etats.json` | 1 | — |
+| `testMod` | `amount,hearingOnly,op` | `etats.json` | 1 | — |
+| `testMod` | `amount,op` | `traits.json` | 1 | — |
+| `transform` | `morphRef,op,ops,tag` | `maneuvers.json` | 1 | — |
+| `weaponDamageMod` | `mode,op` | `qualities.json` | 2 | — |
+| `weaponDamageMod` | `chargeGated,op` | `qualities.json` | 1 | — |
+| `weaponDamageMod` | `negateAtouts,op` | `qualities.json` | 1 | — |
+| `weaponDamageMod` | `op,plusUnits` | `qualities.json` | 1 | — |
+| `weaponRollMod` | `drMod,op,phase` | `qualities.json` | 8 | — |
+| `weaponRollMod` | `drMod,op,phase` | `spells.json` | 1 | — |
+| `weaponRollMod` | `flatMod,op,phase` | `qualities.json` | 1 | — |
+| `weatherWard` | `op` | `spells.json` | 3 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `criticals.json` | 76 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `spells.json` | 17 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `maneuvers.json` | 9 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `miscast.json` | 8 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op,perSL` | `spells.json` | 6 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `tables.json` | 5 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `traits.json` | 5 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `river-criticals.json` | 4 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `trappings.json` | 3 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,onlyGroups,op` | `spells.json` | 2 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `domains.json` | 2 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `etats.json` | 2 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `ship-criticals.json` | 2 | — |
+| `wounds` | `amount,apFrom,ignoreAP,ignoreTB,min,op` | `etats.json` | 1 | — |
+| `wounds` | `amount,bypassArmour,ignoreAP,ignoreTB,op` | `domains.json` | 1 | — |
+| `wounds` | `amount,bypassArmour,ignoreAP,ignoreTB,op` | `spells.json` | 1 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,min,op` | `etats.json` | 1 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,min,op` | `problemes-vehicule.json` | 1 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,min,op` | `traits.json` | 1 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `problemes-vehicule.json` | 1 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op` | `symptoms.json` | 1 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op,perSL` | `grapple.json` | 1 | — |
+| `wounds` | `amount,ignoreAP,ignoreTB,op,perSL` | `maneuvers.json` | 1 | — |
+| `zone` | `op,perRound,radiusMeters,shape` | `spells.json` | 7 | — |
+| `zone` | `crossTest,onCross,op,radiusMeters,shape` | `spells.json` | 2 | — |
+| `zone` | `barrier,gate,noCorruption,op,perRound,shape` | `spells.json` | 1 | — |
+| `zone` | `blocksLoS,lengthMeters,lengthPerSL,op,shape` | `spells.json` | 1 | — |
+| `zone` | `lengthMeters,lengthPerSL,onCross,op,shape` | `spells.json` | 1 | — |
+| `zone` | `op,radiusMeters,shape` | `spells.json` | 1 | — |
+

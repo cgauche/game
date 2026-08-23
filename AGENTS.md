@@ -52,6 +52,7 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 | Ajouter une mécanique à une entité (trait, talent, qualité, mutation, maladie, atout…) | `docs/ajouter-une-mecanique.md` |
 | Le Codex doit-il exposer une nouvelle relation inverse / un nouvel index / un auto-liage ? | `docs/codex-relations.md` |
 | Quel code lit ce champ JSON, avant de le renommer ou de le supprimer ? | `docs/consommateurs-de-champs.md` (GÉNÉRÉ, `npm run docs:field-consumers`) |
+| **« Quelle forme a ce concept dans chaque dataset ? »** — comparer la structure d'une référence / d'une valeur / d'une enveloppe entre documents, AVANT de poser une Nᵉ graphie ou de croire une forme unique | `docs/structures-donnees.md` (GÉNÉRÉ, `npm run docs:structures` — observé × déclaré sur les 2 racines `src/data` + `src/scenes`, lexique fermé `scripts/docs/lib/structures-lexique.mts`, stock décroissant `scripts/guards/lib/structuresStock.mjs`) |
 | Une entrée de `src/data/*.json` est-elle orpheline (jamais référencée) ? | `docs/orphelines-donnees.md` (GÉNÉRÉ, `npm run docs:orphelines`) |
 | Un sprite/rig est-il reconnaissable au premier coup d'œil (QC) ? | `docs/qc-reconnaissabilite-sprites.md` |
 | Reprendre un chantier après une pause (nouvelle machine, clone frais) | `docs/reprise-apres-pause.md` |
