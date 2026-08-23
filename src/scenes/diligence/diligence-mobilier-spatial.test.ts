@@ -9,19 +9,20 @@ import { findPropById } from '../../data';
 import { buildPropVolumes } from '../../gameIso/builders/propVolumes';
 
 /**
- * IMPLANTATION DE LA SALLE PRINCIPALE — preuve SPATIALE des dix-neuf poses de `zone-S-z0`, telles
+ * IMPLANTATION DE LA SALLE PRINCIPALE — preuve SPATIALE des dix-huit poses de `zone-S-z0`, telles
  * que la carte de la salle les arrête (#1443).
  *
  * Ce fichier tient deux promesses distinctes :
  *  1. l'implantation n'a RIEN touché de l'architecture — digests témoins figés, calculés au commit
  *     83d02a10, celui qui précède la première pose, et jamais régénérés depuis ;
- *  2. la salle meublée reste JOUABLE : 85 tuiles libres d'une seule composante, seize places dont
- *     l'abord effectif est marchable et exclusif, comptoir joint à joint, espace du tenancier tenu
- *     ouvert sur la salle ET sur la cuisine, coutures obligatoires (portes, fenêtres, rampe) intactes.
+ *  2. la salle meublée reste JOUABLE : 86 tuiles libres d'une seule composante, seize places dont
+ *     l'abord effectif est marchable et exclusif, comptoir d'un seul tenant (tous ses joints mesurés
+ *     à zéro, façade de service alignée), espace du tenancier tenu ouvert sur la salle ET sur la
+ *     cuisine, coutures obligatoires (portes, fenêtres, rampe) intactes.
  */
 const scene: Scene = diligenceCampaign.scenes[0];
 
-/** Les dix-neuf poses : id, ref, case, cap — dans leur ordre d'inscription au document.
+/** Les dix-huit poses : id, ref, case, cap — dans leur ordre d'inscription au document.
  *
  *  CAP DES PIÈCES DE COMPTOIR (contrat de `data/props.types.ts` : recette FACE AU NORD, cap `N` =
  *  identité, un cran = 45° horaires) : le cap NOMME la face de service, celle que la recette dessine
@@ -32,15 +33,14 @@ const POSES = [
   ['diligence-salle-table-ronde-1', 'table-ronde-4-tabourets', 11, 8, 'S'],
   ['diligence-salle-comptoir-1', 'comptoir-droit', 10, 9, 'N'],
   ['diligence-salle-comptoir-2', 'comptoir-angle', 11, 9, 'E'],
-  ['diligence-salle-comptoir-3', 'comptoir-droit', 12, 9, 'N'],
-  ['diligence-salle-comptoir-4', 'comptoir-droit', 11, 10, 'E'],
-  ['diligence-salle-comptoir-5', 'comptoir-droit', 11, 11, 'E'],
-  ['diligence-salle-comptoir-6', 'comptoir-droit', 11, 12, 'E'],
-  ['diligence-salle-comptoir-7', 'comptoir-droit', 11, 13, 'E'],
-  ['diligence-salle-comptoir-8', 'comptoir-droit', 11, 14, 'E'],
-  ['diligence-salle-comptoir-9', 'comptoir-droit', 11, 15, 'E'],
-  ['diligence-salle-comptoir-10', 'comptoir-angle', 11, 16, 'S'],
-  ['diligence-salle-comptoir-11', 'comptoir-droit', 12, 16, 'S'],
+  ['diligence-salle-comptoir-3', 'comptoir-droit', 11, 10, 'E'],
+  ['diligence-salle-comptoir-4', 'comptoir-droit', 11, 11, 'E'],
+  ['diligence-salle-comptoir-5', 'comptoir-droit', 11, 12, 'E'],
+  ['diligence-salle-comptoir-6', 'comptoir-droit', 11, 13, 'E'],
+  ['diligence-salle-comptoir-7', 'comptoir-droit', 11, 14, 'E'],
+  ['diligence-salle-comptoir-8', 'comptoir-droit', 11, 15, 'E'],
+  ['diligence-salle-comptoir-9', 'comptoir-angle', 11, 16, 'S'],
+  ['diligence-salle-comptoir-10', 'comptoir-droit', 12, 16, 'S'],
   ['diligence-salle-cheminee', 'cheminee-interieure', 10, 18, 'E'],
   ['diligence-salle-table-murale-1', 'table-murale-2-tabourets', 14, 11, 'E'],
   ['diligence-salle-table-murale-2', 'table-murale-2-tabourets', 14, 16, 'E'],
@@ -180,7 +180,7 @@ const SEUILS = new Set(PORTES.flatMap(([x, y]) => [`${x},${y}`, `${x + 1},${y}`]
 const RAMPE = [[14, 23], [14, 24], [14, 25], [13, 25]] as const;
 
 describe('La Diligence — implantation de la salle principale', () => {
-  it('pose les dix-neuf meubles de la carte sans toucher la topologie', () => {
+  it('pose les dix-huit meubles de la carte sans toucher la topologie', () => {
     expect(implantation(scene)).toEqual(POSES.map(([id, ref, x, y, facing]) => [id, ref, x, y, facing]));
     expect(scene.walls).toHaveLength(TOPOLOGY_BEFORE.walls);
     expect(edgeDigest(scene.walls!)).toBe(TOPOLOGY_BEFORE.edgeDigest);
@@ -196,10 +196,10 @@ describe('La Diligence — implantation de la salle principale', () => {
     expect(meubles().filter((e) => !dansSalle.has(`${e.pos.x},${e.pos.y}`)).map((e) => e.id)).toEqual([]);
   });
 
-  it('la salle meublée garde 85 tuiles libres sur 104, en une seule composante', () => {
+  it('la salle meublée garde 86 tuiles libres sur 104, en une seule composante', () => {
     expect(tuilesSalle).toHaveLength(104);
     const libres = tuilesSalle.filter((t) => isWalkable(scene, t.x, t.y, 0));
-    expect(libres).toHaveLength(85);
+    expect(libres).toHaveLength(86);
     const vues = new Set([cle(libres[0])]);
     const file: Pt[] = [libres[0]];
     while (file.length) {
@@ -258,32 +258,41 @@ describe('La Diligence — implantation de la salle principale', () => {
   });
 
   /**
-   * COMPTOIR D'UN SEUL TENANT — les deux modules d'ANGLE raccordent leurs voisins JOINT À JOINT : le
-   * cap de l'angle est ce qui se vérifie ici, pas un commentaire. Un cap faux ouvre une fente ou fait
-   * mordre deux caissons l'un dans l'autre (le recoupement, lui, est déjà refusé plus haut).
+   * COMPTOIR D'UN SEUL TENANT — les dix modules forment UNE chaîne continue, du retour haut au pied
+   * bas : chaque maillon touche le suivant (jour NUL sur l'axe de contact) et sa FAÇADE DE SERVICE
+   * est alignée sur celle de son voisin. Un cap d'angle faux, ou un module posé au-delà du dernier
+   * maillon, rouvre un jour — la revue du 2026-08-23 en a mesuré un de 0,300 case (0,60 m) au retour
+   * haut, une dalle flottante de 11 px en vue du dessus, quand un onzième module occupait (12,9).
    */
-  it('les deux angles du comptoir raccordent leurs deux segments sans fente', () => {
-    const joint = (a: string, b: string, axe: 'x' | 'y') => {
+  it('les dix modules du comptoir forment une chaîne continue, sans jour ni façade décalée', () => {
+    const CHAINE = ['diligence-salle-comptoir-1', 'diligence-salle-comptoir-2', 'diligence-salle-comptoir-3',
+      'diligence-salle-comptoir-4', 'diligence-salle-comptoir-5', 'diligence-salle-comptoir-6',
+      'diligence-salle-comptoir-7', 'diligence-salle-comptoir-8', 'diligence-salle-comptoir-9',
+      'diligence-salle-comptoir-10'];
+    // Aucun autre module de comptoir dans la salle : la chaîne EST tout le comptoir.
+    expect(meubles().filter((e) => (e.ref ?? '').startsWith('comptoir')).map((e) => e.id)).toEqual(CHAINE);
+    // JOUR entre deux maillons : l'écart des AABB sur chaque axe. Négatif = ils se recouvrent (les
+    // angles empiètent sur la bande de leur voisin), zéro = ils se touchent, positif = fente.
+    const jour = (a: string, b: string) => {
       const A = corpsMonde(a), B = corpsMonde(b);
-      return axe === 'x' ? Math.min(Math.abs(A.x1 - B.x0), Math.abs(B.x1 - A.x0)) : Math.min(Math.abs(A.y1 - B.y0), Math.abs(B.y1 - A.y0));
+      return Math.max(Math.max(A.x0 - B.x1, B.x0 - A.x1), Math.max(A.y0 - B.y1, B.y0 - A.y1));
     };
-    // Angle haut (11,9) : retour de l'ouest, barre vers le sud.
-    expect(joint('diligence-salle-comptoir-1', 'diligence-salle-comptoir-2', 'x')).toBeLessThan(1e-9);
-    expect(joint('diligence-salle-comptoir-2', 'diligence-salle-comptoir-4', 'y')).toBeLessThan(1e-9);
-    // Angle bas (11,16) : barre du nord, pied vers l'est.
-    expect(joint('diligence-salle-comptoir-9', 'diligence-salle-comptoir-10', 'y')).toBeLessThan(1e-9);
-    expect(joint('diligence-salle-comptoir-10', 'diligence-salle-comptoir-11', 'x')).toBeLessThan(1e-9);
+    const fentes = CHAINE.slice(1).map((id, i) => ({ joint: `${CHAINE[i]} ↔ ${id}`, jour: jour(CHAINE[i], id) })).filter((j) => j.jour > 1e-9);
+    expect(fentes).toEqual([]);
+    // FAÇADE DE SERVICE du retour haut : le nez EST de l'angle et celui de la barre sont au même x —
+    // c'est le joint que la revue a trouvé ouvert, il se mesure désormais.
+    expect(corpsMonde('diligence-salle-comptoir-2').x1).toBeCloseTo(corpsMonde('diligence-salle-comptoir-3').x1, 9);
     // …et les deux modules d'un joint présentent leur FER — donc leur face de service — du MÊME côté
     // de la ligne de joint : c'est le cap de chaque angle qui se mesure ici.
     const memeCote = (a: string, b: string, axe: 'x' | 'y') => Math.sign(ferDuComptoir(a)[axe]) === Math.sign(ferDuComptoir(b)[axe]);
     expect(memeCote('diligence-salle-comptoir-1', 'diligence-salle-comptoir-2', 'y'), 'retour haut ↔ angle haut').toBe(true);
-    expect(memeCote('diligence-salle-comptoir-2', 'diligence-salle-comptoir-4', 'x'), 'angle haut ↔ barre').toBe(true);
-    expect(memeCote('diligence-salle-comptoir-9', 'diligence-salle-comptoir-10', 'x'), 'barre ↔ angle bas').toBe(true);
-    expect(memeCote('diligence-salle-comptoir-10', 'diligence-salle-comptoir-11', 'y'), 'angle bas ↔ pied bas').toBe(true);
+    expect(memeCote('diligence-salle-comptoir-2', 'diligence-salle-comptoir-3', 'x'), 'angle haut ↔ barre').toBe(true);
+    expect(memeCote('diligence-salle-comptoir-8', 'diligence-salle-comptoir-9', 'x'), 'barre ↔ angle bas').toBe(true);
+    expect(memeCote('diligence-salle-comptoir-9', 'diligence-salle-comptoir-10', 'y'), 'angle bas ↔ pied bas').toBe(true);
     // La face de service de la BARRE regarde la salle (est), jamais la ruelle du tenancier (ouest).
-    for (const n of [4, 5, 6, 7, 8, 9]) expect(ferDuComptoir(`diligence-salle-comptoir-${n}`).x, `comptoir-${n}`).toBeGreaterThan(0);
+    for (const n of [3, 4, 5, 6, 7, 8]) expect(ferDuComptoir(`diligence-salle-comptoir-${n}`).x, `comptoir-${n}`).toBeGreaterThan(0);
     // Les six modules droits de la barre sont alignés sur la même bande de x, au millimètre…
-    const barre = [4, 5, 6, 7, 8, 9].map((n) => corpsMonde(`diligence-salle-comptoir-${n}`));
+    const barre = [3, 4, 5, 6, 7, 8].map((n) => corpsMonde(`diligence-salle-comptoir-${n}`));
     expect(new Set(barre.map((b) => `${b.x0.toFixed(6)},${b.x1.toFixed(6)}`)).size).toBe(1);
     // …et se touchent bout à bout, du nord au sud.
     for (let i = 1; i < barre.length; i++) expect(Math.abs(barre[i].y0 - barre[i - 1].y1)).toBeLessThan(1e-9);
@@ -326,11 +335,11 @@ describe('La Diligence — implantation de la salle principale', () => {
    * (`walkNeighbors`, SOURCE UNIQUE) : les seize abords appartiennent à la composante jouable, celle
    * qui porte aussi la cour d'arrivée.
    */
-  it('les seize abords sont dans la composante jouable — 971 tuiles au rez, 422 à l’étage', () => {
+  it('les seize abords sont dans la composante jouable — 972 tuiles au rez, 422 à l’étage', () => {
     const depart = tuilesSalle.find((t) => isWalkable(scene, t.x, t.y, 0))!;
     const vus = composante({ x: depart.x, y: depart.y });
     const parEtage = [...vus].reduce<Record<string, number>>((acc, k) => ({ ...acc, [k.split(',')[2]]: (acc[k.split(',')[2]] ?? 0) + 1 }), {});
-    expect(parEtage).toEqual({ 0: 971, 1: 422 });
+    expect(parEtage).toEqual({ 0: 972, 1: 422 });
     expect(placesDeLaSalle().filter((s) => !vus.has(`${s.approach.x},${s.approach.y},0`)).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
     // La cour d'arrivée est HORS de la salle et dans la MÊME composante : ce qui joint les places
     // joint le dehors — le groupe entre à pied et va s'asseoir.

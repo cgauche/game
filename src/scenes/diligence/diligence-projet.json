@@ -4946,23 +4946,13 @@
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
-      "x": 12,
-      "y": 9
-     },
-     "facing": "N"
-    },
-    {
-     "id": "diligence-salle-comptoir-4",
-     "kind": "prop",
-     "ref": "comptoir-droit",
-     "pos": {
       "x": 11,
       "y": 10
      },
      "facing": "E"
     },
     {
-     "id": "diligence-salle-comptoir-5",
+     "id": "diligence-salle-comptoir-4",
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
@@ -4972,7 +4962,7 @@
      "facing": "E"
     },
     {
-     "id": "diligence-salle-comptoir-6",
+     "id": "diligence-salle-comptoir-5",
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
@@ -4982,7 +4972,7 @@
      "facing": "E"
     },
     {
-     "id": "diligence-salle-comptoir-7",
+     "id": "diligence-salle-comptoir-6",
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
@@ -4992,7 +4982,7 @@
      "facing": "E"
     },
     {
-     "id": "diligence-salle-comptoir-8",
+     "id": "diligence-salle-comptoir-7",
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
@@ -5002,7 +4992,7 @@
      "facing": "E"
     },
     {
-     "id": "diligence-salle-comptoir-9",
+     "id": "diligence-salle-comptoir-8",
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
@@ -5012,7 +5002,7 @@
      "facing": "E"
     },
     {
-     "id": "diligence-salle-comptoir-10",
+     "id": "diligence-salle-comptoir-9",
      "kind": "prop",
      "ref": "comptoir-angle",
      "pos": {
@@ -5022,7 +5012,7 @@
      "facing": "S"
     },
     {
-     "id": "diligence-salle-comptoir-11",
+     "id": "diligence-salle-comptoir-10",
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {

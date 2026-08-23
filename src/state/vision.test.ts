@@ -305,7 +305,13 @@ describe('computeVisible — vue INCHANGÉE sur les cartes réelles (empreintes 
       [16, 8, 0, '208:a228e0c4'],
       [24, 12, 0, '116:d17fb990'],
       [0, 17, 0, '38:a48e3264'],
-      [8, 21, 0, '77:6a5dbe1a'],
+      // Poste du couloir de service, derrière la porte (8,20). Empreinte REMESURÉE le 2026-08-23 avec
+      // la ré-implantation de la salle (#1443) : 42 cases au lieu de 77. SEULE cause mesurée —
+      // `cheminee-interieure` en (10,18), unique décor `opaque` de la salle : la scène privée de ce
+      // seul meuble rend 77, la scène privée des dix-sept autres rend 42. Les 35 cases en moins
+      // forment le cône (11,15)→(19,0) derrière l'âtre ; la porte de service, la ruelle du tenancier
+      // et le sud de la salle restent vus. Les onze autres postes de la carte sont inchangés.
+      [8, 21, 0, '42:969c2be4'],
       [16, 25, 0, '268:2085c87'],
       [24, 29, 0, '13:a1c27c9e'],
       [0, 34, 0, '38:a48e3264'],

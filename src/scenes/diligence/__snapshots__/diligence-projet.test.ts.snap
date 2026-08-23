@@ -2105,7 +2105,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
     },
     {
       "height": 0,
-      "walkable": false,
+      "walkable": true,
       "x": 12,
       "y": 9,
       "z": 0,
@@ -17055,15 +17055,6 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "id": "diligence-salle-comptoir-10",
       "kind": "prop",
       "pos": {
-        "x": 11,
-        "y": 16,
-      },
-      "z": 0,
-    },
-    {
-      "id": "diligence-salle-comptoir-11",
-      "kind": "prop",
-      "pos": {
         "x": 12,
         "y": 16,
       },
@@ -17082,8 +17073,8 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "id": "diligence-salle-comptoir-3",
       "kind": "prop",
       "pos": {
-        "x": 12,
-        "y": 9,
+        "x": 11,
+        "y": 10,
       },
       "z": 0,
     },
@@ -17092,7 +17083,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "kind": "prop",
       "pos": {
         "x": 11,
-        "y": 10,
+        "y": 11,
       },
       "z": 0,
     },
@@ -17101,7 +17092,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "kind": "prop",
       "pos": {
         "x": 11,
-        "y": 11,
+        "y": 12,
       },
       "z": 0,
     },
@@ -17110,7 +17101,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "kind": "prop",
       "pos": {
         "x": 11,
-        "y": 12,
+        "y": 13,
       },
       "z": 0,
     },
@@ -17119,7 +17110,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "kind": "prop",
       "pos": {
         "x": 11,
-        "y": 13,
+        "y": 14,
       },
       "z": 0,
     },
@@ -17128,7 +17119,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "kind": "prop",
       "pos": {
         "x": 11,
-        "y": 14,
+        "y": 15,
       },
       "z": 0,
     },
@@ -17137,7 +17128,7 @@ exports[`La Diligence — paquet de campagne authoré dans l’éditeur > sanctu
       "kind": "prop",
       "pos": {
         "x": 11,
-        "y": 15,
+        "y": 16,
       },
       "z": 0,
     },
