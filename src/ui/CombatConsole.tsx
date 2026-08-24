@@ -39,7 +39,7 @@ import { inBattleId } from '../state/combatants';
 import { combatDistance } from '../state/footprint';
 import { hotbar } from '../state/hotbarBridge';
 import { charIcon, type EffectChip } from '../gameIso/effectIcons';
-import { HERO_RING, ENEMY_RING, hpColor } from '../gameIso/teamColors';
+import { HERO_RING, ENEMY_RING, ENEMY_TINT, hpColor } from '../gameIso/teamColors';
 import { PortraitTile } from './PortraitTile';
 import { StateChips } from './StateChips';
 import { LifeBar } from './LifeBar';
@@ -270,9 +270,13 @@ const ACTION_DISSIPER = 'dispel';
  *  (`action-atteignabilite.test.ts:66`). */
 const ACTION_RECHARGER = 'reload';
 
-function PhaseBanner({ label, actions, ready }: PhaseBanner) {
+/** Le bandeau de phase, à ses DEUX adresses (arbitrage utilisateur 2026-08-24) : sur le parapet du
+ *  pont (pauses de round, interlude de ciblage) ou, à l'OUVERTURE d'un combat, CENTRÉ EN HAUT DE LA
+ *  CARTE comme la référence Rogue Trader le pose. Une seule boîte, une seule matière — l'adresse est
+ *  un habillage (`centre`), jamais un second composant. */
+function PhaseBanner({ label, actions, ready, centre }: PhaseBanner & { centre?: boolean }) {
   return (
-    <div className="cc-phase">
+    <div className="cc-phase" data-phase={centre ? 'ouverture' : 'pont'}>
       <span className="cc-phase-label">{label}</span>
       {ready && <ReadyRow ready={ready} />}
       {actions.map((a) => (
@@ -517,12 +521,18 @@ export function CombatConsole() {
   // l'INITIATIVE : sur une embuscade, un ENNEMI (Knud) portait portrait, stats et arsenal dans le
   // cadre du joueur. Le pont est celui du joueur — le premier contrôlé, sinon le premier héros du
   // groupe (partie entièrement en Auto-combat), sinon seulement la tête d'ordre.
+  /** OUVERTURE d'un combat (arbitrage utilisateur 2026-08-24, référence RT « round 0 », capture
+   *  archivée) : le bandeau de phase et son bouton quittent le coin du pont pour le HAUT DE LA
+   *  CARTE, centrés. Les pauses de round SUIVANTES gardent leur bandeau sur le parapet du pont —
+   *  l'arbitrage ne porte que sur l'ouverture. */
+  const ouverture = !!pendingRoundStart && pendingRoundStart.round <= 1;
   const active = activeCombatant(battle) ?? (phase ? pontDOuverture(battle) : undefined);
   if (!active) {
     return phase ? (
-      <div className="combat-console" onContextMenu={avalerMenuNatif}>
-        <PhaseBanner {...phase} />
-      </div>
+      <>
+        {ouverture && <PhaseBanner {...phase} centre />}
+        <div className="combat-console" onContextMenu={avalerMenuNatif}>{!ouverture && <PhaseBanner {...phase} />}</div>
+      </>
     ) : null;
   }
 
@@ -533,8 +543,14 @@ export function CombatConsole() {
   // les cases navales du registre, dans la MÊME travée.
   const controlled = controlsCombatant(useGame.getState(), active);
   const vehicule = isVehicle(active);
-  // LECTURE : la console garde sa géométrie, ses cases deviennent inertes (spec zone 7).
-  const live = controlled && !phase;
+  /** FORME SPECTATRICE (arbitrage utilisateur 2026-08-24, verbatim : « D'ailleurs même au tour de
+   *  l'adversaire, pourquoi je vois son pont entier ? Même RT ne fait pas ca ») — tout tour NON tenu
+   *  par ce siège (ennemi, IA, autre siège coop, auto-combat) ET toute pause de Round : la bande
+   *  garde sa géométrie, mais son CONTENU devient un médaillon. Aucune case n'est grisée : il n'y a
+   *  plus de case. Le prédicat de possession est l'unique `controlsCombatant` — aucun cas de kind. */
+  const spectatrice = !controlled || !!pendingRoundStart;
+  // LECTURE : les cases de la forme complète sont inertes sous un bandeau d'interlude (spec zone 7).
+  const live = !phase;
   // ON VISE — source UNIQUE de la mise en sourdine des popovers de règle de la console (`ConsoleCell`,
   // chip de munition, vignettes de set) : intention LOCALE armée (spec zone 4) OU mode de ciblage
   // armé, quel qu'il soit (`battle.action` — Soigner, Dissiper, Bordée…). Aucun cas nommé ici.
@@ -549,7 +565,7 @@ export function CombatConsole() {
       ? net.ownership[active.id] ?? 0
       : null;
 
-  const frenzied = controlled && isFrenzied(active);
+  const frenzied = isFrenzied(active);
   // Ressources du Tour EN COURS : `movementRemaining`/`battle.movementUsed`/`battle.acted` portent
   // l'acteur actif quel qu'il soit — l'arche affiche donc la valeur réelle du moteur pour un ennemi
   // comme pour un héros (spec zone 7 : mêmes cases, inertes).
@@ -561,7 +577,7 @@ export function CombatConsole() {
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
   const previewDelta = previewResourceDelta(battle);
   const stunned = !canTakeAction(active);
-  const broken = controlled && hasCondition(active, 'brise');
+  const broken = hasCondition(active, 'brise');
   const busy = battle.acted || stunned || broken;
 
   // ── LA CONSOLE CONSOMME LE REGISTRE DES ACTIONS ────────────────────────────────────────────────
@@ -655,10 +671,6 @@ export function CombatConsole() {
 
   // ── Travée GAUCHE : l'arsenal du set au poing + le nécessaire ──────────────────────────────
   const loadouts = active.loadouts ?? [];
-  // Le SÉLECTEUR de sets n'existe que pour qui peut en porter : un combattant sans aucun set (toute
-  // créature, tout ennemi) n'a rien à y sélectionner — trois vignettes vides seraient une affordance
-  // morte. Le héros CONTRÔLÉ garde ses places même à vide : sa géométrie ne bat pas avec son sac.
-  const montreSets = loadouts.length > 0 || controlled;
   // ARMES À DISTANCE du porteur — le SÉLECTEUR DU REGISTRE (`armes-a-distance`, déclaré par l'entrée
   // `reload`), jamais un filtre recopié : deux pistolets sont DEUX armes, chacune avec son cycle de
   // charge (`weaponLoad.ts`, registre par `uid`) et sa munition — ce que les dispatchers mesurent déjà
@@ -954,7 +966,10 @@ export function CombatConsole() {
   // gauche, les seules cases réellement branchées de la console (Recharger, Viser, un consommable,
   // Soigner) n'avaient AUCUNE touche. Le badge imprimé est ce MÊME rang : une case affichée et
   // branchée a sa touche, une maquette n'en a pas.
-  const bridged: Cell[] = [...left, ...quick, ...right].filter((c): c is Cell => !!c && !!c.run);
+  // … et le pont ne publie QUE ce qu'il RÉALISE : en forme spectatrice il n'a plus une seule case à
+  // l'écran, il ne publie donc plus un seul slot. Une touche qui tirerait sur une case absente est
+  // une affordance invisible — le contrat du pont clavier est « les cases VISIBLES ».
+  const bridged: Cell[] = spectatrice ? [] : [...left, ...quick, ...right].filter((c): c is Cell => !!c && !!c.run);
   hotbar.slots = bridged.map((c) => ({ actionId: c.id, run: c.run!, disabled: !!c.disabled }));
   const keyRank = new Map(bridged.slice(0, PRINTED_KEYS).map((c, i) => [c.key, i + 1]));
   const hotkeyOf = (c?: Cell) => (c ? keyRank.get(c.key) : undefined);
@@ -987,11 +1002,11 @@ export function CombatConsole() {
   }));
 
   const advCap = advantageCapFor(active);
-  const meaningfulLeft = controlled && hasMeaningfulOption(active, battle);
+  const meaningfulLeft = hasMeaningfulOption(active, battle);
   // Garde-fou « tour gâché » (spec §1c-bis COIN) : finir avec l'Action NON DÉPENSÉE demande deux gestes.
   // La POLITIQUE est celle de l'entrée de registre `end-turn` (`battleEndTurn` arme puis finit) : la
   // plaque ne décide rien, elle passe par `runAction` comme la touche et LIT l'armement du combat.
-  const wastingAction = controlled && wastesAction(active, battle);
+  const wastingAction = wastesAction(active, battle);
   const arme = endTurnArmed(battle);
   const onEndTurn = () => runAction('end-turn', useGame.getState);
   // 3ᵉ ligne de la plaque de sortie : elle dit l'état VRAI du tour — l'armement du 2ᵉ geste, sinon
@@ -1071,10 +1086,14 @@ export function CombatConsole() {
     : [];
 
   return (
-    // LE PONT : la bande porteuse. Le bandeau de phase est son seul enfant HORS FLUX (superposé au
-    // parapet, `.cc-phase`) — une phase qui va et vient ne déplace donc aucune case.
+    <>
+    {/* BANDEAU D'OUVERTURE : enfant du CHAMP (`.stage`), jamais du pont — à l'ouverture il se pose
+        CENTRÉ EN HAUT de la carte (référence RT « round 0 »), au-dessus du terrain. */}
+    {ouverture && phase && <PhaseBanner {...phase} centre />}
+    {/* LE PONT : la bande porteuse, à HAUTEUR FIXE. Le bandeau de phase est son seul enfant HORS
+        FLUX (superposé au parapet, `.cc-phase`) — une phase qui va et vient ne déplace aucune case. */}
     <div className="combat-console" onContextMenu={avalerMenuNatif}>
-      {phase && <PhaseBanner {...phase} />}
+      {phase && !ouverture && <PhaseBanner {...phase} />}
       {!phase && !controlled && (
         <div className="cc-phase">
           {siegeDistant !== null ? (
@@ -1087,8 +1106,38 @@ export function CombatConsole() {
         </div>
       )}
 
-      {/* Les quatre RÉGIONS du pont, sur une seule ligne. */}
-      <div className="cc-dock">
+      {/* LES RÉGIONS DU PONT. Deux FORMES, une seule bande (arbitrage utilisateur 2026-08-24,
+          référence RT : « rond = on regarde, carré = on peut cliquer ; rien ne se grise, rien ne se
+          désactive — la console cesse d'être une console ») :
+          · COMPLÈTE — travée gauche · arche · travée droite · coin, quand ce siège tient le tour ;
+          · SPECTATRICE — le seul médaillon de l'actif, quand il ne le tient pas (ou à la pause de
+            Round). Ni travée, ni set, ni accès rapide, ni grille, ni gouttière, ni fin de tour. */}
+      <div className="cc-dock" data-forme={spectatrice ? 'spectatrice' : 'complete'}>
+      {spectatrice ? (
+        /* MÉDAILLON DE L'ACTIF : portrait dans son cadre ROND, son nom, ses Blessures (en teinte
+           HOSTILE quand c'est un adversaire — la couleur d'équipe du jeu, `ENEMY_TINT`) et son rack
+           d'États. Aucune primitive de plus : c'est `PortraitTile`, `LifeBar` et `StateChips`. */
+        <div data-medaillon="" data-hostile={active.kind === 'enemy' ? '' : undefined}>
+          <PortraitTile c={active} ring={ring} variant="identity" size="lg" team={active.kind === 'enemy' ? 'enemy' : 'ally'} />
+          <div data-corps="">
+            <span data-nom="">{active.label}</span>
+            <LifeBar
+              value={active.wounds.current}
+              max={active.wounds.max}
+              color={active.kind === 'enemy' ? ENEMY_TINT : hpColor(active.wounds.max > 0 ? Math.max(0, Math.min(1, active.wounds.current / active.wounds.max)) : 0)}
+              overlay
+              format={(v, m) => (
+                <>
+                  {v} / {m}
+                  <i> BLESSURES</i>
+                </>
+              )}
+            />
+            <StateChips c={active} max={ARCH_STATE_CELLS} reserve extra={actorStateChips(active, battle)} />
+          </div>
+        </div>
+      ) : (
+      <>
         {/* Travée GAUCHE (planche 2026-08-17) : COLONNE DE SETS · 2×3 cases (haute déduite du set,
             basse LIBRE) · rubrique ACCÈS RAPIDE 2×2. Le commutateur de sets N'EST PLUS une rangée
             sous la travée : il EST la colonne (chaque vignette commute son set, la touche X les fait
@@ -1140,11 +1189,10 @@ export function CombatConsole() {
               <div className="cc-arsenal-body">
                 {/* COLONNE DE SETS : SET_SLOTS vignettes, toujours dessinées (un set absent est une
                     vignette vide) — set au poing en relief, état de charge de l'arme mentionné. */}
-                {/* … et cette colonne n'existe QUE pour qui peut en avoir : un combattant sans set (toute
-                    créature, tout ennemi — aucun `loadouts`) rendait TROIS vignettes vides, un sélecteur
-                    qui ne sélectionne rien (affordance morte). Le héros CONTRÔLÉ, lui, garde ses places
-                    même à vide : c'est SON pont, sa géométrie ne doit pas battre au fil de son équipement. */}
-                {montreSets && (
+                {/* … et cette colonne est TOUJOURS dessinée dans la forme complète : celle-ci n'existe
+                    que pour le combattant que ce siège TIENT, dont la géométrie ne doit pas battre au
+                    fil de son équipement (un set absent est une vignette vide). Un porteur sans set —
+                    créature, ennemi — n'a plus de travée du tout : il a la forme spectatrice. */}
                 <div className="cc-sets" role="group" aria-label="Sets d’armes">
                   {Array.from({ length: SET_SLOTS }, (_, i) => {
                     const lo = loadouts[i];
@@ -1186,7 +1234,6 @@ export function CombatConsole() {
                       : vignette;
                   })}
                 </div>
-                )}
                 <div className="cc-grid cc-grid-left" aria-label="Arsenal">
                   {Array.from({ length: LEFT_CELLS }, (_, i) => (
                     <ConsoleCell key={i} cell={left[i]} hotkey={hotkeyOf(left[i])} ciblageArme={ciblageArme} cellRef={ancreDePanneau(left[i])} onGeste2e={left[i] ? () => declencher2e(left[i]!) : undefined} />
@@ -1296,6 +1343,8 @@ export function CombatConsole() {
             <span className="cc-key">{endNote}</span>
           </button>
         </div>
+      </>
+      )}
       </div>
 
       {/* Le panneau-paramètre du Sort à dissiper NAÎT de l'alvéole qui l'a DÉCLARÉ (`ancresPanneau`,
@@ -1342,5 +1391,6 @@ export function CombatConsole() {
         />
       )}
     </div>
+    </>
   );
 }

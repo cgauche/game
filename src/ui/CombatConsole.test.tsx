@@ -25,7 +25,7 @@ import { mdToText } from './Prose';
 import { CombatConsole } from './CombatConsole';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { hpColor } from '../gameIso/teamColors';
+import { hpColor, ENEMY_TINT } from '../gameIso/teamColors';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -50,7 +50,7 @@ let root: Root;
 
 /** Combat en cours : la console se monte sur le store réel. `turn` désigne l'acteur ACTIF dans
  *  l'ordre (`0` = le héros `h`, `1+` = les adversaires) — le tour adverse est un cas de contrat. */
-function monter(h: Combatant, opts: { foes?: Combatant[]; runBudget?: number; turn?: number } = {}) {
+function monter(h: Combatant, opts: { foes?: Combatant[]; runBudget?: number; turn?: number; action?: string } = {}) {
   const foes = opts.foes ?? [];
   const order = [h.id, ...foes.map((f) => f.id)];
   // Le `setState` passe par `act` : une console déjà montée est abonnée au store, le changement de
@@ -60,7 +60,7 @@ function monter(h: Combatant, opts: { foes?: Combatant[]; runBudget?: number; tu
       party: [h],
       battle: {
         combatants: [h, ...foes], order, baseOrder: order, turn: opts.turn ?? 0, round: 1,
-        action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
+        action: opts.action ?? null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
         acted: false, runBudget: opts.runBudget ?? 4, log: [], over: null,
       } as unknown as BattleState,
     });
@@ -287,22 +287,11 @@ describe('CombatConsole — arche', () => {
     expect(ordre.indexOf(barres[0])).toBeLessThan(ordre.indexOf(arch.querySelector('.cc-arch-name')!));
   });
 
-  // Spec zone 7 : « tour adverse/autre joueur/auto-combat = console en LECTURE (mêmes cases,
-  // inertes) » + §1c-bis (géométrie de l'arche immuable). L'arche de l'ennemi actif porte donc la
-  // MÊME structure que celle du héros — et les valeurs viennent du moteur, pas d'un masquage.
-  it('rend la MÊME arche au tour d’un ENNEMI : 2 gouttières, 2 socles, 4 alvéoles, barre et nom', () => {
-    const structure = () => {
-      const arch = host.querySelector('.cc-arch')!;
-      return {
-        gutters: arch.querySelectorAll('.cc-gutter').length,
-        move: arch.querySelectorAll('.cc-gutter-move').length,
-        action: arch.querySelectorAll('.cc-gutter-action').length,
-        socles: arch.querySelectorAll('.cc-socle').length,
-        alveoles: arch.querySelectorAll('.ptile-states[data-reserve] > *').length,
-        barres: arch.querySelectorAll('.life-bar').length,
-        noms: arch.querySelectorAll('.cc-arch-name').length,
-      };
-    };
+  // Au tour d'un adversaire, la console change de FORME — elle ne rend plus de cases du tout
+  // (`.claude/memory/user-arbitrage-tour-adverse-console-spectatrice-jamais-pont-entier.md`,
+  // 2026-08-24, qui porte le verbatim et sa référence RT). Le comportement mesuré ici SUPPLANTE
+  // celui que ce contrat verrouillait (spec zone 7 : « mêmes cases, inertes »).
+  it('tour d’un ENNEMI : plus une case ni une arche — un MÉDAILLON, PV en teinte hostile', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
     const e = foe('e1', 9, 9);
@@ -310,26 +299,23 @@ describe('CombatConsole — arche', () => {
     e.wounds = { current: 7, max: 12 };
 
     monter(h, { foes: [e] });
-    const auHeros = structure();
-    expect(auHeros).toEqual({ gutters: 2, move: 1, action: 1, socles: 2, alveoles: 4, barres: 1, noms: 1 });
+    expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('complete');
+    expect(host.querySelectorAll('.cc-cell').length, 'témoin : le pont complet a ses cases').toBeGreaterThan(0);
 
     monter(h, { foes: [e], turn: 1 });
-    expect(structure()).toEqual(auHeros);
-
-    // … et l'arche parle bien de l'ENNEMI : son nom, ses Blessures, ses États.
-    const arch = host.querySelector('.cc-arch')!;
-    expect(arch.querySelector('.cc-arch-name')!.textContent).toBe('Rat e1');
-    expect(arch.querySelector('.life-bar__value')!.textContent).toBe('7 / 12 BLESSURES');
-    const rack = niche()!;
-    expect(rack.querySelectorAll('.pt-state').length).toBe(1);
-    expect(rack.querySelector('.pt-n')!.textContent).toBe('2');
-
-    // Les socles disent la valeur RÉELLE du moteur pour cet acteur (aucun 0 de masquage).
-    const battle = useGame.getState().battle!;
-    const reste = movementRemaining(battle, e);
-    expect(reste).toBeGreaterThan(0);
-    expect(arch.querySelector('.cc-gutter-move .cc-socle')!.textContent).toBe(`${reste}MOUV.`);
-    expect(arch.querySelector('.cc-gutter-action .cc-socle')!.textContent).toBe('1ACTION');
+    expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('spectatrice');
+    for (const mort of ['.cc-cell', '.cc-arch', '.cc-bay', '.cc-sets', '.cc-quick', '.cc-grid', '.cc-gutter', '.cc-conduit', '.cc-corner']) {
+      expect(host.querySelectorAll(mort).length, `${mort} survit au tour de l’adversaire`).toBe(0);
+    }
+    // Le médaillon dit qui joue : son nom, ses Blessures RÉELLES (aucun masquage) en teinte hostile
+    // — la couleur d'équipe du jeu (`teintesJeu`), jamais un rouge recopié — et son rack d'États.
+    const med = host.querySelector('[data-medaillon]')!;
+    expect(med.getAttribute('data-hostile')).toBe('');
+    expect(med.querySelector('[data-nom]')!.textContent).toBe('Rat e1');
+    expect(med.querySelector('.life-bar__value')!.textContent).toBe('7 / 12 BLESSURES');
+    expect(parseColor((med.querySelector('.life-bar__fill') as HTMLElement).style.background)).toEqual(parseColor(ENEMY_TINT));
+    expect(med.querySelectorAll('.pt-state').length).toBe(1);
+    expect(med.querySelector('.pt-n')!.textContent).toBe('2');
   });
 });
 
@@ -619,7 +605,7 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     // La composition compacte redimensionne bien la boîte — par la VARIABLE de portrait, une seule
     // source pour les trois boîtes (tuile, face, dessin), au lieu de trois littéraux `!important`.
     const at560 = mediaBlock(CC_CSS, '@media (max-width: 560px)');
-    expect(parseFloat(decl(ruleOf(at560, '.combat-console'), '--cc-portrait')!)).toBeLessThanOrEqual(40);
+    expect(parseFloat(decl(ruleOf(at560, ':root'), '--cc-portrait')!)).toBeLessThanOrEqual(40);
     const boites = ruleOf(CC_BASE, '.cc-arch .ptile, .cc-arch .ptile-face, .cc-arch .rig-portrait');
     expect(decl(boites, 'width')).toBe('var(--cc-portrait) !important');
     const svg = ruleOf(CC_BASE, '.cc-arch .rig-portrait > svg');
@@ -639,8 +625,12 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     const arch = host.querySelector('.cc-arch')!;
     expect(arch.querySelectorAll('.team-ally, .team-enemy').length).toBe(1);
     expect(arch.querySelector('.ptile')!.classList.contains('team-ally')).toBe(true);
+    // … et au tour de l'adversaire (forme SPECTATRICE, arbitrage 2026-08-24), le médaillon porte le
+    // camp au même endroit : une seule fois, sur la tuile.
     monter(h, { foes: [foe('e1', 9, 9)], turn: 1 });
-    expect(host.querySelector('.cc-arch .ptile')!.classList.contains('team-enemy')).toBe(true);
+    const med = host.querySelector('[data-medaillon]')!;
+    expect(med.querySelectorAll('.team-ally, .team-enemy').length).toBe(1);
+    expect(med.querySelector('.ptile')!.classList.contains('team-enemy')).toBe(true);
   });
 
   // C-4 (R-M2) : « Mouve… », « Déter… » + « 3 » orphelin à 360 — la boîte à deux lignes ne pose son
@@ -719,10 +709,13 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     const auHeros = enFlux();
     const casesHeros = host.querySelectorAll('.cc-cell').length;
 
-    monter(h, { foes: [e], turn: 1 });
+    // Un INTERLUDE de ciblage fait naître le bandeau SUR le tour du joueur : le pont garde alors
+    // exactement le même flux et le même compte de cases (loi 1) — c'est ce que ce contrat mesure.
+    // (Le tour de l'adversaire, lui, change de FORME depuis l'arbitrage 2026-08-24 : il ne peut plus
+    // servir de témoin de géométrie constante.)
+    monter(h, { foes: [e], action: 'battery' });
     expect(host.querySelectorAll('.cc-phase').length).toBe(1);
     expect(enFlux()).toEqual(auHeros);
-    // … et la géométrie ne perd pas une case au passage (loi 1).
     expect(host.querySelectorAll('.cc-cell').length).toBe(casesHeros);
     // La hauteur du pont ne dépend pas non plus de l'ACTEUR : la rangée du matériel n'est montée
     // que si l'acteur a de quoi commuter (mesuré à l'écran : 219,3 → 202,3px de pont quand le Loup
@@ -747,7 +740,7 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     expect(decl(arche, 'border-top')).toBe(decl(bande, 'border-top'));
     // Elle S'ÉLÈVE au-dessus du liseré au lieu d'être posée devant (planche : 811 vs 863).
     expect(decl(arche, 'margin-top')).toBe('calc(-1 * var(--cc-fronton))');
-    expect(parseFloat(decl(bande, '--cc-fronton')!)).toBeGreaterThan(0);
+    expect(parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-fronton')!)).toBeGreaterThan(0);
     // … et structurellement, elle est DANS le pont, jamais une soeur flottante.
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
@@ -775,7 +768,10 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     expect(cols.match(/1fr/g)?.length, `voies du pont : « ${cols} »`).toBe(2);
     expect(cols.split(/\s+(?![^(]*\))/).length).toBe(4);
     // La réserve miroir vaut EXACTEMENT le coin + un écart de région — l'identité p = coin + g.
-    expect(norm(decl(dock, 'padding-left')!)).toBe('calc(var(--cc-corner) + var(--cc-bay-gap))');
+    // La MARGE INTERNE de la bande (arbitrage 2026-08-24 : les régions ne touchent plus le bord de
+    // l'écran) s'ajoute des DEUX côtés : c'est la DIFFÉRENCE des deux rembourrages qui centre.
+    expect(norm(decl(dock, 'padding-left')!)).toBe('calc(var(--cc-corner) + var(--cc-bay-gap) + var(--cc-marge))');
+    expect(norm(decl(dock, 'padding-right')!)).toBe('var(--cc-marge)');
     // … et le coin tire sa largeur du MÊME token : la réserve ne peut pas se désynchroniser de lui.
     expect(decl(ruleOf(CC_BASE, '.cc-end'), 'width')).toBe('var(--cc-corner)');
     expect(parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-corner')!)).toBeGreaterThan(0);
@@ -878,6 +874,126 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
 
 // ── ÉTAT DE CHARGE : la case G4 lit le REGISTRE de l'arme (`engine/weaponLoad`), jamais un champ du
 //    porteur. Un pistolet et une arbalète tenus par le même héros ont chacun leur cycle (LDB 62 l.335).
+/**
+ * TROIS FORMES, UNE SEULE BANDE — la console rend le pont COMPLET, la forme SPECTATRICE ou
+ * l'OUVERTURE ; la RÉSERVE de la bande, elle, est la même dans les trois (fiches
+ * `.claude/memory/user-arbitrage-tour-adverse-console-spectatrice-jamais-pont-entier.md` et
+ * `…/user-arbitrage-round0-forme-rt-et-splash-conserve.md`, 2026-08-24). C'est ce qui permet au
+ * bandeau de phase de vivre au-dessus du liseré sans jitter.
+ * La mise en page RENDUE (débord, hauteur réelle, recouvrements) se mesure au navigateur —
+ * `scripts/recette/console-pont-formes.mjs` : jsdom ne fait pas de layout, ces contrats-ci ne
+ * jugent que ce que le CSS DÉCLARE.
+ */
+describe('CombatConsole — trois formes, une seule bande', () => {
+  /** Les trois formes, montées pour de vrai. */
+  function formes() {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    const e = foe('e1', 9, 9);
+    const releve = () => {
+      const dock = host.querySelector('.cc-dock')!;
+      return { forme: dock.getAttribute('data-forme'), cases: host.querySelectorAll('.cc-cell').length, medaillons: host.querySelectorAll('[data-medaillon]').length };
+    };
+    monter(h, { foes: [e] });
+    const complete = releve();
+    monter(h, { foes: [e], turn: 1 });
+    const spectatrice = releve();
+    act(() => { useGame.setState({ pendingRoundStart: { round: 1, readyBySeat: {} } as never }); });
+    const ouverture = releve();
+    act(() => { useGame.setState({ pendingRoundStart: null }); });
+    return { complete, spectatrice, ouverture };
+  }
+
+  it('la FORME dit l’état : cases + arche quand ce siège joue, médaillon seul sinon', () => {
+    const { complete, spectatrice, ouverture } = formes();
+    expect(complete.forme).toBe('complete');
+    expect(complete.cases).toBeGreaterThan(0);
+    expect(complete.medaillons).toBe(0);
+    for (const f of [spectatrice, ouverture]) {
+      expect(f.forme).toBe('spectatrice');
+      expect(f.cases).toBe(0);
+      expect(f.medaillons).toBe(1);
+    }
+  });
+
+  it('la RÉSERVE de bande est déclarée UNE fois, en PLANCHER, et aucune forme ne la reprend', () => {
+    // PLANCHER (`min-height`), jamais couperet : une hauteur imposée AMPUTAIT le pont dès que son
+    // contenu réel dépassait la réserve (mesuré : nom du héros 9px hors écran, plaque de sortie
+    // 7px, travée droite 17px à 900×800). La réserve, elle, est la même dans les trois formes.
+    expect(norm(decl(ruleOf(CC_BASE, '.cc-dock'), 'min-height')!)).toBe('calc(var(--cc-deck-h) - 3px)');
+    expect(decl(ruleOf(CC_BASE, '.cc-dock'), 'height'), 'une hauteur imposée ampute').toBeNull();
+    expect(decl(ruleOf(CC_BASE, '.combat-console'), 'height'), 'une hauteur imposée ampute').toBeNull();
+    // AUCUNE règle keyée sur une FORME ne touche à une grandeur de hauteur : c'est ce qui garantit
+    // que les trois formes se superposent au pixel. Une mutation qui poserait `height: auto` sur une
+    // forme rougirait ici.
+    for (const bloc of [...CC_CSS.matchAll(/\.cc-dock\[data-forme[^{]*\{([^}]*)\}/g)]) {
+      for (const p of ['height', 'min-height', 'max-height', 'padding-top', 'padding-bottom']) {
+        expect(decl(bloc[1], p), `une forme règle « ${p} » : la bande bat d’une forme à l’autre`).toBeNull();
+      }
+    }
+    // … et le médaillon ne pose lui non plus aucune hauteur : il s'assied dans la bande.
+    for (const p of ['height', 'min-height']) expect(decl(ruleOf(CC_BASE, '.cc-dock [data-medaillon]'), p)).toBeNull();
+  });
+
+  it('le bandeau d’OUVERTURE s’ancre sur des grandeurs DÉCLARÉES, jamais sur un nombre sans origine', () => {
+    // Le recouvrement se juge sur des BOÎTES RENDUES, que jsdom ne calcule pas : c'est
+    // `scripts/recette/console-pont-formes.mjs` qui refuse tout chevauchement de la bande de groupe,
+    // de la frise, du rail, du fil et du pont — à six largeurs, dans les trois formes.
+    // ANGLE MORT DÉCLARÉ de ce contrat-ci : il ne juge que l'ANCRAGE déclaré.
+    // Au-delà de 900, le bandeau se pose en haut du champ, sous la zone haute.
+    const ouv = ruleOf(CC_BASE, ".cc-phase[data-phase='ouverture']");
+    expect(decl(ouv, 'top')).toBe('var(--cc-ouverture-top)');
+    expect(decl(ouv, 'bottom')).toBe('auto');
+    expect(decl(ouv, 'left')).toBe('50%');
+    expect(decl(ouv, 'transform')).toBe('translateX(-50%)');
+    expect(parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-ouverture-top')!)).toBeGreaterThan(0);
+    // Cette position tient jusqu'à 701px inclus (mesuré libre de tout recouvrement à 901, 900, 800
+    // et 701). Sous 700 SEULEMENT — là où la frise quitte sa colonne pour une bande haute et où le
+    // fil monte en haut du champ — il descend AU-DESSUS du pont, en RELISANT la réserve de celui-ci
+    // (jamais un littéral qui dériverait au premier réglage de densité).
+    expect(mediaBlock(CC_CSS, '@media (max-width: 900px)'), 'la tranche 700-900 n’est pas contrainte : le bandeau y garde le haut')
+      .not.toContain("data-phase='ouverture'");
+    const ouv700 = ruleOf(mediaBlock(CC_CSS, '@media (max-width: 700px)'), ".cc-phase[data-phase='ouverture']");
+    expect(decl(ouv700, 'top')).toBe('auto');
+    expect(decl(ouv700, 'bottom')).toContain('var(--cc-deck-h)');
+    // … et le fil de combat s'ancre sur la MÊME réserve : les deux se rangent dans le même repère.
+    expect(decl(ruleOf(MODALS_BASE, '.combat-feed'), 'bottom')).toContain('var(--cc-deck-h)');
+  });
+
+  it('la forme SPECTATRICE ne publie AUCUN slot au pont clavier (pas de touche sans case)', () => {
+    // Contrat de `hotbarBridge` : la console publie ses cases VISIBLES. En forme spectatrice il n'y
+    // a plus une seule case à l'écran — une touche encore branchée y tirerait sur une affordance
+    // invisible (seul le verdict d'offre du registre l'en empêchait).
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    const e = foe('e1', 9, 9);
+    monter(h, { foes: [e] });
+    expect(hotbar.slots.length, 'témoin : le pont complet publie ses cases').toBeGreaterThan(0);
+    monter(h, { foes: [e], turn: 1 });
+    expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('spectatrice');
+    expect(hotbar.slots, 'des touches restent branchées sur un pont sans case').toEqual([]);
+    // … et à l'ouverture non plus (le pont y est un médaillon).
+    monter(h, { foes: [e] });
+    act(() => { useGame.setState({ pendingRoundStart: { round: 1, readyBySeat: {} } as never }); });
+    expect(hotbar.slots).toEqual([]);
+    act(() => { useGame.setState({ pendingRoundStart: null }); });
+  });
+
+  it('la sonde de RECETTE du pont existe et mesure les trois formes aux largeurs canon', () => {
+    // Un contrat de mise en page sans mesure de rendu est aveugle : le script qui la porte doit
+    // exister, être exécutable, et couvrir les largeurs de la charte.
+    const sonde = readFileSync(join(process.cwd(), 'scripts', 'recette', 'console-pont-formes.mjs'), 'utf8');
+    for (const w of [900, 800, 700, 560, 360]) expect(sonde, `largeur ${w} non sondée`).toContain(String(w));
+    expect(sonde).toContain('scrollHeight');
+    expect(sonde).toContain('data-forme');
+    // Elle mesure la bande RENDUE contre la bande DÉCLARÉE, les recouvrements du pont, et elle sait
+    // se RÉFUTER (`--stress` : le contenu de l'arche dérive, la sonde doit rougir).
+    expect(sonde).toContain('deckDeclare');
+    expect(sonde).toContain('pontSurFil');
+    expect(sonde).toContain('SONDE AVEUGLE');
+  });
+});
+
 describe('CombatConsole — case Recharger : le porteur de l’état est l’ARME', () => {
   /** Arme à distance NUE (sans `uid`) : son registre de charge est l'instance d'arme elle-même. */
   function pistolet(load: Partial<Weapon>): Weapon {
@@ -1544,10 +1660,16 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
   // CONTENU. Le contrat verrouille l'invariance PAR CONSTRUCTION (hauteur fixe, pas un plancher).
   it('E-3 — la hauteur du pont est FIXE : la rangée de munition est réservée, jamais ajoutée', () => {
     const bay = ruleOf(CC_BASE, '.cc-bay-left');
-    expect(decl(bay, 'height')).toBe('var(--cc-bay-h)');
-    expect(decl(bay, 'min-height'), 'un PLANCHER laisse le pont grandir avec la munition').toBeNull();
+    // La travée prend la hauteur de la BANDE : c'est la bande qui porte la réserve (`--cc-deck-h`),
+    // et la travée ne peut donc plus grandir seule au fil de son contenu.
+    expect(decl(bay, 'height')).toBe('100%');
+    expect(decl(bay, 'min-height'), 'un PLANCHER laisse la travée grandir avec la munition').toBeNull();
     const racine = ruleOf(CC_BASE, ':root');
-    expect(norm(decl(racine, '--cc-deck-h')!)).toBe('calc(var(--cc-bay-h) + 3px)');
+    // La réserve de bande vaut la plus HAUTE des régions — la travée, ou l'arche diminuée de ce
+    // qu'elle franchit — plus le liseré. Une réserve calée sur la seule travée AMPUTAIT l'arche
+    // (mesuré 17px de contenu coupé à 900×800, `scripts/recette/console-pont-formes.mjs`).
+    expect(norm(decl(racine, '--cc-deck-h')!)).toBe('calc(max(var(--cc-bay-h), var(--cc-arch-h) - var(--cc-fronton)) + 3px)');
+    expect(norm(decl(racine, '--cc-arch-h')!)).toBe('calc(var(--cc-portrait) + var(--cc-arch-chrome))');
     // Ces 3px sont bien le liseré du pont, pas un nombre en l'air.
     expect(decl(ruleOf(CC_BASE, '.combat-console'), 'border-top')).toMatch(/^3px /);
     // Tant que le pont est une LIGNE (≥561), aucune tranche ne rejoue la hauteur de la travée : seul le
@@ -1564,6 +1686,8 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
     const at560 = mediaBlock(CC_CSS, '@media (max-width: 560px)');
     expect(decl(ruleOf(at560, '.cc-bay-left'), 'height')).toBe('auto');
     expect(decl(ruleOf(at560, '.cc-bay-left'), 'min-height')).toBeNull();
+    // … et le fronton y rentre dans le rang, au `:root` : la réserve de bande le lit.
+    expect(parseFloat(decl(ruleOf(at560, ':root'), '--cc-fronton')!)).toBe(0);
     // … et la travée ne porte AUCUNE bande réservée : la munition vit dans l'EN-TÊTE, à côté du set
     // (arbitrage #1348 complément a — 47px de plaque NUE mesurés sous les travées avant la coupe).
     const objet = (id: string, uid: string, over: Partial<ItemInstance> = {}) => Object.assign(itemFromTrappingById(id)!, { uid }, over);
@@ -1627,21 +1751,39 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
   // Loi de composition tenue ici : une SEULE matière pour le pont et ses trois plaques ; la région se
   // distingue par son liseré et ses alvéoles. Trace de la décision : `combat-console.css` en tête des
   // travées.
-  it('E-5 — MATIÈRE UNIQUE : les deux travées et le coin portent la nappe du pont, aucun plat propre', () => {
-    const nappe = decl(ruleOf(CC_BASE, '.cc-bay-left, .cc-bay-right, .cc-end'), 'background')!;
-    expect(nappe).toMatch(/--cc-arch-/);
-    // Chaque arrêt de la plaque est un arrêt de la NAPPE du pont : même famille de teinte, à la lettre.
-    const pont = colorsIn(decl(ruleOf(CC_BASE, '.combat-console'), 'background-image')!);
-    for (const c of colorsIn(nappe)) {
-      expect(pont.some((p) => p.join() === c.join()), `teinte de plaque hors de la nappe du pont : ${c}`).toBe(true);
+  // E-5 — spec §1c-ter (« UN PONT CONTINU pleine largeur : bande
+  // unique de bord à bord […] avec son LISERÉ HAUT continu ; les travées, les pages, le conduit
+  // d'Avantage et le coin Fin du tour sont des RÉGIONS — jamais des boîtes sœurs flottantes »).
+  // Mesuré avant : quatre liserés DIFFÉRENTS par région (acier 0,67px à gauche, or 2,67px à l'arche,
+  // brun 0,67px à droite) et quatre bandes de matière plus sombre entre les zones, lues comme des
+  // trous de carte. Le contrat : UN SEUL élément peint la bande, les régions ne peignent RIEN.
+  it('E-5 — BANDE CONTINUE : un seul élément porte le fond ET le liseré ; aucune région n’en peint', () => {
+    const bande = ruleOf(CC_BASE, '.combat-console');
+    // La bande est opaque, de bord à bord, et porte le liseré haut — une seule fois.
+    expect(decl(bande, 'background-image')).toMatch(/linear-gradient/);
+    expect(parseColor(decl(bande, 'background-color')!)[3]).toBe(1);
+    expect(decl(bande, 'border-top')).toBeTruthy();
+    // AUCUNE région n'a plus de fond ni de bordure propre : ni les deux travées, ni le coin.
+    for (const sel of ['.cc-bay', '.cc-bay-left', '.cc-bay-right', '.cc-corner']) {
+      for (const p of ['background', 'background-image', 'background-color', 'border', 'border-top', 'box-shadow']) {
+        expect(decl(ruleOf(CC_BASE, sel), p), `${sel} peint encore « ${p} » : la couture revient`).toBeNull();
+      }
     }
-    // Aucune région ne redéclare un fond propre (acier bleu, laiton, rouge de coin).
-    for (const sel of ['.cc-bay-left', '.cc-bay-right', '.cc-end']) {
-      expect(decl(ruleOf(CC_BASE, sel), 'background'), `${sel} garde un plat de couleur`).toBeNull();
-    }
+    // … et la règle qui donnait une nappe aux régions a disparu de la feuille entière (tranches
+    // responsives comprises) : une nappe de région rouvre un liseré à chaque écart.
+    expect(CC_CSS).not.toMatch(/\.cc-bay-left,\s*\n?\s*\.cc-bay-right/);
     expect(CC_CSS, 'le rouge de la plaque de sortie doit avoir disparu').not.toMatch(/--cc-end-(hi|lo)\b/);
-    // Ce qui distingue les régions, ce sont les LISERÉS et les alvéoles — donc ils restent, et diffèrent.
-    expect(borderColorOf(ruleOf(CC_BASE, '.cc-bay-left'))).not.toEqual(borderColorOf(ruleOf(CC_BASE, '.cc-bay-right')));
+    // SEULE EXCEPTION, et elle est le FRONTON : l'arche s'élève AU-DESSUS du liseré (la figurine
+    // dépasse), il lui faut donc sa matière là-haut — la MÊME que la bande, prolongement compris
+    // (contrat P-3). Elle ne peint aucun flanc : `border: 0`.
+    const arche = ruleOf(CC_BASE, '.cc-arch');
+    expect(decl(arche, 'background-image')).toBe(decl(bande, 'background-image'));
+    expect(decl(arche, 'border-top')).toBe(decl(bande, 'border-top'));
+    expect(decl(arche, 'border')).toBe('0');
+    // Ce qui distingue une région n'est plus que ses ALVÉOLES : le coin porte les tokens de case, il
+    // n'a plus de plaque à lui.
+    expect(decl(ruleOf(CC_BASE, '.cc-corner'), '--cc-cell-edge')).toBeTruthy();
+    expect(decl(ruleOf(CC_BASE, '.cc-end'), 'border')).toBeNull();
   });
 });
 
@@ -1795,20 +1937,30 @@ describe('CombatConsole — budget de hauteur du pont (arbitrage user 2026-08-17
     expect(host.querySelector('.cc-bay-head [data-ammo]')).toBeNull();
   });
 
-  it('G-3 — le PORTRAIT se dérive de l’arche (il la remplit), il n’est plus figé à la taille de la primitive', () => {
+  it('G-3 — le PORTRAIT se dérive de l’ALVÉOLE, et il DOMINE l’arche sans jamais la faire grandir', () => {
+    const racine = ruleOf(CC_BASE, ':root');
     const cc = ruleOf(CC_BASE, '.combat-console');
-    const portrait = decl(cc, '--cc-portrait')!;
-    expect(portrait, 'le portrait doit suivre la hauteur du pont ET l’élévation du fronton').toMatch(/var\(--cc-deck-h\)/);
-    expect(portrait).toMatch(/var\(--cc-fronton\)/);
-    // Il DOMINE la région (planche) : au moins la moitié de la hauteur d'arche.
-    const part = Number(/\*\s*([\d.]+)\s*\)/.exec(portrait)![1]);
-    expect(part, `portrait/arche = ${part}`).toBeGreaterThanOrEqual(0.5);
-    expect(part, 'un portrait qui déborde l’arche mangerait gouttières, barre et nom').toBeLessThanOrEqual(0.7);
+    const portrait = decl(racine, '--cc-portrait')!;
+    // Il suit le CÔTÉ D'ALVÉOLE — une grandeur d'ENTRÉE. Dérivé de la hauteur du pont, il la
+    // faisait croître à son tour (portrait ∝ pont ∝ arche ∝ portrait) : le point fixe de cette
+    // boucle sortait du budget de hauteur, et toute valeur en deçà amputait l'arche.
+    expect(portrait, 'le portrait doit suivre le côté d’alvéole, jamais la hauteur du pont').toMatch(/var\(--cc-cell-h\)/);
+    expect(portrait, 'la boucle portrait→pont→arche→portrait est rouverte').not.toMatch(/--cc-deck-h|--cc-arch-h/);
+    // Il DOMINE l'arche (planche) : au moins la moitié de sa hauteur, à tout écran de bureau.
+    for (const [vw, vh] of ECRANS) {
+      const p = evalLen(portrait, vw, vh);
+      const arche = evalLen(decl(racine, '--cc-arch-h')!, vw, vh);
+      expect(p / arche, `${vw}×${vh} : portrait ${p.toFixed(1)} / arche ${arche.toFixed(1)}`).toBeGreaterThanOrEqual(0.5);
+      expect(p / arche, 'un portrait qui déborde l’arche mangerait gouttières, barre et nom').toBeLessThanOrEqual(0.75);
+    }
     // La règle qui l'applique reprend bien le style INLINE de la primitive (sinon rien ne bouge).
     const appl = ruleOf(CC_BASE, '.cc-arch .ptile, .cc-arch .ptile-face, .cc-arch .rig-portrait');
     expect(decl(appl, 'height')).toBe('var(--cc-portrait) !important');
     // Le rail des gouttières suit le portrait (il ne peut pas rester plus haut que lui).
     expect(decl(cc, '--cc-rail')!).toMatch(/var\(--cc-portrait\)/);
+    // Le CHROME de l'arche (tout ce qui n'est pas le portrait) est une grandeur MESURÉE au
+    // navigateur, pas un nombre en l'air : c'est lui qui complète la réserve de bande.
+    expect(parseFloat(decl(racine, '--cc-arch-chrome')!)).toBeGreaterThan(0);
     expect(decl(ruleOf(CC_BASE, '.cc-gutter-rail'), 'height')).toBe('var(--cc-rail)');
   });
 
@@ -2092,12 +2244,23 @@ describe('CombatConsole — COOP : la console suit la POSSESSION, jamais le mode
     expect(hotbar.slots.some((s) => !s.disabled), 'aucune case branchée : le pont clavier est mort').toBe(true);
   });
 
-  it('C-2 — le tour du héros d’un AUTRE siège reste en LECTURE (mêmes cases, inertes)', () => {
+  // Le tour d'un AUTRE siège est un tour non contrôlé comme un autre : la console y prend la FORME
+  // SPECTATRICE (même fiche que le tour d'un ennemi,
+  // `.claude/memory/user-arbitrage-tour-adverse-console-spectatrice-jamais-pont-entier.md`).
+  // Ce contrat verrouillait « mêmes cases, inertes ».
+  it('C-2 — le tour du héros d’un AUTRE siège : forme SPECTATRICE, et la puce nomme le siège', () => {
     monterCoop(1); // tour de « h2 », possédé par le siège 1
     expect(enAttente(), 'le tour d’autrui doit porter sa bande d’attente').toBe(true);
-    expect((host.querySelector('[data-cell="end-turn"]') as HTMLButtonElement).disabled).toBe(true);
-    // Les cases VIDES sont des `span` (la géométrie ne bouge pas) : ce sont les alvéoles BOUTON qu'on compte.
-    expect(host.querySelectorAll('button.cc-cell:not([disabled])').length, 'aucune case ne doit être cliquable').toBe(0);
+    expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('spectatrice');
+    // Plus une seule case à cliquer — parce qu'il n'y a plus une seule case. Rien n'est grisé.
+    expect(host.querySelectorAll('.cc-cell').length, 'les cases survivent au tour d’autrui').toBe(0);
+    expect(host.querySelector('[data-cell="end-turn"]'), 'la plaque de fin de tour survit').toBeNull();
+    // Le médaillon montre l'ALLIÉ que l'autre siège joue (jamais en teinte hostile), et la puce coop
+    // reste : c'est elle qui dit QUI joue.
+    const med = host.querySelector('[data-medaillon]')!;
+    expect(med.getAttribute('data-hostile')).toBeNull();
+    expect(med.querySelector('[data-nom]')!.textContent).toBe('Rolf');
+    expect(host.querySelector('.spectator-chip'), 'la puce coop doit rester').not.toBeNull();
   });
 });
 
@@ -3191,28 +3354,57 @@ describe('CombatConsole — le pont d’OUVERTURE est celui du JOUEUR, et n’of
     const knud = foe('e1', 9, 9);
     knud.label = 'Knud';
     ouverture(h, knud);
-    // Le bandeau de phase est bien là (la géométrie ne bouge pas), mais l'identité du pont est CELLE
-    // DU JOUEUR : c'est son portrait, son nom, ses ressources — pas l'inventaire d'un ennemi.
+    // Le bandeau de phase est bien là, mais l'identité du médaillon est CELLE DU JOUEUR : son
+    // portrait, son nom — jamais l'adversaire qui ouvre l'initiative.
     expect(host.querySelector('.cc-phase'), 'la pause de Round garde son bandeau').toBeTruthy();
-    expect(host.querySelector('.cc-arch-name')?.textContent).toBe('Gunnar');
-    expect(host.querySelector('.cc-arch .ptile')?.classList.contains('team-enemy'),
+    expect(host.querySelector('[data-nom]')?.textContent).toBe('Gunnar');
+    expect(host.querySelector('[data-medaillon] .ptile')?.classList.contains('team-enemy'),
       'le cadre du joueur portait un ennemi').toBe(false);
   });
 
-  it('un combattant SANS set ne rend AUCUN sélecteur de sets (trois vignettes mortes)', () => {
-    // Tour d'un ennemi : la console est en LECTURE sur lui. Il n'a pas de `loadouts` (aucun ennemi
-    // n'en a) — la colonne de sets n'a alors rien à offrir, elle n'existe pas.
+  // À l'ouverture, le bandeau et son bouton quittent le coin du pont pour le champ, centrés, et la
+  // console basse est un MÉDAILLON — jamais un pont entier (fiche
+  // `.claude/memory/user-arbitrage-round0-forme-rt-et-splash-conserve.md`, 2026-08-24, qui porte le
+  // verbatim et la capture RT de référence). Ce contrat remplace celui qui vérifiait qu'un ennemi
+  // sans set ne rendait pas de sélecteur de sets : il n'a plus de travée du tout.
+  it('OUVERTURE : bandeau CENTRÉ hors du pont, médaillon d’un héros, pas une seule case', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
-    const bete = foe('e1', 9, 9);
-    delete (bete as { loadouts?: unknown }).loadouts; // aucune créature du bestiaire n'en porte
-    monter(h, { foes: [bete], turn: 1 });
-    expect(host.querySelector('.cc-arsenal-body'), 'témoin : la travée gauche est bien rendue').toBeTruthy();
-    expect(host.querySelector('.cc-sets'), 'un sélecteur de sets sans aucun set à sélectionner').toBeNull();
-    // CONTRE-ÉPREUVE : le héros CONTRÔLÉ garde ses places, même sans set équipé — sa géométrie ne
-    // doit pas battre au fil de son équipement.
-    monter(h, { foes: [foe('e1', 9, 9)] });
-    expect(host.querySelectorAll('.cc-sets .cc-set').length).toBe(3);
+    const knud = foe('e1', 9, 9);
+    knud.label = 'Knud';
+    ouverture(h, knud);
+
+    // Le bandeau quitte le pont : il est enfant du CHAMP, pas de la console (il flotte sur la carte).
+    const bandeau = host.querySelector('.cc-phase[data-phase="ouverture"]')!;
+    expect(bandeau, 'aucun bandeau d’ouverture centré').not.toBeNull();
+    expect(host.querySelector('.combat-console')!.contains(bandeau), 'le bandeau est resté DANS le pont').toBe(false);
+    expect(bandeau.textContent).toContain('Ouverture du combat');
+    expect(bandeau.querySelector('button[data-action="round-start"]')!.textContent).toContain('Commencer le combat');
+    // … et il est CENTRÉ EN HAUT : ancré au haut du champ, ramené au centre par sa demi-largeur.
+    const regle = ruleOf(CC_BASE, ".cc-phase[data-phase='ouverture']");
+    expect(decl(regle, 'top')).toBe('var(--cc-ouverture-top)');
+    expect(decl(regle, 'bottom')).toBe('auto');
+    expect(decl(regle, 'left')).toBe('50%');
+    expect(decl(regle, 'transform')).toBe('translateX(-50%)');
+    expect(parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-ouverture-top')!)).toBeGreaterThan(0);
+    // La console basse : un médaillon, et RIEN d'autre (ni case, ni set, ni fin de tour).
+    expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('spectatrice');
+    expect(host.querySelectorAll('.cc-cell').length, 'une case à l’ouverture').toBe(0);
+    expect(host.querySelectorAll('.cc-sets').length).toBe(0);
+    expect(host.querySelector('[data-nom]')!.textContent).toBe('Gunnar');
+    // Aucun second bandeau sur le parapet : le message ne se dédouble pas.
+    expect(host.querySelectorAll('.cc-phase').length).toBe(1);
+  });
+
+  it('PAUSE DE ROUND SUIVANTE : le bandeau reste sur le PONT (l’arbitrage ne vise que l’ouverture)', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    ouverture(h, foe('e1', 9, 9));
+    act(() => { useGame.setState({ pendingRoundStart: { round: 3, readyBySeat: {} } as never }); });
+    const bandeau = host.querySelector('.cc-phase')!;
+    expect(bandeau.getAttribute('data-phase'), 'le round 3 n’est pas une ouverture').toBe('pont');
+    expect(host.querySelector('.combat-console')!.contains(bandeau)).toBe(true);
+    expect(bandeau.textContent).toContain('Début du Round 3');
   });
 });
 

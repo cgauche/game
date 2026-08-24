@@ -75,6 +75,28 @@ frise d'initiative, la piste `.is-tiles` défile au lieu de déborder, et la bo�
 bandeau d'objectif n'avale rien hors de sa tête. Exit ≠ 0 avec la liste des défauts. Les cliquets
 CSS (`src/ui/ui-ratchets.test.ts`) lisent des déclarations ; ce script mesure le rendu.
 
+### CLI — `scripts/recette/console-pont-formes.mjs`
+
+```
+node scripts/recette/console-pont-formes.mjs
+node scripts/recette/console-pont-formes.mjs --widths 900,700 --mesures
+node scripts/recette/console-pont-formes.mjs --stress 105
+```
+
+Mesure le PONT DE CONSOLE dans ses TROIS formes — pont complet (tour du joueur), forme spectatrice
+(tour non contrôlé), ouverture de combat — à 1600/1100/900/800/700/560/360. Refuse : une région qui
+ampute son contenu (`scrollHeight > clientHeight` sur `.cc-dock` et chacune de ses régions), une
+bande dont la hauteur RENDUE s'écarte de sa hauteur DÉCLARÉE (`--cc-deck-h`), un contrôle du pont
+qui sort du champ, un pont qui recouvre le fil ou la frise, une bande dont la hauteur CHANGE d'une
+forme à l'autre (au-delà de 700, là où le pont est une ligne), un bandeau d'ouverture qui recouvre
+la bande de groupe, la frise, le rail, le fil ou le pont — ou qui quitte le HAUT de la carte tant
+que la zone haute le permet —, un médaillon décentré.
+`--mesures` imprime les mesures sans verdict : c'est ainsi que se dimensionnent `--cc-deck-h` et
+`--cc-arch-chrome` (`src/ui/styles/combat-console.css`), que jsdom ne peut pas calculer — le bloc
+`arche {h, pad, gap, enfants[], portrait}` donne le chrome par `h − portrait`.
+`--stress <px>` fait DÉRIVER le contenu de l'arche et INVERSE le verdict : la sonde doit rougir,
+sinon elle est déclarée aveugle (exit 1). Exit ≠ 0 avec la liste des défauts.
+
 ### Socle — `scripts/recette/lib.mjs`
 
 | Fonction | Rôle |

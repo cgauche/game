@@ -41,6 +41,9 @@
   /* Largeur du coin de sortie (plaque `.cc-end`) : elle sert DEUX fois — la plaque elle-même et la
      réserve miroir qui centre le fronton. Un littéral recopié aurait dérivé. */
   --cc-corner: 64px;
+  /* MARGE INTERNE de la bande : ce qui sépare une région du bord de l'écran. Elle vaut des deux
+     côtés, la réserve miroir du coin la reprend donc telle quelle. */
+  --cc-marge: 10px;
   /* HAUTEUR DE LA TRAVÉE, donc du pont : deux rangées d'alvéoles + leur écart + le socle de travée
      (bande de titre des groupes, rembourrages, filet). C'est une hauteur FIXE, pas un plancher : la
      travée ne dépasse jamais sa boîte, le bord haut du pont ne dépend d'AUCUN contenu.
@@ -48,8 +51,31 @@
      (arbitrage #1348, spec § « BUDGET DE HAUTEUR » complément a). Ces 34px (rangée 26 + son écart 8)
      étaient de la plaque NUE sous TOUS les sets — 47px mesurés à l'écran avant la coupe. */
   --cc-bay-h: calc(var(--cc-cell-h) * 2 + var(--cc-gap) + 41px);
-  /* HAUTEUR DU PONT lue par le reste du HUD (frise, fil de combat) : la travée plus le liseré haut. */
-  --cc-deck-h: calc(var(--cc-bay-h) + 3px);
+  /* ÉLÉVATION DU FRONTON au-dessus du liseré (planche 2026-08-17 : arche y=811, pont y=863). Au
+     `:root` parce que la hauteur du pont se calcule AVEC (l'arche ne pèse sur la bande que de ce
+     qu'elle ne franchit pas) — une valeur portée par le sélecteur de la console serait illisible
+     d'ici. */
+  --cc-fronton: 52px;
+  /* PORTRAIT de l'arche : il DOMINE la région, mais il se dérive du CÔTÉ D'ALVÉOLE — une grandeur
+     d'ENTRÉE — et non de la hauteur du pont. Dérivé du pont, il la faisait croître à son tour
+     (portrait ∝ pont ∝ arche ∝ portrait) : le point fixe de cette boucle dépassait le budget de
+     hauteur, et toute valeur en deçà amputait l'arche (mesuré : 17px de contenu coupé à 900×800). */
+  --cc-portrait: calc(var(--cc-cell-h) * 2.4);
+  /* CHROME de l'arche : tout ce qui, hors portrait, occupe sa hauteur — rembourrages, deux écarts,
+     barre de Blessures, nom gravé, liseré, et le surcroît du CORPS sur le portrait (les gouttières
+     et la niche d'États dépassent la vignette de ~25px).
+     RECALIBRATION : `node scripts/recette/console-pont-formes.mjs --mesures` imprime, par largeur,
+     un bloc `arche {h, pad, gap, enfants[], portrait}` ; le chrome vaut `h − portrait`. Relevé
+     ainsi : 78,3px à 1600×800 (186,8 − 108,5) et 81,2px à 1100×800 (182 − 100,8) — la valeur
+     déclarée porte l'air qui sépare le maximum mesuré du bord. Toute dérive fait rougir le script
+     (débord de région, et hauteur rendue ≠ hauteur déclarée). */
+  --cc-arch-chrome: 84px;
+  --cc-arch-h: calc(var(--cc-portrait) + var(--cc-arch-chrome));
+  /* HAUTEUR DU PONT lue par le reste du HUD (frise, fil de combat) — et RÉSERVE de la bande dans
+     ses trois formes. Elle vaut la plus haute des régions : la travée, ou l'arche DIMINUÉE de ce
+     qu'elle franchit (le fronton s'élève au-dessus du liseré, il ne pèse pas sur la bande). Plus le
+     liseré. Le script de recette la RÉFUTE : toute région qui déborderait sa boîte le fait rougir. */
+  --cc-deck-h: calc(max(var(--cc-bay-h), var(--cc-arch-h) - var(--cc-fronton)) + 3px);
   /* HAUTEUR DU BANDEAU DE PHASE, publiée au MÊME titre que `--cc-deck-h` et pour la même raison : le
      bandeau est superposé AU-DESSUS du liseré, il occupe donc de la bande de terrain que la frise ne
      doit pas revendiquer (sans cette réserve, la colonne d'initiative — z-index 45 contre 5 — passait
@@ -57,17 +83,18 @@
      sur quatre captures). C'est un plancher TENU (`min-height` ci-dessous) : la réserve ne peut pas
      être plus courte que la boîte qu'elle décrit. */
   --cc-phase-h: 48px;
+  /* ANCRAGE HAUT du bandeau d'OUVERTURE (arbitrage user 2026-08-24) : il se pose sur la CARTE, sous
+     la bande de groupe. Au `:root` parce qu'un autre flottant du champ doit pouvoir s'y ranger
+     dessous (le fil de combat, tranche ≤700 de hud.css). */
+  /* Il se pose SOUS la zone haute du champ : bande de groupe (`.party-dock`, ancrée à 10px, boîte
+     mesurée 123,6px — tuile `--pd-tile` 88 + nom + rembourrages, invariante en largeur) plus l'air.
+     Le script de recette REFUSE tout recouvrement de la bande de groupe, de la frise et du fil. */
+  --cc-ouverture-top: 152px;
 }
 .combat-console {
   /* Encoche d'angle des plaques (patron d'ébauche : la tôle est coupée, jamais arrondie). */
   --cc-notch: 4px;
-  /* Élévation du FRONTON au-dessus du liseré (planche 2026-08-17 : arche y=811, pont y=863). */
-  --cc-fronton: 52px;
-  /* PORTRAIT de l'arche : il DOMINE la région (planche `docs/plans/2026-08-17-maquette-hud-assemblee.png`).
-     Il ne peut donc pas rester figé à la taille `lg` de la primitive pendant que l'arche grandit avec le
-     pont — mesuré avant : 78px de portrait sous 116,6px de vide à 1920, ratio 0,287. Il se dérive de la
-     hauteur d'ARCHE (le pont plus l'élévation du fronton), et le rail des gouttières le suit. */
-  --cc-portrait: calc((var(--cc-deck-h) + var(--cc-fronton)) * 0.6);
+  /* Le rail des gouttières suit le portrait (dimensionné au `:root`, avec la hauteur de bande). */
   --cc-rail: calc(var(--cc-portrait) * 0.62);
   /* Hauteur de la NAPPE de bois : le dégradé est ancré au BAS et taillé à cette hauteur sur le pont
      ET sur l'arche. Deux boîtes, un seul plan de matière — à la jonction, la teinte est la même des
@@ -128,6 +155,72 @@
   gap: 5px;
 }
 
+/* BANDEAU D'OUVERTURE (arbitrage user 2026-08-24, référence Rogue Trader « round 0 ») : à l'ouverture
+   d'un combat, le message de phase et son bouton quittent le coin du pont pour le HAUT DE LA CARTE,
+   centrés — c'est là que la référence les pose (« Préparez-vous au combat », « DÉMARRER LE COMBAT »).
+   C'est la MÊME boîte que `.cc-phase` (même matière, même primitive) posée ailleurs : le bandeau est
+   alors un enfant du champ (`.stage`), pas du pont — il ne lui appartient pas.
+   Aux pauses de round SUIVANTES, le bandeau reste sur le pont : l'arbitrage ne parle que de
+   l'ouverture. Son ancrage haut vit au `:root` (avec `--cc-phase-h`) : il tient sous la bande de
+   groupe et AU-DESSUS du fil de combat à toute largeur, sans qu'aucun des deux n'ait à se pousser.
+   L'ADRESSE est un attribut du bandeau, jamais une classe de plus (cliquet xii). */
+.cc-phase[data-phase='ouverture'] {
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  top: var(--cc-ouverture-top);
+  transform: translateX(-50%);
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 26px;
+  text-align: center;
+  /* Au-dessus du bandeau de groupe (`.party-dock`, z-index 45) comme le fil de combat. */
+  z-index: 46;
+}
+
+/* MÉDAILLON DE LA FORME SPECTATRICE (arbitrage user 2026-08-24) : le portrait dans un cadre ROND —
+   la forme dit l'état (on regarde), aucune case n'est grisée puisqu'il n'y a plus de case. Le rond
+   est un HABILLAGE de `PortraitTile` (aucun composant de plus) : la primitive garde sa structure,
+   c'est la boîte qui s'arrondit. Les parties du médaillon se visent par ATTRIBUT (patron
+   `[data-overlay]`/`[data-reserve]` déjà en place ici) : le stock de classes du module ne croît pas,
+   et ces attributs sont les ancres stables des captures de jugement. */
+.cc-dock [data-medaillon] {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 18px;
+}
+.cc-dock [data-medaillon] .ptile,
+.cc-dock [data-medaillon] .ptile-face,
+.cc-dock [data-medaillon] .rig-portrait {
+  width: var(--cc-portrait) !important;
+  height: var(--cc-portrait) !important;
+  border-radius: 50%;
+  overflow: hidden;
+}
+/* Le DESSIN suit sa boîte ronde (même levier que l'arche : `RigPortrait` pose sa taille en ATTRIBUT
+   sur le `<svg>`, et un attribut de présentation cède devant une règle CSS). */
+.cc-dock [data-medaillon] .rig-portrait > svg {
+  width: 100%;
+  height: 100%;
+}
+.cc-dock [data-medaillon] > [data-corps] {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 180px;
+  max-width: 320px;
+}
+.cc-dock [data-medaillon] [data-nom] {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.4px;
+  color: var(--atelier-brass-vif);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Les quatre RÉGIONS, assises sur le pont : une VOIE par flanc, le fronton au milieu, le coin de
    sortie en bout. Les deux voies sont des pistes `1fr` de MÊME largeur — c'est ce qui met le
    fronton au centre du VIEWPORT (planche 2026-08-17 : arche centrée à 959,5/1920) alors que les
@@ -146,7 +239,28 @@
   align-items: stretch;
   gap: var(--cc-bay-gap);
   width: 100%;
-  padding-left: calc(var(--cc-corner) + var(--cc-bay-gap));
+  /* RÉSERVE DE BANDE : le pont mesure au MOINS la hauteur canon, dans ses TROIS formes — c'est ce
+     qui les rend superposables et permet au bandeau de phase de vivre au-dessus du liseré sans
+     jitter. PLANCHER, jamais couperet : `--cc-deck-h` est dimensionnée sur la plus haute des
+     régions, et si un contenu la dépassait malgré tout, il pousserait la bande au lieu d'être
+     coupé (le script de recette mesure les deux : débord ET stabilité entre formes). */
+  min-height: calc(var(--cc-deck-h) - 3px);
+  /* MARGE INTERNE de la bande (arbitrage user 2026-08-24) : les régions sont posées SUR le pont, pas
+     collées à ses bords. Elle s'ajoute des DEUX côtés — l'identité de centrage du fronton
+     (`padding-left − padding-right = coin + écart`, contrat P-4) est donc préservée. */
+  padding-right: var(--cc-marge);
+  padding-left: calc(var(--cc-corner) + var(--cc-bay-gap) + var(--cc-marge));
+}
+/* FORME SPECTATRICE (arbitrage user 2026-08-24, « rond = on regarde, carré = on peut cliquer ») : la
+   bande garde SA géométrie, c'est le CONTENU qui change de forme — un médaillon seul, centré.
+   Aucune grandeur de hauteur n'est reprise ici : le pont est le même objet dans les trois formes. */
+.cc-dock[data-forme='spectatrice'] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Rembourrages SYMÉTRIQUES : la réserve miroir du coin n'a plus de coin à équilibrer, et une marge
+     gardée d'un seul côté décentrait le médaillon de la moitié de sa valeur. */
+  padding-inline: var(--cc-marge);
 }
 
 .cc-bay {
@@ -158,24 +272,19 @@
 }
 /* MATIÈRE UNIQUE DU PONT — arbitrage utilisateur 2026-08-17 (AskUserQuestion, verbatim) : « une matière
    unique, fidèle à la planche : tout le pont dans la même teinte bronze/bois, les régions se distinguent
-   par leurs alvéoles et liserés, pas par des plaques de couleurs différentes ». Le juge vision mesurait
-   quatre plats vissés (acier bleu à gauche, laiton à droite, plaque rouge au coin, bois du pont) : les
-   trois plaques prennent désormais la NAPPE de l'arche, et seuls le liseré et les alvéoles disent la
-   région. Les DEUX travées et le coin partagent donc ce fond, à la lettre.
+   par leurs alvéoles et liserés, pas par des plaques de couleurs différentes ».
+   Arbitrage utilisateur 2026-08-24 (« UN PONT CONTINU », spec §1c-ter) : les régions ne peignent plus
+   RIEN — ni fond, ni liseré. Le fond et le liseré sont ceux de la BANDE, une seule fois, de bord à
+   bord ; une nappe de région (même de la bonne famille de teintes) rouvrait une couture à chaque
+   écart de région — mesuré à 1990px, quatre bandes plus sombres entre les zones, lues comme des
+   trous de carte. Ce qui distingue une région n'est plus que ses ALVÉOLES.
    La travée gauche porte en plus la HAUTEUR du pont (`--cc-bay-h`, fixe). */
-.cc-bay-left,
-.cc-bay-right,
-.cc-end {
-  background: linear-gradient(180deg, var(--cc-arch-hi), var(--cc-arch-mid));
-}
 /* Aile GAUCHE — l'arsenal se lit en cartes à cadre d'or fin sur la matière du pont (spécimen C), jamais
    en grille grise (grief d'assemblage 2026-08-17). */
 .cc-bay-left {
   /* La travée se range CONTRE le fronton : sa voie est plus large qu'elle, le surplus va au bord. */
   justify-self: end;
-  height: var(--cc-bay-h);
-  border: 1px solid var(--cc-steel-edge);
-  box-shadow: inset 0 1px 0 rgba(190, 215, 240, 0.1);
+  height: 100%;
   --cc-cell-hi: var(--cc-brass-cell-hi);
   --cc-cell-lo: var(--cc-brass-cell-lo);
   --cc-cell-edge: var(--atelier-brass-hover);
@@ -193,8 +302,6 @@
 /* Aile DROITE — les capacités du personnage (spécimen E) : même matière, alvéoles de laiton. */
 .cc-bay-right {
   justify-self: start;
-  border: 1px solid var(--atelier-wood-etch);
-  box-shadow: inset 0 1px 0 rgba(216, 185, 84, 0.14);
   --cc-cell-hi: var(--cc-brass-cell-hi);
   --cc-cell-lo: var(--cc-brass-cell-lo);
   --cc-cell-edge: var(--atelier-wood-etch);
@@ -918,13 +1025,21 @@ button.cc-socle svg {
   opacity: 0.5;
 }
 
-/* Coin de FIN DE TOUR : isolé des deux travées. Sa plaque est de la MATIÈRE DU PONT (arbitrage
-   utilisateur 2026-08-17, voir en tête des travées) ; ce qui le distingue est son médaillon de cire
-   (spécimen F) et son liseré de laiton, jamais un plat rouge. */
+/* Coin de FIN DE TOUR : une RÉGION du pont comme les autres (arbitrage user 2026-08-24) — elle ne
+   porte plus de plaque propre, elle porte une ALVÉOLE, avec la grammaire d'alvéole des travées
+   (tokens `--cc-cell-*`). Ce qui la distingue est son médaillon de cire (spécimen F), jamais un
+   plat de couleur. Son retrait vertical est celui des travées : le coin est ASSIS sur le pont, à la
+   même profondeur qu'elles — sa marge horizontale, elle, est celle de la bande (`--cc-marge`). */
 .cc-corner {
   flex: 0 0 auto;
   display: flex;
   align-items: flex-end;
+  padding: 8px 0 10px;
+  --cc-cell-hi: var(--cc-brass-cell-hi);
+  --cc-cell-lo: var(--cc-brass-cell-lo);
+  --cc-cell-edge: var(--atelier-brass-hover);
+  --cc-cell-ink: var(--atelier-brass-vif);
+  --cc-cell-key: var(--atelier-brass-meta);
 }
 .cc-end {
   width: var(--cc-corner);
@@ -933,7 +1048,6 @@ button.cc-socle svg {
   min-height: 106px;
   gap: 6px;
   padding: 8px 4px;
-  border: 1px solid var(--atelier-brass-hover);
   border-radius: 0;
   color: var(--atelier-brass-vif);
   clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
@@ -1004,15 +1118,14 @@ button.cc-socle svg {
     --cc-cell-w: 52px;
     --cc-cell-h: 40px;
     --cc-bay-gap: 10px;
-  }
-  .combat-console {
     --cc-fronton: 40px;
   }
   /* Sous 900 les régions occupent presque toute la largeur du pont : il n'y a plus de quoi payer la
      réserve miroir du coin (elle ferait déborder la travée droite), le fronton se décale donc de
-     ce que le coin pèse. Les pistes `min-content` garantissent qu'aucune case ne sort de l'écran. */
+     ce que le coin pèse. Les pistes `min-content` garantissent qu'aucune case ne sort de l'écran.
+     La MARGE INTERNE de la bande, elle, reste — des deux côtés : elle ne décale rien. */
   .cc-dock {
-    padding-left: 0;
+    padding-inline: var(--cc-marge);
   }
 }
 @media (max-width: 700px) {
@@ -1033,6 +1146,24 @@ button.cc-socle svg {
   .cc-arch {
     margin-top: 0;
   }
+  /* BANDEAU D'OUVERTURE sous 700 — et SEULEMENT là : c'est à cette largeur que la frise
+     d'initiative quitte sa colonne pour une BANDE HAUTE et que le fil de combat monte en haut du
+     champ. La zone haute devient alors pleine (bande de groupe jusqu'à 129,6px, frise jusqu'à
+     150px, fil à 192px — mesures `scripts/recette/console-pont-formes.mjs`) et la boîte réelle du
+     bandeau, 77px, n'entre pas dans les 42px qui restent. Il descend donc AU-DESSUS du pont et du
+     fil, pleine largeur, en relisant leur réserve. Jusqu'à 701px inclus il garde la position de la
+     référence RT — mesuré libre de tout recouvrement à 901, 900, 800 et 701. */
+  .cc-phase[data-phase='ouverture'] {
+    left: 4px;
+    right: 4px;
+    top: auto;
+    /* `--cc-deck-h` plus les 46px du fil, sa boîte et l'air — jamais un nombre sans origine. Le
+       bandeau n'étant pas un enfant du pont (il flotte sur le champ), il ne peut pas se caler sur
+       `100%` : sa boîte de référence est le champ lui-même. */
+    bottom: calc(var(--cc-deck-h) + 94px);
+    transform: none;
+    align-items: center;
+  }
 }
 
 /* ── COMPOSITION COMPACTE (≤560px, arbitrage 2026-08-16) — rien ne disparaît : mêmes 8 + 12 cases,
@@ -1051,14 +1182,14 @@ button.cc-socle svg {
     /* Le bandeau compact est plus bas (rembourrage 2px, boutons 11px) : sa RÉSERVE suit, sinon la
        frise réserverait la boîte de la version large. */
     --cc-phase-h: 24px;
-  }
-  .combat-console {
     /* La composition compacte se pose SUR LE MÊME PONT (spec §1c-ter, point 5) : la bande garde ses
        deux bords et son liseré, seul le fronton rentre dans le rang. */
     --cc-fronton: 0px;
-    --cc-band: 260px;
     /* Portrait de la LIGNE compacte : une vignette, pas une région (cf. la règle de base qui l'applique). */
     --cc-portrait: 30px;
+  }
+  .combat-console {
+    --cc-band: 260px;
   }
   /* Bandeau de phase compact : pleine largeur JUSTE au-dessus du pont (il ne vole aucune rangée de
      cases, et à cette largeur il ne peut pas chevaucher le parapet sans couvrir le liseré ET le
