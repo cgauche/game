@@ -12,6 +12,8 @@ import { hasSpritePicker } from '../../gameIso/stage/spritePicker';
 import { buildTokens } from '../../gameIso/builders/tokens';
 import { scenario as scenarioToits } from '../../scenes/test-scenarios/zones-pieces';
 import { RENDER_ORDER } from '../../gameIso/backends/webgl/renderRanks';
+import { CALAGE_APLAT, NOM_ARETES_CALAGE, rangsDeDecor as rangsDeDecorDuMonde } from '../../gameIso/backends/webgl/calageProps';
+import type { WorldGeometry } from '../../gameIso/backends/webgl/sceneMeshes';
 import { effectiveLowerLayerMode, layerHidden, LOWER_LAYER_ISOLATE_BELOW } from './lowerLayerGabarit';
 import type { PlanDefectAt } from '../../state/planDefects';
 
@@ -99,8 +101,18 @@ function plaque(position: 'above' | 'below') {
     opacity: 0.6,
     visible: true,
     position,
+    contraste: false,
     transform: { tx: 20, ty: -10, scale: 0.5, rotateDeg: 0 },
   };
+}
+
+/** La scène d'atelier, plus un MEUBLE VOLUMIQUE : de quoi juger ce que le mode calage contraste. */
+function sceneMobilier(): Scene {
+  const s = emptyScene(8, 8);
+  const table = {
+    id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S',
+  } as unknown as Scene['entities'][number];
+  return { ...s, entities: [table] };
 }
 
 type Plaque = ReturnType<typeof plaque>;
@@ -265,6 +277,30 @@ async function monter(
       let trouve: THREE.Mesh | null = null;
       derniereScene?.traverse((o) => { if (o.name === 'decalque') trouve = o as THREE.Mesh; });
       return trouve as THREE.Mesh | null;
+    },
+    /** Les matériaux RÉELLEMENT portés par le maillage du monde cuit, dans l'ordre des groupes. */
+    materiauxDuMonde: (): THREE.Material[] => {
+      let mats: THREE.Material[] = [];
+      derniereScene?.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh && m.userData.emprunte && Array.isArray(m.material)) mats = m.material as THREE.Material[];
+      });
+      return mats;
+    },
+    /** Rangs des groupes de DÉCOR VOLUMIQUE de la géométrie montée (le périmètre du mode calage). */
+    rangsDeDecor: (): number[] => {
+      let rangs: number[] = [];
+      derniereScene?.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh && m.userData.emprunte && m.geometry?.userData?.surfaceGroups) rangs = rangsDeDecorDuMonde(m.geometry as WorldGeometry);
+      });
+      return rangs;
+    },
+    /** Le maillage d'ARÊTES du mode calage (`null` si le mode est éteint). */
+    aretesCalage: () => {
+      let trouve: THREE.LineSegments | null = null;
+      derniereScene?.traverse((o) => { if (o.name === NOM_ARETES_CALAGE) trouve = o as THREE.LineSegments; });
+      return trouve as THREE.LineSegments | null;
     },
     marqueursLampe: () => svg.querySelectorAll('[data-lampes-auteur] circle').length,
     /** Traits de la GRILLE d'authoring montés dans le SVG. */
@@ -560,6 +596,63 @@ describe('Éditeur — plaque de décalquage et marqueurs d’auteur (#1176, P3-
   it('…et une scène SANS source n’en montre aucun', async () => {
     const h = await monter({ mode: 'select' });
     expect(h.svg.querySelector('[data-lampes-auteur]')).toBeNull();
+  });
+});
+
+/**
+ * MODE CALAGE — le CÂBLAGE complet, du réglage du panneau au maillage réellement dessiné : la case
+ * « Contraste de calage » du calque passe le mobilier volumique en aplat cyan + arêtes, et le sol
+ * garde son matériau. Éteindre la case (ou masquer le calque) rend au décor ses matériaux d'origine,
+ * PAR IDENTITÉ : la surcharge ne recuit rien.
+ */
+describe('Éditeur — mode calage du calque de référence', () => {
+  /** Les matériaux des groupes de DÉCOR, et ceux de tout le reste, tels que le monde les porte. */
+  function tri(h: Awaited<ReturnType<typeof monter>>) {
+    const mats = h.materiauxDuMonde();
+    const rangs = new Set(h.rangsDeDecor());
+    return {
+      decor: mats.filter((_, i) => rangs.has(i)),
+      reste: mats.filter((_, i) => !rangs.has(i)),
+    };
+  }
+
+  it('calque VISIBLE + contraste : le décor passe en aplat cyan UNIQUE, le reste du monde est intact', async () => {
+    const h = await monter({ mode: 'select' }, { scene: sceneMobilier(), traceLayer: { position: 'above' } });
+    const avant = tri(h);
+    expect(avant.decor.length).toBeGreaterThan(0);
+    await h.régler({ contraste: true });
+    const pendant = tri(h);
+    expect(new Set(pendant.decor).size).toBe(1); // UN matériau pour tout le mobilier
+    const aplat = pendant.decor[0] as THREE.MeshBasicMaterial;
+    expect(aplat.color.getHexString()).toBe(CALAGE_APLAT.slice(1));
+    expect(aplat.transparent).toBe(true);
+    expect(pendant.reste).toEqual(avant.reste); // sol et murs : les MÊMES matériaux, par identité
+    expect(h.aretesCalage()).not.toBeNull();
+  });
+
+  it('la case rendue à zéro remet au décor ses matériaux d’ORIGINE et retire les arêtes', async () => {
+    const h = await monter({ mode: 'select' }, { scene: sceneMobilier(), traceLayer: { position: 'above' } });
+    const avant = tri(h);
+    await h.régler({ contraste: true });
+    expect(h.aretesCalage()).not.toBeNull();
+    await h.régler({ contraste: false });
+    expect(tri(h).decor).toEqual(avant.decor);
+    expect(h.aretesCalage()).toBeNull();
+  });
+
+  it('contraste demandé sur un calque MASQUÉ : le mode ne s’allume pas', async () => {
+    const h = await monter({ mode: 'select' }, { scene: sceneMobilier(), traceLayer: { position: 'above' } });
+    const avant = tri(h);
+    await h.régler({ contraste: true, visible: false });
+    expect(tri(h).decor).toEqual(avant.decor);
+    expect(h.aretesCalage()).toBeNull();
+  });
+
+  it('sans calque du tout, le décor garde son rendu de jeu', async () => {
+    const h = await monter({ mode: 'select' }, { scene: sceneMobilier() });
+    expect(h.rangsDeDecor().length).toBeGreaterThan(0);
+    for (const mat of tri(h).decor) expect((mat as THREE.MeshBasicMaterial).color.getHexString()).not.toBe(CALAGE_APLAT.slice(1));
+    expect(h.aretesCalage()).toBeNull();
   });
 });
 

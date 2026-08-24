@@ -152,6 +152,10 @@ export interface SurfaceGroup {
   /** Réponse à la lumière authorée du matériau (décor volumique) — le groupe se monte alors en
    *  matériau à rugosité/métal (`worldMaterials`) au lieu du lambertien commun. */
   pbr?: { roughness: number; metalness: number };
+  /** Le groupe porte du DÉCOR VOLUMIQUE (`material.domain === 'prop'`) — l'identité STRUCTURELLE que
+   *  le mode calage de l'éditeur interroge pour ne surcharger que le mobilier (`calageProps.ts`),
+   *  jamais un préfixe de `key` relu à la ficelle. */
+  prop?: true;
 }
 
 const NU: SurfaceGroup = { key: 'nu', kind: null };
@@ -170,7 +174,7 @@ export function faceGroup(wf: WorldFace, mpt: number): SurfaceGroup {
   // DÉCOR VOLUMIQUE : un groupe par MATÉRIAU de recette — aucune période, aucune cuisson par face, mais
   // sa réponse à la lumière lui est propre, et c'est le groupe qui la porte jusqu'au matériau monté.
   if (domain === 'prop')
-    return { key: `prop|${wf.face.material.id}`, kind: null, surfaceKey: surface.surfaceKey, color: surface.color, ...(surface.pbr ? { pbr: surface.pbr } : {}) };
+    return { key: `prop|${wf.face.material.id}`, kind: null, surfaceKey: surface.surfaceKey, color: surface.color, prop: true, ...(surface.pbr ? { pbr: surface.pbr } : {}) };
   const kind: PeriodKind = domain === 'terrain' ? 'ground' : 'wall';
   // La variante se cale sur le CÔTÉ D'ARÊTE de l'élément — la même clé que `variantOf(cell, side)` de
   // le peintre SVG (`authoring/detailSvg.ts`). Sans côté (pan de toit),

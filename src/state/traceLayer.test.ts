@@ -51,6 +51,7 @@ const record = (sceneId: string, z = 0): TraceLayerRecord => ({
   visible: true,
   position: 'above',
   allowRotation: false,
+  contraste: false,
   transform: identityTransform(),
   savedAt: 1000,
 });
@@ -81,6 +82,15 @@ describe('traceLayer — persistance PAR (SCÈNE, COUCHE) du calque de référen
     expect(z0?.opacity).toBe(0.6);
     expect(z1?.imageDataUrl).toBe('data:image/png;base64,BBBB');
     expect(z1?.opacity).toBe(0.3);
+  });
+
+  it('le CONTRASTE DE CALAGE persiste comme un réglage à part entière, par (scène, couche)', async () => {
+    await traceLayerSave({ ...record('scene-1', 0), contraste: true });
+    await traceLayerSave(record('scene-1', 1));
+    expect((await traceLayerLoad('scene-1', 0))?.contraste).toBe(true);
+    expect((await traceLayerLoad('scene-1', 1))?.contraste).toBe(false);
+    await traceLayerSave({ ...record('scene-1', 0), contraste: false, savedAt: 2000 });
+    expect((await traceLayerLoad('scene-1', 0))?.contraste).toBe(false);
   });
 
   it('un ré-enregistrement écrase la version précédente de la MÊME (scène, couche) seulement', async () => {

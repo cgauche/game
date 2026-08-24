@@ -34,6 +34,7 @@ import { planFocusTiles, type PlanDefectAt } from '../../state/planDefects';
 import { GameStage3D } from '../../gameIso/stage/GameStage3D';
 import { buildTokens } from '../../gameIso/builders/tokens';
 import type { ActorPose, KeepEl, TintAt } from '../../gameIso/backends/webgl/sceneMeshes';
+import { calageActif } from '../../gameIso/backends/webgl/calageProps';
 import { mapLights, type LightSource } from '../../state/vision';
 
 /** Jaune d'ACCENT de SÉLECTION de l'éditeur (arêtes/zones/toits/entités sélectionnés) — même teinte que
@@ -242,6 +243,9 @@ export function EditorCanvas({
     opacity: number;
     visible: boolean;
     position: 'above' | 'below';
+    /** Mode CALAGE demandé par l'auteur — le mobilier volumique en aplat cyan contrasté + arêtes,
+     *  tant que le calque est visible (`gameIso/backends/webgl/calageProps.ts`). */
+    contraste: boolean;
     transform: TraceTransform;
   } | null;
   /** Opacité RÉELLE (0..1, réglage utilisateur) du gabarit de couche inférieure. */
@@ -769,6 +773,7 @@ export function EditorCanvas({
           lightLevel={PLEIN_JOUR}
           lights={AUCUNE_LAMPE}
           decalque={decalque3d}
+          calage={calageActif(traceLayer)}
           spritePicking={false}
         />
         <svg

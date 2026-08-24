@@ -31,6 +31,11 @@ export interface TraceLayerRecord {
    *  une planche est normalement scannée droite, verrouiller l'angle à 0 évite l'inclinaison parasite
    *  d'un calage au pixel près (retour user 2026-07-25). */
   allowRotation: boolean;
+  /** MODE CALAGE : tant que le calque est VISIBLE, le mobilier volumique de la scène se rend en aplat
+   *  cyan contrasté + arêtes (`gameIso/backends/webgl/calageProps.ts`), pour que le plan dessiné et la
+   *  scène construite se distinguent à l'œil. Faux par défaut : le mode sert à COMPARER, pas à
+   *  construire. Aide d'authoring comme le reste du record — jamais une donnée de scène. */
+  contraste: boolean;
   transform: TraceTransform;
   savedAt: number;
 }

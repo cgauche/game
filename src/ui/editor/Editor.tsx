@@ -232,6 +232,7 @@ export function Editor({
           visible: true,
           position: 'above', // défaut : décalquer/comparer (le terrain est opaque, retour user 2026-07-25)
           allowRotation: false, // défaut : rotation VERROUILLÉE (planche scannée droite, retour user 2026-07-25)
+          contraste: false, // défaut : mobilier au rendu normal — le mode calage se demande
           transform: identityTransform(),
           savedAt: Date.now(),
         });
@@ -824,6 +825,7 @@ export function Editor({
           calibStep={traceCalib.step}
           position={traceLayer?.position ?? 'above'}
           allowRotation={traceLayer?.allowRotation ?? false}
+          contraste={traceLayer?.contraste ?? false}
           layerZ={currentLayer}
           expanded={tracePanelExpanded}
           onLoadFile={loadTraceImage}
@@ -831,6 +833,7 @@ export function Editor({
           onOpacityChange={(opacity) => traceLayer && persistTraceLayer({ ...traceLayer, opacity })}
           onPositionChange={(position) => traceLayer && persistTraceLayer({ ...traceLayer, position })}
           onAllowRotationChange={(allowRotation) => traceLayer && persistTraceLayer({ ...traceLayer, allowRotation })}
+          onContrasteChange={(contraste) => traceLayer && persistTraceLayer({ ...traceLayer, contraste })}
           onToggleExpanded={toggleTracePanelExpanded}
           onStartCalibration={() => setTraceCalib({ step: 'image1' })}
           onCancelCalibration={() => setTraceCalib({ step: 'idle' })}

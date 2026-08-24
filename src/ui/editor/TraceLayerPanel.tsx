@@ -25,6 +25,7 @@ export function TraceLayerPanel({
   calibStep,
   position,
   allowRotation,
+  contraste,
   layerZ,
   expanded,
   onLoadFile,
@@ -32,6 +33,7 @@ export function TraceLayerPanel({
   onOpacityChange,
   onPositionChange,
   onAllowRotationChange,
+  onContrasteChange,
   onToggleExpanded,
   onStartCalibration,
   onCancelCalibration,
@@ -46,6 +48,9 @@ export function TraceLayerPanel({
   position: 'above' | 'below';
   /** Autorise la calibration à déduire une rotation (planche scannée de travers) — faux par défaut. */
   allowRotation: boolean;
+  /** Mode CALAGE : le mobilier volumique en aplat cyan contrasté + arêtes tant que le calque est
+   *  visible (`gameIso/backends/webgl/calageProps.ts`). */
+  contraste: boolean;
   /** Couche (z) à laquelle s'applique CE calque — affichée pour qu'on ne règle pas l'étage en
    *  croyant être au rez (retour user 2026-07-25). */
   layerZ: number;
@@ -55,6 +60,7 @@ export function TraceLayerPanel({
   onOpacityChange: (opacity: number) => void;
   onPositionChange: (position: 'above' | 'below') => void;
   onAllowRotationChange: (allowRotation: boolean) => void;
+  onContrasteChange: (contraste: boolean) => void;
   onToggleExpanded: () => void;
   onStartCalibration: () => void;
   onCancelCalibration: () => void;
@@ -166,6 +172,12 @@ export function TraceLayerPanel({
             <input type="checkbox" checked={allowRotation} onChange={(e) => onAllowRotationChange(e.target.checked)} />
             <span title="Par défaut, le calage 2 points ne résout que translation + échelle (angle verrouillé à 0) : une planche de livre est scannée droite.">
               Autoriser la rotation (scan de travers)
+            </span>
+          </label>
+          <label className="row-flex">
+            <input type="checkbox" checked={contraste} onChange={(e) => onContrasteChange(e.target.checked)} />
+            <span title="Le mobilier volumique de la scène passe en aplat cyan translucide, arêtes soulignées : ce qui vient du plan dessiné et ce qui vient de la scène construite se distinguent. Sans effet quand le calque est masqué.">
+              Contraste de calage
             </span>
           </label>
           <button className="btn small btn-primary" onClick={onStartCalibration}>

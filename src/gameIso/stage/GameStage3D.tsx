@@ -79,7 +79,8 @@ import {
 } from '../backends/webgl/billboardMath';
 import { clearPeriodTextures } from '../backends/webgl/periodTexture';
 import { clearFaceBakes } from '../backends/webgl/faceBake';
-import { worldSurfaceMaterials } from '../backends/webgl/worldMaterials';
+import { worldSurfaceMaterials, type WorldSurfaceMaterial } from '../backends/webgl/worldMaterials';
+import { aretesDeCalage, materiauCalage, materiauxDeCalage } from '../backends/webgl/calageProps';
 import {
   actorBillboards,
   actorIdentityKey,
@@ -394,6 +395,11 @@ export interface GameStage3DProps {
    *  (#830), montée en QUAD MONDE : `below` sous la matière (le sol la couvre là où il en écrit),
    *  `above` par-dessus tout (rang chrome, sans test de profondeur). Absente en jeu. */
   decalque?: PlaqueDecalque | null;
+  /** MODE CALAGE de l'ÉDITEUR : le décor VOLUMIQUE de la scène se rend en aplat cyan translucide,
+   *  arêtes soulignées (`backends/webgl/calageProps.ts`), le temps de comparer la planche décalquée à
+   *  ce qui est bâti. Surcharge de MATÉRIAU seule : ni la cuisson ni la géométrie du monde ne
+   *  bougent, et sortir du mode rend aux groupes leurs matériaux d'origine. Absent en jeu. */
+  calage?: boolean;
   /** Cet écran inscrit-il son lanceur de rayon auprès de la couture de picking de sprite
    *  (`stage/spritePicker.ts`) ? Défaut OUI, la vue de plateau du jeu. L'ÉDITEUR (#1176, P3-3) dit
    *  NON : son picking est PUREMENT GÉOMÉTRIQUE (`screenToTileAtZ` sur le SVG d'authoring), et un
@@ -620,7 +626,7 @@ function dir8DuSegment(dx: number, dz: number): Dir8 | null {
   return best;
 }
 
-export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, decalque, spritePicking = true, percage, pionsEnDisques = false, onEntreeEnScene }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, decalque, calage = false, spritePicking = true, percage, pionsEnDisques = false, onEntreeEnScene }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -1703,6 +1709,38 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // (mesuré #1176).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geometry]);
+
+  // ── MODE CALAGE (ÉDITEUR) : le décor VOLUMIQUE en aplat cyan + arêtes, le temps de comparer la
+  // planche décalquée à ce qui est bâti. SURCHARGE de matériau sur le maillage DÉJÀ MONTÉ (les
+  // matériaux d'origine sont tenus ici et remis à la sortie) : aucune cuisson, aucune géométrie de
+  // monde refaite — un basculement de la case du panneau ne repaie rien de la passe lourde. Les
+  // arêtes, elles, sont un maillage de LIGNES à part, bâti des seuls triangles de décor RÉELLEMENT
+  // dessinés : d'où le dégagement dans les dépendances (un étage qui s'ôte emporte ses arêtes).
+  useEffect(() => {
+    // Le maillage du monde, vu par son MATÉRIAU (la référence partagée le type par ce qu'en lit le
+    // picking : une géométrie et une matrice monde, rien d'autre).
+    const mesh = mondeMeshRef.current as unknown as THREE.Mesh<THREE.BufferGeometry, WorldSurfaceMaterial[]> | null;
+    const groupe = monde.current;
+    if (!mesh || !groupe || !calage) return;
+    const origines = mesh.material;
+    const aplat = materiauCalage();
+    const surcharge = materiauxDeCalage(origines, geometry, aplat);
+    if (!surcharge) {
+      aplat.dispose(); // aucune scène de décor volumique : rien à contraster
+      return;
+    }
+    mesh.material = surcharge;
+    const aretes = aretesDeCalage(geometry);
+    if (aretes) groupe.add(withRenderRank(aretes, 'monde'));
+    dessiner();
+    return () => {
+      mesh.material = origines;
+      if (aretes) libererObjet(groupe, aretes);
+      aplat.dispose();
+      dessiner();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geometry, calage, keepEl]);
 
   // ── GROUPE ACCENTS — SEMIS : les instances de touffes/mouchetis, un `InstancedMesh` par lot
   // (type × couleur), montées UNE fois par semis. Séparé du monde car il porte la teinte AUTREMENT
