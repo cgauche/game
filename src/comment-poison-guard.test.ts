@@ -7,7 +7,6 @@ import {
   EXCUSE_GUARD_ACTIVE,
   POISON_DIRS,
   POISON_EXTS,
-  ATTENTE_WIP,
   tombstonesIn,
   scanTombstones,
   untaggedExcuseMatch,
@@ -280,29 +279,6 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
     expect(tombstonesIn('// d’autant plus de mode que la scène en déclare')).toEqual([]);
     expect(tombstonesIn('// la cible ne peut plus se déplacer ce Round : vocabulaire de JEU')).toEqual([]);
     expect(tombstonesIn('// si le héros n’a plus de créneau, la journée se clôt.')).toEqual([]);
-  });
-
-  it('échafaudage `ATTENTE_WIP` : un fichier gelé échappe au SEUL motif « plus de <artefact> », jamais aux autres', () => {
-    const gele = ATTENTE_WIP[0]?.fichier ?? 'src/state/combatFlow.ts';
-    expect(scanTombstones(gele, '// un évaluateur unique, plus de planner par-catégorie')).toEqual([]);
-    expect(scanTombstones('src/state/autre.ts', '// un évaluateur unique, plus de planner par-catégorie')).toHaveLength(1);
-    // Les familles historiques mordent MÊME sur un fichier gelé (le gel ne vaut que pour le motif neuf).
-    expect(scanTombstones(gele, '// Cette logique vivait anciennement dans un autre module.')).toHaveLength(1);
-  });
-
-  it('échafaudage `ATTENTE_WIP` : chaque entrée est datée, nominative, et périme au bout de 7 jours', () => {
-    // La liste est un échafaudage de 24 h posé le 2026-08-23 (WIP de sessions voisines sur l’arbre
-    // partagé), pas une liste d’exception : elle doit DISPARAÎTRE, et la garde le mesure.
-    for (const e of ATTENTE_WIP) {
-      expect(statSync(join(ROOT, e.fichier)).isFile(), `${e.fichier} introuvable`).toBe(true);
-      expect(e.raison, JSON.stringify(e)).toMatch(/WIP session voisine \d{4}-\d{2}-\d{2}/);
-      expect(e.date, JSON.stringify(e)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      const jours = (Date.now() - Date.parse(e.date)) / 86_400_000;
-      expect(
-        jours,
-        `${e.fichier} attend depuis ${Math.floor(jours)} jours : router la tombale vers sa session et VIDER l’entrée (jamais la re-dater).`,
-      ).toBeLessThanOrEqual(7);
-    }
   });
 
   it('aucun commentaire de src/** ni de scripts/** ne porte une pierre tombale (tolérance ZÉRO)', () => {

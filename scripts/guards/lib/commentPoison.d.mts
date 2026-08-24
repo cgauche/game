@@ -19,8 +19,6 @@ export function estFichierScanne(cheminRelatifOuAbsolu: string): boolean;
 export const TOMBSTONE_FAMILIES: { rx: RegExp; label: string }[];
 export function tombstonesIn(text: string): string[];
 export function scanTombstones(relPath: string, contenu: string): Finding[];
-export const MOTIF_ARTEFACT_NOMME: string;
-export const ATTENTE_WIP: { fichier: string; raison: string; date: string }[];
 
 export const LEGACY_VOCAB_FAMILIES: { rx: RegExp; label: string }[];
 export const LEGACY_VOCAB_EXCLUSIONS: { rx: RegExp; label: string }[];

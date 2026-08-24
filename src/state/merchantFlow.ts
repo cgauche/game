@@ -348,11 +348,10 @@ export function openPlaceMerchant(get: Get, set: Set, entityId: string, archetyp
   openMerchantByArchetype(get, set, entityId, archetype, undefined, backdrop);
 }
 
-/** Kind d'étape de cascade du Test de Ragot de recherche active (#274, sweep pré-garde — site consigné
- *  #275 « Ragot silencieux, hors porte ») : le tirage précédent (`rollTest` inline) ne posait AUCUNE
- *  question au siège MJ et n'était jamais influençable (Chance/Résilience) — exactement le trou que la
- *  garde d'exclusivité fait émerger. Migré sur `openRoll` (`klass:'hero-test'`) ; la continuation
- *  (avance de la journée + décision réassort visible/inline, #273) vit ICI, keyée par `kind`. */
+/** Kind d'étape de cascade du Test de Ragot de recherche active (#273) : le jet passe par la porte
+ *  canonique `openPartyTest` (side `partyBest`) — la surface se dérive des PORTEURS réels du jet, la
+ *  fenêtre est influençable (Chance/Résilience) et le siège MJ la voit ; la continuation (avance de la
+ *  journée + réassort visible/inline) vit ICI, keyée par `kind`. */
 const MERCHANT_RAGOT_KIND = 'merchant-ragot';
 registerCascadeApplier(MERCHANT_RAGOT_KIND, (get, set, step) => {
   if (!step.result) return {};
@@ -811,7 +810,7 @@ export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   if (mode === 'buy' ? m.bargainBuy : m.bargainSell) return; // 1 marchandage par MODE et par visite (achat ≠ vente)
   const arch = MERCHANTS[m.archetype];
   const best = partyAssisted(get().party, 'marchandage', 'sociabilite'); if (!best) return; // Soutien (LDB 12) : conseillers du groupe
-  const negotiator = hasBargainBonus(best.actor); // Négociateur → registre de talents (plus de name-match)
+  const negotiator = hasBargainBonus(best.actor); // Négociateur → registre de talents (jamais un name-match)
   set({ pendingBargain: {
     playerId: best.actor.id, playerName: best.actor.label,
     merchantName: arch?.label ?? 'Marchand', merchantValue: arch?.bargainSkill ?? 40,

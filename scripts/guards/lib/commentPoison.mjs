@@ -295,25 +295,6 @@ export function tombstonesIn(text) {
   return TOMBSTONE_FAMILIES.filter((f) => f.rx.test(text)).map((f) => f.label);
 }
 
-export const MOTIF_ARTEFACT_NOMME = 'plus de <artefact de code> (état révolu)';
-
-/** ÉCHAFAUDAGE de 24 h, pas une liste d'exception : les fichiers ci-dessous portaient le travail NON
- *  COMMITÉ d'autres sessions au moment où le motif `MOTIF_ARTEFACT_NOMME` est entré en garde
- *  (2026-08-23). Leurs tombales sont RECENSÉES dans le rendu de #1486 et routées vers ces sessions ;
- *  ici elles ne bloquent pas leur commit en vol. La liste doit être VIDE — le test échoue dès qu'une
- *  entrée dépasse 7 jours, et la garde mord alors sur ces fichiers comme sur les autres.
- * @type {{ fichier: string, raison: string, date: string }[]} */
-export const ATTENTE_WIP = [
-  { fichier: 'src/state/combatFlow.ts', raison: 'WIP session voisine 2026-08-23', date: '2026-08-23' },
-  { fichier: 'src/state/rollSeam.ts', raison: 'WIP session voisine 2026-08-23', date: '2026-08-23' },
-  { fichier: 'src/state/store.test.ts', raison: 'WIP session voisine 2026-08-23', date: '2026-08-23' },
-];
-
-const enAttenteWip = (/** @type {string} */ relPath) => {
-  const p = normPath(relPath);
-  return ATTENTE_WIP.some((e) => p === normPath(e.fichier) || p.endsWith(`/${normPath(e.fichier)}`));
-};
-
 /**
  * Scan complet d'un fichier source : toutes les pierres tombales trouvées dans ses commentaires.
  * @param {string} relPath chemin relatif (pour le libellé de la trouvaille)
@@ -322,10 +303,8 @@ const enAttenteWip = (/** @type {string} */ relPath) => {
  */
 export function scanTombstones(relPath, contenu) {
   const findings = [];
-  const gele = enAttenteWip(relPath);
   for (const c of extractComments(contenu)) {
     for (const fam of TOMBSTONE_FAMILIES) {
-      if (gele && fam.label === MOTIF_ARTEFACT_NOMME) continue;
       const m = fam.rx.exec(c.text);
       if (m) findings.push({ line: matchLine(c, m.index), detail: `[${fam.label}] ${excerptAt(c, m.index)}` });
     }
