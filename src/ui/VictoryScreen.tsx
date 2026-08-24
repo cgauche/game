@@ -45,11 +45,13 @@ export function VictoryScreen() {
   }, [overVictory]);
   const online = net.mode !== 'local';
   const ready = pv?.readyBySeat ?? {};
-  // Échap = MÊME action que [Continuer] (jamais une fermeture qui perdrait le butin non attribué) :
-  // en coop, seulement tant que ce siège n'a pas déjà validé (bouton alors désactivé, Échap inerte).
+  // COUCHE BLOQUANTE tant que l'écran est là : [Continuer] VALIDE la victoire (attribution du butin,
+  // `victoryReady` répliqué au relais en coop) — un congédiement est GRATUIT par contrat
+  // (`dismissStack`), il n'engage rien, donc il ne peut pas porter ce geste. Échap est inerte ici,
+  // le bouton se clique. Même doctrine qu'une sortie d'interlude qui commet (keybindings.ts:313-315).
+  // `actif` = la condition de l'early-return ci-dessous (les hooks restent AVANT lui).
   const boxRef = useRef<HTMLDivElement>(null);
-  const continueAction = online ? (ready[net.mySeat] ? undefined : () => victoryReady(net.mySeat)) : dismiss;
-  useModalA11y(boxRef, continueAction);
+  useModalA11y(boxRef, undefined, { kind: 'victoire', actif: overVictory && revealed });
   if (!battle || battle.over !== 'victory' || !revealed) return null;
   const assignable = party.filter((h) => ownsLocal(state, h.id)); // solo : tous (#1262)
 

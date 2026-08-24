@@ -112,7 +112,9 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
   const inBattle = useGame((s) => !!s.battle);
   const boxRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef, onClose); // dialogue au markup spécifique (header à onglets) → hook a11y partagé
+  // Dialogue au markup spécifique (header à onglets) → hook a11y partagé. `actif` = la condition de
+  // l'early-return `if (!hero) return null` : sans héros, la fiche ne rend rien et n'empile rien.
+  useModalA11y(boxRef, onClose, { kind: 'fiche-perso', actif: !!hero });
 
   // Restaure le scroll mémorisé de CET onglet à chaque affichage (patron ActivityPane : corps
   // scrollable, un onglet reprend où on l'a laissé plutôt que de rouvrir en haut). Lecture SANS

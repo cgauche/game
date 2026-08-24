@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
+import { useDismissLayer } from './useDismissLayer';
 import { ModalSubject } from './ModalSubject';
 import type { Combatant } from '../engine/types';
 
@@ -48,7 +49,16 @@ function focusTarget(box: HTMLElement, mode: 'initial' | 'rescue'): HTMLElement 
   return choice ?? (primary?.getClientRects().length ? primary : null) ?? visibleFocusables(box)[0] ?? null;
 }
 
-export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => void) {
+/** @param kind libellé de DIAGNOSTIC de la couche empilée.
+ *  @param actif le dialogue est-il RÉELLEMENT à l'écran. DISTINCT d'« annulable » : un composant monté
+ *   en permanence (menu système fermé) ou qui rend `null` sous condition (écran de victoire hors
+ *   victoire) n'a AUCUNE couche — sans quoi il empilerait une couche fantôme qui mange le
+ *   congédiement de toute la session. */
+export function useModalA11y(
+  boxRef: RefObject<HTMLDivElement>,
+  onClose?: () => void,
+  { kind = 'modale', actif = true }: { kind?: string; actif?: boolean } = {},
+) {
   // Focus initial UTILE (cf. `focusTarget`) : évite que le focus atterrisse sur un bouton sans intérêt
   // (« rien ne répond »).
   // RESTORE : à la fermeture, le focus revient à l'élément qui l'avait AVANT l'ouverture (déclencheur du
@@ -86,8 +96,12 @@ export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => 
     obs.observe(box, { childList: true, subtree: true });
     return () => { obs.disconnect(); box.removeEventListener('focusin', onFocusIn); };
   }, [boxRef]);
-  const closeRef = useRef(onClose);
-  closeRef.current = onClose; // Échap suit la visibilité COURANTE du bouton Annuler (pré/post-jet)
+  // CONGÉDIEMENT : le dialogue est une COUCHE de la pile (`dismissStack`, #1476) — Échap et le
+  // bouton B de la manette y arrivent par la couture unique `resoudreEchap`, qui congédie la couche
+  // du DESSUS (la dernière ouverte), jamais le dernier `[role=dialog]` de l'ordre du document — un
+  // portal ajouté en fin de `body` mentait sur l'ordre d'ouverture. Sans `onClose`, la couche est
+  // BLOQUANTE : elle consomme la touche sans rien fermer (un jet posé doit être résolu).
+  useDismissLayer(kind, onClose ?? null, actif);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const box = boxRef.current;
@@ -105,18 +119,6 @@ export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => 
       // Focus posé sur un ÉLÉMENT RÉEL hors de la boîte (portal) : il n'appartient pas à ce dialogue,
       // la boîte ne décide pas pour lui. `body` (focus nulle part) reste à la boîte, c'est son repli.
       const focusElsewhere = !!ae && ae !== document.body && !box.contains(ae);
-      if (e.key === 'Escape') {
-        // Congédiement EN COUCHES : la surface portée qui tient le focus se referme la PREMIÈRE
-        // (elle est « au-dessus » de la boîte à l'écran). Sans cette frontière, Échap fermait la
-        // modale ENTIÈRE sous un popover encore ouvert — même défaut de containment qu'Entrée.
-        if (focusElsewhere) return;
-        if (closeRef.current) {
-          e.preventDefault();
-          e.stopPropagation(); // une modale/écran qui CONSOMME Échap ne le laisse pas ouvrir le menu système (useGameKeyboard, phase window)
-          closeRef.current();
-        }
-        return;
-      }
       const els = visibleFocusables(box);
       if (e.key === 'Enter') {
         // Bouton focalisé → activation NATIVE (cocher une option de choix, cliquer Lancer/Terminer…).
@@ -187,7 +189,7 @@ export function Modal({
   children: ReactNode;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef, onClose);
+  useModalA11y(boxRef, onClose); // aucun early-return : la boîte montée est la boîte affichée
   return (
     <div className="modal-overlay" onClick={backdropClose && onClose ? onClose : undefined}>
       <div

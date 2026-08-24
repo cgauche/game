@@ -66,7 +66,7 @@ export function ScreenShell({
   children: ReactNode;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef, onClose);
+  useModalA11y(boxRef, onClose, { kind: 'ecran-plein-champ' }); // aucun early-return : monté = affiché
   return (
     <div ref={boxRef} role="dialog" aria-modal="true" className={`worldmap-overlay${className ? ` ${className}` : ''}`}>
       <div className="worldmap-head">

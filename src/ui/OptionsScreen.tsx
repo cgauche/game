@@ -53,7 +53,7 @@ export function OptionsPanel() {
  */
 export function OptionsScreen({ onClose, title = t('gameMenu.options') }: { onClose: () => void; title?: ReactNode }) {
   const boxRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef, onClose);
+  useModalA11y(boxRef, onClose, { kind: 'options' }); // aucun early-return : monté = affiché
   return (
     <div className="game-menu-overlay" role="dialog" aria-modal="true" aria-label={t('gameMenu.options')} ref={boxRef}>
       <MenuSubScreen title={title} onBack={onClose} wide>

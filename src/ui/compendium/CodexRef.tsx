@@ -17,6 +17,7 @@ import { createPortal } from 'react-dom';
 import { useGame } from '../../state/store';
 import { codexLookup, codexLookupById } from './registry';
 import { mdToText } from '../Prose';
+import { useDismissLayer } from '../useDismissLayer';
 
 const truncate = (s: string, n = 400): string => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
 
@@ -206,29 +207,30 @@ export function CodexRef({
   // Clic HORS du déclencheur ET hors du popover referme aussi. Le popover porté compte comme
   // « dedans » : sous `wrap` il est cliquable (sa porte vers la fiche), et un `mousedown` dessus le
   // démonterait avant que le `click` n'atteigne le bouton.
+  // COUCHE de la pile partagée (`dismissStack`, #1476) tant que le popover est À L'ÉCRAN : le
+  // congédiement (Échap, B) le referme, et s'arrête là — il n'ouvre plus le menu système derrière.
+  const congedier = useCallback(() => {
+    const wasPinned = pinned;
+    unpin();
+    // Le focus ne revient au contrôle englobé QUE s'il était parti DANS le popover (épinglage) —
+    // sinon il n'a jamais bougé, et le re-focaliser rouvrirait le popover à l'instant même par
+    // `onFocus={show}` : Échap semblait alors « ne rien fermer » (recette #1117).
+    if (wrap && wasPinned) ref.current?.querySelector('button')?.focus();
+  }, [pinned, unpin, wrap]);
+  // Une couche ouverte AU-DESSUS (modale, panneau-paramètre) recouvre la surface : le popover, qui
+  // n'était qu'une infobulle posée sur l'écran d'en dessous, se retire au lieu de rester dessous.
+  useDismissLayer('popover-codex', congedier, pinned || !!pos, congedier);
+
   useEffect(() => {
     if (!pinned && !pos) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      const wasPinned = pinned;
-      unpin();
-      // Le focus ne revient au contrôle englobé QUE s'il était parti DANS le popover (épinglage) —
-      // sinon il n'a jamais bougé, et le re-focaliser rouvrirait le popover à l'instant même par
-      // `onFocus={show}` : Échap semblait alors « ne rien fermer » (recette #1117).
-      if (wrap && wasPinned) ref.current?.querySelector('button')?.focus();
-    };
     const onDoc = (e: MouseEvent) => {
       const t = e.target as Node;
       if (ref.current?.contains(t) || popRef.current?.contains(t)) return;
       unpin();
     };
-    document.addEventListener('keydown', onKey);
     document.addEventListener('mousedown', onDoc);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onDoc);
-    };
-  }, [pinned, pos, unpin, wrap]);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [pinned, pos, unpin]);
 
   // Épinglage clavier sous `wrap` : le focus ENTRE dans le popover, sur sa porte — sans quoi la
   // fiche ne serait atteignable qu'à la souris (le portal est en fin de `body`, hors ordre de Tab).

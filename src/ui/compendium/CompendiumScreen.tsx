@@ -286,7 +286,7 @@ export function CodexOverlay() {
   const focus = useGame((s) => s.codexOverlay);
   const close = useGame((s) => s.closeCodexOverlay);
   const boxRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef, close);
+  useModalA11y(boxRef, close, { kind: 'codex', actif: !!focus }); // même condition que l'early-return ci-dessous
   if (!focus) return null;
   return (
     <div className="modal-overlay" onClick={close}>

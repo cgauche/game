@@ -18,6 +18,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { createPortal } from 'react-dom';
 import { Modal } from './Modal';
+import { useDismissLayer } from './useDismissLayer';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -139,11 +140,33 @@ describe('Modal — un contrôle porté par PORTAL possède ses touches (fronti�
     expect(portalClicks).toBe(1);
   });
 
-  it('Échap avec le focus sur la surface PORTÉE ne ferme PAS la boîte (congédiement en couches)', () => {
+  // CONGÉDIEMENT EN COUCHES (#1476) : l'ordre est celui des OUVERTURES (pile LIFO), pas celui du
+  // focus. Une surface portée qui s'est EMPILÉE au-dessus de la boîte se ferme d'abord ; un simple
+  // contrôle porté, qui n'est la couche de personne, ne fait pas écran à la boîte.
+  it('une COUCHE ouverte au-dessus de la boîte se referme d’abord — la modale reste ouverte', () => {
+    clicks = 0; escapes = 0;
+    let surfaces = 0;
+    const Surface = () => { useDismissLayer('surface-portee', () => { surfaces += 1; }); return null; };
+    const Scene = ({ portee }: { portee: boolean }) => (
+      <Modal title="Jet" variant="roll" onClose={() => { escapes += 1; }}>
+        <div className="modal-actions">
+          <button className="btn btn-primary" onClick={() => { clicks += 1; }}>Tout lancer</button>
+        </div>
+        {portee && createPortal(<Surface />, document.body)}
+      </Modal>
+    );
+    act(() => root.render(<Scene portee={false} />));
+    act(() => root.render(<Scene portee />)); // la surface s'ouvre APRÈS la boîte : elle est au-dessus
+    act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+    expect(surfaces, 'la couche du DESSUS se congédie').toBe(1);
+    expect(escapes, 'et la boîte, dessous, reste ouverte').toBe(0);
+  });
+
+  it('un contrôle porté SIMPLEMENT FOCALISÉ ne fait pas écran : Échap ferme la boîte', () => {
     const { porte } = mountWithPortal();
     porte.focus();
     act(() => { porte.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
-    expect(escapes, 'la surface portée se referme d’abord, la modale reste ouverte').toBe(0);
+    expect(escapes, 'le focus n’est pas une couche — la boîte est la surface du dessus').toBe(1);
   });
 
   it('flèches : la boîte ne rove PAS par-dessus un contrôle porté focalisé', () => {

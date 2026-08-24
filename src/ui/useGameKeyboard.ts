@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useGame } from '../state/store';
-import { KEYBINDINGS, effectiveCodes } from '../state/keybindings';
+import { KEYBINDINGS, effectiveCodes, CODE_ECHAP } from '../state/keybindings';
+import { resoudreEchap, echapRelachee } from '../state/resoudreEchap';
 
 /**
  * Hook UNIQUE des raccourcis clavier de JEU : un seul listener `keydown`, ignore les champs de saisie,
@@ -30,6 +31,15 @@ export function useGameKeyboard() {
     const onKey = (e: KeyboardEvent) => {
       const { saisie, controlFocused } = saisieEnCours();
       if (saisie) return;
+      // ANNULATION : couture unique `resoudreEchap` (pile de couches, puis échelle métier du
+      // registre). La porte clavier de la pile la tranche déjà en capture quand une couche existe ;
+      // ce chemin-ci est celui de la pile VIDE. La sourdine du dialogue PNJ est une couche bloquante
+      // poussée par `DialogueBox`, plus un cas particulier de ce hook.
+      if (e.code === CODE_ECHAP) {
+        const pris = resoudreEchap(useGame.getState, { controlFocused, repeat: e.repeat });
+        if (pris !== null) e.preventDefault();
+        return;
+      }
       if (useGame.getState().dialogue) return; // pas de raccourci pendant un dialogue
       const b = trouver(e, controlFocused);
       if (!b) return;
@@ -45,6 +55,7 @@ export function useGameKeyboard() {
     };
     const onKeyUp = (e: KeyboardEvent) => {
       priseParCode.delete(e.code); // l'appui est fini : la touche est rendue au registre
+      if (e.code === CODE_ECHAP) echapRelachee();
       const { saisie, controlFocused } = saisieEnCours();
       if (saisie) return;
       const b = trouver(e, controlFocused);
@@ -58,6 +69,7 @@ export function useGameKeyboard() {
     // coûte rien face à une caméra qui tourne toute seule pendant qu'on est ailleurs.
     const relacherTout = () => {
       priseParCode.clear();
+      echapRelachee();
       for (const b of KEYBINDINGS) b.runUp?.(useGame.getState);
     };
     const onVisibilite = () => { if (document.hidden) relacherTout(); };

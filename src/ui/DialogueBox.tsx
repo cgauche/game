@@ -9,6 +9,7 @@ import type { IconIdInput } from './icons';
 import { SpeakerBanner } from './SpeakerBanner';
 import { SpectatorChip } from './SpectatorChip';
 import { useOwnsGroupDecision, groupDecisionSeat } from './ownership';
+import { useDismissLayer } from './useDismissLayer';
 
 export function DialogueBox() {
   const dialogue = useGame((s) => s.dialogue);
@@ -24,6 +25,9 @@ export function DialogueBox() {
   const owns = useOwnsGroupDecision();
   const seatNames = useGame((s) => s.net.seatNames);
   const meneur = seatNames[groupDecisionSeat(useGame.getState())] ?? 'L’hôte';
+  // COUCHE BLOQUANTE : une conversation en cours consomme le congédiement sans rien fermer — on en
+  // sort par une réponse, jamais par Échap (`onDismiss: null`, l'équivalent de `closedBy="none"`).
+  useDismissLayer('dialogue', null, !!dialogue);
   if (!dialogue) return null;
   const node = dialogue.dialogue.nodes.find((n) => n.id === dialogue.nodeId);
   if (!node) return null;

@@ -9,6 +9,7 @@
 import { useEffect } from 'react';
 import { useGame } from '../state/store';
 import { runBindingById, runBindingUpById } from '../state/keybindings';
+import { resoudreEchap } from '../state/resoudreEchap';
 import { visibleFocusables } from './Modal';
 
 /** Surface d'AFFORDANCES du combat : le pont de la console (`CombatConsole`), unique conteneur de
@@ -92,10 +93,11 @@ export function padButton(name: PadButton): void {
       if (ctx === 'map') { runBindingById('round-start', get); runBindingById('cursor-commit', get); } // gardés par `when` → un seul agit
       else ae?.click();
       break;
-    case 'B': // annuler : carte = annuler le curseur ; menu = ressortir (blur) ; modale = Échap
-      if (ctx === 'map') runBindingById('cursor-cancel', get);
-      else if (ctx === 'menu') ae?.blur();
-      else document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    case 'B': // annuler : la couture UNIQUE du congédiement (pile de couches puis échelle du registre) ;
+      // menu = ressortir (blur), le focus est le seul état à défaire. Le synthétiseur de `KeyboardEvent`
+      // d'avant n'émettait que `key` quand le registre matche `code` : B n'atteignait aucun échelon.
+      if (ctx === 'menu') ae?.blur();
+      else resoudreEchap(get);
       break;
     case 'X': // carte : combat = focus la console ; exploration (pas de console) = bascule le POV. menu = revenir carte.
       if (ctx === 'map') {

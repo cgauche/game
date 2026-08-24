@@ -27,7 +27,9 @@ import { WoundsBadge } from './WoundsBadge';
  */
 export function InspectPanel({ combatant, onClose }: { combatant: Combatant; onClose: () => void }) {
   const boxRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef, onClose); // dialogue au markup spécifique (tête portrait+PV) → hook a11y partagé
+  // Dialogue au markup spécifique (tête portrait+PV) → hook a11y partagé. Aucun early-return : le
+  // panneau est monté par son appelant seulement quand il s'affiche → actif par défaut.
+  useModalA11y(boxRef, onClose, { kind: 'inspection' });
   const c = combatant;
   const battle = useGame((s) => s.battle);
   const facing = useGame((s) => s.facing);

@@ -206,13 +206,17 @@ export function PosteSheet({ combatantIds, initialHullId, onClose }: { combatant
   const [pickedPosteUid, setSelectedPosteUid] = useState<string | null>(null);
   const [tab, setTab] = useState<'postes' | 'manoeuvre'>('postes');
   const boxRef = useRef<HTMLDivElement>(null);
-  useModalA11y(boxRef, onClose);
-  if (!battle || !scene) return null;
   const idSet = new Set(combatantIds);
   // Postes de TOUTES les coques de l'ensemble, ancrés au cap de chacune (posteAnchor). Un poste par pièce d'artillerie.
-  const stations = postesToStations(battle.combatants, (h, p) => posteAnchor(h, p, { heading: facing[h.id] })).filter(
-    (s) => s.ref.kind === 'poste' && idSet.has(s.ref.hullId),
-  );
+  // Calcul PUR, remonté au-dessus du hook a11y : c'est lui qui dit si la feuille rend quelque chose,
+  // donc si elle est une couche — les deux early-returns ci-dessous lisent la même expression.
+  const stations = battle && scene
+    ? postesToStations(battle.combatants, (h, p) => posteAnchor(h, p, { heading: facing[h.id] })).filter(
+        (s) => s.ref.kind === 'poste' && idSet.has(s.ref.hullId),
+      )
+    : [];
+  useModalA11y(boxRef, onClose, { kind: 'feuille-postes', actif: stations.length > 0 });
+  if (!battle || !scene) return null;
   if (!stations.length) return null;
   // Sélection effective : choix explicite (plan/puces), sinon le 1er poste de la coque d'ouverture, sinon le 1er poste.
   const firstOfInitial = initialHullId

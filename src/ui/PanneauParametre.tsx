@@ -18,7 +18,8 @@
  * (côté qui a le plus de place, `maxHeight` borné au réel — jamais de débordement), et l'a11y de
  * dialogue est le hook partagé `useModalA11y` (focus au montage sur le 1ᵉʳ candidat, piège Tab,
  * flèches, retour du focus au déclencheur à la fermeture) — comme `InspectPanel`/`CharacterSheet`,
- * dialogues au markup propre. La touche Échap, elle, reste CONSOMMÉE ici, en capture (voir plus bas).
+ * dialogues au markup propre. Le congédiement (Échap, B de la manette) est celui de tout le monde :
+ * le panneau est une COUCHE de la pile partagée (`useModalA11y` la pousse), congédiée en LIFO.
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -73,31 +74,21 @@ function PanneauBoite({ anchor, intitule, options, onClose, pos }: Omit<PanneauP
   closeRef.current = onClose;
 
   const fermer = useCallback(() => closeRef.current(), []);
-  useModalA11y(panelRef, fermer);
+  // ANNULATION GRATUITE : le panneau s'empile comme couche `panneau-parametre` — Échap le congédie
+  // tant qu'il est la couche du DESSUS, et rien d'autre ne bouge (ni curseur tactique, ni intention
+  // armée, ni menu système). Une couche ouverte APRÈS lui (modale) passe devant : c'est le LIFO.
+  useModalA11y(panelRef, fermer, { kind: 'panneau-parametre' }); // `PanneauBoite` n'est monté QUE placé et affiché → actif par défaut
 
-  // ANNULATION GRATUITE : Échap et clic-dehors ferment. Échap est CONSOMMÉ ici (capture +
-  // `stopImmediatePropagation`) — le panneau est la couche du dessus, et la même touche pilote par
-  // ailleurs le curseur tactique, l'intention armée et le menu système (`keybindings.ts`).
+  // CLIC DEHORS : ferme aussi, sans rien engager.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      fermer();
-    };
     const onDoc = (e: MouseEvent) => {
       const t = e.target as Node;
       // Le DÉCLENCHEUR compte comme « dedans » : son propre clic rouvrirait sinon ce qu'il vient de fermer.
       if (panelRef.current?.contains(t) || anchor.contains(t)) return;
       fermer();
     };
-    document.addEventListener('keydown', onKey, true);
     document.addEventListener('mousedown', onDoc);
-    return () => {
-      document.removeEventListener('keydown', onKey, true);
-      document.removeEventListener('mousedown', onDoc);
-    };
+    return () => document.removeEventListener('mousedown', onDoc);
   }, [anchor, fermer]);
 
   // UN CLIC = COMMIT + FERMETURE : la fermeture est portée par la primitive, jamais recopiée à chaque

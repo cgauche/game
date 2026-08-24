@@ -43,7 +43,7 @@ export function GameMenu({ sceneName, time, onQuit, onSaveLoad, onEndSession, in
   const act = (fn?: () => void) => () => { close(); fn?.(); };
   // Échap / bouton Retour : depuis un sous-écran on remonte au menu ; depuis le menu on ferme.
   const back = () => { if (view !== 'root') setView('root'); else close(); };
-  useModalA11y(boxRef, open ? back : undefined);
+  useModalA11y(boxRef, back, { kind: 'menu-systeme', actif: open }); // monté en PERMANENCE : fermé, il n'est aucune couche
 
   return (
     <div className="game-menu">

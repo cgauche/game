@@ -343,6 +343,10 @@ export const KEYBINDINGS: KeyBinding[] = [
   },
 ];
 
+/** Code physique de la touche d'ANNULATION — le registre en est la source, `resoudreEchap` et la
+ *  pile de couches s'y réfèrent (aucun autre module ne réécrit ce littéral). */
+export const CODE_ECHAP = 'Escape';
+
 /** Touche(s) EFFECTIVE(s) d'un raccourci : la surcharge utilisateur remplace les codes par défaut. */
 export function effectiveCodes(b: KeyBinding, overrides: Record<string, string>): string[] {
   return overrides[b.id] ? [overrides[b.id]] : b.codes;
