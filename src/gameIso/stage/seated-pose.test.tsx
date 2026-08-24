@@ -267,7 +267,12 @@ function repèresDe(species: string, view: View) {
   return {
     drop: seatSitHeight(place) * boxUnitsPerM('personnage', entityTokenScale(ent)),
     solY: Math.max(y('piedG', comp.sk.piedG.length), y('piedD', comp.sk.piedD.length)),
-    tibia: cheville - y('tibiaD'),                       // ce que le TIBIA seul descend sous le genou
+    // Ce que le TIBIA seul descend sous le genou, MESURÉ COMME LE SOLVEUR le borne, canal par canal :
+    // de profil il redresse le tibia à la VERTICALE (angle monde 0) — c'est sa longueur entière qui
+    // descend ; de face/dos il raisonne sur la descente PROJETÉE au repos. Mesurer la projection pour
+    // les deux laissait 0,07 unité de marge au contrat de pendant (rouge au moindre changement
+    // d'angle de repos d'un gabarit) ; mesuré par canal, le résidu tombe à 0,02.
+    tibia: view === 'profile' ? comp.sk.tibiaD.length : cheville - y('tibiaD'),
     semelle: y('piedD', comp.sk.piedD.length) - cheville, // hauteur du PIED sous la cheville
     jambe: cheville - y('cuisseD'),                       // descente hanche → cheville, corps debout
   };

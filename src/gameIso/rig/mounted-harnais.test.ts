@@ -15,6 +15,8 @@ import { mountedPlanOpts, mountedRest, riderBodyPose, seatedBodyPose, seatedRest
 import { baseSkeleton, groundSkeleton } from './skeletons';
 import { gabaritById } from './gabarits';
 import { xfOf } from './poses';
+import { apply, worldTransforms } from './kinematics';
+import type { BoneId } from './bones';
 import { weaponRest } from './anim/weaponClips';
 import { buildWeapon } from '../../engine/items';
 import { resolveById, planById, planOptsForRecord } from './bodyPlan';
@@ -90,9 +92,10 @@ describe('une monture dont l\'espèce n\'est pas cuite pour le set : ALARME visi
 
 /**
  * CORPS ASSIS SANS MONTURE (figurant attablé) : une CHAISE N'EST PAS UNE SELLE — le corps n'enfourche
- * rien, il pose son bassin à la hauteur d'assise et garde ses pieds par terre (`seatedBodyPose`,
- * résolue sur le squelette) — et il porte la tenue d'arme AU REPOS du fantassin, jamais une tenue
- * montée ni un geste.
+ * rien, il pose son bassin à la hauteur d'assise et sa cuisse sur le PLAN d'assise ; son pied touche
+ * terre SI la jambe atteint le sol depuis ce siège, sinon il PEND (`seatedBodyPose`, résolue sur le
+ * squelette, même règle que `mountedRig.ts` § CORPS ASSIS SUR UN SIÈGE) — et il porte la tenue d'arme
+ * AU REPOS du fantassin, jamais une tenue montée ni un geste.
  */
 describe('seatedRest — un attablé n’est pas un cavalier', () => {
   const HAMPE = buildWeapon({ label: 'Hallebarde', hands: 2, reach: 'Longue', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'empalement' }] });
@@ -122,10 +125,31 @@ describe('seatedRest — un attablé n’est pas un cavalier', () => {
     expect(mountedRest('profile', HAMPE).arme).not.toBe(repos.arme); // la hampe montée est AU PORT
   });
 
-  /** `anchor.h` d'un siège est ÉDITABLE : toute la plage doit rendre une jambe, pas une dégénérescence.
-   *  Sous la hauteur du PIED lui-même, un raccourci non borné passe NÉGATIF — cuisse retournée, pied à
-   *  l'envers ; au-dessus de l'atteinte de la jambe, il passerait au-dessus de 1 — jambe étirée. */
-  it('toute hauteur d’assise authorée rend une jambe : aucune échelle nulle, négative ou étirée', () => {
+  /** Repères de jambe du corps de contrôle, MESURÉS sur son squelette : ce sont EXACTEMENT ceux dont
+   *  le solveur d'assise tire ses deux bornes — le test ne repose sur aucun nombre posé à la main. */
+  const R = (() => {
+    const w = worldTransforms(SK.sk, {});
+    const y = (id: BoneId, dy = 0) => apply(w[id], { x: 0, y: dy }).y;
+    const cheville = y('piedD');
+    return {
+      solY: Math.max(y('piedG', SK.sk.piedG.length), y('piedD', SK.sk.piedD.length)),
+      tibia: cheville - y('tibiaD'),                        // ce que le TIBIA seul descend sous le genou
+      semelle: y('piedD', SK.sk.piedD.length) - cheville,   // hauteur du PIED sous la cheville
+      jambe: cheville - y('cuisseD'),                       // descente hanche → cheville, corps debout
+    };
+  })();
+
+  /** Jeu laissé à la projection de la semelle par le repli de la jambe (résidu mesuré ≤ 0,15 unité sur
+   *  toute la plage) : la tolérance absorbe cela, jamais un enfoncement d'une hauteur de pied. */
+  const JEU = 0.25;
+
+  /** `anchor.h` d'un siège est ÉDITABLE : toute la plage doit rendre une jambe, pas une dégénérescence
+   *  — et une jambe QUI TIENT SES BORNES. En haut, la descente hanche→cheville ne dépasse pas ce que
+   *  le TIBIA seul permet (cuisse posée sur le plan d'assise) : la borne vaut tibia/jambe ≈ 0,48, pas
+   *  1. En bas, le repli s'arrête à la hauteur du PIED, plancher de rendabilité de la compensation ;
+   *  sous un siège plus bas que deux semelles, la semelle s'enfonce alors — d'au plus ce que ce
+   *  plancher lui coûte (`2 × semelle − drop`), jamais davantage. */
+  it('toute hauteur d’assise authorée rend une jambe : bornes tenues, semelle jamais plus bas que le repli minimal', () => {
     for (const drop of [0, 1, 5, 10, 20, 32, 60, 200]) {
       const p = seatedBodyPose('front', SK, drop);
       for (const os of ['cuisseG', 'cuisseD', 'piedG', 'piedD'] as const) {
@@ -136,6 +160,13 @@ describe('seatedRest — un attablé n’est pas un cavalier', () => {
       // Le PIED garde sa taille : son échelle compense EXACTEMENT celle héritée de la cuisse.
       expect(xfOf(p, 'cuisseD').sy * xfOf(p, 'piedD').sy).toBeCloseTo(1, 6);
       expect(xfOf(p, 'cuisseD').sy, `étirement @drop=${drop}`).toBeLessThanOrEqual(1);
+      // BORNE HAUTE — la VRAIE : la descente de la jambe assise n'excède pas celle du tibia seul.
+      expect(xfOf(p, 'cuisseD').sy * R.jambe, `descente @drop=${drop}`).toBeLessThanOrEqual(R.tibia + JEU);
+      // BORNE BASSE — la semelle ne descend sous le sol que de ce que le repli minimal lui coûte.
+      const w = worldTransforms(SK.sk, p);
+      const semelleY = Math.max(apply(w.piedG, { x: 0, y: SK.sk.piedG.length }).y, apply(w.piedD, { x: 0, y: SK.sk.piedD.length }).y);
+      const irreductible = Math.max(0, 2 * R.semelle - drop);
+      expect(semelleY - R.solY, `enfoncement @drop=${drop}`).toBeLessThanOrEqual(irreductible + JEU);
     }
   });
 

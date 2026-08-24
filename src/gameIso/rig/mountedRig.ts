@@ -118,7 +118,8 @@ function seatedLegsProfile(b: SeatedBody, base: Pose, drop: number): Pose {
  * RACCOURCIT (`sy`) — le raccourci que la rotation 2D ne sait pas dire. L'échelle étant HÉRITÉE,
  * toute la jambe se raccourcit du même facteur ; le pied compense l'héritage (`sy` inverse) et garde
  * sa taille, si bien que sa pointe retombe exactement sur le sol — tant que le raccourci demandé tient
- * entre les deux bornes du squelette ; à la borne haute le pied PEND, comme en profil.
+ * entre les deux bornes du squelette ; à la borne haute le pied PEND, comme en profil, et sous un
+ * siège plus bas que deux semelles il s'enfonce de ce que le repli minimal lui laisse.
  */
 function seatedLegsFront(b: SeatedBody, base: Pose, drop: number): Pose {
   const { y, solY } = reperes(b, base);
@@ -128,17 +129,23 @@ function seatedLegsFront(b: SeatedBody, base: Pose, drop: number): Pose {
     const hanche = y(cuisse), genou = y(tibia), cheville = y(pied);
     const semelle = y(pied, b.sk[pied].length) - cheville; // hauteur du PIED, hors raccourci
     const jambe = cheville - hanche;
-    // MÊME borne qu'en profil, dite dans le canal du raccourci : la descente de la jambe ne dépasse
-    // pas celle du TIBIA seul (cuisse posée sur le plan d'assise) — au-delà elle s'étirerait vers un
-    // sol hors d'atteinte et le corps redeviendrait debout ; et elle ne se raccourcit pas sous la
-    // hauteur de son propre PIED — sous ce plancher l'échelle deviendrait négative (cuisse retournée,
-    // pied à l'envers) sur un siège authoré plus bas qu'une semelle. Les deux bornes sont MESURÉES
-    // sur le squelette du corps, jamais posées à la main.
-    const k = jambe !== 0
-      ? Math.min((cheville - genou) / jambe, Math.max(semelle / jambe, (drop - semelle) / jambe))
-      : 1;
-    out[cuisse] = { sy: k };
-    out[pied] = { sy: 1 / k };
+    // La descente VISÉE de la jambe est celle qui pose la SEMELLE AU SOL (`drop − semelle`) : c'est
+    // le SOL qui commande le raccourci. Elle se borne aux deux bouts, MESURÉE sur le squelette du
+    // corps et jamais posée à la main. En HAUT par le TIBIA seul, MÊME borne qu'en profil dite dans
+    // le canal du raccourci (cuisse posée sur le plan d'assise) — au-delà la jambe s'étirerait vers
+    // un sol hors d'atteinte et le corps redeviendrait debout. En BAS par la hauteur de son propre
+    // PIED : c'est le plancher de RENDABILITÉ du raccourci, car le pied compense l'héritage par un
+    // `sy` inverse et cette compensation, composée aux rotations de la chaîne, cisaille d'autant plus
+    // que le raccourci est petit (mesuré sur un humain : à k ≈ 0,001, la pointe part à 317 unités de
+    // la cheville, dans une boîte large de 120). Sous un siège plus bas que deux semelles, aucune
+    // pose frontale ne tient donc les deux appuis : la semelle s'enfonce de ce qui manque, au plus de
+    // `2 × semelle − drop`.
+    const visee = drop - semelle;
+    const descente = Math.max(semelle, Math.min(cheville - genou, visee));
+    const k = jambe !== 0 ? descente / jambe : 1;
+    const echelle = k !== 0 ? k : 1; // pied sans épaisseur : rien à replier, la jambe reste entière
+    out[cuisse] = { sy: echelle };
+    out[pied] = { sy: 1 / echelle };
   }
   return out;
 }
