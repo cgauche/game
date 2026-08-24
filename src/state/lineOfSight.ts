@@ -9,6 +9,7 @@ import { Scene, SceneEntity, tileAt, wallBetween, heightAt, sceneMetresPerTile }
 import { TERRAINS } from './terrain';
 import { findPropById } from '../data';
 import { propFootTiles } from './footprint';
+import { memoByRef } from './sceneMemo';
 import { Pt } from './path';
 import type { Combatant } from '../engine/types';
 import { chebyshev } from '../engine/grid';
@@ -96,10 +97,27 @@ export function smokeZone(from: Pt, center: Pt, radius: number): Pt[] {
   return [...seen.values()];
 }
 
+/** Index O(1) case → décor pour la Ligne de Vue, bâti UNE fois par identité de `scene.entities`
+ *  (patron `buildEntityBlockIndex`, sceneRules.ts). La case retient le PREMIER décor du tableau qui
+ *  la couvre : même préséance que le balayage `find` qu'il remplace. Aucun filtre d'étage ici — la
+ *  LdV lit la case, pas la couche (contrairement à `entityBlockedAt`). */
+function buildDecorIndex(entities: readonly SceneEntity[]): ReadonlyMap<string, SceneEntity> {
+  const at = new Map<string, SceneEntity>();
+  for (const e of entities) {
+    if (e.kind !== 'prop') continue;
+    for (const t of propFootTiles(e.ref, e.pos)) {
+      const k = `${t.x},${t.y}`;
+      if (!at.has(k)) at.set(k, e);
+    }
+  }
+  return at;
+}
+/** Mémoïsé par IDENTITÉ de `scene.entities` (`memoByRef`) — PAS `scene` : même raison qu'en
+ *  `sceneRules.ts` (le tableau est la clé la plus fine, toujours neuf à chaque ajout/retrait). */
+const decorIndex = memoByRef(buildDecorIndex);
+
 const decorAt = (scene: Scene, x: number, y: number): SceneEntity | undefined =>
-  scene.entities.find(
-    (e) => e.kind === 'prop' && propFootTiles(e.ref, e.pos).some((p) => p.x === x && p.y === y),
-  );
+  decorIndex(scene.entities).get(`${x},${y}`);
 
 /** Une CASE bloque-t-elle la vue ? (terrain opaque `mur/porte`, décor opaque `statue`). Prédicat UNIQUE
  *  d'opacité de tuile — utilisé par le couvert (`lineOfSightCover`) ET la vision (échantillonnage
