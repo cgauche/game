@@ -189,6 +189,25 @@ export async function attendreQuads(n: number, limiteMs = 4000): Promise<void> {
 /** Le canevas volumique monté sous `hôte`. */
 export const canevas = (hôte: HTMLElement): HTMLCanvasElement => hôte.querySelector('canvas.iso-stage') as HTMLCanvasElement;
 
+/**
+ * Attend la FIN de l'entrée en scène du montage (`data-voile` absent) — PRÉMISSE de mesure pour tout
+ * banc qui mesure autre chose que le voile lui-même.
+ *
+ * Ce que le voile attend n'est PAS ce qu'attend `attendreQuads` : les billboards proches tombent vite,
+ * mais les gabarits de FACE du monde partent en file au rang le plus bas (`PRIORITE_FOND`,
+ * `backends/webgl/faceBake`) et le voile les attend TOUS. Mesuré sur le hub de l'arène : 348 tâches
+ * encore en file et 14 clés de face encore attendues au retour d'`attendreQuads(40)`, le voile tombant
+ * 240 ms plus tard. Un banc qui mesure `data-voile` sans cette attente lit donc le voile du MONTAGE, pas
+ * ce qu'il croit mesurer.
+ *
+ * Le budget est un PLAFOND, jamais une assertion : le voile a le sien (`AMBIANCE.entreeEnScene.plafondMs`),
+ * et c'est à l'appelant d'affirmer qu'il est bien tombé.
+ */
+export async function attendreEntréeFinie(hôte: HTMLElement, limiteMs = 4000): Promise<void> {
+  const fin = Date.now() + limiteMs;
+  while (canevas(hôte)?.dataset.voile && Date.now() < fin) await respirer(20);
+}
+
 /** Le compteur applicatif de rendus du canevas — ce que le renderer a REÇU (un canevas WebGL n'a pas
  *  d'arbre à interroger, et c'est par lui que la recette navigateur lit le même fait). */
 export const rendus = (hôte: HTMLElement): number => Number(canevas(hôte).dataset.rendus ?? 0);

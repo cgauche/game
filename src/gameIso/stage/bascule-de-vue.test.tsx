@@ -30,6 +30,7 @@ import { CampaignView } from '../../ui/CampaignView';
 import { setStageRendererFactory } from './GameStage3D';
 import {
   BancRenderer,
+  attendreEntréeFinie,
   attendreQuads,
   brancherArdoise,
   canevas as canevasDe,
@@ -256,8 +257,15 @@ describe('Bascule de regard — la molette survit à l’aller-retour (#1385)', 
 describe('Bascule de regard — la CUISSON du monde ne se rejoue jamais (#1385)', () => {
   it('quatre bascules et un pas entre chacune : pas une seule cuisson de plus', async () => {
     await monterHub();
+    // PRÉMISSE de la mesure de voile : l'entrée en scène DU MONTAGE doit être finie avant qu'on
+    // compte les bascules. `attendreQuads` ne l'assure pas (elle attend des billboards, le voile
+    // attend en plus tous les gabarits de face, servis au rang le plus bas) — mesuré à 348 tâches
+    // encore en file au retour, voile levé, et tombé 240 ms plus tard.
+    await attendreEntréeFinie(hôte!);
     const quadsAvant = quads();
     expect(quadsAvant.length, 'aucun board monté : rien à mesurer').toBeGreaterThan(0);
+    expect(canevas().dataset.voile, 'PRÉMISSE : le voile du montage n’est pas tombé, il n’y a pas de réarmement à mesurer')
+      .toBeUndefined();
     const bakeAvant = cuissons();
 
     const cuisson = vi.spyOn(sceneMeshes, 'bakeWorldGeometry');
