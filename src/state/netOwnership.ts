@@ -88,16 +88,27 @@ export function worldSeat(s: GameState): number {
   return s.net.gmSeat ?? 0;
 }
 
+/**
+ * LE PORTEUR EST-IL CONDUIT PAR LE SIÈGE DU MONDE ? (#1479) — les deux routes que `seatOwns`
+ * distingue depuis toujours, NOMMÉES : un porteur de l'ENVIRONNEMENT (sentinelle `WORLD_STEP_OWNER` :
+ * désertion, Moral, météo) et un ennemi du bac-à-sable MJ reviennent au `worldSeat` ; tout autre
+ * porteur est ATTRIBUÉ à un siège par `net.ownership` (réservé aux héros).
+ *
+ * Un seul site pour cette route : `seatOwns` la consomme pour dire QUI possède, `rollSeam` pour dire
+ * qui VOIT (un héros dont le siège est aussi le siège MJ — hôte-MJ solo — reste tenu par SON joueur,
+ * il n'est pas « conduit par le monde »).
+ */
+export function conduitParLeSiegeDuMonde(s: GameState, combatantId: string | undefined): boolean {
+  if (combatantId === WORLD_STEP_OWNER) return true;
+  if (!combatantId) return false;
+  const c = inBattleId(s.battle, combatantId);
+  return !!c && c.kind === 'enemy' && s.net.gmSeat != null;
+}
+
 /** Le siège possède-t-il ce combattant ? (héros non attribué → hôte, siège 0). */
 export function seatOwns(s: GameState, seat: number, combatantId: string | undefined): boolean {
-  // Étape MONDE sans acteur (désertion, Moral…) : le siège du monde (`worldSeat` — MJ s'il existe,
-  // hôte sinon ; même politique que l'ennemi `kind:'enemy'` ci-dessous, étendue au hors-combat).
-  if (combatantId === WORLD_STEP_OWNER) return seat === worldSeat(s);
+  if (conduitParLeSiegeDuMonde(s, combatantId)) return seat === worldSeat(s);
   if (!combatantId) return seat === 0;
-  // Bac-à-sable MJ : un combattant NON-héros (ennemi/monde) est conduit par le siège MJ (`gmSeat`), pas
-  // par `ownership` (réservé aux héros) — les intents de son tour/ses modales remontent donc au MJ.
-  const c = inBattleId(s.battle, combatantId);
-  if (c && c.kind === 'enemy' && s.net.gmSeat != null) return seat === s.net.gmSeat;
   return (s.net.ownership[combatantId] ?? 0) === seat;
 }
 

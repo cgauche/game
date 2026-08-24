@@ -31,7 +31,6 @@ const req = (actorId: string): RollRequest => ({
   actionLabel: 'Résistance',
   test: { skill: 'resistance', char: 'endurance' },
   difficulty: 'intermediaire',
-  klass: 'hero-test',
 });
 
 /** HÔTE au siège 0 ; `H1` attribué au siège 1 (invité) — la configuration coop la plus simple. */

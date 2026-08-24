@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 28c99d31-0f31-42bf-b192-e530e82d7635
-  modified: 2026-08-10T06:51:18.560Z
+  modified: 2026-08-24T08:34:52.338Z
 ---
 
 **User 2026-07-26 (verbatim)** : « Moi je n'en sais rien, c'est tes relevés »
@@ -38,5 +38,22 @@ la réf nue, sans tag de décision (poison famille 4) ; une règle maison ne se 
 établi un vrai silence (et vit alors en règle OPTIONNELLE éditable, cf.
 [[game-preference-vs-regle-optionnelle]]).
 
+**Corollaire 4 (2026-08-24, #1479)** : une DOCTRINE DÉJÀ RENDUE ne se re-arbitre pas non plus — la
+re-poser force l'utilisateur à re-trancher ce qu'il a déjà tranché et ouvre la porte à un arbitrage
+contradictoire. Précédent : j'ai demandé « un Test subi par un héros possédé s'affiche-t-il ? »
+alors que la chaîne #942 (« on nourrit l'hôte, on ne le duplique jamais »), la forme canonique
+(2026-08-20) et le contrat d'affichage (2026-08-04) répondaient déjà. User : « Si tu te pose cette
+question c'est que notre objectif n'est pas clair » puis « pourquoi aujourd'hui tu me demande un
+arbitrage qui va a l'encontre même du système qui a des bases solides ». CAUSE AMONT : le ticket
+#1479, écrit par MOI à la clôture de #1426, avait classé la branche `subi` « décision produit » sans
+la confronter aux doctrines — la classification de périmètre a fabriqué une question ouverte, puis
+le ticket a gagné l'autorité d'un brief. VERROUS : (a) avant tout AskUserQuestion d'arbitrage,
+confronter la question à la chaîne d'invariants (tickets-programmes #942/#939 + fiches doctrine) —
+si une doctrine répond, on ÉNONCE et on avance ; (b) tout ticket que J'ÉCRIS sur un socle (dont les
+« restes » de clôture) porte `## Invariant` verbatim, comme les briefs de codeur — un reste ticketé
+sans sa chaîne d'invariants fabrique la question ouverte de demain.
+
 Lié : [[feedback-arbitrage-agent-source-en-main]], [[feedback-questions-stop-loop]],
-[[feedback-deleguer-grounding-pas-que-code]], [[game-preference-vs-regle-optionnelle]].
+[[feedback-deleguer-grounding-pas-que-code]], [[game-preference-vs-regle-optionnelle]],
+[[feedback-invariant-cite-verbatim-jamais-depuis-un-rendu-de-juge]],
+[[user-doctrine-forme-canonique-unique-jets]].

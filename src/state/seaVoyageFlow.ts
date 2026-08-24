@@ -48,8 +48,8 @@ import { registerScene } from './store';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { vehicleCombatant } from '../engine/vehicle';
 import { voyageStakeRef, conditionLabel, findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, diseaseLabel, refLabel } from '../data';
-import { installCost, rollSteamBreakdown, steamBreakdownTriggered, shipSizeOfLength, vesselPropulsion, type SteamBreakdownEntry, type PropulsionKind } from '../engine/shipBuild';
-import { d10, roll as rollDice, type RNG } from '../engine/dice';
+import { installCost, steamBreakdownFor, steamBreakdownTriggered, shipSizeOfLength, vesselPropulsion, type SteamBreakdownEntry, type PropulsionKind } from '../engine/shipBuild';
+import { d10, deMonde, roll as rollDice, type RNG } from '../engine/dice';
 import { findTableEntry } from '../engine/tables';
 import { rollTest, isDoubleRoll, extendedTestStep, difficultyFromModifier } from '../engine/tests';
 import { testValue, partyAssisted, partyBest } from '../engine/skills';
@@ -75,7 +75,7 @@ import { expireOnRespite, exposureTarget, exposureCoatMods, exposureFirstFailCha
 import { pursuitOutcome } from '../engine/pursuit';
 import { addCondition } from '../engine/conditions';
 import { effectiveChar } from '../engine/characteristics';
-import { findWhirlpool, pickSeaHazard, rollStranding, strandingPenalty, rollDebrisEntangle } from '../engine/seaPerils';
+import { findWhirlpool, pickSeaHazard, strandingOccurs, strandingPenalty, debrisEntangleFor } from '../engine/seaPerils';
 import {
   BOARD_EVENTS, rollPortEvent, rollDaysToNextEvent, addManann, MANANN_BASE, seaBoardEventById,
   removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoTotalEnc, cargoOverload, resolveFastVoyage, FAST_VOYAGE_PALIERS,
@@ -96,7 +96,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
-import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, monoStep, tableStep, bandStep, buildBand, choiceStep, openChoice, pousseSi, type RollRequest, type Consequence, type FreeConsLine, type BuiltCascadeStep } from './rollSeam';
+import { openPartyTest, openWorldTest, composeRollLabel, openSequence, freeCons, rollLine, rollStep, monoStep, tableStep, bandStep, buildBand, choiceStep, openChoice, pousseSi, type RollRequest, type Consequence, type FreeConsLine, type BuiltCascadeStep } from './rollSeam';
 import { registerCascadeApplier, registerCascadeSuccessRule, registerTableStep, startCascade, runCascadeImmediate } from './cascade';
 import { exposureWaveBand } from './nightBands';
 import { dataLabel } from '../data';
@@ -466,7 +466,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
  *  utile (aucun jet à jouer ce Test-là, l'appelant applique son chemin sans-jet). `kind` = la clé du
  *  registre `registerCascadeApplier` (#275 Ronde 2 cran 2/3) — les 10 Tests canoniques partagent leur
  *  `testTypeId`, un ÉVÉNEMENT peut réutiliser un `testTypeId` sous un AUTRE `kind` (Ouragan → Affaler,
- *  cf. `sea-ouragan-affaler`) pour ne jamais retomber dans la routine auto-résolue (`SEA_ROUTINE_KINDS`
+ *  cf. `sea-ouragan-affaler`) pour ne jamais retomber dans la routine auto-résolue (`SEA_KINDS_SOUS_ORDRES`
  *  est indexée par `kind`, pas `testTypeId`). */
 
 function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: { sense?: PairedSense; extraDR?: number; icon?: string } = {}): BuiltCascadeStep | undefined {
@@ -562,7 +562,7 @@ function buildForcePaceStep(get: Get): BuiltCascadeStep | undefined {
   const test = { skill: skillId, label: t('sv.forcePace') };
   return monoStep({
     id: 'sea-force-pace', kind: 'sea-force-pace', actor: best.actor, icon: 'travel/sail-ship',
-    label: composeRollLabel(best.actor, t('sv.forcePace'), test), rollLabel: refLabel('skills', { id: skillId }),
+    label: composeRollLabel(best.actor, t('sv.forcePace'), test),
     difficulty: diff,
     // Le Soutien est un bonus AU TEST (LDB 12, fiche `soutien`) : la valeur SOUTENUE (`best.value`,
     // Soutien fondu par `partyAssisted`) donne la CIBLE — sans elle, la cible se recalculerait depuis
@@ -588,7 +588,7 @@ function buildNavProgressionStep(get: Get): BuiltCascadeStep | undefined {
   const diff: Difficulty = 'intermediaire';
   return monoStep({
     id: 'sea-progression-nav', kind: 'sea-progression-nav', actor: best.actor, icon: 'travel/anchor',
-    label: composeRollLabel(best.actor, t('sv.progression'), test), rollLabel: refLabel('skills', { id: skillId }),
+    label: composeRollLabel(best.actor, t('sv.progression'), test),
     difficulty: diff,
     ligne: { test: { skill: skillId }, valeur: best.value, soutien: best.support },
     stake: voyageStakeRef('sea-progression-nav'),
@@ -625,7 +625,7 @@ function buildStrandedOrEntangledStep(get: Get, label: string, difficulty: Diffi
   const test = { char: 'force' as const };
   return monoStep({
     id: kind, kind, actor: force.actor, icon: 'travel/repair',
-    label: composeRollLabel(force.actor, t('sv.degagement', { label }), test), rollLabel: t('char.force'),
+    label: composeRollLabel(force.actor, t('sv.degagement', { label }), test),
     difficulty,
     ligne: { test: { char: 'force' }, valeur: force.value, soutien: force.support },
     // Les deux `kind` de dégagement (échouage / débris) mettent la MÊME chose en jeu : la progression
@@ -660,7 +660,6 @@ function buildOverspeedStep(get: Get, index: number): BuiltCascadeStep | undefin
     id: `sea-overspeed-${index}`, kind: 'sea-overspeed', actor: best.actor, icon: 'travel/sail-ship',
     label: composeRollLabel(best.actor, t('sv.overspeed'), test),
     difficulty: row.difficulty,
-    rollLabel: refLabel('skills', { id: 'resistance' }),
     ligne: { test: { skill: 'resistance', char: 'endurance' }, valeur: best.value, soutien: best.support },
     // SURPLUS de M du jour (`effMToday − M de conception`) : c'est ce qui choisit la bande du tableau
     // (l.121-142). Il se LIT sur l'étape par sa NOTE d'enjeu (`stake`, zone d'accueil de ce que le jet
@@ -1217,7 +1216,7 @@ function signedD10(n: number): string {
   return `${n < 0 ? '−' : '+'}${Math.abs(n)}d10`;
 }
 
-/** Prière d'un Présage (MDG 15 l.197-198 albatros / l.231-232 feu bleu, `klass:'hero-test'`) : bon
+/** Prière d'un Présage (MDG 15 l.197-198 albatros / l.231-232 feu bleu) : bon
  *  présage → il faut RÉUSSIR pour l'appliquer ; mauvais présage → RÉUSSIR l'évite (`manannD >= 0 ? success : !success`, logique
  *  inchangée). `tell()` pour la même raison recap que `sea-force-pace` ci-dessus. La reprise du jour à
  *  la fermeture est portée par `dispatchCascadeDone` (purpose `test` en mer → `runSeaDay`), pas ici. */
@@ -1241,23 +1240,24 @@ registerCascadeApplier('sea-priere', (get, set, step) => {
   return { consequences: freeCons(j) };
 });
 
-/** Scorbut (MDG 14 l.230, `klass:'subi'`) : conséquence + texte IDENTIQUES à l'ancien inline — seule la
- *  RÉSOLUTION du jet change de couture (cascade au lieu de `rollTest` direct). `hero` = l'acteur de
- *  l'étape (résolu par `commitStep` via `step.actorId`, `cascade.ts:109`). */
-registerCascadeApplier('sea-scorbut', (get, set, step, hero) => {
-  if (!step.result || !hero) return;
-  const soup = !!step.meta?.soup;
-  const success = step.result.success;
-  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
-  // Succès sans effet (l'exposition « pour cette fois » n'a rien à ajouter) → aucune conséquence.
-  if (success) { touchParty(get, set); return { consequences: freeCons([]) }; }
-  const d = contractDisease('scorbut', battleRng());
-  if (d) hero.diseases = [...(hero.diseases ?? []), d];
+/** Scorbut (MDG 14 l.230) : BANDE — le verdict se lit RANGÉE PAR RANGÉE (patron Mal de mer ci-dessous),
+ *  chaque porteur portant sa soupe de chou fermenté dans `row.meta`. */
+registerCascadeApplier('sea-scorbut', (get, set, step) => {
+  const lignes: FreeConsLine[] = [];
+  for (const row of step.participants ?? []) {
+    const hero = actorIn(get(), row.id);
+    // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+    // Succès sans effet (l'exposition « pour cette fois » n'a rien à ajouter) → aucune conséquence.
+    if (!hero || !row.result || row.result.success) continue;
+    const d = contractDisease('scorbut', battleRng());
+    if (d) hero.diseases = [...(hero.diseases ?? []), d];
+    lignes.push({ text: t('sv.scurvyGot', { name: hero.label, soup: row.meta?.soup ? t('sv.fragSoup') : '' }), tone: 'bad' });
+  }
   touchParty(get, set);
-  return { consequences: freeCons([{ text: t('sv.scurvyGot', { name: hero.label, soup: soup ? t('sv.fragSoup') : '' }), tone: 'bad' }]) };
+  return { consequences: freeCons(lignes) };
 });
 
-/** Mal de mer (MDG 14 l.217-220, `klass:'subi'`) : échec → contracté. `applyContraction` dédoublonne si
+/** Mal de mer (MDG 14 l.217-220) : échec → contracté. `applyContraction` dédoublonne si
  *  DEUX étapes ratées le même jour pour le même héros (premier voyage ET mauvais temps cumulés,
  *  `buildSeasicknessSteps`). */
 registerCascadeApplier('sea-mal-de-mer', (get, set, step) => {
@@ -1273,7 +1273,7 @@ registerCascadeApplier('sea-mal-de-mer', (get, set, step) => {
   return { consequences: freeCons(lignes) };
 });
 
-/** Tonneau d'eau — EXPOSITION (MDG 14 l.209, `klass:'subi'`) : boire au tonneau contaminé la veille
+/** Tonneau d'eau — EXPOSITION (MDG 14 l.209) : boire au tonneau contaminé la veille
  *  expose au Test de Contraction propre à la maladie qui l'a contaminé (même cycle générique que
  *  Scorbut ci-dessus, difficulté lue sur `DISEASE_DEFS[…].contractDifficulty`). */
 registerCascadeApplier('sea-tonneau-expose', (get, set, step, hero) => {
@@ -1284,7 +1284,7 @@ registerCascadeApplier('sea-tonneau-expose', (get, set, step, hero) => {
   return { consequences: freeCons(j.length ? [{ text: t('sv.waterDiseaseGot', { name: hero.label, disease: diseaseLabel(diseaseId) }), tone: 'bad' }] : []) };
 });
 
-/** Tonneau d'eau — CONTAMINATION (MDG 14 l.209, `klass:'subi'`) : un porteur boit au tonneau, échoue son
+/** Tonneau d'eau — CONTAMINATION (MDG 14 l.209) : un porteur boit au tonneau, échoue son
  *  Test de Résistance Intermédiaire (+0) → le tonneau devient une source de contagion (effet visible
  *  dès DEMAIN, jamais le jour même — le garde `!waterContaminated` évite qu'un second porteur en échec
  *  le même jour n'écrase la maladie déjà posée par le premier). */
@@ -1296,16 +1296,20 @@ registerCascadeApplier('sea-tonneau-contamine', (get, set, step) => {
   return { consequences: freeCons([{ text: t('sv.waterContaminated', { disease: diseaseLabel(diseaseId) }), tone: 'bad' }]) };
 });
 
-/** Épuisement (MDG 13 l.109-111, `klass:'subi'`) : même patron que Scorbut ci-dessus. */
-registerCascadeApplier('sea-epuisement', (get, set, step, hero) => {
-  if (!step.result || !hero) return;
-  const success = step.result.success;
-  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
-  // Succès sans effet (rien à ajouter) → aucune conséquence.
-  if (success) { set({ party: [...get().party] }); return { consequences: freeCons([]) }; }
-  addCondition(hero, 'extenue');
+/** Épuisement (MDG 13 l.109-111) : même patron de BANDE que Scorbut ci-dessus — un Éténué par rangée
+ *  perdante, jamais N étapes qui défilent pour le MÊME Test. */
+registerCascadeApplier('sea-epuisement', (get, set, step) => {
+  const lignes: FreeConsLine[] = [];
+  for (const row of step.participants ?? []) {
+    const hero = actorIn(get(), row.id);
+    // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+    // Succès sans effet (rien à ajouter) → aucune conséquence.
+    if (!hero || !row.result || row.result.success) continue;
+    addCondition(hero, 'extenue');
+    lignes.push({ text: t('sv.exhaustionGot', { name: hero.label, diff: DIFFICULTY_LABELS[exhaustionDifficulty(true)] }), tone: 'bad' });
+  }
   set({ party: [...get().party] });
-  return { consequences: freeCons([{ text: t('sv.exhaustionGot', { name: hero.label, diff: DIFFICULTY_LABELS[exhaustionDifficulty(true)] }), tone: 'bad' }]) };
+  return { consequences: freeCons(lignes) };
 });
 
 /** Applique les MILLES du jour depuis le total du Test de Progression (±10 %/DR, ch.15 l.78). Renvoie
@@ -1398,15 +1402,51 @@ function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): BuiltCascadeStep[
 }
 
 /**
+ * SCORBUT (MDG 14 l.230) — UNE bande dont les Personnages appelés sont les RANGÉES, comme le Mal de mer
+ * ci-dessus : « pour chaque mois passé sans nourriture correcte », Test de Résistance Intermédiaire
+ * (+0), Facile (+40) pour qui porte de la soupe de chou fermenté (`scurvyGuard`, difficulté de RANGÉE —
+ * elle diverge d'un porteur à l'autre). Les rations de bord ne sont pas de la nourriture fraîche : le
+ * mois EN MER compte.
+ */
+function buildScurvySteps(get: Get, daysAtSea: number): BuiltCascadeStep[] {
+  if (daysAtSea % 30 !== 0) return [];
+  const appeles = get().party.filter((h) => !h.dead && !(h.diseases ?? []).some((d) => d.id === 'scorbut'));
+  if (!appeles.length) return [];
+  const bande = buildBand(get, {
+    id: 'sea-scorbut', kind: 'sea-scorbut', label: t('sv.scurvy'),
+    stake: voyageStakeRef('sea-scorbut', { disease: diseaseLabel('scorbut') }),
+    difficulty: 'intermediaire',
+    porteurs: appeles.map((h) => {
+      const soup = (h.items ?? []).some((it) => itemCapability(it, 'scurvyGuard'));
+      return {
+        actor: h, ligne: { test: { skill: 'resistance', char: 'endurance' } },
+        ...(soup ? { difficulty: 'facile' as Difficulty } : {}),
+        meta: { soup },
+      };
+    }),
+  });
+  return bande ? [bande] : [];
+}
+
+/** Lignes de conclusion d'une séquence RÉSOLUE D'OFFICE (aucune fenêtre ne les a montrées) : celles des
+ *  étapes MONO et celles des RANGÉES de bandes — un seul dériveur pour les trois phases du jour. */
+function lignesResolues(steps: readonly CascadeStep[]): string[] {
+  return steps.flatMap((s) => [
+    ...(s.outcome ?? []).map((l) => l.text),
+    ...(s.participants ?? []).flatMap((p) => (p.outcome ?? []).map((l) => l.text)),
+  ]);
+}
+
+/**
  * Clôture de la CASCADE du jour (#275 Ronde 2 cran 3, appelée par le store — `dispatchCascadeDone`
- * `purpose:'travelDay'`) — PHASE 1/3 de l'entretien-survie (#272 résiduel, seam #275 Décision 3) : eau &
- * rats, puis les maladies embarquées (MDG 14 l.209-230 — Tonneau d'eau contaminé, Mal de mer, Scorbut).
- * Le lot de Tests `subi` des maladies passe par `resolveSurface` : un siège MJ présent (`gmSeat`) →
- * cascade SURFACÉE (`purpose:'seaScorbut'`, visible/lançable, jamais silencieuse — la clôture enchaîne
- * `continueSeaDayAfterScorbut` via `dispatchCascadeDone`, `combatSlice.ts`) ; sinon résolu INLINE comme
- * avant (#275 Ronde 1) et la phase 2 s'enchaîne directement. Toute ligne générée ICI passe par `tell()`
- * (journal + `sea.lines`, durable) plutôt qu'un tableau local — une cascade surfacée PAUSE l'exécution
- * (reprise asynchrone par un clic MJ), un accumulateur JS ne survivrait pas la pause.
+ * `purpose:'travelDay'`) — PHASE 1/3 de l'entretien-survie (#272 résiduel) : eau & rats, puis les
+ * maladies embarquées (MDG 14 l.209-230 — Tonneau d'eau contaminé, Mal de mer, Scorbut).
+ * Les Tests des maladies sont POUSSÉS INCONDITIONNELLEMENT par la porte (`openSequence`, #1479) : c'est
+ * le socle qui dérive leur surface des PORTEURS déclarés (les héros qui les subissent) — fenêtre quand
+ * un siège humain en tient un, résolution d'office sinon (ordres commandés, personne à la barre). Toute
+ * ligne générée ICI passe par `tell()` (journal + `sea.lines`, durable) plutôt qu'un tableau local — une
+ * cascade surfacée PAUSE l'exécution (reprise asynchrone par un clic), un accumulateur JS ne survivrait
+ * pas la pause.
  */
 export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   const plan = get().travelPlan;
@@ -1442,38 +1482,15 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   tell(get, set, consumeCrewProvisions(get, set, 1));
 
   // Maladies embarquées (MDG 14 l.209-230) : Tonneau d'eau contaminé (l.209, `buildBarrelSteps`) + Mal de
-  // mer (l.211-222, `buildSeasicknessSteps`) + Scorbut (l.230, « pour chaque mois passé sans nourriture
-  // correcte » — Test de Résistance Intermédiaire (+0), Facile (+40) avec la soupe de chou fermenté ; les
-  // rations de bord ne sont pas de la nourriture fraîche → le mois EN MER compte). UNE cascade à N étapes
-  // `subi` (patron `shipwreck.ts` 22c74b5d) — policy de la PORTE (`resolveSurface`), jamais un `if gmSeat`
-  // local (#272 résiduel).
+  // mer (l.211-222, `buildSeasicknessSteps`) + Scorbut (l.230, `buildScurvySteps`). Chaque règle porte
+  // son `kind` VÉRIDIQUE — la surface de la journée se dérive des étapes elles-mêmes, plus d'un `kind`
+  // de convenance qui en clé trois (#1479).
   const daysAtSea = sea.daysAtSea + 1;
-  const scurvyTest: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
-  const scurvySteps = (daysAtSea % 30 === 0
-    ? get().party.filter((h) => !h.dead && !(h.diseases ?? []).some((d) => d.id === 'scorbut'))
-    : []
-  ).flatMap((h) => {
-    const soup = (h.items ?? []).some((it) => itemCapability(it, 'scurvyGuard'));
-    const diff: Difficulty = soup ? 'facile' : 'intermediaire';
-    return monoStep({
-      id: `sea-scorbut-${h.id}`, kind: 'sea-scorbut', actor: h,
-      // Z5 (docs/charte-ui.md) : ce `rollLabel` nomme la SITUATION, pas la Compétence lancée
-      // (Résistance) — stock nominatif du cliquet `roll-action-label-guard`, #1109.
-      label: composeRollLabel(h, t('sv.scurvy'), scurvyTest), difficulty: diff, rollLabel: t('sv.scurvy'),
-      ligne: { test: { skill: 'resistance', char: 'endurance' } },
-      stake: voyageStakeRef('sea-scorbut', { disease: diseaseLabel('scorbut') }), meta: { soup },
-    }) ?? [];
-  });
-  const diseaseSteps: BuiltCascadeStep[] = [...buildBarrelSteps(get, sea, vessel0), ...buildSeasicknessSteps(get, sea), ...scurvySteps];
+  const diseaseSteps: BuiltCascadeStep[] = [...buildBarrelSteps(get, sea, vessel0), ...buildSeasicknessSteps(get, sea), ...buildScurvySteps(get, daysAtSea)];
   if (diseaseSteps.length) {
-    const subiReq: RollRequest = { side: { worldSide: 'world' }, actionLabel: t('sv.diseases'), test: {}, difficulty: 'intermediaire', klass: 'subi' };
-    if (resolveSurface(get, subiReq, 'sea-scorbut') === 'I') {
-      const resolved = runCascadeImmediate(get, set, diseaseSteps);
-      tell(get, set, resolved.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
-    } else {
-      startCascade(get, set, { title: 'Entretien — Maladies', icon: 'medical/infection', purpose: 'seaScorbut', steps: diseaseSteps });
-      return; // clôture reprise par `dispatchCascadeDone` (`combatSlice.ts`) → `continueSeaDayAfterScorbut`
-    }
+    const resolues = openSequence(get, set, { title: 'Entretien — Maladies', icon: 'medical/infection', purpose: 'seaScorbut', steps: diseaseSteps });
+    if (!resolues) return; // fenêtre ouverte : clôture reprise par `dispatchCascadeDone` (`combatSlice.ts`) → `continueSeaDayAfterScorbut`
+    noteSeaLine(get, set, lignesResolues(resolues));
   }
   continueSeaDayAfterScorbut(get, set);
 }
@@ -1489,7 +1506,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
 export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: CascadeStep[]): void {
   const plan = get().travelPlan;
   if (!plan?.sea) return;
-  if (doneSteps) tell(get, set, doneSteps.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
+  if (doneSteps) noteSeaLine(get, set, lignesResolues(doneSteps));
   const rng = battleRng();
   const sea = plan.sea;
   const daysAtSea = sea.daysAtSea + 1;
@@ -1543,11 +1560,12 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
       const brut = resVal + coat.reduce((s, m) => s + m.value, 0);
       const valeur = froid ? exposureTarget(h, resVal) : Math.max(0, resVal);
       // Une VAGUE = une BANDE influençable (MDG 13 l.203-225 : la cadence de la bande donne le nombre
-      // de Tests de la Période de travail) — même `kind` (et donc même applier d'escalade) que la nuit.
+      // de Tests de la Période de travail) — kind PROPRE à la route de mer (`sea-exposition`, patron
+      // `sea-ouragan-affaler`), même applier d'escalade que la nuit (`EXPOSURE_BAND_KINDS`).
       // La ligne est montée ICI : sa branche PLANCHER ne nomme aucun acteur (valeur d'une autre
       // formule, rien à décomposer) — la faire remonter par le mint la décomposerait.
       const st = monoStep({
-        id: `sea-exposition-${h.id}`, kind: 'exposure', actor: h, icon: 'rest/cold',
+        id: `sea-exposition-${h.id}`, kind: 'sea-exposition', actor: h, icon: 'rest/cold',
         label: stepPrecision(t('step.exposition'), dataLabel(tdef.label)), rollLabel: refLabel('skills', { id: 'resistance' }),
         difficulty: expDiff,
         montee: rollStep(valeur === brut
@@ -1565,14 +1583,9 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
     // 3ᵉ producteur d'Exposition à passer par la fabrique de vagues (#1117 L3).
     const band = exposureWaveBand(steps, tdef.exposure, expCount);
     if (band.length) {
-      const subiReq: RollRequest = { side: { worldSide: 'world' }, actionLabel: t('sv.exposure'), test: {}, difficulty: 'intermediaire', klass: 'subi' };
-      if (resolveSurface(get, subiReq, 'sea-exposition') === 'I') {
-        const resolved = runCascadeImmediate(get, set, band);
-        tell(get, set, resolved.flatMap((s) => (s.participants ?? []).flatMap((p) => (p.outcome ?? []).map((l) => l.text))));
-      } else {
-        startCascade(get, set, { title: 'Entretien — Exposition', icon: 'rest/cold', purpose: 'seaExposure', steps: band });
-        return; // clôture reprise par `dispatchCascadeDone` → `continueSeaDayAfterExposure`
-      }
+      const resolues = openSequence(get, set, { title: 'Entretien — Exposition', icon: 'rest/cold', purpose: 'seaExposure', steps: band });
+      if (!resolues) return; // fenêtre ouverte : clôture reprise par `dispatchCascadeDone` → `continueSeaDayAfterExposure`
+      noteSeaLine(get, set, lignesResolues(resolues));
     }
   }
   continueSeaDayAfterExposure(get, set);
@@ -1587,7 +1600,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
 export function continueSeaDayAfterExposure(get: Get, set: Set, doneSteps?: CascadeStep[]): void {
   const plan = get().travelPlan;
   if (!plan?.sea) return;
-  if (doneSteps) tell(get, set, doneSteps.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
+  if (doneSteps) noteSeaLine(get, set, lignesResolues(doneSteps));
   const sea = plan.sea;
 
   // DISSIPATION (purge #T3) : les pénalités d'Exposition s'échoient après `exposure-expire-hours`
@@ -1604,29 +1617,20 @@ export function continueSeaDayAfterExposure(get: Get, set: Set, doneSteps?: Casc
   // ÉPUISEMENT (MDG 13 l.109-111) : le rythme a été FORCÉ aujourd'hui (réussi OU non) → chaque PJ
   // (l'équipage = les PJ, MDG 14 l.39) teste Résistance Complexe (−10) sous peine d'Exténué. Le Test
   // de base des Périodes de travail (Accessible +20) est absorbé par l'abstraction d'équipage PNJ —
-  // il n'est joué que quand le joueur CHOISIT de forcer (décision documentée). Même patron
-  // MJ-surfaçable que Scorbut (Phase 1) — policy de la PORTE, jamais un `if gmSeat` local.
+  // il n'est joué que quand le joueur CHOISIT de forcer (décision documentée). UNE SITUATION = UNE
+  // BANDE (patron Mal de mer/Scorbut) poussée par la porte, qui en dérive la surface (#1479).
   if (sea.paceToday) {
-    const diff = exhaustionDifficulty(true);
     const patients = get().party.filter((h) => !h.dead);
-    if (patients.length) {
-      const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
-      const steps = patients.flatMap((h) => monoStep({
-        id: `sea-epuisement-${h.id}`, kind: 'sea-epuisement', actor: h,
-        // Z5 (docs/charte-ui.md) : ce `rollLabel` nomme la SITUATION, pas la Compétence lancée
-        // (Résistance) — stock nominatif du cliquet `roll-action-label-guard`, #1109.
-        label: composeRollLabel(h, t('sv.exhaustion'), test), difficulty: diff, rollLabel: t('sv.exhaustion'),
-        ligne: { test: { skill: 'resistance', char: 'endurance' } },
-        stake: voyageStakeRef('sea-epuisement', { condition: conditionLabel('extenue') }),
-      }) ?? []);
-      const subiReq: RollRequest = { side: { worldSide: 'world' }, actionLabel: t('sv.exhaustion'), test: {}, difficulty: 'intermediaire', klass: 'subi' };
-      if (resolveSurface(get, subiReq, 'sea-epuisement') === 'I') {
-        const resolved = runCascadeImmediate(get, set, steps);
-        tell(get, set, resolved.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
-      } else {
-        startCascade(get, set, { title: t('sv.exhaustionTitle'), icon: 'medical/infection', purpose: 'seaExhaustion', steps });
-        return; // clôture reprise par `dispatchCascadeDone` (`combatSlice.ts`) → `continueSeaDayAfterExhaustion`
-      }
+    const bande = buildBand(get, {
+      id: 'sea-epuisement', kind: 'sea-epuisement', label: t('sv.exhaustion'),
+      stake: voyageStakeRef('sea-epuisement', { condition: conditionLabel('extenue') }),
+      difficulty: exhaustionDifficulty(true),
+      porteurs: patients.map((h) => ({ actor: h, ligne: { test: { skill: 'resistance', char: 'endurance' } } })),
+    });
+    if (bande) {
+      const resolues = openSequence(get, set, { title: t('sv.exhaustionTitle'), icon: 'medical/infection', purpose: 'seaExhaustion', steps: [bande] });
+      if (!resolues) return; // fenêtre ouverte : clôture reprise par `dispatchCascadeDone` (`combatSlice.ts`) → `continueSeaDayAfterExhaustion`
+      noteSeaLine(get, set, lignesResolues(resolues));
     }
   }
   continueSeaDayAfterExhaustion(get, set);
@@ -1641,9 +1645,11 @@ export function continueSeaDayAfterExposure(get: Get, set: Set, doneSteps?: Casc
 export function continueSeaDayAfterExhaustion(get: Get, set: Set, doneSteps?: CascadeStep[]): void {
   const plan = get().travelPlan;
   if (!plan?.sea) return;
-  if (doneSteps) tell(get, set, doneSteps.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
+  if (doneSteps) noteSeaLine(get, set, lignesResolues(doneSteps));
   const rng = battleRng();
-  const sea = plan.sea;
+  // RELU APRÈS la reprise ci-dessus : `plan` a été capturé AVANT, et son `sea.lines` n'aurait pas
+  // porté les conclusions de la fenêtre qui vient de se clore — le recap du jour les perdait.
+  const sea = get().travelPlan!.sea!;
   const daysAtSea = sea.daysAtSea + 1;
   const todayLines = sea.lines;
   const todayEvents = sea.events ?? [];
@@ -1725,7 +1731,9 @@ registerCascadeApplier('progression', (get, set, step) => {
     const triggered = (step.participants ?? []).some((x) => x.result
       && steamBreakdownTriggered({ success: x.result.roll <= x.result.target, sl: x.result.sl, isDouble: isDoubleRoll(x.result.roll) }));
     if (triggered) {
-      const b = rollSteamBreakdown(rng);
+      // Tirage POST-POSE de la table de panne : l'étape `progression` est déjà posée, ce dé en est la
+      // conséquence — porte du canal (`deMonde`), même position RNG qu'inline (MDG 12 l.313).
+      const b = steamBreakdownFor(deMonde(rng));
       j.push(t('sv.steamBreakdown', { label: b.label }), b.desc);
       applySteamBreakdown(get, set, b, rng); // « Fuite de vapeur » → `pendingSteamSave` (sauvegarde d'Initiative) suspend AVANT le reste du jour
     }
@@ -2348,7 +2356,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
     }
     case 'ouragan': {
       // Test d'équipage d'Affaler Difficile (−20 → −2 DR plats) sinon 3 Critiques au Gréement. Kind
-      // DISTINCT `sea-ouragan-affaler` (jamais `SEA_ROUTINE_KINDS` — une URGENCE interrompt TOUJOURS,
+      // DISTINCT `sea-ouragan-affaler` (jamais `SEA_KINDS_SOUS_ORDRES` — une URGENCE interrompt TOUJOURS,
       // `voyageCadence.ts`), toujours en cascade INTERACTIVE (jamais l'auto-pilote).
       const st = buildVoyageCrewStep(get, 'affaler', 'sea-ouragan-affaler', { extraDR: -2, icon: 'nautical/wind' });
       if (st) startCascade(get, set, { title: 'Ouragan — Affaler !', icon: 'nautical/wind', purpose: 'test', steps: [st] });
@@ -2388,7 +2396,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
       // l'acteur/la valeur soutenue via `partyBest` ; ce simple test d'existence ne duplique pas ce
       // calcul (mandat coordinateur : le call-site ne calcule plus la VALEUR, juste la CONDITION RAW).
       if (pd && partyAssisted(get().party, 'priere')) {
-        // seam de jet (#275 Ronde 1) : `klass:'hero-test'` (le prêtre agit). La logique de présage
+        // seam de jet (#275 Ronde 1) : le prêtre agit. La logique de présage
         // (bon/mauvais présage, `tellManann`/`applyShipMoraleDelta`) migre dans l'applier `sea-priere`
         // via `meta` SÉRIALISABLE (coop) — TOUJOURS `return` : surfacé → suspend ; inline → l'applier a
         // déjà tout appliqué (rien à refaire ici).
@@ -2447,10 +2455,14 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
       damageVesselHull(get, set, ship, dmg);
       tell(get, set, [t('sv.collision', { dmg, hazard: hazard.label, ic: hazard.ic })]);
       tell(get, set, spoilVesselCargoOnLeak(get, set)); // avarie de coque → voie d'eau (lot D #327)
-      if (hazard.id === 'debris-marins') {
+      // La DONNÉE du péril ouvre l'issue, jamais son id : `entangleChancePct` (l.485) côté empêtrement,
+      // `strandChancePct` (l.497/499) côté Échouage — et le garde passe AVANT le dé, symétriquement,
+      // pour qu'un péril sans chance n'en consomme aucun.
+      if (hazard.entangleChancePct != null) {
         // Empêtrement (l.485-491) : pénalité de Man/M par Taille du bateau, Test étendu de Force pour se dégager.
         const lengthM = findVehicleById(get().vessel?.vehicleId ?? '')?.ship?.lengthM ?? 0;
-        const ent = rollDebrisEntangle(hazard, shipSizeOfLength(lengthM), rng);
+        // Dé de conséquence d'un événement de bord DÉJÀ posé en table — porte du canal (`deMonde`).
+        const ent = debrisEntangleFor(hazard, shipSizeOfLength(lengthM), deMonde(rng));
         if (ent.entangled) {
           patchSea(get, set, {
             entangled: {
@@ -2462,7 +2474,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
           });
           tell(get, set, [t('sv.entangledOn', { hazard: hazard.label })]);
         }
-      } else if (hazard.strandChancePct != null && rollStranding(hazard, rng)) {
+      } else if (hazard.strandChancePct != null && strandingOccurs(hazard, deMonde(rng))) {
         // Échouage (l.471-473/497/499) : Test de Force, pénalité = Encombrement navire + cargaison.
         const vessel = get().vessel;
         const shipEnc = findVehicleById(vessel?.vehicleId ?? '')?.enc ?? 0;

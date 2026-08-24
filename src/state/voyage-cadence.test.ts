@@ -5,7 +5,7 @@ import { buildSeaPlan, runSeaDay } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import { seedBattleRng } from './battleRng';
 import { skills as SKILLS, crewRoles as CREW_ROLES, refLabel } from '../data';
-import { seaAutoResolves, riverAutoResolves, SEA_ROUTINE_KINDS, RIVER_ROUTINE_KINDS, DEFAULT_VOYAGE_ORDERS } from './voyageCadence';
+import { seaAutoResolves, riverAutoResolves, SEA_KINDS_SOUS_ORDRES, RIVER_ROUTINE_KINDS, DEFAULT_VOYAGE_ORDERS } from './voyageCadence';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { buildScene } from './mapSpec';
@@ -43,9 +43,9 @@ function freshSea() {
 }
 
 describe('couche voyageCadence — prédicats de routine', () => {
-  it('SEA_ROUTINE_KINDS est la liste FERMÉE auto-résolue ; crises/embuscade/rapide restent hors liste', () => {
-    for (const k of ['progression', 'affaler', 'phare', 'orientation', 'entretien']) expect(SEA_ROUTINE_KINDS.has(k)).toBe(true);
-    for (const k of ['poursuite', 'tourbillon', 'embuscade', 'extermination', 'ouragan', 'voyage-rapide']) expect(SEA_ROUTINE_KINDS.has(k)).toBe(false);
+  it('SEA_KINDS_SOUS_ORDRES est la liste FERMÉE auto-résolue ; crises/embuscade/rapide restent hors liste', () => {
+    for (const k of ['progression', 'affaler', 'phare', 'orientation', 'entretien']) expect(SEA_KINDS_SOUS_ORDRES.has(k)).toBe(true);
+    for (const k of ['poursuite', 'tourbillon', 'embuscade', 'extermination', 'ouragan', 'voyage-rapide']) expect(SEA_KINDS_SOUS_ORDRES.has(k)).toBe(false);
     expect(seaAutoResolves({ cadence: 'commande' }, 'progression')).toBe(true);
     expect(seaAutoResolves({ cadence: 'commande' }, 'poursuite')).toBe(false);
     expect(seaAutoResolves({ cadence: 'jour-par-jour' }, 'progression')).toBe(false);

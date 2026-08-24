@@ -27,8 +27,8 @@
  *
  * SEAM DE JET (#273 Étape 2) : les 3 formes de résolveur (Cartographie mono, chemin générique
  * `resolveTravelActivity`, Commerce d'opportunité étendu) sont des étapes de cascade construites en
- * UNE passe (`buildSeaActivitiesCascade`) — plus de bulk synchrone. Cartographie/générique routent par
- * `resolveSurface` (klass `hero-test`, policy M/I existante) ; le Commerce d'opportunité SÉQUENCE un
+ * UNE passe (`buildSeaActivitiesCascade`) — plus de bulk synchrone. Cartographie/générique sont POUSSÉES
+ * à la porte de séquence, qui dérive la surface de leurs porteurs ; le Commerce d'opportunité SÉQUENCE un
  * Test étendu (`startExtendedTest`, `maxAttempts`+`outcome` #273 Étape 1) par héros à la fois (un seul
  * `pendingExtendedTest` actif) — `pendingSeaActivities.opportunityQueue` porte la file, vidée par
  * `continueSeaActivitiesAfterCascade` jusqu'à la halte de nuit.
@@ -48,8 +48,8 @@ import type { TravelRecapDay } from './travelFlow';
 import { toRecapLines } from './recapLine';
 import type { Get, Set } from './flowTypes';
 import type { BuiltCascadeStep } from './stepBrand';
-import { composeRollLabel, effectiveTarget, monoStep, openSequence, pousseSi, resolveSurface, freeCons, type RollRequest } from './rollSeam';
-import { registerCascadeApplier, registerExtendedTestOutcome, runCascadeImmediate } from './cascade';
+import { composeRollLabel, effectiveTarget, monoStep, openSequence, pousseSi, freeCons, type RollRequest } from './rollSeam';
+import { registerCascadeApplier, registerExtendedTestOutcome } from './cascade';
 import { noteSeaLine, patchSea } from './seaVoyageFlow';
 import { actorIn } from './combatants';
 
@@ -160,9 +160,8 @@ export function buildSeaGenericStep(get: Get, set: Set, hero: Combatant, def: Ac
   });
 }
 
-/** Résout les Activités MONO (Cartographie + générique) de la semaine en une CASCADE (#273 Étape 2) —
- *  routées par la porte (klass `hero-test`, `resolveSurface` : jour-par-jour → M influençable, route
- *  COMMANDÉE → I inline). Le Commerce d'opportunité est mis de côté (`oppHeroIds`, Test étendu SÉQUENCÉ
+/** Résout les Activités MONO (Cartographie + générique) de la semaine en une CASCADE (#273 Étape 2).
+ *  Le Commerce d'opportunité est mis de côté (`oppHeroIds`, Test étendu SÉQUENCÉ
  *  ailleurs — `openRoll` ne porte pas de multi-Round). */
 function buildSeaActivitiesCascade(get: Get, set: Set, picks: Record<string, SeaActivityPick | null>): { steps: BuiltCascadeStep[]; oppHeroIds: string[] } {
   const steps: BuiltCascadeStep[] = [];
@@ -176,8 +175,8 @@ function buildSeaActivitiesCascade(get: Get, set: Set, picks: Record<string, Sea
 }
 
 /** Résout les Activités de la semaine (une par héros, l.268) puis rend la main à la halte de nuit —
- *  seam de jet (#273 Étape 2) : les jets deviennent des étapes de cascade influençables (klass
- *  `hero-test`) ; le Commerce d'opportunité (Test étendu) est SÉQUENCÉ ensuite,
+ *  seam de jet (#273 Étape 2) : les jets deviennent des étapes de cascade influençables ; le
+ *  Commerce d'opportunité (Test étendu) est SÉQUENCÉ ensuite,
  *  `continueSeaActivitiesAfterCascade` enchaîne. */
 export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, SeaActivityPick | null>): void {
   const pending = get().pendingSeaActivities;
@@ -185,18 +184,12 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
   const { steps, oppHeroIds } = buildSeaActivitiesCascade(get, set, picks);
   set({ pendingSeaActivities: { ...pending, picks, opportunityQueue: oppHeroIds } });
   if (!steps.length) { continueSeaActivitiesAfterCascade(get, set); return; }
-  const iSteps: BuiltCascadeStep[] = [];
-  const surfacedSteps: BuiltCascadeStep[] = [];
-  for (const step of steps) {
-    const req: RollRequest = { side: { actorId: step.actorId! }, actionLabel: step.label ?? step.kind, test: {}, difficulty: 'intermediaire', klass: 'hero-test' };
-    (resolveSurface(get, req, step.kind) === 'I' ? iSteps : surfacedSteps).push(step);
+  // La semaine d'Activités est UNE séquence, pas deux lots : la surface se dérive de ses porteurs
+  // (`openSequence` → `surfaceDesEtapes`, #1479). Un seul héros tenu par un humain suffit à ouvrir la
+  // fenêtre, et les rangées que personne ne tient s'y résolvent d'office, VISIBLES au bilan.
+  if (openSequence(get, set, { title: t('sact.weekTitle'), icon: 'travel/anchor', purpose: 'seaActivities', steps })) {
+    continueSeaActivitiesAfterCascade(get, set);
   }
-  if (iSteps.length) runCascadeImmediate(get, set, iSteps);
-  if (surfacedSteps.length) {
-    openSequence(get, set, { title: t('sact.weekTitle'), icon: 'travel/anchor', purpose: 'seaActivities', steps: surfacedSteps });
-    return;
-  }
-  continueSeaActivitiesAfterCascade(get, set);
 }
 
 /** Ouvre le Commerce d'opportunité (Test étendu, #273 Étape 1) du PROCHAIN héros de la file — mise

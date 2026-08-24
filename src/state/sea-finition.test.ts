@@ -58,7 +58,7 @@ function freshState() {
 
 /** Déroule la journée maritime jusqu'à une SUSPENSION (halte, Activités en mer) — la journée est
  *  désormais UNE cascade `purpose:'travelDay'` (#275 Ronde 2 cran 3) : chaque étape est soit MONO
- *  (Forcer le rythme/Prière, `klass:'hero-test'`) soit À PARTICIPANTS (batch, Tests d'équipage MDG
+ *  (Forcer le rythme/Prière) soit À PARTICIPANTS (batch, Tests d'équipage MDG
  *  ch.14 — `cascadeBatchRoll` par contributeur). Garde-fou 40 pas (crises/événements possibles).
  *  `await tick()` laisse s'exécuter le `setTimeout` de reprise d'un applier surfacé isolément
  *  (Ouragan/Prière — `seaVoyageFlow.ts`), comme un vrai clic UI l'espacerait. */
@@ -168,7 +168,7 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, dexterite: 40 };
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
     // Seam de jet (#273 Étape 2) : Cartographie est désormais une étape de CASCADE influençable —
-    // `seaActivitiesConfirm` ouvre `pendingCascade` (klass `hero-test`), à dérouler (`runSeaActivities`).
+    // `seaActivitiesConfirm` ouvre `pendingCascade`, à dérouler (`runSeaActivities`).
     get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie' } });
     await runSeaActivities();
     const owner = get().party[0];

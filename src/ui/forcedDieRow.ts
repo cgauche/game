@@ -105,6 +105,8 @@ export function rowForcedDie(
   flowKey: FlowKey | undefined,
   row: Pick<RollRowProps, 'actor' | 'rolled' | 'forcedRoll' | 'noForcedDie' | 'interactive'> & {
     key?: string | number;
+    /** Id RÉEL du participant quand la `key` React est SCOPÉE par son site (cf. `RollRowData.pid`). */
+    pid?: string;
     /** Déclencheur du jet de CETTE rangée. REQUIS et explicitement `null` quand la rangée n'est pas
      *  lançable (témoin, post-jet) : la saisie PRÉ-jet LANCE puis substitue, donc sans lui aucun dé
      *  pré-jet n'est offert. L'omettre est une erreur de compilation, jamais un champ mort. */
@@ -121,7 +123,8 @@ export function rowForcedDie(
   // complet (lire où vit le dé, réécrire l'issue re-dérivée). Même gate côté fabrique (`setForcedRoll`).
 
   const multi = FLOW_VERBS[flowKey].kind === 'multi';
-  const pid = multi && row.key != null ? String(row.key) : undefined;
+  // Le slot se résout sur le pid RÉEL : `row.pid` quand le site scope sa clé React, sinon la `key`.
+  const pid = multi ? (row.pid ?? (row.key != null ? String(row.key) : undefined)) : undefined;
   const slot = flow.slotOf(() => s, pid);
   if (!slot) return {};
 

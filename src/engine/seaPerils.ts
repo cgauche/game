@@ -11,14 +11,14 @@
  *  - **Gestion des périls** (MDG 13 l.429-438) : Perception pour repérer / Manœuvre pour éviter, par distance ;
  *    « Un Test d'Orientation est toujours nécessaire après avoir croisé un péril » (MDG 13 l.438).
  * Branché sur l'événement de bord `collision` (#444, `seaVoyageFlow.ts` `case 'collision'`) :
- * `pickSeaHazard` tire le péril, `rollStranding`/`strandingPenalty` l'Échouage (Rocher/Bas-fonds),
- * `rollDebrisEntangle` l'empêtrement (Débris marins) — `damageHull`/`damageVesselHull` seuls écrivent
+ * `pickSeaHazard` tire le péril, `strandingOccurs`/`strandingPenalty` l'Échouage (Rocher/Bas-fonds),
+ * `debrisEntangleFor` l'empêtrement (Débris marins) — `damageHull`/`damageVesselHull` seuls écrivent
  * `state.vessel.wounds`. `perilManagement` (Perception/Manœuvre par distance, MDG 13 l.429-438) reste ORPHELIN :
  * aucune simulation de péril approchant à distance décroissante n'existe côté état (le tirage de bord est
  * un jet unique « sans prévenir ») — cf. rapport #444.
  */
 import seaPerilsJson from '../data/sea-perils.json';
-import { d100, type RNG, defaultRNG } from './dice';
+import { type RNG, defaultRNG } from './dice';
 import type { Difficulty } from './types';
 import type { ShipSize } from '../data';
 
@@ -93,17 +93,19 @@ export function strandingPenalty(shipEnc: number, cargoEnc: number): number {
   return -(Math.max(0, shipEnc) + Math.max(0, cargoEnc));
 }
 
-/** Le navire s'échoue-t-il sur ce péril (Rochers 20 % / Bas-fonds 40 %, MDG 13 l.497+499) ? PUR (RNG injecté). */
-export function rollStranding(hazard: SeaHazardDef, rng: RNG = defaultRNG): boolean {
-  return hazard.strandChancePct != null && d100(rng) <= hazard.strandChancePct;
+/** Le navire s'échoue-t-il sur ce péril (Rochers 20 % / Bas-fonds 40 %, MDG 13 l.497+499) ? PUR, le dé
+ *  est FOURNI : il appartient au canal (`state` le tire par la porte, cf. `engine/dice.deMonde`). */
+export function strandingOccurs(hazard: SeaHazardDef, roll: number): boolean {
+  return hazard.strandChancePct != null && roll <= hazard.strandChancePct;
 }
 
 export interface EntangleResult { entangled: boolean; manDR: number; mMod: number }
 
 /** Empêtrement dans des DÉBRIS MARINS après collision (MDG 13 l.485-489) : 20 % de chances ; pénalité par
- *  Taille du bateau (Minuscule-Petite −2 DR Man / −1 M ; Moyenne-Grande −1 DR Man ; au-delà rien). PUR. */
-export function rollDebrisEntangle(hazard: SeaHazardDef, shipSize: ShipSize, rng: RNG = defaultRNG): EntangleResult {
-  if (hazard.entangleChancePct == null || d100(rng) > hazard.entangleChancePct) return { entangled: false, manDR: 0, mMod: 0 };
+ *  Taille du bateau (Minuscule-Petite −2 DR Man / −1 M ; Moyenne-Grande −1 DR Man ; au-delà rien). PUR,
+ *  le dé est FOURNI (cf. `strandingOccurs`). */
+export function debrisEntangleFor(hazard: SeaHazardDef, shipSize: ShipSize, roll: number): EntangleResult {
+  if (hazard.entangleChancePct == null || roll > hazard.entangleChancePct) return { entangled: false, manDR: 0, mMod: 0 };
   const idx = SIZE_ORDER.indexOf(shipSize);
   for (const p of hazard.entanglePenalties ?? []) {
     const min = p.minSize ? SIZE_ORDER.indexOf(p.minSize) : 0;

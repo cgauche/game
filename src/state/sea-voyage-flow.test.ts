@@ -7,7 +7,7 @@ import {
   resolvePortArrival, resolveManannPriest, resolveShoreLeave, damageVesselHull, healVesselHull,
   buildOverspeedSteps, engineerOf,
 } from './seaVoyageFlow';
-import { seedBattleRng } from './battleRng';
+import { seedBattleRng, battleRng } from './battleRng';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { partyAssisted, partyBest, skillBaseValue, testValue } from '../engine/skills';
 import { subtract, toBrass } from '../engine/money';
@@ -43,7 +43,7 @@ import { makeRNG } from '../engine/dice';
  * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG 13/15), pilotée
  * par le pipeline CASCADE (#275 Ronde 2 cran 3) : un jour = `pendingCascade` `purpose:'travelDay'`,
  * Blessures de coque persistées sur `CampaignVessel` (#30), services portuaires. L'équipage hors
- * combat = les PJ (MDG 14 l.39). `pendingCrewTest` ne sert plus qu'au combat (`crewTestModal` seul).
+ * combat = les PJ (MDG 14 l.39). `pendingCrewTest` est réservé au combat (`crewTestModal` seul).
  */
 const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
@@ -1049,6 +1049,7 @@ describe('Clôture du jour de mer — le récap porte les events, `sea.events` s
     const carried: RecapEvent = { title: def.label, text: def.desc, roll: 21 };
     set({ travelPlan: { ...plan, sea: { ...plan.sea!, events: [carried], milesToday: 5 } } });
     continueSeaDayAfterCascade(get, set);
+    draineCascade(get); // les Tests de l'entretien-survie se jouent dans LEUR fenêtre (#1479), la clôture suit
     const log = get().travelPlan!.log!;
     expect(log).toHaveLength(1);
     expect(log[0].events).toEqual([carried]); // la carte du jour porte l'événement
@@ -1215,6 +1216,7 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
     set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, milesToday: 5 } } });
     // Clôture directe du jour (équivalent RAW-fidèle de la fin de cascade, sans dépendre du tirage du jour).
     continueSeaDayAfterCascade(get, set);
+    draineCascade(get); // Mal de mer du premier jour : sa bande se joue avant l'accostage (#1479)
     expect(get().pendingShoreLeave).toBeTruthy();
     expect(get().pendingShoreLeave!.to.id).toBe('B');
     expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(false); // pas encore tiré
@@ -1233,6 +1235,7 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
     set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, milesToday: 5 } } });
     continueSeaDayAfterCascade(get, set);
+    draineCascade(get); // Mal de mer du premier jour : sa bande se joue avant l'accostage (#1479)
     resolveShoreLeave(get, set, true);
     expect(get().pendingCascade, 'le siège local possède le monde : son dé se joue, il ne se tire pas en silence').toBeTruthy();
     expect(get().journal.some((l) => l.includes('Événement de port')), 'la suite attend le geste').toBe(false);
@@ -1259,16 +1262,36 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
   });
 });
 
-describe('Entretien-survie maritime — #272 résiduel (Scorbut/Épuisement, policy de la PORTE `resolveSurface`, seam #275)', () => {
+describe('Entretien-survie maritime — #272 résiduel (Scorbut/Épuisement : la surface se DÉRIVE des porteurs, #1479)', () => {
   beforeEach(freshState);
 
-  it('Scorbut : SANS siège MJ résout INLINE (policy `subi`, I) — la journée continue jusqu’à la halte de nuit', () => {
+  /**
+   * #1479 — « À partir du moment où je dois faire un jet, il doit apparaitre. Y'a pas de "classe
+   * spéciale" […] face a ... une maladie » (utilisateur, 2026-08-24). Le Scorbut est un Test de
+   * Résistance porté par un héros que son joueur TIENT : sa fenêtre s'ouvre en solo comme ailleurs.
+   */
+  it('Scorbut : en solo jour-par-jour, la BANDE s’ouvre (M) — un jet subi n’est plus silencieux', () => {
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
     set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 29, milesToday: 50 } } });
     continueSeaDayAfterCascade(get, set);
-    expect(get().pendingCascade).toBeNull(); // 'I' — aucun siège MJ
-    expect(get().pendingRest).toBeTruthy(); // la journée a repris jusqu'à la halte
+    const casc = get().pendingCascade!;
+    expect(casc.purpose).toBe('seaScorbut');
+    const bande = casc.participants.find((st) => st.kind === 'sea-scorbut')!;
+    expect(bande, 'UNE bande, pas N étapes qui défilent pour le MÊME Test').toBeTruthy();
+    expect(bande.participants).toHaveLength(get().party.filter((h) => !h.dead).length);
+    expect(bande.participants!.every((r) => r.interactive), 'chaque porteur tient SA rangée').toBe(true);
+    draineCascade(get);
+    expect(get().pendingRest, 'la journée reprend une fois la bande jouée').toBeTruthy();
     expect(get().journal.some((l) => l.toLowerCase().includes('scorbut'))).toBe(true);
+  });
+
+  it('Scorbut : sous ORDRES COMMANDÉS, aucune fenêtre — la journée va d’un trait jusqu’à la halte', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, orders: { cadence: 'commande' }, sea: { ...plan.sea!, daysAtSea: 29, milesToday: 50 } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade, 'traversée commandée = sans fenêtre (attendu validé en recette #1426)').toBeNull();
+    expect(get().pendingRest).toBeTruthy();
+    expect(get().journal.some((l) => l.toLowerCase().includes('scorbut')), 'jamais moins de TRACES').toBe(true);
   });
 
   it('Scorbut : AVEC siège MJ, l’étape SURFACE (V) — plus d’auto-résolution silencieuse ; la journée reprend après résolution', async () => {
@@ -1286,9 +1309,19 @@ describe('Entretien-survie maritime — #272 résiduel (Scorbut/Épuisement, pol
     expect(get().journal.some((l) => l.toLowerCase().includes('scorbut'))).toBe(true); // parité recap/journal avec le chemin inline
   });
 
-  it('Épuisement : SANS siège MJ résout INLINE (policy `subi`, I) — la journée continue jusqu’à la halte de nuit', () => {
+  it('Épuisement : en solo jour-par-jour, la BANDE s’ouvre (M) ; sous ordres commandés, aucune fenêtre', () => {
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
     set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 1, paceToday: 'won', milesToday: 50 } } });
+    continueSeaDayAfterCascade(get, set);
+    const bande = get().pendingCascade!.participants.find((st) => st.kind === 'sea-epuisement')!;
+    expect(bande.participants).toHaveLength(get().party.filter((h) => !h.dead).length);
+    draineCascade(get);
+    expect(get().pendingRest).toBeTruthy();
+    expect(get().journal.some((l) => l.includes('Épuisement'))).toBe(true);
+
+    freshState();
+    const plan2 = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan2, orders: { cadence: 'commande' }, sea: { ...plan2.sea!, daysAtSea: 1, paceToday: 'won', milesToday: 50 } } });
     continueSeaDayAfterCascade(get, set);
     expect(get().pendingCascade).toBeNull();
     expect(get().pendingRest).toBeTruthy();
@@ -1545,7 +1578,7 @@ describe('Périls en mer — collision routée par la DONNÉE (#444, MDG 13 l.47
     }
   });
 
-  it('Rocher/Bas-fonds : Échouage possible (`rollStranding`) → `sea.stranded` posé, dégagement = Test de Force (#444)', () => {
+  it('Rocher/Bas-fonds : Échouage possible (`strandingOccurs`) → `sea.stranded` posé, dégagement = Test de Force (#444)', () => {
     const original = forceHazard('rocher');
     const rocher = findSeaHazard('rocher')!;
     const originalPct = rocher.strandChancePct;
@@ -1562,7 +1595,51 @@ describe('Périls en mer — collision routée par la DONNÉE (#444, MDG 13 l.47
     }
   });
 
-  it('Débris marins : empêtrement possible (`rollDebrisEntangle`) → `sea.entangled` posé avec manDR/mMod de la donnée', () => {
+  /**
+   * LA POSITION DU DÉ SE LIT SUR LE GARDE, JAMAIS SUR LA DONNÉE QU'IL PROTÈGE (#1479) — la
+   * conséquence d'une collision tire un dé de MONDE (`deMonde`) pour l'empêtrement (l.485). Ce dé ne
+   * doit être demandé QUE si le péril ouvre l'issue (`entangleChancePct`), exactement comme le dé
+   * d'Échouage l'est déjà (`strandChancePct != null && strandingOccurs(...)`). Tiré AVANT le garde, il
+   * décalait le flux RNG de toute la suite du voyage pour des périls qui n'empêtrent jamais.
+   *
+   * MESURE : la MÊME journée, même graine, même péril — seule la DONNÉE change. `0 %` (donnée
+   * PRÉSENTE, chance qui ne mord jamais) tire son dé ; ABSENTE, aucun. L'écart doit être d'UN dé.
+   */
+  it('un péril SANS `entangleChancePct` ne consomme AUCUN dé (le garde passe AVANT le dé)', () => {
+    /** Tirages consommés par le RNG de bataille depuis `seed` : le flux est déterministe — on ré-avance
+     *  un flux NEUF jusqu'à retrouver la valeur qui vient. */
+    const tiragesConsommes = (seed: number, limite = 50000): number => {
+      const suivante = battleRng().int(0, 2 ** 30);
+      const neuf = makeRNG(seed);
+      for (let i = 0; i < limite; i++) if (neuf.int(0, 2 ** 30) === suivante) return i;
+      throw new Error('flux du RNG introuvable — la mesure ne vaut rien');
+    };
+    const debris = findSeaHazard('debris-marins')!;
+    const pctOriginal = debris.entangleChancePct;
+    const consomme = (chance: number | undefined): number => {
+      const original = forceHazard('debris-marins');
+      try {
+        freshState(); // renseème à 1
+        debris.entangleChancePct = chance;
+        const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+        set({ travelPlan: { ...plan, sea: { ...plan.sea!, forcedEventId: 'collision-soudaine' } } });
+        runSeaDay(get, set);
+        return tiragesConsommes(1);
+      } finally {
+        restoreWeights(original);
+      }
+    };
+    try {
+      const avecDonnee = consomme(0);
+      const sansDonnee = consomme(undefined);
+      expect(avecDonnee - sansDonnee, 'le dé d’empêtrement se tire APRÈS le garde — un péril sans chance n’en consomme aucun').toBe(1);
+    } finally {
+      debris.entangleChancePct = pctOriginal;
+      freshState();
+    }
+  });
+
+  it('Débris marins : empêtrement possible (`debrisEntangleFor`) → `sea.entangled` posé avec manDR/mMod de la donnée', () => {
     const original = forceHazard('debris-marins');
     const debris = findSeaHazard('debris-marins')!;
     const originalPct = debris.entangleChancePct;
@@ -1774,7 +1851,7 @@ describe('Exposition en mer — une étape influençable par Test, une cascade p
     // 4 Tests/jour (bande 2 h sur 8 h de pont) = 4 VAGUES ; la 1ʳᵉ s'ouvre, les suivantes se
     // construisent après elle (#1117 L3) — une RANGÉE par héros vivant dans la fenêtre.
     expect(casc.participants).toHaveLength(1);
-    expect(casc.participants[0].kind).toBe('exposure'); // applier d'escalade PARTAGÉ
+    expect(casc.participants[0].kind).toBe('sea-exposition'); // applier d'escalade PARTAGÉ
     expect(casc.participants[0].meta?.waves).toBe(4);
     expect(casc.participants[0].participants).toHaveLength(living);
     expect(casc.participants[0].participants!.every((r) => r.difficulty === 'intermediaire')).toBe(true);
@@ -1784,8 +1861,17 @@ describe('Exposition en mer — une étape influençable par Test, une cascade p
     expect(get().pendingRest).toBeTruthy(); // la journée reprend jusqu'à la halte
   });
 
-  it('SANS siège MJ : résolution INLINE (policy `subi`, I) — la journée va jusqu’à la halte, les lignes sont au journal', () => {
+  it('SANS siège MJ : la vague s’ouvre quand même (M — les porteurs sont tenus), et la journée va jusqu’à la halte', () => {
     glacialDay();
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade!.purpose).toBe('seaExposure');
+    draineCascade(get);
+    expect(get().pendingRest).toBeTruthy();
+  });
+
+  it('sous ORDRES COMMANDÉS : aucune fenêtre d’Exposition — la journée va d’un trait jusqu’à la halte', () => {
+    glacialDay();
+    set({ travelPlan: { ...get().travelPlan!, orders: { cadence: 'commande' } } });
     continueSeaDayAfterCascade(get, set);
     expect(get().pendingCascade).toBeNull();
     expect(get().pendingRest).toBeTruthy();
@@ -1826,6 +1912,7 @@ describe('Exposition en mer — les pénalités subies s’échoient à 24 h, ja
     set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 1, milesToday: 50, weather: { ...plan.sea!.weather, temperature } } } });
     set({ pendingRest: null });
     continueSeaDayAfterCascade(get, set);
+    draineCascade(get); // les fenêtres du jour se jouent (#1479) — le drainage EST le geste du joueur
   }
 
   it('un jour GLACIAL pose des pénalités, et la journée leur donne une horloge (jamais `permanent`)', () => {
@@ -2044,7 +2131,9 @@ describe('Tests d’équipage — enjeu d’EFFET, règle en fiche, choix de Pro
       const p = get().pendingCascade;
       if (!p) break;
       for (const st of p.participants) {
-        if (!st.participants || !st.stake) continue;
+        // Test d'ÉQUIPAGE = une bande qui AGRÈGE (`summed-dr`) ; les bandes de jets INDÉPENDANTS
+        // (Mal de mer, Scorbut, Exposition, Épuisement — `aggregate:'none'`) ne sont pas du périmètre.
+        if (!st.participants || !st.stake || st.aggregate === 'none') continue;
         vus += 1;
         const resolved = resolveStake(st.stake);
         expect(resolved.text, `« ${st.kind} » : l’enjeu ne récite pas la règle-cadre`).not.toMatch(/peut être remplacé|au lieu d'un Test de Navigation/);

@@ -12,6 +12,12 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
 
 ## Cycle
 
+0bis. **Toute vague tient sa TODO DE VAGUE dans le scratchpad** (fichier `TODO-vague-<ticket>.md`,
+   mis à jour à CHAQUE transition — dispatch, retour d'agent, écart signalé) : les tickets sont le
+   backlog DURABLE (jamais de plan daté dans le dépôt), la todo de vague est la strate en dessous —
+   les pas transitoires (relire le diff, relancer les gates, recette) ET le parking des écarts en
+   attente de ticket. Vécu 2026-08-24 : plan tenu « de tête », deux restes de recetteurs (#1426) ont
+   fui deux jours, retrouvés seulement parce que l'utilisateur a DEMANDÉ la liste (→ #1500).
 0. **Vague qui reprend des tickets « déjà livrés » → AUDIT DE DoD D'ABORD**, jamais à la fin.
    Un agent `juge` relit le DoD MOT À MOT et confronte chaque point au dépôt (preuve exigée par
    point). Vécu 2026-07-26 : 3 tickets crus livrés, **0 fermable** — et l'audit a révélé une
@@ -137,6 +143,15 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    cesse d'être un consommable : 10 trouvailles sur 10 d'une session venaient de sondes, toutes
    jetées avec les transcripts. **Tout écart « consigné » dans un rendu
    devient un TICKET dans le même tour** — consigné-sans-ticket = backlog invisible = poison.
+   ⚠ **Un ticket que J'ÉCRIS sur un socle (dont les « restes » de clôture) porte `## Invariant`
+   verbatim + sources, comme un brief de codeur** — et une question qu'il pose se confronte
+   D'ABORD à la chaîne d'invariants (tickets-programmes, fiches doctrine) : si une doctrine
+   répond, le ticket ÉNONCE, il ne « réserve » pas une décision produit. Vécu 2026-08-24
+   (#1479) : à la clôture de #1426, la branche `subi` classée « décision produit » SANS
+   confrontation à #942 (« on nourrit l'hôte, on ne le duplique jamais ») ni aux doctrines
+   forme-canonique/contrat-d'affichage qui répondaient déjà — le ticket a fabriqué une question
+   ouverte, gagné l'autorité d'un brief, et j'ai fait re-trancher l'utilisateur à contresens du
+   système (« Si tu te pose cette question c'est que notre objectif n'est pas clair »).
    **Et tout ce qu'un grounding/juge ÉTABLIT sur un ticket ouvert (prémisse corrigée, état
    mesuré, dépendance découverte) se COMMENTE sur le ticket dans le même tour** (credo :
    « un ticket porte ses dépendances et son état mesuré ») — le prochain agent lit l'issue,

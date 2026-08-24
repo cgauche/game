@@ -30,7 +30,7 @@
 import shipConstructionJson from '../data/ship-construction.json';
 import steamBreakdownJson from '../data/steam-breakdown.json';
 import { findTableEntry } from './tables';
-import { d100, roll as rollDice, type RNG, defaultRNG } from './dice';
+import { roll as rollDice, type RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import type { Difficulty } from './types';
 import type { ShipSize, NavalInstall, InstallBand } from '../data';
@@ -247,8 +247,8 @@ export const STEAM_BREAKDOWNS = steamBreakdownJson as SteamBreakdownEntry[];
 /** Tirage du tableau PANNE DE VAPEUR (ch.12 l.313 : « Chaque fois que quelqu'un obtient un double sur
  *  un Test de Métier (Ingénieur) raté, que le résultat est un Échec Stupéfiant ou que le bateau subit
  *  un Coup Critique à la Coque »). PUR (RNG injecté). */
-export function rollSteamBreakdown(rng: RNG = defaultRNG): SteamBreakdownEntry {
-  return findTableEntry(STEAM_BREAKDOWNS, d100(rng));
+export function steamBreakdownFor(roll: number): SteamBreakdownEntry {
+  return findTableEntry(STEAM_BREAKDOWNS, roll);
 }
 
 /** Le Test de Métier (Ingénieur) déclenche-t-il une Panne de Vapeur (ch.12 l.313) ? Double sur un Test

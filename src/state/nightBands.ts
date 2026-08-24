@@ -188,6 +188,12 @@ export function nightRowId(band: CascadeStep, row: BatchParticipant): string {
   return `${band.id}:${row.id}`;
 }
 
+/** Les `kind` de BANDE d'EXPOSITION (LDB 18 l.326-334) — MÊME règle, MÊME applier, DEUX routes qui la
+ *  posent : la nuit de camp / l'effet de scène (`exposure`) et l'entretien de MER (`sea-exposition`,
+ *  seul couvert par les ORDRES d'une traversée, cf. `voyageCadence.SEA_KINDS_SOUS_ORDRES`). L'escalade
+ *  cumulative les compte ENSEMBLE : un héros ne recommence pas à zéro en changeant de route. */
+export const EXPOSURE_BAND_KINDS: readonly string[] = ['exposure', 'sea-exposition'];
+
 /** Échec GENUINE d'Exposition : la peau de phoque (MDG 14 l.277) retient AU FROID un échec de justesse
  *  (+1 DR) — il ne compte alors ni comme conséquence ni dans l'escalade. */
 export function genuineExposureFail(hero: Combatant, kind: ExposureKind, r: CascadeRoll | null | undefined): boolean {
@@ -208,7 +214,7 @@ export function exposurePriorFails(steps: CascadeStep[], hero: Combatant, kind: 
   }
   let n = 0;
   for (const s of steps) {
-    if (s.kind !== 'exposure' || !s.participants) continue;
+    if (!EXPOSURE_BAND_KINDS.includes(s.kind) || !s.participants) continue;
     if (((s.meta?.kind as ExposureKind) ?? 'froid') !== kind) continue;
     for (const row of s.participants) {
       if (row.id !== hero.id || cancelled.has(nightRowId(s, row))) continue;

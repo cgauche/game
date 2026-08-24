@@ -68,7 +68,7 @@ const siteDe = (m: RegExpMatchArray): number => m.index! + (m[1]?.length ?? 0);
 /** Les trois motifs de PROPRIÉTÉ des scans, et l'énumération de leurs sites (index du nom de
  *  propriété dans `s`). Nommés pour être MORDUS directement : c'est ici que se joue le repérage. */
 export const RX_TARGET = /(?<=[{,])(\s*)target\s*(?::\s*[^\s,}]|[,}])|\.\.\.rollStep\(/g;
-export const RX_KLASS = /(?<=[{,])(\s*)klass\s*:\s*[^\s,}]/g;
+export const RX_SIDE = /(?<=[{,])(\s*)side\s*:\s*[^\s,}]/g;
 export const RX_LITERAL = /(?<=[{,])(\s*)(?:skill|characteristic)\s*:\s*[^\s,}]/g;
 export const sitesDe = (s: string, rx: RegExp): number[] => [...s.matchAll(rx)].map(siteDe);
 
@@ -160,6 +160,11 @@ export function stepsWithoutStake(src: string): number[] {
  * `openRoll` construit l'étape à partir d'elle, donc un `RollRequest` muet produit une étape muette
  * que le scan d'étapes ci-dessus ne peut pas voir (le littéral d'étape est DANS le seam, générique).
  *
+ * ANCRE (#1479) : le CÔTÉ (`side`), seul champ que toute `RollRequest` porte depuis la mort du champ
+ * `klass` — sur lequel ce scan s'ancrait. Un détecteur ancré sur un champ supprimé ne mesure PLUS
+ * RIEN et rend une baseline vide par FAIL-OPEN ; la paire (`side` + `actionLabel`) est ce qui
+ * distingue une requête de jet de tout autre littéral.
+ *
  * CONTRAT (#1117 vague 3, « `RollRequest.stake` devient-il REQUIS ? ») : le champ reste optionnel au
  * TYPE tant que la baseline ci-dessous est peuplée, et s'y ferme le jour où elle atteint 0. La garde
  * rend le critère mesurable : tout site soldé s'y retire, tout site neuf muet ROUGIT.
@@ -168,7 +173,7 @@ export function rollRequestsWithoutStake(src: string): number[] {
   const s = strip(src);
   const lines: number[] = [];
   const seen = new Set<number>();
-  for (const m of s.matchAll(RX_KLASS)) {
+  for (const m of s.matchAll(RX_SIDE)) {
     const i = siteDe(m);
     let depth = 0;
     let start = -1;
@@ -187,29 +192,23 @@ export function rollRequestsWithoutStake(src: string): number[] {
     }
     if (end < 0) continue;
     const lit = s.slice(start, end);
-    if (!hasTopLevelKey(lit, 'actionLabel')) continue; // pas une `RollRequest` (un `klass` d'autre chose)
+    if (!hasTopLevelKey(lit, 'actionLabel')) continue; // pas une `RollRequest` (un `side` d'autre chose)
     if (/\bstake\s*(?:[,:]|$)/.test(lit)) continue;
     lines.push(src.slice(0, start).split('\n').length);
   }
   return lines;
 }
 
-/** Baseline NOMINATIVE des `RollRequest` muettes — même contrat que celle des étapes. */
+/** Baseline NOMINATIVE des `RollRequest` muettes — même contrat que celle des étapes.
+ *  RE-MESURÉE le 2026-08-24 (#1479, ancre `side`) : les TROIS entrées de `seaVoyageFlow.ts` ont
+ *  disparu — c'étaient des SONDES DE SURFACE (`RollRequest` de convenance passées à `resolveSurface`
+ *  pour router des étapes DÉJÀ mintées), et la surface se dérive désormais des PORTEURS des étapes
+ *  elles-mêmes. `seaActivities.ts` a suivi le même chemin : sa semaine est POUSSÉE à `openSequence`
+ *  d'un bloc, sans sonde ni tri au call-site. */
 const BASELINE_REQ: Record<string, number> = {
-  // La PORTE elle-même : ses `RollRequest` de commodité sont GÉNÉRIQUES — `openPartyTest` et
-  // `openWorldTest` TRANSMETTENT désormais le `stake` de leur appelant (donc soldées) ; la dernière
-  // est la forme qui n'a pas encore de spec porteuse.
+  // La PORTE elle-même : la `RollRequest` GÉNÉRIQUE d'`openPartyTest`, dont le `stake` est TRANSMIS
+  // en RACCOURCI (`{ stake }`, forme que le scan ne lit pas comme une déclaration d'enjeu).
   'state/rollSeam.ts': 1,
-  // SONDE DE SURFACE des Activités en mer (`seaActivitiesConfirm`, `resolveSurface`) : la `RollRequest`
-  // ne décrit aucun jet propre — elle route les étapes DÉJÀ mintées vers M ou I. L'enjeu de ces étapes
-  // est l'Activité choisie, énoncée par son panneau (même arbitrage que la baseline d'étapes).
-  'state/seaActivities.ts': 1,
-  // RE-MESURÉ le 2026-08-12 (#1262 V2 L6) : les trois sites (`seaVoyageFlow.ts:1413/1512/1565`) sont
-  // des SONDES DE SURFACE (`resolveSurface`), même nature que celle de `seaActivities.ts` ci-dessus —
-  // elles ne décrivent aucun jet propre, elles routent des étapes DÉJÀ mintées (dotées, elles) vers M
-  // ou I. Ce ne sont pas des jets de bord à doter : c'est la FORME `RollRequest` employée en argument
-  // de routage que le scan ne distingue pas de celle employée en description.
-  'state/seaVoyageFlow.ts': 3,
 };
 
 /**
@@ -333,7 +332,7 @@ const BASELINE: Record<string, number> = {
 describe('MORSURE du repérage de site — le délimiteur se REGARDE, il ne se consomme pas', () => {
   it('deux propriétés IMBRIQUÉES de même nom rendent DEUX sites', () => {
     expect(sitesDe("{ target: { target: 'x' } }", RX_TARGET)).toHaveLength(2);
-    expect(sitesDe("{ klass: { klass: 'x' } }", RX_KLASS)).toHaveLength(2);
+    expect(sitesDe("{ side: { side: 'x' } }", RX_SIDE)).toHaveLength(2);
     expect(sitesDe("{ skill: {skill: 'y'} }", RX_LITERAL)).toHaveLength(2);
   });
 });
@@ -489,12 +488,15 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
   });
 
   it('FAIL-CLOSED : une `RollRequest` synthétique sans enjeu est DÉTECTÉE, avec enjeu elle ne l’est pas', () => {
-    const sans = `openRoll(get, set, { side: { actorId: h.id }, actionLabel: 'Prier', test: { skill: 'priere' }, difficulty: 'intermediaire', klass: 'hero-test' }, K);`;
-    const avec = `openRoll(get, set, { side: { actorId: h.id }, actionLabel: 'Prier', test: { skill: 'priere' }, difficulty: 'intermediaire', klass: 'hero-test', stake: combatStakeRef('k') }, K);`;
-    const autreKlass = `const cfg = { klass: 'rowdy', label: 'x' };`;
+    const sans = `openRoll(get, set, { side: { actorId: h.id }, actionLabel: 'Prier', test: { skill: 'priere' }, difficulty: 'intermediaire' }, K);`;
+    const avec = `openRoll(get, set, { side: { actorId: h.id }, actionLabel: 'Prier', test: { skill: 'priere' }, difficulty: 'intermediaire', stake: combatStakeRef('k') }, K);`;
+    // NON-RÉGRESSION SUR L'ANCRE RÉELLE (#1479) : le scan part de `side` — un littéral qui en porte un
+    // SANS `actionLabel` n'est pas une `RollRequest` (c'est le côté d'autre chose) et ne doit rien
+    // compter. Une fixture sans `side` ne toucherait même pas le scanner : elle ne prouverait rien.
+    const sideSansActionLabel = `const cfg = { side: { actorId: h.id }, label: 'x' };`;
     expect(rollRequestsWithoutStake(sans)).toHaveLength(1);
     expect(rollRequestsWithoutStake(avec)).toHaveLength(0);
-    expect(rollRequestsWithoutStake(autreKlass), 'un `klass` hors RollRequest (aucun actionLabel)').toHaveLength(0);
+    expect(rollRequestsWithoutStake(sideSansActionLabel), 'un `side` hors RollRequest (aucun actionLabel)').toHaveLength(0);
   });
 
   it('FAIL-CLOSED : une étape synthétique qui LANCE sans enjeu est DÉTECTÉE, avec enjeu elle ne l’est pas', () => {

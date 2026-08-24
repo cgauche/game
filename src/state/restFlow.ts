@@ -41,7 +41,7 @@ import { weatherExposure, exposureTestCount, expireOnRespite, exposureShelterFro
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
-import { nightBands, registerNightBandApplier, nightRowId, genuineExposureFail, nextExposureWave, exposureWaveBand } from './nightBands';
+import { nightBands, registerNightBandApplier, nightRowId, genuineExposureFail, nextExposureWave, exposureWaveBand, EXPOSURE_BAND_KINDS } from './nightBands';
 import { freeCons, testSkillLabel, monoStep, choiceStep, pousseSi, type BuiltCascadeStep } from './rollSeam';
 import type { CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
@@ -311,7 +311,9 @@ registerNightBandApplier('shelter', (get, _set, _band, row, hero) => {
   };
 });
 
-registerNightBandApplier('exposure', (_get, _set, band, row, hero) => {
+// LES DEUX ROUTES de l'Exposition (`EXPOSURE_BAND_KINDS`) partagent LA conséquence — une déclaration de
+// plus, jamais une seconde implémentation : c'est la ROUTE qui diffère (ordres de traversée), pas la règle.
+for (const kindExposition of EXPOSURE_BAND_KINDS) registerNightBandApplier(kindExposition, (_get, _set, band, row, hero) => {
   // Volet froid/chaleur (l.330/334) porté par la BANDE (`meta.kind`) — défaut froid (nuit de repos). La peau
   // de phoque (MDG 14 l.277) retient l'échec de justesse AU FROID (+1 DR) : un échec ainsi tenu ne compte
   // NI comme conséquence NI dans l'escalade — comme le chemin eager `exposureNight`.

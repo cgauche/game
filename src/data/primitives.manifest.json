@@ -35,7 +35,7 @@
     "id": "rollSeam",
     "nom": "openRoll/resolveSurface",
     "fichier": "src/state/rollSeam.ts",
-    "concept": "policy klass×contrôleur×cadence → Modale/Voix/Interne",
+    "concept": "surface DÉRIVÉE des porteurs : tenue × cadence × ordres de traversée → Modale/Visible-MJ/Interne, un seul site",
     "perimetre": "porte de résolution de tout Test influençable",
     "verrou": "roll-seam-exclusivity-guard.test.ts"
   },

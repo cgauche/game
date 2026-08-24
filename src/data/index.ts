@@ -601,7 +601,7 @@ export function combatStakeRef(
 }
 
 /** RÉFÉRENCE d'enjeu de NUIT — même patron fail-closed que `voyageStakeRef` : le TYPE ferme le
- *  vocabulaire (`NightTestKind`, 15 kinds) en PREMIER rideau, le throw est le second. Plus de
+ *  vocabulaire (`NightTestKind`, 16 kinds) en PREMIER rideau, le throw est le second. Plus de
  *  `undefined` rendu en silence : une étape de nuit qui existe a son enjeu authoré.
  *  `entryId` = l'ENTRÉE JOUÉE quand le kind en a une (symptôme d'une étape de maladie) : la fiche
  *  renvoyée descend alors à CETTE entrée. Un id inconnu replie sur la fiche du kind (déclaré). */

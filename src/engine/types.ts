@@ -1807,12 +1807,14 @@ export const DIFFICULTY_MODIFIERS: Record<Difficulty, number> = {
   impossible: -50,
 };
 
-/** VOCABULAIRE FERMÉ des étapes de la cascade de NUIT (#1117 point 5) — les 15 `kind` réellement
- *  émis : 7 par les Tests d'entretien DIFFÉRÉS (`UpkeepDeferTest`), 8 construits par le flux de nuit.
+/** VOCABULAIRE FERMÉ des étapes de la cascade de NUIT (#1117 point 5) — les 16 `kind` réellement
+ *  émis : 7 par les Tests d'entretien DIFFÉRÉS (`UpkeepDeferTest`), 8 construits par le flux de nuit,
+ *  1 par l'entretien de MER (`sea-exposition` — MÊME règle d'Exposition, AUTRE route, donc autre kind :
+ *  les ORDRES d'une traversée ne commandent que le sien, cf. `voyageCadence.SEA_KINDS_SOUS_ORDRES`).
  *  Union au TYPE = premier rideau : un kind inventé ne compile pas ; le résolveur d'enjeu jette en
  *  second rideau. Ajouter une étape de nuit = l'ajouter ICI et lui authorer son entrée d'enjeu. */
 export const NIGHT_TEST_KINDS = [
-  'faim', 'soif', 'recovery', 'nightmare', 'shelter', 'exposure', 'exposure-heat-drop',
+  'faim', 'soif', 'recovery', 'nightmare', 'shelter', 'exposure', 'sea-exposition', 'exposure-heat-drop',
   'forcedMarch', 'traumaFracture', 'diseaseTick', 'diseaseGangrene', 'diseasePersist',
   'contagion', 'dessoulage', 'dessoulageHangover',
 ] as const;

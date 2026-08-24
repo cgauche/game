@@ -145,7 +145,9 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * détecteurs : `combatFlow.ts` passe de 4 à 3 ; masque de tronc du harnais de volume écrit en collection
  * `BoneId[]` : `mesure-volume.mts` sort de la liste), puis 109 après le lot « anneau ami en donnée »
  * (le MODE de ciblage déclare son anneau de candidats sur son entrée — `tmode.anneauCandidats`, plus de
- * `tmode.id === 'heal'` : `highlightLayer.tsx` sort de la liste).
+ * `tmode.id === 'heal'` : `highlightLayer.tsx` sort de la liste), puis 108 après le lot #1479 (la
+ * conséquence d'une collision en mer lit la DONNÉE qui ouvre l'issue — `entangleChancePct`, symétrique
+ * de `strandChancePct` — au lieu de l'id du péril : `seaVoyageFlow.ts` passe de 4 à 3).
  */
 const RAW_KNOWN: Record<string, number> = {
   'scripts/gen-bestiary-gallery.mts': 1,
@@ -191,7 +193,7 @@ const RAW_KNOWN: Record<string, number> = {
   'src/state/mount.ts': 1,
   'src/state/restFlow.ts': 1,
   'src/state/riverVoyageFlow.ts': 4,
-  'src/state/seaVoyageFlow.ts': 4,
+  'src/state/seaVoyageFlow.ts': 3, // 4 → 3 (#1479 : la conséquence d'un péril lit sa DONNÉE `entangleChancePct`, plus `hazard.id === 'debris-marins'`)
   'src/state/store.ts': 1,
   'src/state/travelFlow.ts': 6,
   'src/state/travelPostes.ts': 2,

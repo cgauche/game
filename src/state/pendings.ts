@@ -1777,12 +1777,11 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  fermeture simple, pas de reprise), 'sequence' (manche d'une SÉQUENCE — poursuite terrestre, jeu de
    *  taverne opposé… : à la clôture le store passe la manche au réducteur du socle, qui rouvre ou dénoue,
    *  cf. state/sequenceCore) ; 'seaScorbut'/
-   *  'seaExhaustion' (seam de jet #275/#272 résiduel — MJ V) : lot de Tests `subi` PAR HÉROS de
-   *  l'entretien-survie maritime (Scorbut MDG 14 l.230, Épuisement MDG 13 l.109-111) surfacé au siège MJ
-   *  quand `resolveSurface('subi')` rend V (au lieu de l'auto-résolution silencieuse, `seaVoyageFlow.ts`
-   *  `continueSeaDayAfterCascade`/`continueSeaDayAfterScorbut`) ; à la clôture, le store enchaîne la
-   *  phase suivante de la journée (`continueSeaDayAfterScorbut`/`continueSeaDayAfterExhaustion`) ;
-   *  'seaActivities' (#273 Étape 2 : Activités en mer hebdomadaires, MDG 15 l.266-306, `klass:'hero-test'`)
+   *  'seaExhaustion' : les BANDES de l'entretien-survie maritime (Scorbut MDG 14 l.230, Épuisement
+   *  MDG 13 l.109-111) — une rangée par héros appelé, surfacée dès qu'un siège humain tient l'un d'eux
+   *  (`rollSeam.surfaceDesEtapes`, #1479) ; à la clôture, le store enchaîne la phase suivante de la
+   *  journée (`continueSeaDayAfterScorbut`/`continueSeaDayAfterExhaustion`) ;
+   *  'seaActivities' (#273 Étape 2 : Activités en mer hebdomadaires, MDG 15 l.266-306)
    *  — à la clôture, le store enchaîne `continueSeaActivitiesAfterCascade` (Commerce d'opportunité
    *  séquencé puis halte de nuit, `seaActivities.ts`) ; 'riverExposure' (MSRC 16 : Exposition hydrique de
    *  la descente fluviale surfacée APRÈS le jour, avant la halte — la clôture enchaîne

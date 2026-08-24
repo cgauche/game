@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { SEA_HAZARDS, findSeaHazard, pickSeaHazard, strandingPenalty, rollStranding, rollDebrisEntangle, perilManagement } from './seaPerils';
+import { SEA_HAZARDS, findSeaHazard, pickSeaHazard, strandingPenalty, strandingOccurs, debrisEntangleFor, perilManagement } from './seaPerils';
 
 /**
  * PÉRILS EN MER — couche pure (MDG 13 l.423-564), ORPHELINE avant le câblage #444 (`seaVoyageFlow.ts`
@@ -41,33 +41,39 @@ describe('pickSeaHazard — tirage pondéré (#444, poids MAISON défaut équipr
   });
 });
 
-describe('strandingPenalty / rollStranding (Échouage, l.471-473/497/499)', () => {
+describe('strandingPenalty / strandingOccurs (Échouage, l.471-473/497/499)', () => {
   it('pénalité = −(Enc navire + Enc cargaison), jamais positive', () => {
     expect(strandingPenalty(20, 10)).toBe(-30);
     expect(strandingPenalty(0, 0)).toBe(-0);
     expect(strandingPenalty(-5, 10)).toBe(-10); // Enc négatif ignoré (Math.max 0)
   });
 
-  it('rollStranding : jamais d’Échouage pour un péril SANS strandChancePct (Débris marins)', () => {
+  it('strandingOccurs : jamais d’Échouage pour un péril SANS strandChancePct (Débris marins)', () => {
     const debris = findSeaHazard('debris-marins')!;
-    const rng = makeRNG(1);
-    for (let i = 0; i < 20; i++) expect(rollStranding(debris, rng)).toBe(false);
+    for (let roll = 1; roll <= 20; roll++) expect(strandingOccurs(debris, roll)).toBe(false);
+  });
+
+  it('strandingOccurs : Échouage à la CHANCE du péril (Rocher 20 %, Bas-fonds 40 %) — dé FOURNI', () => {
+    const rocher = findSeaHazard('rocher')!;
+    const basFonds = findSeaHazard('bas-fonds')!;
+    expect(strandingOccurs(rocher, 20)).toBe(true);
+    expect(strandingOccurs(rocher, 21)).toBe(false);
+    expect(strandingOccurs(basFonds, 40)).toBe(true);
+    expect(strandingOccurs(basFonds, 41)).toBe(false);
   });
 });
 
-describe('rollDebrisEntangle (l.485-491)', () => {
+describe('debrisEntangleFor (l.485-491)', () => {
   it('pénalité par Taille : Minuscule-Petite −2 DR Man/−1 M, Moyenne-Grande −1 DR Man/0 M, au-delà rien', () => {
     const debris = findSeaHazard('debris-marins')!;
-    const rng = { int: () => 1 } as never; // 1 ≤ 20 % → toujours empêtré
-    expect(rollDebrisEntangle(debris, 'petite', rng)).toEqual({ entangled: true, manDR: -2, mMod: -1 });
-    expect(rollDebrisEntangle(debris, 'grande', rng)).toEqual({ entangled: true, manDR: -1, mMod: 0 });
-    expect(rollDebrisEntangle(debris, 'enorme', rng)).toEqual({ entangled: true, manDR: 0, mMod: 0 });
+    expect(debrisEntangleFor(debris, 'petite', 1)).toEqual({ entangled: true, manDR: -2, mMod: -1 });
+    expect(debrisEntangleFor(debris, 'grande', 1)).toEqual({ entangled: true, manDR: -1, mMod: 0 });
+    expect(debrisEntangleFor(debris, 'enorme', 1)).toEqual({ entangled: true, manDR: 0, mMod: 0 });
   });
 
   it('au-delà de 20 %, aucun empêtrement', () => {
     const debris = findSeaHazard('debris-marins')!;
-    const rng = { int: () => 21 } as never;
-    expect(rollDebrisEntangle(debris, 'petite', rng).entangled).toBe(false);
+    expect(debrisEntangleFor(debris, 'petite', 21).entangled).toBe(false);
   });
 });
 

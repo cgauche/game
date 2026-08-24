@@ -580,7 +580,8 @@ function rollBatchParticipants(step: CascadeStep, autoResolved = false) {
  * (`traceLineOf`) : porteur — libellé : dé/cible → issue (DR). Deux formes, un seul dériveur :
  *  - BANDE : les rangées étampées `meta.autoResolved` (posée par `rollBatchParticipants(step, true)`) ;
  *  - MONO : l'étape à jet résolue par un pilote SANS fenêtre — le pilote le DÉCLARE (`unwitnessed`,
- *    `runCascadeImmediate`), il n'est pas déduit d'un champ d'étape (rien n'entre dans la sauvegarde).
+ *    `runCascadeImmediate` ; `advanceCascade` le RE-DÉRIVE de `surfaceOf(porteurDe)` pour le dé que le
+ *    curseur a posé lui-même), il n'est pas déduit d'un champ d'étape (rien n'entre dans la sauvegarde).
  *
  * PARTITION : « Tout lancer » (`resolveRemainingCascade`) n'étampe rien et ne déclare rien — sa modale
  * reste ouverte sur le BILAN, où chaque rangée montre son dé. Et le journal n'est pas la SEULE surface
@@ -1032,14 +1033,31 @@ function porteurDe(st: CascadeStep): string {
 }
 
 /**
- * L'étape est-elle une table qu'AUCUN siège ne joue ? Le seul cas où le socle tire à la place d'une
- * fenêtre (cf. `poserLeCurseur` ci-dessous) — et il se juge au MÊME appel que les JETS, pour TOUT
+ * LES PORTEURS d'une étape — le porteur de l'étape, ou CEUX DE SES RANGÉES quand elle en a (une bande
+ * met N porteurs en jeu, et chaque siège tient la sienne). EXPORTÉ (#1479) pour la porte des jets
+ * (`rollSeam.surfaceDesEtapes`) : la surface d'une séquence se dérive des MÊMES ids que sa possession.
+ */
+export function porteursDeLEtape(st: CascadeStep): string[] {
+  return st.participants ? st.participants.map((p) => p.id) : [porteurDe(st)];
+}
+
+/**
+ * L'étape est-elle un TIRAGE (table ou jet) qu'AUCUN siège ne joue ? Le seul cas où le socle tire à la
+ * place d'une fenêtre (cf. `poserLeCurseur` ci-dessous) — et il se juge au MÊME appel pour TOUT
  * porteur : `rollSeam.surfaceOf(porteurDe(st))`. Un héros conduit par l'IA, un ennemi sans siège MJ,
  * un acteur inconnu ne tiennent aucune fenêtre ; le monde, lui, est toujours tenu par un siège humain
  * (`netOwnership.worldSeat`) — seule la cadence déférée à un automate l'en dessaisit.
+ *
+ * TABLE **ET** JET (#1479) : une étape MONO qu'aucun humain ne tient bloquait la séquence net — aucune
+ * fenêtre ne la lançait, `stepReady` la refusait, `cascadeNext` restait en no-op définitif. Les BANDES
+ * n'en sont pas (leurs rangées naissent déjà témoins-roulées, `rollSeam.surfaceRow`), les CHOIX non plus
+ * (une décision ne se tire pas : `runCascadeImmediate` exige un défaut authoré).
  */
-function tableSansSiege(get: Get, st: CascadeStep | undefined): boolean {
-  if (!st || stepInteraction(st) !== 'table') return false;
+function tirageSansSiege(get: Get, st: CascadeStep | undefined): boolean {
+  if (!st) return false;
+  const interaction = stepInteraction(st);
+  if (interaction !== 'table' && interaction !== 'jet') return false;
+  if (interaction === 'jet' && (st.result || st.target == null)) return false;
   return !surfaceOf(get, porteurDe(st));
 }
 
@@ -1055,20 +1073,25 @@ function tableSansSiege(get: Get, st: CascadeStep | undefined): boolean {
  * fenêtre : l'hôte attend, il ne tire pas à sa place.
  *
  * EXCEPTION UNIQUE, et elle n'est pas une exception au porteur : AUCUN siège humain ne tient l'étape
- * (`tableSansSiege`, donc `rollSeam.surfaceOf`) — cadence déférée à un automate, héros conduit par l'IA,
- * ennemi sans siège MJ, porteur introuvable. Le socle tire l'étape ICI, et `advanceCascade` la
- * FRANCHIT dans le même geste.
+ * (`tirageSansSiege`, donc `rollSeam.surfaceOf`) — cadence déférée à un automate, héros conduit par l'IA,
+ * ennemi sans siège MJ, porteur introuvable. Le socle tire l'étape ICI — TABLE comme JET (#1479) — et
+ * `advanceCascade` la FRANCHIT dans le même geste.
  *
  * Résolveur et composition sont ceux de la modale (`liveTableDecl` + `rollTableStep` +
- * `tableStepResolved`, calque `runCascadeImmediate`) : le dé est consommé au RANG de l'étape, jamais
- * au build, et l'étape porte son résultat — le bilan le montre.
+ * `tableStepResolved`, calque `runCascadeImmediate` ; `roulerDeEtape` pour un jet) : le dé est consommé
+ * au RANG de l'étape, jamais au build, et l'étape porte son résultat — le bilan le montre.
  */
 function poserLeCurseur(get: Get, p: PendingCascade): PendingCascade {
   const st = p.participants[p.cursor];
-  if (!tableSansSiege(get, st)) return p;
-  const decl = liveTableDecl(get(), st);
-  const result = rollTableStep(decl, battleRng(), { get });
-  return { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? tableStepResolved(x, decl, result, get) : x)) };
+  if (!tirageSansSiege(get, st)) return p;
+  let resolue: CascadeStep;
+  if (stepInteraction(st) === 'table') {
+    const decl = liveTableDecl(get(), st);
+    resolue = tableStepResolved(st, decl, rollTableStep(decl, battleRng(), { get }), get);
+  } else {
+    resolue = { ...st, result: roulerDeEtape(st.target!, battleRng(), st.evaluation) };
+  }
+  return { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? resolue : x)) };
 }
 
 /**
@@ -1120,7 +1143,12 @@ function avanceUnPas(get: Get, set: Set): PendingCascade | null | typeof ENCORE 
   let suspended = false;
   // La conséquence d'une étape vit sur l'ÉTAPE (`outcome`, affichée dans la pile) — pas dupliquée
   // dans `log` (réservé aux notes hors-jet : entretien). Évite le doublon « X contracte… » écran/journal.
-  if (cur) { const r = commitStep(get, set, steps, p.cursor, true); steps = r.steps; suspended = r.suspended; } // liveMerge : préserve les appends d'une conséquence foldée
+  // PARITÉ DE TRACE (#1479) : un dé POSÉ D'OFFICE par le curseur (`poserLeCurseur`, aucun siège ne
+  // tient l'étape) n'a été montré par AUCUNE fenêtre — il reçoit donc sa ligne de journal, comme celui
+  // du pilote immédiat (`runCascadeImmediate`). Le fait se RE-DÉRIVE du prédicat qui a fait poser le dé
+  // (`surfaceOf(porteurDe)`), jamais d'un champ d'étape : rien n'entre dans la sauvegarde.
+  const dOffice = !!cur && stepInteraction(cur) === 'jet' && !surfaceOf(get, porteurDe(cur));
+  if (cur) { const r = commitStep(get, set, steps, p.cursor, true, dOffice); steps = r.steps; suspended = r.suspended; } // liveMerge : préserve les appends d'une conséquence foldée
   const next = p.cursor + 1;
   // SUSPENDUE en plein vol (`startCombat`/`transitionTo` déclenché par l'applier de l'étape courante) :
   // le slot ne nous appartient plus — jamais de ressuscite ici.
@@ -1141,9 +1169,9 @@ function avanceUnPas(get: Get, set: Set): PendingCascade | null | typeof ENCORE 
   }
   const suite = poserLeCurseur(get, { ...p, participants: steps, cursor: next });
   set({ pendingCascade: suite });
-  // Table résolue D'OFFICE par le seam — aucun siège humain ne la tient (`tableSansSiege` : cadence
+  // Tirage résolu D'OFFICE par le seam — aucun siège humain ne le tient (`tirageSansSiege` : cadence
   // déférée, héros conduit par l'IA, ennemi sans siège MJ, porteur introuvable), donc aucune fenêtre ne
-  // la joue : la séquence la FRANCHIT au même geste, comme le « Suivant » du joueur l'aurait fait.
+  // le joue : la séquence le FRANCHIT au même geste, comme le « Suivant » du joueur l'aurait fait.
   if (suite.participants[next] !== steps[next]) return ENCORE;
   return null;
 }

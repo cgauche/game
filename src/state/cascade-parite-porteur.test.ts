@@ -184,16 +184,16 @@ describe('#1426 — parité de PORTEUR : le pilote de cascade ne connaît pas «
    * coïncident tant qu'un seul siège joue : une branche « si l'étape n'a pas d'acteur, alors … »
    * rendrait donc les mêmes vecteurs tout en RÉTABLISSANT deux tables de vérité, libres de diverger
    * au premier ajout (un porteur, une cadence, un siège). Ce qui se verrouille ici est donc la FORME :
-   * `tableSansSiege` délègue au prédicat commun pour TOUT porteur, sans tester l'identité de l'étape.
+   * `tirageSansSiege` délègue au prédicat commun pour TOUT porteur, sans tester l'identité de l'étape.
    */
-  it('FORME — `cascade.tableSansSiege` délègue à `surfaceOf(porteurDe(st))`, sans brancher sur le porteur', () => {
-    const corps = corpsDe(join('src', 'state', 'cascade.ts'), 'function tableSansSiege');
+  it('FORME — `cascade.tirageSansSiege` délègue à `surfaceOf(porteurDe(st))`, sans brancher sur le porteur', () => {
+    const corps = corpsDe(join('src', 'state', 'cascade.ts'), 'function tirageSansSiege');
     expect(corps, 'le porteur se dérive (`porteurDe`), il ne se teste pas').toContain('surfaceOf(get, porteurDe(st))');
     expect(corps, 'une branche par TYPE de porteur rouvre les deux tables de vérité de #1426').not.toMatch(/actorId|worldOwner/);
   });
 
   /**
-   * MÊME FORME sur les DEUX fonctions que `tableSansSiege` compose : `porteurDe` (l'id du porteur) et
+   * MÊME FORME sur les DEUX fonctions que `tirageSansSiege` compose : `porteurDe` (l'id du porteur) et
    * `surfaceOf` (la surface de cet id). Elles ont le droit de RÉSOUDRE un id (`st.actorId ??
    * WORLD_STEP_OWNER`) — c'est leur métier ; elles n'ont pas le droit de le COMPARER : un
    * `porteurId === WORLD_STEP_OWNER` dans `surfaceOf` remet la résolution du siège du monde hors du
@@ -236,8 +236,8 @@ describe('#1426 — parité de PORTEUR : le pilote de cascade ne connaît pas «
   it('MONO — `resolveSurface` rend la MÊME série pour un porteur MONDE et un porteur HÉROS', () => {
     const heroId = montage();
     const requetes: Record<Porteur, () => RollRequest> = {
-      heros: () => ({ side: { actorId: heroId }, actionLabel: 'Jet', test: {}, difficulty: 'intermediaire', klass: 'hero-test' }),
-      monde: () => ({ side: { worldSide: 'world' }, actionLabel: 'Jet', test: {}, difficulty: 'intermediaire', klass: 'hero-test' }),
+      heros: () => ({ side: { actorId: heroId }, actionLabel: 'Jet', test: {}, difficulty: 'intermediaire' }),
+      monde: () => ({ side: { worldSide: 'world' }, actionLabel: 'Jet', test: {}, difficulty: 'intermediaire' }),
     };
     const serie = (porteur: Porteur) => POLITIQUES.map((pol) => {
       setDesFixes(pol.pose);
@@ -253,7 +253,7 @@ describe('#1426 — parité de PORTEUR : le pilote de cascade ne connaît pas «
 
   /**
    * PARITÉ SUR L'AXE « CADENCE DE VOYAGE » — la route COMMANDÉE auto-résout les Tests de ROUTINE
-   * (`voyageCadence.seaAutoResolves`, liste fermée `SEA_ROUTINE_KINDS`). C'est une politique du JET,
+   * (`voyageCadence.seaAutoResolves`, liste fermée `SEA_KINDS_SOUS_ORDRES`). C'est une politique du JET,
    * pas une propriété du porteur : un dé de MONDE d'un `kind` de routine se tait comme celui d'un
    * héros, et un `kind` HORS routine garde sa fenêtre des deux côtés. Un côté monde qui ignorerait
    * `autoV` ouvrirait une fenêtre par jour de traversal commandée là où le héros se tait — la branche
@@ -263,10 +263,10 @@ describe('#1426 — parité de PORTEUR : le pilote de cascade ne connaît pas «
     const heroId = montage();
     set({ travelPlan: { routeId: 'r', fromPlaceId: 'a', toPlaceId: 'b', mode: 'sea', hoursPerDay: 8, km: 0, kmDone: 0, interrupted: false, orders: { cadence: 'commande' } } as never });
     const requetes: Record<Porteur, () => RollRequest> = {
-      heros: () => ({ side: { actorId: heroId }, actionLabel: 'Jet', test: {}, difficulty: 'intermediaire', klass: 'hero-test' }),
-      monde: () => ({ side: { worldSide: 'world' }, actionLabel: 'Jet', test: {}, difficulty: 'intermediaire', klass: 'hero-test' }),
+      heros: () => ({ side: { actorId: heroId }, actionLabel: 'Jet', test: {}, difficulty: 'intermediaire' }),
+      monde: () => ({ side: { worldSide: 'world' }, actionLabel: 'Jet', test: {}, difficulty: 'intermediaire' }),
     };
-    // `progression` ∈ SEA_ROUTINE_KINDS ; `tourbillon` n'y est pas (une CRISE interrompt toujours).
+    // `progression` ∈ SEA_KINDS_SOUS_ORDRES ; `tourbillon` n'y est pas (une CRISE interrompt toujours).
     const serie = (porteur: Porteur) => ['progression', 'tourbillon'].map((kind) => resolveSurface(get, requetes[porteur](), kind));
     const monde = serie('monde');
     expect(monde, 'une surface qui diverge par le PORTEUR est une branche « spéciale monde »').toEqual(serie('heros'));

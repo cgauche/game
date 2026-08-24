@@ -24,7 +24,7 @@ import { makeRNG } from '../engine/dice';
 import { seedBattleRng } from './battleRng';
 import { emptyScene } from './scene';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { nightBands, splitBandRows } from './nightBands';
+import { nightBands, splitBandRows, EXPOSURE_BAND_KINDS } from './nightBands';
 import { pushStep } from './cascade';
 import { modalOwnerOf } from './modalArbiter';
 import { seatOwns } from './netOwnership';
@@ -307,13 +307,15 @@ describe('une bande par MALADIE', () => {
  * l'applier de bande RENONCERAIT sur ses étapes : jets lancés, aucune conséquence, en silence (le
  * sinistre du migrateur psy). Garde STRUCTURELLE : tout FICHIER qui construit une étape d'Exposition
  * mentionne la fabrique de vagues.
- * PORTÉE MESURÉE — le détecteur est à granularité FICHIER, pas SITE : il ne voit que le littéral
- * `kind: 'exposure'` et la simple PRÉSENCE de `exposureWaveBand` dans le même fichier. Un SECOND site
+ * PORTÉE MESURÉE — le détecteur est à granularité FICHIER, pas SITE : il ne voit que les littéraux
+ * `kind:` de l'INDEX des kinds d'Exposition (`EXPOSURE_BAND_KINDS`, jamais un nom recopié) et la simple
+ * PRÉSENCE de `exposureWaveBand` dans le même fichier. Un SECOND site
  * d'Exposition ajouté dans un fichier déjà conforme (ex. un 2ᵉ montage dans `restFlow.ts`) passerait
  * donc MUET ici ; ce qui le rattraperait est le comportement, mesuré par les tests de bout en bout.
  */
 describe('les TROIS producteurs d’Exposition passent par la MÊME fabrique de vagues', () => {
-  it('aucun site ne construit d’étape `exposure` sans `exposureWaveBand`', () => {
+  it('aucun site ne construit d’étape d’Exposition sans `exposureWaveBand`', () => {
+    const rxExposition = new RegExp(`kind: '(?:${EXPOSURE_BAND_KINDS.join('|')})'`);
     const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
     const walk = (dir: string, out: string[] = []): string[] => {
       for (const e of readdirSync(dir)) {
@@ -324,7 +326,7 @@ describe('les TROIS producteurs d’Exposition passent par la MÊME fabrique de 
       return out;
     };
     const producteurs = walk(root)
-      .filter((f) => /kind: 'exposure'/.test(readFileSync(f, 'utf-8')))
+      .filter((f) => rxExposition.test(readFileSync(f, 'utf-8')))
       .map((f) => f.replace(/\\/g, '/').slice(f.replace(/\\/g, '/').indexOf('/src/') + 1));
     expect(producteurs.sort(), 'le stock de producteurs a bougé — vérifier que le nouveau passe par la fabrique')
       .toEqual(['src/state/combatEffects.ts', 'src/state/restFlow.ts', 'src/state/seaVoyageFlow.ts']);

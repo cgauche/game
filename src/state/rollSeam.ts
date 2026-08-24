@@ -4,9 +4,8 @@
  * `rollFlowFactory.ts`) + `cascade.ts` (séquenceur) — RIEN de parallèle.
  *
  * `openRoll` DÉCRIT un jet (`RollRequest`) et une CONTINUATION enregistrée par `kind`
- * (`registerCascadeApplier`, `cascade.ts:57`) ; la porte RÉSOUT la policy `klass × contrôleur ×
- * cadence` (Décision 3) via les prédicats EXISTANTS (`surfaceOf`/`cadenceAuto`/`seaAutoResolves`) et
- * choisit la surface :
+ * (`registerCascadeApplier`, `cascade.ts:57`) ; la porte DÉRIVE la surface des PORTEURS RÉELS du jet
+ * (#1479) via les prédicats EXISTANTS (`surfaceOf`/`cadenceAuto`/`seaAutoResolves`) :
  *   M = modale influençable (`startCascade`, propriétaire = l'acteur humain) ;
  *   V = étape visible-lançable MJ (`startCascade`, propriétaire = le siège `gmSeat` — un `actorId`
  *       d'ennemi EN BATAILLE via `seatOwns` (`netOwnership.ts:19`), un côté `worldSide` sans acteur via
@@ -34,6 +33,7 @@
  *     `aggregateOpposeSl`, `CascadeStepMeta`) ; par défaut 0/absent.
  */
 import type { Get, Set } from './flowTypes';
+import type { GameState } from './store';
 import type { Combatant, CharKey, Difficulty, Weapon } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
@@ -50,10 +50,10 @@ import type { RecapLine, RecapTone } from './recapLine';
 import type { ModLine } from '../engine/combat';
 import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey, combineMods, composeDifficulty } from '../engine/combat';
 import { volatileCharLines } from '../engine/characteristics';
-import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepPosee, cascadeTableFolds, clampStepAmount } from './cascade';
+import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepPosee, cascadeTableFolds, clampStepAmount, porteursDeLEtape } from './cascade';
 import { testValue, partyBest, partyAssisted, testValueSplit, testValueParts, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
 import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
-import { tenuParUnHumain, porteurParId, WORLD_STEP_OWNER } from './netOwnership';
+import { tenuParUnHumain, porteurParId, seatOwns, conduitParLeSiegeDuMonde, WORLD_STEP_OWNER } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { findSkillById, conditionLabel, dataLabel, type StakeRef } from '../data';
@@ -62,9 +62,6 @@ import { rollTest, clampTarget } from '../engine/tests';
 import { defaultRNG, type RNG } from '../engine/dice';
 import type { TestResult } from '../engine/tests';
 import { battleRng } from './battleRng';
-
-/** Les classes déclaratives (mandat #275). Pilotent la POLICY, jamais le call-site. */
-export type RollClass = 'hero-test' | 'subi' | 'batch';
 
 /** Agrégation d'un jet multi (porte/contresort/équipage) — SEULE variation de la famille multi.
  *  Canonique dans `pendings.ts` (`CascadeAggregate`, ré-exportée ici pour compat des call-sites du
@@ -94,8 +91,7 @@ export interface RollRequest {
    *  `partyBest` (LDB 12 l.197), pour éviter qu'un futur appelant câble un Soutien interdit. */
   test: { skill?: string; char?: CharKey; spec?: string; sense?: PairedSense; menace?: string; noSupport?: boolean };
   difficulty: Difficulty;
-  klass: RollClass;
-  /** Requis pour un `batch`/multi ; défaut `summed-dr` (Test d'équipage, MDG 14). */
+  /** Requis pour un côté `participants` ; défaut `summed-dr` (Test d'équipage, MDG 14). */
   aggregate?: RollAggregate;
   /** COMMENT le dé se LIT (#1426) — `'seuil'` = pourcentage pur (`dé ≤ nombre visé`, ni bande ni DR ni
    *  écrêtage), tel que le RAW l'écrit pour la recherche d'acheteur (MSRC 13 l.146 / MDG 15 l.362) et
@@ -323,52 +319,84 @@ function resolveMonoSide(get: Get, req: RollRequest, meta?: CascadeStepMeta): { 
   return { baseValue: typeof meta?.baseValue === 'number' ? meta.baseValue : undefined };
 }
 
-/** Policy `klass × contrôleur × cadence` (Décision 3, table COMPLÈTE) — adossée aux prédicats
- *  EXISTANTS, jamais au `kind`. `autoC` (Rapide/Auto global) domine partout ; `autoV` (voyage COMMANDÉE
- *  + `kind` de routine, `seaAutoResolves`) route ensuite ; le reste dépend de la classe + du contrôle. */
-/** EXPORTÉ pour les call-sites qui bâtissent une cascade à PLUSIEURS étapes `subi` d'un même geste
- *  (scorbut/épuisement — Résistance PAR héros, `seaVoyageFlow.ts`) : `CascadeStep.participants`
- *  (Décision 4, Ronde 2) n'existe pas encore, donc `openRoll` (mono/batch) ne peut pas porter N étapes
- *  indépendantes. La policy `subi` se tranche AVANT le côté (#1426) et ne dépend donc PAS de `req.side` :
- *  un seul appel, `side` `worldSide` de convenance, donne la MÊME surface que N appels `openRoll`
- *  individuels (V sous siège MJ, I sinon) — source UNIQUE de policy (jamais dupliquée), pas de nouveau
- *  chemin. */
-export function resolveSurface(get: Get, req: RollRequest, kind: string): Surface {
-  const s = get();
-  const autoC = cadenceAuto();
-  const autoV = seaAutoResolves(s.travelPlan?.orders, kind);
+/**
+ * LES PORTEURS d'une requête — les ids dont la TENUE décide de la surface (#1479) : les contributeurs
+ * d'un côté à participants, ou l'unique porteur du mono (l'acteur nommé/élu, ou la SENTINELLE du monde
+ * `WORLD_STEP_OWNER` pour un côté `worldSide` — un id de porteur comme un autre).
+ */
+function porteursDeLaRequete(get: Get, req: RollRequest): (string | undefined)[] {
+  if ('participants' in req.side) return req.side.participants.map((p) => p.id);
+  if ('worldSide' in req.side) return [WORLD_STEP_OWNER];
+  return [resolveMonoSide(get, req).actor?.id];
+}
+
+/**
+ * LA SURFACE D'UN JET, DÉRIVÉE DE SES PORTEURS (#1479) — il n'existe plus de CLASSE de jet : « on n'a
+ * pas 36 types de jets différents dans l'application ; à partir du moment où je dois faire un jet, il
+ * doit apparaître » (utilisateur, 2026-08-24). Trois queues, dans cet ordre, toutes adossées aux
+ * prédicats EXISTANTS :
+ *  1. cadence déférée à un automate (`cadenceAuto`, GLOBALE) → I — posée par l'appelant qui la subit
+ *     (`surfaceDesPorteurs` ; une SÉQUENCE ne la subit pas, cf. `surfaceDesEtapes`) ;
+ *  2. politique d'ORDRES d'une traversée (`seaAutoResolves` sur CHAQUE `kind` poussé — commandée =
+ *     « sans fenêtre », attendu validé en recette #1426) → I ;
+ *  3. sinon la TENUE des porteurs (`surfaceOf`, donc `netOwnership.tenuParUnHumain`) : aucun porteur
+ *     tenu par un humain → I (le socle résout d'office, le bilan le montre) ; sinon la fenêtre s'ouvre
+ *     — V quand le siège MJ tient ET CONDUIT tous les porteurs surfacés (monde, ennemi de bac-à-sable :
+ *     il la voit et la lance), M sinon (le porteur a son propre joueur, ici ou à un autre siège).
+ * Aucune branche par TYPE de porteur ni par situation : un héros, un ennemi, le monde, un Test subi
+ * face à une maladie passent par CE calcul.
+ */
+function surfaceDesTenus(s: GameState, tenus: readonly (string | undefined)[], kinds: readonly string[], partage = false): Surface {
+  // Politique d'ORDRES d'une traversée : COMMANDÉE, les `kind` qu'elle couvre se résolvent d'office
+  // (attendu validé en recette #1426 « Traversée commandée sans fenêtre »). Une séquence MIXTE garde
+  // sa fenêtre — un seul jet hors des ordres suffit à la rouvrir (patron `riverAutoResolves`).
+  if (kinds.length > 0 && kinds.every((k) => seaAutoResolves(s.travelPlan?.orders, k))) return 'I';
+  // MOMENT PARTAGÉ (cf. `surfaceDesEtapes`) : la possession DÉCLARÉE est « tous les sièges » — la
+  // fenêtre est à la table entière, donc jamais celle du seul MJ.
+  if (partage) return 'M';
+  if (!tenus.length) return 'I';
   const gmSeat = s.net.gmSeat ?? null;
-
-  if (autoC) return 'I'; // « auto (autoC) → I partout » (Décision 3)
-
-  if (req.klass === 'batch') {
-    if (gmSeat != null) return 'V';
-    if (autoV) return 'I';
-    return 'M';
-  }
-
-  if (req.klass === 'subi') {
-    // MESURÉ : `subi` ne rend JAMAIS M — V si un siège MJ existe (il voit/lance, read-only), I sinon.
-    // La classe se tranche AVANT le côté : le MÊME jet subi rend la MÊME surface qu'il soit porté par
-    // un héros ou par le monde (#1426) — la classe dit COMMENT le jet se joue, le porteur dit QUI le
-    // tient. Un dé que le siège du monde TIENT ET JOUE n'est donc pas déclaré `subi` (`openWorldTest`).
-    return gmSeat != null ? 'V' : 'I';
-  }
-
-  // PORTEUR du dé : l'acteur nommé par le côté, ou la SENTINELLE du monde (`WORLD_STEP_OWNER`) — un id
-  // de porteur comme un autre. La suite ne connaît plus que cet id : UNE seule queue (cadence de voyage,
-  // puis le prédicat de surface commun `surfaceOf`) pour le monde comme pour le héros (#1426). Sous siège
-  // MJ, le dé du monde lui revient (V) : c'est lui qui le voit et le lance.
-  const monde = !!req.side && 'worldSide' in req.side;
-  if (monde && gmSeat != null) return 'V';
-  const porteurId = monde ? WORLD_STEP_OWNER : resolveMonoSide(get, req).actor?.id;
-
-  if (autoV) return 'I'; // routine de voyage COMMANDÉE (cf. batch)
+  // V : le siège MJ tient TOUS les porteurs surfacés ET les CONDUIT (monde, ennemi de bac-à-sable —
+  // `netOwnership.conduitParLeSiegeDuMonde`, la route de possession, pas le TYPE lu au call-site) : il
+  // voit et lance. Un héros est ATTRIBUÉ à un siège par `net.ownership` : il garde SA fenêtre (M) même
+  // quand ce siège est aussi le siège MJ (hôte-MJ solo, `gmSeat === ownership[héros]`) — c'est son
+  // joueur qui la roule.
+  if (gmSeat != null && tenus.every((id) => seatOwns(s, gmSeat, id) && conduitParLeSiegeDuMonde(s, id))) return 'V';
   // SURFACE, pas affordance locale (#1262) : le héros d'un AUTRE siège garde sa fenêtre — c'est SON
   // joueur qui la roulera. `pilotedByHuman`/`humanControlled` répondent « qui a la main ICI » et
   // volaient donc le jet de l'invité, résolu en silence chez l'hôte.
-  if (surfaceOf(get, porteurId)) return 'M';
-  return 'I';
+  return 'M';
+}
+
+export function surfaceDesPorteurs(get: Get, porteurs: readonly (string | undefined)[], kinds: readonly string[]): Surface {
+  if (cadenceAuto()) return 'I';
+  return surfaceDesTenus(get(), porteurs.filter((id) => surfaceOf(get, id)), kinds);
+}
+
+/** La surface d'une REQUÊTE : ses porteurs réels passés au calcul unique ci-dessus. */
+export function resolveSurface(get: Get, req: RollRequest, kind: string): Surface {
+  return surfaceDesPorteurs(get, porteursDeLaRequete(get, req), [kind]);
+}
+
+/**
+ * LA SURFACE D'UNE SÉQUENCE DÉJÀ MINTÉE (#1479) — MÊME calcul, porteurs et `kind` lus sur les étapes
+ * elles-mêmes (`porteursDeLEtape`, rangées de bande comprises) : un émetteur POUSSE ce qu'il met en
+ * jeu, il ne tranche plus.
+ *
+ * SEULE différence avec la surface d'une requête, et elle est la divergence 2 ASSUMÉE de la famille de
+ * bandes (cf. `openBand`) : la cadence déférée (`cadenceAuto`) n'y entre pas — une séquence de
+ * nuit/voyage garde sa fenêtre, que le pilote d'auto-cadence DÉROULE en montrant son bilan
+ * (`combatAuto.willAutoResolve`), au lieu de l'effacer. La TENUE, elle, est le même prédicat
+ * (`netOwnership.tenuParUnHumain`).
+ */
+export function surfaceDesEtapes(get: Get, steps: readonly CascadeStep[]): Surface {
+  const s = get();
+  const tenus = steps.flatMap(porteursDeLEtape).filter((id) => tenuParUnHumain(s, id));
+  // MOMENT PARTAGÉ : une étape qui DÉCLARE `groupOwner` SANS rangées (l'incantation d'un ennemi,
+  // `combatFlow.openCastCascade`) est possédée par TOUS les sièges (`modalArbiter` → `'*'`) : elle est
+  // tenue par construction, quel que soit son porteur. Une BANDE, elle, répond par ses rangées.
+  const partage = steps.some((st) => st.groupOwner && !st.participants);
+  return surfaceDesTenus(s, tenus, steps.map((st) => st.kind), partage);
 }
 
 /**
@@ -377,7 +405,7 @@ export function resolveSurface(get: Get, req: RollRequest, kind: string): Surfac
  * à un automate (`cadenceAuto`, cadence GLOBALE : il n'existe pas de cadence par siège — #1264).
  *
  * SOURCE UNIQUE pour le MONO (`resolveSurface`, `rollSansPilote`) comme pour les RANGÉES
- * (`surfaceRow`) et pour les ÉTAPES À TABLE (`cascade.tableSansSiege`). Ce qu'elle N'EST PAS : un
+ * (`surfaceRow`) et pour les TIRAGES d'étape (`cascade.tirageSansSiege`). Ce qu'elle N'EST PAS : un
  * prédicat d'affordance LOCALE (`pilotedByHuman`, `humanControlled`) — ceux-là disent « qui a la main
  * devant CET écran », et bâtir le surfaçage dessus fait rouler en silence, chez l'hôte, le jet du
  * héros d'un invité.
@@ -617,7 +645,7 @@ interface RollLineBase {
    *  aux seules `famille: 'circonstance'`) et, quand la combinaison diffère de la somme brute, ÉMET
    *  l'écart en ligne NOMMÉE « plafond Difficultés » liée à sa fiche de règle. Sans ce mode, un
    *  appelant qui plafonnait sa cible à la main laissait l'amputation en chip « autres ». Réservé aux
-   *  jets de COMBAT : c'est un ARBITRAGE maison (`LDB 12` n'énonce aucune règle de cumul et `l.137`
+   *  jets de COMBAT : valeur MAISON (`LDB 12` silencieux sur le cumul ; `l.137`
    *  est permissif hors combat ; la combinaison vit au chapitre Combat, `LDB 14 l.48` et `l.95`). */
   plafond?: 'difficultes';
 }
@@ -938,7 +966,7 @@ function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: Cascade
 }
 
 /**
- * LA PORTE UNIQUE (Décision 1). Résout policy(klass × contrôleur × cadence) → surface, construit
+ * LA PORTE UNIQUE (Décision 1). Dérive la surface des PORTEURS de la requête (#1479), construit
  * l'étape puis :
  *  - M/V (surfacé) : `startCascade` — la CONTINUATION est l'applier `kind` (lu à l'« Appliquer »,
  *    déjà câblé par `commitStep`/`cascadeAppliers`, `cascade.ts:107-110`) ;
@@ -953,7 +981,9 @@ export function openRoll(get: Get, set: Set, req: RollRequest, kind: string, met
   // c'est ICI que le silence se décide, plus au call-site).
   if ('partyBest' in req.side && !resolveMonoSide(get, req).actor) return;
   const surface = resolveSurface(get, req, kind);
-  const step = req.klass === 'batch' ? buildBatchStep(get, req, kind, meta) : buildMonoStep(get, req, kind, meta);
+  // BANDE ou MONO : le NOMBRE de porteurs déclarés, jamais une classe (#1479) — le mono EST la bande à
+  // N=1, et une requête qui déclare ses contributeurs monte ses rangées.
+  const step = 'participants' in req.side ? buildBatchStep(get, req, kind, meta) : buildMonoStep(get, req, kind, meta);
   if (surface === 'I') {
     runCascadeImmediate(get, set, [step]);
     return;
@@ -963,10 +993,10 @@ export function openRoll(get: Get, set: Set, req: RollRequest, kind: string, met
 
 /**
  * FORME STÉRÉOTYPÉE 1/2 (#352 extension) : le meilleur PJ du groupe teste UNE compétence/carac
- * (`klass:'hero-test'`, side `partyBest`) — 8 call-sites identiques avaient la compétence RÉPÉTÉE
+ * (side `partyBest`) — 8 call-sites identiques avaient la compétence RÉPÉTÉE
  * (`side.partyBest.skill` ET `req.test.skill`, divergence exprimable = bug possible). SOURCE UNIQUE :
  * la compétence se déclare UNE FOIS ; `side`/`test` la reprennent ICI, jamais recopiée au call-site.
- * Réserve `openRoll` (exporté) aux formes hors ce patron (`enemy`/`batch`/`actorId` — cf. `rollSeam.test.ts`).
+ * Réserve `openRoll` (exporté) aux formes hors ce patron (`enemy`/participants/`actorId` — cf. `rollSeam.test.ts`).
  */
 export function openPartyTest(
   get: Get, set: Set,
@@ -980,7 +1010,6 @@ export function openPartyTest(
     actionLabel,
     test: { skill, char, spec: specName, sense, menace, noSupport },
     difficulty,
-    klass: 'hero-test',
     ...(stake ? { stake } : {}),
   }, kind, meta);
 }
@@ -992,10 +1021,8 @@ export function openPartyTest(
  * `WORLD_STEP_OWNER` par `buildMonoStep`+`modalArbiter`, qui la rend au siège MJ s'il existe et à
  * l'hôte sinon. SOURCE UNIQUE, cf. `openPartyTest`.
  *
- * CLASSE ORDINAIRE, jamais `subi` (#1426) : le siège qui possède le monde TIENT ce dé et le JOUE — sa
- * fenêtre s'ouvre (M en solo, V sous siège MJ, I en cadence déférée), exactement comme celle du jet
- * d'un héros. `subi` est la classe du jet qu'un porteur SUBIT (jamais M), et `resolveSurface` la
- * tranche AVANT le côté : la déclarer ici rendrait ces dés muets.
+ * Le siège qui possède le monde TIENT ce dé et le JOUE — sa fenêtre s'ouvre (M en solo, V sous siège
+ * MJ, I en cadence déférée), exactement comme celle du jet d'un héros (#1426/#1479).
  *
  * ÉVALUATION `'seuil'` (#1426) : ces dés ne sont PAS des Tests — le RAW dit « lancez un d100 [...] si
  * le résultat est inférieur ou égal au chiffre final » (MSRC 13 l.146, MDG 15 l.362) et écrit « Test »
@@ -1013,7 +1040,6 @@ export function openWorldTest(
     actionLabel: spec.actionLabel,
     test: {},
     difficulty: spec.difficulty,
-    klass: 'hero-test',
     evaluation: 'seuil',
     ...(spec.stake ? { stake: spec.stake } : {}),
   }, kind, meta);
@@ -1034,10 +1060,11 @@ export function openWorldTest(
  *     kind, meta?)`) ; la famille les met DANS la déclaration (`(get, set, spec)`). C'est le sens même
  *     de la porte : une seule chose à remplir, et un champ de plus s'ajoute au type sans toucher aux
  *     appelants — là où un 6ᵉ positionnel les réécrirait tous.
- *  2. SURFACE I — `openRoll` route l'inline vers `runCascadeImmediate` (aucune fenêtre). `openBand`
- *     OUVRE sa fenêtre même quand toutes ses rangées naissent témoins (cadence auto) : une bande est
- *     UNE entrée de règle mise en jeu face à N porteurs, et son bilan par rangée se lit — c'est le
- *     régime des bandes de nuit/voyage existantes. Le choix est ici, pas dans l'oubli d'un `if`.
+ *  2. SURFACE I — la CADENCE déférée route `openRoll` vers l'inline (aucune fenêtre) mais laisse à
+ *     `openBand`/`openSequence` la leur : une bande est UNE entrée de règle mise en jeu face à N
+ *     porteurs, et son bilan par rangée se lit — le pilote d'auto-cadence la DÉROULE (`combatAuto`)
+ *     au lieu de l'effacer. La TENUE, elle, tranche pareil des deux côtés (#1479) : une bande
+ *     qu'AUCUN siège humain ne tient se résout d'office. Le choix est ici, pas dans l'oubli d'un `if`.
  * ───────────────────────────────────────────────────────────────────────────────────────────────── */
 
 /** Politique de garde de la porte, calque de `rollLine`/`rollSansPilote` : en DEV la violation THROW
@@ -1158,10 +1185,10 @@ export function buildBand(get: Get, spec: BandRowsSpec): BuiltCascadeStep | unde
  *
  * Zéro rangée : aucune fenêtre (rien n'est mis en jeu).
  */
-export function openBand(get: Get, set: Set, spec: BandOpenSpec): void {
+export function openBand(get: Get, set: Set, spec: BandOpenSpec): CascadeStep[] | undefined {
   const step = buildBand(get, spec);
-  if (!step) return;
-  startCascade(get, set, {
+  if (!step) return undefined;
+  return openSequence(get, set, {
     title: spec.title,
     purpose: spec.purpose,
     ...(spec.icon ? { icon: spec.icon } : {}),
@@ -1452,9 +1479,10 @@ export interface TableSpec {
    *  LES TROIS FAMILLES QUI RESTENT OUVERTES, chiffrées au TYPE le 2026-08-12 (sonde : rendre le champ
    *  requis, compter les sites de PRODUCTION qui ne compilent plus) — aucune ne tombe à 0, donc aucune
    *  ne se mure :
-   *   · `RollRequest` : 7 sites (2 RELAIS génériques ici même — `openPartyTest`/`openWorldTest`
-   *     transmettent l'enjeu de leur appelant ; 4 SONDES DE SURFACE `resolveSurface` — `seaActivities`,
-   *     `seaVoyageFlow` ×3, qui ne décrivent aucun jet propre ; 1 jet de taverne à curer, `tavernFlow`) ;
+   *   · `RollRequest` : les 2 RELAIS génériques ici même (`openPartyTest`/`openWorldTest` transmettent
+   *     l'enjeu de leur appelant) ; les 4 SONDES DE SURFACE `resolveSurface` (`seaActivities`,
+   *     `seaVoyageFlow` ×3) ont disparu avec la dérivation par PORTEURS (#1479). Compte VIVANT :
+   *     `BASELINE_REQ` de `cascade-step-stake-guard.test.ts`, seul chiffre qui se re-mesure ;
    *   · `BandSpec` : 9 sites (dont 4 FABRIQUES de bande génériques — `nightBands`, `combatEndBands`,
    *     `pursuitFlow`, les 2 batch de `combat/triggeredTest` — qui transmettent l'enjeu de l'étape) ;
    *   · `HostSpec` : 13 sites (les jets HÔTES d'attaque/défense/incantation/maladresse, dont l'enjeu
@@ -1744,6 +1772,18 @@ export function hostStep(get: Get, spec: HostSpec): BuiltCascadeStep | undefined
  * OUVERTURE d'une SÉQUENCE d'étapes MINTÉES (#1262) — `startCascade` typé par la marque : un littéral
  * monté à la main n'entre pas ici. `startCascade` reste public et non typé : c'est la FRONTIÈRE, celle
  * par où une séquence restaurée d'une sauvegarde revient dans le slot.
+ *
+ * LA SURFACE EST DU SOCLE (#1479) : l'émetteur POUSSE ce qu'il met en jeu, il ne tranche plus — une
+ * séquence qu'AUCUN siège humain ne tient (héros conduits par l'IA, porteurs inconnus) ou que les
+ * ORDRES d'une traversée commandent de résoudre d'office se résout sur place (`runCascadeImmediate`,
+ * conclusions appliquées et tracées), sinon elle ouvre sa fenêtre. RENVOIE les étapes RÉSOLUES dans le
+ * premier cas, `undefined` quand la fenêtre s'est ouverte — l'appelant y lit ses lignes (recap de
+ * journée) et sait s'il doit rendre la main à la fenêtre. `undefined` AUSSI quand la résolution a été
+ * INTERROMPUE (combat ouvert en vol, choix sans défaut) : un préfixe n'est pas une séquence résolue.
+ *
+ * La cadence DÉFÉRÉE (`cadenceAuto`) n'entre PAS ici : elle est portée par le pilote d'auto-cadence
+ * (`combatAuto`, qui déroule la fenêtre et en MONTRE le bilan pour les séquences de nuit/voyage) —
+ * c'est la divergence 2 assumée de la famille de bandes ci-dessus, pas un oubli.
  */
 export function openSequence(get: Get, set: Set, opts: {
   title: string;
@@ -1755,8 +1795,21 @@ export function openSequence(get: Get, set: Set, opts: {
   roundBoundary?: boolean;
   combatEndBoundary?: boolean;
   restNights?: PendingCascade['restNights'];
-}): void {
-  startCascade(get, set, { ...opts, steps: [...opts.steps] });
+}): CascadeStep[] | undefined {
+  const steps = [...opts.steps];
+  if (!steps.length) return undefined;
+  if (surfaceDesEtapes(get, steps) === 'I') {
+    const resolues = runCascadeImmediate(get, set, steps, { title: opts.title, purpose: opts.purpose, ...(opts.log ? { log: opts.log } : {}) });
+    // GARDE DU CONTRAT (#1479) : `runCascadeImmediate` peut rendre un PRÉFIXE — un combat ouvert en
+    // plein vol par l'applier d'une étape, ou un choix sans défaut authoré, laisse le reste de la
+    // séquence en pile (`suspendedCascades`) ou dans le slot. Rendre ce préfixe comme « séquence
+    // résolue » fait ENCHAÎNER l'appelant sur un dénouement que la reprise rejouera : la continuation
+    // partait deux fois. La garde vit ICI, une fois, au lieu d'être recopiée chez chaque appelant.
+    if (get().battle || get().pendingCascade) return undefined;
+    return resolues;
+  }
+  startCascade(get, set, { ...opts, steps });
+  return undefined;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────────────────────────

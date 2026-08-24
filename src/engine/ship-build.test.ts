@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildShip, shipSizeOfLength, installCost, rollPortRepair, rollTemporaryRepair,
-  temporaryRepairFailureDamage, rollSteamBreakdown, steamBreakdownTriggered,
+  temporaryRepairFailureDamage, steamBreakdownFor, steamBreakdownTriggered,
 } from './shipBuild';
 import { findNavalTrait } from '../data';
 import type { RNG } from './dice';
@@ -129,8 +129,8 @@ describe('Panne de Vapeur (MDG 12 l.313-352)', () => {
   });
 
   it('table d100 : 01-40 moteur broute (M −3) ; 61-70 perte de pression (M 0) ; 96-00 explosion (Critique Coque)', () => {
-    expect(rollSteamBreakdown(seq(30))).toMatchObject({ id: 'moteur-broute', mMod: -3 });
-    expect(rollSteamBreakdown(seq(65))).toMatchObject({ id: 'perte-de-pression', mSet: 0 });
-    expect(rollSteamBreakdown(seq(98))).toMatchObject({ id: 'explosion', engineDestroyed: true, hullCritical: true, compartmentDamage: 12 });
+    expect(steamBreakdownFor(30)).toMatchObject({ id: 'moteur-broute', mMod: -3 });
+    expect(steamBreakdownFor(65)).toMatchObject({ id: 'perte-de-pression', mSet: 0 });
+    expect(steamBreakdownFor(98)).toMatchObject({ id: 'explosion', engineDestroyed: true, hullCritical: true, compartmentDamage: 12 });
   });
 });

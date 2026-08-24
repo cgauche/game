@@ -163,13 +163,12 @@ export function scanRollLabels(src: string): ActionLabelHit[] {
 const ROLL_LABEL_SITUATION_STOCK: { file: string; text: string }[] = [
   { file: 'src/state/seaVoyageFlow.ts', text: 'Tonneau contaminé' },
   { file: 'src/state/seaVoyageFlow.ts', text: "Tonneau d'eau" },
-  { file: 'src/state/seaVoyageFlow.ts', text: 'Scorbut' },
-  { file: 'src/state/seaVoyageFlow.ts', text: 'Épuisement' },
 ];
-// Les deux sites « Mal de mer » (premier voyage / mauvais temps) sont sortis du stock : le Test est
-// une BANDE (une fenêtre, une rangée par porteur), et la SITUATION y est portée par le libellé de la
-// bande — la rangée nomme la Compétence, comme le veut Z5.
-const ROLL_LABEL_SITUATION_PLAFOND = 4;
+// Sortis du stock, MÊME RAISON à chaque fois : « Mal de mer » (premier voyage / mauvais temps), puis
+// « Scorbut » et « Épuisement » (#1479) — le Test est devenu une BANDE (une fenêtre, une rangée par
+// porteur) et la SITUATION y est portée par le libellé de la bande, la rangée nommant la Compétence,
+// comme le veut Z5.
+const ROLL_LABEL_SITUATION_PLAFOND = 2;
 
 describe('CLIQUET — un `rollLabel` nomme la COMPÉTENCE, pas la situation (#1109)', () => {
   const situationSites = (): string[] => {

@@ -88,6 +88,59 @@ describe('#1262 V2 L5 — les Activités en mer passent par la PORTE', () => {
   });
 
   /**
+   * #1479 — LA SEMAINE EST **UNE** SÉQUENCE. L'émetteur ne trie plus ses étapes par surface au
+   * call-site (une `RollRequest` forgée passée à `resolveSurface`, puis deux lots : un
+   * `runCascadeImmediate` SILENCIEUX et une fenêtre) : il POUSSE, et `openSequence` dérive la surface
+   * des porteurs (`surfaceDesEtapes`). Comportement mesuré ici : une étape résolue d'office tombe
+   * DANS la fenêtre, où son bilan se lit — jamais dans un lot séparé qui ne s'affiche nulle part.
+   */
+  function deuxCartographes(): [Combatant, Combatant] {
+    const [a, b] = get().party;
+    for (const h of [a, b]) {
+      (h as Combatant).skills = [{ skillId: 'metier', spec: 'cartographe', advances: 20 } as never];
+      (h as Combatant).characteristics = { ...h.characteristics, dexterite: 40 };
+    }
+    return [a, b];
+  }
+
+  it('semaine MIXTE (un héros tenu, un héros conduit par l’IA) → UNE fenêtre qui porte les DEUX étapes, celle que personne ne tient déjà résolue DEDANS', () => {
+    const [ia, tenu] = deuxCartographes(); // l'IA est en TÊTE : le curseur s'y pose d'abord
+    set({
+      party: get().party.map((h) => (h.id === ia.id ? { ...h, aiControlled: true } : h)),
+      pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } },
+    } as never);
+
+    get().seaActivitiesConfirm({
+      [tenu.id]: { activityId: 'cartographie' },
+      [ia.id]: { activityId: 'cartographie' },
+    });
+
+    const casc = get().pendingCascade;
+    expect(casc, 'un seul héros tenu suffit à ouvrir la fenêtre de la semaine').toBeTruthy();
+    expect(casc!.purpose).toBe('seaActivities');
+    const etapes = casc!.participants.filter((s) => s.kind === 'sea-activity-chart');
+    expect(etapes.map((s) => s.actorId).sort(), 'les DEUX Activités sont dans la MÊME séquence — aucun lot résolu à part')
+      .toEqual([tenu.id, ia.id].sort());
+    expect(etapes.find((s) => s.actorId === ia.id)!.result, 'personne ne la tient : son dé tombe DANS la fenêtre, visible au bilan').toBeTruthy();
+    expect(etapes.find((s) => s.actorId === tenu.id)!.result, 'celle du joueur attend SON dé').toBeNull();
+  });
+
+  it('CONTRÔLE — semaine que PERSONNE ne tient : aucune fenêtre de `seaActivities` (la sonde discrimine)', () => {
+    const [a, b] = deuxCartographes();
+    set({
+      party: get().party.map((h) => ({ ...h, aiControlled: true })),
+      pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } },
+    } as never);
+
+    get().seaActivitiesConfirm({
+      [a.id]: { activityId: 'cartographie' },
+      [b.id]: { activityId: 'cartographie' },
+    });
+
+    expect(get().pendingCascade?.purpose, 'tout est résolu d’office : rien à ouvrir').not.toBe('seaActivities');
+  });
+
+  /**
    * Chemin GÉNÉRIQUE (`sea-activity-generic`) : AUCUNE Activité de contexte 'mer' ne l'emprunte
    * aujourd'hui (`activities.json` : les trois entrées 'mer' sont `seaChart`, `opportunityTrade` et
    * `crewTraining` — cette dernière bloquée par `seaActivityBlocked`). Le `def` étant un ARGUMENT du

@@ -40,6 +40,10 @@ import type { BuiltRollRow } from './rollRowBuild';
  *  Le shell fournit `rolled` globalement si la rangée ne le porte pas. */
 export type RollRowData = RollRowProps & {
   key?: string | number;
+  /** Id RÉEL du participant (slot du flux multi) quand la `key` React est SCOPÉE par un site qui
+   *  compose plusieurs pas (`CascadeModal`/`witnessRowKey`) : la clé sert au rendu, le pid sert au
+   *  socle (`rowForcedDie` → `flow.slotOf`). Absent = la `key` EST l'id (6 sites mono-étape). */
+  pid?: string;
   /** Séparateur rendu AVANT cette rangée (filet titré) — sert à couper la pile des étapes DÉJÀ
    *  validées de l'étape COURANTE : sans lui, la prose d'un résultat committé se colle au tirage
    *  suivant et les deux se lisent comme un seul bloc. */
@@ -257,15 +261,15 @@ export function RollShell({
       {!rolled && setup}
       <div className="cs-rows">
         {rows.map((r, i) => {
-          const { key, separator, ...rest } = r;
+          const { key, pid, separator, ...rest } = r;
           // Test opposé (≥2 rangées, post-jet) : la rangée `winnerIndex` est accentuée, les autres atténuées.
           // Une rangée qui porte déjà son propre `winner` reste prioritaire — SAUF quand le panneau est
           // masqué : `winner: undefined` d'une rangée masquée serait avalé par le `??` ci-dessous.
           const winner = !panelMasked && rolled && winnerIndex != null && rows.length > 1 ? (i === winnerIndex ? 'win' : 'lose') : null;
           // SÉLECTEUR DE DÉ (Résilience LDB 17 l.68 / dé fixé) : DÉRIVÉ ici pour TOUTE modale de jet —
           // aucune ne le calcule plus (cf. `forcedDieRow.ts`). `flowKey` donne le flux, la rangée donne
-          // son acteur et, en multi, l'id de son slot.
-          const die = rowForcedDie(state, r.flowKey ?? flowKey, { ...r, onRoll: r.onRoll ?? null }, rolled);
+          // son acteur et, en multi, l'id de son slot (`pid`, ou la `key` quand elle n'est pas scopée).
+          const die = rowForcedDie(state, r.flowKey ?? flowKey, { ...rest, key, pid, onRoll: r.onRoll ?? null }, rolled);
           const shown = reasonLocked && rest.row.d?.decided ? { ...rest, row: { ...rest.row, d: { ...rest.row.d, decided: undefined } } } : rest;
           const row = <RollRow {...shown} forcedRoll={die.forcedRoll} fixedMark={rest.fixedMark ?? die.fixedMark} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} dieCommitRef={i === hoistIdx ? hoistDieCommit : dieRegistry.handle(rowKeyOf(r, i))} />;
           return separator ? <Fragment key={key ?? i}>{separator}{row}</Fragment> : <Fragment key={key ?? i}>{row}</Fragment>;

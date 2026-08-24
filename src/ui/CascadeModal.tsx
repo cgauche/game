@@ -702,7 +702,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // Clés SCOPÉES PAR ÉTAPE (`witnessRowKey`) : la rangée batch COURANTE côtoie les rangées FIGÉES d'un
     // pas batch précédent aux MÊMES participants (Orientation puis Entretien) — sans scope, collision de
     // clé + duplication visuelle. `buildParticipantRows` keye par id nu (correct pour ses 6 autres
-    // appelants MONO-étape) ; ici on re-scope au site qui compose plusieurs pas.
+    // appelants MONO-étape) ; ici on re-scope au site qui compose plusieurs pas — et l'id RÉEL du
+    // participant part alors dans `pid` (le socle résout SON slot par là, jamais par la clé de rendu).
     // Rangées du flux `cascadeBatch` (la coquille hôte porte la cascade) : `flowKey` de RANGÉE.
     const rows: BuiltRollRow[] = buildParticipantRows(cur.participants!, pool, {
       onRoll: batchRoll, onReroll: batchReroll, onBonusSL: batchBonusSL, onDarkPact: batchDarkPact, onForce: batchForce,
@@ -741,6 +742,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       return {
         ...r,
         flowKey: 'cascadeBatch' as const,
+        pid: String(r.key),
         key: witnessRowKey(cur.id, String(r.key)),
         ...(resistOk ? { resist: { menace: part!.menace!, onResist: () => batchResist(part!.id) } } : {}),
         ...(determineOk ? { determination: { resolve: a!.resolve ?? 0, onResolve: () => batchDetermine(part!.id) } } : {}),

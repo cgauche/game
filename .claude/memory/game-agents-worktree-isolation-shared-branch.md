@@ -5,6 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: c0ee09a3-d089-4078-86dc-9f7a9ef84a94
+  modified: 2026-08-24T11:52:00.879Z
 ---
 
 Sur ce repo, une **autre session tourne en parallèle sur la même branche** (`main`, trunk-based)
@@ -28,3 +29,16 @@ mon agent. `git commit -- <chemins>` côté MOI ne protège pas : le danger vien
 - Toujours `git --no-pager log/show` pour vérifier ce que HEAD contient AVANT de committer (l'autre
   session a pu déjà committer une partie de mon travail). Cf. [[git-commits-propres-wip-parallele]],
   [[feedback-jamais-git-surgery-arbre-partage-actif]].
+
+**Deuxième visage du même mal (2026-08-24, flag user : « Tu tiens en hotage une autre session, et tu
+dépends encore d'une autre, c'est vicieux »)** : une VAGUE multi-lots tenue non committée des heures
+dans l'arbre principal fait de ma session le BLOQUEUR de tous les `git merge --ff-only` des voisines
+(le checkout refuse dès qu'un fichier localement modifié est touché par le ff) — j'ai fini par
+distribuer des « autorisations de passage » (mise de côté d'index.ts, 5 docs générés au HEAD) tout en
+dépendant transitivement d'une 3e session. Remèdes, par ordre :
+1. Vague longue + sessions parallèles actives → la vague entière en WORKTREE (pas seulement l'agent).
+2. À défaut : ne JAMAIS répondre « attends mon timing » à un ff — DÉCOUPLER : j'avance vers mon commit
+   sans attendre, eux ff dès que possible, l'ordre est indifférent (un commit divergent se re-merge
+   trivialement ; un doc GÉNÉRÉ se remet au HEAD sans perte, `docs:build` le recale).
+3. Le seul recouvrement légitime à négocier est un fichier PARTAGÉ réellement co-modifié — un
+   doc-comment ou un dérivé ne se négocie pas, il se libère.

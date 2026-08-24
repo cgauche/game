@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { resolveSurface, surfaceOf, tableStep, displayStep, type RollRequest } from './rollSeam';
+import { resolveSurface, surfaceDesEtapes, buildBand, surfaceOf, tableStep, displayStep, type RollRequest } from './rollSeam';
 import { actorIn } from './combatants';
 import { runCascadeImmediate, lireDeEtape, tableStepDefs, naturalRollForTableRow, rollTableStep, registerTableStep, startCascade, pushStep, registerCascadeApplier, suspendActiveCascade, poserCurseurCascade, stepReady } from './cascade';
 import { fixtureText } from '../i18n/fixtureText';
@@ -58,7 +58,6 @@ const requeteMonde = (): RollRequest => ({
   actionLabel: 'Trouver un acheteur',
   test: {},
   difficulty: 'intermediaire',
-  klass: 'hero-test',
 });
 
 describe('#1426 socle — un siège qui POSSÈDE le monde VOIT son dé (resolveSurface, côté worldSide)', () => {
@@ -79,7 +78,7 @@ describe('#1426 socle — un siège qui POSSÈDE le monde VOIT son dé (resolveS
     const h = makePregens()[0];
     set({ party: [h], battle: null });
     const requeteHeros = (): RollRequest => ({
-      side: { actorId: h.id }, actionLabel: 'Test de héros', test: {}, difficulty: 'intermediaire', klass: 'hero-test',
+      side: { actorId: h.id }, actionLabel: 'Test de héros', test: {}, difficulty: 'intermediaire',
     });
     const series = (r: () => RollRequest) => {
       resetDesFixes(); resetCadence();
@@ -101,6 +100,29 @@ describe('#1426 socle — un siège qui POSSÈDE le monde VOIT son dé (resolveS
     expect(resolveSurface(get, requeteMonde(), 'x')).toBe('I');
   });
 
+  /**
+   * HÔTE-MJ (#1479) — le montage le plus courant hors coop dédiée : le siège 0 est à la fois l'hôte,
+   * le MJ et le siège à qui les héros sont attribués (`net.ownership`). « Le siège MJ possède tous les
+   * porteurs » y est VRAI pour un héros — et rendait donc V, la fenêtre « que le MJ voit et lance »,
+   * là où c'est SON joueur qui doit la jouer. V ne se décide pas sur la POSSESSION seule mais sur la
+   * ROUTE de possession (`conduitParLeSiegeDuMonde` : monde, ennemi de bac-à-sable).
+   */
+  it('HÔTE-MJ (`gmSeat` === siège du héros) : le héros garde SA fenêtre (M) ; le dé de MONDE, lui, rend V', () => {
+    const h = makePregens()[0];
+    set({ party: [h], battle: null });
+    set({ net: { ...get().net, mode: 'host', mySeat: 0, gmSeat: 0, ownership: { [h.id]: 0 } } });
+    expect(seatOwns(get(), 0, h.id), 'précondition : le siège MJ POSSÈDE bien ce héros').toBe(true);
+    const requeteHeros = (): RollRequest => ({ side: { actorId: h.id }, actionLabel: 'Résistance', test: {}, difficulty: 'intermediaire' });
+    expect(resolveSurface(get, requeteHeros(), 'x'), 'possédé par le siège MJ n’est pas CONDUIT par lui — le joueur roule son héros').toBe('M');
+    const bande = buildBand(get, {
+      id: 'b', kind: 'x', label: fixtureText('Bande'), difficulty: 'intermediaire',
+      porteurs: [{ actor: h, ligne: { test: { skill: 'resistance', char: 'endurance' } } }],
+    })!;
+    expect(surfaceDesEtapes(get, [bande]), 'la SÉQUENCE répond comme la requête — même calcul').toBe('M');
+    expect(resolveSurface(get, requeteMonde(), 'x'), 'CONTRÔLE : le dé de MONDE, même montage, revient au MJ').toBe('V');
+    set({ net: { ...get().net, ownership: {} } });
+  });
+
   it('coop AVEC siège MJ : V (le MJ voit/lance), et la possession du monde SUIT ce siège', () => {
     set({ net: { ...get().net, mode: 'host', mySeat: 0, gmSeat: 1 } });
     expect(resolveSurface(get, requeteMonde(), 'x')).toBe('V');
@@ -111,15 +133,18 @@ describe('#1426 socle — un siège qui POSSÈDE le monde VOIT son dé (resolveS
   });
 
   /**
-   * LA CLASSE TRANCHE AVANT LE CÔTÉ (#1426) — `subi` est une classe de JET, pas une propriété du
-   * porteur : un jet subi rend la MÊME surface qu'il soit porté par un héros ou par le monde. C'est
-   * l'autre face de la règle ci-dessus (un dé que le siège du monde TIENT ET JOUE n'est pas `subi` :
-   * `openWorldTest` déclare la classe ordinaire).
+   * IL N'Y A PLUS DE CLASSE DE JET (#1479) — un Test SUBI (Scorbut, maladie, péril) est un Test : sa
+   * surface se dérive de son PORTEUR, exactement comme celle d'un jet volontaire. Utilisateur
+   * (2026-08-24) : « On a pas 36 types de jets différents dans l'application […] A partir du moment ou
+   * je dois faire un jet, il doit apparaitre. Y'a pas de "classe spéciale" si je suis a l'initiative,
+   * que je le subit, face a un adversaire ou face a ... une maladie ». Ce qui DIFFÈRE entre les deux
+   * séries ci-dessous n'est donc pas la « classe » mais QUI TIENT le dé : le siège MJ tient le monde
+   * (V), le joueur tient son héros (M).
    */
-  it('un jet `subi` PORTÉ PAR LE MONDE rend la MÊME série qu’un `subi` porté par un HÉROS', () => {
+  it('un Test SUBI et un jet volontaire du MÊME porteur rendent la MÊME série (la classe a disparu)', () => {
     const h = makePregens()[0];
     set({ party: [h], battle: null });
-    const subi = (side: RollRequest['side']) => (): RollRequest => ({ side, actionLabel: 'Subi', test: {}, difficulty: 'intermediaire', klass: 'subi' });
+    const requete = (side: RollRequest['side'], actionLabel: string) => (): RollRequest => ({ side, actionLabel, test: {}, difficulty: 'intermediaire' });
     const serie = (r: () => RollRequest) => {
       resetCadence();
       set({ net: { ...get().net, mode: 'local', mySeat: 0, gmSeat: undefined } });
@@ -132,12 +157,12 @@ describe('#1426 socle — un siège qui POSSÈDE le monde VOIT son dé (resolveS
       resetCadence();
       return { solo, mj, auto };
     };
-    const parMonde = serie(subi({ worldSide: 'world' }));
-    expect(parMonde, 'une surface qui diverge par le PORTEUR est une branche « spéciale monde »').toEqual(serie(subi({ actorId: h.id })));
-    expect(parMonde, 'et un subi ne s’ouvre JAMAIS en fenêtre influençable').toEqual({ solo: 'I', mj: 'V', auto: 'I' });
-    // Sans cet écart, l'égalité ci-dessus passerait aussi si tout rendait la même chose : le dé de
-    // monde ORDINAIRE (celui qu'`openWorldTest` monte) s'ouvre bien, lui, en solo.
-    expect(serie(requeteMonde), 'le dé de monde ordinaire garde SA fenêtre').toEqual({ solo: 'M', mj: 'V', auto: 'I' });
+    const subiParHeros = serie(requete({ actorId: h.id }, 'Scorbut'));
+    expect(subiParHeros, 'l’intitulé du jet ne change pas sa surface — seul le porteur la décide')
+      .toEqual(serie(requete({ actorId: h.id }, 'Ragot')));
+    expect(subiParHeros, 'un jet que le joueur doit faire APPARAÎT, subi ou non').toEqual({ solo: 'M', mj: 'M', auto: 'I' });
+    // Et le PORTEUR discrimine bien : le dé du MONDE revient au siège MJ quand il existe (V).
+    expect(serie(requeteMonde), 'le dé de monde va au siège qui le tient').toEqual({ solo: 'M', mj: 'V', auto: 'I' });
   });
 });
 
