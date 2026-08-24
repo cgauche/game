@@ -143,7 +143,7 @@ describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () =
       rows: [{ min: 1, max: 2, ops: [{ op: 'wounds', amount: 3 }] }],
     }];
     const html = renderToStaticMarkup(<GameOpEditor ops={ops} onChange={() => {}} />);
-    expect(html).not.toContain('(JSON)'); // plus de repli JSON pour cette op
+    expect(html).not.toContain('(JSON)'); // aucun repli JSON pour cette op
     expect(html).toContain('value="d10"'); // sélecteur de dé
     expect(html).toContain('value="1"'); // min de la rangée
     expect(html).toContain('value="2"'); // max de la rangée

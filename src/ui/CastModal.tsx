@@ -348,7 +348,7 @@ export function CastModal() {
                     </div>
                   ))}
                 </div>
-                {/* Désignation des cibles supplémentaires — SÉPARÉE de l'allocation (plus de bouton carte redondant). */}
+                {/* Désignation des cibles supplémentaires — SÉPARÉE de l'allocation (sans bouton carte redondant). */}
                 {can.targets && cap > 0 && (battle ? (
                   <button className="btn small rm-overcast-pick" onClick={() => pickTargets(true)} title="Choisir les cibles supplémentaires sur le champ de bataille">
                     <Icon id="nav/campaign" size="sm" /> Désigner les cibles ({designated}/{cap})

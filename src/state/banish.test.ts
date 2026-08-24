@@ -9,7 +9,7 @@ import type { TriggeredEffect } from './flow';
  * Démoniaque — bannissement « à la mort » (LDB 85 p.339 : « son âme retourne dans les Royaumes du Chaos,
  * ce qui la retire du jeu »). L'effet est 100 % DONNÉE : op `banish` portée par l'`effects` du trait,
  * déclenchée par `onSlain` — donc QUEL QUE SOIT le chemin de mort (0 PB, Critique LÉTAL/démembrement, mort
- * comme attaquant sous un Critique défensif, mort-auto). Plus de branche en dur dans applyAttackResult. Le
+ * comme attaquant sous un Critique défensif, mort-auto), sans branche en dur dans applyAttackResult. Le
  * porteur réagit à SA PROPRE chute (le dispatcher autorise `on:'self'` sur une cible hors-combat) ; `onSlain`
  * n'est tiré qu'UNE fois (garde `slainNotified`, posée par `notifySlain`).
  */
@@ -51,7 +51,7 @@ describe('onWoundLoss — TOUTE perte de PB (mêlée OU distance) ; le type voya
     const g = (() => ({ battle: { combatants: [acid, foe] } })) as never;
     const before = foe.wounds.current;
     fireTriggers(g, acid, 'onWoundLoss', { attackType: 'ranged', rng: makeRNG(1) } as never);
-    expect(foe.wounds.current).toBeLessThan(before); // plus de gate « mêlée seulement »
+    expect(foe.wounds.current).toBeLessThan(before); // aucun gate « mêlée seulement »
   });
 
   it('un effet `attackType:\'melee\'` ne réagit qu’aux pertes de MÊLÉE', () => {

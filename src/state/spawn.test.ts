@@ -61,7 +61,7 @@ describe('spawnEnemy — arme d’AUTHORING (weapon:) vs arme de TRAIT : pas de 
     ] } as any;
     const c = spawnEnemy(undefined, sb, 'e-tireur', { x: 0, y: 0 }, { weapon: 'arbalete' });
     const ranged = c.weapons.filter((w) => w.type === 'ranged');
-    expect(ranged).toHaveLength(1); // plus de doublon rendu/jeu
+    expect(ranged).toHaveLength(1); // aucun doublon rendu/jeu
     expect(ranged[0].reload).toBeGreaterThan(0); // arme de JEU : Recharge dérivée de l'arbalète (LDB 62 l.333) → l'IA suit son cycle (#126)
   });
 });

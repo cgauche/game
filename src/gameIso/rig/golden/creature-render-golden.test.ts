@@ -29,7 +29,7 @@ const VIEWS: View[] = ['front', 'profile', 'back'];
 const SEED = 7;
 
 function renderSvg(id: string, view: View): string {
-  const r = resolveById(id); // résolution data-driven par ID de record (espèce explicite, plus de name-match)
+  const r = resolveById(id); // résolution data-driven par ID de record (espèce explicite, jamais un name-match)
   if (r.kind === 'rig') {
     const p = entityRigProfile(id, SEED);
     return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, view, [])) : '∅rig';

@@ -181,7 +181,7 @@ export function CandidateCard({
   return (
     <OrnateFrame className={`candidate-card candidate-${variant}${selected ? ' selected' : ''}`}>
       {/* Le personnage (figurine + identité) EST le contrôle qui ouvre sa présentation (directive
-          user 2026-07-13) — plus de bouton « loupe ». */}
+          user 2026-07-13) : aucun bouton « loupe » séparé. */}
       <PresentHandle hero={hero} onPresent={onPresent} className="candidate-present">
         <div className="candidate-fig">
           <CharacterPreview hero={hero} size="fill" ambiance="spotlight" />
