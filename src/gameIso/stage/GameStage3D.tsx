@@ -210,9 +210,6 @@ import { creerPercage, type ActeurPerce, type Percage } from './percage';
 import type { Lid } from './architectureVisibility';
 import { demanderUneImage, signalerImagePeinte, subscribeStageFrames, useBattementContinu } from './stageFrames';
 
-/** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
-export { CONVENTION };
-
 /** Clé de verdict des frames SANS découpe locale (première personne, éditeur) : constante, donc le
  *  verdict ne s'y rejoue jamais, et la liste vide y ramène toutes les cibles à zéro. */
 const PERCAGE_HORS_PLATEAU = 'percage:hors-plateau';

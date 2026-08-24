@@ -48,9 +48,11 @@ export function riderBodyPose(view: View): Pose {
 
 // ── CORPS ASSIS SUR UN SIÈGE (sans arme) ────────────────────────────────────
 // Un siège n'est pas une selle : le corps n'enfourche rien, il POSE son bassin à la hauteur
-// d'assise et garde ses PIEDS PAR TERRE. Les angles ne sont donc pas posés à la main — ils se
+// d'assise et sa cuisse sur le PLAN d'assise. Les angles ne sont donc pas posés à la main — ils se
 // RÉSOLVENT depuis le squelette du corps et la hauteur d'assise (`drop`, en unités de la boîte de
-// corps) : deux inconnues, deux appuis (le bassin au siège, la cheville à son appui de repos).
+// corps) : appui du bassin au siège, appui de la cheville au sol TANT QUE le tibia l'atteint. Une
+// espèce courte sur un tabouret d'auberge n'y arrive pas : ses pieds PENDENT, et l'ancre du quad
+// reste au sol (c'est la posture qui porte l'assise, jamais le point d'ancrage).
 
 /** Buste d'un corps attablé — le port du haut du corps, commun aux trois vues (les jambes, elles,
  *  se résolvent). De profil le buste s'incline légèrement vers la table ; de face/dos une rotation
@@ -84,7 +86,9 @@ function reperes(b: SeatedBody, base: Pose) {
  * Jambes d'un corps ASSIS DE PROFIL : le BASSIN descend jusqu'à ce que la hanche soit à `drop`
  * au-dessus du sol ; la cuisse tourne vers l'AVANT de l'angle qui amène le genou juste au-dessus de
  * la cheville ; le tibia reprend la VERTICALE et le pied son appui de repos. Deux appuis (bassin au
- * siège, pied au sol), deux inconnues — la solution est fermée, pas un réglage à l'œil.
+ * siège, pied au sol), deux inconnues — la solution est fermée, pas un réglage à l'œil. Quand la
+ * jambe est trop courte pour le siège, l'appui du sol tombe et la cuisse s'arrête au plan d'assise :
+ * le tibia PEND à la verticale sous le genou.
  */
 function seatedLegsProfile(b: SeatedBody, base: Pose, drop: number): Pose {
   const { y, solY, angle } = reperes(b, base);
@@ -95,8 +99,12 @@ function seatedLegsProfile(b: SeatedBody, base: Pose, drop: number): Pose {
     const hanche = y(cuisse) + ty;
     const cheville = y(pied);
     const genou = cheville - b.sk[tibia].length;
-    // Part VERTICALE du fémur (hanche → genou) = cosinus de son angle MONDE, borné à l'atteignable.
-    const cos = Math.max(-1, Math.min(1, (genou - hanche) / b.sk[cuisse].length));
+    // Part VERTICALE du fémur (hanche → genou) = cosinus de son angle MONDE, bornée aux DEUX bouts :
+    // en haut par l'atteignable (−1, genou remonté au maximum) ; en bas par le PLAN D'ASSISE (0, cuisse
+    // à l'HORIZONTALE) — un corps assis pose sa cuisse dessus. Sans cette seconde borne, une jambe
+    // trop courte pour le siège replonge la cuisse à la verticale pour aller chercher le sol : le
+    // corps redevient DEBOUT sur son tabouret. Passé la borne, le pied ne touche plus — il PEND.
+    const cos = Math.max(-1, Math.min(0, (genou - hanche) / b.sk[cuisse].length));
     const theta = (Math.acos(cos) * 180) / Math.PI; // 0..180 : le genou part vers l'AVANT du profil
     out[cuisse] = theta - angle('bassin', cuisse);
     out[tibia] = -theta - angle(tibia);                        // tibia VERTICAL (angle monde 0)
@@ -109,19 +117,28 @@ function seatedLegsProfile(b: SeatedBody, base: Pose, drop: number): Pose {
  * Jambes d'un corps ASSIS VU DE FACE/DOS : la cuisse ne peut pas tourner vers l'œil, elle se
  * RACCOURCIT (`sy`) — le raccourci que la rotation 2D ne sait pas dire. L'échelle étant HÉRITÉE,
  * toute la jambe se raccourcit du même facteur ; le pied compense l'héritage (`sy` inverse) et garde
- * sa taille, si bien que sa pointe retombe exactement sur le sol.
+ * sa taille, si bien que sa pointe retombe exactement sur le sol — tant que le raccourci demandé tient
+ * entre les deux bornes du squelette ; à la borne haute le pied PEND, comme en profil.
  */
 function seatedLegsFront(b: SeatedBody, base: Pose, drop: number): Pose {
   const { y, solY } = reperes(b, base);
   const out: Pose = { bassin: { ty: solY - drop - y('cuisseD') } };
   for (const c of COTES) {
-    const cuisse: BoneId = `cuisse${c}`, pied: BoneId = `pied${c}`;
-    const hanche = y(cuisse), cheville = y(pied);
+    const cuisse: BoneId = `cuisse${c}`, tibia: BoneId = `tibia${c}`, pied: BoneId = `pied${c}`;
+    const hanche = y(cuisse), genou = y(tibia), cheville = y(pied);
     const semelle = y(pied, b.sk[pied].length) - cheville; // hauteur du PIED, hors raccourci
     const jambe = cheville - hanche;
-    const k = jambe !== 0 ? (drop - semelle) / jambe : 1;
+    // MÊME borne qu'en profil, dite dans le canal du raccourci : la descente de la jambe ne dépasse
+    // pas celle du TIBIA seul (cuisse posée sur le plan d'assise) — au-delà elle s'étirerait vers un
+    // sol hors d'atteinte et le corps redeviendrait debout ; et elle ne se raccourcit pas sous la
+    // hauteur de son propre PIED — sous ce plancher l'échelle deviendrait négative (cuisse retournée,
+    // pied à l'envers) sur un siège authoré plus bas qu'une semelle. Les deux bornes sont MESURÉES
+    // sur le squelette du corps, jamais posées à la main.
+    const k = jambe !== 0
+      ? Math.min((cheville - genou) / jambe, Math.max(semelle / jambe, (drop - semelle) / jambe))
+      : 1;
     out[cuisse] = { sy: k };
-    out[pied] = { sy: k !== 0 ? 1 / k : 1 };
+    out[pied] = { sy: 1 / k };
   }
   return out;
 }

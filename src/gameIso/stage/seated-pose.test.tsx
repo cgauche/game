@@ -10,7 +10,12 @@ import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '..
 import { seatPoseOf, seatSitHeight, type SeatPose } from '../../state/seating';
 import { boxUnitsPerM } from '../backends/webgl/billboardMath';
 import { entityTokenScale } from '../sizeScale';
-import { GROUND_Y } from '../rig/composeRig';
+import { GROUND_Y, rigComposition } from '../rig/composeRig';
+import { entityRigProfileFor } from '../rig/enemyProfile';
+import { apply, worldTransforms } from '../rig/kinematics';
+import { addPose } from '../rig/poses';
+import type { BoneId } from '../rig/bones';
+import type { View } from '../rig/facing';
 import { dynamicMarks } from '../builders/dynamicMarks';
 import { EYE_H, EYE_H_ASSIS, makeCamera, seatedEyeH } from '../pov/camera';
 import { buildTokens, partyTokenOf } from '../builders/tokens';
@@ -22,11 +27,11 @@ const TABLE = 'table-ronde-4-tabourets';
 const PROP = 'table-1';
 
 /** Table en (2,2) cap N ; le PNJ attablé à l'EST, sa `pos` étant son abord (2+1, 2). */
-function scèneAttablée(assis: boolean): Scene {
+function scèneAttablée(assis: boolean, species = 'humain'): Scene {
   const s = emptyScene(8, 8);
   s.entities = [
     { id: PROP, kind: 'prop', pos: { x: 2, y: 2 }, ref: TABLE, facing: 'N' },
-    { id: 'f1', kind: 'personnage', pos: { x: 3, y: 2 }, facing: 'S', appearance: { species: 'humain' } },
+    { id: 'f1', kind: 'personnage', pos: { x: 3, y: 2 }, facing: 'S', appearance: { species } },
   ] as unknown as SceneEntity[];
   if (assis) s.seatAssignments = { [PROP]: { 'place-est': { kind: 'entity', entityId: 'f1' } } };
   return s;
@@ -238,4 +243,74 @@ describe('buildTokens → rendu : la chaîne complète', () => {
     const tk = els.find((e) => e.id === 'f1') as TokenEl;
     expect(tk.subject).toMatchObject({ kind: 'figurant', seat: { propId: PROP, slotId: 'place-est' } });
   });
+});
+
+/**
+ * CONTRAT 4 ESPÈCES × 3 VUES — le tabouret d'auberge a UNE hauteur, les corps qui s'y posent n'ont
+ * pas la même jambe. Une espèce COURTE ne s'étire pas pour rejoindre le sol : elle PEND de son
+ * siège. Aucun seuil n'est posé par espèce — tout se dérive du SQUELETTE du corps rendu (les deux
+ * seams que le rendu emploie : `entityRigProfileFor` + `rigComposition`) confronté à la hauteur
+ * d'assise du catalogue, et se vérifie sur le FRAGMENT RENDU, os par os.
+ */
+const ESPÈCES = ['humain', 'nain', 'halfling', 'elfe'];
+const VUES: View[] = ['front', 'back', 'profile'];
+
+/** Repères de jambe du corps DEBOUT + hauteur d'assise, dans le repère de sa boîte. */
+function repèresDe(species: string, view: View) {
+  const ent = scèneAttablée(false, species).entities.find((e) => e.id === 'f1')!;
+  const place = seatPoseOf(scèneAttablée(true, species), { kind: 'entity', entityId: 'f1' })!;
+  const prof = entityRigProfileFor(ent, false)!;
+  const comp = rigComposition(prof.appearance, prof.equip, prof.tenue, view);
+  const w = worldTransforms(comp.sk, addPose(comp.speciesPose, comp.viewPose));
+  const y = (id: BoneId, dy = 0) => apply(w[id], { x: 0, y: dy }).y;
+  const cheville = y('piedD');
+  return {
+    drop: seatSitHeight(place) * boxUnitsPerM('personnage', entityTokenScale(ent)),
+    solY: Math.max(y('piedG', comp.sk.piedG.length), y('piedD', comp.sk.piedD.length)),
+    tibia: cheville - y('tibiaD'),                       // ce que le TIBIA seul descend sous le genou
+    semelle: y('piedD', comp.sk.piedD.length) - cheville, // hauteur du PIED sous la cheville
+    jambe: cheville - y('cuisseD'),                       // descente hanche → cheville, corps debout
+  };
+}
+
+describe.each(ESPÈCES)('assise d’un %s — le siège est le même, la jambe non', (species) => {
+  it.each(VUES)('vue %s : bassin au siège, jambe jamais étirée, pieds au sol ou pendants', (view) => {
+    const r = repèresDe(species, view);
+    const a = sujetFigurant(scèneAttablée(true, species)).svg(view, false, 0);
+    const d = sujetFigurant(scèneAttablée(false, species)).svg(view, false, 0);
+    const hancheA = originY(a, 'cuisseD'), hancheD = originY(d, 'cuisseD');
+    const piedA = originY(a, 'piedD'), piedD = originY(d, 'piedD');
+
+    // TÉMOIN de dérivation — le squelette mesuré est bien celui du corps rendu.
+    expect(piedD - hancheD).toBeCloseTo(r.jambe, 0);
+
+    // BASSIN AU SIÈGE — le corps est porté par son bassin, à la hauteur d'assise du catalogue.
+    expect(r.solY - hancheA).toBeCloseTo(r.drop, 0);
+
+    // JAMAIS D'ÉTIREMENT — la jambe assise ne descend pas plus bas que ce que le TIBIA seul permet,
+    // la cuisse reposant sur le plan d'assise ; et elle est toujours PLIÉE par rapport au debout.
+    expect(piedA - hancheA).toBeLessThan(r.tibia + 0.5);
+    expect(piedA - hancheA).toBeLessThan(piedD - hancheD);
+
+    // APPUI DU SOL tant que le tibia l'atteint — sinon les pieds PENDENT, de l'écart exact.
+    const atteignable = r.drop <= r.tibia + r.semelle;
+    if (atteignable) expect(piedA).toBeCloseTo(piedD, 0);
+    else {
+      expect(piedA).toBeLessThan(piedD - 1);
+      expect(r.solY - (piedA + r.semelle)).toBeCloseTo(r.drop - r.tibia - r.semelle, 0);
+    }
+
+    // TOISE — un corps assis est plus court que debout ; les pieds à l'appui, franchement plus court.
+    const ratio = toise(a) / toise(d);
+    expect(ratio).toBeLessThan(atteignable ? 0.8 : 1);
+    expect(ratio).toBeGreaterThan(0.6);
+  });
+});
+
+it('la population de contrôle exerce les DEUX régimes (aucune assertion à vide)', () => {
+  const régimes = ESPÈCES.map((sp) => {
+    const r = repèresDe(sp, 'front');
+    return r.drop <= r.tibia + r.semelle ? 'appui' : 'pendant';
+  });
+  expect(new Set(régimes).size).toBe(2);
 });

@@ -122,6 +122,23 @@ describe('seatedRest — un attablé n’est pas un cavalier', () => {
     expect(mountedRest('profile', HAMPE).arme).not.toBe(repos.arme); // la hampe montée est AU PORT
   });
 
+  /** `anchor.h` d'un siège est ÉDITABLE : toute la plage doit rendre une jambe, pas une dégénérescence.
+   *  Sous la hauteur du PIED lui-même, un raccourci non borné passe NÉGATIF — cuisse retournée, pied à
+   *  l'envers ; au-dessus de l'atteinte de la jambe, il passerait au-dessus de 1 — jambe étirée. */
+  it('toute hauteur d’assise authorée rend une jambe : aucune échelle nulle, négative ou étirée', () => {
+    for (const drop of [0, 1, 5, 10, 20, 32, 60, 200]) {
+      const p = seatedBodyPose('front', SK, drop);
+      for (const os of ['cuisseG', 'cuisseD', 'piedG', 'piedD'] as const) {
+        const { sy } = xfOf(p, os);
+        expect(Number.isFinite(sy), `${os} @drop=${drop}`).toBe(true);
+        expect(sy, `${os} @drop=${drop}`).toBeGreaterThan(0);
+      }
+      // Le PIED garde sa taille : son échelle compense EXACTEMENT celle héritée de la cuisse.
+      expect(xfOf(p, 'cuisseD').sy * xfOf(p, 'piedD').sy).toBeCloseTo(1, 6);
+      expect(xfOf(p, 'cuisseD').sy, `étirement @drop=${drop}`).toBeLessThanOrEqual(1);
+    }
+  });
+
   it('sans arme, il ne reste que l’assise', () => {
     expect(seatedRest('profile', SK, ASSISE)).toEqual(seatedBodyPose('profile', SK, ASSISE));
   });

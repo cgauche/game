@@ -4,8 +4,9 @@ import type { Scene, SceneEntity } from '../../state/scene';
 import { assignSeat, seatSlotsOf } from '../../state/seating';
 import type { TestScenario } from './_shared';
 
-/** Où le groupe entre : au milieu de la salle, entre les tables (zone `zone-S-z0`). */
-const DEPART = { x: 12, y: 14 };
+/** Où le groupe entre : au milieu de la salle, entre les tables (zone `zone-S-z0`) — case LIBRE, hors
+ *  du passage d'entrée traversant (colonne 12) et hors de tout abord de place. */
+const DEPART = { x: 11, y: 14 };
 
 /** Un convive AUTHORÉ : son id stable, son nom, et l'apparence choisie (espèce/sexe/tenue civile).
  *  La PLACE qu'il tient est donnée par `TABLES` ci-dessous, dans le même ordre. */

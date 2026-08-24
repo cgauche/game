@@ -1036,8 +1036,10 @@ export function combatantRenderSignature(c: Combatant): string {
 export function actorPoseKey(p: ActorPose): string {
   const monté = p.rider ? `+${p.rider.id}:${combatantRenderSignature(p.rider)}` : '';
   // La PLACE entre dans la clé : elle décide l'ancre du quad, le cap servi et la pose du corps — un
-  // meneur qui s'assoit ou se lève doit reforger son acteur.
-  const assis = p.seat ? `:assis:${p.seat.propId}:${p.seat.slotId}` : '';
+  // meneur qui s'assoit ou se lève doit reforger son acteur. Ses DEUX hauteurs y entrent : le `ground`
+  // porte l'ancre du quad, l'assise (`anchor.h − ground`) porte la posture ; un meuble reposé sur un
+  // sol d'une autre hauteur, ou un siège plus haut, sont un autre dessin.
+  const assis = p.seat ? `:assis:${p.seat.propId}:${p.seat.slotId}:${p.seat.ground}:${seatSitHeight(p.seat)}` : '';
   return `${p.c.id}:${p.x},${p.y},${p.z}:${capActeur(p)}:${combatantRenderSignature(p.c)}${monté}${assis}`;
 }
 

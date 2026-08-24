@@ -42,8 +42,14 @@ describe('La Diligence — salle pleine', () => {
     const cases = new Set((salle!.tiles ?? []).map((t) => `${t.x},${t.y}`));
     for (const c of convives) expect(cases.has(`${c.pos.x},${c.pos.y}`), `${c.id} en (${c.pos.x},${c.pos.y})`).toBe(true);
     const depart = scene.entities.find((e) => e.kind === 'heroStart');
-    expect(depart!.pos).toEqual({ x: 12, y: 14 });
-    expect(cases.has('12,14')).toBe(true);
+    expect(depart!.pos).toEqual({ x: 11, y: 14 });
+    expect(cases.has('11,14')).toBe(true);
+    // La case de départ est LIBRE : ni meuble, ni abord de place (le groupe n'apparaît pas dans le
+    // passage d'entrée ni sur un convive attablé).
+    const meubles = new Set(scene.entities.filter((e) => e.kind === 'prop').map((e) => `${e.pos.x},${e.pos.y}`));
+    const abords = new Set(tables.flatMap((t) => seatSlotsOf(scene, t).map((s) => `${s.approach.x},${s.approach.y}`)));
+    expect(meubles.has('11,14')).toBe(false);
+    expect(abords.has('11,14')).toBe(false);
   });
 
   it('le document est valide — aucune erreur de validation de scène', () => {
