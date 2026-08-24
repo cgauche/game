@@ -9,18 +9,22 @@
  * La géométrie du monde n'est JAMAIS recuite : le monde reste fusionné, seuls les matériaux des
  * groupes de décor sont SURCHARGÉS le temps du mode (`materiauxDeCalage`), et les arêtes sont un
  * maillage de lignes à part, bâti des seuls triangles de ces groupes (`aretesDeCalage`).
+ *
+ * COULEURS : ce module est la FAÇADE du groupe `editeur-` de `src/data/teintesJeu.json` (schéma et
+ * invariants : `src/data/schemas/defs/teintesJeu.ts`) — la troisième avec `gameIso/highlightTints.ts`
+ * et `gameIso/teamColors.ts`.
  */
 import * as THREE from 'three';
 import type { WorldGeometry } from './sceneMeshes';
 import type { WorldSurfaceMaterial } from './worldMaterials';
+import { teintesJeu } from '../../../data';
 
 /** Aplat du mode : un cyan saturé, absent des planches sépia comme de la matière du monde (pierre,
- *  bois, terre). Littéral parce que `THREE.Color` ne résout pas une var CSS et que l'environnement de
- *  test n'a pas de feuille de style (même raison que les façades de `teintesJeu.json`). */
-export const CALAGE_APLAT = '#0097a7';
+ *  bois, terre). */
+export const CALAGE_APLAT = teintesJeu['editeur-calage-aplat'];
 /** Arêtes du mode : le même cyan porté au clair — il tranche sur l'aplat qu'il cerne comme sur le
  *  trait sépia de la planche. */
-export const CALAGE_ARETES = '#5ffbff';
+export const CALAGE_ARETES = teintesJeu['editeur-calage-aretes'];
 /** Opacité de l'aplat : assez couvrant pour lire le volume, assez transparent pour que le dessin de
  *  la planche reste lisible dessous. */
 export const CALAGE_OPACITE = 0.45;

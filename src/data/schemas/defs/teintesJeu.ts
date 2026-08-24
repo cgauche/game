@@ -3,23 +3,24 @@
  * zones, bandes de tir, anneaux de cible, halos, télégraphes) ET identité d'unité (anneaux réservés,
  * couleurs d'équipe, couleurs par héros). Objet PLAT `id → #rrggbb`, groupé par PRÉFIXE d'id.
  *
- * QUI CONSOMME. Deux façades TS, et elles seules — aucun consommateur ne lit ce JSON en direct :
+ * QUI CONSOMME. Trois façades TS, et elles seules — aucun consommateur ne lit ce JSON en direct :
  *  - `src/gameIso/highlightTints.ts` (surbrillances : `WALK_TINT`, `RANGE_BAND_TINT`, …) ;
- *  - `src/gameIso/teamColors.ts` (identité : `HERO_RING`, `ALLY_TINT`, `relationColor`, …).
+ *  - `src/gameIso/teamColors.ts` (identité : `HERO_RING`, `ALLY_TINT`, `relationColor`, …) ;
+ *  - `src/gameIso/backends/webgl/calageProps.ts` (mode calage de l'éditeur : `CALAGE_APLAT`, `CALAGE_ARETES`).
  * Les peintres volumiques lisent ces façades — `THREE.Color` ne résout pas `var(--x)`, et
  * l'environnement de test `node` n'a pas de CSS. Les vars CSS homonymes de `src/ui/styles/base.css`
  * servent les feuilles de style ; leur égalité avec ce JSON est gardée par
  * `src/gameIso/highlightTints.test.ts`.
  *
  * COMMENT ÉTENDRE (une « famille de teinte » de plus). 1) Ajouter l'entrée au JSON sous l'un des
- * préfixes ci-dessous (`zone-`, `bande-`, `signal-`, `or-`, `anneau-`, `equipe-`, `identite-heros-`) ;
+ * préfixes ci-dessous (`zone-`, `bande-`, `signal-`, `or-`, `editeur-`, `anneau-`, `equipe-`, `identite-heros-`) ;
  * 2) l'inscrire dans `TEINTE_KEYS` (recopie gardée par la parité, cf. plus bas) ; 3) l'exposer par la
  * façade qui la sert. Un nouveau préfixe se déclare dans `GROUPES_SURBRILLANCE` ou `GROUPES_IDENTITE`
  * — un préfixe inconnu échoue au chargement, il ne tombe pas dans un angle mort de la non-collision.
  *
  * TROIS INVARIANTS, tenus par `refine` :
  *  (a) NON-COLLISION surbrillance ⇄ identité : un octet servi par une surbrillance transitoire
- *      (`zone-`/`bande-`/`signal-`/`or-`) ne peut pas être celui d'une identité persistante
+ *      (`zone-`/`bande-`/`signal-`/`or-`/`editeur-`) ne peut pas être celui d'une identité persistante
  *      (`anneau-`/`equipe-`/`identite-`) — sinon un tapis de portée peint la couleur d'un héros.
  *      Un partage VOULU (même signal, deux surfaces) s'inscrit NOMINATIVEMENT ci-dessous.
  *  (b) SÉPARATION des quatre `identite-heros-*` : `teamColors.ts` les veut « 4 couleurs FROIDES
@@ -56,12 +57,15 @@ export const TEINTE_KEYS = [
   'equipe-allie', 'equipe-ennemi', 'equipe-neutre',
   // Identité par héros, cyclique.
   'identite-heros-1', 'identite-heros-2', 'identite-heros-3', 'identite-heros-4',
+  // Mode CALAGE de l'éditeur — aplat et arêtes du décor volumique contrasté sur la planche décalquée.
+  'editeur-calage-aplat', 'editeur-calage-aretes',
 ] as const;
 
 export type TeinteId = (typeof TEINTE_KEYS)[number];
 
-/** Préfixes des teintes TRANSITOIRES (surbrillance d'un geste en cours). */
-export const GROUPES_SURBRILLANCE = ['zone-', 'bande-', 'signal-', 'or-'] as const;
+/** Préfixes des teintes TRANSITOIRES (surbrillance d'un geste ou d'un mode en cours — `editeur-` est
+ *  le mode CALAGE, peint par-dessus le décor le temps que l'auteur compare planche et volume). */
+export const GROUPES_SURBRILLANCE = ['zone-', 'bande-', 'signal-', 'or-', 'editeur-'] as const;
 /** Préfixes des teintes PERSISTANTES (identité d'une unité à l'écran). */
 export const GROUPES_IDENTITE = ['anneau-', 'equipe-', 'identite-'] as const;
 
@@ -142,7 +146,7 @@ export const schema = z
     },
     {
       message:
-        "teintesJeu : une teinte de SURBRILLANCE (zone-/bande-/signal-/or-) partage son octet avec une teinte d'IDENTITÉ (anneau-/equipe-/identite-) — un tapis de portée peindrait la couleur d'une unité. Séparer les deux, ou inscrire le partage dans `PARTAGES_NOMMES` avec le signal commun.",
+        "teintesJeu : une teinte de SURBRILLANCE (zone-/bande-/signal-/or-/editeur-) partage son octet avec une teinte d'IDENTITÉ (anneau-/equipe-/identite-) — un tapis de portée peindrait la couleur d'une unité. Séparer les deux, ou inscrire le partage dans `PARTAGES_NOMMES` avec le signal commun.",
     },
   )
   .refine(

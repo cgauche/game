@@ -22,6 +22,7 @@ import {
   ACTIVE_HALO_TINT,
 } from './highlightTints';
 import { ACTIVE_RING, ENEMY_RING, HERO_RING, ALLY_TINT, ENEMY_TINT, ACTIVE_TINT, NEUTRAL_TINT } from './teamColors';
+import { CALAGE_APLAT, CALAGE_ARETES } from './backends/webgl/calageProps';
 import { teintesJeu } from '../data';
 import {
   TEINTE_KEYS,
@@ -37,8 +38,9 @@ import {
 } from '../data/schemas/defs/teintesJeu';
 
 /**
- * Les TEINTES DE JEU sont en DONNÉE (`src/data/teintesJeu.json`) ; deux façades les nomment
- * (`highlightTints.ts` pour les surbrillances, `teamColors.ts` pour l'identité d'unité). Ce fichier
+ * Les TEINTES DE JEU sont en DONNÉE (`src/data/teintesJeu.json`) ; trois façades les nomment
+ * (`highlightTints.ts` pour les surbrillances, `teamColors.ts` pour l'identité d'unité,
+ * `backends/webgl/calageProps.ts` pour le mode calage de l'éditeur). Ce fichier
  * garde les trois coutures de cette bascule :
  *  1. PARITÉ liste-de-clés du schéma ⇄ JSON réel ⇄ ce que les façades servent — `src/data` recopie
  *     `TEINTE_KEYS` faute de pouvoir importer `src/gameIso` (`data-purity.test.ts`), patron
@@ -96,6 +98,13 @@ const RELAIS_IDENTITE: [string, TeinteId, string][] = [
   ['HERO_RING[3]', 'identite-heros-4', HERO_RING[3]],
 ];
 
+/** Câblage constante nommée → id de teinte, façade `backends/webgl/calageProps` (mode calage de
+ *  l'éditeur : aplat du décor volumique et ses arêtes). */
+const RELAIS_EDITEUR: [string, TeinteId, string][] = [
+  ['CALAGE_APLAT', 'editeur-calage-aplat', CALAGE_APLAT],
+  ['CALAGE_ARETES', 'editeur-calage-aretes', CALAGE_ARETES],
+];
+
 describe('teintes de jeu — PARITÉ schéma ⇄ donnée ⇄ façades', () => {
   it('la liste de clés du schéma est EXACTEMENT celle du JSON (recopie gardée, cf. pureté de src/data)', () => {
     expect([...TEINTE_KEYS].sort()).toEqual(Object.keys(teintesJeu).sort());
@@ -106,12 +115,12 @@ describe('teintes de jeu — PARITÉ schéma ⇄ donnée ⇄ façades', () => {
     for (const k of TEINTE_KEYS) expect([k, prefixes.some((p) => k.startsWith(p))]).toEqual([k, true]);
   });
 
-  it('les deux façades servent TOUTES les clés, sans en inventer', () => {
-    const servies = [...RELAIS_SURBRILLANCE, ...RELAIS_IDENTITE].map(([, id]) => id);
+  it('les trois façades servent TOUTES les clés, sans en inventer', () => {
+    const servies = [...RELAIS_SURBRILLANCE, ...RELAIS_IDENTITE, ...RELAIS_EDITEUR].map(([, id]) => id);
     expect([...new Set(servies)].sort()).toEqual([...TEINTE_KEYS].sort());
   });
 
-  it.each([...RELAIS_SURBRILLANCE, ...RELAIS_IDENTITE])('%s relaie la valeur de `%s`', (_nom, id, valeur) => {
+  it.each([...RELAIS_SURBRILLANCE, ...RELAIS_IDENTITE, ...RELAIS_EDITEUR])('%s relaie la valeur de `%s`', (_nom, id, valeur) => {
     expect(valeur).toBe(teintesJeu[id]);
   });
 
