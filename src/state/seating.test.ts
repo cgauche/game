@@ -37,11 +37,11 @@ function seatingScene(opts: { propFacing?: Dir8; blocs?: { x: number; y: number 
 /**
  * Attendu LITTÉRAL par cap (jamais recalculé par la formule sous test) : la recette s'écrit FACE AU
  * NORD (cap d'identité, `data/props.types.ts`), chaque cran la tourne de 45° horaires. Pour la place
- * « nord » (ancre locale (0, −0,43), corps face au `S`, abord local (0, −1)) :
- * l'ancre décrit un cercle de rayon 0,43 et l'abord suit le cap lui-même.
+ * « nord » (ancre locale (0, −0,48), corps face au `S`, abord local (0, −1)) :
+ * l'ancre décrit un cercle de rayon 0,48 et l'abord suit le cap lui-même.
  */
-const R = 0.43;
-const D = 0.43 * Math.SQRT1_2; // 0,3041 — composante d'une ancre en diagonale
+const R = 0.48;
+const D = 0.48 * Math.SQRT1_2; // 0,3394 — composante d'une ancre en diagonale
 const ATTENDU_NORD: Record<Dir8, { dx: number; dy: number; facing: Dir8; approche: { x: number; y: number } }> = {
   N: { dx: 0, dy: -R, facing: 'S', approche: { x: 5, y: 4 } },
   NE: { dx: D, dy: -D, facing: 'SO', approche: { x: 6, y: 4 } },
@@ -64,7 +64,7 @@ describe('seatSlotsOf — transformation des places au cap de l’instance', () 
     expect(nord.propId).toBe(PROP);
     expect(nord.anchor.x).toBeCloseTo(POS.x + attendu.dx, 4);
     expect(nord.anchor.y).toBeCloseTo(POS.y + attendu.dy, 4);
-    expect(nord.anchor.h).toBeCloseTo(0.49, 4); // hauteur d'assise, sol de la case à 0 m
+    expect(nord.anchor.h).toBeCloseTo(0.46, 4); // hauteur d'assise, sol de la case à 0 m
     expect(nord.facing).toBe(attendu.facing);
     expect({ x: nord.approach.x, y: nord.approach.y }).toEqual(attendu.approche);
     // Les quatre ancres restent distinctes et à distance d'assise du centre du meuble.
@@ -305,7 +305,7 @@ describe('abord ATTEIGNABLE — un mur entre le siège et son abord déclaré n�
 
   it('l’occupabilité se juge sur l’ATTEIGNABILITÉ, pas sur la seule marchabilité', () => {
     const scene = cloisonnee();
-    const barree = { propId: PROP, slotId: 'place-ouest', anchor: { x: 4.57, y: 5, h: 0.49 }, ground: 0, facing: 'E' as Dir8, approach: { x: 4, y: 5 } };
+    const barree = { propId: PROP, slotId: 'place-ouest', anchor: { x: 4.52, y: 5, h: 0.46 }, ground: 0, facing: 'E' as Dir8, approach: { x: 4, y: 5 } };
     expect(isWalkable(scene, barree.approach.x, barree.approach.y, 0)).toBe(true);
     expect(seatIsOccupiable(scene, barree)).toBe(false);
   });

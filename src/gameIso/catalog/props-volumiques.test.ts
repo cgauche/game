@@ -50,10 +50,10 @@ describe('mobilier volumique — six refs, leur vignette et leur corps monde', (
 
   it('la table ronde offre quatre places, la table murale deux, le reste aucune', () => {
     expect(findPropById('table-ronde-4-tabourets')!.seatSlots).toEqual([
-      { id: 'place-nord', anchor: { x: 0, y: -0.43, h: 0.49 }, facing: 'S', approach: { x: 0, y: -1 } },
-      { id: 'place-est', anchor: { x: 0.43, y: 0, h: 0.49 }, facing: 'O', approach: { x: 1, y: 0 } },
-      { id: 'place-sud', anchor: { x: 0, y: 0.43, h: 0.49 }, facing: 'N', approach: { x: 0, y: 1 } },
-      { id: 'place-ouest', anchor: { x: -0.43, y: 0, h: 0.49 }, facing: 'E', approach: { x: -1, y: 0 } },
+      { id: 'place-nord', anchor: { x: 0, y: -0.48, h: 0.46 }, facing: 'S', approach: { x: 0, y: -1 } },
+      { id: 'place-est', anchor: { x: 0.48, y: 0, h: 0.46 }, facing: 'O', approach: { x: 1, y: 0 } },
+      { id: 'place-sud', anchor: { x: 0, y: 0.48, h: 0.46 }, facing: 'N', approach: { x: 0, y: 1 } },
+      { id: 'place-ouest', anchor: { x: -0.48, y: 0, h: 0.46 }, facing: 'E', approach: { x: -1, y: 0 } },
     ]);
     expect(findPropById('table-murale-2-tabourets')!.seatSlots?.map((s) => s.id)).toEqual(['place-gauche', 'place-droite']);
     for (const id of ['cheminee-interieure', 'comptoir-droit', 'comptoir-angle', 'armoire'])
@@ -63,8 +63,8 @@ describe('mobilier volumique — six refs, leur vignette et leur corps monde', (
   /** Ancres FIGÉES de la table murale : la sonde d'implantation de la salle les attend au millimètre. */
   it('la table murale porte ses deux ancres canoniques, caps N et approches en diagonale', () => {
     expect(findPropById('table-murale-2-tabourets')!.seatSlots).toEqual([
-      { id: 'place-gauche', anchor: { x: -0.22, y: 0.34, h: 0.49 }, facing: 'N', approach: { x: -1, y: 1 } },
-      { id: 'place-droite', anchor: { x: 0.22, y: 0.34, h: 0.49 }, facing: 'N', approach: { x: 1, y: 1 } },
+      { id: 'place-gauche', anchor: { x: -0.32, y: 0.2, h: 0.46 }, facing: 'N', approach: { x: -1, y: 1 } },
+      { id: 'place-droite', anchor: { x: 0.32, y: 0.2, h: 0.46 }, facing: 'N', approach: { x: 1, y: 1 } },
     ]);
   });
 
@@ -105,14 +105,49 @@ describe('mobilier volumique — six refs, leur vignette et leur corps monde', (
     }
   });
 
-  /** Le corps monde tient dans la case du meuble : une empreinte 1×1 ne déborde pas chez le voisin. */
-  it.each(IDS)('%s tient dans son empreinte au cap d’identité', (id) => {
+  /**
+   * EMPREINTE — le CORPS d'un meuble tient dans sa case ; seuls ses TABOURETS en débordent, d'au plus
+   * 0,45 case, et uniquement du côté de l'abord de la place qu'ils portent. La solidité reste 1×1 :
+   * la case qu'un tabouret effleure demeure traversable.
+   *
+   * Le discriminant est STRUCTUREL, jamais un nom de ref : un tabouret est la primitive dont l'emprise
+   * au plan CONTIENT l'ancre d'une place ET qui ne monte pas plus haut que l'assise (l'assise et son
+   * fût) — un plateau qui survolerait l'ancre reste du corps, et se mesure comme tel.
+   */
+  const DEBORD_TABOURET = 0.45;
+  const tabouretsDe = (id: string) => {
+    const prop = findPropById(id)!;
+    return prop.volume!.primitives.map((p) => {
+      const e = emprise(p);
+      const slot = (prop.seatSlots ?? []).find((s) => s.anchor.x >= e.x0 - 1e-9 && s.anchor.x <= e.x1 + 1e-9
+        && s.anchor.y >= e.y0 - 1e-9 && s.anchor.y <= e.y1 + 1e-9 && e.haut <= s.anchor.h + 1e-9);
+      return { e, slot, debord: Math.max(Math.abs(e.x0), Math.abs(e.x1), Math.abs(e.y0), Math.abs(e.y1)) - 0.5 };
+    });
+  };
+
+  it.each(IDS)('%s : son corps tient dans sa case', (id) => {
+    expect(tabouretsDe(id).filter((v) => !v.slot && v.debord > 1e-9).map((v) => v.e)).toEqual([]);
+  });
+
+  it.each(IDS)('%s : ses tabourets débordent d’au plus 0,45 case, vers l’abord de leur place', (id) => {
+    for (const { e, slot, debord } of tabouretsDe(id)) {
+      if (!slot) continue;
+      expect(debord, `${id}/${slot.id} : débord (cases)`).toBeLessThanOrEqual(DEBORD_TABOURET);
+      // Le débord suit l'abord : jamais un tabouret jeté du côté opposé à la case d'où l'on s'assoit.
+      if (e.x1 > 0.5) expect(Math.sign(slot.approach.x), `${id}/${slot.id} débord est`).toBe(1);
+      if (e.x0 < -0.5) expect(Math.sign(slot.approach.x), `${id}/${slot.id} débord ouest`).toBe(-1);
+      if (e.y1 > 0.5) expect(Math.sign(slot.approach.y), `${id}/${slot.id} débord sud`).toBe(1);
+      if (e.y0 < -0.5) expect(Math.sign(slot.approach.y), `${id}/${slot.id} débord nord`).toBe(-1);
+    }
+  });
+
+  it.each(IDS)('%s, cuit au cap d’identité, ne descend jamais sous le sol et reste dans sa case élargie', (id) => {
     const scene = sceneWith(propEntity({ id: 'e-1', ref: id, pos: { x: 3, y: 4 }, facing: 'N' }));
     const el = buildProps(scene)[0] as { faces: { poly: { x: number; y: number; h: number }[] }[] };
     for (const face of el.faces)
       for (const p of face.poly) {
-        expect(Math.abs(p.x - 3), `${id} x`).toBeLessThanOrEqual(0.5);
-        expect(Math.abs(p.y - 4), `${id} y`).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(p.x - 3), `${id} x`).toBeLessThanOrEqual(0.5 + DEBORD_TABOURET);
+        expect(Math.abs(p.y - 4), `${id} y`).toBeLessThanOrEqual(0.5 + DEBORD_TABOURET);
         expect(p.h, `${id} h`).toBeGreaterThanOrEqual(0);
       }
   });

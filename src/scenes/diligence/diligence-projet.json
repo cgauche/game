@@ -4934,20 +4934,20 @@
     {
      "id": "diligence-salle-comptoir-2",
      "kind": "prop",
-     "ref": "comptoir-angle",
+     "ref": "comptoir-droit",
      "pos": {
       "x": 11,
       "y": 9
      },
-     "facing": "E"
+     "facing": "N"
     },
     {
      "id": "diligence-salle-comptoir-3",
      "kind": "prop",
-     "ref": "comptoir-droit",
+     "ref": "comptoir-angle",
      "pos": {
-      "x": 11,
-      "y": 10
+      "x": 12,
+      "y": 9
      },
      "facing": "E"
     },
@@ -4956,8 +4956,8 @@
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
-      "x": 11,
-      "y": 11
+      "x": 12,
+      "y": 10
      },
      "facing": "E"
     },
@@ -4966,8 +4966,8 @@
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
-      "x": 11,
-      "y": 12
+      "x": 12,
+      "y": 11
      },
      "facing": "E"
     },
@@ -4976,8 +4976,8 @@
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
-      "x": 11,
-      "y": 13
+      "x": 12,
+      "y": 12
      },
      "facing": "E"
     },
@@ -4986,8 +4986,8 @@
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
-      "x": 11,
-      "y": 14
+      "x": 12,
+      "y": 13
      },
      "facing": "E"
     },
@@ -4997,22 +4997,12 @@
      "ref": "comptoir-droit",
      "pos": {
       "x": 11,
-      "y": 15
-     },
-     "facing": "E"
-    },
-    {
-     "id": "diligence-salle-comptoir-9",
-     "kind": "prop",
-     "ref": "comptoir-angle",
-     "pos": {
-      "x": 11,
       "y": 16
      },
      "facing": "S"
     },
     {
-     "id": "diligence-salle-comptoir-10",
+     "id": "diligence-salle-comptoir-9",
      "kind": "prop",
      "ref": "comptoir-droit",
      "pos": {
@@ -5020,6 +5010,36 @@
       "y": 16
      },
      "facing": "S"
+    },
+    {
+     "id": "diligence-salle-plan-travail-1",
+     "kind": "prop",
+     "ref": "comptoir-droit",
+     "pos": {
+      "x": 10,
+      "y": 10
+     },
+     "facing": "E"
+    },
+    {
+     "id": "diligence-salle-plan-travail-2",
+     "kind": "prop",
+     "ref": "comptoir-droit",
+     "pos": {
+      "x": 10,
+      "y": 12
+     },
+     "facing": "E"
+    },
+    {
+     "id": "diligence-salle-plan-travail-3",
+     "kind": "prop",
+     "ref": "comptoir-droit",
+     "pos": {
+      "x": 10,
+      "y": 13
+     },
+     "facing": "E"
     },
     {
      "id": "diligence-salle-cheminee",

@@ -66,8 +66,8 @@ describe('buildTokens — figurants (PNJ d’ambiance)', () => {
     const assis = par.get('f1') as { kind: string; seat?: { slotId: string; facing: string; anchor: { x: number; y: number; h: number } } };
     expect(assis.seat?.slotId).toBe('place-est');
     expect(assis.seat?.facing).toBe('O');           // recette face au N : le corps de l'est regarde l'ouest
-    expect(assis.seat?.anchor.x).toBeCloseTo(1.43, 4);
-    expect(assis.seat?.anchor.h).toBeCloseTo(0.49, 4);
+    expect(assis.seat?.anchor.x).toBeCloseTo(1.48, 4);
+    expect(assis.seat?.anchor.h).toBeCloseTo(0.46, 4);
     // Un attablé n'est PAS un couple monté : aucun token `mounted` n'est émis pour lui, et le sujet
     // reste un figurant (assertion qui rougirait si l'assise passait par la voie monture).
     expect(assis.kind).toBe('figurant');

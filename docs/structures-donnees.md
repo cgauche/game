@@ -44,7 +44,7 @@ Ce que la mesure ci-dessous **ne voit pas** — un compte n’a de sens qu’ave
 
 ### 1bis. Index des ids (le cœur du détecteur)
 
-Identités indexées : **5308** (entrées de racine + documents embarqués) ; libellés
+Identités indexées : **5310** (entrées de racine + documents embarqués) ; libellés
 normalisés : **4714**. Un id vu dans PLUSIEURS datasets rend la résolution
 AMBIGUË (jamais fausse) : **373** collisions, et **3285** ids
 sont aussi le libellé d’une entité (faux positif possible sur la résolvabilité d’un `{text}`).
@@ -693,7 +693,7 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 | méta libre | `__livres` | divergente | 1 | progression-schemas.derived.json(1) |
 
 Groupes mesurés : **125** jeux d’ENTRÉES DE RACINE et **137** chemins de
-DOCUMENTS EMBARQUÉS (**2774** objets). **165** divergences
+DOCUMENTS EMBARQUÉS (**2776** objets). **165** divergences
 (rôle × clé × document × chemin) au stock `STRUCTURES_ENVELOPPE` (`scripts/guards/lib/structuresStock.mjs`,
 garde `src/data/structures-contrat.test.ts`) — une ligne se solde en migrant l’enveloppe, la ligne part
 dans le MÊME commit :
@@ -775,7 +775,7 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `diligence-projet.json` | `scenes.architecture.facades.features` | 71 | `edge`(71) `id`(71) `kind`(71) `offset`(3) `width`(2) |
 | `diligence-projet.json` | `scenes.architecture.storeys` | 2 | `id`(2) `parts`(2) `roomZoneIds`(2) `z`(2) |
 | `diligence-projet.json` | `scenes.effectZones` | 39 | `area`(39) `id`(39) `label`(39) `presentation`(39) `tiles`(10) `z`(37) |
-| `diligence-projet.json` | `scenes.entities` | 19 | `facing`(18) `id`(19) `kind`(19) `pos`(19) `ref`(18) |
+| `diligence-projet.json` | `scenes.entities` | 21 | `facing`(20) `id`(21) `kind`(21) `pos`(21) `ref`(20) |
 | `donnees.manifest.json` | `rubriques` | 11 | `entrees`(11) `nom`(11) |
 | `driving-mishap.json` | `table` | 4 | `desc`(4) `effect`(4) `id`(4) `label`(4) `max`(4) `min`(4) |
 | `drunkenness.json` | `table` | 5 | `desc`(5) `effect`(5) `id`(5) `label`(5) `max`(5) `min`(5) `ops`(3) |
@@ -918,7 +918,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `choice` | historique | 58 |
 | reference | `random` | historique | 19 |
 | reference | `text` | declaree | 566 |
-| reference | `id-nu` | historique | 2165 |
+| reference | `id-nu` | historique | 2167 |
 | refs | `ids-nus` | historique | 618 |
 | monnaie | `brass,gold,silver` | cible | 0 |
 | monnaie | `bronze,gold,silver` | historique | 451 |
@@ -945,12 +945,12 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **825** (cible 144 · declaree 6 · historique 235 · divergente 440). Objets JSON parcourus : **51959**, dont **35872** portent une forme
+Lignes concept × dataset × champ × forme : **825** (cible 144 · declaree 6 · historique 235 · divergente 440). Objets JSON parcourus : **51968**, dont **35876** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **92**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-470 ligne(s), 28701 occurrence(s).
+470 ligne(s), 28705 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1127,7 +1127,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | config | `recoveryPenalty` | `char+…` | divergente | `criticals.json` | 2 | — | `characteristics.json` `progression-schemas.derived.json` |  |
 | config | `subject` | `condition+…` | divergente | `criticals.json` | 1 | — | `etats.json` |  |
 | config | `ambiance` | `id-nu` | historique | `diligence-projet.json` | 1 | — | `vehicles.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
-| config | `ref` | `id-nu` | historique | `diligence-projet.json` | 18 | — | `props.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| config | `ref` | `id-nu` | historique | `diligence-projet.json` | 20 | — | `props.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | config | `walls` | `appearance,structure+…` | divergente | `diligence-projet.json` | 6 | — | `structureAppearance.json` `structures.json` |  |
 | config | `walls` | `structure+…` | divergente | `diligence-projet.json` | 662 | — | `mass-battle.json` `structureAppearance.json` `structures.json` |  |
 | entité | `amount` | `bonusOf` | divergente | `domains.json` | 3 | — | `characteristics.json` `progression-schemas.derived.json` |  |
@@ -1225,7 +1225,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `career` | `id-nu` | historique | `pregens.json` | 8 | — | `careers.json` `creatures.json` `groups.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `species` | `id-nu` | historique | `pregens.json` | 8 | — | `obsessions.json` `skills.json` `species.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `light` | `tone+…` | divergente | `props.json` | 3 | — | `lightTones.json` `spells.json` `trappings.json` |  |
-| entité | `primitives` | `material+…` | divergente | `props.json` | 50 | — | `propMaterials.json` |  |
+| entité | `primitives` | `material+…` | divergente | `props.json` | 52 | — | `propMaterials.json` |  |
 | entité | `becomes` | `id-nu` | historique | `psychology.json` | 1 | — | `mass-battle.json` `psychology.json` `traits.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `failCondition` | `id-nu` | historique | `psychology.json` | 1 | — | `etats.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `ops` | `id+…` | divergente | `psychology.json` | 1 | — | `etats.json` |  |
@@ -2223,7 +2223,7 @@ clé annonçait une FK (`clé de référence non résolue`), `L1b #1467` pour le
 | `tavernGames.json` | `dice` | `count,faces` | clé réservée | 1 |
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 
-Au-delà des orphelines, **11762** objets sur **51959** ne sont portés par AUCUNE
+Au-delà des orphelines, **11767** objets sur **51968** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures

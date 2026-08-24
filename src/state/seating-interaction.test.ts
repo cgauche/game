@@ -64,7 +64,7 @@ describe('interactEntity sur un meuble à places — bascule s’asseoir / se re
     const pose = poseDuMeneur()!;
     expect(pose.facing).toBe('S');                       // assis au nord de la table, on regarde le sud
     expect(pose.anchor.x).toBeCloseTo(5, 5);
-    expect(pose.anchor.y).toBeCloseTo(4.57, 5);
+    expect(pose.anchor.y).toBeCloseTo(4.52, 5);
     expect(pose.approach).toMatchObject(ABORD_NORD);     // la position LOGIQUE reste l'abord
     expect(useGame.getState().partyPos).toMatchObject(ABORD_NORD);
   });
