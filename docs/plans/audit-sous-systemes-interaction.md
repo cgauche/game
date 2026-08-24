@@ -107,7 +107,8 @@ garantie » + un test. (Bonne base déjà : `cascade.test.ts`, `combatAuto`.)
 
 ## 6. Barre d'action & sous-panneaux
 
-**État.** ✅ `ActionBar` data-driven (`hotbar.slots[]`) — les touches 1-N et la manette lisent ce pont.
+**État.** ✅ barre data-driven : la console publie ses cases PAR ADRESSE au pont `hotbar`
+(`hotbar.capacites[]`, un rang par position) — les touches 1-8 et la manette lisent ce pont.
 ⚠️ Mais les **sous-panneaux** (sorts, munitions, attaques ▾, **soin**, détermination) rendent chacun
 leur propre markup de boutons, et le **soin** y vit comme panneau (cf. #2). Plusieurs micro-structures.
 

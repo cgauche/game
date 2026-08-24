@@ -213,7 +213,8 @@ arbitrages du programme et les registres du dépôt :
 - **GRILLE (E)** : 12 cases (icône + libellé + touche + crans) + conduit AVANTAGE
   AU-DESSUS (colliers + valeur chiffrée) + **onglets de PAGES I/II/III** (planche —
   fonctionnement annoté : II = épinglages joueur, III éteinte tant qu'aucun contexte ;
-  la géométrie 2×6 est CONSTANTE par page). C'EST TOUT.
+  la géométrie 2×6 est CONSTANTE par page) [pages NON retenues au lot A — annotation de
+  planche (cf. l.256), déviation de la référence RT à faire valider à l'écran]. C'EST TOUT.
 - **COIN (F)** : icône + libellé (« Fin du tour ») + touche (ESPACE) + ligne d'ÉTAT
   (planche : « Action non dépensée » — l'avertissement garde-fou existant). C'EST TOUT.
 
@@ -384,8 +385,9 @@ sans surface exhaustive.
   dépendance à l'arme est une dépendance d'ÉLIGIBILITÉ (une action d'arme n'est
   proposable/active que si l'arme est au poing) ; la déduction ne fait que PRÉ-REMPLIR.
   **Le placement de la travée gauche est PAR SET** : chaque set a sa disposition,
-  pré-remplie par déduction, rééditable, mémorisée (persistance `(partyKey, actorId)` +
-  set) ; commuter (X) affiche la disposition du set. Proposé sans objection user.
+  pré-remplie par déduction, rééditable, mémorisée AU PORTEUR (`Combatant.barre.arsenal`,
+  indéxée par `WeaponLoadout.id` — zone 9) ; commuter (X) affiche la disposition du set.
+  Proposé sans objection user.
 - **L'édition = GLISSER-DÉPOSER SUR LA BARRE ELLE-MÊME** (⚠ CORRIGÉ 2026-08-17 sur
   contrôle user « c'est comme ca que les jeux videos font normalement ou tu réinvente la
   roue ? » — ma 1ʳᵉ version « écran-éditeur avec sélecteur de héros » était une roue
@@ -457,8 +459,9 @@ cases inertes) + BANDEAU fin par-dessus portant le message de phase et sa sortie
 Le reste : tour adverse/autre joueur/auto-combat = console en LECTURE (mêmes cases,
 inertes) ; tour du NAVIRE = la console charge le contenu navire dans la MÊME géométrie
 (6 ids mesurés : `maneuver-ship`, `battery`, `crew-test`, `sing-shanty`, `ship-reload`,
-`end-turn` — `battery` reste un interlude) ; placement navire : clé `(partyKey, actorId)`
-— `actorId` couvre héros ET navire (b3.19) ; combat fini = console retirée (transition).
+`end-turn` — `battery` reste un interlude) ; placement navire : AUCUNE clé à part — le navire
+EST un porteur, sa disposition vit sur LUI comme celle d'un héros (zone 9, b3.19) ; combat
+fini = console retirée (transition).
 
 ## Zone 8 — LE CLAVIER
 
@@ -473,13 +476,18 @@ Acquis hors arbitrage : table sans modificateur, badge = touche réelle, réfs
 
 ## Zone 9 — PERSISTANCE
 
-`saveId` N'EXISTE PAS (sonde négative ; saves par SLOT 1-3, `SAVE_VERSION = 23` — la
-mention « v12→v13 » de l'invariant était fausse). Clé retenue : **`(partyKey, actorId)`**
-— `partyKey` = UUID posé à la création de partie DANS `data` (suit la save via le snapshot
-zéro-maintenance de `saves.ts:4-8`, aucun bump) ; `heroId` actuel est un compteur de
-module NON stable (`character.ts:409-411`) → le lot pose `partyKey` et documente la
-limite des ids de pré-tirés (identiques entre parties : `pregen-${seed}` — acceptable car
-scoping par `partyKey`). Barre personnelle au client en coop (hors snapshot).
+`saveId` N'EXISTE PAS (sonde négative ; saves par SLOT 1-3, `SAVE_VERSION = 27` — la
+mention « v12→v13 » de l'invariant était fausse). ✅ TRANCHÉ (juge de design 2026-08-24, lot
+A1) : **la disposition est un CHAMP DU PORTEUR** — `Combatant.barre: DispositionConsole`
+(`src/engine/types.ts`), lu/écrit par `src/state/dispositionConsole.ts`. Elle voyage donc
+GRATUITEMENT partout où le porteur voyage : save (snapshot zéro-maintenance de `saves.ts`,
+aucun bump — le champ est optionnel), roster, snapshot réseau. **Aucune clé de partie, aucune
+table annexe, aucun `localStorage`** : ni `partyKey` ni `(partyKey, actorId)` — l'identité du
+porteur EST l'adresse, et la question des ids de héros non stables ne se pose plus.
+En COOP, la disposition est PARTAGÉE avec l'état du personnage (un siège possède ses
+personnages) : elle n'est pas un réglage local de client.
+Une ZONE est un objet CREUX (`Record<rang, entrée|null>`), jamais un tableau à trous : la
+sérialisation JSON de la save rendrait un trou en `null`, c'est-à-dire « case VIDÉE ».
 
 ## Zone 10 — MIGRATION (ordre CORRIGÉ, b3)
 
@@ -489,7 +497,7 @@ scoping par `partyKey`). Barre personnelle au client en coop (hors snapshot).
    AVANT toute UI de barre.
 3. **Lot console** (gros lot unique, b3.16-17) : travées + grille + coin + conduit +
    clavier (mapping livré AVEC les cases) + purge tiroirs + GRIMOIRE + placement/
-   persistance (`partyKey`) + phases lecture/navire. Prérequis internes : matrice G6
+   persistance (champ du porteur, zone 9) + phases lecture/navire. Prérequis internes : matrice G6
    (b3.18), maquette 360px validée, arbitrages b2 tranchés.
 4. **Lot intentions** : modes + `chargeReach` + 3ᵉ kind + annulation + `localIntent`.
 5. **Lot pastilles + pickup ⓘ** (avec la règle anti-débord des remèdes).

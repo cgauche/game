@@ -38,6 +38,7 @@ import { controlsCombatant } from '../state/netOwnership';
 import { inBattleId } from '../state/combatants';
 import { combatDistance } from '../state/footprint';
 import { hotbar } from '../state/hotbarBridge';
+import { TAILLE_ZONE, TOUCHES_IMPRIMEES, cleEntree, dispositionDeduite, resoudreDisposition, type EntreeBarre, type ZoneBarre } from '../state/dispositionConsole';
 import { charIcon, type EffectChip } from '../gameIso/effectIcons';
 import { HERO_RING, ENEMY_RING, ENEMY_TINT, hpColor } from '../gameIso/teamColors';
 import { PortraitTile } from './PortraitTile';
@@ -50,14 +51,15 @@ import type { IconIdInput } from './icons';
 /** Nombre de cases de chaque travée — GÉOMÉTRIE IMMUABLE (arbitrage utilisateur 2026-08-16 :
  *  « je ne veux pas que la taille de l'interface ou les boutons bougent » —
  *  `.claude/memory/game-arbitrage-hud-console-rt-2026-08-16.md:22`). Le contenu varie,
- *  le compte de cases JAMAIS : une case sans contenu se DESSINE vide. */
-const LEFT_CELLS = 6; // travée gauche : 2×3 — les gestes déduits du set (§1a) puis les cases LIBRES
-const QUICK_CELLS = 4; // rubrique ACCÈS RAPIDE : 2×2 (consommables groupés + Soin)
+ *  le compte de cases JAMAIS : une case sans contenu se DESSINE vide. Les trois zones ADRESSABLES
+ *  tiennent leur taille de `TAILLE_ZONE` : c'est la même mesure qui borne la disposition du porteur. */
+const LEFT_CELLS = TAILLE_ZONE.arsenal; // travée gauche : 2×3 — les gestes déduits du set (§1a) puis les cases LIBRES
+const QUICK_CELLS = TAILLE_ZONE.accesRapide; // rubrique ACCÈS RAPIDE : 2×2 (consommables groupés + Soin)
 const SET_SLOTS = 3; // colonne latérale de SETS : vignettes toujours dessinées (planche 2026-08-17)
-const RIGHT_CELLS = 12; // grille de capacités : 2×6
+const RIGHT_CELLS = TAILLE_ZONE.capacites; // grille de capacités : 2×6
 const ADVANTAGE_COLLARS = 10; // conduit d'Avantage (LDB 14 l.198)
 const ARCH_STATE_CELLS = 4; // niche d'États de l'arche : alvéoles réservées (spec §1c-bis)
-const PRINTED_KEYS = 8; // touches imprimées dans les cases de la grille (spec zone 8 : 1-8)
+const PRINTED_KEYS = TOUCHES_IMPRIMEES; // touches imprimées dans les cases de la grille (spec zone 8 : 1-8)
 
 /** FAMILLE d'une alvéole — porte l'accent de la case (filet de tête) et, à gauche, sa MATIÈRE :
  *  ce qu'on fait AVEC L'ARME est de l'acier, le geste et l'objet sont du laiton chaud (spécimen C).
@@ -138,8 +140,11 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
   // quoi le doigt lèverait le geste secondaire PUIS l'action primaire de la case.
   const appuiLong = useLongPress(geste2e);
   if (!cell) {
+    // Une case VIDE garde son RANG et sa touche imprimée : c'est l'adresse qui s'apprend, pas le
+    // contenu du moment (spec zone 8 — la touche suit la CASE). Elle attend le placement du joueur.
     return (
-      <span className="chip cc-cell cc-empty">
+      <span className="chip cc-cell cc-empty" data-hotkey={hotkey ? '' : undefined}>
+        {hotkey ? <span className="cc-key">{hotkey}</span> : null}
         <span className="hors-ecran">{t('cc.caseVide')}</span>
       </span>
     );
@@ -161,11 +166,10 @@ function ConsoleCell({ cell, hotkey, advantage = 0, ciblageArme = false, cellRef
     : refus2e && raison2e
       ? `${cell.label} — ${t('cc.geste2eIndisponible', { geste: refus2e.label, raison: raison2e })}`
       : `${cell.label} — ${t('cc.geste2eSurfaces', { gestes: secondaires.map((g) => g.label).join(', ') })}`;
-  // Touche imprimée SEULEMENT quand elle marche : la case branchée est publiée au pont clavier
-  // (`hotbar`), une case de maquette n'a aucune touche — jamais de badge mort. Une case REFUSÉE
-  // (gate du registre, ou situation qui la ferme) publie son slot `disabled` : son badge s'éteint
-  // aussi, il ne promet pas une touche qui ne fera rien — et il ne vient pas mordre la raison.
-  const touche = hotkey && !inert && !cell.disabled ? hotkey : undefined;
+  // La touche est celle de l'ADRESSE : elle s'imprime sur la case vide comme sur la case pleine, et
+  // ne se déplace jamais d'un rang. Seule une case REFUSÉE l'éteint (gate du registre, ou situation
+  // qui la ferme) : son badge ne promet pas une touche qui ne fera rien, et ne mord pas la raison.
+  const touche = hotkey && !cell.disabled ? hotkey : undefined;
   const button = (
     <button
       ref={cellRef}
@@ -848,13 +852,29 @@ export function CombatConsole() {
     vehicule ? cellFor('sing-shanty', 'geste', { off: !canSing, args: { shipId: active.id } }) : undefined,
     vehicule ? cellFor('ship-reload', 'geste', { off: !reloadable, args: { shipId: active.id, posteUid: reloadable?.item.uid } }) : undefined,
   ];
+  // ADRESSE FIXE — chaque case d'une zone rend ce que le PORTEUR y a posé (`active.barre`), et à
+  // défaut le pré-remplissage déduit (`dispositionDeduite`). Une case laissée vide RESTE à sa place :
+  // rien ne remonte d'un rang, la position s'apprend. Le pool est l'offre COMPLÈTE de la zone — une
+  // capacité posée au-delà du pré-remplissage s'y retrouve. Deux cases de même id (deux potions, deux
+  // sorts) se consomment dans l'ordre du pool, qui est l'ordre de lecture.
+  const placer = (zone: ZoneBarre, pool: Cell[], setId?: string): (Cell | undefined)[] => {
+    // L'ADRESSE de la case = son action ET sa CLÉ DÉCLARÉE (`cellFor`) : une identité de MODÈLE
+    // (`sort-<spellId>`, `q-objet-<trappingId>`…), jamais un uid d'instance — consommer une potion
+    // ne déplace pas la case où le joueur l'a posée.
+    const entreeDe = (c: Cell): EntreeBarre => ({ actionId: c.id, cle: c.key });
+    const parCle = new Map(pool.map((c) => [cleEntree(entreeDe(c)), c]));
+    const deduite = dispositionDeduite(zone, pool.map(entreeDe));
+    return resoudreDisposition(active.barre, zone, deduite, setId).map((e) => (e ? parCle.get(cleEntree(e)) : undefined));
+  };
+
   // La rangée BASSE est LIBRE (placement joueur — spec §1c-bis) et son remplissage PAR DÉFAUT est le
-  // DÉBORD des gestes déduits (spec §1b), tronqué à `LEFT_CELLS` : au-delà, le geste déduit ne paraît
+  // DÉBORD des gestes déduits (spec §1b), borné à `LEFT_CELLS` : au-delà, le geste déduit ne paraît
   // pas (mesuré : jusqu'à 10 déduits pour 6 slots). Arbitrage de géométrie de la travée : #1434.
-  const left: (Cell | undefined)[] = deduced.filter((c): c is Cell => !!c).slice(0, LEFT_CELLS);
+  // Le placement de la travée gauche est PAR SET (spec zone 6) : commuter le set change la disposition.
+  const left: (Cell | undefined)[] = placer('arsenal', deduced.filter((c): c is Cell => !!c), heldSet?.id);
 
   // ── ACCÈS RAPIDE (2×2) : le nécessaire du héros — consommables à compteur, Soin, aspersion ──────
-  const quick: (Cell | undefined)[] = [
+  const rapides: (Cell | undefined)[] = [
     ...consumableGroups.map((g) => {
       const it = consumables.find((i) => i.uid === g.uids[0])!;
       return cellFor('use-item', 'geste', {
@@ -870,9 +890,8 @@ export function CombatConsole() {
       ? cellFor('heal', 'geste', { key: 'q-soigner', off: busy || frenzied })
       : undefined,
     waterTargets.length > 0 ? cellFor('water', 'geste', { off: busy || frenzied }) : undefined,
-  ]
-    .filter((c): c is Cell => !!c)
-    .slice(0, QUICK_CELLS);
+  ];
+  const quick = placer('accesRapide', rapides.filter((c): c is Cell => !!c));
 
   // ── Travée DROITE : la grille de capacités (compte FIXE, remplissage par défaut mesuré) ─────
   // Compétences d'Avantage : le SÉLECTEUR DU REGISTRE (`competences-avantage`), pas une 2ᵉ lecture.
@@ -959,20 +978,22 @@ export function CombatConsole() {
       });
     }),
   ].filter((c): c is Cell => !!c);
-  const right = candidates.slice(0, RIGHT_CELLS);
-  // PONT CLAVIER de la console (`keybindings.ts`, section hotbar : « 1-9 = n-ième slot VISIBLE,
-  // positionnel »). On publie les cases BRANCHÉES dans l'ORDRE DE LECTURE du pont — travée gauche
-  // (gestes déduits + débord pré-rempli), ACCÈS RAPIDE, puis grille de capacités : sans la travée
-  // gauche, les seules cases réellement branchées de la console (Recharger, Viser, un consommable,
-  // Soigner) n'avaient AUCUNE touche. Le badge imprimé est ce MÊME rang : une case affichée et
-  // branchée a sa touche, une maquette n'en a pas.
+  const right = placer('capacites', candidates);
+  // PONT CLAVIER de la console (`keybindings.ts`, section hotbar) : on publie chaque zone PAR ADRESSE,
+  // trous compris — le rang d'une case ne dépend pas de ce que ses voisines contiennent. Les touches
+  // 1-8 se lient aux 8 premiers rangs de la GRILLE (spec zone 8 : « la touche suit la CASE […] 1-8 =
+  // cases de la grille visible ») ; les rangs 9-12, la travée gauche et l'accès rapide restent
+  // atteignables au focus, leurs touches se règlent au volet clavier.
   // … et le pont ne publie QUE ce qu'il RÉALISE : en forme spectatrice il n'a plus une seule case à
-  // l'écran, il ne publie donc plus un seul slot. Une touche qui tirerait sur une case absente est
+  // l'écran, il ne publie donc plus un seul rang. Une touche qui tirerait sur une case absente est
   // une affordance invisible — le contrat du pont clavier est « les cases VISIBLES ».
-  const bridged: Cell[] = spectatrice ? [] : [...left, ...quick, ...right].filter((c): c is Cell => !!c && !!c.run);
-  hotbar.slots = bridged.map((c) => ({ actionId: c.id, run: c.run!, disabled: !!c.disabled }));
-  const keyRank = new Map(bridged.slice(0, PRINTED_KEYS).map((c, i) => [c.key, i + 1]));
-  const hotkeyOf = (c?: Cell) => (c ? keyRank.get(c.key) : undefined);
+  hotbar.capacites = spectatrice
+    ? []
+    : right.map((c) => (c ? { actionId: c.id, run: c.run, disabled: !!c.disabled } : null));
+  // Le badge imprimé EST le rang de l'adresse dans la grille — jamais le rang d'une liste filtrée.
+  // Il ne paraît que sur une console VIVANTE : sous un bandeau de phase, la case pleine s'éteint,
+  // la case vide doit s'éteindre avec elle (une seule condition de vie pour les deux).
+  const hotkeyDeRang = (i: number) => (spectatrice || !live || i >= PRINTED_KEYS ? undefined : i + 1);
 
   // ── GESTE SECONDAIRE d'une alvéole (spec §1d + zone 10) ────────────────────────────────────────
   // N=1 : JAMAIS de panneau. Un seul geste OFFERT = dispatch direct (demander « lequel ? » quand il
@@ -1236,7 +1257,7 @@ export function CombatConsole() {
                 </div>
                 <div className="cc-grid cc-grid-left" aria-label="Arsenal">
                   {Array.from({ length: LEFT_CELLS }, (_, i) => (
-                    <ConsoleCell key={i} cell={left[i]} hotkey={hotkeyOf(left[i])} ciblageArme={ciblageArme} cellRef={ancreDePanneau(left[i])} onGeste2e={left[i] ? () => declencher2e(left[i]!) : undefined} />
+                    <ConsoleCell key={i} cell={left[i]} ciblageArme={ciblageArme} cellRef={ancreDePanneau(left[i])} onGeste2e={left[i] ? () => declencher2e(left[i]!) : undefined} />
                   ))}
                 </div>
               </div>
@@ -1247,7 +1268,7 @@ export function CombatConsole() {
               <span className="cc-bay-head">ACCÈS RAPIDE</span>
               <div className="cc-grid cc-grid-quick" aria-label="Accès rapide">
                 {Array.from({ length: QUICK_CELLS }, (_, i) => (
-                  <ConsoleCell key={i} cell={quick[i]} hotkey={hotkeyOf(quick[i])} ciblageArme={ciblageArme} cellRef={ancreDePanneau(quick[i])} onGeste2e={quick[i] ? () => declencher2e(quick[i]!) : undefined} />
+                  <ConsoleCell key={i} cell={quick[i]} ciblageArme={ciblageArme} cellRef={ancreDePanneau(quick[i])} onGeste2e={quick[i] ? () => declencher2e(quick[i]!) : undefined} />
                 ))}
               </div>
             </div>
@@ -1314,7 +1335,7 @@ export function CombatConsole() {
               <ConsoleCell
                 key={i}
                 cell={right[i]}
-                hotkey={hotkeyOf(right[i])}
+                hotkey={hotkeyDeRang(i)}
                 advantage={active.advantage}
                 ciblageArme={ciblageArme}
                 cellRef={ancreDePanneau(right[i])}

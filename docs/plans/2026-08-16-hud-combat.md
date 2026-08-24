@@ -141,9 +141,9 @@ Remplace « l'empreinte ne bouge jamais ; le catalogue se pagine par onglets ».
 - **Barre de raccourcis PLACÉE PAR LE JOUEUR** (arbitrage : « on place nous mêmes nos sorts
   et capacités ») : remplissage PAR DÉFAUT fourni, placement entièrement libre ensuite ; une
   case = un RACCOURCI (le sort reste au grimoire, la manœuvre sur sa travée) ; persistance
-  PAR PERSONNAGE en préférence locale (patron `keybindingsPrefs` — pas une donnée de save,
-  pas de bump de save — ⚠ correction juge-de-spec : `SAVE_VERSION = 23`, pas « v12 » ; et
-  `saveId` n'existe pas → clé `(partyKey, actorId)`, voir spec zone 9).
+  PAR PERSONNAGE, sur le PORTEUR lui-même (`Combatant.barre` — donnée de save qui voyage avec
+  lui, champ optionnel donc sans bump ; `SAVE_VERSION = 27`, la mention « v12 » était fausse ;
+  `saveId` n'existe pas et aucune clé de partie n'est requise, voir spec zone 9).
 - **Hors tour : la console est en LECTURE, sans surface de décision nouvelle.** La bascule
   en médaillons proposée par l'analyse RT est REFUSÉE par l'utilisateur (« cette interface
   qui n'a pas lieu d'etre », 2026-08-16 — déjà refusée dans la lignée de la spec) : la

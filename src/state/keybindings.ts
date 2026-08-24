@@ -13,6 +13,7 @@ import { controlsActive } from './netOwnership';
 import { pickActiveModalKey } from './modalArbiter';
 import { modalBlocksMapHover } from './mapHover';
 import { hotbar } from './hotbarBridge';
+import { TOUCHES_IMPRIMEES } from './dispositionConsole';
 import { runAction, currentInterludeAction, actionGate } from './actionRegistry';
 import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
@@ -284,12 +285,14 @@ export const KEYBINDINGS: KeyBinding[] = [
     },
     run: (g) => runAction('undo-move', g),
   },
-  // Cases de la console : 1-9 = n-ième case VISIBLE (positionnel, rien en dur), via le pont
-  // `hotbar` publié par la `CombatConsole`. Inactif hors de son tour / pendant une modale.
-  ...Array.from({ length: 9 }, (_, i): KeyBinding => ({
+  // Cases de la GRILLE de capacités : 1-8 = case au RANG n de la grille (adresse, pas rang d'action
+  // — spec HUD zone 8, `docs/plans/2026-08-16-spec-hud-combat.md`), via le pont `hotbar` publié par la
+  // `CombatConsole`. La touche d'un rang vide ou fermé ne déclenche rien, et ne glisse pas au voisin.
+  // Inactif hors de son tour / pendant une modale.
+  ...Array.from({ length: TOUCHES_IMPRIMEES }, (_, i): KeyBinding => ({
     id: `hotbar-${i + 1}`, codes: [`Digit${i + 1}`], labelKey: 'key.hotbarSlot', labelParams: { n: i + 1 }, section: 'hotbar',
     when: (s) => inBattle(s) && controlsActive(s) && noModal(s),
-    run: () => { const sl = hotbar.slots[i]; if (sl && !sl.disabled) sl.run(); },
+    run: () => { const sl = hotbar.capacites[i]; if (sl?.run && !sl.disabled) sl.run(); },
   })),
   // ── Pas clavier d'EXPLORATION ISO (ZQSD) : un pas du groupe vers la surface voisine CONNECTÉE dans le
   //    sens écran poussé (rampes/tabliers via exploreStepDest) → le multi-couche, injouable au clic

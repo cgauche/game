@@ -1298,6 +1298,34 @@ export interface WeaponLoadout {
   off?: string;
 }
 
+/** Les trois zones ADRESSABLES de la console, nommées par leur FONCTION : la donnée du porteur ne
+ *  dépend d'aucune mise en page (arsenal = les gestes de son set, accès rapide = son nécessaire,
+ *  capacités = son grimoire posé). */
+export type ZoneBarre = 'arsenal' | 'accesRapide' | 'capacites';
+
+/** UNE case posée : l'action du registre (`src/data/actions.json`) et la CLÉ DÉCLARÉE de la case,
+ *  qui distingue les N alvéoles d'une même action (`sort-<spellId>`, `advantage-<skillId>`,
+ *  `q-objet-<trappingId>`, `attaque-<attackId>`, `self-<maneuverId>`, ou `ActionDef.keys[0]`).
+ *  Cette clé est une identité de MODÈLE, déclarée au site de la case — jamais un uid d'INSTANCE
+ *  (boire une potion changerait l'uid et tuerait l'adresse), jamais un libellé. */
+export interface EntreeBarre {
+  actionId: string;
+  cle: string;
+}
+
+/** CE QUE LE PORTEUR A POSÉ sur les cases de sa console, PAR ADRESSE : une `EntreeBarre` au rang N
+ *  d'une zone. `null` = case volontairement vidée (elle reste dessinée à sa place) ; rang ABSENT du
+ *  Record = laissé au pré-remplissage déduit. Objet creux, jamais un tableau à trous : le snapshot de
+ *  partie sérialise en JSON, où un trou deviendrait `null` — donc « vidée ».
+ *  UN modèle pour les trois zones — le set au poing n'est qu'une dimension de l'adresse de l'arsenal.
+ *  Lecture/écriture : `src/state/dispositionConsole.ts` (validateur `poserDansBarre`). */
+export interface DispositionConsole {
+  /** Arsenal, par `WeaponLoadout.id` : commuter le set affiche SA disposition. */
+  arsenal?: Record<string, Record<number, EntreeBarre | null>>;
+  accesRapide?: Record<number, EntreeBarre | null>;
+  capacites?: Record<number, EntreeBarre | null>;
+}
+
 /** UNE exposition à une maladie (op `exposeDisease`) — consommée par le bilan de fin de combat
  *  (Test de Contraction, LDB 20 l.25/51). Les modulateurs viennent de la SOURCE de l'exposition :
  *  Contagieux (Type), EDO App.2 l.228-230 → `difficultyShift: -2` (« 2 niveaux plus difficile »,
@@ -1489,6 +1517,11 @@ export interface Combatant {
   /** Sets d'armes du héros (les ennemis n'en ont pas — leurs armes viennent du statbloc, posées à l'instanciation via spawn.ts). */
   loadouts?: WeaponLoadout[];
   activeLoadoutId?: string;
+  /** DISPOSITION de la console de combat, PAR ADRESSE de case (spec HUD zone 6 : la barre est
+   *  éditable, la déduction ne fait que pré-remplir). Donnée du PORTEUR : elle voyage avec lui
+   *  (save, roster, coop) sans table annexe ni clé de partie. Porte unique d'écriture :
+   *  `poserDansBarre` (`src/state/dispositionConsole.ts`). */
+  barre?: DispositionConsole;
   /** Sorts/prières connus (libellés référençant src/data/spells.json). */
   spells?: string[];
   /** Composants d'incantation possédés (LDB 46 l.107-113) — `id` des Sorts d'Arcane/Domaine pour

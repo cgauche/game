@@ -968,14 +968,14 @@ describe('CombatConsole — trois formes, une seule bande', () => {
     h.conditions = [];
     const e = foe('e1', 9, 9);
     monter(h, { foes: [e] });
-    expect(hotbar.slots.length, 'témoin : le pont complet publie ses cases').toBeGreaterThan(0);
+    expect(hotbar.capacites.length, 'témoin : le pont complet publie ses cases').toBeGreaterThan(0);
     monter(h, { foes: [e], turn: 1 });
     expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('spectatrice');
-    expect(hotbar.slots, 'des touches restent branchées sur un pont sans case').toEqual([]);
+    expect(hotbar.capacites, 'des touches restent branchées sur un pont sans case').toEqual([]);
     // … et à l'ouverture non plus (le pont y est un médaillon).
     monter(h, { foes: [e] });
     act(() => { useGame.setState({ pendingRoundStart: { round: 1, readyBySeat: {} } as never }); });
-    expect(hotbar.slots).toEqual([]);
+    expect(hotbar.capacites).toEqual([]);
     act(() => { useGame.setState({ pendingRoundStart: null }); });
   });
 
@@ -1155,6 +1155,32 @@ describe('CombatConsole — travée gauche : sets, gestes déduits, accès rapid
     monter(nu);
     expect(casesRapide().length).toBe(4);
     expect(casesRapide().filter((c) => c.classList.contains('cc-empty')).length).toBe(4);
+  });
+
+  // L'ADRESSE D'UN CONSOMMABLE EST CELLE DE SON MODÈLE, pas de l'instance : la case se déclare
+  // `q-objet-<trappingId>`. Boire une potion consomme un `uid` — l'adresse posée par le joueur, elle,
+  // ne bouge pas d'un rang. Une adresse bâtie sur l'`itemUid` d'args mourrait à la première gorgée.
+  it('(c-bis) l’adresse d’un consommable SURVIT à la consommation d’une instance', () => {
+    const avecPotions = (uids: string[]) => {
+      const h = deuxSets();
+      h.wounds = { current: 5, max: 12 };
+      h.skills = [...(h.skills ?? []), { skillId: 'guerison', advances: 10 } as never];
+      h.items = [...h.items!, ...uids.map((u) => objet('potion-de-guerison', u))];
+      // Le joueur a posé SA potion au 3ᵉ rang de l'accès rapide.
+      h.barre = { accesRapide: { 2: { actionId: 'use-item', cle: 'q-objet-potion-de-guerison' } } };
+      return h;
+    };
+    monter(avecPotions(['i-po1', 'i-po2']));
+    const rangs = () => casesRapide().map((c) => c.getAttribute('data-cell'));
+    expect(rangs()[2], 'la potion ne s’est pas rendue à l’adresse posée').toBe('q-objet-potion-de-guerison');
+    expect(casesRapide()[2].querySelector('.cc-lbl')!.textContent).toBe('Potion de guérison ×2');
+
+    // … une gorgée plus tard : l'instance de tête a disparu du sac (c'est CE `uid` que les args
+    // publiaient). La case reste à SON rang, avec un compteur de moins.
+    monter(avecPotions(['i-po2']));
+    expect(rangs()[2], 'l’adresse a suivi l’uid consommé au lieu du modèle').toBe('q-objet-potion-de-guerison');
+    expect(casesRapide()[2].querySelector('.cc-lbl')!.textContent).toBe('Potion de guérison');
+    expect(rangs()[0], 'la potion a repeuplé le rang 0 : l’adresse posée a été perdue').not.toBe('q-objet-potion-de-guerison');
   });
 });
 
@@ -1369,33 +1395,106 @@ describe('CombatConsole — droit de la travée et du coin (juge vision 2026-08-
     expect(useGame.getState().battle!.turn).not.toBe(0);
   });
 
-  // Le pont clavier ne publiait QUE la travée droite — or aucune case de la grille de capacités n'est
-  // branchée aujourd'hui : la console ne publiait donc RIEN, et « toute action affichée a sa touche »
-  // était faux pour Recharger/Viser/objets/Soigner. Depuis le lot registre, chaque slot publié porte
-  // aussi son `actionId` : le pont n'a plus de closure anonyme (spec HUD « Zone 12 »).
-  it('D-5 — la travée GAUCHE est publiée au pont clavier (slots IDENTIFIÉS), et sa case porte le badge de ce rang', () => {
-    hotbar.slots = [];
+  // La touche suit la CASE, pas l'action (spec HUD zone 8) : le pont publie CHAQUE ZONE par adresse,
+  // trous compris, et les touches 1-8 sont les 8 premiers rangs de la GRILLE. Un rang vide ou fermé ne
+  // glisse pas au voisin. Chaque rang publié porte son `actionId` : aucune closure anonyme (zone 12).
+  it('D-5 — le pont publie chaque zone PAR ADRESSE (trous compris), et la touche d’un rang de grille exécute CE rang', () => {
+    hotbar.capacites = [];
     const h = arbaletrier();
     monter(h);
-    // L'attaque de l'arme, Recharger et Viser sont branchés (store réel) → l'ordre de lecture de la
-    // travée gauche donne les premiers rangs, et chaque slot dit QUELLE action il exécute.
-    expect(hotbar.slots.length, 'aucune case de la console publiée au clavier').toBeGreaterThanOrEqual(3);
-    expect(hotbar.slots.map((s) => s.actionId).slice(0, 4)).toEqual(['attaque', 'reload', 'aim', 'posture-tir']);
-    const rech = host.querySelector('[data-cell="g4-recharger"]')!;
-    expect(rech.querySelector('.cc-key')!.textContent).toBe('2');
-    // La POSTURE de tir n'est plus une maquette (spec §1a G5) : branchée, elle est publiée au pont avec
-    // son rang imprimé, et la touche l'ARME pour de vrai dans `battle.stances`.
-    const posture = host.querySelector('[data-cell="g5-posture"]')!;
+    // Travée gauche : ses cases se rendent à LEUR rang… et ne portent AUCUN badge — les chiffres
+    // sont ceux de la grille (spec zone 8), et le pont ne publie que la zone dont on lit les rangs.
+    const arsenal = [...host.querySelectorAll('.cc-grid-left .cc-cell')];
+    expect(arsenal.length, 'l’arsenal garde sa géométrie entière').toBe(6);
+    expect(arsenal.map((c) => c.getAttribute('data-action')).slice(0, 4)).toEqual(['attaque', 'reload', 'aim', 'posture-tir']);
+    expect(host.querySelector('[data-cell="g4-recharger"] .cc-key'), 'un chiffre sur la travée gauche').toBeNull();
+    // La POSTURE de tir n'est plus une maquette (spec §1a G5) : branchée, elle mord au clic.
+    const posture = host.querySelector('[data-cell="g5-posture"]') as HTMLButtonElement;
     expect(posture.className).not.toContain('cc-inert');
-    expect(posture.querySelector('.cc-key')!.textContent).toBe('4');
-    act(() => hotbar.slots[3].run());
-    expect(useGame.getState().battle!.stances?.[h.id]?.heldGround, 'la touche 4 n’a pas armé la posture').toBe(true);
-    // … et la touche 2 exécute bien CETTE case (même `run` que le clic) : le rechargement OUVRE sa modale
-    // (Test étendu de Projectiles) — c'est l'effet observable du moteur, pas un drapeau forgé ici.
-    expect(useGame.getState().pendingReload ?? null).toBeNull();
-    expect(hotbar.slots[1].disabled).toBe(false);
-    act(() => hotbar.slots[1].run());
-    expect(useGame.getState().pendingReload, 'la touche 2 n’a pas déclenché la case Recharger').toBeTruthy();
+    act(() => posture.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(useGame.getState().battle!.stances?.[h.id]?.heldGround, 'le rang 4 de la travée n’a pas armé la posture').toBe(true);
+    // GRILLE : le rang N porte le badge N (1-8), et la touche exécute LE RANG — pas la N-ième branchée.
+    const grille = [...host.querySelectorAll('.cc-grid-right .cc-cell')];
+    expect(hotbar.capacites.length, 'la grille de capacités est publiée à sa géométrie entière').toBe(12);
+    for (let i = 0; i < 8; i++) {
+      const badge = grille[i].querySelector('.cc-key');
+      // Une case REFUSÉE éteint son badge (elle ne promet pas une touche morte) ; toute autre l'imprime.
+      if (grille[i].hasAttribute('data-gated')) continue;
+      expect(badge?.textContent, `rang ${i + 1} de la grille sans son chiffre`).toBe(String(i + 1));
+    }
+    expect(grille[8].querySelector('.cc-key'), 'les rangs 9-12 n’ont pas encore de touche (spec zone 8)').toBeNull();
+    // Le rang de « Se défendre » exécute bien CETTE case (même `run` que le clic).
+    const rang = hotbar.capacites.findIndex((s) => s?.actionId === 'defend');
+    expect(rang, 'aucune case Se défendre publiée à la grille').toBeGreaterThanOrEqual(0);
+    expect(hotbar.capacites[rang]!.disabled).toBe(false);
+    expect(useGame.getState().battle!.acted).toBe(false);
+    act(() => hotbar.capacites[rang]!.run!());
+    expect(useGame.getState().battle!.acted, 'la touche du rang n’a pas dépensé l’Action de la Défensive').toBe(true);
+  });
+
+  // Le cœur du lot A1 : les cases se rendent PAR ADRESSE. Une case vidée par le joueur RESTE vide à sa
+  // place — aucune recomposition ne fait remonter la suivante (patron RT : la position s'apprend).
+  it('D-5bis — la DISPOSITION du porteur commande l’adresse : case vidée, case posée, id inconnu', () => {
+    const h = hero('h1', 'Gunnar');
+    h.conditions = [];
+    monter(h, { foes: [foe('e1', 9, 9)] });
+    const cellules = () => [...host.querySelectorAll('.cc-grid-right .cc-cell')];
+    const lire = () => cellules().map((c) => c.getAttribute('data-action'));
+    const temoin = lire();
+    expect(temoin[0], 'témoin : le pré-remplissage déduit garnit le rang 0').not.toBeNull();
+
+    // (a) rang 0 VIDÉ : il reste vide, et les rangs suivants ne bougent pas d'un cran.
+    const vide = hero('h1', 'Gunnar');
+    vide.conditions = [];
+    vide.barre = { capacites: { 0: null } };
+    monter(vide, { foes: [foe('e1', 9, 9)] });
+    expect(lire()[0], 'la case vidée s’est repeuplée').toBeNull();
+    // Le PRÉ-REMPLISSAGE s'écoule dans les rangs LIBRES, dans l'ordre : rien n'est perdu, rien n'est
+    // dupliqué — la case vidée, elle, n'est pas reprise.
+    expect(lire().slice(1), 'le pré-remplissage a perdu ou dupliqué une case').toEqual(temoin.slice(0, temoin.length - 1));
+
+    // (b) entrée POSÉE : elle se rend à SON adresse, et QUITTE son rang déduit (poser = déplacer,
+    // jamais dupliquer).
+    const pose = hero('h1', 'Gunnar');
+    pose.conditions = [];
+    pose.barre = { capacites: { 0: { actionId: 'defend', cle: 'defend' } } };
+    monter(pose, { foes: [foe('e1', 9, 9)] });
+    expect(lire()[0]).toBe('defend');
+    expect(lire().filter((a) => a === 'defend').length, 'la capacité posée s’est dédoublée').toBe(1);
+
+    // (c) id INCONNU (save d'une autre version) : entrée ignorée, la case reste VIDE — la déduction ne
+    // la reprend pas, le joueur l'avait remplie.
+    const inconnu = hero('h1', 'Gunnar');
+    inconnu.conditions = [];
+    inconnu.barre = { capacites: { 0: { actionId: 'action-qui-nexiste-pas', cle: 'action-qui-nexiste-pas' } } };
+    monter(inconnu, { foes: [foe('e1', 9, 9)] });
+    expect(lire()[0], 'un id inconnu a laissé la déduction reprendre la case').toBeNull();
+  });
+
+  // Plusieurs cases partagent un même `actionId` (une par Compétence d'Avantage, une par sort) : sans
+  // le CANDIDAT dans l'adresse, la case posée rendrait la n-ième occurrence de l'offre — donc une
+  // AUTRE compétence dès que l'offre change. L'adresse désigne « CELLE-LÀ ».
+  it('D-5ter — l’adresse porte le CANDIDAT : deux cases de la MÊME action ne se confondent pas', () => {
+    /** Un lanceur à DEUX sorts : deux alvéoles, un seul `actionId` (`cast-spell`). */
+    const sorcier = () => {
+      const h = hero('h1', 'Magister');
+      h.conditions = [];
+      h.skills = [{ skillId: 'focalisation', characteristic: 'force-mentale', advances: 10 }] as never;
+      h.spells = ['carreau', 'bouclier-magique'];
+      return h;
+    };
+    monter(sorcier(), { foes: [foe('e1', 9, 9)] });
+    const cles = () => [...host.querySelectorAll('.cc-grid-right .cc-cell')].map((c) => c.getAttribute('data-cell'));
+    const memeAction = [...host.querySelectorAll('.cc-grid-right [data-action="cast-spell"]')]
+      .map((c) => c.getAttribute('data-cell')!);
+    expect(memeAction.length, 'un seul sort : la sonde ne mesurerait aucune collision').toBeGreaterThan(1);
+    // Le 2ᵉ sort, posé au rang 0 : c'est LUI qui doit s'y rendre.
+    const elue = memeAction[1];
+    const pose = sorcier();
+    pose.barre = { capacites: { 0: { actionId: 'cast-spell', cle: elue } } };
+    monter(pose, { foes: [foe('e1', 9, 9)] });
+    expect(cles()[0], 'l’adresse a rendu une AUTRE compétence que celle posée').toBe(elue);
+    expect(cles().filter((k) => k === elue).length, 'la compétence posée s’est dédoublée').toBe(1);
   });
 
   it('D-6 — l’icône de la case d’attaque suit l’ARME du set, jamais un glyphe d’épée en dur', () => {
@@ -1644,7 +1743,11 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
     expect(host.querySelectorAll('.cc-bay-right .cc-cell.cc-empty').length, 'aucune case vide à droite').toBeGreaterThan(0);
     expect(host.querySelectorAll('.cc-bay-left .cc-cell.cc-empty').length, 'aucune case vide à gauche').toBeGreaterThan(0);
     for (const v of vides) {
-      expect(texteVisible(v).trim(), 'une case vide écrit encore un mot à l’écran').toBe('');
+      // Le SILENCE porte sur les MOTS. Le seul signe admis est la TOUCHE de l'adresse (un chiffre) :
+      // le rang s'apprend même vide, c'est le patron positionnel de la grille (spec HUD zone 8).
+      const texte = texteVisible(v).trim();
+      expect(texte, 'une case vide écrit encore un mot à l’écran').toMatch(/^\d*$/);
+      expect(texte, 'une case vide écrit autre chose que sa touche').toBe(v.querySelector('.cc-key')?.textContent?.trim() ?? '');
       const nom = v.querySelector('.hors-ecran');
       expect(nom?.textContent, 'une case vide doit rester NOMMÉE pour le lecteur d’écran').toBe(t('cc.caseVide'));
     }
@@ -2138,7 +2241,9 @@ describe('CombatConsole — tour du NAVIRE contrôlé : ses Tests d’équipage 
       expect(caseAction(id), `case navale « ${id} » absente de la travée`).not.toBeNull();
     }
     // BRANCHÉES, pas seulement dessinées : le pont clavier ne publie que les cases qui portent un `run`.
-    const publiees = hotbar.slots.map((s) => s.actionId);
+    const publiees = [...host.querySelectorAll('.cc-grid-left .cc-cell:not(.cc-empty)')]
+      .filter((c) => !(c as HTMLButtonElement).disabled)
+      .map((c) => c.getAttribute('data-action'));
     for (const id of ['maneuver-ship', 'battery', 'crew-test-rude-epreuve', 'ship-reload']) {
       expect(publiees, `« ${id} » n’est pas branchée (aucun dispatcher publié)`).toContain(id);
     }
@@ -2241,7 +2346,10 @@ describe('CombatConsole — COOP : la console suit la POSSESSION, jamais le mode
     monterCoop(0); // tour de « h1 », possédé par le siège local (0)
     expect(enAttente(), 'la console de MON héros ne doit pas être en lecture').toBe(false);
     expect((host.querySelector('[data-cell="end-turn"]') as HTMLButtonElement).disabled).toBe(false);
-    expect(hotbar.slots.some((s) => !s.disabled), 'aucune case branchée : le pont clavier est mort').toBe(true);
+    expect(
+      hotbar.capacites.some((s) => s?.run && !s.disabled),
+      'aucune case branchée : le pont clavier est mort',
+    ).toBe(true);
   });
 
   // Le tour d'un AUTRE siège est un tour non contrôlé comme un autre : la console y prend la FORME
