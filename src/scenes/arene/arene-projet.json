@@ -460,7 +460,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Hallebarde"
+          "trappingId": "hallebarde"
          }
         },
         {
@@ -6968,7 +6968,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Bouclier"
+          "trappingId": "bouclier"
          }
         },
         {
@@ -8956,7 +8956,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Chemise de mailles"
+          "trappingId": "chemise-de-mailles"
          }
         },
         {
@@ -9835,7 +9835,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Lance de cavalerie"
+          "trappingId": "lance-de-cavalerie"
          }
         },
         {
@@ -11023,7 +11023,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Faxtoryll"
+          "trappingId": "faxtoryll"
          }
         },
         {
@@ -11990,7 +11990,7 @@
           "kind": "do",
           "effect": {
            "type": "giveTrapping",
-           "trapping": "Potion de guérison"
+           "trappingId": "potion-de-guerison"
           }
          },
          {
@@ -12090,7 +12090,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Bonnet de fou"
+          "trappingId": "bonnet-de-fou"
          }
         },
         {
@@ -12157,7 +12157,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Arc"
+          "trappingId": "arc"
          }
         },
         {
@@ -14115,7 +14115,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Potion de vitalité"
+          "trappingId": "potion-de-vitalite"
          }
         },
         {
@@ -14160,7 +14160,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Grande hache"
+          "trappingId": "grande-hache"
          }
         },
         {
@@ -15387,7 +15387,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Lotus noir"
+          "trappingId": "lotus-noir"
          }
         },
         {
@@ -16661,7 +16661,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Grimoire"
+          "trappingId": "grimoire"
          }
         },
         {
@@ -17759,10 +17759,10 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Épée bâtarde",
+          "trappingId": "epee-batarde",
           "qualities": [
-           "Magique",
-           "De plaies atroces"
+           "magique",
+           "de-plaies-atroces"
           ],
           "identified": false
          }
@@ -19342,7 +19342,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Arc elfique"
+          "trappingId": "arc-elfique"
          }
         },
         {
@@ -20827,7 +20827,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Racine de terre"
+          "trappingId": "racine-de-terre"
          }
         },
         {
@@ -20858,7 +20858,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Faxtoryll"
+          "trappingId": "faxtoryll"
          }
         },
         {
@@ -20934,9 +20934,9 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Rapière",
+          "trappingId": "rapiere",
           "qualities": [
-           "Raffiné"
+           "raffine"
           ]
          }
         },
@@ -22349,7 +22349,7 @@
          "kind": "do",
          "effect": {
           "type": "giveTrapping",
-          "trapping": "Corde"
+          "trappingId": "corde"
          }
         },
         {

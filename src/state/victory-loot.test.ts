@@ -27,7 +27,7 @@ describe('dismissVictory — fermeture de l’écran de victoire', () => {
 describe('assignVictoryGear — équipement attribuable, qualités conservées', () => {
   const gearEntry = () => ({
     label: 'Dague', magic: true,
-    effect: { type: 'giveTrapping', trappingId: 'dague', qualities: [{ id: 'devastatrice' }], identified: false },
+    effect: { type: 'giveTrapping', trappingId: 'dague', qualities: ['devastatrice'], identified: false },
   });
   beforeEach(() => {
     useGame.setState({
@@ -46,7 +46,7 @@ describe('assignVictoryGear — équipement attribuable, qualités conservées',
     const it = useGame.getState().party[0].items?.find((x) => /dague/i.test(x.label));
     expect(it).toBeTruthy();
     expect(it!.identified).toBe(false); // flag « non identifié » conservé
-    expect((it!.qualities ?? []).length).toBeGreaterThan(0); // qualité magique conservée
+    expect((it!.qualities ?? []).map((q) => q.id)).toContain('devastatrice'); // qualité magique conservée
     expect(useGame.getState().pendingVictory?.gear?.length).toBe(0); // retiré du butin de l'écran
   });
 

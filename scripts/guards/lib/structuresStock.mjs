@@ -198,6 +198,13 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "arene-projet.json", champ: "effect", signature: "scene,type+…", statut: "divergente", strate: "Référence", occurrences: 13, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "effect", signature: "skill,type+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "effect", signature: "spell,type", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  // Les 18 dons de `giveTrapping` portaient un champ `trapping` LIBELLÉ que `giveTrappingSchema`
+  // (`src/data/schemas/defs-scenes/effets.ts:121`, strictObject) ignore et qu'aucun lecteur ne lit :
+  // demi-migration `7b4e7bbd4` soldée par `scripts/migrations/2026-08-24-give-trapping-label-vers-id.mjs`.
+  // Ces deux formes sont NEUVES au stock parce que la donnée entre enfin dans la strate Référence
+  // (avant la migration elle n'y était pas mesurée du tout : un libellé nu n'ouvre pas de référence).
+  { concept: "reference", dataset: "arene-projet.json", champ: "effect", signature: "trappingId,type", statut: "divergente", strate: "Référence", occurrences: 16, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "arene-projet.json", champ: "effect", signature: "trappingId,type+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "effect", signature: "type+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "material", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 9, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "arene-projet.json", champ: "members", signature: "entityId", statut: "divergente", strate: "Référence", occurrences: 110, lot: "L3 #1463", date: "2026-08-23" },
@@ -616,6 +623,7 @@ export const STRUCTURES_FORMES = [
   { concept: "refs", dataset: "arcane-phenomena.json", champ: "environments", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "refs", dataset: "arcane-phenomena.json", champ: "spellIds", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "refs", dataset: "arene-projet.json", champ: "modes", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "refs", dataset: "arene-projet.json", champ: "qualities", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "refs", dataset: "arene-projet.json", champ: "roomZoneIds", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 12, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "refs", dataset: "arene-projet.json", champ: "spells", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "refs", dataset: "arene-projet.json", champ: "tiles", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-23" },

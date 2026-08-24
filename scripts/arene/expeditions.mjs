@@ -60,14 +60,14 @@ export function makeForet() {
       P(8, 5, 'champignon', {
         label: 'Herbes de sous-bois',
         ...fouille([
-          { type: 'giveTrapping', trapping: 'Racine de terre' },
+          { type: 'giveTrapping', trappingId: 'racine-de-terre' },
           { type: 'journal', text: 'De la racine de terre, fraîche — l’apothicaire du Bourg en redemande.' },
         ]),
       }),
       P(27, 24, 'champignon', {
         label: 'Talus à faxtoryll',
         ...fouille([
-          { type: 'giveTrapping', trapping: 'Faxtoryll' },
+          { type: 'giveTrapping', trappingId: 'faxtoryll' },
           { type: 'journal', text: 'Du faxtoryll sauvage : de quoi étancher une mauvaise plaie.' },
         ]),
       }),
@@ -80,7 +80,7 @@ export function makeForet() {
         label: 'Coffre de la bande',
         ...fouille([
           { type: 'giveMoney', gold: 5 },
-          { type: 'giveTrapping', trapping: 'Rapière', qualities: ['Raffiné'] },
+          { type: 'giveTrapping', trappingId: 'rapiere', qualities: ['raffine'] },
           { type: 'journal', text: 'Le coffre de Bella : 5 co… et une rapière de duelliste, raffinée, prise à quelque noble détroussé.' },
         ]),
       }),
@@ -189,7 +189,7 @@ export function makeMarais() {
       P(5, 23, 'barque', {
         label: 'Barque du tourbier',
         ...fouille([
-          { type: 'giveTrapping', trapping: 'Corde' },
+          { type: 'giveTrapping', trappingId: 'corde' },
           { type: 'giveMoney', silver: 8 },
           { type: 'journal', text: 'La barque du tourbier : une bonne corde et 8 pa dans une boîte à amadou.' },
         ]),

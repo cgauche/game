@@ -240,8 +240,16 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // famille déjà stockée et rangée dans son lot — `ref` id-nu d'un pion de scène (L3, comme les
       // 306 des trois autres scènes), `primitives {material+…}` (L3, comme `walls`/`masses`),
       // `source` absente de `propMaterials.json` (L1d, comme `lightTones.json`).
+      // #1466 T3-b (dons de `giveTrapping`) : deux lignes s'ajoutent au dénominateur, chacune
+      // INSTANCE de la famille déjà stockée `arene-projet.json › effect {<réf>,type}` (`encounter,type`,
+      // `entityId,type`, `scene,type`, `spell,type`…) et rangée dans le MÊME lot L3. Elles n'existaient
+      // pas AVANT la migration parce que le champ portait un LIBELLÉ, qui n'ouvre aucune référence :
+      // c'est la donnée qui ENTRE dans la strate mesurée, pas une dérive de forme.
+      // #1466 T3-b (migration qualités LIBELLÉ→id) : une ligne s'ajoute au dénominateur — le tableau
+      // résolu DEVIENT une forme refs/ids-nus mesurée (ligne nominative `arene-projet.json › qualities`),
+      // rangée dans le MÊME lot L3 : la donnée ENTRE dans la strate, ce n'est pas une dérive de forme.
       ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 15],
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 675],
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 678],
       ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES.length, 6],
       ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 102],
       ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 165],
@@ -303,14 +311,18 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       'L1c #1468': 403,
       'L1d #1469': 66,
       'L2 #1463': 138,
-      'L3 #1463': 392,
+      // +2 : les deux formes `effect {trappingId,type}` de #1466 T3-b (cf. motif au cliquet ci-dessus).
+      // +1 : la forme `qualities` ids-nus de #1466 T3-b (cf. motif au cliquet ci-dessus).
+      'L3 #1463': 395,
       'L4 #1463': 224,
     };
     expect(
       [...parLot].filter(([lot, n]) => n > plafonds[lot]).map(([lot, n]) => `${lot} ${n} > ${plafonds[lot]}`),
       'lot(s) qui ont GONFLÉ — une ligne ne change pas de lot sans revue, et un lot ne grossit pas sans dérive.',
     ).toEqual([]);
-    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(1444);
+    // 1444 → 1446 : les deux mêmes lignes #1466 T3-b (cf. motif au cliquet des sept stocks).
+    // 1446 → 1447 : la ligne `arene-projet.json › qualities` ids-nus (même motif, migration LIBELLÉ→id).
+    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(1447);
   });
 
   it('les ANGLES MORTS ont UNE source : le lexique, recopié nulle part (test, stock, doc)', () => {
