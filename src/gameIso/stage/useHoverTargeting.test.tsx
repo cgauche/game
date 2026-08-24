@@ -7,14 +7,32 @@ import { makeRNG } from '../../engine/dice';
 import { testScene } from '../../scenes/test-fixture';
 import { useGame } from '../../state/store';
 import { startCascade } from '../../state/cascade';
-import { useHoverTargeting } from './useHoverTargeting';
-import { armedIntentPortee, PORTEE_COURSE } from '../../state/localIntent';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { useHoverTargeting, type HoverAim } from './useHoverTargeting';
+import { AimOverlay } from './AimOverlay';
+import type { Dims } from '../../geometry/iso';
+import type { Combatant } from '../../engine/types';
+import { armedIntentPortee, chargeArmee, PORTEE_COURSE } from '../../state/localIntent';
 import { effectiveMovement } from '../../engine/encumbrance';
 import { t } from '../../i18n';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 let root: Root | null = null;
+
+/**
+ * LE CLIC D'UNE SURFACE RÉELLE (curseur clavier/manette) sur une case : `commitCursor` →
+ * `cursorCommitIntent` → la porte partagée des 3 surfaces (`combatantClickActs`) → clic-jeton ou
+ * clic-sol. Jamais `battleClickEntity`/`battleClickTile` en direct : ils court-circuiteraient la porte
+ * même que ces contrats mesurent (un refus non prononcé passerait vert).
+ */
+function cliqueLaCase(pt: { x: number; y: number }) {
+  act(() => {
+    useGame.setState({ combatCursor: { tile: { ...pt } } });
+    useGame.getState().commitCursor();
+    useGame.setState({ combatCursor: null });
+  });
+}
 
 function setup() {
   const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
@@ -133,7 +151,7 @@ describe('useHoverTargeting — modale bloquante (arbitre modal)', () => {
     const empty = { x: active.pos!.x, y: active.pos!.y + 2 };
 
     // Référence : hors modale, la carte répond (réticule sur l'ennemi, piste sur la case vide).
-    expect(probe({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim?.reticle).toBe(true);
+    expect(probe({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim?.tip).toBeTruthy();
     expect(probe(empty).hoverMove).toMatchObject({ kind: 'move' });
     expect(useGame.getState().hoverDelta?.movement).toMatchObject({ status: 'ok' });
 
@@ -158,7 +176,7 @@ describe('useHoverTargeting — modale bloquante (arbitre modal)', () => {
     // Surincantation « +Cible » : le lanceur désigne une cible SUPPLÉMENTAIRE sur la carte (mode overcast).
     useGame.setState({ pendingCast: { casterId: active.id, targetId: active.id, spellId: 'benediction-de-bataille', missile: true, focused: false, result: null, pickingTargets: true } as never });
 
-    expect(probe({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim?.reticle).toBe(true);
+    expect(probe({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim?.tip).toBeTruthy();
   });
 
   /**
@@ -182,17 +200,17 @@ describe('useHoverTargeting — modale bloquante (arbitre modal)', () => {
 });
 
 /**
- * COURSE À ARMER (spec HUD § ARBITRAGE 2026-08-19, école BG3) — le survol DIT LA VÉRITÉ DU CLIC :
- * au-delà de la Marche, le clic-sol est refusé tant que la case Course n'est pas armée, donc le badge
- * porte ce refus (mot du registre) au lieu de promettre « Courir ». La Frénésie, elle, IMPOSE la course
- * (`LDB 21 l.33`) : ce que la règle impose ne s'arme pas, et n'est donc jamais refusé.
+ * COURSE À ARMER (spec HUD § ARBITRAGE 2026-08-19, école BG3) — au-delà de la Marche, le clic-sol est
+ * refusé tant que la case Course n'est pas armée. Le survol, lui, n'affiche QUE le faisable : une case
+ * hors d'atteinte ne se peint pas du tout, et c'est le CLIC qui dit le refus (`refuserGeste`). La
+ * Frénésie IMPOSE la course (`LDB 21 l.33`) : ce que la règle impose ne s'arme pas, et se peint.
  */
-describe('useHoverTargeting — au-delà de la Marche, le survol porte le refus du clic', () => {
-  beforeEach(() => useGame.setState({ battle: null, hoverDelta: null, localIntent: null }));
+describe('useHoverTargeting — au-delà de la Marche, la case ne se peint pas et le clic dit le refus', () => {
+  beforeEach(() => useGame.setState({ battle: null, hoverDelta: null, localIntent: null, refus: null }));
   afterEach(() => {
     if (root) act(() => root!.unmount());
     root = null;
-    useGame.setState({ localIntent: null });
+    useGame.setState({ localIntent: null, refus: null });
   });
 
   function probeRun(hover: { x: number; y: number }) {
@@ -211,14 +229,26 @@ describe('useHoverTargeting — au-delà de la Marche, le survol porte le refus 
   /** Une case DANS la zone de Course mais HORS de la Marche : le Mouvement du héros, +2 cases. */
   const caseDeCourse = (active: ReturnType<typeof setup>) => ({ x: active.pos!.x + effectiveMovement(active) + 2, y: active.pos!.y });
 
-  it('Course NON armée : le badge dit le refus du registre, sans chemin promis', () => {
+  it('Course NON armée : RIEN au survol — ni badge, ni chemin', () => {
     const active = setup();
-    const refus = probeRun(caseDeCourse(active)).hoverMove;
-    expect(refus).toMatchObject({ kind: 'refus', label: t('cs.refusCourseNonArmee') });
-    expect(refus!.path, 'aucun chemin : le clic ne le parcourra pas').toHaveLength(0);
+    expect(probeRun(caseDeCourse(active)).hoverMove, 'une case que le clic refuserait ne se peint pas').toBeNull();
   });
 
-  it('Course ARMÉE : le badge redevient l’aperçu « Courir »', () => {
+  it('Course NON armée : c’est le CLIC-SOL (surface) qui dit le refus', () => {
+    const active = setup();
+    cliqueLaCase(caseDeCourse(active));
+    expect(useGame.getState().refus?.texte).toBe(t('cs.refusCourseNonArmee'));
+  });
+
+  it('case HORS de toute atteinte (au-delà même de la Course) : rien au survol, refus dit au clic', () => {
+    const active = setup();
+    const tresLoin = { x: active.pos!.x + effectiveMovement(active) * 3 + 4, y: active.pos!.y };
+    expect(probeRun(tresLoin).hoverMove).toBeNull();
+    cliqueLaCase(tresLoin);
+    expect(useGame.getState().refus?.texte).toBe(t('cs.refusCaseHorsPortee'));
+  });
+
+  it('Course ARMÉE : la case se peint — l’aperçu « Courir »', () => {
     const active = setup();
     useGame.setState({ localIntent: { actionId: 'course' } });
     expect(armedIntentPortee(useGame.getState), 'l’action « course » doit armer la portée de Course').toBe(PORTEE_COURSE);
@@ -275,9 +305,100 @@ describe('useHoverTargeting — pendant un interlude piloté par la carte, le su
     });
 
     const aim = probeAim({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim;
-    expect(aim?.reticle, 'la carte est rendue et cliquable : le survol ne peut pas être muet').toBe(true);
-    expect(aim?.tip?.kind).toBe('info');
-    expect(aim?.tip?.kind === 'info' && aim.tip.difficulty, 'le survol dit la Difficulté que la modale dira').toBeDefined();
+    expect(aim, 'la carte est rendue et cliquable : le survol ne peut pas être muet').not.toBeNull();
+    expect(aim?.tip, 'la cible frappable porte sa carte de jet').toBeTruthy();
+    expect(aim?.tip?.difficulty, 'le survol dit la Difficulté que la modale dira').toBeDefined();
+  });
+});
+
+/**
+ * SURVOL STRICT — contrat d'affichage déclaré en tête de `src/state/targetingModes.ts` : le survol
+ * n'affiche QUE le faisable (ennemi à portée = carte de jet au pion, sans verbe de manœuvre ; ennemi
+ * hors d'atteinte = rien du tout), et l'infaisable se dit AU CLIC par la porte unique `refuserGeste`
+ * (`src/state/refusVisible.ts`).
+ */
+describe('useHoverTargeting — le survol n’affiche que le FAISABLE, le refus se dit au clic', () => {
+  beforeEach(() => useGame.setState({ battle: null, hoverDelta: null, localIntent: null, refus: null }));
+  afterEach(() => {
+    if (root) act(() => root!.unmount());
+    root = null;
+    useGame.setState({ localIntent: null, refus: null });
+  });
+
+  function probeAim(hover: { x: number; y: number }) {
+    let result: ReturnType<typeof useHoverTargeting> | undefined;
+    const Probe = () => {
+      result = useHoverTargeting(testScene, hover, true);
+      return null;
+    };
+    root = createRoot(document.createElement('div'));
+    act(() => root!.render(<Probe />));
+    act(() => root!.unmount());
+    root = null;
+    return result!.hoverAim;
+  }
+
+  /** L'ÉCRAN réel : ce que la surcouche peint pour ce survol (même composant que le stage). */
+  function ecran(aim: HoverAim | null) {
+    const battle = useGame.getState().battle!;
+    const dims: Dims = { w: 32, h: 32, rot: 0, view: 'iso' };
+    const anchor = (c: Combatant) => ({ cx: (c.pos?.x ?? 0) * 10, cy: (c.pos?.y ?? 0) * 10 });
+    return renderToStaticMarkup(
+      <svg>
+        <AimOverlay battle={battle} hoverAim={aim} anchor={anchor} dims={dims}
+          pendingAttack={null} pendingDefense={null} pendingTrample={null} pendingHeal={null} pendingCast={null} />
+      </svg>,
+    );
+  }
+
+  /** Un ennemi à 3 cases : hors d'Allonge, dans la portée de Charge (2×M) — les autres, au loin. */
+  function foeAPorteeDeCharge(active: ReturnType<typeof setup>) {
+    const battle = useGame.getState().battle!;
+    const foe = battle.combatants.find((c) => c.kind === 'enemy')!;
+    foe.pos = { x: active.pos!.x + 3, y: active.pos!.y };
+    return foe;
+  }
+
+  it('ennemi HORS D’ATTEINTE (Charge non armée) : aucun réticule, aucune carte — l’écran est muet', () => {
+    const active = setup();
+    const foe = foeAPorteeDeCharge(active);
+    const aim = probeAim({ x: foe.pos!.x, y: foe.pos!.y });
+    expect(aim, 'le survol d’une cible que le clic refuserait n’affiche RIEN').toBeNull();
+    expect(ecran(aim), 'ni chip d’erreur, ni réticule').toBe('<svg></svg>');
+  });
+
+  it('le CLIC sur ce même ennemi dit le refus (porte unique `refuserGeste`)', () => {
+    const active = setup();
+    const foe = foeAPorteeDeCharge(active);
+    expect(probeAim({ x: foe.pos!.x, y: foe.pos!.y }), 'témoin : le survol s’est bien tu').toBeNull();
+    cliqueLaCase(foe.pos!);
+    expect(useGame.getState().refus?.texte).toBe(t('cs.refusApprocheNonArmee', { name: foe.label }));
+  });
+
+  it('ennemi À PORTÉE : carte de jet au pion (cible, arme, compétence), SANS verbe de manœuvre', () => {
+    const active = setup();
+    const foe = foeAPorteeDeCharge(active);
+    foe.pos = { x: active.pos!.x + 1, y: active.pos!.y }; // adjacent : la frappe se fait sur place
+    const aim = probeAim({ x: foe.pos!.x, y: foe.pos!.y });
+    expect(aim?.tip, 'une cible frappable porte sa carte de jet').toBeTruthy();
+    const html = ecran(aim);
+    expect(html).toContain(foe.label);
+    expect(html, 'aucun verbe de manœuvre sur la carte').not.toContain('Charge');
+    expect(html, 'aucun verbe de manœuvre sur la carte').not.toContain('Rejoindre');
+  });
+
+  it('Charge ARMÉE : le chemin est tracé et la carte s’affiche — toujours sans verbe', () => {
+    const active = setup();
+    const foe = foeAPorteeDeCharge(active);
+    useGame.setState({ localIntent: { actionId: 'charge' } });
+    expect(chargeArmee(useGame.getState), 'l’action « charge » doit armer la portée de Charge').toBe(true);
+    const aim = probeAim({ x: foe.pos!.x, y: foe.pos!.y });
+    expect(aim?.path?.length, 'le chemin réel de la Charge est tracé').toBeGreaterThan(1);
+    const html = ecran(aim);
+    expect(html).toContain('<polyline');
+    expect(html).toContain(foe.label);
+    expect(html, 'le chemin dit déjà la manœuvre : la carte ne la nomme plus').not.toContain('Charge');
+    expect(html).not.toContain('Rejoindre');
   });
 });
 

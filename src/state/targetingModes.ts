@@ -6,6 +6,11 @@
  * l'aiguilleur. Les facettes (réticule au survol / cibles Tab-curseur / commit) qui vivaient à
  * trois endroits (targeting.ts, combatSlice.ts, la surcouche de plateau) sont ICI, unifiées.
  *
+ * CONTRAT D'AFFICHAGE (arbitrage utilisateur 2026-08-24, verbatim : « Dans RT, mettre sa souris sur un
+ * ennemi ou une case hors porté ca n'affiche rien de particulier ») : LE SURVOL N'AFFICHE QUE LE
+ * FAISABLE — une affordance `ok` porte le réticule et la carte de jet, une affordance `invalid` ne
+ * rend RIEN. L'INFAISABLE SE DIT AU CLIC, par `refuserGeste` (`state/refusVisible`), au point du geste.
+ *
  * Module FEUILLE : importe combatFlow/targeting-helpers, n'est importé par AUCUN d'eux côté
  * combatFlow (zéro cycle d'exécution via le moteur de combat) — consommé par targeting.ts,
  * combatSlice.ts, combatCursor.ts, combatOrParty.ts.
@@ -13,8 +18,8 @@
 import type { Get, Set } from './flowTypes';
 import type { Combatant, Weapon } from '../engine/types';
 import type { DifficultyShown } from '../engine/combat';
-import { attackTestLabel, isHelplessTarget } from '../engine/combat';
-import { castInfo, isMagicMissile, missileDamage, spellRangeTiles } from '../engine/magic';
+import { attackTestLabel, isHelplessTarget, rangeBandModifier } from '../engine/combat';
+import { castInfo, isMagicMissile, missileDamage } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { effectiveRange } from '../engine/weaponDamage';
 import { isOutOfAction, canTakeAction, hasCondition, COND } from '../engine/conditions';
@@ -28,6 +33,7 @@ import { findSpellById } from '../data';
 import { isStructure, structureImmune } from '../engine/structures';
 import { overcastSourceOf } from '../engine/overcast';
 import { tileKey, type Pt } from './path';
+import { sceneMetresPerTile } from './scene';
 import { combatDistance } from './footprint';
 import { targetArc } from './fireArc';
 import { bearingPostes } from './shipBattery';
@@ -44,31 +50,29 @@ import { ev } from './combatLog';
 import { refuserGeste } from './refusVisible';
 import { chargeArmee } from './localIntent';
 import { t } from '../i18n';
+import type { PlayerText } from '../i18n/playerText';
 import { bus, EVT } from './bus';
 import type { GameState } from './store';
 import { chebyshev } from '../engine/grid';
 import {
-  attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption,
+  attackPlan, previewAttack, previewCast, selectedAttackOption,
   trampleTarget, auContactEligible, grappleActionEligible, firedAttackBlock,
   displaceSmaller, fearedSourceTowards, frenzyTarget, applyZoneCrossings, noteApproachMove,
   placingZoneOf, placedZoneValidAt, commitPlacedZone, overcastTargetCandidates,
   cleaveTargets, dualStrikeTargets, castZoneSpell, castSpell, spellSightOf, openAttackCascade,
-  captureMoveSnapshot, firedWeapon, difficultyOf, activeCombatant, type AttackPreview, type AttackOption,
+  captureMoveSnapshot, firedWeapon, difficultyOf, activeCombatant, castTargetBlock, type AttackPreview, type AttackOption,
 } from './combatFlow';
 
 export type HoverTargeting =
   | { kind: 'none' }
-  /** Cible refusée au clic — `engaged` = mêlée verrouillée par l'Engagement (Désengagement requis) ;
-   *  `unloaded` = arme à Recharge non chargée (recharger d'abord) ; `noammo` = plus de munition ;
-   *  `sous-effectif` = machine de guerre ADE II sous la moitié de l'Équipe requise (ch.08 l.233) ;
-   *  `approche-non-armee` = hors de portée ET la Charge n'est pas armée (spec HUD § 2026-08-19) : le clic
-   *  REFUSERAIT, l'affordance le dit au lieu de promettre une Charge que le clic ne fera pas.
-   *  `sans-sort-dissipable` = mode Dissiper armé, mais la cible survolée ne porte aucun Sort permanent
-   *  (LDB 46 l.158-162) : le clic ne ferait rien — l'affordance le DIT au lieu de rester muette. */
-  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min' | 'armeBannie' | 'approche-non-armee' | 'sans-sort-dissipable';
-      /** Munition attendue (libellé JOUEUR, `noammo`) — nommée dans l'affordance/tooltip pour dire quoi
-       *  acheter/charger (« Pas de munitions (Boulet et poudre) »). */
-      need?: string }
+  /** Cible refusée au clic — le SURVOL n'en rend RIEN (arbitrage 2026-08-24) : la raison sert au CLIC,
+   *  qui la dit par `refuserGeste`. `engaged` = mêlée verrouillée par l'Engagement (Désengagement
+   *  requis) ; `unloaded` = arme à Recharge non chargée (recharger d'abord) ; `noammo` = plus de
+   *  munition ; `sous-effectif` = machine de guerre ADE II sous la moitié de l'Équipe requise
+   *  (ch.08 l.233) ; `approche-non-armee` = hors de portée ET la Charge n'est pas armée (spec HUD
+   *  § 2026-08-19) ; `sans-sort-dissipable` = mode Dissiper armé, mais la cible ne porte aucun Sort
+   *  permanent (LDB 46 l.158-162). */
+  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min' | 'armeBannie' | 'approche-non-armee' | 'sans-sort-dissipable' }
   | {
       kind: 'ok';
       /** Style de la ligne de visée : pointillée (tir/sort) ou pleine (mêlée, déplacement compris). */
@@ -88,8 +92,6 @@ export type HoverTargeting =
       dmg: number | null;
       /** Chemin RÉEL du déplacement combiné (Charge / rejoindre) — tracé au survol à la place de la ligne droite. */
       path?: { x: number; y: number }[];
-      /** Nature de la manœuvre combinée (« Charge (+1 Avantage) », « Rejoindre + attaquer ») — info de décision. */
-      note?: string;
       /** Difficulté que dira le jet de ce geste (`difficultyOf` sur l'aperçu qui a fait `base`/`mod`) :
        *  le cran de l'échelle, ou le modificateur combiné quand elle n'en atteint aucun. */
       difficulty?: DifficultyShown;
@@ -220,17 +222,33 @@ export function spellAffinity(spell: NonNullable<ReturnType<typeof findSpellById
 // Affordances (réticule au survol) — corps DÉPLACÉS verbatim des branches de hoverTargeting
 // ───────────────────────────────────────────────────────────────────────────
 
+/**
+ * BORDÉE — ce qui EMPÊCHE la volée sur cette cible, ou `null`. MESURE UNIQUE : le survol en tire son
+ * `invalid` (rien ne s'affiche) et le commit (`battleShipBattery`) en tire son refus DIT — sans elle, le
+ * clic tirait hors de portée (aucun gate au commit) et l'arc ne se disait qu'au journal.
+ */
+export function batteryBlock(get: Get, ship: Combatant, target: Combatant): { reason: 'arc' | 'range'; detail: PlayerText } | null {
+  const side = targetArc(get().facing[ship.id] ?? 'N', ship.pos!, target.pos!);
+  const postes = bearingPostes(ship, side); // sur ce bord ET chargées (pas en cours de recharge, ch.12)
+  if (!postes.length) return { reason: 'arc', detail: t('cs.bordeeNoArc', { ship: ship.label, side }) };
+  // PORTÉE : les BANDES du socle (`rangeBandModifier` → `RANGE_BANDS`, LDB 62 l.198-206 — Extrême =
+  // Portée ×3). En deçà, le tir passe AVEC son modificateur de bande ; au-delà seulement, refus. Jamais
+  // un seuil écrit ici : la pièce la plus longue du bord donne la Portée moyenne, le socle fait le reste.
+  const mpt = sceneMetresPerTile(get().scene);
+  const gbf = () => bonus(effectiveChar(ship, 'force')); // paresseux : la portée navale est fixe (number) → BF jamais évalué
+  const maxRange = Math.max(...postes.map((p) => effectiveRange(p.item.range, gbf) ?? 0)); // mètres — la plus longue pièce du bord
+  if (maxRange && rangeBandModifier(combatDistance(ship, target), maxRange, mpt) == null)
+    return { reason: 'range', detail: t('cs.refusBordeeHorsPortee', { ship: ship.label }) };
+  return null;
+}
+
 /** Mode BORDÉE (navire) : le bord qui porte est dérivé de la cible (`targetArc`) ; réticule si une pièce
- *  du bord porte ET la cible est à portée. 'arc' = aucune pièce sur ce bord ; 'range' = hors de portée. */
+ *  du bord porte ET la cible est à portée (`batteryBlock`, même mesure qu'au commit). */
 function batteryAffordance(get: Get, active: Combatant, target: Combatant): HoverTargeting {
   if (target.kind === active.kind || isOutOfAction(target)) return { kind: 'none' };
+  const block = batteryBlock(get, active, target);
+  if (block) return { kind: 'invalid', reason: block.reason };
   const side = targetArc(get().facing[active.id] ?? 'N', active.pos!, target.pos!);
-  const postes = bearingPostes(active, side); // sur ce bord ET chargées (pas en cours de recharge)
-  if (!postes.length) return { kind: 'invalid', reason: 'arc' };
-  const mpt = get().scene?.metresPerTile ?? 2;
-  const gbf = () => bonus(effectiveChar(active, 'force')); // paresseux : la portée navale est fixe (number) → BF jamais évalué
-  const maxRange = Math.max(...postes.map((p) => effectiveRange(p.item.range, gbf) ?? 0)); // mètres — la plus longue pièce du bord
-  if (maxRange && combatDistance(active, target) * mpt > maxRange) return { kind: 'invalid', reason: 'range' };
   return { kind: 'ok', line: 'dashed', title: `Bordée ${side}`, targetName: target.label, skill: 'Tir de batterie', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
@@ -249,14 +267,10 @@ function castAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
   const allyOk = target.kind === active.kind && !target.dead && !target.outOfRencontre;
   if (!(aff === 'enemy' ? enemyOk : aff === 'ally' ? allyOk : enemyOk || allyOk))
     return { kind: 'none' };
-  if (target.id !== active.id) {
-    // Souffle : la portée suit le TRAIT (BE+20 m), pas le champ Portée — même calcul que castSpell.
-    const range = spell.breathAttack
-      ? Math.max(1, Math.ceil((bonus(effectiveChar(active, 'endurance')) + 20) / 2))
-      : spellRangeTiles(spell.range, active);
-    if (range != null && combatDistance(active, target) > range) return { kind: 'invalid', reason: 'range' };
-    if (castSightBlocked(get, active.pos!, target.pos!)) return { kind: 'invalid', reason: 'los' };
-  }
+  // Portée puis Ligne de Vue : la MÊME mesure que le clic et que `castSpell` (`castTargetBlock`) — une
+  // 2ᵉ écriture ferait diverger ce que le survol montre de ce que le geste fait.
+  const horsAtteinte = castTargetBlock(get, active, spell, target);
+  if (horsAtteinte) return { kind: 'invalid', reason: horsAtteinte.reason };
   const pv = previewCast(active, spell, {
     missile,
     focused: active.focus?.spell === spell.id && active.focus.dr >= (spell.cn ?? 0),
@@ -367,11 +381,11 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
     const p = previewAttack(get, active, target, undefined, { weaponUid: option.weaponUid });
     return { kind: 'invalid', reason: p.blocked ? 'los' : p.kind === 'melee' && isEngaged(active) ? 'engaged' : 'range' };
   }
-  // LE SURVOL DIT LA VÉRITÉ DU CLIC (contrat de ce fichier : « réticule au survol = ce que le clic
-  // commet ») : depuis l'arbitrage du 2026-08-19, un plan d'APPROCHE que la Charge n'a pas armé sera
-  // REFUSÉ au clic — l'affordance porte donc ce refus, au lieu d'annoncer « Charge (+1 Avantage) » et
-  // un chemin que le clic ne parcourra pas. MÊME prédicat qu'au commit (`gesteImpose` y compris) ; le
-  // survol, lui, est un rendu LOCAL : il lit l'intention du client sans passer par les args d'intent.
+  // LE SURVOL N'AFFICHE QUE LE FAISABLE (contrat de ce fichier, arbitrage 2026-08-24) : un plan
+  // d'APPROCHE que la Charge n'a pas armé sera REFUSÉ au clic — l'affordance le déclare donc
+  // INVALIDE (aucun réticule, aucune carte), et c'est le clic qui dit le refus. MÊME prédicat qu'au
+  // commit (`gesteImpose` y compris) ; le survol, lui, est un rendu LOCAL : il lit l'intention du
+  // client sans passer par les args d'intent.
   if (plan.kind !== 'attack' && !isFrenzied(active) && option.cost.action && !chargeArmee(get)) {
     return { kind: 'invalid', reason: 'approche-non-armee' };
   }
@@ -380,7 +394,7 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
   // au lieu d'une attaque qui se solderait par un log silencieux.
   if (plan.kind === 'attack' && !option.freeKind) {
     const block = firedAttackBlock(get, active, target, option.weaponUid);
-    if (block) return { kind: 'invalid', reason: block.reason, ...(block.need ? { need: block.need } : {}) };
+    if (block) return { kind: 'invalid', reason: block.reason };
   }
   // `option.weaponUid` ÉPINGLE l'arme du poste servi pour l'option DÉDIÉE « Servir » (jamais pour 'arme',
   // qui reste auto-choisie parmi les armes PERSONNELLES — `pickAttackWeaponList`/addendum « un intent, une entrée »).
@@ -403,7 +417,6 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
     ...(palier ? { difficulty: palier } : {}),
     dmg: p.dmg, // (gratuite : Dégâts de l'arme tenue = cosmétique ; le chemin/réticule, lui, est exact)
     path: plan.kind === 'attack' ? undefined : plan.path,
-    note: plan.kind === 'charge' ? `Charge${plan.adv ? ' (+1 Avantage)' : ''}` : plan.kind === 'moveAttack' ? 'Rejoindre + attaquer' : undefined,
     // Aperçu de la forme `battle.preview` (tap-1) : le clignotant des jauges lit le MÊME objet.
     preview: plan.kind === 'attack'
       ? { kind: 'attack', targetId: target.id }
@@ -429,8 +442,8 @@ export function dispellableOnCarrier(get: Get, carrierId: string): DispellableSp
 }
 
 /** Mode DISSIPATION (LDB 46 l.158-162) : la cible du clic est le PORTEUR du Sort, jamais un
- *  adversaire à frapper. Un non-porteur porte sa RAISON au réticule (patron `approche-non-armee`) —
- *  sans ce refus dit, le joueur croirait à une cible hors de portée. */
+ *  adversaire à frapper. Un non-porteur est INVALIDE (patron `approche-non-armee`) : le survol se
+ *  tait, et le clic dit sa raison (`DISPEL_MODE.commitCombatant`). */
 function dispelAffordance(get: Get, _active: Combatant, target: Combatant): HoverTargeting {
   if (dispellableOnCarrier(get, target.id).length === 0) return { kind: 'invalid', reason: 'sans-sort-dissipable' };
   return { kind: 'ok', line: 'dashed', title: 'Dissiper', targetName: target.label, skill: 'Langue (Magick)', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
@@ -503,7 +516,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   if (isFrenzied(active)) {
     const ft = frenzyTarget(get, active);
     if (ft && ft.id !== id) {
-      get().log(t('cs.frenzyMustAttack', { name: active.label, foe: ft.label }));
+      refuserGeste(get, set, t('cs.frenzyMustAttack', { name: active.label, foe: ft.label }));
       if (battle.preview) set({ battle: { ...battle, preview: null } });
       return;
     }
@@ -589,7 +602,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
     const feared = battle.fearGate === 'passed' ? null : fearedSourceTowards(battle, active, plan.dest);
     if (feared) {
       if (battle.fearGate === 'failed') {
-        get().log(t('cs.fearNoApproach', { name: active.label, feared: feared.label }));
+        refuserGeste(get, set, t('cs.fearNoApproach', { name: active.label, feared: feared.label }));
         return;
       }
       set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, intent: { kind: 'entity', id, approche: opts?.approche }, result: null }, battle: { ...get().battle!, preview: null } });
@@ -703,6 +716,12 @@ function castClickCommit(get: Get, set: Set, active: Combatant, id: string): voi
   if (!battle || !battle.selectedSpellId) return;
   const target = inBattleId(battle, id);
   if (!target) return;
+  // Cible hors d'atteinte (portée/LdV) : refus DIT au point du geste, et RIEN ne s'ouvre — AVANT le
+  // routage de ZONE, sinon un sort de zone ouvrait sa cascade sans un mot sur une cible que
+  // l'affordance déclarait déjà hors d'atteinte. MÊME mesure que le survol et que `castSpell`.
+  const spell = findSpellById(battle.selectedSpellId);
+  const horsAtteinte = spell ? castTargetBlock(get, active, spell, target) : null;
+  if (horsAtteinte) return void refuserGeste(get, set, horsAtteinte.detail);
   // Sort de ZONE : un token n'est pas une cible (la zone se pose après le jet) → modale.
   if (castZoneSpell(get, set, active, battle.selectedSpellId)) return;
   // L'incantation peut viser un allié, un ennemi ou soi-même.
@@ -840,9 +859,9 @@ const DISPEL_MODE: TargetingMode = {
   id: 'dispel', affordance: dispelAffordance,
   candidates: (get) => (get().battle?.combatants ?? []).filter((c) => dispellableOnCarrier(get, c.id).length > 0),
   electionLocale: dispelParametreADemander,
-  commitCombatant: (get, _set, _active, id) => {
+  commitCombatant: (get, set, _active, id) => {
     const porte = dispellableOnCarrier(get, id);
-    if (porte.length === 0) return;
+    if (porte.length === 0) return void refuserGeste(get, set, t('cs.refusSansSortDissipable'));
     if (dispelParametreADemander(get, id)) { get().dispelSelectCarrier(id); return; }
     get().battleDispelSpell(porte[0].spellId, porte[0].casterId);
   },

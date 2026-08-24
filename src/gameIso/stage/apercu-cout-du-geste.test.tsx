@@ -12,7 +12,6 @@ import { composeAttack, type ModLine } from '../../engine/combat';
 import { difficultyOf, type AttackPreview } from '../../state/combatFlow';
 import { difficultyShownText } from '../../ui/difficultyText';
 import { DIFFICULTY_LABELS, type Combatant, type Weapon } from '../../engine/types';
-import { t } from '../../i18n';
 import type { BattleState } from '../../state/store';
 
 const dims: Dims = { w: 8, h: 8, rot: 0, view: 'iso' };
@@ -78,18 +77,6 @@ describe('le curseur porte ce que le geste fait du Mouvement', () => {
     expect(mouvementLigne(battle(), héros, { kind: 'attack', targetId: 'e1' } as BattleState['preview'])).toBeNull();
   });
 
-  it('un REFUS (Course non armée) dit la raison au point du geste, sans promettre de chemin', () => {
-    const html = renderToStaticMarkup(
-      <svg>
-        <HoverMovePreview
-          move={{ kind: 'refus', path: [], label: t('cs.refusCourseNonArmee') }}
-          at={{ x: 5, y: 0 }} footN={1} dims={dims} lift={() => 0} battle={battle()} activeC={héros}
-        />
-      </svg>,
-    );
-    expect(html).toContain(t('cs.refusCourseNonArmee'));
-    expect(html, 'aucun tracé ni losange d’arrivée : le clic refusera').not.toContain('<polyline');
-  });
 });
 
 describe('l’aperçu tap-1 porte la Difficulté de l’attaque qu’il commettra', () => {

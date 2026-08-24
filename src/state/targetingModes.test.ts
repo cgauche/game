@@ -4,7 +4,10 @@
  * overcastTargetCandidates ; attaque = ennemis via l'affordance par défaut).
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { currentTargetingMode, spellAffinity, TILE_MODES } from './targetingModes';
+import { currentTargetingMode, spellAffinity, TILE_MODES, TARGETING_MODES } from './targetingModes';
+import { combatantClickActs } from './combatOrParty';
+import { cursorCommitIntent } from './combatCursor';
+import { t } from '../i18n';
 import { tilePreviewAt } from './targeting';
 import { runAction } from './actionRegistry';
 import { flyReachable } from './path';
@@ -30,8 +33,17 @@ function combat(over: Record<string, unknown> = {}) {
     turn: 0, round: 1, action: null, selectedSpellId: null, reachable: new Map(),
     movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null, ...over,
   } as never;
-  useGame.setState({ battle, scene: arena(), party: [hero, ally], pendingCleave: null, pendingDualStrike: null, pendingCast: null, pendingAttack: null, pendingSiegeAim: null });
+  useGame.setState({ battle, scene: arena(), party: [hero, ally], pendingCleave: null, pendingDualStrike: null, pendingCast: null, pendingAttack: null, pendingSiegeAim: null, refus: null });
   return { hero, ally, e1, e2 };
+}
+
+/** Le clic d'une SURFACE réelle (curseur clavier/manette) : même porte partagée que la carte et la
+ *  frise (`cursorCommitIntent` → `combatantClickActs` → `battleClickEntity`). Jamais `battleClickEntity`
+ *  en direct — il court-circuiterait justement la porte qu'on mesure. */
+function cliqueParLeCurseur(c: Combatant) {
+  useGame.setState({ combatCursor: { tile: { ...c.pos! }, snappedId: c.id } });
+  useGame.getState().commitCursor();
+  useGame.setState({ combatCursor: null });
 }
 
 describe('currentTargetingMode — aiguilleur unique', () => {
@@ -258,6 +270,25 @@ describe('téléportation — les cases se lisent à la clé de `flyReachable`, 
   }
 });
 
+/**
+ * LA PORTE DE CLIC (`combatantClickActs`, partagée carte/curseur/frise) ne filtre que le HORS-SUJET :
+ * une cible `invalid` PASSE, pour que le commit prononce son refus. Deux garde-fous structurels.
+ */
+describe('porte de clic — elle laisse passer l’infaisable pour qu’il soit DIT', () => {
+  beforeEach(() => { useGame.setState({ battle: null, party: [], refus: null, combatCursor: null }); });
+
+  it('AUCUN mode à `candidates` ne se passe d’affordance (sinon sa cible invalide ne serait jamais jugée)', () => {
+    const sansAffordance = TARGETING_MODES.filter((m) => m.candidates && !m.affordance).map((m) => m.id);
+    expect(sansAffordance, 'un mode à candidates SANS affordance fermerait le clic sur ses non-candidats').toEqual([]);
+  });
+
+  it('sa PROPRE case ne commet rien (mode neutre) : aucun geste, aucun refus', () => {
+    const { hero } = combat();
+    expect(cursorCommitIntent(useGame.getState, { tile: { ...hero.pos! } }), 'se cliquer soi-même n’est pas un geste').toBeNull();
+    expect(useGame.getState().refus).toBeNull();
+  });
+});
+
 describe('spellAffinity — HELPFUL_TARGET_OPS (#131)', () => {
   it("Bénédiction de Sauvagerie (op cible unique critTwice, LDB 41 p.221) → 'ally'", () => {
     const spell = findSpellById('benediction-de-sauvagerie')!;
@@ -315,16 +346,34 @@ describe('DISPEL_MODE — le clic-token élit le PORTEUR, il n’attaque jamais'
     expect(useGame.getState().pendingDispel).toMatchObject({ spellId: 'sort-1', spellCasterId: 'e2', ni: 3 });
   });
 
-  it('cible SANS Sort dissipable : le réticule porte SA raison (affordance-vérité), et le clic ne fait rien', () => {
+  it('cible SANS Sort dissipable : rien au survol, et le clic d’une SURFACE dit son refus', () => {
     const { hero, e1, e2 } = combat({ action: 'dispel' });
     hero.skills.push({ skillId: 'langue', spec: 'magick', advances: 0 } as never);
     porteur(e1, 2);
     const mode = currentTargetingMode(useGame.getState);
-    expect(mode.affordance!(useGame.getState, hero, e2)).toMatchObject({ kind: 'invalid', reason: 'sans-sort-dissipable' });
+    expect(mode.affordance!(useGame.getState, hero, e2), 'invalide = le survol n’affiche rien').toMatchObject({ kind: 'invalid', reason: 'sans-sort-dissipable' });
     expect(mode.affordance!(useGame.getState, hero, e1)).toMatchObject({ kind: 'ok', title: 'Dissiper' });
-    useGame.getState().battleClickEntity('e2');
+    // Le clic passe par la PORTE partagée des 3 surfaces (carte/curseur/frise) : elle doit LAISSER
+    // PASSER une cible invalide, sinon le commit ne prononce jamais son refus.
+    expect(combatantClickActs(useGame.getState, e2), 'la porte de clic ferme la cible : le refus ne se dirait jamais').toBe(true);
+    cliqueParLeCurseur(e2);
+    expect(useGame.getState().refus?.texte).toBe(t('cs.refusSansSortDissipable'));
     expect(useGame.getState().dispelCarrierId).toBeNull();
-    expect(useGame.getState().pendingAttack).toBeNull();
+    expect(useGame.getState().pendingAttack, 'jamais une attaque en mode Dissiper').toBeNull();
+  });
+
+  it('le refus ne CONSOMME rien : ni Action, ni Mouvement, ni Avantage, ni jet ouvert', () => {
+    const { hero, e1, e2 } = combat({ action: 'dispel' });
+    hero.skills.push({ skillId: 'langue', spec: 'magick', advances: 0 } as never);
+    porteur(e1, 2);
+    const avant = { ...useGame.getState().battle! } as unknown as Record<string, unknown>;
+    const avAvantage = hero.advantage;
+    cliqueParLeCurseur(e2);
+    const apres = useGame.getState().battle! as unknown as Record<string, unknown>;
+    expect(useGame.getState().refus?.texte, 'témoin : le refus a bien été prononcé').toBeTruthy();
+    expect([apres.acted, apres.movementUsed, apres.action]).toEqual([avant.acted, avant.movementUsed, avant.action]);
+    expect(hero.advantage).toBe(avAvantage);
+    expect(useGame.getState().pendingCascade, 'aucune fenêtre de jet n’a été ouverte').toBeNull();
   });
 
   it('les CANDIDATS du mode (Tab/curseur) sont les porteurs, pas les ennemis', () => {

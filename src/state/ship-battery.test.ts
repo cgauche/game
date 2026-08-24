@@ -7,6 +7,7 @@ import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { rollCrewRole } from './shipManeuver';
 import { makeRNG } from '../engine/dice';
+import { rangeBandName } from '../engine/combat';
 
 /** Combattant d'équipage minimal (carac d'instance = Dex → valeur prévisible). Calqué sur crew-roles.test.ts. */
 const mk = (chars: Partial<Record<string, number>>, skills: { skillId: string; advances: number; spec?: string }[] = []): Combatant =>
@@ -73,6 +74,35 @@ const enemyHull = (pos = { x: 9, y: 5 }): Combatant =>
   ({ id: 'target', name: 'Caraque', kind: 'enemy', bodyShape: 'vehicule', creatureId: 'knarr', pos,
     characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 40, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 },
     wounds: { current: 90, max: 90, base: 90 }, advantage: 0, conditions: [], weapons: [], armour: { corps: 0 }, skills: [], talents: [], crewIds: [] }) as unknown as Combatant;
+
+/**
+ * PORTÉE D'UNE BORDÉE — les BANDES du socle (`LDB 62 l.198-206` : Bout portant ÷10, Courte ÷2, Moyenne,
+ * Longue ×2, Extrême ×3 ; au-delà = hors de portée). Le clic ne doit refuser QU'au-delà d'Extrême — en
+ * deçà le tir part avec le modificateur de sa bande. Échelle par défaut : 2 m/case.
+ */
+describe('bordée — la portée se juge aux BANDES, jamais à la Portée moyenne (LDB 62 l.198-206)', () => {
+  const canon = 75; // Portée moyenne de la pièce du bord (m) → Longue = 150 m, Extrême = 225 m
+  const monter = (cible: Combatant) => {
+    seedBattleRng(7);
+    useGame.setState({ battle: { combatants: [firingShip(), gunnerPJ(), cible], order: ['ship'], turn: 0, round: 1, acted: false, log: [] } as never, party: [gunnerPJ()], facing: { ship: 'N' }, pendingShipBattery: null, refus: null, scene: null as never });
+  };
+
+  it('120 m (bande LONGUE) : le tir PART — la bande porte son malus, elle ne refuse pas', () => {
+    monter(enemyHull({ x: 5 + 60, y: 5 })); // 60 cases × 2 m = 120 m
+    expect(rangeBandName(60, canon), 'témoin : 120 m avec Portée 75 est bien la bande Longue').toBe('Longue');
+    useGame.getState().battleShipBattery('ship', 'target');
+    expect(useGame.getState().pendingShipBattery, 'un tir à portée Longue doit ouvrir son Test d’équipage').not.toBeNull();
+    expect(useGame.getState().refus).toBeNull();
+  });
+
+  it('230 m (au-delà d’Extrême = 225 m) : refus DIT, aucun Test ouvert', () => {
+    monter(enemyHull({ x: 5 + 115, y: 5 })); // 115 cases × 2 m = 230 m
+    expect(rangeBandName(115, canon), 'témoin : 230 m est hors de toute bande').toBeNull();
+    useGame.getState().battleShipBattery('ship', 'target');
+    expect(useGame.getState().pendingShipBattery, 'aucune volée hors de portée').toBeNull();
+    expect(useGame.getState().refus?.texte, 'et le refus se dit au point du geste').toBeTruthy();
+  });
+});
 
 describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG 14 l.128)', () => {
   it('battleShipBattery ouvre le Test des Artilleurs (bord auto) ; roll ; Feu ! → la coque encaisse', () => {

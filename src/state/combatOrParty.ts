@@ -91,11 +91,13 @@ export function combatantClickActs(get: Get, combatant: Pick<Combatant, 'id'>): 
   if (!active) return false;
   const mode = currentTargetingMode(get);
   if (!mode.commitCombatant) return false; // mode-CASE pur (téléportation) : aucun combattant à cibler
-  if (mode.candidates) return mode.candidates(get, active).some((c) => c.id === combatant.id);
   const target = inBattleId(battle, combatant.id);
   if (!target) return false;
-  // Mode à réticule (attaque/cast/bordée) : la cible est actionnable ⇔ son affordance ≠ 'none' (même
-  // prédicat que le clic). Pose de zone (pas d'affordance, mais un commit) : tout combattant cliqué agit
-  // (sa case sert d'ancre au gabarit).
-  return mode.affordance ? hoverTargeting(get, active, target).kind !== 'none' : true;
+  // La porte ne filtre que le HORS-SUJET (`none`) : une cible que le mode déclare `invalid` PASSE, pour
+  // que son commit prononce le refus (`refuserGeste`) au point du geste — sans quoi le clic serait muet
+  // là où le survol ne montre déjà plus rien. Un refus ne consomme RIEN (contrat de `refusVisible`),
+  // le laisser passer est gratuit. Les `candidates` d'un mode servent au CURSEUR (Tab), jamais à fermer
+  // le clic : un mode sans affordance (pose de zone) retombe sur eux, sinon sur tout combattant cliqué.
+  if (mode.affordance) return hoverTargeting(get, active, target).kind !== 'none';
+  return mode.candidates ? mode.candidates(get, active).some((c) => c.id === combatant.id) : true;
 }

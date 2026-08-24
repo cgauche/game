@@ -1,6 +1,7 @@
 /**
  * Ciblage au SURVOL du stage (memoïsé — previewAttack/LdV/pathTo ne tournent pas à 60 Hz pendant les
- * glissements de token) : réticule + infobulle (`hoverAim`, mêmes prédicats que le clic), combattant
+ * glissements de token) : réticule + carte de jet du FAISABLE (`hoverAim` — une cible que le mode
+ * courant refuse ne rend RIEN, arbitrage 2026-08-24 ; son refus se dit AU CLIC), combattant
  * SOUS le focus (`hoveredId`, miroir frise), aperçus de déplacement (combat `hoverMove` / exploration
  * `explorePath`), grisage hors-LdV (`ghostIds`) et jauges EN DIRECT (hoverDelta).
  * Le curseur clavier/manette (combatCursor) PRIME sur la souris locale (hover) ET sur le survol de
@@ -22,7 +23,6 @@ import { hoverTargeting, tilePreviewAt } from '../../state/targeting';
 import type { DifficultyShown } from '../../engine/combat';
 import { courseArmee } from '../../state/localIntent';
 import { activeCombatant } from '../../state/store';
-import { t } from '../../i18n';
 import { modalBlocksMapHover } from '../../state/mapHover';
 import { mapTargetingActive } from '../../state/targetingHolder';
 import type { RoomPortal } from '../../state/roomPortals';
@@ -34,32 +34,10 @@ export interface HoverAim {
   line: 'dashed' | 'solid' | null;
   /** Chemin RÉEL d'un déplacement combiné (Charge / rejoindre) — tracé à la place de la ligne droite. */
   path?: { x: number; y: number }[];
-  /** Carte d'infobulle : nom / compétence + valeur / palier / dégâts / manœuvre — ou erreur courte. */
-  tip: { kind: 'info'; title: string; targetName: string; skill: string; base: number; mod: number; dmg: number | null; note?: string; difficulty?: DifficultyShown } | { kind: 'err'; text: string } | null;
+  /** Carte de jet : nom de la cible / arme-ou-sort / compétence + valeur / palier / dégâts. */
+  tip: { title: string; targetName: string; skill: string; base: number; mod: number; dmg: number | null; difficulty?: DifficultyShown } | null;
   /** Aperçu synthétisé (forme battle.preview) pour le clignotant des jauges (previewResourceDelta). */
   preview?: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
-  reticle: boolean;
-}
-
-/** Libellé d'erreur d'un survol de cible INVALIDE (source UNIQUE : ciblage normal ET Tir rapide) —
- *  rendu avec l'icône `ui/warning` par l'appelant (carte SVG `AimOverlay`). Pour `noammo`, NOMME la
- *  munition attendue (`need`) — un canon sans boulet dit quoi acheter/charger, pas un cryptique
- *  « Plus de munitions ». */
-function hoverErrText(inv: { reason: string; need?: string }): string {
-  const { reason, need } = inv;
-  return reason === 'los' ? 'pas de ligne de vue'
-    : reason === 'engaged' ? 'Engagé — se désengager'
-    : reason === 'unloaded' ? 'Arme déchargée — recharger'
-    : reason === 'noammo' ? (need ? `Pas de munitions (${need})` : 'Pas de munitions')
-    : reason === 'sous-effectif' ? 'Équipe trop réduite'
-    : reason === 'portee-min' ? 'Cible trop proche — Portée minimale'
-    : reason === 'armeBannie' ? 'Armes à distance interdites (duel judiciaire)'
-    // Le clic-ennemi ne s'approche plus tout seul (spec HUD § ARBITRAGE 2026-08-19) : le réticule dit
-    // ce que le clic FERA — un refus — et par quoi le débloquer, au lieu de promettre une Charge.
-    : reason === 'approche-non-armee' ? 'Hors de portée — armez la Charge'
-    // Mode Dissiper armé : la cible du clic est le PORTEUR d'un Sort permanent (LDB 46 l.158-162).
-    : reason === 'sans-sort-dissipable' ? 'Aucun Sort à dissiper sur cette cible'
-    : 'hors de portée';
 }
 
 export function useHoverTargeting(
@@ -117,15 +95,14 @@ export function useHoverTargeting(
     if (!occ) return null;
     const st = useGame.getState;
     // Tir rapide ARMÉ (interruption hors tour, LDB 10) : la visée suit le TIREUR (`preemptAiming`), pas l'actif —
-    // MÊME `hoverTargeting` que le ciblage normal (réticule + ligne + infobulle + erreurs LdV/portée). Précède
+    // MÊME `hoverTargeting` que le ciblage normal (réticule + ligne + carte de jet du faisable). Précède
     // le verrou « Mon Tour » (la pré-emption a lieu pendant la pause, où il n'y a AUCUN combattant actif).
     if (preemptAiming) {
       const shooter = battle.combatants.find((c) => c.id === preemptAiming);
       if (!shooter?.pos) return null;
       const ht = hoverTargeting(st, shooter, occ);
-      if (ht.kind === 'none') return null;
-      if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht) }, reticle: false };
-      return { fromId: shooter.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note, difficulty: ht.difficulty }, preview: ht.preview, reticle: true };
+      if (ht.kind !== 'ok') return null;
+      return { fromId: shooter.id, toId: occ.id, line: ht.line, path: ht.path, tip: { title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, difficulty: ht.difficulty }, preview: ht.preview };
     }
     // Flux différés (bandeau TargetPrompt — Frappe Mortelle / 2ᵉ frappe / Surincantation +Cible) : le
     // réticule vient du MODE courant (targetingModes via hoverTargeting), AVANT les verrous acted/
@@ -138,7 +115,7 @@ export function useHoverTargeting(
       // enchaînement), et le survol en dit la valeur et la Difficulté. Les modes qui ne jettent rien
       // (cibles de Surincantation) laissent leurs zones à 0 — la carte s'adapte, elle n'invente pas.
       return ht.kind === 'ok'
-        ? { fromId: actor.id, toId: occ.id, line: ht.line, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note, difficulty: ht.difficulty }, reticle: true }
+        ? { fromId: actor.id, toId: occ.id, line: ht.line, tip: { title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, difficulty: ht.difficulty } }
         : null;
     }
     if (!myTurn) return null; // le ciblage NORMAL (ci-dessous) exige Mon Tour ; la pré-emption (ci-dessus) non
@@ -156,9 +133,8 @@ export function useHoverTargeting(
     // Piétinement / zone / mêlée : tout l'aperçu (réticule + chemin + tip) passe par hoverTargeting,
     // qui lit l'`AttackOption` armée (selectedAttack) — plus de branche par mode.
     const ht = hoverTargeting(st, activeH, occ);
-    if (ht.kind === 'none') return null;
-    if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht) }, reticle: false };
-    return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note, difficulty: ht.difficulty }, preview: ht.preview, reticle: true };
+    if (ht.kind !== 'ok') return null;
+    return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, difficulty: ht.difficulty }, preview: ht.preview };
   }, [combatCursor, hover, hoverCombatantId, mode, battle, scene, myTurn, preemptAiming, mapInert, pendingCast, pendingCleave, pendingDualStrike]);
 
   // Combattant SOUS le focus (tuile survolée OU portrait de frise/Tab) — INDÉPENDANT du ciblage
@@ -190,18 +166,17 @@ export function useHoverTargeting(
     return occ ? null : resolveMovement(useGame.getState, effHover);
   }, [combatCursor, hover, mode, battle, myTurn, mapInert, mapTargeting]);
 
-  const hoverMove = useMemo<{ kind: 'move' | 'run' | 'tile' | 'refus'; path: Pt[]; cost?: number; label: string } | null>(() => {
+  const hoverMove = useMemo<{ kind: 'move' | 'run' | 'tile'; path: Pt[]; cost?: number; label: string } | null>(() => {
     if (mode !== 'battle' || !battle || battle.over || !effHover || battle.preview || !myTurn) return null;
     const tp = tilePreviewAt(useGame.getState, effHover);
     if (tp) return { kind: 'tile', path: tp.path ?? [], cost: tp.cost, label: tp.label };
     if (hoverMovementResolution?.status !== 'ok') return null;
-    // LE SURVOL DIT LA VÉRITÉ DU CLIC : au-delà de la Marche, le clic-sol est REFUSÉ tant que la Course
-    // n'est pas armée (mêmes prédicats qu'au commit, `combatSlice` — exemption Frénésie comprise). Le
-    // badge porte alors le refus du REGISTRE, mot pour mot, au lieu de promettre « Courir ».
+    // LE SURVOL N'AFFICHE QUE LE FAISABLE (arbitrage 2026-08-24) : au-delà de la Marche, le clic-sol est
+    // REFUSÉ tant que la Course n'est pas armée (mêmes prédicats qu'au commit, `combatSlice` — exemption
+    // Frénésie comprise), donc la case ne se peint PAS : c'est le clic qui dit le refus.
     if (hoverMovementResolution.kind === 'run') {
       const active = activeCombatant(battle);
-      if (!courseArmee(useGame.getState) && !(active && isFrenzied(active)))
-        return { kind: 'refus', path: [], label: t('cs.refusCourseNonArmee') };
+      if (!courseArmee(useGame.getState) && !(active && isFrenzied(active))) return null;
     }
     return {
       kind: hoverMovementResolution.kind,
@@ -227,7 +202,7 @@ export function useHoverTargeting(
   // l'intention SOUS LA SOURIS — un aperçu de la forme tap-1 est synthétisé du survol et passe par la
   // MÊME source (`previewResourceDelta`). Écrit au store seulement quand le delta CHANGE.
   useEffect(() => {
-    const pvLike = hoverAim?.preview ?? (hoverMove && effHover && hoverMove.kind !== 'tile' && hoverMove.kind !== 'refus' ? { kind: hoverMove.kind, tile: { ...effHover }, path: hoverMove.path, cost: hoverMove.cost } : null);
+    const pvLike = hoverAim?.preview ?? (hoverMove && effHover && hoverMove.kind !== 'tile' ? { kind: hoverMove.kind, tile: { ...effHover }, path: hoverMove.path, cost: hoverMove.cost } : null);
     const delta = pvLike && battle ? previewResourceDelta({ ...battle, preview: pvLike as never }) : null;
     const next = delta
       ? { ...delta, ...(hoverMovementResolution ? { movement: hoverMovementResolution } : {}) }

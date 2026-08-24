@@ -205,7 +205,7 @@ export function SurcoucheIso({
             `mapTargetingActive`) — le réticule/le gabarit du mode prennent alors le relais. */}
         {battle && combatCursor
           && !mapInert && !mapTargeting
-          && !hoverAim?.reticle && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dims} liftAt={liftAt} />}
+          && !hoverAim && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dims} liftAt={liftAt} />}
         {battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dims} lift={liftOf} battle={battle} activeC={activeC} />}
         {mode === 'exploration' && explorePath && (hover || hoveredPortal) && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} walking={anyWalking} />}
         {battle && <TapPreview battle={battle} activeC={activeC} dims={dims} liftAt={liftAt} myTurn={myTurn} difficulty={previewDifficulty} />}

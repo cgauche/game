@@ -4,7 +4,7 @@
  * pas de badge). Tous sur la MÊME source de tracé (movePreviewEls) et la même géométrie (diamondPath +
  * lift métrique) que les autres surbrillances.
  */
-import { Dims, diamondPath, tileCenter } from '../../geometry/iso';
+import { Dims, diamondPath } from '../../geometry/iso';
 import { footprintN, footprintTiles } from '../../state/footprint';
 import { mountOf, movementRemaining } from '../../state/mount';
 import { inBattleId } from '../../state/combatants';
@@ -47,9 +47,10 @@ export function CursorOverlay({ tile, footN, dims, liftAt }: { tile: Pt; footN: 
  *  déplacement NORMAL (Marche/Course) ou mode-CASE du catalogue (Pousser/Téléportation/pose de zone,
  *  `tilePreviewAt` #198) : même primitive de tracé (`movePreviewEls`), `move.label` porte la 1ᵉʳᵉ ligne du
  *  badge (« Aller (N) »/« Courir »/« Pousser (N) »/« Téléporter »/« Poser la zone »), la 2ᵉ disant ce que
- *  le geste fait du Mouvement du Tour (#1411 P2-D). `kind: 'refus'` : le badge ne dit QUE le refus. */
+ *  le geste fait du Mouvement du Tour (#1411 P2-D). Une case que le clic REFUSERAIT n'arrive jamais ici :
+ *  le survol n'affiche que le faisable (arbitrage 2026-08-24), le refus se dit au clic. */
 export function HoverMovePreview({ move, at, footN, dims, lift, battle, activeC }: {
-  move: { kind: 'move' | 'run' | 'tile' | 'refus'; path: Pt[]; cost?: number; label: string };
+  move: { kind: 'move' | 'run' | 'tile'; path: Pt[]; cost?: number; label: string };
   at: Pt;
   footN: number;
   dims: Dims;
@@ -57,12 +58,6 @@ export function HoverMovePreview({ move, at, footN, dims, lift, battle, activeC 
   battle?: BattleState;
   activeC?: Combatant;
 }) {
-  // REFUS (Course non armée) : le badge dit la raison AU POINT DU GESTE et rien d'autre — ni chemin ni
-  // losange d'arrivée, qui promettraient un déplacement que le clic refusera (`state/refusVisible`).
-  if (move.kind === 'refus') {
-    const c0 = tileCenter(at.x, at.y, dims, lift(at));
-    return <text x={c0.cx} y={c0.cy - 28} textAnchor="middle" className="pv-badge" pointerEvents="none">{move.label}</text>;
-  }
   // Le geste survolé est un aperçu de la MÊME forme que le tap-1 : il passe par la même source de coût.
   const pv = battle && move.kind !== 'tile' ? { kind: move.kind, tile: at, path: move.path, cost: move.cost ?? 0 } : null;
   const mouvement = battle && pv ? mouvementLigne(battle, activeC, pv as BattleState['preview']) : null;

@@ -9,6 +9,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent } from './combatCursor';
 import { useGame } from './store';
+import { t } from '../i18n';
 import { makePregens } from '../data/pregens';
 import { spawnEnemy } from './spawn';
 import type { Dims } from '../geometry/iso';
@@ -218,7 +219,7 @@ describe('moveCursor/commitCursor en mode-CASE (belier-porte, #198 résidus) —
     expect(useGame.getState().battle!.reachable.has(`${cur!.tile.x},${cur!.tile.y}`)).toBe(true); // jamais hors ensemble valide
   });
 
-  it("Entrée sur une case NON commettable en mode-CASE prévient (log), jamais muet", () => {
+  it('Entrée sur une case NON commettable en mode-CASE dit son refus À L’ÉCRAN, jamais muet', () => {
     const hero = makePregens()[0]; hero.id = 'h1'; hero.pos = { x: 6, y: 10 };
     const door = spawnEnemy('Bandit de Grand Chemin', undefined, 'door', { x: 7, y: 10 });
     const battle = {
@@ -226,9 +227,10 @@ describe('moveCursor/commitCursor en mode-CASE (belier-porte, #198 résidus) —
       selectedSpellId: null, reachable: new Map(), // AUCUNE case de reach : (7,10) reste occupée/non commettable
       movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
     };
-    useGame.setState({ battle: battle as never, scene: arena(), party: [hero], inspectEnabled: false, combatCursor: { tile: { x: 7, y: 10 } }, journal: [] });
-    const before = useGame.getState().journal.length;
+    useGame.setState({ battle: battle as never, scene: arena(), party: [hero], inspectEnabled: false, combatCursor: { tile: { x: 7, y: 10 } }, journal: [], refus: null });
     useGame.getState().commitCursor();
-    expect(useGame.getState().journal.length).toBe(before + 1); // feedback explicite, jamais un no-op silencieux
+    // Le refus se dit AU POINT DU GESTE (`state/refusVisible`) : en combat, le journal n'est pas
+    // affiché — un feedback qui n'y va QUE serait muet pour le joueur.
+    expect(useGame.getState().refus?.texte).toBe(t('cs.cursorInvalidTile'));
   });
 });

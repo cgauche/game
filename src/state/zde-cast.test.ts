@@ -9,6 +9,7 @@ import { pregen, PREGEN } from '../data/pregens';
 import { spawnEnemy } from './spawn';
 import { zdeDiameterMeters, zdeRadiusTiles, spellRangeTiles } from '../engine/magic';
 import { findSpell } from '../data';
+import { currentTargetingMode } from './targetingModes';
 import type { Combatant } from '../engine/types';
 
 function wiz() {
@@ -38,7 +39,7 @@ describe('parsing ZdE / portée (engine/magic)', () => {
 
 describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.15/28)', () => {
   beforeEach(() => {
-    useGame.setState({ battle: null, party: [], journal: [], pendingCast: null });
+    useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, refus: null, combatCursor: null });
     useGame.getState().seedRng(17);
   });
 
@@ -61,6 +62,32 @@ describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.15/28)', () => {
 
   /** Jet RÉUSSI posé directement (déterminisme) — sl au choix pour piloter le budget de Surincantation. */
   const okCast = (sl: number) => ({ cast: true, roll: 11, target: 70, sl, isCritical: false, isFumble: false, log: 'lancé' });
+
+  /** Le clic d'une SURFACE réelle (curseur clavier/manette) : même porte partagée que la carte et la
+   *  frise. Jamais `battleClickEntity` en direct — il sauterait la porte qu'on mesure. */
+  function cliqueParLeCurseur(pt: { x: number; y: number }) {
+    useGame.setState({ combatCursor: { tile: { ...pt } } });
+    useGame.getState().commitCursor();
+    useGame.setState({ combatCursor: null });
+  }
+
+  /**
+   * SORT DE ZONE HORS D'ATTEINTE — le survol ne montre rien (`invalid`), et le clic ne doit RIEN ouvrir
+   * en silence : le gate de portée/LdV (`castTargetBlock`) précède le routage de zone, sinon la cascade
+   * partait sans un mot sur une cible que l'affordance déclarait déjà hors d'atteinte.
+   */
+  it('cible HORS de portée : rien au survol, aucune cascade ouverte au clic, et le refus est DIT', () => {
+    const { w, e3 } = setupBattle();
+    w.characteristics['force-mentale'] = 20; // portée du sort = FM mètres → 10 cases
+    e3.pos = { x: 19, y: 19 }; // 17 cases depuis (2,2) : au-delà de la portée
+    useGame.setState({ refus: null });
+    const mode = currentTargetingMode(useGame.getState);
+    expect(mode.id).toBe('cast');
+    expect(mode.affordance!(useGame.getState, w, e3), 'invalide = le survol n’affiche rien').toMatchObject({ kind: 'invalid' });
+    cliqueParLeCurseur(e3.pos);
+    expect(useGame.getState().pendingCast, 'une zone ne s’ouvre PAS sur une cible hors d’atteinte').toBeNull();
+    expect(useGame.getState().refus?.texte, 'le refus se dit au point du geste').toBeTruthy();
+  });
 
   it('tout clic (case ou token) OUVRE la modale sans centre ; la pose touche tous ceux du rayon FINAL', () => {
     const { w, e1, e2, e3 } = setupBattle();

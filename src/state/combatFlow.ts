@@ -1554,16 +1554,16 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
     ?? assertAttackWeapon(active.weapons, false);
   if (!opts?.forceMelee && decisive.type === 'ranged') {
     const p = previewAttack(get, active, target, undefined, { weaponUid: opts?.weaponUid });
-    if (p.blocked) return { kind: 'blocked', reason: 'Pas de ligne de vue (cible masquée).' };
-    if (!p.inRange) return { kind: 'blocked', reason: 'Cible hors de portée.' };
+    if (p.blocked) return { kind: 'blocked', reason: tr('cf.noLoSMasked') };
+    if (!p.inRange) return { kind: 'blocked', reason: tr('cf.outOfRange') };
     return { kind: 'attack' };
   }
   // Mêlée hors d'Allonge :
   // Une STRUCTURE (ADE II 8) est inanimée : pas de Charge ni d'approche-puis-frappe implicite (la
   // frapper est une ACTION délibérée, sans +1 Avantage ni `fromCharge` qui bloquerait « Renoncer »).
   // On refuse → le joueur s'approche par un clic-sol normal (undoable), puis frappe une fois au contact.
-  if (isInanimate(target)) return { kind: 'blocked', reason: 'Approche-toi pour la frapper.' };
-  if (isEngaged(active)) return { kind: 'blocked', reason: 'Engagé : se désengager avant de rejoindre une autre cible.' };
+  if (isInanimate(target)) return { kind: 'blocked', reason: tr('cf.approcheToiPourFrapper') };
+  if (isEngaged(active)) return { kind: 'blocked', reason: tr('cf.desengageAvantDeRejoindre') };
   const env = moveEnv(battle, geom);
   if (battle.movementUsed === 0 && !hasCondition(active, COND.aTerre)) {
     // Charge (LDB 15 l.35-37) : manœuvre PLEINE, portée de Course (2M × Bond/Foulée), arrivée
@@ -1571,13 +1571,13 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
     const M = mountMovement(battle, active);
     const reach = moveReachFor(geom, scene, active.pos!, chargeReach(M, runMultiplier(geom.traits)), env);
     const dest = bestAdjacentReachable(reach, target.pos!, footprintN(target), footprintN(geom));
-    if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de Charge.' };
+    if (!dest) return { kind: 'blocked', reason: tr('cf.chargeHorsPortee') };
     return { kind: 'charge', dest, path: pathTo(scene, active.pos!, dest, env) ?? [], adv: chargeAdvantage(M, footprintChebyshev(active.pos!, footprintN(geom), target.pos!, footprintN(target))) };
   }
   // Mouvement entamé (ou À Terre) : rejoindre dans la Marche restante.
   const reach = displayedReach(get);
   const dest = bestAdjacentReachable(reach, target.pos!, footprintN(target), footprintN(geom));
-  if (!dest) return { kind: 'blocked', reason: 'Cible hors de portée de mêlée.' };
+  if (!dest) return { kind: 'blocked', reason: tr('cs.meleeOutOfRange') };
   return { kind: 'moveAttack', dest, path: pathTo(scene, active.pos!, dest, env) ?? [], cost: reach.get(`${dest.x},${dest.y}`)! };
 }
 
@@ -4108,6 +4108,25 @@ export function finishPlayerAction(get: Get, set: SetFn, lines: string[], kind: 
  *  dans le FEED de combat (`battle.log`) — là où le joueur lit — au lieu du `journal` d'exploration
  *  (invisible pendant le combat). Hors combat (incantation hors combat, couture D), repli sur le
  *  journal. Sans ça, un cast refusé faisait un « clic muet » qui passait pour un bug (B4). */
+/**
+ * Ce qui met la CIBLE hors d'atteinte d'un Sort (portée LDB 47, puis Ligne de Vue LDB 46 l.121 :
+ * « vous devez toujours être capable de voir […] votre cible » — binaire, pas de malus de couvert),
+ * ou `null`. MESURE UNIQUE : `castSpell` la journalise (héros ET IA) et le CLIC du joueur
+ * (`castClickCommit`) la DIT au point du geste. `range` null = portée non chiffrable (« le lanceur »,
+ * « au toucher », spécial) → pas de gate. Un Souffle suit le TRAIT (BE+20 m, LDB 85), pas le champ Portée.
+ */
+export function castTargetBlock(get: Get, caster: Combatant, spell: SpellData, target: Combatant): { reason: 'range' | 'los'; detail: PlayerText } | null {
+  if (!get().battle || !caster.pos || !target.pos || caster.id === target.id) return null;
+  const range = spell.breathAttack
+    ? Math.max(1, Math.ceil((bonus(effectiveChar(caster, 'endurance')) + 20) / 2))
+    : spellRangeTiles(spell.range, caster);
+  if (range != null && combatDistance(caster, target) > range)
+    return { reason: 'range', detail: tr('cf.castOutOfRange', { spell: spell.label, range }) };
+  if (castSightBlocked(get, caster.pos, target.pos))
+    return { reason: 'los', detail: tr('cf.noLineOfSight', { spell: spell.label }) };
+  return null;
+}
+
 export function castRefused(get: Get, set: SetFn, actor: Combatant, msg: string): void {
   const battle = get().battle;
   if (battle) set({ battle: { ...battle, log: [...battle.log, ev('cast', msg, actor.id)] } });
@@ -4150,22 +4169,10 @@ export function castSpell(
   // Sort « Souffle » (LDB 47 p.244) : délégué à l'attaque de ZONE du Trait — la portée suit le
   // TRAIT (BE+20 m, LDB 85), pas le champ Portée du sort ; résolu comme zone, pas comme Projectile.
   const breathSpell = !!spell.breathAttack;
-  // Portée (LDB 47) : cible directe hors de portée du sort → refus AVANT la modale (parité ZdE/tir).
-  // `range` null = portée non chiffrable (« le lanceur », « au toucher », spécial) → pas de gate.
-  if (get().battle && caster.pos && target.pos && caster.id !== target.id) {
-    const range = breathSpell
-      ? Math.max(1, Math.ceil((bonus(effectiveChar(caster, 'endurance')) + 20) / 2))
-      : spellRangeTiles(spell.range, caster);
-    if (range != null && combatDistance(caster, target) > range) {
-      castRefused(get, set, caster, tr('cf.castOutOfRange', { spell: spell.label, range }));
-      return;
-    }
-    // Ligne de Vue (LDB 46 l.121 : « vous devez toujours être capable de voir […] votre cible ») —
-    // buff sur allié compris ; binaire, pas de malus de couvert pour un Sort. Couvre héros ET IA.
-    if (castSightBlocked(get, caster.pos, target.pos)) {
-      castRefused(get, set, caster, tr('cf.noLineOfSight', { spell: spell.label }));
-      return;
-    }
+  const horsAtteinte = castTargetBlock(get, caster, spell, target);
+  if (horsAtteinte) {
+    castRefused(get, set, caster, horsAtteinte.detail);
+    return;
   }
   const focusedNI0 = caster.focus?.spell === spell.id && caster.focus.dr >= (spell.cn ?? 0);
   set({

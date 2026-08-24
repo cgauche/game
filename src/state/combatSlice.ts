@@ -38,7 +38,8 @@ import { ev, evLines } from './combatLog';
 import { viewYawDeg } from './stageYaw';
 import { chargeArmee, courseArmee } from './localIntent';
 import { refuserGeste } from './refusVisible';
-import { t } from '../i18n';
+import type { MovementBlockReason } from './combatFlow';
+import { t, type MsgKey } from '../i18n';
 import { combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, backstabWeapon, attackHandGate, type DefenseMode } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, meleeReachRank } from '../engine/engagement';
 import { areGrappling, clearGrapple } from '../engine/grapple';
@@ -99,7 +100,7 @@ import { actorIn, inBattleId } from './combatants';
 import { controlsCombatant, pilotedByHuman, defenseSurfaced, influencesLocally, quorumAtteint } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
-import { currentTargetingMode, type BattleClickOpts, type TileClickOpts } from './targetingModes';
+import { batteryBlock, currentTargetingMode, type BattleClickOpts, type TileClickOpts } from './targetingModes';
 import { resolveRecoverTest } from './combat/recover';
 import { resolveRenounce } from './corruptionFlow';
 import { toMoney } from '../engine/money';
@@ -347,6 +348,16 @@ function rollAllOwnedRows(
 ): void {
   for (const p of rows ?? []) if (!p.result && p.interactive && influencesLocally(s, p.id)) roll(p.id);
 }
+
+/** Ce qu'un clic-sol REFUSÉ dit au joueur, par raison du résolveur (`resolveMovement`). Les raisons
+ *  ABSENTES sont des verrous structurels (pas de combat/scène, ciblage armé, tour d'un autre joueur,
+ *  Engagement — routé vers le Désengagement avant d'arriver ici) : elles ne répondent à aucun geste, et
+ *  ne disent donc rien. */
+const REFUS_DEPLACEMENT: Partial<Record<MovementBlockReason, MsgKey>> = {
+  'out-of-range': 'cs.refusCaseHorsPortee',
+  'movement-spent': 'cs.refusMouvementEpuise',
+  'no-path': 'cs.refusAucunChemin',
+};
 
 /** Actions de combat inline du store — déplacées VERBATIM. Spreadées EN TÊTE du `create`. */
 export function createCombatSlice(get: Get, set: Set) {
@@ -889,6 +900,12 @@ export function createCombatSlice(get: Get, set: Set) {
       const dest = pt;
       const movement = resolveMovement(get, dest);
       if (movement.status === 'blocked') {
+        // Le clic-sol REFUSÉ le DIT (modèle de gestes 2026-08-19 ; le survol, lui, ne peint plus rien sur
+        // une case injouable — arbitrage 2026-08-24). Seules les raisons qui répondent à un GESTE du
+        // joueur parlent : les verrous structurels (pas de combat, ciblage armé, tour d'autrui) ne sont
+        // pas des refus, ils n'ont rien à dire. Table locale à UN consommateur (ce site est le clic-sol).
+        const dit = REFUS_DEPLACEMENT[movement.reason];
+        if (dit) refuserGeste(get, set, t(dit));
         if (battle.preview) {
           set({ battle: { ...battle, preview: null }, hoverDelta: null });
           bus.emit(EVT.SCENE_DIRTY);
@@ -903,7 +920,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const feared = fearedSourceTowards(battle, active, dest);
         if (!feared) return false;
         if (battle.fearGate === 'failed') {
-          get().log(t('cs.fearNoApproach', { name: active.label, feared: feared.label }));
+          refuserGeste(get, set, t('cs.fearNoApproach', { name: active.label, feared: feared.label }));
           return true;
         }
         // On rejoue le clic BRUT (`pt`) après le Test (l.962) → `battleClickTile` re-résout l'escalier
@@ -919,7 +936,7 @@ export function createCombatSlice(get: Get, set: Set) {
         if (!isFrenzied(active)) return false;
         const ft = frenzyTarget(get, active);
         if (!ft?.pos || chebyshev(dest, ft.pos) < chebyshev(active.pos!, ft.pos)) return false;
-        get().log(t('cs.frenzyMustCharge', { name: active.label, foe: ft.label }));
+        refuserGeste(get, set, t('cs.frenzyMustCharge', { name: active.label, foe: ft.label }));
         return true;
       };
       const geom = mountOf(battle, active) ?? active;
@@ -1031,10 +1048,10 @@ export function createCombatSlice(get: Get, set: Set) {
       const intent = cursorCommitIntent(get, cur);
       if (!intent) {
         // Mode-CASE (#198, résidus) : un commit qui tombe malgré tout sur une case non commettable
-        // (occupant sans action pour ce mode) prévient — jamais muet — même mécanisme que les autres
-        // refus d'action (`get().log`), pas un nouveau système. Hors mode-case : no-op voulu (allié
-        // sans Inspection, cf. combatCursor.test.ts).
-        if (currentTargetingMode(get).tileValidAt) s.log(t('cs.cursorInvalidTile'));
+        // (occupant sans action pour ce mode) prévient — jamais muet — par la porte de refus commune
+        // (`refusVisible` : le journal n'est pas affiché en combat). Hors mode-case : no-op voulu
+        // (allié sans Inspection, cf. combatCursor.test.ts).
+        if (currentTargetingMode(get).tileValidAt) refuserGeste(get, set, t('cs.cursorInvalidTile'));
         return;
       }
       if (intent.kind === 'entity') s.battleClickEntity(intent.id, { confirm: true });
@@ -1406,9 +1423,11 @@ export function createCombatSlice(get: Get, set: Set) {
       const ship = inBattleId(battle, shipId);
       const target = inBattleId(battle, targetId);
       if (!ship || !target || !ship.pos || !target.pos) return;
+      // ARC et PORTÉE jugés AU COMMIT, par la MÊME mesure que le survol (`batteryBlock`) : sans elle, le
+      // clic tirait hors de portée, et l'arc ne se disait qu'au journal — invisible en combat.
+      const block = batteryBlock(get, ship, target);
+      if (block) return void refuserGeste(get, set, block.detail);
       const side = targetArc(get().facing[ship.id] ?? 'N', ship.pos, target.pos); // bord qui porte (auto-dérivé de la cible)
-      const postes = bearingPostes(ship, side); // sur ce bord ET chargées (pas en cours de recharge, ch.12)
-      if (!postes.length) { get().log(t('cs.bordeeNoArc', { ship: ship.label, side })); return; }
       const opened = openCrewTestPending(get, ship, 'batterie'); // Artilleurs (UN jet/poste)
       if (!opened) return; // aucun Artilleur apte → pas de bordée
       set({
@@ -1744,11 +1763,15 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!hero || !controlsCombatant(get(), hero) || !canPreemptRanged(hero) || hero.loseNextAction) return; // 1 interruption / Round (loseNext = déjà tiré)
       if (!target || target.kind === hero.kind || isOutOfAction(target)) return;
       // Cible VALIDE seulement (arme à distance + bande de portée + Ligne de Vue) — sinon on N'OUVRE PAS la
-      // modale (le tir résolu hors-tour heurterait la cascade). Le journal explique le refus.
+      // modale (le tir résolu hors-tour heurterait la cascade). Le refus se DIT au point du geste
+      // (`refusVisible`) : le survol, lui, ne montre plus rien sur une cible invalide (arbitrage 2026-08-24).
       const weapon = firedWeapon(hero, target, undefined, battle.combatants);
       const scene = get().scene;
       const blocked = !!(hero.pos && target.pos && scene) && !losClear(scene, hero.pos, target.pos, smokeOf(battle));
-      if (weapon.type !== 'ranged' || !inFiringBand(hero, target, weapon, sceneMetresPerTile(scene)) || blocked) { get().log(t('cf.noLoSMasked')); return; }
+      // Chaque cause dit LA SIENNE : une cible hors de portée n'annonce pas un mur qui n'existe pas.
+      if (weapon.type !== 'ranged') return void refuserGeste(get, set, t('cs.refusTirArmeDeMelee', { weapon: weapon.label }));
+      if (!inFiringBand(hero, target, weapon, sceneMetresPerTile(scene))) return void refuserGeste(get, set, t('cf.outOfRange'));
+      if (blocked) return void refuserGeste(get, set, t('cf.noLoSMasked'));
       // Le tir se résout par la modale de jet NORMALE (attackRoll/attackConfirm) ; le tireur n'est PAS actif.
       // `pendingAttack.interrupt` → attackConfirm applique le tir sans avancer le tour + épuise son tour normal.
       // La modale d'attaque est rendue par la CASCADE (CascadeModal → useAttackJetProps), comme TOUTE attaque :
