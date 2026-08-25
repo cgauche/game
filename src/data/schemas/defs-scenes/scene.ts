@@ -31,6 +31,11 @@ export const authoredShipPosteSchema = z.custom<AuthoredShipPoste>();
 export const navalTraitRefSchema = z.strictObject({ id: z.string(), value: z.number().optional() });
 /** `OptionalEntry` (`engine/statEntry.ts`) — `TraitInstance` OU note composée. T3-b. */
 export const optionalEntrySchema = z.custom<OptionalEntry>();
+/** `SeatOccupant` (`state/seating.ts:53`) — un RANG du groupe (jamais un id de héros) ou un PNJ de la scène. */
+export const seatOccupantSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('party'), rang: z.number() }),
+  z.strictObject({ kind: z.literal('entity'), entityId: z.string() }),
+]);
 /** `SkillRef` (`src/data/index.ts`) — réf de Compétence à valeur. */
 export const skillRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), value: z.number() });
 
@@ -374,6 +379,8 @@ export const sceneSchema = z.strictObject({
   layers: z.array(layerSchema).optional(),
   walls: z.array(wallSegSchema).optional(),
   entities: z.array(sceneEntitySchema).optional(),
+  /** `SeatAssignments` (`state/seating.ts:65`) — `propId → slotId → occupant` (rang du groupe ou entité). */
+  seatAssignments: z.record(z.string(), z.record(z.string(), seatOccupantSchema)).optional(),
   architecture: z.array(architectureBodySchema).optional(),
   dialogues: z.array(dialogueSchema).optional(),
   triggers: z.array(triggerSchema).optional(),

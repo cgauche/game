@@ -144,7 +144,8 @@ function raffineNarratif(nb: z.infer<typeof formeNarratif>, ctx: z.RefinementCtx
  *  CATALOGUE (`defs/trappings.ts`) ne le décrit pas — il est mesuré sur `trappings.json`, dont le
  *  `type` est une énumération fermée (6 valeurs) et dont `availability`/`qualities`/`desc`/`price`/
  *  `source` sont requis, là où un objet EMBARQUÉ de campagne porte un type libre et se passe de
- *  l'enveloppe de catalogue. Sa forme entre en zod avec le lot T3-b. */
+ *  l'enveloppe de catalogue. Échéance : `TROUS_DE_VALIDATION['narratif.ts:objets']`
+ *  (`trous-de-validation.ts`), UNIQUE source du lot de mort de ce trou. */
 const formeNarratif = z.strictObject({
   affaires: z.array(affaireSchema),
   indices: z.array(indiceSchema),
