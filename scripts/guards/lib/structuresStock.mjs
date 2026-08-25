@@ -161,9 +161,13 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "aa-criticals.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 82, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "aa-criticals.json", champ: "perRound", signature: "versTraumaId", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "aa-criticals.json", champ: "recoveryPenalty", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "actions.json", champ: "armed", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
+  // Vague console #1411/#1426 distante, réconciliation post-rebase — la donnée est committée
+  // (`aff0631d4` : l'entrée `cast` meurt au profit de `cast-spell`, le rendeur secondaire est piloté
+  // par le champ `hote`), le stock la rattrape : `armed` 4→3, `mode` 5→4, et `hote` entre nominatif.
+  { concept: "reference", dataset: "actions.json", champ: "armed", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "actions.json", champ: "gate", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "actions.json", champ: "mode", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "actions.json", champ: "hote", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "actions.json", champ: "mode", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "actions.json", champ: "rule", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 32, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "activities.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "activities.json", champ: "ops", signature: "skill+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L2 #1463", date: "2026-08-23" },
@@ -415,7 +419,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "pregens.json", champ: "career", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 8, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "pregens.json", champ: "species", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 8, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "props.json", champ: "light", signature: "tone+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
-  // #1443 : `propPrimitiveSchema` (`src/data/schemas/common.ts`) — chaque volume d'une recette réfère
+  // #1443 : `propPrimitiveSchema` (`src/data/schemas/defs/props.ts`) — chaque volume d'une recette réfère
   // son matériau de `propMaterials.json`. Même graphie que le reste de la géométrie authorée
   // (`masses[].material`, `walls[].structure`/`appearance` : 662 occurrences en scène), même lot L3.
   { concept: "reference", dataset: "props.json", champ: "primitives", signature: "material+…", statut: "divergente", strate: "Référence", occurrences: 52, lot: "L3 #1463", date: "2026-08-23" },
@@ -613,7 +617,8 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "water-exposure.json", champ: "auto", signature: "condition+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "refs", dataset: "aa-criticals.json", champ: "sequels", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 13, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "refs", dataset: "aa-criticals.json", champ: "traumas", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 24, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "refs", dataset: "actions.json", champ: "keys", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 28, lot: "L3 #1463", date: "2026-08-23" },
+  // Vague console #1411/#1426 distante, réconciliation post-rebase — la donnée est committée, le stock la rattrape (28→27).
+  { concept: "refs", dataset: "actions.json", champ: "keys", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 27, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "refs", dataset: "activities.json", champ: "chains", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "refs", dataset: "activities.json", champ: "classes", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 12, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "refs", dataset: "activities.json", champ: "where", signature: "ids-nus", statut: "historique", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
@@ -779,7 +784,7 @@ export const STRUCTURES_HOMONYMES = [
 ];
 
 /** Littéral d'objet zod d'un `defs/*.ts` qui REDÉCLARE localement un concept du lexique (ou la
- *  signature exacte d'un littéral de `common.ts`). Keyé par `def | champ | concept | signature` :
+ *  signature exacte d'un littéral de la grammaire, `src/data/schemas/grammaire/`). Keyé par `def | champ | concept | signature` :
  *  sans le CHAMP, 13 lignes agrégeaient 2 à 4 champs distincts. Pas de numéro de ligne ici : une
  *  ligne bouge à chaque édition du def et ferait rougir la garde sans qu'aucune structure n'ait
  *  changé — le `fichier:ligne` vit dans `docs/structures-donnees.md` §4, régénéré à chaque build. */
@@ -971,7 +976,8 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "libellé", cle: "nom", motif: "clé divergente", detail: "", document: "systemes.manifest.json", chemin: "(entrées)", entrees: 16, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "title", motif: "clé divergente", detail: "", document: "creatures.json", chemin: "(entrées)", entrees: 490, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "title", motif: "clé divergente", detail: "", document: "gods.json", chemin: "(entrées)", entrees: 40, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "maison", cle: "maison", motif: "type divergent", detail: "boolean", document: "actions.json", chemin: "(entrées)", entrees: 29, lot: "L1b #1467", date: "2026-08-23" },
+  // Vague console #1411/#1426 distante, réconciliation post-rebase — la donnée est committée (une entrée d'action de plus), le stock la rattrape (29→30).
+  { role: "maison", cle: "maison", motif: "type divergent", detail: "boolean", document: "actions.json", chemin: "(entrées)", entrees: 30, lot: "L1b #1467", date: "2026-08-23" },
   { role: "méta libre", cle: "__genere", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "(entrées)", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
   { role: "méta libre", cle: "__lecture", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "(entrées)", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
   { role: "méta libre", cle: "__livres", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "(entrées)", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },

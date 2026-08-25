@@ -97,7 +97,9 @@ const cleOrpheline = (o: { dataset: string; champ: string; signature: string; mo
  * CLIQUET des signatures hors strate (#1465) : elles ne sont pas au stock — la table EXHAUSTIVE
  * de `docs/structures-donnees.md` EST la liste de référence, et ce plafond garde son COMPTE.
  */
-const PLAFOND_HORS_STRATE = 1116;
+// Vague console #1411/#1426 distante, réconciliation post-rebase : `actions.json` gagne une entrée
+// et le champ `hote` — la donnée est committée, le cliquet la rattrape (1116→1118).
+const PLAFOND_HORS_STRATE = 1118;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -230,7 +232,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     const stockees = STRUCTURES_REDECLARATIONS.map((r) => `${cle(r)} | ${r.occurrences}` + trace(r, lotDeForme(r.concept, r.signature)));
     expect(
       lignes(observees),
-      'écart entre les redéclarations OBSERVÉES (AST des `src/data/schemas/defs/*.ts`) et `STRUCTURES_REDECLARATIONS` — une forme partagée se déclare UNE fois dans `common.ts`. Le CHAMP entre dans la clé : sans lui, des littéraux de champs différents s’agrègent en une ligne.',
+      'écart entre les redéclarations OBSERVÉES (AST des `src/data/schemas/defs/*.ts`) et `STRUCTURES_REDECLARATIONS` — une forme partagée se déclare UNE fois dans la grammaire (`src/data/schemas/grammaire/`). Le CHAMP entre dans la clé : sans lui, des littéraux de champs différents s’agrègent en une ligne.',
     ).toEqual(lignes(stockees));
   });
 
@@ -249,7 +251,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // résolu DEVIENT une forme refs/ids-nus mesurée (ligne nominative `arene-projet.json › qualities`),
       // rangée dans le MÊME lot L3 : la donnée ENTRE dans la strate, ce n'est pas une dérive de forme.
       ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 15],
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 678],
+      // Vague console #1411/#1426 distante, réconciliation post-rebase : `actions.json` gagne le
+      // champ `hote` (ligne nominative, même lot L3) — la donnée est committée, le stock la rattrape.
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 679],
       ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES.length, 6],
       ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 102],
       ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 165],
@@ -313,7 +317,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       'L2 #1463': 138,
       // +2 : les deux formes `effect {trappingId,type}` de #1466 T3-b (cf. motif au cliquet ci-dessus).
       // +1 : la forme `qualities` ids-nus de #1466 T3-b (cf. motif au cliquet ci-dessus).
-      'L3 #1463': 395,
+      // +1 : `actions.json › hote` id-nu (vague console #1411/#1426 distante, cf. motif ci-dessus).
+      'L3 #1463': 396,
       'L4 #1463': 224,
     };
     expect(
@@ -322,7 +327,8 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     ).toEqual([]);
     // 1444 → 1446 : les deux mêmes lignes #1466 T3-b (cf. motif au cliquet des sept stocks).
     // 1446 → 1447 : la ligne `arene-projet.json › qualities` ids-nus (même motif, migration LIBELLÉ→id).
-    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(1447);
+    // 1447 → 1448 : la ligne `actions.json › hote` id-nu (vague console distante, même motif).
+    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(1448);
   });
 
   it('les ANGLES MORTS ont UNE source : le lexique, recopié nulle part (test, stock, doc)', () => {

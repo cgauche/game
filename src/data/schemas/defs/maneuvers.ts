@@ -3,7 +3,7 @@
  * depuis cette donnée par `state/combatManeuvers.resolveManeuver` (`ManeuverDef`, `src/data/index.ts`).
  * `kind` = `AttackKind` (`src/engine/creatureAttacks.ts`, anim/pose/icône seulement — jamais la
  * résolution). `effects` = `TriggeredEffect<EffectOp>[]` (`src/engine/flowCore.ts`), PROMU dans
- * `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema` — partagés avec
+ * `grammaire/mecanique.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema` — partagés avec
  * `qualities.ts`/`talents.ts`/`etats.ts`/`spells.ts`).
  *
  * AUCUN champ de PROSE (#1226) : une manœuvre est la PROJECTION mécanique d'un Trait de créature qui la

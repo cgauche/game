@@ -2,7 +2,7 @@
  * Schéma de `etats.json` — dérivé de l'inventaire COMPLET des clés (script node, n=20/20) et de
  * `StatusData`/`EtatData` (`src/data/index.ts`). `effects` (`TriggeredEffect[]`) et
  * son `Flow` récursif : MÊME algèbre que talents.json (`engine/flowCore.ts`), PROMUE dans
- * `common.ts` (`flowSchema`/`conditionSchema`/`triggeredEffectSchema`).
+ * `grammaire/mecanique.ts` (`flowSchema`/`conditionSchema`/`triggeredEffectSchema`).
  */
 import { z } from 'zod';
 import { charKeySchema, sourceRefSchema, difficultySchema } from '../grammaire/valeurs';

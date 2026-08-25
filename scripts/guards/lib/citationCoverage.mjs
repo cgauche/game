@@ -1,7 +1,7 @@
 // Mécanique de mesure « citation par ENTRÉE » (#309, suite #278/#281). #278 a posé la garde de
 // FORME (`sourceRefInline.mjs` — aucune réinvention de `sourceRefSchema`) ; #309 mesure la
 // COUVERTURE réelle : chaque dataset de `src/data/*.json` porte-t-il `source: {book,page}` (ou
-// `_source` libre, seule survivance documentée `common.ts:38-45`) sur CHACUNE de ses entrées
+// `_source` libre, seule survivance documentée `src/data/schemas/grammaire/valeurs.ts:75-85`) sur CHACUNE de ses entrées
 // RÉELLES ? Le piège signalé au ticket : un comptage brut (tout id trouvé, y compris les ids
 // imbriqués — `specs`/`ranges`/`levels`…) gonfle le dénominateur. Ici on ne compte QUE les entrées
 // de PREMIER niveau (item d'un tableau racine, ou item d'un tableau de catégorie type
@@ -9,11 +9,11 @@
 // Module ESM pur, exécutable par `node` nu — consommé par `scripts/data/audit-citations.mjs`
 // (rapport) ET par `src/data/citation-coverage-guard.test.ts` (verrou cliquet).
 
-/** Une entrée cite sa source si `source.book` (forme `sourceRefSchema`, `common.ts:23`), `_source`
- *  non vide (forme `freeSourceNoteSchema`, `common.ts:46` — seule survivance documentée pour
+/** Une entrée cite sa source si `source.book` (forme `sourceRefSchema`, `src/data/schemas/grammaire/valeurs.ts:38`), `_source`
+ *  non vide (forme `freeSourceNoteSchema`, `src/data/schemas/grammaire/valeurs.ts:85` — seule survivance documentée pour
  *  `aa-criticals.json`), le champ `maison` non vide top-level (il porte SA justification : rationale +
  *  réfs dans le texte même, ex. `proue-idole-de-stromfels` #221, EST la source de l'entrée), ou
- *  `alsoIn` porte au moins un emplacement bien formé (forme `secondarySourceRefSchema`, `common.ts:47`
+ *  `alsoIn` porte au moins un emplacement bien formé (forme `secondarySourceRefSchema`, `src/data/schemas/grammaire/valeurs.ts:66`
  *  — #563 : l'ancre `source` reste la forme retenue, mais un `alsoIn` seul ne doit JAMAIS compter
  *  « non cité » si un futur schéma le rend co-porteur ; réfuté par `!Array.isArray(rec.source)` qui
  *  ne voit QUE l'ancre — trou permissif inverse : une entrée sans ancre valide mais avec des
@@ -58,7 +58,7 @@ function entryLabel(item, key, idx) {
  *   table, les entrées sont les items de CES tableaux, jamais recursées plus profond (`ops`/
  *   `ranges` imbriqués ne comptent pas).
  * - `single` : objet de config unique — cité si sa RACINE porte `source`/`_source` (convention
- *   documentée `common.ts:30-35` : "à la racine quand le dataset est un objet de config unique
+ *   documentée `src/data/schemas/grammaire/valeurs.ts:49-54` : "à la racine quand le dataset est un objet de config unique
  *   plutôt qu'une liste" — couvre alors TOUT le fichier, y compris les tableaux/sous-tables
  *   imbriqués, ex. `montures.json`/`river-criticals.json.tables`). Sans racine citée ET sans
  *   tableau à convention par-entrée, le fichier entier est UNE entrée non citée.
@@ -76,7 +76,7 @@ export function auditDataset(data) {
     return { total, cited, missing, shape: 'array' };
   }
   if (isPlainObject(data)) {
-    // La RACINE citée prime (convention documentée `common.ts:30-35`) : elle couvre tout le
+    // La RACINE citée prime (convention documentée `src/data/schemas/grammaire/valeurs.ts:49-54`) : elle couvre tout le
     // fichier, y compris les tableaux/sous-tables imbriqués (`montures.json`, `river-criticals.json.
     // tables`…) — même quand une valeur scalaire annexe (`crew-morale.json.base`) est la seule
     // réellement visée par cette réf précise, le fichier est considéré couvert.
@@ -110,7 +110,7 @@ export function auditDataset(data) {
  * @type {Record<string, string>}
  */
 export const EXEMPT_DATASETS = {
-  'aa-criticals.json': "note libre `_source` au niveau du fichier (seule survivance documentée, common.ts:56-65) — l'extraction Marker d'Aux Armes EXISTE (motif RÉVISÉ #563 : la table de Blessures Critiques cite un intervalle APPROXIMATIF `p.≈118-124`, jamais migrée en `source: sourceRefSchema` PAR ENTRÉE — dette de migration, pas un blocage d'extraction).",
+  'aa-criticals.json': "note libre `_source` au niveau du fichier (seule survivance documentée, src/data/schemas/grammaire/valeurs.ts:75-85) — l'extraction Marker d'Aux Armes EXISTE (motif RÉVISÉ #563 : la table de Blessures Critiques cite un intervalle APPROXIMATIF `p.≈118-124`, jamais migrée en `source: sourceRefSchema` PAR ENTRÉE — dette de migration, pas un blocage d'extraction).",
   'books.json': 'catalogue des LIVRES eux-mêmes — pas de "source" au sens où un livre se cite lui-même.',
   'actions.json': "registre de ROUTAGE des actions de combat (id → icône, surface, gate/candidates/run) : aucune table CHIFFRÉE, la règle vit dans la fiche pointée par `rule`+`ruleCategory` (regles/talents/etats/qualities/skills) qui porte SA citation. `source` n'y est posée que sur les entrées dont le COÛT est adossé à un verbatim (LDB 13 l.106, 15 l.35-49, 14 « Viser »…).",
   'characteristics.json': "vocabulaire des 10 Caractéristiques (clés/labels), pas une table de valeurs RAW à citer par entrée (base SUPPRIMÉE #310, table morte).",

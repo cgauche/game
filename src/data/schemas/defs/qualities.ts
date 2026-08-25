@@ -2,7 +2,7 @@
  * Schéma de `qualities.json` — Atouts/Défauts d'arme/armure/objet (LDB 62-63), `QualityData`
  * (`src/data/index.ts`). `capabilities` = `QualityCapabilities` (drapeaux IRRÉDUCTIBLES,
  * `src/data/index.ts`) ; `effects`/`passive` = MÊME vocabulaire `TriggeredEffect`/`GameOp` que
- * les Traits et les sorts, PROMU dans `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`
+ * les Traits et les sorts, PROMU dans `grammaire/mecanique.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`
  * — partagés avec `maneuvers.ts`).
  */
 import { z } from 'zod';

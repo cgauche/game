@@ -9,8 +9,9 @@ import { secondarySourceRefSchema, sourceRefSchema } from '../grammaire/valeurs'
 export const file = 'skills.json';
 export const famille = 'entite';
 
-/** 10 Caractéristiques (LDB) — cf. `engine/types.ts::CharKey`. Dupliqué ici (`common.ts` gelé) ;
- *  candidat à mutualisation (`charKeySchema`) avec talents/spells/etats qui le redéfinissent aussi. */
+/** 10 Caractéristiques (LDB) — cf. `engine/types.ts::CharKey`. Dupliqué ici ;
+ *  candidat à mutualisation sur `grammaire/valeurs.ts::charKeySchema`, avec talents/spells/etats qui le
+ *  redéfinissent aussi. */
 const charKeySchema = z.enum([
   'capacite-de-combat', 'capacite-de-tir', 'force', 'endurance', 'initiative', 'agilite', 'dexterite',
   'intelligence', 'force-mentale', 'sociabilite',

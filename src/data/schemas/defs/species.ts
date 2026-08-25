@@ -2,7 +2,7 @@
  * Schéma de `species.json` — dérivé du contenu RÉEL (27 entrées, script d'inventaire) et de
  * `SpeciesData` (`src/data/index.ts`). `skills`/`talents` = `AdvancementRef[]`, `baseChar` =
  * `Partial<Record<CharKey, number>>`. Mêmes petites formes partagées (Ref/AdvancementRef/CharKey)
- * que `careerLevels.ts`, PROMUES dans `common.ts`. `mutationBodyMax` est ABSENT sur une partie des
+ * que `careerLevels.ts`, PROMUES dans `grammaire/reference.ts` (Ref/AdvancementRef) et `grammaire/valeurs.ts` (CharKey). `mutationBodyMax` est ABSENT sur une partie des
  * entrées (18/27) : optionnel, conforme à l'interface ; `grantGroups` est porté par les 27.
  */
 import { z } from 'zod';

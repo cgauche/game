@@ -1,7 +1,7 @@
 /**
  * Schéma de `classes.json` — dérivé du contenu RÉEL (9 entrées) et de `ClassData`
  * (`src/data/index.ts`). `trappings` = `TrappingRef[]` (id catalogue + quantité, ou texte
- * flavor hors catalogue) — MÊME forme que `careerLevels.trappings`/`species`, PROMUE dans `common.ts`.
+ * flavor hors catalogue) — MÊME forme que `careerLevels.trappings`/`species`, PROMUE dans `grammaire/reference.ts`.
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';

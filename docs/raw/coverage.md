@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 95 traités par une fiche · 📖 78 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 175 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3443 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2390 hors-règle** (chapitre explicitement exclu) · **131 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **287 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅9·📖4·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅1·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 96 traités par une fiche · 📖 78 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 176 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3441 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2360 hors-règle** (chapitre explicitement exclu) · **159 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **287 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅9·📖4·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅1·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -912,12 +912,12 @@
   - 📖 l.113-116 « 2519 CI » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.117-376 « Le rôle de la Couronne Rouge » — transcrit en catalogue, jamais traité, 0 réf
 
-## EDO — ✅ 3 · 📖 0 · 🟡 0 · ⬜ 0
+## EDO — ✅ 4 · 📖 0 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | Chapitre 1 - On recherche - aventuriers courageux | ➖ hors-règle | |
+| 01 | Chapitre 1 - On recherche - aventuriers courageux | ✅ | 5 (reconciliation.md ×3) |
 | 02 | Chapitre 2 - Erreur sur la personne | ➖ hors-règle | |
 | 03 | Chapitre 3 - Le cœur de l’Empire | ➖ hors-règle | |
 | 04 | Chapitre 4 - Sur la route de Bögenhafen… | ➖ hors-règle | |
@@ -932,6 +932,35 @@
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
 
+- **EDO 01** (Chapitre 1 - On recherche - aventuriers courageux) :
+  - ⬜ l.9-14 « DÉBUT DE L'AVENTURE » — bruit de scénario, 0 réf
+  - ⬜ l.15-41 « L'AUBERGE LA DILIGENCE » — bruit de scénario, 0 réf
+  - ⬜ l.42-53 « 5. Écuries et remise » — bruit de scénario, 0 réf
+  - ⬜ l.54-57 « 8. Brasserie » — bruit de scénario, 0 réf
+  - ⬜ l.58-65 « 9. Salle commune » — bruit de scénario, 0 réf
+  - ⬜ l.66-74 « 11. Quartiers des serviteurs » — bruit de scénario, 0 réf
+  - ⬜ l.75-82 « L'APPROCHE DE L'AUBERGE » — bruit de scénario, 0 réf
+  - ⬜ l.83-90 « La diligence » — bruit de scénario, 0 réf
+  - ⬜ l.91-109 « Dans l'auberge » — bruit de scénario, 0 réf
+  - ⬜ l.110-115 « Les PNJ » — bruit de scénario, 0 réf
+  - ⬜ l.116-191 « Le propriétaire » — bruit de scénario, 0 réf
+  - ⬜ l.192-197 « Gérer l'inattendu » — bruit de scénario, 0 réf
+  - ⬜ l.224-244 « Une volée de plomb » — bruit de scénario, 0 réf
+  - ⬜ l.245-248 « LE VOYAGE » — bruit de scénario, 0 réf
+  - ⬜ l.249-259 « Debout là-dedans ! » — bruit de scénario, 0 réf
+  - ⬜ l.301-306 « Un léger contretemps » — bruit de scénario, 0 réf
+  - ⬜ l.307-316 « Le voyage commence » — bruit de scénario, 0 réf
+  - ⬜ l.317-324 « Chantons sous la pluie ! » — bruit de scénario, 0 réf
+  - ⬜ l.325-337 « OPTIONS : COMPAGNONS DE VOYAGE » — bruit de scénario, 0 réf
+  - ⬜ l.338-343 « À la croisée des chemins » — bruit de scénario, 0 réf
+  - ⬜ l.344-345 « CONCLUSION » — bruit de scénario, 0 réf
+  - ⬜ l.346-355 « Récompenses » — bruit de scénario, 0 réf
+  - ⬜ l.356-357 « PNJ » — bruit de scénario, 0 réf
+  - ⬜ l.358-398 « Le personnel de l'auberge » — bruit de scénario, 0 réf
+  - ⬜ l.399-416 « Les cochers » — bruit de scénario, 0 réf
+  - ⬜ l.417-453 « Dame Isolde et sa suite » — bruit de scénario, 0 réf
+  - ⬜ l.454-475 « Le garde du corps » — bruit de scénario, 0 réf
+  - ⬜ l.476-528 « Les autres voyageurs » — bruit de scénario, 0 réf
 - **EDO 07** (Chapitre 7 - Dans les ténèbres) :
   - ⬜ l.9-14 « ENTRER DANS LES ÉGOUTS » — bruit de scénario, 0 réf
   - ⬜ l.15-20 « PENDANT CE TEMPS-LÀ, AILLEURS… » — bruit de scénario, 0 réf

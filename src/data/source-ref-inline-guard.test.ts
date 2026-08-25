@@ -33,7 +33,7 @@ function scanFiles(): string[] {
 }
 
 describe('garde-fou « sourceRefSchema » — réf de source `{book,page}` réinventée (#281)', () => {
-  it('aucune def zod hors common.ts ne réinvente `{book:string, page:number}`', () => {
+  it('aucune def zod hors `grammaire/valeurs.ts` ne réinvente `{book:string, page:number}`', () => {
     const offenders: string[] = [];
     for (const f of scanFiles()) {
       const rel = relative(ROOT, f).split('\\').join('/');

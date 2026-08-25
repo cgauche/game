@@ -11,9 +11,9 @@
  * aucune reconstruction ici, on parse exactement les objets que le lancement charge.
  *
  * ANGLE MORT CHIFFRÉ : ces verts ne valent qu'À CONCURRENCE des trous de `TROUS_DE_VALIDATION`
- * (`trous-de-validation.ts`) que le corpus TRAVERSE — mesuré le 2026-08-25 sur les 84 scènes :
+ * (`trous-de-validation.ts`) que le corpus TRAVERSE — mesuré le 2026-08-25 sur les 85 scènes :
  * `statblock` (19 occurrences, 8 scènes), `optionals` (14 entrées, 13 scènes), `postes`
- * (17 entrées, 5 scènes) ; le 4ᵉ trou (`narratif.ts:objets`) n'est pas atteint par ce corpus.
+ * (18 entrées, 6 scènes) ; le 4ᵉ trou (`narratif.ts:objets`) n'est pas atteint par ce corpus.
  * Sous ces champs, `z.custom` accepte tout : le parse y est un passe-droit, pas une validation.
  */
 import { describe, it, expect } from 'vitest';
@@ -31,8 +31,8 @@ describe('sceneSchema — les scènes CONSTRUITES par les scénarios de test', (
   const scenes = SCENARIOS.flatMap(scenesDe);
 
   it('le contrat VOIT le corpus qu’il prétend mesurer', () => {
-    expect(SCENARIOS.length).toBe(35);
-    expect(scenes.length).toBe(84);
+    expect(SCENARIOS.length).toBe(36);
+    expect(scenes.length).toBe(85);
     expect(new Set(SCENARIOS.map((s) => s.id)).size).toBe(SCENARIOS.length);
   });
 

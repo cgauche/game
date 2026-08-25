@@ -8,7 +8,7 @@ import { sizeFromTraits } from '../../state/spawn';
 import { sizeFootprint } from '../../state/footprint';
 
 /**
- * Galerie EN JEU (exploration, SANS combat) de TOUS les modèles rendus par l'IsoStage :
+ * Galerie EN JEU (exploration, SANS combat) de TOUS les modèles rendus par le monde de campagne :
  * - les créatures du bestiaire (`creatures`), routées vers leur rendu (rig / gabarit / sprite) ;
  * - **toutes les carrières** (`careers`) — un rig humain portant les vêtements de chaque carrière ;
  * - **toutes les armes** (`trappings` mêlée + distance) — un rig humain tenant chaque arme ;
@@ -103,7 +103,7 @@ export const scenario: TestScenario = {
   category: 'rendu',
   icon: 'scenario/gallery',
   title: 'Galerie de modèles',
-  tests: `Tous les modèles de l’IsoStage : ${creatures.length} créatures (empreintes par Taille) + TOUTES les carrières (${careers.length}) + TOUTES les armes (${weapons.length}) + mutants + démo Monstrueuse. Exploration, SANS combat.`,
+  tests: `Tous les modèles du monde de campagne : ${creatures.length} créatures (empreintes par Taille) + TOUTES les carrières (${careers.length}) + TOUTES les armes (${weapons.length}) + mutants + démo Monstrueuse. Exploration, SANS combat.`,
   partyNote: 'Exploration libre, aucun combat',
   makeParty: () => pregenParty(PREGEN.soldat),
   scene,

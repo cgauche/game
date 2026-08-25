@@ -4,7 +4,7 @@
  * au Codex (riders `effects`, mitigation `missile`, `casterOps` post-incantation…).
  *
  * `effects` porte des `TriggeredEffect<EffectOp>` (`src/engine/flowCore.ts`) — Condition/Flow
- * PROMUS dans `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`, partagés ici
+ * PROMUS dans `grammaire/mecanique.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`, partagés ici
  * et dans maneuvers/qualities/talents/etats/spells/traits/trappings/psychology).
  */
 import { z } from 'zod';

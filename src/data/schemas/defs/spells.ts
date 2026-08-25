@@ -3,7 +3,7 @@
  * `SpellData` (`src/data/index.ts`), `SpellRange`/`SpellTarget` (`src/engine/spellRange.ts`),
  * `SpellDuration` (`src/engine/spellDuration.ts`) et `Formula` (`src/engine/ops.ts`).
  * `effects` (`Flow<EffectOp>`) : MÊME algèbre que talents/etats (`engine/flowCore.ts`), PROMUE dans
- * `common.ts` (`flowSchema`/`conditionSchema`/`formulaSchema`).
+ * `grammaire/mecanique.ts` (`flowSchema`/`conditionSchema`) et `grammaire/valeurs.ts` (`formulaSchema`).
  */
 import { z } from 'zod';
 import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, formulaSchema, variantOf } from '../grammaire/valeurs';

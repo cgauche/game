@@ -53,7 +53,7 @@ describe('exploreMoveDest — case d’arrivée partagée survol/clic (explorati
     expect(isWalkable(sc, 5, 5), 'précondition : la case est bloquée').toBe(false);
     const dest = exploreMoveDest(sc, { x: 1, y: 1 }, { x: 5, y: 5 });
     expect(dest).not.toEqual({ x: 5, y: 5 });
-    expect(cheb(dest!, { x: 5, y: 5 })).toBe(1);
+    expect(chebyshev(dest!, { x: 5, y: 5 })).toBe(1);
   });
 
   it('objet interactif, groupe déjà adjacent : aucune marche (fouille sur place)', () => {
@@ -162,7 +162,7 @@ describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () =>
       const plan = exploreMovePlan(sc, depart, { x: 10, y: 10 }, { blocked: new Set() });
       expect(plan, `depuis (${depart.x},${depart.y}) : la fouille reste joignable`).not.toBeNull();
       expect(plan!.dest, 'jamais la case du meuble').not.toEqual({ x: 10, y: 10 });
-      expect(cheb(plan!.dest, { x: 10, y: 10 }), 'une case ADJACENTE, d’où l’on fouille').toBe(1);
+      expect(chebyshev(plan!.dest, { x: 10, y: 10 }), 'une case ADJACENTE, d’où l’on fouille').toBe(1);
       expect(plan!.path[plan!.path.length - 1]).toEqual(plan!.dest);
     }
   });
@@ -176,7 +176,7 @@ describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () =>
     const plan = exploreMovePlan(sc, { x: 5, y: 5 }, { x: 10, y: 10 }, { blocked: new Set() });
     expect(plan, 'le clic mène quelque part').not.toBeNull();
     expect(plan!.dest, 'jamais la case du meuble').not.toEqual({ x: 10, y: 10 });
-    expect(cheb(plan!.dest, { x: 10, y: 10 }), 'une case ADJACENTE').toBe(1);
+    expect(chebyshev(plan!.dest, { x: 10, y: 10 }), 'une case ADJACENTE').toBe(1);
     // Déjà à portée : plus rien à marcher — c'est à l'appelant de le DIRE (`useStagePointer`).
     expect(exploreMovePlan(sc, { x: 10, y: 11 }, { x: 10, y: 10 }, { blocked: new Set() })).toBeNull();
   });

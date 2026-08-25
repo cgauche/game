@@ -34,7 +34,7 @@ const CANONS = [
 ];
 /** Les deux SEULS fichiers qui ont le droit de taper les membres : le foyer du tuple (`types.ts`, où
  *  vivent AUSSI les sous-ensembles métier, chacun `satisfies` le canon) et ce fichier-ci (ses
- *  fixtures SONT des recopies, c'est leur métier). `schemas/common.ts` n'y figure pas : il DÉRIVE
+ *  fixtures SONT des recopies, c'est leur métier). `grammaire/valeurs.ts` n'y figure pas : il DÉRIVE
  *  (`z.enum(AVAILABILITIES)`), il ne tape rien. */
 const FOYERS = ['src/engine/types.ts', 'src/data/schemas/unions-canon.test.ts'];
 /** Corpus MÉMOÏSÉ pour tout le fichier : la lecture disque (~3 s, 3300 fichiers) et les AST (keyés

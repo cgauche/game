@@ -24,7 +24,7 @@ import { combatantBodyTopFrac, combatantTokenScale, entityTokenScale } from '../
 import type { TokenSubject } from '../tokenBodyKind';
 import { teamRingDecor, type MarkCell } from './dynamicMarks';
 import type { Offre, OffresParPorteur } from '../../state/registreOffres';
-import type { PropEl, TokenEl, TokenSubjectEl } from './types';
+import { estPropVolumique, type PropEl, type TokenEl, type TokenSubjectEl } from './types';
 
 /** ALVÉOLES RÉSERVÉES du chrome d'un jeton — autant de places que le rack d'États du portrait
  *  (`PortraitTile maxStates`) : les deux surfaces montrent le même nombre d'États d'un combattant.
@@ -146,12 +146,13 @@ export function ancrageDuJeton(tk: TokenEl): Ancrage | null {
 }
 
 /** L'ancrage d'un DÉCOR posté (`PropEl` : le tas d'objets, le tonneau fouillé) — même repère que celui
- *  d'un jeton, tiré de l'empreinte et de l'échelle au pied que le builder de décors a déjà calculées. */
+ *  d'un jeton, tiré de l'empreinte et de l'échelle au pied que le builder de décors a déjà calculées.
+ *  Un décor VOLUMIQUE (`VolumePropEl`) n'a pas de `foot` — sa géométrie monde porte sa taille : échelle 1. */
 export function ancrageDuDecor(pr: PropEl): Ancrage {
   return {
     cell: { x: pr.cell.x, y: pr.cell.y, z: pr.cell.z },
     n: Math.max(pr.span?.w ?? 1, pr.span?.h ?? 1),
-    scaleK: pr.foot.scale,
+    scaleK: estPropVolumique(pr) ? 1 : pr.foot.scale,
     bodyTopFrac: 1,
   };
 }

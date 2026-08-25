@@ -11,8 +11,8 @@
  * CHAPITRE seul (le passage ne chiffre rien à pointer — `LDB 18`, `LDB 65`…), 2 au folio
  * imprimé (`MDG 15 p.131`). La `ref` porte la RÉFÉRENCE, jamais de justification en prose : celle
  * d'une valeur que le RAW ne chiffre pas va dans `maison` (CLAUDE.md règle 7, même sémantique que
- * `castingNumberMod.maison`, `common.ts`) — 27 entrées.
- * `source` = ancre `{book, page}` de la couverture par ENTRÉE (`sourceRefSchema`, `common.ts`) : le
+ * `castingNumberMod.maison`, `grammaire/valeurs.ts`) — 27 entrées.
+ * `source` = ancre `{book, page}` de la couverture par ENTRÉE (`sourceRefSchema`, `grammaire/valeurs.ts`) : le
  * folio IMPRIMÉ, relevé au marqueur `data-folio` qui gouverne la ligne de la `ref` (#1318 E8) —
  * jamais dérivé d'un calcul sur la ligne.
  * `action` : action de jeu rendue sous la rangée quand la règle vaut `when` — `icon` (registre

@@ -389,7 +389,7 @@ out += 'clé annonçait une FK (`clé de référence non résolue`), `L1b #1467`
 out += '## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`\n\n';
 out += `Littéraux d’objet zod lus : **${totalLitteraux}** ; **${redeclarations.length}** recoupent le lexique\n`;
 out += 'ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE\n';
-out += 'qu’un littéral de `common.ts` (candidat à examiner, cf. angles morts).\n\n';
+out += 'qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).\n\n';
 out += '### 4.1 Empreinte par concept, critère SUPERSET (indépendant du classement ordonné)\n\n';
 out += 'Un littéral qui porte le noyau d’un concept, même s’il a été classé sous un autre concept en §4.2 :\n';
 out += 'ce compte lève l’angle mort du classement ordonné.\n';

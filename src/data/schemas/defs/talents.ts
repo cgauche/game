@@ -2,7 +2,7 @@
  * Schéma de `talents.json` — dérivé de l'inventaire COMPLET des clés (script node, n=179/179), de
  * l'interface `TalentData` (`src/data/index.ts`), `TalentTest`/`TestMatch` (`src/data/index.ts`) et
  * `CombatFeature` (`src/engine/combatFeatures/types.ts`). `effects` (`TriggeredEffect[]`) et son
- * `Flow` récursif (`src/engine/flowCore.ts`) sont PROMUS dans `common.ts` (`conditionSchema`/
+ * `Flow` récursif (`src/engine/flowCore.ts`) sont PROMUS dans `grammaire/mecanique.ts` (`conditionSchema`/
  * `flowSchema`/`triggeredEffectSchema` — partagés avec talents/etats/spells).
  */
 import { z } from 'zod';
@@ -35,7 +35,7 @@ const talentTestSchema = z.strictObject({
   matches: z.array(testMatchSchema),
 });
 
-// ── CombatFeature (src/engine/combatFeatures/types.ts) — PROMU dans `common.ts` (#563, SOURCE
+// ── CombatFeature (src/engine/combatFeatures/types.ts) — PROMU dans `grammaire/valeurs.ts` (#563, SOURCE
 // UNIQUE) : `combatFeatureSchema`/`variantOf` importés ci-dessus.
 
 /** Entrée de `talents.json` SANS ses variantes — sert de patron à `variantOf` (une variante est un

@@ -14,7 +14,7 @@ import type { DiseaseSymptom } from '../../engine/disease';
 import { formatDice, parseDice } from '../../engine/dice';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger, TalentTest, TestMatch, SpecEntry } from '../../data';
-import { harvestRaritySchema } from '../../data/schemas/common';
+import { harvestRaritySchema } from '../../data/schemas/grammaire/valeurs';
 import { specEntryId, specEntryLabel, CHAR_ABR, findCreatureById, findVehicleById } from '../../data';
 import { slugId } from '../../data/slug';
 import { ConditionEditor } from '../editor/ConditionEditor';

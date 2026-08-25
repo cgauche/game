@@ -1,7 +1,7 @@
 /**
  * Schéma de `gods.json` — dérivé du contenu RÉEL (41 entrées, script d'inventaire) et de
  * `GodData` (`src/data/index.ts`). `blessings`/`miracles`/`chaosSpells` = `Ref[]` (par id de
- * sort) — même petite forme que `TrappingRef`/`AdvancementRef`, PROMUE dans `common.ts`.
+ * sort) — même petite forme que `TrappingRef`/`AdvancementRef`, PROMUE dans `grammaire/reference.ts`.
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';

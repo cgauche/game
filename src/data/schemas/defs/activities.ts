@@ -37,7 +37,7 @@ const battleCondSchema = z.enum(['generalDown', 'intervention', 'noIntervention'
 
 /** `ActivityResolver` (`src/engine/activities.ts`) — VOCABULAIRE FERMÉ des résolveurs bespoke
  *  d'Activité (dispatch `runActivityResolver`/`seaActivities`/`travelPostes`/`battleActivities`).
- *  Dupliqué à l'identique côté schéma (même patron que `stageOutcomeSchema`, `common.ts`) : un
+ *  Dupliqué à l'identique côté schéma (même patron que `stageOutcomeSchema`, `grammaire/mecanique.ts`) : un
  *  résolveur de plus = une ligne ici ET sa branche moteur. */
 const activityResolverSchema = z.enum([
   // Interlude — socle (LDB 23, ACE Annexe I)

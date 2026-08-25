@@ -359,7 +359,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Exténué, Magie (`magie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.123-129) → `schema`, `STABLE_COND_KINDS`, `mouvementIntact`, `hitModifiers`, `useAttackJetProps`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `combat-helpless-mode`, `pickDoctrine`, `incomingMeleeAdvantage`, +20 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/state/actionRegistry.ts`, +7 fichiers
+- `LDB 16` (l.123-129) → `schema`, `STABLE_COND_KINDS`, `mouvementIntact`, `hitModifiers`, `useAttackJetProps`, `DOCTRINES`, `combat-helpless-mode`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, +20 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/state/actionRegistry.ts`, +7 fichiers
 
 ---
 
@@ -383,7 +383,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Initiative et Surprise (`combat.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.131-139) → `STABLE_COND_KINDS`, `DOCTRINES`, `applyIncomingMeleeAdvantage`, `combat-helpless-mode`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, +10 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, +1 fichiers
+- `LDB 16` (l.131-139) → `STABLE_COND_KINDS`, `DOCTRINES`, `combat-helpless-mode`, `applyIncomingMeleeAdvantage`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, +10 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, +1 fichiers
 
 ---
 
@@ -512,7 +512,7 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 - `LDB 40 l.101-101` — Colère des dieux 131-135 : Hémorragique quotidien jusqu'à Pénitence
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `miscast-colere`, `NestedTest`, `liveTableDecl`, `wrath-table`, `peche`, `CastPenalty`, `prayer-conviction`, `sonne`, `colere-pensez-a-vos-actes`, `CascadeActorCounter`, +29 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/reglesOptionnelles.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, +4 fichiers
+- `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `miscast-colere`, `NestedTest`, `wrath-table`, `peche`, `liveTableDecl`, `CastPenalty`, `prayer-conviction`, `sonne`, `colere-pensez-a-vos-actes`, `CascadeActorCounter`, +28 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/reglesOptionnelles.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, +4 fichiers
 - `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `miscast-mineure`, `miscast-majeure`, `followsCharacterRules`, `overcastAxes`, `MiscastResult`, `mineure-signe-de-sorciere`, `combat-spell-plus`, `mineure-lait-caille`, `useHoverTargeting`, `CastableSpell`, +95 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +18 fichiers
 
 ---

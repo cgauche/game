@@ -36,7 +36,7 @@ const OLD_TO_NEW = {
 };
 const OLD = new Set(Object.keys(OLD_TO_NEW));
 
-/** Champs recensés (issue #311, point 1) portant une VALEUR CharKey — cf. `common.ts`
+/** Champs recensés (issue #311, point 1) portant une VALEUR CharKey — cf. `src/data/schemas/grammaire/valeurs.ts`
  *  (`charKeySchema`), `engine/ops.ts` (Formula/GameOp), `data/index.ts:730` (`ManeuverDef.stat`). */
 const SCALAR_KEYS = new Set([
   'characteristic', 'char', 'bonusOf', 'charOf', 'castingChar', 'radiusStat', 'cap', 'attacker',

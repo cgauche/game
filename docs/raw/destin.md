@@ -123,7 +123,7 @@ Le MJ décrit la façon dont le personnage survit après la dépense.
 **Voir aussi** : [Personnages Sacrifiés](#personnages-sacrifiés-destin-au-moment-de-la-mort) ci-dessous (usage du Destin face à la mort au Tableau des Critiques).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.29-37) → `canReroll`, `restoreFortune`, `RunModal`, `canActFirst`, `fateSaveOrDie`, `carryOverState`, `freeActFirst`, `rerollAvailable`, `ReservesSeuilsBand`, `fortune-mid-session`, +30 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/persistence.ts`, +18 fichiers
+- `LDB 17` (l.29-37) → `canReroll`, `restoreFortune`, `RunModal`, `canActFirst`, `fateSaveOrDie`, `carryOverState`, `freeActFirst`, `rerollAvailable`, `ReservesSeuilsBand`, `fortune-mid-session`, +30 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +18 fichiers
 
 ---
 
@@ -139,7 +139,7 @@ La restauration se fait jusqu'à la valeur courante de Destin (pas la valeur de 
 **Sources RAW** : `LDB 17 l.41`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `carryOverState`, `fortune-mid-session`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `determination`, `Effect`, `recover-empetre`, +12 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/persistence.ts`, +8 fichiers
+- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `carryOverState`, `fortune-mid-session`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `determination`, `restoreFortuneSchema`, `recover-empetre`, +12 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +8 fichiers
 
 ### Option : Longues Séances de Jeu
 
@@ -151,7 +151,7 @@ Règle optionnelle du MJ : restauration intermédiaire au cours d'une longue ses
 **Sources RAW** : `LDB 17 l.46-47`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `EnemyAction`, `fortune-mid-session`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `determination`, `Effect`, `recover-empetre`, +9 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +7 fichiers
+- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `EnemyAction`, `fortune-mid-session`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `determination`, `restoreFortuneSchema`, `recover-empetre`, +9 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +7 fichiers
 
 ### Destin
 
@@ -163,7 +163,7 @@ Les Points de Destin se renouvellent très rarement — uniquement sur décision
 **Sources RAW** : `LDB 17 l.43`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `fortune-mid-session`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `determination`, `Effect`, `recover-empetre`, `recover-en-flammes`, +11 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +7 fichiers
+- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `fortune-mid-session`, `je-ne-faillirai-pas`, `RollFlowLens`, `je-te-renie`, `determination`, `restoreFortuneSchema`, `recover-empetre`, `recover-en-flammes`, +11 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +7 fichiers
 
 ---
 
@@ -231,7 +231,7 @@ Règles précises :
 **Voir aussi** : [Influencer un test — Chance, Résilience, Talents](tests.md#influencer-un-test--chance-résilience-talents) (dans `tests.md`) — c'est là que le mécanisme est décrit dans son contexte d'intégration au Test ; la présente section n'en donne que la définition.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.64-72) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `regainDetermination`, `forceCrewRole`, `BattementModal`, +79 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +43 fichiers
+- `LDB 17` (l.64-72) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `regainDetermination`, `forceCrewRole`, `BattementModal`, +79 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/combat.ts`, `src/engine/critical.ts`, +43 fichiers
 
 ---
 
@@ -260,7 +260,7 @@ Encore plus rare que l'octroi de Points de Destin. Uniquement pour des actions d
 **Sources RAW** : `LDB 17 l.85-87`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.81-83, l.85-87) → `regainDetermination`, `fortune-mid-session`, `je-ne-faillirai-pas`, `je-te-renie`, `determination`, `recover-empetre`, `recover-en-flammes`, `Effect`, `FLOWS` — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/session.ts`, `src/state/rollFlowSpecs.ts`, `src/state/scene.ts`
+- `LDB 17` (l.81-83, l.85-87) → `regainDetermination`, `fortune-mid-session`, `je-ne-faillirai-pas`, `je-te-renie`, `determination`, `recover-empetre`, `recover-en-flammes`, `sessionEndSchema`, `FLOWS` — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/session.ts`, `src/state/rollFlowSpecs.ts`
 
 ---
 

@@ -3,7 +3,7 @@
  *
  * Miroir EXACT de la chaîne que le stage exécute au geste (`stage/useStagePointer` : pixel de
  * l'élément → point de viewBox (`viewBoxPointAt`) → point de projection (`stagePointAt`) → hit-test
- * SPRITE (`cidUnderPointer`) puis surface du SOL) — jamais un second calcul à tenir à jour.
+ * SPRITE (`targetUnderPointer`) puis surface du SOL) — jamais un second calcul à tenir à jour.
  *
  * Elle vit ICI, dans `gameIso`, et s'ENREGISTRE auprès de l'outillage de recette (`state/devtools`) :
  * `src/state` ne dépend JAMAIS de `src/gameIso` (règle 3, garde `gameiso-purity`). Le sens est donc
@@ -17,7 +17,7 @@ import { viewYawDeg } from '../../state/stageYaw';
 import type { Dims } from '../../geometry/iso';
 import { stagePointAt, viewBoxPointAt } from './stageCam';
 import { poseFromDims, screenToTileAtLift } from './projection';
-import { cidUnderPointer } from './spritePicker';
+import { targetUnderPointer } from './spritePicker';
 
 /** Ce que le picking résoudrait sous `px` (pixel CLIENT). `null` tant que le stage n'est pas monté. */
 export const pickTileAt: PickProbe = (px) => {
@@ -30,7 +30,8 @@ export const pickTileAt: PickProbe = (px) => {
   const vb = viewBoxPointAt({ sx: px.x - r.left, sy: px.y - r.top }, { w: r.width, h: r.height });
   const g = stagePointAt(vb, st.camPan, st.zoom);
   // Étage 2 : le SPRITE d'abord (en combat, le picking cible la case du CORPS dessiné), le SOL sinon.
-  const cid = st.mode === 'battle' && st.battle ? cidUnderPointer(px.x, px.y) : null;
+  const visé = st.mode === 'battle' && st.battle ? targetUnderPointer(px.x, px.y) : null;
+  const cid = visé?.kind === 'combatant' ? visé.id : null;
   const occ = cid && st.battle ? inBattleId(st.battle, cid) : undefined;
   if (occ?.pos) return { tile: { x: occ.pos.x, y: occ.pos.y, z: occ.pos.z ?? 0 }, cid, via: 'sprite' };
   const dims: Dims = { ...st.scene.dimensions, rot: st.camRot, view: st.viewMode, edge: st.camEdge, yawDeg: viewYawDeg(st.camRot, st.camEdge) };

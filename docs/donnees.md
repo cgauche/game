@@ -293,31 +293,48 @@ Deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision MDG) sont
 
 ## §E-bis — Contrat de schéma (`src/data/schemas/`)
 
-Chaque `src/data/*.json` valide contre un schéma zod **STRICT** — le contrat de donnée (Lot 1,
-**121/121** datasets sous contrat, décompte CALCULÉ des defs présentes dans
-`src/data/schemas/defs/`). Trois pièces :
+Chaque document authoré valide contre un schéma zod **STRICT** — le contrat de donnée (Lot 1),
+sur les **DEUX racines** de documents : `src/data` (catalogues de jeu, **121/121**
+datasets sous contrat, décompte CALCULÉ des defs présentes dans `src/data/schemas/defs/`) et
+`src/scenes` (projets de campagne `*-projet.json`, defs dans `src/data/schemas/defs-scenes/`). Pièces :
 
 - **`src/data/schemas/defs/<nom>.ts`** — 1 def PAR dataset (même basename que le `.json`), exporte
   `file` (le nom de fichier) et `schema` (`z.ZodTypeAny`, racine = la forme EXACTE du JSON — tableau
   ou objet à sous-catalogues). `characteristics.ts` est l'EXEMPLAIRE de la convention. Champs de
-  référence commun (`source.book`/`source.page`) : `sourceRefSchema` (`src/data/schemas/common.ts`).
-- **`src/data/schemas/_registry.generated.ts`** — GÉNÉRÉ par `node scripts/gen-registry.mjs`
-  (`npm run gen`), scanne `defs/` et exporte `SCHEMA_DEFS: SchemaDef[]`. Ne JAMAIS éditer à la main.
-- **`PENDING`** dans `src/data/schema-contract.test.ts` — la liste des `.json` encore sans schéma.
-  **Vide** depuis la fin de la migration : tout nouveau dataset naît AVEC son def, jamais en PENDING
+  référence commun (`source.book`/`source.page`) : `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`).
+- **`src/data/schemas/defs-scenes/<nom>.ts`** — 1 def PAR projet de campagne ; son `file` est le
+  **chemin RELATIF à `src/scenes`** (`arene/arene-projet.json`), jamais un basename. Les quatre defs
+  partagent le même `projetSchema` (`src/data/schemas/defs-scenes/projet.ts`), composé des formes de
+  scène (`scene.ts`), de carte du monde (`worldmap.ts`) et du bloc narratif (`narratif.ts`).
+- **`_registry.generated.ts`** et **`_registry-scenes.generated.ts`** — GÉNÉRÉS par
+  `node scripts/gen-registry.mjs` (`npm run gen`), un par dossier de defs (`SCHEMA_DEFS`,
+  `SCHEMA_DEFS_SCENES`). Ne JAMAIS éditer à la main. `DEFS_DE_DOCUMENT`
+  (`src/data/schemas/validate.ts`) en est l'union — le registre des deux racines.
+- **`PENDING`** dans `src/data/schema-contract.test.ts` — la liste des documents encore sans schéma.
+  **Vide** depuis la fin de la migration : tout nouveau document naît AVEC son def, jamais en PENDING
   transitoire.
 
+**Deux portes, une vérité** (`src/data/schemas/validate.ts`) :
+- `validateDataset(file, value)` — porte par **FICHIER**, pour qui connaît le nom du document. Un
+  fichier NON registré est une **erreur nommée**, jamais un laissez-passer.
+- `validateDocument(schema, value)` — porte par **SCHÉMA**, pour un seam SANS nom de fichier :
+  `parseProject` (`src/state/worldMap.ts`) sert du JSON committé, du localStorage ET de l'import
+  utilisateur. C'est là que le projet est validé — forme ET sémantiques (FK `activeAxes`, invariants
+  du bloc narratif, FK intra-document `entity.presetId`, forme de `meta`).
+
 **Portes qui font respecter le contrat :**
-- `src/data/schema-contract.test.ts` (CI/`npm test`) : (a) chaque dataset de `SCHEMA_DEFS` valide
-  son JSON réel, (b) EXHAUSTIVITÉ (tout `.json` est registré ou dans `PENDING`), (c) CLIQUET
+- `src/data/schema-contract.test.ts` (CI/`npm test`) : (a) chaque document des deux racines valide
+  son JSON réel, (b) EXHAUSTIVITÉ (tout document est registré ou dans `PENDING`), (c) CLIQUET
   (`PENDING` ne peut pas contenir un fichier déjà schématisé).
 - `scripts/guards/validate-data.mts` (pre-commit, `scripts/git-hooks/pre-commit.mjs`) : sur les
-  `.json` STAGÉS, reparse et revalide contre `SCHEMA_DEFS` (Node/tsx, hors Vitest) ; un fichier sans
-  schéma enregistré est ignoré silencieusement (ne peut pas arriver hors PENDING, cf. ci-dessus).
+  `.json` STAGÉS, reparse et revalide contre `DEFS_DE_DOCUMENT` — les DEUX registres, `src/data`
+  et `src/scenes` (Node/tsx, hors Vitest). **STRICT** : un document authoré des deux racines SANS
+  schéma au registre est une ERREUR nommée ; un chemin hors des deux racines n'est pas de sa
+  juridiction (compté à part, jamais jugé).
 
-**Geste « ajouter un dataset »** : créer le `.json` **et** `src/data/schemas/defs/<nom>.ts` dans le
-même commit, puis `npm run gen` (régénère `_registry.generated.ts`) — sinon la garde EXHAUSTIVITÉ
-échoue (orphelin ni registré ni PENDING).
+**Geste « ajouter un document »** : créer le `.json` **et** son def (`schemas/defs/<nom>.ts` pour
+`src/data`, `schemas/defs-scenes/<nom>.ts` pour `src/scenes`) dans le même commit, puis
+`npm run gen` — sinon la garde EXHAUSTIVITÉ échoue (orphelin ni registré ni PENDING).
 
 ## §E-ter — Les deux espaces de clés « race » (species ⇄ rig)
 

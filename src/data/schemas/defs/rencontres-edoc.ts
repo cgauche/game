@@ -3,7 +3,7 @@
  * `TravelTableEntry` (`src/engine/travelTables.ts`) + l'enveloppe `{ id, label, die, source,
  * tables }` (voir `EncounterCategory` de `travelTables.ts`).
  *
- * `travelTableEntrySchema` est PROMU dans `common.ts` — MÊME forme que les entrées de
+ * `travelTableEntrySchema` est PROMU dans `grammaire/mecanique.ts` — MÊME forme que les entrées de
  * `incidents-monture.json`/`problemes-vehicule.json` (les trois miroitent `TravelTableEntry`).
  */
 import { z } from 'zod';

@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `specEntrySchema`, `BargainModalView`, `HealRollFlow`, `redaction`, +45 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, +34 fichiers
+- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `CibleDeType`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `specEntrySchema`, `HealRollFlow`, +48 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +35 fichiers
 
 ---
 
@@ -98,7 +98,7 @@ la description, ou en crée une avec l'accord du MJ.
 **Sources RAW :** LDB 09 l.34-46
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `specEntrySchema`, `redaction`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, `buildAdvancementView`, `ACTION_GATES`, `combatBaseValue`, +11 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, +14 fichiers
+- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `CibleDeType`, `specEntrySchema`, `redaction`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, `specRef` ⚠sans-appelant, +14 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +15 fichiers
 
 ---
 

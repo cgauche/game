@@ -7,7 +7,7 @@
 
 ## Périmètre mesuré / angles morts
 
-39 schémas NOMMÉS mesurés dans `src/data/schemas/common.ts` (37) + `src/data/schemas/defs/criticals.ts` (2) ; **17 retenus** (voir en-tête du générateur pour le détail des 22 exclus). Les 109 catalogues `src/data/schemas/defs/*.ts` (schéma d'entrée ANONYME par fichier) restent HORS PÉRIMÈTRE — sans alias TS nommé, ce détecteur ne peut pas y borner une lecture.
+Schémas NOMMÉS candidats : `src/data/schemas/grammaire/` (formes partagées entre documents) + les `src/data/schemas/defs/` dont les sous-schémas sont nommés (`criticals.ts`, `props.ts`) ; **23 retenus** (voir en-tête du générateur pour les raisons d'exclusion). Les catalogues `src/data/schemas/defs/*.ts` à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE — sans alias TS nommé, ce détecteur ne peut pas y borner une lecture ; en SORTIR un catalogue est un geste d'auteur (nommer son schéma d'entrée dans SON def — ou en `grammaire/` si la forme est réellement partagée — puis l'ajouter à `TARGETS`), fait pour `props.json` → `PropData`.
 
 Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant doit être EXPLICITEMENT annoté du type cible. **Vérification manuelle des 16 champs « 0 lecteur »** de la première mesure (échantillon COMPLET, pas partiel) : 9/16 (56 %) sont des FAUX NÉGATIFS — un lecteur réel existe via une variable de type INFÉRÉ, un accès chaîné à travers un champ intermédiaire non annoté, ou une boucle `for…of` sur un tableau typé (détail + fichiers : en-tête du générateur). Taux trop élevé pour un cliquet CI fiable — ce rapport reste une mesure BRUTE, non ratchetée.
 
@@ -23,12 +23,12 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `natural` | 1 | `src/engine/creatureEquip.ts:87` |
 | `hidden` | **0 — JAMAIS LU** | — |
 
-### `SourceRef` (src/data/schemas/common.ts)
+### `SourceRef` (src/data/schemas/grammaire/valeurs.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `book` | 1 | `src/ui/creator/CharacterCreator.tsx:1258` |
-| `page` | 1 | `src/ui/creator/CharacterCreator.tsx:1258` |
+| `book` | 1 | `src/ui/creator/CharacterCreator.tsx:1259` |
+| `page` | 1 | `src/ui/creator/CharacterCreator.tsx:1259` |
 | `note` | **0 — JAMAIS LU** | — |
 
 ### `DetailRecipe` (src/gameIso/detail/types.ts)
@@ -40,7 +40,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `timber` | 4 | `src/gameIso/backends/webgl/faceBake.ts:85` |
 | `speckle` | 6 | `src/gameIso/authoring/detailSvg.ts:414` |
 | `tufts` | 9 | `src/gameIso/authoring/detailSvg.ts:409` |
-| `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:134` |
+| `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:144` |
 | `seedScope` | 1 | `src/gameIso/backends/webgl/groundAccents.ts:70` |
 
 ### `DiceSpec` (src/engine/dice.ts)
@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3224` |
-| `spec` | 1 | `src/data/index.ts:3225` |
+| `id` | 4 | `src/data/index.ts:3229` |
+| `spec` | 1 | `src/data/index.ts:3230` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3236` |
+| `id` | 1 | `src/data/index.ts:3241` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3236` |
+| `value` | 2 | `src/data/index.ts:3241` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3282` |
+| `id` | 4 | `src/data/index.ts:3287` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3283` |
-| `qualities` | 2 | `src/data/index.ts:3286` |
-| `qualityChoice` | 2 | `src/data/index.ts:3284` |
-| `text` | 1 | `src/data/index.ts:3277` |
-| `vehicleId` | 2 | `src/data/index.ts:3279` |
+| `count` | 3 | `src/data/index.ts:3288` |
+| `qualities` | 2 | `src/data/index.ts:3291` |
+| `qualityChoice` | 2 | `src/data/index.ts:3289` |
+| `text` | 1 | `src/data/index.ts:3282` |
+| `vehicleId` | 2 | `src/data/index.ts:3284` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3281` |
-| `choice` | 3 | `src/data/index.ts:3274` |
-| `wildcard` | 1 | `src/data/index.ts:3275` |
+| `creatureId` | 2 | `src/data/index.ts:3286` |
+| `choice` | 3 | `src/data/index.ts:3279` |
+| `wildcard` | 1 | `src/data/index.ts:3280` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:3256` |
-| `wildcard` | 5 | `src/data/index.ts:3258` |
-| `specOptions` | 3 | `src/data/index.ts:3257` |
-| `choice` | 4 | `src/data/index.ts:3260` |
-| `random` | 2 | `src/data/index.ts:3261` |
+| `ref` | 4 | `src/data/index.ts:3261` |
+| `wildcard` | 5 | `src/data/index.ts:3263` |
+| `specOptions` | 3 | `src/data/index.ts:3262` |
+| `choice` | 4 | `src/data/index.ts:3265` |
+| `random` | 2 | `src/data/index.ts:3266` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -119,15 +119,15 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 |---|---|---|
 | `seed` | 2 | `src/gameIso/rig/enemyProfile.ts:126` |
 | `monster` | 4 | `src/gameIso/rig/enemyProfile.ts:127` |
-| `colors` | 5 | `src/gameIso/rig/bodyPlan.ts:121` |
+| `colors` | 5 | `src/gameIso/rig/bodyPlan.ts:122` |
 | `parts` | 2 | `src/gameIso/rig/enemyProfile.ts:130` |
 | `sex` | 3 | `src/gameIso/rig/enemyProfile.ts:124` |
 | `build` | 3 | `src/gameIso/rig/enemyProfile.ts:125` |
 | `species` | 5 | `src/gameIso/AnimatedPlanToken.tsx:14` |
 | `tenue` | 3 | `src/gameIso/rig/enemyProfile.ts:107` |
-| `harnais` | 1 | `src/gameIso/rig/bodyPlan.ts:123` |
+| `harnais` | 1 | `src/gameIso/rig/bodyPlan.ts:124` |
 | `armurePortee` | **0 — JAMAIS LU** | — |
-| `eyes` | 5 | `src/gameIso/rig/bodyPlan.ts:122` |
+| `eyes` | 5 | `src/gameIso/rig/bodyPlan.ts:123` |
 | `features` | 3 | `src/gameIso/rig/enemyProfile.ts:128` |
 
 ### `FlowTest` (src/engine/flowCore.ts)
@@ -195,6 +195,63 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `crewTest` | 1 | `src/ui/compendium/registry.ts:683` |
 | `note` | 1 | `src/ui/compendium/registry.ts:687` |
 
+### `PropData` (src/data/props.types.ts)
+
+| Champ | Lecteurs | Exemple |
+|---|---|---|
+| `id` | **0 — JAMAIS LU** | — |
+| `solid` | **0 — JAMAIS LU** | — |
+| `opaque` | **0 — JAMAIS LU** | — |
+| `cover` | **0 — JAMAIS LU** | — |
+| `light` | **0 — JAMAIS LU** | — |
+| `foot` | 1 | `src/data/props.types.ts:81` |
+| `volume` | 1 | `src/gameIso/builders/propVolumes.ts:132` |
+| `seatSlots` | **0 — JAMAIS LU** | — |
+
+### `PropVolumeRecipe` (src/data/props.types.ts)
+
+| Champ | Lecteurs | Exemple |
+|---|---|---|
+| `primitives` | **0 — JAMAIS LU** | — |
+
+### `PropPrimitive` (src/data/props.types.ts)
+
+| Champ | Lecteurs | Exemple |
+|---|---|---|
+| `kind` | 2 | `src/gameIso/builders/propVolumes.ts:118` |
+| `center` | 3 | `src/gameIso/builders/propVolumes.ts:118` |
+| `size` | 2 | `src/gameIso/builders/propVolumes.ts:118` |
+| `material` | **0 — JAMAIS LU** | — |
+| `radius` | 1 | `src/gameIso/builders/propVolumes.ts:119` |
+| `heightM` | 1 | `src/gameIso/builders/propVolumes.ts:119` |
+| `sides` | 1 | `src/gameIso/builders/propVolumes.ts:119` |
+| `slope` | 1 | `src/gameIso/builders/propVolumes.ts:120` |
+
+### `PropSeatSlot` (src/data/props.types.ts)
+
+| Champ | Lecteurs | Exemple |
+|---|---|---|
+| `id` | **0 — JAMAIS LU** | — |
+| `anchor` | **0 — JAMAIS LU** | — |
+| `facing` | **0 — JAMAIS LU** | — |
+| `approach` | **0 — JAMAIS LU** | — |
+
+### `PropPoint3` (src/data/props.types.ts)
+
+| Champ | Lecteurs | Exemple |
+|---|---|---|
+| `x` | 4 | `src/gameIso/builders/propVolumes.ts:40` |
+| `y` | 4 | `src/gameIso/builders/propVolumes.ts:40` |
+| `h` | 4 | `src/gameIso/builders/propVolumes.ts:40` |
+
+### `PropSize3` (src/data/props.types.ts)
+
+| Champ | Lecteurs | Exemple |
+|---|---|---|
+| `x` | **0 — JAMAIS LU** | — |
+| `y` | **0 — JAMAIS LU** | — |
+| `h` | **0 — JAMAIS LU** | — |
+
 ### `CritEscalation` (src/data/criticals.ts)
 
 | Champ | Lecteurs | Exemple |
@@ -219,7 +276,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-17 types, 121 champs mesurés, **14 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+23 types, 148 champs mesurés, **29 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 

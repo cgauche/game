@@ -42,7 +42,7 @@ function keyName(name) {
 const litType = (t) => (ts.isLiteralTypeNode(t) && ts.isStringLiteralLike(t.literal) ? t.literal.text : null);
 
 /** SCHÉMAS DÉRIVÉS du canon : les seuls récepteurs dont un `.extract(…)`/`.exclude(…)` SÉLECTIONNE
- *  dans le canon (leurs options SONT le tuple, cf. `src/data/schemas/common.ts`). Un `.extract` posé
+ *  dans le canon (leurs options SONT le tuple, cf. `src/data/schemas/grammaire/valeurs.ts`). Un `.extract` posé
  *  sur n'importe quel autre objet ne prouve rien — il ne blanchit donc rien.
  * @type {string[]} */
 export const SCHEMAS_DU_CANON = ['availabilitySchema', 'stakeFormSchema', 'harvestRaritySchema'];
