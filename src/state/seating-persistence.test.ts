@@ -11,10 +11,12 @@ const AUTHORED_NPC_SEAT: SeatAssignments = { [PROP]: { nord: NPC } };
 function sceneWithAssignments(seatAssignments?: SeatAssignments): Scene {
   const s = emptyScene(10, 10);
   s.id = 'taverne';
+  // Table en (4,4) cap `N` — la `pos` d'un attablé est l'ABORD de sa place (spec §5 l.213) :
+  // nord (4,3), sud (4,5).
   s.entities = [
     { id: PROP, kind: 'prop', pos: { x: 4, y: 4 }, ref: TABLE, facing: 'N' },
-    { id: 'pnj-1', kind: 'personnage', pos: { x: 4, y: 4 } },
-    { id: 'pnj-2', kind: 'personnage', pos: { x: 4, y: 4 } },
+    { id: 'pnj-1', kind: 'personnage', pos: { x: 4, y: 3 } },
+    { id: 'pnj-2', kind: 'personnage', pos: { x: 4, y: 5 } },
   ] as SceneEntity[];
   if (seatAssignments) s.seatAssignments = seatAssignments;
   return s;
@@ -61,5 +63,43 @@ describe('SceneMutation — l’assise se persiste en OVERRIDE COMPLET', () => {
     const authored = sceneWithAssignments(AUTHORED_NPC_SEAT);
     const out = applyMutation(structuredClone(authored), { removedEntityIds: [], flags: { porte: true } });
     expect(out.seatAssignments).toEqual(AUTHORED_NPC_SEAT);
+  });
+});
+
+/**
+ * Spec §4.2 : « Au chargement et à l'application d'une mutation, `pruneSeatAssignments` élimine les
+ * références devenues invalides ». Les deux coutures sont mesurées ici (pur) et sur le store (bout
+ * en bout) dans `sceneInstance.test.ts`.
+ */
+describe('applyMutation — élagage de l’assise quand le groupe est fourni', () => {
+  it('la mutation qui RETIRE le meuble emporte la place, dans la même application', () => {
+    const authored = sceneWithAssignments(AUTHORED_NPC_SEAT);
+    const out = applyMutation(structuredClone(authored), { removedEntityIds: [PROP], flags: {} }, new Set());
+    expect(out.entities.map((e) => e.id)).not.toContain(PROP);
+    expect(out.seatAssignments).toEqual({});
+  });
+
+  it('la mutation qui RETIRE le PNJ emporte sa place', () => {
+    const authored = sceneWithAssignments(AUTHORED_NPC_SEAT);
+    const out = applyMutation(structuredClone(authored), { removedEntityIds: ['pnj-1'], flags: {} }, new Set());
+    expect(out.seatAssignments).toEqual({});
+  });
+
+  it('un héros HORS du groupe fourni perd sa place ; le meneur du groupe garde la sienne', () => {
+    const authored = sceneWithAssignments({ [PROP]: { nord: { kind: 'party', heroId: 'hero-1' } } });
+    expect(applyMutation(structuredClone(authored), undefined, new Set()).seatAssignments).toEqual({});
+    expect(applyMutation(structuredClone(authored), undefined, new Set(['hero-1'])).seatAssignments)
+      .toEqual({ [PROP]: { nord: { kind: 'party', heroId: 'hero-1' } } });
+  });
+
+  it('un slot que le catalogue n’offre pas est élagué, les autres survivent', () => {
+    const authored = sceneWithAssignments({ [PROP]: { nord: NPC, plafond: { kind: 'entity', entityId: 'pnj-2' } } });
+    expect(applyMutation(structuredClone(authored), undefined, new Set()).seatAssignments).toEqual({ [PROP]: { nord: NPC } });
+  });
+
+  it('SANS groupe fourni, aucun élagage : la superposition reste NUE (comportement d’origine)', () => {
+    const authored = sceneWithAssignments({ [PROP]: { nord: NPC, plafond: { kind: 'entity', entityId: 'pnj-2' } } });
+    const out = applyMutation(structuredClone(authored), { removedEntityIds: ['pnj-1'], flags: {} });
+    expect(out.seatAssignments).toEqual({ [PROP]: { nord: NPC, plafond: { kind: 'entity', entityId: 'pnj-2' } } });
   });
 });

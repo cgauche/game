@@ -129,8 +129,9 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
           if (!VALID_STATBLOCK_CHAR_KEYS.has(k)) add('error', 'entity', e.id, `${e.label ?? e.id} : statblock.char porte une clé étrangère « ${k} » (format canonique = CharKey slug plein, cf. #311)`);
     }
     // ASSISE AUTHORÉE (`Scene.seatAssignments`, résolue par `state/seating`) : chaque place occupée
-    // doit désigner un meuble POSÉ, une place que son type déclare, et un corps présent — et le PNJ
-    // assis se tient sur la case qui porte sa place, pas ailleurs sur la carte.
+    // doit désigner un meuble POSÉ, une place que son type déclare, et un corps présent — et la `pos`
+    // du PNJ assis est EXACTEMENT la case d'abord résolue de sa place (sa position LOGIQUE : c'est de
+    // là qu'il s'est assis et là qu'il se relève ; l'ancre fractionnaire n'est que du rendu).
     for (const [propId, parMeuble] of Object.entries(s.seatAssignments ?? {})) {
       const places = seatSlotsOf(s, propId);
       const propPose = s.entities.some((e) => e.id === propId && e.kind === 'prop');
@@ -142,9 +143,9 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         if (occupant.kind === 'party') continue; // le groupe n'appartient pas au document de scène
         const pnj = s.entities.find((e) => e.id === occupant.entityId && e.kind === 'personnage');
         if (!pnj) { add('error', 'entity', propId, `Assise « ${propId}/${slotId} » : aucun personnage « ${occupantId} » dans la scène`); continue; }
-        const cx = Math.round(place.anchor.x), cy = Math.round(place.anchor.y);
-        if (pnj.pos.x !== cx || pnj.pos.y !== cy)
-          add('error', 'entity', occupant.entityId, `Assise « ${propId}/${slotId} » : « ${occupantId} » est posé en (${pnj.pos.x},${pnj.pos.y}) alors que sa place est en (${cx},${cy})`);
+        const { x: ax, y: ay } = place.approach;
+        if (pnj.pos.x !== ax || pnj.pos.y !== ay)
+          add('error', 'entity', occupant.entityId, `Assise « ${propId}/${slotId} » : « ${occupantId} » est posé en (${pnj.pos.x},${pnj.pos.y}) alors que l’abord de sa place est en (${ax},${ay})`);
       }
     }
     const validRect = (rect: { x: number; y: number; w: number; h: number }) =>

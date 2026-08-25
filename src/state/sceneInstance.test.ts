@@ -141,6 +141,21 @@ describe('sceneInstance — câblage store, REVISIT (#707)', () => {
     expect(useGame.getState().sceneInstances).toEqual({});
   });
 
+  it('transitionTo : l’assise AUTHORÉE d’un héros hors groupe est élaguée à l’entrée en scène (spec §4.2)', () => {
+    useGame.setState({ party: [hero()] });
+    const a = fixtureScene('scene-t1');
+    const b = fixtureScene('scene-t2');
+    b.entities.push({ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'N' });
+    b.entities.push({ id: 'attable', kind: 'personnage', pos: { x: 2, y: 2 } }); // abord NORD
+    b.seatAssignments = {
+      'table-1': { nord: { kind: 'entity', entityId: 'attable' }, sud: { kind: 'party', heroId: 'heros-jamais-recrute' } },
+    };
+    useGame.getState().loadProject([a, b], 'scene-t1', undefined);
+    useGame.getState().transitionTo('scene-t2');
+    // Le PNJ authoré reste assis ; le héros qui n'est pas du groupe ne réserve rien.
+    expect(useGame.getState().scene!.seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'attable' } } });
+  });
+
   describe('save/load RÉEL (applyLoadedSave, #707)', () => {
     beforeEach(() => {
       (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
@@ -164,6 +179,30 @@ describe('sceneInstance — câblage store, REVISIT (#707)', () => {
 
       useGame.getState().transitionTo('scene-g');
       expect(useGame.getState().scene!.entities.map((e) => e.id)).not.toContain('decor-retire');
+    });
+
+    it('une save v28 portant une place INVALIDE arrive ÉLAGUÉE en état (spec §4.2)', () => {
+      useGame.setState({ party: [hero()] });
+      const s = fixtureScene('scene-assise');
+      s.entities.push({ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'N' });
+      s.entities.push({ id: 'attable', kind: 'personnage', pos: { x: 2, y: 2 } }); // abord NORD de la table
+      useGame.getState().loadProject([s], 'scene-assise', undefined);
+      useGame.setState((st) => ({ scene: { ...st.scene!, seatAssignments: { 'table-1': { nord: { kind: 'entity', entityId: 'attable' } } } } }));
+      expect(useGame.getState().saveGame(1)).toBe(true);
+
+      // La save est trafiquée à la VERSION COURANTE : meuble disparu, héros hors groupe, slot inconnu
+      // — exactement ce qu'un paquet de campagne réédité ou un groupe recomposé produit.
+      const brut = readSlot(1)!;
+      const data = brut.data as { scene: Scene };
+      data.scene.seatAssignments = {
+        'table-1': { nord: { kind: 'entity', entityId: 'attable' }, plafond: { kind: 'entity', entityId: 'attable' } },
+        'meuble-disparu': { nord: { kind: 'entity', entityId: 'attable' } },
+        'table-2': { nord: { kind: 'party', heroId: 'heros-fantome' } },
+      };
+      saveToSlot(1, brut);
+
+      expect(useGame.getState().loadGame(1)).toBe(true);
+      expect(useGame.getState().scene!.seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'attable' } } });
     });
 
     it('tolérance PAR CONSTRUCTION : clé « sceneInstances » absente du snapshot → valeur initiale ({}) au chargement', () => {

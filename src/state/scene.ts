@@ -34,10 +34,10 @@ export type EntityKind = 'heroStart' | 'personnage' | 'prop';
 
 /** Statbloc personnalisé (PNJ/bête custom d'éditeur) — moteur pur, `engine/statblock.ts` (#614) :
  *  `LivingRef` (`engine/possession.ts`) porte la même dualité bestiaire|custom que ce type. */
-import type { SeatAssignments } from './seating';
 import type { CustomStatblock } from '../engine/statblock';
 import type { LivingRef } from '../engine/possession';
 import { chebyshev } from '../engine/grid';
+import type { SeatAssignments } from './seating';
 export type { CustomStatblock };
 
 export interface SceneEntity {

@@ -57,7 +57,7 @@ describe('buildTokens — figurants (PNJ d’ambiance)', () => {
     const s = scene();
     s.entities = [
       { id: 'table-1', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
-      { id: 'f1', kind: 'personnage', pos: { x: 1, y: 1 } },
+      { id: 'f1', kind: 'personnage', pos: { x: 2, y: 1 } }, // assis à l'est : sa `pos` EST son abord
       { id: 'f2', kind: 'personnage', pos: { x: 4, y: 4 } }, // debout : aucune place
     ] as SceneEntity[];
     s.encounters = [] as Scene['encounters'];
@@ -68,7 +68,10 @@ describe('buildTokens — figurants (PNJ d’ambiance)', () => {
     expect(assis.seat?.facing).toBe('O');           // recette face au N : le corps de l'est regarde l'ouest
     expect(assis.seat?.anchor.x).toBeCloseTo(1.43, 4);
     expect(assis.seat?.anchor.h).toBeCloseTo(0.49, 4);
-    expect(assis).not.toHaveProperty('mountId');
+    // Un attablé n'est PAS un couple monté : aucun token `mounted` n'est émis pour lui, et le sujet
+    // reste un figurant (assertion qui rougirait si l'assise passait par la voie monture).
+    expect(assis.kind).toBe('figurant');
+    expect(buildTokens(s, allVisible(s), null, VIEW).map((e) => e.subject.kind)).toEqual(['figurant', 'figurant']);
     expect(par.get('f2')).not.toHaveProperty('seat'); // debout : aucun champ d'assise
   });
 

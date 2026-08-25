@@ -56,6 +56,7 @@ import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlo
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
 import { captureMutation, applyMutation as applySceneMutation, type SceneMutation } from './sceneInstance';
+import { pruneSeatAssignments } from './seating';
 import type { ClueState } from './clues';
 import { togglePin } from './clues';
 import type { CodexFocus } from './codexFocus';
@@ -78,7 +79,14 @@ function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): 
   // rattrapé : `applyNetSnapshot` (`netFlow.ts`), où l'invité adopte l'état de l'hôte en bloc — aucun
   // écrivain de `camEdge: true` ne subsiste dans l'arbre, seul un hôte tournant un build ANTÉRIEUR au
   // lot pourrait en émettre un.
-  set({ ...base, ...data, screen: 'campaign', camEdge: false, net: useGame.getState().net });
+  // ASSISE : la scène persistée peut porter des places dont le meuble, le slot ou le héros n'existent
+  // plus dans CE snapshot (paquet de campagne édité, groupe recomposé) — élaguée AVANT d'entrer en
+  // état, par la même source unique que la superposition de mutation.
+  const chargee = data.scene as Scene | null | undefined;
+  const scene = chargee
+    ? { ...chargee, seatAssignments: pruneSeatAssignments(chargee, new Set((data.party ?? []).map((h) => h.id))) }
+    : chargee;
+  set({ ...base, ...data, ...(chargee ? { scene } : {}), screen: 'campaign', camEdge: false, net: useGame.getState().net });
   // Paquet de campagne snapshotté (#766) : RÉ-ENREGISTRE toutes ses scènes (le `sceneRegistry` en mémoire
   // module ne connaît sinon que l'Arène + la scène courante → transitions/portes vers les AUTRES scènes du
   // paquet échoueraient en silence) et RE-DÉRIVE la couche narrative runtime (non persistée, `saves.ts`).
@@ -2050,7 +2058,9 @@ export const useGame = create<GameState>((set, get) => ({
       if (mut) sceneInstances[leaving.id] = mut;
       else delete sceneInstances[leaving.id];
     }
-    const scene = applySceneMutation(JSON.parse(JSON.stringify(target)), sceneInstances[target.id]);
+    // Le groupe est passé : l'assise superposée est élaguée au moment même où la scène entre en état
+    // (meuble retiré par la mutation, slot disparu du catalogue, héros qui n'est plus du groupe).
+    const scene = applySceneMutation(JSON.parse(JSON.stringify(target)), sceneInstances[target.id], new Set(get().party.map((h) => h.id)));
     set((s) => ({
       scene,
       sceneInstances,

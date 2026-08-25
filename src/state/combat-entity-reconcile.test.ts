@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { checkBattleOver } from './combatFlow';
 import { removeEntities } from './combatGeometry';
-import { seatPoseOf } from './seating';
+import { seatPoseOf, seatSlotsOf } from './seating';
 import { createHero } from '../engine/character';
 import { inanimateCombatant } from '../engine/inanimate';
 import { makeRNG } from '../engine/dice';
@@ -170,7 +170,7 @@ describe('removeEntities — retrait par lot (brique partagée)', () => {
       layers: [{ z: 0, tiles: new Array(36).fill('herbe') }],
       entities: [
         { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
-        { id: 'pnj-1', kind: 'personnage', pos: { x: 2, y: 2 } },
+        { id: 'pnj-1', kind: 'personnage', pos: { x: 2, y: 1 } }, // abord NORD : la `pos` d'un attablé
       ] as SceneEntity[],
       dialogues: [], triggers: [], encounters: [], flags: {},
       seatAssignments: { 'table-1': { nord: assis } },
@@ -197,19 +197,28 @@ describe('ouverture de combat — un PNJ enrôlé ASSIS se lève', () => {
     const sc = useGame.getState().scene!;
     const enrole = sc.encounters.find((e) => e.id === 'enc-mutants')!.members![0].entityId;
     const pos = sc.entities.find((e) => e.id === enrole)!.pos;
+    // Table posée au NORD de l'enrôlé, cap `N` : son abord SUD est exactement la case de l'enrôlé, et
+    // son abord NORD celle du badaud — la `pos` d'un attablé EST son abord (spec §5 l.213).
+    const table = { x: pos.x, y: pos.y - 1 };
     const entities: SceneEntity[] = [
       ...sc.entities,
-      { id: 'table-1', kind: 'prop', pos: { ...pos }, ref: 'table-ronde-4-tabourets', facing: 'N' },
-      { id: 'badaud', kind: 'personnage', pos: { ...pos }, ref: 'mutant' },
+      { id: 'table-1', kind: 'prop', pos: table, ref: 'table-ronde-4-tabourets', facing: 'N' },
+      { id: 'badaud', kind: 'personnage', pos: { x: table.x, y: table.y - 1 }, ref: 'mutant' },
     ];
     const combattant = { kind: 'entity' as const, entityId: enrole };
     const badaud = { kind: 'entity' as const, entityId: 'badaud' };
-    useGame.setState({ scene: { ...sc, entities, seatAssignments: { 'table-1': { nord: combattant, sud: badaud } } } });
+    useGame.setState({ scene: { ...sc, entities, seatAssignments: { 'table-1': { sud: combattant, nord: badaud } } } });
+    // Les deux attablés sont bien posés sur l'abord de LEUR place (le document est sain).
+    for (const [slotId, o] of [['sud', combattant], ['nord', badaud]] as const) {
+      const place = seatSlotsOf(useGame.getState().scene!, 'table-1').find((p) => p.slotId === slotId)!;
+      const ent = useGame.getState().scene!.entities.find((e) => e.id === o.entityId)!;
+      expect({ x: ent.pos.x, y: ent.pos.y }, `« ${o.entityId} »`).toEqual({ x: place.approach.x, y: place.approach.y });
+    }
     expect(seatPoseOf(useGame.getState().scene!, combattant)).not.toBeNull();
 
     useGame.getState().startCombat('enc-mutants');
 
     expect(seatPoseOf(useGame.getState().scene!, combattant)).toBeNull();
-    expect(seatPoseOf(useGame.getState().scene!, badaud)).toMatchObject({ slotId: 'sud' });
+    expect(seatPoseOf(useGame.getState().scene!, badaud)).toMatchObject({ slotId: 'nord' });
   });
 });

@@ -12,12 +12,20 @@ const PARTY: SeatOccupant = { kind: 'party', heroId: 'hero-1' };
 const NPC: SeatOccupant = { kind: 'entity', entityId: 'pnj-1' };
 const HEROS = new Set(['hero-1']);
 
-function seatingScene(opts: { propFacing?: Dir8; blocs?: { x: number; y: number }[] } = {}): Scene {
+/**
+ * POSITIONS des PNJ : la `pos` d'un attablé est sa case d'ABORD, jamais la case du meuble
+ * (spec §4.1 l.162-164 / §5 l.213 : « la position logique du groupe ou du PNJ reste la case
+ * d'approche »). Défauts posés pour le cap `N`, où les abords sont N/E/S/O du meuble.
+ */
+const ABORDS_CAP_N = { 'pnj-1': { x: 6, y: 5 }, 'pnj-2': { x: 5, y: 6 }, 'pnj-3': { x: 4, y: 5 } } as const;
+
+function seatingScene(opts: { propFacing?: Dir8; blocs?: { x: number; y: number }[]; pnjPos?: Record<string, { x: number; y: number }> } = {}): Scene {
   const s = emptyScene(12, 12);
+  const pnj = { ...ABORDS_CAP_N, ...opts.pnjPos };
   const entities: SceneEntity[] = [
     { id: PROP, kind: 'prop', pos: { ...POS }, ref: TABLE, ...(opts.propFacing ? { facing: opts.propFacing } : {}) },
-    { id: 'pnj-1', kind: 'personnage', pos: { ...POS } },
-    { id: 'pnj-2', kind: 'personnage', pos: { x: 1, y: 1 } },
+    { id: 'pnj-1', kind: 'personnage', pos: { ...pnj['pnj-1'] } },
+    { id: 'pnj-2', kind: 'personnage', pos: { ...pnj['pnj-2'] } },
   ];
   // Recoin : chaque bloc est un comptoir SOLIDE (`props.json`) posé sur une case d'abord déclarée.
   opts.blocs?.forEach((p, i) => entities.push({ id: `comptoir-${i}`, kind: 'prop', pos: { ...p }, ref: 'comptoir-droit' }));
@@ -123,12 +131,34 @@ describe('assignSeat / releaseSeat — exclusivités et raisons stables', () => 
   });
 });
 
+/**
+ * SONDE promue de la revue (2026-08-21) : c'est l'ABORD qui individualise une place, jamais la case
+ * du siège. Sur la table ronde, les 4 ancres tiennent dans la MÊME case — celle du meuble, SOLIDE —
+ * tandis que les 4 abords sont distincts et marchables. Toute règle de document assise sur la case
+ * du siège serait donc dégénérée (4 places pour 1 case) ET impossible à tenir (case non marchable).
+ */
+describe('sonde — la case du SIÈGE est unique et solide, les ABORDS sont quatre et marchables', () => {
+  it('4 ancres → 1 case non marchable ; 4 abords → 4 cases marchables distinctes', () => {
+    const scene = seatingScene({ propFacing: 'N' });
+    const slots = seatSlotsOf(scene, PROP);
+    const casesSiege = new Set(slots.map((s) => `${Math.round(s.anchor.x)},${Math.round(s.anchor.y)}`));
+    expect(casesSiege).toEqual(new Set([`${POS.x},${POS.y}`]));
+    expect(isWalkable(scene, POS.x, POS.y, 0), 'la case du meuble est SOLIDE').toBe(false);
+    const abords = slots.map((s) => `${s.approach.x},${s.approach.y}`);
+    expect(new Set(abords).size).toBe(4);
+    for (const s of slots) expect(isWalkable(scene, s.approach.x, s.approach.y, 0), `abord de « ${s.slotId} »`).toBe(true);
+  });
+});
+
 describe('approche EFFECTIVE — une chaise contre un comptoir reste occupable', () => {
   // Recoin : les cases d'abord DÉCLARÉES du nord (5,4) et de l'est (6,5) tombent sur des comptoirs
-  // solides. La place ne se perd pas pour autant : elle se rejoint par une case voisine marchable.
-  const recoin = () => seatingScene({ propFacing: 'N', blocs: [{ x: 5, y: 4 }, { x: 6, y: 5 }] });
+  // solides. La place ne se perd pas pour autant : elle se rejoint par une case voisine marchable —
+  // et jamais par l'abord d'une autre place du même meuble (spec l.133-134 : toutes les places d'un
+  // ensemble sont simultanément occupables).
+  const recoin = (pnjPos?: Record<string, { x: number; y: number }>) =>
+    seatingScene({ propFacing: 'N', blocs: [{ x: 5, y: 4 }, { x: 6, y: 5 }], pnjPos });
 
-  it('les 4 places restent occupables ; les 2 approches barrées se replient sur une case marchable', () => {
+  it('les 4 places restent occupables ; les 2 approches barrées se replient SANS jamais se partager', () => {
     const scene = recoin();
     expect(isWalkable(scene, 5, 4, 0), 'l’abord déclaré du nord DOIT être barré pour que le test morde').toBe(false);
     expect(isWalkable(scene, 6, 5, 0), 'l’abord déclaré de l’est DOIT être barré pour que le test morde').toBe(false);
@@ -136,22 +166,34 @@ describe('approche EFFECTIVE — une chaise contre un comptoir reste occupable',
     const slots = seatSlotsOf(scene, PROP);
     expect(slots).toHaveLength(4);
     for (const s of slots) expect(isWalkable(scene, s.approach.x, s.approach.y, 0), `approche de « ${s.slotId} »`).toBe(true);
-    // Balayage déterministe autour de la case du siège, dans l'ordre de `DIR8_ORDER` : N barré → NE.
-    expect(slots.find((s) => s.slotId === 'nord')!.approach).toMatchObject({ x: 6, y: 4 });
-    expect(slots.find((s) => s.slotId === 'est')!.approach).toMatchObject({ x: 6, y: 4 });
-    // Les deux places NON barrées gardent leur abord déclaré.
+    // Passe 1 : les abords déclarés MARCHABLES sont retenus et réservés.
     expect(slots.find((s) => s.slotId === 'sud')!.approach).toMatchObject({ x: 5, y: 6 });
     expect(slots.find((s) => s.slotId === 'ouest')!.approach).toMatchObject({ x: 4, y: 5 });
+    // Passe 2 : repli autour du siège dans l'ordre `DIR8_ORDER`, en sautant les cases déjà réservées.
+    expect(slots.find((s) => s.slotId === 'nord')!.approach).toMatchObject({ x: 6, y: 4 });  // N barré → NE
+    expect(slots.find((s) => s.slotId === 'est')!.approach).toMatchObject({ x: 6, y: 6 });   // NE pris, E barré → SE
+    expect(new Set(slots.map((s) => `${s.approach.x},${s.approach.y}`)).size, 'deux places simultanément occupables n’ont jamais le même abord').toBe(4);
+  });
 
-    let courant: Scene = scene;
+  it('les 4 places s’occupent simultanément, chaque PNJ posé SUR son abord', () => {
+    const scene = recoin({ 'pnj-1': { x: 6, y: 6 }, 'pnj-2': { x: 5, y: 6 }, 'pnj-3': { x: 4, y: 5 } });
+    scene.entities.push({ id: 'pnj-3', kind: 'personnage', pos: { x: 4, y: 5 } });
+    const slots = seatSlotsOf(scene, PROP);
     const occupants: SeatOccupant[] = [PARTY, NPC, { kind: 'entity', entityId: 'pnj-2' }, { kind: 'entity', entityId: 'pnj-3' }];
-    courant.entities.push({ id: 'pnj-3', kind: 'personnage', pos: { ...POS } });
+    let courant: Scene = scene;
     slots.forEach((s, i) => {
       const res = assignSeat(courant, PROP, s.slotId, occupants[i], HEROS);
       expect(res, `place « ${s.slotId} »`).toMatchObject({ ok: true });
       courant = res.scene;
     });
     expect(Object.keys(courant.seatAssignments![PROP])).toHaveLength(4);
+    // La `pos` de chaque PNJ assis EST l'abord de sa place — l'invariant que `validateScene` garde.
+    for (const s of seatSlotsOf(courant, PROP)) {
+      const o = courant.seatAssignments![PROP][s.slotId];
+      if (o.kind !== 'entity') continue;
+      const pnj = courant.entities.find((e) => e.id === o.entityId)!;
+      expect({ x: pnj.pos.x, y: pnj.pos.y }, `« ${o.entityId} » (place « ${s.slotId} »)`).toEqual({ x: s.approach.x, y: s.approach.y });
+    }
   });
 
   it('une place TOTALEMENT emmurée reste le seul refus d’approche', () => {

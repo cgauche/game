@@ -14,12 +14,15 @@
  *
  * APPROCHE — la case d'abord déclarée par le catalogue est un chemin PRÉFÉRÉ, pas une condition
  * d'occupation : une chaise poussée contre un mur ou un comptoir reste une chaise où l'on s'assoit.
- * `seatSlotsOf` rend donc l'approche EFFECTIVE : la case déclarée si la scène la dit marchable,
- * sinon la PREMIÈRE case marchable
- * voisine de la case du siège, balayée dans l'ordre de `DIR8_ORDER` (N, NE, E, SE, S, SO, O, NO) —
- * déterministe et indépendant de l'ordre des entités. `isWalkable` écarte déjà les empreintes de
- * décor solide, les terrains impassables et les cases effondrées. Une place sans AUCUNE case
- * voisine marchable est la seule qui reste inoccupable (`approche-invalide`).
+ * `seatSlotsOf` rend donc l'approche EFFECTIVE (deux passes décrites à la fonction) : la case
+ * déclarée si la scène la dit marchable, sinon un repli voisin du siège, jamais partagé avec l'abord
+ * d'une autre place du même meuble. `isWalkable` écarte déjà les empreintes de décor solide, les
+ * terrains impassables et les cases effondrées. Une place sans AUCUNE case voisine libre et marchable
+ * est la seule qui reste inoccupable (`approche-invalide`).
+ *
+ * POSITION LOGIQUE — le corps assis se TIENT sur sa case d'abord (c'est de là qu'il s'est assis et
+ * c'est là qu'il se relève) ; seul le RENDU applique l'ancre fractionnaire. Pour un PNJ authored,
+ * `SceneEntity.pos === approche résolue` est un invariant du document, gardé par `validateScene`.
  */
 import { findPropById } from '../data';
 import { rotatePropLocal } from '../data/props.types';
@@ -52,7 +55,7 @@ export type SeatAssignmentResult =
   | { ok: false; scene: Scene; reason: 'prop-absent' | 'slot-absent' | 'occupant-absent' | 'occupant-assis' | 'slot-occupe' | 'approche-invalide' };
 
 /** Deux occupants désignent-ils le même corps ? */
-export function sameOccupant(a: SeatOccupant, b: SeatOccupant): boolean {
+function sameOccupant(a: SeatOccupant, b: SeatOccupant): boolean {
   return a.kind === b.kind && (a.kind === 'party' ? a.heroId === (b as { heroId: string }).heroId : a.entityId === (b as { entityId: string }).entityId);
 }
 
@@ -63,24 +66,22 @@ const propEntity = (scene: Scene, propId: string): SceneEntity | undefined =>
 /** Case (entière) qui porte un point du plan. */
 const caseDe = (x: number, y: number) => ({ x: Math.round(x), y: Math.round(y) });
 
-/** Case d'abord EFFECTIVE : la déclarée si elle est marchable, sinon la première voisine marchable
- *  de la case du siège dans l'ordre `DIR8_ORDER`. Aucune voisine marchable → la déclarée, telle
- *  quelle (c'est `assignSeat` qui la refuse alors). */
-function approcheEffective(scene: Scene, declaree: Pt, siege: { x: number; y: number }, z: number): Pt {
-  if (isWalkable(scene, declaree.x, declaree.y, z)) return declaree;
-  for (const dir of DIR8_ORDER) {
-    const { gx, gy } = DIR8_DELTA[dir];
-    const x = siege.x + gx, y = siege.y + gy;
-    if (isWalkable(scene, x, y, z)) return z ? { x, y, z } : { x, y };
-  }
-  return declaree;
-}
+/** Clé de case, pour la réservation des abords d'un même meuble. */
+const cleCase = (p: { x: number; y: number }) => `${p.x},${p.y}`;
 
 /**
  * Les places du meuble `propId`, résolues dans le monde : ancre tournée au cap de l'instance
  * (`facing ?? 'S'`, le défaut canonique de la scène), cap du corps assis tourné du même nombre de
  * crans, case d'abord EFFECTIVE. ORDRE DU CATALOGUE conservé. `[]` si le meuble ou son type est
  * absent, ou si le type n'offre aucune place.
+ *
+ * RÉSOLUTION DES ABORDS en DEUX PASSES, pour que « toutes les places d'un ensemble soient
+ * simultanément occupables » sans jamais partager d'abord :
+ *  1. les abords DÉCLARÉS marchables sont retenus et RÉSERVÉS (le catalogue les garantit déjà
+ *     distincts entre eux, `validatePropCatalog`) ;
+ *  2. les autres se replient sur la première case voisine du SIÈGE (ordre `DIR8_ORDER` :
+ *     N, NE, E, SE, S, SO, O, NO) qui soit marchable ET non encore réservée par ce meuble.
+ * Aucune candidate → l'abord déclaré est rendu tel quel, et `assignSeat` refuse `approche-invalide`.
  */
 export function seatSlotsOf(scene: Scene, propId: string): ResolvedSeatSlot[] {
   const ent = propEntity(scene, propId);
@@ -91,19 +92,32 @@ export function seatSlotsOf(scene: Scene, propId: string): ResolvedSeatSlot[] {
   const crans = DIR8_ORDER.indexOf(facing);
   const z = ent.z ?? 0;
   const sol = heightAt(scene, ent.pos.x, ent.pos.y, z);
-  return slots.map((slot) => {
+  const enCase = (p: { x: number; y: number }): Pt => (z ? { x: p.x, y: p.y, z } : { x: p.x, y: p.y });
+  const partiels = slots.map((slot) => {
     const [ax, ay] = rotatePropLocal(slot.anchor.x, slot.anchor.y, facing);
     const anchor = { x: ent.pos.x + ax, y: ent.pos.y + ay, h: sol + slot.anchor.h };
     const [px, py] = rotatePropLocal(slot.approach.x, slot.approach.y, facing);
-    const declaree = caseDe(ent.pos.x + px, ent.pos.y + py);
-    const siege = caseDe(anchor.x, anchor.y);
     return {
       propId,
       slotId: slot.id,
       anchor,
       facing: rotateDir8(slot.facing, crans),
-      approach: approcheEffective(scene, z ? { ...declaree, z } : declaree, siege, z),
+      declaree: caseDe(ent.pos.x + px, ent.pos.y + py),
+      siege: caseDe(anchor.x, anchor.y),
     };
+  });
+  const reservees = new Set<string>();
+  for (const p of partiels) if (isWalkable(scene, p.declaree.x, p.declaree.y, z)) reservees.add(cleCase(p.declaree));
+  return partiels.map(({ declaree, siege, ...reste }) => {
+    if (isWalkable(scene, declaree.x, declaree.y, z)) return { ...reste, approach: enCase(declaree) };
+    for (const dir of DIR8_ORDER) {
+      const { gx, gy } = DIR8_DELTA[dir];
+      const voisine = { x: siege.x + gx, y: siege.y + gy };
+      if (!isWalkable(scene, voisine.x, voisine.y, z) || reservees.has(cleCase(voisine))) continue;
+      reservees.add(cleCase(voisine));
+      return { ...reste, approach: enCase(voisine) };
+    }
+    return { ...reste, approach: enCase(declaree) };
   });
 }
 

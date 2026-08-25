@@ -4,7 +4,7 @@
  * capturé au départ d'une scène et réappliqué au clone frais lors du revisit.
  */
 import type { Scene } from './scene';
-import type { SeatAssignments } from './seating';
+import { pruneSeatAssignments, type SeatAssignments } from './seating';
 
 /** Mutation runtime d'une scène (delta vs le document authored), persistée par `sceneId`. */
 export interface SceneMutation {
@@ -50,11 +50,19 @@ export function captureMutation(current: Scene, authored: Scene): SceneMutation 
 }
 
 /** Superpose une mutation sur une scène FRAÎCHEMENT clonée (filtre les entités retirées + fusionne
- *  les flags delta). PUR (nouvelle Scène). No-op si `mutation` absente. */
-export function applyMutation(cloned: Scene, mutation: SceneMutation | undefined): Scene {
-  if (!mutation) return cloned;
-  const entities = cloned.entities.filter((e) => !mutation.removedEntityIds.includes(e.id));
-  const flags = { ...cloned.flags, ...mutation.flags };
-  const assise = mutation.seatAssignments === undefined ? {} : { seatAssignments: mutation.seatAssignments };
-  return { ...cloned, entities, flags, ...assise };
+ *  les flags delta). PUR (nouvelle Scène).
+ *
+ *  `partyHeroIds` FOURNI = l'assise superposée est ÉLAGUÉE dans la foulée (`pruneSeatAssignments`) :
+ *  une place dont le meuble sort par CETTE mutation, dont le slot manque au catalogue, ou dont le
+ *  héros n'est pas du groupe fourni, n'entre pas en état. Paramètre EXPLICITE et non un défaut :
+ *  sans le groupe, on ne peut pas distinguer « héros parti » de « groupe inconnu », et un élagage
+ *  muet supprimerait l'assise du meneur. Absent = superposition nue.
+ *  No-op complet si `mutation` absente ET aucun élagage demandé. */
+export function applyMutation(cloned: Scene, mutation: SceneMutation | undefined, partyHeroIds?: ReadonlySet<string>): Scene {
+  if (!mutation && !partyHeroIds) return cloned;
+  const entities = mutation ? cloned.entities.filter((e) => !mutation.removedEntityIds.includes(e.id)) : cloned.entities;
+  const flags = mutation ? { ...cloned.flags, ...mutation.flags } : cloned.flags;
+  const assise = mutation?.seatAssignments === undefined ? {} : { seatAssignments: mutation.seatAssignments };
+  const out: Scene = { ...cloned, entities, flags, ...assise };
+  return partyHeroIds ? { ...out, seatAssignments: pruneSeatAssignments(out, partyHeroIds) } : out;
 }

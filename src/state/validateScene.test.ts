@@ -515,9 +515,16 @@ describe('validateScene — POI de plan (#345 phase 5)', () => {
   });
 });
 
+/**
+ * ASSISE AUTHORÉE — invariant de DOCUMENT posé par la spec (`docs/plans/2026-08-20-…`, §4.1 l.162-164
+ * et §5 l.213) : « Pour un PNJ authoré, `SceneEntity.pos` doit être exactement la case d'approche
+ * monde résolue de son slot ». La case du MEUBLE (round de l'ancre) n'est pas une position de corps :
+ * les 4 places de la table ronde y tiennent toutes, et elle est solide.
+ */
 describe('validateScene — assise authorée (`Scene.seatAssignments`)', () => {
-  /** Meuble du catalogue app-owned : 4 places, ancres à ±0,43 case → la case du siège EST celle du meuble. */
-  function attable(seatAssignments: Record<string, Record<string, { kind: 'entity'; entityId: string } | { kind: 'party'; heroId: string }>>, pnjPos = { x: 2, y: 2 }) {
+  /** Table ronde en (2,2) cap `N` → abords : nord (2,1), est (3,2), sud (2,3), ouest (1,2). */
+  const ABORD = { nord: { x: 2, y: 1 }, est: { x: 3, y: 2 }, sud: { x: 2, y: 3 }, ouest: { x: 1, y: 2 } };
+  function attable(seatAssignments: Record<string, Record<string, { kind: 'entity'; entityId: string } | { kind: 'party'; heroId: string }>>, pnjPos = ABORD.nord) {
     const s = base();
     s.entities.push({ id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' });
     s.entities.push({ id: 'pnj-1', kind: 'personnage', pos: pnjPos });
@@ -525,8 +532,9 @@ describe('validateScene — assise authorée (`Scene.seatAssignments`)', () => {
     return s;
   }
 
-  it('assise saine = 0 avertissement', () => {
+  it('assise saine (PNJ posé sur l’abord de sa place) = 0 avertissement', () => {
     expect(validateScene([attable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } })])).toEqual([]);
+    expect(validateScene([attable({ 'table-1': { ouest: { kind: 'entity', entityId: 'pnj-1' } } }, ABORD.ouest)])).toEqual([]);
   });
 
   it('meuble, place et personnage inexistants portent chacun leur erreur NOMMÉE', () => {
@@ -540,9 +548,20 @@ describe('validateScene — assise authorée (`Scene.seatAssignments`)', () => {
     expect(msgs(validateScene([corps])).some((m) => /« table-1\/nord ».*aucun personnage « fantome »/.test(m))).toBe(true);
   });
 
-  it('un PNJ assis POSÉ ailleurs que sur sa place est une erreur qui dit les deux cases', () => {
+  it('un PNJ assis POSÉ ailleurs que sur l’ABORD de sa place est une erreur qui dit les deux cases', () => {
     const w = validateScene([attable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } }, { x: 4, y: 0 })]);
-    expect(w.some((x) => x.refId === 'pnj-1' && /est posé en \(4,0\) alors que sa place est en \(2,2\)/.test(x.message))).toBe(true);
+    expect(w.some((x) => x.refId === 'pnj-1' && /est posé en \(4,0\) alors que l’abord de sa place est en \(2,1\)/.test(x.message))).toBe(true);
+  });
+
+  it('un PNJ posé sur la case du MEUBLE est REFUSÉ (l’ancienne règle inversée ne doit pas revenir)', () => {
+    const w = validateScene([attable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } }, { x: 2, y: 2 })]);
+    expect(w.some((x) => x.refId === 'pnj-1' && /est posé en \(2,2\) alors que l’abord de sa place est en \(2,1\)/.test(x.message))).toBe(true);
+  });
+
+  it('chaque place a SON abord : la même `pos` ne vaut pas pour deux places différentes', () => {
+    // `pnj-1` posé sur l'abord NORD mais affecté à l'EST → refus nommant l'abord de l'est.
+    const w = validateScene([attable({ 'table-1': { est: { kind: 'entity', entityId: 'pnj-1' } } }, ABORD.nord)]);
+    expect(w.some((x) => x.refId === 'pnj-1' && /« table-1\/est ».*\(2,1\).*l’abord de sa place est en \(3,2\)/.test(x.message))).toBe(true);
   });
 
   it('une place tenue par le GROUPE ne réclame aucune entité de scène', () => {
