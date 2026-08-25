@@ -16,7 +16,7 @@ import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
 import type { LandMarketProfile } from '../engine/landCargo';
 import type { RestPlaces } from './restFlow';
-import { findNavalPortById, findLieuServiceById, findAxisById, CORE_AXIS_IDS } from '../data';
+import { findNavalPortById, findLieuServiceById, CORE_AXIS_IDS } from '../data';
 
 /** Lieu posé sur la carte. Être dans `scene` = être à ce lieu ; y arriver → transition vers elle. */
 export interface MapPlace {
@@ -421,7 +421,9 @@ export function declutterPositions(
 // #765). Chaîné par la primitive générique `migrateDoc` (même mécanique que les saves, `saves.ts`) —
 // `schema` joue le rôle de `version` ; la migration 2→3 injecte un `narratif` vide.
 import { migrateDoc, type MigrationMap } from './migrateDoc';
-import { type NarratifBlock, emptyNarratif, validateNarratif } from './campaignNarratif';
+import { type NarratifBlock, emptyNarratif } from './campaignNarratif';
+import { validateDocument } from '../data/schemas/validate';
+import { projetSchema } from '../data/schemas/defs-scenes/projet';
 
 export interface ProjectMeta {
   id: string;
@@ -462,30 +464,8 @@ export const CURRENT_PROJECT_SCHEMA = 3;
  *  la migration N→N+1 pour tout futur bump (cf. `MIGRATIONS` de `saves.ts`), plutôt que de refuser
  *  en silence des projets antérieurs valides. */
 export const PROJECT_MIGRATIONS: MigrationMap = {
-  2: (doc) => ({ ...doc, version: 3, narratif: emptyNarratif() }),
+  2: (doc) => ({ ...doc, version: 3, schema: 3, narratif: emptyNarratif() }),
 };
-
-/** Cross-ref FAIL-FAST des `presetId` (#671) : chaque `SceneEntity.presetId` de TOUTES les scènes (et,
- *  défensif, tout `encounters[].enemies[].presetId` d'un document terse non encore compilé) doit résoudre
- *  un `narratif.presetsPnj[].id`. Throw clair avec la scène/l'entité fautive sinon. */
-function validateScenePresetRefs(scenes: Scene[], narratif: NarratifBlock): void {
-  const known = new Set(narratif.presetsPnj.map((p) => p.id));
-  const check = (presetId: string, where: string): void => {
-    if (!known.has(presetId)) {
-      throw new Error(`Projet invalide : ${where} référence un preset de PNJ inconnu « ${presetId} » (narratif.presetsPnj).`);
-    }
-  };
-  for (const s of scenes) {
-    for (const e of s.entities ?? []) {
-      if (e.presetId) check(e.presetId, `l'entité « ${e.id} » de la scène « ${s.id} »`);
-    }
-    for (const enc of (s.encounters ?? []) as Array<{ id?: string; enemies?: Array<{ presetId?: string }> }>) {
-      for (const en of enc.enemies ?? []) {
-        if (en.presetId) check(en.presetId, `un ennemi de la rencontre « ${enc.id ?? '?'} » de la scène « ${s.id} »`);
-      }
-    }
-  }
-}
 
 /** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (jamais un
  *  throw sec sans espoir de migration) si : document mal formé, `schema` absent/non numérique,
@@ -507,40 +487,21 @@ export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: World
       `{ schema: ${CURRENT_PROJECT_SCHEMA}, scenes: [...] }, et aucune migration n'est disponible vers ce format.`,
     );
   }
+  // Porte UNIQUE du document (#1466) : `projetSchema` porte la FORME et les quatre sémantiques du
+  // seam — FK `activeAxes` → `axes.json`, invariants du bloc narratif, FK intra-document
+  // `entity.presetId` → `narratif.presetsPnj`, forme de `meta`. Validé AVANT `resolvePortRef` et
+  // `normalizeScene` : le schéma voit le document tel qu'il est authoré. `version` est la clé de
+  // travail de `migrateDoc`, pas un champ du document : elle ne lui est pas soumise.
+  const { version: _version, ...doc } = migrated;
+  const invalide = validateDocument(projetSchema, doc, 'Projet');
+  if (invalide) throw new Error(invalide);
+
   const worldMap = (migrated.worldMap as WorldMap) ?? undefined;
   if (worldMap) {
     worldMap.places = worldMap.places.map((p) => (p.port ? { ...p, port: resolvePortRef(p.port) } : p));
   }
   const activeAxes = (migrated.activeAxes as string[] | undefined) ?? undefined;
-  if (activeAxes) {
-    const unknown = activeAxes.filter((id) => !findAxisById(id));
-    if (unknown.length) {
-      throw new Error(`Projet invalide : activeAxes référence des axes inconnus de axes.json : ${unknown.join(', ')}.`);
-    }
-  }
-  // Narratif validé fail-fast par `validateNarratif` (forme des 4 registres + invariants d'id) :
-  // un schema-3 sans bloc narratif bien formé est REJETÉ avec un message clair, jamais un TypeError.
-  const narratif = migrated.narratif;
-  validateNarratif(narratif);
-  // Cross-ref scenes ↔ narratif (#671, la validation reportée de #765) : `parseProject` est le SEUL point
-  // où `scenes` ET `narratif` coexistent → on valide ICI que tout `presetId` d'entité de scène résout un
-  // preset déclaré. Fail-fast clair (jamais un repli silencieux à la résolution runtime).
-  validateScenePresetRefs(migrated.scenes as Scene[], narratif);
-  // Identité de campagne (#765) : optionnelle au format, validée fail-fast SI présente (#766 l'exploite).
+  const narratif = migrated.narratif as NarratifBlock;
   const meta = migrated.meta as ProjectMeta | undefined;
-  if (meta !== undefined) {
-    if (typeof meta !== 'object' || meta === null) {
-      throw new Error('Projet invalide : meta doit être un objet.');
-    }
-    if (!meta.id || typeof meta.id !== 'string') {
-      throw new Error('Projet invalide : meta.id doit être une chaîne non vide.');
-    }
-    if (!meta.label || typeof meta.label !== 'string') {
-      throw new Error('Projet invalide : meta.label doit être une chaîne non vide.');
-    }
-    if (typeof meta.version !== 'number') {
-      throw new Error('Projet invalide : meta.version doit être un nombre.');
-    }
-  }
   return { scenes: (migrated.scenes as Scene[]).map(normalizeScene), worldMap, activeAxes, narratif, meta };
 }

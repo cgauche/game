@@ -237,18 +237,22 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
   = id d'une créature globale surchargé par `profil`/`apparence`) ; **`objets`** (`TrappingData`) —
   possessions propres à la campagne.
 - **Frontière RÉFÉRENCE vs NARRATIF.** Le narratif RÉFÉRENCE la règle globale (`src/data`) PAR ID
-  (`base` → `findCreatureById`), il ne la copie PAS et n'entre JAMAIS dans `src/data` global : c'est du
-  contenu EMBARQUÉ dans le JSON, révélé seulement en jeu. `validateNarratif` (appelée par
-  `parseProject`) garde cet invariant fail-fast : aucun id narratif ne peut collisionner avec un id
-  global (créature/possession), `affaireId`/`refs`/`base` doivent résoudre, ids internes uniques.
+  (`base` → id de `creatures.json`), il ne la copie PAS et n'entre JAMAIS dans `src/data` global : c'est
+  du contenu EMBARQUÉ dans le JSON, révélé seulement en jeu. `narratifSchema`
+  (`src/data/schemas/defs-scenes/narratif.ts`, composé par `projetSchema`) garde cet invariant
+  fail-fast au parse : aucun id narratif ne peut collisionner avec un id global (créature/possession),
+  `affaireId`/`refs`/`base` doivent résoudre, ids internes uniques.
 - **Identité (`meta`).** Le paquet porte aussi un bloc `meta` (`ProjectMeta`, `src/state/worldMap.ts`) —
   `id`/`label`/`version` requis, `icon`/`description`/`auteur` optionnels — identité de campagne pour la
   bibliothèque (#766), validée fail-fast SI présente ; optionnelle au format (la migration 2→3 n'en injecte pas).
 - **Migration.** Un projet schema 2 legacy (localStorage éditeur d'avant #765) monte au format courant
-  au chargement (`PROJECT_MIGRATIONS[2]` injecte un narratif vide). « La Barge du Sel » et « Le Loup et
-  la Saumure » sont en schema 3 (produits par `projectDoc`, `scripts/campagne/lib.mjs`, fabrique UNIQUE
-  du document de projet) ; l'Arène (`src/scenes/arene/arene-projet.json`) reste en schema 2 et monte au
-  chargement par cette migration — sa régénération relève de #809 (volet Arène, non traité par ce ticket).
+  au chargement (`PROJECT_MIGRATIONS[2]` injecte un narratif vide). Les **quatre projets committés sont
+  en schema 3** : « L'Arène » (`src/scenes/arene/arene-projet.json`), « La Barge du Sel »
+  (`src/scenes/barge-du-sel/barge-du-sel-projet.json`), « La Diligence »
+  (`src/scenes/diligence/diligence-projet.json`, sans `worldMap`) et « Le Loup et la Saumure »
+  (`src/scenes/loup-et-saumure/loup-et-saumure-projet.json`) — produits par `projectDoc`
+  (`scripts/campagne/lib.mjs`, fabrique UNIQUE du document de projet). Chacun a son def de schéma
+  (`src/data/schemas/defs-scenes/`) et parse `projetSchema` en CI.
 - **Éditeur.** Le bouton « Narratif » (`src/ui/editor/EditorToolbar.tsx`) ouvre le viewer
   `src/ui/editor/NarratifEditor.tsx` (onglets Affaires/Indices/PNJ/Objets).
 - **Instancier un PNJ nommé dans une scène (`presetId`, #671).** Une `SceneEntity` (ou un `AuthoredEnemy`
@@ -259,7 +263,7 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
   en bloc si présents). Au spawn de rencontre (`combatSlice`), la créature mergée et `preset.apparence` sont
   passées à `spawnEnemy` (canal `presetCreature`) ; le portrait de dialogue (`gameIso/tokenBodyKind.tsx`)
   dérive le rig de `preset.base`/`preset.apparence`. Couche non chargée / preset absent → repli silencieux
-  sur `ref`/`statblock`. `parseProject` valide fail-fast (`validateScenePresetRefs`) que tout `presetId`
+  sur `ref`/`statblock`. `parseProject` valide fail-fast (clause `presetId` de `projetSchema`) que tout `presetId`
   de scène résout un preset déclaré.
 
 ## 11. Règles d'or

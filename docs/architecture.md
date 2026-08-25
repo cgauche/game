@@ -88,7 +88,7 @@ src/state/
                             consommateurs actuels (portFlow/landMarketFlow/restPlacesHere) restent inchangés.
   campaignNarratif.ts       SCHÉMA du bloc NARRATIF d'un paquet de campagne (schema 3, #765) : `NarratifBlock`
                             = `{affaires, indices, presetsPnj, objets}`, EMBARQUÉ dans le JSON du projet, jamais
-                            copié dans `src/data` global (`validateNarratif` refuse toute collision d'id).
+                            copié dans `src/data` global (`narratifSchema` refuse toute collision d'id).
   campaignData.ts           COUTURE UNIQUE de résolution de la couche de campagne runtime (#767) : lit le slot
                             `campaignNarratif` (posé par `loadProject`) par id STABLE. `presetPnjById`/`affaireById`/
                             `indiceById` = COUCHE-SEULEMENT (n'existent pas au global) ; `trappingById` chaîne

@@ -2,11 +2,10 @@
 // Frontière RÉFÉRENCE vs NARRATIF (doctrine `game-campagne-json-portable-frontiere-reference-narratif`) :
 // le narratif est EMBARQUÉ dans le JSON du projet (auto-suffisant, révélé seulement en jeu) et RÉFÉRENCE
 // la règle globale (`src/data`) PAR ID — jamais copiée, jamais réinjectée dans `src/data` global. Cet
-// invariant est GARDÉ ici (`validateNarratif` refuse toute collision d'id narratif ↔ id global).
+// invariant est GARDÉ par le schéma du document (`narratifSchema`, `src/data/schemas/defs-scenes/`),
+// qui refuse toute collision d'id narratif ↔ id global.
 
 import type { TrappingData, CreatureData } from '../data/index';
-import { findCreatureById, findTrappingById, findSkillById, findTalentById, specResolves } from '../data/index';
-import type { SpecEntry, SpecsSource } from '../data/index';
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { SourceRef } from '../data/schemas/grammaire/valeurs';
 
@@ -65,93 +64,4 @@ export interface NarratifBlock {
 /** Narratif vide — injecté par la migration 2→3 et posé par `newProject`. */
 export function emptyNarratif(): NarratifBlock {
   return { affaires: [], indices: [], presetsPnj: [], objets: [] };
-}
-
-/** Un id narratif COLLISIONNE avec la règle globale s'il résout déjà comme créature OU comme possession. */
-function collidesWithGlobal(id: string): boolean {
-  return !!findCreatureById(id) || !!findTrappingById(id);
-}
-
-/**
- * Validation FAIL-FAST du bloc narratif (throw `Error` avec l'id fautif). Garde l'invariant de doctrine
- * (aucun id narratif ne collisionne avec un id global) et la cohérence interne des références par id.
- */
-export function validateNarratif(n: unknown): asserts n is NarratifBlock {
-  if (!n || typeof n !== 'object') throw new Error('Narratif invalide : bloc absent ou mal formé.');
-  for (const k of ['affaires', 'indices', 'presetsPnj', 'objets'] as const) {
-    if (!Array.isArray((n as Record<string, unknown>)[k])) {
-      throw new Error(`Narratif invalide : « ${k} » doit être un tableau.`);
-    }
-  }
-  const nb = n as NarratifBlock;
-  const affaireIds = new Set<string>();
-  for (const a of nb.affaires) {
-    if (!a.id) throw new Error('Narratif invalide : une affaire n\'a pas d\'id.');
-    if (affaireIds.has(a.id)) throw new Error(`Narratif invalide : id d'affaire dupliqué « ${a.id} ».`);
-    if (collidesWithGlobal(a.id)) throw new Error(`Narratif invalide : l'id d'affaire « ${a.id} » collisionne avec un id de la règle globale (créature/possession).`);
-    affaireIds.add(a.id);
-  }
-
-  const indiceIds = new Set<string>();
-  for (const i of nb.indices) {
-    if (!i.id) throw new Error('Narratif invalide : un indice n\'a pas d\'id.');
-    if (indiceIds.has(i.id)) throw new Error(`Narratif invalide : id d'indice dupliqué « ${i.id} ».`);
-    if (affaireIds.has(i.id)) throw new Error(`Narratif invalide : l'id d'indice « ${i.id} » collisionne avec un id d'affaire.`);
-    if (collidesWithGlobal(i.id)) throw new Error(`Narratif invalide : l'id d'indice « ${i.id} » collisionne avec un id de la règle globale (créature/possession).`);
-    if (!affaireIds.has(i.affaireId)) throw new Error(`Narratif invalide : l'indice « ${i.id} » référence une affaire inconnue « ${i.affaireId} ».`);
-    if (!Array.isArray(i.stades) || !i.stades.length) throw new Error(`Narratif invalide : l'indice « ${i.id} » n'a aucun stade.`);
-    const stadeIds = new Set<string>();
-    for (const s of i.stades) {
-      if (!s.id) throw new Error(`Narratif invalide : un stade de l'indice « ${i.id} » n'a pas d'id.`);
-      if (stadeIds.has(s.id)) throw new Error(`Narratif invalide : id de stade dupliqué « ${s.id} » dans l'indice « ${i.id} ».`);
-      stadeIds.add(s.id);
-    }
-    indiceIds.add(i.id);
-  }
-  for (const i of nb.indices) {
-    for (const r of i.refs ?? []) {
-      if (!indiceIds.has(r)) throw new Error(`Narratif invalide : l'indice « ${i.id} » référence un indice inconnu « ${r} ».`);
-    }
-  }
-
-  const presetIds = new Set<string>();
-  for (const p of nb.presetsPnj) {
-    if (!p.id) throw new Error('Narratif invalide : un preset de PNJ n\'a pas d\'id.');
-    if (presetIds.has(p.id)) throw new Error(`Narratif invalide : id de preset PNJ dupliqué « ${p.id} ».`);
-    if (affaireIds.has(p.id) || indiceIds.has(p.id)) throw new Error(`Narratif invalide : l'id de preset PNJ « ${p.id} » collisionne avec un autre id du narratif.`);
-    if (collidesWithGlobal(p.id)) throw new Error(`Narratif invalide : l'id de preset PNJ « ${p.id} » collisionne avec un id de la règle globale (créature/possession).`);
-    if (p.base !== undefined && !findCreatureById(p.base)) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » a une base inconnue « ${p.base} ».`);
-    if (p.base === undefined && p.profil === undefined) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » n'a ni base ni profil (au moins l'un des deux est requis).`);
-    if (p.base === undefined) {
-      if (!p.profil!.char || typeof p.profil!.char !== 'object') throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » a un profil sans base et sans « char ».`);
-      if (!Array.isArray(p.profil!.traits)) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » a un profil sans base et sans « traits ».`);
-    }
-    // Référence PAR ID jusque dans la spécialisation : une `spec` de Compétence OU de Talent du profil
-    // doit être VALIDE au catalogue global (`specResolves` — pool ou hors pool, cf. #1342 L3). La
-    // sentinelle « (Au choix) » reste admise : elle désigne un choix, pas une spécialisation.
-    const specValide = (
-      kind: { indefini: string; defini: string },
-      find: (id: string) => { specsSource?: SpecsSource; specs?: SpecEntry[] } | undefined,
-      refs: { id: string; spec?: string }[],
-    ): void => {
-      for (const r of refs) {
-        if (typeof r.spec !== 'string' || /au choix/i.test(r.spec)) continue;
-        const def = find(r.id);
-        if (!def) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » référence ${kind.indefini} inconnu(e) « ${r.id} ».`);
-        if (!specResolves(def, r.spec)) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » porte une spécialisation inconnue « ${r.spec} » pour ${kind.defini} « ${r.id} ».`);
-      }
-    };
-    specValide({ indefini: 'une Compétence', defini: 'la Compétence' }, findSkillById, p.profil?.skills ?? []);
-    specValide({ indefini: 'un Talent', defini: 'le Talent' }, findTalentById, p.profil?.talents ?? []);
-    presetIds.add(p.id);
-  }
-
-  const objetIds = new Set<string>();
-  for (const o of nb.objets) {
-    if (!o.id) throw new Error('Narratif invalide : un objet n\'a pas d\'id.');
-    if (objetIds.has(o.id)) throw new Error(`Narratif invalide : id d'objet dupliqué « ${o.id} ».`);
-    if (affaireIds.has(o.id) || indiceIds.has(o.id) || presetIds.has(o.id)) throw new Error(`Narratif invalide : l'id d'objet « ${o.id} » collisionne avec un autre id du narratif.`);
-    if (collidesWithGlobal(o.id)) throw new Error(`Narratif invalide : l'id d'objet « ${o.id} » collisionne avec un id de la règle globale (créature/possession).`);
-    objetIds.add(o.id);
-  }
 }

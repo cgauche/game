@@ -190,7 +190,7 @@ const scene = buildScene({
   startMessage:
     'Un homme séduisant, épée au côté et dés à la ceinture, vous fait signe depuis la clairière.',
   // PNJ résolus par PRESET (`presetId`) : instanciés base+surcharges au spawn (`resolvePresetCreature`) ;
-  // le bloc `narratif` de ce scénario porte les 3 presets. La cross-ref `validateScenePresetRefs` gate
+  // le bloc `narratif` de ce scénario porte les 3 presets. La cross-ref `presetId` de `projetSchema` gate
   // l'import JSON/éditeur (`parseProject`), pas ce chemin TS-authored — repli spawn silencieux si absent.
   entities: [
     // JOUEUR de taverne AUTHORÉ (#1279 S4) : « il leur propose une partie d'Impératrice Écarlate »

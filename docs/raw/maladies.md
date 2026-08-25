@@ -504,7 +504,7 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les pénalités sont **permanentes** (seuls des moyens magiques ou miraculeux peuvent les annuler).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.4-160) → `schema`, `DiseaseDef`, `water-exposure`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `inconscient`, `applyOnFailInline`, +22 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, +14 fichiers
+- `MSRC 16` (l.4-160) → `schema`, `DiseaseDef`, `water-exposure`, `Disease`, `mapRouteSchema`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `inconscient`, +23 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/maladies.ts`, +15 fichiers
 - sans code : `MSRC 16` (l.35-47)
 
 ---

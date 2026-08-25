@@ -9,7 +9,7 @@ import { lieuxServices } from '../data';
 import { validateScene } from './validateScene';
 import type { Scene } from './scene';
 
-const scene = (id: string) => ({ id } as Scene);
+const scene = (id: string) => ({ id, nom: id, description: '', dimensions: { w: 3, h: 3 } } as Scene);
 const wm = { id: 'm', nom: 'Carte', places: [], routes: [] };
 
 describe('parseProject — validation du format projet v2', () => {
@@ -51,7 +51,7 @@ describe('parseProject — validation du format projet v2', () => {
   it('scène ANCIENNE (schema 2 mais sans les collections requises du Scene actuel) → normalisée, ne crashe pas validateScene', () => {
     // Reproduit le crash « Ouvrir → L'Embuscade » (TypeError sur s.encounters.map, validateScene.ts:59) :
     // un projet localStorage sauvegardé avant que `Scene` ne gagne `encounters`/`dialogues`/… ne les porte pas.
-    const old = { id: 'old', dimensions: { w: 3, h: 3 } } as Scene; // aucune collection
+    const old = { id: 'old', nom: 'Vieille scène', description: '', dimensions: { w: 3, h: 3 } } as Scene; // aucune collection
     const { scenes } = parseProject({ schema: 2, scenes: [old] });
     expect(scenes[0].encounters).toEqual([]);
     expect(scenes[0].dialogues).toEqual([]);
@@ -260,5 +260,38 @@ describe('placeServices — vocabulaire unique des services de lieu (#343)', () 
     const scene = { id: 's1', restZones: [{ rect: { x: 0, y: 0, w: 1, h: 1 }, places: { auberge: true } }] } as Scene;
     const svc = placeServices(place({}), scene);
     expect(svc.map((s) => s.category)).toEqual(['auberge']);
+  });
+});
+
+/**
+ * La PORTE de schéma du seam (#1466 T3-a) : `parseProject` fait traverser un document par
+ * `migrateDoc` PUIS par `projetSchema` (`validateDocument`). Les contrats ci-dessous sont ceux que
+ * le schéma nu (`defs-scenes/projet-schema.test.ts`) ne peut pas tenir — ils portent sur le
+ * CHEMINEMENT : ce qui est migré avant d'être jugé, ce qui est retiré avant d'être jugé, et la
+ * forme des refus. Le refus de `encounters[].enemies` est le DURCISSEMENT acté par la purge
+ * `f20f16e65` (2026-06-13) : ce champ n'est plus produit par l'app.
+ */
+describe('parseProject — porte de schéma', () => {
+  const narratifVide = { affaires: [], indices: [], presetsPnj: [], objets: [] };
+
+  it('un document schema 2 (localStorage d\'avant #765) est MIGRÉ puis accepté par la porte', () => {
+    const res = parseProject({ schema: 2, scenes: [scene('s1')] });
+    expect(res.scenes.map((s) => s.id)).toEqual(['s1']);
+    expect(res.narratif).toEqual(narratifVide);
+  });
+
+  it('la clé de travail `version` de `migrateDoc` est RETIRÉE avant la porte (schéma STRICT)', () => {
+    const res = parseProject({ schema: 3, version: 3, scenes: [scene('s1')], narratif: narratifVide });
+    expect(res.scenes.map((s) => s.id)).toEqual(['s1']);
+  });
+
+  it('un schema FUTUR (4) est refusé AVANT la porte, avec un message actionnable', () => {
+    expect(() => parseProject({ schema: 4, scenes: [scene('s1')], narratif: narratifVide }))
+      .toThrow(/Projet invalide ou version non supportée.*schema=4/);
+  });
+
+  it('`encounters[].enemies` (forme legacy) est refusé PAR SON NOM, jamais absorbé en silence', () => {
+    const doc = { schema: 2, scenes: [{ ...scene('s1'), encounters: [{ id: 'e1', enemies: [{ ref: 'gobelin', count: 2 }] }] }] };
+    expect(() => parseProject(doc)).toThrow(/scenes\.0\.encounters\.0: Unrecognized key: "enemies"/);
   });
 });

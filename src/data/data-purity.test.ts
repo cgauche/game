@@ -9,8 +9,11 @@ import { fileURLToPath } from 'node:url';
  * `src/data` (hors `*.test.ts`) importe RUNTIME quoi que ce soit de `src/ui`, `src/state` ou
  * `src/gameIso` — `from '../ui/…'`/`from '../state/…'`/`from '../gameIso/…'`, `import('../ui/…')`,
  * y compris depuis un sous-dossier. Les imports de TYPE seuls (élidés à la compilation, ex.
- * `import type { Appearance } from '../gameIso/rig/appearance'`) sont autorisés PAR ALLOWLIST
- * (fichier → réf inline factuelle), même patron que `engine-purity.test.ts` sur `types.ts`→`gameIso`.
+ * `import type { Appearance } from '../gameIso/rig/appearance'`) sont autorisés : une déclaration
+ * `import type …` est ÉLIDÉE à la compilation — critère STRUCTUREL, lu sur la ligne. Les réfs de type
+ * INLINE (`import('../state/flow').Condition`), elles, ne sont pas distinguables d'un import runtime
+ * par la ligne : elles restent couvertes PAR ALLOWLIST (fichier → réf inline factuelle), même patron
+ * que `engine-purity.test.ts` sur `types.ts`→`gameIso`.
  *
  * Incident #421 : `pregens.ts` important `../ui/creator/draft` + `../ui/creator/creatorDefaults`
  * tirait tout le graphe `ui/creator` dans le graphe `data`, contaminant (Vitest `isolate:false`)
@@ -35,20 +38,20 @@ const FORBIDDEN_SEGMENTS: { segment: string; allow: Set<string> }[] = [
     // l'éditeur JSON (#518), inversion PRÉEXISTANTE distincte de #421 (qui porte sur
     // `pregens.ts`→`ui/creator`) ; non touchée par ce ticket.
     // `index.ts` : `import('../state/flow').Condition`/`.TriggeredEffect`/`.Flow` — réfs de TYPE
-    // inline seulement, élidées à la compilation (même patron que `engine-purity.test.ts` sur
-    // `types.ts`→`gameIso`), aucune dépendance runtime.
-    // `props.types.ts` : `import type { Dir8 } from '../state/dir8'` — réf de TYPE seule (cap d'une
-    // place assise `PropSeatSlot`), élidée à la compilation ; `dir8.ts` n'importe rien lui-même.
+    // INLINE (indistinguables d'un import runtime à la ligne, contrairement à `import type …`),
+    // élidées à la compilation, aucune dépendance runtime.
+    // `props.types.ts` : `import { DIR8_ORDER, type Dir8 } from '../state/dir8'` — import MIXTE :
+    // `DIR8_ORDER` est une VALEUR runtime (rotation d'empreinte par cap d'une place assise).
+    // `dir8.ts` est un module FEUILLE (zéro import) : pas de contamination de graphe (#421) ;
+    // l'inversion de couche elle-même est un défaut de couture tracé — #1506.
     allow: new Set(['fsPersist.ts', 'index.ts', 'props.types.ts']),
   },
   {
     segment: 'gameIso',
-    // `pregens.ts` : `import type { Appearance } from '../gameIso/rig/appearance'` — réf de TYPE
-    // seule (posée sur `hero.appearance`, #421 REDO suite), élidée à la compilation ; `rigSpeciesId`
-    // (valeur RUNTIME réellement consommée) est une primitive DATA (`./index`), jamais gameIso.
-    // `index.ts` : `import type { RigSpeciesId } from '../gameIso/rig/appearance'` — réf de TYPE
-    // seule (forme du retour de `rigSpeciesId`), aucune dépendance runtime.
-    allow: new Set(['pregens.ts', 'index.ts']),
+    // `index.ts` : `import('../gameIso/catalog/…').StructureAppearanceDef`/`ReliefMaterialDef`/
+    // `RoofMaterialDef`/`AmbianceDef` — réfs de TYPE INLINE (formes des catalogues de rendu servis
+    // depuis la donnée), élidées à la compilation, aucune dépendance runtime.
+    allow: new Set(['index.ts']),
   },
 ];
 
@@ -57,6 +60,10 @@ const FORBIDDEN_SEGMENTS: { segment: string; allow: Set<string> }[] = [
 function importRegexFor(segment: string): RegExp {
   return new RegExp(`(?:\\bfrom\\s+|\\bimport\\s*\\(\\s*|\\bimport\\s+)['"](?:\\.\\.\\/)+${segment}\\/`);
 }
+
+/** Déclaration `import type … from '…'` : ÉLIDÉE à la compilation, donc zéro dépendance runtime.
+ *  `import { type X } from '…'` (forme MIXTE) n'en est pas une : le module est bel et bien importé. */
+const TYPE_ONLY_RE = /^\s*import\s+type\s/;
 
 /** Retire commentaires de bloc et de ligne (une réf à `../ui/…`/`../state/…` en commentaire/doc n'est pas un import). */
 function stripComments(src: string): string {
@@ -93,7 +100,7 @@ describe('pureté de src/data — ne dépend JAMAIS (runtime) de src/ui, src/sta
         const base = f.split('/').pop()!;
         if (allow.has(base)) continue;
         const code = stripComments(readFileSync(`${DATA_DIR}/${f}`, 'utf8'));
-        if (code.split('\n').some((l) => IMPORT_RE.test(l))) offenders.push(f);
+        if (code.split('\n').some((l) => IMPORT_RE.test(l) && !TYPE_ONLY_RE.test(l))) offenders.push(f);
       }
       expect(
         offenders,

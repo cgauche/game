@@ -3,11 +3,14 @@
  * UNIQUE utilisée par la sauvegarde Codex (`CodexEdit.save`), le chargement DEV (`dev-validate.ts`) et
  * le contrat CI (`schema-contract.test.ts`). Le contrat CI couvre déjà « chaque JSON réel parse » ; ici
  * on verrouille le CONTRAT de la fonction : valide → null, invalide → message champ-par-champ, fichier
- * non registré → null (pas de blocage hors contrat).
+ * non registré → erreur NOMMANT le fichier et le registre à peupler (la porte est STRICTE : un document
+ * hors registre ne passe pas en silence).
  */
 import { describe, it, expect } from 'vitest';
-import { validateDataset, schemaForFile, formatZodError } from './validate';
+import { validateDataset, validateDocument, schemaForFile, formatZodError } from './validate';
 import { schema as characteristicsSchema } from './defs/characteristics';
+import { projetSchema } from './defs-scenes/projet';
+import areneProjet from '../../scenes/arene/arene-projet.json';
 
 const VALID_CHAR = [
   { id: 'capacite-de-combat', abr: 'CC', label: 'Capacité de Combat', type: 'roll', desc: 'x', source: { book: 'livre-de-base', page: 33 } },
@@ -32,9 +35,24 @@ describe('validateDataset — point de validation partagé (#176)', () => {
     expect(err).toContain('0.source');
   });
 
-  it('un fichier NON registré → null (un dataset hors contrat ne bloque pas)', () => {
-    expect(validateDataset('fichier-inexistant.json', { anything: true })).toBeNull();
+  it('un fichier NON registré → erreur NOMMANT le fichier et le registre à peupler', () => {
+    const err = validateDataset('fichier-inexistant.json', { anything: true });
+    expect(err).toContain('fichier-inexistant.json');
+    expect(err).toContain('aucun schéma registré');
+    expect(err).toContain('defs-scenes/');
     expect(schemaForFile('fichier-inexistant.json')).toBeUndefined();
+  });
+
+  it('un document de la racine src/scenes est registré par son CHEMIN relatif', () => {
+    expect(schemaForFile('arene/arene-projet.json')).toBe(projetSchema);
+    expect(validateDataset('arene/arene-projet.json', areneProjet)).toBeNull();
+  });
+
+  it('validateDocument — porte par SCHÉMA (le seam n\'a pas de nom de fichier)', () => {
+    expect(validateDocument(projetSchema, areneProjet, 'Projet')).toBeNull();
+    const err = validateDocument(projetSchema, { ...(areneProjet as object), schema: 2 }, 'Projet');
+    expect(err).toContain('Projet — JSON invalide');
+    expect(err).toContain('schema');
   });
 
   it('schemaForFile résout le schéma registré par nom de fichier', () => {

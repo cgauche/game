@@ -6,6 +6,8 @@
  */
 import { z } from 'zod';
 import { isMenaceId, menaceIds } from '../../../engine/menace';
+import type { GameOp } from '../../../engine/ops';
+import type { Condition, EffectOp, Flow } from '../../../engine/flowCore';
 import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema } from './valeurs';
 import { marque } from './slots';
 
@@ -70,7 +72,7 @@ export const OPS_NON_TYPEES: readonly string[] = [
  * registres est NOMMÉE en erreur. Ce rouge vit ICI et nulle part ailleurs : la clé `op` est
  * surchargée en donnée (les comparateurs `>=`/`<=`/`==` d'une `Condition` la portent aussi).
  */
-export const gameOpSchema: z.ZodType<unknown> = z.looseObject({ op: z.string() }).superRefine((v, ctx) => {
+export const gameOpSchema: z.ZodType<GameOp> = z.looseObject({ op: z.string() }).superRefine((v, ctx) => {
   const payload = OP_DEFS[v.op];
   if (payload) {
     const res = payload.safeParse(v);
@@ -83,7 +85,7 @@ export const gameOpSchema: z.ZodType<unknown> = z.looseObject({ op: z.string() }
     path: ['op'],
     message: `GameOp « ${v.op} » : op inconnue de OP_DEFS et de OPS_NON_TYPEES (src/data/schemas/grammaire/mecanique.ts) — la typer, ou l'inscrire à la liste avec sa raison mesurée.`,
   });
-});
+}).transform((v) => v as GameOp);
 
 // ============================================================================
 // FLOW CORE (`src/engine/flowCore.ts`) — Condition / FlowTest / Flow / TriggeredEffect. SOURCE UNIQUE
@@ -110,23 +112,21 @@ const compareSubjectSchema = z.union([
 /** `CompareSubject & { factor?: number }` (`engine/flowCore.ts:131`) — un `z.intersection` d'un
  *  `z.union` de `strictObject` NE FONCTIONNE PAS avec zod (chaque branche strict rejette les clés des
  *  autres, cf. `domains.ts` avant ce rewire : `z.intersection(compareSubjectSchema, …)` échouait sur
- *  `etats.json` #14 « inondation » — `{who,char:'E',factor:0.5}` — vérifié en isolation). Reflet FIDÈLE
- *  à la donnée réelle : un SEUL `strictObject` fusionnant les 3 formes (`field`/`condition`/`char`+`bonus`)
- *  + `factor`, tous optionnels sauf `who` — forme déjà éprouvée par talents/etats/spells/qualities/maneuvers. */
+ *  `etats.json` #14 « inondation » — `{who,char:'E',factor:0.5}` — vérifié en isolation). La forme
+ *  fidèle est donc l'UNION des 3 branches de `CompareSubject`, chacune portant son `factor`. */
 const compareValueSchema = z.union([
   z.number(),
   z.strictObject({
     who: actorRefSchema,
-    field: z.enum(['woundsCurrent', 'woundsMax', 'size', 'advantage']).optional(),
-    condition: z.string().optional(),
-    char: charKeySchema.optional(),
-    bonus: z.boolean().optional(),
+    field: z.enum(['woundsCurrent', 'woundsMax', 'size', 'advantage']),
     factor: z.number().optional(),
   }),
+  z.strictObject({ who: actorRefSchema, condition: z.string(), factor: z.number().optional() }),
+  z.strictObject({ who: actorRefSchema, char: charKeySchema, bonus: z.boolean().optional(), factor: z.number().optional() }),
 ]);
 
 /** `Condition` (`engine/flowCore.ts:112`) — algèbre CLOSE, récursive via `all`/`any`/`not`. */
-export const conditionSchema: z.ZodType<unknown> = z.lazy(() =>
+export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
   z.discriminatedUnion('kind', [
     z.strictObject({ kind: z.literal('always') }),
     z.strictObject({ kind: z.literal('flag'), expr: z.string() }),
@@ -254,7 +254,7 @@ export const effectOpSchema = z.strictObject({
 });
 
 /** `Flow<EffectOp>` (`engine/flowCore.ts:426`) — arbre récursif ACYCLIQUE (seq/do/if/test/choice). */
-export const flowSchema: z.ZodType<unknown> = z.lazy(() =>
+export const flowSchema: z.ZodType<Flow<EffectOp>> = z.lazy(() =>
   z.discriminatedUnion('kind', [
     z.strictObject({ kind: z.literal('seq'), steps: z.array(flowSchema) }),
     z.strictObject({ kind: z.literal('do'), effect: effectOpSchema }),

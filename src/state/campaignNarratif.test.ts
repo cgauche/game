@@ -1,8 +1,9 @@
 /**
  * Paquet de campagne schema 3 (#765) — le bloc NARRATIF parse et VALIDE au bon format, et
  * `parseProject` LÈVE fail-fast sur chaque violation d'invariant (collision id narratif ↔ règle
- * globale, référence par id morte, id interne dupliqué). Contrat POSITIF : un doc minimal valide
- * restitue son narratif.
+ * globale, référence par id morte, id interne dupliqué) — invariants portés par `narratifSchema`
+ * (`src/data/schemas/defs-scenes/narratif.ts`), qui NOMME le chemin fautif dans le message. Contrat
+ * POSITIF : un doc minimal valide restitue son narratif.
  */
 import { describe, it, expect } from 'vitest';
 import { parseProject } from './worldMap';
@@ -11,7 +12,7 @@ import { emptyNarratif, type NarratifBlock } from './campaignNarratif';
 // ids RÉELS de la règle globale (`src/data`) — base de preset valide + cible de collision.
 const GLOBAL_CREATURE = 'humain';
 
-const scene = { id: 's1' };
+const scene = { id: 's1', nom: 'Le quai', description: '', dimensions: { w: 3, h: 3 } };
 
 function doc(narratif: NarratifBlock, meta?: unknown) {
   return { schema: 3, scenes: [scene], narratif, ...(meta !== undefined ? { meta } : {}) };
@@ -57,10 +58,10 @@ describe('paquet de campagne schema 3 — bloc narratif', () => {
     expect(() => parseProject(doc(n))).toThrow(/référence une affaire inconnue/);
   });
 
-  it('(c) LÈVE si preset.base ne résout aucune créature globale', () => {
+  it('(c) LÈVE si preset.base ne résout aucune créature globale (FK `creatures.json`)', () => {
     const n = validNarratif();
     n.presetsPnj[0].base = 'creature-inexistante';
-    expect(() => parseProject(doc(n))).toThrow(/base inconnue/);
+    expect(() => parseProject(doc(n))).toThrow(/id « creature-inexistante » absent de creatures\.json/);
   });
 
   it('(c2) LÈVE si un preset PNJ sans base a un profil sans « char »', () => {
@@ -87,12 +88,12 @@ describe('paquet de campagne schema 3 — bloc narratif', () => {
     expect(() => parseProject(doc(n))).toThrow(/id d'affaire dupliqué/);
   });
 
-  it('(f) LÈVE (message clair, pas TypeError) si un doc schema 3 natif n\'a pas de bloc narratif', () => {
-    expect(() => parseProject({ schema: 3, scenes: [scene] })).toThrow(/bloc absent ou mal formé/);
+  it('(f) LÈVE (message clair NOMMANT le champ, pas TypeError) si un doc schema 3 natif n\'a pas de bloc narratif', () => {
+    expect(() => parseProject({ schema: 3, scenes: [scene] })).toThrow(/narratif: Invalid input: expected object/);
   });
 
   it('(g) LÈVE si un registre du narratif n\'est pas un tableau', () => {
-    expect(() => parseProject({ schema: 3, scenes: [scene], narratif: { affaires: [], indices: [] } })).toThrow(/doit être un tableau/);
+    expect(() => parseProject({ schema: 3, scenes: [scene], narratif: { affaires: [], indices: [] } })).toThrow(/narratif\.presetsPnj: Invalid input: expected array/);
   });
 
   it('(h) doc schema 3 avec un meta valide parse et restitue meta.id', () => {

@@ -53,7 +53,7 @@ function freshIndiceId(existing: Indice[]): string {
   return `indice-${n}`;
 }
 
-/** Id de stade frais, non-colluant DANS l'indice porteur (`validateNarratif` exige l'unicité locale). */
+/** Id de stade frais, non-colluant DANS l'indice porteur (`narratifSchema` exige l'unicité locale). */
 function freshStadeId(existing: IndiceStade[]): string {
   let n = existing.length + 1;
   const has = (x: string) => existing.some((s) => s.id === x);
@@ -63,7 +63,7 @@ function freshStadeId(existing: IndiceStade[]): string {
 
 /** Un id candidat est déjà pris par une AUTRE entrée des trois catégories narratives (affaires/indices/
  *  presetsPnj), hors l'entrée elle-même. Collision inter-catégories gardée ici ; collision avec un id
- *  global reste vérifiée par `validateNarratif` au parse. */
+ *  global reste vérifiée par `narratifSchema` au parse. */
 function idUsedElsewhere(
   narratif: NarratifBlock,
   candidate: string,
@@ -92,7 +92,7 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
   const addPreset = () => {
     const id = freshPresetId(narratif.presetsPnj);
     // Base par défaut = première créature globale : garantit un preset VALIDE au round-trip
-    // (`validateNarratif` refuse un preset sans base ni profil) ; l'auteur la change ensuite.
+    // (`narratifSchema` refuse un preset sans base ni profil) ; l'auteur la change ensuite.
     setPresets([...narratif.presetsPnj, { id, base: CREATURE_OPTIONS[0]?.id }]);
     setSelId(id);
   };
@@ -139,7 +139,7 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
   const renameAffaire = (id: string, nextId: string) => {
     const trimmed = nextId.trim();
     if (!trimmed || idUsedElsewhere(narratif, trimmed, { kind: 'affaire', id })) return;
-    // Propage aux indices rattachés : sinon `validateNarratif` rejette un `affaireId` orphelin.
+    // Propage aux indices rattachés : sinon `narratifSchema` rejette un `affaireId` orphelin.
     const affaires = narratif.affaires.map((a) => (a.id === id ? { ...a, id: trimmed } : a));
     const indices = narratif.indices.map((i) => (i.affaireId === id ? { ...i, affaireId: trimmed } : i));
     onChange?.({ ...narratif, affaires, indices });
@@ -151,7 +151,7 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
   const setIndices = (indices: Indice[]) => onChange?.({ ...narratif, indices });
 
   const addIndice = () => {
-    // Aucune affaire à rattacher : `validateNarratif` rejette un `affaireId` orphelin — no-op, le bouton
+    // Aucune affaire à rattacher : `narratifSchema` rejette un `affaireId` orphelin — no-op, le bouton
     // appelant est désactivé dans ce cas (garantit un indice VALIDE au round-trip, même esprit qu'`addPreset`).
     const firstAffaireId = narratif.affaires[0]?.id;
     if (!firstAffaireId) return;
@@ -180,7 +180,7 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
   const renameIndice = (id: string, nextId: string) => {
     const trimmed = nextId.trim();
     if (!trimmed || idUsedElsewhere(narratif, trimmed, { kind: 'indice', id })) return;
-    // Propage aux `refs` des autres indices : sinon `validateNarratif` rejette une réf orpheline.
+    // Propage aux `refs` des autres indices : sinon `narratifSchema` rejette une réf orpheline.
     const indices = narratif.indices.map((i) => {
       if (i.id === id) return { ...i, id: trimmed };
       if (i.refs?.includes(id)) return { ...i, refs: i.refs.map((r) => (r === id ? trimmed : r)) };

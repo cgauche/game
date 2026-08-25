@@ -8,7 +8,8 @@ import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { NarratifEditor } from './NarratifEditor';
-import { emptyNarratif, validateNarratif, type NarratifBlock } from '../../state/campaignNarratif';
+import { emptyNarratif, type NarratifBlock } from '../../state/campaignNarratif';
+import { narratifSchema } from '../../data/schemas/defs-scenes/narratif';
 import { creatures } from '../../data';
 
 beforeAll(() => {
@@ -105,7 +106,7 @@ describe('NarratifEditor — l\'éditeur ne produit jamais un bloc invalide (#67
     expect(btn('Ajouter un indice').disabled).toBe(true);
   });
 
-  it('1 affaire : « Ajouter un indice » émet un bloc qui passe validateNarratif', () => {
+  it('1 affaire : « Ajouter un indice » émet un bloc qui PARSE contre narratifSchema', () => {
     mount(withOneAffaire());
     click(btn('Indices'));
     const addIndice = btn('Ajouter un indice');
@@ -114,7 +115,7 @@ describe('NarratifEditor — l\'éditeur ne produit jamais un bloc invalide (#67
 
     expect(last.indices).toHaveLength(1);
     expect(last.indices[0].affaireId).toBe('affaire-a');
-    expect(() => validateNarratif(last)).not.toThrow();
+    expect(narratifSchema.safeParse(last).success).toBe(true);
   });
 
   it('renommer une affaire propage aux indices rattachés et reste valide', () => {
@@ -128,7 +129,7 @@ describe('NarratifEditor — l\'éditeur ne produit jamais un bloc invalide (#67
 
     expect(last.affaires[0].id).toBe('affaire-b');
     expect(last.indices[0].affaireId).toBe('affaire-b');
-    expect(() => validateNarratif(last)).not.toThrow();
+    expect(narratifSchema.safeParse(last).success).toBe(true);
   });
 
   it('renommer une affaire vers l\'id d\'un indice existant est REFUSÉ (défaut 2)', () => {

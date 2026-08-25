@@ -351,6 +351,20 @@ export const REGISTRIES = [
     fields: ['file', 'schema', 'famille'],
     constFields: { root: "'src/data'" },
   },
+  {
+    // Schémas zod des documents de la 2ᵉ racine (`src/scenes`) : 1 projet de campagne = 1 fichier
+    // defs-scenes/, exportant `file` (chemin RELATIF à la racine, pas un basename), `schema` et
+    // `famille`. Les modules de FORME du même dossier (scene/worldmap/narratif/projet) n'exportent
+    // pas `file` : le collecteur les saute (cf. `genOne`, registres à champ `file`).
+    dir: 'src/data/schemas/defs-scenes',
+    out: 'src/data/schemas/_registry-scenes.generated.ts',
+    importDir: './defs-scenes',
+    arrayName: 'SCHEMA_DEFS_SCENES',
+    type: 'SchemaDef',
+    typeFrom: './types',
+    fields: ['file', 'schema', 'famille'],
+    constFields: { root: "'src/scenes'" },
+  },
 ];
 
 // Ajout ciblé (#298) : les 2 nouveaux defs manifeste (primitives-manifest, systemes-manifest) vivent
@@ -367,6 +381,9 @@ function genOne(r) {
   }
   const files = entries
     .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !/\.test\.tsx?$/.test(f) && !f.endsWith('.ascii.ts') && f !== 'index.ts')
+    // Registre à champ `file` : un module du dossier qui ne DÉCLARE pas de document (modules de
+    // FORME partagés entre defs) n'est pas une entrée — critère STRUCTUREL, jamais une liste de noms.
+    .filter((f) => !r.fields?.includes('file') || /^export const file = '/m.test(readFileSync(join(r.dir, f), 'utf8')))
     .sort();
   // `fields` (option PAR registre) : un module de def exporte PLUSIEURS noms (ex. `file`+`schema`,
   // cf. src/data/schemas/defs/) → une entrée `{ champ1, champ2, … }` par fichier, au lieu du

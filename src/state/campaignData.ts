@@ -68,7 +68,7 @@ export function mergeCreatureProfile(base: CreatureData, profil?: Partial<Creatu
 /** Résout un preset de PNJ nommé en une `CreatureData` prête à spawner + son apparence embarquée.
  *  `base` présente → créature globale surchargée (`mergeCreatureProfile`) ; sinon `profil` sert de
  *  profil ad hoc complet. `undefined` si le preset est inconnu OU si sa `base` est introuvable
- *  (fail-doux : la garde `validateNarratif` a déjà rejeté un projet à base invalide au parse). */
+ *  (fail-doux : `narratifSchema` a déjà rejeté un projet à base invalide au parse). */
 export function resolvePresetCreature(presetId: string): { creature: CreatureData; apparence?: EntityAppearance } | undefined {
   const preset = presetPnjById(presetId);
   if (!preset) return undefined;
@@ -91,7 +91,7 @@ export function indiceById(id: string): Indice | undefined {
 }
 
 /** Possession résolue par id STABLE, campagne-D'ABORD (`campaignNarratif.objets`) puis règle globale
- *  (`findTrappingById`). Les ids narratifs ne collisionnent jamais avec le global (garde `validateNarratif`,
+ *  (`findTrappingById`). Les ids narratifs ne collisionnent jamais avec le global (garde `narratifSchema`,
  *  #765) → chaîne déterministe. Signature IDENTIQUE à `findTrappingById` : sert de résolveur injecté aux
  *  coutures d'objet du moteur (`engine/items`), qui restent PURES (elles reçoivent la fonction). */
 export function trappingById(id: string): TrappingData | undefined {

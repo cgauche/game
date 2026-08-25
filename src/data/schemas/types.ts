@@ -1,14 +1,18 @@
-/** Type d'une entrée du registre de schémas (`_registry.generated.ts`) — 1 dataset authoré. */
+/** Type d'une entrée des registres de schémas GÉNÉRÉS — UN document authoré, d'une des DEUX racines :
+ *  `SCHEMA_DEFS` (`src/data`, catalogues de jeu) et `SCHEMA_DEFS_SCENES` (`src/scenes`, projets de
+ *  campagne), émis par `scripts/gen-registry.mjs` et réunis par `DEFS_DE_DOCUMENT` (`validate.ts`). */
 import type { z } from 'zod';
 import type { FamilleDocument } from './grammaire/document';
 
-/** Racine d'un document authoré. Le registre couvre `src/data` (catalogues de jeu) ; la racine
- *  `src/scenes` (documents de campagne) est déclarée ici et peuplée quand le schéma de scène entre
- *  au registre (#1466). */
+/** Racine d'un document authoré — les DEUX sont peuplées (#1466) : `src/data` (catalogues de jeu,
+ *  registre `SCHEMA_DEFS`) et `src/scenes` (projets de campagne, registre `SCHEMA_DEFS_SCENES`). */
 export type RacineDocument = 'src/data' | 'src/scenes';
 
 export interface SchemaDef {
-  /** Nom de fichier du dataset (`<root>/<file>`), tel qu'exporté par le module `defs/<nom>.ts`. */
+  /** Désignation du document sous sa racine (`<root>/<file>`), telle qu'exportée par son module de
+   *  def. La graphie SUIT LA RACINE : BASENAME pour `root: 'src/data'` (catalogues à plat,
+   *  `characteristics.json`), CHEMIN RELATIF à la racine pour `root: 'src/scenes'` (documents en
+   *  sous-dossiers, `arene/arene-projet.json`). C'est la clé de `validateDataset`/`schemaForFile`. */
   file: string;
   /** Racine du dataset — émise par `scripts/gen-registry.mjs`, jamais déclarée par le def. */
   root: RacineDocument;

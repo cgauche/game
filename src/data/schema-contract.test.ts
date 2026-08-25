@@ -2,7 +2,8 @@
  * Contrat de donnée (Lot 1 — docs/plans/2026-07-06-perennite-10-ans-design.md § Lot 1) : garantit que
  * `src/data/*.json` reste conforme à son schéma zod (`src/data/schemas/defs/`), migré INCRÉMENT par
  * INCRÉMENT (comme les registres `gen-registry.mjs`). Trois volets, patron `comment-poison-guard.test.ts` :
- *  (a) chaque dataset REGISTRÉ (`SCHEMA_DEFS`) parse et valide son JSON réel — message actionnable ;
+ *  (a) chaque document REGISTRÉ des DEUX racines (`DEFS_DE_DOCUMENT` = `src/data` + `src/scenes`)
+ *      parse et valide son JSON réel — message actionnable ;
  *  (b) EXHAUSTIVITÉ : tout `src/data/*.json` est soit registré, soit dans `PENDING` (gelé à l'état
  *      initial de la migration — characteristics.json en est sorti, l'EXEMPLAIRE de la convention) ;
  *  (c) CLIQUET : une entrée `PENDING` qui a désormais un schéma doit en SORTIR (sinon la liste ne
@@ -12,38 +13,56 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { SCHEMA_DEFS } from './schemas/_registry.generated';
 import { schema as characteristicsSchema } from './schemas/defs/characteristics';
-import { formatZodError } from './schemas/validate';
+import { DEFS_DE_DOCUMENT, formatZodError } from './schemas/validate';
+import type { RacineDocument } from './schemas/types';
 
 const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
+const SCENES_DIR = fileURLToPath(new URL('../scenes/', import.meta.url));
+/** Dossier de chaque racine de documents — `SchemaDef.file` est relatif a SA racine. */
+const DIR_DE_RACINE: Record<RacineDocument, string> = { 'src/data': DATA_DIR, 'src/scenes': SCENES_DIR };
+
+/** Les documents `*-projet.json` de `src/scenes`, chemins relatifs a la racine (recursif). */
+function projetsDeScene(dir = SCENES_DIR, rel = ''): string[] {
+  const out: string[] = [];
+  for (const ent of readdirSync(dir, { withFileTypes: true })) {
+    const relPath = rel ? `${rel}/${ent.name}` : ent.name;
+    if (ent.isDirectory()) out.push(...projetsDeScene(`${dir}${ent.name}/`, relPath));
+    else if (ent.name.endsWith('-projet.json')) out.push(relPath);
+  }
+  return out;
+}
 
 /**
- * Datasets `src/data/*.json` sans schéma — VIDE depuis la fin de la migration (94/94 sous contrat) :
- * tout nouveau `.json` doit NAÎTRE avec son def (`src/data/schemas/defs/<nom>.ts` + `npm run gen`),
+ * Documents sans schéma, DÉSIGNÉS PAR LEUR CHEMIN COMPLET (`src/data/x.json`, `src/scenes/y/z.json`)
+ * — VIDE depuis la fin de la migration (les deux racines sont sous contrat) : tout nouveau document
+ * doit NAÎTRE avec son def (`schemas/defs/<nom>.ts` ou `schemas/defs-scenes/<nom>.ts` + `npm run gen`),
  * sinon le volet (b) échoue. Une entrée ne s'ajoute ici qu'à titre transitoire assumé, jamais durable.
  */
 const PENDING = new Set<string>([]);
 
-describe('contrat de donnée — src/data/*.json valide son schéma zod (SCHEMA_DEFS)', () => {
-  for (const def of SCHEMA_DEFS) {
-    it(`${def.file} valide ${def.schema === characteristicsSchema ? '(schéma characteristics)' : 'son schéma'}`, () => {
-      const raw = JSON.parse(readFileSync(`${DATA_DIR}${def.file}`, 'utf8'));
+describe('contrat de donnée — les documents des deux racines valident leur schéma zod', () => {
+  for (const def of DEFS_DE_DOCUMENT) {
+    it(`${def.root}/${def.file} valide ${def.schema === characteristicsSchema ? '(schéma characteristics)' : 'son schéma'}`, () => {
+      const raw = JSON.parse(readFileSync(`${DIR_DE_RACINE[def.root]}${def.file}`, 'utf8'));
       const result = def.schema.safeParse(raw);
       expect(result.success, result.success ? '' : formatZodError(def.file, result.error)).toBe(true);
     });
   }
 
-  it('EXHAUSTIVITÉ : tout src/data/*.json est registré (SCHEMA_DEFS) ou explicitement PENDING', () => {
-    const registered = new Set(SCHEMA_DEFS.map((d) => d.file));
-    const files = readdirSync(DATA_DIR).filter((f) => f.endsWith('.json'));
-    const orphans = files.filter((f) => !registered.has(f) && !PENDING.has(f));
-    expect(orphans, 'Fichier(s) .json ni schématisé(s) ni dans PENDING — ajouter un schéma ou l\'entrée PENDING').toEqual([]);
+  it('EXHAUSTIVITÉ : tout document des DEUX racines est registré ou explicitement PENDING', () => {
+    const registres = new Set(DEFS_DE_DOCUMENT.map((d) => `${d.root}/${d.file}`));
+    const documents = [
+      ...readdirSync(DATA_DIR).filter((f) => f.endsWith('.json')).map((f) => `src/data/${f}`),
+      ...projetsDeScene().map((f) => `src/scenes/${f}`),
+    ];
+    const orphans = documents.filter((f) => !registres.has(f) && !PENDING.has(f));
+    expect(orphans, 'Document(s) ni schématisé(s) ni dans PENDING — ajouter un def (defs/ ou defs-scenes/) ou l\'entrée PENDING').toEqual([]);
   });
 
   it('CLIQUET : aucune entrée PENDING ne doit avoir déjà un schéma (retirer de PENDING sinon)', () => {
-    const registered = new Set(SCHEMA_DEFS.map((d) => d.file));
-    const staleEntries = [...PENDING].filter((f) => registered.has(f));
+    const registres = new Set(DEFS_DE_DOCUMENT.map((d) => `${d.root}/${d.file}`));
+    const staleEntries = [...PENDING].filter((f) => registres.has(f));
     expect(staleEntries, 'Entrée(s) PENDING périmée(s) — un schéma existe déjà : les retirer de PENDING').toEqual([]);
   });
 

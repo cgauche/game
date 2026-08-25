@@ -54,7 +54,7 @@ export function buildImportedProject(text: string, fallbackLabel: string): Saved
 }
 
 /** Message d'échec d'import à afficher au JOUEUR (jamais le langage de schéma/authoring de
- *  `parseProject`/`validateNarratif`, qui parle de champs — `meta.version`, `schema=`, noms d'id).
+ *  `parseProject`/`projetSchema`, qui parle de champs — `meta.version`, `schema=`, noms d'id).
  *  Le tri est STRUCTUREL : `PlayerFacingImportError` porte un message déjà écrit pour le joueur
  *  (JSON illisible, projet sans scène) — jamais une comparaison de TEXTE (une reformulation FR ne
  *  doit jamais changer le comportement). Toute autre erreur est journalée (`console.error`,
