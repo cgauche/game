@@ -57,7 +57,9 @@ import maneuversJson from './maneuvers.json';
 import domainsJson from './domains.json';
 import lightLevelsJson from './lightLevels.json';
 import lightTonesJson from './lightTones.json';
+import propMaterialsJson from './propMaterials.json';
 import propsJson from './props.json';
+import type { PropData, PropMaterialData } from './props.types';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
 import calendarMonthsJson from './calendarMonths.json';
@@ -2561,14 +2563,17 @@ export const lightTones = lightTonesJson as LightToneDef[];
 export const findLightToneById = (id: string): LightToneDef | undefined => lightTones.find((t) => t.id === id);
 /** Ton SERVI à une source qui n'en nomme aucun — le feu, le cas du monde (brasero, feu de camp). */
 export const DEFAULT_LIGHT_TONE_ID = 'flamme';
-/** Type de PROP/décor app-owned : couche SÉMANTIQUE (physique `solid`, opacité `opaque`, classe de
- *  `cover`, émission de lumière `light`) — le rendu SVG/label reste dans le catalogue gameIso. Lu par
- *  la walkability (`sceneRules`), la Ligne de Vue/couvert (`lineOfSight`) et la lumière (`vision`).
- *  Édité au Codex. Un prop ABSENT de ce dataset = passable, transparent, sans couvert ni lumière. */
-export interface PropData { id: string; solid?: boolean; opaque?: boolean; cover?: 'imparfaite' | 'moyenne' | 'totale'; light?: { radiusTiles: number; tone?: string } }
+/** Contrats NEUTRES du décor (type de prop, recette volumique, matériaux, places assises) — définis
+ *  hors du chargeur pour rester importables par `src/state` et `src/gameIso` (cf. `props.types.ts`). */
+export type { PropData, PropMaterialData, PropMaterialId, PropPoint3, PropSize3, PropPrimitive, PropVolumeRecipe, PropSeatSlot } from './props.types';
+export { validatePropCatalog, propFootOf } from './props.types';
 export const props = propsJson as PropData[];
 export const PROP_BY_ID = new Map(props.map((p) => [p.id, p]));
 export const findPropById = (id: string): PropData | undefined => PROP_BY_ID.get(id);
+/** Matériaux de rendu des recettes volumiques de décor. Lookup LIVE (le catalogue se mute en place au
+ *  Codex/surcharges de campagne, cf. `findLightToneById`) — quatre entrées, le balayage ne coûte rien. */
+export const propMaterials = propMaterialsJson as PropMaterialData[];
+export const findPropMaterialById = (id: string): PropMaterialData | undefined => propMaterials.find((m) => m.id === id);
 /** Domaines de magie app-owned (LDB 48) — ENTITÉ éditable au Codex (attributs en données : onHit,
  *  projectile, post-incantation). Le RUNTIME résout par `id` STABLE (= `SpellData.domainId`, cf.
  *  `findDomainById`) ; `domainByLabel`/`findDomain` restent pour l'authoring/affichage. */

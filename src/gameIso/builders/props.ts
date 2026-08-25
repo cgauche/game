@@ -11,7 +11,7 @@
 import { Scene, tileAt, heightAt, type ArchitectureEdgeRef, type ArchitectureRect, type WallSide } from '../../state/scene';
 import { roofHidden, massFootBBox } from '../../state/buildings';
 import { effectiveArchitecture } from '../../state/sceneEdit';
-import { decorFootGeometry } from '../../state/footprint';
+import { decorFootGeometry, propDeclaredFoot } from '../../state/footprint';
 import { terrainOverlayProp } from '../../state/terrain';
 import { buildingFeatures } from '../catalog/buildings';
 import { facadeFeatureViz } from '../catalog/facades';
@@ -60,16 +60,17 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
     if (ent.kind !== 'prop') continue;
     const z = ent.z ?? 0;
     if (hasLayerView && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
+    const empreinte = propDeclaredFoot(ent.ref);
     out.push({
       kind: 'prop',
       key: `prop:${ent.id}`,
       cell: { x: ent.pos.x, y: ent.pos.y, z },
-      ...(ent.foot ? { span: { w: ent.foot.w, h: ent.foot.h } } : {}),
+      ...(empreinte ? { span: { w: empreinte.w, h: empreinte.h } } : {}),
       source: 'entity',
       entId: ent.id,
       ref: ent.ref ?? 'tonneau',
       ...(ent.facing ? { facing: ent.facing } : {}),
-      foot: decorFootGeometry(ent.foot),
+      foot: decorFootGeometry(empreinte),
       interact: !!ent.interact,
       states: { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) },
     });

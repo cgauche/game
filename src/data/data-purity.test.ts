@@ -37,7 +37,9 @@ const FORBIDDEN_SEGMENTS: { segment: string; allow: Set<string> }[] = [
     // `index.ts` : `import('../state/flow').Condition`/`.TriggeredEffect`/`.Flow` — réfs de TYPE
     // inline seulement, élidées à la compilation (même patron que `engine-purity.test.ts` sur
     // `types.ts`→`gameIso`), aucune dépendance runtime.
-    allow: new Set(['fsPersist.ts', 'index.ts']),
+    // `props.types.ts` : `import type { Dir8 } from '../state/dir8'` — réf de TYPE seule (cap d'une
+    // place assise `PropSeatSlot`), élidée à la compilation ; `dir8.ts` n'importe rien lui-même.
+    allow: new Set(['fsPersist.ts', 'index.ts', 'props.types.ts']),
   },
   {
     segment: 'gameIso',

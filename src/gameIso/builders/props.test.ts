@@ -11,7 +11,7 @@ describe('buildProps — éléments prop du pivot', () => {
     s.layers[0].tiles[3 * 6 + 4] = 'bois'; // (4,3) : overlay à DÉCOR (overlayProp → 'arbre')
     s.entities = [
       { id: 'p1', kind: 'prop', pos: { x: 1, y: 1 } }, // ref absente → normalisée 'tonneau'
-      { id: 'p2', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'tente', foot: { w: 2, h: 2 }, facing: 'SE', interact: { flow: { kind: 'seq', steps: [] } } },
+      { id: 'p2', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'tente', facing: 'SE', interact: { flow: { kind: 'seq', steps: [] } } }, // tente 2×2 au catalogue
       { id: 'npc', kind: 'personnage', pos: { x: 5, y: 5 } }, // pas un prop → ignoré
     ] as SceneEntity[];
     return s;

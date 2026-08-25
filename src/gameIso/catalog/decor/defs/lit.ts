@@ -7,7 +7,6 @@ export const prop: PropViz = {
   id: 'lit',
   label: 'Lit',
   searchable: true,
-  foot: { w: 2, h: 1 },
   render: () =>
     `<g><ellipse cx="60" cy="147" rx="56" ry="9" fill="${P.ombre}" opacity="0.22"/>` +
     // cadre + pieds

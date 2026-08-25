@@ -73,7 +73,6 @@ export const prop: PropViz = {
   id: 'canon-de-pont',
   label: 'Canon de pont',
   searchable: false,
-  foot: { w: 1, h: 1 },
   views: {
     front: () => front(),
     profile: () => profile(),

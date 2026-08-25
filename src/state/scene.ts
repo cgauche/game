@@ -79,9 +79,6 @@ export interface SceneEntity {
   /** Arme ÉQUIPÉE : `trappingId` STABLE du catalogue d'armes — affichée par le rig (tenue prête si à
    *  distance). Ex. `'arbalete'`. Résolue par `weaponFromId` (lookup exact, warn si hors catalogue). */
   weapon?: string;
-  /** Empreinte multi-cases (décor statique : charrette 2×1, épave 2×2…). Défaut 1×1.
-   *  Bloque la walkability (entityBlockedAt) et porte le Couvert sur toutes ses cases. */
-  foot?: { w: number; h: number };
   /** Source de lumière (brouillard de guerre) : rayon d'éclairage en cases. Override de l'instance ;
    *  sinon le rayon vient du TYPE de prop (`props.json` `light`). Absent + type sans `light` = pas de lumière.
    *  `tone` (#1245, L4) : id d'un `lightTones` — APPARENCE seule (couleur/intensité/vacillement),
@@ -1092,6 +1089,15 @@ function sanitizeSceneFlow(flow: Flow | undefined): Flow | undefined {
   return flow == null ? flow : sanitizeFlow(flow, sanitizeEffectLeaf);
 }
 
+/** Un projet sauvegardé avant la migration porte une empreinte D'INSTANCE (`foot`) : elle est
+ *  DÉPOUILLÉE au chargement, jamais recopiée ni interprétée — la physique d'un décor vient du
+ *  catalogue courant (`PropData.foot`), vérité unique de ses dimensions. */
+function stripLegacyFoot(e: SceneEntity): SceneEntity {
+  if (!('foot' in e)) return e;
+  const { foot: _legacy, ...reste } = e as SceneEntity & { foot?: unknown };
+  return reste;
+}
+
 /**
  * Complète les COLLECTIONS requises d'une Scène absentes sur un document ANCIEN (le schéma de
  * `ProjectDoc` — `worldMap.ts` `PROJECT_MIGRATIONS` — ne bump qu'aux ruptures de FORME du document ;
@@ -1105,8 +1111,8 @@ export function normalizeScene(s: Scene): Scene {
   return {
     ...s,
     layers: s.layers ?? emptyScene(s.dimensions?.w, s.dimensions?.h).layers,
-    entities: (s.entities ?? []).map((e) =>
-      e.interact ? { ...e, interact: { ...e.interact, flow: sanitizeSceneFlow(e.interact.flow) as Flow } } : e),
+    entities: (s.entities ?? []).map((e) => stripLegacyFoot(
+      e.interact ? { ...e, interact: { ...e.interact, flow: sanitizeSceneFlow(e.interact.flow) as Flow } } : e)),
     dialogues: (s.dialogues ?? []).map((d) => ({
       ...d,
       nodes: (d.nodes ?? []).map((n) => ({

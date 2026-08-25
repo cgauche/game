@@ -7,7 +7,6 @@ import { P } from '../../decorPalette';
 export const prop: PropViz = {
   id: 'stalle-ecurie',
   label: "Stalle d'écurie",
-  foot: { w: 1, h: 1 },
   render: () =>
     `<g>` +
     `<ellipse cx="60" cy="147" rx="44" ry="9" fill="${P.ombre}" opacity="0.22"/>` +

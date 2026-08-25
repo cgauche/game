@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { propRefPatch } from './propDefaults';
 import { EMPTY_FLOW } from '../../state/flow';
+import { propDeclaredFoot } from '../../state/footprint';
 
 describe('propRefPatch — auto-suggestion interact à la pose', () => {
   it('décor searchable sans interact → pré-arme interact{flow vide}', () => {
@@ -19,13 +20,13 @@ describe('propRefPatch — auto-suggestion interact à la pose', () => {
   });
 });
 
-describe('propRefPatch — empreinte par défaut du catalogue (foot)', () => {
-  it('gros décor (tribune 3×1) → foot appliqué à la pose', () => {
-    expect(propRefPatch('tribune', false).foot).toEqual({ w: 3, h: 1 });
+describe('propRefPatch — l’empreinte n’est PAS une propriété d’instance', () => {
+  it('gros décor (tribune 3×1) → aucune empreinte posée sur l’entité : elle vient du catalogue', () => {
+    expect(propRefPatch('tribune', false)).toEqual({ ref: 'tribune' });
+    expect(propDeclaredFoot('tribune')).toEqual({ w: 3, h: 1 });
   });
-  it('décor 1×1 (tonneau) → foot REMIS à undefined (purge une empreinte héritée d’un autre ref)', () => {
-    const p = propRefPatch('tonneau', false);
-    expect('foot' in p).toBe(true);
-    expect(p.foot).toBeUndefined();
+  it('décor 1×1 (tonneau) → seulement la ref, et aucune empreinte au catalogue', () => {
+    expect(propRefPatch('tonneau', false)).toEqual({ ref: 'tonneau' });
+    expect(propDeclaredFoot('tonneau')).toBeUndefined();
   });
 });

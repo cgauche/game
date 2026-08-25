@@ -1,0 +1,26 @@
+[
+  {
+    "id": "bois-chene",
+    "color": "#5b3a22",
+    "roughness": 0.82,
+    "metalness": 0
+  },
+  {
+    "id": "pierre-atre",
+    "color": "#6b665e",
+    "roughness": 0.94,
+    "metalness": 0
+  },
+  {
+    "id": "fer-noirci",
+    "color": "#2e2f33",
+    "roughness": 0.52,
+    "metalness": 0.85
+  },
+  {
+    "id": "braises",
+    "color": "#8c3416",
+    "roughness": 0.7,
+    "metalness": 0
+  }
+]

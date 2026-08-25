@@ -30,7 +30,7 @@ const ents: SceneEntity[] = [
 
   // ═══════════════ SCÈNE (19, z=0, rangées 5-14, cols 13-30, planches surélevées) ═══════════════
   // Rideau de scène en travers du fond (côté coulisses, regarde le public au sud), sur toute la largeur.
-  ...[13, 16, 19, 22, 25, 28].map((x, i): SceneEntity => ({ id: `rideau-${i}`, kind: 'prop', ref: 'rideau-scene', pos: { x, y: 5 }, facing: 'S', foot: { w: 3, h: 1 } })),
+  ...[13, 16, 19, 22, 25, 28].map((x, i): SceneEntity => ({ id: `rideau-${i}`, kind: 'prop', ref: 'rideau-scene', pos: { x, y: 5 }, facing: 'S' })),
   // Décors en place sur la scène (châssis peints + un praticable) — le plan montre des panneaux au sol.
   { id: 'scene-flat-1', kind: 'prop', ref: 'decor-flat', pos: { x: 15, y: 10 } },
   { id: 'scene-flat-2', kind: 'prop', ref: 'decor-flat', pos: { x: 28, y: 10 } },
@@ -80,7 +80,7 @@ const ents: SceneEntity[] = [
 
   // ═══════════════ SALLES LATÉRALES GAUCHE (z=0) — DENSÉMENT meublées, pièce par pièce (plan p.40) ═══════
   // 14 SALLE VERTE / 13 VESTIAIRE (bande haute gy 1-14) : détente des artistes + coiffeuses.
-  { id: 'sv-table', kind: 'prop', ref: 'table', pos: { x: 3, y: 6 }, foot: { w: 2, h: 1 } },
+  { id: 'sv-table', kind: 'prop', ref: 'table-2x1', pos: { x: 3, y: 6 } },
   { id: 'sv-chaise-1', kind: 'prop', ref: 'chaise', pos: { x: 2, y: 8 } },
   { id: 'sv-chaise-2', kind: 'prop', ref: 'chaise', pos: { x: 5, y: 8 } },
   { id: 'sv-banc-1', kind: 'prop', ref: 'banc', pos: { x: 2, y: 3 } },
@@ -119,7 +119,7 @@ const ents: SceneEntity[] = [
   { id: 'v11-armoire', kind: 'prop', ref: 'armoire', pos: { x: 2, y: 32 } },
 
   // 10 PASSAGE + 15 BUREAU DU RÉGISSEUR (gy 34-43).
-  { id: 'reg15-bureau', kind: 'prop', ref: 'bureau', pos: { x: 2, y: 35 }, foot: { w: 2, h: 1 } },
+  { id: 'reg15-bureau', kind: 'prop', ref: 'bureau-2x1', pos: { x: 2, y: 35 } },
   { id: 'reg15-chaise', kind: 'prop', ref: 'chaise', pos: { x: 5, y: 35 } },
   { id: 'reg15-etag', kind: 'prop', ref: 'etagere', pos: { x: 2, y: 37 } },
   { id: 'reg15-coffre', kind: 'prop', ref: 'coffre', pos: { x: 5, y: 38 } },
@@ -141,9 +141,9 @@ const ents: SceneEntity[] = [
   { id: 's20-colonne', kind: 'prop', ref: 'colonne-brisee', pos: { x: 34, y: 12 } },
 
   // 22 BUREAU DU CONCIERGE / 23 GESTIONNAIRE (petites pièces NE gx37-42).
-  { id: 'b22-bureau', kind: 'prop', ref: 'bureau', pos: { x: 39, y: 6 }, foot: { w: 2, h: 1 } },
+  { id: 'b22-bureau', kind: 'prop', ref: 'bureau-2x1', pos: { x: 39, y: 6 } },
   { id: 'b22-chaise', kind: 'prop', ref: 'chaise', pos: { x: 38, y: 7 } },
-  { id: 'b23-bureau', kind: 'prop', ref: 'bureau', pos: { x: 39, y: 11 }, foot: { w: 2, h: 1 } },
+  { id: 'b23-bureau', kind: 'prop', ref: 'bureau-2x1', pos: { x: 39, y: 11 } },
   { id: 'b23-etag', kind: 'prop', ref: 'etagere', pos: { x: 38, y: 13 } },
 
   // 24 RANGEMENTS DES COSTUMES (gy 15-23).
@@ -158,9 +158,9 @@ const ents: SceneEntity[] = [
   { id: 'c24-armoire-2', kind: 'prop', ref: 'armoire', pos: { x: 31, y: 22 } },
 
   // 25 COUTURIÈRES (gy 24-30).
-  { id: 'c25-table-1', kind: 'prop', ref: 'table', pos: { x: 31, y: 25 }, foot: { w: 2, h: 1 } },
+  { id: 'c25-table-1', kind: 'prop', ref: 'table-2x1', pos: { x: 31, y: 25 } },
   { id: 'c25-tab-1', kind: 'prop', ref: 'tabouret', pos: { x: 34, y: 25 } },
-  { id: 'c25-table-2', kind: 'prop', ref: 'table', pos: { x: 36, y: 25 }, foot: { w: 2, h: 1 } },
+  { id: 'c25-table-2', kind: 'prop', ref: 'table-2x1', pos: { x: 36, y: 25 } },
   { id: 'c25-mann-1', kind: 'prop', ref: 'mannequin', pos: { x: 39, y: 25 } },
   { id: 'c25-portant', kind: 'prop', ref: 'portant-costumes', pos: { x: 31, y: 28 } },
   { id: 'c25-mann-2', kind: 'prop', ref: 'mannequin', pos: { x: 34, y: 28 } },
@@ -168,7 +168,7 @@ const ents: SceneEntity[] = [
   { id: 'c25-tab-2', kind: 'prop', ref: 'tabouret', pos: { x: 40, y: 28 } },
 
   // 26 CHARPENTERIE + 27 RÉSERVE GÉNÉRALE (gy 31-43, côté mur extérieur gx 34-42).
-  { id: 'c26-etabli', kind: 'prop', ref: 'etabli', pos: { x: 34, y: 32 }, foot: { w: 2, h: 1 } },
+  { id: 'c26-etabli', kind: 'prop', ref: 'etabli-2x1', pos: { x: 34, y: 32 } },
   { id: 'c26-scie', kind: 'prop', ref: 'scie-chevalet', pos: { x: 37, y: 32 } },
   { id: 'c26-flat', kind: 'prop', ref: 'decor-flat', pos: { x: 40, y: 32 } },
   { id: 'c26-caisse-1', kind: 'prop', ref: 'caisse', pos: { x: 39, y: 34 } },

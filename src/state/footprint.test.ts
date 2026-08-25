@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { sizeFootprint, footprintN, footprintTiles, occupiesTile, footprintChebyshev, footprintsOverlap, combatDistance, decorFootGeometry } from './footprint';
+import { sizeFootprint, footprintN, footprintTiles, occupiesTile, footprintChebyshev, footprintsOverlap, combatDistance, decorFootGeometry, propDeclaredFoot, propFootTiles } from './footprint';
 import { datasetObject, setObjectDataset } from '../data/overrides';
 import { chebyshev } from './path';
 import type { Combatant } from '../engine/types';
@@ -91,7 +91,21 @@ describe('footprint — empreinte N×N par Taille (donnée `sizes.json::footprin
   });
 });
 
-describe('decorFootGeometry — empreinte rectangulaire des décors (foot {w,h})', () => {
+describe('propDeclaredFoot / propFootTiles — l’empreinte d’un décor vient du CATALOGUE', () => {
+  it('empreinte déclarée (charrette 2×1, tente 2×2) ; absente pour un décor sans empreinte', () => {
+    expect(propDeclaredFoot('charrette')).toEqual({ w: 2, h: 1 });
+    expect(propDeclaredFoot('tente')).toEqual({ w: 2, h: 2 });
+    expect(propDeclaredFoot('tonneau')).toBeUndefined();
+    expect(propDeclaredFoot(undefined)).toBeUndefined();
+  });
+  it('cases couvertes : le rectangle déclaré ancré au coin NO, la seule case sinon', () => {
+    expect(propFootTiles('charrette', { x: 3, y: 2 })).toEqual([{ x: 3, y: 2 }, { x: 4, y: 2 }]);
+    expect(propFootTiles('tente', { x: 0, y: 0 })).toHaveLength(4);
+    expect(propFootTiles('tonneau', { x: 7, y: 1 })).toEqual([{ x: 7, y: 1 }]);
+  });
+});
+
+describe('decorFootGeometry — empreinte rectangulaire des décors (`PropData.foot`)', () => {
   it('absent ou 1×1 → identité (le décor historique ne bouge pas)', () => {
     expect(decorFootGeometry(undefined)).toEqual({ offX: 0, offY: 0, scale: 1 });
     expect(decorFootGeometry({ w: 1, h: 1 })).toEqual({ offX: 0, offY: 0, scale: 1 });

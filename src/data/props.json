@@ -48,19 +48,35 @@
   },
   {
     "id": "tribune",
-    "solid": true
+    "solid": true,
+    "foot": {
+      "w": 3,
+      "h": 1
+    }
   },
   {
     "id": "balustrade-loge",
-    "solid": true
+    "solid": true,
+    "foot": {
+      "w": 3,
+      "h": 1
+    }
   },
   {
     "id": "rangee-sieges",
-    "solid": true
+    "solid": true,
+    "foot": {
+      "w": 3,
+      "h": 1
+    }
   },
   {
     "id": "rideau-scene",
-    "solid": true
+    "solid": true,
+    "foot": {
+      "w": 3,
+      "h": 1
+    }
   },
   {
     "id": "statue",
@@ -94,7 +110,11 @@
   },
   {
     "id": "idole-chaos",
-    "solid": true
+    "solid": true,
+    "foot": {
+      "w": 2,
+      "h": 2
+    }
   },
   {
     "id": "fontaine",
@@ -108,7 +128,11 @@
   },
   {
     "id": "abreuvoir",
-    "solid": true
+    "solid": true,
+    "foot": {
+      "w": 2,
+      "h": 1
+    }
   },
   {
     "id": "sarcophage",
@@ -176,20 +200,40 @@
   {
     "id": "charrette",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "foot": {
+      "w": 2,
+      "h": 1
+    }
   },
   {
     "id": "epave-carrosse",
     "solid": true,
-    "cover": "moyenne"
+    "cover": "moyenne",
+    "foot": {
+      "w": 2,
+      "h": 2
+    }
   },
   {
     "id": "barque",
-    "solid": true
+    "solid": true,
+    "foot": {
+      "w": 2,
+      "h": 1
+    }
   },
   {
     "id": "table",
     "solid": true
+  },
+  {
+    "id": "table-2x1",
+    "solid": true,
+    "foot": {
+      "w": 2,
+      "h": 1
+    }
   },
   {
     "id": "chaise",
@@ -208,12 +252,32 @@
     "solid": true
   },
   {
+    "id": "bureau-2x1",
+    "solid": true,
+    "foot": {
+      "w": 2,
+      "h": 1
+    }
+  },
+  {
     "id": "etabli",
     "solid": true
   },
   {
+    "id": "etabli-2x1",
+    "solid": true,
+    "foot": {
+      "w": 2,
+      "h": 1
+    }
+  },
+  {
     "id": "lit",
-    "solid": true
+    "solid": true,
+    "foot": {
+      "w": 2,
+      "h": 1
+    }
   },
   {
     "id": "miroir",
@@ -250,7 +314,11 @@
   },
   {
     "id": "tente",
-    "solid": true
+    "solid": true,
+    "foot": {
+      "w": 2,
+      "h": 2
+    }
   },
   {
     "id": "tas-foin",
@@ -258,6 +326,87 @@
   },
   {
     "id": "cheval-mort",
-    "cover": "imparfaite"
+    "cover": "imparfaite",
+    "foot": {
+      "w": 2,
+      "h": 1
+    }
+  },
+  {
+    "id": "balustrade-bois",
+    "foot": {
+      "w": 3,
+      "h": 1
+    }
+  },
+  {
+    "id": "canon-de-pont",
+    "foot": {
+      "w": 1,
+      "h": 1
+    }
+  },
+  {
+    "id": "cuve-brasserie",
+    "foot": {
+      "w": 1,
+      "h": 1
+    }
+  },
+  {
+    "id": "ecoutille",
+    "foot": {
+      "w": 1,
+      "h": 1
+    }
+  },
+  {
+    "id": "enclume",
+    "foot": {
+      "w": 1,
+      "h": 1
+    }
+  },
+  {
+    "id": "escalier-bois",
+    "foot": {
+      "w": 1,
+      "h": 1
+    }
+  },
+  {
+    "id": "escalier-loge",
+    "foot": {
+      "w": 1,
+      "h": 1
+    }
+  },
+  {
+    "id": "foyer-de-forge",
+    "foot": {
+      "w": 1,
+      "h": 1
+    }
+  },
+  {
+    "id": "passerelle-d-embarquement",
+    "foot": {
+      "w": 2,
+      "h": 1
+    }
+  },
+  {
+    "id": "rouleau-de-cordage",
+    "foot": {
+      "w": 1,
+      "h": 1
+    }
+  },
+  {
+    "id": "stalle-ecurie",
+    "foot": {
+      "w": 1,
+      "h": 1
+    }
   }
 ]

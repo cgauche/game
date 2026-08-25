@@ -1444,31 +1444,6 @@ function EntityPanel({
               ))}
             </select>
           </label>
-          <label className="ed-field">
-            Empreinte (cases L×H) — couvre/bloque toutes ses cases (1×1 = aucune)
-            <span className="ed-foot-inputs">
-              <input
-                type="number"
-                min={1}
-                value={ent.foot?.w ?? 1}
-                onChange={(e) => {
-                  const w = Math.max(1, Number(e.target.value));
-                  const h = ent.foot?.h ?? 1;
-                  updateSel({ foot: w > 1 || h > 1 ? { w, h } : undefined });
-                }}
-              />
-              <input
-                type="number"
-                min={1}
-                value={ent.foot?.h ?? 1}
-                onChange={(e) => {
-                  const h = Math.max(1, Number(e.target.value));
-                  const w = ent.foot?.w ?? 1;
-                  updateSel({ foot: w > 1 || h > 1 ? { w, h } : undefined });
-                }}
-              />
-            </span>
-          </label>
           <label className="ed-check">
             <input
               type="checkbox"

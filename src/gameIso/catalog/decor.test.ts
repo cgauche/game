@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { PROPS, propSvg, missingPropSvg } from './decor';
 import { MISSING_TONE } from './missing';
 import { propSprite } from '../sprites';
+import { findPropById } from '../../data';
 
 describe('catalogue décors', () => {
   it('contient les placeables de base', () => {
@@ -66,10 +67,20 @@ describe('Opéra — props de théâtre', () => {
     }
   });
   it('le mobilier de salle porte une empreinte 3×1 ; le lustre est en surplomb (sans empreinte)', () => {
-    expect(PROPS['rangee-sieges'].foot).toEqual({ w: 3, h: 1 });
-    expect(PROPS['rideau-scene'].foot).toEqual({ w: 3, h: 1 });
-    expect(PROPS['balustrade-loge'].foot).toEqual({ w: 3, h: 1 });
-    expect(PROPS['lustre-opera'].foot).toBeUndefined();
+    expect(findPropById('rangee-sieges')?.foot).toEqual({ w: 3, h: 1 });
+    expect(findPropById('rideau-scene')?.foot).toEqual({ w: 3, h: 1 });
+    expect(findPropById('balustrade-loge')?.foot).toEqual({ w: 3, h: 1 });
+    expect(findPropById('lustre-opera')?.foot).toBeUndefined();
+  });
+  it('les trois variantes longues 2×1 sont enregistrées, rendues, et empreintées par le catalogue', () => {
+    for (const [id, base] of [['table-2x1', 'table'], ['bureau-2x1', 'bureau'], ['etabli-2x1', 'etabli']] as const) {
+      expect(PROPS[id], id).toBeDefined();
+      expect(PROPS[id].label, id).not.toBe(PROPS[base].label);
+      expect(propSvg(id), id).toBe(propSvg(base)); // même vignette que sa base
+      expect(propSvg(id).length, id).toBeGreaterThan(40);
+      expect(findPropById(id)?.foot, id).toEqual({ w: 2, h: 1 });
+      expect(findPropById(base)?.foot, base).toBeUndefined();
+    }
   });
   it('le mobilier d’ambiance d’opéra est enregistré et rendu (applique, pupitre, fauteuil)', () => {
     for (const id of ['applique-murale', 'pupitre-chef', 'fauteuil-loge']) {

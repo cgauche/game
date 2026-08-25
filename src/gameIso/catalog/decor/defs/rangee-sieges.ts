@@ -37,7 +37,6 @@ const profileSeat = (cx: number) =>
 
 export const prop: PropViz = {
   id: 'rangee-sieges',
-  foot: { w: 3, h: 1 },
   label: 'Rangée de fauteuils',
   views: {
     // Face/dos : quatre sièges alignés sur la largeur, posés sur le socle de bois.

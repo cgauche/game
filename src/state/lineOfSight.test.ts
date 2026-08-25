@@ -23,8 +23,8 @@ function scene(w: number, h: number, tiles?: Record<string, string>, entities: S
   } as unknown as Scene;
 }
 
-const prop = (id: string, x: number, y: number, foot?: { w: number; h: number }): SceneEntity =>
-  ({ id, kind: 'prop', pos: { x, y }, ref: id, foot }) as SceneEntity;
+const prop = (id: string, x: number, y: number): SceneEntity =>
+  ({ id, kind: 'prop', pos: { x, y }, ref: id }) as SceneEntity;
 
 describe('tilesBetween — cases strictement entre deux points', () => {
   it('horizontal', () => {
@@ -68,7 +68,7 @@ describe('lineOfSightCover', () => {
     expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 4, y: 0 }, [])).toEqual({ blocked: false, cover: 'moyenne' });
   });
   it('empreinte de charrette (2×1) → couvre ses deux cases', () => {
-    const s = scene(6, 1, {}, [prop('charrette', 3, 0, { w: 2, h: 1 })]);
+    const s = scene(6, 1, {}, [prop('charrette', 3, 0)]); // empreinte 2×1 du catalogue (`props.json`)
     // la case 4,0 fait partie de l'empreinte → couvert moyen sur la ligne 0,0 → 5,0
     expect(lineOfSightCover(s, { x: 0, y: 0 }, { x: 5, y: 0 }, [])).toEqual({ blocked: false, cover: 'moyenne' });
   });

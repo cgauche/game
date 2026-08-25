@@ -10,6 +10,7 @@ import { Icon } from '../Icon';
 import { OptionChooser } from '../OptionChooser';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import { TERRAINS } from '../../state/terrain';
+import { propDeclaredFoot } from '../../state/footprint';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
@@ -456,7 +457,9 @@ export function Palette({
             <div className="mini-title">Décor à poser</div>
             {searchBox('décor…')}
             <div className="pal-list">
-              {filterByLabel(Object.values(PROPS), (p) => p.label, search).map((p) => (
+              {filterByLabel(Object.values(PROPS), (p) => p.label, search).map((p) => {
+                const empreinte = propDeclaredFoot(p.id);
+                return (
                 <button
                   key={p.id}
                   className={`pal-item${tool.ref === p.id ? ' active' : ''}`}
@@ -466,9 +469,10 @@ export function Palette({
                   }}
                 >
                   {p.label}
-                  {p.foot ? <span className="chip">{p.foot.w}×{p.foot.h}</span> : null}
+                  {empreinte ? <span className="chip">{empreinte.w}×{empreinte.h}</span> : null}
                 </button>
-              ))}
+                );
+              })}
             </div>
           </>
         )}

@@ -6,7 +6,6 @@ import { woodStairSvg } from '../woodwork';
 // dorés — la version d'apparat de l'escalier de bois. Ancré aux pieds ; marches vers l'arrière (haut-gauche).
 export const prop: PropViz = {
   id: 'escalier-loge',
-  foot: { w: 1, h: 1 },
   label: 'Escalier de loge',
   render: () => woodStairSvg({ railColor: P.boisMoyen21, knobColor: P.orMoyen9 }),
 };

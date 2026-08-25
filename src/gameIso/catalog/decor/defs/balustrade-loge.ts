@@ -6,7 +6,6 @@ import { woodBalustradeSvg } from '../woodwork';
 // festonnée à clous dorés tendue sur le devant — la version d'apparat du garde-corps de bois.
 export const prop: PropViz = {
   id: 'balustrade-loge',
-  foot: { w: 3, h: 1 },
   label: 'Balustrade de loge',
   render: () =>
     woodBalustradeSvg({

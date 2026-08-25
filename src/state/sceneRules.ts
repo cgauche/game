@@ -7,6 +7,7 @@ import type { Scene, SceneEntity } from './scene';
 import { isIndoor } from './scene';
 import { isNight } from '../engine/clock';
 import { findPropById } from '../data';
+import { propDeclaredFoot, propFootTiles } from './footprint';
 import { memoByRef } from './sceneMemo';
 
 export interface SceneCombatMods {
@@ -55,19 +56,15 @@ export function sceneCombatModifiers(scene: Pick<Scene, 'ambiance' | 'weather'>,
 export const propIsSolid = (ref: string | undefined): boolean => !!ref && !!findPropById(ref)?.solid;
 
 /** Index O(1) des cases couvertes par une empreinte de décor (`entityBlockedAt`), bâti UNE fois par
- *  identité de `scene.entities` — mêmes règles que la version balayée : décor 1×1 sans `foot` = pas
- *  bloquant SAUF interactif ou solide (cf. JSDoc `entityBlockedAt` ci-dessous). */
+ *  identité de `scene.entities` — mêmes règles que la version balayée : décor sans empreinte déclarée
+ *  au catalogue = pas bloquant SAUF interactif ou solide (cf. JSDoc `entityBlockedAt` ci-dessous). */
 function buildEntityBlockIndex(entities: SceneEntity[]): Set<string> {
   const blocked = new Set<string>();
   for (const e of entities) {
     if (e.kind !== 'prop') continue;
-    const solid = propIsSolid(e.ref);
-    if (!e.foot && !e.interact && !solid) continue;
+    if (!propDeclaredFoot(e.ref) && !e.interact && !propIsSolid(e.ref)) continue;
     const z = e.z ?? 0;
-    const w = e.foot?.w ?? 1;
-    const h = e.foot?.h ?? 1;
-    for (let yy = 0; yy < h; yy++)
-      for (let xx = 0; xx < w; xx++) blocked.add(`${e.pos.x + xx},${e.pos.y + yy},${z}`);
+    for (const t of propFootTiles(e.ref, e.pos)) blocked.add(`${t.x},${t.y},${z}`);
   }
   return blocked;
 }
@@ -77,8 +74,8 @@ function buildEntityBlockIndex(entities: SceneEntity[]): Set<string> {
  *  `.push`/`.splice` hors fixtures de test) : la clé la plus fine est le tableau lui-même. */
 const entityBlockIndex = memoByRef(buildEntityBlockIndex);
 
-/** La case (x,y) est-elle couverte par l'empreinte (`foot {w,h}`) d'un décor ? Pour la walkability.
- *  Un décor 1×1 (sans `foot`) ne bloque PAS — SAUF s'il est :
+/** La case (x,y) est-elle couverte par l'empreinte (`PropData.foot`) d'un décor ? Pour la walkability.
+ *  Un décor sans empreinte déclarée au catalogue ne bloque PAS — SAUF s'il est :
  *   • INTERACTIF (coffre, stèle, dépouille fouillable…) : on ne se tient pas SUR lui, on l'aborde en
  *     case adjacente (exploration P5 comme combat « Ramasser », LDB 13 l.115-116) ; ou
  *   • SOLIDE par son TYPE (`props.json` `solid` : feu de camp, brasero, statue, tonneau…) : objet

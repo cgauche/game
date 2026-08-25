@@ -109,6 +109,29 @@ describe('Inspector — apparence visuelle des murs', () => {
   });
 });
 
+describe('Inspector — l’empreinte d’un décor n’est plus une propriété d’instance', () => {
+  it('aucun contrôle d’empreinte n’est rendu ; changer de ref ne pose rien sur l’entité', async () => {
+    const h = mount({ id: 'p', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau' });
+    await h.mount();
+
+    expect(h.container.textContent).not.toContain('Empreinte');
+
+    const select = Array.from(h.container.querySelectorAll('select'))
+      .find((el) => el.closest('label')?.textContent?.includes('Décor')) as HTMLSelectElement;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')!.set!.call(select, 'tribune');
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(h.entOf().ref).toBe('tribune');
+    expect(h.entOf()).not.toHaveProperty('foot');
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+});
+
 describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
   it('light.radiusTiles : la case + le rayon atterrissent dans la Scène et survivent au round-trip', async () => {
     const h = mount({ id: 'lanterne', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau' });

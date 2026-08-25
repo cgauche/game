@@ -568,9 +568,10 @@
         },
         {
           "files": [
-            "props.json"
+            "props.json",
+            "propMaterials.json"
           ],
-          "desc": "Props de décor (feu de camp, brasero…)"
+          "desc": "Props de décor et leurs matériaux"
         },
         {
           "files": [

@@ -8,6 +8,7 @@
 import { Scene, SceneEntity, tileAt, wallBetween, heightAt, sceneMetresPerTile } from './scene';
 import { TERRAINS } from './terrain';
 import { findPropById } from '../data';
+import { propFootTiles } from './footprint';
 import { Pt } from './path';
 import type { Combatant } from '../engine/types';
 import { chebyshev } from '../engine/grid';
@@ -95,18 +96,9 @@ export function smokeZone(from: Pt, center: Pt, radius: number): Pt[] {
   return [...seen.values()];
 }
 
-/** Empreinte d'un décor : ses cases (1×1 par défaut, ou `foot {w,h}` ancré en `pos`). */
-function entityTiles(e: SceneEntity): Pt[] {
-  const w = e.foot?.w ?? 1;
-  const h = e.foot?.h ?? 1;
-  const out: Pt[] = [];
-  for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) out.push({ x: e.pos.x + xx, y: e.pos.y + yy });
-  return out;
-}
-
 const decorAt = (scene: Scene, x: number, y: number): SceneEntity | undefined =>
   scene.entities.find(
-    (e) => e.kind === 'prop' && entityTiles(e).some((p) => p.x === x && p.y === y),
+    (e) => e.kind === 'prop' && propFootTiles(e.ref, e.pos).some((p) => p.x === x && p.y === y),
   );
 
 /** Une CASE bloque-t-elle la vue ? (terrain opaque `mur/porte`, décor opaque `statue`). Prédicat UNIQUE

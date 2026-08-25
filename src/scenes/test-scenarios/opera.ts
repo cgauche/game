@@ -113,7 +113,9 @@ const ents: SceneEntity[] = [
   { id: 'spect-d', kind: 'personnage', ref: 'villageois', label: 'Spectateur', pos: { x: 18, y: 7 }, z: 1, facing: 'O' },
 
   // LOGE ROYALE (z1, fond-centre de la galerie) : balustrade face à la scène, fauteuil, la Comtesse, appliques.
-  { id: 'bal-royale-g', kind: 'prop', ref: 'balustrade-loge', pos: { x: 8, y: 13 }, facing: 'N', z: 1 },
+  // Les deux volées de balustrade tiennent 3 cases chacune (`props.json` `balustrade-loge`) : ancrées en
+  // 6 et 12, elles couvrent 6-8 et 12-14 et laissent 9-11 ouvert au centre de la loge.
+  { id: 'bal-royale-g', kind: 'prop', ref: 'balustrade-loge', pos: { x: 6, y: 13 }, facing: 'N', z: 1 },
   { id: 'bal-royale-d', kind: 'prop', ref: 'balustrade-loge', pos: { x: 12, y: 13 }, facing: 'N', z: 1 },
   { id: 'fauteuil-royal', kind: 'prop', ref: 'fauteuil-loge', pos: { x: 10, y: 14 }, z: 1 },
   { id: 'comtesse', kind: 'personnage', ref: 'villageois', label: 'Comtesse Emmanuelle', pos: { x: 10, y: 13 }, z: 1, facing: 'N', dialogueId: 'dlg-comtesse' },

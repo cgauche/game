@@ -9,6 +9,7 @@
  * (min x, min y) de l'empreinte, qui s'étend vers +x/+y. Une créature 1×1 garde sa sémantique
  * actuelle (pos = sa tuile), donc tout le code positionnel existant reste correct par défaut.
  */
+import { findPropById, propFootOf } from '../data';
 import { effectiveSize, sizeFootprintSide, type SizeCategory } from '../engine/size';
 import type { Combatant } from '../engine/types';
 import type { Pt } from './path';
@@ -41,7 +42,21 @@ export function occupiesTile(pos: Pt, n: number, x: number, y: number): boolean 
   return x >= pos.x && x < pos.x + side && y >= pos.y && y < pos.y + side;
 }
 
-/** Géométrie d'un DÉCOR à empreinte rectangulaire (`SceneEntity.foot {w,h}`, ancre = coin NO) :
+/** Empreinte DÉCLARÉE du TYPE de décor (`props.json` `foot`, ancre = coin NO) — vérité UNIQUE des
+ *  dimensions d'un prop : une instance de scène n'en redéclare aucune. Absente = le décor n'occupe
+ *  que sa case et ne bloque que s'il est solide ou interactif (cf. `entityBlockedAt`). */
+export const propDeclaredFoot = (ref: string | undefined): { w: number; h: number } | undefined =>
+  (ref ? findPropById(ref)?.foot : undefined);
+
+/** Cases couvertes par un décor de ref `ref` ancré en `pos` (sa seule case si aucune empreinte déclarée). */
+export function propFootTiles(ref: string | undefined, pos: Pt): Pt[] {
+  const { w, h } = propFootOf(findPropById(ref ?? ''));
+  const out: Pt[] = [];
+  for (let dy = 0; dy < h; dy++) for (let dx = 0; dx < w; dx++) out.push({ x: pos.x + dx, y: pos.y + dy });
+  return out;
+}
+
+/** Géométrie d'un DÉCOR à empreinte rectangulaire (`PropData.foot {w,h}`, ancre = coin NO) :
  *  décalage fractionnaire vers le CENTRE du bloc (pour y poser le token) et facteur d'échelle
  *  visuel (côté max). Absent/1×1 ⇒ identité — le décor historique ne bouge pas. */
 export function decorFootGeometry(foot?: { w: number; h: number }): { offX: number; offY: number; scale: number } {

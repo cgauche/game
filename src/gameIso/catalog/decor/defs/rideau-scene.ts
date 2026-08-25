@@ -5,7 +5,6 @@ import { P } from '../../decorPalette';
 // nouées sur les côtés, lambrequin doré festonné, glands à embrasse (ballant `sway`). Lit « la scène ».
 export const prop: PropViz = {
   id: 'rideau-scene',
-  foot: { w: 3, h: 1 },
   label: 'Rideau de scène',
   render: () =>
     `<g><ellipse cx="60" cy="147" rx="54" ry="9" fill="${P.ombre}" opacity="0.2"/>` +

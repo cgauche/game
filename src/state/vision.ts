@@ -16,6 +16,7 @@ import { wallOnSight } from './lineOfSight';
 import { TERRAINS, terrainSolidHeightM } from './terrain';
 import { METRES_PER_LEVEL } from './relief';
 import { sceneIsDark } from './sceneRules';
+import { propFootTiles } from './footprint';
 import { Pt, chebyshev } from './path';
 import { LIGHT_LEVEL_BY_ID, findTraitById, findPropById, findTrappingById } from '../data';
 import { memoByRef } from './sceneMemo';
@@ -90,12 +91,8 @@ function buildOpaqueUncached(scene: Scene): Occ {
       }
   for (const e of scene.entities) {
     if (e.kind !== 'prop' || !e.ref || !findPropById(e.ref)?.opaque) continue;
-    const fw = e.foot?.w ?? 1, fh = e.foot?.h ?? 1;
-    for (let yy = 0; yy < fh; yy++)
-      for (let xx = 0; xx < fw; xx++) {
-        const x = e.pos.x + xx, y = e.pos.y + yy;
-        if (x >= 0 && y >= 0 && x < w && y < h) { g[y * w + x] = 1; topH[y * w + x] = heightAt(scene, x, y, 0) + METRES_PER_LEVEL; }
-      }
+    for (const { x, y } of propFootTiles(e.ref, e.pos))
+      if (x >= 0 && y >= 0 && x < w && y < h) { g[y * w + x] = 1; topH[y * w + x] = heightAt(scene, x, y, 0) + METRES_PER_LEVEL; }
   }
   // Arêtes bloquantes (z0) en SET → test O(1) au rayon (au lieu de `scene.walls.some` O(murs) : 171 ms
   // sur l'Opéra à 999 murs). Toute arête NON ouverte occulte (mur plein, porte fermée, structure intacte ;

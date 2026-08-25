@@ -2919,10 +2919,6 @@
       "y": 14
      },
      "ref": "tente",
-     "foot": {
-      "w": 2,
-      "h": 2
-     },
      "label": "Infirmerie"
     },
     {
@@ -9860,11 +9856,7 @@
       "x": 29,
       "y": 12
      },
-     "ref": "abreuvoir",
-     "foot": {
-      "w": 2,
-      "h": 1
-     }
+     "ref": "abreuvoir"
     },
     {
      "id": "p10",
@@ -11022,10 +11014,6 @@
       "y": 16
      },
      "ref": "cheval-mort",
-     "foot": {
-      "w": 2,
-      "h": 1
-     },
      "label": "Monture éventrée",
      "interact": {
       "flow": {
@@ -11057,10 +11045,6 @@
       "y": 18
      },
      "ref": "barque",
-     "foot": {
-      "w": 2,
-      "h": 1
-     },
      "label": "Barque embourbée",
      "interact": {
       "flow": {
@@ -16540,10 +16524,6 @@
       "y": 5
      },
      "ref": "idole-chaos",
-     "foot": {
-      "w": 2,
-      "h": 2
-     },
      "label": "L’Idole noire"
     },
     {
@@ -20900,10 +20880,6 @@
       "y": 9
      },
      "ref": "tente",
-     "foot": {
-      "w": 2,
-      "h": 2
-     },
      "label": "Tente de Bella"
     },
     {
@@ -20932,10 +20908,6 @@
       "y": 10
      },
      "ref": "charrette",
-     "foot": {
-      "w": 2,
-      "h": 1
-     },
      "label": "Butin des convois"
     },
     {
@@ -22368,10 +22340,6 @@
       "y": 23
      },
      "ref": "barque",
-     "foot": {
-      "w": 2,
-      "h": 1
-     },
      "label": "Barque du tourbier",
      "interact": {
       "flow": {
@@ -23464,11 +23432,7 @@
       "x": 10,
       "y": 8
      },
-     "ref": "abreuvoir",
-     "foot": {
-      "w": 2,
-      "h": 1
-     }
+     "ref": "abreuvoir"
     },
     {
      "id": "p2",
@@ -23478,10 +23442,6 @@
       "y": 9
      },
      "ref": "charrette",
-     "foot": {
-      "w": 2,
-      "h": 1
-     },
      "label": "Charrette abandonnée"
     },
     {
@@ -24919,10 +24879,6 @@
       "y": 6
      },
      "ref": "epave-carrosse",
-     "foot": {
-      "w": 2,
-      "h": 2
-     },
      "label": "La diligence de Felsbach"
     },
     {
