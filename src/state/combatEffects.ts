@@ -1360,9 +1360,10 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'setTime', phase: 'nuit' }),
     apply: (e, env) => {
       // Saut EN AVANT jusqu'à la prochaine occurrence de la phase/heure visée (le temps ne recule jamais).
-      const target = 'phase' in e
+      // `phase` ⊕ `hour` (XOR porté par `setTimeSchema`, defs-scenes/effets.ts).
+      const target = e.phase !== undefined
         ? (DAY_PHASES.find((p) => p.key === e.phase)?.start ?? 0)
-        : e.hour * 60 + (e.minute ?? 0);
+        : (e.hour ?? 0) * 60 + (e.minute ?? 0);
       env.get().advanceTime(minutesUntilNext(env.get().gameTime, target));
     },
   },

@@ -309,7 +309,7 @@ Le **Pouvoir derrière le Trône** (Tome 3) propose en Annexe IV le barème de P
 **Sources RAW** : `PDT 13 l.1-73`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `PDT 13` (l.1-73) → `Effect` — `src/state/scene.ts`
+- `PDT 13` (l.1-73) → `giveXpSchema` — `src/data/schemas/defs-scenes/effets.ts`
 - sans code : `PDT 13` (l.78)
 
 ---

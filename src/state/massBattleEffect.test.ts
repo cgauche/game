@@ -4,7 +4,8 @@ import { seedBattleRng } from './battleRng';
 import { pregenParty, PREGEN } from '../data/pregens';
 import { applyEffects, EFFECT_HANDLERS, type EffectRefCtx } from './combatEffects';
 import type { Effect } from './scene';
-import { armyMight, armyStartMight, type MassBattleSpec } from './massBattleFlow';
+import { armyMight, armyStartMight } from './massBattleFlow';
+import type { MassBattleSpec } from '../engine/massBattle';
 
 /** Effet `startMassBattle` authoré typique (armées + situations par Round + rencontres de combat). */
 function battleEffect(spec: Partial<MassBattleSpec> = {}): Extract<Effect, { type: 'startMassBattle' }> {

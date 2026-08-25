@@ -714,6 +714,7 @@ const HORS_PERIMETRE_COMBAT = [
 const ETAPE_A_LA_MAIN_STOCK: Record<string, number> = {
   // TYPES (aucun montage) — `kind` + `target` en position de DÉCLARATION
   'src/data/schemas/defs/spells.ts': 1,
+  'src/data/schemas/defs-scenes/effets.ts': 2, // schémas `inflictPsychology` et `exposureNight`
   'src/state/pendings.ts': 1, // PendingExtendedTest
   'src/state/upkeep.ts': 1, // DeferredUpkeepTest
   'src/state/interludeFlow.ts': 2, // PendingActivityFields (type) + `target: 0` sentinelle d'ouverture

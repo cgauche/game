@@ -39,7 +39,7 @@ import { cadenceAuto } from '../engine/cadence';
 import { freeCons, bandStep, bandRowOfStep, choiceStep, makeBandFactory, rollStep, type BuiltCascadeStep } from './rollSeam';
 import {
   pursuitOutcome, pursuitMoveBonus, pursuitLaggard, npcSacrificeChoice, npcPursuerChoice,
-  PURSUIT_ESCAPE_DISTANCE, type PursuitPolicy, type PursuitRunner,
+  PURSUIT_ESCAPE_DISTANCE, type PursuitFoe, type PursuitPolicy, type PursuitRunner,
 } from '../engine/pursuit';
 import {
   registerSequence, startSequence, abandonSequence, sequenceScoreOf,
@@ -53,16 +53,6 @@ import { t } from '../i18n';
 import { dataLabel } from '../data';
 import { stepDetail, stepManche, stepPrecision } from './rollSeam';
 import type { PlayerText } from '../i18n/playerText';
-
-/** Un adversaire de la poursuite (côté opposé au groupe) — Mouvement (bonus de DR de vitesse, l.105-108)
- *  et valeur de Test de Mouvement. `label` = affichage (aucune logique keyée dessus) ; `id` est posé à
- *  l'ouverture (l'auteur n'a pas à en écrire un) et sert aux décisions de camp (l.94). */
-export interface PursuitFoe {
-  id?: string;
-  label: string;
-  movement: number;
-  skill: number;
-}
 
 /** Spécification d'auteur d'une poursuite (posée par l'Effet `startPursuit`). */
 export interface PursuitSpec {

@@ -7,7 +7,7 @@
  * CONCRÈTE à plat (`PortProfile` complet). Un port sans `ref` porte donc son profil en entier.
  */
 import { z } from 'zod';
-import { effectSchema } from './scene';
+import { effectSchema } from './effets';
 
 /** `TravelMode` (`engine/travel.ts`) — `'pied'`/`'monture'` ou id de `vehicles.json`. */
 export const travelModeSchema = z.string();

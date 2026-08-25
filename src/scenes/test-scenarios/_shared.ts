@@ -55,7 +55,7 @@ export interface TestScenario {
   rules?: Record<string, import('../../engine/policy').RuleValue>;
   /** Bataille de masse (ADE II 08) : amorce le sous-système de Puissance de Bataille après le chargement
    *  de la scène (les Scènes de combat démarrent les rencontres de cette scène). */
-  massBattle?: import('../../state/massBattleFlow').MassBattleSpec;
+  massBattle?: import('../../engine/massBattle').MassBattleSpec;
   /** Ouvre un interlude (« Entre deux aventures », LDB 23) AVANT la bataille de masse — le budget
    *  d'Activités (max 3) qu'il alloue est CELUI dans lequel puise la préparation (ADE II 8 l.65).
    *  Sans lui, une `massBattle` démarre au Round 1 sans préparation. Valeur = nombre de semaines. */

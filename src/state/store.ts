@@ -47,11 +47,11 @@ import * as favorFlow from './favorFlow';
 import * as netFlow from './netFlow';
 import type { NetState } from './netFlow';
 import type { InterludeState, BankDeposit, PendingActivity } from './interludeFlow';
-import type { Favor } from './favorFlow';
+import type { Favor } from '../engine/favor';
 export type { PendingActivity } from './interludeFlow';
 import * as massBattleFlow from './massBattleFlow';
-import type { MassBattleState, MassBattleSpec } from './massBattleFlow';
-export type { MassBattleState, MassBattleSpec } from './massBattleFlow';
+import type { MassBattleState } from './massBattleFlow';
+import type { MassBattleSpec } from '../engine/massBattle';
 import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveGame } from './saves';
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
@@ -731,7 +731,7 @@ export interface GameState extends RollFlowActionsMap {
    *  aide immédiate ; persistée SOURCE UNIQUE, même patron que `bank`/`pendingOrders`. */
   favors: Favor[];
   /** Accorde une Faveur (Activité à contrepartie / événement du Tableau / Effet `grantFavor`). */
-  favorGrant: (heroId: string, level: import('./favorFlow').FavorLevel, owedTo: string, desc: string) => void;
+  favorGrant: (heroId: string, level: import('../engine/favor').FavorLevel, owedTo: string, desc: string) => void;
   /** « Acquitter une Faveur » (LDB 23 l.147/149) : consomme une Activité d'interlude du héros. */
   favorSettle: (heroId: string, favorId: string) => void;
   /** Rompt une Faveur — Niveau de Carrière −1 (min 0) si la rumeur se répand (LDB 23 l.141). */

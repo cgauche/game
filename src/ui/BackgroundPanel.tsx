@@ -5,7 +5,7 @@ import { findStarById } from '../data';
 import { BackgroundFields } from './BackgroundFields';
 import { Icon } from './Icon';
 import { ChoiceButtons } from './OptionChooser';
-import { favorRequiredActivities, type Favor, type FavorLevel } from '../state/favorFlow';
+import { favorRequiredActivities, type Favor, type FavorLevel } from '../engine/favor';
 
 const FAVOR_LEVEL_LABELS: Record<FavorLevel, string> = {
   mineure: 'Faveur Mineure',

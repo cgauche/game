@@ -25,9 +25,9 @@ import { RefField } from '../compendium/RefField';
 import { NumberField } from '../NumberField';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
-import { POWER_ESTIMATE, clampMight } from '../../engine/massBattle';
+import { POWER_ESTIMATE, clampMight, type MassBattleSpec } from '../../engine/massBattle';
 import { PURSUIT_ESCAPE_DISTANCE } from '../../engine/pursuit';
-import { battleSceneById, type MassBattleSpec } from '../../state/massBattleFlow';
+import { battleSceneById } from '../../state/massBattleFlow';
 import { activitiesFor } from '../../engine/activities';
 import { formatMoney } from '../../engine/money';
 

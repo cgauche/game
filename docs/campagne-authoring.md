@@ -280,8 +280,8 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
 ## 12. Tous les Effects de scène (carte générée)
 
 Le vocabulaire COMPLET des `Effect` posables dans un `Flow` (choix de dialogue, `onVictory`, trigger,
-`delayedEffect`…) vit dans `docs/campagne-effects.md` — carte GÉNÉRÉE depuis le type `Effect` de
-`src/state/scene.ts` (`npm run docs:effects`, gatée par `docs:check`), jamais écrite à la main. On y
-trouve notamment `givePossession` (attribue une bête/serviteur/véhicule au registre `state.possessions`,
+`delayedEffect`…) vit dans `docs/campagne-effects.md` — carte GÉNÉRÉE depuis les schémas zod de
+`src/data/schemas/defs-scenes/effets.ts` (l'union `effectSchema` ; `npm run docs:effects`, gatée par
+`docs:check`), jamais écrite à la main. On y trouve notamment `givePossession` (attribue une bête/serviteur/véhicule au registre `state.possessions`,
 socle possessions #615) à côté de `giveTrapping`/`giveMoney`/`giveXp`, et l'`EffectOp` (pont vers le
 moteur mécanique/GameOp).

@@ -29,6 +29,7 @@ export const FILE_CONCEPTS = new Map([
   ['src/engine/bargain.ts', 'Marchandage, négociation de prix'],
   ['src/engine/bodyForm.ts', 'Gabarit corporel par espèce'],
   ['src/engine/cadence.ts', 'Cadence de tir'],
+  ['src/engine/favor.ts', 'Faveurs dues'],
   ['src/engine/fixedDie.ts', 'Dés fixés'],
   ['src/engine/capabilities.ts', "Capacités d'entité (aptitudes)"],
   ['src/engine/careerSlots.ts', "Carrières : emplacements, statut en carrière"],

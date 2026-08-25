@@ -74,7 +74,10 @@ src/engine/                 Règles WFRP4, PUR + testé :
                                 skills/talents) — SOURCE UNIQUE du mini-radar, du rail de composition (#417)
                                 et des « rôles » de carte (`heroRoles`, `ui/CharCard.tsx`, réconcilié dessus)
 src/state/
-  scene.ts                  SCHÉMA DE SCÈNE (tiles, entities, dialogues, triggers, encounters, Effect[])
+  scene.ts                  SCÈNE : 34 fonctions PURES (tuiles, murs, portes, relief) + 33 types exportés.
+                            UN SEUL est COMPOSÉ : l'union `Effect` (55 `z.infer` des schémas de
+                            `data/schemas/defs-scenes/effets.ts` + `DelayedEffect`/`PetitePriere`/`EffectOp`
+                            manuscrits = 58 membres) ; les 32 autres types restent MANUSCRITS ici
   worldMap.ts               SCHÉMA DE CARTE DU MONDE (#T2) : lieux/routes au niveau projet + format projet v2
                             (`ProjectDoc`, `activeAxes?: string[]` #409 — axes de forces/faiblesses ACTIFS de
                             la campagne, ids de `data/axes.json`, défaut `CORE_AXIS_IDS` via `resolveActiveAxes`).
@@ -308,9 +311,9 @@ Deux restrictions posées en 0cd24a01 (#232/#91) sans ticket au moment du commit
 
 ## Systèmes clés (état actuel)
 
-- **Schéma de Scène + Effets** (`scene.ts`) : `Effect` = setFlag, journal, document, **giveTrapping**
-  (donner un objet — nom RÉEL de la base → objet à stats ; nom inconnu → objet CUSTOM `misc` ;
-  il n'y a PLUS de `giveItem`/inventaire de groupe), giveMoney, giveXp, startCombat, **transition**
+- **Schéma de Scène + Effets** (`data/schemas/defs-scenes/`) : `Effect` = setFlag, journal, document, **giveTrapping**
+  (donner un objet — `trappingId` = id du CATALOGUE → objet à stats ; `custom` = nom libre hors-base → objet
+  `misc` ; il n'y a PLUS de `giveItem`/inventaire de groupe), giveMoney, giveXp, startCombat, **transition**
   (scène+entry), startDialogue, **test** (compétence + difficulté + `onSuccess`/`onFailure`),
   endDialogue. Tout est appliqué par `applyEffects` dans le store.
 - **Moteur de campagne** : transitions de scènes (registre depuis `campaign`), tests de

@@ -13,7 +13,8 @@
 import { fixtureText } from '../i18n/fixtureText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { pursuitOf, PURSUIT_POLICY_DEFAUT, type PursuitPayload, type PursuitFoe } from './pursuitFlow';
+import { pursuitOf, PURSUIT_POLICY_DEFAUT, type PursuitPayload } from './pursuitFlow';
+import type { PursuitFoe } from '../engine/pursuit';
 import { closeSequenceRound, type SequenceState } from './sequenceCore';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';

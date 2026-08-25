@@ -6,37 +6,25 @@
  * comble (`layers`/`entities`/`dialogues`/`triggers`/`encounters`/`flags`) sont donc OPTIONNELLES
  * ici, alors que le type manuscrit les déclare requises : un document ancien n'en porte pas.
  *
- * `Effect` et `Flow` restent des `z.custom<T>()` annotés du type manuscrit (#1466 T3-a) : leur
- * schéma zod est le lot T3-b. Import de TYPE seul — aucun import runtime de `src/state`.
+ * `Effect` et son `Flow` vivent dans `./effets.ts` (les 57 variantes) ; le vocabulaire feuille
+ * partagé avec elles vit dans `./communs.ts`. Import de TYPE seul depuis `src/state` — aucun import
+ * runtime de la couche state.
  */
 import { z } from 'zod';
 import { difficultySchema, entityAppearanceSchema } from '../grammaire/valeurs';
 import { conditionSchema, flowTestSchema, gameOpSchema } from '../grammaire/mecanique';
-import type { CustomStatblock, Effect } from '../../../state/scene';
-import type { Flow } from '../../../state/flow';
+import { customStatblockSchema, moneySchema, ptSchema, wallSideSchema } from './communs';
+import { sceneFlowSchema } from './effets';
 import type { AuthoredShipPoste } from '../../../engine/types';
 import type { OptionalEntry } from '../../../engine/statEntry';
 
-/** `Effect` (`state/scene.ts`) — union des 57 variantes d'effet de scène. Schéma zod = lot T3-b. */
-export const effectSchema = z.custom<Effect>();
-/** `Flow` de scène (`state/flow.ts` = `Flow<Effect>`). Schéma zod = lot T3-b. */
-export const sceneFlowSchema = z.custom<Flow>();
-
 /** `Dir8` (`state/dir8.ts`) — orientation MONDE éditable, projetée au rendu. */
 export const dir8Schema = z.enum(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']);
-/** `WallSide` (`state/scene.ts`) — arête canonique N/E, diagonales `\` (NO→SE) et `/` (NE→SO). */
-export const wallSideSchema = z.enum(['N', 'E', '\\', '/']);
-/** `Pt` (`state/path.ts`) — case, `z` = couche d'empilement (absent = base). */
-export const ptSchema = z.strictObject({ x: z.number(), y: z.number(), z: z.number().optional() });
 /** Rectangle de zone/déclencheur — `z` = étage (défaut 0). */
 export const rectSchema = z.strictObject({ x: z.number(), y: z.number(), w: z.number(), h: z.number(), z: z.number().optional() });
-/** Bourse (`gold`/`silver`/`brass`) d'un coût ou d'un octroi. */
-export const moneySchema = z.strictObject({ gold: z.number().optional(), silver: z.number().optional(), brass: z.number().optional() });
 /** Offre de couchage d'une scène/zone (`RestPlaces` sans `bord`, réservé au navire de campagne). */
 export const restPlacesSchema = z.strictObject({ auberge: z.boolean().optional(), maison: z.boolean().optional(), camp: z.boolean().optional() });
 
-/** `CustomStatblock` (`engine/statblock.ts`) — profil PNJ/bête custom d'éditeur. T3-b. */
-export const customStatblockSchema = z.custom<CustomStatblock>();
 /** `AuthoredShipPoste` (`engine/types.ts`) — pièce d'artillerie MONTÉE, hydratée au spawn. T3-b. */
 export const authoredShipPosteSchema = z.custom<AuthoredShipPoste>();
 /** `NavalTraitRef` (`engine/types.ts`) — Amélioration d'INSTANCE d'un navire (MDG 12). */

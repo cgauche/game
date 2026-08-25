@@ -44,6 +44,16 @@ export interface PursuitRunner {
   total: number;
 }
 
+/** Un adversaire de la poursuite (côté opposé au groupe) — Mouvement (bonus de DR de vitesse, l.105-108)
+ *  et valeur de Test de Mouvement. `label` = affichage (aucune logique keyée dessus) ; `id` est posé à
+ *  l'ouverture (l'auteur n'a pas à en écrire un) et sert aux décisions de camp (l.94). */
+export interface PursuitFoe {
+  id?: string;
+  label: string;
+  movement: number;
+  skill: number;
+}
+
 /** « le plus lent d'entre eux » (l.94) : le coureur au plus petit Mouvement du camp ; à Mouvement égal,
  *  le plus petit DR de la manche (il traîne le plus). `undefined` sur un camp vide ou d'un seul coureur
  *  — sacrifier le dernier fuyard ne laisserait personne à qui profiter de la manœuvre. */

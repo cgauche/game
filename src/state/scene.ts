@@ -6,13 +6,27 @@
  *
  * Aucune scène n'est codée « en dur » : la campagne est de la donnée.
  */
-import { CharKey, Difficulty } from '../engine/types';
 import type { AuthoredShipPoste, NavalTraitRef } from '../engine/types';
-// Type SEUL (effacé à la compilation — aucun cycle runtime), même patron qu'`engine/flowCore`.
-import type { StakeRef } from '../data';
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import { sanitizeFlow, type Flow, type Condition, type EffectOp } from './flow';
-import { type DayPhaseKey, type ScheduleSpec } from '../engine/clock';
+import { type ScheduleSpec } from '../engine/clock';
+// Les FORMES des 57 variantes d'`Effect` vivent en zod (`data/schemas/defs-scenes/effets.ts`) ;
+// l'union ci-dessous les compose par `z.infer`. Import de TYPE seul — aucun cycle runtime.
+import type { z } from 'zod';
+import type {
+  setFlagSchema, setObjectiveSchema, clearObjectiveSchema, giveTrappingSchema, givePossessionSchema,
+  giveMoneySchema, giveXpSchema, startCombatSchema, startMassBattleSchema, transitionSchema,
+  transitionBackSchema, startDialogueSchema, journalSchema, documentSchema, revealClueSchema,
+  discreditClueSchema, extendedTestSchema, forceDoorSchema, setTimeSchema, openMerchantSchema,
+  openPortSchema, medicalAidSchema, restoreFortuneSchema, restSchema, mealPartySchema,
+  inflictNightmaresSchema, ambitionLostSchema, inflictPsychologySchema, inflictDiseaseSchema,
+  inflictHungerSchema, inflictThirstSchema, exposureNightSchema, inflictTraumaSchema,
+  zoneBlastSchema, fallSchema, setLightSchema, setDoorSchema, moveEntitySchema, playSfxSchema,
+  giveSinSchema, corruptionExposureSchema, waterExposureSchema, learnSpellSchema, castSpellSchema,
+  sessionEndSchema, openCharacterCreatorSchema, interludeSchema, grantFavorSchema,
+  startPursuitSchema, openTavernGamesSchema, openWorldMapSchema, setVesselSchema,
+  adjustManannSchema, adjustVesselSchema, endDialogueSchema,
+} from '../data/schemas/defs-scenes/effets';
 import type { ThreatTier } from '../engine/advantagePool';
 import type { Dir8 } from './dir8';
 import type { Pt } from './path';
@@ -35,7 +49,6 @@ export type EntityKind = 'heroStart' | 'personnage' | 'prop';
 /** Statbloc personnalisé (PNJ/bête custom d'éditeur) — moteur pur, `engine/statblock.ts` (#614) :
  *  `LivingRef` (`engine/possession.ts`) porte la même dualité bestiaire|custom que ce type. */
 import type { CustomStatblock } from '../engine/statblock';
-import type { LivingRef } from '../engine/possession';
 import { chebyshev } from '../engine/grid';
 import type { SeatAssignments } from './seating';
 export type { CustomStatblock };
@@ -234,264 +247,81 @@ export interface ArchitectureBody {
   roofExclusions?: { z: number; rect: ArchitectureRect }[];
 }
 
+/** Effet PROGRAMMÉ (Lot 0, étendu #668) — l'une des DEUX variantes dont le corps reste manuscrit :
+ *  elle porte un `Flow<Effect>`, donc elle est MUTUELLEMENT récursive avec l'union ci-dessous, et
+ *  ce corps est l'ANNOTATION de `delayedEffectSchema` (`data/schemas/defs-scenes/effets.ts`, où
+ *  vivent sa mécanique et ses réfs). */
+export type DelayedEffect = { type: 'delayedEffect'; flow: Flow; cancelFlag?: string } & ScheduleSpec;
+
+/** « Petites Prières » — seconde variante récursive (son `reward` est un `Flow<Effect>`) ; ANNOTE
+ *  `petitePriereSchema` (`data/schemas/defs-scenes/effets.ts`). */
+export type PetitePriere = { type: 'petitePriere'; heroId?: string; reward: Flow };
+
+/**
+ * Union des 57 variantes d'effet de scène + la feuille `ops` = 58 membres. La FORME de chaque
+ * variante — champs, optionalités, mécanique, réfs RAW — vit dans
+ * `src/data/schemas/defs-scenes/effets.ts` ; ici on ne compose que les noms. `EffectOp`
+ * (`type:'ops'`) est le membre POSSÉDÉ par le moteur (feuille par défaut du `Flow<E>` générique).
+ */
 export type Effect =
-  | { type: 'setFlag'; flag: string; value?: boolean }
-  /** Pose/met à jour un OBJECTIF courant (surface « je fais quoi maintenant ? », #238) sur la pile
-   *  `store.objectives`, keyé par `id` STABLE : re-poser le même `id` MET À JOUR son `text`. Le HUD
-   *  affiche le plus récent. Archivé aussi au journal. Échéance optionnelle (même `ScheduleSpec` que
-   *  `delayedEffect`) → pose `Objective.deadline` (minute absolue) → compte à rebours dans le bandeau. */
-  | ({ type: 'setObjective'; id: string; text: string } & ScheduleSpec)
-  /** Retire un objectif de la pile : `id` précis, ou TOUS si absent (fin d'acte). */
-  | { type: 'clearObjective'; id?: string }
-  /** Donne un objet à un héros (défaut : le premier). `trappingId` = objet de CATALOGUE à stats (réf
-   *  `TrappingData.id`) ; `custom` = objet HORS-base (nom libre — trinket/quête/pièces de monstre) sans
-   *  stats. L'objet arrive NON équipé. Champs MAGIQUES optionnels (butin/quête) : `qualities` AJOUTÉES
-   *  (Atout/Défaut), `identified:false` = qualités masquées jusqu'à Évaluation (#2), `skin` = recoloration. */
-  | { type: 'giveTrapping'; trappingId?: string; custom?: string; heroId?: string; qualities?: string[]; identified?: boolean; skin?: Record<string, string>;
-      /** Aura détectée / Détection déjà tentée (Talent Détection d'artefact, LDB 10) / jour de la
-       *  dernière Évaluation ratée — posés par la fenêtre de loot AVANT attribution, propagés sur
-       *  l'ItemInstance à la remise. */
-      magicKnown?: boolean; detectTried?: boolean; appraiseTriedDay?: number;
-      /** Valeur de marché propre posée sur l'instance (ex. pièces de monstre récoltées, ZI). */
-      price?: { gold?: number; silver?: number; brass?: number } }
-  /** Donne une POSSESSION (bête/serviteur/véhicule — le SOCLE POSSESSIONS #615, registre
-   *  `GameState.possessions`) à un héros propriétaire (défaut : le premier — même patron que
-   *  `giveTrapping.heroId`, §4.3). `ref` réutilise `LivingRef` (bête/serviteur, bestiaire OU statbloc
-   *  custom) ou `{vehicleId}` (véhicule, catalogue `vehicles.json`). */
-  | { type: 'givePossession'; nature: 'bete' | 'serviteur' | 'vehicule'; ref: LivingRef | { vehicleId: string }; heroId?: string }
-  | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
-  /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). Support
-   *  générique de l'attribution événementielle par scénario (PDT 13 l.5) : chaque scénario/campagne
-   *  authore ses propres octrois via cette action, à tout point narratif (victoire, objectif, dialogue…). */
-  | { type: 'giveXp'; amount: number }
-  | { type: 'startCombat'; encounter: string }
-  /** Combat de masse / Puissance de Bataille (ADE II 8) : ouvre l'écran de bataille sur le
-   *  `MassBattleSpec` AUTHORÉ (armées, Rounds prévus, situations de Scènes par Round, rencontres des
-   *  Scènes de combat, modificateur permanent). Appliqué par le store `startMassBattle` (state/massBattleFlow). */
-  | { type: 'startMassBattle'; battle: import('./massBattleFlow').MassBattleSpec }
-  | { type: 'transition'; scene: string; entry?: string }
-  /** Retour à la scène précédente (sortie d'intérieur), à la case d'entrée. */
-  | { type: 'transitionBack' }
-  /** Ouvre le dialogue scripté `dialogue`. `speakerId` (optionnel) = id d'une `SceneEntity` de la
-   *  scène courante → son PORTRAIT et son NOM (label) pour toute la session de dialogue, tant qu'un
-   *  nœud ne porte pas son propre `speakerId` (cf. `DialogueNode.speakerId`). */
-  | { type: 'startDialogue'; dialogue: string; speakerId?: string }
-  | { type: 'journal'; text: string }
-  | { type: 'document'; title: string; text: string }
-  /** Mécanique MAISON du carnet d'enquête (#670, aucune règle RAW) : révèle/avance un `Indice` de
-   *  `campaignNarratif`. `stade` omis → premier stade si l'indice est encore caché, sinon no-op. */
-  | { type: 'revealClue'; indiceId: string; stade?: string }
-  /** Écarte un indice comme fausse piste (barré, relisible au carnet) — mécanique MAISON (#670). */
-  | { type: 'discreditClue'; indiceId: string }
-  /** Test ÉTENDU (LDB 12 l.172-174) : un acteur cumule des DR Round par Round jusqu'à `targetDR`
-   *  (crocheter une serrure, forcer un mécanisme…). `flag` posé à la réussite (gate la suite). */
-  | {
-      type: 'extendedTest';
-      skill?: string;
-      /** Spécialisation ciblée (Métier (Serrurier), Savoir (Magie)…) — précise QUELLE instance du
-       *  `skill` est testée quand le héros en possède plusieurs ; sinon la première suffit. */
-      spec?: string;
-      characteristic?: CharKey;
-      difficulty?: Difficulty;
-      label: string;
-      /** DR CUMULÉ à atteindre (ex. serrure complexe = 5). */
-      targetDR: number;
-      flag?: string;
-      /** ENJEU du Test (#1117) — référence de donnée, résolue par `resolveStake` et affichée par la
-       *  modale du Round. Authorable par site ; à défaut, l'applier pose celui du Test étendu. */
-      stake?: StakeRef;
-    }
-  /** Enfoncer une PORTE/objet à PLUSIEURS (EDO Appendice 2) : objet (BE = Bonus d'Endurance, B =
-   *  Blessures) ; chaque héros frappe (Bagarre, dégâts = DR + BF − BE). `flag` posé quand l'objet cède. */
-  | { type: 'forceDoor'; label: string; doorBE: number; doorB: number; flag?: string }
-  | { type: 'setTime'; phase: DayPhaseKey }            // « passe à l'aube/jour/…/nuit » (saut en avant, #T1c)
-  | { type: 'setTime'; hour: number; minute?: number } // heure précise (saut en avant)
-  /** Effet PROGRAMMÉ (Lot 0, étendu #668) : `flow` est appliqué quand l'horloge atteint l'échéance,
-   *  résolue par `scheduleAt` (`engine/clock`) selon la `ScheduleSpec` fournie — priorité `atDate`
-   *  (date impériale absolue) > `afterDays` (« J+N », à `atHour:atMinute`, défaut minuit) >
-   *  `afterMinutes` (compte à rebours relatif : mèche de bombe) > `atHour`/`atMinute` seuls (prochaine
-   *  occurrence de cette heure du jour). Annulé si `cancelFlag` est posé avant l'échéance
-   *  (désamorçage). Déclenché au FRANCHISSEMENT dans `advanceTime` (le temps avance par actions
-   *  discrètes : un événement programmé entre deux pas se déclenche dès le pas qui le dépasse). */
-  | ({ type: 'delayedEffect'; flow: Flow; cancelFlag?: string } & ScheduleSpec)
-  /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un
-   *  dialogue (ex. choix « Montrez-moi vos marchandises »). L'entité doit porter `merchant` (#2). */
-  | { type: 'openMerchant'; entityId: string }
-  /** Ouvre le PORT d'un lieu de la carte du monde (MDG 15) — SCRIPTÉ (arrivée mise en scène, cinématique
-   *  de quête) sur le MÊME chemin que l'accostage en mer (`openPortAt`, state/seaVoyageFlow) : avec profil
-   *  de port → relâche à terre en attente de décision (`pendingShoreLeave`) ; sans profil → transition
-   *  directe. `placeId` = id d'un `MapPlace` de `state.worldMap`. */
-  | { type: 'openPort'; placeId: string }
-  /** Soins PAYANTS d'un PNJ (médecin/guérisseur/temple — LDB 75 « Docteur en médecine », l'aide
-   *  médicale se paie À L'ACTE, 4-6 pistoles) : ouvre l'INFIRMERIE du PNJ (modale persistante,
-   *  state/medicFlow) avec ses actes et leurs tarifs — `acts` liste {act, cost?} ; le débit a lieu
-   *  au lancement de chaque acte (remboursé si annulé avant le jet). `skill`/`intBonus` = compétence
-   *  de Guérison du PNJ (sa fiche, éditable — le moteur applique le RAW Guérison/Chirurgie existant).
-   *  `entityId` = le PNJ soigneur (son `label` donne le NOM affiché) → aucun nom codé en dur. Le
-   *  joueur choisit les patients dans la modale. */
-  | { type: 'medicalAid'; acts?: { act: 'wounds' | 'bleed' | 'trauma' | 'surgery'; cost?: { gold?: number; silver?: number; brass?: number } }[]; skill: number; intBonus: number; entityId?: string }
-  /** Début de session (LDB 17 l.41) : chaque héros regagne tous ses Points de Chance,
-   *  jusqu'à un maximum égal à son Destin actuel. Exposé dans l'éditeur (pas de hook caché). */
-  | { type: 'restoreFortune' }
-  /** Repos (LDB 16/18/21) : ouvre la MODALE DE NUIT (state/restFlow) — par héros : couchage +
-   *  pitance, prix RAW calculés (LDB 66 : commune 10 sc, privée 10 pa pour 2, repas 1 pa —
-   *  débit dans la modale), puis bilan globalisé (Exposition dehors, récupération, cauchemars,
-   *  contagion). `lodging` : contexte du lieu (auberge/chez soi/campement) ; `quality: 'pietre'`
-   *  = ½ prix mais nourriture à risque (Courante galopante 10 %, ch.66 l.51). LEGACY : sans
-   *  `lodging`, contexte « maison » (gratuit — prix porté par le choix de dialogue). */
-  | { type: 'rest'; days?: number; lodging?: 'auberge' | 'maison' | 'camp'; quality?: 'normale' | 'pietre' }
-  /** Repas (#T2 — auberge, hôte généreux…) : nourrit TOUT le groupe pour la journée SANS consommer de
-   *  ration — remet les compteurs/malus de Faim à zéro (LDB 18 l.337-343). Le prix éventuel (« Repas,
-   *  auberge », LDB 66 p.302) est porté par le CHOIX de dialogue (`DialogueChoice.cost`), pas par l'effet. */
-  | { type: 'mealParty' }
-  /** Inflige le trauma « Cauchemars » (LDB 21 l.95) à un héros (défaut : le premier) après une scène
-   *  marquante : chaque nuit, Test de Calme Facile (+40) ou Exténué. L'auteur l'assigne (pas inventé). */
-  | { type: 'inflictNightmares'; heroId?: string }
-  /** Trauma (ADE II Annexe I « Troubles psychologiques », règle facultative `psych-acquisition-optional`) :
-   *  un héros TÉMOIN d'un événement rendant une de ses Ambitions complètement irréalisable → Test de Calme
-   *  Accessible (+20) ; échec → Trait psychologique *Trauma*. Déclencheur NARRATIF (aucun hook mécanique),
-   *  donc posé par l'auteur (défaut : le premier héros). Inerte si la règle facultative est éteinte. */
-  | { type: 'ambitionLost'; heroId?: string }
-  /** Source de PEUR/TERREUR scénique (LDB 21) — une apparition, un présage, une vision d'horreur mise en
-   *  scène par l'auteur (PAS un PNJ de la scène : hors combat, la Peur/Terreur de créature ne se teste QUE
-   *  scriptée, cf. `engine/encounterPsych`). Ouvre la MÊME cascade de Tests de Calme que la Psychologie de
-   *  rencontre (`openScriptedPsych`, applier `'encounterPsych'` partagé) — jamais un jet silencieux. Cible :
-   *  `party` ou `hero` (+`heroId`, défaut le premier). */
-  | { type: 'inflictPsychology'; kind: 'peur' | 'terreur'; indice: number; label: string; target?: 'party' | 'hero'; heroId?: string }
-  /** Inflige une Maladie (LDB 20) à un héros (défaut : le premier) — nourriture avariée, contact infecté,
-   *  morsure… L'auteur choisit la maladie (DISEASE_DEFS) ; incubation/durée sont tirées à la contraction. */
-  | { type: 'inflictDisease'; disease: string; heroId?: string }
-  /** Impose la Faim (LDB 18 l.337-343) : `days` échecs de Test de Faim déjà encaissés — 1ᵉʳ → −10 F/E ;
-   *  2ᵉ+ → −10 aux autres Caractéristiques + 1d10 Dégâts (ignore les PA, min 1). Pour scénariser un groupe
-   *  affamé (siège, cachot, traversée sans vivres). Cible : `party` ou `hero` (+`heroId`, défaut le premier). */
-  | { type: 'inflictHunger'; days?: number; target?: 'party' | 'hero'; heroId?: string }
-  /** Impose la Soif (LDB 18 l.340, miroir de la Faim) : `days` échecs de Test de Soif déjà encaissés —
-   *  1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ+ → −10 aux autres Caractéristiques + 1d10 Dégâts (ignore les PA, min 1).
-   *  Moteur partagé `applySoifTest` (engine/provisions), zéro logique nouvelle. Cible : `party` ou `hero`
-   *  (+`heroId`, défaut le premier). */
-  | { type: 'inflictThirst'; days?: number; target?: 'party' | 'hero'; heroId?: string }
-  /** Exposition au froid ou à la chaleur (LDB 18 l.326-334) : `count` Tests de Résistance (Intermédiaire),
-   *  échecs en cascade (froid : −10 CT/Ag/Dex, puis −10 le reste, puis 1d10 Dégâts ignorant les PA, Inconscient
-   *  à 0 PB ; chaleur : −10 Int/FM + Exténué, puis −10 le reste + Exténué, puis 1d10). Pour une nuit glaciale,
-   *  un désert, une tempête. Cible : `party` ou `hero` (+`heroId`, défaut le premier). */
-  | { type: 'exposureNight'; kind: 'froid' | 'chaleur'; count?: number; target?: 'party' | 'hero'; heroId?: string }
-  | { type: 'inflictTrauma'; kind: 'dechirure' | 'fracture' | 'amputation'; severity?: 'mineur' | 'majeur'; location: import('../engine/types').HitLocation; heroId?: string }
-  /** EFFECTOP — pont UNIQUE entre la logique authorée (Flow) et le moteur mécanique des sorts : applique
-   *  des `GameOp` à une cible (`party`/`hero` scène, ou `caster`/`target` incantation). Type défini dans
-   *  le noyau engine (`engine/flowCore` — c'est aussi la feuille PAR DÉFAUT du `Flow<E>` générique) ;
-   *  l'union `Effect` ci-dessous l'inclut comme l'un de ses membres. */
+  | z.infer<typeof setFlagSchema>
+  | z.infer<typeof setObjectiveSchema>
+  | z.infer<typeof clearObjectiveSchema>
+  | z.infer<typeof giveTrappingSchema>
+  | z.infer<typeof givePossessionSchema>
+  | z.infer<typeof giveMoneySchema>
+  | z.infer<typeof giveXpSchema>
+  | z.infer<typeof startCombatSchema>
+  | z.infer<typeof startMassBattleSchema>
+  | z.infer<typeof transitionSchema>
+  | z.infer<typeof transitionBackSchema>
+  | z.infer<typeof startDialogueSchema>
+  | z.infer<typeof journalSchema>
+  | z.infer<typeof documentSchema>
+  | z.infer<typeof revealClueSchema>
+  | z.infer<typeof discreditClueSchema>
+  | z.infer<typeof extendedTestSchema>
+  | z.infer<typeof forceDoorSchema>
+  | z.infer<typeof setTimeSchema>
+  | DelayedEffect
+  | z.infer<typeof openMerchantSchema>
+  | z.infer<typeof openPortSchema>
+  | z.infer<typeof medicalAidSchema>
+  | z.infer<typeof restoreFortuneSchema>
+  | z.infer<typeof restSchema>
+  | z.infer<typeof mealPartySchema>
+  | z.infer<typeof inflictNightmaresSchema>
+  | z.infer<typeof ambitionLostSchema>
+  | z.infer<typeof inflictPsychologySchema>
+  | z.infer<typeof inflictDiseaseSchema>
+  | z.infer<typeof inflictHungerSchema>
+  | z.infer<typeof inflictThirstSchema>
+  | z.infer<typeof exposureNightSchema>
+  | z.infer<typeof inflictTraumaSchema>
   | EffectOp
-  /** Souffle de ZONE (Lot 3) centré sur une case : tous les combattants à `radius` cases (Chebyshev)
-   *  — en combat par position, hors combat le groupe (à partyPos) — subissent les `ops` (vocabulaire
-   *  unique `GameOp`, appliquées par `applyOps` cible par cible). Bombe, grenade, piège de zone…
-   *  Dégâts BRUTS par défaut (`op:'wounds'` ignore BE+PA) ; mitiger = `{ignoreTB:false, ignoreAP:false}`. */
-  | { type: 'zoneBlast'; center: { x: number; y: number }; radius: number; ops: import('../engine/ops').GameOp[] }
-  /** Chute (LDB 15 l.80-84) : la cible tombe de `metres` mètres → 3 Dégâts/mètre + 1d10, réduits par
-   *  le Bonus d'Endurance mais PAS par les PA ; si les Blessures subies dépassent le BE → État À Terre.
-   *  `to` (optionnel) repositionne le GROUPE à l'arrivée (balcon→parterre, plancher de loge effondré). */
-  | { type: 'fall'; target: 'party' | 'hero'; heroId?: string; metres: number; to?: { x: number; y: number; z?: number } }
-  /** Mise en scène (Lot L) : règle le niveau de LUMIÈRE de la scène (0 = noir, 1 = plein jour) — « les
-   *  lumières baissent, le rideau se lève ». Lu par le rendu (overlay d'assombrissement). Générique :
-   *  tout intérieur (donjon, salle, théâtre). null implicite = auto (horloge/ambiance) tant qu'aucun setLight. */
-  | { type: 'setLight'; level: number }
-  /** Porte dynamique (brouillard de guerre) : ouvre/ferme la porte de l'arête (x,y,side) — une porte
-   *  fermée bloque vue ET passage. Pour un levier/piège/scripted authored. */
-  | { type: 'setDoor'; x: number; y: number; side: WallSide; z?: number; open: boolean }
-  /** Repositionne (ANIMÉ) ou RETIRE une entité de scène posée — mise en scène scriptée (#701 : fuite,
-   *  entrée, disparition d'un figurant). `to` = case cible (repositionnement) ; `remove` = l'entité
-   *  quitte la scène (après `to` si fourni = fuite-puis-disparition). Entité introuvable = no-op. */
-  | { type: 'moveEntity'; id: string; to?: { x: number; y: number; z?: number }; remove?: boolean }
-  /** Son PONCTUEL (cloche de minuit, cri hors-champ…) — id du registre audio (#701). */
-  | { type: 'playSfx'; id: string }
-  /** Points de Péché (LDB 40 l.30-36) : l'auteur/MJ sanctionne une infraction aux commandements du dieu
-   *  d'un Bienheureux — 1 à 3 selon la gravité (l.36). Défaut : le premier héros sachant Prier. Le dé des
-   *  unités d'un Test de Prière ≤ Péchés déclenche la Colère des dieux même sur Test réussi (l.45) ;
-   *  chaque jet de Colère en expie 1 (l.53). */
-  | { type: 'giveSin'; amount?: number; heroId?: string }
-  /** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance (Influence physique)
-   *  ou de Calme (spirituelle) par MODALE ; Points de Corruption selon le niveau et le DR. Cible : héros
-   *  désigné, sinon le premier vivant. Au-delà de BFM+BE : Test de Résistance ou MUTATION. */
-  // `skill` ABSENT = nature indéterminée (l.26 « comme déterminé par le MJ ») → le joueur choisit
-  // Résistance/Calme dans la modale ; PRÉSENT = déterminé en amont → verrouillé (pas de choix).
-  // `align` (Puissance du Chaos) facultatif : si la mutation survient, force la table EDOC alignée
-  // (sinon la règle globale décide). C'est à l'éditeur de niveau de le poser quand la source est dédiée.
-  | { type: 'corruptionExposure'; level: 'mineure' | 'moderee' | 'majeure'; skill?: 'resistance' | 'calme'; align?: import('../engine/corruption').ChaosAlign; heroId?: string }
-  /** Exposition HYDRIQUE (MSRC 16 p.91 — « Maladies transmises par l'eau ») : Test de **Résistance
-   *  Intermédiaire (+0)** modifié (tableau 1 « Source d'eau » = `source`, choix d'auteur de la zone
-   *  d'eau ; tableau 2 « Blessures et États » DÉRIVÉ du héros, immersion seule) ; raté → d100 « +10
-   *  pour chaque DR négatif » → maladie CONTRACTÉE directement (le Test d'exposition EST le test —
-   *  jamais un second Test de Contraction). `mode` : `ingestion` (boire de l'eau non bouillie, l.5) /
-   *  `immersion` (chute/nage, blessures ouvertes, l.7-9). Cible : `party` ou `hero` (+`heroId`). */
-  | { type: 'waterExposure'; mode: import('../data').WaterExposureMode; source?: string; target?: 'party' | 'hero'; heroId?: string }
-  /** Enseigne un sort SANS coût en PX (trouvaille de campagne : grimoire d'un maître, parchemin…).
-   *  Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable. L'apprentissage
-   *  PAYANT passe par l'onglet Avancement (buySpell, LDB 46 l.44-47). */
-  | { type: 'learnSpell'; spell: string; heroId?: string }
-  /** Incantation SCRIPTÉE (#98) : rituel scénique, piège magique, PNJ qui lance à un beat précis (dialogue,
-   *  trigger, effet différé). `casterId`/`targetId` = id STABLE d'un combattant — un combattant EN COMBAT
-   *  (`Combatant.id === SceneEntity.id`) ou un héros du GROUPE hors combat (`actorIn`, state/combatOrParty) ;
-   *  un PNJ hors combat n'a pas de Combatant à faire incanter — pas de pseudo-combat inventé pour ce cas
-   *  (le lanceur doit alors être en combat). `targetId` absent = le lanceur (soi/zone). `mode:'jet'`
-   *  (défaut) route par le flux d'incantation STANDARD (`castSpell`, cadence-aware ; modale influençable
-   *  si le lanceur est piloté par un humain — jamais un jet silencieux). `mode:'forceSuccess'` = arbitrage
-   *  D'AUTEUR explicite (rituel garanti, sans jet) : applique directement les effets du sort (`GameOp`,
-   *  `ctx.caster` = le lanceur) — dérogation VOULUE, jamais un défaut. */
-  | { type: 'castSpell'; casterId: string; spellId: string; targetId?: string; mode?: 'jet' | 'forceSuccess' }
-  /** « Petites Prières » (LDB 25 l.22-24, option `prayer-petites`) : posé sur un SITE SACRÉ (autel,
-   *  sanctuaire). Un personnage NON Béni y prie : 1d100 secret, exaucé sur 01 (pourcentage relevé s'il
-   *  possède la Compétence Prière). Exaucée → le `reward` (Flow authoré : bonus, don, flag…) s'applique ;
-   *  sinon rien. Cible : `heroId`, sinon le premier héros vivant non Béni. Sans effet hors du toggle. */
-  | { type: 'petitePriere'; heroId?: string; reward: Flow }
-  /** FIN DE SÉANCE (LDB 05 Ambitions l.793-841 + Détermination LDB 17 l.81) : ouvre l'écran de fin de
-   *  séance EXISTANT (`SessionEndModal`) où le MJ/les joueurs cochent les Ambitions accomplies et les
-   *  Motivations suivies — l'octroi (PX +50/+500, Détermination, Chance restaurée) passe par `endSession`
-   *  (state/partyFlow), déjà câblé derrière cette modale. À poser en fin de chapitre par l'auteur (#83). */
-  | { type: 'sessionEnd' }
-  /** CRÉATION DE PERSONNAGE (#83) : ouvre l'assistant EXISTANT (`src/ui/creator/`) pour un NOUVEAU héros
-   *  (comme le bouton « + » de l'écran Groupe) — un remplaçant scénarisé, un compagnon rejoignant le groupe.
-   *  Navigue vers l'écran `creator` (`setEditingHero(null)` + `setScreen('creator')`). */
-  | { type: 'openCharacterCreator' }
-  /** « Entre deux aventures » (LDB 22-23, Jalon 5) : ouvre l'interlude — Événement d100 par héros,
-   *  min(3, semaines) Activités chacun, puis Argent à gaspiller et le temps passe. À poser en fin
-   *  de chapitre par l'auteur de campagne. */
-  | { type: 'interlude'; weeks?: number }
-  /** Faveur (LDB 23 l.139-153, #509) : contrepartie future acceptée en échange d'une aide
-   *  immédiate — Faveur de départ de campagne, ou octroi narratif hors flux d'Activité. Cible :
-   *  héros désigné, sinon le premier héros vivant du groupe (la source parle au singulier « vous »,
-   *  l.141 « votre Niveau » : la Faveur est due par UN héros, pas le groupe). */
-  | { type: 'grantFavor'; heroId?: string; level: import('./favorFlow').FavorLevel; owedTo: string; desc: string }
-  /** Poursuite TERRESTRE jouable (LDB 15 l.88-108) — à poser sur un trigger/dialogue (« ils prennent la
-   *  fuite », « rattrapez-les ! »). `partyRole` : le groupe FUIT (défaut) ou POURSUIT ; l'autre camp est
-   *  décrit par `foes` (Mouvement + valeur de Test de Mouvement de chaque adversaire). `distance` de départ
-   *  (1-8, l.500-504), `escapeAt` = seuil d'évasion (défaut 10, l.520). `skill` = Compétence de Mouvement
-   *  testée (id : Athlétisme à pied / Chevaucher / Conduite d'attelages). `encounter` = rencontre ouverte au
-   *  RATTRAPAGE (Distance ≤ 0 → combat). Jouée manche par manche par la cascade influençable (state/pursuitFlow),
-   *  MÊME dramaturgie que la poursuite navale (MDG 13). */
-  | { type: 'startPursuit'; partyRole?: 'fleeing' | 'pursuing'; distance: number; escapeAt?: number; skill: string; foes: import('./pursuitFlow').PursuitFoe[]; encounter?: string; policy?: import('../engine/pursuit').PursuitPolicy }
-  /** Ouvre les JEUX DE TAVERNE (NADJ 16, option `tavern-games`) — à poser sur un choix de dialogue
-   *  d'aubergiste (« Une partie ? ») ou une entité de taverne. Sans effet si l'option est éteinte. */
-  | { type: 'openTavernGames' }
-  /** Ouvre la CARTE DU MONDE (#T2) — à poser sur la porte/route d'un lieu (« partir en voyage »).
-   *  Sans effet si le projet n'a pas de carte ou en combat. */
-  | { type: 'openWorldMap' }
-  /** Dote le groupe d'un NAVIRE DE CAMPAGNE (`state.vessel`, MDG 13-15) — à poser quand le groupe
-   *  reçoit/achète un bateau (don d'un patron, chantier). `vehicleId` = un navire de `vehicles.json`
-   *  (facette `ship`) ; Moral et Blessures de coque INITIAUX authorés (coque neuve = pas de `wounds`).
-   *  Le navire survit aux jours et aux combats (le voyage maritime et le Port en repartent). */
-  | { type: 'setVessel'; vehicleId: string; label?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; waterLitres?: number; provisions?: number; crew?: import('../engine/crewMorale').CrewHire[] }
-  /** Fait varier l'HUMEUR DE MANANN du navire de campagne (MDG 15 l.83-125) — à poser sur une
-   *  bénédiction de prêtre, un sacrifice ou tout événement narratif d'auteur. `factorId` = un facteur
-   *  du tableau « EFFET SUR L'HUMEUR DE MANANN » (`sea-events.json`, appliqué UNE SEULE FOIS par
-   *  navire — `applyManannFactor`, l.85) ; `delta` = un ajustement chiffré libre hors-tableau (ex.
-   *  « Fête de Manann » 2d10) — mutuellement exclusifs, `factorId` prioritaire si les deux sont posés.
-   *  Sans navire de campagne → no-op journalisé. */
-  | { type: 'adjustManann'; factorId?: string; delta?: { flat: number; d10: number; sign: 1 | -1 } }
-  /** AJUSTE le navire de campagne EXISTANT (#233) — patch des SEULS champs fournis, contrairement à
-   *  `setVessel` (remplacement total : effacerait Humeur de Manann/dégâts/Moral accumulés). À poser
-   *  sur un événement narratif qui touche PARTIELLEMENT le navire (ex. démasquage d'un saboteur qui
-   *  remet `saboteurDR` à 0 sans réinitialiser le reste). Sans navire de campagne → no-op journalisé. */
-  | { type: 'adjustVessel'; label?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; waterLitres?: number; provisions?: number; crew?: import('../engine/crewMorale').CrewHire[] }
-  | { type: 'endDialogue' };
+  | z.infer<typeof zoneBlastSchema>
+  | z.infer<typeof fallSchema>
+  | z.infer<typeof setLightSchema>
+  | z.infer<typeof setDoorSchema>
+  | z.infer<typeof moveEntitySchema>
+  | z.infer<typeof playSfxSchema>
+  | z.infer<typeof giveSinSchema>
+  | z.infer<typeof corruptionExposureSchema>
+  | z.infer<typeof waterExposureSchema>
+  | z.infer<typeof learnSpellSchema>
+  | z.infer<typeof castSpellSchema>
+  | PetitePriere
+  | z.infer<typeof sessionEndSchema>
+  | z.infer<typeof openCharacterCreatorSchema>
+  | z.infer<typeof interludeSchema>
+  | z.infer<typeof grantFavorSchema>
+  | z.infer<typeof startPursuitSchema>
+  | z.infer<typeof openTavernGamesSchema>
+  | z.infer<typeof openWorldMapSchema>
+  | z.infer<typeof setVesselSchema>
+  | z.infer<typeof adjustManannSchema>
+  | z.infer<typeof adjustVesselSchema>
+  | z.infer<typeof endDialogueSchema>;
 
 export interface DialogueChoice {
   text: string;

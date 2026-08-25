@@ -40,7 +40,7 @@ import type { PendingActivity, PendingActivityFields, ActivityOppositionOn } fro
 import {
   gapDifficulty, resolveClash, rallyHealAmount, battleOutcome, isDestroyed,
   battleHazard, clampMight, initHoldState, resolveHoldRound, holdEnemyBonus,
-  type ClashResult, type BattleOutcome, type HoldState, type BattleHold,
+  type ClashResult, type BattleOutcome, type HoldState, type BattleHold, type MassBattleSpec,
 } from '../engine/massBattle';
 import { t } from '../i18n';
 
@@ -185,27 +185,6 @@ export interface MassBattleState {
   sceneState: Record<string, HoldState>;
   /** Journal de bataille (une ligne par événement marquant). */
   log: string[];
-}
-
-/** Spec d'amorçage d'une bataille (scénario de test / recette `__wfrp`). */
-export interface MassBattleSpec {
-  allyName?: string;
-  enemyName?: string;
-  allyMight: number;
-  enemyMight: number;
-  /** Rounds prévus (défaut 1 = escarmouche). */
-  plannedRounds?: number;
-  terrain?: string;
-  /** Catalogue de Scènes (défaut : tout le catalogue) — la pioche des situations. */
-  scenes?: string[];
-  /** Situations authorées par Round (l.128) : chacune un ENSEMBLE de Scènes du moment. */
-  situations?: string[][];
-  /** Taille du tirage d'une situation par défaut (si non authorée). Défaut 3. */
-  situationSize?: number;
-  /** Rencontres à démarrer pour les Scènes de COMBAT/MENACE (par id de Scène → id d'encounter). */
-  sceneEncounters?: Record<string, string>;
-  /** Modificateur de Planification permanent (l.81). */
-  allyMod?: number;
 }
 
 // ── Catalogues data-driven des Activités/Scènes de bataille (`activities.json`) ────────────────────

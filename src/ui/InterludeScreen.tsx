@@ -5,7 +5,7 @@ import { formatMoney, fromBrass, toBrass, add as moneyAdd, PA_PER_SC, PA_PER_CO,
 import { bourseOf } from '../state/bourseFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { heroStatus, heroClass, incomeSkillOf, interludeCatalog, bestActivitySkill, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
-import { favorRequiredActivities, type Favor, type FavorLevel } from '../state/favorFlow';
+import { favorRequiredActivities, type Favor, type FavorLevel } from '../engine/favor';
 import { armyMight, battleActivityDifficulty, battlePrepEntries, type MassBattleState } from '../state/massBattleFlow';
 import {
   craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout, entrainementOptions,

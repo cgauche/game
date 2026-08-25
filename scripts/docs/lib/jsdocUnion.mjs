@@ -184,3 +184,127 @@ export function emitOrCheck({ out, path, check, staleMsg, rerunMsg, okMsg, write
     console.log(writeMsg)
   }
 }
+
+// ── Lecture d'une union discriminée exprimée en SCHÉMAS zod ──────────────────────────────────────
+// Même contrat que `readUnionMembers` (rendre `[{ name, fieldGroups, role }]` dans l'ordre de
+// l'union), mais la source est un `z.discriminatedUnion('type', [ …identifiants… ])` dont chaque
+// membre est un `export const xSchema = z.strictObject({ … })` porteur de son JSDoc.
+
+/** Déballe `z.lazy(() => X)`, `X.superRefine(…)`, `X.optional()`… jusqu'à l'appel `z.strictObject`. */
+function noyauZod(node) {
+  if (ts.isArrowFunction(node)) return noyauZod(node.body)
+  if (ts.isParenthesizedExpression(node)) return noyauZod(node.expression)
+  if (ts.isCallExpression(node)) {
+    const cible = node.expression
+    if (ts.isPropertyAccessExpression(cible)) {
+      const membre = cible.name.text
+      if (membre === 'lazy') return noyauZod(node.arguments[0])
+      if (membre === 'strictObject' || membre === 'object' || membre === 'looseObject' || membre === 'discriminatedUnion') return node
+      return noyauZod(cible.expression) // .superRefine(…), .optional(), .refine(…)
+    }
+  }
+  return node
+}
+
+/** Le membre est-il OPTIONNEL ? (`…​.optional()` quelque part dans la chaîne d'appels). */
+function estOptionnel(node) {
+  let n = node
+  while (ts.isCallExpression(n)) {
+    const cible = n.expression
+    if (!ts.isPropertyAccessExpression(cible)) break
+    if (cible.name.text === 'optional') return true
+    n = cible.expression
+  }
+  return false
+}
+
+/** Index `nom → { statement, sf, text }` des `export const NOM = …` de plusieurs fichiers. */
+export function indexerConstantes(fichiers) {
+  const index = new Map()
+  for (const chemin of fichiers) {
+    const { text, sf } = loadSource(chemin)
+    sf.forEachChild((node) => {
+      if (!ts.isVariableStatement(node)) return
+      for (const d of node.declarationList.declarations) {
+        if (ts.isIdentifier(d.name)) index.set(d.name.text, { statement: node, decl: d, sf, text, chemin })
+      }
+    })
+  }
+  return index
+}
+
+/**
+ * Membres d'un `z.discriminatedUnion(discriminant, [ … ])` déclaré sous le nom `alias`.
+ * `index` vient d'`indexerConstantes` (le socle des fichiers où vivent les schémas de membre).
+ * Rend `{ rows, rawCount }` — même forme que `readUnionMembers`.
+ */
+export function readZodUnionMembers(index, alias, discriminant, tool, opts = {}) {
+  const entree = index.get(alias)
+  if (!entree) {
+    console.error(`${tool} — schéma « ${alias} » introuvable`)
+    process.exit(1)
+  }
+  const appel = noyauZod(entree.decl.initializer)
+  if (!ts.isCallExpression(appel) || !ts.isArrayLiteralExpression(appel.arguments[1])) {
+    console.error(`${tool} — « ${alias} » n'est pas un z.discriminatedUnion(…, [ … ])`)
+    process.exit(1)
+  }
+  const membres = appel.arguments[1].elements
+
+  const rows = []
+  for (const m of membres) {
+    if (!ts.isIdentifier(m)) {
+      console.error(`${tool} — membre de « ${alias} » qui n'est pas un identifiant de schéma (kind ${ts.SyntaxKind[m.kind]})`)
+      process.exit(1)
+    }
+    const cible = index.get(m.text)
+    if (!cible) {
+      console.error(`${tool} — membre « ${m.text} » de « ${alias} » : schéma introuvable dans les fichiers indexés`)
+      process.exit(1)
+    }
+    const objet = noyauZod(cible.decl.initializer)
+    if (!ts.isCallExpression(objet) || !ts.isObjectLiteralExpression(objet.arguments[0])) {
+      console.error(`${tool} — membre « ${m.text} » : forme d'objet zod illisible`)
+      process.exit(1)
+    }
+    let name = null
+    const fields = []
+    for (const prop of objet.arguments[0].properties) {
+      if (ts.isSpreadAssignment(prop)) {
+        fields.push(`...${opts.nomsDeSpread?.[prop.expression.getText(cible.sf)] ?? prop.expression.getText(cible.sf)}`)
+        continue
+      }
+      const pname = prop.name?.getText(cible.sf)
+      if (!pname) continue
+      if (ts.isGetAccessorDeclaration(prop)) { fields.push(pname); continue }
+      if (!ts.isPropertyAssignment(prop)) continue
+      const litt = prop.initializer
+      if (pname === discriminant && ts.isCallExpression(litt) && ts.isStringLiteral(litt.arguments[0])) {
+        name = litt.arguments[0].text
+        continue
+      }
+      fields.push(pname + (estOptionnel(litt) ? '?' : ''))
+    }
+    if (!name) {
+      console.error(`${tool} — membre « ${m.text} » sans « ${discriminant}: z.literal('…') »`)
+      process.exit(1)
+    }
+    const role = jsdocRole(cible.text.slice(cible.statement.getFullStart(), cible.statement.getStart(cible.sf)))
+    rows.push({ name, fieldGroups: [fields], role })
+  }
+
+  const merged = []
+  const byName = new Map()
+  for (const r of rows) {
+    const existing = byName.get(r.name)
+    if (existing) {
+      existing.fieldGroups.push(...r.fieldGroups)
+      if (!existing.role && r.role) existing.role = r.role
+    } else {
+      const copy = { name: r.name, fieldGroups: [...r.fieldGroups], role: r.role }
+      byName.set(r.name, copy)
+      merged.push(copy)
+    }
+  }
+  return { rows: merged, rawCount: membres.length }
+}

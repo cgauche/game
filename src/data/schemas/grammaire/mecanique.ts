@@ -6,6 +6,8 @@
  */
 import { z } from 'zod';
 import { isMenaceId, menaceIds } from '../../../engine/menace';
+import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/types';
+import type { StakeRef } from '../../index';
 import type { GameOp } from '../../../engine/ops';
 import type { Condition, EffectOp, Flow } from '../../../engine/flowCore';
 import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema } from './valeurs';
@@ -170,10 +172,10 @@ export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
 
 
 /** `FlowTest` (`engine/flowCore.ts:335`) — jet différé (→ modale), tout le métier hors branches. */
-/** RÉFÉRENCE d'enjeu AUTHORÉE (#1117) — miroir zod de `StakeRef` (`src/data/index.ts`) : la clé de la
- *  donnée + les valeurs calculées pour ses trous. Un Flow authoré peut donc DIRE ce qu'il met en jeu,
- *  sans qu'aucun texte n'entre au document (le résolveur reste la seule porte du texte). */
-export const stakeRefSchema = z.strictObject({
+/** `CatalogStake` (`src/data/index.ts`) — RÉFÉRENCE d'enjeu vers un DATASET : la clé de la donnée +
+ *  les valeurs calculées pour ses trous. Un Flow authoré peut DIRE ce qu'il met en jeu sans qu'aucun
+ *  texte n'entre au document (le résolveur reste la seule porte du texte). */
+export const catalogStakeSchema = z.strictObject({
   key: z.strictObject({
     dataset: z.enum(['night', 'voyage', 'weather', 'flow', 'activity', 'combat']),
     kind: z.string(),
@@ -182,6 +184,27 @@ export const stakeRefSchema = z.strictObject({
   }),
   values: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
 });
+
+/** `AuthoredStake` (`src/data/index.ts`) — la phrase qu'un DOCUMENT de campagne écrit lui-même
+ *  (arbitrage user 2026-08-12, #1262) : elle voyage avec le document et ne pointe aucun dataset. */
+export const authoredStakeSchema = z.strictObject({ authored: z.string() });
+
+/** `DerivedStake` (`src/data/index.ts`) — enjeu DÉRIVÉ de l'entité porteuse (`{kind, id}`), calculé
+ *  au montage de l'étape par le socle. */
+export const derivedStakeSchema = z.strictObject({
+  from: z.strictObject({
+    kind: z.enum(Object.keys(CATEGORY_BY_SOURCE_KIND) as [EffectSourceKind, ...EffectSourceKind[]]),
+    id: z.string(),
+  }),
+});
+
+/** `StakeRef` (`src/data/index.ts`) — les TROIS formes d'enjeu d'une entrée de jet, qui passent par
+ *  la même porte de résolution (`resolveStake`). */
+export const stakeRefSchema: z.ZodType<StakeRef> = z.union([
+  catalogStakeSchema,
+  authoredStakeSchema,
+  derivedStakeSchema,
+]);
 
 export const flowTestSchema = z.strictObject({
   /** ENJEU du Test (#1117) — cf. `stakeRefSchema`. */
@@ -240,7 +263,10 @@ export const flowTestSchema = z.strictObject({
     .optional(),
 });
 
-/** `EffectOp` (`engine/flowCore.ts:45`) — feuille `do` par défaut de `Flow<E>`. `on` = les 4 valeurs de
+/** EFFECTOP — pont UNIQUE entre la logique authorée (Flow) et le moteur mécanique des sorts : applique
+ *  des `GameOp` à une cible (`party`/`hero` scène, ou `caster`/`target` incantation). Feuille `do` par
+ *  DÉFAUT du `Flow<E>` générique (`engine/flowCore.ts:45`), et l'un des membres de l'union `Effect` de
+ *  scène (`defs-scenes/effets.ts`). `on` = les 4 valeurs de
  *  l'interface TS : `'party'`/`'hero'` (scène) ou `'caster'`/`'target'` (contexte d'incantation). Le
  *  ciblage `'self'`/`'victim'` est le vocabulaire du NIVEAU TRIGGER (`effectTargetingSchema`), pas de la
  *  feuille : sur la feuille, `'caster'` = porteur, `'target'` = cible résolue par le trigger. */

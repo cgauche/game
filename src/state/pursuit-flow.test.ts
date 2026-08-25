@@ -10,8 +10,9 @@ import { useGame } from './store';
 import { applyEffects } from './combatFlow';
 import {
   startGroundPursuit, pursuitAbandon, pursuitBands, pursuitOf, PURSUIT_POLICY_DEFAUT,
-  type PursuitPayload, type PursuitFoe,
+  type PursuitPayload,
 } from './pursuitFlow';
+import type { PursuitFoe } from '../engine/pursuit';
 import { closeSequenceRound, type SequenceState } from './sequenceCore';
 import { startCascade } from './cascade';
 import { monoStep, displayStep, type BuiltCascadeStep } from './rollSeam';

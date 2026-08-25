@@ -270,3 +270,24 @@ export function isDestroyed(might: number): boolean {
 export function battleHazard(roll: number): HazardRow {
   return findTableEntry(BATTLE_HAZARDS, roll);
 }
+
+/** Spec d'amorçage d'une bataille (scénario de test / recette `__wfrp`). */
+export interface MassBattleSpec {
+  allyName?: string;
+  enemyName?: string;
+  allyMight: number;
+  enemyMight: number;
+  /** Rounds prévus (défaut 1 = escarmouche). */
+  plannedRounds?: number;
+  terrain?: string;
+  /** Catalogue de Scènes (défaut : tout le catalogue) — la pioche des situations. */
+  scenes?: string[];
+  /** Situations authorées par Round (l.128) : chacune un ENSEMBLE de Scènes du moment. */
+  situations?: string[][];
+  /** Taille du tirage d'une situation par défaut (si non authorée). Défaut 3. */
+  situationSize?: number;
+  /** Rencontres à démarrer pour les Scènes de COMBAT/MENACE (par id de Scène → id d'encounter). */
+  sceneEncounters?: Record<string, string>;
+  /** Modificateur de Planification permanent (l.81). */
+  allyMod?: number;
+}

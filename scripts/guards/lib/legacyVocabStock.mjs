@@ -229,7 +229,7 @@ export const LEGACY_VOCAB_SITES = [
     date: "2026-08-23",
   },
   {
-    fichier: "src/state/scene.ts",
+    fichier: "src/data/schemas/defs-scenes/effets.ts",
     motif: "legacy",
     ancre: "= ½ prix mais nourriture à risque (Courante galopante 10 %, ch.66 l.51). LEGACY : sans",
     lot: "L1b #1467 / L5",
