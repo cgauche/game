@@ -7,6 +7,7 @@ import { screenToTileAtZ, tileCenter, type Dims } from '../../geometry/iso';
 import { emptyScene, isWalkable, setDoorOpen } from '../../state/scene';
 import { metricToLift } from '../../state/relief';
 import { walkNeighbors } from '../../state/path';
+import { chebyshev } from '../../engine/grid';
 import { resolveCursorZ } from '../../state/combatCursor';
 import { seatPoseOf, seatSlotsOf } from '../../state/seating';
 import { interactionHalos } from '../builders/interactHalos';
@@ -941,7 +942,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     const sc = useGame.getState().scene!;
     const plan = exploreSeatPlan(sc, { x: 6, y: 6 }, 'table-1')!;
     expect(plan.slotId, 'la seule place libre est au sud').toBe('place-sud');
-    const croisees = plan.path.slice(0, -1).filter((p) => Math.max(Math.abs(p.x - 2), Math.abs(p.y - 3)) <= 1);
+    const croisees = plan.path.slice(0, -1).filter((p) => chebyshev(p, { x: 2, y: 3 }) <= 1);
     expect(croisees.length, 'le chemin DOIT longer le meuble, sinon le test ne mord pas').toBeGreaterThan(0);
 
     const pointer = monter(scene);
@@ -1060,7 +1061,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     act(() => { vi.runAllTimers(); });
     const arrivee = useGame.getState().partyPos;
     expect(arrivee, 'on ne monte jamais SUR le décor').not.toMatchObject({ x: 2, y: 3 });
-    expect(Math.max(Math.abs(arrivee.x - 2), Math.abs(arrivee.y - 3)), 'on s’est approché, comme du sol nu').toBe(1);
+    expect(chebyshev(arrivee, { x: 2, y: 3 }), 'on s’est approché, comme du sol nu').toBe(1);
 
     poser({ x: 2, y: 2 }); // déjà à portée : plus rien à marcher
     const p2 = monter(scene);
@@ -1110,7 +1111,7 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     act(() => { vi.runAllTimers(); });
 
     const arrivee = useGame.getState().partyPos;
-    expect(Math.max(Math.abs(arrivee.x - 2), Math.abs(arrivee.y - 3)), 'on s’arrête à côté du meuble').toBe(1);
+    expect(chebyshev(arrivee, { x: 2, y: 3 }), 'on s’arrête à côté du meuble').toBe(1);
     expect(useGame.getState().journal.join(' | '), 'la fouille a bien été servie').toContain('Vous fouillez');
     expect(useGame.getState().journal.join(' | ')).not.toContain('Aucune place libre');
   });

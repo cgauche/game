@@ -139,7 +139,7 @@ describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () =>
     const sc = scèneTable();
     for (let dx = -2; dx <= 2; dx++)
       for (let dy = -2; dy <= 2; dy++) {
-        if (Math.max(Math.abs(dx), Math.abs(dy)) !== 2) continue;
+        if (chebyshev({ x: dx, y: dy }, { x: 0, y: 0 }) !== 2) continue;
         sc.entities.push({ id: `mur-${dx}-${dy}`, kind: 'prop', pos: { x: 10 + dx, y: 10 + dy }, ref: 'comptoir-droit' });
       }
     expect(exploreSeatPlan(sc, { x: 5, y: 5 }, 'table-1')).toBeNull();

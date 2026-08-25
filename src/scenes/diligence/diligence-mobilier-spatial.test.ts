@@ -8,6 +8,7 @@ import { seatSlotsOf, seatIsOccupiable, type ResolvedSeatSlot } from '../../stat
 import { findPropById } from '../../data';
 import { rotatePropLocal, type PropPrimitive } from '../../data/props.types';
 import { buildPropVolumes } from '../../gameIso/builders/propVolumes';
+import { chebyshev } from '../../engine/grid';
 
 /**
  * IMPLANTATION DE LA SALLE PRINCIPALE — preuve SPATIALE des vingt poses de `zone-S-z0`, telles
@@ -394,7 +395,7 @@ describe('La Diligence — implantation de la salle principale', () => {
     const places = placesDeLaSalle();
     const lointains = places.filter((s) => {
       const siege = caseDuSiege(s);
-      return Math.max(Math.abs(s.approach.x - siege.x), Math.abs(s.approach.y - siege.y)) !== 1;
+      return chebyshev(s.approach, siege) !== 1;
     });
     expect(lointains.map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
     expect(places.filter((s) => cloisonEntre(caseDuSiege(s), s.approach)).map((s) => `${s.propId}/${s.slotId}`)).toEqual([]);
