@@ -12,6 +12,7 @@
 import type { Pt } from '../../state/path';
 import type { Scene } from '../../state/scene';
 import { decorFootGeometry } from '../../state/footprint';
+import { seatSlotsOf } from '../../state/seating';
 import { RING_A_PX, type MarkCell } from './dynamicMarks';
 import type { PropEl } from './types';
 
@@ -111,7 +112,12 @@ export function interactionHalos(
 ): InteractionHalos {
   const fouilles: InteractHalo[] = [];
   for (const el of propEls) {
-    if (el.source !== 'entity' || !el.interact || !el.entId || flags[`__fouille_${el.entId}`]) continue;
+    if (el.source !== 'entity' || !el.entId) continue;
+    // Un MEUBLE À PLACES appelle comme un décor fouillable, sans porter `SceneEntity.interact` : son
+    // affordance est la place LIBRE qui reste (toutes prises → plus rien à proposer). L'assise se lit
+    // à la couture unique `state/seating`, jamais à une empreinte ou à une référence de modèle.
+    const placeLibre = seatSlotsOf(scene, el.entId).some((s) => !scene.seatAssignments?.[el.entId!]?.[s.slotId]);
+    if (!placeLibre && (!el.interact || flags[`__fouille_${el.entId}`])) continue;
     const ez = el.cell.z;
     // La géométrie du halo se dérive de l'EMPREINTE de l'élément — la même source pour un décor
     // billboardé et pour un décor volumique, qui ne porte aucune empreinte de billboard.

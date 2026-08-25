@@ -1344,6 +1344,13 @@ export const fr = {
   'store.searchPlaceFallback': 'les lieux',
   'store.searchTitle': 'Fouille',
   'store.dialogueNoMoney': 'Pas assez d’argent pour cette option.',
+
+  // ── ASSISE (`state/seating.ts`, `seating.*`) : le meneur prend place à un meuble, ou s'en relève. ──
+  'seating.sat': 'Vous prenez place.',
+  'seating.stood': 'Vous vous levez.',
+  'seating.occupied': 'Toutes les places sont occupées.',
+  'seating.noReachableSeat': 'Aucune place libre n’est accessible d’ici.',
+  'seating.mustReachApproach': 'Vous devez rejoindre la place pour vous y asseoir.',
   'store.cargoRaid': 'Vol terrestre — {issue} : {enc} Enc de cargaison pillée ({pct} %{porteurs}).',
   'store.cargoRaidFled': 'le convoi fuit',
   'store.cargoRaidBroken': 'le convoi est enfoncé',

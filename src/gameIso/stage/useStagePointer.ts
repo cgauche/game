@@ -22,6 +22,10 @@ import { metricToLift } from '../../state/relief';
 import { memoByRef } from '../../state/sceneMemo';
 import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
 import { exploreMovePlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
+import { memeCase, seatPoseOf, seatSlotsOf } from '../../state/seating';
+// `t` est déjà le nom local de la TUILE survolée dans ce module : la traduction s'y importe sous son
+// rôle, sans rebaptiser trente sites de pointeur.
+import { t as message } from '../../i18n';
 import { planJump } from '../../state/jumpMove';
 import { runFlow } from '../../state/combatEffects';
 import { maxJumpTiles } from '../../engine/movement';
@@ -353,6 +357,26 @@ export function useStagePointer({
     // Case d'arrivée partagée avec l'aperçu de survol (explorePath) — JAMAIS recalculée à part (cf.
     // exploreMoveDest) : escalier (autre bout), case adjacente d'un objet/PNJ interactif, ou déplacement simple.
     const plan = exploreMovePlan(sc, st.partyPos, t, pathOpts());
+    // MEUBLE À PLACES : le MÊME `pendingInteract` que la fouille, mais la marche va jusqu'à l'ABORD
+    // de la place (`exploreSeatPlan` via `exploreMovePlan`), jamais à la case d'ancrage du meuble.
+    // Aucun second pending, aucune route `sit`/`seat` : le geste reste `interactEntity`.
+    if (ent && ent.kind === 'prop' && seatSlotsOf(sc, ent.id).length) {
+      setHover(null);
+      const meneur = st.party[0]?.id;
+      const assisIci = !!meneur && seatPoseOf(sc, { kind: 'party', heroId: meneur })?.propId === ent.id;
+      const surAbord = seatSlotsOf(sc, ent.id).some((s) => memeCase(s.approach, st.partyPos));
+      if (assisIci || surAbord) {
+        st.setPendingInteract(null);
+        st.interactEntity(ent.id); // se relever, ou prendre la place sous ses pieds
+      } else if (plan) {
+        st.setPendingInteract(ent.id);
+        moveAlong(sc.id, plan);
+      } else {
+        st.setPendingInteract(null);
+        st.log(message('seating.noReachableSeat'));
+      }
+      return;
+    }
     if (ent && (ent.dialogueId || !!ent.interact || !!ent.merchant)) {
       if (chebyshev(st.partyPos, ent.pos) <= 1) {
         setHover(null);
@@ -485,7 +509,9 @@ export function useStagePointer({
     const sc = useGame.getState().scene;
     const overInteractive =
       !!sc && !!t && useGame.getState().mode === 'exploration' &&
-      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.z ?? 0) === (t.z ?? 0) && (e.dialogueId || !!e.interact || !!e.merchant));
+      sc.entities.some((e) => e.pos.x === t.x && e.pos.y === t.y && (e.z ?? 0) === (t.z ?? 0)
+        // Un meuble à places est interactif SANS `SceneEntity.interact` : c'est la place qui appelle.
+        && (e.dialogueId || !!e.interact || !!e.merchant || (e.kind === 'prop' && seatSlotsOf(sc, e.id).length > 0)));
     (ev.currentTarget as SVGElement).style.cursor = overInteractive ? 'pointer' : '';
     // Survol suivi en COMBAT (visée) ET en EXPLORATION (halo renforcé du décor interactif + aperçu de
     // déplacement) — borné aux changements de tuile, donc peu de re-rendus.

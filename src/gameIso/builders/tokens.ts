@@ -12,10 +12,31 @@ import type { BattleState } from '../../state/store';
 import { combatantAtTile } from '../../state/combatGeometry';
 import { isPassengerInBattle } from '../../state/shipPostes';
 import { isRider, isMount, riderOf } from '../../state/mount';
-import { seatPoseOf } from '../../state/seating';
+import { seatPoseOf, type SeatPose } from '../../state/seating';
+import type { Combatant } from '../../engine/types';
 import { isStructure } from '../../engine/structures';
 import { isOverhang } from './floors';
 import type { TokenEl } from './types';
+
+/**
+ * JETON DE GROUPE hors combat — le meneur VISIBLE, sa position de RENDU, et la place qu'il occupe.
+ *
+ * Dérivation UNIQUE, pour que le corps, son chrome, sa caméra et le monde volumique lisent la MÊME
+ * pose : assis, la position de rendu devient l'ANCRE FRACTIONNAIRE de la place (`SeatPose.anchor`) ;
+ * `partyPos` (l'abord) reste la position LOGIQUE du groupe — brouillard, chemins et déclencheurs n'en
+ * bougent pas. `null` = aucun meneur à poster (combat, vue subjective : l'appelant tranche ces
+ * contextes, ici on ne connaît que la scène et le corps).
+ */
+export function partyTokenOf(
+  scene: Scene,
+  leader: Combatant | undefined,
+  partyPos: { x: number; y: number; z?: number },
+): { leader: Combatant; pos: { x: number; y: number; z?: number }; seat?: SeatPose } | null {
+  if (!leader) return null;
+  const seat = seatPoseOf(scene, { kind: 'party', heroId: leader.id });
+  if (!seat) return { leader, pos: partyPos };
+  return { leader, pos: { x: seat.anchor.x, y: seat.anchor.y, ...(partyPos.z ? { z: partyPos.z } : {}) }, seat };
+}
 
 /** Vérité de JEU pilotant la sélection (PAS une caméra) : étage actif/isolé + mode de vue du dessus
  *  (`top` : les couples montés redeviennent deux pions distincts). */

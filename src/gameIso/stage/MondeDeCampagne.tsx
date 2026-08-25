@@ -37,7 +37,8 @@ import { getStagePan, subscribeStagePan } from '../../state/stagePan';
 import { walkPoseAt, type WalkPos } from '../fx/walkPose';
 import { buildRoofs, clearedSpace } from '../builders/roofs';
 import { buildProps } from '../builders/props';
-import { buildTokens } from '../builders/tokens';
+import { buildTokens, partyTokenOf } from '../builders/tokens';
+import { seatPoseOf } from '../../state/seating';
 import { elOccluder } from './occluders';
 import { tireurSurvole, type HighlightOpts } from './highlightLayer';
 import { dynamicMarks } from '../builders/dynamicMarks';
@@ -244,6 +245,11 @@ function CorpsDuMonde() {
   const dimsVueRef = useRef(dimsVue);
   dimsVueRef.current = dimsVue;
   const partyLeader = partyLeaderOf(party);
+  // PLACE ASSISE du meneur — résolue UNE fois pour tout l'écran (corps, chrome, caméra, POV). Le
+  // point de RENDU du meneur en découle : son ancre s'il est attablé, sa case sinon. `partyPos`, lui,
+  // ne bouge jamais : c'est la case d'abord, celle du brouillard, des chemins et des déclencheurs.
+  const partySeat = scene && partyLeader ? seatPoseOf(scene, { kind: 'party', heroId: partyLeader.id }) : null;
+  const posDeRendu = partySeat ? { x: partySeat.anchor.x, y: partySeat.anchor.y, z: partyPos.z } : partyPos;
   const wnow = performance.now();
   // Position VISUELLE des jetons à un instant donné : le rendu la demande au sien, les boucles hors
   // React (caméra volumique, chrome des jetons) la redemandent à chaque frame de marche.
@@ -256,7 +262,8 @@ function CorpsDuMonde() {
   // P2-4). UNE valeur par image pour ses DEUX clients — la caméra three (par `camAt` du cadre) et le
   // groupe d'overlays SVG : aucun d'eux ne lisse quoi que ce soit de son côté.
   const targeting = mode === 'battle' && battle ? cameraTargeting(battle, actorAim) : null;
-  const argsFocal = { mode, battle, partyPos, partyLeader, planView, hoverCombatantId, targeting, pendingAttack, pendingCast };
+  // La caméra cadre le CORPS, donc son point de rendu (assis : l'ancre de sa place).
+  const argsFocal = { mode, battle, partyPos: posDeRendu, partyLeader, planView, hoverCombatantId, targeting, pendingAttack, pendingCast };
   /** Point focal ÉCRAN à un instant (avant décalage manuel), sans adoucissement : la cible VIVE. */
   const focalBrutAt = (now: number) => {
     const focus = stageFocus({ ...argsFocal, walkPosOf: walkPosAt(now) });
@@ -301,10 +308,11 @@ function CorpsDuMonde() {
   // LE REGARD, et rien d'autre : c'est le SEUL endroit où les deux vues divergent de cadrage.
   const frameMonde = useMemo<WorldFrame>(
     () => (pov
-      ? { mode: 'pov', partyPos, facing: capPov ?? 'S', indoor, cid: partyLeader?.id ?? null }
+      // L'ŒIL suit le CORPS : attablé, on regarde depuis sa place, pas depuis la case d'abord.
+      ? { mode: 'pov', partyPos: posDeRendu, facing: capPov ?? 'S', indoor, cid: partyLeader?.id ?? null }
       : { mode: 'plateau', dims: dimsVue, camAt: camAtStable, yawAt: yawAtStable, zoom: zoomVue }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pov, partyPos, capPov, indoor, partyLeader?.id, dimsVue, zoomVue, camAtStable, yawAtStable],
+    [pov, posDeRendu.x, posDeRendu.y, posDeRendu.z, capPov, indoor, partyLeader?.id, dimsVue, zoomVue, camAtStable, yawAtStable],
   );
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
   // Cases LOGIQUES des alliés — ce que la marche fait glisser, jamais ce qu'elle fait bouger.
@@ -558,9 +566,12 @@ function CorpsDuMonde() {
   // prend en dépendance de son redessin, et une liste neuve par rendu y faisait peindre une image à
   // chaque commit de l'hôte — c'est ce qui les place AVANT les sorties anticipées ci-dessous.
   // ÉCART DE REGARD nº 3 : le meneur ne porte AUCUN billboard quand on regarde par ses yeux.
+  // ASSISE DU MENEUR : dérivée UNE fois, ici (`builders/tokens.partyTokenOf`) — corps, chrome et
+  // caméra lisent la MÊME pose. `partyPos` reste la position LOGIQUE (brouillard, chemins) ; le RENDU
+  // suit l'ancre de la place.
   const partyToken = useMemo(
-    () => (pov || combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null),
-    [pov, combatBattle, partyLeader, partyPos],
+    () => (pov || combatBattle || !scene ? null : partyTokenOf(scene, partyLeader, partyPos)),
+    [pov, combatBattle, scene, partyLeader, partyPos],
   );
   const marquesDyn = useMemo(
     () => dynamicMarks(mode === 'battle' ? battle : null, mode === 'exploration' && !dialogue ? partyPos : null, tokenEls, partyToken),

@@ -56,7 +56,7 @@ import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlo
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
 import { captureMutation, applyMutation as applySceneMutation, type SceneMutation } from './sceneInstance';
-import { pruneSeatAssignments } from './seating';
+import { assignSeat, memeCase, pruneSeatAssignments, releaseSeat, seatPoseOf, seatSlotsOf } from './seating';
 import type { ClueState } from './clues';
 import { togglePin } from './clues';
 import type { CodexFocus } from './codexFocus';
@@ -2050,7 +2050,10 @@ export const useGame = create<GameState>((set, get) => ({
     // runtime de portes/structures/tuiles) vs son document authored, puis applique l'instance stockée
     // de la scène CIBLE (si déjà visitée) au clone frais ci-dessous — SEULE couture, aucun site de
     // mutation (`removeEntity`, `setDoorOpen`…) n'est instrumenté.
-    const leaving = get().scene;
+    // Le GROUPE quitte la scène : plus personne du groupe n'y tient de place (une scène quittée ne
+    // garde pas un héros absent). Libéré AVANT la capture, sinon l'instance persistée rappellerait le
+    // meneur à sa chaise au revisit — et l'assise des PNJ authorés, elle, s'y capture normalement.
+    const leaving = partyFlow.releaseHeroSeats(get().scene, get().party.map((h) => h.id));
     const sceneInstances = { ...get().sceneInstances };
     if (leaving) {
       const leavingAuthored = sceneRegistry[leaving.id];
@@ -2099,7 +2102,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (!scene || mode !== 'exploration') return;
     if (!isWalkable(scene, pt.x, pt.y, pt.z ?? 0)) return; // case de l'ÉTAGE visé (z) — une case « vide » se refuse
     const from = partyPos; // case quittée → oriente le meneur le long du pas
-    set({ partyPos: pt });
+    // MARCHER, C'EST SE LEVER : le meneur assis qui fait un pas quitte sa place. Libéré AVANT
+    // l'écriture de `partyPos`, dans la MÊME écriture — aucun état intermédiaire ne le montre assis
+    // à une place dont il s'est déjà éloigné. Scène sans assise → aucun delta (même référence).
+    const lead0 = get().party[0]?.id;
+    const debout = lead0 ? releaseSeat(scene, { kind: 'party', heroId: lead0 }) : scene;
+    set(debout === scene ? { partyPos: pt } : { partyPos: pt, scene: debout });
     const leadId = get().party[0]?.id;
     if (leadId) get().faceFromPath(leadId, [from, pt]);
     bus.emit(EVT.SCENE_DIRTY);
@@ -2108,8 +2116,11 @@ export const useGame = create<GameState>((set, get) => ({
     const pi = get().pendingInteract;
     if (pi) {
       const target = scene.entities.find((e) => e.id === pi);
+      // ARRIVÉE : à côté du décor visé — ou EXACTEMENT sur l'abord d'une de ses places, car un meuble
+      // à places s'aborde par sa place, qui peut tomber hors du voisinage de sa case d'ancrage.
+      const surUnAbord = !!target && seatSlotsOf(get().scene ?? scene, pi).some((s) => memeCase(s.approach, pt));
       if (!target) set({ pendingInteract: null });
-      else if (chebyshev(pt, target.pos) <= 1 && (pt.z ?? 0) === (target.z ?? 0)) {
+      else if (surUnAbord || (chebyshev(pt, target.pos) <= 1 && (pt.z ?? 0) === (target.z ?? 0))) {
         set({ pendingInteract: null });
         get().interactEntity(pi);
       }
@@ -2231,6 +2242,37 @@ export const useGame = create<GameState>((set, get) => ({
     if (!scene) return;
     const ent = scene.entities.find((e) => e.id === entityId);
     if (!ent || ent.combat?.hiddenUntilCombat) return; // un ennemi d'embuscade n'est pas interpellable en exploration
+    // ── MEUBLE À PLACES : s'asseoir / se relever, AVANT dialogue/marchand/fouille. Le geste est un
+    // BASCULE sur le même intent : re-cliquer le meuble qu'on occupe rend debout. La distance ne se
+    // mesure pas au meuble mais à l'ABORD de la place (`slot.approach`, seule couture `state/seating`),
+    // d'où la place précède la garde de portée générique ci-dessous.
+    const leaderId = get().party[0]?.id;
+    const places = ent.kind === 'prop' ? seatSlotsOf(scene, entityId) : [];
+    if (places.length && leaderId) {
+      const occupant = { kind: 'party', heroId: leaderId } as const;
+      if (seatPoseOf(scene, occupant)?.propId === entityId) {
+        set({ scene: releaseSeat(scene, occupant) });
+        get().log(t('seating.stood'));
+        bus.emit(EVT.SCENE_DIRTY);
+        return;
+      }
+      const libres = places.filter((p) => !scene.seatAssignments?.[entityId]?.[p.slotId]);
+      const cible = libres.find((p) => memeCase(p.approach, partyPos));
+      if (!cible) { get().log(t(libres.length ? 'seating.mustReachApproach' : 'seating.occupied')); return; }
+      // REVALIDATION ATOMIQUE dans le callback `set` : entre le choix de la place ci-dessus et
+      // l'écriture, un autre siège coop a pu prendre la dernière — un seul gagnant en sort.
+      let assis = false;
+      set((s) => {
+        if (!s.scene || s.party[0]?.id !== leaderId || !memeCase(s.partyPos, cible.approach)) return {};
+        const res = assignSeat(s.scene, entityId, cible.slotId, occupant, new Set(s.party.map((h) => h.id)));
+        if (!res.ok) return {};
+        assis = true;
+        return { scene: res.scene };
+      });
+      get().log(t(assis ? 'seating.sat' : 'seating.occupied'));
+      if (assis) bus.emit(EVT.SCENE_DIRTY);
+      return;
+    }
     if (chebyshev(partyPos, ent.pos) > 1 || (ent.z ?? 0) !== (partyPos.z ?? 0)) {
       // Trop loin ou autre étage (#800, classe z-blind) : le déplacement-puis-fouille (P5) est armé par l'UI (setPendingInteract) ; ici, no-op.
       return;

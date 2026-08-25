@@ -204,6 +204,57 @@ describe('approche EFFECTIVE — une chaise contre un comptoir reste occupable',
   });
 });
 
+/**
+ * SONDE promue de la revue de la tâche 4 (2026-08-21) : la réservation des abords ne peut pas être
+ * locale au MEUBLE. Deux tables voisines, l'abord déclaré du nord de la première barré : son repli
+ * tombait sur l'abord DÉCLARÉ du sud de la seconde, et les deux places s'occupaient — deux corps
+ * debout sur la même case (spec l.427-428 : « deux slots simultanément occupables n'ont jamais la
+ * même approche », non scopé au meuble).
+ */
+describe('abords réservés à l’échelle de la SCÈNE — un repli ne vole pas l’abord d’un meuble voisin', () => {
+  /** table-1 en (5,5) et table-2 en (6,3), toutes deux cap N ; comptoir SOLIDE sur l'abord nord de table-1. */
+  function deuxTables(): Scene {
+    const s = emptyScene(12, 12);
+    s.entities = [
+      { id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N' },
+      { id: 'table-2', kind: 'prop', pos: { x: 6, y: 3 }, ref: TABLE, facing: 'N' },
+      { id: 'comptoir-0', kind: 'prop', pos: { x: 5, y: 4 }, ref: 'comptoir-droit' },
+      { id: 'pnj-1', kind: 'personnage', pos: { x: 6, y: 6 } },
+      { id: 'pnj-2', kind: 'personnage', pos: { x: 6, y: 4 } },
+    ];
+    return s;
+  }
+
+  it('le repli du nord de table-1 saute l’abord déclaré du sud de table-2', () => {
+    const scene = deuxTables();
+    expect(isWalkable(scene, 5, 4, 0), 'l’abord déclaré du nord DOIT être barré pour que le test morde').toBe(false);
+    expect(isWalkable(scene, 6, 4, 0), 'la case volée DOIT être marchable pour que le test morde').toBe(true);
+    const nord = seatSlotsOf(scene, PROP).find((s) => s.slotId === 'nord')!;
+    const sud2 = seatSlotsOf(scene, 'table-2').find((s) => s.slotId === 'sud')!;
+    expect(sud2.approach).toMatchObject({ x: 6, y: 4 }); // abord DÉCLARÉ, retenu en passe 1
+    expect(nord.approach).not.toMatchObject({ x: 6, y: 4 });
+    expect(nord.approach).toMatchObject({ x: 6, y: 6 }); // N barré, NE réservé, E réservé → SE
+  });
+
+  it('les abords de TOUTES les places de la scène sont deux à deux distincts', () => {
+    const scene = deuxTables();
+    const abords = [...seatSlotsOf(scene, PROP), ...seatSlotsOf(scene, 'table-2')]
+      .map((s) => `${s.approach.x},${s.approach.y}`);
+    expect(new Set(abords).size).toBe(abords.length);
+  });
+
+  it('deux corps ne se posent jamais sur la même case d’abord', () => {
+    const scene = deuxTables();
+    const a = assignSeat(scene, PROP, 'nord', NPC, HEROS);
+    expect(a).toMatchObject({ ok: true });
+    const b = assignSeat(a.scene, 'table-2', 'sud', { kind: 'entity', entityId: 'pnj-2' }, HEROS);
+    expect(b).toMatchObject({ ok: true });
+    const nord = seatSlotsOf(b.scene, PROP).find((s) => s.slotId === 'nord')!;
+    const sud2 = seatSlotsOf(b.scene, 'table-2').find((s) => s.slotId === 'sud')!;
+    expect(`${nord.approach.x},${nord.approach.y}`).not.toBe(`${sud2.approach.x},${sud2.approach.y}`);
+  });
+});
+
 describe('pruneSeatAssignments — normalisation déterministe', () => {
   it('jette meuble absent, place absente, corps absent ; garde le PREMIER siège d’un occupant', () => {
     const scene = seatingScene({ propFacing: 'N' });

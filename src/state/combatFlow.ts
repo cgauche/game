@@ -5935,16 +5935,21 @@ export function openContractionCascade(get: Get, set: SetFn, patient: Combatant,
  *  Les JETS HÉROS de fin de combat (maladie/Corruption) sont résolus AVANT (cascade `openCombatEndCascade`
  *  ou inline) — ici, on ne fait QUE le writeback (les marqueurs ont déjà été consommés). */
 /**
- * Un combat MET DEBOUT ceux qu'il enrôle : chaque entité de scène devenue combattante quitte la
- * place assise qu'elle tenait. PURE — rend la scène à écrire, que l'appelant fond dans SA propre
- * écriture (l'ouverture de combat en a déjà une), donc AVANT toute capture de mutation ; la
- * SUPPRESSION des corps hors d'action passe, elle, par `removeEntities`, qui renormalise à son tour.
+ * Un combat MET DEBOUT ceux qu'il enrôle : chaque corps devenu combattant quitte la place assise
+ * qu'il tenait — le PNJ attablé comme le MENEUR, dont le combattant porte l'id du héros de `party`
+ * (les deux formes d'occupant se lèvent donc pour un même combattant, et il n'y a pas deux coutures).
+ * PURE — rend la scène à écrire, que l'appelant fond dans SA propre écriture (l'ouverture de combat
+ * en a déjà une), donc AVANT toute capture de mutation ; la SUPPRESSION des corps hors d'action
+ * passe, elle, par `removeEntities`, qui renormalise à son tour.
  * Rend la scène d'entrée, même référence, si personne n'était assis.
  */
 export function releaseSeatsOfCombatants<S extends Scene | null>(scene: S, combatants: readonly Pick<Combatant, 'id'>[]): S {
   if (!scene?.seatAssignments) return scene;
   let next: Scene = scene;
-  for (const c of combatants) next = releaseSeat(next, { kind: 'entity', entityId: c.id });
+  for (const c of combatants) {
+    next = releaseSeat(next, { kind: 'entity', entityId: c.id });
+    next = releaseSeat(next, { kind: 'party', heroId: c.id });
+  }
   return next as S;
 }
 

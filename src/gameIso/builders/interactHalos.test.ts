@@ -105,6 +105,19 @@ describe('Halos d’interaction — le PNJ INTERLOCUTEUR (#1176 P3-0g)', () => {
     expect(interactionHalos([décor('coffre', 3, 4)], scène, {}, { x: 5, y: 5 }, { exploring: false, combat: true }).fouilles).toHaveLength(1);
   });
 
+  it('un MEUBLE À PLACES appelle le joueur SANS porter `interact`, et s’éteint quand tout est pris', () => {
+    const table: SceneEntity = { id: 'table-1', kind: 'prop', pos: { x: 3, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'N' };
+    const el = décor('table-1', 3, 3, { interact: false, ref: 'table-ronde-4-tabourets' });
+    const libre = scèneAvec(table);
+    expect(interactionHalos([el], libre, {}, null, EXPLORE).fouilles.map((h) => h.id)).toEqual(['table-1']);
+
+    const pleine = { ...libre, seatAssignments: { 'table-1': Object.fromEntries(['nord', 'est', 'sud', 'ouest'].map((s) => [s, { kind: 'entity' as const, entityId: `pnj-${s}` }])) } };
+    expect(interactionHalos([el], pleine, {}, null, EXPLORE).fouilles).toHaveLength(0);
+
+    // Le flag de FOUILLE n'a aucune prise sur une place : ce n'est pas une ressource qui s'épuise.
+    expect(interactionHalos([el], libre, { __fouille_table_1: true, '__fouille_table-1': true }, null, EXPLORE).fouilles).toHaveLength(1);
+  });
+
   it('la valeur VIDE est gelée — une voie ne peut pas la salir pour l’autre', () => {
     expect(Object.isFrozen(NO_INTERACTION_HALOS)).toBe(true);
     expect(Object.isFrozen(NO_INTERACTION_HALOS.fouilles)).toBe(true);

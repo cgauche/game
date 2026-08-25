@@ -1,6 +1,7 @@
 import { type Scene, isDescriptiveZone, isWalkable } from './scene';
 import { pathTo, walkNeighbors, type MoveEnv, type Pt } from './path';
 import { portalsForParty } from './roomPortals';
+import { memeCase, seatSlotsOf } from './seating';
 import { sceneZoneTiles } from './zones';
 import { screenStepDot, type ScreenDir } from './combatCursor';
 import { type Dims } from '../geometry/iso';
@@ -57,12 +58,49 @@ export interface ExploreMovePlan {
   portalId?: string;
 }
 
+/** Marche PLANIFIÉE vers une place assise : la première place LIBRE du meuble (ordre du catalogue,
+ *  `seatSlotsOf`) dont l'abord EFFECTIF soit atteignable. `null` = ce meuble n'a pas de place, elles
+ *  sont toutes prises, ou aucun abord libre n'est joignable.
+ *
+ *  L'abord ne se redérive JAMAIS ici : `slot.approach` porte déjà l'approche effective (repli sur le
+ *  voisinage du siège compris) — `state/seating` en est la seule couture.
+ *
+ *  Le chemin retourné se termine EXACTEMENT sur l'abord : c'est ce que `interactEntity` exige pour
+ *  asseoir (le groupe doit être SUR la case d'abord, pas simplement à côté du meuble). Déjà sur
+ *  l'abord → chemin d'un seul point, à l'appelant d'y voir « rien à marcher ». */
+export function exploreSeatPlan(
+  scene: Scene,
+  partyPos: Pt,
+  propId: string,
+  opts: PathOpts = { blocked: new Set() },
+): { slotId: string; approach: Pt; path: Pt[] } | null {
+  const libres = seatSlotsOf(scene, propId).filter((s) => !scene.seatAssignments?.[propId]?.[s.slotId]);
+  // La place SOUS LES PIEDS prime sur l'ordre du catalogue — c'est celle que `interactEntity` prendra
+  // (il n'accepte que le slot dont l'abord est exactement `partyPos`) : diverger ici ferait planifier
+  // une marche vers une place que le geste refuserait à l'arrivée.
+  const surPlace = libres.find((s) => memeCase(s.approach, partyPos));
+  if (surPlace) return { slotId: surPlace.slotId, approach: surPlace.approach, path: [partyPos] };
+  for (const slot of libres) {
+    const path = pathTo(scene, partyPos, slot.approach, opts);
+    if (path && path.length >= 2) return { slotId: slot.slotId, approach: slot.approach, path };
+  }
+  return null;
+}
+
 export function exploreMovePlan(
   scene: Scene,
   partyPos: Pt,
   tile: Pt,
   opts: PathOpts,
 ): ExploreMovePlan | null {
+  // MEUBLE À PLACES : on ne marche ni dessus ni « à côté » — on rejoint l'ABORD d'une place libre.
+  // Ici, et pas seulement au clic : l'aperçu de chemin au survol lit la MÊME source (le divergence
+  // ferait disparaître le tracé sous le curseur d'un meuble parfaitement joignable).
+  const meuble = scene.entities.find((e) => e.kind === 'prop' && e.pos.x === tile.x && e.pos.y === tile.y && (e.z ?? 0) === (tile.z ?? 0));
+  if (meuble && seatSlotsOf(scene, meuble.id).length) {
+    const plan = exploreSeatPlan(scene, partyPos, meuble.id, opts);
+    return plan && plan.path.length >= 2 ? { dest: plan.approach, path: plan.path } : null;
+  }
   const dest = exploreMoveDest(scene, partyPos, tile);
   if (!dest) return null;
   const path = pathTo(scene, partyPos, dest, opts);

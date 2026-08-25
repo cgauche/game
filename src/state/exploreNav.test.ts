@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, isWalkable, type Scene, type SceneEntity } from './scene';
 import type { Flow } from './flow';
-import { exploreMoveDest, exploreMovePlan, exploreStepDest, spawnFacing } from './exploreNav';
+import { exploreMoveDest, exploreMovePlan, exploreSeatPlan, exploreStepDest, spawnFacing } from './exploreNav';
 import { chebyshev } from '../engine/grid';
+import { seatSlotsOf } from './seating';
 
 const emptyFlow: Flow = { kind: 'seq', steps: [] };
 
@@ -63,6 +64,71 @@ describe('exploreMoveDest — case d’arrivée partagée survol/clic (explorati
     sc.layers.push({ z: 1, tiles: new Array(100).fill('plancher'), height: new Array(100).fill(4) });
     expect(exploreMoveDest(sc, { x: 1, y: 1 }, { x: 3, y: 2, z: 1 })).toEqual({ x: 3, y: 2, z: 1 });
     expect(exploreMoveDest(sc, { x: 1, y: 1 }, { x: 5, y: 5 })).toEqual({ x: 5, y: 5 }); // sol : sans z
+  });
+});
+
+describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () => {
+  const TABLE = 'table-ronde-4-tabourets';
+  /** Table en (10,10) au cap N : abords nord (10,9), est (11,10), sud (10,11), ouest (9,10). */
+  const table = (over: Partial<SceneEntity> = {}): SceneEntity =>
+    ({ id: 'table-1', kind: 'prop', pos: { x: 10, y: 10 }, ref: TABLE, facing: 'N', ...over }) as SceneEntity;
+  const scèneTable = (assignments?: Scene['seatAssignments']): Scene => {
+    const sc = emptyScene(16, 16);
+    sc.entities = [table()];
+    if (assignments) sc.seatAssignments = assignments;
+    return sc;
+  };
+
+  it('planifie vers l’approche du premier slot libre et atteignable', () => {
+    const scene = scèneTable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } });
+    const plan = exploreSeatPlan(scene, { x: 8, y: 8 }, 'table-1');
+    expect(plan).toMatchObject({ slotId: 'est', approach: { x: 11, y: 10 } });
+    expect(plan!.path[plan!.path.length - 1]).toEqual(plan!.approach);
+    expect(plan!.path[0]).toEqual({ x: 8, y: 8 });
+  });
+
+  it('ordre du CATALOGUE : sans place prise, c’est la première déclarée qui gagne', () => {
+    const plan = exploreSeatPlan(scèneTable(), { x: 8, y: 8 }, 'table-1');
+    expect(plan!.slotId).toBe(seatSlotsOf(scèneTable(), 'table-1')[0].slotId);
+    expect(plan!.slotId).toBe('nord');
+  });
+
+  it('déjà SUR un abord libre : chemin d’un seul point (rien à marcher)', () => {
+    const plan = exploreSeatPlan(scèneTable(), { x: 10, y: 11 }, 'table-1');
+    expect(plan).toMatchObject({ slotId: 'sud', approach: { x: 10, y: 11 } });
+    expect(plan!.path).toEqual([{ x: 10, y: 11 }]);
+  });
+
+  it('toutes les places prises → null (rien à planifier)', () => {
+    const prises = Object.fromEntries(seatSlotsOf(scèneTable(), 'table-1').map((s) => [s.slotId, { kind: 'entity' as const, entityId: `pnj-${s.slotId}` }]));
+    expect(exploreSeatPlan(scèneTable({ 'table-1': prises }), { x: 8, y: 8 }, 'table-1')).toBeNull();
+  });
+
+  it('meuble sans place → null ; meuble absent → null', () => {
+    const sc = emptyScene(16, 16);
+    sc.entities = [{ id: 'caisse', kind: 'prop', pos: { x: 10, y: 10 }, ref: 'comptoir-droit' }];
+    expect(exploreSeatPlan(sc, { x: 8, y: 8 }, 'caisse')).toBeNull();
+    expect(exploreSeatPlan(sc, { x: 8, y: 8 }, 'fantome')).toBeNull();
+  });
+
+  it('aucun abord ATTEIGNABLE (table emmurée) → null', () => {
+    const sc = scèneTable();
+    for (let dx = -2; dx <= 2; dx++)
+      for (let dy = -2; dy <= 2; dy++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== 2) continue;
+        sc.entities.push({ id: `mur-${dx}-${dy}`, kind: 'prop', pos: { x: 10 + dx, y: 10 + dy }, ref: 'comptoir-droit' });
+      }
+    expect(exploreSeatPlan(sc, { x: 5, y: 5 }, 'table-1')).toBeNull();
+  });
+
+  it('exploreMovePlan route le clic d’un meuble à places vers CE plan (survol et clic, une seule source)', () => {
+    const scene = scèneTable({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } });
+    const seat = exploreSeatPlan(scene, { x: 8, y: 8 }, 'table-1')!;
+    const plan = exploreMovePlan(scene, { x: 8, y: 8 }, { x: 10, y: 10 }, { blocked: new Set() });
+    expect(plan).toMatchObject({ dest: seat.approach });
+    expect(plan!.path).toEqual(seat.path);
+    // …et jamais la case du meuble, ni un simple « à côté ».
+    expect(plan!.dest).not.toEqual({ x: 10, y: 10 });
   });
 });
 

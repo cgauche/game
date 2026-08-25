@@ -21,6 +21,7 @@ import { useGame, type BattleState } from '../../state/store';
 import { heightAt, type Scene } from '../../state/scene';
 import type { Dir8 } from '../../state/dir8';
 import type { Pt } from '../../state/path';
+import type { SeatPose } from '../../state/seating';
 import type { LightSource } from '../../state/vision';
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
@@ -68,9 +69,10 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   propEls: PropEl[];
   /** Marches vivantes — LUES par la boucle de rendu, jamais par un rendu React (cf. `anim` ci-dessous). */
   walksRef: MutableRefObject<Record<string, WalkTrack>>;
-  /** Hors combat : le jeton de GROUPE (le meneur visible), à sa case. En combat, ou vu par ses propres
-   *  yeux (POV) : `null`. */
-  partyToken: { leader: Combatant; pos: Pt } | null;
+  /** Hors combat : le jeton de GROUPE (le meneur visible), à sa position de RENDU, et la place qu'il
+   *  occupe s'il est attablé (`builders/tokens.partyTokenOf` — l'ancre de la place est déjà dans
+   *  `pos`). En combat, ou vu par ses propres yeux (POV) : `null`. */
+  partyToken: { leader: Combatant; pos: Pt; seat?: SeatPose } | null;
   /** Horloge de jeu (minutes) et mise en scène de lumière — la LUMIÈRE du monde volumique (P2-5) : le
    *  soleil suit l'heure et le nord de la scène, l'ambiante suit le palier. L'hôte reste la source. */
   gameTime: number;
@@ -105,7 +107,7 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   const poses: ActorPose[] = actorPoses(tokenEls, facings);
   if (partyToken) {
     const z = partyToken.pos.z ?? 0;
-    poses.push({ c: partyToken.leader, x: partyToken.pos.x, y: partyToken.pos.y, z, facing: facings[partyToken.leader.id] });
+    poses.push({ c: partyToken.leader, x: partyToken.pos.x, y: partyToken.pos.y, z, facing: facings[partyToken.leader.id], ...(partyToken.seat ? { seat: partyToken.seat } : {}) });
   }
   // RÉFÉRENCE STABLE tant que rien de ce que le billboard dessine n'a bougé — même patron de clé que
   // `visualAllies` (`stage/MondeDeCampagne`). Un tableau neuf démonte puis remonte les quads de TOUS les sujets ; la
