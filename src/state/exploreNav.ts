@@ -39,9 +39,12 @@ export function adjacentWalkable(sc: Scene, target: Pt, from: Pt): Pt | null {
 export function exploreMoveDest(sc: Scene, partyPos: Pt, tile: Pt): Pt | null {
   const tz = tile.z ?? 0;
   const ent = sc.entities.find((e) => e.pos.x === tile.x && e.pos.y === tile.y && (e.z ?? 0) === tz);
-  // On ne marche jamais SUR un personnage ou un objet interactif : on s'approche d'une case adjacente
-  // (sinon le groupe entrerait dans le corps du PNJ, et la case d'un objet interactif est bloquée).
-  if (ent && (!!ent.dialogueId || !!ent.interact || !!ent.merchant || ent.kind === 'personnage')) {
+  // On ne marche jamais SUR un personnage ni sur un DÉCOR : on s'approche d'une case adjacente (sinon
+  // le groupe entrerait dans le corps du PNJ, et la case d'un décor posé est bloquée par son empreinte).
+  // Le décor SANS affordance ne fait pas exception — c'est du sol occupé : le clic doit y mener comme
+  // il mène au sol nu, jamais rester sans effet faute de destination (un tonneau cliqué ne bougeait
+  // personne, là où la case libre à côté fait marcher).
+  if (ent && (!!ent.dialogueId || !!ent.interact || !!ent.merchant || ent.kind === 'personnage' || ent.kind === 'prop')) {
     if (chebyshev(partyPos, ent.pos) <= 1) return null; // déjà à portée → interaction/échange/badaud sur place
     return adjacentWalkable(sc, ent.pos, partyPos);
   }

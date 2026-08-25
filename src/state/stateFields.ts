@@ -57,7 +57,7 @@ const STATE_FIELDS = {
   pendingDisengage: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingAuContact: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingGrapple: { init: null, resetOn: ['scene', 'combatStart'] },
-  pendingInteract: { init: null, resetOn: ['scene'] },
+  pendingInteract: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingCast: { init: null, resetOn: ['combatStart'] },
   pendingCounterspell: { init: null, resetOn: ['combatStart'] },
   pendingExtendedTest: { init: null, resetOn: [] },

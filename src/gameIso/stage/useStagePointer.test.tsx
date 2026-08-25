@@ -880,35 +880,40 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
   });
 
   /**
-   * REPRO PROMUE de la recette navigateur (#1443, `la-diligence`) : deux clics MUETS sur un meuble
-   * à places. (a) plateau FIN — le rayon ne touche aucune face (`null`), et la résolution de tuile
-   * retombait sur sa boucle cross-couche : la table murale (13,10) rendait (16,13,z1), un autre
-   * ÉTAGE, et le groupe partait à l'autre bout. (b) OCCULTATION — le rayon nomme le comptoir dessiné
-   * devant la table (10,23). Dans les deux cas la case DESSINÉE sous le pixel est celle du meuble
-   * visé : elle lui appartient.
+   * REPRO PROMUE de la recette navigateur (#1443) puis RECADRÉE par la revue (round 2) : qui décide
+   * du meuble visé.
+   *  - le RAYON, dès qu'il nomme un décor : il touche la face réellement dessinée, à sa hauteur réelle
+   *    (une inversion écran→case au lift du SOL se décale sur un meuble haut, et une OCCULTATION n'est
+   *    pas un défaut — le joueur clique ce qu'il voit) ;
+   *  - la case DESSINÉE sous le pixel en REPLI, quand le rayon ne nomme rien : un plateau FIN ne lui
+   *    présente aucune face, et la résolution de tuile écartait son empreinte (non marchable) pour
+   *    rendre une case d'un AUTRE ÉTAGE — la table murale (13,10) résolvait (16,13,z1).
    */
-  it('la case d’un meuble lui appartient : rayon MUET ou rayon OCCULTÉ, le clic vise CE meuble', () => {
+  it('le rayon nomme le meuble visé ; sans rayon, la case dessinée sert de repli', () => {
     const scene = emptyScene(8, 8);
-    // ÉTAGE au-dessus : c'est lui que la boucle cross-couche servait à la place du meuble (cas (a)).
+    // ÉTAGE au-dessus : c'est lui que la boucle cross-couche servait à la place du meuble (cas du plateau fin).
     scene.layers = [scene.layers[0], { z: 1, tiles: new Array(8 * 8).fill('bois') }];
     scene.entities = [
       { id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' },
-      { id: 'comptoir-1', kind: 'prop', pos: { x: 5, y: 5 }, ref: 'comptoir-droit', facing: 'S' },
+      // Le meuble HAUT que le rayon touche alors que le pixel tombe sur la case de la table : posé
+      // ADJACENT au groupe pour que son affordance se serve sur place, et donc s'observe.
+      { id: 'comptoir-1', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'comptoir-droit', facing: 'S',
+        interact: { flow: { kind: 'seq', steps: [] } } },
     ] as typeof scene.entities;
     const surLaTable = tileCenter(2, 3, dims);
 
-    for (const [cas, rayon] of [
-      ['rayon MUET (plateau fin)', () => null],
-      ['rayon OCCULTÉ (meuble devant)', () => ({ kind: 'entity' as const, id: 'comptoir-1' })],
+    for (const [cas, rayon, cible] of [
+      ['rayon MUET (plateau fin) → repli sur la case DESSINÉE', () => null, 'table-1'],
+      ['rayon qui NOMME (face touchée) → CE décor', () => ({ kind: 'entity' as const, id: 'comptoir-1' }), 'comptoir-1'],
     ] as const) {
       const interactEntity = vi.fn();
-      useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null, interactEntity, setPendingInteract: vi.fn() });
+      useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [], dialogue: null, interactEntity, setPendingInteract: vi.fn(), flags: {} });
       setSpritePicker(rayon);
       const pointer = monter(scene);
       const ev = pointerEvent(surLaTable.cx, surLaTable.cy);
       pointer.handlers.onPointerDown(ev);
       pointer.handlers.onPointerUp(ev);
-      expect(interactEntity, cas).toHaveBeenCalledWith('table-1'); // adjacent (2,2)→(2,3) : servi sur place
+      expect(interactEntity, cas).toHaveBeenCalledWith(cible); // les deux cibles sont adjacentes : servies sur place
     }
   });
 
@@ -949,6 +954,78 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
     expect(useGame.getState().journal.join(' | '), 'aucun refus d’assise en chemin').not.toContain('Vous devez rejoindre la place');
     expect(seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 }), 'assis EN UN GESTE').toMatchObject({ propId: 'table-1', slotId: 'sud' });
     expect(useGame.getState().pendingInteract).toBeNull();
+  });
+
+  /**
+   * SONDE C de la revue (#1443, round 2) : DEBOUT SUR L'ABORD D'UNE PLACE PRISE, trois places libres
+   * ailleurs. Le pointeur lisait « suis-je sur un abord ? » sur TOUTES les places, quand le plan
+   * d'assise ne considère que les LIBRES : il servait donc l'interaction sur place, qui refusait
+   * (« Vous devez rejoindre la place »), et personne ne marchait — le 2e clic ne sauvait rien.
+   */
+  it('debout sur l’abord d’une place PRISE : le clic MARCHE vers une place libre et y assoit', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
+    scene.seatAssignments = { 'table-1': { nord: pnjAssis('a') } }; // seule la place NORD est prise
+    const vierge = useGame.getInitialState();
+    const places = seatSlotsOf(scene, 'table-1');
+    const PRISE = places.find((s) => s.slotId === 'nord')!.approach; // on se tient SUR son abord
+    useGame.setState({
+      scene, mode: 'exploration', partyPos: { x: PRISE.x, y: PRISE.y }, party: [meneurJouable()], dialogue: null, battle: null,
+      pendingInteract: null, journal: [], flags: {},
+      interactEntity: vierge.interactEntity, setPendingInteract: vierge.setPendingInteract, moveParty: vierge.moveParty,
+    });
+    setSpritePicker(() => ({ kind: 'entity', id: 'table-1' }));
+
+    const pointer = monter(scene);
+    const ailleurs = tileCenter(7, 7, dims);
+    const ev = pointerEvent(ailleurs.cx, ailleurs.cy);
+    pointer.handlers.onPointerDown(ev);
+    pointer.handlers.onPointerUp(ev);
+    act(() => { vi.runAllTimers(); });
+
+    const pose = seatPoseOf(useGame.getState().scene!, { kind: 'party', rang: 1 });
+    expect(useGame.getState().journal.join(' | '), 'aucun refus : il restait trois places').not.toContain('Vous devez rejoindre la place');
+    expect(pose, 'assis à une place LIBRE, en un geste').toMatchObject({ propId: 'table-1' });
+    expect(pose!.slotId, 'jamais la place prise').not.toBe('nord');
+  });
+
+  /**
+   * P3 de la revue (#1443, round 2) : un décor SANS affordance avalait le geste — ni marche, ni
+   * journal — là où la case de sol nue juste à côté fait MARCHER. On ne monte pas sur un meuble :
+   * loin, on s'en approche (parité sol) ; à portée, on dit qu'il n'y a rien à en tirer.
+   */
+  it('décor SANS affordance : loin on s’en approche, à portée on le DIT — jamais un geste avalé', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    scene.entities = [{ id: 'tonneau-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'tonneau', label: 'Un tonneau' }] as typeof scene.entities;
+    const vierge = useGame.getInitialState();
+    const poser = (pos: { x: number; y: number }) => useGame.setState({
+      scene, mode: 'exploration', partyPos: pos, party: [meneurJouable()], dialogue: null, battle: null,
+      pendingInteract: null, journal: [], flags: {},
+      interactEntity: vierge.interactEntity, setPendingInteract: vierge.setPendingInteract, moveParty: vierge.moveParty,
+    });
+    setSpritePicker(() => ({ kind: 'entity', id: 'tonneau-1' }));
+    const surLeTonneau = tileCenter(2, 3, dims);
+
+    poser({ x: 6, y: 6 });
+    const p1 = monter(scene);
+    const loin = pointerEvent(surLeTonneau.cx, surLeTonneau.cy);
+    p1.handlers.onPointerDown(loin);
+    p1.handlers.onPointerUp(loin);
+    act(() => { vi.runAllTimers(); });
+    const arrivee = useGame.getState().partyPos;
+    expect(arrivee, 'on ne monte jamais SUR le décor').not.toMatchObject({ x: 2, y: 3 });
+    expect(Math.max(Math.abs(arrivee.x - 2), Math.abs(arrivee.y - 3)), 'on s’est approché, comme du sol nu').toBe(1);
+
+    poser({ x: 2, y: 2 }); // déjà à portée : plus rien à marcher
+    const p2 = monter(scene);
+    const pres = pointerEvent(surLeTonneau.cx, surLeTonneau.cy);
+    p2.handlers.onPointerDown(pres);
+    p2.handlers.onPointerUp(pres);
+    act(() => { vi.runAllTimers(); });
+    expect(useGame.getState().partyPos, 'personne ne bouge').toMatchObject({ x: 2, y: 2 });
+    expect(useGame.getState().journal.join(' | '), 'le geste n’est pas avalé').toContain('rien à en tirer');
   });
 
   /**

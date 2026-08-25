@@ -22,7 +22,7 @@ import { metricToLift } from '../../state/relief';
 import { memoByRef } from '../../state/sceneMemo';
 import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
 import { exploreMovePlan, exploreSeatPlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
-import { memeCase, RANG_MENEUR, seatPoseOf, seatSlotsOf } from '../../state/seating';
+import { RANG_MENEUR, seatPoseOf, seatSlotsOf } from '../../state/seating';
 // `t` est déjà le nom local de la TUILE survolée dans ce module : la traduction s'y importe sous son
 // rôle, sans rebaptiser trente sites de pointeur.
 import { t as message } from '../../i18n';
@@ -242,21 +242,22 @@ export function useStagePointer({
       const c = st.battle.combatants.find((x) => x.id === visé.id);
       if (c?.pos) return c.pos.z ? { x: c.pos.x, y: c.pos.y, z: c.pos.z } : { x: c.pos.x, y: c.pos.y };
     }
-    // LA CASE D'UN MEUBLE LUI APPARTIENT : hors combat, si la case DESSINÉE sous le pixel porte un
-    // décor `prop`, c'est LUI qu'on vise — avant le rayon. Deux silences mesurés sur `la-diligence`
-    // s'y referment d'un coup : le plateau FIN que le rayon rate (aucune face sous le pixel), et le
-    // meuble VOISIN plus proche de la caméra que le rayon nomme à la place (le comptoir devant la
-    // table (10,23)) — une occultation ne prend pas à un meuble la case qu'il occupe. Le rayon garde
-    // tout le reste : au-dessus d'une case de SOL, c'est lui qui dit quel corps s'y dessine.
-    const p = st.mode !== 'battle' ? stagePointOf(ev) : null;
-    const meuble = p ? propAtScreen(p.x, p.y, activeZ) : null;
-    if (meuble) return meuble;
     // DÉCOR VOLUMIQUE : c'est le MEUBLE qui est dessiné sous le pixel, pas la tuile derrière lui — on
     // cible sa case d'ancrage, d'où l'interaction d'exploration le reprend comme n'importe quel décor.
+    // LE RAYON DÉCIDE EN PREMIER : il touche la FACE réellement dessinée, à sa hauteur réelle, donc il
+    // est juste même sur le DESSUS d'un meuble haut — là où une inversion écran→case au lift du SOL
+    // décale la case (mesuré sur `la-diligence` : un pixel sur le dessus de `comptoir-2` (11,24) rend
+    // (10,23), la table voisine). Une OCCULTATION n'est pas un défaut : le joueur clique ce qu'il voit.
     if (visé?.kind === 'entity') {
       const ent = useGame.getState().scene?.entities.find((e) => e.id === visé.id);
       if (ent) return ent.z ? { x: ent.pos.x, y: ent.pos.y, z: ent.z } : { x: ent.pos.x, y: ent.pos.y };
     }
+    // REPLI, quand le rayon ne nomme RIEN : la case DESSINÉE sous le pixel. Un plateau FIN ne présente
+    // aucune face au rayon, et la résolution de tuile l'écartait (l'empreinte d'un meuble n'est pas
+    // marchable) pour rendre une case d'un AUTRE ÉTAGE — la table murale (13,10) résolvait (16,13,z1).
+    const p = st.mode !== 'battle' ? stagePointOf(ev) : null;
+    const meuble = p ? propAtScreen(p.x, p.y, activeZ) : null;
+    if (meuble) return meuble;
     return tileFromEvent(ev);
   };
 
@@ -403,8 +404,13 @@ export function useStagePointer({
     if (ent && ent.kind === 'prop' && seatSlotsOf(sc, ent.id).length) {
       const meneur = st.party[0]?.id;
       const assisIci = !!meneur && seatPoseOf(sc, { kind: 'party', rang: RANG_MENEUR })?.propId === ent.id;
-      const surAbord = seatSlotsOf(sc, ent.id).some((s) => memeCase(s.approach, st.partyPos));
-      if (assisIci || surAbord) {
+      // UNE SEULE source de « place LIBRE » : le plan d'assise (`exploreSeatPlan`, qui filtre les
+      // places prises et rend un chemin d'un seul point quand on est DÉJÀ sur l'abord d'une libre).
+      // Le lire deux fois — ici « suis-je sur un abord ? », là « où marcher ? » — les faisait diverger :
+      // debout sur l'abord d'une place PRISE, trois places libres ailleurs, le clic servait
+      // « Vous devez rejoindre la place » et personne ne marchait.
+      const place = exploreSeatPlan(sc, st.partyPos, ent.id, pathOpts());
+      if (assisIci || (place && place.path.length < 2)) {
         // Sur place : le store arbitre entre se relever, servir la fouille/le marchand, et s'asseoir.
         setHover(null);
         st.setPendingInteract(null);
@@ -413,7 +419,7 @@ export function useStagePointer({
       }
       // Une place SERVABLE au loin : on marche jusqu'à son ABORD (jamais la case d'ancrage), et le
       // MÊME `pendingInteract` que la fouille se consomme à l'arrivée.
-      if (plan && exploreSeatPlan(sc, st.partyPos, ent.id, pathOpts())) {
+      if (plan && place) {
         setHover(null);
         st.setPendingInteract({ id: ent.id, at: plan.dest });
         moveAlong(sc.id, plan);
@@ -450,6 +456,17 @@ export function useStagePointer({
       st.setPendingInteract(null);
       if (chebyshev(st.partyPos, ent.pos) <= 1) st.log(`${ent.label ?? 'Ce badaud'} n’a rien à vous dire.`);
       else if (plan) moveAlong(sc.id, plan);
+      return;
+    }
+    if (ent && ent.kind === 'prop') {
+      // DÉCOR SANS AFFORDANCE (ni place, ni fouille, ni dialogue, ni boutique) : on ne monte pas
+      // dessus, mais on ne reste pas non plus sans effet — le sol nu, lui, fait MARCHER. Loin : on
+      // s'en approche (`exploreMoveDest` rend la case adjacente). À portée : il n'y a rien à en tirer,
+      // et on le DIT plutôt que d'avaler le geste.
+      setHover(null);
+      st.setPendingInteract(null);
+      if (plan) moveAlong(sc.id, plan);
+      else st.log(message('store.propInerte', { what: ent.label ?? message('store.propInerteFallback') }));
       return;
     }
     // Clic ailleurs : annule un déplacement-puis-fouille en attente. `dest` couvre l'ESCALIER (geste

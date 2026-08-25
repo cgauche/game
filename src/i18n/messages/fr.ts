@@ -1343,6 +1343,8 @@ export const fr = {
   'store.searching': 'Vous fouillez {what}…',
   'store.searchPlaceFallback': 'les lieux',
   'store.searchTitle': 'Fouille',
+  'store.propInerte': '{what} : rien à en tirer.',
+  'store.propInerteFallback': 'Ce décor',
   'store.dialogueNoMoney': 'Pas assez d’argent pour cette option.',
 
   // ── ASSISE (`state/seating.ts`, `seating.*`) : le meneur prend place à un meuble, ou s'en relève. ──

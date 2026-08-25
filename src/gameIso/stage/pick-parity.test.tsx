@@ -16,6 +16,10 @@ import { poseFromDims, screenToWorldAtLift } from './projection';
 import { stagePointAt, viewBoxPointAt } from './stageCam';
 import { stage3dFraming } from './stage3dCamera';
 import { useStagePointer, type StagePointer } from './useStagePointer';
+import { setSpritePicker } from './spritePicker';
+import { buildPropVolumes } from '../builders/propVolumes';
+import { findPropById } from '../../data';
+import type { SceneEntity } from '../../state/scene';
 
 /**
  * PARITÉ DU PICKING DE TUILE ENTRE LES DEUX VOIES (#1176, lot P2-3).
@@ -118,6 +122,7 @@ function moveEvent(sx: number, sy: number) {
 let root: Root | null = null;
 
 afterEach(() => {
+  setSpritePicker(null);
   if (root) {
     act(() => root!.unmount());
     root = null;
@@ -274,5 +279,66 @@ describe('Frontière de deux cases — les deux inversions coïncident, seul l�
     }
     expect(points).toBeGreaterThan(50);
     expect(pires).toBeLessThan(1e-9);
+  });
+});
+
+/**
+ * MEUBLE HAUT — le pixel du DESSUS appartient au meuble, et c'est le RAYON qui le dit (#1443, round 2).
+ *
+ * La résolution de case du pointeur inverse l'écran au LIFT DU SOL : sur une FACE SUPÉRIEURE portée à
+ * un mètre, elle rend une case décalée vers l'arrière — mesuré sur la Diligence, le pixel du dessus
+ * d'un comptoir désigne la table voisine, et un clic y envoyait le groupe s'attabler au lieu de servir
+ * le comptoir. Le rayon, lui, touche la face RÉELLEMENT dessinée à sa hauteur réelle : quand il nomme
+ * un décor, c'est lui qui décide ; la case dessinée n'est qu'un REPLI (plateau fin, aucune face touchée).
+ */
+describe('meuble HAUT — le rayon décide, la case dessinée n’est qu’un repli (#1443)', () => {
+  const scene = diligence.scene as Scene;
+  const dims = dimsDe(scene);
+  const mpt = sceneMetresPerTile(scene);
+  const camera = cameraVolumique(dims, mpt);
+
+  /** Sommet MONDE d'un décor posé, dérivé de ses faces réelles (aucune relecture de recette). */
+  const sommet = (ent: SceneEntity): number => {
+    const prop = findPropById(ent.ref ?? '')!;
+    const faces = buildPropVolumes(ent, prop, heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0));
+    return Math.max(...faces.flatMap((f) => f.poly.map((p) => p.h)));
+  };
+
+  /** Les décors dont le pixel du DESSUS tombe, au lift du SOL, sur la case d'un AUTRE décor : le cas
+   *  exact que la règle tranche. Vide = la carte a changé, et la garde ne mesure plus rien. */
+  const pieges = scene.entities
+    .filter((e) => e.kind === 'prop' && (e.z ?? 0) === 0)
+    .map((e) => ({ ent: e, px: pixelVolumique(camera, mpt, e.pos.x, e.pos.y, sommet(e)) }))
+    .map(({ ent, px }) => {
+      const vb = viewBoxPointAt({ sx: px.sx, sy: px.sy }, CANVAS);
+      const g = stagePointAt(vb, CAM, ZOOM);
+      const sol = screenToWorldAtLift(poseFromDims(dims), g, 0);
+      const dessous = scene.entities.find((e) => e.kind === 'prop' && e.pos.x === Math.round(sol.x) && e.pos.y === Math.round(sol.y) && (e.z ?? 0) === 0);
+      return { ent, px, voisin: dessous && dessous.id !== ent.id ? dessous : null };
+    })
+    .filter((c) => !!c.voisin);
+
+  it('le pixel du DESSUS d’un meuble haut cible CE meuble, jamais le voisin que le lift du sol désigne', () => {
+    expect(pieges.length, 'la Diligence DOIT porter au moins un meuble haut qui décale sa case').toBeGreaterThan(0);
+    const ecarts: string[] = [];
+    for (const { ent, px, voisin } of pieges) {
+      setSpritePicker(() => ({ kind: 'entity', id: ent.id })); // le rayon touche la face du dessus
+      const vise = viseur(scene, 0, posteDuGroupe(scene, 0, { x: 0, y: 0 }));
+      const vu = vise(px.sx, px.sy);
+      if (vu?.x !== ent.pos.x || vu?.y !== ent.pos.y) {
+        ecarts.push(`${ent.id} (${ent.pos.x},${ent.pos.y}) → pointeur=${vu ? `${vu.x},${vu.y}` : 'rien'} (voisin piège : ${voisin!.id})`);
+      }
+      act(() => root!.unmount());
+      root = null;
+    }
+    expect(ecarts).toEqual([]);
+  });
+
+  it('TÉMOIN — sans rayon, le repli par la case dessinée désigne bien le voisin : c’est ce que la règle évite', () => {
+    const { ent, px, voisin } = pieges[0];
+    setSpritePicker(null); // aucune voie de rayon inscrite → repli par la case dessinée
+    const vise = viseur(scene, 0, posteDuGroupe(scene, 0, { x: 0, y: 0 }));
+    const vu = vise(px.sx, px.sy);
+    expect(`${vu?.x},${vu?.y}`, `le repli désigne ${voisin!.id}, pas ${ent.id}`).toBe(`${voisin!.pos.x},${voisin!.pos.y}`);
   });
 });

@@ -143,10 +143,18 @@ describe('exploreSeatPlan — marcher vers l’ABORD d’une place libre', () =>
     }
   });
 
-  it('table PLEINE et SANS fouille : rien à joindre, le plan reste null', () => {
+  /** Un meuble sans rien à offrir reste du SOL OCCUPÉ : on ne monte pas dessus, mais le clic mène à
+   *  lui comme il mène au sol nu — c'est la parité que le geste avalé rompait (#1443, round 2). */
+  it('table PLEINE et SANS fouille : on ne monte pas dessus, on s’en APPROCHE', () => {
     const prises = Object.fromEntries(seatSlotsOf(scèneTable(), 'table-1')
       .map((s) => [s.slotId, { kind: 'entity' as const, entityId: `pnj-${s.slotId}` }]));
-    expect(exploreMovePlan(scèneTable({ 'table-1': prises }), { x: 5, y: 5 }, { x: 10, y: 10 }, { blocked: new Set() })).toBeNull();
+    const sc = scèneTable({ 'table-1': prises });
+    const plan = exploreMovePlan(sc, { x: 5, y: 5 }, { x: 10, y: 10 }, { blocked: new Set() });
+    expect(plan, 'le clic mène quelque part').not.toBeNull();
+    expect(plan!.dest, 'jamais la case du meuble').not.toEqual({ x: 10, y: 10 });
+    expect(cheb(plan!.dest, { x: 10, y: 10 }), 'une case ADJACENTE').toBe(1);
+    // Déjà à portée : plus rien à marcher — c'est à l'appelant de le DIRE (`useStagePointer`).
+    expect(exploreMovePlan(sc, { x: 10, y: 11 }, { x: 10, y: 10 }, { blocked: new Set() })).toBeNull();
   });
 
   it('exploreMovePlan route le clic d’un meuble à places vers CE plan (survol et clic, une seule source)', () => {
