@@ -161,6 +161,7 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   'renduMonte.json': "réglage de rendu (id du set d'équipement servi par défaut à une monture portée, #1128), pas une fiche de contenu — le set lui-même s'expose par la créature qui le porte.",
   'reliefMaterials.json': 'catalogue de matériaux de relief (rendu iso), pas une fiche de contenu.',
   'roofMaterials.json': 'catalogue de matériaux de toiture (rendu iso), pas une fiche de contenu.',
+  'propMaterials.json': "catalogue de matériaux des recettes volumiques de décor (couleur, rugosité, métallicité — rendu WebGL), jumeau exact de `reliefMaterials`/`roofMaterials` : le meuble qui les porte s'expose, pas la teinte de ses primitives.",
   'structureAppearance.json': "presets d'apparence de structure (rendu iso), pas une fiche de contenu.",
   'props.json': 'catalogue de props de décor (rendu iso), pas une fiche de contenu.',
   'lightLevels.json': 'niveaux de lumière (rendu iso/vision), vocabulaire moteur — la RÈGLE de vision est ailleurs, sourcée et exposée via `regles`/`etats`.',

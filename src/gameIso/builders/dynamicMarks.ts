@@ -21,6 +21,7 @@ import { inBattleId } from '../../state/combatants';
 import { footprintN } from '../../state/footprint';
 import { mountOf } from '../../state/mount';
 import type { Pt } from '../../state/path';
+import type { SeatPose } from '../../state/seating';
 import type { BattleState } from '../../state/store';
 import { combatantTokenScale } from '../sizeScale';
 import { ENEMY_RING, HERO_RING, teamShape } from '../teamColors';
@@ -107,7 +108,7 @@ export const NO_DYNAMIC_MARKS: DynamicMarks = Object.freeze({ tethers: Object.fr
  * des jetons RÉELLEMENT postés. Ces deux-là sont EXIGÉS (une frame sans jeton passe `[]`, une frame en
  * combat passe `null` pour le meneur) : un défaut y rendrait des anneaux silencieusement absents.
  */
-export function dynamicMarks(battle: BattleState | null, party: Pt | null, tokens: readonly TokenEl[], partyToken: { leader: Combatant; pos: Pt } | null): DynamicMarks {
+export function dynamicMarks(battle: BattleState | null, party: Pt | null, tokens: readonly TokenEl[], partyToken: { leader: Combatant; pos: Pt; seat?: SeatPose } | null): DynamicMarks {
   const tethers: EngageTether[] = [];
   let active: ActiveFootprint | null = null;
   if (battle) {
@@ -134,7 +135,12 @@ export function dynamicMarks(battle: BattleState | null, party: Pt | null, token
         n: footprintN(unité),
       };
   }
-  return { tethers, active, party: party ? { x: party.x, y: party.y, z: party.z ?? 0 } : null, rings: teamRings(tokens, partyToken) };
+  // MENEUR ATTABLÉ : le repère de sol du groupe S'ÉTEINT. Il dit « le groupe se tient ici » et se
+  // peint sur une case ENTIÈRE ; assis, le corps n'est plus sur sa case d'abord mais sur l'ancre de sa
+  // place — le poser à l'abord montrerait le groupe à côté de lui-même, le poser à l'ancre peindrait un
+  // carré de sol sous la table. L'anneau d'équipe, lui, suit le corps (`teamRings` lit `partyToken.pos`).
+  const repère = party && !partyToken?.seat ? { x: party.x, y: party.y, z: party.z ?? 0 } : null;
+  return { tethers, active, party: repère, rings: teamRings(tokens, partyToken) };
 }
 
 /** GABARIT de l'anneau d'ÉQUIPE aux pieds du jeton sous la projection LOSANGE (ellipse `rx = 18·s,

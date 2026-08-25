@@ -240,8 +240,9 @@ export function povCamera(
   facing: Dir8,
   viewport: Viewport,
   far = 4000,
+  eyeH?: number,
 ): PerspectiveCamera {
-  return reposerPovCamera(new PerspectiveCamera(), scene, partyPos, facing, viewport, far);
+  return reposerPovCamera(new PerspectiveCamera(), scene, partyPos, facing, viewport, far, eyeH);
 }
 
 /** LA MÊME, REPOSÉE (#1404) : un pas, un cap, une portée de brume qui se resserre écrivent l'œil et
@@ -253,8 +254,9 @@ export function reposerPovCamera(
   facing: Dir8,
   viewport: Viewport,
   far = 4000,
+  eyeH?: number,
 ): PerspectiveCamera {
-  const pose = makeCamera(scene, partyPos, facing);
+  const pose = makeCamera(scene, partyPos, facing, eyeH);
   const fovY = 2 * Math.atan((viewport.h / viewport.w) * Math.tan(FOV_X / 2));
   camera.fov = (fovY * 180) / Math.PI;
   camera.aspect = viewport.w / viewport.h;

@@ -265,6 +265,17 @@ describe('Bascule de regard — la CUISSON du monde ne se rejoue jamais (#1385)'
     await attendreEntréeFinie(hôte!);
     const quadsAvant = quads();
     expect(quadsAvant.length, 'aucun board monté : rien à mesurer').toBeGreaterThan(0);
+    // PRÉMISSE DE MESURE : le MONTAGE a fini de cuire. Le budget de `attendreQuads` est un PLAFOND
+    // (banc partagé, `isolate: false`) : sous charge, une cuisson de BOOT tombait dans la fenêtre de
+    // mesure et se lisait comme un recuit de bascule (flake mesuré 1/7 à cache froid). On attend donc
+    // que la trace de cuisson soit STABLE d'une tranche à l'autre — le budget reste un plafond, mais
+    // la mesure ne commence plus au milieu d'un montage.
+    let précédente = cuissons();
+    for (let i = 0; i < 25; i++) {
+      await respirer(60);
+      if (cuissons() === précédente) break;
+      précédente = cuissons();
+    }
     expect(canevas().dataset.voile, 'PRÉMISSE : le voile du montage n’est pas tombé, il n’y a pas de réarmement à mesurer')
       .toBeUndefined();
     const bakeAvant = cuissons();

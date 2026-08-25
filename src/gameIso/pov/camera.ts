@@ -17,6 +17,9 @@ import { AMBIANCE } from '../catalog/ambiance';
 // — Constantes de caméra/projection — (hauteur de cloison : `WALL_H_M`, vérité partagée dans iso.ts)
 /** Hauteur de l'œil au-dessus de la surface où se tient le groupe (mètres). */
 export const EYE_H = 1.7;
+/** Hauteur de l'œil au-dessus de l'ASSISE d'un corps ASSIS (mètres) : le tronc, le cou et la tête
+ *  restent, les jambes se replient — ce qui reste au-dessus du siège, et non au-dessus du sol. */
+export const EYE_H_ASSIS = 0.75;
 /** Champ de vision horizontal (radians ≈ 75°). */
 export const FOV_X = (75 * Math.PI) / 180;
 /** Plan proche (mètres) — tout ce qui est plus près/derrière est clippé. > 0. */
@@ -123,16 +126,23 @@ export function dir8Basis(facing: Dir8): { fwd: { x: number; y: number }; right:
  *  `partyPos` peut être CONTINU (la marche volumique fait glisser l'œil, #1176 P3-1a) : la hauteur de
  *  l'œil suit alors la pente CONTINUE du sol (`groundUnderM`) : à mi-pas d'un ressaut, l'œil est à
  *  mi-hauteur du ressaut, et sa montée s'étale sur toutes les frames du pas. */
-export function makeCamera(scene: Scene, partyPos: { x: number; y: number; z?: number }, facing: Dir8): CamPose {
+export function makeCamera(scene: Scene, partyPos: { x: number; y: number; z?: number }, facing: Dir8, eyeH: number = EYE_H): CamPose {
   const mpt = sceneMetresPerTile(scene);
   const z = partyPos.z ?? 0;
   const { fwd, right } = dir8Basis(facing);
   const eye: Vec3 = {
     x: partyPos.x * mpt,
     y: partyPos.y * mpt,
-    z: groundUnderM(scene, partyPos.x, partyPos.y, z) + EYE_H,
+    z: groundUnderM(scene, partyPos.x, partyPos.y, z) + eyeH,
   };
   return { eye, fwd, right, mpt, z };
+}
+
+/** Hauteur d'œil AU-DESSUS DU SOL d'un corps ASSIS à cette place — ce que `makeCamera` attend. Dérivée
+ *  de l'ancre de la place (hauteur d'assise ABSOLUE) et de la seule constante nommée `EYE_H_ASSIS` :
+ *  un tabouret bas et un banc haut ne donnent pas le même regard, et aucun nombre magique ne s'y glisse. */
+export function seatedEyeH(scene: Scene, seat: { anchor: { x: number; y: number; h: number } }, z = 0): number {
+  return seat.anchor.h - groundUnderM(scene, seat.anchor.x, seat.anchor.y, z) + EYE_H_ASSIS;
 }
 
 /** Projette un point monde `P` (mètres) en pixels viewport. PUR.

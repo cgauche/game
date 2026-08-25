@@ -223,7 +223,7 @@ import {
   applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf,
 } from './combatGeometry';
 export * from './combatGeometry';
-import { releaseSeat } from './seating';
+import { releaseSeat, releaseUnavailableSeats } from './seating';
 // --- Résolveur d'aire des munitions/armes à effet de zone (Tir de zone / Explosion) extrait → combatArea.ts (baril) ---
 export * from './combatArea';
 import { resolveWeaponArea, areaTargets, blastRadiusTiles, type AreaTargets } from './combatArea';
@@ -1604,6 +1604,7 @@ export function finalizeHeroDeath(_get: Get, set: SetFn, hero: Combatant, source
 export function notifySlain(get: Get, set: SetFn, c: Combatant): string[] {
   if (!isOutOfAction(c) || c.slainNotified) return [];
   c.slainNotified = true;
+  releaseSeatsOfDowned(get, set); // un corps mis hors d'action ne tient plus sa chaise
   const lines: string[] = [];
   emitCombatEvent('onSlain', { get, set, battle: get().battle!, self: c, sink: (line) => lines.push(line), triggerCtx: { rng: battleRng() } });
   // Ops IMPURES « à la mort » (Charnier : 3d10 Zombies ; toute zone laissée en mourant) — inertes dans
@@ -5943,6 +5944,35 @@ export function openContractionCascade(get: Get, set: SetFn, patient: Combatant,
  * passe, elle, par `removeEntities`, qui renormalise à son tour.
  * Rend la scène d'entrée, même référence, si personne n'était assis.
  */
+/**
+ * COUTURE UNIQUE « la mort ou l'indisponibilité libère la place » (spec §5) — le seul endroit qui
+ * traduise « ce corps est hors d'action » en « sa chaise est rendue ». Appelée là où la mise hors de
+ * combat est ACTÉE : `notifySlain` (tous les chemins de mort d'un combattant, garde d'unicité
+ * `slainNotified`) et l'entretien hors combat de `advanceTime` (agonie, Hémorragie, Poison, Flammes —
+ * la seule voie par laquelle un corps s'éteint sans combat).
+ *
+ * L'oracle de disponibilité est bâti ICI, où le groupe ET le combat sont lisibles : un héros du
+ * groupe doit être vivant et debout (`isOutOfAction` couvre mort, Inconscient, Mort Subite) ; un PNJ
+ * de scène ne devient indisponible qu'en tant que combattant enrôlé (hors combat, sa disparition
+ * passe par `removeEntities`, qui renormalise déjà).
+ * No-op complet — et référence de scène INCHANGÉE — si personne n'est assis ou si tout le monde tient.
+ */
+export function releaseSeatsOfDowned(get: Get, set: SetFn): void {
+  const scene = get().scene;
+  if (!scene?.seatAssignments) return;
+  const party = get().party;
+  const combattants = get().battle?.combatants;
+  const next = releaseUnavailableSeats(scene, (o) => {
+    if (o.kind === 'party') {
+      const hero = party.find((h) => h.id === o.heroId);
+      return !!hero && !hero.dead && !isOutOfAction(hero);
+    }
+    const c = combattants?.find((x) => x.id === o.entityId);
+    return !c || !isOutOfAction(c);
+  });
+  if (next !== scene) set({ scene: next });
+}
+
 export function releaseSeatsOfCombatants<S extends Scene | null>(scene: S, combatants: readonly Pick<Combatant, 'id'>[]): S {
   if (!scene?.seatAssignments) return scene;
   let next: Scene = scene;

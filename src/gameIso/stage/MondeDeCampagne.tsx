@@ -39,6 +39,7 @@ import { buildRoofs, clearedSpace } from '../builders/roofs';
 import { buildProps } from '../builders/props';
 import { buildTokens, partyTokenOf } from '../builders/tokens';
 import { seatPoseOf } from '../../state/seating';
+import { seatedEyeH } from '../pov/camera';
 import { elOccluder } from './occluders';
 import { tireurSurvole, type HighlightOpts } from './highlightLayer';
 import { dynamicMarks } from '../builders/dynamicMarks';
@@ -309,10 +310,10 @@ function CorpsDuMonde() {
   const frameMonde = useMemo<WorldFrame>(
     () => (pov
       // L'ŒIL suit le CORPS : attablé, on regarde depuis sa place, pas depuis la case d'abord.
-      ? { mode: 'pov', partyPos: posDeRendu, facing: capPov ?? 'S', indoor, cid: partyLeader?.id ?? null }
+      ? { mode: 'pov', partyPos: posDeRendu, facing: capPov ?? 'S', indoor, cid: partyLeader?.id ?? null, ...(partySeat && scene ? { eyeH: seatedEyeH(scene, partySeat, partyPos.z ?? 0) } : {}) }
       : { mode: 'plateau', dims: dimsVue, camAt: camAtStable, yawAt: yawAtStable, zoom: zoomVue }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pov, posDeRendu.x, posDeRendu.y, posDeRendu.z, capPov, indoor, partyLeader?.id, dimsVue, zoomVue, camAtStable, yawAtStable],
+    [pov, posDeRendu.x, posDeRendu.y, posDeRendu.z, capPov, indoor, partyLeader?.id, partySeat?.anchor.h, dimsVue, zoomVue, camAtStable, yawAtStable],
   );
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
   // Cases LOGIQUES des alliés — ce que la marche fait glisser, jamais ce qu'elle fait bouger.

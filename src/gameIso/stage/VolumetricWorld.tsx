@@ -53,7 +53,15 @@ export type WorldFrame =
       yawAt?: () => number;
       zoom: number;
     }
-  | { mode: 'pov'; partyPos: { x: number; y: number; z?: number }; facing: Dir8; indoor: boolean; cid: string | null };
+  | {
+      mode: 'pov';
+      partyPos: { x: number; y: number; z?: number };
+      facing: Dir8;
+      indoor: boolean;
+      cid: string | null;
+      /** Hauteur d'œil au-dessus du sol — absente = le regard DEBOUT ; le meneur attablé la tient de sa place. */
+      eyeH?: number;
+    };
 
 export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts, dynMarks, halos, chromes, percage, pionsEnDisques }: {
   scene: Scene;
@@ -166,11 +174,11 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   const camRendu = frame.mode === 'plateau' ? frame.camAt(performance.now()) : null;
   const cléCadre = frame.mode === 'plateau'
     ? `plateau|${frame.zoom}|${camRendu!.x}|${camRendu!.y}`
-    : `pov|${frame.partyPos.x},${frame.partyPos.y},${frame.partyPos.z ?? 0}|${frame.facing}|${frame.indoor}|${frame.cid ?? ''}`;
+    : `pov|${frame.partyPos.x},${frame.partyPos.y},${frame.partyPos.z ?? 0}|${frame.facing}|${frame.indoor}|${frame.cid ?? ''}|${frame.eyeH ?? ''}`;
   const frameCam = useMemo<StageFrame>(
     () => (frame.mode === 'plateau'
       ? { mode: 'plateau', dims: frame.dims, cam: { x: camRendu!.x, y: camRendu!.y }, yawAt: frame.yawAt, zoom: frame.zoom }
-      : { mode: 'pov', partyPos: frame.partyPos, facing: frame.facing, indoor: frame.indoor, cid: frame.cid }),
+      : { mode: 'pov', partyPos: frame.partyPos, facing: frame.facing, indoor: frame.indoor, cid: frame.cid, ...(frame.eyeH !== undefined ? { eyeH: frame.eyeH } : {}) }),
     // Le CRAN de vue (`dims`) entre par sa référence : l'hôte le retient déjà sur sa géométrie
     // (`MondeDeCampagne.dimsVue`), et le sérialiser ici en ferait une seconde vérité à tenir d'accord.
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -16,11 +16,14 @@
  * d'occupation : une chaise poussée contre un mur ou un comptoir reste une chaise où l'on s'assoit.
  * `seatSlotsOf` rend donc l'approche EFFECTIVE (deux passes décrites à la fonction) : la case
  * déclarée si la scène la dit marchable, sinon un repli voisin du siège, jamais partagé avec l'abord
- * d'une AUTRE place de la SCÈNE (spec l.427-428 : « deux slots simultanément occupables n'ont jamais
- * la même approche » — la portée est la scène, pas le meuble : un repli qui volait l'abord déclaré
- * d'un meuble voisin posait deux corps sur la même case). `isWalkable` écarte déjà les empreintes de décor solide, les
+ * d'une AUTRE place de la SCÈNE. RÈGLE : deux places simultanément occupables n'ont jamais le même
+ * abord — la portée en est la SCÈNE, pas le meuble (un repli qui volait l'abord déclaré d'un meuble
+ * voisin posait deux corps sur la même case). `isWalkable` écarte déjà les empreintes de décor solide, les
  * terrains impassables et les cases effondrées. Une place sans AUCUNE case voisine libre et marchable
  * est la seule qui reste inoccupable (`approche-invalide`).
+ *
+ * DISPONIBILITÉ — un corps mis hors d'action ne tient pas sa chaise : `releaseUnavailableSeats` lève
+ * les occupants que l'appelant déclare indisponibles (lui seul connaît le groupe et le combat).
  *
  * POSITION LOGIQUE — le corps assis se TIENT sur sa case d'abord (c'est de là qu'il s'est assis et
  * c'est là qu'il se relève) ; seul le RENDU applique l'ancre fractionnaire. Pour un PNJ authored,
@@ -30,6 +33,7 @@ import { findPropById } from '../data';
 import { rotatePropLocal } from '../data/props.types';
 import { DIR8_DELTA, DIR8_ORDER, rotateDir8, type Dir8 } from './dir8';
 import { heightAt, isWalkable, type Scene, type SceneEntity } from './scene';
+import { memoByRef } from './sceneMemo';
 import type { Pt } from './path';
 
 /** Qui occupe une place : un héros du groupe (corps du meneur) ou un PNJ de la scène (authoré). */
@@ -166,8 +170,14 @@ function placesResolues(scene: Scene): Map<string, ResolvedSeatSlot[]> {
  * crans, case d'abord EFFECTIVE (arbitrée à l'échelle de la SCÈNE, cf. `placesResolues`). ORDRE DU
  * CATALOGUE conservé. `[]` si le meuble ou son type est absent, ou si le type n'offre aucune place.
  */
+/** MÉMOÏSÉ par référence de scène (patron canonique `state/sceneMemo`) : l'arbitrage porte sur la
+ *  scène ENTIÈRE, et `interactHalos`/`placesOccupees` interrogent meuble par meuble — sans mémo, une
+ *  frame de halos re-résolvait toute la salle une fois par décor. Aucune invalidation manuelle : toute
+ *  mutation de scène rend une référence neuve. */
+const placesResoluesMemo = memoByRef(placesResolues);
+
 export function seatSlotsOf(scene: Scene, propId: string): ResolvedSeatSlot[] {
-  return placesResolues(scene).get(propId) ?? [];
+  return placesResoluesMemo(scene).get(propId) ?? [];
 }
 
 /** Parcours DÉTERMINISTE de l'occupation : entités de la scène dans leur ordre, puis places du
@@ -241,6 +251,22 @@ export function releaseSeat(scene: Scene, occupant: SeatOccupant): Scene {
     if (Object.keys(restant).length) seatAssignments[propId] = restant;
   }
   return touche ? { ...scene, seatAssignments } : scene;
+}
+
+/**
+ * Lève de leur place les corps que l'appelant déclare INDISPONIBLES — un mort, un Inconscient, un
+ * corps mis hors d'action ne tient pas sa chaise. PURE : l'oracle `disponible` vient de l'appelant,
+ * seul à connaître le groupe et le combat en cours (ce module ne lit que la Scène).
+ * Rend la scène d'entrée, MÊME RÉFÉRENCE, si tout le monde tient encore sa place.
+ */
+export function releaseUnavailableSeats(scene: Scene, disponible: (occupant: SeatOccupant) => boolean): Scene {
+  const assignments = scene.seatAssignments;
+  if (!assignments) return scene;
+  let scèneCourante = scene;
+  for (const parMeuble of Object.values(assignments))
+    for (const occupant of Object.values(parMeuble))
+      if (!disponible(occupant)) scèneCourante = releaseSeat(scèneCourante, occupant);
+  return scèneCourante;
 }
 
 /**

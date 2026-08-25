@@ -8,6 +8,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { emptyScene, type Scene, type SceneEntity } from './scene';
 import { seatPoseOf, type SeatOccupant } from './seating';
+import { notifySlain, releaseSeatsOfDowned } from './combatFlow';
+import { TIME_COST } from '../engine/timeCost';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -88,6 +90,61 @@ describe('transition de scène — une scène quittée ne garde pas un héros ab
     useGame.getState().transitionTo('scene-a');
     expect(poseDe('h')).toBeNull();
     expect(useGame.getState().scene!.seatAssignments).toEqual({});
+  });
+});
+
+/**
+ * MORT / INDISPONIBILITÉ — un corps mis hors d'action ne tient plus sa chaise. La couture est UNIQUE
+ * (`combatFlow.releaseSeatsOfDowned`) et branchée aux deux endroits où la mise hors de combat est
+ * ACTÉE : `notifySlain` (tous les chemins de mort d'un combattant) et l'entretien hors combat de
+ * `advanceTime` (agonie, Hémorragie, Poison, Flammes).
+ */
+describe('mort / indisponibilité d’un occupant', () => {
+  it('la couture rend la place d’un héros MORT et celle d’un héros HORS D’ACTION', () => {
+    for (const tuer of [
+      (h: Combatant) => ({ ...h, dead: true }),
+      (h: Combatant) => ({ ...h, conditions: [{ id: 'inconscient', value: 1 }] }) as Combatant,
+    ]) {
+      meneurAssis([hero('h')]);
+      expect(poseDe('h')).not.toBeNull();
+      useGame.setState((s) => ({ party: s.party.map((x) => (x.id === 'h' ? tuer(x) : x)) }));
+      releaseSeatsOfDowned(useGame.getState, useGame.setState);
+      expect(poseDe('h')).toBeNull();
+      expect(useGame.getState().scene!.seatAssignments).toEqual({});
+    }
+  });
+
+  it('un héros VIVANT et debout garde sa place, et la scène n’est pas réécrite', () => {
+    meneurAssis([hero('h')]);
+    const avant = useGame.getState().scene!;
+    releaseSeatsOfDowned(useGame.getState, useGame.setState);
+    expect(poseDe('h')).toMatchObject({ slotId: 'nord' });
+    expect(useGame.getState().scene).toBe(avant);
+  });
+
+  it('l’AGONIE hors combat (advanceTime) déclenche la libération', () => {
+    meneurAssis([hero('h')]);
+    useGame.setState((s) => ({ party: s.party.map((x) => ({ ...x, dead: true })), battle: null }));
+    useGame.getState().advanceTime(TIME_COST.combatRound);
+    expect(poseDe('h')).toBeNull();
+  });
+
+  it('un PNJ attablé mis hors de combat libère sa place par `notifySlain`', () => {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [h], battle: null, journal: [] });
+    useGame.getState().startScene(testScene);
+    const sc = useGame.getState().scene!;
+    const badaud: SceneEntity = { id: 'badaud', kind: 'personnage', pos: { x: 5, y: 4 } };
+    const entities: SceneEntity[] = [...sc.entities, { id: PROP, kind: 'prop', pos: { x: 5, y: 5 }, ref: TABLE, facing: 'N' }, badaud];
+    const occupant: SeatOccupant = { kind: 'entity', entityId: 'badaud' };
+    useGame.setState({ scene: { ...sc, entities, seatAssignments: { [PROP]: { nord: occupant } } } });
+    expect(seatPoseOf(useGame.getState().scene!, occupant)).not.toBeNull();
+
+    // Le badaud est enrôlé au combat en cours et tombe : `notifySlain` acte la mise hors de combat.
+    const mort = { id: 'badaud', label: 'Badaud', kind: 'enemy', wounds: { current: 0, max: 8 }, conditions: [], dead: true } as unknown as Combatant;
+    useGame.setState({ battle: { combatants: [mort], log: [], order: ['badaud'], turn: 0, round: 1 } as never });
+    notifySlain(useGame.getState, useGame.setState, mort);
+    expect(seatPoseOf(useGame.getState().scene!, occupant)).toBeNull();
   });
 });
 

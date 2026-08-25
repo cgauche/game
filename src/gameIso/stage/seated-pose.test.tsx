@@ -7,7 +7,9 @@
  */
 import { describe, expect, it } from 'vitest';
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../state/scene';
-import { seatPoseOf } from '../../state/seating';
+import { seatPoseOf, type SeatPose } from '../../state/seating';
+import { dynamicMarks } from '../builders/dynamicMarks';
+import { EYE_H, EYE_H_ASSIS, makeCamera, seatedEyeH } from '../pov/camera';
 import { buildTokens, partyTokenOf } from '../builders/tokens';
 import { actorBillboards, actorPoseKey, collectBillboards, memesBillboardEls, type ActorPose } from '../backends/webgl/sceneMeshes';
 import type { TokenEl } from '../builders/types';
@@ -127,6 +129,58 @@ describe('partyTokenOf — la dérivation UNIQUE du jeton de groupe', () => {
 
   it('aucun meneur → aucun jeton', () => {
     expect(partyTokenOf(scèneAttablée(false), undefined, { x: 3, y: 2 })).toBeNull();
+  });
+});
+
+/**
+ * MARQUE DE SOL — 5ᵉ consommateur de la pose. Le repère « groupe » se peint sur une case ENTIÈRE : il
+ * dit « le groupe se tient ici ». Attablé, le corps n'est plus sur sa case d'abord et son anneau
+ * d'équipe l'a suivi ; le repère de sol S'ÉTEINT (le poser à l'abord montrerait le groupe à côté de
+ * lui-même, le poser à l'ancre peindrait un carré de sol sous la table).
+ */
+describe('marque de sol du groupe — cohérente avec la pose', () => {
+  const jeton = (seat?: SeatPose) => ({ leader: meneur(), pos: { x: 3, y: 2 }, ...(seat ? { seat } : {}) });
+
+  it('meneur DEBOUT : le repère de sol est posé à sa case', () => {
+    const marks = dynamicMarks(null, { x: 3, y: 2 }, [], jeton());
+    expect(marks.party).toEqual({ x: 3, y: 2, z: 0 });
+  });
+
+  it('meneur ASSIS : le repère s’éteint, l’anneau d’équipe reste (il suit le corps)', () => {
+    const place = seatPoseOf(scèneAttablée(true), { kind: 'entity', entityId: 'f1' })!;
+    const marks = dynamicMarks(null, { x: 3, y: 2 }, [], jeton(place));
+    expect(marks.party).toBeNull();
+    expect(marks.rings.map((r) => r.id)).toContain('h');
+  });
+});
+
+/**
+ * HAUTEUR D'ŒIL — la vue subjective d'un corps assis ne se prend pas à hauteur d'homme debout. Elle
+ * se dérive de l'ancre de la PLACE (hauteur d'assise réelle) et d'une seule constante nommée.
+ */
+describe('œil POV assis', () => {
+  it('descend sous l’œil debout, et se dérive de la hauteur d’assise', () => {
+    const scene = scèneAttablée(true);
+    const place = seatPoseOf(scene, { kind: 'entity', entityId: 'f1' })!;
+    const h = seatedEyeH(scene, place, 0);
+    expect(h).toBeCloseTo(place.anchor.h + EYE_H_ASSIS, 6); // sol à 0 dans cette scène
+    expect(h).toBeLessThan(EYE_H);
+  });
+
+  it('un siège PLUS HAUT lève l’œil d’autant (aucun nombre magique)', () => {
+    const scene = scèneAttablée(true);
+    const place = seatPoseOf(scene, { kind: 'entity', entityId: 'f1' })!;
+    const perche = { anchor: { ...place.anchor, h: place.anchor.h + 0.3 } };
+    expect(seatedEyeH(scene, perche, 0) - seatedEyeH(scene, place, 0)).toBeCloseTo(0.3, 6);
+  });
+
+  it('`makeCamera` POSE réellement l’œil à la hauteur reçue', () => {
+    const scene = scèneAttablée(true);
+    const place = seatPoseOf(scene, { kind: 'entity', entityId: 'f1' })!;
+    const debout = makeCamera(scene, { x: 3, y: 2 }, 'S');
+    const assis = makeCamera(scene, { x: place.anchor.x, y: place.anchor.y }, place.facing, seatedEyeH(scene, place, 0));
+    expect(assis.eye.z).toBeLessThan(debout.eye.z);
+    expect(debout.eye.z - assis.eye.z).toBeCloseTo(EYE_H - (place.anchor.h + EYE_H_ASSIS), 6);
   });
 });
 

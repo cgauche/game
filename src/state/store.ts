@@ -24,7 +24,7 @@ import type { BattleClickOpts, TileClickOpts } from './targetingModes';
 import { applyShipCollision } from './shipCollision';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { OvercastAxis } from '../engine/overcast';
-import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal, activeCombatant as activeCombatantOf } from './combatFlow';
+import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal, releaseSeatsOfDowned, activeCombatant as activeCombatantOf } from './combatFlow';
 import { t } from '../i18n';
 import type { Get, Set } from './flowTypes';
 import { planClimb } from './climbMove';
@@ -56,7 +56,7 @@ import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlo
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
 import { captureMutation, applyMutation as applySceneMutation, type SceneMutation } from './sceneInstance';
-import { assignSeat, memeCase, pruneSeatAssignments, releaseSeat, seatPoseOf, seatSlotsOf } from './seating';
+import { assignSeat, memeCase, pruneSeatAssignments, releaseSeat, seatPoseOf, seatSlotsOf, type SeatPose } from './seating';
 import type { ClueState } from './clues';
 import { togglePin } from './clues';
 import type { CodexFocus } from './codexFocus';
@@ -2242,60 +2242,80 @@ export const useGame = create<GameState>((set, get) => ({
     if (!scene) return;
     const ent = scene.entities.find((e) => e.id === entityId);
     if (!ent || ent.combat?.hiddenUntilCombat) return; // un ennemi d'embuscade n'est pas interpellable en exploration
-    // ── MEUBLE À PLACES : s'asseoir / se relever, AVANT dialogue/marchand/fouille. Le geste est un
-    // BASCULE sur le même intent : re-cliquer le meuble qu'on occupe rend debout. La distance ne se
-    // mesure pas au meuble mais à l'ABORD de la place (`slot.approach`, seule couture `state/seating`),
-    // d'où la place précède la garde de portée générique ci-dessous.
+    // ── MEUBLE À PLACES — les places AJOUTENT une affordance, elles n'en retirent AUCUNE : un buffet
+    // à tabourets qui porte aussi une fouille reste fouillable. Ordre servi, et c'est le seul :
+    //  1. le meneur occupe CE meuble → il se relève (bascule du même intent, priorité absolue) ;
+    //  2. ce que le meuble a d'ACTIF à portée : dialogue, marchand, fouille NON épuisée ;
+    //  3. une place LIBRE dont l'abord est exactement sous les pieds du groupe → il s'assoit ;
+    //  4. sinon la raison française du refus (assise, ou fouille déjà épuisée).
+    // On loote la table, PUIS on s'y attable : aucune des deux affordances n'est inatteignable.
+    // La portée d'une place ne se mesure pas au meuble mais à son ABORD (`slot.approach`, seule
+    // couture `state/seating`), qui peut tomber hors du voisinage de la case d'ancrage.
     const leaderId = get().party[0]?.id;
     const places = ent.kind === 'prop' ? seatSlotsOf(scene, entityId) : [];
-    if (places.length && leaderId) {
-      const occupant = { kind: 'party', heroId: leaderId } as const;
-      if (seatPoseOf(scene, occupant)?.propId === entityId) {
-        set({ scene: releaseSeat(scene, occupant) });
-        get().log(t('seating.stood'));
-        bus.emit(EVT.SCENE_DIRTY);
+    const occupant = leaderId ? ({ kind: 'party', heroId: leaderId } as const) : null;
+    if (places.length && occupant && seatPoseOf(scene, occupant)?.propId === entityId) {
+      set({ scene: releaseSeat(scene, occupant) });
+      get().log(t('seating.stood'));
+      bus.emit(EVT.SCENE_DIRTY);
+      return;
+    }
+    const horsPortee = chebyshev(partyPos, ent.pos) > 1 || (ent.z ?? 0) !== (partyPos.z ?? 0);
+    // Trop loin ou autre étage (#800, classe z-blind) : le déplacement-puis-fouille (P5) est armé par
+    // l'UI (setPendingInteract) ; ici, aucune des affordances de proximité ne s'ouvre.
+    if (!horsPortee) {
+      if (ent.dialogueId) {
+        const dlg = scene.dialogues.find((d) => d.id === ent.dialogueId);
+        if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start, speakerId: ent.id } });
         return;
       }
+      if (ent.merchant) { get().openMerchant(ent.id); return; }
+      if (ent.interact && !get().flags[`__fouille_${entityId}`]) {
+        // Décor INTERACTIF (fouille/ramassage) — canal unique d'Effets (cf. SceneEntity.interact).
+        get().log(t('store.searching', { what: ent.label ?? t('store.searchPlaceFallback') }));
+        // Logique de fouille (Flow) : butin → fenêtre d'attribution, test → fouille à risque (modale).
+        runFlow(get, set, ent.interact.flow, ent.label ?? t('store.searchTitle'));
+        get().advanceTime(TIME_COST.search); // « tout est horodaté » : fouiller ≈ search min
+        if (ent.interact.consume) removeEntity(get, set, entityId); // butin → le décor disparaît
+        else set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } })); // reste, marqué fouillé
+        return;
+      }
+    }
+    if (places.length && occupant) {
       const libres = places.filter((p) => !scene.seatAssignments?.[entityId]?.[p.slotId]);
       const cible = libres.find((p) => memeCase(p.approach, partyPos));
-      if (!cible) { get().log(t(libres.length ? 'seating.mustReachApproach' : 'seating.occupied')); return; }
-      // REVALIDATION ATOMIQUE dans le callback `set` : entre le choix de la place ci-dessus et
-      // l'écriture, un autre siège coop a pu prendre la dernière — un seul gagnant en sort.
-      let assis = false;
-      set((s) => {
-        if (!s.scene || s.party[0]?.id !== leaderId || !memeCase(s.partyPos, cible.approach)) return {};
-        const res = assignSeat(s.scene, entityId, cible.slotId, occupant, new Set(s.party.map((h) => h.id)));
-        if (!res.ok) return {};
-        assis = true;
-        return { scene: res.scene };
-      });
-      get().log(t(assis ? 'seating.sat' : 'seating.occupied'));
-      if (assis) bus.emit(EVT.SCENE_DIRTY);
-      return;
-    }
-    if (chebyshev(partyPos, ent.pos) > 1 || (ent.z ?? 0) !== (partyPos.z ?? 0)) {
-      // Trop loin ou autre étage (#800, classe z-blind) : le déplacement-puis-fouille (P5) est armé par l'UI (setPendingInteract) ; ici, no-op.
-      return;
-    }
-    if (ent.dialogueId) {
-      const dlg = scene.dialogues.find((d) => d.id === ent.dialogueId);
-      if (dlg) set({ dialogue: { dialogue: dlg, nodeId: dlg.start, speakerId: ent.id } });
-      return;
-    }
-    if (ent.merchant) { get().openMerchant(ent.id); return; }
-    if (ent.interact) {
-      // Décor INTERACTIF (fouille/ramassage) — canal unique d'Effets (cf. SceneEntity.interact).
-      if (get().flags[`__fouille_${entityId}`]) {
-        get().log(t('store.searchedAlready', { what: ent.label ?? t('store.searchedFallback') }));
-        return;
+      if (cible) {
+        // REVALIDATION ATOMIQUE dans le callback `set` : entre le choix de la place ci-dessus et
+        // l'écriture, un autre siège coop a pu prendre la dernière — un seul gagnant en sort. La place
+        // ET son abord y sont RE-RÉSOLUS sur l'état courant : l'abord lu au clic peut avoir bougé (un
+        // décor posé sur la case déclarée bascule la place sur son repli).
+        const gagnee: { pose: SeatPose | null } = { pose: null };
+        set((s) => {
+          if (!s.scene || s.party[0]?.id !== leaderId) return {};
+          const place = seatSlotsOf(s.scene, entityId).find((p) => p.slotId === cible.slotId);
+          if (!place || !memeCase(s.partyPos, place.approach)) return {};
+          const res = assignSeat(s.scene, entityId, place.slotId, occupant, new Set(s.party.map((h) => h.id)));
+          if (!res.ok) return {};
+          gagnee.pose = res.pose;
+          return { scene: res.scene };
+        });
+        if (gagnee.pose) {
+          get().log(t('seating.sat'));
+          // POSE UNIQUE : le cap d'ÉTAT suit celui de la place — le corps, la vue subjective et tout
+          // ce qui lit `facing` regardent la table, pas la direction d'où l'on venait.
+          get().setFacing(leaderId!, gagnee.pose.facing);
+          bus.emit(EVT.SCENE_DIRTY);
+          return;
+        }
       }
-      get().log(t('store.searching', { what: ent.label ?? t('store.searchPlaceFallback') }));
-      // Logique de fouille (Flow) : butin → fenêtre d'attribution, test → fouille à risque (modale).
-      runFlow(get, set, ent.interact.flow, ent.label ?? t('store.searchTitle'));
-      get().advanceTime(TIME_COST.search); // « tout est horodaté » : fouiller ≈ search min
-      if (ent.interact.consume) removeEntity(get, set, entityId); // butin → le décor disparaît
-      else set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } })); // reste, marqué fouillé
+      // UN SEUL message par situation : la place visée est partie (course perdue) ou toutes sont
+      // prises → « occupé » ; il en reste une, mais pas sous les pieds → « rejoindre la place ».
+      const resteLibre = places.some((p) => !get().scene?.seatAssignments?.[entityId]?.[p.slotId]);
+      get().log(t(resteLibre ? 'seating.mustReachApproach' : 'seating.occupied'));
+      return;
     }
+    // Fouille ÉPUISÉE et rien d'autre à offrir : on le dit (le halo, lui, s'est déjà éteint).
+    if (!horsPortee && ent.interact) get().log(t('store.searchedAlready', { what: ent.label ?? t('store.searchedFallback') }));
   },
 
   /** Arme (ou annule via null) un déplacement-puis-fouille : l'UI le pose au clic d'un décor interactif
@@ -2710,6 +2730,9 @@ export const useGame = create<GameState>((set, get) => ({
         const party = get().party;
         const log = outOfCombatUpkeep(party, rounds, battleRng());
         if (log.length) { set({ party: [...party] }); get().log(log); }
+        // L'agonie hors combat est la SEULE voie par laquelle un corps assis s'éteint sans combat :
+        // la couture unique de libération y est appelée (no-op si personne n'est assis).
+        releaseSeatsOfDowned(get, set);
       }
     }
     // Entretien quotidien (#T2/#T3 — rations/faim, maladies, convalescence) + purge des effets à

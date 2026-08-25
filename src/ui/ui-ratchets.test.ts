@@ -527,7 +527,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // menu que l'ajout (`TypeMenu` sur `AddMenu`), plus aucun `<select>` de type dans l'atelier.
   // +1 (115 → 116) : `.editor-iso-3d` (a7f8ac0a, #1176 P3-3) — contexte d'empilement du canevas
   // volumique sous les surcouches SVG d'authoring.
-  'styles/editor.css': 116,
+  // -1 (116 → 115) : `.ed-foot-inputs` meurt — l'empreinte d'un décor se VERROUILLE à son type
+  // (`props.json`), l'inspecteur n'offre plus la paire de champs qui la saisissait à la main.
+  // Le détecteur n'a pas bougé : c'est le STOCK qui a baissé.
+  'styles/editor.css': 115,
   'styles/house-rules.css': 9,
   // LifeBar (#492, arbitrage 2026-07-17) : -2 (145 → 143) — `.ptile-gauge`/`.ptile-pv` MEURENT (le
   // marqueur `ptile-gauge` reste un className de compatibilité, sans style propre), le rendu vit
@@ -1344,7 +1347,11 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
 //    harnais qui pilote un champ n'est pas une réinvention de primitive).
 const NUMBER_INPUT_EXEMPT_FILES = new Set(['NumberField.tsx']);
 const NUMBER_INPUT_BASELINE: Record<string, number> = {
-  'editor/Inspector.tsx': 25,
+  // -2 (25 → 23) : les deux `<input type="number">` de l'empreinte de décor disparaissent avec le
+  // champ lui-même (empreinte verrouillée à la source). Stock baissé, détecteur inchangé.
+  'editor/Inspector.tsx': 23,
+  'editor/LogicDock.tsx': 10,
+  'editor/NarratifEditor.tsx': 3,
   'editor/Palette.tsx': 1,
 };
 

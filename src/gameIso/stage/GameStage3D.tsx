@@ -296,7 +296,17 @@ export type StageFrame =
    * Le LACET, lui, reste SEC : `facing` est un `Dir8`, donc l'œil pivote de 45° d'un coup là où la
    * position, elle, glisse. Statu quo du POV SVG — même arbitrage d'ingénierie, révisable au goût.
    */
-  | { mode: 'pov'; partyPos: { x: number; y: number; z?: number }; facing: Dir8; indoor: boolean; cid: string | null };
+  | {
+      mode: 'pov';
+      partyPos: { x: number; y: number; z?: number };
+      facing: Dir8;
+      indoor: boolean;
+      cid: string | null;
+      /** Hauteur d'œil AU-DESSUS DU SOL (mètres) — absente = le regard DEBOUT (`EYE_H`). Le meneur
+       *  ATTABLé la reçoit de sa place (`pov/camera.seatedEyeH`) : assis, on ne voit pas la salle de
+       *  la même hauteur. */
+      eyeH?: number;
+    };
 
 /**
  * ENTRÉES du verdict de DÉCOUPE LOCALE (#1176, M3), fournies par l'hôte de plateau. Le `cid` est ce
@@ -1225,7 +1235,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // plus bas, sur le MÊME `povDepth`) : rien n'arrive à la coupure autrement qu'entièrement
       // délavé, et l'horizon n'est jamais tranché.
       const portee = povDepth(frame.indoor, brumePov?.povTightenK).farTiles;
-      camera = reposerPovCamera(camPov.current!, scene, pos, frame.facing, { w, h }, portee * mpt);
+      camera = reposerPovCamera(camPov.current!, scene, pos, frame.facing, { w, h }, portee * mpt, frame.eyeH);
     } else {
       // CADRE D'ÉCRAN de l'hôte : les deux conventions du dépôt (`stage3dCamera.ts`) — caméra de
       // groupe sur viewBox FIXE (le jeu), ou viewBox MOBILE mesuré sur le rendu (l'éditeur).

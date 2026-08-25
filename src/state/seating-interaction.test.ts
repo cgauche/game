@@ -7,6 +7,9 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { emptyScene, type Scene } from './scene';
 import { seatPoseOf, seatSlotsOf, type SeatOccupant } from './seating';
+import { flowFromEffects } from './flow';
+import { interactionHalos } from '../gameIso/builders/interactHalos';
+import type { BillboardPropEl } from '../gameIso/builders/types';
 import type { Combatant } from '../engine/types';
 
 const TABLE = 'table-ronde-4-tabourets';
@@ -40,6 +43,7 @@ function poser(pos: { x: number; y: number }, seatAssignments?: Scene['seatAssig
 
 const poseDuMeneur = () => seatPoseOf(useGame.getState().scene!, MENEUR);
 const dernierJournal = () => { const j = useGame.getState().journal; return j[j.length - 1] ?? ''; };
+const journalEntier = () => useGame.getState().journal.join(' | ');
 const occupants = (sc: Scene) => Object.values(sc.seatAssignments ?? {}).flatMap((m) => Object.values(m));
 
 describe('interactEntity sur un meuble à places — bascule s’asseoir / se relever', () => {
@@ -102,6 +106,88 @@ describe('interactEntity sur un meuble à places — bascule s’asseoir / se re
     useGame.getState().interactEntity('caisse');
     expect(useGame.getState().scene!.seatAssignments).toBeUndefined();
     expect(dernierJournal()).not.toContain('Vous prenez place');
+  });
+});
+
+/**
+ * COEXISTENCE — une place AJOUTE une affordance, elle n'en retire aucune. Un meuble à tabourets qui
+ * porte AUSSI une fouille reste fouillable : on le loote d'abord, on s'y attable ensuite. Rien de ce
+ * que le halo annonce n'est inatteignable.
+ */
+describe('meuble à places ET fouillable — les deux affordances restent atteignables', () => {
+  const FOUILLE = { flow: flowFromEffects([{ type: 'giveMoney', gold: 2 }]) };
+
+  function posrFouillable(pos: { x: number; y: number }, seatAssignments?: Scene['seatAssignments']) {
+    useGame.setState({ party: [hero()], scene: null, mode: 'exploration', journal: [], battle: null, dialogue: null, flags: {} });
+    const sc = scèneDeTaverne();
+    const table = sc.entities.find((e) => e.id === PROP)!;
+    (table as { interact?: unknown }).interact = FOUILLE;
+    if (seatAssignments) sc.seatAssignments = seatAssignments;
+    useGame.getState().startScene(sc);
+    useGame.setState({ partyPos: { ...pos }, flags: {} });
+  }
+
+  it('fouille D’ABORD, assise ENSUITE : les deux gestes passent par le même meuble', () => {
+    posrFouillable(ABORD_NORD);
+    useGame.getState().interactEntity(PROP);
+    expect(journalEntier()).toContain('Vous fouillez');
+    expect(poseDuMeneur(), 'la fouille ne fait pas asseoir').toBeNull();
+
+    useGame.getState().interactEntity(PROP); // fouille épuisée → la place prend le relais
+    expect(poseDuMeneur()).toMatchObject({ slotId: 'nord' });
+    expect(dernierJournal()).toContain('Vous prenez place');
+  });
+
+  it('TABLE PLEINE : la fouille reste atteignable (elle n’est jamais avalée par l’assise)', () => {
+    const pris = (id: string): SeatOccupant => ({ kind: 'entity', entityId: id });
+    posrFouillable(ABORD_NORD, { [PROP]: { nord: pris('a'), est: pris('b'), sud: pris('c'), ouest: pris('d') } });
+    useGame.getState().interactEntity(PROP);
+    expect(journalEntier()).toContain('Vous fouillez');
+    // …et une fois épuisée, le meuble dit la seule chose qui reste vraie.
+    useGame.getState().interactEntity(PROP);
+    expect(dernierJournal()).toContain('Toutes les places sont occupées');
+  });
+
+  it('AUCUNE affordance morte : le halo n’est allumé que si un geste reste possible', () => {
+    // Halo ALLUMÉ = fouille non épuisée OU place libre — exactement ce que le store sert.
+    posrFouillable(ABORD_NORD);
+    const el = { kind: 'prop', key: `prop:${PROP}`, cell: { x: 5, y: 5, z: 0 }, source: 'entity', entId: PROP,
+      ref: TABLE, foot: { offX: 0, offY: 0, scale: 1 }, interact: true, states: { visible: true } } as unknown as BillboardPropEl;
+    const ctx = { exploring: true, combat: false };
+    const sc = () => useGame.getState().scene!;
+    expect(interactionHalos([el], sc(), useGame.getState().flags, null, ctx).fouilles).toHaveLength(1);
+
+    useGame.getState().interactEntity(PROP); // fouille consommée
+    useGame.getState().interactEntity(PROP); // place prise
+    expect(poseDuMeneur()).not.toBeNull();
+    // Il reste 3 places : le halo appelle encore, et le clic sert encore (se relever).
+    expect(interactionHalos([el], sc(), useGame.getState().flags, null, ctx).fouilles).toHaveLength(1);
+    useGame.getState().interactEntity(PROP);
+    expect(poseDuMeneur(), 'le clic du meuble occupé relève TOUJOURS, quoi que porte le meuble').toBeNull();
+  });
+
+  it('un meuble à places SANS fouille ne journalise jamais la fouille', () => {
+    poser(ABORD_NORD);
+    useGame.getState().interactEntity(PROP);
+    expect(dernierJournal()).toContain('Vous prenez place');
+  });
+});
+
+describe('la POSE est unique — le cap d’ÉTAT suit la place', () => {
+  it('s’asseoir aligne `facing` du meneur sur le cap du slot', () => {
+    poser(ABORD_NORD);
+    useGame.setState((s) => ({ facing: { ...s.facing, h: 'N' } })); // regard opposé avant l'assise
+    useGame.getState().interactEntity(PROP);
+    expect(poseDuMeneur()!.facing).toBe('S');
+    expect(useGame.getState().facing.h, 'le cap d’état, celui que lit la vue subjective').toBe('S');
+  });
+
+  it('chaque abord donne SON cap : l’état n’est jamais celui de la marche', () => {
+    for (const place of seatSlotsOf(scèneDeTaverne(), PROP)) {
+      poser(place.approach);
+      useGame.getState().interactEntity(PROP);
+      expect(useGame.getState().facing.h, `place « ${place.slotId} »`).toBe(place.facing);
+    }
   });
 });
 

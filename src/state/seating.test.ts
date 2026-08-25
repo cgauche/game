@@ -14,8 +14,9 @@ const HEROS = new Set(['hero-1']);
 
 /**
  * POSITIONS des PNJ : la `pos` d'un attablé est sa case d'ABORD, jamais la case du meuble
- * (spec §4.1 l.162-164 / §5 l.213 : « la position logique du groupe ou du PNJ reste la case
- * d'approche »). Défauts posés pour le cap `N`, où les abords sont N/E/S/O du meuble.
+ * RÈGLE : la position LOGIQUE d'un corps assis est sa case d'abord — c'est de là qu'il s'est assis,
+ * c'est là qu'il se relève, et c'est elle que lisent brouillard et chemins ; seul le RENDU applique
+ * l'ancre fractionnaire. Défauts posés pour le cap `N`, où les abords sont N/E/S/O du meuble.
  */
 const ABORDS_CAP_N = { 'pnj-1': { x: 6, y: 5 }, 'pnj-2': { x: 5, y: 6 }, 'pnj-3': { x: 4, y: 5 } } as const;
 
@@ -153,8 +154,8 @@ describe('sonde — la case du SIÈGE est unique et solide, les ABORDS sont quat
 describe('approche EFFECTIVE — une chaise contre un comptoir reste occupable', () => {
   // Recoin : les cases d'abord DÉCLARÉES du nord (5,4) et de l'est (6,5) tombent sur des comptoirs
   // solides. La place ne se perd pas pour autant : elle se rejoint par une case voisine marchable —
-  // et jamais par l'abord d'une autre place du même meuble (spec l.133-134 : toutes les places d'un
-  // ensemble sont simultanément occupables).
+  // et jamais par l'abord d'une autre place — RÈGLE : toutes les places d'un ensemble restent
+  // simultanément occupables.
   const recoin = (pnjPos?: Record<string, { x: number; y: number }>) =>
     seatingScene({ propFacing: 'N', blocs: [{ x: 5, y: 4 }, { x: 6, y: 5 }], pnjPos });
 
@@ -208,8 +209,8 @@ describe('approche EFFECTIVE — une chaise contre un comptoir reste occupable',
  * SONDE promue de la revue de la tâche 4 (2026-08-21) : la réservation des abords ne peut pas être
  * locale au MEUBLE. Deux tables voisines, l'abord déclaré du nord de la première barré : son repli
  * tombait sur l'abord DÉCLARÉ du sud de la seconde, et les deux places s'occupaient — deux corps
- * debout sur la même case (spec l.427-428 : « deux slots simultanément occupables n'ont jamais la
- * même approche », non scopé au meuble).
+ * debout sur la même case. RÈGLE : deux places simultanément occupables n'ont jamais le même abord,
+ * et la portée en est la SCÈNE, pas le meuble.
  */
 describe('abords réservés à l’échelle de la SCÈNE — un repli ne vole pas l’abord d’un meuble voisin', () => {
   /** table-1 en (5,5) et table-2 en (6,3), toutes deux cap N ; comptoir SOLIDE sur l'abord nord de table-1. */
