@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'mass-battle.json';
+export const famille = 'config';
 
 const powerEstimateRowSchema = z.strictObject({
   id: z.string(),

@@ -8,6 +8,7 @@ import { refSchema } from '../grammaire/reference';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'traits.json';
+export const famille = 'entite';
 
 const specsSourceSchema = z.enum([
   'weaponGroupsMelee',

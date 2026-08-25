@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'surincantation.json';
+export const famille = 'table';
 
 export const schema = z.strictObject({
   source: sourceRefSchema,

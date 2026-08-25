@@ -355,6 +355,20 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
     expect(untaggedExcuseMatch("// on lui épargne la résolution de types.")).not.toBeNull();
   });
 
+  it('défaut relevé puis RENVOYÉ à un autre geste = excuse (motif mesuré sur `defs/careerLevels.ts`, #1466 T2)', () => {
+    expect(untaggedExcuseMatch('// ANOMALIE DE DONNÉE relevée (à corriger séparément, PAS ici) : status « Agent 1 »')).not.toBeNull();
+    expect(untaggedExcuseMatch('// clé en double : à traiter ailleurs')).not.toBeNull();
+    expect(untaggedExcuseMatch('// à migrer plus tard vers le registre')).not.toBeNull();
+    // Le report ASSUMÉ par l'utilisateur reste admis, comme tout le volet excuses.
+    expect(untaggedExcuseMatch('// à corriger séparément [entériné 2026-08-24]')).toBeNull();
+  });
+
+  it('faux positif écarté : une phrase de DONNÉE qui dit « séparément »/« ailleurs » décrit le découpage RÉEL', () => {
+    expect(untaggedExcuseMatch('// les entrées de racine et les documents embarqués se comptent SÉPARÉMENT.')).toBeNull();
+    expect(untaggedExcuseMatch('// la QUANTITÉ perdue est portée par la ligne de Critique, pas ici.')).toBeNull();
+    expect(untaggedExcuseMatch('// hors de portée : géré ailleurs, pas « trop proche »')).toBeNull();
+  });
+
   it('affirmation-RAW non ancrée détectée (règle 6a — classe « bélier » 2026-07-06, preuve TDD)', () => {
     // Le verbatim qui a contourné toutes les gardes : thèse sur le RAW, zéro réf, et FAUSSE (ADE II 8 exige l'Équipe).
     expect(scanRawClaims('x.ts', "// mains, via son inventaire/loadout — RAW ne l'exige PAS « servi » en poste pour être manié")).toHaveLength(1);

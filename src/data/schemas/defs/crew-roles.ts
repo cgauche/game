@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'crew-roles.json';
+export const famille = 'entite';
 
 const money = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
 

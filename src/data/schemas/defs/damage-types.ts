@@ -5,6 +5,7 @@
 import { z } from 'zod';
 
 export const file = 'damage-types.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

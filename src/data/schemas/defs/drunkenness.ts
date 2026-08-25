@@ -10,6 +10,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'drunkenness.json';
+export const famille = 'table';
 
 export const schema = z.strictObject({
   table: z.array(

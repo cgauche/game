@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'steam-breakdown.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

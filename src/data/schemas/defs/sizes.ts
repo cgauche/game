@@ -9,6 +9,7 @@
 import { z } from 'zod';
 
 export const file = 'sizes.json';
+export const famille = 'config';
 
 const sizeTable = z.strictObject({
   minuscule: z.number(),

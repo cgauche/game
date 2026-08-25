@@ -10,6 +10,7 @@ import { sourceRefSchema, charKeySchema, raceKeySchema, refCareerIdSchema } from
 import { advancementRefSchema, traitInstanceSchema } from '../grammaire/reference';
 
 export const file = 'species.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

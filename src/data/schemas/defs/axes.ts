@@ -14,6 +14,7 @@
 import { z } from 'zod';
 
 export const file = 'axes.json';
+export const famille = 'entite';
 
 const skillRefSchema = z.strictObject({
   skillId: z.string(),

@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'driving-mishap.json';
+export const famille = 'table';
 
 export const schema = z.strictObject({
   table: z.array(

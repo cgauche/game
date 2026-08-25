@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'actions.json';
+export const famille = 'entite';
 
 /** RENDEUR d'accueil PAR DÉFAUT (spec §1a / §1c-bis / zone 4). Le placement joueur reste libre :
  *  ce champ dit d'où l'action NAÎT quand rien n'a été posé — et il nomme un rendeur RÉEL, mesuré au

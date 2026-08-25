@@ -12,6 +12,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'grapple.json';
+export const famille = 'config';
 
 export const schema = z.strictObject({
   /** Note de règle (LDB 14) — display-only, jamais parsée. */

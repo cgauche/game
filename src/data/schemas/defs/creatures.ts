@@ -9,6 +9,7 @@ import { availabilitySchema, harvestRaritySchema, sourceRefSchema, secondarySour
 import { refSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
 
 export const file = 'creatures.json';
+export const famille = 'entite';
 
 /** `OptionalEntry` (`src/engine/statEntry.ts`) — un élément d'`optionals` (LDB 76) : soit un
  *  `TraitInstance` ordinaire, soit une NOTE composée irréductible à un trait (discriminée par `note`) :

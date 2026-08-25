@@ -9,6 +9,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'sea-shanties.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

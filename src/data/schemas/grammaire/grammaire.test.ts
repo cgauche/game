@@ -5,12 +5,13 @@
  * Les cas POSITIFS sont bâtis sur des entrées RÉELLES de `src/data/*.json` (jamais un id inventé) :
  * ils prouvent du même coup que le registre généré `_ids.generated.ts` et la donnée s'accordent.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, expectTypeOf } from 'vitest';
 import { z } from 'zod';
 import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
 import { document, CLES_ENVELOPPE, type Exposition } from './document';
-import { ref, refs, specRef, pick, typedRef, idDe, slots, cibleDe, estSpecialisable, TYPES, type Id, type SignatureById } from './ref';
+import { ref, refs, specRef, pick, typedRef, idDe, cibleDe, estSpecialisable, TYPES, type Id, type SignatureById } from './ref';
+import { slotsDe } from './slots';
 import { SANS_LIVRE } from './sans-livre';
 
 type EntreeASpecs = { id: string; specs?: { id: string }[]; specsSource?: string };
@@ -173,8 +174,12 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
     expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE.id }], table: { id: 'x' } }).success).toBe(false);
   });
 
-  it('enregistre ses slots (source de l’intégrité référentielle générique)', () => {
-    expect(slots().some((s) => s.type === 'skill')).toBe(true);
+  it('la MARCHE retrouve la référence à son path exact (source de l’intégrité référentielle générique)', () => {
+    const jouet = z.array(z.strictObject({ comp: ref('skill'), sorts: refs('spell').optional() }));
+    expect(slotsDe('src/data', 'jouet.json', jouet)).toEqual([
+      { root: 'src/data', dataset: 'jouet.json', path: '[].comp.id', type: 'skill', espece: 'id', cardinalite: 'liste' },
+      { root: 'src/data', dataset: 'jouet.json', path: '[].sorts[]', type: 'spell', espece: 'id', cardinalite: 'liste' },
+    ]);
     expect(cibleDe('skill')).toBe('skills.json');
   });
 });
@@ -240,5 +245,15 @@ describe('byId — le type et l’id doivent s’accorder', () => {
     expect(byId('skill', idCompetence)).toBe(`skill:${UNE_COMPETENCE.id}`);
     // @ts-expect-error — un `Id<'skill'>` n'est pas un `Id<'talent'>` (`NoInfer` fige le type).
     byId('talent', idCompetence);
+  });
+
+  it("la porte zod FRAPPE la marque de type — `Id<'skill'>` en sortie, jamais un `string` nu", () => {
+    expectTypeOf(idDe('skill').parse(UNE_COMPETENCE.id)).toEqualTypeOf<Id<'skill'>>();
+    expectTypeOf(idDe('talent').parse(UN_TALENT_A_SPECS.id)).not.toEqualTypeOf<Id<'skill'>>();
+    expectTypeOf<string>().not.toEqualTypeOf<Id<'skill'>>();
+    const idCompetence = idDe('skill').parse(UNE_COMPETENCE.id);
+    // @ts-expect-error — la marque de type ferme l'affectation croisée entre deux types d'entité.
+    const idTalent: Id<'talent'> = idCompetence;
+    expect(idTalent).toBe(UNE_COMPETENCE.id);
   });
 });

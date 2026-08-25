@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'locations.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

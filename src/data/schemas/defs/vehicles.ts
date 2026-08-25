@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { availabilitySchema, cell2Schema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'vehicles.json';
+export const famille = 'entite';
 
 const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
 

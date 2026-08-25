@@ -9,6 +9,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'maladies.json';
+export const famille = 'entite';
 
 const diceSpecSchema = z.strictObject({
   n: z.number(),

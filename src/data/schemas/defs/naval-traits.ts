@@ -11,6 +11,7 @@ import { sourceRefSchema, secondarySourceRefSchema } from '../grammaire/valeurs'
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'naval-traits.json';
+export const famille = 'entite';
 
 const installBandSchema = z.strictObject({
   maxLengthM: z.number().nullable(),

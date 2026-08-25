@@ -14,6 +14,7 @@ import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'tavernGames.json';
+export const famille = 'entite';
 
 const charKeySchema = z.enum([
   'capacite-de-combat', 'capacite-de-tir', 'force', 'endurance', 'initiative', 'agilite', 'dexterite',

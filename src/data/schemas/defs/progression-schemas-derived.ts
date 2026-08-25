@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { charKeySchema } from '../grammaire/valeurs';
 
 export const file = 'progression-schemas.derived.json';
+export const famille = 'config';
 
 /** Une marque lue sur la page : sa colonne imprimée, la Caractéristique correspondante, son abscisse
  *  et — pour les niveaux 2/3/4, imprimés en aplat — la couleur RVB MESURÉE qui donne le niveau. Le

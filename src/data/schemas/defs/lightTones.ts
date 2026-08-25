@@ -17,6 +17,7 @@
 import { z } from 'zod';
 
 export const file = 'lightTones.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

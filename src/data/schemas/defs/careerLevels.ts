@@ -1,19 +1,17 @@
 /**
- * Schéma de `careerLevels.json` — dérivé du contenu RÉEL (384 entrées, script d'inventaire) et de
+ * Schéma de `careerLevels.json` — dérivé du contenu RÉEL (432 entrées, script d'inventaire) et de
  * `CareerLevelData` (`src/data/index.ts`). `skills`/`talents` = `AdvancementRef[]`
  * (`src/data/index.ts` : {ref}/{wildcard}+specOptions/{choice}/{random}), `trappings` =
  * `TrappingRef[]`, `characteristics` = `CharKey[]`. Ces 3 formes (Ref/TrappingRef/AdvancementRef)
- * et l'énum `CharKey` sont PROMUES dans `common.ts` (partagées avec `species.ts`/`classes.ts`).
- *
- * ANOMALIE DE DONNÉE relevée (à corriger séparément, PAS ici) : `careerLevels.json`, carrière
- * `nautonier` niveau 2 (label « Nautonier »), `status: "Agent 1"` — typo pour « Argent 1 »
- * (les 3 échelons canon sont Bronze/Argent/Or, cf. toutes les autres 383 entrées).
+ * et l'énum `CharKey` vivent dans la grammaire (`grammaire/reference.ts`, `grammaire/valeurs.ts`),
+ * partagées avec `species.ts`/`classes.ts`.
  */
 import { z } from 'zod';
 import { charKeySchema, sourceRefSchema } from '../grammaire/valeurs';
 import { advancementRefSchema, trappingRefSchema } from '../grammaire/reference';
 
 export const file = 'careerLevels.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({
@@ -28,9 +26,8 @@ export const schema = z.array(
     talents: z.array(advancementRefSchema),
     trappings: z.array(trappingRefSchema),
     characteristics: z.array(charKeySchema),
-    /** Échelon de statut (« Bronze/Argent/Or N ») — VERBATIM du livre. Une occurrence porte le
-     *  typo « Agent 1 » (cf. anomalie ci-dessus) : gardé z.string() libre (pas d'enum fermée), la
-     *  faute de frappe ne doit pas faire échouer le schéma — elle se corrige au JSON, pas ici. */
+    /** Échelon de statut (« Bronze/Argent/Or N ») — VERBATIM du livre : chaîne libre, 432/432 entrées
+     *  conformes à la graphie Bronze/Argent/Or + échelon. */
     status: z.string(),
     /** Dérivé de `CareerData.source` (#309) : chaque niveau appartient à une Carrière déjà citée ;
      *  ancre retenue = folio de la Carrière parente (LDB 7-08, blocs par Carrière). */

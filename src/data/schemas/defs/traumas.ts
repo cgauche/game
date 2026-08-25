@@ -30,6 +30,7 @@ const rigSchema = z.strictObject({
 });
 
 export const file = 'traumas.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

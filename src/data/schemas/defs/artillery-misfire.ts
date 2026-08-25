@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'artillery-misfire.json';
+export const famille = 'table';
 
 const artilleryMisfireEntrySchema = z.strictObject({
   min: z.number(),

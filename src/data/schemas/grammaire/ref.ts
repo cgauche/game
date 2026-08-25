@@ -12,6 +12,7 @@
  */
 import { z } from 'zod';
 import { IDS_PAR_DATASET, SPECS_PAR_DATASET } from '../_ids.generated';
+import { marque } from './slots';
 
 declare const marqueDeType: unique symbol;
 /** Id BRANDÉ par son type — frappé à la porte zod, jamais par un `as` d'appelant. */
@@ -55,13 +56,6 @@ export function cibleDe(type: TypeEntite): string {
   return TYPES[type].dataset;
 }
 
-const SLOTS: { type: TypeEntite; extra: readonly string[] }[] = [];
-
-/** Slots de référence construits par la grammaire — la source de l'intégrité référentielle générique. */
-export function slots(): readonly { type: TypeEntite; extra: readonly string[] }[] {
-  return SLOTS.map((s) => ({ type: s.type, extra: [...s.extra] }));
-}
-
 function idsDe(type: TypeEntite): readonly string[] {
   return IDS_PAR_DATASET[cibleDe(type)] ?? [];
 }
@@ -80,24 +74,30 @@ export function estSpecialisable(type: TypeEntite, id: string): boolean {
   return catalogueSpecs(type, id).length > 0;
 }
 
-/** Schéma d'un id NU de `type` : refiné contre le registre, brandé `Id<type>` à la sortie. */
+/**
+ * Schéma d'un id NU de `type` : refiné contre le registre, brandé `Id<type>` à la sortie. C'est la
+ * FEUILLE porteuse de la référence — elle porte la marque que la marche des slots retrouve
+ * (`slots.ts`), jamais l'enveloppe `ref()`/`specRef()` qui la compose.
+ */
 export function idDe<T extends TypeEntite>(type: T): z.ZodType<Id<T>, string> {
   const dataset = cibleDe(type);
-  return z
-    .string()
-    .superRefine((v, ctx) => {
-      if (idsDe(type).includes(v)) return;
-      ctx.addIssue({
-        code: 'custom',
-        message: `ref('${type}') : id « ${v} » absent de ${dataset} (registre _ids.generated.ts).`,
-      });
-    })
-    .transform((v) => v as Id<T>);
+  return marque(
+    z
+      .string()
+      .superRefine((v, ctx) => {
+        if (idsDe(type).includes(v)) return;
+        ctx.addIssue({
+          code: 'custom',
+          message: `ref('${type}') : id « ${v} » absent de ${dataset} (registre _ids.generated.ts).`,
+        });
+      })
+      .transform((v) => v as Id<T>),
+    { espece: 'id', type, site: `idDe('${type}')` },
+  );
 }
 
 /** Liste d'ids nus de `type`. */
 export function refs<T extends TypeEntite>(type: T): z.ZodType<Id<T>[], string[]> {
-  SLOTS.push({ type, extra: [] });
   return z.array(idDe(type));
 }
 
@@ -106,13 +106,11 @@ export function ref<T extends TypeEntite, E extends Record<string, z.ZodTypeAny>
   type: T,
   extra?: E,
 ): z.ZodType<unknown> {
-  SLOTS.push({ type, extra: Object.keys(extra ?? {}) });
   return z.strictObject({ id: idDe(type), ...((extra ?? {}) as Record<string, z.ZodTypeAny>) });
 }
 
 /** Slot POLYMORPHE `{ type, id }` — le type est porté par la donnée, l'id résolu contre son dataset. */
 export function typedRef(types: readonly TypeEntite[] = Object.keys(TYPES) as TypeEntite[]): z.ZodType<unknown> {
-  for (const t of types) SLOTS.push({ type: t, extra: ['type'] });
   return z
     .strictObject({ type: z.enum(types as [TypeEntite, ...TypeEntite[]]), id: z.string() })
     .superRefine((v, ctx) => {
@@ -137,7 +135,6 @@ export function specRef<T extends TypeEntite, E extends Record<string, z.ZodType
 ): z.ZodType<unknown> {
   const dataset = cibleDe(type);
   const ouvert = TYPES[type].specsOpen;
-  SLOTS.push({ type, extra: ['spec', 'choix', ...Object.keys(extra ?? {})] });
   return z
     .strictObject({
       id: idDe(type),

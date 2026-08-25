@@ -7,6 +7,7 @@
 import { z } from 'zod';
 
 export const file = 'renduMonte.json';
+export const famille = 'config';
 
 export const schema = z.strictObject({
   _doc: z.string().optional(),

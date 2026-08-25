@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { sourceRefSchema, stakeFormSchema } from '../grammaire/valeurs';
 
 export const file = 'combat-stakes.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z

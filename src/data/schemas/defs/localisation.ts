@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'localisation.json';
+export const famille = 'record';
 
 const hitLocation = z.enum(['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD']);
 const shipLocation = z.enum([

@@ -12,6 +12,7 @@
 import { z } from 'zod';
 
 export const file = 'names.json';
+export const famille = 'record';
 
 const namePoolSchema = z.strictObject({
   maleFirstNames: z.array(z.string()),

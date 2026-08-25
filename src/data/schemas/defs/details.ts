@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { raceKeySchema } from '../grammaire/valeurs';
 
 export const file = 'details.json';
+export const famille = 'config';
 
 const detailTextSchema = z.strictObject({
   all: z.string(),

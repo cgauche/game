@@ -10,6 +10,7 @@ import { sourceRefSchema, secondarySourceRefSchema } from '../grammaire/valeurs'
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'qualities.json';
+export const famille = 'entite';
 
 /** `QualityCapabilities` (`src/data/index.ts`) — clés OBSERVÉES dans `qualities.json` (52
  *  entrées) sauf `slowStrike`/`layerable`/`apIgnoredOnImpaleCrit` (présents dans l'interface, absents

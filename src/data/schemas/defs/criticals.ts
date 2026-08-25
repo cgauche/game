@@ -8,6 +8,7 @@ import { difficultySchema, hitLocationSchema, sourceRefSchema, formulaSchema } f
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'criticals.json';
+export const famille = 'record';
 
 /** Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du membre sans
  *  Chirurgie sous 1d10 jours) — reflet de `CritEscalation` (`src/data/criticals.ts`). Partagée AA/LDB. */

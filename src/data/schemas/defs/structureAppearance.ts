@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { detailRecipeSchema } from '../grammaire/valeurs';
 
 export const file = 'structureAppearance.json';
+export const famille = 'entite';
 
 /** Parties de mur admises comme clés de `relief` — RECOPIE de `WALL_PARTS`
  *  (`src/gameIso/catalog/structures/types.ts`) : `src/data` ne dépend jamais RUNTIME de `src/gameIso`

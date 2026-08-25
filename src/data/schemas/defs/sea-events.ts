@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-events.json';
+export const famille = 'config';
 
 /** `ManannFactor.effect` (`src/engine/seaVoyage.ts`) : signe fixe (1|-1) + décompte flat/d10. */
 const manannFactor = z.strictObject({

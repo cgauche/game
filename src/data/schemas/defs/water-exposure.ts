@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'water-exposure.json';
+export const famille = 'config';
 
 /** Union PLATE (pas `discriminatedUnion` — `woundsLost` a 2 formes selon `op`, discriminant non-unique
  *  sur `kind` seul). */

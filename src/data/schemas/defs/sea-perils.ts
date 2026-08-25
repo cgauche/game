@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-perils.json';
+export const famille = 'config';
 
 /** `ShipSize` (`src/data/index.ts`). */
 const shipSize = z.enum(['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);

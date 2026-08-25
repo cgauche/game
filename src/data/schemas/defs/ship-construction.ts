@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'ship-construction.json';
+export const famille = 'config';
 
 const shipSize = z.enum(['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
 const propulsionRow = z.strictObject({ m: z.number(), crew: z.number() });

@@ -31,6 +31,7 @@
 import { z } from 'zod';
 
 export const file = 'teintesJeu.json';
+export const famille = 'record';
 
 /** Couleur écrite en HEXA `#rrggbb` — la forme que lisent `THREE.Color` comme le SVG (même regex que
  *  `ambiance.ts`, forme unique du dépôt). */

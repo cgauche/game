@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'weather.json';
+export const famille = 'config';
 
 const weatherIdSchema = z.enum(['sec', 'beau', 'pluie', 'pluie-diluvienne', 'neige', 'blizzard']);
 

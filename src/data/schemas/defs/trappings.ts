@@ -14,6 +14,7 @@ import { REACH_LABELS, REACH_VARIABLE } from '../../../engine/types';
 const sizeCategorySchema = z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
 
 export const file = 'trappings.json';
+export const famille = 'entite';
 
 /** Montant CHIFFRÉ de la colonne « Prix »/« Coût » (LDB 62 l.20, LDB 68 l.7) — `{gold,silver,bronze}`
  *  tous `number`. Les formes NON chiffrées de cette colonne vivent sur le champ `price` lui-même. */

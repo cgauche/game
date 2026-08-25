@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { secondarySourceRefSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'skills.json';
+export const famille = 'entite';
 
 /** 10 Caractéristiques (LDB) — cf. `engine/types.ts::CharKey`. Dupliqué ici (`common.ts` gelé) ;
  *  candidat à mutualisation (`charKeySchema`) avec talents/spells/etats qui le redéfinissent aussi. */

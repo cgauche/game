@@ -6,6 +6,7 @@
 import { z } from 'zod';
 
 export const file = 'ambiance.json';
+export const famille = 'config';
 
 const radialVeilSchema = z.strictObject({
   cx: z.string(),

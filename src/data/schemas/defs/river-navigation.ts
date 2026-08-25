@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'river-navigation.json';
+export const famille = 'config';
 
 const riverWindDirId = z.enum(['arriere', 'cote', 'contraire']);
 

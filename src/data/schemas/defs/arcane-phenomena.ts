@@ -17,6 +17,7 @@ import { z } from 'zod';
 import { difficultySchema, sourceRefSchema, castingNumberModSchema } from '../grammaire/valeurs';
 
 export const file = 'arcane-phenomena.json';
+export const famille = 'config';
 
 /** Tests portés par un modificateur de phénomène — surensemble de `WindTest` (`domainAttributes.ts`) :
  *  l'Atténuation module AUSSI les Tests de Dissipation (`VDM 14`, folio 194). */

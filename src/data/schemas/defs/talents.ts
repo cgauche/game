@@ -10,6 +10,7 @@ import { charKeySchema, sourceRefSchema, secondarySourceRefSchema, combatFeature
 import { gameOpSchema, conditionSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'talents.json';
+export const famille = 'entite';
 
 const specsSourceSchema = z.enum([
   'weaponGroupsMelee', 'weaponGroupsRanged', 'winds', 'arcaneDomains', 'cultBlessings',

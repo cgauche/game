@@ -7,6 +7,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'symptoms.json';
+export const famille = 'entite';
 
 const difficultySchemaLocal = z.enum([
   'tresFacile', 'facile', 'accessible', 'intermediaire', 'complexe',

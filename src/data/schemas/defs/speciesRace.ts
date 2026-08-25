@@ -7,6 +7,7 @@
 import { z } from 'zod';
 
 export const file = 'speciesRace.json';
+export const famille = 'config';
 
 const speciesRuleSchema = z.strictObject({
   prefix: z.array(z.string()).optional(),

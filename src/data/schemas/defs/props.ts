@@ -8,5 +8,6 @@ import { z } from 'zod';
 import { propDataSchema } from '../common';
 
 export const file = 'props.json';
+export const famille = 'entite';
 
 export const schema = z.array(propDataSchema);

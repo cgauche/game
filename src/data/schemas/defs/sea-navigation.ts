@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-navigation.json';
+export const famille = 'config';
 
 const tableRange = z.strictObject({ min: z.number(), max: z.number() });
 

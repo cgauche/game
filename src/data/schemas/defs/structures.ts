@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { difficultySchema } from '../grammaire/valeurs';
 
 export const file = 'structures.json';
+export const famille = 'entite';
 
 /** Réf de Trait de structure (Résistant / Impénétrable, ADE II 8) — `{id}` seul observé dans les
  *  5 entrées ; `value` resterait possible (parallèle à `QualityRef`) mais aucune preuve dans la donnée. */

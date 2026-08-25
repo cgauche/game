@@ -11,6 +11,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { travelTableEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'rencontres-edoc.json';
+export const famille = 'table';
 
 export const schema = z.strictObject({
   id: z.string(),

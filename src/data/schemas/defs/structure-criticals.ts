@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'structure-criticals.json';
+export const famille = 'table';
 
 const structureCritEntrySchema = z.strictObject({
   min: z.number(),

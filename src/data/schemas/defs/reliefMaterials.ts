@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { detailRecipeSchema } from '../grammaire/valeurs';
 
 export const file = 'reliefMaterials.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

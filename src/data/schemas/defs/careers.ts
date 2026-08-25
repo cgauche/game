@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { sourceRefSchema, refCareerIdSchema } from '../grammaire/valeurs';
 
 export const file = 'careers.json';
+export const famille = 'entite';
 
 /** Entrée de `careers.json`. */
 const careerEntrySchema = z.strictObject({

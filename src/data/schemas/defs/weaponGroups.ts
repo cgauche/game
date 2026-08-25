@@ -11,6 +11,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { qualityRefSchema } from '../grammaire/reference';
 
 export const file = 'weaponGroups.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

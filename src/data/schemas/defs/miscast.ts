@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'miscast.json';
+export const famille = 'table';
 
 const difficultySchemaLocal = z.enum([
   'tresFacile', 'facile', 'accessible', 'intermediaire', 'complexe',

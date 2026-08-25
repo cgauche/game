@@ -8,6 +8,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { refSchema } from '../grammaire/reference';
 
 export const file = 'gods.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

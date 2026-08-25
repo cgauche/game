@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { sourceRefSchema, charKeySchema } from '../grammaire/valeurs';
 
 export const file = 'characteristics.json';
+export const famille = 'entite';
 
 /** id STABLE — `CharKey` du moteur pour les 10 caracs à jet (« CC »…), slug dédié pour les 9 autres
  *  entrées (Blessure/Destin/Chance/Résilience/Détermination/Extra Points/Mouvement/Corruption/Péché)

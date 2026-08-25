@@ -15,6 +15,7 @@ import { charKeySchema, sourceRefSchema, stakeFormSchema } from '../grammaire/va
 import { triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'maneuvers.json';
+export const famille = 'entite';
 
 /** `ManeuverMeasure` (`src/data/index.ts`) — Portée/Souffle en mètres = `bonus(ref) + plus`. */
 const maneuverMeasure = z.strictObject({

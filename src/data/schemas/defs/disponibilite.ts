@@ -10,6 +10,7 @@ import { availabilitySchema, sourceRefSchema } from '../grammaire/valeurs';
 import { AVAILABILITIES, type Availability } from '../../../engine/types';
 
 export const file = 'disponibilite.json';
+export const famille = 'config';
 
 /** Les Disponibilités qui portent un % (LDB 59 l.25-30) — SÉLECTION du canon, pas une union recopiée :
  *  `extract` borne son argument aux paliers de `availabilitySchema`. Jumeau runtime de

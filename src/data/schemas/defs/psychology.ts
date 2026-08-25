@@ -9,6 +9,7 @@ import { sourceRefSchema, difficultySchema, stakeFormSchema } from '../grammaire
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'psychology.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

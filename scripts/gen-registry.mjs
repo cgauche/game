@@ -348,7 +348,7 @@ export const REGISTRIES = [
     arrayName: 'SCHEMA_DEFS',
     type: 'SchemaDef',
     typeFrom: './types',
-    fields: ['file', 'schema'],
+    fields: ['file', 'schema', 'famille'],
     constFields: { root: "'src/data'" },
   },
 ];
@@ -460,14 +460,73 @@ const genreDe = (v) => (Array.isArray(v) ? 'liste' : v === null ? 'nul' : typeof
  * `teintesJeu`) plutôt qu'un document/une configuration unique ? Trois conditions STRUCTURELLES :
  * au moins deux clés, toutes de la forme d'un id, et des valeurs de même genre. Un objet portant
  * `id`+`label` de premier niveau est UN document, pas un record. Écartés par la 2ᵉ condition :
- * `names.json` et `raceAppearance` (clés = LIBELLÉS affichés, `defs/names.ts`), `decorPalette` et
- * les configurations à clés camelCase (noms de CHAMP, pas des ids).
+ * `names.json` (clés = LIBELLÉS affichés, `defs/names.ts`), `decorPalette` et les configurations à
+ * clés camelCase (noms de CHAMP, pas des ids).
  */
 function estRecordAIds(racine) {
   const ks = Object.keys(racine);
   if (ks.length < 2 || !ks.every(cleIdish)) return false;
   if (typeof racine.id === 'string' && typeof racine.label === 'string') return false;
   return new Set(ks.map((k) => genreDe(racine[k]))).size === 1;
+}
+
+/**
+ * Une valeur d'identité est-elle un LIBELLÉ (capitale initiale ou espace) plutôt qu'un id ? Un
+ * `ref()` posé sur un tel dataset validerait un libellé d'affichage, contre la doctrine des ids
+ * (CLAUDE.md). Les ids camelCase (`screenShell`, `touxEternuements`) en sont, eux, de vrais ids.
+ */
+const estUnLibelle = (v) => /^[A-ZÀ-Þ]/.test(v) || /\s/.test(v);
+
+/**
+ * DÉFAUTS d'ids — liste NOMINATIVE datée (2026-08-24), DÉCROISSANTE, lot de mort `L1b #1467` : les
+ * documents de famille `entite`/`record` dont l'identité de premier niveau n'entre PAS au registre.
+ * Chaque entrée porte l'obstacle MESURÉ ; une entrée ne se retire que par le commit qui donne au
+ * document des ids de premier niveau. Un dataset ni registré ni inscrit ici fait ROUGIR `npm run gen`.
+ */
+const DEFAUTS_IDS = {
+  'aa-criticals.json': 'record de localisations, mais la clé de méta `_source` siège au même niveau que les entrées — le détecteur de record à ids l’écarte',
+  'calendarPhases.json': 'liste d’entités dont l’identité est portée par `key`, jamais par `id`',
+  'careerLevels.json': 'liste d’entités sans identité de premier niveau (le couple `career`+`level` la porte)',
+  'decorPalette.json': 'record de 435 jetons de teinte à clés camelCase (`terreTresSombre`), graphie que le détecteur de record à ids n’admet pas',
+  'names.json': 'record dont les clés sont les LIBELLÉS de race (« Haut Elfe »), pas des ids',
+  'raceAppearance.json': 'liste d’entités dont les `id` sont les LIBELLÉS de race (« Démon », « Elfe sylvain »), pas des ids',
+  'raw.manifest.json': 'liste d’entités dont l’identité est portée par `topic` (clé composite domaine#sujet), jamais par `id`',
+};
+
+/** Familles DÉCLARÉES par les defs de schéma (`export const famille`), dataset par dataset. */
+function famillesDeclarees() {
+  const dir = 'src/data/schemas/defs';
+  const parDataset = new Map();
+  for (const f of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts'))) {
+    const src = readFileSync(join(dir, f), 'utf8');
+    const dataset = src.match(/^export const file = '([^']+)';$/m)?.[1];
+    const famille = src.match(/^export const famille = '([^']+)';$/m)?.[1];
+    if (!dataset || !famille) throw new Error(`gen-registry: defs/${f} : \`file\`/\`famille\` de premier niveau manquant — chaque def déclare sa famille.`);
+    parDataset.set(dataset, famille);
+  }
+  return parDataset;
+}
+
+/**
+ * Contrat FERMÉ entre la famille déclarée et le registre d'ids, dans les DEUX sens : `entite`/`record`
+ * ⇒ ids au registre OU défaut nominatif ; `config`/`table` ⇒ aucun id, aucun défaut.
+ */
+function verifieExhaustiviteDesIds(datasetsAIds) {
+  const familles = famillesDeclarees();
+  const fautes = [];
+  for (const [dataset, famille] of [...familles].sort()) {
+    const aDesIds = datasetsAIds.has(dataset);
+    const defaut = dataset in DEFAUTS_IDS;
+    if (famille === 'entite' || famille === 'record') {
+      if (!aDesIds && !defaut) fautes.push(`${dataset} (famille ${famille}) : aucun id au registre et aucune entrée de DEFAUTS_IDS.`);
+      if (aDesIds && defaut) fautes.push(`${dataset} : porte des ids au registre ET une entrée de DEFAUTS_IDS — retirer l'entrée.`);
+    } else {
+      if (aDesIds) fautes.push(`${dataset} (famille ${famille}) : un document de réglage/table ne porte aucun id de premier niveau, or le registre en indexe.`);
+      if (defaut) fautes.push(`${dataset} (famille ${famille}) : entrée de DEFAUTS_IDS sur un document qui n'attend aucun id.`);
+    }
+  }
+  for (const dataset of Object.keys(DEFAUTS_IDS)) if (!familles.has(dataset)) fautes.push(`${dataset} : entrée de DEFAUTS_IDS sans def de schéma.`);
+  if (fautes.length) throw new Error(`gen-registry: exhaustivité du registre d'ids — ${fautes.length} faute(s) :\n  ${fautes.join('\n  ')}`);
 }
 
 function genIds() {
@@ -489,6 +548,7 @@ function genIds() {
     }
     const entrees = racine.filter((e) => e && typeof e === 'object' && typeof e.id === 'string');
     if (!entrees.length) continue;
+    if (entrees.some((e) => estUnLibelle(e.id))) continue;
     ids.push([f, [...new Set(entrees.map((e) => e.id))].sort()]);
     const catalogueDe = (e) => {
       if (e.specsSource) {
@@ -504,6 +564,7 @@ function genIds() {
       .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
     if (parEntree.length) specs.push([f, parEntree]);
   }
+  verifieExhaustiviteDesIds(new Set(ids.map(([f]) => f)));
   const lit = (v) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
   const body =
     `// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.\n` +

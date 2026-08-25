@@ -6,6 +6,7 @@
 import { z } from 'zod';
 
 export const file = 'donnees.manifest.json';
+export const famille = 'config';
 
 const entreeSchema = z.strictObject({
   files: z.array(z.string()),

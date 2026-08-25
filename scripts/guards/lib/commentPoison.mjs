@@ -355,8 +355,21 @@ export const EXCUSE_GUARD_ACTIVE = true;
 // chaîne dans `src/comment-poison-guard.test.ts`, que `extractComments` ne lit pas (#828).
 const GAME_STATE_PARTICIPLE =
   '(lanc|tir[ée]|boug|dépens|défend|résol|jou|commenc|ouvert|agi\\b|explor|entraîn|connu|désign|roul|au niveau|à la mi|de [A-ZÀ-Ý])';
+// Un DÉFAUT relevé puis renvoyé à un autre geste (« … à <verbe> <ailleurs> ») est une excuse : le
+// commentaire signale une dette sans validation utilisateur traçable. La discrimination tient au
+// seul motif ci-dessous — il exige l'INFINITIF d'un verbe de réparation SUIVI d'un renvoi
+// (séparément/ailleurs/plus tard/à part/au propre) ; un participe qui décrit le PRÉSENT
+// (« traité ailleurs », « comptés séparément ») n'a pas cette forme et ne matche pas.
+// ANGLE MORT MESURÉ (2026-08-24) : une phrase DESCRIPTIVE au présent bâtie sur « est <infinitif de
+// réparation> <renvoi> » (une localisation par zone, comptée chacune de son côté) porterait la même
+// forme et matcherait — 0 occurrence dans le corpus scanné ; motif tenu STRICT tant que le compte
+// reste à 0.
+const REPORT_AILLEURS =
+  'à (corriger|traiter|régler|migrer|nettoyer|purger|réparer|reprendre|refaire|supprimer|instruire) (séparément|ailleurs|plus tard|à part|au propre)';
 export const EXCUSE_RX = new RegExp(
-  "(assume|épargn[ée]\\w*(?!\\w)(?!\\s+(par|pour)\\s)|pour l'instant|pas encore (?!" +
+  "(assume|épargn[ée]\\w*(?!\\w)(?!\\s+(par|pour)\\s)|pour l'instant|" +
+    REPORT_AILLEURS +
+    '|pas encore (?!' +
     GAME_STATE_PARTICIPLE +
     ')|(?<!\\b(accordée?s?|prime|insensible)\\s)temporairement(?!\\s+(insensible|accordé|accordée|accordées|prime)))',
   'i',

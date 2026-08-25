@@ -12,6 +12,7 @@ import { gameOpSchema } from '../grammaire/mecanique';
 import { critEscalationSchema, amputationSchema } from './criticals';
 
 export const file = 'aa-criticals.json';
+export const famille = 'record';
 
 const aaEntrySchema = z.strictObject({
   id: z.string(),

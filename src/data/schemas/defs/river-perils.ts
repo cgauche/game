@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'river-perils.json';
+export const famille = 'config';
 
 export const schema = z.strictObject({
   perils: z.array(

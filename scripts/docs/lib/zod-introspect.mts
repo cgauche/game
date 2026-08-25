@@ -6,25 +6,7 @@
 // zod 4.4.3 : la forme d'un nœud se lit sur `s._zod.def` (`type`, `shape`, `element`, `options`,
 // `innerType`, `getter`, `in`/`out`).
 import type { SchemaDef } from '../../../src/data/schemas/types';
-
-type Noeud = { _zod?: { def?: DefZod }; def?: DefZod };
-type DefZod = {
-  type: string;
-  shape?: Record<string, unknown>;
-  element?: unknown;
-  options?: unknown[];
-  innerType?: unknown;
-  getter?: () => unknown;
-  in?: unknown;
-  out?: unknown;
-  values?: unknown;
-  value?: unknown;
-  entries?: Record<string, unknown>;
-  items?: unknown[];
-  valueType?: unknown;
-};
-
-const defDe = (s: unknown): DefZod | undefined => (s as Noeud | null)?._zod?.def ?? (s as Noeud | null)?.def;
+import { defDe, enfantsDe } from '../../../src/data/schemas/grammaire/slots';
 
 /** Nom de CLASSE de type d'un nœud zod, borné en profondeur (les unions récursives sont légion). */
 function classeZod(s: unknown, profondeur = 0): string {
@@ -184,17 +166,9 @@ export function choixDeclares(defs: readonly SchemaDef[]): Map<string, Map<strin
           if (!parCle.has(k)) parCle.set(k, new Set());
           parCle.get(k)!.add(lit);
         }
-        marche(v, profondeur + 1);
       }
-      for (const enfant of [def.element, def.innerType, def.valueType, def.value, def.in, def.out, ...(def.options ?? []), ...(def.items ?? [])])
-        marche(enfant, profondeur + 1);
-      if (def.type === 'lazy') {
-        try {
-          marche(def.getter?.(), profondeur + 1);
-        } catch {
-          /* schéma récursif non résoluble : la clé reste ouverte */
-        }
-      }
+      // `enfantsDe` énumère DÉJÀ les clés de `shape` : la descente passe par lui SEUL.
+      for (const enfant of enfantsDe(def)) marche(enfant.noeud, profondeur + 1);
     };
     marche(schema);
     out.set(file, parCle);

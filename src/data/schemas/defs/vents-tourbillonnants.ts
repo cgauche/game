@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'vents-tourbillonnants.json';
+export const famille = 'table';
 
 export const schema = z.strictObject({
   table: z.array(

@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'crew-morale.json';
+export const famille = 'config';
 
 export const schema = z.strictObject({
   /** Couvre le champ scalaire `base` (score de départ) — les listes `factors`/`bands` portent chacune

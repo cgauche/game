@@ -9,6 +9,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { gameOpSchema, shipCritEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'ship-criticals.json';
+export const famille = 'table';
 
 export const schema = z.strictObject({
   id: z.string(),

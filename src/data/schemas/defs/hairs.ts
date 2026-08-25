@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { raceKeySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'hairs.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

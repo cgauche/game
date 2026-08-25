@@ -9,6 +9,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { travelTableEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'problemes-vehicule.json';
+export const famille = 'table';
 
 export const schema = z.strictObject({
   id: z.string(),

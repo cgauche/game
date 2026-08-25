@@ -8,6 +8,7 @@
 import { z } from 'zod';
 
 export const file = 'pregens.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

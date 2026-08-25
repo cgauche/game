@@ -10,6 +10,7 @@ import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, formulaSchema
 import { flowSchema, conditionSchema } from '../grammaire/mecanique';
 
 export const file = 'spells.json';
+export const famille = 'entite';
 
 /** `SpellRange` (`engine/spellRange.ts`). */
 const spellRangeSchema = z.discriminatedUnion('kind', [

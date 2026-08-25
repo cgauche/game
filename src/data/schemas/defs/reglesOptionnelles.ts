@@ -23,6 +23,7 @@ import { z } from 'zod';
 import { ruleValueSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'reglesOptionnelles.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

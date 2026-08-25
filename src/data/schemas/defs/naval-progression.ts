@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'naval-progression.json';
+export const famille = 'table';
 
 /** `mode` observés : les 5 issues RAW de la table de Progression (ch.13 l.68-75). */
 export const schema = z.strictObject({

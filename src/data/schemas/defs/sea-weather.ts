@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-weather.json';
+export const famille = 'config';
 
 const windForce = z.enum([
   'calme-plat',

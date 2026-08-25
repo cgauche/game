@@ -1,20 +1,89 @@
 /**
  * MÉCANIQUE de la grammaire de document (#1466 L1a) — l'algèbre exécutable portée en donnée :
  * `GameOp`, `Condition`, `FlowTest`, `EffectOp`, `Flow`, `TriggeredEffect`, et les entrées de
- * table qui embarquent des ops (voyage, critiques de coque). Le registre `OP_DEFS` qui typera
- * chaque payload d'op arrive au lot L1c (#1468).
+ * table qui embarquent des ops (voyage, critiques de coque). Le registre `OP_DEFS` type le payload
+ * op par op ; `OPS_NON_TYPEES` porte celles qui restent à décrire (lot L1c #1468).
  */
 import { z } from 'zod';
 import { isMenaceId, menaceIds } from '../../../engine/menace';
-import { charKeySchema, difficultySchema, hitLocationSchema } from './valeurs';
+import { charKeySchema, difficultySchema, formulaSchema, hitLocationSchema } from './valeurs';
+import { marque } from './slots';
+
+/** `PerSL` (`src/engine/ops.ts:146`) — échelle « par +N DR » d'un payload d'op. */
+export const perSLSchema = z.strictObject({ every: z.number(), amount: z.number(), onFailure: z.boolean().optional() });
 
 /**
- * Un `GameOp` (`src/engine/ops.ts`) tel qu'il apparaît en DONNÉE : forme LOOSE — seul `op` (le nom
- * de l'opération) est garanti par tous les vocabulaires ; les champs restants varient par `op` et
- * sont déjà validés au vocabulaire par `data-wellformed` (moteur). Ce schéma ne vérifie que la
- * FORME (un objet avec un `op` string), pas la sémantique de l'opération.
+ * Payload STRICT par op (`src/engine/ops.ts`, union `GameOp`). Chaque entrée est un contrat POSITIF
+ * vérifié sur toutes les occurrences réelles de l'op dans les 2 racines authorées.
  */
-export const gameOpSchema = z.looseObject({ op: z.string() });
+export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
+  banish: z.strictObject({ op: z.literal('banish'), narration: z.enum(['chaos', 'unravel']).optional(), onlyGroups: z.array(z.string()).optional() }),
+  corruption: z.strictObject({
+    op: z.literal('corruption'),
+    amount: z.number(),
+    perSL: perSLSchema.optional(),
+    align: z.enum(['toute', 'khorne', 'nurgle', 'slaanesh', 'tzeentch']).optional(),
+  }),
+  corruptionExposure: z.strictObject({
+    op: z.literal('corruptionExposure'),
+    level: z.enum(['mineure', 'moderee', 'majeure']).optional(),
+    skill: z.enum(['resistance', 'calme']).optional(),
+    easeSteps: z.number().optional(),
+  }),
+  heal: z.strictObject({ op: z.literal('heal'), amount: formulaSchema, perSL: perSLSchema.optional() }),
+  healCaster: z.strictObject({ op: z.literal('healCaster'), amount: formulaSchema }),
+  kill: z.strictObject({ op: z.literal('kill') }),
+  loseTurn: z.strictObject({ op: z.literal('loseTurn'), what: z.enum(['action', 'movement']).optional() }),
+  noBreath: z.strictObject({ op: z.literal('noBreath') }),
+  noHunger: z.strictObject({ op: z.literal('noHunger') }),
+  suffocate: z.strictObject({ op: z.literal('suffocate') }),
+};
+
+/**
+ * Ops du moteur DONT LE PAYLOAD RESTE À DÉCRIRE — liste NOMINATIVE datée (2026-08-24),
+ * DÉCROISSANTE, lot de mort `L1c #1468` (qui remplit les payloads restants et fait mourir le repli
+ * `looseObject` de `gameOpSchema`). C'est l'INVENTAIRE des payloads non encore déclarés, pas un
+ * constat d'obstacle : une seule entrée porte une mesure PROPRE — `gainAdvantage`, dont `traits.json`
+ * écrit `amount: "$indice"` (chaîne) hors de `formulaSchema`. Les autres attendent leur mesure en L1c.
+ * Une entrée ne se retire que par le commit qui TYPE l'op dans `OP_DEFS`.
+ */
+export const OPS_NON_TYPEES: readonly string[] = [
+  'actGate', 'ap', 'armourPierce', 'arrowWard', 'attackKeyword', 'attackWardFM', 'attrMod', 'augmentWeapon',
+  'beginPsych', 'breakBlade', 'castPenalty', 'castWard', 'chain', 'charDRBonus', 'charDamage', 'charMod',
+  'condition', 'contractDisease', 'crewTestMod', 'critOnRoll', 'critTwice', 'cureCriticalWound', 'cureDisease',
+  'damageArmour', 'delayed', 'disarm', 'diseaseTestMod', 'domeWard', 'endPsych', 'endTransform', 'exposeDisease',
+  'freeReroll', 'gainAdvantage', 'gainResource', 'giveTrapping', 'grantCareerSkill', 'grantCareerTalent',
+  'grantFreeAttack', 'grantNaturalWeapon', 'grantPsychTrait', 'grantReverseToken', 'grantTalent', 'grantTrait',
+  'grantWeapon', 'handGate', 'ignoreAnimosity', 'ignoreStatePenalties', 'incomingAdvantage', 'incomingAttackMod',
+  'incomingSpellDRMod', 'interruptFocus', 'intoxicate', 'lifeSteal', 'light', 'martyr', 'maxWeaponHands',
+  'mitigateIncoming', 'moveMod', 'moveScale', 'narrative', 'offTerrainMod', 'perRound', 'polymorph',
+  'preventInfection', 'push', 'reduceDiseaseDays', 'reduceToZero', 'removeCondition', 'removePsychTrait',
+  'removeShipPoste', 'rollMutation', 'rollTable', 'rollThreshold', 'sbBonus', 'scheduleRespawn', 'senseLoss',
+  'sinMod', 'skillDRBonus', 'skillMod', 'spendAdvantage', 'statusMod', 'summon', 'suppressPsych',
+  'suppressSymptom', 'teamCommander', 'teleport', 'testMod', 'transform', 'weaponDamageMod', 'weaponRollMod',
+  'weatherWard', 'wounds', 'zone',
+];
+
+/**
+ * Un `GameOp` (`src/engine/ops.ts`) tel qu'il apparaît en DONNÉE. Une op de `OP_DEFS` est validée sur
+ * son payload STRICT ; une op de `OPS_NON_TYPEES` garde la forme LOOSE ; une op inconnue des DEUX
+ * registres est NOMMÉE en erreur. Ce rouge vit ICI et nulle part ailleurs : la clé `op` est
+ * surchargée en donnée (les comparateurs `>=`/`<=`/`==` d'une `Condition` la portent aussi).
+ */
+export const gameOpSchema: z.ZodType<unknown> = z.looseObject({ op: z.string() }).superRefine((v, ctx) => {
+  const payload = OP_DEFS[v.op];
+  if (payload) {
+    const res = payload.safeParse(v);
+    if (!res.success) for (const issue of res.error.issues) ctx.addIssue({ code: 'custom', path: issue.path, message: `GameOp « ${v.op} » : ${issue.message}` });
+    return;
+  }
+  if (OPS_NON_TYPEES.includes(v.op)) return;
+  ctx.addIssue({
+    code: 'custom',
+    path: ['op'],
+    message: `GameOp « ${v.op} » : op inconnue de OP_DEFS et de OPS_NON_TYPEES (src/data/schemas/grammaire/mecanique.ts) — la typer, ou l'inscrire à la liste avec sa raison mesurée.`,
+  });
+});
 
 // ============================================================================
 // FLOW CORE (`src/engine/flowCore.ts`) — Condition / FlowTest / Flow / TriggeredEffect. SOURCE UNIQUE
@@ -24,7 +93,8 @@ export const gameOpSchema = z.looseObject({ op: z.string() });
 // ============================================================================
 
 export const compareOpSchema = z.enum(['>=', '<=', '==', '<', '>']);
-export const actorRefSchema = z.enum(['target', 'caster']);
+/** ACTEUR désigné par une mécanique — 2ᵉ espèce de slot, retrouvée par la marche (`slots.ts`). */
+export const actorRefSchema = marque(z.enum(['target', 'caster']), { espece: 'acteur', site: 'actorRefSchema' });
 
 /** `Relation | Camp` (`src/engine/relations.ts`) — union complète lue par la Condition `relation`.
  *  Resserré depuis `z.string()` (variantes `domains`/`talents`/`etats`/`spells`) : les 9 JSON ne

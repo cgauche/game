@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'land-cargo.json';
+export const famille = 'config';
 
 const seasonRange = z.tuple([z.number(), z.number()]);
 const seasonPrice = z.strictObject({ printemps: z.number(), ete: z.number(), automne: z.number(), hiver: z.number() });

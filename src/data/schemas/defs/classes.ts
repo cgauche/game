@@ -8,6 +8,7 @@ import { sourceRefSchema } from '../grammaire/valeurs';
 import { trappingRefSchema } from '../grammaire/reference';
 
 export const file = 'classes.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

@@ -9,6 +9,7 @@ import { charKeySchema, sourceRefSchema, difficultySchema } from '../grammaire/v
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'etats.json';
+export const famille = 'entite';
 
 /** `StatusData.gating` (`src/data/index.ts`) — restriction Action/Mouvement/défense. */
 const gatingSchema = z.strictObject({

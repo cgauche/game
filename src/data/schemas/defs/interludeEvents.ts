@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'interludeEvents.json';
+export const famille = 'entite';
 
 const fxSchema = z.strictObject({
   moneyPct: z.number().optional(),

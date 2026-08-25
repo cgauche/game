@@ -12,6 +12,7 @@ import { charKeySchema, secondarySourceRefSchema, sourceRefSchema } from '../gra
 import { flowTestSchema, gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'domains.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

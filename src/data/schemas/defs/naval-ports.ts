@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'naval-ports.json';
+export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({

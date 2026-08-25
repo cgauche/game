@@ -10,6 +10,7 @@ import { sourceRefSchema, difficultySchema, stakeFormSchema } from '../grammaire
 import { gameOpSchema, stageOutcomeSchema } from '../grammaire/mecanique';
 
 export const file = 'activities.json';
+export const famille = 'entite';
 
 // `difficulty?` = Difficulté PROPRE à cette voie quand le RAW en attache une différente par
 // Compétence (Punchausen, AA 12 l.45-49) — absente, la voie retombe sur `difficulty` de l'Activité.

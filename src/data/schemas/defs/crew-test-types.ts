@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'crew-test-types.json';
+export const famille = 'config';
 
 export const schema = z.strictObject({
   types: z.array(
