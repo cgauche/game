@@ -14,6 +14,7 @@
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { useGame, type BattleState } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { openAttackCascade } from './combatFlow';
 import { gainCorruption } from './corruptionFlow';
 import { openMedic, medicAct } from './medicFlow';
@@ -156,6 +157,7 @@ describe('#1015 — sonde 5 : `activity` (hors combat) — accord avec la route 
     g().startScene(testScene);
     useGame.setState({ net: NET_COOP });
     g().startInterlude(3);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     g().interludeActivity('b', 'observer-une-cible');
     expect(g().pendingActivity?.heroId, 'précondition : l’Activité du héros `b` est ouverte').toBe('b');
     // Route `interlude*` (1er argument = le héros visé) et route par PORTEUR nomment le même siège.
@@ -181,6 +183,7 @@ describe('#1015 — sonde 6 : SOLO bit-à-bit', () => {
     g().startScene(testScene);
     useGame.setState({ net: NET_SOLO });
     g().startInterlude(3);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     g().interludeActivity('a', 'observer-une-cible');
     expect(g().pendingActivity?.heroId).toBe('a');
     for (const i of ACTIVITY_VERBS) expect(intentAllowedFor(g(), 0, i, argsOf(i)), i).toBe(true);

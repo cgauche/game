@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from '../store';
 import { applyMiscast } from '../combatFlow';
 import { seedBattleRng } from '../battleRng';
+import { avanceEtapeCascade } from '../cascadeTestKit';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { hasCondition } from '../../engine/conditions';
@@ -59,6 +60,7 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
       const { H, E } = setup();
       seedBattleRng(s);
       applyMiscast(useGame.getState, useGame.setState, who === 'hero' ? H : E, 'colere');
+      avanceEtapeCascade(useGame.getState); // le dé du Tableau tombe à SON étape : la ligne n'existe qu'après
       const casc = useGame.getState().pendingCascade;
       const hasTestStep = !!casc?.participants.some((p) => p.kind === 'triggeredTest');
       // Héros : une étape influençable (suspendue) ; Ennemi : ligne « Résistance » dans la file différée.
@@ -73,6 +75,7 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
     const { H } = setup();
     seedBattleRng(seed);
     applyMiscast(useGame.getState, useGame.setState, H, 'colere');
+    avanceEtapeCascade(useGame.getState); // dé du Tableau → révélation + Test imbriqué appendus
 
     const casc = useGame.getState().pendingCascade!;
     expect(casc.purpose).toBe('combat');
@@ -95,6 +98,7 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
       const { H } = setup();
       seedBattleRng(s);
       applyMiscast(useGame.getState, useGame.setState, H, 'colere');
+      avanceEtapeCascade(useGame.getState);
       const casc = useGame.getState().pendingCascade;
       const m = casc?.participants.find((p) => p.kind === 'miscast');
       if (m?.outcome?.some((l) => /Purifier la chair/.test(l.text)) && casc?.participants.some((p) => p.kind === 'triggeredTest')) seed = s;
@@ -105,6 +109,7 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
     const { H } = setup();
     seedBattleRng(seed);
     applyMiscast(useGame.getState, useGame.setState, H, 'colere');
+    avanceEtapeCascade(useGame.getState);
     const p0 = useGame.getState().pendingCascade!;
     const stepIdx = p0.participants.findIndex((s) => s.kind === 'triggeredTest');
     const step = p0.participants[stepIdx];
@@ -127,8 +132,11 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
     E.characteristics.endurance = 1; // Résistance minimale → échec quasi sûr → Sonné posé inline
     seedBattleRng(seed);
     applyMiscast(useGame.getState, useGame.setState, E, 'colere');
-
-    expect(useGame.getState().pendingCascade).toBeNull(); // ennemi → jamais d'étape influençable
+    // La table de l'ennemi naît RÉSOLUE (nul siège ne le tient) ; la jouer dénoue tout, sans jamais
+    // ouvrir d'étape INFLUENÇABLE : le Test imbriqué se roule inline.
+    expect(useGame.getState().pendingCascade!.participants[0].table!.result).toBeTruthy();
+    avanceEtapeCascade(useGame.getState);
+    expect(useGame.getState().pendingCascade?.participants.some((p) => p.kind === 'triggeredTest') ?? false).toBe(false);
     // La ligne de parité du Test (traceLineOf) part dans la file différée.
     expect(useGame.getState().pendingLogQueue.some((q) => /Résistance/.test(q.line))).toBe(true);
   });

@@ -4,13 +4,13 @@ import { applyMiscast } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
+import { avanceEtapeCascade, draineCascade } from './cascadeTestKit';
 
-// Colère des dieux / Incantation Imparfaite — conséquence INLINE dans la séquence partagée
-// (étape d'affichage).
-// FOLD (2026-06-16) : la conséquence est désormais APPENDUE à la cascade d'incantation ACTIVE
-// (parité avec le Critique d'attaque) via `pushCombatStep` ; hors cascade d'incantation (ces tests
-// appellent `applyMiscast` à nu, sans openCastCascade) le fallback démarre une cascade GÉNÉRIQUE
-// « Conséquences » et l'identité Colère/Imparfaite vit sur l'ÉTAPE (label/icon), plus sur le titre.
+// Colère des dieux / Incantation Imparfaite — D'ABORD une étape à TABLE (le dé du Tableau, poussé
+// inconditionnellement, #1426), PUIS la révélation en étape d'affichage de la MÊME séquence : c'est
+// elle qui porte l'identité Colère/Imparfaite (label/icon), jamais le titre de cascade. Hors cascade
+// d'incantation (ces tests appellent `applyMiscast` à nu), la séquence d'accueil est celle en vol,
+// sinon celle de l'arène en combat (`miscastPurpose`).
 describe('Miscast en séquence (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -41,11 +41,13 @@ describe('Miscast en séquence (store)', () => {
     const { hero } = battle();
     useGame.setState({ pendingCascade: null });
     applyMiscast(useGame.getState, useGame.setState, hero, 'colere');
-    const c = useGame.getState().pendingCascade;
-    expect(c?.purpose).toBe('combat');
-    expect(c?.participants[0].kind).toBe('miscast');
-    expect(c?.participants[0].label).toBe('Colère des dieux'); // identité sur l'ÉTAPE (fold), pas le titre de cascade
-    expect(c?.participants[0].outcome?.length).toBeGreaterThan(0); // lignes de la table en affichage
+    const ouverte = useGame.getState().pendingCascade;
+    expect(ouverte?.purpose).toBe('combat');
+    expect(ouverte?.participants[0].kind, 'le dé du Tableau est une étape, pas un tirage à l’appel').toBe('miscastTable');
+    avanceEtapeCascade(useGame.getState); // le dé tombe au rang de son étape → la révélation suit
+    const revelation = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'miscast');
+    expect(revelation?.label).toBe('Colère des dieux'); // identité sur l'ÉTAPE, pas le titre de cascade
+    expect(revelation?.outcome?.length ?? revelation?.reveal?.lines.length).toBeGreaterThan(0);
   });
 
   it('une Incantation Imparfaite Mineure d’un HÉROS ouvre une séquence', () => {
@@ -53,17 +55,24 @@ describe('Miscast en séquence (store)', () => {
     const { hero } = battle();
     useGame.setState({ pendingCascade: null });
     applyMiscast(useGame.getState, useGame.setState, hero, 'mineure');
-    const c = useGame.getState().pendingCascade;
-    expect(c?.purpose).toBe('combat');
-    expect(c?.participants[0].kind).toBe('miscast');
-    expect(c?.participants[0].label).toBe('Imparfaite'); // identité Imparfaite sur l'ÉTAPE (fold)
+    expect(useGame.getState().pendingCascade?.purpose).toBe('combat');
+    expect(useGame.getState().pendingCascade?.participants[0].kind).toBe('miscastTable');
+    avanceEtapeCascade(useGame.getState);
+    const revelation = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'miscast');
+    expect(revelation?.label).toBe('Imparfaite'); // identité Imparfaite sur l'ÉTAPE
   });
 
-  it('une Maladresse d’un ENNEMI n’ouvre NI séquence NI révélation (instantané)', () => {
+  it('une Maladresse d’un ENNEMI : étape résolue D’OFFICE par le socle, et AUCUNE révélation', () => {
     useGame.getState().seedRng(2);
     const { enemy } = battle();
     useGame.setState({ pendingCascade: null });
     applyMiscast(useGame.getState, useGame.setState, enemy, 'colere');
+    // Aucun siège ne tient cet ennemi : sa table naît tirée (`cascade.poserLeCurseur`).
+    const st = useGame.getState().pendingCascade!.participants[0];
+    expect(st.kind).toBe('miscastTable');
+    expect(st.table!.result, 'une table sans siège est restée non tirée').toBeTruthy();
+    draineCascade(useGame.getState);
+    // La révélation est réservée aux HÉROS : l'ennemi n'en laisse aucune derrière lui.
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 });

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { avanceEtapeCascade } from './cascadeTestKit';
 import { applyAttackResult } from './combatFlow';
 import { combatAdvanceBlocked } from './combatGate';
 import { createHero } from '../engine/character';
@@ -39,6 +40,9 @@ describe('Conséquences d’attaque en révélation (store)', () => {
       defenderDefeated: false, woundsLost: 3, location: 'corps', log: 'touche !',
     } as AttackResult;
     applyAttackResult(useGame.getState, useGame.setState, hero, enemy, hero.weapons[0], res);
+    // La Blessure critique se tire d'abord (étape unique, #1426) — aucun siège ne tenant l'ennemi, le
+    // socle l'a résolue d'office : on la franchit, et la RÉVÉLATION riche s'appende derrière.
+    avanceEtapeCascade(useGame.getState);
     const c = useGame.getState().pendingCascade;
     expect(c?.purpose).toBe('combat');
     const crit = c?.participants.find((s) => s.kind === 'critical');
@@ -102,7 +106,6 @@ describe('Conséquences d’attaque en révélation (store)', () => {
     const { hero, enemy } = battle();
     const heroNow = () => useGame.getState().battle!.combatants.find((c) => c.kind === 'hero')!;
     hero.armour.corps = 3; // PA au corps → la déviation est possible
-    const devId = `cons-deviation-${hero.id}`;
     const res = {
       hit: true, attackerRoll: 33, netSL: 2, critical: true, advantageTo: 'attacker',
       defenderDefeated: false, woundsLost: 3, location: 'corps', critLocation: 'corps', log: 'touche !',
@@ -112,8 +115,10 @@ describe('Conséquences d’attaque en révélation (store)', () => {
     useGame.setState({ pendingCascade: null });
     const suspended = applyAttackResult(useGame.getState, useGame.setState, enemy, hero, enemy.weapons[0], res);
     expect(suspended).toBe(true);
+    const devId = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'deviation')!.id;
+    useGame.getState().cascadeTableRoll(devId); // le dé de sévérité tombe DANS la MÊME fenêtre (#1426)
     const dev = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'deviation');
-    expect(dev?.reveal?.kind).toBe('critical'); // panneau riche porté par l'étape
+    expect(dev?.reveal?.kind).toBe('critical'); // panneau riche porté par l'étape, sous la ligne de dé
 
     // (2) « Subir » applique CE Critique.
     const cwBefore = heroNow().criticalWounds ?? 0;
@@ -127,7 +132,9 @@ describe('Conséquences d’attaque en révélation (store)', () => {
     h.criticalWounds = 0;
     useGame.setState({ pendingCascade: null });
     applyAttackResult(useGame.getState, useGame.setState, enemy, hero, enemy.weapons[0], res);
-    useGame.getState().cascadeChoose(devId, 'devier');
+    const devId2 = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'deviation')!.id;
+    useGame.getState().cascadeTableRoll(devId2);
+    useGame.getState().cascadeChoose(devId2, 'devier');
     useGame.getState().cascadeNext();
     expect(heroNow().criticalWounds ?? 0).toBe(0); // pas de Blessure critique appliquée
   });

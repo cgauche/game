@@ -139,8 +139,11 @@ describe('#99 — génération au marché : la rumeur vise un AUTRE Lieu de la c
     launchAtA();
     seedBattleRng(7);
     openLandMarket(get, set);
-    // #274 : le Test de Ragot est désormais surfacé par la porte (`openRoll`, hero-test, héros piloté-
-    // humain → modale) — drainer comme un jet joueur normal.
+    // #1426 : les dés de l'étal s'offrent d'abord en FENÊTRE DE LOT (un siège tient le monde) ; ce qui
+    // SUIT l'étal — le Test de Ragot — n'ouvre qu'à la validation.
+    get().etalLotConfirm();
+    // #274 : le Test de Ragot est surfacé par la porte (`openRoll`, hero-test, héros piloté-humain →
+    // modale) — drainer comme un jet joueur normal.
     drainCascade();
     const board = get().tradeRumours;
     expect(board.length).toBe(1);

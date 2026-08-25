@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { castSpell, resolveRoundBoundary, counterspellCandidates, routeCounterspell } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -109,6 +110,10 @@ describe('Contre-sort (Dissipation, LDB 46 l.156)', () => {
     if (st.pendingCounterspell) {
       for (const p of st.pendingCounterspell.participants) useGame.getState().counterspellDeclare(p.id, 'pass');
     } else useGame.getState().castConfirm();
+    vi.advanceTimersByTime(2000);
+    // Une Maladresse de l'IA déclare son étape à table comme partout (#1426) : la main ne repasse
+    // qu'une fois la séquence de conséquence jouée (le socle a déjà tiré ce que nul siège ne tient).
+    draineCascade(useGame.getState);
     vi.advanceTimersByTime(2000);
     st = useGame.getState();
     expect(st.pendingCast).toBeNull();

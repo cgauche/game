@@ -508,8 +508,10 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
     const cibleTexte = `const e = { type: 'exposureNight', kind: 'froid', count: 2, target: 'party' };`;
     const contributeur = `const p = { id: h.id, base: 40, target: 40, result: null, interactive: true };`;
     const corpsDeFonction = `function f(): boolean { const kind = 'k'; const actorId = h.id; return { target } != null; }`;
-    const tableSans = `const s = { id: 'x', kind: 'critSeverity', actorId: t.id, table: critSeverityDecl(t, loc) };`;
-    const tableAvec = `const s = { id: 'x', kind: 'critSeverity', actorId: t.id, table: critSeverityDecl(t, loc), stake: combatStakeRef('critSeverity') };`;
+    // `kind` VIVANT (`deviation` : la fenêtre unique de la Blessure critique, #1426) — une fixture sur
+    // un kind mort ne prouve rien du scan réel.
+    const tableSans = `const s = { id: 'x', kind: 'deviation', actorId: t.id, table: critSeverityDecl(t, loc) };`;
+    const tableAvec = `const s = { id: 'x', kind: 'deviation', actorId: t.id, table: critSeverityDecl(t, loc), stake: combatStakeRef('critSeverity') };`;
     expect(stepsWithoutStake(sans)).toHaveLength(1);
     expect(stepsWithoutStake(avec)).toHaveLength(0);
     expect(stepsWithoutStake(raccourci)).toHaveLength(0);

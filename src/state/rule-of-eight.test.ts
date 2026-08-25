@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
+import { draineEtLit } from './cascadeTestKit';
 import { pregen, PREGEN } from '../data/pregens';
 import { findSpell } from '../data';
 import type { CastResult } from '../engine/magic';
@@ -29,20 +30,20 @@ describe('Règle du 8 — câblage store (LDB 46 l.89)', () => {
     const mage = pregen(PREGEN.sorcier);
     useGame.setState({ party: [mage] });
     castFrozen(mage.id, 'Fléchette', 38, true); // réussite, unités 8, lieu corrompu
-    expect(useGame.getState().journal.join('\n')).toMatch(/Imparfaite/);
+    expect(draineEtLit(useGame.getState).join('\n')).toMatch(/Imparfaite/);
   });
 
   it('même dé, mais AUCUNE Corruption à proximité → pas d’Imparfaite', () => {
     const mage = pregen(PREGEN.sorcier);
     useGame.setState({ party: [mage] });
     castFrozen(mage.id, 'Fléchette', 38, false);
-    expect(useGame.getState().journal.join('\n')).not.toMatch(/Imparfaite/);
+    expect(draineEtLit(useGame.getState).join('\n')).not.toMatch(/Imparfaite/);
   });
 
   it('Corruption à proximité mais dé des unités ≠ 8 → pas d’Imparfaite', () => {
     const mage = pregen(PREGEN.sorcier);
     useGame.setState({ party: [mage] });
     castFrozen(mage.id, 'Fléchette', 37, true);
-    expect(useGame.getState().journal.join('\n')).not.toMatch(/Imparfaite/);
+    expect(draineEtLit(useGame.getState).join('\n')).not.toMatch(/Imparfaite/);
   });
 });

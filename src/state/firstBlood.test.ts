@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { applyAttackResult, checkBattleOver, firedAttackBlock, resolveAttack, doAttack } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -195,6 +196,7 @@ describe('Duel judiciaire — premier sang mesuré sur le coup FINALISÉ (#471 d
       critical: true, advantageTo: 'attacker', defenderDefeated: false, log: '',
     };
     applyAttackResult(useGame.getState, useGame.setState, H, E, H.weapons[0], res);
+    draineCascade(useGame.getState); // la sévérité du Critique se tire DANS la fenêtre (#1426)
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
     expect(20 - e.wounds.current).toBe(4); // 2 de base + 2 du Critique — la perte RÉELLE du coup, pas juste `res.woundsLost`
     expect(e.outOfRencontre).toBe(true);

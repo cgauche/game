@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { applyEffects } from './combatFlow';
 import { interludeEventFor } from '../data/interludeEvents';
 import { toBrass, fromBrass } from '../engine/money';
@@ -36,6 +37,7 @@ describe('Interlude — flux start/end', () => {
 
   it('startInterlude : événements tirés par héros, Activités = min(3, semaines), écran dédié', () => {
     useGame.getState().startInterlude(2);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     const itl = useGame.getState().interlude!;
     expect(itl).toBeTruthy();
     expect(useGame.getState().screen).toBe('interlude');
@@ -54,6 +56,7 @@ describe('Interlude — flux start/end', () => {
 
   it('startInterlude : 5 semaines → max 3 Activités (« maximum de trois », LDB 23 l.5)', () => {
     useGame.getState().startInterlude(5);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     for (const st of Object.values(useGame.getState().interlude!.perHero)) {
       const ev = eventOf(st);
       expect(st.left).toBe(Math.max(0, 3 - (ev.fx?.loseActivity ? 1 : 0)));
@@ -62,6 +65,7 @@ describe('Interlude — flux start/end', () => {
 
   it('interludeEnd : Argent à gaspiller (bourse → Revenus seuls), retour campagne, le temps passe', () => {
     useGame.getState().startInterlude(1);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     const itl = useGame.getState().interlude!;
     const heroId = Object.keys(itl.perHero)[0];
     itl.perHero[heroId].revenueBrass = 120; // Revenus simulés (l'Activité arrive en P2)
@@ -79,6 +83,7 @@ describe('Interlude — flux start/end', () => {
   // reprise au MÊME point (`Combatant.craft`/`Combatant.ritual`, `engine/types.ts`).
   it('#897 : un Artisanat/Rituel en cours SURVIT à la clôture ET à la réouverture d’un interlude', () => {
     useGame.getState().startInterlude(1);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     const h = useGame.getState().party[0];
     h.craft = { trappingId: 'dague', tier: 'bronze', avail: 'Commune', atouts: [], defauts: [], drDone: 3, drTarget: 5, difficulty: 'accessible' };
     h.ritual = { spellId: 'graver-une-pierre-d-ogham', drDone: 7, drTarget: 25 };
@@ -87,12 +92,14 @@ describe('Interlude — flux start/end', () => {
     expect(useGame.getState().party[0].craft).toEqual({ trappingId: 'dague', tier: 'bronze', avail: 'Commune', atouts: [], defauts: [], drDone: 3, drTarget: 5, difficulty: 'accessible' });
     expect(useGame.getState().party[0].ritual).toEqual({ spellId: 'graver-une-pierre-d-ogham', drDone: 7, drTarget: 25 });
     useGame.getState().startInterlude(1); // réouverture : `perHero` neuf, `craft`/`ritual` restent au héros
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     expect(useGame.getState().party[0].craft?.drDone).toBe(3);
     expect(useGame.getState().party[0].ritual?.drDone).toBe(7);
   });
 
   it('la clôture NOURRIT le groupe (vie en ville payée par le gaspillage) — pas de famine sur 3 semaines', () => {
     useGame.getState().startInterlude(3);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     const before = useGame.getState().party.map((h) => h.wounds.current);
     useGame.getState().interludeEnd(); // 21 jours — sans le couvert, la Faim RAW tuerait le groupe
     const party = useGame.getState().party;
@@ -102,6 +109,7 @@ describe('Interlude — flux start/end', () => {
 
   it('« Avec le pouvoir » : Niveau 3 sans Revenus → retombe au Niveau 2 (LDB 23 l.33)', () => {
     useGame.getState().startInterlude(1);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     const hero = useGame.getState().party[0];
     hero.careerLevel = 3;
     useGame.getState().interludeEnd();
@@ -120,6 +128,7 @@ describe('Interlude — flux start/end', () => {
     useGame.getState().confirmRoundStart();
     vi.clearAllTimers();
     useGame.getState().startInterlude(1);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     expect(useGame.getState().interlude).toBeNull();
   });
 
@@ -135,6 +144,7 @@ describe('Interlude — flux start/end', () => {
     elf.species = 'Haut Elfe';
     useGame.setState({ party: [elf], interlude: null });
     useGame.getState().startInterlude(3);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     const st = useGame.getState().interlude!.perHero[elf.id];
     const ev = eventOf(st);
     expect(st.left).toBe(Math.max(0, 3 - (ev.fx?.loseActivity ? 1 : 0) - 1)); // −1 devoir elfique
@@ -146,6 +156,7 @@ describe('Interlude — flux start/end', () => {
     elf.species = 'Haut Elfe';
     useGame.setState({ party: [elf], interlude: null });
     useGame.getState().startInterlude(3);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     const st = useGame.getState().interlude!.perHero[elf.id];
     const ev = eventOf(st);
     expect(st.left).toBe(Math.max(0, 3 - (ev.fx?.loseActivity ? 1 : 0))); // pas de devoir

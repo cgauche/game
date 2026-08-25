@@ -99,6 +99,30 @@ export function registerCascadeApplier(kind: string, apply: CascadeApplier): voi
 }
 
 /**
+ * PLI « APRÈS LE DÉ » d'une étape à table — ce que le `kind` dérive du tirage AU MOMENT où il tombe,
+ * et qui ne peut PAS être re-dérivé plus tard : la sévérité d'une Blessure critique consomme du RNG
+ * même sous dé posé (`engine/critical.rollCritical`, Sauvagerie/relances), donc la recalculer au rendu
+ * donnerait une autre Blessure à chaque redessin. Le pli pose sur l'étape ce que la fenêtre montre
+ * (charge de l'applier + `reveal`) : le dé, la ligne et la conséquence parlent d'UN SEUL tirage.
+ *
+ * Il est appliqué par le SITE UNIQUE de pose d'un `table.result` (`tableStepResolved`), donc par les
+ * CINQ pilotes de tirage sans exception (modale, dé posé, curseur posé, « Tout lancer », immédiat) —
+ * un pilote qui l'oublierait rendrait une étape à table résolue mais SANS sa dérivée.
+ *
+ * Un pli PEUT être impur (RNG) : le site unique le MÉMORISE donc par valeur de dé sur l'étape, et ne
+ * le rappelle que pour une valeur jamais vue — cf. `tableStepResolved` pour le contrat exact.
+ */
+export type CascadeTableFold = (step: CascadeStep, get: Get) => CascadeStep;
+
+/** Registre des plis par `kind` — patron `cascadeAppliers` (inversion de dépendance). */
+export const cascadeTableFolds: Record<string, CascadeTableFold> = {};
+
+/** Enregistre (ou remplace) le pli post-dé d'un `kind` d'étape à table. */
+export function registerCascadeTableFold(kind: string, fold: CascadeTableFold): void {
+  cascadeTableFolds[kind] = fold;
+}
+
+/**
  * Registre des PRÉDICATS DE SUCCÈS d'une étape batch sommée — INVERSION de dépendance, patron
  * `cascadeAppliers` : le seuil de succès d'un domaine (naval : `crewTestSuccess`, MDG 14 l.13, seuil
  * réglable par règle optionnelle) est FOURNI par le flux propriétaire, la machinerie générique ne
@@ -275,11 +299,42 @@ export function stakeAtTableRow(stake: StakeRef | undefined, decl: CascadeTableD
   return { ...stake, key: { ...stake.key, entryId: result.id, entryCategory: category } };
 }
 
-/** Étape à table RÉSOLUE : la déclaration qui a tiré + son résultat + l'enjeu redescendu à la ligne
- *  jouée. SITE UNIQUE de la pose d'un `table.result` sur une étape — les quatre pilotes de tirage
- *  (modale, dé posé, résolution forcée, cascade immédiate) passent par ici, sinon l'un d'eux
- *  laisserait l'enjeu au `kind` pendant que les autres l'ont fait descendre. */
-export function tableStepResolved(step: CascadeStep, decl: CascadeTableDecl, result: CascadeTableResult): CascadeStep {
+/**
+ * Étape à table RÉSOLUE : la déclaration qui a tiré + son résultat + l'enjeu redescendu à la ligne
+ * jouée + le PLI post-dé du `kind` (`cascadeTableFolds`). SITE UNIQUE de la pose d'un `table.result`
+ * sur une étape — les CINQ pilotes de tirage (modale, dé posé, curseur posé, résolution forcée,
+ * cascade immédiate) passent par ici, sinon l'un d'eux laisserait l'enjeu au `kind` pendant que les
+ * autres l'ont fait descendre, et rendrait une étape tirée sans sa dérivée.
+ *
+ * CE QUI EST GARANTI — pour UNE étape donnée, un dé posé rend TOUJOURS la même conséquence : la
+ * dérivée est MÉMORISÉE sur l'étape (`step.foldMemo`, keyée par la valeur du dé) et re-servie
+ * telle quelle, le pli n'étant rappelé que pour une valeur jamais vue sur cette étape. Un pli IMPUR
+ * (la sévérité d'un Critique consomme du RNG même sous dé posé) rendrait sinon une Blessure
+ * différente à chaque re-pose de la même valeur, et la fenêtre mentirait sur son propre dé.
+ *
+ * CE QUI N'EST PAS GARANTI — l'ORDRE des dés SUIVANTS après une exploration de poses : la valeur
+ * re-servie ne consomme PAS de RNG, celle qui est découverte en consomme. Explorer 76 → 20 → 76
+ * rend bien deux fois le même Critique sur 76, mais le flux d'aléa a avancé d'un tirage de plus que
+ * si le joueur avait posé 76 d'emblée. Le mémo est un contrat de CONSÉQUENCE, pas de séquence.
+ */
+export function tableStepResolved(step: CascadeStep, decl: CascadeTableDecl, result: CascadeTableResult, get: Get): CascadeStep {
+  const fold = cascadeTableFolds[step.kind];
+  const posee = tableStepPosee(step, decl, result);
+  if (!fold) return posee;
+  const memo = step.foldMemo;
+  const cle = String(result.roll);
+  const deja = memo?.[cle];
+  if (deja) return { ...deja, foldMemo: memo };
+  const { foldMemo: _sansMemo, ...plie } = fold(posee, get);
+  return { ...plie, foldMemo: { ...(memo ?? {}), [cle]: plie } };
+}
+
+/** LA PART PURE de la pose ci-dessus — la déclaration qui a tiré, son résultat, l'enjeu redescendu, et
+ *  RIEN d'autre. Réservée à l'étape poussée DÉJÀ TIRÉE (`rollSeam.tableStepDone`), dont le tirage a eu
+ *  lieu chez son PRODUCTEUR : ce qui se dérive du dé y est déjà calculé, et il n'y a aucune fenêtre où
+ *  poser un pli. `tableStepDone` REFUSE d'ailleurs un `kind` qui en déclare un — un pli sauté rendrait
+ *  une étape tirée sans sa dérivée. */
+export function tableStepPosee(step: CascadeStep, decl: CascadeTableDecl, result: CascadeTableResult): CascadeStep {
   const stake = stakeAtTableRow(step.stake, decl, result);
   return { ...step, table: { ...decl, result }, ...(stake ? { stake } : {}) };
 }
@@ -596,7 +651,7 @@ export function rollCascadeTable(get: Get, set: Set, stepId: string): void {
   // l'étape : le `mod` qui a servi reste lisible (rangée + conséquence) au lieu d'être recalculé.
   const table = liveTableDecl(get(), cur);
   const result = rollTableStep(table, battleRng(), { get });
-  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? tableStepResolved(x, table, result) : x)) } });
+  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? tableStepResolved(x, table, result, get) : x)) } });
 }
 
 /** Faces du dé d'un tirage sur table : la DÉCLARATION l'emporte sur la table, d100 par défaut —
@@ -666,7 +721,7 @@ export function setCascadeTableForcedRoll(get: Get, set: Set, stepId: string, ro
   const live = liveTableDecl(get(), cur);
   const table: CascadeTableDecl = { ...live, forcedRoll: clampTableNatural(live, roll) };
   const result = rollTableStep(table, battleRng(), { get });
-  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...tableStepResolved(x, table, result), fixed: true } : x)) } });
+  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...tableStepResolved(x, table, result, get), fixed: true } : x)) } });
 }
 
 /**
@@ -871,7 +926,15 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   // vaut `null`, `live` retombe naturellement sur `undefined` (pas de merge, pas de crash).
   const live = liveMerge ? get().pendingCascade?.participants : undefined;
   const base = live && live.length >= steps.length && live[i]?.id === step.id ? live : steps;
-  let next = base.map((x, k) => (k === i ? { ...x, ...(step.result ? { result: step.result } : {}), committed: true, outcome: shown } : x));
+  // Le MÉMO DE PLI (`foldMemo`) ne vaut que tant que l'étape est COURANTE et son dé RE-POSABLE : au
+  // COMMIT, l'étape est jouée, plus rien ne se re-pose — et le mémo porte les dérivées des dés
+  // EXPLORÉS PUIS ABANDONNÉS, qui n'appartiennent qu'au siège qui pose. Purgé ICI, seul site qui
+  // étampe `committed` — les trois pilotes y passent.
+  let next = base.map((x, k) => {
+    if (k !== i) return x;
+    const { foldMemo: _joue, ...sansMemo } = x;
+    return { ...sansMemo, ...(step.result ? { result: step.result } : {}), committed: true, outcome: shown };
+  });
   if (out?.insert?.length) next = [...next.slice(0, i + 1), ...out.insert, ...next.slice(i + 1)];
   // TRONCATURE (`stopSequence`) : les étapes restantes n'existent plus — aucun pilote n'a de « reste »
   // à résoudre, à préserver dans `suspendedCascades`, ni à rejouer. Lue ICI, une seule fois, pour les
@@ -1005,7 +1068,7 @@ function poserLeCurseur(get: Get, p: PendingCascade): PendingCascade {
   if (!tableSansSiege(get, st)) return p;
   const decl = liveTableDecl(get(), st);
   const result = rollTableStep(decl, battleRng(), { get });
-  return { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? tableStepResolved(x, decl, result) : x)) };
+  return { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? tableStepResolved(x, decl, result, get) : x)) };
 }
 
 /**
@@ -1103,15 +1166,22 @@ export function resolveRemainingCascade(get: Get, set: Set): PendingCascade | nu
     if (stepInteraction(st) === 'jet' && !st.result) {
       const result = roulerDeEtape(st.target!, battleRng(), st.evaluation);
       steps = steps.map((x, k) => (k === i ? { ...x, result } : x));
-    } else if (stepInteraction(st) === 'table') {
+    }
+    // SÉQUENTIELS, jamais exclusifs : une étape porte une table ET un choix (la sévérité d'un Critique
+    // se tire DANS la fenêtre de Déviation) — `stepInteraction` est une chaîne de PRIORITÉ, donc la
+    // même étape se présente en `'table'` puis, une fois le dé tombé, en `'choix'`. Un `else if` la
+    // laisserait avec son choix non tranché.
+    if (stepInteraction(steps[i]) === 'table') {
       // TIRAGE SUR TABLE sans influence (« Tout lancer ») : mêmes résolveur ET composition de
       // déclaration que la modale (`liveTableDecl` — modificateur vivant au moment du jet).
-      const table = liveTableDecl(get(), st);
+      const table = liveTableDecl(get(), steps[i]);
       const rolled = rollTableStep(table, battleRng(), { get });
-      steps = steps.map((x, k) => (k === i ? tableStepResolved(x, table, rolled) : x));
-    } else if (stepInteraction(st) === 'batch') {
-      steps = steps.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
-    } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
+      steps = steps.map((x, k) => (k === i ? tableStepResolved(x, table, rolled, get) : x));
+    }
+    if (stepInteraction(steps[i]) === 'batch') {
+      steps = steps.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(steps[i]) } : x));
+    }
+    if (stepInteraction(steps[i]) === 'choix' && steps[i].chosen == null) {
       // « Tout résoudre » ne TRANCHE pas un CHOIX du joueur (dévier/subir, piéger…) : on s'arrête dessus.
       set({ pendingCascade: { ...p, participants: steps, cursor: i, log } });
       return null;
@@ -1172,24 +1242,30 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
       const result = roulerDeEtape(st.target!, battleRng(), st.evaluation);
       cur = cur.map((x, k) => (k === i ? { ...x, result } : x));
       unwitnessed = true;
-    } else if (stepInteraction(st) === 'table') {
-      const table = liveTableDecl(get(), st); // même composition de déclaration que la modale
+    }
+    // SÉQUENTIELS, jamais exclusifs (même raison qu'à `resolveRemainingCascade`) : table PUIS choix
+    // sur la MÊME étape, sinon la table résolue partirait au commit avec son choix non tranché.
+    if (stepInteraction(cur[i]) === 'table') {
+      const table = liveTableDecl(get(), cur[i]); // même composition de déclaration que la modale
       const rolled = rollTableStep(table, battleRng(), { get });
-      cur = cur.map((x, k) => (k === i ? tableStepResolved(x, table, rolled) : x));
-    } else if (stepInteraction(st) === 'batch') {
-      cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st, true) } : x)); // résolue d'office → étampe de trace (#1281)
-    } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
-      if (st.defaultChoice == null) {
+      cur = cur.map((x, k) => (k === i ? tableStepResolved(x, table, rolled, get) : x));
+    }
+    if (stepInteraction(cur[i]) === 'batch') {
+      cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(cur[i], true) } : x)); // résolue d'office → étampe de trace (#1281)
+    }
+    if (stepInteraction(cur[i]) === 'choix' && cur[i].chosen == null) {
+      const choix = cur[i];
+      if (choix.defaultChoice == null) {
         // Aucun défaut AUTEURISÉ (patron `resolveRemainingCascade` l.317-320) : on ne tranche PAS en
         // silence — la cascade s'arrête PENDANTE, surfacée (`pendingCascade`) pour que l'appelant/la
         // modale la reprenne (devtools `advanceRiverDay`/`skipToArrival`, cadence commandée, tout
         // futur appelant immédiat).
         set({
-          pendingCascade: { title: ctx?.title ?? st.label ?? 'Choix', purpose: ctx?.purpose ?? 'test', participants: cur, cursor: i, log: ctx?.log ?? [] },
+          pendingCascade: { title: ctx?.title ?? choix.label ?? 'Choix', purpose: ctx?.purpose ?? 'test', participants: cur, cursor: i, log: ctx?.log ?? [] },
         });
         return cur;
       }
-      cur = cur.map((x, k) => (k === i ? { ...x, chosen: st.defaultChoice! } : x));
+      cur = cur.map((x, k) => (k === i ? { ...x, chosen: choix.defaultChoice! } : x));
     } // affichage / quantité : rien à résoudre avant la conséquence — une étape de quantité naît avec
       // son nombre d'ouverture (`quantityStep`), qu'aucun pilote n'a donc à trancher à l'aveugle.
     const r = commitStep(get, set, cur, i, false, unwitnessed, ctx?.rowSurface);

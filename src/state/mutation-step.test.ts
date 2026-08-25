@@ -14,6 +14,8 @@ import {
 import { species } from '../data';
 import { createHero } from '../engine/character';
 import { setDesFixes, resetDesFixes, desFixes } from '../engine/fixedDie';
+import { canFixDie } from './netOwnership';
+import { draineCascade } from './cascadeTestKit';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
 
@@ -23,7 +25,11 @@ import type { Combatant } from '../engine/types';
  * c'est votre corps ou votre esprit qui va renaître », puis le Tableau de Corruption, puis la
  * sous-table « Tête bestiale » EDOC 12) passent par le résolveur d'étape UNIQUE (`rollTableStep`) et
  * se CHAÎNENT par insertion. Le lookup mécanique reste au moteur (`mutationKindFor` / `mutationAt`).
- * Sans l'option « Dés fixés », le chemin est bit-à-bit celui d'avant (sonde différentielle ci-dessous).
+ *
+ * Les étapes sont POUSSÉES INCONDITIONNELLEMENT (#1426) : ni l'option « Dés fixés » ni le siège
+ * n'entrent dans leur DÉCLARATION. Ce que le socle en fait est SA politique (`cascade.poserLeCurseur` :
+ * fenêtre pour qui tient la victime, résolution d'office sinon), et l'option n'ajoute que la POSE du
+ * dé. Le flux d'aléa, lui, ne bouge pas (sonde différentielle ci-dessous).
  */
 
 const HUMAIN = 'humains-reiklander';
@@ -123,6 +129,7 @@ describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
         const ref = cheminAvant(hero, seed);
         seedBattleRng(seed);
         applyMutation(useGame.getState, useGame.setState, hero);
+        draineCascade(useGame.getState); // les trois dés tombent au RANG de leur étape, dans le même ordre
         const apres = d100(battleRng()); // dé SUIVANT → mesure la consommation exacte du flux
         expect(hero.mutations?.length, `${sp}/${seed}`).toBe(1);
         expect(hero.mutations![0].id, `${sp}/${seed} : mutation différente`).toBe(ref.m.id);
@@ -133,18 +140,22 @@ describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
     }
   });
 
-  it('option ÉTEINTE : aucune étape À POSER — la mutation tombe inline, avec sa révélation', () => {
+  it('option ÉTEINTE : les étapes sont LÀ quand même — aucun dé posable, et la mutation tombe en les jouant', () => {
     const hero = heroSolo();
     seedBattleRng(5);
     const lines = applyMutation(useGame.getState, useGame.setState, hero);
-    expect(hero.mutations?.length).toBe(1);
-    expect(lines.join(' ')).toContain('MUTE');
-    // Zéro friction pour qui n'a pas l'option : AUCUNE étape à TABLE à poser (les trois dés sont tirés
-    // inline). La seule étape ouverte est l'AFFICHAGE de la révélation (#942 L8 : elle n'a jamais été
-    // une file parallèle — elle est une étape, ici la seule).
-    const steps = useGame.getState().pendingCascade?.participants ?? [];
-    expect(steps.every((s) => s.table == null)).toBe(true);
-    expect(steps.some((s) => s.kind === 'mutation' && !!s.reveal)).toBe(true);
+    expect(lines, 'rien ne se dit avant que le dernier dé ne tombe').toEqual([]);
+    const nature = useGame.getState().pendingCascade!.participants[0];
+    expect(nature.kind).toBe('mutationNature');
+    expect(stepInteraction(nature)).toBe('table');
+    expect(canFixDie(useGame.getState(), hero.id), 'option ÉTEINTE : la pose n’est pas offerte').toBe(false);
+    expect(hero.mutations ?? []).toHaveLength(0);
+    // La séquence jouée dénoue : nature → table → mutation attachée + révélation (#942 L8 : la
+    // révélation n'est pas une file parallèle, c'est une étape d'AFFICHAGE de la même séquence).
+    const kinds = draineCascade(useGame.getState);
+    expect(kinds.slice(0, 2)).toEqual(['mutationNature', 'mutationTable']);
+    expect(useGame.getState().party[0].mutations?.length).toBe(1);
+    expect(kinds).toContain('mutation');
   });
 
   it('option ACTIVE + victime contrôlée : étape de NATURE non résolue, AUCUNE mutation attachée', () => {
@@ -264,7 +275,7 @@ describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
     expect(victime.damned).toBe(true);
   });
 
-  it('victime NON contrôlée par le siège local (ennemi sans siège MJ) : aucune étape, résolution inline', () => {
+  it('victime NON contrôlée par le siège local (ennemi sans siège MJ) : l’étape est POUSSÉE et le socle la résout D’OFFICE', () => {
     const hero = heroSolo();
     setDesFixes(true);
     const npc = { ...structuredClone(hero), id: 'npc-1', kind: 'enemy' } as Combatant;
@@ -274,8 +285,13 @@ describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
     useGame.setState({ party: [hero, npc] });
     seedBattleRng(2);
     applyMutation(useGame.getState, useGame.setState, npc);
-    expect(useGame.getState().pendingCascade).toBeNull();
-    expect(npc.mutations?.length).toBe(1);
+    // Le porteur n'est tenu par AUCUN siège : le socle a déjà tiré l'étape sous le curseur, elle naît
+    // résolue (`cascade.poserLeCurseur`). Aucune branche de flux n'a décidé ça : c'est la politique.
+    const nature = useGame.getState().pendingCascade!.participants[0];
+    expect(nature.kind).toBe('mutationNature');
+    expect(nature.table!.result, 'une table sans siège est restée non tirée').toBeTruthy();
+    draineCascade(useGame.getState);
+    expect(useGame.getState().party[1].mutations?.length).toBe(1);
   });
 });
 

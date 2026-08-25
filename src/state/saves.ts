@@ -81,14 +81,32 @@ export function snapshotSave(
     data[k] = v === undefined ? null : v;
   }
   const scene = state.scene as { nom?: string; id?: string } | null;
+  const copie = JSON.parse(JSON.stringify(data)) as Record<string, unknown>; // deep copy JSON-sûre
+  purgeFoldMemo(copie.pendingCascade);
+  purgeFoldMemo(copie.suspendedCascades);
   return {
     version: SAVE_VERSION,
     savedAt,
     sceneLabel: scene?.nom ?? scene?.id ?? 'Sans scène',
     gameTime: typeof state.gameTime === 'number' ? state.gameTime : 0,
-    data: JSON.parse(JSON.stringify(data)) as Record<string, unknown>, // deep copy JSON-sûre
+    data: copie,
     rules: { ...rules },
   };
+}
+
+/**
+ * SECRET DES POSES — le mémo de pli d'une étape à table (`CascadeStep.foldMemo`, `cascade.
+ * tableStepResolved`) porte les conséquences des dés EXPLORÉS PUIS ABANDONNÉS par le siège qui pose.
+ * Il ne quitte JAMAIS ce siège : ni dans la sauvegarde, ni dans le snapshot coop diffusé aux autres
+ * tables. Une seule couture pour les deux — `netFlow.netSnapshot` passe par `snapshotSave`.
+ * Un rechargement re-dérive le pli à la première re-pose (le mémo est un cache, pas une donnée).
+ */
+function purgeFoldMemo(v: unknown): void {
+  if (Array.isArray(v)) { for (const x of v) purgeFoldMemo(x); return; }
+  if (!v || typeof v !== 'object') return;
+  const o = v as Record<string, unknown>;
+  delete o.foldMemo;
+  for (const k of Object.keys(o)) purgeFoldMemo(o[k]);
 }
 
 // ── Règles maison dans le snapshot COOP (parité hôte/invité) ──────────────────────────────────

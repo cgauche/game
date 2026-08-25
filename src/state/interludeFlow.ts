@@ -16,8 +16,8 @@ import { battleRng } from './battleRng';
 import { d100, deMonde, roll as rollDice } from '../engine/dice';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure } from '../engine/tests';
 import { INTERLUDE_EVENTS, interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
-import { registerCascadeApplier, registerTableStep, rollTableStep, startCascade } from './cascade';
-import { freeCons, rollLine, poseOfferte } from './rollSeam';
+import { registerCascadeApplier, registerTableStep, startCascade } from './cascade';
+import { freeCons, rollLine } from './rollSeam';
 import type { CascadeStep, CascadeTableDecl } from './pendings';
 import { fromBrass, toBrass, formatMoney, priceToMoney, canAfford, parseStatus, PA_PER_CO, PA_PER_SC } from '../engine/money';
 import { partyMoneyTotal, bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse, debitBourse } from './bourseFlow';
@@ -213,23 +213,17 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
   for (const h of party) perHero[h.id] = { left: baseLeft, granted: baseLeft, revenueBrass: 0 };
   set({ interlude: { weeks: w, phase: 'tirage', perHero }, bank: get().bank ?? [], pendingOrders: [], screen: 'interlude' });
   for (const l of lines) get().log(l);
-  // FENÊTRE DE POSE du dé d'Événement (#942 L7) — option « Dés fixés » + siège qui contrôle CE héros
-  // (`poseOfferte`, LA politique de pose du socle) : son tirage devient une étape à table poussée NON RÉSOLUE, et AUCUN effet ne lui
-  // est appliqué avant la pose. Sans l'option ni le contrôle : le dé est tiré ici, par le MÊME
-  // résolveur — zéro friction, flux RNG identique. Chaque héros a SA fenêtre (en coop, chaque siège
-  // pose pour les siens) ; le dénouement de GROUPE ferme la séquence.
-  const steps: CascadeStep[] = [];
-  for (const h of party) {
-    if (poseOfferte(get, h.id)) { steps.push(eventStep(h)); continue; }
-    for (const l of finishInterludeEvent(get, set, h, rollTableStep(INTERLUDE_EVENT_DECL, battleRng()).roll)) get().log(l);
-  }
-  if (steps.length) startCascade(get, set, { title: msg('if.drawTitle'), icon: 'nav/dice', purpose: INTERLUDE_PURPOSE, steps: [...steps, purseStep()] });
-  else for (const l of finishInterludeDraw(get, set)) get().log(l);
+  // Le dé d'Événement de CHAQUE héros est une étape à TABLE, poussée NON RÉSOLUE (#1426) : aucun
+  // effet ne lui est appliqué avant que SON dé ne tombe, et il tombe au RANG de l'étape (jamais à
+  // l'appel). Ce qu'il advient de l'étape appartient au socle (`cascade.poserLeCurseur`) : une
+  // fenêtre pour le siège qui tient le héros, une résolution d'office si nul siège ne le tient — et
+  // l'option « Dés fixés » n'y ajoute que la POSE. Le dénouement de GROUPE ferme la séquence.
+  const steps: CascadeStep[] = party.map(eventStep);
+  startCascade(get, set, { title: msg('if.drawTitle'), icon: 'nav/dice', purpose: INTERLUDE_PURPOSE, steps: [...steps, purseStep()] });
   set({ party: [...get().party] });
 }
 
-/** DÉNOUEMENT d'un Événement pour UN héros — commun aux deux chemins (dé tiré inline / dé posé en
- *  étape). Le dé est l'autorité : il est persisté (`eventRoll`) et re-résolu par `interludeEventFor`,
+/** DÉNOUEMENT d'un Événement pour UN héros, appelé par l'applier de son étape. Le dé est l'autorité : il est persisté (`eventRoll`) et re-résolu par `interludeEventFor`,
  *  la même lecture que les Activités en aval. Renvoie les lignes de journal. */
 function finishInterludeEvent(get: Get, set: Set, hero: Combatant, roll: number): string[] {
   const itl = get().interlude;

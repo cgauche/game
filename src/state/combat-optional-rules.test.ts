@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame, type BattleState } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { applyAttackResult, applyOpposedCritical, attackEnv } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import { setRule, resetRule } from '../engine/policy';
@@ -94,8 +95,13 @@ describe('combat-critical-deflect — offre de Déviation Critique (LDB 63 l.30)
     const h = hero({ armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 }, criticalWounds: 0 });
     setBattle([e, h]);
     const suspended = applyAttackResult(useGame.getState, useGame.setState, e, h, critWeapon, critRes());
-    expect(suspended).toBe(false); // aucune suspension
-    expect(useGame.getState().pendingCascade?.participants.some((s) => s.kind === 'deviation')).toBeFalsy();
+    // La sévérité se tire toujours dans SA fenêtre (#1426) ; c'est la DÉCISION qui disparaît : l'étape
+    // ne porte AUCUNE voie, donc le Critique est subi tel quel.
+    expect(suspended).toBe(true);
+    const dev = useGame.getState().pendingCascade!.participants.filter((s) => s.kind === 'deviation');
+    expect(dev).toHaveLength(1);
+    expect(dev[0].options, 'règle désactivée → aucune voie de Déviation').toBeUndefined();
+    draineCascade(useGame.getState);
     const hh = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
     expect(hh.criticalWounds ?? 0).toBe(1); // Critique subi
     expect(hh.armour.corps).toBe(3);        // PA intacte (pas de déviation)
@@ -107,6 +113,7 @@ describe('combat-critical-deflect — offre de Déviation Critique (LDB 63 l.30)
     const h = hero({});
     setBattle([h, e]);
     applyAttackResult(useGame.getState, useGame.setState, h, e, critWeapon, critRes());
+    draineCascade(useGame.getState); // aucun siège ne tient l'ennemi : sa table est résolue d'office
     const ee = useGame.getState().battle!.combatants.find((c) => c.id === 'e1')!;
     expect(ee.armour.corps).toBe(3);          // PA intacte (pas d'auto-déviation)
     expect(ee.criticalWounds ?? 0).toBe(1);   // Critique subi

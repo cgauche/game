@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { useGame } from '../state/store';
+import { draineCascade } from '../state/cascadeTestKit';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { fromBrass } from '../engine/money';
@@ -39,6 +40,7 @@ function buildSeam(weeks = 3): InterludeSeam {
   distributeCredit(useGame.getState, useGame.setState, fromBrass(5000)); // richesse de départ répartie sur les bourses perso (#531)
   useGame.getState().seedRng(7);
   useGame.getState().startInterlude(weeks);
+  draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
   const s = useGame.getState();
   return { interlude: s.interlude!, party: s.party, money: partyMoneyTotal(useGame.getState), bank: s.bank, pendingOrders: s.pendingOrders };
 }

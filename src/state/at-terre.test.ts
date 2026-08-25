@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { applyAttackResult } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -43,6 +44,7 @@ describe('0 PB → État À Terre, MÊME sur overkill/Critique (LDB 18 l.15)', (
       critical: false, advantageTo: 'attacker', defenderDefeated: false, log: '',
     };
     applyAttackResult(useGame.getState, useGame.setState, E, H, E.weapons[0], res);
+    draineCascade(useGame.getState); // la sévérité du Critique se tire DANS la fenêtre (#1426)
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.wounds.current).toBeLessThanOrEqual(0);
     // Invariante : à 0 PB on n'est jamais debout sans état.

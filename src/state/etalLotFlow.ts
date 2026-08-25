@@ -4,11 +4,14 @@
  * ICI sous un id (patron `registerCascadeApplier`), et le flux décide s'il les exécute d'un trait ou
  * s'il offre d'abord leurs dés à la pose.
  *
- * DEUX CHEMINS, UN SEUL GÉNÉRATEUR :
- *  - pose NON offerte (option « Dés fixés » éteinte, ou cadence déférée à un automate) : le générateur
- *    tourne UNE fois, sur le rng vivant, exactement comme avant ce lot — l'écran s'ouvre dans la foulée ;
- *  - pose offerte : il tourne une fois sur un rng ENREGISTREUR (même flux d'aléa, même ordre), la
- *    fenêtre montre ses dés, et la validation le REJOUE avec les dés du lot — sans consommer d'aléa.
+ * DEUX CHEMINS, UN SEUL GÉNÉRATEUR — et c'est la SURFACE qui tranche, le même prédicat que tout jet
+ * (`rollSeam.surfaceOf` sur le porteur MONDE, #1426) :
+ *  - aucun siège humain ne tient le monde (cadence déférée à un automate) : le générateur tourne UNE
+ *    fois, sur le rng vivant — l'écran s'ouvre dans la foulée ;
+ *  - un siège tient le monde : il tourne une fois sur un rng ENREGISTREUR (même flux d'aléa, même
+ *    ordre), la fenêtre montre ses dés, et la validation le REJOUE avec les dés du lot — sans
+ *    consommer d'aléa. L'option « Dés fixés » n'entre pas dans l'ouverture de la fenêtre : elle ne
+ *    gate que la POSE d'un dé, au site unique de la pose (`ui/forcedDieRow`, `canFixDie`).
  *
  * L'invariant que ce flux ne paie jamais : la fenêtre ne change rien par sa seule existence. Valider
  * sans rien poser rejoue les dés enregistrés et rend l'étal identique.
@@ -17,8 +20,7 @@ import type { Get, Set } from './flowTypes';
 import type { EtalLotRow } from './pendings';
 import type { RNG } from '../engine/dice';
 import { battleRng } from './battleRng';
-import { cadenceAuto } from '../engine/cadence';
-import { poseOfferte } from './rollSeam';
+import { surfaceOf } from './rollSeam';
 import { WORLD_STEP_OWNER } from './netOwnership';
 import { lotEnregistreur, lotRejoueur, type EtalDraw } from './etalLot';
 
@@ -37,18 +39,18 @@ export function registerEtalGenerateur(cible: string, gen: EtalGenerateur, apres
 /**
  * Ouvre un étal : soit d'un trait, soit par la fenêtre de lot. `label` titre la fenêtre.
  *
- * La CADENCE tranche avant tout (patron `resolveSurface`) : en Rapide/Auto rien ne s'ouvre, les dés
- * tombent seuls — une fenêtre de pose n'a pas de sens quand le joueur a demandé qu'on joue à sa place.
+ * `surfaceOf` porte DÉJÀ la cadence (auto → aucun siège à la manœuvre) : une fenêtre n'a pas de sens
+ * quand le joueur a demandé qu'on joue à sa place.
  */
 export function ouvrirEtal(get: Get, set: Set, cible: 'land' | 'port', label: string): void {
   const entree = generateurs[cible];
   if (!entree) return;
-  if (cadenceAuto() || !poseOfferte(get, WORLD_STEP_OWNER)) {
+  if (!surfaceOf(get, WORLD_STEP_OWNER)) {
     entree.gen(get, set, battleRng(), () => {});
     entree.apres?.(get, set);
     return;
   }
-  // Pose offerte : on tire pour de vrai (le flux d'aléa est celui d'avant), on montre les dés, et
+  // Un siège tient le monde : on tire pour de vrai (le flux d'aléa est celui d'avant), on montre les dés, et
   // l'état d'étal produit par ce passage sera REMPLACÉ par le rejeu de la validation.
   const lot = lotEnregistreur(battleRng());
   entree.gen(get, set, lot.rng, lot.phase);

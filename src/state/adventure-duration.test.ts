@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { heroStatus } from './interludeFlow';
 import { applyOps } from '../engine/ops';
 import { createHero } from '../engine/character';
@@ -51,6 +52,7 @@ describe('statusMod (LDB 23 l.228-234) — Standing temporaire « pour la procha
     applyOps(h, [{ op: 'statusMod', amount: 2 }], { label: 'Réputation' });
     expect(heroStatus(useGame.getState().party[0]).standing).toBe(base + 2); // toujours actif CETTE aventure
     useGame.getState().startInterlude(1); // ouvre l'interlude → aventure précédente CLOSE → purge
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     expect(heroStatus(useGame.getState().party[0]).standing).toBe(base);
     expect((useGame.getState().party[0].activeEffects ?? []).some((e) => e.statusMod != null)).toBe(false);
   });

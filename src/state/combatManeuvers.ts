@@ -33,7 +33,7 @@ import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatu
 import { findTalentById, findPsychologyById, findManeuverById, combatStakeRef, dataLabel, type ManeuverDef, type ManeuverMeasure } from '../data';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { freeCons } from './rollSeam';
-import { pilotedByHuman } from './netOwnership';
+import { defenseSurfaced } from './netOwnership';
 import { inBattleId } from './combatants';
 import type { CascadeStep } from './pendings';
 import type { GameOp } from '../engine/ops';
@@ -469,12 +469,14 @@ export function resolveManeuver(
   // jamais contre un objet INANIMÉ (il n'a ni psychologie ni Engagement).
   for (const t of affected) if (!isInanimate(t)) markAttacked(attacker, t);
 
-  // Split : défenseurs PILOTÉS PAR UN HUMAIN influençables (défense en cascade, Chance/Résilience) vs le
-  // reste (silencieux, IA en masse). Un défenseur Surpris (`cannotDefend`) ne peut pas réagir → résolu en
-  // silence (parité maybeOpenDefense). Gate : jet d'attaquant présent, opposition réelle (defense ≠ resist),
-  // et effets à subir (pas de fumée pure).
+  // Split : défenseurs SURFACÉS influençables (défense en cascade, Chance/Résilience) vs le reste
+  // (silencieux, IA en masse). MÊME prédicat que TOUTES les autres défenses (`defenseSurfaced`, #989 —
+  // un siège humain QUELCONQUE tient le défenseur, fût-il distant) : c'est la parité `maybeOpenDefense`
+  // annoncée ci-dessus, et une défense de zone ne peut pas répondre depuis une autre table de vérité.
+  // Un défenseur Surpris (`cannotDefend`) ne peut pas réagir → silence. Gate : jet d'attaquant présent,
+  // opposition réelle (defense ≠ resist), et effets à subir (pas de fumée pure).
   const canDefend = !!atk && !!def.defense && def.defense !== 'resist' && (def.effects?.length ?? 0) > 0;
-  const heroDefenders = canDefend ? affected.filter((t) => pilotedByHuman(get(), t) && !isOutOfAction(t) && !cannotDefend(t)) : [];
+  const heroDefenders = canDefend ? affected.filter((t) => defenseSurfaced(get(), t) && !isOutOfAction(t) && !cannotDefend(t)) : [];
   for (const tgt of affected) if (!heroDefenders.includes(tgt)) hitOne(tgt);
   flushLog();
   if (heroDefenders.length) {

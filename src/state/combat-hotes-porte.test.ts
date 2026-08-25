@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { useGame, type BattleState } from './store';
+import { avanceEtapeCascade } from './cascadeTestKit';
 import {
   maybeOpenDefense, openSurfacedDefense, openAttackCascade, startDisengage, openCastCascade,
   openCastOpposition, shareCastStep, applyStructureCriticalToTarget, applyMiscast, resolveDeviation,
@@ -267,6 +268,7 @@ describe('#1262 lot 5a — AFFICHAGES adossés aux situations de combat', () => 
     const { hero } = setup({ x: 1, y: 0 }, [sword]);
     seedBattleRng(3);
     applyMiscast(useGame.getState, useGame.setState, hero, 'mineure');
+    avanceEtapeCascade(useGame.getState); // le dé du Tableau tombe à son étape → la révélation suit
     const st = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'miscast')!;
     expect(st.label).toBe('Imparfaite');
     expect(st.icon).toBe('fire/blast');
@@ -279,6 +281,7 @@ describe('#1262 lot 5a — AFFICHAGES adossés aux situations de combat', () => 
     const { hero } = setup({ x: 1, y: 0 }, [sword]);
     seedBattleRng(3);
     applyMiscast(useGame.getState, useGame.setState, hero, 'colere');
+    avanceEtapeCascade(useGame.getState);
     const st = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'miscast')!;
     expect(st.label).toBe('Colère des dieux');
     expect(st.icon).toBe('magic/power');

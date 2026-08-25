@@ -6,6 +6,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
 import { gainCorruption, corruptionTarget } from './corruptionFlow';
+import { draineCascade, avanceEtapeCascade } from './cascadeTestKit';
+import type { RevealEntry } from './store';
 import { makePregens } from '../data/pregens';
 import mutationTables from '../data/mutationTables.json';
 import type { Combatant } from '../engine/types';
@@ -141,10 +143,16 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
     // Échec forcé (déterministe) puis acquittement → mutation (−BFM) + révélation témoin.
     useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 99, target: 30, sl: -7, success: false } });
     useGame.getState().resolveCorruption();
+    // Les dés de la mutation sont des étapes : elle tombe en les jouant, et la RÉVÉLATION est une
+    // étape d'AFFICHAGE de la MÊME séquence — on la cueille au passage, avant la clôture.
+    let reveal: RevealEntry | undefined;
+    for (let i = 0; i < 10 && useGame.getState().pendingCascade; i++) {
+      reveal ??= useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'mutation')?.reveal;
+      avanceEtapeCascade(useGame.getState);
+    }
     const after = useGame.getState().party.find((h) => h.id === a.id)!;
     expect(after.mutations?.length).toBe(1);
     expect(after.corruption).toBe(Math.max(0, 5 - 3)); // −BFM après mutation
-    const reveal = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'mutation')?.reveal;
     expect(reveal).toBeTruthy();
     expect(reveal!.subjectId).toBe(a.id);
   });
@@ -163,6 +171,7 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
     useGame.getState().corruptionRoll();
     useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 99, target: 30, sl: -7, success: false } });
     useGame.getState().resolveCorruption();
+    draineCascade(useGame.getState);
     const after = useGame.getState().party.find((h) => h.id === a.id)!;
     expect(after.mutations?.length).toBe(1);
     // La mutation obtenue est atteignable depuis une table EDOC « nurgle » (phys/mental/sous-table).
@@ -200,6 +209,7 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
     useGame.getState().resolveCorruption();
     expect(useGame.getState().pendingRenounce).toBeTruthy();
     useGame.getState().renounceResolve(false); // subir la mutation
+    draineCascade(useGame.getState);
     const after = useGame.getState().party.find((h) => h.id === a.id)!;
     expect(after.mutations?.length).toBe(1);
     expect(after.damned).toBe(true);
@@ -296,6 +306,7 @@ describe('Effet ops { op: corruption } (gain direct via ops generiques)', () => 
     useGame.getState().corruptionRoll();
     useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 99, target: 30, sl: -7, success: false } });
     useGame.getState().resolveCorruption();
+    draineCascade(useGame.getState);
     const after = useGame.getState().party.find((h) => h.id === a.id)!;
     expect(after.mutations?.length).toBe(1);
     const nurgleRefs = new Set(

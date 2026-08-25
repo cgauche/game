@@ -8,6 +8,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
+import { avanceEtapeCascade, draineEtLit } from './cascadeTestKit';
 import { pregenParty, PREGEN } from '../data/pregens';
 import type { Combatant } from '../engine/types';
 import type { CastResult } from '../engine/magic';
@@ -45,11 +46,13 @@ describe('Péché et Colère Divine (LDB 40)', () => {
     useGame.setState({ party });
     const before = ally.wounds.current;
     confirmPrayerWithRoll(priest.id, ally.id, 42); // unités 2 ≤ 3 Péchés
+    // Le dé de la Colère est une ÉTAPE : elle se joue, et ce qu'elle rend au joueur vit sur elle
+    // (révélation) autant que dans le journal.
+    const rendu = draineEtLit(useGame.getState).join('\n');
     const after = useGame.getState().party.find((h) => h.id === ally.id)!;
     expect(after.wounds.current).toBe(before + 1); // la Bénédiction se manifeste quand même
-    const journal = useGame.getState().journal.join('\n');
-    expect(journal).toMatch(/Colère des dieux/);
-    expect(journal).toMatch(/Péché expié/);
+    expect(rendu).toMatch(/Colère des dieux/);
+    expect(rendu).toMatch(/Péché expié/);
     expect(useGame.getState().party.find((h) => h.id === priest.id)!.sinPoints).toBe(2);
   });
 
@@ -76,7 +79,7 @@ describe('Péché et Colère Divine (LDB 40)', () => {
       pendingCast: { casterId: priest.id, targetId: ally.id, spellId: 'benediction-de-guerison', missile: false, focused: false, result },
     });
     useGame.getState().castConfirm();
-    const journal = useGame.getState().journal.join('\n');
+    const journal = draineEtLit(useGame.getState).join('\n');
     expect(journal.match(/Colère des dieux \(/g)?.length).toBe(1); // un seul JET de table
     expect(useGame.getState().party.find((h) => h.id === priest.id)!.sinPoints).toBe(1);
   });
@@ -85,7 +88,11 @@ describe('Péché et Colère Divine (LDB 40)', () => {
     const { priest, ally, party } = priestParty(5);
     useGame.setState({ party });
     confirmPrayerWithRoll(priest.id, ally.id, 41); // unités 1 ≤ 5
-    // La Colère est INLINE dans la séquence (étape 'miscast' portant la charge riche `reveal`).
+    // Le dé de la Colère tombe au rang de SON étape ; la révélation (charge riche `reveal`) suit dans
+    // la MÊME séquence — on joue jusqu'à elle.
+    for (let i = 0; i < 6 && !useGame.getState().pendingCascade?.participants.some((s) => s.kind === 'miscast'); i++) {
+      avanceEtapeCascade(useGame.getState);
+    }
     const step = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'miscast');
     expect(step?.reveal?.kind).toBe('miscast');
     // d100 ∈ [1;100] + 5×10 → le jet effectif est forcément > 50.

@@ -10,6 +10,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { toBrass, fromBrass, PA_PER_CO } from '../engine/money';
@@ -37,6 +38,7 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
     creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, fromBrass(5000));
     useGame.getState().seedRng(13);
     useGame.getState().startInterlude(3);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     // Neutralise l'événement d100 tiré (on teste le catalogue, pas l'événement).
     const itl = useGame.getState().interlude!;
     itl.perHero[hero().id] = { ...st(), fx: undefined, left: 3 };
@@ -86,7 +88,14 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
   it('Pénitence — Maladresse : Colère des dieux « à la place » (table LDB 40, −1 Péché expié), pas d’Exténué', () => {
     hero().sinPoints = 2;
     useGame.getState().interludeActivity(hero().id, 'penitence');
+    const parquees = useGame.getState().suspendedCascades.length;
     forceRoll(44, false, -1); // 44 = double raté → Maladresse
+    // Le tirage sur la table de la Colère est une étape de la séquence (#1426) : c'est en la jouant
+    // que le contrecoup se dénoue — et donc que le Péché s'expie. HORS COMBAT, cette étape ne PARQUE
+    // aucune séquence d'accueil : le contrecoup rejoint ce qui est en vol, il ne l'évince pas.
+    expect(useGame.getState().suspendedCascades.length, 'le contrecoup a parqué une séquence hors combat').toBe(parquees);
+    draineCascade(useGame.getState);
+    expect(useGame.getState().suspendedCascades.length).toBe(parquees);
     const journal = useGame.getState().journal.join('\n');
     expect(journal).toMatch(/Colère/);
     expect(st().closeOps).toBeUndefined(); // « à la place » : l'issue d'échec ne tombe pas

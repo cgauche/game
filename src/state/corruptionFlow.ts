@@ -38,7 +38,7 @@ import {
 } from '../data/mutations';
 import { species, mutationBodyMaxForSpecies, combatStakeRef } from '../data';
 import { findTableEntry } from '../engine/tables';
-import { registerCascadeApplier, registerTableStep, rollTableStep, pushStep } from './cascade';
+import { registerCascadeApplier, registerTableStep, pushStep } from './cascade';
 import { touchActors } from './combatOrParty';
 import { actorIn } from './combatants';
 import type { PendingCascade, PendingCorruption, PendingMutationStep } from './pendings';
@@ -48,9 +48,9 @@ import { testValue } from '../engine/skills';
 import { pushReveal } from './combatFlow';
 import { checkPartyWiped } from './partyWipe';
 import { evLines } from './combatLog';
-import { pilotedByHuman } from './netOwnership';
+import { tenuParUnHumain } from './netOwnership';
 import { followsCharacterRules } from '../engine/relations';
-import { resultLine, freeCons, tableStep, poseOfferte, type BuiltCascadeStep } from './rollSeam';
+import { resultLine, freeCons, tableStep, type BuiltCascadeStep } from './rollSeam';
 import { t } from '../i18n';
 import { stepDetail } from './rollSeam';
 
@@ -91,11 +91,12 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   // Seuil « Corrompu » (l.80) : à CHAQUE gain au-delà de BFM+BE (+ Âme pure), Test de Résistance
   // Intermédiaire (+0) ; succès = contenu « pour cette fois », échec = mutation.
   if (!corruptionThresholdExceeded(hero)) return lines;
-  // « Un jet = une modale » : pour un pilote HUMAIN, le Test du seuil est un VRAI jet différé — modale
-  // de Corruption (kind 'seuil', cycle Lancer→Chance→Pacte), résolu dans `resolveCorruptionPending`
-  // (succès = contenu ; échec = « Je te renie ! »/mutation — les DEUX fenêtres partent de là). Repli
-  // auto-résolu : l'IA seule (elle ne tient aucune modale).
-  if (pilotedByHuman(get(), hero)) {
+  // « Un jet = une modale » : dès qu'un siège humain TIENT le porteur (`tenuParUnHumain`, #1426 — la
+  // SURFACE, pas l'affordance locale : le héros d'un AUTRE siège tient sa propre fenêtre), le Test du
+  // seuil est un VRAI jet différé — modale de Corruption (kind 'seuil', cycle Lancer→Chance→Pacte),
+  // résolu dans `resolveCorruptionPending` (succès = contenu ; échec = « Je te renie ! »/mutation —
+  // les DEUX fenêtres partent de là).
+  if (tenuParUnHumain(get(), hero.id)) {
     lines.push(t('cor.threshold', { name: hero.label }));
     // `menace: 'mutation'` : l'échec du Test de seuil fait MUTER (l.82) → c'est le Test qui « résiste
     // à la Mutation » du talent Résistance (Menace), LDB 10 l.1016-1020.
@@ -103,8 +104,8 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
     poseCorruptionPending(get, set, seuil);
     return lines;
   }
-  // REPLI AUTO-RÉSOLU — atteint SEULEMENT quand aucun humain ne pilote le porteur (le `return`
-  // ci-dessus a déjà emporté tous les autres) : l'IA ne tient aucune modale, ni de seuil, ni de
+  // REPLI AUTO-RÉSOLU — atteint SEULEMENT quand AUCUN siège humain ne tient le porteur (le `return`
+  // ci-dessus a déjà emporté tous les autres) : l'automate ne tient aucune modale, ni de seuil, ni de
   // renoncement. Le Test est donc jeté ici et la mutation appliquée d'office.
   const tst = rollTest(testValue(hero, 'resistance'), 'intermediaire', rng);
   if (tst.success) {
@@ -230,33 +231,21 @@ registerCascadeApplier('mutationTable', (get, set, step, hero) => {
 export function applyMutation(get: Get, set: Set, hero: Combatant, _test?: { roll: number; target: number }, align?: ChaosAlign): string[] {
   // LDB 19 l.76, dans CET ordre : « D'abord, vous perdez autant de Points de Corruption que la valeur
   // de votre Bonus de Force Mentale […] Ensuite, effectuez un lancer de pourcentage ». Le débit est
-  // donc À L'ENTRÉE, pour les DEUX chemins : pendant la fenêtre de pose des dés, un nouveau gain relit
+  // donc À L'ENTRÉE, avant la première étape : pendant la séquence des dés, un nouveau gain relit
   // `corruptionThresholdExceeded` sur la Corruption DÉJÀ débitée — sinon il rouvrirait un Test de seuil
   // (et une 2ᵉ mutation) que la séquence en cours exclut.
   hero.corruption = Math.max(0, (hero.corruption ?? 0) - bonus(effectiveChar(hero, 'force-mentale')));
-  // FENÊTRE DE POSE des dés de la mutation (#942 L5) — option « Dés fixés » + siège qui contrôle la
-  // VICTIME (`poseOfferte`, même politique de socle que la sévérité d'un Critique) : les tirages deviennent des étapes
-  // à table CHAÎNÉES, poussées NON RÉSOLUES, et AUCUNE mutation n'est attachée avant la pose du dernier
-  // dé (parité avec l'offre de Déviation). Sans l'option ni le contrôle : les dés sont tirés ici, dans
-  // le MÊME ordre et par le MÊME résolveur — zéro friction, flux RNG identique.
-  if (poseOfferte(get, hero.id)) {
-    pushStep(set, (index) => natureStep(hero, align, index), mutationPurpose(get));
-    return [];
-  }
-  const rng = battleRng();
-  const nature = rollTableStep({ tableId: mutationNatureTableId(hero.species), die: 100 }, rng);
-  const kind = nature.id as 'physique' | 'mentale';
-  let table = mutationTableIdFor(kind, align);
-  for (;;) {
-    const rolled = rollTableStep({ tableId: table, die: 100 }, rng);
-    const m = mutationOfRow(rolled.id, rolled.roll);
-    const sub = mutationSubTableFor(table, m);
-    if (!sub) return finishMutation(get, set, hero, m, kind, nature.roll);
-    table = sub;
-  }
+  // Les dés de la mutation sont des étapes à TABLE CHAÎNÉES, poussées NON RÉSOLUES (#1426) : chaque
+  // ligne tirée insère la suivante (appliers `mutationNature`/`mutationTable`), et AUCUNE mutation
+  // n'est attachée avant que le DERNIER dé ne tombe (parité avec l'offre de Déviation). Ce qu'il
+  // advient de chaque étape appartient au socle (`cascade.poserLeCurseur`) : fenêtre pour le siège
+  // qui tient la victime, résolution d'office si nul siège ne la tient — l'option « Dés fixés » n'y
+  // ajoute que la POSE. Les dés tombent au RANG de leur étape, jamais tous à l'appel.
+  pushStep(set, (index) => natureStep(hero, align, index), mutationPurpose(get));
+  return [];
 }
 
-/** DÉNOUEMENT commun aux deux chemins (dés tirés inline / dés posés en étapes) : attache de la
+/** DÉNOUEMENT de la dernière étape à table (applier `mutationTable`) : attache de la
  *  mutation + effets dérivés, journal & révélation, puis LIMITES (l.87) → damné. Les Points sont
  *  déjà débités par `applyMutation` (l.76, « D'abord… »). */
 function finishMutation(
@@ -283,7 +272,7 @@ function finishMutation(
     hero.dead = true;
     lines.push(t('cor.damned', { name: hero.label }));
   }
-  if (pilotedByHuman(get(), hero))
+  if (tenuParUnHumain(get(), hero.id))
     pushReveal(set, { kind: 'mutation', title: t('cor.revealTitle', { label: m.label }), dice: m.roll, lines: [...lines], subjectId: hero.id, severity: 'grave' });
   checkPartyWiped(get, set); // damnation du dernier héros hors combat → défaite (no-op en combat)
   return lines;

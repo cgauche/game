@@ -23,6 +23,10 @@ import { CascadeBody } from './CascadeModal';
 import type { CascadeStep } from '../state/pendings';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
+import { applyAttackResult } from '../state/combatFlow';
+import { seedBattleRng } from '../state/battleRng';
+import type { Combatant, Weapon } from '../engine/types';
+import type { AttackResult } from '../engine/combat';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -556,5 +560,143 @@ describe('bandes successives — le corps ne rend QUE la bande courante', () => 
     const journal = useGame.getState().journal;
     expect(journal.some((l) => l.includes('Animosité-A1 — verdict'))).toBe(true);
     expect(journal.some((l) => l.includes('Animosité-A2 — verdict'))).toBe(true);
+  });
+});
+
+describe('BILAN — un tirage joué se VOIT, même sans conséquence écrite (#1426)', () => {
+  it('étape à table COMMITTÉE sans `outcome` : elle a sa rangée de bilan (dé + ligne atteinte) et compte 1 jet', () => {
+    // L'arbitrage « résolu d'office → visible au bilan » (2026-08-23) tient ICI : sans rangée, une
+    // table que le socle a tirée pour un porteur qu'aucun siège ne tient n'aurait JAMAIS été vue.
+    // L'applier-espion `uiTableSpy` ne rend aucune conséquence : l'étape n'a donc pas d'`outcome`.
+    openTable();
+    act(() => { useGame.getState().cascadeTableRoll('tm'); });
+    const tire = result()!;
+    act(() => { useGame.getState().cascadeResolveAll(); }); // COMMIT sans fermer → curseur en fin = BILAN
+    const casc = useGame.getState().pendingCascade!;
+    expect(casc.cursor, 'prémisse : on est bien au bilan').toBe(casc.participants.length);
+    expect(casc.participants[0].outcome ?? [], 'prémisse : aucune conséquence écrite').toHaveLength(0);
+    render();
+    const texte = host.textContent ?? '';
+    expect(texte, 'le bilan ne montre pas le tirage').toContain(tire.lines[0]);
+    expect(texte, 'le dé jeté ne se lit nulle part').toContain(String(tire.die));
+    expect(texte, 'un tirage EST un jet : le compte du bilan doit le porter').toContain('1 jet');
+  });
+});
+
+/**
+ * UNE SEULE FENÊTRE pour la Blessure critique (#1426) — le d100 de SÉVÉRITÉ (LDB 18) et la décision
+ * Dévier/Subir (LDB 63 l.30) sont la MÊME étape, montée pour de vrai. Ce que l'écran doit dire :
+ *  — AVANT le dé : rien à trancher. Le Critique naît DU dé (il est posé par le PLI post-dé), donc
+ *    AUCUNE voie n'est rendue — un joueur ne choisit pas devant une case vide ;
+ *  — APRÈS le dé, dans la MÊME fenêtre : la ligne de tirage en TÊTE (zone stable), le panneau riche du
+ *    Critique (`CriticalBody`), et les voies Dévier/Subir DESSOUS. Jamais deux corps successifs.
+ */
+describe('Blessure critique — le dé en tête, le Critique, les voies dessous (#1426)', () => {
+  const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 40, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
+  const combattant = (p: Partial<Combatant>): Combatant =>
+    ({
+      id: 'x', label: 'X', kind: 'hero', characteristics: CHARS,
+      wounds: { current: 15, max: 15 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
+      engagedWith: [], pos: { x: 0, y: 0 }, size: 'moyenne', weapons: [], items: [], fate: 0,
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      ...p,
+    } as unknown as Combatant);
+  const gourdin: Weapon = { label: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
+  const coupCritique: AttackResult = {
+    hit: true, attackerRoll: 12, netSL: 4, location: 'corps', critLocation: 'corps', damage: 8, woundsLost: 3,
+    critical: true, advantageTo: null, defenderDefeated: false, log: 'Coup Critique (corps)',
+  };
+
+  /** Ouvre la fenêtre unique sur un HÉROS BLINDÉ (siège humain : les voies lui sont offertes). */
+  function openCritique() {
+    seedBattleRng(424242);
+    const h = combattant({ id: 'h1', label: 'Hardi', kind: 'hero', armour: { tete: 0, brasG: 0, brasD: 0, corps: 3, jambeG: 0, jambeD: 0 } });
+    const e = combattant({ id: 'e1', label: 'Brute', kind: 'enemy', pos: { x: 1, y: 0 }, weapons: [gourdin] });
+    useGame.setState({
+      battle: { combatants: [e, h], order: ['e1', 'h1'], baseOrder: ['e1', 'h1'], turn: 0, round: 1, action: null,
+        selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null } as never,
+      mode: 'battle', party: [h], pendingCascade: null, suspendedCascades: [], journal: [],
+      net: { mode: 'local', mySeat: 0, gmSeat: null, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
+    });
+    applyAttackResult(useGame.getState, useGame.setState, e, h, gourdin, { ...coupCritique });
+  }
+
+  const boutonTexte = (t: string) => [...host.querySelectorAll('button')].find((b) => (b.textContent ?? '').includes(t));
+
+  it('AVANT le dé : la fenêtre porte le tirage, et AUCUNE voie n’est rendue (le Critique n’existe pas encore)', () => {
+    openCritique();
+    const st = useGame.getState().pendingCascade!.participants[0];
+    expect(st.kind, 'prémisse : c’est bien l’étape de Blessure critique').toBe('deviation');
+    expect(st.table!.result, 'prémisse : le dé n’est pas tombé').toBeUndefined();
+    expect(st.options?.map((o) => o.key), 'prémisse : les voies sont DÉCLARÉES sur l’étape').toEqual(['devier', 'subir']);
+    render();
+    expect(boutonTexte('Dévier'), 'une voie offerte AVANT le dé : on choisirait devant une case vide').toBeUndefined();
+    expect(boutonTexte('Subir')).toBeUndefined();
+    expect(host.querySelector('.crit-stats'), 'aucun Critique à montrer avant son dé').toBeNull();
+  });
+
+  it('APRÈS le dé, MÊME fenêtre : la ligne de tirage en TÊTE, le Critique, puis les voies Dévier/Subir', () => {
+    openCritique();
+    const id = useGame.getState().pendingCascade!.participants[0].id;
+    act(() => { useGame.getState().cascadeTableRoll(id); });
+    const apres = useGame.getState().pendingCascade!.participants[0];
+    expect(apres.deviation?.crit, 'prémisse : le PLI post-dé a posé le Critique').toBeTruthy();
+    render();
+    const devier = boutonTexte('Dévier');
+    const subir = boutonTexte('Subir');
+    expect(devier, 'les voies doivent s’ouvrir une fois le dé tombé').toBeDefined();
+    expect(subir).toBeDefined();
+    // DEUX lignes de tirage : celle de l'ÉTAPE, en TÊTE (zone stable, `extra`), et celle que porte le
+    // panneau du Critique. Une seule = la tête est tombée, et le dé de l'étape ne se lit plus qu'à
+    // l'intérieur du panneau — ce n'est plus la même fenêtre.
+    const tirages = [...host.querySelectorAll('.rm-roll.table')];
+    expect(tirages, 'la ligne de tirage de l’ÉTAPE a disparu de la tête de fenêtre').toHaveLength(2);
+    expect(tirages[0].textContent, 'le dé tiré ne se lit pas en tête').toContain(String(apres.table!.result!.die));
+    const critique = host.querySelector('.crit-stats');
+    expect(critique, 'le panneau riche du Critique (CriticalBody) manque').not.toBeNull();
+    // ORDRE À L'ÉCRAN : tirage → Critique → voies. Une seule fenêtre, lue de haut en bas.
+    const pos = (n: Node) => [...host.querySelectorAll('*')].indexOf(n as Element);
+    expect(pos(tirages[0]), 'le tirage doit rester en TÊTE').toBeLessThan(pos(critique!));
+    expect(pos(critique!), 'les voies se prennent SOUS le Critique').toBeLessThan(pos(devier!));
+  });
+
+  /**
+   * « Le tirage n'est pas un aller sans retour » — la re-pose du dé reste offerte SUR L'ÉTAPE À VOIES,
+   * exactement comme sur une étape d'affichage : même délégué (`tableAffordances`), donc même champ
+   * « Dé fixé » et même grille de lignes, tant que l'étape est COURANTE et non validée. Sans ce
+   * branchement, le dé de sévérité devenait irrévocable dès qu'une décision Dévier/Subir l'accompagnait.
+   */
+  it('APRÈS le dé, étape à VOIES : le dé se RE-POSE (champ « Dé fixé »), la Blessure suit, et un dé DÉJÀ VU rend la MÊME', () => {
+    setDesFixes(true);
+    openCritique();
+    const id = useGame.getState().pendingCascade!.participants[0].id;
+    act(() => { useGame.getState().cascadeTableSetForcedRoll(id, 76); });
+    const etape = () => useGame.getState().pendingCascade!.participants[0];
+    expect(etape().options?.length, 'prémisse : l’étape porte bien ses voies').toBeGreaterThan(0);
+    render();
+
+    expect(dieInput(), 'le champ « Fixer le dé » a disparu dès que l’étape offre des voies').not.toBeNull();
+    expect(host.querySelector('.rm-die-pick > label')?.textContent).toContain('Dé fixé');
+    expect(rowButtons().length, 'la grille des lignes de la table n’est plus servie').toBeGreaterThan(0);
+    expect(boutonTexte('Dévier'), 'les voies doivent rester offertes SOUS la pose').toBeDefined();
+    // La BLESSURE affichée en tête de fenêtre (le nombre du dé, lui, s'anime : on ne le mesure pas ici).
+    const teteTirage = () => (host.querySelectorAll('.rm-roll.table')[0]?.textContent ?? '');
+    const label = () => etape().table!.result!.lines[0];
+    const a = { ligne: etape().table!.result!.id, crit: etape().deviation!.crit, label: label() };
+    expect(teteTirage(), 'la Blessure du dé posé ne se lit pas en tête').toContain(a.label);
+
+    typeSlowly('20'); // RE-POSE : le dé n'est pas un aller sans retour
+    render(); // le store ne repeint qu'au flush suivant sous `act` — on lit l'ÉCRAN à jour
+    const b = { ligne: etape().table!.result!.id, label: label() };
+    expect(b.ligne, '20 et 76 doivent tomber sur des lignes DIFFÉRENTES, sinon la sonde ne prouve rien').not.toBe(a.ligne);
+    expect(teteTirage(), 'la Blessure AFFICHÉE n’a pas suivi la re-pose').toContain(b.label);
+    expect(teteTirage(), 'la Blessure de la pose ABANDONNÉE s’affiche encore').not.toContain(a.label);
+    expect(boutonTexte('Dévier'), 'les voies ont disparu après la re-pose').toBeDefined();
+
+    typeSlowly('76'); // dé DÉJÀ VU → le mémo de pli le re-sert tel quel
+    render();
+    expect(etape().table!.result!.id).toBe(a.ligne);
+    expect(etape().deviation!.crit, 'MÊME dé, MÊME étape → MÊME Blessure').toEqual(a.crit);
+    expect(teteTirage()).toContain(a.label);
   });
 });

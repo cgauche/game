@@ -15,6 +15,7 @@ import { resetRule, setRule } from '../engine/policy';
 import type { Combatant, Weapon } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
 import { emptyScene } from './scene';
+import { stepInteraction } from './cascade';
 
 const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 40, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 30, sociabilite: 30 };
 
@@ -288,6 +289,18 @@ describe('Projectile magique — Déviation Critique (LDB 46 l.55 + 63 l.30)', (
   });
 });
 
+/** LANCE le d100 de sévérité DANS la fenêtre ouverte (chemin MÊLÉE, où la table LDB est déclarée) : la
+ *  MÊME étape passe de `'table'` à `'choix'`, et le PLI post-dé y pose le Critique. */
+function tireLaSeverite() {
+  const st = devSteps();
+  expect(st, 'une seule étape porte le tirage ET la décision').toHaveLength(1);
+  useGame.getState().cascadeTableRoll(st[0].id);
+  const apres = devSteps()[0];
+  expect(stepInteraction(apres)).toBe('choix');
+  expect(apres.deviation?.crit, 'le pli post-dé n’a pas posé le Critique').toBeTruthy();
+  return apres;
+}
+
 // ── Mêlée : overkill (dépassement) couvert par la Déviation ───────────────────
 describe('Mêlée — Déviation sur dépassement (overkill, LDB 18 l.53 + 63 l.30)', () => {
   beforeEach(() => seedBattleRng(31));
@@ -304,7 +317,12 @@ describe('Mêlée — Déviation sur dépassement (overkill, LDB 18 l.53 + 63 l.
     setBattle([e, h]);
     const suspended = applyAttackResult(useGame.getState, useGame.setState, e, h, weapon, overkillRes());
     expect(suspended).toBe(true);
-    expect(devSteps()[0]?.deviation?.mode).toBe('melee');
+    // UNE étape porte le tirage de sévérité ET les voies — jamais deux fenêtres pour le même coup.
+    expect(devSteps()).toHaveLength(1);
+    expect(devSteps()[0].table, 'la sévérité se tire DANS cette fenêtre').toBeTruthy();
+    expect(stepInteraction(devSteps()[0])).toBe('table');
+    expect(devSteps()[0].options?.map((o) => o.key)).toEqual(['devier', 'subir']);
+    expect(tireLaSeverite().deviation!.mode).toBe('melee');
   });
 
   it('« Dévier » sur dépassement → −1 PA, pas de Blessure Critique (À Terre à 0 PB quand même)', () => {
@@ -312,7 +330,7 @@ describe('Mêlée — Déviation sur dépassement (overkill, LDB 18 l.53 + 63 l.
     const h = mk('hero', 'h1', { armour: { ...uniformArmour(0), corps: 3 }, wounds: { current: 3, max: 15 } as never });
     setBattle([e, h]);
     applyAttackResult(useGame.getState, useGame.setState, e, h, weapon, overkillRes());
-    resolveDeviation(useGame.getState, useGame.setState, devSteps()[0].deviation!, true);
+    resolveDeviation(useGame.getState, useGame.setState, tireLaSeverite().deviation!, true);
     const hh = live('h1');
     expect(hh.armour.corps).toBe(2);          // 1 PA sacrifié
     expect(hh.criticalWounds ?? 0).toBe(0);   // Blessure Critique de dépassement ignorée
@@ -323,7 +341,7 @@ describe('Mêlée — Déviation sur dépassement (overkill, LDB 18 l.53 + 63 l.
     const h = mk('hero', 'h1', { armour: { ...uniformArmour(0), corps: 3 }, wounds: { current: 3, max: 15 } as never });
     setBattle([e, h]);
     applyAttackResult(useGame.getState, useGame.setState, e, h, weapon, overkillRes());
-    resolveDeviation(useGame.getState, useGame.setState, devSteps()[0].deviation!, false);
+    resolveDeviation(useGame.getState, useGame.setState, tireLaSeverite().deviation!, false);
     expect(live('h1').criticalWounds ?? 0).toBe(1);
   });
 });

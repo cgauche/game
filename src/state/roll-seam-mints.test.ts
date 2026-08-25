@@ -16,7 +16,7 @@ import {
   pushMono, pushChoice, pushHost, pushTable, pushTableDone, pushBand,
   type BuiltCascadeStep, type HostJet, type HostSpec,
 } from './rollSeam';
-import { pushStep, registerTableStep, stepInteraction } from './cascade';
+import { pushStep, registerTableStep, stepInteraction, registerCascadeTableFold, cascadeTableFolds } from './cascade';
 import { pushCombatStep } from './combatEffects';
 import { modalOwnerOf } from './modalArbiter';
 import { ownsLocally, seatOwns } from './netOwnership';
@@ -153,6 +153,43 @@ describe('#1262 — tableStep / tableStepDone : DEUX entrées, jamais un drapeau
     expect(() => tableStep({ id: 'muet', kind: 'mutation', label: 'Tirage', actorId: 'H1', table: { tableId: TABLE } })).toBeTypeOf('function');
     // @ts-expect-error — même exigence sur la table DÉJÀ tirée (`TableDoneSpec` hérite de `TableSpec`)
     expect(() => tableStepDone({ id: 'muet2', kind: 'mutation', label: 'Tirage', actorId: 'H1', table: { tableId: TABLE }, result: { roll: 60, die: 60, id: 'haute', lines: [] } })).toBeTypeOf('function');
+  });
+
+  /**
+   * CONTRÔLE POSITIF du refus (#1426) : un `kind` qui déclare un PLI post-dé (`registerCascadeTableFold`)
+   * ne peut PAS être poussé déjà tiré — aucune fenêtre ne jouerait son pli, et l'étape arriverait
+   * résolue mais SANS sa dérivée (le Critique manquant à une étape de Déviation). Le refus passe par
+   * le canal unique des portes (`refusePorte` : lève en DEV, journalise en PROD) et ne rend AUCUNE
+   * étape — jamais un drop silencieux.
+   */
+  it('table déjà tirée sur un `kind` À PLI post-dé → REFUSÉE (le pli ne serait jamais joué)', () => {
+    const KIND_A_PLI = 'test-mints-kind-a-pli';
+    registerCascadeTableFold(KIND_A_PLI, (step) => step);
+    try {
+      expect(() => tableStepDone({
+        id: 'plie', kind: KIND_A_PLI, label: fixtureText('Tirage'), actorId: 'H1',
+        table: { tableId: TABLE }, result: { roll: 60, die: 60, id: 'haute', lines: ['x'] },
+        stake: { key: { dataset: 'combat', kind: 'mutation' } },
+      })).toThrow(/PLI post-dé/);
+      // PROD : le canal journalise au lieu de lever, et le mint rend `undefined` (rien à pousser).
+      const dev = import.meta.env.DEV;
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      (import.meta.env as { DEV: boolean }).DEV = false;
+      try {
+        expect(tableStepDone({
+          id: 'plie2', kind: KIND_A_PLI, label: fixtureText('Tirage'), actorId: 'H1',
+          table: { tableId: TABLE }, result: { roll: 60, die: 60, id: 'haute', lines: ['x'] },
+          stake: { key: { dataset: 'combat', kind: 'mutation' } },
+        }), 'aucune étape rendue : le refus est explicite, pas un drop').toBeUndefined();
+        expect(console.error, 'un refus PROD se journalise').toHaveBeenCalled();
+      } finally { (import.meta.env as { DEV: boolean }).DEV = dev; vi.restoreAllMocks(); }
+      // TÉMOIN : le MÊME appel sur un `kind` SANS pli passe — c'est bien le pli qui refuse.
+      expect(tableStepDone({
+        id: 'sans-pli', kind: 'mutation', label: fixtureText('Tirage'), actorId: 'H1',
+        table: { tableId: TABLE }, result: { roll: 60, die: 60, id: 'haute', lines: ['x'] },
+        stake: { key: { dataset: 'combat', kind: 'mutation' } },
+      })).toBeTruthy();
+    } finally { delete cascadeTableFolds[KIND_A_PLI]; }
   });
 });
 

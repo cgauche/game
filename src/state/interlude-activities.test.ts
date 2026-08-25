@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { createHero } from '../engine/character';
 import { makeRNG, roll } from '../engine/dice';
 import { toBrass, fromBrass, priceToMoney, PA_PER_CO } from '../engine/money';
@@ -30,6 +31,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, fromBrass(2000));
     useGame.getState().seedRng(13);
     useGame.getState().startInterlude(3);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
   });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
@@ -259,6 +261,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     // Clôture + nouvel interlude : la commande est livrée.
     useGame.getState().interludeEnd();
     useGame.getState().startInterlude(1);
+    draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
     expect(hero().items?.some((i) => i.label === exotic.label)).toBe(true);
     expect(useGame.getState().pendingOrders).toHaveLength(0);
   });

@@ -50,10 +50,10 @@ import type { RecapLine, RecapTone } from './recapLine';
 import type { ModLine } from '../engine/combat';
 import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey, combineMods, composeDifficulty } from '../engine/combat';
 import { volatileCharLines } from '../engine/characteristics';
-import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepResolved, clampStepAmount } from './cascade';
+import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepPosee, cascadeTableFolds, clampStepAmount } from './cascade';
 import { testValue, partyBest, partyAssisted, testValueSplit, testValueParts, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
 import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
-import { tenuParUnHumain, canFixDie, porteurParId, WORLD_STEP_OWNER } from './netOwnership';
+import { tenuParUnHumain, porteurParId, WORLD_STEP_OWNER } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { findSkillById, conditionLabel, dataLabel, type StakeRef } from '../data';
@@ -130,7 +130,7 @@ export function effectiveTarget(actor: Combatant | undefined, test: RollRequest[
 
 /** Libellé de COMPÉTENCE/carac d'un Test DÉCLARÉ — DÉRIVÉ des ids `skill`/`char` (catalogue
  *  `findSkillById`/`CHAR_LABELS`) uniquement, jamais d'un texte libre : `RollRequest['test']` ne porte
- *  plus de champ texte (fix de classe #352), donc AUCUN call-site ne peut se substituer à cette
+ *  aucun champ texte (fix de classe #352), donc AUCUN call-site ne peut se substituer à cette
  *  dérivation. `undefined` si le Test ne porte ni compétence ni caractéristique (ex. Désertion —
  *  cible posée par `meta.baseValue`). */
 export function testSkillLabel(test: RollRequest['test']): string | undefined {
@@ -388,7 +388,7 @@ export function resolveSurface(get: Get, req: RollRequest, kind: string): Surfac
  * route la sentinelle du monde). Cette fonction n'ajoute donc QUE la cadence : la fenêtre s'ouvre si
  * un siège humain tient le porteur et que la cadence n'est pas déférée à un automate. L'option de
  * confort « Dés fixés » n'entre PAS dans la surface : elle ne gate que la POSE du dé
- * (`poseOfferte`/`canFixDie`), jamais le fait de VOIR le jet.
+ * (`netOwnership.canFixDie`, au site unique de la pose `ui/forcedDieRow`), jamais le fait de VOIR le jet.
  *
  * `isOutOfAction` n'entre PAS ici : « le sujet peut-il encore jouer » est un critère MÉTIER, tranché
  * au site (les sites divergent aujourd'hui — arbitrage #1265).
@@ -396,23 +396,6 @@ export function resolveSurface(get: Get, req: RollRequest, kind: string): Surfac
 export function surfaceOf(get: Get, porteurId: string | undefined): boolean {
   if (cadenceAuto()) return false;
   return tenuParUnHumain(get(), porteurId);
-}
-
-/**
- * LA POLITIQUE DE POSE (#1426) — ce dé s'OFFRE-t-il à la pose (fenêtre / étape non résolue) plutôt que
- * de se tirer sur place ? EXPRESSION UNIQUE des étapes à TABLE que les flux poussent (sévérité de
- * Critique, Imparfaite, mutation, Événement d'interlude, Météo d'Étape, événement de bord) : le socle
- * décide, les feuilles déclarent.
- *
- * Elle compose le prédicat de contrôle EXISTANT (`netOwnership.canFixDie` : option de confort active
- * ET le siège qui décide possède le porteur) et RIEN d'autre. `ownerId` absent ou `WORLD_STEP_OWNER` :
- * le porteur est le monde (`seatOwns` → le siège MJ s'il existe, l'hôte sinon).
- *
- * La CADENCE n'entre pas ici : `resolveSurface` la tranche avant tout (auto → I partout), et une étape
- * à table reste cadence-agnostique — elle s'ouvre et se tranche à son `defaultChoice`.
- */
-export function poseOfferte(get: Get, ownerId: string | undefined): boolean {
-  return canFixDie(get(), ownerId);
 }
 
 /**
@@ -1478,6 +1461,18 @@ export interface TableSpec {
    *     est porté par la fenêtre du jet lui-même, cf. #1262 V2 lot 5a).
    *  La mesure textuelle survivante vit dans `cascade-step-stake-guard.test.ts` (baselines nominatives). */
   stake: StakeRef;
+  /** VOIES offertes APRÈS le dé (#1426) — une étape porte une table ET un choix quand la décision se
+   *  prend DEVANT le tirage qui la motive : la sévérité d'une Blessure critique se tire dans la
+   *  fenêtre où le porteur choisit Dévier ou Subir. `stepInteraction` est une chaîne de PRIORITÉ :
+   *  l'étape se présente en `'table'` tant que le dé n'est pas tombé, puis en `'choix'`. UNE fenêtre,
+   *  jamais deux corps successifs. Même murage du texte joueur que `ChoiceSpec.options`. */
+  options?: readonly { key: string; label: PlayerText; detail?: string }[];
+  /** Clé retenue d'office par une résolution IMMÉDIATE — l'une des `options`. */
+  defaultChoice?: string;
+  /** CHARGE de l'applier « déviation » (`combatFlow`) quand elle est connue AU MINT (aucune table à
+   *  tirer : variante Aux Armes, chemins auto-contenus). Avec une table, c'est le PLI post-dé
+   *  (`cascade.registerCascadeTableFold`) qui la pose — le Critique n'existe qu'après le tirage. */
+  deviation?: PendingDeviation;
   /** CHARGE de l'applier « sévérité du Critique » (`combatFlow`) : de quel coup le d100 posé décide.
    *  Recopiée telle quelle — une charge n'est pas une forme : elle ne rend rien et ne change pas
    *  l'interaction de l'étape, elle est ce que l'applier LIT quand le dé est posé. */
@@ -1504,6 +1499,15 @@ export function tableStep(spec: TableSpec): BuiltCascadeStep | undefined {
       + '— le dé serait re-jeté par la fenêtre. Passer par `tableStepDone`. Aucun tirage ouvert.');
     return undefined;
   }
+  const defaut = spec.defaultChoice != null && (spec.options ?? []).some((o) => o.key === spec.defaultChoice) ? spec.defaultChoice : undefined;
+  if (spec.defaultChoice != null && defaut == null) {
+    refusePorte(`table « ${spec.id} » (${spec.kind}) : `
+      + `\`defaultChoice\` « ${spec.defaultChoice} » hors de ses options — écarté ; une résolution immédiate s'arrête sur ce choix.`);
+  }
+  if (spec.options && !spec.options.length) {
+    refusePorte(`table « ${spec.id} » (${spec.kind}) : \`options\` VIDE — la fenêtre serait une impasse après le dé. Aucun tirage ouvert.`);
+    return undefined;
+  }
   return {
     id: spec.id,
     kind: spec.kind,
@@ -1512,6 +1516,9 @@ export function tableStep(spec: TableSpec): BuiltCascadeStep | undefined {
     ...(spec.worldOwner ? { worldOwner: true } : { actorId: spec.actorId }),
     table: spec.table,
     stake: spec.stake,
+    ...(spec.options ? { options: spec.options.map((o) => ({ ...o })) } : {}),
+    ...(defaut != null ? { defaultChoice: defaut } : {}),
+    ...(spec.deviation ? { deviation: spec.deviation } : {}),
     ...(spec.critSeverity ? { critSeverity: spec.critSeverity } : {}),
     ...(spec.miscast ? { miscast: spec.miscast } : {}),
     ...(spec.mutation ? { mutation: spec.mutation } : {}),
@@ -1529,9 +1536,10 @@ export type TableDoneSpec = TableSpec & {
 
 /**
  * CONSTRUCTEUR d'étape à table RÉSOLUE (#1262) — le tirage a eu lieu chez le producteur (Critique de
- * Structure), l'étape le RAPPORTE. La pose du résultat passe par le site UNIQUE `tableStepResolved`
- * (`cascade.ts`), qui fait redescendre l'enjeu à la LIGNE jouée (#1117 L2) : sans lui, une étape
- * poussée déjà tirée garderait un enjeu qui ne parle que du `kind`.
+ * Structure), l'étape le RAPPORTE. La pose du résultat passe par la part PURE du site unique
+ * (`tableStepPosee`, `cascade.ts`), qui fait redescendre l'enjeu à la LIGNE jouée (#1117 L2) : sans
+ * elle, une étape poussée déjà tirée garderait un enjeu qui ne parle que du `kind`. Un `kind` qui
+ * déclare un PLI post-dé est REFUSÉ ici : son tirage doit se jouer dans une fenêtre (`tableStep`).
  */
 export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined {
   const base: CascadeStep = {
@@ -1548,7 +1556,12 @@ export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined
     ...(spec.outcome ? { outcome: spec.outcome } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   };
-  return tableStepResolved(base, spec.table, spec.result) as BuiltCascadeStep;
+  if (cascadeTableFolds[spec.kind]) {
+    refusePorte(`table déjà tirée « ${spec.id} » (${spec.kind}) : ce \`kind\` déclare un PLI post-dé `
+      + '(`registerCascadeTableFold`) qu\'aucune fenêtre ne jouera ici — le tirage doit passer par `tableStep`. Aucun tirage ouvert.');
+    return undefined;
+  }
+  return tableStepPosee(base, spec.table, spec.result) as BuiltCascadeStep;
 }
 
 /** Ce qui est vrai de TOUTE étape d'AFFICHAGE : une conséquence DÉJÀ arrivée, donnée à LIRE. Zéro dé,

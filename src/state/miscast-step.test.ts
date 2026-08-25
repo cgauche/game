@@ -5,6 +5,8 @@ import { seedBattleRng, battleRng } from './battleRng';
 import { makeRNG, d100 } from '../engine/dice';
 import { createHero } from '../engine/character';
 import { stepInteraction, tableStepDefs } from './cascade';
+import { avanceEtapeCascade, draineCascade } from './cascadeTestKit';
+import { canFixDie } from './netOwnership';
 import {
   rollMiscast, miscastTableId, miscastRowAt, MISCAST_TABLE_ROWS, MISCAST_TABLE_LABELS, type MiscastSeverity,
 } from '../engine/miscast';
@@ -27,8 +29,35 @@ import type { CascadeStep } from './pendings';
  *    les résultats entre 91-00 » (l.54).
  * Le +10 par Point de Péché de la Colère (« ajoutez-y +10 pour chaque Point de Péché que vous avez
  * déjà accumulé », LDB 40 l.53) est DÉCLARÉ en `mod` sur l'étape — le lookup se fait sur le dé
- * EFFECTIF. Sans l'option « Dés fixés », le chemin reste celui d'avant (sonde différentielle).
+ * EFFECTIF.
+ *
+ * L'étape est POUSSÉE INCONDITIONNELLEMENT (#1426) : ni l'option « Dés fixés » ni le siège n'entrent
+ * dans sa DÉCLARATION. Ce que le socle en fait est SA politique (`cascade.poserLeCurseur` : fenêtre
+ * pour qui tient le lanceur, résolution d'office sinon), et l'option n'ajoute que la POSE du dé. Les
+ * dés tirés restent ceux du moteur, dans le même ordre (sonde différentielle ci-dessous).
  */
+
+/** JOUE les étapes de la séquence en cours en retenant, POUR CHAQUE tirage d'Imparfaite, son dé
+ *  EFFECTIF et la ligne atteinte — le kit de drainage ferme la cascade, ces faits seraient perdus. */
+function joueEnRetenant(max = 30): { des: number[]; lignes: string[] } {
+  const des: number[] = [];
+  const lignes: string[] = [];
+  const vus = new Set<string>(); // une étape ne se compte qu'UNE fois, même si le curseur y revient
+  for (let i = 0; i < max && useGame.getState().pendingCascade; i++) {
+    const p = useGame.getState().pendingCascade!;
+    const cur = p.participants[p.cursor];
+    if (!cur) break;
+    if (cur.kind === 'miscastTable' && !cur.table?.result) useGame.getState().cascadeTableRoll(cur.id);
+    const jouee = useGame.getState().pendingCascade?.participants[p.cursor];
+    if (jouee?.kind === 'miscastTable' && jouee.table?.result && !vus.has(jouee.id)) {
+      vus.add(jouee.id);
+      des.push(jouee.table.result.die);
+      lignes.push(jouee.table.result.id);
+    }
+    avanceEtapeCascade(useGame.getState);
+  }
+  return { des, lignes };
+}
 
 function mageSolo(seed = 3): Combatant {
   const h = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'Mage', rng: makeRNG(seed) });
@@ -109,27 +138,42 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
     expect(auto.label).toBe(`Chaos en cascade → ${feu.label}`);
   });
 
-  it('SONDE DIFFÉRENTIELLE (option ÉTEINTE) : même dé, même ligne, même journal qu’un tirage direct', () => {
+  it('SONDE DIFFÉRENTIELLE (option ÉTEINTE) : le dé de TÊTE et sa ligne sont ceux du moteur — le tirage n’est pas décalé', () => {
+    // Ce qui se compare AU MOTEUR est le dé d'ENTRÉE : les relances, elles, sont des étapes, et une
+    // étape résolue APPLIQUE avant que la suivante ne tire (la descente auto de `rollMiscast` tire
+    // tout d'abord). Le nombre de jets, lui, reste celui que la ligne prescrit — chaque relance a SON
+    // étape, aucune n'est jouée d'office (vérifié ligne à ligne ci-dessous).
     for (const sev of ['mineure', 'majeure', 'colere'] as MiscastSeverity[]) {
       for (let seed = 1; seed <= 12; seed++) {
         const hero = mageSolo(seed);
         seedBattleRng(seed);
-        const ref = rollMiscast(sev, battleRng());
+        const ref = rollMiscast(sev, battleRng()); // le moteur, qui descend seul ses relances
         seedBattleRng(seed);
-        const lines = applyMiscast(useGame.getState, useGame.setState, hero, sev);
-        expect(lines[0], `${sev}/${seed} : le dé de tête du flux a été décalé`).toBe(ref.log);
-        expect(steps().some((s) => s.kind === 'miscastTable'), `${sev}/${seed} : une étape à poser hors option`).toBe(false);
+        applyMiscast(useGame.getState, useGame.setState, hero, sev);
+        const { des, lignes } = joueEnRetenant();
+        expect(des[0], `${sev}/${seed} : le dé de tête du flux a été décalé`).toBe(ref.rolls[0]);
+        expect(lignes[0], `${sev}/${seed} : la ligne du dé de tête n’est pas celle du moteur`)
+          .toBe(miscastRowAt(miscastTableId(sev), des[0]).id);
+        // Une ligne de tête qui PRESCRIT une relance a bien reçu une étape de plus — et une ligne
+        // terminale n'en a pas reçu : les relances se pilotent, elles ne se jouent pas d'office.
+        const prescrit = !!rollMiscast(sev, makeRNG(1), 0, undefined, des[0]).reroll;
+        expect(lignes.length > 1, `${sev}/${seed} : la relance de la ligne de tête`).toBe(prescrit);
       }
     }
   });
 
-  it('option ÉTEINTE : aucune étape à poser — le contrecoup tombe inline, avec son étape de révélation', () => {
+  it('option ÉTEINTE : l’étape est LÀ quand même — aucun dé posable, et le contrecoup tombe en la jouant', () => {
     const hero = mageSolo();
     seedBattleRng(5);
     const lines = applyMiscast(useGame.getState, useGame.setState, hero, 'majeure');
-    expect(lines.length).toBeGreaterThan(0);
-    expect(steps().some((s) => s.kind === 'miscastTable')).toBe(false);
-    expect(steps().some((s) => s.kind === 'miscast'), 'la révélation du RÉSULTAT reste le rendu').toBe(true);
+    expect(lines, 'la ligne du Tableau se dit à son étape, pas à l’appel').not.toContain(undefined);
+    const st = stepAt(0);
+    expect(st.kind).toBe('miscastTable');
+    expect(stepInteraction(st)).toBe('table');
+    expect(st.table!.result, 'un siège tient le lanceur : le socle ne tire pas à sa place').toBeUndefined();
+    expect(canFixDie(useGame.getState(), hero.id), 'option ÉTEINTE : la pose n’est pas offerte').toBe(false);
+    draineCascade(useGame.getState);
+    expect(useGame.getState().party[0].conditions?.length ?? 0, 'aucun effet du contrecoup appliqué').toBeGreaterThan(0);
   });
 
   it('option ACTIVE + siège qui contrôle le LANCEUR : étape à TABLE non résolue, AUCUN effet appliqué', () => {
@@ -259,8 +303,11 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
     setDesFixes(true);
     applyMiscast(useGame.getState, useGame.setState, hero, 'colere');
     applyMiscast(useGame.getState, useGame.setState, hero, 'colere');
+    const avant = steps().filter((s) => s.kind === 'miscastTable').map((s) => s.id);
     expect(() => useGame.getState().cascadeResolveAll(), 'la garde de ligne a levé sur un chemin légitime').not.toThrow();
-    const tirees = steps().filter((s) => s.kind === 'miscastTable');
+    // « Tout lancer » laisse la séquence en BILAN (curseur en fin) : les étapes tirées s'y relisent.
+    const tirees = avant.map((id) => steps().find((s) => s.id === id)!);
+    expect(tirees.every(Boolean), 'une étape de la rafale a disparu du bilan').toBe(true);
     const mods = tirees.map((s) => s.table!.mod);
     expect(mods, '2 Péchés puis 1 après la 1ʳᵉ expiation').toEqual([20, 10]);
     for (const s of tirees) expect(s.table!.result!.die).toBe(s.table!.result!.roll + s.table!.mod!);
@@ -291,22 +338,24 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
     expect(gains.length, `gains rendus : ${gains.join(' | ')}`).toBe(2);
     for (const g of gains) expect(g, 'un gain groupé au lieu d’un gain par jet').toMatch(/\+1 Point de Corruption/);
 
-    // (a bis) MÊME exigence sur le chemin OFF, où UN dénouement porte PLUSIEURS jets : c'est là que
-    // « un par un » se distingue d'un gain groupé — deux lignes « +1 », jamais une ligne « +2 ».
+    // (a bis) OPTION ÉTEINTE : le chemin est LE MÊME (les dés se tirent à leur étape au lieu de s'y
+    // poser), donc l'exigence « un par un » tient sans qu'AUCUN dénouement ne porte deux jets — c'est
+    // ce qu'on mesure : autant de Points que d'étapes jouées, et jamais un gain groupé « +2 ».
     resetDesFixes();
     useGame.setState({ pendingCascade: null, suspendedCascades: [] });
     const graine = [...Array(80)].map((_, i) => i + 1)
       .find((s) => { seedBattleRng(s); return rollMiscast('mineure', battleRng()).tableRolls === 2; })!;
-    expect(graine, 'aucune graine à DEUX jets : le cas groupé n’est pas exercé').toBeDefined();
+    expect(graine, 'aucune graine à DEUX jets : le cas multi-jets n’est pas exercé').toBeDefined();
     const inline = mageSolo();
     inline.resilience = 0;
     inline.corruption = 0;
     seedBattleRng(graine);
-    const lignes = applyMiscast(useGame.getState, useGame.setState, inline, 'mineure', { sorceryCorruption: true })
-      .filter((t) => /Points? de Corruption/.test(t)); // « Points » au pluriel = un gain GROUPÉ, à voir
-    expect(inline.corruption).toBe(2);
-    expect(lignes.length, `gains rendus (chemin inline) : ${lignes.join(' | ')}`).toBe(2);
-    for (const g of lignes) expect(g, 'un gain groupé « +2 » au lieu de deux gains « +1 »').toMatch(/\+1 Point de Corruption/);
+    applyMiscast(useGame.getState, useGame.setState, inline, 'mineure', { sorceryCorruption: true });
+    const jets = joueEnRetenant().des.length;
+    expect(jets, 'la relance n’a pas reçu SON étape').toBeGreaterThan(1);
+    expect(inline.corruption, 'un Point par JET (LDB 49 l.5)').toBe(jets);
+    const rendus = useGame.getState().journal.filter((t) => /Points? de Corruption/.test(t));
+    for (const g of rendus) expect(g, 'un gain groupé « +2 » au lieu de gains « +1 »').toMatch(/\+1 Point de Corruption/);
 
     // (b) JUSTE sous le seuil : c'est le gain QUI FRANCHIT qui ouvre le Test de Résistance — donc dès
     // le PREMIER jet. Un gain groupé de 2 ne l'aurait joué qu'une fois, après coup.
@@ -360,8 +409,9 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
     expect(rollMiscast('mineure', scripted([40])).tableRolls).toBe(1);
     expect(rollMiscast('mineure', scripted([96, 26])).tableRolls, 'un 96-00 compte SES DEUX jets').toBe(2);
     expect(rollMiscast('mineure', scripted([91, 95, 40, 30])).tableRolls, 'les résultats 91-00 relancés sont des jets eux aussi').toBe(4);
-    // OFF (dés TIRÉS, chemin store) : sur la MÊME graine, l'écart avec/sans Sorcellerie vaut
-    // exactement le nombre de jets — une valeur mécanique ne dépend pas de l'option de confort.
+    // OPTION ÉTEINTE (les dés tombent à leur étape) : sur la MÊME graine, l'écart avec/sans
+    // Sorcellerie vaut exactement le nombre d'ÉTAPES jouées — une valeur mécanique ne dépend pas de
+    // l'option de confort, et le compte de jets se lit sur la séquence RÉELLE, pas sur un second chemin.
     resetDesFixes();
     // Graines RETENUES : celles dont le flux CASCADE réellement (sinon la sonde ne mesurerait que le
     // cas à un seul jet et laisserait passer un agrégat) + une graine mono comme témoin.
@@ -371,14 +421,16 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
     const mono = toutes.find((s) => compte(s) === 1)!;
     expect(multi.length, 'aucune graine ne cascade : le cas multi-jets n’est pas exercé').toBeGreaterThan(0);
     for (const seed of [...multi, mono]) {
-      const jets = compte(seed);
       const sans = mageSolo(); sans.corruption = 0; sans.resilience = 0;
       seedBattleRng(seed);
       applyMiscast(useGame.getState, useGame.setState, sans, 'mineure');
+      const etapesSans = joueEnRetenant().des.length;
       const avec = mageSolo(); avec.corruption = 0; avec.resilience = 0;
       seedBattleRng(seed);
       applyMiscast(useGame.getState, useGame.setState, avec, 'mineure', { sorceryCorruption: true });
-      expect((avec.corruption ?? 0) - (sans.corruption ?? 0), `graine ${seed} : ${jets} jet(s) sur le Tableau`).toBe(jets);
+      const etapes = joueEnRetenant().des.length;
+      expect(etapes, `graine ${seed} : la Sorcellerie a changé le nombre de jets`).toBe(etapesSans);
+      expect((avec.corruption ?? 0) - (sans.corruption ?? 0), `graine ${seed} : ${etapes} étape(s) de Tableau`).toBe(etapes);
     }
   });
 
@@ -392,15 +444,22 @@ describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => 
     expect(() => suivant()).toThrow(/n'est pas celle affichée/);
   });
 
-  it('lanceur NON contrôlé par le siège local (ennemi sans siège MJ) : aucune étape, résolution inline', () => {
+  it('lanceur NON contrôlé par le siège local (ennemi sans siège MJ) : l’étape est POUSSÉE et le socle la résout D’OFFICE', () => {
     const hero = mageSolo();
     setDesFixes(true);
     const npc = { ...structuredClone(hero), id: 'npc-1', kind: 'enemy' } as Combatant;
     npc.conditions = [];
     useGame.setState({ party: [hero, npc] });
     seedBattleRng(2);
-    const lines = applyMiscast(useGame.getState, useGame.setState, npc, 'majeure');
-    expect(useGame.getState().pendingCascade?.participants.some((s) => s.kind === 'miscastTable') ?? false).toBe(false);
-    expect(lines.length).toBeGreaterThan(0);
+    applyMiscast(useGame.getState, useGame.setState, npc, 'majeure');
+    // Aucun siège ne tient ce porteur : l'étape sous le curseur naît RÉSOLUE (`cascade.poserLeCurseur`).
+    const st = stepAt(0);
+    expect(st.kind).toBe('miscastTable');
+    const tire = st.table!.result;
+    expect(tire, 'une table sans siège est restée non tirée').toBeTruthy();
+    expect(tire!.id, 'le dé tiré d’office ne désigne pas la ligne du Tableau')
+      .toBe(miscastRowAt('miscast-majeure', tire!.die).id);
+    expect(draineCascade(useGame.getState)).toContain('miscastTable');
+    expect(useGame.getState().pendingCascade, 'la séquence résolue d’office ne se ferme pas').toBeNull();
   });
 });

@@ -7,6 +7,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { useGame } from './store';
+import { draineEtLit } from './cascadeTestKit';
 import { pregen, PREGEN } from '../data/pregens';
 import type { Combatant } from '../engine/types';
 
@@ -124,7 +125,9 @@ describe('#337 — Magie des mers, filage state (seaMagicContext)', () => {
         pendingFocus: { casterId: w.id, spellId, result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'Focalisation critique !' } },
       });
       useGame.getState().focusConfirm();
-      return useGame.getState().journal.join('\n');
+      // Le contrecoup est une ÉTAPE à table : elle se joue, et ce qu'elle rend au joueur vit sur elle
+      // (révélation) autant qu'au journal.
+      return draineEtLit(useGame.getState).join('\n');
     }
 
     it('SANS Harmonisation, en mer : Focalisation Critique de Vie → Imparfaite MAJEURE (au lieu de Mineure)', () => {

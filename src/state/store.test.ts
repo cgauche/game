@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { parseQualityInstance } from '../engine/qualities/normalize';
 import { resetFields } from './stateFields';
 import { useGame, type BattleState } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { flowFromEffects, flowEffects, testFlow, EMPTY_FLOW } from './flow';
 import { buildAdvancementView } from './advancement';
 import { createHero } from '../engine/character';
@@ -194,13 +195,25 @@ describe('Boucle de jeu (store)', () => {
     return { enemy, hero, weapon, res, suspended };
   }
 
-  it('Déviation Critique (héros) : applyAttackResult SUSPEND en posant une ÉTAPE DE CHOIX, sans effet de bord', () => {
+  /** L'étape UNIQUE de la Blessure critique (#1426) — le dé de sévérité s'y lance, PUIS les voies s'y
+   *  tranchent. Rend l'étape relue (le pli post-dé y a posé le Critique et sa révélation). */
+  function joueLaSeverite() {
+    const st = useGame.getState().pendingCascade!.participants.filter((s) => s.kind === 'deviation');
+    expect(st, 'une seule étape porte le tirage ET la décision').toHaveLength(1);
+    useGame.getState().cascadeTableRoll(st[0].id);
+    return useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'deviation')!;
+  }
+
+  it('Blessure critique (héros) : applyAttackResult SUSPEND sur UNE étape — tirage puis décision, sans effet de bord', () => {
     const { suspended } = mkDeviationSetup();
     expect(suspended).toBe(true);
-    const dev = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'deviation');
-    expect(dev).toBeTruthy();
-    expect(dev!.deviation?.targetId).toBe('h1');
-    expect(dev!.reveal?.kind).toBe('critical'); // panneau riche porté par l'étape
+    const avant = useGame.getState().pendingCascade!.participants.filter((s) => s.kind === 'deviation');
+    expect(avant).toHaveLength(1);
+    expect(avant[0].table, 'la sévérité se tire DANS cette fenêtre').toBeTruthy();
+    expect(avant[0].table!.result, 'le dé n’est pas encore tombé').toBeUndefined();
+    const dev = joueLaSeverite();
+    expect(dev.deviation?.targetId).toBe('h1');
+    expect(dev.reveal?.kind).toBe('critical'); // panneau riche porté par l'étape, sous la ligne de dé
     // Avant le choix : ni Blessure, ni Critique, ni PA consommée (early-return propre).
     const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
     expect(h.wounds.current).toBe(15);
@@ -208,18 +221,20 @@ describe('Boucle de jeu (store)', () => {
     expect(h.armour.corps).toBe(3);
   });
 
-  it('Déviation Critique (héros) : « Dévier » sacrifie 1 PA et IGNORE le Critique', () => {
+  it('Blessure critique (héros) : « Dévier » sacrifie 1 PA et IGNORE le Critique', () => {
     mkDeviationSetup();
-    useGame.getState().cascadeChoose('cons-deviation-h1', 'devier');
+    const dev = joueLaSeverite();
+    useGame.getState().cascadeChoose(dev.id, 'devier');
     useGame.getState().cascadeNext(); // valide le choix → applier 'deviation' → resolveDeviation
     const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
     expect(h.armour.corps).toBe(2);          // 1 PA sacrifiée (LDB 63 l.30-32)
     expect(h.criticalWounds ?? 0).toBe(0);   // Coup Critique ignoré
   });
 
-  it('Déviation Critique (héros) : « Subir » encaisse le Critique (criticalWounds +1, PA intacte)', () => {
+  it('Blessure critique (héros) : « Subir » encaisse le Critique (criticalWounds +1, PA intacte)', () => {
     mkDeviationSetup();
-    useGame.getState().cascadeChoose('cons-deviation-h1', 'subir');
+    const dev = joueLaSeverite();
+    useGame.getState().cascadeChoose(dev.id, 'subir');
     useGame.getState().cascadeNext();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === 'h1')!;
     expect(h.criticalWounds ?? 0).toBe(1);   // Coup Critique appliqué (table 18-Traumatisme)
@@ -566,7 +581,7 @@ describe('Boucle de jeu (store)', () => {
     vi.clearAllTimers();
     let b = useGame.getState().battle!;
     const h = b.combatants.find((c) => c.kind === 'hero')!;
-    // L'arme tenue = l'ItemInstance source d'un Weapon actif (loadout) — plus de flag `equipped` d'arme.
+    // L'arme tenue = l'ItemInstance source d'un Weapon actif (loadout).
     const witem = h.items!.find((i) => (i.kind === 'melee' || i.kind === 'ranged') && h.weapons.some((w) => w.uid === i.uid))!;
     const weapon = h.weapons.find((w) => w.uid === witem.uid) ?? h.weapons[0];
     // (1) Maladresse 21-40 → 1 Dégât d'arme, écrit sur l'ItemInstance source.
@@ -2337,6 +2352,7 @@ describe('Blessures critiques & mort en combat (LDB 18-Traumatisme)', () => {
     const atk = { roll: 5, target: 80, success: true, sl: 7, isDouble: false };
     const res = resolveMeleePassive(E, H, E.weapons[0], atk);
     applyAttackResult(useGame.getState, useGame.setState, E, H, E.weapons[0], res);
+    draineCascade(useGame.getState); // la sévérité du Critique se tire DANS la fenêtre (#1426)
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.criticalWounds).toBe(1); // une Blessure critique encaissée
     expect(h.wounds.current).toBe(0); // tombé à 0 (ne passe jamais négatif)

@@ -10,6 +10,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { avanceEtapeCascade } from './cascadeTestKit';
 import { applyMiscast, useSpellComponent } from './combatFlow';
 import { setRule, resetRule } from '../engine/policy';
 import { createHero } from '../engine/character';
@@ -56,7 +57,9 @@ describe('Composants d’incantation (LDB 46 l.107-113)', () => {
     expect(hero.componentSpells).toEqual([]); // consommé
     const out = applyMiscast(useGame.getState, useGame.setState, hero, 'majeure', { componentDowngrade: used });
     expect(out.some((l) => /Majeure → Mineure/.test(l))).toBe(true);
-    // L'Imparfaite jouée est une Mineure (étape de cascade ouverte pour le héros).
+    // L'Imparfaite jouée est une Mineure : sa table est l'étape ouverte, sa révélation vient après le dé.
+    expect(useGame.getState().pendingCascade!.participants[0].table!.tableId).toBe('miscast-mineure');
+    avanceEtapeCascade(useGame.getState);
     const step = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'miscast');
     expect(step?.label).toBe('Imparfaite');
   });
@@ -96,7 +99,9 @@ describe('Composants d’incantation (LDB 46 l.107-113)', () => {
     expect(hero.componentSpells).toEqual([SPELL]); // intact
     const out = applyMiscast(useGame.getState, useGame.setState, hero, 'majeure', { componentDowngrade: used });
     expect(out.some((l) => /Majeure → Mineure/.test(l))).toBe(false); // pas de dégradation
-    // Une Imparfaite Majeure pleine est ouverte.
+    // Une Imparfaite Majeure PLEINE est ouverte : c'est la table Majeure que l'étape déclare.
+    expect(useGame.getState().pendingCascade!.participants[0].table!.tableId).toBe('miscast-majeure');
+    avanceEtapeCascade(useGame.getState);
     const step = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'miscast');
     expect(step?.label).toBe('Imparfaite');
   });

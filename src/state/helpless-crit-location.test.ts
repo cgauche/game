@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { doAttack } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -69,9 +70,12 @@ describe('#124 — cible Inconsciente : choix de Localisation (RAW-2 gratuit, LD
     // qui suspendrait aussi — on isole ici le comportement du picker de Localisation.
     H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
     const before = H.wounds.current;
-    const suspended = doAttack(useGame.getState, useGame.setState, E, H);
-    expect(suspended).toBe(false); // cible sans défense → résolution instantanée, pas de modale
+    doAttack(useGame.getState, useGame.setState, E, H);
     expect(useGame.getState().pendingAttack).toBeNull(); // l'IA ne passe jamais par le picker joueur
-    expect(H.wounds.current).toBeLessThan(before); // le coup s'applique quand même (succès+Critique forcés)
+    // La seule fenêtre ouverte est celle de la Blessure critique (sévérité, #1426) — feature DISTINCTE
+    // du picker de Localisation : on la joue, et le coup s'applique.
+    draineCascade(useGame.getState);
+    const hh = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(hh.wounds.current).toBeLessThan(before); // le coup s'applique quand même (succès+Critique forcés)
   });
 });

@@ -67,10 +67,15 @@ export function avanceEtapeCascade(get: () => GameState): string | undefined {
   if (!p) return undefined;
   const cur = p.participants[p.cursor];
   if (cur) {
-    if (cur.options && cur.chosen == null) get().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key);
-    else if (cur.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
-    else if (cur.table && !cur.table.result) get().cascadeTableRoll(cur.id);
-    else if (cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+    // ORDRE de `stepInteraction` (chaîne de PRIORITÉ), jamais un `else if` : une étape porte une table
+    // ET un choix (la sévérité d'un Critique se tire DANS la fenêtre de Déviation) — le dé se lance
+    // d'abord, le choix se tranche ensuite, sur la MÊME étape. En exclusif, le choix resterait non
+    // tranché et `cascadeNext` drainerait à vide.
+    if (cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+    if (cur.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
+    if (cur.table && !cur.table.result) get().cascadeTableRoll(cur.id);
+    const apres = get().pendingCascade?.participants[get().pendingCascade!.cursor];
+    if (apres?.options && apres.chosen == null) get().cascadeChoose(apres.id, apres.defaultChoice ?? apres.options[0].key);
   }
   get().cascadeNext();
   return cur?.kind;
@@ -85,6 +90,30 @@ export function draineCascade(get: () => GameState, max = 200): string[] {
     if (k !== undefined) kinds.push(k);
   }
   return kinds;
+}
+
+/**
+ * DRAINE la séquence active et RASSEMBLE tout ce que le joueur a LU : le journal ENTIER (les lignes
+ * d'avant la séquence comptent — un flux en écrit avant d'ouvrir) ET celles que portent ses ÉTAPES — conséquences (`outcome`) et charge de
+ * révélation (`reveal.lines`). Ce qu'une fenêtre montre ne passe pas par le journal : une révélation
+ * porte SES lignes sur SON étape, et les lire au journal ne prouverait rien de ce que le joueur voit.
+ *
+ * Les étapes sont relues à CHAQUE pas (une étape apparaît en cours de route, une autre reçoit sa
+ * conséquence à son commit) et indexées par id — jamais deux fois la même ligne.
+ */
+export function draineEtLit(get: () => GameState, max = 200): string[] {
+  const parEtape = new Map<string, string[]>();
+  const capte = () => {
+    for (const s of get().pendingCascade?.participants ?? []) {
+      // Une révélation porte SES lignes deux fois (charge `reveal` + conséquence rendue) : c'est UN
+      // rendu, pas deux — sans quoi « combien de fois le joueur l'a-t-il lu ? » compterait faux.
+      const lignes = [...new Set([...(s.outcome ?? []).map((l) => l.text), ...(s.reveal?.lines ?? [])])];
+      if (lignes.length) parEtape.set(s.id, lignes);
+    }
+  };
+  capte();
+  for (let i = 0; i < max && get().pendingCascade; i++) { avanceEtapeCascade(get); capte(); }
+  return [...get().journal, ...[...parEtape.values()].flat()];
 }
 
 /**

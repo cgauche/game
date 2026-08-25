@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
+import { draineEtLit, avanceEtapeCascade } from './cascadeTestKit';
 import { applyCast, checkFocusInterruption, openCastCascade } from './combatFlow';
 import { pregen, PREGEN } from '../data/pregens';
 import { findSpell, findEffectTableById } from '../data';
@@ -37,7 +38,8 @@ describe('Incantation CRITIQUE (LDB 46 l.26-32)', () => {
     const spell = findSpell('Choc')!; // sort non-missile ? Choc est ZdE missile — prendre un sort de soutien
     const armure = findSpell('Armure Aethyrique')!;
     applyCast(useGame.getState, useGame.setState, w, w, armure, critRes(true, 4), false, false);
-    expect(useGame.getState().journal.join('\n')).toMatch(/Incantation Imparfaite/);
+    // Le contrecoup est une ÉTAPE : il se dit quand elle se joue, sur elle autant qu'au journal.
+    expect(draineEtLit(useGame.getState).join('\n')).toMatch(/Incantation Imparfaite/);
     expect(spell).toBeTruthy();
   });
 
@@ -47,7 +49,7 @@ describe('Incantation CRITIQUE (LDB 46 l.26-32)', () => {
     useGame.setState({ party: [w] as Combatant[] });
     const armure = findSpell('Armure Aethyrique')!;
     applyCast(useGame.getState, useGame.setState, w, w, armure, critRes(true, 4), false, false);
-    const j = useGame.getState().journal.join('\n');
+    const j = draineEtLit(useGame.getState).join('\n');
     expect(j).toMatch(/Diction instinctive/);
     expect(j).not.toMatch(/Incantation Imparfaite Mineure \(/);
   });
@@ -65,7 +67,7 @@ describe('Incantation CRITIQUE (LDB 46 l.26-32)', () => {
     useGame.setState({ party: [priest] as Combatant[] });
     const ben = findSpell('Bénédiction de Guérison')!;
     applyCast(useGame.getState, useGame.setState, priest, priest, ben, critRes(true, 2), false, false);
-    expect(useGame.getState().journal.join('\n')).not.toMatch(/Incantation Imparfaite/);
+    expect(draineEtLit(useGame.getState).join('\n')).not.toMatch(/Incantation Imparfaite/);
   });
 
   // FOLD (2026-06-16) : le Critique de Sort ET l'Imparfaite/Colère sont des ÉTAPES de la cascade
@@ -91,7 +93,10 @@ describe('Incantation CRITIQUE (LDB 46 l.26-32)', () => {
     expect(c).toBeTruthy(); // la cascade reste OUVERTE : la conséquence s'y joue
     expect(c!.title).toBe('Incantation'); // MÊME cascade (pas une « Conséquences » neuve) = le fold
     expect(c!.cursor).toBe(1); // curseur avancé au-delà de l'étape cast (cursor 0)
-    expect(c!.participants[1]?.kind).toBe('miscast'); // l'Imparfaite est l'étape appendue
+    expect(c!.participants[1]?.kind).toBe('miscastTable'); // le dé du Tableau est l'étape appendue
+    avanceEtapeCascade(useGame.getState); // le dé tombe à son rang → la révélation rejoint la MÊME cascade
+    expect(useGame.getState().pendingCascade!.title, 'la révélation a ouvert une cascade neuve').toBe('Incantation');
+    expect(useGame.getState().pendingCascade!.participants.some((s) => s.kind === 'miscast')).toBe(true);
   });
 
   it('FOLD : un Sort SANS conséquence ferme la cascade d\'incantation (rien à enchaîner)', () => {
@@ -120,10 +125,11 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
     useGame.setState({ party: [w] as Combatant[] });
     useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'armure-aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'Focalisation critique !' } } });
     useGame.getState().focusConfirm();
+    const rendu = draineEtLit(useGame.getState).join('\n');
     const after = useGame.getState().party.find((h) => h.id === w.id)!;
     expect(after.focus?.dr).toBeGreaterThanOrEqual(findSpell('Armure Aethyrique')!.cn ?? 0);
-    expect(useGame.getState().journal.join('\n')).toMatch(/Focalisation CRITIQUE/);
-    expect(useGame.getState().journal.join('\n')).toMatch(/Incantation Imparfaite/);
+    expect(rendu).toMatch(/Focalisation CRITIQUE/);
+    expect(rendu).toMatch(/Incantation Imparfaite/);
   });
 
   // Sous `VDM 02 l.145` (`focusCriticalDR`) : un DR bonus = BFM s'ajoute, SANS compléter au NI —
@@ -154,7 +160,7 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
     useGame.setState({ party: [w] as Combatant[] });
     useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'armure-aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'crit' } } });
     useGame.getState().focusConfirm();
-    const j = useGame.getState().journal.join('\n');
+    const j = draineEtLit(useGame.getState).join('\n');
     expect(j).toMatch(/Harmonisation aethyrique/);
     expect(j).not.toMatch(/Incantation Imparfaite Mineure \(/);
   });
@@ -172,7 +178,7 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
     seedBattleRng(143);
     useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'cauteriser', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'crit' } } });
     useGame.getState().focusConfirm();
-    const j = useGame.getState().journal.join('\n');
+    const j = draineEtLit(useGame.getState).join('\n');
     expect(j).toMatch(/Marqué par la Magie/);
     const marques = findEffectTableById('vdm-marques-arcaniques-feu').rows;
     const tiree = marques.filter((r) => j.includes((r.ops[0] as { text: string }).text));
@@ -227,7 +233,10 @@ describe('Interruption de Focalisation (l.142-144) — cadence-aware', () => {
     useGame.getState().cascadeNext(); // valide l'échec → applier `triggeredTest` → branche fail → hook
     const h = useGame.getState().battle!.combatants.find((x) => x.id === w.id)!;
     expect(h.focus).toBeUndefined(); // concentration BRISÉE : DR perdus
-    // L'Imparfaite Mineure (conséquence d'échec) est appendue comme une étape `miscast` à la MÊME cascade.
+    // L'Imparfaite Mineure (conséquence d'échec) est appendue à la MÊME cascade : d'abord son TIRAGE
+    // (étape à table), puis sa révélation une fois le dé tombé.
+    expect(useGame.getState().pendingCascade!.participants.some((s) => s.kind === 'miscastTable')).toBe(true);
+    avanceEtapeCascade(useGame.getState);
     expect(useGame.getState().pendingCascade!.participants.some((s) => s.kind === 'miscast')).toBe(true);
   });
 
@@ -246,14 +255,20 @@ describe('Interruption de Focalisation (l.142-144) — cadence-aware', () => {
     expect(useGame.getState().pendingCascade?.participants.some((s) => s.kind === 'miscast') ?? false).toBe(false);
   });
 
-  it('ENNEMI focaliseur frappé → Test de Calme résolu INLINE (jamais d’étape de cascade)', () => {
+  it('ENNEMI focaliseur frappé → Test de Calme résolu INLINE, et son contrecoup tiré D’OFFICE', () => {
     const foe = { ...wiz(), id: 'caster-foe', label: 'Sorcier ennemi', kind: 'enemy' } as Combatant;
     foe.characteristics['force-mentale'] = 1; // Calme raté → conséquence inline
     foe.focus = { spell: 'armure-aethyrique', dr: 2 };
     const w = wiz();
     inCombat(w, foe);
     checkFocusInterruption(useGame.getState, useGame.setState, foe);
-    expect(useGame.getState().pendingCascade).toBeNull(); // ennemi → aucune étape influençable
+    // Aucune étape INFLUENÇABLE : le Test de Calme est roulé inline. Le contrecoup, lui, DÉCLARE son
+    // étape à table comme partout — et le socle la résout d'office, nul siège ne tenant cet ennemi.
+    const ouverte = useGame.getState().pendingCascade;
+    expect(ouverte?.participants.some((s) => s.kind === 'triggeredTest') ?? false).toBe(false);
+    for (const s of ouverte?.participants ?? []) {
+      if (s.kind === 'miscastTable') expect(s.table!.result, 'table sans siège restée non tirée').toBeTruthy();
+    }
     const e = useGame.getState().battle!.combatants.find((x) => x.id === foe.id)!;
     expect(e.focus).toBeUndefined(); // DR perdus inline
     // La ligne de l'effet inline part dans la file différée (drainée par l'appelant).

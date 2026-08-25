@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { applyAttackResult, resolveCritSeverity, critSeverityDecl, critSeverityInSeam, CRIT_TABLE_IDS } from './combatFlow';
 import { setRule, resetRule } from '../engine/policy';
 import { stepInteraction, rollTableStep, tableStepDefs } from './cascade';
+import { draineCascade } from './cascadeTestKit';
 import { seedBattleRng, battleRng } from './battleRng';
 import { makeRNG, d100 } from '../engine/dice';
 import { rollCritical, critTableKeyFor, critTableRows, critSeverityReduction } from '../engine/critical';
@@ -11,6 +12,8 @@ import { findTableEntry } from '../engine/tables';
 import { createHero } from '../engine/character';
 import { setDesFixes, resetDesFixes, desFixes } from '../engine/fixedDie';
 import { testScene } from '../scenes/test-fixture';
+import { snapshotSave } from './saves';
+import { netSnapshot } from './netFlow';
 import { hasCondition } from '../engine/conditions';
 import type { Weapon, Combatant, HitLocation, ArmourPoints } from '../engine/types';
 
@@ -114,25 +117,34 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     }
   });
 
-  it('option ÉTEINTE : aucune fenêtre — le Critique s’applique inline, la révélation PORTE la déclaration résolue', () => {
+  it('option « Dés fixés » ÉTEINTE : la MÊME étape existe et se joue — le dé tombe dans la fenêtre, la ligne tirée EST celle appliquée', () => {
+    // #1426 : plus aucune gate de possession sur la poussée. La table est déclarée pour TOUT porteur ;
+    // l'option « Dés fixés » n'ajoute que la POSE du dé, jamais l'existence de l'étape.
     const { H, E } = startFight();
     const suspended = applyAttackResult(useGame.getState, useGame.setState, E, H, hache, critHit('corps'));
-    expect(suspended).toBe(false); // rien n'est suspendu : zéro friction pour qui n'a pas l'option
-    const steps = useGame.getState().pendingCascade!.participants;
-    expect(steps.some((s) => s.kind === 'critSeverity')).toBe(false);
-    const crit = steps.find((s) => s.kind === 'critical')!;
-    expect(crit.table!.tableId).toBe(CRIT_TABLE_IDS.corps);
-    expect(crit.table!.result!.id).toBe(lastCrit(H));
+    expect(suspended).toBe(true);
+    const etapes = useGame.getState().pendingCascade!.participants.filter((s) => s.kind === 'deviation');
+    expect(etapes).toHaveLength(1);
+    expect(etapes[0].table!.tableId).toBe(CRIT_TABLE_IDS.corps);
+    expect(stepInteraction(etapes[0])).toBe('table');
+    // Le dé tombe DANS la fenêtre (kit = ce que la fenêtre offre) : la ligne tirée par l'étape est
+    // celle que le moteur applique, et la révélation riche la RAPPORTE.
+    useGame.getState().cascadeTableRoll(etapes[0].id);
+    const ligne = useGame.getState().pendingCascade!.participants[0].table!.result!.id;
+    draineCascade(useGame.getState);
+    const victime = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(victime.criticalWounds).toBe(1);
+    expect(lastCrit(victime), 'la ligne tirée dans la fenêtre n’est pas celle appliquée').toBe(ligne);
   });
 
-  it('option ACTIVE + victime contrôlée : l’étape de sévérité est poussée NON RÉSOLUE, l’attaque est SUSPENDUE', () => {
+  it('l’étape de sévérité est poussée NON RÉSOLUE, l’attaque est SUSPENDUE, la victime INTACTE', () => {
     const { H, E } = startFight();
     setDesFixes(true);
     const avant = { pb: H.wounds.current, crits: H.criticalWounds ?? 0 };
     const suspended = applyAttackResult(useGame.getState, useGame.setState, E, H, hache, critHit('corps'));
     expect(suspended).toBe(true);
     const step = useGame.getState().pendingCascade!.participants[0];
-    expect(step.kind).toBe('critSeverity');
+    expect(step.kind).toBe('deviation');
     expect(stepInteraction(step)).toBe('table'); // dé À POSER → les deux affordances de la modale
     expect(step.table).toMatchObject({ tableId: CRIT_TABLE_IDS.corps, die: 100 });
     expect(step.table!.result).toBeUndefined();
@@ -149,6 +161,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     const cond = (entry.ops ?? []).find((o) => o.op === 'condition') as { op: 'condition'; id: string };
     applyAttackResult(useGame.getState, useGame.setState, E, H, hache, critHit('corps'));
     const step = useGame.getState().pendingCascade!.participants[0];
+    expect(step.kind).toBe('deviation');
     useGame.getState().cascadeTableSetForcedRoll(step.id, entry.min);
     const posee = useGame.getState().pendingCascade!.participants[0];
     expect(posee.table!.result).toMatchObject({ roll: entry.min, die: entry.min, id: entry.id });
@@ -163,12 +176,57 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     expect(reveal.reveal!.dice).toBe(entry.min);
   });
 
-  it('victime NON contrôlée par le siège local (ennemi sans siège MJ) : aucune fenêtre, résolution inline', () => {
+  /**
+   * PLI POST-DÉ IMPUR (#1426) — `rollCritical` consomme du RNG même sous dé posé (amputation, relances) :
+   * sans mémo, explorer les poses (76 → 20 → 76) rendrait TROIS Critiques différents pour DEUX valeurs,
+   * et la fenêtre mentirait sur son propre dé. Contrat mesuré : pour une étape donnée, un dé posé rend
+   * TOUJOURS la même conséquence, et une valeur DÉJÀ VUE ne re-consomme aucun dé.
+   */
+  it('PLI IMPUR : re-poser un dé DÉJÀ VU rend LE MÊME Critique, sans re-consommer d’aléa (76 → 20 → 76)', () => {
+    const { H, E } = startFight();
+    setDesFixes(true);
+    applyAttackResult(useGame.getState, useGame.setState, E, H, hache, critHit('corps'));
+    const step = useGame.getState().pendingCascade!.participants[0];
+    expect(step.kind).toBe('deviation');
+    /** Pose le dé et rend { critique dérivé, dés consommés par le pli }. */
+    const pose = (nat: number) => {
+      const rng = battleRng();
+      const brut = rng.int.bind(rng);
+      let n = 0;
+      (rng as { int: typeof brut }).int = (a: number, b: number) => { n++; return brut(a, b); };
+      try { useGame.getState().cascadeTableSetForcedRoll(step.id, nat); } finally { (rng as { int: typeof brut }).int = brut; }
+      const apres = useGame.getState().pendingCascade!.participants[0];
+      return { crit: apres.deviation!.crit, ligne: apres.table!.result!.id, des: n };
+    };
+    const a = pose(76);
+    const b = pose(20);
+    const c = pose(76);
+    expect(a.crit, 'le pli n’a rien dérivé').toBeTruthy();
+    expect(a.des, 'une valeur JAMAIS VUE fait tourner le pli — s’il ne consomme rien, la sonde ne mord pas')
+      .toBeGreaterThan(0);
+    expect(b.ligne, '20 et 76 doivent tomber sur des lignes DIFFÉRENTES, sinon la sonde ne prouve rien')
+      .not.toBe(a.ligne);
+    expect(c.ligne).toBe(a.ligne);
+    expect(c.crit, 'MÊME dé, MÊME étape → MÊME conséquence').toEqual(a.crit);
+    expect(c.des, 'une valeur DÉJÀ VUE se re-sert du mémo : aucun dé de plus').toBe(0);
+  });
+
+  it('victime qu’AUCUN siège ne tient (ennemi sans siège MJ) : l’étape EXISTE, sa table est résolue D’OFFICE et franchie', () => {
+    // Arbitrage 2026-08-23 : un porteur qu'aucun siège ne tient ne fait pas disparaître l'étape — le
+    // socle la résout au rang du curseur (`cascade.poserLeCurseur`) et le bilan la montre. C'est le
+    // MÊME code que pour une table de monde (Météo, événement de bord).
     const { H, E } = startFight();
     setDesFixes(true);
     const suspended = applyAttackResult(useGame.getState, useGame.setState, H, E, hache, critHit('corps', 99));
-    expect(suspended).toBe(false);
-    expect(useGame.getState().pendingCascade!.participants.some((s) => s.kind === 'critSeverity')).toBe(false);
+    expect(suspended).toBe(true);
+    const etapes = useGame.getState().pendingCascade!.participants.filter((s) => s.kind === 'deviation');
+    expect(etapes).toHaveLength(1);
+    expect(etapes[0].table!.result, 'aucun siège ne la tient → le socle a tiré au rang du curseur').toBeTruthy();
+    expect(stepInteraction(etapes[0]), 'plus rien à jouer : l’étape se franchit').toBe('affichage');
+    const ligne = etapes[0].table!.result!.id;
+    draineCascade(useGame.getState);
+    const victime = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
+    expect(lastCrit(victime), 'la ligne résolue d’office n’est pas celle appliquée').toBe(ligne);
   });
 
   it('variante AUX ARMES : aucune fenêtre ni déclaration LDB — la sévérité reste au résolveur AA (#974)', () => {
@@ -184,7 +242,7 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
       expect(() => critSeverityDecl(H, 'corps', 0, false)).toThrow(/combat-aa-blessures/);
       const suspended = applyAttackResult(useGame.getState, useGame.setState, E, H, hache, critHit('corps'));
       expect(suspended, 'fenêtre LDB ouverte sous la variante AA').toBe(false);
-      expect(useGame.getState().pendingCascade!.participants.some((s) => s.kind === 'critSeverity')).toBe(false);
+      expect(useGame.getState().pendingCascade!.participants.some((s) => s.table?.tableId === CRIT_TABLE_IDS.corps && s.kind === 'deviation')).toBe(false);
       // Le Critique appliqué vient bien des tables AA (id absent des tables LDB de la localisation).
       const victime = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
       expect(CRITICAL_TABLES.corps.some((e) => e.id === lastCrit(victime))).toBe(false);
@@ -229,5 +287,60 @@ describe('Sévérité d’un Critique — la table LDB en étape (#942 L4)', () 
     const { crit } = resolveCritSeverity(H, 'corps', 0, true, 42);
     expect(crit.roll, 'le dé posé a été écrasé par le multiplicateur de lancers').toBe(42);
     expect(crit.entryId).toBe(findTableEntry(CRITICAL_TABLES.corps, 42).id);
+  });
+
+  /**
+   * UNE INSTANCE = UN ID (#1426) : deux Critiques sur la MÊME cible à la MÊME localisation dans la
+   * MÊME séquence (Balayage, deux frappes du Maniement de deux armes) portaient un id d'étape
+   * IDENTIQUE — les seams keyés par id (`liveMerge` de `commitStep`, la pose du dé
+   * `cascadeTableSetForcedRoll`) ne les distinguaient plus. L'index d'append les sépare.
+   */
+  it('deux Critiques MÊME cible / MÊME localisation dans une séquence = DEUX ids d’étape', () => {
+    const { H, E } = startFight();
+    setDesFixes(true);
+    applyAttackResult(useGame.getState, useGame.setState, E, H, hache, critHit('corps'));
+    applyAttackResult(useGame.getState, useGame.setState, E, H, hache, critHit('corps'));
+    const etapes = useGame.getState().pendingCascade!.participants.filter((s) => s.kind === 'deviation');
+    expect(etapes, 'les deux Critiques doivent porter DEUX étapes').toHaveLength(2);
+    expect(new Set(etapes.map((s) => s.id)).size, `id partagé : ${etapes[0].id}`).toBe(2);
+    // Et la pose n'agit que sur l'étape SOUS LE CURSEUR : le dé de la seconde ne suit pas celui de la
+    // première (avec un id partagé, elles répondaient au même geste).
+    const entry = CRITICAL_TABLES.corps.find((e) => !e.lethal && !e.amputation)!;
+    useGame.getState().cascadeTableSetForcedRoll(etapes[0].id, entry.min);
+    const apres = useGame.getState().pendingCascade!.participants.filter((s) => s.kind === 'deviation');
+    expect(apres[0].table!.result!.id).toBe(entry.id);
+    expect(apres[1].table!.result, 'la SECONDE étape a été résolue par le geste de la première').toBeUndefined();
+  });
+
+  /**
+   * SECRET DES POSES (#1426) — un dé exploré puis ABANDONNÉ n'appartient qu'au siège qui pose : sa
+   * conséquence dérivée (`CascadeStep.foldMemo`, mémo du pli impur) ne quitte jamais ce siège. Les
+   * deux surfaces sérialisées passent par la MÊME couture (`saves.snapshotSave`, dont
+   * `netFlow.netSnapshot`), et le mémo est purgé au COMMIT de l'étape.
+   */
+  it('le dé exploré puis ABANDONNÉ ne voyage pas : ni sauvegarde, ni snapshot coop, ni étape committée', () => {
+    const { H, E } = startFight();
+    setDesFixes(true);
+    applyAttackResult(useGame.getState, useGame.setState, E, H, hache, critHit('corps'));
+    const step = useGame.getState().pendingCascade!.participants[0];
+    useGame.getState().cascadeTableSetForcedRoll(step.id, 76); // exploré…
+    useGame.getState().cascadeTableSetForcedRoll(step.id, 20); // …puis ABANDONNÉ
+    const courante = useGame.getState().pendingCascade!.participants[0];
+    expect(Object.keys(courante.foldMemo ?? {}), 'sonde : le mémo doit bien porter les DEUX poses')
+      .toEqual(expect.arrayContaining(['76', '20']));
+
+    const brut = (o: unknown) => JSON.stringify(o);
+    const save = snapshotSave(
+      useGame.getState() as unknown as Record<string, unknown>,
+      useGame.getInitialState() as unknown as Record<string, unknown>,
+      'test',
+    );
+    expect(brut(save.data), 'le secret de pose part dans la SAUVEGARDE').not.toMatch(/foldMemo/);
+    expect(brut(netSnapshot(useGame.getState)), 'le secret de pose part dans le SNAPSHOT diffusé').not.toMatch(/foldMemo/);
+    // …et l'état lui-même s'en défait au COMMIT (le mémo ne sert que tant que l'étape est courante).
+    useGame.getState().cascadeNext();
+    const committee = useGame.getState().pendingCascade!.participants[0];
+    expect(committee.committed).toBe(true);
+    expect(committee.foldMemo, 'mémo survivant au commit').toBeUndefined();
   });
 });

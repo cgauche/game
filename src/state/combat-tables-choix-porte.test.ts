@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import {
-  applyOpposedCritical, applyAttackResult, applyMiscast, applyBladeTrap, startDisengage,
+  applyOpposedCritical, applyAttackResult, applyMiscast, applyBladeTrap, startDisengage, STRUCTURE_CRIT_TABLE,
 } from './combatFlow';
-import { displayStep, hostStep } from './rollSeam';
-import { stepInteraction } from './cascade';
+import { displayStep, hostStep, tableStep } from './rollSeam';
+import { stepInteraction, tableStepPosee } from './cascade';
+import { fixtureText } from '../i18n/fixtureText';
+import { combatStakeRef } from '../data';
 import { parseQualityInstance } from '../engine/qualities/normalize';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { seedBattleRng } from './battleRng';
@@ -143,14 +145,15 @@ describe('#1262 lot 5b — TABLES : le dé reste À POSER, la charge dit de quoi
     // est donc tenue par l'HÔTE, et le second héros par l'invité — la possession se mesure des deux côtés.
     const { H, E } = combat(2, 7, [1]);
     const hero = H[0];
-    hero.armour = { ...SANS_PA }; // aucune PA → pas d'offre de Déviation : on isole la fenêtre de sévérité
+    hero.armour = { ...SANS_PA }; // aucune PA → aucune voie de Déviation : on isole le seul tirage
     setDesFixes(true);
     const suspendu = applyAttackResult(useGame.getState, useGame.setState, E[0], hero, hache, critHit('corps'));
     expect(suspendu).toBe(true);
 
-    const st = parKind('critSeverity')!;
+    const st = parKind('deviation')!;
     expect(stepInteraction(st), 'le dé n’est PAS tombé : c’est la fenêtre qui le pose').toBe('table');
     expect(st.table!.result).toBeUndefined();
+    expect(st.options, 'rien à sacrifier : cette fenêtre ne porte QUE le tirage').toBeUndefined();
     expect(st.stake, 'l’enjeu du TABLEAU est déclaré avant le dé').toBeTruthy();
     expect(st.critSeverity, 'sans sa charge, l’applier ne saurait plus quel coup rejouer').toBeTruthy();
     expect(st.critSeverity!.targetId).toBe(hero.id);
@@ -158,6 +161,33 @@ describe('#1262 lot 5b — TABLES : le dé reste À POSER, la charge dit de quoi
     expect(modalOwnerOf(useGame.getState()), 'le d100 subi va à la VICTIME').toBe(hero.id);
     expect(seatOwns(useGame.getState(), 1, hero.id), 'COOP : l’autre siège ne pose pas ce dé').toBe(false);
     expect(seatOwns(useGame.getState(), 1, H[1].id), 'prémisse : ce siège tient bien un héros').toBe(true);
+  });
+
+  it('TABLE + OPTIONS : la SEULE combinaison de formes autorisée, et le mint la RECOPIE (#1426)', () => {
+    // Un tirage dont la DÉCISION se prend devant son résultat (sévérité d'une Blessure critique →
+    // Dévier/Subir) est UNE étape : `stepInteraction` est une chaîne de PRIORITÉ, donc elle se présente
+    // en `'table'` puis, le dé tombé, en `'choix'`. Aucune autre combinaison de formes n'est ouverte.
+    const st = tableStep({
+      id: 'x', kind: 'deviation', label: fixtureText('Blessure critique'), actorId: 'a',
+      table: { tableId: STRUCTURE_CRIT_TABLE, die: 100 },
+      options: [{ key: 'devier', label: fixtureText('Dévier') }, { key: 'subir', label: fixtureText('Subir') }],
+      defaultChoice: 'devier',
+      stake: combatStakeRef('critSeverity'),
+    })!;
+    expect(stepInteraction(st), 'tant que le dé n’est pas tombé, c’est un TIRAGE').toBe('table');
+    expect(st.options!.map((o) => o.key), 'les voies sont RECOPIÉES par le mint').toEqual(['devier', 'subir']);
+    expect(st.defaultChoice, 'la résolution immédiate retient une voie authorée').toBe('devier');
+    // Le dé tombé, la MÊME étape offre ses voies — aucune 2ᵉ étape à enchaîner.
+    const posee = tableStepPosee(st, st.table!, { roll: 40, die: 40, id: 'x', lines: [] });
+    expect(stepInteraction(posee)).toBe('choix');
+    expect(posee.id).toBe(st.id);
+    // Un `defaultChoice` étranger aux voies est REFUSÉ à la porte (calque de `choiceStep`).
+    expect(() => tableStep({
+      id: 'y', kind: 'deviation', label: fixtureText('Blessure critique'), actorId: 'a',
+      table: { tableId: STRUCTURE_CRIT_TABLE, die: 100 },
+      options: [{ key: 'subir', label: fixtureText('Subir') }], defaultChoice: 'devier',
+      stake: combatStakeRef('critSeverity'),
+    })).toThrow(/defaultChoice/);
   });
 
   it('IMPARFAITE : étape à table NON résolue + charge `miscast` (sévérité à appliquer au dé posé)', () => {

@@ -1,9 +1,13 @@
 /**
- * ÉVÉNEMENT d'interlude en étapes à TABLE (#942 L7) — LDB 22 : le d100 « Entre deux aventures » se
- * tire PAR HÉROS, puis les bourses du groupe encaissent le pire tirage de la période. Les dés passent
- * par le résolveur d'étape UNIQUE (`rollTableStep`) : une étape par héros (chaque siège pose pour les
- * siens), le dénouement de GROUPE en étape FINALE. Sans l'option « Dés fixés », le chemin est
- * bit-à-bit celui d'avant (sonde différentielle ci-dessous).
+ * ÉVÉNEMENT d'interlude en étapes à TABLE (#942 L7, #1426) — LDB 22 : le d100 « Entre deux aventures »
+ * se tire PAR HÉROS, puis les bourses du groupe encaissent le pire tirage de la période. Les dés passent
+ * par le résolveur d'étape UNIQUE (`rollTableStep`) : une étape par héros, le dénouement de GROUPE en
+ * étape FINALE.
+ *
+ * La séquence est POUSSÉE INCONDITIONNELLEMENT : ni l'option « Dés fixés » ni le siège n'entrent dans
+ * sa DÉCLARATION. Ce que le socle en fait ensuite est SA politique (`cascade.poserLeCurseur`) — fenêtre
+ * pour qui tient le héros, résolution d'office sinon — et l'option n'ajoute que la POSE du dé. Le flux
+ * d'aléa, lui, ne bouge pas (sonde différentielle ci-dessous).
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
@@ -17,6 +21,8 @@ import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { createHero } from '../engine/character';
 import { testScene } from '../scenes/test-fixture';
 import { setDesFixes, resetDesFixes, desFixes } from '../engine/fixedDie';
+import { canFixDie } from './netOwnership';
+import { draineCascade } from './cascadeTestKit';
 import type { Combatant } from '../engine/types';
 
 /** Dés d'événements CHOISIS dans la donnée (fourchettes de `interludeEvents.json`). */
@@ -98,8 +104,11 @@ describe('Événement d’interlude — un tirage par héros en étape à table 
 
       seedBattleRng(seed);
       useGame.getState().startInterlude(2);
+      // La séquence s'ouvre même sans l'option : elle se JOUE, dé par dé, au rang de chaque étape.
+      expect(draineCascade(useGame.getState), `seed ${seed} : étapes de la séquence`)
+        .toEqual(['interludeEvent', 'interludeEvent', 'interludePurse']);
       const apres = d100(battleRng());
-      expect(useGame.getState().pendingCascade, `seed ${seed} : une séquence s’est ouverte sans l’option`).toBeNull();
+      expect(useGame.getState().pendingCascade, `seed ${seed} : la séquence ne s’est pas fermée`).toBeNull();
       expect(party.map((h) => perHeroOf(h.id).eventRoll), `seed ${seed} : événements différents`).toEqual(rolls);
       expect(apres, `seed ${seed} : le flux RNG a été décalé`).toBe(suivant);
       // Activités restantes et Chance : dérivées de la ligne tirée (2 semaines, aucun elfe ici).
@@ -115,11 +124,15 @@ describe('Événement d’interlude — un tirage par héros en étape à table 
     }
   });
 
-  it('option ÉTEINTE : aucune étape — les Activités ouvrent immédiatement (phase « activities »)', () => {
-    groupe();
+  it('option ÉTEINTE : la séquence s’ouvre quand même — aucun dé posable, et les Activités ouvrent une fois jouée', () => {
+    const party = groupe();
     seedBattleRng(5);
     useGame.getState().startInterlude(2);
-    expect(useGame.getState().pendingCascade).toBeNull(); // zéro friction pour qui n'a pas l'option
+    expect(steps().map((s) => s.kind)).toEqual(['interludeEvent', 'interludeEvent', 'interludePurse']);
+    expect(canFixDie(useGame.getState(), party[0].id), 'option ÉTEINTE : la pose n’est pas offerte').toBe(false);
+    expect(useGame.getState().interlude!.phase).toBe('tirage');
+    draineCascade(useGame.getState);
+    expect(useGame.getState().pendingCascade).toBeNull();
     expect(useGame.getState().interlude!.phase).toBe('activities');
   });
 
@@ -201,17 +214,23 @@ describe('Événement d’interlude — un tirage par héros en étape à table 
     expect(perHeroOf(party[1].id).left, 'le budget du VOISIN a bougé').toBe(3);
   });
 
-  it('coop : le siège ne pose QUE pour les héros qu’il contrôle — ceux des autres se résolvent inline', () => {
+  it('coop : CHAQUE héros a SON étape — celle d’un autre siège n’est pas résolue à sa place', () => {
     const party = groupe();
     const net = useGame.getState().net;
     useGame.setState({ net: { ...net, mode: 'guest', mySeat: 1, ownership: { [party[0].id]: 1, [party[1].id]: 0 } } });
     setDesFixes(true);
     seedBattleRng(3);
     useGame.getState().startInterlude(2);
-    expect(steps().map((s) => s.kind)).toEqual(['interludeEvent', 'interludePurse']);
-    expect(steps()[0].actorId).toBe(party[0].id);
-    expect(perHeroOf(party[0].id).eventRoll, 'le héros du siège local a été résolu sans lui').toBeUndefined();
-    expect(perHeroOf(party[1].id).eventRoll, 'le héros d’un autre siège n’a pas été résolu inline').toBeDefined();
+    // Les deux héros sont tenus par un siège HUMAIN (le local, un distant) : deux étapes à jouer, et
+    // l'hôte ne tire pour aucun des deux. Qui VOIT quelle fenêtre appartient à `modalArbiter`, pas ici.
+    expect(steps().map((s) => s.kind)).toEqual(['interludeEvent', 'interludeEvent', 'interludePurse']);
+    expect(steps().slice(0, 2).map((s) => s.actorId)).toEqual([party[0].id, party[1].id]);
+    expect(steps().slice(0, 2).every((s) => s.table!.result === undefined), 'un dé est tombé sans siège').toBe(true);
+    expect(perHeroOf(party[0].id).eventRoll).toBeUndefined();
+    expect(perHeroOf(party[1].id).eventRoll).toBeUndefined();
+    // Seul le porteur du siège LOCAL se voit offrir la pose (`canFixDie`) — l'option ne gate que ça.
+    expect(canFixDie(useGame.getState(), party[0].id)).toBe(true);
+    expect(canFixDie(useGame.getState(), party[1].id)).toBe(false);
     useGame.setState({ net });
   });
 

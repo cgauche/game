@@ -5,7 +5,7 @@
 import type { PlayerText } from '../i18n/playerText';
 import type { GameState, BattleState, RevealEntry, ShootingStanceKey } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, CascadeTableDone, PendingMiscastStep, CascadeStep, CascadeRoll, BatchParticipant, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
+import type { PendingCast, PendingDeviation, PendingCritSeverity, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, CascadeTableDone, PendingMiscastStep, CascadeStep, CascadeRoll, BatchParticipant, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
 import { FLOWS } from './rollFlowSpecs';
 import { toRecapLines } from './recapLine';
 import { Combatant, HitLocation, Weapon, Difficulty, type ShipPoste, type EffectSource } from '../engine/types';
@@ -252,7 +252,7 @@ export * from './combatManeuvers';
 export * from './combatHooks';
 export * from './combatSetup';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
-import { pilotedByHuman, controlsCombatant, defenseSurfaced, jetSurfaced } from './netOwnership';
+import { controlsCombatant, defenseSurfaced, jetSurfaced, tenuParUnHumain } from './netOwnership';
 import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
@@ -269,12 +269,12 @@ import {
   setManeuverPostHitHook,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
-import { registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep, poserCurseurCascade } from './cascade';
+import { registerCascadeApplier, registerCascadeTableFold, runCascadeImmediate, registerTableStep, rollTableStep, poserCurseurCascade } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
 import { combatEndBands, combatEndRowMeta } from './combatEndBands';
 import type { CascadeStepMeta } from './pendings';
 import {
-  freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, poseOfferte, monoStep, pousseSi,
+  freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, monoStep, pousseSi,
   hostStep, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, tableStep, makeBandFactory,
   type Consequence, type TableSpec,
 } from './rollSeam';
@@ -286,7 +286,7 @@ import { stepPrecision, stepPsych } from './rollSeam';
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
  *  l'attaque » (LDB 16 l.125) — ce gain profite déjà au jet en cours puis persiste. À appeler une seule
- *  fois par attaque (avant le 1er jet ; pas sur une relance). Plus de branche par-nom de l'État. */
+ *  fois par attaque (avant le 1er jet ; pas sur une relance). L'État est lu par sa DONNÉE, jamais par son nom. */
 export function applyIncomingMeleeAdvantage(get: Get, attacker: Combatant, target: Combatant): void {
   const adv = attacker.weapons[0]?.type === 'melee' ? incomingMeleeAdvantage(target) : 0;
   if (adv > 0) {
@@ -1972,10 +1972,17 @@ function applyCritAndFinalize(
   return lethal;
 }
 
-/** Déviation AUTO de l'ennemi (LDB 63) : rule-gated, sacrifie 1 PA à la loc du Critique si possible →
- *  Critique ignoré. RETOURNE true si la Déviation a eu lieu. Révélation « dévié » si un héros est
- *  concerné (parité avec la révélation du Critique subi). Source UNIQUE pour les 3 chemins. */
-function enemyAutoDeviate(
+/**
+ * DÉVIATION DÉCIDÉE PAR L'AUTOMATE (LDB 63 l.30) : rule-gated, sacrifie 1 PA à la loc du Critique si
+ * possible → Critique ignoré. RETOURNE true si la Déviation a eu lieu. Révélation « dévié » si un héros
+ * est concerné (parité avec la révélation du Critique subi). Source UNIQUE pour les 3 chemins.
+ *
+ * KIND-AGNOSTIQUE : son corps ne lit que la règle, l'armure et la cible. QUI décide est la question des
+ * appelants, et elle a UNE réponse (#1426) — `tenuParUnHumain` : le RAW donne le choix à la victime
+ * (« Cela ne se produit que si vous le choisissez », LDB 63 l.30), donc l'automate ne tranche que pour un
+ * porteur qu'AUCUN siège humain ne tient. Un ennemi sous siège MJ reçoit l'étape Dévier/Subir comme un héros.
+ */
+function autoDeviate(
   set: SetFn, target: Combatant, location: HitLocation, extraWounds: number,
   ctx: { attackerId?: string; weapon?: string }, roll: number, log: string[], heroConcerned: boolean,
 ): boolean {
@@ -1991,16 +1998,79 @@ function enemyAutoDeviate(
   return true;
 }
 
-/** Pousse l'étape de cascade « Coup Critique — dévier ? » (choix Dévier/Subir + révélation riche du
- *  Critique pré-tiré dans la MÊME modale). Builder UNIQUE des 3 chemins. */
-function pushDeviationStep(set: SetFn, dev: PendingDeviation): void {
-  pushChoice(set, {
-    id: `cons-deviation-${dev.targetId}`, kind: 'deviation', actorId: dev.targetId, icon: 'fire/blast',
-    label: tr('step.critDevier'),
-    options: [{ key: 'devier', label: tr('opt.devier') }, { key: 'subir', label: tr('opt.subir') }],
-    defaultChoice: 'devier', deviation: dev, reveal: dev.reveal,
-  });
+/** DÉCLARATION de l'étape UNIQUE d'une Blessure critique (#1426) : le d100 de SÉVÉRITÉ (LDB 18) et la
+ *  décision Dévier/Subir (LDB 63 l.30) sont la MÊME fenêtre. `severite` = la table reste à tirer (le
+ *  Critique n'existe qu'APRÈS le dé — il est posé par le PLI post-dé, `registerCascadeTableFold`) ;
+ *  `pretire` = aucune table déclarée pour ce cas (variante Aux Armes, chemins auto-contenus opposé et
+ *  projectile magique), le Critique voyage alors dans la charge dès le mint. */
+interface DeviationStepSpec {
+  targetId: string;
+  /** La décision est-elle OFFERTE ? Sans voies, l'étape ne porte que le tirage — le Critique est subi. */
+  offerte: boolean;
+  severite?: { decl: CascadeTableDecl; charge: PendingCritSeverity; label: PlayerText };
+  pretire?: PendingDeviation;
 }
+
+/** Pousse l'étape « Blessure critique » — tirage de sévérité et/ou choix Dévier/Subir dans UNE fenêtre.
+ *  Builder UNIQUE des 3 chemins. */
+function pushDeviationStep(set: SetFn, spec: DeviationStepSpec): void {
+  const options = spec.offerte
+    ? [{ key: 'devier', label: tr('opt.devier') }, { key: 'subir', label: tr('opt.subir') }]
+    : undefined;
+  // UNE INSTANCE = UN ID : deux Critiques sur la MÊME cible à la MÊME localisation dans la même
+  // séquence (Balayage, deux frappes du Maniement de deux armes) portaient le même id d'étape — les
+  // seams keyés par id (`liveMerge` de `commitStep`, la pose du dé `cascadeTableSetForcedRoll`) ne les
+  // distinguaient plus. L'INDEX d'append est le discriminant canonique de la porte (`rollSeam`, forme
+  // FABRIQUE : « il distingue deux étapes de MÊME clé dans une séquence »).
+  if (spec.severite) {
+    const sev = spec.severite;
+    pushTable(set, (index) => ({
+      id: `cons-deviation-${spec.targetId}-${sev.charge.location}-${index}`,
+      // Le titre d'étape porte la LOCALISATION : c'est elle qui dit sur QUELLE table le dé se pose.
+      kind: 'deviation', actorId: spec.targetId, icon: 'journal/critical',
+      label: sev.label,
+      table: sev.decl,
+      critSeverity: sev.charge,
+      ...(options ? { options, defaultChoice: 'devier' } : {}),
+      // Avant le dé, l'enjeu est celui du TABLEAU (fiche `blessures-critiques`) ; après, la re-pose
+      // le fait descendre à la Blessure tirée (catégorie déclarée par la table de la Localisation).
+      stake: combatStakeRef('critSeverity'),
+    }));
+    return;
+  }
+  const dev = spec.pretire!;
+  pushChoice(set, (index) => ({
+    id: `cons-deviation-${dev.targetId}-${index}`, kind: 'deviation', actorId: dev.targetId, icon: 'fire/blast',
+    label: tr('step.critDevier'),
+    options: options ?? [{ key: 'devier', label: tr('opt.devier') }, { key: 'subir', label: tr('opt.subir') }],
+    defaultChoice: 'devier', deviation: dev, reveal: dev.reveal,
+  }));
+}
+
+/**
+ * PLI POST-DÉ de l'étape « Blessure critique » (#1426) — le dé de l'étape EST le dé naturel du Critique :
+ * le moteur en fait la ligne AU MOMENT où le dé tombe (`rollCritical` en `forcedRoll`, qui prime sur
+ * `twice`), et le résultat est POSÉ sur l'étape. Il ne peut pas être re-dérivé au rendu : `rollCritical`
+ * consomme du RNG (amputation, relances) même sous dé posé, donc chaque redessin donnerait une autre
+ * Blessure. C'est un pli IMPUR : le site unique de pose le MÉMORISE par valeur de dé sur l'étape
+ * (`tableStepResolved`), de sorte qu'explorer les poses puis revenir sur un dé déjà vu rend LE MÊME
+ * Critique. La révélation riche n'est portée par l'étape QUE si une décision y est offerte (le Critique
+ * s'y lit pour choisir) ; sans options, elle reste due au chemin normal, après application.
+ */
+registerCascadeTableFold('deviation', (step, get) => {
+  const p = step.critSeverity;
+  const rolled = step.table?.result;
+  if (!p || !rolled) return step;
+  const target = inBattleId(get().battle, p.targetId);
+  if (!target) return step;
+  const crit = rollCritical(target, p.location, battleRng(), p.overkill, p.twice, rolled.roll);
+  const reveal = previewCritEntry(target, crit, { attackerId: p.attackerId, weapon: p.weapon?.label });
+  const dev: PendingDeviation = {
+    mode: 'melee', attackerId: p.attackerId, targetId: p.targetId, weapon: p.weapon, res: p.res,
+    crit, reveal, resumeAfter: true,
+  };
+  return { ...step, deviation: dev, ...(step.options ? { reveal } : {}) };
+});
 
 /** Une armure Bâclée frappée par un Coup Critique à sa localisation casse (LDB 60 l.50) — héros (pièces). */
 function breakBacleArmour(target: Combatant, loc: HitLocation, log: string[]): void {
@@ -2022,9 +2092,10 @@ export function weaponHasBlade(w: Weapon | undefined): boolean {
 /** Blessure critique « sèche » d'un Test opposé (LDB 14 l.3) : un double réussi inflige une Blessure
  *  critique à l'adversaire indépendamment du vainqueur de l'échange. Localisation = 1d100 frais (LDB 18
  *  l.53). Critique « sec » → aucune composante de Dégâts de base (overkill=0, deflectExtraWounds=0). La
- *  Déviation Critique (LDB 63 l.30) est offerte sur les TROIS chemins via les atomes partagés : l'ENNEMI
- *  dévie AUTO (`enemyAutoDeviate`, rule-gated), le HÉROS blindé CHOISIT (étape `self`), sinon le Critique
- *  est subi (`applyCritAndFinalize`). */
+ *  Déviation Critique (LDB 63 l.30) est offerte sur les TROIS chemins via les atomes partagés, sous le
+ *  MÊME prédicat (#1426, `tenuParUnHumain`) : un porteur blindé TENU par un siège humain CHOISIT (étape
+ *  `self`), un porteur blindé que personne ne tient voit l'automate trancher (`autoDeviate`, rule-gated),
+ *  sinon le Critique est subi (`applyCritAndFinalize`). */
 export function applyOpposedCritical(
   get: Get,
   set: SetFn,
@@ -2038,16 +2109,17 @@ export function applyOpposedCritical(
   const attacker = ctx.attackerId ? inBattleId(get().battle, ctx.attackerId) : undefined;
   const heroConcerned = victim.kind === 'hero' || attacker?.kind === 'hero';
   const c2: DeviationCtx = { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? critRollTwiceFor(attacker) : undefined };
-  if (victim.kind === 'enemy') {
-    if (enemyAutoDeviate(set, victim, loc, 0, ctx, roll, log, heroConcerned)) return;
-  } else if (rule('combat-critical-deflect') && deviatableArmourAt(victim, loc) > 0) {
-    // HÉROS blindé : on SUSPEND pour son choix Dévier/Subir (étape `self`, Critique « sec » pré-tiré).
+  const deviable = !!rule('combat-critical-deflect') && deviatableArmourAt(victim, loc) > 0;
+  if (deviable && !tenuParUnHumain(get(), victim.id)) {
+    if (autoDeviate(set, victim, loc, 0, ctx, roll, log, heroConcerned)) return;
+  } else if (deviable) {
+    // Porteur blindé TENU : on SUSPEND pour son choix Dévier/Subir (étape `self`, Critique « sec » pré-tiré).
     const { crit } = resolveCritSeverity(victim, loc, 0, c2.critTwice); // dé de sévérité par l'étape à table (seam UNIQUE)
     const reveal = previewCritEntry(victim, crit, ctx);
-    pushDeviationStep(set, {
+    pushDeviationStep(set, { targetId: victim.id, offerte: true, pretire: {
       mode: 'self', attackerId: ctx.attackerId ?? '', targetId: victim.id, location: loc, crit,
       isCoupCritique: true, overkill: 0, deflectExtraWounds: 0, woundsBefore: victim.wounds.current, reveal, resumeAfter: true, ctx: c2,
-    });
+    } });
     return;
   }
   applyCritAndFinalize(get, set, victim, loc, true, 0, log, c2, victim.wounds.current);
@@ -2165,55 +2237,64 @@ export function applyAttackResult(
   const dloc = (res.critical && deviated === undefined && target.kind === 'hero')
     ? (res.critLocation ??= critWoundLocation(battleRng(), target.bodyShape))
     : (res.location ?? 'corps'); // dépassement (≠ double) : loc de touche, pas de re-tirage
-  // FENÊTRE DE POSE du d100 de SÉVÉRITÉ (#942 L4) — option « Dés fixés » + siège qui contrôle la
-  // VICTIME (`poseOfferte`, LA politique de pose du socle) : l'étape à table est poussée NON RÉSOLUE et la résolution du coup est
-  // SUSPENDUE, exactement comme l'offre de Déviation (aucune mutation de la cible ici). Le dé posé
-  // revient par l'applier `critSeverity`, qui re-entre ici avec le Critique construit dessus
-  // (`prerolledCrit`) — d'où la garde `!prerolledCrit` (une seule fenêtre par coup). Sans l'option ni
-  // le contrôle : rien ne change, le dé est tiré inline par le seam (`resolveCritSeverity`).
-  // `critSeverityInSeam` gate la fenêtre sur le MÊME prédicat que le seam et que la bifurcation du
-  // moteur : sous la variante Aux Armes (hors Sauvagerie), la sévérité se résout sur les tables AA —
-  // ouvrir une fenêtre sur les tables LDB y ferait poser un dé que `resolveAACritical` ne lit pas.
-  // Coque/Structure ont leurs propres tables (non déclarées ici) → jamais de fenêtre.
+  // UNE SEULE FENÊTRE pour la Blessure critique (#1426) : le d100 de SÉVÉRITÉ (LDB 18) et la décision
+  // Dévier/Subir (LDB 63 l.30) sont la MÊME étape — le dé se lance (ou se pose, option « Dés fixés »),
+  // le Critique tiré s'affiche, les voies se tranchent dessous. La résolution du coup est SUSPENDUE
+  // jusque-là (aucune mutation de la cible ici) ; l'applier ré-entre avec le Critique construit
+  // (`prerolledCrit`), d'où la garde `!prerolledCrit` — une seule fenêtre par coup.
+  //
+  // AUCUNE gate de possession sur le TIRAGE : dès qu'une table est à jouer, l'étape est poussée pour
+  // TOUT porteur, et c'est le SOCLE qui décide de la fenêtre au rang du curseur — un porteur qu'aucun
+  // siège humain ne tient voit sa table résolue D'OFFICE et franchie (`cascade.poserLeCurseur`),
+  // visible au bilan. Même code pour une table de personnage et une table de monde.
+  // La DÉCISION Dévier/Subir, elle, est gatée — parce que le RAW en fait un CHOIX du porteur (LDB 63
+  // l.30) : sans humain pour le tenir, l'automate tranche AVANT toute poussée (`autoDeviate` ci-dessous),
+  // sinon le dé de sévérité serait tiré puis jeté. Le prédicat de cette gate est celui de la TENUE
+  // (`tenuParUnHumain`), le même qui décide si les voies sont OFFERTES : une seule table de vérité.
+  //
+  // `critSeverityInSeam` borne la DÉCLARATION de table au périmètre du seam et de la bifurcation du
+  // moteur : sous la variante Aux Armes (hors Sauvagerie) la sévérité se résout sur les tables AA, qui
+  // ne sont pas déclarées en étapes — l'étape n'y porte alors QUE la décision, sur un Critique tiré au
+  // mint. Coque/Structure ont leurs propres tables (non déclarées ici) → aucune étape ici.
   const twice = critRollTwiceFor(attacker);
   if (deviated === undefined && !prerolledCrit && res.hit && res.woundsLost && (res.critical || overkill0 > 0)
-      && !isStructure(target) && target.bodyShape !== 'vehicule' && critSeverityInSeam(twice) && poseOfferte(get, target.id)) {
+      && !isStructure(target) && target.bodyShape !== 'vehicule') {
     const cloc = res.critical ? critWoundLocation(battleRng(), target.bodyShape, res.critLocation) : dloc;
     if (res.critical) res.critLocation = cloc; // LDB 18 l.55 (#80) : loc FIGÉE avant la suspension (jamais re-tirée)
-    pushTable(set, {
-      id: `cons-crit-severity-${target.id}-${(target.criticalWounds ?? 0) + 1}`,
-      // Le titre d'étape porte la LOCALISATION : c'est elle qui dit sur QUELLE table le dé se pose.
-      kind: 'critSeverity', actorId: target.id, icon: 'journal/critical',
-      label: stepPrecision(tr('step.blessureCritique'), locationLabel(cloc, target.bodyShape)),
-      table: critSeverityDecl(target, cloc, overkill0, twice),
-      critSeverity: { attackerId: attacker.id, targetId: target.id, weapon, res, location: cloc, overkill: overkill0, twice },
-      // Avant le dé, l'enjeu est celui du TABLEAU (fiche `blessures-critiques`) ; après, la re-pose
-      // le fait descendre à la Blessure tirée (catégorie déclarée par la table de la Localisation).
-      stake: combatStakeRef('critSeverity'),
-    });
-    return true; // suspendu — la résolution part de l'applier 'critSeverity'
-  }
-  // Règle optionnelle « Déviation Critique » (LDB 63 l.30) : si désactivée, on N'OFFRE PAS le choix
-  // Dévier/Subir au héros → le Critique est subi directement (chemin normal ci-dessous).
-  // La décision appartient à la VICTIME (LDB 63 l.30) : le prédicat est donc celui du SURFAÇAGE
-  // (`jetSurfaced` — un siège humain QUELCONQUE tient la cible), jamais l'affordance LOCALE
-  // (`pilotedByHuman`), qui subissait le Critique en silence pour le héros d'un autre siège. Les deux
-  // chemins JUMEAUX (`applyOpposedCritical`, projectile magique) n'ont jamais porté ce filtre.
-  // Cadence-AGNOSTIQUE comme eux : en Rapide/Auto l'étape s'ouvre et se tranche à son `defaultChoice`.
-  if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && (res.critical || overkill0 > 0) && jetSurfaced(get(), target) && deviatableArmourAt(target, dloc) > 0) {
-    // Pré-tire la Blessure Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
-    // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.
-    const cloc = res.critical ? critWoundLocation(battleRng(), target.bodyShape, res.critLocation) : dloc;
-    if (res.critical) res.critLocation = cloc; // LDB 18 l.55 (#80) : FIGE la loc re-tirée du Coup Critique AVANT la
-    // suspension — la reprise (Dévier comme Subir) la réutilise sans RE-tirer ; sinon « Dévier » (qui ne repasse
-    // pas `prerolledCrit`) sacrifierait 1 PA à une localisation ≠ de celle montrée au joueur. (Dépassement : pas de re-tirage.)
-    // Le dé POSÉ (fenêtre de sévérité ci-dessus) arrive ici en `prerolledCrit` : la modale montre CE Critique.
-    const crit = prerolledCrit ?? resolveCritSeverity(target, cloc, overkill0, critRollTwiceFor(attacker)).crit;
-    const reveal = previewCritEntry(target, crit, { attackerId: attacker.id, weapon: weapon?.label });
-    // Folding P3a : le choix Dévier/Subir devient une ÉTAPE de la séquence (Critique riche + options),
-    // au lieu d'une modale `pendingDeviation` séparée. L'applier 'deviation' appelle resolveDeviation.
-    pushDeviationStep(set, { mode: 'melee', attackerId: attacker.id, targetId: target.id, weapon, res, crit, reveal, resumeAfter: true });
-    return true; // suspendu — la résolution part de l'applier 'deviation' (resolveDeviation, resume:false)
+    // UN SEUL PRÉDICAT (#1426) : la Déviation appartient à la VICTIME (« Cela ne se produit que si vous
+    // le choisissez », LDB 63 l.30) → un porteur TENU par un siège humain reçoit l'étape Dévier/Subir,
+    // quel que soit son kind ; un porteur que personne ne tient voit l'AUTOMATE trancher (`autoDeviate`
+    // plus bas) sans jamais consulter le Tableau des Critiques — sa décision se prend AVANT toute
+    // poussée, sinon le dé de sévérité serait tiré puis jeté (`applyCritAndFinalize` est sauté quand la
+    // déviation a eu lieu). `tenuParUnHumain` est SEAT-AGNOSTIQUE (le MJ tient ses ennemis) et
+    // cadence-AGNOSTIQUE : en Rapide/Auto l'étape s'ouvre et se tranche à son `defaultChoice`.
+    const deviable = !!rule('combat-critical-deflect') && deviatableArmourAt(target, cloc) > 0;
+    const tenu = tenuParUnHumain(get(), target.id);
+    if (!(deviable && !tenu)) {
+      const offerte = deviable && tenu;
+      if (critSeverityInSeam(twice)) {
+        pushDeviationStep(set, {
+          targetId: target.id, offerte,
+          severite: {
+            decl: critSeverityDecl(target, cloc, overkill0, twice),
+            charge: { attackerId: attacker.id, targetId: target.id, weapon, res, location: cloc, overkill: overkill0, twice },
+            label: stepPrecision(tr('step.blessureCritique'), locationLabel(cloc, target.bodyShape)),
+          },
+        });
+        return true; // suspendu — la résolution part de l'applier 'deviation'
+      }
+      if (offerte) {
+        // Aucune table déclarée pour ce cas (variante Aux Armes) : le Critique est tiré au mint par le
+        // seam UNIQUE et voyage dans la charge — la décision se prend quand même devant lui.
+        const crit = resolveCritSeverity(target, cloc, overkill0, twice).crit;
+        const reveal = previewCritEntry(target, crit, { attackerId: attacker.id, weapon: weapon?.label });
+        pushDeviationStep(set, {
+          targetId: target.id, offerte: true,
+          pretire: { mode: 'melee', attackerId: attacker.id, targetId: target.id, weapon, res, crit, reveal, resumeAfter: true },
+        });
+        return true; // suspendu — la résolution part de l'applier 'deviation'
+      }
+    }
   }
   const battle = get().battle!;
   attacker.aiming = false; // l'attaque consomme la visée (tir : +20 déjà appliqué ; mêlée : visée gâchée)
@@ -2245,7 +2326,7 @@ export function applyAttackResult(
     // LDB 18 l.53-55 : un Coup Critique RE-TIRE la localisation (1d100 frais, ou choix RAW-2 « Je ne
     // faillirai pas ! », ou Critique déjà pré-tiré pour la Déviation) ; TOUTE la résolution du coup — Dégâts
     // NON-critiques (+ PA), Déviation, armure Bâclée, table de Critiques — utilise CETTE localisation. On la
-    // fige sur `res` (location + critLocation) pour que l'aval (deflectCrit/enemyAutoDeviate/breakBacleArmour/
+    // fige sur `res` (location + critLocation) pour que l'aval (deflectCrit/autoDeviate/breakBacleArmour/
     // applyCritAndFinalize) la lise, puis on RECALCULE les Blessures de base à cette localisation
     // (`woundsAtCritLocation`). L'overkill (≠ Coup Critique) garde la localisation de la touche.
     if (res.critical) {
@@ -2265,15 +2346,17 @@ export function applyAttackResult(
     if (reinj > 0) { addCondition(target, COND.hemorragique, reinj); critLog.push(tr('cf.reinjuryBleed', { name: target.label, n: reinj, loc: locationLabel(loc, target.bodyShape) })); }
     if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.50)
     // Blessures supplémentaires d'une Déviation (Dégâts recalculés à PA−1, LDB 63 l.30) : la PA n'est pas
-    // encore sacrifiée ici (deflectCrit/enemyAutoDeviate le font) → on recompute woundsFromHit à PA−1
+    // encore sacrifiée ici (deflectCrit/autoDeviate le font) → on recompute woundsFromHit à PA−1
     // (`extraAP:-1`) et on isole le DELTA par rapport aux Blessures de base déjà appliquées.
     const extra = Math.max(0, woundsFromHit(weapon, target, loc, res.damage ?? 0, -1) - (res.woundsLost ?? 0));
-    // Déviation (LDB 63 l.30-32) : l'ENNEMI dévie AUTO (rule-gated, `enemyAutoDeviate`) ; le HÉROS « Dévier »
-    // sur re-entrée (deviated===true, sans prerolledCrit, `deflectCrit`). Sacrifient 1 PA puis ajoutent `extra`.
+    // Déviation (LDB 63 l.30-32), MÊME prédicat qu'à la fenêtre ci-dessus : un porteur que personne ne
+    // tient voit l'automate trancher (`autoDeviate`, rule-gated) ; un porteur TENU a déjà eu son étape et
+    // ne dévie que s'il l'a CHOISI (deviated===true, `deflectCrit`) — un « Subir » du MJ sur son propre
+    // ennemi est donc respecté. Sacrifient 1 PA puis ajoutent `extra`.
     let deviationApplied = false;
     if (res.critical || overkill > 0) {
-      if (target.kind === 'enemy')
-        deviationApplied = enemyAutoDeviate(set, target, loc, extra, { attackerId: attacker.id, weapon: weapon?.label }, prerolledCrit?.roll ?? res.attackerRoll, critLog, attacker.kind === 'hero');
+      if (!tenuParUnHumain(get(), target.id))
+        deviationApplied = autoDeviate(set, target, loc, extra, { attackerId: attacker.id, weapon: weapon?.label }, prerolledCrit?.roll ?? res.attackerRoll, critLog, attacker.kind === 'hero');
       else if (deviated === true)
         deviationApplied = deflectCrit(target, loc, extra, critLog);
     }
@@ -2376,7 +2459,7 @@ export function applyAttackResult(
   }
   // Exposition aux Maladies (Infecté/Rongeur/Maladie (Type) ; munition Infecté) MIGRÉE en données :
   // `effects: onHit → if woundsDealt>0 → exposeDisease(<id>)` sur les traits/qualité de l'ATTAQUANT,
-  // dispatchés par le `fireTriggers('onHit')` ci-dessous. Op GÉNÉRIQUE unique (plus de flags ad hoc).
+  // dispatchés par le `fireTriggers('onHit')` ci-dessous. Op GÉNÉRIQUE unique, paramétrée par l'id de maladie.
   // Le bilan reste héros-only : exposer un non-héros est inerte. (LDB 20 l.25/51 ; LDB 85 p.340.)
   // Nausée (LDB 20 l.170) : un Test de DÉPLACEMENT raté (Esquive) fait vomir → État Sonné.
   if (res.defenderDetail?.mode === 'esquive' && !res.defenderDetail.success
@@ -2387,7 +2470,7 @@ export function applyAttackResult(
   // Effet DÉCLENCHÉ « à la perte de PB » authoré (Sang corrosif : 1d10 aux Engagés, BE+PA, min 1, sur
   // TOUTE Blessure subie — LDB 85 l.310 ; Démoniaque : banni à 0 PB — `if woundsCurrent<=0`). Le TYPE
   // d'attaque (`weapon.type`) voyage dans le contexte ; un effet peut s'y restreindre (`attackType`).
-  // Dispatcher générique (state/triggeredEffects), plus de handler en dur ni de branche par-nom.
+  // Dispatcher générique (state/triggeredEffects) : l'effet est authoré en donnée sur l'entité.
   if (res.hit && res.woundsLost) {
     emitCombatEvent('onWoundLoss', { get, set, battle, self: target, sink: (line) => critLog.push(line), triggerCtx: { rng: battleRng(), attackType: weapon.type, woundsDealt: res.woundsLost } });
     // Chanson de marin (MDG 09 l.38) : « Si le Personnage subit des Dégâts …, sa Chanson de marin prend fin. »
@@ -3263,7 +3346,12 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
  *  nombre d'enchaînements reste < BCC (LDB 14 l.9) ; sinon le ferme. Déplacement sur la case d'une
  *  cible tuée (l.9). */
 export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, target: Combatant, res: AttackResult, wasChain: boolean): void {
-  if (!pilotedByHuman(get(), attacker)) return;
+  // SURFACE (#1426), jamais l'affordance LOCALE : le balayage d'un héros possédé par un siège DISTANT
+  // est une FENÊTRE qui appartient à ce siège (`pendingCleave` → `modalArbiter`). Les deux chemins du
+  // balayage se PARTAGENT tous les porteurs sans trou : ici ceux qu'un siège humain tient, `autoCleave`
+  // (gaté `aiDriven`) ceux qu'un automate conduit — un prédicat seat-local laisserait un porteur entre
+  // les deux, donc un enchaînement dû (LDB 14 l.9 / 85 l.362) jamais offert ni résolu.
+  if (!tenuParUnHumain(get(), attacker.id)) return;
   const pc = get().pendingCleave;
   const sizeCleave = !!res.cleave; // Taille : enchaîne sur une simple TOUCHE (LDB 85 l.362)
   // Démarrage Frappe Mortelle (option, hors Taille) : la cible doit être TUÉE en un coup (LDB 14 l.9).
@@ -3688,27 +3776,22 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
   checkBattleOver(get, set);
 }
 
-/** Applier de l'étape de CHOIX « déviation » (folding P3a) : « Subir » applique le Critique pré-tiré,
- *  « Dévier » l'ignore (−1 PA). `resume:false` → la reprise de l'IA part de la FERMETURE de séquence
- *  (`cascadeNext`/`cascadeFinish` → `resumeSuspendedAI`). Le reste de l'attaque re-déclenché par
- *  resolveDeviation APPEND ses conséquences à la séquence (préservées par le liveMerge de commitStep). */
+/** Applier UNIQUE de l'étape « Blessure critique » (#1426) : le Critique est celui que le PLI post-dé a
+ *  posé (ou celui du mint quand aucune table n'est déclarée). L'étape offrait-elle ses voies ?
+ *   · OUI — « Subir » applique le Critique montré, « Dévier » l'ignore (−1 PA) : `resolveDeviation` ;
+ *   · NON — le Critique est subi, et sa RÉVÉLATION reste DUE (aucune fenêtre ne l'a montrée) : la
+ *     reprise part sans décision (`deviated: undefined`), ce qui laisse le chemin normal la produire.
+ *  `resume:false` → la reprise de l'IA part de la FERMETURE de séquence (`cascadeNext`/`cascadeFinish`
+ *  → `resumeSuspendedAI`). Le reste de l'attaque re-déclenché APPEND ses conséquences à la séquence
+ *  (préservées par le liveMerge de commitStep). */
 registerCascadeApplier('deviation', (get, set, step) => {
-  if (step.deviation) resolveDeviation(get, set, step.deviation, step.chosen === 'devier');
-});
-
-/** Applier de l'étape à TABLE « sévérité du Critique » (#942 L4) : le dé de l'étape EST le dé naturel
- *  du Critique — l'étape est le SEUL tireur (« Lancer » : `keepHighest` a déjà retenu le meilleur des
- *  deux lancers de Sauvagerie ; dé POSÉ : c'est le dé du joueur) — et le moteur en fait la ligne
- *  (`rollCritical` en `forcedRoll`, qui prime sur `twice`). L'attaque suspendue reprend ensuite son
- *  cours, offre de Déviation comprise : le Critique lui arrive pré-tiré. */
-registerCascadeApplier('critSeverity', (get, set, step) => {
-  const p = step.critSeverity;
-  const rolled = step.table?.result;
-  if (!p || !rolled) return;
-  const target = inBattleId(get().battle, p.targetId);
-  if (!target) return;
-  const crit = rollCritical(target, p.location, battleRng(), p.overkill, p.twice, rolled.roll);
-  resumeMeleeAfterSuspension(get, set, p.attackerId, p.targetId, p.weapon, p.res, undefined, crit);
+  const dev = step.deviation;
+  if (!dev) return;
+  if (!step.options && dev.mode === 'melee') {
+    resumeMeleeAfterSuspension(get, set, dev.attackerId, dev.targetId, dev.weapon, dev.res, undefined, dev.crit);
+    return;
+  }
+  resolveDeviation(get, set, dev, step.chosen === 'devier');
 });
 
 /** L'IA enchaîne ses attaques gratuites de créature après l'attaque principale (chacune 1 Avantage,
@@ -3973,18 +4056,19 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     ...(opts?.sorceryCorruption ? { sorceryCorruption: true } : {}),
     ...(opts?.suppressReveal ? { suppressReveal: true } : {}),
   };
-  // FENÊTRE DE POSE du dé (#942 L6) — option « Dés fixés » + siège qui contrôle le LANCEUR
-  // (`poseOfferte` : c'est SON Imparfaite) : le tirage devient une étape à table poussée NON RÉSOLUE,
-  // et AUCUN effet n'est appliqué avant la pose du dernier dé (relances comprises). Sans l'option ni
-  // le contrôle : le dé est tiré ici, par le MÊME résolveur — zéro friction, flux RNG identique.
-  if (poseOfferte(get, caster.id)) {
-    pushTable(set, (index) => miscastTableSpec(caster, ctx, `miscast-table-${caster.id}-${index}`));
-    return emitMiscastTriggered(get, set, caster); // l'Imparfaite EST déclenchée, seule sa ligne reste à tirer
-  }
-  // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53), lu À L'INSTANT du jet.
-  const { lines } = finishMiscast(get, set, caster, ctx, rollMiscast(severity, battleRng(), liveSinPoints(caster, severity), opts?.domainId));
-  lines.push(...emitMiscastTriggered(get, set, caster));
-  return lines;
+  // Le tirage de la table est une étape à TABLE, poussée NON RÉSOLUE (#1426) : aucun effet n'est
+  // appliqué avant que le DERNIER dé ne tombe (relances comprises), et il tombe au RANG de l'étape.
+  // Ce qu'il advient de l'étape appartient au socle (`cascade.poserLeCurseur`) : fenêtre pour le
+  // siège qui tient le LANCEUR (c'est SON Imparfaite), résolution d'office si nul siège ne le tient —
+  // l'option « Dés fixés » n'y ajoute que la POSE. Le +10 par Point de Péché de la Colère (LDB 40
+  // l.53) est lu par la déclaration au MOMENT du jet (`miscastTableDecl`, `modPerActor`).
+  //
+  // La porte est celle de la séquence de COMBAT (`pushTable`), comme la révélation qui la dénoue et
+  // le Test imbriqué qui la suit (`triggeredTest` → `pushCombatStep`) : le sous-arbre d'un contrecoup
+  // tient dans UNE séquence. Hors combat, une séquence d'un autre `purpose` en vol est donc PARQUÉE
+  // puis reprise — doctrine du slot, jamais un écrasement.
+  pushTable(set, (index) => miscastTableSpec(caster, ctx, `miscast-table-${caster.id}-${index}`));
+  return emitMiscastTriggered(get, set, caster); // l'Imparfaite EST déclenchée, seule sa ligne reste à tirer
 }
 
 /**
@@ -4002,7 +4086,7 @@ function sorceryCorruptionLines(get: Get, set: SetFn, caster: Combatant, ctx: Pe
   return lines;
 }
 
-/** DÉNOUEMENT commun aux deux chemins (dé tiré inline / dé posé en étape) : expiation du Péché, ops
+/** DÉNOUEMENT de l'étape à table (applier `miscastTable`) : expiation du Péché, ops
  *  immédiats, Corruption de Sorcellerie, étape de révélation, Test imbriqué. Le déclencheur
  *  `onMiscast` n'est PAS ici : il vaut par ÉVÉNEMENT d'Imparfaite, donc au site d'`applyMiscast`
  *  (`emitMiscastTriggered`) — une Multiplication d'infortune dénoue DEUX fois. */
@@ -4043,7 +4127,8 @@ function finishMiscast(get: Get, set: SetFn, caster: Combatant, ctx: PendingMisc
     // FOLD : l'Imparfaite/Colère est une ÉTAPE de la cascade d'incantation ACTIVE (parité avec le
     // Critique d'attaque, appendu via pushReveal) — plus une cascade SÉPARÉE. L'append vise la
     // cascade `purpose:'combat'` en cours (jet d'incantation), ou démarre « Conséquences » si aucune
-    // (Focalisation interrompue suppressReveal / contextes hors-cast). Le mint de révélation
+    // (Focalisation interrompue suppressReveal / contextes hors-cast) — la MÊME séquence que l'étape
+    // à table qu'elle dénoue et que le Test imbriqué qui la suit. Le mint de révélation
     // (`revealToStep`) monte l'étape ; l'en-tête de la RANGÉE est plus court que le titre de la
     // charge, et son icône dit la sévérité — d'où les deux surcharges.
     pushCombatStep(set, (index) => revealToStep(reveal, index, {
@@ -5189,19 +5274,22 @@ export function applyCast(
         // pas de bypass de Domaine Ombres/Métal/Cieux, sort qui n'ignore pas les PA).
         const elig = magicDeviationEligible(caster, t, loc, spell, mres, mres.woundsLost ?? 0, overcastDamageSteps);
         let suspended = false;
-        if (elig.eligible && t.kind === 'enemy' && enemyAutoDeviate(set, t, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, logLines, heroConcerned)) {
-          // ennemi : déviation AUTO réussie (rule on + PA sacrifiable) → Critique ignoré. Sinon (règle OFF /
-          // pas de PA), `enemyAutoDeviate` retourne false → on TOMBE sur `applyCritAndFinalize` (Critique subi).
-        } else if (rule('combat-critical-deflect') && elig.eligible && t.kind === 'hero') {
-          // HÉROS blindé : SUSPEND son choix (étape `self`, push SYNCHRONE — la boucle multi-cibles continue,
+        // MÊME prédicat que la mêlée et l'opposé (#1426) : l'automate ne tranche que pour un porteur
+        // qu'aucun siège humain ne tient ; tenu, il choisit — quel que soit son kind.
+        const tenu = tenuParUnHumain(get(), t.id);
+        if (elig.eligible && !tenu && autoDeviate(set, t, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, logLines, heroConcerned)) {
+          // déviation AUTO réussie (rule on + PA sacrifiable) → Critique ignoré. Sinon (règle OFF / pas
+          // de PA), `autoDeviate` retourne false → on TOMBE sur `applyCritAndFinalize` (Critique subi).
+        } else if (rule('combat-critical-deflect') && elig.eligible && tenu) {
+          // Porteur blindé TENU : SUSPEND son choix (étape `self`, push SYNCHRONE — la boucle multi-cibles continue,
           // chaque cible porte SON propre step indépendant). Le Critique pré-tiré PORTE l'overkill (−20 table si
           // > BE, LDB 18 l.30) → un double qui dépasse garde sa sévérité au Subir.
           const cr2 = resolveCritSeverity(t, loc, ovk, c2.critTwice).crit; // dé de sévérité par l'étape à table (seam UNIQUE)
-          pushDeviationStep(set, {
+          pushDeviationStep(set, { targetId: t.id, offerte: true, pretire: {
             mode: 'self', attackerId: caster.id, targetId: t.id, location: loc, crit: cr2,
             isCoupCritique: critWound, overkill: ovk, deflectExtraWounds: elig.extraWounds, woundsBefore: currentBefore,
             reveal: previewCritEntry(t, cr2, { attackerId: caster.id, weapon: spell.label }), resumeAfter: true, ctx: c2,
-          });
+          } });
           suspended = true;
         } else {
           applyCritAndFinalize(get, set, t, loc, critWound, ovk, logLines, c2, currentBefore);

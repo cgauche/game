@@ -198,12 +198,29 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     if (!s.outcome?.length) return undefined;
     return <RecapLineList lines={s.outcome} />;
   };
+  /** Ligne de TIRAGE d'une étape à table résolue — dé, opération et ligne atteinte, même présentation
+   *  qu'en fenêtre (`TableRollLine`). C'est ce qui rend un tirage LISIBLE au bilan. */
+  const tableLineOf = (s: CascadeStep): ReactNode => {
+    const r = s.table?.result;
+    if (!r) return undefined;
+    return (
+      <TableRollLine
+        table={tableLineLabel(tableStepDefs[s.table!.tableId]?.label, s.label, p.title)}
+        roll={r.roll} die={r.die} mod={s.table!.mod ?? 0} result={r.lines[0] ?? ''}
+      />
+    );
+  };
   const rowOf = (s: CascadeStep): PanelRow | null => {
     const a = actorOf(s);
     // Étape BATCH committée : sa conséquence (resultLine, #331) se lit SUR PLACE — note SEULE (pas de
     // RollLine mono factice `base 0` : le batch n'a ni acteur ni cible d'étape, le verdict est agrégé).
     if (s.participants) return s.outcome?.length ? { combatant: a, note: noteFor(s) } : null;
     if (s.result && isRollStep(s)) return { combatant: a, d: breakdown(s, s.result), note: noteFor(s) }; // jet validé
+    // TIRAGE SUR TABLE committé : le dé A ÉTÉ jeté — la rangée existe même sans conséquence écrite,
+    // sinon l'étape DISPARAÎT du bilan (une table que le socle a résolue d'office pour un porteur
+    // qu'aucun siège ne tient n'aurait alors jamais été vue, #1426).
+    const tl = tableLineOf(s);
+    if (tl) return { combatant: a, note: <>{tl}{noteFor(s)}</> };
     if (s.outcome?.length) return { combatant: a, note: noteFor(s) }; // affichage/choix validé : note seule
     return null;
   };
@@ -251,7 +268,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
 
   // Nombre de JETS DE DÉ réels (arbitrage user 2026-07-11) : un pas BATCH = ses N rangées ; un pas-jet
   // = 1 ; l'agrégation / la météo / les affichages = 0. Sert au « Bilan · N jets » et à « jet N/M ».
-  const diceOf = (s: CascadeStep) => (s.participants ? s.participants.length : s.target != null || s.jet ? 1 : 0);
+  const diceOf = (s: CascadeStep) => (s.participants ? s.participants.length : s.target != null || s.jet || s.table ? 1 : 0);
   const totalJets = p.participants.reduce((n, s) => n + diceOf(s), 0);
 
   // BILAN « Tout lancer » : curseur EN FIN — toutes les étapes résolues, chaque conséquence visible.
@@ -594,6 +611,14 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   if (interaction === 'choix') {
     const rev = cur.reveal;
     const dev = cur.deviation;
+    // UNE SEULE FENÊTRE (#1426) : l'étape a pu porter un TIRAGE avant sa décision (sévérité d'une
+    // Blessure critique). Le dé tombé, la MÊME étape offre ses voies — la ligne de tirage reste en
+    // TÊTE, zone stable, et les options se prennent dessous. Jamais deux corps successifs.
+    const tblChoix = cur.table?.result;
+    // … et la POSE du dé reste servie tant que l'étape est COURANTE, exactement comme à la branche
+    // `affichage` : le tirage n'est pas un aller sans retour. MÊME délégué (`tableAffordances`), donc
+    // même sélecteur « Fixer le dé » et même grille de lignes — les voies se prennent dessous.
+    const aff = tableAffordances(cur);
     let canDevier = true;
     if (dev) {
       const subj = pool.find((c) => c.id === dev.targetId);
@@ -607,10 +632,16 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         title={titleNode}
         subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         rolled
-        rows={[]}
+        rows={aff.rows}
         // Un CHOIX d'une séquence se prend DEVANT le score (Middenball : l'option de Test se choisit en
         // sachant où en est la partie) — même tableau de marque que les fenêtres de jet.
-        extra={<SequencePanel />}
+        extra={tblChoix ? (
+          <>
+            <TableRollLine table={tableLineLabel(tableStepDefs[cur.table!.tableId]?.label, cur.label, modalTitle)} roll={tblChoix.roll} die={tblChoix.die} mod={cur.table!.mod ?? 0} result={tblChoix.lines[0] ?? ''} />
+            {aff.lines}
+            <SequencePanel />
+          </>
+        ) : <SequencePanel />}
         postRollExtra={
           <>
             {rev?.kind === 'critical' && <CriticalBody entry={rev} actor={revActor} subject={revSubject} />}

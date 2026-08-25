@@ -8,8 +8,9 @@ import { fileURLToPath } from 'node:url';
  * prédicats d'AFFORDANCE LOCALE vivent dans `netOwnership` (`humanControlled`/`pilotedByHuman`/
  * `aiDriven`) et un prédicat de SURFACE, seat-agnostique, vit dans `rollSeam` (`surfaceOf`, #1262 —
  * le porteur d'un AUTRE siège surface aussi). Quatre volets :
- *  (a) STATIQUE minimal : le prédicat de cadence obsolète `roundTestInteractive` est supprimé, et chaque
- *      site de surfaçage connu référence CELUI des quatre qu'il déclare ;
+ *  (a) STATIQUE minimal : chaque site de surfaçage connu référence CELUI des quatre prédicats qu'il
+ *      déclare (table `SURFACING`), et aucun module ne décide du surfaçage sur la CADENCE
+ *      (`roundTestInteractive` : ni symbole ni module) ;
  *  (b) BEHAVIORAL : un Test de combattant piloté-humain par contexte (défense, manœuvre, upkeep, psy,
  *      maladie/exposition, corruption, test déclenché) OUVRE un `pending*` influençable ;
  *  (c) FLIP LOCAL : poser le rôle MJ (`net.gmSeat`) fait REMONTER le Test déclenché d'un ennemi conduit
@@ -91,7 +92,7 @@ const SURFACING: { file: keyof typeof SRC; fn: string; pred: RegExp }[] = [
   { file: 'combatFlow', fn: 'openSurfacedDefense', pred: /surfacedDefensePending/ },
   { file: 'combatFlow', fn: 'resolveAttack', pred: /defenseSurfaced/ },
   { file: 'combatFlow', fn: 'autoCleave', pred: /aiDriven/ },
-  { file: 'combatFlow', fn: 'maybeHeroCleave', pred: /pilotedByHuman/ },
+  { file: 'combatFlow', fn: 'maybeHeroCleave', pred: /tenuParUnHumain/ }, // #1426 : la SURFACE, pas l'affordance locale
   { file: 'combatFlow', fn: 'resolveEnemyFumble', pred: /aiDriven/ },
   { file: 'combatFlow', fn: 'openRoundEndCascade', pred: /surfaceOf/ }, // #1262 V1 lot 2 : la SURFACE, pas l'affordance locale
   { file: 'combatFlow', fn: 'openCombatEndCascade', pred: /surfaceOf/ }, // #1262 V1 lot 5c : la SURFACE, pas l'affordance locale
@@ -104,7 +105,7 @@ const SURFACING: { file: keyof typeof SRC; fn: string; pred: RegExp }[] = [
   { file: 'triggeredTest', fn: 'resolveFlowTest', pred: /surfaceOf/ }, // #1262 V1 lot 3 : la SURFACE, pas l'affordance locale
   { file: 'triggeredTest', fn: 'resolveFlowChoice', pred: /surfaceOf/ }, // #1262 V1 lot 3 : décider revient au siège du décideur
   { file: 'triggeredEffects', fn: 'applyTriggeredEffects', pred: /surfaceOf/ }, // #1262 V1 lot 2 (voie `deferInteractiveTest`) + lot 3 (l'opt-in)
-  { file: 'corruptionFlow', fn: 'gainCorruption', pred: /pilotedByHuman/ },
+  { file: 'corruptionFlow', fn: 'gainCorruption', pred: /tenuParUnHumain/ }, // #1426 : la SURFACE, pas l'affordance locale
 ];
 
 /** Sites AUTORISÉS à faire jouer une défense (jet du défenseur / choix de sa meilleure défense RAW à
@@ -152,9 +153,12 @@ describe('Surfaçage « remonte-à-un-humain » — statique au choke-point (a)'
   it('chaque site de surfaçage connu route vers le prédicat de contrôleur', () => {
     for (const { file, fn, pred } of SURFACING)
       expect(pred.test(bodyOf(SRC[file], fn)), `${file}.${fn} doit référencer ${pred}`).toBe(true);
-    // La défense de manœuvre de zone (split défenseurs humains/IA) vit dans un gros résolveur — on
-    // vérifie que le module la route par le prédicat plutôt que par le `kind`.
-    expect(SRC.combatManeuvers).toMatch(/pilotedByHuman/);
+    // La défense de manœuvre de zone (split défenseurs surfacés/IA) vit dans un gros résolveur — on
+    // vérifie que le module la route par le prédicat de SURFACE des défenses (#989), jamais par le
+    // `kind` ni par une affordance LOCALE : deux tables de vérité pour « qui peut se défendre » et le
+    // défenseur d'un siège distant tombe en silence chez l'hôte.
+    expect(SRC.combatManeuvers).toMatch(/defenseSurfaced/);
+    expect(SRC.combatManeuvers, 'la défense de zone ne se gate pas sur l’affordance LOCALE').not.toMatch(/pilotedByHuman\(/);
   });
 });
 
@@ -217,7 +221,7 @@ function behavioralFloor(): void {
     addCondition(H, COND.sonne, 2);
     expect(get().pendingCascade?.participants.some((s) => s.kind === 'triggeredTest' && s.actorId === H.id), 'Test déclenché (Mâchoires) doit REMONTER').toBeTruthy();
   }
-  // 5) Défense réactive de mêlée (LDB 13) — gaté `pilotedByHuman` (cadence-agnostique).
+  // 5) Défense réactive de mêlée (LDB 13) — gaté `defenseSurfaced` (cadence-agnostique).
   {
     seedBattleRng(1);
     const { H, E } = freshCombat();
@@ -227,7 +231,7 @@ function behavioralFloor(): void {
     expect(maybeOpenDefense(get, set, E, H), 'attaque IA sur héros doit OUVRIR la défense').toBe(true);
     expect(get().pendingCascade?.participants.some((s) => s.kind === 'defenseJet' && s.actorId === H.id), 'défense réactive doit REMONTER').toBeTruthy();
   }
-  // 6) Défense d'une manœuvre de ZONE (Souffle, LDB 85) — gaté `pilotedByHuman` (cadence-agnostique).
+  // 6) Défense d'une manœuvre de ZONE (Souffle, LDB 85) — gaté `defenseSurfaced` (cadence-agnostique).
   {
     seedBattleRng(2);
     const { H, E } = freshCombat();
@@ -239,7 +243,7 @@ function behavioralFloor(): void {
     aiCreatureFreeAttacks(get, set, E);
     expect(get().pendingCascade?.participants.some((s) => s.kind === 'maneuverDefense' && s.actorId === H.id), 'défense de manœuvre doit REMONTER').toBeTruthy();
   }
-  // 7) Corruption au seuil (LDB 19 l.70) — gaté `pilotedByHuman` (cadence-agnostique, modale).
+  // 7) Corruption au seuil (LDB 19 l.70) — gaté `tenuParUnHumain` (surface, cadence-agnostique, modale).
   {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'C', rng: makeRNG(1) });
     hero.aiControlled = silence; // volet (d) : ré-silençage réel

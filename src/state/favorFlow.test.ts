@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { fromBrass } from '../engine/money';
@@ -30,6 +31,7 @@ function setup() {
  *  emplacements d'Activité OCTROYÉS au héros ; `left` = ce qu'il en reste. */
 function openInterlude(heroId: string, left = 3, granted = left) {
   useGame.getState().startInterlude(1);
+  draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
   const itl = useGame.getState().interlude!;
   itl.perHero[heroId] = { ...itl.perHero[heroId], fx: undefined, left, granted };
   useGame.setState({ interlude: { ...itl } });

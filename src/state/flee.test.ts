@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -197,6 +198,7 @@ describe('Fuir — coup dans le dos : flux canonique à 2 slots (LDB 15 l.63-66)
     const pdAfter = useGame.getState().pendingDisengage!;
     if (fleeNeedCalme(pdAfter)) useGame.getState().fleeRoll(fleeCalme(pdAfter)!.id);
     useGame.getState().fleeConfirm();
+    draineCascade(useGame.getState); // la sévérité du Critique se tire DANS la fenêtre (#1426)
 
     expect(live(fuyard.id).criticalWounds ?? 0).toBeGreaterThan(critBefore); // Blessure critique RAW appliquée
     expect(useGame.getState().pendingDisengage).toBeNull();
@@ -223,6 +225,7 @@ describe('Fuir — coup dans le dos : flux canonique à 2 slots (LDB 15 l.63-66)
 
     const critBefore = live(fuyard.id).criticalWounds ?? 0;
     useGame.getState().fleeConfirm();
+    draineCascade(useGame.getState); // la sévérité du dépassement se tire DANS la fenêtre (#1426)
 
     const f = live(fuyard.id);
     expect(f.wounds.current).toBeLessThanOrEqual(0);
@@ -324,6 +327,7 @@ describe('Fuir — coup dans le dos : flux canonique à 2 slots (LDB 15 l.63-66)
 
     // (2) « Subir » : le Critique s'applique, PUIS la fuite se complète (Brisé + libération + Course).
     const devId = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'deviation')!.id;
+    useGame.getState().cascadeTableRoll(devId); // le d100 de sévérité tombe DANS la MÊME fenêtre (#1426)
     useGame.getState().cascadeChoose(devId, 'subir');
     for (let i = 0; i < 4 && useGame.getState().pendingCascade; i++) useGame.getState().cascadeNext();
     const f = live(fuyard.id);

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from '../store';
 import { applyMiscast } from '../combatFlow';
 import { seedBattleRng } from '../battleRng';
+import { draineCascade } from '../cascadeTestKit';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { setRule, resetRule } from '../../engine/policy';
@@ -61,6 +62,7 @@ describe('Marque Arcanique — le Talent marqué est RÉELLEMENT possédé', () 
       const H = setup();
       seedBattleRng(s);
       applyMiscast(useGame.getState, useGame.setState, H, 'mineure', { suppressReveal: true, domainId: DOMAIN });
+      draineCascade(useGame.getState); // le dé du Tableau tombe à SON étape : la Marque n'existe qu'après
       if (effectiveTalents(live(H.id)).some((t) => t.talentId === TALENT)) return s;
     }
     throw new Error('aucune graine ne produit la Marque du Vent');
@@ -75,6 +77,7 @@ describe('Marque Arcanique — le Talent marqué est RÉELLEMENT possédé', () 
 
     seedBattleRng(seed);
     applyMiscast(useGame.getState, useGame.setState, H, 'mineure', { suppressReveal: true, domainId: DOMAIN });
+    draineCascade(useGame.getState);
 
     const marque = live(H.id);
     expect(hasTalent(marque, 'Empreint de Hysh')).toBe(true);
@@ -91,6 +94,7 @@ describe('Marque Arcanique — le Talent marqué est RÉELLEMENT possédé', () 
     for (let i = 0; i < 3; i++) {
       seedBattleRng(seed);
       applyMiscast(useGame.getState, useGame.setState, live(H.id), 'mineure', { suppressReveal: true, domainId: DOMAIN });
+      draineCascade(useGame.getState);
     }
     const marque = live(H.id);
     expect(marque.talents.filter((t) => t.talentId === TALENT)).toHaveLength(1);

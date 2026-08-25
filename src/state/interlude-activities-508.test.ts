@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { draineCascade } from './cascadeTestKit';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { toBrass, fromBrass } from '../engine/money';
@@ -27,6 +28,7 @@ function setup(careerId: string) {
   creditBourse(useGame.getState, useGame.setState, h.id, fromBrass(20000));
   useGame.getState().seedRng(13);
   useGame.getState().startInterlude(3);
+  draineCascade(useGame.getState); // les dés d'Événement sont des étapes de séquence : elle se joue avant les Activités
   const itl = useGame.getState().interlude!;
   itl.perHero[h.id] = { ...itl.perHero[h.id], fx: undefined, left: 3 };
   useGame.setState({ interlude: { ...itl } });

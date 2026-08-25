@@ -39,7 +39,7 @@ import type { Possession } from '../engine/possession';
  * PORTEUR. Le monde (`WORLD_STEP_OWNER`) est toujours tenu par un siège humain — le siège MJ s'il
  * existe, l'hôte sinon (`netOwnership.worldSeat`) — donc son dé se VOIT et se JOUE comme celui d'un
  * héros. L'option de confort « Dés fixés » n'entre pas dans cette surface : elle n'ajoute que la POSE
- * du dé (`poseOfferte`/`canFixDie`). Seule la cadence déférée à un automate rend le monde muet.
+ * du dé (`canFixDie`). Seule la cadence déférée à un automate rend le monde muet.
  *
  * Ce que ces cas verrouillent, dans l'ordre où ils peuvent casser :
  *  1. la surface d'un jet de monde en solo — la fenêtre s'ouvre, option OFF comme ON ;
@@ -577,29 +577,44 @@ describe('#1426 — la fenêtre de LOT d’un étal (halle terrestre)', () => {
     seedBattleRng(9);
   }
 
-  it('(a) option OFF : aucune fenêtre, l’étal se génère d’un bloc', () => {
+  it('(a) option OFF : la fenêtre s’ouvre quand même — un siège tient le monde — mais AUCUN dé n’y est posable', () => {
     halle();
     resetDesFixes();
     openLandMarket(get, set);
-    expect(get().pendingEtalLot, 'option OFF : rien à poser, rien à ouvrir').toBeNull();
+    expect(get().pendingEtalLot, 'la fenêtre suit la SURFACE du monde, pas l’option de confort').toBeTruthy();
+    expect(canFixDie(get(), WORLD_STEP_OWNER), 'option OFF : la pose n’est pas offerte').toBe(false);
+    get().etalLotConfirm();
+    expect(get().landMarket, 'l’étal existe après validation').toBeTruthy();
+  });
+
+  it('(a’) cadence AUTO — aucun siège à la manœuvre : plus de fenêtre, l’étal se génère d’un bloc', () => {
+    halle();
+    setDesFixes(true); // l’option ne rattrape rien : la cadence domine la surface
+    setCadence('auto');
+    openLandMarket(get, set);
+    expect(get().pendingEtalLot, 'cadence auto : rien à montrer, rien à poser').toBeNull();
     expect(get().landMarket, 'l’étal existe').toBeTruthy();
   });
 
-  it('(d) option ON + validation SANS aucune pose : l’étal est celui du OFF, à l’identique', () => {
+  it('(d) validation SANS aucune pose : l’étal est celui de la cadence AUTO, à l’identique (option OFF comme ON)', () => {
     halle();
-    resetDesFixes();
+    setDesFixes(true);
+    setCadence('auto');
     openLandMarket(get, set);
     const sansFenetre = etal();
 
-    halle();
-    setDesFixes(true);
-    openLandMarket(get, set);
-    const lot = get().pendingEtalLot;
-    expect(lot, 'option ON : la fenêtre de lot s’ouvre AVANT l’écran').toBeTruthy();
-    expect(lot!.participants.length, 'un lot vide n’aurait rien à poser').toBeGreaterThan(0);
-    get().etalLotConfirm();
-    expect(get().pendingEtalLot, 'la validation referme la fenêtre').toBeNull();
-    expect(etal(), 'la fenêtre ne change RIEN par sa seule existence').toEqual(sansFenetre);
+    for (const option of [false, true]) {
+      halle();
+      resetCadence();
+      setDesFixes(option);
+      openLandMarket(get, set);
+      const lot = get().pendingEtalLot;
+      expect(lot, 'la fenêtre de lot s’ouvre AVANT l’écran').toBeTruthy();
+      expect(lot!.participants.length, 'un lot vide n’aurait rien à poser').toBeGreaterThan(0);
+      get().etalLotConfirm();
+      expect(get().pendingEtalLot, 'la validation referme la fenêtre').toBeNull();
+      expect(etal(), `option ${option ? 'ON' : 'OFF'} : la fenêtre ne change RIEN par sa seule existence`).toEqual(sansFenetre);
+    }
   });
 
   it('(b) poser un dé change l’étal — et seul le dé posé bouge', () => {

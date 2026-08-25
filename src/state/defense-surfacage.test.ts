@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { useGame, type BattleState, type PendingAttack } from './store';
+import { avanceEtapeCascade } from './cascadeTestKit';
 import { maybeOpenDefense, resolveAttack, openAttackCascade, defenderFumbled } from './combatFlow';
 import { defenseSurfaced, aiDriven, intentAllowedFor, ownsLocally, modalOwnerOf } from './netOwnership';
 import { willAutoResolve } from './combatAuto';
@@ -277,8 +278,15 @@ describe('#989 R4 — Maladresse du défenseur : UN helper, MÊME ordre (après 
   it('l’Oups! du défenseur est appendu APRÈS les conséquences de l’attaque (ordre de référence = chemin réactif)', () => {
     const { hero, confirm, state } = playToFumble(seed, 1); // touche à 0 Blessure → Coup Critique empilé par l'attaque
     confirm();
+    // La Blessure critique est une étape JOUÉE (tirage de sévérité, #1426) : l'Oups! du défenseur ne
+    // s'appende qu'APRÈS sa résolution — on joue donc la fenêtre avant de mesurer l'ordre.
+    for (let i = 0; i < 6 && state().pendingCascade
+      && !state().pendingCascade!.participants.some((s) => s.jet === 'fumble'); i++) avanceEtapeCascade(state);
     const steps = state().pendingCascade!.participants;
-    const iCrit = steps.findIndex((s) => s.kind === 'critical');
+    // La conséquence empilée par l'attaque est l'étape « Blessure critique » (#1426 : le tirage de
+    // sévérité et la décision Dévier/Subir y sont UNE fenêtre) — ou sa révélation quand le Critique
+    // arrive déjà tiré. C'est APRÈS elle que l'Oups! du défenseur se pose.
+    const iCrit = steps.findIndex((s) => s.kind === 'deviation' || s.kind === 'critical');
     const iFumble = steps.findIndex((s) => s.jet === 'fumble' && s.actorId === hero.id);
     expect(iCrit, 'l’attaque a bien empilé sa conséquence').toBeGreaterThanOrEqual(0);
     expect(iFumble, 'l’Oups! du défenseur est là').toBeGreaterThanOrEqual(0);

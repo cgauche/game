@@ -97,7 +97,7 @@ import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { seaMagicContext, windsMagicModOf } from './combatOrParty';
 import { actorIn, inBattleId } from './combatants';
-import { controlsCombatant, pilotedByHuman, defenseSurfaced, influencesLocally, quorumAtteint } from './netOwnership';
+import { controlsCombatant, defenseSurfaced, influencesLocally, quorumAtteint } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
 import { batteryBlock, currentTargetingMode, type BattleClickOpts, type TileClickOpts } from './targetingModes';
@@ -636,7 +636,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     // ── « Fuir » (LDB 15 l.59-68) : OUVRE le flux MULTI `flee` — un slot par acteur (coup dans le dos
     //    du FRAPPEUR, Test de Calme du FUYARD). Aucun jet ni aucune conséquence ici : `fleeConfirm`
-    //    applique tout. La modale s'ouvre dès qu'UN des deux acteurs est piloté-humain (symétrie). ──
+    //    applique tout. La modale s'ouvre dès qu'UN des deux acteurs est JOUÉ (symétrie). ──
     disengageFlee: () => {
       const { battle, pendingDisengage: pd } = get();
       if (!battle || !pd) return;
@@ -686,10 +686,12 @@ export function createCombatSlice(get: Get, set: Set) {
       // Rangée TÉMOIN auto-roulée à l'ouverture (précédent `battleCrewTest`) : le coup dans le dos d'un
       // frappeur non joué est résolu tout de suite ; celui d'un héros l'attend (il porte son cycle).
       if (!played(foe)) get().fleeRoll(foe.id);
-      // Aucune modale affichable (aucun des deux acteurs piloté-humain, combat fini, Destin en
-      // attente) → résolution HEADLESS par LE MÊME flux (jamais un chemin de calcul parallèle).
+      // Aucune modale affichable (aucun des deux acteurs JOUÉ, combat fini, Destin en attente) →
+      // résolution HEADLESS par LE MÊME flux (jamais un chemin de calcul parallèle). MÊME prédicat que
+      // les rangées ci-dessus (`played`) — une fenêtre se joue exactement quand une rangée est
+      // `interactive` ; jamais `pilotedByHuman`, pour la raison dite plus haut.
       const st = get();
-      if (pilotedByHuman(st, mover) || pilotedByHuman(st, foe)) {
+      if (played(mover) || played(foe)) {
         if (!st.battle?.over && !st.pendingFateSave) return;
       }
       const pdOpen = get().pendingDisengage;

@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { gainCorruption } from './corruptionFlow';
+import { draineCascade } from './cascadeTestKit';
 import { corruptionThresholdExceeded } from '../engine/corruption';
 import { makePregens } from '../data/pregens';
 import { bonus } from '../engine/characteristics';
@@ -66,6 +67,7 @@ describe('« Je te renie ! » (LDB 17 l.67)', () => {
     corruptPastThreshold(h);
     expect(useGame.getState().pendingRenounce).toBeTruthy();
     useGame.getState().renounceResolve(false);
+    draineCascade(useGame.getState); // les dés de la mutation sont des étapes : elle tombe en les jouant
     expect((h.mutations ?? []).length).toBe(1);
   });
   it('sans Résilience → mutation à l’acquittement (pas de « Je te renie ! »)', () => {
@@ -74,6 +76,7 @@ describe('« Je te renie ! » (LDB 17 l.67)', () => {
     useGame.setState({ party: [h] });
     corruptPastThreshold(h);
     expect(useGame.getState().pendingRenounce).toBeNull();
+    draineCascade(useGame.getState); // idem : l'acquittement pousse les étapes, il ne mute pas sur place
     expect((h.mutations ?? []).length).toBe(1);
   });
 });
