@@ -1,4 +1,5 @@
 import { type Scene, isDescriptiveZone, isWalkable } from './scene';
+import { entityBlockedAt } from './sceneRules';
 import { pathTo, walkNeighbors, type MoveEnv, type Pt } from './path';
 import { portalsForParty } from './roomPortals';
 import { memeCase, seatSlotsOf } from './seating';
@@ -39,12 +40,14 @@ export function adjacentWalkable(sc: Scene, target: Pt, from: Pt): Pt | null {
 export function exploreMoveDest(sc: Scene, partyPos: Pt, tile: Pt): Pt | null {
   const tz = tile.z ?? 0;
   const ent = sc.entities.find((e) => e.pos.x === tile.x && e.pos.y === tile.y && (e.z ?? 0) === tz);
-  // On ne marche jamais SUR un personnage ni sur un DÉCOR : on s'approche d'une case adjacente (sinon
-  // le groupe entrerait dans le corps du PNJ, et la case d'un décor posé est bloquée par son empreinte).
-  // Le décor SANS affordance ne fait pas exception — c'est du sol occupé : le clic doit y mener comme
-  // il mène au sol nu, jamais rester sans effet faute de destination (un tonneau cliqué ne bougeait
-  // personne, là où la case libre à côté fait marcher).
-  if (ent && (!!ent.dialogueId || !!ent.interact || !!ent.merchant || ent.kind === 'personnage' || ent.kind === 'prop')) {
+  // On ne marche jamais SUR un personnage ni sur un décor qui OCCUPE sa case : on s'approche d'une case
+  // adjacente (sinon le groupe entrerait dans le corps du PNJ, et la case d'un décor bloquant est
+  // infranchissable). L'occupation ne se lit PAS au `kind` : c'est la règle unique de blocage
+  // (`state/sceneRules.entityBlockedAt` — empreinte déclarée, solidité de type, décor interactif), la
+  // même que `isWalkable`. Un décor PASSABLE (mare de sang, tas de foin : ni empreinte, ni solide, ni
+  // interactif) reste du SOL — on marche DESSUS, comme sur la case nue.
+  const occupe = !!ent && ent.kind === 'prop' && entityBlockedAt(sc, tile.x, tile.y, tz);
+  if (ent && (!!ent.dialogueId || !!ent.interact || !!ent.merchant || ent.kind === 'personnage' || occupe)) {
     if (chebyshev(partyPos, ent.pos) <= 1) return null; // déjà à portée → interaction/échange/badaud sur place
     return adjacentWalkable(sc, ent.pos, partyPos);
   }

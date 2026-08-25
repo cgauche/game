@@ -991,6 +991,50 @@ describe('useStagePointer — le décor VOLUMIQUE se désigne, et ne coûte que 
   });
 
   /**
+   * SONDE G2 de la revue (#1443, round 3) : le SURVOL et le CLIC lisent la MÊME source
+   * (`exploreMovePlan`) — le module le dit en toutes lettres. Table PLEINE et sans fouille : le survol
+   * traçait désormais un chemin vers une case adjacente que le clic n'honorait pas (il journalisait
+   * `seating.noReachableSeat` sur place). Le clic PARCOURT le plan promis ; le refus ne se dit qu'À
+   * PORTÉE, quand il n'y a plus rien à marcher.
+   */
+  it('table PLEINE sans fouille : le clic PARCOURT le chemin que le survol trace, et ne refuse qu’à portée', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    scene.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 3 }, ref: 'table-ronde-4-tabourets', facing: 'S' }] as typeof scene.entities;
+    scene.seatAssignments = { 'table-1': { nord: pnjAssis('a'), est: pnjAssis('b'), sud: pnjAssis('c'), ouest: pnjAssis('d') } };
+    const vierge = useGame.getInitialState();
+    const poser = (pos: { x: number; y: number }) => useGame.setState({
+      scene, mode: 'exploration', partyPos: pos, party: [meneurJouable()], dialogue: null, battle: null,
+      pendingInteract: null, journal: [], flags: {},
+      interactEntity: vierge.interactEntity, setPendingInteract: vierge.setPendingInteract, moveParty: vierge.moveParty,
+    });
+    setSpritePicker(() => ({ kind: 'entity', id: 'table-1' }));
+    const surLaTable = tileCenter(2, 3, dims);
+
+    // AU LOIN — le survol PROMET un chemin : le clic doit le parcourir, pas refuser sur place.
+    poser({ x: 6, y: 6 });
+    const promis = exploreMovePlan(useGame.getState().scene!, { x: 6, y: 6 }, { x: 2, y: 3 }, { blocked: new Set() });
+    expect(promis, 'précondition : le survol trace bien une marche').not.toBeNull();
+    const p1 = monter(scene);
+    const loin = pointerEvent(surLaTable.cx, surLaTable.cy);
+    p1.handlers.onPointerDown(loin);
+    p1.handlers.onPointerUp(loin);
+    act(() => { vi.runAllTimers(); });
+    expect(useGame.getState().partyPos, 'le clic a suivi le plan du survol').toMatchObject({ x: promis!.dest.x, y: promis!.dest.y });
+    expect(useGame.getState().journal.join(' | '), 'aucun refus tant qu’il restait à marcher').not.toContain('Aucune place libre');
+
+    // À PORTÉE — plus rien à marcher : là, et là seulement, on dit pourquoi le meuble ne sert pas.
+    poser({ x: 2, y: 2 });
+    const p2 = monter(scene);
+    const pres = pointerEvent(surLaTable.cx, surLaTable.cy);
+    p2.handlers.onPointerDown(pres);
+    p2.handlers.onPointerUp(pres);
+    act(() => { vi.runAllTimers(); });
+    expect(useGame.getState().partyPos, 'personne ne bouge').toMatchObject({ x: 2, y: 2 });
+    expect(useGame.getState().journal.join(' | ')).toContain('Aucune place libre');
+  });
+
+  /**
    * P3 de la revue (#1443, round 2) : un décor SANS affordance avalait le geste — ni marche, ni
    * journal — là où la case de sol nue juste à côté fait MARCHER. On ne monte pas sur un meuble :
    * loin, on s'en approche (parité sol) ; à portée, on dit qu'il n'y a rien à en tirer.

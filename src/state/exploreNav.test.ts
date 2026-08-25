@@ -32,6 +32,30 @@ describe('exploreMoveDest — case d’arrivée partagée survol/clic (explorati
     expect(isWalkable(sc, dest!.x, dest!.y, dest!.z ?? 0)).toBe(true);
   });
 
+  /**
+   * SONDE G1 de la revue (#1443, round 3) : « on s'approche, jamais dessus » se lit sur la RÈGLE DE
+   * BLOCAGE (`sceneRules.entityBlockedAt` : empreinte déclarée, solidité de type, décor interactif),
+   * jamais sur le `kind`. Un décor PASSABLE — ni empreinte, ni `solid`, ni `interact` — est du SOL
+   * habillé : `tas-foin` (posé quatre fois dans l'arène) devenait inatteignable au clic, et le geste
+   * y journalisait un refus au-dessus d'une case libre.
+   */
+  it('décor PASSABLE (ni empreinte, ni solide, ni interactif) : on marche DESSUS, comme sur la case nue', () => {
+    const foin: SceneEntity = { id: 'foin', kind: 'prop', pos: { x: 5, y: 5 }, ref: 'tas-foin' };
+    const sc = sceneWith([foin]);
+    expect(isWalkable(sc, 5, 5), 'précondition : sa case reste marchable').toBe(true);
+    expect(exploreMoveDest(sc, { x: 1, y: 1 }, { x: 5, y: 5 })).toEqual({ x: 5, y: 5 });
+    expect(exploreMoveDest(sc, { x: 5, y: 6 }, { x: 5, y: 5 }), 'à portée non plus : on y va').toEqual({ x: 5, y: 5 });
+  });
+
+  it('décor SOLIDE sans autre affordance : sa case est occupée, on s’en approche', () => {
+    const tonneau: SceneEntity = { id: 'tonneau-1', kind: 'prop', pos: { x: 5, y: 5 }, ref: 'tonneau' };
+    const sc = sceneWith([tonneau]);
+    expect(isWalkable(sc, 5, 5), 'précondition : la case est bloquée').toBe(false);
+    const dest = exploreMoveDest(sc, { x: 1, y: 1 }, { x: 5, y: 5 });
+    expect(dest).not.toEqual({ x: 5, y: 5 });
+    expect(cheb(dest!, { x: 5, y: 5 })).toBe(1);
+  });
+
   it('objet interactif, groupe déjà adjacent : aucune marche (fouille sur place)', () => {
     const prop: SceneEntity = { id: 'coffre', kind: 'prop', pos: { x: 5, y: 5 }, interact: { flow: emptyFlow } };
     expect(exploreMoveDest(sceneWith([prop]), { x: 5, y: 6 }, { x: 5, y: 5 })).toBeNull();

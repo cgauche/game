@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { parseQualityInstance } from '../engine/qualities/normalize';
+import { resetFields } from './stateFields';
 import { useGame, type BattleState } from './store';
 import { flowFromEffects, flowEffects, testFlow, EMPTY_FLOW } from './flow';
 import { buildAdvancementView } from './advancement';
@@ -1658,6 +1659,19 @@ describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
     useGame.getState().moveParty({ x: 4, y: 1 });
     expect(useGame.getState().pendingInteract).toBeNull();
     expect(partyMoneyTotal(useGame.getState).gold).toBe(3);
+  });
+
+  /** RÉSERVE de la revue (#1443, round 3) : un déplacement-puis-interaction armé n'a plus de sens
+   *  quand un combat s'ouvre — le pending appartient au cadre `combatStart` (`state/stateFields`),
+   *  comme ses voisins de recharge, de désengagement ou d'empoignade. */
+  it('un pending armé ne survit pas à l’ouverture d’un combat', () => {
+    armedScene();
+    useGame.getState().setPendingInteract({ id: 'cadavre', at: { x: 4, y: 0 } });
+    expect(resetFields('combatStart'), 'le cadre PURGE ce champ').toHaveProperty('pendingInteract', null);
+    useGame.setState({ ...resetFields('combatStart') }); // ce que `startCombat` applique
+    expect(useGame.getState().pendingInteract).toBeNull();
+    useGame.getState().moveParty({ x: 4, y: 0 }); // la case armée : plus rien ne s'y déclenche
+    expect(partyMoneyTotal(useGame.getState).gold).toBe(0);
   });
 
   it('annulation : setPendingInteract(null) empêche la fouille à l’arrivée (clic ailleurs)', () => {

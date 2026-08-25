@@ -20,6 +20,7 @@ import { useGame } from '../../state/store';
 import { Scene as GameScene, heightAt, isWalkable, toggleDoorIn } from '../../state/scene';
 import { metricToLift } from '../../state/relief';
 import { memoByRef } from '../../state/sceneMemo';
+import { entityBlockedAt } from '../../state/sceneRules';
 import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
 import { exploreMovePlan, exploreSeatPlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
 import { RANG_MENEUR, seatPoseOf, seatSlotsOf } from '../../state/seating';
@@ -427,12 +428,15 @@ export function useStagePointer({
       }
       // REPLI — aucune place servable (toutes prises, ou aucun abord atteignable) : les places
       // AJOUTENT une affordance, elles n'en retirent AUCUNE. La chaîne fouille/marchand/dialogue
-      // ci-dessous reprend la main (et `exploreMovePlan` a déjà rendu la marche vers une case
-      // adjacente). Un meuble qui n'a QUE des places, lui, dit pourquoi il ne sert pas.
+      // ci-dessous reprend la main. Un meuble qui n'a QUE des places, lui, se rejoint quand même : le
+      // clic PARCOURT le plan que le survol trace déjà (`exploreMovePlan`, source unique des deux) —
+      // sinon le tracé promettait une marche que le clic n'honorait pas — et ne dit pourquoi il ne
+      // sert pas qu'une fois À PORTÉE, plus rien à marcher (parité exacte avec le décor sans affordance).
       if (!ent.dialogueId && !ent.interact && !ent.merchant) {
         setHover(null);
         st.setPendingInteract(null);
-        st.log(message('seating.noReachableSeat'));
+        if (plan) moveAlong(sc.id, plan);
+        else st.log(message('seating.noReachableSeat'));
         return;
       }
     }
@@ -458,11 +462,13 @@ export function useStagePointer({
       else if (plan) moveAlong(sc.id, plan);
       return;
     }
-    if (ent && ent.kind === 'prop') {
-      // DÉCOR SANS AFFORDANCE (ni place, ni fouille, ni dialogue, ni boutique) : on ne monte pas
-      // dessus, mais on ne reste pas non plus sans effet — le sol nu, lui, fait MARCHER. Loin : on
-      // s'en approche (`exploreMoveDest` rend la case adjacente). À portée : il n'y a rien à en tirer,
-      // et on le DIT plutôt que d'avaler le geste.
+    if (ent && ent.kind === 'prop' && entityBlockedAt(sc, ent.pos.x, ent.pos.y, ent.z ?? 0)) {
+      // DÉCOR SANS AFFORDANCE qui OCCUPE sa case (règle unique `sceneRules.entityBlockedAt`, celle
+      // d'`isWalkable`) : on ne monte pas dessus, mais on ne reste pas non plus sans effet — le sol nu,
+      // lui, fait MARCHER. Loin : on s'en approche (`exploreMoveDest` rend la case adjacente). À
+      // portée : il n'y a rien à en tirer, et on le DIT plutôt que d'avaler le geste. Un décor
+      // PASSABLE (mare de sang, tas de foin) n'entre pas ici : sa case se foule, elle se clique comme
+      // le sol, et c'est la marche générique ci-dessous qui la sert.
       setHover(null);
       st.setPendingInteract(null);
       if (plan) moveAlong(sc.id, plan);
