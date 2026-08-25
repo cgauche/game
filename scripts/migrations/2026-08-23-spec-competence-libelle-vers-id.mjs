@@ -12,6 +12,10 @@
  *
  * Marqueur « au choix » : forme canonique EXISTANTE du dépôt (`CHOICE_RE`,
  * `src/engine/careerSlots.ts:70` ; `src/engine/activities.ts:758`) — laissée telle quelle.
+ *
+ * Entrées : `src/data/skills.json`, `src/data/weaponGroups.json`, `src/data/domains.json`
+ * (catalogues de résolution) + `src/data/*.json` (tous les datasets, `readdirSync`) +
+ * `src/scenes/**.json` (marche récursive) + l'authoring TS `src/scenes/test-scenarios/96-presets-edo.ts`.
  */
 import fs from 'node:fs';
 import path from 'node:path';

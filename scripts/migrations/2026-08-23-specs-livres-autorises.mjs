@@ -21,6 +21,10 @@
  * REJOUABLE : un second passage ne réécrit rien. FAIL-FAST : arrêt en 1 si une `specs[]` cible
  * manque, si un id ajouté entre en collision, si une fusion ou un retrait ne trouve pas sa cible,
  * ou s'il reste une spéc non résolue sous un livre extrait — l'arbre n'est écrit qu'après mesure.
+ *
+ * Entrées : `src/data/books.json` + les dossiers d'extraction `Source/<dir>/NN - ….md` qu'il déclare
+ * (périmètre « livre EXTRAIT », `extractedBooks`), `src/data/skills.json` (catalogue, écrit) et les
+ * trois porteurs `src/data/{creatures,careerLevels,species}.json`.
  */
 import fs from 'node:fs';
 import path from 'node:path';

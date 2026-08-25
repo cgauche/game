@@ -11,6 +11,10 @@
  * ou entrée qu'AUCUN statbloc de `creatures.json` n'emploie (une entrée sans usage n'est pas
  * « statbloc-only », c'est autre chose : arrêt) : arrêt en 1 sans rien écrire. Un second passage
  * ne réécrit rien (byte-identique).
+ *
+ * Entrées : `src/data/skills.json` (écrit), `src/data/careerLevels.json`, `src/data/species.json`,
+ * `src/data/stars.json`, `src/data/creatures.json` (les quatre critères re-mesurés) et le RAW
+ * `Source/Warhammer v4 - Livre de base version corrigée/09 - Compétences.md` (liste imprimée).
  */
 import fs from 'node:fs';
 import path from 'node:path';

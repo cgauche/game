@@ -32,8 +32,13 @@ export const refSchema = z.strictObject({ id: z.string(), spec: z.string().optio
 
 /** `QualityRef` (`src/data/index.ts`) — `Ref` + Indice éventuel (« Solide 3 » → `value`). Dupliqué à
  *  l'identique dans `defs/trappings.ts` (catalogue `trappings.json` lui-même) — cette vue COMMUNE sert
- *  au joker de qualité d'une dotation (`TrappingRef.qualities`, #657 Lot 1). */
-export const qualityRefSchema = refSchema.extend({ value: z.number().optional() });
+ *  au joker de qualité d'une dotation (`TrappingRef.qualities`, #657 Lot 1).
+ *  Composée sur la SHAPE de `refSchema`, jamais par `.extend` : la composition par shape est la
+ *  GRAPHIE UNIQUE de dérivation dans la grammaire, et le volet `extend` de la garde
+ *  (`src/data/grammaire-guard.test.ts`) tient cette uniformité — un `.extend` posé ici serait relevé.
+ *  Ce qu'elle ne fait PAS : préserver le registre ni la `.meta()` du récepteur — mesuré zod 4.4.3, le
+ *  spread les perd exactement comme `.extend`. Le schéma dérivé se ré-annote donc lui-même. */
+export const qualityRefSchema = z.strictObject({ ...refSchema.shape, value: z.number().optional() });
 
 
 /** `TrappingRef` (`src/data/index.ts`) — par id de catalogue (+ quantité, + Atouts ATTACHÉS `qualities`

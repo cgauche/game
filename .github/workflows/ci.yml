@@ -47,3 +47,17 @@ jobs:
       - run: npm run raw:reanchor
       - run: npm --prefix server ci
       - run: npm --prefix server run typecheck
+
+  # Les migrations de donnée sont REJOUABLES : rejouées sur l'arbre courant, elles ne réécrivent
+  # RIEN. Job DÉDIÉ (il écrit dans l'arbre du runner, jamais dans celui du job `build`).
+  migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Rejeu des migrations (idempotence de la donnée)
+        run: npm run migrations:replay

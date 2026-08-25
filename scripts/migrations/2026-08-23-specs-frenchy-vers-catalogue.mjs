@@ -22,6 +22,11 @@
  * sans le Trait `arme` que leur ligne « **Armes** … Dégâts DR + N » impose — même lecture que leurs
  * voisines de statbloc déjà migrées (jeune araignée `arme 3` = « Dégâts DR + 3 », ch.40 l.52).
  *
+ * Entrées : `src/data/books.json` (écrit : pose de l'`extractionDir`), le dossier d'extraction
+ * `Source/Warhammer - Habitants & Créatures  du Vieux-Monde (Discord) PDF` (chapitres `NN - ….md`),
+ * `src/data/skills.json` (catalogue, écrit) et les trois porteurs
+ * `src/data/{creatures,careerLevels,species}.json`.
+ *
  * REJOUABLE : un second passage ne réécrit rien. FAIL-FAST : arrêt en 1 si l'extraction manque, si
  * une `specs[]` cible manque, si un id ajouté entre en collision, ou s'il reste une spéc frenchy
  * hors catalogue et hors `CHOIX_BORNE` — l'arbre n'est écrit qu'après mesure.

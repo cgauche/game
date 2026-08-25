@@ -4,6 +4,9 @@
  * 'intelligence'|'force-mentale'|'sociabilite'`). Remap UNIQUEMENT les champs recensés (issue #311) —
  * clé whitelistée ET valeur ∈ anciens tokens (jamais de regex aveugle sur le texte du fichier).
  * Réécrit via `serializeDataset` (2 espaces, PAS de newline final) — round-trip byte-fidèle.
+ *
+ * Entrées : `src/data/*.json` (tous les datasets, `readdirSync`) + les 3 projets de scène
+ * (`src/scenes/{arene,barge-du-sel,loup-et-saumure}/*-projet.json`).
  */
 import fs from 'node:fs';
 import path from 'node:path';

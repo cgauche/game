@@ -10,6 +10,9 @@
  * REJOUABLE et FAIL-FAST : ne retire que ce que le registre `weaponGroups.json` ne résout PAS
  * (`SPEC_SOURCES.weaponGroupsMelee/Ranged.resolves`, `src/data/index.ts:3135`) ; la valeur retirée est
  * journalisée. Un second passage ne réécrit rien. Arrêt en 1 si `weaponGroups.json` est vide.
+ *
+ * Entrées : `src/data/weaponGroups.json` (registre des Groupes d'armes) + `src/data/*.json` (tous
+ * les datasets, `readdirSync`) + `src/scenes/**.json` (marche récursive).
  */
 import fs from 'node:fs';
 import path from 'node:path';
