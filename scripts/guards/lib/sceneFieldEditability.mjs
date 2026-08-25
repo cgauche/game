@@ -21,12 +21,18 @@
 //     complète, testée, ré-exportée par l'éditeur et jamais appelée EST le défaut de #841 — c'est
 //     l'état mesuré de `setSceneFlags` au 2026-07-26.
 //
-// FRONTIÈRE DU PÉRIMÈTRE : la traversée s'arrête aux types déclarés hors de `src/state/scene.ts`.
-// `Flow`, `Condition`, `GameOp`, `EntityAppearance`, `CustomStatblock` sont le vocabulaire PARTAGÉ
-// du moteur, pas le schéma du document ; ils ont leurs propres primitives d'édition
-// (`FlowEditor`, `GameOpEditor`) et leurs propres gardes. Le module qui DÉCLARE le schéma est donc
-// la frontière, et elle est structurelle : un type ajouté demain dans `scene.ts` et atteignable
-// depuis `Scene` entre de lui-même dans le périmètre.
+// FRONTIÈRE DU PÉRIMÈTRE — par PROPRIÉTÉ, jamais par type. Une propriété est surveillée si SA
+// déclaration vit dans un module du document (`DOC_FILES`) : `PropertySignature` du type manuscrit
+// OU `PropertyAssignment` du shape zod dont le type compose le `z.infer`. Un objet dont aucune
+// propriété n'est déclarée là est du vocabulaire PARTAGÉ (`Flow`, `Condition`, `GameOp`,
+// `EntityAppearance`, `CustomStatblock`) : il a ses propres primitives d'édition (`FlowEditor`,
+// `GameOpEditor`) et ses propres gardes, la traversée s'y arrête.
+// Le niveau importe : le SYMBOLE d'un type inféré d'un schéma zod est anonyme et déclaré dans
+// `zod/v4/core/util.d.cts`, alors que ses PROPRIÉTÉS pointent la ligne exacte du shape. Une
+// frontière posée sur le type lâchait donc en silence dès qu'un corps manuscrit passait en
+// `z.infer` (243 → 102 champs sans rougir, mesure #1466 T3-b q24) ; d'où aussi le CLIQUET DE COMPTE
+// de la garde. La frontière reste structurelle : une propriété ajoutée demain dans un module du
+// document, atteignable depuis `Scene`, entre d'elle-même dans le périmètre.
 //
 // CE QUE CE DÉTECTEUR NE VOIT PAS — à lire AVANT de conclure d'une colonne vide qu'un champ est
 // mort. Le scan reconnaît une écriture par le type PORTEUR du littéral, obtenu soit du type
@@ -80,6 +86,24 @@ const isPipelinePath = (rel) => PIPELINE_PATH.some((re) => re.test(rel));
 const isTestFile = (rel) => /\.test\.(ts|tsx|mts|mjs)$/.test(rel);
 
 const SCENE_FILE = 'src/state/scene.ts';
+
+/** Modules qui DÉCLARENT le document de scène : le type manuscrit et le module de SCHÉMAS dont il
+ *  compose les formes (`z.infer`). Une propriété est dans le périmètre si SA déclaration
+ *  (`PropertySignature` du type, `PropertyAssignment` du shape zod) y vit — cf. FRONTIÈRE en tête. */
+const DOC_FILES = [SCENE_FILE, 'src/data/schemas/defs-scenes/scene.ts'];
+
+/** Nom du PORTEUR quand le type est anonyme (`__type` — le lot des objets inférés d'un schéma zod) :
+ *  le `export const xSchema` dont le shape englobant est l'initialiseur, chaînes `.optional()`/
+ *  `.array()` traversées. Un littéral INLINE ne nomme rien et garde son chemin. */
+const schemaOwner = (decl) => {
+  const shape = decl.parent;
+  if (!shape || !ts.isObjectLiteralExpression(shape)) return undefined;
+  let n = shape.parent;
+  while (n && (ts.isCallExpression(n) || ts.isPropertyAccessExpression(n))) n = n.parent;
+  if (!n || !ts.isVariableDeclaration(n) || !ts.isIdentifier(n.name) || !n.name.text.endsWith('Schema')) return undefined;
+  const base = n.name.text.slice(0, -'Schema'.length);
+  return base.charAt(0).toUpperCase() + base.slice(1);
+};
 
 const norm = (p) => p.replace(/\\/g, '/');
 
@@ -164,16 +188,12 @@ export function sceneScope(program, root) {
   const checker = program.getTypeChecker();
   const sf = sceneSourceFile(program, root);
   if (!sf) throw new Error(`${SCENE_FILE} absent du programme`);
-  const sceneFileName = norm(sf.fileName);
   const moduleSym = checker.getSymbolAtLocation(sf);
   const sceneSym = checker.getExportsOfModule(moduleSym).find((s) => s.name === 'Scene');
   if (!sceneSym) throw new Error('type `Scene` introuvable');
 
-  const declaredInScene = (type) => {
-    const sym = type.aliasSymbol ?? type.symbol;
-    const decls = sym?.declarations ?? [];
-    return decls.length > 0 && decls.some((d) => norm(d.getSourceFile().fileName) === sceneFileName);
-  };
+  const docFiles = new Set(DOC_FILES.map((f) => norm(path.resolve(root, f))));
+  const declaredInScene = (decl) => !!decl && docFiles.has(norm(decl.getSourceFile().fileName));
 
   const out = [];
   const seenTypes = new Set();
@@ -195,13 +215,22 @@ export function sceneScope(program, root) {
 
     const idx = checker.getIndexInfoOfType(type, ts.IndexKind.String);
     if (idx) visit(idx.type, ownerPath);
-    if (!declaredInScene(type)) return;
+
+    // FRONTIÈRE (par PROPRIÉTÉ) : un objet dont aucune propriété n'est déclarée par un module du
+    // document est du vocabulaire PARTAGÉ (Flow/Condition/GameOp/EntityAppearance/CustomStatblock…),
+    // on ne descend pas.
+    const dedans = checker
+      .getPropertiesOfType(type)
+      .filter((p) => declaredInScene(p.declarations?.[0]));
+    if (dedans.length === 0) return;
 
     const named = type.aliasSymbol?.name ?? type.symbol?.name;
-    const owner = named && named !== '__type' ? named : ownerPath;
-    for (const prop of checker.getPropertiesOfType(type)) {
-      const decl = prop.declarations?.[0];
-      if (!decl) continue;
+    const owner =
+      (named && !named.startsWith('__') ? named : undefined) ??
+      dedans.map((p) => schemaOwner(p.declarations[0])).find(Boolean) ??
+      ownerPath;
+    for (const prop of dedans) {
+      const decl = prop.declarations[0];
       const id = `${owner}.${prop.name}`;
       if (!seenIds.has(id)) {
         seenIds.add(id);

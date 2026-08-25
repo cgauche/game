@@ -808,7 +808,7 @@ export function structureIsDown(scene: Pick<Scene, 'flags'>, seg: WallSeg): bool
  *  `woundsThreshold`. */
 export type VictoryCondition =
   | { type: 'allEnemiesDead' }
-  | { type: 'destroyStructure'; edge: { x: number; y: number; side: WallSide; z?: number } }
+  | { type: 'destroyStructure'; edge: ArchitectureEdgeRef }
   | { type: 'surviveRounds'; rounds: number }
   | { type: 'reachZone'; rect: { x: number; y: number; w: number; h: number }; camp?: 'party' | 'enemies' }
   | { type: 'woundsThreshold'; targetId: string; belowPercent: number }

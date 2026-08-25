@@ -69,7 +69,11 @@ export const sceneEntitySchema = z.strictObject({
   anim: z.string().optional(),
   /** Arme ÉQUIPÉE — `trappingId` STABLE du catalogue d'armes, résolue par `weaponFromId`. */
   weapon: z.string().optional(),
-  /** Empreinte multi-cases (décor statique). Défaut 1×1. */
+  /** Empreinte D'INSTANCE d'un projet pré-migration : fossile TOLÉRÉ au parse, DÉPOUILLÉ au
+   *  chargement par `stripLegacyFoot` (`src/state/scene.ts`) — jamais une donnée de scène, jamais
+   *  lue par le moteur (la physique d'un décor vient de `PropData.foot`). Meurt au reset des saves.
+   *  Le tag est documentaire à ce stade — la garde #841 le lira au Lot B, gaté par liste nominative.
+   *  @fossile */
   foot: z.strictObject({ w: z.number(), h: z.number() }).optional(),
   /** Source de lumière : rayon en cases ; `tone` = id d'un `lightTones` (apparence seule). */
   light: z.strictObject({ radiusTiles: z.number(), tone: z.string().optional() }).optional(),

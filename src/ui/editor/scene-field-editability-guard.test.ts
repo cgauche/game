@@ -24,6 +24,11 @@ import {
  *    anonymes, `Record<K,V>` compris) — aucune liste de types tenue à la main ;
  *  - le crédit d'écriture est RATTACHÉ AU TYPE porteur : un `{ once: … }` de symptôme de maladie ou
  *    un `{ flags }` passé en lecture à un contexte d'évaluation ne crédite aucun champ de `Scene`.
+ *
+ * ANGLE MORT DÉCLARÉ — la réplique virtuelle de la frontière (`forme({ … })`) éprouve le NOMMAGE du
+ * porteur anonyme et la frontière PAR MODULE, pas la POSITION réelle du symbole rendu par `z.infer`
+ * (`zod/v4/core/util.d.cts`) : ce chemin-là n'est couvert que par la mesure sur le programme RÉEL
+ * (cliquet de compte). Il devient vivant au Lot B.
  */
 const ROOT = path.resolve(__dirname, '..', '..', '..');
 
@@ -133,9 +138,37 @@ export const tracerCalque = () => {
       'RoofDefaults.pitchDeg',
       'SceneEffectZone.area.radius', // membre `disc` de l'union ZoneArea
       'EncounterDef.victoryCondition.belowPercent', // membre de l'union VictoryCondition
+      'ArchitectureEdgeRef.side', // type RÉUTILISÉ par `victoryCondition.edge` — cf. cliquet ci-dessous
+      'ArchitectureEdgeRef.z',
     ]) {
       expect(all, `${id} hors du périmètre dérivé`).toContain(id);
     }
+    // CLIQUET DE COMPTE — le mode de panne à fermer est l'EFFONDREMENT SILENCIEUX du périmètre :
+    // 243 champs → 102 sans un seul rouge (mesure #1466 T3-b q24, la frontière par TYPE lâchant sur
+    // tout corps passé en `z.infer`). Aucune refonte de frontière ne ferme ce mode seule.
+    // 239 = mesure du 2026-08-25 (243 de l'étalon, moins les 4 `victoryCondition.edge.*` remappés sur
+    // `ArchitectureEdgeRef.*` par la réutilisation du type — la liste positive ci-dessus les couvre).
+    expect(scope.length, 'périmètre effondré').toBeGreaterThanOrEqual(239);
+  });
+
+  it('la frontière porte sur la DÉCLARATION DE PROPRIÉTÉ — un corps inféré d’un schéma est dans le périmètre et se NOMME de son schéma, le vocabulaire partagé n’y est pas', () => {
+    // Reproduit STRUCTURELLEMENT ce que `z.infer` fait au TypeChecker : le type porteur est anonyme
+    // (son symbole ne vient pas du module du document), mais chaque propriété est déclarée par le
+    // `PropertyAssignment` du shape. Le porteur se nomme du `export const xSchema` englobant.
+    const program = virtualProgram({
+      'src/engine/vocabulaire.ts': `export interface Vocabulaire { mot: string }\n`,
+      'src/state/scene.ts': `import type { Vocabulaire } from '../engine/vocabulaire';
+declare function forme<T>(shape: T): { readonly sortie: T };
+export const murSchema = forme({
+  x: 0,
+});
+export interface Scene { id: string; walls: (typeof murSchema)['sortie'][]; voc: Vocabulaire }\n`,
+    });
+    const all = ids(sceneScope(program, VIRTUAL_ROOT));
+    expect(all, 'le corps inféré du schéma est dans le périmètre et porte le nom du schéma').toContain(
+      'Mur.x'
+    );
+    expect(all, 'le vocabulaire partagé reste hors périmètre').not.toContain('Vocabulaire.mot');
   });
 
   it('NON VACANTE (a) : un champ frais, écrit par personne, est rapporté orphelin', () => {
