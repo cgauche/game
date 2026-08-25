@@ -12,9 +12,12 @@ import {
   localCrossSpans,
   maxCrossSpan,
   putLayer,
+  pruneAuthoredSeats,
   rectCoverOf,
   ridgeAxisOf,
+  seatOccupant,
 } from './sceneEdit';
+import { validateScene } from './validateScene';
 import { perimeterWallSegs } from './sceneEdit.testkit';
 import { stairFlightCells } from './planDefects';
 import { parseProject } from './worldMap';
@@ -578,5 +581,57 @@ describe('addArchitectureBody — le corps naît BORNÉ à l’emprise du geste'
     const body = scene.architecture!.find((candidate) => candidate.id === id)!;
     expect(body.storeys[0].parts[0].foot).toEqual({ x: 6, y: 6, w: 4, h: 4 });
     expect(bodyFootCells(body).size).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * ASSISE — les mutations d'authoring rendent toujours un document DÉJÀ valide : l'occupation est
+ * normalisée et les corps attablés se tiennent sur l'abord effectif de leur place (`validateScene`).
+ */
+describe('pruneAuthoredSeats / seatOccupant — normalisation d’authoring', () => {
+  /** Table ronde en (2,2) cap `N` → abords : nord (2,1), est (3,2), sud (2,3), ouest (1,2). */
+  function attablee(seatAssignments?: Scene['seatAssignments']): Scene {
+    const s = emptyScene(10, 10);
+    s.entities = [
+      { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
+      { id: 'pnj-1', kind: 'personnage', pos: { x: 8, y: 8 } },
+    ];
+    if (seatAssignments) s.seatAssignments = seatAssignments;
+    return s;
+  }
+
+  it('assoit un PNJ et pose sa `pos` sur l’abord, en une écriture', () => {
+    const res = seatOccupant(attablee(), 'table-1', 'nord', { kind: 'entity', entityId: 'pnj-1' });
+    expect(res.ok).toBe(true);
+    expect(res.scene.seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-1' } } });
+    expect(res.scene.entities.find((e) => e.id === 'pnj-1')?.pos).toEqual({ x: 2, y: 1 });
+    expect(validateScene([res.scene]).filter((w) => w.level === 'error')).toEqual([]);
+  });
+
+  it('refuse par une RAISON stable, sans rien écrire', () => {
+    const res = seatOccupant(attablee(), 'table-1', 'plafond', { kind: 'entity', entityId: 'pnj-1' });
+    expect(res).toMatchObject({ ok: false, reason: 'slot-absent' });
+    expect(res.scene.seatAssignments).toBeUndefined();
+  });
+
+  it('un HÉROS que le document ne nomme pas n’est pas assis par l’éditeur', () => {
+    expect(seatOccupant(attablee(), 'table-1', 'nord', { kind: 'party', heroId: 'h1' })).toMatchObject({
+      ok: false,
+      reason: 'occupant-absent',
+    });
+  });
+
+  it('pruneAuthoredSeats retire la place dont le meuble n’offre plus le slot', () => {
+    const s = attablee({ 'table-1': { plafond: { kind: 'entity', entityId: 'pnj-1' } } });
+    expect(pruneAuthoredSeats(s).seatAssignments).toEqual({});
+  });
+
+  it('pruneAuthoredSeats garde un héros que le DOCUMENT nomme — l’éditeur ne connaît pas le groupe', () => {
+    const s = attablee({ 'table-1': { nord: { kind: 'party', heroId: 'h1' } } });
+    expect(pruneAuthoredSeats(s).seatAssignments).toEqual({ 'table-1': { nord: { kind: 'party', heroId: 'h1' } } });
+  });
+
+  it('pruneAuthoredSeats ne fabrique aucun champ sur une scène sans assise', () => {
+    expect(pruneAuthoredSeats(attablee()).seatAssignments).toBeUndefined();
   });
 });

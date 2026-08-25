@@ -516,9 +516,9 @@ describe('validateScene — POI de plan (#345 phase 5)', () => {
 });
 
 /**
- * ASSISE AUTHORÉE — invariant de DOCUMENT posé par la spec (`docs/plans/2026-08-20-…`, §4.1 l.162-164
- * et §5 l.213) : « Pour un PNJ authoré, `SceneEntity.pos` doit être exactement la case d'approche
- * monde résolue de son slot ». La case du MEUBLE (round de l'ancre) n'est pas une position de corps :
+ * ASSISE AUTHORÉE — invariant de DOCUMENT : la `pos` d'un PNJ authoré assis EST exactement la case
+ * d'abord résolue de sa place (sa position LOGIQUE : c'est de là qu'il s'est assis et là qu'il se
+ * relève). La case du MEUBLE (round de l'ancre) n'est pas une position de corps :
  * les 4 places de la table ronde y tiennent toutes, et elle est solide.
  */
 describe('validateScene — assise authorée (`Scene.seatAssignments`)', () => {

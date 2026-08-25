@@ -15,6 +15,15 @@ import { nextEntityId } from './entityId';
 import { findTrappingById, findCreatureById, creatureLabel } from '../data';
 import { siegeEmplacementEntity } from './siegeEmplacement';
 import { stairFlightCells, interiorCells } from './planDefects';
+import {
+  assignSeat,
+  pruneSeatAssignments,
+  releaseSeat,
+  seatPoseOf,
+  seatSlotsOf,
+  type SeatAssignmentResult,
+  type SeatOccupant,
+} from './seating';
 import { METRES_PER_LEVEL } from './relief';
 
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -461,7 +470,7 @@ export function addEnemyMember(scene: Scene, encId: string, ref: string, p: Pt, 
 /** Gomme : retire l'entité posée sur p à l'étage `z` (les autres couches se suppriment via leur sélection). */
 export function eraseAt(scene: Scene, p: Pt, z = 0): Scene {
   const ent = entityAt(scene, p, z);
-  return ent ? { ...scene, entities: scene.entities.filter((e) => e !== ent) } : scene;
+  return ent ? pruneAuthoredSeats({ ...scene, entities: scene.entities.filter((e) => e !== ent) }) : scene;
 }
 
 // ── Scalaires de scène (headless-editor) : champs sans widget SceneProps, posés par `buildScene`. Chacun
@@ -512,6 +521,68 @@ export function setSceneFlags(scene: Scene, patch: Record<string, boolean>): Sce
  *  partagée par `buildScene` (coque-navire : équipage/upgrades exposés, MDG 14) et l'inspecteur. */
 export function patchEntity(scene: Scene, id: string, patch: Partial<SceneEntity>): Scene {
   return { ...scene, entities: scene.entities.map((e) => (e.id === id ? { ...e, ...patch } : e)) };
+}
+
+// ── ASSISE AUTHORÉE ────────────────────────────────────────────────────────────────────────────────
+// Trois primitives d'authoring composées sur `state/seating` (source unique de la résolution). Toute
+// mutation d'éditeur qui touche un meuble, une place ou un corps les traverse : la Scène rendue par le
+// geste est déjà un document valide (`seatAssignmentDefects`), sans renormalisation différée.
+
+/** Héros que le DOCUMENT lui-même nomme dans son occupation. L'éditeur ne connaît PAS le groupe de la
+ *  partie : c'est le seul ensemble d'ids de héros qu'il puisse tenir pour disponible. */
+function authoredHeroIds(scene: Scene): ReadonlySet<string> {
+  const out = new Set<string>();
+  for (const parMeuble of Object.values(scene.seatAssignments ?? {}))
+    for (const occupant of Object.values(parMeuble)) if (occupant.kind === 'party') out.add(occupant.heroId);
+  return out;
+}
+
+/** Recale chaque corps AUTHORÉ assis sur l'abord EFFECTIF de sa place — l'invariant de document que
+ *  déplacer un meuble (ou rouvrir un passage) déferait. Scène INCHANGÉE si personne n'a bougé. */
+function rebaseSeatedBodies(scene: Scene): Scene {
+  const cibles = new Map<string, Pt>();
+  for (const [propId, parMeuble] of Object.entries(scene.seatAssignments ?? {})) {
+    const places = seatSlotsOf(scene, propId);
+    for (const [slotId, occupant] of Object.entries(parMeuble)) {
+      if (occupant.kind !== 'entity') continue;
+      const place = places.find((p) => p.slotId === slotId);
+      if (place) cibles.set(occupant.entityId, { x: place.approach.x, y: place.approach.y });
+    }
+  }
+  if (!cibles.size) return scene;
+  let touche = false;
+  const entities = scene.entities.map((e) => {
+    const cible = cibles.get(e.id);
+    if (!cible || (e.pos.x === cible.x && e.pos.y === cible.y)) return e;
+    touche = true;
+    return { ...e, pos: { ...e.pos, x: cible.x, y: cible.y } };
+  });
+  return touche ? { ...scene, entities } : scene;
+}
+
+/** Occupation NORMALISÉE après un geste d'authoring : ne survivent que les places dont le meuble est
+ *  posé, dont le slot est déclaré par le catalogue et dont le corps est présent. Une scène qui n'a
+ *  jamais porté d'assise n'en gagne pas le champ. */
+export function pruneAuthoredSeats(scene: Scene): Scene {
+  if (!scene.seatAssignments) return scene;
+  return rebaseSeatedBodies({ ...scene, seatAssignments: pruneSeatAssignments(scene, authoredHeroIds(scene)) });
+}
+
+/** Assoit `occupant` à la place `slotId` du meuble `propId` ET pose la `pos` du corps sur l'abord
+ *  résolu, dans la MÊME écriture. Refus (raison stable) → scène d'entrée inchangée. */
+export function seatOccupant(scene: Scene, propId: string, slotId: string, occupant: SeatOccupant): SeatAssignmentResult {
+  const res = assignSeat(scene, propId, slotId, occupant, authoredHeroIds(scene));
+  return res.ok ? { ...res, scene: rebaseSeatedBodies(res.scene) } : res;
+}
+
+/** Déplacement d'AUTHORING d'une entité : pose la case demandée, lève le corps de sa place s'il quitte
+ *  l'abord de son siège, et emmène les attablés quand c'est le MEUBLE qui bouge. */
+export function moveEntityTo(scene: Scene, id: string, to: Pt): Scene {
+  const deplacee = { ...scene, entities: scene.entities.map((e) => (e.id === id ? { ...e, pos: { ...e.pos, x: to.x, y: to.y } } : e)) };
+  const occupant: SeatOccupant = { kind: 'entity', entityId: id };
+  const pose = seatPoseOf(scene, occupant);
+  const quitte = !!pose && (pose.approach.x !== to.x || pose.approach.y !== to.y);
+  return pruneAuthoredSeats(quitte ? releaseSeat(deplacee, occupant) : deplacee);
 }
 
 /** Patche le sous-objet `combat` d'une entité SANS écraser l'existant (fusionne skills/spells/optionals/

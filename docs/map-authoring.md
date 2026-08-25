@@ -38,6 +38,7 @@ const scene = buildScene({ id: 'test-x', nom: 'Bac à sable', size: [16, 10], he
 | `bind?: {char→BindSpec}` | ce que devient chaque marqueur ASCII (voir ci-dessous) |
 | `entities?: SceneEntity[]` | entités BRUTES (ids **conservés** — utile quand un `member`/`crew` réfère un id fixe) |
 | `heroStart?` | `[x,y]` ou `{x,y,z}` |
+| `seatAssignments?: SeatAssignments` | qui est attablé où : `propId → slotId → occupant` (`{kind:'entity',entityId}` ou `{kind:'party',heroId}`). Ids **FIXES** seulement — `propId` comme `entityId` doivent figurer littéralement dans `entities` (voir ci-dessous) |
 | `entryPoints?: {name:[x,y]}` `restZones?` `effectZones?` `triggers?` `dialogues?` | zones & logique |
 | `zoneMap?: {z0, z1, …}` + `zoneLegend?: {char→{label}}` | calque de ZONES DESCRIPTIVES par étage (nom de pièce, recalé dans la source ASCII) : un char = une zone contiguë (bounding-box), compilée en `SceneEffectZone` purement descriptive (sans `onCross`/`perRound`, inerte au combat) — porte le `z` de son étage (`SceneEffectZone.z`). Char hors légende = échec fail-fast (#782) |
 | `encounters?: EncounterSpec[]` | `{id, enemies?, members?, surprise?, onVictory?}` |
@@ -49,13 +50,19 @@ const scene = buildScene({ id: 'test-x', nom: 'Bac à sable', size: [16, 10], he
 - `{ entity: {…Partial<SceneEntity>…}, member?: {enc,side?,ai?} }` — pose une entité-modèle À CHAQUE marqueur, et l'enrôle éventuellement dans une rencontre.
 - `{ …Partial<SceneEntity>… }` — idem sans enrôlement (forme courte).
 
+### `seatAssignments` — attabler, à ids FIXES seulement
+- Les places d'un meuble viennent de son TYPE (`PropData.seatSlots` dans `src/data/props.json`) ; la Scène ne déclare que l'OCCUPATION. `src/state/seating.ts` est l'unique couture de résolution.
+- `buildScene` **refuse** un `propId` ou un `entityId` que `entities` ne nomme pas littéralement : un id posé par `bind` est généré (`nextEntityId`) et change dès qu'un marqueur bouge dans la grille. Pour attabler un PNJ, déclare le meuble ET le corps dans `entities`.
+- La `pos` d'un PNJ attablé **est** la case d'abord résolue de sa place (position logique : c'est de là qu'il s'assoit et là qu'il se relève ; l'ancre fractionnaire n'est que du rendu). `buildScene` échoue fail-fast sur toute assise que le validateur commun refuse.
+- À la souris, ce champ s'authore dans l'inspecteur de l'éditeur : sélectionne le décor → rubrique « Places assises » (`src/ui/editor/SeatAssignmentsField.tsx`). Le geste pose la `pos` du corps et élague l'assise (suppression, changement de `ref`, déplacement) dans la même mutation.
+
 ### `encounters` — deux façons, fusionnées
 - `enemies: AuthoredEnemy[]` — forme **terse** (`{ref|statblock, pos, side?, ai?, skills?, postes?, crewIds?, upgrades?, hidden?, …}`) → entités FRAÎCHES + members. Ids déterministes `enemy-<id>-<i>`.
 - `members: EncounterMember[]` — enrôle des entités **déjà posées** (`entities`/`bind`) par leur id (PNJ visibles, alliés-IA, affûts inertes).
 - `bind … member` — enrôle une entité posée à un marqueur (son id est GÉNÉRÉ → seul moyen de l'ajouter au roster).
 
 ## Ordre de compilation (figé — cf. header de `mapSpec.ts`)
-`base+scalaires → terrain/scan-marqueurs → relief → murs → rooms → entités+heroStart+bind → zones → encounters`.
+`base+scalaires → terrain/scan-marqueurs → relief → murs → rooms → entités+heroStart+bind → seatAssignments → zones → encounters`.
 
 ## Pièges
 - **Deux modèles de mur** : une tuile `'mur'` (terrain, via `legend`) = bloc PLEIN opaque ; un `WallSeg` d'**arête** (`walls`/`rooms`) = cloison fine qui peut porter `door`/`structure` (brèchable). Choisis exprès. Portes & structures ⇒ arêtes.

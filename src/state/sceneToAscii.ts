@@ -10,6 +10,7 @@
  * PORTÉE HORS ATTEINTE (le format `walled`/`zoneMap` ne les représente pas) — listée dans `notRestored`,
  * répétée en tête du texte exporté : `bind`, `cells` (recettes — dont la VOLÉE `cells.stair` elle-même :
  * seule la RAMPE de hauteurs qui en résulte survit, via `relief`), `entities` (PNJ/décor/habillage),
+ * `seatAssignments` (qui est attablé à quel meuble),
  * `triggers`, `dialogues`, `encounters`, `architecture`, `stations`, `restZones`, zones d'effet
  * MÉCANIQUES (pièges/auras — seules les zones DESCRIPTIVES le sont), `heroStart`, `entryPoints`,
  * crénelure de rendu (`Layer.crenellated`), arêtes ESCALADABLES (`WallSeg.climb`), portes FERMÉES par
@@ -263,7 +264,7 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
 
   const notRestored: string[] = [
     "`cells.stair` (recette de VOLÉE d'escalier + habillage posé par case) — la RAMPE de hauteurs qui en résulte EST capturée (via `relief` ci-dessous), mais pas la recette : pour ré-éditer la volée elle-même (pas seulement ses hauteurs), reportez `cells.stair` à la main dans le fichier `*.ts` source, jamais dans les grilles ASCII.",
-    '`bind` (marqueurs → poses), `entities` (PNJ, décor, props — y compris l’habillage posé par un escalier), `triggers`, `dialogues`, `encounters` — RIEN de narratif/logique n’est réémis.',
+    '`bind` (marqueurs → poses), `entities` (PNJ, décor, props — y compris l’habillage posé par un escalier), `seatAssignments` (occupation des places assises du mobilier), `triggers`, `dialogues`, `encounters` — RIEN de narratif/logique n’est réémis.',
     '`architecture` (masses/façades/toits authorés), `stations`, `restZones`, `heroStart`, `entryPoints` — non réémis.',
     ...warnings,
   ];

@@ -12,7 +12,7 @@ import { placeServices, type WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
 import roofMaterials from '../data/roofMaterials.json';
 import { scenePlanDefects, type PlanDefectAt, type PlanDefectFamily } from './planDefects';
-import { seatSlotsOf } from './seating';
+import { seatAssignmentDefects } from './seating';
 
 /** Clés valides de `CustomStatblock.char` : les 10 `CharKey` (slugs pleins, #311) ∪ `M`/`B`
  *  (Mouvement/Blessures, hors `CharKey` — cf. `CustomStatblock` dans `./scene`). */
@@ -128,26 +128,9 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         for (const k of Object.keys(e.statblock.char))
           if (!VALID_STATBLOCK_CHAR_KEYS.has(k)) add('error', 'entity', e.id, `${e.label ?? e.id} : statblock.char porte une clé étrangère « ${k} » (format canonique = CharKey slug plein, cf. #311)`);
     }
-    // ASSISE AUTHORÉE (`Scene.seatAssignments`, résolue par `state/seating`) : chaque place occupée
-    // doit désigner un meuble POSÉ, une place que son type déclare, et un corps présent — et la `pos`
-    // du PNJ assis est EXACTEMENT la case d'abord résolue de sa place (sa position LOGIQUE : c'est de
-    // là qu'il s'est assis et là qu'il se relève ; l'ancre fractionnaire n'est que du rendu).
-    for (const [propId, parMeuble] of Object.entries(s.seatAssignments ?? {})) {
-      const places = seatSlotsOf(s, propId);
-      const propPose = s.entities.some((e) => e.id === propId && e.kind === 'prop');
-      for (const [slotId, occupant] of Object.entries(parMeuble)) {
-        const occupantId = occupant.kind === 'party' ? occupant.heroId : occupant.entityId;
-        if (!propPose) { add('error', 'entity', propId, `Assise « ${propId}/${slotId} » (« ${occupantId} ») : aucun décor « ${propId} » dans la scène`); continue; }
-        const place = places.find((p) => p.slotId === slotId);
-        if (!place) { add('error', 'entity', propId, `Assise « ${propId}/${slotId} » (« ${occupantId} ») : le décor « ${propId} » n'offre pas de place « ${slotId} »`); continue; }
-        if (occupant.kind === 'party') continue; // le groupe n'appartient pas au document de scène
-        const pnj = s.entities.find((e) => e.id === occupant.entityId && e.kind === 'personnage');
-        if (!pnj) { add('error', 'entity', propId, `Assise « ${propId}/${slotId} » : aucun personnage « ${occupantId} » dans la scène`); continue; }
-        const { x: ax, y: ay } = place.approach;
-        if (pnj.pos.x !== ax || pnj.pos.y !== ay)
-          add('error', 'entity', occupant.entityId, `Assise « ${propId}/${slotId} » : « ${occupantId} » est posé en (${pnj.pos.x},${pnj.pos.y}) alors que l’abord de sa place est en (${ax},${ay})`);
-      }
-    }
+    // ASSISE AUTHORÉE (`Scene.seatAssignments`) : les règles vivent dans `state/seating`, source
+    // unique partagée avec le compilateur d'authoring (`mapSpec.buildScene`, fail-fast).
+    for (const defect of seatAssignmentDefects(s)) add('error', 'entity', defect.at, defect.message);
     const validRect = (rect: { x: number; y: number; w: number; h: number }) =>
       Number.isInteger(rect.x) && Number.isInteger(rect.y) && Number.isInteger(rect.w) && Number.isInteger(rect.h)
       && rect.w > 0 && rect.h > 0 && within(rect.x, rect.y) && within(rect.x + rect.w - 1, rect.y + rect.h - 1);

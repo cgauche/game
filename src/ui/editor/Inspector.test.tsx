@@ -462,3 +462,76 @@ describe('Inspector — l’appareil mécanique d’une zone suit ce que la zone
     h.container.remove();
   });
 });
+
+/**
+ * ASSISE AUTHORÉE — le panneau de décor porte l'authoring des places : sélectionner la table doit
+ * suffire pour attabler un PNJ, sans passer par le JSON.
+ */
+describe('Inspector — places assises d’un décor', () => {
+  /** Table ronde en (2,2) cap `N` → abords : nord (2,1), est (3,2), sud (2,3), ouest (1,2). */
+  function mountTable() {
+    const scene: Scene = {
+      ...emptyScene(8, 8),
+      entities: [
+        { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
+        { id: 'pnj-aubergiste', kind: 'personnage', pos: { x: 6, y: 6 }, label: 'Aubergiste' },
+      ],
+    };
+    let latest = scene;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    const render = (s: Scene) =>
+      root.render(
+        <Inspector
+          scene={s}
+          otherScenes={[]}
+          worldMap={null}
+          setScene={(next) => { latest = next; render(next); }}
+          sel={{ type: 'entity', id: 'table-1' }}
+          setSel={() => undefined}
+          enemyCreatures={[]}
+          openLogic={() => undefined}
+          resizeScene={() => undefined}
+          narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
+          tool={{ mode: 'select' }}
+          armZoneTiles={() => undefined}
+          zoneFocusKey={null}
+        />,
+      );
+    act(() => render(scene));
+    return { container, sceneOf: () => latest };
+  }
+
+  it('expose les places de la ref et écrit l’occupant par id', () => {
+    const { container, sceneOf } = mountTable();
+    expect(container.textContent).toContain('4 places');
+    const place = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('Place nord'));
+    const select = place?.querySelector('select') as HTMLSelectElement;
+    expect(select).toBeTruthy();
+    act(() => {
+      select.value = 'entity:pnj-aubergiste';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(sceneOf().seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } });
+    expect(sceneOf().entities.find((e) => e.id === 'pnj-aubergiste')?.pos).toEqual({ x: 2, y: 1 });
+  });
+
+  it('changer la ref du décor élague l’assise dans la même mutation', () => {
+    const { container, sceneOf } = mountTable();
+    const place = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('Place nord'));
+    const select = place!.querySelector('select') as HTMLSelectElement;
+    act(() => {
+      select.value = 'entity:pnj-aubergiste';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    const decor = [...container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('Décor'));
+    const refSelect = decor!.querySelector('select') as HTMLSelectElement;
+    act(() => {
+      refSelect.value = 'tonneau';
+      refSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(sceneOf().entities.find((e) => e.id === 'table-1')?.ref).toBe('tonneau');
+    expect(sceneOf().seatAssignments).toEqual({});
+  });
+});

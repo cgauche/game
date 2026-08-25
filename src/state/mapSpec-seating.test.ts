@@ -1,0 +1,78 @@
+import { describe, expect, it } from 'vitest';
+import { buildScene, type MapSpec } from './mapSpec';
+import { sceneToAscii } from './sceneToAscii';
+import type { SeatAssignments } from './seating';
+import { validateScene } from './validateScene';
+
+/**
+ * `MapSpec.seatAssignments` — l'authoring ASCII sait attabler, mais seulement des corps qu'il NOMME.
+ * Un id produit par `bind` naît d'un compteur d'entités (`nextEntityId`) : il change dès qu'un
+ * marqueur bouge dans la grille, et n'est donc jamais une clé d'assise. La règle est donc : `propId`
+ * comme `entityId` occupant figurent LITTÉRALEMENT dans `spec.entities`.
+ */
+const BASE: MapSpec = { id: 'taverne', nom: 'Taverne', size: [8, 8], terrain: 'plancher' };
+
+/** Table ronde en (2,2) cap `N` → abords : nord (2,1), est (3,2), sud (2,3), ouest (1,2). */
+const TABLE = { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' } as const;
+const AUBERGISTE = { id: 'pnj-aubergiste', kind: 'personnage', pos: { x: 2, y: 1 }, label: 'Aubergiste' } as const;
+const FIXED_ASSIGNMENT: SeatAssignments = { 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } };
+
+/** Le MÊME meuble posé par un marqueur ASCII plutôt que par `entities`. */
+function specWithBind(char: string, bind: NonNullable<MapSpec['bind']>[string]): MapSpec {
+  return {
+    ...BASE,
+    levels: { z0: ['........', '........', `..${char}.....`, '........', '........', '........', '........', '........'].join('\n') },
+    bind: { [char]: bind },
+  };
+}
+
+describe('MapSpec.seatAssignments — le même meuble, mais une assise à ids FIXES seulement', () => {
+  it('construit le même meuble via entities et bind, mais assigne seulement des ids fixes', () => {
+    const byEntities = buildScene({ ...BASE, entities: [{ ...TABLE }] });
+    const byBind = buildScene(specWithBind('M', { kind: 'prop', ref: 'table-murale-2-tabourets', facing: 'O' }));
+    expect(byEntities.entities.find((e) => e.ref === 'table-ronde-4-tabourets')).toMatchObject({ kind: 'prop', facing: 'N' });
+    expect(byBind.entities.find((e) => e.ref === 'table-murale-2-tabourets')).toMatchObject({ kind: 'prop', facing: 'O' });
+
+    const genere = byBind.entities.find((e) => e.ref === 'table-murale-2-tabourets')!.id;
+    expect(() =>
+      buildScene({
+        ...specWithBind('M', { kind: 'prop', ref: 'table-murale-2-tabourets', facing: 'O' }),
+        seatAssignments: { [genere]: { gauche: { kind: 'entity', entityId: 'pnj-aubergiste' } } },
+      }),
+    ).toThrow(/seatAssignments.*ids fixes/);
+
+    expect(buildScene({ ...BASE, entities: [{ ...TABLE }, { ...AUBERGISTE }], seatAssignments: FIXED_ASSIGNMENT }).seatAssignments)
+      .toEqual(FIXED_ASSIGNMENT);
+  });
+
+  it('rejette un OCCUPANT que `entities` ne nomme pas littéralement', () => {
+    expect(() =>
+      buildScene({ ...BASE, entities: [{ ...TABLE }], seatAssignments: FIXED_ASSIGNMENT }),
+    ).toThrow(/seatAssignments.*ids fixes/);
+  });
+
+  it('rejette une assise que le validateur commun refuse — jamais de Scène invalide compilée', () => {
+    expect(() =>
+      buildScene({
+        ...BASE,
+        entities: [{ ...TABLE }, { ...AUBERGISTE, pos: { x: 7, y: 7 } }],
+        seatAssignments: FIXED_ASSIGNMENT,
+      }),
+    ).toThrow(/abord de sa place/);
+  });
+
+  it('la Scène compilée passe le validateur de document', () => {
+    const s = buildScene({ ...BASE, entities: [{ ...TABLE }, { ...AUBERGISTE }], seatAssignments: FIXED_ASSIGNMENT });
+    expect(validateScene([s]).filter((w) => w.level === 'error')).toEqual([]);
+  });
+});
+
+describe('sceneToAscii — l’export dit ce qu’il ne restitue pas', () => {
+  it('annonce tout ce que l’export ne restaure pas', () => {
+    const seated = buildScene({ ...BASE, entities: [{ ...TABLE }, { ...AUBERGISTE }], seatAssignments: FIXED_ASSIGNMENT });
+    const exp = sceneToAscii(seated);
+    for (const champ of ['entities', 'bind', 'seatAssignments'])
+      expect(exp.notRestored.join('\n'), champ).toContain(`\`${champ}\``);
+    expect(exp.text).toContain('seatAssignments');
+  });
+});

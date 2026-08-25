@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, isDescriptiveZone, Scene } from '../../state/scene';
+import { validateScene } from '../../state/validateScene';
 import { findCreatureById, creatureLabel } from '../../data';
 import {
   hitAt,
   moveSel,
   resizeSel,
   deleteSel,
+  changePropRef,
   paintTiles,
   fillTerrainRect,
   addLayer,
@@ -684,5 +686,56 @@ describe('flowEffectCount — l’atelier annonce les effets de TOUTE profondeur
 
   it('un Flow VIDE annonce zéro', () => {
     expect(flowEffectCount(EMPTY_FLOW)).toBe(0);
+  });
+});
+
+/**
+ * ASSISE AUTHORÉE — un geste d'éditeur qui invalide une place la RETIRE dans la MÊME mutation. Rien
+ * n'est laissé à une renormalisation au prochain chargement : la scène rendue par le geste est déjà
+ * un document valide (`validateScene`).
+ */
+describe('éditeur — les places assises suivent le geste, atomiquement', () => {
+  /** Table ronde en (2,2) cap `N` → abords : nord (2,1), est (3,2), sud (2,3), ouest (1,2). */
+  function attablee(): Scene {
+    const s = emptyScene(10, 10);
+    s.entities = [
+      { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
+      { id: 'pnj-aubergiste', kind: 'personnage', pos: { x: 2, y: 1 }, label: 'Aubergiste' },
+    ];
+    s.seatAssignments = { 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } };
+    return s;
+  }
+
+  it('changer la ref ou supprimer le prop élague dans la même mutation', () => {
+    expect(changePropRef(attablee(), 'table-1', 'tonneau').seatAssignments).toEqual({});
+    expect(deleteSel(attablee(), { type: 'entity', id: 'table-1' }).seatAssignments).toEqual({});
+  });
+
+  it('supprimer le PNJ assis emporte sa place', () => {
+    expect(deleteSel(attablee(), { type: 'entity', id: 'pnj-aubergiste' }).seatAssignments).toEqual({});
+  });
+
+  it('déplacer un PNJ authoré assis libère son siège dans la même mutation', () => {
+    const moved = moveSel(attablee(), { type: 'entity', id: 'pnj-aubergiste' }, { x: 7, y: 9 });
+    expect(moved.entities.find((e) => e.id === 'pnj-aubergiste')?.pos).toEqual({ x: 7, y: 9 });
+    expect(moved.seatAssignments).toEqual({});
+  });
+
+  it('reposer le PNJ sur l’abord de SA place le laisse assis', () => {
+    const moved = moveSel(attablee(), { type: 'entity', id: 'pnj-aubergiste' }, { x: 2, y: 1 });
+    expect(moved.seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } });
+  });
+
+  it('déplacer le MEUBLE emporte les corps attablés sur les nouveaux abords', () => {
+    const moved = moveSel(attablee(), { type: 'entity', id: 'table-1' }, { x: 5, y: 5 });
+    expect(moved.seatAssignments).toEqual({ 'table-1': { nord: { kind: 'entity', entityId: 'pnj-aubergiste' } } });
+    expect(moved.entities.find((e) => e.id === 'pnj-aubergiste')?.pos).toEqual({ x: 5, y: 4 });
+    expect(validateScene([moved]).filter((w) => w.level === 'error')).toEqual([]);
+  });
+
+  it('un geste sur une scène SANS assise ne fabrique aucun champ', () => {
+    const s = emptyScene(10, 10);
+    s.entities = [{ id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets' }];
+    expect(deleteSel(s, { type: 'entity', id: 'table-1' }).seatAssignments).toBeUndefined();
   });
 });

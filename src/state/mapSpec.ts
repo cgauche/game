@@ -49,6 +49,7 @@ import type { Dir8 } from './dir8';
 import { parseAsciiRows, parseWalledAscii, scanMarkers } from './asciiMap';
 import { buildEncounter, type AuthoredEnemy } from './encounterAuthoring';
 import { chebyshev } from '../engine/grid';
+import { seatAssignmentDefects, type SeatAssignments } from './seating';
 import {
   type Pt,
   type Edge4,
@@ -232,6 +233,11 @@ export interface MapSpec {
   bind?: Record<string, BindSpec>;
   /** Entités BRUTES (SceneEntity complètes, ids préservés). */
   entities?: SceneEntity[];
+  /** OCCUPATION des places assises du mobilier posé (`propId → slotId → occupant`). Ids FIXES
+   *  seulement : `propId` comme `entityId` occupant doivent figurer LITTÉRALEMENT dans `entities`.
+   *  Un id produit par `bind` naît d'un compteur (`nextEntityId`) et change dès qu'un marqueur bouge
+   *  dans la grille — il ne peut pas être une clé d'assise. */
+  seatAssignments?: SeatAssignments;
   /** Départ héros : `[x,y]` ou `{x,y,z}`. */
   heroStart?: [number, number] | { x: number; y: number; z?: number };
   entryPoints?: Record<string, [number, number]>;
@@ -837,6 +843,25 @@ export function buildScene(spec: MapSpec): Scene {
       const z = tmpl.z ?? 0;
       s = pasteEntity(s, { ...(tmpl as SceneEntity), id: '', kind: tmpl.kind ?? 'personnage', pos, ...(z ? { z } : {}) }, pos, z).scene;
     }
+  }
+
+  // 6bis. assise authorée — APRÈS `entities`+`heroStart`+`bind` (les corps doivent être posés), et à
+  //       ids FIXES seulement : un id que seul `bind` a fabriqué change au moindre déplacement de
+  //       marqueur. Puis le validateur strict COMMUN du document (`state/seating`), fail-fast.
+  if (spec.seatAssignments) {
+    const fixes = new Set((spec.entities ?? []).map((e) => e.id));
+    const exigeFixe = (id: string, quoi: string) => {
+      if (!fixes.has(id))
+        throw new Error(`buildScene: seatAssignments n'accepte que des ids fixes de \`entities\` — ${quoi} « ${id} » n'y figure pas (un id posé par \`bind\` est généré et change avec la grille)`);
+    };
+    for (const [propId, parMeuble] of Object.entries(spec.seatAssignments)) {
+      exigeFixe(propId, 'le décor');
+      for (const occupant of Object.values(parMeuble))
+        if (occupant.kind === 'entity') exigeFixe(occupant.entityId, "l'occupant");
+    }
+    s = { ...s, seatAssignments: spec.seatAssignments };
+    const defauts = seatAssignmentDefects(s);
+    if (defauts.length) throw new Error(`buildScene: ${defauts.map((d) => d.message).join(' ; ')}`);
   }
 
   // 7. zones

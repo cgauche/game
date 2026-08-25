@@ -8,7 +8,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
 import { siegeEngines } from '../../data';
 import { propRefPatch } from './propDefaults';
-import { type Rect, type Pt, type Edge4, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt } from '../../state/sceneEdit';
+import { type Rect, type Pt, type Edge4, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt, moveEntityTo, patchEntity, pruneAuthoredSeats } from '../../state/sceneEdit';
 
 export {
   addArchitectureBody,
@@ -356,8 +356,7 @@ export function selPos(scene: Scene, sel: Sel): Pt | null {
 /** Déplace la sélection vers `to` (clampée dans la carte). Scene inchangée si sélection invalide. */
 export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
   const { w, h } = scene.dimensions;
-  if (sel?.type === 'entity')
-    return { ...scene, entities: scene.entities.map((e) => (e.id === sel.id ? { ...e, pos: { x: clamp(to.x, w), y: clamp(to.y, h) } } : e)) };
+  if (sel?.type === 'entity') return moveEntityTo(scene, sel.id, { x: clamp(to.x, w), y: clamp(to.y, h) });
   if (sel?.type === 'entry') {
     const pos = scene.entryPoints?.[sel.id];
     if (!pos) return scene;
@@ -459,7 +458,7 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
       if (members.length === (e.members ?? []).length) return e;
       return { ...e, members: members.map((m) => (m.ridesEntityId === sel.id ? { ...m, ridesEntityId: undefined } : m)) };
     });
-    return { ...scene, entities: scene.entities.filter((e) => e.id !== sel.id), encounters };
+    return pruneAuthoredSeats({ ...scene, entities: scene.entities.filter((e) => e.id !== sel.id), encounters });
   }
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.filter((t) => t.id !== sel.id) };
   // #841 FU-C : les CONTENEURS (corps/étage) étaient inatteignables (audit #835 les avait
@@ -503,6 +502,13 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
 }
 
 /** Arête la plus proche du centre de la case, depuis l'offset (ox,oy) ∈ [-0.5,0.5] du pointeur. */
+/** Change le TYPE de décor d'une entité `prop` (avec ses défauts de pose, `propRefPatch`) et élague
+ *  l'assise dans la MÊME mutation : le nouveau type n'offre pas les places de l'ancien. */
+export function changePropRef(scene: Scene, propId: string, ref: string): Scene {
+  const ent = scene.entities.find((e) => e.id === propId && e.kind === 'prop');
+  return ent ? pruneAuthoredSeats(patchEntity(scene, propId, propRefPatch(ref, !!ent.interact))) : scene;
+}
+
 export function nearestEdge(ox: number, oy: number): Edge4 {
   const d: Record<Edge4, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
   return (['N', 'E', 'S', 'O'] as Edge4[]).reduce((a, b) => (d[b] < d[a] ? b : a));

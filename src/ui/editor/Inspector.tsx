@@ -53,8 +53,8 @@ import { FlowEditor, TestFields } from './FlowEditor';
 import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
-import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
+import { SeatAssignmentsField } from './SeatAssignmentsField';
+import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, changePropRef, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
 import { scrollElementIntoPort } from './useEditorView';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
@@ -336,7 +336,7 @@ export function Inspector({
             </button>
           </div>
 
-          {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} worldMap={worldMap} updateSel={updateSel} removeSel={removeSel} />}
+          {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} worldMap={worldMap} setScene={setScene} updateSel={updateSel} removeSel={removeSel} />}
 
           {sel?.type === 'architectureBody' && architectureBody && (
             <>
@@ -1188,6 +1188,7 @@ function EntityPanel({
   scene,
   otherScenes,
   worldMap,
+  setScene,
   updateSel,
   removeSel,
 }: {
@@ -1195,6 +1196,7 @@ function EntityPanel({
   scene: Scene;
   otherScenes: Scene[];
   worldMap: WorldMap | null;
+  setScene: (s: Scene) => void;
   updateSel: (patch: Partial<SceneEntity>) => void;
   removeSel: () => void;
 }) {
@@ -1436,7 +1438,7 @@ function EntityPanel({
         <Fold title="Décor & interaction" open>
           <label className="ed-field">
             Décor
-            <select value={ent.ref ?? 'tonneau'} onChange={(e) => updateSel(propRefPatch(e.target.value, !!ent.interact))}>
+            <select value={ent.ref ?? 'tonneau'} onChange={(e) => setScene(changePropRef(scene, ent.id, e.target.value))}>
               {Object.values(PROPS).map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.label}
@@ -1444,6 +1446,7 @@ function EntityPanel({
               ))}
             </select>
           </label>
+          <SeatAssignmentsField scene={scene} propId={ent.id} onChange={setScene} />
           <label className="ed-check">
             <input
               type="checkbox"

@@ -275,6 +275,42 @@ export function releaseUnavailableSeats(scene: Scene, disponible: (occupant: Sea
  * PNJ encore présent). Parcours déterministe (entités, puis places déclarées) ; un occupant apparu
  * deux fois garde son PREMIER siège. Rend toujours une valeur — `{}` = plus personne d'assis.
  */
+/** Un défaut d'assise du DOCUMENT : le message français à afficher, et l'entité à blâmer (pour que
+ *  l'éditeur y emmène au clic). */
+export interface SeatAssignmentDefect { at: string; message: string }
+
+/**
+ * VALIDATEUR STRICT COMMUN de `Scene.seatAssignments` — source unique des règles du document,
+ * partagée par `validateScene` (qui en fait des avertissements cliquables) et par le compilateur
+ * d'authoring `mapSpec.buildScene` (qui échoue fail-fast dessus).
+ *
+ * Chaque place occupée doit désigner un meuble POSÉ, une place que son type déclare, et un corps
+ * présent ; et la `pos` d'un PNJ assis est EXACTEMENT la case d'abord résolue de sa place (sa
+ * position LOGIQUE : c'est de là qu'il s'est assis et là qu'il se relève ; l'ancre fractionnaire
+ * n'est que du rendu). Le groupe n'appartient pas au document : une place `kind:'party'` ne se
+ * vérifie que jusqu'au meuble et au slot.
+ */
+export function seatAssignmentDefects(scene: Scene): SeatAssignmentDefect[] {
+  const out: SeatAssignmentDefect[] = [];
+  for (const [propId, parMeuble] of Object.entries(scene.seatAssignments ?? {})) {
+    const places = seatSlotsOf(scene, propId);
+    const propPose = !!propEntity(scene, propId);
+    for (const [slotId, occupant] of Object.entries(parMeuble)) {
+      const occupantId = occupant.kind === 'party' ? occupant.heroId : occupant.entityId;
+      if (!propPose) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » (« ${occupantId} ») : aucun décor « ${propId} » dans la scène` }); continue; }
+      const place = places.find((p) => p.slotId === slotId);
+      if (!place) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » (« ${occupantId} ») : le décor « ${propId} » n'offre pas de place « ${slotId} »` }); continue; }
+      if (occupant.kind === 'party') continue;
+      const pnj = scene.entities.find((e) => e.id === occupant.entityId && e.kind === 'personnage');
+      if (!pnj) { out.push({ at: propId, message: `Assise « ${propId}/${slotId} » : aucun personnage « ${occupantId} » dans la scène` }); continue; }
+      const { x: ax, y: ay } = place.approach;
+      if (pnj.pos.x !== ax || pnj.pos.y !== ay)
+        out.push({ at: occupant.entityId, message: `Assise « ${propId}/${slotId} » : « ${occupantId} » est posé en (${pnj.pos.x},${pnj.pos.y}) alors que l’abord de sa place est en (${ax},${ay})` });
+    }
+  }
+  return out;
+}
+
 export function pruneSeatAssignments(scene: Scene, partyHeroIds: ReadonlySet<string>): SeatAssignments {
   const out: SeatAssignments = {};
   const vus: SeatOccupant[] = [];
