@@ -5,7 +5,8 @@
  * l'entité éditable — porté seulement par l'INSTANCE tirée à l'exécution (hors dataset).
  */
 import { z } from 'zod';
-import { sourceRefSchema, gameOpSchema, entityAppearanceSchema } from '../common';
+import { sourceRefSchema, entityAppearanceSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'mutations.json';
 

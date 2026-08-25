@@ -25,7 +25,7 @@ import { findTalentById } from '../data';
  * Les Menaces AUTHORÉES : les ids de SPEC de l'entrée `resistance` de `talents.json`, lus À
  * L'EXÉCUTION — SOURCE UNIQUE. La liste est OUVERTE (LDB 10 l.1016-1020) : une spec ajoutée au
  * Compendium devient utilisable sans toucher au code. Le tag `menace` est une CLÉ ÉTRANGÈRE vers
- * cette liste : validée en donnée par `flowTestSchema` (`data/schemas/common.ts`) et au code par la
+ * cette liste : validée en donnée par `flowTestSchema` (`data/schemas/grammaire/mecanique.ts`) et au code par la
  * garde `menace-fk.test.ts`, qui NOMME le site fautif.
  */
 export function menaceIds(): string[] {

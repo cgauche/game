@@ -6,7 +6,7 @@
  * Course-poursuite, Réparations au port.
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-navigation.json';
 

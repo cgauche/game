@@ -9,7 +9,7 @@
  * `regles.json` n'étant que le foyer des règles de cadre. Au moins l'un des deux est exigé.
  */
 import { z } from 'zod';
-import { sourceRefSchema, stakeFormSchema } from '../common';
+import { sourceRefSchema, stakeFormSchema } from '../grammaire/valeurs';
 
 export const file = 'combat-stakes.json';
 

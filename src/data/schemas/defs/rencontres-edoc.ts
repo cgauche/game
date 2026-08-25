@@ -7,7 +7,8 @@
  * `incidents-monture.json`/`problemes-vehicule.json` (les trois miroitent `TravelTableEntry`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, travelTableEntrySchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { travelTableEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'rencontres-edoc.json';
 

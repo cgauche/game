@@ -11,7 +11,8 @@
  * donc tout `desc` ré-ajouté ici. Résolution du trait : `traitProjectingManeuver` (`src/data/index.ts`).
  */
 import { z } from 'zod';
-import { charKeySchema, sourceRefSchema, triggeredEffectSchema, stakeFormSchema } from '../common';
+import { charKeySchema, sourceRefSchema, stakeFormSchema } from '../grammaire/valeurs';
+import { triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'maneuvers.json';
 

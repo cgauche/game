@@ -4,7 +4,7 @@
  * `SpecsSource`, `engine/skillCombatApps`).
  */
 import { z } from 'zod';
-import { secondarySourceRefSchema, sourceRefSchema } from '../common';
+import { secondarySourceRefSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'skills.json';
 

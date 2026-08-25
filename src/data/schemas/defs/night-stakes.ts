@@ -4,7 +4,7 @@
  * doctrine 2026-07-12 : un catalogue en dur est l'exception, il migre en donnée). Lu par `nightStake`.
  */
 import { z } from 'zod';
-import { sourceRefSchema, stakeFormSchema } from '../common';
+import { sourceRefSchema, stakeFormSchema } from '../grammaire/valeurs';
 
 export const file = 'night-stakes.json';
 

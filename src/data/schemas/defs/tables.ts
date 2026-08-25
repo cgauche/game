@@ -4,7 +4,8 @@
  * mais la rangée porte des `GameOp` (forme LOOSE `gameOpSchema`) au lieu d'un id de mutation.
  */
 import { z } from 'zod';
-import { sourceRefSchema, gameOpSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'tables.json';
 

@@ -6,7 +6,7 @@
  * 22/25, `ship` 20/25, `travel` 3/25, `deck` 1/25).
  */
 import { z } from 'zod';
-import { availabilitySchema, cell2Schema, sourceRefSchema } from '../common';
+import { availabilitySchema, cell2Schema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'vehicles.json';
 

@@ -975,7 +975,7 @@ export function mesurerEnveloppe(groupes: readonly GroupeEnveloppe[]): Divergenc
 
 // ---------------------------------------------------------------------------
 // Redéclarations LOCALES : AST des `defs/*.ts`, littéraux d'objet passés à z.object/strictObject/
-// looseObject dont la signature recoupe le lexique ou un schéma commun de `common.ts`.
+// looseObject dont la signature recoupe le lexique ou un schéma de la grammaire partagée.
 // ---------------------------------------------------------------------------
 
 /** Un `createSourceFile` par fichier et par run (T9). */
@@ -987,15 +987,22 @@ const sourceDe = (fichier: string, texte: () => string) => {
   CACHE_SOURCE.set(fichier, sf);
   return sf;
 };
-const sourceCommune = (root: string) => {
-  const fichier = join(root, 'src/data/schemas/common.ts');
-  return sourceDe(fichier, () => readFileSync(fichier, 'utf8'));
-};
+/** Les fichiers de la GRAMMAIRE partagée (`src/data/schemas/grammaire/`) — un schéma commun y vit,
+ *  jamais dans un def. LUS AU DOSSIER : un module de grammaire ajouté est couvert sans liste à tenir. */
+const fichiersGrammaire = (root: string) =>
+  readdirSync(join(root, 'src/data/schemas/grammaire'))
+    .filter((f) => f.endsWith('.ts') && !f.includes('.test.'))
+    .sort();
+const sourcesGrammaire = (root: string) =>
+  fichiersGrammaire(root).map((nom) => {
+    const fichier = join(root, 'src/data/schemas/grammaire', nom);
+    return sourceDe(fichier, () => readFileSync(fichier, 'utf8'));
+  });
 
-/** `kind` reconnus par `conditionSchema` (`src/data/schemas/common.ts`) — lus par AST, jamais listés
- *  à la main : une Condition en donnée porte un `op` (comparateur) qui n'est PAS une op de jeu. */
+/** `kind` reconnus par `conditionSchema` (`src/data/schemas/grammaire/mecanique.ts`) — lus par AST,
+ *  jamais listés à la main : une Condition en donnée porte un `op` (comparateur) qui n'est PAS une
+ *  op de jeu. */
 function kindsDeCondition(root: string): Set<string> {
-  const sf = sourceCommune(root);
   const out = new Set<string>();
   const collecte = (n: ts.Node) => {
     if (
@@ -1016,25 +1023,33 @@ function kindsDeCondition(root: string): Set<string> {
       collecte(n.initializer);
     ts.forEachChild(n, visite);
   };
-  visite(sf);
+  for (const sf of sourcesGrammaire(root)) visite(sf);
   return out;
 }
 
-/** Schémas COMMUNS candidats, par signature de clés (lus dans `common.ts` par AST). */
+/**
+ * Schémas COMMUNS candidats, par signature de clés (lus dans la grammaire par AST). Le schéma dont la
+ * signature est celle de son littéral RACINE l'emporte sur celui qui ne la porte qu'en sous-objet
+ * (`refSchema` plutôt que le `hasSkill` niché de `flowTestSchema`) — sinon le gagnant dépendrait de
+ * l'ordre de lecture des fichiers de la grammaire.
+ */
 function schemasCommuns(root: string): Map<string, string> {
-  const sf = sourceCommune(root);
-  const parSignature = new Map<string, string>();
-  const visite = (node: ts.Node) => {
+  const racines = new Map<string, string>();
+  const niches = new Map<string, string>();
+  const visite = (node: ts.Node, sf: ts.SourceFile) => {
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
       for (const lit of litterauxZod(node.initializer, sf)) {
         const sig = signature(lit.cles);
-        if (sig && !parSignature.has(sig)) parSignature.set(sig, node.name.text);
+        if (!sig) continue;
+        const cible = lit.champ === '' ? racines : niches;
+        if (!cible.has(sig)) cible.set(sig, node.name.text);
       }
     }
-    ts.forEachChild(node, visite);
+    ts.forEachChild(node, (n) => visite(n, sf));
   };
-  visite(sf);
-  return parSignature;
+  for (const sf of sourcesGrammaire(root)) visite(sf, sf);
+  for (const [sig, nom] of niches) if (!racines.has(sig)) racines.set(sig, nom);
+  return racines;
 }
 
 /** Nom de la propriété qui PORTE ce littéral (le champ, quand il y en a un). */

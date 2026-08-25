@@ -19,7 +19,7 @@ import { findTableEntry } from './tables';
 import { CharKey, CHAR_KEYS, Characteristics, Combatant } from './types';
 import { Money } from './money';
 import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable, findStarById, talentConcrete, spells as allSpells } from '../data';
-import type { RaceKey } from '../data/schemas/common';
+import type { RaceKey } from '../data/schemas/grammaire/valeurs';
 import { rule } from './policy';
 import { bonus } from './characteristics';
 import { baseWithTalents } from './talentEffects';

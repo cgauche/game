@@ -2,10 +2,10 @@
  * Accessors SOURCE UNIQUE pour l'emplacement d'une entrée multi-livres (#563, doctrine user
  * 2026-07-17 : « jamais 2 talents différents » — un même Talent/Trait/Qualité/objet peut être
  * réimprimé ailleurs). L'ANCRE (`source: SourceRef`) reste seule à porter la `desc` (règle stricte
- * 5) ; les emplacements SECONDAIRES vivent dans `alsoIn?: SecondaryRef[]` (`schemas/common.ts`).
+ * 5) ; les emplacements SECONDAIRES vivent dans `alsoIn?: SecondaryRef[]` (`schemas/grammaire/valeurs.ts`).
  * Aucun futur lecteur ne doit inliner `alsoIn` — passer par `allLocations`/`sourceBooks`.
  */
-import type { SourceRef, SecondaryRef } from './schemas/common';
+import type { SourceRef, SecondaryRef } from './schemas/grammaire/valeurs';
 
 /** Toute entrée porteuse d'une ancre + emplacements secondaires optionnels. */
 export interface SourceLocated {

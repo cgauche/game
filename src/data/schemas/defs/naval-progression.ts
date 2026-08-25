@@ -4,7 +4,7 @@
  * `src/engine/shipNavigation.ts` (`ProgressionEntry`, `findTableEntry`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'naval-progression.json';
 

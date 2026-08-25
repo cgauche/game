@@ -79,7 +79,8 @@ describe('cliquet — toute table d’effets a un CONSOMMATEUR (donnée écrite,
   /** Corpus des consommateurs : `tables.json` privé de ses seules DÉCLARATIONS d'id (pour que les
    *  `tableId` d'une table vers une autre comptent), les autres données `src/data/*.json`, + le code
    *  de prod `src/**` (hors tests, COMMENTAIRES retirés — sinon un id cité en commentaire « solde »
-   *  une orpheline sans câblage réel). */
+   *  une orpheline sans câblage réel ; hors `*.generated.ts` — un INDEX généré de la donnée
+   *  énumère tous les ids sans en consommer aucun, cf. `schemas/_ids.generated.ts`). */
   function consumerCorpus(): string {
     let corpus = '';
     for (const f of files) {
@@ -92,7 +93,8 @@ describe('cliquet — toute table d’effets a un CONSOMMATEUR (donnée écrite,
       for (const e of readdirSync(d, { withFileTypes: true })) {
         const p = join(d, e.name);
         if (e.isDirectory()) walk(p);
-        else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name)) corpus += stripComments(readFileSync(p, 'utf8'));
+        else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name) && !/\.generated\.ts$/.test(e.name))
+          corpus += stripComments(readFileSync(p, 'utf8'));
       }
     };
     walk(join(DIR, '..'));

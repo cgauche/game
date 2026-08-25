@@ -6,7 +6,7 @@
  * (verbatim des tableaux), présente en tête du JSON.
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'land-cargo.json';
 

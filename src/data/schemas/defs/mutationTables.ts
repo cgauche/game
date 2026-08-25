@@ -4,7 +4,7 @@
  * Inventaire réel (17 tables) : `id`/`label`/`ranges[{min,max,mutation}]` seulement.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'mutationTables.json';
 

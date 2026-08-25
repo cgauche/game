@@ -10,7 +10,7 @@
  * Le texte reste éditable au Codex (catégorie « Enjeux — cascade de voyage »).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'voyage-stakes.json';
 

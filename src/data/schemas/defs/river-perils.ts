@@ -4,7 +4,7 @@
  * consommateur. `_source` = note de traçabilité libre (non lue par le moteur).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'river-perils.json';
 

@@ -8,7 +8,7 @@ import type { TrappingData, CreatureData } from '../data/index';
 import { findCreatureById, findTrappingById, findSkillById, findTalentById, specResolves } from '../data/index';
 import type { SpecEntry, SpecsSource } from '../data/index';
 import type { EntityAppearance } from '../engine/authoringAppearance';
-import type { SourceRef } from '../data/schemas/common';
+import type { SourceRef } from '../data/schemas/grammaire/valeurs';
 
 /** Un stade RÉVÉLABLE d'un indice : la prose (verbatim source) qui se dévoile à ce palier d'enquête. */
 export interface IndiceStade {

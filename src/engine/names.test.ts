@@ -9,7 +9,7 @@ import { makeRNG } from './dice';
 import { generateName } from './names';
 import { names as N, RACE_KEY_LABEL } from '../data';
 import speciesJson from '../data/species.json';
-import type { RaceKey } from '../data/schemas/common';
+import type { RaceKey } from '../data/schemas/grammaire/valeurs';
 const startsWithOne = (name: string, pool: string[]) => pool.some((p) => name.startsWith(p + ' '));
 const endsWithOne = (name: string, pool: string[]) => pool.some((p) => name.endsWith(' ' + p));
 

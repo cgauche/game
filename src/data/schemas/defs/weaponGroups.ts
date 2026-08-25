@@ -7,7 +7,8 @@
  * combattants (absent sur les Groupes de siège/inventaire).
  */
 import { z } from 'zod';
-import { sourceRefSchema, qualityRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { qualityRefSchema } from '../grammaire/reference';
 
 export const file = 'weaponGroups.json';
 

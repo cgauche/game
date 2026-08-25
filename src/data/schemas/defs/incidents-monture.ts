@@ -7,7 +7,8 @@
  * même déclarés `.optional()` dans le schéma commun, sans conséquence ici.
  */
 import { z } from 'zod';
-import { sourceRefSchema, travelTableEntrySchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { travelTableEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'incidents-monture.json';
 

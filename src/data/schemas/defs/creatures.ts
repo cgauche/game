@@ -5,7 +5,8 @@
  * ci-dessus suit le fichier, il ne le fige pas.
  */
 import { z } from 'zod';
-import { availabilitySchema, harvestRaritySchema, sourceRefSchema, secondarySourceRefSchema, refSchema, trappingRefSchema, entityAppearanceSchema, traitInstanceSchema } from '../common';
+import { availabilitySchema, harvestRaritySchema, sourceRefSchema, secondarySourceRefSchema, entityAppearanceSchema } from '../grammaire/valeurs';
+import { refSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
 
 export const file = 'creatures.json';
 

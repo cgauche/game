@@ -10,19 +10,23 @@
  * affirmé « personne » sur une recherche trop étroite, sans surface pour le vérifier (cf.
  * `scripts/guards/lib/groundingCorpus.mjs`, cas `dotation-spec-consommateurs`).
  *
- * PÉRIMÈTRE MESURÉ / ANGLES MORTS — `src/data/schemas/defs/*.ts` compte 109 fichiers, chacun
- * exportant un `schema` ANONYME (`z.array(z.strictObject({…}))`, l'entrée de catalogue elle-même,
- * ex. `TrappingData`) SANS alias TS nommé exploitable pour le scope-de-liaison de ce détecteur
- * (cf. angles morts de `fieldConsumers.mjs`) — mesurés (109 fichiers) mais HORS PÉRIMÈTRE de ce
- * rapport, dette non traitée. Retenus à la place (`fieldConsumerTargets.mts`) : les schémas
- * PARTAGÉS et RÉUTILISÉS, exportés sous un nom `export const xSchema` ET portant un alias TS
- * NOMMÉ vérifiable ailleurs dans le dépôt (`interface`/`type X = …`) — c'est la classe exacte où
- * vit `TrappingRef.spec`. Mesurés dans `src/data/schemas/common.ts` (37 schémas nommés) +
- * `src/data/schemas/defs/criticals.ts` (2) : 45 candidats, réduits à 21 après exclusion des deux
- * catégories ci-dessous (non un cliquet — `TARGETS` est un TABLEAU statique, étendu à la main si
- * un nouveau schéma nommé apparaît). `props.json` est le premier catalogue SORTI de l'angle mort
- * ci-dessus : sa forme a été nommée dans `common.ts` (`propDataSchema` + ses sous-schémas) au lieu de
- * rester anonyme dans `defs/props.ts` — le chemin à suivre pour tout catalogue qu'on veut mesurer.
+ * PÉRIMÈTRE MESURÉ / ANGLES MORTS — la plupart des `src/data/schemas/defs/*.ts` exportent un
+ * `schema` ANONYME (`z.array(z.strictObject({…}))`, l'entrée de catalogue elle-même, ex.
+ * `TrappingData`) SANS alias TS nommé exploitable pour le scope-de-liaison de ce détecteur (cf.
+ * angles morts de `fieldConsumers.mjs`) — HORS PÉRIMÈTRE de ce rapport, dette non traitée.
+ * Retenus à la place (`fieldConsumerTargets.mjs`) : les schémas exportés sous un nom
+ * `export const xSchema` ET portant un alias TS NOMMÉ vérifiable ailleurs dans le dépôt
+ * (`interface`/`type X = …`) — c'est la classe exacte où vit `TrappingRef.spec`. Candidats
+ * mesurés dans `src/data/schemas/grammaire/` (formes de valeur/référence/mécanique partagées par
+ * plusieurs documents) et dans les `defs/` dont les sous-schémas sont nommés (`criticals.ts`,
+ * `props.ts`), réduits par les deux catégories d'exclusion ci-dessous (non un cliquet — `TARGETS`
+ * est un TABLEAU statique, étendu à la main si un nouveau schéma nommé apparaît).
+ *
+ * SORTIR un catalogue de l'angle mort = un geste d'auteur : NOMMER son schéma d'entrée (et ses
+ * sous-schémas) dans SON def — `export const xSchema` dans `defs/<catalogue>.ts`, patron
+ * `defs/criticals.ts` (`critEscalationSchema`, `amputationSchema`) et `defs/props.ts`
+ * (`propDataSchema` …) — ou dans `grammaire/` si la forme est RÉELLEMENT partagée entre
+ * documents, puis l'ajouter à `TARGETS`.
  *
  * SECOND ANGLE MORT, MESURÉ (pas hypothétique) — `fieldConsumers.mjs` ne borne une lecture que sur
  * un identifiant explicitement ANNOTÉ `T` (littéral du nom dans un type de paramètre/variable). Les
@@ -51,15 +55,15 @@
  * fondateur `TrappingRef.spec` (vérifié indépendamment, non affecté par ces 9 faux négatifs — son
  * unique lecteur, `engine/trappingChoices.ts:36`, EST une annotation directe de paramètre).
  *
- * EXCLUS (39 → 17), avec raison :
- *   - `secondarySourceRefSchema` : aucun alias TS nommé exploitable trouvé (contrairement aux 16
- *     autres schémas de `common.ts` retenus) — dette de nommage distincte, non traitée ici ;
+ * EXCLUS, avec raison :
+ *   - `secondarySourceRefSchema` (`grammaire/valeurs.ts`) : aucun alias TS nommé exploitable trouvé
+ *     (contrairement aux schémas retenus) — dette de nommage distincte, non traitée ici ;
  *   - `gameOpSchema`/`conditionSchema`/`effectOpSchema`/`flowSchema`/`effectTargetingSchema`/
  *     `triggeredEffectSchema`/`formulaSchema`/`combatFeatureSchema` : vocabulaire MÉCANIQUE du
  *     moteur (`GameOp`/`Condition`/`Flow`/`EffectTrigger`/`EffectTargeting`/`Formula`,
  *     `src/engine/{ops,flowCore}.ts`) déjà catalogué par `npm run docs:vocabulaire`
  *     (`docs/vocabulaire-mecanique.md`) — un second générateur ferait doublon ;
- *   - 20 schémas SCALAIRES/ÉNUMÉRÉS de `common.ts` (`z.enum`/`z.string()`/`z.union` de primitifs,
+ *   - les schémas SCALAIRES/ÉNUMÉRÉS de `grammaire/valeurs.ts` (`z.enum`/`z.string()`/`z.union` de primitifs,
  *     ex. `difficultySchema`, `charKeySchema`) : aucun champ objet à consommer, hors du périmètre
  *     de la question « qui lit CE CHAMP ? ».
  */
@@ -80,7 +84,7 @@ type Hit = { file: string; line: number }
  * balayage du corpus nourrit les deux consommateurs — la fraîcheur du `.md` et le cas fondateur de
  * `src/data/field-consumers.test.ts`, qui appelle cette fonction EN PROCESSUS (le CLI ci-dessous
  * n'est qu'un autre appelant). Le cache de lecture/AST vit le temps de l'appel : il est créé ici,
- * partagé par les 17 types mesurés, et libéré au retour.
+ * partagé par tous les types de `TARGETS`, et libéré au retour.
  */
 export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<string, Hit[]>>; totalFields: number; totalUnread: number } {
   const files = listProdFiles(SRC_DIR)
@@ -92,11 +96,13 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
   out += `> accès/déstructuration, cf. \`scripts/guards/lib/fieldConsumers.mjs\`). Complète\n`
   out += `> \`docs/orphelines-donnees.md\` (consommateurs d'ENTITÉ) — ici, consommateurs de CHAMP.\n\n`
   out += `## Périmètre mesuré / angles morts\n\n`
-  out += `45 schémas NOMMÉS mesurés dans \`src/data/schemas/common.ts\` (43) + \`src/data/schemas/defs/criticals.ts\` (2) ; `
+  out += `Schémas NOMMÉS candidats : \`src/data/schemas/grammaire/\` (formes partagées entre documents) + les `
+  out += `\`src/data/schemas/defs/\` dont les sous-schémas sont nommés (\`criticals.ts\`, \`props.ts\`) ; `
   out += `**${TARGETS.length} retenus** (voir en-tête du générateur pour les raisons d'exclusion). Les catalogues `
   out += `\`src/data/schemas/defs/*.ts\` à schéma d'entrée ANONYME restent HORS PÉRIMÈTRE — sans alias TS nommé, `
   out += `ce détecteur ne peut pas y borner une lecture ; en SORTIR un catalogue est un geste d'auteur (nommer `
-  out += `son schéma dans \`common.ts\`, l'ajouter à \`TARGETS\`), fait pour \`props.json\` → \`PropData\`.\n\n`
+  out += `son schéma d'entrée dans SON def — ou en \`grammaire/\` si la forme est réellement partagée — puis `
+  out += `l'ajouter à \`TARGETS\`), fait pour \`props.json\` → \`PropData\`.\n\n`
   out += `Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant doit être `
   out += `EXPLICITEMENT annoté du type cible. **Vérification manuelle des 16 champs « 0 lecteur »** de la `
   out += `première mesure (échantillon COMPLET, pas partiel) : 9/16 (56 %) sont des FAUX NÉGATIFS — un `

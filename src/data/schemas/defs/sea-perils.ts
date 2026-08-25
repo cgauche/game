@@ -4,7 +4,7 @@
  * vue typée `DATA` (`src/engine/seaPerils.ts`), seul consommateur.
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-perils.json';
 

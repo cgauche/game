@@ -3,7 +3,8 @@
  * `SymptomData`/`SymptomCapabilities` (`src/data/index.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, gameOpSchema, triggeredEffectSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'symptoms.json';
 

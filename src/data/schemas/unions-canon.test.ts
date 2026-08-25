@@ -1,7 +1,7 @@
 /**
  * CONTRAT des unions PARTAGÉES entre le moteur et les schémas de donnée (#1440) : `Availability`
  * (LDB 59) et `StakeForm` (forme déclarée d'un enjeu) ont chacune UN tuple canon dans
- * `src/engine/types.ts`, dont le schéma zod de `schemas/common.ts` DÉRIVE. Ce fichier verrouille
+ * `src/engine/types.ts`, dont le schéma zod de `schemas/grammaire/valeurs.ts` DÉRIVE. Ce fichier verrouille
  * les deux moitiés du lien :
  *  - au TYPE (`Eq<…>` ci-dessous, gaté par `npm run typecheck`) : le type inféré du schéma et le
  *    type moteur sont mutuellement assignables — un palier ajouté d'un seul côté ne compile pas ;
@@ -23,7 +23,7 @@ import type { z } from 'zod';
 import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanUnionRecopies } from '../../../scripts/guards/lib/canonUnique.mjs';
 import { AVAILABILITIES, STAKE_FORMS, type Availability, type StakeForm, type TestedAvailability } from '../../engine/types';
-import { availabilitySchema, harvestRaritySchema, stakeFormSchema } from './common';
+import { availabilitySchema, harvestRaritySchema, stakeFormSchema } from './grammaire/valeurs';
 import { dispoPctAvailabilitySchema } from './defs/disponibilite';
 import type { HarvestRarity } from '../index';
 
@@ -66,7 +66,7 @@ describe('unions partagées moteur ⇄ schémas de donnée (#1440)', () => {
 
   it('PERSONNE dans `src/` ne re-tape le littéral des unions partagées — prod ET tests', () => {
     const fautifs = corpus().flatMap((f) => scanUnionRecopies(f, CANONS).map((x) => `${f.rel}:${x.line} — ${x.detail}`));
-    expect(fautifs, 'importer le tuple `engine/types` (ou le schéma dérivé de `schemas/common.ts`) — #1440').toEqual([]);
+    expect(fautifs, 'importer le tuple `engine/types` (ou le schéma dérivé de `schemas/grammaire/valeurs.ts`) — #1440').toEqual([]);
   });
 
   it('`TestedAvailability` et sa sélection zod nomment le MÊME couple (le sous-ensemble n’a qu’un site)', () => {

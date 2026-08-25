@@ -3,7 +3,7 @@
  * plafond/riser/sol-repli POV), consommée comme `ReliefMaterialDef[]` (`src/gameIso/catalog/relief/types.ts`).
  */
 import { z } from 'zod';
-import { detailRecipeSchema } from '../common';
+import { detailRecipeSchema } from '../grammaire/valeurs';
 
 export const file = 'reliefMaterials.json';
 

@@ -5,7 +5,7 @@
  * par le moteur (`DATA as unknown as { ... }` ignore le champ superflu).
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'river-navigation.json';
 

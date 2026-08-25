@@ -4,7 +4,8 @@
  * sort) — même petite forme que `TrappingRef`/`AdvancementRef`, PROMUE dans `common.ts`.
  */
 import { z } from 'zod';
-import { sourceRefSchema, refSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { refSchema } from '../grammaire/reference';
 
 export const file = 'gods.json';
 

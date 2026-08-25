@@ -5,7 +5,7 @@
  * `src/ui/compendium/registry.ts` (`{ label, abr?, type?, desc?, source? }`, `c.type === 'roll'`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, charKeySchema } from '../common';
+import { sourceRefSchema, charKeySchema } from '../grammaire/valeurs';
 
 export const file = 'characteristics.json';
 

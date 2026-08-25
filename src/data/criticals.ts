@@ -1,6 +1,6 @@
 import type { HitLocation, Difficulty } from '../engine/types';
 import type { Formula, GameOp } from '../engine/ops';
-import type { SourceRef } from './schemas/common';
+import type { SourceRef } from './schemas/grammaire/valeurs';
 import criticalsJson from './criticals.json';
 
 /**

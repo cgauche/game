@@ -21,7 +21,10 @@ import { join } from 'node:path';
  * `fields` (option PAR registre) : quand un module de def exporte PLUSIEURS noms (pas 1 seul via
  * `exportName`), liste ces noms → chaque entrée du tableau généré devient `{ champ1, champ2, … }`
  * (ex. `src/data/schemas/defs/` : `file` + `schema`).
- * @type {{ dir:string, out:string, exportName?:string, arrayName:string, type:string, typeFrom:string, importDir?:string, idUnion?:{ typeName:string, field:string }, fields?:string[] }[]}
+ * `constFields` (option PAR registre, avec `fields`) : champs de VALEUR LITTÉRALE ajoutés à chaque
+ * entrée générée — ce que le def ne déclare pas parce que c'est une propriété du REGISTRE (la
+ * racine `root` d'un dataset : le def dit son fichier, le registre dit d'où il vient).
+ * @type {{ dir:string, out:string, exportName?:string, arrayName:string, type:string, typeFrom:string, importDir?:string, idUnion?:{ typeName:string, field:string }, fields?:string[], constFields?:Record<string,string> }[]}
  */
 export const REGISTRIES = [
   {
@@ -346,6 +349,7 @@ export const REGISTRIES = [
     type: 'SchemaDef',
     typeFrom: './types',
     fields: ['file', 'schema'],
+    constFields: { root: "'src/data'" },
   },
 ];
 
@@ -375,8 +379,9 @@ function genOne(r) {
       : `${r.exportName} as e${i}`;
     return `import { ${names} } from '${importDir}/${f.replace(/\.tsx?$/, '')}';`;
   });
+  const constParts = Object.entries(r.constFields ?? {}).map(([k, v]) => `${k}: ${v}`);
   const arr = r.fields
-    ? files.map((_, i) => `{ ${r.fields.map((fn) => `${fn}: e${i}_${fn}`).join(', ')} }`)
+    ? files.map((_, i) => `{ ${[...r.fields.map((fn) => `${fn}: e${i}_${fn}`), ...constParts].join(', ')} }`)
     : files.map((_, i) => `e${i}`);
   // Union de littéraux des ids déclarés dans les defs (option `idUnion`) — triée, dédupliquée.
   let unionDecl = '';
@@ -407,6 +412,133 @@ function genOne(r) {
 }
 
 /**
+ * Registre des IDS de la donnée authorée (`src/data/schemas/_ids.generated.ts`) — le socle contre
+ * lequel `ref(type)` refine un id AU PARSE (#1466, clause B de #1473).
+ *
+ * Périmètre MESURÉ : les 72 datasets de `src/data` dont la racine est une LISTE dont les entrées
+ * portent un `id` string (3 500 ids). Les 41 objets de config et les 4 racines-objets à clés non-id
+ * (`details`, `localisation`, `names`, `sizes` — clés de configuration ou libellés capitalisés, cf.
+ * `docs/structures-donnees.md` §2.3) n'ouvrent aucun espace d'ids : les inscrire ferait résoudre une
+ * référence contre une clé de réglage.
+ *
+ * `SPECS_PAR_DATASET` = les ids de SPÉCIALISATION déclarés par une entrée (`specs[].id`), par
+ * dataset puis par entrée : c'est le POOL de VALIDITÉ d'une spec (tout ce que le catalogue déclare),
+ * jamais le pool de PROPOSITION d'un choix joueur (`pool: false` reste proposable-ou-non côté
+ * `specPoolOf`, `src/data/index.ts`).
+ */
+/**
+ * Pools de spécialisations DÉRIVÉS d'un registre partagé (`specsSource`) — miroir OUTILLAGE du
+ * catalogue `SPEC_SOURCES` de `src/data/index.ts`, que ce script `.mjs` ne peut pas importer (TS +
+ * dépendances moteur). L'égalité des deux tables, source par source, est TENUE par le test
+ * `src/data/schemas/grammaire/pool-specs.test.ts` : une divergence rougit la CI.
+ */
+const POOLS_DERIVES = {
+  weaponGroupsMelee:  (lit) => lit('weaponGroups.json').filter((g) => g.combat === 'melee').map((g) => g.id),
+  weaponGroupsRanged: (lit) => lit('weaponGroups.json').filter((g) => g.combat === 'ranged').map((g) => g.id),
+  winds:         (lit) => lit('domains.json').filter((d) => d.wind).map((d) => d.id),
+  arcaneDomains: (lit) => lit('domains.json').filter((d) => d.arcane).map((d) => d.id),
+  cultBlessings: (lit) => lit('gods.json').filter((g) => g.blessings?.length).map((g) => g.id),
+  cultMiracles:  (lit) => lit('gods.json').filter((g) => g.miracles?.length).map((g) => g.id),
+  cultChaos:     (lit) => lit('gods.json').filter((g) => g.chaosSpells?.length).map((g) => g.id),
+  seaShanties:   (lit) => lit('sea-shanties.json').map((s) => s.id),
+  groups:        (lit) => lit('groups.json').map((g) => g.id),
+  diseases:      (lit) => lit('maladies.json').map((m) => m.id),
+  sizes:         (lit) => Object.keys(lit('sizes.json').rangedMod),
+  mutations:     (lit) => lit('mutations.json').map((m) => m.id),
+  breathTypes:   (lit) => lit('breath-types.json').map((b) => b.id),
+  damageTypes:   (lit) => lit('damage-types.json').map((t) => t.id),
+  weaponsMelee:  (lit) => lit('trappings.json').filter((t) => t.type === 'melee').map((t) => t.id),
+  weaponsRanged: (lit) => lit('trappings.json').filter((t) => t.type === 'ranged').map((t) => t.id),
+};
+
+/** Clé de racine-objet qui a la FORME d'un id (`ids internes, labels à l'affichage`). */
+const cleIdish = (k) => /^[a-z0-9][a-z0-9-]*$/.test(k);
+const genreDe = (v) => (Array.isArray(v) ? 'liste' : v === null ? 'nul' : typeof v);
+
+/**
+ * Une racine-OBJET est-elle un RECORD À IDS (ses clés sont des ids : `localisation`, `criticals`,
+ * `teintesJeu`) plutôt qu'un document/une configuration unique ? Trois conditions STRUCTURELLES :
+ * au moins deux clés, toutes de la forme d'un id, et des valeurs de même genre. Un objet portant
+ * `id`+`label` de premier niveau est UN document, pas un record. Écartés par la 2ᵉ condition :
+ * `names.json` et `raceAppearance` (clés = LIBELLÉS affichés, `defs/names.ts`), `decorPalette` et
+ * les configurations à clés camelCase (noms de CHAMP, pas des ids).
+ */
+function estRecordAIds(racine) {
+  const ks = Object.keys(racine);
+  if (ks.length < 2 || !ks.every(cleIdish)) return false;
+  if (typeof racine.id === 'string' && typeof racine.label === 'string') return false;
+  return new Set(ks.map((k) => genreDe(racine[k]))).size === 1;
+}
+
+function genIds() {
+  const dir = 'src/data';
+  const out = 'src/data/schemas/_ids.generated.ts';
+  const ids = [];
+  const specs = [];
+  const cacheJson = new Map();
+  const litJson = (nom) => {
+    if (!cacheJson.has(nom)) cacheJson.set(nom, JSON.parse(readFileSync(join(dir, nom), 'utf8')));
+    return cacheJson.get(nom);
+  };
+  for (const f of readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
+    let racine;
+    try { racine = JSON.parse(readFileSync(join(dir, f), 'utf8')); } catch { continue; }
+    if (!Array.isArray(racine)) {
+      if (racine && typeof racine === 'object' && estRecordAIds(racine)) ids.push([f, Object.keys(racine).sort()]);
+      continue;
+    }
+    const entrees = racine.filter((e) => e && typeof e === 'object' && typeof e.id === 'string');
+    if (!entrees.length) continue;
+    ids.push([f, [...new Set(entrees.map((e) => e.id))].sort()]);
+    const catalogueDe = (e) => {
+      if (e.specsSource) {
+        const derive = POOLS_DERIVES[e.specsSource];
+        if (!derive) throw new Error(`gen-registry: ${f} « ${e.id} » : specsSource « ${e.specsSource} » inconnue de POOLS_DERIVES.`);
+        return derive(litJson);
+      }
+      return Array.isArray(e.specs) ? e.specs.filter((s) => s && typeof s.id === 'string').map((s) => s.id) : [];
+    };
+    const parEntree = entrees
+      .map((e) => [e.id, [...new Set(catalogueDe(e))].sort()])
+      .filter(([, l]) => l.length)
+      .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+    if (parEntree.length) specs.push([f, parEntree]);
+  }
+  const lit = (v) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+  const body =
+    `// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.\n` +
+    `// Régénérer : \`npm run gen\` (deux exécutions successives rendent le même octet).\n\n` +
+    `/**\n` +
+    ` * Ids de PREMIER NIVEAU de chaque dataset de \`src/data\` — les \`id\` des entrées d'un dataset-LISTE,\n * les CLÉS d'un dataset-RECORD (\`localisation\`, \`criticals\`, \`teintesJeu\`) — la cible de tout \`ref(type)\`\n` +
+    ` * (\`src/data/schemas/grammaire/ref.ts\`), qui refine l'id AU PARSE contre ce registre.\n` +
+    ` *\n` +
+    ` * Deux RÉGIMES de lecture, tous deux déclarés :\n` +
+    ` *  - CI / DEV / test : ce fichier généré, figé au commit — une référence morte casse au parse ;\n` +
+    ` *  - ÉDITEUR (\`CodexEdit.save\` → \`validateDataset\`) : le registre se RECALCULE depuis les datasets\n` +
+    ` *    EN MÉMOIRE, sinon une entité créée au Compendium rendrait rouge toute donnée qui la\n` +
+    ` *    référence avant le prochain \`npm run gen\`. Ce régime est câblé quand la grammaire est\n` +
+    ` *    consommée par les defs (#1467).\n` +
+    ` */\n` +
+    `export const IDS_PAR_DATASET: Readonly<Record<string, readonly string[]>> = {\n` +
+    ids.map(([f, l]) => `  ${lit(f)}: [${l.map(lit).join(', ')}],\n`).join('') +
+    `};\n\n` +
+    `/**\n` +
+    ` * Pool de VALIDITÉ des spécialisations déclarées par une entrée (\`specs[].id\`), par dataset puis\n` +
+    ` * par id d'entrée — la cible du refine de \`spec\` pour un type à pool FERMÉ (\`specsOpen: false\`).\n` +
+    ` */\n` +
+    `export const SPECS_PAR_DATASET: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {\n` +
+    specs
+      .map(([f, entrees]) => `  ${lit(f)}: {\n${entrees.map(([id, l]) => `    ${lit(id)}: [${l.map(lit).join(', ')}],\n`).join('')}  },\n`)
+      .join('') +
+    `};\n`;
+  let prev = '';
+  try { prev = readFileSync(out, 'utf8'); } catch { /* nouveau */ }
+  const changed = prev !== body;
+  if (changed) writeFileSync(out, body);
+  return { out, datasets: ids.length, ids: ids.reduce((n, [, l]) => n + l.length, 0), changed };
+}
+
+/**
  * `verbose` (param, défaut `false`) : régénère TOUS les registres. En mode silencieux (défaut —
  * appel `buildStart` du plugin Vite, donc CHAQUE run Vitest via `globalSetup`), n'imprime QUE les
  * registres réellement RÉGÉNÉRÉS ou en erreur (dossier absent), + UNE ligne agrégée pour le reste
@@ -427,6 +559,12 @@ export function genAll(verbose = false) {
     } else {
       unchangedCount++;
     }
+  }
+  const idsRes = genIds();
+  if (idsRes.changed || verbose) {
+    console.log(`gen-registry: IDS_PAR_DATASET ← ${idsRes.ids} ids / ${idsRes.datasets} datasets (${idsRes.out})${idsRes.changed ? '' : ' [inchangé]'}`);
+  } else {
+    unchangedCount++;
   }
   if (!verbose && unchangedCount > 0) {
     console.log(`gen-registry: ${unchangedCount} registre${unchangedCount > 1 ? 's' : ''} à jour`);

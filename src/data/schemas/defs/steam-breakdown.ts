@@ -3,7 +3,7 @@
  * (`src/engine/shipBuild.ts`), tirée par `rollSteamBreakdown` (d100).
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'steam-breakdown.json';
 

@@ -6,7 +6,8 @@
  * ci-dessous sont observés au moins une fois ; aucun champ de l'interface n'est ABSENT du JSON.
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, difficultySchema, stageOutcomeSchema, stakeFormSchema } from '../common';
+import { sourceRefSchema, difficultySchema, stakeFormSchema } from '../grammaire/valeurs';
+import { gameOpSchema, stageOutcomeSchema } from '../grammaire/mecanique';
 
 export const file = 'activities.json';
 

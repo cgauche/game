@@ -6,7 +6,7 @@
  * directement (candidat à mutualisation avec `sourceRefSchema`, cf. rendu final).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'obsessions.json';
 

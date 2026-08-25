@@ -11,7 +11,7 @@
  * « –sniz » nièce de… (ex. Ariksson, Grunnasdottir, Skagsnev, Sovrissniz).
  */
 import { names as POOLS, RACE_KEY_LABEL, type NamePool } from '../data';
-import type { RaceKey } from '../data/schemas/common';
+import type { RaceKey } from '../data/schemas/grammaire/valeurs';
 import type { RNG } from './dice';
 
 /**

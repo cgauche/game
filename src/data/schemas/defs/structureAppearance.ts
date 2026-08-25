@@ -4,7 +4,7 @@
  * observé : 'bois' | 'pierre' (les seules valeurs présentes, alignées sur le type TS).
  */
 import { z } from 'zod';
-import { detailRecipeSchema } from '../common';
+import { detailRecipeSchema } from '../grammaire/valeurs';
 
 export const file = 'structureAppearance.json';
 

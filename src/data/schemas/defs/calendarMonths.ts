@@ -5,7 +5,7 @@
  * `src/data/index.ts` (`{ name, days }[]`, cf. `engine/clock.ts` pour la mécanique de calendrier).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'calendarMonths.json';
 

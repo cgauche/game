@@ -6,7 +6,7 @@
  * `{ dice }` (Vin maritime : 3d10, tiré une fois à l'achat).
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-cargo.json';
 

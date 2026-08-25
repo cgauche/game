@@ -8,7 +8,7 @@
  * des dieux, LDB 40 folio 218) — #309 phase 3.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'miscast.json';
 

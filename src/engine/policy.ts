@@ -15,12 +15,12 @@
  * quand le passage en porte une) ; les formes réelles sont mesurées au schéma de la donnée.
  */
 import reglesOptionnellesJson from '../data/reglesOptionnelles.json';
-import type { SourceRef } from '../data/schemas/common';
+import type { SourceRef } from '../data/schemas/grammaire/valeurs';
 
 /** Forme du contrôle qu'une règle optionnelle fait auto-rendre au panneau in-game : `flag` =
  *  interrupteur, `param` = nombre borné, `mode` = choix parmi `options`. */
 export type RuleKind = 'flag' | 'param' | 'mode';
-/** Valeur d'une règle optionnelle — union FERMÉE (miroir `ruleValueSchema`, `data/schemas/common.ts`). */
+/** Valeur d'une règle optionnelle — union FERMÉE (miroir `ruleValueSchema`, `data/schemas/grammaire/valeurs.ts`). */
 export type RuleValue = boolean | number | string;
 
 export interface OptionalRule {
@@ -35,7 +35,7 @@ export interface OptionalRule {
    *  du passage visé par `ref` (#1318 E8). Absente sur les entrées portant `maison`. */
   source?: SourceRef;
   /** Justification d'une valeur que le RAW ne chiffre pas (CLAUDE.md règle 7) — même sémantique que
-   *  `castingNumberMod.maison` (`src/data/schemas/common.ts`). Absente = la règle est au RAW. */
+   *  `castingNumberMod.maison` (`src/data/schemas/grammaire/valeurs.ts`). Absente = la règle est au RAW. */
   maison?: string;
   /** Sous-système (regroupement dans le panneau). */
   group: string;

@@ -7,7 +7,8 @@
  * `install` 20/26 ; `ranked` 4/26 ; `passive` 8/26 ; `ram` 1/26 ; `deckCover` 3/26 ; `navTestMod` 2/26 ; `maison` 1/26).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, secondarySourceRefSchema } from '../common';
+import { sourceRefSchema, secondarySourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'naval-traits.json';
 

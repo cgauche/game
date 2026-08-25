@@ -5,7 +5,8 @@
  * (les maladies hors-LDB — Mort sur le Reik Compagnon, EDO, Middenheim) → optionnel, fidèle aux DEUX.
  */
 import { z } from 'zod';
-import { sourceRefSchema, gameOpSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'maladies.json';
 

@@ -10,7 +10,8 @@
  * caractère n'est réécrit (garde : `src/data/tavern-desc-verbatim.test.ts`).
  */
 import { z } from 'zod';
-import { difficultySchema, gameOpSchema, sourceRefSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'tavernGames.json';
 

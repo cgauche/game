@@ -5,7 +5,8 @@
  * — partagé avec `rencontres-edoc.ts`/`incidents-monture.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, travelTableEntrySchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { travelTableEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'problemes-vehicule.json';
 

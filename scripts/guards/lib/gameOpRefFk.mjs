@@ -11,7 +11,7 @@
 // par le type, jamais par la mémoire de l'auteur.
 //
 // POURQUOI PAS LES SCHÉMAS ZOD. `src/data/schemas/` ne déclare AUCUNE cible de référence : un `GameOp`
-// y est `z.looseObject({ op: z.string() })` (`src/data/schemas/common.ts:14`) et un `trappingId` de
+// y est `z.looseObject({ op: z.string() })` (`src/data/schemas/grammaire/mecanique.ts`) et un `trappingId` de
 // prothèse y est un `z.string()` nu (`src/data/schemas/defs/traumas.ts:19`). La seule déclaration
 // existante de la forme d'une op est l'union TypeScript — c'est donc elle la source du périmètre.
 //

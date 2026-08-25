@@ -5,7 +5,8 @@
  * effet inventé).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'sea-shanties.json';
 

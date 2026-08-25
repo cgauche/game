@@ -4,7 +4,7 @@
  * (Structure/Véhicule/Navire, AA 10 l.13/116).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'structure-criticals.json';
 

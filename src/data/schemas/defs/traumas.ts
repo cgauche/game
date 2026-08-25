@@ -4,7 +4,8 @@
  * `cosmetic`/`passiveKind`/`maison` : cicatrices post-guérison (LDB 18 l.61/72, #192).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, formulaSchema } from '../common';
+import { sourceRefSchema, formulaSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 /** Règle de COMPTAGE/AGRÉGATION d'une séquelle cumulative (`TraumaCumul`, `src/engine/trauma.ts`) —
  *  LDB 18 l.247/251/273/277/281. */

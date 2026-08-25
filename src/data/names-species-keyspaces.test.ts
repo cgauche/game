@@ -18,7 +18,7 @@ import namesJson from './names.json';
 import raceAppearanceJson from './raceAppearance.json';
 import speciesJson from './species.json';
 import { RACE_KEY_LABEL } from './index';
-import type { RaceKey } from './schemas/common';
+import type { RaceKey } from './schemas/grammaire/valeurs';
 import { baseSpeciesOf } from '../gameIso/rig/skeletons';
 
 type Species = { label: string; refChar: RaceKey };

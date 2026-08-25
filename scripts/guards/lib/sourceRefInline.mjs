@@ -1,6 +1,6 @@
 // Mécanique de scan du garde-fou « réf de source `{book,page}` réinventée » (#281, F20/V10 du
 // programme structurel #276). `z.strictObject({ book: z.string(), page: z.number() })` réinvente
-// `sourceRefSchema` (`src/data/schemas/common.ts:23`). Module ESM pur, exécutable par `node`
+// `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`). Module ESM pur, exécutable par `node`
 // nu — consommé par `src/data/source-ref-inline-guard.test.ts` ET par un futur hook pre-commit.
 // Même patron que `labelLogic.mjs` (fenêtre stripée de commentaires, motif bloquant tolérance ZÉRO).
 //
@@ -22,7 +22,7 @@ export function stripComments(src) {
 
 /** Réinvention inline de `sourceRefSchema` : `book:` suivi (dans la même déclaration) de `page:
  *  z.number()`. Multiline-safe (`s`) — la déclaration de `sourceRefSchema` elle-même s'écrit sur
- *  plusieurs lignes dans `common.ts`. @type {RegExp} */
+ *  plusieurs lignes dans `grammaire/valeurs.ts`. @type {RegExp} */
 export const SOURCE_REF_INLINE_RX = /book\s*:\s*z\.string\(\)\s*,\s*page\s*:\s*z\.number\(\)/s;
 
 /**

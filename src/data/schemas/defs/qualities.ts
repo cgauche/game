@@ -6,7 +6,8 @@
  * — partagés avec `maneuvers.ts`).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, secondarySourceRefSchema, triggeredEffectSchema } from '../common';
+import { sourceRefSchema, secondarySourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'qualities.json';
 

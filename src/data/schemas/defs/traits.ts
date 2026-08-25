@@ -3,7 +3,9 @@
  * `TraitData` (`src/data/index.ts`) + `TraitCapabilities` (`src/data/index.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, secondarySourceRefSchema, gameOpSchema, refSchema, entityAppearanceSchema, triggeredEffectSchema, charKeySchema, variantOf } from '../common';
+import { sourceRefSchema, secondarySourceRefSchema, entityAppearanceSchema, charKeySchema, variantOf } from '../grammaire/valeurs';
+import { refSchema } from '../grammaire/reference';
+import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'traits.json';
 

@@ -6,7 +6,7 @@
  * `scripts/guards/lib/progressionSchemas.mjs` consomme, pour qu'une édition à la main s'y casse.
  */
 import { z } from 'zod';
-import { charKeySchema } from '../common';
+import { charKeySchema } from '../grammaire/valeurs';
 
 export const file = 'progression-schemas.derived.json';
 

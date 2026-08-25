@@ -15,7 +15,7 @@
  * l'`entryId` pris de SON état. Au moins l'un des deux est exigé : un enjeu sans porte est refusé.
  */
 import { z } from 'zod';
-import { sourceRefSchema, stakeFormSchema } from '../common';
+import { sourceRefSchema, stakeFormSchema } from '../grammaire/valeurs';
 
 export const file = 'flow-stakes.json';
 

@@ -6,7 +6,7 @@
  * STABLE ; `village`/`ville`/`cite` = `Settlement`.
  */
 import { z } from 'zod';
-import { availabilitySchema, sourceRefSchema } from '../common';
+import { availabilitySchema, sourceRefSchema } from '../grammaire/valeurs';
 import { AVAILABILITIES, type Availability } from '../../../engine/types';
 
 export const file = 'disponibilite.json';

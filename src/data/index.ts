@@ -6,7 +6,7 @@
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { PlayerText } from '../i18n/playerText';
 import type { RigSpeciesId } from '../gameIso/rig/appearance';
-import type { SourceRef, SecondaryRef, RaceKey, RefCareerId } from './schemas/common';
+import type { SourceRef, SecondaryRef, RaceKey, RefCareerId } from './schemas/grammaire/valeurs';
 import type { MerchantArchetypeDef } from '../state/merchants/types';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';

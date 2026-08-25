@@ -1,0 +1,296 @@
+/**
+ * MÉCANIQUE de la grammaire de document (#1466 L1a) — l'algèbre exécutable portée en donnée :
+ * `GameOp`, `Condition`, `FlowTest`, `EffectOp`, `Flow`, `TriggeredEffect`, et les entrées de
+ * table qui embarquent des ops (voyage, critiques de coque). Le registre `OP_DEFS` qui typera
+ * chaque payload d'op arrive au lot L1c (#1468).
+ */
+import { z } from 'zod';
+import { isMenaceId, menaceIds } from '../../../engine/menace';
+import { charKeySchema, difficultySchema, hitLocationSchema } from './valeurs';
+
+/**
+ * Un `GameOp` (`src/engine/ops.ts`) tel qu'il apparaît en DONNÉE : forme LOOSE — seul `op` (le nom
+ * de l'opération) est garanti par tous les vocabulaires ; les champs restants varient par `op` et
+ * sont déjà validés au vocabulaire par `data-wellformed` (moteur). Ce schéma ne vérifie que la
+ * FORME (un objet avec un `op` string), pas la sémantique de l'opération.
+ */
+export const gameOpSchema = z.looseObject({ op: z.string() });
+
+// ============================================================================
+// FLOW CORE (`src/engine/flowCore.ts`) — Condition / FlowTest / Flow / TriggeredEffect. SOURCE UNIQUE
+// pour `domains`/`maneuvers`/`qualities`/`talents`/`etats`/`spells`/`traits`/`trappings`/`psychology`,
+// qui redéclaraient CHACUN cette algèbre (à l'identique ou avec des libertés locales — cf. écarts
+// absorbés ci-dessous, chaque dataset re-testé au parse après rewire).
+// ============================================================================
+
+export const compareOpSchema = z.enum(['>=', '<=', '==', '<', '>']);
+export const actorRefSchema = z.enum(['target', 'caster']);
+
+/** `Relation | Camp` (`src/engine/relations.ts`) — union complète lue par la Condition `relation`.
+ *  Resserré depuis `z.string()` (variantes `domains`/`talents`/`etats`/`spells`) : les 9 JSON ne
+ *  portent que `'opponent'` aujourd'hui, sans-risque vis-à-vis de l'enum SOURCE (vérifié au parse). */
+export const relationOrCampSchema = z.enum(['self', 'ally', 'opponent', 'party', 'neutral', 'hostile']);
+
+const charRefSchema = z.strictObject({ who: actorRefSchema, char: charKeySchema, bonus: z.boolean().optional() });
+const compareSubjectSchema = z.union([
+  z.strictObject({ who: actorRefSchema, field: z.enum(['woundsCurrent', 'woundsMax', 'size', 'advantage']) }),
+  z.strictObject({ who: actorRefSchema, condition: z.string() }),
+  charRefSchema,
+]);
+/** `CompareSubject & { factor?: number }` (`engine/flowCore.ts:131`) — un `z.intersection` d'un
+ *  `z.union` de `strictObject` NE FONCTIONNE PAS avec zod (chaque branche strict rejette les clés des
+ *  autres, cf. `domains.ts` avant ce rewire : `z.intersection(compareSubjectSchema, …)` échouait sur
+ *  `etats.json` #14 « inondation » — `{who,char:'E',factor:0.5}` — vérifié en isolation). Reflet FIDÈLE
+ *  à la donnée réelle : un SEUL `strictObject` fusionnant les 3 formes (`field`/`condition`/`char`+`bonus`)
+ *  + `factor`, tous optionnels sauf `who` — forme déjà éprouvée par talents/etats/spells/qualities/maneuvers. */
+const compareValueSchema = z.union([
+  z.number(),
+  z.strictObject({
+    who: actorRefSchema,
+    field: z.enum(['woundsCurrent', 'woundsMax', 'size', 'advantage']).optional(),
+    condition: z.string().optional(),
+    char: charKeySchema.optional(),
+    bonus: z.boolean().optional(),
+    factor: z.number().optional(),
+  }),
+]);
+
+/** `Condition` (`engine/flowCore.ts:112`) — algèbre CLOSE, récursive via `all`/`any`/`not`. */
+export const conditionSchema: z.ZodType<unknown> = z.lazy(() =>
+  z.discriminatedUnion('kind', [
+    z.strictObject({ kind: z.literal('always') }),
+    z.strictObject({ kind: z.literal('flag'), expr: z.string() }),
+    z.strictObject({
+      kind: z.literal('time'),
+      window: z.strictObject({
+        afterHour: z.number().optional(),
+        afterMinute: z.number().optional(),
+        beforeHour: z.number().optional(),
+        beforeMinute: z.number().optional(),
+      }),
+    }),
+    z.strictObject({ kind: z.literal('hasItem'), trappingId: z.string(), count: z.number().optional() }),
+    z.strictObject({
+      kind: z.literal('money'),
+      atLeast: z.strictObject({ gold: z.number().optional(), silver: z.number().optional(), brass: z.number().optional() }),
+    }),
+    z.strictObject({ kind: z.literal('partyDead'), who: z.enum(['any', 'all']) }),
+    z.strictObject({ kind: z.literal('compare'), subject: compareSubjectSchema, op: compareOpSchema, value: compareValueSchema }),
+    z.strictObject({ kind: z.literal('slThreshold'), op: compareOpSchema, value: z.number() }),
+    z.strictObject({ kind: z.literal('location'), is: hitLocationSchema }),
+    z.strictObject({ kind: z.literal('attackKind'), is: z.string() }),
+    z.strictObject({ kind: z.literal('startleCause'), is: z.enum(['noise', 'magic']) }),
+    z.strictObject({ kind: z.literal('woundsDealt'), op: compareOpSchema, value: z.number() }),
+    z.strictObject({ kind: z.literal('engagedAdvantageGap'), op: compareOpSchema, value: z.number() }),
+    z.strictObject({ kind: z.literal('engagedAdvantageLead'), op: compareOpSchema, value: z.number() }),
+    z.strictObject({ kind: z.literal('foeInLoS') }),
+    z.strictObject({ kind: z.literal('hiddenFromFoes') }),
+    z.strictObject({ kind: z.literal('engaged') }),
+    z.strictObject({ kind: z.literal('crewTest') }),
+    z.strictObject({ kind: z.literal('nearestFoe'), op: compareOpSchema, value: z.number() }),
+    z.strictObject({ kind: z.literal('capability'), who: actorRefSchema, id: z.string(), op: compareOpSchema.optional(), value: z.number().optional() }),
+    z.strictObject({ kind: z.literal('relation'), who: actorRefSchema, is: relationOrCampSchema }),
+    z.strictObject({ kind: z.literal('has'), who: actorRefSchema, what: z.enum(['group', 'talent', 'trait', 'psych']), value: z.string(), spec: z.string().optional() }),
+    z.strictObject({ kind: z.literal('casterChaosDomain'), is: z.string() }),
+    z.strictObject({ kind: z.literal('all'), of: z.array(conditionSchema) }),
+    z.strictObject({ kind: z.literal('any'), of: z.array(conditionSchema) }),
+    z.strictObject({ kind: z.literal('not'), of: conditionSchema }),
+  ]),
+);
+
+
+/** `FlowTest` (`engine/flowCore.ts:335`) — jet différé (→ modale), tout le métier hors branches. */
+/** RÉFÉRENCE d'enjeu AUTHORÉE (#1117) — miroir zod de `StakeRef` (`src/data/index.ts`) : la clé de la
+ *  donnée + les valeurs calculées pour ses trous. Un Flow authoré peut donc DIRE ce qu'il met en jeu,
+ *  sans qu'aucun texte n'entre au document (le résolveur reste la seule porte du texte). */
+export const stakeRefSchema = z.strictObject({
+  key: z.strictObject({
+    dataset: z.enum(['night', 'voyage', 'weather', 'flow', 'activity', 'combat']),
+    kind: z.string(),
+    entryId: z.string().optional(),
+    entryCategory: z.string().optional(),
+  }),
+  values: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
+});
+
+export const flowTestSchema = z.strictObject({
+  /** ENJEU du Test (#1117) — cf. `stakeRefSchema`. */
+  stake: stakeRefSchema.optional(),
+  skill: z.string().optional(),
+  spec: z.string().optional(),
+  sense: z.enum(['vue', 'ouie']).optional(),
+  characteristic: charKeySchema.optional(),
+  difficulty: difficultySchema.optional(),
+  requireSL: z.number().optional(),
+  label: z.string().optional(),
+  tool: z.string().optional(),
+  vsGroups: z.array(z.string()).optional(),
+  vsStatus: z.string().optional(),
+  begging: z.boolean().optional(),
+  vsCapricieux: z.boolean().optional(),
+  easierIf: z
+    .strictObject({
+      hasSkill: z.strictObject({ id: z.string(), spec: z.string().optional() }).optional(),
+      hasTalent: z.string().optional(),
+      steps: z.number().optional(),
+    })
+    .optional(),
+  argDifficulty: z.boolean().optional(),
+  unlessImmune: z.string().optional(),
+  onlyGroups: z.array(z.string()).optional(),
+  exceptGroups: z.array(z.string()).optional(),
+  gate: conditionSchema.optional(),
+  /** SOUTIEN (LDB 12 l.197) — TRI-ÉTAT authoré : absent = défaut de la VOIE qui ouvre le Test (scène/
+   *  dialogue : soutenable ; effet déclenché / consommable : non soutenable) ; `true` = jamais
+   *  soutenable ; `false` = soutenable malgré la voie (Test de soin d'un nécessaire). */
+  noSupport: z.boolean().optional(),
+  /** Tag MENACE du talent « Résistance (Menace) » (LDB 10 l.1016-1020) — CLÉ ÉTRANGÈRE vers un id de
+   *  spec de l'entrée `resistance` de `talents.json`, résolue à la VALIDATION (liste OUVERTE : une
+   *  spec ajoutée au Compendium est utilisable sans toucher au code). Un id inconnu échoue au
+   *  chargement (`dev-validate`), au contrat CI (`schema-contract.test.ts`) et à la sauvegarde Codex. */
+  menace: z
+    .string()
+    .superRefine((v, ctx) => {
+      if (isMenaceId(v)) return;
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `menace « ${v} » : aucune spec de ce nom sur le talent « resistance » (talents.json). Valeurs admises : ${menaceIds().join(', ')}`,
+      });
+    })
+    .optional(),
+  difficultyBy: z.array(z.strictObject({ cond: conditionSchema, difficulty: difficultySchema })).optional(),
+  opposed: z
+    .strictObject({
+      attacker: charKeySchema,
+      attackerSkill: z.string().optional(),
+      attackerLabel: z.string().optional(),
+      bonusSL: z.number().optional(),
+      attackerBonusSL: z.number().optional(),
+    })
+    .optional(),
+});
+
+/** `EffectOp` (`engine/flowCore.ts:45`) — feuille `do` par défaut de `Flow<E>`. `on` = les 4 valeurs de
+ *  l'interface TS : `'party'`/`'hero'` (scène) ou `'caster'`/`'target'` (contexte d'incantation). Le
+ *  ciblage `'self'`/`'victim'` est le vocabulaire du NIVEAU TRIGGER (`effectTargetingSchema`), pas de la
+ *  feuille : sur la feuille, `'caster'` = porteur, `'target'` = cible résolue par le trigger. */
+export const effectOpSchema = z.strictObject({
+  type: z.literal('ops'),
+  ops: z.array(gameOpSchema),
+  on: z.enum(['party', 'hero', 'caster', 'target']).optional(),
+  heroId: z.string().optional(),
+  untilTime: z.number().optional(),
+  label: z.string().optional(),
+});
+
+/** `Flow<EffectOp>` (`engine/flowCore.ts:426`) — arbre récursif ACYCLIQUE (seq/do/if/test/choice). */
+export const flowSchema: z.ZodType<unknown> = z.lazy(() =>
+  z.discriminatedUnion('kind', [
+    z.strictObject({ kind: z.literal('seq'), steps: z.array(flowSchema) }),
+    z.strictObject({ kind: z.literal('do'), effect: effectOpSchema }),
+    z.strictObject({ kind: z.literal('if'), cond: conditionSchema, then: flowSchema, else: flowSchema.optional() }),
+    z.strictObject({ kind: z.literal('test'), test: flowTestSchema, success: flowSchema, fail: flowSchema }),
+    z.strictObject({
+      kind: z.literal('choice'),
+      prompt: z.string(),
+      cost: z.strictObject({ advantage: z.number() }).optional(),
+      icon: z.string().optional(),
+      yes: flowSchema,
+      no: flowSchema.optional(),
+    }),
+  ]),
+);
+
+
+/** `EffectTargeting` (`engine/flowCore.ts:469`). */
+export const effectTargetingSchema = z.union([
+  z.enum(['self', 'victim', 'engaged', 'grappled']),
+  z.strictObject({ near: z.enum(['victim', 'self']), radiusMeters: z.number() }),
+  z.strictObject({ pick: z.literal('engaged'), sizeAtMost: z.literal('self').optional(), max: z.number() }),
+]);
+
+/** `TriggeredEffect<EffectOp>` (`engine/flowCore.ts:472`). `optional` (Contrôle de la Frénésie…)
+ *  seule 1/9 des JSON le peuple (`talents.json`) — laissé optionnel, sans risque pour les autres. */
+export const triggeredEffectSchema = z.strictObject({
+  trigger: z.enum([
+    'onHit', 'onCrit', 'onWoundLoss', 'onSlain', 'onRoundStart', 'onStartled', 'onKill', 'onCharged', 'onGainCondition',
+    'onCombatStart', 'onCombatEnd', 'onRoundEnd', 'onTurnStart', 'onTurnEnd',
+    'onAttackResolved', 'onCastResolved', 'onMiscast', 'onOwnTestFailed',
+  ]),
+  on: effectTargetingSchema,
+  flow: flowSchema,
+  condition: z.string().optional(),
+  attackType: z.enum(['melee', 'ranged']).optional(),
+  optional: z.boolean().optional(),
+});
+
+/** `StageOutcome` (`src/engine/activities.ts:82-84`) — effet de portée Étape (Activités + Rencontres
+ *  de voyage). Dupliqué à l'identique dans `activities`/`incidents-monture`/`problemes-vehicule`/
+ *  `rencontres-edoc`. */
+export const stageOutcomeSchema = z.enum([
+  'suppressExposure', 'gatherInfo', 'noSurprise', 'mapMade', 'rerollToken', 'countsAsRest', 'campCare',
+  'extraActivity', 'skipStage', 'fullRecovery', 'worsenWeather',
+]);
+
+/** `TravelTableEntry` (`src/engine/travelTables.ts:15-26`) — entrée d100 de l'enveloppe `TravelTable`,
+ *  partagée par `rencontres-edoc`/`incidents-monture`/`problemes-vehicule`. */
+export const travelTableEntrySchema = z.strictObject({
+  min: z.number(),
+  max: z.number(),
+  id: z.string(),
+  label: z.string(),
+  text: z.string(),
+  stageOutcome: stageOutcomeSchema.optional(),
+  vehicleWounds: z.string().nullable().optional(),
+  occupantOps: z.array(gameOpSchema).optional(),
+  /** Suite MÉCANIQUE d'un Incident de MONTE (`incidents-monture.json`, EDOC 07 l.157-174), miroir de
+   *  `MountIncidentEffects` (`src/engine/travelTables.ts`) : elle est DÉCLARÉE par l'entrée, jamais
+   *  déduite de son id. Une entrée sans `mount` ne laisse aucune séquelle. */
+  mount: z.strictObject({
+    /** Test du CAVALIER, sous peine de chute de `fallM` mètres (l.166/l.171). */
+    riderTest: z.strictObject({
+      skillId: z.string(),
+      char: z.string().optional(),
+      difficulty: difficultySchema,
+      fallM: z.number(),
+    }).optional(),
+    /** Modificateur PERSISTANT aux Tests de Chevaucher tant que la séquelle dure (l.174 : −20). */
+    ridingPenalty: z.number().optional(),
+    /** Allure MAXIMALE imposée à la bête tant que la séquelle dure (Perte d'un fer : le pas). */
+    forcedAllure: z.enum(['pas', 'trot', 'galop']).optional(),
+    /** La bête ne peut plus être montée ni attelée (Boiteux, Patte brisée). */
+    preventsMount: z.boolean().optional(),
+    /** Les soins d'une halte n'effacent PAS cette séquelle (Patte brisée). */
+    notHealedByCare: z.boolean().optional(),
+    /** CONDITION DE FIN de la séquelle, telle que le `text` verbatim de l'entrée la pose (« jusqu'à ce
+     *  que la partie abîmée soit réparée » / « jusqu'à ce que le fer ait été remplacé par un
+     *  maréchal-ferrant ») — fragment d'AFFICHAGE joueur accolé à la ligne de séquelle, jamais une
+     *  mécanique : ce qui EFFACE la séquelle reste `notHealedByCare` + les soins d'étape. */
+    endCondition: z.string().optional(),
+    /** ISSUE de la bête, quand le `text` verbatim en pose une (Patte brisée : « Fracture (Majeure) …
+     *  peu d'espoir qu'elle y survive ») — fragment d'AFFICHAGE joueur, ligne propre au journal. */
+    outcome: z.string().optional(),
+  }).optional(),
+});
+
+/** `ShipCrewTest` (`src/data/shipCriticals.ts`) — Test d'équipage déclenché par un Critique de coque. */
+export const shipCrewTestSchema = z.strictObject({
+  skillId: z.string().optional(),
+  difficulty: difficultySchema.optional(),
+  crewTarget: z.enum(['poste', 'deck']).optional(),
+  onFail: z.array(gameOpSchema),
+});
+
+/** `ShipCritEntry` (`src/data/shipCriticals.ts`) — entrée d100 de Critique de coque, partagée par
+ *  `ship-criticals` (navale) et `river-criticals` (fluviale). */
+export const shipCritEntrySchema = z.strictObject({
+  min: z.number(),
+  max: z.number(),
+  id: z.string(),
+  label: z.string(),
+  ops: z.array(gameOpSchema).optional(),
+  shrapnel: z.number().optional(),
+  hullCrits: z.string().optional(),
+  crewTest: shipCrewTestSchema.optional(),
+  note: z.string(),
+});

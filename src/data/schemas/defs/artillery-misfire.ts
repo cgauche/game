@@ -4,7 +4,7 @@
  * `structure-criticals.json` (même patron `{id,label,die,source,entries}`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'artillery-misfire.json';
 

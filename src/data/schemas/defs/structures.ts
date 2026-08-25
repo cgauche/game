@@ -7,7 +7,7 @@
  * ADE II ou pour les entrées AA sans cette colonne, ex. Herse/Solide porte en bois sans Couvert).
  */
 import { z } from 'zod';
-import { difficultySchema } from '../common';
+import { difficultySchema } from '../grammaire/valeurs';
 
 export const file = 'structures.json';
 

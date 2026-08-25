@@ -6,7 +6,8 @@
  * `common.ts` (`flowSchema`/`conditionSchema`/`formulaSchema`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, flowSchema, formulaSchema, conditionSchema, variantOf } from '../common';
+import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, formulaSchema, variantOf } from '../grammaire/valeurs';
+import { flowSchema, conditionSchema } from '../grammaire/mecanique';
 
 export const file = 'spells.json';
 

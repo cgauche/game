@@ -5,7 +5,7 @@
  * `heightBase`/`heightRoll` = records espèce→nombre à 7 clés ; `texts` = 5 `DetailText`).
  */
 import { z } from 'zod';
-import { raceKeySchema } from '../common';
+import { raceKeySchema } from '../grammaire/valeurs';
 
 export const file = 'details.json';
 

@@ -5,7 +5,7 @@
  * tooltip `CodexRef`. `desc` non vide (garde `regles.test.ts`) ; `source` = folio IMPRIMÉ.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'regles.json';
 

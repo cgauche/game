@@ -12,7 +12,7 @@
  * marqué `maison: true` + `costNote` (patron `activities.json`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'actions.json';
 

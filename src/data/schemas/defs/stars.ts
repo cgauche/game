@@ -5,7 +5,8 @@
  * conservé pour rester fidèle au contrat consommateur (le type autorise `null`).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'stars.json';
 

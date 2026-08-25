@@ -1,5 +1,5 @@
 // Mécanique de garde « `variants[].when.rule` ∈ `OPTIONAL_RULES` » (#563/#564 Lot 3 item 1). Une
-// variante réglée (`variantSchema`, `src/data/schemas/common.ts:151`) référence LE registre
+// variante réglée (`variantSchema`, `src/data/schemas/grammaire/valeurs.ts`) référence LE registre
 // `OPTIONAL_RULES` (`src/engine/policy.ts:43`) par id STABLE — jamais un label, jamais un id fantôme
 // (gate fantôme = une variante que `rule()` ne peut jamais activer, silencieusement morte). Module
 // ESM pur, exécutable par `node` nu — consommé par `src/data/variants-integrity.test.ts`.

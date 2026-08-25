@@ -4,7 +4,8 @@
  * flavor hors catalogue) — MÊME forme que `careerLevels.trappings`/`species`, PROMUE dans `common.ts`.
  */
 import { z } from 'zod';
-import { sourceRefSchema, trappingRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { trappingRefSchema } from '../grammaire/reference';
 
 export const file = 'classes.json';
 

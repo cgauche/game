@@ -5,7 +5,8 @@
  * `common.ts` (`flowSchema`/`conditionSchema`/`triggeredEffectSchema`).
  */
 import { z } from 'zod';
-import { charKeySchema, sourceRefSchema, gameOpSchema, difficultySchema, triggeredEffectSchema } from '../common';
+import { charKeySchema, sourceRefSchema, difficultySchema } from '../grammaire/valeurs';
+import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'etats.json';
 

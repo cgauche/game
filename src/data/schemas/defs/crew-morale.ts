@@ -5,7 +5,7 @@
  * de bande, ±DR de Commandement/Tests d'équipage, seuil de désertion optionnel).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'crew-morale.json';
 

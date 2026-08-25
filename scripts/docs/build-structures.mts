@@ -19,7 +19,7 @@ import {
   MARQUE_HORS_STRATE,
   RACINES,
 } from './lib/structures-scan.mjs';
-import { ANGLES_MORTS, CONCEPTS, GRAPHIES_ENVELOPPANTES, ROLES_ENVELOPPE, clesDuRole } from './lib/structures-lexique.mjs';
+import { ANGLES_MORTS, CONCEPTS, ROLES_ENVELOPPE, clesDuRole } from './lib/structures-lexique.mjs';
 import { choixDeclares, introspecterDefs } from './lib/zod-introspect.mjs';
 import { SCHEMA_DEFS } from '../../src/data/schemas/_registry.generated';
 
@@ -262,10 +262,10 @@ for (const c of CONCEPTS) {
       f.note || '',
     ]),
   );
-  if (c.id !== 'reference') continue;
+  if (!c.graphiesEnveloppantes?.length) continue;
   // Réconciliation des graphies ENVELOPPANTES : une même graphie se lit sous sa signature NUE et
   // sous le chemin `enveloppe>graphie`. Le total par graphie ne se lit donc sur aucune ligne seule.
-  const rangs = GRAPHIES_ENVELOPPANTES.map((g) => {
+  const rangs = c.graphiesEnveloppantes.map((g) => {
     const nue = lignes.filter((f) => f.signature === g);
     const sous = lignes.filter((f) => f.signature.endsWith(`>${g}`));
     const somme = (xs: typeof lignes) => xs.reduce((a, f) => a + f.occurrences, 0);
@@ -388,7 +388,7 @@ out += 'clé annonçait une FK (`clé de référence non résolue`), `L1b #1467`
 // ---------------------------------------------------------------------------
 out += '## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`\n\n';
 out += `Littéraux d’objet zod lus : **${totalLitteraux}** ; **${redeclarations.length}** recoupent le lexique\n`;
-out += 'ou un littéral de `src/data/schemas/common.ts`. « Schéma commun candidat » = même signature EXACTE\n';
+out += 'ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE\n';
 out += 'qu’un littéral de `common.ts` (candidat à examiner, cf. angles morts).\n\n';
 out += '### 4.1 Empreinte par concept, critère SUPERSET (indépendant du classement ordonné)\n\n';
 out += 'Un littéral qui porte le noyau d’un concept, même s’il a été classé sous un autre concept en §4.2 :\n';
@@ -447,7 +447,7 @@ out += tableau(
 out += '## 5. Ops en donnée (strate Ops)\n\n';
 const nbSignaturesOps = new Set(scan.ops.map((o) => `${o.op} | ${o.signature}`)).size;
 const totalObjetsAOp = scan.totalOps + scan.totalConditionsAvecOp;
-out += '`gameOpSchema` est un `looseObject` (`src/data/schemas/common.ts`) : seul `op` est contraint.\n';
+out += '`gameOpSchema` est un `looseObject` (`src/data/schemas/grammaire/mecanique.ts`) : seul `op` est contraint.\n';
 out += `Mesure : **${totalObjetsAOp}** objets portent un \`op\` = **${scan.totalOps}** ops de jeu + **${scan.totalConditionsAvecOp}**\n`;
 out += `Conditions dont l’\`op\` est un COMPARATEUR (\`kind\` reconnu par \`conditionSchema\`, kinds lus par AST).\n`;
 out += `**${scan.totalConditionsAvecOp + scan.totalConditionsSansOp}** Conditions au total, dont **${scan.totalConditionsSansOp}** sans \`op\` :\n`;

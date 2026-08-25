@@ -5,7 +5,8 @@
  * l'interface), simplement optionnel et jamais peuplé en pratique.
  */
 import { z } from 'zod';
-import { sourceRefSchema, gameOpSchema, difficultySchema, triggeredEffectSchema, stakeFormSchema } from '../common';
+import { sourceRefSchema, difficultySchema, stakeFormSchema } from '../grammaire/valeurs';
+import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'psychology.json';
 

@@ -10,7 +10,8 @@
  * (les 3 échelons canon sont Bronze/Argent/Or, cf. toutes les autres 383 entrées).
  */
 import { z } from 'zod';
-import { charKeySchema, advancementRefSchema, trappingRefSchema, sourceRefSchema } from '../common';
+import { charKeySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { advancementRefSchema, trappingRefSchema } from '../grammaire/reference';
 
 export const file = 'careerLevels.json';
 

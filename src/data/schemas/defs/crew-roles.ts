@@ -5,7 +5,7 @@
  * (Poudre noire), Chansonnier = Divertissement (Chant)).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'crew-roles.json';
 

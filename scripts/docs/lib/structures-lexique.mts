@@ -115,7 +115,21 @@ export type Concept = {
   noyauMin?: number;
   /** Le concept n'est candidat que si le SITE d'appel l'a mesuré (cf. `contexte.candidats`). */
   exigeCandidatureStructurelle?: boolean;
+  /**
+   * Graphies ENVELOPPANTES dont CE concept mesure la réconciliation nue/enveloppée dans le doc
+   * (#842 : le comportement se déclare sur l'entrée du registre, jamais à un test d'identité au
+   * call-site) — seul le concept qui POSSÈDE des graphies enveloppantes porte ce champ.
+   */
+  graphiesEnveloppantes?: readonly string[];
 };
+
+/**
+ * Graphies ENVELOPPANTES : une clé de graphie sous laquelle pend un OBJET (ou un tableau d'objets)
+ * plutôt qu'un id nu. L'intérieur porte le CHEMIN de graphie dans sa signature (`ref>id`,
+ * `wildcard>id`, `choice>id`) et HÉRITE du statut de l'enveloppe : `{ref:{id}}` se lit
+ * `ref>id / historique`, jamais `id / cible` (#1463, arbitrage de design L0, point 4).
+ */
+export const GRAPHIES_ENVELOPPANTES = ['ref', 'wildcard', 'choice', 'random'] as const;
 
 /** Concepts, du plus discriminant au plus général (le premier qui matche gagne). */
 export const CONCEPTS: readonly Concept[] = [
@@ -124,6 +138,7 @@ export const CONCEPTS: readonly Concept[] = [
     label: 'référence à une entité',
     strate: 'Référence',
     resolvables: true,
+    graphiesEnveloppantes: GRAPHIES_ENVELOPPANTES,
     signatures: [
       { sig: 'id', statut: 'cible' },
       { sig: 'id,spec', statut: 'cible' },
@@ -204,7 +219,7 @@ export const CONCEPTS: readonly Concept[] = [
     strate: 'Valeur',
     signatures: [
       { sig: 'book,page', statut: 'cible' },
-      { sig: 'book,note,page', statut: 'cible', note: 'note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/common.ts`)' },
+      { sig: 'book,note,page', statut: 'cible', note: 'note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`)' },
       { sig: 'book,chapter', statut: 'historique', note: 'folio obligatoire (#1463, 2026-08-23)' },
       { sig: 'book,chapter,page', statut: 'historique' },
     ],
@@ -264,14 +279,6 @@ export const CONCEPT_REFERENCE = CONCEPTS.find((c) => c.resolvables)!;
 export const GRAPHIE_REFERENCE: ReadonlySet<string> = new Set(
   CONCEPT_REFERENCE.signatures.flatMap((s) => s.sig.split(',')).filter((k) => !k.includes('-')),
 );
-
-/**
- * Graphies ENVELOPPANTES : une clé de graphie sous laquelle pend un OBJET (ou un tableau d'objets)
- * plutôt qu'un id nu. L'intérieur porte le CHEMIN de graphie dans sa signature (`ref>id`,
- * `wildcard>id`, `choice>id`) et HÉRITE du statut de l'enveloppe : `{ref:{id}}` se lit
- * `ref>id / historique`, jamais `id / cible` (#1463, arbitrage de design L0, point 4).
- */
-export const GRAPHIES_ENVELOPPANTES = ['ref', 'wildcard', 'choice', 'random'] as const;
 
 /**
  * Clés de PROSE : leur valeur est un texte d'affichage, jamais une référence — même quand le texte

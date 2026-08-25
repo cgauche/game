@@ -6,7 +6,8 @@
  * ami/belligérant) est `ops` (`GameOp[]`, langue unique — `applyOps`), absent = rien d'exécutable.
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'drunkenness.json';
 

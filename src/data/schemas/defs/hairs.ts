@@ -3,7 +3,7 @@
  * `DetailColorData` (src/data/index.ts, partagée avec `eyes.json`).
  */
 import { z } from 'zod';
-import { raceKeySchema, sourceRefSchema } from '../common';
+import { raceKeySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'hairs.json';
 

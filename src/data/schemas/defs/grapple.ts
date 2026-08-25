@@ -8,7 +8,8 @@
  * (`grapple`, `perSL`, `valuePerSL`) non génériques à tout `GameOp`, cf. `ops.ts`.
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'grapple.json';
 

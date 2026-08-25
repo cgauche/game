@@ -5,7 +5,7 @@
  * `Peripetie` (`src/data/peripeties.ts`). 10 entrées, une par face du d10.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'peripeties.json';
 

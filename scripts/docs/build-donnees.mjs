@@ -219,7 +219,7 @@ out += `\`src/data/schemas/defs/\`). Trois pièces :\n\n`
 out += `- **\`src/data/schemas/defs/<nom>.ts\`** — 1 def PAR dataset (même basename que le \`.json\`), exporte\n`
 out += `  \`file\` (le nom de fichier) et \`schema\` (\`z.ZodTypeAny\`, racine = la forme EXACTE du JSON — tableau\n`
 out += `  ou objet à sous-catalogues). \`characteristics.ts\` est l'EXEMPLAIRE de la convention. Champs de\n`
-out += `  référence commun (\`source.book\`/\`source.page\`) : \`sourceRefSchema\` (\`src/data/schemas/common.ts\`).\n`
+out += `  référence commun (\`source.book\`/\`source.page\`) : \`sourceRefSchema\` (\`src/data/schemas/grammaire/valeurs.ts\`).\n`
 out += `- **\`src/data/schemas/_registry.generated.ts\`** — GÉNÉRÉ par \`node scripts/gen-registry.mjs\`\n`
 out += `  (\`npm run gen\`), scanne \`defs/\` et exporte \`SCHEMA_DEFS: SchemaDef[]\`. Ne JAMAIS éditer à la main.\n`
 out += `- **\`PENDING\`** dans \`src/data/schema-contract.test.ts\` — la liste des \`.json\` encore sans schéma.\n`

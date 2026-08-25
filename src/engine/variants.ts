@@ -4,7 +4,7 @@
  * référence LE registre `OPTIONAL_RULES` (`src/engine/policy.ts:43`), lu par `rule(id)` — jamais un
  * booléen/flag parallèle (garde #564, `scripts/guards`).
  */
-import type { Variant } from '../data/schemas/common';
+import type { Variant } from '../data/schemas/grammaire/valeurs';
 import { rule } from './policy';
 
 /** Première variante dont la règle `when.rule` est à l'état `when.equals` (défaut `true` — règle

@@ -4,7 +4,8 @@
  * (`src/data/criticals.ts`).
  */
 import { z } from 'zod';
-import { gameOpSchema, difficultySchema, hitLocationSchema, sourceRefSchema, formulaSchema } from '../common';
+import { difficultySchema, hitLocationSchema, sourceRefSchema, formulaSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'criticals.json';
 

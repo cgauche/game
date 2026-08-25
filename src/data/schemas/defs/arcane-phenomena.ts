@@ -14,7 +14,7 @@
  * optionnelle `magic-vdm-environnementale` (`src/engine/policy.ts`, groupe Magie).
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema, castingNumberModSchema } from '../common';
+import { difficultySchema, sourceRefSchema, castingNumberModSchema } from '../grammaire/valeurs';
 
 export const file = 'arcane-phenomena.json';
 

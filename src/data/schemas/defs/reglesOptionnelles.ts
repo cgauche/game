@@ -20,7 +20,7 @@
  * `src/ui/rule-action-wiring.test.ts`.
  */
 import { z } from 'zod';
-import { ruleValueSchema, sourceRefSchema } from '../common';
+import { ruleValueSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'reglesOptionnelles.json';
 

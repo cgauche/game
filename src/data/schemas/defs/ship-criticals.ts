@@ -5,7 +5,8 @@
  * Jeu MDG : 5 Localisations (cargaison/greement/coque/avirons/equipements).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, shipCritEntrySchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
+import { gameOpSchema, shipCritEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'ship-criticals.json';
 

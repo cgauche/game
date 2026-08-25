@@ -53,7 +53,7 @@ import {
   DEFAULT_FABRICATION_ATOUT,
 } from '../../data';
 import { SIZE_LABEL } from '../../engine/size';
-import type { SourceRef } from '../../data/schemas/common';
+import type { SourceRef } from '../../data/schemas/grammaire/valeurs';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics, Combatant } from '../../engine/types';
 import { damageString, itemFromTrappingById } from '../../engine/items';
 import { skillBaseValue } from '../../engine/skills';

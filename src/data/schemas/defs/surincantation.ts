@@ -8,7 +8,7 @@
  * `id`/`label` = identité STABLE de la rangée pour l'exposition et l'édition au Compendium.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'surincantation.json';
 

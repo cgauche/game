@@ -7,7 +7,8 @@
  * entrée BLOQUÉE tant qu'une extraction Marker n'existe pas (cf. `common.ts`).
  */
 import { z } from 'zod';
-import { gameOpSchema, difficultySchema, freeSourceNoteSchema } from '../common';
+import { difficultySchema, freeSourceNoteSchema } from '../grammaire/valeurs';
+import { gameOpSchema } from '../grammaire/mecanique';
 import { critEscalationSchema, amputationSchema } from './criticals';
 
 export const file = 'aa-criticals.json';

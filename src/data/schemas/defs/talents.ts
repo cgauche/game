@@ -6,10 +6,8 @@
  * `flowSchema`/`triggeredEffectSchema` — partagés avec talents/etats/spells).
  */
 import { z } from 'zod';
-import {
-  charKeySchema, sourceRefSchema, secondarySourceRefSchema, gameOpSchema, conditionSchema,
-  triggeredEffectSchema, combatFeatureSchema, variantOf,
-} from '../common';
+import { charKeySchema, sourceRefSchema, secondarySourceRefSchema, combatFeatureSchema, variantOf } from '../grammaire/valeurs';
+import { gameOpSchema, conditionSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'talents.json';
 

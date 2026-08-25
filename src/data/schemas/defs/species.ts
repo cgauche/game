@@ -6,7 +6,8 @@
  * entrées (18/27) : optionnel, conforme à l'interface ; `grantGroups` est porté par les 27.
  */
 import { z } from 'zod';
-import { sourceRefSchema, charKeySchema, advancementRefSchema, raceKeySchema, refCareerIdSchema, traitInstanceSchema } from '../common';
+import { sourceRefSchema, charKeySchema, raceKeySchema, refCareerIdSchema } from '../grammaire/valeurs';
+import { advancementRefSchema, traitInstanceSchema } from '../grammaire/reference';
 
 export const file = 'species.json';
 

@@ -3,7 +3,7 @@
  * RÉEL (7 entrées) et de `OupsEntry`/`OupsKind` (`src/data/oups.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'oups.json';
 

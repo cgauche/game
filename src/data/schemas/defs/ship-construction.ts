@@ -5,7 +5,7 @@
  * construction. `size` = `ShipSize` (`src/data/index.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'ship-construction.json';
 

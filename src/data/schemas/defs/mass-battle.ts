@@ -4,7 +4,7 @@
  * (`src/engine/massBattle.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'mass-battle.json';
 

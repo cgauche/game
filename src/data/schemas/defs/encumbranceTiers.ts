@@ -7,7 +7,7 @@
  * Codex (#422).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'encumbranceTiers.json';
 

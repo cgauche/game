@@ -6,7 +6,7 @@
  * avec les colonnes d'espèce qui varient selon que la carrière est ouverte aux races additionnelles).
  */
 import { z } from 'zod';
-import { sourceRefSchema, refCareerIdSchema } from '../common';
+import { sourceRefSchema, refCareerIdSchema } from '../grammaire/valeurs';
 
 export const file = 'careers.json';
 

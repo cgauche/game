@@ -5,7 +5,7 @@
  * 8 entrées toutes {id,label,creatureIds,m,e,trot,encPortee} — inventaire exhaustif par script).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'montures.json';
 

@@ -5,7 +5,7 @@
  * `planEdge`/`planInner`/`planText` seulement — pas de N/E/S/O/detail).
  */
 import { z } from 'zod';
-import { detailRecipeSchema } from '../common';
+import { detailRecipeSchema } from '../grammaire/valeurs';
 
 export const file = 'roofMaterials.json';
 

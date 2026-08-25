@@ -3,7 +3,7 @@
  * consommé par `src/engine/windsOfMagic.ts` (`{ table: WindsEntry[] }`, lookup `findTableEntry` sur 1d10).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'vents-tourbillonnants.json';
 

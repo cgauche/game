@@ -3,7 +3,7 @@
  * (5 demeures) et de `CelestialHouseData` (`src/data/index.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'astrology.json';
 

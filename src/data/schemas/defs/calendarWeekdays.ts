@@ -4,7 +4,7 @@
  * `src/data/index.ts` (`{ name }[]`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'calendarWeekdays.json';
 

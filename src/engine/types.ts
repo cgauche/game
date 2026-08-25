@@ -118,7 +118,7 @@ export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'):
 }
 
 /** Paliers de Disponibilité, dans l'ordre IMPRIMÉ par le tableau (LDB 59 « Disponibilité »). Tuple
- *  RUNTIME : les schémas zod le consomment tel quel (`availabilitySchema`, `src/data/schemas/common.ts`),
+ *  RUNTIME : les schémas zod le consomment tel quel (`availabilitySchema`, `src/data/schemas/grammaire/valeurs.ts`),
  *  donc la donnée et le type ne peuvent plus diverger d'un palier. L'ORDRE porte l'échelle de rareté
  *  (indice 0 = le plus courant) : le Troc (`LDB 59 l.66-76`) et la « Baisse des prix » (`l.60`) s'y
  *  indexent, l'artisanat y décale d'un cran (`craftEconomy`) — aucune échelle recopiée à côté. */
@@ -494,11 +494,12 @@ export interface Weapon {
    *  `src/engine/effect-rule-anchor.test.ts`. */
   source?: EffectSource;
   // ── ÉTAT DE CHARGE (par ARME) ─────────────────────────────────────────────────────────────────────
-  // Arbitrage utilisateur 2026-08-16 : « quand on charge une arme on sélectionne une munition » et « si
-  // j'ai 2 armes à distance elles gèrent chacune leur propre rechargement et munition ». L'état vit donc
-  // sur l'INSTANCE d'arme (`Combatant.weapons[i]`), jamais sur le combattant ; une pièce d'artillerie
-  // SERVIE porte le sien sur `ShipPoste`. Source unique de lecture/écriture : `loadRegister`/`loadWeapon`/
-  // `unloadWeapon` (engine/items.ts). Préservé au re-dérivage du set (`recomputeLoadout`, par uid).
+  // Chaque arme choisit sa munition à son propre chargement ; chaque arme à distance possédée gère
+  // son propre rechargement et sa propre munition (fiche game-arbitrage-hud-console-rt-2026-08-16.md).
+  // L'état vit donc sur l'INSTANCE d'arme (`Combatant.weapons[i]`), jamais sur le combattant ; une pièce
+  // d'artillerie SERVIE porte le sien sur `ShipPoste`. Source unique de lecture/écriture :
+  // `loadRegister`/`loadWeapon`/`unloadWeapon` (engine/items.ts). Préservé au re-dérivage du set
+  // (`recomputeLoadout`, par uid).
   /** Munition CHOISIE pour le prochain chargement de CETTE arme (uid d'un ItemInstance `kind 'ammo'`). */
   ammoUid?: string;
   /** Munition CAPTURÉE dans le coup chargé de CETTE arme : posée au chargement, consommée au tir. */
@@ -1033,11 +1034,12 @@ export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
 /** Instance d'objet portée par un personnage (dérivée d'un trapping à stats). */
 export interface ItemInstance {
   uid: string;
-  // ── ÉTAT DE CHARGE de CET objet-arme (arbitrage utilisateur 2026-08-16 : « si j'ai 2 armes à distance
-  // elles gèrent chacune leur propre rechargement et munition ») : l'OBJET possédé est le porteur qui
-  // SURVIT au re-dérivage du set actif (`recomputeLoadout` reconstruit les `Weapon`, jamais les items) —
-  // changer de set ne téléporte donc aucun coup chargé. Registre résolu par `loadRegister`
-  // (engine/weaponLoad) ; seuls `loadWeapon`/`unloadWeapon` (engine/items) posent et effacent.
+  // ── ÉTAT DE CHARGE de CET objet-arme : chaque arme à distance possédée gère son propre
+  // rechargement et sa propre munition (fiche game-arbitrage-hud-console-rt-2026-08-16.md) —
+  // l'OBJET possédé est le porteur qui SURVIT au re-dérivage du set actif (`recomputeLoadout`
+  // reconstruit les `Weapon`, jamais les items) — changer de set ne téléporte donc aucun coup
+  // chargé. Registre résolu par `loadRegister` (engine/weaponLoad) ; seuls
+  // `loadWeapon`/`unloadWeapon` (engine/items) posent et effacent.
   /** Munition CHOISIE pour le prochain chargement de CETTE arme (uid d'un ItemInstance `kind 'ammo'`). */
   ammoUid?: string;
   /** Munition CAPTURÉE dans le coup chargé de CETTE arme : posée au chargement, consommée au tir. */
@@ -1247,8 +1249,8 @@ export interface AuthoredShipPoste {
    *  la pièce (fiche du navire), sous le choix ponctuel du héros-chef (`Combatant.ammoUid`, hotbar). */
   ammoUid?: string;
   /** Munition CAPTURÉE dans le coup chargé de la pièce (uid dans `ammo`) : posée à l'achèvement du Test
-   *  étendu de recharge, consommée au tir. Changer la sélection d'une pièce chargée la DÉCHARGE
-   *  (arbitrage utilisateur 2026-08-16 « La munition se fixe au CHARGEMENT »). */
+   *  étendu de recharge, consommée au tir. La munition se fixe AU CHARGEMENT : changer la sélection
+   *  d'une pièce chargée la DÉCHARGE (fiche game-arbitrage-hud-console-rt-2026-08-16.md). */
   loadedAmmoUid?: string;
   /** Ancre spatiale optionnelle de la pièce dans l'espace de la scène (authorable). Absente → dérivée
    *  (emplacement au sol = pos de l'entité ; coque = empreinte décalée par l'arc). Index-only, aucun effet combat. */
@@ -1693,8 +1695,8 @@ export interface Combatant {
    *  si le lanceur est hors de combat (minions de Nécromancie liés au sorcier). Géré par state/summonFlow. */
   summon?: { byId: string; expiresAtRound?: number; despawnIfSummonerDown?: boolean; label?: string; spellId?: string };
   // L'ÉTAT DE CHARGE (munition choisie/capturée, `loaded`, progression, chargeur) vit sur l'INSTANCE
-  // D'ARME (`Weapon`) — arbitrage utilisateur 2026-08-16 : deux armes à distance gèrent chacune leur
-  // propre rechargement et leur propre munition. Aucun de ces champs n'existe plus ici.
+  // D'ARME (`Weapon`) : chaque arme à distance possédée gère son propre rechargement et sa propre
+  // munition (fiche game-arbitrage-hud-console-rt-2026-08-16.md). Aucun de ces champs n'existe plus ici.
   /** Salve (Aux Armes p.126) : nombre de tirs DÉJÀ effectués ce tour (réinit. au changement de tour) ;
    *  chaque tir suivant d'une arme à Salve subit −10 cumulatif (lu par `attackModifiers`). */
   shotsThisTurn?: number;
@@ -1825,7 +1827,7 @@ export function isNightTestKind(k: string): k is NightTestKind {
 /** FORME DÉCLARÉE d'un texte d'ENJEU (#1117) : `verbatim` = contigu au Source, bloc par bloc ;
  *  `descripteur` = assemblage mécanique assumé, qui doit alors nommer son foyer de règle. Tuple
  *  RUNTIME posé ICI (module FEUILLE que `src/data` importe déjà) : les 6 schémas zod d'enjeu le
- *  consomment tel quel (`stakeFormSchema`, `src/data/schemas/common.ts`) et les déclarations TS
+ *  consomment tel quel (`stakeFormSchema`, `src/data/schemas/grammaire/valeurs.ts`) et les déclarations TS
  *  référencent `StakeForm` — un palier de plus ne peut plus atterrir d'un seul côté. */
 export const STAKE_FORMS = ['verbatim', 'descripteur'] as const;
 /** Forme déclarée d'un enjeu — union FERMÉE dérivée de `STAKE_FORMS`. */

@@ -5,7 +5,7 @@
  * (+ marqueurs `commerce`/`minimum-vital`, cf. `PortProfile`, `src/engine/seaVoyage.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'naval-ports.json';
 

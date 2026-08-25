@@ -1,12 +1,13 @@
 /**
- * `trappingRefSchema` (`src/data/schemas/common.ts`) — branche `{creatureId}` ouverte au SOCLE
+ * `trappingRefSchema` (`src/data/schemas/grammaire/reference.ts`) — branche `{creatureId}` ouverte au SOCLE
  * POSSESSIONS #615/#617 §9 (dotation BÊTE, `creatures.json`), en plus des branches existantes.
  */
 import { describe, it, expect } from 'vitest';
-import { trappingRefSchema, flowTestSchema } from './common';
-import { menaceIds } from '../../engine/menace';
-import { resolveTrappingChoices } from '../../engine/trappingChoices';
-import { trappingRefLabel, type TrappingRef } from '../index';
+import { trappingRefSchema } from './reference';
+import { flowTestSchema } from './mecanique';
+import { menaceIds } from '../../../engine/menace';
+import { resolveTrappingChoices } from '../../../engine/trappingChoices';
+import { trappingRefLabel, type TrappingRef } from '../../index';
 
 describe('trappingRefSchema — branches de TrappingRef', () => {
   it('accepte {id} de catalogue (+ count optionnel)', () => {

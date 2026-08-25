@@ -6,7 +6,8 @@
  * engine) et d'un inventaire EXHAUSTIF par script (histogramme de TOUTES les entrées du dataset).
  */
 import { z } from 'zod';
-import { availabilitySchema, gameOpSchema, sourceRefSchema, secondarySourceRefSchema, formulaSchema, flowSchema, triggeredEffectSchema } from '../common';
+import { availabilitySchema, sourceRefSchema, secondarySourceRefSchema, formulaSchema } from '../grammaire/valeurs';
+import { gameOpSchema, flowSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 import { REACH_LABELS, REACH_VARIABLE } from '../../../engine/types';
 
 /** `SizeCategory` (`src/engine/size.ts`) — réf par id, jamais un enum parallèle. */

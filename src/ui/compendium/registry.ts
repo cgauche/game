@@ -24,7 +24,7 @@ import {
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
 // importés directement d'`engine/massBattle`).
-import type { RaceKey, SourceRef } from '../../data/schemas/common';
+import type { RaceKey, SourceRef } from '../../data/schemas/grammaire/valeurs';
 import { MOUNT_PROFILES } from '../../engine/mountTravel';
 import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS } from '../../engine/travelTables';
 import type { TravelTableEntry } from '../../engine/travelTables';
@@ -97,7 +97,7 @@ export function entryKey(e: Record<string, unknown>): string {
   return String(e.label ?? e.name ?? e.key ?? e.id ?? '');
 }
 
-/** Vue de projection Codex de `SourceRef` (`src/data/schemas/common.ts:36` — SEULE forme à importer,
+/** Vue de projection Codex de `SourceRef` (`src/data/schemas/grammaire/valeurs.ts` — SEULE forme à importer,
  *  #563 dette soldée) : `book` y est déjà résolu en ABRÉVIATION affichable (`bookAbr`, cf. `src()`
  *  ci-dessous), jamais l'id stable — projection d'AFFICHAGE, pas la donnée. */
 export type CodexSource = Pick<SourceRef, 'page'> & { book: string };

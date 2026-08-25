@@ -6,7 +6,7 @@ import { menaceIds, isMenaceId } from '../engine/menace';
 
 /**
  * Garde FK du tag `menace` posé AU CODE (#1346) — pendant de la validation de donnée portée par
- * `flowTestSchema` (`data/schemas/common.ts`).
+ * `flowTestSchema` (`data/schemas/grammaire/mecanique.ts`).
  *
  * Le tag `menace` d'un pending / d'une étape / d'une rangée est une CLÉ ÉTRANGÈRE vers un id de spec
  * de l'entrée `resistance` de `talents.json` (LDB 10 l.1016-1020, liste OUVERTE : l'auteur ajoute une

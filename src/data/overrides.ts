@@ -40,7 +40,7 @@ import { CRITICAL_TABLES } from './criticals';
 import { SHIP_CRITICAL_TABLES, RIVER_CRIT_SET } from './shipCriticals';
 import type { GameOp } from '../engine/ops';
 import type { Difficulty } from '../engine/types';
-import type { SourceRef } from './schemas/common';
+import type { SourceRef } from './schemas/grammaire/valeurs';
 import criticalsRawJson from './criticals.json';
 import aaCriticalsRawJson from './aa-criticals.json';
 import traumasRawJson from './traumas.json';

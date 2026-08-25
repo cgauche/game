@@ -8,14 +8,8 @@
  * et dans maneuvers/qualities/talents/etats/spells/traits/trappings/psychology).
  */
 import { z } from 'zod';
-import {
-  charKeySchema,
-  flowTestSchema,
-  gameOpSchema,
-  secondarySourceRefSchema,
-  sourceRefSchema,
-  triggeredEffectSchema,
-} from '../common';
+import { charKeySchema, secondarySourceRefSchema, sourceRefSchema } from '../grammaire/valeurs';
+import { flowTestSchema, gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'domains.json';
 

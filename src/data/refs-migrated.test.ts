@@ -659,7 +659,7 @@ describe('spec de Compétence GROUPÉE — corps-a-corps/projectiles ne portent 
 // `passive: skillDRBonus focalisation`) en `{id}`/`{creatureId}`. Il reste 8 dotations en `{text}`
 // sur ces 2 Carrières : 7 hors catalogue (licence magique ×2, objet magique ×2, apprenti,
 // bibliothèque, cercle d'informateurs) ; `atelier` est un 8e cas distinct — `trappingRefSchema`
-// (`schemas/common.ts`) porte un champ `spec` optionnel sur la branche `{id}`,
+// (`schemas/grammaire/reference.ts`) porte un champ `spec` optionnel sur la branche `{id}`,
 // mais aucun consommateur (`trappingRefLabel`, SOURCE UNIQUE du libellé affiché, `data/index.ts`)
 // ne le lit pour cette branche : le poser y perdrait la précision de domaine en silence à
 // l'affichage, donc `atelier` reste en `{text}`.
