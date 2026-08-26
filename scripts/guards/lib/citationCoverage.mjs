@@ -107,20 +107,25 @@ export function auditDataset(data) {
  * mécanique CHIFFRÉE tirée du RAW, ou note de provenance libre déjà documentée comme survivance
  * unique). Chaque entrée porte SA raison ; jamais un motif générique. Établie depuis la mesure
  * réelle (#309, phase 1) — toute extension future nomme le fichier + justifie.
+ *
+ * Cette liste s'AUTO-PURGE (#1467 L1b V-Src) : un dataset intégralement cité n'a plus besoin d'être
+ * exempté, et son entrée devient un mensonge dormant. `src/data/citation-coverage-guard.test.ts`
+ * rougit sur toute entrée dont `auditDataset` rend `cited === total` (> 0). Trois sont mortes à ce
+ * lot : `axes.json` (9/9, migré `source:'maison'` → `maison` par 2026-08-27-l1b-1c), et deux
+ * PRÉEXISTANTES que personne ne relisait — `aa-criticals.json` (1/1 : sa note libre `_source` EST
+ * comptée par `isCitedItem`) et `characteristics.json` (19/19, curé depuis).
  * @type {Record<string, string>}
  */
 export const EXEMPT_DATASETS = {
-  'aa-criticals.json': "note libre `_source` au niveau du fichier (seule survivance documentée, src/data/schemas/grammaire/valeurs.ts:75-85) — l'extraction Marker d'Aux Armes EXISTE (motif RÉVISÉ #563 : la table de Blessures Critiques cite un intervalle APPROXIMATIF `p.≈118-124`, jamais migrée en `source: sourceRefSchema` PAR ENTRÉE — dette de migration, pas un blocage d'extraction).",
   'books.json': 'catalogue des LIVRES eux-mêmes — pas de "source" au sens où un livre se cite lui-même.',
   'actions.json': "registre de ROUTAGE des actions de combat (id → icône, surface, gate/candidates/run) : aucune table CHIFFRÉE, la règle vit dans la fiche pointée par `rule`+`ruleCategory` (regles/talents/etats/qualities/skills) qui porte SA citation. `source` n'y est posée que sur les entrées dont le COÛT est adossé à un verbatim (LDB 13 l.106, 15 l.35-49, 14 « Viser »…).",
-  'characteristics.json': "vocabulaire des 10 Caractéristiques (clés/labels), pas une table de valeurs RAW à citer par entrée (base SUPPRIMÉE #310, table morte).",
   'decorPalette.json': 'palette de couleurs de RENDU (hex), pas une donnée RAW.',
   'teintesJeu.json': "teintes de RENDU du terrain (surbrillances tactiques et identité d'unité, hex), pas une donnée RAW.",
   'ambiance.json': 'config de rendu (éclairage iso/POV), pas une donnée RAW.',
-  'details.json': "presets d'authoring (âge/taille par race) dérivés de tables LDB déjà citées ailleurs (species.json) — vocabulaire de génération, pas une table RAW autonome.",
+  'details.json': "`ageBase`/`ageRoll`/`heightBase`/`heightRoll` reprennent le verbatim direct de LDB `05` l.705-728 (folio 39) pour les 4 seules colonnes que le canon imprime (humain/nain/elfe/halfling) ; `gnome`/`ogre` y sont posés SANS source trouvée, et `texts` est de la prose d'application — aucune de ces strates n'est une table RAW autonome à citer par entrée.",
   'localisation.json': 'table de dé inversé (mapping résultat→zone de touche) — vocabulaire structurel du moteur, pas une table RAW à citer en tant que telle (les zones sont LDB, déjà couvertes par `hitLocationSchema`).',
   'names.json': "liste de PRÉNOMS d'authoring par race — pas une mécanique mesurable, aucune règle à sourcer.",
-  'sizes.json': 'un seul champ `rangedMod` (barème de modificateur par Taille) — vocabulaire structurel, pas une entrée narrative sourçable individuellement.',
+  'sizes.json': "3 tables, 3 provenances : `rangedMod` = LDB folio 162 (`14 - _GoBack.md` l.118-131), `shipboardEnc` = MDG folio 92 (`12` l.25-33), `footprintSide` = MAISON (aucune barre chiffrée au canon, cf. `src/engine/size.ts:40-49`). Aucune des trois n'est une entrée narrative sourçable individuellement : les deux tables RAW portent leur réf à leur foyer (`src/data/schemas/defs/sizes.ts:2-4`), la troisième n'a pas de folio à citer.",
   'speciesRace.json': "table de résolution race→défauts d'authoring (`_doc`/`default`/`rules`), pas une donnée RAW.",
   // (`reglesOptionnelles.json` n'est PAS exempté : sa dette de folios est un cliquet DÉCROISSANT,
   //  `BASELINES` de `src/data/citation-coverage-guard.test.ts` — E8 du programme #1318.)
@@ -143,7 +148,6 @@ export const EXEMPT_DATASETS = {
   'primitives.manifest.json': "manifeste TOOLING (#298) des primitives partagées du code (nom/fichier/concept/verrou) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
   'systemes.manifest.json': "manifeste TOOLING (#298) éditorial des systèmes implémentés (nom/modules/état/ticket) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
   'lieux-services.json': "vocabulaire des SERVICES de lieu (#343 — auberge/temple/forgeron/guilde) : id/label/icône de routage d'écran (hub de lieu), aucune valeur mécanique propre à sourcer (port/marché portent leur propre schéma sourcé).",
-  'axes.json': "axes de forces/faiblesses (#409) — mécanique MAISON tracée par ticket (aucune règle RAW ne stat un axe de forces) : `source: 'maison'` par entrée, pas de folio {book,page} à citer.",
   'raw.manifest.json': "manifeste TOOLING (#487) éditorial du champ Implémente de l'Atlas RAW (topic/ticket/bloque, généré par scripts/raw/build-implemente.mjs) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
   'merchants.json': "archétypes de MARCHAND (#2) — config app-owned (taux de rachat/Marchandage/agglo par défaut/familles vendues), pas une table RAW à folio unique par entrée : les VALEURS RAW citées (½/¼ de revente, majoration, Disponibilité) vivent dans `engine/disponibilite.ts` (LDB 59) et `bargain.ts`, déjà sourcées à leur foyer ; le `boniment` est une réplique d'auteur, sans RAW à sourcer.",
   'merchantFamilies.json': "familles de PRÉSENTATION du stock marchand (onglets/colonnes de `ui/MerchantPanel.tsx`) — vocabulaire de mise en page app-interne, aucune valeur mécanique RAW à sourcer par entrée.",

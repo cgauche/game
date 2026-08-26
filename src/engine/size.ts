@@ -2,8 +2,8 @@
  * Trait de créature **Taille** (LDB `85 - Traits de créature.md` l.279-280 : 7 catégories,
  * Minuscule → Monstrueuse). Modélisé en INDEX ordinal (0..6) car la mécanique est une
  * COMPARAISON d'écart entre combattants, pas une valeur testée. Mod d'à-toucher au TIR selon
- * la Taille de la CIBLE : `14 - _GoBack.md` l.151-170. « Moyenne » = standard implicite des
- * espèces jouables (l.163), sans Trait. Cf. analyse :
+ * la Taille de la CIBLE : `14 - _GoBack.md` l.118-131 (folio 162). « Moyenne » = standard implicite
+ * des espèces jouables (l.128), sans Trait. Cf. analyse :
  * docs/superpowers/specs/2026-06-07-taille-analyse-reference.md
  *
  * Données règles (rangedMod, shipboardEnc, footprintSide) dans `src/data/sizes.json`.

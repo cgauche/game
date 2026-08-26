@@ -147,9 +147,20 @@ function enveloppe(type: string) {
     label: z.string().min(1),
     labelF: z.string().optional(),
     desc: z.string().optional(),
-    source: exigeSource(type) ? sourceRefSchema : sourceRefSchema.optional(),
+    source: sourceRefSchema.optional(),
     alsoIn: z.array(secondarySourceRefSchema).optional(),
-    maison: z.string().optional(),
+    /**
+     * Arbitrage MAISON — la RAISON, en clair, de ce que le canon ne tranche pas. `.min(1)` est
+     * STRUCTUREL : une chaîne vide ne prouve rien et le refine de provenance ci-dessous ne saurait
+     * pas la distinguer d'une raison réelle. Mesuré (2026-08-27) : aucune chaîne vide dans la donnée.
+     *
+     * HOMONYME — `actions.json` porte 30 `maison: true`, un DRAPEAU booléen (« cette action est une
+     * extension maison »), pas une provenance : même nom, autre concept, autre type. Cette enveloppe
+     * les REFUSE (`z.string()`), et c'est voulu — un drapeau ne dit aucune raison. La forme est
+     * pistée au stock (`scripts/guards/lib/structuresStock.mjs:1001`, 30 occurrences) ; sa migration
+     * appartient au lot V-P3 du design, pas à celui-ci.
+     */
+    maison: z.string().min(1).optional(),
     icon: z.string().optional(),
   };
 }
@@ -235,7 +246,25 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
       : complet;
   const entreePartielle: z.ZodType<unknown> = corps.partial().pipe(z.transform((v) => v));
   const clesEntree: readonly string[] = Object.keys(corps.shape);
-  const affine = affinerEntree ? affinerEntree(corps) : corps;
+  // PROVENANCE : `source` OU `maison`, jamais NI L'UN NI L'AUTRE. Une entrée sans folio n'est pas
+  // interdite — elle doit DIRE pourquoi. `exigeSource` consulte l'UNION `SANS_PROVENANCE_EXIGEE`
+  // (`SANS_LIVRE` ∪ `SOURCE_EN_PROFONDEUR`) : sont hors régime les documents SANS aucun livre comme
+  // ceux dont le livre est cité par SOUS-ENTRÉE — dans les deux cas rien n'est exigible à l'entrée de
+  // racine. Refine PRÉ-sceau : `superRefine` rend un `ZodObject` encore extensible (mesuré zod
+  // 4.4.3), donc `affinerEntree` reçoit bien un objet.
+  const avecProvenance = !exigeSource(type)
+    ? corps
+    : (corps.superRefine((v, ctx) => {
+        const d = v as { source?: unknown; maison?: unknown };
+        if (d.source === undefined && d.maison === undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['source'],
+            message: `document('${type}') : entrée sans \`source\` — un document sans folio porte \`maison\` (la raison de l'arbitrage).`,
+          });
+        }
+      }) as z.ZodObject<z.ZodRawShape>);
+  const affine = affinerEntree ? affinerEntree(avecProvenance) : avecProvenance;
   const entreeScellee: z.ZodType<unknown> = affine.pipe(z.transform((v) => v));
 
   // EMBALLAGE par FAMILLE (#1467) : le dataset est ce que le FICHIER porte — une LISTE d'entrées

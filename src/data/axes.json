@@ -4,7 +4,7 @@
     "label": "Social",
     "desc": "Aptitude à convaincre, mener et lire les autres.",
     "core": true,
-    "source": "maison",
+    "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
         "skillId": "charme"
@@ -19,7 +19,7 @@
     "label": "Mêlée",
     "desc": "Combat rapproché, toutes armes de corps à corps confondues.",
     "core": true,
-    "source": "maison",
+    "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
         "skillId": "corps-a-corps"
@@ -31,7 +31,7 @@
     "label": "Tir",
     "desc": "Combat à distance, toutes armes de trait confondues.",
     "core": true,
-    "source": "maison",
+    "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
         "skillId": "projectiles"
@@ -43,7 +43,7 @@
     "label": "Soins",
     "desc": "Soigner les blessures et les maux du groupe.",
     "core": true,
-    "source": "maison",
+    "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
         "skillId": "guerison"
@@ -55,7 +55,7 @@
     "label": "Savoir",
     "desc": "Érudition et connaissances livresques, toutes spécialisations confondues.",
     "core": true,
-    "source": "maison",
+    "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
         "skillId": "savoir"
@@ -67,7 +67,7 @@
     "label": "Discrétion",
     "desc": "Se fondre, se faufiler et forcer un accès sans se faire remarquer.",
     "core": true,
-    "source": "maison",
+    "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
         "skillId": "discretion"
@@ -84,7 +84,7 @@
     "id": "negoce",
     "label": "Négoce",
     "desc": "Évaluer la valeur des biens et négocier en expert — utile dès qu'un scénario tourne autour du commerce.",
-    "source": "maison",
+    "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
         "skillId": "evaluation"
@@ -100,7 +100,7 @@
     "id": "ingenierie",
     "label": "Ingénierie",
     "desc": "Machines de siège, artillerie et constructions — utile dès qu'un scénario tourne autour d'un siège.",
-    "source": "maison",
+    "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
         "skillId": "savoir",
@@ -126,7 +126,7 @@
     "id": "navigation",
     "label": "Navigation",
     "desc": "Mener un vaisseau à bon port — utile dès qu'un scénario tourne autour de la mer ou du fleuve.",
-    "source": "maison",
+    "maison": "Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). #409",
     "skills": [
       {
         "skillId": "voile"

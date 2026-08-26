@@ -300,7 +300,7 @@ Pour votre **Action**, vous pouvez vous mettre **Sur la Défensive** : choisisse
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.14-15, l.74-88, l.90, l.93-98, l.105-107, l.108-110, l.117-119, l.170-171) → `ClimbPlan`, `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `engage`, `secondsPerRound`, `useHoverTargeting`, `markAttacked`, `entityBlockedAt`, `ExecCtx`, +51 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/scene.ts`, +29 fichiers
 - `LDB 14` (l.205-215) → `advantageCap`, `advantageCapFor`, `gainAdvantage`, `ADVANTAGE_COLLARS`, `schema`, `TavernGame`, `combat-advantage-cap`, `combat-advantage-cap-bi`, `avantage`, `avantageSurLaCible`, +4 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/tavernGames.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +4 fichiers
-- `LDB 15` (l.12-16, l.18-31, l.35-41, l.45-53) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, `charge`, `chargeReach`, +59 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs-scenes/scene.ts`, +29 fichiers
+- `LDB 15` (l.12-16, l.18-31, l.35-41, l.45-53) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, `charge`, `chargeReach`, +60 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs-scenes/scene.ts`, +30 fichiers
 
 ---
 
@@ -1514,7 +1514,7 @@ On observe que **Marche = 2 × M mètres** (soit M cases) et **Course = 4 × M m
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.205) → `advantageCap`, `advantageCapFor`, `ADVANTAGE_COLLARS`, `schema`, `TavernGame`, `combat-advantage-cap`, `combat-advantage-cap-bi`, `avantage`, `avantageSurLaCible`, `conditionModLines`, +1 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/tavernGames.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, `src/engine/tavernGame.ts`, +2 fichiers
-- `LDB 15` (l.12, l.16, l.18-31, l.35-37, l.39-41) → `METRES_PER_LEVEL`, `resolveRun`, `RunModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `charge`, `chargeReach`, `occupied`, `run-roll`, +42 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/sizes.ts`, +23 fichiers
+- `LDB 15` (l.12, l.16, l.18-31, l.35-37, l.39-41) → `METRES_PER_LEVEL`, `resolveRun`, `RunModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `charge`, `chargeReach`, `occupied`, `run-roll`, +43 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/sizes.ts`, +24 fichiers
 
 ---
 
@@ -1602,7 +1602,7 @@ La **Fuite** consiste à faire demi-tour et à utiliser son Mouvement pour fuir.
 **Voir aussi** : Avantage (combat) ; Engagement et portée de mêlée ; Test opposé et DR ; Compétence Esquive ; Psychologie — Terreur ; État Brisé ; Charge ; Course.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.18-31, l.45-49, l.61-68) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `fall-choice`, `planJump`, `RunModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, +76 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs-scenes/scene.ts`, +31 fichiers
+- `LDB 15` (l.18-31, l.45-49, l.61-68) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `fall-choice`, `planJump`, `RunModal`, `reachTiles`, `hasMeaningfulOption`, `DisengageModal`, `planClimb`, +77 — `src/data/actions.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs-scenes/scene.ts`, +32 fichiers
 - `LDB 21` (l.54) → `nightmare`, `terreur`, `calme-d-approche`, `endEncounterPsych`, `resolvePsychRow`, `amour`, `humanizePerSL`, `resolvePsychAI`, `camaraderie`, `phobie`, +7 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
 
 ---
@@ -4872,7 +4872,7 @@ Si l'arme subit un **Incident de tir** à n'importe quel moment, en résoudre le
 **Voir aussi** : AA : Qualités et Défauts d'armes (Imprécise, Dangereuse, Recharge, Salve, Tir de zone, Explosion, Empaleuse, Perforante, Percutante, Dévastatrice, Pointue, Pointe d'arme) ; LDB 13 : Combat (Tir ciblé, DR, doubles/Critiques) ; LDB 18 : Traumatisme (Localisations, Blessures Critiques au bras) ; LDB 16 : États (*Surpris*, *À Terre*, *En flammes*) ; LDB 14 : Taille (catégories, modificateurs de Taille de cible) ; ADE II : Combat de masse (grandes batailles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 10` (l.3-25, l.28-53, l.55-92, l.94-98, l.101-111, l.113-128, l.131-134, l.136-150, l.152-173, l.175-196, l.198-224, l.227-249, l.254-276) → `ArtilleryMisfireEntry`, `artillery-misfire`, `structure-criticals`, `StructureCritEntry`, `warMachineCrewPenalty`, `rollArtillerySalveMisfire`, `schema`, `EnemyTurnInput`, `structure-critical`, `StructureData`, +12 — `src/data/artillery-misfire.json`, `src/data/artilleryMisfire.ts`, `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/qualities.json`, `src/data/schemas/defs/structure-criticals.ts`, +13 fichiers
+- `AA 10` (l.3-25, l.28-53, l.55-92, l.94-98, l.101-111, l.113-128, l.131-134, l.136-150, l.152-173, l.175-196, l.198-224, l.227-249, l.254-276) → `ArtilleryMisfireEntry`, `artillery-misfire`, `structure-criticals`, `StructureCritEntry`, `warMachineCrewPenalty`, `rollArtillerySalveMisfire`, `schema`, `charrette`, `chariot-leger`, `chariot-moyen`, +31 — `src/data/artillery-misfire.json`, `src/data/artilleryMisfire.ts`, `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/qualities.json`, `src/data/schemas/defs/structure-criticals.ts`, +14 fichiers
 
 ---
 
@@ -5687,7 +5687,7 @@ Note spéciale : le **Canon à flammes nain** inflige **2 + DR États *En flamme
 **Voir aussi** : aa-structures-sieges (armes de siège *maniables* d'AA, stats distinctes — Baliste +12 / Recharge 3 vs ici +14 / Recharge 2) ; les entrées Combat (Tests spectaculaires, DR, États En flammes/Empoisonné/Empêtré/Surpris/À Terre/Sans défense) ; Corruption (Facteurs Environnementaux, influence corruptrice) ; Psychologie (Peur/Terreur/Animosité/Haine, Horreurs de la Guerre).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ADE II 8` (l.13-19, l.24-33, l.34-47, l.48, l.55-56, l.65-110, l.112-135, l.138-178, l.207-225, l.227-270, l.281-304, l.307-321) → `insignifiante`, `scene`, `desavantagee`, `warMachineCrewPenalty`, `MassBattleView`, `RAM_POS`, `egale`, `RAM_CREW`, `isMeleeWarMachine`, `conditionalDamageNote`, +105 — `src/data/activities.json`, `src/data/index.ts`, `src/data/mass-battle.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +35 fichiers
+- `ADE II 8` (l.13-19, l.24-33, l.34-47, l.48, l.55-56, l.65-110, l.112-135, l.138-178, l.207-225, l.227-270, l.281-304, l.307-321) → `insignifiante`, `scene`, `resistant`, `desavantagee`, `warMachineCrewPenalty`, `MassBattleView`, `RAM_POS`, `egale`, `RAM_CREW`, `isMeleeWarMachine`, +107 — `src/data/activities.json`, `src/data/index.ts`, `src/data/mass-battle.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +36 fichiers
 - sans code : `ADE II 8` (l.174-175, l.181-186)
 
 ---

@@ -3,9 +3,7 @@
 // `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`). Module ESM pur, exécutable par `node`
 // nu — consommé par `src/data/source-ref-inline-guard.test.ts` ET par un futur hook pre-commit.
 // Même patron que `labelLogic.mjs` (fenêtre stripée de commentaires, motif bloquant tolérance ZÉRO).
-//
-// NE MATCHE PAS `{ book, chapter }` (`structures.ts:27` — divergence DOCUMENTÉE, forme distincte,
-// pas de `page`) : le motif exige la paire `book:`/`page:` DANS CET ORDRE, comme `sourceRefSchema`.
+// Le motif exige la paire `book:`/`page:` DANS CET ORDRE, comme `sourceRefSchema`.
 
 /** Retire les commentaires de bloc et de ligne (pas les chaînes).
  * @param {string} src @returns {string} */

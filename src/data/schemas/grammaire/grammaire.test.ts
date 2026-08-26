@@ -58,6 +58,53 @@ describe('document() — enveloppe posée par la fabrique', () => {
     expect(exige.schema.safeParse({ id: 'x', type: typeHorsListe, label: 'X', valeur: 1, source: SOURCE_REELLE }).success).toBe(true);
   });
 
+  it('exige une PROVENANCE : `source` OU `maison`, jamais NI L’UN NI L’AUTRE (#1467 L1b)', () => {
+    const nu = { id: 'a', type: 'talent', label: 'A', max: 2 };
+    // Sans provenance : refusé, et l'erreur NOMME le document et le champ attendu.
+    const ko = fiche.entree.safeParse(nu);
+    expect(ko.success).toBe(false);
+    expect(JSON.stringify(ko.error)).toMatch(/document\('talent'\).*maison/);
+    // `maison` SEULE suffit : un arbitrage hors canon est une provenance, pas un trou.
+    expect(fiche.entree.safeParse({ ...nu, maison: 'le canon ne chiffre pas ce point' }).success).toBe(true);
+    // `source` seule suffit ; les DEUX ensemble restent légitimes (mesuré : 27 entrées, 8 fichiers).
+    expect(fiche.entree.safeParse({ ...nu, source: SOURCE_REELLE }).success).toBe(true);
+    expect(fiche.entree.safeParse({ ...nu, source: SOURCE_REELLE, maison: 'précision maison' }).success).toBe(true);
+    // `maison` VIDE ne prouve rien : `.min(1)` STRUCTUREL, jamais une garde dans le refine.
+    expect(fiche.entree.safeParse({ ...nu, maison: '' }).success).toBe(false);
+  });
+
+  it('REFUSE `maison` BOOLÉEN — l’homonyme d’`actions.json` (drapeau) n’est pas une provenance', () => {
+    const nu = { id: 'a', type: 'talent', label: 'A', max: 2 };
+    // `actions.json` porte 30 `maison: true` : même nom, autre concept. L'enveloppe exige une RAISON.
+    expect(fiche.entree.safeParse({ ...nu, maison: true }).success).toBe(false);
+    expect(fiche.entree.safeParse({ ...nu, source: SOURCE_REELLE, maison: true }).success).toBe(false);
+    // ... et le drapeau ne satisfait donc PAS le refine de provenance : l'entrée reste sans source.
+    const ko = fiche.entree.safeParse({ ...nu, maison: true });
+    expect(JSON.stringify(ko.error)).toMatch(/maison/);
+  });
+
+  it('`affinerEntree` reçoit un nœud PRÉ-sceau dont le `.shape` porte `maison` (composable)', () => {
+    let vues: string[] = [];
+    const doc = document(
+      'talent',
+      'entite',
+      { max: z.number() },
+      { max: { label: 'Maximum' } },
+      EXPOSITION,
+      {
+        affinerEntree: (e) => {
+          vues = Object.keys(e.shape);
+          return e;
+        },
+      },
+    );
+    // Le refine de provenance est posé AVANT `affinerEntree` : il ne doit pas avoir scellé le nœud,
+    // sans quoi tout def qui compose un raffinement perdrait `.shape` (et `variants-integrity` avec).
+    expect(vues).toContain('maison');
+    expect(vues).toContain('source');
+    expect(doc.cles).toContain('maison');
+  });
+
   it('REFUSE une clé d’enveloppe redéclarée dans `champs`, en la nommant', () => {
     expect(() =>
       // @ts-expect-error — `label` est une clé d'ENVELOPPE : le mapped type l'annule en `never`.

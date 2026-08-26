@@ -1935,7 +1935,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       id: s.id, label: s.label, sub: s.kind === 'porte' ? 'Porte' : 'Mur', desc: s.desc ?? undefined,
       meta: facts(
         fact('BE', s.char.BE), fact('Blessures', s.char.B), fact('Fortifiée', s.fortified ? 'oui' : null),
-        fact('Source', s.source ? `${bookAbr(s.source.book)} ch.${s.source.chapter}` : null),
+        fact('Source', s.source ? `${bookAbr(s.source.book)} p.${s.source.page}` : null),
       ),
       sections: sections(chips('Atouts', 'traits', traitLabels(s.traits as unknown as import('../../engine/statEntry').TraitList))),
     })),

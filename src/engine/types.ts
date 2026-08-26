@@ -269,8 +269,8 @@ export interface StructureData {
   /** Pénalité de Couvert par défaut pour un assaillant qui tire sur une cible réfugiée sur/derrière la
    *  Structure (AA 10 l.28-52) — `undefined` = N/A (aucun couvert, ex. Herse/Solide porte en bois). */
   couvertPenalty?: Difficulty;
-  /** Provenance RAW (ADE II 8 ou AA 10). */
-  source: { book: string; chapter: number };
+  /** Provenance RAW au FOLIO imprimé (ADE II 89 ; AA 119-120) — même forme que `SourceRef`. */
+  source: { book: string; page: number };
   desc?: string;
 }
 

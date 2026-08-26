@@ -1,7 +1,8 @@
 /**
  * Schéma de `axes.json` — catalogue des AXES de forces/faiblesses (ticket #409, verbatim en corps
  * d'issue, 2026-07-13 : mini-radar par personnage, paramétrable par campagne). Mécanique MAISON
- * (aucune page RAW — `source: 'maison'`, jamais `sourceRefSchema` qui exigerait un folio inexistant) :
+ * (aucune page RAW — champ d'enveloppe `maison`, jamais `sourceRefSchema` qui exigerait un folio
+ * inexistant) :
  * chaque axe liste ses SOURCES en ids STABLES de `skills.json`/`talents.json` (`skills`/`talents`,
  * TOP-LEVEL — patron `crewRoles.skills`, `{skillId,spec?}[]`, éditeur `SkillSpecListField` au Codex),
  * résolues par `axisScore` (`src/engine/axes.ts`). `core` marque le socle de base (actif par défaut
@@ -35,8 +36,9 @@ export const schema = z.array(
     desc: z.string().optional(),
     /** Socle de base (actif par défaut si la campagne ne déclare pas `activeAxes`). */
     core: z.boolean().optional(),
-    /** Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). */
-    source: z.literal('maison'),
+    /** Mécanique maison — aucune page RAW à citer (le RAW ne connaît pas cet axe). Champ
+     *  d'ENVELOPPE (`maison`), posé ici en attendant l'adoption de `document()` par ce def. */
+    maison: z.string().min(1),
     skills: z.array(skillRefSchema).optional(),
     talents: z.array(talentRefSchema).optional(),
   }),

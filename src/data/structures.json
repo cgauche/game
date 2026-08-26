@@ -14,7 +14,7 @@
     ],
     "source": {
       "book": "archives-de-l-empire-2",
-      "chapter": 8
+      "page": 89
     }
   },
   {
@@ -32,7 +32,7 @@
     ],
     "source": {
       "book": "archives-de-l-empire-2",
-      "chapter": 8
+      "page": 89
     }
   },
   {
@@ -51,7 +51,7 @@
     ],
     "source": {
       "book": "archives-de-l-empire-2",
-      "chapter": 8
+      "page": 89
     }
   },
   {
@@ -69,7 +69,7 @@
     ],
     "source": {
       "book": "archives-de-l-empire-2",
-      "chapter": 8
+      "page": 89
     }
   },
   {
@@ -88,7 +88,7 @@
     ],
     "source": {
       "book": "archives-de-l-empire-2",
-      "chapter": 8
+      "page": 89
     }
   },
   {
@@ -106,7 +106,7 @@
     "couvertPenalty": "intermediaire",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 119
     },
     "desc": "Les petits véhicules à deux roues, par exemple les carrioles à âne et les chars à deux roues de transport ou de combat. Les charrettes à passagers incluent un siège avec de la place pour jusqu'à deux personnes et celles transportant des marchandises ont un seul siège et un plateau pour la cargaison."
   },
@@ -125,7 +125,7 @@
     "couvertPenalty": "complexe",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 119
     },
     "desc": "Les chariots sont de grands véhicules ouverts faits pour transporter n'importe quel type de cargaison. Selon leur taille, ils sont tirés par au moins deux chevaux ou deux bœufs. L'avant comporte un banc assez grand pour trois personnes, même si un seul conducteur est nécessaire. Certains chariots sont même spécialement conçus pour porter des armes ou fournir une plateforme depuis laquelle des troupes peuvent se battre et si le MJ l'autorise, ces véhicules de guerre peuvent accorder une meilleure pénalité de Couvert."
   },
@@ -144,7 +144,7 @@
     "couvertPenalty": "difficile",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 119
     },
     "desc": "Les chariots sont de grands véhicules ouverts faits pour transporter n'importe quel type de cargaison. Selon leur taille, ils sont tirés par au moins deux chevaux ou deux bœufs. L'avant comporte un banc assez grand pour trois personnes, même si un seul conducteur est nécessaire. Certains chariots sont même spécialement conçus pour porter des armes ou fournir une plateforme depuis laquelle des troupes peuvent se battre et si le MJ l'autorise, ces véhicules de guerre peuvent accorder une meilleure pénalité de Couvert."
   },
@@ -163,7 +163,7 @@
     "couvertPenalty": "difficile",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 119
     },
     "desc": "Les chariots sont de grands véhicules ouverts faits pour transporter n'importe quel type de cargaison. Selon leur taille, ils sont tirés par au moins deux chevaux ou deux bœufs. L'avant comporte un banc assez grand pour trois personnes, même si un seul conducteur est nécessaire. Certains chariots sont même spécialement conçus pour porter des armes ou fournir une plateforme depuis laquelle des troupes peuvent se battre et si le MJ l'autorise, ces véhicules de guerre peuvent accorder une meilleure pénalité de Couvert."
   },
@@ -182,7 +182,7 @@
     "couvertPenalty": "complexe",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Une diligence est un véhicule fermé à quatre roues, tiré par 2 à 6 chevaux. Les riches ont tendance à les utiliser pour les voyages sur de longues distances, et l'Empire abrite plusieurs compagnies de diligences qui exploitent des lignes régulières."
   },
@@ -201,7 +201,7 @@
     "couvertPenalty": "complexe",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 119
     },
     "desc": "Les barges sur le Reik mesurent généralement environ 20 mètres de long. Elles sont conçues pour transporter de grosses cargaisons pour leur taille et sont propulsées à la fois à voile et à rames."
   },
@@ -220,7 +220,7 @@
     "couvertPenalty": "difficile",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 119
     },
     "desc": "Les équipages de patrouilleurs fluviaux utilisent des navires rapides propulsés par des rangées de rames pour les poursuites à grande vitesse ou par des voiles pour les patrouilles menées à un rythme plus posé. Ces bateaux font environ 25 mètres de long et sont construits pour pouvoir résister à beaucoup de dommages."
   },
@@ -239,7 +239,7 @@
     "couvertPenalty": "intermediaire",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 119
     },
     "desc": "Les chaloupes sont de petits vaisseaux mesurant 10 mètres de longueur maximum, par exemple les petits bateaux de pêche du Reikland ou les chalands de Marienburg."
   },
@@ -255,7 +255,7 @@
     "couvertPenalty": "intermediaire",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 119
     },
     "desc": "Les clôtures en clayonnage sont tressées avec de minces branches de saule. Elles sont faciles à fabriquer et résistantes si leur tressage est bon. Cependant, elles conviennent davantage pour des enclos d'animaux que pour des fortifications. Elles restent employées comme couvert par ceux qui n'ont pas le temps de trouver autre chose ou qui ne disposent pas d'une meilleure alternative."
   },
@@ -271,7 +271,7 @@
     "traits": [],
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Une grille de fer qui peut être abaissée pour protéger l'entrée principale d'une forteresse."
   },
@@ -288,7 +288,7 @@
     "couvertPenalty": "complexe",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Les mantelets sont de grandes planches de bois solides fixées sur des supports ou des chariots à roues, ce qui permet de les prendre et de les déplacer relativement facilement pour leur taille.\n\nLors des batailles et des sièges, ce sont des défenses mobiles qui peuvent être avancées pour couvrir les troupes et le matériel au fur et à mesure qu'ils se repositionnent ou progressent."
   },
@@ -305,7 +305,7 @@
     "couvertPenalty": "complexe",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Ce mur est typique de beaucoup de résidences du Vieux Monde. Il a pour ossature une solide charpente en bois qui accueille ensuite des matériaux tels que des briques, de la pierre ou du clayonnage et du torchis. Ces murs ne sont généralement pas faits pour y monter une arme, mais la Limite d'Encombrement est indiquée pour prendre en compte le cas où un Personnage utilise un rebord de fenêtre bien pratique pour y poser son arme."
   },
@@ -322,7 +322,7 @@
     "couvertPenalty": "tresDifficile",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Les murs de château sont normalement composés de deux faces de pierres étroitement ajustées les unes dans les autres et fixées par du mortier entre lesquelles se trouve une cavité remplie d'un mélange de gravier, de mortier ou de coquilles d'huître."
   },
@@ -339,7 +339,7 @@
     "couvertPenalty": "tresDifficile",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Les nains ont tendance à bâtir les murs de leurs forteresses à partir d'énormes blocs de roche, taillés pour s'emboîter impeccablement les uns dans les autres. Ils sont aussi épais que les murs des châteaux des humains, si ce n'est plus, mais sont donc composés uniquement de pierre massive et bien plus résistants.\n\nLes murs des cités humaines comme Altdorf, Ubersreik et Marienburg sont construits et entretenus par les nains, contre rémunération significative."
   },
@@ -356,7 +356,7 @@
     "couvertPenalty": "difficile",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Un « mur de pierre » désigne un mur assemblés par leurs formes taillées, du mortier, ou les deux pour donner une Structure permanente, plus stable qu'un mur de pierres sèches, mais moins épaisse qu'un mur de château. Un relais de poste fortifié est généralement entouré d'un mur de pierre."
   },
@@ -373,7 +373,7 @@
     "couvertPenalty": "complexe",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Les murs en pierres sèches incluent toutes les Structures de pierre fabriquées avec des rochers qui ne sont ni taillés ni fixés pour rester en place."
   },
@@ -390,7 +390,7 @@
     "couvertPenalty": "difficile",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Une palissade est construite en érigeant une clôture de pieux de bois enfoncés dans la terre. Des remparts de terre sont élevés derrière la ligne de pieux et des passerelles en bois sont construites par-dessus ces remparts."
   },
@@ -406,7 +406,7 @@
     "enc": 5,
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Les portes généralement présentes dans une maison d'habitation ordinaire sont totalement détruites lorsqu'elles sont touchées par une arme un tant soit peu puissante. Cependant, une « solide porte en bois » fait ici référence aux portes épaisses renforcées par des bandes de fer présentes dans les forteresses et autres grands bâtiments."
   },
@@ -423,7 +423,7 @@
     "couvertPenalty": "complexe",
     "source": {
       "book": "aux-armes",
-      "chapter": 10
+      "page": 120
     },
     "desc": "Les terrassements sont des contreforts de terre volontairement empilée pour servir de fortifications."
   }

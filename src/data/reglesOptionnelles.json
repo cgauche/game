@@ -928,7 +928,7 @@
   {
     "id": "exposure-night-difficile-count",
     "label": "Exposition : Tests par nuit (difficile)",
-    "ref": "LDB 18",
+    "ref": "LDB 18 l.328",
     "maison": "LDB 18 ne chiffre que la CADENCE des Tests d’Exposition en environnement difficile ; convertir une nuit passée dehors en un NOMBRE de Tests est maison.",
     "group": "Voyage",
     "kind": "param",
@@ -940,7 +940,7 @@
   {
     "id": "exposure-night-extreme-count",
     "label": "Exposition : Tests par nuit (extrême)",
-    "ref": "LDB 18",
+    "ref": "LDB 18 l.328",
     "maison": "LDB 18 ne chiffre que la CADENCE des Tests d’Exposition en environnement extrême ; convertir une nuit passée dehors en un NOMBRE de Tests est maison.",
     "group": "Voyage",
     "kind": "param",
@@ -952,7 +952,7 @@
   {
     "id": "exposure-tent-cancels",
     "label": "La Tente annule l’Exposition du camp",
-    "ref": "LDB 74",
+    "ref": "LDB 74 l.62",
     "maison": "LDB 74 ne prête à la Tente AUCUN effet sur l’Exposition (seul le Sac de couchage porte un bonus chiffré) : l’annulation de l’Exposition du camp est une convenance maison.",
     "group": "Voyage",
     "kind": "flag",
@@ -975,7 +975,7 @@
   {
     "id": "exposure-no-coat-penalty",
     "label": "Exposition (Froid) : pénalité sans Manteau",
-    "ref": "LDB 65",
+    "ref": "LDB 65 l.44",
     "maison": "LDB 65 mentionne « des pénalités » sans les chiffrer : malus maison au Test de Résistance contre le froid sans Manteau ni Cape porté.",
     "group": "Voyage",
     "kind": "param",

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { auditDataset, EXEMPT_DATASETS, isCitedItem } from '../../scripts/guards/lib/citationCoverage.mjs';
@@ -52,6 +52,31 @@ function missingByFile(): Record<string, number> {
   }
   return missing;
 }
+
+describe('EXEMPT_DATASETS s’auto-purge — une exemption intégralement citée est morte (#1467 L1b)', () => {
+  it('aucune entrée d’EXEMPT_DATASETS n’a `cited === total` (elle ne sert plus qu’à mentir)', () => {
+    const mortes: string[] = [];
+    for (const f of Object.keys(EXEMPT_DATASETS)) {
+      let data: unknown;
+      try {
+        data = JSON.parse(readFileSync(join(DATA_DIR, f), 'utf8'));
+      } catch {
+        continue;
+      }
+      const { total, cited } = auditDataset(data);
+      if (total > 0 && cited === total) mortes.push(`${f} : ${cited}/${total} entrée(s) citée(s)`);
+    }
+    expect(
+      mortes,
+      `exemption(s) MORTE(S) — le dataset est curé, retirer l’entrée d’EXEMPT_DATASETS :\n  ${mortes.join('\n  ')}`,
+    ).toEqual([]);
+  });
+
+  it('chaque exemption nomme un fichier QUI EXISTE (une exemption fantôme ne protège rien)', () => {
+    const fantomes = Object.keys(EXEMPT_DATASETS).filter((f) => !existsSync(join(DATA_DIR, f)));
+    expect(fantomes).toEqual([]);
+  });
+});
 
 describe('garde-fou « citation par entrée » — couverture source:{book,page} (cliquet, #309)', () => {
   it('aucun dataset non exempté ne dépasse sa baseline gelée d\'entrées sans citation', () => {

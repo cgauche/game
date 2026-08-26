@@ -11,8 +11,6 @@ import { hasInlineSourceRef } from '../../scripts/guards/lib/sourceRefInline.mjs
  * (bloquant) : le Lot 3 a migré les 4 seules defs qui la réinventaient.
  *
  * `grammaire/valeurs.ts` HORS SCAN : c'est le foyer de la primitive, sa définition EST le motif.
- * `structures.ts` (`{book,chapter}`, divergence DOCUMENTÉE sans `page`) ne matche pas ce motif —
- * pas d'exclusion nécessaire.
  */
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/data/ → ../../ = racine du projet

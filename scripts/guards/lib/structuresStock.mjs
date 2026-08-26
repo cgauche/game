@@ -693,7 +693,6 @@ export const STRUCTURES_FORMES = [
   { concept: "source", dataset: "qualities.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "skills.json", champ: "alsoIn", signature: "book,note,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "spells.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 46, lot: "L1d #1469", date: "2026-08-23" },
-  { concept: "source", dataset: "structures.json", champ: "source", signature: "book,chapter", statut: "historique", strate: "Valeur", occurrences: 24, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "talents.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "traits.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "trappings.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 8, lot: "L1d #1469", date: "2026-08-23" },
@@ -804,7 +803,6 @@ export const STRUCTURES_HOMONYMES = [
   { cle: "price", classes: ["null","number","object","string"], occurrences: 515, lot: "L4 #1463", date: "2026-08-23" },
   { cle: "cost", classes: ["number","object","string"], occurrences: 93, lot: "L4 #1463", date: "2026-08-23" },
   { cle: "count", classes: ["number","object"], occurrences: 92, lot: "L4 #1463", date: "2026-08-23" },
-  { cle: "source", classes: ["object","string"], occurrences: 4375, lot: "L1d #1469", date: "2026-08-23" },
 ];
 
 /** Littéral d'objet zod d'un `defs/*.ts` qui REDÉCLARE localement un concept du lexique (ou la
@@ -891,7 +889,6 @@ export const STRUCTURES_REDECLARATIONS = [
   { def: "steam-breakdown.ts", champ: "restart", concept: "test", signature: "difficulty,skillId+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "structure-criticals.ts", champ: "", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "structures.ts", champ: "", concept: "reference", signature: "id,value", statut: "historique", commun: "", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { def: "structures.ts", champ: "source", concept: "source", signature: "book,chapter", statut: "historique", commun: "", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { def: "symptoms.ts", champ: "onTick", concept: "test", signature: "difficulty+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "tables.ts", champ: "rows", concept: "plage", signature: "max,min+…", statut: "divergente", commun: "", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { def: "talents.ts", champ: "max", concept: "", signature: "bonusOf", statut: "hors lexique", commun: "formulaSchema", occurrences: 1, lot: "L1a #1466", date: "2026-08-23" },
@@ -1093,7 +1090,7 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "structureAppearance.json", chemin: "(entrées)", entrees: 18, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "systemes.manifest.json", chemin: "(entrées)", entrees: 16, lot: "L1d #1469", date: "2026-08-23" },
   { role: "source", cle: "source", motif: "clé absente", detail: "", document: "weather.json", chemin: "(entrées)", entrees: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { role: "source", cle: "source", motif: "type divergent", detail: "string", document: "axes.json", chemin: "(entrées)", entrees: 9, lot: "L1d #1469", date: "2026-08-23" },
+  { role: "source", cle: "source", motif: "clé absente", detail: "", document: "axes.json", chemin: "(entrées)", entrees: 9, lot: "L1d #1469", date: "2026-08-23" },
 ];
 
 /** Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé réservée, clé d'identité) et qui

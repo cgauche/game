@@ -17,7 +17,7 @@ describe('Structures AA (AA 10 l.26-92)', () => {
     expect(s.char).toEqual({ BE: 6, B: 100 });
     expect(s.couvertPenalty).toBe('tresDifficile');
     expect(s.kind).toBe('mur');
-    expect(s.source).toEqual({ book: 'aux-armes', chapter: 10 });
+    expect(s.source).toEqual({ book: 'aux-armes', page: 120 });
   });
 
   it('Mur de forteresse naine : Limite 200, Endurance 80 → BE 8, Blessures 150, Couvert Très Difficile', () => {
@@ -54,11 +54,11 @@ describe('Structures AA (AA 10 l.26-92)', () => {
     expect(aa.char).toEqual({ BE: 6, B: 50 });
     expect(aa.couvertPenalty).toBe('difficile');
     expect(aa.kind).toBe('mur');
-    expect(aa.source).toEqual({ book: 'aux-armes', chapter: 10 });
+    expect(aa.source).toEqual({ book: 'aux-armes', page: 120 });
 
     const adeII = findStructureById('mur-en-pierre')!;
     expect(adeII.char).toEqual({ BE: 12, B: 40 });
-    expect(adeII.source).toEqual({ book: 'archives-de-l-empire-2', chapter: 8 });
+    expect(adeII.source).toEqual({ book: 'archives-de-l-empire-2', page: 89 });
   });
 
   it("Solide porte en bois : SEULE nouvelle entrée AA de kind 'porte' (Bélier applicable)", () => {
@@ -72,7 +72,9 @@ describe('Structures AA (AA 10 l.26-92)', () => {
       const s = findStructureById(id);
       expect(s, `${id} manquant`).toBeTruthy();
       expect(s!.kind).toBe(id === 'solide-porte-en-bois' ? 'porte' : 'mur');
-      expect(s!.source).toEqual({ book: 'aux-armes', chapter: 10 });
+      expect(s!.source.book).toBe('aux-armes');
+      // La table court sur DEUX folios (`src/data/structures-folio.test.ts` atteste lequel par entrée).
+      expect([119, 120]).toContain(s!.source.page);
     }
   });
 });
