@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { datasetArray, setDataset, datasetObject, setObjectDataset, datasetFile, datasetSerializeRoot, datasetObjectFile, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
 import type { ShipCrewTest } from '../../data/shipCriticals';
 import { serializeDataset } from '../../data/serialize';
-import { validateDataset } from '../../data/schemas/validate';
+import { validateDataset, metaPourFichier } from '../../data/schemas/validate';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
 import { entryKey, invalidateCodexLookup, ACTIVITY_CONTEXT_LABEL, OUTCOME_ON_LABEL, BATTLE_COND_LABEL, BATTLE_TARGET_LABEL, BATTLE_SCALE_LABEL, BATTLE_SIDE_LABEL } from './registry';
@@ -590,7 +590,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Descripteurs de TOUS les champs inferés (avant retrait des éditeurs dédiés) : `VariantsField` y
   // repique le gabarit d'un champ republiable sans éditeur bespoke (NI, Durée…) pour le rendre pareil
   // que sur l'entrée de base.
-  const allFields = useMemo(() => inferFields(src.entries as Record<string, unknown>[]), [src.entries]);
+  // La méta d'ÉDITION du document arrive par le CANAL REGISTRE (`SchemaDef.meta`, posée par
+  // `document()`) — un def qui adopte la fabrique fait apparaître ses libellés FR sans une ligne d'UI.
+  const allFields = useMemo(() => inferFields(src.entries as Record<string, unknown>[], { meta: metaPourFichier(src.file) }), [src.entries, src.file]);
   const fields = useMemo(() => {
     const handled = dedicatedFieldKeys(categoryKey);
     return allFields.filter((f) => !handled.has(f.key));
@@ -803,7 +805,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {fields.map((f) => {
           const cfg = refFieldCfg(categoryKey, f.key);
           return cfg
-            ? <RefField key={f.key} cfg={cfg} categoryKey={categoryKey} fieldKey={f.key} nullable={f.nullable} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />
+            ? <RefField key={f.key} cfg={cfg} categoryKey={categoryKey} fieldKey={f.key} label={f.label} nullable={f.nullable} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />
             : <Field key={f.key} field={f} value={entry[f.key]} onChange={(v) => edit(f.key, v)} />;
         })}
       </div>
@@ -1731,7 +1733,8 @@ function DetailsTextsField({ value, onChange }: { value: DetailsTexts | undefine
 
 /** Rendu d'un champ, avec autocomplétion `<datalist>` pour les listes de références. */
 function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; onChange: (v: unknown) => void }) {
-  const { key, kind } = field;
+  // `key` = IDENTITÉ du champ (jointures de valeurs, `REF_LIST_DATASET`) ; `label` = AFFICHAGE (#1466).
+  const { key, kind, label } = field;
   const refDs = REF_LIST_DATASET[key];
 
   if (kind === 'stringList') {
@@ -1739,7 +1742,7 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
     const set = (next: string[]) => onChange(next);
     return (
       <div className="ed-field">
-        <span>{key}{refDs && <em className="de-hint"> (autocomplétion {refDs})</em>}</span>
+        <span>{label}{refDs && <em className="de-hint"> (autocomplétion {refDs})</em>}</span>
         {list.map((item, i) => (
           <div key={i} className="de-reflrow">
             <input value={item} list={refDs ? `dl-${refDs}` : undefined}
@@ -1757,10 +1760,10 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
     const set = (next: number[]) => onChange(next);
     return (
       <div className="ed-field">
-        <span>{key}</span>
+        <span>{label}</span>
         {list.map((item, i) => (
           <div key={i} className="de-reflrow">
-            <NumberField variant="nu" label={`${key} — valeur ${i + 1}`} value={item} onChange={(n) => set(list.map((x, j) => (j === i ? n : x)))} />
+            <NumberField variant="nu" label={`${label} — valeur ${i + 1}`} value={item} onChange={(n) => set(list.map((x, j) => (j === i ? n : x)))} />
             <button className="btn small danger" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
           </div>
         ))}
@@ -1769,22 +1772,22 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
     );
   }
   if (kind === 'textarea')
-    return <label className="ed-field"><span>{key}</span><textarea rows={3} value={(value as string) ?? ''} onChange={(e) => onChange(e.target.value)} /></label>;
+    return <label className="ed-field"><span>{label}</span><textarea rows={3} value={(value as string) ?? ''} onChange={(e) => onChange(e.target.value)} /></label>;
   if (kind === 'number')
-    return <label className="ed-field"><span>{key}</span><NumberField variant="nu" label={key} vide value={value as number | null} onChange={(n) => onChange(n ?? (field.nullable ? null : 0))} /></label>;
+    return <label className="ed-field"><span>{label}</span><NumberField variant="nu" label={label} vide value={value as number | null} onChange={(n) => onChange(n ?? (field.nullable ? null : 0))} /></label>;
   if (kind === 'checkbox')
-    return <label className="ed-check"><input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} /><span>{key}</span></label>;
+    return <label className="ed-check"><input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} /><span>{label}</span></label>;
   if (kind === 'source') {
     const s = (value as { book?: string; page?: number }) ?? {};
-    return <div className="ed-field"><span>{key}</span><div className="de-source"><input placeholder="livre" value={s.book ?? ''} onChange={(e) => onChange({ ...s, book: e.target.value })} /><NumberField variant="nu" label={`${key} — page`} placeholder="page" vide value={s.page} onChange={(n) => onChange({ ...s, page: n ?? 0 })} /></div></div>;
+    return <div className="ed-field"><span>{label}</span><div className="de-source"><input placeholder="livre" value={s.book ?? ''} onChange={(e) => onChange({ ...s, book: e.target.value })} /><NumberField variant="nu" label={`${label} — page`} placeholder="page" vide value={s.page} onChange={(n) => onChange({ ...s, page: n ?? 0 })} /></div></div>;
   }
   if (kind === 'recordNumber') {
     const rec = (value as Record<string, number | null>) ?? {};
     const keys = Object.keys(rec);
-    return <div className="ed-field"><span>{key}</span>{keys.length === 0 ? <em className="de-hint">vide</em> : <div className="de-grid">{keys.map((k) => <label key={k} className="de-cell"><span>{k}</span><NumberField variant="nu" label={`${key} — ${k}`} vide value={rec[k]} onChange={(n) => onChange({ ...rec, [k]: n })} /></label>)}</div>}</div>;
+    return <div className="ed-field"><span>{label}</span>{keys.length === 0 ? <em className="de-hint">vide</em> : <div className="de-grid">{keys.map((k) => <label key={k} className="de-cell"><span>{k}</span><NumberField variant="nu" label={`${label} — ${k}`} vide value={rec[k]} onChange={(n) => onChange({ ...rec, [k]: n })} /></label>)}</div>}</div>;
   }
-  if (kind === 'recordText') return <RecordTextField label={key} value={value as Record<string, string> | undefined} onChange={onChange} />;
-  if (kind === 'object') return <ObjectField label={key} value={value as Record<string, unknown> | undefined} onChange={onChange} />;
+  if (kind === 'recordText') return <RecordTextField label={label} value={value as Record<string, string> | undefined} onChange={onChange} />;
+  if (kind === 'object') return <ObjectField label={label} value={value as Record<string, unknown> | undefined} onChange={onChange} />;
   if (kind === 'json') {
     // Un tableau d'objets PLATS niché (`vitesseMax.table`, `hazards[].entanglePenalties`… sous un
     // `ObjectField`/`GenericArrayField` récursif, hors du périmètre TOP-LEVEL du garde
@@ -1794,10 +1797,10 @@ function Field({ field, value, onChange }: { field: FieldDesc; value: unknown; o
     // fonctionnel). `JsonField` ne reste qu'un filet pour une forme vraiment hors gabarit (tableau de
     // tableaux…), aucun cas réel actuel.
     if (value == null || (Array.isArray(value) && value.every((x) => x != null && typeof x === 'object' && !Array.isArray(x))))
-      return <GenericArrayField label={key} value={value as Record<string, unknown>[] | undefined} onChange={onChange as (v: Record<string, unknown>[]) => void} />;
-    return <JsonField label={field.key} value={value} onChange={onChange} />;
+      return <GenericArrayField label={label} value={value as Record<string, unknown>[] | undefined} onChange={onChange as (v: Record<string, unknown>[]) => void} />;
+    return <JsonField label={label} value={value} onChange={onChange} />;
   }
-  return <label className="ed-field"><span>{key}</span><input value={(value as string) ?? ''} onChange={(e) => onChange(field.nullable && e.target.value === '' ? null : e.target.value)} /></label>;
+  return <label className="ed-field"><span>{label}</span><input value={(value as string) ?? ''} onChange={(e) => onChange(field.nullable && e.target.value === '' ? null : e.target.value)} /></label>;
 }
 
 /** Record homogène clé→chaîne (couleur par espèce des yeux/cheveux, palette de couleurs d'apparence) :
@@ -1831,7 +1834,9 @@ function RecordTextField({ label, value, onChange }: { label: string; value: Rec
  *  via le MÊME `inferFields` + `Field`, sans repli JSON pour les objets plats. */
 function ObjectField({ label, value, onChange }: { label: string; value: Record<string, unknown> | undefined; onChange: (v: Record<string, unknown>) => void }) {
   const obj = value ?? {};
-  const subFields = useMemo(() => inferFields([obj]), [obj]);
+  // Régime PROFONDEUR : un sous-champ nommé `id`/`maison` n'est pas le champ d'enveloppe du même nom —
+  // il reste en clé technique, sa méta relève de la dérivation des widgets (#1466 L6).
+  const subFields = useMemo(() => inferFields([obj], { niveau: 'profondeur' }), [obj]);
   return (
     <div className="ed-field ed-subform">
       <span>{label}</span>
@@ -1857,14 +1862,15 @@ function ObjectField({ label, value, onChange }: { label: string; value: Record<
  *  de champs) ou démarre vide si le tableau l'est. */
 function GenericArrayField({ label, value, onChange, columns }: { label: string; value: Record<string, unknown>[] | undefined; onChange: (v: Record<string, unknown>[]) => void; columns?: FieldDesc[] }) {
   const list = value ?? [];
-  const selfCols = useMemo(() => inferFields(list), [list]);
+  // Colonnes de PROFONDEUR : même frontière que `ObjectField` (méta de profondeur = #1466 L6).
+  const selfCols = useMemo(() => inferFields(list, { niveau: 'profondeur' }), [list]);
   const cols = columns ?? selfCols;
   const nestedCols = useMemo(() => {
     const map = new Map<string, FieldDesc[]>();
     for (const f of cols) {
       if (f.kind !== 'json') continue;
       const pool = list.flatMap((r) => (Array.isArray(r[f.key]) ? (r[f.key] as Record<string, unknown>[]) : []));
-      if (pool.length && pool.every((x) => x != null && typeof x === 'object' && !Array.isArray(x))) map.set(f.key, inferFields(pool));
+      if (pool.length && pool.every((x) => x != null && typeof x === 'object' && !Array.isArray(x))) map.set(f.key, inferFields(pool, { niveau: 'profondeur' }));
     }
     return map;
   }, [list, cols]);
@@ -1875,7 +1881,7 @@ function GenericArrayField({ label, value, onChange, columns }: { label: string;
       {list.map((row, i) => (
         <div className="ed-subfield" key={i}>
           {cols.map((f) => nestedCols.has(f.key)
-            ? <GenericArrayField key={f.key} label={f.key} value={(row[f.key] as Record<string, unknown>[] | undefined) ?? []} columns={nestedCols.get(f.key)} onChange={(v) => setRow(i, f.key, v)} />
+            ? <GenericArrayField key={f.key} label={f.label} value={(row[f.key] as Record<string, unknown>[] | undefined) ?? []} columns={nestedCols.get(f.key)} onChange={(v) => setRow(i, f.key, v)} />
             : <Field key={f.key} field={f} value={row[f.key]} onChange={(v) => setRow(i, f.key, v)} />)}
           <button className="btn small danger" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕ Retirer la rangée</button>
         </div>

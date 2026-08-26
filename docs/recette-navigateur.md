@@ -9,6 +9,11 @@
 combat direct) ; **passer par le scénario adapté, sinon en créer un** — un scénario = un fichier
 dans `src/scenes/test-scenarios/` (cf. `docs/test-scenarios.md`).
 
+**Quel process sert le port ?** (5173 peut servir un AUTRE worktree que celui qu'on recette) :
+`Get-NetTCPConnection -LocalPort 5173` → colonne `OwningProcess` = le PID RÉEL. Ne pas s'en remettre
+à `ps -W` seul : il rend le WINPID du wrapper npm, pas celui du serveur Vite. L'arrêt par PID passe
+par un script `.mjs` (`process.kill(pid)`) — `taskkill`/`Stop-Process` sont bloqués par l'allowlist shell.
+
 ## Preuve headless (agents)
 
 > **Le socle `lib.mjs` est TOUJOURS la première option, avant tout `playwright-MCP`** — le profil

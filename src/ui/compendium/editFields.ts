@@ -3,10 +3,15 @@
  * tout seul). Métadonnées de RENDU uniquement : décrit comment afficher un champ, sans introduire de
  * structure intermédiaire — on édite les vrais objets de `src/data`. Consommé par `CodexEdit`.
  */
+import { LIBELLES_ENVELOPPE, type CleEnveloppe } from '../../data/schemas/grammaire/document';
+import type { MetaChamp } from '../../data/schemas/grammaire/meta';
+
 export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'numberList' | 'source' | 'recordNumber' | 'recordText' | 'object' | 'json';
 
 export interface FieldDesc {
   key: string;
+  /** Libellé FR affiché (`libelleDuChamp`) — AFFICHAGE seul : `key` reste l'identité du champ. */
+  label: string;
   kind: FieldKind;
   /** Le champ est null/absent sur au moins une entrée (autorise le vide). */
   nullable: boolean;
@@ -40,8 +45,44 @@ function kindOf(key: string, v: unknown): FieldKind {
   return 'text';
 }
 
-/** Champs (ordre = 1re apparition), type inféré du 1er échantillon non-null de chaque clé. */
-export function inferFields(entries: Record<string, unknown>[]): FieldDesc[] {
+/**
+ * RÉGIME de libellé d'un champ : à quel étage du document il vit, et quelle méta d'édition le nomme.
+ * L'enveloppe (`id`/`desc`/`source`…) n'existe qu'au PREMIER NIVEAU : un `maison` de bande de coût
+ * (`naval-traits.json install.cost.bands[]`) ou un `id` d'op (`activities.json outcomes[].ops[]`) n'est
+ * PAS le champ d'enveloppe du même nom — lui poser « Arbitrage maison » / « Identifiant » mentirait.
+ */
+export interface RegimeDeLibelle {
+  /** Méta d'édition du document, par le canal registre (`SchemaDef.meta`) — champs de premier niveau. */
+  meta?: Readonly<Record<string, MetaChamp>>;
+  /** `document` = champ de premier niveau ; `profondeur` = sous-champ (méta dérivée : lot #1466 L6). */
+  niveau?: 'document' | 'profondeur';
+}
+
+/**
+ * Cascade du LIBELLÉ d'un champ (#1466 L1a, point 6), au régime `document` : clé d'ENVELOPPE → table
+ * FR de la fabrique (`LIBELLES_ENVELOPPE`, seule détentrice de ces noms puisque `document()` refuse
+ * une méta dessus) ; sinon méta d'édition du def ; sinon la clé technique — seam d'extinction à
+ * mesure de l'adoption (L1b #1467).
+ *
+ * Au régime `profondeur`, un sous-champ rend TOUJOURS sa clé : enveloppe et méta décrivent le PREMIER
+ * NIVEAU du document (`document()` exige une méta par clé de `champs`, tous de premier niveau), et le
+ * nommage d'un sous-champ est la dérivation du lot #1466 L6.
+ *
+ * EXCLUSION : `type` sur un document SANS méta (donc sans handle) n'est pas le type de document mais
+ * un DISCRIMINANT de charge utile (characteristics/qualities/skills/trappings/spells, mesuré) — le
+ * libeller « Type de document » mentirait à l'écran.
+ */
+export function libelleDuChamp(key: string, { meta, niveau = 'document' }: RegimeDeLibelle = {}): string {
+  if (niveau === 'profondeur') return key;
+  // Lecture sur les PROPRES clés de la table (jamais la chaîne de prototypes : `toString` rendrait
+  // une fonction là où l'écran attend une chaîne).
+  if (Object.prototype.hasOwnProperty.call(LIBELLES_ENVELOPPE, key) && !(key === 'type' && !meta)) return LIBELLES_ENVELOPPE[key as CleEnveloppe];
+  return meta?.[key]?.label ?? key;
+}
+
+/** Champs (ordre = 1re apparition), type inféré du 1er échantillon non-null de chaque clé ; libellé
+ *  par `libelleDuChamp` (la `meta` du def, quand il en a une, arrive par le registre de schémas). */
+export function inferFields(entries: Record<string, unknown>[], regime: RegimeDeLibelle = {}): FieldDesc[] {
   const keys: string[] = [];
   for (const e of entries) for (const k of Object.keys(e)) if (!keys.includes(k)) keys.push(k);
   return keys.map((key) => {
@@ -52,6 +93,6 @@ export function inferFields(entries: Record<string, unknown>[]): FieldDesc[] {
       if (v == null) sawNull = true;
       else if (sample === undefined) sample = v;
     }
-    return { key, kind: kindOf(key, sample), nullable: sawNull || sample === undefined };
+    return { key, label: libelleDuChamp(key, regime), kind: kindOf(key, sample), nullable: sawNull || sample === undefined };
   });
 }

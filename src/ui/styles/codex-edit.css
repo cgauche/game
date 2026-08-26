@@ -13,7 +13,9 @@
 .codex-edit-form { display: flex; flex-direction: column; gap: 0.7rem; }
 .codex-edit-form .ed-field { display: flex; flex-direction: column; gap: 0.2rem; }
 .codex-edit-form .ed-field > span { font-size: 0.8rem; color: var(--muted); }
-.codex-edit-form input, .codex-edit-form textarea { width: 100%; box-sizing: border-box; }
+/* Nappe pleine largeur des SAISIES — les cases/radios en sont exclues : la charte les dimensionne
+   (base.css, case 18px charbon + marque or) et cette nappe, importée après, les étirerait en barres. */
+.codex-edit-form input:not([type='checkbox']):not([type='radio']), .codex-edit-form textarea { width: 100%; box-sizing: border-box; }
 .codex-edit-form textarea { resize: vertical; font-family: inherit; }
 
 .de-spacer { flex: 1; }

@@ -13,6 +13,7 @@ import type { z } from 'zod';
 import { SCHEMA_DEFS } from './_registry.generated';
 import { SCHEMA_DEFS_SCENES } from './_registry-scenes.generated';
 import type { SchemaDef } from './types';
+import type { MetaChamp } from './grammaire/meta';
 
 /** Le registre des DEUX racines de documents (`src/data` + `src/scenes`). */
 export const DEFS_DE_DOCUMENT: readonly SchemaDef[] = [...SCHEMA_DEFS, ...SCHEMA_DEFS_SCENES];
@@ -27,6 +28,13 @@ export function formatZodError(sujet: string, error: z.ZodError): string {
  *  ou undefined s'il n'est pas registré. */
 export function schemaForFile(file: string): z.ZodTypeAny | undefined {
   return DEFS_DE_DOCUMENT.find((d) => d.file === file)?.schema;
+}
+
+/** Méta d'ÉDITION d'un document par nom de fichier — le canal registre est le SEUL chemin
+ *  schéma→atelier (`src/ui/compendium/editFields.ts`). `undefined` pour un def qui ne passe pas par
+ *  `document()` ; adoption par def : lot L1b #1467. */
+export function metaPourFichier(file: string): Readonly<Record<string, MetaChamp>> | undefined {
+  return DEFS_DE_DOCUMENT.find((d) => d.file === file)?.meta;
 }
 
 /** Valide `value` contre le schéma du fichier `file` : `null` si valide, message actionnable

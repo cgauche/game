@@ -349,6 +349,7 @@ export const REGISTRIES = [
     type: 'SchemaDef',
     typeFrom: './types',
     fields: ['file', 'schema', 'famille'],
+    optionalFields: ['meta'],
     constFields: { root: "'src/data'" },
   },
   {
@@ -363,6 +364,7 @@ export const REGISTRIES = [
     type: 'SchemaDef',
     typeFrom: './types',
     fields: ['file', 'schema', 'famille'],
+    optionalFields: ['meta'],
     constFields: { root: "'src/scenes'" },
   },
 ];
@@ -390,15 +392,21 @@ function genOne(r) {
   // tableau plat d'un seul export (`exportName`) des registres « 1 def = 1 valeur ».
   // Alias suffixé (`e0_champ`) UNIQUEMENT pour les registres multi-champs : les registres
   // « 1 def = 1 valeur » gardent `e0` — leur sortie générée reste byte-identique.
+  // `optionalFields` : champ qu'un module de def exporte OU NON (`meta`, #1466 — posée par
+  // `document()`, absente des defs sans export `meta` ; adoption par def : lot L1b #1467).
+  // Détection par CONVENTION D'EXPORT NOMMÉ,
+  // comme `file`/`schema`/`famille` : le générateur est TEXTUEL (readdirSync + regex, jamais d'import
+  // runtime), donc un export absent doit être vu AVANT d'être importé, sinon le module généré ne compile pas.
+  const presents = (f) => (r.optionalFields ?? []).filter((fn) => new RegExp(`^export const ${fn}\\b`, 'm').test(readFileSync(join(r.dir, f), 'utf8')));
   const imports = files.map((f, i) => {
     const names = r.fields
-      ? r.fields.map((fn) => `${fn} as e${i}_${fn}`).join(', ')
+      ? [...r.fields, ...presents(f)].map((fn) => `${fn} as e${i}_${fn}`).join(', ')
       : `${r.exportName} as e${i}`;
     return `import { ${names} } from '${importDir}/${f.replace(/\.tsx?$/, '')}';`;
   });
   const constParts = Object.entries(r.constFields ?? {}).map(([k, v]) => `${k}: ${v}`);
   const arr = r.fields
-    ? files.map((_, i) => `{ ${[...r.fields.map((fn) => `${fn}: e${i}_${fn}`), ...constParts].join(', ')} }`)
+    ? files.map((f, i) => `{ ${[...r.fields, ...presents(f)].map((fn) => `${fn}: e${i}_${fn}`).concat(constParts).join(', ')} }`)
     : files.map((_, i) => `e${i}`);
   // Union de littéraux des ids déclarés dans les defs (option `idUnion`) — triée, dédupliquée.
   let unionDecl = '';

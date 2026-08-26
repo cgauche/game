@@ -45,10 +45,10 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   'locations.parent': { ds: 'locations', single: true, valueKey: 'label' },
   'pregens.species': { ds: 'species', single: true },
   'pregens.career': { ds: 'careers', single: true },
-  // Caractéristique d'une compétence : SÉLECTEUR (pas d'input libre) — le dataset `characteristics` n'a
-  // pas d'`id`, il est keyé par `label` ; la valeur STOCKÉE lue par l'engine (couture `charKeyByLabel`,
-  // src/data/index.ts) est le label complet (« Dextérité ») → single-ref keyé `label`, format inchangé.
-  'skills.characteristic': { ds: 'characteristics', single: true, valueKey: 'abr' },
+  // Caractéristique d'une compétence : SÉLECTEUR (pas d'input libre) — `skills.json` stocke l'`id` du
+  // dataset `characteristics` (mesuré : 10/10 valeurs distinctes résolues par `id`, 0/10 par `abr` ou
+  // `label`), donc valeur d'option = `id` (défaut). `abr` y est vide sur 7 des 19 entrées.
+  'skills.characteristic': { ds: 'characteristics', single: true },
   // ── vocab (valeurs distinctes d'un champ) ───────────────────────────────────
   // refChar/refCareer n'existent QUE sur les espèces → repli global par nom (la catégorie Codex
   // d'`species.json` est `races`, pas `species` ; un nom de champ unique évite de la coder en dur).
@@ -76,13 +76,16 @@ interface RefEntry { id: string; value?: number }
 interface SpecRef { id: string; spec?: string }
 
 export function RefField(
-  { cfg, fieldKey, value, onChange, nullable }:
-  { cfg: RefFieldCfg; categoryKey?: string; fieldKey?: string; value: unknown; onChange: (v: unknown) => void; nullable?: boolean },
+  { cfg, fieldKey, label, value, onChange, nullable }:
+  { cfg: RefFieldCfg; categoryKey?: string; fieldKey?: string; label?: string; value: unknown; onChange: (v: unknown) => void; nullable?: boolean },
 ) {
-  if (isVocab(cfg)) return <VocabField label={fieldKey} vocabFrom={cfg.vocabFrom} value={value} onChange={onChange} nullable={nullable} />;
-  if (cfg.freeText) return <FreeRefField label={fieldKey} cfg={cfg} value={value} onChange={onChange} />;
-  if (cfg.single) return <SingleRefField label={fieldKey} cfg={cfg} value={value} onChange={onChange} nullable={nullable} />;
-  return <ListRefField label={fieldKey} cfg={cfg} value={value} onChange={onChange} />;
+  // `label` = AFFICHAGE (libellé FR du champ, #1466) ; `fieldKey`/`cfg` restent l'IDENTITé. Un appelant
+  // qui ne connaît que la clé affiche la clé.
+  const affiche = label ?? fieldKey;
+  if (isVocab(cfg)) return <VocabField label={affiche} vocabFrom={cfg.vocabFrom} value={value} onChange={onChange} nullable={nullable} />;
+  if (cfg.freeText) return <FreeRefField label={affiche} cfg={cfg} value={value} onChange={onChange} />;
+  if (cfg.single) return <SingleRefField label={affiche} cfg={cfg} value={value} onChange={onChange} nullable={nullable} />;
+  return <ListRefField label={affiche} cfg={cfg} value={value} onChange={onChange} />;
 }
 
 /** Options triées d'un dataset (valeur stockée + libellé), pour single/liste. */

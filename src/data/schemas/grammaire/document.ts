@@ -22,6 +22,24 @@ export type FamilleDocument = 'entite' | 'table' | 'config' | 'record';
 export const CLES_ENVELOPPE = ['id', 'type', 'label', 'labelF', 'desc', 'source', 'alsoIn', 'variants', 'maison', 'icon'] as const;
 export type CleEnveloppe = (typeof CLES_ENVELOPPE)[number];
 
+/**
+ * Libellés FR des clés d'ENVELOPPE (#1466 L1a, point 6). `document()` REFUSE une `MetaChamp` sur une
+ * clé d'enveloppe (la fabrique la pose, aucun def ne la déclare) : leur nom lisible appartient donc à
+ * la FABRIQUE, ici. Consommé par la cascade de libellés de l'atelier (`src/ui/compendium/editFields.ts`).
+ */
+export const LIBELLES_ENVELOPPE: Readonly<Record<CleEnveloppe, string>> = {
+  id: 'Identifiant',
+  type: 'Type de document',
+  label: 'Libellé',
+  labelF: 'Libellé (forme féminine)',
+  desc: 'Description',
+  source: 'Source',
+  alsoIn: 'Aussi publié dans',
+  variants: 'Variantes',
+  maison: 'Arbitrage maison',
+  icon: 'Icône',
+};
+
 /** Une clé d'enveloppe présente dans `champs` s'annule en `never` : le def ne compile pas. */
 export type ChampsHorsEnveloppe<C> = { [K in keyof C]: K extends CleEnveloppe ? never : C[K] };
 

@@ -3,6 +3,7 @@
  *  campagne), émis par `scripts/gen-registry.mjs` et réunis par `DEFS_DE_DOCUMENT` (`validate.ts`). */
 import type { z } from 'zod';
 import type { FamilleDocument } from './grammaire/document';
+import type { MetaChamp } from './grammaire/meta';
 
 /** Racine d'un document authoré — les DEUX sont peuplées (#1466) : `src/data` (catalogues de jeu,
  *  registre `SCHEMA_DEFS`) et `src/scenes` (projets de campagne, registre `SCHEMA_DEFS_SCENES`). */
@@ -25,4 +26,11 @@ export interface SchemaDef {
    * `IDS_PAR_DATASET`. En L1b (#1467) la déclaration migre dans l'appel `document(type, famille, …)`.
    */
   famille: FamilleDocument;
+  /**
+   * Méta d'ÉDITION par champ de premier niveau (libellé FR, aide, widget, rang) — émise par
+   * `scripts/gen-registry.mjs` quand le module de def exporte `meta`, ce que fait tout def passé par
+   * `document()`. OPTIONNELLE — portée par les seuls defs qui exportent une méta ; un def sans méta
+   * laisse l'atelier sur la clé technique. Adoption par def : lot L1b #1467.
+   */
+  meta?: Readonly<Record<string, MetaChamp>>;
 }
