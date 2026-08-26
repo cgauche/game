@@ -41,7 +41,8 @@ export const TARGETS = [
 
 /** Champs top-level d'un schéma zod (`.shape`), fusionnés à travers les branches d'une union
  *  (`z.union`/`z.discriminatedUnion` — un champ présent sur UNE SEULE branche compte pour le type
- *  entier, angle mort assumé : ce rapport ne distingue pas « lu sur la branche A » de « … B »). */
+ *  entier). PÉRIMÈTRE : les clés top-level. ANGLE MORT : le rapport ne distingue pas « lu sur la
+ *  branche A » de « lu sur la branche B ». */
 export function fieldsOf(schema) {
   if (schema?.shape) return Object.keys(schema.shape)
   const def = schema?._zod?.def ?? schema?.def

@@ -247,21 +247,43 @@ describe('cliquet — part des champs de premier niveau qui portent un libellé'
 
 /**
  * CONVENTION D'EXPORT du générateur de registre (`scripts/gen-registry.mjs`) : il est TEXTUEL et
- * détecte `meta` par `^export const meta` — un export destructuré (`export const { meta } = doc`) ou
- * ré-exporté (`export { meta }`) ne serait PAS émis, et l'atelier retomberait sur la clé sans qu'aucun
- * gate ne rougisse. Cette garde est le rouge manquant, appliquée à tout def qui appelle `document(`.
+ * lit chaque nom PAR REGEX — `fields: ['file', 'schema', 'famille']` (`scripts/gen-registry.mjs:351`,
+ * `:366`) plus `optionalFields: ['meta']` (`:352`, `:367`). Conséquences MESURÉES, une par export :
+ *  - `file` non conforme au filtre `scripts/gen-registry.mjs:388` (`^export const file = '`, guillemet
+ *    SIMPLE littéral) : le def est ÉCARTÉ du registre, en silence — double quote, `: string` annoté,
+ *    littéral gabarit et `= doc.file` compilent tous et sortent pourtant du registre ;
+ *  - `meta` non PLAT : invisible de `presents()` (`scripts/gen-registry.mjs:400`), donc absent de
+ *    l'entrée générée — l'atelier retombe sur la clé technique sans qu'aucun gate ne rougisse ;
+ *  - `schema`/`famille` destructurés (`export const { schema } = doc`) COMPILERAIENT (la destructuration
+ *    crée un vrai nom importé) : ici la garde ne protège pas la compilation mais la CONVENTION du lot
+ *    — forme plate unique sur les adoptions, lisible par le codemod. C'est cette garde qui la tient.
+ *
+ * Population des adoptants = 0 à ce commit (aucun def de `RACINES_DE_DEFS` n'appelle encore
+ * `document(`) : le contrat est VIVANT et vide — il mord au premier adoptant, ce que les fixtures de
+ * source ci-dessous prouvent forme par forme.
  */
 const RACINES_DE_DEFS = ['src/data/schemas/defs', 'src/data/schemas/defs-scenes'];
 const APPELLE_DOCUMENT = /\bdocument\s*\(/;
-const EXPORT_META_PLAT = /^export const meta\b/m;
+/** Les quatre exports PLATS lus par le gen, dans l'ordre du message d'échec. */
+const EXPORTS_PLATS = ['file', 'schema', 'famille', 'meta'] as const;
+/** LA regex du générateur pour `file`, recopiée de `scripts/gen-registry.mjs:388` — guillemet SIMPLE
+ *  littéral : elle seule décide de l'appartenance au registre. */
+const FILE_DU_GEN = /^export const file = '/m;
+const exportPlat = (nom: string) =>
+  nom === 'file' ? FILE_DU_GEN : new RegExp(`^export const ${nom}\\b`, 'm');
 
-/** Defs qui déclarent un document sans exporter `meta` À PLAT — la liste que la garde exige vide. */
-export function defsSansExportMetaPlat(sources: { file: string; src: string }[]): string[] {
+/**
+ * Defs qui déclarent un document sans exporter les quatre noms À PLAT — une ligne
+ * `fichier : manque <noms>` par def, la liste que la garde exige vide.
+ */
+export function defsSansExportsPlats(sources: { file: string; src: string }[]): string[] {
   // `stripComments` (lib de garde partagée) : une PROSE qui dit « intra-document » n'est pas un appel
   // à la fabrique, et l'import nommé de `document` non plus — seuls les SITES d'appel comptent.
   return sources
-    .filter((s) => APPELLE_DOCUMENT.test(stripComments(s.src)) && !EXPORT_META_PLAT.test(s.src))
-    .map((s) => s.file);
+    .filter((s) => APPELLE_DOCUMENT.test(stripComments(s.src)))
+    .map((s) => ({ file: s.file, manquants: EXPORTS_PLATS.filter((nom) => !exportPlat(nom).test(s.src)) }))
+    .filter((r) => r.manquants.length > 0)
+    .map((r) => `${r.file} : manque ${r.manquants.join(', ')}`);
 }
 
 function sourcesDesDefs(): { file: string; src: string }[] {
@@ -273,22 +295,60 @@ function sourcesDesDefs(): { file: string; src: string }[] {
 }
 
 describe('convention d’export lue par le générateur de registre', () => {
-  it('tout def qui appelle `document(` exporte `meta` À PLAT', () => {
-    const muets = defsSansExportMetaPlat(sourcesDesDefs());
+  it('tout def qui appelle `document(` exporte `file`, `schema`, `famille` et `meta` À PLAT', () => {
+    const muets = defsSansExportsPlats(sourcesDesDefs());
     expect(
       muets,
-      `la convention du gen exige l'export PLAT — un export destructuré/ré-exporté serait muet au registre :\n${muets.join('\n')}`,
+      `la convention du gen exige l'export PLAT — un export destructuré/ré-exporté/absent est muet au registre :\n${muets.join('\n')}`,
     ).toEqual([]);
   });
 
-  it('la garde MORD sur les deux formes muettes (fixtures de source)', () => {
-    const muets = defsSansExportMetaPlat([
-      { file: 'destructure.ts', src: "const doc = document('x', 'entite', {}, {}, {});\nexport const { schema, meta } = doc;\n" },
-      { file: 'reexport.ts', src: "const doc = document('y', 'entite', {}, {}, {});\nconst meta = doc.meta;\nexport { meta };\n" },
-      { file: 'plat.ts', src: "const doc = document('z', 'entite', {}, {}, {});\nexport const meta = doc.meta;\n" },
-      { file: 'sans-fabrique.ts', src: "export const schema = z.array(z.object({}));\n" },
+  it('la garde MORD sur chaque forme muette, et NOMME l’export manquant (fixtures de source)', () => {
+    const PLAT = "export const file = 'z.json';\nexport const schema = doc.schema;\nexport const famille = doc.famille;\nexport const meta = doc.meta;\n";
+    const muets = defsSansExportsPlats([
+      { file: 'destructure.ts', src: "const doc = document('x', 'entite', {}, {}, {});\nexport const { file, schema, famille, meta } = doc;\n" },
+      { file: 'reexport.ts', src: "const doc = document('y', 'entite', {}, {}, {});\nconst meta = doc.meta;\nexport { meta };\nexport const file = 'y.json';\nexport const schema = doc.schema;\nexport const famille = doc.famille;\n" },
+      { file: 'sans-schema.ts', src: `const doc = document('a', 'entite', {}, {}, {});\n${PLAT.replace('export const schema = doc.schema;\n', '')}` },
+      { file: 'sans-famille.ts', src: `const doc = document('b', 'entite', {}, {}, {});\n${PLAT.replace('export const famille = doc.famille;\n', '')}` },
+      { file: 'sans-file.ts', src: `const doc = document('c', 'entite', {}, {}, {});\n${PLAT.replace("export const file = 'z.json';\n", '')}` },
+      { file: 'file-double-quote.ts', src: `const doc = document('d', 'entite', {}, {}, {});\n${PLAT.replace("export const file = 'z.json';", 'export const file = "z.json";')}` },
+      { file: 'file-type-annote.ts', src: `const doc = document('e', 'entite', {}, {}, {});\n${PLAT.replace('export const file =', 'export const file: string =')}` },
+      { file: 'file-indirect.ts', src: `const doc = document('f', 'entite', {}, {}, {});\n${PLAT.replace("export const file = 'z.json';", 'export const file = doc.file;')}` },
+      { file: 'plat.ts', src: `const doc = document('z', 'entite', {}, {}, {});\n${PLAT}` },
+      { file: 'sans-fabrique.ts', src: 'export const schema = z.array(z.object({}));\n' },
     ]);
-    expect(muets).toEqual(['destructure.ts', 'reexport.ts']);
+    expect(muets).toEqual([
+      'destructure.ts : manque file, schema, famille, meta',
+      'reexport.ts : manque meta',
+      'sans-schema.ts : manque schema',
+      'sans-famille.ts : manque famille',
+      'sans-file.ts : manque file',
+      'file-double-quote.ts : manque file',
+      'file-type-annote.ts : manque file',
+      'file-indirect.ts : manque file',
+    ]);
+  });
+
+  it('le bras `file` rend le verdict DU GEN, forme par forme (un `file` qui compile peut être hors registre)', () => {
+    // Verdicts du générateur MESURÉS sur son filtre `scripts/gen-registry.mjs:388` : seule la forme
+    // `= '…'` (guillemet SIMPLE littéral) entre au registre — les quatre autres compilent et en sortent.
+    const formes: { nom: string; ligne: string; auRegistre: boolean }[] = [
+      { nom: 'simple-quote', ligne: "export const file = 'z.json';", auRegistre: true },
+      { nom: 'double-quote', ligne: 'export const file = "z.json";', auRegistre: false },
+      { nom: 'type-annote', ligne: "export const file: string = 'z.json';", auRegistre: false },
+      { nom: 'gabarit', ligne: 'export const file = `z.json`;', auRegistre: false },
+      { nom: 'indirect', ligne: 'export const file = doc.file;', auRegistre: false },
+    ];
+    const verdicts = formes.map((f) => {
+      const src = `const doc = document('g', 'entite', {}, {}, {});\n${f.ligne}\nexport const schema = doc.schema;\nexport const famille = doc.famille;\nexport const meta = doc.meta;\n`;
+      const garde = defsSansExportsPlats([{ file: `${f.nom}.ts`, src }]);
+      return { nom: f.nom, gardeAccepte: garde.length === 0, genAccepte: f.auRegistre };
+    });
+    expect(
+      verdicts.filter((v) => v.gardeAccepte !== v.genAccepte),
+      'la garde diverge du filtre du gen : une forme qu’elle accepte serait ÉCARTÉE du registre en silence',
+    ).toEqual([]);
+    expect(verdicts.map((v) => v.gardeAccepte)).toEqual([true, false, false, false, false]);
   });
 
   it('la marche des defs voit une population réelle (le contrat n’est pas vide par erreur de chemin)', () => {
