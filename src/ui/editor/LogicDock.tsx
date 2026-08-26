@@ -5,7 +5,8 @@
  * d'undo (fini le modèle copie locale + Annuler/Appliquer).
  */
 import { useRef } from 'react';
-import { Scene, Trigger, EncounterDef, Dialogue } from '../../state/scene';
+import { Scene, Trigger, EncounterDef, Dialogue, WallSide } from '../../state/scene';
+import { wallSideSchema } from '../../data/schemas/defs-scenes/communs';
 import type { WorldMap } from '../../state/worldMap';
 import type { ThreatTier } from '../../engine/advantagePool';
 import { EMPTY_FLOW } from '../../state/flow';
@@ -489,12 +490,11 @@ function EncountersTab({
                   Arête{' '}
                   <select
                     value={vc.edge.side}
-                    onChange={(e) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, side: e.target.value as 'N' | 'E' | '\\' | '/' } } })}
+                    onChange={(e) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, side: e.target.value as WallSide } } })}
                   >
-                    <option value="N">N</option>
-                    <option value="E">E</option>
-                    <option value="\">\</option>
-                    <option value="/">/</option>
+                    {wallSideSchema.options.map((side) => (
+                      <option key={side} value={side}>{side}</option>
+                    ))}
                   </select>
                 </label>
                 <label>Z <NumberField variant="nu" label="Structure à détruire — Z (étage)" value={vc.edge.z ?? 0} onChange={(z) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, z: z || undefined } } })} /></label>

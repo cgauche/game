@@ -4,6 +4,7 @@ import type { PlayerText } from '../i18n/playerText';
 import type { Duration } from './duration';
 import type { ReachId } from './items';
 import type { CodexTarget, ModProvenance } from './ruleRefs';
+import type { WallSide as WallSideCanon } from '../data/schemas/defs-scenes/communs';
 
 /** Libellés d'AFFICHAGE de l'axe d'Allonge, PAR id d'axe (`ReachId`, `engine/items.ts` — LDB 62
  *  l.156-164). Toute LOGIQUE d'Allonge passe par `reachIdOf`/`reachRankOf`, jamais par ce libellé. */
@@ -89,9 +90,10 @@ export const HIT_LOCATION_LABELS: Record<HitLocation, PlayerText> = {
  */
 export type BodyShape = 'humanoide' | 'quadrupede' | 'oiseau' | 'serpent' | 'araignee' | 'vehicule' | 'structure' | 'engin' | 'army';
 
-/** Côté d'arête de mur — REDÉCLARÉ depuis `state/scene` (`WallSide`, même union) pour ne pas faire dépendre
- *  le moteur PUR de l'état (cf. `Combatant.structureEdge`). */
-export type WallEdgeSide = 'N' | 'E' | '\\' | '/';
+/** Côté d'arête de mur — DÉRIVÉ du canon `wallSideSchema` (`data/schemas/defs-scenes/communs.ts`),
+ *  import de TYPE seul : le moteur PUR ne dépend ni de l'état ni d'un module zod à l'exécution
+ *  (cf. `Combatant.structureEdge`). */
+export type WallEdgeSide = WallSideCanon;
 
 /** Étiquettes de localisation propres à une forme (surchargent HIT_LOCATION_LABELS ; LDB 76 p.312).
  *  `vehicule` (véhicule/embarcation à coque — EDOC 7, MoR ch.5, MDG 13) : ses localisations

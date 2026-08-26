@@ -11,7 +11,10 @@ import type { CustomStatblock } from '../../../engine/statblock';
 export const ptSchema = z.strictObject({ x: z.number(), y: z.number(), z: z.number().optional() });
 /** Bourse (`gold`/`silver`/`brass`) d'un coût ou d'un octroi. */
 export const moneySchema = z.strictObject({ gold: z.number().optional(), silver: z.number().optional(), brass: z.number().optional() });
-/** `WallSide` (`state/scene.ts`) — arête canonique N/E, diagonales `\` (NO→SE) et `/` (NE→SO). */
+/** CANON de l'arête de mur — arête cardinale N/E, diagonales `\` (NO→SE) et `/` (NE→SO). Source
+ *  UNIQUE de l'union : `state/scene.ts` (`WallSide`) et `engine/types.ts` (`WallEdgeSide`) en
+ *  DÉRIVENT, l'éditeur en dérive ses options (`wallSideSchema.options`). Garde : `unions-canon.test.ts`. */
 export const wallSideSchema = z.enum(['N', 'E', '\\', '/']);
+export type WallSide = z.infer<typeof wallSideSchema>;
 /** `CustomStatblock` (`engine/statblock.ts`) — profil PNJ/bête custom d'éditeur. */
 export const customStatblockSchema = z.custom<CustomStatblock>();

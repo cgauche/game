@@ -74,10 +74,14 @@ src/engine/                 Règles WFRP4, PUR + testé :
                                 skills/talents) — SOURCE UNIQUE du mini-radar, du rail de composition (#417)
                                 et des « rôles » de carte (`heroRoles`, `ui/CharCard.tsx`, réconcilié dessus)
 src/state/
-  scene.ts                  SCÈNE : 34 fonctions PURES (tuiles, murs, portes, relief) + 33 types exportés.
-                            UN SEUL est COMPOSÉ : l'union `Effect` (55 `z.infer` des schémas de
-                            `data/schemas/defs-scenes/effets.ts` + `DelayedEffect`/`PetitePriere`/`EffectOp`
-                            manuscrits = 58 membres) ; les 32 autres types restent MANUSCRITS ici
+  scene.ts                  SCÈNE : 34 fonctions PURES (tuiles, murs, portes, relief) + 33 types exportés,
+                            dont 23 `z.infer` des schémas de `data/schemas/defs-scenes/`, 2 ré-exports
+                            (`CustomStatblock`, `TemporalCondition`) et 1 COMPOSÉ : l'union `Effect`
+                            (55 `z.infer` de `defs-scenes/effets.ts` + `DelayedEffect`/`PetitePriere`/
+                            `EffectOp` = 58 membres). Restent 7 MANUSCRITS : `Scene`, `SceneEntity`,
+                            `SceneEffectZone` (corps du document), `DelayedEffect`, `PetitePriere`
+                            (annotations du `z.lazy`), `Terrain`, `Facing` (alias primitifs). Comptes et
+                            liste GATÉS par `ui/editor/scene-field-editability-guard.test.ts`
   worldMap.ts               SCHÉMA DE CARTE DU MONDE (#T2) : lieux/routes au niveau projet + format projet v2
                             (`ProjectDoc`, `activeAxes?: string[]` #409 — axes de forces/faiblesses ACTIFS de
                             la campagne, ids de `data/axes.json`, défaut `CORE_AXIS_IDS` via `resolveActiveAxes`).

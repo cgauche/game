@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { emptyScene } from '../../state/scene';
 import { LogicDock } from './LogicDock';
+import { wallSideSchema } from '../../data/schemas/defs-scenes/communs';
 import { effectSummary } from './EffectList';
 
 function dock(overrides: Partial<Parameters<typeof LogicDock>[0]>) {
@@ -41,6 +42,18 @@ describe('LogicDock — onglet Rencontres (remplace la modale EncountersEditor)'
     expect(html).toContain('Donner des PX'); // l'option giveXp du constructeur d'effets
     expect(html).toContain('value="20"'); // le montant câblé à onVictory
     expect(html).toContain('Surprise (embuscade, LDB 13)');
+  });
+
+  it('le select d’arête de la condition « détruire une structure » offre EXACTEMENT les côtés du canon', () => {
+    // Les `<option>` sont DÉRIVÉES de `wallSideSchema.options` (#1440) : sans contrat positif, un canon
+    // vidé rendrait un select MUET sans qu'aucun rouge ne sorte.
+    const scene = emptyScene(10, 10);
+    scene.encounters = [{ id: 'e1', members: [], victoryCondition: { type: 'destroyStructure', edge: { x: 2, y: 3, side: '\\' } } }];
+    const html = renderToStaticMarkup(dock({ scene, tab: 'encounters', encSel: 'e1' }));
+    const bloc = html.slice(html.indexOf('Arête'));
+    const options = [...bloc.matchAll(/<option value="([^"]*)"/g)].map((m) => m[1]).slice(0, wallSideSchema.options.length);
+    expect(options, 'les options du select d’arête ≠ les côtés du canon').toEqual([...wallSideSchema.options]);
+    expect(bloc).toContain('selected'); // le côté STOCKÉ est bien l'option retenue
   });
 });
 

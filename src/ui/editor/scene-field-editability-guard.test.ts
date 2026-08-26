@@ -229,6 +229,63 @@ export interface Scene { id: string; walls: (typeof murSchema)['sortie'][]; voc:
     expect(fichier(scope.find((r) => r.id === 'Rect.z')!)).toBe('src/data/schemas/defs-scenes/scene.ts');
   });
 
+  /**
+   * RECENSEMENT des types exportés par `state/scene.ts`, confronté à ce que `docs/architecture.md`
+   * AFFIRME. Le mode de panne fermé ici est celui qu'a trouvé l'audit de fermeture L1a (#1466) : le doc
+   * a continué d'annoncer « les 32 autres types restent MANUSCRITS » après la bascule de 22 d'entre eux
+   * en `z.infer` (ba123074e) — une référence vivante qui ment, qu'aucun rouge ne signalait. Le doc est
+   * donc LU, ses trois affirmations (total, `z.infer`, liste NOMINATIVE des manuscrits) sont comparées à
+   * la mesure AST : un type qui bascule sans que le doc suive est rouge, et l'inverse aussi.
+   */
+  const censusScene = () => {
+    const sf = ts.createSourceFile(
+      'scene.ts',
+      fs.readFileSync(path.resolve(ROOT, 'src/state/scene.ts'), 'utf8'),
+      ts.ScriptTarget.Latest,
+      true
+    );
+    const exporte = (st: ts.Statement) =>
+      ts.canHaveModifiers(st) && (ts.getModifiers(st) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+    const estInfer = (t: ts.TypeNode) =>
+      ts.isTypeReferenceNode(t) && t.typeName.getText(sf) === 'z.infer';
+    const out = { infer: [] as string[], compose: [] as string[], manuscrits: [] as string[], reexports: [] as string[] };
+    for (const st of sf.statements) {
+      if (ts.isTypeAliasDeclaration(st) && exporte(st)) {
+        const nom = st.name.text;
+        if (estInfer(st.type)) out.infer.push(nom);
+        else if (ts.isUnionTypeNode(st.type) && st.type.types.some(estInfer)) out.compose.push(nom);
+        else out.manuscrits.push(nom);
+      } else if (ts.isInterfaceDeclaration(st) && exporte(st)) out.manuscrits.push(st.name.text);
+      else if (ts.isExportDeclaration(st) && st.exportClause && ts.isNamedExports(st.exportClause))
+        for (const e of st.exportClause.elements) out.reexports.push(e.name.text);
+    }
+    return out;
+  };
+
+  it('`docs/architecture.md` DIT la vérité sur les types de `state/scene.ts` (total, `z.infer`, manuscrits NOMMÉS)', () => {
+    const doc = fs.readFileSync(path.resolve(ROOT, 'docs/architecture.md'), 'utf8');
+    const bloc = /\n {2}scene\.ts {2}([\s\S]*?)\n {2}worldMap\.ts/.exec(doc)?.[1];
+    expect(bloc, 'bloc `scene.ts` introuvable dans docs/architecture.md').toBeTruthy();
+    const plat = bloc!.replace(/\s+/g, ' ');
+    const nombre = (re: RegExp, quoi: string) => {
+      const m = re.exec(plat);
+      expect(m, `le doc n’affirme plus ${quoi}`).toBeTruthy();
+      return Number(m![1]);
+    };
+    const c = censusScene();
+    const total = c.infer.length + c.compose.length + c.manuscrits.length + c.reexports.length;
+    expect(nombre(/(\d+) types exportés/, 'un total de types'), 'total annoncé ≠ mesure AST').toBe(total);
+    expect(nombre(/dont (\d+) `z\.infer`/, 'un compte de `z.infer`'), '`z.infer` annoncés ≠ mesure AST').toBe(c.infer.length);
+    expect(nombre(/Restent (\d+) MANUSCRITS/, 'un compte de manuscrits'), 'manuscrits annoncés ≠ mesure AST').toBe(
+      c.manuscrits.length
+    );
+    // La liste NOMINATIVE : les noms de type backtiqués de la phrase des manuscrits (les autres
+    // backticks de la phrase — `z.lazy` — ne commencent pas par une majuscule).
+    const phrase = /Restent \d+ MANUSCRITS : (.*?)\. Comptes/.exec(plat)?.[1] ?? '';
+    const nommes = [...phrase.matchAll(/`([A-Z][A-Za-z]*)`/g)].map((m) => m[1]);
+    expect(nommes.sort(), 'le doc doit NOMMER exactement les manuscrits mesurés').toEqual([...c.manuscrits].sort());
+  });
+
   it('le SEAM manuscrit/schéma ne diverge QU’EN optionalité, sur les 6 champs que la note de `scene.ts` nomme', () => {
     const SCENE = 'src/state/scene.ts';
     const brut = fs.readFileSync(path.resolve(ROOT, SCENE), 'utf8');

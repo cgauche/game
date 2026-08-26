@@ -36,6 +36,7 @@ import type {
   facadeSectionSchema, layerSchema, roofDefaultsSchema, sceneStationAnchorSchema, triggerSchema,
   victoryConditionSchema, wallClimbSchema, wallSegSchema, zoneAreaSchema,
 } from '../data/schemas/defs-scenes/scene';
+import type { wallSideSchema } from '../data/schemas/defs-scenes/communs';
 import type { Dir8 } from './dir8';
 import type { Pt } from './path';
 import { terrainWalkable } from './terrain';
@@ -488,7 +489,7 @@ export function surfaceLink(
  *  et (x+1,y). Les DIAGONALES `'\\'` (coin NO→SE) et `'/'` (coin NE→SO) tracent une cloison OBLIQUE en
  *  travers de la case (x,y) — pour les parois en éventail / courbes (purement VISUELLES : le déplacement
  *  reste orthogonal, géré par le sol / les arêtes N-E). `door` = franchissable (porte). `z` = étage. */
-export type WallSide = 'N' | 'E' | '\\' | '/';
+export type WallSide = z.infer<typeof wallSideSchema>;
 export type WallSeg = z.infer<typeof wallSegSchema>;
 
 export type WallClimb = z.infer<typeof wallClimbSchema>;

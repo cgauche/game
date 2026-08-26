@@ -183,6 +183,25 @@ describe('OP_DEFS — payload strict par op, repli nominatif, rouge au SITE', ()
     expect(JSON.stringify(res.error?.issues)).toMatch(/GameOp « nImporteQuoi » : op inconnue de OP_DEFS et de OPS_NON_TYPEES/);
   });
 
+  it('une op TYPÉE au payload FAUX est refusée AU CHAMP (le gate ne s’arrête pas au nom de l’op)', () => {
+    // `heal.amount` est un nombre ou une Formula — une chaîne n'en est ni l'un ni l'autre. Le rouge
+    // doit venir du CHAMP (`amount`), pas du repli nominatif : sans cela, une op nommée juste passerait
+    // avec n'importe quelle charge utile.
+    const res = gameOpSchema.safeParse({ op: 'heal', amount: 'beaucoup' });
+    expect(res.success).toBe(false);
+    const issues = res.error!.issues;
+    expect(issues.map((i) => i.path.join('.'))).toContain('amount');
+    expect(JSON.stringify(issues)).toMatch(/Invalid input/);
+  });
+
+  it('une op TYPÉE à CLÉ EN TROP est refusée par la clé NOMMÉE, pas par un message générique', () => {
+    const res = gameOpSchema.safeParse({ op: 'kill', zzz: 1 });
+    expect(res.success).toBe(false);
+    const texte = JSON.stringify(res.error!.issues);
+    expect(texte).toMatch(/Unrecognized key/);
+    expect(texte).toMatch(/zzz/);
+  });
+
   it('la clé `op` SURCHARGÉE d’une `Condition` (comparateur) ne passe pas par ce rouge', () => {
     for (const comparateur of ['>=', '<=', '>', '<', '==']) {
       const cond = { kind: 'slThreshold', op: comparateur, value: 2 };

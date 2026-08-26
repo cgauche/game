@@ -19,6 +19,8 @@
  * `APPRAISED_AVAILABILITIES`) sont nommés au foyer, jamais re-tapés au site.
  */
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import type { z } from 'zod';
 import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 import { scanUnionRecopies } from '../../../scripts/guards/lib/canonUnique.mjs';
@@ -26,6 +28,9 @@ import { AVAILABILITIES, STAKE_FORMS, type Availability, type StakeForm, type Te
 import { availabilitySchema, harvestRaritySchema, stakeFormSchema } from './grammaire/valeurs';
 import { dispoPctAvailabilitySchema } from './defs/disponibilite';
 import type { HarvestRarity } from '../index';
+import { wallSideSchema } from './defs-scenes/communs';
+import type { WallSide } from '../../state/scene';
+import type { WallEdgeSide } from '../../engine/types';
 
 /** Les deux canons verrouillés, sous la forme attendue par le scan. */
 const CANONS = [
@@ -49,7 +54,10 @@ const _availabilityExact: Eq<Availability, z.infer<typeof availabilitySchema>> =
 const _stakeFormExact: Eq<StakeForm, z.infer<typeof stakeFormSchema>> = true;
 const _harvestRarityExact: Eq<HarvestRarity, z.infer<typeof harvestRaritySchema>> = true;
 const _testedExact: Eq<TestedAvailability, z.infer<typeof dispoPctAvailabilitySchema>> = true;
+const _wallSideExact: Eq<WallSide, z.infer<typeof wallSideSchema>> = true;
+const _wallEdgeSideExact: Eq<WallEdgeSide, z.infer<typeof wallSideSchema>> = true;
 void _availabilityExact; void _stakeFormExact; void _harvestRarityExact; void _testedExact;
+void _wallSideExact; void _wallEdgeSideExact;
 
 describe('unions partagées moteur ⇄ schémas de donnée (#1440)', () => {
   it('`availabilitySchema` expose EXACTEMENT les paliers de `AVAILABILITIES`', () => {
@@ -67,6 +75,48 @@ describe('unions partagées moteur ⇄ schémas de donnée (#1440)', () => {
   it('PERSONNE dans `src/` ne re-tape le littéral des unions partagées — prod ET tests', () => {
     const fautifs = corpus().flatMap((f) => scanUnionRecopies(f, CANONS).map((x) => `${f.rel}:${x.line} — ${x.detail}`));
     expect(fautifs, 'importer le tuple `engine/types` (ou le schéma dérivé de `schemas/grammaire/valeurs.ts`) — #1440').toEqual([]);
+  });
+
+  /**
+   * ARÊTE DE MUR — le canon est le SCHÉMA (`wallSideSchema`, `defs-scenes/communs.ts`) : `WallSide`
+   * (`state/scene.ts`) et `WallEdgeSide` (`engine/types.ts`) en dérivent par `z.infer` (les deux `Eq`
+   * ci-dessus), l'éditeur en dérive ses `<option>` (`wallSideSchema.options`, `LogicDock.tsx`).
+   *
+   * PÉRIMÈTRE MESURÉ (2026-08-26, arbre APRÈS ce lot, scan sur 3438 fichiers) : la recopie que cette garde
+   * ferme est celle de l'union COMPLÈTE — les 4 membres re-tapés ensemble. Il en reste 2 : le canon
+   * lui-même et `authoring/detailSvg.ts:63` (exempté ci-dessous).
+   *
+   * Le seuil GÉNÉRIQUE de `scanUnionRecopies` (≥2 membres) ne convient PAS ici : il rapporte 102 sites, dont
+   * 100 ne re-déclarent PAS l'union. Trois familles y coexistent : les SOUS-ENSEMBLES cardinaux `'N','E'`
+   * (arêtes orthogonales des toits/sols/façades) ; les sous-ensembles diagonaux `'\\','/'`
+   * (`asciiMap`/`mapSpec`/`sceneEdit`/`sceneToAscii`) ; et des CONSOMMATEURS EXHAUSTIFS en VALEURS —
+   * `builders/walls.ts:66` énumère trois `case` + un `default` sur une valeur déjà typée par le canon : un
+   * narrowing n'est pas une recopie de TYPE, le compilateur le borne déjà. Nommer les deux sous-ensembles
+   * au foyer et étendre le canon au seuil ≥2 : dette #1515.
+   */
+  it('l’arête de mur : l’union COMPLÈTE n’est re-tapée NULLE PART hors du canon', () => {
+    /** Le SEUL site qui re-tape les 4 membres hors canon, et pourquoi il n'en est pas une recopie :
+     *  `AXIS_OF` mappe les SIX orientations d'arête de la planche (N/S/E/O + les 2 diagonales) vers
+     *  ses 4 axes de motif — un vocabulaire de dessin plus large que l'arête de mur, dont l'union
+     *  n'est pas le canon (il porte `S` et `O`, que `wallSideSchema` n'a pas). */
+    const EXEMPTIONS = ['src/gameIso/authoring/detailSvg.ts:63'];
+    const canon = [{ nom: 'WALL_SIDES', membres: wallSideSchema.options }];
+    // `src/engine/types.ts` est FOYER des deux autres canons, donc retiré du corpus commun — il ne
+    // l'est PAS de celui-ci : c'est justement l'un des sites qui re-tapait l'arête. On le rajoute.
+    const TYPES = 'src/engine/types.ts';
+    const corpusArete = [
+      ...corpus(),
+      { rel: TYPES, text: readFileSync(resolve(__dirname, '..', '..', '..', TYPES), 'utf8') },
+    ];
+    const complets = corpusArete
+      .flatMap((f) => scanUnionRecopies(f, canon).map((x) => ({ rel: `${f.rel}:${x.line}`, detail: x.detail })))
+      // L'union COMPLÈTE : les 4 membres du canon nommés ensemble par le rapport du scan.
+      .filter(({ detail }) => wallSideSchema.options.every((m) => detail.includes(`'${m}'`)))
+      // Le FOYER (le `z.enum` du canon lui-même) sort par FICHIER — c'est la maison de l'union, comme
+      // `FOYERS` pour les deux autres canons. L'exemption, elle, est épinglée AU SITE (`fichier:ligne`).
+      .filter(({ rel }) => !rel.startsWith('src/data/schemas/defs-scenes/communs.ts:') && !EXEMPTIONS.includes(rel))
+      .map(({ rel, detail }) => `${rel} — ${detail}`);
+    expect(complets, 'dériver du canon : `z.infer<typeof wallSideSchema>` / `wallSideSchema.options`').toEqual([]);
   });
 
   it('`TestedAvailability` et sa sélection zod nomment le MÊME couple (le sous-ensemble n’a qu’un site)', () => {

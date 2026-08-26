@@ -203,6 +203,49 @@ describe('canal atelier → picker de référence (`RefField`)', () => {
 });
 
 /**
+ * CLIQUET DU SEAM D'EXTINCTION (L1b #1467) — quelle PART des champs affichés au premier niveau de
+ * l'atelier porte un libellé FR plutôt que sa clé technique. La mesure est REFAITE ici par le code
+ * (mêmes projections que `CodexEdit` : catégories éditables × entrées réelles × `inferFields`), jamais
+ * un couple de nombres recopié : chaque def qui adopte `document()` la fait MONTER, une régression du
+ * canal (méta perdue, table d'enveloppe amputée) la fait DESCENDRE et rougit.
+ */
+describe('cliquet — part des champs de premier niveau qui portent un libellé', () => {
+  const champsAffiches = () =>
+    CODEX.filter((c) => isEditableCategory(c.key)).flatMap((c) =>
+      inferFields(editableEntries(c.key) as Record<string, unknown>[], { meta: metaPourFichier(`${c.key}.json`) }),
+    );
+
+  // PLANCHER NOMINAL : 356/1118 = 31,8 % — mesure du 2026-08-26 sur l'arbre, 0 def adoptant `document()`
+  // (ventilation : id 103, label 100, source 77, desc 48, maison 11, alsoIn 8, icon 5, labelF 2, variants 2).
+  // Le 26,5 % (276/1040) du commit 09cc686e4 portait sur une AUTRE projection : les DEUX termes diffèrent —
+  // population 1040 → 1118 et compte libellé 276 → 356. La mesure est refaite ici par la projection réelle
+  // de `CodexEdit`, jamais recopiée. Marge du plancher : 0,3 pt — la perte d'une seule clé d'enveloppe
+  // peuplée (la plus petite, `variants`/`labelF` à 2 champs) reste verte, celle d'`icon` (5) rougit.
+  it('la part libellée ne redescend pas sous son plancher (31,5 % au 2026-08-26 — 0 def adoptant)', () => {
+    const champs = champsAffiches();
+    const libelles = champs.filter((f) => f.label && f.label !== f.key);
+    expect(champs.length, 'la projection des champs affichés a changé de forme').toBeGreaterThan(500);
+    const part = libelles.length / champs.length;
+    expect(
+      part,
+      `part libellée = ${libelles.length}/${champs.length} = ${(part * 100).toFixed(1)} %`,
+    ).toBeGreaterThanOrEqual(0.315);
+  });
+
+  it('le cliquet mesure bien le CANAL : tout champ libellé l’est PAR LA CASCADE, jamais par la projection', () => {
+    // Non-vacuité : chaque libellé compté se retrouve en repassant la clé dans `libelleDuChamp` avec la
+    // méta de sa catégorie — aucun n'est un artefact d'`inferFields`.
+    const ecarts = CODEX.filter((c) => isEditableCategory(c.key)).flatMap((c) => {
+      const meta = metaPourFichier(`${c.key}.json`);
+      return inferFields(editableEntries(c.key) as Record<string, unknown>[], { meta })
+        .filter((f) => f.label !== f.key && libelleDuChamp(f.key, { meta }) !== f.label)
+        .map((f) => `${c.key}.${f.key} → ${f.label}`);
+    });
+    expect(ecarts, 'un libellé affiché que la cascade ne rend pas').toEqual([]);
+  });
+});
+
+/**
  * CONVENTION D'EXPORT du générateur de registre (`scripts/gen-registry.mjs`) : il est TEXTUEL et
  * détecte `meta` par `^export const meta` — un export destructuré (`export const { meta } = doc`) ou
  * ré-exporté (`export { meta }`) ne serait PAS émis, et l'atelier retomberait sur la clé sans qu'aucun
