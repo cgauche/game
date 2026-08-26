@@ -16,6 +16,12 @@ export const STRUCTURES_FORMES: ReadonlyArray<{
   date: string;
 }>;
 
+export const STRUCTURES_DEFAUT: ReadonlyArray<{
+  dataset: string;
+  cle: string;
+  date: string;
+}>;
+
 export const STRUCTURES_HOMONYMES: ReadonlyArray<{
   cle: string;
   classes: readonly string[];

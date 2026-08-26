@@ -11,6 +11,8 @@
 // alimente vit dans scripts/guards/lib/structuresStock.mjs (garde src/data/structures-contrat.test.ts).
 import { execFileSync } from 'node:child_process';
 import { emitOrCheck } from './lib/jsdocUnion.mjs';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   scannerDonnees,
   scannerRedeclarations,
@@ -19,16 +21,37 @@ import {
   MARQUE_HORS_STRATE,
   RACINES,
 } from './lib/structures-scan.mjs';
-import { ANGLES_MORTS, CONCEPTS, ROLES_ENVELOPPE, clesDuRole } from './lib/structures-lexique.mjs';
+import {
+  ANGLES_MORTS,
+  ANGLES_MORTS_SLOTS,
+  CONCEPTS,
+  LOTS_DE_PEUPLEMENT,
+  MANDAT_SLOTS,
+  ROLES_ENVELOPPE,
+  clesDuRole,
+} from './lib/structures-lexique.mjs';
 import { choixDeclares, introspecterDefs } from './lib/zod-introspect.mjs';
-import { SCHEMA_DEFS } from '../../src/data/schemas/_registry.generated';
+import {
+  champDuPath,
+  champsJoints,
+  champsSansSlot,
+  defsDeDocument,
+  estTypeDuRegistre,
+  idsDuType,
+  slotsDeclares,
+  valeursAuPath,
+} from './lib/slots-registre.mjs';
+import { effectSchema } from '../../src/data/schemas/defs-scenes/effets';
+import { defDe, enfantsDe } from '../../src/data/schemas/grammaire/slots';
 
 const OUT = 'docs/structures-donnees.md';
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
 
-const declares = introspecterDefs(SCHEMA_DEFS);
+/** Le DÉCLARÉ couvre les DEUX racines (#1466 L1a) — jointure par BASENAME, comme le scan key. */
+const DEFS = defsDeDocument();
+const declares = introspecterDefs(DEFS);
 const parFichierDeclare = new Map(declares.map((d) => [d.file, d]));
-const scan = scannerDonnees(ROOT, new Map(declares.map((d) => [d.file, d.famille])), choixDeclares(SCHEMA_DEFS));
+const scan = scannerDonnees(ROOT, new Map(declares.map((d) => [d.file, d.famille])), choixDeclares(DEFS));
 const { redeclarations, totalLitteraux } = scannerRedeclarations(ROOT);
 
 /** Numérotation des sous-sections de §3 — table UNIQUE : titres ET renvois s'y lisent. */
@@ -41,6 +64,34 @@ const SECTION = {
 };
 
 const echappe = (s: string) => String(s).replace(/\|/g, '\\|');
+
+/** Discriminants DÉCLARÉS des options d'`effectSchema` (le `z.lazy` est déroulé par `enfantsDe`). */
+function discriminantsDeffet(): string[] {
+  const def = defDe(effectSchema)!;
+  const cible = def.type === 'lazy' ? enfantsDe(def)[0]?.noeud : effectSchema;
+  const options = defDe(cible)?.options ?? [];
+  return options.flatMap((o) => {
+    const litteral = defDe(o)?.shape?.type;
+    const d = defDe(litteral);
+    const brut = d?.values ?? d?.value;
+    const valeurs = Array.isArray(brut) ? brut : brut instanceof Set ? [...brut] : [brut];
+    return valeurs.filter((v): v is string => typeof v === 'string');
+  });
+}
+
+/** Variantes d'`Effect` DÉCLARÉES et posées NULLE PART dans les deux racines (`type: '<t>'`). */
+function variantesDeffetJamaisPosees(): string[] {
+  const posees = new Set<string>();
+  const marche = (n: unknown): void => {
+    if (Array.isArray(n)) return void n.forEach(marche);
+    if (!n || typeof n !== 'object') return;
+    const v = (n as Record<string, unknown>).type;
+    if (typeof v === 'string') posees.add(v);
+    for (const enfant of Object.values(n as Record<string, unknown>)) marche(enfant);
+  };
+  for (const d of listerDocuments(ROOT)) marche(JSON.parse(readFileSync(join(ROOT, d.chemin), 'utf8')));
+  return discriminantsDeffet().filter((t) => !posees.has(t)).sort();
+}
 const tableau = (entetes: string[], lignes: (string | number)[][]) =>
   [
     `| ${entetes.join(' | ')} |`,
@@ -70,17 +121,28 @@ out += '## 1. Racines\n\n';
 const docs = listerDocuments(ROOT);
 const parRacine = new Map<string, number>();
 for (const d of docs) parRacine.set(d.racine, (parRacine.get(d.racine) ?? 0) + 1);
+/** « Au registre zod » est CALCULÉ par racine : le déclaré couvre les deux depuis #1466 L1a. */
+const declaresParRacine = new Map<string, number>();
+for (const d of DEFS) declaresParRacine.set(d.root, (declaresParRacine.get(d.root) ?? 0) + 1);
 out += tableau(
   ['Racine', 'Fichiers retenus', 'Documents', 'Au registre zod'],
   RACINES.map((r) => [
     `\`${r.dir}\``,
     `\`${r.motif}\`${r.recursif ? ' (récursif)' : ''}`,
     parRacine.get(r.id) ?? 0,
-    r.auRegistre
-      ? `${declares.length} / ${parRacine.get(r.id) ?? 0}`
-      : '0 — aucune scène n’est au registre (#1463 L1)',
+    `${declaresParRacine.get(r.id) ?? 0} / ${parRacine.get(r.id) ?? 0}`,
   ]),
 );
+{
+  const orphelins = scan.documents.filter((d) => !parFichierDeclare.has(d.nom));
+  out += `Documents qu’AUCUNE def ne déclare : **${orphelins.length}**`;
+  out += `${orphelins.length ? ` — ${orphelins.map((d) => `\`${d.chemin}\``).join(' ')}` : ''}.\n`;
+  const tronquees = declares.filter((d) => d.tronquee);
+  out += `Defs dont le relevé déclaré est TRONQUÉ par la borne d’introspection : **${tronquees.length}**`;
+  out += `${tronquees.length ? ` — ${tronquees.map((d) => `\`${d.file}\``).join(' ')}` : ''}. Au-delà de la\n`;
+  out += 'borne, `classeZod`/`clesDeclarees` écrivent le marqueur `(profondeur)` au lieu de la forme : la\n';
+  out += 'troncature se COMPTE ici, elle ne se tait pas.\n\n';
+}
 
 out += '### 1bis. Index des ids (le cœur du détecteur)\n\n';
 out += `Identités indexées : **${scan.index.ids}** (entrées de racine + documents embarqués) ; libellés\n`;
@@ -199,18 +261,40 @@ out += 'dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGE
 
 out += '### 2.4 Formes DÉCLARÉES jamais observées\n\n';
 out += 'Clé déclarée par le schéma zod d’un document mais portée par AUCUNE entrée du JSON — schéma plus\n';
-out += 'large que la donnée (un champ à retirer, ou une donnée à écrire).\n\n';
+out += 'large que la donnée (un champ à retirer, ou une donnée à écrire).\n';
+out += 'Deux régimes, et ils ne se confondent pas : **par DÉFAUT** (table A) la forme n’a AUCUN lot de\n';
+out += 'peuplement — c’est du dénominateur, elle va au stock `STRUCTURES_DEFAUT` et ne fait que décroître ;\n';
+out += '**`cible-declaree`** (table B) est un déclaré-avant-posé ASSUMÉ, avec son lot de peuplement — il ne\n';
+out += 'se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), il s’ÉMET ici.\n\n';
 {
+  out += '#### A. Par défaut — sans lot de peuplement (stock `STRUCTURES_DEFAUT`)\n\n';
   const lignes: (string | number)[][] = [];
+  let nCles = 0;
   for (const d of scan.documents) {
     const dec = parFichierDeclare.get(d.nom);
     if (!dec) continue;
     const vues = new Set(d.clesNiveau1.map((k) => k.cle));
     const jamais = Object.keys(dec.cles).filter((k) => !vues.has(k)).sort();
-    if (jamais.length) lignes.push([`\`${d.nom}\``, jamais.length, jamais.map((k) => `\`${k}\``).join(' ')]);
+    if (jamais.length) {
+      nCles += jamais.length;
+      lignes.push([`\`${d.nom}\``, jamais.length, jamais.map((k) => `\`${k}\``).join(' ')]);
+    }
   }
-  out += `**${lignes.length}** documents portent au moins une clé déclarée jamais observée.\n\n`;
+  out += `**${lignes.length}** documents portent au moins une clé déclarée jamais observée, **${nCles}** clés en tout\n`;
+  out += '(stock `STRUCTURES_DEFAUT`, `scripts/guards/lib/structuresStock.mjs`, garde `src/data/structures-contrat.test.ts`).\n\n';
   out += tableau(['Document', 'Clés', 'Détail'], lignes);
+
+  out += '#### B. `cible-declaree` — déclaré-avant-posé ASSUMÉ (émission, jamais un stock)\n\n';
+  out += 'Le CONTENU de cette table est MESURÉ (déclaré du schéma × valeurs posées dans les deux racines) ;\n';
+  out += 'seuls la DATE et le LOT DE PEUPLEMENT se déclarent, une fois par famille\n';
+  out += '(`LOTS_DE_PEUPLEMENT`, `scripts/docs/lib/structures-lexique.mts`).\n\n';
+  out += tableau(
+    ['Forme', 'Famille', 'Date', 'Lot de peuplement'],
+    variantesDeffetJamaisPosees().map((t) => {
+      const l = LOTS_DE_PEUPLEMENT['variante d’`Effect`'];
+      return [`\`type: '${t}'\``, 'variante d’`Effect`', l.date, l.lot];
+    }),
+  );
 
   out += 'Même règle pour le LEXIQUE : une signature qu’il déclare et que la donnée ne porte nulle part.\n';
   out += 'Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit ici, jamais en silence.\n\n';
@@ -478,6 +562,70 @@ out += tableau(
       return [`\`${o.op}\``, `\`${o.signature}\``, `\`${o.dataset}\``, o.occurrences, refs.length ? refs.map((r) => `\`${r}\``).join(' ') : '—'];
     }),
   );
+}
+
+// ---------------------------------------------------------------------------
+out += '## 6. Slots DÉCLARÉS × réfs OBSERVÉES (registre des slots)\n\n';
+out += 'Le côté DÉCLARÉ des références : un slot par référence RÉELLE, à son path exact, lu PAR MARCHE des\n';
+out += 'schémas des deux racines (`slotsDe`, `src/data/schemas/grammaire/slots.ts`). Son enforcement vit\n';
+out += 'dans `src/data/slots-contrat.test.ts`.\n\n';
+out += `${MANDAT_SLOTS}\n\n`;
+{
+  const slots = slotsDeclares(DEFS);
+  const parEspece = new Map<string, number>();
+  for (const s of slots) parEspece.set(s.espece, (parEspece.get(s.espece) ?? 0) + 1);
+  const documents = new Map<string, unknown>();
+  for (const d of listerDocuments(ROOT)) documents.set(d.nom, JSON.parse(readFileSync(join(ROOT, d.chemin), 'utf8')));
+
+  out += `Slots déclarés : **${slots.length}** — `;
+  out += [...parEspece].map(([e, n]) => `espèce \`${e}\` **${n}**`).join(', ') + '.\n\n';
+
+  out += '### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)\n\n';
+  out += 'Pour chacun, les valeurs POSÉES à ce path dans le document, et leur résolution contre le registre\n';
+  out += 'des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une ligne de stock.\n\n';
+  out += tableau(
+    ['Dataset', 'Path déclaré', 'Champ projeté', 'Type', 'Cardinalité', 'Valeurs posées', 'Résolues'],
+    slots
+      .filter((s) => s.espece === 'id')
+      .map((s) => {
+        const valeurs = documents.has(s.dataset) ? valeursAuPath(documents.get(s.dataset), s.path) : [];
+        const resolues = estTypeDuRegistre(s.type)
+          ? valeurs.filter((v) => (idsDuType(s.type as never) as readonly string[]).includes(v.valeur)).length
+          : 0;
+        return [
+          `\`${s.dataset}\``,
+          `\`${s.path}\``,
+          `\`${champDuPath(s.path)}\``,
+          `\`${s.type ?? '—'}\``,
+          s.cardinalite,
+          valeurs.length,
+          `${resolues} / ${valeurs.length}`,
+        ];
+      }),
+  );
+
+  const joints = champsJoints(scan.formes, slots);
+  out += `Champs porteurs de réfs OBSERVÉES que le déclaré ATTEINT : **${joints.length}** — `;
+  out += `${joints.map((k) => `\`${k}\``).join(' ') || '—'}. Une jointure VIDE rendrait ce volet muet :\n`;
+  out += 'la garde l’exige NON VIDE.\n\n';
+
+  out += '### 6.2 Couverture — réfs observées qu’AUCUN slot ne déclare\n\n';
+  out += 'La dette d’ADOPTION du registre : un `(dataset, champ)` porteur de références mesurées (strate\n';
+  out += '`Référence`) que le déclaré n’atteint par aucun slot. Stock `SLOTS_SANS_DECLARATION`\n';
+  out += '(`scripts/guards/lib/slotsStock.mjs`, garde `src/data/slots-contrat.test.ts`) — il se solde concept\n';
+  out += 'par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.\n\n';
+  const sansSlot = champsSansSlot(scan.formes, slots);
+  out += `**${sansSlot.length}** couples (dataset, champ) sans slot déclaré.\n\n`;
+  out += tableau(
+    ['Dataset', 'Champ', 'Occurrences observées'],
+    sansSlot.map((c) => [`\`${c.dataset}\``, `\`${c.champ}\``, c.occurrences]),
+  );
+
+  out += '### 6.3 Angles morts DÉCLARÉS de ce volet\n\n';
+  out += `Source UNIQUE \`ANGLES_MORTS_SLOTS\` (\`scripts/docs/lib/structures-lexique.mts\`) — l’espèce \`acteur\`\n`;
+  out += `pèse **${parEspece.get('acteur') ?? 0}** slots sur ${slots.length}.\n\n`;
+  out += ANGLES_MORTS_SLOTS.map((a) => `- ${a}`).join('\n');
+  out += '\n\n';
 }
 
 emitOrCheck({

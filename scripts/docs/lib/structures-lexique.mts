@@ -79,11 +79,11 @@ export const ANGLES_MORTS: readonly string[] = [
   'La RÉSOLVABILITÉ d’un `{text}` se mesure sur le LIBELLÉ NORMALISÉ (casse, accents, ponctuation, espaces) d’une entité d’un dataset de la CIBLE MAJORITAIRE de son site — de n’importe quel dataset quand le site n’a pas de cible ; elle ne vérifie AUCUN type d’entité attendu, et un `label` qui est aussi un id peut la faire mordre sur un homonyme : la forme `text (résolvable)` est un candidat à migrer en `{id}`, pas un verdict.',
   'Le partage d’un SITE tranche entre référence cassée et document embarqué, mais les TELLS de document passent avant le ratio (`label` + `source`, ou `label` + ≥ 2 clés de charge utile) et l’égalité tranche pour le DOCUMENT ; un site à UNE seule valeur est un document, sauf si la clé est `…Id`/`…Ids`/`…Ref`.',
   'L’ORDRE DES PASSES est un angle mort déclaré : l’index est complété par les documents EMBARQUÉS (passe 3) AVANT que la résolution ne soit mesurée (passe 4) — un site comme `arene-projet.json › members {entityId}` ne résout que grâce à cet ordre.',
-  'Une clé dont la valeur est un LITTÉRAL D’ENUM du schéma zod du document n’ouvre jamais de référence (discriminants `kind`/`type`/`class`/`op`…) ; les documents HORS registre (les scènes) n’ont pas de schéma, leurs discriminants échappent donc à cette fermeture.',
+  'Une clé dont la valeur est un LITTÉRAL D’ENUM du schéma zod du document n’ouvre jamais de référence (discriminants `kind`/`type`/`class`/`op`…). Depuis #1466 L1a les DEUX racines sont au registre (`SCHEMA_DEFS` + `SCHEMA_DEFS_SCENES`, joints par BASENAME) : les discriminants des scènes sont fermés comme les autres. La fermeture reste bornée à ce que l’introspection atteint — un littéral sous une enveloppe qu’`enfantsDe` ne traverse pas y échappe.',
   'Les clés de PROSE `label`/`nom`/`desc`/`title` n’ouvrent jamais de référence ; `text` sous un champ de dotation est l’exception unique (résolution NARRATIVE #624).',
   'La strate `Instance` du design v2 (SkillInstance, ItemInstance, saves) est HORS PÉRIMÈTRE PAR CONSTRUCTION : les deux racines ne portent que des documents AUTHORÉS, et `saves` a sa propre politique de version (`src/state/saves.ts`).',
   'Les ABSENCES d’enveloppe ne se comptent que sur les ENTRÉES DE RACINE (`id` et `source` partout, `label` sur les familles `entité`/`table`) : un document EMBARQUÉ n’est jamais sommé de porter un `id`.',
-  'Le RÉGIME D’ENTRÉES vient de la famille DÉCLARÉE par le schéma zod (`liste` → les éléments, `record` → les valeurs, `config` → le document EST son entrée) ; un document hors registre est classé par sa racine JSON. La FAMILLE mesurée (`entité`/`table`/`config`/`record`), elle, est observée.',
+  'Le RÉGIME D’ENTRÉES vient de la famille DÉCLARÉE par le schéma zod (`liste` → les éléments, `record` → les valeurs, `config` → le document EST son entrée) ; un document qu’aucune def ne déclare serait classé par sa racine JSON — depuis #1466 L1a il n’y en a plus aucun, les quatre projets de `src/scenes` sont déclarés `config`. La FAMILLE mesurée (`entité`/`table`/`config`/`record`), elle, est observée.',
   'Une valeur mesurée hors de sa forme propre est enregistrée sous sa PROJECTION sur le vocabulaire du concept, suffixée `+…` ; de même pour une référence (clés de graphie + clés qui résolvent, charge utile repliée).',
   'La candidature `plage` est STRUCTURELLE : élément d’un TABLEAU portant `min` ET `max` NUMÉRIQUES. Un `{min,max}` porté par un champ hors tableau n’est pas mesuré comme plage.',
   'Un concept exprimé en SCALAIRE hors liste (`species: "humain"`) est mesuré sous la forme `id-nu`, sans signature d’objet.',
@@ -94,6 +94,38 @@ export const ANGLES_MORTS: readonly string[] = [
   'Les portes MOTEUR (`src/engine`, `src/state`) et les JSON hors documents (outillage, `public/qc/*`, baselines de gardes) ne sont pas mesurés : ce contrat parle de la DONNÉE authorée et de ses schémas.',
   'Les CACHES de parse AST (`CACHE_SOURCE`, `CACHE_LITTERAUX`) sont module-level et ne sont jamais invalidés : en mode watch, une édition d’un `defs/*.ts` n’est pas re-mesurée sans redémarrage.',
 ];
+
+/**
+ * MANDAT du volet SLOTS — SOURCE UNIQUE de la phrase, jamais recopiée : le doc l'ÉMET (§6), la garde
+ * `src/data/slots-contrat.test.ts` l'assère, les autres sites y RENVOIENT.
+ */
+export const MANDAT_SLOTS =
+  'Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».';
+
+/**
+ * ANGLES MORTS du volet SLOTS — SOURCE UNIQUE, même patron que `ANGLES_MORTS` (le doc les émet, la
+ * garde les référence, l'en-tête du stock en porte la copie et la garde compare les trois).
+ */
+export const ANGLES_MORTS_SLOTS: readonly string[] = [
+  'L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.',
+  'Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).',
+  'La PROJECTION path → champ retient le DERNIER segment-clé : deux paths distincts qui finissent sur la même clé se joignent au même champ observé (couverture sur-estimée à la marge).',
+  '`valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.',
+];
+
+/**
+ * DÉCLARÉ-AVANT-POSÉ ASSUMÉ (`cible-declaree`) — une famille de formes que le schéma déclare et que
+ * la donnée ne porte pas ENCORE, avec le LOT qui la peuplera. Ce n'est PAS un stock : un stock ne
+ * fait que décroître, une cible déclarée se solde en PEUPLANT la donnée (elle quitte alors la mesure
+ * d'elle-même). Le doc l'ÉMET (§2.4 table B) ; le contenu de la table est MESURÉ, seuls la date et
+ * le lot de peuplement se déclarent ici.
+ */
+export type LotDePeuplement = { readonly lot: string; readonly date: string };
+export const LOTS_DE_PEUPLEMENT: Readonly<Record<string, LotDePeuplement>> = {
+  // Les 57 variantes d'`Effect` sont passées en zod au commit ee98da334 (#1466 L1a T3-b) ; celles
+  // qu'aucune scène ne pose encore sont écrites du DÉCLARÉ seul, en attente d'adoption.
+  'variante d’`Effect`': { lot: 'adoption scènes (L1b #1467 et suivants)', date: '2026-08-24' },
+};
 
 export type Concept = {
   id: string;

@@ -7,7 +7,8 @@ import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
 import merchantsJson from '../../merchants.json';
 import { SCHEMA_DEFS } from '../_registry.generated';
-import { marqueDe, marquesPosées, marquesRetrouvées, PROFONDEUR_MAX, slotsDe, defDe, enfantsDe } from './slots';
+import { SCHEMA_DEFS_SCENES } from '../_registry-scenes.generated';
+import { marqueDe, marquesPosées, marquesRetrouvées, profondeurDe, PROFONDEUR_MAX, slotsDe, defDe, enfantsDe } from './slots';
 import { idDe, ref, refs, pick, specRef } from './ref';
 import { actorRefSchema, conditionSchema, gameOpSchema, OP_DEFS, OPS_NON_TYPEES } from './mecanique';
 
@@ -76,21 +77,56 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
     expect(paths(z.strictObject({ s: z.array(feuille).min(1) }))).toEqual(['s[]']);
   });
 
-  it('la marche des 120 defs ne perd aucune marque en route et NOMME les fabriques retrouvées', () => {
+  it('la marche des defs des DEUX racines ne perd aucune marque et NOMME les fabriques retrouvées', () => {
     const retrouvées = new Set<object>();
-    for (const { root, file, schema } of SCHEMA_DEFS) {
+    for (const { root, file, schema } of [...SCHEMA_DEFS, ...SCHEMA_DEFS_SCENES]) {
       for (const n of marquesRetrouvées(schema)) retrouvées.add(n);
       expect(() => slotsDe(root, file, schema)).not.toThrow();
     }
-    // Le stock des références ADOPTÉES par les defs, nommé par sa fabrique : il ne peut que CROÎtRE
-    // (L1b/L2/L3 adoptent concept par concept) ; un retrait silencieux rougit ici.
-    expect([...retrouvées].map((n) => marqueDe(n)!.site).sort()).toEqual(['actorRefSchema', "idDe('trapping')"]);
+    // Le stock des références ADOPTÉES par les defs, nommé par sa fabrique : il ne peut que CROÎTRE
+    // (L1b/L2/L3 adoptent concept par concept) ; un retrait silencieux rougit ici. La marque de
+    // `defs-scenes/narratif.ts` (`idDe('creature')`) n'est nommée QUE si les deux racines sont marchées.
+    expect(
+      [...retrouvées].map((n) => marqueDe(n)!.site).sort(),
+      'marque(s) de référence perdue(s) ou apparue(s) — une feuille marquée puis clonée hors fabrique (`.refine` EXTERNE) disparaît de la marche SANS erreur : c’est le zéro silencieux que ce stock nominatif détecte.',
+    ).toEqual(['actorRefSchema', "idDe('creature')", "idDe('trapping')"]);
   });
 
   it('la coupe de PROFONDEUR_MAX est BRUYANTE : un schéma trop profond LÈVE en nommant son path', () => {
     let jouet: z.ZodTypeAny = ref('skill');
     for (let i = 0; i < PROFONDEUR_MAX + 1; i++) jouet = z.strictObject({ n: jouet });
-    expect(() => slotsDe('src/data', 'jouet.json', jouet)).toThrow(/descente coupée à PROFONDEUR_MAX=20 sous « n\.n\.n/);
+    expect(() => slotsDe('src/data', 'jouet.json', jouet)).toThrow(
+      new RegExp(`descente coupée à PROFONDEUR_MAX=${PROFONDEUR_MAX} sous « n\\.n\\.n`),
+    );
+  });
+
+  it('la MARGE sous PROFONDEUR_MAX est verrouillée : le rouge arrive AVANT que `slotsDe` ne lève', () => {
+    const mesures = [...SCHEMA_DEFS, ...SCHEMA_DEFS_SCENES]
+      .map((d) => ({ def: `${d.root}/${d.file}`, ...profondeurDe(d.schema) }))
+      .sort((a, b) => b.profondeur - a.profondeur);
+    expect(
+      SCHEMA_DEFS_SCENES.length,
+      'le registre des scènes est vide : la moitié du corpus ne serait pas mesurée.',
+    ).toBeGreaterThan(0);
+    expect(mesures[0].profondeur, 'la mesure de profondeur ne rend rien : elle ne prouverait aucune marge.').toBeGreaterThan(0);
+    const pire = mesures[0];
+    expect(
+      pire.profondeur,
+      `la def la PLUS PROFONDE du corpus atteint ou dépasse PROFONDEUR_MAX=${PROFONDEUR_MAX} — « ${pire.def} » à ${pire.profondeur} sous « ${pire.chemin} ». ` +
+        'La marge est épuisée : re-mesurer (`profondeurDe`) et relever `PROFONDEUR_MAX` AVEC ce motif au commentaire de `slots.ts` — jamais en silence, sinon des slots se perdent à la coupe.',
+    ).toBeLessThan(PROFONDEUR_MAX);
+    // Corollaire : sous cette marge, aucune def ne fait LEVER la marche des slots.
+    const leves = [...SCHEMA_DEFS, ...SCHEMA_DEFS_SCENES]
+      .filter((d) => {
+        try {
+          slotsDe(d.root, d.file, d.schema);
+          return false;
+        } catch {
+          return true;
+        }
+      })
+      .map((d) => `${d.root}/${d.file}`);
+    expect(leves, 'def(s) dont la marche des slots LÈVE alors que la marge est censée tenir.').toEqual([]);
   });
 });
 

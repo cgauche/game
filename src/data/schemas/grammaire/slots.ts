@@ -112,10 +112,21 @@ export function marquesPosées(): readonly { readonly noeud: object; readonly ma
 
 /**
  * Un schéma récursif non mémoïsé rend un nouveau nœud à chaque `lazy` : la descente est bornée.
- * La borne est BRUYANTE — atteindre la coupe LÈVE en nommant le path : la marge mesurée sur le
- * corpus est NULLE (`spells.json` descend à 20 pile), une enveloppe de plus perdrait des slots.
+ * La borne est BRUYANTE — atteindre la coupe LÈVE en nommant le path. La MARGE est verrouillée par
+ * un test (`slots.test.ts`) qui mesure la profondeur RÉELLE des defs des deux racines (`profondeurDe`)
+ * et l'exige STRICTEMENT sous la borne — le rouge arrive donc AVANT que `slotsDe` ne lève.
+ * Mesure du 2026-08-26 : `src/scenes` descend à 25 (les 4 projets, chemin
+ * `worldMap.routes[].perils[].effects[]|19.flow|3.test.difficultyBy[].cond|10.subject|2.bonus`),
+ * `src/data` à 20 (`spells.json`). Ces chiffres se RE-MESURENT, ils ne se recopient pas.
  */
-export const PROFONDEUR_MAX = 20;
+export const PROFONDEUR_MAX = 30;
+
+/**
+ * CAP DUR de la MESURE de profondeur — filet de sécurité de `profondeurDe`, sans rapport avec la
+ * borne de production : il ne protège que la sonde contre un arbre qui échapperait à la pile
+ * d'ancêtres. L'atteindre LÈVE (une sonde qui s'arrêterait en silence mentirait sur la marge).
+ */
+export const CAP_MESURE_PROFONDEUR = 200;
 
 /**
  * Marche UNIQUE d'un schéma composé : visite chaque nœud MARQUÉ avec son path. Les cycles sont
@@ -125,21 +136,64 @@ export const PROFONDEUR_MAX = 20;
 /** Le point séparateur d'une clé ne s'écrit pas en tête de path (`t.id`, jamais `.t.id`). */
 const joindrePath = (path: string, segment: string): string => (path === '' && segment.startsWith('.') ? segment.slice(1) : path + segment);
 
-function marcher(schema: unknown, visite: (noeud: object, marque: MarqueDeSlot, path: string) => void): void {
+function descendreArbre(
+  schema: unknown,
+  cap: number,
+  visite: (noeud: object, path: string, profondeur: number) => void,
+  auCap: (path: string) => never,
+): void {
   const descendre = (noeud: unknown, path: string, ancêtres: ReadonlySet<unknown>, profondeur: number): void => {
     if (!noeud || typeof noeud !== 'object' || ancêtres.has(noeud)) return;
-    if (profondeur > PROFONDEUR_MAX)
-      throw new Error(
-        `slots : descente coupée à PROFONDEUR_MAX=${PROFONDEUR_MAX} sous « ${path} » — le schéma est plus profond que la borne, ses slots seraient perdus sans un mot.`,
-      );
-    const m = marqueDe(noeud);
-    if (m) visite(noeud as object, m, path);
+    if (profondeur > cap) auCap(path);
+    visite(noeud as object, path, profondeur);
     const def = defDe(noeud);
     if (!def) return;
     const pile = new Set(ancêtres).add(noeud);
     for (const e of enfantsDe(def)) descendre(e.noeud, joindrePath(path, e.segment), pile, profondeur + 1);
   };
   descendre(schema, '', new Set(), 0);
+}
+
+function marcher(schema: unknown, visite: (noeud: object, marque: MarqueDeSlot, path: string) => void): void {
+  descendreArbre(
+    schema,
+    PROFONDEUR_MAX,
+    (noeud, path) => {
+      const m = marqueDe(noeud);
+      if (m) visite(noeud, m, path);
+    },
+    (path) => {
+      throw new Error(
+        `slots : descente coupée à PROFONDEUR_MAX=${PROFONDEUR_MAX} sous « ${path} » — le schéma est plus profond que la borne, ses slots seraient perdus sans un mot.`,
+      );
+    },
+  );
+}
+
+/**
+ * Profondeur RÉELLE d'un schéma et le chemin qui l'atteint — MÊME règle de coupe que `marcher` (pile
+ * d'ancêtres), bornée au seul `CAP_MESURE_PROFONDEUR`. C'est la mesure qui verrouille la MARGE sous
+ * `PROFONDEUR_MAX` : la borne ne se relève qu'avec ce chiffre à l'appui.
+ */
+export function profondeurDe(schema: unknown): { profondeur: number; chemin: string } {
+  let profondeur = -1;
+  let chemin = '';
+  descendreArbre(
+    schema,
+    CAP_MESURE_PROFONDEUR,
+    (_noeud, path, p) => {
+      if (p > profondeur) {
+        profondeur = p;
+        chemin = path;
+      }
+    },
+    (path) => {
+      throw new Error(
+        `slots : mesure de profondeur coupée au CAP_MESURE_PROFONDEUR=${CAP_MESURE_PROFONDEUR} sous « ${path} » — la pile d'ancêtres n'a pas coupé la récursion, la marge n'est pas mesurable.`,
+      );
+    },
+  );
+  return { profondeur, chemin };
 }
 
 /**

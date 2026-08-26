@@ -47,16 +47,21 @@ export type Racine = {
   motif: string;
   suffixe: string;
   recursif: boolean;
-  /** Les documents de cette racine sont-ils attendus au registre zod (#1463 L1) ? */
-  auRegistre: boolean;
 };
 
 export const RACINES: readonly Racine[] = [
-  { id: 'src/data', dir: 'src/data', motif: '*.json', suffixe: '.json', recursif: false, auRegistre: true },
-  { id: 'src/scenes', dir: 'src/scenes', motif: '*-projet.json', suffixe: '-projet.json', recursif: true, auRegistre: false },
+  { id: 'src/data', dir: 'src/data', motif: '*.json', suffixe: '.json', recursif: false },
+  { id: 'src/scenes', dir: 'src/scenes', motif: '*-projet.json', suffixe: '-projet.json', recursif: true },
 ];
 
 export type Document = { racine: string; chemin: string; nom: string };
+
+/**
+ * NOM d'un document tel que le scan le key : son BASENAME. Les defs de `src/scenes` déclarent un
+ * CHEMIN RELATIF à leur racine (`arene/arene-projet.json`) là où `listerDocuments` rend un basename
+ * (`arene-projet.json`) : toute jointure DÉCLARÉ × OBSERVÉ passe par ici, jamais par `file` brut.
+ */
+export const nomDeDocument = (file: string): string => file.split(/[\\/]/).pop() ?? file;
 
 /**
  * Bornes de la table EXHAUSTIVE des signatures hors strate dans `docs/structures-donnees.md`.
@@ -346,10 +351,10 @@ function parcourir(racine: unknown, visite: (o: Obj, champ: string, chemin: stri
  * @param root racine absolue du dépôt
  * @param famillesDeclarees nom de document → famille déclarée par son schéma zod
  *   (`introspecterDefs`), qui donne le RÉGIME D'ENTRÉES. Absente = régime déduit de la racine JSON
- *   seule (documents hors registre).
+ *   seule — repli sans population depuis #1466 L1a : les DEUX racines sont au registre.
  * @param choixDeclares nom de document → clé → littéraux d'enum déclarés par son schéma zod
  *   (`choixDeclares`) : une clé dont la valeur est l'un d'eux est un DISCRIMINANT, jamais une
- *   référence. Absente = aucune fermeture d'enum (les documents hors registre).
+ *   référence. Absente = aucune fermeture d'enum — repli sans population depuis #1466 L1a.
  */
 export function scannerDonnees(
   root: string,

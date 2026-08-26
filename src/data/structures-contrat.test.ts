@@ -14,14 +14,16 @@ import {
   ANGLES_MORTS,
   CONCEPTS,
   LOTS_CONNUS,
+  LOTS_DE_PEUPLEMENT,
   LOT_CLE_RESERVEE,
   lotDeForme,
   signature,
 } from '../../scripts/docs/lib/structures-lexique.mjs';
 import { choixDeclares, introspecterDefs } from '../../scripts/docs/lib/zod-introspect.mjs';
-import { SCHEMA_DEFS } from './schemas/_registry.generated';
+import { defsDeDocument } from '../../scripts/docs/lib/slots-registre.mjs';
 import {
   STRUCTURES_CIBLES,
+  STRUCTURES_DEFAUT,
   STRUCTURES_ENVELOPPE,
   STRUCTURES_FORMES,
   STRUCTURES_HOMONYMES,
@@ -59,9 +61,12 @@ const GARDE = {
 } as const;
 
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
+/** Le DÉCLARÉ couvre les DEUX racines (#1466 L1a) — jointure par BASENAME, comme le scan key. */
+const DEFS = defsDeDocument();
 /** UN seul scan pour tout le fichier : le test consomme la mesure, il ne relit jamais les JSON. */
-const FAMILLES = new Map(introspecterDefs(SCHEMA_DEFS).map((d) => [d.file, d.famille]));
-const CHOIX = choixDeclares(SCHEMA_DEFS);
+const DECLARES = introspecterDefs(DEFS);
+const FAMILLES = new Map(DECLARES.map((d) => [d.file, d.famille]));
+const CHOIX = choixDeclares(DEFS);
 const scan = scannerDonnees(ROOT, FAMILLES, CHOIX);
 const { redeclarations } = scannerRedeclarations(ROOT);
 
@@ -99,7 +104,12 @@ const cleOrpheline = (o: { dataset: string; champ: string; signature: string; mo
  */
 // Vague console #1411/#1426 distante, réconciliation post-rebase : `actions.json` gagne une entrée
 // et le champ `hote` — la donnée est committée, le cliquet la rattrape (1116→1118).
-const PLAFOND_HORS_STRATE = 1118;
+// #1466 L1a volet A (1118→1119) : le DÉCLARÉ couvre désormais `src/scenes`, donc les discriminants
+// des 4 projets se FERMENT — `loup-et-saumure-projet.json › threat {camp,tier}` cesse d'être compté
+// comme référence `tier+…` (sa valeur est un littéral d'enum du schéma) et tombe hors strate. C'est
+// le MÊME objet qui change de classement, pas une structure neuve : le dénominateur des formes
+// décroît de 8 lignes dans le même geste.
+const PLAFOND_HORS_STRATE = 1119;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 
@@ -236,7 +246,33 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     ).toEqual(lignes(stockees));
   });
 
-  it('les sept stocks ne font que DÉCROÎTRE (aucune ligne neuve hors migration)', () => {
+  it('formes DÉCLARÉES jamais observées, sans lot de peuplement : observé == stock', () => {
+    const cle = (x: { dataset: string; cle: string; date?: string }) => `${x.dataset} | ${x.cle} | ${x.date ?? DATE_STOCK}`;
+    const observees: string[] = [];
+    const parFichier = new Map(DECLARES.map((d) => [d.file, d]));
+    for (const d of scan.documents) {
+      const dec = parFichier.get(d.nom);
+      if (!dec) continue;
+      const vues = new Set(d.clesNiveau1.map((k) => k.cle));
+      for (const c of Object.keys(dec.cles).filter((k) => !vues.has(k)))
+        observees.push(cle({ dataset: d.nom, cle: c, date: STRUCTURES_DEFAUT.find((s) => s.dataset === d.nom && s.cle === c)?.date }));
+    }
+    expect(
+      lignes(observees),
+      'écart entre les clés DÉCLARÉES JAMAIS OBSERVÉES et `STRUCTURES_DEFAUT` — un schéma plus large que la donnée se solde en retirant le champ ou en écrivant la donnée. Un déclaré-avant-posé ASSUMÉ ne se stocke PAS ici : il porte un lot de peuplement et s’ÉMET (`LOTS_DE_PEUPLEMENT`, doc §2.4 table B).',
+    ).toEqual(lignes(STRUCTURES_DEFAUT.map(cle)));
+  });
+
+  it('`cible-declaree` ne se STOCKE nulle part : c’est une ÉMISSION du doc, pas un dénominateur', () => {
+    const stock = readFileSync(join(ROOT, 'scripts/guards/lib/structuresStock.mjs'), 'utf8');
+    expect(
+      /statut:\s*["']cible-declaree["']/.test(stock),
+      'une ligne `cible-declaree` est entrée au stock : elle CROÎTRAIT (une forme se déclare avant d’être posée), et rendrait menteurs `GARDE.baseline.decroissant` et le cliquet des huit stocks.',
+    ).toBe(false);
+    expect(Object.keys(LOTS_DE_PEUPLEMENT).length, 'aucun lot de peuplement déclaré : la table B du doc serait vide de sens.').toBeGreaterThan(0);
+  });
+
+  it('les huit stocks ne font que DÉCROÎTRE (aucune ligne neuve hors migration)', () => {
     const mesure = [
       // #1443 (mobilier volumique) : trois lignes s'ajoutent au dénominateur, chacune INSTANCE d'une
       // famille déjà stockée et rangée dans son lot — `ref` id-nu d'un pion de scène (L3, comme les
@@ -250,10 +286,15 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // #1466 T3-b (migration qualités LIBELLÉ→id) : une ligne s'ajoute au dénominateur — le tableau
       // résolu DEVIENT une forme refs/ids-nus mesurée (ligne nominative `arene-projet.json › qualities`),
       // rangée dans le MÊME lot L3 : la donnée ENTRE dans la strate, ce n'est pas une dérive de forme.
+      // #1466 L1a volet A : le DÉCLARÉ couvre les 2 racines — la fermeture des discriminants de
+      // scène retire 8 lignes de formes (`ambiance`/`weather`/`threat` des 4 projets : leurs valeurs
+      // sont des littéraux d'enum du schéma, elles n'ouvrent plus de référence). Le cliquet SUIT la
+      // baisse : 679 → 671, sinon la marge regagnée servirait à absorber une dérive future.
       ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 15],
-      // Vague console #1411/#1426 distante, réconciliation post-rebase : `actions.json` gagne le
-      // champ `hote` (ligne nominative, même lot L3) — la donnée est committée, le stock la rattrape.
-      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 679],
+      ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 671],
+      // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (24, dont 5
+      // apportées par les 4 projets de scène qui entrent au déclaré).
+      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 24],
       ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES.length, 6],
       ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 102],
       ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 165],
@@ -272,6 +313,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     const sansDate = [
       ...STRUCTURES_CIBLES.filter((c) => !dateOk(c.date)).map((c) => `cible ${c.concept} ${c.signature}`),
       ...STRUCTURES_FORMES.filter((f) => !dateOk(f.date)).map(cleForme),
+      ...STRUCTURES_DEFAUT.filter((d) => !dateOk(d.date)).map((d) => `défaut ${d.dataset} ${d.cle}`),
       ...STRUCTURES_HOMONYMES.filter((h) => !dateOk(h.date)).map((h) => h.cle),
       ...STRUCTURES_ENVELOPPE.filter((e) => !dateOk(e.date)).map((e) => `${e.role} | ${e.cle} | ${e.document}`),
       ...STRUCTURES_REDECLARATIONS.filter((r) => !dateOk(r.date)).map((r) => r.def),
@@ -318,17 +360,22 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // +2 : les deux formes `effect {trappingId,type}` de #1466 T3-b (cf. motif au cliquet ci-dessus).
       // +1 : la forme `qualities` ids-nus de #1466 T3-b (cf. motif au cliquet ci-dessus).
       // +1 : `actions.json › hote` id-nu (vague console #1411/#1426 distante, cf. motif ci-dessus).
-      'L3 #1463': 396,
+      // −8 : #1466 L1a volet A — les 8 formes `ambiance`/`weather`/`threat` des 4 projets de scène,
+      // éteintes par la fermeture de leurs discriminants (le déclaré couvre `src/scenes`) : 396 → 388.
+      'L3 #1463': 388,
       'L4 #1463': 224,
     };
     expect(
       [...parLot].filter(([lot, n]) => n > plafonds[lot]).map(([lot, n]) => `${lot} ${n} > ${plafonds[lot]}`),
       'lot(s) qui ont GONFLÉ — une ligne ne change pas de lot sans revue, et un lot ne grossit pas sans dérive.',
     ).toEqual([]);
-    // 1444 → 1446 : les deux mêmes lignes #1466 T3-b (cf. motif au cliquet des sept stocks).
+    // 1444 → 1446 : les deux mêmes lignes #1466 T3-b (cf. motif au cliquet des huit stocks).
     // 1446 → 1447 : la ligne `arene-projet.json › qualities` ids-nus (même motif, migration LIBELLÉ→id).
     // 1447 → 1448 : la ligne `actions.json › hote` id-nu (vague console distante, même motif).
-    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(1448);
+    // 1448 → 1440 : les 8 formes de scène éteintes par la fermeture des discriminants (#1466 L1a
+    // volet A). `STRUCTURES_DEFAUT` n'entre pas dans ce total : il ne porte pas de LOT d'extinction
+    // (une clé déclarée jamais écrite se solde au SCHÉMA ou à la DONNÉE, pas dans un lot de migration).
+    expect(toutes.length, 'le dénominateur total du chantier ne fait que décroître.').toBeLessThanOrEqual(1440);
   });
 
   it('les ANGLES MORTS ont UNE source : le lexique, recopié nulle part (test, stock, doc)', () => {
@@ -357,6 +404,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
     const stocks: Array<[string, readonly Record<string, unknown>[], (x: never) => string, string[]]> = [
       ['STRUCTURES_CIBLES', STRUCTURES_CIBLES, ((c: { concept: string; signature: string; date: string }) => `${c.concept} | ${c.signature} | ${c.date}`) as never, ['concept', 'signature', 'date']],
       ['STRUCTURES_FORMES', STRUCTURES_FORMES, cleForme as never, ['concept', 'dataset', 'champ', 'signature', 'statut', 'strate', 'occurrences', 'lot', 'date']],
+      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT, ((d: { dataset: string; cle: string; date: string }) => `${d.dataset} | ${d.cle} | ${d.date}`) as never, ['dataset', 'cle', 'date']],
       ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES, cleHomonyme as never, ['cle', 'classes', 'occurrences', 'lot', 'date']],
       ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS, cleRedeclaration as never, ['def', 'champ', 'concept', 'signature', 'statut', 'commun', 'occurrences', 'lot', 'date']],
       ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE, cleEnveloppe as never, ['role', 'cle', 'motif', 'detail', 'document', 'chemin', 'entrees', 'lot', 'date']],
