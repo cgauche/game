@@ -1,8 +1,11 @@
 ---
 name: env-faux-vert-pont-rtk-vitest-collecte
 description: "Le pont RTK peut afficher un FAUX VERT : « EXIT = 0 » sur un vitest rendu 1 (erreur de collecte, 2026-08-09) ET « TypeScript: No errors found » sur un tsc à 4 erreurs EXIT=2 (2026-08-19, reproduit 2×) — seul spawnSync.status écrit HORS PIPE fait foi, pour vitest COMME pour tsc"
-metadata:
+metadata: 
+  node_type: memory
   type: reference
+  originSessionId: 581b89eb-a389-4f97-87c2-713104a0fbca
+  modified: 2026-08-26T07:32:38.026Z
 ---
 
 Mesuré 2026-08-09 (chantier #1153, arbre partagé). Un run `vitest run src/engine src/state` a rendu
@@ -19,6 +22,21 @@ Bash (pont RTK) a rendu « TypeScript: No errors found » **deux fois de suite**
 tsc mesuré par `spawnSync` sortait **EXIT=2 avec 4 erreurs** (dont 2 vraies régressions dans des
 tests). Le faux vert n'est donc PAS spécifique à vitest ni aux erreurs de collecte : il frappe
 aussi tsc en régime nominal. Tout gate (tsc, vitest, lint) exigé d'un agent passe par spawnSync.
+
+**Extension mesurée 2026-08-24 (#1466 T3-b, sonde gen-registry)** : le pont pipé peut afficher une
+LIGNE DE CONTENU non concordante avec l'état disque — `npm run gen | tail -1` a rendu « [inchangé] »
+à la seconde même où mtime + contenu du `_ids.generated.ts` prouvaient l'écriture (générateur
+byte-exact vérifié :612-616, hors de cause). Le mensonge frappe donc aussi les lignes de LOG, pas
+seulement les codes de sortie. Cause jumelle côté observateur, à éliminer d'abord : le plugin Vite
+`registryGen` (`vite.config.ts:9-20`) régénère EN SILENCE au buildStart de tout vitest/vite dev —
+un « [inchangé] » juste APRÈS un test peut être vrai (fichier déjà écrit) pendant que le diff vs
+HEAD montre du neuf.
+
+**Extension mesurée 2026-08-26 (juge de diff Lot P #1466)** : le pont frappe aussi les RECHERCHES —
+`grep -n "escapeStrength\|Tenue indisciplin" src/data/miscast.json` via Bash a rendu « 0 matches »
+alors que le fichier porte 6 occurrences (vérifié par ctx_search puis lecture directe :194-211).
+Un FAUX NÉGATIF de grep fonde silencieusement une conclusion « n'existe pas » — toute affirmation
+d'ABSENCE issue du pont se recoupe par un outil d'une autre famille (ctx_search, lecture directe).
 
 **Why:** c'est une famille distincte de [[env-exit-code-avale-par-l-outillage-shell]] (là, le pipe
 mange le code ; ici, le pont AFFICHE un code faux). Un « vert » de gate lu à l'écran peut donc être
