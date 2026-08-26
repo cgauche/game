@@ -67,10 +67,68 @@ export interface Exposition {
   readonly edit: ExpositionEdit;
 }
 
+/**
+ * Options de `document()` — tout ce qui n'est pas la déclaration nue du document, pour garder la
+ * signature positionnelle courte (`type, famille, champs, meta, exposition, options?`).
+ */
+export interface OptionsDocument {
+  /** Champs qu'une variante réglée republie (`variantOf`, #563/#564). */
+  readonly variantes?: readonly string[];
+  /** Schéma d'une VALEUR du record — exigé par la famille `record`, refusé partout ailleurs. */
+  readonly valeurRecord?: z.ZodTypeAny;
+  /**
+   * Schéma d'une CLÉ du record — défaut `z.string().min(1)`. Un def dont l'univers de clés est FERMÉ
+   * le déclare ici (`src/data/schemas/defs/teintesJeu.ts:134` : `z.record(z.enum(TEINTE_KEYS), hexColor)`)
+   * et garde son verrou par construction, qu'une clé libre perdrait. Mesuré (zod 4.4.3) : une clé
+   * énumérée rend le record EXHAUSTIF — toute clé déclarée doit être présente.
+   */
+  readonly cleRecord?: z.ZodType<string>;
+  /**
+   * Raffinement de l'ENTRÉE, appliqué AVANT le sceau.
+   * Mesuré (zod 4.4.3) : `superRefine`/`refine` rendent un `ZodObject` ENCORE extensible — l'ordre
+   * entrée → affiner → `.pipe` est donc le seul qui scelle. Consommateurs cibles : `projet.ts`
+   * (`superRefine` de document).
+   * En famille `record`, l'ENTRÉE est le DOCUMENT ENTIER (enveloppe + `entries`) : le raffinement
+   * reçoit donc l'objet qui parse le fichier, `entries` comprise.
+   */
+  readonly affinerEntree?: (entree: z.ZodObject<z.ZodRawShape>) => z.ZodType<unknown>;
+  /**
+   * Raffinement du DATASET, appliqué APRÈS l'emballage par famille.
+   * Consommateurs cibles : `teintesJeu` (refines du record), unicité d'ids (dataset-liste).
+   */
+  readonly affinerDataset?: (dataset: z.ZodType<unknown>) => z.ZodType<unknown>;
+}
+
 /** Handle FERMÉ d'un document : ce que le registre, l'éditeur et les gardes consomment. */
 export interface DocumentHandle<T extends string> {
-  /** Schéma zod du document, enveloppe + champs, `strictObject` SCELLÉ — ni `.extend` ni `.shape`. */
+  /**
+   * LE DATASET tel qu'il vit dans son fichier, emballé PAR FAMILLE (#1467) : `entite`/`table` →
+   * `z.array(entrée)`, `config` → l'entrée seule, `record` → enveloppe + `entries`. Un def n'écrit
+   * plus jamais son `z.array` à la main.
+   */
   readonly schema: z.ZodType<unknown>;
+  /**
+   * L'ENTRÉE SCELLÉE seule — pour l'EMBARQUEMENT (statblocks, table posée dans un autre fichier),
+   * jamais pour l'UI, qui consomme le dataset. En famille `record`, l'entrée EST le document entier
+   * (enveloppe + `entries`), donc `entree` et `schema` y coïncident.
+   */
+  readonly entree: z.ZodType<unknown>;
+  /**
+   * L'entrée en PATCH (tous champs optionnels), dérivée AVANT le sceau puis SCELLÉE à son tour :
+   * `.partial()` rend un `ZodObject` NU, que `.extend` rouvrirait — la fabrique n'expose aucun nœud
+   * extensible, fût-il voisin. `.optional()`/`safeParse` restent servis.
+   * Consommateur mesuré : `src/data/schemas/defs-scenes/narratif.ts:49`
+   * (`creaturesSchema.element.partial().optional()`) — sur le nœud SCELLÉ, `.partial` n'existe pas et l'appel JETTE.
+   */
+  readonly entreePartielle: z.ZodType<unknown>;
+  /**
+   * Clés top-level de l'entrée (enveloppe + champs, plus `entries` en famille `record`), relevées
+   * AVANT le sceau.
+   * Consommateurs mesurés : `src/data/variants-integrity.test.ts:29-31`
+   * (`Object.keys(def.schema.element.shape)` ×3) et `scripts/guards/lib/fieldConsumerTargets.mjs:46`
+   * (`if (schema?.shape)` — sans cette liste, la garde dégrade en SILENCE à zéro champ).
+   */
+  readonly cles: readonly string[];
   /** `type` du document, écrit dans le JSON et vérifié au parse. */
   readonly type: T;
   readonly famille: FamilleDocument;
@@ -109,9 +167,13 @@ function verifieExposition(type: string, exposition: Exposition): void {
 
 /**
  * Déclare un document. `champs` = la charge utile propre au type, `meta` = son libellé FR par clé,
- * `exposition` = Codex + éditeur, `variantes` = les champs qu'une variante réglée republie — la
- * fabrique compose `variantOf` elle-même, donc un champ hors de cette liste est refusé au parse et
+ * `exposition` = Codex + éditeur, `options.variantes` = les champs qu'une variante réglée republie —
+ * la fabrique compose `variantOf` elle-même, donc un champ hors de cette liste est refusé au parse et
  * un document sans `variantes` n'admet aucun `variants`.
+ *
+ * Elle rend AUSSI l'emballage du FICHIER (`schema`, par famille) : pour `record`, `champs`/`meta`
+ * décrivent les champs d'ENVELOPPE additionnels éventuels — le contenu, lui, vit sous `entries`, que
+ * la fabrique pose seule (`options.valeurRecord`, `options.cleRecord`) et qu'un def ne redéclare pas.
  */
 export function document<T extends string, C extends Record<string, z.ZodTypeAny>>(
   type: T,
@@ -119,10 +181,23 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
   champs: C & ChampsHorsEnveloppe<C>,
   meta: MetaDesChamps<C>,
   exposition: Exposition,
-  variantes?: readonly string[],
+  options: OptionsDocument = {},
 ): DocumentHandle<T> {
+  const { variantes, valeurRecord, cleRecord, affinerEntree, affinerDataset } = options;
+  if (famille === 'record' && !valeurRecord) {
+    throw new Error(`document('${type}') : la famille « record » exige \`valeurRecord\` (le schéma d'une valeur de \`entries\`).`);
+  }
+  if (famille !== 'record' && valeurRecord) {
+    throw new Error(`document('${type}') : \`valeurRecord\` n'a de sens que pour la famille « record » (ici « ${famille} »).`);
+  }
+  if (famille !== 'record' && cleRecord) {
+    throw new Error(`document('${type}') : \`cleRecord\` n'a de sens que pour la famille « record » (ici « ${famille} »).`);
+  }
   const cles = Object.keys(champs);
   for (const k of cles) {
+    if (famille === 'record' && k === 'entries') {
+      throw new Error(`document('${type}') : la fabrique pose « entries » pour la famille « record » — retire-le de \`champs\`.`);
+    }
     if ((CLES_ENVELOPPE as readonly string[]).includes(k)) {
       throw new Error(`document('${type}') : « ${k} » est une clé d'ENVELOPPE, la fabrique la pose — retire-la de \`champs\`.`);
     }
@@ -149,9 +224,29 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
   // SCEAU : `.pipe` rend un `ZodPipe` — ni `.extend` ni `.shape` AU RUNTIME, `safeParse`/`z.infer` et le
   // refus `strict` intacts (mesuré sur zod 4.4.3 : `.superRefine`/`.check`/`.refine`/`.brand` rendent,
   // eux, un `ZodObject` encore extensible).
-  const schema: z.ZodType<unknown> = complet.pipe(z.transform((v) => v));
+  // En famille `record`, l'ENTRÉE est le DOCUMENT ENTIER : `entries` (posée ICI) en fait partie, donc
+  // `affinerEntree`, `entreePartielle` et `cles` la voient comme n'importe quel champ.
+  const corps =
+    famille === 'record'
+      ? (z.strictObject({
+          ...complet.shape,
+          entries: z.record(cleRecord ?? z.string().min(1), valeurRecord!),
+        }) as z.ZodObject<z.ZodRawShape>)
+      : complet;
+  const entreePartielle: z.ZodType<unknown> = corps.partial().pipe(z.transform((v) => v));
+  const clesEntree: readonly string[] = Object.keys(corps.shape);
+  const affine = affinerEntree ? affinerEntree(corps) : corps;
+  const entreeScellee: z.ZodType<unknown> = affine.pipe(z.transform((v) => v));
+
+  // EMBALLAGE par FAMILLE (#1467) : le dataset est ce que le FICHIER porte — une LISTE d'entrées
+  // (`entite`/`table`), ou l'entrée elle-même (`config`, `record`).
+  const dataset: z.ZodType<unknown> = famille === 'entite' || famille === 'table' ? z.array(entreeScellee) : entreeScellee;
+  const schema: z.ZodType<unknown> = affinerDataset ? affinerDataset(dataset) : dataset;
   return {
     schema,
+    entree: entreeScellee,
+    entreePartielle,
+    cles: clesEntree,
     type,
     famille,
     meta: { ...(meta as Record<string, MetaChamp>) },

@@ -39,12 +39,12 @@ describe('document() — enveloppe posée par la fabrique', () => {
     expect(fiche.meta.max.label).toBe('Maximum');
     expect(fiche.exposition).toEqual(EXPOSITION);
     expect(fiche.variantes).toEqual([]);
-    expect(fiche.schema.safeParse(DOC_COMPLET).success).toBe(true);
+    expect(fiche.entree.safeParse(DOC_COMPLET).success).toBe(true);
   });
 
   it('refuse un champ inconnu (strictObject) et un document sans `source`', () => {
-    expect(fiche.schema.safeParse({ id: 'a', type: 'talent', label: 'A', source: SOURCE_REELLE, inconnu: 1 }).success).toBe(false);
-    expect(fiche.schema.safeParse({ id: 'a', type: 'talent', label: 'A', max: 2 }).success).toBe(false);
+    expect(fiche.entree.safeParse({ id: 'a', type: 'talent', label: 'A', source: SOURCE_REELLE, inconnu: 1 }).success).toBe(false);
+    expect(fiche.entree.safeParse({ id: 'a', type: 'talent', label: 'A', max: 2 }).success).toBe(false);
   });
 
   it('rend `source` optionnelle pour un type de la liste SANS LIVRE, et pour lui seul', () => {
@@ -97,16 +97,20 @@ describe('document() — enveloppe posée par la fabrique', () => {
   });
 
   it('n’expose AUCUN nœud extensible en aval : `.extend` et `.shape` absents AU RUNTIME', () => {
-    const nu = fiche.schema as unknown as Record<string, unknown>;
+    const nu = fiche.entree as unknown as Record<string, unknown>;
     expect(nu.extend).toBeUndefined();
     expect(nu.shape).toBeUndefined();
+    // « AUCUN nœud » vaut pour TOUT ce que le handle rend, l'entrée PARTIELLE comprise.
+    const patch = fiche.entreePartielle as unknown as Record<string, unknown>;
+    expect(patch.extend).toBeUndefined();
+    expect(patch.shape).toBeUndefined();
     expect(() =>
       // @ts-expect-error — le schéma sort en `z.ZodType` : pas d'`.extend` sur le handle.
-      fiche.schema.extend({ ajout: z.string() }),
+      fiche.entree.extend({ ajout: z.string() }),
     ).toThrow();
-    const parse: z.infer<typeof fiche.schema> = fiche.schema.parse(DOC_COMPLET);
+    const parse: z.infer<typeof fiche.entree> = fiche.entree.parse(DOC_COMPLET);
     expect((parse as { max: number }).max).toBe(2);
-    expect(fiche.schema.safeParse({ ...DOC_COMPLET, max: 'deux' }).success).toBe(false);
+    expect(fiche.entree.safeParse({ ...DOC_COMPLET, max: 'deux' }).success).toBe(false);
   });
 });
 
@@ -117,26 +121,208 @@ describe('document() — variantes réglées composées par la fabrique', () => 
     { max: z.number(), tests: z.string().optional() },
     { max: { label: 'Maximum' }, tests: { label: 'Tests' } },
     EXPOSITION,
-    ['desc', 'source', 'max'],
+    { variantes: ['desc', 'source', 'max'] },
   );
   const BASE = { id: 'ambidextre', type: 'talent', label: 'Ambidextre', source: SOURCE_REELLE, max: 2 };
 
   it('accepte un patch PARTIEL des champs déclarés, sous sa garde `when`', () => {
     expect(jouet.variantes).toEqual(['desc', 'source', 'max']);
-    expect(jouet.schema.safeParse({ ...BASE, variants: [{ when: { rule: 'aa-group-advantage' }, max: 4 }] }).success).toBe(true);
+    expect(jouet.entree.safeParse({ ...BASE, variants: [{ when: { rule: 'aa-group-advantage' }, max: 4 }] }).success).toBe(true);
   });
 
   it('REFUSE un champ hors liste, et une variante sans `when`', () => {
-    expect(jouet.schema.safeParse({ ...BASE, variants: [{ when: { rule: 'r' }, tests: 'Ténacité' }] }).success).toBe(false);
-    expect(jouet.schema.safeParse({ ...BASE, variants: [{ max: 4 }] }).success).toBe(false);
+    expect(jouet.entree.safeParse({ ...BASE, variants: [{ when: { rule: 'r' }, tests: 'Ténacité' }] }).success).toBe(false);
+    expect(jouet.entree.safeParse({ ...BASE, variants: [{ max: 4 }] }).success).toBe(false);
   });
 
   it('REFUSE tout `variants` à un document qui n’en déclare aucun, et un champ republiable inconnu', () => {
     const sansVariante = document('talent', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION);
-    expect(sansVariante.schema.safeParse({ ...BASE, variants: [{ when: { rule: 'r' }, max: 4 }] }).success).toBe(false);
+    expect(sansVariante.entree.safeParse({ ...BASE, variants: [{ when: { rule: 'r' }, max: 4 }] }).success).toBe(false);
     expect(() =>
-      document('talent', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, ['inexistant']),
+      document('talent', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, { variantes: ['inexistant'] }),
     ).toThrow(/« inexistant » est déclaré republiable/);
+  });
+});
+
+describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
+  const REPLIQUES = {
+    // Réplique de forme d'un def `entite` (talents.json) — jamais le vrai def : c'est la FABRIQUE qu'on mesure.
+    entite: document('talent', 'entite', { max: z.number() }, { max: { label: 'Maximum' } }, EXPOSITION),
+    // Réplique d'un def `config` (objet unique dans son fichier).
+    config: document('config-jouet', 'config', { valeur: z.number() }, { valeur: { label: 'Valeur' } }, EXPOSITION),
+    // Réplique d'un def `record` (decorPalette : record de chaînes hex).
+    record: document('palette-jouet', 'record', {}, {}, EXPOSITION, { valeurRecord: z.string().regex(/^#[0-9a-f]{6}$/) }),
+    // Réplique d'un def `table` : `die?` optionnel + `lignes`. Nom `lignes` pour la réplique table,
+    // distinct de l'`entries` que la fabrique injecte en famille `record` (#1467 — les datasets réels
+    // migrent à la V-FLIP-table).
+    table: document(
+      'table-jouet',
+      'table',
+      { die: z.string().optional(), lignes: z.array(z.strictObject({ min: z.number(), max: z.number(), label: z.string() })) },
+      { die: { label: 'Dé' }, lignes: { label: 'Lignes' } },
+      EXPOSITION,
+    ),
+  };
+  const ENV = (type: string) => ({ id: 'x', type, label: 'X', source: SOURCE_REELLE });
+
+  it('famille `entite` : le dataset est un TABLEAU d’entrées', () => {
+    const { schema } = REPLIQUES.entite;
+    expect(schema.safeParse([{ ...ENV('talent'), max: 2 }]).success).toBe(true);
+    expect(schema.safeParse({ ...ENV('talent'), max: 2 }).success).toBe(false);
+    expect(schema.safeParse([{ ...ENV('talent'), max: 2, inconnu: 1 }]).success).toBe(false);
+    expect(schema.safeParse([{ ...ENV('talent'), max: 'deux' }]).success).toBe(false);
+  });
+
+  it('famille `config` : le dataset est l’ENTRÉE seule', () => {
+    const { schema } = REPLIQUES.config;
+    expect(schema.safeParse({ ...ENV('config-jouet'), valeur: 3 }).success).toBe(true);
+    expect(schema.safeParse([{ ...ENV('config-jouet'), valeur: 3 }]).success).toBe(false);
+    expect(schema.safeParse({ ...ENV('config-jouet'), valeur: 3, inconnu: 1 }).success).toBe(false);
+    expect(schema.safeParse({ ...ENV('config-jouet'), valeur: 'trois' }).success).toBe(false);
+  });
+
+  it('famille `record` : ENVELOPPE + `entries`, chaque valeur validée', () => {
+    const { schema } = REPLIQUES.record;
+    const base = { ...ENV('palette-jouet'), entries: { bois: '#8b5a2b', pierre: '#7a7a7a' } };
+    expect(schema.safeParse(base).success).toBe(true);
+    expect(schema.safeParse({ ...base, inconnu: 1 }).success).toBe(false);
+    expect(schema.safeParse({ ...base, entries: { bois: 'marron' } }).success).toBe(false);
+    expect(schema.safeParse({ ...base, entries: { '': '#8b5a2b' } }).success).toBe(false);
+  });
+
+  it('famille `table` : TABLEAU d’entrées à `die?` optionnel et `lignes`', () => {
+    const { schema } = REPLIQUES.table;
+    const t = { ...ENV('table-jouet'), lignes: [{ min: 1, max: 10, label: 'Rien' }] };
+    expect(schema.safeParse([t]).success).toBe(true);
+    expect(schema.safeParse([{ ...t, die: '1d100' }]).success).toBe(true);
+    expect(schema.safeParse([{ ...t, entries: {} }]).success).toBe(false);
+    expect(schema.safeParse([{ ...t, lignes: [{ min: 1, max: 10 }] }]).success).toBe(false);
+  });
+
+  it('le SCEAU tient sur TOUT nœud rendu (dataset de chaque famille, entrée, entrée partielle)', () => {
+    const scelle = (n: unknown) => {
+      const nu = n as Record<string, unknown>;
+      expect(nu.extend).toBeUndefined();
+      expect(nu.shape).toBeUndefined();
+      expect(typeof (nu as { partial?: unknown }).partial).toBe('undefined');
+      expect(() => (nu as { partial: () => unknown }).partial()).toThrow();
+    };
+    scelle((REPLIQUES.entite.schema as unknown as { element: unknown }).element);
+    scelle((REPLIQUES.table.schema as unknown as { element: unknown }).element);
+    scelle(REPLIQUES.config.schema);
+    scelle(REPLIQUES.record.schema);
+    scelle(REPLIQUES.entite.entree);
+    scelle(REPLIQUES.record.entree);
+    // Le nœud PARTIEL est scellé lui aussi : un `.partial()` nu rouvrirait `.extend` par le voisin.
+    scelle(REPLIQUES.entite.entreePartielle);
+    scelle(REPLIQUES.record.entreePartielle);
+  });
+
+  it('`entreePartielle` accepte le PATCH que le nœud scellé rend impossible, et `cles` liste les clés top-level', () => {
+    const { entreePartielle, cles } = REPLIQUES.entite;
+    expect(entreePartielle.safeParse({ max: 2 }).success).toBe(true);
+    expect(entreePartielle.safeParse({}).success).toBe(true);
+    expect(entreePartielle.safeParse({ inconnu: 1 }).success).toBe(false);
+    // Consommateur mesuré `defs-scenes/narratif.ts:49` : `.partial().optional()` — le sceau le sert.
+    expect(entreePartielle.optional().safeParse(undefined).success).toBe(true);
+    expect(entreePartielle.optional().safeParse({ max: 2 }).success).toBe(true);
+    expect(cles).toEqual(['id', 'type', 'label', 'labelF', 'desc', 'source', 'alsoIn', 'maison', 'icon', 'max']);
+    expect(REPLIQUES.table.cles).toContain('lignes');
+    // En famille `record`, `entries` EST un champ de l'entrée : `cles` ne ment pas sur la forme.
+    expect(REPLIQUES.record.cles).toContain('entries');
+  });
+
+  it('`affinerEntree` MORD sur l’entrée, sans rouvrir le sceau', () => {
+    const borne = document(
+      'talent',
+      'entite',
+      { max: z.number() },
+      { max: { label: 'Maximum' } },
+      EXPOSITION,
+      { affinerEntree: (e) => e.superRefine((v, ctx) => { if ((v as { max: number }).max > 3) ctx.addIssue({ code: 'custom', message: 'max plafonné à 3' }); }) },
+    );
+    expect(borne.schema.safeParse([{ ...ENV('talent'), max: 2 }]).success).toBe(true);
+    const ko = borne.schema.safeParse([{ ...ENV('talent'), max: 9 }]);
+    expect(ko.success).toBe(false);
+    expect(JSON.stringify(ko.error)).toContain('max plafonné à 3');
+    expect((borne.entree as unknown as Record<string, unknown>).extend).toBeUndefined();
+    expect((borne.schema as unknown as { element: Record<string, unknown> }).element.extend).toBeUndefined();
+  });
+
+  it('`affinerDataset` MORD sur le dataset (unicité d’ids), sans rouvrir le sceau', () => {
+    const unique = document(
+      'talent',
+      'entite',
+      { max: z.number() },
+      { max: { label: 'Maximum' } },
+      EXPOSITION,
+      {
+        affinerDataset: (d) =>
+          d.superRefine((v, ctx) => {
+            const ids = (v as { id: string }[]).map((e) => e.id);
+            if (new Set(ids).size !== ids.length) ctx.addIssue({ code: 'custom', message: 'id dupliqué' });
+          }),
+      },
+    );
+    expect(unique.schema.safeParse([{ ...ENV('talent'), max: 1 }, { ...ENV('talent'), id: 'y', max: 2 }]).success).toBe(true);
+    const ko = unique.schema.safeParse([{ ...ENV('talent'), max: 1 }, { ...ENV('talent'), max: 2 }]);
+    expect(ko.success).toBe(false);
+    expect(JSON.stringify(ko.error)).toContain('id dupliqué');
+    expect((unique.entree as unknown as Record<string, unknown>).extend).toBeUndefined();
+  });
+
+  it('`affinerEntree` MORD AUSSI en famille `record` : l’entrée y est le DOCUMENT (enveloppe + `entries`)', () => {
+    const palette = document(
+      'palette-jouet',
+      'record',
+      {},
+      {},
+      EXPOSITION,
+      {
+        valeurRecord: z.string(),
+        affinerEntree: (e) =>
+          e.superRefine((v, ctx) => {
+            if (!Object.keys((v as { entries: Record<string, string> }).entries).length) {
+              ctx.addIssue({ code: 'custom', message: 'AFFINER-A-MORDU' });
+            }
+          }),
+      },
+    );
+    expect(palette.schema.safeParse({ ...ENV('palette-jouet'), entries: { bois: '#000000' } }).success).toBe(true);
+    const ko = palette.schema.safeParse({ ...ENV('palette-jouet'), entries: {} });
+    expect(ko.success).toBe(false);
+    expect(JSON.stringify(ko.error)).toContain('AFFINER-A-MORDU');
+  });
+
+  it('`cleRecord` FERME l’univers des clés quand le def le déclare (patron `teintesJeu`)', () => {
+    const teintes = document('palette-jouet', 'record', {}, {}, EXPOSITION, {
+      cleRecord: z.enum(['bois', 'pierre']),
+      valeurRecord: z.string(),
+    });
+    const toutes = { bois: '#000000', pierre: '#ffffff' };
+    expect(teintes.schema.safeParse({ ...ENV('palette-jouet'), entries: toutes }).success).toBe(true);
+    expect(teintes.schema.safeParse({ ...ENV('palette-jouet'), entries: { ...toutes, lave: '#000000' } }).success).toBe(false);
+    // zod 4.4.3, mesuré : une clé ÉNUMÉRÉE rend le record EXHAUSTIF — une clé déclarée qui manque est
+    // refusée. C'est la forme du def réel `defs/teintesJeu.ts:134` (`z.record(z.enum(TEINTE_KEYS), …)`).
+    expect(teintes.schema.safeParse({ ...ENV('palette-jouet'), entries: { bois: '#000000' } }).success).toBe(false);
+    expect(() =>
+      document('talent', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, { cleRecord: z.string() }),
+    ).toThrow(/`cleRecord` n'a de sens que pour la famille « record »/);
+  });
+
+  it('REFUSE un champ `entries` déclaré par un def `record` : la fabrique le pose, en le nommant', () => {
+    expect(() =>
+      document('palette-jouet', 'record', { entries: z.string() }, { entries: { label: 'Entrées' } }, EXPOSITION, {
+        valeurRecord: z.string(),
+      }),
+    ).toThrow(/la fabrique pose « entries »/);
+  });
+
+  it('`valeurRecord` : EXIGÉ par la famille `record`, REFUSÉ partout ailleurs, en nommant le document', () => {
+    expect(() => document('palette-jouet', 'record', {}, {}, EXPOSITION)).toThrow(/« record » exige `valeurRecord`/);
+    expect(() =>
+      document('talent', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, { valeurRecord: z.string() }),
+    ).toThrow(/`valeurRecord` n'a de sens que pour la famille « record » \(ici « entite »\)/);
   });
 });
 
