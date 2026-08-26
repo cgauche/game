@@ -34,8 +34,9 @@ en fin de workflow) — c'est le signal qu'un geste manuel a dévié de ce que `
   `emojiAffordance`, `hardcode`, `labelLogic`) et les hooks Claude Code de session
   (`scripts/hooks/*.mjs`, déclarés dans `.claude/settings.json` : garde anti-réinvention Write,
   grounding donnée, garde `[entériné]`, garde git destructif, garde anti-poison post-écriture).
-- Les schémas de données : `src/data/schemas/` (`types.ts`, `common.ts`, `_registry.generated.ts`,
-  `defs/*.ts` — un fichier par catalogue : `traits.ts`, `qualities.ts`, `spells.ts`, `creatures.ts`…).
+- Les schémas de données : `src/data/schemas/` (`types.ts`, `validate.ts`, `_registry.generated.ts`,
+  `_ids.generated.ts`, `grammaire/` — le vocabulaire partagé, `defs/*.ts` — un fichier par catalogue :
+  `traits.ts`, `qualities.ts`, `spells.ts`, `creatures.ts`… — et `defs-scenes/` pour les documents de scène).
 - `scripts/art-ref/` — le PIPELINE d'extraction d'images (`extract.py`, `probe.py`,
   `ldb_extract.py`, `ldb_map.py`) : le code est tracké, ses SORTIES (images) ne le sont pas
   (§3).

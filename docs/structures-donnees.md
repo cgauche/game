@@ -3443,20 +3443,20 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `mass-battle.ts` | 51 | — | plage | divergente | `max,min+…` | — |
 | `miscast.ts` | 23 | — | de | divergente | `n,plus,sides+…` | — |
 | `miscast.ts` | 33 | — | — | hors lexique | `dice` | `formulaSchema` |
-| `miscast.ts` | 44 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
-| `miscast.ts` | 45 | — | — | hors lexique | `charOf` | `formulaSchema` |
-| `miscast.ts` | 46 | — | — | hors lexique | `dice` | `formulaSchema` |
-| `miscast.ts` | 46 | `dice` | de | cible | `n,plus,sides` | `diceSpecSchema` |
-| `miscast.ts` | 47 | — | — | hors lexique | `rolled` | `formulaSchema` |
-| `miscast.ts` | 48 | — | — | hors lexique | `indiceOf` | `formulaSchema` |
-| `miscast.ts` | 49 | — | — | hors lexique | `stacks` | `formulaSchema` |
-| `miscast.ts` | 50 | — | — | hors lexique | `engagedAdvantageGap` | `formulaSchema` |
-| `miscast.ts` | 51 | — | — | hors lexique | `woundsDealt` | `formulaSchema` |
-| `miscast.ts` | 52 | — | — | hors lexique | `sum` | `formulaSchema` |
-| `miscast.ts` | 53 | — | — | hors lexique | `times` | `formulaSchema` |
-| `miscast.ts` | 53 | `times` | — | hors lexique | `factor,of` | `formulaSchema` |
-| `miscast.ts` | 89 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
-| `miscast.ts` | 98 | — | plage | divergente | `max,min+…` | — |
+| `miscast.ts` | 45 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
+| `miscast.ts` | 46 | — | — | hors lexique | `charOf` | `formulaSchema` |
+| `miscast.ts` | 47 | — | — | hors lexique | `dice` | `formulaSchema` |
+| `miscast.ts` | 47 | `dice` | de | cible | `n,plus,sides` | `diceSpecSchema` |
+| `miscast.ts` | 48 | — | — | hors lexique | `rolled` | `formulaSchema` |
+| `miscast.ts` | 49 | — | — | hors lexique | `indiceOf` | `formulaSchema` |
+| `miscast.ts` | 50 | — | — | hors lexique | `stacks` | `formulaSchema` |
+| `miscast.ts` | 51 | — | — | hors lexique | `engagedAdvantageGap` | `formulaSchema` |
+| `miscast.ts` | 52 | — | — | hors lexique | `woundsDealt` | `formulaSchema` |
+| `miscast.ts` | 53 | — | — | hors lexique | `sum` | `formulaSchema` |
+| `miscast.ts` | 54 | — | — | hors lexique | `times` | `formulaSchema` |
+| `miscast.ts` | 54 | `times` | — | hors lexique | `factor,of` | `formulaSchema` |
+| `miscast.ts` | 87 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
+| `miscast.ts` | 96 | — | plage | divergente | `max,min+…` | — |
 | `mutationTables.ts` | 18 | `ranges` | plage | divergente | `max,min+…` | — |
 | `naval-progression.ts` | 15 | `table` | plage | divergente | `max,min+…` | — |
 | `obsessions.ts` | 18 | `table` | plage | divergente | `max,min+…` | — |

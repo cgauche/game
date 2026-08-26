@@ -1524,7 +1524,7 @@ export interface Combatant {
    *  (save, roster, coop) sans table annexe ni clé de partie. Porte unique d'écriture :
    *  `poserDansBarre` (`src/state/dispositionConsole.ts`). */
   barre?: DispositionConsole;
-  /** Sorts/prières connus (libellés référençant src/data/spells.json). */
+  /** Sorts/prières connus — `id` de `src/data/spells.json`, résolus par `findSpellById`. */
   spells?: string[];
   /** Composants d'incantation possédés (LDB 46 l.107-113) — `id` des Sorts d'Arcane/Domaine pour
    *  lesquels le héros a acheté un composant (coût = NI pistoles d'argent, « acheté pour un Sort

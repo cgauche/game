@@ -38,8 +38,8 @@ export const schema = z.array(
     encLimit: z.number().optional(),
     couvertPenalty: difficultySchema.optional(),
     /** Réf de source à granularité CHAPITRE (≠ `sourceRefSchema` commun qui est `{book,page}`) — les
-     *  entrées ne portent qu'un `chapter`, jamais de `page`. Candidat à mutualisation si un 2e dataset
-     *  porte la même forme `{book, chapter}`. */
+     *  entrées ne portent qu'un `chapter`, jamais de `page`. Forme classée HISTORIQUE au stock des
+     *  structures (24 occurrences, `folio obligatoire`) : dette #1463. */
     source: z.strictObject({ book: z.string(), chapter: z.number() }),
     desc: z.string().optional(),
   }),

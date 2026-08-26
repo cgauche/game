@@ -79,22 +79,22 @@ interface NestedTest {
 }
 
 // ---------------------------------------------------------------------------
-// JSON data types — supersets of GameOp/Formula that encode sin-parameterisation
+// Types de la donnée JSON — sur-ensembles de GameOp/Formula qui encodent le paramétrage par Péché
 // ---------------------------------------------------------------------------
 
 /**
- * Dice descriptor as it appears in the JSON. Extends the engine's `{ n, sides, plus? }` shape
- * with an optional `sinPlus` flag: when `true`, the resolved `plus` is the caller's `sinPoints`
- * value (`{ n:1, sides:10, sinPlus:true }` in JSON).
+ * Descripteur de dé tel qu'il apparaît dans le JSON. Étend la forme `{ n, sides, plus? }` du moteur
+ * d'un drapeau `sinPlus` optionnel : à `true`, le `plus` résolu vaut les `sinPoints` de l'appelant
+ * (`{ n:1, sides:10, sinPlus:true }` dans le JSON).
  */
 interface JsonDice extends DiceSpec {
-  /** When true, `plus` = sinPoints at resolution time (replaces the old closure `d(n,s,sin)`). */
+  /** À `true`, `plus` = sinPoints à la résolution. */
   sinPlus?: boolean;
 }
 
 /**
- * Formula as it appears in the JSON.  A plain number stays a plain number; a dice descriptor
- * uses `JsonDice` (with optional `sinPlus`); `{ sinPlus1: true }` encodes the pattern `1 + sin`.
+ * `Formula` telle qu'elle apparaît dans le JSON. Un nombre nu reste un nombre nu ; un descripteur de
+ * dé passe par `JsonDice` (avec `sinPlus` optionnel) ; `{ sinPlus1: true }` encode le motif `1 + sin`.
  */
 type JsonFormula =
   | number
@@ -102,11 +102,10 @@ type JsonFormula =
   | { sinPlus1: true };
 
 /**
- * A single GameOp as stored in the JSON.  Mirrors the runtime `GameOp` union but with
- * `JsonFormula` in place of `Formula`, and two extra optional fields:
- * - `sinPlus1Value`: when true the `value` of a `condition` op is `1 + sinPoints` at runtime.
- * - `durationRounds`: a `JsonFormula` for the `durationRounds` field of a timed-condition op
- *   (old inline: `{ op:'condition', id:'sonne', durationRounds: d(1,10) }`).
+ * Un `GameOp` unique tel que stocké dans le JSON. Miroir de l'union `GameOp` runtime, avec
+ * `JsonFormula` à la place de `Formula` — `durationRounds` est un champ du `GameOp` `condition`
+ * lui-même (`engine/ops.ts`). Seul `sinPlus1Value` est un champ EN PLUS du runtime : à `true`, la
+ * `value` d'un op `condition` vaut `1 + sinPoints` à la résolution.
  */
 type JsonOp = {
   op: string;
@@ -114,7 +113,7 @@ type JsonOp = {
   id?: string;
   value?: JsonFormula;
   durationRounds?: JsonFormula;
-  /** When true the condition `value` is `1 + sinPoints` (cannot be expressed as a plain Formula). */
+  /** À `true`, la `value` de la condition vaut `1 + sinPoints` (inexprimable en `Formula` nue). */
   sinPlus1Value?: boolean;
   /** `GameOp['condition'].escapeStrength` (Empêtré : force de désengagement, ex. Tenue indisciplinée
    *  LDB 46) — déjà une `Formula` runtime valide, jamais sin-paramétrée : copiée telle quelle. */
@@ -135,7 +134,7 @@ type JsonOp = {
   days?: number;
 };
 
-/** Spec of a nested test as stored in the JSON (same shape as NestedTest but with JsonOp[]). */
+/** Spec d'un test imbriqué telle que stockée dans le JSON (même forme que `NestedTest`, en `JsonOp[]`). */
 interface JsonNestedTest {
   skill?: string;
   characteristic?: string;
@@ -144,8 +143,8 @@ interface JsonNestedTest {
   onFailHard?: { dr: number; ops: JsonOp[] };
 }
 
-/** A table row as stored in the JSON. `id` (#422, Codex exposure) is display/navigation identity —
- *  never read by this module. */
+/** Une rangée de table telle que stockée dans le JSON. `id` (#422, exposition Codex) est l'identité
+ *  d'affichage/navigation — jamais lue par ce module. */
 interface JsonRow {
   id: string;
   min: number;
@@ -161,26 +160,27 @@ interface JsonRow {
 }
 
 // ---------------------------------------------------------------------------
-// JSON → runtime resolution
+// JSON → résolution runtime
 // ---------------------------------------------------------------------------
 
-/** Resolve a `JsonFormula` to a runtime `Formula` (engine/ops), substituting sinPoints where flagged. */
+/** Résout une `JsonFormula` en `Formula` runtime (`engine/ops`), en substituant les sinPoints là où
+ *  le drapeau `sinPlus`/`sinPlus1` le demande. */
 function resolveJsonFormula(f: JsonFormula, sin: number): unknown {
   if (typeof f === 'number') return f;
   if ('sinPlus1' in f) return 1 + sin;
-  // dice descriptor — sinPlus replaces the `plus` field with the current sinPoints
+  // descripteur de dé — sinPlus remplace le champ `plus` par les sinPoints courants
   const { n, sides, sinPlus } = f.dice;
   return sinPlus ? { dice: { n, sides, plus: sin } } : { dice: { n, sides } };
 }
 
 /**
- * Expand a single `JsonOp` into a runtime `GameOp`, binding `sinPoints` for all
- * sin-parameterised fields. This is the ONLY place where sin enters the ops pipeline.
+ * Déplie un `JsonOp` unique en `GameOp` runtime, en liant `sinPoints` sur tous les champs
+ * paramétrés par le Péché. C'est le SEUL endroit où le Péché entre dans la chaîne des ops.
  */
 function expandOp(op: JsonOp, sin: number): GameOp {
   switch (op.op) {
     case 'condition': {
-      // sinPlus1Value → value = 1 + sin; plain value → resolve formula; absent → omit (e.g. durationRounds-only op)
+      // sinPlus1Value → value = 1 + sin ; value nue → résolution de la formule ; absente → omise (op à durationRounds seul)
       const base: Record<string, unknown> = { op: 'condition', id: op.id };
       if (op.sinPlus1Value) {
         base.value = 1 + sin;
@@ -221,18 +221,19 @@ function expandOp(op: JsonOp, sin: number): GameOp {
   }
 }
 
-/** Expand a `JsonOp[]` into `GameOp[]`, substituting sinPoints. */
+/** Déplie un `JsonOp[]` en `GameOp[]`, en substituant les sinPoints. */
 function expandOps(jsonOps: JsonOp[], sin: number): GameOp[] {
   return jsonOps.map((o) => expandOp(o, sin));
 }
 
-/** Expand a `JsonNestedTest` into a runtime `NestedTest`, binding sinPoints (tests never use sin directly). */
+/** Déplie un `JsonNestedTest` en `NestedTest` runtime, en liant les sinPoints (un test n'emploie
+ *  jamais le Péché directement). */
 function expandNestedTest(t: JsonNestedTest): NestedTest {
   const result: NestedTest = {
     ...(t.skill ? { skill: t.skill } : {}),
     ...(t.characteristic ? { characteristic: t.characteristic as 'force-mentale' } : {}),
     difficulty: t.difficulty as Difficulty,
-    onFail: expandOps(t.onFail, 0), // test onFail ops never reference sin
+    onFail: expandOps(t.onFail, 0), // les ops onFail d'un test ne référencent jamais le Péché
   };
   if (t.onFailHard) {
     result.onFailHard = { dr: t.onFailHard.dr, ops: expandOps(t.onFailHard.ops, 0) };
@@ -241,7 +242,7 @@ function expandNestedTest(t: JsonNestedTest): NestedTest {
 }
 
 // ---------------------------------------------------------------------------
-// Runtime Row type (after JSON expansion)
+// Type `Row` runtime (après dépliage du JSON)
 // ---------------------------------------------------------------------------
 
 interface Row {
@@ -260,7 +261,7 @@ interface Row {
   reroll?: 'majeure' | 'mineure-x2';
 }
 
-/** Build a runtime `Row` from a `JsonRow`. */
+/** Bâtit un `Row` runtime à partir d'un `JsonRow`. */
 function buildRow(jr: JsonRow): Row {
   const row: Row = { id: jr.id, min: jr.min, max: jr.max, label: jr.label };
   if (jr.reroll) row.reroll = jr.reroll;
@@ -276,7 +277,7 @@ function buildRow(jr: JsonRow): Row {
 }
 
 // ---------------------------------------------------------------------------
-// Tables built from JSON at module load time
+// Tables bâties depuis le JSON au chargement du module
 // ---------------------------------------------------------------------------
 
 /** Tableau de rangées porteur d'une table déclarée (clé de `miscast.json`). */
@@ -360,7 +361,7 @@ function miscastTables(): Record<MiscastSeverity, Row[]> {
 }
 
 // ---------------------------------------------------------------------------
-// mkTest — unchanged resolution code (factory, not data)
+// mkTest — résolution par FABRIQUE (du code, pas de la donnée)
 // ---------------------------------------------------------------------------
 
 /** Enveloppe une liste de GameOps en une feuille de Flow `do` appliquée au lanceur (`on:'target'` =
@@ -403,7 +404,7 @@ function mkTest(t: NestedTest, rowId: string, severity: MiscastSeverity): Flow {
 }
 
 // ---------------------------------------------------------------------------
-// Public API — unchanged signatures
+// API PUBLIQUE du module
 // ---------------------------------------------------------------------------
 
 /**

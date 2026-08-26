@@ -35,7 +35,8 @@ const jsonFormulaSchema = z.union([
 ]);
 
 /** `Formula` GÉNÉRAL du moteur (`engine/ops.ts`) — UNIQUEMENT pour `escapeStrength` : la donnée
- *  réelle y écrit `{times:{of,factor}}` (miscast.json:93, « Tenue indisciplinée »), une forme HORS
+ *  réelle y écrit `{times:{of,factor}}` (entrées `mineure-tenue-indisciplinee` et
+ *  `mineure-vdm-tenue-indisciplinee` de `miscast.json`), une forme HORS
  *  du dialecte `JsonFormula` (qui n'a que number/dice/sinPlus1) — ce champ n'est jamais sin-paramétré,
  *  `expandOp` le recopie tel quel (`engine/miscast.ts`). */
 const engineFormulaSchema: z.ZodType<unknown> = z.lazy(() =>
@@ -55,11 +56,9 @@ const engineFormulaSchema: z.ZodType<unknown> = z.lazy(() =>
 );
 
 /**
- * `JsonOp` (`engine/miscast.ts`) — mirroir aplati du `GameOp` runtime (`op:'condition'|'wounds'|
+ * `JsonOp` (`engine/miscast.ts`) — miroir aplati du `GameOp` runtime (`op:'condition'|'wounds'|
  * 'corruption'|'reduceToZero'|'castPenalty'`, seuls op observés dans la donnée), en `JsonFormula`.
- * `escapeStrength` (GameOp `condition` réel, `engine/ops.ts` — porté par miscast.json:93
- * « Tenue indisciplinée ») est recopié tel quel par `expandOp` (`Formula` plein, jamais sin-paramétré
- * — cf. `engineFormulaSchema` ci-dessus).
+ * `escapeStrength` porte le `Formula` plein : cf. `engineFormulaSchema` ci-dessus.
  */
 const jsonOpSchema = z.strictObject({
   op: z.string(),
@@ -81,7 +80,6 @@ const jsonOpSchema = z.strictObject({
   hours: jsonFormulaSchema.optional(),
   minutes: jsonFormulaSchema.optional(),
   days: z.number().optional(),
-  /** Cf. ANOMALIE ci-dessus — accepté (dialecte réel, `Formula` plein), signalé comme mort côté `expandOp`. */
   escapeStrength: engineFormulaSchema.optional(),
 });
 
