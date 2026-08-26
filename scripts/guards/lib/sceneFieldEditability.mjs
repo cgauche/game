@@ -21,12 +21,19 @@
 //     complète, testée, ré-exportée par l'éditeur et jamais appelée EST le défaut de #841 — c'est
 //     l'état mesuré de `setSceneFlags` au 2026-07-26.
 //
-// FRONTIÈRE DU PÉRIMÈTRE — par PROPRIÉTÉ, jamais par type. Une propriété est surveillée si SA
-// déclaration vit dans un module du document (`DOC_FILES`) : `PropertySignature` du type manuscrit
-// OU `PropertyAssignment` du shape zod dont le type compose le `z.infer`. Un objet dont aucune
-// propriété n'est déclarée là est du vocabulaire PARTAGÉ (`Flow`, `Condition`, `GameOp`,
-// `EntityAppearance`, `CustomStatblock`) : il a ses propres primitives d'édition (`FlowEditor`,
-// `GameOpEditor`) et ses propres gardes, la traversée s'y arrête.
+// FRONTIÈRE DU PÉRIMÈTRE — par PROPRIÉTÉ, et l'appartenance se juge par IDENTITÉ, jamais par
+// module. L'ENSEMBLE D'IDENTITÉS du document se construit en marchant les schémas depuis
+// `sceneSchema` (`data/schemas/defs-scenes/scene.ts`) : toute `PropertyAssignment` d'un shape
+// atteint en fait partie, y compris celles d'un schéma FEUILLE d'un autre module (`communs.ts` :
+// `moneySchema`, `ptSchema`) que le document compose. S'y ajoutent les `PropertySignature` des
+// types encore MANUSCRITS (`src/state/scene.ts`). Une frontière posée sur le MODULE perdait ces
+// feuilles dès qu'un corps manuscrit passait en `z.infer` (mesuré : `DialogueChoice.cost.{gold,
+// silver,brass}` déclarés par `communs.ts:moneySchema`).
+// La marche S'ARRÊTE aux nœuds-frontière, désignés eux aussi par IDENTITÉ (module + nom du
+// `export const`) : `conditionSchema`, `gameOpSchema`, `flowTestSchema`, `sceneFlowSchema`,
+// `effectSchema`, `entityAppearanceSchema` — du vocabulaire PARTAGÉ, qui a ses propres primitives
+// d'édition (`FlowEditor`, `GameOpEditor`) et ses propres gardes. Un `z.custom<T>()` est une
+// frontière STRUCTURELLE (aucun shape à marcher), détectée et jamais listée.
 // Le niveau importe : le SYMBOLE d'un type inféré d'un schéma zod est anonyme et déclaré dans
 // `zod/v4/core/util.d.cts`, alors que ses PROPRIÉTÉS pointent la ligne exacte du shape. Une
 // frontière posée sur le type lâchait donc en silence dès qu'un corps manuscrit passait en
@@ -87,21 +94,48 @@ const isTestFile = (rel) => /\.test\.(ts|tsx|mts|mjs)$/.test(rel);
 
 const SCENE_FILE = 'src/state/scene.ts';
 
-/** Modules qui DÉCLARENT le document de scène : le type manuscrit et le module de SCHÉMAS dont il
- *  compose les formes (`z.infer`). Une propriété est dans le périmètre si SA déclaration
- *  (`PropertySignature` du type, `PropertyAssignment` du shape zod) y vit — cf. FRONTIÈRE en tête. */
-const DOC_FILES = [SCENE_FILE, 'src/data/schemas/defs-scenes/scene.ts'];
+/** Racine de la marche d'IDENTITÉ : le schéma du document. */
+const SCHEMA_FILE = 'src/data/schemas/defs-scenes/scene.ts';
+const SCHEMA_ROOT = 'sceneSchema';
 
-/** Nom du PORTEUR quand le type est anonyme (`__type` — le lot des objets inférés d'un schéma zod) :
- *  le `export const xSchema` dont le shape englobant est l'initialiseur, chaînes `.optional()`/
- *  `.array()` traversées. Un littéral INLINE ne nomme rien et garde son chemin. */
-const schemaOwner = (decl) => {
+/** Nœuds-FRONTIÈRE par IDENTITÉ — `[module, nom du export const]`. Cf. FRONTIÈRE en tête. */
+const FRONTIERE = [
+  ['src/data/schemas/grammaire/mecanique.ts', 'conditionSchema'],
+  ['src/data/schemas/grammaire/mecanique.ts', 'gameOpSchema'],
+  ['src/data/schemas/grammaire/mecanique.ts', 'flowTestSchema'],
+  ['src/data/schemas/grammaire/valeurs.ts', 'entityAppearanceSchema'],
+  ['src/data/schemas/defs-scenes/effets.ts', 'sceneFlowSchema'],
+  ['src/data/schemas/defs-scenes/effets.ts', 'effectSchema'],
+];
+
+/**
+ * FOSSILES — champs qu'un document ancien porte encore, que le parse TOLÈRE et que le chargement
+ * DÉPOUILLE : hors du périmètre éditable, puisque ce ne sont pas des données de scène. La liste est
+ * NOMINATIVE et sa PHASE DE MORT est écrite : elle disparaît au reset des saves (L5).
+ * Le gate est BIDIRECTIONNEL (`fossileAudit`) : un tag `@fossile` sans entrée ici est ROUGE — sinon
+ * le tag serait un canal d'évasion, un champ NEUF tagué sortant du périmètre sans que rien ne rougisse
+ * (mesuré, sonde `scratchprobe/1463/lotA-juge/j10-hatch-reel.mjs` cas B) ; une entrée sans tag est
+ * ROUGE aussi (toute transition se tient au registre, `feedback-registre-fossiles-transition`).
+ * Clé = `<nom du export const>.<champ>` pour un shape zod, `<Type>.<champ>` pour un corps manuscrit.
+ */
+export const FOSSILES = ['sceneEntitySchema.foot'];
+
+/** Nom du `export const xSchema` dont le shape porte cette déclaration de propriété — chaînes
+ *  `.optional()`/`.array()` traversées. Un littéral INLINE ne nomme rien. */
+const schemaConstName = (decl) => {
   const shape = decl.parent;
   if (!shape || !ts.isObjectLiteralExpression(shape)) return undefined;
   let n = shape.parent;
   while (n && (ts.isCallExpression(n) || ts.isPropertyAccessExpression(n))) n = n.parent;
   if (!n || !ts.isVariableDeclaration(n) || !ts.isIdentifier(n.name) || !n.name.text.endsWith('Schema')) return undefined;
-  const base = n.name.text.slice(0, -'Schema'.length);
+  return n.name.text;
+};
+
+/** Nom du PORTEUR quand le type est anonyme (`__type` — le lot des objets inférés d'un schéma zod). */
+const schemaOwner = (decl) => {
+  const nom = schemaConstName(decl);
+  if (!nom) return undefined;
+  const base = nom.slice(0, -'Schema'.length);
   return base.charAt(0).toUpperCase() + base.slice(1);
 };
 
@@ -126,7 +160,10 @@ export function repoProgram(root) {
   // les types restent complets tout en évitant de compiler le dépôt entier.
   const rootNames = parsed.fileNames.filter((f) => {
     const rel = path.relative(key, f);
-    return !isTestFile(rel) && (isAuthorPath(rel) || isPipelinePath(rel) || norm(rel) === SCENE_FILE);
+    return (
+      !isTestFile(rel) &&
+      (isAuthorPath(rel) || isPipelinePath(rel) || norm(rel) === SCENE_FILE || norm(rel) === SCHEMA_FILE)
+    );
   });
   const program = ts.createProgram({
     rootNames,
@@ -180,6 +217,114 @@ function sceneSourceFile(program, root) {
   return program.getSourceFiles().find((sf) => norm(sf.fileName) === want);
 }
 
+/** `VariableDeclaration`s auxquelles un identifiant se résout — alias d'import traversés. Résolution
+ *  par SYMBOLE : un homonyme d'un autre module ne fait entrer personne dans le périmètre. */
+function variableDeclarationsOf(checker, id) {
+  let sym = checker.getSymbolAtLocation(id);
+  if (!sym) return [];
+  if (sym.flags & ts.SymbolFlags.Alias) {
+    try {
+      sym = checker.getAliasedSymbol(sym);
+    } catch {
+      return [];
+    }
+  }
+  return (sym.declarations ?? []).filter(ts.isVariableDeclaration);
+}
+
+const isCustomSchema = (init) =>
+  !!init &&
+  ts.isCallExpression(init) &&
+  ts.isPropertyAccessExpression(init.expression) &&
+  init.expression.name.text === 'custom';
+
+/**
+ * ENSEMBLE D'IDENTITÉS du document : les `PropertyAssignment` des shapes atteints depuis
+ * `sceneSchema`, frontières exclues (cf. FRONTIÈRE en tête). Vide si le module de schémas n'est pas
+ * dans le programme — les programmes VIRTUELS des preuves ne déclarent que `src/state/scene.ts`.
+ * @returns {Set<import('typescript').Node>}
+ */
+export function documentDeclarations(program, root) {
+  const checker = program.getTypeChecker();
+  const want = norm(path.resolve(root, SCHEMA_FILE));
+  const sf = program.getSourceFiles().find((s) => norm(s.fileName) === want);
+  const noeuds = new Set();
+  if (!sf) return noeuds;
+
+  const frontiere = new Set(FRONTIERE.map(([f, n]) => `${norm(path.resolve(root, f))}#${n}`));
+  const idOf = (d) => `${norm(d.getSourceFile().fileName)}#${ts.isIdentifier(d.name) ? d.name.text : ''}`;
+
+  const vues = new Set();
+  const file = [];
+  const enfiler = (d) => {
+    if (!d || vues.has(d) || frontiere.has(idOf(d)) || isCustomSchema(d.initializer)) return;
+    vues.add(d);
+    file.push(d);
+  };
+  for (const st of sf.statements) {
+    if (!ts.isVariableStatement(st)) continue;
+    for (const d of st.declarationList.declarations)
+      if (ts.isIdentifier(d.name) && d.name.text === SCHEMA_ROOT) enfiler(d);
+  }
+  if (file.length === 0) throw new Error(`\`${SCHEMA_ROOT}\` introuvable dans ${SCHEMA_FILE}`);
+
+  for (let i = 0; i < file.length; i++) {
+    const visiter = (n) => {
+      if (ts.isPropertyAssignment(n) || ts.isShorthandPropertyAssignment(n)) noeuds.add(n);
+      if (ts.isIdentifier(n)) for (const d of variableDeclarationsOf(checker, n)) enfiler(d);
+      ts.forEachChild(n, visiter);
+    };
+    if (file[i].initializer) visiter(file[i].initializer);
+  }
+  return noeuds;
+}
+
+const aTagFossile = (decl) => ts.getJSDocTags(decl).some((t) => t.tagName.text === 'fossile');
+
+/** Clé de fossile d'une déclaration : `<export const>.<champ>` (shape zod) ou `<Type>.<champ>`
+ *  (corps manuscrit). `undefined` si la déclaration n'est pas nommable. */
+function fossileKey(decl) {
+  const nom = decl.name && (ts.isIdentifier(decl.name) || ts.isStringLiteral(decl.name)) ? decl.name.text : undefined;
+  if (!nom) return undefined;
+  if (ts.isPropertyAssignment(decl) || ts.isShorthandPropertyAssignment(decl)) {
+    const porteur = schemaConstName(decl);
+    return porteur ? `${porteur}.${nom}` : undefined;
+  }
+  const p = decl.parent;
+  if (p && (ts.isInterfaceDeclaration(p) || ts.isTypeAliasDeclaration(p)) && ts.isIdentifier(p.name))
+    return `${p.name.text}.${nom}`;
+  if (p && ts.isTypeLiteralNode(p) && p.parent && ts.isTypeAliasDeclaration(p.parent))
+    return `${p.parent.name.text}.${nom}`;
+  return undefined;
+}
+
+/**
+ * Gate `@fossile` BIDIRECTIONNEL — cf. `FOSSILES`. Les deux sens sont des ROUGES.
+ * @returns {{ taguesHorsListe: string[], entreesSansTag: string[] }}
+ */
+export function fossileAudit(program, root) {
+  const tags = new Set();
+  const collecte = (decl) => {
+    if (!aTagFossile(decl)) return;
+    const k = fossileKey(decl);
+    tags.add(k ?? `<déclaration non nommable> ${norm(path.relative(root, decl.getSourceFile().fileName))}:${decl.getSourceFile().getLineAndCharacterOfPosition(decl.getStart()).line + 1}`);
+  };
+  for (const n of documentDeclarations(program, root)) collecte(n);
+  const sf = sceneSourceFile(program, root);
+  if (sf) {
+    const visiter = (n) => {
+      if (ts.isPropertySignature(n)) collecte(n);
+      ts.forEachChild(n, visiter);
+    };
+    visiter(sf);
+  }
+  const listes = new Set(FOSSILES);
+  return {
+    taguesHorsListe: [...tags].filter((k) => !listes.has(k)).sort(),
+    entreesSansTag: FOSSILES.filter((k) => !tags.has(k)).sort(),
+  };
+}
+
 /**
  * Champs du DOCUMENT de scène, dérivés du type `Scene` par le TypeChecker.
  * @returns {{ id: string, owner: string, field: string, decl: import('typescript').Declaration }[]}
@@ -192,8 +337,16 @@ export function sceneScope(program, root) {
   const sceneSym = checker.getExportsOfModule(moduleSym).find((s) => s.name === 'Scene');
   if (!sceneSym) throw new Error('type `Scene` introuvable');
 
-  const docFiles = new Set(DOC_FILES.map((f) => norm(path.resolve(root, f))));
-  const declaredInScene = (decl) => !!decl && docFiles.has(norm(decl.getSourceFile().fileName));
+  // Périmètre par IDENTITÉ : les shapes atteints depuis `sceneSchema`, plus les corps encore
+  // MANUSCRITS de `src/state/scene.ts`.
+  const docNodes = documentDeclarations(program, root);
+  const sceneFile = norm(path.resolve(root, SCENE_FILE));
+  const declaredInScene = (decl) =>
+    !!decl && (docNodes.has(decl) || norm(decl.getSourceFile().fileName) === sceneFile);
+  // Un fossile GATÉ (tagué ET tenu au registre `FOSSILES`) sort du périmètre éditable ; tagué sans
+  // entrée, il y RESTE — c'est `fossileAudit` qui en fait un rouge, jamais un silence.
+  const gate = new Set(FOSSILES);
+  const fossileGate = (decl) => aTagFossile(decl) && gate.has(fossileKey(decl));
 
   const out = [];
   const seenTypes = new Set();
@@ -221,7 +374,7 @@ export function sceneScope(program, root) {
     // on ne descend pas.
     const dedans = checker
       .getPropertiesOfType(type)
-      .filter((p) => declaredInScene(p.declarations?.[0]));
+      .filter((p) => declaredInScene(p.declarations?.[0]) && !fossileGate(p.declarations[0]));
     if (dedans.length === 0) return;
 
     const named = type.aliasSymbol?.name ?? type.symbol?.name;

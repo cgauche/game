@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import path from 'node:path';
+import fs from 'node:fs';
+import ts from 'typescript';
 import {
   auditSceneFieldEditability,
   orphanFields,
   sceneScope,
   repoProgram,
   virtualProgram,
+  fossileAudit,
+  FOSSILES,
   VIRTUAL_ROOT,
 } from '../../../scripts/guards/lib/sceneFieldEditability.mjs';
 
@@ -25,10 +29,11 @@ import {
  *  - le crédit d'écriture est RATTACHÉ AU TYPE porteur : un `{ once: … }` de symptôme de maladie ou
  *    un `{ flags }` passé en lecture à un contexte d'évaluation ne crédite aucun champ de `Scene`.
  *
- * ANGLE MORT DÉCLARÉ — la réplique virtuelle de la frontière (`forme({ … })`) éprouve le NOMMAGE du
- * porteur anonyme et la frontière PAR MODULE, pas la POSITION réelle du symbole rendu par `z.infer`
- * (`zod/v4/core/util.d.cts`) : ce chemin-là n'est couvert que par la mesure sur le programme RÉEL
- * (cliquet de compte). Il devient vivant au Lot B.
+ * ANGLE MORT DÉCLARÉ — les répliques virtuelles (`forme({ … })`) éprouvent le NOMMAGE du porteur
+ * anonyme, l'inclusion par IDENTITÉ et la coupe aux nœuds-frontière, pas la POSITION réelle du
+ * symbole rendu par `z.infer` (`zod/v4/core/util.d.cts`) : ce chemin-là n'est couvert que par la
+ * mesure sur le programme RÉEL (cliquet de compte + les mesures du gate `@fossile`, qui bâtissent
+ * le programme du dépôt avec un module modifié EN MÉMOIRE).
  */
 const ROOT = path.resolve(__dirname, '..', '..', '..');
 
@@ -130,7 +135,13 @@ export const tracerCalque = () => {
       'Scene.entryPoints.x', // valeur d'un Record<K,V>
       'Dialogue.nodes',
       'DialogueNode.choices',
-      'DialogueChoice.cost.gold',
+      // Feuille PARTAGÉE d'un AUTRE module (`defs-scenes/communs.ts`, `moneySchema`) que le document
+      // COMPOSE : elle n'entre que par l'inclusion par IDENTITÉ — une frontière posée sur le MODULE
+      // perdait les 3 champs de coût d'un choix de dialogue (239 → 236, cf. le test d'identité).
+      'Money.gold',
+      // `Rect` est déclaré DANS le document (`defs-scenes/scene.ts:24`) : il ne doit rien à l'inclusion
+      // par identité — `Trigger.rect.*` → `Rect.*` relève du NOMMAGE du porteur rendu par `z.infer`.
+      'Rect.z',
       'EncounterDef.victoryCondition',
       'EncounterMember.ridesEntityId',
       'WallClimb.requiresGrimpeur',
@@ -151,6 +162,32 @@ export const tracerCalque = () => {
     expect(scope.length, 'périmètre effondré').toBeGreaterThanOrEqual(239);
   });
 
+  it('le périmètre inclut par IDENTITÉ — une feuille d’un AUTRE module composée par le document y entre, un nœud-frontière n’y entre pas', () => {
+    // Réplique STRUCTURELLE du seam réel : `sceneSchema` compose `moneySchema` (feuille de
+    // `defs-scenes/communs.ts`) et `conditionSchema` (vocabulaire partagé de `grammaire/`). La marche
+    // part de `sceneSchema` et suit les IDENTITÉS ; elle s'arrête au nœud-frontière.
+    const program = virtualProgram({
+      'src/data/schemas/grammaire/mecanique.ts': `declare function forme<T>(shape: T): { readonly sortie: T };
+export const conditionSchema = forme({ flag: '' });\n`,
+      'src/data/schemas/defs-scenes/communs.ts': `declare function forme<T>(shape: T): { readonly sortie: T };
+export const moneySchema = forme({ gold: 0 });\n`,
+      'src/data/schemas/defs-scenes/scene.ts': `import { moneySchema } from './communs';
+import { conditionSchema } from '../grammaire/mecanique';
+declare function forme<T>(shape: T): { readonly sortie: T };
+export const sceneSchema = forme({ id: '', cost: moneySchema.sortie, when: conditionSchema.sortie });\n`,
+      'src/state/scene.ts': `import type { sceneSchema } from '../data/schemas/defs-scenes/scene';
+export type Scene = (typeof sceneSchema)['sortie'];\n`,
+    });
+    const all = ids(sceneScope(program, VIRTUAL_ROOT));
+    expect(all, 'les champs déclarés par le shape du document').toEqual(
+      expect.arrayContaining(['Scene.id', 'Scene.cost', 'Scene.when'])
+    );
+    expect(all, 'la feuille d’un AUTRE module, composée par le document, entre par IDENTITÉ').toContain(
+      'Money.gold'
+    );
+    expect(all, 'le nœud-frontière reste du vocabulaire partagé').not.toContain('Condition.flag');
+  });
+
   it('la frontière porte sur la DÉCLARATION DE PROPRIÉTÉ — un corps inféré d’un schéma est dans le périmètre et se NOMME de son schéma, le vocabulaire partagé n’y est pas', () => {
     // Reproduit STRUCTURELLEMENT ce que `z.infer` fait au TypeChecker : le type porteur est anonyme
     // (son symbole ne vient pas du module du document), mais chaque propriété est déclarée par le
@@ -169,6 +206,146 @@ export interface Scene { id: string; walls: (typeof murSchema)['sortie'][]; voc:
       'Mur.x'
     );
     expect(all, 'le vocabulaire partagé reste hors périmètre').not.toContain('Vocabulaire.mot');
+  });
+
+  it('l’inclusion par IDENTITÉ est LOAD-BEARING sur le programme RÉEL — la frontière par MODULE perd des champs NOMMÉS', () => {
+    // Rabattre `declaredInScene` sur les deux FICHIERS du document fait 239 → 236 (mutation mesurée).
+    // Les 3 champs perdus sont nommés ici : ce sont les seuls du périmètre déclarés hors du document.
+    const DOC = ['src/state/scene.ts', 'src/data/schemas/defs-scenes/scene.ts'];
+    const fichier = (r: { decl: ts.Declaration }) =>
+      path.relative(ROOT, r.decl.getSourceFile().fileName).split(path.sep).join('/');
+    const scope: { id: string; decl: ts.Declaration }[] = sceneScope(repoProgram(ROOT), ROOT);
+    const horsDocument = scope.filter((r) => !DOC.includes(fichier(r)));
+    expect(
+      horsDocument.map((r) => `${r.id} @ ${fichier(r)}`).sort(),
+      'ce que la frontière par MODULE perdrait'
+    ).toEqual([
+      'Money.brass @ src/data/schemas/defs-scenes/communs.ts',
+      'Money.gold @ src/data/schemas/defs-scenes/communs.ts',
+      'Money.silver @ src/data/schemas/defs-scenes/communs.ts',
+    ]);
+    // Contre-témoin : `Rect` ne doit RIEN à l'inclusion par identité — il est déclaré DANS le document,
+    // son renommage `Trigger.rect.*` → `Rect.*` vient du NOMMAGE du porteur rendu par `z.infer`.
+    expect(fichier(scope.find((r) => r.id === 'Rect.z')!)).toBe('src/data/schemas/defs-scenes/scene.ts');
+  });
+
+  it('le SEAM manuscrit/schéma ne diverge QU’EN optionalité, sur les 6 champs que la note de `scene.ts` nomme', () => {
+    const SCENE = 'src/state/scene.ts';
+    const brut = fs.readFileSync(path.resolve(ROOT, SCENE), 'utf8');
+    const program = programAvec({
+      [SCENE]:
+        `${brut}\nexport type __SondeManuscrit = Scene;\n` +
+        `export type __SondeSchema = import('zod').z.infer<typeof import('../data/schemas/defs-scenes/scene').sceneSchema>;\n`,
+    });
+    const checker = program.getTypeChecker();
+    const sf = program
+      .getSourceFiles()
+      .find((s) => path.resolve(s.fileName) === path.resolve(ROOT, SCENE))!;
+    const exportes = checker.getExportsOfModule(checker.getSymbolAtLocation(sf)!);
+    const optionalite = (nom: string) => {
+      const sym = exportes.find((s) => s.name === nom);
+      expect(sym, `alias ${nom} absent du programme`).toBeTruthy();
+      const type = checker.getDeclaredTypeOfSymbol(sym!);
+      return new Map(
+        checker.getPropertiesOfType(type).map((p) => [p.name, !!(p.flags & ts.SymbolFlags.Optional)])
+      );
+    };
+    const manuscrit = optionalite('__SondeManuscrit');
+    const schema = optionalite('__SondeSchema');
+    expect(manuscrit.size, 'les deux faces portent les mêmes champs').toBe(schema.size);
+    const divergents = [...manuscrit.keys()].filter((k) => manuscrit.get(k) !== schema.get(k));
+    expect(divergents.sort(), 'la divergence du seam est CLOSE et nommée').toEqual([
+      'dialogues',
+      'encounters',
+      'entities',
+      'flags',
+      'layers',
+      'triggers',
+    ]);
+    for (const k of divergents) {
+      expect(manuscrit.get(k), `${k} REQUIS côté manuscrit (après normalizeScene)`).toBe(false);
+      expect(schema.get(k), `${k} OPTIONNEL côté schéma (document avant normalisation)`).toBe(true);
+    }
+  });
+
+  // ── Gate `@fossile`, BIDIRECTIONNEL, mesuré sur le programme RÉEL ─────────────────────────
+  // Un tag lu SANS liste nominative est un canal d'évasion : un champ NEUF tagué sortirait du
+  // périmètre sans qu'aucun rouge ne sorte (ni orphelin, ni cliquet — mesure du juge, sonde j10).
+  // Les programmes ci-dessous sont ceux du DÉPÔT, un module servi MODIFIÉ EN MÉMOIRE : aucune
+  // écriture disque, et la mesure porte sur les vraies déclarations, pas sur une réplique.
+  const programAvec = (patch: Record<string, string>) => {
+    const cfgPath = ts.findConfigFile(ROOT, ts.sys.fileExists, 'tsconfig.json')!;
+    const cfg = ts.readConfigFile(cfgPath, ts.sys.readFile);
+    const parsed = ts.parseJsonConfigFileContent(cfg.config, ts.sys, path.dirname(cfgPath));
+    const rootNames = parsed.fileNames.filter((f) => {
+      const rel = path.relative(ROOT, f).split(path.sep).join('/');
+      return (
+        !/\.test\.(ts|tsx|mts|mjs)$/.test(rel) &&
+        (rel.startsWith('src/ui/') ||
+          rel === 'src/state/sceneEdit.ts' ||
+          rel === 'src/state/mapSpec.ts' ||
+          rel.startsWith('src/scenes/') ||
+          rel === 'src/state/scene.ts' ||
+          rel === 'src/data/schemas/defs-scenes/scene.ts')
+      );
+    });
+    const patche = new Map(Object.entries(patch).map(([rel, texte]) => [path.resolve(ROOT, rel), texte]));
+    const host = ts.createCompilerHost({ ...parsed.options, noEmit: true });
+    const getSource = host.getSourceFile.bind(host);
+    host.getSourceFile = (name, lang, ...reste) => {
+      const texte = patche.get(path.resolve(name));
+      return texte === undefined ? getSource(name, lang, ...reste) : ts.createSourceFile(name, texte, lang, true);
+    };
+    const readFile = host.readFile.bind(host);
+    host.readFile = (name) => patche.get(path.resolve(name)) ?? readFile(name);
+    return ts.createProgram({ rootNames, options: { ...parsed.options, noEmit: true }, host });
+  };
+
+  /** Le module RÉEL, avec `ancre` remplacée — échec bruyant si l'ancre a bougé. */
+  const modifie = (rel: string, ancre: string, remplacement: string) => {
+    const brut = fs.readFileSync(path.resolve(ROOT, rel), 'utf8');
+    expect(brut, `ancre introuvable dans ${rel}`).toContain(ancre);
+    return { [rel]: brut.replace(ancre, remplacement) };
+  };
+
+  const ANCRE_LABEL = '  label?: string;\n';
+  const ANCRE_FOOT = '   *  @fossile */\n';
+
+  it('gate @fossile (cas A) : un champ EXISTANT que l’on tague sans l’inscrire au registre est ROUGE', () => {
+    const audit = fossileAudit(
+      programAvec(modifie('src/state/scene.ts', ANCRE_LABEL, `  /** @fossile */\n${ANCRE_LABEL}`)),
+      ROOT
+    );
+    expect(audit.taguesHorsListe, 'un tag posé hors registre doit être nommé').toEqual(['SceneEntity.label']);
+  });
+
+  it('gate @fossile (cas B) : un champ NEUF né tagué — LE canal d’évasion — est ROUGE, et il RESTE dans le périmètre', () => {
+    // Sans gate, ce champ (vraie donnée de scène, éditable par personne) sortait du périmètre en
+    // silence : ni orphelin, ni cliquet, aucun rouge — la mesure du juge sur le dépôt réel.
+    const program = programAvec(
+      modifie(
+        'src/state/scene.ts',
+        ANCRE_LABEL,
+        `${ANCRE_LABEL}  /** Couleur de bannière du fief.\n   *  @fossile */\n  couleurDeBanniere?: string;\n`
+      )
+    );
+    expect(fossileAudit(program, ROOT).taguesHorsListe).toEqual(['SceneEntity.couleurDeBanniere']);
+    expect(ids(sceneScope(program, ROOT)), 'un tag non gaté ne retire RIEN du périmètre').toContain(
+      'SceneEntity.couleurDeBanniere'
+    );
+  });
+
+  it('gate @fossile : une ENTRÉE du registre que plus aucun tag ne porte est ROUGE (le registre ne survit pas à son shim)', () => {
+    const audit = fossileAudit(
+      programAvec(modifie('src/data/schemas/defs-scenes/scene.ts', ANCRE_FOOT, '   */\n')),
+      ROOT
+    );
+    expect(audit.entreesSansTag).toEqual([...FOSSILES].sort());
+  });
+
+  it('gate @fossile : les deux sens sont muets à l’arbre, et le fossile gaté est HORS périmètre', () => {
+    expect(fossileAudit(repoProgram(ROOT), ROOT)).toEqual({ taguesHorsListe: [], entreesSansTag: [] });
+    expect(ids(sceneScope(repoProgram(ROOT), ROOT))).not.toContain('SceneEntity.foot');
   });
 
   it('NON VACANTE (a) : un champ frais, écrit par personne, est rapporté orphelin', () => {

@@ -8,7 +8,7 @@
  */
 import type { AuthoredShipPoste, NavalTraitRef } from '../engine/types';
 import type { EntityAppearance } from '../engine/authoringAppearance';
-import { sanitizeFlow, type Flow, type Condition, type EffectOp } from './flow';
+import { sanitizeFlow, type Flow, type EffectOp } from './flow';
 import { type ScheduleSpec } from '../engine/clock';
 // Les FORMES des 57 variantes d'`Effect` vivent en zod (`data/schemas/defs-scenes/effets.ts`) ;
 // l'union ci-dessous les compose par `z.infer`. Import de TYPE seul — aucun cycle runtime.
@@ -27,7 +27,15 @@ import type {
   startPursuitSchema, openTavernGamesSchema, openWorldMapSchema, setVesselSchema,
   adjustManannSchema, adjustVesselSchema, endDialogueSchema,
 } from '../data/schemas/defs-scenes/effets';
-import type { ThreatTier } from '../engine/advantagePool';
+// Idem pour les FORMES de la scène elle-même : le schéma zod (`data/schemas/defs-scenes/scene.ts`)
+// les DÉCLARE — champs, optionalités, mécanique, réfs RAW —, les types ci-dessous les nomment.
+import type {
+  architectureBodySchema, architectureEdgeRefSchema, architecturePartSchema, architectureRectSchema,
+  architectureStoreySchema, buildingMassSchema, dialogueChoiceSchema, dialogueNodeSchema,
+  dialogueSchema, encounterDefSchema, encounterMemberSchema, entityKindSchema, facadeFeatureSchema,
+  facadeSectionSchema, layerSchema, roofDefaultsSchema, sceneStationAnchorSchema, triggerSchema,
+  victoryConditionSchema, wallClimbSchema, wallSegSchema, zoneAreaSchema,
+} from '../data/schemas/defs-scenes/scene';
 import type { Dir8 } from './dir8';
 import type { Pt } from './path';
 import { terrainWalkable } from './terrain';
@@ -39,12 +47,7 @@ export type Terrain = string;
 
 export type Facing = 'N' | 'S' | 'E' | 'O';
 
-/**
- * Rôle d'une entité de scène. `personnage` = tout être animé (apparence libre
- * via `ref` + dialogue/quête optionnel) — fusion des anciens `pnj`/`ennemi`,
- * que le combat (encounters) et l'interaction (dialogueId) ne distinguaient pas.
- */
-export type EntityKind = 'heroStart' | 'personnage' | 'prop';
+export type EntityKind = z.infer<typeof entityKindSchema>;
 
 /** Statbloc personnalisé (PNJ/bête custom d'éditeur) — moteur pur, `engine/statblock.ts` (#614) :
  *  `LivingRef` (`engine/possession.ts`) porte la même dualité bestiaire|custom que ce type. */
@@ -53,6 +56,12 @@ import { chebyshev } from '../engine/grid';
 import type { SeatAssignments } from './seating';
 export type { CustomStatblock };
 
+/** RESTE MANUSCRIT (les 22 autres formes de la scène sont des `z.infer` de
+ *  `data/schemas/defs-scenes/scene.ts`) — deux écarts MESURÉS avec `sceneEntitySchema` :
+ *  `foot` n'existe QUE sur le schéma (fossile toléré au parse, dépouillé par `stripLegacyFoot`,
+ *  gaté `@fossile` — il n'a jamais eu de champ ici) ; `appearance` porte ici `EntityAppearance`
+ *  (`engine/authoringAppearance`) là où le schéma compose `entityAppearanceSchema`, nœud-FRONTIÈRE
+ *  du vocabulaire partagé. */
 export interface SceneEntity {
   id: string;
   kind: EntityKind;
@@ -141,111 +150,15 @@ export interface SceneEntity {
   };
 }
 
-export interface ArchitectureRect { x: number; y: number; w: number; h: number }
-export interface ArchitectureEdgeRef { x: number; y: number; side: WallSide; z?: number }
-export interface ArchitecturePart { id: string; foot: ArchitectureRect }
-export interface ArchitectureStorey {
-  id: string;
-  z: number;
-  parts: ArchitecturePart[];
-  roomZoneIds: string[];
-}
-export interface FacadeFeature {
-  id: string;
-  kind: 'gable' | 'stone-entry' | 'chimney' | 'sign' | 'window-band' | 'belfry';
-  edge: ArchitectureEdgeRef;
-  offset?: number;
-  width?: number;
-  appearance?: string;
-}
-export interface FacadeSection {
-  id: string;
-  z: number;
-  edges: ArchitectureEdgeRef[];
-  appearance: string;
-  roomZoneIds?: string[];
-  features?: FacadeFeature[];
-}
-/** MASSE de bâtiment (#823, remplace `RoofSection` authoré à la main) : l'INTENTION, jamais la
- *  géométrie du toit — `gameIso/builders/roofs.ts` DÉRIVE pans/faîte/noues/croupes par une formule
- *  UNIQUE (`hauteur(case) = hauteurÉgout + distance(case, bord de la masse) × métresParCase ×
- *  tan(pente)`), et `roomZoneIds` par intersection avec `Scene.effectZones` (plus de redistribution
- *  manuelle). `z` = étage du PLANCHER SOMMET couvert par le toit (le dessous immédiat de la masse) ;
- *  c'est la COUCHE sur laquelle se lit la cote du plancher, jamais l'altitude elle-même : l'égout vaut
- *  la cote la plus HAUTE que `heightAt` porte sous l'emprise à cet étage + `WALL_H_M` — le toit
- *  s'assoit sur le sommet des murs, qui s'assoient sur le relief de LEUR case (cf. `resolveMass`,
- *  `buildWalls`). `levels` = nombre de niveaux couverts DEPUIS `z`
- *  en descendant : il désigne la PLAGE d'étages que la masse coiffe (`roomZoneIds`, couverture,
- *  chevauchement), jamais une hauteur. `footprint` doit être CONTIGU (4-connexe) et
- *  coïncider EXACTEMENT avec le plancher intérieur réel à l'étage `z` — fail-fast dans `buildScene`
- *  sinon (`validateBuildingMasses`, `state/mapSpec.ts`), pas une redevance silencieuse.
- *
- *  Note #829 : `ArchitectureBody.masses` déclarées ici sont des SURCHARGES, plus la règle. Par défaut,
- *  `buildScene` DÉRIVE les masses manquantes depuis le plancher réel (`deriveArchitectureMasses`,
- *  `state/sceneEdit.ts`) — éditer un mur/une pièce fait suivre la toiture sans redéclaration. Une masse
- *  authorée ici ne sert plus qu'à corriger la dérivation là où elle se trompe (passage couvert, appentis,
- *  cour à ne pas coiffer via `ArchitectureBody.roofExclusions`, encorbellement voulu). */
-export interface BuildingMass {
-  id: string;
-  z: number;
-  footprint: ArchitectureRect[];
-  levels: number;
-  profile: 'gable' | 'hip' | 'shed' | 'flat';
-  /** Pente en DEGRÉS (jamais des mètres par case — c'est cette unité qui a écrasé les toits d'un
-   *  facteur deux, #825). */
-  pitchDeg: number;
-  material: string;
-  /** Axe de faîtage (gable/hip) — optionnel, défaut = le long axe de la masse ; OBLIGATOIRE si la
-   *  masse est carrée (ambigu, fail-fast plutôt que deviner). Sans effet sur `shed`/`flat`. */
-  ridge?: 'x' | 'y';
-  /** Côté d'égout bas — OBLIGATOIRE pour `shed` (aucun défaut deviné), ignoré sinon. */
-  eaveSide?: 'N' | 'E' | 'S' | 'O';
-  /** Masse POSÉE par la dérivation (`deriveArchitectureMasses`, `state/sceneEdit.ts`) et non par un
-   *  auteur : re-calculable à volonté — toute re-dérivation jette ces masses et les refait depuis le
-   *  plan et `ArchitectureBody.roofDefaults`. Une masse SANS ce drapeau est une SURCHARGE authorée,
-   *  jamais écrasée. C'est ce qui rend la dérivation IDEMPOTENTE, donc rejouable dans l'éditeur
-   *  (#841) : l'intention de toiture y produit un effet immédiat sur le rendu, qui ne lit QUE les
-   *  masses matérialisées. */
-  derived?: true;
-}
-/** Intention de toiture pour les masses DÉRIVÉES d'un corps (#829) — réglée dans l'outil Architecture
- *  de l'éditeur ; défaut si absent : `gable`/`ardoise`, pente ADAPTÉE à la portée sous la borne de
- *  comble (cf. `DEFAULT_ROOF_DEFAULTS`/`fittedPitchDeg`, `sceneEdit.ts`).
- *  Cette intention s'applique telle quelle à CHAQUE corps : le plancher réel se décompose en
- *  composantes 4-connexes, et chacune reçoit UNE masse (`deriveArchitectureMasses`, `sceneEdit.ts`),
- *  faîtage le long de sa plus grande dimension. Le profil déclaré ici PRIME sur la lecture de portée
- *  (`ROOF_GABLE_SPAN_MAX_M`) qui, à défaut, choisit entre pignon et croupe. */
-export interface RoofDefaults {
-  profile: 'gable' | 'hip' | 'shed' | 'flat';
-  /** Pente en DEGRÉS POSÉE par l'auteur : elle ne s'adapte JAMAIS à la portée. ABSENTE : la
-   *  dérivation calcule la pente de CHAQUE masse par `fittedPitchDeg` (`sceneEdit.ts`) — pente de
-   *  référence rabattue jusqu'à ce que le comble tienne dans `riseMaxStoreys` (#947). */
-  pitchDeg?: number;
-  material: string;
-  /** Côté d'égout bas des masses dérivées — OBLIGATOIRE dès que `profile` vaut `shed` (le côté bas
-   *  d'un appentis est une intention d'AUTEUR, aucun défaut deviné ; même contrat que
-   *  `BuildingMass.eaveSide`, que la dérivation recopie depuis ici). Ignoré par les autres profils. */
-  eaveSide?: 'N' | 'E' | 'S' | 'O';
-  /** BORNE de comble des masses dérivées, en hauteurs d'ÉTAGE (`METRES_PER_LEVEL`) : c'est elle qui
-   *  fait s'adapter la PENTE à la portée (#947) — un corps profond porte un toit plus PLAT, sa
-   *  couverture ne se découpe jamais. Absente = `DEFAULT_ROOF_DEFAULTS.riseMaxStoreys`. Sans effet
-   *  dès que `pitchDeg` est posé : l'intention de l'auteur passe avant la borne. */
-  riseMaxStoreys?: number;
-}
-export interface ArchitectureBody {
-  id: string;
-  label?: string;
-  style: string;
-  storeys: ArchitectureStorey[];
-  facades: FacadeSection[];
-  /** SURCHARGES (#829, cf. doc `BuildingMass`) — jamais l'obligation de couvrir tout le bâti à la main. */
-  masses: BuildingMass[];
-  /** Intention des masses DÉRIVÉES par défaut (#829) — absent = `DEFAULT_ROOF_DEFAULTS`. */
-  roofDefaults?: RoofDefaults;
-  /** Cases à NE JAMAIS couvrir par la dérivation par défaut (cour intérieure à ciel ouvert…), par
-   *  étage — surcharge NÉGATIVE (#829), symétrique des `masses` (surcharge positive). */
-  roofExclusions?: { z: number; rect: ArchitectureRect }[];
-}
+export type ArchitectureRect = z.infer<typeof architectureRectSchema>;
+export type ArchitectureEdgeRef = z.infer<typeof architectureEdgeRefSchema>;
+export type ArchitecturePart = z.infer<typeof architecturePartSchema>;
+export type ArchitectureStorey = z.infer<typeof architectureStoreySchema>;
+export type FacadeFeature = z.infer<typeof facadeFeatureSchema>;
+export type FacadeSection = z.infer<typeof facadeSectionSchema>;
+export type BuildingMass = z.infer<typeof buildingMassSchema>;
+export type RoofDefaults = z.infer<typeof roofDefaultsSchema>;
+export type ArchitectureBody = z.infer<typeof architectureBodySchema>;
 
 /** Effet PROGRAMMÉ (Lot 0, étendu #668) — l'une des DEUX variantes dont le corps reste manuscrit :
  *  elle porte un `Flow<Effect>`, donc elle est MUTUELLEMENT récursive avec l'union ci-dessous, et
@@ -323,37 +236,11 @@ export type Effect =
   | z.infer<typeof adjustVesselSchema>
   | z.infer<typeof endDialogueSchema>;
 
-export interface DialogueChoice {
-  text: string;
-  /** Icône d'affordance (registre `src/ui/icons/`, rendue par `<Icon>` dans `DialogueBox`) — jamais
-   *  un emoji collé au `text` (#290, doctrine anti-emoji). Id de string brute (couture UI hors de
-   *  `src/state`, cf. CLAUDE.md : la logique reste pure, `<Icon>` valide l'id au rendu). */
-  icon?: string;
-  /** Condition d'AFFICHAGE du choix (algèbre `Condition`, cf. `evalCondition`). Absente = toujours visible. */
-  when?: Condition;
-  /** Prix de l'option (service payant : auberge, péage, pot-de-vin…). Le choix est RÉPÉTABLE mais
-   *  désactivé si on ne peut pas payer ; à la sélection, le montant est débité AVANT le flow. */
-  cost?: { gold?: number; silver?: number; brass?: number };
-  /** LOGIQUE exécutée à la sélection : séquence d'effets + branches `if`/`test` (exécutée par `runFlow`). */
-  flow?: Flow;
-  next?: string; // id du nœud suivant
-}
+export type DialogueChoice = z.infer<typeof dialogueChoiceSchema>;
 
-export interface DialogueNode {
-  id: string;
-  /** Id d'une `SceneEntity` de la scène courante → son PORTRAIT et son NOM (label) pour CE nœud.
-   *  Permet d'alterner les interlocuteurs dans une même conversation. À défaut, l'interlocuteur de
-   *  SESSION (`state.dialogue.speakerId`, posé par `interactEntity` ou `startDialogue.speakerId`). */
-  speakerId?: string;
-  text: string;
-  choices: DialogueChoice[];
-}
+export type DialogueNode = z.infer<typeof dialogueNodeSchema>;
 
-export interface Dialogue {
-  id: string;
-  start: string;
-  nodes: DialogueNode[];
-}
+export type Dialogue = z.infer<typeof dialogueSchema>;
 
 /** Nom AFFICHÉ du locuteur d'un nœud : override par nœud puis speaker de session, résolu en label
  *  d'entité de la scène (jamais un nom en clair stocké, #669). `undefined` si aucun speaker. */
@@ -373,101 +260,18 @@ export function speakerLabel(
  *  importeurs historiques de `./scene` (ConditionEditor, tests). */
 export type { TemporalCondition } from '../engine/flowCore';
 
-export interface Trigger {
-  id: string;
-  /** `z` — étage du déclencheur, défaut 0 (rez). Comme `SceneEffectZone.z` (#782) : sans lui, un
-   *  trigger posé au rez se déclenche depuis/vers l'étage au-dessus (`checkTriggers`, #803). */
-  rect: { x: number; y: number; w: number; h: number; z?: number };
-  once?: boolean;
-  /** Condition d'ENTRÉE (algèbre `Condition`, cf. `evalCondition`) — combinée en ET avec le `rect` et
-   *  évaluée à l'entrée dans la zone. Absente = pas de garde (un pur événement horaire sans position =
-   *  `delayedEffect`). Remplace les anciens `condition`/`temporalCondition`. */
-  when?: Condition;
-  /** LOGIQUE exécutée à l'entrée : séquence d'effets + branches `if`/`test` (exécutée par `runFlow`). */
-  flow: Flow;
-}
+export type Trigger = z.infer<typeof triggerSchema>;
 
 // Évaluation des conditions (flag/temporelle) : SOURCE UNIQUE `evalCondition` (src/state/flow.ts).
 // Les anciens `condMet`/`temporalConditionMet` ont fondu dedans (algèbre de Conditions unifiée).
 
-/** Membre d'une rencontre : RÉFÉRENCE une `SceneEntity` (kind 'personnage') de la scène — c'est
- *  ELLE qui porte le profil (ref/statblock/apparence/arme/label/facing/combat). Le membre n'ajoute
- *  que le contexte propre à CETTE rencontre (camp, monture). */
-export interface EncounterMember {
-  /** id de la `SceneEntity` enrôlée. */
-  entityId: string;
-  /** Camp au spawn : 'ally' pose un combattant du côté des héros (ex. monture prêtée). Défaut 'enemy'. */
-  side?: 'enemy' | 'ally';
-  /** PNJ allié piloté par l'IA (`Combatant.aiControlled`) : un allié qui AGIT SEUL (défenseur de siège,
-   *  équipage d'une pièce…) au lieu d'être contrôlé par le joueur. Sans effet sur un membre 'enemy'. */
-  ai?: boolean;
-  /** Combat monté (LDB 14) : cet acteur est une MONTURE rideable (peut être enfourché). */
-  mount?: boolean;
-  /** id d'entité de la monture chevauchée au spawn (pré-monté) — réf stable (≠ ancien index `rides`). */
-  ridesEntityId?: string;
-}
+export type EncounterMember = z.infer<typeof encounterMemberSchema>;
 
-export interface EncounterDef {
-  id: string;
-  /** Membres référençant des entités de la scène (peuplés par l'éditeur, ou à l'authoring via
-   *  `buildEncounter`). SOURCE UNIQUE lue par le runtime — chaque membre pointe une `SceneEntity`
-   *  'personnage' qui porte tout le profil (ref/statblock/apparence/arme/`combat.hiddenUntilCombat`). */
-  members?: EncounterMember[];
-  /** Scène/flag déclenché à la victoire — Flow (UN seul format avec `Trigger.flow`/`DialogueChoice.flow`).
-   *  Aplati en `Effect[]` par `finishVictory` (la déférence transition/dialogue + la mesure de récompense
-   *  restent sur la séquence plate). */
-  onVictory?: Flow;
-  /** Objectif de victoire (#197). Absent = `allEnemiesDead` (défaut historique). */
-  victoryCondition?: VictoryCondition;
-  /** Surprise (LDB 13 l.52-81) : camp pris en EMBUSCADE au début du combat. Les combattants de ce camp
-   *  font un Test opposé de Perception vs la meilleure Discrétion des embusqueurs ; les vaincus gagnent
-   *  l'État `Surpris`. Absent = personne n'est surpris. */
-  surprise?: 'party' | 'enemies';
-  /** Avantage initial — Manœuvrabilité (AA 11 l.53-65) : le camp indiqué possède un avantage de
-   *  mouvement au début du combat (monté, terrain arboricole/aérien favorable…) → +2 à sa réserve
-   *  d'Avantage en mode « Avantage de groupe » (`startAdvantagePools`). Absent = pas de circonstance. */
-  maneuverability?: 'party' | 'enemies';
-  /** Avantage initial — Menace (AA 11 l.53-65) : le camp `camp` représente une menace notoire pour
-   *  l'autre camp (`tier` : dangereuse +1, très dangereuse +3, extrême +5) → crédite sa réserve
-   *  d'Avantage en mode groupe. Absent = pas de circonstance. */
-  threat?: { camp: 'party' | 'enemies'; tier: ThreatTier };
-  /** Avantage initial — Terrain (AA 11 l.53-65) : le camp `camp` tient une position avantageuse
-   *  (fortification/couvert léger/hauteur → +1 ; `heavy` : couvert lourd/position décisive type pont
-   *  → +2) → crédite sa réserve d'Avantage en mode groupe. Absent = pas de circonstance. */
-  terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
-  /** Restriction d'armes à DISTANCE (#471) — Duel judiciaire (NADJ 06 l.181) : « les parties concernées
-   *  […] ont normalement le libre choix des armes bien que la plupart des lois locales interdisent de
-   *  faire appel à des projectiles. » DÉFAUT SÉMANTIQUE (#471 défaut 1) : « la plupart » = interdit PAR
-   *  DÉFAUT quand `victoryCondition.type === 'firstBlood'` — champ ABSENT sur un duel = armes à distance
-   *  INTERDITES ; l'auteur DÉROGE explicitement en posant `banRanged: false` (« pas toutes »). Champ
-   *  SÉPARÉ de `victoryCondition` (une variante locale peut l'imposer à une rencontre qui n'est pas un
-   *  `firstBlood`, valeur explicite `true`). Hors `firstBlood`, champ absent = armes à distance autorisées
-   *  (défaut historique). Défaut résolu par `banRangedActive` (SEUL point), consommé par
-   *  `resolveAttack`/`firedAttackBlock` (joueur ET IA). */
-  banRanged?: boolean;
-}
+export type EncounterDef = z.infer<typeof encounterDefSchema>;
 
-/** Une COUCHE d'empilement de la scène : son index discret `z` (0 = couche de base) — identité
- *  d'empilement, clé de pathfinding ET clé de tri de profondeur — et sa grille de tuiles (w×h aplatie).
- *  `height[]` est PARALLÈLE à `tiles` (indexation y·w+x) : la hauteur RÉELLE de la surface, en MÈTRES
- *  (échelle RAW 2 m/case, LDB 15 l.12). Absent = tout à 0 m. PORTEUSE (plus cosmétique) : pilote la
- *  marchabilité (rampe/falaise via `surfaceLink`), la distance/−10 en combat et la chute. Le RENDU pose
- *  la tuile au lift métrique (`metricToLift(height)`) ; le TRI garde `z` (occlusion dessus/dessous). */
-export interface Layer {
-  z: number;
-  tiles: Terrain[];
-  height?: number[];
-  /** CRÉNELURE (RENDU PUR) : parallèle à `tiles` (`y·w+x`). `null` = pas de crénelure ; une chaîne = id de
-   *  structure crénelée (`structureAppearance.json`) → le crest builder (`crestGeometry`) en dérive des MERLONS
-   *  sur le PÉRIMÈTRE (arête dont le voisin même-z n'est pas crénelé) — jamais à l'intérieur. Marqueur de
-   *  DÉCORATION seulement (comme un toit auto-dessiné) : n'affecte NI la passabilité NI la LdV plongeante. */
-  crenellated?: (string | null)[];
-}
+export type Layer = z.infer<typeof layerSchema>;
 
-/** Aire d'une zone d'effet : rectangle (`rect`) ou disque de Chebyshev (`disc`, rayon en CASES). */
-export type ZoneArea =
-  | { kind: 'rect'; x: number; y: number; w: number; h: number }
-  | { kind: 'disc'; cx: number; cy: number; radius: number };
+export type ZoneArea = z.infer<typeof zoneAreaSchema>;
 
 /** ZONE D'EFFET authorée (piège/hasard/aura environnementale). Payload = `GameOp[]` partagé avec les
  *  zones de Sort (vocabulaire unique, appliqué par `applyOps`). `onCross` se déclenche à la TRAVERSÉE
@@ -475,6 +279,10 @@ export type ZoneArea =
  *  Tous les champs mécaniques (`onCross`/`perRound`/`crossTest`/`barrier`/`blocksLoS`) sont OPTIONNELS —
  *  une zone `{id,label,area}` sans aucun d'eux est DESCRIPTIVE (nom de pièce, #782) : inerte au combat,
  *  affichée seulement (`isDescriptiveZone`). */
+/** RESTE MANUSCRIT : `crossTest` NOMME ici le type moteur `FlowTest` (`engine/flowCore`), là où le
+ *  schéma compose `flowTestSchema`, nœud-FRONTIÈRE du vocabulaire partagé ; `tiles` NOMME de même
+ *  `Pt` (`state/path`), là où le schéma compose `ptSchema` — divergence NOMINALE seule, assignabilité
+ *  mutuelle intacte dans les deux sens. */
 export interface SceneEffectZone {
   id: string;
   label: string;
@@ -509,6 +317,10 @@ export function isDescriptiveZone(ez: SceneEffectZone): boolean {
   return !ez.onCross && !ez.perRound && !ez.crossTest && !ez.barrier && !ez.blocksLoS;
 }
 
+/** RESTE MANUSCRIT : le SEAM diverge en OPTIONALITÉ. `sceneSchema` voit le document AVANT
+ *  `normalizeScene` — `layers`/`entities`/`dialogues`/`triggers`/`encounters`/`flags` y sont
+ *  optionnels (un document ancien n'en porte pas), REQUIS ici (après normalisation, tout
+ *  consommateur les lit sans garde). */
 export interface Scene {
   id: string;
   nom: string;
@@ -591,15 +403,7 @@ export interface Scene {
   startMessage?: string;
 }
 
-/** Ancre AUTHORÉE d'une Scène de bataille sur le plan (S2) : `sceneId` (une entrée de
- *  `MassBattleState.pool` = l'id d'une Scène de bataille, `ActivityDef` contexte 'bataille-round') posée
- *  sur une case de la carte. La Puissance des
- *  armées reste une abstraction NON rendue — seul l'emplacement de l'ACTION est posé. Consommé par
- *  `battleScenesToStations` (state/stations.ts) ; absence d'ancre → repli déterministe côté consommateur. */
-export interface SceneStationAnchor {
-  sceneId: string;
-  pos: { x: number; y: number; z?: number };
-}
+export type SceneStationAnchor = z.infer<typeof sceneStationAnchorSchema>;
 
 /** Échelle métrique d'une case (m/case) — défaut 2 (person-scale, LDB). Source UNIQUE pour la couche Mer. PUR. */
 export function sceneMetresPerTile(scene: { metresPerTile?: number } | null | undefined): number {
@@ -685,44 +489,9 @@ export function surfaceLink(
  *  travers de la case (x,y) — pour les parois en éventail / courbes (purement VISUELLES : le déplacement
  *  reste orthogonal, géré par le sol / les arêtes N-E). `door` = franchissable (porte). `z` = étage. */
 export type WallSide = 'N' | 'E' | '\\' | '/';
-export interface WallSeg {
-  x: number;
-  y: number;
-  side: WallSide;
-  z?: number;
-  door?: boolean;
-  /** Porte FERMÉE par défaut à l'ouverture de la scène (bloque vue+passage tant qu'on ne l'ouvre pas).
-   *  Absent = ouverte par défaut (comportement historique : une porte est une ouverture franchissable). */
-  closed?: boolean;
-  /** Structure destructible posée SUR l'arête (id de `structures.json`, ex. `porte-de-ville`). Tant
-   *  qu'elle tient, l'arête bloque passage+vue comme un mur plein ; une fois ABATTUE (`structureIsDown`),
-   *  l'arête devient une BRÈCHE franchissable et transparente. */
-  structure?: string;
-  /** Apparence de rendu (`structureAppearance.json`) indépendante de `structure`. N'affecte ni
-   *  résistance, ni couvert, ni collision : absent = apparence dérivée de la structure/façade. */
-  appearance?: string;
-  /** DÉCORATIF uniquement : l'arête porte une FENÊTRE (croisée vitrée) au rendu. Un mur fenêtré reste un
-   *  mur PLEIN (vitre SERTIE, pas une ouverture) — il bloque passage/vue/vision/marchabilité EXACTEMENT
-   *  comme un mur nu (`window` n'est lu par AUCUNE règle de combat : ni `wallIsOpen`, ni `vision`, ni
-   *  `isWalkable`). N'affecte que l'apparence iso + POV (nuit : vitre ambrée émissive). */
-  window?: boolean;
-  /** ESCALADABLE (LDB 15 l.53-57) : l'arête sépare deux surfaces de hauteurs différentes (une FALAISE au
-   *  sens `surfaceLink` — infranchissable à pied) qu'un Personnage peut GRIMPER. `ladder` = échelle ou
-   *  surface facile (pas de Test, LDB 15 l.53) ; `surface` = paroi à prises (Test d'Escalade, l.57).
-   *  Bloque toujours passage+vue comme un mur PLEIN (une falaise n'est pas une ouverture) : la grimpe est
-   *  un geste EXPLICITE, pas un franchissement de pathfinding. Résolu par `state/climbMove`. */
-  climb?: WallClimb;
-}
+export type WallSeg = z.infer<typeof wallSegSchema>;
 
-/** Nature d'une arête grimpable (`WallSeg.climb`). */
-export interface WallClimb {
-  kind: 'ladder' | 'surface';
-  /** Surface uniquement — difficulté du Test d'Escalade. LDB 15 l.57 la laisse « définie par le MJ » ;
-   *  sans MJ (règle 7) c'est un arbitrage ÉDITABLE par arête. Absent = `intermediaire` (défaut moteur). */
-  difficulty?: import('../engine/types').Difficulty;
-  /** Surface uniquement — paroi « bien trop compliquée » sans le Talent Grimpeur (LDB 15 l.57). */
-  requiresGrimpeur?: boolean;
-}
+export type WallClimb = z.infer<typeof wallClimbSchema>;
 
 /** Le segment ESCALADABLE sur l'arête (x,y,side,z), ou undefined. */
 export function climbAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {
@@ -787,32 +556,7 @@ export function structureIsDown(scene: Pick<Scene, 'flags'>, seg: WallSeg): bool
   return scene.flags?.[structureDownKey(seg.x, seg.y, seg.side, seg.z ?? 0)] === true;
 }
 
-/** OBJECTIF de victoire d'une rencontre (#197) — AUTHORABLE en donnée, lu par `checkBattleOver`.
- *  Absent = `allEnemiesDead` (comportement HISTORIQUE, tous les scénarios existants inchangés).
- *  `destroyStructure` référence l'arête par son identifiant STABLE (x/y/side/z), le même couple que
- *  `structureIsDown`/`Combatant.structureEdge` (bélier-porte, AA 10 p.120-121) — la victoire se déclenche
- *  à la BRÈCHE, indépendamment du sort des combattants. `surviveRounds` : victoire posée au début du
- *  Round `rounds + 1` (le groupe a tenu N Rounds complets). `reachZone` réutilise le rectangle de zone
- *  des `Trigger`/`SceneEffectZone` (`inRect`, `combatGeometry.ts`) — aucun 2e mécanisme de zone.
- *  `woundsThreshold` (#215) : REDDITION à seuil de dommage partiel — `targetId` référence l'id
- *  STABLE d'une entité de scène (`SceneEntity.id` = `Combatant.id` au spawn, identité unifiée).
- *  Le RAW ne chiffre AUCUN seuil de reddition (silence confirmé) ; seul précédent chiffré, la
- *  reddition d'un monstre marin à mi-Blessures (MDG 15 l.143, l.166-168). `belowPercent` reste
- *  une valeur ÉDITABLE par rencontre, sans seuil RAW imposé (CLAUDE.md règle 7).
- *  `firstBlood` (#471) : DUEL JUDICIAIRE — « le premier sang est la première attaque qui cause une
- *  perte de plus de 3 Blessures […] ; un adversaire est incapable de continuer lorsqu'il est réduit
- *  à 0 Blessure » (NADJ 06 l.175-177) — les DEUX fins restent actives en parallèle, la seconde étant
- *  la fin standard (0 Blessure, `isOutOfAction`) déjà couverte hors `VictoryCondition`. `threshold`
- *  reste ÉDITABLE (défaut 3, seule valeur chiffrée par le RAW) — sévérité de la charge, CLAUDE.md
- *  règle 7. Testé PAR-COUP (`resolveFirstBlood`, combatFlow.ts) — pas un seuil cumulatif comme
- *  `woundsThreshold`. */
-export type VictoryCondition =
-  | { type: 'allEnemiesDead' }
-  | { type: 'destroyStructure'; edge: ArchitectureEdgeRef }
-  | { type: 'surviveRounds'; rounds: number }
-  | { type: 'reachZone'; rect: { x: number; y: number; w: number; h: number }; camp?: 'party' | 'enemies' }
-  | { type: 'woundsThreshold'; targetId: string; belowPercent: number }
-  | { type: 'firstBlood'; threshold?: number };
+export type VictoryCondition = z.infer<typeof victoryConditionSchema>;
 
 /** Le segment portant une STRUCTURE sur l'arête (x,y,side,z), ou undefined. */
 export function structureAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {

@@ -178,7 +178,12 @@ describe('`effectSchema` — verrou d\'union : les discriminants du SCHÉMA == c
 
   it('un membre dont le SCHÉMA n’est plus résolu sort NOMMÉ, jamais en silence (preuve de câblage)', () => {
     const brut = readFileSync(SCENE, 'utf8');
-    const premier = /z\.infer<typeof (\w+)>/.exec(brut);
+    // La sonde vise un membre de l'UNION `Effect` : `state/scene.ts` compose aussi les FORMES de la
+    // scène en `z.infer` (`defs-scenes/scene.ts`), qui ne sont pas des effets et que ce verrou ne
+    // mesure pas. Le premier `z.infer` du fichier n'est donc pas forcément un membre d'`Effect`.
+    const bloc = /export type Effect =[\s\S]*?;\n/.exec(brut);
+    expect(bloc, 'union `Effect` introuvable dans `state/scene.ts` : la sonde ne mesure plus rien.').not.toBeNull();
+    const premier = /z\.infer<typeof (\w+)>/.exec(bloc![0]);
     expect(premier, 'aucun membre `z.infer<typeof …>` dans `Effect` : la sonde ne mesure plus rien.').not.toBeNull();
 
     const nom = premier![1];

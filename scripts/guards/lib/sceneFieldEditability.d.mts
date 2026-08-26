@@ -27,6 +27,19 @@ export interface FieldEditability {
 /** Racine des programmes bâtis par `virtualProgram`. */
 export const VIRTUAL_ROOT: string;
 
+/** Registre NOMINATIF des fossiles tolérés au parse et hors périmètre éditable — gate bidirectionnel. */
+export const FOSSILES: string[];
+
+/** Gate `@fossile` : un tag hors registre, une entrée sans tag — les deux sens sont des rouges. */
+export function fossileAudit(
+  program: Program,
+  root: string
+): { taguesHorsListe: string[]; entreesSansTag: string[] };
+
+/** Ensemble d'IDENTITÉS du document : les déclarations de propriété des shapes atteints depuis
+ *  `sceneSchema`, nœuds-frontière exclus. */
+export function documentDeclarations(program: Program, root: string): Set<Node>;
+
 export function repoProgram(root: string): Program;
 export function virtualProgram(files: Record<string, string>): Program;
 export function sceneScope(program: Program, root: string): SceneField[];

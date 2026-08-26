@@ -41,7 +41,9 @@ export const skillRefSchema = z.strictObject({ id: z.string(), spec: z.string().
 
 // ── Entité de scène ─────────────────────────────────────────────────────────────────────────────
 
-/** `EntityKind` — `personnage` = tout être animé (fusion des anciens `pnj`/`ennemi`). */
+/** Rôle d'une entité de scène. `personnage` = tout être animé (apparence libre via `ref` +
+ *  dialogue/quête optionnel) — fusion des anciens `pnj`/`ennemi`, que le combat (encounters) et
+ *  l'interaction (dialogueId) ne distinguaient pas. */
 export const entityKindSchema = z.enum(['heroStart', 'personnage', 'prop']);
 
 /** `SceneEntity` (`state/scene.ts:41`). `id` = identité STABLE partagée avec le `Combatant` au spawn. */
@@ -72,7 +74,8 @@ export const sceneEntitySchema = z.strictObject({
   /** Empreinte D'INSTANCE d'un projet pré-migration : fossile TOLÉRÉ au parse, DÉPOUILLÉ au
    *  chargement par `stripLegacyFoot` (`src/state/scene.ts`) — jamais une donnée de scène, jamais
    *  lue par le moteur (la physique d'un décor vient de `PropData.foot`). Meurt au reset des saves.
-   *  Le tag est documentaire à ce stade — la garde #841 le lira au Lot B, gaté par liste nominative.
+   *  La garde #841 lit ce tag, GATÉ par sa liste nominative (`FOSSILES`, `sceneFieldEditability.mjs`) :
+   *  le champ est hors périmètre éditable, et un tag posé sans entrée au registre est ROUGE.
    *  @fossile */
   foot: z.strictObject({ w: z.number(), h: z.number() }).optional(),
   /** Source de lumière : rayon en cases ; `tone` = id d'un `lightTones` (apparence seule). */
@@ -144,30 +147,70 @@ export const facadeSectionSchema = z.strictObject({
 export const roofProfileSchema = z.enum(['gable', 'hip', 'shed', 'flat']);
 /** Côté d'égout bas (OBLIGATOIRE pour `shed`, ignoré sinon). */
 export const eaveSideSchema = z.enum(['N', 'E', 'S', 'O']);
-/** `BuildingMass` (#823) — l'INTENTION de toiture, jamais la géométrie du toit (dérivée par
- *  `gameIso/builders/roofs.ts`). `pitchDeg` est en DEGRÉS ; `derived` marque une masse posée par
- *  la dérivation (`deriveArchitectureMasses`), donc re-calculable, jamais une surcharge d'auteur. */
+/** MASSE de bâtiment (#823, remplace `RoofSection` authoré à la main) : l'INTENTION, jamais la
+ *  géométrie du toit — `gameIso/builders/roofs.ts` DÉRIVE pans/faîte/noues/croupes par une formule
+ *  UNIQUE (`hauteur(case) = hauteurÉgout + distance(case, bord de la masse) × métresParCase ×
+ *  tan(pente)`), et `roomZoneIds` par intersection avec `Scene.effectZones` (plus de redistribution
+ *  manuelle). `z` = étage du PLANCHER SOMMET couvert par le toit (le dessous immédiat de la masse) ;
+ *  c'est la COUCHE sur laquelle se lit la cote du plancher, jamais l'altitude elle-même : l'égout vaut
+ *  la cote la plus HAUTE que `heightAt` porte sous l'emprise à cet étage + `WALL_H_M` — le toit
+ *  s'assoit sur le sommet des murs, qui s'assoient sur le relief de LEUR case (cf. `resolveMass`,
+ *  `buildWalls`). `levels` = nombre de niveaux couverts DEPUIS `z`
+ *  en descendant : il désigne la PLAGE d'étages que la masse coiffe (`roomZoneIds`, couverture,
+ *  chevauchement), jamais une hauteur. `footprint` doit être CONTIGU (4-connexe) et
+ *  coïncider EXACTEMENT avec le plancher intérieur réel à l'étage `z` — fail-fast dans `buildScene`
+ *  sinon (`validateBuildingMasses`, `state/mapSpec.ts`), pas une redevance silencieuse.
+ *
+ *  Note #829 : `ArchitectureBody.masses` déclarées ici sont des SURCHARGES, plus la règle. Par défaut,
+ *  `buildScene` DÉRIVE les masses manquantes depuis le plancher réel (`deriveArchitectureMasses`,
+ *  `state/sceneEdit.ts`) — éditer un mur/une pièce fait suivre la toiture sans redéclaration. Une masse
+ *  authorée ici CORRIGE la dérivation là où elle se trompe (passage couvert, appentis,
+ *  cour à ne pas coiffer via `ArchitectureBody.roofExclusions`, encorbellement voulu). */
 export const buildingMassSchema = z.strictObject({
   id: z.string(),
   z: z.number(),
   footprint: z.array(architectureRectSchema),
   levels: z.number(),
   profile: roofProfileSchema,
+  /** Pente en DEGRÉS (jamais des mètres par case — c'est cette unité qui a écrasé les toits d'un
+   *  facteur deux, #825). */
   pitchDeg: z.number(),
   material: z.string(),
-  /** Axe de faîtage — OBLIGATOIRE si la masse est carrée (ambigu). Sans effet sur `shed`/`flat`. */
+  /** Axe de faîtage (gable/hip) — optionnel, défaut = le long axe de la masse ; OBLIGATOIRE si la
+   *  masse est carrée (ambigu, fail-fast plutôt que deviner). Sans effet sur `shed`/`flat`. */
   ridge: z.enum(['x', 'y']).optional(),
+  /** Côté d'égout bas — OBLIGATOIRE pour `shed` (aucun défaut deviné), ignoré sinon. */
   eaveSide: eaveSideSchema.optional(),
+  /** Masse POSÉE par la dérivation (`deriveArchitectureMasses`, `state/sceneEdit.ts`) et non par un
+   *  auteur : re-calculable à volonté — toute re-dérivation jette ces masses et les refait depuis le
+   *  plan et `ArchitectureBody.roofDefaults`. Une masse SANS ce drapeau est une SURCHARGE authorée,
+   *  jamais écrasée. C'est ce qui rend la dérivation IDEMPOTENTE, donc rejouable dans l'éditeur
+   *  (#841) : l'intention de toiture y produit un effet immédiat sur le rendu, qui ne lit QUE les
+   *  masses matérialisées. */
   derived: z.literal(true).optional(),
 });
-/** `RoofDefaults` (#829) — intention de toiture des masses DÉRIVÉES d'un corps. */
+/** Intention de toiture pour les masses DÉRIVÉES d'un corps (#829) — réglée dans l'outil Architecture
+ *  de l'éditeur ; défaut si absent : `gable`/`ardoise`, pente ADAPTÉE à la portée sous la borne de
+ *  comble (cf. `DEFAULT_ROOF_DEFAULTS`/`fittedPitchDeg`, `sceneEdit.ts`).
+ *  Cette intention s'applique telle quelle à CHAQUE corps : le plancher réel se décompose en
+ *  composantes 4-connexes, et chacune reçoit UNE masse (`deriveArchitectureMasses`, `sceneEdit.ts`),
+ *  faîtage le long de sa plus grande dimension. Le profil déclaré ici PRIME sur la lecture de portée
+ *  (`ROOF_GABLE_SPAN_MAX_M`) qui, à défaut, choisit entre pignon et croupe. */
 export const roofDefaultsSchema = z.strictObject({
   profile: roofProfileSchema,
-  /** Pente POSÉE par l'auteur : elle ne s'adapte JAMAIS à la portée. Absente → `fittedPitchDeg`. */
+  /** Pente en DEGRÉS POSÉE par l'auteur : elle ne s'adapte JAMAIS à la portée. ABSENTE : la
+   *  dérivation calcule la pente de CHAQUE masse par `fittedPitchDeg` (`sceneEdit.ts`) — pente de
+   *  référence rabattue jusqu'à ce que le comble tienne dans `riseMaxStoreys` (#947). */
   pitchDeg: z.number().optional(),
   material: z.string(),
+  /** Côté d'égout bas des masses dérivées — OBLIGATOIRE dès que `profile` vaut `shed` (le côté bas
+   *  d'un appentis est une intention d'AUTEUR, aucun défaut deviné ; même contrat que
+   *  `BuildingMass.eaveSide`, que la dérivation recopie depuis ici). Ignoré par les autres profils. */
   eaveSide: eaveSideSchema.optional(),
-  /** BORNE de comble en hauteurs d'ÉTAGE (#947). Sans effet dès que `pitchDeg` est posé. */
+  /** BORNE de comble des masses dérivées, en hauteurs d'ÉTAGE (`METRES_PER_LEVEL`) : c'est elle qui
+   *  fait s'adapter la PENTE à la portée (#947) — un corps profond porte un toit plus PLAT, sa
+   *  couverture ne se découpe jamais. Absente = `DEFAULT_ROOF_DEFAULTS.riseMaxStoreys`. Sans effet
+   *  dès que `pitchDeg` est posé : l'intention de l'auteur passe avant la borne. */
   riseMaxStoreys: z.number().optional(),
 });
 /** `ArchitectureBody` — corps architectural authoré (volumes, façades, toitures). */
@@ -177,10 +220,13 @@ export const architectureBodySchema = z.strictObject({
   style: z.string(),
   storeys: z.array(architectureStoreySchema),
   facades: z.array(facadeSectionSchema),
-  /** SURCHARGES (#829) — la dérivation couvre le reste. */
+  /** SURCHARGES (#829, cf. doc `buildingMassSchema`) — jamais l'obligation de couvrir tout le bâti à
+   *  la main : la dérivation couvre le reste. */
   masses: z.array(buildingMassSchema),
+  /** Intention des masses DÉRIVÉES par défaut (#829) — absent = `DEFAULT_ROOF_DEFAULTS`. */
   roofDefaults: roofDefaultsSchema.optional(),
-  /** Surcharge NÉGATIVE (#829) : cases à NE JAMAIS couvrir, par étage. */
+  /** Cases à NE JAMAIS couvrir par la dérivation par défaut (cour intérieure à ciel ouvert…), par
+   *  étage — surcharge NÉGATIVE (#829), symétrique des `masses` (surcharge positive). */
   roofExclusions: z.array(z.strictObject({ z: z.number(), rect: architectureRectSchema })).optional(),
 });
 
@@ -189,16 +235,26 @@ export const architectureBodySchema = z.strictObject({
 /** `DialogueChoice` — `when` gate l'AFFICHAGE, `cost` est débité AVANT le flow. */
 export const dialogueChoiceSchema = z.strictObject({
   text: z.string(),
-  /** Icône d'affordance (registre `src/ui/icons`), jamais un emoji collé au `text` (#290). */
+  /** Icône d'affordance (registre `src/ui/icons/`, rendue par `<Icon>` dans `DialogueBox`) — jamais
+   *  un emoji collé au `text` (#290, doctrine anti-emoji). Id de string brute (couture UI hors de
+   *  `src/state`, cf. CLAUDE.md : la logique reste pure, `<Icon>` valide l'id au rendu). */
   icon: z.string().optional(),
+  /** Condition d'AFFICHAGE du choix (algèbre `Condition`, cf. `evalCondition`). Absente = toujours visible. */
   when: conditionSchema.optional(),
+  /** Prix de l'option (service payant : auberge, péage, pot-de-vin…). Le choix est RÉPÉTABLE mais
+   *  désactivé si on ne peut pas payer ; à la sélection, le montant est débité AVANT le flow. */
   cost: moneySchema.optional(),
+  /** LOGIQUE exécutée à la sélection : séquence d'effets + branches `if`/`test` (exécutée par `runFlow`). */
   flow: sceneFlowSchema.optional(),
+  /** Id du nœud suivant. */
   next: z.string().optional(),
 });
 /** `DialogueNode` — `speakerId` = entité de la scène dont le portrait/nom porte CE nœud. */
 export const dialogueNodeSchema = z.strictObject({
   id: z.string(),
+  /** Id d'une `SceneEntity` de la scène courante → son PORTRAIT et son NOM (label) pour CE nœud.
+   *  Permet d'alterner les interlocuteurs dans une même conversation. À défaut, l'interlocuteur de
+   *  SESSION (`state.dialogue.speakerId`, posé par `interactEntity` ou `startDialogue.speakerId`). */
   speakerId: z.string().optional(),
   text: z.string(),
   choices: z.array(dialogueChoiceSchema),
@@ -215,9 +271,15 @@ export const dialogueSchema = z.strictObject({
 /** `Trigger` — `rect` (avec son étage `z`, #803) ET `when` en ET, évalués à l'entrée dans la zone. */
 export const triggerSchema = z.strictObject({
   id: z.string(),
+  /** `z` — étage du déclencheur, défaut 0 (rez). Comme `SceneEffectZone.z` (#782) : sans lui, un
+   *  trigger posé au rez se déclenche depuis/vers l'étage au-dessus (`checkTriggers`, #803). */
   rect: rectSchema,
   once: z.boolean().optional(),
+  /** Condition d'ENTRÉE (algèbre `Condition`, cf. `evalCondition`) — combinée en ET avec le `rect` et
+   *  évaluée à l'entrée dans la zone. Absente = pas de garde (un pur événement horaire sans position =
+   *  `delayedEffect`). Remplace les anciens `condition`/`temporalCondition`. */
   when: conditionSchema.optional(),
+  /** LOGIQUE exécutée à l'entrée : séquence d'effets + branches `if`/`test` (exécutée par `runFlow`). */
   flow: sceneFlowSchema,
 });
 
@@ -228,7 +290,25 @@ export const campSchema = z.enum(['party', 'enemies']);
 /** `ThreatTier` (`engine/advantagePool.ts`) — palier de Menace (`AA 11 l.53-65`). */
 export const threatTierSchema = z.enum(['dangereuse', 'tresDangereuse', 'extreme']);
 
-/** `VictoryCondition` — objectif de victoire ; absent sur la rencontre = `allEnemiesDead`. */
+/** OBJECTIF de victoire d'une rencontre (#197) — AUTHORABLE en donnée, lu par `checkBattleOver`.
+ *  Absent = `allEnemiesDead` (comportement HISTORIQUE, tous les scénarios existants inchangés).
+ *  `destroyStructure` référence l'arête par son identifiant STABLE (x/y/side/z), le même couple que
+ *  `structureIsDown`/`Combatant.structureEdge` (bélier-porte, `AA 10 p.120-121`) — la victoire se déclenche
+ *  à la BRÈCHE, indépendamment du sort des combattants. `surviveRounds` : victoire posée au début du
+ *  Round `rounds + 1` (le groupe a tenu N Rounds complets). `reachZone` réutilise le rectangle de zone
+ *  des `Trigger`/`SceneEffectZone` (`inRect`, `combatGeometry.ts`) — aucun 2e mécanisme de zone.
+ *  `woundsThreshold` (#215) : REDDITION à seuil de dommage partiel — `targetId` référence l'id
+ *  STABLE d'une entité de scène (`SceneEntity.id` = `Combatant.id` au spawn, identité unifiée).
+ *  Le RAW ne chiffre AUCUN seuil de reddition (silence confirmé) ; seul précédent chiffré, la
+ *  reddition d'un monstre marin à mi-Blessures (`MDG 15 l.143`, `l.166-168`). `belowPercent` reste
+ *  une valeur ÉDITABLE par rencontre, sans seuil RAW imposé (CLAUDE.md règle 7).
+ *  `firstBlood` (#471) : DUEL JUDICIAIRE — « le premier sang est la première attaque qui cause une
+ *  perte de plus de 3 Blessures […] ; un adversaire est incapable de continuer lorsqu'il est réduit
+ *  à 0 Blessure » (`NADJ 06 l.175-177`) — les DEUX fins restent actives en parallèle, la seconde étant
+ *  la fin standard (0 Blessure, `isOutOfAction`) déjà couverte hors `VictoryCondition`. `threshold`
+ *  reste ÉDITABLE (défaut 3, seule valeur chiffrée par le RAW) — sévérité de la charge, CLAUDE.md
+ *  règle 7. Testé PAR-COUP (`resolveFirstBlood`, combatFlow.ts) — pas un seuil cumulatif comme
+ *  `woundsThreshold`. */
 export const victoryConditionSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('allEnemiesDead') }),
   z.strictObject({ type: z.literal('destroyStructure'), edge: architectureEdgeRefSchema }),
@@ -244,41 +324,80 @@ export const victoryConditionSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('firstBlood'), threshold: z.number().optional() }),
 ]);
 
-/** `EncounterMember` — RÉFÉRENCE une `SceneEntity` ; n'ajoute que le contexte de CETTE rencontre. */
+/** Membre d'une rencontre : RÉFÉRENCE une `SceneEntity` (kind 'personnage') de la scène — c'est
+ *  ELLE qui porte le profil (ref/statblock/apparence/arme/label/facing/combat). Le membre n'ajoute
+ *  que le contexte propre à CETTE rencontre (camp, monture). */
 export const encounterMemberSchema = z.strictObject({
+  /** id de la `SceneEntity` enrôlée. */
   entityId: z.string(),
-  /** Camp au spawn — défaut 'enemy'. */
+  /** Camp au spawn : 'ally' pose un combattant du côté des héros (ex. monture prêtée). Défaut 'enemy'. */
   side: z.enum(['enemy', 'ally']).optional(),
-  /** PNJ allié piloté par l'IA (`Combatant.aiControlled`). Sans effet sur un membre 'enemy'. */
+  /** PNJ allié piloté par l'IA (`Combatant.aiControlled`) : un allié qui AGIT SEUL (défenseur de siège,
+   *  équipage d'une pièce…) au lieu d'être contrôlé par le joueur. Sans effet sur un membre 'enemy'. */
   ai: z.boolean().optional(),
-  /** Combat monté (`LDB 14`) : acteur rideable. */
+  /** Combat monté (`LDB 14`) : cet acteur est une MONTURE rideable (peut être enfourché). */
   mount: z.boolean().optional(),
+  /** id d'entité de la monture chevauchée au spawn (pré-monté) — réf stable (≠ ancien index `rides`). */
   ridesEntityId: z.string().optional(),
 });
 
 /** `EncounterDef` — les circonstances d'Avantage initial (`AA 11 l.53-65`) et la fin de combat. */
-export const encounterSchema = z.strictObject({
+export const encounterDefSchema = z.strictObject({
   id: z.string(),
+  /** Membres référençant des entités de la scène (peuplés par l'éditeur, ou à l'authoring via
+   *  `buildEncounter`). SOURCE UNIQUE lue par le runtime — chaque membre pointe une `SceneEntity`
+   *  'personnage' qui porte tout le profil (ref/statblock/apparence/arme/`combat.hiddenUntilCombat`). */
   members: z.array(encounterMemberSchema).optional(),
+  /** Scène/flag déclenché à la victoire — Flow (UN seul format avec `Trigger.flow`/`DialogueChoice.flow`).
+   *  Aplati en `Effect[]` par `finishVictory` (la déférence transition/dialogue + la mesure de récompense
+   *  restent sur la séquence plate). */
   onVictory: sceneFlowSchema.optional(),
+  /** Objectif de victoire (#197). Absent = `allEnemiesDead` (défaut historique). */
   victoryCondition: victoryConditionSchema.optional(),
-  /** Camp pris en EMBUSCADE au début du combat (`LDB 13 l.52-81`). */
+  /** Surprise (`LDB 13 l.52-81`) : camp pris en EMBUSCADE au début du combat. Les combattants de ce camp
+   *  font un Test opposé de Perception vs la meilleure Discrétion des embusqueurs ; les vaincus gagnent
+   *  l'État `Surpris`. Absent = personne n'est surpris. */
   surprise: campSchema.optional(),
+  /** Avantage initial — Manœuvrabilité (`AA 11 l.53-65`) : le camp indiqué possède un avantage de
+   *  mouvement au début du combat (monté, terrain arboricole/aérien favorable…) → +2 à sa réserve
+   *  d'Avantage en mode « Avantage de groupe » (`startAdvantagePools`). Absent = pas de circonstance. */
   maneuverability: campSchema.optional(),
+  /** Avantage initial — Menace (`AA 11 l.53-65`) : le camp `camp` représente une menace notoire pour
+   *  l'autre camp (`tier` : dangereuse +1, très dangereuse +3, extrême +5) → crédite sa réserve
+   *  d'Avantage en mode groupe. Absent = pas de circonstance. */
   threat: z.strictObject({ camp: campSchema, tier: threatTierSchema }).optional(),
+  /** Avantage initial — Terrain (`AA 11 l.53-65`) : le camp `camp` tient une position avantageuse
+   *  (fortification/couvert léger/hauteur → +1 ; `heavy` : couvert lourd/position décisive type pont
+   *  → +2) → crédite sa réserve d'Avantage en mode groupe. Absent = pas de circonstance. */
   terrain: z.strictObject({ camp: campSchema, heavy: z.boolean().optional() }).optional(),
-  /** Armes à distance interdites (#471, `NADJ 06 l.181`) — défaut résolu par `banRangedActive`. */
+  /** Restriction d'armes à DISTANCE (#471) — Duel judiciaire (`NADJ 06 l.181`) : « les parties concernées
+   *  […] ont normalement le libre choix des armes bien que la plupart des lois locales interdisent de
+   *  faire appel à des projectiles. » DÉFAUT SÉMANTIQUE (#471 défaut 1) : « la plupart » = interdit PAR
+   *  DÉFAUT quand `victoryCondition.type === 'firstBlood'` — champ ABSENT sur un duel = armes à distance
+   *  INTERDITES ; l'auteur DÉROGE explicitement en posant `banRanged: false` (« pas toutes »). Champ
+   *  SÉPARÉ de `victoryCondition` (une variante locale peut l'imposer à une rencontre qui n'est pas un
+   *  `firstBlood`, valeur explicite `true`). Hors `firstBlood`, champ absent = armes à distance autorisées
+   *  (défaut historique). Défaut résolu par `banRangedActive` (SEUL point), consommé par
+   *  `resolveAttack`/`firedAttackBlock` (joueur ET IA). */
   banRanged: z.boolean().optional(),
 });
 
 // ── Couches, zones, murs ────────────────────────────────────────────────────────────────────────
 
-/** `Layer` — `tiles` aplatie (y·w+x), `height` PARALLÈLE en MÈTRES (`LDB 15 l.12`),
- *  `crenellated` parallèle aussi (RENDU PUR : ni passabilité ni LdV). */
+/** Une COUCHE d'empilement de la scène : son index discret `z` (0 = couche de base) — identité
+ *  d'empilement, clé de pathfinding ET clé de tri de profondeur — et sa grille de tuiles (w×h aplatie).
+ *  `height[]` est PARALLÈLE à `tiles` (indexation y·w+x) : la hauteur RÉELLE de la surface, en MÈTRES
+ *  (échelle RAW 2 m/case, `LDB 15 l.12`). Absent = tout à 0 m. PORTEUSE (plus cosmétique) : pilote la
+ *  marchabilité (rampe/falaise via `surfaceLink`), la distance/−10 en combat et la chute. Le RENDU pose
+ *  la tuile au lift métrique (`metricToLift(height)`) ; le TRI garde `z` (occlusion dessus/dessous). */
 export const layerSchema = z.strictObject({
   z: z.number(),
   tiles: z.array(z.string()),
   height: z.array(z.number()).optional(),
+  /** CRÉNELURE (RENDU PUR) : parallèle à `tiles` (`y·w+x`). `null` = pas de crénelure ; une chaîne = id de
+   *  structure crénelée (`structureAppearance.json`) → le crest builder (`crestGeometry`) en dérive des MERLONS
+   *  sur le PÉRIMÈTRE (arête dont le voisin même-z n'est pas crénelé) — jamais à l'intérieur. Marqueur de
+   *  DÉCORATION seulement (comme un toit auto-dessiné) : n'affecte NI la passabilité NI la LdV plongeante. */
   crenellated: z.array(z.string().nullable()).optional(),
 });
 
@@ -306,31 +425,52 @@ export const sceneEffectZoneSchema = z.strictObject({
   z: z.number().optional(),
 });
 
-/** `WallClimb` — nature d'une arête grimpable (`LDB 15 l.53-57`). */
+/** Nature d'une arête grimpable (`WallSeg.climb`). */
 export const wallClimbSchema = z.strictObject({
+  /** `ladder` = échelle ou surface facile (pas de Test, `LDB 15 l.53`) ; `surface` = paroi à prises
+   *  (Test d'Escalade, `l.57`). */
   kind: z.enum(['ladder', 'surface']),
+  /** Surface uniquement — difficulté du Test d'Escalade. `LDB 15 l.57` la laisse « définie par le MJ » ;
+   *  sans MJ (règle 7) c'est un arbitrage ÉDITABLE par arête. Absent = `intermediaire` (défaut moteur). */
   difficulty: difficultySchema.optional(),
-  /** Surface « bien trop compliquée » sans le Talent Grimpeur (`LDB 15 l.57`). */
+  /** Surface uniquement — paroi « bien trop compliquée » sans le Talent Grimpeur (`LDB 15 l.57`). */
   requiresGrimpeur: z.boolean().optional(),
 });
 
-/** `WallSeg` — cloison sur ARÊTE. `window` est DÉCORATIF (le mur reste plein). */
+/** `WallSeg` — cloison sur ARÊTE. `door` = franchissable (porte) ; `z` = étage. */
 export const wallSegSchema = z.strictObject({
   x: z.number(),
   y: z.number(),
   side: wallSideSchema,
   z: z.number().optional(),
   door: z.boolean().optional(),
-  /** Porte FERMÉE à l'ouverture de la scène. Absent = ouverte. */
+  /** Porte FERMÉE par défaut à l'ouverture de la scène (bloque vue+passage tant qu'on ne l'ouvre pas).
+   *  Absent = ouverte par défaut (comportement historique : une porte est une ouverture franchissable). */
   closed: z.boolean().optional(),
-  /** Structure destructible posée SUR l'arête (id de `structures.json`). */
+  /** Structure destructible posée SUR l'arête (id de `structures.json`, ex. `porte-de-ville`). Tant
+   *  qu'elle tient, l'arête bloque passage+vue comme un mur plein ; une fois ABATTUE (`structureIsDown`),
+   *  l'arête devient une BRÈCHE franchissable et transparente. */
   structure: z.string().optional(),
+  /** Apparence de rendu (`structureAppearance.json`) indépendante de `structure`. N'affecte ni
+   *  résistance, ni couvert, ni collision : absent = apparence dérivée de la structure/façade. */
   appearance: z.string().optional(),
+  /** DÉCORATIF uniquement : l'arête porte une FENÊTRE (croisée vitrée) au rendu. Un mur fenêtré reste un
+   *  mur PLEIN (vitre SERTIE, pas une ouverture) — il bloque passage/vue/vision/marchabilité EXACTEMENT
+   *  comme un mur nu (`window` n'est lu par AUCUNE règle de combat : ni `wallIsOpen`, ni `vision`, ni
+   *  `isWalkable`). N'affecte que l'apparence iso + POV (nuit : vitre ambrée émissive). */
   window: z.boolean().optional(),
+  /** ESCALADABLE (`LDB 15 l.53-57`) : l'arête sépare deux surfaces de hauteurs différentes (une FALAISE au
+   *  sens `surfaceLink` — infranchissable à pied) qu'un Personnage peut GRIMPER.
+   *  Bloque toujours passage+vue comme un mur PLEIN (une falaise n'est pas une ouverture) : la grimpe est
+   *  un geste EXPLICITE, pas un franchissement de pathfinding. Résolu par `state/climbMove`. */
   climb: wallClimbSchema.optional(),
 });
 
-/** `SceneStationAnchor` — ancre d'une Scène de bataille sur le plan (S2, `battleScenesToStations`). */
+/** Ancre AUTHORÉE d'une Scène de bataille (S2) sur le plan : `MassBattleState.pool` = l'id d'une
+ *  Scène de bataille, `ActivityDef` contexte 'bataille-round', posée sur une case de la carte. La
+ *  Puissance des armées reste une abstraction NON rendue — seul l'emplacement de l'ACTION est posé.
+ *  Consommé par `battleScenesToStations` (state/stations.ts) ; absence d'ancre → repli déterministe
+ *  côté consommateur. */
 export const sceneStationAnchorSchema = z.strictObject({
   sceneId: z.string(),
   pos: z.strictObject({ x: z.number(), y: z.number(), z: z.number().optional() }),
@@ -388,7 +528,7 @@ export const sceneSchema = z.strictObject({
   architecture: z.array(architectureBodySchema).optional(),
   dialogues: z.array(dialogueSchema).optional(),
   triggers: z.array(triggerSchema).optional(),
-  encounters: z.array(encounterSchema).optional(),
+  encounters: z.array(encounterDefSchema).optional(),
   stations: z.array(sceneStationAnchorSchema).optional(),
   flags: z.record(z.string(), z.boolean()).optional(),
   /** Points d'arrivée nommés — `z` = étage visé (défaut 0, #835 FU-5). */

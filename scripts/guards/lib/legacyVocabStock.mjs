@@ -222,13 +222,6 @@ export const LEGACY_VOCAB_SITES = [
     date: "2026-08-23",
   },
   {
-    fichier: "src/state/scene.ts",
-    motif: "ne sert plus qu’à",
-    ancre: "authorée ici ne sert plus qu'à corriger la dérivation là où elle se trompe (passage couvert, appentis,",
-    lot: "L1b #1467",
-    date: "2026-08-23",
-  },
-  {
     fichier: "src/data/schemas/defs-scenes/effets.ts",
     motif: "legacy",
     ancre: "= ½ prix mais nourriture à risque (Courante galopante 10 %, ch.66 l.51). LEGACY : sans",
