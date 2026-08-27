@@ -16,7 +16,7 @@ export const schema = z.array(
     parent: z.string().nullable(),
     prefix: z.string().nullable(),
     suffix: z.string().nullable(),
-    desc: z.string().nullable(),
+    desc: z.string().min(1).optional(),
     source: sourceRefSchema,
   }),
 );

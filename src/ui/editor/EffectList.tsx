@@ -150,9 +150,9 @@ function scheduleSummary(spec: ScheduleSpec): string {
 export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string {
   const e = effect as any;
   switch (effect.type) {
-    case 'journal': return `Journal : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}`;
+    case 'journal': return `Journal : ${e.desc ? `« ${cut(e.desc)} »` : '(vide)'}`;
     case 'setFlag': return `Flag ${e.flag || '?'} = ${e.value === false ? 'faux' : 'vrai'}`;
-    case 'setObjective': return `Objectif [${e.id || '?'}] : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}${hasSchedule(e) ? ` (échéance ${scheduleSummary(e)})` : ''}`;
+    case 'setObjective': return `Objectif [${e.id || '?'}] : ${e.desc ? `« ${cut(e.desc)} »` : '(vide)'}${hasSchedule(e) ? ` (échéance ${scheduleSummary(e)})` : ''}`;
     case 'clearObjective': return e.id ? `Retirer l'objectif [${e.id}]` : `Retirer tous les objectifs`;
     case 'document': return `Document : ${e.title || '(sans titre)'}`;
     case 'revealClue': return `Indice : ${e.indiceId || '?'}${e.stade ? ` → stade ${e.stade}` : ''}`;
@@ -268,7 +268,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         onChange={onChange}
       />
       <div className="eff-fields">
-        {effect.type === 'journal' && <input placeholder="Texte du journal" value={e.text ?? ''} onChange={(ev) => upd({ text: ev.target.value })} />}
+        {effect.type === 'journal' && <input placeholder="Texte du journal" value={e.desc ?? ''} onChange={(ev) => upd({ desc: ev.target.value })} />}
         {effect.type === 'setFlag' && (
           <>
             <input placeholder="nom_du_flag" value={e.flag ?? ''} onChange={(ev) => upd({ flag: ev.target.value })} />
@@ -280,7 +280,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         {effect.type === 'setObjective' && (
           <>
             <input placeholder="id_de_l_objectif (stable — re-poser = mise à jour)" value={e.id ?? ''} onChange={(ev) => upd({ id: ev.target.value })} />
-            <input placeholder="Consigne joueur (ex. « Retrouver Gustav au port »)" value={e.text ?? ''} onChange={(ev) => upd({ text: ev.target.value })} />
+            <input placeholder="Consigne joueur (ex. « Retrouver Gustav au port »)" value={e.desc ?? ''} onChange={(ev) => upd({ desc: ev.target.value })} />
             <label className="radio">
               <input
                 type="checkbox"
@@ -301,7 +301,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         {effect.type === 'document' && (
           <>
             <input placeholder="Titre" value={e.title ?? ''} onChange={(ev) => upd({ title: ev.target.value })} />
-            <textarea placeholder="Texte du document (sauts de ligne autorisés)" value={e.text ?? ''} onChange={(ev) => upd({ text: ev.target.value })} />
+            <textarea placeholder="Texte du document (sauts de ligne autorisés)" value={e.desc ?? ''} onChange={(ev) => upd({ desc: ev.target.value })} />
           </>
         )}
         {effect.type === 'giveTrapping' && (

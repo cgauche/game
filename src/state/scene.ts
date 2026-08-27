@@ -325,7 +325,7 @@ export function isDescriptiveZone(ez: SceneEffectZone): boolean {
 export interface Scene {
   id: string;
   nom: string;
-  description: string;
+  desc?: string;
   dimensions: { w: number; h: number };
   /** Échelle métrique d'une CASE (m/case) — défaut 2 (person-scale). Une Scène MER (combat naval, MDG 13)
    *  vaut ~10 (1 pt de Distance = 10 m, `ch.13 l.362`) → le M des navires et les portées canon (50/75/150 m)
@@ -642,7 +642,6 @@ export function emptyScene(w = 20, h = 15): Scene {
   return {
     id: `scene-${Date.now()}`,
     nom: 'Nouvelle scène',
-    description: '',
     dimensions: { w, h },
     ambiance: 'exterieur',
     metresPerTile: 2,

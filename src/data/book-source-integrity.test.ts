@@ -97,7 +97,16 @@ const FOLIO_TITLE_RATCHET_MAX = 0;
  * nommant les entrées comme leur livre les intitule. Plafonné pour la même raison que les stocks :
  * sans plafond, « la garde couvre de plus en plus » n'est qu'un commentaire.
  */
-const UNRESOLVED_MAX = 661;
+/**
+ * Plafond des IRRÉSOLUES. Relevé 661 → 713 le 2026-08-27 (#1467 L1b V-P2) : c'est la POPULATION
+ * mesurée qui a grandi, pas le détecteur qui a faibli. L'audit ne voit une entrée que si elle porte
+ * une `desc` ; la migration `text` → `desc` fait entrer d'un coup la prose d'`interludeEvents`,
+ * `peripeties`, `mass-battle › hazards` et `land-cargo › rumours` (mesuré au rendu de la garde :
+ * 30 + 10 + 10 + 20 irrésolues sur ces quatre fichiers). Le plafond ne DESCEND qu'en soldant des
+ * folios au `Source/` ; l'entrée `interludeEvents:kleptomane`, elle, n'était pas irrésolue mais
+ * RÉFUTÉE (folio 193 déclaré, desc en 194) — corrigée à la donnée dans le même lot.
+ */
+const UNRESOLVED_MAX = 713;
 
 describe('intégrité du folio — voie TITRE de section, et skip BRUYANT de ce qui reste (#1200)', () => {
   const { titleViolations, noteAuthored, unresolved, stats, total } = AUDIT;

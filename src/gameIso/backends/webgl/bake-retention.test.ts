@@ -52,7 +52,7 @@ const cloneLayers = (s: Scene): Scene['layers'] => s.layers.map((l) => ({ ...l, 
 const MUTATIONS: Record<keyof Scene, (s: Scene) => Scene> = {
   id: (s) => ({ ...s, id: `${s.id}-bis` }),
   nom: (s) => ({ ...s, nom: 'Autre nom' }),
-  description: (s) => ({ ...s, description: 'Autre description' }),
+  desc: (s) => ({ ...s, desc: 'Autre description' }),
   dimensions: (s) => ({ ...s, dimensions: { ...s.dimensions } }),
   metresPerTile: (s) => ({ ...s, metresPerTile: sceneMetresPerTile(s) + 1 }),
   ambiance: (s) => ({ ...s, ambiance: s.ambiance === 'interieur' ? 'exterieur' : 'interieur' }),

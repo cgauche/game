@@ -563,6 +563,22 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     ]);
   });
 
+  it('le rôle PROSE ne voit que ses divergentes DÉCLARÉES — une graphie hors lexique lui échappe', () => {
+    const groupe = (doc: string, c: string) => ({
+      document: doc, chemin: '(entrées)', portee: 'racine' as const, famille: 'entité' as const, nbEntrees: 2,
+      cles: [cle('id', 'string', 2), cle('label', 'string', 2), cle('source', 'object', 2), cle(c, 'string', 2)],
+    });
+    const prose = (doc: string, c: string) =>
+      mesurerEnveloppe([groupe(doc, c)]).filter((e) => e.role === 'prose').map((e) => `${e.cle} | ${e.motif}`);
+
+    expect(prose('divergente.json', 'text'), 'une divergente DÉCLARÉE est mesurée.').toEqual(['text | clé divergente']);
+    expect(prose('cible.json', 'desc'), 'la CIBLE du rôle n’est pas une divergence.').toEqual([]);
+    // La mesure ne voit que ses divergentes déclarées — une graphie hors lexique lui échappe.
+    // La clé sonde est FORGÉE pour n'entrer JAMAIS au lexique : une graphie plausible (`texte`) ferait
+    // rougir cette assertion le jour où elle y entrerait, et l'angle mort disparaîtrait de la mesure.
+    expect(prose('inconnue.json', 'proseInconnueSonde')).toEqual([]);
+  });
+
   it('l’enveloppe descend sous l’entrée : un document EMBARQUÉ est mesuré sous son chemin', () => {
     const embarques = scan.groupesEnveloppe.filter((g) => g.portee === 'embarqué');
     expect(embarques.length, 'aucun document embarqué mesuré — la borne de profondeur est revenue.').toBeGreaterThan(0);

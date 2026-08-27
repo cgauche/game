@@ -37,7 +37,7 @@ const GUN: SkillRef[] = [{ id: 'projectiles', spec: 'poudre-noire', value: 55 }]
 const scene = buildScene({
   id: 'test-duel-naval',
   nom: 'Duel naval',
-  description: 'Duel de deux coques en mer ouverte (échelle MER 10 m/case).',
+  desc: 'Duel de deux coques en mer ouverte (échelle MER 10 m/case).',
   size: [24, 14],
   terrain: 'eau',
   metresPerTile: 10, // MDG 13 l.362 : 1 point de Distance = 10 m → 1 case ; portées 50/75/150 m = 5/7,5/15 cases

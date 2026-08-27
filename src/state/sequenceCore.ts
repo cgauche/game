@@ -176,7 +176,7 @@ export function resolveSequencePotTurn(
   turn: Omit<SequencePotTurn, 'mises'>,
 ): { row?: SequencePotRow; outcome: SequencePotOutcome } {
   const row = sequencePotRow(params, turn.roll);
-  const fn = row ? sequencePotEffects[row.effect] : undefined;
+  const fn = row ? sequencePotEffects[row.potEffectId] : undefined;
   return { ...(row ? { row } : {}), outcome: fn ? fn({ ...turn, mises: row?.mises ?? 1 }) : {} };
 }
 

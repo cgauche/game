@@ -358,7 +358,7 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
   const category = stageEncounterCategory(results);
   if (category) {
     const enc = rollEncounter(category, d100(battleRng()));
-    j.push(t('out.travelEncounter', { category: t(ENCOUNTER_KEY[category]), label: enc.label, text: enc.text }));
+    j.push(t('out.travelEncounter', { category: t(ENCOUNTER_KEY[category]), label: enc.label, text: enc.desc }));
     if (enc.stageOutcome === 'fullRecovery') {
       for (const h of party.filter((x) => !x.dead)) {
         // SOURCE UNIQUE `applyHealWounds` — plafond munition logée (LDB 62 l.250) même chemin que Guérison/repos.

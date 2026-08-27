@@ -1201,7 +1201,7 @@ export interface TrappingData {
   damage: import('../engine/types').WeaponDamageSpec | null;
   /** Qualités d'arme/armure (`QualityRef` : id + Indice éventuel « Solide 3 » → value, spec = arg éventuel). */
   qualities: QualityRef[];
-  desc: string | null;
+  desc?: string;
   /** Effet d'un CONSOMMABLE (potion/drogue/bandage — LDB 71/72/67) en **Flow** (noyau `engine/flowCore`) :
    *  feuilles `do` d'ops (MÊME vocabulaire que sorts/passifs), branches `if` (Fleur de lune par race),
    *  nœuds `test` pour les Tests « au boire » (Brise-cœur/Belladone/Nécessaire antipoison), résolus
@@ -1332,7 +1332,7 @@ export interface CreatureData {
   trappings: TrappingRef[];
   /** Sorts connus (`Ref` par id de sort). */
   spells: Ref[];
-  desc: string | null;
+  desc?: string;
   source: SourceRef;
   /** Apparence par défaut UNIFIÉE (plan P2) — UN seul bloc éditable porté par l'enregistrement :
    *  espèce, tenue, parts monstrueux, couleurs, coiffure, sexe/carrure, yeux. Le rig la lit comme
@@ -2104,12 +2104,12 @@ export interface StarData {
   apparence: string | null;
   /** Effet ADE II appliqué AUX ATTRIBUTS DE DÉPART (ch.03 l.38) — donnée éditable au Codex
    *  (`GameOpEditor`) : `charMod` (±carac) et/ou `grantTalent` (talent octroyé). Appliqué une
-   *  fois à la création (cf. `applyStarEffect`), pas collecté en passif continu. */
-  effect?: import('../engine/ops').GameOp[];
+   *  fois à la création (cf. `applyStarOps`), pas collecté en passif continu. */
+  ops?: import('../engine/ops').GameOp[];
   /** L'Étoile du Sorcier (ADE II 3 l.63) : fourchette du 1d10 interne `[min, max]` parmi les variantes
    *  partageant `rand:100`. Absent = pas de sous-tirage (signe simple). */
   sub?: [number, number];
-  desc: string | null;
+  desc?: string;
   source: SourceRef;
 }
 /** Demeure céleste (ADE II 3 l.502-512) : section du ciel gouvernée par un signe — thème astral
@@ -2131,7 +2131,7 @@ export interface LocationData {
   parent: string | null;
   prefix: string | null;
   suffix: string | null;
-  desc: string | null;
+  desc?: string;
   source: SourceRef;
 }
 /** Ouvrage WFRP4 référencé (bibliographie). `desc` = présentation en texte/Markdown (règle 5). */
@@ -2143,7 +2143,7 @@ export interface BookData {
   extractionDir?: string | null;
   language: string | null;
   folder: string | null;
-  desc: string | null;
+  desc?: string;
 }
 /**
  * Apparence de base d'une espèce de rig (Humain, Ogre, Skaven…) — éditable dans le Compendium.

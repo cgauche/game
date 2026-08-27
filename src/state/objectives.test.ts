@@ -13,16 +13,16 @@ describe('Effets setObjective / clearObjective', () => {
   beforeEach(() => useGame.setState({ objectives: [], journal: [] }));
 
   it('pose un objectif (et l’archive au journal)', () => {
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'setObjective', id: 'a', text: 'Trouver Gustav' }] as Effect[]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setObjective', id: 'a', desc: 'Trouver Gustav' }] as Effect[]);
     expect(useGame.getState().objectives).toEqual([{ id: 'a', text: 'Trouver Gustav' }]);
     expect(useGame.getState().journal.join('\n')).toContain('Trouver Gustav');
   });
 
   it('re-poser le même id MET À JOUR le texte et le remonte en tête (pas de doublon)', () => {
     applyEffects(useGame.getState, useGame.setState, [
-      { type: 'setObjective', id: 'a', text: 'Étape 1' },
-      { type: 'setObjective', id: 'b', text: 'Étape 2' },
-      { type: 'setObjective', id: 'a', text: 'Étape 1 bis' },
+      { type: 'setObjective', id: 'a', desc: 'Étape 1' },
+      { type: 'setObjective', id: 'b', desc: 'Étape 2' },
+      { type: 'setObjective', id: 'a', desc: 'Étape 1 bis' },
     ] as Effect[]);
     expect(useGame.getState().objectives).toEqual([
       { id: 'b', text: 'Étape 2' },
@@ -32,8 +32,8 @@ describe('Effets setObjective / clearObjective', () => {
 
   it('clearObjective avec id retire cet objectif seul', () => {
     applyEffects(useGame.getState, useGame.setState, [
-      { type: 'setObjective', id: 'a', text: 'A' },
-      { type: 'setObjective', id: 'b', text: 'B' },
+      { type: 'setObjective', id: 'a', desc: 'A' },
+      { type: 'setObjective', id: 'b', desc: 'B' },
       { type: 'clearObjective', id: 'a' },
     ] as Effect[]);
     expect(useGame.getState().objectives).toEqual([{ id: 'b', text: 'B' }]);
@@ -41,8 +41,8 @@ describe('Effets setObjective / clearObjective', () => {
 
   it('clearObjective sans id vide toute la pile', () => {
     applyEffects(useGame.getState, useGame.setState, [
-      { type: 'setObjective', id: 'a', text: 'A' },
-      { type: 'setObjective', id: 'b', text: 'B' },
+      { type: 'setObjective', id: 'a', desc: 'A' },
+      { type: 'setObjective', id: 'b', desc: 'B' },
       { type: 'clearObjective' },
     ] as Effect[]);
     expect(useGame.getState().objectives).toEqual([]);

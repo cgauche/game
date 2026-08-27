@@ -230,7 +230,7 @@ function DialoguesTab({
           className="btn small"
           onClick={() => {
             const id = nextEntityId('dlg', scene.dialogues.map((x) => x.id));
-            setScene({ ...scene, dialogues: [...scene.dialogues, { id, start: 'n1', nodes: [{ id: 'n1', text: '', choices: [] }] }] });
+            setScene({ ...scene, dialogues: [...scene.dialogues, { id, start: 'n1', nodes: [{ id: 'n1', desc: '', choices: [] }] }] });
             setSel(id);
           }}
         >

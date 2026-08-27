@@ -129,15 +129,15 @@ const dialogues: Dialogue[] = [
       {
         id: 'p1',
         speakerId: 'npc-phillipe',
-        text:
+        desc:
           "« Vous cherchez la route de Kemperbad ? Prenez garde : Knud Cratinx et sa bande de mutants " +
           "écument ces bois. J'ai croisé leur chef ce matin — écailleux, une arbalète en travers du dos. " +
           "Il vous attend un peu plus loin. Alors ? On croise le fer, ou on file ? »",
         choices: [
           {
-            text: 'Fondre sur Knud Cratinx avant qu’il ne se poste.',
+            label: 'Fondre sur Knud Cratinx avant qu’il ne se poste.',
             flow: flowFromEffects([
-              { type: 'journal', text: 'Phillipe dégaine son épée et vous emboîte le pas vers le mutant.' },
+              { type: 'journal', desc: 'Phillipe dégaine son épée et vous emboîte le pas vers le mutant.' },
               { type: 'endDialogue' },
               { type: 'startCombat', encounter: 'enc-knud' },
             ]),
@@ -145,7 +145,7 @@ const dialogues: Dialogue[] = [
           {
             // CHEMIN JOUEUR de « il leur propose une partie » (`EDO 01 l.200`) : sans lui, le rôle
             // `tavernGame` de l'entité est une affordance morte — authorée, jamais atteignable au clic.
-            text: 'Accepter la partie de cartes qu’il propose.',
+            label: 'Accepter la partie de cartes qu’il propose.',
             icon: 'nav/dice',
             flow: flowFromEffects([
               { type: 'endDialogue' },
@@ -153,7 +153,7 @@ const dialogues: Dialogue[] = [
             ]),
           },
           {
-            text: 'Le remercier et poursuivre sans se presser.',
+            label: 'Le remercier et poursuivre sans se presser.',
             flow: flowFromEffects([{ type: 'endDialogue' }]),
           },
         ],
@@ -165,7 +165,7 @@ const dialogues: Dialogue[] = [
 const scene = buildScene({
   id: 'edo-presets-test',
   nom: 'Presets PNJ — pilotes EDO',
-  description:
+  desc:
     'Une clairière sur la route de Kemperbad. Phillipe Descartes (preset EDO) hèle le groupe et le ' +
     'renseigne sur Knud Cratinx (preset EDO), le chef mutant posté plus loin — le dialogue peut enchaîner ' +
     'sur le combat. Josef Quartjin (preset EDO) rôde en retrait.',
@@ -211,7 +211,7 @@ const scene = buildScene({
         { pos: { x: 10, y: 4 }, presetId: 'edo-knud-cratinx', label: 'Knud Cratinx' },
       ],
       onVictory: flowFromEffects([
-        { type: 'journal', text: 'Knud Cratinx s’effondre dans un sifflement. La route de Kemperbad est libre.' },
+        { type: 'journal', desc: 'Knud Cratinx s’effondre dans un sifflement. La route de Kemperbad est libre.' },
         { type: 'giveXp', amount: 60 },
         { type: 'giveMoney', silver: 5 },
       ]),

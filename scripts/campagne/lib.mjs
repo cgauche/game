@@ -1,6 +1,6 @@
 /**
  * Outillage d'AUTHORING de CAMPAGNE — helpers purs pour composer un projet (`ProjectDoc` schema 3 :
- * `{ schema: 3, meta?, narratif, scenes, worldMap }`, `projectDoc()` ci-dessous en est la SEULE fabrique)
+ * `{ schema: 4, meta?, narratif, scenes, worldMap }`, `projectDoc()` ci-dessous en est la SEULE fabrique)
  * partagé par TOUTES les campagnes (Arène, « Le Loup et la Saumure », …). Le JSON commité
  * (`src/scenes/<campagne>/<campagne>-projet.json`) reste la SOURCE CANONIQUE, 100 % éditable dans
  * l'éditeur : ce script n'est qu'un outil d'auteur (itération de layout), PAS un build — ne pas le
@@ -247,7 +247,7 @@ export function zoneVictory(n, { money, xp, journal, extra = [] }) {
     { type: 'giveMoney', ...money },
     { type: 'giveXp', amount: xp },
     { type: 'setFlag', flag: `zone${n}_clear` },
-    { type: 'journal', text: journal },
+    { type: 'journal', desc: journal },
     ...extra,
     { type: 'transition', scene: 'arene-hub', entry: 'porte-arene' },
   ]);

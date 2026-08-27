@@ -81,7 +81,7 @@ export const ANGLES_MORTS: readonly string[] = [
   'L’ORDRE DES PASSES est un angle mort déclaré : l’index est complété par les documents EMBARQUÉS (passe 3) AVANT que la résolution ne soit mesurée (passe 4) — un site comme `arene-projet.json › members {entityId}` ne résout que grâce à cet ordre.',
   'Une clé dont la valeur est un LITTÉRAL D’ENUM du schéma zod du document n’ouvre jamais de référence (discriminants `kind`/`type`/`class`/`op`…). Depuis #1466 L1a les DEUX racines sont au registre (`SCHEMA_DEFS` + `SCHEMA_DEFS_SCENES`, joints par BASENAME) : les discriminants des scènes sont fermés comme les autres. La fermeture reste bornée à ce que l’introspection atteint — un littéral sous une enveloppe qu’`enfantsDe` ne traverse pas y échappe.',
   'Les clés de PROSE `label`/`nom`/`desc`/`title` n’ouvrent jamais de référence ; `text` sous un champ de dotation est l’exception unique (résolution NARRATIVE #624).',
-  'La strate `Instance` du design v2 (SkillInstance, ItemInstance, saves) est HORS PÉRIMÈTRE PAR CONSTRUCTION : les deux racines ne portent que des documents AUTHORÉS, et `saves` a sa propre politique de version (`src/state/saves.ts`).',
+  'La strate `Instance` du design v2 (SkillInstance, ItemInstance, saves) est DÉCLARÉE HORS PÉRIMÈTRE, pas absente : elle existe en SNAPSHOTS nommés dans la racine `src/scenes` — `barge-du-sel-projet.json` et `loup-et-saumure-projet.json` sous `scenes[].entities[].postes[].ammo[]` (des `ItemInstance` recopiées par `src/engine/items.ts`). Ces chemins ne sont pas mesurés ; `saves` a en outre sa propre politique de version (`src/state/saves.ts`).',
   'Les ABSENCES d’enveloppe ne se comptent que sur les ENTRÉES DE RACINE (`id` et `source` partout, `label` sur les familles `entité`/`table`) : un document EMBARQUÉ n’est jamais sommé de porter un `id`.',
   'Le RÉGIME D’ENTRÉES vient de la famille DÉCLARÉE par le schéma zod (`liste` → les éléments, `record` → les valeurs, `config` → le document EST son entrée) ; un document qu’aucune def ne déclare serait classé par sa racine JSON — depuis #1466 L1a il n’y en a plus aucun, les quatre projets de `src/scenes` sont déclarés `config`. La FAMILLE mesurée (`entité`/`table`/`config`/`record`), elle, est observée.',
   'Une valeur mesurée hors de sa forme propre est enregistrée sous sa PROJECTION sur le vocabulaire du concept, suffixée `+…` ; de même pour une référence (clés de graphie + clés qui résolvent, charge utile repliée).',
@@ -354,7 +354,19 @@ export type RoleEnveloppe = {
 export const ROLES_ENVELOPPE: Record<string, RoleEnveloppe> = {
   identité: { cible: 'id', divergentes: ['key', 'nom'], typeAttendu: 'string', requise: true },
   libellé: { cible: 'label', divergentes: ['nom', 'title'], typeAttendu: 'string', requiseSurFamilles: ['entité', 'table'] },
-  prose: { cible: 'desc', divergentes: ['text', 'description', 'effect', 'rules', 'hint'] },
+  // `effect`, `rules` et `hint` ont été RETIRÉS des divergentes (#1467 L1b V-P2) : le détecteur
+  // classait par NOM de clé, pas par TYPE, et ces trois-là ne portent pas de prose.
+  //   `crew-morale.json › factors[].effect` = expression de dés lue par `rollExpr`
+  //     (`src/data/schemas/defs/crew-morale.ts:22-23`) ;
+  //   `sea-events.json › manann.factors[].effect` = objet `{sign, flat, d10}`
+  //     (`src/data/schemas/defs/sea-events.ts:19-23`) ;
+  //   `hint` = qualificatif d'affichage d'un marqueur de cargaison
+  //     (`src/data/schemas/defs/land-cargo.ts:37-38`) et aide de saisie d'une règle optionnelle
+  //     (`src/data/schemas/defs/reglesOptionnelles.ts:42`) ;
+  //   `speciesRace.json › rules` = tableau de règles (`src/data/schemas/defs/speciesRace.ts:23`).
+  // Les `effect` qui ÉTAIENT des issues ou une clé de registre ont, eux, été migrés (`outcome`,
+  // `potEffectId`, `ops`) plutôt que retirés de la mesure.
+  prose: { cible: 'desc', divergentes: ['text', 'description'] },
   source: { cible: 'source', divergentes: [], typeAttendu: 'object', requise: true },
   maison: { cible: 'maison', divergentes: [], typeAttendu: 'string' },
   'méta libre': { cible: null, divergentes: ['_source', '_comment', '_doc', '__genere', '__lecture', '__livres'] },

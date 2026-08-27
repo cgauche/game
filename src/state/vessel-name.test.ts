@@ -36,7 +36,7 @@ describe('#230 — réconciliation combat : le nom d’instance ne touche QUE la
   afterEach(() => { vi.useRealTimers(); });
 
   const scene = (): Scene => ({
-    id: 's', nom: 'Bataille navale', description: '', dimensions: { w: 8, h: 8 },
+    id: 's', nom: 'Bataille navale', dimensions: { w: 8, h: 8 },
     layers: [{ z: 0, tiles: new Array(64).fill('eau') }],
     entities: [
       { id: 'coque-campagne', kind: 'personnage', ref: 'cogue', pos: { x: 1, y: 1 } },

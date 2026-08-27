@@ -47,7 +47,7 @@ const dialogues: Dialogue[] = [
     nodes: [
       {
         id: 'a1',
-        text:
+        desc:
           "La forêt se referme sur la route. Plus loin, une diligence gît renversée, l'attelage " +
           "éventré, les bagages crevés et répandus dans la boue. Penchées sur les corps des voyageurs, " +
           "des silhouettes difformes s'en repaissent à pleines dents — l'une, à quatre pattes, fouille " +
@@ -55,25 +55,25 @@ const dialogues: Dialogue[] = [
           "se tourne lentement vers vous.",
         choices: [
           {
-            text: 'Fondre sur les charognards avant qu’ils ne se ruent.',
+            label: 'Fondre sur les charognards avant qu’ils ne se ruent.',
             flow: flowFromEffects([
-              { type: 'journal', text: "Vous chargez — l'acier contre la chair corrompue." },
+              { type: 'journal', desc: "Vous chargez — l'acier contre la chair corrompue." },
               { type: 'endDialogue' },
               { type: 'startCombat', encounter: 'enc-mutants' },
             ]),
           },
-          { text: 'Reculer sans bruit vers le couvert…', next: 'a2' },
+          { label: 'Reculer sans bruit vers le couvert…', next: 'a2' },
         ],
       },
       {
         id: 'a2',
-        text:
+        desc:
           'Une branche craque sous votre botte. Aussitôt les créatures relèvent la tête, naseaux ' +
           'frémissants — elles ont flairé le sang neuf. Elles abandonnent leur festin et bondissent ' +
           'vers vous en hurlant, gueules béantes.',
         choices: [
           {
-            text: 'Au combat !',
+            label: 'Au combat !',
             flow: flowFromEffects([
               { type: 'endDialogue' },
               { type: 'startCombat', encounter: 'enc-mutants' },
@@ -88,7 +88,7 @@ const dialogues: Dialogue[] = [
 const scene = buildScene({
   id: 'ambush-test',
   nom: 'Du Sang sur la Route — scène de test',
-  description:
+  desc:
     'Route forestière. Une diligence éventrée, ses passagers dépecés, des mutants de toutes ' +
     "formes qui s'en repaissent. L'approche déclenche un dialogue, dont la fin lance le combat.",
   ambiance: 'exterieur',
@@ -189,7 +189,7 @@ const scene = buildScene({
       // cf. `gearFromEffects`) — la scène sert de photo de recette pour « victoire avec butin ».
       onVictory: flowFromEffects([
         { type: 'setFlag', flag: 'embuscade_nettoyee' },
-        { type: 'journal', text: 'La bande de Knud Cratinx gît à son tour. La route, enfin, se tait.' },
+        { type: 'journal', desc: 'La bande de Knud Cratinx gît à son tour. La route, enfin, se tait.' },
         { type: 'giveXp', amount: 100 },
         { type: 'giveMoney', silver: 15 },
         { type: 'giveTrapping', trappingId: 'arbalete', identified: true },

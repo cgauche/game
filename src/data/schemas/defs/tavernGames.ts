@@ -173,8 +173,9 @@ export const schema = z.array(
       mult: z.number(),
     })).optional(),
     /** MISE / POT / ABANDON / ÉLIMINATION (Al-zahr l.17) — famille (5) du socle de séquence,
-     *  consommée par `SequenceParams.pot` (`src/state/sequenceCore.ts`). `effect` est le nom d'un
-     *  effet de pot ENREGISTRÉ (`registerSequencePotEffect`), jamais un id de jeu. */
+     *  consommée par `SequenceParams.pot` (`src/state/sequenceCore.ts`). `potEffectId` est le nom d'un
+     *  effet de pot ENREGISTRÉ (`registerSequencePotEffect`), jamais un id de jeu — la clé nomme donc
+     *  ce qu'elle porte : une CLÉ DE REGISTRE, ni de la prose ni l'issue du tour. */
     pot: z.strictObject({
       dice: z.strictObject({ count: z.number(), faces: z.number() }),
       targetRange: z.strictObject({ min: z.number(), max: z.number() }).optional(),
@@ -184,7 +185,7 @@ export const schema = z.array(
       rows: z.array(z.strictObject({
         min: z.number(),
         max: z.number(),
-        effect: z.enum(['rafle-le-pot', 'reprend-mise', 'cible-ou-passe', 'remise-ou-abandon', 'quitte-la-manche']),
+        potEffectId: z.enum(['rafle-le-pot', 'reprend-mise', 'cible-ou-passe', 'remise-ou-abandon', 'quitte-la-manche']),
         /** Paramètre de l'effet : combien de mises il déplace (défaut 1). */
         mises: z.number().optional(),
         label: z.string(),

@@ -73,7 +73,7 @@ function tradeMap(): WorldMap {
   };
 }
 
-const marche = (id: string, nom: string) => buildScene({ id, nom, description: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const marche = (id: string, nom: string) => buildScene({ id, nom, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 function launchAtA(): void {
   seedBattleRng(7);

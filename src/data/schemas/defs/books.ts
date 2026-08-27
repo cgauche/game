@@ -27,6 +27,6 @@ export const schema = z.array(
     folder: z.string().nullable(),
     /** HTML de présentation (bibliographie) — hors du périmètre `<Prose>` (pas un texte de règle
      *  copié/collé verbatim d'un livre, mais une notice éditoriale du dataset lui-même). */
-    desc: z.string().nullable(),
+    desc: z.string().min(1).optional(),
   }),
 );

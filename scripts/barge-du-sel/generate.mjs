@@ -1,7 +1,7 @@
 #!/usr/bin/env -S npx tsx
 /**
  * Génère `src/scenes/barge-du-sel/barge-du-sel-projet.json` (`projectDoc()` : projet schema 3
- * `{ schema: 3, meta, narratif, scenes, worldMap }`).
+ * `{ schema: 4, meta, narratif, scenes, worldMap }`).
  * Mini-campagne navale « La Barge du Sel » (issue #218, expérience auteur) — modelée sur
  * `scripts/loup-et-saumure/generate.mjs` : RÉUTILISE `scene()`/`hero()`/`P()`/`flowOf()`/`poste()`/
  * `resetIds()` de `scripts/campagne/lib.mjs` (IMPORT, zéro modification de ce fichier).
@@ -96,7 +96,7 @@ resetIds();
 scenes.push(scene({
   id: 'barge-du-sel-quai',
   nom: 'Le quai de la Barge du Sel',
-  description:
+  desc:
     "Un petit quai de chargement. La Louve grise attend, amarrée, la cale pleine de sel à livrer à l'îlot voisin.",
   base: 'sable',
   legend: { '~': 'eau', '=': 'planches' },
@@ -120,7 +120,7 @@ scenes.push(scene({
           crew: [{ roleId: 'mousse', count: 2 }],
         },
         OBJ("Convoyer le sel jusqu'à l'îlot, malgré les pirates qui infestent la route."),
-        { type: 'journal', text: "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord — son canon servi, poudre et boulets en soute." },
+        { type: 'journal', desc: "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord — son canon servi, poudre et boulets en soute." },
       ]),
     },
   ],
@@ -140,7 +140,7 @@ resetIds();
 scenes.push(scene({
   id: 'barge-du-sel-embuscade',
   nom: 'Voile noire à mi-route — une cogue pirate attaque',
-  description: "Une cogue pirate coupe la route de la Louve grise en pleine mer.",
+  desc: "Une cogue pirate coupe la route de la Louve grise en pleine mer.",
   weather: 'brouillard',
   base: 'eau',
   legend: { '=': 'planches' },
@@ -194,7 +194,7 @@ scenes.push(scene({
         { type: 'giveXp', amount: 100 },
         { type: 'giveMoney', gold: 10 },
         OBJ("Rallier l'îlot avec le sel — la cogue pirate écartée."),
-        { type: 'journal', text: "La cogue pirate amène son pavillon à mi-coque et rompt le combat." },
+        { type: 'journal', desc: "La cogue pirate amène son pavillon à mi-coque et rompt le combat." },
         // Pas de transition en dur : l'embuscade n'est qu'une INTERRUPTION de la traversée (patron
         // loup-et-saumure) — le voyage REPREND vers l'îlot une fois le combat gagné.
       ]),
@@ -210,7 +210,7 @@ resetIds();
 scenes.push(scene({
   id: 'barge-du-sel-ilot',
   nom: 'L’îlot du sel',
-  description: "Un petit îlot rocheux où la cargaison de sel doit être débarquée.",
+  desc: "Un petit îlot rocheux où la cargaison de sel doit être débarquée.",
   base: 'sable',
   legend: { '~': 'eau', '=': 'planches' },
   rows: [
@@ -226,7 +226,7 @@ scenes.push(scene({
       id: 'barge-du-sel-arrivee', rect: { x: 0, y: 0, w: 12, h: 6 }, once: true,
       flow: flowOf([
         { type: 'clearObjective' },
-        { type: 'journal', text: "La Louve grise accoste à l'îlot, la cale toujours pleine de sel." },
+        { type: 'journal', desc: "La Louve grise accoste à l'îlot, la cale toujours pleine de sel." },
       ]),
     },
   ],

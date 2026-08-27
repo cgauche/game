@@ -9,7 +9,7 @@ export function makeForet() {
   return scene({
     id: 'arene-exp-foret',
     nom: 'La Vieille Futaie',
-    description: 'La grande forêt à l’est du Bourg — hommes-bêtes en lisière, brigands au cœur.',
+    desc: 'La grande forêt à l’est du Bourg — hommes-bêtes en lisière, brigands au cœur.',
     startMessage:
       'LA VIEILLE FUTAIE. La harde chasse en lisière — et au cœur du bois, la bande de BELLA LA NOIRE compte son butin. Les herbes du sous-bois valent leur pesant d’or.',
     rows: [
@@ -61,14 +61,14 @@ export function makeForet() {
         label: 'Herbes de sous-bois',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'racine-de-terre' },
-          { type: 'journal', text: 'De la racine de terre, fraîche — l’apothicaire du Bourg en redemande.' },
+          { type: 'journal', desc: 'De la racine de terre, fraîche — l’apothicaire du Bourg en redemande.' },
         ]),
       }),
       P(27, 24, 'champignon', {
         label: 'Talus à faxtoryll',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'faxtoryll' },
-          { type: 'journal', text: 'Du faxtoryll sauvage : de quoi étancher une mauvaise plaie.' },
+          { type: 'journal', desc: 'Du faxtoryll sauvage : de quoi étancher une mauvaise plaie.' },
         ]),
       }),
       // Le camp de Bella (cœur du bois, est)
@@ -81,7 +81,7 @@ export function makeForet() {
         ...fouille([
           { type: 'giveMoney', gold: 5 },
           { type: 'giveTrapping', trappingId: 'rapiere', qualities: ['raffine'] },
-          { type: 'journal', text: 'Le coffre de Bella : 5 co… et une rapière de duelliste, raffinée, prise à quelque noble détroussé.' },
+          { type: 'journal', desc: 'Le coffre de Bella : 5 co… et une rapière de duelliste, raffinée, prise à quelque noble détroussé.' },
         ]),
       }),
       P(16, 6, 'gibet', { label: 'L’avertissement de Bella' }),
@@ -109,7 +109,7 @@ export function makeForet() {
         ],
         onVictory: flowOf([
           { type: 'giveXp', amount: 120 },
-          { type: 'journal', text: 'La harde de lisière est dispersée. Plus profond, une fumée monte du camp des brigands…' },
+          { type: 'journal', desc: 'La harde de lisière est dispersée. Plus profond, une fumée monte du camp des brigands…' },
         ]),
       },
       {
@@ -124,7 +124,7 @@ export function makeForet() {
         onVictory: flowOf([
           { type: 'setFlag', flag: 'contrat_foret_fait' },
           { type: 'giveXp', amount: 160 },
-          { type: 'journal', text: 'Bella la Noire est tombée, sa bande éparpillée. CONTRAT REMPLI — le Maître paiera. (Le coffre du camp est à vous ; retour par la carte du monde.)' },
+          { type: 'journal', desc: 'Bella la Noire est tombée, sa bande éparpillée. CONTRAT REMPLI — le Maître paiera. (Le coffre du camp est à vous ; retour par la carte du monde.)' },
         ]),
       },
     ],
@@ -138,7 +138,7 @@ export function makeMarais() {
   return scene({
     id: 'arene-exp-marais',
     nom: 'La Tourbière Noire',
-    description: 'Une tourbière d’eau noire au sud de la Futaie — les pontons sont le seul chemin sûr. Enfin, « sûr »…',
+    desc: 'Une tourbière d’eau noire au sud de la Futaie — les pontons sont le seul chemin sûr. Enfin, « sûr »…',
     weather: 'brouillard',
     startMessage:
       'LA TOURBIÈRE NOIRE. Les pontons de planches serpentent sur l’eau morte. Ce qui traîne les voyageurs sous la surface a été FABRIQUÉ — et il régénère. Apportez du feu.',
@@ -191,7 +191,7 @@ export function makeMarais() {
         ...fouille([
           { type: 'giveTrapping', trappingId: 'corde' },
           { type: 'giveMoney', silver: 8 },
-          { type: 'journal', text: 'La barque du tourbier : une bonne corde et 8 pa dans une boîte à amadou.' },
+          { type: 'journal', desc: 'La barque du tourbier : une bonne corde et 8 pa dans une boîte à amadou.' },
         ]),
       }),
       P(20, 18, 'cadavre', {
@@ -200,11 +200,11 @@ export function makeMarais() {
           { skill: 'resistance', difficulty: 'facile', label: 'Fouiller le noyé sans frémir' },
           [
             { type: 'giveMoney', silver: 22 },
-            { type: 'journal', text: 'Le noyé voyageait riche : 22 pa, que la tourbe lui pardonne.' },
+            { type: 'journal', desc: 'Le noyé voyageait riche : 22 pa, que la tourbe lui pardonne.' },
           ],
           [
             { type: 'inflictDisease', disease: 'Infection Mineure' },
-            { type: 'journal', text: 'L’eau morte vous entre par une écorchure. Ça gratte. Ça GRATTE.' },
+            { type: 'journal', desc: 'L’eau morte vous entre par une écorchure. Ça gratte. Ça GRATTE.' },
           ],
         )),
       }),
@@ -226,7 +226,7 @@ export function makeMarais() {
           { type: 'setFlag', flag: 'contrat_marais_fait' },
           { type: 'giveXp', amount: 180 },
           { type: 'giveMoney', gold: 3 },
-          { type: 'journal', text: 'La chose FABRIQUÉE a cessé de se recoudre. CONTRAT REMPLI — la tourbière redevient juste sinistre. (Retour par la carte du monde.)' },
+          { type: 'journal', desc: 'La chose FABRIQUÉE a cessé de se recoudre. CONTRAT REMPLI — la tourbière redevient juste sinistre. (Retour par la carte du monde.)' },
         ]),
       },
     ],
@@ -290,7 +290,7 @@ export function makeVillage() {
   return scene({
     id: 'arene-exp-village',
     nom: 'Felsbach — village pesteux',
-    description: 'Un village qui ne répond plus : portes ouvertes, marmites froides… et des pas traînants.',
+    desc: 'Un village qui ne répond plus : portes ouvertes, marmites froides… et des pas traînants.',
     startMessage:
       'FELSBACH. Plus une lumière, des portes battantes — et des silhouettes qui TRAÎNENT entre les maisons. Ne buvez pas l’eau du puits. Cherchez le journal du prévôt.',
     rows: [
@@ -348,7 +348,7 @@ export function makeVillage() {
         label: 'Coffre du foyer',
         ...fouille([
           { type: 'giveMoney', silver: 26 },
-          { type: 'journal', text: 'Les économies d’une famille qui ne reviendra pas : 26 pa. Elles serviront à les venger.' },
+          { type: 'journal', desc: 'Les économies d’une famille qui ne reviendra pas : 26 pa. Elles serviront à les venger.' },
         ]),
       }),
       P(27, 16, 'lettre', {
@@ -357,9 +357,9 @@ export function makeVillage() {
           {
             type: 'document',
             title: 'Journal du prévôt de Felsbach',
-            text: '« 12 Sigmarzeit — Le colporteur est reparti vers le marais, fiévreux. 15 — Trois foyers touchés, on a muré la maison Brenner. 19 — L’eau du puits a un goût. TOUT LE MONDE a bu. 22 — Que Morr nous ouvre. Ne buvez pas l’e— » (la plume a traversé la page)',
+            desc: '« 12 Sigmarzeit — Le colporteur est reparti vers le marais, fiévreux. 15 — Trois foyers touchés, on a muré la maison Brenner. 19 — L’eau du puits a un goût. TOUT LE MONDE a bu. 22 — Que Morr nous ouvre. Ne buvez pas l’e— » (la plume a traversé la page)',
           },
-          { type: 'journal', text: 'Le journal du prévôt : la peste est venue du PUITS. Le Maître voudra lire ça.' },
+          { type: 'journal', desc: 'Le journal du prévôt : la peste est venue du PUITS. Le Maître voudra lire ça.' },
         ]),
       }),
       P(4, 3, 'tonneaux-pile'),
@@ -371,10 +371,10 @@ export function makeVillage() {
         once: true,
         flow: testNode(
           { skill: 'resistance', difficulty: 'intermediaire', label: 'Les remontées du puits maudit' },
-          [{ type: 'journal', text: 'L’odeur du puits vous plie en deux — mais rien ne s’accroche. Cette eau a TUÉ le village.' }],
+          [{ type: 'journal', desc: 'L’odeur du puits vous plie en deux — mais rien ne s’accroche. Cette eau a TUÉ le village.' }],
           [
             { type: 'inflictDisease', disease: 'Courante Galopante' },
-            { type: 'journal', text: 'Les miasmes du puits vous prennent à la gorge. Votre ventre gargouille déjà sinistrement…' },
+            { type: 'journal', desc: 'Les miasmes du puits vous prennent à la gorge. Votre ventre gargouille déjà sinistrement…' },
           ],
         ),
       },
@@ -394,7 +394,7 @@ export function makeVillage() {
         onVictory: flowOf([
           { type: 'setFlag', flag: 'contrat_village_fait' },
           { type: 'giveXp', amount: 200 },
-          { type: 'journal', text: 'Felsbach repose enfin. CONTRAT REMPLI — rapportez le journal du prévôt au Maître. (Retour par la carte du monde.)' },
+          { type: 'journal', desc: 'Felsbach repose enfin. CONTRAT REMPLI — rapportez le journal du prévôt au Maître. (Retour par la carte du monde.)' },
         ]),
       },
     ],
@@ -408,7 +408,7 @@ export function makeEmbuscade() {
   return scene({
     id: 'arene-route-embuscade',
     nom: 'Le Gué du Carrosse',
-    description: 'Un gué encaissé sur la route de l’est — l’endroit rêvé pour détrousser les voyageurs.',
+    desc: 'Un gué encaissé sur la route de l’est — l’endroit rêvé pour détrousser les voyageurs.',
     startMessage:
       'EMBUSCADE AU GUÉ ! Des silhouettes jaillissent des fourrés — défendez-vous, puis reprenez la route.',
     rows: [
@@ -440,7 +440,7 @@ export function makeEmbuscade() {
         label: 'Postillon détroussé',
         ...fouille([
           { type: 'giveMoney', silver: 9 },
-          { type: 'journal', text: 'Le postillon de la diligence perdue. Sa sacoche : 9 pa et une lettre illisible.' },
+          { type: 'journal', desc: 'Le postillon de la diligence perdue. Sa sacoche : 9 pa et une lettre illisible.' },
         ]),
       }),
       P(20, 6, 'tonneau'),
@@ -460,7 +460,7 @@ export function makeEmbuscade() {
         onVictory: flowOf([
           { type: 'giveXp', amount: 80 },
           { type: 'giveMoney', silver: 15 },
-          { type: 'journal', text: 'Les détrousseurs sont détroussés (15 pa). Reprenez la route par la carte du monde.' },
+          { type: 'journal', desc: 'Les détrousseurs sont détroussés (15 pa). Reprenez la route par la carte du monde.' },
         ]),
       },
     ],

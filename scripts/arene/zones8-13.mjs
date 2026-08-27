@@ -9,7 +9,7 @@ export function makeZone8() {
     id: 'arene-zone8',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — La Fosse',
-    description: 'La grande fosse aux bêtes : des gouffres la découpent en passes étroites.',
+    desc: 'La grande fosse aux bêtes : des gouffres la découpent en passes étroites.',
     startMessage:
       'LA FOSSE. Des gouffres coupent l’arène en passes étroites — et un GLADIATEUR enchaîné combat à vos côtés : la harde a capturé le mauvais homme.',
     rows: [
@@ -52,7 +52,7 @@ export function makeZone8() {
         label: 'Cage brisée',
         ...fouille([
           { type: 'giveMoney', silver: 16 },
-          { type: 'journal', text: 'La cage du gladiateur — sa solde y était cachée : 16 pa, qu’il vous abandonne.' },
+          { type: 'journal', desc: 'La cage du gladiateur — sa solde y était cachée : 16 pa, qu’il vous abandonne.' },
         ]),
       }),
     ],
@@ -89,7 +89,7 @@ export function makeZone9() {
     id: 'arene-zone9',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — La Caverne du Troll',
-    description: 'Le garde-manger du troll de l’arène — une crevasse, des os, et un invité de marque.',
+    desc: 'Le garde-manger du troll de l’arène — une crevasse, des os, et un invité de marque.',
     startMessage:
       'LA CAVERNE DU TROLL. Ça pue le rance et la chair faisandée. Au fond, une alcôve murée abrite le magot — et son NOUVEAU propriétaire.',
     rows: [
@@ -133,7 +133,7 @@ export function makeZone9() {
         ...fouille([
           { type: 'giveTrapping', trappingId: 'potion-de-vitalite' },
           { type: 'giveMoney', silver: 14 },
-          { type: 'journal', text: 'Au fond du brouet : une fiole scellée (potion de vitalité !) et 14 pa qui n’ont pas fondu.' },
+          { type: 'journal', desc: 'Au fond du brouet : une fiole scellée (potion de vitalité !) et 14 pa qui n’ont pas fondu.' },
         ]),
       }),
       P(26, 5, 'coffre', {
@@ -141,7 +141,7 @@ export function makeZone9() {
         ...fouille([
           { type: 'giveMoney', gold: 4 },
           { type: 'giveTrapping', trappingId: 'grande-hache' },
-          { type: 'journal', text: 'Le magot : 4 co et une grande hache au fil intact. L’Ogre ne comptera plus rien.' },
+          { type: 'journal', desc: 'Le magot : 4 co et une grande hache au fil intact. L’Ogre ne comptera plus rien.' },
         ]),
       }),
       P(28, 8, 'feu-camp', { label: 'Feu de l’Ogre' }),
@@ -171,7 +171,7 @@ export function makeZone9() {
       enemies: [{ ref: 'ogre', pos: { x: 27, y: 9 }, optionals: [{ id: 'affame' }] }],
         onVictory: flowOf([
           { type: 'giveXp', amount: 60 },
-          { type: 'journal', text: 'L’Ogre s’effondre en travers de son feu. Le magot n’attend plus que vous.' },
+          { type: 'journal', desc: 'L’Ogre s’effondre en travers de son feu. Le magot n’attend plus que vous.' },
         ]),
       },
     ],
@@ -188,10 +188,10 @@ export function makeZone10() {
     nodes: [
       {
         id: 'accueil',
-        text: '« Psst ! Par ici ! Les hommes-rats m’engraissent pour leur table — la serrure est grossière, sortez-moi de là ! »',
+        desc: '« Psst ! Par ici ! Les hommes-rats m’engraissent pour leur table — la serrure est grossière, sortez-moi de là ! »',
         choices: [
           {
-            text: 'Crocheter la cage (Test de Crochetage).',
+            label: 'Crocheter la cage (Test de Crochetage).',
             icon: 'ui/lock',
             when: flagWhen('!prisonnier_libre'),
             flow: testNode(
@@ -200,13 +200,13 @@ export function makeZone10() {
                 { type: 'setFlag', flag: 'prisonnier_libre' },
                 { type: 'giveMoney', silver: 40 },
                 { type: 'giveXp', amount: 50 },
-                { type: 'journal', text: 'Le colporteur halfling s’extrait de la cage, vous fourre sa bourse (40 pa) dans les mains et détale vers la surface.' },
+                { type: 'journal', desc: 'Le colporteur halfling s’extrait de la cage, vous fourre sa bourse (40 pa) dans les mains et détale vers la surface.' },
                 { type: 'endDialogue' },
               ],
-              [{ type: 'journal', text: 'La serrure est grossière mais voilée — le crochet ripe. Réessayez.' }],
+              [{ type: 'journal', desc: 'La serrure est grossière mais voilée — le crochet ripe. Réessayez.' }],
             ),
           },
-          { text: '« On revient te chercher. » (Plus tard.)', flow: flowOf([{ type: 'endDialogue' }]) },
+          { label: '« On revient te chercher. » (Plus tard.)', flow: flowOf([{ type: 'endDialogue' }]) },
         ],
       },
     ],
@@ -215,7 +215,7 @@ export function makeZone10() {
     id: 'arene-zone10',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Nid de Vermine',
-    description: 'Un quartier muré du vieux Bourg, rendu aux skavens — terriers, rouages et cages.',
+    desc: 'Un quartier muré du vieux Bourg, rendu aux skavens — terriers, rouages et cages.',
     startMessage:
       'LE NID DE VERMINE. Les hommes-rats ont percé leurs terriers sous le vieux quartier. Une voix appelle depuis une CAGE — et mille yeux rouges vous regardent.',
     rows: [
@@ -270,7 +270,7 @@ export function makeZone10() {
         label: 'Caisse de contrebande',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'lotus-noir' },
-          { type: 'journal', text: 'De la contrebande skavenne : un sachet de lotus noir. À manier avec des gants.' },
+          { type: 'journal', desc: 'De la contrebande skavenne : un sachet de lotus noir. À manier avec des gants.' },
         ]),
       }),
       P(18, 4, 'gravats'),
@@ -318,7 +318,7 @@ export function makeZone11() {
     id: 'arene-zone11',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Cercle Maudit',
-    description: 'L’ancien sanctuaire du culte sous l’arène — l’idole noire y saigne encore.',
+    desc: 'L’ancien sanctuaire du culte sous l’arène — l’idole noire y saigne encore.',
     startMessage:
       'LE CERCLE MAUDIT. Le culte psalmodie autour de l’idole noire — leur CHAMANE tisse déjà ses sorts et l’air vous corrompt la moelle. Frappez vite.',
     rows: [
@@ -368,7 +368,7 @@ export function makeZone11() {
         ...fouille([
           { type: 'giveTrapping', trappingId: 'grimoire' },
           { type: 'learnSpell', spell: 'eblouissant' },
-          { type: 'journal', text: 'Le grimoire du célébrant — votre sorcier en déchiffre déjà un charme (Éblouissant) ; le reste se lira au calme.' },
+          { type: 'journal', desc: 'Le grimoire du célébrant — votre sorcier en déchiffre déjà un charme (Éblouissant) ; le reste se lira au calme.' },
         ]),
       }),
     ],
@@ -379,7 +379,7 @@ export function makeZone11() {
         once: true,
         flow: flowOf([
           { type: 'corruptionExposure', level: 'mineure', skill: 'calme' },
-          { type: 'journal', text: 'L’idole noire CHANTE dans vos crânes — une influence corruptrice à l’état pur.' },
+          { type: 'journal', desc: 'L’idole noire CHANTE dans vos crânes — une influence corruptrice à l’état pur.' },
         ]),
       },
       fightTrigger('enc-zone11', { x: 6, y: 1, w: 27, h: 20 }),
@@ -416,7 +416,7 @@ export function makeZone12() {
     id: 'arene-zone12',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Sépulcre',
-    description: 'Le tombeau d’un seigneur oublié, sous l’arène — il reçoit, à la nuit tombée.',
+    desc: 'Le tombeau d’un seigneur oublié, sous l’arène — il reçoit, à la nuit tombée.',
     startMessage:
       'LE SÉPULCRE. La porte se referme : il fera NUIT, quoi qu’en dise le soleil. Le seigneur des lieux apprécie les visites — ses gens hurlent déjà.',
     rows: [
@@ -465,7 +465,7 @@ export function makeZone12() {
         label: 'Sarcophage du seigneur',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'epee-batarde', qualities: ['magique', 'de-plaies-atroces'], identified: false },
-          { type: 'journal', text: 'Entre les mains du gisant : une épée bâtarde au fil GLACIAL. Quelque chose dort dans cet acier — faites-la évaluer.' },
+          { type: 'journal', desc: 'Entre les mains du gisant : une épée bâtarde au fil GLACIAL. Quelque chose dort dans cet acier — faites-la évaluer.' },
         ]),
       }),
     ],
@@ -476,7 +476,7 @@ export function makeZone12() {
         once: true,
         flow: flowOf([
           { type: 'setTime', phase: 'nuit' },
-          { type: 'journal', text: 'La porte claque derrière vous. Dans le Sépulcre, il est TOUJOURS minuit.' },
+          { type: 'journal', desc: 'La porte claque derrière vous. Dans le Sépulcre, il est TOUJOURS minuit.' },
         ]),
       },
       fightTrigger('enc-zone12', { x: 1, y: 1, w: 30, h: 12 }),
@@ -512,7 +512,7 @@ export function makeZone13() {
     id: 'arene-zone13',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — L’Antre du Dragon',
-    description: 'Le secret du Maître : sous la treizième porte dort un dragon des ténèbres, sur son or.',
+    desc: 'Le secret du Maître : sous la treizième porte dort un dragon des ténèbres, sur son or.',
     startMessage:
       'L’ANTRE DU DRAGON. La chaleur racle la gorge, l’or scintille entre les coulées de lave. Le dragon DORT. On peut chiper une poignée d’or sans le réveiller… en théorie.',
     rows: [
@@ -569,10 +569,10 @@ export function makeZone13() {
           { skill: 'discretion', difficulty: 'difficile', label: 'Chiper l’or sous l’œil clos du dragon' },
           [
             { type: 'giveMoney', gold: 8 },
-            { type: 'journal', text: 'Huit couronnes glissées sans un tintement. Le dragon ronfle toujours.' },
+            { type: 'journal', desc: 'Huit couronnes glissées sans un tintement. Le dragon ronfle toujours.' },
           ],
           [
-            { type: 'journal', text: 'UNE PIÈCE TINTE. L’œil du dragon s’ouvre — d’or en fusion.' },
+            { type: 'journal', desc: 'UNE PIÈCE TINTE. L’œil du dragon s’ouvre — d’or en fusion.' },
             { type: 'startCombat', encounter: 'enc-zone13' },
           ],
         ), true),
@@ -582,7 +582,7 @@ export function makeZone13() {
         ...fouille([
           { type: 'giveMoney', gold: 6 },
           { type: 'giveTrapping', trappingId: 'arc-elfique' },
-          { type: 'journal', text: 'Dans le coffre d’un pillard digéré : 6 co et un arc elfique que le feu n’a jamais mordu.' },
+          { type: 'journal', desc: 'Dans le coffre d’un pillard digéré : 6 co et un arc elfique que le feu n’a jamais mordu.' },
         ]),
       }),
     ],

@@ -2351,8 +2351,8 @@ export const useGame = create<GameState>((set, get) => ({
     // Test différé (`choice.flow` peut suspendre plus bas : le tour est déjà enregistré ici).
     const turn: DialogueTurn = {
       speaker,
-      nodeText: node.text,
-      choiceText: choice.text,
+      nodeText: node.desc,
+      choiceText: choice.label,
       at: st.gameTime,
       sceneId: st.scene?.id,
       dialogueId: st.dialogue.dialogue.id,

@@ -14,8 +14,7 @@
     "abbr": "AA",
     "dir": "Source/WH - V4 - Aux Armes",
     "language": "VO",
-    "folder": "Livre de Règle",
-    "desc": null
+    "folder": "Livre de Règle"
   },
   {
     "id": "vents-de-la-magie",
@@ -23,8 +22,7 @@
     "abbr": "VDM",
     "dir": "Source/Warhammer v4 - Les Vents de Magie",
     "language": "VF",
-    "folder": "Livre de Règle",
-    "desc": null
+    "folder": "Livre de Règle"
   },
   {
     "id": "archives-de-l-empire-1",
@@ -49,8 +47,7 @@
     "label": "Archives de l'Empire Vol. III",
     "abbr": "ADE3",
     "language": "VO",
-    "folder": "Cadre de campagne",
-    "desc": null
+    "folder": "Cadre de campagne"
   },
   {
     "id": "middenheim",
@@ -85,32 +82,28 @@
     "abbr": "MDG",
     "dir": "Source/WH - V4 - La Mer de Griffe",
     "language": "VF",
-    "folder": "Cadre de campagne",
-    "desc": null
+    "folder": "Cadre de campagne"
   },
   {
     "id": "lustria",
     "label": "Lustria",
     "abbr": "Lustria",
     "language": "VO",
-    "folder": "Cadre de campagne",
-    "desc": null
+    "folder": "Cadre de campagne"
   },
   {
     "id": "salzenmund",
     "label": "Salzenmund, City of Salt and Silver",
     "abbr": "Salzemund",
     "language": "VO",
-    "folder": "Cadre de campagne",
-    "desc": null
+    "folder": "Cadre de campagne"
   },
   {
     "id": "reikland-miscellanea",
     "label": "Reikland Miscellanea",
     "abbr": "RM",
     "language": "VO",
-    "folder": "Cadre de campagne",
-    "desc": null
+    "folder": "Cadre de campagne"
   },
   {
     "id": "ennemi-dans-l-ombre-compagnon",
@@ -151,8 +144,7 @@
     "label": "Empire en Ruine – Compagnon",
     "abbr": "EERC",
     "language": "VO",
-    "folder": "Cadre de campagne",
-    "desc": null
+    "folder": "Cadre de campagne"
   },
   {
     "id": "boite-d-initiation",
@@ -184,8 +176,7 @@
     "label": "Aventures à Ubersreik III",
     "abbr": "AU3",
     "language": "VO",
-    "folder": "Scénario",
-    "desc": null
+    "folder": "Scénario"
   },
   {
     "id": "nuits-agitees-et-dures-journees",
@@ -236,8 +227,7 @@
     "label": "Empire en Ruine",
     "abbr": "EER",
     "language": "VO",
-    "folder": "Scénario",
-    "desc": null
+    "folder": "Scénario"
   },
   {
     "id": "frenchy-bzh",
@@ -245,7 +235,6 @@
     "abbr": "frenchy.bzh",
     "extractionDir": "Source/Warhammer - Habitants & Créatures  du Vieux-Monde (Discord) PDF",
     "language": "VF",
-    "folder": "Fan",
-    "desc": null
+    "folder": "Fan"
   }
 ]

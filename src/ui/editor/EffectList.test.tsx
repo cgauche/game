@@ -115,9 +115,9 @@ describe('#94 — Effets santé éditables (ambitionLost/inflictThirst/inflictPs
 
 describe('changer le type d’un effet CONVERTIT — un seul vocabulaire, un seul geste', () => {
   it('les champs que le type visé connaît aussi gardent leur valeur (fonction pure)', () => {
-    const memoire = { type: 'journal', text: 'Le plancher gemit' };
+    const memoire = { type: 'journal', desc: 'Le plancher gemit' };
     expect(convertTo(newEffect('document'), memoire, 'type')).toEqual({
-      type: 'document', title: '', text: 'Le plancher gemit',
+      type: 'document', title: '', desc: 'Le plancher gemit',
     });
   });
 
@@ -128,7 +128,7 @@ describe('changer le type d’un effet CONVERTIT — un seul vocabulaire, un seu
     expect(rubriques).toBeGreaterThan(0);
     expect(types).toBeGreaterThan(0);
     const html = renderToStaticMarkup(
-      <EffectList effects={[{ type: 'journal', text: 'Le plancher gemit' }]} onChange={() => {}} ctx={ctx} />,
+      <EffectList effects={[{ type: 'journal', desc: 'Le plancher gemit' }]} onChange={() => {}} ctx={ctx} />,
     );
     // Le choix du type passe par le MÊME menu que l'ajout — plus aucun `<select>` de type.
     expect(html).toContain('Type : Journal');
@@ -141,7 +141,7 @@ describe('changer le type d’un effet CONVERTIT — un seul vocabulaire, un seu
     const root: Root = createRoot(container);
     let dernier: Effect[] = [];
     function ListeControlee() {
-      const [effects, setEffects] = useState<Effect[]>([{ type: 'journal', text: 'Le plancher gemit' }]);
+      const [effects, setEffects] = useState<Effect[]>([{ type: 'journal', desc: 'Le plancher gemit' }]);
       return <EffectList effects={effects} ctx={ctx} onChange={(next) => { dernier = next; setEffects(next); }} />;
     }
     await act(async () => {
@@ -161,14 +161,14 @@ describe('changer le type d’un effet CONVERTIT — un seul vocabulaire, un seu
     };
 
     await choisirType('Document (handout)');
-    expect(dernier[0]).toEqual({ type: 'document', title: '', text: 'Le plancher gemit' });
+    expect(dernier[0]).toEqual({ type: 'document', title: '', desc: 'Le plancher gemit' });
 
     await choisirType('Définir un flag');
     expect(dernier[0].type).toBe('setFlag');
-    expect(dernier[0]).not.toHaveProperty('text'); // le document ne porte que les champs de SON type
+    expect(dernier[0]).not.toHaveProperty('desc'); // le document ne porte que les champs de SON type
 
     await choisirType('Journal');
-    expect(dernier[0]).toEqual({ type: 'journal', text: 'Le plancher gemit' });
+    expect(dernier[0]).toEqual({ type: 'journal', desc: 'Le plancher gemit' });
 
     await act(async () => {
       root.unmount();

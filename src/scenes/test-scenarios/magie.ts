@@ -15,7 +15,7 @@ import type { Combatant, CharKey } from '../../engine/types';
 const scene = buildScene({
   id: 'test-magie',
   nom: 'Magie en combat',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [30, 22],
   heroStart: [3, 11],
   startMessage:
@@ -34,7 +34,7 @@ const scene = buildScene({
       rect: { x: 10, y: 1, w: 1, h: 20 },
       once: true,
       flow: flowFromEffects([
-        { type: 'journal', text: 'Une veine de malepierre suinte entre les dalles — l’air poisse (Influence corruptrice modérée).' },
+        { type: 'journal', desc: 'Une veine de malepierre suinte entre les dalles — l’air poisse (Influence corruptrice modérée).' },
         { type: 'corruptionExposure', level: 'moderee', skill: 'resistance' },
       ]),
     },
@@ -43,7 +43,7 @@ const scene = buildScene({
       rect: { x: 16, y: 1, w: 1, h: 20 },
       once: true,
       flow: flowFromEffects([
-        { type: 'journal', text: 'La warband vous a repérés — les casters ennemis lèvent déjà les mains. À l’assaut !' },
+        { type: 'journal', desc: 'La warband vous a repérés — les casters ennemis lèvent déjà les mains. À l’assaut !' },
         { type: 'startCombat', encounter: 'enc-magie' },
       ]),
     },

@@ -29,7 +29,7 @@ export interface MountIncidentEffects {
    *  « jusqu'au remplacement du fer par un maréchal-ferrant ») — fragment d'AFFICHAGE accolé à la ligne
    *  de séquelle par le gabarit du catalogue, jamais une mécanique. */
   endCondition?: string;
-  /** ISSUE de la bête quand le `text` verbatim en pose une (Patte brisée) — fragment d'AFFICHAGE. */
+  /** ISSUE de la bête quand le `desc` verbatim en pose une (Patte brisée) — fragment d'AFFICHAGE. */
   outcome?: string;
 }
 
@@ -41,7 +41,7 @@ export interface TravelTableEntry {
   max: number;
   id: string;
   label: string;
-  text: string;
+  desc: string;
   /** Incidents de MONTE seuls : la séquelle et le risque déclarés par l'entrée. */
   mount?: MountIncidentEffects;
   stageOutcome?: StageOutcome;

@@ -170,7 +170,7 @@ export function generateTradeRumour(get: Get, set: Set, currentPlaceId: string, 
     placeId: target.id,
     biens: row.biens,
     mult: 2, // l.180 : « le double du prix de base »
-    text: row.text,
+    text: row.desc,
     heardDay: dayIndex(get().gameTime),
   };
   set({ tradeRumours: [...board, rumour] });

@@ -1147,7 +1147,7 @@ for (const jeu of TAVERN_GAMES) {
   registerTableStep(potTableId(jeu.id), {
     label: jeu.label,
     die: regles.dice.faces,
-    rows: regles.rows.map((r) => ({ min: r.min, max: r.max, id: r.effect, label: r.label })),
+    rows: regles.rows.map((r) => ({ min: r.min, max: r.max, id: r.potEffectId, label: r.label })),
     // L'ENCART de résultat (ce que le joueur lit juste après « Lancer ») dit l'ISSUE du lancer, pas
     // la fourchette où il tombe : la cible est celle du TOUR, lue à la RÉSOLUTION via le contexte du
     // tirage — jamais figée ici, à l'enregistrement. Même fonction que le journal (`sequencePotIssue`),

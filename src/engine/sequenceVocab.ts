@@ -54,14 +54,14 @@ export interface SequenceDice {
   faces: number;
 }
 
-/** UNE PLAGE de résultat du tour et l'EFFET qu'elle déclenche — `effect` est le nom d'un effet
+/** UNE PLAGE de résultat du tour et l'EFFET qu'elle déclenche — `potEffectId` est le nom d'un effet
  *  ENREGISTRÉ (`registerSequencePotEffect`, `state/sequenceCore`), jamais un id de jeu, et `mises`
  *  le PARAMÈTRE que cet effet applique (combien de mises il déplace, défaut 1). `label` est de
  *  l'AFFICHAGE. */
 export interface SequencePotRow {
   min: number;
   max: number;
-  effect: string;
+  potEffectId: string;
   /** Nombre de MISES que l'effet déplace (reprise dans le pot, remise à payer) — défaut 1. */
   mises?: number;
   label: string;

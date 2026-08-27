@@ -45,7 +45,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "livre-de-base",
       "page": 311
@@ -113,7 +112,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "livre-de-base",
       "page": 311
@@ -168,7 +166,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "livre-de-base",
       "page": 311
@@ -243,7 +240,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "livre-de-base",
       "page": 311
@@ -4914,7 +4910,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "livre-de-base",
       "page": 336
@@ -5010,7 +5005,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "livre-de-base",
       "page": 336
@@ -5555,7 +5549,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 27
@@ -5695,7 +5688,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 28
@@ -5856,7 +5848,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 29
@@ -6040,7 +6031,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 30
@@ -6173,7 +6163,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 33
@@ -6322,7 +6311,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 34
@@ -6501,7 +6489,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 34
@@ -6697,7 +6684,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 36
@@ -6838,7 +6824,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 39
@@ -6990,7 +6975,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 40
@@ -7157,7 +7141,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 41
@@ -7342,7 +7325,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 42
@@ -7474,7 +7456,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -7619,7 +7600,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 46
@@ -7790,7 +7770,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 47
@@ -7979,7 +7958,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 49
@@ -8104,7 +8082,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -8258,7 +8235,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -8432,7 +8408,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -8625,7 +8600,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -8747,7 +8721,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -8889,7 +8862,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -9009,7 +8981,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -9150,7 +9121,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 60
@@ -9301,7 +9271,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -9469,7 +9438,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 62
@@ -9646,7 +9614,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 63
@@ -9840,7 +9807,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 64
@@ -9969,7 +9935,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -10097,7 +10062,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -10250,7 +10214,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 67
@@ -10425,7 +10388,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 68
@@ -10617,7 +10579,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 69
@@ -10754,7 +10715,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 72
@@ -10915,7 +10875,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 73
@@ -11057,7 +11016,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 74
@@ -11216,7 +11174,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 74
@@ -11325,7 +11282,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 76
@@ -11495,7 +11451,6 @@
         "id": "purification"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 77
@@ -11644,7 +11599,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 79
@@ -11811,7 +11765,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 80
@@ -11962,7 +11915,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 81
@@ -12127,7 +12079,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 82
@@ -12248,7 +12199,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 83
@@ -12385,7 +12335,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 84
@@ -12516,7 +12465,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 84
@@ -12669,7 +12617,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 86
@@ -12801,7 +12748,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 87
@@ -12990,7 +12936,6 @@
         "id": "sanctuaire"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 88
@@ -13123,7 +13068,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 90
@@ -13315,7 +13259,6 @@
         "id": "courage-du-loup"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 91
@@ -13448,7 +13391,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 93
@@ -13641,7 +13583,6 @@
         "id": "sagesse-du-hibou"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 94
@@ -13749,7 +13690,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 98
@@ -13876,7 +13816,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 99
@@ -14028,7 +13967,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 100
@@ -14159,7 +14097,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 101
@@ -14314,7 +14251,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 102
@@ -14450,7 +14386,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 103
@@ -14605,7 +14540,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 104
@@ -14744,7 +14678,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 105
@@ -14901,7 +14834,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 106
@@ -15029,7 +14961,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 107
@@ -15185,7 +15116,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 108
@@ -15327,7 +15257,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 109
@@ -15491,7 +15420,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 110
@@ -15630,7 +15558,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 111
@@ -15784,7 +15711,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 112
@@ -15915,7 +15841,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 113
@@ -16072,7 +15997,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 114
@@ -16238,7 +16162,6 @@
         "id": "rapidite"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 115
@@ -16380,7 +16303,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 121
@@ -16538,7 +16460,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 122
@@ -16714,7 +16635,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 123
@@ -16908,7 +16828,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 124
@@ -17057,7 +16976,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 127
@@ -17224,7 +17142,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 128
@@ -17379,7 +17296,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 129
@@ -17548,7 +17464,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 130
@@ -17691,7 +17606,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 131
@@ -17862,7 +17776,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 132
@@ -18029,7 +17942,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 133
@@ -18209,7 +18121,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 134
@@ -18369,7 +18280,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 136
@@ -18546,7 +18456,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 137
@@ -18737,7 +18646,6 @@
         "id": "source"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 138
@@ -18970,7 +18878,6 @@
         "id": "bouillon-revigorant"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 140
@@ -19133,7 +19040,6 @@
         "id": "projectile-mineur"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 143
@@ -19340,7 +19246,6 @@
         "id": "ruine"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 145
@@ -19504,7 +19409,6 @@
         "id": "soins"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 148
@@ -19698,7 +19602,6 @@
         "id": "soins"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 149
@@ -19828,7 +19731,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 151
@@ -19985,7 +19887,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 152
@@ -20153,7 +20054,6 @@
         "id": "souffle"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 153
@@ -20363,7 +20263,6 @@
         "id": "dressage-de-rhya"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 154
@@ -20498,7 +20397,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 156
@@ -20650,7 +20548,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 157
@@ -20824,7 +20721,6 @@
         "id": "souffle"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 158
@@ -21039,7 +20935,6 @@
         "id": "les-voies-de-la-nature"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 160
@@ -21159,7 +21054,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 163
@@ -21303,7 +21197,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 164
@@ -21466,7 +21359,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 165
@@ -21647,7 +21539,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 166
@@ -21771,7 +21662,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -21919,7 +21809,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 169
@@ -22086,7 +21975,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 170
@@ -22276,7 +22164,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 171
@@ -22400,7 +22287,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 173
@@ -22541,7 +22427,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 174
@@ -22702,7 +22587,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 175
@@ -22880,7 +22764,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 176
@@ -22991,7 +22874,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -23099,7 +22981,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -23230,7 +23111,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 179
@@ -23381,7 +23261,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 180
@@ -23512,7 +23391,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 180
@@ -23609,7 +23487,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -23739,7 +23616,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 185
@@ -23864,7 +23740,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 187
@@ -23981,7 +23856,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 192
@@ -24115,7 +23989,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 193
@@ -24266,7 +24139,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 194
@@ -24433,7 +24305,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 195
@@ -24563,7 +24434,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 198
@@ -24707,7 +24577,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 200
@@ -24860,7 +24729,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 202
@@ -25028,7 +24896,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 204
@@ -25082,7 +24949,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -25191,7 +25057,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -25312,7 +25177,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 208
@@ -25397,7 +25261,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 209
@@ -25566,7 +25429,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 210
@@ -25630,7 +25492,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -25750,7 +25611,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -25881,7 +25741,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 214
@@ -26018,7 +25877,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 215
@@ -26198,7 +26056,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 216
@@ -26258,7 +26115,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -26396,7 +26252,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 219
@@ -26536,7 +26391,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 221
@@ -26704,7 +26558,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 223
@@ -26885,7 +26738,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 225
@@ -26993,7 +26845,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 229
@@ -27134,7 +26985,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 230
@@ -27262,7 +27112,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 231
@@ -27411,7 +27260,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 231
@@ -27554,7 +27402,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 233
@@ -27698,7 +27545,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 234
@@ -27857,7 +27703,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 235
@@ -28010,7 +27855,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 237
@@ -28174,7 +28018,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 239
@@ -28368,7 +28211,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 241
@@ -28566,7 +28408,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 243
@@ -28756,7 +28597,6 @@
         "id": "trouble"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 245
@@ -28962,7 +28802,6 @@
         "id": "felure-aethyrique"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 247
@@ -29209,7 +29048,6 @@
         "id": "secousse-tellurique"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 250
@@ -29351,7 +29189,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 255
@@ -29510,7 +29347,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 256
@@ -29694,7 +29530,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 258
@@ -29870,7 +29705,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 261
@@ -30061,7 +29895,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 264
@@ -30239,7 +30072,6 @@
         "id": "projectile-de-dhar"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 267
@@ -30433,7 +30265,6 @@
         "id": "projectile-de-dhar"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 269
@@ -30654,7 +30485,6 @@
         "id": "projectile-de-dhar"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 272
@@ -30767,7 +30597,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 276
@@ -30889,7 +30718,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 278
@@ -31011,7 +30839,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 279
@@ -31132,7 +30959,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 280
@@ -31256,7 +31082,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 282
@@ -31388,7 +31213,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -31546,7 +31370,6 @@
         "id": "langue-des-slaangors"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 285
@@ -31725,7 +31548,6 @@
         "id": "decharge-cerebrale"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 287
@@ -31922,7 +31744,6 @@
         "id": "rejeton-de-slaanesh"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 290
@@ -32125,7 +31946,6 @@
         "id": "desarroi"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 294
@@ -32222,7 +32042,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -32318,7 +32137,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 299
@@ -32430,7 +32248,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 300
@@ -32574,7 +32391,6 @@
         "id": "langue-des-pestigors"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 301
@@ -32724,7 +32540,6 @@
         "id": "langue-des-pestigors"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 303
@@ -32901,7 +32716,6 @@
         "id": "putrefaction"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 305
@@ -33063,7 +32877,6 @@
         "id": "langue-des-pestigors"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 310
@@ -33175,7 +32988,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -33291,7 +33103,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 318
@@ -33424,7 +33235,6 @@
         "id": "flammes-roses-de-tzeentch"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 320
@@ -33583,7 +33393,6 @@
         "id": "projectile-mineur"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 322
@@ -33769,7 +33578,6 @@
         "id": "malediction-de-tzeentch"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 324
@@ -33948,7 +33756,6 @@
         "id": "malediction-de-tzeentch"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 326
@@ -34127,7 +33934,6 @@
         "id": "malediction-de-tzeentch"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 331
@@ -34269,7 +34075,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -34421,7 +34226,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 337
@@ -34587,7 +34391,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 338
@@ -34768,7 +34571,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 340
@@ -34917,7 +34719,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -35079,7 +34880,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -35265,7 +35065,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 344
@@ -35459,7 +35258,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 346
@@ -35611,7 +35409,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -35765,7 +35562,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 350
@@ -35929,7 +35725,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 352
@@ -36111,7 +35906,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 354
@@ -36279,7 +36073,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 357
@@ -36476,7 +36269,6 @@
         "id": "bouclier"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 359
@@ -36686,7 +36478,6 @@
         "id": "rafale-hurlante"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 362
@@ -36923,7 +36714,6 @@
         "id": "crevasse"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 365
@@ -37084,7 +36874,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 369
@@ -37287,7 +37076,6 @@
         "id": "bond-furtif"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 371
@@ -37525,7 +37313,6 @@
         "id": "poids-plume"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 374
@@ -37797,7 +37584,6 @@
         "id": "disparition"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 377
@@ -37934,7 +37720,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 382
@@ -38110,7 +37895,6 @@
         "id": "furoncle-infecte"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 384
@@ -38312,7 +38096,6 @@
         "id": "nuee-de-mouches"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 387
@@ -38532,7 +38315,6 @@
         "id": "brume-acide"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 390
@@ -38667,7 +38449,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 395
@@ -38835,7 +38616,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 397
@@ -39034,7 +38814,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 399
@@ -39246,7 +39025,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 401
@@ -39369,7 +39147,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 404
@@ -39529,7 +39306,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 406
@@ -39701,7 +39477,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 408
@@ -39890,7 +39665,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 410
@@ -40135,7 +39909,6 @@
         "id": "avatar-du-rat-cornu"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 414
@@ -40397,7 +40170,6 @@
         "id": "avatar-du-rat-cornu"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 419
@@ -40535,7 +40307,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 426
@@ -40680,7 +40451,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 430
@@ -40830,7 +40600,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 432
@@ -40980,7 +40749,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 434
@@ -41140,7 +40908,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 436
@@ -41264,7 +41031,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 438
@@ -41383,7 +41149,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 440
@@ -41565,7 +41330,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 442
@@ -41777,7 +41541,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 444
@@ -41952,7 +41715,6 @@
         "id": "saccade"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 446
@@ -42166,7 +41928,6 @@
         "id": "saccade"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 449
@@ -42404,7 +42165,6 @@
         "id": "saccade"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 452
@@ -42446,7 +42206,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -42580,7 +42339,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 459
@@ -42732,7 +42490,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 459
@@ -42889,7 +42646,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 462
@@ -43037,7 +42793,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 463
@@ -43222,7 +42977,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 465
@@ -43443,7 +43197,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 467
@@ -43639,7 +43392,6 @@
         "id": "lumiere"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 469
@@ -43847,7 +43599,6 @@
         "id": "projectile-mineur"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 473
@@ -44083,7 +43834,6 @@
         "id": "projectile-mineur"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 477
@@ -44227,7 +43977,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 482
@@ -44408,7 +44157,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 486
@@ -44601,7 +44349,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 488
@@ -44824,7 +44571,6 @@
         "id": "belier"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 491
@@ -45081,7 +44827,6 @@
         "id": "pierre-de-souffrance"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 494
@@ -45371,7 +45116,6 @@
         "id": "crue-mortelle"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 498
@@ -45477,7 +45221,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 504
@@ -45531,7 +45274,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 504
@@ -45655,7 +45397,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 506
@@ -45799,7 +45540,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 507
@@ -45957,7 +45697,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 509
@@ -46142,7 +45881,6 @@
         "id": "reanimation"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 515
@@ -46355,7 +46093,6 @@
         "id": "reanimation"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 517
@@ -46619,7 +46356,6 @@
         "id": "reanimation"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 520
@@ -46732,7 +46468,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 525
@@ -46857,7 +46592,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 526
@@ -47008,7 +46742,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 527
@@ -47193,7 +46926,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 528
@@ -47306,7 +47038,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -47436,7 +47167,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 532
@@ -47562,7 +47292,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 534
@@ -47718,7 +47447,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 537
@@ -47875,7 +47603,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 539
@@ -48007,7 +47734,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 542
@@ -48180,7 +47906,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 547
@@ -48371,7 +48096,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 552
@@ -48491,7 +48215,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 0
@@ -48633,7 +48356,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 556
@@ -48757,7 +48479,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 558
@@ -48924,7 +48645,6 @@
     ],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 565
@@ -49218,7 +48938,6 @@
         "id": "reanimation"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 571
@@ -49543,7 +49262,6 @@
         "id": "agression-aethyrique"
       }
     ],
-    "desc": null,
     "source": {
       "book": "frenchy-bzh",
       "page": 577
@@ -63761,7 +63479,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 24
@@ -63834,7 +63551,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 24
@@ -63900,7 +63616,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 24
@@ -63966,7 +63681,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 24
@@ -64055,7 +63769,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 24
@@ -64118,7 +63831,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 24
@@ -64180,7 +63892,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 24
@@ -64242,7 +63953,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 24
@@ -64318,7 +64028,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "archives-de-l-empire-3",
       "page": 78
@@ -64356,7 +64065,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "livre-de-base",
       "page": 306
@@ -64382,7 +64090,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "livre-de-base",
       "page": 306
@@ -64408,7 +64115,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "livre-de-base",
       "page": 306
@@ -65159,7 +64865,6 @@
     "talents": [],
     "trappings": [],
     "spells": [],
-    "desc": null,
     "source": {
       "book": "vents-de-la-magie",
       "page": 213

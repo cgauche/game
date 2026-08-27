@@ -160,7 +160,7 @@ export const schema = z.array(
     pa: z.union([z.number(), z.null()]).optional(),
     damage: z.union([weaponDamageSpecSchema, z.null()]).optional(),
     qualities: z.array(qualityRefSchema),
-    desc: z.union([z.string(), z.null()]),
+    desc: z.string().min(1).optional(),
     consumable: flowSchema.optional(),
     consumableDuration: consumableDurationSchema.optional(),
     container: z.strictObject({ capacity: z.number() }).optional(),

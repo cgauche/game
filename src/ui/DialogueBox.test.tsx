@@ -27,12 +27,12 @@ const dlg: Dialogue = {
   id: 'dlg-test',
   start: 'n1',
   nodes: [
-    { id: 'n1', text: 'Réplique de session.', choices: [{ text: 'Suite', next: 'n2' }] },
-    { id: 'n2', speakerId: 'e2', text: 'Réplique de Bob.', choices: [] },
+    { id: 'n1', desc: 'Réplique de session.', choices: [{ label: 'Suite', next: 'n2' }] },
+    { id: 'n2', speakerId: 'e2', desc: 'Réplique de Bob.', choices: [] },
   ],
 };
 
-const scene: Scene = { id: 'scn', nom: 'Scène de test', description: '', size: [4, 4], entities: [alice, bob], dialogues: [dlg], triggers: [], encounters: [] } as unknown as Scene;
+const scene: Scene = { id: 'scn', nom: 'Scène de test', desc: '', size: [4, 4], entities: [alice, bob], dialogues: [dlg], triggers: [], encounters: [] } as unknown as Scene;
 
 describe('DialogueBox — résolution du locuteur PAR ID (#669)', () => {
   let container: HTMLDivElement;

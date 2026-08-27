@@ -180,7 +180,7 @@ export interface MapSpec {
   size: [number, number];
   id: string;
   nom: string;
-  description?: string;
+  desc?: string;
   ambiance?: Scene['ambiance'];
   weather?: Scene['weather'];
   ambientLight?: string;
@@ -627,7 +627,7 @@ export function buildScene(spec: MapSpec): Scene {
   let s = emptyScene(w, h);
   s.id = spec.id;
   s.nom = spec.nom;
-  if (spec.description !== undefined) s.description = spec.description;
+  if (spec.desc !== undefined) s.desc = spec.desc;
   if (spec.ambiance !== undefined) s.ambiance = spec.ambiance;
   if (spec.weather !== undefined) s.weather = spec.weather;
   if (spec.music !== undefined) s.music = spec.music;

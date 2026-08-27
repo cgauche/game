@@ -542,7 +542,7 @@ describe('Atelier de dialogue — ICÔNE d’un choix (`DialogueChoice.icon`, #8
   it('l’id choisi à l’atelier est rendu par `DialogueBox` devant le libellé du choix', async () => {
     const dialogue: Dialogue = {
       id: 'd', start: 'n1',
-      nodes: [{ id: 'n1', text: 'Bonjour.', choices: [{ text: 'Payer la taxe' }] }],
+      nodes: [{ id: 'n1', desc: 'Bonjour.', choices: [{ label: 'Payer la taxe' }] }],
     };
     let latest = dialogue;
     const container = document.createElement('div');

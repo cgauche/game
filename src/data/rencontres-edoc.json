@@ -13,21 +13,21 @@
         "max": 25,
         "id": "bonne-compagnie",
         "label": "Bonne compagnie",
-        "text": "une rencontre fortuite sur la route avec d'autres voyageurs rappelle aux Personnages qu'il existe encore des gens bien en ce monde. Bien sûr, s'ils ne sont pas eux-mêmes des gens recommandables, ils peuvent chercher à profiter de la situation."
+        "desc": "une rencontre fortuite sur la route avec d'autres voyageurs rappelle aux Personnages qu'il existe encore des gens bien en ce monde. Bien sûr, s'ils ne sont pas eux-mêmes des gens recommandables, ils peuvent chercher à profiter de la situation."
       },
       {
         "min": 26,
         "max": 45,
         "id": "utile",
         "label": "Voilà qui est utile !",
-        "text": "Les Personnages découvrent quelque chose d'important pour leur aventure, des ragots, un message égaré, une scène dont ils n'étaient pas censés être les témoins, etc."
+        "desc": "Les Personnages découvrent quelque chose d'important pour leur aventure, des ragots, un message égaré, une scène dont ils n'étaient pas censés être les témoins, etc."
       },
       {
         "min": 46,
         "max": 60,
         "id": "merveilleux-hebergement",
         "label": "Un merveilleux hébergement",
-        "text": "les Personnages passent aux abords d'une confortable auberge-relais, et s'ils sont prêts à dépenser quelques pièces, ils se retrouvent l'esprit tranquille, le ventre plein et le corps guéri de tout État persistant."
+        "desc": "les Personnages passent aux abords d'une confortable auberge-relais, et s'ils sont prêts à dépenser quelques pièces, ils se retrouvent l'esprit tranquille, le ventre plein et le corps guéri de tout État persistant."
       },
       {
         "min": 61,
@@ -35,14 +35,14 @@
         "id": "temps-libre",
         "label": "Temps libre",
         "stageOutcome": "extraActivity",
-        "text": "le voyage est si détendu et sans encombre que les Personnages se retrouvent avec du temps libre. Chaque Personnage peut effectuer une Activité de voyage supplémentaire."
+        "desc": "le voyage est si détendu et sans encombre que les Personnages se retrouvent avec du temps libre. Chaque Personnage peut effectuer une Activité de voyage supplémentaire."
       },
       {
         "min": 76,
         "max": 90,
         "id": "un-mot-gentil",
         "label": "Un mot gentil",
-        "text": "un simple acte de bonne volonté de la part des Personnages ravit un compagnon de voyage qui propage cette bonne impression jusqu'à leur destination. Au moins un PNJ qu'ils y rencontreront aura une bonne opinion d'eux."
+        "desc": "un simple acte de bonne volonté de la part des Personnages ravit un compagnon de voyage qui propage cette bonne impression jusqu'à leur destination. Au moins un PNJ qu'ils y rencontreront aura une bonne opinion d'eux."
       },
       {
         "min": 91,
@@ -50,7 +50,7 @@
         "id": "raccourci",
         "label": "Raccourci",
         "stageOutcome": "skipStage",
-        "text": "en revérifiant les cartes ou en demandant des conseils sur place, les Personnages découvrent un raccourci à travers la région. Ils peuvent sauter l'étape suivante de leur voyage."
+        "desc": "en revérifiant les cartes ou en demandant des conseils sur place, les Personnages découvrent un raccourci à travers la région. Ils peuvent sauter l'étape suivante de leur voyage."
       },
       {
         "min": 96,
@@ -58,7 +58,7 @@
         "id": "voyage-tranquille",
         "label": "Voyage tranquille",
         "stageOutcome": "fullRecovery",
-        "text": "le voyage est heureusement sans incident, les Personnages se reposent bien, le paysage est particulièrement inspirant, et peut-être rencontrent-ils un PNJ guérisseur ou un prêtre serviable. Les Personnages peuvent guérir toutes les Blessures et récupérer de tous les États Exténué."
+        "desc": "le voyage est heureusement sans incident, les Personnages se reposent bien, le paysage est particulièrement inspirant, et peut-être rencontrent-ils un PNJ guérisseur ou un prêtre serviable. Les Personnages peuvent guérir toutes les Blessures et récupérer de tous les États Exténué."
       }
     ],
     "fortuites": [
@@ -67,70 +67,70 @@
         "max": 10,
         "id": "environnement-suspect",
         "label": "Environnement suspect",
-        "text": "quelque chose ne tourne pas rond lors de cette journée de voyage ; la route est curieusement silencieuse, le gibier est rare, les quelques voyageurs rencontrés jettent des regards furtifs avant de partir en courant. Quelque chose ne va pas ou ce n'est que votre imagination."
+        "desc": "quelque chose ne tourne pas rond lors de cette journée de voyage ; la route est curieusement silencieuse, le gibier est rare, les quelques voyageurs rencontrés jettent des regards furtifs avant de partir en courant. Quelque chose ne va pas ou ce n'est que votre imagination."
       },
       {
         "min": 11,
         "max": 20,
         "id": "champ-de-bataille",
         "label": "Champ de bataille",
-        "text": "les Personnages tombent sur le site d'une bataille récente. S'agissait-il d'un massacre de peaux vertes, un vol de grand chemin, d'une escarmouche avec des bandits, ou pire ? Peu de charognards ont profité des corps, et il reste beaucoup à prendre. Mais à quelle distance se trouvent les coupables, et comment vont-ils réagir au fait que les Personnages pillent la scène ?"
+        "desc": "les Personnages tombent sur le site d'une bataille récente. S'agissait-il d'un massacre de peaux vertes, un vol de grand chemin, d'une escarmouche avec des bandits, ou pire ? Peu de charognards ont profité des corps, et il reste beaucoup à prendre. Mais à quelle distance se trouvent les coupables, et comment vont-ils réagir au fait que les Personnages pillent la scène ?"
       },
       {
         "min": 21,
         "max": 30,
         "id": "deplacement-de-masse",
         "label": "Déplacement de masse",
-        "text": "les Personnages passent devant une procession d'individus recroquevillés et abattus. Sont-ils des réfugiés, des pénitents, des lépreux, ou quelque chose de plus insidieux ? Quelle que soit la nature du groupe, celui-ci peut cacher d'autres menaces : pestiférés, criminels, mutants, ou pire encore."
+        "desc": "les Personnages passent devant une procession d'individus recroquevillés et abattus. Sont-ils des réfugiés, des pénitents, des lépreux, ou quelque chose de plus insidieux ? Quelle que soit la nature du groupe, celui-ci peut cacher d'autres menaces : pestiférés, criminels, mutants, ou pire encore."
       },
       {
         "min": 31,
         "max": 40,
         "id": "un-rival",
         "label": "Oh non, pas eux !",
-        "text": "Un rival ou tout autre source d'ennui se rappelle aux Personnages au cours de leur voyage. Jouez la carte de l'humour, mais faites en sorte qu'il représente une véritable épine dans le pied des Personnages. Peut-être que Delberz Trötte (page 52) ne peut s'empêcher d'entraîner les Personnages dans une nouvelle combine soi disant lucrative."
+        "desc": "Un rival ou tout autre source d'ennui se rappelle aux Personnages au cours de leur voyage. Jouez la carte de l'humour, mais faites en sorte qu'il représente une véritable épine dans le pied des Personnages. Peut-être que Delberz Trötte (page 52) ne peut s'empêcher d'entraîner les Personnages dans une nouvelle combine soi disant lucrative."
       },
       {
         "min": 41,
         "max": 50,
         "id": "tentations",
         "label": "Tentations sur la route",
-        "text": "quelque chose d'inhabituel attire le regard des Personnages : un relais somptueux et accueillant au milieu de nulle part, un feu de camp sans surveillance rôtissant un sanglier appétissant, les échos d'une troupe de cirque itinérante, etc. Les Personnages font-ils un détour pour enquêter ou se faire plaisir ? Quels dangers cachés accompagnent ces tentations ?"
+        "desc": "quelque chose d'inhabituel attire le regard des Personnages : un relais somptueux et accueillant au milieu de nulle part, un feu de camp sans surveillance rôtissant un sanglier appétissant, les échos d'une troupe de cirque itinérante, etc. Les Personnages font-ils un détour pour enquêter ou se faire plaisir ? Quels dangers cachés accompagnent ces tentations ?"
       },
       {
         "min": 51,
         "max": 65,
         "id": "mauvaise-influence",
         "label": "Mauvaise influence !",
-        "text": "Les Personnages font du tort à un compagnon de route, que ce soit un affront perçu, une collision accidentelle ou une insulte intentionnelle. Quoi qu'il en soit, le voyageur choisit de répandre des rumeurs peut-être fausses et délétères sur le groupe."
+        "desc": "Les Personnages font du tort à un compagnon de route, que ce soit un affront perçu, une collision accidentelle ou une insulte intentionnelle. Quoi qu'il en soit, le voyageur choisit de répandre des rumeurs peut-être fausses et délétères sur le groupe."
       },
       {
         "min": 66,
         "max": 75,
         "id": "route-a-peage",
         "label": "Route à péage",
-        "text": "un noble local, un intérêt commercial ou une « entreprise privée » a établi un péage sur la route des Personnages. Vont-ils payer les frais exorbitants, en fonction de leur Statut social ou vont-ils tenter d'échapper aux autorités ? Voir Postes de péages (page 40) pour en savoir plus."
+        "desc": "un noble local, un intérêt commercial ou une « entreprise privée » a établi un péage sur la route des Personnages. Vont-ils payer les frais exorbitants, en fonction de leur Statut social ou vont-ils tenter d'échapper aux autorités ? Voir Postes de péages (page 40) pour en savoir plus."
       },
       {
         "min": 76,
         "max": 80,
         "id": "chose-anormale",
         "label": "La chose qui ne devrait pas être",
-        "text": "quelque chose ici ne devrait pas y être ; un obélisque de pierre noire au milieu d'une forêt verdoyante, d'étranges runes gravées sur les troncs d'arbres, une lumière froide et scintillante juste au delà de la lueur du feu de camp. Quoi qu'il en soit, d'autres l'ont aussi vu, et les rumeurs abondent à ce sujet."
+        "desc": "quelque chose ici ne devrait pas y être ; un obélisque de pierre noire au milieu d'une forêt verdoyante, d'étranges runes gravées sur les troncs d'arbres, une lumière froide et scintillante juste au delà de la lueur du feu de camp. Quoi qu'il en soit, d'autres l'ont aussi vu, et les rumeurs abondent à ce sujet."
       },
       {
         "min": 81,
         "max": 90,
         "id": "providence",
         "label": "La Providence",
-        "text": "les dieux envoient un message aux Personnages, une révélation sur le passé, une interprétation du présent, ou un avertissement sur l'avenir. Mais les dieux ne s'expriment pas comme les mortels, mais plutôt à l'aide de signes de la nature variant selon les circonstances. Un corbeau avec un scorpion frétillant dans son bec. Un cerf transpercé au sternum par une branche fleurie. Un Test de Savoir (Théologie) peut être effectué pour recueillir plus d'informations, mais les symboles devraient être clairs pour tous les citoyens de l'Empire."
+        "desc": "les dieux envoient un message aux Personnages, une révélation sur le passé, une interprétation du présent, ou un avertissement sur l'avenir. Mais les dieux ne s'expriment pas comme les mortels, mais plutôt à l'aide de signes de la nature variant selon les circonstances. Un corbeau avec un scorpion frétillant dans son bec. Un cerf transpercé au sternum par une branche fleurie. Un Test de Savoir (Théologie) peut être effectué pour recueillir plus d'informations, mais les symboles devraient être clairs pour tous les citoyens de l'Empire."
       },
       {
         "min": 91,
         "max": 100,
         "id": "ami-dans-le-besoin",
         "label": "Un ami dans le besoin",
-        "text": "un autre voyageur, ou un groupe de voyageurs, a besoin de l'aide des Personnages. Peut être leur charrette est-elle abîmée, ou bien sont-ils harcelés par des loups. Si les Personnages daignent les escorter jusqu'à leur destination, ils peuvent exprimer leur gratitude d'être arrivés sains et saufs."
+        "desc": "un autre voyageur, ou un groupe de voyageurs, a besoin de l'aide des Personnages. Peut être leur charrette est-elle abîmée, ou bien sont-ils harcelés par des loups. Si les Personnages daignent les escorter jusqu'à leur destination, ils peuvent exprimer leur gratitude d'être arrivés sains et saufs."
       }
     ],
     "dangereuses": [
@@ -139,35 +139,35 @@
         "max": 10,
         "id": "voyage-fatigant",
         "label": "Voyage fatigant !",
-        "text": "La route est bloquée. Un pont peut être tombé, une rivière encombrée, une route inondée, ou tout autre obstacle insurmontable. Un Personnage fait un Test de Survie en extérieur Accessible (+20) pour trouver un bon itinéraire alternatif, sinon tout le monde continue à avancer, et reçoit un État Exténué."
+        "desc": "La route est bloquée. Un pont peut être tombé, une rivière encombrée, une route inondée, ou tout autre obstacle insurmontable. Un Personnage fait un Test de Survie en extérieur Accessible (+20) pour trouver un bon itinéraire alternatif, sinon tout le monde continue à avancer, et reçoit un État Exténué."
       },
       {
         "min": 11,
         "max": 20,
         "id": "voleurs",
         "label": "Voleurs !",
-        "text": "Les Personnages se font dérober des biens. Peut-être par quelqu'un qui voyageait avec eux, qui partageait leur feu de camp pour la nuit ou juste une brève conversation sur la route. Ils perdent rapidement le voleur de vue, mais pendant la phase d'arrivée, ils l'aperçoivent juste devant eux, les biens dérobés toujours en sa possession. Peut-être que leur bourse est tombée dans les pattes de Wolmar Rotte (page 47), ou peut-être Wilhelm Kind (page 53) s'est-il enfui avec l'une de leurs montures ?"
+        "desc": "Les Personnages se font dérober des biens. Peut-être par quelqu'un qui voyageait avec eux, qui partageait leur feu de camp pour la nuit ou juste une brève conversation sur la route. Ils perdent rapidement le voleur de vue, mais pendant la phase d'arrivée, ils l'aperçoivent juste devant eux, les biens dérobés toujours en sa possession. Peut-être que leur bourse est tombée dans les pattes de Wolmar Rotte (page 47), ou peut-être Wilhelm Kind (page 53) s'est-il enfui avec l'une de leurs montures ?"
       },
       {
         "min": 21,
         "max": 30,
         "id": "territoire-hostile",
         "label": "Territoire hostile",
-        "text": "Au fur et à mesure que les Personnages voyagent, il leur apparaît que la région abrite des bandits, des monstres, ou pire. Ils peuvent prendre le risque de traverser le territoire ; demandez alors à chaque Personnage de réussir un Test de Discrétion (Rural) Intermédiaire (+0) sans quoi ils tombent dans une embuscade. Ils peuvent également trouver un moyen de contourner la zone, sans quoi ils tombent dans un État Exténué à cause de la difficulté supplémentaire."
+        "desc": "Au fur et à mesure que les Personnages voyagent, il leur apparaît que la région abrite des bandits, des monstres, ou pire. Ils peuvent prendre le risque de traverser le territoire ; demandez alors à chaque Personnage de réussir un Test de Discrétion (Rural) Intermédiaire (+0) sans quoi ils tombent dans une embuscade. Ils peuvent également trouver un moyen de contourner la zone, sans quoi ils tombent dans un État Exténué à cause de la difficulté supplémentaire."
       },
       {
         "min": 31,
         "max": 40,
         "id": "terre-empoisonnee",
         "label": "Terre empoisonnée",
-        "text": "la région traversée par les Personnages a été souillée par une ancienne activité, la guerre ou de la magie noire. En surface, tout semble normal, mais les rivières charrient une maladie, les animaux sont contaminés, et la pestilence envahit l'air. Tous les Personnages qui tentent une Activité Approvisionnement, achètent des marchandises ou y passent trop de temps, devront faire face à des poisons, des maladies, et peut-être même à la Corruption."
+        "desc": "la région traversée par les Personnages a été souillée par une ancienne activité, la guerre ou de la magie noire. En surface, tout semble normal, mais les rivières charrient une maladie, les animaux sont contaminés, et la pestilence envahit l'air. Tous les Personnages qui tentent une Activité Approvisionnement, achètent des marchandises ou y passent trop de temps, devront faire face à des poisons, des maladies, et peut-être même à la Corruption."
       },
       {
         "min": 41,
         "max": 50,
         "id": "nature-hostile",
         "label": "Même la nature vous déteste !",
-        "text": "Les Personnages se retrouvent face à un danger naturel. Animaux très dangereux, foudre, maladies, insectes, etc. Cela peut se traduire par un affrontement, ou par l'obtention d'un État, ou encore par une confrontation mineure, mais tordue, lorsqu'ils choisissent la mauvaise cabane de berger où s'abriter. Choisissez, si vous le désirez, parmi les créatures présentées dans Les Bêtes du Reikland à la page 314 du Livre de Règles."
+        "desc": "Les Personnages se retrouvent face à un danger naturel. Animaux très dangereux, foudre, maladies, insectes, etc. Cela peut se traduire par un affrontement, ou par l'obtention d'un État, ou encore par une confrontation mineure, mais tordue, lorsqu'ils choisissent la mauvaise cabane de berger où s'abriter. Choisissez, si vous le désirez, parmi les créatures présentées dans Les Bêtes du Reikland à la page 314 du Livre de Règles."
       },
       {
         "min": 51,
@@ -175,28 +175,28 @@
         "id": "tres-mauvais-temps",
         "label": "Très mauvais temps",
         "stageOutcome": "worsenWeather",
-        "text": "alors que les Personnages montent leur camp, le ciel s'assombrit, le vent se lève et le temps change de façon inattendue durant la nuit. Pour le prochain jet de Météo que vous faites, ajoutez +40 au résultat. S'il s'agit de la dernière étape du voyage, les intempéries s'abattent sur leur destination, mettant tout le monde de mauvaise humeur."
+        "desc": "alors que les Personnages montent leur camp, le ciel s'assombrit, le vent se lève et le temps change de façon inattendue durant la nuit. Pour le prochain jet de Météo que vous faites, ajoutez +40 au résultat. S'il s'agit de la dernière étape du voyage, les intempéries s'abattent sur leur destination, mettant tout le monde de mauvaise humeur."
       },
       {
         "min": 71,
         "max": 80,
         "id": "equipement-endommage",
         "label": "Équipement essentiel endommagé",
-        "text": "à cause d'une route cahoteuse, d'un sac perdu ou d'une tente déchirée, une partie cruciale de l'équipement de voyage du Personnage est perdue ou détruite. Il peut s'agir d'un beau ciré, d'une tente ou de la roue d'un chariot. Des réparations peuvent être nécessaires, ou le Personnage peut devoir braver les éléments, et se soumettre à un Test d'Exposition (WFJDR page 181)."
+        "desc": "à cause d'une route cahoteuse, d'un sac perdu ou d'une tente déchirée, une partie cruciale de l'équipement de voyage du Personnage est perdue ou détruite. Il peut s'agir d'un beau ciré, d'une tente ou de la roue d'un chariot. Des réparations peuvent être nécessaires, ou le Personnage peut devoir braver les éléments, et se soumettre à un Test d'Exposition (WFJDR page 181)."
       },
       {
         "min": 81,
         "max": 90,
         "id": "conditions-repugnantes",
         "label": "Conditions répugnantes !",
-        "text": "Qu'il s'agisse d'un camp mal famé ou d'une auberge infestée, les Personnages se sont tous exposés à la terrible Vérole du Tanneur ! Voir le Livre de Règles page 187 pour les règles concernant la manière de contracter cette maladie."
+        "desc": "Qu'il s'agisse d'un camp mal famé ou d'une auberge infestée, les Personnages se sont tous exposés à la terrible Vérole du Tanneur ! Voir le Livre de Règles page 187 pour les règles concernant la manière de contracter cette maladie."
       },
       {
         "min": 91,
         "max": 100,
         "id": "monture-en-fuite",
         "label": "Monture en fuite",
-        "text": "dans la nuit, l'une des montures des Personnages s'enfuit du campement ou de l'écurie. Un Personnage prend un État Exténué s'il souhaite récupérer la bête égarée, et doit en plus faire un Test d'Exposition s'il cherche de nuit, sous la pluie, la neige ou le blizzard."
+        "desc": "dans la nuit, l'une des montures des Personnages s'enfuit du campement ou de l'écurie. Un Personnage prend un État Exténué s'il souhaite récupérer la bête égarée, et doit en plus faire un Test d'Exposition s'il cherche de nuit, sous la pluie, la neige ou le blizzard."
       }
     ]
   }

@@ -18,7 +18,7 @@ import type { TestScenario } from './_shared';
 const auberge = buildScene({
   id: 'test-dialogue-multi-auberge',
   nom: 'Auberge — la tablée',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',
   heroStart: [3, 6],
@@ -38,26 +38,26 @@ const auberge = buildScene({
         {
           // Pas de speakerId : hérite du locuteur de SESSION (Gustav, l'entité cliquée par interactEntity).
           id: 'a1',
-          text: '« Vous tombez bien — on refaisait le monde. Isolde soutient qu’un dragon a survolé le Nordland la semaine dernière. »',
-          choices: [{ text: '« Un dragon ? »', next: 'a2' }],
+          desc: '« Vous tombez bien — on refaisait le monde. Isolde soutient qu’un dragon a survolé le Nordland la semaine dernière. »',
+          choices: [{ label: '« Un dragon ? »', next: 'a2' }],
         },
         {
           id: 'a2',
           speakerId: 'isolde',
-          text: '« Je l’ai VU, de mes yeux. Une ombre plus grande qu’une grange, au-dessus de la lisière. Phillipe ne me croit pas. »',
-          choices: [{ text: '« Et vous, Phillipe ? »', next: 'a3' }],
+          desc: '« Je l’ai VU, de mes yeux. Une ombre plus grande qu’une grange, au-dessus de la lisière. Phillipe ne me croit pas. »',
+          choices: [{ label: '« Et vous, Phillipe ? »', next: 'a3' }],
         },
         {
           id: 'a3',
           speakerId: 'phillipe',
-          text: 'Il hausse les épaules. « Une ombre de nuage, plutôt. Isolde voit des dragons partout depuis qu’elle a lu ce roman de gare. »',
-          choices: [{ text: '« Vous vous chamaillez souvent ? »', next: 'a4' }],
+          desc: 'Il hausse les épaules. « Une ombre de nuage, plutôt. Isolde voit des dragons partout depuis qu’elle a lu ce roman de gare. »',
+          choices: [{ label: '« Vous vous chamaillez souvent ? »', next: 'a4' }],
         },
         {
           id: 'a4',
           // Retour au locuteur de session (Gustav) sans le redéclarer.
-          text: 'Gustav rit et lève sa chope. « Tous les soirs, l’ami. Ça fait la conversation. »',
-          choices: [{ text: 'Trinquer avec eux.', flow: flowFromEffects([{ type: 'setFlag', flag: 'tablee_faite' }, { type: 'endDialogue' }]) }],
+          desc: 'Gustav rit et lève sa chope. « Tous les soirs, l’ami. Ça fait la conversation. »',
+          choices: [{ label: 'Trinquer avec eux.', flow: flowFromEffects([{ type: 'setFlag', flag: 'tablee_faite' }, { type: 'endDialogue' }]) }],
         },
       ],
     },
@@ -70,17 +70,17 @@ const auberge = buildScene({
       nodes: [
         {
           id: 'accueil',
-          text: 'Gustav lève les yeux de sa chope.',
+          desc: 'Gustav lève les yeux de sa chope.',
           choices: [
             {
-              text: '(Se présenter)',
+              label: '(Se présenter)',
               when: { kind: 'flag', expr: '!repeat_presente' },
-              flow: flowFromEffects([{ type: 'setFlag', flag: 'repeat_presente' }, { type: 'journal', text: 'Gustav vous serre la main. « Enchanté, on se reverra. »' }, { type: 'endDialogue' }]),
+              flow: flowFromEffects([{ type: 'setFlag', flag: 'repeat_presente' }, { type: 'journal', desc: 'Gustav vous serre la main. « Enchanté, on se reverra. »' }, { type: 'endDialogue' }]),
             },
             {
-              text: '(Reprendre la conversation)',
+              label: '(Reprendre la conversation)',
               when: { kind: 'flag', expr: 'repeat_presente' },
-              flow: flowFromEffects([{ type: 'journal', text: '« Encore vous ! Asseyez-vous. »' }, { type: 'endDialogue' }]),
+              flow: flowFromEffects([{ type: 'journal', desc: '« Encore vous ! Asseyez-vous. »' }, { type: 'endDialogue' }]),
             },
           ],
         },

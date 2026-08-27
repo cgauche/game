@@ -30,7 +30,7 @@ export type LandCargoEntry = LandCargoDef | CargoMarkerDef;
 
 interface WineTier { min: number; max: number; label: string; price: number }
 interface OfferRow { richesse: number; label: string; pct: number }
-export interface RumourRow { min: number; max: number; biens: string[]; text: string }
+export interface RumourRow { min: number; max: number; biens: string[]; desc: string }
 
 const LAND = landCargoJson as unknown as {
   cargoes: LandCargoEntry[];

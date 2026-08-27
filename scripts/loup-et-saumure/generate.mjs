@@ -1,7 +1,7 @@
 #!/usr/bin/env -S npx tsx
 /**
  * Génère `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` (`projectDoc()` : projet schema 3
- * `{ schema: 3, meta, narratif, scenes, worldMap }`).
+ * `{ schema: 4, meta, narratif, scenes, worldMap }`).
  * Modelé sur `scripts/arene/generate.mjs` — RÉUTILISE `scene()`/`hero()`/`NPC()`/`P()`/`flowOf()`/
  * `flagWhen()`/`testNode()`/`poste()` de `scripts/campagne/lib.mjs` (IMPORT, zéro modification de ce fichier).
  *
@@ -116,7 +116,7 @@ scenes.push(scene({
   id: 'ls-quai-salzenmund',
   rest: { auberge: true }, // couchage effectif du quai — `placeServices` le lit via `sceneAubergeOffer` (`worldMap.ts`)
   nom: 'Salzenmund — le quai de la Seconde Flotte',
-  description:
+  desc:
     "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, " +
     "à côté du Grimm amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; " +
     "Griet accorde son luth.",
@@ -160,7 +160,7 @@ scenes.push(scene({
           kind: 'if', cond: flagWhen('ls_commission_acceptee'),
           then: flowOf([{ type: 'openWorldMap' }]),
           // Refus VISIBLE (modale) : « personne ne lit le journal » — le maître de quai barre la passerelle.
-          else: flowOf([{ type: 'document', title: 'La passerelle du Grimm', text: 'Le maître de quai croise les bras devant la passerelle. « Pas d’appareillage sans l’ordre du baron Köhler, capitaine. Voyez-le d’abord. »' }]),
+          else: flowOf([{ type: 'document', title: 'La passerelle du Grimm', desc: 'Le maître de quai croise les bras devant la passerelle. « Pas d’appareillage sans l’ordre du baron Köhler, capitaine. Voyez-le d’abord. »' }]),
         },
       },
     }),
@@ -171,7 +171,7 @@ scenes.push(scene({
       nodes: [
         {
           id: 'k1',
-          text:
+          desc:
             "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison " +
             "d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et " +
             "une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. " +
@@ -179,7 +179,7 @@ scenes.push(scene({
             "mais le fond de cale est avitaillé au minimum — le chandelier du quai vous vendra l'eau et les vivres du voyage. »",
           choices: [
             {
-              text: 'Accepter la commission (40 CO, le Grimm à quai)',
+              label: 'Accepter la commission (40 CO, le Grimm à quai)',
               when: { kind: 'flag', expr: '!ls_commission_acceptee' },
               flow: flowOf([
                 { type: 'giveMoney', gold: 40 },
@@ -201,16 +201,16 @@ scenes.push(scene({
                 },
                 { type: 'setFlag', flag: 'ls_commission_acceptee' },
                 OBJ('Livrer le fret de Dame Kramer à Erengrad avant les glaces.'),
-                { type: 'journal', text: 'Le Grimm est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage.' },
+                { type: 'journal', desc: 'Le Grimm est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage.' },
               ]),
               next: 'k1',
             },
             {
-              text: 'Lui demander de financer le carénage (60 CO)',
+              label: 'Lui demander de financer le carénage (60 CO)',
               next: 'k-careene',
             },
             {
-              text: 'Prendre congé',
+              label: 'Prendre congé',
               when: { kind: 'flag', expr: 'ls_commission_acceptee' },
               flow: flowOf([{ type: 'endDialogue' }]),
             },
@@ -218,8 +218,8 @@ scenes.push(scene({
         },
         {
           id: 'k-careene',
-          text: '« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale, et vous traînerez la salissure dans chaque manœuvre. »',
-          choices: [{ text: 'Revenir à la commission', next: 'k1' }],
+          desc: '« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale, et vous traînerez la salissure dans chaque manœuvre. »',
+          choices: [{ label: 'Revenir à la commission', next: 'k1' }],
         },
       ],
     },
@@ -228,7 +228,7 @@ scenes.push(scene({
       nodes: [
         {
           id: 'a1',
-          text:
+          desc:
             "« Un navire qui appareille sans la bénédiction de Manann navigue nu, capitaine. Un petit sacrifice, " +
             "et je bénis la coque. »",
           choices: [
@@ -236,7 +236,7 @@ scenes.push(scene({
               // Aldo est prêtre initié et sans Point de Péché (texte de présentation) — sa propre bénédiction,
               // sans offrande du capitaine, mappe sur le facteur « prêtre à bord sans péché » (sea-events.json
               // id `pretre-sans-peche`).
-              text: 'Demander la bénédiction du navire',
+              label: 'Demander la bénédiction du navire',
               flow: flowOf([
                 { type: 'adjustManann', factorId: 'pretre-sans-peche' },
                 { type: 'setFlag', flag: 'ls_benediction_aldo' },
@@ -244,48 +244,48 @@ scenes.push(scene({
               next: 'a-benediction',
             },
             {
-              text: 'Faire un petit sacrifice (une pièce jetée à la mer)',
+              label: 'Faire un petit sacrifice (une pièce jetée à la mer)',
               flow: flowOf([{ type: 'giveMoney', gold: -1 }, { type: 'adjustManann', factorId: 'petit-sacrifice' }]),
               next: 'a-petit',
             },
             {
-              text: 'Faire un sacrifice moyen (une gemme de votre bourse)',
+              label: 'Faire un sacrifice moyen (une gemme de votre bourse)',
               flow: flowOf([{ type: 'giveMoney', gold: -20 }, { type: 'adjustManann', factorId: 'sacrifice-moyen' }]),
               next: 'a-moyen',
             },
             {
-              text: 'Faire un grand sacrifice (une vache entière, la moitié des provisions)',
+              label: 'Faire un grand sacrifice (une vache entière, la moitié des provisions)',
               flow: flowOf([{ type: 'giveMoney', gold: -50 }, { type: 'adjustManann', factorId: 'grand-sacrifice' }]),
               next: 'a-grand',
             },
-            { text: 'Lui demander l’origine de son ordre', next: 'a-origine' },
-            { text: 'Le saluer', flow: flowOf([{ type: 'endDialogue' }]) },
+            { label: 'Lui demander l’origine de son ordre', next: 'a-origine' },
+            { label: 'Le saluer', flow: flowOf([{ type: 'endDialogue' }]) },
           ],
         },
         {
           id: 'a-benediction',
-          text: 'Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe. « La coque est bénie, capitaine. Manann veille. »',
-          choices: [{ text: 'Le remercier', next: 'a1' }],
+          desc: 'Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe. « La coque est bénie, capitaine. Manann veille. »',
+          choices: [{ label: 'Le remercier', next: 'a1' }],
         },
         {
           id: 'a-petit',
-          text: 'Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »',
-          choices: [{ text: 'Revenir', next: 'a1' }],
+          desc: 'Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »',
+          choices: [{ label: 'Revenir', next: 'a1' }],
         },
         {
           id: 'a-moyen',
-          text: 'La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »',
-          choices: [{ text: 'Revenir', next: 'a1' }],
+          desc: 'La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »',
+          choices: [{ label: 'Revenir', next: 'a1' }],
         },
         {
           id: 'a-grand',
-          text: 'La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »',
-          choices: [{ text: 'Revenir', next: 'a1' }],
+          desc: 'La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »',
+          choices: [{ label: 'Revenir', next: 'a1' }],
         },
         {
           id: 'a-origine',
-          text: '« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels, le dieu des naufrageurs — mieux que je ne le voudrais. On ne le paie pas : on le nourrit. »',
-          choices: [{ text: 'Revenir', next: 'a1' }],
+          desc: '« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels, le dieu des naufrageurs — mieux que je ne le voudrais. On ne le paie pas : on le nourrit. »',
+          choices: [{ label: 'Revenir', next: 'a1' }],
         },
       ],
     },
@@ -294,31 +294,31 @@ scenes.push(scene({
       nodes: [
         {
           id: 'kr1',
-          text:
+          desc:
             "« Ma cargaison est dans la cale, capitaine, et j'entends qu'elle y reste jusqu'à Erengrad. »",
           choices: [
-            { text: 'S’enquérir du fret', next: 'kr-fret' },
+            { label: 'S’enquérir du fret', next: 'kr-fret' },
             {
-              text: 'L’observer discrètement (Intuition)',
+              label: 'L’observer discrètement (Intuition)',
               flow: testNode(
                 { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — quelque chose cloche chez Kramer' },
                 // Révélation VISIBLE au moment (modale document) + flag + archive au journal.
                 [
                   { type: 'setFlag', flag: 'ls_kramer_soupconnee' },
-                  { type: 'document', title: 'Votre intuition', text: 'Un éclair de calcul froid passe dans le regard de Dame Kramer, vite maîtrisé. Cette femme cache quelque chose — et ce n’est pas une simple affaire de fret.' },
-                  { type: 'journal', text: 'Intuition : Dame Kramer cache quelque chose.' },
+                  { type: 'document', title: 'Votre intuition', desc: 'Un éclair de calcul froid passe dans le regard de Dame Kramer, vite maîtrisé. Cette femme cache quelque chose — et ce n’est pas une simple affaire de fret.' },
+                  { type: 'journal', desc: 'Intuition : Dame Kramer cache quelque chose.' },
                 ],
-                [{ type: 'document', title: 'Votre intuition', text: 'Rien ne transparaît — une négociante comme une autre, en apparence.' }],
+                [{ type: 'document', title: 'Votre intuition', desc: 'Rien ne transparaît — une négociante comme une autre, en apparence.' }],
               ),
               next: 'kr1',
             },
-            { text: 'La laisser à ses affaires', flow: flowOf([{ type: 'endDialogue' }]) },
+            { label: 'La laisser à ses affaires', flow: flowOf([{ type: 'endDialogue' }]) },
           ],
         },
         {
           id: 'kr-fret',
-          text: '« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »',
-          choices: [{ text: 'Revenir', next: 'kr1' }],
+          desc: '« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »',
+          choices: [{ label: 'Revenir', next: 'kr1' }],
         },
       ],
     },
@@ -327,25 +327,25 @@ scenes.push(scene({
       nodes: [
         {
           id: 'g1',
-          text: "« Une chanson pour la route, capitaine ? »",
+          desc: "« Une chanson pour la route, capitaine ? »",
           choices: [
             // Après écoute, le choix ne reboucle plus à l'identique : la réplique change (flag ls_chant_griet).
-            { text: 'Écouter sa chanson', when: { kind: 'flag', expr: '!ls_chant_griet' }, flow: flowOf([{ type: 'setFlag', flag: 'ls_chant_griet' }]), next: 'g-chant' },
-            { text: 'Lui demander un autre air', when: { kind: 'flag', expr: 'ls_chant_griet' }, next: 'g-chant-encore' },
-            { text: 'La saluer', flow: flowOf([{ type: 'endDialogue' }]) },
+            { label: 'Écouter sa chanson', when: { kind: 'flag', expr: '!ls_chant_griet' }, flow: flowOf([{ type: 'setFlag', flag: 'ls_chant_griet' }]), next: 'g-chant' },
+            { label: 'Lui demander un autre air', when: { kind: 'flag', expr: 'ls_chant_griet' }, next: 'g-chant-encore' },
+            { label: 'La saluer', flow: flowOf([{ type: 'endDialogue' }]) },
           ],
         },
         {
           id: 'g-chant',
           // Narration VISIBLE : le refrain répond (le vrai effet « Camarades d'équipage »/« Jacques Bret »
           // est un buff de DR de COMBAT — inexprimable à quai, cf. journal d'authoring).
-          text: 'Griet entonne « Jacques Bret a rencontré notre acier ». Le refrain court de bouche en bouche ; les gabiers tapent du pied sur le pont et reprennent en chœur.',
-          choices: [{ text: 'Applaudir', next: 'g1' }],
+          desc: 'Griet entonne « Jacques Bret a rencontré notre acier ». Le refrain court de bouche en bouche ; les gabiers tapent du pied sur le pont et reprennent en chœur.',
+          choices: [{ label: 'Applaudir', next: 'g1' }],
         },
         {
           id: 'g-chant-encore',
-          text: '« Toujours la même rengaine ? » Elle rit et enchaîne une complainte plus douce, pour ceux qui restent à quai.',
-          choices: [{ text: 'La saluer', next: 'g1' }],
+          desc: '« Toujours la même rengaine ? » Elle rit et enchaîne une complainte plus douce, pour ceux qui restent à quai.',
+          choices: [{ label: 'La saluer', next: 'g1' }],
         },
       ],
     },
@@ -360,7 +360,7 @@ resetIds();
 scenes.push(scene({
   id: 'ls-abordage-cogue',
   nom: 'La Dent de Manann — voile noire sous le vent (J4)',
-  description:
+  desc:
     "La cogue pirate intercepte le Grimm en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille " +
     "de cale et pillage, PUIS un prisonnier à sacrifier à Stromfels. Frère Aldo nomme l'ennemi à voix haute.",
   weather: 'brouillard',
@@ -418,7 +418,7 @@ scenes.push(scene({
         { type: 'giveXp', amount: 150 },
         { type: 'giveMoney', gold: 15 },
         OBJ('Rallier Erengrad avec le fret — la Dent de Manann écartée.'),
-        { type: 'journal', text: 'La Dent de Manann amène son pavillon à mi-coque — la cogue se rend. Des épaves flottent : Séquestre à faire valoir à quai.' },
+        { type: 'journal', desc: 'La Dent de Manann amène son pavillon à mi-coque — la cogue se rend. Des épaves flottent : Séquestre à faire valoir à quai.' },
         // Pas de transition en dur : l'abordage n'est qu'une INTERRUPTION de la traversée. Le combat gagné,
         // le voyage REPREND (bouton carte « voyage interrompu ») vers SA destination (Erengrad) — accostage
         // naturel (relâche à terre, événement de port). Le sens du trajet décide de la destination, jamais l'ennemi.
@@ -436,7 +436,7 @@ scenes.push(scene({
   id: 'ls-quai-erengrad',
   rest: { auberge: true }, // couchage effectif du quai — `placeServices` le lit via `sceneAubergeOffer` (`worldMap.ts`)
   nom: 'Erengrad — le port kislevite',
-  description:
+  desc:
     "Erengrad (Taille 4, Richesse 4, surplus Laine +1 — MDG 15 l.439-506). Négoce, rumeurs, et une nuit où " +
     "le chat du bord tombe malade.",
   weather: 'neige',
@@ -476,22 +476,22 @@ scenes.push(scene({
       id: 'dlg-rumeur-olg', start: 'r1',
       nodes: [{
         id: 'r1',
-        text:
+        desc:
           "« Vous naviguez vers Salzenmund ? Faites gaffe à Olg Blóðsalt — un skaeling qui « boit la saumure » " +
           "et écume la route avec son langskip. La guilde marchande a mis une prime sur sa tête. »",
-        choices: [{ text: 'Merci pour l’avertissement', flow: flowOf([{ type: 'setFlag', flag: 'ls_rumeur_olg' }, { type: 'endDialogue' }]) }],
+        choices: [{ label: 'Merci pour l’avertissement', flow: flowOf([{ type: 'setFlag', flag: 'ls_rumeur_olg' }, { type: 'endDialogue' }]) }],
       }],
     },
     {
       id: 'dlg-kramer-nuit-du-chat', start: 'nc1',
       nodes: [{
         id: 'nc1',
-        text:
+        desc:
           "Au matin de l'appareillage, le chat du bord est malade et un albatros mort est cloué au beaupré. " +
           "Kramer était « à terre toute la nuit ».",
         choices: [
           {
-            text: 'L’interroger sur sa nuit (Intuition)',
+            label: 'L’interroger sur sa nuit (Intuition)',
             flow: testNode(
               { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — la nuit du chat' },
               // Démasquage : dénouement VISIBLE (document) + le sabotage CESSE (adjustVessel { saboteurDR: 0 }
@@ -499,14 +499,14 @@ scenes.push(scene({
               [
                 { type: 'setFlag', flag: 'ls_kramer_demasquee' },
                 { type: 'adjustVessel', saboteurDR: 0 },
-                { type: 'document', title: 'Kramer démasquée', text: 'Elle craque. Ce n’est pas une négociante de Kislev, mais une initiée de Stromfels — c’est elle qui minait le Grimm depuis Salzenmund. Prise à découvert, elle n’a plus les mains libres : ses manigances cessent. L’équipage gronde.' },
-                { type: 'journal', text: 'Dame Kramer démasquée : initiée de Stromfels, saboteuse. Le sabotage cesse.' },
+                { type: 'document', title: 'Kramer démasquée', desc: 'Elle craque. Ce n’est pas une négociante de Kislev, mais une initiée de Stromfels — c’est elle qui minait le Grimm depuis Salzenmund. Prise à découvert, elle n’a plus les mains libres : ses manigances cessent. L’équipage gronde.' },
+                { type: 'journal', desc: 'Dame Kramer démasquée : initiée de Stromfels, saboteuse. Le sabotage cesse.' },
               ],
-              [{ type: 'document', title: 'La nuit du chat', text: '« Une insomnie de plus, capitaine. La traversée est éprouvante pour tous. »' }],
+              [{ type: 'document', title: 'La nuit du chat', desc: '« Une insomnie de plus, capitaine. La traversée est éprouvante pour tous. »' }],
             ),
             next: 'nc1',
           },
-          { text: 'La laisser tranquille', flow: flowOf([{ type: 'endDialogue' }]) },
+          { label: 'La laisser tranquille', flow: flowOf([{ type: 'endDialogue' }]) },
         ],
       }],
     },
@@ -514,14 +514,14 @@ scenes.push(scene({
       id: 'dlg-reparation', start: 'rp1',
       nodes: [{
         id: 'rp1',
-        text: "« Calfeutrons la coque avant de reprendre la mer, capitaine — la traversée l'a mise à mal. »",
+        desc: "« Calfeutrons la coque avant de reprendre la mer, capitaine — la traversée l'a mise à mal. »",
         choices: [
           {
-            text: 'Superviser la réparation (Test étendu de Métier (Charpentier), 5 DR)',
+            label: 'Superviser la réparation (Test étendu de Métier (Charpentier), 5 DR)',
             flow: flowOf([{ type: 'extendedTest', skill: 'metier', spec: 'Charpentier', difficulty: 'intermediaire', label: 'Réparation temporaire du Grimm', targetDR: 5, flag: 'ls_coque_reparee' }]),
             next: 'rp1',
           },
-          { text: 'Plus tard', flow: flowOf([{ type: 'endDialogue' }]) },
+          { label: 'Plus tard', flow: flowOf([{ type: 'endDialogue' }]) },
         ],
       }],
     },
@@ -536,7 +536,7 @@ resetIds();
 scenes.push(scene({
   id: 'ls-abordage-olg',
   nom: 'Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)',
-  description:
+  desc:
     "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Grimm chargé de laine. Poursuite, feu de chasse, " +
     "collision, abordage — le morceau de bravoure de la traversée.",
   weather: 'tempete',
@@ -594,7 +594,7 @@ scenes.push(scene({
         { type: 'setFlag', flag: 'ls_olg_vaincu' },
         { type: 'giveXp', amount: 250 },
         { type: 'giveMoney', gold: 40 },
-        { type: 'journal', text: 'Olg Blóðsalt tombe. Le Serpent-de-Sel amène pavillon — la prise à armer, ~40 survivants à répartir sur deux coques.' },
+        { type: 'journal', desc: 'Olg Blóðsalt tombe. Le Serpent-de-Sel amène pavillon — la prise à armer, ~40 survivants à répartir sur deux coques.' },
         // Pas de transition en dur : l'abordage n'INTERROMPT que la traversée. Le voyage REPREND vers SA
         // destination (Salzenmund) et accoste ; l'épilogue se joue à l'ARRIVÉE au quai, gaté par la livraison
         // du fret (`ls_fret_livre`, trigger de `ls-quai-salzenmund`) — jamais court-circuité par l'aller.
@@ -611,7 +611,7 @@ resetIds();
 scenes.push(scene({
   id: 'ls-epilogue-salzenmund',
   nom: 'Salzenmund — le retour (J13)',
-  description: "Les parts, le chantier, le conseil final. Köhler regarde la prise avec des yeux gourmands.",
+  desc: "Les parts, le chantier, le conseil final. Köhler regarde la prise avec des yeux gourmands.",
   base: 'sable',
   legend: { '~': 'eau', '=': 'planches' },
   rows: [
@@ -634,21 +634,21 @@ scenes.push(scene({
       id: 'dlg-epilogue', start: 'e1',
       nodes: [{
         id: 'e1',
-        text: "« La Seconde Flotte manque de coques, capitaine. La prise du Serpent-de-Sel est à vendre ? »",
+        desc: "« La Seconde Flotte manque de coques, capitaine. La prise du Serpent-de-Sel est à vendre ? »",
         choices: [
           {
-            text: 'Toucher la solde de la mission (parts + prime)',
+            label: 'Toucher la solde de la mission (parts + prime)',
             when: { kind: 'flag', expr: '!ls_solde_versee' },
             flow: flowOf([
               { type: 'giveMoney', gold: 60 },
               { type: 'setFlag', flag: 'ls_solde_versee' },
               { type: 'giveXp', amount: 100 },
               { type: 'clearObjective' }, // fin d'acte : la pile d'objectifs de la campagne est vidée
-              { type: 'journal', text: 'Köhler verse la solde et la prime d’Olg. Le chantier attend le Grimm — carénage enfin, critiques réparés.' },
+              { type: 'journal', desc: 'Köhler verse la solde et la prime d’Olg. Le chantier attend le Grimm — carénage enfin, critiques réparés.' },
             ]),
             next: 'e1',
           },
-          { text: 'Prendre congé', flow: flowOf([{ type: 'endDialogue' }]) },
+          { label: 'Prendre congé', flow: flowOf([{ type: 'endDialogue' }]) },
         ],
       }],
     },

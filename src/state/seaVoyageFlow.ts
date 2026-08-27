@@ -1793,9 +1793,9 @@ registerCascadeApplier('orientation', (get, set, step) => {
     j.push(t('sv.courseChange', { roll: cc.roll, side: t(cc.side === 'tribord' ? 'sv.sideTribord' : 'sv.sideBabord'), desc: cc.desc }));
     const plan2 = get().travelPlan!;
     const remaining = plan2.km - plan2.kmDone;
-    if (cc.effect === 'retard') set({ travelPlan: { ...plan2, km: plan2.km + remaining * (cc.delayPct / 100) } });
-    if (cc.effect === 'demi-tour') set({ travelPlan: { ...plan2, kmDone: Math.max(0, plan2.kmDone - (plan2.sea?.milesToday ?? 0)) } });
-    if (cc.effect === 'quart-de-tour') {
+    if (cc.outcome === 'retard') set({ travelPlan: { ...plan2, km: plan2.km + remaining * (cc.delayPct / 100) } });
+    if (cc.outcome === 'demi-tour') set({ travelPlan: { ...plan2, kmDone: Math.max(0, plan2.kmDone - (plan2.sea?.milesToday ?? 0)) } });
+    if (cc.outcome === 'quart-de-tour') {
       const turn: Record<WindDirection, WindDirection> = { nord: cc.side === 'tribord' ? 'est' : 'ouest', sud: cc.side === 'tribord' ? 'ouest' : 'est', est: cc.side === 'tribord' ? 'sud' : 'nord', ouest: cc.side === 'tribord' ? 'nord' : 'sud' };
       patchSea(get, set, { heading: turn[sea.heading] });
     }

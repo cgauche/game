@@ -1712,7 +1712,7 @@ describe('Fenêtre de loot (pendingLoot) — capture, attribution, révélation'
     scene.entities.push({
       id: 'coffre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Coffre de la garnison',
       interact: { flow: flowFromEffects([
-        { type: 'journal', text: 'Sous une fausse planche, la solde du mois.' },
+        { type: 'journal', desc: 'Sous une fausse planche, la solde du mois.' },
         { type: 'giveMoney', silver: 18 },
         { type: 'giveTrapping', custom: 'Épée', qualities: ['de-plaies-atroces'], identified: false },
       ]) },
@@ -2078,7 +2078,7 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB 13 l.115-116)',
       id: 'corps', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cocher',
       interact: {
         flow: flowFromEffects([
-          { type: 'journal', text: 'Son tromblon repose à côté.' }, // index 0 (non ramassable)
+          { type: 'journal', desc: 'Son tromblon repose à côté.' }, // index 0 (non ramassable)
           { type: 'giveTrapping', trappingId: 'dague' }, // index 1
           { type: 'giveTrapping', trappingId: 'tromblon' }, // index 2
         ]),

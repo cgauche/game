@@ -221,7 +221,7 @@ function skill(c: Combatant, skillId: string, advances: number): void {
 const CARRIER_ID = 'convoi-1';
 const profile = (extra: Partial<LandMarketProfile> = {}): LandMarketProfile => ({ taille: 4, richesse: 4, produits: ['commerce', 'vin'], ...extra });
 const lot: CargoLot = { cargoId: 'vin', enc: 40, basePriceGold: 10 };
-const marche = (id: string, nom: string) => buildScene({ id, nom, description: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const marche = (id: string, nom: string) => buildScene({ id, nom, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 function carte(): WorldMap {
   return {
@@ -379,7 +379,7 @@ describe('#1426 Q1 — `stopSequence` TRONQUE la séquence au goulot partagé (p
     id: 'r1', a: 'A', b: 'B', km: 10, modes: ['pied'],
     perils: [0, 1, 2].map((i) => ({
       label: `P${i}`, chancePct: 100,
-      effects: i === interrompt ? [{ type: 'startCombat' as const, encounter: 'enc-x' }] : [{ type: 'journal' as const, text: `note ${i}` }],
+      effects: i === interrompt ? [{ type: 'startCombat' as const, encounter: 'enc-x' }] : [{ type: 'journal' as const, desc: `note ${i}` }],
     })),
   } as MapRoute);
 

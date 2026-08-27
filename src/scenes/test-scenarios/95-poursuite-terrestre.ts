@@ -12,7 +12,7 @@ import type { TestScenario } from './_shared';
 const scene = buildScene({
   id: 'test-poursuite-terrestre',
   nom: 'Chemin de crête — poursuite',
-  description: 'Chemin découvert entre deux talus, aucun couvert avant la lisière au loin.',
+  desc: 'Chemin découvert entre deux talus, aucun couvert avant la lisière au loin.',
   size: [18, 10],
   terrain: 'herbe',
   heroStart: [2, 5],

@@ -62,7 +62,7 @@ function groupe(): Combatant[] {
 const village = buildScene({
   id: 'test-voyage-village',
   nom: 'Village de Weiler',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [14, 9],
   terrain: 'herbe',
   heroStart: [3, 4],
@@ -85,11 +85,11 @@ const village = buildScene({
       nodes: [
         {
           id: 'accueil',
-          text: 'Une table, une chope, un lit ? Tout se paie, mais tout est bon.',
+          desc: 'Une table, une chope, un lit ? Tout se paie, mais tout est bon.',
           choices: [
-            { text: 'Prendre des chambres pour la nuit.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge' }]) },
-            { text: 'Juste un repas (4 sous).', cost: { brass: 4 }, flow: flowFromEffects([{ type: 'mealParty' }]) },
-            { text: 'Une autre fois. (Partir)' },
+            { label: 'Prendre des chambres pour la nuit.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge' }]) },
+            { label: 'Juste un repas (4 sous).', cost: { brass: 4 }, flow: flowFromEffects([{ type: 'mealParty' }]) },
+            { label: 'Une autre fois. (Partir)' },
           ],
         },
       ],
@@ -100,7 +100,7 @@ const village = buildScene({
 const hameau = buildScene({
   id: 'test-voyage-hameau',
   nom: 'Hameau de Federholz',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',
   heroStart: [3, 4],
@@ -111,7 +111,7 @@ const hameau = buildScene({
 const bourg = buildScene({
   id: 'test-voyage-bourg',
   nom: 'Bourg de Steinbruck',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',
   heroStart: [3, 4],
@@ -122,7 +122,7 @@ const bourg = buildScene({
 const cite = buildScene({
   id: 'test-voyage-cite',
   nom: 'Altdorf, la capitale',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',
   heroStart: [3, 4],
@@ -137,7 +137,7 @@ const cite = buildScene({
       once: true,
       flow: flowFromEffects([
         { type: 'giveMoney', gold: 30 },
-        { type: 'journal', text: 'Au bout de la route, vous touchez votre dû — 30 couronnes pour cet entre-deux. Le reste s’évaporera.' },
+        { type: 'journal', desc: 'Au bout de la route, vous touchez votre dû — 30 couronnes pour cet entre-deux. Le reste s’évaporera.' },
         { type: 'interlude', weeks: 3 },
       ]),
     },
@@ -147,7 +147,7 @@ const cite = buildScene({
 const embuscade = buildScene({
   id: 'test-voyage-embuscade',
   nom: 'Sous-bois — embuscade',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [14, 9],
   terrain: 'herbe',
   heroStart: [2, 4],

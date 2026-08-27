@@ -12,7 +12,6 @@ function makeScene(w: number, h: number, layers: { z: number; tiles: string[]; h
   return {
     id: 'fixture',
     nom: 'Fixture de plan',
-    description: '',
     dimensions: { w, h },
     layers,
     walls,

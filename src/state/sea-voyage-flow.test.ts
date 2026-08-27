@@ -697,7 +697,7 @@ describe('Périls d’AUTEUR lus au fil des jours en mer — C.22 (route.perils)
   it('un `route.perils` à 100 % se déclenche CHAQUE jour de mer (patron terrestre), en plus de l’ambush ANCRÉE', () => {
     const perilMap: WorldMap = {
       ...seaMap,
-      routes: [{ ...seaMap.routes[0], perils: [{ label: 'Récif affleurant', chancePct: 100, effects: [{ type: 'journal', text: 'La coque frôle un récif.' }] }] }],
+      routes: [{ ...seaMap.routes[0], perils: [{ label: 'Récif affleurant', chancePct: 100, effects: [{ type: 'journal', desc: 'La coque frôle un récif.' }] }] }],
     };
     set({ worldMap: perilMap } as never);
     get().startTravel('r1', 'mer');

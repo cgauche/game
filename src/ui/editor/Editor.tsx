@@ -557,7 +557,7 @@ export function Editor({
     file.text().then((txt) => {
       try {
         const data = JSON.parse(txt);
-        const { scenes, worldMap: wm, activeAxes: aa, narratif: na, meta: ma } = parseProject(data); // paquet ({ schema: 3, scenes, worldMap?, activeAxes?, narratif, meta? })
+        const { scenes, worldMap: wm, activeAxes: aa, narratif: na, meta: ma } = parseProject(data); // paquet ({ schema: 4, scenes, worldMap?, activeAxes?, narratif, meta? })
         if (!scenes.length) return;
         setOtherScenes(scenes.slice(1).map(clone));
         setWorldMap(wm ?? null);

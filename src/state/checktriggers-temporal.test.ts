@@ -8,14 +8,14 @@ import type { Scene, Trigger } from './scene';
  *  qu'en étant DANS la zone ET DANS la fenêtre horaire. On observe un effet `journal` (évite la
  *  question du flag) et on pilote `gameTime` au cran près. */
 const sceneWith = (trigger: Trigger): Scene => ({
-  id: 't', nom: 't', description: '', dimensions: { w: 5, h: 5 }, ambiance: 'interieur',
+  id: 't', nom: 't', dimensions: { w: 5, h: 5 }, ambiance: 'interieur',
   layers: [{ z: 0, tiles: new Array(25).fill('sol') }], entities: [], dialogues: [], triggers: [trigger], encounters: [], flags: {},
 });
 
 const spotTrigger: Trigger = {
   id: 'spot', rect: { x: 0, y: 0, w: 5, h: 5 }, once: false,
   when: { kind: 'time', window: { afterHour: 21, afterMinute: 30, beforeHour: 21, beforeMinute: 45 } },
-  flow: flowFromEffects([{ type: 'journal', text: 'TIC' }]),
+  flow: flowFromEffects([{ type: 'journal', desc: 'TIC' }]),
 };
 
 describe('temporalCondition — intégration checkTriggers (proximité ET fenêtre horaire)', () => {
@@ -45,12 +45,12 @@ describe('temporalCondition — intégration checkTriggers (proximité ET fenêt
  *  groupe à l'étage au-dessus (même x/y), et réciproquement (patron #782 `SceneEffectZone.z`). */
 const groundTrigger: Trigger = {
   id: 'ground', rect: { x: 0, y: 0, w: 5, h: 5 }, once: false,
-  flow: flowFromEffects([{ type: 'journal', text: 'REZ' }]),
+  flow: flowFromEffects([{ type: 'journal', desc: 'REZ' }]),
 };
 
 const upperTrigger: Trigger = {
   id: 'upper', rect: { x: 0, y: 0, w: 5, h: 5, z: 1 }, once: false,
-  flow: flowFromEffects([{ type: 'journal', text: 'ETAGE' }]),
+  flow: flowFromEffects([{ type: 'journal', desc: 'ETAGE' }]),
 };
 
 describe('Trigger.rect.z — étage (#803)', () => {

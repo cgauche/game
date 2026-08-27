@@ -39,7 +39,7 @@ describe('buildImportedProject — import portable (#766)', () => {
   it('construit un SavedProject publié à partir d’un document de projet valide', () => {
     const entry = buildImportedProject(builtinDocJson(0), 'depuis-fichier');
     expect(entry.published).toBe(true);
-    expect(entry.project.schema).toBe(3);
+    expect(entry.project.schema).toBe(4);
     expect(entry.project.scenes.length).toBe(allBuiltinCampaigns[0].scenes.length);
     expect(entry.startSceneId).toBe(entry.project.scenes[0].id);
     expect(entry.id).toBeTruthy();
@@ -196,7 +196,7 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
       narratif: bc.narratif,
       // Champ méta hors-schéma volontairement énorme : dépasse la borne PAR PROJET du miroir
       // localStorage (500 000 caractères), pour exercer le chemin de PERTE RÉEL.
-      meta: { id: 'big-fixture', label: 'Grosse campagne', version: 1, description: 'x'.repeat(600_000) },
+      meta: { id: 'big-fixture', label: 'Grosse campagne', version: 1, desc: 'x'.repeat(600_000) },
     });
     const idb: IdbBackend = {
       async getAll() { return []; },

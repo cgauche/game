@@ -15,7 +15,7 @@ import {
   rollEyes,
   rollHair,
   rollStar,
-  applyStarEffect,
+  applyStarOps,
   XP_SPECIES_ACCEPTED,
   XP_CAREER_FIRST,
   XP_CAREER_TOP3,
@@ -69,7 +69,7 @@ describe('rollStar — signe astral (ADE II, table d100)', () => {
   });
 });
 
-describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE II 3 l.38)', () => {
+describe('applyStarOps — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE II 3 l.38)', () => {
   const baseChars = () => Object.fromEntries(CHAR_KEYS.map((k) => [k, 30])) as Record<CharKey, number>;
 
   it('XP_STAR_ROLLED = 25 (l.36)', () => {
@@ -79,7 +79,7 @@ describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE II
   it('applique les charMod (±carac) — Wymund : +2 Soc, +2 I, -3 Int', () => {
     const chars = baseChars();
     const talents: string[] = [];
-    applyStarEffect('wymund-l-anachorete', chars, (t) => talents.push(t)); // id STABLE
+    applyStarOps('wymund-l-anachorete', chars, (t) => talents.push(t)); // id STABLE
     expect(chars.sociabilite).toBe(32);
     expect(chars.initiative).toBe(32);
     expect(chars.intelligence).toBe(27);
@@ -89,14 +89,14 @@ describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE II
   it('octroie le Talent + applique la pénalité — Mummit le Fou : Chanceux, -3 FM', () => {
     const chars = baseChars();
     const talents: string[] = [];
-    applyStarEffect('mummit-le-fou', chars, (t) => talents.push(t)); // id STABLE
+    applyStarOps('mummit-le-fou', chars, (t) => talents.push(t)); // id STABLE
     expect(chars['force-mentale']).toBe(27);
     expect(talents).toEqual(['Chanceux']);
   });
 
   it('signe inconnu = aucun effet (pas d\'appel à addTalent)', () => {
     const chars = baseChars();
-    applyStarEffect('Inexistant', chars, () => { throw new Error('addTalent ne doit pas être appelé'); });
+    applyStarOps('Inexistant', chars, () => { throw new Error('addTalent ne doit pas être appelé'); });
     expect(CHAR_KEYS.every((k) => chars[k] === 30)).toBe(true);
   });
 });

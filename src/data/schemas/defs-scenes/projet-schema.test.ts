@@ -16,13 +16,13 @@ type Jouet = Record<string, unknown>;
 const sceneMinimale = (over: Jouet = {}): Jouet => ({
   id: 'scene-1',
   nom: 'Une salle',
-  description: '',
+  desc: 'Scène minimale de fixture.',
   dimensions: { w: 4, h: 4 },
   ...over,
 });
 
 const projet = (over: Jouet = {}): Jouet => ({
-  schema: 3,
+  schema: 4,
   narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
   scenes: [sceneMinimale()],
   ...over,

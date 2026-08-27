@@ -135,11 +135,11 @@ const ents: SceneEntity[] = [
           stake: { authored: 'Trouver le détonateur sous le feuillage : sinon la charge de l’antichambre reste amorcée, et la loge royale saute à l’heure dite.' },
         },
         flowFromEffects([
-          { type: 'journal', text: 'Sous le feuillage : le pot est bourré de poudre à canon, relié à un détonateur. Vous arrachez le détonateur — la bombe est neutralisée.' },
+          { type: 'journal', desc: 'Sous le feuillage : le pot est bourré de poudre à canon, relié à un détonateur. Vous arrachez le détonateur — la bombe est neutralisée.' },
           { type: 'setFlag', flag: 'bombeDesamorcee' },
           { type: 'giveXp', amount: 50 }, // déjouer le complot de la bombe de Dammenblatz (source 08 l.275)
         ]),
-        flowFromEffects([{ type: 'journal', text: 'Une grande plante en pot, sans rien de particulier.' }]),
+        flowFromEffects([{ type: 'journal', desc: 'Une grande plante en pot, sans rien de particulier.' }]),
       ),
     },
   },
@@ -151,7 +151,7 @@ const ents: SceneEntity[] = [
 const spec: MapSpec = {
   id: 'test-opera-theatre',
   nom: 'Opéra — Le théâtre',
-  description: 'Le Théâtre Staatsoper d\'après le plan du scénario : coulisses, scène (surélevée), parterre, hall et rampes jumelles ; galerie de loges et loge royale à l\'étage (couche surélevée à 2 m).',
+  desc: 'Le Théâtre Staatsoper d\'après le plan du scénario : coulisses, scène (surélevée), parterre, hall et rampes jumelles ; galerie de loges et loge royale à l\'étage (couche surélevée à 2 m).',
   size: [W, H],
   ambiance: 'interieur',
   // Couche 0 = mur en tuile pleine par défaut (le `.`/l'espace y valent 'mur', comme le char '#') ; couche 1 = vide.
@@ -179,24 +179,24 @@ const spec: MapSpec = {
       nodes: [
         {
           id: 'n0',
-          text: 'La Comtesse Emmanuelle vous toise depuis sa loge. « On ne vous a pas conviés dans ma loge. Qu’est-ce qui peut bien valoir cette intrusion ? »',
+          desc: 'La Comtesse Emmanuelle vous toise depuis sa loge. « On ne vous a pas conviés dans ma loge. Qu’est-ce qui peut bien valoir cette intrusion ? »',
           choices: [
-            { text: '« Excellence — un attentat vous visait. Il est déjoué. »', when: { kind: 'flag', expr: 'bombeDesamorcee' }, next: 'merci' },
-            { text: '« Excellence, l’antichambre n’est peut-être pas sûre ce soir. »', when: { kind: 'flag', expr: '!bombeDesamorcee' }, next: 'n1' },
-            { text: 'S’incliner et se retirer.', flow: flowFromEffects([{ type: 'endDialogue' }]) },
+            { label: '« Excellence — un attentat vous visait. Il est déjoué. »', when: { kind: 'flag', expr: 'bombeDesamorcee' }, next: 'merci' },
+            { label: '« Excellence, l’antichambre n’est peut-être pas sûre ce soir. »', when: { kind: 'flag', expr: '!bombeDesamorcee' }, next: 'n1' },
+            { label: 'S’incliner et se retirer.', flow: flowFromEffects([{ type: 'endDialogue' }]) },
           ],
         },
         {
           id: 'n1',
-          text: '« Pas sûre ? » Un sourire glacé. « Mes gardes en jugeront. Mais examinez donc, puisque vous y tenez — discrètement. »',
-          choices: [{ text: 'Remercier et examiner les lieux.', flow: flowFromEffects([{ type: 'endDialogue' }]) }],
+          desc: '« Pas sûre ? » Un sourire glacé. « Mes gardes en jugeront. Mais examinez donc, puisque vous y tenez — discrètement. »',
+          choices: [{ label: 'Remercier et examiner les lieux.', flow: flowFromEffects([{ type: 'endDialogue' }]) }],
         },
         {
           id: 'merci',
-          text: 'Le masque de hauteur se fissure une seconde. « …Un attentat ? Dans MA loge ? » Elle se ressaisit, mais son regard s’est radouci. « L’Empire saura que la maison von Liebwitz a une dette envers vous. Prenez ceci — et discrétion. »',
+          desc: 'Le masque de hauteur se fissure une seconde. « …Un attentat ? Dans MA loge ? » Elle se ressaisit, mais son regard s’est radouci. « L’Empire saura que la maison von Liebwitz a une dette envers vous. Prenez ceci — et discrétion. »',
           choices: [
             {
-              text: 'S’incliner et accepter.',
+              label: 'S’incliner et accepter.',
               flow: flowFromEffects([
                 { type: 'giveMoney', gold: 5 },
                 { type: 'setFlag', flag: 'faveurComtesse' },
@@ -213,16 +213,16 @@ const spec: MapSpec = {
       nodes: [
         {
           id: 'e0',
-          text: 'Deux jeunes gens nerveux, dissimulés près de la porte, manipulent un petit pot à feu et un chapelet de pétards. L’un d’eux blêmit en vous voyant approcher.',
+          desc: 'Deux jeunes gens nerveux, dissimulés près de la porte, manipulent un petit pot à feu et un chapelet de pétards. L’un d’eux blêmit en vous voyant approcher.',
           choices: [
-            { text: '« Lâchez ça. Vous êtes en état d’arrestation. »', next: 'e1' },
-            { text: 'Les laisser filer.', flow: flowFromEffects([{ type: 'journal', text: 'Vous détournez le regard ; les étudiants se fondent dans la foule.' }, { type: 'endDialogue' }]) },
+            { label: '« Lâchez ça. Vous êtes en état d’arrestation. »', next: 'e1' },
+            { label: 'Les laisser filer.', flow: flowFromEffects([{ type: 'journal', desc: 'Vous détournez le regard ; les étudiants se fondent dans la foule.' }, { type: 'endDialogue' }]) },
           ],
         },
         {
           id: 'e1',
-          text: '« On… on ne faisait rien ! » Ils refusent de se rendre et tentent de forcer le passage.',
-          choices: [{ text: 'Les maîtriser.', flow: flowFromEffects([{ type: 'endDialogue' }, { type: 'startCombat', encounter: 'enc-etudiants' }]) }],
+          desc: '« On… on ne faisait rien ! » Ils refusent de se rendre et tentent de forcer le passage.',
+          choices: [{ label: 'Les maîtriser.', flow: flowFromEffects([{ type: 'endDialogue' }, { type: 'startCombat', encounter: 'enc-etudiants' }]) }],
         },
       ],
     },
@@ -235,9 +235,9 @@ const spec: MapSpec = {
       rect: { x: 4, y: 5, w: 13, h: 8 },
       once: true,
       flow: flowFromEffects([
-        { type: 'journal', text: 'Les lumières de la salle baissent, le rideau se lève — la représentation commence.' },
+        { type: 'journal', desc: 'Les lumières de la salle baissent, le rideau se lève — la représentation commence.' },
         { type: 'setLight', level: 0.35 },
-        { type: 'journal', text: 'Une âcre odeur de poudre flotte depuis la galerie des loges…' },
+        { type: 'journal', desc: 'Une âcre odeur de poudre flotte depuis la galerie des loges…' },
         // INTRIGUE n°2 (source 08 l.158-162) : à 20h30, deux étudiants jettent des pétards sur le siège
         // de Pakker. Flash de la mèche, pétards, spectacle interrompu SANS panique ; Glimbrin vole.
         {
@@ -246,22 +246,22 @@ const spec: MapSpec = {
           flow: {
             kind: 'seq',
             steps: [
-              { kind: 'do', effect: { type: 'journal', text: 'Près de l’allée centrale, la lueur d’une mèche embrase la pénombre…' } },
+              { kind: 'do', effect: { type: 'journal', desc: 'Près de l’allée centrale, la lueur d’une mèche embrase la pénombre…' } },
               { kind: 'do', effect: { type: 'setLight', level: 0.8 } },
               { kind: 'do', effect: { type: 'zoneBlast', center: { x: 9, y: 8 }, radius: 1, ops: [{ op: 'wounds', amount: 2 }] } },
-              { kind: 'do', effect: { type: 'journal', text: 'Une volée de pétards éclate sur le siège du professeur Pakker ! Le spectacle s’interrompt dans les cris — mais sans panique. Dans le brouhaha, une petite silhouette se faufile sous son fauteuil…' } },
+              { kind: 'do', effect: { type: 'journal', desc: 'Une volée de pétards éclate sur le siège du professeur Pakker ! Le spectacle s’interrompt dans les cris — mais sans panique. Dans le brouhaha, une petite silhouette se faufile sous son fauteuil…' } },
               testFlow(
                 {
                   skill: 'Perception', difficulty: 'difficile', label: 'Repérer le voleur dans le brouhaha',
                   stake: { authored: 'Repérer la silhouette glissée sous le fauteuil du professeur Pakker : sinon les clés de l’École impériale d’artillerie partent avec elle.' },
                 },
                 flowFromEffects([
-                  { type: 'journal', text: 'Vous surprenez un gnome glissé sous le fauteuil du professeur — il détale les mains vides. Les clés de l’École d’artillerie sont sauves.' },
+                  { type: 'journal', desc: 'Vous surprenez un gnome glissé sous le fauteuil du professeur — il détale les mains vides. Les clés de l’École d’artillerie sont sauves.' },
                   { type: 'setFlag', flag: 'glimbrinDejoue' },
                   { type: 'giveXp', amount: 15 }, // empêcher le vol des clés du professeur Pakker (source 08 l.297)
                 ]),
                 flowFromEffects([
-                  { type: 'journal', text: 'Plus tard, le professeur Pakker s’aperçoit avec effroi que les clés de l’École impériale d’artillerie ont disparu de sa poche…' },
+                  { type: 'journal', desc: 'Plus tard, le professeur Pakker s’aperçoit avec effroi que les clés de l’École impériale d’artillerie ont disparu de sa poche…' },
                   { type: 'setFlag', flag: 'clesVolees' },
                 ]),
               ),
@@ -272,7 +272,7 @@ const spec: MapSpec = {
         {
           type: 'delayedEffect', afterMinutes: 60, cancelFlag: 'bombeDesamorcee',
           flow: flowFromEffects([
-            { type: 'journal', text: 'UNE EXPLOSION DÉCHIRE L’ANTICHAMBRE DE LA LOGE ROYALE !' },
+            { type: 'journal', desc: 'UNE EXPLOSION DÉCHIRE L’ANTICHAMBRE DE LA LOGE ROYALE !' },
             { type: 'zoneBlast', center: { x: 10, y: 14 }, radius: 6, ops: [{ op: 'wounds', amount: { dice: { n: 1, sides: 10, plus: 15 } } }, { op: 'condition', id: 'en-flammes' }] },
           ]),
         },
@@ -287,7 +287,7 @@ const spec: MapSpec = {
       id: 'enc-etudiants',
       members: [{ entityId: 'etudiant-1' }, { entityId: 'etudiant-2' }],
       onVictory: flowFromEffects([
-        { type: 'journal', text: 'Les deux étudiants sont maîtrisés et remis à la garde — ils passeront la nuit en cellule.' },
+        { type: 'journal', desc: 'Les deux étudiants sont maîtrisés et remis à la garde — ils passeront la nuit en cellule.' },
         { type: 'setFlag', flag: 'etudiantsArretes' },
         { type: 'giveXp', amount: 10 }, // les étudiants en artillerie contrecarrés (source 08 l.277)
       ]),

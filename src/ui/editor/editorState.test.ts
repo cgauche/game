@@ -659,7 +659,7 @@ describe('paintEffectZone — pinceau d\'emprise de zone', () => {
 });
 
 describe('flowEffectCount — l’atelier annonce les effets de TOUTE profondeur', () => {
-  const journal = (text: string): Effect => ({ type: 'journal', text });
+  const journal = (desc: string): Effect => ({ type: 'journal', desc });
 
   it('compte les effets de premier niveau', () => {
     expect(flowEffectCount({ kind: 'seq', steps: [{ kind: 'do', effect: journal('a') }, { kind: 'do', effect: journal('b') }] })).toBe(2);

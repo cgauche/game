@@ -243,13 +243,6 @@ export const LEGACY_VOCAB_SITES = [
     date: "2026-08-23",
   },
   {
-    fichier: "src/state/worldMap.ts",
-    motif: "legacy",
-    ancre: "bloc `narratif` vide (#765 — un projet schema 2 legacy est un paquet SANS narratif). Ajouter ici",
-    lot: "L1b #1467 / L5",
-    date: "2026-08-23",
-  },
-  {
     fichier: "src/ui/editor/Editor.tsx",
     motif: "legacy",
     ancre: "/** Identité de campagne (#765/#766) — préservée au round-trip, absente d'un projet legacy sans identité. */",

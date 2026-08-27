@@ -38,7 +38,7 @@ const narratif: NarratifBlock = {
 const scene = buildScene({
   id: 'test-enquete-carnet-comptoir',
   nom: 'Comptoir marchand — enquête',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [10, 8],
   terrain: 'herbe',
   heroStart: [1, 4],
@@ -58,17 +58,17 @@ const scene = buildScene({
       nodes: [
         {
           id: 'accueil',
-          text: '« Le patron n’est pas rentré. Vous voulez jeter un œil au registre ? »',
+          desc: '« Le patron n’est pas rentré. Vous voulez jeter un œil au registre ? »',
           choices: [
             {
-              text: 'Consulter le registre.',
+              label: 'Consulter le registre.',
               flow: flowFromEffects([{ type: 'revealClue', indiceId: 'ind-registre' }, { type: 'endDialogue' }]),
             },
             {
-              text: 'Y regarder de plus près, à la page du bas.',
+              label: 'Y regarder de plus près, à la page du bas.',
               flow: flowFromEffects([{ type: 'revealClue', indiceId: 'ind-registre', stade: 's2' }, { type: 'endDialogue' }]),
             },
-            { text: 'Laisser tomber.', flow: flowFromEffects([{ type: 'endDialogue' }]) },
+            { label: 'Laisser tomber.', flow: flowFromEffects([{ type: 'endDialogue' }]) },
           ],
         },
       ],
@@ -80,7 +80,7 @@ const scene = buildScene({
       rect: { x: 7, y: 6, w: 1, h: 1 },
       once: true,
       flow: flowFromEffects([
-        { type: 'journal', text: 'Le forgeron travaille tranquillement — la rumeur ne tient pas debout.' },
+        { type: 'journal', desc: 'Le forgeron travaille tranquillement — la rumeur ne tient pas debout.' },
         { type: 'discreditClue', indiceId: 'ind-rumeur-forgeron' },
       ]),
     },

@@ -21,7 +21,7 @@ const AUTHORED_POS = { x: 9, y: 9 };
 
 function makeScene(): Scene {
   const scene = buildScene({
-    id: 'crew-auto-fx-scene', nom: 'Crew auto fx', description: 'test scénario', size: [12, 12],
+    id: 'crew-auto-fx-scene', nom: 'Crew auto fx', desc: 'test scénario', size: [12, 12],
     terrain: 'herbe', heroStart: [1, 1],
   });
   const { entities, encounters } = buildEncounters([{

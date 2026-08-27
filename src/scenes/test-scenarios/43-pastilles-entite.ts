@@ -42,7 +42,7 @@ const SERVANT_SLOTS = crewFormationSlots({ pos: RAM_POS, footprint: 2 }, { crewI
 const scene = buildScene({
   id: 'pastilles-entite',
   nom: 'Pastilles d’entité — les gestes vivent sur ce qui les offre',
-  description: 'Une cour de manœuvre : un bélier servi, un cheval libre, un coffre entrouvert.',
+  desc: 'Une cour de manœuvre : un bélier servi, un cheval libre, un coffre entrouvert.',
   size: [14, 12],
   terrain: 'pave',
   ambiance: 'exterieur',

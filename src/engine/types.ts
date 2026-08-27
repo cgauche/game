@@ -1087,7 +1087,7 @@ export interface ItemInstance {
    *  −20 à tous les Tests avec cet objet (l.710, `attackModifiers`). */
   sizeFor?: import('./size').SizeCategory;
   equipped: boolean;
-  desc?: string | null;
+  desc?: string;
   /** Effet d'un CONSOMMABLE (potion/drogue/bandage) en **Flow** (noyau `engine/flowCore`, feuilles
    *  EffectOp) — copié du trapping (`TrappingData.consumable`). Un Test « au boire » (Brise-cœur,
    *  Belladone…) est un nœud `{kind:'test'}` du Flow, résolu cadence-aware par le runner state

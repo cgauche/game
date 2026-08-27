@@ -234,9 +234,11 @@ export const architectureBodySchema = z.strictObject({
 
 /** `DialogueChoice` — `when` gate l'AFFICHAGE, `cost` est débité AVANT le flow. */
 export const dialogueChoiceSchema = z.strictObject({
-  text: z.string(),
+  /** LIBELLÉ du choix — rôle libellé de l'enveloppe (`label`), pas de la prose : c'est l'étiquette
+   *  du bouton que le joueur clique, et l'archive de dialogue la stocke comme telle. */
+  label: z.string(),
   /** Icône d'affordance (registre `src/ui/icons/`, rendue par `<Icon>` dans `DialogueBox`) — jamais
-   *  un emoji collé au `text` (#290, doctrine anti-emoji). Id de string brute (couture UI hors de
+   *  un emoji collé au `label` (#290, doctrine anti-emoji). Id de string brute (couture UI hors de
    *  `src/state`, cf. CLAUDE.md : la logique reste pure, `<Icon>` valide l'id au rendu). */
   icon: z.string().optional(),
   /** Condition d'AFFICHAGE du choix (algèbre `Condition`, cf. `evalCondition`). Absente = toujours visible. */
@@ -256,7 +258,7 @@ export const dialogueNodeSchema = z.strictObject({
    *  Permet d'alterner les interlocuteurs dans une même conversation. À défaut, l'interlocuteur de
    *  SESSION (`state.dialogue.speakerId`, posé par `interactEntity` ou `startDialogue.speakerId`). */
   speakerId: z.string().optional(),
-  text: z.string(),
+  desc: z.string(),
   choices: z.array(dialogueChoiceSchema),
 });
 /** `Dialogue` — arbre de nœuds, `start` = id du nœud d'entrée. */
@@ -486,7 +488,10 @@ export const sceneStationAnchorSchema = z.strictObject({
 export const sceneSchema = z.strictObject({
   id: z.string(),
   nom: z.string(),
-  description: z.string(),
+  /** Prose de la Scène — `.min(1).optional()`, comme l'enveloppe de document
+   *  (`grammaire/document.ts`) : une prose ABSENTE est une CLÉ ABSENTE, jamais une chaîne vide (le
+   *  troisième état, vu « présent » par les uns et « absent » par les autres). */
+  desc: z.string().min(1).optional(),
   dimensions: z.strictObject({ w: z.number(), h: z.number() }),
   /** Échelle métrique d'une CASE (m/case) — défaut 2 ; ≥ 4 = Scène MER (`isMerScene`). */
   metresPerTile: z.number().optional(),

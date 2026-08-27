@@ -76,7 +76,7 @@ const scene = buildScene({
   id: 'pont-vitrine',
   nom: 'Pont — vitrine du relief',
   size: [16, 16],
-  description:
+  desc:
     "Vitrine du relief métrique : un chemin de pierre traverse une clairière en passant SOUS un pont de bois " +
     "(tablier à 2 m, couche 1) que l'on rejoint par deux rampes ; un petit plateau à 1 m ; et un rebord de " +
     "falaise à 3 m dominant un creux. Marchez sous le pont, montez la rampe pour marcher dessus, escaladez le " +

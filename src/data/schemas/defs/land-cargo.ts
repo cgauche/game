@@ -70,7 +70,11 @@ export const schema = z.strictObject({
       min: z.number(),
       max: z.number(),
       biens: z.array(z.string()),
-      text: z.string(),
+      /** Prose de la rumeur — `desc`, la cible du rôle prose de l'enveloppe. Ces rangées n'ont pas de
+       *  `label` : elles sortent du DÉNOMINATEUR du détecteur de structures, qui ne mesure que les
+       *  entrées de racine. Une graphie divergente ne survit pas parce qu'elle est hors mesure — c'est
+       *  le MÊME concept que les autres proses, donc la même clé. */
+      desc: z.string(),
       source: sourceRefSchema,
     }),
   ),

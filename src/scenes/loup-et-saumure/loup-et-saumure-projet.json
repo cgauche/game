@@ -1,5 +1,5 @@
 {
- "schema": 3,
+ "schema": 4,
  "meta": {
   "id": "loup-et-saumure",
   "label": "Le Loup et la Saumure",
@@ -16,7 +16,7 @@
   {
    "id": "ls-quai-salzenmund",
    "nom": "Salzenmund — le quai de la Seconde Flotte",
-   "description": "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, à côté du Grimm amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; Griet accorde son luth.",
+   "desc": "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, à côté du Grimm amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; Griet accorde son luth.",
    "dimensions": {
     "w": 16,
     "h": 10
@@ -359,7 +359,7 @@
           "effect": {
            "type": "document",
            "title": "La passerelle du Grimm",
-           "text": "Le maître de quai croise les bras devant la passerelle. « Pas d’appareillage sans l’ordre du baron Köhler, capitaine. Voyez-le d’abord. »"
+           "desc": "Le maître de quai croise les bras devant la passerelle. « Pas d’appareillage sans l’ordre du baron Köhler, capitaine. Voyez-le d’abord. »"
           }
          }
         ]
@@ -375,10 +375,10 @@
      "nodes": [
       {
        "id": "k1",
-       "text": "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. Les trois pièces du Grimm sont servies, soutes garnies de poudre et de boulets pour la traversée ; mais le fond de cale est avitaillé au minimum — le chandelier du quai vous vendra l'eau et les vivres du voyage. »",
+       "desc": "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. Les trois pièces du Grimm sont servies, soutes garnies de poudre et de boulets pour la traversée ; mais le fond de cale est avitaillé au minimum — le chandelier du quai vous vendra l'eau et les vivres du voyage. »",
        "choices": [
         {
-         "text": "Accepter la commission (40 CO, le Grimm à quai)",
+         "label": "Accepter la commission (40 CO, le Grimm à quai)",
          "when": {
           "kind": "flag",
           "expr": "!ls_commission_acceptee"
@@ -444,14 +444,14 @@
             "effect": {
              "type": "setObjective",
              "id": "ls-mission",
-             "text": "Livrer le fret de Dame Kramer à Erengrad avant les glaces."
+             "desc": "Livrer le fret de Dame Kramer à Erengrad avant les glaces."
             }
            },
            {
             "kind": "do",
             "effect": {
              "type": "journal",
-             "text": "Le Grimm est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage."
+             "desc": "Le Grimm est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage."
             }
            }
           ]
@@ -459,11 +459,11 @@
          "next": "k1"
         },
         {
-         "text": "Lui demander de financer le carénage (60 CO)",
+         "label": "Lui demander de financer le carénage (60 CO)",
          "next": "k-careene"
         },
         {
-         "text": "Prendre congé",
+         "label": "Prendre congé",
          "when": {
           "kind": "flag",
           "expr": "ls_commission_acceptee"
@@ -484,10 +484,10 @@
       },
       {
        "id": "k-careene",
-       "text": "« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale, et vous traînerez la salissure dans chaque manœuvre. »",
+       "desc": "« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale, et vous traînerez la salissure dans chaque manœuvre. »",
        "choices": [
         {
-         "text": "Revenir à la commission",
+         "label": "Revenir à la commission",
          "next": "k1"
         }
        ]
@@ -500,10 +500,10 @@
      "nodes": [
       {
        "id": "a1",
-       "text": "« Un navire qui appareille sans la bénédiction de Manann navigue nu, capitaine. Un petit sacrifice, et je bénis la coque. »",
+       "desc": "« Un navire qui appareille sans la bénédiction de Manann navigue nu, capitaine. Un petit sacrifice, et je bénis la coque. »",
        "choices": [
         {
-         "text": "Demander la bénédiction du navire",
+         "label": "Demander la bénédiction du navire",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -526,7 +526,7 @@
          "next": "a-benediction"
         },
         {
-         "text": "Faire un petit sacrifice (une pièce jetée à la mer)",
+         "label": "Faire un petit sacrifice (une pièce jetée à la mer)",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -549,7 +549,7 @@
          "next": "a-petit"
         },
         {
-         "text": "Faire un sacrifice moyen (une gemme de votre bourse)",
+         "label": "Faire un sacrifice moyen (une gemme de votre bourse)",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -572,7 +572,7 @@
          "next": "a-moyen"
         },
         {
-         "text": "Faire un grand sacrifice (une vache entière, la moitié des provisions)",
+         "label": "Faire un grand sacrifice (une vache entière, la moitié des provisions)",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -595,11 +595,11 @@
          "next": "a-grand"
         },
         {
-         "text": "Lui demander l’origine de son ordre",
+         "label": "Lui demander l’origine de son ordre",
          "next": "a-origine"
         },
         {
-         "text": "Le saluer",
+         "label": "Le saluer",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -616,50 +616,50 @@
       },
       {
        "id": "a-benediction",
-       "text": "Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe. « La coque est bénie, capitaine. Manann veille. »",
+       "desc": "Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe. « La coque est bénie, capitaine. Manann veille. »",
        "choices": [
         {
-         "text": "Le remercier",
+         "label": "Le remercier",
          "next": "a1"
         }
        ]
       },
       {
        "id": "a-petit",
-       "text": "Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »",
+       "desc": "Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »",
        "choices": [
         {
-         "text": "Revenir",
+         "label": "Revenir",
          "next": "a1"
         }
        ]
       },
       {
        "id": "a-moyen",
-       "text": "La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »",
+       "desc": "La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »",
        "choices": [
         {
-         "text": "Revenir",
+         "label": "Revenir",
          "next": "a1"
         }
        ]
       },
       {
        "id": "a-grand",
-       "text": "La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »",
+       "desc": "La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »",
        "choices": [
         {
-         "text": "Revenir",
+         "label": "Revenir",
          "next": "a1"
         }
        ]
       },
       {
        "id": "a-origine",
-       "text": "« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels, le dieu des naufrageurs — mieux que je ne le voudrais. On ne le paie pas : on le nourrit. »",
+       "desc": "« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels, le dieu des naufrageurs — mieux que je ne le voudrais. On ne le paie pas : on le nourrit. »",
        "choices": [
         {
-         "text": "Revenir",
+         "label": "Revenir",
          "next": "a1"
         }
        ]
@@ -672,14 +672,14 @@
      "nodes": [
       {
        "id": "kr1",
-       "text": "« Ma cargaison est dans la cale, capitaine, et j'entends qu'elle y reste jusqu'à Erengrad. »",
+       "desc": "« Ma cargaison est dans la cale, capitaine, et j'entends qu'elle y reste jusqu'à Erengrad. »",
        "choices": [
         {
-         "text": "S’enquérir du fret",
+         "label": "S’enquérir du fret",
          "next": "kr-fret"
         },
         {
-         "text": "L’observer discrètement (Intuition)",
+         "label": "L’observer discrètement (Intuition)",
          "flow": {
           "kind": "test",
           "test": {
@@ -705,14 +705,14 @@
              "effect": {
               "type": "document",
               "title": "Votre intuition",
-              "text": "Un éclair de calcul froid passe dans le regard de Dame Kramer, vite maîtrisé. Cette femme cache quelque chose — et ce n’est pas une simple affaire de fret."
+              "desc": "Un éclair de calcul froid passe dans le regard de Dame Kramer, vite maîtrisé. Cette femme cache quelque chose — et ce n’est pas une simple affaire de fret."
              }
             },
             {
              "kind": "do",
              "effect": {
               "type": "journal",
-              "text": "Intuition : Dame Kramer cache quelque chose."
+              "desc": "Intuition : Dame Kramer cache quelque chose."
              }
             }
            ]
@@ -725,7 +725,7 @@
              "effect": {
               "type": "document",
               "title": "Votre intuition",
-              "text": "Rien ne transparaît — une négociante comme une autre, en apparence."
+              "desc": "Rien ne transparaît — une négociante comme une autre, en apparence."
              }
             }
            ]
@@ -734,7 +734,7 @@
          "next": "kr1"
         },
         {
-         "text": "La laisser à ses affaires",
+         "label": "La laisser à ses affaires",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -751,10 +751,10 @@
       },
       {
        "id": "kr-fret",
-       "text": "« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »",
+       "desc": "« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »",
        "choices": [
         {
-         "text": "Revenir",
+         "label": "Revenir",
          "next": "kr1"
         }
        ]
@@ -767,10 +767,10 @@
      "nodes": [
       {
        "id": "g1",
-       "text": "« Une chanson pour la route, capitaine ? »",
+       "desc": "« Une chanson pour la route, capitaine ? »",
        "choices": [
         {
-         "text": "Écouter sa chanson",
+         "label": "Écouter sa chanson",
          "when": {
           "kind": "flag",
           "expr": "!ls_chant_griet"
@@ -790,7 +790,7 @@
          "next": "g-chant"
         },
         {
-         "text": "Lui demander un autre air",
+         "label": "Lui demander un autre air",
          "when": {
           "kind": "flag",
           "expr": "ls_chant_griet"
@@ -798,7 +798,7 @@
          "next": "g-chant-encore"
         },
         {
-         "text": "La saluer",
+         "label": "La saluer",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -815,20 +815,20 @@
       },
       {
        "id": "g-chant",
-       "text": "Griet entonne « Jacques Bret a rencontré notre acier ». Le refrain court de bouche en bouche ; les gabiers tapent du pied sur le pont et reprennent en chœur.",
+       "desc": "Griet entonne « Jacques Bret a rencontré notre acier ». Le refrain court de bouche en bouche ; les gabiers tapent du pied sur le pont et reprennent en chœur.",
        "choices": [
         {
-         "text": "Applaudir",
+         "label": "Applaudir",
          "next": "g1"
         }
        ]
       },
       {
        "id": "g-chant-encore",
-       "text": "« Toujours la même rengaine ? » Elle rit et enchaîne une complainte plus douce, pour ceux qui restent à quai.",
+       "desc": "« Toujours la même rengaine ? » Elle rit et enchaîne une complainte plus douce, pour ceux qui restent à quai.",
        "choices": [
         {
-         "text": "La saluer",
+         "label": "La saluer",
          "next": "g1"
         }
        ]
@@ -881,7 +881,7 @@
   {
    "id": "ls-abordage-cogue",
    "nom": "La Dent de Manann — voile noire sous le vent (J4)",
-   "description": "La cogue pirate intercepte le Grimm en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille de cale et pillage, PUIS un prisonnier à sacrifier à Stromfels. Frère Aldo nomme l'ennemi à voix haute.",
+   "desc": "La cogue pirate intercepte le Grimm en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille de cale et pillage, PUIS un prisonnier à sacrifier à Stromfels. Frère Aldo nomme l'ennemi à voix haute.",
    "dimensions": {
     "w": 24,
     "h": 14
@@ -1278,7 +1278,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 12
         },
@@ -1301,7 +1300,6 @@
          ],
          "enc": 0,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 4,
          "ammoRangeMod": {
@@ -1335,7 +1333,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 12
         },
@@ -1358,7 +1355,6 @@
          ],
          "enc": 0,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 4,
          "ammoRangeMod": {
@@ -1399,7 +1395,6 @@
          ],
          "enc": 0,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 16
         }
@@ -1517,7 +1512,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 12
         }
@@ -1548,7 +1542,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 12
         }
@@ -1579,7 +1572,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 8
         }
@@ -1759,14 +1751,14 @@
         "effect": {
          "type": "setObjective",
          "id": "ls-mission",
-         "text": "Rallier Erengrad avec le fret — la Dent de Manann écartée."
+         "desc": "Rallier Erengrad avec le fret — la Dent de Manann écartée."
         }
        },
        {
         "kind": "do",
         "effect": {
          "type": "journal",
-         "text": "La Dent de Manann amène son pavillon à mi-coque — la cogue se rend. Des épaves flottent : Séquestre à faire valoir à quai."
+         "desc": "La Dent de Manann amène son pavillon à mi-coque — la cogue se rend. Des épaves flottent : Séquestre à faire valoir à quai."
         }
        }
       ]
@@ -1791,7 +1783,7 @@
   {
    "id": "ls-quai-erengrad",
    "nom": "Erengrad — le port kislevite",
-   "description": "Erengrad (Taille 4, Richesse 4, surplus Laine +1 — MDG 15 l.439-506). Négoce, rumeurs, et une nuit où le chat du bord tombe malade.",
+   "desc": "Erengrad (Taille 4, Richesse 4, surplus Laine +1 — MDG 15 l.439-506). Négoce, rumeurs, et une nuit où le chat du bord tombe malade.",
    "dimensions": {
     "w": 16,
     "h": 8
@@ -2012,7 +2004,7 @@
          "effect": {
           "type": "setObjective",
           "id": "ls-mission",
-          "text": "Ramener le Grimm et sa cargaison à Salzenmund."
+          "desc": "Ramener le Grimm et sa cargaison à Salzenmund."
          }
         },
         {
@@ -2033,10 +2025,10 @@
      "nodes": [
       {
        "id": "r1",
-       "text": "« Vous naviguez vers Salzenmund ? Faites gaffe à Olg Blóðsalt — un skaeling qui « boit la saumure » et écume la route avec son langskip. La guilde marchande a mis une prime sur sa tête. »",
+       "desc": "« Vous naviguez vers Salzenmund ? Faites gaffe à Olg Blóðsalt — un skaeling qui « boit la saumure » et écume la route avec son langskip. La guilde marchande a mis une prime sur sa tête. »",
        "choices": [
         {
-         "text": "Merci pour l’avertissement",
+         "label": "Merci pour l’avertissement",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -2066,10 +2058,10 @@
      "nodes": [
       {
        "id": "nc1",
-       "text": "Au matin de l'appareillage, le chat du bord est malade et un albatros mort est cloué au beaupré. Kramer était « à terre toute la nuit ».",
+       "desc": "Au matin de l'appareillage, le chat du bord est malade et un albatros mort est cloué au beaupré. Kramer était « à terre toute la nuit ».",
        "choices": [
         {
-         "text": "L’interroger sur sa nuit (Intuition)",
+         "label": "L’interroger sur sa nuit (Intuition)",
          "flow": {
           "kind": "test",
           "test": {
@@ -2102,14 +2094,14 @@
              "effect": {
               "type": "document",
               "title": "Kramer démasquée",
-              "text": "Elle craque. Ce n’est pas une négociante de Kislev, mais une initiée de Stromfels — c’est elle qui minait le Grimm depuis Salzenmund. Prise à découvert, elle n’a plus les mains libres : ses manigances cessent. L’équipage gronde."
+              "desc": "Elle craque. Ce n’est pas une négociante de Kislev, mais une initiée de Stromfels — c’est elle qui minait le Grimm depuis Salzenmund. Prise à découvert, elle n’a plus les mains libres : ses manigances cessent. L’équipage gronde."
              }
             },
             {
              "kind": "do",
              "effect": {
               "type": "journal",
-              "text": "Dame Kramer démasquée : initiée de Stromfels, saboteuse. Le sabotage cesse."
+              "desc": "Dame Kramer démasquée : initiée de Stromfels, saboteuse. Le sabotage cesse."
              }
             }
            ]
@@ -2122,7 +2114,7 @@
              "effect": {
               "type": "document",
               "title": "La nuit du chat",
-              "text": "« Une insomnie de plus, capitaine. La traversée est éprouvante pour tous. »"
+              "desc": "« Une insomnie de plus, capitaine. La traversée est éprouvante pour tous. »"
              }
             }
            ]
@@ -2131,7 +2123,7 @@
          "next": "nc1"
         },
         {
-         "text": "La laisser tranquille",
+         "label": "La laisser tranquille",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -2154,10 +2146,10 @@
      "nodes": [
       {
        "id": "rp1",
-       "text": "« Calfeutrons la coque avant de reprendre la mer, capitaine — la traversée l'a mise à mal. »",
+       "desc": "« Calfeutrons la coque avant de reprendre la mer, capitaine — la traversée l'a mise à mal. »",
        "choices": [
         {
-         "text": "Superviser la réparation (Test étendu de Métier (Charpentier), 5 DR)",
+         "label": "Superviser la réparation (Test étendu de Métier (Charpentier), 5 DR)",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -2178,7 +2170,7 @@
          "next": "rp1"
         },
         {
-         "text": "Plus tard",
+         "label": "Plus tard",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -2221,7 +2213,7 @@
         "effect": {
          "type": "setObjective",
          "id": "ls-mission",
-         "text": "Vendre la laine kislevite et découvrir qui en veut à la cargaison."
+         "desc": "Vendre la laine kislevite et découvrir qui en veut à la cargaison."
         }
        }
       ]
@@ -2244,7 +2236,7 @@
   {
    "id": "ls-abordage-olg",
    "nom": "Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)",
-   "description": "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Grimm chargé de laine. Poursuite, feu de chasse, collision, abordage — le morceau de bravoure de la traversée.",
+   "desc": "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Grimm chargé de laine. Poursuite, feu de chasse, collision, abordage — le morceau de bravoure de la traversée.",
    "dimensions": {
     "w": 24,
     "h": 14
@@ -2641,7 +2633,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 12
         },
@@ -2664,7 +2655,6 @@
          ],
          "enc": 0,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 4,
          "ammoRangeMod": {
@@ -2698,7 +2688,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 12
         },
@@ -2721,7 +2710,6 @@
          ],
          "enc": 0,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 4,
          "ammoRangeMod": {
@@ -2762,7 +2750,6 @@
          ],
          "enc": 0,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 16
         }
@@ -2880,7 +2867,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 10
         }
@@ -2911,7 +2897,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 10
         }
@@ -2942,7 +2927,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 8
         }
@@ -3127,7 +3111,7 @@
         "kind": "do",
         "effect": {
          "type": "journal",
-         "text": "Olg Blóðsalt tombe. Le Serpent-de-Sel amène pavillon — la prise à armer, ~40 survivants à répartir sur deux coques."
+         "desc": "Olg Blóðsalt tombe. Le Serpent-de-Sel amène pavillon — la prise à armer, ~40 survivants à répartir sur deux coques."
         }
        }
       ]
@@ -3156,7 +3140,7 @@
   {
    "id": "ls-epilogue-salzenmund",
    "nom": "Salzenmund — le retour (J13)",
-   "description": "Les parts, le chantier, le conseil final. Köhler regarde la prise avec des yeux gourmands.",
+   "desc": "Les parts, le chantier, le conseil final. Köhler regarde la prise avec des yeux gourmands.",
    "dimensions": {
     "w": 14,
     "h": 9
@@ -3330,10 +3314,10 @@
      "nodes": [
       {
        "id": "e1",
-       "text": "« La Seconde Flotte manque de coques, capitaine. La prise du Serpent-de-Sel est à vendre ? »",
+       "desc": "« La Seconde Flotte manque de coques, capitaine. La prise du Serpent-de-Sel est à vendre ? »",
        "choices": [
         {
-         "text": "Toucher la solde de la mission (parts + prime)",
+         "label": "Toucher la solde de la mission (parts + prime)",
          "when": {
           "kind": "flag",
           "expr": "!ls_solde_versee"
@@ -3372,7 +3356,7 @@
             "kind": "do",
             "effect": {
              "type": "journal",
-             "text": "Köhler verse la solde et la prime d’Olg. Le chantier attend le Grimm — carénage enfin, critiques réparés."
+             "desc": "Köhler verse la solde et la prime d’Olg. Le chantier attend le Grimm — carénage enfin, critiques réparés."
             }
            }
           ]
@@ -3380,7 +3364,7 @@
          "next": "e1"
         },
         {
-         "text": "Prendre congé",
+         "label": "Prendre congé",
          "flow": {
           "kind": "seq",
           "steps": [

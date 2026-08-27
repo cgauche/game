@@ -32,7 +32,7 @@ function mutate(c: Combatant, rolls: number[]): Combatant {
 const scene = buildScene({
   id: 'test-bestiaire',
   nom: 'Bestiaire, traits & états',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [26, 20],
   heroStart: [3, 10],
   startMessage:

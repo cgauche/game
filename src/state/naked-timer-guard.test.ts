@@ -20,18 +20,18 @@ const DIR = join(ROOT, SCAN_DIR);
 // `scanNakedTimers`, sur contenu POST-retrait des commentaires). Toute dérive de ligne ou
 // assainissement du site fait échouer le CLIQUET ci-dessous (à réviser, pas à re-décaler).
 const ALLOWED_SITES: Record<string, string> = {
-  'src/state/projectLibrary.ts:82':
+  'src/state/projectLibrary.ts:83':
     "timeout d'ouverture IndexedDB au BOOT (#776) — ne mute ni `battle` ni un flux de scène (rien " +
     "de tel n'existe encore à cet instant), n'est jamais nettoyé par `clearTrackedTimers` (afterEach " +
     "de test) : nature d'infrastructure, hors du périmètre COMBAT/FLUX de `combatTimers.ts`, pas un " +
     'contournement de son suivi.',
   'src/state/traceLayer.ts:76':
     "timeout d'ouverture IndexedDB au BOOT du calque de référence (#830) — même nature d'infra que " +
-    "projectLibrary.ts:82 ci-dessus (aucun `battle`/flux de scène en jeu, jamais nettoyé par " +
+    "projectLibrary.ts:83 ci-dessus (aucun `battle`/flux de scène en jeu, jamais nettoyé par " +
     '`clearTrackedTimers`), magasin distinct.',
   'src/state/editorAutosave.ts:45':
     "timeout d'ouverture IndexedDB au BOOT du filet de crash de l'éditeur — même nature d'infra que " +
-    'projectLibrary.ts:82/traceLayer.ts:76 ci-dessus (aucun `battle`/flux de scène en jeu, jamais ' +
+    'projectLibrary.ts:83/traceLayer.ts:76 ci-dessus (aucun `battle`/flux de scène en jeu, jamais ' +
     'nettoyé par `clearTrackedTimers`), magasin distinct.',
 };
 

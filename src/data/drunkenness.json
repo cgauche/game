@@ -5,7 +5,7 @@
       "min": 1,
       "max": 2,
       "label": "Bravoure du Marienburgher !",
-      "effect": "bravoure",
+      "outcome": "bravoure",
       "desc": "« Bravoure du Marienburgher ! » : Gagnez un bonus de +20 à votre Compétence Calme.",
       "ops": [
         {
@@ -20,7 +20,7 @@
       "min": 3,
       "max": 4,
       "label": "Vous êtes mon meilleur ami !",
-      "effect": "ami",
+      "outcome": "ami",
       "desc": "« Vous êtes mon meilleur ami ! » : Ignorez tous vos Préjugés et toutes vos Animosités existantes.",
       "ops": [
         {
@@ -33,7 +33,7 @@
       "min": 5,
       "max": 6,
       "label": "Pourquoi est-ce que la pièce tourne ?",
-      "effect": "staggering",
+      "outcome": "staggering",
       "desc": "« Pourquoi est-ce que la pièce tourne ? » : À votre tour, vous pouvez soit effectuer un Mouvement, soit une Action, mais pas les deux."
     },
     {
@@ -41,7 +41,7 @@
       "min": 7,
       "max": 8,
       "label": "Je vais tous vous prendre un par un !",
-      "effect": "belligerent",
+      "outcome": "belligerent",
       "desc": "« Je vais tous vous prendre un par un ! » : Gagnez Animosité (Tout le monde !).",
       "ops": [
         {
@@ -56,7 +56,7 @@
       "min": 9,
       "max": 10,
       "label": "Comment je suis arrivé là ?",
-      "effect": "blackout",
+      "outcome": "blackout",
       "desc": "« Comment je suis arrivé là ? » : Vous vous réveillez le lendemain, avec une gueule de bois de tous les diables et peu de souvenirs de ce qui s'est passé. Réussissez un Test de Résistance à l'alcool ou gagnez un État Empoisonné."
     }
   ],

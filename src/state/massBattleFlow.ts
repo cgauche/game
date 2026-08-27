@@ -841,7 +841,7 @@ export function massBattleSetHazard(get: Get, set: Set, roll?: number): void {
   const mb = get().massBattle;
   if (!mb || mb.phase !== 'round') return;
   const h = battleHazard(roll ?? d10(battleRng()));
-  set({ massBattle: { ...mb, hazard: { label: h.label, text: h.text }, log: [...mb.log, t('mbf.hazardLog', { label: h.label })] } });
+  set({ massBattle: { ...mb, hazard: { label: h.label, text: h.desc }, log: [...mb.log, t('mbf.hazardLog', { label: h.label })] } });
   get().log(t('mbf.hazard', { label: h.label }));
 }
 

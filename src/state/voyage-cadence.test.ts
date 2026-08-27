@@ -187,7 +187,7 @@ function riverCrew(): Combatant[] {
   return [gunnar];
 }
 
-const quai = (id: string, nom: string) => buildScene({ id, nom, description: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const quai = (id: string, nom: string) => buildScene({ id, nom, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 function riverMap(km: number): WorldMap {
   return {

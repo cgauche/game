@@ -17,7 +17,7 @@ function ensureSkill(h: Combatant, name: string, characteristic: CharKey, spec?:
 const scene = buildScene({
   id: 'test-magie-hors-combat',
   nom: 'Magie — incantation hors combat',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [14, 9],
   heroStart: [2, 4],
   startMessage:

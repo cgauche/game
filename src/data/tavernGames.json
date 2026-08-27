@@ -19,33 +19,33 @@
         {
           "min": 2,
           "max": 2,
-          "effect": "quitte-la-manche",
+          "potEffectId": "quitte-la-manche",
           "label": "sortie de la manche"
         },
         {
           "min": 3,
           "max": 6,
-          "effect": "remise-ou-abandon",
+          "potEffectId": "remise-ou-abandon",
           "mises": 1,
           "label": "une autre mise au pot, ou abandon"
         },
         {
           "min": 7,
           "max": 15,
-          "effect": "cible-ou-passe",
+          "potEffectId": "cible-ou-passe",
           "label": "le nombre cible, ou la cible du suivant"
         },
         {
           "min": 16,
           "max": 19,
-          "effect": "reprend-mise",
+          "potEffectId": "reprend-mise",
           "mises": 1,
           "label": "une mise reprise dans le pot"
         },
         {
           "min": 20,
           "max": 20,
-          "effect": "rafle-le-pot",
+          "potEffectId": "rafle-le-pot",
           "label": "la manche est remportée"
         }
       ]

@@ -102,13 +102,13 @@ export const scheduleShape = {
 export const setFlagSchema = z.strictObject({ type: z.literal('setFlag'), flag: z.string(), value: z.boolean().optional() });
 
 /** Pose/met à jour un OBJECTIF courant (surface « je fais quoi maintenant ? », #238) sur la pile
- *  `store.objectives`, keyé par `id` STABLE : re-poser le même `id` MET À JOUR son `text`. Le HUD
+ *  `store.objectives`, keyé par `id` STABLE : re-poser le même `id` MET À JOUR sa prose (`desc`). Le HUD
  *  affiche le plus récent. Archivé aussi au journal. Échéance optionnelle (même `ScheduleSpec` que
  *  `delayedEffect`) → pose `Objective.deadline` (minute absolue) → compte à rebours dans le bandeau. */
 export const setObjectiveSchema = z.strictObject({
   type: z.literal('setObjective'),
   id: z.string(),
-  text: z.string(),
+  desc: z.string(),
   ...scheduleShape,
 });
 
@@ -181,9 +181,9 @@ export const startDialogueSchema = z.strictObject({
   speakerId: z.string().optional(),
 });
 
-export const journalSchema = z.strictObject({ type: z.literal('journal'), text: z.string() });
+export const journalSchema = z.strictObject({ type: z.literal('journal'), desc: z.string() });
 
-export const documentSchema = z.strictObject({ type: z.literal('document'), title: z.string(), text: z.string() });
+export const documentSchema = z.strictObject({ type: z.literal('document'), title: z.string(), desc: z.string() });
 
 /** Mécanique MAISON du carnet d'enquête (#670, aucune règle RAW) : révèle/avance un `Indice` de
  *  `campaignNarratif`. `stade` omis → premier stade si l'indice est encore caché, sinon no-op. */

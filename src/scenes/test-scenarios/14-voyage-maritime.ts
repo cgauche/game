@@ -66,7 +66,7 @@ function crew(): Combatant[] {
 const departPort = buildScene({
   id: 'test-mer-depart',
   nom: 'Salzenmund — les quais',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [14, 9],
   terrain: 'planches',
   heroStart: [3, 4],
@@ -83,7 +83,7 @@ const departPort = buildScene({
 const arrivePort = buildScene({
   id: 'test-mer-arrivee',
   nom: 'Marienburg — le Grand Port',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [14, 9],
   terrain: 'planches',
   heroStart: [3, 4],

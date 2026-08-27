@@ -19,14 +19,14 @@ function makeDialogue(withFlow: boolean): Dialogue {
     id: 'd', start: 'n1',
     nodes: [
       {
-        id: 'n1', text: '…',
+        id: 'n1', desc: '…',
         choices: [{
-          text: 'Tenter',
+          label: 'Tenter',
           next: 'n2',
           ...(withFlow ? { flow: { kind: 'test', test: { characteristic: 'force', label: 'Force' }, success: setFlag('gagne'), fail: setFlag('perd') } as Flow } : {}),
         }],
       },
-      { id: 'n2', text: 'Suite', choices: [] },
+      { id: 'n2', desc: 'Suite', choices: [] },
     ],
   };
 }

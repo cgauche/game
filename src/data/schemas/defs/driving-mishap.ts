@@ -1,6 +1,8 @@
 /**
  * Schéma de `driving-mishap.json` — Tableau des Accidents de Conduite d'attelage EN SCÈNE
- * (LDB 09 l.140-149), 1d10. Reflet de `MishapEntry`/`DrivingMishapEffect`
+ * (LDB 09 l.140-149), 1d10. Reflet de `MishapEntry`/`DrivingMishapOutcome`. L'ISSUE tirée est
+ * `outcome` — graphie du dépôt pour une issue de table (`sea-navigation.json::orientation.reperes`,
+ * `mecanique.ts::travelTableEntry.mount.outcome`), la MÉCANIQUE exécutable restant `ops`
  * (`src/engine/drivingMishap.ts`).
  */
 import { z } from 'zod';
@@ -16,7 +18,7 @@ export const schema = z.strictObject({
       min: z.number(),
       max: z.number(),
       label: z.string(),
-      effect: z.enum(['harness', 'jolt', 'wheel', 'crash']),
+      outcome: z.enum(['harness', 'jolt', 'wheel', 'crash']),
       desc: z.string(),
     }),
   ),

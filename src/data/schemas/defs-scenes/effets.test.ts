@@ -143,7 +143,7 @@ describe('sceneFlowSchema — le MÊME arbre que la grammaire, feuille `do` = `E
         effect: {
           type: 'delayedEffect',
           afterMinutes: 60,
-          flow: { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'journal', text: 'boum' } }] },
+          flow: { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'journal', desc: 'boum' } }] },
         },
       }).success,
     ).toBe(true);

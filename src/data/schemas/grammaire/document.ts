@@ -146,7 +146,10 @@ function enveloppe(type: string) {
     type: z.literal(type),
     label: z.string().min(1),
     labelF: z.string().optional(),
-    desc: z.string().optional(),
+    /** Prose du document — `.min(1)` STRUCTUREL, même classe que le `maison` ci-dessous : une chaîne
+     *  vide est un TROISIÈME état, vu « présent » par `search.ts` et « absent » par `CodexRef`. Absente
+     *  plutôt que vide ou nulle. */
+    desc: z.string().min(1).optional(),
     source: sourceRefSchema.optional(),
     alsoIn: z.array(secondarySourceRefSchema).optional(),
     /**

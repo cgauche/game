@@ -296,7 +296,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "spells.json", champ: "target", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "spells.json", champ: "when", occurrences: 18, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "stars.json", champ: "ascendant", occurrences: 11, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "stars.json", champ: "effect", occurrences: 55, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "stars.json", champ: "ops", occurrences: 55, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "structures.json", champ: "traits", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "symptoms.json", champ: "onFail", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "symptoms.json", champ: "ops", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },

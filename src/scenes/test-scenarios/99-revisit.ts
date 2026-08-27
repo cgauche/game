@@ -16,7 +16,7 @@ import type { TestScenario } from './_shared';
 const reserve = buildScene({
   id: 'test-revisit-reserve',
   nom: 'La Réserve',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [6, 3],
   terrain: 'pierre',
   ambiance: 'interieur',
@@ -31,7 +31,7 @@ const reserve = buildScene({
       id: 'reserve-coffre', kind: 'prop', ref: 'coffre', pos: { x: 1, y: 1 }, label: 'Coffre sans gardien',
       interact: { consume: true, flow: flowFromEffects([
         { type: 'giveMoney', gold: 3 },
-        { type: 'journal', text: 'Le coffre ne contenait que quelques pièces — vous les empochez.' },
+        { type: 'journal', desc: 'Le coffre ne contenait que quelques pièces — vous les empochez.' },
       ]) },
     },
   ],
@@ -47,7 +47,7 @@ const reserve = buildScene({
 const couloir = buildScene({
   id: 'test-revisit-couloir',
   nom: 'Le Couloir',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [4, 3],
   terrain: 'pierre',
   ambiance: 'interieur',

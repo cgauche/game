@@ -38,7 +38,7 @@ function combatant(p: Partial<Combatant> & { id: string; force: number }): Comba
 }
 
 const scene = () =>
-  ({ id: 's', nom: '', description: '', dimensions: { w: 12, h: 12 }, layers: [{ z: 0, tiles: Array(144).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
+  ({ id: 's', nom: '', dimensions: { w: 12, h: 12 }, layers: [{ z: 0, tiles: Array(144).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 
 /** Entrave = héros Force NUE 50 (1 Exténué → 40 testés) ; Empêtré = ennemi Force NUE 60 (3 Exténué →
  *  30 testés). Les valeurs TESTÉES s'inversent par rapport aux NUES : le départage à DR égal se voit. */

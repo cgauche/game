@@ -47,7 +47,7 @@ import {
 import { splitTopLevelOu, splitLabel, concreteLabel, refKey, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
 import { resolveTrappingChoices } from './trappingChoices';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from './talentEffects';
-import { applyStarEffect } from './creation';
+import { applyStarOps } from './creation';
 import { sizeFromTalents } from './size';
 
 /** Caractéristique d'une Compétence (skills.json) par `id` STABLE — LDB 09 : valeur de Test =
@@ -241,7 +241,7 @@ export interface CreateHeroOptions {
    *  (ex. « Métier (Au choix) » → « Métier (Forgeron) »). */
   specChoices?: Record<string, string>;
   /** Signe astral choisi (ADE II) — `id` STABLE (≠ libellé) ; son `effect` (charMod / grantTalent) est
-   *  appliqué aux attributs de départ via applyStarEffect. Absent = pas de signe. */
+   *  appliqué aux attributs de départ via applyStarOps. Absent = pas de signe. */
   starId?: string;
   /** Les 5 Augmentations gratuites réparties sur les 3 Caractéristiques de carrière (LDB 05
    *  l.488). Défaut : 2/2/1 sur les 3 Caractéristiques du Niveau 1. */
@@ -346,7 +346,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   // Signe astral (ADE II 3) : effet appliqué AUX ATTRIBUTS DE DÉPART (±carac) + Talents octroyés.
   // AVANT heroSoFar (careerSkillAdditions voit un « Maître artisan » du signe) et avant les effets
   // d'acquisition des Talents (l. ~377). Talent « (Au choix) » résolu via specChoices (resolveEntry).
-  if (opts.starId) applyStarEffect(opts.starId, chars, (label) => addTalent(resolveEntry(label, opts.specChoices)));
+  if (opts.starId) applyStarOps(opts.starId, chars, (label) => addTalent(resolveEntry(label, opts.specChoices)));
 
   for (const t of talents) {
     if (isUnresolvedChoice(talentConcrete(t))) throw new Error(`Talent non résolu : ${talentConcrete(t)}`);

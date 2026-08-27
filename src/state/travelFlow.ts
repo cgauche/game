@@ -835,7 +835,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
   const die = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
   if (die >= 1 && d10(battleRng()) === die) {
     const entry = PERIPETIES[d10(battleRng()) - 1];
-    j.push(t('tf.perilTable', { roll: entry.roll, label: entry.label, text: entry.text }));
+    j.push(t('tf.perilTable', { roll: entry.roll, label: entry.label, text: entry.desc }));
     const party = get().party;
     if (entry.kind === 'reposant') {
       for (const h of party) {

@@ -34,7 +34,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
     let n = dialogue.nodes.length + 1;
     while (dialogue.nodes.some((x) => x.id === `n${n}`)) n++;
     const id = `n${n}`;
-    onChange({ ...dialogue, nodes: [...dialogue.nodes, { id, text: '', choices: [] }] });
+    onChange({ ...dialogue, nodes: [...dialogue.nodes, { id, desc: '', choices: [] }] });
     setNodeId(id);
   };
 
@@ -67,7 +67,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                 key={n.id}
                 selected={node?.id === n.id}
                 onClick={() => setNodeId(n.id)}
-                label={<>{dialogue.start === n.id ? '▶ ' : ''}<b>{n.id}</b> {n.text ? `· ${n.text.slice(0, 24)}${n.text.length > 24 ? '…' : ''}` : ''}</>}
+                label={<>{dialogue.start === n.id ? '▶ ' : ''}<b>{n.id}</b> {n.desc ? `· ${n.desc.slice(0, 24)}${n.desc.length > 24 ? '…' : ''}` : ''}</>}
               >
                 {targets.length > 0 && <span className="chip">→ {targets.join(', ')}</span>}
               </ListRow>
@@ -119,7 +119,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                 ✕ nœud
               </button>
             </div>
-            <textarea className="node-text" value={node.text} onChange={(e) => updNode({ text: e.target.value })} placeholder="Texte de la réplique" />
+            <textarea className="node-text" value={node.desc} onChange={(e) => updNode({ desc: e.target.value })} placeholder="Texte de la réplique" />
 
             <div className="mini-title">Choix ({node.choices.length})</div>
             <div className="stack">
@@ -127,7 +127,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                 <details className="eff-row dlg-choice" key={ci}>
                   <summary>
                     <span className="eff-summary">
-                      {c.text ? `« ${c.text.slice(0, 38)}${c.text.length > 38 ? '…' : ''} »` : '(choix sans texte)'}
+                      {c.label ? `« ${c.label.slice(0, 38)}${c.label.length > 38 ? '…' : ''} »` : '(choix sans texte)'}
                       {c.next ? ` → ${c.next}` : ' → fin'}
                       {c.cost?.gold || c.cost?.silver || c.cost?.brass ? <> · <Icon id="resource/gold-purse" size="sm" /></> : ''}
                       {condSummary(c.when) ? ' · si ' + condSummary(c.when) : ''}
@@ -141,7 +141,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                   </summary>
                   <div className="eff-body">
                     <div className="row-flex">
-                      <input className="choice-text" value={c.text} onChange={(e) => updChoice(ci, { text: e.target.value })} placeholder="Texte du choix" />
+                      <input className="choice-text" value={c.label} onChange={(e) => updChoice(ci, { label: e.target.value })} placeholder="Texte du choix" />
                       <label className="dr" title="Icône d'affordance affichée devant le choix (registre d'icônes — jamais un emoji collé au texte).">
                         {c.icon ? <Icon id={c.icon} size="sm" /> : '—'}
                         <select value={c.icon ?? ''} onChange={(e) => updChoice(ci, { icon: e.target.value || undefined })}>
@@ -193,7 +193,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                   </div>
                 </details>
               ))}
-              <button className="btn small" onClick={() => updNode({ choices: [...node.choices, { text: '' }] })}>
+              <button className="btn small" onClick={() => updNode({ choices: [...node.choices, { label: '' }] })}>
                 + Choix
               </button>
             </div>

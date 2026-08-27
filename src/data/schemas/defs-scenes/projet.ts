@@ -1,6 +1,6 @@
 /**
  * Schéma zod d'un PROJET DE SCÈNE (`ProjectDoc`, `src/state/worldMap.ts:435`) — le paquet de
- * campagne auto-suffisant `{ schema: 3, meta?, narratif, scenes, worldMap?, activeAxes? }`.
+ * campagne auto-suffisant `{ schema: 4, meta?, narratif, scenes, worldMap?, activeAxes? }`.
  *
  * C'est la porte UNIQUE du seam `parseProject` : la FORME (ci-dessous) et les QUATRE sémantiques
  * qui vivaient en validateurs manuscrits du même seam — FK `activeAxes` vers `axes.json`, invariants
@@ -21,7 +21,7 @@ export const projectMetaSchema = z.strictObject({
   label: z.string().min(1, 'meta.label doit être une chaîne non vide.'),
   icon: z.string().optional(),
   version: z.number(),
-  description: z.string().optional(),
+  desc: z.string().optional(),
   auteur: z.string().optional(),
 });
 
@@ -31,7 +31,7 @@ const idsDAxes = (): readonly string[] => IDS_PAR_DATASET['axes.json'] ?? [];
 
 /** FORME du document de projet. */
 const formeProjet = z.strictObject({
-  schema: z.literal(3),
+  schema: z.literal(4),
   scenes: z.array(sceneSchema),
   worldMap: worldMapSchema.optional(),
   /** Axes de forces/faiblesses ACTIFS de la campagne (#409) — absent = socle `CORE_AXIS_IDS`. */

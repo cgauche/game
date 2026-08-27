@@ -19,8 +19,8 @@ function makeDialogue(): Dialogue {
   return {
     id: 'd-archive', start: 'n1',
     nodes: [
-      { id: 'n1', speakerId: 'pnj-2', text: 'Bonjour, voyageur.', choices: [{ text: 'Salut.', next: 'n2' }] },
-      { id: 'n2', text: 'Autre chose ?', choices: [{ text: 'Non merci.' }] },
+      { id: 'n1', speakerId: 'pnj-2', desc: 'Bonjour, voyageur.', choices: [{ label: 'Salut.', next: 'n2' }] },
+      { id: 'n2', desc: 'Autre chose ?', choices: [{ label: 'Non merci.' }] },
     ],
   };
 }
@@ -176,7 +176,7 @@ describe('save/load — dialogueHistory round-trip', () => {
     expect(useGame.getState().saveGame(1)).toBe(true);
     const saved = readSlot(1)!;
     const data = { ...(saved.data as Record<string, unknown>) };
-    delete data.dialogueHistory; // simule une save d'avant l'ajout du champ (rétrocompat additive)
+    delete data.dialogueHistory; // une save dont le `data` ne porte PAS la clé : elle est optionnelle au chargement
     expect(saveToSlot(1, { ...saved, data } as typeof saved)).toBe(true);
     useGame.getState().startScene(testScene);
     expect(useGame.getState().loadGame(1)).toBe(true);

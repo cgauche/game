@@ -16,10 +16,10 @@ import { RNG, defaultRNG, d10 } from './dice';
 import { findTableEntry } from './tables';
 import drivingMishapJson from '../data/driving-mishap.json';
 
-export type DrivingMishapEffect = 'harness' | 'jolt' | 'wheel' | 'crash';
+export type DrivingMishapOutcome = 'harness' | 'jolt' | 'wheel' | 'crash';
 /** Entrée du Tableau des accidents de Conduite d'attelage — MÊME schéma que `driving-mishap.json::table`
  *  (exportée pour l'exposition Codex, #422 : `data/overrides.ts` la réutilise pour typer la table live). */
-export interface MishapEntry { id: string; min: number; max: number; label: string; effect: DrivingMishapEffect; desc: string }
+export interface MishapEntry { id: string; min: number; max: number; label: string; outcome: DrivingMishapOutcome; desc: string }
 const MISHAP_TABLE = (drivingMishapJson as { table: MishapEntry[] }).table;
 
 /** 1d10 sur le Tableau des accidents de Conduite d'attelage (LDB 09 l.142). Renvoie l'entrée + le dé. */
@@ -30,8 +30,8 @@ export function rollDrivingMishap(rng: RNG = defaultRNG): { roll: number; entry:
 
 /** Un véhicule ACCIDENTÉ (Essieu cassé 9-10, ou Roue brisée sur un 2-roues) inflige-t-il les Dégâts ?
  *  `twoWheeler` = un véhicule à deux roues (Roue brisée → Accidenté automatique, l.146). */
-export function mishapCausesCrash(effect: DrivingMishapEffect, twoWheeler = false): boolean {
-  return effect === 'crash' || (effect === 'wheel' && twoWheeler);
+export function mishapCausesCrash(outcome: DrivingMishapOutcome, twoWheeler = false): boolean {
+  return outcome === 'crash' || (outcome === 'wheel' && twoWheeler);
 }
 
 /** Dégâts d'ACCIDENT à UN occupant (LDB 09 l.149) : 2d10 réduits par le Bonus d'Endurance ET les PA,

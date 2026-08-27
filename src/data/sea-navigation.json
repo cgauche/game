@@ -250,7 +250,7 @@
       {
         "min": -9999,
         "max": 3,
-        "effect": "aucun",
+        "outcome": "aucun",
         "desc": "Le Navigateur n'arrive plus à trouver la position du bateau sur une carte. Sans conséquences.",
         "source": {
           "book": "mer-des-griffes",
@@ -261,7 +261,7 @@
       {
         "min": 4,
         "max": 6,
-        "effect": "retard",
+        "outcome": "retard",
         "delayPct": 10,
         "desc": "Le Navigateur est un peu perdu. Ajoutez 10 % au temps que prendra le bateau pour atteindre sa prochaine destination voulue.",
         "source": {
@@ -273,7 +273,7 @@
       {
         "min": 7,
         "max": 9,
-        "effect": "retard",
+        "outcome": "retard",
         "delayPct": 25,
         "desc": "Le Navigateur a vraiment du mal à garder le cap. Ajoutez 25 % au temps que prendra le navire pour atteindre sa prochaine destination voulue.",
         "source": {
@@ -285,7 +285,7 @@
       {
         "min": 10,
         "max": 11,
-        "effect": "quart-de-tour",
+        "outcome": "quart-de-tour",
         "desc": "À cause des bourdes du Navigateur, le vaisseau a dévié de 90 degrés (donc s'il voyageait vers le nord, il voyage maintenant vers l'est ou l'ouest).",
         "source": {
           "book": "mer-des-griffes",
@@ -296,7 +296,7 @@
       {
         "min": 12,
         "max": 9999,
-        "effect": "demi-tour",
+        "outcome": "demi-tour",
         "desc": "Le bateau a accidentellement fait demi-tour et se dirige vers l'endroit d'où il vient.",
         "source": {
           "book": "mer-des-griffes",

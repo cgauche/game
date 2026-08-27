@@ -22,7 +22,6 @@ function scene(w: number, h: number, tiles?: Record<string, string>, walls?: Wal
   return {
     id: 's',
     nom: 's',
-    description: '',
     dimensions: { w, h },
     ambiance: 'exterieur',
     ambientLight: 'jour',
@@ -98,7 +97,7 @@ describe('computeStateVisible — brouillard PARTY-ONLY : un PNJ allié-IA ne d�
   const w = 12, h = 1;
   const z0 = new Array(w * h).fill('herbe') as Terrain[]; z0[5] = 'mur';
   const sc = {
-    id: 's', nom: 's', description: '', dimensions: { w, h }, ambiance: 'exterieur', ambientLight: 'jour',
+    id: 's', nom: 's', dimensions: { w, h }, ambiance: 'exterieur', ambientLight: 'jour',
     layers: [{ z: 0, tiles: z0 }],
     entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
   } as unknown as Scene;
@@ -130,7 +129,7 @@ describe('computeStateVisible — INTÉGRATION : le viewer porte sa COUCHE (z-de
     const z0 = new Array(w * h).fill('sol') as Terrain[]; z0[0] = 'mur'; // le mur, sous le rempart : un viewer calculé à z=0 y serait aveugle
     const z1 = new Array(w * h).fill('vide') as Terrain[]; z1[0] = 'plancher'; // chemin de ronde en (0,0)
     const sc = {
-      id: 's', nom: 's', description: '', dimensions: { w, h }, ambiance: 'exterieur', ambientLight: 'jour',
+      id: 's', nom: 's', dimensions: { w, h }, ambiance: 'exterieur', ambientLight: 'jour',
       layers: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1, height: [4, 0, 0, 0, 0, 0] }],
       entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
     } as unknown as Scene;
@@ -149,7 +148,7 @@ describe('lineOfSightCover — angle mort VERTICAL (dead ground) au pied du remp
     const z1 = new Array(w).fill('vide') as Terrain[]; z1[0] = 'plancher';
     const height1 = new Array(w).fill(0); height1[0] = 4;
     return {
-      id: 's', nom: 's', description: '', dimensions: { w, h: 1 }, ambiance: 'exterieur', ambientLight: 'jour',
+      id: 's', nom: 's', dimensions: { w, h: 1 }, ambiance: 'exterieur', ambientLight: 'jour',
       layers: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1, height: height1 }],
       entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
     } as unknown as Scene;

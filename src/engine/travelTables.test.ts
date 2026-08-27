@@ -11,7 +11,7 @@ function expectContiguous(entries: TravelTableEntry[]) {
   expect(sorted[0].min).toBe(1);
   expect(sorted[sorted.length - 1].max).toBe(100);
   for (let i = 1; i < sorted.length; i++) expect(sorted[i].min).toBe(sorted[i - 1].max + 1);
-  for (const e of entries) expect(e.id && e.label && e.text).toBeTruthy();
+  for (const e of entries) expect(e.id && e.label && e.desc).toBeTruthy();
 }
 
 describe('tables de voyage EDOC (data-driven, JSON)', () => {

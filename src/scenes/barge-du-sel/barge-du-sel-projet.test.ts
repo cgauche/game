@@ -164,8 +164,8 @@ describe('La Barge du Sel — mini-campagne navale (zéro code applicatif)', () 
     const jargonPattern = /`|INEXPRIMABLE|CONTOURN|\bstate\.|\bvessel\.|\bTODO\b|seaVoyageFlow|op:'testMod'|engine\/ops\.ts|adjustManann|adjustVessel|setVessel|setObjective|saboteurDR|factorId|woundsThreshold|MDG \d+ l\.\d/;
     const bad: string[] = [];
     for (const e of allEffects()) {
-      if (e.type === 'journal' && jargonPattern.test(e.text)) bad.push(`journal: "${e.text}"`);
-      if (e.type === 'setObjective' && jargonPattern.test(e.text)) bad.push(`objectif: "${e.text}"`);
+      if (e.type === 'journal' && jargonPattern.test(e.desc)) bad.push(`journal: "${e.desc}"`);
+      if (e.type === 'setObjective' && jargonPattern.test(e.desc)) bad.push(`objectif: "${e.desc}"`);
     }
     expect(bad).toEqual([]);
   });

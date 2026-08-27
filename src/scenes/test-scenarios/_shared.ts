@@ -81,7 +81,7 @@ export function arena(opts: {
   return buildScene({
     id: opts.id,
     nom: opts.nom,
-    description: 'Arène de test.',
+    desc: 'Arène de test.',
     size: [w, h],
     terrain: opts.terrain ?? 'herbe',
     heroStart: [hs.x, hs.y],

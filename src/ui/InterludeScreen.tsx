@@ -371,7 +371,7 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
                 <CharFrame c={h} variant="identity" size="sm" />
                 <span className="interlude-chronicle-who">{h.label}</span>
               </header>
-              <p className="interlude-event">{ev.text}</p>
+              <p className="interlude-event">{ev.desc}</p>
               {chips.length > 0 && (
                 <div className="interlude-fx">
                   {chips.map((c) => <FxChip key={c.label} icon={c.icon} label={c.label} />)}
@@ -490,7 +490,7 @@ function HeroCard({ hero, st, catalog, mecenat, favors, massBattle, canDrive, ow
         </span>
       </h3>
       {ev
-        ? <p className="interlude-event" title={ev.text}><Icon id="nav/dice" size="sm" /> {st.eventRoll} — {ev.label}</p>
+        ? <p className="interlude-event" title={ev.desc}><Icon id="nav/dice" size="sm" /> {st.eventRoll} — {ev.label}</p>
         : <p className="interlude-event"><Icon id="nav/dice" size="sm" /> Événement de la période : dé à poser.</p>}
       <MasterDetail
         className="interlude-master"

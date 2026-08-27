@@ -79,11 +79,11 @@ describe('Orientation — Repères & Changement de cap (MDG 13 l.307-331)', () =
   });
 
   it('Changement de cap : 1-3 sans conséquence ; 4-6 +10 % ; 7-9 +25 % ; 10-11 90° ; 12 demi-tour ; côté 1-5 tribord', () => {
-    expect(rollCourseChange(seq(2, 3))).toMatchObject({ effect: 'aucun', delayPct: 0, side: 'tribord' });
-    expect(rollCourseChange(seq(5, 8))).toMatchObject({ effect: 'retard', delayPct: 10, side: 'babord' });
-    expect(rollCourseChange(seq(8, 1))).toMatchObject({ effect: 'retard', delayPct: 25 });
-    expect(rollCourseChange(seq(10, 1))).toMatchObject({ effect: 'quart-de-tour' });
-    expect(rollCourseChange(seq(10, 1), 2)).toMatchObject({ effect: 'demi-tour' }); // 10 + 2 (dérive majeure)
+    expect(rollCourseChange(seq(2, 3))).toMatchObject({ outcome: 'aucun', delayPct: 0, side: 'tribord' });
+    expect(rollCourseChange(seq(5, 8))).toMatchObject({ outcome: 'retard', delayPct: 10, side: 'babord' });
+    expect(rollCourseChange(seq(8, 1))).toMatchObject({ outcome: 'retard', delayPct: 25 });
+    expect(rollCourseChange(seq(10, 1))).toMatchObject({ outcome: 'quart-de-tour' });
+    expect(rollCourseChange(seq(10, 1), 2)).toMatchObject({ outcome: 'demi-tour' }); // 10 + 2 (dérive majeure)
   });
 });
 

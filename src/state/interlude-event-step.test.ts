@@ -81,7 +81,7 @@ describe('Événement d’interlude — un tirage par héros en étape à table 
     expect(def.rows).toBe(INTERLUDE_EVENTS); // par RÉFÉRENCE : zéro duplication de fourchettes
     expect(def.die).toBe(100);
     // Ligne d'affichage = le libellé + le texte de l'entrée atteinte (lookup de la donnée).
-    expect(def.lines(PREVOT)).toEqual([interludeEventFor(PREVOT).label, interludeEventFor(PREVOT).text]);
+    expect(def.lines(PREVOT)).toEqual([interludeEventFor(PREVOT).label, interludeEventFor(PREVOT).desc]);
     // Sur TOUT le dé, l'id de ligne EST l'événement du lookup partagé — jamais un second chemin.
     for (let die = 1; die <= 100; die++) {
       expect(rollTableStep({ tableId: INTERLUDE_EVENT_TABLE, forcedRoll: die }, makeRNG(1)).id, `dé ${die}`)

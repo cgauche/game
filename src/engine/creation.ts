@@ -190,13 +190,13 @@ export function rollStar(rng: RNG = defaultRNG): { roll: number; id: string } {
   return { roll: r, id: hit.id };
 }
 
-/** Applique l'effet ADE II d'un signe astral AUX ATTRIBUTS DE DÉPART (ch.03 l.38) : `charMod` ajuste
+/** Applique les `ops` ADE II d'un signe astral AUX ATTRIBUTS DE DÉPART (ch.03 l.38) : `charMod` ajuste
  *  une Caractéristique de départ, `grantTalent` octroie un Talent via `addTalent` (le résolveur de la
  *  création). Le signe est résolu par son `id` STABLE (`findStarById` — ≠ libellé). Le Talent est passé
  *  en LIBELLÉ CONCRET (`talentConcrete` : id+spec → « Maître artisan (Au choix) ») que le consommateur
  *  re-résout. Effet baked une fois à la création — PAS un passif. */
-export function applyStarEffect(starId: string, chars: Characteristics, addTalent: (label: string) => void): void {
-  for (const op of findStarById(starId)?.effect ?? []) {
+export function applyStarOps(starId: string, chars: Characteristics, addTalent: (label: string) => void): void {
+  for (const op of findStarById(starId)?.ops ?? []) {
     if (op.op === 'charMod') chars[op.char] += op.mod;
     else if (op.op === 'grantTalent') addTalent(talentConcrete(op));
   }

@@ -13,7 +13,7 @@
       "id": "incontrolable",
       "label": "Incontrôlable",
       "vehicleWounds": null,
-      "text": "Par malchance, les rênes se cassent et le conducteur n'a aucun moyen de diriger le véhicule, d'accélérer ou de ralentir. S'il ne prend pas des mesures pour l'arrêter, le véhicule peut entrer en collision ! Si le véhicule se déplaçait à la vitesse du pas et n'est pas maîtrisé en 1d10 rounds, il heurte quelque chose et devient Endommagé (voir ci-dessous). S'il se déplaçait plus vite que la vitesse de marche, il subit un Accident à la place. Cette mésaventure peut également se produire si le conducteur est tué ou empêché de diriger le véhicule."
+      "desc": "Par malchance, les rênes se cassent et le conducteur n'a aucun moyen de diriger le véhicule, d'accélérer ou de ralentir. S'il ne prend pas des mesures pour l'arrêter, le véhicule peut entrer en collision ! Si le véhicule se déplaçait à la vitesse du pas et n'est pas maîtrisé en 1d10 rounds, il heurte quelque chose et devient Endommagé (voir ci-dessous). S'il se déplaçait plus vite que la vitesse de marche, il subit un Accident à la place. Cette mésaventure peut également se produire si le conducteur est tué ou empêché de diriger le véhicule."
     },
     {
       "min": 51,
@@ -21,7 +21,7 @@
       "id": "endommage",
       "label": "Endommagé",
       "vehicleWounds": null,
-      "text": "Un élément essentiel est endommagé : une roue se fend, l'essieu se déforme ou un problème similaire se produit. Le véhicule ne peut rouler qu'à une vitesse de marche jusqu'à ce qu'il soit réparé par quelqu'un possédant une Compétence Métier appropriée, comme Métier (Charpentier) ou Métier (Charron). S'il est conduit à une allure supérieure, le véhicule est Cassé après 1d10 rounds."
+      "desc": "Un élément essentiel est endommagé : une roue se fend, l'essieu se déforme ou un problème similaire se produit. Le véhicule ne peut rouler qu'à une vitesse de marche jusqu'à ce qu'il soit réparé par quelqu'un possédant une Compétence Métier appropriée, comme Métier (Charpentier) ou Métier (Charron). S'il est conduit à une allure supérieure, le véhicule est Cassé après 1d10 rounds."
     },
     {
       "min": 80,
@@ -29,7 +29,7 @@
       "id": "casse",
       "label": "Cassé",
       "vehicleWounds": "1d10",
-      "text": "Un élément essentiel se brise : un harnais, une roue ou un essieu. Si le véhicule est tiré par un attelage d'animaux, ceux-ci peuvent s'être détachés : le conducteur doit réussir un Test d'Athlétisme Intermédiaire (+0) pour lâcher les rênes et éviter d'être arraché de son siège. Un échec indique une Chute et peut-être d'être Traîné au sol, selon le problème rencontré. Le véhicule subit immédiatement 1d10 points de Dégâts, modifiés avec le Bonus d'Endurance jusqu'à un minimum de 1. Le véhicule ne peut plus être conduit tant qu'il n'a pas été réparé avec une Compétence Métier appropriée, comme Métier (Charpentier) ou Métier (Charron). Toute personne se trouvant dans le véhicule subit immédiatement une Blessure, non modifiée par le Bonus d'Endurance ou les Points d'Armure. Si le véhicule se déplaçait plus vite que la marche, traitez ce résultat comme un Accident.",
+      "desc": "Un élément essentiel se brise : un harnais, une roue ou un essieu. Si le véhicule est tiré par un attelage d'animaux, ceux-ci peuvent s'être détachés : le conducteur doit réussir un Test d'Athlétisme Intermédiaire (+0) pour lâcher les rênes et éviter d'être arraché de son siège. Un échec indique une Chute et peut-être d'être Traîné au sol, selon le problème rencontré. Le véhicule subit immédiatement 1d10 points de Dégâts, modifiés avec le Bonus d'Endurance jusqu'à un minimum de 1. Le véhicule ne peut plus être conduit tant qu'il n'a pas été réparé avec une Compétence Métier appropriée, comme Métier (Charpentier) ou Métier (Charron). Toute personne se trouvant dans le véhicule subit immédiatement une Blessure, non modifiée par le Bonus d'Endurance ou les Points d'Armure. Si le véhicule se déplaçait plus vite que la marche, traitez ce résultat comme un Accident.",
       "occupantOps": [
         {
           "op": "wounds",
@@ -45,7 +45,7 @@
       "id": "accident",
       "label": "Accident",
       "vehicleWounds": "2d10",
-      "text": "Le véhicule entre en collision avec quelque chose à grande vitesse. Les occupants subissent 2d10 Blessures modifiées par le Bonus d'Endurance et les Points d'Armure, avec un minimum de 1. Le véhicule subit immédiatement 2d10 Blessures, modifiés par le Bonus d'Endurance, minimum 1. Les véhicules accidentés doivent être réparés par quelqu'un possédant une Compétence appropriée, comme Métier (Charpentier) ou Métier (Charron) avant de pouvoir être conduits à nouveau.",
+      "desc": "Le véhicule entre en collision avec quelque chose à grande vitesse. Les occupants subissent 2d10 Blessures modifiées par le Bonus d'Endurance et les Points d'Armure, avec un minimum de 1. Le véhicule subit immédiatement 2d10 Blessures, modifiés par le Bonus d'Endurance, minimum 1. Les véhicules accidentés doivent être réparés par quelqu'un possédant une Compétence appropriée, comme Métier (Charpentier) ou Métier (Charron) avant de pouvoir être conduits à nouveau.",
       "occupantOps": [
         {
           "op": "wounds",

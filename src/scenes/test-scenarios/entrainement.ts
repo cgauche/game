@@ -85,7 +85,7 @@ const W = 24, H = 14;
 const scene = buildScene({
   id: 'terrain-entrainement',
   nom: "Terrain d'entraînement",
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [W, H],
   terrain: 'sol',
   ambientLight: 'nuit', // brouillard de guerre : ~5 cases de vue de base ; lumière / vision nocturne révèlent
@@ -122,7 +122,7 @@ const scene = buildScene({
       rect: { x: 7, y: 1, w: 1, h: 12 },
       once: true,
       flow: flowFromEffects([
-        { type: 'journal', text: "Vous entrez dans la lice ; l'instructeur lance l'exercice. En garde !" },
+        { type: 'journal', desc: "Vous entrez dans la lice ; l'instructeur lance l'exercice. En garde !" },
         { type: 'startCombat', encounter: 'enc-entrainement' },
       ]),
     },

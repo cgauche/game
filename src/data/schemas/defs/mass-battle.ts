@@ -53,7 +53,7 @@ const hazardRowSchema = z.strictObject({
   min: z.number(),
   max: z.number(),
   label: z.string(),
-  text: z.string(),
+  desc: z.string(),
   source: sourceRefSchema,
 });
 

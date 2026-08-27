@@ -192,7 +192,7 @@ export function applyEffectsLoot(get: Get, set: SetFn, effects: Effect[], title:
     .filter((e): e is Extract<Effect, { type: 'giveMoney' }> => e.type === 'giveMoney')
     .reduce((m, e) => m + toBrass({ gold: e.gold ?? 0, silver: e.silver ?? 0, brass: e.brass ?? 0 }), 0);
   if (!gear.length && found <= 0) return; // dépense (giveMoney négatif) ou simple récit : pas de fenêtre
-  const messages = effects.filter((e): e is Extract<Effect, { type: 'journal' }> => e.type === 'journal').map((e) => e.text);
+  const messages = effects.filter((e): e is Extract<Effect, { type: 'journal' }> => e.type === 'journal').map((e) => e.desc);
   set((s: GameState) => {
     const prev = s.pendingLoot;
     if (!prev) return { pendingLoot: { title, messages: messages.length ? messages : undefined, gold: found > 0 ? fromBrass(found) : undefined, gear } };
@@ -722,13 +722,13 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   // ── Narration ──────────────────────────────────────────────────────────
   journal: {
     group: 'Narration', label: 'Journal', icon: 'journal/detail',
-    make: () => ({ type: 'journal', text: '' }),
-    apply: (e, env) => { env.log(e.text); },
+    make: () => ({ type: 'journal', desc: '' }),
+    apply: (e, env) => { env.log(e.desc); },
   },
   document: {
     group: 'Narration', label: 'Document (handout)', icon: 'file/document',
-    make: () => ({ type: 'document', title: '', text: '' }),
-    apply: (e, env) => { env.set({ document: { title: e.title, text: e.text } }); },
+    make: () => ({ type: 'document', title: '', desc: '' }),
+    apply: (e, env) => { env.set({ document: { title: e.title, text: e.desc } }); },
   },
   revealClue: {
     group: 'Narration', label: 'Révéler un indice (carnet)', icon: 'ui/search',
@@ -780,7 +780,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   },
   setObjective: {
     group: 'Narration', label: 'Objectif courant (« je fais quoi maintenant ? »)', icon: 'map-tool/start-flag',
-    make: () => ({ type: 'setObjective', id: '', text: '' }),
+    make: () => ({ type: 'setObjective', id: '', desc: '' }),
     apply: (e, env) => {
       // Pile keyée par id STABLE : re-poser le même id MET À JOUR le texte (et le remonte en tête), sinon
       // AJOUTE en fin (le plus récent = surface HUD). #238 « personne ne lit le journal » → archivé aussi.
@@ -788,9 +788,9 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const deadline = hasSched ? scheduleAt(env.get().gameTime, e) : undefined;
       env.set((s: GameState) => {
         const rest = s.objectives.filter((o) => o.id !== e.id);
-        return { objectives: [...rest, { id: e.id, text: e.text, deadline }] };
+        return { objectives: [...rest, { id: e.id, text: e.desc, deadline }] };
       });
-      env.log(t('eff.objectiveSet', { text: e.text }));
+      env.log(t('eff.objectiveSet', { text: e.desc }));
     },
   },
   clearObjective: {

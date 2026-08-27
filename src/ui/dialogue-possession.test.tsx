@@ -26,10 +26,10 @@ const pnj: SceneEntity = { id: 'e1', kind: 'personnage', pos: { x: 0, y: 0 }, la
 const dlg: Dialogue = {
   id: 'dlg-groupe',
   start: 'n1',
-  nodes: [{ id: 'n1', text: 'Que faites-vous ?', choices: [{ text: 'Attaquer' }, { text: 'Parler' }] }],
+  nodes: [{ id: 'n1', desc: 'Que faites-vous ?', choices: [{ label: 'Attaquer' }, { label: 'Parler' }] }],
 };
 
-const scene = { id: 'scn', nom: 'Scène', description: '', size: [4, 4], entities: [pnj], dialogues: [dlg], triggers: [], encounters: [] } as unknown as Scene;
+const scene = { id: 'scn', nom: 'Scène', desc: '', size: [4, 4], entities: [pnj], dialogues: [dlg], triggers: [], encounters: [] } as unknown as Scene;
 
 /** État réseau : deux sièges nommés, aucun héros attribué (le dialogue n'appartient à personne). */
 const net = (over: Partial<GameState['net']>): GameState['net'] =>

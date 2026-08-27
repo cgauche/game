@@ -12,7 +12,7 @@ import type { TestScenario } from './_shared';
 const village = buildScene({
   id: 'test-effets-scriptes-village',
   nom: 'Ebendorf — place du village',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [12, 9],
   terrain: 'herbe',
   heroStart: [2, 4],
@@ -35,7 +35,7 @@ const village = buildScene({
           {
             type: 'petitePriere',
             reward: flowFromEffects([
-              { type: 'journal', text: 'Une chaleur inattendue vous traverse — la prière a porté.' },
+              { type: 'journal', desc: 'Une chaleur inattendue vous traverse — la prière a porté.' },
               { type: 'giveXp', amount: 20 },
             ]),
           },
@@ -55,10 +55,10 @@ const village = buildScene({
       nodes: [
         {
           id: 'accueil',
-          text: '« Je soigne qui peut payer — pas plus, pas moins. Bander une plaie, ça se facture. »',
+          desc: '« Je soigne qui peut payer — pas plus, pas moins. Bander une plaie, ça se facture. »',
           choices: [
             {
-              text: 'Ouvrir son infirmaire (soins payants).',
+              label: 'Ouvrir son infirmaire (soins payants).',
               flow: flowFromEffects([
                 {
                   type: 'medicalAid', entityId: 'medecin', skill: 45, intBonus: 3,
@@ -67,7 +67,7 @@ const village = buildScene({
                 { type: 'endDialogue' },
               ]),
             },
-            { text: 'Une autre fois.', flow: flowFromEffects([{ type: 'endDialogue' }]) },
+            { label: 'Une autre fois.', flow: flowFromEffects([{ type: 'endDialogue' }]) },
           ],
         },
       ],
@@ -78,10 +78,10 @@ const village = buildScene({
       nodes: [
         {
           id: 'annonce',
-          text: '« L’atelier a brûlé cette nuit — il n’en reste rien. Tout ce pour quoi vous travailliez... c’est fini. »',
+          desc: '« L’atelier a brûlé cette nuit — il n’en reste rien. Tout ce pour quoi vous travailliez... c’est fini. »',
           choices: [
             {
-              text: 'Encaisser la nouvelle.',
+              label: 'Encaisser la nouvelle.',
               flow: flowFromEffects([{ type: 'ambitionLost' }, { type: 'endDialogue' }]),
             },
           ],
@@ -95,7 +95,7 @@ const village = buildScene({
       rect: { x: 9, y: 5, w: 1, h: 1 },
       once: true,
       flow: flowFromEffects([
-        { type: 'journal', text: 'Une planche vermoulue cède sous votre pied — vous plongez dans la cave à provisions !' },
+        { type: 'journal', desc: 'Une planche vermoulue cède sous votre pied — vous plongez dans la cave à provisions !' },
         { type: 'fall', target: 'party', metres: 3, to: { x: 9, y: 6 } },
         { type: 'inflictTrauma', kind: 'dechirure', severity: 'mineur', location: 'jambeD' },
       ]),

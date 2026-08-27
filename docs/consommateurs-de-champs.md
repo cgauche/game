@@ -166,7 +166,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `max` | 1 | `src/ui/compendium/registry.ts:675` |
 | `id` | 2 | `src/engine/mountTravel.ts:214` |
 | `label` | 2 | `src/engine/mountTravel.ts:198` |
-| `text` | 1 | `src/ui/compendium/registry.ts:676` |
+| `desc` | 1 | `src/ui/compendium/registry.ts:676` |
 | `stageOutcome` | **0 — JAMAIS LU** | — |
 | `vehicleWounds` | 1 | `src/ui/compendium/registry.ts:677` |
 | `occupantOps` | 1 | `src/ui/compendium/registry.ts:678` |

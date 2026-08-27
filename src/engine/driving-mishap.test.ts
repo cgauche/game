@@ -6,10 +6,10 @@ const fixed = (roll: number): RNG => ({ int: () => roll });
 
 describe('Accidents de Conduite d’attelage EN SCÈNE (LDB 09 l.140-149)', () => {
   it('1d10 mappe la table : 1→Harnais, 4→Cahots, 7→Roue brisée, 10→Essieu', () => {
-    expect(rollDrivingMishap(fixed(1)).entry.effect).toBe('harness');
-    expect(rollDrivingMishap(fixed(4)).entry.effect).toBe('jolt');
-    expect(rollDrivingMishap(fixed(7)).entry.effect).toBe('wheel');
-    expect(rollDrivingMishap(fixed(10)).entry.effect).toBe('crash');
+    expect(rollDrivingMishap(fixed(1)).entry.outcome).toBe('harness');
+    expect(rollDrivingMishap(fixed(4)).entry.outcome).toBe('jolt');
+    expect(rollDrivingMishap(fixed(7)).entry.outcome).toBe('wheel');
+    expect(rollDrivingMishap(fixed(10)).entry.outcome).toBe('crash');
   });
   it('Accidenté : Essieu cassé toujours ; Roue brisée seulement sur un 2-roues', () => {
     expect(mishapCausesCrash('crash')).toBe(true);

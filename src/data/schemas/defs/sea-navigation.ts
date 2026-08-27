@@ -65,7 +65,9 @@ export const schema = z.strictObject({
     driftSide: z.strictObject({ tribordMax: z.number() }),
     changementDeCap: z.array(
       tableRange.extend({
-        effect: z.enum(['aucun', 'retard', 'quart-de-tour', 'demi-tour']),
+        /** ISSUE tirée du Changement de cap — même graphie que `reperes.outcome` ci-dessus, qui est
+         *  déjà la forme du dépôt pour une issue de table. */
+        outcome: z.enum(['aucun', 'retard', 'quart-de-tour', 'demi-tour']),
         delayPct: z.number().optional(),
         desc: z.string(),
         source: sourceRefSchema,

@@ -65,7 +65,7 @@ function riverMap(km: number, extra: Partial<MapRoute> = {}): WorldMap {
   };
 }
 
-const quai = (id: string, nom: string) => buildScene({ id, nom, description: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const quai = (id: string, nom: string) => buildScene({ id, nom, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 /** Charge le projet (2 quais + carte) et l'équipage, au quai de Grünburg. */
 function launch(withSavoir = false, km = 45, extra: Partial<MapRoute> = {}): void {
@@ -499,7 +499,7 @@ describe('péril fluvial — la ligne du Test d’évitement nomme la Compétenc
     set({ travelPlan: buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])! });
     const built = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
     const check = built.steps.find((s) => s.kind === 'riverPerilCheck')!;
-    // Forme LEGACY : la save rejouée ne porte PAS `navLabel` (aucun backfill dans `saves.ts`).
+    // Fixture SANS `meta.navLabel` : le champ est optionnel, et `saves.ts` ne le remplit pas au rejeu.
     const legacy = { ...check, meta: { ...check.meta, navLabel: undefined } } as typeof check;
     expect(legacy.meta?.navLabel).toBeUndefined();
 

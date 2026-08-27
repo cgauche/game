@@ -22,7 +22,7 @@ const PERIMETER_WALLS: WallSpec[] = [
 const scene = buildScene({
   id: 'zones-pieces',
   nom: 'Étiquettes de zone',
-  description:
+  desc:
     'Une maisonnette à 4 pièces cloisonnées (Cave, Chambre, Cuisine, Salle commune) sous un même toit. ' +
     "Entrez : le toit se lève en cutaway et le nom de chaque pièce s'affiche, cuit au centre de son aire.",
   size: [10, 9],

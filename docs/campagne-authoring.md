@@ -127,7 +127,9 @@ codé en dur.
 
 ### 9bis. Dialogues (`Dialogue`, `DialogueNode.speakerId`, #669)
 
-Un `Dialogue` (`Scene.dialogues`) est un arbre de `DialogueNode` (`id`, `text`, `choices`). **Aucun nom
+Un `Dialogue` (`Scene.dialogues`) est un arbre de `DialogueNode` (`id`, `desc`, `choices`) — la
+réplique du nœud est de la PROSE (`desc`), l'étiquette d'un `DialogueChoice` est un LIBELLÉ (`label`),
+deux rôles distincts, deux clés (#1467 L1b). **Aucun nom
 en clair** n'est jamais authoré dans un nœud (doctrine id-only, CLAUDE.md « on ne MANIPULE que des
 IDs ») : le portrait ET le nom de l'interlocuteur se résolvent TOUJOURS par ID d'entité, jamais par une
 chaîne de nom dupliquée dans la donnée.
@@ -193,8 +195,8 @@ d'objectifs (`store.objectives`, `{ id, text }[]`) affichée par un bandeau disc
 en exploration (`src/ui/ObjectiveBanner.tsx`, masqué en combat). Le plus RÉCENT est en tête ; plusieurs →
 dépliable.
 
-- `setObjective { id, text } & ScheduleSpec` — pose OU met à jour (re-poser le même `id` STABLE remplace
-  son `text` et le remonte en tête). `text` = consigne joueur verbatim (`Prose`-safe : pas d'id de code ni
+- `setObjective { id, desc } & ScheduleSpec` — pose OU met à jour (re-poser le même `id` STABLE remplace
+  sa `desc` et le remonte en tête). `desc` = consigne joueur verbatim (`Prose`-safe : pas d'id de code ni
   de réf RAW brute). Une `ScheduleSpec` optionnelle (#668) pose `Objective.deadline` (minute absolue) →
   compte à rebours affiché en puce par `ObjectiveBanner`.
 - `clearObjective { id? }` — retire l'objectif `id`, ou TOUS si `id` absent (fin d'acte).
@@ -272,7 +274,7 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
   des ids STABLES. Un libellé est un défaut silencieux (poison). Doctrine : CLAUDE.md, encadré « id STABLE ».
 - **Personne ne lit le journal** — tout dénouement pertinent est une surface VISIBLE au moment (dialogue,
   modale, effet à l'écran), le `journal` ne fait que rappeler.
-- **Aucun texte technique dans un texte joueur** — un `node.text`/`journal` est rendu VERBATIM par
+- **Aucun texte technique dans un texte joueur** — un `node.desc`/`journal` est rendu VERBATIM par
   `Prose` (`src/ui/Prose.tsx`) : ni identifiant de code, ni tag d'auteur (`[INEXPRIMABLE]`), ni citation
   RAW brute (`MDG 14 l.45`). Les constats d'authoring vont dans un journal `docs/plans/`, jamais en jeu.
 - **Prose = verbatim source, Markdown** (CLAUDE.md règle 5) — jamais de reformulation ni de HTML.

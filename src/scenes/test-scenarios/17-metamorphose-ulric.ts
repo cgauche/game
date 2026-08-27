@@ -15,7 +15,7 @@ const W = 18, H = 12;
 const scene = buildScene({
   id: 'clairiere-ulric',
   nom: "Clairière des Enfants d'Ulric",
-  description: 'Une clairière cernée de bois où rôdent des lycanthropes.',
+  desc: 'Une clairière cernée de bois où rôdent des lycanthropes.',
   size: [W, H],
   terrain: 'herbe',
   ambientLight: 'jour',
@@ -27,7 +27,7 @@ const scene = buildScene({
       rect: { x: 6, y: 1, w: 1, h: 10 },
       once: true,
       flow: flowFromEffects([
-        { type: 'journal', text: "Deux villageois se dressent en grondant — leurs traits se déforment. En garde !" },
+        { type: 'journal', desc: "Deux villageois se dressent en grondant — leurs traits se déforment. En garde !" },
         { type: 'startCombat', encounter: 'enc-ulric' },
       ]),
     },

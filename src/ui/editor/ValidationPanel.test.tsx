@@ -62,7 +62,6 @@ function scenePlanFautive(): Scene {
   return {
     id: 'sc-fautive',
     nom: 'Cour prise pour une salle',
-    description: '',
     dimensions: { w, h },
     layers: [{ z: 0, tiles: Array.from({ length: w * h }, (_, i) => (i % w <= 1 ? 'plancher' : 'route')) }],
     walls: [],

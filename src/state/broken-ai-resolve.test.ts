@@ -15,7 +15,7 @@ import type { Combatant } from '../engine/types';
  * l'exécution dans `runEnemyAI` (dépense via l'action store `spendResolveCondition`, puis vraie action).
  */
 const scene = () =>
-  ({ id: 's', nom: '', description: '', dimensions: { w: 12, h: 12 }, layers: [{ z: 0, tiles: Array(144).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
+  ({ id: 's', nom: '', dimensions: { w: 12, h: 12 }, layers: [{ z: 0, tiles: Array(144).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 
 const sword = [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }];
 

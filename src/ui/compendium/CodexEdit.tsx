@@ -190,6 +190,7 @@ const OPS_FIELDS: Record<string, string[]> = {
   incidentsMonture: ['occupantOps'], problemesVehicule: ['occupantOps'],
   seaShanties: ['crewOps', 'captainOps'],
   drunkenness: ['ops'], // LOT 1 #422 (suite) : effet mécanique optionnel d'un résultat d'Ivresse (LDB 09)
+  stars: ['ops'], // #1467 L1b : effet du signe aux attributs de départ (ADE II 3 l.38) — GameOp[] comme les autres
   // LOT 3 #422 (FINAL) : Empoignade — `init` (à la touche) en `GameOp[]` top-level (`win.damage/entangle/
   // free`, sous `win`, retombent en sous-formulaire récursif `object`, hors guard — même patron `windEffect`
   // de `riverNavigation`). Incantations Imparfaites/Colère des dieux — `ops` (dialecte compilé, mais MÊMES
@@ -349,7 +350,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'steamBreakdowns') add('restart'); // {skillId,spec?,difficulty,extendedDR?}[] → éditeur dédié
   add(...opsFieldsOf(categoryKey)); // ops/occupantOps/crewOps/captainOps → GameOpEditor (#157)
   if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick', 'visiblePassive', 'visibleLocations'); // GameOp[] + test de cycle + gate visibilité → éditeurs dédiés (capabilities = sous-form générique)
-  if (categoryKey === 'stars') add('effect', 'sub');
+  if (categoryKey === 'stars') add('sub');
   if (categoryKey === 'mutationTables' || categoryKey === 'weather') add('ranges');
   if (categoryKey === 'mutations') add('psychTraits');
   if (['mutations', 'trappings'].includes(categoryKey)) add('derivedWeapon');
@@ -513,9 +514,6 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Symptôme de maladie : pénalité aggravée `severePassive` (Modérée/Grave) + Test de cycle `onTick`
   // (difficulté + conséquence GameOp `onFail`) — éditeurs dédiés au-dessus du formulaire générique.
   const isSymptom = categoryKey === 'symptoms';
-  // Signe astral : son EFFET de création (charMod / grantTalent) en `GameOp[]` — même éditeur que les
-  // passifs, mais champ `effect` (appliqué une fois aux attributs de départ, cf. applyStarEffect).
-  const isStarEffect = categoryKey === 'stars';
   // Règle optionnelle : sa valeur par défaut (et le `when` de son action) sont typées par son `kind`.
   const isOptionalRule = categoryKey === 'reglesOptionnelles';
   // Table de Corruption : ses `ranges` (plages d100 → réf mutation) ont leur éditeur dédié.
@@ -656,12 +654,6 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
           <div className="ed-field">
             <span>modificateurs PASSIFS continus (mêmes ops que les sorts — sans déclencheur)</span>
             <GameOpEditor ops={(entry.passive as GameOp[] | undefined) ?? []} onChange={(ops) => edit('passive', ops)} />
-          </div>
-        )}
-        {isStarEffect && (
-          <div className="ed-field">
-            <span>effet du signe — appliqué aux attributs de départ à la création (±carac / Talent octroyé)</span>
-            <GameOpEditor ops={(entry.effect as GameOp[] | undefined) ?? []} onChange={(ops) => edit('effect', ops)} />
           </div>
         )}
         {isOptionalRule && (

@@ -169,7 +169,7 @@ describe('Al-zahr — les effets de pot (famille 5, socle)', () => {
     expect(jeu.pot).toBeTruthy();
     expect(jeu.pot!.dice).toEqual({ count: 2, faces: 10 });
     expect(jeu.pot!.targetRange).toEqual({ min: 7, max: 15 });
-    expect(jeu.pot!.rows.map((r) => r.effect)).toEqual([
+    expect(jeu.pot!.rows.map((r) => r.potEffectId)).toEqual([
       'quitte-la-manche', 'remise-ou-abandon', 'cible-ou-passe', 'reprend-mise', 'rafle-le-pot',
     ]);
     // La règle est recopiée SANS coupe : la dernière phrase du RAW (l.17) est là.

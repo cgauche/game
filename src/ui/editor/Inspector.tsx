@@ -1822,7 +1822,7 @@ function SceneProps({
         </label>
         <label className="ed-field">
           Description (notes d'auteur)
-          <textarea value={scene.description ?? ''} onChange={(e) => setScene({ ...scene, description: e.target.value })} />
+          <textarea value={scene.desc ?? ''} onChange={(e) => setScene({ ...scene, desc: e.target.value })} />
         </label>
         <div className="ed-dim">
           <label>

@@ -12,7 +12,7 @@ import type { TestScenario } from './_shared';
 const auberge = buildScene({
   id: 'test-echeance-auberge',
   nom: 'Auberge du Cor Fêlé',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',
   heroStart: [3, 4],
@@ -31,10 +31,10 @@ const auberge = buildScene({
       nodes: [
         {
           id: 'accueil',
-          text: 'Une chambre pour la nuit, l’ami ? À ce train, vous allez user le plancher.',
+          desc: 'Une chambre pour la nuit, l’ami ? À ce train, vous allez user le plancher.',
           choices: [
-            { text: 'Dormir jusqu’au lendemain.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge', days: 1 }]) },
-            { text: 'Pas encore.' },
+            { label: 'Dormir jusqu’au lendemain.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge', days: 1 }]) },
+            { label: 'Pas encore.' },
           ],
         },
       ],
@@ -49,14 +49,14 @@ const auberge = buildScene({
         {
           type: 'setObjective',
           id: 'ech-obj',
-          text: 'Empêcher le rituel avant minuit',
+          desc: 'Empêcher le rituel avant minuit',
           afterDays: 2, atHour: 0,
         },
         {
           type: 'delayedEffect',
           afterDays: 2, atHour: 0,
           flow: flowFromEffects([
-            { type: 'journal', text: 'MINUIT — le rituel s’accomplit.' },
+            { type: 'journal', desc: 'MINUIT — le rituel s’accomplit.' },
             { type: 'setFlag', flag: 'rituel-accompli' },
           ]),
         },

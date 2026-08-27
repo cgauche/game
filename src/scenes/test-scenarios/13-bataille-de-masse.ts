@@ -16,7 +16,7 @@ import type { TestScenario } from './_shared';
 const scene = buildScene({
   id: 'test-bataille-de-masse',
   nom: 'Bataille de masse — le théâtre de la guerre',
-  description: 'Champ de bataille : la plaine devant les remparts.',
+  desc: 'Champ de bataille : la plaine devant les remparts.',
   size: [22, 16],
   heroStart: [3, 8],
   startMessage:

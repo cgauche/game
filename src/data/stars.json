@@ -9,7 +9,7 @@
     "dates": "12 vorhexen - 27 vorhexen",
     "dieux": "Manann",
     "apparence": "un visage sévère",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "sociabilite",
@@ -42,7 +42,7 @@
     "dates": "28 vorhexen - 8 nachhexen",
     "dieux": "Ulric",
     "apparence": "un X",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "force",
@@ -75,7 +75,7 @@
     "dates": "9 nachhexen - 28 nachhexen",
     "dieux": "Vallich (forgerons et constructeurs de navires (Nordland)) ",
     "apparence": "un archer bandant son arc",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "capacite-de-tir",
@@ -108,7 +108,7 @@
     "dates": "29 nachhexen - 16 jahrdrung",
     "dieux": "Guvaur (taureaux (Ostland))",
     "apparence": "un bœuf",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "endurance",
@@ -141,7 +141,7 @@
     "dates": "17 jahrdrung - 7 pflugzeit",
     "dieux": "Khaine",
     "apparence": "un dragon cabré",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "force-mentale",
@@ -174,7 +174,7 @@
     "dates": "8 pflugzeit - 31 pflugzeit",
     "dieux": "Morr \r",
     "apparence": "un amas d'étoiles rouges et bleues qui n'apparaissent qu'au crépuscule ",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "intelligence",
@@ -207,7 +207,7 @@
     "dates": "32 pflugzeit - 22 sigmarzeit",
     "dieux": "Grungni (nains, forgerons (Stirland)), Margileo (honneur (Averland)) ",
     "apparence": "un nain équipé d'un fourreau",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "capacite-de-combat",
@@ -240,7 +240,7 @@
     "dates": "23 sigmarzeit - 11 sommerzeit",
     "dieux": "Verena",
     "apparence": "une chouette",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "initiative",
@@ -273,7 +273,7 @@
     "dates": "12 sommerzeit - 29 sommerzeit",
     "dieux": "Ranald",
     "apparence": "un visage souriant",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "force-mentale",
@@ -300,7 +300,7 @@
     "dates": "30 sommerzeit - 13 vorgeheim",
     "dieux": "Ahalt (chasse, fertilité et sacrifice (Wissenland)) ",
     "apparence": "deux bœufs",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "intelligence",
@@ -328,7 +328,7 @@
     "dates": "14 vorgeheim - 2 nachgeheim",
     "dieux": "Millavog (danse (Wissenland))",
     "apparence": "un danseur tourbillonnant",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "initiative",
@@ -355,7 +355,7 @@
     "dates": "3 nachgeheim - 24 nachgeheim",
     "dieux": "Lupos (prédateurs (Hochland))",
     "apparence": "un tambour",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "force-mentale",
@@ -382,7 +382,7 @@
     "dates": "25 nachgeheim - 16 erntezeit",
     "dieux": "Ranald, Katya (beauté désarmante (Reikland)) ",
     "apparence": "un flûtiste folâtre",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "sociabilite",
@@ -415,7 +415,7 @@
     "dates": "17 erntezeit - 6 brauzeit",
     "dieux": "Ranald",
     "apparence": "pas d'étoiles",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "initiative",
@@ -442,7 +442,7 @@
     "dates": "7 brauzeit - 27 brauzeit",
     "dieux": "Nurgle",
     "apparence": "une charrette avec une roue cassée",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "force-mentale",
@@ -470,7 +470,7 @@
     "dates": "28 brauzeit - 17 kaldezeit",
     "dieux": "Taal",
     "apparence": "une chèvre",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "endurance",
@@ -497,7 +497,7 @@
     "dates": "18 kaldezeit - 33 kaldezeit",
     "dieux": "Rhya",
     "apparence": "un chaudron",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "agilite",
@@ -524,7 +524,7 @@
     "dates": "1er ulriczeit - 16 ulriczeit",
     "dieux": "Kakarol (chevaux (Ostland))",
     "apparence": "deux pièces",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "sociabilite",
@@ -551,7 +551,7 @@
     "dates": "17 ulriczeit - 31 ulriczeit",
     "dieux": "Shallya",
     "apparence": "un couteau",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "intelligence",
@@ -584,7 +584,7 @@
     "dates": "32 ulriczeit - 11 vorhexen",
     "dieux": "Soll",
     "apparence": "une étoile très lumineuse",
-    "effect": [
+    "ops": [
       {
         "op": "grantTalent",
         "talentId": "sixieme-sens"
@@ -610,7 +610,7 @@
     "dates": "33 ulriczeit - 11 vorhexen",
     "dieux": "Soll",
     "apparence": "une étoile très lumineuse",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "force",
@@ -641,7 +641,7 @@
     "dates": "34 ulriczeit - 11 vorhexen",
     "dieux": "Soll",
     "apparence": "une étoile très lumineuse",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "force",
@@ -672,7 +672,7 @@
     "dates": "35 ulriczeit - 11 vorhexen",
     "dieux": "Soll",
     "apparence": "une étoile très lumineuse",
-    "effect": [
+    "ops": [
       {
         "op": "charMod",
         "char": "force",

@@ -66,7 +66,7 @@ export const schema = z.array(
     talents: z.array(talentRefSchema),
     trappings: z.array(trappingRefSchema),
     spells: z.array(refSchema),
-    desc: z.string().nullable(),
+    desc: z.string().min(1).optional(),
     source: sourceRefSchema,
     /** Emplacements SECONDAIRES (#563) — le MÊME statbloc réimprimé par un autre livre (Bête des
      *  marais : LDB 79 p.318, republiée verbatim par VDM 13 folio 179). L'ANCRE `source` reste seule

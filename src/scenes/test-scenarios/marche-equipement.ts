@@ -70,7 +70,7 @@ function maitreArmes(): Combatant {
 const scene = buildScene({
   id: 'test-marchand',
   nom: 'Marché & équipement',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [16, 9],
   terrain: 'herbe',
   heroStart: [2, 4],
@@ -96,10 +96,10 @@ const scene = buildScene({
       nodes: [
         {
           id: 'accueil',
-          text: 'Bonjour, voyageur. Cherchez-vous des remèdes… ou seulement à bavarder ?',
+          desc: 'Bonjour, voyageur. Cherchez-vous des remèdes… ou seulement à bavarder ?',
           choices: [
-            { text: 'Montrez-moi vos marchandises.', flow: flowFromEffects([{ type: 'openMerchant', entityId: 'herboriste' }]) },
-            { text: 'Une autre fois. (Partir)' },
+            { label: 'Montrez-moi vos marchandises.', flow: flowFromEffects([{ type: 'openMerchant', entityId: 'herboriste' }]) },
+            { label: 'Une autre fois. (Partir)' },
           ],
         },
       ],
@@ -110,10 +110,10 @@ const scene = buildScene({
       nodes: [
         {
           id: 'accueil',
-          text: 'La salle est chaude et les dés roulent. Une partie, l’ami ?',
+          desc: 'La salle est chaude et les dés roulent. Une partie, l’ami ?',
           choices: [
-            { text: 'Volontiers — proposez-nous une partie.', flow: flowFromEffects([{ type: 'openTavernGames' }]) },
-            { text: 'Plus tard. (Partir)' },
+            { label: 'Volontiers — proposez-nous une partie.', flow: flowFromEffects([{ type: 'openTavernGames' }]) },
+            { label: 'Plus tard. (Partir)' },
           ],
         },
       ],
@@ -121,7 +121,7 @@ const scene = buildScene({
   ],
   triggers: [
     // Bourse de départ (la nouvelle partie réinitialise l'argent à 0) — versée en s'avançant vers les échoppes.
-    { id: 'bourse', rect: { x: 3, y: 3, w: 8, h: 4 }, once: true, flow: flowFromEffects([{ type: 'giveMoney', gold: 60 }, { type: 'journal', text: 'Vous disposez de 60 couronnes.' }]) },
+    { id: 'bourse', rect: { x: 3, y: 3, w: 8, h: 4 }, once: true, flow: flowFromEffects([{ type: 'giveMoney', gold: 60 }, { type: 'journal', desc: 'Vous disposez de 60 couronnes.' }]) },
   ],
 });
 

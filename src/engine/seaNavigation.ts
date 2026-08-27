@@ -52,7 +52,7 @@ const DATA = seaNavJson as unknown as {
     reperes: { min: number; max: number; outcome: OrientationOutcome; desc: string }[];
     driftMajorBonus: number;
     driftSide: { tribordMax: number };
-    changementDeCap: { min: number; max: number; effect: CourseChangeEffect; delayPct?: number; desc: string }[];
+    changementDeCap: { min: number; max: number; outcome: CourseChangeOutcome; delayPct?: number; desc: string }[];
   };
   phares: { voirLaLumiere: { min: number; max: number; difficulty: Difficulty }[]; perilSpotBonus: number; clocher: { orientationDR: number; distanceDiviseur: number } };
   longsVoyages: { millesParJourParM: number; sansVoguerDeNuitDiviseur: number; progressionPctParDR: number };
@@ -147,7 +147,7 @@ export function rollWeeklyFouling(hullE: number, level: number, rng: RNG = defau
 // ── Orientation : Repères & Changement de cap (MDG 13 l.307-331) ────────────────────────────────────────
 
 export type OrientationOutcome = 'exact' | 'ok' | 'drift-minor' | 'drift' | 'drift-major';
-export type CourseChangeEffect = 'aucun' | 'retard' | 'quart-de-tour' | 'demi-tour';
+export type CourseChangeOutcome = 'aucun' | 'retard' | 'quart-de-tour' | 'demi-tour';
 
 export interface OrientationResult {
   outcome: OrientationOutcome;
@@ -169,7 +169,7 @@ export function orientationOutcome(dr: number, minorDriftBefore: boolean): Orien
 
 export interface CourseChangeResult {
   roll: number;
-  effect: CourseChangeEffect;
+  outcome: CourseChangeOutcome;
   delayPct: number;
   side: 'tribord' | 'babord';
   desc: string;
@@ -182,7 +182,7 @@ export function rollCourseChange(rng: RNG = defaultRNG, bonus = 0): CourseChange
   const row = findTableEntry(DATA.orientation.changementDeCap, roll);
   return {
     roll,
-    effect: row.effect,
+    outcome: row.outcome,
     delayPct: row.delayPct ?? 0,
     side: d10(rng) <= DATA.orientation.driftSide.tribordMax ? 'tribord' : 'babord',
     desc: row.desc,

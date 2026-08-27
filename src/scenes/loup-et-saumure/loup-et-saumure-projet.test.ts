@@ -126,7 +126,7 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
   it('la commission de Köhler MENTIONNE la dotation de bord (soutes garnies) — le joueur sait qu’il appareille armé', () => {
     const sc = project.find((s) => s.id === 'ls-quai-salzenmund')!;
     const k1 = sc.dialogues.find((d) => d.id === 'dlg-kohler')!.nodes.find((n) => n.id === 'k1')!;
-    expect(/poudre et de boulets/i.test(k1.text)).toBe(true);
+    expect(/poudre et de boulets/i.test(k1.desc)).toBe(true);
   });
 
   it('la Dent de Manann (cogue) porte son équipage exposé (crewIds) référencé par de vraies entités', () => {
@@ -149,7 +149,7 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
   it('la commission de Köhler est la PRÉMISSE assumée : accepter donne l’avance ET le Grimm (setVessel)', () => {
     const sc = project.find((s) => s.id === 'ls-quai-salzenmund')!;
     const dlg = sc.dialogues.find((d) => d.id === 'dlg-kohler')!;
-    const accept = dlg.nodes.flatMap((n) => n.choices).find((c) => /Accepter la commission/.test(c.text))!;
+    const accept = dlg.nodes.flatMap((n) => n.choices).find((c) => /Accepter la commission/.test(c.label))!;
     const steps = accept.flow!.kind === 'seq' ? accept.flow!.steps : [];
     const types = steps.map((s) => (s.kind === 'do' ? s.effect.type : s.kind));
     expect(types).toEqual(expect.arrayContaining(['giveMoney', 'setVessel', 'setFlag', 'journal']));
@@ -248,13 +248,13 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     for (const sc of project)
       for (const d of sc.dialogues)
         for (const n of d.nodes) {
-          if (jargonPattern.test(n.text)) bad.push(`${sc.id}/${d.id}/${n.id}: node.text`);
-          for (const c of n.choices) if (jargonPattern.test(c.text)) bad.push(`${sc.id}/${d.id}/${n.id}: choice "${c.text}"`);
+          if (jargonPattern.test(n.desc)) bad.push(`${sc.id}/${d.id}/${n.id}: node.desc`);
+          for (const c of n.choices) if (jargonPattern.test(c.label)) bad.push(`${sc.id}/${d.id}/${n.id}: choice "${c.label}"`);
         }
     for (const e of allEffects()) {
-      if (e.type === 'journal' && jargonPattern.test(e.text)) bad.push(`journal: "${e.text}"`);
-      if (e.type === 'document' && (jargonPattern.test(e.title) || jargonPattern.test(e.text))) bad.push(`document: "${e.title}"`);
-      if (e.type === 'setObjective' && jargonPattern.test(e.text)) bad.push(`objectif: "${e.text}"`);
+      if (e.type === 'journal' && jargonPattern.test(e.desc)) bad.push(`journal: "${e.desc}"`);
+      if (e.type === 'document' && (jargonPattern.test(e.title) || jargonPattern.test(e.desc))) bad.push(`document: "${e.title}"`);
+      if (e.type === 'setObjective' && jargonPattern.test(e.desc)) bad.push(`objectif: "${e.desc}"`);
     }
     expect(bad).toEqual([]);
   });
@@ -266,7 +266,7 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     for (const o of objTexts) expect(o.id).toBe('ls-mission');
     // Bascule 1 : la commission de Köhler pose l’objectif d’aller.
     const salzenmund = project.find((s) => s.id === 'ls-quai-salzenmund')!;
-    const accept = salzenmund.dialogues.find((d) => d.id === 'dlg-kohler')!.nodes.flatMap((n) => n.choices).find((c) => /Accepter la commission/.test(c.text))!;
+    const accept = salzenmund.dialogues.find((d) => d.id === 'dlg-kohler')!.nodes.flatMap((n) => n.choices).find((c) => /Accepter la commission/.test(c.label))!;
     const acceptEffects: Effect[] = [];
     walkFlow(accept.flow, acceptEffects);
     expect(acceptEffects.some((e) => e.type === 'setObjective')).toBe(true);

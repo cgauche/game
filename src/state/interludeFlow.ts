@@ -136,7 +136,7 @@ registerTableStep(INTERLUDE_EVENT_TABLE, {
   label: msg('if.eventTableLabel'),
   die: 100,
   rows: INTERLUDE_EVENTS,
-  lines: (die) => [interludeEventFor(die).label, interludeEventFor(die).text],
+  lines: (die) => [interludeEventFor(die).label, interludeEventFor(die).desc],
   entryCategory: 'interludeEvents', // la ligne tirée EST l'Événement : sa fiche porte son texte
 });
 
@@ -230,7 +230,7 @@ function finishInterludeEvent(get: Get, set: Set, hero: Combatant, roll: number)
   const st = itl?.perHero[hero.id];
   if (!itl || !st) return [];
   const ev = interludeEventFor(roll);
-  const lines: string[] = [msg('if.eventLine', { name: hero.label, roll, label: ev.label, text: ev.text })];
+  const lines: string[] = [msg('if.eventLine', { name: hero.label, roll, label: ev.label, text: ev.desc })];
   let left = st.left;
   if (ev.fx?.loseActivity) left -= 1;
   // « les elfes ne perdent une Activité que si la durée est d'au moins trois semaines » (ch.23 l.50).

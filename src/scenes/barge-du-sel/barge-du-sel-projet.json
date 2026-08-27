@@ -1,5 +1,5 @@
 {
- "schema": 3,
+ "schema": 4,
  "meta": {
   "id": "barge-du-sel",
   "label": "La Barge du Sel",
@@ -16,7 +16,7 @@
   {
    "id": "barge-du-sel-quai",
    "nom": "Le quai de la Barge du Sel",
-   "description": "Un petit quai de chargement. La Louve grise attend, amarrée, la cale pleine de sel à livrer à l'îlot voisin.",
+   "desc": "Un petit quai de chargement. La Louve grise attend, amarrée, la cale pleine de sel à livrer à l'îlot voisin.",
    "dimensions": {
     "w": 12,
     "h": 8
@@ -193,14 +193,14 @@
         "effect": {
          "type": "setObjective",
          "id": "barge-du-sel-mission",
-         "text": "Convoyer le sel jusqu'à l'îlot, malgré les pirates qui infestent la route."
+         "desc": "Convoyer le sel jusqu'à l'îlot, malgré les pirates qui infestent la route."
         }
        },
        {
         "kind": "do",
         "effect": {
          "type": "journal",
-         "text": "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord — son canon servi, poudre et boulets en soute."
+         "desc": "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord — son canon servi, poudre et boulets en soute."
         }
        }
       ]
@@ -213,7 +213,7 @@
   {
    "id": "barge-du-sel-embuscade",
    "nom": "Voile noire à mi-route — une cogue pirate attaque",
-   "description": "Une cogue pirate coupe la route de la Louve grise en pleine mer.",
+   "desc": "Une cogue pirate coupe la route de la Louve grise en pleine mer.",
    "dimensions": {
     "w": 24,
     "h": 14
@@ -610,7 +610,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 12
         },
@@ -633,7 +632,6 @@
          ],
          "enc": 0,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 4,
          "ammoRangeMod": {
@@ -667,7 +665,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 12
         },
@@ -690,7 +687,6 @@
          ],
          "enc": 0,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 4,
          "ammoRangeMod": {
@@ -731,7 +727,6 @@
          ],
          "enc": 0,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 16
         }
@@ -849,7 +844,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 12
         }
@@ -880,7 +874,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 12
         }
@@ -911,7 +904,6 @@
          ],
          "enc": 1,
          "equipped": false,
-         "desc": null,
          "subType": "munition-de-siege",
          "qty": 8
         }
@@ -1089,14 +1081,14 @@
         "effect": {
          "type": "setObjective",
          "id": "barge-du-sel-mission",
-         "text": "Rallier l'îlot avec le sel — la cogue pirate écartée."
+         "desc": "Rallier l'îlot avec le sel — la cogue pirate écartée."
         }
        },
        {
         "kind": "do",
         "effect": {
          "type": "journal",
-         "text": "La cogue pirate amène son pavillon à mi-coque et rompt le combat."
+         "desc": "La cogue pirate amène son pavillon à mi-coque et rompt le combat."
         }
        }
       ]
@@ -1121,7 +1113,7 @@
   {
    "id": "barge-du-sel-ilot",
    "nom": "L’îlot du sel",
-   "description": "Un petit îlot rocheux où la cargaison de sel doit être débarquée.",
+   "desc": "Un petit îlot rocheux où la cargaison de sel doit être débarquée.",
    "dimensions": {
     "w": 12,
     "h": 6
@@ -1240,7 +1232,7 @@
         "kind": "do",
         "effect": {
          "type": "journal",
-         "text": "La Louve grise accoste à l'îlot, la cale toujours pleine de sel."
+         "desc": "La Louve grise accoste à l'îlot, la cale toujours pleine de sel."
         }
        }
       ]

@@ -61,7 +61,7 @@ describe('LogicDock — onglet Triggers (master-détail, édition LIVE)', () => 
   it('liste les triggers et édite le sélectionné (rect + condition + effets)', () => {
     const scene = emptyScene(10, 10);
     scene.triggers = [
-      { id: 'trig-porte', rect: { x: 1, y: 2, w: 3, h: 1 }, once: true, when: { kind: 'flag', expr: 'cle' }, flow: flowFromEffects([{ type: 'journal', text: 'La porte grince' }]) },
+      { id: 'trig-porte', rect: { x: 1, y: 2, w: 3, h: 1 }, once: true, when: { kind: 'flag', expr: 'cle' }, flow: flowFromEffects([{ type: 'journal', desc: 'La porte grince' }]) },
     ];
     const html = renderToStaticMarkup(dock({ scene, tab: 'triggers', trigSel: 'trig-porte' }));
     expect(html).toContain('trig-porte');
@@ -78,8 +78,8 @@ describe('LogicDock — onglet Dialogues (master-détail de nœuds)', () => {
         id: 'dlg-forgeron',
         start: 'n1',
         nodes: [
-          { id: 'n1', text: 'Bonjour voyageur', choices: [{ text: 'Au revoir', next: 'n2' }] },
-          { id: 'n2', text: 'Bonne route', choices: [] },
+          { id: 'n1', desc: 'Bonjour voyageur', choices: [{ label: 'Au revoir', next: 'n2' }] },
+          { id: 'n2', desc: 'Bonne route', choices: [] },
         ],
       },
     ];

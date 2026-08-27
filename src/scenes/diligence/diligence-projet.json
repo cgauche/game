@@ -1,5 +1,5 @@
 {
- "schema": 3,
+ "schema": 4,
  "meta": {
   "id": "la-diligence",
   "label": "La Diligence",
@@ -16,7 +16,6 @@
   {
    "id": "la-diligence",
    "nom": "La Diligence",
-   "description": "",
    "dimensions": {
     "w": 32,
     "h": 38

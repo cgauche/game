@@ -96,7 +96,7 @@ function quay(e: ReikEntry, start: boolean): Scene {
   return buildScene({
     id: `quai-${e.id}`,
     nom: `${e.label} — les quais`,
-    description: 'Arène de test.',
+    desc: 'Arène de test.',
     size,
     terrain: 'planches',
     heroStart: [3, 4],

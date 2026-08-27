@@ -76,7 +76,7 @@ const bigProj = (id: string, label = 'Grosse campagne'): SavedProject => ({
   project: {
     schema: 2,
     scenes: [scene(id)],
-    meta: { description: 'x'.repeat(600_000) },
+    meta: { desc: 'x'.repeat(600_000) },
   } as unknown as SavedProject['project'],
 });
 
@@ -195,8 +195,8 @@ describe('projectLibrary — bibliothèque de projets éditeur (localStorage)', 
     // Sortie 1 : `projectsLoad()` direct après le retrait (cache déjà à jour en mémoire).
     expect(projectsLoad()).toEqual([]);
 
-    // Une copie legacy concurrente survit dans le miroir localStorage (écriture concurrente, reload
-    // partiel…) — aucune des trois sorties ne doit la laisser ressusciter le projet supprimé.
+    // Une copie CONCURRENTE du projet survit dans le miroir localStorage (écriture concurrente,
+    // reload partiel…) — aucune des trois sorties ne doit la laisser ressusciter le projet supprimé.
     localStorage.setItem(KEY, JSON.stringify([proj('p1', 'Revenant')]));
 
     // Sortie 2 : `initLibrary()` SANS IndexedDB (`hasIdb()` faux par défaut dans cet environnement de
@@ -312,8 +312,8 @@ describe('projectLibrary — bibliothèque de projets éditeur (localStorage)', 
       expect(projectsLoad()).toEqual([]);
       expect(idb.store.has('p1')).toBe(false);
 
-      // le miroir localStorage a suivi la suppression : un reload ne le voit plus, même si une
-      // copie legacy traînait encore (ex. écriture concurrente) — la tombe l'exclut de la migration.
+      // le miroir localStorage a suivi la suppression : un reload ne le voit plus, même si une copie
+      // CONCURRENTE y traîne (écriture concurrente) — l'entrée de `TOMBSTONE_KEY` l'exclut de la migration.
       localStorage.setItem(
         KEY,
         JSON.stringify([proj('p1', 'Un')]),

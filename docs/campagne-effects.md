@@ -14,7 +14,7 @@ câblé côté `src/state`, ou n'être jamais posé dans aucun JSON de campagne 
 | Effect (`type`) | Champs | Rôle |
 |---|---|---|
 | `setFlag` | `flag`, `value?` | — |
-| `setObjective` | `id`, `text`, `...ScheduleSpec` | Pose/met à jour un OBJECTIF courant (surface « je fais quoi maintenant ? », #238) sur la pile `store.objectives`, keyé par `id` STABLE : re-poser le même `id` MET À JOUR son `text`. |
+| `setObjective` | `id`, `desc`, `...ScheduleSpec` | Pose/met à jour un OBJECTIF courant (surface « je fais quoi maintenant ? », #238) sur la pile `store.objectives`, keyé par `id` STABLE : re-poser le même `id` MET À JOUR sa prose (`desc`). |
 | `clearObjective` | `id?` | Retire un objectif de la pile : `id` précis, ou TOUS si absent (fin d'acte). |
 | `giveTrapping` | `trappingId?`, `custom?`, `heroId?`, `qualities?`, `identified?`, `skin?`, `magicKnown?`, `detectTried?`, `appraiseTriedDay?`, `price?` | Donne un objet à un héros (défaut : le premier). |
 | `givePossession` | `nature`, `ref`, `heroId?` | Donne une POSSESSION (bête/serviteur/véhicule — le SOCLE POSSESSIONS #615, registre `GameState.possessions`) à un héros propriétaire (défaut : le premier — même patron que `giveTrapping.heroId`, §4.3). |
@@ -25,8 +25,8 @@ câblé côté `src/state`, ou n'être jamais posé dans aucun JSON de campagne 
 | `transition` | `scene`, `entry?` | — |
 | `transitionBack` | — | Retour à la scène précédente (sortie d'intérieur), à la case d'entrée. |
 | `startDialogue` | `dialogue`, `speakerId?` | Ouvre le dialogue scripté `dialogue`. |
-| `journal` | `text` | — |
-| `document` | `title`, `text` | — |
+| `journal` | `desc` | — |
+| `document` | `title`, `desc` | — |
 | `revealClue` | `indiceId`, `stade?` | Mécanique MAISON du carnet d'enquête (#670, aucune règle RAW) : révèle/avance un `Indice` de `campaignNarratif`. |
 | `discreditClue` | `indiceId` | Écarte un indice comme fausse piste (barré, relisible au carnet) — mécanique MAISON (#670). |
 | `extendedTest` | `skill?`, `spec?`, `characteristic?`, `difficulty?`, `label`, `targetDR`, `flag?`, `stake?` | Test ÉTENDU (`LDB 12 l.172-174`) : un acteur cumule des DR Round par Round jusqu'à `targetDR` (crocheter une serrure, forcer un mécanisme…). |

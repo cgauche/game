@@ -268,7 +268,7 @@ describe('péripéties d’auteur — interruption et reprise', () => {
   });
 
   it('péripétie purement narrative (journal) : le voyage continue', () => {
-    setup(map({ perils: [{ label: 'Un colporteur partage la route.', chancePct: 100, effects: [{ type: 'journal', text: 'Il vend des amulettes.' }] }] }));
+    setup(map({ perils: [{ label: 'Un colporteur partage la route.', chancePct: 100, effects: [{ type: 'journal', desc: 'Il vend des amulettes.' }] }] }));
     useGame.getState().startTravel('r1', 'pied');
     drainCascade(); // péripétie narrative en cascade travelDay → drainer, puis arrivée
     const st = useGame.getState();
@@ -303,7 +303,7 @@ describe('nourriture en voyage (LDB 18 l.337-343)', () => {
 
 describe('récapitulatif de voyage (audit M4) — modale à l’arrivée/interruption', () => {
   it('arrivée : recap « arrived » avec ses journées et les lignes de péripétie', () => {
-    setup(map({ perils: [{ label: 'Un colporteur partage la route.', chancePct: 100, effects: [{ type: 'journal', text: 'Il vend des amulettes.' }] }] }));
+    setup(map({ perils: [{ label: 'Un colporteur partage la route.', chancePct: 100, effects: [{ type: 'journal', desc: 'Il vend des amulettes.' }] }] }));
     useGame.getState().startTravel('r1', 'pied');
     drainCascade(); // péripétie du jour en cascade travelDay → drainer, puis recap d'arrivée
     const r = useGame.getState().travelRecap!;

@@ -417,7 +417,7 @@ export function declutterPositions(
 }
 
 // ── Format de PROJET (export/import éditeur) ────────────────────────────────────────────────
-// Format courant : `{ schema: 3, scenes, worldMap?, narratif }` (paquet de campagne auto-suffisant,
+// Format courant : `{ schema: 4, scenes, worldMap?, narratif }` (paquet de campagne auto-suffisant,
 // #765). Chaîné par la primitive générique `migrateDoc` (même mécanique que les saves, `saves.ts`) —
 // `schema` joue le rôle de `version` ; la migration 2→3 injecte un `narratif` vide.
 import { migrateDoc, type MigrationMap } from './migrateDoc';
@@ -430,12 +430,12 @@ export interface ProjectMeta {
   label: string;
   icon?: string;
   version: number;
-  description?: string;
+  desc?: string;
   auteur?: string;
 }
 
 export interface ProjectDoc {
-  schema: 3;
+  schema: 4;
   scenes: Scene[];
   worldMap?: WorldMap;
   /** Axes de forces/faiblesses ACTIFS de la campagne (#409, ids de `src/data/axes.json`) — un
@@ -457,14 +457,86 @@ export function resolveActiveAxes(doc: { activeAxes?: string[] }): string[] {
   return doc.activeAxes && doc.activeAxes.length > 0 ? doc.activeAxes : CORE_AXIS_IDS;
 }
 
-export const CURRENT_PROJECT_SCHEMA = 3;
+export const CURRENT_PROJECT_SCHEMA = 4;
+
+/** Renomme UNE clé d'un objet EN PLACE (position préservée), sans la créer si elle est absente. */
+function renommeCle(o: Record<string, unknown>, de: string, vers: string): Record<string, unknown> {
+  if (!(de in o)) return o;
+  return Object.fromEntries(Object.entries(o).map(([k, v]) => [k === de ? vers : k, v]));
+}
+
+/** Un effet narratif porte sa prose sous `text` en schema 3 (`journal`, `document`, `setObjective`). */
+const EFFETS_A_PROSE = new Set(['journal', 'document', 'setObjective']);
+
+/**
+ * Descente RECONNAISSANTE d'un document schema 3 : un porteur est reconnu à sa FORME (un nœud de
+ * dialogue porte `choices`, un effet narratif porte un `type` de `EFFETS_A_PROSE`), jamais par
+ * exclusion — le `text` d'une op `narrative` ou d'un `TrappingRef` traverse intact.
+ */
+function migreProse(v: unknown, dansNodes: boolean): unknown {
+  if (Array.isArray(v)) return v.map((x) => migreProse(x, dansNodes));
+  if (!v || typeof v !== 'object') return v;
+  const src = v as Record<string, unknown>;
+  let o: Record<string, unknown> = Object.fromEntries(
+    Object.entries(src).map(([k, x]) => [k, migreProse(x, k === 'nodes' ? true : k === 'choices' ? false : dansNodes)]),
+  );
+  const estNoeud = dansNodes && Array.isArray(o.choices);
+  const estEffetNarratif = typeof o.type === 'string' && EFFETS_A_PROSE.has(o.type);
+  if (estNoeud || estEffetNarratif) o = renommeCle(o, 'text', 'desc');
+  // Prose ABSENTE = clé absente (les snapshots d'`ItemInstance` embarqués portaient `desc: null`).
+  if (o.desc === null) { const { desc: _nul, ...reste } = o; o = reste; }
+  return o;
+}
+
+/** Les CHOIX d'un dialogue : `text` y était un LIBELLÉ, pas de la prose. */
+function migreChoix(scenes: unknown): unknown {
+  if (!Array.isArray(scenes)) return scenes;
+  return scenes.map((s) => {
+    const sc = s as Record<string, unknown>;
+    if (!Array.isArray(sc.dialogues)) return sc;
+    return {
+      ...sc,
+      dialogues: sc.dialogues.map((d) => {
+        const dl = d as Record<string, unknown>;
+        if (!Array.isArray(dl.nodes)) return dl;
+        return {
+          ...dl,
+          nodes: dl.nodes.map((n) => {
+            const nd = n as Record<string, unknown>;
+            if (!Array.isArray(nd.choices)) return nd;
+            return { ...nd, choices: nd.choices.map((c) => renommeCle(c as Record<string, unknown>, 'text', 'label')) };
+          }),
+        };
+      }),
+    };
+  });
+}
 
 /** Migrations SÉQUENTIELLES de ProjectDoc : la clé N met à niveau un schema N → N+1. `2` injecte le
- *  bloc `narratif` vide (#765 — un projet schema 2 legacy est un paquet SANS narratif). Ajouter ici
- *  la migration N→N+1 pour tout futur bump (cf. `MIGRATIONS` de `saves.ts`), plutôt que de refuser
- *  en silence des projets antérieurs valides. */
+ *  bloc `narratif` vide (#765 — un projet schema 2 est un paquet SANS narratif). `3` porte les
+ *  RÔLES DE PROSE du lot #1467 L1b V-P2 : c'est la MÊME transformation que les migrations de dépôt
+ *  (`scripts/migrations/2026-08-27-l1b-3{a,b,g,h}-*.mjs`), appliquée au CHARGEMENT — sans elle, un
+ *  projet exporté avant ce lot (bibliothèque utilisateur, `.json` portable) mourrait sur le schéma.
+ *  Ajouter ici la migration N→N+1 pour tout futur bump (cf. `MIGRATIONS` de `saves.ts`), plutôt que
+ *  de refuser en silence des projets antérieurs valides. */
 export const PROJECT_MIGRATIONS: MigrationMap = {
   2: (doc) => ({ ...doc, version: 3, schema: 3, narratif: emptyNarratif() }),
+  3: (doc) => {
+    // Un document SANS `scenes` valide traverse INTACT : c'est `parseProject` qui le refuse, avec son
+    // message actionnable — une migration ne doit jamais transformer une donnée absente en exception.
+    if (!Array.isArray(doc.scenes)) return { ...doc, version: 4, schema: 4 };
+    const scenesProse = migreProse(doc.scenes, false) as unknown[];
+    const scenes = (migreChoix(scenesProse) as Record<string, unknown>[]).map((s) => {
+      const avecDesc = renommeCle(s, 'description', 'desc');
+      // Prose ABSENTE = clé absente : ni `null`, ni chaîne vide (le schéma pose `.min(1).optional()`).
+      if (avecDesc.desc === '' || avecDesc.desc === null) { const { desc: _sans, ...reste } = avecDesc; return reste; }
+      return avecDesc;
+    });
+    const meta = doc.meta && typeof doc.meta === 'object'
+      ? renommeCle(doc.meta as Record<string, unknown>, 'description', 'desc')
+      : doc.meta;
+    return { ...doc, version: 4, schema: 4, scenes, ...(doc.meta !== undefined ? { meta } : {}) };
+  },
 };
 
 /** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (jamais un

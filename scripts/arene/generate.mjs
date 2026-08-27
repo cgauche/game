@@ -60,7 +60,7 @@ const worldMap = {
         {
           label: 'Hurlements dans la nuit',
           chancePct: 25,
-          effects: [{ type: 'journal', text: 'Des hurlements suivent la colonne toute la nuit — au matin, des empreintes de loups cernent le bivouac.' }],
+          effects: [{ type: 'journal', desc: 'Des hurlements suivent la colonne toute la nuit — au matin, des empreintes de loups cernent le bivouac.' }],
         },
       ],
       ambush: { scene: 'arene-route-embuscade', encounter: 'enc-embuscade' },
@@ -76,7 +76,7 @@ const worldMap = {
         {
           label: 'Charrette de réfugiés',
           chancePct: 20,
-          effects: [{ type: 'journal', text: 'Une charrette de réfugiés de Felsbach passe sans s’arrêter. Une femme crie : « N’y allez pas ! L’EAU ! »' }],
+          effects: [{ type: 'journal', desc: 'Une charrette de réfugiés de Felsbach passe sans s’arrêter. Une femme crie : « N’y allez pas ! L’EAU ! »' }],
         },
       ],
       ambush: { scene: 'arene-route-embuscade', encounter: 'enc-embuscade' },
@@ -92,7 +92,7 @@ const worldMap = {
         {
           label: 'Feux follets',
           chancePct: 30,
-          effects: [{ type: 'journal', text: 'Des lueurs dansent hors du sentier, insistantes. Ceux qui les suivent ne reviennent pas — vous ne les suivez PAS.' }],
+          effects: [{ type: 'journal', desc: 'Des lueurs dansent hors du sentier, insistantes. Ceux qui les suivent ne reviennent pas — vous ne les suivez PAS.' }],
         },
       ],
       ambush: { scene: 'arene-route-embuscade', encounter: 'enc-embuscade' },

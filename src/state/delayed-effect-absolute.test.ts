@@ -92,14 +92,14 @@ describe('setObjective — échéance posée sur Objective.deadline (#668)', () 
 
   it('afterDays:2, atHour:0 : pose deadline = (dayIndex(now)+2)*1440', () => {
     const now = useGame.getState().gameTime;
-    const eff: Effect = { type: 'setObjective', id: 'obj', text: 'Retrouver le Grimm', afterDays: 2, atHour: 0 };
+    const eff: Effect = { type: 'setObjective', id: 'obj', desc: 'Retrouver le Grimm', afterDays: 2, atHour: 0 };
     applyEffects(useGame.getState, useGame.setState, [eff]);
     const obj = useGame.getState().objectives.find((o) => o.id === 'obj');
     expect(obj?.deadline).toBe((dayIndex(now) + 2) * MINUTES_PER_DAY);
   });
 
   it('sans ScheduleSpec : deadline reste undefined (compat #668)', () => {
-    const eff: Effect = { type: 'setObjective', id: 'obj2', text: 'Sans échéance' };
+    const eff: Effect = { type: 'setObjective', id: 'obj2', desc: 'Sans échéance' };
     applyEffects(useGame.getState, useGame.setState, [eff]);
     const obj = useGame.getState().objectives.find((o) => o.id === 'obj2');
     expect(obj?.deadline).toBeUndefined();

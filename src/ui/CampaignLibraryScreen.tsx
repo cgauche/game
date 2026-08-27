@@ -236,8 +236,8 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
           <span className="chip">{selected.kind === 'builtin' ? 'Campagne du jeu' : 'Ma bibliothèque'}</span>
           {selected.kind === 'library' && selected.sp.published && <span className="chip">publiée</span>}
         </div>
-        {selected.kind === 'library' && selected.sp.project.meta?.description && (
-          <p>{selected.sp.project.meta.description}</p>
+        {selected.kind === 'library' && selected.sp.project.meta?.desc && (
+          <p>{selected.sp.project.meta.desc}</p>
         )}
         {selected.kind === 'library' && selected.sp.project.meta?.auteur && (
           <p className="mini-title">Par {selected.sp.project.meta.auteur}</p>

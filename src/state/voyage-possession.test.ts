@@ -168,7 +168,7 @@ describe('#1262 V2 — la décision d’Embrigadement est au siège du MENEUR', 
 
 // ── FLEUVE ───────────────────────────────────────────────────────────────────────────────────────
 
-const quai = (id: string, nom: string) => buildScene({ id, nom, description: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const quai = (id: string, nom: string) => buildScene({ id, nom, desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 function riverMap(extra: Partial<MapRoute> = {}): WorldMap {
   return {
@@ -246,8 +246,8 @@ describe('#1262 V2 — l’allure FORCÉE ouvre sa cascade pour le conducteur d�
     skill(aide, 'conduite-d-attelage', 5);
     useGame.setState({ party: [lead, aide], travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] } as never);
     get().loadProject(
-      [buildScene({ id: 'lieu-a', nom: 'A', description: '.', size: [8, 6], terrain: 'herbe', heroStart: [2, 3] }),
-        buildScene({ id: 'lieu-b', nom: 'B', description: '.', size: [8, 6], terrain: 'herbe', heroStart: [2, 3] })],
+      [buildScene({ id: 'lieu-a', nom: 'A', desc: '.', size: [8, 6], terrain: 'herbe', heroStart: [2, 3] }),
+        buildScene({ id: 'lieu-b', nom: 'B', desc: '.', size: [8, 6], terrain: 'herbe', heroStart: [2, 3] })],
       'lieu-a',
       { id: 'c', nom: 'c', places: [
         { id: 'pa', label: 'A', pos: { x: 0, y: 0 }, scene: 'lieu-a' },

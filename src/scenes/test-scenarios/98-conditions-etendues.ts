@@ -13,7 +13,7 @@ import type { TestScenario } from './_shared';
 const scene = buildScene({
   id: 'test-conditions-etendues',
   nom: 'Conditions étendues — démo',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [10, 8],
   terrain: 'herbe',
   heroStart: [1, 4],
@@ -33,30 +33,30 @@ const scene = buildScene({
       nodes: [
         {
           id: 'accueil',
-          text: '« Halte-là ! Qu’est-ce qui vous amène ? »',
+          desc: '« Halte-là ! Qu’est-ce qui vous amène ? »',
           choices: [
             {
-              text: '[Crochetage] « On sait forcer une serrure, au besoin. »',
+              label: '[Crochetage] « On sait forcer une serrure, au besoin. »',
               when: { kind: 'skill', id: 'crochetage' },
-              flow: flowFromEffects([{ type: 'journal', text: 'Le garde hausse un sourcil, amusé.' }, { type: 'endDialogue' }]),
+              flow: flowFromEffects([{ type: 'journal', desc: 'Le garde hausse un sourcil, amusé.' }, { type: 'endDialogue' }]),
             },
             {
-              text: '[Soldat] « On a porté l’uniforme, nous aussi. »',
+              label: '[Soldat] « On a porté l’uniforme, nous aussi. »',
               when: { kind: 'career', id: 'soldat' },
-              flow: flowFromEffects([{ type: 'journal', text: 'Le garde se détend, entre collègues.' }, { type: 'endDialogue' }]),
+              flow: flowFromEffects([{ type: 'journal', desc: 'Le garde se détend, entre collègues.' }, { type: 'endDialogue' }]),
             },
             {
-              text: '[Halfling] « Un petit gabarit passe partout, hein ? »',
+              label: '[Halfling] « Un petit gabarit passe partout, hein ? »',
               when: { kind: 'species', id: 'halflings' },
-              flow: flowFromEffects([{ type: 'journal', text: 'Le garde éclate de rire.' }, { type: 'endDialogue' }]),
+              flow: flowFromEffects([{ type: 'journal', desc: 'Le garde éclate de rire.' }, { type: 'endDialogue' }]),
             },
             {
-              text: '[Statut : Argent+] « Nous sommes des gens de qualité. »',
+              label: '[Statut : Argent+] « Nous sommes des gens de qualité. »',
               when: { kind: 'status', atLeast: 'Argent 1' },
-              flow: flowFromEffects([{ type: 'journal', text: 'Le garde s’incline, un peu raide.' }, { type: 'endDialogue' }]),
+              flow: flowFromEffects([{ type: 'journal', desc: 'Le garde s’incline, un peu raide.' }, { type: 'endDialogue' }]),
             },
             {
-              text: 'Passer son chemin sans un mot.',
+              label: 'Passer son chemin sans un mot.',
               flow: flowFromEffects([{ type: 'endDialogue' }]),
             },
           ],

@@ -57,14 +57,14 @@ export function DialogueBox() {
             onClick={() => choose(i)}
           >
             {c.icon && <Icon id={c.icon as IconIdInput} size="sm" />}
-            <span className="dlg-choice-text">{c.text}</span>
+            <span className="dlg-choice-text">{c.label}</span>
             {cost && <span className="dlg-choice-cost"><Coins money={cost} /></span>}
           </button>
         );
       })}
       {!owns && <SpectatorChip label={meneur} action="répond pour le groupe…" inline />}
     </>}>
-      {node.text}
+      {node.desc}
     </SpeakerBanner>
   );
 }

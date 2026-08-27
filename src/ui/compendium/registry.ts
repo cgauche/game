@@ -673,7 +673,7 @@ function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem
   return {
     id: e.id, label: e.label,
     sub: `d100 ${e.min}–${e.max}`,
-    desc: e.text,
+    desc: e.desc,
     meta: facts(fact('Dégâts véhicule', e.vehicleWounds ?? null)),
     sections: sections(passiveSection(e.occupantOps, occupantsTitle)),
   };
@@ -832,15 +832,15 @@ function shipConstructionRulesSection(): CodexSection {
 //    `waterExposure`) ; Accidents de Conduite / Ivresse restent des CATÉGORIES-tableau (id/name déjà
 //    en donnée, MÊME patron que `incidentsMonture`/`problemesVehicule`). ──
 
-/** Libellés FR des 4 issues de l'Accident de Conduite d'attelage (`driving-mishap.json::effect`, LDB 09
- *  l.140-149) — vocabulaire machine (`DrivingMishapEffect`) lu par `mishapCausesCrash`. */
-const DRIVING_MISHAP_EFFECT_LABEL: Record<string, string> = {
+/** Libellés FR des 4 issues de l'Accident de Conduite d'attelage (`driving-mishap.json::outcome`, LDB 09
+ *  l.140-149) — vocabulaire machine (`DrivingMishapOutcome`) lu par `mishapCausesCrash`. */
+const DRIVING_MISHAP_OUTCOME_LABEL: Record<string, string> = {
   harness: 'Harnais cassé', jolt: 'Cahots de la route', wheel: 'Roue brisée', crash: 'Essieu cassé (Accidenté)',
 };
 
-/** Libellés FR des 5 résultats du Tableau d'Ivresse (`drunkenness.json::effect`, LDB 09 l.475-481) —
+/** Libellés FR des 5 résultats du Tableau d'Ivresse (`drunkenness.json::outcome`, LDB 09 l.475-481) —
  *  vocabulaire machine lu par `drunkStaggers`/`soberUp`. */
-const DRUNKENNESS_EFFECT_LABEL: Record<string, string> = {
+const DRUNKENNESS_OUTCOME_LABEL: Record<string, string> = {
   bravoure: 'Bravoure du Marienburgher', ami: 'Meilleur ami', staggering: 'La pièce tourne',
   belligerent: 'Tous, un par un', blackout: 'Trou noir (gueule de bois)',
 };
@@ -1164,14 +1164,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'drivingMishap', label: 'Accidents de Conduite d’attelage', group: 'Tables', cluster: 'Voyage terrestre', sourceRef: 'LDB 09',
     build: () => datasetArray('drivingMishap').map((e) => ({
       id: e.id, label: e.label, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
-      meta: facts(fact('Type', DRIVING_MISHAP_EFFECT_LABEL[e.effect] ?? e.effect)),
+      meta: facts(fact('Type', DRIVING_MISHAP_OUTCOME_LABEL[e.outcome] ?? e.outcome)),
     })),
   },
   {
     key: 'drunkenness', label: 'Ivresse (Tableau)', group: 'Tables', sourceRef: 'LDB 09',
     build: () => datasetArray('drunkenness').map((e) => ({
       id: e.id, label: e.label, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
-      meta: facts(fact('Type', DRUNKENNESS_EFFECT_LABEL[e.effect] ?? e.effect)),
+      meta: facts(fact('Type', DRUNKENNESS_OUTCOME_LABEL[e.outcome] ?? e.outcome)),
       sections: sections(passiveSection(e.ops, 'Effet')),
     })),
   },
@@ -1392,7 +1392,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => stars.map((s) => ({
       id: s.id, label: s.label, sub: s.signe ?? undefined, desc: s.desc ?? undefined, source: src(s.source),
       meta: facts(fact('Dates', s.dates), fact('Dieu', s.dieux), fact('Ascendant', s.ascendant)),
-      sections: sections(passiveSection(s.effect, 'Effet du signe')),
+      sections: sections(passiveSection(s.ops, 'Effet du signe')),
     })),
   },
   {
@@ -1828,11 +1828,11 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'interludeEvents', label: 'Entre deux aventures', group: 'Tables',
-    build: () => interludeEvents.map((e) => ({ id: e.id, label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text })),
+    build: () => interludeEvents.map((e) => ({ id: e.id, label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.desc })),
   },
   {
     key: 'peripeties', label: 'Péripéties de voyage', group: 'Tables', cluster: 'Voyage terrestre',
-    build: () => peripeties.map((p) => ({ id: p.id, label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.text })),
+    build: () => peripeties.map((p) => ({ id: p.id, label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.desc })),
   },
   {
     key: 'activities', label: 'Activités', group: 'Tables',
@@ -1901,7 +1901,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'massBattleHazards', label: 'Bataille de masse — Aléas de bataille', group: 'Tables', cluster: 'Bataille de masse',
-    build: () => BATTLE_HAZARDS.map((h) => ({ id: h.id, label: h.label, sub: `1d10 = ${h.min}`, desc: h.text })),
+    build: () => BATTLE_HAZARDS.map((h) => ({ id: h.id, label: h.label, sub: `1d10 = ${h.min}`, desc: h.desc })),
   },
   // ── Datasets-OBJETS uniques (E3b) : config de création (objet) + banque de noms (Record par race) ──
   {

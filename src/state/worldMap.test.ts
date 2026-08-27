@@ -9,7 +9,7 @@ import { lieuxServices } from '../data';
 import { validateScene } from './validateScene';
 import type { Scene } from './scene';
 
-const scene = (id: string) => ({ id, nom: id, description: '', dimensions: { w: 3, h: 3 } } as Scene);
+const scene = (id: string) => ({ id, nom: id, dimensions: { w: 3, h: 3 } } as Scene);
 const wm = { id: 'm', nom: 'Carte', places: [], routes: [] };
 
 describe('parseProject — validation du format projet v2', () => {
@@ -51,7 +51,7 @@ describe('parseProject — validation du format projet v2', () => {
   it('scène ANCIENNE (schema 2 mais sans les collections requises du Scene actuel) → normalisée, ne crashe pas validateScene', () => {
     // Reproduit le crash « Ouvrir → L'Embuscade » (TypeError sur s.encounters.map, validateScene.ts:59) :
     // un projet localStorage sauvegardé avant que `Scene` ne gagne `encounters`/`dialogues`/… ne les porte pas.
-    const old = { id: 'old', nom: 'Vieille scène', description: '', dimensions: { w: 3, h: 3 } } as Scene; // aucune collection
+    const old = { id: 'old', nom: 'Vieille scène', dimensions: { w: 3, h: 3 } } as Scene; // aucune collection
     const { scenes } = parseProject({ schema: 2, scenes: [old] });
     expect(scenes[0].encounters).toEqual([]);
     expect(scenes[0].dialogues).toEqual([]);
@@ -285,9 +285,9 @@ describe('parseProject — porte de schéma', () => {
     expect(res.scenes.map((s) => s.id)).toEqual(['s1']);
   });
 
-  it('un schema FUTUR (4) est refusé AVANT la porte, avec un message actionnable', () => {
-    expect(() => parseProject({ schema: 4, scenes: [scene('s1')], narratif: narratifVide }))
-      .toThrow(/Projet invalide ou version non supportée.*schema=4/);
+  it('un schema FUTUR (5) est refusé AVANT la porte, avec un message actionnable', () => {
+    expect(() => parseProject({ schema: 5, scenes: [scene('s1')], narratif: narratifVide }))
+      .toThrow(/Projet invalide ou version non supportée.*schema=5/);
   });
 
   it('`encounters[].enemies` (forme legacy) est refusé PAR SON NOM, jamais absorbé en silence', () => {

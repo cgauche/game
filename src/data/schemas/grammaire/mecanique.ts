@@ -339,7 +339,7 @@ export const travelTableEntrySchema = z.strictObject({
   max: z.number(),
   id: z.string(),
   label: z.string(),
-  text: z.string(),
+  desc: z.string(),
   stageOutcome: stageOutcomeSchema.optional(),
   vehicleWounds: z.string().nullable().optional(),
   occupantOps: z.array(gameOpSchema).optional(),
@@ -362,12 +362,12 @@ export const travelTableEntrySchema = z.strictObject({
     preventsMount: z.boolean().optional(),
     /** Les soins d'une halte n'effacent PAS cette séquelle (Patte brisée). */
     notHealedByCare: z.boolean().optional(),
-    /** CONDITION DE FIN de la séquelle, telle que le `text` verbatim de l'entrée la pose (« jusqu'à ce
+    /** CONDITION DE FIN de la séquelle, telle que le `desc` verbatim de l'entrée la pose (« jusqu'à ce
      *  que la partie abîmée soit réparée » / « jusqu'à ce que le fer ait été remplacé par un
      *  maréchal-ferrant ») — fragment d'AFFICHAGE joueur accolé à la ligne de séquelle, jamais une
      *  mécanique : ce qui EFFACE la séquelle reste `notHealedByCare` + les soins d'étape. */
     endCondition: z.string().optional(),
-    /** ISSUE de la bête, quand le `text` verbatim en pose une (Patte brisée : « Fracture (Majeure) …
+    /** ISSUE de la bête, quand le `desc` verbatim en pose une (Patte brisée : « Fracture (Majeure) …
      *  peu d'espoir qu'elle y survive ») — fragment d'AFFICHAGE joueur, ligne propre au journal. */
     outcome: z.string().optional(),
   }).optional(),

@@ -17,7 +17,7 @@ export const schema = z.array(
     label: z.string(),
     /** Ce que le MOTEUR sait jouer sans rien inventer (cf. `src/data/peripeties.ts`). */
     kind: z.enum(['reposant', 'narratif', 'ereintant', 'attaque']),
-    text: z.string(),
+    desc: z.string(),
     source: sourceRefSchema.optional(),
   }),
 );

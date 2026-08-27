@@ -41,7 +41,7 @@ function tavernMap(): WorldMap {
   };
 }
 
-const scene = () => buildScene({ id: 'auberge-a', nom: 'Auberge du Cerf', description: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
+const scene = () => buildScene({ id: 'auberge-a', nom: 'Auberge du Cerf', desc: '.', size: [8, 6], terrain: 'planches', heroStart: [2, 3] });
 
 function launch(advances: number, seed: number): void {
   seedBattleRng(seed);

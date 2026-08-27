@@ -42,7 +42,7 @@ const HERSE_WHEN: Condition = {
 const scene = buildScene({
   id: 'test-piege-caveau',
   nom: 'Le Caveau piégé',
-  description: 'Arène de test.',
+  desc: 'Arène de test.',
   size: [14, 10],
   terrain: 'pierre',
   ambiance: 'interieur',
@@ -55,19 +55,19 @@ const scene = buildScene({
     { id: 'levier', kind: 'prop', ref: 'roue-dentee', pos: { x: 2, y: 2 }, label: 'Mécanisme rouillé',
       interact: { flow: flowFromEffects([
         { type: 'setFlag', flag: 'levier_tire' },
-        { type: 'journal', text: 'Le mécanisme cède dans un grincement — quelque chose s’ébranle derrière le mur.' },
+        { type: 'journal', desc: 'Le mécanisme cède dans un grincement — quelque chose s’ébranle derrière le mur.' },
       ]) } },
     { id: 'cle', kind: 'prop', ref: 'cle', pos: { x: 2, y: 8 }, label: 'Clé en fer, posée là',
       interact: { consume: true, flow: flowFromEffects([
         { type: 'giveTrapping', custom: 'Clé en fer' },
-        { type: 'journal', text: 'Vous empochez la lourde clé en fer.' },
+        { type: 'journal', desc: 'Vous empochez la lourde clé en fer.' },
       ]) } },
     { id: 'herse-grille', kind: 'prop', ref: 'grille', pos: { x: 10, y: 5 }, label: 'Herse du trésor' },
     { id: 'tresor', kind: 'prop', ref: 'coffre', pos: { x: 12, y: 5 }, label: 'Coffre du trésor',
       interact: { consume: true, flow: flowFromEffects([
         { type: 'giveMoney', gold: 5 },
         { type: 'giveTrapping', trappingId: 'arme-simple', qualities: ['precise'], identified: false },
-        { type: 'journal', text: 'Le coffre regorge d’or et d’une lame finement ouvragée.' },
+        { type: 'journal', desc: 'Le coffre regorge d’or et d’une lame finement ouvragée.' },
       ]) } },
   ],
   triggers: [
@@ -81,11 +81,11 @@ const scene = buildScene({
           skill: 'Athlétisme', difficulty: 'intermediaire', label: 'Esquiver les piques de la dalle',
           stake: { authored: 'Se figer à temps sur la dalle : sinon les piques frappent le groupe, l’alarme retentit et la herse du trésor se verrouille.' },
         },
-        flowFromEffects([{ type: 'journal', text: 'Un déclic — vous vous figez juste à temps, les piques claquent dans le vide.' }]),
+        flowFromEffects([{ type: 'journal', desc: 'Un déclic — vous vous figez juste à temps, les piques claquent dans le vide.' }]),
         flowFromEffects([
           { type: 'ops', on: 'party', ops: [{ op: 'wounds', amount: 5 }, { op: 'condition', id: 'a-terre' }] },
           { type: 'setFlag', flag: 'alarme' },
-          { type: 'journal', text: 'Les piques jaillissent ! Dans le fracas, une cloche d’alarme retentit — la herse se verrouille.' },
+          { type: 'journal', desc: 'Les piques jaillissent ! Dans le fracas, une cloche d’alarme retentit — la herse se verrouille.' },
         ]),
       ),
     },
@@ -97,7 +97,7 @@ const scene = buildScene({
       flow: flowFromEffects([
         { type: 'setFlag', flag: 'herse_ouverte' },
         { type: 'giveXp', amount: 30 },
-        { type: 'journal', text: 'La herse coulisse : le trésor est à vous.' },
+        { type: 'journal', desc: 'La herse coulisse : le trésor est à vous.' },
       ]),
     },
   ],

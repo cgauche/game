@@ -10,7 +10,7 @@ export function makeZone1() {
     id: 'arene-zone1',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — La Cour',
-    description: 'La cour d’échauffement de l’arène : du sable, des caisses, de la vermine.',
+    desc: 'La cour d’échauffement de l’arène : du sable, des caisses, de la vermine.',
     startMessage:
       'L’ARÈNE — La Cour. Pour s’échauffer : de la vermine. Utilisez le couvert (tonneaux, caisses, murets) — et fouillez le râtelier avant d’avancer.',
     rows: [
@@ -40,7 +40,7 @@ export function makeZone1() {
         label: 'Râtelier de l’arène',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'hallebarde' },
-          { type: 'journal', text: 'Une hallebarde réglementaire dort sur le râtelier. Elle est à vous.' },
+          { type: 'journal', desc: 'Une hallebarde réglementaire dort sur le râtelier. Elle est à vous.' },
         ]),
       }),
       P(9, 3, 'tonneau'),
@@ -78,7 +78,7 @@ export function makeZone2() {
     id: 'arene-zone2',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Les Ruines',
-    description: 'Un pan de forteresse effondrée annexé par l’arène — et squatté par des peaux-vertes.',
+    desc: 'Un pan de forteresse effondrée annexé par l’arène — et squatté par des peaux-vertes.',
     startMessage:
       'LES RUINES. Des gobelins nichent dans les chambres effondrées. On murmure qu’une salle au nord-est garde encore son trésor… et son gardien.',
     rows: [
@@ -121,9 +121,9 @@ export function makeZone2() {
           {
             type: 'document',
             title: 'Stèle des Ruines',
-            text: '« Ici tint garnison la III^e bannière du Comte Palatin. Le feu prit la tour une nuit de Geheimnisnacht ; nul ne rebâtit. Que celui qui fouille nos pierres laisse une pièce aux morts. »',
+            desc: '« Ici tint garnison la III^e bannière du Comte Palatin. Le feu prit la tour une nuit de Geheimnisnacht ; nul ne rebâtit. Que celui qui fouille nos pierres laisse une pièce aux morts. »',
           },
-          { type: 'journal', text: 'La stèle parle d’une garnison brûlée une nuit de Geheimnisnacht…' },
+          { type: 'journal', desc: 'La stèle parle d’une garnison brûlée une nuit de Geheimnisnacht…' },
         ]),
       }),
       P(25, 3, 'coffre', {
@@ -131,7 +131,7 @@ export function makeZone2() {
         ...fouille([
           { type: 'giveMoney', gold: 3 },
           { type: 'giveTrapping', trappingId: 'bouclier' },
-          { type: 'journal', text: 'Le coffre de la garnison : 3 co et un bouclier frappé du Comte Palatin.' },
+          { type: 'journal', desc: 'Le coffre de la garnison : 3 co et un bouclier frappé du Comte Palatin.' },
         ]),
       }),
       P(3, 8, 'tonneau'),
@@ -165,7 +165,7 @@ export function makeZone2() {
         ],
         onVictory: flowOf([
           { type: 'giveXp', amount: 50 },
-          { type: 'journal', text: 'Le gardien du trésor est tombé — la salle est à vous. Fouillez le coffre !' },
+          { type: 'journal', desc: 'Le gardien du trésor est tombé — la salle est à vous. Fouillez le coffre !' },
         ]),
       },
     ],
@@ -180,7 +180,7 @@ export function makeZone3() {
     id: 'arene-zone3',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Les Égouts',
-    description: 'Le collecteur sous l’arène : un canal d’eau croupie, deux passerelles, de la vermine.',
+    desc: 'Le collecteur sous l’arène : un canal d’eau croupie, deux passerelles, de la vermine.',
     startMessage:
       'LES ÉGOUTS. Un canal d’eau croupie coupe le collecteur — deux passerelles de planches le franchissent. Retenez votre souffle : les miasmes rendent MALADE.',
     rows: [
@@ -217,7 +217,7 @@ export function makeZone3() {
         label: 'Égoutier noyé',
         ...fouille([
           { type: 'giveMoney', silver: 12 },
-          { type: 'journal', text: 'L’égoutier n’avait plus besoin de sa paie : 12 pa.' },
+          { type: 'journal', desc: 'L’égoutier n’avait plus besoin de sa paie : 12 pa.' },
         ]),
       }),
       P(14, 10, 'mare-sang'),
@@ -230,10 +230,10 @@ export function makeZone3() {
         once: true,
         flow: testNode(
           { skill: 'resistance', difficulty: 'facile', label: 'Miasmes des égouts' },
-          [{ type: 'journal', text: 'L’air est irrespirable, mais vous gardez vos tripes — et votre santé.' }],
+          [{ type: 'journal', desc: 'L’air est irrespirable, mais vous gardez vos tripes — et votre santé.' }],
           [
             { type: 'inflictDisease', disease: 'Fièvre du Rongeur' },
-            { type: 'journal', text: 'Quelque chose se glisse dans vos poumons avec l’odeur… La Fièvre du Rongeur couve.' },
+            { type: 'journal', desc: 'Quelque chose se glisse dans vos poumons avec l’odeur… La Fièvre du Rongeur couve.' },
           ],
         ),
       },
@@ -264,7 +264,7 @@ export function makeZone4() {
     id: 'arene-zone4',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Charnier',
-    description: 'La fosse commune de l’arène, murée en cryptes — les pensionnaires se relèvent.',
+    desc: 'La fosse commune de l’arène, murée en cryptes — les pensionnaires se relèvent.',
     startMessage:
       'LE CHARNIER. Les vaincus de l’arène finissent ici… et n’y restent pas. Les morts SURGISSENT — attendez-vous à être surpris.',
     rows: [
@@ -312,11 +312,11 @@ export function makeZone4() {
           { skill: 'resistance', difficulty: 'intermediaire', label: 'Fouiller les morts du charnier' },
           [
             { type: 'giveMoney', silver: 18 },
-            { type: 'journal', text: 'Le fossoyeur serrait encore sa bourse : 18 pa, et rien d’attrapé.' },
+            { type: 'journal', desc: 'Le fossoyeur serrait encore sa bourse : 18 pa, et rien d’attrapé.' },
           ],
           [
             { type: 'inflictDisease', disease: 'Blessure Purulente' },
-            { type: 'journal', text: 'Un os brisé vous entaille la paume. La plaie sent déjà mauvais…' },
+            { type: 'journal', desc: 'Un os brisé vous entaille la paume. La plaie sent déjà mauvais…' },
           ],
         )),
       }),
@@ -324,7 +324,7 @@ export function makeZone4() {
         label: 'Reliquaire descellé',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'chemise-de-mailles' },
-          { type: 'journal', text: 'Sous les os : une chemise de mailles, intacte. Les morts n’en font rien.' },
+          { type: 'journal', desc: 'Sous les os : une chemise de mailles, intacte. Les morts n’en font rien.' },
         ]),
       }),
     ],
@@ -335,7 +335,7 @@ export function makeZone4() {
         once: true,
         flow: flowOf([
           { type: 'setTime', phase: 'crepuscule' },
-          { type: 'journal', text: 'Le jour décline sur le charnier — les ombres s’allongent entre les cryptes.' },
+          { type: 'journal', desc: 'Le jour décline sur le charnier — les ombres s’allongent entre les cryptes.' },
         ]),
       },
       fightTrigger('enc-zone4', { x: 1, y: 1, w: 26, h: 12 }),
@@ -372,7 +372,7 @@ export function makeZone5() {
     id: 'arene-zone5',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Les Lices',
-    description: 'Le champ de joute de l’arène, sous la pluie — duels montés et lances de cavalerie.',
+    desc: 'Le champ de joute de l’arène, sous la pluie — duels montés et lances de cavalerie.',
     weather: 'pluie',
     startMessage:
       'LES LICES, sous la pluie battante. Des cavaliers vous attendent — un destrier SELLÉ broute près de la barrière : enfourchez-le ! (Et fouillez le râtelier de lances.)',
@@ -409,7 +409,7 @@ export function makeZone5() {
         label: 'Râtelier de joute',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'lance-de-cavalerie' },
-          { type: 'journal', text: 'Une lance de cavalerie de tournoi — parfaite depuis une selle.' },
+          { type: 'journal', desc: 'Une lance de cavalerie de tournoi — parfaite depuis une selle.' },
         ]),
       }),
       P(29, 12, 'abreuvoir'),
@@ -446,7 +446,7 @@ export function makeZone6() {
     id: 'arene-zone6',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Marais',
-    description: 'La fondrière au pied des murs — hommes-bêtes et loups y chassent dans la brume.',
+    desc: 'La fondrière au pied des murs — hommes-bêtes et loups y chassent dans la brume.',
     weather: 'brouillard',
     startMessage:
       'LE MARAIS, noyé de brouillard. La harde chasse en silence et l’eau cache pire encore. Restez groupés — l’embuscade est CERTAINE.',
@@ -501,14 +501,14 @@ export function makeZone6() {
         label: 'Monture éventrée',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'faxtoryll' },
-          { type: 'journal', text: 'Les fontes du cavalier disparu contenaient du faxtoryll — encore sec.' },
+          { type: 'journal', desc: 'Les fontes du cavalier disparu contenaient du faxtoryll — encore sec.' },
         ]),
       }),
       P(26, 18, 'barque', {
         label: 'Barque embourbée',
         ...fouille([
           { type: 'giveMoney', silver: 10 },
-          { type: 'journal', text: 'Sous le banc de nage : une bourse oubliée (10 pa).' },
+          { type: 'journal', desc: 'Sous le banc de nage : une bourse oubliée (10 pa).' },
         ]),
       }),
     ],
@@ -540,7 +540,7 @@ export function makeZone7() {
     id: 'arene-zone7',
     rest: {}, // on ne bivouaque pas dans l'arène
     nom: 'Arène — Le Nid',
-    description: 'Une grotte tendue de toiles sous l’arène — et le perchoir d’une vouivre.',
+    desc: 'Une grotte tendue de toiles sous l’arène — et le perchoir d’une vouivre.',
     startMessage:
       'LE NID. Toiles, cocons… et un sifflement de VOUIVRE au fond. Les cocons cachent des trésors — et des morsures. Prudence en fouillant.',
     rows: [
@@ -580,11 +580,11 @@ export function makeZone7() {
           { skill: 'athletisme', difficulty: 'intermediaire', label: 'Éventrer le cocon sans s’y prendre' },
           [
             { type: 'giveTrapping', trappingId: 'potion-de-guerison' },
-            { type: 'journal', text: 'Dans la soie : la besace d’une victime, potion intacte.' },
+            { type: 'journal', desc: 'Dans la soie : la besace d’une victime, potion intacte.' },
           ],
           [
             { type: 'inflictDisease', disease: 'Infection Mineure' },
-            { type: 'journal', text: 'Quelque chose vous mord à travers la soie avant de fuir. La plaie gonfle déjà.' },
+            { type: 'journal', desc: 'Quelque chose vous mord à travers la soie avant de fuir. La plaie gonfle déjà.' },
           ],
         )),
       }),
@@ -592,7 +592,7 @@ export function makeZone7() {
         label: 'Cocon lourd',
         ...fouille([
           { type: 'giveMoney', silver: 24 },
-          { type: 'journal', text: 'Le cocon rend une bourse poisseuse : 24 pa.' },
+          { type: 'journal', desc: 'Le cocon rend une bourse poisseuse : 24 pa.' },
         ]),
       }),
       P(15, 17, 'cocon'),
@@ -601,7 +601,7 @@ export function makeZone7() {
         label: 'Chapeaux moirés',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'bonnet-de-fou' },
-          { type: 'journal', text: 'Des chapeaux moirés de Bonnet de fou — l’apothicaire en donnerait cher.' },
+          { type: 'journal', desc: 'Des chapeaux moirés de Bonnet de fou — l’apothicaire en donnerait cher.' },
         ]),
       }),
       P(12, 7, 'champignon'),
@@ -612,7 +612,7 @@ export function makeZone7() {
         label: 'Chasseur momifié',
         ...fouille([
           { type: 'giveTrapping', trappingId: 'arc' },
-          { type: 'journal', text: 'Le chasseur n’aura plus besoin de son arc. Sa corde est encore bonne.' },
+          { type: 'journal', desc: 'Le chasseur n’aura plus besoin de son arc. Sa corde est encore bonne.' },
         ]),
       }),
       P(7, 11, 'tonneau', { label: 'Vieux camp' }),

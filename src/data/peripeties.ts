@@ -21,7 +21,7 @@ export interface Peripetie {
   id: string;
   roll: number;
   label: string;
-  text: string;
+  desc: string;
   kind: 'reposant' | 'narratif' | 'ereintant' | 'attaque';
 }
 

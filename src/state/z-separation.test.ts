@@ -31,7 +31,7 @@ const mk = (id: string, x: number, y: number, z = 0, h = 0): Combatant =>
 function twoFloorScene(entities: SceneEntity[] = [], effectZones: SceneEffectZone[] = []): Scene {
   const n = 10 * 10;
   return {
-    id: 's', nom: 's', description: '', dimensions: { w: 10, h: 10 }, ambiance: 'interieur',
+    id: 's', nom: 's', dimensions: { w: 10, h: 10 }, ambiance: 'interieur',
     layers: [
       { z: 0, tiles: new Array(n).fill('sol') },
       { z: 1, tiles: new Array(n).fill('plancher'), height: new Array(n).fill(4) },
