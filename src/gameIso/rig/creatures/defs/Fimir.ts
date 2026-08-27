@@ -10,5 +10,5 @@ export const creature: CreatureDef = {
   // Race dédiée (même gabarit brute que l'Ogre, mais SANS les features cosmétiques Ogre).
   // Tête cyclope, queue, chair gris-vert et cuir écailleux vivent SUR LA RACE (head/palette/
   // features) : un perso.monster court-circuiterait les features (écailles).
-  race: 'Fimir',
+  race: 'fimir',
 };

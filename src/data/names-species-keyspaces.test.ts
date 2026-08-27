@@ -1,40 +1,33 @@
 /**
- * Garde croisée des DEUX espaces de clés « race » (issue #163). Le repo porte deux conventions
- * de nommage de race, DISTINCTES par dessein :
- *  - espace « données de personnage » (`species.refChar`/`species.refCareer`) : `RaceKey` id STABLE
- *    (#313, ex. `haut-elfe`, `elfe-sylvain`) — pont vers `names.json` (resté label-keyé, EXCEPTION
- *    documentée `schemas/defs/names.ts`) via `RACE_KEY_LABEL` (« Haut Elfe », « Elfe Sylvain »…) ;
- *  - espace « rig » (id d'apparence, sûr pour nom de fichier) : `Haut-Elfe`, `Elfe sylvain`… — id de
- *    `raceAppearance.json` et des defs de `src/gameIso/rig/`.
- * `speciesRace.json` (via `baseSpeciesOf`) EST le pont species→rig. Les deux espaces se ressemblent
- * (5 des 7 races jouables sont identiques ; seuls les elfes divergent par tiret/casse) mais NE se
- * confondent pas : les unifier casserait l'un des deux clans (des dizaines de fichiers chacun).
- * Cette garde rend le découplage EXPLICITE et mécanique : elle échoue si `names.json` dérive hors de
- * l'espace `RACE_KEY_LABEL(refChar)`, si le pont n'est plus 1:1, ou si une clé d'un espace se met à
- * RESSEMBLER à une clé de l'autre (casse/tiret/espace) sans être le couple ponté sanctionné.
+ * Garde des espaces de clés « race » (issue #163, recalée #1467 L1b V-P4). Le repo n'en porte plus
+ * qu'UN pour les races JOUABLES : l'id `RaceKey` (`schemas/grammaire/valeurs.ts`, #313).
+ *  - `species.refChar` le porte côté données de personnage ;
+ *  - `names.json` est keyé par lui : `generateName` indexe la banque sans aucune conversion ;
+ *  - `raceAppearance.json` (espace « rig », 21 races dont 14 non jouables) est keyé par le SLUG de
+ *    son libellé, et les 7 races jouables y ont pour slug exactement leur `RaceKey`.
+ * `speciesRace.json` (via `baseSpeciesOf`) reste le pont species→rig ; ce que cette garde verrouille
+ * n'est plus une SÉPARATION mais la CONVERGENCE mesurée : le pont ramène chaque `refChar` sur l'id de
+ * rig de même nom, et un id de rig qui cesserait d'être le slug de son libellé casserait la relation.
  */
 import { describe, it, expect } from 'vitest';
 import namesJson from './names.json';
 import raceAppearanceJson from './raceAppearance.json';
 import speciesJson from './species.json';
-import { RACE_KEY_LABEL } from './index';
-import type { RaceKey } from './schemas/grammaire/valeurs';
+import { slugId } from './slug';
+import { raceKeySchema, type RaceKey } from './schemas/grammaire/valeurs';
 import { baseSpeciesOf } from '../gameIso/rig/skeletons';
 
 type Species = { label: string; refChar: RaceKey };
 const SPECIES = speciesJson as Species[];
 const NAMES_KEYS = Object.keys(namesJson);
-const RIG_IDS = (raceAppearanceJson as { id: string }[]).map((r) => r.id);
+const RIG = raceAppearanceJson as { id: string; label: string }[];
+const RIG_IDS = RIG.map((r) => r.id);
+const RACE_KEYS = raceKeySchema.options;
 
-/** Deux libellés « se ressemblent » s'ils sont égaux à la casse, aux espaces et aux tirets près. */
-const norm = (s: string) => s.toLowerCase().replace(/[\s-]/g, '');
-
-describe('#163 — names.json ⇄ speciesRace.json : deux espaces de clés découplés, pont species→rig gardé', () => {
-  it('names.json est ancré à l’espace refChar (clés === {RACE_KEY_LABEL(species.refChar)}) — pas à l’espace rig', () => {
-    const refCharLabels = new Set(SPECIES.map((s) => RACE_KEY_LABEL[s.refChar]));
-    // Toute clé de names.json doit être un libellé de refChar connu (ex. `Haut Elfe`), JAMAIS un id
-    // de rig (`Haut-Elfe`) : c'est ce qui empêche la fusion silencieuse des deux espaces.
-    expect(new Set(NAMES_KEYS)).toEqual(refCharLabels);
+describe('#163 — espaces de clés « race » : names keyé RaceKey, pont species→rig 1:1, ids de rig slugués', () => {
+  it('names.json est keyé par RaceKey — exactement les 7 ids, ni plus ni moins', () => {
+    expect(new Set(NAMES_KEYS)).toEqual(new Set<string>(RACE_KEYS));
+    expect(NAMES_KEYS.length).toBe(RACE_KEYS.length);
   });
 
   it('pont species→rig 1:1 : chaque refChar mappe (via baseSpeciesOf) vers exactement UN id de rig existant', () => {
@@ -49,20 +42,18 @@ describe('#163 — names.json ⇄ speciesRace.json : deux espaces de clés déco
     expect(ambiguous, 'refChar(s) pontant vers PLUSIEURS races de rig — le pont species→rig doit rester 1:1').toEqual([]);
   });
 
-  it('garde de ressemblance : toute quasi-collision names-key ⇄ id-rig est le couple ponté EXACT, jamais un accident', () => {
-    // Couples sanctionnés = ceux qu'établit réellement le pont (RACE_KEY_LABEL(refChar) → baseSpeciesOf).
-    const sanctioned = new Set(SPECIES.map((s) => `${RACE_KEY_LABEL[s.refChar]}\0${baseSpeciesOf(s.label)}`));
-    const violations: string[] = [];
-    for (const key of NAMES_KEYS) {
-      for (const rig of RIG_IDS) {
-        if (norm(key) !== norm(rig)) continue; // pas de ressemblance → pas de risque de confusion
-        if (key === rig) continue; // identiques (Nain, Humain…) : aucun risque
-        // Ressemblent SANS être identiques (Haut Elfe ⇄ Haut-Elfe) : n'est toléré que si le pont
-        // species→rig établit précisément ce couple. Sinon = future collision latente.
-        if (!sanctioned.has(`${key}\0${rig}`))
-          violations.push(`names.json[${JSON.stringify(key)}] ressemble à l’id de rig ${JSON.stringify(rig)} sans pont species→rig les reliant`);
-      }
-    }
-    expect(violations, violations.join('\n')).toEqual([]);
+  it('convergence des deux espaces : le pont ramène chaque refChar sur l’id de rig de MÊME nom', () => {
+    // Ce que la garde verrouillait avant #1467 L1b V-P4 était la SÉPARATION label⇄id ; l'identité est
+    // désormais la relation vraie — un préfixe de `speciesRace.json` mal placé la casse aussitôt.
+    const ecarts = SPECIES.filter((s) => baseSpeciesOf(s.label) !== s.refChar)
+      .map((s) => `${s.label} : refChar ${s.refChar} ⇄ rig ${baseSpeciesOf(s.label)}`);
+    expect(ecarts, 'refChar(s) dont le pont ne rejoint pas l’id de rig homonyme').toEqual([]);
+    for (const k of RACE_KEYS) expect(RIG_IDS, `RaceKey ${k} sans race de rig`).toContain(k);
+  });
+
+  it('chaque id de rig est le slug de son propre label (21/21) — l’identité ne se relit plus dans l’affichage', () => {
+    const fautes = RIG.filter((r) => r.id !== slugId(r.label)).map((r) => `${r.id} ≠ slugId(${JSON.stringify(r.label)})`);
+    expect(fautes, fautes.join('\n')).toEqual([]);
+    expect(new Set(RIG_IDS).size).toBe(RIG.length);
   });
 });

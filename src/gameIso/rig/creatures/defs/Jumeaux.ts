@@ -9,7 +9,7 @@ export const creature: CreatureDef = {
   label: 'Jumeaux',
   id: "jumeaux",
   plan: 'biped',
-  race: 'Homme-bête', // « jumeaux » (pluriel) = le nom ; « jumeau » nu désignerait des humains
+  race: 'homme-bete', // « jumeaux » (pluriel) = le nom ; « jumeau » nu désignerait des humains
 
   perso: {
     gabarit: 'gremlin', // dégingandé à grosse tête — la hargne minuscule

@@ -25,7 +25,7 @@ export const creature: CreatureDef = {
   label: 'Rat ogre',
   id: "rat-ogre",
   plan: 'biped',
-  race: 'Skaven',
+  race: 'skaven',
   perso: {
     // MORPHO ici (chair cousue, fourrure, épines, griffes) ; son ÉQUIPEMENT (pagne-tablier
     // sanglé par les Molder) = tenue de carrière « Rat ogre » (registre, ne chausse pas — race

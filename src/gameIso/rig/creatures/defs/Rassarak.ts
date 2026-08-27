@@ -14,7 +14,7 @@ export const creature: CreatureDef = {
   label: 'Rassarak',
   id: "rassarak",
   plan: 'biped',
-  race: 'Skaven',
+  race: 'skaven',
   perso: {
     tenue: 'esclave-skaven',
     colors: { peau: '#e8e2d4', cheveux: '#cfc8b8' }, // blanc pur

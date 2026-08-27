@@ -268,7 +268,7 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
             {creating && atelier && cat && isEditableCategory(cat.key)
               ? <CodexEdit categoryKey={cat.key} label="" isNew onClose={() => setCreating(false)} />
               : selected && editing && atelier && cat && isEditableCategory(cat.key)
-                ? <CodexEdit categoryKey={cat.key} label={selected.label} onClose={() => setEditing(false)} />
+                ? <CodexEdit categoryKey={cat.key} label={selected.label} id={selected.id} onClose={() => setEditing(false)} />
                 : selected && <CodexEntry item={selected} instance={instance} category={cat?.key} />}
           </section>
         }

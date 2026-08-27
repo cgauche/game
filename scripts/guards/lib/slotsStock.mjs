@@ -116,7 +116,9 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "combat-stakes.json", champ: "entryCategory", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "combat-stakes.json", champ: "kind", occurrences: 7, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "combat-stakes.json", champ: "rule", occurrences: 23, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "creatures.json", champ: "appearance", occurrences: 454, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // #1467 L1b V-P4 : `names.json` et `raceAppearance.json` entrent à l'index des ids (28 ids neufs)
+  // — 3 comptes d'occurrences OBSERVÉES montent ici sans qu'aucune donnée de ces datasets ne change.
+  { dataset: "creatures.json", champ: "appearance", occurrences: 455, lot: "L2/L3 #1473", date: "2026-08-27" },
   { dataset: "creatures.json", champ: "features", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "grant", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "grantGroups", occurrences: 87, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -291,9 +293,9 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "spells.json", champ: "ops", occurrences: 222, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "spells.json", champ: "perRound", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "spells.json", champ: "qualities", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "spells.json", champ: "range", occurrences: 13, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "spells.json", champ: "range", occurrences: 22, lot: "L2/L3 #1473", date: "2026-08-27" },
   { dataset: "spells.json", champ: "subject", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "spells.json", champ: "target", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "spells.json", champ: "target", occurrences: 16, lot: "L2/L3 #1473", date: "2026-08-27" },
   { dataset: "spells.json", champ: "when", occurrences: 18, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "stars.json", champ: "ascendant", occurrences: 11, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "stars.json", champ: "ops", occurrences: 55, lot: "L2/L3 #1473", date: "2026-08-26" },

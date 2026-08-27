@@ -361,7 +361,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       'L1b #1467': 205,
       'L1c #1468': 403,
       'L1d #1469': 66,
-      'L2 #1463': 138,
+      // +3 : #1467 L1b V-P4 — `names.json` et `raceAppearance.json` entrent à l'index des ids (28 ids
+      // neufs) ; 3 lignes déjà au stock (`spells.json › range`, `spells.json › target`,
+      // `speciesRace.json › rules`) deviennent RÉSOLVABLES et passent de L3 à L2. Aucune ligne neuve :
+      // le total ne bouge pas, L3 perd les 3 que L2 gagne : 138 → 141.
+      'L2 #1463': 141,
       // +2 : les deux formes `effect {trappingId,type}` de #1466 T3-b (cf. motif au cliquet ci-dessus).
       // +1 : la forme `qualities` ids-nus de #1466 T3-b (cf. motif au cliquet ci-dessus).
       // +1 : `actions.json › hote` id-nu (vague console #1411/#1426 distante, cf. motif ci-dessus).

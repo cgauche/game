@@ -1,15 +1,15 @@
 /**
- * Schéma de `names.json` — banques de noms par race (LDB 05), consommé par
- * `src/data/index.ts` (`Record<string, NamePool>` — clé = LIBELLÉ ("Humain", "Haut Elfe"…),
- * PAS `raceKeySchema`). `NamePool` = `src/data/index.ts` : `lastNameSuffixes` n'est présent QUE
- * pour "Nain" dans le JSON réel (patronymes générés par suffixe, LDB 05 l.627-633) — optionnel ailleurs.
+ * Schéma de `names.json` — banques de noms par race (LDB 05), consommé par `src/data/index.ts`
+ * (`Record<RaceKey, NamePool>`). La clé EST l'id d'espèce `raceKeySchema` (#313), celle que porte
+ * `species.refChar` : `generateName` indexe la banque directement, sans conversion.
+ * `NamePool` = `src/data/index.ts` : `lastNameSuffixes` n'est présent QUE pour `nain` dans le JSON
+ * réel (patronymes générés par suffixe, LDB 05 l.627-633) — optionnel ailleurs.
  *
- * EXCEPTION VOLONTAIRE à la migration id (#313) : `species.refChar` (désormais `raceKeySchema`) est
- * converti en libellé via `RACE_KEY_LABEL` (`src/data/index.ts`) au SEUL point d'appel
- * (`generateName`) — ce dataset reste label-keyé car le label EST la donnée affichée (nom de banque
- * lisible au Codex), pas une clé de logique déguisée.
+ * CLÉS EXHAUSTIVES : `z.record(z.enum, …)` exige en zod 4.4.3 TOUTES les clés déclarées — les 7
+ * races jouables ont donc chacune leur banque, et une banque manquante est refusée au sceau.
  */
 import { z } from 'zod';
+import { raceKeySchema } from '../grammaire/valeurs';
 
 export const file = 'names.json';
 export const famille = 'record';
@@ -24,4 +24,4 @@ const namePoolSchema = z.strictObject({
   }).optional(),
 });
 
-export const schema = z.record(z.string(), namePoolSchema);
+export const schema = z.record(raceKeySchema, namePoolSchema);

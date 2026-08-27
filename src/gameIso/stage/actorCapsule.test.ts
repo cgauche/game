@@ -50,12 +50,12 @@ describe('actorCapsuleOf — la boîte du jeton est calée sur le CORPS DESSINÉ
    *  `stage/MondeDeCampagne`), de Taille Moyenne ou moindre. La Taille vient du talent d'espèce (`species.json` :
    *  `petit` → Petite, `talents.json`). */
   const HERO_RIGS: { race: string; size: SizeCategory }[] = [
-    { race: 'Humain', size: 'moyenne' },
-    { race: 'Nain', size: 'moyenne' },
-    { race: 'Haut-Elfe', size: 'moyenne' },
-    { race: 'Elfe sylvain', size: 'moyenne' },
-    { race: 'Halfling', size: 'petite' },
-    { race: 'Gnome', size: 'petite' },
+    { race: 'humain', size: 'moyenne' },
+    { race: 'nain', size: 'moyenne' },
+    { race: 'haut-elfe', size: 'moyenne' },
+    { race: 'elfe-sylvain', size: 'moyenne' },
+    { race: 'halfling', size: 'petite' },
+    { race: 'gnome', size: 'petite' },
   ];
   /** Gabarit résolu comme en production : celui de la race, surchargé par son `gabaritOverride`. */
   const gabaritOf = (raceId: string): GabaritDef => {

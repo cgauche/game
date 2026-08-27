@@ -18,7 +18,8 @@ export interface RaceFeature {
  *  (tenue/couleurs/sexe/coiffure/échelle). Dissout PROPS-via-baseSpeciesOf, palettes et postures
  *  d'espèce et la config biped des defs créature. */
 export interface RaceDef {
-  id: string;                   // 'Humain', 'Ogre', 'Skaven'… (== sortie canonique de baseSpeciesOf)
+  id: string;                   // 'humain', 'ogre', 'skaven'… (== sortie canonique de baseSpeciesOf)
+  label: string;                // libellé d'affichage (« Haut-Elfe ») dont l'id est le slug
   gabarit: string;              // id du gabarit par défaut
   gabaritOverride?: Partial<Pick<GabaritDef, 'sl' | 'st' | 'legs' | 'arms' | 'head'>>;
   palette?: StoredPalette;      // peau/cheveux/yeux par défaut de l'espèce

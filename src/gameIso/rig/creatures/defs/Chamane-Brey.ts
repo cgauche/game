@@ -10,7 +10,7 @@ export const creature: CreatureDef = {
   label: 'Chamane-Brey',
   id: "chamane-brey",
   plan: 'biped',
-  race: 'Homme-bête',
+  race: 'homme-bete',
   perso: {
     tenue: 'chamane-bray',
     extremites: 'griffues',

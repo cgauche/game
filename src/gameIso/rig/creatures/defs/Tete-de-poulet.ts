@@ -7,7 +7,7 @@ export const creature: CreatureDef = {
   label: 'Homme-bête à tête de poulet',
   id: "homme-bete-a-tete-de-poulet",
   plan: 'biped',
-  race: 'Homme-bête',
+  race: 'homme-bete',
   perso: {
     head: 'poulet',
     gabarit: 'elance-voute', // volaille efflanquée, pas la masse trapue du gor

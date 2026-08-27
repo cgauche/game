@@ -171,7 +171,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   // Variété seedée des humains GÉNÉRIQUES (#223) : hors bestiaire (pas de creatureId) et sans
   // couleurs/coiffure authorées → teintes/coiffure dérivées du seed (parité explo↔combat). Un
   // record de bestiaire (creatureId) garde son apparence figée → goldens intacts.
-  if (!c.creatureId && baseSpeciesOf(bb.species) === 'Humain' && !override?.colors && !override?.parts) {
+  if (!c.creatureId && baseSpeciesOf(bb.species) === 'humain' && !override?.colors && !override?.parts) {
     override = { ...(override ?? {}), colors: humanSeedColors(eseed), parts: { cheveux: humanSeedHairIndex(eseed) } };
   }
   const appearance = rigAppearance(eseed, bb, cd, override);
@@ -230,7 +230,7 @@ export function entityRigProfile(
   };
   // Variété seedée des humains GÉNÉRIQUES (#223, miroir exact d'`enemyRigProfile`) : opt-in de scène,
   // hors record de bestiaire (`!rec`), sans couleurs/coiffure authorées → dérivées du seed stable.
-  if (opts?.seededVariety && r.kind === 'rig' && !rec && baseSpeciesOf(r.species) === 'Humain' && !override.colors && !override.parts) {
+  if (opts?.seededVariety && r.kind === 'rig' && !rec && baseSpeciesOf(r.species) === 'humain' && !override.colors && !override.parts) {
     override.colors = humanSeedColors(seed);
     override.parts = { cheveux: humanSeedHairIndex(seed) };
   }

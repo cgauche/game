@@ -8,7 +8,7 @@ export const creature: CreatureDef = {
   label: 'Prophète gris',
   id: "prophete-gris",
   plan: 'biped',
-  race: 'Skaven',
+  race: 'skaven',
   perso: {
     tenue: 'prophete-gris',
     features: [appendageFeature('cornes-caprin')], // cornes derrière le crâne

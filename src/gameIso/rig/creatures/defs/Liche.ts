@@ -6,7 +6,7 @@ export const creature: CreatureDef = {
   label: 'Liche',
   id: "liche",
   plan: 'biped',
-  // Espèce NON-canonique : baseSpeciesOf('Liche')→'Humain'. Sa config distincte (tenue ossuaire +
+  // Espèce NON-canonique : baseSpeciesOf('Liche')→'humain'. Sa config distincte (tenue ossuaire +
   // crâne, comme le squelette) vit sur le perso, pour ne pas polluer la race Humain partagée — y
   // compris `extremites` : sa tenue 'squelette' ne chausse pas (#736 Lot 1), mais Humain reste
   // 'lisses' (défaut pour les Humains qui retombent sur la tenue 'Nu') → surcharge ICI.

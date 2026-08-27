@@ -10,17 +10,16 @@
  * élevés » avec suffixe sexué — « –sson » fils de…, « –snev » neveu de…, « –sdottir » fille de…,
  * « –sniz » nièce de… (ex. Ariksson, Grunnasdottir, Skagsnev, Sovrissniz).
  */
-import { names as POOLS, RACE_KEY_LABEL, type NamePool } from '../data';
+import { names as POOLS, type NamePool } from '../data';
 import type { RaceKey } from '../data/schemas/grammaire/valeurs';
 import type { RNG } from './dice';
 
 /**
- * Pool de la banque ← `species.refChar` (`RaceKey`, #313) converti en libellé via `RACE_KEY_LABEL`
- * (clé de `names.json`, cf. `names-species-keyspaces.test.ts` — exception documentée volontaire :
- * ce dataset reste label-keyé, le SEUL pont id→label autorisé).
+ * Pool de la banque ← `species.refChar` (`RaceKey`, #313) : `names.json` est keyé par CE même id
+ * (#1467 L1b), l'indexation est directe — aucune conversion (cf. `names-species-keyspaces.test.ts`).
  */
 function poolOf(refChar: RaceKey): NamePool | null {
-  return POOLS[RACE_KEY_LABEL[refChar]] ?? null;
+  return POOLS[refChar] ?? null;
 }
 
 const pick = <T>(arr: T[], rng: RNG): T => arr[rng.int(0, arr.length - 1)];

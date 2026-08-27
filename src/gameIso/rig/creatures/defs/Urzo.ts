@@ -10,7 +10,7 @@ export const creature: CreatureDef = {
   label: 'Urzo',
   id: "urzo",
   plan: 'biped',
-  race: 'Homme-bête', // « urzo » = le nom (limite de mot)
+  race: 'homme-bete', // « urzo » = le nom (limite de mot)
 
   perso: {
     gabarit: 'brute',

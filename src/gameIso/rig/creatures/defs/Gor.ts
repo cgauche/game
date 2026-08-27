@@ -7,7 +7,7 @@ export const creature: CreatureDef = {
   label: 'Gor',
   id: "gor",
   plan: 'biped',
-  race: 'Homme-bête',
+  race: 'homme-bete',
   perso: {
     features: [appendageFeature('cornes-gor')],
   },

@@ -8,22 +8,22 @@ import speciesRaceJson from '../../data/speciesRace.json';
 
 describe('baseSpeciesOf', () => {
   it('normalise les variantes régionales', () => {
-    expect(baseSpeciesOf('Humains (Reiklander)')).toBe('Humain');
-    expect(baseSpeciesOf('Nains (Norse)')).toBe('Nain');
-    expect(baseSpeciesOf('Halflings (Cendreplaine)')).toBe('Halfling');
-    expect(baseSpeciesOf('Hauts Elfes')).toBe('Haut-Elfe');
-    expect(baseSpeciesOf('Elfes sylvains')).toBe('Elfe sylvain');
+    expect(baseSpeciesOf('Humains (Reiklander)')).toBe('humain');
+    expect(baseSpeciesOf('Nains (Norse)')).toBe('nain');
+    expect(baseSpeciesOf('Halflings (Cendreplaine)')).toBe('halfling');
+    expect(baseSpeciesOf('Hauts Elfes')).toBe('haut-elfe');
+    expect(baseSpeciesOf('Elfes sylvains')).toBe('elfe-sylvain');
   });
 
   // Le vocabulaire d'`appearance.species` = ids STABLES de species.json (slug du libellé). Chaque id
   // valide DOIT matcher une RÈGLE explicite de speciesRace.json, jamais vivre du défaut silencieux.
   const RACE_BY_FAMILY: Record<string, string> = {
-    Humains: 'Humain', Halflings: 'Halfling', Nains: 'Nain', Gnomes: 'Gnome',
-    Ogres: 'Ogre', 'Hauts elfes': 'Haut-Elfe', 'Elfes sylvains': 'Elfe sylvain',
+    Humains: 'humain', Halflings: 'halfling', Nains: 'nain', Gnomes: 'gnome',
+    Ogres: 'ogre', 'Hauts elfes': 'haut-elfe', 'Elfes sylvains': 'elfe-sylvain',
   };
   it('une règle EXPLICITE couvre l\'id humain (pas le défaut)', () => {
-    const humainRule = speciesRaceJson.rules.find((r) => r.race === 'Humain' && (r.prefix ?? []).includes('humain'));
-    expect(humainRule, 'speciesRace.json doit porter une règle prefix "humain" → Humain').toBeTruthy();
+    const humainRule = speciesRaceJson.rules.find((r) => r.race === 'humain' && (r.prefix ?? []).includes('humain'));
+    expect(humainRule, 'speciesRace.json doit porter une règle prefix "humain" → humain').toBeTruthy();
   });
   it('tout id de species.json résout vers la race de sa famille PAR RÈGLE', () => {
     for (const s of species) {
@@ -33,11 +33,11 @@ describe('baseSpeciesOf', () => {
       expect(baseSpeciesOf(s.id), `${s.id} → ${expected}`).toBe(expected);
     }
   });
-  it('une chaîne poubelle retombe sur le DÉFAUT (Humain), discriminant', () => {
-    // 'zzz-espece-inconnue' ne matche AUCUNE règle → défaut ; 'nains' matche une règle → Nain (≠ défaut),
+  it('une chaîne poubelle retombe sur le DÉFAUT (humain), discriminant', () => {
+    // 'zzz-espece-inconnue' ne matche AUCUNE règle → défaut ; 'nains' matche une règle → nain (≠ défaut),
     // ce qui prouve que les ids valides passent bien par les règles et non par la retombée.
     expect(baseSpeciesOf('zzz-espece-inconnue')).toBe(speciesRaceJson.default);
-    expect(baseSpeciesOf('nains')).toBe('Nain');
+    expect(baseSpeciesOf('nains')).toBe('nain');
     expect(baseSpeciesOf('nains')).not.toBe(speciesRaceJson.default);
   });
 });

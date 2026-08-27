@@ -9,7 +9,7 @@ export const creature: CreatureDef = {
   label: 'Bête Impériale',
   id: "bete-imperiale",
   plan: 'biped',
-  race: 'Homme-bête',
+  race: 'homme-bete',
   perso: {
     gabarit: 'gremlin',
     scale: 0.85,

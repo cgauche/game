@@ -12,9 +12,10 @@ export const famille = 'config';
 
 const detailTextSchema = z.strictObject({
   all: z.string(),
-  /** Clé OUVERTE (libellé d'espèce, saisie libre à l'édition Codex — `CodexEdit.tsx`) : NON migrée
-   *  vers `raceKeySchema` (#313, hors périmètre — pas un catalogue fermé de 7 colonnes). */
-  bySpecies: z.record(z.string(), z.string()),
+  /** Surcharges PAR ESPÈCE, colonne `raceKeySchema` (id stable, #313) — partiel : un texte d'aide
+   *  ne couvre que les races qu'il nomme (7 pour les noms, 6 pour l'âge, 2 pour la taille, 0 pour
+   *  les Ambitions). */
+  bySpecies: z.partialRecord(raceKeySchema, z.string()),
 });
 
 export const schema = z.strictObject({

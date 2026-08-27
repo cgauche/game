@@ -12,6 +12,9 @@ export const famille = 'entite';
 export const schema = z.array(
   z.strictObject({
     id: z.string(),
+    /** Libellé d'AFFICHAGE de la race de rig (« Haut-Elfe », « Homme-bête ») — l'`id` au-dessus est
+     *  son slug (#1467 L1b) : c'est lui que désignent `speciesRace.json` et les defs de créatures. */
+    label: z.string().min(1),
     gabarit: z.string(),
     gabaritOverride: z.record(z.string(), z.number()).optional(),
     palette: z.record(z.string(), z.string()).optional(),

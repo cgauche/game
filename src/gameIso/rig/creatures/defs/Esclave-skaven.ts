@@ -6,7 +6,7 @@ export const creature: CreatureDef = {
   label: 'Esclave skaven',
   id: "esclave-skaven",
   plan: 'biped',
-  race: 'Skaven',
+  race: 'skaven',
   perso: {
     tenue: 'esclave-skaven',
     gabarit: 'decharne', // affamé — carrure émaciée plutôt que celle du guerrier

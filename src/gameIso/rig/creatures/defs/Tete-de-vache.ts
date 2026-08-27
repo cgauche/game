@@ -8,7 +8,7 @@ export const creature: CreatureDef = {
   label: 'Homme-bête à tête de vache',
   id: "homme-bete-a-tete-de-vache",
   plan: 'biped',
-  race: 'Homme-bête',
+  race: 'homme-bete',
   perso: {
     head: 'vache',
     colors: { peau: '#a89478', cheveux: '#5a4a34' }, // robe pie claire

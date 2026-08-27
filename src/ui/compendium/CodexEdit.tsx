@@ -120,8 +120,9 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
- *  l'éditeur projette l'objet : `single` = édite l'objet entier ; `record` = une entrée par clé (l'item
- *  Codex porte la clé en `label`). */
+ *  l'éditeur projette l'objet : `single` = édite l'objet entier ; `record` = une entrée par clé, et
+ *  l'item Codex porte cette clé en `id` — le `label` est de l'AFFICHAGE (#1467 L1b V-P4 : la clé d'un
+ *  record EST un id stable, elle ne se relit jamais dans le libellé). */
 const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | 'record' }> = {
   details: { ds: 'details', mode: 'single' },
   names: { ds: 'names', mode: 'record' },
@@ -421,7 +422,7 @@ export function editableEntries(categoryKey: string): Entry[] {
   return datasetArray(editableDataset(categoryKey)!) as Entry[];
 }
 
-export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey: string; label: string; onClose: () => void; isNew?: boolean }) {
+export function CodexEdit({ categoryKey, label, id, onClose, isNew }: { categoryKey: string; label: string; id?: string; onClose: () => void; isNew?: boolean }) {
   // SOURCE de données UNIFIÉE (tableau d'entités OU dataset-objet) → la même UI de formulaire édite les
   // trois formes : tableau (une entité par item Codex), objet unique (`details`), Record keyé (`names`,
   // une entrée par race). `entries` = échantillons pour `inferFields` ; `initial` = l'objet édité ;
@@ -436,9 +437,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
       const file = datasetObjectFile(obj.ds);
       if (obj.mode === 'single')
         return { entries, initial: data as Entry, index: -1, file, recordMode: false, initialKey: '', persist: (e) => setObjectDataset(obj.ds, e as never) };
-      // record : une entrée par clé (le `label` du navigateur = la clé, ex. la race) ; inférence sur
-      // TOUTES les valeurs (mêmes champs partout). `isNew` → clé vide à saisir dans le champ « Clé ».
-      const initialKey = isNew ? '' : label;
+      // record : une entrée par clé (l'`id` de l'item du navigateur EST la clé du record) ; inférence
+      // sur TOUTES les valeurs (mêmes champs partout). `isNew` → clé vide à saisir dans le champ « Clé ».
+      const initialKey = isNew ? '' : (id ?? '');
       const initial = (data[initialKey] as Entry) ?? {};
       return {
         entries, initial, index: -1, file, recordMode: true, initialKey,
@@ -462,7 +463,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
       file: datasetFile(dsKey), recordMode: false, initialKey: '',
       persist: (e) => setDataset(dsKey, (index < 0 ? [...arr, e] : arr.map((x, i) => (i === index ? e : x))) as never),
     };
-  }, [obj, categoryKey, label, isNew]);
+  }, [obj, categoryKey, label, id, isNew]);
 
   const [entry, setEntry] = useState<Entry>(() => structuredClone(src.initial));
   const [recordKey, setRecordKey] = useState(src.initialKey);
@@ -1671,7 +1672,8 @@ function MutationTableField({ value, onChange }: { value: MutationRange[] | unde
   );
 }
 
-/** Texte d'aide LDB 05 (« Détails ») : global + par espèce (HTML léger). */
+/** Texte d'aide LDB 05 (« Détails ») : global + par espèce (HTML léger). Clé de `bySpecies` = id
+ *  d'espèce `RaceKey` (#1467 L1b V-P4) ; le sceau du dataset refuse toute autre clé. */
 interface DetailText { all: string; bySpecies: Record<string, string>; }
 /** Bloc `details.texts` : 5 entrées d'aide (nom/âge/taille/Ambitions courte & longue). Clés OUVERTES
  *  (un nouveau texte ajouté à la donnée apparaît tout seul). */
@@ -1682,7 +1684,7 @@ const DETAIL_TEXT_LABEL: Record<string, string> = {
 };
 
 /** Éditeur du bloc `details.texts` (objet `details.json`) — pour chaque entrée d'aide : un texte GLOBAL
- *  (`all`) + des surcharges PAR ESPÈCE (`bySpecies`, clés ouvertes). HTML léger autorisé (rendu via
+ *  (`all`) + des surcharges PAR ESPÈCE (`bySpecies`, clé = id `RaceKey`). HTML léger autorisé (rendu via
  *  LoreText au Codex). Réutilise le motif `de-reflrow` (rangée + ✕ + « + »). Sort `texts` du repli JSON. */
 function DetailsTextsField({ value, onChange }: { value: DetailsTexts | undefined; onChange: (v: DetailsTexts) => void }) {
   const texts = value ?? {};

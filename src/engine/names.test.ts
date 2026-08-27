@@ -7,32 +7,32 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
 import { generateName } from './names';
-import { names as N, RACE_KEY_LABEL } from '../data';
+import { names as N } from '../data';
 import speciesJson from '../data/species.json';
 import type { RaceKey } from '../data/schemas/grammaire/valeurs';
 const startsWithOne = (name: string, pool: string[]) => pool.some((p) => name.startsWith(p + ' '));
 const endsWithOne = (name: string, pool: string[]) => pool.some((p) => name.endsWith(' ' + p));
 
-// generateName est keyé par `species.refChar` (`RaceKey`, #313) — le pont vers le libellé de
-// `names.json` vit dans `RACE_KEY_LABEL` (SEUL point de conversion, cf. `engine/names.ts`).
+// generateName est keyé par `species.refChar` (`RaceKey`, #313) et `names.json` est keyé par le MÊME
+// id depuis #1467 L1b V-P4 : l'accès à la banque est direct, sans conversion (cf. `engine/names.ts`).
 describe('generateName — banque names.json + canon nain (LDB 05 l.627-633)', () => {
   it('Humain : « Prénom Famille », prénom du pool du SEXE', () => {
     for (let s = 1; s <= 25; s++) {
       const m = generateName('humain', 'M', makeRNG(s))!;
-      expect(startsWithOne(m, N.Humain.maleFirstNames), m).toBe(true);
-      expect(endsWithOne(m, N.Humain.lastNames), m).toBe(true);
+      expect(startsWithOne(m, N.humain.maleFirstNames), m).toBe(true);
+      expect(endsWithOne(m, N.humain.lastNames), m).toBe(true);
       const f = generateName('humain', 'F', makeRNG(s))!;
-      expect(startsWithOne(f, N.Humain.femaleFirstNames), f).toBe(true);
+      expect(startsWithOne(f, N.humain.femaleFirstNames), f).toBe(true);
     }
   });
 
   it('Nain : famille = parent + suffixe SEXUÉ (l.622), jamais le pool (vide)', () => {
     for (let s = 1; s <= 25; s++) {
       const m = generateName('nain', 'M', makeRNG(s))!;
-      expect(startsWithOne(m, N.Nain.maleFirstNames), m).toBe(true);
+      expect(startsWithOne(m, N.nain.maleFirstNames), m).toBe(true);
       expect(m).toMatch(/(sson|snev)$/);
       const f = generateName('nain', 'F', makeRNG(s))!;
-      expect(startsWithOne(f, N.Nain.femaleFirstNames), f).toBe(true);
+      expect(startsWithOne(f, N.nain.femaleFirstNames), f).toBe(true);
       expect(f).toMatch(/(sdottir|sniz)$/);
     }
   });
@@ -40,27 +40,26 @@ describe('generateName — banque names.json + canon nain (LDB 05 l.627-633)', (
   it('le parent du patronyme nain vient du pool de prénoms nains (mono-mot)', () => {
     const m = generateName('nain', 'M', makeRNG(7))!;
     const fam = m.slice(m.lastIndexOf(' ') + 1);
-    const suffix = N.Nain.lastNameSuffixes!.M.find((sf) => fam.endsWith(sf))!;
+    const suffix = N.nain.lastNameSuffixes!.M.find((sf) => fam.endsWith(sf))!;
     const parent = fam.slice(0, -suffix.length);
-    expect([...N.Nain.maleFirstNames, ...N.Nain.femaleFirstNames]).toContain(parent);
+    expect([...N.nain.maleFirstNames, ...N.nain.femaleFirstNames]).toContain(parent);
   });
 
-  it('Elfes : prénom du pool de la lignée + épithète (lastNames) — clés divergentes (espace)', () => {
+  it('Elfes : prénom du pool de la lignée + épithète (lastNames) — deux banques distinctes', () => {
     const he = generateName('haut-elfe', 'M', makeRNG(3))!;
-    expect(startsWithOne(he, N['Haut Elfe'].maleFirstNames), he).toBe(true);
-    expect(endsWithOne(he, N['Haut Elfe'].lastNames), he).toBe(true);
+    expect(startsWithOne(he, N['haut-elfe'].maleFirstNames), he).toBe(true);
+    expect(endsWithOne(he, N['haut-elfe'].lastNames), he).toBe(true);
     const es = generateName('elfe-sylvain', 'F', makeRNG(3))!;
-    expect(startsWithOne(es, N['Elfe Sylvain'].femaleFirstNames), es).toBe(true);
-    expect(endsWithOne(es, N['Elfe Sylvain'].lastNames), es).toBe(true);
+    expect(startsWithOne(es, N['elfe-sylvain'].femaleFirstNames), es).toBe(true);
+    expect(endsWithOne(es, N['elfe-sylvain'].lastNames), es).toBe(true);
   });
 
-  it('CHAQUE species de species.json résout son pool (via refChar→RACE_KEY_LABEL) et produit un nom (M et F)', () => {
-    // Preuve du routage par refChar : on parcourt les VRAIES espèces (variantes régionales et
-    // elfes inclus — dont les libellés de banque divergent par l'espace : « Haut Elfe », « Elfe Sylvain »).
+  it('CHAQUE species de species.json résout son pool (par refChar) et produit un nom (M et F)', () => {
+    // Preuve du routage par refChar : on parcourt les VRAIES espèces (les 20 variantes régionales
+    // partagent la banque de leur race — `humain`, `halfling`, `nain`…).
     const species = speciesJson as { label: string; refChar: RaceKey }[];
     for (const sp of species) {
-      const bankLabel = RACE_KEY_LABEL[sp.refChar];
-      expect(N[bankLabel], `${sp.label} → refChar ${JSON.stringify(sp.refChar)} (${bankLabel}) absent de names.json`).toBeTruthy();
+      expect(N[sp.refChar], `${sp.label} → refChar ${JSON.stringify(sp.refChar)} absent de names.json`).toBeTruthy();
       for (const sex of ['M', 'F'] as const) {
         const n = generateName(sp.refChar, sex, makeRNG(11));
         expect(n, `${sp.label} (${sp.refChar}) ${sex}`).toBeTruthy();

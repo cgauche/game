@@ -1,5 +1,5 @@
 {
-  "Humain": {
+  "humain": {
     "maleFirstNames": [
       "Abel",
       "Abelhard",
@@ -3597,7 +3597,7 @@
       "Zweisteiner"
     ]
   },
-  "Halfling": {
+  "halfling": {
     "maleFirstNames": [
       "Adam",
       "Addy",
@@ -4585,7 +4585,7 @@
       "Vigueurbaie"
     ]
   },
-  "Haut Elfe": {
+  "haut-elfe": {
     "maleFirstNames": [
       "Adanedhel",
       "Adûnakhôr",
@@ -6013,7 +6013,7 @@
       "Vueperçante"
     ]
   },
-  "Elfe Sylvain": {
+  "elfe-sylvain": {
     "maleFirstNames": [
       "Adanedhel",
       "Adûnakhôr",
@@ -7441,7 +7441,7 @@
       "Vueperçante"
     ]
   },
-  "Nain": {
+  "nain": {
     "maleFirstNames": [
       "Abrak",
       "Abrath",
@@ -10250,7 +10250,7 @@
       ]
     }
   },
-  "Gnome": {
+  "gnome": {
     "maleFirstNames": [
       "Abel",
       "Abelhard",
@@ -13848,7 +13848,7 @@
       "Zweisteiner"
     ]
   },
-  "Ogre": {
+  "ogre": {
     "maleFirstNames": [
       "Abel",
       "Abelhard",

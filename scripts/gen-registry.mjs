@@ -485,8 +485,7 @@ const genreDe = (v) => (Array.isArray(v) ? 'liste' : v === null ? 'nul' : typeof
  * `teintesJeu`) plutôt qu'un document/une configuration unique ? Trois conditions STRUCTURELLES :
  * au moins deux clés, toutes de la forme d'un id, et des valeurs de même genre. Un objet portant
  * `id`+`label` de premier niveau est UN document, pas un record. Écartés par la 2ᵉ condition :
- * `names.json` (clés = LIBELLÉS affichés, `defs/names.ts`), `decorPalette` et les configurations à
- * clés camelCase (noms de CHAMP, pas des ids).
+ * `decorPalette` et les configurations à clés camelCase (noms de CHAMP, pas des ids).
  */
 function estRecordAIds(racine) {
   const ks = Object.keys(racine);
@@ -511,8 +510,6 @@ const estUnLibelle = (v) => /^[A-ZÀ-Þ]/.test(v) || /\s/.test(v);
 const DEFAUTS_IDS = {
   'aa-criticals.json': 'record de localisations, mais la clé de méta `_source` siège au même niveau que les entrées — le détecteur de record à ids l’écarte',
   'decorPalette.json': 'record de 435 jetons de teinte à clés camelCase (`terreTresSombre`), graphie que le détecteur de record à ids n’admet pas',
-  'names.json': 'record dont les clés sont les LIBELLÉS de race (« Haut Elfe »), pas des ids',
-  'raceAppearance.json': 'liste d’entités dont les `id` sont les LIBELLÉS de race (« Démon », « Elfe sylvain »), pas des ids',
 };
 
 /** Familles DÉCLARÉES par les defs de schéma (`export const famille`), dataset par dataset. */

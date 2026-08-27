@@ -1499,11 +1499,10 @@ export interface DetailColorData {
   randByRace?: Partial<Record<RaceKey, number>>;
   color: Partial<Record<RaceKey, string>>;
 }
-/** Texte d'aide (LDB 05 « Détails ») : global + par espèce (clé OUVERTE — libellé, saisie libre à
- *  l'édition Codex, hors périmètre #313 : pas un catalogue fermé). */
+/** Texte d'aide (LDB 05 « Détails ») : global + surcharges par colonne `RaceKey` (#313), partielles. */
 export interface DetailText {
   all: string;
-  bySpecies: Record<string, string>;
+  bySpecies: Partial<Record<RaceKey, string>>;
 }
 /** Formules d'Âge/Taille (LDB 05 l.691-707) : « base + N d10 », par colonne `RaceKey` (#313) —
  *  + textes d'aide (conventions de noms, espérance de vie, tailles moyennes, Ambitions). */
@@ -2153,6 +2152,7 @@ export interface BookData {
  */
 export interface RaceAppearanceData {
   id: string;
+  label: string;
   gabarit: string;
   gabaritOverride?: Record<string, number>;
   palette?: Record<string, string>;
@@ -2682,14 +2682,9 @@ export interface GodData {
   sinLocks?: { beni?: number; invocation?: number };
 }
 export const gods = godsJson as GodData[];
-export const names = namesJson as Record<string, NamePool>;
-/** Pont id→libellé pour `names.json` (SEUL espace resté label-keyé — #313, exception documentée
- *  `schemas/defs/names.ts`) — conversion au SEUL point d'appel (`engine/names.generateName`), jamais
- *  ré-inventée ailleurs. */
-export const RACE_KEY_LABEL: Record<RaceKey, string> = {
-  humain: 'Humain', halfling: 'Halfling', nain: 'Nain', gnome: 'Gnome', ogre: 'Ogre',
-  'haut-elfe': 'Haut Elfe', 'elfe-sylvain': 'Elfe Sylvain',
-};
+/** Banques de noms par id d'espèce (`RaceKey`, celui de `species.refChar`) — `engine/names` y indexe
+ *  directement (#1467 L1b). */
+export const names = namesJson as Record<RaceKey, NamePool>;
 /** Personnages pré-tirés (DÉFINITIONS) — app-owned éditable au Codex ; la FABRIQUE (`createHero`)
  *  vit dans `pregens.ts`, qui consomme CE tableau (même référence → mutation live de l'éditeur). */
 export const pregens = pregensJson as PregenDef[];

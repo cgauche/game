@@ -12,7 +12,7 @@ import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, siegeEngines, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
   stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, advancementBaseId, weaponGroupLabel, trappingTypeLabel, qualitySubtypeLabel, qualityTypeLabel,
-  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names, RACE_KEY_LABEL,
+  skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
@@ -86,8 +86,8 @@ export const CODEX_GROUPS: CodexGroup[] = ['Personnage', 'Compétences', 'Équip
 /**
  * Identité GÉNÉRIQUE d'une entrée de dataset — clé STABLE servant À LA FOIS de `CodexItem.label`
  * (ce que le navigateur passe à l'éditeur) ET de cible du `findIndex` côté `CodexEdit`. Précédence
- * `label → id` : un dataset qui porte un `label` l'expose (maladies, gods…), sinon son `id` fait
- * l'affichage (raceAppearance). Mesuré sur les 2 racines (`src/data`, `src/scenes`) : aucune entrée
+ * `label → id` : un dataset qui porte un `label` l'expose (maladies, gods, raceAppearance depuis
+ * #1467 L1b V-P4…), sinon son `id` fait l'affichage. Mesuré sur les 2 racines (`src/data`, `src/scenes`) : aucune entrée
  * de premier niveau ne porte `key` ni `name` — le dernier porteur de `key` (`calendarPhases`) est
  * passé à `id` en #1467 L1b V-P1.
  * EXCEPTION careerLevels : le libellé de niveau (« Recrue ») revient sur plusieurs carrières et
@@ -476,8 +476,6 @@ export function raceCareerSection(s: (typeof species)[number]): CodexSection | n
 /** Section « Détails » d'une race — âge, taille, yeux & cheveux, noms (tables de création). */
 export function raceDetailSection(s: (typeof species)[number]): CodexSection {
   const ref = s.refChar;
-  // `bySpecies` reste label-keyé (clé OUVERTE, #313 hors périmètre) : pont id→label via `RACE_KEY_LABEL`.
-  const refLabelForText = RACE_KEY_LABEL[ref];
   const txt = details.texts;
   const eyeColors = [...new Set(eyes.map((e) => e.color[ref]).filter(Boolean))];
   const hairColors = [...new Set(hairs.map((e) => e.color[ref]).filter(Boolean))];
@@ -485,13 +483,13 @@ export function raceDetailSection(s: (typeof species)[number]): CodexSection {
     { t: 'sub', label: 'Âge' },
     { t: 'text', text: `${details.ageBase[ref] ?? details.ageBase.humain} + ${Math.round(details.ageRoll[ref] ?? 1)}d10 ans` },
   ];
-  if (txt.age.bySpecies[refLabelForText]) rows.push({ t: 'text', text: txt.age.bySpecies[refLabelForText] });
+  if (txt.age.bySpecies[ref]) rows.push({ t: 'text', text: txt.age.bySpecies[ref]! });
   rows.push({ t: 'sub', label: 'Taille' }, { t: 'text', text: `${details.heightBase[ref] ?? details.heightBase.humain} + ${Math.round(details.heightRoll[ref] ?? 1)}d10 cm` });
-  const tailleTxt = txt.taille.bySpecies[refLabelForText] ?? txt.taille.all;
+  const tailleTxt = txt.taille.bySpecies[ref] ?? txt.taille.all;
   if (tailleTxt) rows.push({ t: 'text', text: tailleTxt });
   if (eyeColors.length) rows.push({ t: 'sub', label: 'Yeux' }, { t: 'text', text: eyeColors.join(', ') });
   if (hairColors.length) rows.push({ t: 'sub', label: 'Cheveux' }, { t: 'text', text: hairColors.join(', ') });
-  const namesTxt = txt.nom.bySpecies[refLabelForText] ?? txt.nom.bySpecies['Humain'];
+  const namesTxt = txt.nom.bySpecies[ref] ?? txt.nom.bySpecies.humain;
   if (namesTxt) rows.push({ t: 'sub', label: 'Noms' }, { t: 'text', text: namesTxt });
   return { title: 'Âge, taille & apparence', layout: 'list', rows };
 }
@@ -1800,7 +1798,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables', cluster: 'Création de personnage',
     build: () => raceAppearance.map((r) => ({
-      id: r.id, label: r.id, sub: r.gabarit, appearance: { species: r.id },
+      id: r.id, label: r.label, sub: r.gabarit, appearance: { species: r.id },
       meta: facts(fact('Gabarit', r.gabarit), fact('Tenue', r.tenue), fact('Tête', r.head), fact('Jambes', r.legs)),
     })),
   },
@@ -1920,10 +1918,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'names', label: 'Banque de noms', group: 'Tables', cluster: 'Création de personnage',
-    // Record race → NamePool : une entrée par race (clé = libellé de l'item, édité au Codex) — la clé
-    // de Record EST déjà une identité stable (`RaceKey`), reprise telle quelle comme id.
+    // Record `RaceKey` → NamePool (#1467 L1b V-P4) : la clé EST l'identité, reprise telle quelle
+    // comme id ; l'affichage vient du `label` de la race de rig, keyé par le même slug.
     build: () => Object.entries(names).map(([race, pool]) => ({
-      id: race, label: race,
+      id: race, label: raceAppearance.find((r) => r.id === race)?.label ?? race,
       sub: `${pool.maleFirstNames.length}♂ · ${pool.femaleFirstNames.length}♀ · ${pool.lastNames.length} noms`,
       sections: sections(
         pool.maleFirstNames.length ? { title: 'Prénoms masculins', layout: 'chips', rows: [{ t: 'text', text: pool.maleFirstNames.join(', ') }] } : null,

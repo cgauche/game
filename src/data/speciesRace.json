@@ -1,132 +1,132 @@
 {
-  "default": "Humain",
+  "default": "humain",
   "rules": [
     {
       "prefix": [
         "humain"
       ],
-      "race": "Humain"
+      "race": "humain"
     },
     {
       "prefix": [
         "haut"
       ],
-      "race": "Haut-Elfe"
+      "race": "haut-elfe"
     },
     {
       "includes": [
         "sylvain"
       ],
-      "race": "Elfe sylvain"
+      "race": "elfe-sylvain"
     },
     {
       "prefix": [
         "elf"
       ],
-      "race": "Elfe sylvain"
+      "race": "elfe-sylvain"
     },
     {
       "prefix": [
         "nain"
       ],
-      "race": "Nain"
+      "race": "nain"
     },
     {
       "prefix": [
         "halfling"
       ],
-      "race": "Halfling"
+      "race": "halfling"
     },
     {
       "prefix": [
         "gnome"
       ],
-      "race": "Gnome"
+      "race": "gnome"
     },
     {
       "prefix": [
         "ogre"
       ],
-      "race": "Ogre"
+      "race": "ogre"
     },
     {
       "prefix": [
         "skaven"
       ],
-      "race": "Skaven"
+      "race": "skaven"
     },
     {
       "prefix": [
         "orc"
       ],
-      "race": "Orc"
+      "race": "orc"
     },
     {
       "prefix": [
         "gobelin"
       ],
-      "race": "Gobelin"
+      "race": "gobelin"
     },
     {
       "prefix": [
         "snotling"
       ],
-      "race": "Snotling"
+      "race": "snotling"
     },
     {
       "prefix": [
         "minotaure"
       ],
-      "race": "Minotaure"
+      "race": "minotaure"
     },
     {
       "prefix": [
         "homme"
       ],
-      "race": "Homme-bête"
+      "race": "homme-bete"
     },
     {
       "prefix": [
         "squelette"
       ],
-      "race": "Squelette"
+      "race": "squelette"
     },
     {
       "prefix": [
         "zombie"
       ],
-      "race": "Zombie"
+      "race": "zombie"
     },
     {
       "prefix": [
         "goule"
       ],
-      "race": "Goule"
+      "race": "goule"
     },
     {
       "prefix": [
         "troll"
       ],
-      "race": "Troll"
+      "race": "troll"
     },
     {
       "prefix": [
         "vampire"
       ],
-      "race": "Vampire"
+      "race": "vampire"
     },
     {
       "prefix": [
         "démon",
         "demon"
       ],
-      "race": "Démon"
+      "race": "demon"
     },
     {
       "prefix": [
         "fimir"
       ],
-      "race": "Fimir"
+      "race": "fimir"
     },
     {
       "all": [
@@ -138,7 +138,7 @@
         "chevalier",
         "champion"
       ],
-      "race": "Guerrier du Chaos"
+      "race": "guerrier-du-chaos"
     }
   ]
 }

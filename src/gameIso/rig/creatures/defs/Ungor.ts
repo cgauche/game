@@ -7,7 +7,7 @@ export const creature: CreatureDef = {
   label: 'Ungor',
   id: "ungor",
   plan: 'biped',
-  race: 'Homme-bête',
+  race: 'homme-bete',
   perso: {
     gabarit: 'elance-voute', // chétif — perd la masse trapue du gor
     features: [appendageFeature('cornes-vestigiales')],

@@ -6,7 +6,7 @@ export const creature: CreatureDef = {
   label: 'Vermine de choc',
   id: "vermine-de-choc",
   plan: 'biped',
-  race: 'Skaven',
+  race: 'skaven',
   perso: {
     tenue: 'vermine-de-choc',
     scale: 1.1, // « plus grands, plus forts… que les guerriers des clans » (LDB 84)

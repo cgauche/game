@@ -6,7 +6,7 @@ export const creature: CreatureDef = {
   label: "Coureur d'égout",
   id: "coureur-d-egout",
   plan: 'biped',
-  race: 'Skaven',
+  race: 'skaven',
   perso: {
     tenue: 'coureur-d-egout',
     colors: { peau: '#46403a', cheveux: '#1c1813' }, // fourrure brun-noir

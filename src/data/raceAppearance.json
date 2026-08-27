@@ -1,6 +1,7 @@
 [
   {
-    "id": "Démon",
+    "id": "demon",
+    "label": "Démon",
     "gabarit": "elance",
     "gabaritOverride": {
       "sl": 1.06,
@@ -24,7 +25,8 @@
     ]
   },
   {
-    "id": "Elfe sylvain",
+    "id": "elfe-sylvain",
+    "label": "Elfe sylvain",
     "gabarit": "elance",
     "tenue": "bourgeois",
     "gabaritOverride": {
@@ -52,7 +54,8 @@
     ]
   },
   {
-    "id": "Fimir",
+    "id": "fimir",
+    "label": "Fimir",
     "gabarit": "brute",
     "palette": {
       "peau": "#6b7a52",
@@ -68,12 +71,14 @@
     ]
   },
   {
-    "id": "Gnome",
+    "id": "gnome",
+    "label": "Gnome",
     "gabarit": "gnome",
     "tenue": "artisan"
   },
   {
-    "id": "Gobelin",
+    "id": "gobelin",
+    "label": "Gobelin",
     "gabarit": "gremlin",
     "palette": {
       "peau": "#4f7a33",
@@ -99,7 +104,8 @@
     }
   },
   {
-    "id": "Goule",
+    "id": "goule",
+    "label": "Goule",
     "gabarit": "trapu-voute",
     "gabaritOverride": {
       "sl": 0.96,
@@ -128,7 +134,8 @@
     ]
   },
   {
-    "id": "Guerrier du Chaos",
+    "id": "guerrier-du-chaos",
+    "label": "Guerrier du Chaos",
     "gabarit": "trapu-massif",
     "tenue": "guerrier-du-chaos",
     "palette": {
@@ -152,7 +159,8 @@
     }
   },
   {
-    "id": "Halfling",
+    "id": "halfling",
+    "label": "Halfling",
     "gabarit": "halfling",
     "tenue": "bourgeois",
     "palette": {
@@ -172,7 +180,8 @@
     }
   },
   {
-    "id": "Haut-Elfe",
+    "id": "haut-elfe",
+    "label": "Haut-Elfe",
     "gabarit": "elance",
     "tenue": "bourgeois",
     "palette": {
@@ -194,7 +203,8 @@
     ]
   },
   {
-    "id": "Homme-bête",
+    "id": "homme-bete",
+    "label": "Homme-bête",
     "gabarit": "trapu-massif",
     "gabaritOverride": {
       "sl": 1.02,
@@ -225,7 +235,8 @@
     ]
   },
   {
-    "id": "Humain",
+    "id": "humain",
+    "label": "Humain",
     "gabarit": "moyen",
     "tenue": "bourgeois",
     "palette": {
@@ -246,7 +257,8 @@
     }
   },
   {
-    "id": "Minotaure",
+    "id": "minotaure",
+    "label": "Minotaure",
     "gabarit": "brute",
     "gabaritOverride": {
       "sl": 1.32,
@@ -270,7 +282,8 @@
     ]
   },
   {
-    "id": "Nain",
+    "id": "nain",
+    "label": "Nain",
     "gabarit": "courtaud",
     "tenue": "artisan",
     "palette": {
@@ -293,7 +306,8 @@
     ]
   },
   {
-    "id": "Ogre",
+    "id": "ogre",
+    "label": "Ogre",
     "gabarit": "brute",
     "palette": {
       "peau": "#c9966a",
@@ -312,7 +326,8 @@
     }
   },
   {
-    "id": "Orc",
+    "id": "orc",
+    "label": "Orc",
     "gabarit": "trapu-massif",
     "palette": {
       "peau": "#4f7a36",
@@ -338,7 +353,8 @@
     }
   },
   {
-    "id": "Skaven",
+    "id": "skaven",
+    "label": "Skaven",
     "gabarit": "elance-voute",
     "palette": {
       "peau": "#6f6354",
@@ -363,7 +379,8 @@
     ]
   },
   {
-    "id": "Snotling",
+    "id": "snotling",
+    "label": "Snotling",
     "gabarit": "gremlin-mini",
     "palette": {
       "peau": "#4a7a3a",
@@ -380,7 +397,8 @@
     ]
   },
   {
-    "id": "Squelette",
+    "id": "squelette",
+    "label": "Squelette",
     "gabarit": "decharne",
     "palette": {
       "peau": "#d8ccab",
@@ -395,7 +413,8 @@
     "extremites": "griffues"
   },
   {
-    "id": "Troll",
+    "id": "troll",
+    "label": "Troll",
     "gabarit": "brute-bras-longs",
     "palette": {
       "peau": "#4a6b34",
@@ -419,7 +438,8 @@
     ]
   },
   {
-    "id": "Vampire",
+    "id": "vampire",
+    "label": "Vampire",
     "gabarit": "elance",
     "gabaritOverride": {
       "sl": 1.04,
@@ -456,7 +476,8 @@
     ]
   },
   {
-    "id": "Zombie",
+    "id": "zombie",
+    "label": "Zombie",
     "gabarit": "trapu-voute",
     "palette": {
       "peau": "#8e8a7a",

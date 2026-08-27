@@ -273,7 +273,11 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "combat-stakes.json", champ: "entryCategory", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "combat-stakes.json", champ: "kind", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 7, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "combat-stakes.json", champ: "rule", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 23, lot: "L2 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "creatures.json", champ: "appearance", signature: "species", statut: "divergente", strate: "Référence", occurrences: 225, lot: "L2 #1463", date: "2026-08-23" },
+  // Les 4 lignes ci-dessous ont bougé avec #1467 L1b V-P4 : `names.json` (7) et `raceAppearance.json`
+  // (21) entrent à l'INDEX DES IDS (leurs clés/ids cessent d'être des libellés, `DEFAUTS_IDS` perd ses
+  // deux entrées) — des références jusqu'ici mesurées NON résolvables le deviennent. La donnée de ces
+  // datasets n'a pas changé : c'est le dénominateur de résolution qui s'élargit.
+  { concept: "reference", dataset: "creatures.json", champ: "appearance", signature: "species", statut: "divergente", strate: "Référence", occurrences: 226, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "appearance", signature: "species,tenue", statut: "divergente", strate: "Référence", occurrences: 107, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "appearance", signature: "species,tenue+…", statut: "divergente", strate: "Référence", occurrences: 70, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "creatures.json", champ: "appearance", signature: "species+…", statut: "divergente", strate: "Référence", occurrences: 52, lot: "L2 #1463", date: "2026-08-23" },
@@ -463,7 +467,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "species.json", champ: "talents", signature: "ref", statut: "historique", strate: "Référence", occurrences: 77, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "species.json", champ: "wildcard", signature: "wildcard>id", statut: "historique", strate: "Référence", occurrences: 39, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "speciesRace.json", champ: "default", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "speciesRace.json", champ: "rules", signature: "race+…", statut: "divergente", strate: "Référence", occurrences: 22, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "speciesRace.json", champ: "rules", signature: "race+…", statut: "divergente", strate: "Référence", occurrences: 22, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "addTraits", signature: "id,value", statut: "historique", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "cond", signature: "is+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "domainId", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 256, lot: "L2 #1463", date: "2026-08-23" },
@@ -496,9 +500,9 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "spells.json", champ: "perRound", signature: "id,unlessCondition+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "perRound", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "perRound", signature: "op+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "spells.json", champ: "range", signature: "text+… (résolvable)", statut: "divergente", strate: "Référence", occurrences: 13, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "spells.json", champ: "range", signature: "text+… (résolvable)", statut: "divergente", strate: "Référence", occurrences: 22, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "subject", signature: "condition+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "spells.json", champ: "target", signature: "text+… (résolvable)", statut: "divergente", strate: "Référence", occurrences: 8, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "spells.json", champ: "target", signature: "text+… (résolvable)", statut: "divergente", strate: "Référence", occurrences: 16, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "spells.json", champ: "when", signature: "rule", statut: "divergente", strate: "Référence", occurrences: 18, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "stars.json", champ: "ascendant", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "stars.json", champ: "ops", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 42, lot: "L3 #1463", date: "2026-08-23" },
@@ -969,7 +973,6 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "identité", cle: "nom", motif: "clé divergente", detail: "", document: "loup-et-saumure-projet.json", chemin: "scenes", entrees: 5, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "nom", motif: "clé divergente", detail: "", document: "loup-et-saumure-projet.json", chemin: "worldMap", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "props.json", chemin: "(entrées)", entrees: 78, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "raceAppearance.json", chemin: "(entrées)", entrees: 21, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 8, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "reliefMaterials.json", chemin: "(entrées)", entrees: 6, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "roofMaterials.json", chemin: "(entrées)", entrees: 4, lot: "L1b #1467", date: "2026-08-23" },
