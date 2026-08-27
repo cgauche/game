@@ -498,7 +498,7 @@ nombre d’entrées qui la portent.
 | Document | Racine JSON | Famille déclarée | Famille mesurée | Entrées | Clés de 1er niveau |
 |---|---|---|---|---|---|
 | `src/data/aa-criticals.json` | object | config (objet unique) | config | 1 | `_source`:string(1) `bras`:array(1) `corps`:array(1) `jambe`:array(1) `tete`:array(1) |
-| `src/data/actions.json` | array | liste | entité | 55 | `armed`:string(5) `candidates`:string(20) `cost`:string(55) `costNote`:string(30) `exitSafe`:boolean(6) `gate`:array/string(55) `hote`:string(1) `icon`:string(55) `id`:string(55) `intent`:string(4) `keys`:array(41) `label`:string(55) `maison`:boolean(30) `mode`:string(12) `panneau`:boolean(2) `role`:string(6) `rule`:string(32) `ruleCategory`:string(32) `run`:string(52) `source`:object(12) `stance`:string(2) `surface`:string(55) |
+| `src/data/actions.json` | array | liste | entité | 55 | `armed`:string(5) `candidates`:string(20) `cost`:string(55) `exitSafe`:boolean(6) `gate`:array/string(55) `hote`:string(1) `icon`:string(55) `id`:string(55) `intent`:string(4) `keys`:array(41) `label`:string(55) `maison`:string(30) `mode`:string(12) `panneau`:boolean(2) `role`:string(6) `rule`:string(32) `ruleCategory`:string(32) `run`:string(52) `source`:object(12) `stance`:string(2) `surface`:string(55) |
 | `src/data/activities.json` | array | liste | entité | 62 | `assisted`:boolean(1) `blocked`:object(7) `classGate`:object(12) `combined`:boolean(2) `contexts`:array(62) `desc`:string(61) `difficulty`:string(51) `difficultyFrom`:object(1) `encounter`:string(3) `extended`:object(1) `failExtenue`:boolean(7) `freeSkill`:boolean(1) `generalDownOn`:string(2) `grantsFlag`:string(2) `hold`:object(1) `icon`:string(62) `id`:string(62) `label`:string(62) `maison`:string(8) `minInvest`:object(1) `onSuccess`:array(1) `outcomes`:array(35) `requires`:array(2) `resolver`:string(21) `rounds`:number(7) `rule`:string(1) `ruleCategory`:string(1) `sceneKind`:string(13) `skills`:array(48) `source`:object(62) `stageOutcome`:string(7) `stake`:string(46) `stakeForm`:string(46) `testModFrom`:string(1) `threat`:object(1) `unavailableIfExtenue`:boolean(1) `weatherMod`:object(2) `where`:array(5) |
 | `src/data/advancementCosts.json` | array | liste | entité | 15 | `char`:number(15) `id`:string(15) `label`:string(15) `max`:null/number(15) `skill`:number(15) `source`:object(15) |
 | `src/data/ambiance.json` | object | config (objet unique) | config | 1 | `ambientFloor`:number(1) `entreeEnScene`:object(1) `faceShade`:object(1) `fogTint`:object(1) `iso`:object(1) `pov`:object(1) |
@@ -535,7 +535,7 @@ nombre d’entrées qui la portent.
 | `src/data/eyes.json` | array | liste | entité | 10 | `color`:object(10) `id`:string(10) `label`:string(10) `rand`:number(10) `source`:object(10) |
 | `src/data/flow-stakes.json` | array | liste | entité | 34 | `entryCategory`:string(2) `flow`:string(34) `form`:string(34) `id`:string(34) `label`:string(34) `phase`:string(34) `rule`:string(33) `ruleCategory`:string(33) `source`:object(34) `template`:string(34) |
 | `src/data/gods.json` | array | liste | entité | 41 | `blessings`:array(41) `chaosSpells`:array(3) `desc`:string(40) `grantGroups`:array(2) `id`:string(41) `label`:string(41) `miracles`:array(41) `sinLocks`:object(1) `source`:object(41) `title`:string(40) |
-| `src/data/grapple.json` | object | config (objet unique) | config | 1 | `_comment`:string(1) `init`:array(1) `source`:object(1) `win`:object(1) |
+| `src/data/grapple.json` | object | config (objet unique) | config | 1 | `init`:array(1) `source`:object(1) `win`:object(1) |
 | `src/data/groups.json` | array | liste | entité | 38 | `exceptGroups`:array(1) `id`:string(38) `label`:string(38) `matchesAll`:boolean(2) |
 | `src/data/hairs.json` | array | liste | entité | 10 | `color`:object(10) `id`:string(10) `label`:string(10) `rand`:number(10) `randByRace`:object(2) `source`:object(10) |
 | `src/data/incidents-monture.json` | object | config (objet unique) | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) |
@@ -579,7 +579,7 @@ nombre d’entrées qui la portent.
 | `src/data/reglesOptionnelles.json` | array | liste | entité | 81 | `action`:object(1) `default`:boolean/number/string(81) `group`:string(81) `hint`:string(81) `id`:string(81) `kind`:string(81) `label`:string(81) `maison`:string(27) `max`:number(23) `min`:number(23) `options`:array(12) `ref`:string(81) `source`:object(54) `step`:number(13) |
 | `src/data/reliefMaterials.json` | array | liste | entité | 6 | `built`:boolean(4) `detail`:object(2) `face`:string(6) `foot`:string(2) `id`:string(6) `shadeDark`:number(2) `slopeTop`:string(2) |
 | `src/data/rencontres-edoc.json` | object | config (objet unique) | config | 1 | `die`:string(1) `id`:string(1) `label`:string(1) `source`:object(1) `tables`:object(1) |
-| `src/data/renduMonte.json` | object | config (objet unique) | config | 1 | `_doc`:string(1) `harnaisParDefaut`:string(1) |
+| `src/data/renduMonte.json` | object | config (objet unique) | config | 1 | `harnaisParDefaut`:string(1) |
 | `src/data/river-criticals.json` | object | config (objet unique) | config | 1 | `id`:string(1) `label`:string(1) `shrapnelHit`:array(1) `source`:object(1) `tables`:object(1) |
 | `src/data/river-navigation.json` | object | config (objet unique) | config | 1 | `capsize`:object(1) `driftNavPenalty`:number(1) `driftPctOfSpeed`:number(1) `echouage`:object(1) `navBaseDifficulty`:string(1) `outOfControl`:object(1) `rowingAgility`:object(1) `savoirVoiesFluvialesDR`:number(1) `source`:object(1) `tackDifficulty`:string(1) `temporaryRepair`:object(1) `windDirections`:array(1) `windEffect`:object(1) `windForces`:array(1) `windTicksPerDay`:number(1) `windTickThreshold`:number(1) |
 | `src/data/river-perils.json` | object | config (objet unique) | config | 1 | `perils`:array(1) |
@@ -595,7 +595,7 @@ nombre d’entrées qui la portent.
 | `src/data/sizes.json` | object | config (objet unique) | config | 1 | `footprintSide`:object(1) `rangedMod`:object(1) `shipboardEnc`:object(1) |
 | `src/data/skills.json` | array | liste | entité | 48 | `altChar`:object(2) `characteristic`:string(48) `combatAdvantage`:object(4) `combatSubstitute`:object(2) `desc`:string(48) `hearing`:boolean(1) `id`:string(48) `label`:string(48) `movement`:boolean(5) `source`:object(48) `specs`:array(43) `specsOpen`:boolean(6) `specsSource`:string(3) `tool`:object(1) `type`:string(48) |
 | `src/data/species.json` | array | liste | entité | 27 | `arcaneDomainsBonusOf`:string(2) `baseChar`:object(27) `desc`:string(27) `family`:string(27) `fate`:object(27) `gatedByRule`:string(1) `grantGroups`:array(27) `id`:string(27) `label`:string(27) `movement`:number(27) `mutationBodyMax`:number(18) `preview`:object(27) `rand`:number(27) `refCareer`:string(27) `refChar`:string(27) `skills`:array(27) `source`:object(27) `talents`:array(27) `traits`:array(1) `variant`:string(21) |
-| `src/data/speciesRace.json` | object | config (objet unique) | config | 1 | `_doc`:string(1) `default`:string(1) `rules`:array(1) |
+| `src/data/speciesRace.json` | object | config (objet unique) | config | 1 | `default`:string(1) `rules`:array(1) |
 | `src/data/spells.json` | array | liste | entité | 576 | `alsoIn`:array(46) `breathAttack`:boolean(2) `cn`:null/number(576) `curated`:boolean(438) `damage`:number(22) `desc`:string(576) `domainId`:string(256) `duration`:null/object(576) `effects`:object(576) `family`:string(576) `id`:string(576) `ignoreBE`:boolean(2) `ignorePA`:boolean(6) `isRitual`:boolean(17) `label`:string(576) `missile`:boolean(40) `opposed`:object(4) `range`:null/object(576) `ritual`:object(17) `source`:object(576) `subType`:null/string(576) `target`:null/object(576) `type`:string(576) `variants`:array(18) |
 | `src/data/stars.json` | array | liste | entité | 23 | `apparence`:string(23) `ascendant`:string(23) `classique`:string(23) `dates`:string(23) `desc`:string(23) `dieux`:string(23) `id`:string(23) `label`:string(23) `ops`:array(23) `rand`:number(23) `signe`:string(23) `source`:object(23) `sub`:array(4) |
 | `src/data/steam-breakdown.json` | array | liste | table | 6 | `compartmentDamage`:number(1) `coolMinutes`:string(1) `desc`:string(6) `durationRounds`:string(1) `engineDestroyed`:boolean(1) `failDamage`:string(1) `hullCritical`:boolean(1) `id`:string(6) `label`:string(6) `max`:number(6) `min`:number(6) `mMod`:number(2) `mSet`:number(2) `restart`:array(3) `source`:object(6) |
@@ -691,14 +691,14 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 | source | `source` | cible (`object`) | 70 | actions.json(12) activities.json(62) advancementCosts.json(15) artillery-misfire.json(1) astrology.json(5) calendarIntercalary.json(6) calendarMonths.json(12) calendarWeekdays.json(8) careerLevels.json(432) careers.json(108) characteristics.json(19) classes.json(9) … |
 | maison | `maison` | cible (`string`) | 12 | actions.json(30) activities.json(8) axes.json(9) creatures.json(1) crew-roles.json(7) etats.json(1) naval-traits.json(2) reglesOptionnelles.json(27) talents.json(9) traits.json(3) trappings.json(2) traumas.json(2) |
 | méta libre | `_source` | divergente | 1 | aa-criticals.json(1) |
-| méta libre | `_comment` | divergente | 1 | grapple.json(1) |
-| méta libre | `_doc` | divergente | 2 | renduMonte.json(1) speciesRace.json(1) |
+| méta libre | `_comment` | divergente | 0 | — |
+| méta libre | `_doc` | divergente | 0 | — |
 | méta libre | `__genere` | divergente | 1 | progression-schemas.derived.json(1) |
 | méta libre | `__lecture` | divergente | 1 | progression-schemas.derived.json(1) |
 | méta libre | `__livres` | divergente | 1 | progression-schemas.derived.json(1) |
 
 Groupes mesurés : **125** jeux d’ENTRÉES DE RACINE et **137** chemins de
-DOCUMENTS EMBARQUÉS (**2776** objets). **124** divergences
+DOCUMENTS EMBARQUÉS (**2776** objets). **120** divergences
 (rôle × clé × document × chemin) au stock `STRUCTURES_ENVELOPPE` (`scripts/guards/lib/structuresStock.mjs`,
 garde `src/data/structures-contrat.test.ts`) — une ligne se solde en migrant l’enveloppe, la ligne part
 dans le MÊME commit :
@@ -709,8 +709,7 @@ dans le MÊME commit :
 | identité | clé divergente | 12 |
 | libellé | clé absente | 5 |
 | libellé | clé divergente | 9 |
-| maison | type divergent | 1 |
-| méta libre | clé divergente | 7 |
+| méta libre | clé divergente | 4 |
 | source | clé absente | 53 |
 
 Documents dont AUCUNE ENTRÉE DE RACINE ne porte `source` : **53** (lot `L1d #1469`) —

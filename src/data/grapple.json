@@ -1,5 +1,4 @@
 {
-  "_comment": "Empoignade (LDB 14 l.159-169) en DONNÉE. `init` = effet à la touche d'une Empoignade déclarée (Empêtré + relation via le flag `grapple`). `win` = les 3 options du Test opposé GAGNÉ (l.161), appliquées avec ctx.sl = DR net : damage = BF+DR ignorant les PA ; entangle = +1 Empêtré à l'adversaire ; free = se défaire de son Empêtré (1 + DR). Le flux pendingGrapple n'ORCHESTRE que le choix ; ces ops sont la mécanique.",
   "init": [
     {
       "op": "condition",

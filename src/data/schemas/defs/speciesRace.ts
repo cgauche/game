@@ -1,8 +1,11 @@
 /**
- * Schéma de `speciesRace.json` — règles ORDONNÉES espèce (slug/libellé) → race-id du rig, consommé
+ * Schéma de `speciesRace.json` — règles ORDONNÉES espèce (slug/libellé) → race-id du rig
+ * (carrure/palette/features/posture), consommé
  * par `src/gameIso/rig/skeletons.ts` (`baseSpeciesOf`, type `SpeciesRule`). Une règle porte
- * EXACTEMENT un des 3 opérateurs (`prefix`/`includes`/`all`+`any`) — `_doc` documente la convention,
- * absente de la lecture runtime (cast `as`) mais présente dans le JSON réel : champ toléré ici.
+ * EXACTEMENT un des 3 opérateurs : `prefix` (l'espèce COMMENCE par un des tokens), `includes` (elle
+ * en CONTIENT un), `all`+`any` (elle contient TOUS les `all` ET un des `any`). Règles évaluées dans
+ * l'ORDRE, première qui matche gagne ; aucune ne matche → `default`. L'espèce entrante est déjà en
+ * minuscules. Ajouter un mapping = une ligne de `rules`.
  */
 import { z } from 'zod';
 
@@ -18,7 +21,6 @@ const speciesRuleSchema = z.strictObject({
 });
 
 export const schema = z.strictObject({
-  _doc: z.string().optional(),
   default: z.string(),
   rules: z.array(speciesRuleSchema),
 });

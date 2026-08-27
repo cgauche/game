@@ -66,16 +66,16 @@ describe('document() — enveloppe posée par la fabrique', () => {
     expect(JSON.stringify(ko.error)).toMatch(/document\('talent'\).*maison/);
     // `maison` SEULE suffit : un arbitrage hors canon est une provenance, pas un trou.
     expect(fiche.entree.safeParse({ ...nu, maison: 'le canon ne chiffre pas ce point' }).success).toBe(true);
-    // `source` seule suffit ; les DEUX ensemble restent légitimes (mesuré : 27 entrées, 8 fichiers).
+    // `source` seule suffit ; les DEUX ensemble restent légitimes (mesuré : 28 entrées, 9 fichiers).
     expect(fiche.entree.safeParse({ ...nu, source: SOURCE_REELLE }).success).toBe(true);
     expect(fiche.entree.safeParse({ ...nu, source: SOURCE_REELLE, maison: 'précision maison' }).success).toBe(true);
     // `maison` VIDE ne prouve rien : `.min(1)` STRUCTUREL, jamais une garde dans le refine.
     expect(fiche.entree.safeParse({ ...nu, maison: '' }).success).toBe(false);
   });
 
-  it('REFUSE `maison` BOOLÉEN — l’homonyme d’`actions.json` (drapeau) n’est pas une provenance', () => {
+  it('REFUSE `maison` BOOLÉEN — un DRAPEAU ne dit aucune raison, l’enveloppe en exige une', () => {
     const nu = { id: 'a', type: 'talent', label: 'A', max: 2 };
-    // `actions.json` porte 30 `maison: true` : même nom, autre concept. L'enveloppe exige une RAISON.
+    // Le TYPE porte le contrat : `maison` est la raison en clair, jamais un vrai/faux.
     expect(fiche.entree.safeParse({ ...nu, maison: true }).success).toBe(false);
     expect(fiche.entree.safeParse({ ...nu, source: SOURCE_REELLE, maison: true }).success).toBe(false);
     // ... et le drapeau ne satisfait donc PAS le refine de provenance : l'entrée reste sans source.

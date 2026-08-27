@@ -304,7 +304,7 @@ describe('Pastille d’entité — le geste vit sur ce qui l’offre (#1411 P2-C
 
   it('CHEF SONNÉ : Pousser coûte le MOUVEMENT, pas l’Action — le geste MORD (sonde du juge, R1)', () => {
     // L'État Sonné (`etats.json`, LDB 08) laisse le déplacement à demi-budget et retire l'Action. L'entrée
-    // « Pousser » du registre déclare `cost: 'mouvement'` (`actions.json`, `costNote` à l'appui ; ADE II 8
+    // « Pousser » du registre déclare `cost: 'mouvement'` (`actions.json`, sa raison `maison` à l'appui ; ADE II 8
     // l.256/258) : un chef Sonné pousse donc, à demi-budget. Exiger la capacité d'ACTION au dispatcher
     // faisait mentir ce coût déclaré — et rendait le clic MUET.
     const poste = mkPoste('belier-ade2', ['h1', 's1', 's2']);

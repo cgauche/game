@@ -60,8 +60,7 @@
     "gate": "mouvement-restant-fantassin",
     "intent": "portee-mouvement",
     "cost": "mouvement",
-    "maison": true,
-    "costNote": "le déplacement dépense le Mouvement du Tour — imputation du moteur, aucun verbatim de coût cité.",
+    "maison": "le déplacement dépense le Mouvement du Tour — imputation du moteur, aucun verbatim de coût cité.",
     "rule": "mouvement",
     "ruleCategory": "regles",
     "keys": [
@@ -113,8 +112,7 @@
     "run": "battleSelectAmmo",
     "candidates": "munitions-compatibles",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "fixe la munition à charger ; le coût réel est celui du Rechargement qui suit."
+    "maison": "fixe la munition à charger ; le coût réel est celui du Rechargement qui suit."
   },
   {
     "id": "pushback",
@@ -124,8 +122,7 @@
     "gate": "toujours",
     "run": "battleTogglePushback",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "arme un MODE d’attaque (la prochaine attaque repousse au lieu de blesser) — le coût est celui de l’attaque.",
+    "maison": "arme un MODE d’attaque (la prochaine attaque repousse au lieu de blesser) — le coût est celui de l’attaque.",
     "rule": "perturbante",
     "ruleCategory": "qualities",
     "keys": [
@@ -141,8 +138,7 @@
     "run": "battleToggleStance",
     "stance": "heldGround",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "la bascule ne consomme rien ; c'est le TIR effectué en posture qui dépense le Mouvement du Tour.",
+    "maison": "la bascule ne consomme rien ; c'est le TIR effectué en posture qui dépense le Mouvement du Tour.",
     "rule": "tir-en-mouvement",
     "ruleCategory": "regles",
     "keys": [
@@ -158,8 +154,7 @@
     "run": "battleToggleStance",
     "stance": "intoCrowd",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "la bascule ne consomme rien : elle change la Difficulté du TIR et la cible touchée, pas l'économie du Tour.",
+    "maison": "la bascule ne consomme rien : elle change la Difficulté du TIR et la cible touchée, pas l'économie du Tour.",
     "rule": "tirer-dans-le-tas",
     "ruleCategory": "regles",
     "keys": [
@@ -193,8 +188,7 @@
     "run": "battleWater",
     "candidates": "cibles-aspersion",
     "cost": "action",
-    "maison": true,
-    "costNote": "coût repris du site historique sans verbatim de coût cité ni Test exigé — à re-vérifier au Source (MDG).",
+    "maison": "coût repris du site historique sans verbatim de coût cité ni Test exigé — à re-vérifier au Source (MDG).",
     "keys": [
       "water"
     ]
@@ -453,8 +447,7 @@
     "run": "battleSelfManeuver",
     "candidates": "manoeuvres-sur-soi",
     "cost": "action",
-    "maison": true,
-    "costNote": "la Métamorphose consomme DEUX Actions (celle-ci puis le tour perdu) — plafond maison, aucun verbatim de coût cité.",
+    "maison": "la Métamorphose consomme DEUX Actions (celle-ci puis le tour perdu) — plafond maison, aucun verbatim de coût cité.",
     "keys": [
       "self-"
     ]
@@ -468,8 +461,7 @@
     "run": "battleSelectAttack",
     "candidates": "attaques-disponibles",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "ARME l’attaque pour le clic-ennemi ; le coût est celui de l’attaque résolue.",
+    "maison": "ARME l’attaque pour le clic-ennemi ; le coût est celui de l’attaque résolue.",
     "keys": [
       "attaque-"
     ]
@@ -495,8 +487,7 @@
     "gate": "determination-en-reserve",
     "run": "battleResolvePsychImmune",
     "cost": "gratuit",
-    "maison": true,
-    "costNote": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
+    "maison": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
     "rule": "determination",
     "ruleCategory": "characteristics"
   },
@@ -508,8 +499,7 @@
     "gate": "determination-en-reserve",
     "run": "battleResolveIgnoreCrit",
     "cost": "gratuit",
-    "maison": true,
-    "costNote": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
+    "maison": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
     "rule": "determination",
     "ruleCategory": "characteristics"
   },
@@ -522,8 +512,7 @@
     "run": "battleSpendResolve",
     "candidates": "etats-retirables",
     "cost": "gratuit",
-    "maison": true,
-    "costNote": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
+    "maison": "dépense d’un point de Détermination, hors Action/Mouvement — imputation du moteur.",
     "rule": "determination",
     "ruleCategory": "characteristics"
   },
@@ -536,8 +525,7 @@
     "run": "battleMount",
     "candidates": "montures-adjacentes",
     "cost": "mouvement",
-    "maison": true,
-    "costNote": "enfourcher n’exige aucun Test : l’imputation au Mouvement est notre arbitrage (la guideline ne tranche que les actes à Test).",
+    "maison": "enfourcher n’exige aucun Test : l’imputation au Mouvement est notre arbitrage (la guideline ne tranche que les actes à Test).",
     "rule": "combat-monte",
     "ruleCategory": "regles",
     "keys": [
@@ -552,8 +540,7 @@
     "gate": "mouvement-intact",
     "run": "battleDismount",
     "cost": "mouvement",
-    "maison": true,
-    "costNote": "descendre n’exige aucun Test : l’imputation au Mouvement est notre arbitrage.",
+    "maison": "descendre n’exige aucun Test : l’imputation au Mouvement est notre arbitrage.",
     "rule": "combat-monte",
     "ruleCategory": "regles",
     "keys": [
@@ -569,8 +556,7 @@
     "run": "battleManPoste",
     "candidates": "pieces-servables",
     "cost": "gratuit",
-    "maison": true,
-    "costNote": "rejoindre une pièce est GRATUIT (on sert puis on agit le même Round) — arbitrage maison, aucun verbatim de coût cité.",
+    "maison": "rejoindre une pièce est GRATUIT (on sert puis on agit le même Round) — arbitrage maison, aucun verbatim de coût cité.",
     "keys": [
       "man-poste"
     ]
@@ -583,8 +569,7 @@
     "gate": "action-libre",
     "run": "battleLeavePoste",
     "cost": "action",
-    "maison": true,
-    "costNote": "quitter la pièce n’exige aucun Test : l’imputation à l’Action est notre arbitrage.",
+    "maison": "quitter la pièce n’exige aucun Test : l’imputation à l’Action est notre arbitrage.",
     "keys": [
       "leave-poste"
     ]
@@ -603,8 +588,7 @@
     "armed": "push",
     "mode": "push",
     "cost": "mouvement",
-    "maison": true,
-    "costNote": "pousser l’engin dépense le MOUVEMENT de tout l’équipage — arbitrage maison (aucun Test, la guideline ne tranche pas).",
+    "maison": "pousser l’engin dépense le MOUVEMENT de tout l’équipage — arbitrage maison (aucun Test, la guideline ne tranche pas).",
     "keys": [
       "push-engine"
     ]
@@ -632,8 +616,7 @@
     "run": "battlePickup",
     "candidates": "objets-au-sol",
     "cost": "action",
-    "maison": true,
-    "costNote": "ramasser n’exige aucun Test : l’imputation à l’Action est notre arbitrage.",
+    "maison": "ramasser n’exige aucun Test : l’imputation à l’Action est notre arbitrage.",
     "keys": [
       "pickup-"
     ]
@@ -690,8 +673,7 @@
     "gate": "toujours",
     "run": "battleSingShanty",
     "cost": "gratuit",
-    "maison": true,
-    "costNote": "tâche PARALLÈLE : le chant occupe le chanteur, pas l’Action du navire — arbitrage maison (l’acte exige pourtant un Test).",
+    "maison": "tâche PARALLÈLE : le chant occupe le chanteur, pas l’Action du navire — arbitrage maison (l’acte exige pourtant un Test).",
     "rule": "chanson-de-marin",
     "ruleCategory": "talents",
     "keys": [
@@ -706,8 +688,7 @@
     "gate": "toujours",
     "run": "battleShipReload",
     "cost": "gratuit",
-    "maison": true,
-    "costNote": "tâche d’équipage PARALLÈLE : elle occupe l’équipage, pas le tour du navire — arbitrage maison (l’acte exige pourtant un Test).",
+    "maison": "tâche d’équipage PARALLÈLE : elle occupe l’équipage, pas le tour du navire — arbitrage maison (l’acte exige pourtant un Test).",
     "rule": "recharge",
     "ruleCategory": "qualities",
     "keys": [
@@ -722,8 +703,7 @@
     "gate": "deplacement-annulable",
     "run": "cancelMove",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "annulation d’un déplacement non commis — affordance d’interface, aucun coût de jeu.",
+    "maison": "annulation d’un déplacement non commis — affordance d’interface, aucun coût de jeu.",
     "keys": [
       "undo-move"
     ]
@@ -736,8 +716,7 @@
     "gate": "toujours",
     "run": "battleEndTurn",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "clôture du tour — ne dépense rien (ce qui reste est perdu).",
+    "maison": "clôture du tour — ne dépense rien (ce qui reste est perdu).",
     "keys": [
       "end-turn"
     ]
@@ -750,8 +729,7 @@
     "gate": "toujours",
     "run": "roundStart",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "ouverture du Round depuis la pause d’initiative — geste de table, aucun coût de jeu."
+    "maison": "ouverture du Round depuis la pause d’initiative — geste de table, aucun coût de jeu."
   },
   {
     "id": "raise-hand",
@@ -761,8 +739,7 @@
     "gate": "coop",
     "run": "raiseHand",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "demande de pause au prochain début de Round — geste de table (coop), aucun coût de jeu.",
+    "maison": "demande de pause au prochain début de Round — geste de table (coop), aucun coût de jeu.",
     "keys": [
       "raise-hand"
     ]
@@ -776,8 +753,7 @@
     "run": "battleSwitchLoadout",
     "candidates": "sets-d-armes",
     "cost": "gratuit",
-    "maison": true,
-    "costNote": "la gratuité est RAW (LDB 13 l.106, « dégainer votre arme ») ; le plafond 1×/tour est l’arbitrage maison, porté par `battleSwitchLoadout`.",
+    "maison": "la gratuité est RAW (LDB 13 l.106, « dégainer votre arme ») ; le plafond 1×/tour est l’arbitrage maison, porté par `battleSwitchLoadout`.",
     "source": {
       "book": "livre-de-base",
       "page": 158,
@@ -795,8 +771,7 @@
     "exitSafe": false,
     "role": "valide",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "clore le balayage ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
+    "maison": "clore le balayage ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
   },
   {
     "id": "dual-strike-skip",
@@ -809,8 +784,7 @@
     "exitSafe": false,
     "role": "renonce",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "renoncer à la 2ᵉ frappe ne dépense rien de plus (l’Action est déjà payée) — coût nul, arbitrage d’interface."
+    "maison": "renoncer à la 2ᵉ frappe ne dépense rien de plus (l’Action est déjà payée) — coût nul, arbitrage d’interface."
   },
   {
     "id": "overcast-validate",
@@ -823,8 +797,7 @@
     "exitSafe": true,
     "role": "valide",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "revenir à la modale avec les cibles désignées ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
+    "maison": "revenir à la modale avec les cibles désignées ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
   },
   {
     "id": "place-zone-back",
@@ -837,8 +810,7 @@
     "exitSafe": true,
     "role": "renonce",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "reposer le gabarit — retour à la modale du sort, ou placeur du pilonnage refermé — ne commet aucun acte de jeu : coût nul, arbitrage d’interface."
+    "maison": "reposer le gabarit — retour à la modale du sort, ou placeur du pilonnage refermé — ne commet aucun acte de jeu : coût nul, arbitrage d’interface."
   },
   {
     "id": "battery-cancel",
@@ -851,8 +823,7 @@
     "exitSafe": true,
     "role": "renonce",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "désarmer la désignation de bordée ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
+    "maison": "désarmer la désignation de bordée ne commet aucun acte de jeu — coût nul, arbitrage d’interface."
   },
   {
     "id": "teleport-place",
@@ -865,7 +836,6 @@
     "exitSafe": false,
     "role": "valide",
     "cost": "aucun",
-    "maison": true,
-    "costNote": "la case d’arrivée se choisit après un sort déjà payé ; arriver sur sa propre case ne coûte rien de plus — arbitrage d’interface."
+    "maison": "la case d’arrivée se choisit après un sort déjà payé ; arriver sur sa propre case ne coûte rien de plus — arbitrage d’interface."
   }
 ]

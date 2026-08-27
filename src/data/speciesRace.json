@@ -1,5 +1,4 @@
 {
-  "_doc": "Espèce (slug/libellé) → RACE-ID du rig (carrure/palette/features/posture). Règles ORDONNÉES, première qui matche gagne ; sinon `default`. op: prefix (startsWith un des tokens) / includes (contient un des tokens) / all+any (contient TOUS les `all` ET un des `any`). Ajouter un mapping = une ligne. Consommé par baseSpeciesOf (skeletons.ts). Entrée déjà en minuscules.",
   "default": "Humain",
   "rules": [
     {

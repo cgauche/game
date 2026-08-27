@@ -19,11 +19,15 @@ import { SANS_LIVRE, SANS_PROVENANCE_EXIGEE, SOURCE_EN_PROFONDEUR } from './sche
  * sont hors mesure : leur document entier est déclaré sans provenance exigible à l'entrée de racine,
  * y compter des `maison` mélangerait deux régimes.
  *
- * Ce que cette borne masque AUJOURD'HUI : RIEN — mesuré le 2026-08-27, et ASSERTÉ plus bas (le total
- * masqué vaut 0). En particulier `actions.json` n'est PAS masqué par elle : ses 30 `maison` sont des
- * BOOLÉENS (`maison: true`, un drapeau d'action — actions.json:63,116,127…), et le prédicat de ce
- * test exige une CHAÎNE non vide ; ils sont invisibles ici avec ou sans la borne. Le total hors
- * exemption vaut 44, et il vaudrait 44 sans la borne.
+ * Ce que cette borne masque AUJOURD'HUI est GELÉ NOMINATIVEMENT (`MASQUES_GELES`, asserté plus bas) :
+ * 29 des 30 raisons de coût d'`actions.json`, entrées dans le périmètre mesurable par la migration
+ * `2026-08-27-l1b-4b-actions-maison-raison.mjs` (le couple `maison: true` + `costNote` y est devenu la
+ * RAISON en clair). Chacune de ces 29 entrées porte sa raison dans le champ `maison` ; `actions` est
+ * dans `SANS_LIVRE` (`schemas/grammaire/sans-livre.ts:41`), et 12 de ses 55 entrées citent malgré tout
+ * un folio. 29 et non 30 : `switch-loadout`
+ * porte SA raison ET son folio (LDB 13 l.106) — le prédicat exige `source` absente, il n'est donc pas
+ * masqué. Tout masqué NOUVEAU — une 30ᵉ entrée d'`actions.json` sans folio, ou un autre dataset
+ * exempté — rougit nominativement. Le total hors exemption vaut 44.
  *
  * Second volet : AUCUN champ `source` de type CHAÎNE dans les deux racines de documents. `source`
  * est la réf `{book, page}` ; une chaîne y passe au travers de tout lecteur générique de provenance
@@ -52,6 +56,11 @@ const BASELINES: Record<string, number> = {
 };
 
 const TOTAL_GELE = 44;
+
+/** Entrées `maison` sans `source` des datasets EXEMPTÉS — gelé au 2026-08-27, APRÈS la migration 4b.
+ *  Ce que la borne soustrait au cliquet, nommé dataset par dataset : un masqué de plus, ici ou
+ *  ailleurs, n'a nulle part où se cacher. */
+const MASQUES_GELES: Record<string, number> = { 'actions.json': 29 };
 
 const lire = (dir: string, f: string): unknown => JSON.parse(readFileSync(join(dir, f), 'utf8'));
 
@@ -118,8 +127,8 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     expect(total).toBe(TOTAL_GELE);
   });
 
-  it('la BORNE d’exemption ne masque RIEN — même prédicat appliqué aux datasets exemptés', () => {
-    const masques: string[] = [];
+  it('la BORNE d’exemption ne masque QUE le connu — même prédicat appliqué aux datasets exemptés', () => {
+    const masques: Record<string, number> = {};
     for (const f of jsons(DATA_DIR)) {
       if (!SANS_PROVENANCE_EXIGEE[f.replace(/\.json$/, '')]) continue;
       let data: unknown;
@@ -129,10 +138,10 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
         continue;
       }
       const n = maisonSansSource(data);
-      if (n > 0) masques.push(`${f} : ${n}`);
+      if (n > 0) masques[f] = n;
     }
-    // Si un exempté se met à porter des `maison` STRING, la borne cesse d'être neutre et le dit.
-    expect(masques, `entrée(s) soustraite(s) au cliquet par l’exemption :\n  ${masques.join('\n  ')}`).toEqual([]);
+    // Si un exempté se met à porter des `maison` STRING hors du gel, la borne cesse d'être connue et le dit.
+    expect(masques, `masqués par l’exemption — attendu ${JSON.stringify(MASQUES_GELES)}, mesuré ${JSON.stringify(masques)}`).toEqual(MASQUES_GELES);
   });
 
   it('le CONTENU des deux listes d’exemption est gelé (un ajout sort des entrées du cliquet)', () => {
@@ -155,6 +164,32 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     const communes = Object.keys(SANS_LIVRE).filter((k) => k in SOURCE_EN_PROFONDEUR);
     expect(communes).toEqual([]);
     expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(50);
+  });
+
+  it('`maison` est TOUJOURS une chaîne — zéro drapeau booléen, à TOUTE profondeur des deux racines', () => {
+    // Le TYPE porte le contrat de l'enveloppe (`grammaire/document.ts` : la RAISON en clair). Un
+    // `maison: true` ne dit aucune raison et passerait tous les lecteurs de provenance en silence.
+    const fautifs: string[] = [];
+    const walk = (n: unknown, ou: string): void => {
+      if (Array.isArray(n)) return n.forEach((x, i) => walk(x, `${ou}[${i}]`));
+      if (!n || typeof n !== 'object') return;
+      const r = n as Record<string, unknown>;
+      if (r.maison !== undefined && typeof r.maison !== 'string') fautifs.push(`${ou}.maison = ${JSON.stringify(r.maison)} (${typeof r.maison})`);
+      for (const [k, v] of Object.entries(r)) walk(v, `${ou}.${k}`);
+    };
+    for (const [dir, etiquette] of [
+      [DATA_DIR, 'src/data'],
+      [SCENES_DIR, 'src/scenes'],
+    ] as const) {
+      for (const f of jsons(dir)) {
+        try {
+          walk(lire(dir, f), `${etiquette}/${f}`);
+        } catch {
+          continue;
+        }
+      }
+    }
+    expect(fautifs, `\`maison\` doit être la RAISON en clair — un drapeau ne dit rien :\n  ${fautifs.join('\n  ')}`).toEqual([]);
   });
 
   it('AUCUN champ `source` de type CHAÎNE dans les deux racines de documents', () => {

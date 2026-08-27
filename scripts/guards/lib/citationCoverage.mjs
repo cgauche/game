@@ -126,7 +126,7 @@ export const EXEMPT_DATASETS = {
   'localisation.json': 'table de dé inversé (mapping résultat→zone de touche) — vocabulaire structurel du moteur, pas une table RAW à citer en tant que telle (les zones sont LDB, déjà couvertes par `hitLocationSchema`).',
   'names.json': "liste de PRÉNOMS d'authoring par race — pas une mécanique mesurable, aucune règle à sourcer.",
   'sizes.json': "3 tables, 3 provenances : `rangedMod` = LDB folio 162 (`14 - _GoBack.md` l.118-131), `shipboardEnc` = MDG folio 92 (`12` l.25-33), `footprintSide` = MAISON (aucune barre chiffrée au canon, cf. `src/engine/size.ts:40-49`). Aucune des trois n'est une entrée narrative sourçable individuellement : les deux tables RAW portent leur réf à leur foyer (`src/data/schemas/defs/sizes.ts:2-4`), la troisième n'a pas de folio à citer.",
-  'speciesRace.json': "table de résolution race→défauts d'authoring (`_doc`/`default`/`rules`), pas une donnée RAW.",
+  'speciesRace.json': "table de résolution race→défauts d'authoring (`default`/`rules`), pas une donnée RAW.",
   // (`reglesOptionnelles.json` n'est PAS exempté : sa dette de folios est un cliquet DÉCROISSANT,
   //  `BASELINES` de `src/data/citation-coverage-guard.test.ts` — E8 du programme #1318.)
   'renduMonte.json': "réglage MAISON du RENDU monté (id du set d'équipement servi par défaut à une monture portée) — inférence d'atelier #1128, pas une table RAW : les Possessions de carrière donnent la monture « avec selle et harnais » (LDB 08 l.557, ADE I 07 l.48), aucune règle n'attache la sellerie au fait d'être monté.",

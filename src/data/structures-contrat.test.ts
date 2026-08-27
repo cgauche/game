@@ -421,11 +421,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       const base = lignes(arr.map(cle as (x: unknown) => string)).join('\n');
       for (const champ of champs) {
         const i = arr.findIndex((x) => x[champ] !== undefined && x[champ] !== '' && x[champ] !== null);
-        if (i < 0) {
-          aveugles.push(`${nom}.${champ} (aucune ligne ne le porte)`);
-          continue;
-        }
-        const copie = arr.map((x, j) => (j === i ? { ...x, [champ]: mute(x[champ]) } : x));
+        // Champ qu'AUCUNE ligne ne porte encore (`STRUCTURES_ENVELOPPE.detail` depuis l'extinction du
+        // dernier `type divergent`, #1467 L1b V-P3) : le scan le produit toujours
+        // (`structures-scan.mts:967`), il doit donc entrer dans la clé LE JOUR où une ligne le
+        // portera — on l'INJECTE sur la première ligne, la cécité de la clé restant mesurée pareil.
+        const cible = i < 0 ? 0 : i;
+        const valeur = i < 0 ? 'PORTE' : mute(arr[cible][champ]);
+        const copie = arr.map((x, j) => (j === cible ? { ...x, [champ]: valeur } : x));
         if (lignes(copie.map(cle as (x: unknown) => string)).join('\n') === base) aveugles.push(`${nom}.${champ}`);
       }
     }

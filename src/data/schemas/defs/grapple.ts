@@ -4,8 +4,10 @@
  * juste après le passage ; terme absent de `13 - Combat.md`, vérifié #309 phase 3) en donnée. Reflet
  * de `GrappleRule`
  * (`src/data/index.ts`) : `init` = ops à la touche (Empêtré) ; `win` = les 3 options du Test opposé
- * gagné (damage/entangle/free). `ops` en `gameOpSchema` LOOSE — porte des extensions data-only
+ * gagné (damage/entangle/free, LDB 14 l.161). `ops` en `gameOpSchema` LOOSE — porte des extensions data-only
  * (`grapple`, `perSL`, `valuePerSL`) non génériques à tout `GameOp`, cf. `ops.ts`.
+ *
+ * Le flux `pendingGrapple` n'ORCHESTRE que le CHOIX de l'option ; ces ops sont la mécanique.
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
@@ -15,8 +17,6 @@ export const file = 'grapple.json';
 export const famille = 'config';
 
 export const schema = z.strictObject({
-  /** Note de règle (LDB 14) — display-only, jamais parsée. */
-  _comment: z.string(),
   init: z.array(gameOpSchema),
   win: z.strictObject({
     damage: z.array(gameOpSchema),

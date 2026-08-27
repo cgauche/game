@@ -157,11 +157,9 @@ function enveloppe(type: string) {
      * STRUCTUREL : une chaîne vide ne prouve rien et le refine de provenance ci-dessous ne saurait
      * pas la distinguer d'une raison réelle. Mesuré (2026-08-27) : aucune chaîne vide dans la donnée.
      *
-     * HOMONYME — `actions.json` porte 30 `maison: true`, un DRAPEAU booléen (« cette action est une
-     * extension maison »), pas une provenance : même nom, autre concept, autre type. Cette enveloppe
-     * les REFUSE (`z.string()`), et c'est voulu — un drapeau ne dit aucune raison. La forme est
-     * pistée au stock (`scripts/guards/lib/structuresStock.mjs:1001`, 30 occurrences) ; sa migration
-     * appartient au lot V-P3 du design, pas à celui-ci.
+     * Le TYPE est le contrat : une raison est une CHAÎNE. La forme booléenne (un drapeau « c'est
+     * maison », qui ne dit aucune raison) est ÉTEINTE de la donnée — zéro `maison` non-chaîne sur les
+     * deux racines, mesuré RÉCURSIVEMENT et gardé par `src/data/maison-sans-source.test.ts`.
      */
     maison: z.string().min(1).optional(),
     icon: z.string().optional(),

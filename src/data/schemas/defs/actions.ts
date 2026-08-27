@@ -8,8 +8,8 @@
  * COÛTS — guideline RAW (`LDB 13 l.106`, verbatim : « C'est le MJ qui va décider ce qui vous coûtera
  * votre Action, et ce que vous pouvez faire au cours d'un Round. On part en général du principe que
  * si un acte nécessite un Test, c'est que c'est une Action plutôt qu'une Action gratuite. ») : elle
- * sert de DÉFAUT de remplissage. Tout coût qui n'en découle pas et qu'aucun verbatim ne porte est
- * marqué `maison: true` + `costNote` (patron `activities.json`).
+ * sert de DÉFAUT de remplissage. Tout coût qui n'en découle pas et qu'aucun verbatim ne porte porte
+ * sa RAISON en clair dans `maison` (champ d'enveloppe, #1467 L1b).
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../grammaire/valeurs';
@@ -79,9 +79,9 @@ export const schema = z.array(
      *  `PendingAttack` qu'elle pré-remplit) — exigée par le dispatcher `battleToggleStance`. */
     stance: z.enum(['heldGround', 'intoCrowd']).optional(),
     cost: costSchema,
-    /** Arbitrage NON-verbatim du coût (patron `activities.json`) — exige `costNote`. */
-    maison: z.boolean().optional(),
-    costNote: z.string().optional(),
+    /** Arbitrage NON-verbatim du coût : la RAISON en clair, patron d'enveloppe `maison` (#1467 L1b).
+     *  Son ABSENCE dit que le coût découle de la guideline ou d'un verbatim cité par `source`. */
+    maison: z.string().min(1).optional(),
     source: sourceRefSchema.optional(),
     /** FOYER de la règle : id de l'entrée Codex qui la porte (jamais une phrase recomposée). */
     rule: z.string().optional(),
@@ -113,12 +113,6 @@ export const schema = z.array(
     panneau: z.boolean().optional(),
   })
   .superRefine((a, ctx) => {
-    if (a.maison && !a.costNote) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : coût maison sans costNote` });
-    }
-    if (a.costNote && !a.maison) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : costNote sans maison (un coût RAW n'a pas de note d'arbitrage)` });
-    }
     if (a.rule && !a.ruleCategory) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : rule sans ruleCategory` });
     }

@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import reglesOptionnelles from './reglesOptionnelles.json';
+
+const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 /**
  * Garde-fou « une règle optionnelle est SOURCÉE ou MAISON, jamais les deux, jamais aucune »
@@ -17,12 +22,10 @@ import reglesOptionnelles from './reglesOptionnelles.json';
  *
  * PORTÉE — À LIRE AVANT DE GÉNÉRALISER : « jamais les deux » est un invariant LOCAL de CE dataset,
  * pas une règle de fabrique. `document()` pose `source` ∨ `maison` (au moins l'un des deux) ; la
- * COEXISTENCE des deux est légitime ailleurs et MESURÉE (2026-08-27, `maison` CHAÎNE non vide) sur
- * 8 fichiers / 27 entrées de premier niveau — `talents` 9, `activities` 8, `traits` 3, `trappings` 2,
- * `traumas` 2, `creatures` 1, `etats` 1, `naval-traits` 1 : une entrée y cite son folio ET dit ce que
- * le canon n'a pas tranché. Étendre ce XOR à la fabrique casserait ces 27 entrées.
- * (`actions.json` n'en est PAS : ses 30 `maison` sont des drapeaux BOOLÉENS, un autre concept — cf.
- * `schemas/grammaire/document.ts`, champ `maison`.)
+ * COEXISTENCE des deux est légitime ailleurs et MESURÉE (`maison` CHAÎNE non vide) sur des entrées de
+ * premier niveau : une entrée y cite son folio ET dit ce que le canon n'a pas tranché. Étendre ce XOR
+ * à la fabrique les casserait. Ce relevé ne vit plus en prose : il est GELÉ dans `COEXISTENCE`
+ * ci-dessous et asserté — la prose dérivait à chaque lot qui déplaçait une entrée.
  */
 
 type Regle = { id: string; ref?: string; source?: { book: string; page: number }; maison?: string };
@@ -31,6 +34,24 @@ const REGLES = reglesOptionnelles as Regle[];
 
 /** Partition mesurée au 2026-08-27 : 81 = 54 sourcées + 27 maison, 0 des deux, 0 d'aucune. */
 const PARTITION = { total: 81, source: 54, maison: 27 };
+
+/**
+ * COEXISTENCE `source` + `maison` (chaîne non vide) sur les entrées de PREMIER niveau de `src/data`,
+ * gelée au 2026-08-27 — la POPULATION que le XOR ci-dessus ne décrit PAS, et qu'une généralisation à
+ * la fabrique casserait. `actions.json` y est entré avec le lot V-P3 (#1467 L1b) : `switch-loadout`
+ * cite son folio pour la gratuité ET porte en clair l'arbitrage du plafond.
+ */
+const COEXISTENCE: Record<string, number> = {
+  'actions.json': 1,
+  'activities.json': 8,
+  'creatures.json': 1,
+  'etats.json': 1,
+  'naval-traits.json': 1,
+  'talents.json': 9,
+  'traits.json': 3,
+  'trappings.json': 2,
+  'traumas.json': 2,
+};
 
 describe('reglesOptionnelles.json — partition source ⊕ maison (#1467 L1b)', () => {
   it('chaque entrée porte `source` XOR `maison` — jamais les deux, jamais aucune', () => {
@@ -50,6 +71,27 @@ describe('reglesOptionnelles.json — partition source ⊕ maison (#1467 L1b)', 
     const source = REGLES.filter((r) => r.source).length;
     const maison = REGLES.filter((r) => r.maison).length;
     expect({ total: REGLES.length, source, maison }).toEqual(PARTITION);
+  });
+
+  it('la COEXISTENCE `source` + `maison` du reste de `src/data` est celle gelée (le XOR reste LOCAL)', () => {
+    const mesure: Record<string, number> = {};
+    for (const f of readdirSync(DATA_DIR)) {
+      if (!f.endsWith('.json')) continue;
+      let data: unknown;
+      try {
+        data = JSON.parse(readFileSync(join(DATA_DIR, f), 'utf8'));
+      } catch {
+        continue;
+      }
+      const items = Array.isArray(data) ? data : [data];
+      const n = items.filter((e) => {
+        if (!e || typeof e !== 'object') return false;
+        const r = e as Record<string, unknown>;
+        return typeof r.maison === 'string' && r.maison.length > 0 && r.source !== undefined;
+      }).length;
+      if (n > 0) mesure[f] = n;
+    }
+    expect(mesure, `coexistences source+maison — attendu ${JSON.stringify(COEXISTENCE)}, mesuré ${JSON.stringify(mesure)}`).toEqual(COEXISTENCE);
   });
 
   it('une entrée SOURCÉE porte un folio numérique et un livre non vide', () => {
