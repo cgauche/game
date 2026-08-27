@@ -11,7 +11,7 @@ export const famille = 'entite';
 export const schema = z.array(
   z.strictObject({
     id: z.string(),
-    nom: z.string(),
+    label: z.string().min(1),
     fichier: z.string(),
     concept: z.string(),
     perimetre: z.string(),

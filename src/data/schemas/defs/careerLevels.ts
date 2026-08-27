@@ -15,6 +15,8 @@ export const famille = 'entite';
 
 export const schema = z.array(
   z.strictObject({
+    /** Identité du niveau — composite `<career>-<level>` (`agitateur-1`), 432/432 distincts. */
+    id: z.string().min(1),
     label: z.string(),
     /** Forme féminine d'AFFICHAGE du niveau — MAISON (le LDB n'imprime que le masculin) ;
      *  omis = forme épicène (identique au masculin). */

@@ -1,9 +1,9 @@
 {
   "reglesOr": "Une table que le livre range sous « **Machines de guerre / véhicules / navires** » n'est JAMAIS un *trapping* (équipement porté). Elle va dans le fichier de son sous-système (`mass-battle.json`, `vehicles.json`, `naval-traits.json`…). Corollaire : un même nom peut désigner plusieurs concepts distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).",
-  "narratifNote": "Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/state/campaignNarratif.ts`, #765) est EMBARQUÉ dans le JSON du projet, jamais dans `src/data` global : ses `narratif.objets` réutilisent le schéma `TrappingData` global (`src/data/index.ts`), et ses `presetsPnj.base` RÉFÉRENCENT une créature globale par id (`findCreatureById`) — jamais une copie.",
   "rubriques": [
     {
-      "nom": "Personnage — fiche & progression",
+      "id": "personnage",
+      "label": "Personnage — fiche & progression",
       "entrees": [
         {
           "files": [
@@ -111,7 +111,8 @@
       ]
     },
     {
-      "nom": "Magie & religion",
+      "id": "magie-religion",
+      "label": "Magie & religion",
       "entrees": [
         {
           "files": [
@@ -164,7 +165,8 @@
       ]
     },
     {
-      "nom": "Combat & résolution",
+      "id": "combat",
+      "label": "Combat & résolution",
       "entrees": [
         {
           "files": [
@@ -281,7 +283,8 @@
       ]
     },
     {
-      "nom": "Santé — blessures, maladies, corruption",
+      "id": "sante",
+      "label": "Santé — blessures, maladies, corruption",
       "entrees": [
         {
           "files": [
@@ -343,7 +346,8 @@
       ]
     },
     {
-      "nom": "Objets & équipement",
+      "id": "objets",
+      "label": "Objets & équipement",
       "entrees": [
         {
           "files": [
@@ -360,7 +364,8 @@
       ]
     },
     {
-      "nom": "Bestiaire",
+      "id": "bestiaire",
+      "label": "Bestiaire",
       "entrees": [
         {
           "files": [
@@ -371,7 +376,8 @@
       ]
     },
     {
-      "nom": "Monde, voyage terrestre & temps",
+      "id": "monde-voyage",
+      "label": "Monde, voyage terrestre & temps",
       "entrees": [
         {
           "files": [
@@ -448,7 +454,8 @@
       ]
     },
     {
-      "nom": "Naval & fluvial (*Mer des Griffes* · *Mort sur le Reik*)",
+      "id": "naval-fluvial",
+      "label": "Naval & fluvial (*Mer des Griffes* · *Mort sur le Reik*)",
       "entrees": [
         {
           "files": [
@@ -522,7 +529,9 @@
       ]
     },
     {
-      "nom": "Contenu de campagne / interlude / rencontres",
+      "id": "campagne",
+      "label": "Contenu de campagne / interlude / rencontres",
+      "note": "Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/state/campaignNarratif.ts`, #765) est EMBARQUÉ dans le JSON du projet, jamais dans `src/data` global : ses `narratif.objets` réutilisent le schéma `TrappingData` global (`src/data/index.ts`), et ses `presetsPnj.base` RÉFÉRENCENT une créature globale par id (`findCreatureById`) — jamais une copie.",
       "entrees": [
         {
           "files": [
@@ -552,7 +561,8 @@
       ]
     },
     {
-      "nom": "Rendu / apparence / décor (NON-règles)",
+      "id": "rendu-apparence",
+      "label": "Rendu / apparence / décor (NON-règles)",
       "entrees": [
         {
           "files": [
@@ -609,7 +619,8 @@
       ]
     },
     {
-      "nom": "Méta",
+      "id": "meta",
+      "label": "Méta",
       "entrees": [
         {
           "files": [

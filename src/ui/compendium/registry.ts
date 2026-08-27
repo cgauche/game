@@ -86,15 +86,18 @@ export const CODEX_GROUPS: CodexGroup[] = ['Personnage', 'Compétences', 'Équip
 /**
  * Identité GÉNÉRIQUE d'une entrée de dataset — clé STABLE servant À LA FOIS de `CodexItem.label`
  * (ce que le navigateur passe à l'éditeur) ET de cible du `findIndex` côté `CodexEdit`. Précédence
- * `label → name → key → id` (couvre gods keyé `key`, maladies keyées `name`, raceAppearance keyé `id`).
- * EXCEPTION careerLevels : pas de clé mono-champ UNIQUE (le même libellé de
- * niveau « Recrue » revient sur plusieurs carrières) → composite carrière + niveau, identique des deux
- * côtés (l'éditeur réécrit la bonne entrée, plus de collision sur le 1er homonyme).
+ * `label → id` : un dataset qui porte un `label` l'expose (maladies, gods…), sinon son `id` fait
+ * l'affichage (raceAppearance). Mesuré sur les 2 racines (`src/data`, `src/scenes`) : aucune entrée
+ * de premier niveau ne porte `key` ni `name` — le dernier porteur de `key` (`calendarPhases`) est
+ * passé à `id` en #1467 L1b V-P1.
+ * EXCEPTION careerLevels : le libellé de niveau (« Recrue ») revient sur plusieurs carrières et
+ * n'identifie rien seul → composite carrière + niveau, identique des deux côtés (l'éditeur réécrit la
+ * bonne entrée, plus de collision sur le 1er homonyme).
  */
 export function entryKey(e: Record<string, unknown>): string {
   if (typeof e.career === 'string' && typeof e.level === 'number')
     return `${findCareerById(e.career)?.label ?? e.career} · N${e.level} ${e.label ?? ''}`.trim();
-  return String(e.label ?? e.name ?? e.key ?? e.id ?? '');
+  return String(e.label ?? e.id ?? '');
 }
 
 /** Vue de projection Codex de `SourceRef` (`src/data/schemas/grammaire/valeurs.ts` — SEULE forme à importer,
@@ -1728,10 +1731,11 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   // ── Tables & gabarits éditables (E3a) ─────────────────────────────────────────
   {
     key: 'careerLevels', label: 'Niveaux de carrière', group: 'Tables',
-    // Pas de clé mono-champ UNIQUE (même libellé de niveau sur plusieurs carrières) — id composite
-    // carrière + niveau, cf. `entryKey` (même composition côté éditeur `CodexEdit`).
+    // Le `label` reste composé par `entryKey` (même composition côté éditeur `CodexEdit`) : un même
+    // libellé de niveau sert plusieurs carrières, il n'identifie rien à lui seul. L'`id`, lui, est
+    // celui de la DONNÉE (#1467 L1b V-P1) — le registre ne recompose plus d'identité.
     build: () => careerLevels.map((lv) => ({
-      id: `${lv.career}:${lv.level}`,
+      id: lv.id,
       label: entryKey(lv as unknown as Record<string, unknown>),
       sub: lv.status, group: findCareerById(lv.career)?.label ?? lv.career,
       sections: sections(
@@ -1769,7 +1773,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'calendarPhases', label: 'Calendrier — Phases du jour', group: 'Tables', cluster: 'Calendrier',
     build: () => calendarPhases.map((p) => ({
-      id: p.key, label: p.label, // `p.icon` = id d'icône (time/*, registre src/ui/icons), plus un glyphe affichable en préfixe
+      id: p.id, label: p.label, // `p.icon` = id d'icône (time/*, registre src/ui/icons), plus un glyphe affichable en préfixe
 
       sub: `dès ${String(Math.floor(p.start / 60)).padStart(2, '0')}:${String(p.start % 60).padStart(2, '0')}`,
     })),

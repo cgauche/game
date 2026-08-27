@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { IMPERIAL_MONTHS, INTERCALARY, WEEKDAYS, DAYS_PER_YEAR, daysPerYear, MINUTES_PER_DAY, toDate, fromDate, formatImperial, CAMPAIGN_START, dayPhase, isNight, minutesUntilNext } from './clock';
+import { IMPERIAL_MONTHS, INTERCALARY, WEEKDAYS, DAYS_PER_YEAR, daysPerYear, MINUTES_PER_DAY, toDate, fromDate, formatImperial, CAMPAIGN_START, dayPhase, isNight, minutesUntilNext, DAWN_MINUTE, DUSK_MINUTE, DAY_PHASES, ancreDePhase } from './clock';
 import { setDataset } from '../data/overrides';
 import { calendarMonths } from '../data';
 
@@ -83,15 +83,15 @@ describe('clock — calendrier impérial', () => {
 describe('clock — phases du jour & obscurité (#T1c)', () => {
   const at = (h: number, m = 0) => h * 60 + m;
   it('dayPhase : 7 phases aux frontières (la nuit enjambe minuit)', () => {
-    expect(dayPhase(at(4, 59)).key).toBe('nuit');
-    expect(dayPhase(at(5)).key).toBe('aube');
-    expect(dayPhase(at(8)).key).toBe('matin');
-    expect(dayPhase(at(11)).key).toBe('midi');
-    expect(dayPhase(at(14)).key).toBe('apresmidi');
-    expect(dayPhase(at(18)).key).toBe('crepuscule');
-    expect(dayPhase(at(20)).key).toBe('soir');
-    expect(dayPhase(at(22)).key).toBe('nuit');
-    expect(dayPhase(at(0)).key).toBe('nuit');
+    expect(dayPhase(at(4, 59)).id).toBe('nuit');
+    expect(dayPhase(at(5)).id).toBe('aube');
+    expect(dayPhase(at(8)).id).toBe('matin');
+    expect(dayPhase(at(11)).id).toBe('midi');
+    expect(dayPhase(at(14)).id).toBe('apresmidi');
+    expect(dayPhase(at(18)).id).toBe('crepuscule');
+    expect(dayPhase(at(20)).id).toBe('soir');
+    expect(dayPhase(at(22)).id).toBe('nuit');
+    expect(dayPhase(at(0)).id).toBe('nuit');
   });
   it('isNight = obscurité 22:00–05:00 (enjambe minuit), découplé des phases', () => {
     expect(isNight(at(22))).toBe(true);
@@ -102,9 +102,55 @@ describe('clock — phases du jour & obscurité (#T1c)', () => {
     expect(isNight(at(21, 59))).toBe(false);
   });
   it('dayPhase expose label/icon et isNight', () => {
-    expect(dayPhase(at(12))).toMatchObject({ key: 'midi', icon: 'time/noon', isNight: false });
-    expect(dayPhase(at(23))).toMatchObject({ key: 'nuit', isNight: true });
+    expect(dayPhase(at(12))).toMatchObject({ id: 'midi', icon: 'time/noon', isNight: false });
+    expect(dayPhase(at(23))).toMatchObject({ id: 'nuit', isNight: true });
   });
+  // #1467 L1b V-P1 : `dayPhase()` SCANNE `DAY_PHASES` dans l'ordre du fichier et retient la dernière
+  // dont `start` ≤ l'heure ; son défaut (`[length - 1]`) suppose que la dernière entrée est celle qui
+  // enjambe minuit. Ces deux hypothèses vivaient dans un commentaire. Elles sont ici un CONTRAT sur
+  // la donnée : avec des `start` strictement croissants, « la dernière = celle qui enjambe » tient par
+  // construction. Aucun tri défensif au chargement — une donnée cassée se DÉNONCE, elle ne se répare
+  // pas en silence.
+  it('`calendarPhases.json` : `start` STRICTEMENT croissants (contrat du scan de `dayPhase`)', () => {
+    const desordres = DAY_PHASES.flatMap((p, i) =>
+      i > 0 && p.start <= DAY_PHASES[i - 1].start
+        ? [`${DAY_PHASES[i - 1].id} (${DAY_PHASES[i - 1].start}) → ${p.id} (${p.start})`]
+        : [],
+    );
+    expect(desordres, 'ordre du fichier non strictement croissant : le scan de `dayPhase` rendrait une phase fausse').toEqual([]);
+    // TÉMOIN POSITIF de l'enjambement : AVANT la première phase (00:00 < aube), le défaut du scan
+    // prend la DERNIÈRE entrée — le comportement décrit par le commentaire de `dayPhase` est verrouillé.
+    expect(dayPhase(0).id).toBe('nuit');
+    expect(DAY_PHASES[DAY_PHASES.length - 1].id).toBe('nuit');
+  });
+
+  // #1467 L1b V-P1 : les deux ancres se RÉSOLVENT par id sur la donnée réelle. Elles s'écrivaient
+  // l'une en POSITIONNEL (`DAY_PHASES[0]`), l'autre avec un REPLI (`[length - 2]`, qui désigne
+  // 'soir' — 20:00, pas 18:00) : deux heures fausses en silence si la donnée bougeait.
+  it('ancres DAWN/DUSK : résolues par id sur `calendarPhases.json`, valeurs du dataset réel', () => {
+    expect(DAWN_MINUTE).toBe(300); // 05:00
+    expect(DUSK_MINUTE).toBe(1080); // 18:00
+    // Chaque ancre est bien LA phase demandée, pas sa voisine de position.
+    expect(DAY_PHASES.find((p) => p.id === 'aube')?.start).toBe(DAWN_MINUTE);
+    expect(DAY_PHASES.find((p) => p.id === 'crepuscule')?.start).toBe(DUSK_MINUTE);
+    // TÉMOIN du repli mort : 'soir' (l'ancienne cible de `[length - 2]`) n'est PAS le crépuscule.
+    expect(DAY_PHASES.find((p) => p.id === 'soir')?.start).not.toBe(DUSK_MINUTE);
+  });
+
+  it('`ancreDePhase` : une ancre absente FAIL-FAST, et le message nomme donnée + id + ids présents', () => {
+    const forgees = [
+      { id: 'aube', start: 300 },
+      { id: 'soir', start: 1200 },
+    ];
+    expect(ancreDePhase(forgees, 'aube')).toBe(300);
+    // La branche d'erreur est ATTEIGNABLE (résolveur pur) : elle n'est pas du texte mort.
+    expect(() => ancreDePhase(forgees, 'crepuscule')).toThrow(
+      /phase d'ancre « crepuscule » absente de calendarPhases\.json \(ids présents : aube, soir\)/,
+    );
+    // Donnée VIDE : le message reste lisible, jamais une liste d'ids muette.
+    expect(() => ancreDePhase([], 'aube')).toThrow(/ids présents : \(aucun\)/);
+  });
+
   it('minutesUntilNext : plus tard / déjà passé → demain / pile = 0', () => {
     expect(minutesUntilNext(at(14), at(22))).toBe(8 * 60); // 14:00 → 22:00
     expect(minutesUntilNext(at(23), at(22))).toBe(23 * 60); // 23:00 → prochaine 22:00

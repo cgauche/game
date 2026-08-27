@@ -1,34 +1,34 @@
 [
   {
-    "topic": "combat#conversion-combat-poursuite",
+    "id": "combat#conversion-combat-poursuite",
     "ticket": "#511"
   },
   {
-    "topic": "combat#detail-mecanique-de-chaque-miracle",
+    "id": "combat#detail-mecanique-de-chaque-miracle",
     "ticket": "#375"
   },
   {
-    "topic": "bestiaire#catalogue-du-bestiaire",
+    "id": "bestiaire#catalogue-du-bestiaire",
     "bloque": "topic documentaire (pointeur vers le catalogue creatures.json), aucune règle à implémenter"
   },
   {
-    "topic": "magie#seconde-vue",
+    "id": "magie#seconde-vue",
     "ticket": "#463"
   },
   {
-    "topic": "magie#malepierre",
+    "id": "magie#malepierre",
     "ticket": "#884"
   },
   {
-    "topic": "magie#magie-noire-dhar",
+    "id": "magie#magie-noire-dhar",
     "ticket": "#517"
   },
   {
-    "topic": "magie#magie-elfique-qhaysh",
+    "id": "magie#magie-elfique-qhaysh",
     "bloque": "passage de lore (LDB 46 l.2), aucune règle mécanique — vérifié au Source le 2026-07-16"
   },
   {
-    "topic": "magie#dissipation-contre-sort",
+    "id": "magie#dissipation-contre-sort",
     "ticket": "#1033"
   }
 ]

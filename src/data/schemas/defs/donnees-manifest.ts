@@ -14,7 +14,11 @@ const entreeSchema = z.strictObject({
 });
 
 const rubriqueSchema = z.strictObject({
-  nom: z.string(),
+  id: z.string().min(1),
+  label: z.string().min(1),
+  /** Note de rubrique imprimée sous son tableau (`build-donnees.mjs`) — CHAMP, jamais un cas
+   *  particulier câblé dans le générateur : toute rubrique peut en porter une. */
+  note: z.string().min(1).optional(),
   entrees: z.array(entreeSchema),
 });
 
@@ -31,7 +35,6 @@ const homonymeCasSchema = z.strictObject({
 
 export const schema = z.strictObject({
   reglesOr: z.string(),
-  narratifNote: z.string(),
   rubriques: z.array(rubriqueSchema),
   homonymes: z.strictObject({
     intro: z.string(),

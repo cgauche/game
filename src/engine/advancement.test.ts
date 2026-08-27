@@ -145,6 +145,7 @@ describe('Compléter / Changer de Carrière (LDB 07 l.111-140, LDB 07 l.144)', (
   // MÊMES ids ('s1'…, 't1'…) que `completedHero`, pour que la comparaison par id soit cohérente.
   const LEVELS: CareerLevelData[] = [
     {
+      id: 'Test-1',
       label: 'Niv1',
       career: 'Test',
       level: 1,
@@ -155,6 +156,7 @@ describe('Compléter / Changer de Carrière (LDB 07 l.111-140, LDB 07 l.144)', (
       status: 'Bronze 1',
     },
     {
+      id: 'Test-2',
       label: 'Niv2',
       career: 'Test',
       level: 2,

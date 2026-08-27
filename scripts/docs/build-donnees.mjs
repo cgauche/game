@@ -88,7 +88,7 @@ out += `garantie, pas la justesse de sa glose.\n\n`
 out += `## §A — Carte : où va chaque donnée\n\n`
 out += `**Règle d'or** : ${MANIFEST.reglesOr}\n\n`
 for (const r of MANIFEST.rubriques) {
-  out += `### ${r.nom}\n`
+  out += `### ${r.label}\n`
   out += `| Fichier | Contient |\n|---|---|\n`
   for (const e of r.entrees) {
     const label = e.files.map((f) => `\`${f}\``).join(' · ')
@@ -96,7 +96,7 @@ for (const r of MANIFEST.rubriques) {
     out += `| ${label} | ${e.desc} (${shapes}) |\n`
   }
   out += `\n`
-  if (r.nom === 'Contenu de campagne / interlude / rencontres') out += `${MANIFEST.narratifNote}\n\n`
+  if (r.note) out += `${r.note}\n\n`
 }
 
 out += `## §B — Conventions de champs (à respecter à l'ajout)\n\n`

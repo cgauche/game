@@ -12,7 +12,7 @@ import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
 import { Icon } from '../Icon';
 import { EMPTY_FLOW } from '../../state/flow';
 import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
-import { DAY_PHASES, DayPhaseKey, IMPERIAL_MONTHS, type ScheduleSpec } from '../../engine/clock';
+import { DAY_PHASES, DayPhaseId, IMPERIAL_MONTHS, type ScheduleSpec } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
 import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById, crewRoles } from '../../data';
 import { MANANN_FACTORS, findManannFactor } from '../../engine/seaVoyage';
@@ -239,7 +239,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'medicalAid': return `Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
     case 'extendedTest': return `Test Étendu ${e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic || '?')} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
     case 'forceDoor': return `Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
-    case 'setTime': return `Heure → ${DAY_PHASES.find((p) => p.key === e.phase)?.label ?? e.phase}`;
+    case 'setTime': return `Heure → ${DAY_PHASES.find((p) => p.id === e.phase)?.label ?? e.phase}`;
     case 'delayedEffect': {
       const n = e.flow ? (e.flow.kind === 'seq' ? e.flow.steps.length : 1) : 0;
       return `Différé ${scheduleSummary(e)} → ${n} bloc(s)${e.cancelFlag ? ` · annulé si ${e.cancelFlag}` : ''}`;
@@ -655,9 +655,9 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         {effect.type === 'setTime' && (
           <label className="dr">
             Régler l’heure sur
-            <select value={e.phase ?? 'nuit'} onChange={(ev) => onChange({ type: 'setTime', phase: ev.target.value as DayPhaseKey })}>
+            <select value={e.phase ?? 'nuit'} onChange={(ev) => onChange({ type: 'setTime', phase: ev.target.value as DayPhaseId })}>
               {DAY_PHASES.map((p) => (
-                <option key={p.key} value={p.key}>
+                <option key={p.id} value={p.id}>
                   {p.icon} {p.label}
                 </option>
               ))}

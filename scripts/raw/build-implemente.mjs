@@ -486,12 +486,14 @@ export function loadManifest(knownTopics, path = MANIFEST_PATH) {
 export function validateManifest(arr, knownTopics) {
   const byTopic = new Map()
   const errors = []
+  // L'entrée de manifest porte son identité en `id` ; sa VALEUR vit dans l'espace des topics de
+  // fiches (`domaine#sujet`), d'où la confrontation à `knownTopics` ci-dessous.
   for (const e of arr) {
-    if (!e.topic) { errors.push(`entrée manifest sans topic : ${JSON.stringify(e)}`); continue }
-    if (byTopic.has(e.topic)) errors.push(`topic dupliqué dans le manifest : ${e.topic}`)
-    if (!e.ticket && !e.bloque) errors.push(`entrée manifest sans ticket ni bloque : ${e.topic}`)
-    if (knownTopics && !knownTopics.has(e.topic)) errors.push(`topic inconnu des fiches : ${e.topic}`)
-    byTopic.set(e.topic, e)
+    if (!e.id) { errors.push(`entrée manifest sans id : ${JSON.stringify(e)}`); continue }
+    if (byTopic.has(e.id)) errors.push(`id dupliqué dans le manifest : ${e.id}`)
+    if (!e.ticket && !e.bloque) errors.push(`entrée manifest sans ticket ni bloque : ${e.id}`)
+    if (knownTopics && !knownTopics.has(e.id)) errors.push(`id inconnu des fiches : ${e.id}`)
+    byTopic.set(e.id, e)
   }
   if (errors.length) {
     const msg = `raw.manifest.json — ${errors.length} erreur(s) d'intégrité :\n  ${errors.join('\n  ')}`

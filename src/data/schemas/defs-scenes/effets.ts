@@ -21,8 +21,8 @@ import type { Flow } from '../../../engine/flowCore';
 
 // ── Vocabulaire des effets ──────────────────────────────────────────────────────────────────────
 
-/** `DayPhaseKey` (`engine/clock.ts`) — phases d'AFFICHAGE de la journée. */
-export const dayPhaseKeySchema = z.enum(['aube', 'matin', 'midi', 'apresmidi', 'crepuscule', 'soir', 'nuit']);
+/** `DayPhaseId` (`engine/clock.ts`) — phases d'AFFICHAGE de la journée. */
+export const dayPhaseIdSchema = z.enum(['aube', 'matin', 'midi', 'apresmidi', 'crepuscule', 'soir', 'nuit']);
 /** Cible d'un effet de scène : tout le groupe, ou UN héros (`heroId`, défaut le premier). */
 export const effectTargetSchema = z.enum(['party', 'hero']);
 /** `LivingRef` (`engine/possession.ts`) — bestiaire (édition Codex vivante) OU statbloc custom
@@ -231,7 +231,7 @@ export const forceDoorSchema = z.strictObject({
 export const setTimeSchema = z
   .strictObject({
     type: z.literal('setTime'),
-    phase: dayPhaseKeySchema.optional(),
+    phase: dayPhaseIdSchema.optional(),
     hour: z.number().optional(),
     minute: z.number().optional(),
   })

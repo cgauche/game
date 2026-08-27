@@ -1,7 +1,7 @@
 [
   {
     "id": "combat",
-    "nom": "Combat (arène tactique)",
+    "label": "Combat (arène tactique)",
     "modules": [
       "src/state/combatFlow.ts",
       "src/state/combatHooks.ts",
@@ -15,7 +15,7 @@
   },
   {
     "id": "magie",
-    "nom": "Magie (incantation, sorts, mésaventures)",
+    "label": "Magie (incantation, sorts, mésaventures)",
     "modules": [
       "src/engine/magic.ts",
       "src/engine/miscast.ts",
@@ -30,7 +30,7 @@
   },
   {
     "id": "corruption",
-    "nom": "Corruption & mutation",
+    "label": "Corruption & mutation",
     "modules": [
       "src/engine/corruption.ts",
       "src/state/corruptionFlow.ts",
@@ -42,7 +42,7 @@
   },
   {
     "id": "psychologie",
-    "nom": "Psychologie (P1-P4)",
+    "label": "Psychologie (P1-P4)",
     "modules": [
       "src/engine/psychology.ts",
       "src/state/encounterPsychFlow.ts"
@@ -53,7 +53,7 @@
   },
   {
     "id": "voyage-terre",
-    "nom": "Voyage terrestre",
+    "label": "Voyage terrestre",
     "modules": [
       "src/state/travelFlow.ts",
       "src/engine/travel.ts",
@@ -69,7 +69,7 @@
   },
   {
     "id": "voyage-fluvial",
-    "nom": "Voyage fluvial",
+    "label": "Voyage fluvial",
     "modules": [
       "src/state/riverVoyageFlow.ts",
       "src/engine/riverNavigation.ts"
@@ -80,7 +80,7 @@
   },
   {
     "id": "voyage-maritime",
-    "nom": "Voyage maritime",
+    "label": "Voyage maritime",
     "modules": [
       "src/state/seaVoyageFlow.ts",
       "src/engine/seaVoyage.ts",
@@ -96,7 +96,7 @@
   },
   {
     "id": "combat-naval",
-    "nom": "Combat naval tactique",
+    "label": "Combat naval tactique",
     "modules": [
       "src/engine/shipBuild.ts",
       "src/engine/shipCritical.ts",
@@ -118,7 +118,7 @@
   },
   {
     "id": "bataille-masse",
-    "nom": "Bataille de masse / siège",
+    "label": "Bataille de masse / siège",
     "modules": [
       "src/engine/massBattle.ts",
       "src/state/massBattleFlow.ts",
@@ -131,7 +131,7 @@
   },
   {
     "id": "interlude",
-    "nom": "Interlude / entre-deux",
+    "label": "Interlude / entre-deux",
     "modules": [
       "src/state/interludeFlow.ts",
       "src/engine/activities.ts",
@@ -143,7 +143,7 @@
   },
   {
     "id": "commerce",
-    "nom": "Marchand / négoce / cargaison",
+    "label": "Marchand / négoce / cargaison",
     "modules": [
       "src/state/merchantFlow.ts",
       "src/state/portFlow.ts",
@@ -161,7 +161,7 @@
   },
   {
     "id": "equipage",
-    "nom": "Équipage / paie / postes",
+    "label": "Équipage / paie / postes",
     "modules": [
       "src/state/shipCrew.ts",
       "src/engine/crewMorale.ts",
@@ -176,7 +176,7 @@
   },
   {
     "id": "repos-survie",
-    "nom": "Repos / survie",
+    "label": "Repos / survie",
     "modules": [
       "src/state/restFlow.ts",
       "src/engine/rest.ts",
@@ -192,7 +192,7 @@
   },
   {
     "id": "coop",
-    "nom": "Coop en ligne (relay)",
+    "label": "Coop en ligne (relay)",
     "modules": [
       "src/state/netFlow.ts",
       "src/state/netOwnership.ts",
@@ -208,7 +208,7 @@
   },
   {
     "id": "editeur",
-    "nom": "Éditeur de scène / campagne",
+    "label": "Éditeur de scène / campagne",
     "modules": [
       "src/state/sceneEdit.ts",
       "src/state/validateScene.ts",
@@ -221,7 +221,7 @@
   },
   {
     "id": "codex",
-    "nom": "Codex / Compendium",
+    "label": "Codex / Compendium",
     "modules": [
       "src/ui/compendium/CompendiumScreen.tsx"
     ],

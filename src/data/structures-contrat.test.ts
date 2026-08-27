@@ -109,7 +109,12 @@ const cleOrpheline = (o: { dataset: string; champ: string; signature: string; mo
 // comme référence `tier+…` (sa valeur est un littéral d'enum du schéma) et tombe hors strate. C'est
 // le MÊME objet qui change de classement, pas une structure neuve : le dénominateur des formes
 // décroît de 8 lignes dans le même geste.
-const PLAFOND_HORS_STRATE = 1119;
+// #1467 L1b V-P1 (1119→1120) : `donnees.manifest.json › rubriques` passe `nom` → `label`, donc sa
+// signature `entrees,nom` (divergente, au stock) devient `entrees,label` (forme CIBLE du lexique,
+// hors strate). MÊME objet, nouveau classement — le stock perd 12 lignes dans le même geste
+// (identité+libellé `nom` des 3 manifestes, `id` de careerLevels/calendarPhases/raw.manifest,
+// `key` de calendarPhases, `label` absent de primitives/systemes).
+const PLAFOND_HORS_STRATE = 1120;
 const cleInvisible = (o: { dataset: string; champ: string; signature: string }) =>
   `${o.dataset} | ${o.champ} | ${o.signature}`;
 

@@ -125,13 +125,32 @@ export const CAMPAIGN_START = fromDate({
 });
 
 // ─── Phases du jour (#T1c) ─── affichage riche, découplé de l'obscurité mécanique ───
-export type DayPhaseKey = 'aube' | 'matin' | 'midi' | 'apresmidi' | 'crepuscule' | 'soir' | 'nuit';
-export interface DayPhase { key: DayPhaseKey; label: string; icon: string; isNight: boolean; }
+export type DayPhaseId = 'aube' | 'matin' | 'midi' | 'apresmidi' | 'crepuscule' | 'soir' | 'nuit';
+export interface DayPhase { id: DayPhaseId; label: string; icon: string; isNight: boolean; }
 
 /** Phases d'AFFICHAGE (heure de début minutes-de-jour + libellé + icône) — DONNÉE éditable, réf live.
  *  'nuit' enjambe minuit (00:00–05:00). Le canon est muet sur l'heure exacte du lever/coucher. */
-export const DAY_PHASES: { key: DayPhaseKey; start: number; label: string; icon: string }[] =
-  calendarPhases as { key: DayPhaseKey; start: number; label: string; icon: string }[];
+export const DAY_PHASES: { id: DayPhaseId; start: number; label: string; icon: string }[] =
+  calendarPhases as { id: DayPhaseId; start: number; label: string; icon: string }[];
+
+/**
+ * Heure de début d'une phase ANCRE, résolue par son id. PURE (les phases sont un paramètre) : sa
+ * branche d'erreur est atteignable en test, elle n'est pas du texte mort.
+ *
+ * Le résolveur VALIDE (fail-fast) : il ne retombe sur rien. Un repli positionnel désignerait une
+ * AUTRE phase que celle demandée et rendrait une heure fausse en silence — une donnée amputée pète
+ * ici, au chargement du module.
+ */
+export function ancreDePhase(phases: readonly { id: string; start: number }[], id: DayPhaseId): number {
+  const phase = phases.find((p) => p.id === id);
+  if (!phase) {
+    throw new Error(
+      `clock: phase d'ancre « ${id} » absente de calendarPhases.json (ids présents : ` +
+        `${phases.map((p) => p.id).join(', ') || '(aucun)'}).`,
+    );
+  }
+  return phase.start;
+}
 
 /** Fenêtre d'OBSCURITÉ mécanique (combat −20 tir / rendu sombre), DÉCOUPLÉE des phases d'affichage.
  *  [start,end) en minutes-de-jour ; enjambe minuit (22:00 → 05:00). Scalaire de config. */
@@ -150,7 +169,7 @@ export function dayPhase(minutes: number): DayPhase {
   const m = minuteOfDay(minutes);
   let chosen = DAY_PHASES[DAY_PHASES.length - 1]; // défaut avant la 1ʳᵉ phase (00:00 → 'aube')
   for (const p of DAY_PHASES) if (m >= p.start) chosen = p;
-  return { key: chosen.key, label: chosen.label, icon: chosen.icon, isNight: isNight(minutes) };
+  return { id: chosen.id, label: chosen.label, icon: chosen.icon, isNight: isNight(minutes) };
 }
 
 /** Minutes à avancer pour atteindre la PROCHAINE occurrence (toujours en avant) de l'heure-du-jour
@@ -160,12 +179,12 @@ export function minutesUntilNext(currentMinutes: number, targetMinuteOfDay: numb
 }
 
 /** Heure de l'aube (minutes-de-jour) — fin d'une nuit de sommeil ; cible du « Dormir ». */
-export const DAWN_MINUTE = DAY_PHASES[0].start; // 'aube' = 05:00
+export const DAWN_MINUTE = ancreDePhase(DAY_PHASES, 'aube'); // 05:00
 
 /** Heure du crépuscule (minutes-de-jour) — fin d'une journée de voyage AVANT la halte de nuit : le
  *  jour de navigation (fluvial/maritime) s'arrête ici, puis la nuit de sommeil enjambe minuit jusqu'à
  *  l'aube — un seul franchissement de jour par cycle voyage+nuit (aligné sur le voyage terrestre). */
-export const DUSK_MINUTE = (DAY_PHASES.find((p) => p.key === 'crepuscule') ?? DAY_PHASES[DAY_PHASES.length - 2]).start; // 'crépuscule' = 18:00
+export const DUSK_MINUTE = ancreDePhase(DAY_PHASES, 'crepuscule'); // 18:00
 
 /** Créneau de DÉPART d'un voyage terrestre/fluvial : de l'aube au crépuscule (`[DAWN, DUSK)`). Sert à
  *  la porte de départ maison (canon muet — arbitrage #340) : partir de nuit propose « Attendre l'aube ». */

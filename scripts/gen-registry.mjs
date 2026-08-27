@@ -510,12 +510,9 @@ const estUnLibelle = (v) => /^[A-ZÀ-Þ]/.test(v) || /\s/.test(v);
  */
 const DEFAUTS_IDS = {
   'aa-criticals.json': 'record de localisations, mais la clé de méta `_source` siège au même niveau que les entrées — le détecteur de record à ids l’écarte',
-  'calendarPhases.json': 'liste d’entités dont l’identité est portée par `key`, jamais par `id`',
-  'careerLevels.json': 'liste d’entités sans identité de premier niveau (le couple `career`+`level` la porte)',
   'decorPalette.json': 'record de 435 jetons de teinte à clés camelCase (`terreTresSombre`), graphie que le détecteur de record à ids n’admet pas',
   'names.json': 'record dont les clés sont les LIBELLÉS de race (« Haut Elfe »), pas des ids',
   'raceAppearance.json': 'liste d’entités dont les `id` sont les LIBELLÉS de race (« Démon », « Elfe sylvain »), pas des ids',
-  'raw.manifest.json': 'liste d’entités dont l’identité est portée par `topic` (clé composite domaine#sujet), jamais par `id`',
 };
 
 /** Familles DÉCLARÉES par les defs de schéma (`export const famille`), dataset par dataset. */

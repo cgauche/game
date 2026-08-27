@@ -315,12 +315,13 @@ test('regenerateFiche : SEUL le bloc du champ change, le reste octet pour octet 
   assert.ok(!after.includes('ancien texte à écraser'))
 })
 
-test('validateManifest : topic inconnu / doublon / entrée sans ticket ni bloque → fail-fast', () => {
+test('validateManifest : id inconnu / doublon / entrée sans ticket ni bloque → fail-fast', () => {
   const known = new Set(['a#s'])
-  assert.throws(() => validateManifest([{ topic: 'a#inconnu', ticket: '#1' }], known), /topic inconnu/)
-  assert.throws(() => validateManifest([{ topic: 'a#s', ticket: '#1' }, { topic: 'a#s', ticket: '#2' }], known), /dupliqué/)
-  assert.throws(() => validateManifest([{ topic: 'a#s' }], known), /sans ticket ni bloque/)
-  assert.doesNotThrow(() => validateManifest([{ topic: 'a#s', bloque: 'attente RAW' }], known))
+  assert.throws(() => validateManifest([{ id: 'a#inconnu', ticket: '#1' }], known), /id inconnu des fiches/)
+  assert.throws(() => validateManifest([{ id: 'a#s', ticket: '#1' }, { id: 'a#s', ticket: '#2' }], known), /dupliqué/)
+  assert.throws(() => validateManifest([{ id: 'a#s' }], known), /sans ticket ni bloque/)
+  assert.throws(() => validateManifest([{ ticket: '#1' }], known), /entrée manifest sans id/)
+  assert.doesNotThrow(() => validateManifest([{ id: 'a#s', bloque: 'attente RAW' }], known))
 })
 
 // --- Pont FOLIO (#434) ---

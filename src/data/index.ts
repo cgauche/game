@@ -824,6 +824,8 @@ export interface CareerData {
   source: SourceRef;
 }
 export interface CareerLevelData {
+  /** Identité du niveau — composite `<career>-<level>` (`agitateur-1`). */
+  id: string;
   label: string;
   /** Forme féminine d'AFFICHAGE du niveau (MAISON, cf. `CareerData.labelF`) ; absent = épicène. */
   labelF?: string;
@@ -2605,7 +2607,7 @@ export const hairs = hairsJson as DetailColorData[];
 export const calendarMonths = calendarMonthsJson as { id: string; label: string; days: number }[];
 export const calendarIntercalary = calendarIntercalaryJson as { id: string; label: string; afterMonth: number }[];
 export const calendarWeekdays = calendarWeekdaysJson as { id: string; label: string }[];
-export const calendarPhases = calendarPhasesJson as { key: string; start: number; label: string; icon: string }[];
+export const calendarPhases = calendarPhasesJson as { id: string; start: number; label: string; icon: string }[];
 /** Table de Météo de voyage TERRESTRE (EDOC 8). `seasons` = plages d100 → météo par saison ;
  *  `conditions` = EFFETS par météo (mêmes formes de donnée que `sea-weather.json`). Éditable au Codex. */
 const weatherData = weatherJson as {

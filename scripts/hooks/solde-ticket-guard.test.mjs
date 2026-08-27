@@ -811,13 +811,13 @@ test('evaluateAmendInvisible : --amend sans -m/-F, diff staged ne touche pas src
 
 // ── manifest RAW (prévention #434/#487) ────────────────────────────────────────────────────────────
 const manifestWith = (...tickets) =>
-  JSON.stringify(tickets.map((n) => ({ topic: `dom#t${n}`, ticket: `#${n}` })), null, 2)
+  JSON.stringify(tickets.map((n) => ({ id: `dom#t${n}`, ticket: `#${n}` })), null, 2)
 
 test('manifestTickets : extrait les #N (ticket et bloque), dédupliqués', () => {
   const content = JSON.stringify([
-    { topic: 'a', ticket: '#508' },
-    { topic: 'b', ticket: '#508' },
-    { topic: 'c', bloque: 'attend #490 avant câblage' },
+    { id: 'a', ticket: '#508' },
+    { id: 'b', ticket: '#508' },
+    { id: 'c', bloque: 'attend #490 avant câblage' },
   ])
   assert.deepEqual([...manifestTickets(content)].sort((a, b) => a - b), [490, 508])
 })

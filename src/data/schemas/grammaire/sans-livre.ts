@@ -36,7 +36,7 @@ export const SANS_LIVRE: Readonly<Record<string, string>> = {
   teintesJeu: 'configuration de rendu — palette de teintes de l’interface de jeu',
   'donnees.manifest': 'manifeste d’outillage — rubriques de la carte des données, décrit le dépôt',
   'primitives.manifest': 'manifeste d’outillage — primitives partagées, décrit le dépôt',
-  'raw.manifest': 'manifeste d’outillage — dette/blocage par topic RAW, décrit le dépôt',
+  'raw.manifest': 'manifeste d’outillage — dette/blocage par id de topic RAW, décrit le dépôt',
   'systemes.manifest': 'manifeste d’outillage — systèmes du jeu, décrit le dépôt',
   actions: 'vocabulaire des actes du moteur — une action porte un folio quand une règle la nomme (12/55), jamais par construction',
 

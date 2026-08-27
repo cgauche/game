@@ -16,11 +16,11 @@ const errors = []
 
 // --- intégrité des manifestes : tout fichier déclaré doit exister ---
 for (const p of PRIMITIVES) {
-  if (!existsSync(p.fichier)) errors.push(`primitive « ${p.nom} » (${p.id}) : fichier absent ${p.fichier}`)
+  if (!existsSync(p.fichier)) errors.push(`primitive « ${p.label} » (${p.id}) : fichier absent ${p.fichier}`)
 }
 for (const s of SYSTEMES) {
   for (const m of s.modules) {
-    if (!existsSync(m)) errors.push(`système « ${s.nom} » (${s.id}) : module absent ${m}`)
+    if (!existsSync(m)) errors.push(`système « ${s.label} » (${s.id}) : module absent ${m}`)
   }
 }
 
@@ -70,25 +70,25 @@ out += `sous-dossier, ou situé ailleurs (\`src/ui\`, \`src/gameIso\`, \`src/dat
 out += `## Sommaire des systèmes\n\n`
 out += `| Système | État | Modules racines | Ticket |\n|---|---|---|---|\n`
 for (const s of SYSTEMES) {
-  out += `| ${s.nom} | ${s.etat} | ${s.modules.map((m) => `\`${m}\``).join(', ')} | ${s.ticket ?? '—'} |\n`
+  out += `| ${s.label} | ${s.etat} | ${s.modules.map((m) => `\`${m}\``).join(', ')} | ${s.ticket ?? '—'} |\n`
 }
 out += `\n`
 for (const s of SYSTEMES) {
-  if (s.notes && s.notes !== '—') out += `- **${s.nom}** (\`${s.id}\`) : ${s.notes}\n`
+  if (s.notes && s.notes !== '—') out += `- **${s.label}** (\`${s.id}\`) : ${s.notes}\n`
 }
 
 out += `\n## Matrice primitives × systèmes (générée)\n\n`
-out += `Colonnes : ${SYSTEMES.map((s) => `\`${s.id}\`=${s.nom}`).join(' · ')}.\n`
+out += `Colonnes : ${SYSTEMES.map((s) => `\`${s.id}\`=${s.label}`).join(' · ')}.\n`
 out += `Cellule = **U** (la primitive est dans la closure d'import du système) ou vide (non détectée directement —\n`
 out += `n'exclut pas un usage indirect hors des modules racines déclarés).\n\n`
 out += `| Primitive | ${COLS.join(' | ')} |\n|---|${COLS.map(() => '---').join('|')}|\n`
 for (const row of matrix) {
-  out += `| \`${row.primitive.nom}\` | ${COLS.map((c) => (row.cells[c] ? 'U' : '')).join(' | ')} |\n`
+  out += `| \`${row.primitive.label}\` | ${COLS.map((c) => (row.cells[c] ? 'U' : '')).join(' | ')} |\n`
 }
 
 out += `\n## Primitives jamais adoptées par un système déclaré\n\n`
 out += orphanPrimitives.length
-  ? orphanPrimitives.map((p) => `- \`${p.nom}\` (${p.fichier}) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).\n`).join('')
+  ? orphanPrimitives.map((p) => `- \`${p.label}\` (${p.fichier}) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).\n`).join('')
   : '- (aucune)\n'
 
 out += `\n## Modules \`src/state\`/\`src/engine\` non rattachés à un système déclaré\n\n`

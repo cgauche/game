@@ -176,7 +176,7 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   'lieux-services.json': "vocabulaire de routage d'écran (icône/service de lieu — auberge/temple/forgeron…), pas une fiche de contenu.",
   'primitives.manifest.json': 'manifeste TOOLING (#298) des primitives partagées du code — vocabulaire app-interne.',
   'systemes.manifest.json': 'manifeste TOOLING (#298) éditorial des systèmes implémentés — vocabulaire app-interne.',
-  'raw.manifest.json': "manifeste TOOLING (#487) éditorial du champ Implémente de l'Atlas RAW (topic/ticket/bloque) — vocabulaire app-interne.",
+  'raw.manifest.json': "manifeste TOOLING (#487) éditorial du champ Implémente de l'Atlas RAW (id/ticket/bloque) — vocabulaire app-interne.",
   'donnees.manifest.json': "manifeste TOOLING (#903) éditorial de l'atlas des données (rangement par rubrique/description/homonymes) — vocabulaire app-interne.",
   'progression-schemas.derived.json':
     "artefact de GARDE (#905) : la lecture brute des schémas de progression dans les PDF (colonne, teinte d'aplat, page PDF), consommée par `scripts/guards/lib/progressionSchemas.mjs` — le contenu de jeu correspondant est déjà exposé au Codex par la Carrière et ses niveaux (`careers`/`careerLevels`).",

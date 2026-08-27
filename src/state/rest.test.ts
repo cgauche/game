@@ -126,7 +126,7 @@ describe('restParty (store) — « Dormir jusqu’à l’aube »', () => {
     useGame.setState({ party: [c], gameTime: 12 * 60 }); // midi
     useGame.getState().restParty();
     const after = useGame.getState();
-    expect(dayPhase(after.gameTime).key).toBe('aube'); // réveil à l’aube
+    expect(dayPhase(after.gameTime).id).toBe('aube'); // réveil à l’aube
     expect(hasCondition(after.party[0], 'extenue')).toBe(false);
     expect(after.journal.some((l) => /dort jusqu|aube/i.test(l))).toBe(true);
   });

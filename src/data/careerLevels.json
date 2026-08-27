@@ -1,5 +1,6 @@
 [
   {
+    "id": "agitateur-1",
     "label": "Pamphlétaire",
     "career": "agitateur",
     "level": 1,
@@ -96,6 +97,7 @@
     }
   },
   {
+    "id": "agitateur-2",
     "label": "Agitateur",
     "labelF": "Agitatrice",
     "career": "agitateur",
@@ -170,6 +172,7 @@
     }
   },
   {
+    "id": "agitateur-3",
     "label": "Fauteur de Troubles",
     "labelF": "Fauteuse de Troubles",
     "career": "agitateur",
@@ -237,6 +240,7 @@
     }
   },
   {
+    "id": "agitateur-4",
     "label": "Démagogue",
     "career": "agitateur",
     "level": 4,
@@ -303,6 +307,7 @@
     }
   },
   {
+    "id": "artisan-1",
     "label": "Apprenti Artisan",
     "labelF": "Apprentie Artisane",
     "career": "artisan",
@@ -401,6 +406,7 @@
     }
   },
   {
+    "id": "artisan-2",
     "label": "Artisan",
     "labelF": "Artisane",
     "career": "artisan",
@@ -480,6 +486,7 @@
     }
   },
   {
+    "id": "artisan-3",
     "label": "Maître artisan",
     "labelF": "Maîtresse artisane",
     "career": "artisan",
@@ -551,6 +558,7 @@
     }
   },
   {
+    "id": "artisan-4",
     "label": "Maître de guilde",
     "labelF": "Maîtresse de guilde",
     "career": "artisan",
@@ -608,6 +616,7 @@
     }
   },
   {
+    "id": "bourgeois-1",
     "label": "Employé",
     "labelF": "Employée",
     "career": "bourgeois",
@@ -697,6 +706,7 @@
     }
   },
   {
+    "id": "bourgeois-2",
     "label": "Bourgeois",
     "labelF": "Bourgeoise",
     "career": "bourgeois",
@@ -781,6 +791,7 @@
     }
   },
   {
+    "id": "bourgeois-3",
     "label": "Conseiller municipal",
     "labelF": "Conseillère municipale",
     "career": "bourgeois",
@@ -851,6 +862,7 @@
     }
   },
   {
+    "id": "bourgeois-4",
     "label": "Bourgmestre",
     "career": "bourgeois",
     "level": 4,
@@ -920,6 +932,7 @@
     }
   },
   {
+    "id": "enqueteur-1",
     "label": "Limier",
     "career": "enqueteur",
     "level": 1,
@@ -1017,6 +1030,7 @@
     }
   },
   {
+    "id": "enqueteur-2",
     "label": "Enquêteur",
     "labelF": "Enquêtrice",
     "career": "enqueteur",
@@ -1101,6 +1115,7 @@
     }
   },
   {
+    "id": "enqueteur-3",
     "label": "Maître Enquêteur",
     "labelF": "Maîtresse Enquêtrice",
     "career": "enqueteur",
@@ -1167,6 +1182,7 @@
     }
   },
   {
+    "id": "enqueteur-4",
     "label": "Détective",
     "career": "enqueteur",
     "level": 4,
@@ -1222,6 +1238,7 @@
     }
   },
   {
+    "id": "marchand-1",
     "label": "Négociant",
     "labelF": "Négociante",
     "career": "marchand",
@@ -1325,6 +1342,7 @@
     }
   },
   {
+    "id": "marchand-2",
     "label": "Marchand",
     "labelF": "Marchande",
     "career": "marchand",
@@ -1410,6 +1428,7 @@
     }
   },
   {
+    "id": "marchand-3",
     "label": "Maître Marchand",
     "labelF": "Maîtresse Marchande",
     "career": "marchand",
@@ -1484,6 +1503,7 @@
     }
   },
   {
+    "id": "marchand-4",
     "label": "Prince Marchand",
     "labelF": "Princesse Marchande",
     "career": "marchand",
@@ -1556,6 +1576,7 @@
     }
   },
   {
+    "id": "mendiant-1",
     "label": "Indigent",
     "labelF": "Indigente",
     "career": "mendiant",
@@ -1646,6 +1667,7 @@
     }
   },
   {
+    "id": "mendiant-2",
     "label": "Mendiant",
     "labelF": "Mendiante",
     "career": "mendiant",
@@ -1724,6 +1746,7 @@
     }
   },
   {
+    "id": "mendiant-3",
     "label": "Maître Mendiant",
     "labelF": "Maîtresse Mendiante",
     "career": "mendiant",
@@ -1795,6 +1818,7 @@
     }
   },
   {
+    "id": "mendiant-4",
     "label": "Roi des Mendiants",
     "labelF": "Reine des Mendiants",
     "career": "mendiant",
@@ -1852,6 +1876,7 @@
     }
   },
   {
+    "id": "milicien-1",
     "label": "Recrue de la Milice",
     "career": "milicien",
     "level": 1,
@@ -1942,6 +1967,7 @@
     }
   },
   {
+    "id": "milicien-2",
     "label": "Milicien",
     "labelF": "Milicienne",
     "career": "milicien",
@@ -2025,6 +2051,7 @@
     }
   },
   {
+    "id": "milicien-3",
     "label": "Sergent de la Milice",
     "labelF": "Sergente de la Milice",
     "career": "milicien",
@@ -2098,6 +2125,7 @@
     }
   },
   {
+    "id": "milicien-4",
     "label": "Capitaine de la Milice",
     "career": "milicien",
     "level": 4,
@@ -2166,6 +2194,7 @@
     }
   },
   {
+    "id": "ratier-1",
     "label": "Chasseur de Rat",
     "labelF": "Chasseuse de Rat",
     "career": "ratier",
@@ -2272,6 +2301,7 @@
     }
   },
   {
+    "id": "ratier-2",
     "label": "Ratier",
     "labelF": "Ratière",
     "career": "ratier",
@@ -2351,6 +2381,7 @@
     }
   },
   {
+    "id": "ratier-3",
     "label": "Égoutier",
     "labelF": "Égoutière",
     "career": "ratier",
@@ -2421,6 +2452,7 @@
     }
   },
   {
+    "id": "ratier-4",
     "label": "Exterminateur",
     "labelF": "Exterminatrice",
     "career": "ratier",
@@ -2482,6 +2514,7 @@
     }
   },
   {
+    "id": "artiste-1",
     "label": "Artiste Apprenti",
     "labelF": "Artiste Apprentie",
     "career": "artiste",
@@ -2578,6 +2611,7 @@
     }
   },
   {
+    "id": "artiste-2",
     "label": "Artiste",
     "career": "artiste",
     "level": 2,
@@ -2655,6 +2689,7 @@
     }
   },
   {
+    "id": "artiste-3",
     "label": "Artiste de renom",
     "career": "artiste",
     "level": 3,
@@ -2725,6 +2760,7 @@
     }
   },
   {
+    "id": "artiste-4",
     "label": "Maestro",
     "career": "artiste",
     "level": 4,
@@ -2787,6 +2823,7 @@
     }
   },
   {
+    "id": "conseiller-1",
     "label": "Assistant",
     "labelF": "Assistante",
     "career": "conseiller",
@@ -2874,6 +2911,7 @@
     }
   },
   {
+    "id": "conseiller-2",
     "label": "Conseiller",
     "labelF": "Conseillère",
     "career": "conseiller",
@@ -2948,6 +2986,7 @@
     }
   },
   {
+    "id": "conseiller-3",
     "label": "Consultant",
     "labelF": "Consultante",
     "career": "conseiller",
@@ -3016,6 +3055,7 @@
     }
   },
   {
+    "id": "conseiller-4",
     "label": "Chancelier",
     "labelF": "Chancelière",
     "career": "conseiller",
@@ -3083,6 +3123,7 @@
     }
   },
   {
+    "id": "duelliste-1",
     "label": "Escrimeur",
     "labelF": "Escrimeuse",
     "career": "duelliste",
@@ -3184,6 +3225,7 @@
     }
   },
   {
+    "id": "duelliste-2",
     "label": "Duelliste",
     "career": "duelliste",
     "level": 2,
@@ -3275,6 +3317,7 @@
     }
   },
   {
+    "id": "duelliste-3",
     "label": "Maître duelliste",
     "labelF": "Maîtresse duelliste",
     "career": "duelliste",
@@ -3353,6 +3396,7 @@
     }
   },
   {
+    "id": "duelliste-4",
     "label": "Champion de Justice",
     "labelF": "Championne de Justice",
     "career": "duelliste",
@@ -3410,6 +3454,7 @@
     }
   },
   {
+    "id": "emissaire-1",
     "label": "Héraut",
     "career": "emissaire",
     "level": 1,
@@ -3502,6 +3547,7 @@
     }
   },
   {
+    "id": "emissaire-2",
     "label": "Émissaire",
     "career": "emissaire",
     "level": 2,
@@ -3585,6 +3631,7 @@
     }
   },
   {
+    "id": "emissaire-3",
     "label": "Diplomate",
     "career": "emissaire",
     "level": 3,
@@ -3654,6 +3701,7 @@
     }
   },
   {
+    "id": "emissaire-4",
     "label": "Ambassadeur",
     "labelF": "Ambassadrice",
     "career": "emissaire",
@@ -3716,6 +3764,7 @@
     }
   },
   {
+    "id": "espion-1",
     "label": "Informateur",
     "labelF": "Informatrice",
     "career": "espion",
@@ -3813,6 +3862,7 @@
     }
   },
   {
+    "id": "espion-2",
     "label": "Espion",
     "labelF": "Espionne",
     "career": "espion",
@@ -3900,6 +3950,7 @@
     }
   },
   {
+    "id": "espion-3",
     "label": "Agent secret",
     "labelF": "Agente secrète",
     "career": "espion",
@@ -3976,6 +4027,7 @@
     }
   },
   {
+    "id": "espion-4",
     "label": "Maître Espion",
     "labelF": "Maîtresse Espionne",
     "career": "espion",
@@ -4038,6 +4090,7 @@
     }
   },
   {
+    "id": "intendant-1",
     "label": "Gardien",
     "labelF": "Gardienne",
     "career": "intendant",
@@ -4133,6 +4186,7 @@
     }
   },
   {
+    "id": "intendant-2",
     "label": "Intendant",
     "labelF": "Intendante",
     "career": "intendant",
@@ -4222,6 +4276,7 @@
     }
   },
   {
+    "id": "intendant-3",
     "label": "Sénéchal",
     "labelF": "Sénéchale",
     "career": "intendant",
@@ -4291,6 +4346,7 @@
     }
   },
   {
+    "id": "intendant-4",
     "label": "Gouverneur",
     "labelF": "Gouverneure",
     "career": "intendant",
@@ -4351,6 +4407,7 @@
     }
   },
   {
+    "id": "noble-1",
     "label": "Héritier",
     "labelF": "Héritière",
     "career": "noble",
@@ -4455,6 +4512,7 @@
     }
   },
   {
+    "id": "noble-2",
     "label": "Noble",
     "career": "noble",
     "level": 2,
@@ -4557,6 +4615,7 @@
     }
   },
   {
+    "id": "noble-3",
     "label": "Magnat",
     "labelF": "Magnate",
     "career": "noble",
@@ -4636,6 +4695,7 @@
     }
   },
   {
+    "id": "noble-4",
     "label": "Noble Seigneur",
     "labelF": "Noble Dame",
     "career": "noble",
@@ -4712,6 +4772,7 @@
     }
   },
   {
+    "id": "serviteur-1",
     "label": "Domestique",
     "career": "serviteur",
     "level": 1,
@@ -4796,6 +4857,7 @@
     }
   },
   {
+    "id": "serviteur-2",
     "label": "Serviteur",
     "labelF": "Servante",
     "career": "serviteur",
@@ -4870,6 +4932,7 @@
     }
   },
   {
+    "id": "serviteur-3",
     "label": "Valet",
     "career": "serviteur",
     "level": 3,
@@ -4943,6 +5006,7 @@
     }
   },
   {
+    "id": "serviteur-4",
     "label": "Régisseur",
     "labelF": "Régisseuse",
     "career": "serviteur",
@@ -5003,6 +5067,7 @@
     }
   },
   {
+    "id": "cavalier-1",
     "label": "Apprenti Cavalier",
     "labelF": "Apprentie Cavalière",
     "career": "cavalier",
@@ -5097,6 +5162,7 @@
     }
   },
   {
+    "id": "cavalier-2",
     "label": "Cavalier",
     "labelF": "Cavalière",
     "career": "cavalier",
@@ -5194,6 +5260,7 @@
     }
   },
   {
+    "id": "cavalier-3",
     "label": "Sergent de Cavalerie légère",
     "labelF": "Sergente de Cavalerie légère",
     "career": "cavalier",
@@ -5258,6 +5325,7 @@
     }
   },
   {
+    "id": "cavalier-4",
     "label": "Officier de Cavalerie Légère",
     "labelF": "Officière de Cavalerie Légère",
     "career": "cavalier",
@@ -5316,6 +5384,7 @@
     }
   },
   {
+    "id": "chevalier-1",
     "label": "Ecuyer",
     "labelF": "Écuyère",
     "career": "chevalier",
@@ -5420,6 +5489,7 @@
     }
   },
   {
+    "id": "chevalier-2",
     "label": "Chevalier",
     "labelF": "Chevalière",
     "career": "chevalier",
@@ -5509,6 +5579,7 @@
     }
   },
   {
+    "id": "chevalier-3",
     "label": "Chevalier commandeur",
     "labelF": "Chevalière commandeur",
     "career": "chevalier",
@@ -5576,6 +5647,7 @@
     }
   },
   {
+    "id": "chevalier-4",
     "label": "Chevalier du Cercle Intérieur",
     "labelF": "Chevalière du Cercle Intérieur",
     "career": "chevalier",
@@ -5636,6 +5708,7 @@
     }
   },
   {
+    "id": "garde-1",
     "label": "Sentinelle",
     "career": "garde",
     "level": 1,
@@ -5732,6 +5805,7 @@
     }
   },
   {
+    "id": "garde-2",
     "label": "Garde",
     "career": "garde",
     "level": 2,
@@ -5821,6 +5895,7 @@
     }
   },
   {
+    "id": "garde-3",
     "label": "Garde d'honneur",
     "career": "garde",
     "level": 3,
@@ -5893,6 +5968,7 @@
     }
   },
   {
+    "id": "garde-4",
     "label": "Garde officier",
     "labelF": "Garde officière",
     "career": "garde",
@@ -5947,6 +6023,7 @@
     }
   },
   {
+    "id": "gladiateur-1",
     "label": "Pugiliste",
     "career": "gladiateur",
     "level": 1,
@@ -6038,6 +6115,7 @@
     }
   },
   {
+    "id": "gladiateur-2",
     "label": "Gladiateur",
     "labelF": "Gladiatrice",
     "career": "gladiateur",
@@ -6140,6 +6218,7 @@
     }
   },
   {
+    "id": "gladiateur-3",
     "label": "Champion de fosse",
     "labelF": "Championne de fosse",
     "career": "gladiateur",
@@ -6208,6 +6287,7 @@
     }
   },
   {
+    "id": "gladiateur-4",
     "label": "Légende de la fosse",
     "career": "gladiateur",
     "level": 4,
@@ -6261,6 +6341,7 @@
     }
   },
   {
+    "id": "mangeur-d-hommes-1",
     "label": "Chair fraîche",
     "career": "mangeur-d-hommes",
     "level": 1,
@@ -6363,6 +6444,7 @@
     }
   },
   {
+    "id": "mangeur-d-hommes-2",
     "label": "Mangeur d'hommes",
     "labelF": "Mangeuse d'hommes",
     "career": "mangeur-d-hommes",
@@ -6448,6 +6530,7 @@
     }
   },
   {
+    "id": "mangeur-d-hommes-3",
     "label": "Broyeur d'hommes",
     "labelF": "Broyeuse d'hommes",
     "career": "mangeur-d-hommes",
@@ -6515,6 +6598,7 @@
     }
   },
   {
+    "id": "mangeur-d-hommes-4",
     "label": "Capitaine mangeur d'hommes",
     "labelF": "Capitaine mangeuse d'hommes",
     "career": "mangeur-d-hommes",
@@ -6571,6 +6655,7 @@
     }
   },
   {
+    "id": "pretre-guerrier-1",
     "label": "Novice (Prêtre Guerrier)",
     "career": "pretre-guerrier",
     "level": 1,
@@ -6669,6 +6754,7 @@
     }
   },
   {
+    "id": "pretre-guerrier-2",
     "label": "Prêtre Guerrier",
     "labelF": "Prêtresse Guerrière",
     "career": "pretre-guerrier",
@@ -6747,6 +6833,7 @@
     }
   },
   {
+    "id": "pretre-guerrier-3",
     "label": "Prêtre sergent",
     "labelF": "Prêtresse sergente",
     "career": "pretre-guerrier",
@@ -6814,6 +6901,7 @@
     }
   },
   {
+    "id": "pretre-guerrier-4",
     "label": "Prêtre capitaine",
     "labelF": "Prêtresse capitaine",
     "career": "pretre-guerrier",
@@ -6868,6 +6956,7 @@
     }
   },
   {
+    "id": "soldat-1",
     "label": "Recrue",
     "career": "soldat",
     "level": 1,
@@ -6964,6 +7053,7 @@
     }
   },
   {
+    "id": "soldat-2",
     "label": "Soldat",
     "labelF": "Soldate",
     "career": "soldat",
@@ -7044,6 +7134,7 @@
     }
   },
   {
+    "id": "soldat-3",
     "label": "Sergent",
     "labelF": "Sergente",
     "career": "soldat",
@@ -7110,6 +7201,7 @@
     }
   },
   {
+    "id": "soldat-4",
     "label": "Officier",
     "labelF": "Officière",
     "career": "soldat",
@@ -7186,6 +7278,7 @@
     }
   },
   {
+    "id": "chevaucheur-de-blaireau-1",
     "label": "Taquineur de blaireau",
     "labelF": "Taquineuse de blaireau",
     "career": "chevaucheur-de-blaireau",
@@ -7287,6 +7380,7 @@
     }
   },
   {
+    "id": "chevaucheur-de-blaireau-2",
     "label": "Chevaucheur de blaireau",
     "labelF": "Chevaucheuse de blaireau",
     "career": "chevaucheur-de-blaireau",
@@ -7368,6 +7462,7 @@
     }
   },
   {
+    "id": "chevaucheur-de-blaireau-3",
     "label": "Sergent blaireau",
     "labelF": "Sergente blaireau",
     "career": "chevaucheur-de-blaireau",
@@ -7435,6 +7530,7 @@
     }
   },
   {
+    "id": "chevaucheur-de-blaireau-4",
     "label": "Maître blaireau",
     "labelF": "Maîtresse blaireau",
     "career": "chevaucheur-de-blaireau",
@@ -7498,6 +7594,7 @@
     }
   },
   {
+    "id": "spadassin-1",
     "label": "Matamore",
     "career": "spadassin",
     "level": 1,
@@ -7596,6 +7693,7 @@
     }
   },
   {
+    "id": "spadassin-2",
     "label": "Spadassin",
     "labelF": "Spadassine",
     "career": "spadassin",
@@ -7683,6 +7781,7 @@
     }
   },
   {
+    "id": "spadassin-3",
     "label": "Tueur à gages",
     "labelF": "Tueuse à gages",
     "career": "spadassin",
@@ -7756,6 +7855,7 @@
     }
   },
   {
+    "id": "spadassin-4",
     "label": "Assassin",
     "labelF": "Assassine",
     "career": "spadassin",
@@ -7820,6 +7920,7 @@
     }
   },
   {
+    "id": "tueur-1",
     "label": "Tueur de Trolls",
     "labelF": "Tueuse de Trolls",
     "career": "tueur",
@@ -7917,6 +8018,7 @@
     }
   },
   {
+    "id": "tueur-2",
     "label": "Tueur de Géants",
     "labelF": "Tueuse de Géants",
     "career": "tueur",
@@ -7999,6 +8101,7 @@
     }
   },
   {
+    "id": "tueur-3",
     "label": "Tueur de Dragons",
     "labelF": "Tueuse de Dragons",
     "career": "tueur",
@@ -8068,6 +8171,7 @@
     }
   },
   {
+    "id": "tueur-4",
     "label": "Tueur de Démons",
     "labelF": "Tueuse de Démons",
     "career": "tueur",
@@ -8122,6 +8226,7 @@
     }
   },
   {
+    "id": "chasseur-de-primes-1",
     "label": "Chasseur de voleurs",
     "labelF": "Chasseuse de voleurs",
     "career": "chasseur-de-primes",
@@ -8214,6 +8319,7 @@
     }
   },
   {
+    "id": "chasseur-de-primes-2",
     "label": "Chasseur de primes",
     "labelF": "Chasseuse de primes",
     "career": "chasseur-de-primes",
@@ -8307,6 +8413,7 @@
     }
   },
   {
+    "id": "chasseur-de-primes-3",
     "label": "Maître Chasseur de primes",
     "labelF": "Maîtresse Chasseuse de primes",
     "career": "chasseur-de-primes",
@@ -8377,6 +8484,7 @@
     }
   },
   {
+    "id": "chasseur-de-primes-4",
     "label": "Chasseur de primes vétéran",
     "labelF": "Chasseuse de primes vétéran",
     "career": "chasseur-de-primes",
@@ -8444,6 +8552,7 @@
     }
   },
   {
+    "id": "rodeur-fantome-1",
     "label": "Garde forestier",
     "labelF": "Garde forestière",
     "career": "rodeur-fantome",
@@ -8548,6 +8657,7 @@
     }
   },
   {
+    "id": "rodeur-fantome-2",
     "label": "Rôdeur fantôme",
     "labelF": "Rôdeuse fantôme",
     "career": "rodeur-fantome",
@@ -8635,6 +8745,7 @@
     }
   },
   {
+    "id": "rodeur-fantome-3",
     "label": "Esprit du vent",
     "career": "rodeur-fantome",
     "level": 3,
@@ -8706,6 +8817,7 @@
     }
   },
   {
+    "id": "rodeur-fantome-4",
     "label": "Courroux de la forêt",
     "career": "rodeur-fantome",
     "level": 4,
@@ -8764,6 +8876,7 @@
     }
   },
   {
+    "id": "cocher-1",
     "label": "Postillon",
     "career": "cocher",
     "level": 1,
@@ -8856,6 +8969,7 @@
     }
   },
   {
+    "id": "cocher-2",
     "label": "Cocher",
     "labelF": "Cochère",
     "career": "cocher",
@@ -8946,6 +9060,7 @@
     }
   },
   {
+    "id": "cocher-3",
     "label": "Maître cocher",
     "labelF": "Maîtresse cochère",
     "career": "cocher",
@@ -9019,6 +9134,7 @@
     }
   },
   {
+    "id": "cocher-4",
     "label": "Maître des routes",
     "labelF": "Maîtresse des routes",
     "career": "cocher",
@@ -9076,6 +9192,7 @@
     }
   },
   {
+    "id": "colporteur-1",
     "label": "Vagabond",
     "labelF": "Vagabonde",
     "career": "colporteur",
@@ -9175,6 +9292,7 @@
     }
   },
   {
+    "id": "colporteur-2",
     "label": "Colporteur",
     "labelF": "Colporteuse",
     "career": "colporteur",
@@ -9262,6 +9380,7 @@
     }
   },
   {
+    "id": "colporteur-3",
     "label": "Maître colporteur",
     "labelF": "Maîtresse colporteuse",
     "career": "colporteur",
@@ -9328,6 +9447,7 @@
     }
   },
   {
+    "id": "colporteur-4",
     "label": "Négociant itinérant",
     "labelF": "Négociante itinérante",
     "career": "colporteur",
@@ -9392,6 +9512,7 @@
     }
   },
   {
+    "id": "flagellant-1",
     "label": "Zélote",
     "career": "flagellant",
     "level": 1,
@@ -9481,6 +9602,7 @@
     }
   },
   {
+    "id": "flagellant-2",
     "label": "Flagellant",
     "labelF": "Flagellante",
     "career": "flagellant",
@@ -9565,6 +9687,7 @@
     }
   },
   {
+    "id": "flagellant-3",
     "label": "Pénitent",
     "labelF": "Pénitente",
     "career": "flagellant",
@@ -9629,6 +9752,7 @@
     }
   },
   {
+    "id": "flagellant-4",
     "label": "Prophète du destin",
     "labelF": "Prophétesse du destin",
     "career": "flagellant",
@@ -9687,6 +9811,7 @@
     }
   },
   {
+    "id": "frere-loup-1",
     "label": "Survivant",
     "labelF": "Survivante",
     "career": "frere-loup",
@@ -9788,6 +9913,7 @@
     }
   },
   {
+    "id": "frere-loup-2",
     "label": "Frère Loup",
     "labelF": "Sœur Louve",
     "career": "frere-loup",
@@ -9862,6 +9988,7 @@
     }
   },
   {
+    "id": "frere-loup-3",
     "label": "Compagnon Loup",
     "labelF": "Compagne Louve",
     "career": "frere-loup",
@@ -9923,6 +10050,7 @@
     }
   },
   {
+    "id": "frere-loup-4",
     "label": "Grand Loup",
     "labelF": "Grande Louve",
     "career": "frere-loup",
@@ -9983,6 +10111,7 @@
     }
   },
   {
+    "id": "messager-1",
     "label": "Coureur",
     "labelF": "Coureuse",
     "career": "messager",
@@ -10069,6 +10198,7 @@
     }
   },
   {
+    "id": "messager-2",
     "label": "Messager",
     "labelF": "Messagère",
     "career": "messager",
@@ -10154,6 +10284,7 @@
     }
   },
   {
+    "id": "messager-3",
     "label": "Estafette",
     "career": "messager",
     "level": 3,
@@ -10222,6 +10353,7 @@
     }
   },
   {
+    "id": "messager-4",
     "label": "Messager vétéran",
     "labelF": "Messagère vétéran",
     "career": "messager",
@@ -10282,6 +10414,7 @@
     }
   },
   {
+    "id": "patrouilleur-des-karak-1",
     "label": "Coureur des forts",
     "labelF": "Coureuse des forts",
     "career": "patrouilleur-des-karak",
@@ -10378,6 +10511,7 @@
     }
   },
   {
+    "id": "patrouilleur-des-karak-2",
     "label": "Patrouilleur des karak",
     "labelF": "Patrouilleuse des karak",
     "career": "patrouilleur-des-karak",
@@ -10466,6 +10600,7 @@
     }
   },
   {
+    "id": "patrouilleur-des-karak-3",
     "label": "Gardien des routes des karak",
     "labelF": "Gardienne des routes des karak",
     "career": "patrouilleur-des-karak",
@@ -10540,6 +10675,7 @@
     }
   },
   {
+    "id": "patrouilleur-des-karak-4",
     "label": "Arpenteur des karak",
     "labelF": "Arpenteuse des karak",
     "career": "patrouilleur-des-karak",
@@ -10603,6 +10739,7 @@
     }
   },
   {
+    "id": "patrouilleur-routier-1",
     "label": "Péager",
     "labelF": "Péagère",
     "career": "patrouilleur-routier",
@@ -10699,6 +10836,7 @@
     }
   },
   {
+    "id": "patrouilleur-routier-2",
     "label": "Patrouilleur routier",
     "labelF": "Patrouilleuse routière",
     "career": "patrouilleur-routier",
@@ -10785,6 +10923,7 @@
     }
   },
   {
+    "id": "patrouilleur-routier-3",
     "label": "Sergent Patrouilleur",
     "labelF": "Sergente Patrouilleuse",
     "career": "patrouilleur-routier",
@@ -10866,6 +11005,7 @@
     }
   },
   {
+    "id": "patrouilleur-routier-4",
     "label": "Capitaine Patrouilleur",
     "labelF": "Capitaine Patrouilleuse",
     "career": "patrouilleur-routier",
@@ -10940,6 +11080,7 @@
     }
   },
   {
+    "id": "gardechamps-1",
     "label": "Garde novice",
     "career": "gardechamps",
     "level": 1,
@@ -11045,6 +11186,7 @@
     }
   },
   {
+    "id": "gardechamps-2",
     "label": "Gardechamps",
     "career": "gardechamps",
     "level": 2,
@@ -11128,6 +11270,7 @@
     }
   },
   {
+    "id": "gardechamps-3",
     "label": "Sergent Gardechamps",
     "labelF": "Sergente Gardechamps",
     "career": "gardechamps",
@@ -11195,6 +11338,7 @@
     }
   },
   {
+    "id": "gardechamps-4",
     "label": "Capitaine Gardechamps",
     "career": "gardechamps",
     "level": 4,
@@ -11253,6 +11397,7 @@
     }
   },
   {
+    "id": "repurgateur-1",
     "label": "Interrogateur",
     "labelF": "Interrogatrice",
     "career": "repurgateur",
@@ -11343,6 +11488,7 @@
     }
   },
   {
+    "id": "repurgateur-2",
     "label": "Répurgateur",
     "labelF": "Répurgatrice",
     "career": "repurgateur",
@@ -11444,6 +11590,7 @@
     }
   },
   {
+    "id": "repurgateur-3",
     "label": "Inquisiteur",
     "labelF": "Inquisitrice",
     "career": "repurgateur",
@@ -11514,6 +11661,7 @@
     }
   },
   {
+    "id": "repurgateur-4",
     "label": "Répurgateur vétéran",
     "labelF": "Répurgatrice vétéran",
     "career": "repurgateur",
@@ -11572,6 +11720,7 @@
     }
   },
   {
+    "id": "saltimbanque-1",
     "label": "Musicien de rues",
     "labelF": "Musicienne de rues",
     "career": "saltimbanque",
@@ -11660,6 +11809,7 @@
     }
   },
   {
+    "id": "saltimbanque-2",
     "label": "Saltimbanque",
     "career": "saltimbanque",
     "level": 2,
@@ -11743,6 +11893,7 @@
     }
   },
   {
+    "id": "saltimbanque-3",
     "label": "Troubadour",
     "career": "saltimbanque",
     "level": 3,
@@ -11809,6 +11960,7 @@
     }
   },
   {
+    "id": "saltimbanque-4",
     "label": "Chef de troupe",
     "labelF": "Cheffe de troupe",
     "career": "saltimbanque",
@@ -11872,6 +12024,7 @@
     }
   },
   {
+    "id": "apothicaire-1",
     "label": "Apprenti Apothicaire",
     "labelF": "Apprentie Apothicaire",
     "career": "apothicaire",
@@ -11974,6 +12127,7 @@
     }
   },
   {
+    "id": "apothicaire-2",
     "label": "Apothicaire",
     "career": "apothicaire",
     "level": 2,
@@ -12052,6 +12206,7 @@
     }
   },
   {
+    "id": "apothicaire-3",
     "label": "Maître Apothicaire",
     "labelF": "Maîtresse Apothicaire",
     "career": "apothicaire",
@@ -12124,6 +12279,7 @@
     }
   },
   {
+    "id": "apothicaire-4",
     "label": "Apothicaire de Renom",
     "career": "apothicaire",
     "level": 4,
@@ -12183,6 +12339,7 @@
     }
   },
   {
+    "id": "boucher-ogre-1",
     "label": "Faiseur de bouillie",
     "labelF": "Faiseuse de bouillie",
     "career": "boucher-ogre",
@@ -12284,6 +12441,7 @@
     }
   },
   {
+    "id": "boucher-ogre-2",
     "label": "Boucher ogre",
     "labelF": "Bouchère ogre",
     "career": "boucher-ogre",
@@ -12372,6 +12530,7 @@
     }
   },
   {
+    "id": "boucher-ogre-3",
     "label": "Sage de la Gueule",
     "career": "boucher-ogre",
     "level": 3,
@@ -12444,6 +12603,7 @@
     }
   },
   {
+    "id": "boucher-ogre-4",
     "label": "Maître massacreur",
     "labelF": "Maîtresse massacreuse",
     "career": "boucher-ogre",
@@ -12504,6 +12664,7 @@
     }
   },
   {
+    "id": "erudit-1",
     "label": "Étudiant",
     "labelF": "Étudiante",
     "career": "erudit",
@@ -12600,6 +12761,7 @@
     }
   },
   {
+    "id": "erudit-2",
     "label": "Érudit",
     "labelF": "Érudite",
     "career": "erudit",
@@ -12678,6 +12840,7 @@
     }
   },
   {
+    "id": "erudit-3",
     "label": "Chercheur",
     "labelF": "Chercheuse",
     "career": "erudit",
@@ -12745,6 +12908,7 @@
     }
   },
   {
+    "id": "erudit-4",
     "label": "Professeur",
     "labelF": "Professeure",
     "career": "erudit",
@@ -12799,6 +12963,7 @@
     }
   },
   {
+    "id": "ingenieur-1",
     "label": "Étudiant Ingénieur",
     "labelF": "Étudiante Ingénieure",
     "career": "ingenieur",
@@ -12894,6 +13059,7 @@
     }
   },
   {
+    "id": "ingenieur-2",
     "label": "Ingénieur",
     "labelF": "Ingénieure",
     "career": "ingenieur",
@@ -12974,6 +13140,7 @@
     }
   },
   {
+    "id": "ingenieur-3",
     "label": "Maître Ingénieur",
     "labelF": "Maîtresse Ingénieure",
     "career": "ingenieur",
@@ -13042,6 +13209,7 @@
     }
   },
   {
+    "id": "ingenieur-4",
     "label": "Ingénieur Agréé",
     "labelF": "Ingénieure Agréée",
     "career": "ingenieur",
@@ -13106,6 +13274,7 @@
     }
   },
   {
+    "id": "juriste-1",
     "label": "Étudiant en Droit",
     "labelF": "Étudiante en Droit",
     "career": "juriste",
@@ -13198,6 +13367,7 @@
     }
   },
   {
+    "id": "juriste-2",
     "label": "Juriste",
     "career": "juriste",
     "level": 2,
@@ -13279,6 +13449,7 @@
     }
   },
   {
+    "id": "juriste-3",
     "label": "Maître du Barreau",
     "labelF": "Maîtresse du Barreau",
     "career": "juriste",
@@ -13347,6 +13518,7 @@
     }
   },
   {
+    "id": "juriste-4",
     "label": "Juge",
     "career": "juriste",
     "level": 4,
@@ -13403,6 +13575,7 @@
     }
   },
   {
+    "id": "medecin-1",
     "label": "Étudiant en Médecine",
     "labelF": "Étudiante en Médecine",
     "career": "medecin",
@@ -13491,6 +13664,7 @@
     }
   },
   {
+    "id": "medecin-2",
     "label": "Médecin",
     "career": "medecin",
     "level": 2,
@@ -13574,6 +13748,7 @@
     }
   },
   {
+    "id": "medecin-3",
     "label": "Docteur en médecine",
     "labelF": "Docteure en médecine",
     "career": "medecin",
@@ -13642,6 +13817,7 @@
     }
   },
   {
+    "id": "medecin-4",
     "label": "Médecin de la cour",
     "career": "medecin",
     "level": 4,
@@ -13701,6 +13877,7 @@
     }
   },
   {
+    "id": "nonne-1",
     "label": "Novice (Nonne)",
     "career": "nonne",
     "level": 1,
@@ -13791,6 +13968,7 @@
     }
   },
   {
+    "id": "nonne-2",
     "label": "Nonne",
     "career": "nonne",
     "level": 2,
@@ -13873,6 +14051,7 @@
     }
   },
   {
+    "id": "nonne-3",
     "label": "Abbesse",
     "career": "nonne",
     "level": 3,
@@ -13941,6 +14120,7 @@
     }
   },
   {
+    "id": "nonne-4",
     "label": "Prieure Générale",
     "career": "nonne",
     "level": 4,
@@ -13993,6 +14173,7 @@
     }
   },
   {
+    "id": "pretre-1",
     "label": "Initié",
     "labelF": "Initiée",
     "career": "pretre",
@@ -14082,6 +14263,7 @@
     }
   },
   {
+    "id": "pretre-2",
     "label": "Prêtre",
     "labelF": "Prêtresse",
     "career": "pretre",
@@ -14161,6 +14343,7 @@
     }
   },
   {
+    "id": "pretre-3",
     "label": "Grand Prêtre",
     "labelF": "Grande Prêtresse",
     "career": "pretre",
@@ -14236,6 +14419,7 @@
     }
   },
   {
+    "id": "pretre-4",
     "label": "Lecteur",
     "labelF": "Lectrice",
     "career": "pretre",
@@ -14294,6 +14478,7 @@
     }
   },
   {
+    "id": "sorcier-1",
     "label": "Sorcier novice",
     "labelF": "Sorcière novice",
     "career": "sorcier",
@@ -14386,6 +14571,7 @@
     }
   },
   {
+    "id": "sorcier-2",
     "label": "Sorcier",
     "labelF": "Sorcière",
     "career": "sorcier",
@@ -14460,6 +14646,7 @@
     }
   },
   {
+    "id": "sorcier-3",
     "label": "Maître Sorcier",
     "labelF": "Maîtresse Sorcière",
     "career": "sorcier",
@@ -14531,6 +14718,7 @@
     }
   },
   {
+    "id": "sorcier-4",
     "label": "Seigneur sorcier",
     "labelF": "Dame sorcière",
     "career": "sorcier",
@@ -14590,6 +14778,7 @@
     }
   },
   {
+    "id": "batelier-1",
     "label": "Canotier",
     "labelF": "Canotière",
     "career": "batelier",
@@ -14682,6 +14871,7 @@
     }
   },
   {
+    "id": "batelier-2",
     "label": "Batelier",
     "labelF": "Batelière",
     "career": "batelier",
@@ -14783,6 +14973,7 @@
     }
   },
   {
+    "id": "batelier-3",
     "label": "Chef de bord",
     "labelF": "Cheffe de bord",
     "career": "batelier",
@@ -14851,6 +15042,7 @@
     }
   },
   {
+    "id": "batelier-4",
     "label": "Capitaine",
     "career": "batelier",
     "level": 4,
@@ -14910,6 +15102,7 @@
     }
   },
   {
+    "id": "contrebandier-1",
     "label": "Coureur de rivières",
     "labelF": "Coureuse de rivières",
     "career": "contrebandier",
@@ -15012,6 +15205,7 @@
     }
   },
   {
+    "id": "contrebandier-2",
     "label": "Contrebandier",
     "labelF": "Contrebandière",
     "career": "contrebandier",
@@ -15101,6 +15295,7 @@
     }
   },
   {
+    "id": "contrebandier-3",
     "label": "Maître contrebandier",
     "labelF": "Maîtresse contrebandière",
     "career": "contrebandier",
@@ -15170,6 +15365,7 @@
     }
   },
   {
+    "id": "contrebandier-4",
     "label": "Roi des contrebandiers",
     "labelF": "Reine des contrebandiers",
     "career": "contrebandier",
@@ -15227,6 +15423,7 @@
     }
   },
   {
+    "id": "debardeur-1",
     "label": "Porteur",
     "labelF": "Porteuse",
     "career": "debardeur",
@@ -15316,6 +15513,7 @@
     }
   },
   {
+    "id": "debardeur-2",
     "label": "Débardeur",
     "labelF": "Débardeuse",
     "career": "debardeur",
@@ -15404,6 +15602,7 @@
     }
   },
   {
+    "id": "debardeur-3",
     "label": "Contremaître",
     "labelF": "Contremaîtresse",
     "career": "debardeur",
@@ -15471,6 +15670,7 @@
     }
   },
   {
+    "id": "debardeur-4",
     "label": "Maître des docks",
     "labelF": "Maîtresse des docks",
     "career": "debardeur",
@@ -15531,6 +15731,7 @@
     }
   },
   {
+    "id": "femme-du-fleuve-1",
     "label": "Alevin",
     "career": "femme-du-fleuve",
     "level": 1,
@@ -15625,6 +15826,7 @@
     }
   },
   {
+    "id": "femme-du-fleuve-2",
     "label": "Femme du fleuve",
     "career": "femme-du-fleuve",
     "level": 2,
@@ -15711,6 +15913,7 @@
     }
   },
   {
+    "id": "femme-du-fleuve-3",
     "label": "Sage des rives",
     "career": "femme-du-fleuve",
     "level": 3,
@@ -15781,6 +15984,7 @@
     }
   },
   {
+    "id": "femme-du-fleuve-4",
     "label": "Ancienne du fleuve",
     "career": "femme-du-fleuve",
     "level": 4,
@@ -15836,6 +16040,7 @@
     }
   },
   {
+    "id": "marin-1",
     "label": "Marin d'eau douce",
     "career": "marin",
     "level": 1,
@@ -15928,6 +16133,7 @@
     }
   },
   {
+    "id": "marin-2",
     "label": "Marin",
     "career": "marin",
     "level": 2,
@@ -16005,6 +16211,7 @@
     }
   },
   {
+    "id": "marin-3",
     "label": "Maître d'équipage",
     "labelF": "Maîtresse d'équipage",
     "career": "marin",
@@ -16069,6 +16276,7 @@
     }
   },
   {
+    "id": "marin-4",
     "label": "Capitaine de Navire",
     "career": "marin",
     "level": 4,
@@ -16133,6 +16341,7 @@
     }
   },
   {
+    "id": "naufrageur-1",
     "label": "Pilleur d'épaves",
     "labelF": "Pilleuse d'épaves",
     "career": "naufrageur",
@@ -16225,6 +16434,7 @@
     }
   },
   {
+    "id": "naufrageur-2",
     "label": "Naufrageur",
     "labelF": "Naufrageuse",
     "career": "naufrageur",
@@ -16304,6 +16514,7 @@
     }
   },
   {
+    "id": "naufrageur-3",
     "label": "Pirate des rivières",
     "career": "naufrageur",
     "level": 3,
@@ -16382,6 +16593,7 @@
     }
   },
   {
+    "id": "naufrageur-4",
     "label": "Capitaine naufrageur",
     "labelF": "Capitaine naufrageuse",
     "career": "naufrageur",
@@ -16445,6 +16657,7 @@
     }
   },
   {
+    "id": "nautonier-1",
     "label": "Guide fluvial",
     "labelF": "Guide fluviale",
     "career": "nautonier",
@@ -16538,6 +16751,7 @@
     }
   },
   {
+    "id": "nautonier-2",
     "label": "Nautonier",
     "labelF": "Nautonière",
     "career": "nautonier",
@@ -16620,6 +16834,7 @@
     }
   },
   {
+    "id": "nautonier-3",
     "label": "Pilote",
     "career": "nautonier",
     "level": 3,
@@ -16691,6 +16906,7 @@
     }
   },
   {
+    "id": "nautonier-4",
     "label": "Maître nocher",
     "labelF": "Maîtresse nocher",
     "career": "nautonier",
@@ -16748,6 +16964,7 @@
     }
   },
   {
+    "id": "patrouilleur-fluvial-1",
     "label": "Recrue fluviale",
     "career": "patrouilleur-fluvial",
     "level": 1,
@@ -16839,6 +17056,7 @@
     }
   },
   {
+    "id": "patrouilleur-fluvial-2",
     "label": "Patrouilleur fluvial",
     "labelF": "Patrouilleuse fluviale",
     "career": "patrouilleur-fluvial",
@@ -16929,6 +17147,7 @@
     }
   },
   {
+    "id": "patrouilleur-fluvial-3",
     "label": "Abordeur",
     "labelF": "Abordeuse",
     "career": "patrouilleur-fluvial",
@@ -16999,6 +17218,7 @@
     }
   },
   {
+    "id": "patrouilleur-fluvial-4",
     "label": "Maître abordeur",
     "labelF": "Maîtresse abordeuse",
     "career": "patrouilleur-fluvial",
@@ -17066,6 +17286,7 @@
     }
   },
   {
+    "id": "charlatan-1",
     "label": "Filou",
     "career": "charlatan",
     "level": 1,
@@ -17163,6 +17384,7 @@
     }
   },
   {
+    "id": "charlatan-2",
     "label": "Charlatan",
     "labelF": "Charlatane",
     "career": "charlatan",
@@ -17256,6 +17478,7 @@
     }
   },
   {
+    "id": "charlatan-3",
     "label": "Arnaqueur",
     "labelF": "Arnaqueuse",
     "career": "charlatan",
@@ -17328,6 +17551,7 @@
     }
   },
   {
+    "id": "charlatan-4",
     "label": "Escroc",
     "career": "charlatan",
     "level": 4,
@@ -17384,6 +17608,7 @@
     }
   },
   {
+    "id": "entremetteur-1",
     "label": "Prostitué",
     "labelF": "Prostituée",
     "career": "entremetteur",
@@ -17469,6 +17694,7 @@
     }
   },
   {
+    "id": "entremetteur-2",
     "label": "Entremetteur",
     "labelF": "Entremetteuse",
     "career": "entremetteur",
@@ -17549,6 +17775,7 @@
     }
   },
   {
+    "id": "entremetteur-3",
     "label": "Souteneur",
     "labelF": "Souteneuse",
     "career": "entremetteur",
@@ -17613,6 +17840,7 @@
     }
   },
   {
+    "id": "entremetteur-4",
     "label": "Meneur",
     "labelF": "Meneuse",
     "career": "entremetteur",
@@ -17670,6 +17898,7 @@
     }
   },
   {
+    "id": "hors-la-loi-1",
     "label": "Bandit",
     "career": "hors-la-loi",
     "level": 1,
@@ -17764,6 +17993,7 @@
     }
   },
   {
+    "id": "hors-la-loi-2",
     "label": "Hors-la-loi",
     "career": "hors-la-loi",
     "level": 2,
@@ -17851,6 +18081,7 @@
     }
   },
   {
+    "id": "hors-la-loi-3",
     "label": "Chef de bande",
     "labelF": "Cheffe de bande",
     "career": "hors-la-loi",
@@ -17927,6 +18158,7 @@
     }
   },
   {
+    "id": "hors-la-loi-4",
     "label": "Roi des bandits",
     "labelF": "Reine des bandits",
     "career": "hors-la-loi",
@@ -17985,6 +18217,7 @@
     }
   },
   {
+    "id": "pilleur-de-tombes-1",
     "label": "Trafiquant de cadavres",
     "labelF": "Trafiquante de cadavres",
     "career": "pilleur-de-tombes",
@@ -18079,6 +18312,7 @@
     }
   },
   {
+    "id": "pilleur-de-tombes-2",
     "label": "Pilleur de tombes",
     "labelF": "Pilleuse de tombes",
     "career": "pilleur-de-tombes",
@@ -18167,6 +18401,7 @@
     }
   },
   {
+    "id": "pilleur-de-tombes-3",
     "label": "Pilleur de tombeaux",
     "labelF": "Pilleuse de tombeaux",
     "career": "pilleur-de-tombes",
@@ -18234,6 +18469,7 @@
     }
   },
   {
+    "id": "pilleur-de-tombes-4",
     "label": "Chasseur de trésors",
     "labelF": "Chasseuse de trésors",
     "career": "pilleur-de-tombes",
@@ -18301,6 +18537,7 @@
     }
   },
   {
+    "id": "ranconneur-1",
     "label": "Coupe-jarret",
     "career": "ranconneur",
     "level": 1,
@@ -18392,6 +18629,7 @@
     }
   },
   {
+    "id": "ranconneur-2",
     "label": "Rançonneur",
     "labelF": "Rançonneuse",
     "career": "ranconneur",
@@ -18476,6 +18714,7 @@
     }
   },
   {
+    "id": "ranconneur-3",
     "label": "Chef de gang",
     "labelF": "Cheffe de gang",
     "career": "ranconneur",
@@ -18554,6 +18793,7 @@
     }
   },
   {
+    "id": "ranconneur-4",
     "label": "Baron du crime",
     "labelF": "Baronne du crime",
     "career": "ranconneur",
@@ -18620,6 +18860,7 @@
     }
   },
   {
+    "id": "receleur-1",
     "label": "Brocanteur",
     "labelF": "Brocanteuse",
     "career": "receleur",
@@ -18709,6 +18950,7 @@
     }
   },
   {
+    "id": "receleur-2",
     "label": "Receleur",
     "labelF": "Receleuse",
     "career": "receleur",
@@ -18791,6 +19033,7 @@
     }
   },
   {
+    "id": "receleur-3",
     "label": "Maître receleur",
     "labelF": "Maîtresse receleuse",
     "career": "receleur",
@@ -18857,6 +19100,7 @@
     }
   },
   {
+    "id": "receleur-4",
     "label": "Professionnel du marché noir",
     "labelF": "Professionnelle du marché noir",
     "career": "receleur",
@@ -18917,6 +19161,7 @@
     }
   },
   {
+    "id": "sorcier-dissident-1",
     "label": "Ensorceleur",
     "labelF": "Ensorceleuse",
     "career": "sorcier-dissident",
@@ -19013,6 +19258,7 @@
     }
   },
   {
+    "id": "sorcier-dissident-2",
     "label": "Sorcier dissident",
     "labelF": "Sorcière dissidente",
     "career": "sorcier-dissident",
@@ -19098,6 +19344,7 @@
     }
   },
   {
+    "id": "sorcier-dissident-3",
     "label": "Devin",
     "labelF": "Devineresse",
     "career": "sorcier-dissident",
@@ -19168,6 +19415,7 @@
     }
   },
   {
+    "id": "sorcier-dissident-4",
     "label": "Démoniste",
     "career": "sorcier-dissident",
     "level": 4,
@@ -19225,6 +19473,7 @@
     }
   },
   {
+    "id": "voleur-1",
     "label": "Rôdeur",
     "labelF": "Rôdeuse",
     "career": "voleur",
@@ -19317,6 +19566,7 @@
     }
   },
   {
+    "id": "voleur-2",
     "label": "Voleur",
     "labelF": "Voleuse",
     "career": "voleur",
@@ -19396,6 +19646,7 @@
     }
   },
   {
+    "id": "voleur-3",
     "label": "Maître voleur",
     "labelF": "Maîtresse voleuse",
     "career": "voleur",
@@ -19466,6 +19717,7 @@
     }
   },
   {
+    "id": "voleur-4",
     "label": "Cambrioleur",
     "labelF": "Cambrioleuse",
     "career": "voleur",
@@ -19525,6 +19777,7 @@
     }
   },
   {
+    "id": "bailli-1",
     "label": "Percepteur",
     "labelF": "Perceptrice",
     "career": "bailli",
@@ -19614,6 +19867,7 @@
     }
   },
   {
+    "id": "bailli-2",
     "label": "Bailli",
     "career": "bailli",
     "level": 2,
@@ -19693,6 +19947,7 @@
     }
   },
   {
+    "id": "bailli-3",
     "label": "Préfet",
     "labelF": "Préfète",
     "career": "bailli",
@@ -19767,6 +20022,7 @@
     }
   },
   {
+    "id": "bailli-4",
     "label": "Magistrat",
     "labelF": "Magistrate",
     "career": "bailli",
@@ -19829,6 +20085,7 @@
     }
   },
   {
+    "id": "chasseur-1",
     "label": "Traqueur",
     "labelF": "Traqueuse",
     "career": "chasseur",
@@ -19934,6 +20191,7 @@
     }
   },
   {
+    "id": "chasseur-2",
     "label": "Chasseur",
     "labelF": "Chasseuse",
     "career": "chasseur",
@@ -20017,6 +20275,7 @@
     }
   },
   {
+    "id": "chasseur-3",
     "label": "Pisteur",
     "labelF": "Pisteuse",
     "career": "chasseur",
@@ -20088,6 +20347,7 @@
     }
   },
   {
+    "id": "chasseur-4",
     "label": "Maître de la Chasse",
     "labelF": "Maîtresse de la Chasse",
     "career": "chasseur",
@@ -20148,6 +20408,7 @@
     }
   },
   {
+    "id": "eclaireur-1",
     "label": "Coureur des bois",
     "labelF": "Coureuse des bois",
     "career": "eclaireur",
@@ -20247,6 +20508,7 @@
     }
   },
   {
+    "id": "eclaireur-2",
     "label": "Éclaireur",
     "labelF": "Éclaireuse",
     "career": "eclaireur",
@@ -20332,6 +20594,7 @@
     }
   },
   {
+    "id": "eclaireur-3",
     "label": "Guide",
     "career": "eclaireur",
     "level": 3,
@@ -20411,6 +20674,7 @@
     }
   },
   {
+    "id": "eclaireur-4",
     "label": "Explorateur",
     "labelF": "Exploratrice",
     "career": "eclaireur",
@@ -20469,6 +20733,7 @@
     }
   },
   {
+    "id": "gardien-de-troupeaux-de-rhinox-1",
     "label": "Voleur de rhinox",
     "labelF": "Voleuse de rhinox",
     "career": "gardien-de-troupeaux-de-rhinox",
@@ -20577,6 +20842,7 @@
     }
   },
   {
+    "id": "gardien-de-troupeaux-de-rhinox-2",
     "label": "Gardien de troupeaux de rhinox",
     "labelF": "Gardienne de troupeaux de rhinox",
     "career": "gardien-de-troupeaux-de-rhinox",
@@ -20664,6 +20930,7 @@
     }
   },
   {
+    "id": "gardien-de-troupeaux-de-rhinox-3",
     "label": "Dompteur de rhinox",
     "labelF": "Dompteuse de rhinox",
     "career": "gardien-de-troupeaux-de-rhinox",
@@ -20734,6 +21001,7 @@
     }
   },
   {
+    "id": "gardien-de-troupeaux-de-rhinox-4",
     "label": "Maître des rhinox",
     "labelF": "Maîtresse des rhinox",
     "career": "gardien-de-troupeaux-de-rhinox",
@@ -20790,6 +21058,7 @@
     }
   },
   {
+    "id": "herboriste-1",
     "label": "Cueilleur",
     "labelF": "Cueilleuse",
     "career": "herboriste",
@@ -20887,6 +21156,7 @@
     }
   },
   {
+    "id": "herboriste-2",
     "label": "Herboriste",
     "career": "herboriste",
     "level": 2,
@@ -20966,6 +21236,7 @@
     }
   },
   {
+    "id": "herboriste-3",
     "label": "Maître Herboriste",
     "labelF": "Maîtresse Herboriste",
     "career": "herboriste",
@@ -21044,6 +21315,7 @@
     }
   },
   {
+    "id": "herboriste-4",
     "label": "Herboriste de renom",
     "career": "herboriste",
     "level": 4,
@@ -21102,6 +21374,7 @@
     }
   },
   {
+    "id": "mineur-1",
     "label": "Prospecteur",
     "labelF": "Prospectrice",
     "career": "mineur",
@@ -21199,6 +21472,7 @@
     }
   },
   {
+    "id": "mineur-2",
     "label": "Mineur",
     "labelF": "Mineuse",
     "career": "mineur",
@@ -21284,6 +21558,7 @@
     }
   },
   {
+    "id": "mineur-3",
     "label": "Maître Mineur",
     "labelF": "Maîtresse Mineuse",
     "career": "mineur",
@@ -21357,6 +21632,7 @@
     }
   },
   {
+    "id": "mineur-4",
     "label": "Contremaître de la mine",
     "labelF": "Contremaîtresse de la mine",
     "career": "mineur",
@@ -21413,6 +21689,7 @@
     }
   },
   {
+    "id": "mystique-1",
     "label": "Voyant",
     "labelF": "Voyante",
     "career": "mystique",
@@ -21509,6 +21786,7 @@
     }
   },
   {
+    "id": "mystique-2",
     "label": "Mystique",
     "career": "mystique",
     "level": 2,
@@ -21583,6 +21861,7 @@
     }
   },
   {
+    "id": "mystique-3",
     "label": "Sage",
     "career": "mystique",
     "level": 3,
@@ -21647,6 +21926,7 @@
     }
   },
   {
+    "id": "mystique-4",
     "label": "Prophète",
     "labelF": "Prophétesse",
     "career": "mystique",
@@ -21703,6 +21983,7 @@
     }
   },
   {
+    "id": "sorcier-de-village-1",
     "label": "Apprenti Sorcier de Village",
     "labelF": "Apprentie Sorcière de Village",
     "career": "sorcier-de-village",
@@ -21804,6 +22085,7 @@
     }
   },
   {
+    "id": "sorcier-de-village-2",
     "label": "Sorcier de village",
     "labelF": "Sorcière de village",
     "career": "sorcier-de-village",
@@ -21887,6 +22169,7 @@
     }
   },
   {
+    "id": "sorcier-de-village-3",
     "label": "Maître Sorcier de village",
     "labelF": "Maîtresse Sorcière de village",
     "career": "sorcier-de-village",
@@ -21958,6 +22241,7 @@
     }
   },
   {
+    "id": "sorcier-de-village-4",
     "label": "Sage de village",
     "career": "sorcier-de-village",
     "level": 4,
@@ -22017,6 +22301,7 @@
     }
   },
   {
+    "id": "villageois-1",
     "label": "Paysan",
     "labelF": "Paysanne",
     "career": "villageois",
@@ -22100,6 +22385,7 @@
     }
   },
   {
+    "id": "villageois-2",
     "label": "Villageois",
     "labelF": "Villageoise",
     "career": "villageois",
@@ -22181,6 +22467,7 @@
     }
   },
   {
+    "id": "villageois-3",
     "label": "Échevin",
     "labelF": "Échevine",
     "career": "villageois",
@@ -22253,6 +22540,7 @@
     }
   },
   {
+    "id": "villageois-4",
     "label": "Doyen",
     "labelF": "Doyenne",
     "career": "villageois",
@@ -22308,6 +22596,7 @@
     }
   },
   {
+    "id": "cavalier-leger-1",
     "label": "Cavalier",
     "labelF": "Cavalière",
     "career": "cavalier-leger",
@@ -22427,6 +22716,7 @@
     }
   },
   {
+    "id": "cavalier-leger-2",
     "label": "Cavalier Léger",
     "labelF": "Cavalière Légère",
     "career": "cavalier-leger",
@@ -22508,6 +22798,7 @@
     }
   },
   {
+    "id": "cavalier-leger-3",
     "label": "Cavalier Léger Lancier",
     "labelF": "Cavalière Légère Lancière",
     "career": "cavalier-leger",
@@ -22581,6 +22872,7 @@
     }
   },
   {
+    "id": "cavalier-leger-4",
     "label": "Capitaine Cavalier Léger",
     "labelF": "Capitaine Cavalière Légère",
     "career": "cavalier-leger",
@@ -22645,6 +22937,7 @@
     }
   },
   {
+    "id": "chevalier-errant-1",
     "label": "Écuyer",
     "labelF": "Écuyère",
     "career": "chevalier-errant",
@@ -22758,6 +23051,7 @@
     }
   },
   {
+    "id": "chevalier-errant-2",
     "label": "Chevalier Errant",
     "labelF": "Chevalière Errante",
     "career": "chevalier-errant",
@@ -22846,6 +23140,7 @@
     }
   },
   {
+    "id": "chevalier-errant-3",
     "label": "Capitaine Indépendant",
     "labelF": "Capitaine Indépendante",
     "career": "chevalier-errant",
@@ -22913,6 +23208,7 @@
     }
   },
   {
+    "id": "chevalier-errant-4",
     "label": "Chevalier Commandant",
     "labelF": "Chevalière Commandante",
     "career": "chevalier-errant",
@@ -22970,6 +23266,7 @@
     }
   },
   {
+    "id": "chevalier-du-soleil-flamboyant-1",
     "label": "Novice",
     "career": "chevalier-du-soleil-flamboyant",
     "level": 1,
@@ -23087,6 +23384,7 @@
     }
   },
   {
+    "id": "chevalier-du-soleil-flamboyant-2",
     "label": "Chevalier du Soleil flamboyant",
     "labelF": "Chevalière du Soleil flamboyant",
     "career": "chevalier-du-soleil-flamboyant",
@@ -23176,6 +23474,7 @@
     }
   },
   {
+    "id": "chevalier-du-soleil-flamboyant-3",
     "label": "Hochmeister",
     "career": "chevalier-du-soleil-flamboyant",
     "level": 3,
@@ -23241,6 +23540,7 @@
     }
   },
   {
+    "id": "chevalier-du-soleil-flamboyant-4",
     "label": "Chevalier du Cercle Intérieur",
     "labelF": "Chevalière du Cercle Intérieur",
     "career": "chevalier-du-soleil-flamboyant",
@@ -23301,6 +23601,7 @@
     }
   },
   {
+    "id": "chevalier-du-loup-blanc-1",
     "label": "Novice",
     "career": "chevalier-du-loup-blanc",
     "level": 1,
@@ -23418,6 +23719,7 @@
     }
   },
   {
+    "id": "chevalier-du-loup-blanc-2",
     "label": "Chevalier du Loup Blanc",
     "labelF": "Chevalière du Loup Blanc",
     "career": "chevalier-du-loup-blanc",
@@ -23501,6 +23803,7 @@
     }
   },
   {
+    "id": "chevalier-du-loup-blanc-3",
     "label": "Sergent Templier",
     "labelF": "Sergente Templière",
     "career": "chevalier-du-loup-blanc",
@@ -23568,6 +23871,7 @@
     }
   },
   {
+    "id": "chevalier-du-loup-blanc-4",
     "label": "Commandant de compagnie (cercle intérieur)",
     "labelF": "Commandante de compagnie (cercle intérieur)",
     "career": "chevalier-du-loup-blanc",
@@ -23625,6 +23929,7 @@
     }
   },
   {
+    "id": "chevalier-panthere-1",
     "label": "Écuyer",
     "labelF": "Écuyère",
     "career": "chevalier-panthere",
@@ -23741,6 +24046,7 @@
     }
   },
   {
+    "id": "chevalier-panthere-2",
     "label": "Chevalier Panthère",
     "labelF": "Chevalière Panthère",
     "career": "chevalier-panthere",
@@ -23836,6 +24142,7 @@
     }
   },
   {
+    "id": "chevalier-panthere-3",
     "label": "Chevalier Commandeur",
     "labelF": "Chevalière Commandeur",
     "career": "chevalier-panthere",
@@ -23904,6 +24211,7 @@
     }
   },
   {
+    "id": "chevalier-panthere-4",
     "label": "Commandant de compagnie (cercle intérieur)",
     "labelF": "Commandante de compagnie (cercle intérieur)",
     "career": "chevalier-panthere",
@@ -23961,6 +24269,7 @@
     }
   },
   {
+    "id": "pretre-de-myrmidia-1",
     "label": "Premier Aigle",
     "labelF": "Première Aigle",
     "career": "pretre-de-myrmidia",
@@ -24075,6 +24384,7 @@
     }
   },
   {
+    "id": "pretre-de-myrmidia-2",
     "label": "Prêtre de Myrmidia",
     "labelF": "Prêtresse de Myrmidia",
     "career": "pretre-de-myrmidia",
@@ -24156,6 +24466,7 @@
     }
   },
   {
+    "id": "pretre-de-myrmidia-3",
     "label": "Prêtre Sergent",
     "labelF": "Prêtresse Sergente",
     "career": "pretre-de-myrmidia",
@@ -24219,6 +24530,7 @@
     }
   },
   {
+    "id": "pretre-de-myrmidia-4",
     "label": "Prêtre Capitaine",
     "labelF": "Prêtresse Capitaine",
     "career": "pretre-de-myrmidia",
@@ -24273,6 +24585,7 @@
     }
   },
   {
+    "id": "archer-1",
     "label": "Tireur à l'arc",
     "labelF": "Tireuse à l'arc",
     "career": "archer",
@@ -24387,6 +24700,7 @@
     }
   },
   {
+    "id": "archer-2",
     "label": "Archer",
     "labelF": "Archère",
     "career": "archer",
@@ -24470,6 +24784,7 @@
     }
   },
   {
+    "id": "archer-3",
     "label": "Sergent Archer",
     "labelF": "Sergente Archère",
     "career": "archer",
@@ -24538,6 +24853,7 @@
     }
   },
   {
+    "id": "archer-4",
     "label": "Capitaine Archer",
     "labelF": "Capitaine Archère",
     "career": "archer",
@@ -24602,6 +24918,7 @@
     }
   },
   {
+    "id": "hallebardier-1",
     "label": "Recrue Hallebardier",
     "labelF": "Recrue Hallebardière",
     "career": "hallebardier",
@@ -24708,6 +25025,7 @@
     }
   },
   {
+    "id": "hallebardier-2",
     "label": "Hallebardier",
     "labelF": "Hallebardière",
     "career": "hallebardier",
@@ -24789,6 +25107,7 @@
     }
   },
   {
+    "id": "hallebardier-3",
     "label": "Sergent Hallebardier",
     "labelF": "Sergente Hallebardière",
     "career": "hallebardier",
@@ -24857,6 +25176,7 @@
     }
   },
   {
+    "id": "hallebardier-4",
     "label": "Capitaine Hallebardier",
     "labelF": "Capitaine Hallebardière",
     "career": "hallebardier",
@@ -24923,6 +25243,7 @@
     }
   },
   {
+    "id": "arquebusier-1",
     "label": "Recrue Arquebusier",
     "labelF": "Recrue Arquebusière",
     "career": "arquebusier",
@@ -25025,6 +25346,7 @@
     }
   },
   {
+    "id": "arquebusier-2",
     "label": "Arquebusier",
     "labelF": "Arquebusière",
     "career": "arquebusier",
@@ -25104,6 +25426,7 @@
     }
   },
   {
+    "id": "arquebusier-3",
     "label": "Sergent Arquebusier",
     "labelF": "Sergente Arquebusière",
     "career": "arquebusier",
@@ -25173,6 +25496,7 @@
     }
   },
   {
+    "id": "arquebusier-4",
     "label": "Capitaine Arquebusier",
     "labelF": "Capitaine Arquebusière",
     "career": "arquebusier",
@@ -25236,6 +25560,7 @@
     }
   },
   {
+    "id": "joueur-d-epee-1",
     "label": "Cadet Joueur d'épée",
     "labelF": "Cadette Joueuse d'épée",
     "career": "joueur-d-epee",
@@ -25341,6 +25666,7 @@
     }
   },
   {
+    "id": "joueur-d-epee-2",
     "label": "Joueur d'épée",
     "labelF": "Joueuse d'épée",
     "career": "joueur-d-epee",
@@ -25419,6 +25745,7 @@
     }
   },
   {
+    "id": "joueur-d-epee-3",
     "label": "Sergent Joueur d'épée",
     "labelF": "Sergente Joueuse d'épée",
     "career": "joueur-d-epee",
@@ -25490,6 +25817,7 @@
     }
   },
   {
+    "id": "joueur-d-epee-4",
     "label": "Capitaine Joueur d'épée",
     "labelF": "Capitaine Joueuse d'épée",
     "career": "joueur-d-epee",
@@ -25557,6 +25885,7 @@
     }
   },
   {
+    "id": "piquier-1",
     "label": "Recrue",
     "career": "piquier",
     "level": 1,
@@ -25664,6 +25993,7 @@
     }
   },
   {
+    "id": "piquier-2",
     "label": "Piquier",
     "labelF": "Piquière",
     "career": "piquier",
@@ -25746,6 +26076,7 @@
     }
   },
   {
+    "id": "piquier-3",
     "label": "Chef de File",
     "labelF": "Cheffe de File",
     "career": "piquier",
@@ -25812,6 +26143,7 @@
     }
   },
   {
+    "id": "piquier-4",
     "label": "Capitaine d'étendard",
     "career": "piquier",
     "level": 4,
@@ -25885,6 +26217,7 @@
     }
   },
   {
+    "id": "specialiste-de-siege-1",
     "label": "Arbalétrier",
     "labelF": "Arbalétrière",
     "career": "specialiste-de-siege",
@@ -25999,6 +26332,7 @@
     }
   },
   {
+    "id": "specialiste-de-siege-2",
     "label": "Spécialiste de Siège",
     "career": "specialiste-de-siege",
     "level": 2,
@@ -26077,6 +26411,7 @@
     }
   },
   {
+    "id": "specialiste-de-siege-3",
     "label": "Sapeur",
     "labelF": "Sapeuse",
     "career": "specialiste-de-siege",
@@ -26159,6 +26494,7 @@
     }
   },
   {
+    "id": "specialiste-de-siege-4",
     "label": "Maître de Siège",
     "labelF": "Maîtresse de Siège",
     "career": "specialiste-de-siege",
@@ -26222,6 +26558,7 @@
     }
   },
   {
+    "id": "suiveur-de-camp-1",
     "label": "Ribaud",
     "labelF": "Ribaude",
     "career": "suiveur-de-camp",
@@ -26321,6 +26658,7 @@
     }
   },
   {
+    "id": "suiveur-de-camp-2",
     "label": "Suiveur de Camp",
     "labelF": "Suiveuse de Camp",
     "career": "suiveur-de-camp",
@@ -26400,6 +26738,7 @@
     }
   },
   {
+    "id": "suiveur-de-camp-3",
     "label": "Pillard Chevronné",
     "labelF": "Pillarde Chevronnée",
     "career": "suiveur-de-camp",
@@ -26464,6 +26803,7 @@
     }
   },
   {
+    "id": "suiveur-de-camp-4",
     "label": "Chef de Camp",
     "labelF": "Cheffe de Camp",
     "career": "suiveur-de-camp",
@@ -26523,6 +26863,7 @@
     }
   },
   {
+    "id": "cartographe-1",
     "label": "Arpenteur",
     "labelF": "Arpenteuse",
     "career": "cartographe",
@@ -26626,6 +26967,7 @@
     }
   },
   {
+    "id": "cartographe-2",
     "label": "Cartographe",
     "career": "cartographe",
     "level": 2,
@@ -26706,6 +27048,7 @@
     }
   },
   {
+    "id": "cartographe-3",
     "label": "Cartographe Reconnu",
     "labelF": "Cartographe Reconnue",
     "career": "cartographe",
@@ -26776,6 +27119,7 @@
     }
   },
   {
+    "id": "cartographe-4",
     "label": "Maître Cartographe",
     "labelF": "Maîtresse Cartographe",
     "career": "cartographe",
@@ -26833,6 +27177,7 @@
     }
   },
   {
+    "id": "artilleur-1",
     "label": "Apprenti Artilleur",
     "labelF": "Apprentie Artilleuse",
     "career": "artilleur",
@@ -26936,6 +27281,7 @@
     }
   },
   {
+    "id": "artilleur-2",
     "label": "Artilleur",
     "labelF": "Artilleuse",
     "career": "artilleur",
@@ -27029,6 +27375,7 @@
     }
   },
   {
+    "id": "artilleur-3",
     "label": "Capitaine Artilleur",
     "labelF": "Capitaine Artilleuse",
     "career": "artilleur",
@@ -27098,6 +27445,7 @@
     }
   },
   {
+    "id": "artilleur-4",
     "label": "Maître Artilleur",
     "labelF": "Maîtresse Artilleuse",
     "career": "artilleur",
@@ -27170,6 +27518,7 @@
     }
   },
   {
+    "id": "artilleur-de-navire-1",
     "label": "Mousse artilleur",
     "labelF": "Mousse artilleuse",
     "career": "artilleur-de-navire",
@@ -27271,6 +27620,7 @@
     }
   },
   {
+    "id": "artilleur-de-navire-2",
     "label": "Artilleur de navire",
     "labelF": "Artilleuse de navire",
     "career": "artilleur-de-navire",
@@ -27352,6 +27702,7 @@
     }
   },
   {
+    "id": "artilleur-de-navire-3",
     "label": "Capitaine d'artillerie",
     "career": "artilleur-de-navire",
     "level": 3,
@@ -27419,6 +27770,7 @@
     }
   },
   {
+    "id": "artilleur-de-navire-4",
     "label": "Maître artilleur",
     "labelF": "Maîtresse artilleuse",
     "career": "artilleur-de-navire",
@@ -27476,6 +27828,7 @@
     }
   },
   {
+    "id": "chansonnier-1",
     "label": "Chanteur",
     "labelF": "Chanteuse",
     "career": "chansonnier",
@@ -27583,6 +27936,7 @@
     }
   },
   {
+    "id": "chansonnier-2",
     "label": "Chansonnier",
     "labelF": "Chansonnière",
     "career": "chansonnier",
@@ -27657,6 +28011,7 @@
     }
   },
   {
+    "id": "chansonnier-3",
     "label": "Capitaine chansonnier",
     "labelF": "Capitaine chansonnière",
     "career": "chansonnier",
@@ -27721,6 +28076,7 @@
     }
   },
   {
+    "id": "chansonnier-4",
     "label": "Maître chansonnier",
     "labelF": "Maîtresse chansonnière",
     "career": "chansonnier",
@@ -27776,6 +28132,7 @@
     }
   },
   {
+    "id": "marin-cotier-1",
     "label": "Mousse",
     "career": "marin-cotier",
     "level": 1,
@@ -27880,6 +28237,7 @@
     }
   },
   {
+    "id": "marin-cotier-2",
     "label": "Marin",
     "career": "marin-cotier",
     "level": 2,
@@ -27957,6 +28315,7 @@
     }
   },
   {
+    "id": "marin-cotier-3",
     "label": "Quartier-maître",
     "career": "marin-cotier",
     "level": 3,
@@ -28020,6 +28379,7 @@
     }
   },
   {
+    "id": "marin-cotier-4",
     "label": "Bosco",
     "career": "marin-cotier",
     "level": 4,
@@ -28078,6 +28438,7 @@
     }
   },
   {
+    "id": "naufrageur-cotier-1",
     "label": "Pilleur d'épaves",
     "labelF": "Pilleuse d'épaves",
     "career": "naufrageur-cotier",
@@ -28181,6 +28542,7 @@
     }
   },
   {
+    "id": "naufrageur-cotier-2",
     "label": "Naufrageur",
     "labelF": "Naufrageuse",
     "career": "naufrageur-cotier",
@@ -28263,6 +28625,7 @@
     }
   },
   {
+    "id": "naufrageur-cotier-3",
     "label": "Pirate",
     "career": "naufrageur-cotier",
     "level": 3,
@@ -28341,6 +28704,7 @@
     }
   },
   {
+    "id": "naufrageur-cotier-4",
     "label": "Capitaine pirate",
     "career": "naufrageur-cotier",
     "level": 4,
@@ -28400,6 +28764,7 @@
     }
   },
   {
+    "id": "nautonier-cotier-1",
     "label": "Guide portuaire",
     "career": "nautonier-cotier",
     "level": 1,
@@ -28503,6 +28868,7 @@
     }
   },
   {
+    "id": "nautonier-cotier-2",
     "label": "Nautonier",
     "labelF": "Nautonière",
     "career": "nautonier-cotier",
@@ -28584,6 +28950,7 @@
     }
   },
   {
+    "id": "nautonier-cotier-3",
     "label": "Pilote",
     "career": "nautonier-cotier",
     "level": 3,
@@ -28649,6 +29016,7 @@
     }
   },
   {
+    "id": "nautonier-cotier-4",
     "label": "Maître pilote",
     "labelF": "Maîtresse pilote",
     "career": "nautonier-cotier",
@@ -28706,6 +29074,7 @@
     }
   },
   {
+    "id": "officier-1",
     "label": "Enseigne",
     "career": "officier",
     "level": 1,
@@ -28805,6 +29174,7 @@
     }
   },
   {
+    "id": "officier-2",
     "label": "Officier",
     "labelF": "Officière",
     "career": "officier",
@@ -28883,6 +29253,7 @@
     }
   },
   {
+    "id": "officier-3",
     "label": "Capitaine",
     "career": "officier",
     "level": 3,
@@ -28953,6 +29324,7 @@
     }
   },
   {
+    "id": "officier-4",
     "label": "Amiral",
     "labelF": "Amirale",
     "career": "officier",
@@ -29006,6 +29378,7 @@
     }
   },
   {
+    "id": "pretre-marin-de-manann-1",
     "label": "Initié",
     "labelF": "Initiée",
     "career": "pretre-marin-de-manann",
@@ -29110,6 +29483,7 @@
     }
   },
   {
+    "id": "pretre-marin-de-manann-2",
     "label": "Prêtre marin",
     "labelF": "Prêtresse marine",
     "career": "pretre-marin-de-manann",
@@ -29189,6 +29563,7 @@
     }
   },
   {
+    "id": "pretre-marin-de-manann-3",
     "label": "Prêtre capitaine",
     "labelF": "Prêtresse capitaine",
     "career": "pretre-marin-de-manann",
@@ -29265,6 +29640,7 @@
     }
   },
   {
+    "id": "pretre-marin-de-manann-4",
     "label": "Seigneur des vagues",
     "labelF": "Dame des vagues",
     "career": "pretre-marin-de-manann",
@@ -29325,6 +29701,7 @@
     }
   },
   {
+    "id": "ratisseur-de-plages-1",
     "label": "Récupérateur",
     "labelF": "Récupératrice",
     "career": "ratisseur-de-plages",
@@ -29427,6 +29804,7 @@
     }
   },
   {
+    "id": "ratisseur-de-plages-2",
     "label": "Ratisseur de plages",
     "labelF": "Ratisseuse de plages",
     "career": "ratisseur-de-plages",
@@ -29507,6 +29885,7 @@
     }
   },
   {
+    "id": "ratisseur-de-plages-3",
     "label": "Dériveur",
     "labelF": "Dériveuse",
     "career": "ratisseur-de-plages",
@@ -29581,6 +29960,7 @@
     }
   },
   {
+    "id": "ratisseur-de-plages-4",
     "label": "Maître des plages",
     "labelF": "Maîtresse des plages",
     "career": "ratisseur-de-plages",
@@ -29635,6 +30015,7 @@
     }
   },
   {
+    "id": "pretre-de-stromfels-1",
     "label": "Initié",
     "labelF": "Initiée",
     "career": "pretre-de-stromfels",
@@ -29744,6 +30125,7 @@
     }
   },
   {
+    "id": "pretre-de-stromfels-2",
     "label": "Prêtre de Stromfels",
     "labelF": "Prêtresse de Stromfels",
     "career": "pretre-de-stromfels",
@@ -29826,6 +30208,7 @@
     }
   },
   {
+    "id": "pretre-de-stromfels-3",
     "label": "Prêtre pirate",
     "labelF": "Prêtresse pirate",
     "career": "pretre-de-stromfels",
@@ -29908,6 +30291,7 @@
     }
   },
   {
+    "id": "pretre-de-stromfels-4",
     "label": "Prêtre terreur des mers",
     "labelF": "Prêtresse terreur des mers",
     "career": "pretre-de-stromfels",
@@ -29971,6 +30355,7 @@
     }
   },
   {
+    "id": "alchimiste-ordinaire-1",
     "label": "Rétameur",
     "career": "alchimiste-ordinaire",
     "level": 1,
@@ -30087,6 +30472,7 @@
     }
   },
   {
+    "id": "alchimiste-ordinaire-2",
     "label": "Alchimiste ordinaire",
     "career": "alchimiste-ordinaire",
     "level": 2,
@@ -30166,6 +30552,7 @@
     }
   },
   {
+    "id": "alchimiste-ordinaire-3",
     "label": "Maître Alchimiste ordinaire",
     "career": "alchimiste-ordinaire",
     "level": 3,
@@ -30235,6 +30622,7 @@
     }
   },
   {
+    "id": "alchimiste-ordinaire-4",
     "label": "Transmutateur",
     "career": "alchimiste-ordinaire",
     "level": 4,
@@ -30296,6 +30684,7 @@
     }
   },
   {
+    "id": "bedeau-1",
     "label": "Aide bedeau",
     "career": "bedeau",
     "level": 1,
@@ -30393,6 +30782,7 @@
     }
   },
   {
+    "id": "bedeau-2",
     "label": "Bedeau",
     "career": "bedeau",
     "level": 2,
@@ -30470,6 +30860,7 @@
     }
   },
   {
+    "id": "bedeau-3",
     "label": "Gardien des lieux",
     "career": "bedeau",
     "level": 3,
@@ -30537,6 +30928,7 @@
     }
   },
   {
+    "id": "bedeau-4",
     "label": "Terreur de la faculté",
     "career": "bedeau",
     "level": 4,
@@ -30592,6 +30984,7 @@
     }
   },
   {
+    "id": "devin-1",
     "label": "Hanté",
     "career": "devin",
     "level": 1,
@@ -30695,6 +31088,7 @@
     }
   },
   {
+    "id": "devin-2",
     "label": "Devin",
     "labelF": "Devineresse",
     "career": "devin",
@@ -30768,6 +31162,7 @@
     }
   },
   {
+    "id": "devin-3",
     "label": "Psychométricien",
     "career": "devin",
     "level": 3,
@@ -30833,6 +31228,7 @@
     }
   },
   {
+    "id": "devin-4",
     "label": "Rétrolecteur",
     "career": "devin",
     "level": 4,
@@ -30889,6 +31285,7 @@
     }
   },
   {
+    "id": "hierophante-1",
     "label": "Acolyte de l'Ordre Lumineux",
     "career": "hierophante",
     "level": 1,
@@ -30996,6 +31393,7 @@
     }
   },
   {
+    "id": "hierophante-2",
     "label": "Hiérophante",
     "career": "hierophante",
     "level": 2,
@@ -31073,6 +31471,7 @@
     }
   },
   {
+    "id": "hierophante-3",
     "label": "Maître Hiérophante",
     "career": "hierophante",
     "level": 3,
@@ -31146,6 +31545,7 @@
     }
   },
   {
+    "id": "hierophante-4",
     "label": "Gardien de l'Ordre Lumineux",
     "career": "hierophante",
     "level": 4,
@@ -31205,6 +31605,7 @@
     }
   },
   {
+    "id": "alchimiste-1",
     "label": "Apprenti Alchimiste",
     "career": "alchimiste",
     "level": 1,
@@ -31308,6 +31709,7 @@
     }
   },
   {
+    "id": "alchimiste-2",
     "label": "Alchimiste",
     "career": "alchimiste",
     "level": 2,
@@ -31399,6 +31801,7 @@
     }
   },
   {
+    "id": "alchimiste-3",
     "label": "Maître Alchimiste",
     "career": "alchimiste",
     "level": 3,
@@ -31491,6 +31894,7 @@
     }
   },
   {
+    "id": "alchimiste-4",
     "label": "Seigneur Alchimiste",
     "career": "alchimiste",
     "level": 4,
@@ -31550,6 +31954,7 @@
     }
   },
   {
+    "id": "druide-1",
     "label": "Apprenti Druide",
     "career": "druide",
     "level": 1,
@@ -31655,6 +32060,7 @@
     }
   },
   {
+    "id": "druide-2",
     "label": "Druide",
     "labelF": "Druidesse",
     "career": "druide",
@@ -31736,6 +32142,7 @@
     }
   },
   {
+    "id": "druide-3",
     "label": "Maître Druide",
     "career": "druide",
     "level": 3,
@@ -31809,6 +32216,7 @@
     }
   },
   {
+    "id": "druide-4",
     "label": "Seigneur Druide",
     "career": "druide",
     "level": 4,
@@ -31867,6 +32275,7 @@
     }
   },
   {
+    "id": "astromancien-1",
     "label": "Acolyte Céleste",
     "career": "astromancien",
     "level": 1,
@@ -31973,6 +32382,7 @@
     }
   },
   {
+    "id": "astromancien-2",
     "label": "Astromancien",
     "career": "astromancien",
     "level": 2,
@@ -32057,6 +32467,7 @@
     }
   },
   {
+    "id": "astromancien-3",
     "label": "Grand Astromancien",
     "career": "astromancien",
     "level": 3,
@@ -32133,6 +32544,7 @@
     }
   },
   {
+    "id": "astromancien-4",
     "label": "Seigneur Céleste",
     "career": "astromancien",
     "level": 4,
@@ -32191,6 +32603,7 @@
     }
   },
   {
+    "id": "spirite-1",
     "label": "Apprenti Spirite",
     "career": "spirite",
     "level": 1,
@@ -32293,6 +32706,7 @@
     }
   },
   {
+    "id": "spirite-2",
     "label": "Spirite",
     "career": "spirite",
     "level": 2,
@@ -32375,6 +32789,7 @@
     }
   },
   {
+    "id": "spirite-3",
     "label": "Maître Spirite",
     "career": "spirite",
     "level": 3,
@@ -32459,6 +32874,7 @@
     }
   },
   {
+    "id": "spirite-4",
     "label": "Seigneur Spirite",
     "career": "spirite",
     "level": 4,
@@ -32517,6 +32933,7 @@
     }
   },
   {
+    "id": "pyromancien-1",
     "label": "Apprenti Pyromancien",
     "career": "pyromancien",
     "level": 1,
@@ -32623,6 +33040,7 @@
     }
   },
   {
+    "id": "pyromancien-2",
     "label": "Pyromancien",
     "career": "pyromancien",
     "level": 2,
@@ -32706,6 +33124,7 @@
     }
   },
   {
+    "id": "pyromancien-3",
     "label": "Maître Pyromancien",
     "career": "pyromancien",
     "level": 3,
@@ -32781,6 +33200,7 @@
     }
   },
   {
+    "id": "pyromancien-4",
     "label": "Seigneur Pyromancien",
     "career": "pyromancien",
     "level": 4,
@@ -32842,6 +33262,7 @@
     }
   },
   {
+    "id": "chamane-1",
     "label": "Apprenti Chamane",
     "career": "chamane",
     "level": 1,
@@ -32943,6 +33364,7 @@
     }
   },
   {
+    "id": "chamane-2",
     "label": "Chamane",
     "career": "chamane",
     "level": 2,
@@ -33022,6 +33444,7 @@
     }
   },
   {
+    "id": "chamane-3",
     "label": "Maître Chamane",
     "career": "chamane",
     "level": 3,
@@ -33092,6 +33515,7 @@
     }
   },
   {
+    "id": "chamane-4",
     "label": "Seigneur Chamane",
     "career": "chamane",
     "level": 4,
@@ -33150,6 +33574,7 @@
     }
   },
   {
+    "id": "magister-vigilant-1",
     "label": "Apprenti Vigilant",
     "career": "magister-vigilant",
     "level": 1,
@@ -33251,6 +33676,7 @@
     }
   },
   {
+    "id": "magister-vigilant-2",
     "label": "Magister Vigilant",
     "career": "magister-vigilant",
     "level": 2,
@@ -33324,6 +33750,7 @@
     }
   },
   {
+    "id": "magister-vigilant-3",
     "label": "Magister Inquisiteur",
     "career": "magister-vigilant",
     "level": 3,
@@ -33387,6 +33814,7 @@
     }
   },
   {
+    "id": "magister-vigilant-4",
     "label": "Seigneur Vigilant",
     "career": "magister-vigilant",
     "level": 4,
@@ -33439,6 +33867,7 @@
     }
   },
   {
+    "id": "umbramancien-1",
     "label": "Apprenti illusionniste",
     "career": "umbramancien",
     "level": 1,
@@ -33549,6 +33978,7 @@
     }
   },
   {
+    "id": "umbramancien-2",
     "label": "Umbramancien",
     "career": "umbramancien",
     "level": 2,
@@ -33626,6 +34056,7 @@
     }
   },
   {
+    "id": "umbramancien-3",
     "label": "Gardien Gris",
     "career": "umbramancien",
     "level": 3,
@@ -33699,6 +34130,7 @@
     }
   },
   {
+    "id": "umbramancien-4",
     "label": "Seigneur Gris",
     "career": "umbramancien",
     "level": 4,
