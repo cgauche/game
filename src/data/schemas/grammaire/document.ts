@@ -7,10 +7,10 @@
  * est une erreur de TYPE (mapped type → `never`) ET une erreur d'exécution nommant la clé ; chaque
  * clé de `champs` exige sa `MetaChamp` ; chaque document déclare son EXPOSITION (Codex, éditeur).
  *
- * L'adoption par les defs est le lot L1b (#1467) : 121 defs l'appellent (120 sous `defs/`, 1 sous
- * `defs-scenes/`). Les defs `entite` ont TOUS adopté, `oups.ts` excepté — schéma d'UNION, hors des
- * vagues d'adoption. Le compte fait foi à la MESURE, pas à cette phrase : c'est le mesureur de
- * `grammaire.test.ts` (« contrats d'enveloppe REQUIS dans les defs `entite` ») qui l'établit.
+ * L'adoption par les defs est le lot L1b (#1467) : 122 defs l'appellent (121 sous `defs/`, 1 sous
+ * `defs-scenes/`). Les defs `entite` ont TOUS adopté. Le compte fait foi à la MESURE, pas à cette
+ * phrase : c'est le mesureur de `grammaire.test.ts` (« contrats d'enveloppe REQUIS dans les defs
+ * `entite` ») qui l'établit.
  */
 import { z } from 'zod';
 import { sourceRefSchema, secondarySourceRefSchema, variantOf } from './valeurs';

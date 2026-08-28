@@ -572,7 +572,7 @@ nombre d’entrées qui la portent.
 | `src/data/naval-traits.json` | array | liste | entité | 26 | `alsoIn`:array(1) `deckCover`:string(3) `desc`:string(26) `id`:string(26) `install`:object(21) `kind`:string(26) `label`:string(26) `maison`:string(2) `navTestMod`:number(2) `passive`:array(9) `ram`:object(1) `ranked`:boolean(4) `source`:object(25) `type`:string(26) |
 | `src/data/night-stakes.json` | array | liste | entité | 15 | `form`:string(2) `id`:string(15) `kind`:string(15) `label`:string(15) `rule`:string(15) `ruleCategory`:string(2) `source`:object(15) `stake`:string(15) `type`:string(15) |
 | `src/data/obsessions.json` | object | pipe à la racine | config | 1 | `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
-| `src/data/oups.json` | array | liste | table | 8 | `id`:string(8) `kind`:string(8) `label`:string(8) `max`:number(7) `min`:number(7) `source`:object(8) |
+| `src/data/oups.json` | array | liste | table | 8 | `id`:string(8) `kind`:string(8) `label`:string(8) `max`:number(7) `min`:number(7) `source`:object(8) `type`:string(8) |
 | `src/data/peripeties.json` | array | liste | entité | 10 | `desc`:string(10) `id`:string(10) `kind`:string(10) `label`:string(10) `roll`:number(10) `source`:object(10) `type`:string(10) |
 | `src/data/pregens.json` | array | liste | entité | 8 | `ambitionLong`:string(8) `ambitionShort`:string(8) `build`:number(2) `career`:string(8) `careerTalent`:string(2) `id`:string(8) `label`:string(8) `motivation`:string(8) `pettySpells`:array(1) `seed`:number(8) `sex`:string(2) `species`:string(8) `type`:string(8) |
 | `src/data/primitives.manifest.json` | array | liste | entité | 28 | `concept`:string(28) `fichier`:string(28) `id`:string(28) `label`:string(28) `perimetre`:string(28) `type`:string(28) `verrou`:string(28) |
@@ -636,7 +636,7 @@ nombre d’entrées qui la portent.
 
 ### 2.2 Fréquence globale des signatures d’entrée
 
-Signatures distinctes d’entrée de document : **591**. Les 40 plus fréquentes :
+Signatures distinctes d’entrée de document : **590**. Les 40 plus fréquentes :
 
 | Signature d’entrée | Entrées |
 |---|---|
@@ -875,7 +875,7 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 
 #### A. Par défaut — sans lot de peuplement (stock `STRUCTURES_DEFAUT`)
 
-**81** documents portent au moins une clé déclarée jamais observée, **374** clés en tout
+**82** documents portent au moins une clé déclarée jamais observée, **379** clés en tout
 (stock `STRUCTURES_DEFAUT`, `scripts/guards/lib/structuresStock.mjs`, garde `src/data/structures-contrat.test.ts`).
 
 | Document | Clés | Détail |
@@ -923,6 +923,7 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 | `naval-ports.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `naval-traits.json` | 2 | `icon` `labelF` |
 | `night-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
+| `oups.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `peripeties.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `pregens.json` | 8 | `age` `alsoIn` `desc` `icon` `labelF` `maison` `source` `weaponChoice` |
 | `primitives.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
@@ -3447,7 +3448,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 
 ## 4. Redéclarations locales dans `src/data/schemas/defs/*.ts`
 
-Littéraux d’objet zod lus : **500** ; **117** recoupent le lexique
+Littéraux d’objet zod lus : **499** ; **117** recoupent le lexique
 ou un littéral de `src/data/schemas/grammaire/`. « Schéma commun candidat » = même signature EXACTE
 qu’un littéral de la grammaire (candidat à examiner, cf. angles morts).
 
@@ -3536,7 +3537,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `naval-progression.ts` | 14 | — | — | hors lexique | `entries` | `corps` |
 | `obsessions.ts` | 15 | — | — | hors lexique | `entries` | `corps` |
 | `obsessions.ts` | 17 | `entries` | plage | divergente | `max,min+…` | — |
-| `oups.ts` | 14 | — | plage | divergente | `max,min+…` | — |
+| `oups.ts` | 39 | — | plage | divergente | `max,min+…` | — |
 | `progression-schemas-derived.ts` | 39 | `schemas` | source | divergente | `book+…` | — |
 | `psychology.ts` | 53 | `test` | test | historique | `difficulty,skill` | — |
 | `raceAppearance.ts` | 31 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |

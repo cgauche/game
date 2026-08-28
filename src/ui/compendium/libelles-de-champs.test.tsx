@@ -150,9 +150,26 @@ describe('régime PROFONDEUR — pas de fuite des libellés d’enveloppe dans l
 });
 
 describe('canal registre → atelier (`metaPourFichier`)', () => {
-  it('un document registré SANS méta rend `undefined` (témoin : `oups.json`, schéma d’union non adopté)', () => {
-    expect(DEFS_DE_DOCUMENT.some((d) => d.file === 'oups.json'), '`oups.json` a quitté le registre — choisir un autre témoin sans méta').toBe(true);
-    expect(metaPourFichier('oups.json')).toBeUndefined();
+  // `oups.json` tenait ce rôle tant que son schéma d'union le laissait hors de `document()` : il était
+  // le DERNIER document registré sans méta. Son adoption (#1467 L1b V-UNION) vide cette population, si
+  // bien que le témoin négatif n'a plus de porteur. Le contrat qui reste se dit au POSITIF, et il est
+  // plus fort : le canal sert TOUT le registre, `undefined` ne signalant plus que le hors-registre.
+  it('plus AUCUN document de `src/data` n’est registré sans méta — et les 4 restants sont NOMMÉS', () => {
+    const sansMeta = DEFS_DE_DOCUMENT.filter((d) => metaPourFichier(d.file) === undefined);
+    const donnees = sansMeta.filter((d) => d.root === 'src/data').map((d) => d.file);
+    expect(donnees, `document(s) de src/data sans méta — le canal atelier y retombe sur la clé technique :\n${donnees.join('\n')}`).toEqual([]);
+    // Les 4 projets de scène sont déclarés par des defs qui n'appellent pas `document()` (leur méta
+    // n'existe donc pas) : population GELÉE, un 5ᵉ porteur ou un de moins rend cette liste rouge.
+    expect(sansMeta.map((d) => d.file).sort()).toEqual([
+      'arene/arene-projet.json',
+      'barge-du-sel/barge-du-sel-projet.json',
+      'diligence/diligence-projet.json',
+      'loup-et-saumure/loup-et-saumure-projet.json',
+    ]);
+  });
+
+  it('`oups.json` rend bien ses libellés de champs par le canal (témoin nominatif de l’adoption)', () => {
+    expect(metaPourFichier('oups.json')?.kind?.label).toBe('Effet mécanique');
   });
 
   it('un fichier inconnu du registre rend `undefined` (jamais une exception)', () => {

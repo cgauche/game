@@ -406,14 +406,10 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
   // rien à perdre, leur enveloppe est celle de la fabrique. Ce compte est ce que le flip-entite doit
   // reporter en `options.exiges`, def par def : il DÉCROÎT à mesure que les defs sont adoptés.
   //
-  // UNE EXCEPTION NOMMÉE dans `scelles` : `oups.json` n'est PAS adopté. Son schéma est
-  // `z.array(z.union([...]))` — un nœud d'union n'a ni `.shape` ni `innerType`, donc le relevé
-  // ci-dessous le range en « scellé » alors que son enveloppe est encore écrite à la main. Ce n'est
-  // pas un oubli d'adoption : ses deux formes (bande d100 `min`/`max`/`kind` vs Incident de Tir
-  // `kind: 'misfire'`) sont DISJOINTES, et `options.variantes` ne les exprime pas (une variante
-  // REPUBLIE des champs d'un même document, elle n'en propose pas une seconde forme). `oups` relève
-  // d'une classe « union » à concevoir, hors des vagues d'adoption. Au 2026-08-28, `scelles` = 76
-  // defs réellement adoptés + `oups` — et la population MESURÉE est VIDE.
+  // Au 2026-08-28, `scelles` = 77 defs `entite`, TOUS adoptés — et la population MESURÉE est VIDE.
+  // `oups.json` est le dernier entré (V-UNION) : ses deux formes (bande d100 `min`/`max`/`kind` vs
+  // Incident de Tir `kind: 'misfire'`) tiennent en UNE entrée dont un refine ⟺ porte la disjonction,
+  // si bien qu'il n'a plus besoin d'une classe « union » hors des vagues d'adoption.
   const noeudInterne = (n: unknown): unknown => {
     const d = (n as { _zod?: { def?: Record<string, unknown> }; def?: Record<string, unknown> })?._zod?.def;
     if (!d) return undefined;
@@ -475,7 +471,10 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     //                    tavernGames, trappings),
     //         icon −2 (actions, activities) — les 12 DERNIERS defs `entite` quittent la mesure
     //         (12 → 0, 65 → 77). La population MESURÉE est ÉTEINTE : plus AUCUN def `entite` ne
-    //         porte son enveloppe à la main, `oups` mis à part (union, cf. en-tête).
+    //         porte son enveloppe à la main.
+    //   14  : `oups` (V-UNION) était DÉJÀ compté en `scelles` — son union n'avait pas plus de
+    //         `.shape` que le nœud scellé qu'il rend désormais — donc le total ne bouge PAS (77).
+    //         Ce qu'il gagne, c'est d'y être pour la BONNE raison, et son `source` exigée au verrou.
     // L'ADOPTION est la cause du recalage, pas une dérive du détecteur — le témoin ci-dessus le
     // prouve en faisant mordre l'instrument sur un schéma non adopté.
     //
@@ -518,8 +517,10 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
 
   /**
    * Un def `entite` est ADOPTÉ quand l'élément de sa liste est un `ZodPipe` — la forme EXACTE que
-   * `document()` rend (`affine.pipe(...)`). Le critère « pas de `.shape` » ne suffirait pas : une
-   * UNION n'en a pas non plus, et `oups.json` (non adopté) entrerait dans la population.
+   * `document()` rend (`affine.pipe(...)`). Le critère « pas de `.shape` » ne suffirait pas : il est
+   * négatif, donc satisfait par tout nœud opaque (une union, un `ZodLazy`) qu'aucune fabrique n'a
+   * scellé — il ferait entrer dans la population des defs dont l'enveloppe est écrite à la main, et
+   * le verrou d'exigence y serait mesuré sur un contrat que `document()` ne porte pas.
    */
   const adopte = (schema: unknown): boolean =>
     ((schema as { _zod?: { def?: { type?: string; element?: { _zod?: { def?: { type?: string } } } } } })?._zod?.def?.element?._zod?.def
@@ -638,6 +639,9 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     'tavernGames.json · desc',
     'tavernGames.json · source',
     'trappings.json · source',
+    // vague 14 (V-UNION) — `oups` adopte : DERNIER def hors forme, sa disjonction bande/misfire passe
+    // d'une union à un refine ⟺. Les 8 entrées portent le folio 160, donc `source` est exigible.
+    'oups.json · source',
   ];
 
   it('la 1ʳᵉ entrée réelle de chaque def adopté est ACCEPTÉE — témoin positif de chaque paire', () => {
