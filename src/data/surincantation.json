@@ -1,11 +1,13 @@
 {
+  "id": "surincantation",
+  "type": "surincantation",
+  "label": "Tableau de Surincantation",
   "source": {
     "book": "vents-de-la-magie",
     "page": 23,
     "note": "TABLEAU DE SURINCANTATION, VDM 02 l.205-215"
   },
-  "ref": "VDM 02 l.207-215",
-  "table": [
+  "entries": [
     {
       "id": "dr-1",
       "label": "1 DR",

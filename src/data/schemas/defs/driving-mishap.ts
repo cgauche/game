@@ -6,21 +6,36 @@
  * (`src/engine/drivingMishap.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'driving-mishap.json';
-export const famille = 'table';
+export const famille = 'config';
 
-export const schema = z.strictObject({
-  table: z.array(
-    z.strictObject({
-      id: z.string(),
-      min: z.number(),
-      max: z.number(),
-      label: z.string(),
-      outcome: z.enum(['harness', 'jolt', 'wheel', 'crash']),
-      desc: z.string(),
-    }),
-  ),
-  source: sourceRefSchema.optional(),
-});
+const doc = document(
+  'driving-mishap',
+  famille,
+  {
+    entries: z.array(
+      z.strictObject({
+        id: z.string(),
+        min: z.number(),
+        max: z.number(),
+        label: z.string(),
+        outcome: z.enum(['harness', 'jolt', 'wheel', 'crash']),
+        desc: z.string(),
+      }),
+    ),
+  },
+  {
+    entries: { label: 'Accidents', hint: 'Rangées du 1d10, bornes min/max inclusives ; `outcome` = id de l’issue tirée' },
+  },
+  {
+    codex: { keys: ['drivingMishap'] },
+    edit: {
+      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `drivingMishap` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

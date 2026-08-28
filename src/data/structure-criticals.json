@@ -1,5 +1,6 @@
 {
   "id": "structure-criticals",
+  "type": "structure-criticals",
   "label": "Blessures critiques sur une Structure",
   "die": "d100",
   "source": {

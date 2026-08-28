@@ -1,5 +1,6 @@
 {
   "id": "artillery-misfire",
+  "type": "artillery-misfire",
   "label": "Incidents de Tir d'Artillerie par Salve",
   "die": "d10",
   "source": {

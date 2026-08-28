@@ -152,7 +152,12 @@ describe('Données — verrous & escapeStrength câblés (RAW)', () => {
   });
 
   it('Imparfaite « Tenue indisciplinée » (LDB 46) : Empêtré avec Force d’évasion 1d10×5', () => {
-    const entry = (miscastJson as { minor: { label: string; ops?: { op: string; id?: string; escapeStrength?: unknown }[] }[] }).minor.find((e) => e.label === 'Tenue indisciplinée')!;
+    // Adressée PAR ID stable (le libellé est de l'affichage — et il est HOMONYME entre les jeux LDB et VDM).
+    type Ligne = { id: string; label: string; ops?: { op: string; id?: string; escapeStrength?: unknown }[] };
+    const docs = miscastJson as unknown as { id: string; entries: Ligne[] }[];
+    const mineure = docs.find((d) => d.id === 'miscast-mineure');
+    if (!mineure) throw new Error('tableau « miscast-mineure » absent de miscast.json');
+    const entry = mineure.entries.find((e) => e.id === 'mineure-tenue-indisciplinee')!;
     const op = entry.ops!.find((o) => o.op === 'condition')!;
     expect(op.id).toBe('empetre');
     // Résolution du 1d10×5 (multiple de 5, borné 5..50) via applyOps.

@@ -280,26 +280,21 @@ function buildRow(jr: JsonRow): Row {
 // Tables bâties depuis le JSON au chargement du module
 // ---------------------------------------------------------------------------
 
-/** Tableau de rangées porteur d'une table déclarée (clé de `miscast.json`). */
-type MiscastRowsKey = 'minor' | 'major' | 'minorVdm' | 'majorVdm' | 'wrath';
-
-/** DÉCLARATION d'une table tirable (donnée) : son id d'étape STABLE, ses rangées, son libellé JOUEUR
- *  et — quand ses LIGNES sont exposées au Codex — la catégorie qui les porte. */
+/** UN DOCUMENT de `miscast.json` : une table tirable, son identité STABLE, son libellé JOUEUR, sa
+ *  provenance, ses rangées, et — quand ses LIGNES sont exposées au Codex — la catégorie qui les
+ *  porte. Identité et charge sont le MÊME objet : aucun pointeur ne les relie plus (#1467 L1b). */
 export interface MiscastTableDef {
   id: string;
-  rows: MiscastRowsKey;
   label: string;
   /** Catégorie Codex des LIGNES de cette table (`entryCategory` de l'étape). Absente = aucune
    *  exposition Codex de ses lignes (un renvoi vers une catégorie qui ne les contient pas serait mort). */
   codexCategory?: string;
   /** Folio du TABLEAU source dont cette table est le tirage. */
   source: { book: string; page: number; note?: string };
+  entries: JsonRow[];
 }
 
-const data = miscastJson as {
-  tables: MiscastTableDef[];
-  minor: JsonRow[]; major: JsonRow[]; minorVdm: JsonRow[]; majorVdm: JsonRow[]; wrath: JsonRow[];
-};
+const data = miscastJson as unknown as MiscastTableDef[];
 
 /** Une ligne de table d'Imparfaite/Colère telle que la DONNÉE la porte : fourchette + id STABLE +
  *  libellé. Forme de `TableStepRow` (state/cascade) — les rangées entrent au registre d'étapes PAR
@@ -311,16 +306,16 @@ export interface MiscastTableRow {
   label: string;
 }
 
-/** Les tables tirables TELLES QUE LA DONNÉE les déclare (`miscast.json`, clé `tables`) : id d'étape,
- *  rangées portées, libellé JOUEUR — sans marque de livre (`docs/charte-ui.md`) : le jeu de tables en
- *  vigueur est une RÈGLE, pas une information d'écran — et catégorie Codex de ses lignes. Une table de
- *  plus est une entrée de plus ICI, aucune ligne de code. */
-export const MISCAST_TABLES: MiscastTableDef[] = data.tables;
+/** Les tables tirables TELLES QUE LA DONNÉE les déclare (les documents de `miscast.json`) : id
+ *  d'étape, rangées portées, libellé JOUEUR — sans marque de livre (`docs/charte-ui.md`) : le jeu de
+ *  tables en vigueur est une RÈGLE, pas une information d'écran — et catégorie Codex de ses lignes.
+ *  Une table de plus est un DOCUMENT de plus dans le fichier, aucune ligne de code. */
+export const MISCAST_TABLES: MiscastTableDef[] = data;
 
 /** Rangées par id de table — source unique du couple id ⇄ rangées : le registre d'étapes de cascade
  *  (`registerTableStep`, state) et la résolution (`miscastTables`) lisent LES MÊMES tableaux. */
 export const MISCAST_TABLE_ROWS: Record<string, MiscastTableRow[]> = Object.fromEntries(
-  MISCAST_TABLES.map((t) => [t.id, data[t.rows]]),
+  MISCAST_TABLES.map((t) => [t.id, t.entries]),
 );
 
 /** Libellé JOUEUR de chaque table (rangée de tirage), tel que la déclaration le porte. */

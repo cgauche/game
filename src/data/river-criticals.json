@@ -1,5 +1,6 @@
 {
   "id": "river-criticals",
+  "type": "river-criticals",
   "label": "Coups Critiques sur un bateau fluvial",
   "source": {
     "book": "mort-sur-le-reik-compagnon",

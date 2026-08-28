@@ -59,17 +59,23 @@ function idsDePremierNiveau(): Porteur[] {
   return out;
 }
 
-/** Les 27 `type` que V-FLIP-CONFIG a dotés d'une enveloppe — le lot dont ce test est la garde. */
+/** Les 41 `type` de racine-objet dotés d'une enveloppe : les 27 de V-FLIP-CONFIG, puis les 14
+ *  documents uniques que V-FLIP-TABLE a flippés en `config` — le lot dont ce test est la garde. */
 const FLIPPES_V_FLIP_CONFIG = [
   'aa-criticals', 'ambiance', 'arcane-phenomena', 'crew-morale', 'crew-test-types', 'criticals', 'details',
   'disponibilite', 'donnees.manifest', 'grapple', 'land-cargo', 'localisation', 'mass-battle',
   'progression-schemas.derived', 'renduMonte', 'river-navigation', 'river-perils', 'sea-cargo', 'sea-events',
   'sea-navigation', 'sea-perils', 'sea-weather', 'ship-construction', 'sizes', 'speciesRace', 'water-exposure',
   'weather',
+  // #1467 L1b V-FLIP-TABLE (2026-08-28) — 14 racines-objet UNIQUES : l'instrument de mesure les classe
+  // `config`, la famille déclarée les suit.
+  'artillery-misfire', 'driving-mishap', 'drunkenness', 'incidents-monture', 'montures',
+  'naval-progression', 'obsessions', 'problemes-vehicule', 'rencontres-edoc', 'river-criticals',
+  'ship-criticals', 'structure-criticals', 'surincantation', 'vents-tourbillonnants',
 ];
 
-/** TOUTE racine-objet à enveloppe de `src/data` (`id` + `label`) — les 27 du lot ET les 8 documents
- *  `table` qui en portaient déjà une : l'espace d'unicité est celui des DOCUMENTS, pas d'un lot. */
+/** TOUTE racine-objet à enveloppe de `src/data` (`id` + `label`) : l'espace d'unicité est celui des
+ *  DOCUMENTS, pas d'un lot. */
 function documentsConfig(): (Porteur & { type: string })[] {
   const dir = fileURLToPath(new URL('./', import.meta.url));
   return readdirSync(dir)
@@ -90,16 +96,16 @@ function documentsConfig(): (Porteur & { type: string })[] {
 }
 
 describe('id de racine d’un document `config` — unique dans l’espace des ids (#1467 L1b)', () => {
-  it('les 27 documents flippés par le lot portent tous leur enveloppe', () => {
+  it('les 41 documents flippés par les deux lots portent tous leur enveloppe', () => {
     const types = documentsConfig().map((d) => d.type);
     const manquants = FLIPPES_V_FLIP_CONFIG.filter((t) => !types.includes(t));
     expect(manquants, `document(s) du lot sans enveloppe :\n  ${manquants.join('\n  ')}`).toEqual([]);
   });
 
-  it('les 35 documents à enveloppe de `src/data` portent 35 ids DISTINCTS entre eux', () => {
+  it('les 41 documents à enveloppe de `src/data` portent 41 ids DISTINCTS entre eux', () => {
     const docs = documentsConfig();
-    // 27 du lot V-FLIP-CONFIG + 8 documents `table` qui portaient déjà leur enveloppe.
-    expect(docs.length).toBe(35);
+    // 27 du lot V-FLIP-CONFIG + 14 documents uniques flippés en `config` par V-FLIP-TABLE.
+    expect(docs.length).toBe(41);
     const parId = new Map<string, string[]>();
     for (const d of docs) parId.set(d.id, [...(parId.get(d.id) ?? []), d.ou]);
     const collisions = [...parId].filter(([, ou]) => ou.length > 1).map(([id, ou]) => `« ${id} » : ${ou.join(' + ')}`);

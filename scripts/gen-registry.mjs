@@ -503,13 +503,13 @@ const estUnLibelle = (v) => /^[A-ZÀ-Þ]/.test(v) || /\s/.test(v);
 
 /**
  * DÉFAUTS d'ids — liste NOMINATIVE datée (2026-08-24), DÉCROISSANTE, lot de mort `L1b #1467` : les
- * documents de famille `entite`/`record` dont l'identité de premier niveau n'entre PAS au registre.
- * Chaque entrée porte l'obstacle MESURÉ. DEUX voies de retrait, toutes deux mesurées par le contrat
- * `verifieExhaustiviteDesIds` ci-dessous : le commit qui donne au document des ids de premier niveau,
- * OU celui qui le RE-ÉTIQUETTE dans une famille qui n'en attend aucun (`config`/`table` — c'est par
+ * documents de famille `entite`/`table`/`record` dont l'identité de premier niveau n'entre PAS au
+ * registre. Chaque entrée porte l'obstacle MESURÉ. DEUX voies de retrait, toutes deux mesurées par le
+ * contrat `verifieExhaustiviteDesIds` ci-dessous : le commit qui donne au document des ids de premier
+ * niveau, OU celui qui le RE-ÉTIQUETTE dans une famille qui n'en attend aucun (`config` — c'est par
  * cette seconde voie qu'`aa-criticals.json` est sorti d'ici, V-FLIP-CONFIG #1467 : ses 4 familles sont
  * des CHAMPS de document, pas des clés de record). Un dataset ni registré ni inscrit ici fait ROUGIR
- * `npm run gen` ; une entrée survivante sur un document `config`/`table` aussi.
+ * `npm run gen` ; une entrée survivante sur un document `config` aussi.
  */
 const DEFAUTS_IDS = {
   'decorPalette.json': 'record de 435 jetons de teinte à clés camelCase (`terreTresSombre`), graphie que le détecteur de record à ids n’admet pas',
@@ -530,24 +530,25 @@ function famillesDeclarees() {
 }
 
 /**
- * Contrat FERMÉ entre la famille déclarée et le registre d'ids, dans les DEUX sens : `entite`/`record`
- * ⇒ ids au registre OU défaut nominatif ; `config`/`table` ⇒ aucun id, aucun défaut.
+ * Contrat FERMÉ entre la famille déclarée et le registre d'ids, dans les DEUX sens :
+ * `entite`/`table`/`record` ⇒ ids au registre OU défaut nominatif ; `config` ⇒ aucun id, aucun défaut
+ * — non par principe, mais parce qu'`estRecordAIds` refuse une racine `id`+`label` (état courant,
+ * réversible : #1528).
  */
-function verifieExhaustiviteDesIds(datasetsAIds) {
-  const familles = famillesDeclarees();
+export function verifieExhaustiviteDesIds(datasetsAIds, familles = famillesDeclarees(), defauts = DEFAUTS_IDS) {
   const fautes = [];
   for (const [dataset, famille] of [...familles].sort()) {
     const aDesIds = datasetsAIds.has(dataset);
-    const defaut = dataset in DEFAUTS_IDS;
-    if (famille === 'entite' || famille === 'record') {
+    const defaut = dataset in defauts;
+    if (famille === 'entite' || famille === 'table' || famille === 'record') {
       if (!aDesIds && !defaut) fautes.push(`${dataset} (famille ${famille}) : aucun id au registre et aucune entrée de DEFAUTS_IDS.`);
       if (aDesIds && defaut) fautes.push(`${dataset} : porte des ids au registre ET une entrée de DEFAUTS_IDS — retirer l'entrée.`);
     } else {
-      if (aDesIds) fautes.push(`${dataset} (famille ${famille}) : un document de réglage/table ne porte aucun id de premier niveau, or le registre en indexe.`);
+      if (aDesIds) fautes.push(`${dataset} (famille ${famille}) : un document de réglage ne porte aucun id de premier niveau, or le registre en indexe.`);
       if (defaut) fautes.push(`${dataset} (famille ${famille}) : entrée de DEFAUTS_IDS sur un document qui n'attend aucun id.`);
     }
   }
-  for (const dataset of Object.keys(DEFAUTS_IDS)) if (!familles.has(dataset)) fautes.push(`${dataset} : entrée de DEFAUTS_IDS sans def de schéma.`);
+  for (const dataset of Object.keys(defauts)) if (!familles.has(dataset)) fautes.push(`${dataset} : entrée de DEFAUTS_IDS sans def de schéma.`);
   if (fautes.length) throw new Error(`gen-registry: exhaustivité du registre d'ids — ${fautes.length} faute(s) :\n  ${fautes.join('\n  ')}`);
 }
 

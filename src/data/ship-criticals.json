@@ -1,5 +1,6 @@
 {
   "id": "ship-criticals",
+  "type": "ship-criticals",
   "label": "Blessures critiques sur un navire",
   "die": "d10",
   "source": {

@@ -117,6 +117,9 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   // + enjeux de la cascade de repos (`nightStakes`, tableau racine kebab-case divergent).
   miscastMinor: 'miscastMinor', miscastMajor: 'miscastMajor', miscastWrath: 'miscastWrath',
   nightStakes: 'nightStakes',
+  // #1467 L1b V-FLIP-TABLE : deux tableaux exposés au Codex depuis longtemps, jamais éditables —
+  // même couture nichée que leurs 13 frères de la vague, plus aucun régime à part.
+  artilleryMisfire: 'artilleryMisfire', ventsTourbillonnants: 'ventsTourbillonnants',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment

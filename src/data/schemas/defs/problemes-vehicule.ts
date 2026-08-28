@@ -5,16 +5,30 @@
  * — partagé avec `rencontres-edoc.ts`/`incidents-monture.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { travelTableEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'problemes-vehicule.json';
-export const famille = 'table';
+export const famille = 'config';
 
-export const schema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
-  die: z.string(),
-  source: sourceRefSchema,
-  entries: z.array(travelTableEntrySchema),
-});
+const doc = document(
+  'problemes-vehicule',
+  famille,
+  {
+    die: z.string(),
+    entries: z.array(travelTableEntrySchema),
+  },
+  {
+    die: { label: 'Dé de tirage', hint: 'Expression du dé lancé pour tirer un problème (d100)' },
+    entries: { label: 'Problèmes de véhicule', hint: 'Rangées de la table, bornes min/max inclusives sur le dé de tirage' },
+  },
+  {
+    codex: { keys: ['problemesVehicule'] },
+    edit: {
+      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `problemesVehicule` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

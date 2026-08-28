@@ -1,5 +1,6 @@
 {
   "id": "incidents-monte",
+  "type": "incidents-monture",
   "label": "Incidents de monte",
   "die": "d100",
   "source": {

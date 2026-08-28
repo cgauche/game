@@ -58,7 +58,7 @@ garantie, pas la justesse de sa glose.
 | `spells.json` | Sorts, bénédictions, miracles (`effects`) (576 entrée(s)) |
 | `domains.json` | Domaines de magie (Vents) (20 entrée(s)) |
 | `gods.json` | Dieux (bénédictions/miracles rattachés) (41 entrée(s)) |
-| `miscast.json` | Tables d'Incident magique (`minor`/`major`/`wrath`) (objet à sous-catalogues) |
+| `miscast.json` | Tables d'Incident magique — 5 documents : Imparfaites Mineures/Majeures (LDB), leurs révisions VDM, Colère des dieux (5 entrée(s)) |
 | `breath-types.json` | Types de Souffle (feu, froid, corrosif…) (6 entrée(s)) |
 | `vents-tourbillonnants.json` | Table d10 de force des Vents (option `vents-tourbillonnants`, LDB 46 l.179-190) (objet à sous-catalogues) |
 | `arcane-phenomena.json` | Magie ENVIRONNEMENTALE (VDM 14, folios 189-199) : paliers de Saturation, Effets de Saturation par Vent, phénomènes arcaniques (lignes de force, pierres gardiennes, Grand Vortex, nexus, appuis arcaniques, Tempête de Magie, Corruption), tables de Corruption chaotique/nécromantique et de Flux magique — option `magic-vdm-environnementale` (objet à sous-catalogues) |

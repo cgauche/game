@@ -97,6 +97,10 @@ export const SANS_LIVRE: Readonly<Record<string, string>> = {
  * La fabrique les exempte comme `SANS_LIVRE` (même effet : aucune provenance exigée à l'entrée de
  * racine), mais le MOTIF n'est pas le même et les deux listes ne se soldent pas ensemble — d'où deux
  * constantes. Comptes mesurés le 2026-08-27.
+ *
+ * `miscast` en est SORTI le 2026-08-28 (#1467 L1b V-FLIP-TABLE) : son fichier ne porte plus une
+ * racine nue mais 5 DOCUMENTS, chacun avec SA `source` (LDB 234 ×2, VDM 24, VDM 25, LDB 218) — la
+ * provenance y est redevenue exigible à l'entrée, et la fabrique l'exige.
  */
 export const SOURCE_EN_PROFONDEUR: Readonly<Record<string, string>> = {
   'aa-criticals': 'racine nue, citations par sous-entrée (80/80) — une source racine rendrait le dataset aveugle',
@@ -109,7 +113,6 @@ export const SOURCE_EN_PROFONDEUR: Readonly<Record<string, string>> = {
   'river-perils': 'racine nue, citations par sous-entrée (4/4) — une source racine rendrait le dataset aveugle',
   weather: 'racine nue, citations par sous-entrée (10/10) — une source racine rendrait le dataset aveugle',
   criticals: 'racine nue, citations par sous-entrée (80/80) — une source racine rendrait le dataset aveugle',
-  miscast: 'racine nue, citations par sous-entrée (116/116) — une source racine rendrait le dataset aveugle',
   'mass-battle': 'racine nue, citations par sous-entrée (39/39) — une source racine rendrait le dataset aveugle',
   'arcane-phenomena': 'racine nue, citations par sous-entrée (41/41) — une source racine rendrait le dataset aveugle',
   'ship-construction': 'racine nue, citations par sous-entrée (22/22) — une source racine rendrait le dataset aveugle',

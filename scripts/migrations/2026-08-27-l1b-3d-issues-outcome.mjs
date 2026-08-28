@@ -28,17 +28,23 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
-/** @type {{ rel: string; chemin: readonly string[] }[]} — le chemin mène au TABLEAU de rangées. */
+/**
+ * @type {{ rel: string; chemins: readonly (readonly string[])[] }[]} — chaque chemin mène au TABLEAU
+ * de rangées ; le PREMIER qui résout est retenu. Deux graphies pour la charge des deux tables LDB :
+ * `table` était son nom à l'écriture de cette migration, `entries` est celui que
+ * `2026-08-28-l1b-8b-table-vers-entries.mjs` pose — une migration ANTÉRIEURE dans l'ordre lexical
+ * doit reconnaître la forme qu'une POSTÉRIEURE produit, sinon le rejeu la trouve introuvable.
+ */
 const CIBLES = [
-  { rel: 'src/data/driving-mishap.json', chemin: ['table'] },
-  { rel: 'src/data/drunkenness.json', chemin: ['table'] },
-  { rel: 'src/data/sea-navigation.json', chemin: ['orientation', 'changementDeCap'] },
+  { rel: 'src/data/driving-mishap.json', chemins: [['entries'], ['table']] },
+  { rel: 'src/data/drunkenness.json', chemins: [['entries'], ['table']] },
+  { rel: 'src/data/sea-navigation.json', chemins: [['orientation', 'changementDeCap']] },
 ];
 
 const echecs = [];
 const rapports = [];
 
-for (const { rel, chemin } of CIBLES) {
+for (const { rel, chemins } of CIBLES) {
   const abs = path.join(ROOT, rel);
   const brut = fs.readFileSync(abs, 'utf8');
   const doc = JSON.parse(brut);
@@ -48,12 +54,13 @@ for (const { rel, chemin } of CIBLES) {
     continue;
   }
 
-  let noeud = doc;
-  for (const k of chemin) noeud = noeud?.[k];
-  if (!Array.isArray(noeud)) {
-    echecs.push(`${rel} : chemin \`${chemin.join('.')}\` absent ou non-tableau`);
+  const resoudre = (c) => c.reduce((n, k) => n?.[k], doc);
+  const chemin = chemins.find((c) => Array.isArray(resoudre(c)));
+  if (!chemin) {
+    echecs.push(`${rel} : aucun des chemins ${chemins.map((c) => `\`${c.join('.')}\``).join(' / ')} n'est un tableau`);
     continue;
   }
+  const noeud = resoudre(chemin);
 
   let migres = 0;
   let deja = 0;

@@ -199,15 +199,15 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     config: document('config-jouet', 'config', { valeur: z.number() }, { valeur: { label: 'Valeur' } }, EXPOSITION),
     // Réplique d'un def `record` (decorPalette : record de chaînes hex).
     record: document('palette-jouet', 'record', {}, {}, EXPOSITION, { valeurRecord: z.string().regex(/^#[0-9a-f]{6}$/) }),
-    // Réplique d'un def `table` : `die?` optionnel + `lignes`. Nom `lignes` pour la réplique table,
-    // distinct de l'`entries` que la fabrique injecte en famille `record` (#1467 — les datasets réels
-    // migrent à la V-FLIP-table).
+    // Réplique d'un def `table` (#1467 L1b V-FLIP-TABLE) : `die?` est un champ du def, `entries` est
+    // POSÉE par la fabrique depuis `options.ligneTable` — comme `entries` l'est en famille `record`.
     table: document(
       'table-jouet',
       'table',
-      { die: z.string().optional(), lignes: z.array(z.strictObject({ min: z.number(), max: z.number(), label: z.string() })) },
-      { die: { label: 'Dé' }, lignes: { label: 'Lignes' } },
+      { die: z.string().optional() },
+      { die: { label: 'Dé' } },
       EXPOSITION,
+      { ligneTable: z.strictObject({ min: z.number(), max: z.number(), label: z.string() }) },
     ),
   };
   const ENV = (type: string) => ({ id: 'x', type, label: 'X', source: SOURCE_REELLE });
@@ -237,13 +237,35 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     expect(schema.safeParse({ ...base, entries: { '': '#8b5a2b' } }).success).toBe(false);
   });
 
-  it('famille `table` : TABLEAU d’entrées à `die?` optionnel et `lignes`', () => {
+  it('famille `table` : TABLEAU de documents, chacun à `die?` optionnel et `entries` POSÉE par la fabrique', () => {
     const { schema } = REPLIQUES.table;
-    const t = { ...ENV('table-jouet'), lignes: [{ min: 1, max: 10, label: 'Rien' }] };
+    const t = { ...ENV('table-jouet'), entries: [{ min: 1, max: 10, label: 'Rien' }] };
     expect(schema.safeParse([t]).success).toBe(true);
     expect(schema.safeParse([{ ...t, die: '1d100' }]).success).toBe(true);
+    // Le fichier porte une LISTE de documents : le document nu n'est pas le dataset.
+    expect(schema.safeParse(t).success).toBe(false);
+    // `entries` est une LISTE ordonnée (là où la famille `record` en fait une map).
     expect(schema.safeParse([{ ...t, entries: {} }]).success).toBe(false);
-    expect(schema.safeParse([{ ...t, lignes: [{ min: 1, max: 10 }] }]).success).toBe(false);
+    // Chaque rangée est validée par `ligneTable`, et le sceau refuse la clé en trop.
+    expect(schema.safeParse([{ ...t, entries: [{ min: 1, max: 10 }] }]).success).toBe(false);
+    expect(schema.safeParse([{ ...t, entries: [{ min: 1, max: 10, label: 'Rien', inconnu: 1 }] }]).success).toBe(false);
+  });
+
+  it('`ligneTable` : EXIGÉ par la famille `table`, REFUSÉ partout ailleurs, en nommant le document', () => {
+    expect(() => document('table-nue', 'table', {}, {}, EXPOSITION)).toThrow(
+      /document\('table-nue'\) : la famille « table » exige `ligneTable`/,
+    );
+    expect(() => document('config-ligne', 'config', {}, {}, EXPOSITION, { ligneTable: z.number() })).toThrow(
+      /`ligneTable` n'a de sens que pour la famille « table » \(ici « config »\)/,
+    );
+  });
+
+  it('un def `table` qui redéclare `entries` dans ses `champs` est REFUSÉ (la fabrique la pose)', () => {
+    expect(() =>
+      document('table-doublon', 'table', { entries: z.array(z.number()) }, { entries: { label: 'Rangées' } }, EXPOSITION, {
+        ligneTable: z.number(),
+      }),
+    ).toThrow(/la fabrique pose « entries » pour la famille « table »/);
   });
 
   it('le SCEAU tient sur TOUT nœud rendu (dataset de chaque famille, entrée, entrée partielle)', () => {
@@ -274,7 +296,9 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     expect(entreePartielle.optional().safeParse(undefined).success).toBe(true);
     expect(entreePartielle.optional().safeParse({ max: 2 }).success).toBe(true);
     expect(cles).toEqual(['id', 'type', 'label', 'labelF', 'desc', 'source', 'alsoIn', 'maison', 'icon', 'max']);
-    expect(REPLIQUES.table.cles).toContain('lignes');
+    // En famille `table` comme en `record`, `entries` EST un champ de l'entrée.
+    expect(REPLIQUES.table.cles).toContain('die');
+    expect(REPLIQUES.table.cles).toContain('entries');
     // En famille `record`, `entries` EST un champ de l'entrée : `cles` ne ment pas sur la forme.
     expect(REPLIQUES.record.cles).toContain('entries');
   });

@@ -17,10 +17,10 @@ import { findTableEntry } from './tables';
 import drivingMishapJson from '../data/driving-mishap.json';
 
 export type DrivingMishapOutcome = 'harness' | 'jolt' | 'wheel' | 'crash';
-/** Entrée du Tableau des accidents de Conduite d'attelage — MÊME schéma que `driving-mishap.json::table`
+/** Entrée du Tableau des accidents de Conduite d'attelage — MÊME schéma que `driving-mishap.json::entries`
  *  (exportée pour l'exposition Codex, #422 : `data/overrides.ts` la réutilise pour typer la table live). */
 export interface MishapEntry { id: string; min: number; max: number; label: string; outcome: DrivingMishapOutcome; desc: string }
-const MISHAP_TABLE = (drivingMishapJson as { table: MishapEntry[] }).table;
+const MISHAP_TABLE = (drivingMishapJson as { entries: MishapEntry[] }).entries;
 
 /** 1d10 sur le Tableau des accidents de Conduite d'attelage (LDB 09 l.142). Renvoie l'entrée + le dé. */
 export function rollDrivingMishap(rng: RNG = defaultRNG): { roll: number; entry: MishapEntry } {

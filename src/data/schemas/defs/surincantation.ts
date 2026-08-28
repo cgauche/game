@@ -1,6 +1,6 @@
 /**
- * Schéma de `surincantation.json` — TABLEAU DE SURINCANTATION des Vents de Magie (VDM 02 l.207-215,
- * folio 23). Fichier NON-tableau (objet `{ source, ref, table }`, même patron qu'`obsessions.json`).
+ * Schéma de `surincantation.json` — TABLEAU DE SURINCANTATION des Vents de Magie (VDM 02 l.205-215,
+ * folio 23). Document UNIQUE de famille `config`, même patron qu'`obsessions.json`.
  * Une rangée = un PALIER de DR dépensés sur UNE colonne : `targets` = Cibles ADDITIONNELLES,
  * `damage` = Dégât en plus (Projectiles magiques, VDM 02 l.198), `range`/`zone`/`duration` =
  * multiplicateurs de la valeur listée par le Sort. Rangées AUTHORÉES dans l'ordre imprimé (DR
@@ -8,15 +8,13 @@
  * `id`/`label` = identité STABLE de la rangée pour l'exposition et l'édition au Compendium.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document, type EnveloppeDocument } from '../grammaire/document';
 
 export const file = 'surincantation.json';
-export const famille = 'table';
+export const famille = 'config';
 
-export const schema = z.strictObject({
-  source: sourceRefSchema,
-  ref: z.string().min(1),
-  table: z
+const champs = {
+  entries: z
     .array(
       z.strictObject({
         id: z.string().min(1),
@@ -30,6 +28,23 @@ export const schema = z.strictObject({
       }),
     )
     .min(1),
-});
+};
 
-export type SurincantationData = z.infer<typeof schema>;
+const doc = document(
+  'surincantation',
+  famille,
+  champs,
+  {
+    entries: { label: 'Paliers de Surincantation', hint: 'Un palier = des DR dépensés ; le lookup retient le plus haut palier ≤ DR dépensés' },
+  },
+  {
+    codex: { keys: ['surincantation'] },
+    edit: {
+      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `surincantation` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;
+export type SurincantationData = EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>;

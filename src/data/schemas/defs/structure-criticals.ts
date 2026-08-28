@@ -4,10 +4,10 @@
  * (Structure/Véhicule/Navire, AA 10 l.13/116).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'structure-criticals.json';
-export const famille = 'table';
+export const famille = 'config';
 
 const structureCritEntrySchema = z.strictObject({
   min: z.number(),
@@ -21,10 +21,24 @@ const structureCritEntrySchema = z.strictObject({
   note: z.string(),
 });
 
-export const schema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
-  die: z.string(),
-  source: sourceRefSchema,
-  entries: z.array(structureCritEntrySchema),
-});
+const doc = document(
+  'structure-criticals',
+  famille,
+  {
+    die: z.string(),
+    entries: z.array(structureCritEntrySchema),
+  },
+  {
+    die: { label: 'Dé de tirage', hint: 'Expression du dé lancé pour tirer un critique de Structure' },
+    entries: { label: 'Critiques de Structure', hint: 'Rangées de la table, bornes min/max inclusives sur le dé de tirage' },
+  },
+  {
+    codex: { keys: ['structureCriticals'] },
+    edit: {
+      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `structureCriticals` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

@@ -1,5 +1,8 @@
 {
-  "table": [
+  "id": "progression-de-navire",
+  "type": "naval-progression",
+  "label": "Progression de navire",
+  "entries": [
     {
       "id": "plus2",
       "min": 4,

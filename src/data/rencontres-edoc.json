@@ -1,5 +1,6 @@
 {
   "id": "rencontres-edoc",
+  "type": "rencontres-edoc",
   "label": "Rencontres de voyage",
   "die": "d100",
   "source": {

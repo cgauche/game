@@ -6,22 +6,36 @@
  * fluvial) et sans `die` (absent du JSON, à la différence du jeu MDG).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema, shipCritEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'river-criticals.json';
-export const famille = 'table';
+export const famille = 'config';
 
-export const schema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
-  source: sourceRefSchema,
-  shrapnelHit: z.array(gameOpSchema),
-  tables: z.strictObject({
-    greement: z.array(shipCritEntrySchema),
-    avirons: z.array(shipCritEntrySchema),
-    gouvernail: z.array(shipCritEntrySchema),
-    coque: z.array(shipCritEntrySchema),
-    superstructure: z.array(shipCritEntrySchema),
-  }),
-});
+const doc = document(
+  'river-criticals',
+  famille,
+  {
+    shrapnelHit: z.array(gameOpSchema),
+    tables: z.strictObject({
+      greement: z.array(shipCritEntrySchema),
+      avirons: z.array(shipCritEntrySchema),
+      gouvernail: z.array(shipCritEntrySchema),
+      coque: z.array(shipCritEntrySchema),
+      superstructure: z.array(shipCritEntrySchema),
+    }),
+  },
+  {
+    shrapnelHit: { label: 'Éclats', hint: 'Effets posés sur les occupants touchés par les éclats' },
+    tables: { label: 'Critiques par Localisation', hint: 'Cinq tables sœurs : gréement, avirons, gouvernail, coque, superstructure' },
+  },
+  {
+    codex: { keys: ['riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure'] },
+    edit: {
+      none: 'édité par TABLEAUX NICHÉS : les 5 catégories Codex `riverCriticals*` éditent chacune une sous-table de `tables`, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

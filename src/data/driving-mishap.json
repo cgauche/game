@@ -1,5 +1,8 @@
 {
-  "table": [
+  "id": "accidents-conduite-attelage",
+  "type": "driving-mishap",
+  "label": "Accidents de Conduite d'attelage",
+  "entries": [
     {
       "id": "harnais-casse",
       "min": 1,

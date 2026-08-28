@@ -26,7 +26,11 @@ describe('Tableau des Obsessions (EDOC 12 folio 69)', () => {
     expect(OBSESSIONS.length).toBe(19);
     expect(OBSESSIONS[0]).toMatchObject({ min: 2, max: 2 });
     expect(OBSESSIONS[OBSESSIONS.length - 1]).toMatchObject({ min: 20, max: 20 });
-    expect(OBSESSIONS_SOURCE).toEqual({ book: 'ennemi-dans-l-ombre-compagnon', page: 69 });
+    expect(OBSESSIONS_SOURCE).toEqual({
+      book: 'ennemi-dans-l-ombre-compagnon',
+      page: 69,
+      note: 'Tableau des Obsessions, EDOC 12 l.170',
+    });
   });
 
   it('findTableEntry mappe les bornes (verbatim)', () => {

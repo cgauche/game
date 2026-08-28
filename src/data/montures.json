@@ -1,5 +1,6 @@
 {
   "id": "montures-voyage",
+  "type": "montures",
   "label": "Mouvement pour les montures",
   "source": {
     "book": "ennemi-dans-l-ombre-compagnon",

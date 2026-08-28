@@ -20,6 +20,7 @@ import {
   navalProgression, seaNavigation, seaPerils, seaWeather, shipConstruction,
   disponibilite, riverNavigation,
   GRAPPLE, NIGHT_STAKES, VOYAGE_STAKES, FLOW_STAKES, COMBAT_STAKES,
+  windsOfMagicTable,
 } from './index';
 // #157 : catalogues de CONTENU déjà chargés par un module dédié (`src/data/*.ts` ou `src/engine/*.ts`,
 // pas la façade `index.ts`) — importés DIRECTEMENT ici (même patron que `massBattle*` ci-dessus, qui
@@ -77,8 +78,19 @@ import type { SaturationLevel, WindSaturationEffects, ArcanePhenomenon, ArcaneTa
 // datasets migrés du CODE en donnée, MÊME module JSON singleton que leur lecteur moteur.
 import { OPTIONAL_RULES } from '../engine/policy';
 import surincantationRawJson from './surincantation.json';
+// #1467 L1b V-FLIP-TABLE : les 7 documents dont le tableau ÉDITÉ est NICHÉ sous leur enveloppe — la
+// racine à réécrire au save est le DOCUMENT entier, jamais le tableau nu (5 clefs y étaient sans
+// `NESTED_ARRAY_FILE` et auraient écrasé leur enveloppe ; 2 documents deviennent éditables ici).
+import monturesRawJson from './montures.json';
+import incidentsMontureRawJson from './incidents-monture.json';
+import problemesVehiculeRawJson from './problemes-vehicule.json';
+import structureCriticalsRawJson from './structure-criticals.json';
+import obsessionsRawJson from './obsessions.json';
+import artilleryMisfireRawJson from './artillery-misfire.json';
+import ventsTourbillonnantsRawJson from './vents-tourbillonnants.json';
+import { ARTILLERY_MISFIRE } from './artilleryMisfire';
 
-/** Entrée d'une table de miscast (`minor`/`major`/`wrath`, `miscast.json`) — DIALECTE compilé (PAS
+/** Entrée d'une table de miscast (`entries` d'un document de `miscast.json`) — DIALECTE compilé (PAS
  *  des `GameOp` standard, cf. `engine/miscast.ts::JsonRow`) : `ops`/`test` restent au format JSON brut
  *  du dialecte (sin-paramétrage), projetés par un renderer DÉDIÉ côté Codex (jamais `passiveSection`,
  *  qui suppose de vrais `GameOp`). */
@@ -89,7 +101,15 @@ export interface MiscastRowEntry {
   reroll?: 'majeure' | 'mineure-x2';
   source?: SourceRef;
 }
-const miscastRoot = miscastRawJson as unknown as { minor: MiscastRowEntry[]; major: MiscastRowEntry[]; wrath: MiscastRowEntry[] };
+/** Les DOCUMENTS de `miscast.json` (un par tableau tirable) — la racine sérialisée au save. */
+const miscastRoot = miscastRawJson as unknown as { id: string; entries: MiscastRowEntry[] }[];
+/** Rangées LIVE d'UN tableau, par id de DOCUMENT — FAIL-FAST : un id absent laisserait une catégorie
+ *  Codex sur un tableau vide, sans un mot. */
+function miscastEntries(tableId: string): MiscastRowEntry[] {
+  const doc = miscastRoot.find((d) => d.id === tableId);
+  if (!doc) throw new Error(`miscastEntries : tableau « ${tableId} » absent de miscast.json (ids : ${miscastRoot.map((d) => d.id).join(', ')}).`);
+  return doc.entries;
+}
 
 /** Fiche de Traumatisme (`traumas.json`, #157) — MÊME schéma que `engine/trauma.ts::TraumaFiche`
  *  (module-privé là-bas, redéclaré ici a minima pour le seam d'édition ; `traumaFicheById` reste la
@@ -174,26 +194,26 @@ const ARRAYS = {
   seaManannFactors: MANANN_FACTORS, seaBoardEvents: BOARD_EVENTS, seaPortEvents: PORT_EVENTS,
   // LOT 1 #422 : Ports (MDG 15), Progression de navire (MDG 13) et 3 sous-tableaux de
   // Construction navale (MDG 12) — `navalPorts` est DÉJÀ un tableau racine ; les 4 autres sont des
-  // sous-tableaux NICHÉS dans un objet-config parent (`navalProgression.table`, `shipConstruction.*`,
+  // sous-tableaux NICHÉS dans un objet-config parent (`navalProgression.entries`, `shipConstruction.*`,
   // même patron que `seaManannFactors`/`seaBoardEvents`/`seaPortEvents` ci-dessus) — `NESTED_ARRAY_FILE`
   // réécrit le PARENT entier au save.
   navalPorts,
-  navalProgression: navalProgression.table,
+  navalProgression: navalProgression.entries,
   shipHullSizes: shipConstruction.standard,
   shipSpeedTraits: shipConstruction.speedTraits,
   shipConstructionTraits: shipConstruction.constructionTraits,
   // LOT 1 #422 : famille RÈGLES LDB — Coût des Augmentations (tableau RACINE) ; Accidents de Conduite
-  // d'attelage / Ivresse (tableaux NICHÉS dans `{table,source}`, MÊME référence que le moteur — accès de
+  // d'attelage / Ivresse (tableaux NICHÉS sous `entries`, MÊME référence que le moteur — accès de
   // propriété, jamais une copie) ; Surchargé par palier (tableau RACINE).
   advancementCosts: advancementCostsRawJson,
-  drivingMishap: drivingMishapRawJson.table as MishapEntry[],
-  drunkenness: drunkennessRawJson.table as DrunkEntry[],
+  drivingMishap: drivingMishapRawJson.entries as MishapEntry[],
+  drunkenness: drunkennessRawJson.entries as DrunkEntry[],
   encumbranceTiers: encumbranceTiersRawJson,
   // LOT 3 #422 (FINAL) : Incantations Imparfaites Mineures/Majeures (LDB 46) + Colère des dieux (LDB 40)
-  // — 3 tables frères NICHÉES dans `miscast.json` (même patron que `criticalsTete`/`aaCriticalsTete`).
-  miscastMinor: miscastRoot.minor,
-  miscastMajor: miscastRoot.major,
-  miscastWrath: miscastRoot.wrath,
+  // — les rangées de 3 des 5 DOCUMENTS de `miscast.json`, adressées par leur id (#1467 L1b).
+  miscastMinor: miscastEntries('miscast-mineure'),
+  miscastMajor: miscastEntries('miscast-majeure'),
+  miscastWrath: miscastEntries('miscast-colere'),
   // LOT 3 #422 (FINAL) : enjeux VERBATIM de la cascade de nuit — tableau RACINE, nom de fichier
   // kebab-case divergent (même besoin que `navalPorts`).
   nightStakes: NIGHT_STAKES,
@@ -202,10 +222,15 @@ const ARRAYS = {
   combatStakes: COMBAT_STAKES,
   // V9 #1318 : registre des RÈGLES OPTIONNELLES (tableau RACINE de `reglesOptionnelles.json`) —
   // MÊME référence que `engine/policy.ts::OPTIONAL_RULES` (singleton JSON) ; Tableau de
-  // Surincantation (VDM 02) NICHÉ dans `surincantation.json` (`{source,ref,table}`, même patron que
+  // Surincantation (VDM 02) NICHÉ dans `surincantation.json` (sous `entries`, même patron que
   // `drivingMishap`/`drunkenness`), MÊME référence que celle lue par `engine/overcast.ts`.
   reglesOptionnelles: OPTIONAL_RULES,
-  surincantation: surincantationRawJson.table,
+  surincantation: surincantationRawJson.entries,
+  // #1467 L1b V-FLIP-TABLE : deux tableaux déjà EXPOSÉS au Codex (`artilleryMisfire`,
+  // `ventsTourbillonnants`) qui n'étaient pas ÉDITABLES — même couture que leurs 13 frères, aucun
+  // régime à part. MÊME référence que le moteur (`engine/artilleryMisfire.ts`, `engine/windsOfMagic.ts`).
+  artilleryMisfire: ARTILLERY_MISFIRE,
+  ventsTourbillonnants: windsOfMagicTable,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;
@@ -336,11 +361,12 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   shipHullSizes: { file: 'ship-construction.json', root: () => shipConstruction },
   shipSpeedTraits: { file: 'ship-construction.json', root: () => shipConstruction },
   shipConstructionTraits: { file: 'ship-construction.json', root: () => shipConstruction },
-  // LOT 1 #422 : Accidents de Conduite d'attelage / Ivresse — tableau NICHÉ dans `driving-mishap.json`/
-  // `drunkenness.json` (`{table,source}`), réécrire le PARENT entier au save (le `source` de table doit survivre).
+  // LOT 1 #422 : Accidents de Conduite d'attelage / Ivresse — tableau NICHÉ sous `entries` dans
+  // `driving-mishap.json`/`drunkenness.json`, réécrire le PARENT entier au save (l'enveloppe doit survivre).
   drivingMishap: { file: 'driving-mishap.json', root: () => drivingMishapRawJson },
   drunkenness: { file: 'drunkenness.json', root: () => drunkennessRawJson },
-  // LOT 3 #422 (FINAL) : miscast — 3 tables NICHÉES dans `miscast.json`, réécrire le PARENT entier au save.
+  // LOT 3 #422 (FINAL) : miscast — rangées NICHÉES dans l'un des 5 documents de `miscast.json`,
+  // réécrire la LISTE entière au save (les 4 documents frères doivent survivre).
   miscastMinor: { file: 'miscast.json', root: () => miscastRoot },
   miscastMajor: { file: 'miscast.json', root: () => miscastRoot },
   miscastWrath: { file: 'miscast.json', root: () => miscastRoot },
@@ -349,9 +375,19 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   voyageStakes: { file: 'voyage-stakes.json', root: () => VOYAGE_STAKES },
   flowStakes: { file: 'flow-stakes.json', root: () => FLOW_STAKES },
   combatStakes: { file: 'combat-stakes.json', root: () => COMBAT_STAKES },
-  // V9 #1318 : Tableau de Surincantation NICHÉ dans `{source,ref,table}` — réécrire le PARENT entier
-  // au save (le `source`/`ref` du tableau doit survivre à l'édition des rangées).
+  // V9 #1318 : Tableau de Surincantation NICHÉ sous `entries` — réécrire le PARENT entier au save
+  // (l'enveloppe du document doit survivre à l'édition des rangées).
   surincantation: { file: 'surincantation.json', root: () => surincantationRawJson },
+  // #1467 L1b V-FLIP-TABLE : les 14 documents uniques de la vague portent une ENVELOPPE (id/type/
+  // label/source). Sans entrée ici, `datasetSerializeRoot` rendait le TABLEAU NU et le save écrasait
+  // l'enveloppe — 5 clés étaient dans ce cas. Les 2 dernières naissent éditables avec leur entrée.
+  montures: { file: 'montures.json', root: () => monturesRawJson },
+  incidentsMonture: { file: 'incidents-monture.json', root: () => incidentsMontureRawJson },
+  problemesVehicule: { file: 'problemes-vehicule.json', root: () => problemesVehiculeRawJson },
+  structureCriticals: { file: 'structure-criticals.json', root: () => structureCriticalsRawJson },
+  obsessions: { file: 'obsessions.json', root: () => obsessionsRawJson },
+  artilleryMisfire: { file: 'artillery-misfire.json', root: () => artilleryMisfireRawJson },
+  ventsTourbillonnants: { file: 'vents-tourbillonnants.json', root: () => ventsTourbillonnantsRawJson },
 };
 /** Fichier disque d'un dataset-tableau (`<clé>.json` par défaut ; le fichier PARENT pour un tableau niché). */
 export function datasetFile(key: DatasetKey): string {

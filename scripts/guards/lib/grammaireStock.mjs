@@ -79,10 +79,8 @@ export const GRAMMAIRE_STOCK = {
 
   // ── Graphies historiques de RÉFÉRENCE à une autre entité (`ref`, `talentId`, `trappingId`) ────
   'src/data/schemas/defs/axes.ts:talentRefSchema|alias|talentId': e('Réf de Talent d’un axe de profil en `{talentId, spec}`.', L3),
-  'src/data/schemas/defs/obsessions.ts:schema|alias|ref': e('Obsession désignant son entité cible par une enveloppe `ref` (graphie `{ref:{id}}`).', L3),
   'src/data/schemas/defs/reglesOptionnelles.ts:schema|alias|ref': e('Règle optionnelle désignant l’entité concernée par une enveloppe `ref`.', L3),
   'src/data/schemas/defs/river-perils.ts:doc.perils|alias|ref': e('Péril fluvial désignant son entité (créature/structure) par une enveloppe `ref`.', L3),
-  'src/data/schemas/defs/surincantation.ts:schema|alias|ref': e('Surincantation désignant l’entité visée par une enveloppe `ref`.', L3),
   'src/data/schemas/defs/traumas.ts:rigSchema.byProsthesis|alias|trappingId': e('Rig de trauma keyé par `trappingId` (prothèse) — graphie d’objet de catalogue.', L3),
   'src/data/schemas/defs/traumas.ts:schema.prosthesis|alias|trappingId': e('Prothèse d’un trauma désignée par `trappingId`.', L3),
   'src/data/schemas/defs-scenes/effets.ts:giveTrappingSchema|alias|trappingId': e('Effet `giveTrapping` désignant l’objet donné par `trappingId` (migration de LIBELLÉ soldée en T3-b, la graphie reste).', L3),

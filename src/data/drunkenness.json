@@ -1,5 +1,8 @@
 {
-  "table": [
+  "id": "ivresse",
+  "type": "drunkenness",
+  "label": "Ivresse",
+  "entries": [
     {
       "id": "bravoure-marienburgher",
       "min": 1,

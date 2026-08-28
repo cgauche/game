@@ -1,25 +1,37 @@
 /**
- * Schéma de `obsessions.json` — Tableau des Obsessions (EDOC 12, folio 69). Fichier NON-tableau
- * (objet `{ source, ref, table }`), dérivé de `ObsessionTableFile`/`ObsessionEntry`
- * (`src/data/obsessions.ts`). `source` a la MÊME forme que `sourceRefSchema` mais le type
- * consommateur (`{ book: string; page: number }` inline, pas `import(...).SourceRef`) — repris
- * directement (candidat à mutualisation avec `sourceRefSchema`, cf. rendu final).
+ * Schéma de `obsessions.json` — Tableau des Obsessions (EDOC 12 l.170, folio 69). Document UNIQUE
+ * de famille `config`, dérivé de `ObsessionTableFile`/`ObsessionEntry` (`src/data/obsessions.ts`) :
+ * son enveloppe (identité + `source`) est posée par la fabrique, sa charge est `entries`.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'obsessions.json';
-export const famille = 'table';
+export const famille = 'config';
 
-export const schema = z.strictObject({
-  source: sourceRefSchema,
-  ref: z.string(),
-  table: z.array(
-    z.strictObject({
-      id: z.string(),
-      min: z.number(),
-      max: z.number(),
-      label: z.string(),
-    }),
-  ),
-});
+const doc = document(
+  'obsessions',
+  famille,
+  {
+    entries: z.array(
+      z.strictObject({
+        id: z.string(),
+        min: z.number(),
+        max: z.number(),
+        label: z.string(),
+      }),
+    ),
+  },
+  {
+    entries: { label: 'Obsessions', hint: 'Rangées du 2d10, bornes min/max inclusives' },
+  },
+  {
+    codex: { keys: ['obsessions'] },
+    edit: {
+      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `obsessions` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

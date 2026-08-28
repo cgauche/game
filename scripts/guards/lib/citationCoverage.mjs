@@ -42,12 +42,35 @@ function entryLabel(item, key, idx) {
 
 /**
  * Résultat de mesure d'un dataset (fichier `.json` de `src/data`).
- * @typedef {{ total: number, cited: number, missing: string[], shape: 'array'|'map-of-lists'|'single' }} DatasetCoverage
+ * @typedef {{ total: number, cited: number, missing: string[], shape: 'array'|'array-of-documents'|'map-of-lists'|'single' }} DatasetCoverage
  */
+
+/**
+ * Le tableau racine est-il une LISTE DE DOCUMENTS PORTEURS (chacun avec sa charge `entries[]`) ?
+ * Forme posée par la famille `table` de la fabrique (`document.ts`, #1467 L1b V-FLIP-TABLE) :
+ * `miscast.json` = 5 documents, 111 rangées. Sans ce bras, le scan ne compterait que les 5 documents
+ * de premier niveau et les 111 rangées — qui portent CHACUNE sa `source` — sortiraient de toute
+ * garde de couverture, en silence.
+ *
+ * Condition SYMETRIQUE de `map-of-lists` : au moins un document porte une charge non vide d'objets,
+ * ET au moins une RANGÉE cite déjà sa source (signe que ce dataset suit la convention PAR ENTRÉE —
+ * un dataset-liste ordinaire dont une entrée aurait un champ `entries` de sous-objets NON cités
+ * reste en forme `array`, son dénominateur inchangé).
+ * Mesuré le 2026-08-28 sur les 2 racines : `miscast.json` est le SEUL dataset-liste concerné.
+ * @param {unknown[]} data @returns {boolean}
+ */
+function estListeDeDocumentsPorteurs(data) {
+  const porteurs = data.filter((d) => isPlainObject(d) && Array.isArray(d.entries) && d.entries.length > 0 && d.entries.every(isPlainObject));
+  if (!porteurs.length) return false;
+  return porteurs.some((d) => /** @type {unknown[]} */ (d.entries).some(isCitedItem));
+}
 
 /**
  * Détecte la FORME d'un dataset et compte ses entrées RÉELLES + leur citation.
  * - `array` : le fichier racine EST le tableau d'entrées (`skills.json`, `talents.json`…).
+ * - `array-of-documents` : le fichier racine est un tableau de DOCUMENTS PORTEURS, chacun avec sa
+ *   charge `entries[]` (famille `table` de la fabrique, `miscast.json`) — on compte les documents ET
+ *   leurs rangées, chaque manquant nommé `<id-du-document>.<id-de-la-rangée>`.
  * - `map-of-lists` : objet racine dont une ou plusieurs propriétés DIRECTES sont des tableaux
  *   d'objets ET dont AU MOINS UN item de ces tableaux cite déjà sa source individuellement —
  *   signe que ce dataset suit la convention PAR ENTRÉE (`sea-weather.json.table`,
@@ -63,6 +86,24 @@ function entryLabel(item, key, idx) {
  */
 export function auditDataset(data) {
   if (Array.isArray(data)) {
+    if (estListeDeDocumentsPorteurs(data)) {
+      const missing = [];
+      let total = 0;
+      let cited = 0;
+      data.forEach((doc, i) => {
+        total++;
+        const etiquette = entryLabel(doc, '', i);
+        if (isCitedItem(doc)) cited++;
+        else missing.push(etiquette);
+        if (!isPlainObject(doc) || !Array.isArray(doc.entries)) return;
+        doc.entries.forEach((row, j) => {
+          total++;
+          if (isCitedItem(row)) cited++;
+          else missing.push(entryLabel(row, etiquette, j));
+        });
+      });
+      return { total, cited, missing, shape: 'array-of-documents' };
+    }
     const total = data.length;
     const missing = [];
     let cited = 0;

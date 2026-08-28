@@ -3,11 +3,16 @@
  * `src/data/data-wellformed.test.ts` et `src/engine/miscast.ts::expandOp`. Modélise
  * `JsonRow`/`JsonNestedTest`/`JsonOp`/`JsonFormula`/`JsonDice` TELS QU'ILS SONT LUS par
  * `miscast.ts` (miroir du `GameOp` runtime, mais `Formula` → `JsonFormula`, + `sinPlus1Value`/
- * `durationRounds` propres au dialecte). Table exposée en 3 tirages d100 : `minor`/`major` (Tableaux
- * des Incantations Imparfaites Mineures/Majeures, LDB 46 folio 234) et `wrath` (Tableau de la Colère
- * des dieux, LDB 40 folio 218) — #309 phase 3.
+ * `durationRounds` propres au dialecte).
+ *
+ * Le fichier porte une LISTE de 5 documents de famille `table` — un par jeu de rangées tirable :
+ * `miscast-mineure`/`miscast-majeure` (LDB 46 folio 234), leurs révisions `-vdm` (VDM 02 folios
+ * 24/25, sélectionnées par la règle optionnelle `magic-vdm-incantation`) et `miscast-colere`
+ * (LDB 40 folio 218). Chaque document porte SON identité, SA provenance et SES rangées : le
+ * pointeur `rows` d'une méta séparée a disparu avec ce lot (#1467 L1b V-FLIP-TABLE, #309 phase 3).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'miscast.json';
@@ -110,26 +115,26 @@ const jsonRowSchema = z.strictObject({
   source: sourceRefSchema.optional(),
 });
 
-export const schema = z.strictObject({
-  /** Les TABLES tirables déclarées : id STABLE d'étape de cascade, tableau de rangées porteur
-   *  (`rows`), libellé JOUEUR de la rangée de tirage, et la catégorie Codex où vivent ses LIGNES
-   *  quand elles y sont exposées (les deux révisions VDM n'en ont pas : le Codex n'expose que les
-   *  trois tableaux du Livre de base, un renvoi y serait mort). Cf. `engine/miscast.ts`. */
-  tables: z.array(
-    z.strictObject({
-      id: z.string(),
-      rows: z.enum(['minor', 'major', 'minorVdm', 'majorVdm', 'wrath']),
-      label: z.string(),
-      codexCategory: z.string().optional(),
-      /** Le TABLEAU source dont cette table est le tirage (folio du livre qui la porte). */
-      source: sourceRefSchema,
-    }),
-  ),
-  minor: z.array(jsonRowSchema),
-  major: z.array(jsonRowSchema),
-  /** Jeux de tables ALTERNATIFS des Vents de Magie (`VDM 02 l.218-263`, folios 24-25), sélectionnés
-   *  par la règle optionnelle `magic-vdm-incantation` — cf. `engine/miscast.ts::miscastTables`. */
-  minorVdm: z.array(jsonRowSchema),
-  majorVdm: z.array(jsonRowSchema),
-  wrath: z.array(jsonRowSchema),
-});
+const doc = document(
+  'miscast',
+  famille,
+  {
+    /** Catégorie Codex où vivent les LIGNES de ce tableau quand elles y sont exposées. Les deux
+     *  révisions VDM n'en ont pas : le Codex n'expose que les trois tableaux du Livre de base, un
+     *  renvoi y serait mort. */
+    codexCategory: z.string().optional(),
+  },
+  {
+    codexCategory: { label: 'Catégorie Codex des lignes', hint: 'Clé de la catégorie Compendium qui expose les rangées (absente = tableau non exposé)' },
+  },
+  {
+    codex: { keys: ['miscastMinor', 'miscastMajor', 'miscastWrath'] },
+    edit: {
+      none: 'édité par TABLEAU NICHÉ : les catégories Codex `miscastMinor`/`miscastMajor`/`miscastWrath` éditent chacune le champ `entries` d’UN des 5 documents du fichier, jamais le fichier entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+  { ligneTable: jsonRowSchema },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

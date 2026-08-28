@@ -4,14 +4,15 @@
  * `src/engine/shipNavigation.ts` (`ProgressionEntry`, `findTableEntry`).
  */
 import { z } from 'zod';
+import { document, type EnveloppeDocument } from '../grammaire/document';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'naval-progression.json';
-export const famille = 'table';
+export const famille = 'config';
 
 /** `mode` observés : les 5 issues RAW de la table de Progression (ch.13 l.68-75). */
-export const schema = z.strictObject({
-  table: z.array(
+const champs = {
+  entries: z.array(
     z.strictObject({
       /** id STABLE = `mode` (déjà une clé fermée à 5 valeurs) — identité d'entrée pour le Codex (#422). */
       id: z.string(),
@@ -22,6 +23,23 @@ export const schema = z.strictObject({
       source: sourceRefSchema,
     }),
   ),
-});
+};
 
-export type NavalProgressionData = z.infer<typeof schema>;
+const doc = document(
+  'naval-progression',
+  famille,
+  champs,
+  {
+    entries: { label: 'Bandes de progression', hint: 'Bande de DR du Test de Navigation → mode de déplacement du navire' },
+  },
+  {
+    codex: { keys: ['navalProgression'] },
+    edit: {
+      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `navalProgression` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;
+export type NavalProgressionData = EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>;

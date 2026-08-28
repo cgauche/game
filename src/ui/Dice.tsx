@@ -33,11 +33,22 @@ export function Dice({ roll }: { roll: number }) {
       return;
     }
     let tick = 0;
+    let arrete = false;
     setRolling(true);
-    const id = window.setInterval(() => {
+    // Minuterie prise sur le GLOBAL, jamais sur `window`. Un tick qui survit à la disparition du
+    // document (teardown jsdom) ne doit RIEN poser : le `setState` de React y lit `window.event`
+    // (getCurrentEventPriority) et jetterait hors de toute pile rattrapable. Sans document, il n'y
+    // a plus rien à animer : la minuterie s'éteint d'elle-même.
+    const id = setInterval(() => {
+      if (arrete || typeof window === 'undefined') {
+        arrete = true;
+        clearInterval(id);
+        return;
+      }
       tick += 1;
       if (tick >= TICKS) {
-        window.clearInterval(id);
+        arrete = true;
+        clearInterval(id);
         setShown(roll);
         setRolling(false);
       } else {
@@ -45,7 +56,8 @@ export function Dice({ roll }: { roll: number }) {
       }
     }, TICK_MS);
     return () => {
-      window.clearInterval(id);
+      arrete = true;
+      clearInterval(id);
       setShown(roll);
       setRolling(false);
     };

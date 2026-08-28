@@ -71,9 +71,23 @@ export const FOLIO_LINE_ALIGN_RATCHET = new Set([
  * chiffre tenu et non un angle mort : leur folio déclaré est plausible mais n'a PAS été
  * machine-vérifié (relu à la main, #1318 E8). Si une extraction regagne ses ancres, l'entrée devient
  * jugeable et doit SORTIR de cette liste.
+ *
+ * ANGLE MORT MESURÉ du détecteur (2026-08-28, #1467 L1b V-FLIP-TABLE) — il ne se lit pas dans cette
+ * liste : `parseLineCitation` (`folioLineAlign.mjs:24`) ANCRE son motif au DÉBUT de la citation
+ * (`/^<ABRÉV> <ch> l.<n>/`). Toute note PRÉFIXÉE (« Tableau des Obsessions, EDOC 12 l.170 ») est donc
+ * classée `hors-forme`, c'est-à-dire INVISIBLE — pas jugée, et pas comptée ici non plus.
+ * `obsessions.json#(racine)` a quitté cette liste par CETTE cécité, pas par résolution : sa citation
+ * nue `ref` est devenue une note préfixée à la migration `2026-08-28-l1b-8c`.
+ * Mesure de l'élargissement (motif CHERCHÉ dans la note au lieu d'être ancré) : 872 → 678
+ * `hors-forme`, `scanned` 270 → 462, non-jugeables 2 → 4 (`obsessions.json#obsessions` REVIENDRAIT,
+ * plus `vents-tourbillonnants.json#force-des-vents`), et 14 désalignements NEUFS apparaîtraient —
+ * 2 causes seulement : `eyes.json` ×10 (une note unique, qui DIT elle-même « pagination Marker
+ * estimée entre les folios 37 et 41 » — déclaré 40, mesuré 39) et `weather.json` ×4 (« EDOC 8
+ * l.52-59 » — déclaré 33, mesuré 32). Le cliquet `FOLIO_LINE_ALIGN_RATCHET` étant déclaré NON
+ * CROISSANT (`RATCHET_MAX = 41`), l'élargissement ne se fait pas dans ce lot : il exige d'ARBITRER
+ * ces 14 au `Source/` d'abord.
  */
 export const FOLIO_LINE_ALIGN_NON_JUGEABLE = new Set([
-  'obsessions.json#(racine)', // « EDOC 12 l.170 » — déclaré 69 (EDOC 12 : ancres 64 et 65 seules, folios 66-71 sans ancre)
   'reglesOptionnelles.json#vents-tourbillonnants', // « LDB 46 l.179-190 » — déclaré 238 (dernière ancre du chapitre, le voisin ne la continue pas)
   'reglesOptionnelles.json#corruption-tables-edoc', // « EDOC 12 l.63 » — déclaré 65 (même trou EDOC 12)
 ])

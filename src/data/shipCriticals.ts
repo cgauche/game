@@ -86,11 +86,11 @@ export interface ShipCritSet {
 }
 
 /** Jeu MDG (mer, ch.13) — Éclats 9 Dégâts. */
-export const SHIP_CRIT_SET: ShipCritSet = { id: 'ship-criticals', shrapnelHit: SHRAPNEL_HIT, tables: SHIP_CRITICAL_TABLES };
+export const SHIP_CRIT_SET: ShipCritSet = { id: shipCriticalsJson.id, shrapnelHit: SHRAPNEL_HIT, tables: SHIP_CRITICAL_TABLES };
 
 /** Jeu MSRC (fleuve, ch.5) — Éclats +5 Dégâts, Localisations Gréement/Rames/Gouvernail/Coque/Superstructure. */
 export const RIVER_CRIT_SET: ShipCritSet = {
-  id: 'river-criticals',
+  id: riverCriticalsJson.id,
   shrapnelHit: riverCriticalsJson.shrapnelHit as GameOp[],
   tables: riverCriticalsJson.tables as Partial<Record<ShipCritKey, ShipCritTable>>,
 };

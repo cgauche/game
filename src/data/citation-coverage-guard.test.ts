@@ -136,6 +136,31 @@ describe('garde-fou « citation par entrée » — couverture source:{book,page}
     expect(ancienGuard(withAlsoIn)).toBe(false); // ROUGE avec l'ancien guard : bascule non-citée
   });
 
+  it('FORME `array-of-documents` : les RANGÉES d’un dataset-liste de documents porteurs sont comptées, et un manquant est NOMMÉ `<doc>.<rangée>`', () => {
+    // `miscast.json` (famille `table`, #1467 L1b V-FLIP-TABLE) : 5 documents + 111 rangées = 116.
+    // Sans le bras `array-of-documents` d'`auditDataset`, le scan s'arrêtait au premier niveau (5/5)
+    // et les 111 rangées — qui portent CHACUNE leur `source` — sortaient de la garde en silence.
+    const reel = JSON.parse(readFileSync(join(DATA_DIR, 'miscast.json'), 'utf8')) as {
+      id: string;
+      entries: { id: string; source?: unknown }[];
+    }[];
+    const audit = auditDataset(reel);
+    expect(audit.shape).toBe('array-of-documents');
+    expect(audit.total).toBe(reel.length + reel.reduce((n, d) => n + d.entries.length, 0));
+    expect(audit.cited).toBe(audit.total);
+    expect(audit.missing).toEqual([]);
+
+    // MORSURE : une source de RANGÉE retirée est comptée manquante ET nommée par son chemin d'ids.
+    const cible = reel[0].entries[3];
+    const mute = reel.map((d, i) =>
+      i === 0 ? { ...d, entries: d.entries.map((e, j) => (j === 3 ? { ...e, source: undefined } : e)) } : d,
+    );
+    const rouge = auditDataset(mute);
+    expect(rouge.total).toBe(audit.total);
+    expect(rouge.cited).toBe(audit.cited - 1);
+    expect(rouge.missing).toEqual([`${reel[0].id}.${cible.id}`]);
+  });
+
   it('EXEMPT_DATASETS ne cible que des fichiers réellement présents', () => {
     const files = new Set(readdirSync(DATA_DIR).filter((f) => f.endsWith('.json')));
     const dangling = Object.keys(EXEMPT_DATASETS).filter((f) => !files.has(f));

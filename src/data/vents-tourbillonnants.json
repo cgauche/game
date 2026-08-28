@@ -1,5 +1,8 @@
 {
-  "table": [
+  "id": "force-des-vents",
+  "type": "vents-tourbillonnants",
+  "label": "Vents Tourbillonnants",
+  "entries": [
     {
       "id": "vents-tres-faibles",
       "min": 1,

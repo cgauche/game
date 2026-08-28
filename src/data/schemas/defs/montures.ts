@@ -5,16 +5,16 @@
  * 8 entrées toutes {id,label,creatureIds,m,e,trot,encPortee} — inventaire exhaustif par script).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'montures.json';
-export const famille = 'table';
+export const famille = 'config';
 
-export const schema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
-  source: sourceRefSchema,
-  entries: z.array(
+const doc = document(
+  'montures',
+  famille,
+  {
+    entries: z.array(
     z.strictObject({
       id: z.string(),
       label: z.string(),
@@ -30,5 +30,18 @@ export const schema = z.strictObject({
       /** Capacité de charge (« Enc portée », EDOC 07 l.97-110). */
       encPortee: z.number(),
     }),
-  ),
-});
+    ),
+  },
+  {
+    entries: { label: 'Montures et bêtes de trait', hint: 'Mouvement, Endurance, trot et capacité de charge en voyage' },
+  },
+  {
+    codex: { keys: ['montures'] },
+    edit: {
+      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `montures` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

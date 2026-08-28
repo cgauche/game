@@ -133,16 +133,16 @@ describe('Tableau de Surincantation (VDM) — les 7 paliers imprimés, lus de la
     // verts : ils passent par les fonctions publiques, pas par le fichier. Ici on lit le DISQUE.
     const disque = JSON.parse(
       readFileSync(fileURLToPath(new URL('../data/surincantation.json', import.meta.url)), 'utf8'),
-    ) as { source: { book: string; page: number; note?: string }; ref: string; table: Record<string, number>[] };
+    ) as { id: string; type: string; label: string; source: { book: string; page: number; note?: string }; entries: Record<string, number>[] };
     // (a) le fichier porte bien la table IMPRIMÉE, et sa citation ;
-    expect(disque.table.map((r) => [r.dr, r.targets, r.damage, r.range, r.zone, r.duration])).toEqual(PALIERS);
+    expect(disque.entries.map((r) => [r.dr, r.targets, r.damage, r.range, r.zone, r.duration])).toEqual(PALIERS);
     expect(disque.source.book).toBe('vents-de-la-magie');
     expect(disque.source.page).toBe(23);
-    expect(disque.ref).toMatch(/^VDM 02 /);
+    expect(disque.source.note).toMatch(/VDM 02 /);
     // (b) la table du MOTEUR est celle-là, valeur pour valeur — une ré-inscription en dur (ou une
     //     divergence d'une seule rangée) fait rouge ici.
     expect(VDM_OVERCAST.map((r) => [r.dr, r.targets, r.damage, r.range, r.zone, r.duration])).toEqual(
-      disque.table.map((r) => [r.dr, r.targets, r.damage, r.range, r.zone, r.duration]),
+      disque.entries.map((r) => [r.dr, r.targets, r.damage, r.range, r.zone, r.duration]),
     );
   });
 

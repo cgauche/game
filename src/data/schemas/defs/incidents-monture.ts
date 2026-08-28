@@ -7,16 +7,30 @@
  * même déclarés `.optional()` dans le schéma commun, sans conséquence ici.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { travelTableEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'incidents-monture.json';
-export const famille = 'table';
+export const famille = 'config';
 
-export const schema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
-  die: z.string(),
-  source: sourceRefSchema,
-  entries: z.array(travelTableEntrySchema),
-});
+const doc = document(
+  'incidents-monture',
+  famille,
+  {
+    die: z.string(),
+    entries: z.array(travelTableEntrySchema),
+  },
+  {
+    die: { label: 'Dé de tirage', hint: 'Expression du dé lancé pour tirer un incident (d100)' },
+    entries: { label: 'Incidents de monte', hint: 'Rangées de la table, bornes min/max inclusives sur le dé de tirage' },
+  },
+  {
+    codex: { keys: ['incidentsMonture'] },
+    edit: {
+      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `incidentsMonture` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

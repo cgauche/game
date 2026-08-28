@@ -23,7 +23,7 @@ import ventsJson from '../data/vents-tourbillonnants.json';
 /** `id`/`label` = affichage (Codex `ventsTourbillonnants`, `src/ui/compendium/registry.ts`) ; le
  *  lookup n'utilise que `min`/`max`/`mod` (`findTableEntry`). */
 interface WindsEntry { id: string; min: number; max: number; mod: number; label: string }
-const WINDS_TABLE = (ventsJson as { table: WindsEntry[] }).table;
+const WINDS_TABLE = (ventsJson as { entries: WindsEntry[] }).entries;
 
 /** Modificateur (LDB 46 l.183-190) pour un jet 1d10 donné — lecture LIVE de la donnée éditable. */
 export function windsModFromRoll(roll: number): number {

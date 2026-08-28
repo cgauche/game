@@ -149,8 +149,10 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     expect(Object.keys(SOURCE_EN_PROFONDEUR).sort()).toEqual([
       // `aa-criticals` y entre par #1467 L1b V-FLIP-CONFIG : sa note libre `_source` est morte, ses
       // 80 entrées portent chacune leur folio (83/84/85/86), et la racine reste NUE.
+      // `miscast` en SORT par #1467 L1b V-FLIP-TABLE : son fichier porte 5 DOCUMENTS, chacun avec SA
+      // `source` à son entrée de premier niveau — il n'y a plus de racine nue à exempter.
       'aa-criticals', 'arcane-phenomena', 'crew-test-types', 'criticals', 'disponibilite', 'land-cargo',
-      'mass-battle', 'miscast', 'naval-progression', 'river-perils', 'sea-cargo', 'sea-events',
+      'mass-battle', 'naval-progression', 'river-perils', 'sea-cargo', 'sea-events',
       'sea-navigation', 'sea-perils', 'sea-weather', 'ship-construction', 'weather',
     ]);
     expect(Object.keys(SANS_LIVRE).sort()).toEqual([
@@ -166,7 +168,8 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     const communes = Object.keys(SANS_LIVRE).filter((k) => k in SOURCE_EN_PROFONDEUR);
     expect(communes).toEqual([]);
     // 50 → 51 : `aa-criticals` rejoint `SOURCE_EN_PROFONDEUR` (#1467 L1b V-FLIP-CONFIG).
-    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(51);
+    // 51 → 50 : `miscast` en sort (#1467 L1b V-FLIP-TABLE).
+    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(50);
   });
 
   it('`maison` est TOUJOURS une chaîne — zéro drapeau booléen, à TOUTE profondeur des deux racines', () => {

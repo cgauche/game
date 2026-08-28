@@ -5,23 +5,38 @@
  * Jeu MDG : 5 Localisations (cargaison/greement/coque/avirons/equipements).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema, shipCritEntrySchema } from '../grammaire/mecanique';
 
 export const file = 'ship-criticals.json';
-export const famille = 'table';
+export const famille = 'config';
 
-export const schema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
-  die: z.string(),
-  source: sourceRefSchema,
-  shrapnelHit: z.array(gameOpSchema),
-  tables: z.strictObject({
-    cargaison: z.array(shipCritEntrySchema),
-    greement: z.array(shipCritEntrySchema),
-    coque: z.array(shipCritEntrySchema),
-    avirons: z.array(shipCritEntrySchema),
-    equipements: z.array(shipCritEntrySchema),
-  }),
-});
+const doc = document(
+  'ship-criticals',
+  famille,
+  {
+    die: z.string(),
+    shrapnelHit: z.array(gameOpSchema),
+    tables: z.strictObject({
+      cargaison: z.array(shipCritEntrySchema),
+      greement: z.array(shipCritEntrySchema),
+      coque: z.array(shipCritEntrySchema),
+      avirons: z.array(shipCritEntrySchema),
+      equipements: z.array(shipCritEntrySchema),
+    }),
+  },
+  {
+    die: { label: 'Dé de tirage', hint: 'Expression du dé lancé pour tirer un critique de coque' },
+    shrapnelHit: { label: 'Éclats', hint: 'Effets posés sur les occupants touchés par les éclats' },
+    tables: { label: 'Critiques par Localisation', hint: 'Cinq tables sœurs : cargaison, gréement, coque, avirons, équipements' },
+  },
+  {
+    codex: { keys: ['shipCriticalsCargaison', 'shipCriticalsGreement', 'shipCriticalsCoque', 'shipCriticalsAvirons', 'shipCriticalsEquipements'] },
+    edit: {
+      none: 'édité par TABLEAUX NICHÉS : les 5 catégories Codex `shipCriticals*` éditent chacune une sous-table de `tables`, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

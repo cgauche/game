@@ -19,15 +19,14 @@ export interface ObsessionEntry {
 }
 
 interface ObsessionTableFile {
-  source: { book: string; page: number };
-  ref: string;
-  table: ObsessionEntry[];
+  source: { book: string; page: number; note?: string };
+  entries: ObsessionEntry[];
 }
 
 const FILE = obsessionsJson as ObsessionTableFile;
 
 /** Le Tableau des Obsessions (19 entrées, 2d10 = 2..20). */
-export const OBSESSIONS: readonly ObsessionEntry[] = FILE.table;
+export const OBSESSIONS: readonly ObsessionEntry[] = FILE.entries;
 /** Provenance (livre + folio) — traçabilité (EDOC 12 folio 69). */
 export const OBSESSIONS_SOURCE = FILE.source;
 

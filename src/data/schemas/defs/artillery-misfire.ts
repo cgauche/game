@@ -1,13 +1,13 @@
 /**
  * Schéma de `artillery-misfire.json` — Incidents de Tir d'Artillerie par Salve (Aux Armes, AA
  * l.3940-3946). Reflet de `ArtilleryMisfireEntry` (`src/data/artilleryMisfire.ts`), table SŒUR de
- * `structure-criticals.json` (même patron `{id,label,die,source,entries}`).
+ * `structure-criticals.json` (même patron `{enveloppe, die, entries}`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'artillery-misfire.json';
-export const famille = 'table';
+export const famille = 'config';
 
 const artilleryMisfireEntrySchema = z.strictObject({
   min: z.number(),
@@ -24,10 +24,24 @@ const artilleryMisfireEntrySchema = z.strictObject({
   note: z.string(),
 });
 
-export const schema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
-  die: z.string(),
-  source: sourceRefSchema,
-  entries: z.array(artilleryMisfireEntrySchema),
-});
+const doc = document(
+  'artillery-misfire',
+  famille,
+  {
+    die: z.string(),
+    entries: z.array(artilleryMisfireEntrySchema),
+  },
+  {
+    die: { label: 'Dé de tirage', hint: 'Expression du dé lancé pour tirer un incident (ex. « 1d10 »)' },
+    entries: { label: 'Incidents', hint: 'Rangées de la table, bornes min/max inclusives sur le dé de tirage' },
+  },
+  {
+    codex: { keys: ['artilleryMisfire'] },
+    edit: {
+      none: 'édité par TABLEAU NICHÉ : la catégorie Codex `artilleryMisfire` édite le champ `entries` de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)',
+    },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

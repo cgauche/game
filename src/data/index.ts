@@ -423,9 +423,9 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
   criticalsCorps: (id) => criticalsRows.corps.some((r) => r.id === id),
   criticalsJambe: (id) => criticalsRows.jambe.some((r) => r.id === id),
   structureCriticals: (id) => structureCriticalRows.some((r) => r.id === id),
-  miscastMinor: (id) => miscastRows.minor.some((r) => r.id === id),
-  miscastMajor: (id) => miscastRows.major.some((r) => r.id === id),
-  miscastWrath: (id) => miscastRows.wrath.some((r) => r.id === id),
+  miscastMinor: (id) => miscastMinorRows.some((r) => r.id === id),
+  miscastMajor: (id) => miscastMajorRows.some((r) => r.id === id),
+  miscastWrath: (id) => miscastWrathRows.some((r) => r.id === id),
   mutations: (id) => mutations.some((m) => m.id === id),
   mutationTables: (id) => mutationTables.some((t) => t.id === id),
   interludeEvents: (id) => interludeEvents.some((e) => e.id === id),
@@ -452,7 +452,17 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
  *  besoin que du pool d'ids, et les lit sur le MÊME JSON que le Codex édite. */
 const criticalsRows = criticalsRawJson as Record<'tete' | 'bras' | 'corps' | 'jambe', { id: string }[]>;
 const structureCriticalRows = (structureCriticalsRawJson as { entries: { id: string }[] }).entries;
-const miscastRows = miscastRawJson as unknown as Record<'minor' | 'major' | 'wrath', { id: string }[]>;
+const miscastDocs = miscastRawJson as unknown as { id: string; entries: { id: string }[] }[];
+/** Rangées d'UN tableau d'Incantation Imparfaite, par id de DOCUMENT (`miscast.json`) — FAIL-FAST :
+ *  un id absent rendrait le résolveur d'enjeu silencieusement aveugle. */
+function miscastRowsOf(tableId: string): { id: string }[] {
+  const doc = miscastDocs.find((d) => d.id === tableId);
+  if (!doc) throw new Error(`miscastRowsOf : tableau « ${tableId} » absent de miscast.json (ids : ${miscastDocs.map((d) => d.id).join(', ')}).`);
+  return doc.entries;
+}
+const miscastMinorRows = miscastRowsOf('miscast-mineure');
+const miscastMajorRows = miscastRowsOf('miscast-majeure');
+const miscastWrathRows = miscastRowsOf('miscast-colere');
 
 /** CATALOGUE d'ENTRÉES d'un `kind` : où vit la fiche de l'entrée JOUÉE, quand la clé en nomme une.
  *  Déclaratif — ajouter une famille à entrées (tables régionales de Lustrie, périls…) = une ligne ICI,
@@ -2639,7 +2649,7 @@ export const weatherPhysicalTestChars = weatherData.physicalTestChars;
 /** Tableau des Vents Tourbillonnants (LDB 46 l.183-190, option `vents-tourbillonnants`) — tirage 1d10
  *  (`engine/windsOfMagic.ts`, lecture JSON directe comme `drunkenness.ts`) ; réexporté ICI pour le
  *  Codex (`ventsTourbillonnants`, `ui/compendium/registry.ts`). */
-export const windsOfMagicTable = (ventsTourbillonnantsJson as { table: { id: string; min: number; max: number; mod: number; label: string }[] }).table;
+export const windsOfMagicTable = (ventsTourbillonnantsJson as { entries: { id: string; min: number; max: number; mod: number; label: string }[] }).entries;
 export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
 /** Les 5 demeures célestes (ADE II 3 l.502-512, « Déterminer les demeures célestes ») — ossature

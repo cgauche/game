@@ -56,10 +56,16 @@ describe('Influences malveillantes — `VDM 02 l.157-159`', () => {
 });
 
 describe('Tableaux des Incantations Imparfaites — `VDM 02 l.218-263`', () => {
-  const data = miscastJson as { minorVdm: { min: number; max: number }[]; majorVdm: { min: number; max: number }[] };
+  const docs = miscastJson as unknown as { id: string; entries: { min: number; max: number }[] }[];
+  /** Rangées d'un tableau par son id STABLE — FAIL-FAST : un id absent rendrait le contrat vide. */
+  const rowsOf = (id: string) => {
+    const d = docs.find((x) => x.id === id);
+    if (!d) throw new Error(`tableau « ${id} » absent de miscast.json`);
+    return d.entries;
+  };
 
   it('20 rangées par table, fourchettes contiguës de 01 à 00', () => {
-    for (const rows of [data.minorVdm, data.majorVdm]) {
+    for (const rows of [rowsOf('miscast-mineure-vdm'), rowsOf('miscast-majeure-vdm')]) {
       expect(rows).toHaveLength(20);
       expect(rows[0].min).toBe(1);
       expect(rows[rows.length - 1].max).toBe(100);

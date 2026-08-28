@@ -186,7 +186,7 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
       // MÊMES fichiers que le Codex édite, jamais sur une copie du résolveur.
       mutations, mutationTables, interludeEvents,
       structureCriticals: STRUCTURE_CRITICALS,
-      miscastWrath: (miscastRawJson as unknown as { wrath: { id: string }[] }).wrath,
+      miscastWrath: (miscastRawJson as unknown as { id: string; entries: { id: string }[] }[]).find((d) => d.id === 'miscast-colere')!.entries,
     };
     const muettes: string[] = [];
     for (const [dataset, e] of [

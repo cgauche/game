@@ -43,7 +43,6 @@ const RACINE_NUE = [
   'river-perils.json',
   'weather.json',
   'criticals.json',
-  'miscast.json',
   'mass-battle.json',
   'arcane-phenomena.json',
   'ship-construction.json',
@@ -54,8 +53,16 @@ const RACINE_NUE = [
 
 /** Sous-entrées RÉELLEMENT mesurées par la garde de couverture — PLANCHER (il ne peut que monter).
  *  490 au 2026-08-27 ; 570 au 2026-08-28, les 80 entrées d'`aa-criticals.json` entrant dans la classe
- *  avec leur `source` par entrée (#1467 L1b V-FLIP-CONFIG). */
-const SOUS_ENTREES_MESUREES = 570;
+ *  avec leur `source` par entrée (#1467 L1b V-FLIP-CONFIG) ; 454 le même jour, `miscast.json` SORTANT
+ *  de la classe (#1467 L1b V-FLIP-TABLE) : sa racine n'est plus un objet nu mais une LISTE de 5
+ *  documents, chacun portant SA `source` — il n'y a plus de racine à rendre aveugle.
+ *
+ *  Ses 116 entrées (5 documents + 111 rangées) restent SOUS garde de couverture, mesuré : le bras
+ *  `array-of-documents` d'`auditDataset` (`scripts/guards/lib/citationCoverage.mjs`) descend dans la
+ *  charge `entries[]` de chaque document, rend 116/116 cités, et `citation-coverage-guard.test.ts`
+ *  en gèle la morsure (une source de rangée retirée est nommée `<doc>.<rangée>`). Le retrait de la
+ *  classe RACINE_NUE ne baisse donc pas la couverture réelle — il change de garde. */
+const SOUS_ENTREES_MESUREES = 454;
 
 const lire = (f: string): unknown => JSON.parse(readFileSync(join(DATA_DIR, f), 'utf8'));
 
