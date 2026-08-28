@@ -247,12 +247,16 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
   (`src/data/schemas/defs-scenes/narratif.ts`, composé par `projetSchema`) garde cet invariant
   fail-fast au parse : aucun id narratif ne peut collisionner avec un id global (créature/possession),
   `affaireId`/`refs`/`base` doivent résoudre, ids internes uniques.
-- **Identité (`meta`).** Le paquet porte aussi un bloc `meta` (`ProjectMeta`, `src/state/worldMap.ts`) —
-  `id`/`label`/`version` requis, `icon`/`desc`/`auteur` optionnels — identité de campagne pour la
-  bibliothèque (#766), validée fail-fast SI présente ; optionnelle au format (la migration 2→3 n'en injecte pas).
+- **Identité (à plat).** Le paquet porte aussi son identité de campagne (`ProjectIdentite`,
+  `src/state/worldMap.ts`) — champs PLATS à la racine du document depuis #1467 L1b, sans poche
+  intermédiaire : `id`/`label`/`versionContenu` forment un trio TOUT-OU-RIEN, `icon`/`desc`/`auteur`
+  sont optionnels. `versionContenu` est le numéro de CONTENU de l'auteur ; la version de FORME du
+  document est `schema`. Identité pour la bibliothèque (#766), validée fail-fast SI présente ;
+  optionnelle au format (la migration 2→3 n'en injecte pas).
 - **Migration.** Un projet schema 2 legacy (localStorage éditeur d'avant #765) monte au format courant
-  au chargement (`PROJECT_MIGRATIONS[2]` injecte un narratif vide). Les **quatre projets committés sont
-  en schema 4** : « L'Arène » (`src/scenes/arene/arene-projet.json`), « La Barge du Sel »
+  au chargement (`PROJECT_MIGRATIONS[2]` injecte un narratif vide ; `[4]` aplatit la poche `meta` et
+  renomme sa `version` en `versionContenu`). Les **quatre projets committés sont
+  en schema 5** : « L'Arène » (`src/scenes/arene/arene-projet.json`), « La Barge du Sel »
   (`src/scenes/barge-du-sel/barge-du-sel-projet.json`), « La Diligence »
   (`src/scenes/diligence/diligence-projet.json`, sans `worldMap`) et « Le Loup et la Saumure »
   (`src/scenes/loup-et-saumure/loup-et-saumure-projet.json`) — produits par `projectDoc`

@@ -1,6 +1,6 @@
 /** Index de la campagne. La campagne de LANCEMENT est l'Arène (projet de DONNÉES éditeur — cf.
  *  src/scenes/arene/arene-projet.json, créable/éditable dans l'éditeur, paquet de campagne
- *  `{schema:3, scenes, worldMap, narratif}`) : `campaign[0]` est sa scène d'entrée, toutes ses scènes
+ *  `{schema:5, <identité>, scenes, worldMap, narratif}`) : `campaign[0]` est sa scène d'entrée, toutes ses scènes
  *  (bourg + zones + expéditions) sont enregistrées → les transitions résolvent, et sa carte du
  *  monde alimente le voyage (#T2). */
 import { Scene } from '../state/scene';
@@ -38,8 +38,33 @@ export interface BuiltinCampaign {
   scenes: Scene[];
   startSceneId: string;
   worldMap: WorldMap | null;
-  /** Bloc narratif du paquet (schema 3, #765) — acheminé au runtime par `loadProject` (#767). */
+  /** Bloc narratif du paquet (#765) — acheminé au runtime par `loadProject` (#767). */
   narratif: NarratifBlock;
+}
+
+/**
+ * Identité d'une campagne BUILT-IN, DÉRIVÉE de son paquet (#1467 L1b V-formeProjet) — jamais re-tapée
+ * ici. Elle vit à la RACINE du document depuis l'aplatissement de l'enveloppe, donc `parseProject`
+ * la rend déjà : la DONNÉE fait foi, et le seul moyen de changer l'`icon`/le `label` d'une campagne
+ * est d'éditer son générateur (`scripts/<campagne>/generate.mjs`), pas ce fichier.
+ *
+ * La duplication qui vivait ici avait DÉRIVÉ en silence : l'Arène portait `icon: 'scenario/arena'` et
+ * un label à apostrophe ASCII, là où son paquet dit `scenario/village` et une apostrophe
+ * typographique. C'est l'écran qui lisait la copie, donc la copie qui gagnait.
+ */
+function identiteDe(
+  doc: { id?: string; label?: string; icon?: string },
+  fichier: string,
+): { id: string; label: string; icon: string } {
+  const { id, label, icon } = doc;
+  if (!id || !label || !icon) {
+    throw new Error(
+      `${fichier} : paquet de campagne BUILT-IN sans identité complète à la racine ` +
+      `(id=${JSON.stringify(id)}, label=${JSON.stringify(label)}, icon=${JSON.stringify(icon)}) — ` +
+      `une campagne exposée au picker doit être identifiée par SON document.`,
+    );
+  }
+  return { id, label, icon };
 }
 
 const loupEtSaumure = parseProject(loupEtSaumureProjet);
@@ -49,9 +74,7 @@ const diligence = parseProject(diligenceProjet);
 /** « La Diligence » — relais routier à deux niveaux, paquet éditeur d'une seule scène. Exposée à part
  *  (comme `areneCampaign`) pour que sa Scène se réutilise sans re-parser le paquet. */
 export const diligenceCampaign: BuiltinCampaign = {
-  id: 'la-diligence',
-  label: 'La Diligence',
-  icon: 'scenario/village',
+  ...identiteDe(diligence, 'diligence-projet.json'),
   scenes: diligence.scenes,
   startSceneId: diligence.scenes[0].id,
   worldMap: diligence.worldMap ?? null,
@@ -62,18 +85,14 @@ export const diligenceCampaign: BuiltinCampaign = {
  *  historique). Ajouter une campagne étalon = un item ICI, jamais un chemin parallèle. */
 export const builtinCampaigns: BuiltinCampaign[] = [
   {
-    id: 'loup-et-saumure',
-    label: 'Le Loup et la Saumure',
-    icon: 'scenario/naval',
+    ...identiteDe(loupEtSaumure, 'loup-et-saumure-projet.json'),
     scenes: loupEtSaumure.scenes,
     startSceneId: loupEtSaumure.scenes[0].id,
     worldMap: loupEtSaumure.worldMap ?? null,
     narratif: loupEtSaumure.narratif,
   },
   {
-    id: 'barge-du-sel',
-    label: 'La Barge du Sel',
-    icon: 'scenario/naval',
+    ...identiteDe(bargeDuSel, 'barge-du-sel-projet.json'),
     scenes: bargeDuSel.scenes,
     startSceneId: bargeDuSel.scenes[0].id,
     worldMap: bargeDuSel.worldMap ?? null,
@@ -85,9 +104,7 @@ export const builtinCampaigns: BuiltinCampaign[] = [
 /** L'Arène (chemin `pendingCampaign: null` historique) sous la MÊME forme `BuiltinCampaign`, pour
  *  la réutiliser partout où une liste homogène est nécessaire (#367 : « Ouvrir » de l'éditeur). */
 export const areneCampaign: BuiltinCampaign = {
-  id: 'arene',
-  label: "L'Arène",
-  icon: 'scenario/arena',
+  ...identiteDe(projet, 'arene-projet.json'),
   scenes: arene.map((c) => c.scene),
   startSceneId: arene[0].id,
   worldMap: campaignWorldMap,

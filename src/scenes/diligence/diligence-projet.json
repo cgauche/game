@@ -1,11 +1,9 @@
 {
- "schema": 4,
- "meta": {
-  "id": "la-diligence",
-  "label": "La Diligence",
-  "icon": "scenario/village",
-  "version": 1
- },
+ "schema": 5,
+ "id": "la-diligence",
+ "label": "La Diligence",
+ "icon": "scenario/village",
+ "versionContenu": 1,
  "narratif": {
   "affaires": [],
   "indices": [],

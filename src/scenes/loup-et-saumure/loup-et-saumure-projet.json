@@ -1,11 +1,9 @@
 {
- "schema": 4,
- "meta": {
-  "id": "loup-et-saumure",
-  "label": "Le Loup et la Saumure",
-  "icon": "scenario/naval",
-  "version": 1
- },
+ "schema": 5,
+ "id": "loup-et-saumure",
+ "label": "Le Loup et la Saumure",
+ "icon": "scenario/naval",
+ "versionContenu": 1,
  "narratif": {
   "affaires": [],
   "indices": [],

@@ -5,7 +5,9 @@
  * (`scripts/docs/lib/structures-lexique.mts` : `prose: { cible: 'desc', divergentes: [… 'description'
  * …] }`) ; l'enveloppe de document déclare `desc` (`src/data/schemas/grammaire/document.ts`). Deux
  * porteurs, même rôle : `scenes[].description` (la prose d'une Scène) et `meta.description` (la
- * prose de campagne de la bibliothèque, `ProjectMeta`). Le TEXTE ne change pas.
+ * prose de campagne de la bibliothèque). Le TEXTE ne change pas. La poche `meta` a depuis été
+ * APLATIE à la racine du document (#1467 L1b V-formeProjet) : ce script vise la forme d'ALORS,
+ * c'est le sujet de sa mesure et il ne se « modernise » pas.
  *
  * ENTRÉES : les 4 `src/scenes/<campagne>/<campagne>-projet.json`.
  *

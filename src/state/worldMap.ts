@@ -417,25 +417,29 @@ export function declutterPositions(
 }
 
 // ── Format de PROJET (export/import éditeur) ────────────────────────────────────────────────
-// Format courant : `{ schema: 4, scenes, worldMap?, narratif }` (paquet de campagne auto-suffisant,
-// #765). Chaîné par la primitive générique `migrateDoc` (même mécanique que les saves, `saves.ts`) —
-// `schema` joue le rôle de `version` ; la migration 2→3 injecte un `narratif` vide.
+// Format courant : `{ schema: 5, <identité>?, scenes, worldMap?, narratif }` (paquet de campagne
+// auto-suffisant, #765 ; enveloppe PLATE depuis #1467 L1b). Chaîné par la primitive générique
+// `migrateDoc` (même mécanique que les saves, `saves.ts`) — `schema` joue le rôle de `version` ; la
+// migration 2→3 injecte un `narratif` vide, la 4→5 aplatit la poche `meta`.
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { type NarratifBlock, emptyNarratif } from './campaignNarratif';
 import { validateDocument } from '../data/schemas/validate';
 import { projetSchema } from '../data/schemas/defs-scenes/projet';
 
-export interface ProjectMeta {
-  id: string;
-  label: string;
+/** Identité de campagne pour la bibliothèque (#766) — PLATE à la racine du document depuis #1467
+ *  L1b. Le trio `id`/`label`/`versionContenu` est tout-ou-rien (`projetSchema`). */
+export interface ProjectIdentite {
+  id?: string;
+  label?: string;
   icon?: string;
-  version: number;
+  /** Numéro de CONTENU de l'auteur — la version de FORME du document est `schema`. */
+  versionContenu?: number;
   desc?: string;
   auteur?: string;
 }
 
-export interface ProjectDoc {
-  schema: 4;
+export interface ProjectDoc extends ProjectIdentite {
+  schema: 5;
   scenes: Scene[];
   worldMap?: WorldMap;
   /** Axes de forces/faiblesses ACTIFS de la campagne (#409, ids de `src/data/axes.json`) — un
@@ -446,9 +450,6 @@ export interface ProjectDoc {
   /** Bloc NARRATIF embarqué (#765) : affaires, indices, presets de PNJ, objets de la campagne —
    *  référence la règle globale PAR ID, jamais réinjecté dans `src/data` (`campaignNarratif.ts`). */
   narratif: NarratifBlock;
-  /** Identité de campagne pour la bibliothèque (#766) — optionnelle au format, requise pour l'export
-   *  portable (dédup d'import par `meta.id` + version). */
-  meta?: ProjectMeta;
 }
 
 /** Axes RÉELLEMENT actifs d'un projet — `activeAxes` déclaré (validé) sinon le socle de base. SOURCE
@@ -457,7 +458,7 @@ export function resolveActiveAxes(doc: { activeAxes?: string[] }): string[] {
   return doc.activeAxes && doc.activeAxes.length > 0 ? doc.activeAxes : CORE_AXIS_IDS;
 }
 
-export const CURRENT_PROJECT_SCHEMA = 4;
+export const CURRENT_PROJECT_SCHEMA = 5;
 
 /** Renomme UNE clé d'un objet EN PLACE (position préservée), sans la créer si elle est absente. */
 function renommeCle(o: Record<string, unknown>, de: string, vers: string): Record<string, unknown> {
@@ -537,6 +538,27 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
       : doc.meta;
     return { ...doc, version: 4, schema: 4, scenes, ...(doc.meta !== undefined ? { meta } : {}) };
   },
+  /**
+   * `4` APLATIT l'enveloppe (#1467 L1b V-formeProjet) : les champs de la poche `meta` remontent à la
+   * RACINE et `version` y devient `versionContenu`. Le renommage n'est pas cosmétique, et le risque
+   * MESURÉ n'est pas un refus : `parseProject` pose `version: obj.schema` EN DERNIER dans le spread,
+   * donc un `version` de CONTENU à la racine serait ÉCRASÉ par le numéro de forme, puis PURGÉ avec la
+   * clé de travail avant le retour. Gardé sous le nom `version`, le numéro de l'auteur ne survivrait
+   * donc JAMAIS à un chargement — perte SILENCIEUSE (aucune erreur), et `importDecision` comparerait
+   * 0 à 0 pour l'éternité. Le nom distinct est ce qui met le numéro hors de portée de l'écrasement.
+   */
+  4: (doc) => {
+    const { meta, ...reste } = doc;
+    if (!meta || typeof meta !== 'object') return { ...reste, version: 5, schema: 5 };
+    const { version: versionContenu, ...identite } = meta as Record<string, unknown>;
+    return {
+      ...reste,
+      ...identite,
+      ...(versionContenu !== undefined ? { versionContenu } : {}),
+      version: 5,
+      schema: 5,
+    };
+  },
 };
 
 /** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (jamais un
@@ -547,7 +569,7 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
  *  refusés : ils n'ont jamais porté de `schema`. Chaque scène ressort passée par `normalizeScene`
  *  (`scene.ts`) : les collections requises qu'un vieux document (même schema 2) ne portait pas encore
  *  sont complétées ici, au SEUL point d'entrée, jamais par un `?? []` dispersé côté consommateur. */
-export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: WorldMap; activeAxes?: string[]; narratif: NarratifBlock; meta?: ProjectMeta } {
+export function parseProject(data: unknown): Omit<ProjectDoc, 'schema'> {
   const obj = data as Record<string, unknown> | null;
   if (!obj || typeof obj !== 'object') {
     throw new Error('Projet invalide : document absent ou mal formé.');
@@ -561,7 +583,7 @@ export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: World
   }
   // Porte UNIQUE du document (#1466) : `projetSchema` porte la FORME et les quatre sémantiques du
   // seam — FK `activeAxes` → `axes.json`, invariants du bloc narratif, FK intra-document
-  // `entity.presetId` → `narratif.presetsPnj`, forme de `meta`. Validé AVANT `resolvePortRef` et
+  // `entity.presetId` → `narratif.presetsPnj`, invariant d'identité. Validé AVANT `resolvePortRef` et
   // `normalizeScene` : le schéma voit le document tel qu'il est authoré. `version` est la clé de
   // travail de `migrateDoc`, pas un champ du document : elle ne lui est pas soumise.
   const { version: _version, ...doc } = migrated;
@@ -574,6 +596,6 @@ export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: World
   }
   const activeAxes = (migrated.activeAxes as string[] | undefined) ?? undefined;
   const narratif = migrated.narratif as NarratifBlock;
-  const meta = migrated.meta as ProjectMeta | undefined;
-  return { scenes: (migrated.scenes as Scene[]).map(normalizeScene), worldMap, activeAxes, narratif, meta };
+  const { schema: _schema, scenes: _scenes, worldMap: _wm, activeAxes: _aa, narratif: _na, ...identite } = doc;
+  return { ...(identite as ProjectIdentite), scenes: (migrated.scenes as Scene[]).map(normalizeScene), worldMap, activeAxes, narratif };
 }

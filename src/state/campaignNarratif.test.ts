@@ -96,13 +96,15 @@ describe('paquet de campagne schema 3 — bloc narratif', () => {
     expect(() => parseProject({ schema: 3, scenes: [scene], narratif: { affaires: [], indices: [] } })).toThrow(/narratif\.presetsPnj: Invalid input: expected array/);
   });
 
-  it('(h) doc schema 3 avec un meta valide parse et restitue meta.id', () => {
+  it('(h) doc schema 3 avec un meta valide parse et restitue l’id, APLATI à la racine', () => {
     const res = parseProject(doc(emptyNarratif(), { id: 'camp-x', label: 'Campagne X', version: 1 }));
-    expect(res.meta?.id).toBe('camp-x');
+    expect(res.id).toBe('camp-x');
+    expect(res.versionContenu).toBe(1);
+    expect('meta' in (res as Record<string, unknown>)).toBe(false);
   });
 
-  it('(i) LÈVE si meta est malformé (id vide)', () => {
-    expect(() => parseProject(doc(emptyNarratif(), { id: '', label: 'X', version: 1 }))).toThrow(/meta/i);
+  it('(i) LÈVE si l’identité est malformée (id vide) — chemin APLATI à la racine', () => {
+    expect(() => parseProject(doc(emptyNarratif(), { id: '', label: 'X', version: 1 }))).toThrow(/\bid\b/i);
   });
 
   // ── #1342 L3 : la référence PAR ID va jusqu'à la spécialisation d'une Compétence de profil.

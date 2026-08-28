@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/arene/arene-projet.json` (`projectDoc()` : projet schema 4, { schema, meta, narratif, scenes, worldMap }).
+ * Génère `src/scenes/arene/arene-projet.json` (`projectDoc()` : projet schema courant, { schema, <identité>, narratif, scenes, worldMap }).
  * OUTIL D'AUTEUR (itération de layout) — le JSON commité reste la source canonique, 100 %
  * éditable dans l'éditeur. Usage : `tsx scripts/arene/generate.mjs` (tsx car `scripts/campagne/lib.mjs` importe
  * `buildScene` du moteur — l'ASCII, l'architecture, les murs, les couches et les rencontres sont compilés par le compilateur
@@ -123,7 +123,7 @@ for (const s of scenes) {
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
 return projectDoc({
-  meta: { id: 'arene', label: 'L’Arène', icon: 'scenario/village', version: 1 },
+  identite: { id: 'arene', label: 'L’Arène', icon: 'scenario/village', versionContenu: 1 },
   scenes,
   worldMap,
 });

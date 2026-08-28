@@ -1,11 +1,9 @@
 {
- "schema": 4,
- "meta": {
-  "id": "arene",
-  "label": "L’Arène",
-  "icon": "scenario/village",
-  "version": 1
- },
+ "schema": 5,
+ "id": "arene",
+ "label": "L’Arène",
+ "icon": "scenario/village",
+ "versionContenu": 1,
  "narratif": {
   "affaires": [],
   "indices": [],

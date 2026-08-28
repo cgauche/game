@@ -324,7 +324,6 @@ export interface Objective {
  *  les AUTRES scènes du paquet échoueraient en silence. `null` = chemin Arène (scènes déjà seedées au
  *  module init de `sceneRegistry`) ou vieille save pré-#766. */
 export interface CampaignDoc {
-  meta?: import('./worldMap').ProjectMeta;
   scenes: Scene[];
   worldMap?: import('./worldMap').WorldMap | null;
   narratif: NarratifBlock;

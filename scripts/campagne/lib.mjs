@@ -1,6 +1,6 @@
 /**
  * Outillage d'AUTHORING de CAMPAGNE — helpers purs pour composer un projet (`ProjectDoc` schema 3 :
- * `{ schema: 4, meta?, narratif, scenes, worldMap }`, `projectDoc()` ci-dessous en est la SEULE fabrique)
+ * `{ schema: 5, <identité>?, narratif, scenes, worldMap }`, `projectDoc()` ci-dessous en est la SEULE fabrique)
  * partagé par TOUTES les campagnes (Arène, « Le Loup et la Saumure », …). Le JSON commité
  * (`src/scenes/<campagne>/<campagne>-projet.json`) reste la SOURCE CANONIQUE, 100 % éditable dans
  * l'éditeur : ce script n'est qu'un outil d'auteur (itération de layout), PAS un build — ne pas le
@@ -185,10 +185,11 @@ export function scene({ id, nom, desc, ambiance = 'exterieur', weather, music, s
 
 /** Fabrique UNIQUE du document de projet (schema courant, #809) — aucun générateur ne réécrit un
  *  littéral `schema:`. Ordre de clés reproduisant EXACTEMENT les paquets committés :
- *  `{ schema, meta, narratif, scenes, worldMap }`. `narratif` par défaut = bloc vide
+ *  `{ schema, <identité>, narratif, scenes, worldMap }` — l'enveloppe est PLATE (#1467 L1b), les
+ *  champs d'identité prenant la place qu'occupait la poche `meta`. `narratif` par défaut = bloc vide
  *  (`emptyNarratif()`, mêmes clés que `NarratifBlock`). */
-export function projectDoc({ meta, scenes, worldMap, narratif = emptyNarratif() }) {
-  return { schema: CURRENT_PROJECT_SCHEMA, meta, narratif, scenes, worldMap };
+export function projectDoc({ identite, scenes, worldMap, narratif = emptyNarratif() }) {
+  return { schema: CURRENT_PROJECT_SCHEMA, ...identite, narratif, scenes, worldMap };
 }
 
 let propSeq = 0;

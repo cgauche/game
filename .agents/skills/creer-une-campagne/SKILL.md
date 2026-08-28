@@ -38,9 +38,9 @@ labels ne servent qu'à l'AFFICHAGE et à la SAISIE (pickers de l'éditeur/Compe
 au final ce qu'on manipule c'est des ids (AGENTS.md, encadré « id STABLE », en bas de fichier).
 
 **4. Sortie = `src/scenes/<campagne>/<campagne>-projet.json`.**
-Format de paquet courant `{ schema: 3, scenes, worldMap, narratif, meta? }` (`ProjectDoc`,
+Format de paquet courant `{ schema: 5, <identité>?, scenes, worldMap, narratif }` (`ProjectDoc`,
 `src/state/worldMap.ts`), COMMITÉ, source canonique, 100 % rééditable dans l'éditeur en jeu ensuite —
-détail des blocs `narratif`/`meta` : § « Bloc narratif + meta (schema 3) » ci-dessous. `worldMap.places[].scene`
+détail des blocs `narratif`/identité : § « Bloc narratif + identité » ci-dessous. `worldMap.places[].scene`
 doit pointer vers un id de scène du tableau `scenes` (garde-fou explicite dans `generate.mjs`, cf.
 `arene/generate.mjs` l.111-119) ; `worldMap.routes` accepte DEUX routes entre les mêmes lieux (seul `id`
 est une clé) — utile pour un aller/retour asymétrique (embuscades différentes), mais le moteur ne force
@@ -57,11 +57,13 @@ toute régénération qui casserait silencieusement une ref.
 `docs/recette-navigateur.md` + `docs/test-scenarios.md`). Piège closure-sync Playwright : ne jamais lire
 le DOM dans le même `evaluate` que l'action qui le change.
 
-## Bloc narratif + meta (schema 3)
+## Bloc narratif + identité
 
-Un paquet de campagne porte deux blocs frères de `scenes`/`worldMap`, au NIVEAU PROJET (jamais per-scène) :
-`narratif` (`NarratifBlock`, `src/state/campaignNarratif.ts`) et `meta` (`ProjectMeta`, `src/state/worldMap.ts`,
-optionnel). Détail complet des champs, de la migration, du bridge `presetId`/`resolvePresetCreature` et de
+Un paquet de campagne porte, au NIVEAU PROJET (jamais per-scène), le bloc `narratif` (`NarratifBlock`,
+`src/state/campaignNarratif.ts`) frère de `scenes`/`worldMap`, ET son IDENTITÉ à PLAT à la racine du
+document (`ProjectIdentite`, `src/state/worldMap.ts` — `id`/`label`/`versionContenu` tout-ou-rien,
+`icon`/`desc`/`auteur` optionnels ; plus de poche `meta` depuis #1467 L1b). Détail complet des champs,
+de la migration, du bridge `presetId`/`resolvePresetCreature` et de
 l'éditeur (`NarratifEditor`) : **`docs/campagne-authoring.md` §10ter** (référence vivante, source de vérité —
 ne pas dupliquer ici).
 

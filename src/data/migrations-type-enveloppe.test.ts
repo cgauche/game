@@ -8,7 +8,10 @@
  * ressuscité (« arbitrage requis » sur toutes les entrées, rejeu ROUGE). Ils distinguent désormais
  * les deux par `typeAncien()` — 6a/6c à la vague 11b, 6b à la vague 12a, 6d/6e à la vague 12b.
  * CINQ scripts sont donc tenus ici ; ajouter une retouche sans ajouter son cas laisserait le geste le
- * plus risqué du lot sans témoin.
+ * plus risqué du lot sans témoin. Ce fichier tient la famille `type`→<clé métier> sur `src/data` ; la
+ * famille « bump de FORME » du document de projet (`src/scenes/<c>/<c>-projet.json`) est tenue par sa
+ * sœur `src/scenes/migrations-format-projet.test.ts`, même doctrine, `Cas` incompatible (ni `type`,
+ * ni cardinal, ni la même indentation de sérialiseur).
  *
  * RETOUCHER UN SCRIPT DÉJÀ JOUÉ est le geste le plus risqué du lot : ce test le tient. Il exécute les
  * VRAIS fichiers de `scripts/migrations/` — copiés dans un arbre temporaire pour que leur

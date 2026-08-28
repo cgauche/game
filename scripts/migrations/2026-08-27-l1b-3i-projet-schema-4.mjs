@@ -17,8 +17,9 @@
  *
  * ORDRE : ce script se rejoue APRÈS `…-3h-…` (ordre lexical) — la charge utile est déjà migrée quand
  * le numéro change.
- * IDEMPOTENT : un document déjà en `schema: 4` est reconnu migré ; rejouée, la migration n'écrit rien.
- * FAIL-FAST : `schema` absent, non numérique, ou d'une valeur autre que 3 ou 4 → sortie 1.
+ * IDEMPOTENT : un document déjà en `schema: 4` — ou PLUS RÉCENT, un bump ultérieur l'ayant emporté
+ * plus loin (`…-13-projet-forme.mjs` porte le 4 → 5) — est reconnu migré ; rejouée, elle n'écrit rien.
+ * FAIL-FAST : `schema` absent, non numérique, ou INFÉRIEUR à 3 → sortie 1.
  * FORMATAGE PRÉSERVÉ : sérialiseur des scènes `JSON.stringify(doc, null, 1) + '\n'`, vérifié AVANT
  * toute écriture.
  */
@@ -41,8 +42,9 @@ for (const d of fs.readdirSync(RACINE, { withFileTypes: true })) {
   const brut = fs.readFileSync(abs, 'utf8');
   const doc = JSON.parse(brut);
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
-  if (doc.schema === 4) { ecritures.push({ rel, abs, brut, out: brut, deja: true }); continue; }
-  if (doc.schema !== 3) { echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (3 ou 4 attendus)`); continue; }
+  if (typeof doc.schema !== 'number' || !Number.isFinite(doc.schema)) { echecs.push(`${rel} : \`schema\` absent ou non numérique (${JSON.stringify(doc.schema)})`); continue; }
+  if (doc.schema >= 4) { ecritures.push({ rel, abs, brut, out: brut, deja: true }); continue; }
+  if (doc.schema !== 3) { echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (3 ou plus récent attendus)`); continue; }
   // Le numéro change EN PLACE : `schema` garde sa position de première clé.
   ecritures.push({ rel, abs, brut, out: canonique({ ...doc, schema: 4 }), deja: false });
 }
@@ -60,10 +62,10 @@ for (const e of ecritures) {
   const apres = JSON.parse(e.out);
   const { schema: _a, ...resteApres } = apres;
   const { schema: _b, ...resteAvant } = JSON.parse(e.brut);
-  if (apres.schema !== 4 || JSON.stringify(resteApres) !== JSON.stringify(resteAvant)) {
+  if (apres.schema < 4 || JSON.stringify(resteApres) !== JSON.stringify(resteAvant)) {
     console.error(`VÉRIFICATION POST-ÉCRITURE ROUGE — ${e.rel} : schema=${apres.schema}, charge utile ${JSON.stringify(resteApres) === JSON.stringify(resteAvant) ? 'intacte' : 'ALTÉRÉE'}`);
     process.exit(1);
   }
-  console.log(`${e.rel} — schema ${e.deja ? '4 (déjà migré, no-op)' : '3 → 4'}`);
+  console.log(`${e.rel} — schema ${e.deja ? `${apres.schema} (déjà migré, no-op)` : '3 → 4'}`);
 }
 console.log(`TOTAL : ${migres} document(s) bumpé(s) sur ${ecritures.length}.`);

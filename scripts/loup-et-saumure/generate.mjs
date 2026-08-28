@@ -727,7 +727,7 @@ for (const s of scenes) {
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
 return projectDoc({
-  meta: { id: 'loup-et-saumure', label: 'Le Loup et la Saumure', icon: 'scenario/naval', version: 1 },
+  identite: { id: 'loup-et-saumure', label: 'Le Loup et la Saumure', icon: 'scenario/naval', versionContenu: 1 },
   scenes,
   worldMap,
 });

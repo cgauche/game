@@ -4,7 +4,7 @@
  * amont : l'éditeur affiche « JSON invalide », pas un crash), jamais être parsé en silence.
  */
 import { describe, it, expect } from 'vitest';
-import { parseProject, declutterPositions, resolvePortRef, placeServices, type RenderPoint, type MapPlace } from './worldMap';
+import { parseProject, declutterPositions, resolvePortRef, placeServices, CURRENT_PROJECT_SCHEMA, type RenderPoint, type MapPlace } from './worldMap';
 import { lieuxServices } from '../data';
 import { validateScene } from './validateScene';
 import type { Scene } from './scene';
@@ -285,9 +285,12 @@ describe('parseProject — porte de schéma', () => {
     expect(res.scenes.map((s) => s.id)).toEqual(['s1']);
   });
 
-  it('un schema FUTUR (5) est refusé AVANT la porte, avec un message actionnable', () => {
-    expect(() => parseProject({ schema: 5, scenes: [scene('s1')], narratif: narratifVide }))
-      .toThrow(/Projet invalide ou version non supportée.*schema=5/);
+  it('un schema FUTUR est refusé AVANT la porte, avec un message actionnable', () => {
+    // Le futur se DÉRIVE du courant : un littéral se périme en silence au prochain bump (il l'a fait
+    // au passage à 5, où « le futur » était devenu le présent et ne mesurait plus rien).
+    const futur = CURRENT_PROJECT_SCHEMA + 1;
+    expect(() => parseProject({ schema: futur, scenes: [scene('s1')], narratif: narratifVide }))
+      .toThrow(new RegExp(`Projet invalide ou version non supportée.*schema=${futur}`));
   });
 
   it('`encounters[].enemies` (forme legacy) est refusé PAR SON NOM, jamais absorbé en silence', () => {

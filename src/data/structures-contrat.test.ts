@@ -353,7 +353,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
       // 0 porteur en donnée ET 0 consommateur mesuré, le champ MEURT du def. Le cliquet SUIT la
       // baisse (même doctrine qu'à `STRUCTURES_FORMES` ci-dessus).
-      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 23],
+      // Cliquet REMONTÉ 23 → 27 (#1467 L1b V-formeProjet) : c'est la COUVERTURE du relevé qui a
+      // changé, pas la donnée ni les defs — même mécanique que `STRUCTURES_REDECLARATIONS` ci-dessous.
+      // Ce scan mesure les clés de RACINE d'un document ; `auteur` (identité de campagne #766,
+      // optionnelle, portée par 0 des 4 projets committés) vivait sous la poche `meta`, où il lui
+      // échappait. L'aplatissement de l'enveloppe le SURFACE sur les 4 documents. La donnée est
+      // INCHANGÉE : aucun projet n'en portait avant, aucun n'en porte après.
+      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 27],
       // Cliquet DESCENDU 6 → 5 : le stock est à 5 depuis un lot antérieur et la marge n'avait pas été
       // reprise. Aucune raison de garder un cran libre : il servirait à absorber un homonyme neuf.
       ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES.length, 5],
@@ -367,7 +373,10 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
       // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
       // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
-      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 77],
+      // Cliquet DESCENDU 77 → 73 (#1467 L1b V-formeProjet) : les 4 lignes « identité | `id` | clé
+      // absente » des projets sont SOLDéES — l'enveloppe aplatie pose `id`/`label` à la RACINE des 4
+      // documents. Le cliquet SUIT la baisse.
+      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 73],
       ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 91],
       ['STRUCTURES_OPS', STRUCTURES_OPS.length, 403],
     ] as const;

@@ -629,10 +629,10 @@ nombre d’entrées qui la portent.
 | `src/data/water-exposure.json` | object | pipe à la racine | config | 1 | `desc`:string(1) `diseases`:array(1) `id`:string(1) `label`:string(1) `modifiers`:array(1) `rollModPerNegativeSL`:number(1) `source`:object(1) `test`:object(1) `type`:string(1) |
 | `src/data/weaponGroups.json` | array | liste | entité | 38 | `combat`:string(18) `id`:string(38) `kind`:string(38) `label`:string(38) `material`:string(5) `qualities`:array(3) `source`:object(38) `type`:string(38) |
 | `src/data/weather.json` | object | pipe à la racine | config | 1 | `conditions`:array(1) `id`:string(1) `label`:string(1) `physicalTestChars`:array(1) `physicalTestCharsSource`:object(1) `seasons`:array(1) `type`:string(1) |
-| `src/scenes/arene/arene-projet.json` | object | config (objet unique) | config | 1 | `meta`:object(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) `worldMap`:object(1) |
-| `src/scenes/barge-du-sel/barge-du-sel-projet.json` | object | config (objet unique) | config | 1 | `meta`:object(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) `worldMap`:object(1) |
-| `src/scenes/diligence/diligence-projet.json` | object | config (objet unique) | config | 1 | `meta`:object(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) |
-| `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` | object | config (objet unique) | config | 1 | `meta`:object(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) `worldMap`:object(1) |
+| `src/scenes/arene/arene-projet.json` | object | config (objet unique) | config | 1 | `icon`:string(1) `id`:string(1) `label`:string(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) `versionContenu`:number(1) `worldMap`:object(1) |
+| `src/scenes/barge-du-sel/barge-du-sel-projet.json` | object | config (objet unique) | config | 1 | `icon`:string(1) `id`:string(1) `label`:string(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) `versionContenu`:number(1) `worldMap`:object(1) |
+| `src/scenes/diligence/diligence-projet.json` | object | config (objet unique) | config | 1 | `icon`:string(1) `id`:string(1) `label`:string(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) `versionContenu`:number(1) |
+| `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` | object | config (objet unique) | config | 1 | `icon`:string(1) `id`:string(1) `label`:string(1) `narratif`:object(1) `scenes`:array(1) `schema`:number(1) `versionContenu`:number(1) `worldMap`:object(1) |
 
 ### 2.2 Fréquence globale des signatures d’entrée
 
@@ -690,10 +690,10 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 
 | Rôle | Clé | Statut de la clé | Documents | Documents (n entrées) |
 |---|---|---|---|---|
-| identité | `id` | cible (`string`) | 119 | aa-criticals.json(1) actions.json(55) activities.json(62) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) … |
+| identité | `id` | cible (`string`) | 123 | aa-criticals.json(1) actions.json(55) activities.json(62) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) … |
 | identité | `key` | divergente | 0 | — |
 | identité | `nom` | divergente | 0 | — |
-| libellé | `label` | cible (`string`) | 119 | aa-criticals.json(1) actions.json(55) activities.json(62) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) … |
+| libellé | `label` | cible (`string`) | 123 | aa-criticals.json(1) actions.json(55) activities.json(62) advancementCosts.json(15) ambiance.json(1) arcane-phenomena.json(1) artillery-misfire.json(1) astrology.json(5) axes.json(9) books.json(29) breath-types.json(6) calendarIntercalary.json(6) … |
 | libellé | `nom` | divergente | 0 | — |
 | libellé | `title` | divergente | 2 | creatures.json(490) gods.json(40) |
 | prose | `desc` | cible | 38 | activities.json(61) astrology.json(5) axes.json(9) books.json(18) careers.json(108) characteristics.json(19) classes.json(9) creatures.json(195) crew-roles.json(9) domains.json(14) etats.json(21) gods.json(40) … |
@@ -708,15 +708,14 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 | méta libre | `__lecture` | divergente | 0 | — |
 | méta libre | `__livres` | divergente | 0 | — |
 
-Groupes mesurés : **125** jeux d’ENTRÉES DE RACINE et **134** chemins de
-DOCUMENTS EMBARQUÉS (**2773** objets). **77** divergences
+Groupes mesurés : **125** jeux d’ENTRÉES DE RACINE et **130** chemins de
+DOCUMENTS EMBARQUÉS (**2769** objets). **73** divergences
 (rôle × clé × document × chemin) au stock `STRUCTURES_ENVELOPPE` (`scripts/guards/lib/structuresStock.mjs`,
 garde `src/data/structures-contrat.test.ts`) — une ligne se solde en migrant l’enveloppe, la ligne part
 dans le MÊME commit :
 
 | Rôle | Motif | Groupes |
 |---|---|---|
-| identité | clé absente | 4 |
 | identité | clé divergente | 12 |
 | libellé | clé divergente | 9 |
 | source | clé absente | 52 |
@@ -742,7 +741,6 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `arcane-phenomena.json` | `saturationLevels` | 5 | `corrupts`(1) `desc`(5) `effectsMax`(5) `effectsMin`(5) `id`(5) `label`(5) `order`(5) `source`(5) `testMods`(3) |
 | `arcane-phenomena.json` | `tables` | 3 | `desc`(3) `die`(3) `id`(3) `label`(3) `rows`(3) `source`(3) |
 | `arcane-phenomena.json` | `windSaturationEffects` | 8 | `domainId`(8) `effects`(8) `environments`(8) `id`(8) `source`(8) `surnoms`(8) `wind`(8) |
-| `arene-projet.json` | `meta` | 1 | `icon`(1) `id`(1) `label`(1) `version`(1) |
 | `arene-projet.json` | `scenes` | 18 | `ambiance`(18) `ambientLight`(18) `architecture`(2) `desc`(18) `dialogues`(18) `dimensions`(18) `effectZones`(2) `encounters`(18) `entities`(18) `entryPoints`(1) `flags`(18) `id`(18) `layers`(18) `metresPerTile`(18) `music`(1) `nom`(18) `rest`(14) `startMessage`(18) `triggers`(18) `walls`(2) `weather`(3) |
 | `arene-projet.json` | `scenes.architecture` | 2 | `facades`(2) `id`(2) `label`(2) `masses`(2) `storeys`(2) `style`(2) |
 | `arene-projet.json` | `scenes.architecture.facades` | 3 | `appearance`(3) `edges`(3) `features`(3) `id`(3) `roomZoneIds`(3) `z`(3) |
@@ -760,7 +758,6 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `arene-projet.json` | `worldMap.places` | 4 | `entry`(1) `icon`(4) `id`(4) `label`(4) `pos`(4) `scene`(4) |
 | `arene-projet.json` | `worldMap.routes` | 4 | `a`(4) `ambush`(4) `b`(4) `id`(4) `inns`(1) `km`(4) `modes`(4) `perilDie`(1) `perils`(3) |
 | `artillery-misfire.json` | `entries` | 4 | `destroyed`(4) `id`(4) `label`(4) `location`(4) `max`(4) `min`(4) `note`(4) `perSalveIndex`(4) `strayFire`(1) |
-| `barge-du-sel-projet.json` | `meta` | 1 | `icon`(1) `id`(1) `label`(1) `version`(1) |
 | `barge-du-sel-projet.json` | `scenes` | 3 | `ambiance`(3) `ambientLight`(3) `desc`(3) `dialogues`(3) `dimensions`(3) `encounters`(3) `entities`(3) `entryPoints`(1) `flags`(3) `id`(3) `layers`(3) `metresPerTile`(3) `nom`(3) `triggers`(3) `weather`(1) |
 | `barge-du-sel-projet.json` | `scenes.encounters` | 1 | `id`(1) `members`(1) `onVictory`(1) `surprise`(1) `victoryCondition`(1) |
 | `barge-du-sel-projet.json` | `scenes.encounters.onVictory.steps.effect` | 1 | `desc`(1) `id`(1) `type`(1) |
@@ -780,7 +777,6 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `criticals.json` | `jambe` | 20 | `amputation`(4) `desc`(20) `escalation`(3) `id`(20) `label`(20) `lethal`(1) `maison`(1) `max`(20) `min`(20) `ops`(19) `resist`(8) `source`(20) `traumas`(6) |
 | `criticals.json` | `tete` | 20 | `amputation`(5) `desc`(20) `escalation`(4) `id`(20) `label`(20) `lethal`(1) `max`(20) `min`(20) `ops`(19) `resist`(3) `source`(20) `traumas`(4) |
 | `decorPalette.json` | `(racine)` | 1 | `entries`(1) `id`(1) `label`(1) `type`(1) |
-| `diligence-projet.json` | `meta` | 1 | `icon`(1) `id`(1) `label`(1) `version`(1) |
 | `diligence-projet.json` | `scenes` | 1 | `ambiance`(1) `architecture`(1) `dialogues`(1) `dimensions`(1) `effectZones`(1) `encounters`(1) `entities`(1) `flags`(1) `id`(1) `layers`(1) `metresPerTile`(1) `nom`(1) `rest`(1) `restZones`(1) `triggers`(1) `walls`(1) |
 | `diligence-projet.json` | `scenes.architecture` | 1 | `facades`(1) `id`(1) `label`(1) `masses`(1) `storeys`(1) `style`(1) |
 | `diligence-projet.json` | `scenes.architecture.facades` | 41 | `appearance`(41) `edges`(41) `features`(25) `id`(41) `roomZoneIds`(37) `z`(41) |
@@ -793,7 +789,6 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `drunkenness.json` | `entries` | 5 | `desc`(5) `id`(5) `label`(5) `max`(5) `min`(5) `ops`(3) `outcome`(5) |
 | `incidents-monture.json` | `entries` | 4 | `desc`(4) `id`(4) `label`(4) `max`(4) `min`(4) `mount`(4) |
 | `land-cargo.json` | `cargoes` | 9 | `avail`(7) `echangeable`(2) `hint`(2) `id`(9) `label`(9) `price`(7) `source`(9) `tradeHub`(1) `wine`(1) |
-| `loup-et-saumure-projet.json` | `meta` | 1 | `icon`(1) `id`(1) `label`(1) `version`(1) |
 | `loup-et-saumure-projet.json` | `scenes` | 5 | `ambiance`(5) `ambientLight`(5) `desc`(5) `dialogues`(5) `dimensions`(5) `encounters`(5) `entities`(5) `entryPoints`(5) `flags`(5) `id`(5) `layers`(5) `metresPerTile`(5) `nom`(5) `rest`(2) `triggers`(5) `weather`(4) |
 | `loup-et-saumure-projet.json` | `scenes.dialogues` | 8 | `id`(8) `nodes`(8) `start`(8) |
 | `loup-et-saumure-projet.json` | `scenes.dialogues.nodes` | 17 | `choices`(17) `desc`(17) `id`(17) |
@@ -880,7 +875,7 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 
 #### A. Par défaut — sans lot de peuplement (stock `STRUCTURES_DEFAUT`)
 
-**81** documents portent au moins une clé déclarée jamais observée, **366** clés en tout
+**81** documents portent au moins une clé déclarée jamais observée, **374** clés en tout
 (stock `STRUCTURES_DEFAUT`, `scripts/guards/lib/structuresStock.mjs`, garde `src/data/structures-contrat.test.ts`).
 
 | Document | Clés | Détail |
@@ -962,10 +957,10 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 | `vehicles.json` | 3 | `alsoIn` `labelF` `maison` |
 | `voyage-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `weaponGroups.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `arene-projet.json` | 1 | `activeAxes` |
-| `barge-du-sel-projet.json` | 1 | `activeAxes` |
-| `diligence-projet.json` | 2 | `activeAxes` `worldMap` |
-| `loup-et-saumure-projet.json` | 1 | `activeAxes` |
+| `arene-projet.json` | 3 | `activeAxes` `auteur` `desc` |
+| `barge-du-sel-projet.json` | 3 | `activeAxes` `auteur` `desc` |
+| `diligence-projet.json` | 4 | `activeAxes` `auteur` `desc` `worldMap` |
+| `loup-et-saumure-projet.json` | 3 | `activeAxes` `auteur` `desc` |
 
 #### B. `cible-declaree` — déclaré-avant-posé ASSUMÉ (émission, jamais un stock)
 
@@ -1065,7 +1060,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **823** (cible 146 · declaree 6 · historique 228 · divergente 443). Objets JSON parcourus : **52048**, dont **36019** portent une forme
+Lignes concept × dataset × champ × forme : **823** (cible 146 · declaree 6 · historique 228 · divergente 443). Objets JSON parcourus : **52044**, dont **36019** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **93**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
@@ -2326,7 +2321,7 @@ clé annonçait une FK (`clé de référence non résolue`), `L1b #1467` pour le
 | `tavernGames.json` | `dice` | `count,faces` | clé réservée | 1 |
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 
-Au-delà des orphelines, **11652** objets sur **52048** ne sont portés par AUCUNE
+Au-delà des orphelines, **11652** objets sur **52044** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures

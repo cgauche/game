@@ -24,7 +24,7 @@ export class PlayerFacingImportError extends Error {}
 /** Un `SavedProject` construit depuis le texte d'un fichier importé. Fonction PURE testable : throw
  *  un `PlayerFacingImportError` (message déjà en langage JOUEUR) sur JSON illisible ou projet sans
  *  scène ; toute autre invalidité passe par la validation `parseProject` (#765, message d'authoring,
- *  jamais affiché tel quel — voir `playerImportError`). L'id repart de `meta.id` si présent (dédup
+ *  jamais affiché tel quel — voir `playerImportError`). L'id repart de l'`id` du document si présent (dédup
  *  portable, #766) sinon un id frais. */
 export function buildImportedProject(text: string, fallbackLabel: string): SavedProject {
   let data: unknown;
@@ -33,10 +33,13 @@ export function buildImportedProject(text: string, fallbackLabel: string): Saved
   } catch {
     throw new PlayerFacingImportError('Fichier illisible : ce n’est pas du JSON valide.');
   }
-  const { scenes, worldMap, narratif, meta } = parseProject(data);
+  // `activeAxes` est destructuré NOMMÉMENT (comme `src/ui/editor/Editor.tsx`) : le laisser tomber
+  // dans le rest le rendrait invisible à la relecture, alors qu'il doit être RECONDUIT au document
+  // reconstruit ci-dessous — sans quoi une campagne importée perdrait ses axes actifs (#409).
+  const { scenes, worldMap, activeAxes, narratif, ...identite } = parseProject(data);
   if (!scenes.length) throw new PlayerFacingImportError('Projet invalide : aucune scène.');
-  const label = meta?.label ?? scenes[0].nom ?? fallbackLabel;
-  const id = meta?.id ?? `import-${fileSlug(label)}-${Date.now()}`;
+  const label = identite.label ?? scenes[0].nom ?? fallbackLabel;
+  const id = identite.id ?? `import-${fileSlug(label)}-${Date.now()}`;
   return {
     id,
     label,
@@ -45,16 +48,17 @@ export function buildImportedProject(text: string, fallbackLabel: string): Saved
     published: true, // apparaît aussi dans le picker « Nouvelle partie »
     project: {
       schema: CURRENT_PROJECT_SCHEMA,
+      ...identite,
       scenes,
       ...(worldMap ? { worldMap } : {}),
+      ...(activeAxes ? { activeAxes } : {}),
       narratif,
-      ...(meta ? { meta } : {}),
     },
   };
 }
 
 /** Message d'échec d'import à afficher au JOUEUR (jamais le langage de schéma/authoring de
- *  `parseProject`/`projetSchema`, qui parle de champs — `meta.version`, `schema=`, noms d'id).
+ *  `parseProject`/`projetSchema`, qui parle de champs — `versionContenu`, `schema=`, noms d'id).
  *  Le tri est STRUCTUREL : `PlayerFacingImportError` porte un message déjà écrit pour le joueur
  *  (JSON illisible, projet sans scène) — jamais une comparaison de TEXTE (une reformulation FR ne
  *  doit jamais changer le comportement). Toute autre erreur est journalée (`console.error`,
@@ -70,7 +74,7 @@ export function playerImportError(err: unknown): string {
 }
 
 /** Décision d'import face à un éventuel doublon d'id dans la bibliothèque locale (#766 lot C DoD :
- *  « même `meta.id` + version supérieure → remplacement PROPOSÉ, jamais silencieux »). Fonction PURE
+ *  « même `id` + version supérieure → remplacement PROPOSÉ, jamais silencieux »). Fonction PURE
  *  testable : 'new' = aucun existant, import direct ; 'replace-newer'/'replace-older-or-equal' =
  *  existant de même id, la version tranche seulement le LIBELLÉ du prompt de confirmation — dans les
  *  deux cas le remplacement reste soumis à confirmation, jamais silencieux. */
@@ -79,8 +83,8 @@ export function importDecision(
   existing: SavedProject | undefined,
 ): 'new' | 'replace-newer' | 'replace-older-or-equal' {
   if (!existing) return 'new';
-  const vNew = entry.project.meta?.version ?? 0;
-  const vExist = existing.project.meta?.version ?? 0;
+  const vNew = entry.project.versionContenu ?? 0;
+  const vExist = existing.project.versionContenu ?? 0;
   return vNew > vExist ? 'replace-newer' : 'replace-older-or-equal';
 }
 
@@ -94,13 +98,16 @@ function toProjectDoc(e: Entry): ProjectDoc {
       narratif: e.bc.narratif,
     };
   }
-  const { scenes, worldMap, narratif, meta } = parseProject(e.sp.project);
+  // `activeAxes` NOMMÉ et RECONDUIT (même raison qu'à `buildImportedProject`) : un export de
+  // bibliothèque qui le perdrait rendrait un document PORTABLE amputé de ses axes (#409).
+  const { scenes, worldMap, activeAxes, narratif, ...identite } = parseProject(e.sp.project);
   return {
     schema: CURRENT_PROJECT_SCHEMA,
+    ...identite,
     scenes,
     ...(worldMap ? { worldMap } : {}),
+    ...(activeAxes ? { activeAxes } : {}),
     narratif,
-    ...(meta ? { meta } : {}),
   };
 }
 
@@ -132,8 +139,8 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
         const existing = projectsLoad().find((p) => p.id === entry.id);
         const decision = importDecision(entry, existing);
         if (decision !== 'new') {
-          const vNew = entry.project.meta?.version ?? 0;
-          const vExist = existing!.project.meta?.version ?? 0;
+          const vNew = entry.project.versionContenu ?? 0;
+          const vExist = existing!.project.versionContenu ?? 0;
           const msg = decision === 'replace-newer'
             ? `Une campagne « ${existing!.label} » (v${vExist}) est déjà dans votre bibliothèque. La remplacer par la version ${vNew} importée ?`
             : `La version importée (v${vNew}) n’est pas plus récente que celle de votre bibliothèque (v${vExist}). Remplacer quand même « ${existing!.label} » ?`;
@@ -236,11 +243,11 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
           <span className="chip">{selected.kind === 'builtin' ? 'Campagne du jeu' : 'Ma bibliothèque'}</span>
           {selected.kind === 'library' && selected.sp.published && <span className="chip">publiée</span>}
         </div>
-        {selected.kind === 'library' && selected.sp.project.meta?.desc && (
-          <p>{selected.sp.project.meta.desc}</p>
+        {selected.kind === 'library' && selected.sp.project.desc && (
+          <p>{selected.sp.project.desc}</p>
         )}
-        {selected.kind === 'library' && selected.sp.project.meta?.auteur && (
-          <p className="mini-title">Par {selected.sp.project.meta.auteur}</p>
+        {selected.kind === 'library' && selected.sp.project.auteur && (
+          <p className="mini-title">Par {selected.sp.project.auteur}</p>
         )}
         <div className="modal-actions">
           <button type="button" className="btn btn-primary" onClick={() => play(selected)}>Jouer</button>

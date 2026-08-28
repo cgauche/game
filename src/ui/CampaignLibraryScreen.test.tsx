@@ -7,6 +7,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { CampaignLibraryScreen, buildImportedProject, importDecision, playerImportError, PlayerFacingImportError } from './CampaignLibraryScreen';
 import { allBuiltinCampaigns } from '../scenes/campaign';
+import { CURRENT_PROJECT_SCHEMA } from '../state/worldMap';
 import {
   projectSave,
   projectsLoad,
@@ -39,11 +40,36 @@ describe('buildImportedProject — import portable (#766)', () => {
   it('construit un SavedProject publié à partir d’un document de projet valide', () => {
     const entry = buildImportedProject(builtinDocJson(0), 'depuis-fichier');
     expect(entry.published).toBe(true);
-    expect(entry.project.schema).toBe(4);
+    expect(entry.project.schema).toBe(CURRENT_PROJECT_SCHEMA);
     expect(entry.project.scenes.length).toBe(allBuiltinCampaigns[0].scenes.length);
     expect(entry.startSceneId).toBe(entry.project.scenes[0].id);
     expect(entry.id).toBeTruthy();
     expect(entry.label).toBeTruthy();
+  });
+
+  it('ROUND-TRIP : `activeAxes` SURVIT à l’import puis au ré-export (#409, #1467 L1b)', () => {
+    // Le document PORTABLE porte ses axes actifs. Ils traversent `parseProject` — qui les rend
+    // nommément — et doivent être RECONDUITS au `SavedProject` : sinon une campagne importée perd
+    // ses axes en silence, et son ré-export les perd pour de bon.
+    const bc = allBuiltinCampaigns[0];
+    const axes = ['negoce', 'navigation'];
+    const doc = JSON.stringify({
+      schema: CURRENT_PROJECT_SCHEMA,
+      id: 'axes-fixture',
+      label: 'Campagne à axes',
+      versionContenu: 1,
+      scenes: bc.scenes,
+      ...(bc.worldMap ? { worldMap: bc.worldMap } : {}),
+      activeAxes: axes,
+      narratif: bc.narratif,
+    });
+
+    const entry = buildImportedProject(doc, 'x');
+    expect(entry.project.activeAxes, 'axes PERDUS à l’import').toEqual(axes);
+
+    // Second tour : ce qui a été stocké se relit encore avec ses axes.
+    const relu = buildImportedProject(JSON.stringify(entry.project), 'x');
+    expect(relu.project.activeAxes, 'axes PERDUS au ré-export').toEqual(axes);
   });
 
   it('utilise le nom de fichier en repli quand aucune méta/scène nommée', () => {
@@ -70,7 +96,7 @@ describe('buildImportedProject — import portable (#766)', () => {
 
 describe('importDecision — remplacement PROPOSÉ jamais silencieux (#766 lot C)', () => {
   function withVersion(entry: ReturnType<typeof buildImportedProject>, version: number) {
-    return { ...entry, project: { ...entry.project, meta: { ...entry.project.meta, id: entry.id, label: entry.label, version } } };
+    return { ...entry, project: { ...entry.project, id: entry.id, label: entry.label, versionContenu: version } };
   }
 
   it('aucun existant de même id → \'new\' (import direct)', () => {
@@ -157,7 +183,7 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
     await unmount();
   });
 
-  it('ré-importer un même meta.id PROPOSE le remplacement (window.confirm) au lieu d’écraser silencieusement (#766)', async () => {
+  it('ré-importer un même id PROPOSE le remplacement (window.confirm) au lieu d’écraser silencieusement (#766)', async () => {
     const bc = allBuiltinCampaigns[0];
     const docFor = (version: number) => JSON.stringify({
       schema: 3,
@@ -168,7 +194,7 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
     });
     const v1 = buildImportedProject(docFor(1), 'x');
     projectSave(v1);
-    expect(projectsLoad().find((p) => p.id === 'dup-fixture')?.project.meta?.version).toBe(1);
+    expect(projectsLoad().find((p) => p.id === 'dup-fixture')?.project.versionContenu).toBe(1);
 
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     await mount();
@@ -183,7 +209,7 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
 
     expect(confirmSpy).toHaveBeenCalled();
     // Confirmation REFUSÉE → la version en bibliothèque reste inchangée (jamais un écrasement silencieux).
-    expect(projectsLoad().find((p) => p.id === 'dup-fixture')?.project.meta?.version).toBe(1);
+    expect(projectsLoad().find((p) => p.id === 'dup-fixture')?.project.versionContenu).toBe(1);
     await unmount();
   });
 

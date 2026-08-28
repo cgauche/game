@@ -21,7 +21,7 @@ import { downloadText } from '../../state/fileIo';
 import { sceneToAscii, type SceneAsciiExport } from '../../state/sceneToAscii';
 import type { TestScenario } from '../../scenes/test-scenarios';
 import type { BuiltinCampaign } from '../../scenes/campaign';
-import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, type ProjectMeta } from '../../state/worldMap';
+import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, type ProjectIdentite } from '../../state/worldMap';
 import { type NarratifBlock, emptyNarratif } from '../../state/campaignNarratif';
 import { nextEntityId } from '../../state/entityId';
 import {
@@ -131,7 +131,7 @@ export function Editor({
   /** Bloc NARRATIF du paquet de campagne (#765) — affaires/indices/PNJ/objets, préservé au round-trip. */
   const [narratif, setNarratif] = useState<NarratifBlock>(emptyNarratif());
   /** Identité de campagne (#765/#766) — préservée au round-trip, absente d'un projet legacy sans identité. */
-  const [meta, setMeta] = useState<ProjectMeta | undefined>(undefined);
+  const [identite, setIdentite] = useState<ProjectIdentite | undefined>(undefined);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState('La Diligence');
   const [published, setPublished] = useState(false);
@@ -550,20 +550,20 @@ export function Editor({
   // --- Fichier : import/export/bibliothèque/test ---
   function exportJson() {
     // Exporte le PROJET v2 (scènes + carte du monde) ; la première scène est l'entrée.
-    const project = { schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif, ...(meta ? { meta } : {}) };
+    const project = { schema: CURRENT_PROJECT_SCHEMA, ...(identite ?? {}), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif };
     downloadText(`${scene.id}-projet.json`, JSON.stringify(project, null, 2));
   }
   function importJson(file: File) {
     file.text().then((txt) => {
       try {
         const data = JSON.parse(txt);
-        const { scenes, worldMap: wm, activeAxes: aa, narratif: na, meta: ma } = parseProject(data); // paquet ({ schema: 4, scenes, worldMap?, activeAxes?, narratif, meta? })
+        const { scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(data); // paquet ({ schema: 5, <identité>?, scenes, worldMap?, activeAxes?, narratif })
         if (!scenes.length) return;
         setOtherScenes(scenes.slice(1).map(clone));
         setWorldMap(wm ?? null);
         setActiveAxes(aa);
         setNarratif(na);
-        setMeta(ma);
+        setIdentite(ident);
         setSel(null);
         resetScene(clone(scenes[0]));
       } catch {
@@ -584,7 +584,7 @@ export function Editor({
     setWorldMap(sc.worldMap ? JSON.parse(JSON.stringify(sc.worldMap)) : null);
     setActiveAxes(undefined);
     setNarratif(emptyNarratif());
-    setMeta(undefined);
+    setIdentite(undefined);
     setProjectId(null);
     setProjectName(sc.title);
     setPublished(false);
@@ -602,7 +602,7 @@ export function Editor({
     setWorldMap(bc.worldMap ? JSON.parse(JSON.stringify(bc.worldMap)) : null);
     setActiveAxes(undefined);
     setNarratif(emptyNarratif());
-    setMeta({ id: bc.id, label: bc.label, icon: bc.icon, version: 1 });
+    setIdentite({ id: bc.id, label: bc.label, icon: bc.icon, versionContenu: 1 });
     setProjectId(null);
     setProjectName(`Copie de ${bc.label}`);
     setPublished(false);
@@ -615,9 +615,9 @@ export function Editor({
     let wm: WorldMap | undefined;
     let aa: string[] | undefined;
     let na: NarratifBlock;
-    let ma: ProjectMeta | undefined;
+    let ident: ProjectIdentite;
     try {
-      ({ scenes, worldMap: wm, activeAxes: aa, narratif: na, meta: ma } = parseProject(p.project)); // même validation/migration que l'import JSON
+      ({ scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(p.project)); // même validation/migration que l'import JSON
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Projet invalide');
       return;
@@ -627,7 +627,7 @@ export function Editor({
     setWorldMap(wm ? JSON.parse(JSON.stringify(wm)) : null);
     setActiveAxes(aa);
     setNarratif(na);
-    setMeta(ma);
+    setIdentite(ident);
     setProjectId(p.id);
     setProjectName(p.label);
     setPublished(p.published);
@@ -645,7 +645,7 @@ export function Editor({
       startSceneId,
       savedAt: Date.now(),
       published: pub,
-      project: { schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif, ...(meta ? { meta } : {}) },
+      project: { schema: CURRENT_PROJECT_SCHEMA, ...(identite ?? {}), scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif },
     });
     if (!res.ok) {
       setSaveError(res.message);
@@ -672,7 +672,7 @@ export function Editor({
     setWorldMap(null);
     setActiveAxes(undefined);
     setNarratif(emptyNarratif());
-    setMeta(undefined);
+    setIdentite(undefined);
     setProjectId(null);
     setProjectName('Nouveau projet');
     setPublished(false);

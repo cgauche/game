@@ -264,7 +264,7 @@ for (const s of scenes) {
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
 return projectDoc({
-  meta: { id: 'barge-du-sel', label: 'La Barge du Sel', icon: 'scenario/naval', version: 1 },
+  identite: { id: 'barge-du-sel', label: 'La Barge du Sel', icon: 'scenario/naval', versionContenu: 1 },
   scenes,
   worldMap,
 });

@@ -819,6 +819,16 @@ export const STRUCTURES_DEFAUT = [
   { dataset: "diligence-projet.json", cle: "activeAxes", date: "2026-08-26" },
   { dataset: "diligence-projet.json", cle: "worldMap", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", cle: "activeAxes", date: "2026-08-26" },
+  // `auteur` : champ d'identité de campagne (#766), optionnel, qu'AUCUN des 4 projets committés ne
+  // porte (ils sont tous de première main). Ces 4 lignes ne sont pas une dette NEUVE : le champ
+  // était déjà déclaré-jamais-observé sous la poche `meta`, où ce scan — qui mesure les clés de
+  // RACINE — ne le voyait pas. L'aplatissement de l'enveloppe (#1467 L1b V-formeProjet) le rend
+  // VISIBLE : c'est la couverture du détecteur qui s'étend, pas la donnée qui régresse. Même nature
+  // et mêmes documents qu'`activeAxes` ci-dessus ; se solde en retirant le champ ou en l'écrivant.
+  { dataset: "arene-projet.json", cle: "auteur", date: "2026-08-28" },
+  { dataset: "barge-du-sel-projet.json", cle: "auteur", date: "2026-08-28" },
+  { dataset: "diligence-projet.json", cle: "auteur", date: "2026-08-28" },
+  { dataset: "loup-et-saumure-projet.json", cle: "auteur", date: "2026-08-28" },
 ];
 
 export const STRUCTURES_HOMONYMES = [
@@ -958,10 +968,6 @@ export const STRUCTURES_REDECLARATIONS = [
  *  les clés DIVERGENTES. `chemin` = `(entrées)` pour les entrées du document, le chemin du document
  *  embarqué sinon. Rôles, cibles et graphies divergentes sont au lexique (`ROLES_ENVELOPPE`). */
 export const STRUCTURES_ENVELOPPE = [
-  { role: "identité", cle: "id", motif: "clé absente", detail: "", document: "arene-projet.json", chemin: "(entrées)", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "identité", cle: "id", motif: "clé absente", detail: "", document: "barge-du-sel-projet.json", chemin: "(entrées)", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "identité", cle: "id", motif: "clé absente", detail: "", document: "diligence-projet.json", chemin: "(entrées)", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "identité", cle: "id", motif: "clé absente", detail: "", document: "loup-et-saumure-projet.json", chemin: "(entrées)", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "schemas.lv.1", entrees: 333, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "schemas.lv.2", entrees: 111, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "schemas.lv.3", entrees: 111, lot: "L1b #1467", date: "2026-08-23" },

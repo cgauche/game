@@ -4,8 +4,8 @@
  *  - la FORME reçue par le seam, AVANT `normalizeScene`/`resolvePortRef` (collections absentes,
  *    port SPARSE `{ref}`) — VERTE, sinon le schéma refuserait un document que l'app charge ;
  *  - les QUATRE sémantiques, chacune ROUGE avec le CHEMIN et l'id fautif : FK `activeAxes`,
- *    invariants du narratif, FK intra-document `presetId`, forme de `meta` ;
- *  - le `schema` littéral 3 (un document non migré n'entre pas par cette porte).
+ *    invariants du narratif, FK intra-document `presetId`, invariant d'IDENTITÉ ;
+ *  - le `schema` littéral courant (un document non migré n'entre pas par cette porte).
  */
 import { describe, it, expect } from 'vitest';
 import { projetSchema } from './projet';
@@ -22,7 +22,7 @@ const sceneMinimale = (over: Jouet = {}): Jouet => ({
 });
 
 const projet = (over: Jouet = {}): Jouet => ({
-  schema: 4,
+  schema: 5,
   narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
   scenes: [sceneMinimale()],
   ...over,
@@ -127,11 +127,42 @@ describe('projetSchema — les quatre sémantiques du seam, chacune NOMMÉE', ()
     expect(projetSchema.safeParse(projet({ scenes, narratif })).success).toBe(true);
   });
 
-  it('(d) `meta` sans `label` non vide → rouge nommant le champ', () => {
-    expect(fautes(projet({ meta: { id: 'ma-campagne', label: '', version: 1 } }))).toEqual([
-      'meta.label :: meta.label doit être une chaîne non vide.',
+  it('(d) identité PLATE : `label` vide → rouge nommant le champ à la RACINE', () => {
+    expect(fautes(projet({ id: 'ma-campagne', label: '', versionContenu: 1 }))).toEqual([
+      'label :: label doit être une chaîne non vide.',
     ]);
-    expect(fautes(projet({ meta: { id: 'ma-campagne', label: 'Ma campagne' } }))[0]).toContain('meta.version');
+  });
+
+  it('(d bis) identité TOUT-OU-RIEN : le trio incomplet est rouge, chaque manquant NOMMÉ', () => {
+    // Ce que la poche `meta` garantissait par construction (strictObject à 3 clés requises) : aplatie,
+    // l'exigence deviendrait trois champs optionnels indépendants (#1467 L1b V-formeProjet).
+    const attendu = (k: string) =>
+      `${k} :: identité de campagne INCOMPLÈTE : « ${k} » est requis dès qu'un autre champ du trio \`id\`/\`label\`/\`versionContenu\` est présent.`;
+    expect(fautes(projet({ id: 'ma-campagne' }))).toEqual([attendu('label'), attendu('versionContenu')]);
+
+    // MATRICE — le déclencheur est N'IMPORTE LEQUEL des 6 champs d'identité, pas seulement le trio.
+    // Étalon : sous la poche `meta` (strictObject à 3 clés requises), `{ icon }` seul était DÉJÀ
+    // rouge. Un refine qui ne regarderait que le trio laisserait passer les accessoires orphelins.
+    expect(projetSchema.safeParse(projet()).success, 'aucune identité = brouillon LÉGITIME').toBe(true);
+    expect(projetSchema.safeParse(projet({ id: 'c', label: 'C', versionContenu: 1 })).success, 'trio complet').toBe(true);
+    for (const accessoire of [{ icon: 'scenario/village' }, { desc: 'Une prose.' }, { auteur: 'Une autrice' }]) {
+      const nom = Object.keys(accessoire)[0];
+      expect(fautes(projet(accessoire)), `« ${nom} » seul doit exiger le trio`).toEqual([
+        attendu('id'), attendu('label'), attendu('versionContenu'),
+      ]);
+    }
+    // Un accessoire ACCOMPAGNÉ du trio complet reste vert.
+    expect(projetSchema.safeParse(projet({ id: 'c', label: 'C', versionContenu: 1, icon: 'scenario/village' })).success).toBe(true);
+  });
+
+  it('(d ter) la poche `meta` et le `version` RACINE sont REFUSÉS par le SCEAU de l’enveloppe plate', () => {
+    // Portée EXACTE de cette assertion : elle juge `projetSchema` SEUL. Par le seam réel, un `version`
+    // racine n'arrive JAMAIS jusqu'ici (`parseProject` l'écrase puis le purge avant de valider —
+    // mesuré par `state/projet-migration-4-vers-5.test.ts`). Le sceau est donc la garde du document
+    // AU REPOS : un `.json` authioré/exporté à la mauvaise forme est nommé à la porte du schéma,
+    // plutôt que d'être absorbé en silence par le seam.
+    expect(fautes(projet({ version: 1 })).join(' ')).toMatch(/version/);
+    expect(fautes(projet({ meta: { id: 'c', label: 'C', version: 1 } })).join(' ')).toMatch(/meta/);
   });
 });
 

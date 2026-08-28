@@ -1,11 +1,9 @@
 {
- "schema": 4,
- "meta": {
-  "id": "barge-du-sel",
-  "label": "La Barge du Sel",
-  "icon": "scenario/naval",
-  "version": 1
- },
+ "schema": 5,
+ "id": "barge-du-sel",
+ "label": "La Barge du Sel",
+ "icon": "scenario/naval",
+ "versionContenu": 1,
  "narratif": {
   "affaires": [],
   "indices": [],

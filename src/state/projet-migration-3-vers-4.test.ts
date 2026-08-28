@@ -72,17 +72,20 @@ const PROJET_FORMAT_3 = {
 
 describe('PROJECT_MIGRATIONS[3] — un projet format 3 se charge à travers la migration (#1467 L1b)', () => {
   it('le document gelé est bien au format ANTÉRIEUR (sans quoi la garde ne mesurerait rien)', () => {
-    expect(PROJET_FORMAT_3.schema).toBe(CURRENT_PROJECT_SCHEMA - 1);
+    expect(PROJET_FORMAT_3.schema).toBe(3);
+    expect(PROJET_FORMAT_3.schema).toBeLessThan(CURRENT_PROJECT_SCHEMA);
     expect(PROJET_FORMAT_3.scenes[0]).toHaveProperty('description');
     expect(PROJET_FORMAT_3.scenes[0].dialogues[0].nodes[0]).toHaveProperty('text');
   });
 
   it('il se charge VERT, et chaque rôle de prose ressort sous sa clé courante', () => {
-    const { scenes, meta } = parseProject(structuredClone(PROJET_FORMAT_3));
-    const scene = scenes[0];
+    const doc = parseProject(structuredClone(PROJET_FORMAT_3));
+    const scene = doc.scenes[0];
     expect(scene.desc).toBe('Un quai de chargement, format 3.');
     expect(scene).not.toHaveProperty('description');
-    expect(meta?.desc).toBe('Prose de campagne, format 3.');
+    // La prose de campagne ressort à la RACINE : la chaîne traverse aussi `PROJECT_MIGRATIONS[4]`,
+    // qui aplatit la poche `meta` (#1467 L1b V-formeProjet).
+    expect(doc.desc).toBe('Prose de campagne, format 3.');
 
     const node = scene.dialogues[0].nodes[0];
     expect(node.desc).toBe('Le maître de quai vous toise.');
