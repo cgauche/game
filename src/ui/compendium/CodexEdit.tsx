@@ -120,15 +120,15 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   // #1467 L1b V-FLIP-TABLE : deux tableaux exposés au Codex depuis longtemps, jamais éditables —
   // même couture nichée que leurs 13 frères de la vague, plus aucun régime à part.
   artilleryMisfire: 'artilleryMisfire', ventsTourbillonnants: 'ventsTourbillonnants',
+  // #1467 L1b V-FLIP-RECORD : les 7 banques de noms sont des DOCUMENTS d'une liste — édition par la
+  // voie ordinaire, comme toute autre entité.
+  names: 'names',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
- *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
- *  l'éditeur projette l'objet : `single` = édite l'objet entier ; `record` = une entrée par clé, et
- *  l'item Codex porte cette clé en `id` — le `label` est de l'AFFICHAGE (#1467 L1b V-P4 : la clé d'un
- *  record EST un id stable, elle ne se relit jamais dans le libellé). */
-const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | 'record' }> = {
+ *  unique (`details`) ou une fiche de règle unique. Le `mode` dit comment l'éditeur projette l'objet :
+ *  `single` = édite l'objet entier. */
+const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' }> = {
   details: { ds: 'details', mode: 'single' },
-  names: { ds: 'names', mode: 'record' },
   // Exposition à l'eau (MSRC 16, #157 suite) : UNE seule fiche de règle (fichier `water-exposure.json`,
   // clé JS `waterExposure` — `datasetObjectFile` gère la divergence de nom).
   waterExposure: { ds: 'waterExposure', mode: 'single' },
@@ -149,7 +149,7 @@ const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | '
   // top-level (`saturationLevels`/`windSaturationEffects`/`phenomena`/`tables`) au GenericArrayField commun.
   arcanePhenomena: { ds: 'arcanePhenomena', mode: 'single' },
 };
-export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' | 'record' } | undefined => OBJECT_CATEGORY[categoryKey];
+export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' } | undefined => OBJECT_CATEGORY[categoryKey];
 /** Une catégorie est éditable au Codex ssi elle a un dataset tableau OU un dataset-objet. */
 export const editableDataset = (categoryKey: string): DatasetKey | undefined => CATEGORY_DATASET[categoryKey];
 export const isEditableCategory = (categoryKey: string): boolean => !!CATEGORY_DATASET[categoryKey] || !!OBJECT_CATEGORY[categoryKey];
@@ -427,32 +427,16 @@ export function editableEntries(categoryKey: string): Entry[] {
 
 export function CodexEdit({ categoryKey, label, id, onClose, isNew }: { categoryKey: string; label: string; id?: string; onClose: () => void; isNew?: boolean }) {
   // SOURCE de données UNIFIÉE (tableau d'entités OU dataset-objet) → la même UI de formulaire édite les
-  // trois formes : tableau (une entité par item Codex), objet unique (`details`), Record keyé (`names`,
-  // une entrée par race). `entries` = échantillons pour `inferFields` ; `initial` = l'objet édité ;
+  // deux formes : tableau (une entité par item Codex) et objet unique (`details`, fiches de règle).
+  // `entries` = échantillons pour `inferFields` ; `initial` = l'objet édité ;
   // `file`/`persist` = écriture disque (preview live in-place + `serializeDataset` byte-fidèle).
   const obj = editableObjectDataset(categoryKey);
-  // `recordMode` : dataset-objet Record (`names`) — l'entrée est keyée par une CLÉ (la race) éditable
-  // (création/renommage). `persist(entry, key)` écrit sous `key` (et purge l'ancienne si renommée).
-  const src = useMemo<{ entries: Entry[]; initial: Entry; index: number; file: string; recordMode: boolean; initialKey: string; persist: (entry: Entry, key: string) => void }>(() => {
+  const src = useMemo<{ entries: Entry[]; initial: Entry; index: number; file: string; persist: (entry: Entry) => void }>(() => {
     const entries = editableEntries(categoryKey);
     if (obj) {
       const data = datasetObject(obj.ds) as Record<string, unknown>;
       const file = datasetObjectFile(obj.ds);
-      if (obj.mode === 'single')
-        return { entries, initial: data as Entry, index: -1, file, recordMode: false, initialKey: '', persist: (e) => setObjectDataset(obj.ds, e as never) };
-      // record : une entrée par clé (l'`id` de l'item du navigateur EST la clé du record) ; inférence
-      // sur TOUTES les valeurs (mêmes champs partout). `isNew` → clé vide à saisir dans le champ « Clé ».
-      const initialKey = isNew ? '' : (id ?? '');
-      const initial = (data[initialKey] as Entry) ?? {};
-      return {
-        entries, initial, index: -1, file, recordMode: true, initialKey,
-        persist: (e, key) => {
-          const next = { ...data } as Record<string, unknown>;
-          if (initialKey && initialKey !== key) delete next[initialKey]; // renommage : retire l'ancienne clé
-          if (key) next[key] = e;
-          setObjectDataset(obj.ds, next as never);
-        },
-      };
+      return { entries, initial: data as Entry, index: -1, file, persist: (e) => setObjectDataset(obj.ds, e as never) };
     }
     const dsKey = editableDataset(categoryKey)!;
     const arr = entries;
@@ -463,13 +447,12 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: { category
       entries: arr,
       initial: arr[index] ?? {},
       index,
-      file: datasetFile(dsKey), recordMode: false, initialKey: '',
+      file: datasetFile(dsKey),
       persist: (e) => setDataset(dsKey, (index < 0 ? [...arr, e] : arr.map((x, i) => (i === index ? e : x))) as never),
     };
   }, [obj, categoryKey, label, id, isNew]);
 
   const [entry, setEntry] = useState<Entry>(() => structuredClone(src.initial));
-  const [recordKey, setRecordKey] = useState(src.initialKey);
   const [dir, setDir] = useState<FileSystemDirectoryHandle | null>(null);
   const [needsGrant, setNeedsGrant] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -479,7 +462,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: { category
   const [schemaError, setSchemaError] = useState<string | null>(null);
 
   useEffect(() => { fs.restoreDataDir().then((r) => { if (r) { setDir(r.handle); setNeedsGrant(!r.granted); } }); }, []);
-  useEffect(() => { setEntry(structuredClone(src.initial)); setRecordKey(src.initialKey); setDirty(false); setMsg(''); setSchemaError(null); }, [src]);
+  useEffect(() => { setEntry(structuredClone(src.initial)); setDirty(false); setMsg(''); setSchemaError(null); }, [src]);
 
   // L'apparence (MonsterPartsFields) ET les EFFETS d'un sort (FlowEditor) ont leur éditeur dédié — on les
   // sort du formulaire générique (sinon rendus en JSON brut). Les autres champs gardent le formulaire
@@ -601,13 +584,12 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: { category
   }, [allFields, categoryKey]);
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); setSchemaError(null); };
   // Erreurs BLOQUANTES avant persist (identité + refs résolvables) — pas de validation des
-  // datasets-objet (details/names : pas d'identité par entrée ; la clé du mode Record a sa garde).
+  // datasets-objet (`details`, fiches de règle : pas d'identité par entrée).
   const errors = useMemo(() => (obj ? [] : validateEntry(categoryKey, entry, src.entries, src.index)), [obj, categoryKey, entry, src]);
-  // En mode Record, la clé (race) ne peut pas être vide (sinon entrée fantôme) — bloque l'enregistrement.
-  const canSave = dirty && errors.length === 0 && (!src.recordMode || recordKey.trim().length > 0);
+  const canSave = dirty && errors.length === 0;
 
   const save = async () => {
-    src.persist(entry, recordKey.trim()); // preview mémoire (live) — mutation en place (tableau ou objet)
+    src.persist(entry); // preview mémoire (live) — mutation en place (tableau ou objet)
     invalidateCodexLookup(); // l'index de `codexLookup` repart de la donnée persistée
     // Le texte écrit = la SOURCE entière (tableau ou objet-dataset), re-sérialisée byte-fidèle.
     const root = obj ? datasetObject(obj.ds) : datasetSerializeRoot(editableDataset(categoryKey)!);
@@ -647,11 +629,6 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: { category
         </ul>
       )}
       <div className="codex-edit-form">
-        {src.recordMode && (
-          <label className="ed-field"><span>Clé (race) — identifiant de l'entrée</span>
-            <input value={recordKey} placeholder="ex. Humain" onChange={(e) => { setRecordKey(e.target.value); setDirty(true); }} />
-          </label>
-        )}
         {hasAppearance && <AppearanceField label={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {isSpell && <SpellEffectsField value={entry.effects as Flow | undefined} onChange={(v) => edit('effects', v)} />}
         {isPassive && (

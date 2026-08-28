@@ -2187,8 +2187,12 @@ export interface RaceAppearanceData {
   scale?: number;
   eyes?: { G?: string; D?: string };
 }
-/** Banque de noms par race (clé : « Humain », « Nain »…) : prénoms M/F + noms de famille (LDB 05). */
+/** Banque de noms d'UNE race jouable : prénoms M/F + noms de famille (LDB 05). L'`id` est le
+ *  `RaceKey` de la race (`species.refChar`) ; le `label` est de l'AFFICHAGE. */
 export interface NamePool {
+  id: RaceKey;
+  type: 'names';
+  label: string;
   maleFirstNames: string[];
   femaleFirstNames: string[];
   lastNames: string[];
@@ -2348,7 +2352,7 @@ export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').Am
 /** TEINTES DE JEU du terrain (surbrillances tactiques + identité d'unité), `id → #rrggbb` — donnée
  *  pure, servie aux peintres par les deux façades `gameIso/highlightTints.ts` et
  *  `gameIso/teamColors.ts` (schéma et invariants : `schemas/defs/teintesJeu.ts`). */
-export const teintesJeu: Record<import('./schemas/defs/teintesJeu').TeinteId, string> = teintesJeuJson;
+export const teintesJeu: Record<import('./schemas/defs/teintesJeu').TeinteId, string> = teintesJeuJson.entries;
 
 /** Traits & Améliorations de navire (MDG 12) — catalogue app-owned éditable au Codex. La DONNÉE (`desc`
  *  verbatim + effet) vit ici ; `engine/navalTraits.ts` ne fait que la LIRE (aucune valeur codée en dur).
@@ -2701,9 +2705,9 @@ export interface GodData {
   sinLocks?: { beni?: number; invocation?: number };
 }
 export const gods = godsJson as GodData[];
-/** Banques de noms par id d'espèce (`RaceKey`, celui de `species.refChar`) — `engine/names` y indexe
- *  directement (#1467 L1b). */
-export const names = namesJson as Record<RaceKey, NamePool>;
+/** Banques de noms — UN document par race jouable, d'`id` égal à son `RaceKey` (celui de
+ *  `species.refChar`) : `engine/names` retrouve la banque par cet id (#1467 L1b V-FLIP-RECORD). */
+export const names = namesJson as NamePool[];
 /** Personnages pré-tirés (DÉFINITIONS) — app-owned éditable au Codex ; la FABRIQUE (`createHero`)
  *  vit dans `pregens.ts`, qui consomme CE tableau (même référence → mutation live de l'éditeur). */
 export const pregens = pregensJson as PregenDef[];

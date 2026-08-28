@@ -11,6 +11,7 @@
  */
 import raw from '../../data/decorPalette.json';
 
-export type DecorTone = keyof typeof raw;
-/** Tons de matériau du décor, indexés par nom (`P.boisMoyen`). */
-export const P: Record<DecorTone, string> = raw;
+export type DecorTone = keyof typeof raw.entries;
+/** Tons de matériau du décor, indexés par nom (`P.boisMoyen`) — la carte vit sous `entries` du
+ *  document `decorPalette` (#1467 L1b V-FLIP-RECORD). */
+export const P: Record<DecorTone, string> = raw.entries;

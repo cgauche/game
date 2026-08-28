@@ -102,10 +102,12 @@ describe('id de racine d’un document `config` — unique dans l’espace des i
     expect(manquants, `document(s) du lot sans enveloppe :\n  ${manquants.join('\n  ')}`).toEqual([]);
   });
 
-  it('les 41 documents à enveloppe de `src/data` portent 41 ids DISTINCTS entre eux', () => {
+  it('les 43 documents à enveloppe de `src/data` portent 43 ids DISTINCTS entre eux', () => {
     const docs = documentsConfig();
-    // 27 du lot V-FLIP-CONFIG + 14 documents uniques flippés en `config` par V-FLIP-TABLE.
-    expect(docs.length).toBe(41);
+    // 27 du lot V-FLIP-CONFIG + 14 documents uniques flippés en `config` par V-FLIP-TABLE + les 2
+    // RECORDS enveloppés par V-FLIP-RECORD (`teintes-jeu`, `palette-decor`) : l'espace d'unicité est
+    // celui des DOCUMENTS à enveloppe, quelle que soit leur famille.
+    expect(docs.length).toBe(43);
     const parId = new Map<string, string[]>();
     for (const d of docs) parId.set(d.id, [...(parId.get(d.id) ?? []), d.ou]);
     const collisions = [...parId].filter(([, ou]) => ou.length > 1).map(([id, ou]) => `« ${id} » : ${ou.join(' + ')}`);

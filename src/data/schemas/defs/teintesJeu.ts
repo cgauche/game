@@ -1,7 +1,8 @@
 /**
  * Schéma de `teintesJeu.json` — les TEINTES DE JEU du terrain : surbrillances tactiques (portées,
  * zones, bandes de tir, anneaux de cible, halos, télégraphes) ET identité d'unité (anneaux réservés,
- * couleurs d'équipe, couleurs par héros). Objet PLAT `id → #rrggbb`, groupé par PRÉFIXE d'id.
+ * couleurs d'équipe, couleurs par héros). Document de famille `record` : sa carte `id → #rrggbb`,
+ * groupée par PRÉFIXE d'id, vit sous `entries` (#1467 L1b V-FLIP-RECORD).
  *
  * QUI CONSOMME. Trois façades TS, et elles seules — aucun consommateur ne lit ce JSON en direct :
  *  - `src/gameIso/highlightTints.ts` (surbrillances : `WALK_TINT`, `RANGE_BAND_TINT`, …) ;
@@ -15,8 +16,9 @@
  * COMMENT ÉTENDRE (une « famille de teinte » de plus). 1) Ajouter l'entrée au JSON sous l'un des
  * préfixes ci-dessous (`zone-`, `bande-`, `signal-`, `or-`, `editeur-`, `anneau-`, `equipe-`, `identite-heros-`) ;
  * 2) l'inscrire dans `TEINTE_KEYS` (recopie gardée par la parité, cf. plus bas) ; 3) l'exposer par la
- * façade qui la sert. Un nouveau préfixe se déclare dans `GROUPES_SURBRILLANCE` ou `GROUPES_IDENTITE`
- * — un préfixe inconnu échoue au chargement, il ne tombe pas dans un angle mort de la non-collision.
+ * façade qui la sert. Un nouveau préfixe se déclare dans `GROUPES_SURBRILLANCE` ou `GROUPES_IDENTITE` :
+ * une clé hors `TEINTE_KEYS` est refusée au sceau (clés FERMÉES), et la parité des `TEINTE_KEYS` avec
+ * les préfixes déclarés est mesurée par `src/gameIso/highlightTints.test.ts`.
  *
  * TROIS INVARIANTS, tenus par `refine` :
  *  (a) NON-COLLISION surbrillance ⇄ identité : un octet servi par une surbrillance transitoire
@@ -30,6 +32,7 @@
  *      ne suffit pas quand les deux couleurs se jouxtent à quelques pixels.
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 
 export const file = 'teintesJeu.json';
 export const famille = 'record';
@@ -128,39 +131,72 @@ export function distanceTeinte(a: string, b: string): number {
  *  anneau de 2 px). */
 export const SEUIL_IDENTITE_HEROS = 90;
 
-const prefixeConnu = (id: string) => [...GROUPES_SURBRILLANCE, ...GROUPES_IDENTITE].some((p) => id.startsWith(p));
+/** Vue de la CHARGE d'un document `teintesJeu` : la carte des teintes, sous `entries`. */
+type Carte = { entries: Record<TeinteId, string> };
 
-export const schema = z
-  .record(z.enum(TEINTE_KEYS), hexColor)
-  .refine((t) => Object.keys(t).every(prefixeConnu), {
-    message: 'teintesJeu : chaque id porte un préfixe de groupe déclaré (`GROUPES_SURBRILLANCE` / `GROUPES_IDENTITE`)',
-  })
-  .refine(
-    (t) => {
-      const exempt = new Set(PARTAGES_NOMMES.flatMap((p) => [`${p.a}|${p.b}`, `${p.b}|${p.a}`]));
-      const surbrillances = TEINTE_KEYS.filter((k) => GROUPES_SURBRILLANCE.some((p) => k.startsWith(p)));
-      const identites = TEINTE_KEYS.filter((k) => GROUPES_IDENTITE.some((p) => k.startsWith(p)));
-      return surbrillances.every((s) =>
-        identites.every((i) => t[s].toLowerCase() !== t[i].toLowerCase() || exempt.has(`${s}|${i}`)),
-      );
+const doc = document(
+  'teintesJeu',
+  famille,
+  {},
+  {},
+  {
+    codex: {
+      exempt: {
+        kind: 'vocabulaire-app-interne',
+        raison:
+          "teintes de jeu du terrain (surbrillances tactiques + identité d'unité, hex) servies aux peintres par `gameIso/highlightTints.ts` et `gameIso/teamColors.ts` — vocabulaire app-interne de rendu, pas une fiche de contenu (même raison qu'à `codex-exposure-guard.test.ts`)",
+      },
     },
-    {
-      message:
-        "teintesJeu : une teinte de SURBRILLANCE (zone-/bande-/signal-/or-/editeur-) partage son octet avec une teinte d'IDENTITÉ (anneau-/equipe-/identite-) — un tapis de portée peindrait la couleur d'une unité. Séparer les deux, ou inscrire le partage dans `PARTAGES_NOMMES` avec le signal commun.",
-    },
-  )
-  .refine(
-    (t) =>
-      IDENTITE_HEROS_KEYS.every((a, i) =>
-        IDENTITE_HEROS_KEYS.slice(i + 1).every((b) => distanceTeinte(t[a], t[b]) >= SEUIL_IDENTITE_HEROS),
-      ),
-    {
-      message: `teintesJeu : deux \`identite-heros-*\` sont à moins de ${SEUIL_IDENTITE_HEROS} de distance perceptuelle — les anneaux de deux héros se confondraient.`,
-    },
-  )
-  .refine(
-    (t) => PAIRES_SUPERPOSEES.every((p) => distanceTeinte(t[p.surbrillance], t[p.identite]) >= SEUIL_IDENTITE_HEROS),
-    {
-      message: `teintesJeu : une paire SUPERPOSÉE (\`PAIRES_SUPERPOSEES\` — la surbrillance est peinte sous le pion qui porte l'identité) est à moins de ${SEUIL_IDENTITE_HEROS} de distance perceptuelle ; à ce contact la surbrillance se lit comme la couleur de l'unité.`,
-    },
-  );
+    edit: { none: "palette de rendu éditée au fichier (aucun écran d'atelier ne l'expose)" },
+  },
+  {
+    // CLÉS FERMÉES par construction : `z.enum` rend le record EXHAUSTIF (zod 4.4.3) — une teinte
+    // manquante ou étrangère est refusée au sceau, sans refine. C'est aussi ce qui rend INATTEIGNABLE
+    // un refine « préfixe connu » : toute clé admise est déjà l'une des `TEINTE_KEYS`, dont la parité
+    // aux préfixes déclarés est mesurée par `src/gameIso/highlightTints.test.ts`.
+    cleRecord: z.enum(TEINTE_KEYS),
+    valeurRecord: hexColor,
+    affinerEntree: (entree) =>
+      entree
+        .refine(
+          (d) => {
+            const t = (d as Carte).entries;
+            const exempt = new Set(PARTAGES_NOMMES.flatMap((p) => [`${p.a}|${p.b}`, `${p.b}|${p.a}`]));
+            const surbrillances = TEINTE_KEYS.filter((k) => GROUPES_SURBRILLANCE.some((p) => k.startsWith(p)));
+            const identites = TEINTE_KEYS.filter((k) => GROUPES_IDENTITE.some((p) => k.startsWith(p)));
+            return surbrillances.every((s) =>
+              identites.every((i) => t[s].toLowerCase() !== t[i].toLowerCase() || exempt.has(`${s}|${i}`)),
+            );
+          },
+          {
+            message:
+              "teintesJeu : une teinte de SURBRILLANCE (zone-/bande-/signal-/or-/editeur-) partage son octet avec une teinte d'IDENTITÉ (anneau-/equipe-/identite-) — un tapis de portée peindrait la couleur d'une unité. Séparer les deux, ou inscrire le partage dans `PARTAGES_NOMMES` avec le signal commun.",
+          },
+        )
+        .refine(
+          (d) =>
+            IDENTITE_HEROS_KEYS.every((a, i) =>
+              IDENTITE_HEROS_KEYS.slice(i + 1).every(
+                (b) => distanceTeinte((d as Carte).entries[a], (d as Carte).entries[b]) >= SEUIL_IDENTITE_HEROS,
+              ),
+            ),
+          {
+            message: `teintesJeu : deux \`identite-heros-*\` sont à moins de ${SEUIL_IDENTITE_HEROS} de distance perceptuelle — les anneaux de deux héros se confondraient.`,
+          },
+        )
+        .refine(
+          (d) =>
+            PAIRES_SUPERPOSEES.every(
+              (p) =>
+                distanceTeinte((d as Carte).entries[p.surbrillance], (d as Carte).entries[p.identite]) >=
+                SEUIL_IDENTITE_HEROS,
+            ),
+          {
+            message: `teintesJeu : une paire SUPERPOSÉE (\`PAIRES_SUPERPOSEES\` — la surbrillance est peinte sous le pion qui porte l'identité) est à moins de ${SEUIL_IDENTITE_HEROS} de distance perceptuelle ; à ce contact la surbrillance se lit comme la couleur de l'unité.`,
+          },
+        ),
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

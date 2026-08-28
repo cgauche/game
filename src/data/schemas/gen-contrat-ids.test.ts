@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { verifieExhaustiviteDesIds } from '../../../scripts/gen-registry.mjs';
+import { verifieExhaustiviteDesIds, idsDuDataset } from '../../../scripts/gen-registry.mjs';
 
 /**
  * Contrat FERMÉ famille ⇄ registre d'ids (`scripts/gen-registry.mjs::verifieExhaustiviteDesIds`) —
@@ -54,5 +54,43 @@ describe('contrat famille ⇄ registre d’ids (#1467 L1b)', () => {
     expect(() => verifieExhaustiviteDesIds(new Set(), familles({}), { 'fantome.json': 'raison' })).toThrow(
       /fantome\.json : entrée de DEFAUTS_IDS sans def de schéma\./,
     );
+  });
+});
+
+/**
+ * EXTRACTION des ids (`idsDuDataset`) sur la forme RECORD, avant et après l'enveloppe
+ * (#1467 L1b V-FLIP-RECORD). Un record enveloppé porte sa carte sous `entries` : ce sont SES clés qui
+ * sont des ids de premier niveau, jamais `id`/`type`/`label`/`entries`. Les trois fixtures sont les
+ * coins de ce bras — clés-ids (le registre les prend), clés camelCase (aucun id : le défaut nominatif
+ * reste exigé), record NU à racine plate (ses clés de racine SONT les ids).
+ */
+describe('extraction des ids — record enveloppé sous `entries` (#1467 L1b V-FLIP-RECORD)', () => {
+  const enveloppe = (entries: Record<string, unknown>) => ({ id: 'sonde', type: 'sonde', label: 'Sonde', entries });
+
+  it('record ENVELOPPÉ à clés-ids : les clés d’`entries` entrent au registre, et aucun défaut n’est exigé', () => {
+    const ids = idsDuDataset(enveloppe({ 'zone-marche': '#111111', 'anneau-actif': '#222222' }), 'record');
+    expect(ids).toEqual(['anneau-actif', 'zone-marche']);
+    expect(() => verifieExhaustiviteDesIds(new Set(['r.json']), familles({ 'r.json': 'record' }), {})).not.toThrow();
+  });
+
+  it('record ENVELOPPÉ à clés camelCase : aucun id — le défaut nominatif reste la seule voie', () => {
+    expect(idsDuDataset(enveloppe({ terreTresSombre: '#333333', boisMoyen: '#444444' }), 'record')).toBeNull();
+    expect(() => verifieExhaustiviteDesIds(new Set(), familles({ 'r.json': 'record' }), {})).toThrow(
+      /r\.json \(famille record\) : aucun id au registre et aucune entrée de DEFAUTS_IDS\./,
+    );
+    expect(() =>
+      verifieExhaustiviteDesIds(new Set(), familles({ 'r.json': 'record' }), { 'r.json': 'clés camelCase' }),
+    ).not.toThrow();
+  });
+
+  it('record NU (forme d’avant le flip) : les clés de RACINE restent les ids', () => {
+    expect(idsDuDataset({ 'zone-marche': '#111111', 'anneau-actif': '#222222' }, 'record')).toEqual([
+      'anneau-actif',
+      'zone-marche',
+    ]);
+  });
+
+  it('l’enveloppe SEULE n’est jamais un record à ids (`id`+`label` de racine = UN document)', () => {
+    expect(idsDuDataset(enveloppe({ 'zone-marche': '#111111' }), 'entite')).toBeNull();
   });
 });

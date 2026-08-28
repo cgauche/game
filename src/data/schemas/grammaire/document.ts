@@ -111,7 +111,8 @@ export interface OptionsDocument {
   readonly affinerEntree?: (entree: z.ZodObject<z.ZodRawShape>) => z.ZodType<unknown>;
   /**
    * Raffinement du DATASET, appliqué APRÈS l'emballage par famille.
-   * Consommateurs cibles : `teintesJeu` (refines du record), unicité d'ids (dataset-liste).
+   * Consommateurs mesurés : `names` (exhaustivité des ids du dataset-liste). Un invariant de record se
+   * porte, lui, par `affinerEntree` — en famille `record` l'entrée EST le document, `entries` comprise.
    */
   readonly affinerDataset?: (dataset: z.ZodType<unknown>) => z.ZodType<unknown>;
 }

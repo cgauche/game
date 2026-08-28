@@ -1918,10 +1918,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'names', label: 'Banque de noms', group: 'Tables', cluster: 'Création de personnage',
-    // Record `RaceKey` → NamePool (#1467 L1b V-P4) : la clé EST l'identité, reprise telle quelle
-    // comme id ; l'affichage vient du `label` de la race de rig, keyé par le même slug.
-    build: () => Object.entries(names).map(([race, pool]) => ({
-      id: race, label: raceAppearance.find((r) => r.id === race)?.label ?? race,
+    // LISTE de documents (#1467 L1b V-FLIP-RECORD) : chaque banque porte SON id (le `RaceKey`) et SON
+    // libellé — l'affichage se lit sur le document, sans lookup transverse.
+    build: () => names.map((pool) => ({
+      id: pool.id, label: pool.label,
       sub: `${pool.maleFirstNames.length}♂ · ${pool.femaleFirstNames.length}♀ · ${pool.lastNames.length} noms`,
       sections: sections(
         pool.maleFirstNames.length ? { title: 'Prénoms masculins', layout: 'chips', rows: [{ t: 'text', text: pool.maleFirstNames.join(', ') }] } : null,

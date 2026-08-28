@@ -1,5 +1,8 @@
-{
-  "humain": {
+[
+  {
+    "id": "humain",
+    "type": "names",
+    "label": "Humain",
     "maleFirstNames": [
       "Abel",
       "Abelhard",
@@ -3597,7 +3600,10 @@
       "Zweisteiner"
     ]
   },
-  "halfling": {
+  {
+    "id": "halfling",
+    "type": "names",
+    "label": "Halfling",
     "maleFirstNames": [
       "Adam",
       "Addy",
@@ -4585,7 +4591,10 @@
       "Vigueurbaie"
     ]
   },
-  "haut-elfe": {
+  {
+    "id": "haut-elfe",
+    "type": "names",
+    "label": "Haut-Elfe",
     "maleFirstNames": [
       "Adanedhel",
       "Adûnakhôr",
@@ -6013,7 +6022,10 @@
       "Vueperçante"
     ]
   },
-  "elfe-sylvain": {
+  {
+    "id": "elfe-sylvain",
+    "type": "names",
+    "label": "Elfe sylvain",
     "maleFirstNames": [
       "Adanedhel",
       "Adûnakhôr",
@@ -7441,7 +7453,10 @@
       "Vueperçante"
     ]
   },
-  "nain": {
+  {
+    "id": "nain",
+    "type": "names",
+    "label": "Nain",
     "maleFirstNames": [
       "Abrak",
       "Abrath",
@@ -10250,7 +10265,10 @@
       ]
     }
   },
-  "gnome": {
+  {
+    "id": "gnome",
+    "type": "names",
+    "label": "Gnome",
     "maleFirstNames": [
       "Abel",
       "Abelhard",
@@ -13848,7 +13866,10 @@
       "Zweisteiner"
     ]
   },
-  "ogre": {
+  {
+    "id": "ogre",
+    "type": "names",
+    "label": "Ogre",
     "maleFirstNames": [
       "Abel",
       "Abelhard",
@@ -17446,4 +17467,4 @@
       "Zweisteiner"
     ]
   }
-}
+]

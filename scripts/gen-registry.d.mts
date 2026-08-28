@@ -7,4 +7,5 @@ export function verifieExhaustiviteDesIds(
   familles?: ReadonlyMap<string, string>,
   defauts?: Readonly<Record<string, string>>,
 ): void;
+export function idsDuDataset(racine: unknown, famille?: string): string[] | null;
 export function genAll(verbose?: boolean): void;

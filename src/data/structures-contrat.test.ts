@@ -685,3 +685,38 @@ describe('contrôle POSITIF côté DONNÉE : le détecteur MORD (#1465 F21)', ()
     }
   });
 });
+
+/**
+ * MORSURE du régime `valeurs` sur un record ENVELOPPÉ (#1467 L1b V-FLIP-RECORD). Un record porte
+ * son enveloppe (`id`/`type`/`label`) et sa carte sous `entries` : le scan doit DESCENDRE
+ * dans `entries` pour indexer les vraies clés. Sans cette descente, l'index reçoit `id`/`type`/`label`/
+ * `entries` — les clés du record disparaîtraient de l'index des ids, en silence.
+ */
+describe('régime `valeurs` : le scan descend dans `entries` d’un record ENVELOPPÉ', () => {
+  it('une clé d’`entries` entre à l’index (collision avec `teintesJeu.json`) ; l’enveloppe n’y entre pas', () => {
+    const copie = mkdtempSync(join(tmpdir(), 'structures-record-'));
+    try {
+      for (const racine of ['src/data', 'src/scenes']) cpSync(join(ROOT, racine), join(copie, racine), { recursive: true });
+      // Record ENVELOPPÉ sonde : sa seule clé de charge est celle d'une teinte réelle — le scan doit
+      // donc voir une COLLISION d'id entre les deux documents.
+      writeFileSync(
+        join(copie, 'src/data/sonde-record.json'),
+        JSON.stringify({ id: 'sonde-record', type: 'sondeRecord', label: 'Sonde record', entries: { 'zone-marche': '#123456' } }),
+        'utf8',
+      );
+      const famillesSonde = new Map([...FAMILLES, ['sonde-record.json', 'record']]);
+      const apres = scannerDonnees(copie, famillesSonde, CHOIX);
+      const collision = apres.index.collisions.find((c) => c.id === 'zone-marche');
+      expect(collision?.datasets, 'la clé d’`entries` n’est pas indexée : le régime `valeurs` n’est pas descendu sous l’enveloppe.').toEqual([
+        'sonde-record.json',
+        'teintesJeu.json',
+      ]);
+      expect(
+        apres.index.collisions.filter((c) => ['entries', 'label', 'type'].includes(c.id)).map((c) => c.id),
+        'les clés d’ENVELOPPE sont entrées à l’index comme des ids de record.',
+      ).toEqual([]);
+    } finally {
+      rmSync(copie, { recursive: true, force: true });
+    }
+  });
+});

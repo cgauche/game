@@ -27,7 +27,9 @@
  * les feuilles de texte de `details` (verbatim LDB 05) sont comparés AVANT/APRÈS, ordre compris.
  *
  * IDEMPOTENT / NO-OP TOLÉRANT À LA FORME : une clé déjà `RaceKey` est reconnue migrée ; rejouée sur
- * l'état final, la migration n'écrit rien et sort 0.
+ * l'état final, la migration n'écrit rien et sort 0. DEUX FORMES de `names.json` sont admises :
+ * forme LISTE (documents à `id`, #1467 L1b V-FLIP-RECORD) — l'exigence 7⟺7 se vérifie sur les `id`,
+ * le fichier n'est pas réécrit ; forme RECORD (clés de racine) — les clés se convertissent.
  * FAIL-FAST : clé inconnue (ni libellé de la table, ni `RaceKey`), collision de clés après
  * conversion, `names.json` dont l'ensemble des clés ne fait pas exactement les 7 `RaceKey`, chemin
  * `texts` absent → rien n'est écrit (pour AUCUN des deux fichiers), sortie 1.
@@ -91,12 +93,19 @@ function lire(fichier) {
   return { fichier, chemin, brut, data };
 }
 
-// ── names.json : record RACINE, exigé 7⟺7 ────────────────────────────────────────────────────────
+/** Ids de premier niveau de `names.json`, quelle que soit sa FORME : clés du record d'origine, ou
+ *  `id` des 7 DOCUMENTS depuis #1467 L1b V-FLIP-RECORD (le fichier est devenu une LISTE). */
+const idsDeNoms = (d) => (Array.isArray(d) ? d.map((e) => e?.id) : Object.keys(d));
+
+// ── names.json : ids de premier niveau, exigés 7⟺7 ────────────────────────────────────────────────────────
 const noms = lire('src/data/names.json');
 let sortieNoms = null;
 if (noms) {
-  sortieNoms = convertir(noms.data, 'names.json');
-  const cles = new Set(Object.keys(sortieNoms));
+  // FORME LISTE (#1467 L1b V-FLIP-RECORD) : l'identité vit dans l'`id` de chaque document, et
+  // l'exigence 7⟺7 se vérifie sur ces ids ; le fichier est rendu tel quel. FORME RECORD : les clés
+  // de racine se convertissent.
+  sortieNoms = Array.isArray(noms.data) ? noms.data : convertir(noms.data, 'names.json');
+  const cles = new Set(idsDeNoms(sortieNoms));
   const manquantes = [...RACE_KEYS].filter((k) => !cles.has(k));
   const etrangeres = [...cles].filter((k) => !RACE_KEYS.has(k));
   if (manquantes.length || etrangeres.length)
@@ -138,13 +147,13 @@ for (const p of plans) if (p.out !== p.brut) fs.writeFileSync(p.chemin, p.out, '
 const apresNoms = JSON.parse(plans[0].out);
 const apresDetails = JSON.parse(plans[1].out);
 const rouges = [];
-const horsEspace = Object.keys(apresNoms).filter((k) => !RACE_KEYS.has(k));
+const horsEspace = idsDeNoms(apresNoms).filter((k) => !RACE_KEYS.has(k));
 if (horsEspace.length) rouges.push(`names.json : clé(s) hors RaceKey ${horsEspace.join(', ')}`);
 for (const [nom, t] of Object.entries(apresDetails.texts)) {
   const hors = Object.keys(t.bySpecies).filter((k) => !RACE_KEYS.has(k));
   if (hors.length) rouges.push(`details.json texts.${nom}.bySpecies : clé(s) hors RaceKey ${hors.join(', ')}`);
 }
-const valeursNoms = (d) => Object.values(d).map((p) => JSON.stringify(p)).join('|');
+const valeursNoms = (d) => (Array.isArray(d) ? d : Object.values(d)).map((p) => JSON.stringify(p)).join('|');
 if (valeursNoms(noms.data) !== valeursNoms(apresNoms)) rouges.push('names.json : VALEURS altérées');
 // Les FEUILLES de `details` (verbatim LDB 05) : même multi-ensemble avant/après, ordre compris —
 // seules les clés changent, jamais un caractère de texte d'aide.
@@ -167,7 +176,7 @@ if (rouges.length) {
 }
 
 console.log(`names.json + details.json — libellé → RaceKey : ${migrees} clé(s) ; déjà migrées (no-op) : ${dejaMigrees}`);
-console.log(`names.json : ${Object.keys(apresNoms).length} banque(s), clés ${Object.keys(apresNoms).join(', ')} ; ${plans[0].out !== plans[0].brut ? 'réécrit' : 'INCHANGÉ'}`);
+console.log(`names.json : ${idsDeNoms(apresNoms).length} banque(s), ids ${idsDeNoms(apresNoms).join(', ')} ; ${plans[0].out !== plans[0].brut ? 'réécrit' : 'INCHANGÉ'}`);
 for (const [nom, t] of Object.entries(apresDetails.texts))
   console.log(`  details.texts.${nom}.bySpecies : ${Object.keys(t.bySpecies).length} clé(s) [${Object.keys(t.bySpecies).join(', ')}]`);
 console.log(`details.json : ${plans[1].out !== plans[1].brut ? 'réécrit' : 'INCHANGÉ'} ; ${apresFeuilles.length} feuille(s) de texte vérifiées identiques (ordre compris).`);

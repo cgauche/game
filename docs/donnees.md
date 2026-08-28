@@ -47,7 +47,7 @@ garantie, pas la justesse de sa glose.
 | `groups.json` | Groupes de races/familles (clé des `specs` de compétence/talent) (38 entrée(s)) |
 | `advancementCosts.json` | Coût d'XP par palier (caractéristique/compétence) (15 entrée(s)) |
 | `pregens.json` | Personnages prétirés (8 entrée(s)) |
-| `names.json` | Générateur de noms par espèce (objet à sous-catalogues) |
+| `names.json` | Générateur de noms par espèce (7 entrée(s)) |
 | `details.json` | Détails physiques aléatoires (âge, taille, textes) (objet à sous-catalogues) |
 | `eyes.json` · `hairs.json` | Couleurs d'yeux / de cheveux (tirage) (10 entrée(s) · 10 entrée(s)) |
 | `axes.json` | Axes de forces/faiblesses (#409, mécanique MAISON) — socle de base + exemples de scénario, `derivation` en ids de `skills.json`/`talents.json` ; moteur `src/engine/axes.ts` (9 entrée(s)) |

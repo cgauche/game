@@ -512,8 +512,34 @@ const estUnLibelle = (v) => /^[A-ZÀ-Þ]/.test(v) || /\s/.test(v);
  * `npm run gen` ; une entrée survivante sur un document `config` aussi.
  */
 const DEFAUTS_IDS = {
-  'decorPalette.json': 'record de 435 jetons de teinte à clés camelCase (`terreTresSombre`), graphie que le détecteur de record à ids n’admet pas',
+  'decorPalette.json':
+    'record de 435 jetons de teinte à clés camelCase (`terreTresSombre`) SOUS `entries` — graphie que le détecteur de record à ids n’admet pas',
 };
+
+/**
+ * Ids de PREMIER NIVEAU d'un dataset, ou `null` quand il n'en porte aucun — SOURCE UNIQUE de
+ * l'extraction, jouable sur fixture (`src/data/schemas/gen-contrat-ids.test.ts`).
+ *
+ * Deux formes de racine : un TABLEAU d'entrées à `id` (l'`id` de chaque entrée ; un `id` qui est un
+ * LIBELLÉ fait renoncer le dataset entier), ou un OBJET. Un objet de famille `record` porte sa carte
+ * sous `entries` depuis #1467 L1b V-FLIP-RECORD : la charge à examiner est alors `entries`, jamais
+ * l'enveloppe (dont les clés `id`/`type`/`label` ne sont pas des ids de record).
+ * @param {unknown} racine racine JSON du dataset
+ * @param {string | undefined} famille famille DÉCLARÉE par le def (`famillesDeclarees`)
+ * @returns {string[] | null} ids triés, ou `null`
+ */
+export function idsDuDataset(racine, famille) {
+  if (!Array.isArray(racine)) {
+    const charge =
+      famille === 'record' && racine?.entries && typeof racine.entries === 'object' ? racine.entries : racine;
+    if (charge && typeof charge === 'object' && estRecordAIds(charge)) return Object.keys(charge).sort();
+    return null;
+  }
+  const entrees = racine.filter((e) => e && typeof e === 'object' && typeof e.id === 'string');
+  if (!entrees.length) return null;
+  if (entrees.some((e) => estUnLibelle(e.id))) return null;
+  return [...new Set(entrees.map((e) => e.id))].sort();
+}
 
 /** Familles DÉCLARÉES par les defs de schéma (`export const famille`), dataset par dataset. */
 function famillesDeclarees() {
@@ -562,17 +588,15 @@ function genIds() {
     if (!cacheJson.has(nom)) cacheJson.set(nom, JSON.parse(readFileSync(join(dir, nom), 'utf8')));
     return cacheJson.get(nom);
   };
+  const familles = famillesDeclarees();
   for (const f of readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
     let racine;
     try { racine = JSON.parse(readFileSync(join(dir, f), 'utf8')); } catch { continue; }
-    if (!Array.isArray(racine)) {
-      if (racine && typeof racine === 'object' && estRecordAIds(racine)) ids.push([f, Object.keys(racine).sort()]);
-      continue;
-    }
+    const idsDuFichier = idsDuDataset(racine, familles.get(f));
+    if (!idsDuFichier) continue;
+    ids.push([f, idsDuFichier]);
+    if (!Array.isArray(racine)) continue;
     const entrees = racine.filter((e) => e && typeof e === 'object' && typeof e.id === 'string');
-    if (!entrees.length) continue;
-    if (entrees.some((e) => estUnLibelle(e.id))) continue;
-    ids.push([f, [...new Set(entrees.map((e) => e.id))].sort()]);
     const catalogueDe = (e) => {
       if (e.specsSource) {
         const derive = POOLS_DERIVES[e.specsSource];

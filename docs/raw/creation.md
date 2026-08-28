@@ -602,7 +602,7 @@ Possessions : arme simple, haillons, respect des autres Frères Loups.
 **Voir aussi :** `talents.md` § Vision nocturne (Talent de départ nain) ; `carrieres.md` § Nains.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 5` (l.623-624, l.627-633) → `generateName`, `NamePool`, `DetailsScreen` — `src/data/index.ts`, `src/data/schemas/defs/names.ts`, `src/engine/names.ts`, `src/ui/creator/CharacterCreator.tsx`
+- `LDB 5` (l.623-624, l.627-633) → `generateName`, `doc`, `DetailsScreen`, `NamePool` — `src/data/index.ts`, `src/data/schemas/defs/names.ts`, `src/engine/names.ts`, `src/ui/creator/CharacterCreator.tsx`
 
 ---
 

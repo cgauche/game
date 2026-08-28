@@ -169,6 +169,19 @@ export function introspecterDefs(defs: readonly SchemaDef[]): DefIntrospectee[] 
         // Enveloppes d'un `pipe` : `[in, out]` — l'entrée du doc est la SORTIE (ce qui est rendu).
         entree = d!.enveloppes[d!.enveloppes.length - 1];
         famille = 'pipe à la racine';
+        // RECORD ENVELOPPÉ (#1467 L1b V-FLIP-RECORD) : la fabrique `document()` SCELLE le document par
+        // un `pipe`, mais la CHARGE d'un record reste sa carte clé→valeur sous `entries`. Le critère
+        // est STRUCTUREL (la sortie porte un `entries` de type `record`), jamais la déclaration : les
+        // entrées du document sont les VALEURS de cette carte, comme pour un record nu.
+        // La SORTIE d'un sceau est un `transform` (elle ne porte aucune clé) : la forme du document
+        // se lit sur l'ENTRÉE du pipe, seul nœud à clés.
+        const porteur = d!.enveloppes.map((n) => defDe(n)).find((s) => s && descente(s).cles.length);
+        const carte = porteur ? descente(porteur).cles.find((e) => e.cle === 'entries')?.noeud : undefined;
+        const carteDef = carte ? defDe(carte) : undefined;
+        if (carteDef?.type === 'record') {
+          famille = 'record';
+          entree = descente(carteDef).valeur;
+        }
       } else if (def?.type === 'tuple') {
         famille = 'tuple';
       }

@@ -86,6 +86,18 @@ const classeDeType = (v: unknown): string =>
  *                           niveau sont celles de sa racine.
  * Hors registre (les documents de scène), la racine JSON tranche seule, même règle.
  */
+/**
+ * CHARGE d'un document de famille `record` : depuis #1467 L1b V-FLIP-RECORD, un record porte son
+ * ENVELOPPE (`id`/`type`/`label`) et sa carte clé→valeur sous `entries`. Le régime `valeurs` descend
+ * donc dans `entries` quand elle est présente — sans quoi il prendrait `id`/`type`/`label`/`entries`
+ * pour les clés de premier niveau du record, et les VRAIES clés sortiraient de l'index des ids.
+ * Un record NU (racine plate, sans `entries`) est rendu tel quel.
+ */
+const chargeRecord = (brut: unknown): unknown => {
+  const entries = estObjet(brut) ? (brut as Record<string, unknown>).entries : undefined;
+  return estObjet(entries) ? entries : brut;
+};
+
 const regimeEntrees = (racineJson: string, familleDeclaree?: string): 'elements' | 'valeurs' | 'racine' => {
   if (familleDeclaree?.startsWith('liste')) return 'elements';
   if (familleDeclaree?.startsWith('record')) return 'valeurs';
@@ -386,18 +398,20 @@ export function scannerDonnees(
     const racineJson = Array.isArray(brut) ? 'array' : estObjet(brut) ? 'object' : classeDeType(brut);
     const familleDeclaree = famillesDeclarees.get(doc.nom) ?? '';
     const regime = regimeEntrees(racineJson, familleDeclaree || undefined);
+    /** En régime `valeurs`, la carte clé→valeur vit sous `entries` dès que le record est enveloppé. */
+    const charge = regime === 'valeurs' ? chargeRecord(brut) : brut;
     const brutes: unknown[] =
       regime === 'elements'
         ? Array.isArray(brut)
           ? brut
           : []
         : regime === 'valeurs'
-          ? Object.values((brut ?? {}) as object)
+          ? Object.values((charge ?? {}) as object)
           : estObjet(brut)
             ? [brut]
             : [];
     const entrees = brutes.filter(estObjet);
-    if (regime === 'valeurs') for (const k of Object.keys((brut ?? {}) as object)) ajouteIndex(k, doc.nom);
+    if (regime === 'valeurs') for (const k of Object.keys((charge ?? {}) as object)) ajouteIndex(k, doc.nom);
     else for (const e of entrees) { const ident = identiteDe(e); if (ident) ajouteIndex(ident.valeur, doc.nom); }
     const portePlage = entrees.filter((e) => {
       const r = e.range;

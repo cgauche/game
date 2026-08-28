@@ -1,8 +1,8 @@
 /**
  * Génération de noms de personnage (Jalon 3) — pur, RNG injecté.
  *
- * Pools : `src/data/names.json` — banque de noms par race et par sexe (prénoms M/F + noms de
- * famille), reprise du projet WarhammerV2 de l'utilisateur. Gnomes et Ogres y retombent sur les
+ * Pools : `src/data/names.json` — un DOCUMENT de banque par race, prénoms M/F + noms de famille,
+ * repris du projet WarhammerV2 de l'utilisateur. Gnomes et Ogres y retombent sur les
  * pools humains ; les elfes ont des épithètes en guise de nom (« Aiglenoir », « Lande de braises »).
  *
  * Cas NAIN : la banque n'a pas de noms de famille — le canon les GÉNÈRE depuis le parent
@@ -15,11 +15,13 @@ import type { RaceKey } from '../data/schemas/grammaire/valeurs';
 import type { RNG } from './dice';
 
 /**
- * Pool de la banque ← `species.refChar` (`RaceKey`, #313) : `names.json` est keyé par CE même id
- * (#1467 L1b), l'indexation est directe — aucune conversion (cf. `names-species-keyspaces.test.ts`).
+ * Pool de la banque ← `species.refChar` (`RaceKey`, #313) : le document de banque porte CE même id
+ * (#1467 L1b V-FLIP-RECORD), la résolution est directe — aucune conversion
+ * (cf. `names-species-keyspaces.test.ts`). Recherche SUR LE TABLEAU VIVANT à chaque appel : une Map
+ * mémoïsée au chargement figerait un instantané et rendrait l'édition au Codex invisible en jeu.
  */
 function poolOf(refChar: RaceKey): NamePool | null {
-  return POOLS[refChar] ?? null;
+  return POOLS.find((n) => n.id === refChar) ?? null;
 }
 
 const pick = <T>(arr: T[], rng: RNG): T => arr[rng.int(0, arr.length - 1)];

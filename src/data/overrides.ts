@@ -6,7 +6,7 @@
  *  - la future couche de surcharges PAR CAMPAGNE (apply au chargement, reset à la sortie).
  *
  * Couvre les datasets-TABLEAUX (`ARRAYS`) ET les datasets-OBJETS uniques (`OBJECTS`, E3b) :
- * `details` (objet de config imbriqué) et `names` (Record race → pools de noms). Tous mutés EN PLACE,
+ * `details` (objet de config imbriqué), fiches de règle uniques. Tous mutés EN PLACE,
  * jamais réassignés → les consommateurs gardent la même référence et voient l'édition en direct.
  */
 import {
@@ -153,7 +153,7 @@ const rencontresDangereuses = encounterTable('dangereuses');
 const ARRAYS = {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, lightTones, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
-  pregens, oups, interludeEvents, peripeties,
+  pregens, oups, interludeEvents, peripeties, names,
   // Axes de forces/faiblesses (#409) — mécanique MAISON, éditable au Codex comme tout catalogue.
   axes: allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
@@ -243,13 +243,13 @@ interface ArcanePhenomenaFile {
 }
 const arcanePhenomenaFile = arcanePhenomenaRawJson as unknown as ArcanePhenomenaFile;
 
-/** Datasets-OBJETS uniques (E3b) : pas un tableau d'entités mais UN objet de config (`details`), un
- *  Record keyé (`names`), ou une fiche de règle UNIQUE (`waterExposure`, MSRC 16 — #157 suite). Mutés
+/** Datasets-OBJETS uniques (E3b) : pas un tableau d'entités mais UN objet de config (`details`) ou
+ *  une fiche de règle UNIQUE (`waterExposure`, MSRC 16 — #157 suite). Mutés
  *  EN PLACE (mêmes garanties que les tableaux) → preview live + écriture disque par l'éditeur du Codex.
- *  Le fichier disque est `<clé>.json` par défaut (`details.json`, `names.json`) ou l'override
+ *  Le fichier disque est `<clé>.json` par défaut (`details.json`) ou l'override
  *  `OBJECT_FILE` pour une clé dont le nom diverge du fichier (`waterExposure` → `water-exposure.json`). */
 const OBJECTS = {
-  details, names, waterExposure: WATER_EXPOSURE,
+  details, waterExposure: WATER_EXPOSURE,
   // LOT 1 #422 : 3 fiches de règle UNIQUES (MDG 13) — même patron que `waterExposure` (MSRC 16).
   seaNavigation, seaPerils, seaWeather,
   // LOT 1 #422 (suite) : Disponibilité & Troc (LDB 59) — fiche de règle UNIQUE, même patron.
@@ -279,7 +279,7 @@ export function datasetObject<K extends ObjectDatasetKey>(key: K): (typeof OBJEC
 
 /** Fichier disque d'un dataset-OBJET dont la clé JS diverge du nom de fichier (tout fichier de
  *  `src/data` est kebab-case) — même idée que `NESTED_ARRAY_FILE` côté tableaux, mais pour `OBJECTS`.
- *  Absente d'ici → `<clé>.json` (défaut historique, zéro changement pour `details`/`names`). */
+ *  Absente d'ici → `<clé>.json` (défaut historique, zéro changement pour `details`). */
 const OBJECT_FILE: Partial<Record<ObjectDatasetKey, string>> = {
   waterExposure: 'water-exposure.json',
   seaNavigation: 'sea-navigation.json',

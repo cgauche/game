@@ -24,6 +24,12 @@ import {
 import { ACTIVE_RING, ENEMY_RING, HERO_RING, ALLY_TINT, ENEMY_TINT, ACTIVE_TINT, NEUTRAL_TINT } from './teamColors';
 import { CALAGE_APLAT, CALAGE_ARETES } from './backends/webgl/calageProps';
 import { teintesJeu } from '../data';
+/** Le DOCUMENT entier (enveloppe + `entries`) — ce que le schéma parse depuis #1467 L1b V-FLIP-RECORD. */
+import teintesJeuJson from '../data/teintesJeu.json';
+
+/** Document FORGÉ : l'enveloppe réelle du document, avec une carte de teintes de test sous `entries`
+ *  — c'est le DOCUMENT que le schéma parse, jamais la carte nue. */
+const doc = (entries: Record<string, string>) => ({ ...teintesJeuJson, entries });
 import {
   TEINTE_KEYS,
   GROUPES_SURBRILLANCE,
@@ -150,7 +156,7 @@ describe('teintes de jeu — RÔLES DISJOINTS (surbrillance ⇄ identité), inva
   const exempt = new Set(PARTAGES_NOMMES.flatMap((p) => [`${p.a}|${p.b}`, `${p.b}|${p.a}`]));
 
   it('la donnée du dépôt PASSE le schéma', () => {
-    expect(schema.safeParse(teintesJeu).success).toBe(true);
+    expect(schema.safeParse(teintesJeuJson).success).toBe(true);
   });
 
   it('aucune surbrillance ne peint l’octet d’une identité (hors partage NOMMÉ)', () => {
@@ -168,29 +174,29 @@ describe('teintes de jeu — RÔLES DISJOINTS (surbrillance ⇄ identité), inva
 
   it('le partage NOMMÉ ne vaut que pour SA paire — repeindre une AUTRE surbrillance sur la même identité échoue', () => {
     // `or-halo` prend l'octet d'`equipe-allie` : paire non déclarée, l'exemption d'`or-surbrillance` ne la couvre pas.
-    expect(schema.safeParse({ ...teintesJeu, 'or-halo': teintesJeu['equipe-allie'] }).success).toBe(false);
+    expect(schema.safeParse(doc({ ...teintesJeu, 'or-halo': teintesJeu['equipe-allie'] })).success).toBe(false);
   });
 
   it('le partage NOMMÉ ne vaut pas « dans l’autre sens » — repeindre l’identité exemptée sur une AUTRE surbrillance échoue', () => {
     // `equipe-neutre` est exemptée AVEC `or-surbrillance`, pas avec `or-halo` : la paire forgée reste inconnue.
-    expect(schema.safeParse({ ...teintesJeu, 'equipe-neutre': teintesJeu['or-halo'] }).success).toBe(false);
+    expect(schema.safeParse(doc({ ...teintesJeu, 'equipe-neutre': teintesJeu['or-halo'] })).success).toBe(false);
   });
 
   it('l’invariant porte sur le CROISEMENT des deux familles — deux surbrillances au même octet passent', () => {
     // PÉRIMÈTRE mesuré : `zone-feu` peint comme `zone-marche` est ACCEPTÉ (aucune identité en jeu). La
     // donnée du dépôt porte déjà deux tels doublets intra-famille (`bande-bonus`/`signal-allie`,
     // `bande-malus`/`signal-ennemi`).
-    expect(schema.safeParse({ ...teintesJeu, 'zone-feu': teintesJeu['zone-marche'] }).success).toBe(true);
+    expect(schema.safeParse(doc({ ...teintesJeu, 'zone-feu': teintesJeu['zone-marche'] })).success).toBe(true);
   });
 
   it('la collision se mesure sur l’OCTET, pas sur la casse écrite', () => {
     const forge = { ...teintesJeu, 'zone-marche': teintesJeu['identite-heros-1'].toUpperCase() };
-    expect(schema.safeParse(forge).success).toBe(false);
+    expect(schema.safeParse(doc(forge)).success).toBe(false);
   });
 
   it('le schéma REFUSE une collision non nommée (`zone-marche` repeint en couleur du héros 1)', () => {
     const forge = { ...teintesJeu, 'zone-marche': teintesJeu['identite-heros-1'] };
-    expect(schema.safeParse(forge).success).toBe(false);
+    expect(schema.safeParse(doc(forge)).success).toBe(false);
   });
 
   it('les 4 identités de héros restent SÉPARÉES, et le schéma refuse deux jumelles', () => {
@@ -199,14 +205,14 @@ describe('teintes de jeu — RÔLES DISJOINTS (surbrillance ⇄ identité), inva
     );
     expect(Math.min(...distances)).toBeGreaterThanOrEqual(SEUIL_IDENTITE_HEROS);
     const forge = { ...teintesJeu, 'identite-heros-4': teintesJeu['identite-heros-3'] };
-    expect(schema.safeParse(forge).success).toBe(false);
+    expect(schema.safeParse(doc(forge)).success).toBe(false);
   });
 
   it('une clé MANQUANTE ou une couleur mal formée échoue au chargement', () => {
     const { 'zone-feu': _absente, ...ampute } = teintesJeu;
-    expect(schema.safeParse(ampute).success).toBe(false);
-    expect(schema.safeParse({ ...teintesJeu, 'zone-feu': 'orange' }).success).toBe(false);
-    expect(schema.safeParse({ ...teintesJeu, 'zone-inconnue': '#123456' }).success).toBe(false);
+    expect(schema.safeParse(doc(ampute)).success).toBe(false);
+    expect(schema.safeParse(doc({ ...teintesJeu, 'zone-feu': 'orange' })).success).toBe(false);
+    expect(schema.safeParse(doc({ ...teintesJeu, 'zone-inconnue': '#123456' })).success).toBe(false);
   });
 });
 
@@ -229,7 +235,7 @@ describe('teintes de jeu — PAIRES SUPERPOSÉES (le tapis peint SOUS le pion)',
     // #3d7fd0 : un bleu de Marche à 49,4 de l'anneau du héros 1 — la non-collision d'octet le laissait passer.
     const forge = { ...teintesJeu, 'zone-marche': '#3d7fd0' };
     expect(distanceTeinte(forge['zone-marche'], teintesJeu['identite-heros-1'])).toBeLessThan(SEUIL_IDENTITE_HEROS);
-    expect(schema.safeParse(forge).success).toBe(false);
+    expect(schema.safeParse(doc(forge)).success).toBe(false);
   });
 
   it('ANGLE MORT du périmètre : un croisement NON superposé sous le seuil reste admis', () => {
@@ -238,7 +244,7 @@ describe('teintes de jeu — PAIRES SUPERPOSÉES (le tapis peint SOUS le pion)',
     // dépôt, le croisement le plus serré hors liste est `zone-course` ⇄ `identite-heros-4`, à 71,2.
     const forge = { ...teintesJeu, 'zone-fumee': '#8a6cff' };
     expect(distanceTeinte(forge['zone-fumee'], teintesJeu['identite-heros-4'])).toBeLessThan(SEUIL_IDENTITE_HEROS);
-    expect(schema.safeParse(forge).success).toBe(true);
+    expect(schema.safeParse(doc(forge)).success).toBe(true);
     expect(distanceTeinte(teintesJeu['zone-course'], teintesJeu['identite-heros-4'])).toBeLessThan(SEUIL_IDENTITE_HEROS);
   });
 

@@ -2,7 +2,7 @@
  * Garde des espaces de clés « race » (issue #163, recalée #1467 L1b V-P4). Le repo n'en porte plus
  * qu'UN pour les races JOUABLES : l'id `RaceKey` (`schemas/grammaire/valeurs.ts`, #313).
  *  - `species.refChar` le porte côté données de personnage ;
- *  - `names.json` est keyé par lui : `generateName` indexe la banque sans aucune conversion ;
+ *  - chaque document de `names.json` porte cet id : `generateName` retrouve la banque sans conversion ;
  *  - `raceAppearance.json` (espace « rig », 21 races dont 14 non jouables) est keyé par le SLUG de
  *    son libellé, et les 7 races jouables y ont pour slug exactement leur `RaceKey`.
  * `speciesRace.json` (via `baseSpeciesOf`) reste le pont species→rig ; ce que cette garde verrouille
@@ -19,13 +19,14 @@ import { baseSpeciesOf } from '../gameIso/rig/skeletons';
 
 type Species = { label: string; refChar: RaceKey };
 const SPECIES = speciesJson as Species[];
-const NAMES_KEYS = Object.keys(namesJson);
+/** Ids des 7 DOCUMENTS de banque (#1467 L1b V-FLIP-RECORD : `names.json` est une LISTE). */
+const NAMES_KEYS = (namesJson as { id: string }[]).map((n) => n.id);
 const RIG = raceAppearanceJson as { id: string; label: string }[];
 const RIG_IDS = RIG.map((r) => r.id);
 const RACE_KEYS = raceKeySchema.options;
 
 describe('#163 — espaces de clés « race » : names keyé RaceKey, pont species→rig 1:1, ids de rig slugués', () => {
-  it('names.json est keyé par RaceKey — exactement les 7 ids, ni plus ni moins', () => {
+  it('les documents de names.json portent les RaceKey — exactement les 7 ids, ni plus ni moins', () => {
     expect(new Set(NAMES_KEYS)).toEqual(new Set<string>(RACE_KEYS));
     expect(NAMES_KEYS.length).toBe(RACE_KEYS.length);
   });
