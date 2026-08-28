@@ -200,7 +200,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
 | `screenPos('id')` | bounding box ÉCRAN (`{x,y,width,height}`) du nœud `[data-cid="id"]` | lecture seule. ⚠ **CADUC pour les JETONS depuis le monde volumique** (#1176, C5a ; mesuré en recette 2026-08-14, cf. #1296) : les corps sont peints dans le canevas WebGL et ne portent plus AUCUN `data-cid` (`stage/spritePicker.ts`, `stage/GameStage3D.tsx`) — `screenPos` y rend `null` pour un combattant ou une entité. Restent adressables par ce canal : les hit-areas de STRUCTURE de siège (`stage/SiegeHitAreas.tsx`). En **vue du DESSUS** (#1176, P3-5c), les pions redeviennent du SVG : chaque jeton y porte un groupe `[data-pion-cid="id"]` (et, dans les deux vues, son chrome porte `[data-chrome-cid="id"]`) — ces nœuds-là sont mesurables, et le pion est CENTRÉ sur sa case (viser le centre de la bbox, pas son bas). **Replis** : (a) agir par les BOUTONS réels de l'UI (HUD, ordre de tour, panneaux) ; (b) pour les raccourcis liés à `e.code`, passer par la voie CDP `realKey` (§ manette/clavier) ; (c) pour viser une CASE, `tileScreenPos` (ci-dessous), qui ne dépend d'aucun `data-cid`. Le repère de clic historique reste valable là où un `data-cid` existe : **viser `{x: x+width/2, y: y+height}` (le BAS de la bbox, pied du token)** plutôt que le centre géométrique — une bbox de créature haute est étirée vers le haut, le centre tombe hors silhouette (résidu #199). Port du serveur de dev : celui de `.claude/launch.json` (5191), pas le défaut Vite |
 | `tileScreenPos({x,y,z?})` | même bounding box ÉCRAN pour une CASE, vide comprise — projetée par `diamondCorners` (`src/geometry/iso.ts`, la géométrie du rendu) puis passée par la CTM du groupe caméra, donc zoom/panoramique/rotation viennent du DOM | lecture seule ; `null` hors scène ou tant que le stage n'est pas monté. Pour un clic, viser le CENTRE (`{x: x+width/2, y: y+height/2}`) : contrairement à un token, une case n'a pas de pied. Vérifié aux 8 crans de caméra contre `screenPos` du jeton du groupe (écart ≤ 6px sur une tuile de 93px = l'ancrage propre du sprite) |
-| `pickTileAt({x,y})` | l'INVERSE de `tileScreenPos` : ce que le PICKING RÉEL résoudrait sous ce PIXEL D'ÉCRAN — `{tile:{x,y,z}|null, cid, via:'sprite'|'sol'|'aucune'}`. Miroir EXACT de la chaîne du stage (`viewBoxPointAt` → `stagePointAt` → hit-test sprite puis sol, `stage/useStagePointer`) | lecture seule, ne clique RIEN. **L'outil du clic « qui ne fait rien »** : `via:'sprite'` avec un `cid` inattendu = un CORPS couvre la case visée (engin 2×2, créature haute) et le clic part sur l'ENTITÉ, pas sur le sol ; `tile:null` = aucune surface résolue à ce pixel (hors carte, ou étage sans surface). Vérifier AVANT de conclure à un bouton/overlay mort, et TOUJOURS relire après un geste de caméra |
+| `pickTileAt({x,y})` | l'INVERSE de `tileScreenPos` : ce que le PICKING RÉEL résoudrait sous ce PIXEL D'ÉCRAN — `{tile:{x,y,z}|null, cid, via:'sprite'|'sol'|'aucune'}`. Miroir EXACT de la chaîne du stage (`viewBoxPointAt` → `stagePointAt` → hit-test sprite puis sol, `stage/useStagePointer`) | lecture seule, ne clique RIEN. **L'outil du clic « qui ne fait rien »** : `via:'sprite'` avec un `cid` inattendu = un CORPS couvre la case visée (engin 2×2, créature haute) et le clic part sur l'ENTITÉ, pas sur le sol ; `tile:null` = aucune surface résolue à ce pixel (hors carte, ou étage sans surface). Vérifier AVANT de conclure à un bouton/overlay mort, et TOUJOURS relire après un geste de caméra. **Ne rend QUE la bbox de la CASE** : pour viser un CORPS dressé, voir « Cibler un sprite HAUT » (Pièges vécus) |
 | `talk('id')` | téléporte le groupe à côté de l'entité + l'interpelle (dialogue/marchand) | rien si l'entité n'a ni dialogue ni marchand ; ⚠ un marchand-PNJ de scène n'a PAS de bande de décor (`ScreenShell` slot `backdrop`) — cette ambiance n'existe QUE par le chemin service-de-lieu (`openPlaceMerchant`, hub de ville) qui la porte en donnée. Ne pas conclure à une régression de décor en interpellant un PNJ |
 | `goto('id'\|{x,y,z?})` | place le groupe sur une case (déclenche portes/triggers au pas) | — |
 | `screen('menu'\|'party'\|…)` | navigue vers un écran | id validé contre `SCREENS` (`state/store.ts`) — `throw` immédiat + liste des ids valides si invalide (#211 ; avant : routage silencieux, écran blanc, zéro erreur console). ⚠ `screen('interlude')` n'ARME PAS l'interlude : `InterludeScreen` rend `null` sans `state.interlude` (peuplé par `startInterlude`) → écran vide. Utiliser `interlude()` (ci-dessous), pas `screen('interlude')` |
@@ -447,6 +447,29 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   entre le geste de caméra et le clic, jamais mémorisés d'une étape sur l'autre. Corollaire pour les
   pastilles d'entité : leur panneau-paramètre se FERME dès que la caméra bouge (l'ancre glisserait
   sous lui) — rouvrir la pastille après un `turn()`, ce n'est pas un bug.
+
+- **Cibler un sprite HAUT en rendu volumique : viser au-dessus du sol, PUIS vérifier l'occlusion DOM**
+  (mesuré recette 2026-08-28, arbre ff8322e18) : le couple `tileScreenPos` + `pickTileAt` ne connaît que
+  la bbox de la CASE ; un corps dressé (créature haute, héros) occupe l'écran AU-DESSUS d'elle. Viser
+  `y − hauteur_sprite` et, si le premier essai retombe au sol (`via:'sol'`, ou un `cid` autre que la cible),
+  SCANNER vers le haut par pas de ~5px jusqu'à ce que `pickTileAt` rende le `cid` attendu — un seul essai
+  au centre de la case fait conclure à tort au « clic mort ». Second piège, indépendant : `pickTileAt`
+  ignore l'occlusion DOM ; le point retenu peut tomber SOUS le dock de compétences, et le clic atterrit
+  sur le dock EN SILENCE (aucune erreur, aucun effet sur la scène). RÈGLE : `document.elementFromPoint(x,y)`
+  AVANT le clic réel, et reprendre le scan si le nœud résolu n'appartient pas au canevas de scène.
+  (Helper à venir : #1543, spriteScreenPos.)
+
+- **Listes LONGUES du Compendium/Codex sous Playwright-MCP : les refs d'accessibilité deviennent STALE**
+  (mesuré recette 2026-08-28, arbre ff8322e18 — 576 sorts, 490 créatures) : sélectionner une entrée
+  re-rend la liste côté React, et TOUTE ref mémorisée au snapshot précédent pointe alors dans le vide
+  (échec d'interaction ou, pire, clic sur l'entrée voisine). RÈGLE : retrouver l'élément à chaque geste par
+  une boucle sur `textContent` (comparaison sur la valeur `trim()`ée), jamais par une ref conservée d'un
+  tour sur l'autre.
+
+- **`browser_snapshot` sur le Compendium : JAMAIS un snapshot RACINE** (mesuré recette 2026-08-28, arbre
+  ff8322e18) : la liste à plat produit 104 000 caractères d'un coup — le budget de la recette part dans
+  l'arbre d'accessibilité. TOUJOURS passer `target:<ref du panneau de détail>` (le détail est ce qu'on
+  juge ; la liste se pilote au texte, cf. piège précédent).
 
 - **Le BRIEFING d'entrée de scène avale tous les clics** (vécu 2026-08-10, recette du lacet continu —
   2 h perdues) : toute entrée de scène avec `startMessage` pousse une étape d'AFFICHAGE
