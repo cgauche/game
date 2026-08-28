@@ -9,10 +9,11 @@ import { describe, it, expect, expectTypeOf } from 'vitest';
 import { z } from 'zod';
 import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
-import { document, CLES_ENVELOPPE, type Exposition } from './document';
+import { document, CLES_ENVELOPPE, CLES_EXIGIBLES, type Exposition } from './document';
 import { ref, refs, specRef, pick, typedRef, idDe, cibleDe, estSpecialisable, TYPES, type Id, type SignatureById } from './ref';
 import { slotsDe } from './slots';
 import { SANS_LIVRE } from './sans-livre';
+import { SCHEMA_DEFS } from '../_registry.generated';
 
 type EntreeASpecs = { id: string; specs?: { id: string }[]; specsSource?: string };
 const UNE_COMPETENCE = skillsJson[0] as { id: string };
@@ -394,6 +395,170 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     expect(() =>
       document('talent', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, { valeurRecord: z.string() }),
     ).toThrow(/`valeurRecord` n'a de sens que pour la famille « record » \(ici « entite »\)/);
+  });
+});
+
+describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique qui justifie `exiges`', () => {
+  // MESUREUR : « requis » = `shape[k].safeParse(undefined)` ROUGE au schéma d'entrée du def (jamais une
+  // regex de source, qui sous-compte les déclarations indentées autrement). Les defs DÉJÀ adoptés par
+  // `document()` rendent un nœud SCELLÉ sans `.shape` : ils ne sont pas mesurables ici — et n'ont plus
+  // rien à perdre, leur enveloppe est celle de la fabrique. Ce compte est ce que le flip-entite doit
+  // reporter en `options.exiges`, def par def : il DÉCROÎT à mesure que les defs sont adoptés.
+  const noeudInterne = (n: unknown): unknown => {
+    const d = (n as { _zod?: { def?: Record<string, unknown> }; def?: Record<string, unknown> })?._zod?.def;
+    if (!d) return undefined;
+    return d.type === 'array' ? d.element : d.innerType;
+  };
+  const shapeDe = (schema: unknown): Record<string, z.ZodTypeAny> | undefined => {
+    let n: unknown = schema;
+    for (let i = 0; i < 12 && n; i++) {
+      const shape = (n as { shape?: Record<string, z.ZodTypeAny> }).shape;
+      if (shape) return shape;
+      n = noeudInterne(n);
+    }
+    return undefined;
+  };
+
+  const mesure = { desc: 0, source: 0, icon: 0, scelles: 0, mesures: 0 };
+  for (const def of SCHEMA_DEFS.filter((d) => d.famille === 'entite')) {
+    const shape = shapeDe(def.schema);
+    if (!shape) {
+      mesure.scelles++;
+      continue;
+    }
+    mesure.mesures++;
+    for (const k of ['desc', 'source', 'icon'] as const) {
+      if (shape[k] && shape[k].safeParse(undefined).success === false) mesure[k]++;
+    }
+  }
+
+  it('compte les clés d’enveloppe REQUISES que l’adoption relâcherait sans `exiges`', () => {
+    expect(mesure).toEqual({ desc: 24, source: 27, icon: 3, scelles: 2, mesures: 75 });
+  });
+});
+
+describe('document() — verrous d’ENVELOPPE paramétrés (#1467 L1b V-P0c)', () => {
+  const ENV = (type: string) => ({ id: 'x', type, label: 'X', source: SOURCE_REELLE });
+
+  it('`idDocument` FERME le catalogue d’ids quand le def le déclare (patron `characteristics`)', () => {
+    const ferme = document('carac-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
+      idDocument: z.enum(['ca', 'cc']),
+    });
+    const ok = { ...ENV('carac-jouet'), id: 'cc', max: 2 };
+    expect(ferme.entree.safeParse(ok).success).toBe(true);
+    const ko = ferme.entree.safeParse({ ...ok, id: 'id-etranger' });
+    expect(ko.success).toBe(false);
+    expect(ko.error!.issues.map((i) => i.path.join('.'))).toContain('id');
+    // Sans `idDocument`, le comportement de l'enveloppe est INCHANGÉ : tout id non vide passe.
+    const libre = document('carac-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION);
+    expect(libre.entree.safeParse({ ...ok, id: 'id-etranger' }).success).toBe(true);
+    expect(libre.entree.safeParse({ ...ok, id: '' }).success).toBe(false);
+  });
+
+  it('`exiges` rend REQUISE une clé d’enveloppe, en NOMMANT celle qui manque', () => {
+    const strict = document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
+      exiges: ['desc', 'source'],
+    });
+    const complet = { ...ENV('fiche-jouet'), desc: 'Une prose.', max: 2 };
+    expect(strict.entree.safeParse(complet).success).toBe(true);
+    const sansDesc = strict.entree.safeParse({ ...ENV('fiche-jouet'), max: 2 });
+    expect(sansDesc.success).toBe(false);
+    expect(sansDesc.error!.issues.map((i) => i.path.join('.'))).toContain('desc');
+    // Sans `exiges`, la même entrée passe : c'est bien l'option qui verrouille.
+    const relache = document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION);
+    expect(relache.entree.safeParse({ ...ENV('fiche-jouet'), max: 2 }).success).toBe(true);
+  });
+
+  it('`exiges: [source]` : `maison` seule ne suffit plus, et l’entrée est refusée AU TYPE de `source`', () => {
+    const strict = document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
+      exiges: ['source'],
+    });
+    const avecMaison = { id: 'x', type: 'fiche-jouet', label: 'X', maison: 'arbitrage maison', max: 2 };
+    const ko = strict.entree.safeParse(avecMaison);
+    expect(ko.success).toBe(false);
+    // `source` exigée est REQUISE au schéma : le refus vient du type manquant, pas du refine de
+    // provenance — lequel ne s'exécute que sur un objet dont `source` est déjà validée (inatteignable).
+    expect(ko.error!.issues.map((i) => `${i.code}@${i.path.join('.')}`)).toContain('invalid_type@source');
+    // Le MÊME document sans `exiges` accepte `maison` seule (contrat du refine, plus faible).
+    const refine = document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION);
+    expect(refine.entree.safeParse(avecMaison).success).toBe(true);
+  });
+
+  it('`source` exigée rend le refine de provenance INATTEIGNABLE : son message n’apparaît sur AUCUNE entrée', () => {
+    const CORPUS: Record<string, unknown>[] = [
+      {},
+      { id: 'x' },
+      { id: 'x', label: 'X' },
+      { id: 'x', label: 'X', max: 2 },
+      { id: 'x', label: 'X', max: 2, maison: 'r' },
+      { id: 'x', label: 'X', max: 2, source: undefined },
+      { id: 'x', label: 'X', max: 2, source: undefined, maison: 'r' },
+      { id: 'x', label: 'X', max: 2, source: null },
+      { id: 'x', label: 'X', max: 2, source: {} },
+      { id: 'x', label: 'X', max: 2, source: SOURCE_REELLE, maison: 'r' },
+    ];
+    const messages = (doc: ReturnType<typeof document>) =>
+      CORPUS.flatMap((v) => {
+        const r = doc.entree.safeParse({ ...v, type: 'fiche-jouet' });
+        return r.success ? [] : r.error.issues.map((i) => i.message);
+      });
+    const REFINE = /entrée sans `source`/;
+    const exigeant = document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
+      exiges: ['source'],
+    });
+    expect(messages(exigeant).some((m) => REFINE.test(m))).toBe(false);
+    // Le TÉMOIN : le même document sans `exiges` fait bien parler le refine sur ce corpus.
+    const refine = document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION);
+    expect(messages(refine).some((m) => REFINE.test(m))).toBe(true);
+  });
+
+  it('EXIGER, c’est requis ET NON VIDE : `icon` exigée refuse `’’`, `alsoIn` exigée refuse `[]`', () => {
+    const strict = document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
+      exiges: ['icon', 'alsoIn'],
+    });
+    const base = { ...ENV('fiche-jouet'), max: 2, icon: 'epee', alsoIn: [{ book: 'aux-armes', page: 12 }] };
+    expect(strict.entree.safeParse(base).success).toBe(true);
+    expect(strict.entree.safeParse({ ...base, icon: '' }).success).toBe(false);
+    expect(strict.entree.safeParse({ ...base, alsoIn: [] }).success).toBe(false);
+    // Non exigées, ces mêmes clés gardent leur forme d'origine (l'option n'est pas un durcissement global).
+    const libre = document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION);
+    expect(libre.entree.safeParse({ ...base, icon: '', alsoIn: [] }).success).toBe(true);
+  });
+
+  it('`idDocument` qui admettrait la CHAÎNE VIDE est REFUSÉ à la déclaration', () => {
+    expect(() =>
+      document('carac-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
+        idDocument: z.string(),
+      }),
+    ).toThrow(/`idDocument` admet la CHAÎNE VIDE/);
+    // Une union/énumération fermée, elle, passe la garde.
+    expect(() =>
+      document('carac-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
+        idDocument: z.enum(['ca', 'cc']),
+      }),
+    ).not.toThrow();
+  });
+
+  it('`exiges` REFUSE une clé inconnue, une clé non exigible et un DOUBLON, en les nommant', () => {
+    expect(() =>
+      document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
+        exiges: ['inconnue' as never],
+      }),
+    ).toThrow(/`exiges` nomme « inconnue »/);
+    expect(() =>
+      document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
+        exiges: ['id' as never],
+      }),
+    ).toThrow(/« id » n'est pas exigible/);
+    expect(() =>
+      document('fiche-jouet', 'entite', { max: z.number() }, { max: { label: 'Max' } }, EXPOSITION, {
+        exiges: ['desc', 'desc'],
+      }),
+    ).toThrow(/`exiges` répète « desc »/);
+  });
+
+  it('les clés EXIGIBLES sont DÉRIVÉES de l’enveloppe : aucune liste parallèle à maintenir', () => {
+    expect([...CLES_EXIGIBLES].sort()).toEqual(CLES_ENVELOPPE.filter((k) => !['id', 'type', 'label', 'variants'].includes(k)).sort());
   });
 });
 

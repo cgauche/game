@@ -7,8 +7,8 @@
  * est une erreur de TYPE (mapped type → `never`) ET une erreur d'exécution nommant la clé ; chaque
  * clé de `champs` exige sa `MetaChamp` ; chaque document déclare son EXPOSITION (Codex, éditeur).
  *
- * Ce lot POSE la fabrique ; l'adoption par les 120 defs et la migration d'enveloppe correspondante
- * sont le lot L1b (#1467) — aucun def ne l'appelle encore, aucune donnée ne change ici.
+ * L'adoption par les defs est le lot L1b (#1467), en cours : 45 defs l'appellent, les autres portent
+ * encore leur `z.array(z.strictObject({...}))` à la main.
  */
 import { z } from 'zod';
 import { sourceRefSchema, secondarySourceRefSchema, variantOf } from './valeurs';
@@ -39,6 +39,19 @@ export const LIBELLES_ENVELOPPE: Readonly<Record<CleEnveloppe, string>> = {
   maison: 'Arbitrage maison',
   icon: 'Icône',
 };
+
+/** Clés d'enveloppe qu'un document ne peut pas EXIGER : `id`/`type`/`label` sont déjà requises,
+ *  `variants` n'est pas un champ simple (la fabrique le compose depuis `options.variantes`). */
+const NON_EXIGIBLES = ['id', 'type', 'label', 'variants'] as const;
+
+/**
+ * Clés d'enveloppe qu'un document peut EXIGER (`options.exiges`) — DÉRIVÉES de `CLES_ENVELOPPE`,
+ * jamais re-tapées : une liste parallèle mentirait en silence au prochain champ d'enveloppe.
+ */
+export type CleExigible = Exclude<CleEnveloppe, (typeof NON_EXIGIBLES)[number]>;
+export const CLES_EXIGIBLES: readonly CleExigible[] = CLES_ENVELOPPE.filter(
+  (k): k is CleExigible => !(NON_EXIGIBLES as readonly string[]).includes(k),
+);
 
 /** Une clé d'enveloppe présente dans `champs` s'annule en `never` : le def ne compile pas. */
 export type ChampsHorsEnveloppe<C> = { [K in keyof C]: K extends CleEnveloppe ? never : C[K] };
@@ -101,6 +114,31 @@ export interface OptionsDocument {
    */
   readonly cleRecord?: z.ZodType<string>;
   /**
+   * Schéma de l'ID du document — défaut `z.string().min(1)`. Même mécanique que `cleRecord` : un def
+   * dont le catalogue d'ids est FERMÉ le déclare ici et garde son verrou par construction, qu'un id
+   * libre perdrait. Consommateur cible : `src/data/schemas/defs/characteristics.ts:13-19`
+   * (`z.union([charKeySchema, z.enum([...])])` ; à la ligne 15 : « Catalogue FERMÉ (19 entrées) — union
+   * énumérée, pas `z.string()` ») — sans cette option, l'adoption de la fabrique remplacerait ce verrou
+   * par `z.string().min(1)` EN SILENCE.
+   * Un schéma qui admettrait la chaîne vide ré-ouvrirait le contrat que l'enveloppe ferme (`.min(1)`) :
+   * `document()` le REFUSE nommément (garde ci-dessous).
+   */
+  readonly idDocument?: z.ZodType<string>;
+  /**
+   * Clés d'ENVELOPPE que CE document rend REQUISES (l'enveloppe les pose optionnelles).
+   * EXIGER = requis ET NON VIDE : les clés de chaîne exigées prennent `.min(1)`, `alsoIn` exigé prend
+   * `.min(1)` sur son tableau — une exigence satisfaite par `''` ou `[]` ne prouverait rien (`desc` et
+   * `maison` portent déjà ce `.min(1)` structurellement : pour elles, `exiges` ne change que l'optionalité).
+   * ce que l'adoption relâcherait sans cette option est MESURÉ et figé par le test
+   * `grammaire.test.ts` « contrats d'enveloppe REQUIS dans les defs `entite` » — mesureur : `shape[k]`
+   * dont `safeParse(undefined)` est ROUGE, sur les defs `entite` du registre. Au 2026-08-28 :
+   * desc 24, source 27, icon 3 (75 defs mesurés, 2 déjà scellés donc hors mesure).
+   * ATTENTION : `source` dans `exiges` la rend STRICTEMENT requise : le refine de provenance `source ∨ maison`
+   * en devient INATTEIGNABLE (il ne s'exécute que sur un objet dont `source` est déjà validée) — il n'y
+   * a donc pas de second chemin à éteindre, c'est une conséquence de la forme, pas un branchement.
+   */
+  readonly exiges?: readonly CleExigible[];
+  /**
    * Raffinement de l'ENTRÉE, appliqué AVANT le sceau.
    * Mesuré (zod 4.4.3) : `superRefine`/`refine` rendent un `ZodObject` ENCORE extensible — l'ordre
    * entrée → affiner → `.pipe` est donc le seul qui scelle. Consommateurs cibles : `projet.ts`
@@ -160,18 +198,29 @@ export interface DocumentHandle<T extends string> {
   readonly variantes: readonly string[];
 }
 
-function enveloppe(type: string) {
+/**
+ * Pose un champ d'enveloppe : OPTIONNEL par défaut, ou sa forme NON VIDE quand le document l'EXIGE
+ * (`options.exiges`). Le cast garde la VUE TS la plus permissive (`EnveloppeDocument` reste « tout
+ * optionnel ») : le verrou d'un document qui exige est au PARSE, il ne rétrécit jamais le type
+ * partagé par tous les documents.
+ */
+function champEnveloppe<S extends z.ZodTypeAny>(optionnel: S, exige: boolean, nonVide: S = optionnel): z.ZodOptional<S> {
+  return (exige ? nonVide : optionnel.optional()) as z.ZodOptional<S>;
+}
+
+function enveloppe(type: string, idDocument?: z.ZodType<string>, exiges: readonly CleExigible[] = []) {
+  const requis = (k: CleExigible) => exiges.includes(k);
   return {
-    id: z.string().min(1),
+    id: (idDocument ?? z.string().min(1)) as z.ZodType<string>,
     type: z.literal(type),
     label: z.string().min(1),
-    labelF: z.string().optional(),
+    labelF: champEnveloppe(z.string(), requis('labelF'), z.string().min(1)),
     /** Prose du document — `.min(1)` STRUCTUREL, même classe que le `maison` ci-dessous : une chaîne
      *  vide est un TROISIÈME état, vu « présent » par `search.ts` et « absent » par `CodexRef`. Absente
      *  plutôt que vide ou nulle. */
-    desc: z.string().min(1).optional(),
-    source: sourceRefSchema.optional(),
-    alsoIn: z.array(secondarySourceRefSchema).optional(),
+    desc: champEnveloppe(z.string().min(1), requis('desc')),
+    source: champEnveloppe(sourceRefSchema, requis('source')),
+    alsoIn: champEnveloppe(z.array(secondarySourceRefSchema), requis('alsoIn'), z.array(secondarySourceRefSchema).min(1)),
     /**
      * Arbitrage MAISON — la RAISON, en clair, de ce que le canon ne tranche pas. `.min(1)` est
      * STRUCTUREL : une chaîne vide ne prouve rien et le refine de provenance ci-dessous ne saurait
@@ -181,8 +230,8 @@ function enveloppe(type: string) {
      * maison », qui ne dit aucune raison) est ÉTEINTE de la donnée — zéro `maison` non-chaîne sur les
      * deux racines, mesuré RÉCURSIVEMENT et gardé par `src/data/maison-sans-source.test.ts`.
      */
-    maison: z.string().min(1).optional(),
-    icon: z.string().optional(),
+    maison: champEnveloppe(z.string().min(1), requis('maison')),
+    icon: champEnveloppe(z.string(), requis('icon'), z.string().min(1)),
   };
 }
 
@@ -216,7 +265,25 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
   exposition: Exposition,
   options: OptionsDocument = {},
 ): DocumentHandle<T> {
-  const { variantes, valeurRecord, cleRecord, ligneTable, affinerEntree, affinerDataset } = options;
+  const { variantes, valeurRecord, cleRecord, idDocument, exiges = [], ligneTable, affinerEntree, affinerDataset } = options;
+  if (idDocument && idDocument.safeParse('').success) {
+    throw new Error(
+      `document('${type}') : \`idDocument\` admet la CHAÎNE VIDE — l'enveloppe ferme l'id à \`.min(1)\`, un schéma d'id ne le ré-ouvre pas.`,
+    );
+  }
+  for (const [i, k] of exiges.entries()) {
+    if ((NON_EXIGIBLES as readonly string[]).includes(k)) {
+      throw new Error(`document('${type}') : « ${k} » n'est pas exigible — l'enveloppe la pose déjà ainsi (clés exigibles : ${CLES_EXIGIBLES.join(', ')}).`);
+    }
+    if (!(CLES_EXIGIBLES as readonly string[]).includes(k)) {
+      throw new Error(
+        `document('${type}') : \`exiges\` nomme « ${k} », qui n'est pas une clé exigible de l'enveloppe (${CLES_EXIGIBLES.join(', ')}).`,
+      );
+    }
+    if (exiges.indexOf(k) !== i) {
+      throw new Error(`document('${type}') : \`exiges\` répète « ${k} ».`);
+    }
+  }
   if (famille === 'record' && !valeurRecord) {
     throw new Error(`document('${type}') : la famille « record » exige \`valeurRecord\` (le schéma d'une valeur de \`entries\`).`);
   }
@@ -250,7 +317,10 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
     }
   }
   verifieExposition(type, exposition);
-  const entree = z.strictObject({ ...enveloppe(type), ...(champs as Record<string, z.ZodTypeAny>) }) as z.ZodObject<z.ZodRawShape>;
+  const entree = z.strictObject({
+    ...enveloppe(type, idDocument, exiges),
+    ...(champs as Record<string, z.ZodTypeAny>),
+  }) as z.ZodObject<z.ZodRawShape>;
   const declarees = [...(variantes ?? [])];
   for (const k of declarees) {
     if (!(k in entree.shape)) {
@@ -284,6 +354,9 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
   // ceux dont le livre est cité par SOUS-ENTRÉE — dans les deux cas rien n'est exigible à l'entrée de
   // racine. Refine PRÉ-sceau : `superRefine` rend un `ZodObject` encore extensible (mesuré zod
   // 4.4.3), donc `affinerEntree` reçoit bien un objet.
+  // `exiges: ['source']` rend `source` structurellement requise : le refine ci-dessous ne s'exécute
+  // alors que sur un objet dont `source` est déjà validée et ne peut JAMAIS lever — inatteignable par
+  // construction, donc rien à éteindre ici (mesuré : un branchement qui l'éteindrait est inobservable).
   const avecProvenance = !exigeSource(type)
     ? corps
     : (corps.superRefine((v, ctx) => {
