@@ -348,10 +348,15 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // baisse : 679 → 671, sinon la marge regagnée servirait à absorber une dérive future.
       ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 15],
       ['STRUCTURES_FORMES', STRUCTURES_FORMES.length, 671],
-      // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (24, dont 5
+      // 8ᵉ stock, né du volet A : les clés déclarées jamais observées des DEUX racines (dont 5
       // apportées par les 4 projets de scène qui entrent au déclaré).
-      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 24],
-      ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES.length, 6],
+      // Cliquet DESCENDU 24 → 23 (#1467 L1b V-FLIP-ENTITE-c) : `creatures.json › group` est SOLDÉ —
+      // 0 porteur en donnée ET 0 consommateur mesuré, le champ MEURT du def. Le cliquet SUIT la
+      // baisse (même doctrine qu'à `STRUCTURES_FORMES` ci-dessus).
+      ['STRUCTURES_DEFAUT', STRUCTURES_DEFAUT.length, 23],
+      // Cliquet DESCENDU 6 → 5 : le stock est à 5 depuis un lot antérieur et la marge n'avait pas été
+      // reprise. Aucune raison de garder un cran libre : il servirait à absorber un homonyme neuf.
+      ['STRUCTURES_HOMONYMES', STRUCTURES_HOMONYMES.length, 5],
       // Cliquet REMONTÉ 102 → 108 (#1467 L1b V-FLIP-ENTITE-b) : c'est la COUVERTURE du relevé qui a
       // changé, pas la donnée ni les defs. `litterauxZod` (structures-scan.mts) visite désormais
       // l'argument `champs` de `document()` — forme DOMINANTE (43 defs adoptés) qu'il ne voyait pas :
@@ -359,8 +364,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // était stockée AVANT l'adoption et revit à l'identique). Sans l'extension, l'adoption faisait
       // DISPARAÎTRE des lignes et ce cliquet lisait la perte comme un solde.
       ['STRUCTURES_REDECLARATIONS', STRUCTURES_REDECLARATIONS.length, 108],
-      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 165],
-      ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 93],
+      // Cliquets DESCENDUS 165 → 77 et 93 → 91 : même geste. Le dénominateur d'enveloppe a fondu au
+      // fil des vagues d'adoption (l'enveloppe étant POSÉE, ses divergences s'éteignent) sans que le
+      // plafond suive ; 88 crans libres auraient absorbé en silence la régression de tout un lot.
+      ['STRUCTURES_ENVELOPPE', STRUCTURES_ENVELOPPE.length, 77],
+      ['STRUCTURES_ORPHELINES', STRUCTURES_ORPHELINES.length, 91],
       ['STRUCTURES_OPS', STRUCTURES_OPS.length, 403],
     ] as const;
     const gonfles = mesure.filter(([, n, plafond]) => n > plafond).map(([nom, n, plafond]) => `${nom} ${n} > ${plafond}`);
@@ -436,7 +444,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // `traits.passive`) ; en regard, les 2 orphelines `etats.json › value` (lot L1b) QUITTENT leur
       // stock, désormais vues comme des références. Net compté ici : +1. Aucune valeur de donnée n'a
       // bougé — le détecteur voit ce que l'adoption lui avait masqué.
-      'L3 #1463': 389,
+      // 389 → 390 : MÊME cause, vague suivante (#1467 L1b V-FLIP-ENTITE-c). `trappings` adopte à son
+      // tour, et sa forme `ops › char+…` (24 occurrences) devient visible — corroborée au chiffre près
+      // par `slotsStock.mjs`, où le MÊME lot relève `trappings.json › ops` de 34 à 58 (+24). La donnée
+      // est prouvée intacte entrée par entrée par la migration 12b (deep-equal hors la clé `type`).
+      'L3 #1463': 390,
       'L4 #1463': 224,
     };
     expect(

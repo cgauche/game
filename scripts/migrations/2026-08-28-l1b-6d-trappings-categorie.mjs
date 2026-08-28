@@ -50,15 +50,25 @@ const t = lire(TRAPPINGS);
 if (!Array.isArray(t.data)) echecs.push('trappings.json : racine non tableau');
 else if (t.data.length !== ATTENDU_TRAPPINGS) echecs.push(`trappings.json : cardinal ${t.data.length} ≠ ${ATTENDU_TRAPPINGS} attendu`);
 
+/**
+ * `type` D'ENVELOPPE (#1467 L1b V-FLIP-ENTITE-c) : depuis l'adoption de `document()`, chaque entrée
+ * de `trappings.json` porte `type: "trappings"` — le NOM DU DOCUMENT, pas l'ancienne catégorie. Sans
+ * cette distinction, la migration lit l'enveloppe comme un `type` ressuscité et exige un arbitrage
+ * sur les 440 entrées. L'ancien `type` était une valeur de `VALEURS` (melee/ranged/ammunition/armor/
+ * trapping), jamais le nom du dataset.
+ */
+const TYPE_ENVELOPPE = 'trappings';
+const typeAncien = (e) => (e?.type !== undefined && e.type !== TYPE_ENVELOPPE ? e.type : undefined);
+
 let migresT = 0;
 let dejaT = 0;
 const sortieT = Array.isArray(t.data)
   ? t.data.map((e, i) => {
-      const aType = e?.type !== undefined;
+      const aType = typeAncien(e) !== undefined;
       const aCat = e?.categorie !== undefined;
       if (aType && aCat) { echecs.push(`trappings #${i} (${e.id}) : porte À LA FOIS \`type\` et \`categorie\` — arbitrage requis`); return e; }
       if (!aType && !aCat) { echecs.push(`trappings #${i} (${e?.id}) : ni \`type\` ni \`categorie\` — catégorie PERDUE`); return e; }
-      const valeur = aCat ? e.categorie : e.type;
+      const valeur = aCat ? e.categorie : typeAncien(e);
       if (!VALEURS.has(valeur)) { echecs.push(`trappings #${i} (${e.id}) : catégorie ${JSON.stringify(valeur)} hors {${[...VALEURS].join(', ')}}`); return e; }
       if (aCat) { dejaT++; return e; }
       migresT++;
@@ -102,9 +112,9 @@ if (outF !== f.brut) fs.writeFileSync(FAMILLES, outF, 'utf8');
 // PREUVE post-écriture : plus aucun `type`/`trappingType`, catégories conservées entrée par entrée.
 const apresT = JSON.parse(outT);
 const apresF = JSON.parse(outF);
-const residusT = apresT.filter((e) => e.type !== undefined).length;
+const residusT = apresT.filter((e) => typeAncien(e) !== undefined).length;
 const residusF = apresF.filter((e) => e.match?.trappingType !== undefined).length;
-const avantT = t.data.map((e) => e.type ?? e.categorie).join(',');
+const avantT = t.data.map((e) => typeAncien(e) ?? e.categorie).join(',');
 const renduT = apresT.map((e) => e.categorie).join(',');
 const avantF = f.data.map((e) => e.match?.trappingType ?? e.match?.categorie ?? '—').join(',');
 const renduF = apresF.map((e) => e.match?.categorie ?? '—').join(',');

@@ -37,16 +37,25 @@ const echecs = [];
 if (!Array.isArray(data)) echecs.push('racine non tableau');
 else if (data.length !== ATTENDU) echecs.push(`cardinal ${data.length} ≠ ${ATTENDU} attendu`);
 
+/**
+ * `type` D'ENVELOPPE (#1467 L1b V-FLIP-ENTITE-c) : depuis l'adoption de `document()`, chaque entrée
+ * de `spells.json` porte `type: "spells"` — le NOM DU DOCUMENT, pas l'ancienne école. Sans cette
+ * distinction, la migration lit l'enveloppe comme un `type` ressuscité et exige un arbitrage sur les
+ * 576 entrées. L'ancien `type` était un libellé d'école (18 valeurs), jamais le nom du dataset.
+ */
+const TYPE_ENVELOPPE = 'spells';
+const typeAncien = (e) => (e?.type !== undefined && e.type !== TYPE_ENVELOPPE ? e.type : undefined);
+
 let migres = 0;
 let dejaMigres = 0;
 
 const sortie = Array.isArray(data)
   ? data.map((e, i) => {
-      const aType = e?.type !== undefined;
+      const aType = typeAncien(e) !== undefined;
       const aEcole = e?.ecole !== undefined;
       if (aType && aEcole) { echecs.push(`entrée #${i} (${e.id}) : porte À LA FOIS \`type\` et \`ecole\` — arbitrage requis`); return e; }
       if (!aType && !aEcole) { echecs.push(`entrée #${i} (${e?.id}) : ni \`type\` ni \`ecole\` — école PERDUE`); return e; }
-      const valeur = aEcole ? e.ecole : e.type;
+      const valeur = aEcole ? e.ecole : typeAncien(e);
       if (typeof valeur !== 'string' || !valeur) { echecs.push(`entrée #${i} (${e.id}) : école ${JSON.stringify(valeur)} (chaîne non vide attendue)`); return e; }
       if (aEcole) { dejaMigres++; return e; }
       migres++;
@@ -65,9 +74,9 @@ if (out !== brut) fs.writeFileSync(CIBLE, out, 'utf8');
 
 // PREUVE post-écriture : plus aucun `type`, les 18 valeurs sont conservées À L'IDENTIQUE (casse comprise).
 const apres = JSON.parse(out);
-const residus = apres.filter((e) => e.type !== undefined).length;
-const avant = data.map((e) => e.type ?? e.ecole).join('');
-const rendu = apres.map((e) => e.ecole).join('');
+const residus = apres.filter((e) => typeAncien(e) !== undefined).length;
+const avant = data.map((e) => typeAncien(e) ?? e.ecole).join('\u0001');
+const rendu = apres.map((e) => e.ecole).join('\u0001');
 if (residus || avant !== rendu || apres.length !== ATTENDU) {
   console.error(`VÉRIFICATION POST-ÉCRITURE ROUGE : ${residus} \`type\` résiduel(s), ${apres.length} entrée(s), valeurs ${avant === rendu ? 'conservées' : 'ALTÉRÉES'}`);
   process.exit(1);

@@ -9,7 +9,7 @@
 import { z } from 'zod';
 import { sourceRefSchema, entityAppearanceSchema } from '../grammaire/valeurs';
 import { idDe } from '../grammaire/ref';
-import { schema as creaturesSchema } from '../defs/creatures';
+import { entreePartielle as creatureEntreePartielle, type CreatureProfilPartiel } from '../defs/creatures';
 import { findCreatureById, findTrappingById, findSkillById, findTalentById, specResolves } from '../../index';
 import type { TrappingData } from '../../index';
 
@@ -46,7 +46,7 @@ export const affaireSchema = z.strictObject({
 export const presetPnjSchema = z.strictObject({
   id: z.string().min(1, 'presetsPnj[].id : id vide.'),
   base: idDe('creature').optional(),
-  profil: creaturesSchema.element.partial().optional(),
+  profil: (creatureEntreePartielle as z.ZodType<CreatureProfilPartiel>).optional(),
   apparence: entityAppearanceSchema.optional(),
   /** id d'illustration (registre d'art), affichage seul. */
   portrait: z.string().optional(),

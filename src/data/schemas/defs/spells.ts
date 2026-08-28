@@ -6,7 +6,8 @@
  * `grammaire/mecanique.ts` (`flowSchema`/`conditionSchema`) et `grammaire/valeurs.ts` (`formulaSchema`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, formulaSchema, variantOf } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
+import { charKeySchema, formulaSchema } from '../grammaire/valeurs';
 import { flowSchema, conditionSchema } from '../grammaire/mecanique';
 
 export const file = 'spells.json';
@@ -96,10 +97,9 @@ const ritualSchema = z.strictObject({
 });
 
 // ── SpellData (src/data/index.ts) ───────────────────────────────────────────────────────────────
-/** Entrée de `spells.json`. */
-const spellEntrySchema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
+/** Champs PROPRES d'une entrée de `spells.json` — l'enveloppe (id/label/desc/source/alsoIn/variants)
+ *  est posée par `document()`. */
+const champs = {
   /** ÉCOLE — libellé d'affichage hérité (dépotoir : 18 valeurs, casse double 'Magie mineure' /
    *  'Magie Mineure') ; le discriminant de logique reste `family` + `domainId`. Sa MORT PAR
    *  DÉRIVATION depuis `family` + `domainIds` appartient à #1517 (Sorts multi-domaines : `domainId`
@@ -121,7 +121,6 @@ const spellEntrySchema = z.strictObject({
   range: spellRangeSchema.nullable(),
   target: spellTargetSchema.nullable(),
   duration: spellDurationSchema.nullable(),
-  desc: z.string(),
   missile: z.boolean().optional(),
   damage: z.number().optional(),
   ignorePA: z.boolean().optional(),
@@ -134,11 +133,7 @@ const spellEntrySchema = z.strictObject({
     skill: z.string().optional(),
   }).optional(),
   effects: flowSchema.optional(),
-  source: sourceRefSchema,
-  /** Emplacement SECONDAIRE (#563) — ex. `maitre-de-la-bete` prose folio 246 (ancre) ET stat-bloc
-   *  (NI/Portée/Cible/Durée) folio 245 (`alsoIn[0].quote`). */
-  alsoIn: z.array(secondarySourceRefSchema).optional(),
-});
+};
 
 /**
  * Champs qu'une variante réglée de `spells.json` peut republier — ceux dont la lecture PASSE par
@@ -159,11 +154,48 @@ const spellEntrySchema = z.strictObject({
  */
 export const VARIANT_RESOLVED_FIELDS = ['desc', 'source', 'cn', 'duration', 'effects'] as const;
 
-export const schema = z.array(
-  spellEntrySchema.extend({
-    /** Variantes réglées (#563/#564) : patch PARTIEL de l'entrée sur `VARIANT_RESOLVED_FIELDS`,
-     *  résolu par `effectiveEntry` (`engine/variants.ts`, REPLACE par champ déclaré) — SEULE lecture
-     *  des consommateurs. Les 18 sorts que VDM révise sont gatés par `magic-vdm-incantation`. */
-    variants: z.array(variantOf(spellEntrySchema, VARIANT_RESOLVED_FIELDS)).optional(),
-  }),
+const doc = document(
+  'spells',
+  famille,
+  champs,
+  {
+    ecole: {
+      label: 'École',
+      hint: 'Libellé d’école hérité, non normalisé (18 valeurs, casse double) — la famille de logique vit sur Famille de sort et Domaine',
+    },
+    subType: { label: 'Sous-type' },
+    domainId: { label: 'Domaine', hint: 'Domaine arcanique ou de culte auquel le sort appartient' },
+    isRitual: { label: 'Est un Rituel' },
+    ritual: {
+      label: 'Rubriques de Rituel',
+      hint: 'Rubriques qu’un Rituel imprime en plus d’un Sort : Type, Domaines, PX d’apprentissage, Composants, Conditions, Sacrifices, Conséquences — plus le NI porté par la cible et la Difficulté réduite pour certains Domaines',
+    },
+    family: { label: 'Famille de sort', hint: 'Mineure/Arcane/Invocation/Béni/Chaos — discriminant de logique' },
+    cn: { label: 'Niveau d’Incantation' },
+    range: { label: 'Portée' },
+    target: { label: 'Cible' },
+    duration: { label: 'Durée' },
+    missile: { label: 'Est un projectile magique' },
+    damage: { label: 'Dégâts (projectile magique)', hint: 'Bonus additif de Dégâts du projectile magique' },
+    ignorePA: { label: 'Ignore les PA', hint: 'Le projectile magique ignore les Points d’armure de la cible' },
+    ignoreBE: { label: 'Ignore le Bonus d’Endurance', hint: 'Le projectile magique ignore le Bonus d’Endurance de la cible' },
+    curated: {
+      label: 'Entrée officielle curée',
+      hint: 'Vrai pour une entrée complète de la base officielle ; absent/faux pour un sort homebrew',
+    },
+    breathAttack: { label: 'Sort Souffle', hint: 'Délégué à l’attaque de zone du Trait Souffle' },
+    opposed: { label: 'Test opposé', hint: 'Le sort exige un Test de résistance ou de contact de la cible' },
+    effects: { label: 'Effets déclenchés' },
+  },
+  {
+    codex: { keys: ['spells'] },
+    edit: { dataset: 'spells' },
+  },
+  { exiges: ['desc', 'source'], variantes: VARIANT_RESOLVED_FIELDS },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;
+/** Clés top-level relevées AVANT le sceau — le nœud rendu n'a plus de `.shape`
+ *  (`variants-integrity.test.ts`). */
+export const cles = doc.cles;

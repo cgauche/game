@@ -254,6 +254,7 @@ describe('Le torchon trempé (NADJ 16 l.109-111)', () => {
 describe('famille (10) — un 2ᵉ jeu à lanceurs est une ENTRÉE JSON, récit compris', () => {
   const FIXTURE = {
     id: 'sonde-lanceurs',
+    type: 'tavernGames',
     label: 'Sonde à lanceurs',
     desc: 'Entrée de SONDE (jamais livrée au catalogue) : elle mesure qu’un 2ᵉ jeu à lanceurs se déclare.',
     skill: 'projectiles',

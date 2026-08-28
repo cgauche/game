@@ -9,7 +9,9 @@
  *  - le CANAL atelier→picker de réf (`RefField` reçoit le libellé, pas la clé) ;
  *  - la CONVENTION D'EXPORT que le générateur de registre sait lire (export PLAT `export const meta`).
  * Les champs de charge utile suivent la méta du def : leur libellé FR arrive avec l'adoption de
- * `document()` par le def (lot L1b #1467) — 0 def adoptant à ce commit.
+ * `document()` par le def (lot L1b #1467). Au 2026-08-28 les 76 defs `entite` ont adopté ; `oups.json`
+ * reste le SEUL document registré sans méta (schéma d'UNION, hors des vagues d'adoption), et c'est lui
+ * qui sert de témoin au canal « document sans méta » ci-dessous.
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -68,17 +70,24 @@ describe('cascade du libellé', () => {
   });
 });
 
-describe('cascade sur DONNÉE RÉELLE (`trappings`, def sans handle)', () => {
+describe('cascade sur DONNÉE RÉELLE (`trappings`, def ADOPTÉ)', () => {
   const champs = () => inferFields(editableEntries('trappings') as Record<string, unknown>[], { meta: metaPourFichier('trappings.json') });
 
-  /** Le discriminant de catalogue s'appelle `categorie` depuis #1467 L1b V-P5 (l'homonyme `type` a
-   *  quitté les deux racines de documents) ; le CONTRAT mesuré est le même : un champ de CHARGE UTILE
-   *  d'un def sans handle reste sa clé, il n'emprunte jamais un libellé d'enveloppe. */
-  it('`categorie` de `trappings.json` est un discriminant de charge utile → sa clé, jamais un libellé d’enveloppe', () => {
+  /** Le discriminant de catalogue s'appelle `categorie` depuis #1467 L1b V-P5, et `trappings` a adopté
+   *  `document()` à la vague 12b : il porte donc MAINTENANT une clé d'enveloppe `type` sur les mêmes
+   *  entrées. Le CONTRAT que ce test tient est celui de la CASCADE : un champ de CHARGE UTILE prend le
+   *  libellé que SON def déclare, et jamais celui d'une clé d'enveloppe homonyme — les deux coexistent
+   *  sans se confondre. */
+  it('`categorie` prend le libellé de SON def, jamais celui de la clé d’enveloppe `type` qui la côtoie', () => {
     const entrees = editableEntries('trappings') as Record<string, unknown>[];
     expect(entrees.some((e) => typeof e.categorie === 'string'), 'la population `categorie` a disparu de trappings.json').toBe(true);
-    expect(libelleDuChamp('categorie', { meta: metaPourFichier('trappings.json') })).toBe('categorie');
-    expect(champs().find((f) => f.key === 'categorie')!.label).toBe('categorie');
+    const meta = metaPourFichier('trappings.json');
+    expect(meta, '`trappings` a adopté `document()` : sa méta doit arriver au canal').toBeDefined();
+    expect(libelleDuChamp('categorie', { meta })).toBe('Catégorie');
+    expect(champs().find((f) => f.key === 'categorie')!.label).toBe('Catégorie');
+    // Le voisin d'ENVELOPPE garde SON nom à lui : aucune des deux clés n'emprunte le libellé de l'autre.
+    expect(libelleDuChamp('type', { meta })).toBe(LIBELLES_ENVELOPPE.type);
+    expect(libelleDuChamp('categorie', { meta })).not.toBe(LIBELLES_ENVELOPPE.type);
   });
 
   it('un champ d’enveloppe réel (`desc`) porte son libellé FR', () => {
@@ -141,8 +150,9 @@ describe('régime PROFONDEUR — pas de fuite des libellés d’enveloppe dans l
 });
 
 describe('canal registre → atelier (`metaPourFichier`)', () => {
-  it('un document registré SANS méta rend `undefined` (0 def adoptant à ce commit)', () => {
-    expect(metaPourFichier('trappings.json')).toBeUndefined();
+  it('un document registré SANS méta rend `undefined` (témoin : `oups.json`, schéma d’union non adopté)', () => {
+    expect(DEFS_DE_DOCUMENT.some((d) => d.file === 'oups.json'), '`oups.json` a quitté le registre — choisir un autre témoin sans méta').toBe(true);
+    expect(metaPourFichier('oups.json')).toBeUndefined();
   });
 
   it('un fichier inconnu du registre rend `undefined` (jamais une exception)', () => {
@@ -218,13 +228,21 @@ describe('cliquet — part des champs de premier niveau qui portent un libellé'
       inferFields(editableEntries(c.key) as Record<string, unknown>[], { meta: metaPourFichier(`${c.key}.json`) }),
     );
 
-  // PLANCHER NOMINAL : 356/1118 = 31,8 % — mesure du 2026-08-26 sur l'arbre, 0 def adoptant `document()`
-  // (ventilation : id 103, label 100, source 77, desc 48, maison 11, alsoIn 8, icon 5, labelF 2, variants 2).
-  // Le 26,5 % (276/1040) du commit 09cc686e4 portait sur une AUTRE projection : les DEUX termes diffèrent —
-  // population 1040 → 1118 et compte libellé 276 → 356. La mesure est refaite ici par la projection réelle
-  // de `CodexEdit`, jamais recopiée. Marge du plancher : 0,3 pt — la perte d'une seule clé d'enveloppe
-  // peuplée (la plus petite, `variants`/`labelF` à 2 champs) reste verte, celle d'`icon` (5) rougit.
-  it('la part libellée ne redescend pas sous son plancher (31,5 % au 2026-08-26 — 0 def adoptant)', () => {
+  // PLANCHER NOMINAL : 819/1220 = 67,1 % — mesure du 2026-08-28 sur l'arbre, les 76 defs `entite`
+  // ayant adopté `document()`. Le 31,8 % (356/1118) du 2026-08-26 valait pour 0 def adoptant.
+  //
+  // CAUSES, mesurées — les DEUX termes ont bougé, et pour des raisons distinctes :
+  //  • NUMÉRATEUR 356 → 819 : c'est l'essentiel du gain, et il est ENTIÈREMENT dû à l'adoption — la
+  //    méta des defs adoptés arrive au canal `metaPourFichier` et libelle des champs de charge utile
+  //    qui rendaient jusque-là leur clé technique.
+  //  • DÉNOMINATEUR 1118 → 1220 (+102) : il n'est PAS imputable à la seule clé `type`. Mesuré sur
+  //    l'arbre : 63 des 117 catégories éditables portent `type`, soit 63 champs de la population de
+  //    1220 — dont 6 seulement entrent à CE lot, les 57 autres venant des vagues 11a/11b/12a. Le
+  //    reste de la croissance s'étale sur ces mêmes vagues (entre la mesure du 26 et celle du 28) et
+  //    ne se ventile pas d'ici : la ligne dit ce qu'elle a mesuré, elle n'invente pas le solde.
+  // La mesure est refaite par la projection réelle de `CodexEdit`, jamais recopiée. Marge du plancher :
+  // 0,6 pt — la perte de la méta d'un seul def moyen (une dizaine de champs) rougit.
+  it('la part libellée ne redescend pas sous son plancher (66,5 % au 2026-08-28 — 76 defs adoptants)', () => {
     const champs = champsAffiches();
     const libelles = champs.filter((f) => f.label && f.label !== f.key);
     expect(champs.length, 'la projection des champs affichés a changé de forme').toBeGreaterThan(500);
@@ -232,7 +250,7 @@ describe('cliquet — part des champs de premier niveau qui portent un libellé'
     expect(
       part,
       `part libellée = ${libelles.length}/${champs.length} = ${(part * 100).toFixed(1)} %`,
-    ).toBeGreaterThanOrEqual(0.315);
+    ).toBeGreaterThanOrEqual(0.665);
   });
 
   it('le cliquet mesure bien le CANAL : tout champ libellé l’est PAR LA CASCADE, jamais par la projection', () => {

@@ -1,11 +1,14 @@
 /**
- * LES DEUX MIGRATIONS DÉJÀ JOUÉES, REJOUÉES SUR UN ARBRE JETABLE (#1467 L1b V-FLIP-ENTITE-b).
+ * LES MIGRATIONS DÉJÀ JOUÉES ET RETOUCHÉES, REJOUÉES SUR UN ARBRE JETABLE (#1467 L1b V-FLIP-ENTITE).
  *
  * `2026-08-28-l1b-6a` a renommé `type`→`polarite` (qualities), `6c` `type`→`nature`
- * (characteristics) et `6b` `type`→`acces` (skills). L'adoption de `document()` a ensuite posé une clé
- * d'ENVELOPPE `type` — le NOM DU DOCUMENT — sur ces mêmes entrées, que ces scripts lisaient comme
- * l'ancien scalaire ressuscité (« arbitrage requis » sur toutes les entrées, rejeu ROUGE). Ils
- * distinguent désormais les deux par `typeAncien()` — 6a/6c à la vague 11b, 6b à la vague 12.
+ * (characteristics), `6b` `type`→`acces` (skills), `6d` `type`→`categorie` (trappings) et `6e`
+ * `type`→`ecole` (spells). L'adoption de `document()` a ensuite posé une clé d'ENVELOPPE `type` — le
+ * NOM DU DOCUMENT — sur ces mêmes entrées, que ces scripts lisaient comme l'ancien scalaire
+ * ressuscité (« arbitrage requis » sur toutes les entrées, rejeu ROUGE). Ils distinguent désormais
+ * les deux par `typeAncien()` — 6a/6c à la vague 11b, 6b à la vague 12a, 6d/6e à la vague 12b.
+ * CINQ scripts sont donc tenus ici ; ajouter une retouche sans ajouter son cas laisserait le geste le
+ * plus risqué du lot sans témoin.
  *
  * RETOUCHER UN SCRIPT DÉJÀ JOUÉ est le geste le plus risqué du lot : ce test le tient. Il exécute les
  * VRAIS fichiers de `scripts/migrations/` — copiés dans un arbre temporaire pour que leur
@@ -39,6 +42,13 @@ interface Cas {
   readonly cardinal: number;
   /** Valeurs historiques du scalaire `type`, cyclées pour peupler la fixture. */
   readonly valeurs: readonly string[];
+  /**
+   * Fichier ANNEXE que le script lit AUSSI et dont il exige le cardinal (`6d` : `merchantFamilies`,
+   * 7 entrées, où il renomme `match.trappingType`→`match.categorie`). Il est écrit À SON ÉTAT DÉJÀ
+   * MIGRÉ : les quatre cas ci-dessous portent sur le fichier PRINCIPAL, l'annexe ne doit jamais être
+   * ce qui fait rougir — sans quoi le cas C mesurerait la mauvaise cause.
+   */
+  readonly annexe?: { readonly fichier: string; readonly contenu: readonly Record<string, unknown>[] };
 }
 
 const CAS: readonly Cas[] = [
@@ -69,7 +79,37 @@ const CAS: readonly Cas[] = [
     // (couverte, elle, par la preuve post-écriture du script lui-même).
     valeurs: ['base', 'avancee'],
   },
+  {
+    script: '2026-08-28-l1b-6d-trappings-categorie.mjs',
+    fichier: 'trappings.json',
+    typeEnveloppe: 'trappings',
+    cleNeuve: 'categorie',
+    cardinal: 440,
+    valeurs: ['melee', 'ranged', 'ammunition', 'armor', 'trapping'],
+    annexe: {
+      fichier: 'merchantFamilies.json',
+      contenu: Array.from({ length: 7 }, (_, i) => ({ id: `f-${i}`, match: { categorie: 'trapping' } })),
+    },
+  },
+  {
+    script: '2026-08-28-l1b-6e-spells-ecole.mjs',
+    fichier: 'spells.json',
+    typeEnveloppe: 'spells',
+    cleNeuve: 'ecole',
+    cardinal: 576,
+    // `6e` n'a PAS de vocabulaire fermé (l'école est un libellé hérité, 18 valeurs) : il exige une
+    // chaîne NON VIDE. Le cas C ci-dessous en tient compte — cf. `collisionne`.
+    valeurs: ['Magie mineure', 'Magie Mineure', 'Petite Magie'],
+  },
 ];
+
+/**
+ * Ce qu'une valeur de `type` doit valoir pour que le script REFUSE de trancher. Deux régimes réels :
+ * un vocabulaire FERMÉ (6a/6b/6c/6d) où toute valeur étrangère mord, et 6e qui n'exige qu'une chaîne
+ * NON VIDE — sa seule valeur refusable est donc `''`. Sans cette distinction, le cas C serait VERT
+ * sur 6e en croyant tester un fail-fast.
+ */
+const collisionne = (cas: Cas): string => (cas.script.includes('-6e-') ? '' : 'valeur-inconnue');
 
 /** Écrit `data` à la forme CANONIQUE que les deux scripts exigent avant de lire. */
 const canonique = (data: unknown) => JSON.stringify(data, null, 2);
@@ -83,6 +123,7 @@ function arbre(cas: Cas, entrees: Record<string, unknown>[]): { dir: string; cib
   copyFileSync(join(RACINE, 'scripts', 'migrations', cas.script), script);
   const cible = join(dir, 'src', 'data', cas.fichier);
   writeFileSync(cible, canonique(entrees), 'utf8');
+  if (cas.annexe) writeFileSync(join(dir, 'src', 'data', cas.annexe.fichier), canonique(cas.annexe.contenu), 'utf8');
   return { dir, cible, script };
 }
 
@@ -132,7 +173,7 @@ describe.each(CAS)('migration $script — retouchée pour le `type` d’ENVELOPP
 
   it('C. COLLISION : une entrée dont le `type` n’est NI l’enveloppe NI une valeur connue → fail-fast, rien d’écrit', () => {
     const entrees = historique(cas);
-    entrees[0] = { id: 'e-0', type: 'valeur-inconnue', label: 'E0' };
+    entrees[0] = { id: 'e-0', type: collisionne(cas), label: 'E0' };
     const { code, apres, avant } = joue(cas, entrees);
     expect(code, 'une valeur hors vocabulaire doit ARRÊTER la migration').toBe(1);
     expect(apres, 'aucune écriture avant arbitrage').toBe(avant);
@@ -144,5 +185,72 @@ describe.each(CAS)('migration $script — retouchée pour le `type` d’ENVELOPP
     const { code, apres, avant } = joue(cas, entrees);
     expect(code, 'la double graphie reste un arbitrage, jamais un choix silencieux').toBe(1);
     expect(apres, 'aucune écriture avant arbitrage').toBe(avant);
+  });
+});
+
+/**
+ * FIDÉLITÉ DE LA VAGUE 12b — la migration `type` n'ajoute QUE `type`, sur les 1730 entrées des 12
+ * derniers datasets `entite`, et retire la SEULE `desc: ""` qu'elle DÉCLARE (`species › humains-tileens`).
+ *
+ * La migration porte déjà cette preuve en post-écriture, mais elle ne la porte QUE le jour où elle
+ * écrit : rejouée sur l'état final, elle sort en no-op sans rien comparer. Ce test-ci la tient au
+ * PRÉSENT, sur l'arbre committé — un `type` retiré, une charge utile modifiée ou une purge non
+ * déclarée le fait rougir, sans dépendre d'un rejeu.
+ */
+describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a bougé', () => {
+  /** `<fichier>` → `type`, recopié de la table `TYPES` de la migration. */
+  const TYPES_12B: Readonly<Record<string, string>> = {
+    'actions.json': 'actions',
+    'activities.json': 'activities',
+    'creatures.json': 'creatures',
+    'night-stakes.json': 'night-stakes',
+    'psychology.json': 'psychology',
+    'raceAppearance.json': 'raceAppearance',
+    'roofMaterials.json': 'roofMaterials',
+    'species.json': 'species',
+    'spells.json': 'spells',
+    'structureAppearance.json': 'structureAppearance',
+    'tavernGames.json': 'tavernGames',
+    'trappings.json': 'trappings',
+  };
+  const TOTAL_ATTENDU = 1730;
+
+  const lu = (f: string) => JSON.parse(readFileSync(join(RACINE, 'src', 'data', f), 'utf8')) as Record<string, unknown>[];
+
+  it('les 12 datasets totalisent 1730 entrées, `type` en 2ᵉ position et ACCORDÉ à son document', () => {
+    const fautes: string[] = [];
+    let total = 0;
+    for (const [f, type] of Object.entries(TYPES_12B)) {
+      const data = lu(f);
+      total += data.length;
+      for (const e of data) {
+        const cles = Object.keys(e);
+        if (cles[0] !== 'id' || cles[1] !== 'type') fautes.push(`${f} ${String(e.id)} : tête ${cles.slice(0, 2).join(',')} ≠ id,type`);
+        if (e.type !== type) fautes.push(`${f} ${String(e.id)} : type ${JSON.stringify(e.type)} ≠ ${JSON.stringify(type)}`);
+      }
+    }
+    expect(fautes, `entrée(s) hors contrat :\n${fautes.slice(0, 10).join('\n')}`).toEqual([]);
+    expect(total).toBe(TOTAL_ATTENDU);
+  });
+
+  it('AUCUNE `desc` vide ne subsiste, et `species › humains-tileens` n’en porte plus du tout', () => {
+    const vides: string[] = [];
+    for (const f of Object.keys(TYPES_12B)) {
+      for (const e of lu(f)) if (e.desc === '') vides.push(`${f} ${String(e.id)}`);
+    }
+    expect(vides, 'la chaîne vide est un TROISIÈME état — absente plutôt que vide').toEqual([]);
+    const tileens = lu('species.json').find((e) => e.id === 'humains-tileens');
+    expect(tileens, '`humains-tileens` a disparu de species.json').toBeDefined();
+    expect('desc' in tileens!, 'la purge DÉCLARÉE de la vague 12b retire la clé, elle ne la vide pas').toBe(false);
+  });
+
+  it('`creatures › group` est MORT de la donnée, et `title` y SURVIT (53 porteurs réels, #1541)', () => {
+    const creatures = lu('creatures.json');
+    expect(creatures.filter((e) => 'group' in e), '`group` est soldé : 0 porteur, 0 consommateur').toEqual([]);
+    // Le contre-témoin : la même vague qui tue `group` ne touche PAS `title`, dont 53 entrées portent
+    // un qualificatif de statbloc recopié du livre (règle 5 — on ne détruit pas de la donnée sourcée).
+    const porteurs = creatures.filter((e) => 'title' in e);
+    expect(porteurs.length, '`title` est REQUIS (nullable ≠ optional) : toutes les entrées le portent').toBe(creatures.length);
+    expect(porteurs.filter((e) => e.title !== null).length).toBe(53);
   });
 });

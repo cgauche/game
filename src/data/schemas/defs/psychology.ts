@@ -5,18 +5,17 @@
  * l'interface), simplement optionnel et jamais peuplé en pratique.
  */
 import { z } from 'zod';
-import { sourceRefSchema, difficultySchema, stakeFormSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
+import { difficultySchema, stakeFormSchema } from '../grammaire/valeurs';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'psychology.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    desc: z.string(),
-    source: sourceRefSchema,
+const doc = document(
+  'psychology',
+  famille,
+  {
     passive: z.array(gameOpSchema).optional(),
     effects: z.array(triggeredEffectSchema).optional(),
     gating: z
@@ -26,7 +25,6 @@ export const schema = z.array(
         cannotDefend: z.literal(true).optional(),
       })
       .optional(),
-    icon: z.string().optional(),
     psychImmune: z.boolean().optional(),
     targeted: z.boolean().optional(),
     endedByOtherPsych: z.boolean().optional(),
@@ -53,5 +51,49 @@ export const schema = z.array(
       .optional(),
     becomes: z.string().optional(),
     test: z.strictObject({ skill: z.string().optional(), difficulty: difficultySchema.optional() }).optional(),
-  }),
+  },
+  {
+    passive: { label: 'Effets passifs' },
+    effects: { label: 'Effets déclenchés' },
+    gating: { label: 'Restrictions Action/Mouvement/défense' },
+    psychImmune: { label: 'Immunise à toute Psychologie' },
+    targeted: {
+      label: 'Vise une cible',
+      hint: 'Ce type de Psychologie porte sur une cible désignée (Animosité, Haine, Préjugé, Phobie — la Cible est un Groupe)',
+    },
+    endedByOtherPsych: { label: 'Levée par un autre état psy' },
+    immuneToFromTarget: { label: 'Immunités face à la Cible' },
+    attackDR: { label: 'DR d’attaque', hint: 'Modificateur de DR en attaque, selon la cible (source/groupe/n’importe)' },
+    immuneWhileActive: { label: 'Immunités pendant l’état' },
+    containedSocialMod: {
+      label: 'Modificateur social (contenue)',
+      hint: 'Malus au Test de Sociabilité du porteur envers sa Cible tant que le Trait reste contenu (Test réussi) — Animosité −20, Préjugé −10',
+    },
+    targetCauses: {
+      label: 'Régime causé par sa Cible',
+      hint: 'L’objet visé devient, POUR LE PORTEUR, une source de Peur/Terreur de cet Indice (Phobie → Peur 1)',
+    },
+    triggerOn: { label: 'Déclenché par', hint: 'Rencontre ou menace' },
+    stake: { label: 'Enjeu' },
+    stakeForm: { label: 'Forme de l’enjeu' },
+    resolution: { label: 'Mode de résolution', hint: 'Étendu / Terreur / binaire' },
+    failCondition: { label: 'État infligé à l’échec', hint: 'Identifiant de l’État posé quand le Test échoue' },
+    failAmount: {
+      label: 'Quantité infligée à l’échec',
+      hint: 'Part fixe (ou l’Indice) + N par degré d’échec — nombre de rangs de l’État posé',
+    },
+    becomes: {
+      label: 'Devient',
+      hint: 'Psychologie posée à la suite du Test, quel qu’en soit le résultat (Terreur → Peur de même Indice)',
+    },
+    test: { label: 'Test associé', hint: 'Compétence/Difficulté du Test de Psychologie' },
+  },
+  {
+    codex: { keys: ['psychologies'] },
+    edit: { dataset: 'psychologies' },
+  },
+  { exiges: ['desc', 'source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

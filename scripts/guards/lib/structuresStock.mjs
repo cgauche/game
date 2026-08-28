@@ -588,6 +588,13 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "trappings.json", champ: "cond", signature: "value+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "defaultAmmo", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 9, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "derivedWeapon", signature: "subType,type+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  // #1467 L1b V-FLIP-ENTITE-c : forme SURFACÉE par l'adoption de `document()` par `trappings`, pas
+  // ajoutée à la donnée — sous la fabrique, les champs vivent dans un littéral `champs` et le scan voit
+  // les ops de `passive`/`consumable`/`onHitEffects` telles qu'elles sont (même cause qu'à
+  // `qualities.json`/`symptoms.json`, cf. `slotsStock.mjs`, où le MÊME lot relève `ops` 34 → 58 : les
+  // +24 occurrences y sont exactement cette ligne). La migration 12b prouve entrée par entrée que
+  // seule la clé `type` s'ajoute au fichier (deep-equal sur tout le reste).
+  { concept: "reference", dataset: "trappings.json", champ: "ops", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 24, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "ops", signature: "disease+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "ops", signature: "id,value+…", statut: "divergente", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "trappings.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 7, lot: "L3 #1463", date: "2026-08-23" },
@@ -786,7 +793,6 @@ export const STRUCTURES_FORMES = [
 export const STRUCTURES_DEFAUT = [
   { dataset: "actions.json", cle: "blocked", date: "2026-08-26" },
   { dataset: "activities.json", cle: "char", date: "2026-08-26" },
-  { dataset: "creatures.json", cle: "group", date: "2026-08-26" },
   { dataset: "maneuvers.json", cle: "priority", date: "2026-08-26" },
   { dataset: "merchants.json", cle: "buyMarkup", date: "2026-08-26" },
   { dataset: "merchants.json", cle: "restockDays", date: "2026-08-26" },

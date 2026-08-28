@@ -353,7 +353,12 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "trappings.json", champ: "diseases", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "exceptGroups", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "onlyGroups", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "trappings.json", champ: "ops", occurrences: 34, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // #1467 L1b V-FLIP-ENTITE-c : occurrences RELEVÉES à neuf 34 → 58, même cause qu'à
+  // `qualities.json`/`symptoms.json` ci-dessus — sous `document()` les champs de `trappings` vivent
+  // dans un littéral `champs`, et le scan de slots voit désormais les ops de `passive`/`consumable`/
+  // `onHitEffects` telles qu'elles sont. La DONNÉE n'a pas bougé : la migration 12b prouve entrée par
+  // entrée que seule la clé `type` s'ajoute (deep-equal sur tout le reste). Se solde avec les ops.
+  { dataset: "trappings.json", champ: "ops", occurrences: 58, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "trappings.json", champ: "passive", occurrences: 16, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "qualities", occurrences: 438, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "shape", occurrences: 43, lot: "L2/L3 #1473", date: "2026-08-26" },

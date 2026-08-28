@@ -1,6 +1,7 @@
 [
   {
     "id": "tuile",
+    "type": "roofMaterials",
     "label": "Tuile",
     "N": "#a04836",
     "E": "#732a20",
@@ -29,6 +30,7 @@
   },
   {
     "id": "chaume",
+    "type": "roofMaterials",
     "label": "Chaume",
     "N": "#b0904a",
     "E": "#7d642a",
@@ -60,6 +62,7 @@
   },
   {
     "id": "ardoise",
+    "type": "roofMaterials",
     "label": "Ardoise",
     "N": "#63727f",
     "E": "#3d4852",
@@ -88,6 +91,7 @@
   },
   {
     "id": "plan",
+    "type": "roofMaterials",
     "label": "Plan (vue de dessus)",
     "planBody": "#6e4f3a",
     "planEdge": "#241a12",

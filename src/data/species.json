@@ -1,6 +1,7 @@
 [
   {
     "id": "humains-reiklander",
+    "type": "species",
     "label": "Humains (Reiklander)",
     "family": "Humains",
     "variant": "Reiklander",
@@ -130,6 +131,7 @@
   },
   {
     "id": "humains-middenheim",
+    "type": "species",
     "label": "Humains (Middenheim)",
     "family": "Humains",
     "variant": "Middenheim",
@@ -257,6 +259,7 @@
   },
   {
     "id": "humains-middenland",
+    "type": "species",
     "label": "Humains (Middenland)",
     "family": "Humains",
     "variant": "Middenland",
@@ -392,6 +395,7 @@
   },
   {
     "id": "humains-nordland",
+    "type": "species",
     "label": "Humains (Nordland)",
     "family": "Humains",
     "variant": "Nordland",
@@ -542,13 +546,13 @@
   },
   {
     "id": "humains-tileens",
+    "type": "species",
     "label": "Humains (Tiléens)",
     "family": "Humains",
     "variant": "Tiléens",
     "refChar": "humain",
     "refCareer": "humain",
     "rand": 90,
-    "desc": "",
     "movement": 4,
     "fate": {
       "fate": 2,
@@ -679,6 +683,7 @@
   },
   {
     "id": "humains-bjornling-norse",
+    "type": "species",
     "label": "Humains (Bjornling Norse)",
     "family": "Humains",
     "variant": "Bjornling Norse",
@@ -828,6 +833,7 @@
   },
   {
     "id": "humains-sarl-norse",
+    "type": "species",
     "label": "Humains (Sarl Norse)",
     "family": "Humains",
     "variant": "Sarl Norse",
@@ -978,6 +984,7 @@
   },
   {
     "id": "humains-skaeling-norse",
+    "type": "species",
     "label": "Humains (Skaeling Norse)",
     "family": "Humains",
     "variant": "Skaeling Norse",
@@ -1129,6 +1136,7 @@
   },
   {
     "id": "halflings",
+    "type": "species",
     "label": "Halflings",
     "family": "Halflings",
     "refChar": "halfling",
@@ -1259,6 +1267,7 @@
   },
   {
     "id": "halflings-cendreplaine",
+    "type": "species",
     "label": "Halflings (Cendreplaine)",
     "family": "Halflings",
     "variant": "Cendreplaine",
@@ -1401,6 +1410,7 @@
   },
   {
     "id": "halflings-basseronce",
+    "type": "species",
     "label": "Halflings (Basseronce)",
     "family": "Halflings",
     "variant": "Basseronce",
@@ -1541,6 +1551,7 @@
   },
   {
     "id": "halflings-tuilecaramel",
+    "type": "species",
     "label": "Halflings (Tuilecaramel)",
     "family": "Halflings",
     "variant": "Tuilecaramel",
@@ -1683,6 +1694,7 @@
   },
   {
     "id": "halflings-piedfoin",
+    "type": "species",
     "label": "Halflings (Piedfoin)",
     "family": "Halflings",
     "variant": "Piedfoin",
@@ -1824,6 +1836,7 @@
   },
   {
     "id": "halflings-piedpaille",
+    "type": "species",
     "label": "Halflings (Piedpaille)",
     "family": "Halflings",
     "variant": "Piedpaille",
@@ -1964,6 +1977,7 @@
   },
   {
     "id": "halflings-piedfoin-piedpaille",
+    "type": "species",
     "label": "Halflings (Piedfoin-Piedpaille)",
     "family": "Halflings",
     "variant": "Piedfoin-Piedpaille",
@@ -2104,6 +2118,7 @@
   },
   {
     "id": "halflings-pochegaree",
+    "type": "species",
     "label": "Halflings (Pochégarée)",
     "family": "Halflings",
     "variant": "Pochégarée",
@@ -2243,6 +2258,7 @@
   },
   {
     "id": "halflings-havrebas",
+    "type": "species",
     "label": "Halflings (Havrebas)",
     "family": "Halflings",
     "variant": "Havrebas",
@@ -2387,6 +2403,7 @@
   },
   {
     "id": "halflings-rumster",
+    "type": "species",
     "label": "Halflings (Rumster)",
     "family": "Halflings",
     "variant": "Rumster",
@@ -2528,6 +2545,7 @@
   },
   {
     "id": "halflings-bordecharde",
+    "type": "species",
     "label": "Halflings (Bordécharde)",
     "family": "Halflings",
     "variant": "Bordécharde",
@@ -2669,6 +2687,7 @@
   },
   {
     "id": "halflings-pavederonces",
+    "type": "species",
     "label": "Halflings (Pavéderonces)",
     "family": "Halflings",
     "variant": "Pavéderonces",
@@ -2814,6 +2833,7 @@
   },
   {
     "id": "halflings-fraisedebois",
+    "type": "species",
     "label": "Halflings (Fraisedébois)",
     "family": "Halflings",
     "variant": "Fraisedébois",
@@ -2955,6 +2975,7 @@
   },
   {
     "id": "nains",
+    "type": "species",
     "label": "Nains",
     "family": "Nains",
     "refChar": "nain",
@@ -3106,6 +3127,7 @@
   },
   {
     "id": "nains-norse",
+    "type": "species",
     "label": "Nains (Norse)",
     "family": "Nains",
     "variant": "Norse",
@@ -3257,6 +3279,7 @@
   },
   {
     "id": "gnomes",
+    "type": "species",
     "label": "Gnomes",
     "family": "Gnomes",
     "refChar": "gnome",
@@ -3429,6 +3452,7 @@
   },
   {
     "id": "ogres",
+    "type": "species",
     "label": "Ogres",
     "family": "Ogres",
     "refChar": "ogre",
@@ -3588,6 +3612,7 @@
   },
   {
     "id": "hauts-elfes",
+    "type": "species",
     "label": "Hauts elfes",
     "family": "Hauts elfes",
     "refChar": "haut-elfe",
@@ -3739,6 +3764,7 @@
   },
   {
     "id": "elfes-sylvains",
+    "type": "species",
     "label": "Elfes sylvains",
     "family": "Elfes sylvains",
     "refChar": "elfe-sylvain",

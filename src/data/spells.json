@@ -1,6 +1,7 @@
 [
   {
     "id": "benediction-de-bataille",
+    "type": "spells",
     "label": "Bénédiction de Bataille",
     "ecole": "Béni",
     "subType": null,
@@ -47,6 +48,7 @@
   },
   {
     "id": "benediction-de-chance",
+    "type": "spells",
     "label": "Bénédiction de Chance",
     "ecole": "Béni",
     "subType": null,
@@ -91,6 +93,7 @@
   },
   {
     "id": "benediction-de-charisme",
+    "type": "spells",
     "label": "Bénédiction de Charisme",
     "ecole": "Béni",
     "subType": null,
@@ -137,6 +140,7 @@
   },
   {
     "id": "benediction-de-conscience",
+    "type": "spells",
     "label": "Bénédiction de Conscience",
     "ecole": "Béni",
     "subType": null,
@@ -182,6 +186,7 @@
   },
   {
     "id": "benediction-de-convalescence",
+    "type": "spells",
     "label": "Bénédiction de Convalescence",
     "ecole": "Béni",
     "subType": null,
@@ -225,6 +230,7 @@
   },
   {
     "id": "benediction-de-courage",
+    "type": "spells",
     "label": "Bénédiction de Courage",
     "ecole": "Béni",
     "subType": null,
@@ -271,6 +277,7 @@
   },
   {
     "id": "benediction-de-droiture",
+    "type": "spells",
     "label": "Bénédiction de Droiture",
     "ecole": "Béni",
     "subType": null,
@@ -318,6 +325,7 @@
   },
   {
     "id": "benediction-de-finesse",
+    "type": "spells",
     "label": "Bénédiction de Finesse",
     "ecole": "Béni",
     "subType": null,
@@ -364,6 +372,7 @@
   },
   {
     "id": "benediction-de-grace",
+    "type": "spells",
     "label": "Bénédiction de Grâce",
     "ecole": "Béni",
     "subType": null,
@@ -410,6 +419,7 @@
   },
   {
     "id": "benediction-de-guerison",
+    "type": "spells",
     "label": "Bénédiction de Guérison",
     "ecole": "Béni",
     "subType": null,
@@ -452,6 +462,7 @@
   },
   {
     "id": "benediction-de-la-chasse",
+    "type": "spells",
     "label": "Bénédiction de La Chasse",
     "ecole": "Béni",
     "subType": null,
@@ -498,6 +509,7 @@
   },
   {
     "id": "benediction-de-protection",
+    "type": "spells",
     "label": "Bénédiction de Protection",
     "ecole": "Béni",
     "subType": null,
@@ -542,6 +554,7 @@
   },
   {
     "id": "benediction-de-puissance",
+    "type": "spells",
     "label": "Bénédiction de Puissance",
     "ecole": "Béni",
     "subType": null,
@@ -588,6 +601,7 @@
   },
   {
     "id": "benediction-de-sagesse",
+    "type": "spells",
     "label": "Bénédiction de Sagesse",
     "ecole": "Béni",
     "subType": null,
@@ -634,6 +648,7 @@
   },
   {
     "id": "benediction-de-sauvagerie",
+    "type": "spells",
     "label": "Bénédiction de Sauvagerie",
     "ecole": "Béni",
     "subType": null,
@@ -678,6 +693,7 @@
   },
   {
     "id": "benediction-de-souffle",
+    "type": "spells",
     "label": "Bénédiction de Souffle",
     "ecole": "Béni",
     "subType": null,
@@ -722,6 +738,7 @@
   },
   {
     "id": "benediction-de-tenacite",
+    "type": "spells",
     "label": "Bénédiction de Ténacité",
     "ecole": "Béni",
     "subType": null,
@@ -765,6 +782,7 @@
   },
   {
     "id": "benediction-de-vigueur",
+    "type": "spells",
     "label": "Bénédiction de Vigueur",
     "ecole": "Béni",
     "subType": null,
@@ -811,6 +829,7 @@
   },
   {
     "id": "benediction-de-vivacite",
+    "type": "spells",
     "label": "Bénédiction de Vivacité",
     "ecole": "Béni",
     "subType": null,
@@ -857,6 +876,7 @@
   },
   {
     "id": "alerte",
+    "type": "spells",
     "label": "Alerte",
     "ecole": "Magie mineure",
     "subType": null,
@@ -901,6 +921,7 @@
   },
   {
     "id": "amitie-animale",
+    "type": "spells",
     "label": "Amitié animale",
     "ecole": "Magie mineure",
     "subType": null,
@@ -947,6 +968,7 @@
   },
   {
     "id": "bruits",
+    "type": "spells",
     "label": "Bruits",
     "ecole": "Magie mineure",
     "subType": null,
@@ -996,6 +1018,7 @@
   },
   {
     "id": "choc",
+    "type": "spells",
     "label": "Choc",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1038,6 +1061,7 @@
   },
   {
     "id": "conservation",
+    "type": "spells",
     "label": "Conservation",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1086,6 +1110,7 @@
   },
   {
     "id": "coup-de-vent",
+    "type": "spells",
     "label": "Coup de vent",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1132,6 +1157,7 @@
   },
   {
     "id": "creer-un-petit-animal",
+    "type": "spells",
     "label": "Créer un petit animal",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1174,6 +1200,7 @@
   },
   {
     "id": "drain",
+    "type": "spells",
     "label": "Drain",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1218,6 +1245,7 @@
   },
   {
     "id": "eblouissant",
+    "type": "spells",
     "label": "Éblouissant",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1268,6 +1296,7 @@
   },
   {
     "id": "en-catimini",
+    "type": "spells",
     "label": "En catimini",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1312,6 +1341,7 @@
   },
   {
     "id": "feux-follets",
+    "type": "spells",
     "label": "Feux follets",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1362,6 +1392,7 @@
   },
   {
     "id": "flamme-magique",
+    "type": "spells",
     "label": "Flamme magique",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1406,6 +1437,7 @@
   },
   {
     "id": "flechette",
+    "type": "spells",
     "label": "Fléchette",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1439,6 +1471,7 @@
   },
   {
     "id": "lumiere",
+    "type": "spells",
     "label": "Lumière",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1489,6 +1522,7 @@
   },
   {
     "id": "murmures",
+    "type": "spells",
     "label": "Murmures",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1538,6 +1572,7 @@
   },
   {
     "id": "pas-leger",
+    "type": "spells",
     "label": "Pas léger",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1583,6 +1618,7 @@
   },
   {
     "id": "protection-contre-la-pluie",
+    "type": "spells",
     "label": "Protection contre la pluie",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1627,6 +1663,7 @@
   },
   {
     "id": "purification-de-l-eau",
+    "type": "spells",
     "label": "Purification de l'eau",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1671,6 +1708,7 @@
   },
   {
     "id": "putrefaction",
+    "type": "spells",
     "label": "Putréfaction",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1719,6 +1757,7 @@
   },
   {
     "id": "reperes",
+    "type": "spells",
     "label": "Repères",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1760,6 +1799,7 @@
   },
   {
     "id": "secousse",
+    "type": "spells",
     "label": "Secousse",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1817,6 +1857,7 @@
   },
   {
     "id": "serrure-ouverte",
+    "type": "spells",
     "label": "Serrure ouverte",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1859,6 +1900,7 @@
   },
   {
     "id": "sommeil",
+    "type": "spells",
     "label": "Sommeil",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1917,6 +1959,7 @@
   },
   {
     "id": "source",
+    "type": "spells",
     "label": "Source",
     "ecole": "Magie mineure",
     "subType": null,
@@ -1962,6 +2005,7 @@
   },
   {
     "id": "tendre-l-oreille",
+    "type": "spells",
     "label": "Tendre l'oreille",
     "ecole": "Magie mineure",
     "subType": null,
@@ -2012,6 +2056,7 @@
   },
   {
     "id": "arme-aethyrique",
+    "type": "spells",
     "label": "Arme aethyrique",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2075,6 +2120,7 @@
   },
   {
     "id": "armure-aethyrique",
+    "type": "spells",
     "label": "Armure Aethyrique",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2120,6 +2166,7 @@
   },
   {
     "id": "attaques-en-chaine",
+    "type": "spells",
     "label": "Attaques en chaîne",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2173,6 +2220,7 @@
   },
   {
     "id": "aura-ordinaire",
+    "type": "spells",
     "label": "Aura ordinaire",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2218,6 +2266,7 @@
   },
   {
     "id": "bouclier-anti-fleches",
+    "type": "spells",
     "label": "Bouclier anti-flèches",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2269,6 +2318,7 @@
   },
   {
     "id": "bouclier-magique",
+    "type": "spells",
     "label": "Bouclier magique",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2313,6 +2363,7 @@
   },
   {
     "id": "carreau",
+    "type": "spells",
     "label": "Carreau",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2347,6 +2398,7 @@
   },
   {
     "id": "chute",
+    "type": "spells",
     "label": "Chute",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2404,6 +2456,7 @@
   },
   {
     "id": "deplacement-d-objet",
+    "type": "spells",
     "label": "Déplacement d'objet",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2451,6 +2504,7 @@
   },
   {
     "id": "dome",
+    "type": "spells",
     "label": "Dôme",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2501,6 +2555,7 @@
   },
   {
     "id": "effrayant",
+    "type": "spells",
     "label": "Effrayant",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2550,6 +2605,7 @@
   },
   {
     "id": "enchevetrement",
+    "type": "spells",
     "label": "Enchevêtrement",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2604,6 +2660,7 @@
   },
   {
     "id": "envol",
+    "type": "spells",
     "label": "Envol",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2652,6 +2709,7 @@
   },
   {
     "id": "explosion",
+    "type": "spells",
     "label": "Explosion",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2688,6 +2746,7 @@
   },
   {
     "id": "perturbant",
+    "type": "spells",
     "label": "Perturbant",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2732,6 +2791,7 @@
   },
   {
     "id": "pont",
+    "type": "spells",
     "label": "Pont",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2785,6 +2845,7 @@
   },
   {
     "id": "poussee",
+    "type": "spells",
     "label": "Poussée",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2845,6 +2906,7 @@
   },
   {
     "id": "protection",
+    "type": "spells",
     "label": "Protection",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2890,6 +2952,7 @@
   },
   {
     "id": "sang-corrosif",
+    "type": "spells",
     "label": "Sang corrosif",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2934,6 +2997,7 @@
   },
   {
     "id": "souffle",
+    "type": "spells",
     "label": "Souffle",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -2966,6 +3030,7 @@
   },
   {
     "id": "teleportation",
+    "type": "spells",
     "label": "Téléportation",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -3015,6 +3080,7 @@
   },
   {
     "id": "terrifiant",
+    "type": "spells",
     "label": "Terrifiant",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -3060,6 +3126,7 @@
   },
   {
     "id": "vision-dans-l-obscurite",
+    "type": "spells",
     "label": "Vision dans l'obscurité",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -3104,6 +3171,7 @@
   },
   {
     "id": "forme-bestiale",
+    "type": "spells",
     "label": "Forme bestiale",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -3182,6 +3250,7 @@
   },
   {
     "id": "incarnation-de-wyssan",
+    "type": "spells",
     "label": "Incarnation de Wyssan",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -3265,6 +3334,7 @@
   },
   {
     "id": "la-lance-d-ambre",
+    "type": "spells",
     "label": "La lance d'Ambre",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -3325,6 +3395,7 @@
   },
   {
     "id": "langue-bestiale",
+    "type": "spells",
     "label": "Langue bestiale",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -3378,6 +3449,7 @@
   },
   {
     "id": "maitre-de-la-bete",
+    "type": "spells",
     "label": "Maître de la bête",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -3498,6 +3570,7 @@
   },
   {
     "id": "peau-de-chasseur",
+    "type": "spells",
     "label": "Peau de chasseur",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -3565,6 +3638,7 @@
   },
   {
     "id": "serres-d-ambre",
+    "type": "spells",
     "label": "Serres d'ambre",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -3690,6 +3764,7 @@
   },
   {
     "id": "vol-du-destin",
+    "type": "spells",
     "label": "Vol du Destin",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -3778,6 +3853,7 @@
   },
   {
     "id": "arc-de-t-essla",
+    "type": "spells",
     "label": "Arc de T'Essla",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -3834,6 +3910,7 @@
   },
   {
     "id": "bouclier-ceruleen",
+    "type": "spells",
     "label": "Bouclier céruléen",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -3891,6 +3968,7 @@
   },
   {
     "id": "comete-de-cassandora",
+    "type": "spells",
     "label": "Comète de Cassandora",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -3959,6 +4037,7 @@
   },
   {
     "id": "ironie-du-destin",
+    "type": "spells",
     "label": "Ironie du Destin",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -4035,6 +4114,7 @@
   },
   {
     "id": "le-premier-signe-d-amul",
+    "type": "spells",
     "label": "Le Premier Signe d'Amul",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -4093,6 +4173,7 @@
   },
   {
     "id": "le-second-signe-d-amul",
+    "type": "spells",
     "label": "Le Second Signe d'Amul",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -4155,6 +4236,7 @@
   },
   {
     "id": "le-troisieme-signe-d-amul",
+    "type": "spells",
     "label": "Le Troisième Signe d'Amul",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -4209,6 +4291,7 @@
   },
   {
     "id": "maudit",
+    "type": "spells",
     "label": "Maudit",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -4266,6 +4349,7 @@
   },
   {
     "id": "cauteriser",
+    "type": "spells",
     "label": "Cautériser",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -4379,6 +4463,7 @@
   },
   {
     "id": "coeurs-ardents",
+    "type": "spells",
     "label": "Cœurs ardents",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -4467,6 +4552,7 @@
   },
   {
     "id": "couronne-de-flammes",
+    "type": "spells",
     "label": "Couronne de Flammes",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -4532,6 +4618,7 @@
   },
   {
     "id": "grands-feux-d-u-zhul",
+    "type": "spells",
     "label": "Grands feux d'U'Zhul",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -4643,6 +4730,7 @@
   },
   {
     "id": "l-egide-d-aqshy",
+    "type": "spells",
     "label": "L'Égide d'Aqshy",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -4700,6 +4788,7 @@
   },
   {
     "id": "l-epee-ardente-de-rhuin",
+    "type": "spells",
     "label": "L'Épée ardente de Rhuin",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -4805,6 +4894,7 @@
   },
   {
     "id": "mur-de-feu",
+    "type": "spells",
     "label": "Mur de feu",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -4891,6 +4981,7 @@
   },
   {
     "id": "purification",
+    "type": "spells",
     "label": "Purification",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -4960,6 +5051,7 @@
   },
   {
     "id": "bouf-crane",
+    "type": "spells",
     "label": "Bouf 'crâne",
     "ecole": "Magie des Arcanes",
     "subType": "Gueule",
@@ -5010,6 +5102,7 @@
   },
   {
     "id": "broyeur-d-os",
+    "type": "spells",
     "label": "Broyeur d'os",
     "ecole": "Magie des Arcanes",
     "subType": "Gueule",
@@ -5060,6 +5153,7 @@
   },
   {
     "id": "festin-des-damnes",
+    "type": "spells",
     "label": "Festin des Damnés",
     "ecole": "Magie des Arcanes",
     "subType": "Gueule",
@@ -5113,6 +5207,7 @@
   },
   {
     "id": "goinfre-costaud",
+    "type": "spells",
     "label": "Goinfre costaud",
     "ecole": "Magie des Arcanes",
     "subType": "Gueule",
@@ -5168,6 +5263,7 @@
   },
   {
     "id": "goutemort",
+    "type": "spells",
     "label": "Goûtemort",
     "ecole": "Magie des Arcanes",
     "subType": "Gueule",
@@ -5210,6 +5306,7 @@
   },
   {
     "id": "la-gueule",
+    "type": "spells",
     "label": "La Gueule",
     "ecole": "Magie des Arcanes",
     "subType": "Gueule",
@@ -5263,6 +5360,7 @@
   },
   {
     "id": "trollboyaux",
+    "type": "spells",
     "label": "Trollboyaux",
     "ecole": "Magie des Arcanes",
     "subType": "Gueule",
@@ -5317,6 +5415,7 @@
   },
   {
     "id": "bannissement",
+    "type": "spells",
     "label": "Bannissement",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -5378,6 +5477,7 @@
   },
   {
     "id": "clarte-d-esprit",
+    "type": "spells",
     "label": "Clarté d'esprit",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -5438,6 +5538,7 @@
   },
   {
     "id": "fauche-demon",
+    "type": "spells",
     "label": "Fauche-démon",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -5503,6 +5604,7 @@
   },
   {
     "id": "filet-d-amyntok",
+    "type": "spells",
     "label": "Filet d'Amyntok",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -5562,6 +5664,7 @@
   },
   {
     "id": "lumiere-aveuglante",
+    "type": "spells",
     "label": "Lumière aveuglante",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -5624,6 +5727,7 @@
   },
   {
     "id": "lumiere-de-guerison",
+    "type": "spells",
     "label": "Lumière de guérison",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -5791,6 +5895,7 @@
   },
   {
     "id": "pensee-rapide",
+    "type": "spells",
     "label": "Pensée rapide",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -5849,6 +5954,7 @@
   },
   {
     "id": "protection-de-pha",
+    "type": "spells",
     "label": "Protection de Phâ",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -5915,6 +6021,7 @@
   },
   {
     "id": "arme-enchantee",
+    "type": "spells",
     "label": "Arme enchantée",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -5978,6 +6085,7 @@
   },
   {
     "id": "creuset-de-chamon",
+    "type": "spells",
     "label": "Creuset de Chamon",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -6038,6 +6146,7 @@
   },
   {
     "id": "ecaille-d-acier",
+    "type": "spells",
     "label": "Écaille d'acier",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -6095,6 +6204,7 @@
   },
   {
     "id": "forge-de-chamon",
+    "type": "spells",
     "label": "Forge de Chamon",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -6153,6 +6263,7 @@
   },
   {
     "id": "l-or-des-fous",
+    "type": "spells",
     "label": "L'Or des fous",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -6207,6 +6318,7 @@
   },
   {
     "id": "metal-changeant",
+    "type": "spells",
     "label": "Métal changeant",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -6265,6 +6377,7 @@
   },
   {
     "id": "plume-de-plomb",
+    "type": "spells",
     "label": "Plume de plomb",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -6325,6 +6438,7 @@
   },
   {
     "id": "transmutation-de-chamon",
+    "type": "spells",
     "label": "Transmutation de Chamon",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -6414,6 +6528,7 @@
   },
   {
     "id": "caresse-de-laniph",
+    "type": "spells",
     "label": "Caresse de Laniph",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -6476,6 +6591,7 @@
   },
   {
     "id": "dernieres-paroles",
+    "type": "spells",
     "label": "Dernières paroles",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -6529,6 +6645,7 @@
   },
   {
     "id": "la-faux-de-shyish",
+    "type": "spells",
     "label": "La Faux de Shyish",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -6612,6 +6729,7 @@
   },
   {
     "id": "le-voile-violet-de-shyish",
+    "type": "spells",
     "label": "Le Voile violet de Shyish",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -6675,6 +6793,7 @@
   },
   {
     "id": "mort-rapide",
+    "type": "spells",
     "label": "Mort rapide",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -6725,6 +6844,7 @@
   },
   {
     "id": "sanctifier",
+    "type": "spells",
     "label": "Sanctifier",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -6782,6 +6902,7 @@
   },
   {
     "id": "vol-de-vie",
+    "type": "spells",
     "label": "Vol de vie",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -6868,6 +6989,7 @@
   },
   {
     "id": "vortex-d-ames",
+    "type": "spells",
     "label": "Vortex d'âmes",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -6933,6 +7055,7 @@
   },
   {
     "id": "destrier-d-ombre",
+    "type": "spells",
     "label": "Destrier d'Ombre",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -7016,6 +7139,7 @@
   },
   {
     "id": "illusion",
+    "type": "spells",
     "label": "Illusion",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -7100,6 +7224,7 @@
   },
   {
     "id": "jumeau-malefique",
+    "type": "spells",
     "label": "Jumeau maléfique",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -7158,6 +7283,7 @@
   },
   {
     "id": "linceul-d-invisibilite",
+    "type": "spells",
     "label": "Linceul d'Invisibilité",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -7211,6 +7337,7 @@
   },
   {
     "id": "miasme-mystifiant",
+    "type": "spells",
     "label": "Miasme mystifiant",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -7292,6 +7419,7 @@
   },
   {
     "id": "ombres-etrangleuses",
+    "type": "spells",
     "label": "Ombres étrangleuses",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -7364,6 +7492,7 @@
   },
   {
     "id": "perte-de-memoire",
+    "type": "spells",
     "label": "Perte de mémoire",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -7420,6 +7549,7 @@
   },
   {
     "id": "portail-d-ombre",
+    "type": "spells",
     "label": "Portail d'Ombre",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -7488,6 +7618,7 @@
   },
   {
     "id": "configuration-du-terrain",
+    "type": "spells",
     "label": "Configuration du terrain",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -7535,6 +7666,7 @@
   },
   {
     "id": "don-de-vie",
+    "type": "spells",
     "label": "Don de Vie",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -7590,6 +7722,7 @@
   },
   {
     "id": "eau-de-la-terre",
+    "type": "spells",
     "label": "Eau de la terre",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -7660,6 +7793,7 @@
   },
   {
     "id": "ecorce",
+    "type": "spells",
     "label": "Écorce",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -7724,6 +7858,7 @@
   },
   {
     "id": "foret-d-epines",
+    "type": "spells",
     "label": "Forêt d'épines",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -7815,6 +7950,7 @@
   },
   {
     "id": "graisse-de-la-terre",
+    "type": "spells",
     "label": "Graisse de la terre",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -7872,6 +8008,7 @@
   },
   {
     "id": "regeneration",
+    "type": "spells",
     "label": "Régénération",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -7925,6 +8062,7 @@
   },
   {
     "id": "sang-de-la-terre",
+    "type": "spells",
     "label": "Sang de la Terre",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -8052,6 +8190,7 @@
   },
   {
     "id": "bonne-volonte",
+    "type": "spells",
     "label": "Bonne Volonté",
     "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -8101,6 +8240,7 @@
   },
   {
     "id": "charme-protecteur",
+    "type": "spells",
     "label": "Charme protecteur",
     "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -8148,6 +8288,7 @@
   },
   {
     "id": "chevaucher-l-obscurite",
+    "type": "spells",
     "label": "Chevaucher l'Obscurité",
     "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -8194,6 +8335,7 @@
   },
   {
     "id": "nepenthes",
+    "type": "spells",
     "label": "Nepenthès",
     "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -8240,6 +8382,7 @@
   },
   {
     "id": "panacee",
+    "type": "spells",
     "label": "Panacée",
     "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -8286,6 +8429,7 @@
   },
   {
     "id": "separer-les-branches",
+    "type": "spells",
     "label": "Séparer les branches",
     "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
@@ -8332,6 +8476,7 @@
   },
   {
     "id": "degradation",
+    "type": "spells",
     "label": "Dégradation",
     "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -8380,6 +8525,7 @@
   },
   {
     "id": "horreur-obsedante",
+    "type": "spells",
     "label": "Horreur obsédante",
     "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -8427,6 +8573,7 @@
   },
   {
     "id": "malediction-de-douleur-paralysante",
+    "type": "spells",
     "label": "Malédiction de douleur paralysante",
     "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -8477,6 +8624,7 @@
   },
   {
     "id": "malediction-de-malchance",
+    "type": "spells",
     "label": "Malédiction de malchance",
     "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -8532,6 +8680,7 @@
   },
   {
     "id": "mauvais-oeil",
+    "type": "spells",
     "label": "Mauvais œil",
     "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -8583,6 +8732,7 @@
   },
   {
     "id": "menace-rampante",
+    "type": "spells",
     "label": "Menace rampante",
     "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -8653,6 +8803,7 @@
   },
   {
     "id": "destruction-de-demon-mineur",
+    "type": "spells",
     "label": "Destruction de Démon Mineur",
     "ecole": "Magie des Arcanes",
     "subType": "Démonologie",
@@ -8714,6 +8865,7 @@
   },
   {
     "id": "detection-de-demon",
+    "type": "spells",
     "label": "Détection de démon",
     "ecole": "Magie des Arcanes",
     "subType": "Démonologie",
@@ -8761,6 +8913,7 @@
   },
   {
     "id": "manifestation-de-demon-mineur",
+    "type": "spells",
     "label": "Manifestation de Démon mineur",
     "ecole": "Magie des Arcanes",
     "subType": "Démonologie",
@@ -8827,6 +8980,7 @@
   },
   {
     "id": "octogramme",
+    "type": "spells",
     "label": "Octogramme",
     "ecole": "Magie des Arcanes",
     "subType": "Démonologie",
@@ -8877,6 +9031,7 @@
   },
   {
     "id": "crane-hurlant",
+    "type": "spells",
     "label": "Crâne hurlant",
     "ecole": "Magie des Arcanes",
     "subType": "Nécromancie",
@@ -8949,6 +9104,7 @@
   },
   {
     "id": "l-appel-de-vanhel",
+    "type": "spells",
     "label": "L'appel de Vanhel",
     "ecole": "Magie des Arcanes",
     "subType": "Nécromancie",
@@ -8996,6 +9152,7 @@
   },
   {
     "id": "reanimation",
+    "type": "spells",
     "label": "Réanimation",
     "ecole": "Magie des Arcanes",
     "subType": "Nécromancie",
@@ -9068,6 +9225,7 @@
   },
   {
     "id": "relever-les-morts",
+    "type": "spells",
     "label": "Relever les morts",
     "ecole": "Magie des Arcanes",
     "subType": "Nécromancie",
@@ -9138,6 +9296,7 @@
   },
   {
     "id": "allure-demoniaque",
+    "type": "spells",
     "label": "Allure démoniaque",
     "ecole": "Magie du Chaos",
     "subType": null,
@@ -9254,6 +9413,7 @@
   },
   {
     "id": "aspect-sublime",
+    "type": "spells",
     "label": "Aspect sublimé",
     "ecole": "Magie du Chaos",
     "subType": null,
@@ -9300,6 +9460,7 @@
   },
   {
     "id": "decharge-de-corruption",
+    "type": "spells",
     "label": "Décharge de Corruption",
     "ecole": "Magie du Chaos",
     "subType": null,
@@ -9359,6 +9520,7 @@
   },
   {
     "id": "dechirer-l-aethyr",
+    "type": "spells",
     "label": "Déchirer l'Aethyr",
     "ecole": "Magie du Chaos",
     "subType": null,
@@ -9424,6 +9586,7 @@
   },
   {
     "id": "esclave-des-tenebres",
+    "type": "spells",
     "label": "Esclave des Ténèbres",
     "ecole": "Magie du Chaos",
     "subType": null,
@@ -9467,6 +9630,7 @@
   },
   {
     "id": "explosion-de-corruption",
+    "type": "spells",
     "label": "Explosion de Corruption",
     "ecole": "Magie du Chaos",
     "subType": null,
@@ -9529,6 +9693,7 @@
   },
   {
     "id": "obsession",
+    "type": "spells",
     "label": "Obsession",
     "ecole": "Magie du Chaos",
     "subType": null,
@@ -9576,6 +9741,7 @@
   },
   {
     "id": "odieux-messager",
+    "type": "spells",
     "label": "Odieux messager",
     "ecole": "Magie du Chaos",
     "subType": null,
@@ -9622,6 +9788,7 @@
   },
   {
     "id": "pouvoir-du-chaos",
+    "type": "spells",
     "label": "Pouvoir du Chaos",
     "ecole": "Magie du Chaos",
     "subType": null,
@@ -9674,6 +9841,7 @@
   },
   {
     "id": "flot-de-corruption",
+    "type": "spells",
     "label": "Flot de Corruption",
     "ecole": "Magie du Chaos",
     "subType": "Nurgle",
@@ -9719,6 +9887,7 @@
   },
   {
     "id": "consentement",
+    "type": "spells",
     "label": "Consentement",
     "ecole": "Magie du Chaos",
     "subType": "Slaanesh",
@@ -9768,6 +9937,7 @@
   },
   {
     "id": "trahison-de-tzeentch",
+    "type": "spells",
     "label": "Trahison de Tzeentch",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -9817,6 +9987,7 @@
   },
   {
     "id": "aura-doree-de-tzeentch",
+    "type": "spells",
     "label": "Aura dorée de Tzeentch",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -9862,6 +10033,7 @@
   },
   {
     "id": "avantage-de-tzeentch",
+    "type": "spells",
     "label": "Avantage de Tzeentch",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -9907,6 +10079,7 @@
   },
   {
     "id": "eclair-du-changement",
+    "type": "spells",
     "label": "Éclair du changement",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -9979,6 +10152,7 @@
   },
   {
     "id": "feu-bleu-de-tzeentch",
+    "type": "spells",
     "label": "Feu bleu de Tzeentch",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10033,6 +10207,7 @@
   },
   {
     "id": "feu-rose-de-tzeentch",
+    "type": "spells",
     "label": "Feu rose de Tzeentch",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10085,6 +10260,7 @@
   },
   {
     "id": "feu-spirituel",
+    "type": "spells",
     "label": "Feu spirituel",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10155,6 +10331,7 @@
   },
   {
     "id": "flammes-vacillantes-du-capricieux-destin",
+    "type": "spells",
     "label": "Flammes vacillantes du capricieux destin",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10205,6 +10382,7 @@
   },
   {
     "id": "la-main-pourpre",
+    "type": "spells",
     "label": "La Main Pourpre",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10252,6 +10430,7 @@
   },
   {
     "id": "malediction-de-tzeentch",
+    "type": "spells",
     "label": "Malédiction de Tzeentch",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10299,6 +10478,7 @@
   },
   {
     "id": "maitre-du-destin",
+    "type": "spells",
     "label": "Maître du Destin",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10354,6 +10534,7 @@
   },
   {
     "id": "parole-de-tzeentch",
+    "type": "spells",
     "label": "Parole de Tzeentch",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10416,6 +10597,7 @@
   },
   {
     "id": "percevoir-l-echeveau",
+    "type": "spells",
     "label": "Percevoir l'écheveau",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10458,6 +10640,7 @@
   },
   {
     "id": "tempete-de-feu-de-tzeentch",
+    "type": "spells",
     "label": "Tempête de feu de Tzeentch",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10514,6 +10697,7 @@
   },
   {
     "id": "transformation-de-tzeentch",
+    "type": "spells",
     "label": "Transformation de Tzeentch",
     "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
@@ -10567,6 +10751,7 @@
   },
   {
     "id": "encalmine",
+    "type": "spells",
     "label": "Encalminé",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -10615,6 +10800,7 @@
   },
   {
     "id": "generosite-de-manann",
+    "type": "spells",
     "label": "Générosité de Manann",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -10665,6 +10851,7 @@
   },
   {
     "id": "marcher-sur-les-eaux",
+    "type": "spells",
     "label": "Marcher sur les eaux",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -10710,6 +10897,7 @@
   },
   {
     "id": "mer-dechainee",
+    "type": "spells",
     "label": "Mer déchainée",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -10771,6 +10959,7 @@
   },
   {
     "id": "vents-favorables",
+    "type": "spells",
     "label": "Vents favorables",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -10819,6 +11008,7 @@
   },
   {
     "id": "visage-de-l-homme-noye",
+    "type": "spells",
     "label": "Visage de l'homme noyé",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -10875,6 +11065,7 @@
   },
   {
     "id": "aneantir-les-morts-vivants",
+    "type": "spells",
     "label": "Anéantir les morts-vivants",
     "ecole": "Invocation",
     "subType": "Morr",
@@ -10934,6 +11125,7 @@
   },
   {
     "id": "condamne",
+    "type": "spells",
     "label": "Condamné",
     "ecole": "Invocation",
     "subType": "Morr",
@@ -10976,6 +11168,7 @@
   },
   {
     "id": "main-de-morr",
+    "type": "spells",
     "label": "Main de Morr",
     "ecole": "Invocation",
     "subType": "Morr",
@@ -11022,6 +11215,7 @@
   },
   {
     "id": "masque-mortuaire",
+    "type": "spells",
     "label": "Masque mortuaire",
     "ecole": "Invocation",
     "subType": "Morr",
@@ -11067,6 +11261,7 @@
   },
   {
     "id": "rites-funeraires",
+    "type": "spells",
     "label": "Rites funéraires",
     "ecole": "Invocation",
     "subType": "Morr",
@@ -11111,6 +11306,7 @@
   },
   {
     "id": "seuil-du-portail",
+    "type": "spells",
     "label": "Seuil du Portail",
     "ecole": "Invocation",
     "subType": "Morr",
@@ -11154,6 +11350,7 @@
   },
   {
     "id": "appel-a-la-fureur",
+    "type": "spells",
     "label": "Appel à la Fureur",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11207,6 +11404,7 @@
   },
   {
     "id": "bouclier-de-myrmidia",
+    "type": "spells",
     "label": "Bouclier de Myrmidia",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11256,6 +11454,7 @@
   },
   {
     "id": "inspirant",
+    "type": "spells",
     "label": "Inspirant",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11309,6 +11508,7 @@
   },
   {
     "id": "lance-de-myrmidia",
+    "type": "spells",
     "label": "Lance de Myrmidia",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11361,6 +11561,7 @@
   },
   {
     "id": "oeil-de-l-aigle",
+    "type": "spells",
     "label": "Œil de l'aigle",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11409,6 +11610,7 @@
   },
   {
     "id": "soleil-flamboyant",
+    "type": "spells",
     "label": "Soleil flamboyant",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11460,6 +11662,7 @@
   },
   {
     "id": "commander-la-legion",
+    "type": "spells",
     "label": "Commander la Légion",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11503,6 +11706,7 @@
   },
   {
     "id": "terrifier-l-ennemi",
+    "type": "spells",
     "label": "Terrifier l'Ennemi",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11546,6 +11750,7 @@
   },
   {
     "id": "en-bon-ordre",
+    "type": "spells",
     "label": "En Bon Ordre",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11599,6 +11804,7 @@
   },
   {
     "id": "connais-ton-ennemi",
+    "type": "spells",
     "label": "Connais Ton Ennemi",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11645,6 +11851,7 @@
   },
   {
     "id": "en-terrain-dangereux",
+    "type": "spells",
     "label": "En Terrain Dangereux",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11698,6 +11905,7 @@
   },
   {
     "id": "frappe-rapide",
+    "type": "spells",
     "label": "Frappe Rapide",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11740,6 +11948,7 @@
   },
   {
     "id": "devotion-de-la-vierge-guerriere",
+    "type": "spells",
     "label": "Dévotion de la Vierge Guerrière",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11790,6 +11999,7 @@
   },
   {
     "id": "prouesses-martiales",
+    "type": "spells",
     "label": "Prouesses Martiales",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11847,6 +12057,7 @@
   },
   {
     "id": "fureur-vengeresse",
+    "type": "spells",
     "label": "Fureur Vengeresse",
     "ecole": "Invocation",
     "subType": "Myrmidia",
@@ -11889,6 +12100,7 @@
   },
   {
     "id": "grace-de-ranald",
+    "type": "spells",
     "label": "Grâce de Ranald",
     "ecole": "Invocation",
     "subType": "Ranald",
@@ -11943,6 +12155,7 @@
   },
   {
     "id": "invitation",
+    "type": "spells",
     "label": "Invitation",
     "ecole": "Invocation",
     "subType": "Ranald",
@@ -11987,6 +12200,7 @@
   },
   {
     "id": "que-la-chance-persiste",
+    "type": "spells",
     "label": "Que la chance persiste",
     "ecole": "Invocation",
     "subType": "Ranald",
@@ -12038,6 +12252,7 @@
   },
   {
     "id": "riche-pauvre-mendiant-voleur",
+    "type": "spells",
     "label": "Riche, pauvre, mendiant, voleur",
     "ecole": "Invocation",
     "subType": "Ranald",
@@ -12086,6 +12301,7 @@
   },
   {
     "id": "vous-ne-m-avez-pas-vu-n-est-ce-pas",
+    "type": "spells",
     "label": "Vous ne m'avez pas vu, n'est-ce pas?",
     "ecole": "Invocation",
     "subType": "Ranald",
@@ -12135,6 +12351,7 @@
   },
   {
     "id": "yeux-de-chat",
+    "type": "spells",
     "label": "Yeux de chat",
     "ecole": "Invocation",
     "subType": "Ranald",
@@ -12183,6 +12400,7 @@
   },
   {
     "id": "abri-de-rhya",
+    "type": "spells",
     "label": "Abri de Rhya",
     "ecole": "Invocation",
     "subType": "Rhya",
@@ -12225,6 +12443,7 @@
   },
   {
     "id": "caresse-de-rhya",
+    "type": "spells",
     "label": "Caresse de Rhya",
     "ecole": "Invocation",
     "subType": "Rhya",
@@ -12274,6 +12493,7 @@
   },
   {
     "id": "enfants-de-rhya",
+    "type": "spells",
     "label": "Enfants de Rhya",
     "ecole": "Invocation",
     "subType": "Rhya",
@@ -12319,6 +12539,7 @@
   },
   {
     "id": "recolte-de-rhya",
+    "type": "spells",
     "label": "Récolte de Rhya",
     "ecole": "Invocation",
     "subType": "Rhya",
@@ -12366,6 +12587,7 @@
   },
   {
     "id": "secours-de-rhya",
+    "type": "spells",
     "label": "Secours de Rhya",
     "ecole": "Invocation",
     "subType": "Rhya",
@@ -12415,6 +12637,7 @@
   },
   {
     "id": "union-de-rhya",
+    "type": "spells",
     "label": "Union de Rhya",
     "ecole": "Invocation",
     "subType": "Rhya",
@@ -12461,6 +12684,7 @@
   },
   {
     "id": "amere-catharsis",
+    "type": "spells",
     "label": "Amère catharsis",
     "ecole": "Invocation",
     "subType": "Shallya",
@@ -12516,6 +12740,7 @@
   },
   {
     "id": "baume-pour-un-esprit-blesse",
+    "type": "spells",
     "label": "Baume pour un esprit blessé",
     "ecole": "Invocation",
     "subType": "Shallya",
@@ -12565,6 +12790,7 @@
   },
   {
     "id": "endurance-de-l-anachorete",
+    "type": "spells",
     "label": "Endurance de l'anachorète",
     "ecole": "Invocation",
     "subType": "Shallya",
@@ -12617,6 +12843,7 @@
   },
   {
     "id": "innocence-immaculee",
+    "type": "spells",
     "label": "Innocence immaculée",
     "ecole": "Invocation",
     "subType": "Shallya",
@@ -12667,6 +12894,7 @@
   },
   {
     "id": "larmes-de-shallya",
+    "type": "spells",
     "label": "Larmes de Shallya",
     "ecole": "Invocation",
     "subType": "Shallya",
@@ -12718,6 +12946,7 @@
   },
   {
     "id": "martyr",
+    "type": "spells",
     "label": "Martyr",
     "ecole": "Invocation",
     "subType": "Shallya",
@@ -12766,6 +12995,7 @@
   },
   {
     "id": "comete-a-deux-queues",
+    "type": "spells",
     "label": "Comète à Deux Queues",
     "ecole": "Invocation",
     "subType": "Sigmar",
@@ -12835,6 +13065,7 @@
   },
   {
     "id": "feu-de-l-ame",
+    "type": "spells",
     "label": "Feu de l'âme",
     "ecole": "Invocation",
     "subType": "Sigmar",
@@ -12900,6 +13131,7 @@
   },
   {
     "id": "flambeau-de-vertu",
+    "type": "spells",
     "label": "Flambeau de Vertu",
     "ecole": "Invocation",
     "subType": "Sigmar",
@@ -12954,6 +13186,7 @@
   },
   {
     "id": "marteau-ardent-de-sigmar",
+    "type": "spells",
     "label": "Marteau ardent de Sigmar",
     "ecole": "Invocation",
     "subType": "Sigmar",
@@ -13026,6 +13259,7 @@
   },
   {
     "id": "n-ecoutez-point-la-sorciere",
+    "type": "spells",
     "label": "N'écoutez point la Sorcière",
     "ecole": "Invocation",
     "subType": "Sigmar",
@@ -13079,6 +13313,7 @@
   },
   {
     "id": "vaincre-les-impies",
+    "type": "spells",
     "label": "Vaincre les impies",
     "ecole": "Invocation",
     "subType": "Sigmar",
@@ -13139,6 +13374,7 @@
   },
   {
     "id": "bondissant-comme-un-cerf",
+    "type": "spells",
     "label": "Bondissant comme un cerf",
     "ecole": "Invocation",
     "subType": "Taal",
@@ -13187,6 +13423,7 @@
   },
   {
     "id": "dent-et-griffe",
+    "type": "spells",
     "label": "Dent et griffe",
     "ecole": "Invocation",
     "subType": "Taal",
@@ -13243,6 +13480,7 @@
   },
   {
     "id": "enchevetrement-2",
+    "type": "spells",
     "label": "Enchevêtrement",
     "ecole": "Invocation",
     "subType": "Taal",
@@ -13301,6 +13539,7 @@
   },
   {
     "id": "instincts-animaux",
+    "type": "spells",
     "label": "Instincts animaux",
     "ecole": "Invocation",
     "subType": "Taal",
@@ -13351,6 +13590,7 @@
   },
   {
     "id": "roi-de-la-nature",
+    "type": "spells",
     "label": "Roi de la Nature",
     "ecole": "Invocation",
     "subType": "Taal",
@@ -13415,6 +13655,7 @@
   },
   {
     "id": "seigneur-de-la-chasse",
+    "type": "spells",
     "label": "Seigneur de la Chasse",
     "ecole": "Invocation",
     "subType": "Taal",
@@ -13460,6 +13701,7 @@
   },
   {
     "id": "frisson-du-givre",
+    "type": "spells",
     "label": "Frisson du givre",
     "ecole": "Invocation",
     "subType": "Ulric",
@@ -13510,6 +13752,7 @@
   },
   {
     "id": "fureur-d-ulric",
+    "type": "spells",
     "label": "Fureur d'Ulric",
     "ecole": "Invocation",
     "subType": "Ulric",
@@ -13559,6 +13802,7 @@
   },
   {
     "id": "hurlement-du-loup",
+    "type": "spells",
     "label": "Hurlement du loup",
     "ecole": "Invocation",
     "subType": "Ulric",
@@ -13632,6 +13876,7 @@
   },
   {
     "id": "jugement-du-roi-de-la-neige",
+    "type": "spells",
     "label": "Jugement du Roi de la neige",
     "ecole": "Invocation",
     "subType": "Ulric",
@@ -13689,6 +13934,7 @@
   },
   {
     "id": "morsure-de-l-hiver",
+    "type": "spells",
     "label": "Morsure de l'hiver",
     "ecole": "Invocation",
     "subType": "Ulric",
@@ -13774,6 +14020,7 @@
   },
   {
     "id": "peau-de-loup-d-hiver",
+    "type": "spells",
     "label": "Peau de loup d'hiver",
     "ecole": "Invocation",
     "subType": "Ulric",
@@ -13819,6 +14066,7 @@
   },
   {
     "id": "entraves-a-la-verite",
+    "type": "spells",
     "label": "Entraves à la vérité",
     "ecole": "Invocation",
     "subType": "Verena",
@@ -13872,6 +14120,7 @@
   },
   {
     "id": "epee-de-justice",
+    "type": "spells",
     "label": "Épée de justice",
     "ecole": "Invocation",
     "subType": "Verena",
@@ -13957,6 +14206,7 @@
   },
   {
     "id": "justice-aveugle",
+    "type": "spells",
     "label": "Justice aveugle",
     "ecole": "Invocation",
     "subType": "Verena",
@@ -14001,6 +14251,7 @@
   },
   {
     "id": "la-verite-eclatera",
+    "type": "spells",
     "label": "La Vérité éclatera",
     "ecole": "Invocation",
     "subType": "Verena",
@@ -14047,6 +14298,7 @@
   },
   {
     "id": "sagesse-de-la-chouette",
+    "type": "spells",
     "label": "Sagesse de la chouette",
     "ecole": "Invocation",
     "subType": "Verena",
@@ -14100,6 +14352,7 @@
   },
   {
     "id": "verena-est-mon-temoin",
+    "type": "spells",
     "label": "Verena est mon témoin",
     "ecole": "Invocation",
     "subType": "Verena",
@@ -14144,6 +14397,7 @@
   },
   {
     "id": "bon-baiser-d-la-fosse-noire",
+    "type": "spells",
     "label": "Bon Baiser d'la Fosse Noire",
     "ecole": "Invocation",
     "subType": "Déesse-Araignée",
@@ -14209,6 +14463,7 @@
   },
   {
     "id": "nuee-d-escampette",
+    "type": "spells",
     "label": "Nuée d'Escampette",
     "ecole": "Invocation",
     "subType": "Déesse-Araignée",
@@ -14272,6 +14527,7 @@
   },
   {
     "id": "toile-surprise",
+    "type": "spells",
     "label": "Toile surprise",
     "ecole": "Invocation",
     "subType": "Déesse-Araignée",
@@ -14332,6 +14588,7 @@
   },
   {
     "id": "abondance-de-rhya",
+    "type": "spells",
     "label": "Abondance de Rhya",
     "ecole": "Miracle",
     "subType": null,
@@ -14352,6 +14609,7 @@
   },
   {
     "id": "agression-aethyrique",
+    "type": "spells",
     "label": "Agression AEthyrique",
     "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -14372,6 +14630,7 @@
   },
   {
     "id": "alarme",
+    "type": "spells",
     "label": "Alarme",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -14401,6 +14660,7 @@
   },
   {
     "id": "algues-cruelles",
+    "type": "spells",
     "label": "Algues Cruelles",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -14432,6 +14692,7 @@
   },
   {
     "id": "ame-devoilee",
+    "type": "spells",
     "label": "Âme Dévoilée",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -14461,6 +14722,7 @@
   },
   {
     "id": "apaisement",
+    "type": "spells",
     "label": "Apaisement",
     "ecole": "Miracle",
     "subType": null,
@@ -14481,6 +14743,7 @@
   },
   {
     "id": "appel-de-vanhel",
+    "type": "spells",
     "label": "Appel de Vanhel",
     "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -14510,6 +14773,7 @@
   },
   {
     "id": "arme-souillee",
+    "type": "spells",
     "label": "Arme Souillée",
     "ecole": "Sort",
     "subType": null,
@@ -14539,6 +14803,7 @@
   },
   {
     "id": "armure-d-aethyr",
+    "type": "spells",
     "label": "Armure d’AEthyr",
     "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -14568,6 +14833,7 @@
   },
   {
     "id": "armure-d-obscurite",
+    "type": "spells",
     "label": "Armure d’Obscurité",
     "ecole": "du Domaine des Ombres",
     "subType": null,
@@ -14599,6 +14865,7 @@
   },
   {
     "id": "arriere-sorciere",
+    "type": "spells",
     "label": "Arrière, Sorcière !",
     "ecole": "Miracle",
     "subType": null,
@@ -14619,6 +14886,7 @@
   },
   {
     "id": "aux-innocents-les-mains-pleines",
+    "type": "spells",
     "label": "Aux Innocents les Mains Pleines !",
     "ecole": "Miracle",
     "subType": null,
@@ -14639,6 +14907,7 @@
   },
   {
     "id": "avatar-du-rat-cornu",
+    "type": "spells",
     "label": "Avatar du Rat Cornu",
     "ecole": "Magie des Arcanes Skaven",
     "subType": null,
@@ -14668,6 +14937,7 @@
   },
   {
     "id": "baratin",
+    "type": "spells",
     "label": "Baratin",
     "ecole": "Miracle",
     "subType": null,
@@ -14688,6 +14958,7 @@
   },
   {
     "id": "belier",
+    "type": "spells",
     "label": "Bélier",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -14716,6 +14987,7 @@
   },
   {
     "id": "benedicite-de-taal",
+    "type": "spells",
     "label": "Bénédicité de Taal",
     "ecole": "Miracle",
     "subType": null,
@@ -14736,6 +15008,7 @@
   },
   {
     "id": "berceuse-soporifique-ua-ii",
+    "type": "spells",
     "label": "Berceuse Soporifique UA II",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -14766,6 +15039,7 @@
   },
   {
     "id": "bienveillance",
+    "type": "spells",
     "label": "Bienveillance",
     "ecole": "Magie des Arcanes & des Taillis",
     "subType": null,
@@ -14796,6 +15070,7 @@
   },
   {
     "id": "blizzard",
+    "type": "spells",
     "label": "Blizzard",
     "ecole": "Miracle",
     "subType": null,
@@ -14816,6 +15091,7 @@
   },
   {
     "id": "bon-debarras",
+    "type": "spells",
     "label": "Bon Débarras !",
     "ecole": "Miracle",
     "subType": null,
@@ -14836,6 +15112,7 @@
   },
   {
     "id": "bond-furtif",
+    "type": "spells",
     "label": "Bond Furtif",
     "ecole": "du Domaine des Ombres",
     "subType": null,
@@ -14864,6 +15141,7 @@
   },
   {
     "id": "bouclier",
+    "type": "spells",
     "label": "Bouclier",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -14895,6 +15173,7 @@
   },
   {
     "id": "bouillon-revigorant",
+    "type": "spells",
     "label": "Bouillon Revigorant",
     "ecole": "Magie des Arcanes & des Taillis",
     "subType": null,
@@ -14924,6 +15203,7 @@
   },
   {
     "id": "bruit",
+    "type": "spells",
     "label": "Bruit",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -14954,6 +15234,7 @@
   },
   {
     "id": "brume-acide",
+    "type": "spells",
     "label": "Brume Acide",
     "ecole": "du Domaine de la Peste",
     "subType": null,
@@ -14987,6 +15268,7 @@
   },
   {
     "id": "brume-mystique",
+    "type": "spells",
     "label": "Brume Mystique",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -15019,6 +15301,7 @@
   },
   {
     "id": "cacophonie-scabreuse",
+    "type": "spells",
     "label": "Cacophonie Scabreuse",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -15048,6 +15331,7 @@
   },
   {
     "id": "catharsis",
+    "type": "spells",
     "label": "Catharsis",
     "ecole": "Miracle",
     "subType": null,
@@ -15068,6 +15352,7 @@
   },
   {
     "id": "chaleur-de-la-fourrure",
+    "type": "spells",
     "label": "Chaleur de la Fourrure",
     "ecole": "Miracle",
     "subType": null,
@@ -15088,6 +15373,7 @@
   },
   {
     "id": "chuchotis",
+    "type": "spells",
     "label": "Chuchotis",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -15118,6 +15404,7 @@
   },
   {
     "id": "cogne-fort",
+    "type": "spells",
     "label": "Cogne-Fort",
     "ecole": "Sort",
     "subType": null,
@@ -15147,6 +15434,7 @@
   },
   {
     "id": "conserve",
+    "type": "spells",
     "label": "Conserve",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -15178,6 +15466,7 @@
   },
   {
     "id": "contamination",
+    "type": "spells",
     "label": "Contamination",
     "ecole": "du Domaine de la Peste",
     "subType": null,
@@ -15208,6 +15497,7 @@
   },
   {
     "id": "coup-d-boule",
+    "type": "spells",
     "label": "Coup d’Boule !",
     "ecole": "Sort",
     "subType": null,
@@ -15238,6 +15528,7 @@
   },
   {
     "id": "courage-du-loup",
+    "type": "spells",
     "label": "Courage du Loup",
     "ecole": "Miracle",
     "subType": null,
@@ -15258,6 +15549,7 @@
   },
   {
     "id": "courant-d-air",
+    "type": "spells",
     "label": "Courant d’Air",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -15287,6 +15579,7 @@
   },
   {
     "id": "crepitement-funeste",
+    "type": "spells",
     "label": "Crépitement Funeste",
     "ecole": "du Domaine de la Ruine",
     "subType": null,
@@ -15363,6 +15656,7 @@
   },
   {
     "id": "crepitements-vengeurs",
+    "type": "spells",
     "label": "Crépitements Vengeurs",
     "ecole": "Sort",
     "subType": null,
@@ -15394,6 +15688,7 @@
   },
   {
     "id": "crevasse",
+    "type": "spells",
     "label": "Crevasse",
     "ecole": "du Domaine de la Ruine",
     "subType": null,
@@ -15424,6 +15719,7 @@
   },
   {
     "id": "crue-mortelle",
+    "type": "spells",
     "label": "Crue Mortelle",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -15455,6 +15751,7 @@
   },
   {
     "id": "culpabilite",
+    "type": "spells",
     "label": "Culpabilité",
     "ecole": "Bénédiction",
     "subType": null,
@@ -15475,6 +15772,7 @@
   },
   {
     "id": "decharge-cerebrale",
+    "type": "spells",
     "label": "Décharge Cérébrale",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -15502,6 +15800,7 @@
   },
   {
     "id": "demangeaison-agacante",
+    "type": "spells",
     "label": "Démangeaison Agaçante",
     "ecole": "Sort",
     "subType": null,
@@ -15532,6 +15831,7 @@
   },
   {
     "id": "depecage",
+    "type": "spells",
     "label": "Dépeçage",
     "ecole": "du Domaine de la Ruine",
     "subType": null,
@@ -15563,6 +15863,7 @@
   },
   {
     "id": "desarroi",
+    "type": "spells",
     "label": "Désarroi",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -15593,6 +15894,7 @@
   },
   {
     "id": "disparition",
+    "type": "spells",
     "label": "Disparition",
     "ecole": "du Domaine des Ombres",
     "subType": null,
@@ -15625,6 +15927,7 @@
   },
   {
     "id": "douces-paroles",
+    "type": "spells",
     "label": "Douces Paroles",
     "ecole": "Sort",
     "subType": null,
@@ -15655,6 +15958,7 @@
   },
   {
     "id": "dressage-de-rhya",
+    "type": "spells",
     "label": "Dressage de Rhya",
     "ecole": "Miracle",
     "subType": null,
@@ -15675,6 +15979,7 @@
   },
   {
     "id": "duplicite-de-tzeentch",
+    "type": "spells",
     "label": "Duplicité de Tzeentch",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -15705,6 +16010,7 @@
   },
   {
     "id": "eau-pure",
+    "type": "spells",
     "label": "Eau Pure",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -15734,6 +16040,7 @@
   },
   {
     "id": "eclat",
+    "type": "spells",
     "label": "Éclat",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -15762,6 +16069,7 @@
   },
   {
     "id": "effigie-maudite",
+    "type": "spells",
     "label": "Effigie Maudite",
     "ecole": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
@@ -15792,6 +16100,7 @@
   },
   {
     "id": "entrave",
+    "type": "spells",
     "label": "Entrave",
     "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -15822,6 +16131,7 @@
   },
   {
     "id": "espionnage",
+    "type": "spells",
     "label": "Espionnage",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -15853,6 +16163,7 @@
   },
   {
     "id": "esprit-enfievre",
+    "type": "spells",
     "label": "Esprit Enfiévré",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -15882,6 +16193,7 @@
   },
   {
     "id": "explosion-de-dhar",
+    "type": "spells",
     "label": "Explosion de Dhar",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -15913,6 +16225,7 @@
   },
   {
     "id": "fatigue",
+    "type": "spells",
     "label": "Fatigue",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -15940,6 +16253,7 @@
   },
   {
     "id": "faux-semblant",
+    "type": "spells",
     "label": "Faux- Semblant",
     "ecole": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
@@ -15970,6 +16284,7 @@
   },
   {
     "id": "faveur-du-rat-cornu",
+    "type": "spells",
     "label": "Faveur du Rat Cornu",
     "ecole": "Magie Mineure Skaven",
     "subType": null,
@@ -16000,6 +16315,7 @@
   },
   {
     "id": "felure-aethyrique",
+    "type": "spells",
     "label": "Fêlure AEthyrique",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -16031,6 +16347,7 @@
   },
   {
     "id": "fers-de",
+    "type": "spells",
     "label": "Fers de",
     "ecole": "Miracle",
     "subType": null,
@@ -16051,6 +16368,7 @@
   },
   {
     "id": "fertilisation",
+    "type": "spells",
     "label": "Fertilisation",
     "ecole": "Magie des Arcanes & des Taillis",
     "subType": null,
@@ -16078,6 +16396,7 @@
   },
   {
     "id": "feu-follet",
+    "type": "spells",
     "label": "Feu Follet",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -16109,6 +16428,7 @@
   },
   {
     "id": "flamme",
+    "type": "spells",
     "label": "Flamme",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -16138,6 +16458,7 @@
   },
   {
     "id": "flamme-verdatre",
+    "type": "spells",
     "label": "Flamme Verdâtre",
     "ecole": "du Domaine de la Ruine",
     "subType": null,
@@ -16170,6 +16491,7 @@
   },
   {
     "id": "flammes-bleues-de-tzeentch",
+    "type": "spells",
     "label": "Flammes Bleues de Tzeentch",
     "ecole": "Sort",
     "subType": null,
@@ -16201,6 +16523,7 @@
   },
   {
     "id": "flammes-roses-de-tzeentch",
+    "type": "spells",
     "label": "Flammes Roses de Tzeentch",
     "ecole": "Sort",
     "subType": null,
@@ -16231,6 +16554,7 @@
   },
   {
     "id": "forme-spectrale",
+    "type": "spells",
     "label": "Forme Spectrale",
     "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -16260,6 +16584,7 @@
   },
   {
     "id": "frenesie-artificielle",
+    "type": "spells",
     "label": "Frénésie Artificielle",
     "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -16289,6 +16614,7 @@
   },
   {
     "id": "infecte-benediction",
+    "type": "spells",
     "label": "Infecte Bénédiction",
     "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
@@ -16342,6 +16668,7 @@
   },
   {
     "id": "furoncle-infecte",
+    "type": "spells",
     "label": "Furoncle Infecté",
     "ecole": "Sort",
     "subType": null,
@@ -16372,6 +16699,7 @@
   },
   {
     "id": "haine-du-faible",
+    "type": "spells",
     "label": "Haine du Faible",
     "ecole": "Miracle",
     "subType": null,
@@ -16392,6 +16720,7 @@
   },
   {
     "id": "haleine-fetide",
+    "type": "spells",
     "label": "Haleine Fétide",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -16422,6 +16751,7 @@
   },
   {
     "id": "hebetement",
+    "type": "spells",
     "label": "Hébètement",
     "ecole": "du Domaine de la Ruine",
     "subType": null,
@@ -16452,6 +16782,7 @@
   },
   {
     "id": "immuno-deficience",
+    "type": "spells",
     "label": "Immuno - Déficience",
     "ecole": "du Domaine de la Peste",
     "subType": null,
@@ -16484,6 +16815,7 @@
   },
   {
     "id": "instinct-animal",
+    "type": "spells",
     "label": "Instinct Animal",
     "ecole": "Miracle",
     "subType": null,
@@ -16504,6 +16836,7 @@
   },
   {
     "id": "introspection",
+    "type": "spells",
     "label": "Introspection",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -16534,6 +16867,7 @@
   },
   {
     "id": "justice",
+    "type": "spells",
     "label": "Justice",
     "ecole": "Bénédiction",
     "subType": null,
@@ -16554,6 +16888,7 @@
   },
   {
     "id": "la-verite-finit-toujours-par-sortir",
+    "type": "spells",
     "label": "La Vérité finit toujours par sortir",
     "ecole": "Miracle",
     "subType": null,
@@ -16574,6 +16909,7 @@
   },
   {
     "id": "langue-aceree",
+    "type": "spells",
     "label": "Langue Acérée",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -16620,6 +16956,7 @@
   },
   {
     "id": "langue-des-gors",
+    "type": "spells",
     "label": "Langue des Gors",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -16650,6 +16987,7 @@
   },
   {
     "id": "langue-des-pestigors",
+    "type": "spells",
     "label": "Langue des Pestigors",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -16680,6 +17018,7 @@
   },
   {
     "id": "langue-des-slaangors",
+    "type": "spells",
     "label": "Langue des Slaangors",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -16710,6 +17049,7 @@
   },
   {
     "id": "langue-des-tzaangors",
+    "type": "spells",
     "label": "Langue des Tzaangors",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -16740,6 +17080,7 @@
   },
   {
     "id": "les-voies-de-la-nature",
+    "type": "spells",
     "label": "Les Voies de la Nature",
     "ecole": "Miracle",
     "subType": null,
@@ -16760,6 +17101,7 @@
   },
   {
     "id": "lune-de-malheur",
+    "type": "spells",
     "label": "Lune de Malheur",
     "ecole": "Sort",
     "subType": null,
@@ -16791,6 +17133,7 @@
   },
   {
     "id": "main-de-rhya",
+    "type": "spells",
     "label": "Main de Rhya",
     "ecole": "Miracle",
     "subType": null,
@@ -16811,6 +17154,7 @@
   },
   {
     "id": "maitrise-du-destin",
+    "type": "spells",
     "label": "Maîtrise du Destin",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -16841,6 +17185,7 @@
   },
   {
     "id": "malveillance-absolue",
+    "type": "spells",
     "label": "Malveillance Absolue",
     "ecole": "Sort",
     "subType": null,
@@ -16877,6 +17222,7 @@
   },
   {
     "id": "marque-du-rat-cornu",
+    "type": "spells",
     "label": "Marque du Rat Cornu",
     "ecole": "Magie Mineure Skaven",
     "subType": null,
@@ -16908,6 +17254,7 @@
   },
   {
     "id": "marteau-de-justice",
+    "type": "spells",
     "label": "Marteau de Justice",
     "ecole": "Miracle",
     "subType": null,
@@ -16928,6 +17275,7 @@
   },
   {
     "id": "modele-de-vertu",
+    "type": "spells",
     "label": "Modèle de Vertu",
     "ecole": "Miracle",
     "subType": null,
@@ -16948,6 +17296,7 @@
   },
   {
     "id": "morsure-d-hiver",
+    "type": "spells",
     "label": "Morsure d’Hiver",
     "ecole": "Miracle",
     "subType": null,
@@ -16968,6 +17317,7 @@
   },
   {
     "id": "mouchard",
+    "type": "spells",
     "label": "Mouchard",
     "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -16997,6 +17347,7 @@
   },
   {
     "id": "nostrum",
+    "type": "spells",
     "label": "Nostrum",
     "ecole": "Magie des Arcanes & des Taillis",
     "subType": null,
@@ -17025,6 +17376,7 @@
   },
   {
     "id": "nuee",
+    "type": "spells",
     "label": "Nuée",
     "ecole": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
@@ -17055,6 +17407,7 @@
   },
   {
     "id": "nuee-de-mouches",
+    "type": "spells",
     "label": "Nuée de Mouches",
     "ecole": "Sort",
     "subType": null,
@@ -17086,6 +17439,7 @@
   },
   {
     "id": "oeil-de-lynx",
+    "type": "spells",
     "label": "Oeil de Lynx",
     "ecole": "Miracle",
     "subType": null,
@@ -17106,6 +17460,7 @@
   },
   {
     "id": "ouverture",
+    "type": "spells",
     "label": "Ouverture",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -17133,6 +17488,7 @@
   },
   {
     "id": "pattes-gluantes",
+    "type": "spells",
     "label": "Pattes Gluantes",
     "ecole": "du Domaine des Ombres",
     "subType": null,
@@ -17164,6 +17520,7 @@
   },
   {
     "id": "pied-leger",
+    "type": "spells",
     "label": "Pied Léger",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -17194,6 +17551,7 @@
   },
   {
     "id": "pierre-de-souffrance",
+    "type": "spells",
     "label": "Pierre de Souffrance",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -17224,6 +17582,7 @@
   },
   {
     "id": "piste-froide",
+    "type": "spells",
     "label": "Piste Froide",
     "ecole": "Miracle",
     "subType": null,
@@ -17244,6 +17603,7 @@
   },
   {
     "id": "poids-plume",
+    "type": "spells",
     "label": "Poids Plume",
     "ecole": "du Domaine des Ombres",
     "subType": null,
@@ -17275,6 +17635,7 @@
   },
   {
     "id": "position",
+    "type": "spells",
     "label": "Position",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -17303,6 +17664,7 @@
   },
   {
     "id": "poudre-d-escampette",
+    "type": "spells",
     "label": "Poudre d’Escampette",
     "ecole": "du Domaine des Ombres",
     "subType": null,
@@ -17333,6 +17695,7 @@
   },
   {
     "id": "pourriture",
+    "type": "spells",
     "label": "Pourriture",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -17362,6 +17725,7 @@
   },
   {
     "id": "prise-de-tete",
+    "type": "spells",
     "label": "Prise de Tête",
     "ecole": "Sort",
     "subType": null,
@@ -17391,6 +17755,7 @@
   },
   {
     "id": "projectile",
+    "type": "spells",
     "label": "Projectile",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -17421,6 +17786,7 @@
   },
   {
     "id": "projectile-de-dhar",
+    "type": "spells",
     "label": "Projectile de Dhar",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -17451,6 +17817,7 @@
   },
   {
     "id": "projectile-mineur",
+    "type": "spells",
     "label": "Projectile Mineur",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -17496,6 +17863,7 @@
   },
   {
     "id": "rafale-hurlante",
+    "type": "spells",
     "label": "Rafale Hurlante",
     "ecole": "du Domaine de la Ruine",
     "subType": null,
@@ -17534,6 +17902,7 @@
   },
   {
     "id": "rage-meurtriere",
+    "type": "spells",
     "label": "Rage Meurtrière",
     "ecole": "du Domaine des Ombres",
     "subType": null,
@@ -17564,6 +17933,7 @@
   },
   {
     "id": "ramanchage",
+    "type": "spells",
     "label": "Ramanchage",
     "ecole": "Magie des Arcanes & des Taillis",
     "subType": null,
@@ -17591,6 +17961,7 @@
   },
   {
     "id": "rapidite",
+    "type": "spells",
     "label": "Rapidité",
     "ecole": "Bénédiction",
     "subType": null,
@@ -17611,6 +17982,7 @@
   },
   {
     "id": "rat-esclave",
+    "type": "spells",
     "label": "Rat Esclave",
     "ecole": "du Domaine des Ombres",
     "subType": null,
@@ -17643,6 +18015,7 @@
   },
   {
     "id": "regard-lubrique",
+    "type": "spells",
     "label": "Regard Lubrique",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -17673,6 +18046,7 @@
   },
   {
     "id": "rejeton-de-slaanesh",
+    "type": "spells",
     "label": "Rejeton de Slaanesh",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -17702,6 +18076,7 @@
   },
   {
     "id": "resistance-du-penitent",
+    "type": "spells",
     "label": "Résistance du Pénitent",
     "ecole": "Miracle",
     "subType": null,
@@ -17722,6 +18097,7 @@
   },
   {
     "id": "robustesse",
+    "type": "spells",
     "label": "Robustesse",
     "ecole": "Bénédiction",
     "subType": null,
@@ -17742,6 +18118,7 @@
   },
   {
     "id": "ruine",
+    "type": "spells",
     "label": "Ruine",
     "ecole": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
@@ -17772,6 +18149,7 @@
   },
   {
     "id": "saccade",
+    "type": "spells",
     "label": "Saccade",
     "ecole": "Magie Mineure",
     "subType": null,
@@ -17801,6 +18179,7 @@
   },
   {
     "id": "sagesse-du-hibou",
+    "type": "spells",
     "label": "Sagesse du Hibou",
     "ecole": "Miracle",
     "subType": null,
@@ -17821,6 +18200,7 @@
   },
   {
     "id": "sanctuaire",
+    "type": "spells",
     "label": "Sanctuaire",
     "ecole": "Miracle",
     "subType": null,
@@ -17841,6 +18221,7 @@
   },
   {
     "id": "saut-de-cabri",
+    "type": "spells",
     "label": "Saut de Cabri",
     "ecole": "Miracle",
     "subType": null,
@@ -17861,6 +18242,7 @@
   },
   {
     "id": "secousse-tellurique",
+    "type": "spells",
     "label": "Secousse Tellurique",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -17890,6 +18272,7 @@
   },
   {
     "id": "shurikens-enchantes",
+    "type": "spells",
     "label": "Shurikens Enchantés",
     "ecole": "du Domaine des Ombres",
     "subType": null,
@@ -17920,6 +18303,7 @@
   },
   {
     "id": "soins",
+    "type": "spells",
     "label": "Soins",
     "ecole": "Bénédiction",
     "subType": null,
@@ -17940,6 +18324,7 @@
   },
   {
     "id": "soleil-noir",
+    "type": "spells",
     "label": "Soleil Noir",
     "ecole": "Sort",
     "subType": null,
@@ -17971,6 +18356,7 @@
   },
   {
     "id": "sus-a-l-ennemi",
+    "type": "spells",
     "label": "Sus à l’Ennemi !",
     "ecole": "Miracle",
     "subType": null,
@@ -17991,6 +18377,7 @@
   },
   {
     "id": "telekinesie",
+    "type": "spells",
     "label": "Télékinésie",
     "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
@@ -18021,6 +18408,7 @@
   },
   {
     "id": "terreur-nocturne",
+    "type": "spells",
     "label": "Terreur Nocturne",
     "ecole": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
@@ -18050,6 +18438,7 @@
   },
   {
     "id": "treve-de-taal-dsfl",
+    "type": "spells",
     "label": "Trêve de Taal DSFL",
     "ecole": "Miracle",
     "subType": null,
@@ -18070,6 +18459,7 @@
   },
   {
     "id": "trouble",
+    "type": "spells",
     "label": "Trouble",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -18099,6 +18489,7 @@
   },
   {
     "id": "vague-scelerate",
+    "type": "spells",
     "label": "Vague Scélérate",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -18129,6 +18520,7 @@
   },
   {
     "id": "verena-m-est-temoin",
+    "type": "spells",
     "label": "Verena m’est témoin !",
     "ecole": "Miracle",
     "subType": null,
@@ -18149,6 +18541,7 @@
   },
   {
     "id": "vol",
+    "type": "spells",
     "label": "Vol",
     "ecole": "Sort",
     "subType": null,
@@ -18179,6 +18572,7 @@
   },
   {
     "id": "waaagh",
+    "type": "spells",
     "label": "WAAAGH !",
     "ecole": "Sort",
     "subType": null,
@@ -18209,6 +18603,7 @@
   },
   {
     "id": "z-oeils-de-mork",
+    "type": "spells",
     "label": "Z’Oeils de Mork",
     "ecole": "Sort",
     "subType": null,
@@ -18238,6 +18633,7 @@
   },
   {
     "id": "apaiser-les-eaux",
+    "type": "spells",
     "label": "Apaiser les eaux",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -18284,6 +18680,7 @@
   },
   {
     "id": "benediction-de-l-albatros",
+    "type": "spells",
     "label": "Bénédiction de l'albatros",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -18330,6 +18727,7 @@
   },
   {
     "id": "benediction-du-marinier",
+    "type": "spells",
     "label": "Bénédiction du marinier",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -18374,6 +18772,7 @@
   },
   {
     "id": "contre-courants",
+    "type": "spells",
     "label": "Contre-courants",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -18420,6 +18819,7 @@
   },
   {
     "id": "malediction-de-la-mer",
+    "type": "spells",
     "label": "Malédiction de la mer",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -18466,6 +18866,7 @@
   },
   {
     "id": "navigation-benie",
+    "type": "spells",
     "label": "Navigation bénie",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -18508,6 +18909,7 @@
   },
   {
     "id": "repousser-une-creature-marine",
+    "type": "spells",
     "label": "Repousser une créature marine",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -18554,6 +18956,7 @@
   },
   {
     "id": "respiration-aquatique",
+    "type": "spells",
     "label": "Respiration aquatique",
     "ecole": "Invocation",
     "subType": "Manann",
@@ -18599,6 +19002,7 @@
   },
   {
     "id": "faire-fi-de-l-humeur-de-manann",
+    "type": "spells",
     "label": "Faire fi de l'Humeur de Manann",
     "ecole": "Invocation",
     "subType": "Stromfels",
@@ -18646,6 +19050,7 @@
   },
   {
     "id": "flairer-le-sang",
+    "type": "spells",
     "label": "Flairer le sang",
     "ecole": "Invocation",
     "subType": "Stromfels",
@@ -18689,6 +19094,7 @@
   },
   {
     "id": "lame-de-fond",
+    "type": "spells",
     "label": "Lame de fond",
     "ecole": "Invocation",
     "subType": "Stromfels",
@@ -18732,6 +19138,7 @@
   },
   {
     "id": "mal-de-mer",
+    "type": "spells",
     "label": "Mal de mer",
     "ecole": "Invocation",
     "subType": "Stromfels",
@@ -18779,6 +19186,7 @@
   },
   {
     "id": "malediction-de-la-maitresse-cruelle",
+    "type": "spells",
     "label": "Malédiction de la maîtresse cruelle",
     "ecole": "Invocation",
     "subType": "Stromfels",
@@ -18825,6 +19233,7 @@
   },
   {
     "id": "sacrifice-a-stromfels",
+    "type": "spells",
     "label": "Sacrifice à Stromfels",
     "ecole": "Invocation",
     "subType": "Stromfels",
@@ -18868,6 +19277,7 @@
   },
   {
     "id": "vents-de-tempete",
+    "type": "spells",
     "label": "Vents de tempête",
     "ecole": "Invocation",
     "subType": "Stromfels",
@@ -18915,6 +19325,7 @@
   },
   {
     "id": "bourbier-vivant",
+    "type": "spells",
     "label": "Bourbier vivant",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -18963,6 +19374,7 @@
   },
   {
     "id": "que-d-eau-que-d-eau",
+    "type": "spells",
     "label": "Que d'eau, que d'eau",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -19006,6 +19418,7 @@
   },
   {
     "id": "tourbillon",
+    "type": "spells",
     "label": "Tourbillon",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -19053,6 +19466,7 @@
   },
   {
     "id": "bienfait-de-bel-shanaar",
+    "type": "spells",
     "label": "Bienfait de Bel Shanaar",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -19098,6 +19512,7 @@
   },
   {
     "id": "mer-d-huile",
+    "type": "spells",
     "label": "Mer d'huile",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -19145,6 +19560,7 @@
   },
   {
     "id": "solution-de-tir-optimal-de-niezlib",
+    "type": "spells",
     "label": "Solution de tir optimal de Niezlib",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -19193,6 +19609,7 @@
   },
   {
     "id": "assaut-de-pierre",
+    "type": "spells",
     "label": "Assaut de pierre",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19277,6 +19694,7 @@
   },
   {
     "id": "bibliothecaire-instantane-de-meissner",
+    "type": "spells",
     "label": "Bibliothécaire instantané de Meissner",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19328,6 +19746,7 @@
   },
   {
     "id": "collet-d-abulla",
+    "type": "spells",
     "label": "Collet d'Abulla",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19433,6 +19852,7 @@
   },
   {
     "id": "comprehension-parfaite",
+    "type": "spells",
     "label": "Compréhension parfaite",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19479,6 +19899,7 @@
   },
   {
     "id": "crevasse-lumiere",
+    "type": "spells",
     "label": "Crevasse",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19564,6 +19985,7 @@
   },
   {
     "id": "distorsion-temporelle",
+    "type": "spells",
     "label": "Distorsion temporelle",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19615,6 +20037,7 @@
   },
   {
     "id": "edifice-erige",
+    "type": "spells",
     "label": "Édifice érigé",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19673,6 +20096,7 @@
   },
   {
     "id": "edifice-illumine",
+    "type": "spells",
     "label": "Édifice illuminé",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19725,6 +20149,7 @@
   },
   {
     "id": "halo-purificateur",
+    "type": "spells",
     "label": "Halo purificateur",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19775,6 +20200,7 @@
   },
   {
     "id": "intention-inspiree",
+    "type": "spells",
     "label": "Intention inspirée",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19832,6 +20258,7 @@
   },
   {
     "id": "lever-le-voile",
+    "type": "spells",
     "label": "Lever le voile",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19882,6 +20309,7 @@
   },
   {
     "id": "lueur-eblouissante",
+    "type": "spells",
     "label": "Lueur éblouissante",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -19963,6 +20391,7 @@
   },
   {
     "id": "mains-de-karkora",
+    "type": "spells",
     "label": "Mains de Karkora",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -20052,6 +20481,7 @@
   },
   {
     "id": "manteau-miroitant",
+    "type": "spells",
     "label": "Manteau miroitant",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -20098,6 +20528,7 @@
   },
   {
     "id": "orbe-de-hysh",
+    "type": "spells",
     "label": "Orbe de Hysh",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -20148,6 +20579,7 @@
   },
   {
     "id": "yeux-de-volans",
+    "type": "spells",
     "label": "Yeux de Volans",
     "ecole": "Magie des Arcanes",
     "subType": "Lumière",
@@ -20198,6 +20630,7 @@
   },
   {
     "id": "armure-de-fer-blanc",
+    "type": "spells",
     "label": "Armure de fer blanc",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20255,6 +20688,7 @@
   },
   {
     "id": "bouclier-en-acier-dore",
+    "type": "spells",
     "label": "Bouclier en acier doré",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20313,6 +20747,7 @@
   },
   {
     "id": "boussole-d-argent-de-puchta",
+    "type": "spells",
     "label": "Boussole d'argent de Puchta",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20364,6 +20799,7 @@
   },
   {
     "id": "cage-doree",
+    "type": "spells",
     "label": "Cage dorée",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20418,6 +20854,7 @@
   },
   {
     "id": "contact-dore",
+    "type": "spells",
     "label": "Contact doré",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20504,6 +20941,7 @@
   },
   {
     "id": "defaut-metal",
+    "type": "spells",
     "label": "Défaut",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20565,6 +21003,7 @@
   },
   {
     "id": "denouer-les-noeuds",
+    "type": "spells",
     "label": "Dénouer les nœuds",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20615,6 +21054,7 @@
   },
   {
     "id": "devoiler-l-inconnu",
+    "type": "spells",
     "label": "Dévoiler l'inconnu",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20679,6 +21119,7 @@
   },
   {
     "id": "globe-dore-de-gehenna",
+    "type": "spells",
     "label": "Globe doré de Gehenna",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20776,6 +21217,7 @@
   },
   {
     "id": "inscription",
+    "type": "spells",
     "label": "Inscription",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20842,6 +21284,7 @@
   },
   {
     "id": "malediction-de-la-rouille",
+    "type": "spells",
     "label": "Malédiction de la rouille",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20889,6 +21332,7 @@
   },
   {
     "id": "methode-essai-erreur",
+    "type": "spells",
     "label": "Méthode essai-erreur",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -20956,6 +21400,7 @@
   },
   {
     "id": "protections-de-fer-meteorique",
+    "type": "spells",
     "label": "Protections de fer météorique",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -21012,6 +21457,7 @@
   },
   {
     "id": "refraction-prismatique-de-habermas",
+    "type": "spells",
     "label": "Réfraction prismatique de Habermas",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -21067,6 +21513,7 @@
   },
   {
     "id": "reparer-du-metal",
+    "type": "spells",
     "label": "Réparer du métal",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -21110,6 +21557,7 @@
   },
   {
     "id": "reproduction-de-levorg",
+    "type": "spells",
     "label": "Reproduction de Levorg",
     "ecole": "Magie des Arcanes",
     "subType": "Métal",
@@ -21160,6 +21608,7 @@
   },
   {
     "id": "almanach",
+    "type": "spells",
     "label": "Almanach",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21204,6 +21653,7 @@
   },
   {
     "id": "apotheose-verdoyante",
+    "type": "spells",
     "label": "Apothéose verdoyante",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21255,6 +21705,7 @@
   },
   {
     "id": "cercueil-de-jade",
+    "type": "spells",
     "label": "Cercueil de Jade",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21306,6 +21757,7 @@
   },
   {
     "id": "chair-de-pierre",
+    "type": "spells",
     "label": "Chair de pierre",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21379,6 +21831,7 @@
   },
   {
     "id": "chant-revigorant",
+    "type": "spells",
     "label": "Chant revigorant",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21445,6 +21898,7 @@
   },
   {
     "id": "chute-de-feuilles",
+    "type": "spells",
     "label": "Chute de feuilles",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21495,6 +21949,7 @@
   },
   {
     "id": "cri-de-guerre-du-druide",
+    "type": "spells",
     "label": "Cri de guerre du Druide",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21591,6 +22046,7 @@
   },
   {
     "id": "croissance-vitale",
+    "type": "spells",
     "label": "Croissance vitale",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21638,6 +22094,7 @@
   },
   {
     "id": "escalier-en-colimacon",
+    "type": "spells",
     "label": "Escalier en colimaçon",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21688,6 +22145,7 @@
   },
   {
     "id": "etres-du-dessous",
+    "type": "spells",
     "label": "Êtres du dessous",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21762,6 +22220,7 @@
   },
   {
     "id": "geyser",
+    "type": "spells",
     "label": "Geyser",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21851,6 +22310,7 @@
   },
   {
     "id": "murmure-de-la-nature",
+    "type": "spells",
     "label": "Murmure de la nature",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21897,6 +22357,7 @@
   },
   {
     "id": "transformation-en-arbre",
+    "type": "spells",
     "label": "Transformation en arbre",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -21944,6 +22405,7 @@
   },
   {
     "id": "transmutation-fantasmagorique-de-colchis",
+    "type": "spells",
     "label": "Transmutation fantasmagorique de Colchis",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -22003,6 +22465,7 @@
   },
   {
     "id": "trouver-des-lignes-de-force-telluriques",
+    "type": "spells",
     "label": "Trouver des lignes de force telluriques",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -22055,6 +22518,7 @@
   },
   {
     "id": "la-voie-de-paranoth",
+    "type": "spells",
     "label": "La Voie de Paranoth",
     "ecole": "Magie des Arcanes",
     "subType": "Vie",
@@ -22107,6 +22571,7 @@
   },
   {
     "id": "arche-de-saphir",
+    "type": "spells",
     "label": "Arche de saphir",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22160,6 +22625,7 @@
   },
   {
     "id": "destin-eclairci",
+    "type": "spells",
     "label": "Destin éclairci",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22204,6 +22670,7 @@
   },
   {
     "id": "ennemi-previsible",
+    "type": "spells",
     "label": "Ennemi prévisible",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22250,6 +22717,7 @@
   },
   {
     "id": "lames-d-azur",
+    "type": "spells",
     "label": "Lames d'Azur",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22295,6 +22763,7 @@
   },
   {
     "id": "lentille-celeste",
+    "type": "spells",
     "label": "Lentille céleste",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22346,6 +22815,7 @@
   },
   {
     "id": "lueur-stellaire",
+    "type": "spells",
     "label": "Lueur stellaire",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22393,6 +22863,7 @@
   },
   {
     "id": "malediction-du-destin",
+    "type": "spells",
     "label": "Malédiction du Destin",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22460,6 +22931,7 @@
   },
   {
     "id": "miroir-mystique",
+    "type": "spells",
     "label": "Miroir mystique",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22507,6 +22979,7 @@
   },
   {
     "id": "mistral-de-la-stratosphere",
+    "type": "spells",
     "label": "Mistral de la stratosphère",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22609,6 +23082,7 @@
   },
   {
     "id": "nettoyage-impeccable",
+    "type": "spells",
     "label": "Nettoyage impeccable",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22656,6 +23130,7 @@
   },
   {
     "id": "prediction-prodigieuse",
+    "type": "spells",
     "label": "Prédiction prodigieuse",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22703,6 +23178,7 @@
   },
   {
     "id": "premonition",
+    "type": "spells",
     "label": "Prémonition",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22745,6 +23221,7 @@
   },
   {
     "id": "projection-astrale",
+    "type": "spells",
     "label": "Projection astrale",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22791,6 +23268,7 @@
   },
   {
     "id": "que-soufflent-les-quatre-vents",
+    "type": "spells",
     "label": "Que soufflent les Quatre Vents !",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22866,6 +23344,7 @@
   },
   {
     "id": "tempete-de-shemtek",
+    "type": "spells",
     "label": "Tempête de Shemtek",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -22933,6 +23412,7 @@
   },
   {
     "id": "tornade-de-thorsen",
+    "type": "spells",
     "label": "Tornade de Thorsen",
     "ecole": "Magie des Arcanes",
     "subType": "Cieux",
@@ -23005,6 +23485,7 @@
   },
   {
     "id": "ailes-grises",
+    "type": "spells",
     "label": "Ailes grises",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23110,6 +23591,7 @@
   },
   {
     "id": "bosquet-d-ombre",
+    "type": "spells",
     "label": "Bosquet d'Ombre",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23164,6 +23646,7 @@
   },
   {
     "id": "charme-changeant",
+    "type": "spells",
     "label": "Charme changeant",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23274,6 +23757,7 @@
   },
   {
     "id": "chut",
+    "type": "spells",
     "label": "Chut !",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23325,6 +23809,7 @@
   },
   {
     "id": "corne-d-andar",
+    "type": "spells",
     "label": "Corne d'Andar",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23426,6 +23911,7 @@
   },
   {
     "id": "danse-du-desespoir",
+    "type": "spells",
     "label": "Danse du désespoir",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23512,6 +23998,7 @@
   },
   {
     "id": "desorientation",
+    "type": "spells",
     "label": "Désorientation",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23646,6 +24133,7 @@
   },
   {
     "id": "horreurs-noires",
+    "type": "spells",
     "label": "Horreurs noires",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23700,6 +24188,7 @@
   },
   {
     "id": "illusion-grandiose",
+    "type": "spells",
     "label": "Illusion grandiose",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23754,6 +24243,7 @@
   },
   {
     "id": "illusion-retroactive-de-ribauld",
+    "type": "spells",
     "label": "Illusion rétroactive de Ribauld",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23801,6 +24291,7 @@
   },
   {
     "id": "ombre-errante",
+    "type": "spells",
     "label": "Ombre errante",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23847,6 +24338,7 @@
   },
   {
     "id": "poches-profondes",
+    "type": "spells",
     "label": "Poches profondes",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23894,6 +24386,7 @@
   },
   {
     "id": "pont-des-ombres",
+    "type": "spells",
     "label": "Pont des ombres",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -23960,6 +24453,7 @@
   },
   {
     "id": "puits-de-tarnus",
+    "type": "spells",
     "label": "Puits de Tarnus",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -24049,6 +24543,7 @@
   },
   {
     "id": "substance-de-l-ombre",
+    "type": "spells",
     "label": "Substance de l'Ombre",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -24106,6 +24601,7 @@
   },
   {
     "id": "traitre-de-tarn",
+    "type": "spells",
     "label": "Traître de Tarn",
     "ecole": "Magie des Arcanes",
     "subType": "Ombres",
@@ -24174,6 +24670,7 @@
   },
   {
     "id": "amarante",
+    "type": "spells",
     "label": "Amarante",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -24244,6 +24741,7 @@
   },
   {
     "id": "ame-emprisonnee",
+    "type": "spells",
     "label": "Âme emprisonnée",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -24288,6 +24786,7 @@
   },
   {
     "id": "apercu-de-la-mort",
+    "type": "spells",
     "label": "Aperçu de la mort",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -24424,6 +24923,7 @@
   },
   {
     "id": "cendre-et-poussiere",
+    "type": "spells",
     "label": "Cendre et poussière",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -24546,6 +25046,7 @@
   },
   {
     "id": "contraindre-les-esprits",
+    "type": "spells",
     "label": "Contraindre les esprits",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -24669,6 +25170,7 @@
   },
   {
     "id": "destin-de-bjuna",
+    "type": "spells",
     "label": "Destin de Bjuna",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -24811,6 +25313,7 @@
   },
   {
     "id": "embrasser-son-destin",
+    "type": "spells",
     "label": "Embrasser son destin",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -24870,6 +25373,7 @@
   },
   {
     "id": "etreinte-d-iyrtu",
+    "type": "spells",
     "label": "Étreinte d'Iyrtu",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -24915,6 +25419,7 @@
   },
   {
     "id": "le-labyrinthe-de-cristal",
+    "type": "spells",
     "label": "Le Labyrinthe de Cristal",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -25027,6 +25532,7 @@
   },
   {
     "id": "liberation-de-la-mort",
+    "type": "spells",
     "label": "Libération de la mort",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -25151,6 +25657,7 @@
   },
   {
     "id": "membre-fletri",
+    "type": "spells",
     "label": "Membre flétri",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -25212,6 +25719,7 @@
   },
   {
     "id": "parent-sauvage-de-zandox",
+    "type": "spells",
     "label": "Parent sauvage de Zandox",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -25258,6 +25766,7 @@
   },
   {
     "id": "poids-des-annees",
+    "type": "spells",
     "label": "Poids des années",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -25375,6 +25884,7 @@
   },
   {
     "id": "shyish-a-decouvert",
+    "type": "spells",
     "label": "Shyish à découvert",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -25422,6 +25932,7 @@
   },
   {
     "id": "telepathie",
+    "type": "spells",
     "label": "Télépathie",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -25480,6 +25991,7 @@
   },
   {
     "id": "vitesse-de-lykos",
+    "type": "spells",
     "label": "Vitesse de Lykos",
     "ecole": "Magie des Arcanes",
     "subType": "Mort",
@@ -25533,6 +26045,7 @@
   },
   {
     "id": "allumer-le-feu",
+    "type": "spells",
     "label": "Allumer le feu",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -25598,6 +26111,7 @@
   },
   {
     "id": "blizzard-ardent-d-ygethmor",
+    "type": "spells",
     "label": "Blizzard ardent d'Ygethmor",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -25708,6 +26222,7 @@
   },
   {
     "id": "cognat-de-l-atre",
+    "type": "spells",
     "label": "Cognat de l'âtre",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -25769,6 +26284,7 @@
   },
   {
     "id": "colerique",
+    "type": "spells",
     "label": "Colérique",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -25877,6 +26393,7 @@
   },
   {
     "id": "corps-de-feu",
+    "type": "spells",
     "label": "Corps de feu",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -25923,6 +26440,7 @@
   },
   {
     "id": "embrasement",
+    "type": "spells",
     "label": "Embrasement",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -25975,6 +26493,7 @@
   },
   {
     "id": "epees-sanguines",
+    "type": "spells",
     "label": "Épées sanguines",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -26025,6 +26544,7 @@
   },
   {
     "id": "flamme-fascinante",
+    "type": "spells",
     "label": "Flamme fascinante",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -26110,6 +26630,7 @@
   },
   {
     "id": "flamme-inextinguible",
+    "type": "spells",
     "label": "Flamme inextinguible",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -26163,6 +26684,7 @@
   },
   {
     "id": "la-forge-de-tarnus",
+    "type": "spells",
     "label": "La Forge de Tarnus",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -26222,6 +26744,7 @@
   },
   {
     "id": "fournaise-fletrissante",
+    "type": "spells",
     "label": "Fournaise flétrissante",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -26290,6 +26813,7 @@
   },
   {
     "id": "gout-du-feu",
+    "type": "spells",
     "label": "Goût du feu",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -26337,6 +26861,7 @@
   },
   {
     "id": "sang-bouillant",
+    "type": "spells",
     "label": "Sang bouillant",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -26417,6 +26942,7 @@
   },
   {
     "id": "tempete-de-flammes",
+    "type": "spells",
     "label": "Tempête de flammes",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -26476,6 +27002,7 @@
   },
   {
     "id": "tempete-de-magma",
+    "type": "spells",
     "label": "Tempête de magma",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -26547,6 +27074,7 @@
   },
   {
     "id": "tete-enflammee",
+    "type": "spells",
     "label": "Tête enflammée",
     "ecole": "Magie des Arcanes",
     "subType": "Feu",
@@ -26625,6 +27153,7 @@
   },
   {
     "id": "appeler-une-monture",
+    "type": "spells",
     "label": "Appeler une monture",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -26677,6 +27206,7 @@
   },
   {
     "id": "bete-indomptee",
+    "type": "spells",
     "label": "Bête indomptée",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -26804,6 +27334,7 @@
   },
   {
     "id": "capuche-vengeresse",
+    "type": "spells",
     "label": "Capuche vengeresse",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -26866,6 +27397,7 @@
   },
   {
     "id": "eveil-du-bois",
+    "type": "spells",
     "label": "Éveil du bois",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -26935,6 +27467,7 @@
   },
   {
     "id": "les-lunes-du-chasseur",
+    "type": "spells",
     "label": "Les lunes du chasseur",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27009,6 +27542,7 @@
   },
   {
     "id": "malediction-d-anraheir",
+    "type": "spells",
     "label": "Malédiction d'Anraheir",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27081,6 +27615,7 @@
   },
   {
     "id": "obstination-du-boeuf",
+    "type": "spells",
     "label": "Obstination du bœuf",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27144,6 +27679,7 @@
   },
   {
     "id": "pelage-d-hiver",
+    "type": "spells",
     "label": "Pelage d'hiver",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27203,6 +27739,7 @@
   },
   {
     "id": "regiment-monstrueux-de-merciw",
+    "type": "spells",
     "label": "Régiment monstrueux de Merciw",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27272,6 +27809,7 @@
   },
   {
     "id": "suivre-le-fumet",
+    "type": "spells",
     "label": "Suivre le fumet",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27318,6 +27856,7 @@
   },
   {
     "id": "transe-ambree",
+    "type": "spells",
     "label": "Transe ambrée",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27381,6 +27920,7 @@
   },
   {
     "id": "transformation-de-kadon",
+    "type": "spells",
     "label": "Transformation de Kadon",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27432,6 +27972,7 @@
   },
   {
     "id": "traversee-rapide",
+    "type": "spells",
     "label": "Traversée rapide",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27490,6 +28031,7 @@
   },
   {
     "id": "vaporisation-de-musc",
+    "type": "spells",
     "label": "Vaporisation de musc",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27551,6 +28093,7 @@
   },
   {
     "id": "ver-fretillant",
+    "type": "spells",
     "label": "Ver frétillant",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27606,6 +28149,7 @@
   },
   {
     "id": "yeux-de-la-meute",
+    "type": "spells",
     "label": "Yeux de la meute",
     "ecole": "Magie des Arcanes",
     "subType": "Bête",
@@ -27653,6 +28197,7 @@
   },
   {
     "id": "agressivite-de-la-maresang",
+    "type": "spells",
     "label": "Agressivité de la Maresang",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -27703,6 +28248,7 @@
   },
   {
     "id": "argile-fertile",
+    "type": "spells",
     "label": "Argile fertile",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -27753,6 +28299,7 @@
   },
   {
     "id": "decrypter-une-malediction",
+    "type": "spells",
     "label": "Décrypter une malédiction",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -27823,6 +28370,7 @@
   },
   {
     "id": "effondrement-de-fabrique",
+    "type": "spells",
     "label": "Effondrement de Fabriqué",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -27882,6 +28430,7 @@
   },
   {
     "id": "perturber-la-magie",
+    "type": "spells",
     "label": "Perturber la Magie",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -27941,6 +28490,7 @@
   },
   {
     "id": "secourir-un-serviteur-magique",
+    "type": "spells",
     "label": "Secourir un serviteur magique",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -28017,6 +28567,7 @@
   },
   {
     "id": "silence",
+    "type": "spells",
     "label": "Silence",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -28073,6 +28624,7 @@
   },
   {
     "id": "varech-avarie",
+    "type": "spells",
     "label": "Varech avarié",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -28123,6 +28675,7 @@
   },
   {
     "id": "bourbier-d-abattement",
+    "type": "spells",
     "label": "Bourbier d'abattement",
     "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
@@ -28215,6 +28768,7 @@
   },
   {
     "id": "brume-mystique-magie-du-marais",
+    "type": "spells",
     "label": "Brume mystique",
     "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
@@ -28298,6 +28852,7 @@
   },
   {
     "id": "de-la-boue-jusqu-au-bout",
+    "type": "spells",
     "label": "De la boue jusqu'au bout !",
     "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
@@ -28345,6 +28900,7 @@
   },
   {
     "id": "empreint-de-bruine",
+    "type": "spells",
     "label": "Empreint de bruine",
     "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
@@ -28416,6 +28972,7 @@
   },
   {
     "id": "piqures-de-moustiques",
+    "type": "spells",
     "label": "Piqûres de moustiques",
     "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
@@ -28521,6 +29078,7 @@
   },
   {
     "id": "tourner-en-rond",
+    "type": "spells",
     "label": "Tourner en rond",
     "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
@@ -28577,6 +29135,7 @@
   },
   {
     "id": "peau-d-ecorce-et-d-os",
+    "type": "spells",
     "label": "Peau d'écorce et d'os",
     "ecole": "Magie des Arcanes",
     "subType": null,
@@ -28631,6 +29190,7 @@
   },
   {
     "id": "art-de-la-malediction",
+    "type": "spells",
     "label": "Art de la malédiction",
     "ecole": "Rituel",
     "subType": null,
@@ -28672,6 +29232,7 @@
   },
   {
     "id": "corrompre-une-pierre-gardienne",
+    "type": "spells",
     "label": "Corrompre une pierre gardienne",
     "ecole": "Rituel",
     "subType": null,
@@ -28706,6 +29267,7 @@
   },
   {
     "id": "creer-un-fabrique",
+    "type": "spells",
     "label": "Créer un Fabriqué",
     "ecole": "Rituel",
     "subType": null,
@@ -28753,6 +29315,7 @@
   },
   {
     "id": "creer-un-familier",
+    "type": "spells",
     "label": "Créer un familier",
     "ecole": "Rituel",
     "subType": null,
@@ -28784,6 +29347,7 @@
   },
   {
     "id": "creer-une-pierre-de-pouvoir",
+    "type": "spells",
     "label": "Créer une pierre de pouvoir",
     "ecole": "Rituel",
     "subType": null,
@@ -28824,6 +29388,7 @@
   },
   {
     "id": "creer-une-propriete-de-pierre-gardienne",
+    "type": "spells",
     "label": "Créer une propriété de pierre gardienne",
     "ecole": "Rituel",
     "subType": null,
@@ -28855,6 +29420,7 @@
   },
   {
     "id": "les-faux-croisees",
+    "type": "spells",
     "label": "Les Faux croisées",
     "ecole": "Rituel",
     "subType": "Mort",
@@ -28890,6 +29456,7 @@
   },
   {
     "id": "graver-une-pierre-d-ogham",
+    "type": "spells",
     "label": "Graver une pierre d'ogham",
     "ecole": "Rituel",
     "subType": null,
@@ -28921,6 +29488,7 @@
   },
   {
     "id": "impregner-un-baton",
+    "type": "spells",
     "label": "Imprégner un bâton",
     "ecole": "Rituel",
     "subType": null,
@@ -28975,6 +29543,7 @@
   },
   {
     "id": "invocation-de-demon",
+    "type": "spells",
     "label": "Invocation de démon",
     "ecole": "Rituel",
     "subType": "Démonologie",
@@ -29010,6 +29579,7 @@
   },
   {
     "id": "invocation-de-l-elementaire-incarne-de-la-mort",
+    "type": "spells",
     "label": "Invocation de l'élémentaire incarné de la Mort",
     "ecole": "Rituel",
     "subType": "Mort",
@@ -29060,6 +29630,7 @@
   },
   {
     "id": "invocation-de-jack-des-cendres",
+    "type": "spells",
     "label": "Invocation de Jack des Cendres",
     "ecole": "Rituel",
     "subType": "Feu",
@@ -29110,6 +29681,7 @@
   },
   {
     "id": "invocation-du-predateur-sanglant",
+    "type": "spells",
     "label": "Invocation du Prédateur sanglant",
     "ecole": "Rituel",
     "subType": "Bête",
@@ -29160,6 +29732,7 @@
   },
   {
     "id": "lever-une-malediction",
+    "type": "spells",
     "label": "Lever une malédiction",
     "ecole": "Rituel",
     "subType": null,
@@ -29191,6 +29764,7 @@
   },
   {
     "id": "lier-une-bete-monstrueuse",
+    "type": "spells",
     "label": "Lier une bête monstrueuse",
     "ecole": "Rituel",
     "subType": "Bête",
@@ -29226,6 +29800,7 @@
   },
   {
     "id": "lier-un-esprit-a-une-pierre-de-pouvoir",
+    "type": "spells",
     "label": "Lier un esprit à une pierre de pouvoir",
     "ecole": "Rituel",
     "subType": null,
@@ -29266,6 +29841,7 @@
   },
   {
     "id": "materialiser-le-marais-vivant",
+    "type": "spells",
     "label": "Matérialiser le marais-vivant",
     "ecole": "Rituel",
     "subType": null,

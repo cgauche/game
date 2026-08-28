@@ -412,8 +412,8 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
   // pas un oubli d'adoption : ses deux formes (bande d100 `min`/`max`/`kind` vs Incident de Tir
   // `kind: 'misfire'`) sont DISJOINTES, et `options.variantes` ne les exprime pas (une variante
   // REPUBLIE des champs d'un même document, elle n'en propose pas une seconde forme). `oups` relève
-  // d'une classe « union » à concevoir, hors des vagues 11a/11b/12. Au 2026-08-28, `scelles` = 64 defs
-  // réellement adoptés + `oups`.
+  // d'une classe « union » à concevoir, hors des vagues d'adoption. Au 2026-08-28, `scelles` = 76
+  // defs réellement adoptés + `oups` — et la population MESURÉE est VIDE.
   const noeudInterne = (n: unknown): unknown => {
     const d = (n as { _zod?: { def?: Record<string, unknown> }; def?: Record<string, unknown> })?._zod?.def;
     if (!d) return undefined;
@@ -442,6 +442,21 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     }
   }
 
+  /**
+   * TÉMOIN DU DÉTECTEUR — la population mesurée étant VIDE, les trois compteurs valent 0 ; un
+   * `shapeDe` cassé rendrait EXACTEMENT le même 0. Ce zéro n'a de sens que si l'instrument mord
+   * encore : on lui donne ici un schéma NON adopté (la forme que portaient les defs avant la
+   * fabrique) et on exige qu'il y VOIE les trois clés requises.
+   */
+  const NON_ADOPTE = z.array(z.strictObject({ desc: z.string(), source: z.string(), icon: z.string() }));
+
+  it('le DÉTECTEUR mord encore — sur un schéma NON adopté, il VOIT les trois clés requises', () => {
+    const shape = shapeDe(NON_ADOPTE);
+    expect(shape, '`shapeDe` ne descend plus jusqu’à la forme d’un def non adopté').toBeDefined();
+    const requises = (['desc', 'source', 'icon'] as const).filter((k) => shape![k] && !shape![k].safeParse(undefined).success);
+    expect(requises).toEqual(['desc', 'source', 'icon']);
+  });
+
   it('compte les clés d’enveloppe REQUISES que l’adoption relâcherait sans `exiges`', () => {
     // #1467 L1b V-FLIP-ENTITE, vagues 11a puis 11b (2026-08-28) : 42 defs `entite` ont adopté
     // `document()` — ils rendent un nœud SCELLÉ, donc ils quittent la population MESURÉE pour la
@@ -455,15 +470,27 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     //                  traits, traumas),
     //         source −9 (combat-stakes, etats, flow-stakes, maneuvers, naval-ports, skills,
     //                    structures, talents, traits) — 21 defs quittent la mesure (33 → 12, 44 → 65).
-    // L'ADOPTION est la cause du recalage, pas une dérive du détecteur.
+    //   12b : desc −4 (psychology, species, spells, tavernGames),
+    //         source −8 (activities, creatures, night-stakes, psychology, species, spells,
+    //                    tavernGames, trappings),
+    //         icon −2 (actions, activities) — les 12 DERNIERS defs `entite` quittent la mesure
+    //         (12 → 0, 65 → 77). La population MESURÉE est ÉTEINTE : plus AUCUN def `entite` ne
+    //         porte son enveloppe à la main, `oups` mis à part (union, cf. en-tête).
+    // L'ADOPTION est la cause du recalage, pas une dérive du détecteur — le témoin ci-dessus le
+    // prouve en faisant mordre l'instrument sur un schéma non adopté.
     //
-    // UN SEUL ÉCART entre ce que la mesure PERD et ce que `exiges` REPREND, à la vague 12 :
-    // `talents` quitte la population avec `desc` REQUISE et n'exige que `source`. Sa 187ᵉ entrée,
-    // `talent-aleatoire`, est une entrée MÉTA du vocabulaire de tirage (LDB 10 p.132, exemptée
-    // d'obtenabilité par `META_CATALOG_ENTRIES`) sans prose à citer : sa `desc: ""` est PURGÉE par
-    // `2026-08-28-l1b-12a-entite-type.mjs` (renvoi nominatif de la migration 3h), et exiger `desc`
-    // refuserait cette entrée. L'écart est ici, pas dans un silence.
-    expect(mesure).toEqual({ desc: 4, source: 8, icon: 2, scelles: 65, mesures: 12 });
+    // DEUX ÉCARTS entre ce que la mesure PERD et ce que `exiges` REPREND, tous deux de la MÊME
+    // classe — une entrée MÉTA ou sans prose citable dont la `desc: ""` est purgée, si bien
+    // qu'exiger `desc` la refuserait :
+    //   • vague 12  : `talents` (187ᵉ entrée `talent-aleatoire`, vocabulaire de tirage LDB 10 p.132,
+    //     exemptée d'obtenabilité par `META_CATALOG_ENTRIES`), purgée par la migration 12a ;
+    //   • vague 12b : `species` (5ᵉ entrée `humains-tileens`), purgée par la migration 12b.
+    // Les deux renvois viennent NOMMÉMENT de `2026-08-27-l1b-3h-desc-null.mjs:25-28`, verbatim :
+    // « Les deux autres — `species.json[4]` et `talents.json[0]` — sont déclarés `desc: z.string()`
+    // REQUIS […] Ils meurent avec le lot qui posera `min(1)` sur ces deux defs, pas ici. » Les deux
+    // sont désormais morts (12a puis 12b) : le renvoi de 3h est INTÉGRALEMENT soldé. Les écarts sont
+    // ici, pas dans un silence.
+    expect(mesure).toEqual({ desc: 0, source: 0, icon: 0, scelles: 77, mesures: 0 });
   });
 
 });
@@ -592,6 +619,25 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     'traits.json · desc',
     'traits.json · source',
     'traumas.json · desc',
+    // vague 12b — les 12 DERNIERS defs `entite` adoptent, 13 exigences NEUVES, chacune MORDANTE.
+    // `species` n'exige que `source` : sa 5ᵉ entrée (`humains-tileens`) portait `desc: ""`, purgée
+    // par `2026-08-28-l1b-12b-entite-type.mjs` (renvoi nominatif de 3h:25-27) — exiger `desc`
+    // refuserait cette entrée. MÊME écart que `talents` à la vague 12, motivé au mesureur ci-dessus.
+    // Les trois catalogues de RENDU (`raceAppearance`, `roofMaterials`, `structureAppearance`)
+    // n'exigent RIEN : ils sont sans livre, et leurs entrées ne portent ni desc ni icon.
+    'actions.json · icon',
+    'activities.json · icon',
+    'activities.json · source',
+    'creatures.json · source',
+    'night-stakes.json · source',
+    'psychology.json · desc',
+    'psychology.json · source',
+    'species.json · source',
+    'spells.json · desc',
+    'spells.json · source',
+    'tavernGames.json · desc',
+    'tavernGames.json · source',
+    'trappings.json · source',
   ];
 
   it('la 1ʳᵉ entrée réelle de chaque def adopté est ACCEPTÉE — témoin positif de chaque paire', () => {

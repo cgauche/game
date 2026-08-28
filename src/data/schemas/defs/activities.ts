@@ -6,7 +6,8 @@
  * ci-dessous sont observés au moins une fois ; aucun champ de l'interface n'est ABSENT du JSON.
  */
 import { z } from 'zod';
-import { sourceRefSchema, difficultySchema, stakeFormSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
+import { difficultySchema, stakeFormSchema } from '../grammaire/valeurs';
 import { gameOpSchema, stageOutcomeSchema } from '../grammaire/mecanique';
 
 export const file = 'activities.json';
@@ -63,13 +64,11 @@ const outcomeBandSchema = z.strictObject({
   chains: z.array(z.string()).optional(),
 });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    icon: z.string(),
+const doc = document(
+  'activities',
+  famille,
+  {
     contexts: z.array(activityContextSchema),
-    source: sourceRefSchema,
     // ── TestSpec (src/engine/skills.ts) ──
     skills: z.array(skillRefSchema).optional(),
     char: z.string().optional(),
@@ -82,7 +81,6 @@ export const schema = z.array(
     weatherMod: z.record(z.string(), z.number()).optional(),
     resolver: activityResolverSchema.optional(),
     onSuccess: z.array(gameOpSchema).optional(),
-    desc: z.string().optional(),
     outcomes: z.array(outcomeBandSchema).optional(),
     where: z.array(z.string()).optional(),
     minInvest: z.strictObject({ gold: z.number() }).optional(),
@@ -119,9 +117,6 @@ export const schema = z.array(
     // `blocked` = dette bloquante d'une Activité curée dont l'issue n'a aucun support moteur
     // (`ActivityDef.blocked`) : retirée des catalogues jouables par `activitiesFor`.
     blocked: z.strictObject({ ticket: z.string(), raison: z.string() }).optional(),
-    // `maison` = arbitrage NON-verbatim documentant un champ (ex. `difficulty` par défaut quand le
-    // RAW la laisse « variable ») — même convention que `naval-traits.json`/`criticals.json`/`crew-roles.json`.
-    maison: z.string().optional(),
     // ── ENJEU du jet (#1117 L3) — `activities` est le 5ᵉ dataset d'enjeux, porté par l'ENTITÉ
     //    elle-même (pas de fichier tiers) : une Activité qui LANCE dit ce que son jet met en jeu.
     /** Texte d'enjeu — descripteur mécanique de ce que le résolveur applique, et/ou verbatim court. */
@@ -133,16 +128,102 @@ export const schema = z.array(
     rule: z.string().optional(),
     /** Catégorie Codex du foyer (`'regles'`, `'skills'`, `'etats'`…) — exigée avec `rule`. */
     ruleCategory: z.string().optional(),
-  })
-  .superRefine((a, ctx) => {
-    if (a.stake && !a.stakeForm) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : enjeu sans forme déclarée (stakeForm)` });
-    }
-    if (a.stakeForm && !a.stake) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : forme d’enjeu déclarée sans enjeu` });
-    }
-    if (a.rule && !a.ruleCategory) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : rule sans ruleCategory` });
-    }
-  }),
+  },
+  {
+    contexts: {
+      label: 'Contextes d’offre',
+      hint: 'Situations (interlude, voyage, mer, bataille…) où l’Activité est proposée',
+    },
+    skills: { label: 'Compétences du Test' },
+    char: { label: 'Caractéristique du Test', hint: 'Utilisée quand aucune Compétence n’est requise' },
+    difficulty: { label: 'Difficulté' },
+    combined: {
+      label: 'Test combiné',
+      hint: 'UN jet confronté aux deux premières Compétences listées ; réussi seulement si les deux cibles sont atteintes',
+    },
+    freeSkill: { label: 'Compétence libre', hint: 'Le joueur choisit lui-même la Compétence pratiquée' },
+    extended: { label: 'Test étendu', hint: 'DR requis = un montant par Étape' },
+    failExtenue: { label: 'Échec inflige Exténué' },
+    weatherMod: { label: 'Modificateur météo', hint: 'Modificateur au Test, par météo' },
+    resolver: { label: 'Résolveur dédié', hint: 'Logique de résolution dédiée, réutilisée plutôt que dupliquée' },
+    onSuccess: { label: 'Effets de réussite' },
+    outcomes: {
+      label: 'Table d’issues',
+      hint: 'Issues par bande de DR/résultat — prime sur les Effets de réussite simples',
+    },
+    where: {
+      label: 'Lieux requis',
+      hint: 'Lieux de la carte du monde où l’Activité est proposable ; absent = partout',
+    },
+    minInvest: { label: 'Mise minimale', hint: 'Montant minimal engagé (dépôt bancaire…)' },
+    stageOutcome: { label: 'Issue par Étape', hint: 'Effet de portée Étape, pour les Activités de voyage' },
+    unavailableIfExtenue: { label: 'Indisponible si Exténué' },
+    assisted: { label: 'Test à soutien', hint: 'Les assistants capables ajoutent un bonus au meneur du Test' },
+    requires: { label: 'Préparations requises', hint: 'Préparations à satisfaire avant de proposer l’Activité' },
+    grantsFlag: {
+      label: 'Préparation octroyée',
+      hint: 'Préparation accordée sur réussite, débloquant une autre Activité',
+    },
+    testModFrom: {
+      label: 'Réservoir de modificateur consommé',
+      hint: 'Réserve de modificateur d’armée dépensée par le Test de cette Activité',
+    },
+    difficultyFrom: {
+      label: 'Difficulté dérivée',
+      hint: 'Difficulté calculée depuis un écart de mesure d’armée, plutôt que fixe',
+    },
+    sceneKind: {
+      label: 'Genre de Scène',
+      hint: 'Nature de la Scène de Round (test/combat/menace/tenue de position/rassemblement)',
+    },
+    encounter: { label: 'Rencontre', hint: 'Identifiant de la rencontre démarrée par la Scène' },
+    rounds: { label: 'Durée en Rounds', hint: 'Durée indicative de la Scène' },
+    hold: {
+      label: 'Tenue de position',
+      hint: 'Seuil de rupture, Rounds max, bonus d’opposition cumulatif par Round tenu',
+    },
+    threat: {
+      label: 'Pénalité de menace',
+      hint: 'Pénalité infligée aux Tests des autres Scènes tant que la Scène Menace est active',
+    },
+    generalDownOn: {
+      label: 'Chute du général',
+      hint: 'Résultat de Test requis pour faire tomber le général/capitaine ennemi',
+    },
+    classGate: { label: 'Restriction de Classe', hint: 'Classes couvertes par l’Activité et pénalité hors Classe' },
+    blocked: {
+      label: 'Dette bloquante',
+      hint: 'Sous-système non modélisé : l’Activité est retirée des catalogues jouables tant que non soldée',
+    },
+    stake: { label: 'Enjeu' },
+    stakeForm: { label: 'Forme de l’enjeu' },
+    rule: {
+      label: 'Règle associée',
+      hint: 'Identifiant de l’entité qui porte la règle derrière le jet ; absent, c’est l’Activité elle-même',
+    },
+    ruleCategory: { label: 'Catégorie de la règle', hint: 'Catégorie Codex de l’entité désignée par « Règle associée »' },
+  },
+  {
+    codex: { keys: ['activities'] },
+    edit: { dataset: 'activities' },
+  },
+  {
+    exiges: ['source', 'icon'],
+    affinerEntree: (entree) =>
+      entree.superRefine((v, ctx) => {
+        const a = v as { id: string; stake?: string; stakeForm?: string; rule?: string; ruleCategory?: string };
+        if (a.stake && !a.stakeForm) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : enjeu sans forme déclarée (stakeForm)` });
+        }
+        if (a.stakeForm && !a.stake) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : forme d’enjeu déclarée sans enjeu` });
+        }
+        if (a.rule && !a.ruleCategory) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : rule sans ruleCategory` });
+        }
+      }),
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

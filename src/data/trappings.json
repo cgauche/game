@@ -1,6 +1,7 @@
 [
   {
     "id": "baton-de-combat",
+    "type": "trappings",
     "label": "Bâton de combat",
     "hands": 2,
     "categorie": "melee",
@@ -35,6 +36,7 @@
   },
   {
     "id": "hallebarde",
+    "type": "trappings",
     "label": "Hallebarde",
     "hands": 2,
     "categorie": "melee",
@@ -73,6 +75,7 @@
   },
   {
     "id": "lance",
+    "type": "trappings",
     "label": "Lance",
     "hands": 2,
     "categorie": "melee",
@@ -104,6 +107,7 @@
   },
   {
     "id": "pique",
+    "type": "trappings",
     "label": "Pique",
     "hands": 2,
     "categorie": "melee",
@@ -135,6 +139,7 @@
   },
   {
     "id": "mains-nues",
+    "type": "trappings",
     "label": "Mains nues",
     "categorie": "melee",
     "subType": "bagarre",
@@ -161,6 +166,7 @@
   },
   {
     "id": "coup-de-poing",
+    "type": "trappings",
     "label": "Coup-de-poing",
     "categorie": "melee",
     "subType": "bagarre",
@@ -187,6 +193,7 @@
   },
   {
     "id": "arme-improvisee",
+    "type": "trappings",
     "label": "Arme improvisée",
     "categorie": "melee",
     "subType": "base",
@@ -214,6 +221,7 @@
   },
   {
     "id": "arme-simple",
+    "type": "trappings",
     "label": "Arme simple",
     "categorie": "melee",
     "subType": "base",
@@ -248,6 +256,7 @@
   },
   {
     "id": "bouclier",
+    "type": "trappings",
     "label": "Bouclier",
     "categorie": "melee",
     "subType": "base",
@@ -285,6 +294,7 @@
   },
   {
     "id": "bouclier-grand",
+    "type": "trappings",
     "label": "Bouclier (Grand)",
     "categorie": "melee",
     "subType": "base",
@@ -322,6 +332,7 @@
   },
   {
     "id": "bouclier-targe",
+    "type": "trappings",
     "label": "Bouclier (Targe)",
     "categorie": "melee",
     "subType": "base",
@@ -359,6 +370,7 @@
   },
   {
     "id": "couteau",
+    "type": "trappings",
     "label": "Couteau",
     "categorie": "melee",
     "subType": "base",
@@ -390,6 +402,7 @@
   },
   {
     "id": "dague",
+    "type": "trappings",
     "label": "Dague",
     "categorie": "melee",
     "subType": "base",
@@ -417,6 +430,7 @@
   },
   {
     "id": "cimeterre",
+    "type": "trappings",
     "label": "Cimeterre",
     "categorie": "melee",
     "subType": "base",
@@ -457,6 +471,7 @@
   },
   {
     "id": "dague-ballock",
+    "type": "trappings",
     "label": "Dague ballock",
     "categorie": "melee",
     "subType": "base",
@@ -502,6 +517,7 @@
   },
   {
     "id": "massue",
+    "type": "trappings",
     "label": "Massue",
     "categorie": "melee",
     "subType": "base",
@@ -536,6 +552,7 @@
   },
   {
     "id": "pique-d-armes",
+    "type": "trappings",
     "label": "Pique d'armes",
     "categorie": "melee",
     "subType": "base",
@@ -570,6 +587,7 @@
   },
   {
     "id": "lance-de-cavalerie",
+    "type": "trappings",
     "label": "Lance de cavalerie",
     "categorie": "melee",
     "subType": "cavalerie",
@@ -604,6 +622,7 @@
   },
   {
     "id": "marteau-a-bec-de-corbin",
+    "type": "trappings",
     "label": "Marteau à bec-de-corbin",
     "hands": 2,
     "categorie": "melee",
@@ -635,6 +654,7 @@
   },
   {
     "id": "epee-batarde",
+    "type": "trappings",
     "label": "Épée bâtarde",
     "hands": 2,
     "categorie": "melee",
@@ -670,6 +690,7 @@
   },
   {
     "id": "grande-hache",
+    "type": "trappings",
     "label": "Grande hache",
     "hands": 2,
     "categorie": "melee",
@@ -708,6 +729,7 @@
   },
   {
     "id": "marteau-de-guerre",
+    "type": "trappings",
     "label": "Marteau de guerre",
     "hands": 2,
     "categorie": "melee",
@@ -745,6 +767,7 @@
   },
   {
     "id": "pioche-a-deux-mains",
+    "type": "trappings",
     "label": "Pioche à deux mains",
     "hands": 2,
     "categorie": "melee",
@@ -782,6 +805,7 @@
   },
   {
     "id": "zweihander",
+    "type": "trappings",
     "label": "Zweihänder",
     "hands": 2,
     "categorie": "melee",
@@ -817,6 +841,7 @@
   },
   {
     "id": "fleuret",
+    "type": "trappings",
     "label": "Fleuret",
     "categorie": "melee",
     "subType": "escrime",
@@ -851,6 +876,7 @@
   },
   {
     "id": "rapiere",
+    "type": "trappings",
     "label": "Rapière",
     "categorie": "melee",
     "subType": "escrime",
@@ -878,6 +904,7 @@
   },
   {
     "id": "fleau",
+    "type": "trappings",
     "label": "Fléau",
     "categorie": "melee",
     "subType": "fleau",
@@ -904,6 +931,7 @@
   },
   {
     "id": "fleau-a-grain",
+    "type": "trappings",
     "label": "Fléau à grain",
     "categorie": "melee",
     "subType": "fleau",
@@ -934,6 +962,7 @@
   },
   {
     "id": "fleau-d-armes",
+    "type": "trappings",
     "label": "Fléau d'armes",
     "hands": 2,
     "categorie": "melee",
@@ -968,6 +997,7 @@
   },
   {
     "id": "brise-epee",
+    "type": "trappings",
     "label": "Brise-épée",
     "categorie": "melee",
     "subType": "parade",
@@ -999,6 +1029,7 @@
   },
   {
     "id": "main-gauche",
+    "type": "trappings",
     "label": "Main Gauche",
     "categorie": "melee",
     "subType": "parade",
@@ -1026,6 +1057,7 @@
   },
   {
     "id": "arbalete",
+    "type": "trappings",
     "label": "Arbalète",
     "hands": 2,
     "categorie": "ranged",
@@ -1060,6 +1092,7 @@
   },
   {
     "id": "arbalete-de-poing",
+    "type": "trappings",
     "label": "Arbalète de poing",
     "categorie": "ranged",
     "subType": "arbalete",
@@ -1092,6 +1125,7 @@
   },
   {
     "id": "arbalete-lourde",
+    "type": "trappings",
     "label": "Arbalète lourde",
     "hands": 2,
     "categorie": "ranged",
@@ -1129,6 +1163,7 @@
   },
   {
     "id": "arc",
+    "type": "trappings",
     "label": "Arc",
     "hands": 2,
     "categorie": "ranged",
@@ -1158,6 +1193,7 @@
   },
   {
     "id": "arc-court",
+    "type": "trappings",
     "label": "Arc court",
     "hands": 2,
     "categorie": "ranged",
@@ -1187,6 +1223,7 @@
   },
   {
     "id": "arc-elfique",
+    "type": "trappings",
     "label": "Arc elfique",
     "hands": 2,
     "categorie": "ranged",
@@ -1223,6 +1260,7 @@
   },
   {
     "id": "arc-long",
+    "type": "trappings",
     "label": "Arc long",
     "hands": 2,
     "categorie": "ranged",
@@ -1256,6 +1294,7 @@
   },
   {
     "id": "fouet",
+    "type": "trappings",
     "label": "Fouet",
     "categorie": "ranged",
     "subType": "entraves",
@@ -1288,6 +1327,7 @@
   },
   {
     "id": "lasso",
+    "type": "trappings",
     "label": "Lasso",
     "categorie": "ranged",
     "subType": "entraves",
@@ -1319,6 +1359,7 @@
   },
   {
     "id": "filet",
+    "type": "trappings",
     "label": "Filet",
     "categorie": "ranged",
     "subType": "entraves",
@@ -1347,6 +1388,7 @@
   },
   {
     "id": "bombe",
+    "type": "trappings",
     "label": "Bombe",
     "categorie": "ranged",
     "subType": "explosifs",
@@ -1387,6 +1429,7 @@
   },
   {
     "id": "bombe-incendiaire",
+    "type": "trappings",
     "label": "Bombe incendiaire",
     "categorie": "ranged",
     "subType": "explosifs",
@@ -1424,6 +1467,7 @@
   },
   {
     "id": "fronde",
+    "type": "trappings",
     "label": "Fronde",
     "categorie": "ranged",
     "subType": "fronde",
@@ -1451,6 +1495,7 @@
   },
   {
     "id": "fustibale",
+    "type": "trappings",
     "label": "Fustibale",
     "hands": 2,
     "categorie": "ranged",
@@ -1479,6 +1524,7 @@
   },
   {
     "id": "bolas",
+    "type": "trappings",
     "label": "Bolas",
     "categorie": "ranged",
     "subType": "lancer",
@@ -1513,6 +1559,7 @@
   },
   {
     "id": "couteau-de-lancer",
+    "type": "trappings",
     "label": "Couteau de lancer",
     "categorie": "ranged",
     "subType": "lancer",
@@ -1542,6 +1589,7 @@
   },
   {
     "id": "flechette",
+    "type": "trappings",
     "label": "Fléchette",
     "categorie": "ranged",
     "subType": "lancer",
@@ -1575,6 +1623,7 @@
   },
   {
     "id": "hache-de-lancer",
+    "type": "trappings",
     "label": "Hache de lancer",
     "categorie": "ranged",
     "subType": "lancer",
@@ -1608,6 +1657,7 @@
   },
   {
     "id": "javelot",
+    "type": "trappings",
     "label": "Javelot",
     "categorie": "ranged",
     "subType": "lancer",
@@ -1642,6 +1692,7 @@
   },
   {
     "id": "rocher",
+    "type": "trappings",
     "label": "Rocher",
     "categorie": "ranged",
     "subType": "lancer",
@@ -1668,6 +1719,7 @@
   },
   {
     "id": "arquebus-a-repetition",
+    "type": "trappings",
     "label": "Arquebus à répétition",
     "hands": 2,
     "categorie": "ranged",
@@ -1714,6 +1766,7 @@
   },
   {
     "id": "pistolet-a-repetition",
+    "type": "trappings",
     "label": "Pistolet à répétition",
     "categorie": "ranged",
     "subType": "ingenierie",
@@ -1762,6 +1815,7 @@
   },
   {
     "id": "arquebuse",
+    "type": "trappings",
     "label": "Arquebuse",
     "hands": 2,
     "categorie": "ranged",
@@ -1804,6 +1858,7 @@
   },
   {
     "id": "long-fusil-d-hochland",
+    "type": "trappings",
     "label": "Long fusil d'Hochland",
     "hands": 2,
     "categorie": "ranged",
@@ -1849,6 +1904,7 @@
   },
   {
     "id": "pistolet",
+    "type": "trappings",
     "label": "Pistolet",
     "categorie": "ranged",
     "subType": "poudre-noire",
@@ -1890,6 +1946,7 @@
   },
   {
     "id": "tromblon",
+    "type": "trappings",
     "label": "Tromblon",
     "hands": 2,
     "categorie": "ranged",
@@ -1936,6 +1993,7 @@
   },
   {
     "id": "carreau",
+    "type": "trappings",
     "label": "Carreau",
     "packSize": 12,
     "categorie": "ammunition",
@@ -1963,6 +2021,7 @@
   },
   {
     "id": "fleche",
+    "type": "trappings",
     "label": "Flèche",
     "packSize": 12,
     "categorie": "ammunition",
@@ -1990,6 +2049,7 @@
   },
   {
     "id": "fleche-elfique",
+    "type": "trappings",
     "label": "Flèche elfique",
     "categorie": "ammunition",
     "subType": "arc",
@@ -2028,6 +2088,7 @@
   },
   {
     "id": "balle-de-plomb",
+    "type": "trappings",
     "label": "Balle de plomb",
     "packSize": 12,
     "categorie": "ammunition",
@@ -2061,6 +2122,7 @@
   },
   {
     "id": "projectile-de-pierre",
+    "type": "trappings",
     "label": "Projectile de pierre",
     "packSize": 12,
     "categorie": "ammunition",
@@ -2088,6 +2150,7 @@
   },
   {
     "id": "balle-et-poudre",
+    "type": "trappings",
     "label": "Balle et Poudre",
     "packSize": 12,
     "categorie": "ammunition",
@@ -2121,6 +2184,7 @@
   },
   {
     "id": "munitions-improvisees-et-poudre",
+    "type": "trappings",
     "label": "Munitions improvisées et Poudre",
     "categorie": "ammunition",
     "subType": "poudre-noire-et-ingenierie",
@@ -2146,6 +2210,7 @@
   },
   {
     "id": "petites-munitions-et-poudre",
+    "type": "trappings",
     "label": "Petites munitions et Poudre",
     "categorie": "ammunition",
     "subType": "poudre-noire-et-ingenierie",
@@ -2172,6 +2237,7 @@
   },
   {
     "id": "calotte-de-cuir",
+    "type": "trappings",
     "label": "Calotte de cuir",
     "categorie": "armor",
     "subType": "cuir-souple",
@@ -2199,6 +2265,7 @@
   },
   {
     "id": "jambieres-en-cuir",
+    "type": "trappings",
     "label": "Jambières en cuir",
     "categorie": "armor",
     "subType": "cuir-souple",
@@ -2222,6 +2289,7 @@
   },
   {
     "id": "justaucorps-de-cuir",
+    "type": "trappings",
     "label": "Justaucorps de cuir",
     "categorie": "armor",
     "subType": "cuir-souple",
@@ -2245,6 +2313,7 @@
   },
   {
     "id": "veste-de-cuir",
+    "type": "trappings",
     "label": "Veste de cuir",
     "categorie": "armor",
     "subType": "cuir-souple",
@@ -2268,6 +2337,7 @@
   },
   {
     "id": "plastron-de-cuir",
+    "type": "trappings",
     "label": "Plastron de cuir",
     "categorie": "armor",
     "subType": "cuir-bouilli",
@@ -2294,6 +2364,7 @@
   },
   {
     "id": "chausses-de-mailles",
+    "type": "trappings",
     "label": "Chausses de mailles",
     "categorie": "armor",
     "subType": "mailles",
@@ -2324,6 +2395,7 @@
   },
   {
     "id": "chemise-de-mailles",
+    "type": "trappings",
     "label": "Chemise de mailles",
     "categorie": "armor",
     "subType": "mailles",
@@ -2354,6 +2426,7 @@
   },
   {
     "id": "coiffe-de-mailles",
+    "type": "trappings",
     "label": "Coiffe de mailles",
     "categorie": "armor",
     "subType": "mailles",
@@ -2391,6 +2464,7 @@
   },
   {
     "id": "cotte-de-mailles",
+    "type": "trappings",
     "label": "Cotte de mailles",
     "categorie": "armor",
     "subType": "mailles",
@@ -2421,6 +2495,7 @@
   },
   {
     "id": "brassards",
+    "type": "trappings",
     "label": "Brassards",
     "categorie": "armor",
     "subType": "plate",
@@ -2454,6 +2529,7 @@
   },
   {
     "id": "heaume",
+    "type": "trappings",
     "label": "Heaume",
     "categorie": "armor",
     "subType": "plate",
@@ -2491,6 +2567,7 @@
   },
   {
     "id": "heaume-ouvert",
+    "type": "trappings",
     "label": "Heaume ouvert",
     "categorie": "armor",
     "subType": "plate",
@@ -2525,6 +2602,7 @@
   },
   {
     "id": "jambieres-d-acier",
+    "type": "trappings",
     "label": "Jambières d'acier",
     "categorie": "armor",
     "subType": "plate",
@@ -2558,6 +2636,7 @@
   },
   {
     "id": "plastron",
+    "type": "trappings",
     "label": "Plastron",
     "categorie": "armor",
     "subType": "plate",
@@ -2591,6 +2670,7 @@
   },
   {
     "id": "baril",
+    "type": "trappings",
     "label": "Baril",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2617,6 +2697,7 @@
   },
   {
     "id": "besace",
+    "type": "trappings",
     "label": "Besace",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2643,6 +2724,7 @@
   },
   {
     "id": "bourse",
+    "type": "trappings",
     "label": "Bourse",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2668,6 +2750,7 @@
   },
   {
     "id": "chope-en-etain",
+    "type": "trappings",
     "label": "Chope en étain",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2690,6 +2773,7 @@
   },
   {
     "id": "cruche",
+    "type": "trappings",
     "label": "Cruche",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2716,6 +2800,7 @@
   },
   {
     "id": "etui-a-parchemin",
+    "type": "trappings",
     "label": "Étui à parchemin",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2738,6 +2823,7 @@
   },
   {
     "id": "flasque",
+    "type": "trappings",
     "label": "Flasque",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2761,6 +2847,7 @@
   },
   {
     "id": "fontes-de-selle",
+    "type": "trappings",
     "label": "Fontes de selle",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2786,6 +2873,7 @@
   },
   {
     "id": "grand-sac",
+    "type": "trappings",
     "label": "Grand sac",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2812,6 +2900,7 @@
   },
   {
     "id": "outre-a-eau",
+    "type": "trappings",
     "label": "Outre à eau",
     "capabilities": {
       "waterContainer": true
@@ -2841,6 +2930,7 @@
   },
   {
     "id": "sac",
+    "type": "trappings",
     "label": "Sac",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2867,6 +2957,7 @@
   },
   {
     "id": "sac-a-dos",
+    "type": "trappings",
     "label": "Sac à dos",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2893,6 +2984,7 @@
   },
   {
     "id": "tonneau",
+    "type": "trappings",
     "label": "Tonneau",
     "categorie": "trapping",
     "subType": "sacs-et-contenants",
@@ -2919,6 +3011,7 @@
   },
   {
     "id": "amulette",
+    "type": "trappings",
     "label": "Amulette",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -2941,6 +3034,7 @@
   },
   {
     "id": "bijoux",
+    "type": "trappings",
     "label": "Bijoux",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -2960,6 +3054,7 @@
   },
   {
     "id": "bottes",
+    "type": "trappings",
     "label": "Bottes",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -2982,6 +3077,7 @@
   },
   {
     "id": "canne-de-marche",
+    "type": "trappings",
     "label": "Canne de marche",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3005,6 +3101,7 @@
   },
   {
     "id": "cape",
+    "type": "trappings",
     "label": "Cape",
     "capabilities": {
       "weatherProtection": true
@@ -3030,6 +3127,7 @@
   },
   {
     "id": "capuchon",
+    "type": "trappings",
     "label": "Capuchon",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3052,6 +3150,7 @@
   },
   {
     "id": "masque",
+    "type": "trappings",
     "label": "Masque",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3074,6 +3173,7 @@
   },
   {
     "id": "chapeau",
+    "type": "trappings",
     "label": "Chapeau",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3097,6 +3197,7 @@
   },
   {
     "id": "chaussures",
+    "type": "trappings",
     "label": "Chaussures",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3119,6 +3220,7 @@
   },
   {
     "id": "chevaliere",
+    "type": "trappings",
     "label": "Chevalière",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3142,6 +3244,7 @@
   },
   {
     "id": "costume",
+    "type": "trappings",
     "label": "Costume",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3164,6 +3267,7 @@
   },
   {
     "id": "epingle",
+    "type": "trappings",
     "label": "Épingle",
     "packSize": 6,
     "categorie": "trapping",
@@ -3187,6 +3291,7 @@
   },
   {
     "id": "gants",
+    "type": "trappings",
     "label": "Gants",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3209,6 +3314,7 @@
   },
   {
     "id": "gants-en-cuir",
+    "type": "trappings",
     "label": "Gants en cuir",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3231,6 +3337,7 @@
   },
   {
     "id": "costume-de-cour",
+    "type": "trappings",
     "label": "Costume de cour",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3254,6 +3361,7 @@
   },
   {
     "id": "manteau",
+    "type": "trappings",
     "label": "Manteau",
     "capabilities": {
       "weatherProtection": true
@@ -3280,6 +3388,7 @@
   },
   {
     "id": "parfum",
+    "type": "trappings",
     "label": "Parfum",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3302,6 +3411,7 @@
   },
   {
     "id": "poudre-pour-le-visage",
+    "type": "trappings",
     "label": "Poudre pour le visage",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3324,6 +3434,7 @@
   },
   {
     "id": "robes",
+    "type": "trappings",
     "label": "Robes",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3346,6 +3457,7 @@
   },
   {
     "id": "sceptre",
+    "type": "trappings",
     "label": "Sceptre",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3369,6 +3481,7 @@
   },
   {
     "id": "symbole-religieux",
+    "type": "trappings",
     "label": "Symbole religieux",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3391,6 +3504,7 @@
   },
   {
     "id": "tatouage",
+    "type": "trappings",
     "label": "Tatouage",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3413,6 +3527,7 @@
   },
   {
     "id": "uniforme",
+    "type": "trappings",
     "label": "Uniforme",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3435,6 +3550,7 @@
   },
   {
     "id": "vetements",
+    "type": "trappings",
     "label": "Vêtements",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -3457,6 +3573,7 @@
   },
   {
     "id": "biere-pinte",
+    "type": "trappings",
     "label": "Bière, pinte",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3501,6 +3618,7 @@
   },
   {
     "id": "biere-tonnelet",
+    "type": "trappings",
     "label": "Bière, tonnelet",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3524,6 +3642,7 @@
   },
   {
     "id": "biere-de-bugman-xxxxxx-pinte",
+    "type": "trappings",
     "label": "Bière de Bugman XXXXXX, pinte",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3547,6 +3666,7 @@
   },
   {
     "id": "chambre-commune-nuit",
+    "type": "trappings",
     "label": "Chambre, commune/nuit",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3571,6 +3691,7 @@
   },
   {
     "id": "chambre-privee-nuit",
+    "type": "trappings",
     "label": "Chambre, privée/nuit",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3595,6 +3716,7 @@
   },
   {
     "id": "ecurie-nuit",
+    "type": "trappings",
     "label": "Écurie/nuit",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3618,6 +3740,7 @@
   },
   {
     "id": "nourriture-courses-journee",
+    "type": "trappings",
     "label": "Nourriture, courses/journée",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3640,6 +3763,7 @@
   },
   {
     "id": "repas-auberge",
+    "type": "trappings",
     "label": "Repas, auberge",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3662,6 +3786,7 @@
   },
   {
     "id": "spiritueux-pinte",
+    "type": "trappings",
     "label": "Spiritueux, pinte",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3684,6 +3809,7 @@
   },
   {
     "id": "vin-bouteille",
+    "type": "trappings",
     "label": "Vin, bouteille",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3706,6 +3832,7 @@
   },
   {
     "id": "vin-spiritueux-verre",
+    "type": "trappings",
     "label": "Vin & spiritueux, verre",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -3751,6 +3878,7 @@
   },
   {
     "id": "ration",
+    "type": "trappings",
     "label": "Ration",
     "capabilities": {
       "isRations": true
@@ -3777,6 +3905,7 @@
   },
   {
     "id": "aiguille",
+    "type": "trappings",
     "label": "Aiguille",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -3799,6 +3928,7 @@
   },
   {
     "id": "balai",
+    "type": "trappings",
     "label": "Balai",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -3821,6 +3951,7 @@
   },
   {
     "id": "bequille",
+    "type": "trappings",
     "label": "Béquille",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -3843,6 +3974,7 @@
   },
   {
     "id": "besicles",
+    "type": "trappings",
     "label": "Bésicles",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -3878,6 +4010,7 @@
   },
   {
     "id": "binette",
+    "type": "trappings",
     "label": "Binette",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -3900,6 +4033,7 @@
   },
   {
     "id": "boulier",
+    "type": "trappings",
     "label": "Boulier",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -3922,6 +4056,7 @@
   },
   {
     "id": "brosse-pour-le-sol",
+    "type": "trappings",
     "label": "Brosse pour le sol",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -3944,6 +4079,7 @@
   },
   {
     "id": "cachet-grave",
+    "type": "trappings",
     "label": "Cachet, gravé",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -3966,6 +4102,7 @@
   },
   {
     "id": "ciseau",
+    "type": "trappings",
     "label": "Ciseau",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -3988,6 +4125,7 @@
   },
   {
     "id": "clef",
+    "type": "trappings",
     "label": "Clef",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4010,6 +4148,7 @@
   },
   {
     "id": "clou",
+    "type": "trappings",
     "label": "Clou",
     "packSize": 12,
     "categorie": "trapping",
@@ -4033,6 +4172,7 @@
   },
   {
     "id": "couteau-2",
+    "type": "trappings",
     "label": "Couteau",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4055,6 +4195,7 @@
   },
   {
     "id": "cure-oreille",
+    "type": "trappings",
     "label": "Cure-oreille",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4077,6 +4218,7 @@
   },
   {
     "id": "faucille",
+    "type": "trappings",
     "label": "Faucille",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4099,6 +4241,7 @@
   },
   {
     "id": "gaffe",
+    "type": "trappings",
     "label": "Gaffe",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4121,6 +4264,7 @@
   },
   {
     "id": "hamecon",
+    "type": "trappings",
     "label": "Hameçon",
     "packSize": 12,
     "categorie": "trapping",
@@ -4145,6 +4289,7 @@
   },
   {
     "id": "maillet",
+    "type": "trappings",
     "label": "Maillet",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4167,6 +4312,7 @@
   },
   {
     "id": "marteau",
+    "type": "trappings",
     "label": "Marteau",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4189,6 +4335,7 @@
   },
   {
     "id": "menottes",
+    "type": "trappings",
     "label": "Menottes",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4212,6 +4359,7 @@
   },
   {
     "id": "miroir-a-main",
+    "type": "trappings",
     "label": "Miroir à main",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4234,6 +4382,7 @@
   },
   {
     "id": "necessaire-antipoison",
+    "type": "trappings",
     "label": "Nécessaire antipoison",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4282,6 +4431,7 @@
   },
   {
     "id": "necessaire-d-ecriture",
+    "type": "trappings",
     "label": "Nécessaire d'écriture",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4305,6 +4455,7 @@
   },
   {
     "id": "necessaire-de-deguisement",
+    "type": "trappings",
     "label": "Nécessaire de déguisement",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4328,6 +4479,7 @@
   },
   {
     "id": "outils-de-crochetage",
+    "type": "trappings",
     "label": "Outils de crochetage",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4354,6 +4506,7 @@
   },
   {
     "id": "peigne",
+    "type": "trappings",
     "label": "Peigne",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4376,6 +4529,7 @@
   },
   {
     "id": "pelle",
+    "type": "trappings",
     "label": "Pelle",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4398,6 +4552,7 @@
   },
   {
     "id": "perche",
+    "type": "trappings",
     "label": "Perche",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4421,6 +4576,7 @@
   },
   {
     "id": "pied-de-biche",
+    "type": "trappings",
     "label": "Pied-de-biche",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4443,6 +4599,7 @@
   },
   {
     "id": "piege-a-animaux",
+    "type": "trappings",
     "label": "Piège à animaux",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4466,6 +4623,7 @@
   },
   {
     "id": "pilon-et-mortier",
+    "type": "trappings",
     "label": "Pilon et Mortier",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4488,6 +4646,7 @@
   },
   {
     "id": "pinces-acier",
+    "type": "trappings",
     "label": "Pinces, acier",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4510,6 +4669,7 @@
   },
   {
     "id": "pince-a-epiler",
+    "type": "trappings",
     "label": "Pince à épiler",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4532,6 +4692,7 @@
   },
   {
     "id": "pinceau",
+    "type": "trappings",
     "label": "Pinceau",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4554,6 +4715,7 @@
   },
   {
     "id": "pioche",
+    "type": "trappings",
     "label": "Pioche",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4576,6 +4738,7 @@
   },
   {
     "id": "plume-d-oie",
+    "type": "trappings",
     "label": "Plume d'oie",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4598,6 +4761,7 @@
   },
   {
     "id": "rateau",
+    "type": "trappings",
     "label": "Râteau",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4620,6 +4784,7 @@
   },
   {
     "id": "scie",
+    "type": "trappings",
     "label": "Scie",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4642,6 +4807,7 @@
   },
   {
     "id": "seau",
+    "type": "trappings",
     "label": "Seau",
     "capabilities": {
       "waterContainer": true
@@ -4667,6 +4833,7 @@
   },
   {
     "id": "serpillere",
+    "type": "trappings",
     "label": "Serpillère",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4689,6 +4856,7 @@
   },
   {
     "id": "telescope",
+    "type": "trappings",
     "label": "Télescope",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -4711,6 +4879,7 @@
   },
   {
     "id": "carte",
+    "type": "trappings",
     "label": "Carte",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4733,6 +4902,7 @@
   },
   {
     "id": "document-legal",
+    "type": "trappings",
     "label": "Document légal",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4756,6 +4926,7 @@
   },
   {
     "id": "licence-de-guilde",
+    "type": "trappings",
     "label": "Licence de Guilde",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4775,6 +4946,7 @@
   },
   {
     "id": "livre-apothicaire",
+    "type": "trappings",
     "label": "Livre (Apothicaire)",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4798,6 +4970,7 @@
   },
   {
     "id": "livre-art",
+    "type": "trappings",
     "label": "Livre (Art)",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4821,6 +4994,7 @@
   },
   {
     "id": "livre-cryptographie",
+    "type": "trappings",
     "label": "Livre (Cryptographie)",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4844,6 +5018,7 @@
   },
   {
     "id": "livre-ingenierie",
+    "type": "trappings",
     "label": "Livre (Ingénierie)",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4867,6 +5042,7 @@
   },
   {
     "id": "livre-loi",
+    "type": "trappings",
     "label": "Livre (Loi)",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4890,6 +5066,7 @@
   },
   {
     "id": "livre-magie",
+    "type": "trappings",
     "label": "Livre (Magie)",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4913,6 +5090,7 @@
   },
   {
     "id": "livre-medecine",
+    "type": "trappings",
     "label": "Livre (Médecine)",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4936,6 +5114,7 @@
   },
   {
     "id": "livre-religion",
+    "type": "trappings",
     "label": "Livre (Religion)",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -4959,6 +5138,7 @@
   },
   {
     "id": "grimoire",
+    "type": "trappings",
     "label": "Grimoire",
     "capabilities": {
       "isGrimoire": true
@@ -4985,6 +5165,7 @@
   },
   {
     "id": "parchemin",
+    "type": "trappings",
     "label": "Parchemin",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -5007,6 +5188,7 @@
   },
   {
     "id": "feuille-de-parchemin",
+    "type": "trappings",
     "label": "Feuille de parchemin",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -5029,6 +5211,7 @@
   },
   {
     "id": "tract",
+    "type": "trappings",
     "label": "Tract",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -5051,6 +5234,7 @@
   },
   {
     "id": "atelier",
+    "type": "trappings",
     "label": "Atelier",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5074,6 +5258,7 @@
   },
   {
     "id": "atelier-apothicaire",
+    "type": "trappings",
     "label": "Atelier (Apothicaire)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5097,6 +5282,7 @@
   },
   {
     "id": "atelier-charpentier",
+    "type": "trappings",
     "label": "Atelier (Charpentier)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5120,6 +5306,7 @@
   },
   {
     "id": "atelier-forgeron",
+    "type": "trappings",
     "label": "Atelier (Forgeron)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5143,6 +5330,7 @@
   },
   {
     "id": "atelier-graveur",
+    "type": "trappings",
     "label": "Atelier (Graveur)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5166,6 +5354,7 @@
   },
   {
     "id": "atelier-artiste",
+    "type": "trappings",
     "label": "Atelier (Artiste)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5189,6 +5378,7 @@
   },
   {
     "id": "atelier-herboriste",
+    "type": "trappings",
     "label": "Atelier (Herboriste)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5212,6 +5402,7 @@
   },
   {
     "id": "atelier-ingenieur",
+    "type": "trappings",
     "label": "Atelier (Ingénieur)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5235,6 +5426,7 @@
   },
   {
     "id": "atelier-medecin",
+    "type": "trappings",
     "label": "Atelier (Médecin)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5258,6 +5450,7 @@
   },
   {
     "id": "outils-professionnels",
+    "type": "trappings",
     "label": "Outils professionnels",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5281,6 +5474,7 @@
   },
   {
     "id": "outils-professionnels-apothicaire",
+    "type": "trappings",
     "label": "Outils professionnels (Apothicaire)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5304,6 +5498,7 @@
   },
   {
     "id": "outils-professionnels-charpentier",
+    "type": "trappings",
     "label": "Outils professionnels (Charpentier)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5327,6 +5522,7 @@
   },
   {
     "id": "outils-professionnels-forgeron",
+    "type": "trappings",
     "label": "Outils professionnels (Forgeron)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5350,6 +5546,7 @@
   },
   {
     "id": "outils-professionnels-graveur",
+    "type": "trappings",
     "label": "Outils professionnels (Graveur)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5373,6 +5570,7 @@
   },
   {
     "id": "outils-professionnels-artiste",
+    "type": "trappings",
     "label": "Outils professionnels (Artiste)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5396,6 +5594,7 @@
   },
   {
     "id": "outils-professionnels-herboriste",
+    "type": "trappings",
     "label": "Outils professionnels (Herboriste)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5419,6 +5618,7 @@
   },
   {
     "id": "outils-professionnels-ingenieur",
+    "type": "trappings",
     "label": "Outils professionnels (Ingénieur)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5442,6 +5642,7 @@
   },
   {
     "id": "outils-professionnels-medecin",
+    "type": "trappings",
     "label": "Outils professionnels (Médecin)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5465,6 +5666,7 @@
   },
   {
     "id": "outils-professionnels-navigateur",
+    "type": "trappings",
     "label": "Outils professionnels (Navigateur)",
     "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
@@ -5488,6 +5690,7 @@
   },
   {
     "id": "collier-et-laisse-chien",
+    "type": "trappings",
     "label": "Collier et laisse (chien)",
     "categorie": "trapping",
     "subType": "animaux-et-vehicules",
@@ -5510,6 +5713,7 @@
   },
   {
     "id": "poulet",
+    "type": "trappings",
     "label": "Poulet",
     "categorie": "trapping",
     "subType": "animaux-et-vehicules",
@@ -5532,6 +5736,7 @@
   },
   {
     "id": "selle-et-harnais",
+    "type": "trappings",
     "label": "Selle et Harnais",
     "categorie": "trapping",
     "subType": "animaux-et-vehicules",
@@ -5554,6 +5759,7 @@
   },
   {
     "id": "singe",
+    "type": "trappings",
     "label": "Singe",
     "categorie": "trapping",
     "subType": "animaux-et-vehicules",
@@ -5576,6 +5782,7 @@
   },
   {
     "id": "vers",
+    "type": "trappings",
     "label": "Vers",
     "packSize": 6,
     "categorie": "trapping",
@@ -5599,6 +5806,7 @@
   },
   {
     "id": "bave",
+    "type": "trappings",
     "label": "Bave",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -5646,6 +5854,7 @@
   },
   {
     "id": "bonnet-de-fou",
+    "type": "trappings",
     "label": "Bonnet de fou",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -5748,6 +5957,7 @@
   },
   {
     "id": "brise-coeur",
+    "type": "trappings",
     "label": "Brise-cœur",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -5799,6 +6009,7 @@
   },
   {
     "id": "delice-de-ranald",
+    "type": "trappings",
     "label": "Délice de Ranald",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -5888,6 +6099,7 @@
   },
   {
     "id": "fleur-de-lune",
+    "type": "trappings",
     "label": "Fleur de lune",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -5989,6 +6201,7 @@
   },
   {
     "id": "lotus-noir",
+    "type": "trappings",
     "label": "Lotus noir",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -6082,6 +6295,7 @@
   },
   {
     "id": "malepierre-brute",
+    "type": "trappings",
     "label": "Malepierre (brute)",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -6116,6 +6330,7 @@
   },
   {
     "id": "malepierre-raffinee",
+    "type": "trappings",
     "label": "Malepierre raffinée",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -6150,6 +6365,7 @@
   },
   {
     "id": "mystracine",
+    "type": "trappings",
     "label": "Mystracine",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -6219,6 +6435,7 @@
   },
   {
     "id": "racine-de-mandragore",
+    "type": "trappings",
     "label": "Racine de mandragore",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -6277,6 +6494,7 @@
   },
   {
     "id": "belladone",
+    "type": "trappings",
     "label": "Belladone",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6336,6 +6554,7 @@
   },
   {
     "id": "cataplasme-de-guerison",
+    "type": "trappings",
     "label": "Cataplasme de guérison",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6370,6 +6589,7 @@
   },
   {
     "id": "faxtoryll",
+    "type": "trappings",
     "label": "Faxtoryll",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6406,6 +6626,7 @@
   },
   {
     "id": "potion-de-guerison",
+    "type": "trappings",
     "label": "Potion de guérison",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6455,6 +6676,7 @@
   },
   {
     "id": "potion-de-vitalite",
+    "type": "trappings",
     "label": "Potion de vitalité",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6491,6 +6713,7 @@
   },
   {
     "id": "racine-de-terre",
+    "type": "trappings",
     "label": "Racine de terre",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6536,6 +6759,7 @@
   },
   {
     "id": "soude-commune",
+    "type": "trappings",
     "label": "Soude commune",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6572,6 +6796,7 @@
   },
   {
     "id": "tonique-digestif",
+    "type": "trappings",
     "label": "Tonique digestif",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6614,6 +6839,7 @@
   },
   {
     "id": "gesundheit",
+    "type": "trappings",
     "label": "Gesundheit",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6666,6 +6892,7 @@
   },
   {
     "id": "racine-des-tombes",
+    "type": "trappings",
     "label": "Racine des tombes",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6775,6 +7002,7 @@
   },
   {
     "id": "rouille-mouchetee",
+    "type": "trappings",
     "label": "Rouille mouchetée",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -6824,6 +7052,7 @@
   },
   {
     "id": "cache-oeil",
+    "type": "trappings",
     "label": "Cache-œil",
     "categorie": "trapping",
     "subType": "protheses",
@@ -6847,6 +7076,7 @@
   },
   {
     "id": "crochet",
+    "type": "trappings",
     "label": "Crochet",
     "prosthesisTraining": [
       {
@@ -6905,6 +7135,7 @@
   },
   {
     "id": "dents-en-bois",
+    "type": "trappings",
     "label": "Dents en bois",
     "categorie": "trapping",
     "subType": "protheses",
@@ -6928,6 +7159,7 @@
   },
   {
     "id": "fausse-jambe",
+    "type": "trappings",
     "label": "Fausse jambe",
     "prosthesisTraining": [
       {
@@ -6963,6 +7195,7 @@
   },
   {
     "id": "merveille-d-ingenierie",
+    "type": "trappings",
     "label": "Merveille d'ingénierie",
     "categorie": "trapping",
     "subType": "protheses",
@@ -6986,6 +7219,7 @@
   },
   {
     "id": "nez-dore",
+    "type": "trappings",
     "label": "Nez doré",
     "categorie": "trapping",
     "subType": "protheses",
@@ -7009,6 +7243,7 @@
   },
   {
     "id": "oeil-de-verre",
+    "type": "trappings",
     "label": "Œil de verre",
     "categorie": "trapping",
     "subType": "protheses",
@@ -7032,6 +7267,7 @@
   },
   {
     "id": "affiche",
+    "type": "trappings",
     "label": "Affiche",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7054,6 +7290,7 @@
   },
   {
     "id": "allumette",
+    "type": "trappings",
     "label": "Allumette",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7076,6 +7313,7 @@
   },
   {
     "id": "assiette",
+    "type": "trappings",
     "label": "Assiette",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7098,6 +7336,7 @@
   },
   {
     "id": "bache-de-toile",
+    "type": "trappings",
     "label": "Bâche de toile",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7120,6 +7359,7 @@
   },
   {
     "id": "balle",
+    "type": "trappings",
     "label": "Balle",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7142,6 +7382,7 @@
   },
   {
     "id": "bandages",
+    "type": "trappings",
     "label": "Bandages",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7181,6 +7422,7 @@
   },
   {
     "id": "batonnet-de-fusain",
+    "type": "trappings",
     "label": "Bâtonnet de fusain",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7203,6 +7445,7 @@
   },
   {
     "id": "boite-a-amadou",
+    "type": "trappings",
     "label": "Boîte à amadou",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7225,6 +7468,7 @@
   },
   {
     "id": "bol",
+    "type": "trappings",
     "label": "Bol",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7247,6 +7491,7 @@
   },
   {
     "id": "bougie",
+    "type": "trappings",
     "label": "Bougie",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7277,6 +7522,7 @@
   },
   {
     "id": "casserole",
+    "type": "trappings",
     "label": "Casserole",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7299,6 +7545,7 @@
   },
   {
     "id": "chiffons",
+    "type": "trappings",
     "label": "Chiffons",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7321,6 +7568,7 @@
   },
   {
     "id": "corde",
+    "type": "trappings",
     "label": "Corde",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7344,6 +7592,7 @@
   },
   {
     "id": "couvert",
+    "type": "trappings",
     "label": "Couvert",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7366,6 +7615,7 @@
   },
   {
     "id": "couverture",
+    "type": "trappings",
     "label": "Couverture",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7388,6 +7638,7 @@
   },
   {
     "id": "craie",
+    "type": "trappings",
     "label": "Craie",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7410,6 +7661,7 @@
   },
   {
     "id": "des",
+    "type": "trappings",
     "label": "Dés",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7432,6 +7684,7 @@
   },
   {
     "id": "grappin",
+    "type": "trappings",
     "label": "Grappin",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7455,6 +7708,7 @@
   },
   {
     "id": "instrument",
+    "type": "trappings",
     "label": "Instrument",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7478,6 +7732,7 @@
   },
   {
     "id": "lampe-davrich",
+    "type": "trappings",
     "label": "Lampe Davrich",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7501,6 +7756,7 @@
   },
   {
     "id": "huile-de-lampe",
+    "type": "trappings",
     "label": "Lampe à huile",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7531,6 +7787,7 @@
   },
   {
     "id": "lampe-tempete",
+    "type": "trappings",
     "label": "Lampe tempête",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7561,6 +7818,7 @@
   },
   {
     "id": "lanterne",
+    "type": "trappings",
     "label": "Lanterne",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7591,6 +7849,7 @@
   },
   {
     "id": "marmite",
+    "type": "trappings",
     "label": "Marmite",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7613,6 +7872,7 @@
   },
   {
     "id": "matraque",
+    "type": "trappings",
     "label": "Matraque",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7635,6 +7895,7 @@
   },
   {
     "id": "paquet-de-cartes",
+    "type": "trappings",
     "label": "Paquet de cartes",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7657,6 +7918,7 @@
   },
   {
     "id": "pipe-et-tabac",
+    "type": "trappings",
     "label": "Pipe et Tabac",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7679,6 +7941,7 @@
   },
   {
     "id": "poupee",
+    "type": "trappings",
     "label": "Poupée",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7701,6 +7964,7 @@
   },
   {
     "id": "sac-de-couchage",
+    "type": "trappings",
     "label": "Sac de couchage",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7724,6 +7988,7 @@
   },
   {
     "id": "tasse",
+    "type": "trappings",
     "label": "Tasse",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -7746,6 +8011,7 @@
   },
   {
     "id": "tente",
+    "type": "trappings",
     "label": "Tente",
     "capabilities": {
       "isShelter": true
@@ -7772,6 +8038,7 @@
   },
   {
     "id": "pavois",
+    "type": "trappings",
     "label": "Pavois",
     "categorie": "melee",
     "subType": "base",
@@ -7807,6 +8074,7 @@
   },
   {
     "id": "filet-leste",
+    "type": "trappings",
     "label": "Filet lesté",
     "hands": 2,
     "categorie": "melee",
@@ -7859,6 +8127,7 @@
   },
   {
     "id": "baliste",
+    "type": "trappings",
     "label": "Baliste",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -7902,6 +8171,7 @@
   },
   {
     "id": "catapulte-petite",
+    "type": "trappings",
     "label": "Catapulte (petite)",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -7947,6 +8217,7 @@
   },
   {
     "id": "catapulte-moyenne",
+    "type": "trappings",
     "label": "Catapulte (moyenne)",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -7992,6 +8263,7 @@
   },
   {
     "id": "catapulte-grande",
+    "type": "trappings",
     "label": "Catapulte (grande)",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -8037,6 +8309,7 @@
   },
   {
     "id": "batterie-tonnerre-de-feu",
+    "type": "trappings",
     "label": "Batterie tonnerre de feu",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -8096,6 +8369,7 @@
   },
   {
     "id": "canon-a-repetition",
+    "type": "trappings",
     "label": "Canon à répétition",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -8137,6 +8411,7 @@
   },
   {
     "id": "canon-a-repetition-feu-d-enfer",
+    "type": "trappings",
     "label": "Canon à répétition feu d'enfer",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -8182,6 +8457,7 @@
   },
   {
     "id": "canon-petit",
+    "type": "trappings",
     "label": "Canon (petit)",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -8227,6 +8503,7 @@
   },
   {
     "id": "canon-moyen",
+    "type": "trappings",
     "label": "Canon (moyen)",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -8272,6 +8549,7 @@
   },
   {
     "id": "canon-grand",
+    "type": "trappings",
     "label": "Canon (grand)",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -8317,6 +8595,7 @@
   },
   {
     "id": "mortier",
+    "type": "trappings",
     "label": "Mortier",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -8357,6 +8636,7 @@
   },
   {
     "id": "pierrier",
+    "type": "trappings",
     "label": "Pierrier",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -8395,6 +8675,7 @@
   },
   {
     "id": "demi-lance-de-cavalerie",
+    "type": "trappings",
     "label": "Demi-lance de cavalerie",
     "categorie": "melee",
     "subType": "cavalerie",
@@ -8429,6 +8710,7 @@
   },
   {
     "id": "sabre",
+    "type": "trappings",
     "label": "Sabre",
     "categorie": "melee",
     "subType": "cavalerie",
@@ -8462,6 +8744,7 @@
   },
   {
     "id": "epee-de-cour",
+    "type": "trappings",
     "label": "Épée de cour",
     "categorie": "melee",
     "subType": "escrime",
@@ -8494,6 +8777,7 @@
   },
   {
     "id": "gaffe-2",
+    "type": "trappings",
     "label": "Gaffe",
     "categorie": "melee",
     "subType": "bagarre",
@@ -8528,6 +8812,7 @@
   },
   {
     "id": "gantelet-a-pointes",
+    "type": "trappings",
     "label": "Gantelet à pointes",
     "categorie": "melee",
     "subType": "bagarre",
@@ -8562,6 +8847,7 @@
   },
   {
     "id": "griffe-de-tigre",
+    "type": "trappings",
     "label": "Griffes de Tigre",
     "categorie": "melee",
     "subType": "bagarre",
@@ -8590,6 +8876,7 @@
   },
   {
     "id": "gantelet-verrouille",
+    "type": "trappings",
     "label": "Gantelet verrouillé",
     "categorie": "melee",
     "subType": "bagarre",
@@ -8624,6 +8911,7 @@
   },
   {
     "id": "lacet-etrangleur",
+    "type": "trappings",
     "label": "Lacet étrangleur",
     "hands": 2,
     "categorie": "melee",
@@ -8665,6 +8953,7 @@
   },
   {
     "id": "cape-2",
+    "type": "trappings",
     "label": "Cape",
     "categorie": "melee",
     "subType": "parade",
@@ -8706,6 +8995,7 @@
   },
   {
     "id": "ahlspiess",
+    "type": "trappings",
     "label": "Ahlspiess",
     "hands": 2,
     "categorie": "melee",
@@ -8741,6 +9031,7 @@
   },
   {
     "id": "attrape-coquin",
+    "type": "trappings",
     "label": "Attrape-coquin",
     "hands": 2,
     "categorie": "melee",
@@ -8776,6 +9067,7 @@
   },
   {
     "id": "hache-d-armes",
+    "type": "trappings",
     "label": "Hache d'armes",
     "hands": 2,
     "categorie": "melee",
@@ -8825,6 +9117,7 @@
   },
   {
     "id": "pertuisane-fauchard",
+    "type": "trappings",
     "label": "Pertuisane/Fauchard",
     "hands": 2,
     "categorie": "melee",
@@ -8872,6 +9165,7 @@
   },
   {
     "id": "serpe-de-guerre",
+    "type": "trappings",
     "label": "Serpe de guerre",
     "hands": 2,
     "categorie": "melee",
@@ -8918,6 +9212,7 @@
   },
   {
     "id": "zweihander-flamberge",
+    "type": "trappings",
     "label": "Zweihänder flamberge",
     "hands": 2,
     "categorie": "melee",
@@ -8958,6 +9253,7 @@
   },
   {
     "id": "baton-pointu",
+    "type": "trappings",
     "label": "Bâton pointu",
     "categorie": "ranged",
     "subType": "munitions",
@@ -8998,6 +9294,7 @@
   },
   {
     "id": "fleche-barbelee",
+    "type": "trappings",
     "label": "Flèche barbelée",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9030,6 +9327,7 @@
   },
   {
     "id": "fleche-bodkin",
+    "type": "trappings",
     "label": "Flèche bodkin",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9061,6 +9359,7 @@
   },
   {
     "id": "bille-de-plomb",
+    "type": "trappings",
     "label": "Bille de plomb",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9094,6 +9393,7 @@
   },
   {
     "id": "caillou",
+    "type": "trappings",
     "label": "Caillou",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9130,6 +9430,7 @@
   },
   {
     "id": "arquebuse-a-double-canon",
+    "type": "trappings",
     "label": "Arquebuse à double canon",
     "hands": 2,
     "categorie": "ranged",
@@ -9171,6 +9472,7 @@
   },
   {
     "id": "arquebuse-a-meche",
+    "type": "trappings",
     "label": "Arquebuse à mèche",
     "hands": 2,
     "categorie": "ranged",
@@ -9208,6 +9510,7 @@
   },
   {
     "id": "hache-arquebuse",
+    "type": "trappings",
     "label": "Hache-arquebuse",
     "hands": 2,
     "categorie": "ranged",
@@ -9248,6 +9551,7 @@
   },
   {
     "id": "hallebarde-arquebuse",
+    "type": "trappings",
     "label": "Hallebarde-arquebuse",
     "hands": 2,
     "categorie": "ranged",
@@ -9288,6 +9592,7 @@
   },
   {
     "id": "haquebute",
+    "type": "trappings",
     "label": "Haquebute",
     "hands": 2,
     "categorie": "ranged",
@@ -9328,6 +9633,7 @@
   },
   {
     "id": "pistolet-patte-de-griffon",
+    "type": "trappings",
     "label": "Pistolet patte de griffon",
     "categorie": "ranged",
     "subType": "poudre-noire",
@@ -9368,6 +9674,7 @@
   },
   {
     "id": "tromblon-a-meche",
+    "type": "trappings",
     "label": "Tromblon à mèche",
     "hands": 2,
     "categorie": "ranged",
@@ -9409,6 +9716,7 @@
   },
   {
     "id": "canne-pistolet",
+    "type": "trappings",
     "label": "Canne-pistolet",
     "categorie": "ranged",
     "subType": "poudre-noire",
@@ -9448,6 +9756,7 @@
   },
   {
     "id": "mortier-a-main",
+    "type": "trappings",
     "label": "Mortier à main",
     "hands": 2,
     "categorie": "ranged",
@@ -9488,6 +9797,7 @@
   },
   {
     "id": "poivriere",
+    "type": "trappings",
     "label": "Poivrière",
     "categorie": "ranged",
     "subType": "poudre-noire",
@@ -9531,6 +9841,7 @@
   },
   {
     "id": "balle-de-gros-calibre-et-poudre",
+    "type": "trappings",
     "label": "Balle de gros calibre et poudre",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9567,6 +9878,7 @@
   },
   {
     "id": "bombe-explosive",
+    "type": "trappings",
     "label": "Bombe explosive",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9604,6 +9916,7 @@
   },
   {
     "id": "cartouche-en-papier",
+    "type": "trappings",
     "label": "Cartouche en papier",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9637,6 +9950,7 @@
   },
   {
     "id": "cartouche-et-poudre-de-precision",
+    "type": "trappings",
     "label": "Cartouche et poudre de précision",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9673,6 +9987,7 @@
   },
   {
     "id": "ferraille-et-poudre",
+    "type": "trappings",
     "label": "Ferraille et poudre",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9709,6 +10024,7 @@
   },
   {
     "id": "grappin-munition",
+    "type": "trappings",
     "label": "Grappin (munition)",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9745,6 +10061,7 @@
   },
   {
     "id": "poudre-impregnee-d-aqshy",
+    "type": "trappings",
     "label": "Poudre imprégnée d'Aqshy",
     "categorie": "ranged",
     "subType": "munitions",
@@ -9784,6 +10101,7 @@
   },
   {
     "id": "jezail-a-malepierre",
+    "type": "trappings",
     "label": "Jezaïl à malepierre",
     "categorie": "ranged",
     "subType": "poudre-noire",
@@ -9825,6 +10143,7 @@
   },
   {
     "id": "canon-ratling",
+    "type": "trappings",
     "label": "Canon ratling",
     "hands": 2,
     "categorie": "ranged",
@@ -9874,6 +10193,7 @@
   },
   {
     "id": "pistolet-a-malepierre",
+    "type": "trappings",
     "label": "Pistolet à malepierre",
     "categorie": "ranged",
     "subType": "poudre-noire",
@@ -9925,6 +10245,7 @@
   },
   {
     "id": "baiser-de-la-vouivre",
+    "type": "trappings",
     "label": "Baiser de la Vouivre",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -9944,6 +10265,7 @@
   },
   {
     "id": "boursoufleur",
+    "type": "trappings",
     "label": "Boursoufleur",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -9963,6 +10285,7 @@
   },
   {
     "id": "long-sommeil",
+    "type": "trappings",
     "label": "Long Sommeil",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -9982,6 +10305,7 @@
   },
   {
     "id": "sibilance",
+    "type": "trappings",
     "label": "Sibilance",
     "categorie": "trapping",
     "subType": "drogues-et-poisons",
@@ -10001,6 +10325,7 @@
   },
   {
     "id": "potion-a-deux-tetes",
+    "type": "trappings",
     "label": "Potion à deux têtes",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10020,6 +10345,7 @@
   },
   {
     "id": "remede-de-lurek",
+    "type": "trappings",
     "label": "Remède de Lurek",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10039,6 +10365,7 @@
   },
   {
     "id": "solvant-a-bezoard",
+    "type": "trappings",
     "label": "Solvant à bézoard",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10058,6 +10385,7 @@
   },
   {
     "id": "acide-de-troll",
+    "type": "trappings",
     "label": "Acide de troll",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10077,6 +10405,7 @@
   },
   {
     "id": "bouclier-de-la-forge",
+    "type": "trappings",
     "label": "Bouclier de la forge",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10096,6 +10425,7 @@
   },
   {
     "id": "camouflarbre",
+    "type": "trappings",
     "label": "Camouflarbre",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10115,6 +10445,7 @@
   },
   {
     "id": "dernier-souffle",
+    "type": "trappings",
     "label": "Dernier souffle",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10134,6 +10465,7 @@
   },
   {
     "id": "esprit-clair",
+    "type": "trappings",
     "label": "Esprit clair",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10153,6 +10485,7 @@
   },
   {
     "id": "feu-de-carroburg",
+    "type": "trappings",
     "label": "Feu de Carroburg",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10172,6 +10505,7 @@
   },
   {
     "id": "feu-liquide",
+    "type": "trappings",
     "label": "Feu liquide",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10191,6 +10525,7 @@
   },
   {
     "id": "fleau-de-la-sorciere",
+    "type": "trappings",
     "label": "Fléau de la sorcière",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10210,6 +10545,7 @@
   },
   {
     "id": "furie-du-preyton",
+    "type": "trappings",
     "label": "Furie du preyton",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10229,6 +10565,7 @@
   },
   {
     "id": "liqueur-de-serpent-du-prophete",
+    "type": "trappings",
     "label": "Liqueur de serpent du prophète",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10248,6 +10585,7 @@
   },
   {
     "id": "malveillance",
+    "type": "trappings",
     "label": "Malveillance",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10267,6 +10605,7 @@
   },
   {
     "id": "poudre-de-veine",
+    "type": "trappings",
     "label": "Poudre de veine",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10286,6 +10625,7 @@
   },
   {
     "id": "protection-du-cerf",
+    "type": "trappings",
     "label": "Protection du cerf",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10305,6 +10645,7 @@
   },
   {
     "id": "razorflamme",
+    "type": "trappings",
     "label": "Razorflamme",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10324,6 +10665,7 @@
   },
   {
     "id": "sang-douleur",
+    "type": "trappings",
     "label": "Sang-douleur",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10343,6 +10685,7 @@
   },
   {
     "id": "sang-de-la-mer",
+    "type": "trappings",
     "label": "Sang de la mer",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -10362,6 +10705,7 @@
   },
   {
     "id": "dague-funeste",
+    "type": "trappings",
     "label": "Dague Funeste",
     "categorie": "melee",
     "subType": "base",
@@ -10390,6 +10734,7 @@
   },
   {
     "id": "armure-de-plates-du-leviathan",
+    "type": "trappings",
     "label": "Armure de Plates du Léviathan",
     "categorie": "armor",
     "subType": "plate",
@@ -10424,6 +10769,7 @@
   },
   {
     "id": "lame-a-poignee-en-bois-de-cerf",
+    "type": "trappings",
     "label": "Lame à poignée en bois de cerf",
     "categorie": "melee",
     "subType": "base",
@@ -10452,6 +10798,7 @@
   },
   {
     "id": "trempe-au-sang-de-dragon",
+    "type": "trappings",
     "label": "Trempe au Sang de Dragon",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -10470,6 +10817,7 @@
   },
   {
     "id": "surin-de-l-aigle",
+    "type": "trappings",
     "label": "Surin de l'aigle",
     "categorie": "melee",
     "subType": "base",
@@ -10498,6 +10846,7 @@
   },
   {
     "id": "seve-de-tregara",
+    "type": "trappings",
     "label": "Sève de trégara",
     "packSize": 6,
     "categorie": "ammunition",
@@ -10529,6 +10878,7 @@
   },
   {
     "id": "empennage-de-griffon",
+    "type": "trappings",
     "label": "Empennage de griffon",
     "packSize": 12,
     "categorie": "ammunition",
@@ -10569,6 +10919,7 @@
   },
   {
     "id": "pointes-barbelees",
+    "type": "trappings",
     "label": "Pointes barbelées",
     "packSize": 12,
     "categorie": "ammunition",
@@ -10597,6 +10948,7 @@
   },
   {
     "id": "broyeur-d-os",
+    "type": "trappings",
     "label": "Broyeur d'os",
     "hands": 2,
     "categorie": "melee",
@@ -10635,6 +10987,7 @@
   },
   {
     "id": "silence",
+    "type": "trappings",
     "label": "Silence",
     "categorie": "melee",
     "subType": "base",
@@ -10667,6 +11020,7 @@
   },
   {
     "id": "vision-de-vie",
+    "type": "trappings",
     "label": "Vision de Vie",
     "categorie": "melee",
     "subType": "base",
@@ -10705,6 +11059,7 @@
   },
   {
     "id": "cape-du-loup",
+    "type": "trappings",
     "label": "Cape du Loup",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -10723,6 +11078,7 @@
   },
   {
     "id": "gants-de-l-etrangleur",
+    "type": "trappings",
     "label": "Gants de l'étrangleur",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -10741,6 +11097,7 @@
   },
   {
     "id": "derniere-gorgee",
+    "type": "trappings",
     "label": "Dernière Gorgée",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -10759,6 +11116,7 @@
   },
   {
     "id": "pierre-assoiffee",
+    "type": "trappings",
     "label": "Pierre Assoiffée",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -10777,6 +11135,7 @@
   },
   {
     "id": "carreau-de-baliste",
+    "type": "trappings",
     "label": "Carreau",
     "categorie": "ammunition",
     "subType": "munition-de-siege",
@@ -10806,6 +11165,7 @@
   },
   {
     "id": "carreau-nain-norse",
+    "type": "trappings",
     "label": "Carreau nain norse",
     "categorie": "ammunition",
     "subType": "munition-de-siege",
@@ -10838,6 +11198,7 @@
   },
   {
     "id": "boulet-et-poudre",
+    "type": "trappings",
     "label": "Boulet et poudre",
     "categorie": "ammunition",
     "subType": "munition-de-siege",
@@ -10868,6 +11229,7 @@
   },
   {
     "id": "mitraille-et-poudre",
+    "type": "trappings",
     "label": "Mitraille et poudre",
     "categorie": "ammunition",
     "subType": "munition-de-siege",
@@ -10901,6 +11263,7 @@
   },
   {
     "id": "bombe-de-mortier",
+    "type": "trappings",
     "label": "Bombe",
     "categorie": "ammunition",
     "subType": "munition-de-siege",
@@ -10937,6 +11300,7 @@
   },
   {
     "id": "bombe-incendiaire-mortier",
+    "type": "trappings",
     "label": "Bombe incendiaire",
     "categorie": "ammunition",
     "subType": "munition-de-siege",
@@ -10971,6 +11335,7 @@
   },
   {
     "id": "balles-et-poudre-pierrier",
+    "type": "trappings",
     "label": "Balles et poudre pour 1 tir",
     "categorie": "ammunition",
     "subType": "munition-de-siege",
@@ -11007,6 +11372,7 @@
   },
   {
     "id": "petites-munitions-et-poudre-pierrier",
+    "type": "trappings",
     "label": "Petites munitions et poudre pour 1 tir",
     "categorie": "ammunition",
     "subType": "munition-de-siege",
@@ -11034,6 +11400,7 @@
   },
   {
     "id": "massue-ogre",
+    "type": "trappings",
     "label": "Massue ogre",
     "categorie": "melee",
     "subType": "base",
@@ -11062,6 +11429,7 @@
   },
   {
     "id": "poing-de-fer",
+    "type": "trappings",
     "label": "Poing de fer",
     "categorie": "melee",
     "subType": "base",
@@ -11101,6 +11469,7 @@
   },
   {
     "id": "grande-massue-ogre",
+    "type": "trappings",
     "label": "Grande massue ogre",
     "hands": 2,
     "categorie": "melee",
@@ -11134,6 +11503,7 @@
   },
   {
     "id": "lance-harpon",
+    "type": "trappings",
     "label": "Lance-harpon",
     "hands": 2,
     "categorie": "ranged",
@@ -11176,6 +11546,7 @@
   },
   {
     "id": "piege-a-chaines",
+    "type": "trappings",
     "label": "Piège à chaînes",
     "categorie": "ranged",
     "subType": "entraves",
@@ -11211,6 +11582,7 @@
   },
   {
     "id": "grande-lance",
+    "type": "trappings",
     "label": "Grande lance",
     "categorie": "ranged",
     "subType": "lancer",
@@ -11247,6 +11619,7 @@
   },
   {
     "id": "canon-crache-plomb",
+    "type": "trappings",
     "label": "Canon crache-plomb",
     "hands": 2,
     "categorie": "ranged",
@@ -11285,6 +11658,7 @@
   },
   {
     "id": "pistolet-ogre",
+    "type": "trappings",
     "label": "Pistolet ogre",
     "categorie": "ranged",
     "subType": "poudre-noire",
@@ -11322,6 +11696,7 @@
   },
   {
     "id": "harpon",
+    "type": "trappings",
     "label": "Harpon",
     "packSize": 6,
     "categorie": "ammunition",
@@ -11349,6 +11724,7 @@
   },
   {
     "id": "balle-crache-plomb",
+    "type": "trappings",
     "label": "Balle crache-plomb",
     "packSize": 12,
     "categorie": "ammunition",
@@ -11380,6 +11756,7 @@
   },
   {
     "id": "boulet-crache-plomb",
+    "type": "trappings",
     "label": "Boulet crache-plomb",
     "packSize": 1,
     "categorie": "ammunition",
@@ -11417,6 +11794,7 @@
   },
   {
     "id": "pansiere-ogre",
+    "type": "trappings",
     "label": "Pansière ogre",
     "categorie": "armor",
     "subType": "plate",
@@ -11445,6 +11823,7 @@
   },
   {
     "id": "sel-sacre",
+    "type": "trappings",
     "label": "Sel sacré",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -11476,6 +11855,7 @@
   },
   {
     "id": "tonneau-d-eau-douce",
+    "type": "trappings",
     "label": "Tonneau d'eau douce",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -11499,6 +11879,7 @@
   },
   {
     "id": "tonneau-de-petite-biere",
+    "type": "trappings",
     "label": "Tonneau de petite bière",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -11522,6 +11903,7 @@
   },
   {
     "id": "ration-biscuits-de-mer",
+    "type": "trappings",
     "label": "Ration de biscuits de mer pour un jour",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -11548,6 +11930,7 @@
   },
   {
     "id": "ration-nourriture-preservee",
+    "type": "trappings",
     "label": "Ration de nourriture préservée pour un jour",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -11574,6 +11957,7 @@
   },
   {
     "id": "ration-soupe-chou-fermente",
+    "type": "trappings",
     "label": "Ration de soupe de chou fermenté pour un jour",
     "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
@@ -11601,6 +11985,7 @@
   },
   {
     "id": "boussole",
+    "type": "trappings",
     "label": "Boussole",
     "categorie": "trapping",
     "subType": "outils-et-necessaires",
@@ -11631,6 +12016,7 @@
   },
   {
     "id": "carte-marine",
+    "type": "trappings",
     "label": "Carte marine",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -11657,6 +12043,7 @@
   },
   {
     "id": "peau-de-phoque",
+    "type": "trappings",
     "label": "Peau de phoque",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -11683,6 +12070,7 @@
   },
   {
     "id": "pieces-detachees-de-navire",
+    "type": "trappings",
     "label": "Pièces détachées de navire",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -11709,6 +12097,7 @@
   },
   {
     "id": "baliste-ade2",
+    "type": "trappings",
     "label": "Baliste",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -11760,6 +12149,7 @@
   },
   {
     "id": "belier-ade2",
+    "type": "trappings",
     "label": "Bélier",
     "categorie": "melee",
     "subType": "armes-de-siege",
@@ -11806,6 +12196,7 @@
   },
   {
     "id": "batterie-tonnerre-de-feu-ade2",
+    "type": "trappings",
     "label": "Batterie tonnerre de feu",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -11860,6 +12251,7 @@
   },
   {
     "id": "canon-a-repetition-feu-d-enfer-ade2",
+    "type": "trappings",
     "label": "Canon à répétition feu d'enfer",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -11918,6 +12310,7 @@
   },
   {
     "id": "canon-ade2",
+    "type": "trappings",
     "label": "Canon",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -11976,6 +12369,7 @@
   },
   {
     "id": "canon-a-flammes-nain-ade2",
+    "type": "trappings",
     "label": "Canon à flammes nain",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -12053,6 +12447,7 @@
   },
   {
     "id": "mangonneau-ade2",
+    "type": "trappings",
     "label": "Mangonneau",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -12105,6 +12500,7 @@
   },
   {
     "id": "onagre-ade2",
+    "type": "trappings",
     "label": "Onagre",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -12157,6 +12553,7 @@
   },
   {
     "id": "trebuchet-ade2",
+    "type": "trappings",
     "label": "Trébuchet",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -12209,6 +12606,7 @@
   },
   {
     "id": "mortier-ade2",
+    "type": "trappings",
     "label": "Mortier",
     "categorie": "ranged",
     "subType": "armes-de-siege",
@@ -12271,6 +12669,7 @@
   },
   {
     "id": "robe-de-sorcier-fonctionnelle",
+    "type": "trappings",
     "label": "Robe fonctionnelle",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -12297,6 +12696,7 @@
   },
   {
     "id": "robe-de-sorcier-ordinaire",
+    "type": "trappings",
     "label": "Robe ordinaire",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -12323,6 +12723,7 @@
   },
   {
     "id": "robe-de-sorcier-elaboree",
+    "type": "trappings",
     "label": "Robe élaborée",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -12349,6 +12750,7 @@
   },
   {
     "id": "baton-enchante",
+    "type": "trappings",
     "label": "Bâton enchanté",
     "hands": 2,
     "categorie": "melee",
@@ -12384,6 +12786,7 @@
   },
   {
     "id": "parchemin-de-sort",
+    "type": "trappings",
     "label": "Parchemin de sort",
     "categorie": "trapping",
     "subType": "livres-et-documents",
@@ -12399,6 +12802,7 @@
   },
   {
     "id": "l-ami-debauche",
+    "type": "trappings",
     "label": "L'Ami débauché",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12434,6 +12838,7 @@
   },
   {
     "id": "concentre-de-pouvoir",
+    "type": "trappings",
     "label": "Concentré de pouvoir",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12461,6 +12866,7 @@
   },
   {
     "id": "lotion-capillaire",
+    "type": "trappings",
     "label": "Lotion capillaire",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12489,6 +12895,7 @@
   },
   {
     "id": "musc-de-sanglier",
+    "type": "trappings",
     "label": "Musc de sanglier",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12534,6 +12941,7 @@
   },
   {
     "id": "nectar-de-beaute",
+    "type": "trappings",
     "label": "Nectar de beauté",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12570,6 +12978,7 @@
   },
   {
     "id": "nectar-de-veracite",
+    "type": "trappings",
     "label": "Nectar de véracité",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12605,6 +13014,7 @@
   },
   {
     "id": "nectar-de-vitalite",
+    "type": "trappings",
     "label": "Nectar de vitalité",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12640,6 +13050,7 @@
   },
   {
     "id": "panacea-universalis",
+    "type": "trappings",
     "label": "Panacea Universalis",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12717,6 +13128,7 @@
   },
   {
     "id": "potion-d-invisibilite",
+    "type": "trappings",
     "label": "Potion d'invisibilité",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12752,6 +13164,7 @@
   },
   {
     "id": "potion-de-divination",
+    "type": "trappings",
     "label": "Potion de divination",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12779,6 +13192,7 @@
   },
   {
     "id": "potion-de-focalisation",
+    "type": "trappings",
     "label": "Potion de focalisation",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12815,6 +13229,7 @@
   },
   {
     "id": "potion-de-puissance",
+    "type": "trappings",
     "label": "Potion de puissance",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12860,6 +13275,7 @@
   },
   {
     "id": "potion-de-vol",
+    "type": "trappings",
     "label": "Potion de vol",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12896,6 +13312,7 @@
   },
   {
     "id": "tonifiant-de-lucidite",
+    "type": "trappings",
     "label": "Tonifiant de lucidité",
     "categorie": "trapping",
     "subType": "herbes-et-potions",
@@ -12952,6 +13369,7 @@
   },
   {
     "id": "les-ecrits-de-sedelmann",
+    "type": "trappings",
     "label": "Les Écrits de Sedelmann",
     "capabilities": {
       "isGrimoire": true
@@ -12970,6 +13388,7 @@
   },
   {
     "id": "les-livres-de-wa",
+    "type": "trappings",
     "label": "Les Livres de WA",
     "capabilities": {
       "isGrimoire": true
@@ -12988,6 +13407,7 @@
   },
   {
     "id": "les-livres-caches-de-chamon",
+    "type": "trappings",
     "label": "Les Livres cachés de Chamon",
     "capabilities": {
       "isGrimoire": true
@@ -13006,6 +13426,7 @@
   },
   {
     "id": "le-tome-de-pouvoir-de-krampi",
+    "type": "trappings",
     "label": "Le Tome de pouvoir de Krampi",
     "capabilities": {
       "isGrimoire": true
@@ -13024,6 +13445,7 @@
   },
   {
     "id": "saphir-veritable",
+    "type": "trappings",
     "label": "Saphir véritable",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -13043,6 +13465,7 @@
   },
   {
     "id": "mortegemme",
+    "type": "trappings",
     "label": "Mortegemme",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -13062,6 +13485,7 @@
   },
   {
     "id": "ambrespectre",
+    "type": "trappings",
     "label": "Ambrespectre",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -13081,6 +13505,7 @@
   },
   {
     "id": "luminante",
+    "type": "trappings",
     "label": "Luminante",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -13100,6 +13525,7 @@
   },
   {
     "id": "rubis-igne",
+    "type": "trappings",
     "label": "Rubis igné",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -13119,6 +13545,7 @@
   },
   {
     "id": "pierre-d-or",
+    "type": "trappings",
     "label": "Pierre d'or",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -13138,6 +13565,7 @@
   },
   {
     "id": "cristal-de-brume",
+    "type": "trappings",
     "label": "Cristal de brume",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -13157,6 +13585,7 @@
   },
   {
     "id": "vitaellum",
+    "type": "trappings",
     "label": "Vitaellum",
     "categorie": "trapping",
     "subType": "possessions-diverses",
@@ -13176,6 +13605,7 @@
   },
   {
     "id": "arc-d-empathie-sanglante",
+    "type": "trappings",
     "label": "Arc d'empathie sanglante",
     "hands": 2,
     "categorie": "ranged",
@@ -13240,6 +13670,7 @@
   },
   {
     "id": "bottes-du-remords-soudain",
+    "type": "trappings",
     "label": "Bottes du remords soudain",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -13266,6 +13697,7 @@
   },
   {
     "id": "cotte-de-mailles-de-bravoure-usurpee",
+    "type": "trappings",
     "label": "Cotte de mailles de bravoure usurpée",
     "categorie": "armor",
     "subType": "mailles",
@@ -13289,6 +13721,7 @@
   },
   {
     "id": "dague-voleuse-de-chance",
+    "type": "trappings",
     "label": "Dague voleuse de chance",
     "categorie": "melee",
     "subType": "base",
@@ -13351,6 +13784,7 @@
   },
   {
     "id": "dechireur-de-sociabilite",
+    "type": "trappings",
     "label": "Déchireur de sociabilité",
     "categorie": "melee",
     "subType": "base",
@@ -13519,6 +13953,7 @@
   },
   {
     "id": "epee-de-retenue",
+    "type": "trappings",
     "label": "Épée de retenue",
     "categorie": "melee",
     "subType": "base",
@@ -13547,6 +13982,7 @@
   },
   {
     "id": "fibule-d-attraction-non-souhaitee",
+    "type": "trappings",
     "label": "Fibule d'attraction non souhaitée",
     "categorie": "trapping",
     "subType": "vetements-et-accessoires",
@@ -13566,6 +14002,7 @@
   },
   {
     "id": "fleau-d-attention-non-sollicitee",
+    "type": "trappings",
     "label": "Fléau d'attention non sollicitée",
     "categorie": "melee",
     "subType": "fleau",
@@ -13593,6 +14030,7 @@
   },
   {
     "id": "hache-de-fureur-incessante",
+    "type": "trappings",
     "label": "Hache de fureur incessante",
     "categorie": "melee",
     "subType": "base",
@@ -13621,6 +14059,7 @@
   },
   {
     "id": "pistolet-de-solitude-involontaire",
+    "type": "trappings",
     "label": "Pistolet de solitude involontaire",
     "categorie": "ranged",
     "subType": "poudre-noire",
@@ -13697,6 +14136,7 @@
   },
   {
     "id": "poings-d-ignominie",
+    "type": "trappings",
     "label": "Poings d'ignominie",
     "categorie": "melee",
     "subType": "bagarre",

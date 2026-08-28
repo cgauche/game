@@ -5,16 +5,15 @@
  * restent des registres CODE résolus par `src/gameIso/rig/races/index.ts`.
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 
 export const file = 'raceAppearance.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    /** Libellé d'AFFICHAGE de la race de rig (« Haut-Elfe », « Homme-bête ») — l'`id` au-dessus est
-     *  son slug (#1467 L1b) : c'est lui que désignent `speciesRace.json` et les defs de créatures. */
-    label: z.string().min(1),
+const doc = document(
+  'raceAppearance',
+  famille,
+  {
     gabarit: z.string(),
     gabaritOverride: z.record(z.string(), z.number()).optional(),
     palette: z.record(z.string(), z.string()).optional(),
@@ -33,5 +32,41 @@ export const schema = z.array(
     scale: z.number().optional(),
     eyes: z.strictObject({ G: z.string().optional(), D: z.string().optional() }).optional(),
     extremites: z.enum(['lisses', 'griffues']).optional(),
-  }),
+  },
+  {
+    gabarit: { label: 'Gabarit', hint: 'Identifiant du gabarit de silhouette par défaut de la race' },
+    gabaritOverride: {
+      label: 'Surcharge de gabarit',
+      hint: 'Mesures du gabarit surchargées pour cette race (longueur et épaisseur globales, jambes, bras, tête)',
+    },
+    palette: { label: 'Palette', hint: 'Couleurs de peau/cheveux/yeux par défaut de la race' },
+    paletteF: {
+      label: 'Palette (variante féminine)',
+      hint: 'Palette propre au sexe féminin ; absente = la palette commune sert aux deux sexes',
+    },
+    head: { label: 'Tête monstrueuse', hint: 'Pièce de tête non humaine qui remplace le visage cosmétique' },
+    legs: { label: 'Jambes monstrueuses', hint: 'Pièce de jambes qui remplace les deux cuisses (ex. sabots de chèvre)' },
+    armG: { label: 'Bras gauche monstrueux', hint: 'Pièce qui remplace l’épaule gauche' },
+    armD: { label: 'Bras droit monstrueux', hint: 'Pièce qui remplace l’épaule droite (ex. griffe)' },
+    dropHeadgear: { label: 'Sans couvre-chef', hint: 'La race ne porte jamais le couvre-chef d’une tenue (ex. Vampire)' },
+    featureKeys: { label: 'Traits de corps', hint: 'Traits anatomiques ajoutés au rig (ventre, barbe, queue, cornes…)' },
+    pose: { label: 'Posture au repos', hint: 'Posture de face et de profil au repos' },
+    tenue: { label: 'Tenue par défaut', hint: 'Tenue portée par défaut par cette race' },
+    colors: { label: 'Surcharge de palette', hint: 'Couleurs qui surchargent la palette de base pour cette race' },
+    sex: { label: 'Sexe forcé', hint: 'Sexe imposé au rig de cette race, sans choix' },
+    parts: { label: 'Coiffure/visage épinglés', hint: 'Variante de coiffure et de visage fixée pour cette race' },
+    scale: { label: 'Échelle du token', hint: 'Facteur d’échelle globale du pion en jeu (ex. Géant)' },
+    eyes: {
+      label: 'Yeux par défaut',
+      hint: 'Yeux par défaut de la race, œil gauche/droit (clés du catalogue) — surchargés par mutation/blessure',
+    },
+    extremites: { label: 'Nu des pieds', hint: 'Aspect des pieds nus (lisses ou griffues) quand rien ne les chausse' },
+  },
+  {
+    codex: { keys: ['raceAppearance'] },
+    edit: { dataset: 'raceAppearance' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

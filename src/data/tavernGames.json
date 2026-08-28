@@ -1,6 +1,7 @@
 [
   {
     "id": "al-zahr",
+    "type": "tavernGames",
     "label": "L'Al-zahr",
     "skill": null,
     "roundShape": "pot",
@@ -58,6 +59,7 @@
   },
   {
     "id": "alvatafl",
+    "type": "tavernGames",
     "label": "L'Alvatafl",
     "skill": "savoir",
     "spec": "Art de la Guerre",
@@ -100,6 +102,7 @@
   },
   {
     "id": "bras-de-fer",
+    "type": "tavernGames",
     "label": "Le bras de fer",
     "skill": null,
     "characteristic": "force",
@@ -132,6 +135,7 @@
   },
   {
     "id": "bete-tailleurs",
+    "type": "tavernGames",
     "label": "La Bête parmi les Tailleurs",
     "skill": "projectiles",
     "characteristic": "capacite-de-tir",
@@ -199,6 +203,7 @@
   },
   {
     "id": "boules",
+    "type": "tavernGames",
     "label": "Les boules",
     "skill": "projectiles",
     "spec": "lancer",
@@ -220,6 +225,7 @@
   },
   {
     "id": "cerevis",
+    "type": "tavernGames",
     "label": "Le Cerevis",
     "skill": "pari",
     "characteristic": "initiative",
@@ -254,6 +260,7 @@
   },
   {
     "id": "flechettes",
+    "type": "tavernGames",
     "label": "Les fléchettes",
     "skill": "projectiles",
     "spec": "lancer",
@@ -282,6 +289,7 @@
   },
   {
     "id": "dominos",
+    "type": "tavernGames",
     "label": "Les dominos",
     "skill": "pari",
     "mode": "opposed",
@@ -294,6 +302,7 @@
   },
   {
     "id": "torchon",
+    "type": "tavernGames",
     "label": "Le torchon trempé",
     "skill": "projectiles",
     "spec": "lancer",
@@ -352,6 +361,7 @@
   },
   {
     "id": "middenball",
+    "type": "tavernGames",
     "label": "Middenball",
     "skill": "corps-a-corps",
     "spec": "bagarre",
@@ -394,6 +404,7 @@
   },
   {
     "id": "arene",
+    "type": "tavernGames",
     "label": "L'Arène",
     "skill": "projectiles",
     "spec": "lancer",
@@ -452,6 +463,7 @@
   },
   {
     "id": "moulins",
+    "type": "tavernGames",
     "label": "Les moulins",
     "skill": null,
     "characteristic": "intelligence",
@@ -472,6 +484,7 @@
   },
   {
     "id": "pierres",
+    "type": "tavernGames",
     "label": "Les pierres",
     "skill": null,
     "characteristic": "intelligence",

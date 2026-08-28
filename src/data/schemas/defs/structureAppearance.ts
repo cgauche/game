@@ -4,6 +4,7 @@
  * observé : 'bois' | 'pierre' (les seules valeurs présentes, alignées sur le type TS).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { detailRecipeSchema } from '../grammaire/valeurs';
 
 export const file = 'structureAppearance.json';
@@ -40,10 +41,10 @@ const reliefParPartie = z.strictObject(
   >,
 );
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'structureAppearance',
+  famille,
+  {
     material: z.enum(['bois', 'pierre']),
     wallHeightM: z.number().positive().optional(),
     detail: detailRecipeSchema.optional(),
@@ -116,5 +117,41 @@ export const schema = z.array(
         wallM: z.number().positive().optional(),
       })
       .optional(),
-  }),
+  },
+  {
+    material: { label: 'Matériau', hint: 'bois ou pierre' },
+    wallHeightM: { label: 'Hauteur de mur', hint: 'En mètres' },
+    detail: { label: 'Recette de détail' },
+    face: { label: 'Couleur de face', hint: 'Teinte de base du pan de mur' },
+    post: { label: 'Couleur de poteau', hint: 'Teinte des montants' },
+    bayPanel: { label: 'Panneau mouluré', hint: 'Ajoute le panneau et sa moulure de travée sur le pan plein' },
+    band: { label: 'Couleur de bande', hint: 'Pierre : ferrure de courtine, barreaux de herse' },
+    cap: { label: 'Couleur de couronnement' },
+    rubble: { label: 'Couleur de gravats' },
+    rubbleHi: { label: 'Couleur de gravats (clair)', hint: 'Reflet des gravats' },
+    recess: { label: 'Couleur de renfoncement', hint: 'Glyphe en creux de la vue de plan (corps de garde)' },
+    wood: {
+      label: 'Habillage bois',
+      hint: 'Teintes de panneau, cadre/chambranle, couronnement, plinthe et gravats en bois',
+    },
+    parapet: { label: 'Parapet', hint: 'Hauteur, merlons et bandes du parapet' },
+    door: { label: 'Porte', hint: 'Ouverture, linteau, jambages, vantail, poignée et herse' },
+    window: { label: 'Fenêtre', hint: 'Vitre, cadre, meneau et teinte éclairée' },
+    relief: {
+      label: 'Relief de paroi',
+      hint: 'Saillie et épaisseur en mètres par partie de mur, plus l’épaisseur de matière pleine (wallM)',
+    },
+  },
+  {
+    codex: {
+      exempt: {
+        kind: 'vocabulaire-app-interne',
+        raison: "presets d'apparence de structure (rendu iso), pas une fiche de contenu.",
+      },
+    },
+    edit: { none: 'presets de rendu édités au fichier — absent de `CodexEdit.CATEGORY_DATASET`' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

@@ -10,7 +10,8 @@
  * caractère n'est réécrit (garde : `src/data/tavern-desc-verbatim.test.ts`).
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
+import { difficultySchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'tavernGames.json';
@@ -28,11 +29,10 @@ const throwEffectSchema = z.enum([
   'chiffres-du-de', 'gain-au-choix', 'aucun-gain', 'termine-le-passage',
 ]);
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    desc: z.string(),
+const doc = document(
+  'tavernGames',
+  famille,
+  {
     skill: z.string().nullable(),
     spec: z.string().optional(),
     characteristic: charKeySchema.optional(),
@@ -191,6 +191,57 @@ export const schema = z.array(
         label: z.string(),
       })),
     }).optional(),
-    source: sourceRefSchema,
-  }),
+  },
+  {
+    skill: {
+      label: 'Compétence testée',
+      hint: 'Compétence testée, prise au catalogue ; absente, le jeu joue sa Caractéristique, et à défaut Pari (NADJ 16 l.11)',
+    },
+    spec: { label: 'Spécialisation testée', hint: 'Spécialisation de la Compétence testée, si le jeu en exige une' },
+    characteristic: {
+      label: 'Caractéristique testée',
+      hint: 'Caractéristique du Test : celle qui porte la Compétence quand les deux sont déclarées (Alvatafl : Savoir sur Int), ou la Caractéristique jouée seule (Bras de fer : Force)',
+    },
+    fastSkill: {
+      label: 'Test rapide (option)',
+      hint: 'Test de remplacement joué en régime rapide (règle optionnelle), écart maison tagué',
+    },
+    mode: { label: 'Mode de résolution', hint: 'Test opposé ou étendu ; absent si le jeu se résout par mise' },
+    target: { label: 'Objectif de DR', hint: 'DR cumulé à atteindre pour clore la partie (Test étendu)' },
+    drCap: { label: 'Plafond de DR', hint: 'DR de manche plafonné à cette valeur sur une réussite, avant tout bonus' },
+    tieBreak: {
+      label: 'Départage d’égalité',
+      hint: 'Règle appliquée à une égalité de DR : dé des unités le plus bas, ou égalité maintenue (nul)',
+    },
+    drBonus: { label: 'Bonus de Caractéristique', hint: 'Bonus de la Caractéristique ajouté au DR de chaque manche' },
+    roundOps: { label: 'Effets par manche', hint: 'Effets mécaniques appliqués au vainqueur de la manche, et par usure' },
+    team: { label: 'Effectif d’équipe', hint: 'Effectif requis par camp, complété de figurants si incomplet' },
+    roundShape: { label: 'Forme du tour', hint: 'Structure d’un tour : équipe, lanceur unique, mise ou volée' },
+    options: {
+      label: 'Options de Test',
+      hint: 'Compétences/Caractéristiques proposées au choix du joueur pour la manche',
+    },
+    campScore: { label: 'Calcul du score', hint: 'Formule qui agrège les résultats d’un camp en un score' },
+    scoreThreshold: {
+      label: 'Seuil de score',
+      hint: 'Score de camp qui marque un acquis dans la manche (un but au Middenball) ; la partie se juge au compte des acquis',
+    },
+    phases: { label: 'Mi-temps', hint: 'Découpage de la partie en mi-temps de plusieurs tours' },
+    dancers: { label: 'Effectif du cercle', hint: 'Participants au cercle, dont un tiré au sort est visé' },
+    table: { label: 'Table de score', hint: 'Barème de points par plage de DR obtenu' },
+    volley: { label: 'Volée de lancers', hint: 'Série de lancers notée par manche (Bête, Fléchettes, Boules…)' },
+    combined: { label: 'Test combiné', hint: 'Un seul jet lu deux fois : conséquence principale et secondaire' },
+    throwerPenalty: { label: 'Sanction du lanceur', hint: 'Test et coût imposés au lanceur qui manque son lancer' },
+    scoreUnit: { label: 'Unité de score', hint: 'Nom au pluriel de ce que le jeu compte (quilles, points…)' },
+    sides: { label: 'Camps asymétriques', hint: 'Conversion du score de chaque camp en prises sur l’adversaire' },
+    pot: { label: 'Mise et pot', hint: 'Mise, pot, et abandon/élimination d’une partie à mise' },
+  },
+  {
+    codex: { keys: ['tavernGames'] },
+    edit: { dataset: 'tavernGames' },
+  },
+  { exiges: ['desc', 'source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

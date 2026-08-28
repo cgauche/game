@@ -5,7 +5,8 @@
  * ci-dessus suit le fichier, il ne le fige pas.
  */
 import { z } from 'zod';
-import { availabilitySchema, harvestRaritySchema, sourceRefSchema, secondarySourceRefSchema, entityAppearanceSchema } from '../grammaire/valeurs';
+import { document, type EnveloppeDocument } from '../grammaire/document';
+import { availabilitySchema, harvestRaritySchema, entityAppearanceSchema } from '../grammaire/valeurs';
 import { refSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
 
 export const file = 'creatures.json';
@@ -45,10 +46,12 @@ const harvestDangerSchema = z.enum(['Inoffensive', 'Inquiétante', 'Menaçante',
 
 const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+/** Champs PROPRES d'une entrée de `creatures.json` — l'enveloppe est posée par `document()`. */
+const champs = {
+  /** SOUS-TITRE de statbloc (« Bandit humain », « Prince démon de Slaanesh »). Mesuré 2026-08-28 :
+     *  490/490 porteuses, dont 437 à `null` et 53 à valeur recopiée du livre ; AUCUN lecteur —
+     *  `CreatureData.title` (`src/data/index.ts`) interdit même d'en inférer la nommé-ité (`isNamed`
+     *  lit `named`, jamais ceci). Affordance sans consommateur : #1541 la branche ou la déclare morte. */
     title: z.string().nullable(),
     named: z.boolean().optional(),
     folder: z.string().nullable(),
@@ -66,23 +69,70 @@ export const schema = z.array(
     talents: z.array(talentRefSchema),
     trappings: z.array(trappingRefSchema),
     spells: z.array(refSchema),
-    desc: z.string().min(1).optional(),
-    source: sourceRefSchema,
     /** Emplacements SECONDAIRES (#563) — le MÊME statbloc réimprimé par un autre livre (Bête des
      *  marais : LDB 79 p.318, republiée verbatim par VDM 13 folio 179). L'ANCRE `source` reste seule
      *  à porter la `desc` ; jamais une seconde entrée. */
-    alsoIn: z.array(secondarySourceRefSchema).optional(),
     appearance: entityAppearanceSchema.optional(),
     harvest: z.strictObject({ rarity: harvestRaritySchema, danger: harvestDangerSchema, uses: z.string() }).optional(),
-    group: z.string().optional(),
     followsCharacterRules: z.boolean().optional(),
     /** Facette ACHAT (montures, LDB 70 / EDOC 07). */
     purchase: z.strictObject({
       price: moneySchema,
       availability: availabilitySchema.optional(),
     }).optional(),
-    /** Arbitrage NON-verbatim (`CreatureData.maison`, `src/data/index.ts`) — même patron que
-     *  `ActivityData.maison`/`TraumaData.maison`. */
-    maison: z.string().optional(),
-  }),
+};
+
+/** VUE TS d'un profil de créature EMBARQUÉ (patch PARTIEL de l'entrée, `defs-scenes/narratif.ts`) :
+ *  le nœud rendu par la fabrique est SCELLÉ, donc `z.infer` y vaut `unknown` — la vue se recompose
+ *  ici, sans jamais rouvrir le nœud (patron `axes.ts`). */
+export type CreatureProfilPartiel = Partial<EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>>;
+
+const doc = document(
+  'creatures',
+  famille,
+  champs,
+  {
+    title: {
+      label: 'Sous-titre (Codex)',
+      hint: 'Second nom affiché sous le libellé — jamais lu pour détecter un individu nommé (c’est `named` qui le dit)',
+    },
+    named: { label: 'Individu nommé', hint: 'Source unique de la nommé-ité (vs créature générique) — éditable au Codex' },
+    folder: {
+      label: 'Catégorie Codex',
+      hint: 'Catégorie de classement de la créature dans l’arborescence du Codex, distincte de Groupes accordés',
+    },
+    grantGroups: { label: 'Groupes accordés', hint: 'Catégorie de la créature et Groupe du dieu du Chaos servi' },
+    char: {
+      label: 'Caractéristiques',
+      hint: 'Table des 10 caractéristiques (CC/CT/F/E/I/Ag/Dex/Int/FM/Soc) — valeur ou vide si non imprimée',
+    },
+    traits: { label: 'Traits', hint: 'Traits de créature structurés (identifiant + argument ou valeur)' },
+    optionals: {
+      label: 'Traits optionnels',
+      hint: 'Traits ou notes composées proposés au choix à l’apparition de la créature (LDB 76)',
+    },
+    skills: { label: 'Compétences', hint: 'Compétences de la créature : identifiant + valeur de Test imprimée' },
+    talents: { label: 'Talents', hint: 'Talents de la créature : identifiant + spécialisation ou niveau' },
+    trappings: { label: 'Possessions', hint: 'Objets portés par la créature (référence catalogue ou texte narratif)' },
+    spells: { label: 'Sorts connus', hint: 'Sorts que la créature peut lancer' },
+    appearance: { label: 'Apparence', hint: 'Apparence par défaut de la créature (espèce, tenue, couleurs), lue par le rig' },
+    harvest: { label: 'Récolte', hint: 'Rareté, dangerosité et usages des organes récoltables sur cette créature' },
+    followsCharacterRules: {
+      label: 'Suit les règles de Personnage',
+      hint: 'La créature suit les règles réservées aux Personnages',
+    },
+    purchase: { label: 'Facette Achat', hint: 'Prix et Disponibilité à l’achat (montures)' },
+  },
+  {
+    codex: { keys: ['creatures'] },
+    edit: { dataset: 'creatures' },
+  },
+  { exiges: ['source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;
+/** Clés top-level relevées AVANT le sceau — le nœud rendu n'a plus de `.shape`. */
+export const cles = doc.cles;
+/** L'entrée en PATCH, pour l'embarquement d'un profil ad hoc (`defs-scenes/narratif.ts`). */
+export const entreePartielle = doc.entreePartielle;

@@ -509,8 +509,8 @@ nombre d’entrées qui la portent.
 | Document | Racine JSON | Famille déclarée | Famille mesurée | Entrées | Clés de 1er niveau |
 |---|---|---|---|---|---|
 | `src/data/aa-criticals.json` | object | pipe à la racine | config | 1 | `bras`:array(1) `corps`:array(1) `id`:string(1) `jambe`:array(1) `label`:string(1) `tete`:array(1) `type`:string(1) |
-| `src/data/actions.json` | array | liste | entité | 55 | `armed`:string(5) `candidates`:string(20) `cost`:string(55) `exitSafe`:boolean(6) `gate`:array/string(55) `hote`:string(1) `icon`:string(55) `id`:string(55) `intent`:string(4) `keys`:array(41) `label`:string(55) `maison`:string(30) `mode`:string(12) `panneau`:boolean(2) `role`:string(6) `rule`:string(32) `ruleCategory`:string(32) `run`:string(52) `source`:object(12) `stance`:string(2) `surface`:string(55) |
-| `src/data/activities.json` | array | liste | entité | 62 | `assisted`:boolean(1) `blocked`:object(7) `classGate`:object(12) `combined`:boolean(2) `contexts`:array(62) `desc`:string(61) `difficulty`:string(51) `difficultyFrom`:object(1) `encounter`:string(3) `extended`:object(1) `failExtenue`:boolean(7) `freeSkill`:boolean(1) `generalDownOn`:string(2) `grantsFlag`:string(2) `hold`:object(1) `icon`:string(62) `id`:string(62) `label`:string(62) `maison`:string(8) `minInvest`:object(1) `onSuccess`:array(1) `outcomes`:array(35) `requires`:array(2) `resolver`:string(21) `rounds`:number(7) `rule`:string(1) `ruleCategory`:string(1) `sceneKind`:string(13) `skills`:array(48) `source`:object(62) `stageOutcome`:string(7) `stake`:string(46) `stakeForm`:string(46) `testModFrom`:string(1) `threat`:object(1) `unavailableIfExtenue`:boolean(1) `weatherMod`:object(2) `where`:array(5) |
+| `src/data/actions.json` | array | liste | entité | 55 | `armed`:string(5) `candidates`:string(20) `cost`:string(55) `exitSafe`:boolean(6) `gate`:array/string(55) `hote`:string(1) `icon`:string(55) `id`:string(55) `intent`:string(4) `keys`:array(41) `label`:string(55) `maison`:string(30) `mode`:string(12) `panneau`:boolean(2) `role`:string(6) `rule`:string(32) `ruleCategory`:string(32) `run`:string(52) `source`:object(12) `stance`:string(2) `surface`:string(55) `type`:string(55) |
+| `src/data/activities.json` | array | liste | entité | 62 | `assisted`:boolean(1) `blocked`:object(7) `classGate`:object(12) `combined`:boolean(2) `contexts`:array(62) `desc`:string(61) `difficulty`:string(51) `difficultyFrom`:object(1) `encounter`:string(3) `extended`:object(1) `failExtenue`:boolean(7) `freeSkill`:boolean(1) `generalDownOn`:string(2) `grantsFlag`:string(2) `hold`:object(1) `icon`:string(62) `id`:string(62) `label`:string(62) `maison`:string(8) `minInvest`:object(1) `onSuccess`:array(1) `outcomes`:array(35) `requires`:array(2) `resolver`:string(21) `rounds`:number(7) `rule`:string(1) `ruleCategory`:string(1) `sceneKind`:string(13) `skills`:array(48) `source`:object(62) `stageOutcome`:string(7) `stake`:string(46) `stakeForm`:string(46) `testModFrom`:string(1) `threat`:object(1) `type`:string(62) `unavailableIfExtenue`:boolean(1) `weatherMod`:object(2) `where`:array(5) |
 | `src/data/advancementCosts.json` | array | liste | entité | 15 | `char`:number(15) `id`:string(15) `label`:string(15) `max`:null/number(15) `skill`:number(15) `source`:object(15) `type`:string(15) |
 | `src/data/ambiance.json` | object | pipe à la racine | config | 1 | `ambientFloor`:number(1) `entreeEnScene`:object(1) `faceShade`:object(1) `fogTint`:object(1) `id`:string(1) `iso`:object(1) `label`:string(1) `pov`:object(1) `type`:string(1) |
 | `src/data/arcane-phenomena.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `phenomena`:array(1) `saturationLevels`:array(1) `tables`:array(1) `type`:string(1) `windSaturationEffects`:array(1) |
@@ -528,7 +528,7 @@ nombre d’entrées qui la portent.
 | `src/data/characteristics.json` | array | liste | entité | 19 | `abr`:string(19) `desc`:string(19) `id`:string(19) `label`:string(19) `nature`:string(19) `options`:array(1) `source`:object(19) `type`:string(19) |
 | `src/data/classes.json` | array | liste | entité | 9 | `desc`:string(9) `grantGroups`:array(1) `id`:string(9) `label`:string(9) `source`:object(9) `trappings`:array(9) `type`:string(9) |
 | `src/data/combat-stakes.json` | array | liste | entité | 35 | `entryCategory`:string(11) `entryFromSource`:boolean(1) `form`:string(32) `id`:string(35) `kind`:string(35) `label`:string(35) `rule`:string(23) `ruleCategory`:string(23) `source`:object(35) `template`:string(32) `type`:string(35) |
-| `src/data/creatures.json` | array | liste | entité | 490 | `alsoIn`:array(3) `appearance`:object(484) `char`:object(490) `desc`:string(195) `folder`:string(490) `followsCharacterRules`:boolean(163) `grantGroups`:array(87) `harvest`:object(54) `id`:string(490) `label`:string(490) `maison`:string(1) `named`:boolean(66) `optionals`:array(490) `purchase`:object(10) `skills`:array(490) `source`:object(490) `spells`:array(490) `talents`:array(490) `title`:null/string(490) `traits`:array(490) `trappings`:array(490) |
+| `src/data/creatures.json` | array | liste | entité | 490 | `alsoIn`:array(3) `appearance`:object(484) `char`:object(490) `desc`:string(195) `folder`:string(490) `followsCharacterRules`:boolean(163) `grantGroups`:array(87) `harvest`:object(54) `id`:string(490) `label`:string(490) `maison`:string(1) `named`:boolean(66) `optionals`:array(490) `purchase`:object(10) `skills`:array(490) `source`:object(490) `spells`:array(490) `talents`:array(490) `title`:null/string(490) `traits`:array(490) `trappings`:array(490) `type`:string(490) |
 | `src/data/crew-morale.json` | object | pipe à la racine | config | 1 | `bands`:array(1) `base`:number(1) `factors`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
 | `src/data/crew-roles.json` | array | liste | entité | 9 | `desc`:string(9) `id`:string(9) `label`:string(9) `maison`:string(7) `skills`:array(9) `source`:object(2) `type`:string(9) `wage`:object(9) |
 | `src/data/crew-test-types.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `type`:string(1) `types`:array(1) |
@@ -570,7 +570,7 @@ nombre d’entrées qui la portent.
 | `src/data/naval-ports.json` | array | liste | entité | 39 | `cosmopolite`:boolean(2) `demande`:object(32) `desc`:string(29) `dirigeant`:string(39) `id`:string(39) `label`:string(39) `production`:array(38) `region`:string(39) `richesse`:number(39) `source`:object(39) `surplus`:object(20) `taille`:number(39) `type`:string(39) |
 | `src/data/naval-progression.json` | object | pipe à la racine | config | 1 | `entries`:array(1) `id`:string(1) `label`:string(1) `type`:string(1) |
 | `src/data/naval-traits.json` | array | liste | entité | 26 | `alsoIn`:array(1) `deckCover`:string(3) `desc`:string(26) `id`:string(26) `install`:object(21) `kind`:string(26) `label`:string(26) `maison`:string(2) `navTestMod`:number(2) `passive`:array(9) `ram`:object(1) `ranked`:boolean(4) `source`:object(25) `type`:string(26) |
-| `src/data/night-stakes.json` | array | liste | entité | 15 | `form`:string(2) `id`:string(15) `kind`:string(15) `label`:string(15) `rule`:string(15) `ruleCategory`:string(2) `source`:object(15) `stake`:string(15) |
+| `src/data/night-stakes.json` | array | liste | entité | 15 | `form`:string(2) `id`:string(15) `kind`:string(15) `label`:string(15) `rule`:string(15) `ruleCategory`:string(2) `source`:object(15) `stake`:string(15) `type`:string(15) |
 | `src/data/obsessions.json` | object | pipe à la racine | config | 1 | `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
 | `src/data/oups.json` | array | liste | table | 8 | `id`:string(8) `kind`:string(8) `label`:string(8) `max`:number(7) `min`:number(7) `source`:object(8) |
 | `src/data/peripeties.json` | array | liste | entité | 10 | `desc`:string(10) `id`:string(10) `kind`:string(10) `label`:string(10) `roll`:number(10) `source`:object(10) `type`:string(10) |
@@ -580,11 +580,11 @@ nombre d’entrées qui la portent.
 | `src/data/progression-schemas.derived.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `livres`:array(1) `schemas`:array(1) `type`:string(1) |
 | `src/data/propMaterials.json` | array | liste | entité | 4 | `color`:string(4) `id`:string(4) `label`:string(4) `metalness`:number(4) `roughness`:number(4) `type`:string(4) |
 | `src/data/props.json` | array | liste | entité | 78 | `cover`:string(15) `foot`:object(26) `id`:string(78) `label`:string(78) `light`:object(5) `opaque`:boolean(2) `seatSlots`:array(2) `solid`:boolean(65) `type`:string(78) `volume`:object(6) |
-| `src/data/psychology.json` | array | liste | entité | 9 | `attackDR`:object(5) `becomes`:string(1) `containedSocialMod`:number(2) `desc`:string(9) `effects`:array(1) `endedByOtherPsych`:boolean(2) `failAmount`:object(1) `failCondition`:string(1) `icon`:string(9) `id`:string(9) `immuneToFromTarget`:array(1) `immuneWhileActive`:array(1) `label`:string(9) `passive`:array(1) `psychImmune`:boolean(1) `resolution`:string(7) `source`:object(9) `stake`:string(7) `stakeForm`:string(7) `targetCauses`:object(1) `targeted`:boolean(6) `test`:object(7) `triggerOn`:string(2) |
+| `src/data/psychology.json` | array | liste | entité | 9 | `attackDR`:object(5) `becomes`:string(1) `containedSocialMod`:number(2) `desc`:string(9) `effects`:array(1) `endedByOtherPsych`:boolean(2) `failAmount`:object(1) `failCondition`:string(1) `icon`:string(9) `id`:string(9) `immuneToFromTarget`:array(1) `immuneWhileActive`:array(1) `label`:string(9) `passive`:array(1) `psychImmune`:boolean(1) `resolution`:string(7) `source`:object(9) `stake`:string(7) `stakeForm`:string(7) `targetCauses`:object(1) `targeted`:boolean(6) `test`:object(7) `triggerOn`:string(2) `type`:string(9) |
 | `src/data/qualities.json` | array | liste | entité | 59 | `alsoIn`:array(2) `capabilities`:object(31) `desc`:string(59) `effects`:array(10) `id`:string(59) `indice`:object(1) `label`:string(59) `passive`:array(17) `polarite`:string(59) `source`:object(59) `subType`:string(59) `type`:string(59) |
 | `src/data/qualitySubtypes.json` | array | liste | entité | 3 | `id`:string(3) `label`:string(3) `type`:string(3) |
 | `src/data/qualityTypes.json` | array | liste | entité | 2 | `id`:string(2) `label`:string(2) `type`:string(2) |
-| `src/data/raceAppearance.json` | array | liste | entité | 21 | `colors`:object(4) `dropHeadgear`:boolean(1) `extremites`:string(3) `eyes`:object(1) `featureKeys`:array(13) `gabarit`:string(21) `gabaritOverride`:object(6) `head`:string(13) `id`:string(21) `label`:string(21) `legs`:string(3) `palette`:object(20) `paletteF`:object(5) `parts`:object(1) `pose`:object(9) `sex`:string(1) `tenue`:string(21) |
+| `src/data/raceAppearance.json` | array | liste | entité | 21 | `colors`:object(4) `dropHeadgear`:boolean(1) `extremites`:string(3) `eyes`:object(1) `featureKeys`:array(13) `gabarit`:string(21) `gabaritOverride`:object(6) `head`:string(13) `id`:string(21) `label`:string(21) `legs`:string(3) `palette`:object(20) `paletteF`:object(5) `parts`:object(1) `pose`:object(9) `sex`:string(1) `tenue`:string(21) `type`:string(21) |
 | `src/data/raw.manifest.json` | array | liste | entité | 8 | `bloque`:string(2) `id`:string(8) `label`:string(8) `ticket`:string(6) `type`:string(8) |
 | `src/data/regles.json` | array | liste | entité | 84 | `desc`:string(84) `id`:string(84) `label`:string(84) `source`:object(84) `type`:string(84) |
 | `src/data/reglesOptionnelles.json` | array | liste | entité | 81 | `action`:object(1) `default`:boolean/number/string(81) `group`:string(81) `hint`:string(81) `id`:string(81) `kind`:string(81) `label`:string(81) `maison`:string(27) `max`:number(23) `min`:number(23) `options`:array(12) `ref`:string(81) `source`:object(54) `step`:number(13) `type`:string(81) |
@@ -594,7 +594,7 @@ nombre d’entrées qui la portent.
 | `src/data/river-criticals.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `shrapnelHit`:array(1) `source`:object(1) `tables`:object(1) `type`:string(1) |
 | `src/data/river-navigation.json` | object | pipe à la racine | config | 1 | `capsize`:object(1) `driftNavPenalty`:number(1) `driftPctOfSpeed`:number(1) `echouage`:object(1) `id`:string(1) `label`:string(1) `navBaseDifficulty`:string(1) `outOfControl`:object(1) `rowingAgility`:object(1) `savoirVoiesFluvialesDR`:number(1) `source`:object(1) `tackDifficulty`:string(1) `temporaryRepair`:object(1) `type`:string(1) `windDirections`:array(1) `windEffect`:object(1) `windForces`:array(1) `windTicksPerDay`:number(1) `windTickThreshold`:number(1) |
 | `src/data/river-perils.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `perils`:array(1) `type`:string(1) |
-| `src/data/roofMaterials.json` | array | liste | entité | 4 | `detail`:object(3) `E`:string(3) `eaveOverhangM`:number(3) `fascia`:string(2) `fasciaDropM`:number(2) `id`:string(4) `label`:string(4) `line`:string(3) `N`:string(3) `O`:string(3) `planBody`:string(1) `planEdge`:string(1) `planInner`:string(1) `planText`:string(1) `ridgeCap`:string(2) `S`:string(3) `soffite`:string(3) |
+| `src/data/roofMaterials.json` | array | liste | entité | 4 | `detail`:object(3) `E`:string(3) `eaveOverhangM`:number(3) `fascia`:string(2) `fasciaDropM`:number(2) `id`:string(4) `label`:string(4) `line`:string(3) `N`:string(3) `O`:string(3) `planBody`:string(1) `planEdge`:string(1) `planInner`:string(1) `planText`:string(1) `ridgeCap`:string(2) `S`:string(3) `soffite`:string(3) `type`:string(4) |
 | `src/data/sea-cargo.json` | object | pipe à la racine | config | 1 | `buy`:object(1) `cargoes`:array(1) `id`:string(1) `label`:string(1) `opportunite`:object(1) `overload`:object(1) `sell`:object(1) `type`:string(1) |
 | `src/data/sea-events.json` | object | pipe à la racine | config | 1 | `boardEvents`:array(1) `fastVoyage`:object(1) `id`:string(1) `label`:string(1) `manann`:object(1) `portEvents`:array(1) `type`:string(1) |
 | `src/data/sea-navigation.json` | object | pipe à la racine | config | 1 | `epuisement`:object(1) `forcerLeRythme`:array(1) `id`:string(1) `label`:string(1) `longsVoyages`:object(1) `orientation`:object(1) `phares`:object(1) `poursuite`:object(1) `reparation`:object(1) `salissures`:object(1) `type`:string(1) `vitesseMax`:object(1) `workPeriodHours`:object(1) |
@@ -605,23 +605,23 @@ nombre d’entrées qui la portent.
 | `src/data/ship-criticals.json` | object | pipe à la racine | config | 1 | `die`:string(1) `id`:string(1) `label`:string(1) `shrapnelHit`:array(1) `source`:object(1) `tables`:object(1) `type`:string(1) |
 | `src/data/sizes.json` | object | pipe à la racine | config | 1 | `footprintSide`:object(1) `id`:string(1) `label`:string(1) `rangedMod`:object(1) `shipboardEnc`:object(1) `type`:string(1) |
 | `src/data/skills.json` | array | liste | entité | 48 | `acces`:string(48) `altChar`:object(2) `characteristic`:string(48) `combatAdvantage`:object(4) `combatSubstitute`:object(2) `desc`:string(48) `hearing`:boolean(1) `id`:string(48) `label`:string(48) `movement`:boolean(5) `source`:object(48) `specs`:array(43) `specsOpen`:boolean(6) `specsSource`:string(3) `tool`:object(1) `type`:string(48) |
-| `src/data/species.json` | array | liste | entité | 27 | `arcaneDomainsBonusOf`:string(2) `baseChar`:object(27) `desc`:string(27) `family`:string(27) `fate`:object(27) `gatedByRule`:string(1) `grantGroups`:array(27) `id`:string(27) `label`:string(27) `movement`:number(27) `mutationBodyMax`:number(18) `preview`:object(27) `rand`:number(27) `refCareer`:string(27) `refChar`:string(27) `skills`:array(27) `source`:object(27) `talents`:array(27) `traits`:array(1) `variant`:string(21) |
+| `src/data/species.json` | array | liste | entité | 27 | `arcaneDomainsBonusOf`:string(2) `baseChar`:object(27) `desc`:string(26) `family`:string(27) `fate`:object(27) `gatedByRule`:string(1) `grantGroups`:array(27) `id`:string(27) `label`:string(27) `movement`:number(27) `mutationBodyMax`:number(18) `preview`:object(27) `rand`:number(27) `refCareer`:string(27) `refChar`:string(27) `skills`:array(27) `source`:object(27) `talents`:array(27) `traits`:array(1) `type`:string(27) `variant`:string(21) |
 | `src/data/speciesRace.json` | object | pipe à la racine | config | 1 | `default`:string(1) `id`:string(1) `label`:string(1) `rules`:array(1) `type`:string(1) |
-| `src/data/spells.json` | array | liste | entité | 576 | `alsoIn`:array(46) `breathAttack`:boolean(2) `cn`:null/number(576) `curated`:boolean(438) `damage`:number(22) `desc`:string(576) `domainId`:string(256) `duration`:null/object(576) `ecole`:string(576) `effects`:object(576) `family`:string(576) `id`:string(576) `ignoreBE`:boolean(2) `ignorePA`:boolean(6) `isRitual`:boolean(17) `label`:string(576) `missile`:boolean(40) `opposed`:object(4) `range`:null/object(576) `ritual`:object(17) `source`:object(576) `subType`:null/string(576) `target`:null/object(576) `variants`:array(18) |
+| `src/data/spells.json` | array | liste | entité | 576 | `alsoIn`:array(46) `breathAttack`:boolean(2) `cn`:null/number(576) `curated`:boolean(438) `damage`:number(22) `desc`:string(576) `domainId`:string(256) `duration`:null/object(576) `ecole`:string(576) `effects`:object(576) `family`:string(576) `id`:string(576) `ignoreBE`:boolean(2) `ignorePA`:boolean(6) `isRitual`:boolean(17) `label`:string(576) `missile`:boolean(40) `opposed`:object(4) `range`:null/object(576) `ritual`:object(17) `source`:object(576) `subType`:null/string(576) `target`:null/object(576) `type`:string(576) `variants`:array(18) |
 | `src/data/stars.json` | array | liste | entité | 23 | `apparence`:string(23) `ascendant`:string(23) `classique`:string(23) `dates`:string(23) `desc`:string(23) `dieux`:string(23) `id`:string(23) `label`:string(23) `ops`:array(23) `rand`:number(23) `signe`:string(23) `source`:object(23) `sub`:array(4) `type`:string(23) |
 | `src/data/steam-breakdown.json` | array | liste | table | 6 | `compartmentDamage`:number(1) `coolMinutes`:string(1) `desc`:string(6) `durationRounds`:string(1) `engineDestroyed`:boolean(1) `failDamage`:string(1) `hullCritical`:boolean(1) `id`:string(6) `label`:string(6) `max`:number(6) `min`:number(6) `mMod`:number(2) `mSet`:number(2) `restart`:array(3) `source`:object(6) `type`:string(6) |
 | `src/data/structure-criticals.json` | object | pipe à la racine | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
-| `src/data/structureAppearance.json` | array | liste | entité | 18 | `band`:string(5) `cap`:string(5) `detail`:object(17) `door`:object(5) `face`:string(18) `id`:string(18) `label`:string(18) `material`:string(18) `parapet`:object(4) `post`:string(18) `recess`:string(1) `rubble`:string(7) `rubbleHi`:string(7) `wallHeightM`:number(2) `window`:object(5) `wood`:object(10) |
+| `src/data/structureAppearance.json` | array | liste | entité | 18 | `band`:string(5) `cap`:string(5) `detail`:object(17) `door`:object(5) `face`:string(18) `id`:string(18) `label`:string(18) `material`:string(18) `parapet`:object(4) `post`:string(18) `recess`:string(1) `rubble`:string(7) `rubbleHi`:string(7) `type`:string(18) `wallHeightM`:number(2) `window`:object(5) `wood`:object(10) |
 | `src/data/structures.json` | array | liste | entité | 24 | `char`:object(24) `couvertPenalty`:string(17) `desc`:string(19) `edgeKind`:string(1) `enc`:number(10) `encLimit`:number(15) `fortified`:boolean(2) `id`:string(24) `kind`:string(24) `label`:string(24) `source`:object(24) `traits`:array(24) `type`:string(24) `vehicle`:boolean(8) |
 | `src/data/surincantation.json` | object | pipe à la racine | config | 1 | `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
 | `src/data/symptoms.json` | array | liste | entité | 18 | `capabilities`:object(7) `desc`:string(18) `effects`:array(1) `id`:string(18) `label`:string(18) `onTick`:object(4) `passive`:array(9) `severePassive`:array(1) `source`:object(18) `type`:string(18) `visibleLocations`:array(1) `visiblePassive`:array(1) |
 | `src/data/systemes.manifest.json` | array | liste | entité | 16 | `etat`:string(16) `id`:string(16) `label`:string(16) `modules`:array(16) `notes`:string(16) `ticket`:null/string(16) `type`:string(16) |
 | `src/data/tables.json` | array | liste | entité | 20 | `die`:string(20) `id`:string(20) `label`:string(20) `rows`:array(20) `source`:object(20) `type`:string(20) |
 | `src/data/talents.json` | array | liste | entité | 187 | `alsoIn`:array(1) `codexOnly`:boolean(6) `combat`:object(54) `desc`:string(186) `effects`:array(4) `grantsArcaneDomain`:boolean(1) `grantSpecGroups`:boolean(1) `id`:string(187) `label`:string(187) `maison`:string(9) `max`:null/number/object(187) `passive`:array(21) `rand`:null/number(187) `size`:string(2) `source`:object(187) `specs`:array(182) `specsOpen`:boolean(8) `specsSource`:string(5) `test`:null/object(187) `type`:string(187) `variants`:array(12) |
-| `src/data/tavernGames.json` | array | liste | entité | 13 | `campScore`:string(3) `characteristic`:string(6) `combined`:object(1) `dancers`:number(1) `desc`:string(13) `drBonus`:string(4) `drCap`:number(1) `id`:string(13) `label`:string(13) `mode`:string(12) `options`:array(5) `phases`:object(2) `pot`:object(1) `roundOps`:object(2) `roundShape`:string(7) `scoreThreshold`:number(1) `scoreUnit`:string(5) `sides`:array(1) `skill`:null/string(13) `source`:object(13) `spec`:string(6) `table`:array(1) `target`:number(3) `team`:object(2) `throwerPenalty`:object(1) `tieBreak`:string(2) `volley`:object(4) |
+| `src/data/tavernGames.json` | array | liste | entité | 13 | `campScore`:string(3) `characteristic`:string(6) `combined`:object(1) `dancers`:number(1) `desc`:string(13) `drBonus`:string(4) `drCap`:number(1) `id`:string(13) `label`:string(13) `mode`:string(12) `options`:array(5) `phases`:object(2) `pot`:object(1) `roundOps`:object(2) `roundShape`:string(7) `scoreThreshold`:number(1) `scoreUnit`:string(5) `sides`:array(1) `skill`:null/string(13) `source`:object(13) `spec`:string(6) `table`:array(1) `target`:number(3) `team`:object(2) `throwerPenalty`:object(1) `tieBreak`:string(2) `type`:string(13) `volley`:object(4) |
 | `src/data/teintesJeu.json` | object | record | record | 0 | — |
 | `src/data/traits.json` | array | liste | entité | 131 | `alsoIn`:array(4) `aura`:object(3) `capabilities`:object(51) `desc`:string(131) `effects`:array(24) `grantsManeuvers`:array(14) `id`:string(131) `indice`:object(22) `label`:string(131) `maison`:string(3) `nonTransferable`:boolean(1) `passive`:array(25) `range`:boolean(2) `source`:object(131) `specsMulti`:boolean(9) `specsOpen`:boolean(7) `specsSource`:string(18) `standard`:boolean(15) `suppressesCapabilities`:array(1) `type`:string(131) |
-| `src/data/trappings.json` | array | liste | entité | 440 | `alsoIn`:array(8) `ammoRangeMod`:object(13) `availability`:null/string(440) `bladed`:boolean(26) `capabilities`:object(20) `categorie`:string(440) `consumable`:object(40) `consumableDuration`:object(19) `container`:object(10) `damage`:null/object(380) `defaultAmmo`:string(9) `derivedWeapon`:object(1) `desc`:string(278) `enc`:null/number/string(423) `formChoices`:array(1) `hands`:number(44) `id`:string(440) `improvised`:boolean(1) `indirect`:boolean(8) `label`:string(440) `loc`:null/string(380) `maison`:string(2) `minRangeBand`:string(9) `niConsumedPerDR`:number(2) `niPerGram`:number(2) `onHitEffects`:array(6) `organicProjectile`:boolean(14) `pa`:null/number(380) `packSize`:number(15) `passive`:array(15) `price`:null/object/string(440) `prosthesisTraining`:array(2) `qualities`:array(440) `range`:null/number/object(68) `reach`:null/string(380) `service`:boolean(3) `shape`:string(109) `siegeFootprint`:number(1) `siegeRig`:string(22) `sizeFor`:string(9) `soloSimple`:boolean(1) `source`:object(440) `subType`:string(440) `unarmed`:boolean(1) `weaponGroup`:string(22) |
+| `src/data/trappings.json` | array | liste | entité | 440 | `alsoIn`:array(8) `ammoRangeMod`:object(13) `availability`:null/string(440) `bladed`:boolean(26) `capabilities`:object(20) `categorie`:string(440) `consumable`:object(40) `consumableDuration`:object(19) `container`:object(10) `damage`:null/object(380) `defaultAmmo`:string(9) `derivedWeapon`:object(1) `desc`:string(278) `enc`:null/number/string(423) `formChoices`:array(1) `hands`:number(44) `id`:string(440) `improvised`:boolean(1) `indirect`:boolean(8) `label`:string(440) `loc`:null/string(380) `maison`:string(2) `minRangeBand`:string(9) `niConsumedPerDR`:number(2) `niPerGram`:number(2) `onHitEffects`:array(6) `organicProjectile`:boolean(14) `pa`:null/number(380) `packSize`:number(15) `passive`:array(15) `price`:null/object/string(440) `prosthesisTraining`:array(2) `qualities`:array(440) `range`:null/number/object(68) `reach`:null/string(380) `service`:boolean(3) `shape`:string(109) `siegeFootprint`:number(1) `siegeRig`:string(22) `sizeFor`:string(9) `soloSimple`:boolean(1) `source`:object(440) `subType`:string(440) `type`:string(440) `unarmed`:boolean(1) `weaponGroup`:string(22) |
 | `src/data/traumas.json` | array | liste | entité | 29 | `amputation`:boolean(12) `cosmetic`:boolean(2) `cumul`:object(5) `desc`:string(29) `id`:string(29) `kind`:string(12) `label`:string(29) `maison`:string(2) `needsSurgery`:boolean(2) `ops`:array(17) `passiveKind`:string(2) `prosthesis`:array(7) `rig`:object(3) `severity`:string(12) `source`:object(29) `type`:string(29) |
 | `src/data/vehicles.json` | array | liste | entité | 31 | `chargement`:number(11) `deck`:object(1) `desc`:string(12) `enc`:null/number(12) `hull`:object(29) `icon`:string(31) `id`:string(31) `label`:string(31) `purchase`:object(31) `ship`:object(20) `source`:object(31) `travel`:object(3) `type`:string(31) |
 | `src/data/vents-tourbillonnants.json` | object | pipe à la racine | config | 1 | `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
@@ -636,46 +636,46 @@ nombre d’entrées qui la portent.
 
 ### 2.2 Fréquence globale des signatures d’entrée
 
-Signatures distinctes d’entrée de document : **590**. Les 40 plus fréquentes :
+Signatures distinctes d’entrée de document : **591**. Les 40 plus fréquentes :
 
 | Signature d’entrée | Entrées |
 |---|---|
 | `career,characteristics,id,label,labelF,level,skills,source,status,talents,trappings,type` | 297 |
-| `cn,curated,desc,duration,ecole,effects,family,id,label,range,source,subType,target` | 176 |
-| `cn,curated,desc,domainId,duration,ecole,effects,family,id,label,range,source,subType,target` | 157 |
-| `appearance,char,folder,id,label,optionals,skills,source,spells,talents,title,traits,trappings` | 136 |
+| `cn,curated,desc,duration,ecole,effects,family,id,label,range,source,subType,target,type` | 176 |
+| `cn,curated,desc,domainId,duration,ecole,effects,family,id,label,range,source,subType,target,type` | 157 |
+| `appearance,char,folder,id,label,optionals,skills,source,spells,talents,title,traits,trappings,type` | 136 |
 | `career,characteristics,id,label,level,skills,source,status,talents,trappings,type` | 135 |
-| `appearance,char,folder,followsCharacterRules,id,label,optionals,skills,source,spells,talents,title,traits,trappings` | 123 |
-| `cn,desc,duration,ecole,effects,family,id,label,range,source,subType,target` | 113 |
+| `appearance,char,folder,followsCharacterRules,id,label,optionals,skills,source,spells,talents,title,traits,trappings,type` | 123 |
+| `cn,desc,duration,ecole,effects,family,id,label,range,source,subType,target,type` | 113 |
 | `desc,id,label,source,type` | 109 |
-| `availability,categorie,damage,enc,id,label,loc,pa,price,qualities,reach,source,subType` | 95 |
+| `availability,categorie,damage,enc,id,label,loc,pa,price,qualities,reach,source,subType,type` | 95 |
 | `desc,id,label,max,rand,source,specs,test,type` | 83 |
 | `class,desc,id,label,labelF,rand,source,type` | 72 |
-| `availability,categorie,damage,desc,enc,id,label,loc,pa,price,qualities,reach,source,subType` | 65 |
+| `availability,categorie,damage,desc,enc,id,label,loc,pa,price,qualities,reach,source,subType,type` | 65 |
 | `desc,id,label,parent,prefix,source,suffix,type` | 55 |
 | `id,label,type` | 51 |
-| `appearance,char,desc,folder,grantGroups,id,label,optionals,skills,source,spells,talents,title,traits,trappings` | 45 |
-| `appearance,char,desc,folder,harvest,id,label,optionals,skills,source,spells,talents,title,traits,trappings` | 42 |
+| `appearance,char,desc,folder,grantGroups,id,label,optionals,skills,source,spells,talents,title,traits,trappings,type` | 45 |
+| `appearance,char,desc,folder,harvest,id,label,optionals,skills,source,spells,talents,title,traits,trappings,type` | 42 |
 | `default,group,hint,id,kind,label,ref,source,type` | 39 |
 | `combat,desc,id,label,max,rand,source,specs,test,type` | 39 |
 | `appearance,desc,id,kind,label,passive,source,type` | 38 |
-| `alsoIn,cn,curated,desc,domainId,duration,ecole,effects,family,id,label,range,source,subType,target` | 38 |
-| `appearance,char,desc,folder,followsCharacterRules,id,label,named,optionals,skills,source,spells,talents,title,traits,trappings` | 34 |
+| `alsoIn,cn,curated,desc,domainId,duration,ecole,effects,family,id,label,range,source,subType,target,type` | 38 |
+| `appearance,char,desc,folder,followsCharacterRules,id,label,named,optionals,skills,source,spells,talents,title,traits,trappings,type` | 34 |
 | `blessings,desc,id,label,miracles,source,title,type` | 34 |
 | `id,label,solid,type` | 33 |
-| `availability,categorie,desc,enc,id,label,price,qualities,source,subType` | 33 |
+| `availability,categorie,desc,enc,id,label,price,qualities,source,subType,type` | 33 |
 | `flow,form,id,label,phase,rule,ruleCategory,source,template,type` | 32 |
 | `concept,fichier,id,label,perimetre,type,verrou` | 28 |
 | `capabilities,desc,id,label,source,type` | 28 |
-| `appearance,char,desc,folder,id,label,optionals,skills,source,spells,talents,title,traits,trappings` | 27 |
+| `appearance,char,desc,folder,id,label,optionals,skills,source,spells,talents,title,traits,trappings,type` | 27 |
 | `acces,characteristic,desc,id,label,source,specs,type` | 26 |
 | `id,kind,label,rule,source,template,type` | 25 |
-| `appearance,char,folder,grantGroups,id,label,optionals,skills,source,spells,talents,title,traits,trappings` | 24 |
+| `appearance,char,folder,grantGroups,id,label,optionals,skills,source,spells,talents,title,traits,trappings,type` | 24 |
 | `capabilities,desc,id,label,polarite,source,subType,type` | 24 |
 | `form,id,kind,label,rule,ruleCategory,source,template,type` | 20 |
 | `die,id,label,rows,source,type` | 20 |
 | `desc,id,label,max,passive,rand,source,specs,test,type` | 20 |
-| `appearance,char,desc,folder,id,label,named,optionals,skills,source,spells,talents,title,traits,trappings` | 19 |
+| `appearance,char,desc,folder,id,label,named,optionals,skills,source,spells,talents,title,traits,trappings,type` | 19 |
 | `apparence,ascendant,classique,dates,desc,dieux,id,label,ops,rand,signe,source,type` | 19 |
 | `abr,desc,id,label,nature,source,type` | 18 |
 | `desc,effects,id,label,source,type` | 18 |
@@ -880,13 +880,13 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 
 #### A. Par défaut — sans lot de peuplement (stock `STRUCTURES_DEFAUT`)
 
-**78** documents portent au moins une clé déclarée jamais observée, **321** clés en tout
+**81** documents portent au moins une clé déclarée jamais observée, **366** clés en tout
 (stock `STRUCTURES_DEFAUT`, `scripts/guards/lib/structuresStock.mjs`, garde `src/data/structures-contrat.test.ts`).
 
 | Document | Clés | Détail |
 |---|---|---|
-| `actions.json` | 1 | `blocked` |
-| `activities.json` | 1 | `char` |
+| `actions.json` | 4 | `alsoIn` `blocked` `desc` `labelF` |
+| `activities.json` | 3 | `alsoIn` `char` `labelF` |
 | `advancementCosts.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `astrology.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `axes.json` | 4 | `alsoIn` `icon` `labelF` `source` |
@@ -901,7 +901,7 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 | `characteristics.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `classes.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `combat-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
-| `creatures.json` | 1 | `group` |
+| `creatures.json` | 2 | `icon` `labelF` |
 | `crew-roles.json` | 3 | `alsoIn` `icon` `labelF` |
 | `damage-types.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `domains.json` | 3 | `icon` `labelF` `maison` |
@@ -927,34 +927,37 @@ se STOCKE pas (un stock décroît, une cible se solde en PEUPLANT la donnée), i
 | `names.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `naval-ports.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `naval-traits.json` | 2 | `icon` `labelF` |
+| `night-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `peripeties.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `pregens.json` | 8 | `age` `alsoIn` `desc` `icon` `labelF` `maison` `source` `weaponChoice` |
 | `primitives.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `propMaterials.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `props.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `psychology.json` | 1 | `gating` |
+| `psychology.json` | 4 | `alsoIn` `gating` `labelF` `maison` |
 | `qualities.json` | 3 | `icon` `labelF` `maison` |
 | `qualitySubtypes.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `qualityTypes.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `raceAppearance.json` | 3 | `armD` `armG` `scale` |
+| `raceAppearance.json` | 9 | `alsoIn` `armD` `armG` `desc` `icon` `labelF` `maison` `scale` `source` |
 | `raw.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `regles.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `reglesOptionnelles.json` | 4 | `alsoIn` `desc` `icon` `labelF` |
 | `reliefMaterials.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
-| `roofMaterials.json` | 1 | `fasciaThickM` |
+| `roofMaterials.json` | 7 | `alsoIn` `desc` `fasciaThickM` `icon` `labelF` `maison` `source` |
 | `sea-shanties.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `skills.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
+| `species.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
+| `spells.json` | 3 | `icon` `labelF` `maison` |
 | `stars.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `steam-breakdown.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
-| `structureAppearance.json` | 2 | `bayPanel` `relief` |
+| `structureAppearance.json` | 8 | `alsoIn` `bayPanel` `desc` `icon` `labelF` `maison` `relief` `source` |
 | `structures.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `symptoms.json` | 4 | `alsoIn` `icon` `labelF` `maison` |
 | `systemes.manifest.json` | 6 | `alsoIn` `desc` `icon` `labelF` `maison` `source` |
 | `tables.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
 | `talents.json` | 2 | `icon` `labelF` |
-| `tavernGames.json` | 1 | `fastSkill` |
+| `tavernGames.json` | 5 | `alsoIn` `fastSkill` `icon` `labelF` `maison` |
 | `traits.json` | 4 | `appearance` `icon` `labelF` `variants` |
-| `trappings.json` | 1 | `requiresMastery` |
+| `trappings.json` | 3 | `icon` `labelF` `requiresMastery` |
 | `traumas.json` | 3 | `alsoIn` `icon` `labelF` |
 | `vehicles.json` | 3 | `alsoIn` `labelF` `maison` |
 | `voyage-stakes.json` | 5 | `alsoIn` `desc` `icon` `labelF` `maison` |
@@ -1062,12 +1065,12 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **822** (cible 146 · declaree 6 · historique 228 · divergente 442). Objets JSON parcourus : **52048**, dont **35995** portent une forme
+Lignes concept × dataset × champ × forme : **823** (cible 146 · declaree 6 · historique 228 · divergente 443). Objets JSON parcourus : **52048**, dont **36019** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **93**.
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-469 ligne(s), 28736 occurrence(s).
+470 ligne(s), 28760 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1505,6 +1508,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `cond` | `value+…` | divergente | `trappings.json` | 1 | — | `groups.json` `tavernGames.json` |  |
 | entité | `defaultAmmo` | `id-nu` | historique | `trappings.json` | 9 | — | `trappings.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `derivedWeapon` | `subType,type+…` | divergente | `trappings.json` | 1 | — | `weaponGroups.json` |  |
+| entité | `ops` | `char+…` | divergente | `trappings.json` | 24 | — | `characteristics.json` `progression-schemas.derived.json` |  |
 | entité | `ops` | `disease+…` | divergente | `trappings.json` | 3 | — | `maladies.json` |  |
 | entité | `ops` | `id,value+…` | divergente | `trappings.json` | 11 | — | `etats.json` |  |
 | entité | `ops` | `id+…` | divergente | `trappings.json` | 7 | — | `etats.json` `water-exposure.json` |  |
@@ -2322,14 +2326,14 @@ clé annonçait une FK (`clé de référence non résolue`), `L1b #1467` pour le
 | `tavernGames.json` | `dice` | `count,faces` | clé réservée | 1 |
 | `trappings.json` | `prosthesisTraining` | `cost,grants,label,reduces` | clé réservée | 1 |
 
-Au-delà des orphelines, **11676** objets sur **52048** ne sont portés par AUCUNE
+Au-delà des orphelines, **11652** objets sur **52048** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1112** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1107** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2487,7 +2491,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `spells.json` | `amount` | `dice` | 9 |
 | `spells.json` | `affects` | `is,kind,who` | 9 |
 | `structureAppearance.json` | `detail` | `courses,seedScope` | 9 |
-| `trappings.json` | `ops` | `char,mod,op` | 9 |
 | `trappings.json` | `flow` | `cond,kind,then` | 9 |
 | `activities.json` | `outcomes` | `note,on` | 8 |
 | `etats.json` | `flow` | `effect,kind` | 8 |
@@ -2499,7 +2502,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `spells.json` | `cond` | `kind,op,value` | 8 |
 | `talents.json` | `combat` | `reverseFailed` | 8 |
 | `trappings.json` | `consumableDuration` | `hours` | 8 |
-| `trappings.json` | `ops` | `bonus,char,op` | 8 |
 | `activities.json` | `blocked` | `raison,ticket` | 7 |
 | `arene-projet.json` | `layers` | `tiles,z` | 7 |
 | `arene-projet.json` | `choices` | `flow,icon,label` | 7 |
@@ -2592,7 +2594,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `traits.json` | `ops` | `amount,ignoreAP,ignoreTB,op` | 5 |
 | `trappings.json` | `capabilities` | `isGrimoire` | 5 |
 | `trappings.json` | `minutes` | `dice` | 5 |
-| `trappings.json` | `ops` | `amount,char,op` | 5 |
 | `aa-criticals.json` | `durationRounds` | `dice` | 4 |
 | `activities.json` | `outcomes` | `battle,maxSL,on` | 4 |
 | `barge-du-sel-projet.json` | `char` | `B,M,agilite,capacite-de-combat,capacite-de-tir,dexterite,endurance,force,force-mentale,intelligence,sociabilite` | 4 |
@@ -3420,7 +3421,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `trappings.json` | `consumable` | `cond,else,kind,then` | 1 |
 | `trappings.json` | `else` | `fail,kind,success,test` | 1 |
 | `trappings.json` | `ops` | `den,num,op` | 1 |
-| `trappings.json` | `ops` | `char,op` | 1 |
 | `trappings.json` | `ops` | `afterMinutes,op,ops` | 1 |
 | `trappings.json` | `consumable` | `cond,kind,then` | 1 |
 | `trappings.json` | `cond` | `kind,op,subject,value` | 1 |
@@ -3439,7 +3439,6 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `trappings.json` | `of` | `bonusOf` | 1 |
 | `trappings.json` | `ops` | `count,op` | 1 |
 | `trappings.json` | `ops` | `amount,op,resource` | 1 |
-| `trappings.json` | `ops` | `char,durationHours,mod,op` | 1 |
 | `traumas.json` | `rig` | `bone,byProsthesis,hidesBone,lateral,replace` | 1 |
 | `traumas.json` | `cumul` | `escalade,portee` | 1 |
 | `traumas.json` | `ops` | `hands,op` | 1 |
@@ -3464,8 +3463,8 @@ ce compte lève l’angle mort du classement ordonné.
 Le DoD de #1463 annonçait « 5 defs redéclarent la monnaie » : la mesure en trouve **5** littéraux
 dans **5** defs (`activities.ts` `creatures.ts` `crew-roles.ts` `trappings.ts` `vehicles.ts`).
 Le chiffre du DoD est CONFIRMÉ par la mesure.
-Critère : ≥ **1** clé(s) du noyau `gold,silver`. Sites : `activities.ts:88` (`minInvest`) `{gold}` · `creatures.ts:46` `{gold,silver}` · `crew-roles.ts:18` `{gold,silver}` · `trappings.ts:21` `{gold,silver}` · `vehicles.ts:15` `{gold,silver}`.
-Dont **1** littéral(aux) PARTIEL(s) du noyau — `activities.ts:88` : une mesure qui exigerait le noyau COMPLET `gold,silver` en compterait **4**, pas 5. Le compte du DoD se lit avec le critère.
+Critère : ≥ **1** clé(s) du noyau `gold,silver`. Sites : `activities.ts:86` (`minInvest`) `{gold}` · `creatures.ts:47` `{gold,silver}` · `crew-roles.ts:18` `{gold,silver}` · `trappings.ts:22` `{gold,silver}` · `vehicles.ts:15` `{gold,silver}`.
+Dont **1** littéral(aux) PARTIEL(s) du noyau — `activities.ts:86` : une mesure qui exigerait le noyau COMPLET `gold,silver` en compterait **4**, pas 5. Le compte du DoD se lit avec le critère.
 
 | Concept | Noyau | Littéraux | Defs | Liste des defs |
 |---|---|---|---|---|
@@ -3487,15 +3486,15 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 |---|---|---|---|---|---|---|
 | `aa-criticals.ts` | 29 | — | plage | divergente | `max,min+…` | — |
 | `aa-criticals.ts` | 39 | `resist` | test | divergente | `difficulty,skill+…` | — |
-| `activities.ts` | 17 | — | test | divergente | `difficulty,skillId+…` | — |
-| `activities.ts` | 67 | — | test | divergente | `char,difficulty+…` | — |
-| `activities.ts` | 88 | `minInvest` | monnaie | divergente | `gold` | — |
+| `activities.ts` | 18 | — | test | divergente | `difficulty,skillId+…` | — |
+| `activities.ts` | 70 | — | test | divergente | `char,difficulty+…` | — |
+| `activities.ts` | 86 | `minInvest` | monnaie | divergente | `gold` | — |
 | `arcane-phenomena.ts` | 153 | `controlFlux` | test | divergente | `difficulty+…` | — |
 | `arcane-phenomena.ts` | 169 | `rows` | plage | divergente | `max,min+…` | — |
 | `artillery-misfire.ts` | 12 | — | plage | divergente | `max,min+…` | — |
 | `axes.ts` | 21 | — | reference | historique | `skillId,spec` | — |
-| `creatures.ts` | 38 | — | reference | historique | `id,spec,value` | — |
-| `creatures.ts` | 46 | — | monnaie | historique | `bronze,gold,silver` | — |
+| `creatures.ts` | 39 | — | reference | historique | `id,spec,value` | — |
+| `creatures.ts` | 47 | — | monnaie | historique | `bronze,gold,silver` | — |
 | `crew-morale.ts` | 36 | `bands` | plage | divergente | `max,min+…` | — |
 | `crew-roles.ts` | 18 | — | monnaie | historique | `bronze,gold,silver` | — |
 | `crew-roles.ts` | 24 | `skills` | reference | historique | `skillId,spec` | — |
@@ -3544,9 +3543,9 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `obsessions.ts` | 17 | `entries` | plage | divergente | `max,min+…` | — |
 | `oups.ts` | 14 | — | plage | divergente | `max,min+…` | — |
 | `progression-schemas-derived.ts` | 39 | `schemas` | source | divergente | `book+…` | — |
-| `psychology.ts` | 55 | `test` | test | historique | `difficulty,skill` | — |
-| `raceAppearance.ts` | 32 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
-| `raceAppearance.ts` | 34 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
+| `psychology.ts` | 53 | `test` | test | historique | `difficulty,skill` | — |
+| `raceAppearance.ts` | 31 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
+| `raceAppearance.ts` | 33 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
 | `reglesOptionnelles.ts` | 32 | — | plage | divergente | `max,min+…` | — |
 | `river-navigation.ts` | 17 | — | plage | divergente | `max,min+…` | — |
 | `river-navigation.ts` | 39 | `rowingAgility` | test | divergente | `difficulty+…` | — |
@@ -3566,12 +3565,12 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `sea-weather.ts` | 78 | `temperatures` | test | divergente | `difficulty+…` | — |
 | `sea-weather.ts` | 99 | `roseDesVents` | plage | divergente | `max,min+…` | — |
 | `sea-weather.ts` | 110 | `affaler` | test | divergente | `difficulty+…` | — |
-| `species.ts` | 47 | `preview` | reference | historique | `career` | — |
-| `spells.ts` | 17 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `species.ts` | 45 | `preview` | reference | historique | `career` | — |
 | `spells.ts` | 18 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 26 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 35 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 38 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 19 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 27 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 36 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 39 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `steam-breakdown.ts` | 15 | — | plage | divergente | `max,min+…` | — |
 | `steam-breakdown.ts` | 28 | `restart` | test | divergente | `difficulty,skillId+…` | — |
 | `structure-criticals.ts` | 12 | — | plage | divergente | `max,min+…` | — |
@@ -3580,7 +3579,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `symptoms.ts` | 39 | `onTick` | test | divergente | `difficulty+…` | — |
 | `tables.ts` | 19 | `rows` | plage | divergente | `max,min+…` | — |
 | `talents.ts` | 66 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
-| `tavernGames.ts` | 32 | — | sequence | divergente | `combined,drCap,phases,pot,sides,table,target,throwerPenalty,volley+…` | — |
+| `tavernGames.ts` | 35 | — | sequence | divergente | `combined,drCap,phases,pot,sides,table,target,throwerPenalty,volley+…` | — |
 | `tavernGames.ts` | 78 | `options` | test | divergente | `char,difficulty,skill+…` | — |
 | `tavernGames.ts` | 96 | `table` | plage | divergente | `max,min+…` | — |
 | `tavernGames.ts` | 106 | `rows` | test | divergente | `difficulty+…` | — |
@@ -3588,9 +3587,9 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `tavernGames.ts` | 144 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
 | `tavernGames.ts` | 181 | `targetRange` | plage | cible | `max,min` | — |
 | `tavernGames.ts` | 185 | `rows` | plage | divergente | `max,min+…` | — |
-| `trappings.ts` | 21 | — | monnaie | historique | `bronze,gold,silver` | — |
-| `trappings.ts` | 28 | — | reference | historique | `id,spec,value` | — |
-| `trappings.ts` | 77 | `qualities` | reference | historique | `id,value` | — |
+| `trappings.ts` | 22 | — | monnaie | historique | `bronze,gold,silver` | — |
+| `trappings.ts` | 29 | — | reference | historique | `id,spec,value` | — |
+| `trappings.ts` | 78 | `qualities` | reference | historique | `id,value` | — |
 | `vehicles.ts` | 15 | — | monnaie | historique | `bronze,gold,silver` | — |
 | `vehicles.ts` | 17 | — | reference | historique | `id,value` | — |
 | `vehicles.ts` | 67 | `traits` | reference | historique | `arg,id,value` | — |
@@ -4399,7 +4398,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `trappings.json` | `diseases` | 5 |
 | `trappings.json` | `exceptGroups` | 1 |
 | `trappings.json` | `onlyGroups` | 2 |
-| `trappings.json` | `ops` | 34 |
+| `trappings.json` | `ops` | 58 |
 | `trappings.json` | `passive` | 16 |
 | `trappings.json` | `qualities` | 438 |
 | `trappings.json` | `shape` | 43 |

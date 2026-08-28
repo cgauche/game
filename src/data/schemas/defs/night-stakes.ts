@@ -4,18 +4,16 @@
  * doctrine 2026-07-12 : un catalogue en dur est l'exception, il migre en donnée). Lu par `nightStake`.
  */
 import { z } from 'zod';
-import { sourceRefSchema, stakeFormSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
+import { stakeFormSchema } from '../grammaire/valeurs';
 
 export const file = 'night-stakes.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    /** Identité STABLE (#422, exposition Codex) — distincte de `kind` (le vocabulaire consommé par
-     *  `nightStake`), ajoutée pour la navigation/l'édition. */
-    id: z.string(),
-    /** Libellé FR d'affichage (#422). */
-    label: z.string(),
+const doc = document(
+  'night-stakes',
+  famille,
+  {
     kind: z.string(),
     stake: z.string(),
     /** FORME du `stake`, DÉCLARÉE par la donnée (garde `night-stake-form.test.ts`, #1117 L0b) :
@@ -25,7 +23,6 @@ export const schema = z.array(
      *    (aucun fragment n'est réputé verbatim). Le verbatim intégral vit dans la fiche `rule`.
      *  La garde distingue les deux STRUCTURELLEMENT : un assemblage non déclaré échoue. */
     form: stakeFormSchema.optional(),
-    source: sourceRefSchema,
     /** FICHE derrière cette étape — la règle est à UN CLIC depuis l'enjeu (#1117). C'est l'id de
      *  l'entité qui PORTE déjà la règle (amendement A, 2026-08-06 : « tant qu'on évite de surcharger
      *  au maximum la table régle ») : une compétence, un État, un symptôme… `regles.json` n'est que
@@ -34,5 +31,26 @@ export const schema = z.array(
     /** CATÉGORIE Codex du foyer — `'regles'` par défaut. `'skills'` quand la règle vit sur la
      *  compétence, `'etats'` sur l'État, etc. Le renvoi est un couple {catégorie, id}. */
     ruleCategory: z.string().optional(),
-  }),
+  },
+  {
+    kind: {
+      label: 'Étape de la cascade',
+      hint: 'Vocabulaire d’étape de nuit consommé par `nightStake` — distinct de l’identifiant',
+    },
+    stake: { label: 'Enjeu' },
+    form: { label: 'Forme de l’enjeu' },
+    rule: { label: 'Règle associée', hint: 'Identifiant de l’entité qui porte la règle derrière l’étape' },
+    ruleCategory: {
+      label: 'Catégorie de la règle',
+      hint: 'Catégorie Codex de l’entité désignée par « Règle associée »',
+    },
+  },
+  {
+    codex: { keys: ['nightStakes'] },
+    edit: { dataset: 'nightStakes' },
+  },
+  { exiges: ['source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

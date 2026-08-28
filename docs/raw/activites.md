@@ -300,7 +300,7 @@ S'entraîner dans une Compétence ou Caractéristique **en dehors de la Carrièr
 - Compétences Avancées : **double** du montant ci-dessus.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.133-153) → `FavorLevel`, `favorLevelSchema`, `resetInterruptedFavorProgress`, `FAVOR_LEVEL_LABELS`, `FavorRow`, `InterludeHeroState`, `revenus`, `creatureToCombatant`, `entrainement`, `statblockToCombatant`, +8 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/favor.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, +6 fichiers
+- `LDB 23` (l.133-153) → `FavorLevel`, `favorLevelSchema`, `resetInterruptedFavorProgress`, `FAVOR_LEVEL_LABELS`, `FavorRow`, `InterludeHeroState`, `creatureToCombatant`, `revenus`, `entrainement`, `statblockToCombatant`, +8 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/favor.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, +6 fichiers
 
 ---
 
@@ -564,7 +564,7 @@ Contexte : préparation d'une bataille (siège, campagne militaire). Les Activit
 **Option coût de la guerre** : entretien = Σ Statuts des soldats/jour (réduction 50 % → −10 à tous les Tests de Puissance ; aucun entretien → armée se disperse en 2 jours).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ADE II 8` (l.89-131) → `scene`, `MassBattleView`, `ActivityContext`, `schema`, `RESOLVER_OWNER`, `inspire`, `planification`, `infiltration`, `rassembler-des-forces`, `reperage`, +2 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/activities.ts`, `src/engine/activities.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/state/combatFlow.ts`, +1 fichiers
+- `ADE II 8` (l.89-131) → `scene`, `MassBattleView`, `ActivityContext`, `doc`, `RESOLVER_OWNER`, `inspire`, `planification`, `infiltration`, `rassembler-des-forces`, `reperage`, +2 — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/activities.ts`, `src/engine/activities.ts`, `src/scenes/test-scenarios/13-bataille-de-masse.ts`, `src/state/combatFlow.ts`, +1 fichiers
 
 ---
 
@@ -688,7 +688,7 @@ Activité de spéculation rapide lors d'une escale appropriée. Le Personnage **
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [`economie.md`](economie.md) (Marchandage, couronnes d'or, Encombrement).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.274-286) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `schema`, `SEA_WEEK_DAYS`, `sea-embrigadement-ragot`, `surcharge-3`, `sea-embrigadement-discretion`, `sellRefusal`, `buildPostProgressionSteps`, +26 — `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/voyage-stakes.json`, `src/engine/activities.ts`, +8 fichiers
+- `MDG 15` (l.274-286) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `doc`, `SEA_WEEK_DAYS`, `sea-embrigadement-ragot`, `surcharge-3`, `sea-embrigadement-discretion`, `sellRefusal`, `buildPostProgressionSteps`, +26 — `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/voyage-stakes.json`, `src/engine/activities.ts`, +8 fichiers
 
 ---
 
@@ -707,7 +707,7 @@ Dessiner une carte revendable et utile à l'orientation. **Test de Métier (Cart
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Opérations Bancaires](#opérations-bancaires) (Planque, découverte sur 10 ou moins), [Activités de Voyage — EDOC 5](#activités-de-voyage--edoc-ch5) (Établir des Cartes — équivalent terrestre).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.288-292) → `SeaActivitiesModal`, `BankDeposit`, `schema`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `PendingExtendedTest`, `bankWithdrawInner`, `GameState`, +3 — `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +6 fichiers
+- `MDG 15` (l.288-292) → `SeaActivitiesModal`, `BankDeposit`, `doc`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `PendingExtendedTest`, `bankWithdrawInner`, `GameState`, +3 — `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +6 fichiers
 
 ---
 
@@ -726,7 +726,7 @@ Former l'équipage (PNJ) dans une **Compétence utile à la gestion du bateau**.
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Entraînement](#entraînement) (Activité d'Augmentation LDB 23).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `schema`, `commerce`, `minimum-vital`, `port-buy-bargain`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, +6 — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, +8 fichiers
+- `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `doc`, `commerce`, `minimum-vital`, `port-buy-bargain`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, +6 — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, +8 fichiers
 
 ---
 

@@ -1,6 +1,7 @@
 [
   {
     "id": "frenesie",
+    "type": "psychology",
     "label": "Frénésie",
     "desc": "Vous pouvez, par le biais d'un Test de Force Mentale, vous mettre dans un état psychologique dans lequel vous allez vous surmotiver, mordre votre bouclier, etc. Sur un succès, vous entrez en *Frénésie*.\n\nTant que vous êtes en *Frénésie*, vous êtes immunisé à tous les autres Traits Psychologiques, et sous aucun prétexte vous ne fuirez, ni ne battrez en retraite. À l'inverse, vous devez vous déplacer à votre maximum en direction de l'ennemi le plus proche dans votre Ligne de Vue pour l'attaquer. La seule Action possible est un Test de **Capacité de Combat** ou un Test d'**Athlétisme** pour atteindre votre ennemi le plus rapidement possible. De plus, vous pouvez effectuer un Test de **Capacité de Combat** gratuit chaque Round car vous vous lancez à corps perdu dans votre attaque. Enfin, vous gagnez un Bonus de Force de +1 grâce à votre férocité.\n\nVous restez en *Frénésie* jusqu'à ce que tous les ennemis dans votre Ligne de Vue soient neutralisés ou que vous gagniez l'État *Sonné* ou *Inconscient*. Dès que votre *Frénésie* s'achève, vous gagnez l'État *Exténué*.",
     "source": {
@@ -78,6 +79,7 @@
   },
   {
     "id": "peur",
+    "type": "psychology",
     "label": "Peur",
     "icon": "flag/fear",
     "desc": "La *Peur* représente une aversion extrême pour quelque chose. Les créatures qui causent la *Peur* possèdent un *Indice* de *Peur* ; cette valeur représente le DR que vous devez atteindre lorsque vous effectuez votre Test étendu de **Calme** pour vaincre cette *Peur*. Vous pouvez effectuer ce Test à la fin de chaque Round jusqu'à ce que votre DR devienne supérieur ou égal à l'*Indice* de *Peur* de la créature. Tant que ce n'est pas le cas, vous êtes sujet à la *Peur*.\n\nLorsque vous êtes sous le coup de la *Peur*, vous subissez -1 DR à tous les Tests en rapport avec la source de votre peur. Vous êtes incapable de vous rapprocher de ce qui provoque cette *Peur* à moins de réussir un Test de **Calme Intermédiaire (+0)**. Si la source de votre *Peur* se rapproche de vous, vous devez réussir un Test de **Calme Intermédiaire (+0)** ou gagner un État *Brisé*.",
@@ -99,6 +101,7 @@
   },
   {
     "id": "terreur",
+    "type": "psychology",
     "label": "Terreur",
     "icon": "creature/scream",
     "desc": "Certaines créatures sont si profondément perturbantes qu'elles parviennent à provoquer une terreur glaçante auprès de leurs adversaires. Lorsque vous rencontrez pour la première fois une créature qui inspire la *Terreur*, effectuez un Test de Psychologie. Sur un succès, vous ne subissez aucun effet supplémentaire à cause de la *Terreur*. Sur un échec, vous gagnez autant d'États *Brisé* que l'*Indice* de *Terreur* de la créature, auquel vous rajoutez les DR inférieurs à 0.\n\nUne fois ce Test de Psychologie effectué, la créature cause la *Peur*, avec un *Indice* de *Peur* équivalent à son *Indice* de *Terreur*.",
@@ -122,6 +125,7 @@
   },
   {
     "id": "animosite",
+    "type": "psychology",
     "label": "Animosité",
     "icon": "flag/anger",
     "targeted": true,
@@ -146,6 +150,7 @@
   },
   {
     "id": "haine",
+    "type": "psychology",
     "label": "Haine",
     "icon": "flag/anger",
     "targeted": true,
@@ -171,6 +176,7 @@
   },
   {
     "id": "prejuge",
+    "type": "psychology",
     "label": "Préjugé",
     "icon": "flag/anger",
     "targeted": true,
@@ -191,6 +197,7 @@
   },
   {
     "id": "amour",
+    "type": "psychology",
     "label": "Amour",
     "icon": "flag/bond",
     "targeted": true,
@@ -217,6 +224,7 @@
   },
   {
     "id": "camaraderie",
+    "type": "psychology",
     "label": "Camaraderie",
     "icon": "flag/bond",
     "targeted": true,
@@ -240,6 +248,7 @@
   },
   {
     "id": "phobie",
+    "type": "psychology",
     "label": "Phobie",
     "icon": "flag/fear",
     "targeted": true,

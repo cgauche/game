@@ -1,6 +1,7 @@
 [
   {
     "id": "plain",
+    "type": "structureAppearance",
     "label": "Mur",
     "material": "bois",
     "detail": {
@@ -32,6 +33,7 @@
   },
   {
     "id": "mur-en-bois",
+    "type": "structureAppearance",
     "label": "Mur en bois",
     "material": "bois",
     "detail": {
@@ -69,6 +71,7 @@
   },
   {
     "id": "mur-a-ossature-en-bois",
+    "type": "structureAppearance",
     "label": "Mur à ossature en bois",
     "material": "bois",
     "detail": {
@@ -106,6 +109,7 @@
   },
   {
     "id": "cloison-basse-a-ossature-en-bois",
+    "type": "structureAppearance",
     "label": "Cloison basse à ossature en bois",
     "material": "bois",
     "wallHeightM": 1.25,
@@ -144,6 +148,7 @@
   },
   {
     "id": "porte",
+    "type": "structureAppearance",
     "label": "Porte",
     "material": "bois",
     "detail": {
@@ -178,6 +183,7 @@
   },
   {
     "id": "porte-blindee",
+    "type": "structureAppearance",
     "label": "Porte blindée",
     "material": "bois",
     "detail": {
@@ -212,6 +218,7 @@
   },
   {
     "id": "mur-en-pierre",
+    "type": "structureAppearance",
     "label": "Mur en pierre",
     "material": "pierre",
     "detail": {
@@ -270,6 +277,7 @@
   },
   {
     "id": "porte-de-ville",
+    "type": "structureAppearance",
     "label": "Porte de ville",
     "material": "pierre",
     "detail": {
@@ -324,6 +332,7 @@
   },
   {
     "id": "cloture-en-clayonnage",
+    "type": "structureAppearance",
     "label": "Clôture en clayonnage",
     "material": "bois",
     "wallHeightM": 1.25,
@@ -355,6 +364,7 @@
   },
   {
     "id": "herse",
+    "type": "structureAppearance",
     "label": "Herse",
     "material": "pierre",
     "face": "#4a4d54",
@@ -371,6 +381,7 @@
   },
   {
     "id": "mantelet-de-bois",
+    "type": "structureAppearance",
     "label": "Mantelet de bois",
     "material": "bois",
     "detail": {
@@ -396,6 +407,7 @@
   },
   {
     "id": "mur-de-chateau",
+    "type": "structureAppearance",
     "label": "Mur de château",
     "material": "pierre",
     "detail": {
@@ -448,6 +460,7 @@
   },
   {
     "id": "mur-de-forteresse-naine",
+    "type": "structureAppearance",
     "label": "Mur de forteresse naine",
     "material": "pierre",
     "detail": {
@@ -488,6 +501,7 @@
   },
   {
     "id": "mur-de-pierre-aa",
+    "type": "structureAppearance",
     "label": "Mur de pierre (relais fortifié)",
     "material": "pierre",
     "detail": {
@@ -514,6 +528,7 @@
   },
   {
     "id": "mur-en-pierres-seches",
+    "type": "structureAppearance",
     "label": "Mur en pierres sèches",
     "material": "pierre",
     "detail": {
@@ -538,6 +553,7 @@
   },
   {
     "id": "palissade-de-pieux",
+    "type": "structureAppearance",
     "label": "Palissade de pieux",
     "material": "bois",
     "detail": {
@@ -568,6 +584,7 @@
   },
   {
     "id": "terrassement",
+    "type": "structureAppearance",
     "label": "Terrassement",
     "material": "pierre",
     "detail": {
@@ -599,6 +616,7 @@
   },
   {
     "id": "solide-porte-en-bois",
+    "type": "structureAppearance",
     "label": "Solide porte en bois",
     "material": "bois",
     "detail": {

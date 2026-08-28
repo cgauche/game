@@ -7,8 +7,10 @@
  * est une erreur de TYPE (mapped type → `never`) ET une erreur d'exécution nommant la clé ; chaque
  * clé de `champs` exige sa `MetaChamp` ; chaque document déclare son EXPOSITION (Codex, éditeur).
  *
- * L'adoption par les defs est le lot L1b (#1467), en cours : 67 defs l'appellent, les autres portent
- * encore leur `z.array(z.strictObject({...}))` à la main.
+ * L'adoption par les defs est le lot L1b (#1467) : 121 defs l'appellent (120 sous `defs/`, 1 sous
+ * `defs-scenes/`). Les defs `entite` ont TOUS adopté, `oups.ts` excepté — schéma d'UNION, hors des
+ * vagues d'adoption. Le compte fait foi à la MESURE, pas à cette phrase : c'est le mesureur de
+ * `grammaire.test.ts` (« contrats d'enveloppe REQUIS dans les defs `entite` ») qui l'établit.
  */
 import { z } from 'zod';
 import { sourceRefSchema, secondarySourceRefSchema, variantOf } from './valeurs';
@@ -129,10 +131,12 @@ export interface OptionsDocument {
    * EXIGER = requis ET NON VIDE : les clés de chaîne exigées prennent `.min(1)`, `alsoIn` exigé prend
    * `.min(1)` sur son tableau — une exigence satisfaite par `''` ou `[]` ne prouverait rien (`desc` et
    * `maison` portent déjà ce `.min(1)` structurellement : pour elles, `exiges` ne change que l'optionalité).
-   * ce que l'adoption relâcherait sans cette option est MESURÉ et figé par le test
+   * Ce que l'adoption relâcherait sans cette option est MESURÉ et figé par le test
    * `grammaire.test.ts` « contrats d'enveloppe REQUIS dans les defs `entite` » — mesureur : `shape[k]`
-   * dont `safeParse(undefined)` est ROUGE, sur les defs `entite` du registre. Au 2026-08-28 :
-   * desc 19, source 24, icon 2 (53 defs mesurés, 24 déjà scellés donc hors mesure).
+   * dont `safeParse(undefined)` est ROUGE, sur les defs `entite` du registre. Les CHIFFRES vivent
+   * dans ce test, jamais recopiés ici : une copie se périme en silence à chaque vague d'adoption, et
+   * un JSDoc ne rend aucun verdict vérifiable. Le verrou de contrepartie (l'entrée AMPUTÉE d'une clé
+   * exigée est refusée, def par def) vit dans le même fichier.
    * ATTENTION : `source` dans `exiges` la rend STRICTEMENT requise : le refine de provenance `source ∨ maison`
    * en devient INATTEIGNABLE (il ne s'exécute que sur un objet dont `source` est déjà validée) — il n'y
    * a donc pas de second chemin à éteindre, c'est une conséquence de la forme, pas un branchement.
@@ -175,16 +179,18 @@ export interface DocumentHandle<T extends string> {
    * L'entrée en PATCH (tous champs optionnels), dérivée AVANT le sceau puis SCELLÉE à son tour :
    * `.partial()` rend un `ZodObject` NU, que `.extend` rouvrirait — la fabrique n'expose aucun nœud
    * extensible, fût-il voisin. `.optional()`/`safeParse` restent servis.
-   * Consommateur mesuré : `src/data/schemas/defs-scenes/narratif.ts:49`
-   * (`creaturesSchema.element.partial().optional()`) — sur le nœud SCELLÉ, `.partial` n'existe pas et l'appel JETTE.
+   * Consommateur mesuré : `narratif.ts` (`presetPnjSchema.profil`, profil de PNJ embarqué) — il
+   * CONSOMME désormais `entreePartielle`. Sur le nœud SCELLÉ, `.partial` n'existe pas et l'appel
+   * JETTE : c'est bien cette propriété-ci qui lui tient lieu de `.partial()`.
    */
   readonly entreePartielle: z.ZodType<unknown>;
   /**
    * Clés top-level de l'entrée (enveloppe + champs, plus `entries` en famille `record`/`table`),
    * relevées AVANT le sceau.
-   * Consommateurs mesurés : `src/data/variants-integrity.test.ts:29-31`
-   * (`Object.keys(def.schema.element.shape)` ×3) et `scripts/guards/lib/fieldConsumerTargets.mjs:46`
-   * (`if (schema?.shape)` — sans cette liste, la garde dégrade en SILENCE à zéro champ).
+   * Consommateurs mesurés : `variants-integrity.test.ts` (`SHAPE_BY_FILE`, où les TROIS defs à
+   * variantes lisent désormais `cles` — plus aucun `element.shape`, le dernier est mort avec
+   * l'adoption de `spells`) et `scripts/guards/lib/fieldConsumerTargets.mjs` (`if (schema?.shape)` —
+   * sans cette liste, la garde dégrade en SILENCE à zéro champ).
    */
   readonly cles: readonly string[];
   /** `type` du document, écrit dans le JSON et vérifié au parse. */

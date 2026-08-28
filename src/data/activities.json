@@ -1,6 +1,7 @@
 [
   {
     "id": "plein-air",
+    "type": "activities",
     "label": "Plein air",
     "icon": "nav/activity",
     "contexts": [
@@ -32,6 +33,7 @@
   },
   {
     "id": "approvisionnement",
+    "type": "activities",
     "label": "Approvisionnement",
     "icon": "action/consume",
     "contexts": [
@@ -58,6 +60,7 @@
   },
   {
     "id": "recueillir-informations",
+    "type": "activities",
     "label": "Recueillir des informations",
     "icon": "char/soc",
     "contexts": [
@@ -82,6 +85,7 @@
   },
   {
     "id": "rester-aux-aguets",
+    "type": "activities",
     "label": "Rester aux aguets",
     "icon": "action/aim",
     "contexts": [
@@ -105,6 +109,7 @@
   },
   {
     "id": "etablir-cartes",
+    "type": "activities",
     "label": "Établir des cartes",
     "icon": "nav/campaign",
     "contexts": [
@@ -136,6 +141,7 @@
   },
   {
     "id": "pratiquer-competence",
+    "type": "activities",
     "label": "Pratiquer une Compétence",
     "icon": "scenario/training",
     "contexts": [
@@ -155,6 +161,7 @@
   },
   {
     "id": "recuperer",
+    "type": "activities",
     "label": "Récupérer",
     "icon": "nav/rest",
     "contexts": [
@@ -169,6 +176,7 @@
   },
   {
     "id": "monter-camp",
+    "type": "activities",
     "label": "Monter un camp",
     "icon": "journal/heal",
     "contexts": [
@@ -195,6 +203,7 @@
   },
   {
     "id": "revenus",
+    "type": "activities",
     "label": "Revenus",
     "icon": "resource/gold-purse",
     "contexts": [
@@ -212,6 +221,7 @@
   },
   {
     "id": "craft",
+    "type": "activities",
     "label": "Artisanat",
     "icon": "item/misc",
     "contexts": [
@@ -229,6 +239,7 @@
   },
   {
     "id": "learn",
+    "type": "activities",
     "label": "Apprentissage particulier",
     "icon": "nav/compendium",
     "contexts": [
@@ -246,6 +257,7 @@
   },
   {
     "id": "entrainement",
+    "type": "activities",
     "label": "Entraînement",
     "icon": "nav/compendium",
     "contexts": [
@@ -260,6 +272,7 @@
   },
   {
     "id": "identify",
+    "type": "activities",
     "label": "Identifier un artefact",
     "icon": "nav/identify",
     "contexts": [
@@ -283,6 +296,7 @@
   },
   {
     "id": "convalescence",
+    "type": "activities",
     "label": "Convalescence",
     "icon": "resource/resolve",
     "contexts": [
@@ -309,6 +323,7 @@
   },
   {
     "id": "penitence",
+    "type": "activities",
     "label": "Pénitence",
     "icon": "resource/fate",
     "contexts": [
@@ -372,6 +387,7 @@
   },
   {
     "id": "entrainement-arme-inhabituelle",
+    "type": "activities",
     "label": "Entraînement avec une arme inhabituelle",
     "icon": "action/attack",
     "contexts": [
@@ -411,6 +427,7 @@
   },
   {
     "id": "tester-objets-magiques",
+    "type": "activities",
     "label": "Tester des objets magiques",
     "icon": "nav/identify",
     "contexts": [
@@ -466,6 +483,7 @@
   },
   {
     "id": "mecenat",
+    "type": "activities",
     "label": "Mécénat",
     "icon": "scenario/opera",
     "contexts": [
@@ -535,6 +553,7 @@
   },
   {
     "id": "recherche-universitaire",
+    "type": "activities",
     "label": "Recherche universitaire",
     "icon": "nav/memorize",
     "contexts": [
@@ -567,6 +586,7 @@
   },
   {
     "id": "commerce-opportunite",
+    "type": "activities",
     "label": "Commerce d'opportunité",
     "icon": "resource/gold-purse",
     "contexts": [
@@ -589,6 +609,7 @@
   },
   {
     "id": "cartographie",
+    "type": "activities",
     "label": "Cartographie",
     "icon": "nav/campaign",
     "contexts": [
@@ -612,6 +633,7 @@
   },
   {
     "id": "entrainement-equipage",
+    "type": "activities",
     "label": "Entraînement d'équipage",
     "icon": "action/lead",
     "contexts": [
@@ -634,6 +656,7 @@
   },
   {
     "id": "inspire",
+    "type": "activities",
     "label": "Discours inspirant",
     "icon": "action/lead",
     "contexts": [
@@ -671,6 +694,7 @@
   },
   {
     "id": "planification",
+    "type": "activities",
     "label": "Planification",
     "icon": "action/lead",
     "contexts": [
@@ -720,6 +744,7 @@
   },
   {
     "id": "infiltration",
+    "type": "activities",
     "label": "Infiltration",
     "icon": "scenario/ambush",
     "contexts": [
@@ -760,6 +785,7 @@
   },
   {
     "id": "rassembler-des-forces",
+    "type": "activities",
     "label": "Rassembler des forces",
     "icon": "char/soc",
     "contexts": [
@@ -825,6 +851,7 @@
   },
   {
     "id": "reperage",
+    "type": "activities",
     "label": "Repérage",
     "icon": "action/aim",
     "contexts": [
@@ -863,6 +890,7 @@
   },
   {
     "id": "sabotage",
+    "type": "activities",
     "label": "Sabotage",
     "icon": "scenario/trap",
     "contexts": [
@@ -916,6 +944,7 @@
   },
   {
     "id": "motivation",
+    "type": "activities",
     "label": "Motivation",
     "icon": "char/soc",
     "contexts": [
@@ -957,6 +986,7 @@
   },
   {
     "id": "pluie-de-fleches",
+    "type": "activities",
     "label": "Pluie de flèches",
     "icon": "action/roll-fire",
     "contexts": [
@@ -991,6 +1021,7 @@
   },
   {
     "id": "protection",
+    "type": "activities",
     "label": "Protection",
     "icon": "flag/defensive",
     "contexts": [
@@ -1019,6 +1050,7 @@
   },
   {
     "id": "tenez-votre-position",
+    "type": "activities",
     "label": "Tenez votre position",
     "icon": "scenario/siege",
     "contexts": [
@@ -1063,6 +1095,7 @@
   },
   {
     "id": "compte-a-rebours",
+    "type": "activities",
     "label": "Compte à rebours",
     "icon": "ui/warning",
     "contexts": [
@@ -1108,6 +1141,7 @@
   },
   {
     "id": "percee",
+    "type": "activities",
     "label": "Percée",
     "icon": "scenario/siege",
     "contexts": [
@@ -1145,6 +1179,7 @@
   },
   {
     "id": "ligne-de-mire",
+    "type": "activities",
     "label": "Ligne de mire",
     "icon": "action/aim",
     "generalDownOn": "success",
@@ -1196,6 +1231,7 @@
   },
   {
     "id": "tuez-la-bete",
+    "type": "activities",
     "label": "Tuez la bête !",
     "icon": "scenario/bestiary",
     "contexts": [
@@ -1224,6 +1260,7 @@
   },
   {
     "id": "survol",
+    "type": "activities",
     "label": "Survol",
     "icon": "travel/mount",
     "generalDownOn": "stupefying",
@@ -1279,6 +1316,7 @@
   },
   {
     "id": "charge",
+    "type": "activities",
     "label": "Charge",
     "icon": "journal/charge",
     "contexts": [
@@ -1313,6 +1351,7 @@
   },
   {
     "id": "duel",
+    "type": "activities",
     "label": "Duel",
     "icon": "action/attack",
     "contexts": [
@@ -1369,6 +1408,7 @@
   },
   {
     "id": "intrus",
+    "type": "activities",
     "label": "Intrus",
     "icon": "flag/fear",
     "contexts": [
@@ -1388,6 +1428,7 @@
   },
   {
     "id": "rassemblement",
+    "type": "activities",
     "label": "Rassemblement",
     "icon": "journal/heal",
     "contexts": [
@@ -1410,6 +1451,7 @@
   },
   {
     "id": "dressage",
+    "type": "activities",
     "label": "Dressage",
     "icon": "action/lead",
     "contexts": [
@@ -1437,6 +1479,7 @@
   },
   {
     "id": "dernieres-nouvelles",
+    "type": "activities",
     "label": "Dernières nouvelles",
     "icon": "expedition/rumor",
     "contexts": [
@@ -1476,6 +1519,7 @@
   },
   {
     "id": "entrainement-au-combat",
+    "type": "activities",
     "label": "Entraînement au Combat",
     "icon": "expedition/practice",
     "contexts": [
@@ -1508,6 +1552,7 @@
   },
   {
     "id": "observer-une-cible",
+    "type": "activities",
     "label": "Observer une cible",
     "icon": "action/aim",
     "contexts": [
@@ -1546,6 +1591,7 @@
   },
   {
     "id": "recherche-de-savoir",
+    "type": "activities",
     "label": "Recherche de savoir",
     "icon": "nav/compendium",
     "contexts": [
@@ -1585,6 +1631,7 @@
   },
   {
     "id": "reputation",
+    "type": "activities",
     "label": "Réputation",
     "icon": "char/soc",
     "contexts": [
@@ -1611,6 +1658,7 @@
   },
   {
     "id": "semer-dissension-reperage",
+    "type": "activities",
     "label": "Semer la dissension — Repérage",
     "icon": "expedition/rumor",
     "contexts": [
@@ -1640,6 +1688,7 @@
   },
   {
     "id": "semer-dissension-emeute",
+    "type": "activities",
     "label": "Semer la dissension — Émeute",
     "icon": "flag/anger",
     "contexts": [
@@ -1670,6 +1719,7 @@
   },
   {
     "id": "fanmaris",
+    "type": "activities",
     "label": "Tir parfait de Fanmaris",
     "icon": "action/aim",
     "contexts": [
@@ -1705,6 +1755,7 @@
   },
   {
     "id": "leitdorf",
+    "type": "activities",
     "label": "Défense de Leitdorf",
     "icon": "melee/grapple",
     "contexts": [
@@ -1739,6 +1790,7 @@
   },
   {
     "id": "alcatani",
+    "type": "activities",
     "label": "Méthode Alcatani",
     "icon": "flag/bond",
     "contexts": [
@@ -1773,6 +1825,7 @@
   },
   {
     "id": "punchausen",
+    "type": "activities",
     "label": "Fabuleuse Vente des Aventures du comte de Punchausen",
     "icon": "merchant/haggle",
     "contexts": [
@@ -1807,6 +1860,7 @@
   },
   {
     "id": "remaniement-contremaitre",
+    "type": "activities",
     "label": "Remaniement du contremaître",
     "icon": "scenario/trap",
     "contexts": [
@@ -1836,6 +1890,7 @@
   },
   {
     "id": "accomplir-un-rituel",
+    "type": "activities",
     "label": "Accomplir un Rituel",
     "icon": "mechanic/invoke",
     "contexts": [
@@ -1855,6 +1910,7 @@
   },
   {
     "id": "ameliorer-un-familier",
+    "type": "activities",
     "label": "Améliorer un familier",
     "icon": "scenario/bestiary",
     "contexts": [
@@ -1884,6 +1940,7 @@
   },
   {
     "id": "brasser-une-potion",
+    "type": "activities",
     "label": "Brasser une potion",
     "icon": "item/consumable",
     "contexts": [
@@ -1924,6 +1981,7 @@
   },
   {
     "id": "reunir-des-ingredients",
+    "type": "activities",
     "label": "Réunir des ingrédients",
     "icon": "magic/component",
     "contexts": [
@@ -1949,6 +2007,7 @@
   },
   {
     "id": "alchimie-ordinaire",
+    "type": "activities",
     "label": "L'alchimie ordinaire",
     "icon": "item/misc",
     "contexts": [
@@ -1987,6 +2046,7 @@
   },
   {
     "id": "haute-alchimie",
+    "type": "activities",
     "label": "La Haute Alchimie",
     "icon": "scenario/magic",
     "contexts": [
@@ -2026,6 +2086,7 @@
   },
   {
     "id": "augure",
+    "type": "activities",
     "label": "Augure",
     "icon": "nav/dice",
     "contexts": [
@@ -2155,6 +2216,7 @@
   },
   {
     "id": "ecrire-des-parchemins",
+    "type": "activities",
     "label": "Écrire des parchemins",
     "icon": "nav/memorize",
     "contexts": [

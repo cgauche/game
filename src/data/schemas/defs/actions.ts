@@ -12,7 +12,7 @@
  * sa RAISON en clair dans `maison` (champ d'enveloppe, #1467 L1b).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'actions.json';
 export const famille = 'entite';
@@ -50,14 +50,29 @@ const surfaceSchema = z.enum([
 /** Ce que l'acte consomme dans l'économie du Tour. */
 const costSchema = z.enum(['action', 'mouvement', 'gratuit', 'aucun']);
 
-export const schema = z.array(
-  z.strictObject({
-    /** Id STABLE, SANS préfixe de position (la touche suit la case, la case porte cet id). */
-    id: z.string(),
-    /** Libellé d'AFFICHAGE (français) — jamais une clé de logique. */
-    label: z.string(),
-    /** Id d'icône du registre `src/ui/icons` (garde `data-wellformed`, cas 9). */
-    icon: z.string(),
+/** Vue des champs que les deux raffinements lisent — le nœud pré-sceau est `ZodObject<ZodRawShape>`,
+ *  son `v` arrive donc en `unknown`. */
+type EntreeAction = {
+  id: string;
+  surface: z.infer<typeof surfaceSchema>;
+  gate: string | string[];
+  candidates?: string;
+  run?: string;
+  intent?: string;
+  stance?: 'heldGround' | 'intoCrowd';
+  rule?: string;
+  ruleCategory?: string;
+  blocked?: { ticket: string; raison: string };
+  exitSafe?: boolean;
+  role?: 'valide' | 'renonce';
+  hote?: string;
+  mode?: string;
+};
+
+const doc = document(
+  'actions',
+  famille,
+  {
     surface: surfaceSchema,
     /** Id de PRÉDICAT enregistré dans `ACTION_GATES` (`src/state/actionRegistry.ts`), ou LISTE d'ids :
      *  ils se composent alors par l'ET séquentiel d'`actionGate` (toutes passent, sinon la première
@@ -79,10 +94,6 @@ export const schema = z.array(
      *  `PendingAttack` qu'elle pré-remplit) — exigée par le dispatcher `battleToggleStance`. */
     stance: z.enum(['heldGround', 'intoCrowd']).optional(),
     cost: costSchema,
-    /** Arbitrage NON-verbatim du coût : la RAISON en clair, patron d'enveloppe `maison` (#1467 L1b).
-     *  Son ABSENCE dit que le coût découle de la guideline ou d'un verbatim cité par `source`. */
-    maison: z.string().min(1).optional(),
-    source: sourceRefSchema.optional(),
     /** FOYER de la règle : id de l'entrée Codex qui la porte (jamais une phrase recomposée). */
     rule: z.string().optional(),
     /** Catégorie Codex du foyer (`'regles'`, `'talents'`, `'etats'`…) — exigée avec `rule`. */
@@ -111,8 +122,53 @@ export const schema = z.array(
     /** L'action FAIT NAÎTRE un panneau-paramètre (`PanneauParametre`) de SON alvéole : la surface qui
      *  la rend y pose l'ANCRE du panneau. Déclaré ICI pour qu'aucune console ne teste un id. */
     panneau: z.boolean().optional(),
-  })
-  .superRefine((a, ctx) => {
+  },
+  {
+    surface: { label: 'Surface d’accueil', hint: 'Zone de la console de combat où l’action naît par défaut' },
+    gate: {
+      label: 'Prédicat d’autorisation',
+      hint: 'Identifiant (ou liste, toutes devant passer) qui autorise ou refuse l’action',
+    },
+    candidates: { label: 'Sélecteur de cibles/objets', hint: 'Identifiant du sélecteur qui liste ce que l’action propose' },
+    run: {
+      label: 'Dispatcher d’exécution',
+      hint: 'Identifiant de la méthode qui exécute l’action ; absent, l’action est en dette',
+    },
+    mode: { label: 'Mode de ciblage', hint: 'Identifiant du mode de ciblage armé par l’action' },
+    intent: { label: 'Portée d’intention', hint: 'Identifiant de portée peinte sur le champ tant que l’action est armée' },
+    armed: { label: 'Valeur d’armement', hint: 'Valeur écrite quand l’action est armée (mode à bouton)' },
+    stance: {
+      label: 'Posture de tir pré-armée',
+      hint: 'Posture basculée par cette action (tenir sa position/foncer dans la mêlée)',
+    },
+    cost: { label: 'Coût en Action', hint: 'Ce que l’acte consomme dans l’économie du Tour (Action/Mouvement/gratuit/aucun)' },
+    rule: { label: 'Règle associée', hint: 'Identifiant de l’entrée Codex qui porte la règle' },
+    ruleCategory: { label: 'Catégorie de la règle' },
+    keys: {
+      label: 'Clés historiques de surface',
+      hint: 'Anciennes clés de case couvertes par cette action (liste décroissante, en transition)',
+    },
+    blocked: { label: 'Dette bloquante', hint: 'Action déclarée sans dispatcher qui l’exécute' },
+    exitSafe: { label: 'Sortie sans perte', hint: 'La touche d’annulation peut déclencher cette sortie sans rien commettre' },
+    role: { label: 'Rôle de la sortie', hint: 'Valide le geste, ou y renonce — la proéminence du bouton s’en déduit' },
+    hote: { label: 'Action hôte', hint: 'Action dont l’alvéole porte ce geste secondaire' },
+    panneau: { label: 'Ouvre un panneau-paramètre', hint: 'L’action fait naître un panneau ancré à sa propre alvéole' },
+  },
+  {
+    codex: {
+      exempt: {
+        kind: 'vocabulaire-app-interne',
+        raison:
+          "registre de ROUTAGE des actions de combat (id → icône, surface, gate/candidates/run, mode armé) : chaque entrée POINTE vers la fiche qui porte sa règle (`rule`+`ruleCategory` → regles/talents/etats/qualities/skills), elle n'en héberge aucune — aucun verbatim à exposer, la fiche l'est déjà.",
+      },
+    },
+    edit: { none: 'registre de routage édité au fichier — absent de `CodexEdit.CATEGORY_DATASET`' },
+  },
+  {
+    exiges: ['icon'],
+    affinerEntree: (entree) =>
+      entree.superRefine((v, ctx) => {
+        const a = v as EntreeAction;
     if (a.rule && !a.ruleCategory) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : rule sans ruleCategory` });
     }
@@ -146,16 +202,23 @@ export const schema = z.array(
     if (a.hote && a.surface !== 'geste-secondaire') {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : hote hors d’un geste secondaire (aucune alvéole ne le porterait)` });
     }
-  }),
-).superRefine((actions, ctx) => {
-  const par = new Map(actions.map((a) => [a.id, a]));
-  for (const a of actions) {
-    if (!a.hote) continue;
-    const hote = par.get(a.hote);
-    if (!hote) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : hote « ${a.hote} » absent du registre` });
-    } else if (hote.surface === 'geste-secondaire') {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : hote « ${a.hote} » est lui-même un geste secondaire (aucune alvéole au bout)` });
-    }
-  }
-});
+      }),
+    affinerDataset: (dataset) =>
+      dataset.superRefine((v, ctx) => {
+        const actions = v as EntreeAction[];
+        const par = new Map(actions.map((a) => [a.id, a]));
+        for (const a of actions) {
+          if (!a.hote) continue;
+          const hote = par.get(a.hote);
+          if (!hote) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : hote « ${a.hote} » absent du registre` });
+          } else if (hote.surface === 'geste-secondaire') {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : hote « ${a.hote} » est lui-même un geste secondaire (aucune alvéole au bout)` });
+          }
+        }
+      }),
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

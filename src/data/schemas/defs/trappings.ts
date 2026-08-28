@@ -6,7 +6,8 @@
  * engine) et d'un inventaire EXHAUSTIF par script (histogramme de TOUTES les entrées du dataset).
  */
 import { z } from 'zod';
-import { availabilitySchema, sourceRefSchema, secondarySourceRefSchema, formulaSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
+import { availabilitySchema, formulaSchema } from '../grammaire/valeurs';
 import { gameOpSchema, flowSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 import { REACH_LABELS, REACH_VARIABLE } from '../../../engine/types';
 
@@ -93,10 +94,10 @@ const consumableDurationSchema = z.strictObject({
   days: formulaSchema.optional(),
 });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'trappings',
+  famille,
+  {
     hands: z.union([z.literal(1), z.literal(2)]).optional(),
     packSize: z.number().optional(),
     /** CATÉGORIE de catalogue — vocabulaire FERMÉ, mesuré sur 440/440 : melee 65, ranged 79,
@@ -164,7 +165,6 @@ export const schema = z.array(
     pa: z.union([z.number(), z.null()]).optional(),
     damage: z.union([weaponDamageSpecSchema, z.null()]).optional(),
     qualities: z.array(qualityRefSchema),
-    desc: z.string().min(1).optional(),
     consumable: flowSchema.optional(),
     consumableDuration: consumableDurationSchema.optional(),
     container: z.strictObject({ capacity: z.number() }).optional(),
@@ -176,9 +176,6 @@ export const schema = z.array(
      *  fixe aucune formule de consommation) — arbitrage documenté par l'entrée elle-même (`maison`
      *  ci-dessous). Éditable. Absent = 1 (défaut). */
     niConsumedPerDR: z.number().optional(),
-    /** Arbitrage NON-verbatim (même patron que `ActivityData.maison`/`CreatureData.maison`) —
-     *  ex. le taux `niConsumedPerDR` d'une malepierre, ou le doublement plein sur réserve partielle. */
-    maison: z.string().optional(),
     /** Vocabulaire FERMÉ, validé au CHARGEMENT (fail-fast). Trois formes, telles que le livre les
      *  imprime en colonne « Prix »/« Coût » — MÊME traitement que `enc`, qui porte déjà ses marques :
      *  - un montant chiffré (`moneySchema`) ;
@@ -189,15 +186,117 @@ export const schema = z.array(
      *  - `null` — le livre n'imprime AUCUNE valeur : entrée hors table d'équipement (malepierre
      *    LDB 44 l.113-119, sel sacré MDG 10 l.112, carte marine MDG 15 l.290). */
     price: z.union([moneySchema, z.literal('ND'), z.null()]),
-    source: sourceRefSchema,
-    /** Emplacements SECONDAIRES (#563) — ex. `cimeterre` prose folio 90 (ancre) ET ligne de stats
-     *  folio 91 (`alsoIn[0].quote`, la table n'imprime pas la desc). NON migré ici (Lot 0 primitive
-     *  only). */
-    alsoIn: z.array(secondarySourceRefSchema).optional(),
     derivedWeapon: weaponSchema.optional(),
     capabilities: itemCapabilitiesSchema.optional(),
     passive: z.array(gameOpSchema).optional(),
     /** Tarif de SERVICE (LDB 66 p.302 : chambre/écurie) — pas un objet possédable, cf. `TrappingData.service`. */
     service: z.boolean().optional(),
-  }),
+  },
+  {
+    hands: { label: 'Mains requises', hint: '1 ou 2 mains pour manier l’objet' },
+    packSize: { label: 'Taille du lot', hint: 'Nombre d’unités vendues ensemble (munitions groupées)' },
+    categorie: {
+      label: 'Catégorie',
+      hint: 'Catégorie de catalogue : arme de mêlée, arme à distance, munition, armure ou possession',
+    },
+    subType: { label: 'Sous-type', hint: 'Sous-catégorie au sein de la catégorie' },
+    weaponGroup: {
+      label: 'Groupe d’armes',
+      hint: 'Groupe d’armes régissant cette arme (Qualités communes, Spécialisation de Groupe)',
+    },
+    soloSimple: {
+      label: 'Simple en solo',
+      hint: 'Arme d’équipage relativement simple : tirée seule, elle perd le bénéfice des Atouts',
+    },
+    unarmed: {
+      label: 'Est « Mains nues »',
+      hint: 'Marque l’entrée « Mains nues » du catalogue — seule lue pour écarter les poings des armes tenues',
+    },
+    improvised: { label: 'Est l’arme improvisée', hint: 'Marque l’entrée « Arme improvisée » du catalogue' },
+    indirect: { label: 'Tir indirect', hint: 'Tir en arc (mortier/catapulte) : vise une case, jamais une cible directe' },
+    bladed: {
+      label: 'Porte une lame (maison)',
+      hint: 'Approximation maison : l’arme a une lame (condition de la Qualité Piège-lame)',
+    },
+    organicProjectile: {
+      label: 'Projectile organique (maison)',
+      hint: 'Approximation maison : le projectile est organique (arrêté par le Bouclier anti-flèches)',
+    },
+    onHitEffects: { label: 'Effets à la touche', hint: 'Effets déclenchés au moment où l’arme touche sa cible' },
+    minRangeBand: {
+      label: 'Portée minimale de tir',
+      hint: 'Bande sous laquelle l’arme de siège ne peut pas tirer (pas de Bout portant)',
+    },
+    siegeRig: { label: 'Rig de siège', hint: 'Silhouette utilisée pour le rendu visuel de l’engin de siège' },
+    siegeFootprint: {
+      label: 'Empreinte au sol',
+      hint: 'Taille occupée sur la grille par l’engin de siège une fois posé en combat',
+    },
+    defaultAmmo: {
+      label: 'Munition représentative',
+      hint: 'Munition affichée par défaut pour cette arme de siège (indication au joueur)',
+    },
+    shape: { label: 'Forme du rig', hint: 'Forme du rig utilisée pour l’apparence' },
+    formChoices: {
+      label: 'Formes proposées',
+      hint: 'Formes visuelles alternatives que le joueur peut choisir pour cet objet',
+    },
+    requiresMastery: {
+      label: 'Maîtrise requise',
+      hint: 'Arme inhabituelle : sans maîtrise acquise, le Test se fait sur la Caractéristique brute',
+    },
+    prosthesisTraining: {
+      label: 'Paliers d’entraînement (prothèse)',
+      hint: 'Paliers d’achat qui réduisent ou lèvent la pénalité de la prothèse, dans l’ordre',
+    },
+    enc: { label: 'Encombrement' },
+    sizeFor: {
+      label: 'Taille prévue',
+      hint: 'Version grande taille d’une possession ordinaire (ex. équipement pour Ogre)',
+    },
+    availability: { label: 'Disponibilité' },
+    reach: { label: 'Allonge', hint: 'Porté par les armes de mêlée ; absent des objets sans profil d’arme' },
+    range: { label: 'Portée', hint: 'Mètres fixes, ou Bonus de Force × multiplicateur (armes de jet)' },
+    ammoRangeMod: {
+      label: 'Modificateur de portée (munition)',
+      hint: 'Fraction, ou mètres ajoutés ou retranchés à la Portée de l’arme',
+    },
+    loc: { label: 'Localisation protégée', hint: 'Zone du corps couverte par l’armure' },
+    pa: { label: 'Points d’armure' },
+    damage: { label: 'Dégâts' },
+    qualities: { label: 'Qualités' },
+    consumable: { label: 'Effets à la consommation', hint: 'Effets déclenchés à l’usage de l’objet (potion, remède…)' },
+    consumableDuration: {
+      label: 'Durée de l’effet consommé',
+      hint: 'Durée (minutes/heures/jours) de l’effet une fois l’objet consommé',
+    },
+    container: { label: 'Capacité de contenant', hint: 'Quantité que l’objet peut ranger' },
+    niPerGram: {
+      label: 'NI par gramme',
+      hint: 'Niveau d’Incantation qu’un gramme de la matière apporte à un Test d’Incantation/Focalisation (malepierre)',
+    },
+    niConsumedPerDR: { label: 'NI consommé par DR', hint: 'Réserve de NI consommée par point de DR bonus accordé' },
+    price: {
+      label: 'Prix',
+      hint: 'Montant en or/argent/bronze ; « ND » = hors du commerce ordinaire ; vide = le livre n’imprime rien',
+    },
+    derivedWeapon: {
+      label: 'Arme dérivée',
+      hint: 'Profil d’arme d’une prothèse-arme (le membre EST considéré comme telle arme)',
+    },
+    capabilities: { label: 'Capacités mécaniques (liste fermée)' },
+    passive: { label: 'Effets passifs' },
+    service: {
+      label: 'Objet-service',
+      hint: 'Marque un tarif de service (chambre, écurie…), pas un objet possédable',
+    },
+  },
+  {
+    codex: { keys: ['trappings', 'siegeEngines'] },
+    edit: { dataset: 'trappings' },
+  },
+  { exiges: ['source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;
