@@ -13,6 +13,19 @@ src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans 
                             mutations.ts (Tableaux de Corruption LDB 19). Les métadonnées de résolution
                             des sorts vivent dans SpellData (spells.json) — l'ancien registre spellspecs/
                             et le repli regex sont SUPPRIMÉS (Migration #5)
+  schemas/                    CONTRAT de la donnée. Chaque dataset a UN def (`defs/<nom>.ts`,
+                              `defs-scenes/<nom>.ts`) qui DÉCLARE son document par la fabrique
+                              `document()` (`grammaire/document.ts`) : enveloppe commune posée par la
+                              fabrique (id/type/label, provenance source ∨ maison), emballage du fichier
+                              par famille (entite/table/config/record), méta d'édition et exposition
+                              Codex/éditeur. Registres GÉNÉRÉS (`_registry*.generated.ts`,
+                              `_ids.generated.ts`) par `npm run gen` — jamais édités à la main.
+                              Détail : `docs/donnees.md` §E-bis
+scripts/migrations/         Migrations de donnée REJOUABLES (une par lot, datée) : rejouées sur l'arbre
+                            courant elles ne réécrivent RIEN. `npm run migrations:replay` (replay.mjs)
+                            les rejoue dans l'ordre lexical, EN PLACE, et mesure l'arbre par git diff
+                            (suivi) ET git status (non suivi) — toute donnée réécrite ou tout fichier
+                            neuf est ROUGE et NOMMÉ
 src/geometry/                Géométrie/simulation PURE partagée `state` ⇄ `gameIso` (#161 : `state` en a
                             besoin pour SA PROPRE logique — curseur de combat, IA, cadence des beats —
                             pas seulement le rendu ; zéro dépendance framework). `iso.ts` : projection

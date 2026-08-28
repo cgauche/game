@@ -13,6 +13,29 @@ des faits-clés et des références AVANT (déjà projetées par `registry.ts`),
    `codexLookup`). Seule brique langue-dépendante : l'**auto-liage** de prose, *locale-scoped*
    (matcher dérivé des libellés de la locale active), jamais une chaîne FR en dur.
 
+## D'où viennent les entrées — l'exposition est DÉCLARÉE au def
+
+Un document ne « rentre » pas au Codex par une table tenue à part : son **exposition** est un
+argument de la fabrique `document()` (`src/data/schemas/grammaire/document.ts`, cf.
+`docs/donnees.md` §E-bis), au même titre que ses champs :
+
+- `codex` — soit `{ keys: [...] }`, les clés de catégorie sous lesquelles le joueur trouve le
+  document (`src/ui/compendium/registry.ts`), soit `{ exempt: { kind, raison, ticket? } }` : une
+  exemption MOTIVÉE (`'vocabulaire-app-interne'` ou `'dette'`). La fabrique refuse un `codex` sans
+  clés ni exemption motivée.
+- `edit` — ce que l'ÉDITEUR édite : `{ dataset }` (le dataset-liste dont ce document est une entrée),
+  `{ object: 'single' | 'record' }` (objet de configuration), ou `{ none: raison }`. La fabrique
+  refuse les trois absents.
+
+La DÉRIVATION des catégories du Codex à partir de ces déclarations reste à faire (lot L1b, #1467).
+D'ici là, la source lue à l'EXÉCUTION reste `CODEX_SPECS` (`src/ui/compendium/registry.ts:1062`, dont
+`CODEX` est la projection, `:2477`) : l'`exposition` déclarée au def ne pilote encore aucun écran.
+`FILE_TO_CATEGORY_KEYS` / `CODEX_EXPOSURE_EXEMPT` ne sont PAS cette source — ce sont deux tables
+LOCALES à la garde `src/ui/compendium/codex-exposure-guard.test.ts`, qu'elle confronte au registre
+pour tenir l'invariant (tout dataset exposé OU exempté, tables disjointes, aucune entrée fantôme,
+aucun mapping périmé). Un document neuf se pose donc en TROIS endroits du MÊME commit : son
+`exposition` au def, sa catégorie dans `CODEX_SPECS`, sa ligne dans la table de la garde.
+
 ## `relations.ts` — ce qu'elle expose
 
 Construite UNE fois au chargement, en inversant les refs de `src/data` :

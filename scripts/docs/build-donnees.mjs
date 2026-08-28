@@ -100,6 +100,13 @@ for (const r of MANIFEST.rubriques) {
 }
 
 out += `## §B — Conventions de champs (à respecter à l'ajout)\n\n`
+out += [
+  "- **`type`** = le **nom de base du dataset** (`peripeties.json` → `\"type\": \"peripeties\"`), en **2ᵉ clé",
+  "  de chaque entrée**, juste après `id`. Ce n'est pas de la décoration : c'est le littéral que la",
+  "  fabrique `document()` pose et VÉRIFIE au parse (§E-bis) — une entrée dont le `type` ment est",
+  "  REFUSÉE. Il ne se recopie pas d'un dataset voisin : il se lit sur le nom du fichier.",
+  "",
+].join("\n")
 out += `- **\`source.book\`** = l'\`id\` STABLE d'un livre de \`src/data/books.json\` (slug neutre, ex.\n`
 out += `  \`livre-de-base\`, \`archives-de-l-empire-2\`, \`mer-des-griffes\`) — **jamais** l'abréviation d'affichage ni\n`
 out += `  le libellé. Relation **id-pure** (i18n-safe) : \`books.json\` est la source de vérité, **enforced** par\n`
@@ -212,45 +219,148 @@ for (const cas of MANIFEST.homonymes.cas) {
 }
 out += `\n${MANIFEST.homonymes.cas[0].lecon}\n\n`
 
-out += `## §E-bis — Contrat de schéma (\`src/data/schemas/\`)\n\n`
-out += `Chaque document authoré valide contre un schéma zod **STRICT** — le contrat de donnée (Lot 1),\n`
-out += `sur les **DEUX racines** de documents : \`src/data\` (catalogues de jeu, **${schemaCoverage}/${filesOnDisk.length}**\n`
-out += `datasets sous contrat, décompte CALCULÉ des defs présentes dans \`src/data/schemas/defs/\`) et\n`
-out += `\`src/scenes\` (projets de campagne \`*-projet.json\`, defs dans \`src/data/schemas/defs-scenes/\`). Pièces :\n\n`
-out += `- **\`src/data/schemas/defs/<nom>.ts\`** — 1 def PAR dataset (même basename que le \`.json\`), exporte\n`
-out += `  \`file\` (le nom de fichier) et \`schema\` (\`z.ZodTypeAny\`, racine = la forme EXACTE du JSON — tableau\n`
-out += `  ou objet à sous-catalogues). \`characteristics.ts\` est l'EXEMPLAIRE de la convention. Champs de\n`
-out += `  référence commun (\`source.book\`/\`source.page\`) : \`sourceRefSchema\` (\`src/data/schemas/grammaire/valeurs.ts\`).\n`
-out += `- **\`src/data/schemas/defs-scenes/<nom>.ts\`** — 1 def PAR projet de campagne ; son \`file\` est le\n`
-out += `  **chemin RELATIF à \`src/scenes\`** (\`arene/arene-projet.json\`), jamais un basename. Les quatre defs\n`
-out += `  partagent le même \`projetSchema\` (\`src/data/schemas/defs-scenes/projet.ts\`), composé des formes de\n`
-out += `  scène (\`scene.ts\`), de carte du monde (\`worldmap.ts\`) et du bloc narratif (\`narratif.ts\`).\n`
-out += `- **\`_registry.generated.ts\`** et **\`_registry-scenes.generated.ts\`** — GÉNÉRÉS par\n`
-out += `  \`node scripts/gen-registry.mjs\` (\`npm run gen\`), un par dossier de defs (\`SCHEMA_DEFS\`,\n`
-out += `  \`SCHEMA_DEFS_SCENES\`). Ne JAMAIS éditer à la main. \`DEFS_DE_DOCUMENT\`\n`
-out += `  (\`src/data/schemas/validate.ts\`) en est l'union — le registre des deux racines.\n`
-out += `- **\`PENDING\`** dans \`src/data/schema-contract.test.ts\` — la liste des documents encore sans schéma.\n`
-out += `  **Vide** depuis la fin de la migration : tout nouveau document naît AVEC son def, jamais en PENDING\n`
-out += `  transitoire.\n\n`
-out += `**Deux portes, une vérité** (\`src/data/schemas/validate.ts\`) :\n`
-out += `- \`validateDataset(file, value)\` — porte par **FICHIER**, pour qui connaît le nom du document. Un\n`
-out += `  fichier NON registré est une **erreur nommée**, jamais un laissez-passer.\n`
-out += `- \`validateDocument(schema, value)\` — porte par **SCHÉMA**, pour un seam SANS nom de fichier :\n`
-out += `  \`parseProject\` (\`src/state/worldMap.ts\`) sert du JSON committé, du localStorage ET de l'import\n`
-out += `  utilisateur. C'est là que le projet est validé — forme ET sémantiques (FK \`activeAxes\`, invariants\n`
-out += `  du bloc narratif, FK intra-document \`entity.presetId\`, forme de \`meta\`).\n\n`
-out += `**Portes qui font respecter le contrat :**\n`
-out += `- \`src/data/schema-contract.test.ts\` (CI/\`npm test\`) : (a) chaque document des deux racines valide\n`
-out += `  son JSON réel, (b) EXHAUSTIVITÉ (tout document est registré ou dans \`PENDING\`), (c) CLIQUET\n`
-out += `  (\`PENDING\` ne peut pas contenir un fichier déjà schématisé).\n`
-out += `- \`scripts/guards/validate-data.mts\` (pre-commit, \`scripts/git-hooks/pre-commit.mjs\`) : sur les\n`
-out += `  \`.json\` STAGÉS, reparse et revalide contre \`DEFS_DE_DOCUMENT\` — les DEUX registres, \`src/data\`\n`
-out += `  et \`src/scenes\` (Node/tsx, hors Vitest). **STRICT** : un document authoré des deux racines SANS\n`
-out += `  schéma au registre est une ERREUR nommée ; un chemin hors des deux racines n'est pas de sa\n`
-out += `  juridiction (compté à part, jamais jugé).\n\n`
-out += `**Geste « ajouter un document »** : créer le \`.json\` **et** son def (\`schemas/defs/<nom>.ts\` pour\n`
-out += `\`src/data\`, \`schemas/defs-scenes/<nom>.ts\` pour \`src/scenes\`) dans le même commit, puis\n`
-out += `\`npm run gen\` — sinon la garde EXHAUSTIVITÉ échoue (orphelin ni registré ni PENDING).\n\n`
+// §E-bis — la fabrique `document()` est LE chemin (#1467 L1b). Lignes émises telles quelles :
+// des chaînes à guillemets doubles (les backticks Markdown y sont littéraux), jointes par \n.
+out += [
+  "## §E-bis — Contrat de schéma (`src/data/schemas/`)",
+  "",
+  "Chaque document authoré valide contre un schéma zod **STRICT**, sur les **DEUX racines** de",
+  "documents : `src/data` (catalogues de jeu, **" + schemaCoverage + "/" + filesOnDisk.length + "** datasets sous contrat, décompte",
+  "CALCULÉ des defs présentes dans `src/data/schemas/defs/`) et `src/scenes` (projets de campagne",
+  "`*-projet.json`, defs dans `src/data/schemas/defs-scenes/`).",
+  "",
+  "**La fabrique `document()` est LE chemin** (`src/data/schemas/grammaire/document.ts`) : un def ne",
+  "compose plus son schéma à la main, il DÉCLARE son document et reçoit un **handle FERMÉ** (le schéma",
+  "sort scellé — `.extend`/`.shape` n'existent ni au type ni au runtime ; la composition se fait dans la",
+  "fabrique, une fois, ou pas du tout).",
+  "",
+  "```ts",
+  "// src/data/schemas/defs/peripeties.ts — la forme réelle d'un def simple",
+  "export const file = 'peripeties.json';",
+  "export const famille = 'entite';",
+  "",
+  "const doc = document(",
+  "  'peripeties',                                 // type = 2ᵉ clé de chaque entrée (§B)",
+  "  famille,",
+  "  {                                             // champs — la charge utile PROPRE au type",
+  "    roll: z.number(),",
+  "    kind: z.enum(['reposant', 'narratif', 'ereintant', 'attaque']),",
+  "  },",
+  "  {                                             // meta — libellé FR par champ, exigé pour CHAQUE clé",
+  "    roll: { label: 'Face du dé', hint: 'Valeur du d10 qui déclenche cette Péripétie' },",
+  "    kind: { label: 'Nature de la Péripétie', hint: 'Ce que le moteur sait jouer sans rien inventer' },",
+  "  },",
+  "  {                                             // exposition — Codex + éditeur",
+  "    codex: { keys: ['peripeties'] },",
+  "    edit: { dataset: 'peripeties' },",
+  "  },",
+  "  { exiges: ['desc'] },                         // options",
+  ");",
+  "",
+  "export const schema = doc.schema;",
+  "export const meta = doc.meta;",
+  "```",
+  "",
+  "**Signature** : `document(type, famille, champs, meta, exposition, options?)`.",
+  "",
+  "**Les 4 familles** — l'emballage du FICHIER est posé par la fabrique, un def n'écrit plus jamais son",
+  "`z.array` :",
+  "",
+  "- `entite` — le dataset est un **TABLEAU d'entrées** (le cas courant : catalogues de jeu).",
+  "- `table` — un TABLEAU de **documents-tables**, chacun portant ses rangées sous `entries`",
+  "  (`options.ligneTable`, posée par la fabrique).",
+  "- `config` — l'**ENTRÉE seule** : le document forme à lui seul le fichier.",
+  "- `record` — **enveloppe + `entries`** (`options.valeurRecord`, clé par `options.cleRecord`) ; en",
+  "  famille `record` l'ENTRÉE *est* le document.",
+  "",
+  "**L'enveloppe** est posée par la fabrique, jamais redéclarée par un def — une clé d'enveloppe présente",
+  "dans `champs` est une erreur de TYPE *et* d'exécution, qui la nomme. `id`, `type` et `label` sont",
+  "requis ; `labelF`, `desc`, `icon`, `alsoIn` et `variants` optionnels ; la **provenance** est",
+  "`source` ∨ `maison`. Leurs libellés FR appartiennent à la fabrique (`LIBELLES_ENVELOPPE`), pas aux defs.",
+  "",
+  "**Provenance** — un raffinement PRÉ-sceau refuse l'entrée qui n'a NI `source` NI `maison` (`maison` =",
+  "la RAISON en clair d'un arbitrage, une CHAÎNE, jamais un drapeau). Les types dont la provenance n'est",
+  "pas exigible (vocabulaires d'app, documents dont la source vit en profondeur) sont listés dans",
+  "`SANS_PROVENANCE_EXIGEE` (`src/data/schemas/grammaire/sans-livre.ts`, union de `SANS_LIVRE` et",
+  "`SOURCE_EN_PROFONDEUR`), seule table consultée par `exigeSource`.",
+  "",
+  "**`options`** :",
+  "",
+  "- `exiges` — clés d'ENVELOPPE que CE document rend requises ET non vides (`id`/`type`/`label`/`variants`",
+  "  ne sont pas exigibles : la fabrique les pose déjà ainsi).",
+  "- `idDocument` — schéma de l'id quand le catalogue est FERMÉ (patron `characteristics`) ; un schéma qui",
+  "  admettrait la chaîne vide est refusé à la déclaration.",
+  "- `variantes` — champs qu'une variante réglée republie (`variantOf`) ; un document sans `variantes`",
+  "  n'admet aucun `variants`.",
+  "- `affinerEntree` / `affinerDataset` — raffinements PRÉ-sceau, sur l'entrée ou sur le dataset emballé.",
+  "- `cleRecord` / `valeurRecord` — clé et valeur de `entries` en famille `record` ; `ligneTable` en",
+  "  famille `table`. Chacune est EXIGÉE par sa famille et REFUSÉE hors d'elle, en nommant le document.",
+  "",
+  "**Les 4 exports plats du contrat `gen`** : tout def qui appelle `document(` exporte `file`, `schema`,",
+  "`famille` et `meta` **À PLAT**. Le générateur de registre est TEXTUEL (lecture par regex, jamais un",
+  "import) — la sanction diffère donc PAR EXPORT, et une seule est silencieuse :",
+  "",
+  "- `file` non conforme au filtre `scripts/gen-registry.mjs:388` (`^export const file = '`, guillemet",
+  "  SIMPLE littéral) : le def est **ÉCARTÉ du registre, en silence** — double quote, `: string` annoté,",
+  "  littéral gabarit et `= doc.file` compilent tous et sortent pourtant du registre. Seul cet export",
+  "  décide de l'appartenance au registre.",
+  "- `meta` non plat : le def **RESTE au registre** et perd son entrée `meta` (invisible de `presents()`,",
+  "  `scripts/gen-registry.mjs:400`) — l'atelier retombe sur la clé technique, sans qu'aucun gate rougisse.",
+  "- `schema`/`famille` destructurés (`export const { schema } = doc`) **COMPILERAIENT** : la",
+  "  destructuration crée un vrai nom importable. La garde n'y protège pas la compilation mais la",
+  "  CONVENTION — forme plate unique, lisible par un codemod.",
+  "",
+  "Garde : `defsSansExportsPlats`, dans `src/ui/compendium/libelles-de-champs.test.tsx` (« convention",
+  "d'export lue par le générateur de registre »), dont le bras `file` rend le verdict DU GEN forme par forme.",
+  "",
+  "**Méta d'édition** — chaque clé de `champs` exige sa `MetaChamp` (`{ label }` au minimum), et toute",
+  "méta sans champ correspondant est refusée. C'est le canal registre → atelier (`metaPourFichier`,",
+  "`src/data/schemas/validate.ts`) : les gardes de libellés et le CLIQUET de couverture vivent dans",
+  "`src/ui/compendium/libelles-de-champs.test.tsx` — les CHIFFRES y sont, jamais recopiés ici.",
+  "",
+  "**Registres GÉNÉRÉS** — `_registry.generated.ts`, `_registry-scenes.generated.ts` et",
+  "`_ids.generated.ts`, par `node scripts/gen-registry.mjs` (`npm run gen`). Ne JAMAIS éditer à la main.",
+  "`DEFS_DE_DOCUMENT` (`src/data/schemas/validate.ts`) est l'union des deux registres.",
+  "",
+  "Un def de `src/data/schemas/defs-scenes/` suit la même fabrique ; son `file` est le **chemin RELATIF à",
+  "`src/scenes`** (`arene/arene-projet.json`), jamais un basename, et les quatre defs de projet partagent",
+  "le même `projetSchema` (`src/data/schemas/defs-scenes/projet.ts`), composé des formes de scène",
+  "(`scene.ts`), de carte du monde (`worldmap.ts`) et du bloc narratif (`narratif.ts`).",
+  "",
+  "**Deux portes, une vérité** (`src/data/schemas/validate.ts`) :",
+  "",
+  "- `validateDataset(file, value)` — porte par **FICHIER**, pour qui connaît le nom du document. Un",
+  "  fichier NON registré est une **erreur nommée**, jamais un laissez-passer.",
+  "- `validateDocument(schema, value)` — porte par **SCHÉMA**, pour un seam SANS nom de fichier :",
+  "  `parseProject` (`src/state/worldMap.ts`) sert du JSON committé, du localStorage ET de l'import",
+  "  utilisateur. C'est là que le projet est validé — forme ET sémantiques (FK `activeAxes`, invariants",
+  "  du bloc narratif, FK intra-document `entity.presetId`, forme de `meta`).",
+  "",
+  "**Portes qui font respecter le contrat :**",
+  "",
+  "- `src/data/schemas/grammaire/grammaire.test.ts` — le contrat de la FABRIQUE : enveloppe, emballage",
+  "  par famille, sceau, variantes, verrous paramétrés, et le mesureur des contrats d'enveloppe requis",
+  "  qui justifie `exiges`. Les comptes vivent LÀ, à la mesure — jamais recopiés dans une doc.",
+  "- `src/data/schema-contract.test.ts` (CI/`npm test`) : (a) chaque document des deux racines valide",
+  "  son JSON réel, (b) EXHAUSTIVITÉ (tout document est registré ou dans `PENDING`), (c) CLIQUET",
+  "  (`PENDING` ne peut pas contenir un fichier déjà schématisé). `PENDING` est **vide** : tout nouveau",
+  "  document naît AVEC son def, jamais en PENDING transitoire.",
+  "- `scripts/guards/validate-data.mts` (pre-commit, `scripts/git-hooks/pre-commit.mjs`) : sur les",
+  "  `.json` STAGÉS, reparse et revalide contre `DEFS_DE_DOCUMENT` — les DEUX registres, `src/data`",
+  "  et `src/scenes` (Node/tsx, hors Vitest). **STRICT** : un document authoré des deux racines SANS",
+  "  schéma au registre est une ERREUR nommée ; un chemin hors des deux racines n'est pas de sa",
+  "  juridiction (compté à part, jamais jugé).",
+  "",
+  "**Formes RÉELLES par dataset** (comparer une référence, une valeur, une enveloppe d'un document à",
+  "l'autre) : `docs/structures-donnees.md`, GÉNÉRÉ (`npm run docs:structures`).",
+  "",
+  "**Geste « ajouter un document »** : créer le `.json` **et** son def (`schemas/defs/<nom>.ts` pour",
+  "`src/data`, `schemas/defs-scenes/<nom>.ts` pour `src/scenes`) — appel à `document()` plus les 4",
+  "exports plats — dans le même commit, puis `npm run gen` : sinon la garde EXHAUSTIVITÉ échoue",
+  "(orphelin ni registré ni PENDING).",
+  "",
+  "",
+].join("\n")
 out += `## §E-ter — Les deux espaces de clés « race » (species ⇄ rig)\n\n`
 out += `Deux conventions de nommage de race coexistent, **par dessein**, DÉCOUPLÉES :\n\n`
 out += `- **espace « données de personnage »** (\`species.refChar\`/\`species.refCareer\`, ex. \`Haut Elfe\`, \`Elfe\n`
