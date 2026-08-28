@@ -1,6 +1,7 @@
 [
   {
     "id": "terre",
+    "label": "Terre",
     "face": "#5a4a33",
     "foot": "#3e3322",
     "slopeTop": "#75603f",
@@ -28,6 +29,7 @@
   },
   {
     "id": "pierre",
+    "label": "Pierre",
     "built": true,
     "face": "#6b6f76",
     "foot": "#4a4e54",
@@ -51,21 +53,25 @@
   },
   {
     "id": "pilier",
+    "label": "Pilier",
     "built": true,
     "face": "#565a61"
   },
   {
     "id": "riser",
+    "label": "Contremarche",
     "built": true,
     "face": "#57534c"
   },
   {
     "id": "plafond",
+    "label": "Plafond",
     "built": true,
     "face": "#2c2a26"
   },
   {
     "id": "sol-inconnu",
+    "label": "Sol inconnu",
     "face": "#6b6250"
   }
 ]

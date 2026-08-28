@@ -107,12 +107,6 @@ export const EFFECT_ZONE_SEEDS: Record<'room' | 'effect', EffectZoneSeed> = {
  *  ce rig qui rend l'affût inerte en éditeur comme en combat. L'invariant ne vit qu'ici (pas dupliqué). */
 export const SIEGE_ENGINES = siegeEngines; // FOYER UNIQUE du filtre = `data/siegeEngines` (partagé avec le Codex)
 
-export const ROOF_MATERIALS = [
-  { id: 'tuile', label: 'Tuiles' },
-  { id: 'chaume', label: 'Chaume' },
-  { id: 'ardoise', label: 'Ardoise' },
-] as const;
-
 /** Sous-mode de l'outil MURS : cloison pleine, porte (arête franchissable), ou diagonale en travers. */
 export type WallPaint = 'wall' | 'door' | 'diagBack' | 'diagFwd';
 

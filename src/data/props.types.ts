@@ -61,13 +61,16 @@ export interface PropMaterialData { id: string; label: string; color: string; ro
 /**
  * Type de PROP/décor app-owned : couche SÉMANTIQUE (physique `solid`, opacité `opaque`, classe de
  * `cover`, émission de lumière `light`, empreinte `foot`) ET géométrie locale (`volume`, `seatSlots`) —
- * le rendu SVG de vignette et le label restent au catalogue gameIso. Vérité UNIQUE des dimensions d'un
+ * le rendu SVG de vignette reste au catalogue gameIso. Vérité UNIQUE des dimensions d'un
  * décor : une instance de scène ne redéclare aucune empreinte. Lu par la walkability (`sceneRules`), la
  * Ligne de Vue/couvert (`lineOfSight`), la lumière (`vision`) et le monde volumique. Édité au Codex.
  * Un prop ABSENT du dataset = passable, transparent, sans couvert, sans lumière et sans empreinte.
  */
 export interface PropData {
   id: string;
+  /** Nom d'auteur du décor. Miroir du `label` de la def d'ART du même id
+   *  (`src/gameIso/catalog/decor/defs/<id>.ts`) — parité gardée par `src/data/props-label-parite.test.ts`. */
+  label: string;
   solid?: boolean;
   opaque?: boolean;
   cover?: 'imparfaite' | 'moyenne' | 'totale';

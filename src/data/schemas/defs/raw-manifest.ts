@@ -13,6 +13,9 @@ export const schema = z.array(
   z
     .strictObject({
       id: z.string().min(1),
+      /** Titre VERBATIM de la section d'Atlas que le topic adresse — accord gardé par
+       *  `scripts/raw/build-implemente.test.mjs` (`headingForTopic`). */
+      label: z.string().min(1),
       ticket: z.string().optional(),
       bloque: z.string().optional(),
     })

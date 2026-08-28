@@ -54,7 +54,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { SeatAssignmentsField } from './SeatAssignmentsField';
-import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, changePropRef, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, editEntity, editEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
+import { KIND_LABEL, Sel, type Tool, changePropRef, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, editEntity, editEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
 import { scrollElementIntoPort } from './useEditorView';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
@@ -408,7 +408,7 @@ export function Inspector({
                 <label className="ed-field">
                   Couverture
                   <select value={roofDefaults.material} onChange={(event) => patchRoofDefaults({ material: event.target.value })}>
-                    {COVERING_MATERIALS.map((m) => <option key={m.id} value={m.id}>{m.id}</option>)}
+                    {COVERING_MATERIALS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
                   </select>
                 </label>
                 <p className="hint">
@@ -700,7 +700,7 @@ export function Inspector({
                 <label className="ed-field">
                   Matériau
                   <select value={roofSection.material} onChange={(event) => updateRoofSection({ material: event.target.value })}>
-                    {ROOF_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.label}</option>)}
+                    {COVERING_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.label}</option>)}
                   </select>
                 </label>
               </Fold>

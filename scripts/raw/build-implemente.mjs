@@ -275,7 +275,9 @@ export function parseFiche(basename, content) {
       const n = (slugCount.get(slug) || 0) + 1
       slugCount.set(slug, n)
       const topic = `${stem}#${slug}${n > 1 ? '-' + n : ''}`
-      fields.push({ topic, headerIdx: i, endIdx: endIdxOf[i], refs: pending })
+      // `heading` = le titre VERBATIM d'où le slug du topic est tiré, exposé ici pour que personne
+      // n'ait à re-dériver l'appariement titre↔topic (cf. `headingForTopic`).
+      fields.push({ topic, heading: nearestHeading || stem, headerIdx: i, endIdx: endIdxOf[i], refs: pending })
       pending = []
       continue
     }
@@ -476,6 +478,20 @@ export function regenerateFiche(basename, content, ctx) {
   const reps = fields.map((f) => ({ f, block: renderBlock(f, ctx) })).sort((a, b) => b.f.headerIdx - a.f.headerIdx)
   for (const { f, block } of reps) lines.splice(f.headerIdx, f.endIdx - f.headerIdx, ...block)
   return lines.join('\n')
+}
+
+/**
+ * Titre (heading VERBATIM) de la fiche qui porte un topic `<fiche>#<slug>`. Passe par `parseFiche` —
+ * donc par la MÊME dérivation de topic que le générateur, disambiguation `-N` comprise : aucun second
+ * slugify parallèle ne peut diverger. Fail-fast si la fiche ou le topic n'existe pas.
+ * Consommé par la migration `2026-08-28-l1b-10b-rawmanifest-label.mjs` et par sa garde.
+ */
+export function headingForTopic(topic, rawDir = RAWDIR) {
+  const stem = String(topic).split('#')[0]
+  const { fields } = parseFiche(stem, readFileSync(join(rawDir, `${stem}.md`), 'utf8'))
+  const hit = fields.filter((f) => f.topic === topic)
+  if (hit.length !== 1) throw new Error(`topic « ${topic} » : ${hit.length} champ(s) dans ${stem}.md (1 attendu)`)
+  return hit[0].heading
 }
 
 /** Charge + valide le manifest éditorial (fail-fast). `knownTopics` = Set des topics des fiches. */

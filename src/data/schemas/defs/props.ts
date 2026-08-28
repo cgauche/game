@@ -43,6 +43,9 @@ export const propSeatSlotSchema = z.strictObject({
  *  partagé par `src/state` (walkability, LdV, lumière) et `src/gameIso` (rendu). */
 export const propDataSchema = z.strictObject({
   id: z.string(),
+  /** Miroir du `label` de la def d'ART du même id (`src/gameIso/catalog/decor/defs/<id>.ts`) —
+   *  parité gardée par `src/data/props-label-parite.test.ts`. */
+  label: z.string().min(1),
   solid: z.boolean().optional(),
   opaque: z.boolean().optional(),
   cover: z.enum(['imparfaite', 'moyenne', 'totale']).optional(),

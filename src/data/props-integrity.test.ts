@@ -3,13 +3,13 @@ import { schema as propsSchema } from './schemas/defs/props';
 import { props, propMaterials, findPropMaterialById } from './index';
 import { validatePropCatalog, type PropData } from './props.types';
 
-const propFixture = (patch: Partial<PropData>): PropData => ({ id: 'x', solid: true, ...patch });
+const propFixture = (patch: Partial<PropData>): PropData => ({ id: 'x', label: 'X d’épreuve', solid: true, ...patch });
 
 describe('props.json — formes strictes de la recette volumique et des places assises', () => {
   it('refuse une primitive inconnue et un matériau absent', () => {
     expect(() => propsSchema.parse([{ id: 'x', volume: { primitives: [{ kind: 'sphere' }] } }])).toThrow();
     expect(validatePropCatalog(
-      [{ id: 'x', volume: { primitives: [{ kind: 'box', center: { x: 0, y: 0, h: 0.5 }, size: { x: 1, y: 1, h: 1 }, material: 'absent' }] } }],
+      [{ id: 'x', label: 'X d’épreuve', volume: { primitives: [{ kind: 'box', center: { x: 0, y: 0, h: 0.5 }, size: { x: 1, y: 1, h: 1 }, material: 'absent' }] } }],
       [{ id: 'bois-chene', label: 'Chêne', color: '#5b3a22', roughness: 0.82, metalness: 0 }],
     )).toContain('x: matériau inconnu « absent »');
   });
@@ -17,6 +17,7 @@ describe('props.json — formes strictes de la recette volumique et des places a
   it('accepte une recette et des places assises bien formées', () => {
     expect(() => propsSchema.parse([{
       id: 'x',
+      label: 'X d’épreuve',
       solid: true,
       foot: { w: 2, h: 1 },
       volume: {

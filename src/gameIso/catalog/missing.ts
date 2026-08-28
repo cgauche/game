@@ -13,6 +13,10 @@ export { MISSING_TONE, MISSING_TONE_DARK };
  *  et une garde de couverture (`structureAppearance-coverage.test.ts`) le distingue d'une entrée réelle. */
 export const MISSING_ID = 'sans-entree-au-catalogue';
 
+/** Libellé porté par toute entrée de repli visible — même doctrine que `MISSING_ID` : l'échec se NOMME
+ *  à l'écran, il n'emprunte pas le nom d'une entrée réelle. */
+export const MISSING_LABEL = 'Sans entrée au catalogue';
+
 /** Avertit en DEV qu'un id est absent d'un catalogue de rendu (`kind` = famille affichée). */
 export function warnMissing(kind: string, id: string): void {
   // `?.` : import.meta.env est absent hors Vite (scripts de galeries, tests headless).

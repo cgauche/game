@@ -258,7 +258,11 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "creatureId", statut: "historique", strate: "Référence", occurrences: 54, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "creatureId+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "id,qualityChoice", statut: "historique", strate: "Référence", occurrences: 36, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "text (résolvable)", statut: "divergente", strate: "Référence", occurrences: 55, lot: "L2 #1463", date: "2026-08-23" },
+  // 55→60 (#1467 L1b V-P0d) : la DONNÉE a bougé, pas le détecteur — les 78 entrées de `props.json`
+  // reçoivent leur `label`, et « Bureau » ×5 (careerLevels.trappings, texte d'auteur inchangé) trouve
+  // désormais une cible dans l'index des libellés. Même texte, même divergence : il est seulement
+  // devenu RÉSOLVABLE. Le compte redescendra quand ces 5 textes passeront en réf d'id.
+  { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "text (résolvable)", statut: "divergente", strate: "Référence", occurrences: 60, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "vehicleId", statut: "historique", strate: "Référence", occurrences: 15, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "vehicleId+…", statut: "divergente", strate: "Référence", occurrences: 11, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "careerLevels.json", champ: "trappings", signature: "wildcard", statut: "historique", strate: "Référence", occurrences: 7, lot: "L3 #1463", date: "2026-08-23" },
@@ -935,10 +939,6 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "identité", cle: "nom", motif: "clé divergente", detail: "", document: "diligence-projet.json", chemin: "scenes", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "nom", motif: "clé divergente", detail: "", document: "loup-et-saumure-projet.json", chemin: "scenes", entrees: 5, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "nom", motif: "clé divergente", detail: "", document: "loup-et-saumure-projet.json", chemin: "worldMap", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "props.json", chemin: "(entrées)", entrees: 78, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "raw.manifest.json", chemin: "(entrées)", entrees: 8, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "reliefMaterials.json", chemin: "(entrées)", entrees: 6, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "libellé", cle: "label", motif: "clé absente", detail: "", document: "roofMaterials.json", chemin: "(entrées)", entrees: 4, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "nom", motif: "clé divergente", detail: "", document: "arene-projet.json", chemin: "scenes", entrees: 18, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "nom", motif: "clé divergente", detail: "", document: "arene-projet.json", chemin: "worldMap", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
   { role: "libellé", cle: "nom", motif: "clé divergente", detail: "", document: "barge-du-sel-projet.json", chemin: "scenes", entrees: 3, lot: "L1b #1467", date: "2026-08-23" },

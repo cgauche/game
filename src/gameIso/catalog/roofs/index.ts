@@ -1,6 +1,6 @@
 import type { RoofMaterialDef } from './types';
 import { roofMaterials } from '../../../data';
-import { catalogEntry, MISSING_ID, MISSING_TONE, MISSING_TONE_DARK } from '../missing';
+import { catalogEntry, MISSING_ID, MISSING_LABEL, MISSING_TONE, MISSING_TONE_DARK } from '../missing';
 export type { RoofMaterialDef } from './types';
 
 const MAP: Record<string, RoofMaterialDef> = Object.fromEntries(roofMaterials.map((m) => [m.id, m]));
@@ -9,6 +9,7 @@ const MAP: Record<string, RoofMaterialDef> = Object.fromEntries(roofMaterials.ma
  *  du dessus, jamais l'apparence d'un autre matériau. */
 const MISSING: RoofMaterialDef = {
   id: MISSING_ID,
+  label: MISSING_LABEL,
   N: MISSING_TONE,
   E: MISSING_TONE,
   S: MISSING_TONE,

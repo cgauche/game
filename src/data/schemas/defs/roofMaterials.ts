@@ -13,6 +13,7 @@ export const famille = 'entite';
 export const schema = z.array(
   z.strictObject({
     id: z.string(),
+    label: z.string().min(1),
     detail: detailRecipeSchema.optional(),
     N: z.string().optional(),
     E: z.string().optional(),

@@ -14,6 +14,7 @@ import type { Face } from './types';
  */
 const PROP_TROIS_PRIMITIVES: PropData = {
   id: 'banc-d-epreuve',
+  label: 'Banc d’épreuve',
   solid: true,
   volume: {
     primitives: [

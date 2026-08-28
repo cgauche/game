@@ -1,6 +1,7 @@
 [
   {
     "id": "tuile",
+    "label": "Tuile",
     "N": "#a04836",
     "E": "#732a20",
     "S": "#531b13",
@@ -28,6 +29,7 @@
   },
   {
     "id": "chaume",
+    "label": "Chaume",
     "N": "#b0904a",
     "E": "#7d642a",
     "S": "#59461a",
@@ -58,6 +60,7 @@
   },
   {
     "id": "ardoise",
+    "label": "Ardoise",
     "N": "#63727f",
     "E": "#3d4852",
     "S": "#283037",
@@ -85,6 +88,7 @@
   },
   {
     "id": "plan",
+    "label": "Plan (vue de dessus)",
     "planBody": "#6e4f3a",
     "planEdge": "#241a12",
     "planInner": "#8a6a4a",

@@ -6,6 +6,8 @@ import type { DetailRecipe } from '../../detail/types';
 
 export interface RoofMaterialDef {
   id: string;
+  /** Nom d'auteur du matériau, affiché tel quel par les sélecteurs de couverture de l'éditeur. */
+  label: string;
   /** Recette de détail de COUVERTURE (matériaux v2) : `courses` = les rangs (le pas `hM` fixe leur
    *  espacement — source unique builder/backend — `joint` leur couleur ; `blockWM`+`stagger`+
    *  `paletteVar` = bardeaux décalés nuancés ; `edgeWobble` seul = rangs organiques type chaume) ;

@@ -9,9 +9,10 @@ import {
   parseFiche, renderBlock, regenerateFiche, validateManifest, isExcludedSrc, indexCode, isDeadExport,
   GUARD_LEAK_RE, GEN_TAG, NOT_IMPL,
   buildAbbrMap, folioCitationsFromJson, findManifestOrphans, computeAll, computeFolioWinners,
+  headingForTopic, MANIFEST_PATH,
 } from './build-implemente.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -450,4 +451,31 @@ test('renderBlock : topic non matché par lignes mais MATCHÉ par folio → impl
   assert.match(b, /`src\/data\/creatures\.json`/)
   // déterminisme : deux rendus identiques
   assert.deepEqual(renderBlock(field, ctx), renderBlock(field, ctx))
+})
+
+test('headingForTopic : rend le titre VERBATIM d’où le slug du topic est tiré (disambiguation -N comprise)', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'raw-heading-'))
+  try {
+    writeFileSync(join(dir, 'a.md'), [
+      '## Seconde Vue', '', '**Implémente :** x', '',
+      '## Magie Noire (Dhar)', '', '**Implémente :** x', '',
+      '### Seconde Vue', '', '**Implémente :** x', '',
+    ].join('\n'))
+    assert.equal(headingForTopic('a#seconde-vue', dir), 'Seconde Vue')
+    assert.equal(headingForTopic('a#magie-noire-dhar', dir), 'Magie Noire (Dhar)')
+    assert.equal(headingForTopic('a#seconde-vue-2', dir), 'Seconde Vue') // 2ᵉ porteur du même slug
+    assert.throws(() => headingForTopic('a#absent', dir), /0 champ\(s\)/)
+  } finally { rmSync(dir, { recursive: true, force: true }) }
+})
+
+test('raw.manifest.json : le `label` de chaque entrée EST le titre d’Atlas que son topic adresse', () => {
+  const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'))
+  assert.ok(manifest.length > 0)
+  const divergents = manifest
+    .map((e) => ({ id: e.id, label: e.label, titre: headingForTopic(e.id) }))
+    .filter((x) => x.label !== x.titre)
+    .map((x) => `${x.id} : label ${JSON.stringify(x.label)} ≠ titre ${JSON.stringify(x.titre)}`)
+  assert.deepEqual(divergents, [])
+  const vides = manifest.filter((e) => typeof e.label !== 'string' || e.label.trim() === '').map((e) => e.id)
+  assert.deepEqual(vides, [])
 })

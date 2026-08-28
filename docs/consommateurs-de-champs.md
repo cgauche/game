@@ -200,11 +200,12 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | Champ | Lecteurs | Exemple |
 |---|---|---|
 | `id` | **0 — JAMAIS LU** | — |
+| `label` | **0 — JAMAIS LU** | — |
 | `solid` | **0 — JAMAIS LU** | — |
 | `opaque` | **0 — JAMAIS LU** | — |
 | `cover` | **0 — JAMAIS LU** | — |
 | `light` | **0 — JAMAIS LU** | — |
-| `foot` | 1 | `src/data/props.types.ts:81` |
+| `foot` | 1 | `src/data/props.types.ts:84` |
 | `volume` | 1 | `src/gameIso/builders/propVolumes.ts:132` |
 | `seatSlots` | **0 — JAMAIS LU** | — |
 
@@ -276,7 +277,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-23 types, 148 champs mesurés, **29 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+23 types, 149 champs mesurés, **30 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 

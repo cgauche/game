@@ -5,6 +5,8 @@ import type { DetailRecipe } from '../../detail/types';
 
 export interface ReliefMaterialDef {
   id: string;
+  /** Nom d'auteur du matériau, affiché tel quel par l'éditeur. */
+  label: string;
   /** Masse BÂTIE (maçonnerie, ouvrage) par opposition au relief NATUREL (talus, terre remuée) — même axe
    *  que `TerrainDef.built`. Absent = naturel. */
   built?: boolean;
