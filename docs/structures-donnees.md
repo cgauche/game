@@ -709,14 +709,14 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 | méta libre | `__livres` | divergente | 0 | — |
 
 Groupes mesurés : **125** jeux d’ENTRÉES DE RACINE et **130** chemins de
-DOCUMENTS EMBARQUÉS (**2769** objets). **73** divergences
+DOCUMENTS EMBARQUÉS (**2769** objets). **72** divergences
 (rôle × clé × document × chemin) au stock `STRUCTURES_ENVELOPPE` (`scripts/guards/lib/structuresStock.mjs`,
 garde `src/data/structures-contrat.test.ts`) — une ligne se solde en migrant l’enveloppe, la ligne part
 dans le MÊME commit :
 
 | Rôle | Motif | Groupes |
 |---|---|---|
-| identité | clé divergente | 12 |
+| identité | clé divergente | 11 |
 | libellé | clé divergente | 9 |
 | source | clé absente | 52 |
 
@@ -858,7 +858,7 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `talents.json` | `specs` | 215 | `id`(215) `label`(215) |
 | `tavernGames.json` | `sides` | 2 | `div`(2) `id`(2) `label`(2) `mult`(2) `pieces`(2) |
 | `teintesJeu.json` | `(racine)` | 1 | `entries`(1) `id`(1) `label`(1) `type`(1) |
-| `vehicles.json` | `travel.classes` | 6 | `brassPerKm`(6) `key`(6) `label`(6) |
+| `vehicles.json` | `travel.classes` | 6 | `brassPerKm`(6) `id`(6) `label`(6) |
 | `vents-tourbillonnants.json` | `entries` | 5 | `id`(5) `label`(5) `max`(5) `min`(5) `mod`(5) |
 | `water-exposure.json` | `modifiers` | 12 | `appliesTo`(12) `auto`(7) `id`(12) `label`(12) `mod`(12) `table`(12) |
 | `weather.json` | `conditions` | 6 | `desc`(4) `id`(6) `label`(6) `lightningNervous`(1) `movementWalkOnly`(2) `physicalTestMod`(1) `powderUseless`(1) `rangedMod`(2) `rangedUseless`(1) `resistanceTest`(2) `source`(6) `visibiliteM`(4) |

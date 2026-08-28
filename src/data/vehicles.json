@@ -27,12 +27,12 @@
       },
       "classes": [
         {
-          "key": "interieur",
+          "id": "interieur",
           "label": "Intérieur",
           "brassPerKm": 2
         },
         {
-          "key": "exterieur",
+          "id": "exterieur",
           "label": "Extérieur",
           "brassPerKm": 1
         }
@@ -148,12 +148,12 @@
       "medium": "fluvial",
       "classes": [
         {
-          "key": "cabine",
+          "id": "cabine",
           "label": "Cabine",
           "brassPerKm": 5
         },
         {
-          "key": "pont",
+          "id": "pont",
           "label": "Pont",
           "brassPerKm": 2
         }
@@ -205,12 +205,12 @@
       "movement": 8,
       "classes": [
         {
-          "key": "cabine",
+          "id": "cabine",
           "label": "Cabine",
           "brassPerKm": 5
         },
         {
-          "key": "pont",
+          "id": "pont",
           "label": "Pont",
           "brassPerKm": 2
         }

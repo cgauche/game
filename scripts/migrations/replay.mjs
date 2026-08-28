@@ -21,7 +21,7 @@
  * de son propre chef, il délègue aux scripts.
  *
  * NOMMAGE DU LOT #1467 L1b : préfixe `<AAAA-MM-JJ>-l1b-<n><lettre>-<concept>.mjs`, la date étant
- * celle d'ÉCRITURE de la vague (2026-08-27 pour les vagues 1 à 5, 2026-08-28 à partir de la vague 6).
+ * celle d'ÉCRITURE de la vague — elle ne se déduit ni du numéro ni de l'ordre.
  * L'ordre lexical NE SUIT PLUS le numéro de vague depuis la vague 10 : `10a`, `11a` trient AVANT
  * `6a`…`9c` (comparaison de chaînes, pas d'entiers). C'est SANS effet ici parce que les migrations du
  * lot écrivent des fichiers DISJOINTS — aucune ne lit le résultat d'une autre, donc aucun ordre

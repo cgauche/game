@@ -25,7 +25,7 @@ describe('catalogue véhicules (data-driven)', () => {
     }
   });
 
-  it('diligence M6 (2/1 sous) et barge M8 (5/2 sous) — RAW LDB l.207-219', () => {
+  it('diligence M6 (2/1 sous) et barge M8 (5/2 sous) — RAW LDB 51 l.180-189', () => {
     const dil = vehicleTravel('diligence')!;
     expect(dil.movement).toBe(6);
     expect(dil.classes.map((c) => c.brassPerKm)).toEqual([2, 1]);

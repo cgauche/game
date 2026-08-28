@@ -143,8 +143,8 @@ export const APPRAISED_AVAILABILITIES = ['Rare', 'Exotique'] as const satisfies 
  *  attelage ; fleuve/mer : voiles/avirons/coque). EDOC 7 (terrestre), MoR ch.5 (fluvial), MDG 13 (maritime). */
 export type Propulsion = 'terrestre' | 'fluvial' | 'maritime';
 
-/** Classe de voyage payant d'un véhicule : prix RAW en sous (PA) par km ET par passager (LDB l.207-219). */
-export interface VehicleTravelClass { key: string; label: string; brassPerKm: number; }
+/** Classe de voyage payant d'un véhicule : prix RAW en sous (PA) par km ET par passager (LDB 51 l.180-189). */
+export interface VehicleTravelClass { id: string; label: string; brassPerKm: number; }
 
 /**
  * Véhicule / embarcation à coque — FOYER UNIQUE de la donnée (`src/data/vehicles.json`), data-driven.
@@ -189,7 +189,7 @@ export interface VehicleData {
   /** Facette ACHAT (marché / possession de carrière). `availability` absent pour les navires (MDG ne
    *  donne pas de Disponibilité). */
   purchase?: { price: { gold: number; silver: number; bronze: number }; availability?: string };
-  /** Facette VOYAGE (passage payant, LDB l.207-219). `movement` = Déplacement du véhicule (km/h).
+  /** Facette VOYAGE (passage payant, LDB 51 l.178-189). `movement` = Déplacement du véhicule (km/h).
    *  `medium` = milieu du TRAJET PAYÉ — INDÉPENDANT de `hull.propulsion` (un véhicule peut être
    *  bi-milieu : la Barge navigue le fleuve, LDB 70 p.306, tout en figurant à la table navale MDG 12
    *  avec `propulsion:'maritime'` — jamais l'un dérivé de l'autre) ; absent = terrestre implicite.

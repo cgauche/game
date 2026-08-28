@@ -58,7 +58,7 @@ describe('16-voyage — intégration Voyage par Étapes', () => {
     // La LONGUE route part du hameau : on entre à p-hameau pour la prendre en diligence.
     useGame.getState().loadProject([scenario.scene, ...(scenario.extraScenes ?? [])], 'test-voyage-hameau', scenario.worldMap!);
     if (scenario.money) distributeCredit(useGame.getState, useGame.setState, scenario.money); // bourses du groupe (SOCLE POSSESSIONS #531)
-    useGame.getState().startTravel('r-longue', 'diligence', { classKey: 'exterieur' });
+    useGame.getState().startTravel('r-longue', 'diligence', { classeId: 'exterieur' });
     const plan = useGame.getState().travelPlan;
     expect(plan?.vehicle?.bodyShape).toBe('vehicule'); // diligence E45/B50
     // Les jets d'Étape du jour sont une cascade influençable (`travelDay`) : la drainer pour que les

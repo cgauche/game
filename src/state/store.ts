@@ -1421,7 +1421,7 @@ export interface GameState extends RollFlowActionsMap {
   travelRecap: import('./travelFlow').TravelRecap | null;
   dismissTravelRecap: () => void;
   /** Démarre un voyage depuis le lieu courant le long d'une route (mode + classe + allure). */
-  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure; seaPace?: number; fast?: boolean; cadence?: import('./voyageCadence').VoyageCadence }) => void;
+  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classeId?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure; seaPace?: number; fast?: boolean; cadence?: import('./voyageCadence').VoyageCadence }) => void;
   /** Reprend un voyage interrompu par une péripétie. */
   resumeTravel: () => void;
   /** Bascule la CADENCE des ordres de la traversée en cours (couche `voyageCadence`) — « Passer en
@@ -1448,7 +1448,7 @@ export interface GameState extends RollFlowActionsMap {
   lastNightDay: number;
   /** Départ de voyage BLOQUÉ par la porte d'heure (maison `travel-departure-gate`, #340) : terre/fleuve
    *  de nuit → « Attendre l'aube » (nuit jouée) ou annuler. `null` = pas de départ en attente. */
-  pendingDeparture: { routeId: string; mode: import('../engine/travel').TravelMode; opts: { classKey?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure; seaPace?: number; fast?: boolean; cadence?: import('./voyageCadence').VoyageCadence }; dawnAt: number } | null;
+  pendingDeparture: { routeId: string; mode: import('../engine/travel').TravelMode; opts: { classeId?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure; seaPace?: number; fast?: boolean; cadence?: import('./voyageCadence').VoyageCadence }; dawnAt: number } | null;
   /** « Attendre l'aube » : joue une nuit (repos) puis efface la porte — le groupe repart au matin. */
   departWaitDawn: () => void;
   /** « Annuler » le départ nocturne bloqué par la porte. */

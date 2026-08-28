@@ -150,14 +150,14 @@ export function travelPlanCalc(km: number, kmh: number, hoursPerDay: number): Tr
 export function transportCost(
   km: number,
   mode: Exclude<TravelMode, 'pied'>,
-  classKey: string,
+  classeId: string,
   passengers: number,
   brassPerKmOverride?: number,
 ): Money | null {
   const travel = vehicleTravel(mode);
   if (!travel) return null;
   const classes = travel.classes;
-  const cls = classes.find((c) => c.key === classKey) ?? classes[0];
+  const cls = classes.find((c) => c.id === classeId) ?? classes[0];
   const perKm = brassPerKmOverride ?? cls.brassPerKm;
   return fromBrass(Math.ceil(perKm * km) * Math.max(1, passengers));
 }

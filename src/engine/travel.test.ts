@@ -64,7 +64,7 @@ describe('travelPlanCalc (LDB 51 l.195 : 6 h/jour sans Test)', () => {
   });
 });
 
-describe('transportCost (l.207-219 : prix par km par passager)', () => {
+describe('transportCost (LDB 51 l.180-189 : prix par km par passager)', () => {
   it('diligence Intérieur 2 sous/km : 10 km × 4 passagers = 80 sous', () => {
     expect(toBrass(transportCost(10, 'diligence', 'interieur', 4)!)).toBe(80);
   });

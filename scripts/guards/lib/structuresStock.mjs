@@ -972,7 +972,6 @@ export const STRUCTURES_ENVELOPPE = [
   { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "schemas.lv.2", entrees: 111, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "schemas.lv.3", entrees: 111, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "progression-schemas.derived.json", chemin: "schemas.lv.4", entrees: 111, lot: "L1b #1467", date: "2026-08-23" },
-  { role: "identité", cle: "key", motif: "clé divergente", detail: "", document: "vehicles.json", chemin: "travel.classes", entrees: 6, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "nom", motif: "clé divergente", detail: "", document: "arene-projet.json", chemin: "scenes", entrees: 18, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "nom", motif: "clé divergente", detail: "", document: "arene-projet.json", chemin: "worldMap", entrees: 1, lot: "L1b #1467", date: "2026-08-23" },
   { role: "identité", cle: "nom", motif: "clé divergente", detail: "", document: "barge-du-sel-projet.json", chemin: "scenes", entrees: 3, lot: "L1b #1467", date: "2026-08-23" },

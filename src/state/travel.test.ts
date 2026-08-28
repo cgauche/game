@@ -172,11 +172,11 @@ describe('startTravel — à pied', () => {
   });
 });
 
-describe('startTravel — transports payants (l.207-219)', () => {
+describe('startTravel — transports payants (LDB 51 l.178-189)', () => {
   it('diligence : débite prix/km × km × passagers et voyage à M6', () => {
     setup(map({ modes: ['pied', 'diligence'] })); // 12 km — bourse de départ : 5 SC = 60 PA
     const t0 = useGame.getState().gameTime;
-    useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur' }); // 1 sou/km × 12 × 1 passager
+    useGame.getState().startTravel('r1', 'diligence', { classeId: 'exterieur' }); // 1 sou/km × 12 × 1 passager
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene');
     expect(toBrass(partyMoneyTotal(() => st))).toBe(48); // 60 − 12
@@ -185,7 +185,7 @@ describe('startTravel — transports payants (l.207-219)', () => {
 
   it('bourse insuffisante → voyage refusé', () => {
     setup(map({ modes: ['diligence'], prices: { diligence: 100 } })); // 1200 PA ≫ 60 PA
-    useGame.getState().startTravel('r1', 'diligence', { classKey: 'interieur' });
+    useGame.getState().startTravel('r1', 'diligence', { classeId: 'interieur' });
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-a-scene'); // pas parti
     expect(st.travelPlan).toBeNull();
@@ -196,7 +196,7 @@ describe('startTravel — transports payants (l.207-219)', () => {
   it('vitesse d’auteur sur la route (EiS ch.1 : diligence à 3 km/h) respectée', () => {
     setup(map({ modes: ['diligence'], speed: { diligence: 3 } }));
     const t0 = useGame.getState().gameTime;
-    useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur' });
+    useGame.getState().startTravel('r1', 'diligence', { classeId: 'exterieur' });
     expect(useGame.getState().gameTime - t0).toBe(240); // 12 km ÷ 3 km/h = 4 h
   });
 });
@@ -474,7 +474,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     // Trajet > 36 km/jour (M6 × 6 h) → halte de nuit, `travelPlan` persiste (vehicle inspectable).
     // Extérieur 1 sou/km × 50 km = 50 PA ≤ 60 PA de bourse de départ.
     setup(map({ km: 50, modes: ['diligence'], perilDie: 0 }));
-    useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur' });
+    useGame.getState().startTravel('r1', 'diligence', { classeId: 'exterieur' });
     const plan = useGame.getState().travelPlan;
     expect(plan?.vehicle?.bodyShape).toBe('vehicule');
     expect(plan?.vehicle?.wounds.max).toBe(50);
@@ -652,7 +652,7 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
     for (let seed = 1; seed <= 30 && !problem; seed++) {
       seedBattleRng(seed);
       setup(map({ km: 30, modes: ['diligence'], prices: { diligence: 1 } }));
-      useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur', allure: 'galop' });
+      useGame.getState().startTravel('r1', 'diligence', { classeId: 'exterieur', allure: 'galop' });
       drainCascade(); // #270 : le Test de Conduite d'attelage au km est une étape influençable (conducteur piloté par un humain)
       const st = useGame.getState();
       // La coque est créée dès que l'allure est forcée (les Dégâts du Problème doivent porter).
@@ -672,7 +672,7 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
       seedBattleRng(seed);
       setup(map({ km: 200, modes: ['diligence'], prices: { diligence: 1 } }), [hero({ items: [ration('r1'), ration('r2'), ration('r3')] })]);
       creditBourse(useGame.getState, useGame.setState, 'h', { gold: 5, silver: 0, brass: 0 });
-      useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur', allure: 'galop' });
+      useGame.getState().startTravel('r1', 'diligence', { classeId: 'exterieur', allure: 'galop' });
       drainCascade(); // #270 : le Test de Conduite d'attelage au km est une étape influençable (conducteur piloté par un humain)
       if (useGame.getState().travelPlan?.vehicleLame) lame = true;
       while (useGame.getState().pendingRest && useGame.getState().travelPlan && !lame) {

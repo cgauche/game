@@ -147,7 +147,7 @@ const AGENDA_GLYPH: Record<DayAgendaItem['state'], string> = { done: '✓', curr
 /** Sous-mode de l'habillage, dérivé du plan (SOURCE UNIQUE). Un voyage JOUÉ (résolution jour par jour,
  *  `plan.sea`/`plan.river`) prime ; à défaut (transport PAYANT — un passeur, pas de descente/traversée
  *  jouée), le milieu réel du VÉHICULE (`plan.mode`, `vehicles.json`) tranche — jamais un repli « terre »
- *  deviné pour une embarcation affrétée (#333 correctif). `travel.medium` (facette VOYAGE, LDB l.207-219)
+ *  deviné pour une embarcation affrétée (#333 correctif). `travel.medium` (facette VOYAGE, LDB 51 l.178-189)
  *  est la donnée du TRAJET PAYÉ elle-même — prioritaire, un véhicule pouvant être bi-milieu (la Barge
  *  navigue le fleuve, LDB 70 p.306, tout en figurant à la table navale MDG 12 avec
  *  `hull.propulsion:'maritime'` — les deux facettes sont INDÉPENDANTES). Repli sur `hull.propulsion` si

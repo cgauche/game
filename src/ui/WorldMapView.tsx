@@ -84,7 +84,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const isGuest = useGame((s) => s.net.mode) === 'guest';
   const [selId, setSelId] = useState<string | null>(initialRouteId ?? null);
   const [mode, setMode] = useState<TravelMode>('pied');
-  const [classKey, setClassKey] = useState('');
+  const [classeId, setClasseId] = useState('');
   const [forced, setForced] = useState(false);
   /** Allure en selle (EDOC 07 l.140) — règle optionnelle `travel-allures`. */
   const [allure, setAllure] = useState<Allure>('pas');
@@ -148,7 +148,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
     setFarId(null);
     const m = r.modes[0] ?? 'pied';
     setMode(m);
-    setClassKey(vehicleTravel(m)?.classes[0].key ?? '');
+    setClasseId(vehicleTravel(m)?.classes[0].id ?? '');
     setForced(false);
     setAllure('pas');
     setForceGallop(false);
@@ -156,7 +156,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   };
   const pickMode = (m: TravelMode) => {
     setMode(m);
-    setClassKey(vehicleTravel(m)?.classes[0].key ?? '');
+    setClasseId(vehicleTravel(m)?.classes[0].id ?? '');
     setAllure('pas');
     setForceGallop(false);
     setSeaPace(0);
@@ -195,7 +195,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const hours = mode === 'pied' && forced ? maxH : mode === 'monture' && forced ? 12 : base;
   const plan = selRoute && kmh > 0 ? travelPlanCalc(selRoute.km, kmh, hours) : null;
   const cost = selRoute && mode !== 'pied' && mode !== 'monture' && mode !== 'mer'
-    ? transportCost(selRoute.km, mode, classKey, passengers, selRoute.prices?.[mode])
+    ? transportCost(selRoute.km, mode, classeId, passengers, selRoute.prices?.[mode])
     : null;
   const affordable = !cost || canAfford(money, cost);
   const rationsOwned = party.reduce((s, h) => s + (h.dead ? 0 : rationCount(h)), 0);
@@ -449,9 +449,9 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           {vehicleTravel(mode) && (
             <label className="wm-opt">
               Classe{' '}
-              <select value={classKey} onChange={(e) => setClassKey(e.target.value)}>
+              <select value={classeId} onChange={(e) => setClasseId(e.target.value)}>
                 {(vehicleTravel(mode)?.classes ?? []).map((c) => (
-                  <option key={c.key} value={c.key}>
+                  <option key={c.id} value={c.id}>
                     {c.label} ({selRoute.prices?.[mode] ?? c.brassPerKm} sou(s)/km/passager)
                   </option>
                 ))}
@@ -560,7 +560,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 : mode !== 'mer' && !affordable ? `Bourse insuffisante (${cost ? formatMoney(cost) : ''})`
                 : undefined}
               onClick={() => startTravel(selRoute.id, mode, {
-                classKey: classKey || undefined,
+                classeId: classeId || undefined,
                 hoursPerDay: forced ? (mode === 'pied' ? maxH : mode === 'monture' ? 12 : undefined) : undefined,
                 allure: effAllure,
                 seaPace: mode === 'mer' && !seaFast && seaPace > 0 ? seaPace : undefined,

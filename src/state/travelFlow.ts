@@ -126,14 +126,14 @@ export interface TravelRecap {
   daysTotal?: number;
 }
 
-/** Voyage en cours / interrompu (persiste pour « Reprendre le voyage »). */
+/** Voyage en cours / interrompu (persiste pour « Reprendre le voyage »). La classe du transport payant
+ *  (`interieur`/`exterieur`, `cabine`/`pont`) n'entre QUE dans le prix du passage, débité à l'ouverture
+ *  par `transportCost` : le plan n'en porte pas trace, aucune reprise ne la relit. */
 export interface TravelPlan {
   routeId: string;
   fromPlaceId: string;
   toPlaceId: string;
   mode: TravelMode;
-  /** Classe du transport payant (interieur/exterieur, cabine/pont). */
-  classKey?: string;
   /** Allure choisie (heures de route par jour ; > heures RAW = marche forcée). */
   hoursPerDay: number;
   /** Allure EDOC (règle `travel-allures`) : en selle = pas/trot/galop (EDOC 07 l.140-144) ; sur un
@@ -283,7 +283,7 @@ export function startTravel(
   get: Get, set: Set,
   routeId: string,
   mode: TravelMode,
-  opts: { classKey?: string; hoursPerDay?: number; allure?: Allure; seaPace?: number; fast?: boolean; cadence?: import('./voyageCadence').VoyageCadence } = {},
+  opts: { classeId?: string; hoursPerDay?: number; allure?: Allure; seaPace?: number; fast?: boolean; cadence?: import('./voyageCadence').VoyageCadence } = {},
 ): void {
   const { worldMap, scene, battle, party } = get();
   if (battle || !worldMap || !scene) return;
@@ -347,7 +347,7 @@ export function startTravel(
   // Transport payant : prix par km PAR PASSAGER (LDB 51 l.178), débité au départ — refus si bourse insuffisante.
   if (mode !== 'pied' && mode !== 'monture') {
     const passengers = party.filter((h) => !h.dead && !h.outOfRencontre).length;
-    const cost = transportCost(route.km, mode, opts.classKey ?? '', passengers, route.prices?.[mode]);
+    const cost = transportCost(route.km, mode, opts.classeId ?? '', passengers, route.prices?.[mode]);
     if (!cost) return; // mode sans facette `travel` (id de véhicule invalide) — rien à débiter, rien à jouer
     // Dépense de GROUPE (LDB 51 l.178) : passage sans bénéficiaire unique → cotisation gloutonne des bourses.
     if (!payFromGroup(get, set, cost, { purpose: 'passage' })) {
@@ -377,7 +377,7 @@ export function startTravel(
     : undefined;
   const plan: TravelPlan = {
     routeId, fromPlaceId: from.id, toPlaceId: to.id, mode,
-    classKey: opts.classKey, hoursPerDay: hours, km: route.km, kmDone: 0, interrupted: false,
+    hoursPerDay: hours, km: route.km, kmDone: 0, interrupted: false,
     ...(allure ? { allure } : {}),
     // Postes initialisés depuis les rôles PERSISTANTS (`travelRole`) — réutilisés chaque Étape (EDOC 8).
     postes: rule('travel-etapes') ? stageAssignmentFromRoles(party) : undefined,
