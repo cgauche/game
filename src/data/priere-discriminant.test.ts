@@ -41,9 +41,9 @@ describe('dataset — la famille COMMANDE la branche de résolution', () => {
 
 describe('câblage — le moteur lit la FAMILLE, jamais un champ-drapeau', () => {
   /** Littéral NU : la famille tranche seule, la donnée ne porte aucun champ-drapeau. */
-  const beni: SpellLike = { label: 'Bénédiction témoin', type: 'Béni', family: 'beni', cn: null, desc: '' };
-  const invocation: SpellLike = { label: 'Miracle témoin', type: 'Miracle', family: 'invocation', cn: null, desc: '' };
-  const arcane: SpellLike = { label: 'Sort témoin', type: 'Arcane', family: 'arcane', cn: 4, desc: '' };
+  const beni: SpellLike = { label: 'Bénédiction témoin', ecole: 'Béni', family: 'beni', cn: null, desc: '' };
+  const invocation: SpellLike = { label: 'Miracle témoin', ecole: 'Miracle', family: 'invocation', cn: null, desc: '' };
+  const arcane: SpellLike = { label: 'Sort témoin', ecole: 'Arcane', family: 'arcane', cn: 4, desc: '' };
 
   it('Béni et Invocation roulent le Test de Prière, sans Niveau d’Incantation', () => {
     expect(castInfo(beni)).toEqual({ skill: 'priere', requireNI: false });
@@ -61,7 +61,7 @@ describe('câblage — le moteur lit la FAMILLE, jamais un champ-drapeau', () =>
   });
 
   it('une famille ABSENTE reste un Sort (aucun repli sur `cn: null`)', () => {
-    expect(castInfo({ label: 'Sans famille', type: '?', cn: null, desc: '' })).toEqual({ skill: 'langue', spec: 'magick', requireNI: true });
+    expect(castInfo({ label: 'Sans famille', ecole: '?', cn: null, desc: '' })).toEqual({ skill: 'langue', spec: 'magick', requireNI: true });
   });
 });
 

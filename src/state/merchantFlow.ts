@@ -193,7 +193,7 @@ function computeFreshStockLines(
   const marketMode = marketRule(ent, 'marketMode') as string;
   const cat: CatalogItem[] = trappings
     .filter((t) => !t.service) // tarif de service (chambre/écurie, LDB p.302) : jamais en stock, pas un objet
-    .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
+    .filter((t) => (!arch.category.categories || arch.category.categories.includes(t.categorie)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
     .map((t) => {
       const base: CatalogItem['availability'] = isTradable(t.availability) ? t.availability : null;
       const av = guild && base ? shiftAvailability(base, { qualities: t.qualities }, { guild: true }) : base;

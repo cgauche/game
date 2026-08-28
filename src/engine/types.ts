@@ -389,9 +389,10 @@ export interface Weapon {
   /** Qualités NEUTRALISÉES sur cette arme par id (altération `augmentWeapon.removeQualities`) — retirées
    *  APRÈS la fusion des qualités de FAMILLE (`resolveQualities`), qui sont sur le même plan RAW. */
   removedQualities?: string[];
-  /** TYPES de qualité neutralisés (altération `augmentWeapon.removeType`) : le type de chaque qualité est
-   *  résolu par le REGISTRE (`qualities.json` champ `type`) à la fusion — jamais une liste d'ids en dur.
-   *  VDM 05 *Défaut* : « Tous les Atouts de l'arme disparaissent ». */
+  /** POLARITÉS de qualité neutralisées (altération `augmentWeapon.removeType`) : la polarité de chaque
+   *  qualité est résolue par le REGISTRE (`qualities.json` champ `polarite`) à la fusion — jamais une
+   *  liste d'ids en dur. VDM 05 *Défaut* : « Tous les Atouts de l'arme disparaissent ». Le nom du champ
+   *  d'op reste `removeType` : il est PERSISTÉ en donnée, son rename appartient à #1468 (L1c). */
   removedTypes?: ('atout' | 'defaut')[];
   /** `id` de munition REPRÉSENTATIVE d'une arme de siège (cf. `TrappingData.defaultAmmo`) — discrimine la
    *  bonne famille de munition (pierrier/canon/baliste/mortier) là où `subType` seul ne le fait pas. Lu par

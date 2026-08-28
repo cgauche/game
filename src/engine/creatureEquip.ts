@@ -24,8 +24,8 @@ export function weaponFromId(trappingId: string): Weapon | null {
     console.error(`[weapon] trappingId « ${trappingId} » introuvable au catalogue d'armes (#223) — entité désarmée, rien d'inventé.`);
     return null;
   }
-  if (trapping.type !== 'melee' && trapping.type !== 'ranged') {
-    console.error(`[weapon] trapping « ${trappingId} » (type « ${trapping.type} ») n'est pas une arme — entité désarmée, rien d'inventé.`);
+  if (trapping.categorie !== 'melee' && trapping.categorie !== 'ranged') {
+    console.error(`[weapon] trapping « ${trappingId} » (catégorie « ${trapping.categorie} ») n'est pas une arme — entité désarmée, rien d'inventé.`);
     return null;
   }
   const it = itemFromTrappingById(trappingId);

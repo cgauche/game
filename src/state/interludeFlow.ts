@@ -1069,7 +1069,7 @@ function runActivityResolver(get: Get, set: Set, resolver: ActivityResolver, pa:
 function falseQualities(item: { kind: string; qualities: QualityInstance[]; subType?: string | null; weaponGroup?: string | null }, count: number): string[] {
   const have = new Set(resolveQualities(item).map((r) => r.id)); // qualités RÉELLEMENT portées (propres + de FAMILLE), par id
   const pool = qualities
-    .filter((q) => q.type === 'atout')
+    .filter((q) => q.polarite === 'atout')
     .filter((q) => (item.kind === 'armor' ? q.subType !== 'arme' : q.subType !== 'armure'))
     .filter((q) => !have.has(q.id)) // dédup par ID (corrige le bug : comparait un libellé à un tableau d'ids)
     .map((q) => q.label);

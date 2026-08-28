@@ -99,7 +99,11 @@ export const schema = z.array(
     label: z.string(),
     hands: z.union([z.literal(1), z.literal(2)]).optional(),
     packSize: z.number().optional(),
-    type: z.enum(['melee', 'ranged', 'ammunition', 'armor', 'trapping', 'vehicle']),
+    /** CATÉGORIE de catalogue — vocabulaire FERMÉ, mesuré sur 440/440 : melee 65, ranged 79,
+     *  ammunition 22, armor 17, trapping 257. ≠ `Weapon.type` du moteur (`src/engine/types.ts`,
+     *  `'melee' | 'ranged'`, persisté) et ≠ `ItemInstance.kind` : le pont est `kindOf()`
+     *  (`src/engine/items.ts`), une TRADUCTION. `vehicle` n'a aucun porteur et n'est plus admis. */
+    categorie: z.enum(['melee', 'ranged', 'ammunition', 'armor', 'trapping']),
     subType: z.union([z.string(), z.null()]),
     weaponGroup: z.string().optional(),
     soloSimple: z.boolean().optional(),
@@ -122,7 +126,7 @@ export const schema = z.array(
     minRangeBand: z.enum(['bout-portant', 'courte', 'moyenne', 'longue', 'extreme']).optional(),
     siegeRig: z.string().optional(),
     siegeFootprint: z.number().optional(),
-    /** Munition REPRÉSENTATIVE d'une arme de siège (`id` de trapping `type:'ammunition'`) — discrimine
+    /** Munition REPRÉSENTATIVE d'une arme de siège (`id` de trapping `categorie:'ammunition'`) — discrimine
      *  pierrier/canon/baliste/mortier là où `subType`='armes-de-siege' seul ne le fait pas (hint joueur,
      *  `ammoFamilyLabel`). */
     defaultAmmo: z.string().optional(),

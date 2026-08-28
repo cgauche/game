@@ -16,7 +16,7 @@ import {
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
-  isNamed, specCatalogOf, specLabel,
+  isNamed, specCatalogOf, specLabel, SKILL_ACCES_LABEL,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
   conditionLabel, traitProjectingManeuver,
@@ -1359,10 +1359,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'characteristics', label: 'Caractéristiques', group: 'Personnage',
-    build: () => (characteristics as { id: string; label: string; abr?: string; type?: string; desc?: string; source?: CodexSource; options?: { id: string; label: string; desc: string }[] }[]).map((c) => ({
+    build: () => (characteristics as { id: string; label: string; abr?: string; nature?: string; desc?: string; source?: CodexSource; options?: { id: string; label: string; desc: string }[] }[]).map((c) => ({
       id: c.id, label: c.label, sub: c.abr, desc: c.desc, source: src(c.source),
       // Bonus de Caractéristique = chiffre des dizaines (LDB 03) — rappel sur les caracs à jet (d100).
-      meta: c.type === 'roll' ? facts(fact('Bonus', 'chiffre des dizaines')) : undefined,
+      meta: c.nature === 'roll' ? facts(fact('Bonus', 'chiffre des dizaines')) : undefined,
       sections: sections(
         // DÉPENSES de la ressource (Résilience : ses deux choix) — la règle vit sur l'ENTITÉ qui la
         // porte (amendement A, #1117) ; `regles.json` ne garde que les règles de CADRE. Même forme
@@ -1396,8 +1396,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'skills', label: 'Compétences', group: 'Compétences',
     build: () => skills.map((s) => ({
-      id: s.id, label: s.label, sub: join(CHAR_LABELS[s.characteristic], s.type), desc: s.desc, source: src(s.source),
-      meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Type', s.type), fact('Spécialisations', specsFact('skills', s))),
+      id: s.id, label: s.label, sub: join(CHAR_LABELS[s.characteristic], SKILL_ACCES_LABEL[s.acces]), desc: s.desc, source: src(s.source),
+      meta: facts(fact('Caractéristique', CHAR_LABELS[s.characteristic]), fact('Accès', SKILL_ACCES_LABEL[s.acces]), fact('Spécialisations', specsFact('skills', s))),
       sections: sections(...reverseSections('skills', s.id)),
     })),
   },
@@ -1445,11 +1445,11 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       ].filter(Boolean) as string[];
       // Allonge = mêlée, Portée = distance (LDB 62). Tir/munition : « Portée 50 m » (fixe) / « BF×3 m » (jet)
       // sinon le modificateur de munition (« Portée ×½ », `ammoRangeModLabel`) ; jamais « Allonge 50 ».
-      const reachFact = (t.type === 'ranged' || t.type === 'ammunition')
+      const reachFact = (t.categorie === 'ranged' || t.categorie === 'ammunition')
         ? fact('Portée', rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod))
         : fact('Allonge', t.reach);
       return {
-        id: t.id, label: t.label, sub: join(trappingTypeLabel(t.type), weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
+        id: t.id, label: t.label, sub: join(trappingTypeLabel(t.categorie), weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
         meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', damageFact(t)), fact('PA', t.pa), reachFact),
         sections: sections(
           chips('Qualités', 'qualities', resolveQualities({ qualities: t.qualities, subType: t.subType }).map((r) => qualityRefLabel({ id: r.id, value: r.indice }))),
@@ -1466,7 +1466,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // MÊME chemin — appearance.species = siegeRig) ET de « Possessions » pour les faits d'arme
     // (Portée/Dégâts) + Atouts (l'Indice « Arme d'équipe N » = équipage requis).
     build: () => siegeEngines.map((t) => ({
-      id: t.id, label: t.label, sub: join(trappingTypeLabel(t.type), weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
+      id: t.id, label: t.label, sub: join(trappingTypeLabel(t.categorie), weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
       // Aperçu rig de l'affût, résolu comme une créature (par id + apparence species).
       appearance: { species: t.siegeRig! }, previewRef: t.siegeRig!,
       meta: facts(
@@ -1486,8 +1486,8 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'qualities', label: 'Qualités', group: 'Équipement',
-    build: () => (qualities as { id: string; label: string; type?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[]; capabilities?: Record<string, unknown> }[]).map((q) => ({
-      id: q.id, label: q.label, sub: join(qualityTypeLabel(q.type), qualitySubtypeLabel(q.subType)), desc: q.desc, source: src(q.source),
+    build: () => (qualities as { id: string; label: string; polarite?: string; subType?: string; desc?: string; source?: CodexSource; passive?: import('../../engine/ops').GameOp[]; effects?: import('../../state/flow').TriggeredEffect[]; capabilities?: Record<string, unknown> }[]).map((q) => ({
+      id: q.id, label: q.label, sub: join(qualityTypeLabel(q.polarite), qualitySubtypeLabel(q.subType)), desc: q.desc, source: src(q.source),
       sections: sections(capabilitySection(q.capabilities, QUALITY_CAP_LABEL), passiveSection(q.passive), effectsSection(q.effects, 'Effets déclenchés'), ...reverseSections('qualities', q.id)),
     })),
   },
@@ -1623,7 +1623,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // Entrée EFFECTIVE sous les règles optionnelles actives (#563/#564) : desc, source, NI, Durée et
     // effet mécanique affichés sont ceux de la variante réglée quand elle est active (VDM).
     build: () => spells.map((s0) => effectiveEntry(s0)).map((s) => ({
-      id: s.id, label: s.label, sub: join(s.type, s.subType), desc: s.desc, source: src(s.source),
+      id: s.id, label: s.label, sub: join(s.ecole, s.subType), desc: s.desc, source: src(s.source),
       meta: facts(
         // Un Rituel dont la rubrique NI imprime une formule sur la cible (`VDM 02 l.379`) n'a pas
         // de nombre : c'est ce texte qui est le NI imprimé.

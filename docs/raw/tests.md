@@ -317,7 +317,7 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.17) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, `rollTest`, +27 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +18 fichiers
+- `LDB 9` (l.17) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `skillEntrySchema`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, +29 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, +20 fichiers
 - `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `RecoverResolution`, `soutien`, `test-critiques-doubles`, `AuContactModal`, `GrappleModal`, `BargainModalView`, `TraceOpposed`, `MedicState`, `StateRecoveryModalView`, +84 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +42 fichiers
 
 ---

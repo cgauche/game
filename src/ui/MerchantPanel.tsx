@@ -84,18 +84,18 @@ const FAMILY_COLS: Record<string, { label: string; get: (id: string) => string; 
 
 const UNIT_FAMILY = merchantFamilies.find((f) => f.match.unit)?.id ?? 'divers';
 const SHIELD_FAMILY = merchantFamilies.find((f) => f.match.shield)?.id ?? 'divers';
-const FALLBACK_FAMILY = merchantFamilies.find((f) => !f.match.trappingType && !f.match.shield && !f.match.unit)?.id ?? 'divers';
-const FAMILY_BY_TRAPPING_TYPE = new Map(merchantFamilies.filter((f) => f.match.trappingType).map((f) => [f.match.trappingType as string, f.id]));
+const FALLBACK_FAMILY = merchantFamilies.find((f) => !f.match.categorie && !f.match.shield && !f.match.unit)?.id ?? 'divers';
+const FAMILY_BY_TRAPPING_CATEGORIE = new Map(merchantFamilies.filter((f) => f.match.categorie).map((f) => [f.match.categorie as string, f.id]));
 
 /** Famille d'une ligne de stock — `catalogEntryOf` (SOURCE UNIQUE, `state/merchantFlow.ts`) tranche
  *  d'abord si c'est une UNITÉ (#619 Lot A) avant de retomber sur la classification trapping. Priorité
- *  de SPÉCIFICITÉ (dérivée de `merchantFamilies.json:match`) : unit → shield → trappingType → fallback. */
+ *  de SPÉCIFICITÉ (dérivée de `merchantFamilies.json:match`) : unit → shield → categorie → fallback. */
 function familyOf(id: string): string {
   if (catalogEntryOf(id)?.unit) return UNIT_FAMILY;
   const t = findTrappingById(id);
   if (!t) return FALLBACK_FAMILY;
   if (isShieldItem({ qualities: t.qualities })) return SHIELD_FAMILY;
-  return FAMILY_BY_TRAPPING_TYPE.get(t.type) ?? FALLBACK_FAMILY;
+  return FAMILY_BY_TRAPPING_CATEGORIE.get(t.categorie) ?? FALLBACK_FAMILY;
 }
 
 /** Coût d'achat unitaire (catalogue × qualité d'artisanat × Marchandage). null si prix non chiffré (« ND »).
@@ -240,7 +240,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
     const quals = resolveQualities(item)
       .map((r): QualityInstance => ({ id: r.id, ...(r.indice != null ? { value: r.indice } : {}) }))
       .flatMap((q) => { const info = describeQuality(q); return info ? [{ q, info }] : []; })
-      .sort((a, b) => (a.info.type === 'defaut' ? 1 : 0) - (b.info.type === 'defaut' ? 1 : 0));
+      .sort((a, b) => (a.info.polarite === 'defaut' ? 1 : 0) - (b.info.polarite === 'defaut' ? 1 : 0));
     const canCompare = item.kind === 'melee' || item.kind === 'ranged' || item.kind === 'armor';
     return (
       <div className="merch-compare preview" role="region" aria-label={`Détails ${item.label}`}>

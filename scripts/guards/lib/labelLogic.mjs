@@ -407,7 +407,7 @@ export const LABEL_LITERAL_STOCK = {
   // Axe Disponibilité (LDB 59) — `Availability` EST le libellé ; `src/engine/disponibilite.ts` porte
   // le type, la table ET le prédicat `isTradable` (source unique de la comparaison aux 4 classes),
   // ses consommateurs suivent.
-  'src/engine/activities.ts': 3,
+  'src/engine/activities.ts': 2,
   'src/engine/disponibilite.ts': 1,
   // Axes de récolte (Rareté / Danger / Taille / Conservation) — quatre vocabulaires FR en clés de table.
   'src/engine/harvest.ts': 5,

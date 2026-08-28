@@ -35,9 +35,6 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   chaosSpells: { ds: 'spells' },
   qualities: { ds: 'qualities', value: true },
   grantsManeuvers: { ds: 'maneuvers' },
-  // Traits conférés par une mutation (Tentacule → Arme) : `{id}` simple (≠ traits de créature qui
-  // portent value/arg/range/count → éditeur de statbloc dédié). Liste de réfs par id, lossless ici.
-  'mutations.traits': { ds: 'traits' },
   // ── single (dataset réel) ───────────────────────────────────────────────────
   'trappings.subType': { ds: 'weaponGroups', single: true },
   'careers.class': { ds: 'classes', single: true },
@@ -55,7 +52,7 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   refChar: { vocabFrom: 'species.refChar' },
   refCareer: { vocabFrom: 'species.refCareer' },
   'qualities.subType': { ds: 'qualitySubtypes', single: true },
-  'qualities.type': { ds: 'qualityTypes', single: true },
+  'qualities.polarite': { ds: 'qualityTypes', single: true },
 };
 
 /** Résout la config d'un champ : clé (catégorie, champ) puis repli global par champ. */

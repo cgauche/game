@@ -29,7 +29,7 @@ export function possesses(c: Combatant, skillId: string, spec?: string): boolean
   const sd = findSkillById(skillId);
   if (!sd) return false;
   const inst = c.skills?.find((s) => s.skillId === skillId && (spec == null || s.spec === spec));
-  return sd.type === 'base' || (inst?.advances ?? 0) > 0;
+  return sd.acces === 'base' || (inst?.advances ?? 0) > 0;
 }
 
 /** Valeur d'un Test de la Compétence `skillId` (spécialisation `spec`) pour `c` — SOURCE UNIQUE partagée

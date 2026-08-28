@@ -564,9 +564,9 @@ function caster(chars: Partial<Characteristics>, skills: SkillInstance[] = [], w
   };
 }
 
-const FLECHETTE: SpellLike = { label: 'Fléchette', type: 'Magie mineure', family: 'mineure', missile: true, damage: 0, cn: 0, duration: { kind: 'instant' }, desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
-const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', type: 'Béni', family: 'beni', cn: null, duration: { kind: 'rounds', value: 6 }, desc: 'Votre cible gagne +10 en Capacité de Combat.' };
-const ARCANE: SpellLike = { label: 'Boule de feu', type: 'Magie des Arcanes', family: 'arcane', cn: 8, duration: { kind: 'instant' }, desc: 'Projectile magique avec Dégâts +8.' };
+const FLECHETTE: SpellLike = { label: 'Fléchette', ecole: 'Magie mineure', family: 'mineure', missile: true, damage: 0, cn: 0, duration: { kind: 'instant' }, desc: 'Il s’agit d’un Projectile magique avec Dégât +0.' };
+const PRIERE: SpellLike = { label: 'Bénédiction de Bataille', ecole: 'Béni', family: 'beni', cn: null, duration: { kind: 'rounds', value: 6 }, desc: 'Votre cible gagne +10 en Capacité de Combat.' };
+const ARCANE: SpellLike = { label: 'Boule de feu', ecole: 'Magie des Arcanes', family: 'arcane', cn: 8, duration: { kind: 'instant' }, desc: 'Projectile magique avec Dégâts +8.' };
 
 describe('Magie — routage du test par branche', () => {
   it('les Prières (Béni/Invocation) utilisent Prière (Soc), sans NI', () => {
@@ -589,7 +589,7 @@ describe('Magie — routage du test par branche', () => {
 
 describe('Magie — analyse des descriptions', () => {
   it('missileDamage lit les champs de données (Dégâts / ignore PA / ignore BE)', () => {
-    const sp = (o: Partial<SpellLike>): SpellLike => ({ label: 'X', type: 'T', cn: 0, desc: '', ...o });
+    const sp = (o: Partial<SpellLike>): SpellLike => ({ label: 'X', ecole: 'T', cn: 0, desc: '', ...o });
     expect(missileDamage(sp({ missile: true, damage: 8 }))).toEqual({ damage: 8, ignorePA: false, ignoreBE: false });
     expect(missileDamage(sp({ missile: true, damage: 0, ignorePA: true }))).toEqual({ damage: 0, ignorePA: true, ignoreBE: false });
     expect(missileDamage(sp({ missile: true, damage: 10, ignorePA: true, ignoreBE: true }))).toEqual({ damage: 10, ignorePA: true, ignoreBE: true });
@@ -708,7 +708,7 @@ describe('Magie — correctifs de fidélité (audit)', () => {
     const target = caster({ endurance: 39 }, [], 20); // BE 3
     const spell: SpellLike = {
       label: 'Vortex d’âmes',
-      type: 'Magie des Arcanes',
+      ecole: 'Magie des Arcanes',
       cn: 0,
       duration: { kind: 'instant' },
       missile: true,
@@ -818,7 +818,7 @@ describe('Magie — compétences Avancées (gating)', () => {
 
   it('Dissipation : seul un SORT se dissipe — pas une Prière (LDB 46 « Si un Sort vous cible »)', () => {
     expect(isDispellableSpell(FLECHETTE)).toBe(true);
-    expect(isDispellableSpell({ label: 'Bénédiction', type: 'Béni', family: 'beni', cn: null, duration: null, desc: '' })).toBe(false);
+    expect(isDispellableSpell({ label: 'Bénédiction', ecole: 'Béni', family: 'beni', cn: null, duration: null, desc: '' })).toBe(false);
   });
 
   it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {

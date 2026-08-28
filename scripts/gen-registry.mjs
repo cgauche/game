@@ -472,8 +472,8 @@ const POOLS_DERIVES = {
   mutations:     (lit) => lit('mutations.json').map((m) => m.id),
   breathTypes:   (lit) => lit('breath-types.json').map((b) => b.id),
   damageTypes:   (lit) => lit('damage-types.json').map((t) => t.id),
-  weaponsMelee:  (lit) => lit('trappings.json').filter((t) => t.type === 'melee').map((t) => t.id),
-  weaponsRanged: (lit) => lit('trappings.json').filter((t) => t.type === 'ranged').map((t) => t.id),
+  weaponsMelee:  (lit) => lit('trappings.json').filter((t) => t.categorie === 'melee').map((t) => t.id),
+  weaponsRanged: (lit) => lit('trappings.json').filter((t) => t.categorie === 'ranged').map((t) => t.id),
 };
 
 /** Clé de racine-objet qui a la FORME d'un id (`ids internes, labels à l'affichage`). */

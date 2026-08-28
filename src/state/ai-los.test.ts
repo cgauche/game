@@ -6,7 +6,7 @@ import type { SpellData } from '../data';
 
 /** Projectile magique RÉSOLU minimal (`CastableSpell`) — `range` en cases (null = pas de gate). */
 function castable(over: Partial<CastableSpell> & { id?: string } = {}): CastableSpell {
-  const data = { id: over.id ?? 'carreau', label: 'Carreau', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', missile: true, damage: 8, source: { book: 'LDB', page: 0 } } as unknown as SpellData;
+  const data = { id: over.id ?? 'carreau', label: 'Carreau', ecole: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', missile: true, damage: 8, source: { book: 'LDB', page: 0 } } as unknown as SpellData;
   return { id: over.id ?? 'carreau', data, cn: 0, range: over.range ?? null, shape: 'single', landProb: 1, focusState: 'none', active: false };
 }
 

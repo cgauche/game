@@ -100,9 +100,12 @@ const ritualSchema = z.strictObject({
 const spellEntrySchema = z.strictObject({
   id: z.string(),
   label: z.string(),
-  /** Libellé d'affichage du type (« Béni », « Magie mineure »… 17 valeurs constatées, PROSE — le
-   *  discriminant de logique est `family`). */
-  type: z.string(),
+  /** ÉCOLE — libellé d'affichage hérité (dépotoir : 18 valeurs, casse double 'Magie mineure' /
+   *  'Magie Mineure') ; le discriminant de logique reste `family` + `domainId`. Sa MORT PAR
+   *  DÉRIVATION depuis `family` + `domainIds` appartient à #1517 (Sorts multi-domaines : `domainId`
+   *  single, 320/576 null → `domainIds` pluriel sur règle RAW VDM citée, puis mort du libellé `ecole`
+   *  par dérivation). */
+  ecole: z.string(),
   subType: z.string().nullable(),
   domainId: z.string().optional(),
   /** `VDM 02 l.363` / `l.377-393` — TAG lu par `castingNumberOf` (`src/engine/magic.ts`) et

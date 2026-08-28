@@ -363,7 +363,7 @@ describe('Magie mineure à la création (LDB 10 l.714) — BFM sorts inclus au T
       careerTalent: 'Magie mineure',
     };
   }
-  const minorsOf = (n: number) => spells.filter((s) => s.type === 'Magie mineure').slice(0, n).map((s) => s.label);
+  const minorsOf = (n: number) => spells.filter((s) => s.ecole === 'Magie mineure').slice(0, n).map((s) => s.label);
 
   it('quota = BFM final ; l\'étape 4 exige EXACTEMENT ce nombre de sorts', () => {
     const d = sorcererDraft();

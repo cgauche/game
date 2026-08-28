@@ -11,17 +11,17 @@ describe('merchantFamilies — cohérence des familles de présentation du march
     }
   });
 
-  it('au plus une famille par règle de `match` (unit / shield / trappingType)', () => {
+  it('au plus une famille par règle de `match` (unit / shield / categorie)', () => {
     const unitFamilies = merchantFamilies.filter((f) => f.match.unit);
     const shieldFamilies = merchantFamilies.filter((f) => f.match.shield);
     expect(unitFamilies.length).toBeLessThanOrEqual(1);
     expect(shieldFamilies.length).toBeLessThanOrEqual(1);
-    const trappingTypes = merchantFamilies.filter((f) => f.match.trappingType).map((f) => f.match.trappingType as string);
-    expect(new Set(trappingTypes).size).toBe(trappingTypes.length);
+    const categories = merchantFamilies.filter((f) => f.match.categorie).map((f) => f.match.categorie as string);
+    expect(new Set(categories).size).toBe(categories.length);
   });
 
   it('exactement une famille fallback (`match` vide) — `familyOf` a un défaut', () => {
-    const fallbacks = merchantFamilies.filter((f) => !f.match.trappingType && !f.match.shield && !f.match.unit);
+    const fallbacks = merchantFamilies.filter((f) => !f.match.categorie && !f.match.shield && !f.match.unit);
     expect(fallbacks.length).toBe(1);
   });
 });

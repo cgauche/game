@@ -92,7 +92,7 @@ describe('2 — `augmentWeapon` DÉGRADANT : Défaut (VDM 05)', () => {
     applyOps(c, opsOf('defaut-metal'), { label: 'Défaut', defaultDurationRounds: 3 });
     expect(hasQuality(c.weapons[0], 'precise')).toBe(false);
     // Aucun Atout ne subsiste (les Défauts, eux, ne sont pas visés).
-    expect(resolveQualities(c.weapons[0]).filter((r) => r.data?.type === 'atout')).toEqual([]);
+    expect(resolveQualities(c.weapons[0]).filter((r) => r.data?.polarite === 'atout')).toEqual([]);
   });
 
   it('« −1 DR à tous les Tests pour attaquer avec elle » — passif d’arme conféré, lu par attackDRAdjust', () => {

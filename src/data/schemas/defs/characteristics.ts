@@ -2,7 +2,7 @@
  * Schéma de `characteristics.json` — l'EXEMPLAIRE de la convention des defs de schéma (Lot 1 du
  * contrat de donnée). Dérivé du contenu RÉEL du JSON (10 caracs à jet + Blessure/Destin/Chance/
  * Résilience/Détermination/Extra Points/Mouvement/Corruption/Péché) et de son seul consommateur typé,
- * `src/ui/compendium/registry.ts` (`{ label, abr?, type?, desc?, source? }`, `c.type === 'roll'`).
+ * `src/ui/compendium/registry.ts` (`{ label, abr?, nature?, desc?, source? }`, `c.nature === 'roll'`).
  */
 import { z } from 'zod';
 import { sourceRefSchema, charKeySchema } from '../grammaire/valeurs';
@@ -18,8 +18,9 @@ const characteristicIdSchema = z.union([
   z.enum(['blessure', 'destin', 'chance', 'resilience', 'determination', 'extra-points', 'mouvement', 'corruption', 'peche']),
 ]);
 
-/** `type` observés dans le JSON : 'roll' (10 caracs à jet), 'wounds' (B), 'extra' (Destin/Résilience),
- *  'mv' (Mouvement), 'points' (Extra Points), '' (Chance/Détermination/Corruption — pas de type propre). */
+/** NATURE de la ligne de registre, mesurée sur les 19 entrées : 'roll' (10 caracs à jet), 'wounds' (B),
+ *  'extra' (Destin/Résilience), 'mv' (Mouvement), 'points' (Extra Points), 'compteur' (Chance,
+ *  Détermination, Corruption, Péché). La chaîne VIDE, qui ne discriminait rien, est MORTE du schéma. */
 export const schema = z.array(
   z.strictObject({
     /** id STABLE — cible de la jointure (`src/data/index.ts`, `registry.ts`). `abr` reste un champ
@@ -27,7 +28,7 @@ export const schema = z.array(
     id: characteristicIdSchema,
     abr: z.string(),
     label: z.string(),
-    type: z.enum(['roll', 'wounds', 'extra', 'mv', 'points', '']),
+    nature: z.enum(['roll', 'wounds', 'extra', 'mv', 'points', 'compteur']),
     desc: z.string(),
     source: sourceRefSchema,
     /** DÉPENSES offertes par une ressource (Résilience : « Je ne faillirai pas ! » / « Je te renie ! » ;

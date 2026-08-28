@@ -69,7 +69,7 @@ for (const c of careers) {
 newSection();
 
 // 3) Toutes les armes — rig humain tenant chaque arme (mêlée + distance).
-const weapons = trappings.filter((t) => t.type === 'melee' || t.type === 'ranged');
+const weapons = trappings.filter((t) => t.categorie === 'melee' || t.categorie === 'ranged');
 for (const w of weapons) {
   place({ id: `wp-${n++}`, kind: 'personnage', ref: 'humain', label: `Arme — ${w.label}`, weapon: w.id }, 1);
 }

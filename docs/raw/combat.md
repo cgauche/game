@@ -978,7 +978,7 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 - `LDB 13` (l.114, l.125, l.133, l.137-145) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `useHoverTargeting`, `entityBlockedAt`, `useAttackJetProps`, `DisengageModal`, `sur-la-defensive`, `ACTION_GATES`, `KEYBINDINGS`, +23 — `src/data/actions.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/actions.ts`, `src/engine/combat.ts`, +16 fichiers
 - `LDB 14` (l.40, l.41, l.43, l.44, l.53, l.68-131, l.135, l.137-138, l.142-151) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `areGrappling`, `fr`, `setGrapple`, `10-a-votre-action-au-prochain-round`, +110 — `src/data/actions.json`, `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, +41 fichiers
 - `LDB 16` (l.113) → `unstable`, `schema`, `mouvementIntact`, `stopBleedOutcome`, `hitModifiers`, `useAttackJetProps`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, +14 — `src/data/etats.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +10 fichiers
-- `LDB 62` (l.198-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `TraceRow`, `isShieldItem`, `a-repetition`, `InitiativeStripProps`, `protectrice`, `canActFirst`, `freeActFirst`, `resolveQualities`, +92 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +28 fichiers
+- `LDB 62` (l.198-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `TraceRow`, `isShieldItem`, `a-repetition`, `InitiativeStripProps`, `protectrice`, `canActFirst`, `freeActFirst`, `schema`, +93 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +29 fichiers
 
 ---
 
@@ -2217,7 +2217,7 @@ La Portée listée est la portée moyenne en mètres ; les fourchettes se calcul
 **Voir aussi** : qualites-defauts-armes-tables (Recharge, Dévastatrice, Explosion, Immobilisante, Empaleuse, Perforante, Pointue, Précise, Dangereuse) ; armes-corps-a-corps-tables (groupes de corps à corps, Allonge) ; bandes-portee-modificateurs (Bout portant/Courte/Longue/Extrême) ; etats-table (État Enflammé) ; monnaie-tables (lecture des prix `X/Y` et `XCO`).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.5-15, l.65-124, l.130-131, l.179-180, l.183-184, l.187-188, l.191-192, l.195-211) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `AuContactModal`, `reachTiles`, `bagarre`, `moneySchema`, `schema`, `a-poudre-noire`, `base`, +97 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, +23 fichiers
+- `LDB 62` (l.5-15, l.65-124, l.130-131, l.179-180, l.183-184, l.187-188, l.191-192, l.195-211) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `AuContactModal`, `reachTiles`, `bagarre`, `moneySchema`, `schema`, `a-poudre-noire`, `base`, +98 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/qualities.ts`, +24 fichiers
 - sans code : `AA 8` (l.366-385, l.386-389)
 
 ---
@@ -2319,7 +2319,7 @@ Les groupes d'armes à distance et leurs spécialisations conditionnent l'usage 
 **Voir aussi** : Bandes de portée et modificateurs de tir (Bout portant +60 / Courte +40 / Moyenne +0 / Longue -10 / Extrême -30) ; Engagement et déplacement (1 case = 2 m) ; Atouts et Défauts d'arme ; Groupes d'armes et spécialisations ; Maladresses au combat.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.20-102, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-215, l.260-262) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `reachTiles`, `REACH_OPTIONS`, `AuContactModal`, `woundsFromHit`, `bagarre`, `moneySchema`, `REACH_VARIABLE`, +144 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +44 fichiers
+- `LDB 62` (l.20-102, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-215, l.260-262) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `reachTiles`, `REACH_OPTIONS`, `AuContactModal`, `woundsFromHit`, `bagarre`, `moneySchema`, `REACH_VARIABLE`, +145 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +45 fichiers
 
 ---
 
@@ -2502,7 +2502,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 **Voir aussi** : Tests et Degrés de Réussite (DR) ; Combat (localisation, dé inversé, Critiques) ; Maladresses ; États (Brisé, Sonné, Empêtré, À Terre, Hémorragique, En flammes, Empoisonné, Surpris, Exténué) ; Psychologie (Peur, Terreur, Frénésie) ; Traits — défense, résilience, créatures (Éthéré, Instable, Bestial) ; Talents (Coup puissant, Frappe assommante, Frappe blessante, Tireur d'élite, Tireur embusqué, Tir rapide) ; Armes (stats : Allonge, Dégâts, Groupes) ; Armures (PA, Dégâts d'armure) ; Qualités et Défauts d'objet (Solide, Incassable, Pratique, Peu Fiable) ; Objets magiques / Enchantements (génération ADE II 4).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.217-307, l.309-335) → `a-enroulement`, `woundsFromHit`, `a-poudre-noire`, `TraceRow`, `CrewedReloadStep`, `isShieldItem`, `combatOrder`, `a-repetition`, `crewedReloadStep`, `InitiativeStripProps`, +137 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +48 fichiers
+- `LDB 62` (l.217-307, l.309-335) → `a-enroulement`, `woundsFromHit`, `a-poudre-noire`, `TraceRow`, `CrewedReloadStep`, `isShieldItem`, `combatOrder`, `a-repetition`, `crewedReloadStep`, `InitiativeStripProps`, +138 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/regles.json`, +49 fichiers
 - `ADE II 2` (l.608-658) → `attackModifiers`, `massue-ogre`, `protectrice`, `devastatrice`, `recharge`, `immobilisante`, `empaleuse`, `a-explosion`, `perforante`, `impenetrable` — `src/data/trappings.json`, `src/engine/combat.ts`
 - `ADE II 4` (l.212, l.214, l.215, l.216, l.218-253) → `deroutante` — `src/data/qualities.json`
 - `AA 8` (l.67-76, l.77, l.79-95, l.98-108) → `taillade`, `precise`, `a-terre`, `tir-de-zone`, `desequilibree`, `percutante`, `inoffensive`, `empaleuse`, `lente` — `src/data/qualities.json`, `src/data/trappings.json`
@@ -2632,7 +2632,7 @@ Certaines sources naturelles de PA **ne peuvent pas servir à la Déviation Crit
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 62` (l.307) → `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `resolveQualities`, `defensive`, `useAttackJetProps`, `devastatrice`, `CampaignView`, `empaleuse`, `rapideParryMod`, +34 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/qualities.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, +8 fichiers
-- `LDB 63` (l.7-15, l.18-27, l.29-32, l.38-61, l.63-66, l.73-74, l.77-78, l.85-86, l.89-90, l.92) → `itemRepairCostBrass`, `repairCost`, `cuir-souple`, `cuir-bouilli`, `mailles`, `plate`, `sacs-et-contenants`, `GameOp`, `PendingDeviation`, `repairItem`, +33 — `src/data/qualities.json`, `src/data/reglesOptionnelles.json`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/items.ts`, `src/engine/ops.ts`, +8 fichiers
+- `LDB 63` (l.7-15, l.18-27, l.29-32, l.38-61, l.63-66, l.73-74, l.77-78, l.85-86, l.89-90, l.92) → `itemRepairCostBrass`, `schema`, `repairCost`, `cuir-souple`, `cuir-bouilli`, `mailles`, `plate`, `sacs-et-contenants`, `GameOp`, `PendingDeviation`, +35 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/qualities.ts`, `src/data/trappings.json`, `src/data/weaponGroups.json`, +10 fichiers
 - `EDO 11` (l.192-196) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `absorption`, `amorphe`, `contagieux` — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
 
 ---

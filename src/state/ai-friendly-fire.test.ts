@@ -13,7 +13,7 @@ import type { SpellData } from '../data';
 
 // Sort de ZONE de CONTRÔLE (aveugle tous les couverts) — ZÉRO dégât : tout le « mal » passe par l'État.
 const BLIND_AOE: SpellData = {
-  id: 'nuee-aveuglante', label: 'Nuée aveuglante', type: 'sort', subType: null, family: 'arcane', cn: 0,
+  id: 'nuee-aveuglante', label: 'Nuée aveuglante', ecole: 'sort', subType: null, family: 'arcane', cn: 0,
   range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 },
   effects: { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'aveugle' }] } }] },
 } as unknown as SpellData;

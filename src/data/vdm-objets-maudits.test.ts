@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 type Op = { op: string; mod?: number; amount?: number; resource?: string; skill?: string; ignoreTB?: boolean; ignoreAP?: boolean };
 type Trapping = {
-  id: string; label?: string; desc?: string; type?: string; subType: string | null; enc?: unknown; reach?: unknown; hands?: number; pa?: number | null;
+  id: string; label?: string; desc?: string; categorie?: string; subType: string | null; enc?: unknown; reach?: unknown; hands?: number; pa?: number | null;
   damage?: { plusBF: boolean; flat: number } | null;
   qualities: { id: string }[]; passive?: Op[]; onHitEffects?: unknown[];
   consumable?: unknown; consumableDuration?: unknown;
@@ -76,8 +76,18 @@ describe('armures — le PA annoncé dans la desc concorde avec le champ `pa` d�
 
   const armures = TRAPPINGS.filter(
     (t): t is Trapping & { pa: number; desc: string } =>
-      t.type === 'armor' && typeof t.pa === 'number' && typeof t.desc === 'string',
+      t.categorie === 'armor' && typeof t.pa === 'number' && typeof t.desc === 'string',
   );
+
+  // NON-VACUITÉ : les `it()` ci-dessous ne naissent que des armures dont la desc ANNONCE un PA — sans
+  // ce gel, un filtre qui ne sélectionne plus rien (renommage de champ, valeur déplacée) rendrait la
+  // garde VERTE et MUETTE. Population mesurée le 2026-08-28 : 7 armures pourvues d'un `pa` numérique et
+  // d'une `desc`, dont 1 annonce un PA en toutes lettres. Égalité STRICTE : tout retrait se motive ici.
+  it('la population sous garde est celle mesurée (7 armures ; le filtre ne s’est pas vidé)', () => {
+    expect(armures.length).toBe(7);
+    expect(armures.filter((t) => [...t.desc.matchAll(new RegExp(PA_MENTION.source, 'gi'))].length > 0).map((t) => t.id))
+      .toEqual(['cotte-de-mailles-de-bravoure-usurpee']);
+  });
 
   for (const t of armures) {
     const annonces = [...t.desc.matchAll(PA_MENTION)].map((m) => Number(m[1]));

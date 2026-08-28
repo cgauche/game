@@ -535,9 +535,11 @@ export type GameOp =
       /** Qualités RETIRÉES par id STABLE (VDM 05 — Arme enchantée : « retirer 1 Défaut de l'arme »).
        *  Retire aussi les qualités de FAMILLE du Groupe d'arme, qui sont sur le même plan RAW. */
       removeQualities?: string[];
-      /** Retire TOUTES les qualités de ce TYPE, lu dans le registre (`qualities.json` champ `type`, via
-       *  `isAtoutQuality`) — VDM 05 Défaut : « Tous les Atouts de l'arme disparaissent ». Jamais une liste
-       *  d'ids en dur : le type est une donnée du registre. */
+      /** Retire TOUTES les qualités de cette POLARITÉ, lue dans le registre (`qualities.json` champ
+       *  `polarite`, via `isAtoutQuality`) — VDM 05 Défaut : « Tous les Atouts de l'arme disparaissent ».
+       *  Jamais une liste d'ids en dur : la polarité est une donnée du registre. Le NOM de ce champ d'op
+       *  est PERSISTÉ en donnée (1 porteur mesuré, `spells.json`) : son alignement sur `polarite` appartient
+       *  au lot des ops, #1468 (L1c). */
       removeType?: 'atout' | 'defaut';
       /** Neutralise les enchantements PRÉ-EXISTANTS de l'arme tant que celui-ci tient — VDM 05 Défaut,
        *  clause des armes magiques gatée à +4 DR. */

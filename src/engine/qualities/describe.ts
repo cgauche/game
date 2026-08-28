@@ -21,8 +21,8 @@ export const QUALITY_DESC: Record<string, string> = DATA_DESC;
 export interface QualityInfo {
   /** Clé canonique du registre (ex. 'Solide'). */
   key: string;
-  /** Atout (bénéfique) / Défaut (handicap) — id du registre ; undefined si non classé. */
-  type?: 'atout' | 'defaut';
+  /** POLARITÉ : Atout (bénéfique) / Défaut (handicap) — id du registre ; undefined si non classée. */
+  polarite?: 'atout' | 'defaut';
   /** Indice numérique éventuel (« Solide 3 » → 3, « Recharge 1 » → 1). */
   indice?: number;
   /** Libellé d'affichage (clé + Indice, ex. « Solide 3 »). */
@@ -39,7 +39,7 @@ export function describeQuality(q: QualityInstance): QualityInfo | null {
   const key = data.label; // clé canonique = libellé FR du registre
   return {
     key,
-    type: data.type === 'atout' || data.type === 'defaut' ? data.type : undefined,
+    polarite: data.polarite === 'atout' || data.polarite === 'defaut' ? data.polarite : undefined,
     indice: q.value,
     label: q.value != null ? `${key} ${q.value}` : key,
     desc: QUALITY_DESC[key],

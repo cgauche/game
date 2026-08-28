@@ -895,7 +895,8 @@ export interface SkillData {
   id: string;
   label: string;
   characteristic: import('../engine/types').CharKey;
-  type: string;
+  /** ACCÈS (`LDB 09 l.25/l.30`) : `base` (testable sans formation) / `avancee` (exige une Augmentation). */
+  acces: 'base' | 'avancee';
   /** Spécialisations inline (`SpecEntry[]`) — ABSENT quand `specsSource` est présent (le pool DÉRIVE
    *  alors du registre partagé, cf. `specPoolOf` : aucune liste tenue à la main). */
   specs?: SpecEntry[];
@@ -1097,7 +1098,9 @@ export interface TrappingData {
   hands?: 1 | 2;
   /** Taille TYPÉE du paquet de munitions (« 12 flèches », LDB 290) — jamais lue dans le libellé. */
   packSize?: number;
-  type: string;
+  /** CATÉGORIE de catalogue — vocabulaire FERMÉ `TrappingTypeId`, miroir de l'enum du def.
+   *  ≠ `Weapon.type` (moteur) et ≠ `ItemInstance.kind` : le pont est `kindOf()` (traduction). */
+  categorie: TrappingTypeId;
   /** `id` du Groupe d'objet (`WeaponGroupData.id`) : Groupe d'arme (Base/Escrime…), famille de munition
    *  (Arc/Poudre noire…), type d'armure (Plate/Mailles…) ou catégorie d'inventaire — réf d'entité, ≠ libellé. */
   subType: string | null;
@@ -1131,7 +1134,7 @@ export interface TrappingData {
    *  l'affût rendu en emplacement. Pur ROUTAGE D'APPARENCE (≠ règle), comme `shape` route l'art d'arme.
    *  Absent ⇒ l'arme n'est pas posable comme emplacement (pas d'art d'affût). */
   siegeRig?: string;
-  /** `id` de munition REPRÉSENTATIVE (`TrappingData.id`, `type:'ammunition'`) d'une arme de siège — les
+  /** `id` de munition REPRÉSENTATIVE (`TrappingData.id`, `categorie:'ammunition'`) d'une arme de siège — les
    *  familles `armes-de-siege`/`munition-de-siege` (`ammoFamily`) regroupent des munitions non-interchangeables
    *  (carreau de baliste ≠ boulet de canon ≠ bombe de mortier ≠ balles de pierrier, MDG 12 p.101) ; le
    *  `subType` seul ne discrimine pas la bonne famille pour le hint joueur. Propagé jusqu'à `Weapon`,
@@ -1290,13 +1293,13 @@ export interface GroupData {
   exceptGroups?: string[];
 }
 /** Famille de PRÉSENTATION du stock marchand (`MerchantPanel`, ordre d'affichage = ordre du tableau).
- *  `match` = règle de classement d'une ligne de stock (priorité unit > shield > trappingType > fallback
+ *  `match` = règle de classement d'une ligne de stock (priorité unit > shield > categorie > fallback
  *  au `match` vide) ; `columns` = ids de colonnes de stats à afficher, résolus contre le registre de
  *  renderers `MERCHANT_COL_RENDERERS` (`ui/MerchantPanel.tsx`). */
 export interface MerchantFamilyData {
   id: string;
   label: string;
-  match: { trappingType?: string; shield?: boolean; unit?: boolean };
+  match: { categorie?: string; shield?: boolean; unit?: boolean };
   columns: string[];
 }
 export const merchantFamilies = merchantFamiliesJson as MerchantFamilyData[];
@@ -1821,7 +1824,9 @@ export interface QualityData {
   /** id STABLE (slug du libellé) — cible des `Ref` de qualité, robuste au renommage. */
   id: string;
   label: string;
-  type: string;
+  /** POLARITÉ : Atout (bénéfique) / Défaut (handicap) — `id` de `qualityTypes.json`. Trois PAIRES de
+   *  rubriques : objet `LDB 60 l.9`/`l.40`, arme `LDB 62 l.217`/`l.309`, armure `LDB 63 l.68`/`l.80`. */
+  polarite: 'atout' | 'defaut';
   subType: string | null;
   desc: string;
   /** Emplacement SECONDAIRE (#563) — même Qualité réimprimée/à cheval ailleurs (ex. Tir de zone :
@@ -1995,7 +2000,8 @@ export interface SpellData {
   /** id STABLE (slug du libellé) — cible des `Ref` de sort (sorts de créature, bénédictions/miracles). */
   id: string;
   label: string;
-  type: string;
+  /** ÉCOLE — libellé d'affichage hérité (dépotoir de 18 valeurs) ; la logique branche sur `family`/`domainId`. Dette : #1517. */
+  ecole: string;
   subType: string | null;
   /** id STABLE du Domaine de magie (= `DomainData.id`, ex. « feu ») — source RUNTIME du chemin
    *  sort→domaine (attributs LDB 48). Dérivé du `subType` (libellé) à l'authoring ; le runtime ne
@@ -2186,13 +2192,16 @@ export const characteristics = characteristicsJson as CharacteristicsData;
 /** Abréviation FR AFFICHÉE d'une caractéristique à jet (« CC », « Ag »…), dérivée de `characteristics.json`
  *  par `id` (jamais recopiée en dur dans l'UI — `CharKey` reste un id opaque, cf. engine/types.ts). */
 export const CHAR_ABR: Record<CharKey, string> = Object.fromEntries(
-  characteristics.filter((c) => c.type === 'roll').map((c) => [c.id, c.abr]),
+  characteristics.filter((c) => c.nature === 'roll').map((c) => [c.id, c.abr]),
 ) as Record<CharKey, string>;
 export const species = speciesJson as SpeciesData[];
 export const classes = classesJson as ClassData[];
 export const careers = careersJson as CareerData[];
 export const careerLevels = careerLevelsJson as CareerLevelData[];
 export const skills = skillsJson as SkillData[];
+/** Libellés FR de l'ACCÈS d'une Compétence — l'`acces` est un id de logique, il ne s'affiche jamais
+ *  nu. Table EXHAUSTIVE par son type de clé : tout membre nouveau sans libellé est un échec `tsc`. */
+export const SKILL_ACCES_LABEL: Record<SkillData['acces'], string> = { base: 'Base', avancee: 'Avancée' };
 export const talents = talentsJson as TalentData[];
 export const etats = etatsJson as EtatData[];
 /** Procédures / options de jeu (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation
@@ -2240,7 +2249,7 @@ export const qualityById: Map<string, QualityData> = new Map(qualities.map((q) =
  *  Compétence Métier produit, donc hors qualités MAGIQUES (`capabilities.magic` : Maudit, VDM 12
  *  folio 170, est un Atout d'objet qu'aucun artisan ne fabrique). */
 export const FABRICATION_ATOUTS: string[] = qualities
-  .filter((q) => q.type === 'atout' && q.subType === 'objet' && !q.capabilities?.magic)
+  .filter((q) => q.polarite === 'atout' && q.subType === 'objet' && !q.capabilities?.magic)
   .map((q) => q.id);
 /** Atout de fabrication par DÉFAUT (fallback maison quand le joueur ne choisit pas ; le RAW n'en fixe
  *  aucun — un objet de qualité a toujours UN Atout, LDB 60 p.286). */
@@ -2889,7 +2898,7 @@ export function qualitySubtypeLabel(id: string | null | undefined): string {
 export interface QualityTypeData { id: string; label: string; }
 export const qualityTypes = qualityTypesJson as QualityTypeData[];
 const QUALITY_TYPE_BY_ID = new Map(qualityTypes.map((t) => [t.id, t]));
-/** Résout un type de Qualité par son `id` STABLE (= `QualityData.type`). */
+/** Résout un type de Qualité par son `id` STABLE (= `QualityData.polarite`). */
 export function findQualityTypeById(id: string | null | undefined): QualityTypeData | undefined {
   return id ? QUALITY_TYPE_BY_ID.get(id) : undefined;
 }
@@ -2906,10 +2915,10 @@ export function findWeaponGroupById(id: string | null | undefined): WeaponGroupD
 export function weaponGroupLabel(id: string | null | undefined): string {
   return id ? (WEAPON_GROUP_BY_ID.get(id)?.label ?? id) : '';
 }
-/** VOCABULAIRE FERMÉ des types de possession (`TrappingData.type`), miroir de l'enum du schéma
- *  `src/data/schemas/defs/trappings.ts` — une union, pas un registre de données. */
-export type TrappingTypeId = 'melee' | 'ranged' | 'ammunition' | 'armor' | 'trapping' | 'vehicle';
-/** Libellés FR des TYPES de possession — SOURCE UNIQUE : l'enum est un id de logique, il ne s'affiche
+/** VOCABULAIRE FERMÉ des catégories de possession (`TrappingData.categorie`), miroir de l'enum du
+ *  schéma `src/data/schemas/defs/trappings.ts` — une union, pas un registre de données. */
+export type TrappingTypeId = 'melee' | 'ranged' | 'ammunition' | 'armor' | 'trapping';
+/** Libellés FR des CATÉGORIES de possession — SOURCE UNIQUE : l'enum est un id de logique, il ne s'affiche
  *  jamais nu (« ammunition » lu à l'écran, grief du juge vision). Table EXHAUSTIVE par son type de
  *  clé : tout membre nouveau du vocabulaire sans libellé est un échec `tsc`. */
 const TRAPPING_TYPE_LABEL: Record<TrappingTypeId, string> = {
@@ -2918,9 +2927,8 @@ const TRAPPING_TYPE_LABEL: Record<TrappingTypeId, string> = {
   ammunition: 'Munitions',
   armor: 'Armures',
   trapping: 'Équipement',
-  vehicle: 'Véhicules',
 };
-/** Libellé d'affichage d'un type de possession par son id (repli sur l'id). */
+/** Libellé d'affichage d'une catégorie de possession par son id (repli sur l'id). */
 export function trappingTypeLabel(id: string | null | undefined): string {
   return id ? (TRAPPING_TYPE_LABEL[id as TrappingTypeId] ?? id) : '';
 }
@@ -3157,8 +3165,8 @@ export const SPEC_SOURCES: Record<SpecsSource, { pool(): string[]; label(id: str
   mutations:     { pool: () => mutations.map((m) => m.id),    label: (id) => mutationLabel(id),    resolves: (id) => !!findMutationById(id) },
   breathTypes:   { pool: () => breathTypes.map((b) => b.id),  label: (id) => breathTypeLabel(id),  resolves: (id) => !!findBreathTypeById(id) },
   damageTypes:   { pool: () => damageTypes.map((t) => t.id),  label: (id) => damageTypeLabel(id),  resolves: (id) => !!findDamageTypeById(id) },
-  weaponsMelee:  { pool: () => trappings.filter((t) => t.type === 'melee').map((t) => t.id),  label: (id) => findTrappingById(id)?.label ?? id, resolves: (id) => findTrappingById(id)?.type === 'melee' },
-  weaponsRanged: { pool: () => trappings.filter((t) => t.type === 'ranged').map((t) => t.id), label: (id) => findTrappingById(id)?.label ?? id, resolves: (id) => findTrappingById(id)?.type === 'ranged' },
+  weaponsMelee:  { pool: () => trappings.filter((t) => t.categorie === 'melee').map((t) => t.id),  label: (id) => findTrappingById(id)?.label ?? id, resolves: (id) => findTrappingById(id)?.categorie === 'melee' },
+  weaponsRanged: { pool: () => trappings.filter((t) => t.categorie === 'ranged').map((t) => t.id), label: (id) => findTrappingById(id)?.label ?? id, resolves: (id) => findTrappingById(id)?.categorie === 'ranged' },
 };
 /** POOL d'une def (Compétence/Talent) — ce qu'un choix joueur PROPOSE d'office (`LDB 09 l.40`) :
  *  pool DÉRIVÉ du registre partagé si `specsSource` (SSOT `SPEC_SOURCES`), sinon les entrées `specs[]`

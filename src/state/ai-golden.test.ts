@@ -20,7 +20,7 @@ const CROSSBOW: Weapon = { label: 'Arbalète', type: 'ranged', damage: { plusBF:
 
 /** Sort RÉSOLU minimal (`CastableSpell`) pour les fixtures golden — défaut = Projectile mono-cible. */
 function spellData(over: Partial<SpellData> = {}): SpellData {
-  return { id: 'sp', label: 'Sort', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, ...over } as SpellData;
+  return { id: 'sp', label: 'Sort', ecole: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, ...over } as SpellData;
 }
 function castable(over: Partial<CastableSpell> & { id?: string } = {}): CastableSpell {
   const data = over.data ?? spellData({ id: over.id ?? 'sp', missile: true, damage: 8 });

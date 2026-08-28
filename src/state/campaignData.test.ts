@@ -15,7 +15,7 @@ const narratif: NarratifBlock = {
   affaires: [{ id: 'aff-corbeau-noir', titre: 'Le Corbeau noir' }],
   indices: [{ id: 'ind-lettre-scellee', affaireId: 'aff-corbeau-noir', kind: 'indice', titre: 'Lettre scellée', stades: [{ id: 's1', prose: 'Une lettre.' }] }],
   presetsPnj: [{ id: 'pnj-baron-caché' }],
-  objets: [{ id: LAME_CAMPAGNE, label: 'Lame maudite', type: 'melee', subType: null } as NarratifBlock['objets'][number]],
+  objets: [{ id: LAME_CAMPAGNE, label: 'Lame maudite', categorie: 'melee', subType: null } as NarratifBlock['objets'][number]],
 };
 
 function hero(): Combatant {

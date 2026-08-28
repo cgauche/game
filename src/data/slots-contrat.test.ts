@@ -147,7 +147,10 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
       'écart entre la dette d’ADOPTION observée et `SLOTS_SANS_DECLARATION` — un champ en trop côté observé est une référence neuve qui n’a pas adopté la fabrique (elle s’adopte), un champ en trop côté stock est périmé (il se retire dans le commit de l’adoption).',
     ).toEqual(SLOTS_SANS_DECLARATION.map(cle).sort());
     // Cliquet : la dette d'adoption ne fait que DÉCROÎTRE (L2/L3, #1473).
-    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(326);
+    // Cliquet abaissé 326 → 325 avec le lot #1467 L1b V-P5 : `skills.type` n'est plus MESURÉ comme un
+    // site de référence — la normalisation `avancée` → `avancee` (migration 6b) fait passer ses valeurs
+    // distinctes de 1/1 résolvante à 1/2, sous la majorité stricte qu'exige `siteDeReference`.
+    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(325);
   });
 
   it('chaque ligne du stock porte sa DATE et son LOT de mort', () => {

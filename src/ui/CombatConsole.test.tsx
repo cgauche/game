@@ -3194,7 +3194,7 @@ describe('CombatConsole — geste secondaire de l’alvéole (Focaliser)', () =>
 
   /** `LDB 09 l.30` (verbatim, `docs/raw/competences.md`) : « Vous ne pouvez effectuer de Test de
    *  Compétence Avancée que si vous y avez ajouté au moins une Augmentation. » Focalisation EST
-   *  Avancée (`skills.json`, type « avancée ») — le geste doit se fermer AVANT le journal. */
+   *  Avancée (`skills.json`, accès « avancee ») — le geste doit se fermer AVANT le journal. */
   it('SANS la Compétence Focalisation : le geste est refusé à la CASE, et le journal reste muet', () => {
     monter(mage(['carreau'], { focalisation: false }));
     const cellule = alveole('carreau');

@@ -48,7 +48,7 @@ const lines: string[] = [
 
 const groups = new Map<string, typeof spells>();
 for (const s of spells) {
-  const key = s.subType ? `${s.type} — ${s.subType}` : s.type;
+  const key = s.subType ? `${s.ecole} — ${s.subType}` : s.ecole;
   if (!groups.has(key)) groups.set(key, []);
   groups.get(key)!.push(s);
 }

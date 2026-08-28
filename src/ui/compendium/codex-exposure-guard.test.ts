@@ -265,7 +265,7 @@ describe('anti-spoiler : la couche de campagne n’entre jamais dans l’index C
     affaires: [{ id: 'aff-corbeau-noir', titre: 'Le Corbeau noir' }],
     indices: [{ id: 'ind-lettre-scellee', affaireId: 'aff-corbeau-noir', kind: 'indice', titre: 'Lettre scellée', stades: [{ id: 's1', prose: 'Une lettre.' }] }],
     presetsPnj: [{ id: 'pnj-baron-spoiler' }],
-    objets: [{ id: 'obj-relique-cachee', label: 'Relique cachée', type: 'misc' } as NarratifBlock['objets'][number]],
+    objets: [{ id: 'obj-relique-cachee', label: 'Relique cachée', categorie: 'trapping' } as NarratifBlock['objets'][number]],
   };
 
   /** Tous les ids RÉELLEMENT exposés par le Compendium — chaque item de chaque catégorie du registre. */

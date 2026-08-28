@@ -16,7 +16,10 @@ export const schema = z.array(
     id: z.string(),
     label: z.string(),
     category: z.strictObject({
-      types: z.array(z.string()).optional(),
+      /** CATÉGORIES de catalogue vendues (`TrappingData.categorie`) — mesuré : 1 porteur, valeurs ⊆ le
+       *  vocabulaire de `trappings.json`. Absent = pas de filtre par catégorie. */
+      categories: z.array(z.string()).optional(),
+      /** Sous-types vendus (`TrappingData.subType`, Groupe d'objet) — axe DISTINCT, nom inchangé. */
       subTypes: z.array(z.string()).optional(),
     }),
     settlement: settlementSchema,

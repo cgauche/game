@@ -3,7 +3,7 @@
     "id": "armurier",
     "label": "Armurier",
     "category": {
-      "types": [
+      "categories": [
         "melee",
         "ranged",
         "armor",

@@ -37,7 +37,7 @@ const rmTalent = (times: number) => [{ talentId: 'resistance-a-la-magie', times 
 
 /** Projectile arcane MINIMAL (non curé → aucun Flow) : Dégâts 8 + DR + BFM 3. */
 const missileSpell = (): never =>
-  ({ id: 'dard-test', label: 'Dard', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: 1, duration: null, desc: '', source: { book: 'LDB', page: 0 }, missile: true, damage: 8 }) as never;
+  ({ id: 'dard-test', label: 'Dard', ecole: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: 1, duration: null, desc: '', source: { book: 'LDB', page: 0 }, missile: true, damage: 8 }) as never;
 
 /** Sort de SOUTIEN curé : État Aveugle dont la magnitude s'échelonne sur le DR (1 pion / 2 DR). */
 const stateSpell = (): never =>

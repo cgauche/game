@@ -36,7 +36,7 @@ function foeAt(id: string, x: number, y: number, opts: Partial<Combatant> = {}):
 }
 
 function spellData(over: Partial<SpellData> = {}): SpellData {
-  return { id: 'sp', label: 'Sort', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, ...over } as SpellData;
+  return { id: 'sp', label: 'Sort', ecole: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, ...over } as SpellData;
 }
 const doOps = (ops: unknown[], on: 'target' | 'caster' = 'target') => ({ kind: 'do', effect: { type: 'ops', on, ops } }) as unknown as SpellData['effects'];
 function castable(over: Partial<CastableSpell> & { id?: string } = {}): CastableSpell {

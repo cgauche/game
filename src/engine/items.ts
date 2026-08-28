@@ -226,11 +226,13 @@ const ARMOUR_LOC_BY_ID: Record<string, HitLocation[]> = {
   jambes: ['jambeG', 'jambeD'],
 };
 
-function kindOf(type: string): ItemKind {
-  if (type === 'melee') return 'melee';
-  if (type === 'ranged') return 'ranged';
-  if (type === 'armor') return 'armor';
-  if (type === 'ammunition') return 'ammo';
+/** PONT catalogue → runtime : la CATÉGORIE de catalogue (`TrappingData.categorie`) se TRADUIT en
+ *  `ItemKind` (`ItemInstance.kind`). Deux vocabulaires distincts, jamais une recopie. */
+function kindOf(categorie: string): ItemKind {
+  if (categorie === 'melee') return 'melee';
+  if (categorie === 'ranged') return 'ranged';
+  if (categorie === 'armor') return 'armor';
+  if (categorie === 'ammunition') return 'ammo';
   return 'misc';
 }
 
@@ -240,7 +242,7 @@ export function itemFromTrappingById(id: string, resolveTrapping: TrappingResolv
   const t = resolveTrapping(id);
   if (!t) return null;
   if (t.service) throw new Error(`itemFromTrappingById: "${t.id}" est un tarif de service (LDB p.302), pas un objet possédable.`);
-  const kind = kindOf(t.type);
+  const kind = kindOf(t.categorie);
   const locs =
     t.loc != null
       ? t.loc

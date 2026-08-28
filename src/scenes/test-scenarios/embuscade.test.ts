@@ -142,7 +142,7 @@ describe('embuscade — Scene produite par buildScene', () => {
       expect(traits.length).toBeGreaterThan(0);
       for (const t of traits) {
         const trapping = t.arg ? findTrappingById(t.arg) : undefined;
-        expect(trapping?.type).toBe(t.id === 'a-distance' ? 'ranged' : 'melee');
+        expect(trapping?.categorie).toBe(t.id === 'a-distance' ? 'ranged' : 'melee');
       }
       const melee = traits.find((t) => t.id === 'arme');
       expect(weaponFromTrait(melee!)?.label).toBe(attendus[m.entityId]);

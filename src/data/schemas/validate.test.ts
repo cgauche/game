@@ -13,7 +13,7 @@ import { projetSchema } from './defs-scenes/projet';
 import areneProjet from '../../scenes/arene/arene-projet.json';
 
 const VALID_CHAR = [
-  { id: 'capacite-de-combat', abr: 'CC', label: 'Capacité de Combat', type: 'roll', desc: 'x', source: { book: 'livre-de-base', page: 33 } },
+  { id: 'capacite-de-combat', abr: 'CC', label: 'Capacité de Combat', nature: 'roll', desc: 'x', source: { book: 'livre-de-base', page: 33 } },
 ];
 
 describe('validateDataset — point de validation partagé (#176)', () => {
@@ -29,7 +29,7 @@ describe('validateDataset — point de validation partagé (#176)', () => {
   });
 
   it('un champ requis manquant → chemin du champ dans le message', () => {
-    const bad = [{ abr: 'CC', label: 'x', type: 'roll', desc: 'x' }]; // pas de `source`
+    const bad = [{ abr: 'CC', label: 'x', nature: 'roll', desc: 'x' }]; // pas de `source`
     const err = validateDataset('characteristics.json', bad);
     expect(err).not.toBeNull();
     expect(err).toContain('0.source');

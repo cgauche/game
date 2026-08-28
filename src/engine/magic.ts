@@ -58,7 +58,8 @@ export interface SpellLike {
    *  entre parenthèses (`VDM 02 l.398`), gatée sur les Domaines que PRATIQUE le lanceur. */
   ritual?: { reduced?: RitualReduced };
   label: string;
-  type: string;
+  /** ÉCOLE — libellé d'affichage hérité du Sort (`SpellData.ecole`) ; le discriminant moteur est `family`. */
+  ecole: string;
   /** Domaine/Vent (« Feu », « Ombres »…) ou culte — null pour les sorts génériques. */
   subType?: string | null;
   /** id STABLE du Domaine de magie (`DomainData.id`, ex. « feu ») — source RUNTIME des attributs de

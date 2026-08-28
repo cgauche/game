@@ -29,15 +29,15 @@ describe('couverture de curation', () => {
     // La curation ne couvre que l'officiel.
     for (const s of spells) {
       if (s.source?.book === 'frenchy-bzh') continue;
-      expect(s.curated, `${s.label} (${s.type} / ${s.subType ?? '—'})`).toBe(true);
+      expect(s.curated, `${s.label} (${s.ecole} / ${s.subType ?? '—'})`).toBe(true);
     }
   });
 
-  it('labels en double : « Enchevêtrement » résolu par type (Arcane vs miracle de Taal, tous deux curés)', () => {
-    const arcane = spells.find((s) => s.label === 'Enchevêtrement' && s.type === 'Magie des Arcanes');
-    const taal = spells.find((s) => s.label === 'Enchevêtrement' && s.type === 'Invocation');
-    expect(arcane?.type).toBe('Magie des Arcanes'); // discriminant du Sort d'Arcane
-    expect(taal?.type).toBe('Invocation'); // discriminant du miracle de Taal
+  it('labels en double : « Enchevêtrement » résolu par école (Arcane vs miracle de Taal, tous deux curés)', () => {
+    const arcane = spells.find((s) => s.label === 'Enchevêtrement' && s.ecole === 'Magie des Arcanes');
+    const taal = spells.find((s) => s.label === 'Enchevêtrement' && s.ecole === 'Invocation');
+    expect(arcane?.ecole).toBe('Magie des Arcanes'); // discriminant du Sort d'Arcane
+    expect(taal?.ecole).toBe('Invocation'); // discriminant du miracle de Taal
     const taalSpell = findSpellById('enchevetrement-2')!; // miracle de Taal (le label « Enchevêtrement » est en double)
     expect(taalSpell.curated).toBe(true);
   });

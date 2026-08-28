@@ -66,7 +66,7 @@ const EFFECT_TYPES = Object.keys(EFFECT_HANDLERS) as Effect['type'][];
 const SPELL_GROUPS: [string, { id: string; label: string }[]][] = (() => {
   const m = new Map<string, { id: string; label: string }[]>();
   for (const sp of spells) {
-    const g = `${sp.type ?? 'Sorts'}${sp.subType ? ` — ${sp.subType}` : ''}`;
+    const g = `${sp.ecole ?? 'Sorts'}${sp.subType ? ` — ${sp.subType}` : ''}`;
     if (!m.has(g)) m.set(g, []);
     m.get(g)!.push({ id: sp.id, label: sp.label });
   }

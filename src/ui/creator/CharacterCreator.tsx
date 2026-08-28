@@ -192,7 +192,7 @@ const CORE = allSpecies.filter((s) => s.source.book === 'livre-de-base').map((s)
  *  hors celles que le catalogue DÉCLARE « Mains nues » (`TrappingData.unarmed`) — on ne choisit pas ses
  *  poings comme équipement de départ. */
 const WEAPON_CHOICES = allTrappings
-  .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !t.unarmed)
+  .filter((t) => (t.categorie === 'melee' || t.categorie === 'ranged') && !t.unarmed)
   .map((t) => ({ id: t.id, label: t.label }))
   .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 /** Demeure céleste par ID (ADE II 3 l.504-512) — libellé affiché + desc RAW en tooltip du thème astral. */
@@ -1995,9 +1995,9 @@ function trappingMeta(id: string): string {
   const bits: string[] = [];
   if (t.damage) bits.push(`Dégâts ${damageString(t.damage)}`);
   if (t.pa) bits.push(`${t.pa} PA (${t.loc ?? ''})`);
-  if (t.reach && t.type === 'melee') bits.push(`Allonge ${t.reach}`);
+  if (t.reach && t.categorie === 'melee') bits.push(`Allonge ${t.reach}`);
   // Portée : « N m » (fixe) / « BF×k m » (jet) ; sinon le modificateur de la munition (« ×½ »).
-  if (t.type === 'ranged' || t.type === 'ammunition') { const p = rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod); if (p) bits.push(`Portée ${p}`); }
+  if (t.categorie === 'ranged' || t.categorie === 'ammunition') { const p = rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod); if (p) bits.push(`Portée ${p}`); }
   if (t.enc) bits.push(`Enc. ${t.enc}`);
   if (t.qualities?.length) bits.push(t.qualities.map(qualityRefLabel).join(', '));
   return bits.join(' · ');

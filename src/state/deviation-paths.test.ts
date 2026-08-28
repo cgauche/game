@@ -39,7 +39,7 @@ const mage = (kind: Combatant['kind'], id: string): Combatant =>
 
 // Sort Projectile arcane MINIMAL (curé=non → pas de Flow d'effet) ; `damage` ADDITIF (+ DR + BFM).
 const missileSpell = (over: Record<string, unknown> = {}): never =>
-  ({ id: 'dard-test', label: 'Dard', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: 1, duration: null, desc: '', source: { book: 'LDB', page: 0 }, missile: true, damage: 8, ...over }) as never;
+  ({ id: 'dard-test', label: 'Dard', ecole: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: 1, duration: null, desc: '', source: { book: 'LDB', page: 0 }, missile: true, damage: 8, ...over }) as never;
 
 function setBattle(combatants: Combatant[]): void {
   const battle = {

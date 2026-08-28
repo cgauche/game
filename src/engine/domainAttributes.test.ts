@@ -75,7 +75,7 @@ describe('Métal / Cieux / Ombres — mitigation des Projectiles (LDB 48 l.87/30
   it('evaluateMissile intègre l’attribut (Métal : +PA métal en Dégâts, PA métal ignorées)', () => {
     const caster = mk({ id: 'w', label: 'Doré' }); // BFM 4
     const t = mk({ id: 't', items: [mail(3)], armour: { tete: 3, brasG: 3, brasD: 3, corps: 3, jambeG: 3, jambeD: 3 } as Combatant['armour'] });
-    const spell = { label: 'Test Métal', type: 'Magie des Arcanes', subType: 'Métal', domainId: 'metal', missile: true, damage: 4, cn: 0, range: null, target: 1, duration: null, desc: 'Il s’agit d’un Projectile magique avec Dégâts +4.' };
+    const spell = { label: 'Test Métal', ecole: 'Magie des Arcanes', subType: 'Métal', domainId: 'metal', missile: true, damage: 4, cn: 0, range: null, target: 1, duration: null, desc: 'Il s’agit d’un Projectile magique avec Dégâts +4.' };
     const cr = { cast: true, roll: 54, target: 60, sl: 2, isCritical: false, isFumble: false, log: 'ok' }; // jet inversé 45 → corps
     const r = evaluateMissile(caster, t, spell as never, cr as never);
     // Dégâts = 4 (sort) + 2 (DR) + 4 (BFM) + 3 (PA métal) = 13 ; mitigation = BE 3 + (PA 3 − 3 ignorées) = 3.
@@ -168,11 +168,11 @@ describe('Cieux — arc d’Azyr (LDB 48 l.87) : géométrie on:{near} + bypass 
 });
 
 describe('Magie des mers (MDG 02 l.178-186) — 4 Domaines, seaModifier (DomainData)', () => {
-  const feuSpell = { label: 'Test Feu', type: 'Magie des Arcanes', subType: 'Feu', domainId: 'feu', cn: 0, range: null, target: 1, duration: null, desc: '' };
-  const vieSpell = { label: 'Test Vie', type: 'Magie des Arcanes', subType: 'Vie', domainId: 'vie', cn: 0, range: null, target: 1, duration: null, desc: '' };
-  const cieuxSpell = { label: 'Test Cieux', type: 'Magie des Arcanes', subType: 'Cieux', domainId: 'cieux', cn: 0, range: null, target: 1, duration: null, desc: '' };
-  const beteSpell = { label: 'Test Bête', type: 'Magie des Arcanes', subType: 'Bête', domainId: 'bete', cn: 0, range: null, target: 1, duration: null, desc: '' };
-  const otherSpell = { label: 'Autre', type: 'Magie des Arcanes', subType: 'Métal', domainId: 'metal', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const feuSpell = { label: 'Test Feu', ecole: 'Magie des Arcanes', subType: 'Feu', domainId: 'feu', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const vieSpell = { label: 'Test Vie', ecole: 'Magie des Arcanes', subType: 'Vie', domainId: 'vie', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const cieuxSpell = { label: 'Test Cieux', ecole: 'Magie des Arcanes', subType: 'Cieux', domainId: 'cieux', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const beteSpell = { label: 'Test Bête', ecole: 'Magie des Arcanes', subType: 'Bête', domainId: 'bete', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const otherSpell = { label: 'Autre', ecole: 'Magie des Arcanes', subType: 'Métal', domainId: 'metal', cn: 0, range: null, target: 1, duration: null, desc: '' };
 
   const caster = (domainSpec: string): Combatant => mk({
     id: 'w', kind: 'hero',
@@ -257,8 +257,8 @@ describe('Bete — Peur 1 pour 1d10 Rounds apres un Sort de la Bete reussi (LDB 
 });
 
 describe('Rubrique de VENT du Domaine (VDM 04 l.48-56, folio 55) — windModifiers (DomainData)', () => {
-  const hyshSpell = { label: 'Test Lumière', type: 'Magie des Arcanes', subType: 'Lumière', domainId: 'lumiere', cn: 0, range: null, target: 1, duration: null, desc: '' };
-  const metalSpell = { label: 'Test Métal', type: 'Magie des Arcanes', subType: 'Métal', domainId: 'metal', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const hyshSpell = { label: 'Test Lumière', ecole: 'Magie des Arcanes', subType: 'Lumière', domainId: 'lumiere', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const metalSpell = { label: 'Test Métal', ecole: 'Magie des Arcanes', subType: 'Métal', domainId: 'metal', cn: 0, range: null, target: 1, duration: null, desc: '' };
 
   const wizard = (domainSpec: string): Combatant => mk({
     id: 'w', kind: 'hero',

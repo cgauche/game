@@ -34,7 +34,7 @@ const caster = (): Combatant =>
   }) as unknown as Combatant;
 
 const missile = (): SpellData =>
-  ({ id: 'dard', label: 'Dard', type: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, missile: true, damage: 8 }) as SpellData;
+  ({ id: 'dard', label: 'Dard', ecole: 'sort', subType: null, family: 'arcane', cn: 0, range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 }, missile: true, damage: 8 }) as SpellData;
 
 const critCast: CastResult = { cast: true, roll: 50, target: 60, sl: 2, isCritical: true, isFumble: false, log: '' };
 

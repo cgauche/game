@@ -3,7 +3,7 @@
     "id": "capacite-de-combat",
     "abr": "CC",
     "label": "Capacité de Combat",
-    "type": "roll",
+    "nature": "roll",
     "desc": "Il s'agit de votre capacité à vous battre au Corps à corps, à exécuter une frappe mesurée, et de votre efficacité dans le tumulte d'une mêlée générale. Cet Attribut est aussi utilisé pour le combat à mains nues, quand l'arme est votre propre corps !",
     "source": {
       "book": "livre-de-base",
@@ -14,7 +14,7 @@
     "id": "capacite-de-tir",
     "abr": "CT",
     "label": "Capacité de Tir",
-    "type": "roll",
+    "nature": "roll",
     "desc": "Elle représente votre capacité à atteindre vos cibles avec des armes à distance telles que des arcs et des couteaux de lancer, et, en général, à lancer des objets. Cet Attribut est aussi utilisé comme base pour d'autres attaques à distance comme le Vomissement des trolls.",
     "source": {
       "book": "livre-de-base",
@@ -25,7 +25,7 @@
     "id": "force",
     "abr": "F",
     "label": "Force",
-    "type": "roll",
+    "nature": "roll",
     "desc": "Ceci indique combien de Dégâts vous infligez au Corps à corps, combien vous pouvez soulever et à quel point vous êtes bon en Natation et en Escalade.",
     "source": {
       "book": "livre-de-base",
@@ -36,7 +36,7 @@
     "id": "endurance",
     "abr": "E",
     "label": "Endurance",
-    "type": "roll",
+    "nature": "roll",
     "desc": "Il s'agit de votre résistance physique. Elle vous aide à survivre aux Dégâts durant un combat, mais aussi à des conditions difficiles et à résister au poison.",
     "source": {
       "book": "livre-de-base",
@@ -47,7 +47,7 @@
     "id": "initiative",
     "abr": "I",
     "label": "Initiative",
-    "type": "roll",
+    "nature": "roll",
     "desc": "Elle représente votre vitesse de pensée et de réaction, en particulier dans le feu de l'action et quand vous êtes sous pression. Elle détermine l'ordre de combat, votre intuition et votre perception, et vous aide à être le premier à réagir.",
     "source": {
       "book": "livre-de-base",
@@ -58,7 +58,7 @@
     "id": "agilite",
     "abr": "Ag",
     "label": "Agilité",
-    "type": "roll",
+    "nature": "roll",
     "desc": "L'Agilité est l'expression de votre coordination physique et de vos capacités athlétiques naturelles, la base dans des domaines comme la course, l'équitation et la dissimulation. Elle est aussi utilisée pour esquiver les coups en combat.",
     "source": {
       "book": "livre-de-base",
@@ -69,7 +69,7 @@
     "id": "dexterite",
     "abr": "Dex",
     "label": "Dextérité",
-    "type": "roll",
+    "nature": "roll",
     "desc": "Elle indique votre capacité à accomplir des tâches manuelles délicates telles que jouer d'un instrument de musique ou confectionner habilement des objets. Elle vous aide aussi pour les tours de passe-passe ou pour faire les poches.",
     "source": {
       "book": "livre-de-base",
@@ -80,7 +80,7 @@
     "id": "intelligence",
     "abr": "Int",
     "label": "Intelligence",
-    "type": "roll",
+    "nature": "roll",
     "desc": "L'Intelligence symbolise le potentiel de pensée, d'analyse et de compréhension. Utile pour soigner, évaluer et pour les connaissances en général, elle est indispensable pour comprendre et lancer des Sorts.",
     "source": {
       "book": "livre-de-base",
@@ -91,7 +91,7 @@
     "id": "force-mentale",
     "abr": "FM",
     "label": "Force Mentale",
-    "type": "roll",
+    "nature": "roll",
     "desc": "La Force Mentale représente votre volonté en général et votre capacité à ignorer les difficultés et à vous concentrer sur le travail en cours. Elle aide à résister à toutes sortes d'influences et de coercitions, et protège contre la peur et la terreur.",
     "source": {
       "book": "livre-de-base",
@@ -102,7 +102,7 @@
     "id": "sociabilite",
     "abr": "Soc",
     "label": "Sociabilité",
-    "type": "roll",
+    "nature": "roll",
     "desc": "La Sociabilité vous pousse à vous entendre avec les gens et à paraître assez plaisant et convenable. Elle vous aide lorsque vous discutez avec les gens du coin ou que vous commandez les gens en situation de combat, enjôlez les gardes ou tentez de les corrompre, et, pour les Personnages pieux, lorsque vous communiquez avec votre divinité.",
     "source": {
       "book": "livre-de-base",
@@ -113,7 +113,7 @@
     "id": "blessure",
     "abr": "B",
     "label": "Blessure",
-    "type": "wounds",
+    "nature": "wounds",
     "desc": "Vos Points de Blessure indiquent le nombre de Dégâts que vous pouvez endurer en fonction de votre puissance physique et de votre force de volonté pour éviter les blessures. Voir le Chapitre 5 : Règles pour en savoir plus sur la façon d'utiliser les Points de Blessures pour calculer les Dégâts.",
     "source": {
       "book": "livre-de-base",
@@ -124,7 +124,7 @@
     "id": "destin",
     "abr": "",
     "label": "Destin",
-    "type": "extra",
+    "nature": "extra",
     "desc": "Chaque Personnage possède une destinée. Alors même si ce futur reste mystérieux et qu'il n'y a aucune garantie quant au fait qu'il soit glorieux, héroïque ou même agréable, il est voué a accomplir quelque chose d'important.\n\nPour réprésenter cela, vous commencez la partie avec un certain nombre de Points de Destin. Ce sont ces Points qui vous différencient du reste des habitants du Vieux Monde. Ils vont vous permettre de survivre même lorsque toutes les chances sont contre voous et de l'emporter là où les gens normaux échouerraient\n\nLe Destin détermine le nombre de Points de Chance dont vous pouvez disposer et qui peuvent être sacrifiés lors des circonstances les plus difficiles afin d'éviter une mort certaine.",
     "source": {
       "book": "livre-de-base",
@@ -135,7 +135,7 @@
     "id": "chance",
     "abr": "",
     "label": "Chance",
-    "type": "",
+    "nature": "compteur",
     "desc": "Le Destin est directement lié à vos Points de Chance. Les Points de Chance sont dépensés pour recevoir un bonus mineur, y compris la possibilité de pouvoir relancer un Test qui s'est soldé par un échec ou de prendre l'avantage lorsque la chance vous sourit, et leur nombre ne va pas cesser de fluctuer au cours du jeu.",
     "source": {
       "book": "livre-de-base",
@@ -146,7 +146,7 @@
     "id": "resilience",
     "abr": "",
     "label": "Résilience",
-    "type": "extra",
+    "nature": "extra",
     "desc": "Alors que les Points de Destin représentent votre destinée, peut-être tracée par une divinité mystérieuse, la Résilience représente votre volonté et votre détermination à endurer les événements et à vous dépasser quels que soient les obstacles auxquels vous faite face.\n\nLa Résilience détermine votre limite maximale de Détermination et elle peut être sacrifiée pour vous permettre de surmonter des situations à priori impossibles.",
     "source": {
       "book": "livre-de-base",
@@ -179,7 +179,7 @@
     "id": "determination",
     "abr": "",
     "label": "Détermination",
-    "type": "",
+    "nature": "compteur",
     "desc": "Tout comme le Destin, la Résilience est directement liée à une réserve de Points, cette fois appelée Détermination. Les Points de Détermination sont dépensés afin de passer outre des contrariétés mineures, comme le fait d'ignorer les effets négatifs des Blessures critiques pendant un Round ou de retirer un État.",
     "source": {
       "book": "livre-de-base",
@@ -191,7 +191,7 @@
     "id": "extra-points",
     "abr": "",
     "label": "Extra Points",
-    "type": "points",
+    "nature": "points",
     "desc": "Vous commencez avec une valeur de base pour le Destin et la Résilience, puis vous disposez d'un nombre de Points supplémentaires à répartir entre ces Attributs, comme bon vous semble. Les nombres de Points supplémentaires sont indiqués dans le Tableau des Attributs. Plus vous attribuez de Points à votre Destin, plus vous êtes chanceux. En comparaison, une plus haute Résilience indique que vous pouvez faire face à n'importe quelle situation.",
     "source": {
       "book": "livre-de-base",
@@ -202,7 +202,7 @@
     "id": "mouvement",
     "abr": "M",
     "label": "Mouvement",
-    "type": "mv",
+    "nature": "mv",
     "desc": "Le Mouvement est utilisé pour déterminer vos vitesses de marche et de course. Le Mouvement humain standard est de 4. Si vous utilisez une grille pour le déplacement, cela indique le nombre de cases que vous pouvez parcourir en un Round, ou de centimètres sur une table. À plus long terme, il indique combien de kilomètres par heure vous pouvez aisément parcourir à pied. Pour plus de détails sur le Mouvement, voir page 164.\n\n| Mouvement | Marche | Charge |\n| --- | --- | --- |\n| 3 | 6 | 12 |\n| 4 | 8 | 16 |\n| 5 | 10 | 20 |",
     "source": {
       "book": "livre-de-base",
@@ -213,7 +213,7 @@
     "id": "corruption",
     "abr": "",
     "label": "Corruption",
-    "type": "",
+    "nature": "compteur",
     "desc": "Les Points de Corruption sont utilisés pour représenter la lente dérive de votre âme vers les Dieux Sombres du Chaos. Chaque fois que vous êtes exposé à une potentielle source de Corruption, vous risquez d'accumuler des Points. Plus ce total est important, plus vous vous rapprochez du Chaos et plus votre âme s'assombrit, jusqu'à ce qu'éventuellement, vous changiez...",
     "source": {
       "book": "livre-de-base",
@@ -224,7 +224,7 @@
     "id": "peche",
     "abr": "",
     "label": "Péché",
-    "type": "",
+    "nature": "compteur",
     "desc": "Les dieux gardent un œil sur les Bienheureux, et ces derniers risquent la disgrâce s'ils agissent de façon contraire à la volonté de leur divinité. Dans le jeu, les Points de Péché représentent ce problème.\n\nSi vous violez n'importe lequel des commandements de votre dieu, le MJ vous octroiera un Point de Péché ou plus. Chaque fois que vous recevez un Point de Péché, il est ajouté à votre total actuel. Il n'y a pas de maximum au nombre de Points de Péché que vous pouvez obtenir, mais, plus vous en avez, plus votre dieu risque d'être mécontent en cas d'appel à l'aide divine.\n\n**Péché et Colère divine**\n\nIl est risqué de faire appel à votre divinité quand vous avez agi de façon contraire à sa volonté. Chaque fois que vous effectuez un Test de Prière, si le dé des unités est inférieur ou égal à votre total actuel de Points de Péché, vous subirez la Colère des dieux, même si le Test de Prière est réussi.",
     "source": {
       "book": "livre-de-base",

@@ -50,7 +50,7 @@ describe('#409 — intégrité de axes.json', () => {
       if (axis.core) continue;
       for (const ref of axis.skills ?? []) {
         const skill = findSkillById(ref.skillId);
-        if (skill && skill.type !== 'avancée') offenders.push(`${axis.id} ← ${ref.skillId} (type « ${skill.type} »)`);
+        if (skill && skill.acces !== 'avancee') offenders.push(`${axis.id} ← ${ref.skillId} (accès « ${skill.acces} »)`);
       }
     }
     expect(offenders, `Axe(s) expert dérivant d'une Compétence de Base (RAW l.25 : testable sans formation) :\n${offenders.join('\n')}`).toEqual([]);

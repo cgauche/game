@@ -2,7 +2,7 @@
   {
     "id": "benediction-de-bataille",
     "label": "Bénédiction de Bataille",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -48,7 +48,7 @@
   {
     "id": "benediction-de-chance",
     "label": "Bénédiction de Chance",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -92,7 +92,7 @@
   {
     "id": "benediction-de-charisme",
     "label": "Bénédiction de Charisme",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -138,7 +138,7 @@
   {
     "id": "benediction-de-conscience",
     "label": "Bénédiction de Conscience",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -183,7 +183,7 @@
   {
     "id": "benediction-de-convalescence",
     "label": "Bénédiction de Convalescence",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -226,7 +226,7 @@
   {
     "id": "benediction-de-courage",
     "label": "Bénédiction de Courage",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -272,7 +272,7 @@
   {
     "id": "benediction-de-droiture",
     "label": "Bénédiction de Droiture",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -319,7 +319,7 @@
   {
     "id": "benediction-de-finesse",
     "label": "Bénédiction de Finesse",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -365,7 +365,7 @@
   {
     "id": "benediction-de-grace",
     "label": "Bénédiction de Grâce",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -411,7 +411,7 @@
   {
     "id": "benediction-de-guerison",
     "label": "Bénédiction de Guérison",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -453,7 +453,7 @@
   {
     "id": "benediction-de-la-chasse",
     "label": "Bénédiction de La Chasse",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -499,7 +499,7 @@
   {
     "id": "benediction-de-protection",
     "label": "Bénédiction de Protection",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -543,7 +543,7 @@
   {
     "id": "benediction-de-puissance",
     "label": "Bénédiction de Puissance",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -589,7 +589,7 @@
   {
     "id": "benediction-de-sagesse",
     "label": "Bénédiction de Sagesse",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -635,7 +635,7 @@
   {
     "id": "benediction-de-sauvagerie",
     "label": "Bénédiction de Sauvagerie",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -679,7 +679,7 @@
   {
     "id": "benediction-de-souffle",
     "label": "Bénédiction de Souffle",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -723,7 +723,7 @@
   {
     "id": "benediction-de-tenacite",
     "label": "Bénédiction de Ténacité",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -766,7 +766,7 @@
   {
     "id": "benediction-de-vigueur",
     "label": "Bénédiction de Vigueur",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -812,7 +812,7 @@
   {
     "id": "benediction-de-vivacite",
     "label": "Bénédiction de Vivacité",
-    "type": "Béni",
+    "ecole": "Béni",
     "subType": null,
     "cn": null,
     "range": {
@@ -858,7 +858,7 @@
   {
     "id": "alerte",
     "label": "Alerte",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -902,7 +902,7 @@
   {
     "id": "amitie-animale",
     "label": "Amitié animale",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -948,7 +948,7 @@
   {
     "id": "bruits",
     "label": "Bruits",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -997,7 +997,7 @@
   {
     "id": "choc",
     "label": "Choc",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1039,7 +1039,7 @@
   {
     "id": "conservation",
     "label": "Conservation",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1087,7 +1087,7 @@
   {
     "id": "coup-de-vent",
     "label": "Coup de vent",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1133,7 +1133,7 @@
   {
     "id": "creer-un-petit-animal",
     "label": "Créer un petit animal",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1175,7 +1175,7 @@
   {
     "id": "drain",
     "label": "Drain",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1219,7 +1219,7 @@
   {
     "id": "eblouissant",
     "label": "Éblouissant",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1269,7 +1269,7 @@
   {
     "id": "en-catimini",
     "label": "En catimini",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1313,7 +1313,7 @@
   {
     "id": "feux-follets",
     "label": "Feux follets",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1363,7 +1363,7 @@
   {
     "id": "flamme-magique",
     "label": "Flamme magique",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1407,7 +1407,7 @@
   {
     "id": "flechette",
     "label": "Fléchette",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1440,7 +1440,7 @@
   {
     "id": "lumiere",
     "label": "Lumière",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1490,7 +1490,7 @@
   {
     "id": "murmures",
     "label": "Murmures",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1539,7 +1539,7 @@
   {
     "id": "pas-leger",
     "label": "Pas léger",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1584,7 +1584,7 @@
   {
     "id": "protection-contre-la-pluie",
     "label": "Protection contre la pluie",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1628,7 +1628,7 @@
   {
     "id": "purification-de-l-eau",
     "label": "Purification de l'eau",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1672,7 +1672,7 @@
   {
     "id": "putrefaction",
     "label": "Putréfaction",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1720,7 +1720,7 @@
   {
     "id": "reperes",
     "label": "Repères",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1761,7 +1761,7 @@
   {
     "id": "secousse",
     "label": "Secousse",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1818,7 +1818,7 @@
   {
     "id": "serrure-ouverte",
     "label": "Serrure ouverte",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1860,7 +1860,7 @@
   {
     "id": "sommeil",
     "label": "Sommeil",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1918,7 +1918,7 @@
   {
     "id": "source",
     "label": "Source",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -1963,7 +1963,7 @@
   {
     "id": "tendre-l-oreille",
     "label": "Tendre l'oreille",
-    "type": "Magie mineure",
+    "ecole": "Magie mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -2013,7 +2013,7 @@
   {
     "id": "arme-aethyrique",
     "label": "Arme aethyrique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 2,
     "range": {
@@ -2076,7 +2076,7 @@
   {
     "id": "armure-aethyrique",
     "label": "Armure Aethyrique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 2,
     "range": {
@@ -2121,7 +2121,7 @@
   {
     "id": "attaques-en-chaine",
     "label": "Attaques en chaîne",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -2174,7 +2174,7 @@
   {
     "id": "aura-ordinaire",
     "label": "Aura ordinaire",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -2219,7 +2219,7 @@
   {
     "id": "bouclier-anti-fleches",
     "label": "Bouclier anti-flèches",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 3,
     "range": {
@@ -2270,7 +2270,7 @@
   {
     "id": "bouclier-magique",
     "label": "Bouclier magique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -2314,7 +2314,7 @@
   {
     "id": "carreau",
     "label": "Carreau",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -2348,7 +2348,7 @@
   {
     "id": "chute",
     "label": "Chute",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 1,
     "range": {
@@ -2405,7 +2405,7 @@
   {
     "id": "deplacement-d-objet",
     "label": "Déplacement d'objet",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -2452,7 +2452,7 @@
   {
     "id": "dome",
     "label": "Dôme",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 7,
     "range": {
@@ -2502,7 +2502,7 @@
   {
     "id": "effrayant",
     "label": "Effrayant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 3,
     "range": {
@@ -2551,7 +2551,7 @@
   {
     "id": "enchevetrement",
     "label": "Enchevêtrement",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 3,
     "range": {
@@ -2605,7 +2605,7 @@
   {
     "id": "envol",
     "label": "Envol",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 8,
     "range": {
@@ -2653,7 +2653,7 @@
   {
     "id": "explosion",
     "label": "Explosion",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -2689,7 +2689,7 @@
   {
     "id": "perturbant",
     "label": "Perturbant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -2733,7 +2733,7 @@
   {
     "id": "pont",
     "label": "Pont",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -2786,7 +2786,7 @@
   {
     "id": "poussee",
     "label": "Poussée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -2846,7 +2846,7 @@
   {
     "id": "protection",
     "label": "Protection",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 5,
     "range": {
@@ -2891,7 +2891,7 @@
   {
     "id": "sang-corrosif",
     "label": "Sang corrosif",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -2935,7 +2935,7 @@
   {
     "id": "souffle",
     "label": "Souffle",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -2967,7 +2967,7 @@
   {
     "id": "teleportation",
     "label": "Téléportation",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 5,
     "range": {
@@ -3016,7 +3016,7 @@
   {
     "id": "terrifiant",
     "label": "Terrifiant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 7,
     "range": {
@@ -3061,7 +3061,7 @@
   {
     "id": "vision-dans-l-obscurite",
     "label": "Vision dans l'obscurité",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 1,
     "range": {
@@ -3105,7 +3105,7 @@
   {
     "id": "forme-bestiale",
     "label": "Forme bestiale",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 5,
     "range": {
@@ -3183,7 +3183,7 @@
   {
     "id": "incarnation-de-wyssan",
     "label": "Incarnation de Wyssan",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 8,
     "range": {
@@ -3266,7 +3266,7 @@
   {
     "id": "la-lance-d-ambre",
     "label": "La lance d'Ambre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 8,
     "range": {
@@ -3326,7 +3326,7 @@
   {
     "id": "langue-bestiale",
     "label": "Langue bestiale",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 3,
     "range": {
@@ -3379,7 +3379,7 @@
   {
     "id": "maitre-de-la-bete",
     "label": "Maître de la bête",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 10,
     "range": {
@@ -3499,7 +3499,7 @@
   {
     "id": "peau-de-chasseur",
     "label": "Peau de chasseur",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 6,
     "range": {
@@ -3566,7 +3566,7 @@
   {
     "id": "serres-d-ambre",
     "label": "Serres d'ambre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 6,
     "range": {
@@ -3691,7 +3691,7 @@
   {
     "id": "vol-du-destin",
     "label": "Vol du Destin",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 8,
     "range": {
@@ -3779,7 +3779,7 @@
   {
     "id": "arc-de-t-essla",
     "label": "Arc de T'Essla",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 7,
     "range": {
@@ -3835,7 +3835,7 @@
   {
     "id": "bouclier-ceruleen",
     "label": "Bouclier céruléen",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 7,
     "range": {
@@ -3892,7 +3892,7 @@
   {
     "id": "comete-de-cassandora",
     "label": "Comète de Cassandora",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 10,
     "range": {
@@ -3960,7 +3960,7 @@
   {
     "id": "ironie-du-destin",
     "label": "Ironie du Destin",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 6,
     "range": {
@@ -4036,7 +4036,7 @@
   {
     "id": "le-premier-signe-d-amul",
     "label": "Le Premier Signe d'Amul",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 3,
     "range": {
@@ -4094,7 +4094,7 @@
   {
     "id": "le-second-signe-d-amul",
     "label": "Le Second Signe d'Amul",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 6,
     "range": {
@@ -4156,7 +4156,7 @@
   {
     "id": "le-troisieme-signe-d-amul",
     "label": "Le Troisième Signe d'Amul",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 12,
     "range": {
@@ -4210,7 +4210,7 @@
   {
     "id": "maudit",
     "label": "Maudit",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 7,
     "range": {
@@ -4267,7 +4267,7 @@
   {
     "id": "cauteriser",
     "label": "Cautériser",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 4,
     "range": {
@@ -4380,7 +4380,7 @@
   {
     "id": "coeurs-ardents",
     "label": "Cœurs ardents",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 8,
     "range": {
@@ -4468,7 +4468,7 @@
   {
     "id": "couronne-de-flammes",
     "label": "Couronne de Flammes",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 8,
     "range": {
@@ -4533,7 +4533,7 @@
   {
     "id": "grands-feux-d-u-zhul",
     "label": "Grands feux d'U'Zhul",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 10,
     "range": {
@@ -4644,7 +4644,7 @@
   {
     "id": "l-egide-d-aqshy",
     "label": "L'Égide d'Aqshy",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 5,
     "range": {
@@ -4701,7 +4701,7 @@
   {
     "id": "l-epee-ardente-de-rhuin",
     "label": "L'Épée ardente de Rhuin",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 8,
     "range": {
@@ -4806,7 +4806,7 @@
   {
     "id": "mur-de-feu",
     "label": "Mur de feu",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 6,
     "range": {
@@ -4892,7 +4892,7 @@
   {
     "id": "purification",
     "label": "Purification",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 10,
     "range": {
@@ -4961,7 +4961,7 @@
   {
     "id": "bouf-crane",
     "label": "Bouf 'crâne",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Gueule",
     "domainId": "gueule",
     "cn": 5,
@@ -5011,7 +5011,7 @@
   {
     "id": "broyeur-d-os",
     "label": "Broyeur d'os",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Gueule",
     "domainId": "gueule",
     "cn": 5,
@@ -5061,7 +5061,7 @@
   {
     "id": "festin-des-damnes",
     "label": "Festin des Damnés",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Gueule",
     "domainId": "gueule",
     "cn": 9,
@@ -5114,7 +5114,7 @@
   {
     "id": "goinfre-costaud",
     "label": "Goinfre costaud",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Gueule",
     "domainId": "gueule",
     "cn": 5,
@@ -5169,7 +5169,7 @@
   {
     "id": "goutemort",
     "label": "Goûtemort",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Gueule",
     "domainId": "gueule",
     "cn": 2,
@@ -5211,7 +5211,7 @@
   {
     "id": "la-gueule",
     "label": "La Gueule",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Gueule",
     "domainId": "gueule",
     "cn": 11,
@@ -5264,7 +5264,7 @@
   {
     "id": "trollboyaux",
     "label": "Trollboyaux",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Gueule",
     "domainId": "gueule",
     "cn": 7,
@@ -5318,7 +5318,7 @@
   {
     "id": "bannissement",
     "label": "Bannissement",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 12,
     "range": {
@@ -5379,7 +5379,7 @@
   {
     "id": "clarte-d-esprit",
     "label": "Clarté d'esprit",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 6,
     "range": {
@@ -5439,7 +5439,7 @@
   {
     "id": "fauche-demon",
     "label": "Fauche-démon",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 10,
     "range": {
@@ -5504,7 +5504,7 @@
   {
     "id": "filet-d-amyntok",
     "label": "Filet d'Amyntok",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 8,
     "range": {
@@ -5563,7 +5563,7 @@
   {
     "id": "lumiere-aveuglante",
     "label": "Lumière aveuglante",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 5,
     "range": {
@@ -5625,7 +5625,7 @@
   {
     "id": "lumiere-de-guerison",
     "label": "Lumière de guérison",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 9,
     "range": {
@@ -5792,7 +5792,7 @@
   {
     "id": "pensee-rapide",
     "label": "Pensée rapide",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 8,
     "range": {
@@ -5850,7 +5850,7 @@
   {
     "id": "protection-de-pha",
     "label": "Protection de Phâ",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 10,
     "range": {
@@ -5916,7 +5916,7 @@
   {
     "id": "arme-enchantee",
     "label": "Arme enchantée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 6,
     "range": {
@@ -5979,7 +5979,7 @@
   {
     "id": "creuset-de-chamon",
     "label": "Creuset de Chamon",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 7,
     "range": {
@@ -6039,7 +6039,7 @@
   {
     "id": "ecaille-d-acier",
     "label": "Écaille d'acier",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 5,
     "range": {
@@ -6096,7 +6096,7 @@
   {
     "id": "forge-de-chamon",
     "label": "Forge de Chamon",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 9,
     "range": {
@@ -6154,7 +6154,7 @@
   {
     "id": "l-or-des-fous",
     "label": "L'Or des fous",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 4,
     "range": {
@@ -6208,7 +6208,7 @@
   {
     "id": "metal-changeant",
     "label": "Métal changeant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 5,
     "range": {
@@ -6266,7 +6266,7 @@
   {
     "id": "plume-de-plomb",
     "label": "Plume de plomb",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 5,
     "range": {
@@ -6326,7 +6326,7 @@
   {
     "id": "transmutation-de-chamon",
     "label": "Transmutation de Chamon",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 12,
     "range": {
@@ -6415,7 +6415,7 @@
   {
     "id": "caresse-de-laniph",
     "label": "Caresse de Laniph",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 7,
     "range": {
@@ -6477,7 +6477,7 @@
   {
     "id": "dernieres-paroles",
     "label": "Dernières paroles",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 6,
     "range": {
@@ -6530,7 +6530,7 @@
   {
     "id": "la-faux-de-shyish",
     "label": "La Faux de Shyish",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 6,
     "range": {
@@ -6613,7 +6613,7 @@
   {
     "id": "le-voile-violet-de-shyish",
     "label": "Le Voile violet de Shyish",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 9,
     "range": {
@@ -6676,7 +6676,7 @@
   {
     "id": "mort-rapide",
     "label": "Mort rapide",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 6,
     "range": {
@@ -6726,7 +6726,7 @@
   {
     "id": "sanctifier",
     "label": "Sanctifier",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 10,
     "range": {
@@ -6783,7 +6783,7 @@
   {
     "id": "vol-de-vie",
     "label": "Vol de vie",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 7,
     "range": {
@@ -6869,7 +6869,7 @@
   {
     "id": "vortex-d-ames",
     "label": "Vortex d'âmes",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 8,
     "range": {
@@ -6934,7 +6934,7 @@
   {
     "id": "destrier-d-ombre",
     "label": "Destrier d'Ombre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 6,
     "range": {
@@ -7017,7 +7017,7 @@
   {
     "id": "illusion",
     "label": "Illusion",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 8,
     "range": {
@@ -7101,7 +7101,7 @@
   {
     "id": "jumeau-malefique",
     "label": "Jumeau maléfique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 10,
     "range": {
@@ -7159,7 +7159,7 @@
   {
     "id": "linceul-d-invisibilite",
     "label": "Linceul d'Invisibilité",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 8,
     "range": {
@@ -7212,7 +7212,7 @@
   {
     "id": "miasme-mystifiant",
     "label": "Miasme mystifiant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 6,
     "range": {
@@ -7293,7 +7293,7 @@
   {
     "id": "ombres-etrangleuses",
     "label": "Ombres étrangleuses",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 6,
     "range": {
@@ -7365,7 +7365,7 @@
   {
     "id": "perte-de-memoire",
     "label": "Perte de mémoire",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 6,
     "range": {
@@ -7421,7 +7421,7 @@
   {
     "id": "portail-d-ombre",
     "label": "Portail d'Ombre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 8,
     "range": {
@@ -7489,7 +7489,7 @@
   {
     "id": "configuration-du-terrain",
     "label": "Configuration du terrain",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 5,
     "range": {
@@ -7536,7 +7536,7 @@
   {
     "id": "don-de-vie",
     "label": "Don de Vie",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 8,
     "range": {
@@ -7591,7 +7591,7 @@
   {
     "id": "eau-de-la-terre",
     "label": "Eau de la terre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 8,
     "range": {
@@ -7661,7 +7661,7 @@
   {
     "id": "ecorce",
     "label": "Écorce",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 3,
     "range": {
@@ -7725,7 +7725,7 @@
   {
     "id": "foret-d-epines",
     "label": "Forêt d'épines",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 6,
     "range": {
@@ -7816,7 +7816,7 @@
   {
     "id": "graisse-de-la-terre",
     "label": "Graisse de la terre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 4,
     "range": {
@@ -7873,7 +7873,7 @@
   {
     "id": "regeneration",
     "label": "Régénération",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 6,
     "range": {
@@ -7926,7 +7926,7 @@
   {
     "id": "sang-de-la-terre",
     "label": "Sang de la Terre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 6,
     "range": {
@@ -8053,7 +8053,7 @@
   {
     "id": "bonne-volonte",
     "label": "Bonne Volonté",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
     "cn": 0,
     "range": {
@@ -8102,7 +8102,7 @@
   {
     "id": "charme-protecteur",
     "label": "Charme protecteur",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
     "cn": 0,
     "range": {
@@ -8149,7 +8149,7 @@
   {
     "id": "chevaucher-l-obscurite",
     "label": "Chevaucher l'Obscurité",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
     "cn": 0,
     "range": {
@@ -8195,7 +8195,7 @@
   {
     "id": "nepenthes",
     "label": "Nepenthès",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
     "cn": 0,
     "range": {
@@ -8241,7 +8241,7 @@
   {
     "id": "panacee",
     "label": "Panacée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
     "cn": 0,
     "range": {
@@ -8287,7 +8287,7 @@
   {
     "id": "separer-les-branches",
     "label": "Séparer les branches",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie naturelle",
     "cn": 0,
     "range": {
@@ -8333,7 +8333,7 @@
   {
     "id": "degradation",
     "label": "Dégradation",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
     "cn": 14,
     "range": {
@@ -8381,7 +8381,7 @@
   {
     "id": "horreur-obsedante",
     "label": "Horreur obsédante",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
     "cn": 8,
     "range": {
@@ -8428,7 +8428,7 @@
   {
     "id": "malediction-de-douleur-paralysante",
     "label": "Malédiction de douleur paralysante",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
     "cn": 10,
     "range": {
@@ -8478,7 +8478,7 @@
   {
     "id": "malediction-de-malchance",
     "label": "Malédiction de malchance",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
     "cn": 8,
     "range": {
@@ -8533,7 +8533,7 @@
   {
     "id": "mauvais-oeil",
     "label": "Mauvais œil",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
     "cn": 6,
     "range": {
@@ -8584,7 +8584,7 @@
   {
     "id": "menace-rampante",
     "label": "Menace rampante",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
     "cn": 6,
     "range": {
@@ -8654,7 +8654,7 @@
   {
     "id": "destruction-de-demon-mineur",
     "label": "Destruction de Démon Mineur",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Démonologie",
     "cn": 6,
     "range": {
@@ -8715,7 +8715,7 @@
   {
     "id": "detection-de-demon",
     "label": "Détection de démon",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Démonologie",
     "cn": 4,
     "range": {
@@ -8762,7 +8762,7 @@
   {
     "id": "manifestation-de-demon-mineur",
     "label": "Manifestation de Démon mineur",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Démonologie",
     "cn": 8,
     "range": {
@@ -8828,7 +8828,7 @@
   {
     "id": "octogramme",
     "label": "Octogramme",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Démonologie",
     "cn": 10,
     "range": {
@@ -8878,7 +8878,7 @@
   {
     "id": "crane-hurlant",
     "label": "Crâne hurlant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Nécromancie",
     "cn": 8,
     "range": {
@@ -8950,7 +8950,7 @@
   {
     "id": "l-appel-de-vanhel",
     "label": "L'appel de Vanhel",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Nécromancie",
     "cn": 6,
     "range": {
@@ -8997,7 +8997,7 @@
   {
     "id": "reanimation",
     "label": "Réanimation",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Nécromancie",
     "cn": 8,
     "range": {
@@ -9069,7 +9069,7 @@
   {
     "id": "relever-les-morts",
     "label": "Relever les morts",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Nécromancie",
     "cn": 8,
     "range": {
@@ -9139,7 +9139,7 @@
   {
     "id": "allure-demoniaque",
     "label": "Allure démoniaque",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": null,
     "cn": 8,
     "range": {
@@ -9255,7 +9255,7 @@
   {
     "id": "aspect-sublime",
     "label": "Aspect sublimé",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": null,
     "cn": 4,
     "range": {
@@ -9301,7 +9301,7 @@
   {
     "id": "decharge-de-corruption",
     "label": "Décharge de Corruption",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": null,
     "cn": 8,
     "range": {
@@ -9360,7 +9360,7 @@
   {
     "id": "dechirer-l-aethyr",
     "label": "Déchirer l'Aethyr",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": null,
     "cn": 16,
     "range": {
@@ -9425,7 +9425,7 @@
   {
     "id": "esclave-des-tenebres",
     "label": "Esclave des Ténèbres",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": null,
     "cn": 8,
     "range": {
@@ -9468,7 +9468,7 @@
   {
     "id": "explosion-de-corruption",
     "label": "Explosion de Corruption",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": null,
     "cn": 8,
     "range": {
@@ -9530,7 +9530,7 @@
   {
     "id": "obsession",
     "label": "Obsession",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": null,
     "cn": 8,
     "range": {
@@ -9577,7 +9577,7 @@
   {
     "id": "odieux-messager",
     "label": "Odieux messager",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": null,
     "cn": 8,
     "range": {
@@ -9623,7 +9623,7 @@
   {
     "id": "pouvoir-du-chaos",
     "label": "Pouvoir du Chaos",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": null,
     "cn": 4,
     "range": {
@@ -9675,7 +9675,7 @@
   {
     "id": "flot-de-corruption",
     "label": "Flot de Corruption",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Nurgle",
     "cn": 9,
     "range": {
@@ -9720,7 +9720,7 @@
   {
     "id": "consentement",
     "label": "Consentement",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Slaanesh",
     "cn": 5,
     "range": {
@@ -9769,7 +9769,7 @@
   {
     "id": "trahison-de-tzeentch",
     "label": "Trahison de Tzeentch",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 6,
     "range": {
@@ -9818,7 +9818,7 @@
   {
     "id": "aura-doree-de-tzeentch",
     "label": "Aura dorée de Tzeentch",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 7,
     "range": {
@@ -9863,7 +9863,7 @@
   {
     "id": "avantage-de-tzeentch",
     "label": "Avantage de Tzeentch",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 9,
     "range": {
@@ -9908,7 +9908,7 @@
   {
     "id": "eclair-du-changement",
     "label": "Éclair du changement",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 9,
     "range": {
@@ -9980,7 +9980,7 @@
   {
     "id": "feu-bleu-de-tzeentch",
     "label": "Feu bleu de Tzeentch",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 6,
     "range": {
@@ -10034,7 +10034,7 @@
   {
     "id": "feu-rose-de-tzeentch",
     "label": "Feu rose de Tzeentch",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 6,
     "range": {
@@ -10086,7 +10086,7 @@
   {
     "id": "feu-spirituel",
     "label": "Feu spirituel",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 6,
     "range": {
@@ -10156,7 +10156,7 @@
   {
     "id": "flammes-vacillantes-du-capricieux-destin",
     "label": "Flammes vacillantes du capricieux destin",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 4,
     "range": {
@@ -10206,7 +10206,7 @@
   {
     "id": "la-main-pourpre",
     "label": "La Main Pourpre",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 3,
     "range": {
@@ -10253,7 +10253,7 @@
   {
     "id": "malediction-de-tzeentch",
     "label": "Malédiction de Tzeentch",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 9,
     "range": {
@@ -10300,7 +10300,7 @@
   {
     "id": "maitre-du-destin",
     "label": "Maître du Destin",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 8,
     "range": {
@@ -10355,7 +10355,7 @@
   {
     "id": "parole-de-tzeentch",
     "label": "Parole de Tzeentch",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 7,
     "range": {
@@ -10417,7 +10417,7 @@
   {
     "id": "percevoir-l-echeveau",
     "label": "Percevoir l'écheveau",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 3,
     "range": {
@@ -10459,7 +10459,7 @@
   {
     "id": "tempete-de-feu-de-tzeentch",
     "label": "Tempête de feu de Tzeentch",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 11,
     "range": {
@@ -10515,7 +10515,7 @@
   {
     "id": "transformation-de-tzeentch",
     "label": "Transformation de Tzeentch",
-    "type": "Magie du Chaos",
+    "ecole": "Magie du Chaos",
     "subType": "Tzeentch",
     "cn": 10,
     "range": {
@@ -10568,7 +10568,7 @@
   {
     "id": "encalmine",
     "label": "Encalminé",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -10616,7 +10616,7 @@
   {
     "id": "generosite-de-manann",
     "label": "Générosité de Manann",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -10666,7 +10666,7 @@
   {
     "id": "marcher-sur-les-eaux",
     "label": "Marcher sur les eaux",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -10711,7 +10711,7 @@
   {
     "id": "mer-dechainee",
     "label": "Mer déchainée",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -10772,7 +10772,7 @@
   {
     "id": "vents-favorables",
     "label": "Vents favorables",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -10820,7 +10820,7 @@
   {
     "id": "visage-de-l-homme-noye",
     "label": "Visage de l'homme noyé",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -10876,7 +10876,7 @@
   {
     "id": "aneantir-les-morts-vivants",
     "label": "Anéantir les morts-vivants",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Morr",
     "cn": null,
     "range": {
@@ -10935,7 +10935,7 @@
   {
     "id": "condamne",
     "label": "Condamné",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Morr",
     "cn": null,
     "range": {
@@ -10977,7 +10977,7 @@
   {
     "id": "main-de-morr",
     "label": "Main de Morr",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Morr",
     "cn": null,
     "range": {
@@ -11023,7 +11023,7 @@
   {
     "id": "masque-mortuaire",
     "label": "Masque mortuaire",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Morr",
     "cn": null,
     "range": {
@@ -11068,7 +11068,7 @@
   {
     "id": "rites-funeraires",
     "label": "Rites funéraires",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Morr",
     "cn": null,
     "range": {
@@ -11112,7 +11112,7 @@
   {
     "id": "seuil-du-portail",
     "label": "Seuil du Portail",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Morr",
     "cn": null,
     "range": {
@@ -11155,7 +11155,7 @@
   {
     "id": "appel-a-la-fureur",
     "label": "Appel à la Fureur",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11208,7 +11208,7 @@
   {
     "id": "bouclier-de-myrmidia",
     "label": "Bouclier de Myrmidia",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11257,7 +11257,7 @@
   {
     "id": "inspirant",
     "label": "Inspirant",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11310,7 +11310,7 @@
   {
     "id": "lance-de-myrmidia",
     "label": "Lance de Myrmidia",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11362,7 +11362,7 @@
   {
     "id": "oeil-de-l-aigle",
     "label": "Œil de l'aigle",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11410,7 +11410,7 @@
   {
     "id": "soleil-flamboyant",
     "label": "Soleil flamboyant",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11461,7 +11461,7 @@
   {
     "id": "commander-la-legion",
     "label": "Commander la Légion",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11504,7 +11504,7 @@
   {
     "id": "terrifier-l-ennemi",
     "label": "Terrifier l'Ennemi",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11547,7 +11547,7 @@
   {
     "id": "en-bon-ordre",
     "label": "En Bon Ordre",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11600,7 +11600,7 @@
   {
     "id": "connais-ton-ennemi",
     "label": "Connais Ton Ennemi",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11646,7 +11646,7 @@
   {
     "id": "en-terrain-dangereux",
     "label": "En Terrain Dangereux",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11699,7 +11699,7 @@
   {
     "id": "frappe-rapide",
     "label": "Frappe Rapide",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11741,7 +11741,7 @@
   {
     "id": "devotion-de-la-vierge-guerriere",
     "label": "Dévotion de la Vierge Guerrière",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11791,7 +11791,7 @@
   {
     "id": "prouesses-martiales",
     "label": "Prouesses Martiales",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11848,7 +11848,7 @@
   {
     "id": "fureur-vengeresse",
     "label": "Fureur Vengeresse",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Myrmidia",
     "cn": null,
     "range": {
@@ -11890,7 +11890,7 @@
   {
     "id": "grace-de-ranald",
     "label": "Grâce de Ranald",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ranald",
     "cn": null,
     "range": {
@@ -11944,7 +11944,7 @@
   {
     "id": "invitation",
     "label": "Invitation",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ranald",
     "cn": null,
     "range": {
@@ -11988,7 +11988,7 @@
   {
     "id": "que-la-chance-persiste",
     "label": "Que la chance persiste",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ranald",
     "cn": null,
     "range": {
@@ -12039,7 +12039,7 @@
   {
     "id": "riche-pauvre-mendiant-voleur",
     "label": "Riche, pauvre, mendiant, voleur",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ranald",
     "cn": null,
     "range": {
@@ -12087,7 +12087,7 @@
   {
     "id": "vous-ne-m-avez-pas-vu-n-est-ce-pas",
     "label": "Vous ne m'avez pas vu, n'est-ce pas?",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ranald",
     "cn": null,
     "range": {
@@ -12136,7 +12136,7 @@
   {
     "id": "yeux-de-chat",
     "label": "Yeux de chat",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ranald",
     "cn": null,
     "range": {
@@ -12184,7 +12184,7 @@
   {
     "id": "abri-de-rhya",
     "label": "Abri de Rhya",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Rhya",
     "cn": null,
     "range": {
@@ -12226,7 +12226,7 @@
   {
     "id": "caresse-de-rhya",
     "label": "Caresse de Rhya",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Rhya",
     "cn": null,
     "range": {
@@ -12275,7 +12275,7 @@
   {
     "id": "enfants-de-rhya",
     "label": "Enfants de Rhya",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Rhya",
     "cn": null,
     "range": {
@@ -12320,7 +12320,7 @@
   {
     "id": "recolte-de-rhya",
     "label": "Récolte de Rhya",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Rhya",
     "cn": null,
     "range": {
@@ -12367,7 +12367,7 @@
   {
     "id": "secours-de-rhya",
     "label": "Secours de Rhya",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Rhya",
     "cn": null,
     "range": {
@@ -12416,7 +12416,7 @@
   {
     "id": "union-de-rhya",
     "label": "Union de Rhya",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Rhya",
     "cn": null,
     "range": {
@@ -12462,7 +12462,7 @@
   {
     "id": "amere-catharsis",
     "label": "Amère catharsis",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Shallya",
     "cn": null,
     "range": {
@@ -12517,7 +12517,7 @@
   {
     "id": "baume-pour-un-esprit-blesse",
     "label": "Baume pour un esprit blessé",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Shallya",
     "cn": null,
     "range": {
@@ -12566,7 +12566,7 @@
   {
     "id": "endurance-de-l-anachorete",
     "label": "Endurance de l'anachorète",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Shallya",
     "cn": null,
     "range": {
@@ -12618,7 +12618,7 @@
   {
     "id": "innocence-immaculee",
     "label": "Innocence immaculée",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Shallya",
     "cn": null,
     "range": {
@@ -12668,7 +12668,7 @@
   {
     "id": "larmes-de-shallya",
     "label": "Larmes de Shallya",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Shallya",
     "cn": null,
     "range": {
@@ -12719,7 +12719,7 @@
   {
     "id": "martyr",
     "label": "Martyr",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Shallya",
     "cn": null,
     "range": {
@@ -12767,7 +12767,7 @@
   {
     "id": "comete-a-deux-queues",
     "label": "Comète à Deux Queues",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Sigmar",
     "cn": null,
     "range": {
@@ -12836,7 +12836,7 @@
   {
     "id": "feu-de-l-ame",
     "label": "Feu de l'âme",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Sigmar",
     "cn": null,
     "range": {
@@ -12901,7 +12901,7 @@
   {
     "id": "flambeau-de-vertu",
     "label": "Flambeau de Vertu",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Sigmar",
     "cn": null,
     "range": {
@@ -12955,7 +12955,7 @@
   {
     "id": "marteau-ardent-de-sigmar",
     "label": "Marteau ardent de Sigmar",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Sigmar",
     "cn": null,
     "range": {
@@ -13027,7 +13027,7 @@
   {
     "id": "n-ecoutez-point-la-sorciere",
     "label": "N'écoutez point la Sorcière",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Sigmar",
     "cn": null,
     "range": {
@@ -13080,7 +13080,7 @@
   {
     "id": "vaincre-les-impies",
     "label": "Vaincre les impies",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Sigmar",
     "cn": null,
     "range": {
@@ -13140,7 +13140,7 @@
   {
     "id": "bondissant-comme-un-cerf",
     "label": "Bondissant comme un cerf",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Taal",
     "cn": null,
     "range": {
@@ -13188,7 +13188,7 @@
   {
     "id": "dent-et-griffe",
     "label": "Dent et griffe",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Taal",
     "cn": null,
     "range": {
@@ -13244,7 +13244,7 @@
   {
     "id": "enchevetrement-2",
     "label": "Enchevêtrement",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Taal",
     "cn": null,
     "range": {
@@ -13302,7 +13302,7 @@
   {
     "id": "instincts-animaux",
     "label": "Instincts animaux",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Taal",
     "cn": null,
     "range": {
@@ -13352,7 +13352,7 @@
   {
     "id": "roi-de-la-nature",
     "label": "Roi de la Nature",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Taal",
     "cn": null,
     "range": {
@@ -13416,7 +13416,7 @@
   {
     "id": "seigneur-de-la-chasse",
     "label": "Seigneur de la Chasse",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Taal",
     "cn": null,
     "range": {
@@ -13461,7 +13461,7 @@
   {
     "id": "frisson-du-givre",
     "label": "Frisson du givre",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ulric",
     "cn": null,
     "range": {
@@ -13511,7 +13511,7 @@
   {
     "id": "fureur-d-ulric",
     "label": "Fureur d'Ulric",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ulric",
     "cn": null,
     "range": {
@@ -13560,7 +13560,7 @@
   {
     "id": "hurlement-du-loup",
     "label": "Hurlement du loup",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ulric",
     "cn": null,
     "range": {
@@ -13633,7 +13633,7 @@
   {
     "id": "jugement-du-roi-de-la-neige",
     "label": "Jugement du Roi de la neige",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ulric",
     "cn": null,
     "range": {
@@ -13690,7 +13690,7 @@
   {
     "id": "morsure-de-l-hiver",
     "label": "Morsure de l'hiver",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ulric",
     "cn": null,
     "range": {
@@ -13775,7 +13775,7 @@
   {
     "id": "peau-de-loup-d-hiver",
     "label": "Peau de loup d'hiver",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Ulric",
     "cn": null,
     "range": {
@@ -13820,7 +13820,7 @@
   {
     "id": "entraves-a-la-verite",
     "label": "Entraves à la vérité",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Verena",
     "cn": null,
     "range": {
@@ -13873,7 +13873,7 @@
   {
     "id": "epee-de-justice",
     "label": "Épée de justice",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Verena",
     "cn": null,
     "range": {
@@ -13958,7 +13958,7 @@
   {
     "id": "justice-aveugle",
     "label": "Justice aveugle",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Verena",
     "cn": null,
     "range": {
@@ -14002,7 +14002,7 @@
   {
     "id": "la-verite-eclatera",
     "label": "La Vérité éclatera",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Verena",
     "cn": null,
     "range": {
@@ -14048,7 +14048,7 @@
   {
     "id": "sagesse-de-la-chouette",
     "label": "Sagesse de la chouette",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Verena",
     "cn": null,
     "range": {
@@ -14101,7 +14101,7 @@
   {
     "id": "verena-est-mon-temoin",
     "label": "Verena est mon témoin",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Verena",
     "cn": null,
     "range": {
@@ -14145,7 +14145,7 @@
   {
     "id": "bon-baiser-d-la-fosse-noire",
     "label": "Bon Baiser d'la Fosse Noire",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Déesse-Araignée",
     "cn": null,
     "range": {
@@ -14210,7 +14210,7 @@
   {
     "id": "nuee-d-escampette",
     "label": "Nuée d'Escampette",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Déesse-Araignée",
     "cn": null,
     "range": {
@@ -14273,7 +14273,7 @@
   {
     "id": "toile-surprise",
     "label": "Toile surprise",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Déesse-Araignée",
     "cn": null,
     "range": {
@@ -14333,7 +14333,7 @@
   {
     "id": "abondance-de-rhya",
     "label": "Abondance de Rhya",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -14353,7 +14353,7 @@
   {
     "id": "agression-aethyrique",
     "label": "Agression AEthyrique",
-    "type": "Magie des Arcanes & de Nécromancie",
+    "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
     "cn": null,
     "range": null,
@@ -14373,7 +14373,7 @@
   {
     "id": "alarme",
     "label": "Alarme",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -14402,7 +14402,7 @@
   {
     "id": "algues-cruelles",
     "label": "Algues Cruelles",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 5,
     "range": {
@@ -14433,7 +14433,7 @@
   {
     "id": "ame-devoilee",
     "label": "Âme Dévoilée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 2,
     "range": {
@@ -14462,7 +14462,7 @@
   {
     "id": "apaisement",
     "label": "Apaisement",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -14482,7 +14482,7 @@
   {
     "id": "appel-de-vanhel",
     "label": "Appel de Vanhel",
-    "type": "Magie des Arcanes & de Nécromancie",
+    "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
     "cn": 5,
     "range": {
@@ -14511,7 +14511,7 @@
   {
     "id": "arme-souillee",
     "label": "Arme Souillée",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 6,
     "range": {
@@ -14540,7 +14540,7 @@
   {
     "id": "armure-d-aethyr",
     "label": "Armure d’AEthyr",
-    "type": "Magie des Arcanes & de Nécromancie",
+    "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
     "cn": 0,
     "range": {
@@ -14569,7 +14569,7 @@
   {
     "id": "armure-d-obscurite",
     "label": "Armure d’Obscurité",
-    "type": "du Domaine des Ombres",
+    "ecole": "du Domaine des Ombres",
     "subType": null,
     "cn": 6,
     "range": {
@@ -14600,7 +14600,7 @@
   {
     "id": "arriere-sorciere",
     "label": "Arrière, Sorcière !",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -14620,7 +14620,7 @@
   {
     "id": "aux-innocents-les-mains-pleines",
     "label": "Aux Innocents les Mains Pleines !",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -14640,7 +14640,7 @@
   {
     "id": "avatar-du-rat-cornu",
     "label": "Avatar du Rat Cornu",
-    "type": "Magie des Arcanes Skaven",
+    "ecole": "Magie des Arcanes Skaven",
     "subType": null,
     "cn": 4,
     "range": {
@@ -14669,7 +14669,7 @@
   {
     "id": "baratin",
     "label": "Baratin",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -14689,7 +14689,7 @@
   {
     "id": "belier",
     "label": "Bélier",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 3,
     "range": {
@@ -14717,7 +14717,7 @@
   {
     "id": "benedicite-de-taal",
     "label": "Bénédicité de Taal",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -14737,7 +14737,7 @@
   {
     "id": "berceuse-soporifique-ua-ii",
     "label": "Berceuse Soporifique UA II",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -14767,7 +14767,7 @@
   {
     "id": "bienveillance",
     "label": "Bienveillance",
-    "type": "Magie des Arcanes & des Taillis",
+    "ecole": "Magie des Arcanes & des Taillis",
     "subType": null,
     "cn": 0,
     "range": {
@@ -14797,7 +14797,7 @@
   {
     "id": "blizzard",
     "label": "Blizzard",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -14817,7 +14817,7 @@
   {
     "id": "bon-debarras",
     "label": "Bon Débarras !",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -14837,7 +14837,7 @@
   {
     "id": "bond-furtif",
     "label": "Bond Furtif",
-    "type": "du Domaine des Ombres",
+    "ecole": "du Domaine des Ombres",
     "subType": null,
     "cn": 6,
     "range": {
@@ -14865,7 +14865,7 @@
   {
     "id": "bouclier",
     "label": "Bouclier",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 2,
     "range": {
@@ -14896,7 +14896,7 @@
   {
     "id": "bouillon-revigorant",
     "label": "Bouillon Revigorant",
-    "type": "Magie des Arcanes & des Taillis",
+    "ecole": "Magie des Arcanes & des Taillis",
     "subType": null,
     "cn": 0,
     "range": {
@@ -14925,7 +14925,7 @@
   {
     "id": "bruit",
     "label": "Bruit",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -14955,7 +14955,7 @@
   {
     "id": "brume-acide",
     "label": "Brume Acide",
-    "type": "du Domaine de la Peste",
+    "ecole": "du Domaine de la Peste",
     "subType": null,
     "cn": 10,
     "range": {
@@ -14988,7 +14988,7 @@
   {
     "id": "brume-mystique",
     "label": "Brume Mystique",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -15020,7 +15020,7 @@
   {
     "id": "cacophonie-scabreuse",
     "label": "Cacophonie Scabreuse",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -15049,7 +15049,7 @@
   {
     "id": "catharsis",
     "label": "Catharsis",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -15069,7 +15069,7 @@
   {
     "id": "chaleur-de-la-fourrure",
     "label": "Chaleur de la Fourrure",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -15089,7 +15089,7 @@
   {
     "id": "chuchotis",
     "label": "Chuchotis",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -15119,7 +15119,7 @@
   {
     "id": "cogne-fort",
     "label": "Cogne-Fort",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 5,
     "range": {
@@ -15148,7 +15148,7 @@
   {
     "id": "conserve",
     "label": "Conserve",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -15179,7 +15179,7 @@
   {
     "id": "contamination",
     "label": "Contamination",
-    "type": "du Domaine de la Peste",
+    "ecole": "du Domaine de la Peste",
     "subType": null,
     "cn": 4,
     "range": {
@@ -15209,7 +15209,7 @@
   {
     "id": "coup-d-boule",
     "label": "Coup d’Boule !",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 5,
     "range": {
@@ -15239,7 +15239,7 @@
   {
     "id": "courage-du-loup",
     "label": "Courage du Loup",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -15259,7 +15259,7 @@
   {
     "id": "courant-d-air",
     "label": "Courant d’Air",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -15288,7 +15288,7 @@
   {
     "id": "crepitement-funeste",
     "label": "Crépitement Funeste",
-    "type": "du Domaine de la Ruine",
+    "ecole": "du Domaine de la Ruine",
     "subType": null,
     "cn": 5,
     "range": {
@@ -15364,7 +15364,7 @@
   {
     "id": "crepitements-vengeurs",
     "label": "Crépitements Vengeurs",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 6,
     "range": {
@@ -15395,7 +15395,7 @@
   {
     "id": "crevasse",
     "label": "Crevasse",
-    "type": "du Domaine de la Ruine",
+    "ecole": "du Domaine de la Ruine",
     "subType": null,
     "cn": 11,
     "range": {
@@ -15425,7 +15425,7 @@
   {
     "id": "crue-mortelle",
     "label": "Crue Mortelle",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 13,
     "range": {
@@ -15456,7 +15456,7 @@
   {
     "id": "culpabilite",
     "label": "Culpabilité",
-    "type": "Bénédiction",
+    "ecole": "Bénédiction",
     "subType": null,
     "cn": null,
     "range": null,
@@ -15476,7 +15476,7 @@
   {
     "id": "decharge-cerebrale",
     "label": "Décharge Cérébrale",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 8,
     "range": {
@@ -15503,7 +15503,7 @@
   {
     "id": "demangeaison-agacante",
     "label": "Démangeaison Agaçante",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 3,
     "range": {
@@ -15533,7 +15533,7 @@
   {
     "id": "depecage",
     "label": "Dépeçage",
-    "type": "du Domaine de la Ruine",
+    "ecole": "du Domaine de la Ruine",
     "subType": null,
     "cn": 6,
     "range": {
@@ -15564,7 +15564,7 @@
   {
     "id": "desarroi",
     "label": "Désarroi",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 12,
     "range": {
@@ -15594,7 +15594,7 @@
   {
     "id": "disparition",
     "label": "Disparition",
-    "type": "du Domaine des Ombres",
+    "ecole": "du Domaine des Ombres",
     "subType": null,
     "cn": 11,
     "range": {
@@ -15626,7 +15626,7 @@
   {
     "id": "douces-paroles",
     "label": "Douces Paroles",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 0,
     "range": {
@@ -15656,7 +15656,7 @@
   {
     "id": "dressage-de-rhya",
     "label": "Dressage de Rhya",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -15676,7 +15676,7 @@
   {
     "id": "duplicite-de-tzeentch",
     "label": "Duplicité de Tzeentch",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -15706,7 +15706,7 @@
   {
     "id": "eau-pure",
     "label": "Eau Pure",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -15735,7 +15735,7 @@
   {
     "id": "eclat",
     "label": "Éclat",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -15763,7 +15763,7 @@
   {
     "id": "effigie-maudite",
     "label": "Effigie Maudite",
-    "type": "Magie des Arcanes & de Sorcellerie",
+    "ecole": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
     "cn": 9,
     "range": {
@@ -15793,7 +15793,7 @@
   {
     "id": "entrave",
     "label": "Entrave",
-    "type": "Magie des Arcanes & de Nécromancie",
+    "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
     "cn": 3,
     "range": {
@@ -15823,7 +15823,7 @@
   {
     "id": "espionnage",
     "label": "Espionnage",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -15854,7 +15854,7 @@
   {
     "id": "esprit-enfievre",
     "label": "Esprit Enfiévré",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 5,
     "range": {
@@ -15883,7 +15883,7 @@
   {
     "id": "explosion-de-dhar",
     "label": "Explosion de Dhar",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -15914,7 +15914,7 @@
   {
     "id": "fatigue",
     "label": "Fatigue",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -15941,7 +15941,7 @@
   {
     "id": "faux-semblant",
     "label": "Faux- Semblant",
-    "type": "Magie des Arcanes & de Sorcellerie",
+    "ecole": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
     "cn": 3,
     "range": {
@@ -15971,7 +15971,7 @@
   {
     "id": "faveur-du-rat-cornu",
     "label": "Faveur du Rat Cornu",
-    "type": "Magie Mineure Skaven",
+    "ecole": "Magie Mineure Skaven",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16001,7 +16001,7 @@
   {
     "id": "felure-aethyrique",
     "label": "Fêlure AEthyrique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 3,
     "range": {
@@ -16032,7 +16032,7 @@
   {
     "id": "fers-de",
     "label": "Fers de",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -16052,7 +16052,7 @@
   {
     "id": "fertilisation",
     "label": "Fertilisation",
-    "type": "Magie des Arcanes & des Taillis",
+    "ecole": "Magie des Arcanes & des Taillis",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16079,7 +16079,7 @@
   {
     "id": "feu-follet",
     "label": "Feu Follet",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16110,7 +16110,7 @@
   {
     "id": "flamme",
     "label": "Flamme",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16139,7 +16139,7 @@
   {
     "id": "flamme-verdatre",
     "label": "Flamme Verdâtre",
-    "type": "du Domaine de la Ruine",
+    "ecole": "du Domaine de la Ruine",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16171,7 +16171,7 @@
   {
     "id": "flammes-bleues-de-tzeentch",
     "label": "Flammes Bleues de Tzeentch",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 6,
     "range": {
@@ -16202,7 +16202,7 @@
   {
     "id": "flammes-roses-de-tzeentch",
     "label": "Flammes Roses de Tzeentch",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 6,
     "range": {
@@ -16232,7 +16232,7 @@
   {
     "id": "forme-spectrale",
     "label": "Forme Spectrale",
-    "type": "Magie des Arcanes & de Nécromancie",
+    "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
     "cn": 4,
     "range": {
@@ -16261,7 +16261,7 @@
   {
     "id": "frenesie-artificielle",
     "label": "Frénésie Artificielle",
-    "type": "Magie des Arcanes & de Nécromancie",
+    "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
     "cn": 1,
     "range": {
@@ -16290,7 +16290,7 @@
   {
     "id": "infecte-benediction",
     "label": "Infecte Bénédiction",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Sorcellerie",
     "cn": 6,
     "range": {
@@ -16343,7 +16343,7 @@
   {
     "id": "furoncle-infecte",
     "label": "Furoncle Infecté",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 5,
     "range": {
@@ -16373,7 +16373,7 @@
   {
     "id": "haine-du-faible",
     "label": "Haine du Faible",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -16393,7 +16393,7 @@
   {
     "id": "haleine-fetide",
     "label": "Haleine Fétide",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 8,
     "range": {
@@ -16423,7 +16423,7 @@
   {
     "id": "hebetement",
     "label": "Hébètement",
-    "type": "du Domaine de la Ruine",
+    "ecole": "du Domaine de la Ruine",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16453,7 +16453,7 @@
   {
     "id": "immuno-deficience",
     "label": "Immuno - Déficience",
-    "type": "du Domaine de la Peste",
+    "ecole": "du Domaine de la Peste",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16485,7 +16485,7 @@
   {
     "id": "instinct-animal",
     "label": "Instinct Animal",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -16505,7 +16505,7 @@
   {
     "id": "introspection",
     "label": "Introspection",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -16535,7 +16535,7 @@
   {
     "id": "justice",
     "label": "Justice",
-    "type": "Bénédiction",
+    "ecole": "Bénédiction",
     "subType": null,
     "cn": null,
     "range": null,
@@ -16555,7 +16555,7 @@
   {
     "id": "la-verite-finit-toujours-par-sortir",
     "label": "La Vérité finit toujours par sortir",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -16575,7 +16575,7 @@
   {
     "id": "langue-aceree",
     "label": "Langue Acérée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -16621,7 +16621,7 @@
   {
     "id": "langue-des-gors",
     "label": "Langue des Gors",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16651,7 +16651,7 @@
   {
     "id": "langue-des-pestigors",
     "label": "Langue des Pestigors",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16681,7 +16681,7 @@
   {
     "id": "langue-des-slaangors",
     "label": "Langue des Slaangors",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16711,7 +16711,7 @@
   {
     "id": "langue-des-tzaangors",
     "label": "Langue des Tzaangors",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16741,7 +16741,7 @@
   {
     "id": "les-voies-de-la-nature",
     "label": "Les Voies de la Nature",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -16761,7 +16761,7 @@
   {
     "id": "lune-de-malheur",
     "label": "Lune de Malheur",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 8,
     "range": {
@@ -16792,7 +16792,7 @@
   {
     "id": "main-de-rhya",
     "label": "Main de Rhya",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -16812,7 +16812,7 @@
   {
     "id": "maitrise-du-destin",
     "label": "Maîtrise du Destin",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 8,
     "range": {
@@ -16842,7 +16842,7 @@
   {
     "id": "malveillance-absolue",
     "label": "Malveillance Absolue",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 19,
     "range": {
@@ -16878,7 +16878,7 @@
   {
     "id": "marque-du-rat-cornu",
     "label": "Marque du Rat Cornu",
-    "type": "Magie Mineure Skaven",
+    "ecole": "Magie Mineure Skaven",
     "subType": null,
     "cn": 0,
     "range": {
@@ -16909,7 +16909,7 @@
   {
     "id": "marteau-de-justice",
     "label": "Marteau de Justice",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -16929,7 +16929,7 @@
   {
     "id": "modele-de-vertu",
     "label": "Modèle de Vertu",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -16949,7 +16949,7 @@
   {
     "id": "morsure-d-hiver",
     "label": "Morsure d’Hiver",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -16969,7 +16969,7 @@
   {
     "id": "mouchard",
     "label": "Mouchard",
-    "type": "Magie des Arcanes & de Nécromancie",
+    "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
     "cn": 2,
     "range": {
@@ -16998,7 +16998,7 @@
   {
     "id": "nostrum",
     "label": "Nostrum",
-    "type": "Magie des Arcanes & des Taillis",
+    "ecole": "Magie des Arcanes & des Taillis",
     "subType": null,
     "cn": 0,
     "range": {
@@ -17026,7 +17026,7 @@
   {
     "id": "nuee",
     "label": "Nuée",
-    "type": "Magie des Arcanes & de Sorcellerie",
+    "ecole": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
     "cn": 5,
     "range": {
@@ -17056,7 +17056,7 @@
   {
     "id": "nuee-de-mouches",
     "label": "Nuée de Mouches",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 6,
     "range": {
@@ -17087,7 +17087,7 @@
   {
     "id": "oeil-de-lynx",
     "label": "Oeil de Lynx",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -17107,7 +17107,7 @@
   {
     "id": "ouverture",
     "label": "Ouverture",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -17134,7 +17134,7 @@
   {
     "id": "pattes-gluantes",
     "label": "Pattes Gluantes",
-    "type": "du Domaine des Ombres",
+    "ecole": "du Domaine des Ombres",
     "subType": null,
     "cn": 8,
     "range": {
@@ -17165,7 +17165,7 @@
   {
     "id": "pied-leger",
     "label": "Pied Léger",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -17195,7 +17195,7 @@
   {
     "id": "pierre-de-souffrance",
     "label": "Pierre de Souffrance",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 5,
     "range": {
@@ -17225,7 +17225,7 @@
   {
     "id": "piste-froide",
     "label": "Piste Froide",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -17245,7 +17245,7 @@
   {
     "id": "poids-plume",
     "label": "Poids Plume",
-    "type": "du Domaine des Ombres",
+    "ecole": "du Domaine des Ombres",
     "subType": null,
     "cn": 6,
     "range": {
@@ -17276,7 +17276,7 @@
   {
     "id": "position",
     "label": "Position",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -17304,7 +17304,7 @@
   {
     "id": "poudre-d-escampette",
     "label": "Poudre d’Escampette",
-    "type": "du Domaine des Ombres",
+    "ecole": "du Domaine des Ombres",
     "subType": null,
     "cn": 4,
     "range": {
@@ -17334,7 +17334,7 @@
   {
     "id": "pourriture",
     "label": "Pourriture",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -17363,7 +17363,7 @@
   {
     "id": "prise-de-tete",
     "label": "Prise de Tête",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 4,
     "range": {
@@ -17392,7 +17392,7 @@
   {
     "id": "projectile",
     "label": "Projectile",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 3,
     "range": {
@@ -17422,7 +17422,7 @@
   {
     "id": "projectile-de-dhar",
     "label": "Projectile de Dhar",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 7,
     "range": {
@@ -17452,7 +17452,7 @@
   {
     "id": "projectile-mineur",
     "label": "Projectile Mineur",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -17497,7 +17497,7 @@
   {
     "id": "rafale-hurlante",
     "label": "Rafale Hurlante",
-    "type": "du Domaine de la Ruine",
+    "ecole": "du Domaine de la Ruine",
     "subType": null,
     "cn": 7,
     "range": {
@@ -17535,7 +17535,7 @@
   {
     "id": "rage-meurtriere",
     "label": "Rage Meurtrière",
-    "type": "du Domaine des Ombres",
+    "ecole": "du Domaine des Ombres",
     "subType": null,
     "cn": 5,
     "range": {
@@ -17565,7 +17565,7 @@
   {
     "id": "ramanchage",
     "label": "Ramanchage",
-    "type": "Magie des Arcanes & des Taillis",
+    "ecole": "Magie des Arcanes & des Taillis",
     "subType": null,
     "cn": 0,
     "range": {
@@ -17592,7 +17592,7 @@
   {
     "id": "rapidite",
     "label": "Rapidité",
-    "type": "Bénédiction",
+    "ecole": "Bénédiction",
     "subType": null,
     "cn": null,
     "range": null,
@@ -17612,7 +17612,7 @@
   {
     "id": "rat-esclave",
     "label": "Rat Esclave",
-    "type": "du Domaine des Ombres",
+    "ecole": "du Domaine des Ombres",
     "subType": null,
     "cn": 0,
     "range": {
@@ -17644,7 +17644,7 @@
   {
     "id": "regard-lubrique",
     "label": "Regard Lubrique",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -17674,7 +17674,7 @@
   {
     "id": "rejeton-de-slaanesh",
     "label": "Rejeton de Slaanesh",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 10,
     "range": {
@@ -17703,7 +17703,7 @@
   {
     "id": "resistance-du-penitent",
     "label": "Résistance du Pénitent",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -17723,7 +17723,7 @@
   {
     "id": "robustesse",
     "label": "Robustesse",
-    "type": "Bénédiction",
+    "ecole": "Bénédiction",
     "subType": null,
     "cn": null,
     "range": null,
@@ -17743,7 +17743,7 @@
   {
     "id": "ruine",
     "label": "Ruine",
-    "type": "Magie des Arcanes & de Sorcellerie",
+    "ecole": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
     "cn": 13,
     "range": {
@@ -17773,7 +17773,7 @@
   {
     "id": "saccade",
     "label": "Saccade",
-    "type": "Magie Mineure",
+    "ecole": "Magie Mineure",
     "subType": null,
     "cn": 0,
     "range": {
@@ -17802,7 +17802,7 @@
   {
     "id": "sagesse-du-hibou",
     "label": "Sagesse du Hibou",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -17822,7 +17822,7 @@
   {
     "id": "sanctuaire",
     "label": "Sanctuaire",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -17842,7 +17842,7 @@
   {
     "id": "saut-de-cabri",
     "label": "Saut de Cabri",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -17862,7 +17862,7 @@
   {
     "id": "secousse-tellurique",
     "label": "Secousse Tellurique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -17891,7 +17891,7 @@
   {
     "id": "shurikens-enchantes",
     "label": "Shurikens Enchantés",
-    "type": "du Domaine des Ombres",
+    "ecole": "du Domaine des Ombres",
     "subType": null,
     "cn": 8,
     "range": {
@@ -17921,7 +17921,7 @@
   {
     "id": "soins",
     "label": "Soins",
-    "type": "Bénédiction",
+    "ecole": "Bénédiction",
     "subType": null,
     "cn": null,
     "range": null,
@@ -17941,7 +17941,7 @@
   {
     "id": "soleil-noir",
     "label": "Soleil Noir",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 11,
     "range": {
@@ -17972,7 +17972,7 @@
   {
     "id": "sus-a-l-ennemi",
     "label": "Sus à l’Ennemi !",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -17992,7 +17992,7 @@
   {
     "id": "telekinesie",
     "label": "Télékinésie",
-    "type": "Magie des Arcanes & de Nécromancie",
+    "ecole": "Magie des Arcanes & de Nécromancie",
     "subType": null,
     "cn": 4,
     "range": {
@@ -18022,7 +18022,7 @@
   {
     "id": "terreur-nocturne",
     "label": "Terreur Nocturne",
-    "type": "Magie des Arcanes & de Sorcellerie",
+    "ecole": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
     "cn": 7,
     "range": {
@@ -18051,7 +18051,7 @@
   {
     "id": "treve-de-taal-dsfl",
     "label": "Trêve de Taal DSFL",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -18071,7 +18071,7 @@
   {
     "id": "trouble",
     "label": "Trouble",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 3,
     "range": {
@@ -18100,7 +18100,7 @@
   {
     "id": "vague-scelerate",
     "label": "Vague Scélérate",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 11,
     "range": {
@@ -18130,7 +18130,7 @@
   {
     "id": "verena-m-est-temoin",
     "label": "Verena m’est témoin !",
-    "type": "Miracle",
+    "ecole": "Miracle",
     "subType": null,
     "cn": null,
     "range": null,
@@ -18150,7 +18150,7 @@
   {
     "id": "vol",
     "label": "Vol",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": null,
     "range": {
@@ -18180,7 +18180,7 @@
   {
     "id": "waaagh",
     "label": "WAAAGH !",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 11,
     "range": {
@@ -18210,7 +18210,7 @@
   {
     "id": "z-oeils-de-mork",
     "label": "Z’Oeils de Mork",
-    "type": "Sort",
+    "ecole": "Sort",
     "subType": null,
     "cn": 4,
     "range": {
@@ -18239,7 +18239,7 @@
   {
     "id": "apaiser-les-eaux",
     "label": "Apaiser les eaux",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -18285,7 +18285,7 @@
   {
     "id": "benediction-de-l-albatros",
     "label": "Bénédiction de l'albatros",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -18331,7 +18331,7 @@
   {
     "id": "benediction-du-marinier",
     "label": "Bénédiction du marinier",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -18375,7 +18375,7 @@
   {
     "id": "contre-courants",
     "label": "Contre-courants",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -18421,7 +18421,7 @@
   {
     "id": "malediction-de-la-mer",
     "label": "Malédiction de la mer",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -18467,7 +18467,7 @@
   {
     "id": "navigation-benie",
     "label": "Navigation bénie",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -18509,7 +18509,7 @@
   {
     "id": "repousser-une-creature-marine",
     "label": "Repousser une créature marine",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -18555,7 +18555,7 @@
   {
     "id": "respiration-aquatique",
     "label": "Respiration aquatique",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Manann",
     "cn": null,
     "range": {
@@ -18600,7 +18600,7 @@
   {
     "id": "faire-fi-de-l-humeur-de-manann",
     "label": "Faire fi de l'Humeur de Manann",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Stromfels",
     "cn": null,
     "range": {
@@ -18647,7 +18647,7 @@
   {
     "id": "flairer-le-sang",
     "label": "Flairer le sang",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Stromfels",
     "cn": null,
     "range": {
@@ -18690,7 +18690,7 @@
   {
     "id": "lame-de-fond",
     "label": "Lame de fond",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Stromfels",
     "cn": null,
     "range": {
@@ -18733,7 +18733,7 @@
   {
     "id": "mal-de-mer",
     "label": "Mal de mer",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Stromfels",
     "cn": null,
     "range": {
@@ -18780,7 +18780,7 @@
   {
     "id": "malediction-de-la-maitresse-cruelle",
     "label": "Malédiction de la maîtresse cruelle",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Stromfels",
     "cn": null,
     "range": {
@@ -18826,7 +18826,7 @@
   {
     "id": "sacrifice-a-stromfels",
     "label": "Sacrifice à Stromfels",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Stromfels",
     "cn": null,
     "range": {
@@ -18869,7 +18869,7 @@
   {
     "id": "vents-de-tempete",
     "label": "Vents de tempête",
-    "type": "Invocation",
+    "ecole": "Invocation",
     "subType": "Stromfels",
     "cn": null,
     "range": {
@@ -18916,7 +18916,7 @@
   {
     "id": "bourbier-vivant",
     "label": "Bourbier vivant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 8,
     "range": {
@@ -18964,7 +18964,7 @@
   {
     "id": "que-d-eau-que-d-eau",
     "label": "Que d'eau, que d'eau",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 6,
     "range": {
@@ -19007,7 +19007,7 @@
   {
     "id": "tourbillon",
     "label": "Tourbillon",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 6,
     "range": {
@@ -19054,7 +19054,7 @@
   {
     "id": "bienfait-de-bel-shanaar",
     "label": "Bienfait de Bel Shanaar",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 2,
     "range": {
@@ -19099,7 +19099,7 @@
   {
     "id": "mer-d-huile",
     "label": "Mer d'huile",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 10,
     "range": {
@@ -19146,7 +19146,7 @@
   {
     "id": "solution-de-tir-optimal-de-niezlib",
     "label": "Solution de tir optimal de Niezlib",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 6,
     "range": {
@@ -19194,7 +19194,7 @@
   {
     "id": "assaut-de-pierre",
     "label": "Assaut de pierre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 12,
     "range": {
@@ -19278,7 +19278,7 @@
   {
     "id": "bibliothecaire-instantane-de-meissner",
     "label": "Bibliothécaire instantané de Meissner",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 2,
     "range": {
@@ -19329,7 +19329,7 @@
   {
     "id": "collet-d-abulla",
     "label": "Collet d'Abulla",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 5,
     "range": {
@@ -19434,7 +19434,7 @@
   {
     "id": "comprehension-parfaite",
     "label": "Compréhension parfaite",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 5,
     "range": {
@@ -19480,7 +19480,7 @@
   {
     "id": "crevasse-lumiere",
     "label": "Crevasse",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 8,
     "range": {
@@ -19565,7 +19565,7 @@
   {
     "id": "distorsion-temporelle",
     "label": "Distorsion temporelle",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 11,
     "range": {
@@ -19616,7 +19616,7 @@
   {
     "id": "edifice-erige",
     "label": "Édifice érigé",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 9,
     "range": {
@@ -19674,7 +19674,7 @@
   {
     "id": "edifice-illumine",
     "label": "Édifice illuminé",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 4,
     "range": {
@@ -19726,7 +19726,7 @@
   {
     "id": "halo-purificateur",
     "label": "Halo purificateur",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 6,
     "range": {
@@ -19776,7 +19776,7 @@
   {
     "id": "intention-inspiree",
     "label": "Intention inspirée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 4,
     "range": {
@@ -19833,7 +19833,7 @@
   {
     "id": "lever-le-voile",
     "label": "Lever le voile",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 4,
     "range": {
@@ -19883,7 +19883,7 @@
   {
     "id": "lueur-eblouissante",
     "label": "Lueur éblouissante",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 5,
     "range": {
@@ -19964,7 +19964,7 @@
   {
     "id": "mains-de-karkora",
     "label": "Mains de Karkora",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 8,
     "range": {
@@ -20053,7 +20053,7 @@
   {
     "id": "manteau-miroitant",
     "label": "Manteau miroitant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 9,
     "range": {
@@ -20099,7 +20099,7 @@
   {
     "id": "orbe-de-hysh",
     "label": "Orbe de Hysh",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 5,
     "range": {
@@ -20149,7 +20149,7 @@
   {
     "id": "yeux-de-volans",
     "label": "Yeux de Volans",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Lumière",
     "cn": 6,
     "range": {
@@ -20199,7 +20199,7 @@
   {
     "id": "armure-de-fer-blanc",
     "label": "Armure de fer blanc",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 4,
     "range": {
@@ -20256,7 +20256,7 @@
   {
     "id": "bouclier-en-acier-dore",
     "label": "Bouclier en acier doré",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 10,
     "range": {
@@ -20314,7 +20314,7 @@
   {
     "id": "boussole-d-argent-de-puchta",
     "label": "Boussole d'argent de Puchta",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 2,
     "range": {
@@ -20365,7 +20365,7 @@
   {
     "id": "cage-doree",
     "label": "Cage dorée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 9,
     "range": {
@@ -20419,7 +20419,7 @@
   {
     "id": "contact-dore",
     "label": "Contact doré",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 7,
     "range": {
@@ -20505,7 +20505,7 @@
   {
     "id": "defaut-metal",
     "label": "Défaut",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 2,
     "range": {
@@ -20566,7 +20566,7 @@
   {
     "id": "denouer-les-noeuds",
     "label": "Dénouer les nœuds",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 5,
     "range": {
@@ -20616,7 +20616,7 @@
   {
     "id": "devoiler-l-inconnu",
     "label": "Dévoiler l'inconnu",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 4,
     "range": {
@@ -20680,7 +20680,7 @@
   {
     "id": "globe-dore-de-gehenna",
     "label": "Globe doré de Gehenna",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 13,
     "range": {
@@ -20777,7 +20777,7 @@
   {
     "id": "inscription",
     "label": "Inscription",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 2,
     "range": {
@@ -20843,7 +20843,7 @@
   {
     "id": "malediction-de-la-rouille",
     "label": "Malédiction de la rouille",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 4,
     "range": {
@@ -20890,7 +20890,7 @@
   {
     "id": "methode-essai-erreur",
     "label": "Méthode essai-erreur",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 3,
     "range": {
@@ -20957,7 +20957,7 @@
   {
     "id": "protections-de-fer-meteorique",
     "label": "Protections de fer météorique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 7,
     "range": {
@@ -21013,7 +21013,7 @@
   {
     "id": "refraction-prismatique-de-habermas",
     "label": "Réfraction prismatique de Habermas",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 5,
     "range": {
@@ -21068,7 +21068,7 @@
   {
     "id": "reparer-du-metal",
     "label": "Réparer du métal",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 4,
     "range": {
@@ -21111,7 +21111,7 @@
   {
     "id": "reproduction-de-levorg",
     "label": "Reproduction de Levorg",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Métal",
     "cn": 6,
     "range": {
@@ -21161,7 +21161,7 @@
   {
     "id": "almanach",
     "label": "Almanach",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 4,
     "range": {
@@ -21205,7 +21205,7 @@
   {
     "id": "apotheose-verdoyante",
     "label": "Apothéose verdoyante",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 16,
     "range": {
@@ -21256,7 +21256,7 @@
   {
     "id": "cercueil-de-jade",
     "label": "Cercueil de Jade",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 6,
     "range": {
@@ -21307,7 +21307,7 @@
   {
     "id": "chair-de-pierre",
     "label": "Chair de pierre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 9,
     "range": {
@@ -21380,7 +21380,7 @@
   {
     "id": "chant-revigorant",
     "label": "Chant revigorant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 6,
     "range": {
@@ -21446,7 +21446,7 @@
   {
     "id": "chute-de-feuilles",
     "label": "Chute de feuilles",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 6,
     "range": {
@@ -21496,7 +21496,7 @@
   {
     "id": "cri-de-guerre-du-druide",
     "label": "Cri de guerre du Druide",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 9,
     "range": {
@@ -21592,7 +21592,7 @@
   {
     "id": "croissance-vitale",
     "label": "Croissance vitale",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 7,
     "range": {
@@ -21639,7 +21639,7 @@
   {
     "id": "escalier-en-colimacon",
     "label": "Escalier en colimaçon",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 6,
     "range": {
@@ -21689,7 +21689,7 @@
   {
     "id": "etres-du-dessous",
     "label": "Êtres du dessous",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 13,
     "range": {
@@ -21763,7 +21763,7 @@
   {
     "id": "geyser",
     "label": "Geyser",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 8,
     "range": {
@@ -21852,7 +21852,7 @@
   {
     "id": "murmure-de-la-nature",
     "label": "Murmure de la nature",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 8,
     "range": {
@@ -21898,7 +21898,7 @@
   {
     "id": "transformation-en-arbre",
     "label": "Transformation en arbre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 8,
     "range": {
@@ -21945,7 +21945,7 @@
   {
     "id": "transmutation-fantasmagorique-de-colchis",
     "label": "Transmutation fantasmagorique de Colchis",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 6,
     "range": {
@@ -22004,7 +22004,7 @@
   {
     "id": "trouver-des-lignes-de-force-telluriques",
     "label": "Trouver des lignes de force telluriques",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 5,
     "range": {
@@ -22056,7 +22056,7 @@
   {
     "id": "la-voie-de-paranoth",
     "label": "La Voie de Paranoth",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Vie",
     "cn": 4,
     "range": {
@@ -22108,7 +22108,7 @@
   {
     "id": "arche-de-saphir",
     "label": "Arche de saphir",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 6,
     "range": {
@@ -22161,7 +22161,7 @@
   {
     "id": "destin-eclairci",
     "label": "Destin éclairci",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 5,
     "range": {
@@ -22205,7 +22205,7 @@
   {
     "id": "ennemi-previsible",
     "label": "Ennemi prévisible",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 4,
     "range": {
@@ -22251,7 +22251,7 @@
   {
     "id": "lames-d-azur",
     "label": "Lames d'Azur",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 6,
     "range": {
@@ -22296,7 +22296,7 @@
   {
     "id": "lentille-celeste",
     "label": "Lentille céleste",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 3,
     "range": {
@@ -22347,7 +22347,7 @@
   {
     "id": "lueur-stellaire",
     "label": "Lueur stellaire",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 8,
     "range": {
@@ -22394,7 +22394,7 @@
   {
     "id": "malediction-du-destin",
     "label": "Malédiction du Destin",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 8,
     "range": {
@@ -22461,7 +22461,7 @@
   {
     "id": "miroir-mystique",
     "label": "Miroir mystique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 7,
     "range": {
@@ -22508,7 +22508,7 @@
   {
     "id": "mistral-de-la-stratosphere",
     "label": "Mistral de la stratosphère",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 7,
     "range": {
@@ -22610,7 +22610,7 @@
   {
     "id": "nettoyage-impeccable",
     "label": "Nettoyage impeccable",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 1,
     "range": {
@@ -22657,7 +22657,7 @@
   {
     "id": "prediction-prodigieuse",
     "label": "Prédiction prodigieuse",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 7,
     "range": {
@@ -22704,7 +22704,7 @@
   {
     "id": "premonition",
     "label": "Prémonition",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 3,
     "range": {
@@ -22746,7 +22746,7 @@
   {
     "id": "projection-astrale",
     "label": "Projection astrale",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 7,
     "range": {
@@ -22792,7 +22792,7 @@
   {
     "id": "que-soufflent-les-quatre-vents",
     "label": "Que soufflent les Quatre Vents !",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 9,
     "range": {
@@ -22867,7 +22867,7 @@
   {
     "id": "tempete-de-shemtek",
     "label": "Tempête de Shemtek",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 11,
     "range": {
@@ -22934,7 +22934,7 @@
   {
     "id": "tornade-de-thorsen",
     "label": "Tornade de Thorsen",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Cieux",
     "cn": 11,
     "range": {
@@ -23006,7 +23006,7 @@
   {
     "id": "ailes-grises",
     "label": "Ailes grises",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 6,
     "range": {
@@ -23111,7 +23111,7 @@
   {
     "id": "bosquet-d-ombre",
     "label": "Bosquet d'Ombre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 5,
     "range": {
@@ -23165,7 +23165,7 @@
   {
     "id": "charme-changeant",
     "label": "Charme changeant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 4,
     "range": {
@@ -23275,7 +23275,7 @@
   {
     "id": "chut",
     "label": "Chut !",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 3,
     "range": {
@@ -23326,7 +23326,7 @@
   {
     "id": "corne-d-andar",
     "label": "Corne d'Andar",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 5,
     "range": {
@@ -23427,7 +23427,7 @@
   {
     "id": "danse-du-desespoir",
     "label": "Danse du désespoir",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 13,
     "range": {
@@ -23513,7 +23513,7 @@
   {
     "id": "desorientation",
     "label": "Désorientation",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 5,
     "range": {
@@ -23647,7 +23647,7 @@
   {
     "id": "horreurs-noires",
     "label": "Horreurs noires",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 6,
     "range": {
@@ -23701,7 +23701,7 @@
   {
     "id": "illusion-grandiose",
     "label": "Illusion grandiose",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 14,
     "range": {
@@ -23755,7 +23755,7 @@
   {
     "id": "illusion-retroactive-de-ribauld",
     "label": "Illusion rétroactive de Ribauld",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 11,
     "range": {
@@ -23802,7 +23802,7 @@
   {
     "id": "ombre-errante",
     "label": "Ombre errante",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 4,
     "range": {
@@ -23848,7 +23848,7 @@
   {
     "id": "poches-profondes",
     "label": "Poches profondes",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 5,
     "range": {
@@ -23895,7 +23895,7 @@
   {
     "id": "pont-des-ombres",
     "label": "Pont des ombres",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 6,
     "range": {
@@ -23961,7 +23961,7 @@
   {
     "id": "puits-de-tarnus",
     "label": "Puits de Tarnus",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 8,
     "range": {
@@ -24050,7 +24050,7 @@
   {
     "id": "substance-de-l-ombre",
     "label": "Substance de l'Ombre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 9,
     "range": {
@@ -24107,7 +24107,7 @@
   {
     "id": "traitre-de-tarn",
     "label": "Traître de Tarn",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Ombres",
     "cn": 12,
     "range": {
@@ -24175,7 +24175,7 @@
   {
     "id": "amarante",
     "label": "Amarante",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 7,
     "range": {
@@ -24245,7 +24245,7 @@
   {
     "id": "ame-emprisonnee",
     "label": "Âme emprisonnée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 12,
     "range": {
@@ -24289,7 +24289,7 @@
   {
     "id": "apercu-de-la-mort",
     "label": "Aperçu de la mort",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 7,
     "range": {
@@ -24425,7 +24425,7 @@
   {
     "id": "cendre-et-poussiere",
     "label": "Cendre et poussière",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 9,
     "range": {
@@ -24547,7 +24547,7 @@
   {
     "id": "contraindre-les-esprits",
     "label": "Contraindre les esprits",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 6,
     "range": {
@@ -24670,7 +24670,7 @@
   {
     "id": "destin-de-bjuna",
     "label": "Destin de Bjuna",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 8,
     "range": {
@@ -24812,7 +24812,7 @@
   {
     "id": "embrasser-son-destin",
     "label": "Embrasser son destin",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 6,
     "range": {
@@ -24871,7 +24871,7 @@
   {
     "id": "etreinte-d-iyrtu",
     "label": "Étreinte d'Iyrtu",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 4,
     "range": {
@@ -24916,7 +24916,7 @@
   {
     "id": "le-labyrinthe-de-cristal",
     "label": "Le Labyrinthe de Cristal",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 13,
     "range": {
@@ -25028,7 +25028,7 @@
   {
     "id": "liberation-de-la-mort",
     "label": "Libération de la mort",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 5,
     "range": {
@@ -25152,7 +25152,7 @@
   {
     "id": "membre-fletri",
     "label": "Membre flétri",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 5,
     "range": {
@@ -25213,7 +25213,7 @@
   {
     "id": "parent-sauvage-de-zandox",
     "label": "Parent sauvage de Zandox",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 5,
     "range": {
@@ -25259,7 +25259,7 @@
   {
     "id": "poids-des-annees",
     "label": "Poids des années",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 3,
     "range": {
@@ -25376,7 +25376,7 @@
   {
     "id": "shyish-a-decouvert",
     "label": "Shyish à découvert",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 4,
     "range": {
@@ -25423,7 +25423,7 @@
   {
     "id": "telepathie",
     "label": "Télépathie",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 1,
     "range": {
@@ -25481,7 +25481,7 @@
   {
     "id": "vitesse-de-lykos",
     "label": "Vitesse de Lykos",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Mort",
     "cn": 3,
     "range": {
@@ -25534,7 +25534,7 @@
   {
     "id": "allumer-le-feu",
     "label": "Allumer le feu",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 2,
     "range": {
@@ -25599,7 +25599,7 @@
   {
     "id": "blizzard-ardent-d-ygethmor",
     "label": "Blizzard ardent d'Ygethmor",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 12,
     "range": {
@@ -25709,7 +25709,7 @@
   {
     "id": "cognat-de-l-atre",
     "label": "Cognat de l'âtre",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 4,
     "range": {
@@ -25770,7 +25770,7 @@
   {
     "id": "colerique",
     "label": "Colérique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 2,
     "range": {
@@ -25878,7 +25878,7 @@
   {
     "id": "corps-de-feu",
     "label": "Corps de feu",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 5,
     "range": {
@@ -25924,7 +25924,7 @@
   {
     "id": "embrasement",
     "label": "Embrasement",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 3,
     "range": {
@@ -25976,7 +25976,7 @@
   {
     "id": "epees-sanguines",
     "label": "Épées sanguines",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 6,
     "range": {
@@ -26026,7 +26026,7 @@
   {
     "id": "flamme-fascinante",
     "label": "Flamme fascinante",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 3,
     "range": {
@@ -26111,7 +26111,7 @@
   {
     "id": "flamme-inextinguible",
     "label": "Flamme inextinguible",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 3,
     "range": {
@@ -26164,7 +26164,7 @@
   {
     "id": "la-forge-de-tarnus",
     "label": "La Forge de Tarnus",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 6,
     "range": {
@@ -26223,7 +26223,7 @@
   {
     "id": "fournaise-fletrissante",
     "label": "Fournaise flétrissante",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 6,
     "range": {
@@ -26291,7 +26291,7 @@
   {
     "id": "gout-du-feu",
     "label": "Goût du feu",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 2,
     "range": {
@@ -26338,7 +26338,7 @@
   {
     "id": "sang-bouillant",
     "label": "Sang bouillant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 5,
     "range": {
@@ -26418,7 +26418,7 @@
   {
     "id": "tempete-de-flammes",
     "label": "Tempête de flammes",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 8,
     "range": {
@@ -26477,7 +26477,7 @@
   {
     "id": "tempete-de-magma",
     "label": "Tempête de magma",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 13,
     "range": {
@@ -26548,7 +26548,7 @@
   {
     "id": "tete-enflammee",
     "label": "Tête enflammée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Feu",
     "cn": 6,
     "range": {
@@ -26626,7 +26626,7 @@
   {
     "id": "appeler-une-monture",
     "label": "Appeler une monture",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 6,
     "range": {
@@ -26678,7 +26678,7 @@
   {
     "id": "bete-indomptee",
     "label": "Bête indomptée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 4,
     "range": {
@@ -26805,7 +26805,7 @@
   {
     "id": "capuche-vengeresse",
     "label": "Capuche vengeresse",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 7,
     "range": {
@@ -26867,7 +26867,7 @@
   {
     "id": "eveil-du-bois",
     "label": "Éveil du bois",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 8,
     "range": {
@@ -26936,7 +26936,7 @@
   {
     "id": "les-lunes-du-chasseur",
     "label": "Les lunes du chasseur",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 8,
     "range": {
@@ -27010,7 +27010,7 @@
   {
     "id": "malediction-d-anraheir",
     "label": "Malédiction d'Anraheir",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 5,
     "range": {
@@ -27082,7 +27082,7 @@
   {
     "id": "obstination-du-boeuf",
     "label": "Obstination du bœuf",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 5,
     "range": {
@@ -27145,7 +27145,7 @@
   {
     "id": "pelage-d-hiver",
     "label": "Pelage d'hiver",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 2,
     "range": {
@@ -27204,7 +27204,7 @@
   {
     "id": "regiment-monstrueux-de-merciw",
     "label": "Régiment monstrueux de Merciw",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 13,
     "range": {
@@ -27273,7 +27273,7 @@
   {
     "id": "suivre-le-fumet",
     "label": "Suivre le fumet",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 4,
     "range": {
@@ -27319,7 +27319,7 @@
   {
     "id": "transe-ambree",
     "label": "Transe ambrée",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 4,
     "range": {
@@ -27382,7 +27382,7 @@
   {
     "id": "transformation-de-kadon",
     "label": "Transformation de Kadon",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 14,
     "range": {
@@ -27433,7 +27433,7 @@
   {
     "id": "traversee-rapide",
     "label": "Traversée rapide",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 4,
     "range": {
@@ -27491,7 +27491,7 @@
   {
     "id": "vaporisation-de-musc",
     "label": "Vaporisation de musc",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 2,
     "range": {
@@ -27552,7 +27552,7 @@
   {
     "id": "ver-fretillant",
     "label": "Ver frétillant",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 4,
     "range": {
@@ -27607,7 +27607,7 @@
   {
     "id": "yeux-de-la-meute",
     "label": "Yeux de la meute",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Bête",
     "cn": 3,
     "range": {
@@ -27654,7 +27654,7 @@
   {
     "id": "agressivite-de-la-maresang",
     "label": "Agressivité de la Maresang",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 2,
     "range": {
@@ -27704,7 +27704,7 @@
   {
     "id": "argile-fertile",
     "label": "Argile fertile",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -27754,7 +27754,7 @@
   {
     "id": "decrypter-une-malediction",
     "label": "Décrypter une malédiction",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -27824,7 +27824,7 @@
   {
     "id": "effondrement-de-fabrique",
     "label": "Effondrement de Fabriqué",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 6,
     "range": {
@@ -27883,7 +27883,7 @@
   {
     "id": "perturber-la-magie",
     "label": "Perturber la Magie",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 8,
     "range": {
@@ -27942,7 +27942,7 @@
   {
     "id": "secourir-un-serviteur-magique",
     "label": "Secourir un serviteur magique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 2,
     "range": {
@@ -28018,7 +28018,7 @@
   {
     "id": "silence",
     "label": "Silence",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -28074,7 +28074,7 @@
   {
     "id": "varech-avarie",
     "label": "Varech avarié",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": 4,
     "range": {
@@ -28124,7 +28124,7 @@
   {
     "id": "bourbier-d-abattement",
     "label": "Bourbier d'abattement",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
     "cn": 6,
     "range": {
@@ -28216,7 +28216,7 @@
   {
     "id": "brume-mystique-magie-du-marais",
     "label": "Brume mystique",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
     "cn": 4,
     "range": {
@@ -28299,7 +28299,7 @@
   {
     "id": "de-la-boue-jusqu-au-bout",
     "label": "De la boue jusqu'au bout !",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
     "cn": 20,
     "range": {
@@ -28346,7 +28346,7 @@
   {
     "id": "empreint-de-bruine",
     "label": "Empreint de bruine",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
     "cn": 9,
     "range": {
@@ -28417,7 +28417,7 @@
   {
     "id": "piqures-de-moustiques",
     "label": "Piqûres de moustiques",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
     "cn": 5,
     "range": {
@@ -28522,7 +28522,7 @@
   {
     "id": "tourner-en-rond",
     "label": "Tourner en rond",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": "Magie du marais de Mòna",
     "cn": 4,
     "range": {
@@ -28578,7 +28578,7 @@
   {
     "id": "peau-d-ecorce-et-d-os",
     "label": "Peau d'écorce et d'os",
-    "type": "Magie des Arcanes",
+    "ecole": "Magie des Arcanes",
     "subType": null,
     "cn": null,
     "range": {
@@ -28632,7 +28632,7 @@
   {
     "id": "art-de-la-malediction",
     "label": "Art de la malédiction",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 50,
     "range": null,
@@ -28673,7 +28673,7 @@
   {
     "id": "corrompre-une-pierre-gardienne",
     "label": "Corrompre une pierre gardienne",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 60,
     "range": null,
@@ -28707,7 +28707,7 @@
   {
     "id": "creer-un-fabrique",
     "label": "Créer un Fabriqué",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 60,
     "range": null,
@@ -28754,7 +28754,7 @@
   {
     "id": "creer-un-familier",
     "label": "Créer un familier",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 45,
     "range": null,
@@ -28785,7 +28785,7 @@
   {
     "id": "creer-une-pierre-de-pouvoir",
     "label": "Créer une pierre de pouvoir",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 64,
     "range": null,
@@ -28825,7 +28825,7 @@
   {
     "id": "creer-une-propriete-de-pierre-gardienne",
     "label": "Créer une propriété de pierre gardienne",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 40,
     "range": null,
@@ -28856,7 +28856,7 @@
   {
     "id": "les-faux-croisees",
     "label": "Les Faux croisées",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": "Mort",
     "cn": null,
     "range": null,
@@ -28891,7 +28891,7 @@
   {
     "id": "graver-une-pierre-d-ogham",
     "label": "Graver une pierre d'ogham",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 50,
     "range": null,
@@ -28922,7 +28922,7 @@
   {
     "id": "impregner-un-baton",
     "label": "Imprégner un bâton",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 35,
     "range": null,
@@ -28976,7 +28976,7 @@
   {
     "id": "invocation-de-demon",
     "label": "Invocation de démon",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": "Démonologie",
     "cn": null,
     "range": null,
@@ -29011,7 +29011,7 @@
   {
     "id": "invocation-de-l-elementaire-incarne-de-la-mort",
     "label": "Invocation de l'élémentaire incarné de la Mort",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": "Mort",
     "cn": 90,
     "range": null,
@@ -29061,7 +29061,7 @@
   {
     "id": "invocation-de-jack-des-cendres",
     "label": "Invocation de Jack des Cendres",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": "Feu",
     "cn": 85,
     "range": null,
@@ -29111,7 +29111,7 @@
   {
     "id": "invocation-du-predateur-sanglant",
     "label": "Invocation du Prédateur sanglant",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": "Bête",
     "cn": 85,
     "range": null,
@@ -29161,7 +29161,7 @@
   {
     "id": "lever-une-malediction",
     "label": "Lever une malédiction",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 40,
     "range": null,
@@ -29192,7 +29192,7 @@
   {
     "id": "lier-une-bete-monstrueuse",
     "label": "Lier une bête monstrueuse",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": "Bête",
     "cn": null,
     "range": null,
@@ -29227,7 +29227,7 @@
   {
     "id": "lier-un-esprit-a-une-pierre-de-pouvoir",
     "label": "Lier un esprit à une pierre de pouvoir",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 32,
     "range": null,
@@ -29267,7 +29267,7 @@
   {
     "id": "materialiser-le-marais-vivant",
     "label": "Matérialiser le marais-vivant",
-    "type": "Rituel",
+    "ecole": "Rituel",
     "subType": null,
     "cn": 40,
     "range": null,

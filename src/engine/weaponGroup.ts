@@ -22,8 +22,8 @@ const GROUP_KEY: Record<string, string> = {
 
 /** libellé normalisé d'arme catalogué → subType canonique (construit une fois). */
 const NAME_TO_GROUP: Record<string, string> = {};
-for (const t of trappings as { label: string; type: string; subType: string | null }[]) {
-  if ((t.type === 'melee' || t.type === 'ranged') && t.subType) NAME_TO_GROUP[norm(t.label)] = t.subType;
+for (const t of trappings as { label: string; categorie: string; subType: string | null }[]) {
+  if ((t.categorie === 'melee' || t.categorie === 'ranged') && t.subType) NAME_TO_GROUP[norm(t.label)] = t.subType;
 }
 
 /**

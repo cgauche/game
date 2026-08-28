@@ -62,12 +62,12 @@ describe('castPenalty — pénalités/blocages temporisés', () => {
     const c = hero();
     applyOps(c, [{ op: 'castPenalty', skill: 'priere', maxZeroDR: true, days: 7 }], { label: 'Pensez à vos actes', now: 0 });
     expect(prayerMaxZeroDR(c)).toBe(true);
-    const prayer = { label: 'Bénédiction de Guérison', type: 'Béni', family: 'beni' as const, cn: null, desc: 'soin' };
+    const prayer = { label: 'Bénédiction de Guérison', ecole: 'Béni', family: 'beni' as const, cn: null, desc: 'soin' };
     const res = evaluateCasting(c, prayer, { roll: 5, target: 55, success: true, sl: 5, isDouble: false });
     expect(res.cast).toBe(true);
     expect(res.sl).toBe(0); // plafonné
     // Un SORT (Langue) n'est pas plafonné.
-    const sort = { label: 'X', type: 'Magie mineure', cn: 0, desc: 'x' };
+    const sort = { label: 'X', ecole: 'Magie mineure', cn: 0, desc: 'x' };
     expect(evaluateCasting(c, sort, { roll: 5, target: 50, success: true, sl: 4, isDouble: false }).sl).toBe(4);
   });
 });

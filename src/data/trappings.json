@@ -3,7 +3,7 @@
     "id": "baton-de-combat",
     "label": "Bâton de combat",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-d-hast",
     "enc": 2,
     "availability": "Commune",
@@ -37,7 +37,7 @@
     "id": "hallebarde",
     "label": "Hallebarde",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-d-hast",
     "enc": 3,
     "availability": "Commune",
@@ -75,7 +75,7 @@
     "id": "lance",
     "label": "Lance",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-d-hast",
     "enc": 2,
     "availability": "Commune",
@@ -106,7 +106,7 @@
     "id": "pique",
     "label": "Pique",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-d-hast",
     "enc": 4,
     "availability": "Rare",
@@ -136,7 +136,7 @@
   {
     "id": "mains-nues",
     "label": "Mains nues",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "bagarre",
     "unarmed": true,
     "enc": 0,
@@ -162,7 +162,7 @@
   {
     "id": "coup-de-poing",
     "label": "Coup-de-poing",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "bagarre",
     "enc": 0,
     "availability": "Commune",
@@ -188,7 +188,7 @@
   {
     "id": "arme-improvisee",
     "label": "Arme improvisée",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "improvised": true,
     "enc": "Variable",
@@ -215,7 +215,7 @@
   {
     "id": "arme-simple",
     "label": "Arme simple",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 1,
     "availability": "Commune",
@@ -249,7 +249,7 @@
   {
     "id": "bouclier",
     "label": "Bouclier",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 1,
     "availability": "Commune",
@@ -286,7 +286,7 @@
   {
     "id": "bouclier-grand",
     "label": "Bouclier (Grand)",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 3,
     "availability": "Commune",
@@ -323,7 +323,7 @@
   {
     "id": "bouclier-targe",
     "label": "Bouclier (Targe)",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 0,
     "availability": "Commune",
@@ -360,7 +360,7 @@
   {
     "id": "couteau",
     "label": "Couteau",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 0,
     "availability": "Commune",
@@ -391,7 +391,7 @@
   {
     "id": "dague",
     "label": "Dague",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 0,
     "availability": "Commune",
@@ -418,7 +418,7 @@
   {
     "id": "cimeterre",
     "label": "Cimeterre",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 1,
     "availability": "Limitée",
@@ -458,7 +458,7 @@
   {
     "id": "dague-ballock",
     "label": "Dague ballock",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 0,
     "availability": "Limitée",
@@ -503,7 +503,7 @@
   {
     "id": "massue",
     "label": "Massue",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 1,
     "availability": "Commune",
@@ -537,7 +537,7 @@
   {
     "id": "pique-d-armes",
     "label": "Pique d'armes",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 1,
     "availability": "Limitée",
@@ -571,7 +571,7 @@
   {
     "id": "lance-de-cavalerie",
     "label": "Lance de cavalerie",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "cavalerie",
     "enc": 3,
     "availability": "Rare",
@@ -606,7 +606,7 @@
     "id": "marteau-a-bec-de-corbin",
     "label": "Marteau à bec-de-corbin",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "cavalerie",
     "enc": 3,
     "availability": "Limitée",
@@ -637,7 +637,7 @@
     "id": "epee-batarde",
     "label": "Épée bâtarde",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "deux-mains",
     "enc": 3,
     "availability": "Limitée",
@@ -672,7 +672,7 @@
     "id": "grande-hache",
     "label": "Grande hache",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "deux-mains",
     "enc": 3,
     "availability": "Limitée",
@@ -710,7 +710,7 @@
     "id": "marteau-de-guerre",
     "label": "Marteau de guerre",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "deux-mains",
     "enc": 3,
     "availability": "Commune",
@@ -747,7 +747,7 @@
     "id": "pioche-a-deux-mains",
     "label": "Pioche à deux mains",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "deux-mains",
     "enc": 3,
     "availability": "Commune",
@@ -784,7 +784,7 @@
     "id": "zweihander",
     "label": "Zweihänder",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "deux-mains",
     "enc": 3,
     "availability": "Limitée",
@@ -818,7 +818,7 @@
   {
     "id": "fleuret",
     "label": "Fleuret",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "escrime",
     "enc": 1,
     "availability": "Limitée",
@@ -852,7 +852,7 @@
   {
     "id": "rapiere",
     "label": "Rapière",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "escrime",
     "enc": 1,
     "availability": "Limitée",
@@ -879,7 +879,7 @@
   {
     "id": "fleau",
     "label": "Fléau",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "fleau",
     "enc": 1,
     "availability": "Limitée",
@@ -905,7 +905,7 @@
   {
     "id": "fleau-a-grain",
     "label": "Fléau à grain",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "fleau",
     "enc": 1,
     "availability": "Commune",
@@ -936,7 +936,7 @@
     "id": "fleau-d-armes",
     "label": "Fléau d'armes",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "fleau",
     "enc": 2,
     "availability": "Rare",
@@ -969,7 +969,7 @@
   {
     "id": "brise-epee",
     "label": "Brise-épée",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "parade",
     "enc": 1,
     "availability": "Limitée",
@@ -1000,7 +1000,7 @@
   {
     "id": "main-gauche",
     "label": "Main Gauche",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "parade",
     "enc": 0,
     "availability": "Rare",
@@ -1028,7 +1028,7 @@
     "id": "arbalete",
     "label": "Arbalète",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "arbalete",
     "enc": 2,
     "availability": "Commune",
@@ -1061,7 +1061,7 @@
   {
     "id": "arbalete-de-poing",
     "label": "Arbalète de poing",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "arbalete",
     "enc": 0,
     "availability": "Limitée",
@@ -1094,7 +1094,7 @@
     "id": "arbalete-lourde",
     "label": "Arbalète lourde",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "arbalete",
     "enc": 3,
     "availability": "Rare",
@@ -1131,7 +1131,7 @@
     "id": "arc",
     "label": "Arc",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "arc",
     "enc": 2,
     "availability": "Commune",
@@ -1160,7 +1160,7 @@
     "id": "arc-court",
     "label": "Arc court",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "arc",
     "enc": 1,
     "availability": "Commune",
@@ -1189,7 +1189,7 @@
     "id": "arc-elfique",
     "label": "Arc elfique",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "arc",
     "enc": 2,
     "availability": "Exotique",
@@ -1225,7 +1225,7 @@
     "id": "arc-long",
     "label": "Arc long",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "arc",
     "enc": 3,
     "availability": "Limitée",
@@ -1257,7 +1257,7 @@
   {
     "id": "fouet",
     "label": "Fouet",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "entraves",
     "enc": 0,
     "availability": "Commune",
@@ -1289,7 +1289,7 @@
   {
     "id": "lasso",
     "label": "Lasso",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "entraves",
     "enc": 0,
     "availability": "Commune",
@@ -1320,7 +1320,7 @@
   {
     "id": "filet",
     "label": "Filet",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "entraves",
     "enc": 1,
     "availability": "Commune",
@@ -1348,7 +1348,7 @@
   {
     "id": "bombe",
     "label": "Bombe",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "explosifs",
     "enc": 0,
     "availability": "Rare",
@@ -1388,7 +1388,7 @@
   {
     "id": "bombe-incendiaire",
     "label": "Bombe incendiaire",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "explosifs",
     "enc": 0,
     "availability": "Limitée",
@@ -1425,7 +1425,7 @@
   {
     "id": "fronde",
     "label": "Fronde",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "fronde",
     "enc": 0,
     "availability": "Commune",
@@ -1453,7 +1453,7 @@
     "id": "fustibale",
     "label": "Fustibale",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "fronde",
     "enc": 2,
     "availability": "Limitée",
@@ -1480,7 +1480,7 @@
   {
     "id": "bolas",
     "label": "Bolas",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "lancer",
     "enc": 0,
     "availability": "Rare",
@@ -1514,7 +1514,7 @@
   {
     "id": "couteau-de-lancer",
     "label": "Couteau de lancer",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "lancer",
     "enc": 0,
     "availability": "Commune",
@@ -1543,7 +1543,7 @@
   {
     "id": "flechette",
     "label": "Fléchette",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "lancer",
     "enc": 0,
     "availability": "Limitée",
@@ -1576,7 +1576,7 @@
   {
     "id": "hache-de-lancer",
     "label": "Hache de lancer",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "lancer",
     "enc": 1,
     "availability": "Commune",
@@ -1609,7 +1609,7 @@
   {
     "id": "javelot",
     "label": "Javelot",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "lancer",
     "enc": 1,
     "availability": "Limitée",
@@ -1643,7 +1643,7 @@
   {
     "id": "rocher",
     "label": "Rocher",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "lancer",
     "enc": 0,
     "availability": "Commune",
@@ -1670,7 +1670,7 @@
     "id": "arquebus-a-repetition",
     "label": "Arquebus à répétition",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "ingenierie",
     "enc": 3,
     "availability": "Rare",
@@ -1715,7 +1715,7 @@
   {
     "id": "pistolet-a-repetition",
     "label": "Pistolet à répétition",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "ingenierie",
     "enc": 1,
     "availability": "Rare",
@@ -1764,7 +1764,7 @@
     "id": "arquebuse",
     "label": "Arquebuse",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 2,
     "availability": "Limitée",
@@ -1806,7 +1806,7 @@
     "id": "long-fusil-d-hochland",
     "label": "Long fusil d'Hochland",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 3,
     "availability": "Exotique",
@@ -1850,7 +1850,7 @@
   {
     "id": "pistolet",
     "label": "Pistolet",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 0,
     "availability": "Rare",
@@ -1892,7 +1892,7 @@
     "id": "tromblon",
     "label": "Tromblon",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Limitée",
@@ -1938,7 +1938,7 @@
     "id": "carreau",
     "label": "Carreau",
     "packSize": 12,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "arbalete",
     "enc": 0,
     "availability": "Commune",
@@ -1965,7 +1965,7 @@
     "id": "fleche",
     "label": "Flèche",
     "packSize": 12,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "arc",
     "enc": 0,
     "availability": "Commune",
@@ -1991,7 +1991,7 @@
   {
     "id": "fleche-elfique",
     "label": "Flèche elfique",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "arc",
     "enc": 0,
     "availability": "Exotique",
@@ -2030,7 +2030,7 @@
     "id": "balle-de-plomb",
     "label": "Balle de plomb",
     "packSize": 12,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "fronde",
     "enc": 0,
     "availability": "Commune",
@@ -2063,7 +2063,7 @@
     "id": "projectile-de-pierre",
     "label": "Projectile de pierre",
     "packSize": 12,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "fronde",
     "enc": 0,
     "availability": "Commune",
@@ -2090,7 +2090,7 @@
     "id": "balle-et-poudre",
     "label": "Balle et Poudre",
     "packSize": 12,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "poudre-noire-et-ingenierie",
     "enc": 0,
     "availability": "Commune",
@@ -2122,7 +2122,7 @@
   {
     "id": "munitions-improvisees-et-poudre",
     "label": "Munitions improvisées et Poudre",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "poudre-noire-et-ingenierie",
     "enc": 0,
     "availability": "Commune",
@@ -2147,7 +2147,7 @@
   {
     "id": "petites-munitions-et-poudre",
     "label": "Petites munitions et Poudre",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "poudre-noire-et-ingenierie",
     "enc": 0,
     "availability": "Commune",
@@ -2173,7 +2173,7 @@
   {
     "id": "calotte-de-cuir",
     "label": "Calotte de cuir",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "cuir-souple",
     "enc": 0,
     "availability": "Commune",
@@ -2200,7 +2200,7 @@
   {
     "id": "jambieres-en-cuir",
     "label": "Jambières en cuir",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "cuir-souple",
     "enc": 1,
     "availability": "Commune",
@@ -2223,7 +2223,7 @@
   {
     "id": "justaucorps-de-cuir",
     "label": "Justaucorps de cuir",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "cuir-souple",
     "enc": 1,
     "availability": "Commune",
@@ -2246,7 +2246,7 @@
   {
     "id": "veste-de-cuir",
     "label": "Veste de cuir",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "cuir-souple",
     "enc": 1,
     "availability": "Commune",
@@ -2269,7 +2269,7 @@
   {
     "id": "plastron-de-cuir",
     "label": "Plastron de cuir",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "cuir-bouilli",
     "enc": 2,
     "availability": "Limitée",
@@ -2295,7 +2295,7 @@
   {
     "id": "chausses-de-mailles",
     "label": "Chausses de mailles",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "mailles",
     "enc": 3,
     "availability": "Limitée",
@@ -2325,7 +2325,7 @@
   {
     "id": "chemise-de-mailles",
     "label": "Chemise de mailles",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "mailles",
     "enc": 2,
     "availability": "Limitée",
@@ -2355,7 +2355,7 @@
   {
     "id": "coiffe-de-mailles",
     "label": "Coiffe de mailles",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "mailles",
     "enc": 2,
     "availability": "Limitée",
@@ -2392,7 +2392,7 @@
   {
     "id": "cotte-de-mailles",
     "label": "Cotte de mailles",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "mailles",
     "enc": 3,
     "availability": "Commune",
@@ -2422,7 +2422,7 @@
   {
     "id": "brassards",
     "label": "Brassards",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "plate",
     "enc": 3,
     "availability": "Rare",
@@ -2455,7 +2455,7 @@
   {
     "id": "heaume",
     "label": "Heaume",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "plate",
     "enc": 2,
     "availability": "Rare",
@@ -2492,7 +2492,7 @@
   {
     "id": "heaume-ouvert",
     "label": "Heaume ouvert",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "plate",
     "enc": 1,
     "availability": "Commune",
@@ -2526,7 +2526,7 @@
   {
     "id": "jambieres-d-acier",
     "label": "Jambières d'acier",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "plate",
     "enc": 3,
     "availability": "Rare",
@@ -2559,7 +2559,7 @@
   {
     "id": "plastron",
     "label": "Plastron",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "plate",
     "enc": 3,
     "availability": "Limitée",
@@ -2592,7 +2592,7 @@
   {
     "id": "baril",
     "label": "Baril",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 6,
     "availability": "Commune",
@@ -2618,7 +2618,7 @@
   {
     "id": "besace",
     "label": "Besace",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 1,
     "availability": "Commune",
@@ -2644,7 +2644,7 @@
   {
     "id": "bourse",
     "label": "Bourse",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 0,
     "availability": "Commune",
@@ -2669,7 +2669,7 @@
   {
     "id": "chope-en-etain",
     "label": "Chope en étain",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 0,
     "availability": "Commune",
@@ -2691,7 +2691,7 @@
   {
     "id": "cruche",
     "label": "Cruche",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 1,
     "availability": "Commune",
@@ -2717,7 +2717,7 @@
   {
     "id": "etui-a-parchemin",
     "label": "Étui à parchemin",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 0,
     "availability": "Limitée",
@@ -2739,7 +2739,7 @@
   {
     "id": "flasque",
     "label": "Flasque",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 0,
     "availability": "Commune",
@@ -2762,7 +2762,7 @@
   {
     "id": "fontes-de-selle",
     "label": "Fontes de selle",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 4,
     "availability": "Commune",
@@ -2787,7 +2787,7 @@
   {
     "id": "grand-sac",
     "label": "Grand sac",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 3,
     "availability": "Commune",
@@ -2816,7 +2816,7 @@
     "capabilities": {
       "waterContainer": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 1,
     "availability": "Commune",
@@ -2842,7 +2842,7 @@
   {
     "id": "sac",
     "label": "Sac",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 2,
     "availability": "Commune",
@@ -2868,7 +2868,7 @@
   {
     "id": "sac-a-dos",
     "label": "Sac à dos",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 2,
     "availability": "Commune",
@@ -2894,7 +2894,7 @@
   {
     "id": "tonneau",
     "label": "Tonneau",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "sacs-et-contenants",
     "enc": 2,
     "availability": "Commune",
@@ -2920,7 +2920,7 @@
   {
     "id": "amulette",
     "label": "Amulette",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -2942,7 +2942,7 @@
   {
     "id": "bijoux",
     "label": "Bijoux",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -2961,7 +2961,7 @@
   {
     "id": "bottes",
     "label": "Bottes",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Commune",
@@ -2983,7 +2983,7 @@
   {
     "id": "canne-de-marche",
     "label": "Canne de marche",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Commune",
@@ -3009,7 +3009,7 @@
     "capabilities": {
       "weatherProtection": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Commune",
@@ -3031,7 +3031,7 @@
   {
     "id": "capuchon",
     "label": "Capuchon",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -3053,7 +3053,7 @@
   {
     "id": "masque",
     "label": "Masque",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -3075,7 +3075,7 @@
   {
     "id": "chapeau",
     "label": "Chapeau",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -3098,7 +3098,7 @@
   {
     "id": "chaussures",
     "label": "Chaussures",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -3120,7 +3120,7 @@
   {
     "id": "chevaliere",
     "label": "Chevalière",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Rare",
@@ -3143,7 +3143,7 @@
   {
     "id": "costume",
     "label": "Costume",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Limitée",
@@ -3166,7 +3166,7 @@
     "id": "epingle",
     "label": "Épingle",
     "packSize": 6,
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -3188,7 +3188,7 @@
   {
     "id": "gants",
     "label": "Gants",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -3210,7 +3210,7 @@
   {
     "id": "gants-en-cuir",
     "label": "Gants en cuir",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -3232,7 +3232,7 @@
   {
     "id": "costume-de-cour",
     "label": "Costume de cour",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Limitée",
@@ -3258,7 +3258,7 @@
     "capabilities": {
       "weatherProtection": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Commune",
@@ -3281,7 +3281,7 @@
   {
     "id": "parfum",
     "label": "Parfum",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -3303,7 +3303,7 @@
   {
     "id": "poudre-pour-le-visage",
     "label": "Poudre pour le visage",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -3325,7 +3325,7 @@
   {
     "id": "robes",
     "label": "Robes",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Commune",
@@ -3347,7 +3347,7 @@
   {
     "id": "sceptre",
     "label": "Sceptre",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Rare",
@@ -3370,7 +3370,7 @@
   {
     "id": "symbole-religieux",
     "label": "Symbole religieux",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Commune",
@@ -3392,7 +3392,7 @@
   {
     "id": "tatouage",
     "label": "Tatouage",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": "Limitée",
@@ -3414,7 +3414,7 @@
   {
     "id": "uniforme",
     "label": "Uniforme",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Limitée",
@@ -3436,7 +3436,7 @@
   {
     "id": "vetements",
     "label": "Vêtements",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Commune",
@@ -3458,7 +3458,7 @@
   {
     "id": "biere-pinte",
     "label": "Bière, pinte",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
     "availability": "Commune",
@@ -3502,7 +3502,7 @@
   {
     "id": "biere-tonnelet",
     "label": "Bière, tonnelet",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 2,
     "availability": "Commune",
@@ -3525,7 +3525,7 @@
   {
     "id": "biere-de-bugman-xxxxxx-pinte",
     "label": "Bière de Bugman XXXXXX, pinte",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
     "availability": "Exotique",
@@ -3548,7 +3548,7 @@
   {
     "id": "chambre-commune-nuit",
     "label": "Chambre, commune/nuit",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": null,
     "availability": "Commune",
@@ -3572,7 +3572,7 @@
   {
     "id": "chambre-privee-nuit",
     "label": "Chambre, privée/nuit",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": null,
     "availability": "Commune",
@@ -3596,7 +3596,7 @@
   {
     "id": "ecurie-nuit",
     "label": "Écurie/nuit",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": null,
     "availability": "Commune",
@@ -3619,7 +3619,7 @@
   {
     "id": "nourriture-courses-journee",
     "label": "Nourriture, courses/journée",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 1,
     "availability": "Commune",
@@ -3641,7 +3641,7 @@
   {
     "id": "repas-auberge",
     "label": "Repas, auberge",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
     "availability": "Commune",
@@ -3663,7 +3663,7 @@
   {
     "id": "spiritueux-pinte",
     "label": "Spiritueux, pinte",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
     "availability": "Commune",
@@ -3685,7 +3685,7 @@
   {
     "id": "vin-bouteille",
     "label": "Vin, bouteille",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
     "availability": "Commune",
@@ -3707,7 +3707,7 @@
   {
     "id": "vin-spiritueux-verre",
     "label": "Vin & spiritueux, verre",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
     "availability": "Commune",
@@ -3755,7 +3755,7 @@
     "capabilities": {
       "isRations": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
     "availability": "Commune",
@@ -3778,7 +3778,7 @@
   {
     "id": "aiguille",
     "label": "Aiguille",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -3800,7 +3800,7 @@
   {
     "id": "balai",
     "label": "Balai",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
     "availability": "Commune",
@@ -3822,7 +3822,7 @@
   {
     "id": "bequille",
     "label": "Béquille",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
     "availability": "Commune",
@@ -3844,7 +3844,7 @@
   {
     "id": "besicles",
     "label": "Bésicles",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Rare",
@@ -3879,7 +3879,7 @@
   {
     "id": "binette",
     "label": "Binette",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
     "availability": "Commune",
@@ -3901,7 +3901,7 @@
   {
     "id": "boulier",
     "label": "Boulier",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -3923,7 +3923,7 @@
   {
     "id": "brosse-pour-le-sol",
     "label": "Brosse pour le sol",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -3945,7 +3945,7 @@
   {
     "id": "cachet-grave",
     "label": "Cachet, gravé",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -3967,7 +3967,7 @@
   {
     "id": "ciseau",
     "label": "Ciseau",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -3989,7 +3989,7 @@
   {
     "id": "clef",
     "label": "Clef",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -4012,7 +4012,7 @@
     "id": "clou",
     "label": "Clou",
     "packSize": 12,
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -4034,7 +4034,7 @@
   {
     "id": "couteau-2",
     "label": "Couteau",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -4056,7 +4056,7 @@
   {
     "id": "cure-oreille",
     "label": "Cure-oreille",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -4078,7 +4078,7 @@
   {
     "id": "faucille",
     "label": "Faucille",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
     "availability": "Commune",
@@ -4100,7 +4100,7 @@
   {
     "id": "gaffe",
     "label": "Gaffe",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
     "availability": "Commune",
@@ -4123,7 +4123,7 @@
     "id": "hamecon",
     "label": "Hameçon",
     "packSize": 12,
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -4146,7 +4146,7 @@
   {
     "id": "maillet",
     "label": "Maillet",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -4168,7 +4168,7 @@
   {
     "id": "marteau",
     "label": "Marteau",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -4190,7 +4190,7 @@
   {
     "id": "menottes",
     "label": "Menottes",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -4213,7 +4213,7 @@
   {
     "id": "miroir-a-main",
     "label": "Miroir à main",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Exotique",
@@ -4235,7 +4235,7 @@
   {
     "id": "necessaire-antipoison",
     "label": "Nécessaire antipoison",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -4283,7 +4283,7 @@
   {
     "id": "necessaire-d-ecriture",
     "label": "Nécessaire d'écriture",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -4306,7 +4306,7 @@
   {
     "id": "necessaire-de-deguisement",
     "label": "Nécessaire de déguisement",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -4329,7 +4329,7 @@
   {
     "id": "outils-de-crochetage",
     "label": "Outils de crochetage",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -4355,7 +4355,7 @@
   {
     "id": "peigne",
     "label": "Peigne",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -4377,7 +4377,7 @@
   {
     "id": "pelle",
     "label": "Pelle",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
     "availability": "Commune",
@@ -4399,7 +4399,7 @@
   {
     "id": "perche",
     "label": "Perche",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 3,
     "availability": "Commune",
@@ -4422,7 +4422,7 @@
   {
     "id": "pied-de-biche",
     "label": "Pied-de-biche",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
     "availability": "Commune",
@@ -4444,7 +4444,7 @@
   {
     "id": "piege-a-animaux",
     "label": "Piège à animaux",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
     "availability": "Commune",
@@ -4467,7 +4467,7 @@
   {
     "id": "pilon-et-mortier",
     "label": "Pilon et Mortier",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -4489,7 +4489,7 @@
   {
     "id": "pinces-acier",
     "label": "Pinces, acier",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -4511,7 +4511,7 @@
   {
     "id": "pince-a-epiler",
     "label": "Pince à épiler",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -4533,7 +4533,7 @@
   {
     "id": "pinceau",
     "label": "Pinceau",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -4555,7 +4555,7 @@
   {
     "id": "pioche",
     "label": "Pioche",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
     "availability": "Limitée",
@@ -4577,7 +4577,7 @@
   {
     "id": "plume-d-oie",
     "label": "Plume d'oie",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Commune",
@@ -4599,7 +4599,7 @@
   {
     "id": "rateau",
     "label": "Râteau",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
     "availability": "Commune",
@@ -4621,7 +4621,7 @@
   {
     "id": "scie",
     "label": "Scie",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
     "availability": "Commune",
@@ -4646,7 +4646,7 @@
     "capabilities": {
       "waterContainer": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 1,
     "availability": "Commune",
@@ -4668,7 +4668,7 @@
   {
     "id": "serpillere",
     "label": "Serpillère",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 2,
     "availability": "Commune",
@@ -4690,7 +4690,7 @@
   {
     "id": "telescope",
     "label": "Télescope",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Rare",
@@ -4712,7 +4712,7 @@
   {
     "id": "carte",
     "label": "Carte",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
     "availability": "Limitée",
@@ -4734,7 +4734,7 @@
   {
     "id": "document-legal",
     "label": "Document légal",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
     "availability": "Commune",
@@ -4757,7 +4757,7 @@
   {
     "id": "licence-de-guilde",
     "label": "Licence de Guilde",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
     "availability": "ND",
@@ -4776,7 +4776,7 @@
   {
     "id": "livre-apothicaire",
     "label": "Livre (Apothicaire)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": "Limitée",
@@ -4799,7 +4799,7 @@
   {
     "id": "livre-art",
     "label": "Livre (Art)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": "Limitée",
@@ -4822,7 +4822,7 @@
   {
     "id": "livre-cryptographie",
     "label": "Livre (Cryptographie)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": "Exotique",
@@ -4845,7 +4845,7 @@
   {
     "id": "livre-ingenierie",
     "label": "Livre (Ingénierie)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": "Limitée",
@@ -4868,7 +4868,7 @@
   {
     "id": "livre-loi",
     "label": "Livre (Loi)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": "Rare",
@@ -4891,7 +4891,7 @@
   {
     "id": "livre-magie",
     "label": "Livre (Magie)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": "Exotique",
@@ -4914,7 +4914,7 @@
   {
     "id": "livre-medecine",
     "label": "Livre (Médecine)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": "Rare",
@@ -4937,7 +4937,7 @@
   {
     "id": "livre-religion",
     "label": "Livre (Religion)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": "Commune",
@@ -4963,7 +4963,7 @@
     "capabilities": {
       "isGrimoire": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": "Exotique",
@@ -4986,7 +4986,7 @@
   {
     "id": "parchemin",
     "label": "Parchemin",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
     "availability": "Commune",
@@ -5008,7 +5008,7 @@
   {
     "id": "feuille-de-parchemin",
     "label": "Feuille de parchemin",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
     "availability": "Commune",
@@ -5030,7 +5030,7 @@
   {
     "id": "tract",
     "label": "Tract",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
     "availability": "Commune",
@@ -5052,7 +5052,7 @@
   {
     "id": "atelier",
     "label": "Atelier",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
     "availability": "Exotique",
@@ -5075,7 +5075,7 @@
   {
     "id": "atelier-apothicaire",
     "label": "Atelier (Apothicaire)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
     "availability": "Exotique",
@@ -5098,7 +5098,7 @@
   {
     "id": "atelier-charpentier",
     "label": "Atelier (Charpentier)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
     "availability": "Exotique",
@@ -5121,7 +5121,7 @@
   {
     "id": "atelier-forgeron",
     "label": "Atelier (Forgeron)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
     "availability": "Exotique",
@@ -5144,7 +5144,7 @@
   {
     "id": "atelier-graveur",
     "label": "Atelier (Graveur)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
     "availability": "Exotique",
@@ -5167,7 +5167,7 @@
   {
     "id": "atelier-artiste",
     "label": "Atelier (Artiste)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
     "availability": "Exotique",
@@ -5190,7 +5190,7 @@
   {
     "id": "atelier-herboriste",
     "label": "Atelier (Herboriste)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
     "availability": "Exotique",
@@ -5213,7 +5213,7 @@
   {
     "id": "atelier-ingenieur",
     "label": "Atelier (Ingénieur)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
     "availability": "Exotique",
@@ -5236,7 +5236,7 @@
   {
     "id": "atelier-medecin",
     "label": "Atelier (Médecin)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": "ND",
     "availability": "Exotique",
@@ -5259,7 +5259,7 @@
   {
     "id": "outils-professionnels",
     "label": "Outils professionnels",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
     "availability": "Rare",
@@ -5282,7 +5282,7 @@
   {
     "id": "outils-professionnels-apothicaire",
     "label": "Outils professionnels (Apothicaire)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
     "availability": "Rare",
@@ -5305,7 +5305,7 @@
   {
     "id": "outils-professionnels-charpentier",
     "label": "Outils professionnels (Charpentier)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
     "availability": "Rare",
@@ -5328,7 +5328,7 @@
   {
     "id": "outils-professionnels-forgeron",
     "label": "Outils professionnels (Forgeron)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
     "availability": "Rare",
@@ -5351,7 +5351,7 @@
   {
     "id": "outils-professionnels-graveur",
     "label": "Outils professionnels (Graveur)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
     "availability": "Rare",
@@ -5374,7 +5374,7 @@
   {
     "id": "outils-professionnels-artiste",
     "label": "Outils professionnels (Artiste)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
     "availability": "Rare",
@@ -5397,7 +5397,7 @@
   {
     "id": "outils-professionnels-herboriste",
     "label": "Outils professionnels (Herboriste)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
     "availability": "Rare",
@@ -5420,7 +5420,7 @@
   {
     "id": "outils-professionnels-ingenieur",
     "label": "Outils professionnels (Ingénieur)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
     "availability": "Rare",
@@ -5443,7 +5443,7 @@
   {
     "id": "outils-professionnels-medecin",
     "label": "Outils professionnels (Médecin)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
     "availability": "Rare",
@@ -5466,7 +5466,7 @@
   {
     "id": "outils-professionnels-navigateur",
     "label": "Outils professionnels (Navigateur)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-professionnels-et-ateliers",
     "enc": 1,
     "availability": "Rare",
@@ -5489,7 +5489,7 @@
   {
     "id": "collier-et-laisse-chien",
     "label": "Collier et laisse (chien)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 0,
     "availability": "Commune",
@@ -5511,7 +5511,7 @@
   {
     "id": "poulet",
     "label": "Poulet",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 1,
     "availability": "Commune",
@@ -5533,7 +5533,7 @@
   {
     "id": "selle-et-harnais",
     "label": "Selle et Harnais",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 4,
     "availability": "Commune",
@@ -5555,7 +5555,7 @@
   {
     "id": "singe",
     "label": "Singe",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 2,
     "availability": "Rare",
@@ -5578,7 +5578,7 @@
     "id": "vers",
     "label": "Vers",
     "packSize": 6,
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "animaux-et-vehicules",
     "enc": 0,
     "availability": "Commune",
@@ -5600,7 +5600,7 @@
   {
     "id": "bave",
     "label": "Bave",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Rare",
@@ -5647,7 +5647,7 @@
   {
     "id": "bonnet-de-fou",
     "label": "Bonnet de fou",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Exotique",
@@ -5749,7 +5749,7 @@
   {
     "id": "brise-coeur",
     "label": "Brise-cœur",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Exotique",
@@ -5800,7 +5800,7 @@
   {
     "id": "delice-de-ranald",
     "label": "Délice de Ranald",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Limitée",
@@ -5889,7 +5889,7 @@
   {
     "id": "fleur-de-lune",
     "label": "Fleur de lune",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Limitée",
@@ -5990,7 +5990,7 @@
   {
     "id": "lotus-noir",
     "label": "Lotus noir",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Exotique",
@@ -6083,7 +6083,7 @@
   {
     "id": "malepierre-brute",
     "label": "Malepierre (brute)",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "availability": null,
     "reach": null,
@@ -6117,7 +6117,7 @@
   {
     "id": "malepierre-raffinee",
     "label": "Malepierre raffinée",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "availability": null,
     "reach": null,
@@ -6151,7 +6151,7 @@
   {
     "id": "mystracine",
     "label": "Mystracine",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Rare",
@@ -6220,7 +6220,7 @@
   {
     "id": "racine-de-mandragore",
     "label": "Racine de mandragore",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Rare",
@@ -6278,7 +6278,7 @@
   {
     "id": "belladone",
     "label": "Belladone",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -6337,7 +6337,7 @@
   {
     "id": "cataplasme-de-guerison",
     "label": "Cataplasme de guérison",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Commune",
@@ -6371,7 +6371,7 @@
   {
     "id": "faxtoryll",
     "label": "Faxtoryll",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Exotique",
@@ -6407,7 +6407,7 @@
   {
     "id": "potion-de-guerison",
     "label": "Potion de guérison",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Limitée",
@@ -6456,7 +6456,7 @@
   {
     "id": "potion-de-vitalite",
     "label": "Potion de vitalité",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Limitée",
@@ -6492,7 +6492,7 @@
   {
     "id": "racine-de-terre",
     "label": "Racine de terre",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Limitée",
@@ -6537,7 +6537,7 @@
   {
     "id": "soude-commune",
     "label": "Soude commune",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Commune",
@@ -6573,7 +6573,7 @@
   {
     "id": "tonique-digestif",
     "label": "Tonique digestif",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Commune",
@@ -6615,7 +6615,7 @@
   {
     "id": "gesundheit",
     "label": "Gesundheit",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Limitée",
@@ -6667,7 +6667,7 @@
   {
     "id": "racine-des-tombes",
     "label": "Racine des tombes",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -6776,7 +6776,7 @@
   {
     "id": "rouille-mouchetee",
     "label": "Rouille mouchetée",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -6825,7 +6825,7 @@
   {
     "id": "cache-oeil",
     "label": "Cache-œil",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "protheses",
     "enc": 0,
     "availability": "Commune",
@@ -6871,7 +6871,7 @@
         "label": "retirer la pénalité entière"
       }
     ],
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "protheses",
     "enc": 1,
     "availability": "Commune",
@@ -6906,7 +6906,7 @@
   {
     "id": "dents-en-bois",
     "label": "Dents en bois",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "protheses",
     "enc": 0,
     "availability": "Rare",
@@ -6941,7 +6941,7 @@
         "label": "réapprendre à utiliser Esquive"
       }
     ],
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "protheses",
     "enc": 2,
     "availability": "Limitée",
@@ -6964,7 +6964,7 @@
   {
     "id": "merveille-d-ingenierie",
     "label": "Merveille d'ingénierie",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "protheses",
     "enc": 1,
     "availability": "Exotique",
@@ -6987,7 +6987,7 @@
   {
     "id": "nez-dore",
     "label": "Nez doré",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "protheses",
     "enc": 0,
     "availability": "Limitée",
@@ -7010,7 +7010,7 @@
   {
     "id": "oeil-de-verre",
     "label": "Œil de verre",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "protheses",
     "enc": 0,
     "availability": "Rare",
@@ -7033,7 +7033,7 @@
   {
     "id": "affiche",
     "label": "Affiche",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 2,
     "availability": "Commune",
@@ -7055,7 +7055,7 @@
   {
     "id": "allumette",
     "label": "Allumette",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7077,7 +7077,7 @@
   {
     "id": "assiette",
     "label": "Assiette",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7099,7 +7099,7 @@
   {
     "id": "bache-de-toile",
     "label": "Bâche de toile",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Commune",
@@ -7121,7 +7121,7 @@
   {
     "id": "balle",
     "label": "Balle",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7143,7 +7143,7 @@
   {
     "id": "bandages",
     "label": "Bandages",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7182,7 +7182,7 @@
   {
     "id": "batonnet-de-fusain",
     "label": "Bâtonnet de fusain",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7204,7 +7204,7 @@
   {
     "id": "boite-a-amadou",
     "label": "Boîte à amadou",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7226,7 +7226,7 @@
   {
     "id": "bol",
     "label": "Bol",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7248,7 +7248,7 @@
   {
     "id": "bougie",
     "label": "Bougie",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7278,7 +7278,7 @@
   {
     "id": "casserole",
     "label": "Casserole",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Commune",
@@ -7300,7 +7300,7 @@
   {
     "id": "chiffons",
     "label": "Chiffons",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7322,7 +7322,7 @@
   {
     "id": "corde",
     "label": "Corde",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Commune",
@@ -7345,7 +7345,7 @@
   {
     "id": "couvert",
     "label": "Couvert",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7367,7 +7367,7 @@
   {
     "id": "couverture",
     "label": "Couverture",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7389,7 +7389,7 @@
   {
     "id": "craie",
     "label": "Craie",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7411,7 +7411,7 @@
   {
     "id": "des",
     "label": "Dés",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7433,7 +7433,7 @@
   {
     "id": "grappin",
     "label": "Grappin",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Limitée",
@@ -7456,7 +7456,7 @@
   {
     "id": "instrument",
     "label": "Instrument",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Rare",
@@ -7479,7 +7479,7 @@
   {
     "id": "lampe-davrich",
     "label": "Lampe Davrich",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Rare",
@@ -7502,7 +7502,7 @@
   {
     "id": "huile-de-lampe",
     "label": "Lampe à huile",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7532,7 +7532,7 @@
   {
     "id": "lampe-tempete",
     "label": "Lampe tempête",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Limitée",
@@ -7562,7 +7562,7 @@
   {
     "id": "lanterne",
     "label": "Lanterne",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Commune",
@@ -7592,7 +7592,7 @@
   {
     "id": "marmite",
     "label": "Marmite",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Commune",
@@ -7614,7 +7614,7 @@
   {
     "id": "matraque",
     "label": "Matraque",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7636,7 +7636,7 @@
   {
     "id": "paquet-de-cartes",
     "label": "Paquet de cartes",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7658,7 +7658,7 @@
   {
     "id": "pipe-et-tabac",
     "label": "Pipe et Tabac",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Limitée",
@@ -7680,7 +7680,7 @@
   {
     "id": "poupee",
     "label": "Poupée",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7702,7 +7702,7 @@
   {
     "id": "sac-de-couchage",
     "label": "Sac de couchage",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Commune",
@@ -7725,7 +7725,7 @@
   {
     "id": "tasse",
     "label": "Tasse",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": "Commune",
@@ -7750,7 +7750,7 @@
     "capabilities": {
       "isShelter": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 2,
     "availability": "Limitée",
@@ -7773,7 +7773,7 @@
   {
     "id": "pavois",
     "label": "Pavois",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 4,
     "availability": "Rare",
@@ -7809,7 +7809,7 @@
     "id": "filet-leste",
     "label": "Filet lesté",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "parade",
     "enc": 1,
     "availability": "Rare",
@@ -7860,7 +7860,7 @@
   {
     "id": "baliste",
     "label": "Baliste",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "baliste",
     "weaponGroup": "arbalete",
@@ -7903,7 +7903,7 @@
   {
     "id": "catapulte-petite",
     "label": "Catapulte (petite)",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "catapulte",
     "weaponGroup": "catapulte",
@@ -7948,7 +7948,7 @@
   {
     "id": "catapulte-moyenne",
     "label": "Catapulte (moyenne)",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "catapulte",
     "weaponGroup": "catapulte",
@@ -7993,7 +7993,7 @@
   {
     "id": "catapulte-grande",
     "label": "Catapulte (grande)",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "catapulte",
     "weaponGroup": "catapulte",
@@ -8038,7 +8038,7 @@
   {
     "id": "batterie-tonnerre-de-feu",
     "label": "Batterie tonnerre de feu",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "batterie-tonnerre-de-feu",
     "weaponGroup": "ingenierie",
@@ -8097,7 +8097,7 @@
   {
     "id": "canon-a-repetition",
     "label": "Canon à répétition",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "canon-a-repetition",
     "weaponGroup": "ingenierie",
@@ -8138,7 +8138,7 @@
   {
     "id": "canon-a-repetition-feu-d-enfer",
     "label": "Canon à répétition feu d'enfer",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "canon-a-repetition",
     "weaponGroup": "ingenierie",
@@ -8183,7 +8183,7 @@
   {
     "id": "canon-petit",
     "label": "Canon (petit)",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "canon-petit",
     "weaponGroup": "poudre-noire",
@@ -8228,7 +8228,7 @@
   {
     "id": "canon-moyen",
     "label": "Canon (moyen)",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "canon-lourd",
     "weaponGroup": "poudre-noire",
@@ -8273,7 +8273,7 @@
   {
     "id": "canon-grand",
     "label": "Canon (grand)",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "canon-lourd",
     "weaponGroup": "poudre-noire",
@@ -8318,7 +8318,7 @@
   {
     "id": "mortier",
     "label": "Mortier",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "mortier",
     "weaponGroup": "poudre-noire",
@@ -8358,7 +8358,7 @@
   {
     "id": "pierrier",
     "label": "Pierrier",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "pierrier",
     "weaponGroup": "poudre-noire",
@@ -8396,7 +8396,7 @@
   {
     "id": "demi-lance-de-cavalerie",
     "label": "Demi-lance de cavalerie",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "cavalerie",
     "enc": 2,
     "availability": "Limitée",
@@ -8430,7 +8430,7 @@
   {
     "id": "sabre",
     "label": "Sabre",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "cavalerie",
     "enc": 1,
     "availability": "Limitée",
@@ -8463,7 +8463,7 @@
   {
     "id": "epee-de-cour",
     "label": "Épée de cour",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "escrime",
     "enc": 1,
     "availability": "Limitée",
@@ -8495,7 +8495,7 @@
   {
     "id": "gaffe-2",
     "label": "Gaffe",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "bagarre",
     "enc": 0,
     "availability": "Commune",
@@ -8529,7 +8529,7 @@
   {
     "id": "gantelet-a-pointes",
     "label": "Gantelet à pointes",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "bagarre",
     "enc": 1,
     "availability": "Limitée",
@@ -8563,7 +8563,7 @@
   {
     "id": "griffe-de-tigre",
     "label": "Griffes de Tigre",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "bagarre",
     "enc": 0,
     "availability": "Commune",
@@ -8591,7 +8591,7 @@
   {
     "id": "gantelet-verrouille",
     "label": "Gantelet verrouillé",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "bagarre",
     "enc": 1,
     "availability": "Limitée",
@@ -8626,7 +8626,7 @@
     "id": "lacet-etrangleur",
     "label": "Lacet étrangleur",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "bagarre",
     "enc": 0,
     "availability": "Rare",
@@ -8666,7 +8666,7 @@
   {
     "id": "cape-2",
     "label": "Cape",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "parade",
     "enc": 1,
     "availability": "Commune",
@@ -8708,7 +8708,7 @@
     "id": "ahlspiess",
     "label": "Ahlspiess",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-d-hast",
     "enc": 2,
     "availability": "Limitée",
@@ -8743,7 +8743,7 @@
     "id": "attrape-coquin",
     "label": "Attrape-coquin",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-d-hast",
     "enc": 3,
     "availability": "Rare",
@@ -8778,7 +8778,7 @@
     "id": "hache-d-armes",
     "label": "Hache d'armes",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-d-hast",
     "enc": 3,
     "availability": "Limitée",
@@ -8827,7 +8827,7 @@
     "id": "pertuisane-fauchard",
     "label": "Pertuisane/Fauchard",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-d-hast",
     "enc": 3,
     "availability": "Limitée",
@@ -8874,7 +8874,7 @@
     "id": "serpe-de-guerre",
     "label": "Serpe de guerre",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-d-hast",
     "enc": 3,
     "availability": "Limitée",
@@ -8920,7 +8920,7 @@
     "id": "zweihander-flamberge",
     "label": "Zweihänder flamberge",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "deux-mains",
     "enc": 3,
     "availability": "Exotique",
@@ -8959,7 +8959,7 @@
   {
     "id": "baton-pointu",
     "label": "Bâton pointu",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Commune",
@@ -8999,7 +8999,7 @@
   {
     "id": "fleche-barbelee",
     "label": "Flèche barbelée",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Limitée",
@@ -9031,7 +9031,7 @@
   {
     "id": "fleche-bodkin",
     "label": "Flèche bodkin",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Limitée",
@@ -9062,7 +9062,7 @@
   {
     "id": "bille-de-plomb",
     "label": "Bille de plomb",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Commune",
@@ -9095,7 +9095,7 @@
   {
     "id": "caillou",
     "label": "Caillou",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Commune",
@@ -9132,7 +9132,7 @@
     "id": "arquebuse-a-double-canon",
     "label": "Arquebuse à double canon",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 3,
     "availability": "Exotique",
@@ -9173,7 +9173,7 @@
     "id": "arquebuse-a-meche",
     "label": "Arquebuse à mèche",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 2,
     "availability": "Rare",
@@ -9210,7 +9210,7 @@
     "id": "hache-arquebuse",
     "label": "Hache-arquebuse",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Exotique",
@@ -9250,7 +9250,7 @@
     "id": "hallebarde-arquebuse",
     "label": "Hallebarde-arquebuse",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 3,
     "availability": "Exotique",
@@ -9290,7 +9290,7 @@
     "id": "haquebute",
     "label": "Haquebute",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 3,
     "availability": "Exotique",
@@ -9329,7 +9329,7 @@
   {
     "id": "pistolet-patte-de-griffon",
     "label": "Pistolet patte de griffon",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Exotique",
@@ -9370,7 +9370,7 @@
     "id": "tromblon-a-meche",
     "label": "Tromblon à mèche",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Rare",
@@ -9410,7 +9410,7 @@
   {
     "id": "canne-pistolet",
     "label": "Canne-pistolet",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Exotique",
@@ -9450,7 +9450,7 @@
     "id": "mortier-a-main",
     "label": "Mortier à main",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 3,
     "availability": "Exotique",
@@ -9489,7 +9489,7 @@
   {
     "id": "poivriere",
     "label": "Poivrière",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 1,
     "availability": "Rare",
@@ -9532,7 +9532,7 @@
   {
     "id": "balle-de-gros-calibre-et-poudre",
     "label": "Balle de gros calibre et poudre",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Limitée",
@@ -9568,7 +9568,7 @@
   {
     "id": "bombe-explosive",
     "label": "Bombe explosive",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Limitée",
@@ -9605,7 +9605,7 @@
   {
     "id": "cartouche-en-papier",
     "label": "Cartouche en papier",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Limitée",
@@ -9638,7 +9638,7 @@
   {
     "id": "cartouche-et-poudre-de-precision",
     "label": "Cartouche et poudre de précision",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Commune",
@@ -9674,7 +9674,7 @@
   {
     "id": "ferraille-et-poudre",
     "label": "Ferraille et poudre",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Commune",
@@ -9710,7 +9710,7 @@
   {
     "id": "grappin-munition",
     "label": "Grappin (munition)",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 1,
     "availability": "Limitée",
@@ -9746,7 +9746,7 @@
   {
     "id": "poudre-impregnee-d-aqshy",
     "label": "Poudre imprégnée d'Aqshy",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "munitions",
     "enc": 0,
     "availability": "Exotique",
@@ -9785,7 +9785,7 @@
   {
     "id": "jezail-a-malepierre",
     "label": "Jezaïl à malepierre",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "availability": "Exotique",
     "price": {
@@ -9827,7 +9827,7 @@
     "id": "canon-ratling",
     "label": "Canon ratling",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "ingenierie",
     "availability": "Exotique",
     "price": {
@@ -9875,7 +9875,7 @@
   {
     "id": "pistolet-a-malepierre",
     "label": "Pistolet à malepierre",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "availability": "Exotique",
     "price": {
@@ -9926,7 +9926,7 @@
   {
     "id": "baiser-de-la-vouivre",
     "label": "Baiser de la Vouivre",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Exotique",
@@ -9945,7 +9945,7 @@
   {
     "id": "boursoufleur",
     "label": "Boursoufleur",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Rare",
@@ -9964,7 +9964,7 @@
   {
     "id": "long-sommeil",
     "label": "Long Sommeil",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Rare",
@@ -9983,7 +9983,7 @@
   {
     "id": "sibilance",
     "label": "Sibilance",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "drogues-et-poisons",
     "enc": 0,
     "availability": "Rare",
@@ -10002,7 +10002,7 @@
   {
     "id": "potion-a-deux-tetes",
     "label": "Potion à deux têtes",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Exotique",
@@ -10021,7 +10021,7 @@
   {
     "id": "remede-de-lurek",
     "label": "Remède de Lurek",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Limitée",
@@ -10040,7 +10040,7 @@
   {
     "id": "solvant-a-bezoard",
     "label": "Solvant à bézoard",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Limitée",
@@ -10059,7 +10059,7 @@
   {
     "id": "acide-de-troll",
     "label": "Acide de troll",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10078,7 +10078,7 @@
   {
     "id": "bouclier-de-la-forge",
     "label": "Bouclier de la forge",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10097,7 +10097,7 @@
   {
     "id": "camouflarbre",
     "label": "Camouflarbre",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10116,7 +10116,7 @@
   {
     "id": "dernier-souffle",
     "label": "Dernier souffle",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Exotique",
@@ -10135,7 +10135,7 @@
   {
     "id": "esprit-clair",
     "label": "Esprit clair",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10154,7 +10154,7 @@
   {
     "id": "feu-de-carroburg",
     "label": "Feu de Carroburg",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10173,7 +10173,7 @@
   {
     "id": "feu-liquide",
     "label": "Feu liquide",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10192,7 +10192,7 @@
   {
     "id": "fleau-de-la-sorciere",
     "label": "Fléau de la sorcière",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10211,7 +10211,7 @@
   {
     "id": "furie-du-preyton",
     "label": "Furie du preyton",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10230,7 +10230,7 @@
   {
     "id": "liqueur-de-serpent-du-prophete",
     "label": "Liqueur de serpent du prophète",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10249,7 +10249,7 @@
   {
     "id": "malveillance",
     "label": "Malveillance",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10268,7 +10268,7 @@
   {
     "id": "poudre-de-veine",
     "label": "Poudre de veine",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10287,7 +10287,7 @@
   {
     "id": "protection-du-cerf",
     "label": "Protection du cerf",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10306,7 +10306,7 @@
   {
     "id": "razorflamme",
     "label": "Razorflamme",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10325,7 +10325,7 @@
   {
     "id": "sang-douleur",
     "label": "Sang-douleur",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10344,7 +10344,7 @@
   {
     "id": "sang-de-la-mer",
     "label": "Sang de la mer",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": "Rare",
@@ -10363,7 +10363,7 @@
   {
     "id": "dague-funeste",
     "label": "Dague Funeste",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "availability": "Exotique",
     "price": {
@@ -10391,7 +10391,7 @@
   {
     "id": "armure-de-plates-du-leviathan",
     "label": "Armure de Plates du Léviathan",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "plate",
     "availability": "Rare",
     "price": {
@@ -10425,7 +10425,7 @@
   {
     "id": "lame-a-poignee-en-bois-de-cerf",
     "label": "Lame à poignée en bois de cerf",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "availability": "Rare",
     "price": {
@@ -10453,7 +10453,7 @@
   {
     "id": "trempe-au-sang-de-dragon",
     "label": "Trempe au Sang de Dragon",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "availability": "Exotique",
     "price": {
@@ -10471,7 +10471,7 @@
   {
     "id": "surin-de-l-aigle",
     "label": "Surin de l'aigle",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "availability": "Rare",
     "price": {
@@ -10500,7 +10500,7 @@
     "id": "seve-de-tregara",
     "label": "Sève de trégara",
     "packSize": 6,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "arbalete",
     "availability": "Rare",
     "price": {
@@ -10531,7 +10531,7 @@
     "id": "empennage-de-griffon",
     "label": "Empennage de griffon",
     "packSize": 12,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "arc",
     "availability": "Rare",
     "price": {
@@ -10571,7 +10571,7 @@
     "id": "pointes-barbelees",
     "label": "Pointes barbelées",
     "packSize": 12,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "arc",
     "availability": "Rare",
     "price": {
@@ -10599,7 +10599,7 @@
     "id": "broyeur-d-os",
     "label": "Broyeur d'os",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "deux-mains",
     "availability": "Exotique",
     "price": {
@@ -10636,7 +10636,7 @@
   {
     "id": "silence",
     "label": "Silence",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "availability": "Exotique",
     "price": {
@@ -10668,7 +10668,7 @@
   {
     "id": "vision-de-vie",
     "label": "Vision de Vie",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "availability": "Exotique",
     "price": {
@@ -10706,7 +10706,7 @@
   {
     "id": "cape-du-loup",
     "label": "Cape du Loup",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "availability": "Exotique",
     "price": {
@@ -10724,7 +10724,7 @@
   {
     "id": "gants-de-l-etrangleur",
     "label": "Gants de l'étrangleur",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "availability": "Exotique",
     "price": {
@@ -10742,7 +10742,7 @@
   {
     "id": "derniere-gorgee",
     "label": "Dernière Gorgée",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "availability": "Exotique",
     "price": {
@@ -10760,7 +10760,7 @@
   {
     "id": "pierre-assoiffee",
     "label": "Pierre Assoiffée",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "availability": "Exotique",
     "price": {
@@ -10778,7 +10778,7 @@
   {
     "id": "carreau-de-baliste",
     "label": "Carreau",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Limitée",
@@ -10807,7 +10807,7 @@
   {
     "id": "carreau-nain-norse",
     "label": "Carreau nain norse",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Limitée",
@@ -10839,7 +10839,7 @@
   {
     "id": "boulet-et-poudre",
     "label": "Boulet et poudre",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "munition-de-siege",
     "enc": 1,
     "availability": "Limitée",
@@ -10869,7 +10869,7 @@
   {
     "id": "mitraille-et-poudre",
     "label": "Mitraille et poudre",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Exotique",
@@ -10902,7 +10902,7 @@
   {
     "id": "bombe-de-mortier",
     "label": "Bombe",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Rare",
@@ -10938,7 +10938,7 @@
   {
     "id": "bombe-incendiaire-mortier",
     "label": "Bombe incendiaire",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Limitée",
@@ -10972,7 +10972,7 @@
   {
     "id": "balles-et-poudre-pierrier",
     "label": "Balles et poudre pour 1 tir",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Commune",
@@ -11008,7 +11008,7 @@
   {
     "id": "petites-munitions-et-poudre-pierrier",
     "label": "Petites munitions et poudre pour 1 tir",
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "munition-de-siege",
     "enc": 0,
     "availability": "Commune",
@@ -11035,7 +11035,7 @@
   {
     "id": "massue-ogre",
     "label": "Massue ogre",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "sizeFor": "grande",
     "enc": 2,
@@ -11063,7 +11063,7 @@
   {
     "id": "poing-de-fer",
     "label": "Poing de fer",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "sizeFor": "grande",
     "enc": 2,
@@ -11103,7 +11103,7 @@
     "id": "grande-massue-ogre",
     "label": "Grande massue ogre",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "deux-mains",
     "sizeFor": "grande",
     "enc": 6,
@@ -11136,7 +11136,7 @@
     "id": "lance-harpon",
     "label": "Lance-harpon",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "entraves",
     "sizeFor": "grande",
     "enc": 5,
@@ -11177,7 +11177,7 @@
   {
     "id": "piege-a-chaines",
     "label": "Piège à chaînes",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "entraves",
     "sizeFor": "grande",
     "enc": 2,
@@ -11212,7 +11212,7 @@
   {
     "id": "grande-lance",
     "label": "Grande lance",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "lancer",
     "sizeFor": "grande",
     "enc": 2,
@@ -11249,7 +11249,7 @@
     "id": "canon-crache-plomb",
     "label": "Canon crache-plomb",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "sizeFor": "grande",
     "enc": 8,
@@ -11286,7 +11286,7 @@
   {
     "id": "pistolet-ogre",
     "label": "Pistolet ogre",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "sizeFor": "grande",
     "enc": 3,
@@ -11324,7 +11324,7 @@
     "id": "harpon",
     "label": "Harpon",
     "packSize": 6,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "entraves",
     "enc": 0,
     "availability": "Exotique",
@@ -11351,7 +11351,7 @@
     "id": "balle-crache-plomb",
     "label": "Balle crache-plomb",
     "packSize": 12,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "poudre-noire",
     "enc": 0,
     "availability": "Limitée",
@@ -11382,7 +11382,7 @@
     "id": "boulet-crache-plomb",
     "label": "Boulet crache-plomb",
     "packSize": 1,
-    "type": "ammunition",
+    "categorie": "ammunition",
     "subType": "poudre-noire",
     "enc": 0,
     "availability": "Limitée",
@@ -11418,7 +11418,7 @@
   {
     "id": "pansiere-ogre",
     "label": "Pansière ogre",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "plate",
     "sizeFor": "grande",
     "enc": 4,
@@ -11446,7 +11446,7 @@
   {
     "id": "sel-sacre",
     "label": "Sel sacré",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": null,
     "availability": null,
@@ -11477,7 +11477,7 @@
   {
     "id": "tonneau-d-eau-douce",
     "label": "Tonneau d'eau douce",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 9,
     "availability": "Commune",
@@ -11500,7 +11500,7 @@
   {
     "id": "tonneau-de-petite-biere",
     "label": "Tonneau de petite bière",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 9,
     "availability": "Commune",
@@ -11523,7 +11523,7 @@
   {
     "id": "ration-biscuits-de-mer",
     "label": "Ration de biscuits de mer pour un jour",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
     "availability": "Commune",
@@ -11549,7 +11549,7 @@
   {
     "id": "ration-nourriture-preservee",
     "label": "Ration de nourriture préservée pour un jour",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
     "availability": "Commune",
@@ -11575,7 +11575,7 @@
   {
     "id": "ration-soupe-chou-fermente",
     "label": "Ration de soupe de chou fermenté pour un jour",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "nourriture-boisson-et-hebergement",
     "enc": 0,
     "availability": "Limitée",
@@ -11602,7 +11602,7 @@
   {
     "id": "boussole",
     "label": "Boussole",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "outils-et-necessaires",
     "enc": 0,
     "availability": "Limitée",
@@ -11632,7 +11632,7 @@
   {
     "id": "carte-marine",
     "label": "Carte marine",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": null,
     "availability": null,
@@ -11658,7 +11658,7 @@
   {
     "id": "peau-de-phoque",
     "label": "Peau de phoque",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Limitée",
@@ -11684,7 +11684,7 @@
   {
     "id": "pieces-detachees-de-navire",
     "label": "Pièces détachées de navire",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 1,
     "availability": "Commune",
@@ -11710,7 +11710,7 @@
   {
     "id": "baliste-ade2",
     "label": "Baliste",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "baliste",
     "weaponGroup": "machine-de-guerre",
@@ -11761,7 +11761,7 @@
   {
     "id": "belier-ade2",
     "label": "Bélier",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-de-siege",
     "siegeRig": "belier",
     "siegeFootprint": 2,
@@ -11807,7 +11807,7 @@
   {
     "id": "batterie-tonnerre-de-feu-ade2",
     "label": "Batterie tonnerre de feu",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "batterie-tonnerre-de-feu",
     "weaponGroup": "machine-de-guerre",
@@ -11861,7 +11861,7 @@
   {
     "id": "canon-a-repetition-feu-d-enfer-ade2",
     "label": "Canon à répétition feu d'enfer",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "canon-a-repetition",
     "weaponGroup": "machine-de-guerre",
@@ -11919,7 +11919,7 @@
   {
     "id": "canon-ade2",
     "label": "Canon",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "canon-lourd",
     "weaponGroup": "machine-de-guerre",
@@ -11977,7 +11977,7 @@
   {
     "id": "canon-a-flammes-nain-ade2",
     "label": "Canon à flammes nain",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "canon-a-flammes",
     "weaponGroup": "machine-de-guerre",
@@ -12054,7 +12054,7 @@
   {
     "id": "mangonneau-ade2",
     "label": "Mangonneau",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "mangonneau",
     "weaponGroup": "machine-de-guerre",
@@ -12106,7 +12106,7 @@
   {
     "id": "onagre-ade2",
     "label": "Onagre",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "onagre",
     "weaponGroup": "machine-de-guerre",
@@ -12158,7 +12158,7 @@
   {
     "id": "trebuchet-ade2",
     "label": "Trébuchet",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "trebuchet",
     "weaponGroup": "machine-de-guerre",
@@ -12210,7 +12210,7 @@
   {
     "id": "mortier-ade2",
     "label": "Mortier",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "armes-de-siege",
     "siegeRig": "mortier",
     "weaponGroup": "machine-de-guerre",
@@ -12272,7 +12272,7 @@
   {
     "id": "robe-de-sorcier-fonctionnelle",
     "label": "Robe fonctionnelle",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": "Rare",
@@ -12298,7 +12298,7 @@
   {
     "id": "robe-de-sorcier-ordinaire",
     "label": "Robe ordinaire",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 2,
     "availability": "Exotique",
@@ -12324,7 +12324,7 @@
   {
     "id": "robe-de-sorcier-elaboree",
     "label": "Robe élaborée",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 4,
     "availability": "Exotique",
@@ -12351,7 +12351,7 @@
     "id": "baton-enchante",
     "label": "Bâton enchanté",
     "hands": 2,
-    "type": "melee",
+    "categorie": "melee",
     "subType": "armes-d-hast",
     "enc": 2,
     "availability": null,
@@ -12385,7 +12385,7 @@
   {
     "id": "parchemin-de-sort",
     "label": "Parchemin de sort",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 0,
     "availability": null,
@@ -12400,7 +12400,7 @@
   {
     "id": "l-ami-debauche",
     "label": "L'Ami débauché",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12435,7 +12435,7 @@
   {
     "id": "concentre-de-pouvoir",
     "label": "Concentré de pouvoir",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12462,7 +12462,7 @@
   {
     "id": "lotion-capillaire",
     "label": "Lotion capillaire",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12490,7 +12490,7 @@
   {
     "id": "musc-de-sanglier",
     "label": "Musc de sanglier",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12535,7 +12535,7 @@
   {
     "id": "nectar-de-beaute",
     "label": "Nectar de beauté",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12571,7 +12571,7 @@
   {
     "id": "nectar-de-veracite",
     "label": "Nectar de véracité",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12606,7 +12606,7 @@
   {
     "id": "nectar-de-vitalite",
     "label": "Nectar de vitalité",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12641,7 +12641,7 @@
   {
     "id": "panacea-universalis",
     "label": "Panacea Universalis",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12718,7 +12718,7 @@
   {
     "id": "potion-d-invisibilite",
     "label": "Potion d'invisibilité",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12753,7 +12753,7 @@
   {
     "id": "potion-de-divination",
     "label": "Potion de divination",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12780,7 +12780,7 @@
   {
     "id": "potion-de-focalisation",
     "label": "Potion de focalisation",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12816,7 +12816,7 @@
   {
     "id": "potion-de-puissance",
     "label": "Potion de puissance",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12861,7 +12861,7 @@
   {
     "id": "potion-de-vol",
     "label": "Potion de vol",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12897,7 +12897,7 @@
   {
     "id": "tonifiant-de-lucidite",
     "label": "Tonifiant de lucidité",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "herbes-et-potions",
     "enc": 0,
     "availability": null,
@@ -12956,7 +12956,7 @@
     "capabilities": {
       "isGrimoire": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": null,
@@ -12974,7 +12974,7 @@
     "capabilities": {
       "isGrimoire": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": null,
@@ -12992,7 +12992,7 @@
     "capabilities": {
       "isGrimoire": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": null,
@@ -13010,7 +13010,7 @@
     "capabilities": {
       "isGrimoire": true
     },
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "livres-et-documents",
     "enc": 1,
     "availability": null,
@@ -13025,7 +13025,7 @@
   {
     "id": "saphir-veritable",
     "label": "Saphir véritable",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": null,
@@ -13044,7 +13044,7 @@
   {
     "id": "mortegemme",
     "label": "Mortegemme",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": null,
@@ -13063,7 +13063,7 @@
   {
     "id": "ambrespectre",
     "label": "Ambrespectre",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": null,
@@ -13082,7 +13082,7 @@
   {
     "id": "luminante",
     "label": "Luminante",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": null,
@@ -13101,7 +13101,7 @@
   {
     "id": "rubis-igne",
     "label": "Rubis igné",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": null,
@@ -13120,7 +13120,7 @@
   {
     "id": "pierre-d-or",
     "label": "Pierre d'or",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": null,
@@ -13139,7 +13139,7 @@
   {
     "id": "cristal-de-brume",
     "label": "Cristal de brume",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": null,
@@ -13158,7 +13158,7 @@
   {
     "id": "vitaellum",
     "label": "Vitaellum",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "possessions-diverses",
     "enc": 0,
     "availability": null,
@@ -13178,7 +13178,7 @@
     "id": "arc-d-empathie-sanglante",
     "label": "Arc d'empathie sanglante",
     "hands": 2,
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "arc",
     "enc": 2,
     "availability": null,
@@ -13241,7 +13241,7 @@
   {
     "id": "bottes-du-remords-soudain",
     "label": "Bottes du remords soudain",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 1,
     "availability": null,
@@ -13267,7 +13267,7 @@
   {
     "id": "cotte-de-mailles-de-bravoure-usurpee",
     "label": "Cotte de mailles de bravoure usurpée",
-    "type": "armor",
+    "categorie": "armor",
     "subType": "mailles",
     "enc": 3,
     "availability": null,
@@ -13290,7 +13290,7 @@
   {
     "id": "dague-voleuse-de-chance",
     "label": "Dague voleuse de chance",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 0,
     "availability": null,
@@ -13352,7 +13352,7 @@
   {
     "id": "dechireur-de-sociabilite",
     "label": "Déchireur de sociabilité",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 1,
     "availability": null,
@@ -13520,7 +13520,7 @@
   {
     "id": "epee-de-retenue",
     "label": "Épée de retenue",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 1,
     "availability": null,
@@ -13548,7 +13548,7 @@
   {
     "id": "fibule-d-attraction-non-souhaitee",
     "label": "Fibule d'attraction non souhaitée",
-    "type": "trapping",
+    "categorie": "trapping",
     "subType": "vetements-et-accessoires",
     "enc": 0,
     "availability": null,
@@ -13567,7 +13567,7 @@
   {
     "id": "fleau-d-attention-non-sollicitee",
     "label": "Fléau d'attention non sollicitée",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "fleau",
     "enc": 1,
     "availability": null,
@@ -13594,7 +13594,7 @@
   {
     "id": "hache-de-fureur-incessante",
     "label": "Hache de fureur incessante",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "base",
     "enc": 1,
     "availability": null,
@@ -13622,7 +13622,7 @@
   {
     "id": "pistolet-de-solitude-involontaire",
     "label": "Pistolet de solitude involontaire",
-    "type": "ranged",
+    "categorie": "ranged",
     "subType": "poudre-noire",
     "enc": 0,
     "availability": null,
@@ -13698,7 +13698,7 @@
   {
     "id": "poings-d-ignominie",
     "label": "Poings d'ignominie",
-    "type": "melee",
+    "categorie": "melee",
     "subType": "bagarre",
     "enc": 0,
     "availability": null,

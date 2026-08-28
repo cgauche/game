@@ -20,11 +20,12 @@
  * ENTRÉES : `scripts/migrations/*.mjs` (les migrations elles-mêmes) — le rejeu ne lit aucune donnée
  * de son propre chef, il délègue aux scripts.
  *
- * NOMMAGE À VENIR (lot #1467 L1b, aucune de ces migrations n'existe encore ici) : elles porteront le
- * préfixe `2026-08-27-l1b-<n><lettre>-<concept>.mjs`, l'ordre lexical valant ordre des vagues — la
- * porte ci-dessus rejoue dans cet ordre. Elles seront NO-OP TOLÉRANTES À LA FORME : rejouées sur
- * l'état final, elles reconnaîtront « déjà migré » et sortiront 0 — une migration absente d'
- * `ATTENDU_ROUGE` qui fail-fast sur « forme inattendue » sort ROUGE du rejeu (`replay.mjs:110`).
+ * NOMMAGE DU LOT #1467 L1b : préfixe `<AAAA-MM-JJ>-l1b-<n><lettre>-<concept>.mjs`, la date étant
+ * celle d'ÉCRITURE de la vague (2026-08-27 pour les vagues 1 à 5, 2026-08-28 pour la vague 6 —
+ * l'ordre lexical reste l'ordre des vagues, les deux clés croissant ensemble). La porte ci-dessus
+ * rejoue dans cet ordre. Elles sont NO-OP TOLÉRANTES À LA FORME : rejouées sur l'état final, elles
+ * reconnaissent « déjà migré » et sortent 0 — une migration absente d'`ATTENDU_ROUGE` qui fail-fast
+ * sur « forme inattendue » sort ROUGE du rejeu (`replay.mjs:110`).
  */
 import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';

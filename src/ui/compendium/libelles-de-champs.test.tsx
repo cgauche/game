@@ -71,11 +71,14 @@ describe('cascade du libellé', () => {
 describe('cascade sur DONNÉE RÉELLE (`trappings`, def sans handle)', () => {
   const champs = () => inferFields(editableEntries('trappings') as Record<string, unknown>[], { meta: metaPourFichier('trappings.json') });
 
-  it('`type` de `trappings.json` est un discriminant de charge utile → sa clé, jamais « Type de document »', () => {
+  /** Le discriminant de catalogue s'appelle `categorie` depuis #1467 L1b V-P5 (l'homonyme `type` a
+   *  quitté les deux racines de documents) ; le CONTRAT mesuré est le même : un champ de CHARGE UTILE
+   *  d'un def sans handle reste sa clé, il n'emprunte jamais un libellé d'enveloppe. */
+  it('`categorie` de `trappings.json` est un discriminant de charge utile → sa clé, jamais un libellé d’enveloppe', () => {
     const entrees = editableEntries('trappings') as Record<string, unknown>[];
-    expect(entrees.some((e) => typeof e.type === 'string'), 'la population `type` a disparu de trappings.json').toBe(true);
-    expect(libelleDuChamp('type', { meta: metaPourFichier('trappings.json') })).toBe('type');
-    expect(champs().find((f) => f.key === 'type')!.label).toBe('type');
+    expect(entrees.some((e) => typeof e.categorie === 'string'), 'la population `categorie` a disparu de trappings.json').toBe(true);
+    expect(libelleDuChamp('categorie', { meta: metaPourFichier('trappings.json') })).toBe('categorie');
+    expect(champs().find((f) => f.key === 'categorie')!.label).toBe('categorie');
   });
 
   it('un champ d’enveloppe réel (`desc`) porte son libellé FR', () => {

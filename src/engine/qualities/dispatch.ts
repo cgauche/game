@@ -63,13 +63,13 @@ export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality
     out.push({ def: { key: data?.label ?? q.id }, id: q.id, data, caps: data?.capabilities, indice: q.value });
   }
   const beaten = new Set(out.flatMap((r) => r.caps?.beats ?? []));
-  // Neutralisations d'une ALTÉRATION (op `augmentWeapon`) : par id, et par TYPE lu dans le REGISTRE
-  // (`QualityData.type`) — jamais une liste d'ids en dur. Appliquées APRÈS la fusion de famille : le RAW
+  // Neutralisations d'une ALTÉRATION (op `augmentWeapon`) : par id, et par POLARITÉ lue dans le REGISTRE
+  // (`QualityData.polarite`) — jamais une liste d'ids en dur. Appliquées APRÈS la fusion de famille : le RAW
   // (« Tous les Atouts de l'arme disparaissent », VDM 05) ne distingue pas propre et famille.
   const removedIds = w.removedQualities?.length ? new Set(w.removedQualities) : null;
   const removedTypes = w.removedTypes?.length ? new Set<string>(w.removedTypes) : null;
   if (!beaten.size && !removedIds && !removedTypes) return out;
-  return out.filter((r) => !beaten.has(r.id) && !removedIds?.has(r.id) && !(r.data?.type != null && removedTypes?.has(r.data.type)));
+  return out.filter((r) => !beaten.has(r.id) && !removedIds?.has(r.id) && !(r.data?.polarite != null && removedTypes?.has(r.data.polarite)));
 }
 
 /** L'objet possède-t-il la qualité d'`id` STABLE (`QualityId`) ? Compare par id (≠ littéral FR). */
@@ -77,10 +77,10 @@ export function hasQuality(w: QualityCarrier | undefined, id: QualityId): boolea
   return resolveQualities(w).some((r) => r.id === id);
 }
 
-/** La qualité d'`id` est-elle un Atout (≠ Défaut) ? Lu dans la DONNÉE (`qualities.json` champ `type`). Sert au
+/** La qualité d'`id` est-elle un Atout (≠ Défaut) ? Lu dans la DONNÉE (`qualities.json` champ `polarite`). Sert au
  *  « perd tous ses Atouts » d'une baliste tirée en solo (AA 10 p.122 l.3818). Qualité inconnue → false (pas un Atout). */
 export function isAtoutQuality(id: string): boolean {
-  return qualityById.get(id)?.type === 'atout';
+  return qualityById.get(id)?.polarite === 'atout';
 }
 
 /** Indice de la qualité d'`id` sur l'objet (ex. Solide/Recharge → N), ou undefined si absente/sans Indice. */

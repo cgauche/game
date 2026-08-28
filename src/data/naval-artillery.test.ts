@@ -41,7 +41,7 @@ describe('Artillerie navale — munitions MDG 12 (verbatim) + qualité Brise-coq
   it('qualité Brise-coque : desc verbatim (MDG) + atout sur arme', () => {
     const bc = (qualities as any[]).find((q) => q.id === 'brise-coque');
     expect(bc).toBeTruthy();
-    expect(bc.type).toBe('atout');
+    expect(bc.polarite).toBe('atout');
     expect(bc.source.book).toBe('mer-des-griffes');
     expect(bc.desc).toContain('structures en bois');
     expect(bc.desc).toContain("gagne l'atout Dévastatrice");

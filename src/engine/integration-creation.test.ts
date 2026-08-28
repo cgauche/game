@@ -31,7 +31,7 @@ describe('création ↔ Magie (grimoire, LDB 10/41/46)', () => {
     expect(casterTalents(h).some((t) => t.kind === 'mineure')).toBe(true);
     const learnable = learnableSpells(h);
     expect(learnable.length).toBeGreaterThan(0);
-    const minor = learnable.filter((x) => x.spell.type === 'Magie mineure');
+    const minor = learnable.filter((x) => x.spell.ecole === 'Magie mineure');
     expect(minor.length).toBeGreaterThan(0);
     expect(minor[0].cost).toBe(0); // BFM sorts INCLUS au Talent (LDB 10 l.714), payants ensuite
   });

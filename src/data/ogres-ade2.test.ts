@@ -71,7 +71,7 @@ describe('#61 — munitions & armure des ogres (ADE II p.29)', () => {
   it('Harpon (6) : Empaleuse, portée comme l\'arme (pas d\'ammoRangeMod)', () => {
     const e = q('harpon');
     expect(e.packSize).toBe(6);
-    expect(e.type).toBe('ammunition');
+    expect(e.categorie).toBe('ammunition');
     expect(qualIds('harpon')).toEqual(['empaleuse']);
     expect(e.ammoRangeMod).toBeUndefined();
   });

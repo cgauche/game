@@ -13,7 +13,8 @@ export const schema = z.array(
     id: z.string(),
     label: z.string(),
     match: z.strictObject({
-      trappingType: z.string().optional(),
+      /** CATÉGORIE de catalogue classée par cette famille (`TrappingData.categorie`). */
+      categorie: z.string().optional(),
       shield: z.boolean().optional(),
       unit: z.boolean().optional(),
     }),

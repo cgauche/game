@@ -56,15 +56,15 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
   it('Magie des Arcanes : bandes de BInt ×100 PX ; Domaine exigé pour les sorts de Domaine', () => {
     const c = hero({ talents: [{ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 }] });
     expect(spellCost(c, sp('Arme aethyrique'))).toBe(100); // Arcane commun : OK
-    const feu = spells.find((s) => s.type === 'Magie des Arcanes' && s.subType === 'Feu')!;
+    const feu = spells.find((s) => s.ecole === 'Magie des Arcanes' && s.subType === 'Feu')!;
     expect(spellCost(c, feu)).toBe(100);
-    const ombres = spells.find((s) => s.type === 'Magie des Arcanes' && s.subType === 'Ombres')!;
+    const ombres = spells.find((s) => s.ecole === 'Magie des Arcanes' && s.subType === 'Ombres')!;
     expect(spellCost(c, ombres)).toBeNull(); // pas le Domaine
   });
 
   it('Arcanes — bande INCLUSIVE : à exactement BInt connus, le suivant reste à 100 PX', () => {
     const c = hero({ talents: [{ talentId: 'magie-des-arcanes', spec: 'feu', times: 1 }] }); // Int 42 → BInt 4
-    const arcanes = spells.filter((s) => s.type === 'Magie des Arcanes' && (s.subType === 'Feu' || s.subType == null));
+    const arcanes = spells.filter((s) => s.ecole === 'Magie des Arcanes' && (s.subType === 'Feu' || s.subType == null));
     c.spells = arcanes.slice(0, 4).map((s) => s.id); // « Jusqu'à BInt ×1 » plein
     expect(spellCost(c, arcanes[4])).toBe(100);
     c.spells = arcanes.slice(0, 5).map((s) => s.id); // 5 connus → « Jusqu'à BInt ×2 » = 200
@@ -73,13 +73,13 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
 
   it('Invocation : 1er Miracle inclus (0 PX), puis 100 × connus ; culte exigé', () => {
     const c = hero({ talents: [{ talentId: 'invocation', spec: 'sigmar', times: 1 }] });
-    const sigmar = spells.filter((s) => s.type === 'Invocation' && s.subType === 'Sigmar'); // subType = libellé d'affichage
+    const sigmar = spells.filter((s) => s.ecole === 'Invocation' && s.subType === 'Sigmar'); // subType = libellé d'affichage
     expect(spellCost(c, sigmar[0])).toBe(0);
     c.spells = [sigmar[0].id];
     expect(spellCost(c, sigmar[1])).toBe(100);
     c.spells = [sigmar[0].id, sigmar[1].id, sigmar[2].id];
     expect(spellCost(c, sigmar[3])).toBe(300); // « 3 Miracles connus → 300 PX »
-    const ulric = spells.find((s) => s.type === 'Invocation' && s.subType === 'Ulric')!;
+    const ulric = spells.find((s) => s.ecole === 'Invocation' && s.subType === 'Ulric')!;
     expect(spellCost(c, ulric)).toBeNull(); // autre culte
   });
 
@@ -100,7 +100,7 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
     expect(spellCost(c, sp('Bénédiction de Guérison'))).toBe(0);
     expect(spellCost(c, sp('Bénédiction de Bataille'))).toBeNull(); // pas chez Shallya (LDB 41)
     const learn = learnableSpells(c);
-    expect(learn.filter((l) => l.spell.type === 'Béni')).toHaveLength(6);
+    expect(learn.filter((l) => l.spell.ecole === 'Béni')).toHaveLength(6);
   });
 
   it('déjà connu / aucun Talent → null', () => {

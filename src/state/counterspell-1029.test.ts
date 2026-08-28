@@ -85,7 +85,7 @@ describe('#1029/#1040 — le Contre-sort au RAW : moment, verrous, hostilité, N
     expect(useGame.getState().pendingCast!.result!.log, 'aucun Contre-sort inline non plus').toBe('x');
     expect(heroes[0].dispelledThisRound).toBeFalsy();
     // Le MÊME choix sans le DR (« si vous obtenez suffisamment de DR ») ne verrouille rien.
-    const SORT = { label: 'Carreau', type: 'Sort', family: 'arcane', cn: 4, duration: null, desc: '' } as SpellLike;
+    const SORT = { label: 'Carreau', ecole: 'Sort', family: 'arcane', cn: 4, duration: null, desc: '' } as SpellLike;
     freeze(E, heroes[0], { ...CRIT, cast: false }, { missile: false, critChoice: 'ineluctable' });
     expect(isDispellableCast(useGame.getState().pendingCast!, SORT)).toBe(true);
     // Et SANS choix enregistré, rien n'est « inéluctable » : LDB 46 l.28 — sans choix, l'effet est le

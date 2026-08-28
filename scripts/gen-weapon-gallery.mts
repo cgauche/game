@@ -20,10 +20,10 @@ import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 // générateur lit les IDS, `label` ne sert qu'au titre de rubrique. `trappings.json` porte lui aussi
 // l'id en `subType` — l'ancienne liste de LIBELLÉS ne croisait plus rien (planche vide, #1338).
 const GROUPS = weaponGroups.filter((g) => g.combat === 'melee' || g.combat === 'ranged');
-type Trapping = { label: string; type?: string; subType?: string };
+type Trapping = { label: string; categorie?: string; subType?: string };
 const GROUP_IDS = new Set(GROUPS.map((g) => g.id));
 const all = (trappings as Trapping[]).filter(
-  (t) => (t.type === 'melee' || t.type === 'ranged') && t.subType != null && GROUP_IDS.has(t.subType),
+  (t) => (t.categorie === 'melee' || t.categorie === 'ranged') && t.subType != null && GROUP_IDS.has(t.subType),
 );
 if (!all.length)
   throw new Error('[weapon-gallery] aucune arme sélectionnée — planche vide (registre de Groupes ou trappings.json désaccordés).');
@@ -55,7 +55,7 @@ for (const g of GROUPS) {
   const cells = ws
     .map((t) => {
       const isShield = /bouclier/i.test(t.label);
-      const type = t.type as 'melee' | 'ranged';
+      const type = t.categorie as 'melee' | 'ranged';
       return fig({ label: t.label, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon, isShield);
     })
     .join('');

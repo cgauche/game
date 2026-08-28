@@ -13,7 +13,7 @@ import { priceToMoney, toBrass } from '../engine/money';
  *   - `range` = SPEC de Portée de tir : `number` (mètres fixes) OU `{bf}` (arme de jet : BF×bf m).
  *     UNIQUEMENT sur les armes à distance.
  */
-const rows = trappings as { id: string; type: string; subType?: string; reach?: unknown; range?: unknown; ammoRangeMod?: unknown; enc?: unknown; availability?: unknown; price: { gold: number; silver: number; bronze: number } | 'ND' | null }[];
+const rows = trappings as { id: string; categorie: string; subType?: string; reach?: unknown; range?: unknown; ammoRangeMod?: unknown; enc?: unknown; availability?: unknown; price: { gold: number; silver: number; bronze: number } | 'ND' | null }[];
 
 const ALLONGE = new Set(['Personnelle', 'Très courte', 'Courte', 'Moyenne', 'Longue', 'Très longue', 'Considérable', 'Variable']);
 const isNumericLike = (v: unknown): boolean =>
@@ -37,7 +37,7 @@ describe('trappings — invariant Allonge (reach) ⊥ Portée (range)', () => {
     const withRange = rows.filter((t) => t.range != null);
     expect(withRange.length).toBeGreaterThan(0);
     expect(withRange.every((t) => typeof t.range === 'number' || isBfSpec(t.range))).toBe(true);
-    expect(withRange.filter((t) => t.type !== 'ranged').map((t) => t.id)).toEqual([]);
+    expect(withRange.filter((t) => t.categorie !== 'ranged').map((t) => t.id)).toEqual([]);
   });
 
   it('toute arme de JET (`range:{bf}`) a un bf > 0 et un `reach` nul', () => {
@@ -47,7 +47,7 @@ describe('trappings — invariant Allonge (reach) ⊥ Portée (range)', () => {
   });
 
   it('une arme de mêlée n\'a pas de Portée', () => {
-    expect(rows.filter((t) => t.type === 'melee' && t.range != null).map((t) => t.id)).toEqual([]);
+    expect(rows.filter((t) => t.categorie === 'melee' && t.range != null).map((t) => t.id)).toEqual([]);
   });
 
   it('échantillon : Arc (50 m), Javelot (BF×3, reach nul), Hallebarde (Allonge « Longue », pas de Portée)', () => {

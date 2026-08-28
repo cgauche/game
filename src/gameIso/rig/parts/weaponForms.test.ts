@@ -18,8 +18,8 @@ const isWeaponShape = (s: string) => WEAPON_SLUGS.has(s);
 
 describe('weaponForms — shape catalogué sur les armes tenues en main', () => {
   it('chaque arme melee/ranged de la donnée (hors siège & munitions) porte un shape = slug réel', () => {
-    const bad = (trappings as { id: string; label: string; type: string; subType?: string; shape?: string }[])
-      .filter((t) => (t.type === 'melee' || t.type === 'ranged') && !NON_PORTEE.has(t.subType ?? ''))
+    const bad = (trappings as { id: string; label: string; categorie: string; subType?: string; shape?: string }[])
+      .filter((t) => (t.categorie === 'melee' || t.categorie === 'ranged') && !NON_PORTEE.has(t.subType ?? ''))
       .filter((t) => t.id !== 'mains-nues') // Mains nues : aucune silhouette tenue (pas de shape) — par design
       .filter((t) => !(t.shape && (isWeaponShape(t.shape) || SHIELD_SLUGS.has(t.shape))))
       .map((t) => `${t.label} → shape=${t.shape ?? '∅'}`);

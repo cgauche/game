@@ -45,7 +45,7 @@ Augmentations** dans cette Compétence inscrites sur la Feuille de Personnage.
 **Sources RAW :** LDB 09 l.12-18
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.12-18) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, `rollTest`, +27 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +18 fichiers
+- `LDB 9` (l.12-18) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `skillEntrySchema`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, +29 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, +20 fichiers
 
 **Voir aussi :** [Tests & Degrés de Réussite](tests.md) pour l'utilisation de ce niveau en test.
 
@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `CibleDeType`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `specEntrySchema`, `HealRollFlow`, +48 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +35 fichiers
+- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `CibleDeType`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `specEntrySchema`, `skillEntrySchema`, +50 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +35 fichiers
 
 ---
 
@@ -98,7 +98,7 @@ la description, ou en crée une avec l'accord du MJ.
 **Sources RAW :** LDB 09 l.34-46
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `CibleDeType`, `specEntrySchema`, `redaction`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, `specRef` ⚠sans-appelant, +14 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +15 fichiers
+- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `CibleDeType`, `specEntrySchema`, `skillEntrySchema`, `redaction`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, +16 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +15 fichiers
 
 ---
 

@@ -51,8 +51,8 @@ import { t } from '../i18n';
 
 /** Atouts/Défauts d'artisanat (LDB 60 l.9-62) — dérivés de la DONNÉE éditable (`qualities.json`,
  *  qualités d'Objet) par `id` ; tooltips/libellés via le registre (`describeQuality`). */
-const ATOUTS = qualities.filter((q) => q.type === 'atout' && q.subType === 'objet').map((q) => q.id);
-const DEFAUTS = qualities.filter((q) => q.type === 'defaut' && q.subType === 'objet').map((q) => q.id);
+const ATOUTS = qualities.filter((q) => q.polarite === 'atout' && q.subType === 'objet').map((q) => q.id);
+const DEFAUTS = qualities.filter((q) => q.polarite === 'defaut' && q.subType === 'objet').map((q) => q.id);
 /** Libellé + desc d'une qualité d'artisanat par id (registre via `describeQuality`). */
 const craftQual = (id: string) => describeQuality({ id }) ?? { label: id, desc: undefined };
 
@@ -632,7 +632,7 @@ function CraftProgressPane({ hero, craft, disabled, desc }: {
 
 /** Sélecteur d'équipement groupé par famille + recherche (audit B1/B3). `value`/`onChange` = `id`. */
 function TrappingSelect({ options, value, onChange, detail }: {
-  options: { id: string; label: string; type: string; priceBrass: number }[];
+  options: { id: string; label: string; categorie: string; priceBrass: number }[];
   value: string;
   onChange: (v: string) => void;
   detail?: (id: string) => string;
@@ -641,7 +641,7 @@ function TrappingSelect({ options, value, onChange, detail }: {
   const families = useMemo(() => {
     const m = new Map<string, typeof filtered>();
     for (const o of filtered) {
-      const f = trappingTypeLabel(o.type) || 'Équipement';
+      const f = trappingTypeLabel(o.categorie) || 'Équipement';
       if (!m.has(f)) m.set(f, []);
       m.get(f)!.push(o);
     }

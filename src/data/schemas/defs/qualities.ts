@@ -48,10 +48,14 @@ export const schema = z.array(
   z.strictObject({
     id: z.string(),
     label: z.string(),
-    /** `type` observé : 'atout' | 'defaut' (52/52). */
-    type: z.enum(['atout', 'defaut']),
-    /** `subType` observé : 'arme' | 'armure' | 'objet' (52/52) ; `QualityData.subType` autorise aussi
-     *  `null` (TS `string | null`), non vu dans les 52 entrées actuelles mais le type source fait foi. */
+    /** POLARITÉ de la Qualité — Atout (bénéfique) / Défaut (handicap). Trois PAIRES de rubriques selon
+     *  le sous-type : objet `LDB 60 l.9`/`l.40`, arme `LDB 62 l.217`/`l.309`, armure `LDB 63 l.68`/`l.80`.
+     *  Observée sur 59/59 entrées : 40 `atout`, 19 `defaut`. Lue par `isAtoutQuality` — cible des champs
+     *  d'op `augmentWeapon.removeType`/`Weapon.removedTypes`, dont le NOM est persisté en donnée
+     *  (1 porteur mesuré, `spells.json`) : leur rename appartient au lot des ops, #1468 (L1c). */
+    polarite: z.enum(['atout', 'defaut']),
+    /** `subType` observé : 'arme' | 'armure' | 'objet' (59/59) ; `QualityData.subType` autorise aussi
+     *  `null` (TS `string | null`), non vu dans les 59 entrées actuelles mais le type source fait foi. */
     subType: z.enum(['arme', 'armure', 'objet']).nullable(),
     desc: z.string(),
     source: sourceRefSchema,

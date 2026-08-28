@@ -8,7 +8,7 @@ export interface MerchantArchetypeDef {
   label: string;
   /** Familles vendues : filtre le catalogue par `type` et/ou `subType` de trapping
    *  (« un herboriste ne vend pas d'arquebuses »). */
-  category: { types?: string[]; subTypes?: string[] };
+  category: { categories?: string[]; subTypes?: string[] };
   /** Taille d'agglo par défaut (overridable par l'entité de scène). */
   settlement: Settlement;
   /** Taux de rachat : ½ du prix listé sur un Marchandage de vente GAGNÉ (LDB 59 l.54) ; sinon ¼ (resaleRate/2). */

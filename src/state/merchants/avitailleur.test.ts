@@ -37,7 +37,7 @@ describe('#220 — archétype avitailleur (registre)', () => {
   it('le stock tiré (rollStock, RNG seedé) garantit l\'eau douce et les pièces détachées de navire', () => {
     const arch = MERCHANTS.avitailleur;
     const cat: CatalogItem[] = trappings
-      .filter((t) => !arch.category.types && t.subType != null && arch.category.subTypes!.includes(t.subType))
+      .filter((t) => !arch.category.categories && t.subType != null && arch.category.subTypes!.includes(t.subType))
       .map((t) => ({ id: t.id, label: t.label, availability: (t.availability as CatalogItem['availability']) ?? null }));
     // seeds multiples : le curated doit ressortir quelle que soit l'issue du Test de Disponibilité du reste du stock
     for (const seed of [1, 2, 3, 42]) {

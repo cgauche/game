@@ -25,7 +25,7 @@ const validNarratif = (): NarratifBlock => ({
     { id: 'ru-taverne', affaireId: 'af-sel', kind: 'rumeur', titre: 'On chuchote', stades: [{ id: 'st1', prose: 'Une rumeur.' }], refs: ['in-quai'] },
   ],
   presetsPnj: [{ id: 'pnj-marin', base: GLOBAL_CREATURE }],
-  objets: [{ id: 'obj-lettre', label: 'Lettre cachetée', type: 'divers', subType: null } as NarratifBlock['objets'][number]],
+  objets: [{ id: 'obj-lettre', label: 'Lettre cachetée', categorie: 'trapping', subType: null } as NarratifBlock['objets'][number]],
 });
 
 describe('paquet de campagne schema 3 — bloc narratif', () => {

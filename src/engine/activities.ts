@@ -759,7 +759,7 @@ export function entrainementOptions(hero: Combatant): EntrainementOption[] {
       if (addedExact) continue; // ajoutée « à n'importe quelle Carrière » par un talent (LDB 10) → in-carrière
       const known = hero.skills.find((k) => k.skillId === s.id && (k.spec ?? '') === (spec ?? ''));
       const advances = known?.advances ?? 0;
-      const advanced = s.type === 'avancée';
+      const advanced = s.acces === 'avancee';
       const range = entrainementTutorRange(advanced);
       skillOptions.push({
         kind: 'skill' as const, id: s.id, spec, label: refLabel('skills', { id: s.id, spec }), advanced, advances,
@@ -821,8 +821,8 @@ export interface CraftOption {
   /** `id` du trapping (`TrappingData.id`) — réf passée à `craftStart`/`orderItem`. */
   id: string;
   label: string;
-  /** Famille de données (melee/ranged/armor/trapping…) pour grouper le sélecteur. */
-  type: string;
+  /** CATÉGORIE de catalogue (`TrappingData.categorie` : melee/ranged/armor/trapping…) — groupe le sélecteur. */
+  categorie: string;
   tier: PriceTier;
   avail: Availability;
   priceBrass: number;
@@ -844,9 +844,9 @@ export function craftCatalog(): CraftOption[] {
       const spec = craftSpecOf(t);
       if (!spec) return [];
       const target = craftTarget(spec.tier, spec.avail, 0, 0);
-      return [{ id: t.id, label: t.label, type: t.type, ...spec, dr: target.dr, difficulty: target.difficulty }];
+      return [{ id: t.id, label: t.label, categorie: t.categorie, ...spec, dr: target.dr, difficulty: target.difficulty }];
     })
-    .sort((a, b) => (a.type === b.type ? a.priceBrass - b.priceBrass : a.type.localeCompare(b.type)));
+    .sort((a, b) => (a.categorie === b.categorie ? a.priceBrass - b.priceBrass : a.categorie.localeCompare(b.categorie)));
 }
 
 /** Fourchette du prix du tuteur (« 2D10 pistoles d'argent par 100PX », ch.23 l.63) — pour
@@ -912,10 +912,10 @@ export function orderBlockOf(t: Pick<TrappingData, 'price' | 'availability'>): '
 
 /** Catalogue de « Passer commande » (ch.23 l.167-172), payé à la commande — porte d'entrée
  *  `orderBlockOf` (partagée avec `orderItem`). */
-export function orderCatalog(): { id: string; label: string; type: string; priceBrass: number }[] {
+export function orderCatalog(): { id: string; label: string; categorie: string; priceBrass: number }[] {
   return trappings
     .filter((t) => orderBlockOf(t) === null)
-    .map((t) => ({ id: t.id, label: t.label, type: t.type, priceBrass: listedBrass(t.price) }))
+    .map((t) => ({ id: t.id, label: t.label, categorie: t.categorie, priceBrass: listedBrass(t.price) }))
     .sort((a, b) => a.priceBrass - b.priceBrass);
 }
 

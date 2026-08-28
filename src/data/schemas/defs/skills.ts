@@ -53,8 +53,11 @@ const skillEntrySchema = z.strictObject({
   id: z.string(),
   label: z.string(),
   characteristic: charKeySchema,
-  /** Libellé d'affichage de catégorie ('base' | 'avancée' constatés) — AFFICHAGE, pas un id de logique. */
-  type: z.string(),
+  /** ACCÈS à la Compétence (`LDB 09 l.25/l.30`) : `base` = testable sans formation, sur la
+   *  Caractéristique nue ; `avancee` = exige au moins une Augmentation, sinon le Test est impossible.
+   *  DISCRIMINANT DE LOGIQUE, jamais un libellé : lu par `possesses` (`engine/skillCombatApps.ts`) et
+   *  par la fourchette de tuteur de l'Entraînement (`engine/activities.ts`). Mesuré : 25 / 23 sur 48. */
+  acces: z.enum(['base', 'avancee']),
   specs: z.array(specEntrySchema).optional(),
   specsSource: specsSourceSchema.optional(),
   specsOpen: z.boolean().optional(),

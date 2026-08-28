@@ -3,7 +3,7 @@
     "id": "melee",
     "label": "Armes de mêlée",
     "match": {
-      "trappingType": "melee"
+      "categorie": "melee"
     },
     "columns": [
       "damage",
@@ -14,7 +14,7 @@
     "id": "ranged",
     "label": "Armes à distance",
     "match": {
-      "trappingType": "ranged"
+      "categorie": "ranged"
     },
     "columns": [
       "damage",
@@ -25,7 +25,7 @@
     "id": "ammo",
     "label": "Munitions",
     "match": {
-      "trappingType": "ammunition"
+      "categorie": "ammunition"
     },
     "columns": [
       "damage"
@@ -45,7 +45,7 @@
     "id": "armor",
     "label": "Armures",
     "match": {
-      "trappingType": "armor"
+      "categorie": "armor"
     },
     "columns": [
       "pa"

@@ -17,7 +17,7 @@
 // prédicat de champ `type`/`subType`, résultat exploité PAR ID — `ui/InterludeScreen.tsx:52-53`) ;
 // `talents:talent-aleatoire` par `META_CATALOG_ENTRIES` (entrée MÉTA structurelle, jamais un Talent
 // possédable — même source que `src/data/obtainability-guard.test.ts`). `qualities:filet-barbele`/
-// `deroutante` restent DUES : `state/interludeFlow.ts:910` (`falseQualities()`) les sélectionne par
+// `deroutante` restent DUES : `state/interludeFlow.ts:1069` (`falseQualities()`) les sélectionne par
 // champ mais ne les exploite QUE par LABEL (rumeurs de Particularité fausses, ADE II — jamais la
 // qualité elle-même) — MODE 2 les rejette (résultat non exploité par id). Descendu à 15 (2026-07-27) :
 // la grammaire MODE 2 étendue à la véracité de champ (`x.champ`)/sa négation (`!x.champ`, cf. en-tête

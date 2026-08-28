@@ -15,7 +15,7 @@
 //
 // MODE 2 — sélection dynamique par PRÉDICAT DE CHAMP (`computeFieldPredicateConsumers`) : un
 // consommateur qui ne cite JAMAIS l'id, mais SÉLECTIONNE le catalogue par ses champs (ex.
-// `qualities.filter((q) => q.type === 'atout' && q.subType === 'objet')` bâtit le pool d'un picker —
+// `qualities.filter((q) => q.polarite === 'atout' && q.subType === 'objet')` bâtit le pool d'un picker —
 // toute entité qui satisfait le prédicat est atteinte, sans que son id apparaisse en toutes lettres
 // nulle part). Mesuré : `qualities:laid` (défaut d'Objet, LDB 60) est exactement ce cas — surfacé au
 // picker d'Artisanat (`ui/InterludeScreen.tsx:52-53`, chaîne `.filter(...).map((q) => q.id)`) SANS
@@ -38,7 +38,7 @@
 // « on ne manipule que des IDs ; le `label` est de l'AFFICHAGE ») : un filtre qui sélectionne mais ne
 // mène nulle part par id (`.map((q) => q.label)`, ou pas de `.map` du tout) ne prouve AUCUN chemin
 // d'accès à l'entité — SÉLECTIONNER n'est pas la même chose que MENER À. Mesuré : `qualities.filter((q)
-// => q.type === 'atout')` dans `falseQualities()` (`src/state/interludeFlow.ts:910`) sélectionne bien
+// => q.polarite === 'atout')` dans `falseQualities()` (`src/state/interludeFlow.ts:1069`) sélectionne bien
 // par champ, mais nourrit une liste de RUMEURS FAUSSES (Particularités que le personnage croit à tort
 // déceler après un jet raté — ADE II) affichées par LABEL, jamais appliquées : la qualité sélectionnée
 // n'est précisément PAS atteinte. Rejeté par cette règle générale (aucune exception codée sur ce

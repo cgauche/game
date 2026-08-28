@@ -42,7 +42,7 @@ const narratif: NarratifBlock = {
   affaires: [{ id: 'snap-aff', titre: 'Le Corbeau noir' }],
   indices: [],
   presetsPnj: [{ id: 'snap-pnj', profil: {} }],
-  objets: [{ id: OBJET_ID, label: 'Lame maudite', type: 'melee', subType: null } as NarratifBlock['objets'][number]],
+  objets: [{ id: OBJET_ID, label: 'Lame maudite', categorie: 'melee', subType: null } as NarratifBlock['objets'][number]],
 };
 
 const worldMap: WorldMap = {

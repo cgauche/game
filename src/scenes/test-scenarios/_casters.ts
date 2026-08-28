@@ -37,9 +37,9 @@ export function addTalents(c: Combatant, names: string[]): void {
   }
 }
 
-/** IDS des sorts d'un type (+ sous-type optionnel) depuis la base — `c.spells` = ids (console → findSpellById). */
-export const spellsOf = (type: string, subTypes?: (string | null)[]): string[] =>
-  spells.filter((s) => s.type === type && (!subTypes || subTypes.includes(s.subType ?? null))).map((s) => s.id);
+/** IDS des sorts d'une école (+ sous-type optionnel) depuis la base — `c.spells` = ids (console → findSpellById). */
+export const spellsOf = (ecole: string, subTypes?: (string | null)[]): string[] =>
+  spells.filter((s) => s.ecole === ecole && (!subTypes || subTypes.includes(s.subType ?? null))).map((s) => s.id);
 
 /** Prêtre COMPLET d'un culte : Prière + Béni/Invocation (Culte) + TOUTES ses Bénédictions ET Miracles. */
 export function makePriest(base: Combatant, id: string, name: string, cult: string, chars: Partial<Record<CharKey, number>>): Combatant {
