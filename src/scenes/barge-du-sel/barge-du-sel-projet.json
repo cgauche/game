@@ -16,12 +16,13 @@
   {
    "id": "barge-du-sel-quai",
    "nom": "Le quai de la Barge du Sel",
-   "desc": "Un petit quai de chargement. La Louve grise attend, amarrée, la cale pleine de sel à livrer à l'îlot voisin.",
    "dimensions": {
     "w": 12,
     "h": 8
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -208,17 +209,19 @@
     }
    ],
    "encounters": [],
-   "flags": {}
+   "flags": {},
+   "desc": "Un petit quai de chargement. La Louve grise attend, amarrée, la cale pleine de sel à livrer à l'îlot voisin."
   },
   {
    "id": "barge-du-sel-embuscade",
    "nom": "Voile noire à mi-route — une cogue pirate attaque",
-   "desc": "Une cogue pirate coupe la route de la Louve grise en pleine mer.",
    "dimensions": {
     "w": 24,
     "h": 14
    },
    "ambiance": "exterieur",
+   "metresPerTile": 10,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -1101,8 +1104,8 @@
     }
    ],
    "flags": {},
+   "desc": "Une cogue pirate coupe la route de la Louve grise en pleine mer.",
    "weather": "brouillard",
-   "metresPerTile": 10,
    "entryPoints": {
     "arrivee": {
      "x": 3,
@@ -1113,12 +1116,13 @@
   {
    "id": "barge-du-sel-ilot",
    "nom": "L’îlot du sel",
-   "desc": "Un petit îlot rocheux où la cargaison de sel doit être débarquée.",
    "dimensions": {
     "w": 12,
     "h": 6
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -1240,7 +1244,8 @@
     }
    ],
    "encounters": [],
-   "flags": {}
+   "flags": {},
+   "desc": "Un petit îlot rocheux où la cargaison de sel doit être débarquée."
   }
  ],
  "worldMap": {

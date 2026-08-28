@@ -16,12 +16,13 @@
   {
    "id": "ls-quai-salzenmund",
    "nom": "Salzenmund — le quai de la Seconde Flotte",
-   "desc": "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, à côté du Grimm amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; Griet accorde son luth.",
    "dimensions": {
     "w": 16,
     "h": 10
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -867,26 +868,28 @@
    ],
    "encounters": [],
    "flags": {},
+   "desc": "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, à côté du Grimm amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; Griet accorde son luth.",
    "weather": "brouillard",
+   "rest": {
+    "auberge": true
+   },
    "entryPoints": {
     "retour": {
      "x": 2,
      "y": 4
     }
-   },
-   "rest": {
-    "auberge": true
    }
   },
   {
    "id": "ls-abordage-cogue",
    "nom": "La Dent de Manann — voile noire sous le vent (J4)",
-   "desc": "La cogue pirate intercepte le Grimm en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille de cale et pillage, PUIS un prisonnier à sacrifier à Stromfels. Frère Aldo nomme l'ennemi à voix haute.",
    "dimensions": {
     "w": 24,
     "h": 14
    },
    "ambiance": "exterieur",
+   "metresPerTile": 10,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -1771,8 +1774,8 @@
     }
    ],
    "flags": {},
+   "desc": "La cogue pirate intercepte le Grimm en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille de cale et pillage, PUIS un prisonnier à sacrifier à Stromfels. Frère Aldo nomme l'ennemi à voix haute.",
    "weather": "brouillard",
-   "metresPerTile": 10,
    "entryPoints": {
     "arrivee": {
      "x": 3,
@@ -1783,12 +1786,13 @@
   {
    "id": "ls-quai-erengrad",
    "nom": "Erengrad — le port kislevite",
-   "desc": "Erengrad (Taille 4, Richesse 4, surplus Laine +1 — MDG 15 l.439-506). Négoce, rumeurs, et une nuit où le chat du bord tombe malade.",
    "dimensions": {
     "w": 16,
     "h": 8
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -2222,26 +2226,28 @@
    ],
    "encounters": [],
    "flags": {},
+   "desc": "Erengrad (Taille 4, Richesse 4, surplus Laine +1 — MDG 15 l.439-506). Négoce, rumeurs, et une nuit où le chat du bord tombe malade.",
    "weather": "neige",
+   "rest": {
+    "auberge": true
+   },
    "entryPoints": {
     "arrivee": {
      "x": 2,
      "y": 4
     }
-   },
-   "rest": {
-    "auberge": true
    }
   },
   {
    "id": "ls-abordage-olg",
    "nom": "Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)",
-   "desc": "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Grimm chargé de laine. Poursuite, feu de chasse, collision, abordage — le morceau de bravoure de la traversée.",
    "dimensions": {
     "w": 24,
     "h": 14
    },
    "ambiance": "exterieur",
+   "metresPerTile": 10,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -2611,7 +2617,7 @@
      "postes": [
       {
        "trappingId": "canon-moyen",
-       "uid": "poste-7",
+       "uid": "poste-1",
        "side": "tribord",
        "crewIds": [],
        "ammo": [
@@ -2666,7 +2672,7 @@
       },
       {
        "trappingId": "canon-moyen",
-       "uid": "poste-8",
+       "uid": "poste-2",
        "side": "babord",
        "crewIds": [],
        "ammo": [
@@ -2721,7 +2727,7 @@
       },
       {
        "trappingId": "pierrier",
-       "uid": "poste-9",
+       "uid": "poste-3",
        "side": "poupe",
        "crewIds": [],
        "ammo": [
@@ -2845,7 +2851,7 @@
      "postes": [
       {
        "trappingId": "canon-moyen",
-       "uid": "poste-10",
+       "uid": "poste-4",
        "side": "tribord",
        "crewIds": [],
        "ammo": [
@@ -2875,7 +2881,7 @@
       },
       {
        "trappingId": "canon-moyen",
-       "uid": "poste-11",
+       "uid": "poste-5",
        "side": "babord",
        "crewIds": [],
        "ammo": [
@@ -2905,7 +2911,7 @@
       },
       {
        "trappingId": "canon-moyen",
-       "uid": "poste-12",
+       "uid": "poste-6",
        "side": "proue",
        "crewIds": [],
        "ammo": [
@@ -3128,8 +3134,8 @@
     }
    ],
    "flags": {},
+   "desc": "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Grimm chargé de laine. Poursuite, feu de chasse, collision, abordage — le morceau de bravoure de la traversée.",
    "weather": "tempete",
-   "metresPerTile": 10,
    "entryPoints": {
     "arrivee": {
      "x": 3,
@@ -3140,12 +3146,13 @@
   {
    "id": "ls-epilogue-salzenmund",
    "nom": "Salzenmund — le retour (J13)",
-   "desc": "Les parts, le chantier, le conseil final. Köhler regarde la prise avec des yeux gourmands.",
    "dimensions": {
     "w": 14,
     "h": 9
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -3385,6 +3392,7 @@
    "triggers": [],
    "encounters": [],
    "flags": {},
+   "desc": "Les parts, le chantier, le conseil final. Köhler regarde la prise avec des yeux gourmands.",
    "entryPoints": {
     "retour": {
      "x": 2,

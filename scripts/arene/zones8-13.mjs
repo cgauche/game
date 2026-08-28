@@ -195,7 +195,7 @@ export function makeZone10() {
             icon: 'ui/lock',
             when: flagWhen('!prisonnier_libre'),
             flow: testNode(
-              { skill: 'crochetage', difficulty: 'accessible', label: 'Crocheter la cage du garde-manger' },
+              { skill: 'crochetage', difficulty: 'accessible', label: 'Crocheter la cage du garde-manger', stake: { authored: 'Ouvrir la cage du colporteur : sa liberté, sa bourse de 40 pistoles et 50 XP ; raté, le crochet ripe et il reste dedans.' } },
               [
                 { type: 'setFlag', flag: 'prisonnier_libre' },
                 { type: 'giveMoney', silver: 40 },
@@ -566,7 +566,7 @@ export function makeZone13() {
       P(13, 17, 'tas-or', {
         label: 'Or épars (le dragon DORT…)',
         ...fouille(testNode(
-          { skill: 'discretion', difficulty: 'difficile', label: 'Chiper l’or sous l’œil clos du dragon' },
+          { skill: 'discretion', difficulty: 'difficile', label: 'Chiper l’or sous l’œil clos du dragon', stake: { authored: 'Prendre l’or sans un tintement : 8 couronnes ; un seul bruit et le dragon se réveille — combat.' } },
           [
             { type: 'giveMoney', gold: 8 },
             { type: 'journal', desc: 'Huit couronnes glissées sans un tintement. Le dragon ronfle toujours.' },

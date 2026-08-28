@@ -53,7 +53,7 @@ const dlgHub = {
           icon: 'ui/lock',
           when: flagWhen('!coffre_pris'),
           flow: testNode(
-            { skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter le coffre' },
+            { skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter le coffre', stake: { authored: 'Forcer la serrure : 5 couronnes dans le coffre, sinon le mécanisme rouillé tient bon.' } },
             [
               { type: 'setFlag', flag: 'coffre_pris' },
               { type: 'giveMoney', gold: 5 },
@@ -272,7 +272,7 @@ const dlgFrere = {
           icon: 'action/pick-up',
           when: flagWhen('!tronc_pille'),
           flow: testNode(
-            { skill: 'discretion', difficulty: 'difficile', label: 'Piller le tronc sous l’œil de Sigmar' },
+            { skill: 'discretion', difficulty: 'difficile', label: 'Piller le tronc sous l’œil de Sigmar', stake: { authored: 'Faire main basse sans être vu : 30 pistoles à la clé ; pris sur le fait, le tronc bascule et vous gagnez 1 Point de Péché.' } },
             [
               { type: 'setFlag', flag: 'tronc_pille' },
               { type: 'giveMoney', silver: 30 },

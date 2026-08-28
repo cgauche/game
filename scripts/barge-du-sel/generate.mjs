@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/barge-du-sel/barge-du-sel-projet.json` (`projectDoc()` : projet schema 3
+ * Génère `src/scenes/barge-du-sel/barge-du-sel-projet.json` (`projectDoc()` : projet schema 4
  * `{ schema: 4, meta, narratif, scenes, worldMap }`).
  * Mini-campagne navale « La Barge du Sel » (issue #218, expérience auteur) — modelée sur
  * `scripts/loup-et-saumure/generate.mjs` : RÉUTILISE `scene()`/`hero()`/`P()`/`flowOf()`/`poste()`/
@@ -16,10 +16,14 @@
  */
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { scene, hero, P, flowOf, poste, resetIds, projectDoc } from '../campagne/lib.mjs';
 import { itemFromTrappingById } from '../../src/engine/items.ts';
 
+/** Construction PURE du document de projet : la SOURCE possède 100 % de la donnée de l'artefact
+ *  (`src/scenes/barge-du-sel/barge-du-sel-projet.json`), le CLI ci-dessous n'en est que la voie d'écriture.
+ *  Rejouable à volonté dans un même process — garde `src/scenes/generateurs-byte-stables.test.ts`. */
+export function build() {
 let ammoSeq = 0;
 /** Munition de bord (`ItemInstance` kind:'ammo') bâtie par la couture CANONIQUE `itemFromTrappingById`,
  *  uid STABLE + quantité — cohérence témoin avec `scripts/loup-et-saumure/generate.mjs`. */
@@ -85,7 +89,7 @@ function marine(id, x, y, label, skills) {
 }
 
 /** Objectif courant (#238, doc §10) — id STABLE UNIQUE : re-poser met à jour le texte et le remonte en tête. */
-const OBJ = (text) => ({ type: 'setObjective', id: 'barge-du-sel-mission', text });
+const OBJ = (desc) => ({ type: 'setObjective', id: 'barge-du-sel-mission', desc });
 
 const scenes = [];
 
@@ -259,11 +263,18 @@ for (const s of scenes) {
 }
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
-const doc = projectDoc({
+return projectDoc({
   meta: { id: 'barge-du-sel', label: 'La Barge du Sel', icon: 'scenario/naval', version: 1 },
   scenes,
   worldMap,
 });
-const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/barge-du-sel/barge-du-sel-projet.json');
-writeFileSync(out, JSON.stringify(doc, null, 1) + '\n');
-console.log(`barge-du-sel-projet.json : ${scenes.length} scènes, ${worldMap.places.length} lieux, ${worldMap.routes.length} routes.`);
+}
+
+/** Chemin de l'artefact écrit par le CLI — lu aussi par la garde byte-stable. */
+export const OUT = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/barge-du-sel/barge-du-sel-projet.json');
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const doc = build();
+  writeFileSync(OUT, JSON.stringify(doc, null, 1) + '\n');
+  console.log(`barge-du-sel-projet.json : ${doc.scenes.length} scènes, ${doc.worldMap.places.length} lieux, ${doc.worldMap.routes.length} routes.`);
+}

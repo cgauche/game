@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` (`projectDoc()` : projet schema 3
+ * Génère `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` (`projectDoc()` : projet schema 4
  * `{ schema: 4, meta, narratif, scenes, worldMap }`).
  * Modelé sur `scripts/arene/generate.mjs` — RÉUTILISE `scene()`/`hero()`/`NPC()`/`P()`/`flowOf()`/
  * `flagWhen()`/`testNode()`/`poste()` de `scripts/campagne/lib.mjs` (IMPORT, zéro modification de ce fichier).
@@ -18,11 +18,16 @@
  */
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { scene, hero, NPC, P, flowOf, flagWhen, testNode, poste, resetIds, projectDoc } from '../campagne/lib.mjs';
 import { dailyWaterLitres } from '../../src/engine/seaWeather.ts';
 import { itemFromTrappingById } from '../../src/engine/items.ts';
 
+/** Construction PURE du document de projet : la SOURCE possède 100 % de la donnée de l'artefact
+ *  (`src/scenes/loup-et-saumure/loup-et-saumure-projet.json`), le CLI ci-dessous n'en est que la voie
+ *  d'écriture. Rejouable à volonté dans un même process (toute séquence d'ids vit ICI ou est remise à
+ *  zéro par `resetIds()`) — garde `src/scenes/generateurs-byte-stables.test.ts`. */
+export function build() {
 let ammoSeq = 0;
 /** Munition de bord (`ItemInstance` kind:'ammo') bâtie par la couture CANONIQUE `itemFromTrappingById`
  *  (Dégâts/Qualités du catalogue), estampillée d'un uid STABLE et de sa quantité (le fond de soute). */
@@ -99,7 +104,7 @@ function marinDuGrimm(id, x, y, label, skills) {
 
 /** Objectif d'acte (surface « je fais quoi ? », #238) sur la pile `store.objectives`, keyé par id STABLE
  *  UNIQUE `ls-mission` : re-poser met à jour le texte et le remonte en tête (doc §10). */
-const OBJ = (text) => ({ type: 'setObjective', id: 'ls-mission', text });
+const OBJ = (desc) => ({ type: 'setObjective', id: 'ls-mission', desc });
 
 // Apparences EXPLICITES, id STABLE (point 6). Kramer partagée par ses DEUX instances (même personnage :
 // même seed/colors/tenue → rendu identique quai ⇄ Erengrad) ; Köhler partagé quai ⇄ épilogue.
@@ -301,7 +306,7 @@ scenes.push(scene({
             {
               label: 'L’observer discrètement (Intuition)',
               flow: testNode(
-                { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — quelque chose cloche chez Kramer' },
+                { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — quelque chose cloche chez Kramer', stake: { authored: 'Percer le masque de Dame Kramer : vous la soupçonnez pour la suite du voyage ; raté, elle passe pour une négociante ordinaire.' } },
                 // Révélation VISIBLE au moment (modale document) + flag + archive au journal.
                 [
                   { type: 'setFlag', flag: 'ls_kramer_soupconnee' },
@@ -493,7 +498,7 @@ scenes.push(scene({
           {
             label: 'L’interroger sur sa nuit (Intuition)',
             flow: testNode(
-              { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — la nuit du chat' },
+              { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — la nuit du chat', stake: { authored: 'La coincer sur son alibi : démasquée, le sabotage du Grimm cesse ; raté, elle garde les mains libres et le navire continue de souffrir.' } },
               // Démasquage : dénouement VISIBLE (document) + le sabotage CESSE (adjustVessel { saboteurDR: 0 }
               // — patch INCRÉMENTAL, la coque/l'Humeur/le Moral accumulés depuis le départ sont préservés, #233).
               [
@@ -721,11 +726,18 @@ for (const s of scenes) {
 }
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
-const doc = projectDoc({
+return projectDoc({
   meta: { id: 'loup-et-saumure', label: 'Le Loup et la Saumure', icon: 'scenario/naval', version: 1 },
   scenes,
   worldMap,
 });
-const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/loup-et-saumure/loup-et-saumure-projet.json');
-writeFileSync(out, JSON.stringify(doc, null, 1) + '\n');
-console.log(`loup-et-saumure-projet.json : ${scenes.length} scènes, ${worldMap.places.length} lieux, ${worldMap.routes.length} routes.`);
+}
+
+/** Chemin de l'artefact écrit par le CLI — lu aussi par la garde byte-stable. */
+export const OUT = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/loup-et-saumure/loup-et-saumure-projet.json');
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const doc = build();
+  writeFileSync(OUT, JSON.stringify(doc, null, 1) + '\n');
+  console.log(`loup-et-saumure-projet.json : ${doc.scenes.length} scènes, ${doc.worldMap.places.length} lieux, ${doc.worldMap.routes.length} routes.`);
+}

@@ -15,7 +15,10 @@ est de l'affichage multilangue — CLAUDE.md, encadré « id STABLE ») ; **pers
 - **Générateur** `scripts/<campagne>/generate.mjs` (modèles : `scripts/arene/generate.mjs`,
   `scripts/loup-et-saumure/generate.mjs`, `scripts/barge-du-sel/generate.mjs` — ce dernier le plus récent,
   CharKey canonique) — assemble les scènes + la `worldMap`, écrit le JSON. OUTIL d'auteur (`tsx`), PAS un
-  build : la sortie commitée est la source.
+  build : la sortie commitée est la source. **Contrat imposé** (garde `src/scenes/generateurs-byte-stables.test.ts`,
+  #1522) : le module exporte la construction PURE `build()` et le chemin `OUT` de son artefact, le CLI n'étant
+  qu'un shell d'écriture gardé par `import.meta.url` — la SOURCE possède 100 % de la donnée du JSON, et
+  relancer un générateur ne peut plus rien perdre en silence.
 - **Compilation** `scene()` construit un `MapSpec` déclaratif puis délègue à `buildScene()`
   (`src/state/mapSpec.ts`) — MÊME compilateur headless-editor que l'éditeur. L'ASCII (`rows`/`legend`/
   `base`) est parsé, les bâtiments composés par `addBuilding`, les rencontres terse expansées par
@@ -245,11 +248,11 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
   fail-fast au parse : aucun id narratif ne peut collisionner avec un id global (créature/possession),
   `affaireId`/`refs`/`base` doivent résoudre, ids internes uniques.
 - **Identité (`meta`).** Le paquet porte aussi un bloc `meta` (`ProjectMeta`, `src/state/worldMap.ts`) —
-  `id`/`label`/`version` requis, `icon`/`description`/`auteur` optionnels — identité de campagne pour la
+  `id`/`label`/`version` requis, `icon`/`desc`/`auteur` optionnels — identité de campagne pour la
   bibliothèque (#766), validée fail-fast SI présente ; optionnelle au format (la migration 2→3 n'en injecte pas).
 - **Migration.** Un projet schema 2 legacy (localStorage éditeur d'avant #765) monte au format courant
   au chargement (`PROJECT_MIGRATIONS[2]` injecte un narratif vide). Les **quatre projets committés sont
-  en schema 3** : « L'Arène » (`src/scenes/arene/arene-projet.json`), « La Barge du Sel »
+  en schema 4** : « L'Arène » (`src/scenes/arene/arene-projet.json`), « La Barge du Sel »
   (`src/scenes/barge-du-sel/barge-du-sel-projet.json`), « La Diligence »
   (`src/scenes/diligence/diligence-projet.json`, sans `worldMap`) et « Le Loup et la Saumure »
   (`src/scenes/loup-et-saumure/loup-et-saumure-projet.json`) — produits par `projectDoc`

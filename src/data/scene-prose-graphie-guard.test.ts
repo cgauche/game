@@ -18,7 +18,13 @@
  * ANGLE MORT DÉCLARÉ : la détection est TEXTUELLE et ancrée sur des formes d'AUTHORING littérales
  * (`type: 'journal', text:`, `description:` d'une scène, `choices: [{ text:`). Un document construit
  * par épissure (`{ ...noeud, text }`) ou par une clé calculée lui échappe — le contrat de donnée et
- * le typecheck restent les filets pour ces formes-là.
+ * le typecheck restent les filets pour ces formes-là. La propriété RACCOURCIE d'un effet
+ * (`{ type: 'setObjective', id, text }`) est, elle, COUVERTE (#1522) : c'est par ce trou exact que les
+ * helpers `OBJ` des deux générateurs nommés ci-dessus sont restés verts à la graphie schema-3. La
+ * même forme raccourcie reste hors portée pour `choices` (aucun porteur mesuré).
+ * Second angle mort, MONO-LIGNE : les deux motifs d'effet sont ancrés par `[^\n]*?`, donc un effet ÉCLATÉ
+ * sur plusieurs lignes (`{\n  type: 'journal',\n  text: …`) ou dont le `text` PRÉCÈDE son `type:` leur
+ * échappe — 0 porteur mesuré aujourd'hui dans `src/**` ni `scripts/**`.
  */
 import { describe, expect, it } from 'vitest';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
@@ -49,6 +55,9 @@ const FORMES: readonly { motif: RegExp; quoi: string; cible: string }[] = [
   { motif: /type:\s*'(?:journal|document|setObjective)'[^\n]*?,\s*text:/g, quoi: "effet `journal`/`document`/`setObjective` à `text`", cible: 'desc' },
   { motif: /choices:\s*\[\s*\{\s*text:/g, quoi: '`DialogueChoice.text`', cible: 'label' },
   { motif: /(?<![A-Za-z0-9_$])description:/g, quoi: '`description` de scène/projet', cible: 'desc' },
+  // Propriété RACCOURCIE : ancrée sur le `type:` de l'effet, donc aveugle aux `text` LÉGITIMES
+  // (`narrative.text`, `TrappingRef.text`) que le lot #1467 L1b a laissés intacts.
+  { motif: /type:\s*'(?:journal|document|setObjective)'[^\n]*?,\s*text\s*[,}\)]/g, quoi: "effet `journal`/`document`/`setObjective` à `text` RACCOURCI", cible: 'desc' },
 ];
 
 describe('graphie de la prose de scène — aucun producteur ne réécrit la forme retirée (#1467 L1b)', () => {
@@ -65,6 +74,7 @@ describe('graphie de la prose de scène — aucun producteur ne réécrit la for
       "flowOf([{ type: 'journal', text: 'x' }])",
       "choices: [{ text: 'Revenir', next: 'a' }]",
       "description: 'une scène',",
+      "({ type: 'setObjective', id: 'm', text })",
     ];
     for (const [i, f] of FORMES.entries()) {
       f.motif.lastIndex = 0;

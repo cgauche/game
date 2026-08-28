@@ -136,11 +136,10 @@ function validateFlowRefs(node) {
  *  réfs par ids stables des rencontres et des flows sont validées SUR LE SPEC avant compilation.
  *  `hidden` (défaut false = VISIBLE, RAW : le groupe voit
  *  ses adversaires) pose `combat.hiddenUntilCombat` sur les entités enrôlées. */
-export function scene({ id, nom, description = '', ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, metresPerTile, rest, entities = [], architecture = [], walls = [], terrainRects = [], effectZones = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
+export function scene({ id, nom, desc, ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, metresPerTile, rest, entities = [], architecture = [], walls = [], terrainRects = [], effectZones = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
   const spec = {
     id,
     nom,
-    description,
     ambiance,
     size: [rows[0].length, rows.length],
     terrain: base,
@@ -159,6 +158,7 @@ export function scene({ id, nom, description = '', ambiance = 'exterieur', weath
     })),
     flags,
   };
+  if (desc) spec.desc = desc; // `desc` est `min(1).optional()` (defs-scenes/scene.ts) : vide ⇒ clé ABSENTE
   if (legend) spec.legend = legend;
   if (metresPerTile != null) spec.metresPerTile = metresPerTile; // échelle de la scène (MER = 4 m/case) — forwardée au MapSpec (sinon défaut 2 m/case)
   if (weather) spec.weather = weather;
@@ -170,6 +170,16 @@ export function scene({ id, nom, description = '', ambiance = 'exterieur', weath
   // Compétences/sorts des flows (tests, corruption, learnSpell) → ids : dialogues, triggers, onVictory des
   // rencontres, ET les flows de fouille nichés dans `entities[].interact` (testNode d'un décor piégé).
   validateFlowRefs({ dialogues, triggers, entities, encounters: spec.encounters });
+  // Les uid de postes sont une séquence remise à zéro PAR SCÈNE (`resetIds`) : leur unicité n'est plus
+  // portée par un compteur global. Sans ce fail-fast, un doublon serait SILENCIEUX (tout lecteur résout
+  // un poste par `find` sur l'uid et prendrait le premier).
+  const uids = new Set();
+  for (const e of entities) {
+    for (const p of e.postes ?? []) {
+      if (uids.has(p.uid)) throw new Error(`campagne : scène « ${id} » — uid de poste dupliqué « ${p.uid} » (resetIds() appelé au MILIEU de la scène ?).`);
+      uids.add(p.uid);
+    }
+  }
   return buildScene(spec);
 }
 
@@ -187,8 +197,10 @@ let propSeq = 0;
 export function P(x, y, ref, extra = {}) {
   return { id: `p${propSeq++}`, kind: 'prop', pos: { x, y }, ref, ...extra };
 }
+/** Remet à zéro TOUTES les séquences d'ids de scène (props ET postes) — à appeler au début de CHAQUE scène. */
 export function resetIds() {
   propSeq = 0;
+  posteSeq = 0;
 }
 
 /** Personnage (PNJ) : apparence/dialogue/marchand via opts. `weapon`/`appearance.species`/`appearance.tenue`

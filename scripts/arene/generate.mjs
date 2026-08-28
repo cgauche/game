@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/arene/arene-projet.json` (`projectDoc()` : projet schema 3, { schema, meta, narratif, scenes, worldMap }).
+ * Génère `src/scenes/arene/arene-projet.json` (`projectDoc()` : projet schema 4, { schema, meta, narratif, scenes, worldMap }).
  * OUTIL D'AUTEUR (itération de layout) — le JSON commité reste la source canonique, 100 %
  * éditable dans l'éditeur. Usage : `tsx scripts/arene/generate.mjs` (tsx car `scripts/campagne/lib.mjs` importe
  * `buildScene` du moteur — l'ASCII, l'architecture, les murs, les couches et les rencontres sont compilés par le compilateur
@@ -8,13 +8,17 @@
  */
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { projectDoc } from '../campagne/lib.mjs';
 import { makeHub } from './hub.mjs';
 import { makeZone1, makeZone2, makeZone3, makeZone4, makeZone5, makeZone6, makeZone7 } from './zones1-7.mjs';
 import { makeZone8, makeZone9, makeZone10, makeZone11, makeZone12, makeZone13 } from './zones8-13.mjs';
 import { makeForet, makeMarais, makeVillage, makeEmbuscade } from './expeditions.mjs';
 
+/** Construction PURE du document de projet : la SOURCE possède 100 % de la donnée de l'artefact
+ *  (`src/scenes/arene/arene-projet.json`), le CLI ci-dessous n'en est que la voie d'écriture.
+ *  Rejouable à volonté dans un même process — garde `src/scenes/generateurs-byte-stables.test.ts`. */
+export function build() {
 // L'ordre compte : scenes[0] = arene-zone1 (départ de « Nouvelle partie »). Le Bourg est TOUT-EN-SCÈNE :
 // les 4 corps architecturaux (taverne/chapelle/forge/échoppe) sont DANS `arene-hub`.
 const scenes = [
@@ -118,11 +122,18 @@ for (const s of scenes) {
 }
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
-const doc = projectDoc({
+return projectDoc({
   meta: { id: 'arene', label: 'L’Arène', icon: 'scenario/village', version: 1 },
   scenes,
   worldMap,
 });
-const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/arene/arene-projet.json');
-writeFileSync(out, JSON.stringify(doc, null, 1) + '\n');
-console.log(`arene-projet.json : ${scenes.length} scènes, ${worldMap.places.length} lieux, ${worldMap.routes.length} routes.`);
+}
+
+/** Chemin de l'artefact écrit par le CLI — lu aussi par la garde byte-stable. */
+export const OUT = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/arene/arene-projet.json');
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const doc = build();
+  writeFileSync(OUT, JSON.stringify(doc, null, 1) + '\n');
+  console.log(`arene-projet.json : ${doc.scenes.length} scènes, ${doc.worldMap.places.length} lieux, ${doc.worldMap.routes.length} routes.`);
+}
