@@ -1,6 +1,7 @@
 [
   {
     "id": "tier-0",
+    "type": "encumbranceTiers",
     "label": "Palier 0",
     "tier": 0,
     "movePenalty": 0,
@@ -16,6 +17,7 @@
   },
   {
     "id": "tier-1",
+    "type": "encumbranceTiers",
     "label": "Palier 1",
     "tier": 1,
     "movePenalty": 1,
@@ -31,6 +33,7 @@
   },
   {
     "id": "tier-2",
+    "type": "encumbranceTiers",
     "label": "Palier 2",
     "tier": 2,
     "movePenalty": 2,
@@ -46,6 +49,7 @@
   },
   {
     "id": "tier-3",
+    "type": "encumbranceTiers",
     "label": "Palier 3",
     "tier": 3,
     "movePenalty": null,

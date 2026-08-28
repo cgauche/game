@@ -6,6 +6,7 @@
  * ils prouvent du même coup que le registre généré `_ids.generated.ts` et la donnée s'accordent.
  */
 import { describe, it, expect, expectTypeOf } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
@@ -404,6 +405,15 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
   // `document()` rendent un nœud SCELLÉ sans `.shape` : ils ne sont pas mesurables ici — et n'ont plus
   // rien à perdre, leur enveloppe est celle de la fabrique. Ce compte est ce que le flip-entite doit
   // reporter en `options.exiges`, def par def : il DÉCROÎT à mesure que les defs sont adoptés.
+  //
+  // UNE EXCEPTION NOMMÉE dans `scelles` : `oups.json` n'est PAS adopté. Son schéma est
+  // `z.array(z.union([...]))` — un nœud d'union n'a ni `.shape` ni `innerType`, donc le relevé
+  // ci-dessous le range en « scellé » alors que son enveloppe est encore écrite à la main. Ce n'est
+  // pas un oubli d'adoption : ses deux formes (bande d100 `min`/`max`/`kind` vs Incident de Tir
+  // `kind: 'misfire'`) sont DISJOINTES, et `options.variantes` ne les exprime pas (une variante
+  // REPUBLIE des champs d'un même document, elle n'en propose pas une seconde forme). `oups` relève
+  // d'une classe « union » à concevoir, hors des vagues 11a/11b. Au 2026-08-28, `scelles` = 23 defs
+  // réellement adoptés + `oups`.
   const noeudInterne = (n: unknown): unknown => {
     const d = (n as { _zod?: { def?: Record<string, unknown> }; def?: Record<string, unknown> })?._zod?.def;
     if (!d) return undefined;
@@ -433,7 +443,117 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
   }
 
   it('compte les clés d’enveloppe REQUISES que l’adoption relâcherait sans `exiges`', () => {
-    expect(mesure).toEqual({ desc: 24, source: 27, icon: 3, scelles: 2, mesures: 75 });
+    // #1467 L1b V-FLIP-ENTITE-a (2026-08-28) : 22 defs `entite` ont adopté `document()` — ils rendent
+    // un nœud SCELLÉ, donc ils quittent la population MESURÉE pour la population SCELLÉE (75 → 53,
+    // 2 → 24). Ce que la mesure perd, `options.exiges` le PORTE désormais au def : desc −5 (astrology,
+    // classes, crew-roles, peripeties, sea-shanties), source −3 (astrology, classes, sea-shanties),
+    // icon −1 (calendarPhases). L'ADOPTION est la cause du recalage, pas une dérive du détecteur.
+    expect(mesure).toEqual({ desc: 19, source: 24, icon: 2, scelles: 24, mesures: 53 });
+  });
+
+});
+
+/**
+ * CONTREPARTIE du mesureur (#1467 L1b V-FLIP-ENTITE-a) — un def ADOPTÉ sort de la population mesurée
+ * (nœud scellé) : son `exiges` n'y est plus visible, et le vider ne ferait ROUGIR AUCUN compte tant
+ * que la donnée réelle porte la clé. C'est mesuré, pas supposé. Le verrou qui reste est celui-ci :
+ * l'entrée SANS la clé exigée doit être REFUSÉE, def par def.
+ *
+ * POPULATION DÉRIVÉE, jamais nommée à la main : tous les defs `entite` ADOPTÉS du registre (schéma
+ * SCELLÉ, donc sans `.shape`) × les clés exigibles que porte leur 1ʳᵉ entrée RÉELLE. Un def adopté à
+ * une vague ultérieure entre SEUL dans la population ; s'il exige, la table gelée ci-dessous devient
+ * ROUGE et le nomme — la divergence est bruyante, jamais silencieuse.
+ *
+ * AMPUTATION DE `source` : le refine de PROVENANCE (`document.ts`, « entrée sans `source` ») refuse
+ * DÉJÀ une entrée amputée de sa source — un test naïf y serait INERTE (rouge quel que soit `exiges`).
+ * L'amputation POSE donc `maison` : la provenance est satisfaite, et seule `exiges` peut encore
+ * refuser. Le témoin `AVEC` (entrée complète acceptée) accompagne chaque paire.
+ */
+describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureur ne voit plus', () => {
+  const RACINE = new URL('../../', import.meta.url);
+  const CLES = ['labelF', 'desc', 'source', 'alsoIn', 'maison', 'icon'] as const;
+  type Cle = (typeof CLES)[number];
+
+  /**
+   * Un def `entite` est ADOPTÉ quand l'élément de sa liste est un `ZodPipe` — la forme EXACTE que
+   * `document()` rend (`affine.pipe(...)`). Le critère « pas de `.shape` » ne suffirait pas : une
+   * UNION n'en a pas non plus, et `oups.json` (non adopté) entrerait dans la population.
+   */
+  const adopte = (schema: unknown): boolean =>
+    ((schema as { _zod?: { def?: { type?: string; element?: { _zod?: { def?: { type?: string } } } } } })?._zod?.def?.element?._zod?.def
+      ?.type ?? '') === 'pipe';
+
+  /** Dataset RÉEL complet (jamais une entrée isolée : `affinerDataset` peut exiger la liste entière —
+   *  `names.json` refuse tout tableau qui n'a pas ses 7 races). */
+  const dataset = (fichier: string): Record<string, unknown>[] | undefined => {
+    const brut = JSON.parse(readFileSync(new URL(fichier, RACINE), 'utf8')) as unknown;
+    return Array.isArray(brut) && brut.length ? (brut as Record<string, unknown>[]) : undefined;
+  };
+
+  const premiereEntree = (fichier: string): Record<string, unknown> | undefined => dataset(fichier)?.[0];
+
+  /**
+   * `source` RÉELLE empruntée à `classes.json` — jamais un folio inventé : elle ne sert qu'à
+   * satisfaire le refine de provenance quand la sonde ampute `maison`.
+   */
+  const SOURCE_TEMOIN = premiereEntree('classes.json')!.source;
+
+  /**
+   * Entrée privée de `cle`. Les deux clés de PROVENANCE se compensent l'une l'autre : sans cela le
+   * refine `source ∨ maison` refuserait l'entrée amputée QUOI QUE déclare `exiges`, et la sonde
+   * serait INERTE (rouge dans les deux configurations, donc muette). Compensée, seule `exiges` peut
+   * encore refuser.
+   */
+  const ampute = (entree: Record<string, unknown>, cle: Cle): Record<string, unknown> => {
+    const { [cle]: _retire, ...reste } = entree;
+    if (cle === 'source') return { ...reste, maison: 'sonde d’exigence — provenance satisfaite pour isoler `exiges`' };
+    if (cle === 'maison') return { ...reste, source: SOURCE_TEMOIN };
+    return reste;
+  };
+
+  /** Paires (fichier, clé) mesurées REFUSÉES à l'amputation, sur la population dérivée du registre. */
+  const mesurees = (): { paires: string[]; temoins: string[] } => {
+    const paires: string[] = [];
+    const temoins: string[] = [];
+    for (const def of SCHEMA_DEFS.filter((d) => d.famille === 'entite' && adopte(d.schema))) {
+      const liste = dataset(def.file);
+      const entree = liste?.[0];
+      if (!liste || !entree) continue;
+      /** La liste RÉELLE dont la 1ʳᵉ entrée est remplacée — tout le reste intact. */
+      const avec = (remplacante: Record<string, unknown>) => [remplacante, ...liste.slice(1)];
+      if (!def.schema.safeParse(avec(entree)).success) temoins.push(`${def.file} : la 1ʳᵉ entrée RÉELLE est refusée par son propre schéma`);
+      for (const cle of CLES) {
+        if (entree[cle] === undefined) continue;
+        if (!def.schema.safeParse(avec(ampute(entree, cle))).success) paires.push(`${def.file} · ${cle}`);
+      }
+    }
+    return { paires, temoins };
+  };
+
+  /** Ce que la vague 11a a DÉCLARÉ en `options.exiges`, mesuré au schéma. Gelé, NOMINATIF. */
+  const EXIGENCES_GELEES = [
+    'astrology.json · desc',
+    'astrology.json · source',
+    'calendarPhases.json · icon',
+    'classes.json · desc',
+    'classes.json · source',
+    'crew-roles.json · desc',
+    'peripeties.json · desc',
+    'sea-shanties.json · desc',
+    'sea-shanties.json · source',
+  ];
+
+  it('la 1ʳᵉ entrée réelle de chaque def adopté est ACCEPTÉE — témoin positif de chaque paire', () => {
+    const { temoins } = mesurees();
+    expect(temoins, `Témoin(s) positif(s) en échec :\n${temoins.join('\n')}`).toEqual([]);
+  });
+
+  it('l’entrée AMPUTÉE d’une clé exigée est REFUSÉE — et le stock des paires est EXACTEMENT celui gelé', () => {
+    const { paires } = mesurees();
+    const manquantes = EXIGENCES_GELEES.filter((p) => !paires.includes(p));
+    const neuves = paires.filter((p) => !EXIGENCES_GELEES.includes(p));
+    expect(manquantes, `Exigence(s) DÉCLARÉE(s) mais non verrouillée(s) — l’amputation passe :\n${manquantes.join('\n')}`).toEqual([]);
+    expect(neuves, `Exigence(s) NEUVE(s) non gelée(s) — une vague a adopté un def qui exige, déclare-la :\n${neuves.join('\n')}`).toEqual([]);
   });
 });
 

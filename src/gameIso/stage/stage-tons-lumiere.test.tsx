@@ -61,7 +61,7 @@ describe('lightTones.json — le catalogue livré, et les bornes qui le tiennent
   });
 
   it('zod REFUSE chaque borne violée — couleur, intensité, amplitude, fréquence', () => {
-    const base = { id: 'x', label: 'X', color: '#ffffff', intensity: 1 };
+    const base = { id: 'x', type: 'lightTones', label: 'X', color: '#ffffff', intensity: 1 };
     const refusé = (entrée: unknown) => lightTonesSchema.safeParse([entrée]).success;
     expect(refusé(base)).toBe(true);
     expect(refusé({ ...base, color: 'orange' })).toBe(false);       // ni nom CSS…
@@ -107,7 +107,7 @@ describe('Un ton FORGÉ change l’apparence de la flaque SANS une ligne de code
   });
 
   it('couleur, part d’intensité et vacillement de la lampe écrite viennent TOUS du ton', () => {
-    forger({ id: 'feu-verdatre', label: 'Feu verdâtre', color: '#3ad18c', intensity: 0.5, flicker: { amplitude: 0.4, hz: 7 } });
+    forger({ id: 'feu-verdatre', type: 'lightTones', label: 'Feu verdâtre', color: '#3ad18c', intensity: 0.5, flicker: { amplitude: 0.4, hz: 7 } });
     const w = pointLightWrites([source({ tone: 'feu-verdatre' })], OPTS)[0]!;
     expect(w.color).toBe(0x3ad18c);
     expect(w.flicker).toEqual({ amplitude: 0.4, hz: 7 });
@@ -117,7 +117,7 @@ describe('Un ton FORGÉ change l’apparence de la flaque SANS une ligne de code
   });
 
   it('…et la lampe MONTÉE porte cette couleur : la chaîne va jusqu’à three', () => {
-    forger({ id: 'braise-pourpre', label: 'Braise pourpre', color: '#a03cff', intensity: 1 });
+    forger({ id: 'braise-pourpre', type: 'lightTones', label: 'Braise pourpre', color: '#a03cff', intensity: 1 });
     const pool = createPointLightPool();
     applyPointLights(pool, pointLightWrites([source({ tone: 'braise-pourpre' })], OPTS));
     expect(pool[0].color.getHexString()).toBe(new THREE.Color(0xa03cff).getHexString());

@@ -1,6 +1,7 @@
 [
   {
     "id": "hexenstag",
+    "type": "calendarIntercalary",
     "label": "Hexenstag",
     "afterMonth": -1,
     "source": {
@@ -11,6 +12,7 @@
   },
   {
     "id": "mitterfruhl",
+    "type": "calendarIntercalary",
     "label": "Mitterfrühl",
     "afterMonth": 1,
     "source": {
@@ -21,6 +23,7 @@
   },
   {
     "id": "sonnstill",
+    "type": "calendarIntercalary",
     "label": "Sonnstill",
     "afterMonth": 4,
     "source": {
@@ -31,6 +34,7 @@
   },
   {
     "id": "geheimnistag",
+    "type": "calendarIntercalary",
     "label": "Geheimnistag",
     "afterMonth": 5,
     "source": {
@@ -41,6 +45,7 @@
   },
   {
     "id": "mittherbst",
+    "type": "calendarIntercalary",
     "label": "Mittherbst",
     "afterMonth": 7,
     "source": {
@@ -51,6 +56,7 @@
   },
   {
     "id": "mondstille",
+    "type": "calendarIntercalary",
     "label": "Mondstille",
     "afterMonth": 8,
     "source": {

@@ -20,7 +20,7 @@ const doc = document(
   {
     harnaisParDefaut: {
       label: 'Harnais par défaut',
-      hint: 'Appliqué seulement si le record ne déclare aucun appearance.harnais — un harnais du record ou d’un override prime',
+      hint: 'Appliqué seulement si le record ne déclare aucun appearance.harnais — un harnais du record ou d’une surcharge prime',
     },
   },
   {

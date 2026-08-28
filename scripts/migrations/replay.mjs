@@ -21,9 +21,13 @@
  * de son propre chef, il délègue aux scripts.
  *
  * NOMMAGE DU LOT #1467 L1b : préfixe `<AAAA-MM-JJ>-l1b-<n><lettre>-<concept>.mjs`, la date étant
- * celle d'ÉCRITURE de la vague (2026-08-27 pour les vagues 1 à 5, 2026-08-28 pour la vague 6 —
- * l'ordre lexical reste l'ordre des vagues, les deux clés croissant ensemble). La porte ci-dessus
- * rejoue dans cet ordre. Elles sont NO-OP TOLÉRANTES À LA FORME : rejouées sur l'état final, elles
+ * celle d'ÉCRITURE de la vague (2026-08-27 pour les vagues 1 à 5, 2026-08-28 à partir de la vague 6).
+ * L'ordre lexical NE SUIT PLUS le numéro de vague depuis la vague 10 : `10a`, `11a` trient AVANT
+ * `6a`…`9c` (comparaison de chaînes, pas d'entiers). C'est SANS effet ici parce que les migrations du
+ * lot écrivent des fichiers DISJOINTS — aucune ne lit le résultat d'une autre, donc aucun ordre
+ * n'est requis entre elles. Le jour où deux migrations toucheraient le MÊME fichier, l'ordre lexical
+ * ne suffirait plus et il faudrait le rendre explicite. La porte ci-dessus rejoue dans l'ordre
+ * lexical, quel qu'il soit. Elles sont NO-OP TOLÉRANTES À LA FORME : rejouées sur l'état final, elles
  * reconnaissent « déjà migré » et sortent 0 — une migration absente d'`ATTENDU_ROUGE` qui fail-fast
  * sur « forme inattendue » sort ROUGE du rejeu (`replay.mjs:110`).
  */

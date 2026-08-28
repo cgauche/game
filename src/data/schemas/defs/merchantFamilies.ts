@@ -4,14 +4,15 @@
  * `familyOf`, `FAMILY_COLS` dérivés) — ordre du tableau = ordre d'affichage des onglets.
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 
 export const file = 'merchantFamilies.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'merchantFamilies',
+  famille,
+  {
     match: z.strictObject({
       /** CATÉGORIE de catalogue classée par cette famille (`TrappingData.categorie`). */
       categorie: z.string().optional(),
@@ -19,5 +20,22 @@ export const schema = z.array(
       unit: z.boolean().optional(),
     }),
     columns: z.array(z.string()),
-  }),
+  },
+  {
+    match: { label: 'Critère de rattachement', hint: 'Condition qui range un objet dans cette famille de présentation' },
+    columns: { label: 'Colonnes affichées', hint: 'Colonnes de statistiques affichées pour cette famille, dans l’ordre' },
+  },
+  {
+    codex: {
+      exempt: {
+        kind: 'vocabulaire-app-interne',
+        raison:
+          "config de PRÉSENTATION du stock marchand (familles d'onglets, colonnes) — vocabulaire app-interne, pas une fiche de contenu.",
+      },
+    },
+    edit: { none: 'aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

@@ -1,6 +1,7 @@
 [
   {
     "id": "citadins",
+    "type": "classes",
     "label": "Citadins",
     "trappings": [
       {
@@ -33,6 +34,7 @@
   },
   {
     "id": "cotiers",
+    "type": "classes",
     "label": "Côtiers",
     "trappings": [
       {
@@ -65,6 +67,7 @@
   },
   {
     "id": "courtisans",
+    "type": "classes",
     "label": "Courtisans",
     "trappings": [
       {
@@ -94,6 +97,7 @@
   },
   {
     "id": "guerriers",
+    "type": "classes",
     "label": "Guerriers",
     "trappings": [
       {
@@ -117,6 +121,7 @@
   },
   {
     "id": "itinerants",
+    "type": "classes",
     "label": "Itinérants",
     "trappings": [
       {
@@ -152,6 +157,7 @@
   },
   {
     "id": "lettres",
+    "type": "classes",
     "label": "Lettrés",
     "trappings": [
       {
@@ -187,6 +193,7 @@
   },
   {
     "id": "riverains",
+    "type": "classes",
     "label": "Riverains",
     "trappings": [
       {
@@ -216,6 +223,7 @@
   },
   {
     "id": "roublards",
+    "type": "classes",
     "label": "Roublards",
     "grantGroups": [
       "criminel"
@@ -260,6 +268,7 @@
   },
   {
     "id": "ruraux",
+    "type": "classes",
     "label": "Ruraux",
     "trappings": [
       {

@@ -195,7 +195,7 @@ const doc = document(
       hint: 'Rangée du tableau des Effets de Saturation propre à chaque Vent de Magie',
     },
     phenomena: { label: 'Phénomènes arcaniques', hint: 'Un phénomène nommé, ses modificateurs de Test et son action sur la Saturation' },
-    tables: { label: 'Tables tirées', hint: 'Les tables d10/d100 du chapitre, consultées par id' },
+    tables: { label: 'Tables tirées', hint: 'Les tables d10/d100 du chapitre, consultées par identifiant' },
   },
   { codex: { keys: ['arcanePhenomena'] }, edit: { object: 'single' } },
 );

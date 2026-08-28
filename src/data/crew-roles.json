@@ -1,6 +1,7 @@
 [
   {
     "id": "capitaine",
+    "type": "crew-roles",
     "label": "Capitaine",
     "skills": [
       {
@@ -25,6 +26,7 @@
   },
   {
     "id": "timonier",
+    "type": "crew-roles",
     "label": "Timonier",
     "skills": [
       {
@@ -49,6 +51,7 @@
   },
   {
     "id": "vigie",
+    "type": "crew-roles",
     "label": "Vigie",
     "skills": [
       {
@@ -73,6 +76,7 @@
   },
   {
     "id": "mousse",
+    "type": "crew-roles",
     "label": "Mousse",
     "skills": [
       {
@@ -106,6 +110,7 @@
   },
   {
     "id": "navigateur",
+    "type": "crew-roles",
     "label": "Navigateur",
     "skills": [
       {
@@ -130,6 +135,7 @@
   },
   {
     "id": "artilleur",
+    "type": "crew-roles",
     "label": "Artilleur",
     "skills": [
       {
@@ -155,6 +161,7 @@
   },
   {
     "id": "cuisinier",
+    "type": "crew-roles",
     "label": "Cuisinier",
     "skills": [
       {
@@ -180,6 +187,7 @@
   },
   {
     "id": "chirurgien",
+    "type": "crew-roles",
     "label": "Chirurgien",
     "skills": [
       {
@@ -210,6 +218,7 @@
   },
   {
     "id": "chansonnier",
+    "type": "crew-roles",
     "label": "Chansonnier",
     "skills": [
       {

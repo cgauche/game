@@ -27,7 +27,7 @@ const doc = document(
     ),
   },
   {
-    entries: { label: 'Accidents', hint: 'Rangées du 1d10, bornes min/max inclusives ; `outcome` = id de l’issue tirée' },
+    entries: { label: 'Accidents', hint: 'Rangées du 1d10, bornes min/max inclusives ; `outcome` = identifiant de l’issue tirée' },
   },
   {
     codex: { keys: ['drivingMishap'] },

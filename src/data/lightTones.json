@@ -1,6 +1,7 @@
 [
   {
     "id": "flamme",
+    "type": "lightTones",
     "label": "Flamme",
     "color": "#ff8c3a",
     "intensity": 1,
@@ -11,12 +12,14 @@
   },
   {
     "id": "lanterne",
+    "type": "lightTones",
     "label": "Lanterne",
     "color": "#ffe6b3",
     "intensity": 0.6
   },
   {
     "id": "chandelle",
+    "type": "lightTones",
     "label": "Chandelle",
     "color": "#ffbf66",
     "intensity": 0.45,
@@ -27,6 +30,7 @@
   },
   {
     "id": "magique",
+    "type": "lightTones",
     "label": "Magique",
     "color": "#8fc8ff",
     "intensity": 0.85

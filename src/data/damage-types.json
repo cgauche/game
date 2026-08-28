@@ -1,18 +1,22 @@
 [
   {
     "id": "poison",
+    "type": "damage-types",
     "label": "Poison"
   },
   {
     "id": "feu",
+    "type": "damage-types",
     "label": "Feu"
   },
   {
     "id": "electrique",
+    "type": "damage-types",
     "label": "Électrique"
   },
   {
     "id": "magique",
+    "type": "damage-types",
     "label": "Magique"
   }
 ]

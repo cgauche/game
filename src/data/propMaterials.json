@@ -1,6 +1,7 @@
 [
   {
     "id": "bois-chene",
+    "type": "propMaterials",
     "label": "Chêne",
     "color": "#5b3a22",
     "roughness": 0.82,
@@ -8,6 +9,7 @@
   },
   {
     "id": "pierre-atre",
+    "type": "propMaterials",
     "label": "Pierre d'âtre",
     "color": "#6b665e",
     "roughness": 0.94,
@@ -15,6 +17,7 @@
   },
   {
     "id": "fer-noirci",
+    "type": "propMaterials",
     "label": "Fer noirci",
     "color": "#2e2f33",
     "roughness": 0.52,
@@ -22,6 +25,7 @@
   },
   {
     "id": "braises",
+    "type": "propMaterials",
     "label": "Braises",
     "color": "#8c3416",
     "roughness": 0.7,

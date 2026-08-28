@@ -803,6 +803,7 @@ export interface SpeciesData {
 export interface ClassData {
   /** id STABLE (slug du libellé) — cible de `CareerData.class`. */
   id: string;
+  type: 'classes';
   label: string;
   /** Ids de `groups.json` accordés à tout titulaire d'une carrière de cette Classe (`groupsFor`) —
    *  ex. la classe des Roublards ouvre le Groupe « Criminel ». Absent = aucun Groupe. */
@@ -1308,6 +1309,7 @@ export interface GroupData {
  *  renderers `MERCHANT_COL_RENDERERS` (`ui/MerchantPanel.tsx`). */
 export interface MerchantFamilyData {
   id: string;
+  type: 'merchantFamilies';
   label: string;
   match: { categorie?: string; shield?: boolean; unit?: boolean };
   columns: string[];
@@ -1504,6 +1506,8 @@ export interface PsychologyData extends StatusData {
 /** Tables Couleur des Yeux / Cheveux (LDB 05 l.698-744) : 2d10, par colonne `RaceKey` (#313). */
 export interface DetailColorData {
   id: string;
+  /** Deux datasets partagent CE contrat (`eyes.json` et `hairs.json`) : le `type` dit lequel. */
+  type: 'eyes' | 'hairs';
   label: string;
   /** Borne haute 2d10 (incluse). */
   rand: number;
@@ -2132,6 +2136,7 @@ export interface StarData {
 export interface CelestialHouseData {
   /** id STABLE (slug du libellé) — `HeroDetails.dwellings[].house` stocke cet ID (libellé à l'affichage). */
   id: string;
+  type: 'astrology';
   label: string;
   rand: number;
   desc: string;
@@ -2471,6 +2476,7 @@ export const riverNavigation = riverNavigationJson as RiverNavigationData;
  *  forgeron/guilde…) — id STABLE → libellé/icône d'affichage du hub de lieu. */
 export interface LieuServiceData {
   id: string;
+  type: 'lieux-services';
   label: string;
   icon?: string;
   desc?: string;
@@ -2504,6 +2510,7 @@ export function findLieuServiceById(id: string): LieuServiceData | undefined {
  *  conséquence de Test non suivies par le moteur) — affichée, jamais un effet inventé. */
 export interface SeaShantyData {
   id: string;
+  type: 'sea-shanties';
   label: string;
   desc: string;
   crewOps?: import('../engine/ops').GameOp[];
@@ -2529,6 +2536,7 @@ export interface CrewWage {
 }
 export interface CrewRoleData {
   id: string;
+  type: 'crew-roles';
   label: string;
   skills: { skillId: string; spec?: string }[];
   desc: string;
@@ -2571,7 +2579,7 @@ export const maneuvers = maneuversJson as ManeuverDef[];
 /** Niveaux de lumière ambiante app-owned (brouillard de guerre) : `scalar` 0..1 (assombrissement du
  *  rendu) + `baseSightTiles` (rayon de vue de base en cases — réglage MAISON : le LDB ne stat pas la
  *  portée de vue). Édité au Codex. `Scene.ambientLight` réfère un `id` (ou `auto` = suit l'horloge). */
-export interface LightLevelDef { id: string; label: string; scalar: number; baseSightTiles: number }
+export interface LightLevelDef { id: string; type: 'lightLevels'; label: string; scalar: number; baseSightTiles: number }
 export const lightLevels = lightLevelsJson as LightLevelDef[];
 export const LIGHT_LEVEL_BY_ID = new Map(lightLevels.map((l) => [l.id, l]));
 export const findLightLevelById = (id: string): LightLevelDef | undefined => LIGHT_LEVEL_BY_ID.get(id);
@@ -2580,7 +2588,7 @@ export const findLightLevelById = (id: string): LightLevelDef | undefined => LIG
  *  vacillement optionnel. Aucune conséquence de règle : le moteur ne connaît d'une source que son
  *  RAYON (LDB 74). Référencé par `tone` (prop, instance de scène, op `light`, `ActiveEffect.light`) ;
  *  absent = `flamme`. Résolu au bord du RENDU (`gameIso/stage/stagePointLights.ts`). */
-export interface LightToneDef { id: string; label: string; color: string; intensity: number; flicker?: { amplitude: number; hz: number } }
+export interface LightToneDef { id: string; type: 'lightTones'; label: string; color: string; intensity: number; flicker?: { amplitude: number; hz: number } }
 export const lightTones = lightTonesJson as LightToneDef[];
 /** Lookup LIVE — un balayage du tableau, pas une `Map` cuite au chargement : le catalogue se mute EN
  *  PLACE (`data/overrides.ts`, éditeur du Codex / surcharges de campagne), et un index figé servirait
@@ -2628,9 +2636,9 @@ export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 /** Calendrier impérial — tables de CONTENU éditables au Codex (cf. `engine/clock.ts` pour la mécanique). */
 export const calendarMonths = calendarMonthsJson as { id: string; label: string; days: number }[];
-export const calendarIntercalary = calendarIntercalaryJson as { id: string; label: string; afterMonth: number }[];
-export const calendarWeekdays = calendarWeekdaysJson as { id: string; label: string }[];
-export const calendarPhases = calendarPhasesJson as { id: string; start: number; label: string; icon: string }[];
+export const calendarIntercalary = calendarIntercalaryJson as { id: string; type: 'calendarIntercalary'; label: string; afterMonth: number }[];
+export const calendarWeekdays = calendarWeekdaysJson as { id: string; type: 'calendarWeekdays'; label: string }[];
+export const calendarPhases = calendarPhasesJson as { id: string; type: 'calendarPhases'; start: number; label: string; icon: string }[];
 /** Table de Météo de voyage TERRESTRE (EDOC 8). `seasons` = plages d100 → météo par saison ;
  *  `conditions` = EFFETS par météo (mêmes formes de donnée que `sea-weather.json`). Éditable au Codex. */
 const weatherData = weatherJson as {
@@ -2897,7 +2905,7 @@ export function talentRefLabel(ref: TalentRef): string {
   return refConcrete('talents', ref) + (ref.times && ref.times > 1 ? ` ${ref.times}` : '');
 }
 /** Sous-type d'une QUALITÉ (classification RAW : qualités d'Arme LDB 62, d'Armure LDB 63, d'Objet). */
-export interface QualitySubtypeData { id: string; label: string; }
+export interface QualitySubtypeData { id: string; type: 'qualitySubtypes'; label: string; }
 export const qualitySubtypes = qualitySubtypesJson as QualitySubtypeData[];
 const QUALITY_SUBTYPE_BY_ID = new Map(qualitySubtypes.map((s) => [s.id, s]));
 /** Résout un sous-type de Qualité par son `id` STABLE (= `QualityData.subType`). */
@@ -2909,7 +2917,7 @@ export function qualitySubtypeLabel(id: string | null | undefined): string {
   return id ? (QUALITY_SUBTYPE_BY_ID.get(id)?.label ?? id) : '';
 }
 /** Type d'une QUALITÉ : Atout (bénéfique) / Défaut (handicap) — classification RAW (LDB 62/63). */
-export interface QualityTypeData { id: string; label: string; }
+export interface QualityTypeData { id: string; type: 'qualityTypes'; label: string; }
 export const qualityTypes = qualityTypesJson as QualityTypeData[];
 const QUALITY_TYPE_BY_ID = new Map(qualityTypes.map((t) => [t.id, t]));
 /** Résout un type de Qualité par son `id` STABLE (= `QualityData.polarite`). */
@@ -2965,7 +2973,7 @@ export function groupLabel(id: string | null | undefined): string {
 }
 /** Type de Souffle d'une créature (Feu/Froid/Corrosif/Électrique/Poison/Fumée) — argument du Trait Souffle,
  *  aligné sur les manœuvres `souffle-*`. Registre SSOT (`breath-types.json`). */
-export interface BreathTypeData { id: string; label: string; }
+export interface BreathTypeData { id: string; type: 'breath-types'; label: string; }
 export const breathTypes = breathTypesJson as BreathTypeData[];
 const BREATH_TYPE_BY_ID = new Map(breathTypes.map((b) => [b.id, b]));
 /** Résout un Type de Souffle par son `id` STABLE. */
@@ -2979,7 +2987,7 @@ export function breathTypeLabel(id: string | null | undefined): string {
 /** Type de Dégâts ignoré par le Trait Immunité (LDB 85 : « poison, magiques ou électriques ») — argument du
  *  Trait Immunité (multi-valeurs) ET référent des `unlessImmune` des Flows (Venin (Poison)…). Registre SSOT
  *  (`damage-types.json`, éditable). */
-export interface DamageTypeData { id: string; label: string; }
+export interface DamageTypeData { id: string; type: 'damage-types'; label: string; }
 export const damageTypes = damageTypesJson as DamageTypeData[];
 const DAMAGE_TYPE_BY_ID = new Map(damageTypes.map((t) => [t.id, t]));
 /** Résout un Type de Dégâts par son `id` STABLE. */

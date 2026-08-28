@@ -1,6 +1,7 @@
 [
   {
     "id": "naviguons-tous-ensemble",
+    "type": "sea-shanties",
     "label": "Naviguons tous ensemble, ho hisse, ho hisse…",
     "desc": "Cette chanson de marin dissémine un esprit de coopération et pousse l'équipage à s'atteler à la manœuvre du navire avec vigueur et confiance. Elle donne un modificateur de +10 sur les Tests individuels de chaque membre d'équipage impliqué dans un Test d'équipage.",
     "source": {
@@ -16,6 +17,7 @@
   },
   {
     "id": "jacques-bret-a-rencontre-notre-acier",
+    "type": "sea-shanties",
     "label": "Jacques Bret a rencontré notre acier sur les mers !",
     "desc": "Cette chanson de marin entraînante parle d'exploits héroïques et de batailles sanglantes. Elle fouette le sang de l'équipage et le prépare au combat. Tous les membres de l'équipage reçoivent +1 DR sur tout Test de Corps à corps réussi.",
     "source": {
@@ -32,6 +34,7 @@
   },
   {
     "id": "de-toutes-les-terreurs-sur-les-mers",
+    "type": "sea-shanties",
     "label": "De toutes les terreurs sur les mers…",
     "desc": "Cette mélodie régulière et réconfortante peut raffermir les cœurs d'un équipage qui commençait à vaciller. Elle donne à ses membres +1 DR sur les Tests de Calme.",
     "source": {
@@ -48,6 +51,7 @@
   },
   {
     "id": "camarades-d-equipage-rassemblez-vous",
+    "type": "sea-shanties",
     "label": "Camarades d'équipage, rassemblez-vous…",
     "desc": "Cette chanson est un canon qui encourage les autres à s'y joindre et son rythme doux et ses paroles apaisantes ramènent le calme. Elle donne à tous les membres de l'équipage +1 DR sur tout Test de Sociabilité visant à fraterniser avec d'autres membres ou à les apaiser.",
     "source": {
@@ -65,6 +69,7 @@
   },
   {
     "id": "tous-a-la-vigie",
+    "type": "sea-shanties",
     "label": "Tous à la vigie, car la nuit a des yeux…",
     "desc": "Cette chanson de marin est douce et mélodieuse, mais les paroles contiennent un avertissement implicite. Elle est généralement entonnée de nuit ; elle aide à calmer et à reposer tous ceux qui sont à bord du bateau, mais maintient la vigilance de ceux qui sont de garde. Quiconque tente de rester éveillé reçoit un modificateur de +20 sur tous les Tests qui l'endormiraient en cas d'échec et reçoit également +10 sur tout Test de Perception.",
     "source": {
@@ -82,6 +87,7 @@
   },
   {
     "id": "les-dames-de-l-anguille",
+    "type": "sea-shanties",
     "label": "Les dames de L'Anguille…",
     "desc": "Cette chanson paillarde a de très nombreux couplets et les marins sont encouragés à ajouter les leurs à cette litanie de débauche. Elle sert à amuser l'équipage et à lui remonter le moral. Toute personne qui participe à la chanson peut ignorer un État.",
     "source": {
@@ -98,6 +104,7 @@
   },
   {
     "id": "suivez-le-capitaine",
+    "type": "sea-shanties",
     "label": "Suivez le capitaine, suivez le héros…",
     "desc": "Cette chanson sur les nombreux actes héroïques du capitaine de fiction Vriez van Vijnen donne un sentiment d'optimisme et de confiance dans le capitaine du navire. Tout Test de Sociabilité tenté par le capitaine ou par une autre figure d'autorité à bord et ciblant l'équipage reçoit un bonus de +20.",
     "source": {

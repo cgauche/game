@@ -1,14 +1,17 @@
 [
   {
     "id": "arme",
+    "type": "qualitySubtypes",
     "label": "Arme"
   },
   {
     "id": "armure",
+    "type": "qualitySubtypes",
     "label": "Armure"
   },
   {
     "id": "objet",
+    "type": "qualitySubtypes",
     "label": "Objet"
   }
 ]

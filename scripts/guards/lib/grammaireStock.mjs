@@ -53,7 +53,7 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs/advancementCosts.ts:schema|alias|skill': e('Table des coûts d’avancement keyée par colonne `skill` (Compétence vs Caractéristique).', L2),
   'src/data/schemas/defs/axes.ts:skillRefSchema|alias|skillId': e('Réf de Compétence d’un axe de profil en `{skillId, spec}` (`STRUCTURES_REDECLARATIONS` axes.ts, même lot).', L2),
   'src/data/schemas/defs/creatures.ts:swapGrantSchema|alias|skillId': e('Échange de dotation de bestiaire désignant sa Compétence par `skillId`.', L2),
-  'src/data/schemas/defs/crew-roles.ts:schema.skills|alias|skillId': e('Compétences d’un rôle d’équipage en `{skillId, spec}` (`STRUCTURES_REDECLARATIONS` crew-roles.ts, même lot).', L2),
+  'src/data/schemas/defs/crew-roles.ts:doc.skills|alias|skillId': e('Compétences d’un rôle d’équipage en `{skillId, spec}` (`STRUCTURES_REDECLARATIONS` crew-roles.ts, même lot).', L2),
   'src/data/schemas/defs/etats.ts:recoverSchema|alias|skill': e('Test de récupération d’un État désignant sa Compétence par `skill`.', L2),
   'src/data/schemas/defs/miscast.ts:jsonOpSchema|alias|skill': e('Op de maléfice portant un test par `skill` (le champ moteur `TestSpec.skill`, non migré).', L2),
   'src/data/schemas/defs/miscast.ts:jsonNestedTestSchema|alias|skill': e('Test IMBRIQUÉ d’un maléfice, même graphie `skill` que l’op porteuse.', L2),

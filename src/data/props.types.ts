@@ -56,7 +56,7 @@ export interface PropSeatSlot { id: string; anchor: PropPoint3; facing: Dir8; ap
 
 /** Matériau de rendu d'une primitive : couleur de base + réponse à la lumière. Aucune émission — une
  *  source lumineuse est un `light` de prop/d'instance, jamais un matériau. */
-export interface PropMaterialData { id: string; label: string; color: string; roughness: number; metalness: number }
+export interface PropMaterialData { id: string; type: 'propMaterials'; label: string; color: string; roughness: number; metalness: number }
 
 /**
  * Type de PROP/décor app-owned : couche SÉMANTIQUE (physique `solid`, opacité `opaque`, classe de

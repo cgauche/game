@@ -7,7 +7,7 @@
  * est une erreur de TYPE (mapped type → `never`) ET une erreur d'exécution nommant la clé ; chaque
  * clé de `champs` exige sa `MetaChamp` ; chaque document déclare son EXPOSITION (Codex, éditeur).
  *
- * L'adoption par les defs est le lot L1b (#1467), en cours : 45 defs l'appellent, les autres portent
+ * L'adoption par les defs est le lot L1b (#1467), en cours : 67 defs l'appellent, les autres portent
  * encore leur `z.array(z.strictObject({...}))` à la main.
  */
 import { z } from 'zod';
@@ -132,7 +132,7 @@ export interface OptionsDocument {
    * ce que l'adoption relâcherait sans cette option est MESURÉ et figé par le test
    * `grammaire.test.ts` « contrats d'enveloppe REQUIS dans les defs `entite` » — mesureur : `shape[k]`
    * dont `safeParse(undefined)` est ROUGE, sur les defs `entite` du registre. Au 2026-08-28 :
-   * desc 24, source 27, icon 3 (75 defs mesurés, 2 déjà scellés donc hors mesure).
+   * desc 19, source 24, icon 2 (53 defs mesurés, 24 déjà scellés donc hors mesure).
    * ATTENTION : `source` dans `exiges` la rend STRICTEMENT requise : le refine de provenance `source ∨ maison`
    * en devient INATTEIGNABLE (il ne s'exécute que sur un objet dont `source` est déjà validée) — il n'y
    * a donc pas de second chemin à éteindre, c'est une conséquence de la forme, pas un branchement.
@@ -196,6 +196,14 @@ export interface DocumentHandle<T extends string> {
   readonly exposition: Exposition;
   /** Champs qu'une variante réglée republie (`variantOf`, #563/#564) — vide = aucune variante admise. */
   readonly variantes: readonly string[];
+  /**
+   * Clés d'ENVELOPPE que ce document rend REQUISES (`options.exiges`) — la DÉCLARATION, lisible.
+   * Le handle la publie ; le registre généré, lui, n'importe que les quatre exports plats
+   * (`file`/`schema`/`famille`/`meta`, contrat `defsSansExportsPlats`), si bien qu'une garde qui part
+   * du registre mesure l'exigence sur le SCHÉMA (l'entrée ampuée est-elle refusée ?) et non sur cette
+   * liste — les deux disent la même chose, la seconde est la seule observable de l'extérieur.
+   */
+  readonly exiges: readonly CleExigible[];
 }
 
 /**
@@ -386,5 +394,6 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
     meta: { ...(meta as Record<string, MetaChamp>) },
     exposition,
     variantes: declarees,
+    exiges: [...exiges],
   };
 }

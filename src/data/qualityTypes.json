@@ -1,10 +1,12 @@
 [
   {
     "id": "atout",
+    "type": "qualityTypes",
     "label": "Atout"
   },
   {
     "id": "defaut",
+    "type": "qualityTypes",
     "label": "Défaut"
   }
 ]

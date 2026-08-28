@@ -5,19 +5,29 @@
  * `Peripetie` (`src/data/peripeties.ts`). 10 entrées, une par face du d10.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'peripeties.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
+const doc = document(
+  'peripeties',
+  famille,
+  {
     roll: z.number(),
-    label: z.string(),
     /** Ce que le MOTEUR sait jouer sans rien inventer (cf. `src/data/peripeties.ts`). */
     kind: z.enum(['reposant', 'narratif', 'ereintant', 'attaque']),
-    desc: z.string(),
-    source: sourceRefSchema.optional(),
-  }),
+  },
+  {
+    roll: { label: 'Face du dé', hint: 'Valeur du d10 qui déclenche cette Péripétie' },
+    kind: { label: 'Nature de la Péripétie', hint: 'Ce que le moteur sait jouer sans rien inventer' },
+  },
+  {
+    codex: { keys: ['peripeties'] },
+    edit: { dataset: 'peripeties' },
+  },
+  { exiges: ['desc'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

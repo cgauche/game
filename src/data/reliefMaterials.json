@@ -1,6 +1,7 @@
 [
   {
     "id": "terre",
+    "type": "reliefMaterials",
     "label": "Terre",
     "face": "#5a4a33",
     "foot": "#3e3322",
@@ -29,6 +30,7 @@
   },
   {
     "id": "pierre",
+    "type": "reliefMaterials",
     "label": "Pierre",
     "built": true,
     "face": "#6b6f76",
@@ -53,24 +55,28 @@
   },
   {
     "id": "pilier",
+    "type": "reliefMaterials",
     "label": "Pilier",
     "built": true,
     "face": "#565a61"
   },
   {
     "id": "riser",
+    "type": "reliefMaterials",
     "label": "Contremarche",
     "built": true,
     "face": "#57534c"
   },
   {
     "id": "plafond",
+    "type": "reliefMaterials",
     "label": "Plafond",
     "built": true,
     "face": "#2c2a26"
   },
   {
     "id": "sol-inconnu",
+    "type": "reliefMaterials",
     "label": "Sol inconnu",
     "face": "#6b6250"
   }

@@ -1,6 +1,7 @@
 [
   {
     "id": "blond-blanc",
+    "type": "hairs",
     "label": "Blond blanc",
     "rand": 2,
     "color": {
@@ -20,6 +21,7 @@
   },
   {
     "id": "blond-dore",
+    "type": "hairs",
     "label": "Blond doré",
     "rand": 3,
     "color": {
@@ -39,6 +41,7 @@
   },
   {
     "id": "blond-roux",
+    "type": "hairs",
     "label": "Blond roux",
     "rand": 4,
     "randByRace": {
@@ -61,6 +64,7 @@
   },
   {
     "id": "brun-dore",
+    "type": "hairs",
     "label": "Brun doré",
     "rand": 7,
     "randByRace": {
@@ -83,6 +87,7 @@
   },
   {
     "id": "brun-clair",
+    "type": "hairs",
     "label": "Brun clair",
     "rand": 11,
     "color": {
@@ -102,6 +107,7 @@
   },
   {
     "id": "brun-fonce",
+    "type": "hairs",
     "label": "Brun foncé",
     "rand": 14,
     "color": {
@@ -121,6 +127,7 @@
   },
   {
     "id": "noir",
+    "type": "hairs",
     "label": "Noir",
     "rand": 17,
     "color": {
@@ -140,6 +147,7 @@
   },
   {
     "id": "auburn",
+    "type": "hairs",
     "label": "Auburn",
     "rand": 18,
     "color": {
@@ -159,6 +167,7 @@
   },
   {
     "id": "roux",
+    "type": "hairs",
     "label": "Roux",
     "rand": 19,
     "color": {
@@ -178,6 +187,7 @@
   },
   {
     "id": "gris",
+    "type": "hairs",
     "label": "Gris",
     "rand": 20,
     "color": {
