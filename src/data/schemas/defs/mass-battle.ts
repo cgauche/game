@@ -4,6 +4,7 @@
  * (`src/engine/massBattle.ts`).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'mass-battle.json';
@@ -57,10 +58,30 @@ const hazardRowSchema = z.strictObject({
   source: sourceRefSchema,
 });
 
-export const schema = z.strictObject({
-  powerEstimate: z.array(powerEstimateRowSchema),
-  mightModifiers: z.array(mightModifierRowSchema),
-  warMachines: z.array(warMachineRowSchema),
-  structures: z.array(structureRowSchema),
-  hazards: z.array(hazardRowSchema),
-});
+const doc = document(
+  'mass-battle',
+  famille,
+  {
+    powerEstimate: z.array(powerEstimateRowSchema),
+    mightModifiers: z.array(mightModifierRowSchema),
+    warMachines: z.array(warMachineRowSchema),
+    structures: z.array(structureRowSchema),
+    hazards: z.array(hazardRowSchema),
+  },
+  {
+    powerEstimate: { label: 'Estimation de Puissance', hint: "Table d'exemples de composition d'armée par valeur de Puissance" },
+    mightModifiers: { label: 'Modificateurs de Force', hint: 'Modificateurs de Force militaire par facteur tactique' },
+    warMachines: { label: 'Machines de guerre', hint: 'Catalogue des machines de siège (coût, équipage, portée, Dégâts, Traits)' },
+    structures: { label: 'Structures', hint: 'Catalogue des structures assiégeables (BE, Blessures, Traits)' },
+    hazards: { label: 'Aléas de bataille', hint: "Table de tirage d'incidents de la bataille de masse" },
+  },
+  {
+    codex: {
+      keys: ['massBattlePowerEstimate', 'massBattleMightModifiers', 'massBattleWarMachines', 'massBattleStructures', 'massBattleHazards'],
+    },
+    edit: { none: 'édité par TABLEAU NICHÉ : les 5 catégories Codex `massBattle*` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

@@ -4,12 +4,16 @@
  * `findCrewTestTypeById`) et `src/engine/crewMorale.ts`/`src/state/shipCrew.ts`.
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'crew-test-types.json';
 export const famille = 'config';
 
-export const schema = z.strictObject({
+const doc = document(
+  'crew-test-types',
+  famille,
+  {
   types: z.array(
     z.strictObject({
       id: z.string(),
@@ -27,4 +31,18 @@ export const schema = z.strictObject({
       source: sourceRefSchema,
     }),
   ),
-});
+  },
+  {
+    types: {
+      label: "Types de Test d'équipage",
+      hint: 'Rôles contributeurs, rôle essentiel (DR double), règle associée et effets (ex. Rude épreuve, Manœuvre)',
+    },
+  },
+  {
+    codex: { keys: ['crewTestTypes'] },
+    edit: { none: 'édité par TABLEAU NICHÉ : la catégorie Codex `crewTestTypes` édite le champ `types`, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

@@ -105,8 +105,15 @@ const FOLIO_TITLE_RATCHET_MAX = 0;
  * 30 + 10 + 10 + 20 irrésolues sur ces quatre fichiers). Le plafond ne DESCEND qu'en soldant des
  * folios au `Source/` ; l'entrée `interludeEvents:kleptomane`, elle, n'était pas irrésolue mais
  * RÉFUTÉE (folio 193 déclaré, desc en 194) — corrigée à la donnée dans le même lot.
+ *
+ * Relevé 713 → 771 le 2026-08-28 (#1467 L1b V-FLIP-CONFIG), même lecture : `aa-criticals.json` ne
+ * portait AUCUNE `source` (une note libre `_source` approximative), ses 80 entrées étaient donc hors
+ * de l'audit. Sourcées au folio, elles y entrent : 22 sont prouvées par leur desc, 58 restent
+ * irrésolues (51 `desc-introuvable`, 7 `desc-trop-courte` — les cellules du tableau AA portent des
+ * `<br>` que la desc recolle sans les reproduire). Zéro réfutée : le volet « aucune entrée NEUVE
+ * réfutée » est resté VERT sur ces 80. Population qui grandit, pas détecteur qui faiblit.
  */
-const UNRESOLVED_MAX = 713;
+const UNRESOLVED_MAX = 771;
 
 describe('intégrité du folio — voie TITRE de section, et skip BRUYANT de ce qui reste (#1200)', () => {
   const { titleViolations, noteAuthored, unresolved, stats, total } = AUDIT;

@@ -230,7 +230,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "night-stakes.json", champ: "rule", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "pregens.json", champ: "career", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "pregens.json", champ: "species", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "progression-schemas.derived.json", champ: "__livres", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "progression-schemas.derived.json", champ: "livres", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "progression-schemas.derived.json", champ: "titresPage", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "props.json", champ: "light", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "props.json", champ: "primitives", occurrences: 52, lot: "L2/L3 #1473", date: "2026-08-26" },

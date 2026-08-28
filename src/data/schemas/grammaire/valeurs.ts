@@ -72,18 +72,6 @@ export const secondarySourceRefSchema = sourceRefSchema.extend({
  *  entrée multi-emplacement. Accesseurs `allLocations`/`sourceBooks` (`src/data/index.ts`). */
 export type SecondaryRef = z.infer<typeof secondarySourceRefSchema>;
 
-/**
- * Note de provenance LIBRE `_source` — SURVIT uniquement pour `aa-criticals.json` (#278). ATTENTION —
- * motif RÉVISÉ (#563, 2026-07-17) : « Aux Armes n'a AUCUNE extraction Markdown » était PÉRIMÉ — l'extraction
- * Marker de `Source/WH - V4 - Aux Armes` EXISTE et porte des spans `data-folio` (13 chapitres, ex.
- * `10 - L'ARTILLERIE…md` en compte 15). Le vrai motif : les tables de Blessures Critiques par
- * Localisation d'`aa-criticals.json` citent un intervalle APPROXIMATIF (`p.≈118-124`, note libre du
- * fichier) et n'ont jamais été migrées en `source: sourceRefSchema` PAR ENTRÉE — pas un blocage
- * d'extraction, une migration non faite. Ne pas réutiliser ailleurs (`sourceRefSchema` + `note`
- * couvre tous les autres cas).
- */
-export const freeSourceNoteSchema = z.string();
-
 // ============================================================================
 // COMBAT FEATURE (`src/engine/combatFeatures/types.ts`) — sac de flags CLOS conféré par un Talent/Trait,
 // `aa` récursif (variante « Avantage de groupe », Aux Armes Annexe I). Promu ici (partagé avec

@@ -147,7 +147,9 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
   it('le CONTENU des deux listes d’exemption est gelé (un ajout sort des entrées du cliquet)', () => {
     // Le cardinal ne suffit pas : un échange à cardinal constant doit rougir. On gèle les CLÉS.
     expect(Object.keys(SOURCE_EN_PROFONDEUR).sort()).toEqual([
-      'arcane-phenomena', 'crew-test-types', 'criticals', 'disponibilite', 'land-cargo',
+      // `aa-criticals` y entre par #1467 L1b V-FLIP-CONFIG : sa note libre `_source` est morte, ses
+      // 80 entrées portent chacune leur folio (83/84/85/86), et la racine reste NUE.
+      'aa-criticals', 'arcane-phenomena', 'crew-test-types', 'criticals', 'disponibilite', 'land-cargo',
       'mass-battle', 'miscast', 'naval-progression', 'river-perils', 'sea-cargo', 'sea-events',
       'sea-navigation', 'sea-perils', 'sea-weather', 'ship-construction', 'weather',
     ]);
@@ -163,7 +165,8 @@ describe('cliquet « maison sans source » — le régime d’arbitrage ne déri
     // Les deux régimes sont DISJOINTS : une clé dans les deux rendrait l'union ambiguë.
     const communes = Object.keys(SANS_LIVRE).filter((k) => k in SOURCE_EN_PROFONDEUR);
     expect(communes).toEqual([]);
-    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(50);
+    // 50 → 51 : `aa-criticals` rejoint `SOURCE_EN_PROFONDEUR` (#1467 L1b V-FLIP-CONFIG).
+    expect(Object.keys(SANS_PROVENANCE_EXIGEE)).toHaveLength(51);
   });
 
   it('`maison` est TOUJOURS une chaîne — zéro drapeau booléen, à TOUTE profondeur des deux racines', () => {

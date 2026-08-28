@@ -8,6 +8,7 @@
  * minuscules. Ajouter un mapping = une ligne de `rules`.
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 
 export const file = 'speciesRace.json';
 export const famille = 'config';
@@ -20,7 +21,27 @@ const speciesRuleSchema = z.strictObject({
   race: z.string(),
 });
 
-export const schema = z.strictObject({
-  default: z.string(),
-  rules: z.array(speciesRuleSchema),
-});
+const doc = document(
+  'speciesRace',
+  famille,
+  {
+    default: z.string(),
+    rules: z.array(speciesRuleSchema),
+  },
+  {
+    default: { label: 'Race par défaut', hint: 'Race de rig retenue quand aucune règle ne correspond' },
+    rules: { label: 'Règles de correspondance', hint: 'Règles ordonnées qui font correspondre une espèce à une race de rig' },
+  },
+  {
+    codex: {
+      exempt: {
+        kind: 'vocabulaire-app-interne',
+        raison: "table de résolution race→défauts d'authoring (`default`/`rules`), pas une fiche de contenu.",
+      },
+    },
+    edit: { none: 'aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

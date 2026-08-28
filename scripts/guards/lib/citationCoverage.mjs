@@ -1,17 +1,15 @@
 // Mécanique de mesure « citation par ENTRÉE » (#309, suite #278/#281). #278 a posé la garde de
 // FORME (`sourceRefInline.mjs` — aucune réinvention de `sourceRefSchema`) ; #309 mesure la
-// COUVERTURE réelle : chaque dataset de `src/data/*.json` porte-t-il `source: {book,page}` (ou
-// `_source` libre, seule survivance documentée `src/data/schemas/grammaire/valeurs.ts:75-85`) sur CHACUNE de ses entrées
-// RÉELLES ? Le piège signalé au ticket : un comptage brut (tout id trouvé, y compris les ids
+// COUVERTURE réelle : chaque dataset de `src/data/*.json` porte-t-il `source: {book,page}` sur CHACUNE
+// de ses entrées RÉELLES ? Le piège signalé au ticket : un comptage brut (tout id trouvé, y compris les ids
 // imbriqués — `specs`/`ranges`/`levels`…) gonfle le dénominateur. Ici on ne compte QUE les entrées
 // de PREMIER niveau (item d'un tableau racine, ou item d'un tableau de catégorie type
 // `criticals.json.tete`/`mass-battle.json.powerEstimate`) — jamais les sous-objets d'une entrée.
 // Module ESM pur, exécutable par `node` nu — consommé par `scripts/data/audit-citations.mjs`
 // (rapport) ET par `src/data/citation-coverage-guard.test.ts` (verrou cliquet).
 
-/** Une entrée cite sa source si `source.book` (forme `sourceRefSchema`, `src/data/schemas/grammaire/valeurs.ts:38`), `_source`
- *  non vide (forme `freeSourceNoteSchema`, `src/data/schemas/grammaire/valeurs.ts:85` — seule survivance documentée pour
- *  `aa-criticals.json`), le champ `maison` non vide top-level (il porte SA justification : rationale +
+/** Une entrée cite sa source si `source.book` (forme `sourceRefSchema`, `src/data/schemas/grammaire/valeurs.ts:38`),
+ *  le champ `maison` non vide top-level (il porte SA justification : rationale +
  *  réfs dans le texte même, ex. `proue-idole-de-stromfels` #221, EST la source de l'entrée), ou
  *  `alsoIn` porte au moins un emplacement bien formé (forme `secondarySourceRefSchema`, `src/data/schemas/grammaire/valeurs.ts:66`
  *  — #563 : l'ancre `source` reste la forme retenue, mais un `alsoIn` seul ne doit JAMAIS compter
@@ -23,7 +21,6 @@ export function isCitedItem(item) {
   if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
   const rec = /** @type {Record<string, unknown>} */ (item);
   if (rec.source && typeof rec.source === 'object' && !Array.isArray(rec.source) && typeof (/** @type {Record<string, unknown>} */ (rec.source)).book === 'string') return true;
-  if (typeof rec._source === 'string' && rec._source.length > 0) return true;
   if (typeof rec.maison === 'string' && rec.maison.length > 0) return true;
   if (Array.isArray(rec.alsoIn) && rec.alsoIn.some((ref) => isPlainObject(ref) && typeof (/** @type {Record<string, unknown>} */ (ref)).book === 'string' && typeof (/** @type {Record<string, unknown>} */ (ref)).page === 'number')) return true;
   return false;
@@ -57,7 +54,7 @@ function entryLabel(item, key, idx) {
  *   `mass-battle.json.powerEstimate`…) : chaque tableau est une CATÉGORIE de la même famille de
  *   table, les entrées sont les items de CES tableaux, jamais recursées plus profond (`ops`/
  *   `ranges` imbriqués ne comptent pas).
- * - `single` : objet de config unique — cité si sa RACINE porte `source`/`_source` (convention
+ * - `single` : objet de config unique — cité si sa RACINE porte `source` (convention
  *   documentée `src/data/schemas/grammaire/valeurs.ts:49-54` : "à la racine quand le dataset est un objet de config unique
  *   plutôt qu'une liste" — couvre alors TOUT le fichier, y compris les tableaux/sous-tables
  *   imbriqués, ex. `montures.json`/`river-criticals.json.tables`). Sans racine citée ET sans
@@ -112,8 +109,10 @@ export function auditDataset(data) {
  * exempté, et son entrée devient un mensonge dormant. `src/data/citation-coverage-guard.test.ts`
  * rougit sur toute entrée dont `auditDataset` rend `cited === total` (> 0). Trois sont mortes à ce
  * lot : `axes.json` (9/9, migré `source:'maison'` → `maison` par 2026-08-27-l1b-1c), et deux
- * PRÉEXISTANTES que personne ne relisait — `aa-criticals.json` (1/1 : sa note libre `_source` EST
- * comptée par `isCitedItem`) et `characteristics.json` (19/19, curé depuis).
+ * PRÉEXISTANTES que personne ne relisait — `aa-criticals.json` et `characteristics.json` (19/19,
+ * curé depuis). `aa-criticals.json` compte désormais 80/80 par entrée (#1467 L1b V-FLIP-CONFIG) : sa
+ * note libre `_source`, qui à elle seule le rendait « 1/1 cité », est morte avec le dernier porteur
+ * de `freeSourceNoteSchema` — le bras `_source` d'`isCitedItem` avec elle.
  * @type {Record<string, string>}
  */
 export const EXEMPT_DATASETS = {

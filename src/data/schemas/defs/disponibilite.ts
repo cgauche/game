@@ -6,6 +6,7 @@
  * STABLE ; `village`/`ville`/`cite` = `Settlement`.
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { availabilitySchema, sourceRefSchema } from '../grammaire/valeurs';
 import { AVAILABILITIES, type Availability } from '../../../engine/types';
 
@@ -19,7 +20,10 @@ export const dispoPctAvailabilitySchema = availabilitySchema.extract(['Limitée'
 
 const ratioSchema = z.strictObject({ give: z.number(), get: z.number() });
 
-export const schema = z.strictObject({
+const doc = document(
+  'disponibilite',
+  famille,
+  {
   /** Tableau de Disponibilité — % de réussite du Test (d100 ≤ %) par taille de colonie. Commune
    *  (toujours en stock) et Exotique (jamais) n'ont pas de %, donc absentes de la table. */
   dispoPct: z.array(
@@ -38,4 +42,13 @@ export const schema = z.strictObject({
       source: sourceRefSchema,
     }),
   ),
-});
+  },
+  {
+    dispoPct: { label: 'Tableau de Disponibilité', hint: "Pourcentage de réussite du Test d'achat, par taille de colonie" },
+    barterRatios: { label: 'Ratios de troc', hint: "Ratio d'objets échangés entre deux Disponibilités, au troc" },
+  },
+  { codex: { keys: ['disponibilite'] }, edit: { object: 'single' } },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

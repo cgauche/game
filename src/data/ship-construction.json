@@ -1,4 +1,7 @@
 {
+  "id": "ship-construction",
+  "type": "ship-construction",
+  "label": "Construction navale",
   "standard": [
     {
       "id": "minuscule",

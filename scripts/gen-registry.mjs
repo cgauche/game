@@ -504,11 +504,14 @@ const estUnLibelle = (v) => /^[A-ZÀ-Þ]/.test(v) || /\s/.test(v);
 /**
  * DÉFAUTS d'ids — liste NOMINATIVE datée (2026-08-24), DÉCROISSANTE, lot de mort `L1b #1467` : les
  * documents de famille `entite`/`record` dont l'identité de premier niveau n'entre PAS au registre.
- * Chaque entrée porte l'obstacle MESURÉ ; une entrée ne se retire que par le commit qui donne au
- * document des ids de premier niveau. Un dataset ni registré ni inscrit ici fait ROUGIR `npm run gen`.
+ * Chaque entrée porte l'obstacle MESURÉ. DEUX voies de retrait, toutes deux mesurées par le contrat
+ * `verifieExhaustiviteDesIds` ci-dessous : le commit qui donne au document des ids de premier niveau,
+ * OU celui qui le RE-ÉTIQUETTE dans une famille qui n'en attend aucun (`config`/`table` — c'est par
+ * cette seconde voie qu'`aa-criticals.json` est sorti d'ici, V-FLIP-CONFIG #1467 : ses 4 familles sont
+ * des CHAMPS de document, pas des clés de record). Un dataset ni registré ni inscrit ici fait ROUGIR
+ * `npm run gen` ; une entrée survivante sur un document `config`/`table` aussi.
  */
 const DEFAUTS_IDS = {
-  'aa-criticals.json': 'record de localisations, mais la clé de méta `_source` siège au même niveau que les entrées — le détecteur de record à ids l’écarte',
   'decorPalette.json': 'record de 435 jetons de teinte à clés camelCase (`terreTresSombre`), graphie que le détecteur de record à ids n’admet pas',
 };
 

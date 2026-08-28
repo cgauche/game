@@ -1,4 +1,7 @@
 {
+  "id": "species-race",
+  "type": "speciesRace",
+  "label": "Correspondance espèce → race de rig",
   "default": "humain",
   "rules": [
     {

@@ -1,4 +1,7 @@
 {
+  "id": "ambiance",
+  "type": "ambiance",
+  "label": "Ambiance lumineuse",
   "ambientFloor": 0.12,
   "fogTint": {
     "visible": 1,

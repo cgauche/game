@@ -1,5 +1,7 @@
 {
-  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y COMPRIS les sous-effets récurrents à durée Rounds (#125 : `maxWeaponHands.durationRounds`/`charMod.durationRounds`, `resist.skill` hors-Résistance), les durées en JOURS (#153 : `condition`/`charMod` `durationHours` = jours×24, ctx.now câblé côté combatFlow), l'objet lâché (#153 : op `disarm`) et l'Amputation structurée (#153 : `amputation.{difficulty,sequels}`, même patron que `data/criticals.ts` LDB). `desc` = « Effets supplémentaires » VERBATIM (reste l'affichage long terme). aa-jambe-81 (Tendon rompu, l.2620) : RAW ne donne AUCUNE Difficulté pour l'Amputation référencée (« voir p.180 », contrairement à toutes ses voisines qui en citent une) — arbitrage maison NON entériné : réutilise la Difficulté Difficile du Test de Résistance de la MÊME ligne (seule valeur que la ligne fournit) ; à valider. La cascade « Aide Médicale → Test étendu de Guérison » (Épaule luxée 96-109 / Genou démis 96-105, #166) est modélisée par `escalation.medicalAidGate` (membre désactivé + `restoreDR`/`recoveryPenalty`, joué à l'Infirmerie via l'acte « Guérison ») et le Sonné « jusqu'à Aide Médicale » par `condition.unlockBy` (verrou d'acte de soin porté sur l'instance d'État, levé par `releaseConditionLocks`) ; l'escalade doigt/pied par Round ou par jour sans soin (bras 116-120/jambe 106-115) par `escalation.perRound`/`apresDelai` (#167). Le Test de Dextérité (+20) PAR ACTION de « Main ensanglantée » (bras 46-50, l.2569, #165) est modélisé par l'op `handGate` (marqueur PAR-MAIN `Combatant.handGates`, gate `attackHandGate` posé à la déclaration d'attaque, Échec → op `disarm`) ; il tient tant que l'Hémorragique tient (`removeCondition` purge le marqueur à 0).",
+  "id": "aa-criticals",
+  "type": "aa-criticals",
+  "label": "Blessures critiques par localisation (approche alternative)",
   "tete": [
     {
       "id": "aa-tete-01",
@@ -15,7 +17,11 @@
           "value": 1
         }
       ],
-      "desc": "Une entaille sur la joue. Vous recevez 1 État Hémorragique. Une fois la blessure guérie, la cicatrice fournit un bonus de +1 DR sur les Tests sociaux appropriés. Vous ne pouvez gagner ce bénéfice qu'une seule fois."
+      "desc": "Une entaille sur la joue. Vous recevez 1 État Hémorragique. Une fois la blessure guérie, la cicatrice fournit un bonus de +1 DR sur les Tests sociaux appropriés. Vous ne pouvez gagner ce bénéfice qu'une seule fois.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-04",
@@ -30,7 +36,11 @@
           "value": 1
         }
       ],
-      "desc": "Le coup vous fait voir trente-six chandelles. Vous recevez 1 État Sonné."
+      "desc": "Le coup vous fait voir trente-six chandelles. Vous recevez 1 État Sonné.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-07",
@@ -45,7 +55,11 @@
           "value": 1
         }
       ],
-      "desc": "Le coup vous érafle l'orbite de l'œil. Gagnez 1 État Aveuglé."
+      "desc": "Le coup vous érafle l'orbite de l'œil. Gagnez 1 État Aveuglé.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-10",
@@ -60,7 +74,11 @@
           "value": 1
         }
       ],
-      "desc": "Votre oreille siffle. Vous recevez 1 État Assourdi."
+      "desc": "Votre oreille siffle. Vous recevez 1 État Assourdi.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-16",
@@ -75,7 +93,11 @@
           "value": 1
         }
       ],
-      "desc": "Le coup vous ouvre la joue. Vous recevez 1 État Hémorragique."
+      "desc": "Le coup vous ouvre la joue. Vous recevez 1 État Hémorragique.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-21",
@@ -90,7 +112,11 @@
           "value": 2
         }
       ],
-      "desc": "Un coup s'abat sur votre œil. Vous recevez 2 États Aveuglé."
+      "desc": "Un coup s'abat sur votre œil. Vous recevez 2 États Aveuglé.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-26",
@@ -110,7 +136,11 @@
           "value": 1
         }
       ],
-      "desc": "Un coup vous entaille l'oreille. Vous recevez 2 États Assourdi et 1 État Hémorragique."
+      "desc": "Un coup vous entaille l'oreille. Vous recevez 2 États Assourdi et 1 État Hémorragique.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-31",
@@ -130,7 +160,11 @@
           "value": 1
         }
       ],
-      "desc": "Un coup percutant vous atteint en plein front. Gagnez 2 États Hémorragique et 1 État Aveuglé qui ne peut pas être retiré tant que tous les États Hémorragique n'ont pas été éliminés."
+      "desc": "Un coup percutant vous atteint en plein front. Gagnez 2 États Hémorragique et 1 État Aveuglé qui ne peut pas être retiré tant que tous les États Hémorragique n'ont pas été éliminés.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-36",
@@ -148,7 +182,11 @@
       "traumas": [
         "fracture-tete-mineure"
       ],
-      "desc": "Le coup vous brise la mâchoire. Vous recevez 2 États Sonné et vous subissez le Traumatisme Fracture (Mineure)."
+      "desc": "Le coup vous brise la mâchoire. Vous recevez 2 États Sonné et vous subissez le Traumatisme Fracture (Mineure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-41",
@@ -169,7 +207,11 @@
           "unlockBy": "medicalAid"
         }
       ],
-      "desc": "Un coup touche votre orbite. Vous recevez 1 État Hémorragique. Vous recevez également 1 État Aveuglé qui ne pourra être soigné que lorsque vous recevrez de l'Aide Médicale."
+      "desc": "Un coup touche votre orbite. Vous recevez 1 État Hémorragique. Vous recevez également 1 État Aveuglé qui ne pourra être soigné que lorsque vous recevrez de l'Aide Médicale.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-46",
@@ -187,7 +229,11 @@
           ]
         }
       },
-      "desc": "Le coup endommage votre oreille. Vous subissez une pénalité permanente de –20 à tout Test ayant un rapport avec l'audition. Si vous subissez de nouveau ce résultat, vous perdez totalement l'audition."
+      "desc": "Le coup endommage votre oreille. Vous subissez une pénalité permanente de –20 à tout Test ayant un rapport avec l'audition. Si vous subissez de nouveau ce résultat, vous perdez totalement l'audition.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-51",
@@ -212,7 +258,11 @@
           }
         ]
       },
-      "desc": "Un coup très violent sur le nez. Vous recevez 2 États Hémorragique et vous devez réussir un Test de Résistance Intermédiaire (+0) sous peine de recevoir aussi 1 État Sonné."
+      "desc": "Un coup très violent sur le nez. Vous recevez 2 États Hémorragique et vous devez réussir un Test de Résistance Intermédiaire (+0) sous peine de recevoir aussi 1 État Sonné.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-56",
@@ -240,7 +290,11 @@
       "traumas": [
         "fracture-tete-majeure"
       ],
-      "desc": "Le coup vous brise la mâchoire. Vous recevez 3 États Sonné. Vous devez faire un Test de Résistance Intermédiaire (+0) ou subir un État Inconscient. Vous subissez le Traumatisme Fracture (Majeure)."
+      "desc": "Le coup vous brise la mâchoire. Vous recevez 3 États Sonné. Vous devez faire un Test de Résistance Intermédiaire (+0) ou subir un État Inconscient. Vous subissez le Traumatisme Fracture (Majeure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-61",
@@ -266,7 +320,11 @@
           "oreille-perdue"
         ]
       },
-      "desc": "Un coup vous déchire l'oreille. Vous recevez 3 États Assourdi et 2 États Hémorragique. Vous perdez votre oreille – Amputation (Accessible)."
+      "desc": "Un coup vous déchire l'oreille. Vous recevez 3 États Assourdi et 2 États Hémorragique. Vous perdez votre oreille – Amputation (Accessible).",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-66",
@@ -293,7 +351,11 @@
           }
         }
       },
-      "desc": "Le coup vous déchausse plusieurs dents. Vous recevez 2 États Hémorragique. Vous perdez 1d10 dents – Amputation (Facile)."
+      "desc": "Le coup vous déchausse plusieurs dents. Vous recevez 2 États Hémorragique. Vous perdez 1d10 dents – Amputation (Facile).",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-76",
@@ -329,7 +391,11 @@
           }
         }
       ],
-      "desc": "Un coup très puissant résonne contre votre crâne. Vous recevez 1 État Assourdi, 2 États Hémorragique et 1d10 États Sonné. Vous recevez également 1 État Exténué qui dure 1d10 jours."
+      "desc": "Un coup très puissant résonne contre votre crâne. Vous recevez 1 État Assourdi, 2 États Hémorragique et 1d10 États Sonné. Vous recevez également 1 État Exténué qui dure 1d10 jours.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-81",
@@ -360,7 +426,11 @@
           "oeil-perdu"
         ]
       },
-      "desc": "Un coup porté à votre œil le crève. Vous recevez 3 États Aveuglé, 2 États Hémorragique et 1 État Sonné. Vous perdez votre œil – Amputation (Complexe)."
+      "desc": "Un coup porté à votre œil le crève. Vous recevez 3 États Aveuglé, 2 États Hémorragique et 1 État Sonné. Vous perdez votre œil – Amputation (Complexe).",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-86",
@@ -392,7 +462,11 @@
           "nez-ampute"
         ]
       },
-      "desc": "Le coup détruit votre œil et votre nez. Vous recevez 3 États Hémorragique, 3 États Aveuglé et 2 États Sonné. Vous perdez votre œil et votre nez – Amputation (Difficile)."
+      "desc": "Le coup détruit votre œil et votre nez. Vous recevez 3 États Hémorragique, 3 États Aveuglé et 2 États Sonné. Vous perdez votre œil et votre nez – Amputation (Difficile).",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-95",
@@ -428,7 +502,11 @@
           }
         }
       },
-      "desc": "Le coup vous fracasse totalement la mâchoire : il vous détruit la langue et fait voler vos dents. Vous recevez 4 États Hémorragique et 3 États Sonné. Vous subissez le Traumatisme Fracture (Majeure) et vous perdez votre langue et 1d10 dents – Amputation (Difficile)."
+      "desc": "Le coup vous fracasse totalement la mâchoire : il vous détruit la langue et fait voler vos dents. Vous recevez 4 États Hémorragique et 3 États Sonné. Vous subissez le Traumatisme Fracture (Majeure) et vous perdez votre langue et 1d10 dents – Amputation (Difficile).",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     },
     {
       "id": "aa-tete-00",
@@ -436,7 +514,11 @@
       "max": 100000,
       "label": "Crâne fracassé",
       "lethal": true,
-      "desc": "Votre tête est écrasée et vous vous écroulez, mort sur le coup."
+      "desc": "Votre tête est écrasée et vous vous écroulez, mort sur le coup.",
+      "source": {
+        "book": "aux-armes",
+        "page": 83
+      }
     }
   ],
   "bras": [
@@ -452,7 +534,11 @@
           "op": "disarm"
         }
       ],
-      "desc": "Vous lâchez ce que vous teniez dans cette main."
+      "desc": "Vous lâchez ce que vous teniez dans cette main.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-11",
@@ -488,7 +574,11 @@
           }
         }
       ],
-      "desc": "Vous lâchez ce que vous teniez dans cette main et cette dernière devient inutilisable pour 1d10 – (Bonus d'Endurance) Rounds (minimum de 1). Pendant ce temps, considérez votre main comme perdue (voir Amputation en page 180 de WFJDR)."
+      "desc": "Vous lâchez ce que vous teniez dans cette main et cette dernière devient inutilisable pour 1d10 – (Bonus d'Endurance) Rounds (minimum de 1). Pendant ce temps, considérez votre main comme perdue (voir Amputation en page 180 de WFJDR).",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-21",
@@ -503,7 +593,11 @@
           "value": 1
         }
       ],
-      "desc": "Vous prenez une coupure sur le haut du bras. Vous recevez 1 État Hémorragique."
+      "desc": "Vous prenez une coupure sur le haut du bras. Vous recevez 1 État Hémorragique.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-26",
@@ -514,7 +608,11 @@
       "traumas": [
         "dechirure-autre-mineure"
       ],
-      "desc": "Vous subissez le Traumatisme Déchirure musculaire (Mineure)."
+      "desc": "Vous subissez le Traumatisme Déchirure musculaire (Mineure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-41",
@@ -532,7 +630,11 @@
       "traumas": [
         "dechirure-autre-mineure"
       ],
-      "desc": "Le coup écrase votre avant-bras. Gagnez 1 État Hémorragique et un Traumatisme Déchirure musculaire (Mineure)."
+      "desc": "Le coup écrase votre avant-bras. Gagnez 1 État Hémorragique et un Traumatisme Déchirure musculaire (Mineure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-46",
@@ -550,7 +652,11 @@
           "op": "handGate"
         }
       ],
-      "desc": "Recevez 1 État Hémorragique. Tant que vous êtes sous l'effet de cet État, effectuez un Test de Dextérité Accessible (+20) avant d'effectuer une Action impliquant quelque chose de tenu dans cette main ; sur un Échec, l'objet vous glisse de la main."
+      "desc": "Recevez 1 État Hémorragique. Tant que vous êtes sous l'effet de cet État, effectuez un Test de Dextérité Accessible (+20) avant d'effectuer une Action impliquant quelque chose de tenu dans cette main ; sur un Échec, l'objet vous glisse de la main.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-51",
@@ -573,7 +679,11 @@
           }
         }
       ],
-      "desc": "Vous lâchez ce que vous teniez dans cette main. Le bras est inutilisable pendant 1d10 Rounds (voir Amputation en page 180 de WFJDR)."
+      "desc": "Vous lâchez ce que vous teniez dans cette main. Le bras est inutilisable pendant 1d10 Rounds (voir Amputation en page 180 de WFJDR).",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-56",
@@ -594,7 +704,11 @@
           "label": "Blessure béante"
         }
       },
-      "desc": "Vous recevez 2 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie afin de recoudre la blessure, toute Blessure que vous subissez à votre bras blessé vous inflige un État Hémorragique supplémentaire."
+      "desc": "Vous recevez 2 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie afin de recoudre la blessure, toute Blessure que vous subissez à votre bras blessé vous inflige un État Hémorragique supplémentaire.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-61",
@@ -620,7 +734,11 @@
       "traumas": [
         "fracture-bras-mineure"
       ],
-      "desc": "Vous lâchez ce que vous teniez dans cette main et vous subissez un Traumatisme Fracture (Mineure). Vous devez réussir un Test de Résistance Complexe (–10) sous peine de recevoir 1 État Sonné."
+      "desc": "Vous lâchez ce que vous teniez dans cette main et vous subissez un Traumatisme Fracture (Mineure). Vous devez réussir un Test de Résistance Complexe (–10) sous peine de recevoir 1 État Sonné.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-76",
@@ -636,7 +754,11 @@
       "traumas": [
         "dechirure-autre-majeure"
       ],
-      "desc": "Vous lâchez ce que vous teniez dans cette main et vous subissez un Traumatisme Déchirure musculaire (Majeure)."
+      "desc": "Vous lâchez ce que vous teniez dans cette main et vous subissez un Traumatisme Déchirure musculaire (Majeure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-81",
@@ -669,7 +791,11 @@
       "traumas": [
         "dechirure-autre-mineure"
       ],
-      "desc": "Gagnez 2 États Hémorragique. Gagnez 1 État Sonné et subissez un Traumatisme Déchirure musculaire (Mineure). Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient."
+      "desc": "Gagnez 2 États Hémorragique. Gagnez 1 État Sonné et subissez un Traumatisme Déchirure musculaire (Mineure). Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-86",
@@ -685,7 +811,11 @@
       "traumas": [
         "fracture-bras-majeure"
       ],
-      "desc": "Vous lâchez ce que vous teniez dans cette main et vous subissez un Traumatisme Fracture (Majeure)."
+      "desc": "Vous lâchez ce que vous teniez dans cette main et vous subissez un Traumatisme Fracture (Majeure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-91",
@@ -700,7 +830,11 @@
           "value": 4
         }
       ],
-      "desc": "Vous subissez 4 États Hémorragique."
+      "desc": "Vous subissez 4 États Hémorragique.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-96",
@@ -735,7 +869,11 @@
           ]
         }
       },
-      "desc": "Le bras est considéré comme perdu (voir Amputation en page 180 de WFJDR). Vous subissez 1 État Sonné jusqu'à ce que vous receviez de l'Aide Médicale. Après ce traitement initial, il faut obtenir 6 DR sur un Test étendu de Guérison Accessible (+20) pour que vous récupériez l'usage de ce bras, après quoi les Tests effectués avec ce bras subissent une pénalité de –10 pendant 1d10 jours."
+      "desc": "Le bras est considéré comme perdu (voir Amputation en page 180 de WFJDR). Vous subissez 1 État Sonné jusqu'à ce que vous receviez de l'Aide Médicale. Après ce traitement initial, il faut obtenir 6 DR sur un Test étendu de Guérison Accessible (+20) pour que vous récupériez l'usage de ce bras, après quoi les Tests effectués avec ce bras subissent une pénalité de –10 pendant 1d10 jours.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-110",
@@ -756,7 +894,11 @@
           "doigt-ampute"
         ]
       },
-      "desc": "Vous perdez un doigt – Amputation (Accessible). Vous subissez 1 État Hémorragique."
+      "desc": "Vous perdez un doigt – Amputation (Accessible). Vous subissez 1 État Hémorragique.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-116",
@@ -787,7 +929,11 @@
           "versTraumaId": "doigt-ampute"
         }
       },
-      "desc": "Votre main s'ouvre. Perdez 1 doigt – Amputation (Complexe). Gagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous vos doigts, vous perdez votre main – Amputation (Complexe)."
+      "desc": "Votre main s'ouvre. Perdez 1 doigt – Amputation (Complexe). Gagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous vos doigts, vous perdez votre main – Amputation (Complexe).",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-121",
@@ -813,7 +959,11 @@
       "traumas": [
         "dechirure-autre-majeure"
       ],
-      "desc": "Le coup sépare le biceps de l'os. Vous lâchez ce que vous teniez dans cette main et vous subissez un Traumatisme Déchirure musculaire (Majeure), 2 États Hémorragique et 1 État Sonné."
+      "desc": "Le coup sépare le biceps de l'os. Vous lâchez ce que vous teniez dans cette main et vous subissez un Traumatisme Déchirure musculaire (Majeure), 2 États Hémorragique et 1 État Sonné.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-126",
@@ -849,7 +999,11 @@
           "main-bras-ampute"
         ]
       },
-      "desc": "Vous perdez votre main – Amputation (Difficile). Vous recevez 2 États Hémorragique et vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 1 État Sonné et 1 État À Terre."
+      "desc": "Vous perdez votre main – Amputation (Difficile). Vous recevez 2 États Hémorragique et vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 1 État Sonné et 1 État À Terre.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-131",
@@ -885,7 +1039,11 @@
           "main-bras-ampute"
         ]
       },
-      "desc": "Le coup rend votre bras inutilisable de manière permanente – Amputation (Très Difficile). Vous recevez 3 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient."
+      "desc": "Le coup rend votre bras inutilisable de manière permanente – Amputation (Très Difficile). Vous recevez 3 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     },
     {
       "id": "aa-bras-136",
@@ -893,7 +1051,11 @@
       "max": 100000,
       "label": "Démembrement brutal",
       "lethal": true,
-      "desc": "Votre bras est tranché et vous mourez presque instantanément à cause du choc et de la perte de sang."
+      "desc": "Votre bras est tranché et vous mourez presque instantanément à cause du choc et de la perte de sang.",
+      "source": {
+        "book": "aux-armes",
+        "page": 84
+      }
     }
   ],
   "corps": [
@@ -921,7 +1083,11 @@
           }
         ]
       },
-      "desc": "Vous recevez 1 État Sonné. Vous devez réussir un Test de Résistance Accessible (+20) sous peine de subir l'État À Terre. Votre Mouvement est réduit de moitié pendant 1d10 Rounds le temps de reprendre votre souffle."
+      "desc": "Vous recevez 1 État Sonné. Vous devez réussir un Test de Résistance Accessible (+20) sous peine de subir l'État À Terre. Votre Mouvement est réduit de moitié pendant 1d10 Rounds le temps de reprendre votre souffle.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-11",
@@ -936,7 +1102,11 @@
           "value": 1
         }
       ],
-      "desc": "Vous subissez 1 État Hémorragique."
+      "desc": "Vous subissez 1 État Hémorragique.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-21",
@@ -961,7 +1131,11 @@
           }
         ]
       },
-      "desc": "Vous recevez 1 État Sonné et vous devez réussir un Test de Résistance Facile (+40) sous peine de vomir et de subir l'État À Terre."
+      "desc": "Vous recevez 1 État Sonné et vous devez réussir un Test de Résistance Facile (+40) sous peine de vomir et de subir l'État À Terre.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-26",
@@ -979,7 +1153,11 @@
           }
         ]
       },
-      "desc": "Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 3 États Sonné."
+      "desc": "Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 3 États Sonné.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-31",
@@ -990,7 +1168,11 @@
       "traumas": [
         "dechirure-autre-mineure"
       ],
-      "desc": "Vous subissez un Traumatisme Déchirure musculaire (Mineure)."
+      "desc": "Vous subissez un Traumatisme Déchirure musculaire (Mineure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-36",
@@ -1016,7 +1198,11 @@
           }
         }
       ],
-      "desc": "Vous subissez une pénalité de –10 sur tous vos Tests basés sur l'Agilité pendant 1d10 jours."
+      "desc": "Vous subissez une pénalité de –10 sur tous vos Tests basés sur l'Agilité pendant 1d10 jours.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-41",
@@ -1039,7 +1225,11 @@
           }
         }
       ],
-      "desc": "Choisissez au hasard l'un de vos deux bras. Vous lâchez ce que vous teniez dans cette main et le bras est inutilisable pendant 1d10 Rounds (voir Amputation en page 180 de WFJDR)."
+      "desc": "Choisissez au hasard l'un de vos deux bras. Vous lâchez ce que vous teniez dans cette main et le bras est inutilisable pendant 1d10 Rounds (voir Amputation en page 180 de WFJDR).",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-46",
@@ -1054,7 +1244,11 @@
           "value": 2
         }
       ],
-      "desc": "Vous recevez 2 États Hémorragique."
+      "desc": "Vous recevez 2 États Hémorragique.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-51",
@@ -1072,7 +1266,11 @@
       "traumas": [
         "fracture-torse-mineure"
       ],
-      "desc": "Le coup fracture une ou plusieurs côtes. Vous recevez 1 État Sonné et vous subissez un Traumatisme Fracture (Mineure)."
+      "desc": "Le coup fracture une ou plusieurs côtes. Vous recevez 1 État Sonné et vous subissez un Traumatisme Fracture (Mineure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-56",
@@ -1093,7 +1291,11 @@
           "label": "Blessure béante"
         }
       },
-      "desc": "Vous recevez 3 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie, toute Blessure que vous perdez au torse vous inflige un État Hémorragique supplémentaire car la plaie se rouvre."
+      "desc": "Vous recevez 3 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie, toute Blessure que vous perdez au torse vous inflige un État Hémorragique supplémentaire car la plaie se rouvre.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-61",
@@ -1123,7 +1325,11 @@
           }
         ]
       },
-      "desc": "Vous recevez 2 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient car vous perdez connaissance à cause de la douleur. Et si vous n'obtenez pas au moins 4 DR, vous hurlez de douleur."
+      "desc": "Vous recevez 2 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient car vous perdez connaissance à cause de la douleur. Et si vous n'obtenez pas au moins 4 DR, vous hurlez de douleur.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-66",
@@ -1144,7 +1350,11 @@
           "label": "Dégâts artériels"
         }
       },
-      "desc": "Vous recevez 4 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie, chaque nouvelle Blessure à cette Localisation vous fait subir 2 États Hémorragique supplémentaires."
+      "desc": "Vous recevez 4 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie, chaque nouvelle Blessure à cette Localisation vous fait subir 2 États Hémorragique supplémentaires.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-71",
@@ -1155,7 +1365,11 @@
       "traumas": [
         "dechirure-autre-majeure"
       ],
-      "desc": "Une douleur irradiante vous assaille alors que vous faites usage de vos muscles. Subissez un Traumatisme Déchirure musculaire (Majeure)."
+      "desc": "Une douleur irradiante vous assaille alors que vous faites usage de vos muscles. Subissez un Traumatisme Déchirure musculaire (Majeure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-76",
@@ -1183,7 +1397,11 @@
       "traumas": [
         "fracture-torse-mineure"
       ],
-      "desc": "Vous recevez 1 État Sonné. Vous devez réussir un Test de Résistance Intermédiaire (+0) sous peine de subir également l'État À Terre. Vous subissez le Traumatisme Fracture (Mineure)."
+      "desc": "Vous recevez 1 État Sonné. Vous devez réussir un Test de Résistance Intermédiaire (+0) sous peine de subir également l'État À Terre. Vous subissez le Traumatisme Fracture (Mineure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-81",
@@ -1204,7 +1422,11 @@
           "label": "Blessure majeure au torse"
         }
       },
-      "desc": "Vous recevez une blessure importante au torse qui arrache la peau de ses muscles et de ses tendons. Recevez 4 États Hémorragique. Tant que vous n'êtes pas soigné par Chirurgie afin de recoudre la blessure, toute nouvelle Blessure que vous recevrez à cette Localisation vous fera gagner 2 États Hémorragique supplémentaires à cause de la réouverture de la blessure."
+      "desc": "Vous recevez une blessure importante au torse qui arrache la peau de ses muscles et de ses tendons. Recevez 4 États Hémorragique. Tant que vous n'êtes pas soigné par Chirurgie afin de recoudre la blessure, toute nouvelle Blessure que vous recevrez à cette Localisation vous fera gagner 2 États Hémorragique supplémentaires à cause de la réouverture de la blessure.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-86",
@@ -1219,7 +1441,11 @@
           "value": 2
         }
       ],
-      "desc": "Vous contractez une Blessure Purulente (voir Maladies et Infections en page 186 de WFJDR) et gagnez 2 États Hémorragique."
+      "desc": "Vous contractez une Blessure Purulente (voir Maladies et Infections en page 186 de WFJDR) et gagnez 2 États Hémorragique.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-91",
@@ -1238,7 +1464,11 @@
       "traumas": [
         "fracture-torse-majeure"
       ],
-      "desc": "Gagnez 1 État Sonné qui ne peut être retiré que par Aide Médicale, et subissez un Traumatisme Fracture (Majeure)."
+      "desc": "Gagnez 1 État Sonné qui ne peut être retiré que par Aide Médicale, et subissez un Traumatisme Fracture (Majeure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-96",
@@ -1257,7 +1487,11 @@
       "traumas": [
         "fracture-torse-majeure"
       ],
-      "desc": "Gagnez 1 État Inconscient jusqu'à ce que vous soyez soigné par Aide Médicale et subissez un Traumatisme Fracture (Majeure)."
+      "desc": "Gagnez 1 État Inconscient jusqu'à ce que vous soyez soigné par Aide Médicale et subissez un Traumatisme Fracture (Majeure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-111",
@@ -1273,7 +1507,11 @@
           "unlockBy": "surgery"
         }
       ],
-      "desc": "Gagnez 1 État Hémorragique qui ne peut être retiré que par Chirurgie. Vous contractez une Infection du sang (voir Maladies et Infections en page 186 de WFJDR)."
+      "desc": "Gagnez 1 État Hémorragique qui ne peut être retiré que par Chirurgie. Vous contractez une Infection du sang (voir Maladies et Infections en page 186 de WFJDR).",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     },
     {
       "id": "aa-corps-116",
@@ -1281,7 +1519,11 @@
       "max": 100000,
       "label": "Éventré",
       "lethal": true,
-      "desc": "Vous êtes littéralement coupé en deux. Les deux parties de votre corps atterrissent de façon parfaitement aléatoire au sol, et tout Personnage situé à moins de 2 mètres est recouvert de sang."
+      "desc": "Vous êtes littéralement coupé en deux. Les deux parties de votre corps atterrissent de façon parfaitement aléatoire au sol, et tout Personnage situé à moins de 2 mètres est recouvert de sang.",
+      "source": {
+        "book": "aux-armes",
+        "page": 85
+      }
     }
   ],
   "jambe": [
@@ -1303,7 +1545,11 @@
           }
         ]
       },
-      "desc": "Vous devez réussir un Test de Résistance Accessible (+20) sous peine de subir une pénalité de -10 sur tous vos Tests d'Agilité jusqu'à la fin du prochain Round."
+      "desc": "Vous devez réussir un Test de Résistance Accessible (+20) sous peine de subir une pénalité de -10 sur tous vos Tests d'Agilité jusqu'à la fin du prochain Round.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-11",
@@ -1323,7 +1569,11 @@
           }
         ]
       },
-      "desc": "Vous devez réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de subir l'État À Terre."
+      "desc": "Vous devez réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de subir l'État À Terre.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-21",
@@ -1344,7 +1594,11 @@
           }
         }
       ],
-      "desc": "Vous subissez une pénalité de -10 sur tous vos Tests d'Agilité pendant 1d10 Rounds."
+      "desc": "Vous subissez une pénalité de -10 sur tous vos Tests d'Agilité pendant 1d10 Rounds.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-26",
@@ -1359,7 +1613,11 @@
           "value": 1
         }
       ],
-      "desc": "Vous recevez 1 État Hémorragique."
+      "desc": "Vous recevez 1 État Hémorragique.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-41",
@@ -1384,7 +1642,11 @@
           }
         ]
       },
-      "desc": "Un coup violent sur le haut de la cuisse. Vous recevez 1 État Hémorragique et vous devez réussir un Test de Résistance Accessible (+20) sous peine de subir l'État À Terre."
+      "desc": "Un coup violent sur le haut de la cuisse. Vous recevez 1 État Hémorragique et vous devez réussir un Test de Résistance Accessible (+20) sous peine de subir l'État À Terre.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-46",
@@ -1395,7 +1657,11 @@
       "traumas": [
         "dechirure-jambe-mineure"
       ],
-      "desc": "Vous subissez un Traumatisme Déchirure musculaire (Mineure)."
+      "desc": "Vous subissez un Traumatisme Déchirure musculaire (Mineure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-51",
@@ -1416,7 +1682,11 @@
           }
         }
       ],
-      "desc": "Votre genou pivote un peu trop. Vous subissez une pénalité de -20 sur tous vos Tests d'Agilité pendant 1d10 Rounds."
+      "desc": "Votre genou pivote un peu trop. Vous subissez une pénalité de -20 sur tous vos Tests d'Agilité pendant 1d10 Rounds.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-56",
@@ -1441,7 +1711,11 @@
           "difficulty": "intermediaire"
         }
       },
-      "desc": "Vous recevez 1 État Hémorragique. Une fois la rencontre terminée, effectuez un Test de Résistance Intermédiaire (+0). Sur un Échec, vous perdez un orteil – Amputation (Accessible)."
+      "desc": "Vous recevez 1 État Hémorragique. Une fois la rencontre terminée, effectuez un Test de Résistance Intermédiaire (+0). Sur un Échec, vous perdez un orteil – Amputation (Accessible).",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-61",
@@ -1466,7 +1740,11 @@
           }
         ]
       },
-      "desc": "Vous recevez 2 États Hémorragique. Vous devez réussir un Test de Résistance Intermédiaire (+0) sous peine de subir l'État À Terre."
+      "desc": "Vous recevez 2 États Hémorragique. Vous devez réussir un Test de Résistance Intermédiaire (+0) sous peine de subir l'État À Terre.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-66",
@@ -1477,7 +1755,11 @@
       "traumas": [
         "dechirure-jambe-majeure"
       ],
-      "desc": "Vous subissez un Traumatisme Déchirure musculaire (Majeure)."
+      "desc": "Vous subissez un Traumatisme Déchirure musculaire (Majeure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-71",
@@ -1500,7 +1782,11 @@
       "traumas": [
         "fracture-jambe-mineure"
       ],
-      "desc": "Vous recevez 1 État À Terre et 2 États Hémorragique et vous subissez un Traumatisme Fracture (Mineure)."
+      "desc": "Vous recevez 1 État À Terre et 2 États Hémorragique et vous subissez un Traumatisme Fracture (Mineure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-76",
@@ -1521,7 +1807,11 @@
           "label": "Cuisse lacérée"
         }
       },
-      "desc": "Vous recevez 3 États Hémorragique. Tant que vous n'aurez pas été soigné par Chirurgie afin de refermer la plaie, chaque fois que vous subirez des Blessures à cette Jambe, gagnez 1 État Hémorragique supplémentaire."
+      "desc": "Vous recevez 3 États Hémorragique. Tant que vous n'aurez pas été soigné par Chirurgie afin de refermer la plaie, chaque fois que vous subirez des Blessures à cette Jambe, gagnez 1 État Hémorragique supplémentaire.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-81",
@@ -1554,7 +1844,11 @@
       "traumas": [
         "dechirure-jambe-majeure"
       ],
-      "desc": "Gagnez les États À Terre et Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 1 État Inconscient. Votre jambe devient inutilisable (voir Amputation en page 180 de WFJDR). Vous subissez un Traumatisme Déchirure musculaire (Majeure)."
+      "desc": "Gagnez les États À Terre et Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 1 État Inconscient. Votre jambe devient inutilisable (voir Amputation en page 180 de WFJDR). Vous subissez un Traumatisme Déchirure musculaire (Majeure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-86",
@@ -1578,7 +1872,11 @@
         "dechirure-jambe-majeure",
         "fracture-jambe-mineure"
       ],
-      "desc": "Vous recevez 1 État Sonné et 1 État À Terre. De plus, vous subissez un Traumatisme Déchirure musculaire (Majeure) et un Traumatisme Fracture (Mineure)."
+      "desc": "Vous recevez 1 État Sonné et 1 État À Terre. De plus, vous subissez un Traumatisme Déchirure musculaire (Majeure) et un Traumatisme Fracture (Mineure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-91",
@@ -1606,7 +1904,11 @@
       "traumas": [
         "fracture-jambe-majeure"
       ],
-      "desc": "Vous subissez 1 État Hémorragique, 1 État À Terre et 1 État Sonné, et un Traumatisme Fracture (Majeure)."
+      "desc": "Vous subissez 1 État Hémorragique, 1 État À Terre et 1 État Sonné, et un Traumatisme Fracture (Majeure).",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-96",
@@ -1658,7 +1960,11 @@
           ]
         }
       },
-      "desc": "Vous subissez 1 État À Terre. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 1 État Sonné, qui n'est retiré qu'une fois que vous avez reçu de l'Aide Médicale. Après cette Aide Médicale, il faut obtenir 6 DR sur un Test étendu de Guérison Accessible (+20) pour que vous récupériez l'usage de cette jambe, après quoi votre Mouvement est réduit de moitié et les Tests effectués avec cette jambe subissent une pénalité de -10 pendant 1d10 jours."
+      "desc": "Vous subissez 1 État À Terre. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 1 État Sonné, qui n'est retiré qu'une fois que vous avez reçu de l'Aide Médicale. Après cette Aide Médicale, il faut obtenir 6 DR sur un Test étendu de Guérison Accessible (+20) pour que vous récupériez l'usage de cette jambe, après quoi votre Mouvement est réduit de moitié et les Tests effectués avec cette jambe subissent une pénalité de -10 pendant 1d10 jours.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-106",
@@ -1693,7 +1999,11 @@
           "versTraumaId": "membre-inferieur-ampute"
         }
       },
-      "desc": "Effectuez un Test de Résistance Accessible (+20) ; sur un Échec, vous gagnez l'État À Terre et perdez un orteil, plus un orteil par DR en dessous de 0 – Amputation (Accessible). Gagnez 2 États Hémorragique. Si vous n'êtes pas soigné par Chirurgie au cours des 1d10 jours suivants, vous perdez votre pied."
+      "desc": "Effectuez un Test de Résistance Accessible (+20) ; sur un Échec, vous gagnez l'État À Terre et perdez un orteil, plus un orteil par DR en dessous de 0 – Amputation (Accessible). Gagnez 2 États Hémorragique. Si vous n'êtes pas soigné par Chirurgie au cours des 1d10 jours suivants, vous perdez votre pied.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-116",
@@ -1724,7 +2034,11 @@
           "membre-inferieur-ampute"
         ]
       },
-      "desc": "Votre pied est sectionné – Amputation (Difficile). Vous gagnez les États suivants : 3 États Hémorragique, 2 États Sonné et 1 État À Terre."
+      "desc": "Votre pied est sectionné – Amputation (Difficile). Vous gagnez les États suivants : 3 États Hémorragique, 2 États Sonné et 1 État À Terre.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-121",
@@ -1755,7 +2069,11 @@
           "membre-inferieur-ampute"
         ]
       },
-      "desc": "Votre jambe cède sous le poids de votre corps. Vous gagnez 2 États Hémorragique, 2 États Sonné et 1 État À Terre et vous perdez l'usage de votre jambe – Amputation (Très Difficile)."
+      "desc": "Votre jambe cède sous le poids de votre corps. Vous gagnez 2 États Hémorragique, 2 États Sonné et 1 État À Terre et vous perdez l'usage de votre jambe – Amputation (Très Difficile).",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     },
     {
       "id": "aa-jambe-126",
@@ -1763,7 +2081,11 @@
       "max": 100000,
       "label": "Bassin fracassé",
       "lethal": true,
-      "desc": "Le coup fracasse votre bassin, coupant une jambe. Vous mourez instantanément à cause du choc traumatique."
+      "desc": "Le coup fracasse votre bassin, coupant une jambe. Vous mourez instantanément à cause du choc traumatique.",
+      "source": {
+        "book": "aux-armes",
+        "page": 86
+      }
     }
   ]
 }

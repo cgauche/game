@@ -11,6 +11,7 @@
  * `src/engine/seaWeather.ts` (#162).
  */
 import { z } from 'zod';
+import { document, type EnveloppeDocument } from '../grammaire/document';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-weather.json';
@@ -34,7 +35,7 @@ const windEffectCell = z.strictObject({
 });
 const windEffectTable = z.record(windForce, z.record(windAspect, windEffectCell));
 
-export const schema = z.strictObject({
+const champs = {
   table: z.array(
     z.strictObject({
       min: z.number(),
@@ -112,6 +113,36 @@ export const schema = z.strictObject({
     driftPctOfSpeed: z.number(),
   }),
   encalmine: z.strictObject({ currentM: z.number(), towM: z.number(), towManDR: z.number() }),
-});
+};
 
-export type SeaWeatherData = z.infer<typeof schema>;
+const doc = document(
+  'sea-weather',
+  famille,
+  champs,
+  {
+    table: {
+      label: 'Tirage quotidien',
+      hint: 'Tirage 1d10 + modificateur saisonnier, PAR ASPECT (4 tirages : précipitations/température/visibilité/vent)',
+    },
+    seasonMod: { label: 'Modificateur saisonnier', hint: 'Décalage du tirage météo par saison' },
+    warmSeaMod: { label: 'Modificateur mer chaude', hint: 'Décalage du tirage météo en mer chaude' },
+    precipitations: {
+      label: 'Précipitations',
+      hint: "Catalogue des paliers de précipitations et de leurs pénalités (dont par spécialisation d'arme)",
+    },
+    temperatures: { label: 'Températures', hint: "Catalogue des paliers de température et de leur exigence de Test/exposition" },
+    visibilites: { label: 'Visibilités', hint: 'Catalogue des paliers de visibilité et de leur pénalité/portée' },
+    vents: { label: 'Forces de vent', hint: 'Libellés des 6 forces de vent, du calme plat à la violente tempête' },
+    roseDesVents: { label: 'Rose des vents', hint: 'Tirage d10 de la direction du vent (« dominant » = vents dominants du plan d’eau)' },
+    effetDuVent: { label: 'Effet du vent', hint: 'Table croisée force×aspect (% voiles/autre, encalminage, affalage, virement)' },
+    effetDuVentClinfoc: { label: 'Effet du vent (clinfoc)', hint: 'Même table, variante clinfoc' },
+    effetDuVentGreementDelta: { label: 'Delta gréement de course', hint: 'Delta de % voiles ajouté au tableau standard, par aspect de vent' },
+    affaler: { label: 'Affaler les voiles', hint: 'Difficulté, localisation d’échec critique et dérive induite' },
+    encalmine: { label: 'Encalminé', hint: 'Distances et DR de remorquage en absence de vent' },
+  },
+  { codex: { keys: ['seaWeather'] }, edit: { object: 'single' } },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;
+export type SeaWeatherData = EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>;

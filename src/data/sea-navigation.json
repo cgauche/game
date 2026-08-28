@@ -1,4 +1,7 @@
 {
+  "id": "sea-navigation",
+  "type": "sea-navigation",
+  "label": "Navigation maritime",
   "workPeriodHours": {
     "voile": 8,
     "avirons": 2,

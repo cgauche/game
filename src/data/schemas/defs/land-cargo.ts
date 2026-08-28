@@ -2,10 +2,11 @@
  * Schéma de `land-cargo.json` — COMMERCE TERRESTRE & FLUVIAL (Mort sur le Reik Compagnon ch.11
  * « Règles du commerce », p.70-78). Consommé par `src/engine/landCargo.ts` (`LAND as unknown as
  * { ... }`, cast inline reflété ICI 1:1). `wine: true` marque le Vin/Eau-de-vie (prix par la table de
- * qualité SECRÈTE `wineQuality`, pas par la colonne saisonnière). `_source` = note de provenance
- * (verbatim des tableaux), présente en tête du JSON.
+ * qualité SECRÈTE `wineQuality`, pas par la colonne saisonnière). La racine est NUE : chaque
+ * sous-entrée porte son `source` (`src/data/source-racine-aveugle.test.ts`).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'land-cargo.json';
@@ -42,7 +43,10 @@ const cargoMarqueur = z.strictObject({
   source: sourceRefSchema,
 });
 
-export const schema = z.strictObject({
+const doc = document(
+  'land-cargo',
+  famille,
+  {
   cargoes: z.array(z.union([cargoMarchand, cargoMarqueur])),
   wineQuality: z.array(
     z.strictObject({ min: z.number(), max: z.number(), label: z.string(), price: z.number(), source: sourceRefSchema }),
@@ -78,4 +82,26 @@ export const schema = z.strictObject({
       source: sourceRefSchema,
     }),
   ),
-});
+  },
+  {
+    cargoes: {
+      label: 'Cargaisons',
+      hint: 'Catalogue des cargaisons terrestres/fluviales échangeables et des marqueurs de colonne Produits',
+    },
+    wineQuality: {
+      label: 'Qualité du vin',
+      hint: "Table secrète de prix du Vin/Eau-de-vie, tirée à part de la colonne saisonnière",
+    },
+    buy: { label: "Règles d'achat", hint: 'Barème de Marchandage, disponibilité, seuils de dégustation du vin' },
+    sell: { label: 'Règles de vente', hint: 'Cible de production, bonus de Commerce, bradage, offre par richesse du lieu' },
+    gossip: { label: 'Ragot', hint: 'Difficulté et modificateur du Test de Ragot préalable à la vente' },
+    rumours: { label: 'Rumeurs', hint: 'Table de tirage d100 de rumeurs commerciales' },
+  },
+  {
+    codex: { keys: ['landCargo'] },
+    edit: { none: 'édité par TABLEAU NICHÉ : la catégorie Codex `landCargo` édite le champ `cargoes`, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

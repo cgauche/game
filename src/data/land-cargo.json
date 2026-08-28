@@ -1,4 +1,7 @@
 {
+  "id": "land-cargo",
+  "type": "land-cargo",
+  "label": "Cargaison terrestre",
   "cargoes": [
     {
       "id": "vivres",

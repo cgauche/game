@@ -1,4 +1,7 @@
 {
+  "id": "sea-perils",
+  "type": "sea-perils",
+  "label": "Périls en mer",
   "echouer": {
     "desc": "Quand un navire s'est Échoué, il s'arrête net. Le vaisseau ne peut plus bouger jusqu'à ce qu'il soit dégagé du péril. Cette tâche nécessite un Test de Force avec une pénalité égale au total de points d'Encombrement du navire et de sa cargaison. N'importe quel nombre de Personnages, de bêtes de somme, etc. peut aider s'ils ont tous assez de cordes pour tirer.",
     "source": {

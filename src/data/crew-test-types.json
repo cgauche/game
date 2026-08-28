@@ -1,4 +1,7 @@
 {
+  "id": "crew-test-types",
+  "type": "crew-test-types",
+  "label": "Tests d'équipage (types)",
   "types": [
     {
       "id": "progression",

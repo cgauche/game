@@ -4,6 +4,7 @@
  * (tooling), pas une donnée RAW — cf. `EXEMPT_DATASETS` (citationCoverage.mjs).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 
 export const file = 'donnees.manifest.json';
 export const famille = 'config';
@@ -33,11 +34,33 @@ const homonymeCasSchema = z.strictObject({
   lecon: z.string(),
 });
 
-export const schema = z.strictObject({
-  reglesOr: z.string(),
-  rubriques: z.array(rubriqueSchema),
-  homonymes: z.strictObject({
-    intro: z.string(),
-    cas: z.array(homonymeCasSchema),
-  }),
-});
+const doc = document(
+  'donnees.manifest',
+  famille,
+  {
+    reglesOr: z.string(),
+    rubriques: z.array(rubriqueSchema),
+    homonymes: z.strictObject({
+      intro: z.string(),
+      cas: z.array(homonymeCasSchema),
+    }),
+  },
+  {
+    reglesOr: { label: 'Règles d’or', hint: 'Principes éditoriaux de l’atlas des données' },
+    rubriques: { label: 'Rubriques', hint: 'Sections de l’atlas, chacune listant ses fichiers et leur usage' },
+    homonymes: { label: 'Homonymes', hint: 'Cas de noms partagés entre fichiers, avec la leçon qui les distingue' },
+  },
+  {
+    codex: {
+      exempt: {
+        kind: 'vocabulaire-app-interne',
+        raison:
+          "manifeste TOOLING (#903) éditorial de l'atlas des données (rangement par rubrique/description/homonymes) — vocabulaire app-interne.",
+      },
+    },
+    edit: { none: 'aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

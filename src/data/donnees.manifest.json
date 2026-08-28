@@ -1,4 +1,7 @@
 {
+  "id": "donnees-manifest",
+  "type": "donnees.manifest",
+  "label": "Manifeste éditorial de l'atlas des données",
   "reglesOr": "Une table que le livre range sous « **Machines de guerre / véhicules / navires** » n'est JAMAIS un *trapping* (équipement porté). Elle va dans le fichier de son sous-système (`mass-battle.json`, `vehicles.json`, `naval-traits.json`…). Corollaire : un même nom peut désigner plusieurs concepts distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).",
   "rubriques": [
     {
@@ -247,7 +250,7 @@
             "sizes.json",
             "encumbranceTiers.json"
           ],
-          "desc": "Modif. de Taille au tir · paliers d'Encombrement"
+          "desc": "Barèmes par Taille (modif. au tir · Enc à bord · côté d'empreinte) · paliers d'Encombrement"
         },
         {
           "files": [

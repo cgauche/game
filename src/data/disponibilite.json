@@ -1,4 +1,7 @@
 {
+  "id": "disponibilite",
+  "type": "disponibilite",
+  "label": "Disponibilité & Troc",
   "dispoPct": [
     {
       "availability": "Limitée",

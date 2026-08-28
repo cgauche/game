@@ -6,6 +6,7 @@
  * Course-poursuite, Réparations au port.
  */
 import { z } from 'zod';
+import { document, type EnveloppeDocument } from '../grammaire/document';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-navigation.json';
@@ -13,7 +14,7 @@ export const famille = 'config';
 
 const tableRange = z.strictObject({ min: z.number(), max: z.number() });
 
-export const schema = z.strictObject({
+const champs = {
   workPeriodHours: z.strictObject({ voile: z.number(), avirons: z.number(), source: sourceRefSchema }),
   epuisement: z.strictObject({ difficulty: difficultySchema, forcedDifficulty: difficultySchema, source: sourceRefSchema }),
   forcerLeRythme: z.array(
@@ -112,6 +113,30 @@ export const schema = z.strictObject({
     }),
     entretienCrewTestDR: z.number(),
   }),
-});
+};
 
-export type SeaNavigationData = z.infer<typeof schema>;
+const doc = document(
+  'sea-navigation',
+  famille,
+  champs,
+  {
+    workPeriodHours: { label: 'Période de travail', hint: "Durée d'un quart de voile/d'avirons avant relève" },
+    epuisement: { label: 'Épuisement', hint: "Difficulté du Test d'Épuisement de l'équipage, normal et forcé" },
+    forcerLeRythme: { label: 'Forcer le rythme', hint: 'Difficulté du Test de Voile / de Rame à payer pour gagner ce bonus de Mouvement' },
+    vitesseMax: {
+      label: 'Vitesse maximum',
+      hint: 'Seuil de vitesse sûre et, au-delà, table par BONUS DE VITESSE (M − M de conception) : Difficulté, périodicité, Dégâts',
+    },
+    salissures: { label: 'Salissures de coque', hint: 'Paliers d’encrassement — pénalités de manœuvre/Navigation et coût de nettoyage' },
+    orientation: { label: 'Orientation', hint: 'Repères de route et Changement de cap : issues par fourchette de DR' },
+    phares: { label: 'Phares et clochers', hint: 'Portée de détection des phares, orientation par clocher' },
+    longsVoyages: { label: 'Longs voyages', hint: 'Milles par jour et par point de Mouvement, progression par DR' },
+    poursuite: { label: 'Course-poursuite', hint: "Distances d'échappement, delta de DR, pénalité à faible Mouvement" },
+    reparation: { label: 'Réparations au port', hint: 'Coût, durée et rendement des réparations de coque, dont la réparation temporaire' },
+  },
+  { codex: { keys: ['seaNavigation'] }, edit: { object: 'single' } },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;
+export type SeaNavigationData = EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>;

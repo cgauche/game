@@ -7,6 +7,7 @@
  * au-delà de « objet »).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-events.json';
@@ -52,14 +53,34 @@ const fastVoyagePalier = z.strictObject({
   source: sourceRefSchema,
 });
 
-export const schema = z.strictObject({
-  manann: z.strictObject({
-    base: z.number(),
-    portEventMod: z.number(),
-    source: sourceRefSchema,
-    factors: z.array(manannFactor),
-  }),
-  boardEvents: z.array(seaEventDef),
-  portEvents: z.array(seaEventDef),
-  fastVoyage: z.strictObject({ source: sourceRefSchema, paliers: z.array(fastVoyagePalier) }),
-});
+const doc = document(
+  'sea-events',
+  famille,
+  {
+    manann: z.strictObject({
+      base: z.number(),
+      portEventMod: z.number(),
+      source: sourceRefSchema,
+      factors: z.array(manannFactor),
+    }),
+    boardEvents: z.array(seaEventDef),
+    portEvents: z.array(seaEventDef),
+    fastVoyage: z.strictObject({ source: sourceRefSchema, paliers: z.array(fastVoyagePalier) }),
+  },
+  {
+    manann: { label: 'Humeur de Manann', hint: 'Score de départ + facteurs signés qui font varier l’humeur du dieu de la mer' },
+    boardEvents: { label: 'Événements de bord', hint: 'Table de tirage d’événements en cours de traversée' },
+    portEvents: { label: 'Événements de port', hint: 'Table de tirage d’événements à l’escale' },
+    fastVoyage: {
+      label: 'Voyage rapide',
+      hint: 'Paliers de conséquences (équipage/cargaison/coque/Critiques) du choix de forcer l’allure',
+    },
+  },
+  {
+    codex: { keys: ['seaManannFactors', 'seaBoardEvents', 'seaPortEvents'] },
+    edit: { none: 'édité par TABLEAU NICHÉ : les 3 catégories Codex `sea*Events`/`seaManannFactors` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

@@ -1,3 +1,6 @@
 {
+  "id": "rendu-monte",
+  "type": "renduMonte",
+  "label": "Rendu du couple monté",
   "harnaisParDefaut": "sellerie-imperiale"
 }

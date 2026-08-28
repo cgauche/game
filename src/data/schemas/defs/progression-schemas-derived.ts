@@ -4,8 +4,16 @@
  * progression imprimé de chaque Carrière (quelle marque de niveau coche quelle Caractéristique).
  * Il n'est pas authoré : ce contrat verrouille la FORME que le générateur écrit et que
  * `scripts/guards/lib/progressionSchemas.mjs` consomme, pour qu'une édition à la main s'y casse.
+ *
+ * GÉNÉRATION : `python scripts/data/gen-progression-schemas.py` écrit l'artefact depuis les PDF de
+ * `Source/` ; `--check` le compare à l'OCTET sans rien écrire. NE PAS ÉDITER À LA MAIN.
+ * LECTURE : une entrée de `schemas` = une bande de schéma de progression lue dans le PDF — `folio` est
+ * le folio IMPRIMÉ relevé SUR la page, `career` le titre de Carrière imprimé au-dessus de la bande,
+ * `lv[n]` les Caractéristiques marquées au niveau n (`col` = colonne imprimée, `key` = CharKey,
+ * `teinte` = couleur RVB mesurée de l'aplat, absente au niveau 1 qui est un glyphe de police).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { charKeySchema } from '../grammaire/valeurs';
 
 export const file = 'progression-schemas.derived.json';
@@ -22,10 +30,11 @@ const markSchema = z.strictObject({
   mark: z.literal('glyphe').optional(),
 });
 
-export const schema = z.strictObject({
-  __genere: z.string(),
-  __lecture: z.string(),
-  __livres: z.array(z.string()),
+const doc = document(
+  'progression-schemas.derived',
+  famille,
+  {
+  livres: z.array(z.string()),
   schemas: z.array(
     z.strictObject({
       /** `id` du livre (`books.json`). */
@@ -47,4 +56,22 @@ export const schema = z.strictObject({
       }),
     }),
   ),
-});
+  },
+  {
+    livres: { label: 'Livres sources', hint: 'Provenance du dérivé : livres lus par le générateur' },
+    schemas: { label: 'Schémas de progression', hint: 'Un schéma de progression relevé par Carrière' },
+  },
+  {
+    codex: {
+      exempt: {
+        kind: 'vocabulaire-app-interne',
+        raison:
+          "artefact de GARDE (#905) : la lecture brute des schémas de progression dans les PDF (colonne, teinte d'aplat, page PDF), consommée par `scripts/guards/lib/progressionSchemas.mjs` — le contenu de jeu correspondant est déjà exposé au Codex par la Carrière et ses niveaux (`careers`/`careerLevels`).",
+      },
+    },
+    edit: { none: 'artefact GÉNÉRÉ : il se réécrit par `scripts/data/gen-progression-schemas.py`, jamais à l’atelier' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

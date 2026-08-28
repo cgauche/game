@@ -1,4 +1,7 @@
 {
+  "id": "river-navigation",
+  "type": "river-navigation",
+  "label": "Navigation fluviale",
   "windForces": [
     {
       "id": "calme",

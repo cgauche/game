@@ -1,19 +1,30 @@
 /**
- * Schéma de `aa-criticals.json` — Blessures critiques ALTERNATIVES (Aux Armes, l.2441-2627), 4 familles
- * (Tête/Bras/Corps/Jambe). Reflet de l'interface `AAEntry` (`src/engine/aaCritical.ts`) + `_source`
- * (note de provenance en tête de fichier, absente du chemin LDB). SEUL dataset encore sur
- * `freeSourceNoteSchema` (#278) : la note libre en tête de fichier cite un intervalle APPROXIMATIF
- * (`p.≈118-124`) et n'a jamais été migrée en `source` structuré PAR entrée — dette de migration, jamais
- * un blocage d'extraction : `Source/WH - V4 - Aux Armes` EST extrait en Markdown à folios `data-folio`
- * (13 chapitres) [motif RÉVISÉ #563, cf. `freeSourceNoteSchema` dans `grammaire/valeurs.ts`].
+ * Schéma de `aa-criticals.json` — Blessures critiques ALTERNATIVES (Aux Armes), 4 familles
+ * (Tête/Bras/Corps/Jambe). Reflet de l'interface `AAEntry` (`src/engine/aaCritical.ts`). Système
+ * ALTERNATIF optionnel (policy `combat-aa-blessures=aa`).
+ *
+ * PROVENANCE : chaque entrée porte son `source: {book:'aux-armes', page}` — folios relevés aux ancres
+ * `data-folio` d'AA 07 (83 Tête, 84 Bras, 85 Torse, 86 Jambe), cf.
+ * `src/data/aa-criticals-folio.test.ts`.
+ *
+ * MODÉLISATION (réfs nues) : `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ;
+ * nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y
+ * compris les sous-effets à durée Rounds (#125), les durées en jours (#153), l'objet lâché (#153) et
+ * l'Amputation structurée (#153). La cascade « Aide Médicale → Test étendu de Guérison » (#166) passe
+ * par `escalation.medicalAidGate`, l'escalade doigt/pied sans soin (#167) par
+ * `escalation.perRound`/`apresDelai`, le Test de Dextérité par action de « Main ensanglantée » (#165)
+ * par l'op `handGate`. `desc` = « Effets supplémentaires » VERBATIM.
  */
 import { z } from 'zod';
-import { difficultySchema, freeSourceNoteSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
+import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 import { critEscalationSchema, amputationSchema } from './criticals';
 
 export const file = 'aa-criticals.json';
-export const famille = 'record';
+// Les 4 familles de Localisation sont des CLÉS FIXES du document, donc des CHAMPS : `config`, jamais
+// un `record` à clés libres (#1467 L1b V-FLIP-CONFIG).
+export const famille = 'config';
 
 const aaEntrySchema = z.strictObject({
   id: z.string(),
@@ -40,13 +51,29 @@ const aaEntrySchema = z.strictObject({
   escalation: critEscalationSchema.optional(),
   lethal: z.boolean().optional(),
   desc: z.string(),
+  source: sourceRefSchema,
 });
 
-export const schema = z.strictObject({
-  /** Note de provenance/périmètre (Système ALTERNATIF optionnel) — display-only, jamais parsée. */
-  _source: freeSourceNoteSchema,
-  tete: z.array(aaEntrySchema),
-  bras: z.array(aaEntrySchema),
-  corps: z.array(aaEntrySchema),
-  jambe: z.array(aaEntrySchema),
-});
+const doc = document(
+  'aa-criticals',
+  famille,
+  {
+    tete: z.array(aaEntrySchema),
+    bras: z.array(aaEntrySchema),
+    corps: z.array(aaEntrySchema),
+    jambe: z.array(aaEntrySchema),
+  },
+  {
+    tete: { label: 'Table — Tête (Aux Armes)' },
+    bras: { label: 'Table — Bras (Aux Armes)' },
+    corps: { label: 'Table — Corps (Aux Armes)' },
+    jambe: { label: 'Table — Jambe (Aux Armes)' },
+  },
+  {
+    codex: { keys: ['aaCriticalsTete', 'aaCriticalsBras', 'aaCriticalsCorps', 'aaCriticalsJambe'] },
+    edit: { none: 'édité par TABLEAU NICHÉ : les 4 catégories Codex `aaCriticals*` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

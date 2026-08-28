@@ -89,7 +89,7 @@ describe('schémas de progression (PDF -> careerLevels.json)', () => {
     }
   });
 
-  it("l'artefact couvre les 7 livres à Carrières et porte son en-tête de fichier GÉNÉRÉ", () => {
+  it("l'artefact couvre les 7 livres à Carrières et porte son ENVELOPPE de document", () => {
     expect(audit.livresArtefact).toEqual([
       'livre-de-base',
       'vents-de-la-magie',
@@ -99,8 +99,14 @@ describe('schémas de progression (PDF -> careerLevels.json)', () => {
       'archives-de-l-empire-2',
       'middenheim',
     ]);
-    expect(artefact.__genere).toContain('gen-progression-schemas.py');
-    expect(artefact.__genere).toContain('NE PAS ÉDITER');
+    // #1467 L1b V-FLIP-CONFIG : la prose « généré par… / ne pas éditer » a quitté la DONNÉE (elle
+    // décrivait le def, pas le document) — elle vit au JSDoc de `defs/progression-schemas-derived.ts`.
+    // Ce que l'artefact porte désormais, et que ce volet gèle, c'est son ENVELOPPE de document, dont
+    // le `type` est ce que la fabrique vérifie au parse.
+    expect(artefact.id).toBe('progression-schemas-derived');
+    expect(artefact.type).toBe('progression-schemas.derived');
+    expect(artefact.label).toBe('Schémas de progression (relevé dérivé)');
+    expect(Object.keys(artefact).filter((k) => k.startsWith('__'))).toEqual([]);
   });
 
   it('la garde REFUSE une permutation entre deux niveaux (ce que la cardinalité laissait passer)', () => {

@@ -1,4 +1,7 @@
 {
+  "id": "criticals",
+  "type": "criticals",
+  "label": "Blessures critiques par localisation (Traumatisme)",
   "tete": [
     {
       "id": "blessure-spectaculaire",

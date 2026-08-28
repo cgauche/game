@@ -6,6 +6,7 @@
  * `{ dice }` (Vin maritime : 3d10, tiré une fois à l'achat).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-cargo.json';
@@ -39,7 +40,10 @@ const cargoMarqueur = z.strictObject({
   source: sourceRefSchema,
 });
 
-export const schema = z.strictObject({
+const doc = document(
+  'sea-cargo',
+  famille,
+  {
   cargoes: z.array(z.union([cargoMarchand, cargoMarqueur])),
   buy: z.strictObject({
     availabilityMultiplier: z.number(),
@@ -84,4 +88,22 @@ export const schema = z.strictObject({
     ),
     source: sourceRefSchema,
   }),
-});
+  },
+  {
+    cargoes: { label: 'Cargaisons', hint: 'Catalogue des cargaisons échangeables et des marqueurs de colonne Production' },
+    buy: { label: "Règles d'achat", hint: 'Barème de Marchandage et bonus de disponibilité à l’achat' },
+    sell: { label: 'Règles de vente', hint: 'Barème de prix, Ragot préalable, DR de camp du Marchandage de vente' },
+    overload: { label: 'Surcharge', hint: 'Paliers de surcharge de cale (malus de Mouvement/manœuvre)' },
+    opportunite: {
+      label: "Commerce d'opportunité",
+      hint: 'Test, nombre de tentatives et issues (%) du placement spéculatif de cargaison',
+    },
+  },
+  {
+    codex: { keys: ['seaCargo'] },
+    edit: { none: 'édité par TABLEAU NICHÉ : la catégorie Codex `seaCargo` édite le champ `cargoes`, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

@@ -1,4 +1,7 @@
 {
+  "id": "mass-battle",
+  "type": "mass-battle",
+  "label": "Bataille de masse",
   "powerEstimate": [
     {
       "id": "insignifiante",

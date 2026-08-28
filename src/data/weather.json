@@ -1,4 +1,7 @@
 {
+  "id": "weather",
+  "type": "weather",
+  "label": "Météo de voyage",
   "seasons": [
     {
       "id": "printemps",

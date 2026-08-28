@@ -5,6 +5,7 @@
  * construction. `size` = `ShipSize` (`src/data/index.ts`).
  */
 import { z } from 'zod';
+import { document, type EnveloppeDocument } from '../grammaire/document';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'ship-construction.json';
@@ -13,7 +14,7 @@ export const famille = 'config';
 const shipSize = z.enum(['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
 const propulsionRow = z.strictObject({ m: z.number(), crew: z.number() });
 
-export const schema = z.strictObject({
+const champs = {
   standard: z.array(
     z.strictObject({
       /** id STABLE = `size` (déjà une clé fermée à 7 valeurs) — identité d'entrée pour le Codex (#422). */
@@ -55,6 +56,25 @@ export const schema = z.strictObject({
       source: sourceRefSchema,
     }),
   ),
-});
+};
 
-export type ShipConstructionData = z.infer<typeof schema>;
+const doc = document(
+  'ship-construction',
+  famille,
+  champs,
+  {
+    standard: { label: 'Caractéristiques standard', hint: 'Une ligne par taille de coque : coût, équipage, propulsion, gabarit, capacité' },
+    propulsion: { label: 'Propulsion secondaire', hint: "Malus et Mouvement minimum d'une propulsion secondaire (rames sur voilier, etc.)" },
+    manoeuvrability: { label: 'Manœuvrabilité', hint: 'Table DR de manœuvre vers surcoût de construction' },
+    speedTraits: { label: 'Traits de vitesse', hint: 'Traits de coque agissant sur Mouvement/capacité/manœuvre/coût' },
+    constructionTraits: { label: 'Traits de construction', hint: 'Traits de coque à paliers (E/Blindage/capacité par niveau)' },
+  },
+  {
+    codex: { keys: ['shipHullSizes', 'shipSpeedTraits', 'shipConstructionTraits'] },
+    edit: { none: 'édité par TABLEAU NICHÉ : les 3 catégories Codex `ship*` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;
+export type ShipConstructionData = EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>;

@@ -168,7 +168,7 @@ export function auditProgressionSchemas(sources = {}) {
     totalBandes: artefact.schemas.length,
     totalCarrieres: careers.length,
     couvertes: couvertes.size,
-    livresArtefact: artefact.__livres ?? [],
+    livresArtefact: artefact.livres ?? [],
   }
 }
 

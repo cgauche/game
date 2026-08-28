@@ -14,6 +14,7 @@
  * optionnelle `magic-vdm-environnementale` (`src/engine/policy.ts`, groupe Magie).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { difficultySchema, sourceRefSchema, castingNumberModSchema } from '../grammaire/valeurs';
 
 export const file = 'arcane-phenomena.json';
@@ -85,7 +86,10 @@ const saturationEffect = z.strictObject({
 
 const attestedNote = z.strictObject({ source: sourceRefSchema, desc: z.string() });
 
-export const schema = z.strictObject({
+const doc = document(
+  'arcane-phenomena',
+  famille,
+  {
   saturationLevels: z.array(
     z.strictObject({
       id: z.string(),
@@ -180,4 +184,21 @@ export const schema = z.strictObject({
       desc: z.string(),
     }),
   ),
-});
+  },
+  {
+    saturationLevels: {
+      label: 'Paliers de Saturation',
+      hint: "Les cinq paliers de Saturation environnementale, leurs modificateurs de Test et leur nombre d'Effets",
+    },
+    windSaturationEffects: {
+      label: 'Effets de Saturation par Vent',
+      hint: 'Rangée du tableau des Effets de Saturation propre à chaque Vent de Magie',
+    },
+    phenomena: { label: 'Phénomènes arcaniques', hint: 'Un phénomène nommé, ses modificateurs de Test et son action sur la Saturation' },
+    tables: { label: 'Tables tirées', hint: 'Les tables d10/d100 du chapitre, consultées par id' },
+  },
+  { codex: { keys: ['arcanePhenomena'] }, edit: { object: 'single' } },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

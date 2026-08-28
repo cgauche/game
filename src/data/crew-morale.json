@@ -1,4 +1,7 @@
 {
+  "id": "crew-morale",
+  "type": "crew-morale",
+  "label": "Moral d'équipage",
   "base": 75,
   "factors": [
     {

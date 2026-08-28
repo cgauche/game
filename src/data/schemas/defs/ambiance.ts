@@ -4,6 +4,7 @@
  * `src/gameIso/catalog/ambiance.ts`.
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 
 export const file = 'ambiance.json';
 export const famille = 'config';
@@ -148,7 +149,10 @@ const faceShadeSchema = z
     message: 'faceShade.verticales : rapport max/min ≤ 2 — au-delà, la famille la plus sombre passe sous le plancher de luminance',
   });
 
-export const schema = z.strictObject({
+const doc = document(
+  'ambiance',
+  famille,
+  {
   ambientFloor: z.number(),
   // `fogTint` = APPLICATION de la politique de visibilité en facteur MULTIPLICATIF (0..1), partagée par
   // les trois rendus (`gameIso/catalog/ambiance.ts`). Trois invariants la tiennent : un facteur reste
@@ -226,4 +230,22 @@ export const schema = z.strictObject({
     }),
     vignette: radialVeilSchema,
   }),
-});
+  },
+  {
+    ambientFloor: { label: 'Plancher ambiant', hint: 'Luminosité minimale garantie, quel que soit le calcul de scène' },
+    fogTint: { label: 'Teinte de brouillard', hint: 'Facteurs multiplicatifs visible/exploré/inconnu de la politique de visibilité' },
+    faceShade: { label: 'Modelé des faces', hint: 'Facteurs d’irradiance ambiante par orientation de face' },
+    entreeEnScene: { label: 'Entrée en scène', hint: 'Voile bref pendant le chargement des textures des sujets proches' },
+    iso: { label: 'Ambiance isométrique', hint: 'Réglages de voiles, vignette et météo propres à la vue isométrique' },
+    pov: { label: 'Ambiance première personne', hint: 'Réglages de brumes, profondeur et vignette propres à la vue première personne' },
+  },
+  {
+    codex: {
+      exempt: { kind: 'vocabulaire-app-interne', raison: 'config de rendu (éclairage iso/POV), pas une fiche de contenu.' },
+    },
+    edit: { none: 'aucune catégorie Codex ne l’expose, donc aucun formulaire d’atelier ne l’édite' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

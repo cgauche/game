@@ -121,10 +121,12 @@ describe('Données — verrous & escapeStrength câblés (RAW)', () => {
     type Op = { op: string; id?: string; unlockBy?: string };
     type Entry = { id: string; ops?: Op[]; resist?: { onFail: Op[] } };
     const all = [
-      ...(criticalsJson as Record<string, Entry[]>).tete,
-      ...(criticalsJson as Record<string, Entry[]>).corps,
-      ...(criticalsJson as Record<string, Entry[]>).bras,
-      ...(criticalsJson as Record<string, Entry[]>).jambe,
+      // Le document porte son ENVELOPPE (`id`/`type`/`label`, #1467) : les 4 familles sont des CHAMPS
+      // parmi d'autres, plus les seules clés de la racine — d'où la lecture par champ nommé.
+      ...(criticalsJson as Record<string, unknown>).tete as Entry[],
+      ...(criticalsJson as Record<string, unknown>).corps as Entry[],
+      ...(criticalsJson as Record<string, unknown>).bras as Entry[],
+      ...(criticalsJson as Record<string, unknown>).jambe as Entry[],
       ...(aaCriticalsJson as Record<string, unknown>).tete as Entry[],
       ...(aaCriticalsJson as Record<string, unknown>).corps as Entry[],
       ...(aaCriticalsJson as Record<string, unknown>).bras as Entry[],

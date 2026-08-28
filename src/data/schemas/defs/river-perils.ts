@@ -1,15 +1,20 @@
 /**
  * Schéma de `river-perils.json` — Dangers fluviaux (MSRC 7 l.119-166 : Débris/Barrage/Rochers/Eaux
  * peu profondes). Dérivé de `RiverPerilDef` (`src/engine/riverNavigation.ts`), seul
- * consommateur. `_source` = note de traçabilité libre (non lue par le moteur).
+ * consommateur. La racine est NUE : chaque péril porte son `source`
+ * (`src/data/source-racine-aveugle.test.ts`).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'river-perils.json';
 export const famille = 'config';
 
-export const schema = z.strictObject({
+const doc = document(
+  'river-perils',
+  famille,
+  {
   perils: z.array(
     z.strictObject({
       id: z.string(),
@@ -42,4 +47,13 @@ export const schema = z.strictObject({
       }
     }
   }),
-});
+  },
+  { perils: { label: 'Dangers fluviaux', hint: 'Catalogue des dangers (Débris/Barrage/Rochers/Eaux peu profondes)' } },
+  {
+    codex: { keys: ['riverPerils'] },
+    edit: { none: 'édité par TABLEAU NICHÉ : la catégorie Codex `riverPerils` édite le champ `perils`, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

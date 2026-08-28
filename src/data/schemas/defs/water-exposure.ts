@@ -4,7 +4,8 @@
  * (`src/data/index.ts`). `test.difficulty` = `Difficulty` (moteur) → `difficultySchema` partagé.
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
+import { difficultySchema } from '../grammaire/valeurs';
 
 export const file = 'water-exposure.json';
 export const famille = 'config';
@@ -19,10 +20,10 @@ const waterExposureAutoSchema = z.union([
   z.strictObject({ kind: z.literal('hasCondition'), condition: z.string() }),
 ]);
 
-export const schema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
-  desc: z.string(),
+const doc = document(
+  'water-exposure',
+  famille,
+  {
   test: z.strictObject({
     skillId: z.string(),
     difficulty: difficultySchema,
@@ -46,5 +47,21 @@ export const schema = z.strictObject({
       rerollUnlessWounded: z.boolean().optional(),
     }),
   ),
-  source: sourceRefSchema,
-});
+  },
+  {
+    test: { label: "Test d'exposition", hint: "Compétence et difficulté du Test déclenché par l'exposition à l'eau" },
+    rollModPerNegativeSL: {
+      label: 'Malus par DR négatif (jet de maladie)',
+      hint: "Modificateur ajouté au tirage de la maladie (d100), +10 par DR négatif du Test d'exposition",
+    },
+    modifiers: {
+      label: 'Modificateurs',
+      hint: "Modificateurs de Test par source d'eau/état, appliqués à l'ingestion et/ou l'immersion",
+    },
+    diseases: { label: 'Maladies contractées', hint: "Table de tirage d100 de la maladie contractée en cas d'échec" },
+  },
+  { codex: { keys: ['waterExposure'] }, edit: { object: 'single' } },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

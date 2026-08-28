@@ -1,4 +1,7 @@
 {
+  "id": "details",
+  "type": "details",
+  "label": "Détails de création",
   "ageBase": {
     "humain": 15,
     "halfling": 15,

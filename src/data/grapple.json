@@ -1,4 +1,7 @@
 {
+  "id": "grapple",
+  "type": "grapple",
+  "label": "Empoignade — mécanique",
   "init": [
     {
       "op": "condition",

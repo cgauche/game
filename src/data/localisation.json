@@ -1,4 +1,7 @@
 {
+  "id": "localisation",
+  "type": "localisation",
+  "label": "Tables de Localisation (d100)",
   "personnage": {
     "source": {
       "book": "livre-de-base",

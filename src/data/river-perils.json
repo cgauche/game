@@ -1,4 +1,7 @@
 {
+  "id": "river-perils",
+  "type": "river-perils",
+  "label": "Périls fluviaux",
   "perils": [
     {
       "id": "debris",

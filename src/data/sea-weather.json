@@ -1,4 +1,7 @@
 {
+  "id": "sea-weather",
+  "type": "sea-weather",
+  "label": "Météo de la Mer des Griffes",
   "table": [
     {
       "min": -9999,

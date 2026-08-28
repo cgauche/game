@@ -5,15 +5,16 @@
  * de bande, ±DR de Commandement/Tests d'équipage, seuil de désertion optionnel).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'crew-morale.json';
 export const famille = 'config';
 
-export const schema = z.strictObject({
-  /** Couvre le champ scalaire `base` (score de départ) — les listes `factors`/`bands` portent chacune
-   *  leur propre `source` par entrée. */
-  source: sourceRefSchema,
+const doc = document(
+  'crew-morale',
+  famille,
+  {
   base: z.number(),
   factors: z.array(
     z.strictObject({
@@ -44,4 +45,23 @@ export const schema = z.strictObject({
       source: sourceRefSchema,
     }),
   ),
-});
+  },
+  {
+    base: { label: 'Score de départ', hint: "Score de Moral de départ d'un équipage" },
+    factors: {
+      label: 'Facteurs de Moral',
+      hint: 'Modificateurs de Moral en dés signés (ex. +2d10), dont les choix de paie du Conseil de bord',
+    },
+    bands: {
+      label: 'Effets du Moral',
+      hint: "Bandes de score vers plus/moins DR de Commandement/Tests d'équipage, seuil de désertion",
+    },
+  },
+  {
+    codex: { keys: ['crewMoraleFactors', 'crewMoraleBands'] },
+    edit: { none: 'édité par TABLEAU NICHÉ : les catégories Codex `crewMoraleFactors`/`crewMoraleBands` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

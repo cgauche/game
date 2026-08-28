@@ -10,18 +10,35 @@
  * Le flux `pendingGrapple` n'ORCHESTRE que le CHOIX de l'option ; ces ops sont la mécanique.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'grapple.json';
 export const famille = 'config';
 
-export const schema = z.strictObject({
-  init: z.array(gameOpSchema),
-  win: z.strictObject({
-    damage: z.array(gameOpSchema),
-    entangle: z.array(gameOpSchema),
-    free: z.array(gameOpSchema),
-  }),
-  source: sourceRefSchema.optional(),
-});
+const doc = document(
+  'grapple',
+  famille,
+  {
+    init: z.array(gameOpSchema),
+    win: z.strictObject({
+      damage: z.array(gameOpSchema),
+      entangle: z.array(gameOpSchema),
+      free: z.array(gameOpSchema),
+    }),
+  },
+  {
+    init: {
+      label: "Effets posés à l'engagement",
+      hint: "Effets posés sur l'ADVERSAIRE touché quand l'Empoignade est déclarée (État Empêtré + relation d'Empoignade)",
+    },
+    win: {
+      label: 'Issues du Test opposé gagné',
+      hint: 'Les 3 issues offertes à CELUI des deux empoignés qui remporte le Test opposé de Force',
+    },
+  },
+  { codex: { keys: ['grapple'] }, edit: { object: 'single' } },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

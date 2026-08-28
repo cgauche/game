@@ -1,4 +1,7 @@
 {
+  "id": "sea-events",
+  "type": "sea-events",
+  "label": "Humeur de Manann et événements de mer",
   "manann": {
     "base": 0,
     "portEventMod": 1,

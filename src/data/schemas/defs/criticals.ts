@@ -4,11 +4,14 @@
  * (`src/data/criticals.ts`).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { difficultySchema, hitLocationSchema, sourceRefSchema, formulaSchema } from '../grammaire/valeurs';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'criticals.json';
-export const famille = 'record';
+// Les 4 familles de Localisation sont des CLÉS FIXES du document, donc des CHAMPS : `config`, jamais
+// un `record` à clés libres (#1467 L1b V-FLIP-CONFIG).
+export const famille = 'config';
 
 /** Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du membre sans
  *  Chirurgie sous 1d10 jours) — reflet de `CritEscalation` (`src/data/criticals.ts`). Partagée AA/LDB. */
@@ -95,9 +98,26 @@ const critEntrySchema = z.strictObject({
   source: sourceRefSchema.optional(),
 });
 
-export const schema = z.strictObject({
-  tete: z.array(critEntrySchema),
-  bras: z.array(critEntrySchema),
-  corps: z.array(critEntrySchema),
-  jambe: z.array(critEntrySchema),
-});
+const doc = document(
+  'criticals',
+  famille,
+  {
+    tete: z.array(critEntrySchema),
+    bras: z.array(critEntrySchema),
+    corps: z.array(critEntrySchema),
+    jambe: z.array(critEntrySchema),
+  },
+  {
+    tete: { label: 'Table — Tête' },
+    bras: { label: 'Table — Bras' },
+    corps: { label: 'Table — Corps' },
+    jambe: { label: 'Table — Jambe' },
+  },
+  {
+    codex: { keys: ['criticalsTete', 'criticalsBras', 'criticalsCorps', 'criticalsJambe'] },
+    edit: { none: 'édité par TABLEAU NICHÉ : les 4 catégories Codex `criticals*` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;

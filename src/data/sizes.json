@@ -1,4 +1,7 @@
 {
+  "id": "sizes",
+  "type": "sizes",
+  "label": "Barèmes par Taille",
   "rangedMod": {
     "minuscule": -30,
     "tresPetite": -20,

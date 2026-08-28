@@ -4,6 +4,7 @@
  * vue typée `DATA` (`src/engine/seaPerils.ts`), seul consommateur.
  */
 import { z } from 'zod';
+import { document, type EnveloppeDocument } from '../grammaire/document';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-perils.json';
@@ -59,7 +60,7 @@ const whirlpoolDef = z.strictObject({
   source: sourceRefSchema,
 });
 
-export const schema = z.strictObject({
+const champs = {
   echouer: z.strictObject({ desc: z.string(), source: sourceRefSchema }),
   /** Pondération MAISON du tirage entre `hazards[]` (#444) — le RAW l.475-499 est muet sur la fréquence. */
   hazardsWeightNote: z.string(),
@@ -70,6 +71,24 @@ export const schema = z.strictObject({
   gestionDesPerils: z.array(
     z.strictObject({ distanceM: z.number(), spot: difficultySchema, avoid: difficultySchema, source: sourceRefSchema }),
   ),
-});
+};
 
-export type SeaPerilsData = z.infer<typeof schema>;
+const doc = document(
+  'sea-perils',
+  famille,
+  champs,
+  {
+    echouer: { label: 'Échouage', hint: "Description et référence de la règle d'échouage" },
+    hazardsWeightNote: { label: 'Note de pondération', hint: 'Pondération MAISON du tirage entre dangers — le RAW ne chiffre pas la fréquence' },
+    hazards: { label: 'Dangers de navigation', hint: 'Catalogue des dangers (Iceberg/Débris/Rocher/Bas-fonds) — collision, empêtrement' },
+    detroits: { label: 'Détroits', hint: 'Passages resserrés : Mouvement max et DR de Navigation pour les franchir' },
+    tourbillons: { label: 'Tourbillons', hint: "Zones dangereuses : rayon, spirale d'aspiration, chance d'évasion" },
+    tourbillonSwim: { label: 'Nage hors tourbillon', hint: "Compétence et difficulté pour s'extraire à la nage" },
+    gestionDesPerils: { label: 'Gestion à distance', hint: "Distance de détection/d'évitement d'un péril repéré à temps" },
+  },
+  { codex: { keys: ['seaPerils'] }, edit: { object: 'single' } },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;
+export type SeaPerilsData = EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>;

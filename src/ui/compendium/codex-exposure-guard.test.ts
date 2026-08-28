@@ -171,7 +171,7 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   'qualityTypes.json': 'vocabulaire de catégorisation des Qualités/Défauts (Atout/Défaut) — consommé par `qualityTypeLabel`, pas une fiche autonome.',
   'qualitySubtypes.json': 'vocabulaire de catégorisation des Qualités/Défauts (Arme/Armure/Objet) — consommé par `qualitySubtypeLabel`, pas une fiche autonome.',
   'localisation.json': 'table de dé inversé (résultat→zone de touche) — vocabulaire structurel du moteur ; les zones sont déjà exposées via les Critiques par Localisation (`criticalsTete`/…).',
-  'sizes.json': 'un seul champ `rangedMod` (barème par Taille) — vocabulaire structurel, pas une fiche narrative.',
+  'sizes.json': 'trois barèmes par Taille (`rangedMod`/`shipboardEnc`/`footprintSide`) — vocabulaire structurel, pas une fiche narrative.',
   'speciesRace.json': "table de résolution race→défauts d'authoring (`default`/`rules`), pas une fiche de contenu.",
   'lieux-services.json': "vocabulaire de routage d'écran (icône/service de lieu — auberge/temple/forgeron…), pas une fiche de contenu.",
   'primitives.manifest.json': 'manifeste TOOLING (#298) des primitives partagées du code — vocabulaire app-interne.',

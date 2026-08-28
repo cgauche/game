@@ -1,4 +1,7 @@
 {
+  "id": "sea-cargo",
+  "type": "sea-cargo",
+  "label": "Cargaison maritime",
   "cargoes": [
     {
       "id": "cereales",

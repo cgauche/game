@@ -374,10 +374,15 @@ def main():
         print(f"{len(errors)} anomalie(s) — artefact NON écrit", file=sys.stderr)
         return 1
 
+    # ENVELOPPE de document (#1467 L1b) : `id`/`type`/`label` en tête, comme tout document authoré —
+    # la fabrique `document()` les EXIGE au parse (`defs/progression-schemas-derived.ts`). Les deux
+    # méta-clés de prose d'outillage (`__genere`/`__lecture`) ont quitté l'artefact : ce que le
+    # générateur EST et comment il LIT se disent au JSDoc de ce def, pas dans la donnée.
     doc = {
-        "__genere": "GÉNÉRÉ par scripts/data/gen-progression-schemas.py depuis les PDF de Source/ — NE PAS ÉDITER À LA MAIN.",
-        "__lecture": "Chaque entrée = une bande de schéma de progression lue dans le PDF : `folio` est le folio IMPRIMÉ relevé SUR la page, `career` le titre de Carrière imprimé au-dessus de la bande, `lv[n]` les Caractéristiques marquées au niveau n (`col` = colonne imprimée, `key` = CharKey, `teinte` = couleur RVB mesurée de l'aplat, absente au niveau 1 qui est un glyphe de police).",
-        "__livres": [b["id"] for b in books],
+        "id": "progression-schemas-derived",
+        "type": "progression-schemas.derived",
+        "label": "Schémas de progression (relevé dérivé)",
+        "livres": [b["id"] for b in books],
         "schemas": schemas,
     }
     # Forme canonique des datasets app-owned : `serializeDataset` (`src/data/serialize.ts`) =

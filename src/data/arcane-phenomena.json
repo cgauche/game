@@ -1,4 +1,7 @@
 {
+  "id": "arcane-phenomena",
+  "type": "arcane-phenomena",
+  "label": "Magie environnementale",
   "saturationLevels": [
     {
       "id": "basse",

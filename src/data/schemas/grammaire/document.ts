@@ -44,6 +44,16 @@ export const LIBELLES_ENVELOPPE: Readonly<Record<CleEnveloppe, string>> = {
 export type ChampsHorsEnveloppe<C> = { [K in keyof C]: K extends CleEnveloppe ? never : C[K] };
 
 /**
+ * Vue TS de l'ENVELOPPE que la fabrique pose (`enveloppe()` ci-dessous), `type` élargi à `string`.
+ *
+ * Le handle rend ses nœuds SCELLÉS (`z.ZodType<unknown>`) : `z.infer<typeof schema>` d'un def adopté
+ * vaut donc `unknown`. Un def qui exporte la VUE TS de son document (les casts de `src/data/index.ts`)
+ * la recompose ici — `EnveloppeDocument & z.infer<z.ZodObject<typeof champs>>` — sans jamais rouvrir
+ * un nœud ni élargir un cast.
+ */
+export type EnveloppeDocument = Omit<z.infer<z.ZodObject<ReturnType<typeof enveloppe>>>, 'type'> & { type: string };
+
+/**
  * Ce que le CODEX expose de ce document : les clés de catégorie sous lesquelles le joueur le trouve
  * (`src/ui/compendium/registry.ts`), ou une EXEMPTION motivée. Déclarée au handle ; la DÉRIVATION des
  * tables du Codex à partir de ces déclarations est le lot L1b (#1467).

@@ -99,6 +99,7 @@ export const SANS_LIVRE: Readonly<Record<string, string>> = {
  * constantes. Comptes mesurés le 2026-08-27.
  */
 export const SOURCE_EN_PROFONDEUR: Readonly<Record<string, string>> = {
+  'aa-criticals': 'racine nue, citations par sous-entrée (80/80) — une source racine rendrait le dataset aveugle',
   'sea-weather': 'racine nue, citations par sous-entrée (34/34) — une source racine rendrait le dataset aveugle',
   'sea-events': 'racine nue, citations par sous-entrée (58/58) — une source racine rendrait le dataset aveugle',
   'sea-navigation': 'racine nue, citations par sous-entrée (2/2) — une source racine rendrait le dataset aveugle',

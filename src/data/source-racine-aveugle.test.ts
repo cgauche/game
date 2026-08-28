@@ -25,12 +25,15 @@ const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 /**
  * Datasets dont la racine est NUE et dont chaque sous-entrée porte sa propre citation — relevé au
- * geste (#1467 L1b V-Src) sur les 42 datasets de la classe « cité par entrée » : ce sont les seuls
+ * geste (#1467 L1b V-Src, étendu V-FLIP-CONFIG) sur les datasets de la classe « cité par entrée » : ce sont les seuls
  * dont la racine ne porte ni `source` ni `maison`, donc les seuls qu'une source racine rendrait
  * aveugles. Les autres portent déjà leur citation sur leurs entrées de premier niveau et sont
  * couverts par `citation-coverage-guard.test.ts`.
  */
 const RACINE_NUE = [
+  // #1467 L1b V-FLIP-CONFIG : `aa-criticals.json` remplit les critères depuis que sa note libre
+  // `_source` est morte et que ses 80 entrées portent chacune leur folio (83/84/85/86).
+  'aa-criticals.json',
   'sea-weather.json',
   'sea-events.json',
   'sea-navigation.json',
@@ -49,8 +52,10 @@ const RACINE_NUE = [
   'naval-progression.json',
 ] as const;
 
-/** Sous-entrées RÉELLEMENT mesurées par la garde de couverture au 2026-08-27 — plancher. */
-const SOUS_ENTREES_MESUREES = 490;
+/** Sous-entrées RÉELLEMENT mesurées par la garde de couverture — PLANCHER (il ne peut que monter).
+ *  490 au 2026-08-27 ; 570 au 2026-08-28, les 80 entrées d'`aa-criticals.json` entrant dans la classe
+ *  avec leur `source` par entrée (#1467 L1b V-FLIP-CONFIG). */
+const SOUS_ENTREES_MESUREES = 570;
 
 const lire = (f: string): unknown => JSON.parse(readFileSync(join(DATA_DIR, f), 'utf8'));
 

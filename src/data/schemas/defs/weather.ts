@@ -10,6 +10,7 @@
  * `weather` enum = EXACTEMENT `engine/travelStages.ts` (`type Weather`).
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'weather.json';
@@ -17,7 +18,10 @@ export const famille = 'config';
 
 const weatherIdSchema = z.enum(['sec', 'beau', 'pluie', 'pluie-diluvienne', 'neige', 'blizzard']);
 
-export const schema = z.strictObject({
+const doc = document(
+  'weather',
+  famille,
+  {
   seasons: z.array(
     z.strictObject({
       id: z.string(),
@@ -62,4 +66,21 @@ export const schema = z.strictObject({
       source: sourceRefSchema.optional(),
     }),
   ),
-});
+  },
+  {
+    seasons: { label: 'Tirage saisonnier', hint: 'Table de tirage d100 de la météo, par saison' },
+    physicalTestChars: {
+      label: 'Caractéristiques physiques',
+      hint: 'Liste MAISON des Caractéristiques réputées « physiques » (non définie par la source)',
+    },
+    physicalTestCharsSource: { label: 'Source de la liste maison', hint: 'Référence RAW/maison de la liste de Caractéristiques physiques' },
+    conditions: { label: 'Conditions météo', hint: 'Effets par météo : visibilité, pénalités, Test de Résistance de traversée' },
+  },
+  {
+    codex: { keys: ['weather', 'weatherConditions'] },
+    edit: { none: 'édité par TABLEAU NICHÉ : les catégories Codex `weather`/`weatherConditions` éditent chacune un champ de ce document, jamais le document entier (CodexEdit.CATEGORY_DATASET)' },
+  },
+);
+
+export const schema = doc.schema;
+export const meta = doc.meta;
