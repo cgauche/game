@@ -221,6 +221,7 @@ export const VOYAGE_STAKES = voyageStakesJson as VoyageStakeEntry[];
  *  cf. `schemas/defs/flow-stakes.ts`. */
 export interface FlowStakeEntry {
   id: string;
+  type: 'flow-stakes';
   label: string;
   flow: string;
   phase: string;
@@ -241,6 +242,7 @@ export const FLOW_STAKES = flowStakesJson as FlowStakeEntry[];
  *  Famille née en combat, elle sert toute cascade à étapes (mutation, interlude). */
 export interface CombatStakeEntry {
   id: string;
+  type: 'combat-stakes';
   label: string;
   kind: string;
   /** Gabarit du descripteur — ABSENT quand l'issue du jet se lit en chips d'ops (#1117) : l'entrée ne
@@ -839,6 +841,7 @@ export interface CareerData {
 export interface CareerLevelData {
   /** Identité du niveau — composite `<career>-<level>` (`agitateur-1`). */
   id: string;
+  type: 'careerLevels';
   label: string;
   /** Forme féminine d'AFFICHAGE du niveau (MAISON, cf. `CareerData.labelF`) ; absent = épicène. */
   labelF?: string;
@@ -906,6 +909,7 @@ export interface SkillData {
   /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
    *  renommage du `label`. Source unique pour `findSkillById`. */
   id: string;
+  type: 'skills';
   label: string;
   characteristic: import('../engine/types').CharKey;
   /** ACCÈS (`LDB 09 l.25/l.30`) : `base` (testable sans formation) / `avancee` (exige une Augmentation). */
@@ -991,6 +995,7 @@ export interface TalentData {
   /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
    *  renommage du `label`. Source unique pour `findTalentById`. */
   id: string;
+  type: 'talents';
   label: string;
   /** Maxi d'acquisitions (LDB 10 « Schéma des Talents ») : un nombre fixe, ou le BONUS d'une
    *  caractéristique (`{bonusOf}`, structuré — remplace la chaîne « Bonus de X » re-parsée par regex),
@@ -1384,6 +1389,7 @@ export interface CreatureData {
 export interface StatusData {
   /** id STABLE (slug du libellé) — cible des instances (`ConditionInstance.name` / `PsychAffliction.type`). */
   id: string;
+  type: 'etats';
   label: string;
   desc: string;
   source: SourceRef;
@@ -1555,6 +1561,7 @@ export interface ManeuverMeasure {
 }
 export interface ManeuverDef {
   id: string;
+  type: 'maneuvers';
   label: string;
   /** Anim/pose/icône SEULEMENT (pas la résolution) — type d'attaque naturelle (geste distinct). */
   kind: import('../engine/creatureAttacks').AttackKind;
@@ -1725,6 +1732,7 @@ export interface TraitCapabilities {
 export interface TraitData {
   /** Identifiant STABLE (slug du libellé) — clé d'instance/lookup, indépendant de la langue. */
   id: string;
+  type: 'traits';
   label: string;
   /** Sens de la valeur NUMÉRIQUE `value` de l'instance (Difficulté, Indice, Degré…) — `label` affiché
    *  devant/autour du nombre. Absent = le trait ne porte pas de valeur numérique. */
@@ -1880,6 +1888,7 @@ export interface SymptomCapabilities {
  *  irréductibles lues par la machinerie de maladie. */
 export interface SymptomData {
   id: string;
+  type: 'symptoms';
   label: string;
   desc: string;
   source?: SourceRef;
@@ -1920,6 +1929,7 @@ export interface SymptomData {
  *  d'un Sort d'Arcane (`domainOf`). */
 export interface DomainData {
   id: string;
+  type: 'domains';
   label: string;
   desc?: string;
   source?: SourceRef;
@@ -2400,6 +2410,7 @@ export interface NavalInstall {
 export interface NavalTraitData {
   /** id STABLE (slug) — la clé d'appariement avec `ship.traits`/`Combatant.upgrades` (`NavalTraitRef.id`). */
   id: string;
+  type: 'naval-traits';
   /** Libellé VERBATIM de BASE (sans Indice) — affichage seul, résolu par `findNavalTrait(id)?.label`. */
   label: string;
   kind: 'trait' | 'amelioration';
@@ -2442,6 +2453,7 @@ export function findNavalTrait(id: string): NavalTraitData | undefined {
  *  (+ marqueurs `commerce`/`minimum-vital`), même vocabulaire que `PortProfile` (`engine/seaVoyage.ts`). */
 export interface NavalPortData {
   id: string;
+  type: 'naval-ports';
   label: string;
   /** Région/nation de la colonne « Lieu » de l'Index (regroupement RAW, ex. « Nordland », « Tilée »). */
   region: string;

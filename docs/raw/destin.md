@@ -306,7 +306,7 @@ La mort survient sans dépense de Destin dans ces cas :
 **Voir aussi** : [`traumatisme.md`](traumatisme.md) pour le fonctionnement complet des Blessures critiques et de la mort.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.38, l.40, l.42-43) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `crit-severity`, `critWoundLocation`, `EtatPanel`, `combat-sudden-death`, `blessure-majeure-a-l-oreille`, `inconscient`, +31 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/traumas.json`, `src/engine/combat.ts`, +6 fichiers
+- `LDB 18` (l.38, l.40, l.42-43) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `crit-severity`, `critWoundLocation`, `EtatPanel`, `blessure-majeure-a-l-oreille`, `combat-sudden-death`, `inconscient`, +31 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/traumas.json`, `src/engine/combat.ts`, +6 fichiers
 
 ---
 

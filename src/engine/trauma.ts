@@ -83,6 +83,7 @@ export interface TraumaRig {
  */
 export interface TraumaFiche {
   id: string;
+  type: 'traumas';
   label: string;
   desc: string;
   ops?: GameOp[];

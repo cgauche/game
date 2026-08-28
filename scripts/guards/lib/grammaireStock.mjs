@@ -65,7 +65,7 @@ export const GRAMMAIRE_STOCK = {
   'src/data/schemas/defs/sea-perils.ts:seaHazardDef.freeTest|alias|skillId': e('Test gratuit d’un péril maritime en `{skillId, …}` (`STRUCTURES_REDECLARATIONS` sea-perils.ts).', L2),
   'src/data/schemas/defs/sea-perils.ts:champs.tourbillonSwim|alias|skillId': e('Test de Natation du tourbillon en `{skillId, …}` (`STRUCTURES_REDECLARATIONS` sea-perils.ts).', L2),
   'src/data/schemas/defs/spells.ts:spellEntrySchema.opposed|alias|skill': e('Jet OPPOSÉ d’un sort désignant les deux Compétences par `skill`.', L2),
-  'src/data/schemas/defs/steam-breakdown.ts:schema.restart|alias|skillId': e('Test de redémarrage d’une machine à vapeur en `{skillId, …}` (`STRUCTURES_REDECLARATIONS` steam-breakdown.ts).', L2),
+  'src/data/schemas/defs/steam-breakdown.ts:doc.restart|alias|skillId': e('Test de redémarrage d’une machine à vapeur en `{skillId, …}` (`STRUCTURES_REDECLARATIONS` steam-breakdown.ts).', L2),
   'src/data/schemas/defs/talents.ts:testMatchSchema|alias|skill': e('Filtre de test d’un Talent (à quel jet il s’applique) désignant la Compétence par `skill`.', L2),
   'src/data/schemas/defs/tavernGames.ts:schema|alias|skill': e('Jeu de taverne : Compétence du jeu par `skill` (`STRUCTURES_REDECLARATIONS` tavernGames.ts, champ `options`).', L2),
   'src/data/schemas/defs/tavernGames.ts:schema.fastSkill|alias|skill': e('Variante RAPIDE d’un jeu de taverne, même graphie `skill`.', L2),
@@ -82,17 +82,17 @@ export const GRAMMAIRE_STOCK = {
 
   // ── Graphies historiques de RÉFÉRENCE à une autre entité (`ref`, `talentId`, `trappingId`) ────
   'src/data/schemas/defs/axes.ts:talentRefSchema|alias|talentId': e('Réf de Talent d’un axe de profil en `{talentId, spec}`.', L3),
-  'src/data/schemas/defs/reglesOptionnelles.ts:schema|alias|ref': e('Règle optionnelle désignant l’entité concernée par une enveloppe `ref`.', L3),
+  'src/data/schemas/defs/reglesOptionnelles.ts:doc|alias|ref': e('Règle optionnelle désignant l’entité concernée par une enveloppe `ref`.', L3),
   'src/data/schemas/defs/river-perils.ts:doc.perils|alias|ref': e('Péril fluvial désignant son entité (créature/structure) par une enveloppe `ref`.', L3),
   'src/data/schemas/defs/traumas.ts:rigSchema.byProsthesis|alias|trappingId': e('Rig de trauma keyé par `trappingId` (prothèse) — graphie d’objet de catalogue.', L3),
-  'src/data/schemas/defs/traumas.ts:schema.prosthesis|alias|trappingId': e('Prothèse d’un trauma désignée par `trappingId`.', L3),
+  'src/data/schemas/defs/traumas.ts:doc.prosthesis|alias|trappingId': e('Prothèse d’un trauma désignée par `trappingId`.', L3),
   'src/data/schemas/defs-scenes/effets.ts:giveTrappingSchema|alias|trappingId': e('Effet `giveTrapping` désignant l’objet donné par `trappingId` (migration de LIBELLÉ soldée en T3-b, la graphie reste).', L3),
   'src/data/schemas/defs-scenes/effets.ts:givePossessionSchema|alias|ref': e('Effet `givePossession` désignant la possession par une enveloppe `ref`.', L3),
   'src/data/schemas/defs-scenes/scene.ts:sceneEntitySchema|alias|ref': e('Entité de scène désignant son modèle (créature/prop) par une enveloppe `ref`.', L3),
   'src/data/schemas/defs-scenes/worldmap.ts:portProfileSchema|alias|ref': e('Profil de port désignant son entité par une enveloppe `ref`.', L3),
   'src/data/schemas/defs/creatures.ts:skillRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('Réf de bestiaire re-tapée `{id, spec, value}` (`STRUCTURES_REDECLARATIONS` creatures.ts, signature `id,spec,value`).', L3),
   'src/data/schemas/defs/trappings.ts:qualityRefSchema|redeclaration|qualityRefSchema|trappingRefSchema {id,spec,value}': e('`qualityRefSchema` re-déclaré localement dans le catalogue des dotations — la vue commune vit dans `grammaire/reference.ts`.', L3),
-  'src/data/schemas/defs/domains.ts:schema.windModifiers.cancelledBy.requiresSkill|redeclaration|advancementRefSchema|refSchema {id,spec}': e('Réf `{id, spec}` re-tapée sous `requiresSkill` (`STRUCTURES_REDECLARATIONS` domains.ts, statut `cible`, commun `refSchema`).', L3),
+  'src/data/schemas/defs/domains.ts:doc.windModifiers.cancelledBy.requiresSkill|redeclaration|advancementRefSchema|refSchema {id,spec}': e('Réf `{id, spec}` re-tapée sous `requiresSkill` (`STRUCTURES_REDECLARATIONS` domains.ts, statut `cible`, commun `refSchema`).', L3),
 
   // ── Formes de VALEUR re-tapées (monnaie, dé, cellule de grille) ───────────────────────────────
   'src/data/schemas/defs/creatures.ts:moneySchema|alias|bronze': e('Monnaie `{gold, silver, bronze}` re-tapée dans le bestiaire (`STRUCTURES_REDECLARATIONS` creatures.ts, concept monnaie).', L4),

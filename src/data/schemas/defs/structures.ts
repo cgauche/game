@@ -8,7 +8,8 @@
  * Folios : ADE II 89 ; AA 119-120 (`src/data/structures-folio.test.ts` les confronte à `auditFolio`).
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { difficultySchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'structures.json';
 export const famille = 'entite';
@@ -20,10 +21,10 @@ const structureTraitRefSchema = z.strictObject({
   value: z.number().optional(),
 });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'structures',
+  famille,
+  {
     kind: z.enum(['porte', 'mur']),
     /** Nature d'AUTHORING (posable sur une arête) — redéfinit `kind` quand il diverge (Herse, #830). */
     edgeKind: z.enum(['porte', 'mur']).optional(),
@@ -38,7 +39,30 @@ export const schema = z.array(
     enc: z.number().optional(),
     encLimit: z.number().optional(),
     couvertPenalty: difficultySchema.optional(),
-    source: sourceRefSchema,
-    desc: z.string().optional(),
-  }),
+  },
+  {
+    kind: { label: 'Nature de la Structure', hint: 'Porte ou Mur, pour la résolution mécanique' },
+    edgeKind: { label: 'Nature d’authoring', hint: 'Redéfinit kind quand elle diverge à la pose sur une arête' },
+    vehicle: {
+      label: 'Véhicule (partage la mécanique)',
+      hint: 'Partage la mécanique de Points de Vie d’une Structure mais jamais posable sur une arête',
+    },
+    fortified: { label: 'Fortification (rendu)', hint: 'Rendu visuel seulement — jamais une règle' },
+    char: { label: 'Blessures et Bonus d’Endurance' },
+    traits: { label: 'Traits de Structure' },
+    enc: {
+      label: 'Encombrement',
+      hint: 'Absent des entrées ADE II, et N/A pour certaines entrées AA (Structures fixes sans ENC)',
+    },
+    encLimit: { label: 'Limite d’Encombrement', hint: 'Encombrement maximal que la Structure peut recevoir' },
+    couvertPenalty: { label: 'Pénalité de Couvert' },
+  },
+  {
+    codex: { keys: ['structures'] },
+    edit: { dataset: 'structures' },
+  },
+  { exiges: ['source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

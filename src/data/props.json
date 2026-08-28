@@ -1,6 +1,7 @@
 [
   {
     "id": "feu-camp",
+    "type": "props",
     "label": "Feu de camp",
     "solid": true,
     "light": {
@@ -9,6 +10,7 @@
   },
   {
     "id": "brasero",
+    "type": "props",
     "label": "Brasero",
     "solid": true,
     "light": {
@@ -17,6 +19,7 @@
   },
   {
     "id": "chandelier",
+    "type": "props",
     "label": "Candélabre",
     "solid": true,
     "light": {
@@ -26,6 +29,7 @@
   },
   {
     "id": "lampadaire",
+    "type": "props",
     "label": "Lampadaire",
     "solid": true,
     "light": {
@@ -35,27 +39,32 @@
   },
   {
     "id": "pupitre-chef",
+    "type": "props",
     "label": "Pupitre de chef",
     "solid": true
   },
   {
     "id": "barriere",
+    "type": "props",
     "label": "Barrière de lice",
     "solid": true
   },
   {
     "id": "cloture",
+    "type": "props",
     "label": "Clôture",
     "solid": true,
     "cover": "moyenne"
   },
   {
     "id": "palissade",
+    "type": "props",
     "label": "Palissade",
     "solid": true
   },
   {
     "id": "tribune",
+    "type": "props",
     "label": "Tribune",
     "solid": true,
     "foot": {
@@ -65,6 +74,7 @@
   },
   {
     "id": "balustrade-loge",
+    "type": "props",
     "label": "Balustrade de loge",
     "solid": true,
     "foot": {
@@ -74,6 +84,7 @@
   },
   {
     "id": "rangee-sieges",
+    "type": "props",
     "label": "Rangée de fauteuils",
     "solid": true,
     "foot": {
@@ -83,6 +94,7 @@
   },
   {
     "id": "rideau-scene",
+    "type": "props",
     "label": "Rideau de scène",
     "solid": true,
     "foot": {
@@ -92,6 +104,7 @@
   },
   {
     "id": "statue",
+    "type": "props",
     "label": "Statue",
     "solid": true,
     "opaque": true,
@@ -99,36 +112,43 @@
   },
   {
     "id": "gargouille",
+    "type": "props",
     "label": "Gargouille",
     "solid": true
   },
   {
     "id": "menhir",
+    "type": "props",
     "label": "Menhir",
     "solid": true
   },
   {
     "id": "rocher",
+    "type": "props",
     "label": "Rocher",
     "solid": true
   },
   {
     "id": "stalagmite",
+    "type": "props",
     "label": "Stalagmite",
     "solid": true
   },
   {
     "id": "colonne-brisee",
+    "type": "props",
     "label": "Colonne brisée",
     "solid": true
   },
   {
     "id": "autel",
+    "type": "props",
     "label": "Autel du Chaos",
     "solid": true
   },
   {
     "id": "idole-chaos",
+    "type": "props",
     "label": "Idole du Chaos",
     "solid": true,
     "foot": {
@@ -138,18 +158,21 @@
   },
   {
     "id": "fontaine",
+    "type": "props",
     "label": "Fontaine",
     "solid": true,
     "cover": "moyenne"
   },
   {
     "id": "puits",
+    "type": "props",
     "label": "Puits",
     "solid": true,
     "cover": "moyenne"
   },
   {
     "id": "abreuvoir",
+    "type": "props",
     "label": "Abreuvoir",
     "solid": true,
     "foot": {
@@ -159,84 +182,100 @@
   },
   {
     "id": "sarcophage",
+    "type": "props",
     "label": "Sarcophage",
     "solid": true
   },
   {
     "id": "tombe",
+    "type": "props",
     "label": "Pierre tombale",
     "solid": true
   },
   {
     "id": "gibet",
+    "type": "props",
     "label": "Gibet",
     "solid": true
   },
   {
     "id": "pilori",
+    "type": "props",
     "label": "Pilori",
     "solid": true
   },
   {
     "id": "cage",
+    "type": "props",
     "label": "Cage de fer",
     "solid": true
   },
   {
     "id": "arbre",
+    "type": "props",
     "label": "Arbre",
     "solid": true,
     "cover": "imparfaite"
   },
   {
     "id": "arbre-mort",
+    "type": "props",
     "label": "Arbre mort",
     "solid": true
   },
   {
     "id": "souche",
+    "type": "props",
     "label": "Souche d'arbre",
     "solid": true
   },
   {
     "id": "tonneau",
+    "type": "props",
     "label": "Tonneau",
     "solid": true,
     "cover": "moyenne"
   },
   {
     "id": "tonneaux-pile",
+    "type": "props",
     "label": "Pile de tonneaux",
     "solid": true
   },
   {
     "id": "caisse",
+    "type": "props",
     "label": "Caisse",
     "solid": true,
     "cover": "moyenne"
   },
   {
     "id": "coffre",
+    "type": "props",
     "label": "Coffre",
     "solid": true
   },
   {
     "id": "urne",
+    "type": "props",
     "label": "Urne funéraire",
     "solid": true
   },
   {
     "id": "marmite",
+    "type": "props",
     "label": "Marmite de troll",
     "solid": true
   },
   {
     "id": "oeuf-dragon",
+    "type": "props",
     "label": "Œuf de dragon",
     "solid": true
   },
   {
     "id": "charrette",
+    "type": "props",
     "label": "Charrette",
     "solid": true,
     "cover": "moyenne",
@@ -247,6 +286,7 @@
   },
   {
     "id": "epave-carrosse",
+    "type": "props",
     "label": "Épave de carrosse",
     "solid": true,
     "cover": "moyenne",
@@ -257,6 +297,7 @@
   },
   {
     "id": "barque",
+    "type": "props",
     "label": "Barque",
     "solid": true,
     "foot": {
@@ -266,11 +307,13 @@
   },
   {
     "id": "table",
+    "type": "props",
     "label": "Table",
     "solid": true
   },
   {
     "id": "table-2x1",
+    "type": "props",
     "label": "Table longue",
     "solid": true,
     "foot": {
@@ -280,16 +323,19 @@
   },
   {
     "id": "chaise",
+    "type": "props",
     "label": "Chaise",
     "solid": true
   },
   {
     "id": "tabouret",
+    "type": "props",
     "label": "Tabouret",
     "solid": true
   },
   {
     "id": "armoire",
+    "type": "props",
     "label": "Armoire",
     "solid": true,
     "volume": {
@@ -383,11 +429,13 @@
   },
   {
     "id": "bureau",
+    "type": "props",
     "label": "Bureau",
     "solid": true
   },
   {
     "id": "bureau-2x1",
+    "type": "props",
     "label": "Bureau long",
     "solid": true,
     "foot": {
@@ -397,11 +445,13 @@
   },
   {
     "id": "etabli",
+    "type": "props",
     "label": "Établi",
     "solid": true
   },
   {
     "id": "etabli-2x1",
+    "type": "props",
     "label": "Établi long",
     "solid": true,
     "foot": {
@@ -411,6 +461,7 @@
   },
   {
     "id": "lit",
+    "type": "props",
     "label": "Lit",
     "solid": true,
     "foot": {
@@ -420,47 +471,56 @@
   },
   {
     "id": "miroir",
+    "type": "props",
     "label": "Miroir",
     "solid": true
   },
   {
     "id": "etagere",
+    "type": "props",
     "label": "Étagère",
     "solid": true
   },
   {
     "id": "rack-armes",
+    "type": "props",
     "label": "Râtelier d'armes",
     "solid": true
   },
   {
     "id": "rack-lances",
+    "type": "props",
     "label": "Présentoir à lances",
     "solid": true
   },
   {
     "id": "mannequin",
+    "type": "props",
     "label": "Mannequin d'entraînement",
     "solid": true
   },
   {
     "id": "fauteuil-loge",
+    "type": "props",
     "label": "Fauteuil de loge",
     "solid": true
   },
   {
     "id": "plante-pot",
+    "type": "props",
     "label": "Plante en pot",
     "solid": true
   },
   {
     "id": "etal-marche",
+    "type": "props",
     "label": "Étal de marché",
     "solid": true,
     "cover": "moyenne"
   },
   {
     "id": "tente",
+    "type": "props",
     "label": "Tente",
     "solid": true,
     "foot": {
@@ -470,11 +530,13 @@
   },
   {
     "id": "tas-foin",
+    "type": "props",
     "label": "Tas de foin",
     "cover": "imparfaite"
   },
   {
     "id": "cheval-mort",
+    "type": "props",
     "label": "Cheval mort",
     "cover": "imparfaite",
     "foot": {
@@ -484,6 +546,7 @@
   },
   {
     "id": "balustrade-bois",
+    "type": "props",
     "label": "Balustrade en bois",
     "foot": {
       "w": 3,
@@ -492,6 +555,7 @@
   },
   {
     "id": "canon-de-pont",
+    "type": "props",
     "label": "Canon de pont",
     "foot": {
       "w": 1,
@@ -500,6 +564,7 @@
   },
   {
     "id": "cuve-brasserie",
+    "type": "props",
     "label": "Cuve de brasserie",
     "foot": {
       "w": 1,
@@ -508,6 +573,7 @@
   },
   {
     "id": "ecoutille",
+    "type": "props",
     "label": "Écoutille",
     "foot": {
       "w": 1,
@@ -516,6 +582,7 @@
   },
   {
     "id": "enclume",
+    "type": "props",
     "label": "Enclume",
     "foot": {
       "w": 1,
@@ -524,6 +591,7 @@
   },
   {
     "id": "escalier-bois",
+    "type": "props",
     "label": "Escalier en bois",
     "foot": {
       "w": 1,
@@ -532,6 +600,7 @@
   },
   {
     "id": "escalier-loge",
+    "type": "props",
     "label": "Escalier de loge",
     "foot": {
       "w": 1,
@@ -540,6 +609,7 @@
   },
   {
     "id": "foyer-de-forge",
+    "type": "props",
     "label": "Foyer de forge",
     "foot": {
       "w": 1,
@@ -548,6 +618,7 @@
   },
   {
     "id": "passerelle-d-embarquement",
+    "type": "props",
     "label": "Passerelle d'embarquement",
     "foot": {
       "w": 2,
@@ -556,6 +627,7 @@
   },
   {
     "id": "rouleau-de-cordage",
+    "type": "props",
     "label": "Rouleau de cordage",
     "foot": {
       "w": 1,
@@ -564,6 +636,7 @@
   },
   {
     "id": "stalle-ecurie",
+    "type": "props",
     "label": "Stalle d'écurie",
     "foot": {
       "w": 1,
@@ -572,6 +645,7 @@
   },
   {
     "id": "cheminee-interieure",
+    "type": "props",
     "label": "Cheminée intérieure",
     "solid": true,
     "opaque": true,
@@ -699,6 +773,7 @@
   },
   {
     "id": "comptoir-droit",
+    "type": "props",
     "label": "Comptoir droit",
     "solid": true,
     "cover": "moyenne",
@@ -849,6 +924,7 @@
   },
   {
     "id": "comptoir-angle",
+    "type": "props",
     "label": "Comptoir d’angle",
     "solid": true,
     "cover": "moyenne",
@@ -999,6 +1075,7 @@
   },
   {
     "id": "table-ronde-4-tabourets",
+    "type": "props",
     "label": "Table ronde et 4 tabourets",
     "solid": true,
     "volume": {
@@ -1194,6 +1271,7 @@
   },
   {
     "id": "table-murale-2-tabourets",
+    "type": "props",
     "label": "Table murale et 2 tabourets",
     "solid": true,
     "volume": {

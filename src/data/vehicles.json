@@ -1,6 +1,7 @@
 [
   {
     "id": "diligence",
+    "type": "vehicles",
     "label": "Diligence",
     "icon": "travel/coach",
     "source": {
@@ -48,6 +49,7 @@
   },
   {
     "id": "chaise",
+    "type": "vehicles",
     "label": "Chaise",
     "icon": "travel/coach",
     "source": {
@@ -76,6 +78,7 @@
   },
   {
     "id": "petite-litiere",
+    "type": "vehicles",
     "label": "Petite litière",
     "icon": "travel/coach",
     "source": {
@@ -104,6 +107,7 @@
   },
   {
     "id": "grande-litiere",
+    "type": "vehicles",
     "label": "Grande litière",
     "icon": "travel/coach",
     "source": {
@@ -132,6 +136,7 @@
   },
   {
     "id": "barge",
+    "type": "vehicles",
     "label": "Barge",
     "icon": "travel/barge",
     "source": {
@@ -189,6 +194,7 @@
   },
   {
     "id": "barge-fluviale",
+    "type": "vehicles",
     "label": "Barge fluviale",
     "icon": "travel/barge",
     "source": {
@@ -248,6 +254,7 @@
   },
   {
     "id": "barque-fluviale",
+    "type": "vehicles",
     "label": "Barque",
     "icon": "travel/rowboat",
     "source": {
@@ -288,6 +295,7 @@
   },
   {
     "id": "charrette",
+    "type": "vehicles",
     "label": "Charrette",
     "icon": "travel/cart",
     "source": {
@@ -316,6 +324,7 @@
   },
   {
     "id": "charrette-a-bras",
+    "type": "vehicles",
     "label": "Charrette à bras",
     "icon": "travel/cart",
     "source": {
@@ -344,6 +353,7 @@
   },
   {
     "id": "chariot-leger",
+    "type": "vehicles",
     "label": "Chariot",
     "icon": "travel/cart",
     "source": {
@@ -372,6 +382,7 @@
   },
   {
     "id": "chariot-moyen",
+    "type": "vehicles",
     "label": "Chariot moyen",
     "icon": "travel/cart",
     "source": {
@@ -400,6 +411,7 @@
   },
   {
     "id": "chariot-lourd",
+    "type": "vehicles",
     "label": "Chariot lourd",
     "icon": "travel/cart",
     "source": {
@@ -428,6 +440,7 @@
   },
   {
     "id": "barque",
+    "type": "vehicles",
     "label": "Barque",
     "icon": "travel/rowboat",
     "source": {
@@ -448,6 +461,7 @@
   },
   {
     "id": "chaland",
+    "type": "vehicles",
     "label": "Chaland",
     "icon": "travel/barge",
     "source": {
@@ -468,6 +482,7 @@
   },
   {
     "id": "coracle",
+    "type": "vehicles",
     "label": "Coracle",
     "icon": "travel/rowboat",
     "source": {
@@ -508,6 +523,7 @@
   },
   {
     "id": "chaloupe",
+    "type": "vehicles",
     "label": "Chaloupe",
     "icon": "travel/sail-ship",
     "source": {
@@ -545,6 +561,7 @@
   },
   {
     "id": "esquif",
+    "type": "vehicles",
     "label": "Esquif",
     "icon": "travel/sail-ship",
     "source": {
@@ -586,6 +603,7 @@
   },
   {
     "id": "grande-barge",
+    "type": "vehicles",
     "label": "Grande barge",
     "icon": "travel/sail-ship",
     "source": {
@@ -627,6 +645,7 @@
   },
   {
     "id": "bateau-de-patrouille",
+    "type": "vehicles",
     "label": "Bateau de patrouille",
     "icon": "travel/sail-ship",
     "source": {
@@ -680,6 +699,7 @@
   },
   {
     "id": "knarr",
+    "type": "vehicles",
     "label": "Knarr",
     "icon": "travel/sail-ship",
     "source": {
@@ -725,6 +745,7 @@
   },
   {
     "id": "langskip",
+    "type": "vehicles",
     "label": "Langskip",
     "icon": "travel/sail-ship",
     "source": {
@@ -766,6 +787,7 @@
   },
   {
     "id": "cogue",
+    "type": "vehicles",
     "label": "Cogue",
     "icon": "travel/sail-ship",
     "source": {
@@ -856,6 +878,7 @@
   },
   {
     "id": "caraque",
+    "type": "vehicles",
     "label": "Caraque",
     "icon": "travel/sail-ship",
     "source": {
@@ -897,6 +920,7 @@
   },
   {
     "id": "galere-de-guerre",
+    "type": "vehicles",
     "label": "Galère de guerre",
     "icon": "travel/sail-ship",
     "source": {
@@ -948,6 +972,7 @@
   },
   {
     "id": "loup-imperial",
+    "type": "vehicles",
     "label": "Loup impérial",
     "icon": "travel/sail-ship",
     "source": {
@@ -999,6 +1024,7 @@
   },
   {
     "id": "croiseur",
+    "type": "vehicles",
     "label": "Croiseur",
     "icon": "travel/sail-ship",
     "source": {
@@ -1043,6 +1069,7 @@
   },
   {
     "id": "galion-bretonnien",
+    "type": "vehicles",
     "label": "Galion bretonnien",
     "icon": "travel/sail-ship",
     "source": {
@@ -1087,6 +1114,7 @@
   },
   {
     "id": "caravelle-tileenne",
+    "type": "vehicles",
     "label": "Caravelle tiléenne",
     "icon": "travel/sail-ship",
     "source": {
@@ -1128,6 +1156,7 @@
   },
   {
     "id": "chebec-arabien",
+    "type": "vehicles",
     "label": "Chébec arabien",
     "icon": "travel/sail-ship",
     "source": {
@@ -1173,6 +1202,7 @@
   },
   {
     "id": "boutre-d-inja",
+    "type": "vehicles",
     "label": "Boutre d'Inja",
     "icon": "travel/sail-ship",
     "source": {
@@ -1210,6 +1240,7 @@
   },
   {
     "id": "bateau-tresor-cathayen",
+    "type": "vehicles",
     "label": "Bateau-trésor cathayen",
     "icon": "travel/sail-ship",
     "source": {

@@ -56,10 +56,18 @@ const mod = (dr: number, when: string[], page: number, desc: string) => ({
   desc,
 });
 
+/** `source` d'ancrage du Domaine, LUE dans `domains.json` — jamais un folio inventé : la fabrique
+ *  exige désormais une provenance par entrée, et ces 7 fixtures rejouent des Domaines RÉELS. */
+const sourceReelle = (id: string) =>
+  (JSON.parse(readFileSync(fileURLToPath(new URL('./domains.json', import.meta.url)), 'utf8')) as { id: string; source: unknown }[])
+    .find((d) => d.id === id)!.source;
+
 /** Les 7 Vents restants, tels qu'ils devront être curés par leurs lots. */
 const SEPT_VENTS = [
   {
     id: 'metal',
+    type: 'domains',
+    source: sourceReelle('metal'),
     label: 'Métal',
     windModifiers: [
       mod(-1, ['voyage-vers-equateur'], 67, CHAMON_EQUATEUR),
@@ -68,6 +76,8 @@ const SEPT_VENTS = [
   },
   {
     id: 'vie',
+    type: 'domains',
+    source: sourceReelle('vie'),
     label: 'Vie',
     windModifiers: [
       mod(1, ['eau-abondante'], 79, GHYRAN_EAU),
@@ -78,6 +88,8 @@ const SEPT_VENTS = [
   },
   {
     id: 'cieux',
+    type: 'domains',
+    source: sourceReelle('cieux'),
     label: 'Cieux',
     windModifiers: [
       mod(1, ['tour', 'colline-elevee'], 91, AZYR_HAUTEUR),
@@ -86,6 +98,8 @@ const SEPT_VENTS = [
   },
   {
     id: 'ombres',
+    type: 'domains',
+    source: sourceReelle('ombres'),
     label: 'Ombres',
     windModifiers: [
       mod(1, ['temps-orageux', 'temps-brumeux'], 103, ULGU_METEO),
@@ -94,6 +108,8 @@ const SEPT_VENTS = [
   },
   {
     id: 'mort',
+    type: 'domains',
+    source: sourceReelle('mort'),
     label: 'Mort',
     windModifiers: [
       mod(1, ['charnier', 'lieu-de-massacre'], 115, SHYISH_MORT),
@@ -102,6 +118,8 @@ const SEPT_VENTS = [
   },
   {
     id: 'feu',
+    type: 'domains',
+    source: sourceReelle('feu'),
     label: 'Feu',
     windModifiers: [
       mod(1, ['feu-proche'], 127, AQSHY_FEU),
@@ -110,6 +128,8 @@ const SEPT_VENTS = [
   },
   {
     id: 'bete',
+    type: 'domains',
+    source: sourceReelle('bete'),
     label: 'Bête',
     windModifiers: [
       mod(-1, ['ville'], 139, GHUR_SAUVAGE),

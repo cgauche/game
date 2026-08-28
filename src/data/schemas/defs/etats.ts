@@ -3,9 +3,11 @@
  * `StatusData`/`EtatData` (`src/data/index.ts`). `effects` (`TriggeredEffect[]`) et
  * son `Flow` récursif : MÊME algèbre que talents.json (`engine/flowCore.ts`), PROMUE dans
  * `grammaire/mecanique.ts` (`flowSchema`/`conditionSchema`/`triggeredEffectSchema`).
+ * `icon` et `maison` sont des clés d'ENVELOPPE, posées par la fabrique.
  */
 import { z } from 'zod';
-import { charKeySchema, sourceRefSchema, difficultySchema } from '../grammaire/valeurs';
+import { charKeySchema, difficultySchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'etats.json';
@@ -26,17 +28,13 @@ const recoverSchema = z.strictObject({
   difficulty: difficultySchema.optional(),
 });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    desc: z.string(),
-    source: sourceRefSchema,
+const doc = document(
+  'etats',
+  famille,
+  {
     passive: z.array(gameOpSchema).optional(),
     effects: z.array(triggeredEffectSchema).optional(),
     gating: gatingSchema.optional(),
-    /** Icône du registre `<Icon>` (`famille/nom`) — pas d'enum fermé ici (registre hors dataset). */
-    icon: z.string().optional(),
     severity: z.number().optional(),
     aiThreat: z.number().optional(),
     perStack: z.boolean().optional(),
@@ -47,8 +45,28 @@ export const schema = z.array(
     recover: recoverSchema.optional(),
     /** `EtatData.persistsAfterCombat` (`src/data/index.ts`) — LDB 16 l.56/70/84/92/107/117, LDB 62 l.250. */
     persistsAfterCombat: z.boolean().optional(),
-    /** Arbitrage NON-verbatim (`EtatData.maison`, `src/data/index.ts`) — même patron que
-     *  `naval-traits.json`/`creatures.json`. */
-    maison: z.string().optional(),
-  }),
+  },
+  {
+    passive: { label: 'Effets passifs', hint: 'Effets mécaniques appliqués en continu tant que l’État est actif' },
+    effects: { label: 'Effets déclenchés' },
+    gating: { label: 'Restrictions Action/Mouvement/défense', hint: 'Limite Action/Mouvement/défense pendant l’État' },
+    severity: { label: 'Sévérité' },
+    aiThreat: { label: 'Menace pour l’IA', hint: 'Poids pris en compte par l’IA pour évaluer la dangerosité de l’État' },
+    perStack: { label: 'Par cumul', hint: 'L’effet se recalcule à chaque palier de cumul, pas une seule fois' },
+    stacksReducedBy: { label: 'Cumuls réduits par', hint: 'Capacité de combat qui réduit le nombre de cumuls' },
+    restrictsAction: {
+      label: 'Action verrouillée',
+      hint: 'État bloquant (Brisé) : l’IA dépense sa Détermination pour le lever',
+    },
+    recover: { label: 'Guérison', hint: 'Test (Compétence/Caractéristique/Difficulté) qui met fin à l’État' },
+    persistsAfterCombat: { label: 'Persiste hors combat' },
+  },
+  {
+    codex: { keys: ['etats'] },
+    edit: { dataset: 'etats' },
+  },
+  { exiges: ['desc', 'source'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

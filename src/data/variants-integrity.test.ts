@@ -24,10 +24,13 @@ import { characteristics, skills, traits } from './index';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
 const KNOWN_RULE_IDS = new Set(OPTIONAL_RULES.map((r) => r.id));
-/** Clés du schéma d'ENTRÉE de chaque dataset à variantes — lues du schéma zod, jamais recopiées. */
+/** Clés du schéma d'ENTRÉE de chaque dataset à variantes — lues du def, jamais recopiées. Un def
+ *  ADOPTÉ par `document()` rend un nœud SCELLÉ, sans `.element.shape` : il publie ses clés relevées
+ *  AVANT le sceau (`DocumentHandle.cles`, réexportées `cles`). `spells.json` déclare son entrée en
+ *  `z.strictObject` : ses clés se lisent au nœud zod. */
 const SHAPE_BY_FILE = new Map<string, string[]>([
-  [talentsDef.file, Object.keys(talentsDef.schema.element.shape)],
-  [traitsDef.file, Object.keys(traitsDef.schema.element.shape)],
+  [talentsDef.file, [...talentsDef.cles]],
+  [traitsDef.file, [...traitsDef.cles]],
   [spellsDef.file, Object.keys(spellsDef.schema.element.shape)],
 ]);
 

@@ -169,6 +169,7 @@ export interface NavalTraitRef {
 export interface VehicleData {
   /** id STABLE (slug) — cible de `TravelMode`/réfs de scène. */
   id: string;
+  type: 'vehicles';
   label: string;
   /** `IconId` du pictogramme d'affichage (registre `src/ui/icons/`, famille `travel/*`) — donnée, pas
    *  de ternaire par id en dur. Typé `string` (et non `IconId`) pour NE PAS coupler l'engine pur à
@@ -238,6 +239,7 @@ export interface VehicleData {
 export interface StructureData {
   /** id STABLE (slug) — clé d'instance/lookup. */
   id: string;
+  type: 'structures';
   label: string;
   /** Catégorie physique (ADE II 8) : `porte` est seule visable par un Bélier (`ram`) ; `mur` couvre
    *  murs/tours. Découplée des Atouts (une porte peut être Résistante OU Impénétrable). */

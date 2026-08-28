@@ -46,13 +46,22 @@ else if (data.length !== ATTENDU) echecs.push(`cardinal ${data.length} ≠ ${ATT
 let migres = 0;
 let dejaMigres = 0;
 
+/**
+ * `type` D'ENVELOPPE (#1467 L1b V-FLIP-ENTITE-b) : depuis l'adoption de `document()`, chaque entrée
+ * porte `type: "skills"` — le NOM DU DOCUMENT, pas l'ancien accès. Sans cette distinction, la
+ * migration lisait l'enveloppe comme un `type` ressuscité et exigeait un arbitrage sur les 48 entrées.
+ * L'ancien `type` était une clé de `NORMALISE` ({base, avancée, avancee}), jamais le nom du dataset.
+ */
+const TYPE_ENVELOPPE = 'skills';
+const typeAncien = (e) => (e?.type !== undefined && e.type !== TYPE_ENVELOPPE ? e.type : undefined);
+
 const sortie = Array.isArray(data)
   ? data.map((e, i) => {
-      const aType = e?.type !== undefined;
+      const aType = typeAncien(e) !== undefined;
       const aAcces = e?.acces !== undefined;
       if (aType && aAcces) { echecs.push(`entrée #${i} (${e.id}) : porte À LA FOIS \`type\` et \`acces\` — arbitrage requis`); return e; }
       if (!aType && !aAcces) { echecs.push(`entrée #${i} (${e?.id}) : ni \`type\` ni \`acces\` — accès PERDU`); return e; }
-      const brute = aAcces ? e.acces : e.type;
+      const brute = aAcces ? e.acces : typeAncien(e);
       const norm = NORMALISE[brute];
       if (norm === undefined) { echecs.push(`entrée #${i} (${e.id}) : accès ${JSON.stringify(brute)} hors {base, avancée, avancee}`); return e; }
       if (aAcces) {
@@ -74,10 +83,11 @@ if (echecs.length) {
 const out = JSON.stringify(sortie, null, 2);
 if (out !== brut) fs.writeFileSync(CIBLE, out, 'utf8');
 
-// PREUVE post-écriture : plus aucun `type`, l'accent est mort, la PARTITION est conservée entrée par entrée.
+// PREUVE post-écriture : plus aucun ANCIEN `type`, l'accent est mort, la PARTITION est conservée
+// entrée par entrée. Le `type` d'ENVELOPPE, lui, est attendu et ne compte pas pour un résidu.
 const apres = JSON.parse(out);
-const residus = apres.filter((e) => e.type !== undefined).length;
-const avant = data.map((e) => NORMALISE[e.type ?? e.acces]).join(',');
+const residus = apres.filter((e) => typeAncien(e) !== undefined).length;
+const avant = data.map((e) => NORMALISE[typeAncien(e) ?? e.acces]).join(',');
 const rendu = apres.map((e) => e.acces).join(',');
 const accents = apres.filter((e) => e.acces === 'avancée').length;
 if (residus || accents || avant !== rendu || apres.length !== ATTENDU) {
@@ -87,5 +97,5 @@ if (residus || accents || avant !== rendu || apres.length !== ATTENDU) {
 
 const parAcces = apres.reduce((m, e) => ({ ...m, [e.acces]: (m[e.acces] ?? 0) + 1 }), {});
 console.log(`skills.json — \`type\` → \`acces\` (+ \`avancée\` → \`avancee\`) : ${migres} migrée(s), ${dejaMigres} déjà migrée(s)`);
-console.log(`Entrées : ${apres.length} ; \`type\` restant : 0 ; répartition ${JSON.stringify(parAcces)}`);
+console.log(`Entrées : ${apres.length} ; ancien \`type\` restant : 0 ; répartition ${JSON.stringify(parAcces)}`);
 console.log(`Fichier ${out !== brut ? 'réécrit' : 'INCHANGÉ'} : src/data/skills.json`);

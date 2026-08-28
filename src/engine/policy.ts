@@ -26,6 +26,7 @@ export type RuleValue = boolean | number | string;
 export interface OptionalRule {
   /** Identifiant stable (clé de surcharge + persistance). */
   id: string;
+  type: 'reglesOptionnelles';
   /** Libellé affiché dans le panneau. */
   label: string;
   /** Citation de la règle, montrée en infobulle : livre (`abbr` de `books.json`) + chapitre, plus la

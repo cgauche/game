@@ -45,7 +45,7 @@ Augmentations** dans cette Compétence inscrites sur la Feuille de Personnage.
 **Sources RAW :** LDB 09 l.12-18
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.12-18) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `skillEntrySchema`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, +29 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, +20 fichiers
+- `LDB 9` (l.12-18) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `doc`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, +29 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, +20 fichiers
 
 **Voir aussi :** [Tests & Degrés de Réussite](tests.md) pour l'utilisation de ce niveau en test.
 
@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `CibleDeType`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `specEntrySchema`, `skillEntrySchema`, +50 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +35 fichiers
+- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `CibleDeType`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `specEntrySchema`, `doc`, +50 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +35 fichiers
 
 ---
 
@@ -98,7 +98,7 @@ la description, ou en crée une avec l'accord du MJ.
 **Sources RAW :** LDB 09 l.34-46
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `CibleDeType`, `specEntrySchema`, `skillEntrySchema`, `redaction`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, +16 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +15 fichiers
+- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `CibleDeType`, `specEntrySchema`, `doc`, `redaction`, `estSpecialisable`, `buySkillAdvance`, `athletisme`, `wildcardSpecs`, +16 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +15 fichiers
 
 ---
 
@@ -954,7 +954,7 @@ l'Intelligence. (Voir section dédiée.)
 **Sources RAW :** LDB 09 l.293-294 ; LDB 09 l.358 ; ADE II 2 l.728
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.293-294, l.358) → `altCharKey`, `useDefenseJetProps`, `test-metier-int`, `rederiveAttack`, `defenseSubOf`, `heal-wounds`, `heal-bleed`, `skill-advantage`, `guerison`, `intimidation`, +9 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/skills.json`, `src/engine/skills.ts`, +4 fichiers
+- `LDB 9` (l.293-294, l.358) → `altCharKey`, `useDefenseJetProps`, `rederiveAttack`, `test-metier-int`, `defenseSubOf`, `heal-wounds`, `heal-bleed`, `skill-advantage`, `guerison`, `intimidation`, +9 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/skills.json`, `src/engine/skills.ts`, +4 fichiers
 - `ADE II 2` (l.728) → `altCharKey`, `castingCharKey`, `possession-pas-a-sa-taille`, `gueule`, `DomainData`, `ogre`, `bouf-crane`, `broyeur-d-os`, `festin-des-damnes` — `src/data/domains.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/spells.json`, `src/data/traits.json`, `src/engine/magic.ts`, +1 fichiers
 
 ---

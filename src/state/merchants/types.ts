@@ -4,6 +4,7 @@ import type { Settlement } from '../../engine/disponibilite';
 export interface MerchantArchetypeDef {
   /** Clé unique (référencée par l'entité de scène `merchant.archetype`). */
   id: string;
+  type: 'merchants';
   /** Libellé FR (UI). */
   label: string;
   /** Familles vendues : filtre le catalogue par `type` et/ou `subType` de trapping

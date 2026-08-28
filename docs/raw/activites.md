@@ -404,7 +404,7 @@ Test de Compétence de Carrière :
 Les Personnages aux Niveaux 3-4 qui entreprennent *Revenus* **maintiennent automatiquement leur Statut** (voir *Avec le pouvoir*).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 8` (l.106-122) → `statusOf`, `incomeSkillOf`, `social-begging-bonus`, `social-charm-intra-tier`, `statusIncomeMax`, `RevenusPane`, `openCatalogActivity`, `runActivityResolver`, `statut`, `statusIncome` — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `LDB 8` (l.106-122) → `statusOf`, `incomeSkillOf`, `statusIncomeMax`, `social-begging-bonus`, `social-charm-intra-tier`, `RevenusPane`, `openCatalogActivity`, `runActivityResolver`, `statut`, `statusIncome` — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`, `src/ui/InterludeScreen.tsx`
 - `LDB 23` (l.187-193) → `revenus`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `Combatant`, `dernieres-nouvelles`, `entrainement-au-combat`, `observer-une-cible` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
@@ -537,7 +537,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 | **Remaniement du Contremaître** | Ragot (+0) pour localiser, puis Corps à Corps **ou** Projectiles Complexe (−10) | Reçoit l'objet désiré + Critique sur localisation aléatoire (gravité variable selon résultat) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 12` (l.5-144) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `ActivityDef`, `battement`, `PendingActivityFields`, `team-command`, `everBelongedClasses`, `bestActivitySkill`, +16 — `src/data/activities.json`, `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, +4 fichiers
+- `AA 12` (l.5-144) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `ActivityDef`, `PendingActivityFields`, `battement`, `team-command`, `everBelongedClasses`, `bestActivitySkill`, +16 — `src/data/activities.json`, `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, +4 fichiers
 
 ---
 

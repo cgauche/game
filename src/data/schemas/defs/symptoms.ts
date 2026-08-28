@@ -3,7 +3,7 @@
  * `SymptomData`/`SymptomCapabilities` (`src/data/index.ts`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'symptoms.json';
@@ -27,14 +27,10 @@ const symptomCapabilitiesSchema = z.strictObject({
 
 const hitLocationSchema = z.enum(['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD']);
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    desc: z.string(),
-    /** `source` optionnel dans `SymptomData` (≠ la plupart des autres datasets où il est requis) —
-     *  reflet exact de l'interface TS (`source?: { book, page }`). */
-    source: sourceRefSchema.optional(),
+const doc = document(
+  'symptoms',
+  famille,
+  {
     passive: z.array(gameOpSchema).optional(),
     severePassive: z.array(gameOpSchema).optional(),
     /** Effets DÉCLENCHÉS du symptôme (Crampes abdominales `onOwnTestFailed`, MSRC 16) — MÊME schéma que
@@ -59,5 +55,28 @@ export const schema = z.array(
     /** Localisations VISIBLES (`maison`) qui activent `visiblePassive`. */
     visibleLocations: z.array(hitLocationSchema).optional(),
     capabilities: symptomCapabilitiesSchema.optional(),
-  }),
+  },
+  {
+    passive: { label: 'Effets passifs' },
+    severePassive: { label: 'Effets passifs (Grave)', hint: 'Effets passifs actifs seulement au palier de sévérité Grave' },
+    effects: { label: 'Effets déclenchés' },
+    onTick: {
+      label: 'Évolution périodique',
+      hint: 'Conséquence récurrente : chaque jour, ou au Nᵉ jour, avec ou sans jet ; l’échec applique ses effets',
+    },
+    visiblePassive: {
+      label: 'Effets passifs (lésion visible)',
+      hint: 'Actifs seulement quand la lésion est sur une localisation visible',
+    },
+    visibleLocations: { label: 'Localisations visibles' },
+    capabilities: { label: 'Capacités mécaniques (liste fermée)' },
+  },
+  {
+    codex: { keys: ['symptoms'] },
+    edit: { dataset: 'symptoms' },
+  },
+  { exiges: ['desc'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

@@ -134,6 +134,19 @@ function clesDeclarees(s: unknown, profondeur = 0): { cles: Record<string, strin
     if (!d.enveloppes.length) return { cles: {}, note: 'lazy inatteignable' };
     return clesDeclarees(d.enveloppes[0], profondeur + 1);
   }
+  if (def.type === 'pipe') {
+    // SCEAU de `document()` (#1467 L1b) : l'entrée d'un def adopté est un `pipe` dont la SORTIE est un
+    // `transform` sans clés. Les clés se lisent sur le nœud PORTEUR — le même critère STRUCTUREL que
+    // `introspecterDefs` applique au record enveloppé : le premier des deux bouts qui a des clés.
+    // Sans cette descente, tout def adopté rendait ZÉRO clé déclarée, et la comparaison
+    // « déclaré × observé » se taisait au lieu de mordre.
+    const porteur = d.enveloppes.find((n) => {
+      const s = defDe(n);
+      return s && descente(s).cles.length > 0;
+    });
+    if (porteur) return clesDeclarees(porteur, profondeur + 1);
+    return { cles: {}, note: 'pipe sans nœud à clés' };
+  }
   return { cles: {}, note: `non-objet(${def.type})` };
 }
 

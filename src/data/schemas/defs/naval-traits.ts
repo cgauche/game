@@ -5,9 +5,10 @@
  * (26 entrées : `id`/`label`/`kind`/`desc`
  * toujours présents ; `source` 25/26 (#221 : Proue-idole de Stromfels = `maison`, pas de folio RAW) ;
  * `install` 20/26 ; `ranked` 4/26 ; `passive` 8/26 ; `ram` 1/26 ; `deckCover` 3/26 ; `navTestMod` 2/26 ; `maison` 1/26).
+ * `source`/`alsoIn`/`maison` sont des clés d'ENVELOPPE, posées par la fabrique.
  */
 import { z } from 'zod';
-import { sourceRefSchema, secondarySourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'naval-traits.json';
@@ -29,16 +30,11 @@ const navalInstallSchema = z.strictObject({
   weightEnc: installCostSchema.optional(),
 });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'naval-traits',
+  famille,
+  {
     kind: z.enum(['trait', 'amelioration']),
-    source: sourceRefSchema.optional(),
-    /** Emplacement SECONDAIRE (#563) — `murs-blindes` prose folio 66 (ancre) ET bloc Coût/Poids
-     *  folio 65 (`alsoIn[0].quote`). */
-    alsoIn: z.array(secondarySourceRefSchema).optional(),
-    desc: z.string(),
     install: navalInstallSchema.optional(),
     ranked: z.boolean().optional(),
     passive: z.array(gameOpSchema).optional(),
@@ -49,7 +45,28 @@ export const schema = z.array(
     /** Modificateur (points) au Test de Navigation POUR DIRIGER le bateau (MSRC 12 l.66 Bouteur +20 ;
      *  l.137 Gréement de course −10) — sous-système manœuvre hors vocabulaire combattant (`navalNavTestDR`). */
     navTestMod: z.number().optional(),
-    /** #221 : même champ `maison` que `traumas.json` (`src/data/schemas/defs/traumas.ts`). */
-    maison: z.string().optional(),
-  }),
+  },
+  {
+    kind: { label: 'Nature', hint: 'Trait naval ou Amélioration installable' },
+    install: { label: 'Coût d’installation', hint: 'Coût (or) et poids, par bande de longueur de coque ou au modèle' },
+    ranked: { label: 'À paliers', hint: 'Amélioration cumulable par palier (plutôt qu’achat unique)' },
+    passive: {
+      label: 'Effets passifs',
+      hint: 'Effets mécaniques permanents tant que le Trait/l’Amélioration équipe le navire',
+    },
+    ram: { label: 'Bélier', hint: 'Bonus de collision (IC + PA), sous-système collision hors vocabulaire combattant' },
+    deckCover: { label: 'Couvert de pont', hint: 'Couvert gradué offert à l’équipage (imparfaite/moyenne/totale)' },
+    navTestMod: {
+      label: 'Modificateur de manœuvre',
+      hint: 'Points au Test de Navigation pour DIRIGER le navire (ex. Bouteur +20, Gréement de course −10)',
+    },
+  },
+  {
+    codex: { keys: ['navalTraits'] },
+    edit: { dataset: 'navalTraits' },
+  },
+  { exiges: ['desc'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

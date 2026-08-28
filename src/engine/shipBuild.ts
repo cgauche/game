@@ -227,6 +227,7 @@ export interface SteamBreakdownEntry {
   min: number;
   max: number;
   id: string;
+  type: 'steam-breakdown';
   label: string;
   desc: string;
   mMod?: number;

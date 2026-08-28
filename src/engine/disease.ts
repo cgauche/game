@@ -82,6 +82,7 @@ export interface DiseaseSymptom {
 export interface DiseaseDef {
   /** id STABLE (slug du nom) — clé de `maladies.json`, cible de `Disease.name` et des refs. */
   id: string;
+  type: 'maladies';
   /** Libellé d'affichage (français) — résolu via `diseaseLabel` ; ≠ id. Convention `label` des catalogues. */
   label: string;
   /** Description VERBATIM (LDB 20) — affichage seul (jamais lue par le moteur), comme toute entité. */

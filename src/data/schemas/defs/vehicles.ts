@@ -3,10 +3,11 @@
  * indépendantes (achat/voyage/coque+navire+pont). Dérivé de l'interface `VehicleData` EXISTANTE
  * (`src/engine/types.ts`, + `NavalTraitRef`/`ShipDeck`/`DeckPosteSlot`/`Propulsion`/
  * `VehicleTravelClass` co-localisées) et du contenu RÉEL (25 entrées, script d'inventaire : `hull`
- * 22/25, `ship` 20/25, `travel` 3/25, `deck` 1/25).
+ * 22/25, `ship` 20/25, `travel` 3/25, `deck` 1/25). `icon` est une clé d'ENVELOPPE, posée par la fabrique.
  */
 import { z } from 'zod';
-import { availabilitySchema, cell2Schema, sourceRefSchema } from '../grammaire/valeurs';
+import { availabilitySchema, cell2Schema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'vehicles.json';
 export const famille = 'entite';
@@ -32,20 +33,16 @@ const vehicleTravelClassSchema = z.strictObject({
   brassPerKm: z.number(),
 });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    /** `IconId` du registre `src/ui/icons/` (famille `travel/*`) — typé `string` côté engine (règle 3). */
-    icon: z.string().optional(),
-    source: sourceRefSchema.optional(),
+const doc = document(
+  'vehicles',
+  famille,
+  {
     /** Encombrement de l'objet véhicule (LDB 61) — `null` = ne se porte pas (généralement, diligence…). */
     enc: z.union([z.number(), z.null()]).optional(),
     /** Chargement (EDOC 07 l.231-243) — Points d'Enc que la section bagages contient, véhicules terrestres
      *  uniquement. Champ parallèle à `ship.capacity` (même concept, facette `ship` inadaptée : ses autres
      *  champs — crew/manoeuvre/lengthM naval — n'ont pas d'équivalent EDOC pour un attelage terrestre). */
     chargement: z.number().optional(),
-    desc: z.string().optional(),
     /** Facette ACHAT — `availability` absent pour les navires (MDG ne donne pas de Disponibilité). */
     purchase: z.strictObject({
       price: moneySchema,
@@ -90,5 +87,27 @@ export const schema = z.array(
     }).optional(),
     /** Facette PONT (plan person-scale, authoré par TYPE). */
     deck: shipDeckSchema.optional(),
-  }),
+  },
+  {
+    enc: { label: 'Encombrement (objet)', hint: 'Encombrement de l’objet véhicule — vide = ne se porte pas' },
+    chargement: {
+      label: 'Chargement',
+      hint: 'Points d’Encombrement que la section bagages contient (véhicules terrestres)',
+    },
+    purchase: { label: 'Facette Achat', hint: 'Prix, et Disponibilité quand le livre en imprime une' },
+    travel: { label: 'Facette Voyage', hint: 'Passage payant : vitesse et milieu du trajet, classes de passage' },
+    hull: {
+      label: 'Facette Coque',
+      hint: 'Profil à PV de la coque : Endurance et Blessures, propulsion/gréement et Traits',
+    },
+    ship: { label: 'Facette Navire', hint: 'Équipage, manœuvrabilité, longueur et capacité du profil naval' },
+    deck: { label: 'Facette Pont', hint: 'Plan du pont à l’échelle du combat, authoré par type de véhicule' },
+  },
+  {
+    codex: { keys: ['vehicles'] },
+    edit: { dataset: 'vehicles' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

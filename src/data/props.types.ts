@@ -68,6 +68,7 @@ export interface PropMaterialData { id: string; type: 'propMaterials'; label: st
  */
 export interface PropData {
   id: string;
+  type: 'props';
   /** Nom d'auteur du décor. Miroir du `label` de la def d'ART du même id
    *  (`src/gameIso/catalog/decor/defs/<id>.ts`) — parité gardée par `src/data/props-label-parite.test.ts`. */
   label: string;

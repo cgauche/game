@@ -51,7 +51,7 @@ Le chapitre ne pose pas d'arbre de décision : il énonce un critère de bascule
 
 **Voir aussi** : [Tests opposés](#tests-opposés), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.5-7, l.83-88) → `canReroll`, `test-fast-sl`, `getTestPolicy`, `test-over-100`, `RollInfluenceView`, `RollRowCore`, `RollRow`, `rollTest`, `useTestJetProps`, `opposedForcedFloor`, +8 — `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +6 fichiers
+- `LDB 12` (l.5-7, l.83-88) → `canReroll`, `getTestPolicy`, `test-fast-sl`, `test-over-100`, `RollInfluenceView`, `RollRowCore`, `RollRow`, `rollTest`, `useTestJetProps`, `opposedForcedFloor`, +8 — `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +6 fichiers
 
 ---
 
@@ -99,7 +99,7 @@ Ces bandes automatiques s'appliquent à *tous* les tests, simples ou spectaculai
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.25-28, l.31-32, l.119-121) → `canReroll`, `test-auto-bands`, `TestPolicy`, `test-critiques-doubles`, `getTestPolicy`, `test-fast-sl`, `ChanceButtons`, `amazingTestLabel`, `useTestJetProps`, `test-auto-band-width`, +26 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/crewMorale.ts`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, +10 fichiers
+- `LDB 12` (l.25-28, l.31-32, l.119-121) → `canReroll`, `test-auto-bands`, `TestPolicy`, `test-critiques-doubles`, `getTestPolicy`, `test-fast-sl`, `ChanceButtons`, `amazingTestLabel`, `useTestJetProps`, `RollRowCore`, +26 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/crewMorale.ts`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, +10 fichiers
 
 ---
 
@@ -123,7 +123,7 @@ Cette règle optionnelle fonctionne particulièrement bien avec les Tests simple
 
 **Voir aussi** : chapitre Combat (Critiques et Maladresses en combat)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.38, l.124-127) → `canReroll`, `test-auto-bands`, `TestPolicy`, `test-critiques-doubles`, `getTestPolicy`, `test-fast-sl`, `ChanceButtons`, `amazingTestLabel`, `useTestJetProps`, `test-auto-band-width`, +24 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, +9 fichiers
+- `LDB 12` (l.38, l.124-127) → `canReroll`, `test-auto-bands`, `TestPolicy`, `test-critiques-doubles`, `getTestPolicy`, `test-fast-sl`, `ChanceButtons`, `amazingTestLabel`, `useTestJetProps`, `RollRowCore`, +24 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, +9 fichiers
 
 ---
 
@@ -145,7 +145,7 @@ Ces deux mécanismes constituent, avec les modificateurs et les doubles, les bri
 
 **Voir aussi** : Chance (Points de Chance permettant la relance), Résilience (dé forcé)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.40, l.42) → `canReroll`, `test-auto-bands`, `getTestPolicy`, `ChanceButtons`, `test-over-100`, `test-auto-band-width`, `RollRowCore`, `rerollAvailable`, `NightEntry`, `PendingTest`, +12 — `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +4 fichiers
+- `LDB 12` (l.40, l.42) → `canReroll`, `test-auto-bands`, `getTestPolicy`, `ChanceButtons`, `test-over-100`, `RollRowCore`, `test-auto-band-width`, `rerollAvailable`, `NightEntry`, `PendingTest`, +12 — `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +4 fichiers
 
 ---
 
@@ -169,7 +169,7 @@ Ainsi : **valeur cible = Base + Difficulté + Σ modificateurs circonstanciels**
 
 **Voir aussi** : [Difficulté](#difficulté--table-complète), [Combiner les Difficultés](#combiner-les-difficultés--cumul-et-plafonds)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.44, l.133-137) → `canReroll`, `test-auto-bands`, `test-critiques-doubles`, `ChanceButtons`, `amazingTestLabel`, `test-over-100`, `useTestJetProps`, `test-auto-band-width`, `RollRowCore`, `rerollAvailable`, +15 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/state/flowOutcomes.ts`, `src/state/pendings.ts`, +6 fichiers
+- `LDB 12` (l.44, l.133-137) → `canReroll`, `test-auto-bands`, `test-critiques-doubles`, `ChanceButtons`, `amazingTestLabel`, `test-over-100`, `useTestJetProps`, `RollRowCore`, `test-auto-band-width`, `rerollAvailable`, +15 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/state/flowOutcomes.ts`, `src/state/pendings.ts`, +6 fichiers
 
 ---
 
@@ -317,7 +317,7 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.17) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `skillEntrySchema`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, +29 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, +20 fichiers
+- `LDB 9` (l.17) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `doc`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, +29 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, +20 fichiers
 - `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `RecoverResolution`, `soutien`, `test-critiques-doubles`, `AuContactModal`, `GrappleModal`, `BargainModalView`, `TraceOpposed`, `MedicState`, `StateRecoveryModalView`, +84 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +42 fichiers
 
 ---
@@ -346,7 +346,7 @@ Les tests étendus servent à résoudre des tâches particulièrement longues ou
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `soutien`, `AuContactModal`, `GrappleModal`, `BargainModalView`, `MedicState`, `StateRecoveryModalView`, `SequenceParams`, `test-extended-min-sl`, `opposedLines`, +48 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, +32 fichiers
+- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `soutien`, `AuContactModal`, `GrappleModal`, `BargainModalView`, `MedicState`, `StateRecoveryModalView`, `SequenceParams`, `opposedLines`, `test-extended-min-sl`, +48 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, +32 fichiers
 
 ---
 
@@ -431,7 +431,7 @@ Sans cette règle optionnelle, la valeur cible est plafonnée à 99 pour les cal
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.74-80) → `test-fast-sl`, `getTestPolicy`, `test-over-100` — `src/data/reglesOptionnelles.json`, `src/engine/testPolicy.ts`
+- `LDB 12` (l.74-80) → `getTestPolicy`, `test-fast-sl`, `test-over-100` — `src/data/reglesOptionnelles.json`, `src/engine/testPolicy.ts`
 
 ---
 
@@ -581,7 +581,7 @@ Talents concernés (LDB 10) :
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé)
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.176, l.634, l.834, l.899, l.950, l.966) → `MedicState`, `MODAL_DEFS`, `CombatFeature`, `surgeryNext`, `MedicModal`, `surgery-roll`, `caid`, `cavalier-emerite`, `chanceux`, `charge-berserk`, +63 — `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/i18n/messages/fr.ts`, `src/state/combatFlow.ts`, +5 fichiers
-- `LDB 12` (l.42) → `canReroll`, `test-auto-bands`, `getTestPolicy`, `ChanceButtons`, `test-over-100`, `test-auto-band-width`, `RollRowCore`, `rerollAvailable`, `NightEntry`, `PendingTest`, +12 — `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +4 fichiers
+- `LDB 12` (l.42) → `canReroll`, `test-auto-bands`, `getTestPolicy`, `ChanceButtons`, `test-over-100`, `RollRowCore`, `test-auto-band-width`, `rerollAvailable`, `NightEntry`, `PendingTest`, +12 — `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +4 fichiers
 
 ---
 

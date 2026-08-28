@@ -4,9 +4,18 @@
  * `CombatFeature` (`src/engine/combatFeatures/types.ts`). `effects` (`TriggeredEffect[]`) et son
  * `Flow` récursif (`src/engine/flowCore.ts`) sont PROMUS dans `grammaire/mecanique.ts` (`conditionSchema`/
  * `flowSchema`/`triggeredEffectSchema` — partagés avec talents/etats/spells).
+ * `desc`/`source`/`alsoIn`/`maison` sont des clés d'ENVELOPPE, posées par la fabrique.
+ *
+ * ÉCART D'EXIGENCE MESURÉ : `exiges` ne nomme que `source`. `desc` est portée par 186/187 entrées ;
+ * la 187ᵉ, `talent-aleatoire`, est une entrée MÉTA du vocabulaire de tirage (« N Talent(s) au hasard »,
+ * LDB 10 p.132 — exemptée d'obtenabilité par `META_CATALOG_ENTRIES`,
+ * `scripts/guards/lib/entityConsumers.mjs:144`), sans prose à citer. Sa `desc: ""` — l'un des deux
+ * porteurs que la migration `2026-08-27-l1b-3h-desc-null.mjs` a nommément renvoyés « au lot qui posera
+ * `min(1)` » — est PURGÉE par la migration de ce lot ; exiger `desc` ici refuserait cette entrée.
  */
 import { z } from 'zod';
-import { charKeySchema, sourceRefSchema, secondarySourceRefSchema, combatFeatureSchema, variantOf } from '../grammaire/valeurs';
+import { charKeySchema, combatFeatureSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema, conditionSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'talents.json';
@@ -36,42 +45,7 @@ const talentTestSchema = z.strictObject({
 });
 
 // ── CombatFeature (src/engine/combatFeatures/types.ts) — PROMU dans `grammaire/valeurs.ts` (#563, SOURCE
-// UNIQUE) : `combatFeatureSchema`/`variantOf` importés ci-dessus.
-
-/** Entrée de `talents.json` SANS ses variantes — sert de patron à `variantOf` (une variante est un
- *  patch partiel de CETTE forme) puis, étendue de `variants`, de schéma du dataset. */
-const talentEntrySchema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
-  max: z.union([z.number(), z.strictObject({ bonusOf: charKeySchema }), z.null()]),
-  test: talentTestSchema.nullable(),
-  desc: z.string(),
-  specs: z.array(specEntrySchema).optional(),
-  size: z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']).optional(),
-  specsSource: specsSourceSchema.optional(),
-  /** Le `spec` de ce Talent nomme un CULTE (`gods.json`) : ses `grantGroups` sont accordés au
-   *  porteur (`groupsFor`). Absent = le `spec` n'ouvre aucun Groupe d'appartenance. */
-  grantSpecGroups: z.literal(true).optional(),
-  /** Le `spec` de ce Talent nomme un Domaine arcanique (`DomainData.id`) que son porteur PRATIQUE : il
-   *  compte alors dans les Domaines tenus et sous le plafond d'apprentissage (`LDB 46 l.177`, repris
-   *  `VDM 02 l.190-192`) — lu par `heldArcaneDomains` (engine/careerSlots). Distinct de `specsSource`,
-   *  qui ne décrit que le POOL de spécialisations proposé. */
-  grantsArcaneDomain: z.literal(true).optional(),
-  specsOpen: z.boolean().optional(),
-  rand: z.number().nullable(),
-  source: sourceRefSchema,
-  /** Emplacements SECONDAIRES du MÊME Talent (doctrine « UNE entité, N livres ») : `source` reste
-   *  l'ancre qui porte la `desc` ; ex. `empreint-d-ulgu`, republié en `VDM 13 l.485`. */
-  alsoIn: z.array(secondarySourceRefSchema).optional(),
-  effects: z.array(triggeredEffectSchema).optional(),
-  passive: z.array(gameOpSchema).optional(),
-  combat: combatFeatureSchema.optional(),
-  // Contenu de RÉFÉRENCE (PNJ/campagne, RAW cité par entrée) : hors graphe d'obtenabilité (#326).
-  codexOnly: z.literal(true).optional(),
-  /** Arbitrage NON-verbatim (`TalentData.maison`, `src/data/index.ts`) — même patron que
-   *  `naval-traits.json`/`creatures.json`. */
-  maison: z.string().optional(),
-});
+// UNIQUE) : `combatFeatureSchema` importé ci-dessus ; `variantOf` est composé par la fabrique.
 
 /**
  * Champs qu'une variante réglée de `talents.json` peut republier — ceux dont la lecture PASSE par
@@ -85,11 +59,61 @@ const talentEntrySchema = z.strictObject({
  */
 export const VARIANT_RESOLVED_FIELDS = ['desc', 'source', 'test', 'max', 'combat'] as const;
 
-export const schema = z.array(
-  talentEntrySchema.extend({
-    /** Variantes réglées (#563/#564 — ex. Aux Armes Annexe III, gatées `combat-aa-avantage-groupe`) :
-     *  patch PARTIEL de l'entrée sur `VARIANT_RESOLVED_FIELDS`, résolu par `effectiveEntry`
-     *  (`engine/variants.ts`, REPLACE par champ déclaré) — SEULE lecture des consommateurs. */
-    variants: z.array(variantOf(talentEntrySchema, VARIANT_RESOLVED_FIELDS)).optional(),
-  }),
+const doc = document(
+  'talents',
+  famille,
+  {
+    max: z.union([z.number(), z.strictObject({ bonusOf: charKeySchema }), z.null()]),
+    test: talentTestSchema.nullable(),
+    specs: z.array(specEntrySchema).optional(),
+    size: z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']).optional(),
+    specsSource: specsSourceSchema.optional(),
+    /** Le `spec` de ce Talent nomme un CULTE (`gods.json`) : ses `grantGroups` sont accordés au
+     *  porteur (`groupsFor`). Absent = le `spec` n'ouvre aucun Groupe d'appartenance. */
+    grantSpecGroups: z.literal(true).optional(),
+    /** Le `spec` de ce Talent nomme un Domaine arcanique (`DomainData.id`) que son porteur PRATIQUE : il
+     *  compte alors dans les Domaines tenus et sous le plafond d'apprentissage (`LDB 46 l.177`, repris
+     *  `VDM 02 l.190-192`) — lu par `heldArcaneDomains` (engine/careerSlots). Distinct de `specsSource`,
+     *  qui ne décrit que le POOL de spécialisations proposé. */
+    grantsArcaneDomain: z.literal(true).optional(),
+    specsOpen: z.boolean().optional(),
+    rand: z.number().nullable(),
+    effects: z.array(triggeredEffectSchema).optional(),
+    passive: z.array(gameOpSchema).optional(),
+    combat: combatFeatureSchema.optional(),
+    // Contenu de RÉFÉRENCE (PNJ/campagne, RAW cité par entrée) : hors graphe d'obtenabilité (#326).
+    codexOnly: z.literal(true).optional(),
+  },
+  {
+    max: { label: 'Maximum', hint: 'Nombre maximum d’achats du Talent' },
+    test: { label: 'Test associé', hint: 'Compétence/Caractéristique/spécialisation dont le Talent modifie le jet' },
+    specs: { label: 'Spécialisations', hint: 'Liste fermée de spécialisations proposées' },
+    size: { label: 'Taille requise' },
+    specsSource: { label: 'Registre de spécialisations' },
+    grantSpecGroups: {
+      label: 'Groupes du culte choisi',
+      hint: 'La spécialisation nomme un culte dont les Groupes sont accordés au porteur',
+    },
+    grantsArcaneDomain: { label: 'Ouvre un Domaine arcanique' },
+    specsOpen: { label: 'Spécialisation ouverte' },
+    rand: { label: 'Seuil aléatoire (d100)' },
+    effects: { label: 'Effets déclenchés' },
+    passive: { label: 'Effets passifs' },
+    combat: {
+      label: 'Fonction de combat',
+      hint: 'Capacité de combat à laquelle le Talent se rattache (parade, initiative, avantage de groupe…)',
+    },
+    codexOnly: { label: 'Codex seulement', hint: 'Jamais proposé à l’achat/création (PNJ/campagne)' },
+  },
+  {
+    codex: { keys: ['talents'] },
+    edit: { dataset: 'talents' },
+  },
+  { exiges: ['source'], variantes: VARIANT_RESOLVED_FIELDS },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;
+/** Clés top-level de l'entrée (enveloppe + champs), relevées AVANT le sceau — le nœud rendu par la
+ *  fabrique n'a plus de `.shape`. Consommée par `src/data/variants-integrity.test.ts`. */
+export const cles = doc.cles;

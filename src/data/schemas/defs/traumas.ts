@@ -1,10 +1,12 @@
 /**
  * Schéma de `traumas.json` — Traumatismes (LDB 18). Dérivé du contenu RÉEL (23 fiches) et de son
  * consommateur typé `TraumaFiche` (`src/engine/trauma.ts`). `ops` = `GameOp[]` (vocab partagé) ;
- * `cosmetic`/`passiveKind`/`maison` : cicatrices post-guérison (LDB 18 l.61/72, #192).
+ * `cosmetic`/`passiveKind` : cicatrices post-guérison (LDB 18 l.61/72, #192) — `maison` est une clé
+ * d'ENVELOPPE, posée par la fabrique.
  */
 import { z } from 'zod';
-import { sourceRefSchema, formulaSchema } from '../grammaire/valeurs';
+import { formulaSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 /** Règle de COMPTAGE/AGRÉGATION d'une séquelle cumulative (`TraumaCumul`, `src/engine/trauma.ts`) —
@@ -32,11 +34,10 @@ const rigSchema = z.strictObject({
 export const file = 'traumas.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    desc: z.string(),
+const doc = document(
+  'traumas',
+  famille,
+  {
     ops: z.array(gameOpSchema).optional(),
     kind: z.enum(['dechirure', 'fracture']).optional(),
     severity: z.enum(['mineur', 'majeur']).optional(),
@@ -56,7 +57,28 @@ export const schema = z.array(
     passiveKind: z
       .enum(['douleur', 'mobilite', 'structurel', 'sensoriel', 'maladie', 'faim', 'magique', 'etat', 'ivresse', 'intrinseque'])
       .optional(),
-    maison: z.string().optional(),
-    source: sourceRefSchema.optional(),
-  }),
+  },
+  {
+    ops: { label: 'Effets passifs' },
+    kind: { label: 'Type de séquelle', hint: 'Déchirure ou fracture' },
+    severity: { label: 'Sévérité', hint: 'Mineure ou majeure' },
+    prosthesis: { label: 'Prothèses compatibles', hint: 'Prothèses pouvant annuler tout ou partie de la séquelle' },
+    cumul: { label: 'Règle de cumul', hint: 'Comptage/agrégation d’une séquelle qui s’accumule' },
+    rig: { label: 'Routage d’apparence', hint: 'Emplacement du rig où la séquelle s’affiche' },
+    needsSurgery: { label: 'Nécessite une opération' },
+    cosmetic: { label: 'Cicatrice cosmétique', hint: 'Séquelle post-guérison sans effet mécanique' },
+    amputation: { label: 'Est une amputation' },
+    passiveKind: {
+      label: 'Catégorie de passif',
+      hint: 'Nature du passif porté par la séquelle (douleur, mobilité, structurel…)',
+    },
+  },
+  {
+    codex: { keys: ['traumas'] },
+    edit: { dataset: 'traumas' },
+  },
+  { exiges: ['desc'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

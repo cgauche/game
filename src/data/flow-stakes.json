@@ -1,6 +1,7 @@
 [
   {
     "id": "fall-choice",
+    "type": "flow-stakes",
     "label": "Chute volontaire — le choix",
     "flow": "fall",
     "phase": "choice",
@@ -16,6 +17,7 @@
   },
   {
     "id": "fall-roll",
+    "type": "flow-stakes",
     "label": "Chute volontaire — le Test",
     "flow": "fall",
     "phase": "roll",
@@ -31,6 +33,7 @@
   },
   {
     "id": "run-roll",
+    "type": "flow-stakes",
     "label": "Course",
     "flow": "run",
     "phase": "roll",
@@ -46,6 +49,7 @@
   },
   {
     "id": "disengage-choice",
+    "type": "flow-stakes",
     "label": "Désengagement — le menu",
     "flow": "disengage",
     "phase": "choice",
@@ -61,6 +65,7 @@
   },
   {
     "id": "disengage-esquive",
+    "type": "flow-stakes",
     "label": "Désengagement — Esquive",
     "flow": "disengage",
     "phase": "esquive",
@@ -76,6 +81,7 @@
   },
   {
     "id": "disengage-fuir",
+    "type": "flow-stakes",
     "label": "Désengagement — Fuite",
     "flow": "disengage",
     "phase": "fuir",
@@ -91,6 +97,7 @@
   },
   {
     "id": "au-contact-roll",
+    "type": "flow-stakes",
     "label": "Au contact — le Test",
     "flow": "auContact",
     "phase": "roll",
@@ -106,6 +113,7 @@
   },
   {
     "id": "au-contact-choice",
+    "type": "flow-stakes",
     "label": "Au contact — le choix du vainqueur",
     "flow": "auContact",
     "phase": "choice",
@@ -121,6 +129,7 @@
   },
   {
     "id": "corruption-mineure",
+    "type": "flow-stakes",
     "label": "Influence corruptrice mineure",
     "flow": "corruption",
     "phase": "mineure",
@@ -136,6 +145,7 @@
   },
   {
     "id": "corruption-moderee",
+    "type": "flow-stakes",
     "label": "Influence corruptrice modérée",
     "flow": "corruption",
     "phase": "moderee",
@@ -151,6 +161,7 @@
   },
   {
     "id": "corruption-majeure",
+    "type": "flow-stakes",
     "label": "Influence corruptrice majeure",
     "flow": "corruption",
     "phase": "majeure",
@@ -166,6 +177,7 @@
   },
   {
     "id": "corruption-seuil",
+    "type": "flow-stakes",
     "label": "Seuil de Corruption",
     "flow": "corruption",
     "phase": "seuil",
@@ -181,6 +193,7 @@
   },
   {
     "id": "dispel-roll",
+    "type": "flow-stakes",
     "label": "Dissipation permanente",
     "flow": "dispel",
     "phase": "roll",
@@ -196,6 +209,7 @@
   },
   {
     "id": "ward-roll",
+    "type": "flow-stakes",
     "label": "Bénédiction de Protection",
     "flow": "ward",
     "phase": "roll",
@@ -211,6 +225,7 @@
   },
   {
     "id": "steam-save-roll",
+    "type": "flow-stakes",
     "label": "Fuite de vapeur — sauvegarde d’Initiative",
     "flow": "steamSave",
     "phase": "roll",
@@ -226,6 +241,7 @@
   },
   {
     "id": "frenzy-roll",
+    "type": "flow-stakes",
     "label": "Entrée en Frénésie",
     "flow": "frenzy",
     "phase": "roll",
@@ -241,6 +257,7 @@
   },
   {
     "id": "reload-roll",
+    "type": "flow-stakes",
     "label": "Rechargement",
     "flow": "reload",
     "phase": "roll",
@@ -256,6 +273,7 @@
   },
   {
     "id": "battement-roll",
+    "type": "flow-stakes",
     "label": "Battement",
     "flow": "battement",
     "phase": "roll",
@@ -271,6 +289,7 @@
   },
   {
     "id": "distraire-roll",
+    "type": "flow-stakes",
     "label": "Distraire",
     "flow": "distraire",
     "phase": "roll",
@@ -286,6 +305,7 @@
   },
   {
     "id": "surgery-roll",
+    "type": "flow-stakes",
     "label": "Chirurgie — une passe",
     "flow": "surgery",
     "phase": "roll",
@@ -301,6 +321,7 @@
   },
   {
     "id": "appraise-evaluate",
+    "type": "flow-stakes",
     "label": "Évaluation",
     "flow": "appraise",
     "phase": "evaluate",
@@ -316,6 +337,7 @@
   },
   {
     "id": "appraise-detect",
+    "type": "flow-stakes",
     "label": "Détection d’artefact",
     "flow": "appraise",
     "phase": "detect",
@@ -331,6 +353,7 @@
   },
   {
     "id": "heal-wounds",
+    "type": "flow-stakes",
     "label": "Soin de Blessures",
     "flow": "heal",
     "phase": "wounds",
@@ -346,6 +369,7 @@
   },
   {
     "id": "heal-bleed",
+    "type": "flow-stakes",
     "label": "Arrêt d’Hémorragie",
     "flow": "heal",
     "phase": "bleed",
@@ -361,6 +385,7 @@
   },
   {
     "id": "heal-trauma",
+    "type": "flow-stakes",
     "label": "Soin d’une déchirure",
     "flow": "heal",
     "phase": "trauma",
@@ -376,6 +401,7 @@
   },
   {
     "id": "heal-ammo",
+    "type": "flow-stakes",
     "label": "Retrait d’une munition logée",
     "flow": "heal",
     "phase": "ammo",
@@ -391,6 +417,7 @@
   },
   {
     "id": "shanty-roll",
+    "type": "flow-stakes",
     "label": "Chanson de marin",
     "flow": "shanty",
     "phase": "roll",
@@ -407,6 +434,7 @@
   },
   {
     "id": "recover-empetre",
+    "type": "flow-stakes",
     "label": "Se libérer (Empêtré)",
     "flow": "recover",
     "phase": "empetre",
@@ -422,6 +450,7 @@
   },
   {
     "id": "recover-en-flammes",
+    "type": "flow-stakes",
     "label": "Se rouler au sol (En flammes)",
     "flow": "recover",
     "phase": "en-flammes",
@@ -437,6 +466,7 @@
   },
   {
     "id": "fate-save-choice",
+    "type": "flow-stakes",
     "label": "Sauvetage par le Destin",
     "flow": "fateSave",
     "phase": "choice",
@@ -452,6 +482,7 @@
   },
   {
     "id": "crew-test-roll",
+    "type": "flow-stakes",
     "label": "Test d’équipage",
     "flow": "crewTest",
     "phase": "roll",
@@ -466,6 +497,7 @@
   },
   {
     "id": "surgery-recovery",
+    "type": "flow-stakes",
     "label": "Rééducation d’un membre — une passe",
     "flow": "surgery",
     "phase": "recovery",
@@ -481,6 +513,7 @@
   },
   {
     "id": "extended-test-roll",
+    "type": "flow-stakes",
     "label": "Test étendu — un Round",
     "flow": "extendedTest",
     "phase": "roll",
@@ -496,6 +529,7 @@
   },
   {
     "id": "etal-lot",
+    "type": "flow-stakes",
     "label": "Les dés de l’étal",
     "flow": "etalLot",
     "phase": "pose",

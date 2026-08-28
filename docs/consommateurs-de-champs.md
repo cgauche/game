@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3266` |
-| `spec` | 1 | `src/data/index.ts:3267` |
+| `id` | 4 | `src/data/index.ts:3278` |
+| `spec` | 1 | `src/data/index.ts:3279` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3278` |
+| `id` | 1 | `src/data/index.ts:3290` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3278` |
+| `value` | 2 | `src/data/index.ts:3290` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3324` |
+| `id` | 4 | `src/data/index.ts:3336` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3325` |
-| `qualities` | 2 | `src/data/index.ts:3328` |
-| `qualityChoice` | 2 | `src/data/index.ts:3326` |
-| `text` | 1 | `src/data/index.ts:3319` |
-| `vehicleId` | 2 | `src/data/index.ts:3321` |
+| `count` | 3 | `src/data/index.ts:3337` |
+| `qualities` | 2 | `src/data/index.ts:3340` |
+| `qualityChoice` | 2 | `src/data/index.ts:3338` |
+| `text` | 1 | `src/data/index.ts:3331` |
+| `vehicleId` | 2 | `src/data/index.ts:3333` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3323` |
-| `choice` | 3 | `src/data/index.ts:3316` |
-| `wildcard` | 1 | `src/data/index.ts:3317` |
+| `creatureId` | 2 | `src/data/index.ts:3335` |
+| `choice` | 3 | `src/data/index.ts:3328` |
+| `wildcard` | 1 | `src/data/index.ts:3329` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:3298` |
-| `wildcard` | 5 | `src/data/index.ts:3300` |
-| `specOptions` | 3 | `src/data/index.ts:3299` |
-| `choice` | 4 | `src/data/index.ts:3302` |
-| `random` | 2 | `src/data/index.ts:3303` |
+| `ref` | 4 | `src/data/index.ts:3310` |
+| `wildcard` | 5 | `src/data/index.ts:3312` |
+| `specOptions` | 3 | `src/data/index.ts:3311` |
+| `choice` | 4 | `src/data/index.ts:3314` |
+| `random` | 2 | `src/data/index.ts:3315` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -200,12 +200,19 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | Champ | Lecteurs | Exemple |
 |---|---|---|
 | `id` | **0 — JAMAIS LU** | — |
+| `type` | **0 — JAMAIS LU** | — |
 | `label` | **0 — JAMAIS LU** | — |
+| `labelF` | **0 — JAMAIS LU** | — |
+| `desc` | **0 — JAMAIS LU** | — |
+| `source` | **0 — JAMAIS LU** | — |
+| `alsoIn` | **0 — JAMAIS LU** | — |
+| `maison` | **0 — JAMAIS LU** | — |
+| `icon` | **0 — JAMAIS LU** | — |
 | `solid` | **0 — JAMAIS LU** | — |
 | `opaque` | **0 — JAMAIS LU** | — |
 | `cover` | **0 — JAMAIS LU** | — |
 | `light` | **0 — JAMAIS LU** | — |
-| `foot` | 1 | `src/data/props.types.ts:84` |
+| `foot` | 1 | `src/data/props.types.ts:85` |
 | `volume` | 1 | `src/gameIso/builders/propVolumes.ts:132` |
 | `seatSlots` | **0 — JAMAIS LU** | — |
 
@@ -257,13 +264,13 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `perRound` | 1 | `src/engine/trauma.ts:529` |
-| `apresDelai` | 2 | `src/engine/trauma.ts:530` |
-| `medicalAidGate` | 2 | `src/engine/trauma.ts:537` |
-| `bleedOnReinjury` | 2 | `src/engine/trauma.ts:548` |
+| `perRound` | 1 | `src/engine/trauma.ts:530` |
+| `apresDelai` | 2 | `src/engine/trauma.ts:531` |
+| `medicalAidGate` | 2 | `src/engine/trauma.ts:538` |
+| `bleedOnReinjury` | 2 | `src/engine/trauma.ts:549` |
 | `onRepeat` | **0 — JAMAIS LU** | — |
-| `onNextCritWhileCondition` | 2 | `src/engine/trauma.ts:560` |
-| `onHealGrant` | 2 | `src/engine/trauma.ts:554` |
+| `onNextCritWhileCondition` | 2 | `src/engine/trauma.ts:561` |
+| `onHealGrant` | 2 | `src/engine/trauma.ts:555` |
 
 ### `Amputation` (src/data/criticals.ts)
 
@@ -277,7 +284,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-23 types, 149 champs mesurés, **30 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+23 types, 156 champs mesurés, **37 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 

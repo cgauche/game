@@ -1,6 +1,7 @@
 [
   {
     "id": "assourdi",
+    "type": "etats",
     "label": "Assourdi",
     "desc": "Que ce soit à cause d'un bruit tonitruant ou d'un coup porté à la tête, vous ne parvenez plus à entendre correctement. Vous subissez une pénalité de -10 à tous les Tests impliquant l'audition, et tout adversaire qui vous attaque en combat rapproché par le flanc ou par derrière gagne un bonus supplémentaire de +10 pour vous toucher (ce bonus n'est pas augmenté avec de multiples États Assourdi). Un État Assourdi est retiré à la fin de chaque Round après le premier, souvent remplacé par un acouphène.",
     "source": {
@@ -46,6 +47,7 @@
   },
   {
     "id": "a-terre",
+    "type": "etats",
     "label": "À Terre",
     "desc": "Vous vous retrouvez au sol, sans doute parce que vous n'avez plus de Points de Blessure disponibles, que vous avez chuté ou que vous avez été frappé par quelque chose de très gros.\n\nPendant votre tour, votre Mouvement ne peut être utilisé que pour vous relever ou encore ramper de la moitié de votre Mouvement en mètres (Note : s'il ne vous reste plus aucune Blessure, vous ne pouvez que ramper). Vous subissez une pénalité de -20 à tout Test qui implique un déplacement quelconque, et tout adversaire qui tente de vous attaquer en Combat au Corps à corps gagne un bonus de +20 pour vous toucher.\n\nÀ l'inverse de la plupart des États, À Terre ne se cumule pas – soit vous êtes À Terre, soit vous ne l'êtes pas.\n\nVous perdez l'État À Terre lorsque vous vous relevez.",
     "source": {
@@ -73,6 +75,7 @@
   },
   {
     "id": "aveugle",
+    "type": "etats",
     "label": "Aveuglé",
     "desc": "Vous n'êtes plus capable de voir clairement, que ce soit à cause d'un éclair lumineux ou d'un liquide que vous aurez reçu dans les yeux.\n\nVous subissez une pénalité de -10 à tous les Tests qui impliquent la vue, et un adversaire qui vous attaque en combat rapproché gagne +10 pour vous toucher.\n\nUn État Aveuglé est retiré à la fin de chaque Round, à partir du prochain Round.",
     "source": {
@@ -117,6 +120,7 @@
   },
   {
     "id": "brise",
+    "type": "etats",
     "label": "Brisé",
     "desc": "Vous êtes terrifié, vaincu, paniqué ou encore convaincu que vous allez mourir. Pendant votre tour, votre Mouvement et votre Action doivent être utilisés pour vous éloigner le plus vite possible jusqu'à ce que vous vous retrouviez à l'abri, hors de vue de l'ennemi ; vous pourrez alors utiliser votre Action sur une Compétence qui vous permettra de vous cacher plus efficacement. Vous subissez également une pénalité de -10 à tous les Tests autres que ceux impliquant la course ou la dissimulation.\n\nVous ne pouvez effectuer aucun Test pour récupérer de cet État si vous êtes Engagé avec un ennemi (voir page 159). Si vous n'êtes pas Engagé, à la fin de chaque Round, vous pouvez tenter un Test de Calme pour vous débarrasser d'un État Brisé, où chaque DR retire un État Brisé supplémentaire, et dont la Difficulté est dictée par les circonstances dans lesquelles vous vous trouvez ; il est plus facile de vous reprendre pour recouvrer vos esprits si vous vous cachez derrière un tonneau au fond d'une impasse située loin du danger (Accessible +20) plutôt que lorsque vous vous trouvez à trois enjambées d'un démon salivant qui réclame votre sang (Très difficile -30).\n\nSi vous passez un Round entier à être caché hors de vue de tout ennemi, vous retirez 1 État Brisé.\n\nUne fois que vous n'avez plus d'États Brisé, vous gagnez 1 État Exténué.",
     "source": {
@@ -306,6 +310,7 @@
   },
   {
     "id": "empetre",
+    "type": "etats",
     "label": "Empêtré",
     "desc": "Vous êtes gêné par quelque chose qui restreint votre déplacement ; cela peut être des cordes, une toile d'araignée, ou les biceps protubérants d'un adversaire.\n\nAu cours de votre tour, vous ne pouvez pas utiliser votre Mouvement, et toute action qui implique un déplacement quelconque subit une pénalité de -10 (dont l'Empoignade ; voir page 163).\n\nVous pouvez utiliser votre Action pour retirer l'État Empêtré en réussissant un Test opposé de Force contre la source de cet empêtrement, et chaque DR obtenu permet de retirer un État Empêtré supplémentaire.",
     "source": {
@@ -333,6 +338,7 @@
   },
   {
     "id": "empoisonne",
+    "type": "etats",
     "label": "Empoisonné",
     "desc": "Vous avez été Empoisonné ou un venin vous a été injecté. La difficulté de tous les Tests effectués pour éliminer le poison est dictée par le poison ou le venin en question.\n\nÀ la fin de chaque Round, perdez 1 Point de Blessure, en ignorant tous les modificateurs. De plus, vous subissez une pénalité de -10 à tous vos Tests.\n\nSi vous atteignez 0 Point de Blessure alors que vous êtes Empoisonné, vous ne pouvez soigner aucune Blessure tant qu'il vous reste des États Empoisonné. Si vous tombez Inconscient alors que vous êtes Empoisonné, effectuez un Test de Résistance après un nombre de Rounds équivalent à votre Bonus d'Endurance ou vous mourrez dans d'horribles souffrances. Voir Traumatisme page 172 pour en savoir plus.\n\nÀ la fin de chaque Round, vous pouvez effectuer un Test de Résistance. Sur un succès, retirez un État Empoisonné, et chaque DR permet d'en retirer un supplémentaire. Un Test de Guérison permet d'obtenir le même résultat.\n\nUne fois débarrassé de tous les États Empoisonné, gagnez 1 État Exténué.",
     "source": {
@@ -440,6 +446,7 @@
   },
   {
     "id": "en-flammes",
+    "type": "etats",
     "label": "En flammes",
     "desc": "Vous avez pris feu ! Cet État ne peut s'appliquer que si vous êtes inflammable – par exemple : porter des vêtements susceptibles de prendre feu –, mais certains effets, magiques ou divins, peuvent également vous enflammer même si vous n'êtes normalement pas combustible !\n\nÀ la fin de chaque Round, vous subissez 1d10 Points de Blessure, résultat modifié par votre Bonus d'Endurance et les PA de la Localisation la moins protégée, pour un minimum de 1 Blessure. Pour chaque État En flammes supplémentaire que vous subissez, ajoutez +1 aux Dégâts subis ; ainsi, si vous avez 3 États En flammes, vous subissez 1d10+2 Points de Blessure. Un unique État En flammes peut être retiré avec un Test d'Athlétisme, et chaque DR obtenu permet de retirer un État En flammes supplémentaire. La difficulté du Test est ajustée en fonction des circonstances : il est plus facile de se défaire des flammes en se roulant dans le sable qu'au milieu d'une cuisine pleine d'huile.",
     "source": {
@@ -492,6 +499,7 @@
   },
   {
     "id": "extenue",
+    "type": "etats",
     "label": "Exténué",
     "desc": "Vous êtes épuisé, ou stressé, mais quoi qu'il en soit, vous avez besoin de repos.\n\nVous subissez une pénalité de -10 à tous vos Tests.\n\nPour retirer un État Exténué, il faut normalement du repos, un Sort ou un effet divin, mais, dans certaines conditions, par exemple lorsque l'État Exténué est dû à une charge portée trop importante (voir Encombrement à la page 293), le fait de faire des modifications (comme porter moins de pièges, par exemple), peut permettre de retirer l'État.",
     "source": {
@@ -511,6 +519,7 @@
   },
   {
     "id": "hemorragique",
+    "type": "etats",
     "label": "Hémorragique",
     "desc": "Vous saignez abondamment. Perdez 1 Blessure à la fin de chaque Round, en ignorant tous les modificateurs. De plus, vous subissez une pénalité de -10 lorsqu'il s'agit de faire un Test pour résister à une Blessure Purulente, Infection Mineure ou Infection du Sang (voir page 187). Si vous atteignez 0 Blessure, vous ne perdez plus de Points de Blessure supplémentaires et tombez immédiatement inconscient (et vous gagnez l'État Inconscient) à cause de la perte de sang. À la fin du Round, vous avez 10 % de chance de mourir par État Hémorragique que vous possédez ; donc, si vous souffrez de 3 États Hémorragique, vous mourrez de la perte de sang sur un résultat de 1 à 30. Si vous faites un double sur ce jet, vos blessures coagulent un peu et vous perdez 1 État Hémorragique. Vous ne pouvez pas reprendre vos esprits tant que tous les États Hémorragique ne sont pas retirés (voir Traumatisme à la page 172).\n\nOn peut retirer un État Hémorragique avec : un Test de Guérison réussi, où chaque DR retire un État Hémorragique supplémentaire ; ou avec n'importe quel Sort ou n'importe quelle Prière qui guérit les Points de Blessure, avec un État de retiré par Point de Blessure guéri.\n\nUne fois tous les États Hémorragique retirés, gagnez un État Exténué.",
     "source": {
@@ -548,6 +557,7 @@
   },
   {
     "id": "inconscient",
+    "type": "etats",
     "label": "Inconscient",
     "desc": "Vous êtes KO, inconscient, ou frappé d'incapacité. Vous ne pouvez absolument rien faire de votre tour et n'avez aucune conscience de ce qui vous entoure. Un attaquant qui vous cible gagne le bénéfice de la règle Je ne faillirai pas ! (voir p. 171) sans avoir à dépenser un Point de Résilience ; ou, si le MJ préfère, une attaque en combat rapproché vous tue automatiquement. Toute attaque à distance est également un succès et occasionne les mêmes Dégâts que si le tireur était à bout portant.\n\nL'État Inconscient ne se cumule pas – soit vous êtes Inconscient, soit vous ne l'êtes pas.\n\nRécupérer d'un État Inconscient va bien souvent dépendre des circonstances qui ont causé cette inconscience. Reportez-vous aux Traumatismes à la page 172 pour en savoir plus sur le sujet. Si vous dépensez un Point de Détermination pour vous débarrasser d'un État Inconscient, mais que vous êtes toujours sujet aux causes de cette inconscience, vous gagnez un nouvel État Inconscient à la fin du Round.\n\nLorsque vous vous débarrassez de l'État Inconscient, vous gagnez l'État À Terre et l'État Exténué.",
     "source": {
@@ -566,6 +576,7 @@
   },
   {
     "id": "sonne",
+    "type": "etats",
     "label": "Sonné",
     "desc": "Vous avez reçu un coup sur la tête, ou êtes désorienté ou confus ; vos oreilles bourdonnent et plus rien n'a vraiment de sens.\n\nVous êtes incapable d'effectuer votre Action au cours de votre tour et vous ne pouvez vous déplacer que de la moitié de votre Mouvement. Vous pouvez vous défendre lors des Tests opposés – mais pas ceux qui utilisent Langue (Magick). Vous subissez également une pénalité de -10 à tous les Tests, et tout adversaire qui tente de vous frapper en Combat au Corps à corps gagne +1 Avantage avant d'effectuer son attaque.\n\nÀ la fin de chaque Round, vous pouvez tenter un Test de Résistance Intermédiaire (+0). Sur un succès, retirez 1 État Sonné, et chaque DR obtenu permet de retirer 1 État Sonné supplémentaire.\n\nUne fois débarrassé de tout État Sonné, gagnez 1 État Exténué si vous n'en possédez pas déjà.",
     "source": {
@@ -674,6 +685,7 @@
   },
   {
     "id": "surpris",
+    "type": "etats",
     "label": "Surpris",
     "desc": "Vous avez été pris au dépourvu et vous n'êtes absolument pas prêt à réagir à ce qu'il arrive.\n\nVous ne pouvez effectuer ni votre Mouvement ni votre Action pendant ce tour et vous ne pouvez pas vous défendre lors de Tests opposés. Tout adversaire qui tente de vous frapper en Combat au Corps à corps gagne +20 à la CC.\n\nL'État Surpris ne se cumule pas, et donc vous ne pouvez pas en subir plusieurs, même si, techniquement, vous pouvez être surpris plus d'une fois dans un même Round.\n\nÀ la fin de chaque Round, ou après la première tentative effectuée pour vous toucher, vous perdez l'État Surpris.",
     "source": {
@@ -717,6 +729,7 @@
   },
   {
     "id": "en-flammes-navire",
+    "type": "etats",
     "label": "En flammes (navire)",
     "source": {
       "book": "mer-des-griffes",
@@ -750,6 +763,7 @@
   },
   {
     "id": "voie-d-eau",
+    "type": "etats",
     "label": "Voie d'eau",
     "source": {
       "book": "mer-des-griffes",
@@ -781,6 +795,7 @@
   },
   {
     "id": "inondation",
+    "type": "etats",
     "label": "Inondation",
     "source": {
       "book": "mer-des-griffes",
@@ -886,6 +901,7 @@
   },
   {
     "id": "alourdi",
+    "type": "etats",
     "label": "Alourdi par l’eau",
     "source": {
       "book": "mer-des-griffes",
@@ -896,6 +912,7 @@
   },
   {
     "id": "naufrage",
+    "type": "etats",
     "label": "Naufrage",
     "source": {
       "book": "mer-des-griffes",
@@ -905,6 +922,7 @@
   },
   {
     "id": "derive",
+    "type": "etats",
     "label": "Dérive",
     "source": {
       "book": "mort-sur-le-reik-compagnon",
@@ -914,6 +932,7 @@
   },
   {
     "id": "gouvernail-brise",
+    "type": "etats",
     "label": "Gouvernail brisé",
     "source": {
       "book": "mort-sur-le-reik-compagnon",
@@ -923,6 +942,7 @@
   },
   {
     "id": "digere",
+    "type": "etats",
     "label": "Digéré",
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -932,6 +952,7 @@
   },
   {
     "id": "munition-logee",
+    "type": "etats",
     "label": "Munition logée",
     "source": {
       "book": "livre-de-base",

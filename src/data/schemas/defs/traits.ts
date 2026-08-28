@@ -1,10 +1,12 @@
 /**
  * Schéma de `traits.json` — Traits de créature (LDB 85 + suppléments/frenchy.bzh), miroir de
  * `TraitData` (`src/data/index.ts`) + `TraitCapabilities` (`src/data/index.ts`).
+ * `desc`/`source`/`alsoIn`/`maison` sont des clés d'ENVELOPPE, posées par la fabrique.
  */
 import { z } from 'zod';
-import { sourceRefSchema, secondarySourceRefSchema, entityAppearanceSchema, charKeySchema, variantOf } from '../grammaire/valeurs';
+import { entityAppearanceSchema, charKeySchema } from '../grammaire/valeurs';
 import { refSchema } from '../grammaire/reference';
+import { document } from '../grammaire/document';
 import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'traits.json';
@@ -87,57 +89,6 @@ const traitCapabilitiesSchema = z.strictObject({
   consumptionFactor: z.number().optional(),
 });
 
-/** Entrée de `traits.json` SANS ses variantes — patron de `variantOf` (patch partiel de CETTE forme). */
-const traitEntrySchema = z.strictObject({
-  id: z.string(),
-  label: z.string(),
-  indice: z.strictObject({ label: z.string() }).optional(),
-  range: z.boolean().optional(),
-  specsSource: specsSourceSchema.optional(),
-  specsOpen: z.boolean().optional(),
-  specsMulti: z.boolean().optional(),
-  /** Trait EXCLU d'un octroi en masse de Traits de créature — `LDB 48 l.23` : « Gagnez tous les Traits
-   *  standards de la créature sauf Bestial. » Lu par `polymorphOps` (engine/polymorph). */
-  nonTransferable: z.boolean().optional(),
-  desc: z.string(),
-  source: sourceRefSchema,
-  /** Emplacements SECONDAIRES (#563, doctrine « jamais 2 talents différents ») — ex. `fouissement`
-   *  ZI folio 23 ET 134, deux définitions complètes du même Trait. NON migré ici (Lot 0 primitive
-   *  only) : `allLocations`/`sourceBooks` (`src/data/sourceRefs.ts`). */
-  alsoIn: z.array(secondarySourceRefSchema).optional(),
-  effects: z.array(triggeredEffectSchema).optional(),
-  grantsManeuvers: z.array(refSchema).optional(),
-  passive: z.array(gameOpSchema).optional(),
-  appearance: entityAppearanceSchema.optional(),
-  capabilities: traitCapabilitiesSchema.optional(),
-  suppressesCapabilities: z.array(z.string()).optional(),
-  aura: z
-    .strictObject({
-      rangeChar: charKeySchema.optional(),
-      rangeMeters: z.number().optional(),
-      affects: z.enum(['enemies', 'allies', 'all']).optional(),
-      /** Ids de `groups.json` : filtre d'APPARTENANCE de la cible, en plus du camp — l'aura ne touche
-       *  qu'un combattant d'AU MOINS un de ces Groupes (union `groupMatch`). Une règle CONJONCTIVE
-       *  (« X qui sont aussi Y ») n'est PAS exprimable ici : elle se scinde en entrées.
-       *  BORNE MESURÉE sur les auras de Dhar, dont le texte vise « les sorciers et démons » d'un dieu et
-       *  que l'union rend par le seul Groupe du dieu. Sur-inclusion : un cultiste slaaneshi qui possède
-       *  la Compétence reçoit le +1 DR à Langue (Magick) sans être ni sorcier ni démon. Sous-inclusion :
-       *  aucun sorcier NON démon ne peut porter le Groupe d'un dieu tant que `marque-de-slaanesh`/
-       *  `marque-de-nurgle` n'existent pas en donnée (seuls le folder du bestiaire et `grantGroups` le
-       *  dérivent). La conjonction se posera quand un statbloc l'exigera. */
-      affectsGroups: z.array(z.string()).optional(),
-      /** L'ÉMETTEUR est lui-même touché par son aura (frenchy-bzh 295 l.233 / 313 l.341) — absent =
-       *  l'émetteur n'est jamais touché (Perturbant, LDB 85 l.260-262). */
-      includesSelf: z.boolean().optional(),
-      passive: z.array(gameOpSchema),
-    })
-    .optional(),
-  standard: z.boolean().optional(),
-  /** Arbitrage NON-verbatim (`TraitData.maison`, `src/data/index.ts`) — même patron que
-   *  `naval-traits.json`/`creatures.json`. */
-  maison: z.string().optional(),
-});
-
 /**
  * Champs qu'une variante réglée de `traits.json` peut republier — ceux dont la lecture PASSE par
  * `effectiveEntry` : `desc`/`source` → Codex `src/ui/compendium/registry.ts`. `capabilities`,
@@ -146,10 +97,87 @@ const traitEntrySchema = z.strictObject({
  */
 export const VARIANT_RESOLVED_FIELDS = ['desc', 'source'] as const;
 
-export const schema = z.array(
-  traitEntrySchema.extend({
-    /** Variantes réglées (#563/#564) — patch PARTIEL de l'entrée sur `VARIANT_RESOLVED_FIELDS` sous une
-     *  règle optionnelle, résolu par `effectiveEntry` (`engine/variants.ts`, REPLACE par champ déclaré). */
-    variants: z.array(variantOf(traitEntrySchema, VARIANT_RESOLVED_FIELDS)).optional(),
-  }),
+const doc = document(
+  'traits',
+  famille,
+  {
+    indice: z.strictObject({ label: z.string() }).optional(),
+    range: z.boolean().optional(),
+    specsSource: specsSourceSchema.optional(),
+    specsOpen: z.boolean().optional(),
+    specsMulti: z.boolean().optional(),
+    /** Trait EXCLU d'un octroi en masse de Traits de créature — `LDB 48 l.23` : « Gagnez tous les Traits
+     *  standards de la créature sauf Bestial. » Lu par `polymorphOps` (engine/polymorph). */
+    nonTransferable: z.boolean().optional(),
+    effects: z.array(triggeredEffectSchema).optional(),
+    grantsManeuvers: z.array(refSchema).optional(),
+    passive: z.array(gameOpSchema).optional(),
+    appearance: entityAppearanceSchema.optional(),
+    capabilities: traitCapabilitiesSchema.optional(),
+    suppressesCapabilities: z.array(z.string()).optional(),
+    aura: z
+      .strictObject({
+        rangeChar: charKeySchema.optional(),
+        rangeMeters: z.number().optional(),
+        affects: z.enum(['enemies', 'allies', 'all']).optional(),
+        /** Ids de `groups.json` : filtre d'APPARTENANCE de la cible, en plus du camp — l'aura ne touche
+         *  qu'un combattant d'AU MOINS un de ces Groupes (union `groupMatch`). Une règle CONJONCTIVE
+         *  (« X qui sont aussi Y ») n'est PAS exprimable ici : elle se scinde en entrées.
+         *  BORNE MESURÉE sur les auras de Dhar, dont le texte vise « les sorciers et démons » d'un dieu et
+         *  que l'union rend par le seul Groupe du dieu. Sur-inclusion : un cultiste slaaneshi qui possède
+         *  la Compétence reçoit le +1 DR à Langue (Magick) sans être ni sorcier ni démon. Sous-inclusion :
+         *  aucun sorcier NON démon ne peut porter le Groupe d'un dieu tant que `marque-de-slaanesh`/
+         *  `marque-de-nurgle` n'existent pas en donnée (seuls le folder du bestiaire et `grantGroups` le
+         *  dérivent). La conjonction se posera quand un statbloc l'exigera. */
+        affectsGroups: z.array(z.string()).optional(),
+        /** L'ÉMETTEUR est lui-même touché par son aura (frenchy-bzh 295 l.233 / 313 l.341) — absent =
+         *  l'émetteur n'est jamais touché (Perturbant, LDB 85 l.260-262). */
+        includesSelf: z.boolean().optional(),
+        passive: z.array(gameOpSchema),
+      })
+      .optional(),
+    standard: z.boolean().optional(),
+  },
+  {
+    indice: {
+      label: 'Trait indicé',
+      hint: 'Descripteur : le Trait est noté (valeur sur l’instance), avec le libellé affiché (Indice/Degré…)',
+    },
+    range: {
+      label: 'Porte une portée',
+      hint: 'Le Trait prend une portée chiffrée EN PLUS de son argument, affichée « (Portée) » (À distance, Langue préhensile)',
+    },
+    specsSource: {
+      label: 'Registre de spécialisations',
+      hint: 'Catalogue partagé (armes, Vents, Domaines, Cultes…) d’où proviennent les spécialisations',
+    },
+    specsOpen: {
+      label: 'Spécialisation ouverte',
+      hint: 'La liste de spécialisations accepte de nouvelles entrées à l’authoring (fermé sinon)',
+    },
+    specsMulti: { label: 'Argument multiple', hint: 'L’argument du Trait peut combiner plusieurs spécialisations' },
+    nonTransferable: { label: 'Non transférable', hint: 'Exclu d’un octroi en masse de Traits de créature' },
+    effects: { label: 'Effets déclenchés' },
+    grantsManeuvers: { label: 'Manœuvres accordées' },
+    passive: { label: 'Effets passifs' },
+    appearance: { label: 'Apparence' },
+    capabilities: {
+      label: 'Capacités mécaniques (liste fermée)',
+      hint: 'Sac de flags fermé (vol, immunités, résistances structurelles…)',
+    },
+    suppressesCapabilities: { label: 'Capacités supprimées' },
+    aura: { label: 'Aura', hint: 'Effet passif diffusé à portée aux alliés/ennemis/tous' },
+    standard: { label: 'Trait standard' },
+  },
+  {
+    codex: { keys: ['traits'] },
+    edit: { dataset: 'traits' },
+  },
+  { exiges: ['desc', 'source'], variantes: VARIANT_RESOLVED_FIELDS },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;
+/** Clés top-level de l'entrée (enveloppe + champs), relevées AVANT le sceau — le nœud rendu par la
+ *  fabrique n'a plus de `.shape`. Consommée par `src/data/variants-integrity.test.ts`. */
+export const cles = doc.cles;

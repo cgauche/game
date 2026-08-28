@@ -6,23 +6,20 @@
  * `effects` porte des `TriggeredEffect<EffectOp>` (`src/engine/flowCore.ts`) — Condition/Flow
  * PROMUS dans `grammaire/mecanique.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`, partagés ici
  * et dans maneuvers/qualities/talents/etats/spells/traits/trappings/psychology).
+ * `desc`/`source`/`alsoIn` sont des clés d'ENVELOPPE, posées par la fabrique.
  */
 import { z } from 'zod';
-import { charKeySchema, secondarySourceRefSchema, sourceRefSchema } from '../grammaire/valeurs';
+import { charKeySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { flowTestSchema, gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'domains.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    desc: z.string().optional(),
-    source: sourceRefSchema.optional(),
-    /** Emplacements SECONDAIRES du même Domaine (republication à l'identique — doctrine « UNE entité,
-     *  N livres »), l'ancre `source` restant seule à porter la `desc`. */
-    alsoIn: z.array(secondarySourceRefSchema).optional(),
+const doc = document(
+  'domains',
+  famille,
+  {
     /** Vent de Magie (Couleur), EXTRAIT du `desc` (« Domaine du Feu (Aqshy) »). Absent pour les
      *  Domaines dérivés (Sorcellerie/Nécromancie/Démonologie/Magie naturelle…). */
     wind: z.string().optional(),
@@ -93,5 +90,40 @@ export const schema = z.array(
       /** Passage RAW VERBATIM qui porte le modificateur (règle stricte 5). */
       desc: z.string(),
     })).optional(),
-  }),
+  },
+  {
+    wind: { label: 'Vent de magie', hint: 'Couleur associée (Aqshy, Ghyran…), extraite du texte' },
+    arcane: { label: 'Enseignable (Magie des Arcanes)', hint: 'Domaine ouvert via le Talent Magie des Arcanes' },
+    dark: { label: 'Domaine sombre', hint: 'Nécromancie/Démonologie' },
+    tables: { label: 'Tables associées', hint: 'Tables de tables.json déclarées par le Domaine, par clé de rôle' },
+    effects: { label: 'Effets déclenchés', hint: 'Effets à la touche d’un Sort du Domaine' },
+    missile: {
+      label: 'Projectile magique du Domaine',
+      hint: 'Les Sorts à Dégâts du Domaine ignorent les PA d’une matière — et peuvent en tirer un bonus de Dégâts',
+    },
+    casterOps: { label: 'Effets appliqués au lanceur', hint: 'Ops appliquées au lanceur après une incantation réussie' },
+    breathType: { label: 'Type de Souffle', hint: 'Élément conféré par le Talent Magie des Arcanes du Domaine' },
+    castBonus: { label: 'Bonus d’incantation conditionnel', hint: 'Bonus lié à un État porté à portée' },
+    castingChar: {
+      label: 'Caractéristique d’incantation',
+      hint: 'Remplace la Caractéristique par défaut des Tests d’Incantation',
+    },
+    environmentBonus: {
+      label: 'Bonus d’environnement',
+      hint: 'Bonus d’incantation lié à l’environnement de Scène',
+    },
+    sorcery: { label: 'Domaine de Sorcellerie' },
+    seaModifier: {
+      label: 'Modificateurs en mer',
+      hint: 'Vents de Magie en mer (Focalisation, Incantation, Critique/Maladresse)',
+    },
+    windModifiers: { label: 'Modificateurs du Vent', hint: 'Modificateurs de DR propres au Vent, hors mer' },
+  },
+  {
+    codex: { keys: ['domains'] },
+    edit: { dataset: 'domains' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

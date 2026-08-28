@@ -79,13 +79,13 @@ describe('parsing des entrées de carrière (LDB 09 l.38 / pièges de données)'
 // Savoir) — le scénario complet de désignation se joue dessus.
 const C1: CareerLevelData[] = [
   {
-    id: 'C1-1', label: 'N1', career: 'C1', level: 1,
+    id: 'C1-1', type: 'careerLevels', label: 'N1', career: 'C1', level: 1,
     skills: A(['Charme', 'Savoir (Au choix)']),
     talents: A(['Sens aiguisé (Au choix)', 'Baratiner']),
     trappings: [], characteristics: ['force', 'endurance', 'sociabilite'], status: 'Bronze 1',
   },
   {
-    id: 'C1-2', label: 'N2', career: 'C1', level: 2,
+    id: 'C1-2', type: 'careerLevels', label: 'N2', career: 'C1', level: 2,
     skills: A(['Ragot', 'Savoir (Au choix)']),
     talents: A(['Sens aiguisé (Au choix)', 'Sociable']),
     trappings: [], characteristics: ['agilite'], status: 'Bronze 2',

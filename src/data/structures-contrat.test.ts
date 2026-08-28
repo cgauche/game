@@ -20,6 +20,20 @@ import {
   signature,
 } from '../../scripts/docs/lib/structures-lexique.mjs';
 import { choixDeclares, introspecterDefs } from '../../scripts/docs/lib/zod-introspect.mjs';
+import { CLES_ENVELOPPE } from './schemas/grammaire/document';
+
+/**
+ * Clés que `document()` pose sur TOUT document, sans qu'aucun def ne les demande — DÉRIVÉES de
+ * `CLES_ENVELOPPE`, jamais re-tapées.
+ *
+ * `variants` en est EXCLUE et c'est la seule : la fabrique ne la pose que si le def le DEMANDE
+ * (`options.variantes`, `document.ts` — « un document sans `variantes` n'admet aucun `variants` »).
+ * Elle reste donc une DÉCLARATION du def, comme n'importe quel champ de `champs` : un def qui
+ * l'active sans qu'aucune entrée ne la porte est bien « un schéma plus large que sa donnée », et sa
+ * dette se compte. Mesuré au 2026-08-28 : 3 defs l'activent — `spells` (18 entrées porteuses),
+ * `talents` (12), `traits` (0/131, dette réelle).
+ */
+const CLES_POSEES_INCONDITIONNELLEMENT: readonly string[] = (CLES_ENVELOPPE as readonly string[]).filter((k) => k !== 'variants');
 import { defsDeDocument } from '../../scripts/docs/lib/slots-registre.mjs';
 import {
   STRUCTURES_CIBLES,
@@ -259,13 +273,50 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       const dec = parFichier.get(d.nom);
       if (!dec) continue;
       const vues = new Set(d.clesNiveau1.map((k) => k.cle));
-      for (const c of Object.keys(dec.cles).filter((k) => !vues.has(k)))
+      // Les clés posées INCONDITIONNELLEMENT par la fabrique (`document.ts`) sortent de la question
+      // posée ici (un SCHÉMA plus large que sa donnée) : un `labelF` ou un `icon` qu'un dataset
+      // n'emploie pas ne se « solde » pas — il n'y a rien à retirer d'un def qui ne l'a pas écrit.
+      // Sans ce filtre, la restauration de couverture du sceau `pipe` (`zod-introspect.mts`, même
+      // lot) en aurait versé 298 au stock, tous inertes.
+      for (const c of Object.keys(dec.cles).filter((k) => !vues.has(k) && !CLES_POSEES_INCONDITIONNELLEMENT.includes(k)))
         observees.push(cle({ dataset: d.nom, cle: c, date: STRUCTURES_DEFAUT.find((s) => s.dataset === d.nom && s.cle === c)?.date }));
     }
     expect(
       lignes(observees),
       'écart entre les clés DÉCLARÉES JAMAIS OBSERVÉES et `STRUCTURES_DEFAUT` — un schéma plus large que la donnée se solde en retirant le champ ou en écrivant la donnée. Un déclaré-avant-posé ASSUMÉ ne se stocke PAS ici : il porte un lot de peuplement et s’ÉMET (`LOTS_DE_PEUPLEMENT`, doc §2.4 table B).',
     ).toEqual(lignes(STRUCTURES_DEFAUT.map(cle)));
+  });
+
+  /**
+   * Ce que l'exclusion COÛTE, MESURÉ (#1467 L1b V-FLIP-ENTITE-b) — pas déclaré en prose. Une clé
+   * ajoutée à `CLES_POSEES_INCONDITIONNELLEMENT` fait TAIRE toutes les dettes qu'elle porte : le
+   * filtre se relit donc ici clé par clé, sur la mesure.
+   *
+   * `variants` est le cas qui a MORDU : rangée d'abord parmi les clés d'office, elle escamotait
+   * `traits.json › variants` — une dette réelle, l'option étant DEMANDÉE par le def et portée par
+   * 0 des 131 entrées. Le test ci-dessous gèle les deux comptes : sans `variants` dans l'exclusion
+   * (l'état courant) le relevé en a UNE de plus, et cette une-là est nommée.
+   */
+  it('l’exclusion des clés d’office ne cache AUCUNE dette d’option — son coût est mesuré, clé par clé', () => {
+    const releve = (exclues: readonly string[]) => {
+      const out: string[] = [];
+      const parFichier = new Map(DECLARES.map((d) => [d.file, d]));
+      for (const d of scan.documents) {
+        const dec = parFichier.get(d.nom);
+        if (!dec) continue;
+        const vues = new Set(d.clesNiveau1.map((k) => k.cle));
+        for (const c of Object.keys(dec.cles).filter((k) => !vues.has(k) && !exclues.includes(k))) out.push(`${d.nom} | ${c}`);
+      }
+      return out.sort();
+    };
+    const courant = releve(CLES_POSEES_INCONDITIONNELLEMENT);
+    const avecVariants = releve(CLES_ENVELOPPE as readonly string[]);
+    expect(
+      courant.filter((l) => !avecVariants.includes(l)),
+      'exclure `variants` ne doit escamoter QUE la dette d’option de `traits.json` — une seconde ligne signalerait une clé d’office mal rangée.',
+    ).toEqual(['traits.json | variants']);
+    expect(CLES_POSEES_INCONDITIONNELLEMENT).not.toContain('variants');
+    expect(courant.length - avecVariants.length, 'le delta d’exclusion vaut EXACTEMENT une ligne').toBe(1);
   });
 
   it('`cible-declaree` ne se STOCKE nulle part : c’est une ÉMISSION du doc, pas un dénominateur', () => {
@@ -379,7 +430,13 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // +1 : `actions.json › hote` id-nu (vague console #1411/#1426 distante, cf. motif ci-dessus).
       // −8 : #1466 L1a volet A — les 8 formes `ambiance`/`weather`/`threat` des 4 projets de scène,
       // éteintes par la fermeture de leurs discriminants (le déclaré couvre `src/scenes`) : 396 → 388.
-      'L3 #1463': 388,
+      // 388 → 389 : COUVERTURE, pas dérive (#1467 L1b V-FLIP-ENTITE-b). La descente du sceau `pipe`
+      // (`zod-introspect.mts`) et le scan du littéral `champs` de `document()` rendent visibles 6
+      // formes `char+…` (`etats.value`, `symptoms.ops/passive/severePassive/visiblePassive`,
+      // `traits.passive`) ; en regard, les 2 orphelines `etats.json › value` (lot L1b) QUITTENT leur
+      // stock, désormais vues comme des références. Net compté ici : +1. Aucune valeur de donnée n'a
+      // bougé — le détecteur voit ce que l'adoption lui avait masqué.
+      'L3 #1463': 389,
       'L4 #1463': 224,
     };
     expect(

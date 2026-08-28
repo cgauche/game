@@ -343,6 +343,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "etats.json", champ: "passive", signature: "mode+…", statut: "divergente", strate: "Référence", occurrences: 5, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "etats.json", champ: "recover", signature: "skill", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "etats.json", champ: "subject", signature: "condition+…", statut: "divergente", strate: "Référence", occurrences: 10, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "etats.json", champ: "value", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "etats.json", champ: "test", signature: "skill+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L2 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "flow-stakes.json", champ: "flow", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 16, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "flow-stakes.json", champ: "phase", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 6, lot: "L2 #1463", date: "2026-08-23" },
@@ -516,6 +517,10 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "stars.json", champ: "ops", signature: "talentId+…", statut: "divergente", strate: "Référence", occurrences: 11, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "onFail", signature: "disease+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "onFail", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "symptoms.json", champ: "passive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 23, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "symptoms.json", champ: "severePassive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 6, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "symptoms.json", champ: "visiblePassive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "id+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "ops", signature: "traitId+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "symptoms.json", champ: "passive", signature: "cible,psychType+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
@@ -569,6 +574,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "op+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "tableId+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "ops", signature: "traitId+…", statut: "divergente", strate: "Référence", occurrences: 2, lot: "L3 #1463", date: "2026-08-23" },
+  { concept: "reference", dataset: "traits.json", champ: "passive", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 20, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "passive", signature: "attackKind,subType+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "passive", signature: "mode+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "traits.json", champ: "passive", signature: "skill,spec+…", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L2 #1463", date: "2026-08-23" },
@@ -795,6 +801,11 @@ export const STRUCTURES_DEFAUT = [
   { dataset: "structureAppearance.json", cle: "relief", date: "2026-08-26" },
   { dataset: "tavernGames.json", cle: "fastSkill", date: "2026-08-26" },
   { dataset: "traits.json", cle: "appearance", date: "2026-08-26" },
+  // `variants` reste une DÉCLARATION du def, pas une clé posée d'office : la fabrique ne l'ajoute
+  // qu'aux documents qui la DEMANDENT (`options.variantes`). Mesuré au 2026-08-28 : 3 defs
+  // l'activent — `spells` (18 entrées porteuses), `talents` (12), `traits` (0/131). La dette de
+  // `traits.json` est donc INCHANGÉE par l'adoption de `document()` : son schéma reste plus large
+  // que sa donnée, et la ligne se solde en retirant l'option ou en écrivant une variante.
   { dataset: "traits.json", cle: "variants", date: "2026-08-26" },
   { dataset: "trappings.json", cle: "requiresMastery", date: "2026-08-26" },
   { dataset: "arene-projet.json", cle: "activeAxes", date: "2026-08-26" },
@@ -1061,8 +1072,6 @@ export const STRUCTURES_ORPHELINES = [
   { dataset: "domains.json", champ: "windModifiers", signature: "cancelledBy,desc,dr,source,tests", motif: "clé réservée", occurrences: 2, lot: "L1b #1467", date: "2026-08-23" },
   { dataset: "domains.json", champ: "windModifiers", signature: "desc,dr,source,tests,when", motif: "clé réservée", occurrences: 17, lot: "L1b #1467", date: "2026-08-23" },
   { dataset: "etats.json", champ: "of", signature: "id,kind,who", motif: "identité non résolue", occurrences: 1, lot: "L1b #1467", date: "2026-08-23" },
-  { dataset: "etats.json", champ: "value", signature: "char,factor,who", motif: "clé réservée", occurrences: 1, lot: "L1b #1467", date: "2026-08-23" },
-  { dataset: "etats.json", champ: "value", signature: "char,who", motif: "clé réservée", occurrences: 1, lot: "L1b #1467", date: "2026-08-23" },
   { dataset: "land-cargo.json", champ: "buy", signature: "availabilityMultiplier,merchantSkill,minEnc,partialSurchargePct,source,wineAlcoholResistThreshold,wineEvalDifficulty,wineEvalEasyDifficulty", motif: "clé réservée", occurrences: 1, lot: "L1b #1467", date: "2026-08-23" },
   { dataset: "land-cargo.json", champ: "sell", signature: "commerceBonus,dumpingPctOfBase,offerByRichesse,source,targetPerSize", motif: "clé réservée", occurrences: 1, lot: "L1b #1467", date: "2026-08-23" },
   { dataset: "localisation.json", champ: "personnage", signature: "shapes,source", motif: "clé réservée", occurrences: 1, lot: "L1b #1467", date: "2026-08-23" },

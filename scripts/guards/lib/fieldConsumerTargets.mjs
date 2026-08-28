@@ -7,7 +7,7 @@ import * as reference from '../../../src/data/schemas/grammaire/reference'
 import * as mecanique from '../../../src/data/schemas/grammaire/mecanique'
 import { critEscalationSchema, amputationSchema } from '../../../src/data/schemas/defs/criticals'
 import {
-  propDataSchema, propVolumeRecipeSchema, propPrimitiveSchema, propSeatSlotSchema,
+  cles as propCles, propVolumeRecipeSchema, propPrimitiveSchema, propSeatSlotSchema,
   propPoint3Schema, propSize3Schema,
 } from '../../../src/data/schemas/defs/props'
 
@@ -29,7 +29,10 @@ export const TARGETS = [
   { schema: mecanique.travelTableEntrySchema, type: 'TravelTableEntry', home: 'src/engine/travelTables.ts' },
   { schema: mecanique.shipCrewTestSchema, type: 'ShipCrewTest', home: 'src/data/shipCriticals.ts' },
   { schema: mecanique.shipCritEntrySchema, type: 'ShipCritEntry', home: 'src/data/shipCriticals.ts' },
-  { schema: propDataSchema, type: 'PropData', home: 'src/data/props.types.ts' },
+  // `PropData` est l'ENTRÉE d'un def adopté par `document()` : son nœud est SCELLé (pas de `.shape`).
+  // Ses clés viennent donc du handle (`cles`, relevées avant le sceau) — un `schema:` ici rendrait
+  // zéro champ EN SILENCE, et le rapport perdrait le type sans le dire.
+  { cles: propCles, type: 'PropData', home: 'src/data/props.types.ts' },
   { schema: propVolumeRecipeSchema, type: 'PropVolumeRecipe', home: 'src/data/props.types.ts' },
   { schema: propPrimitiveSchema, type: 'PropPrimitive', home: 'src/data/props.types.ts' },
   { schema: propSeatSlotSchema, type: 'PropSeatSlot', home: 'src/data/props.types.ts' },
@@ -44,6 +47,9 @@ export const TARGETS = [
  *  entier). PÉRIMÈTRE : les clés top-level. ANGLE MORT : le rapport ne distingue pas « lu sur la
  *  branche A » de « lu sur la branche B ». */
 export function fieldsOf(schema) {
+  // Une cible peut fournir ses clés TELLES QUELLES (`cles` d'un handle `document()`) : le nœud scellé
+  // n'expose plus de `.shape`, et un rendu vide serait une perte muette.
+  if (Array.isArray(schema)) return [...schema]
   if (schema?.shape) return Object.keys(schema.shape)
   const def = schema?._zod?.def ?? schema?.def
   if (def?.options) {

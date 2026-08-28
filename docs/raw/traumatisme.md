@@ -129,7 +129,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : [Option : Mort Subite](#6-option--mort-subite) ; Destin → [destin.md](destin.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.34, l.38-40, l.42-43) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `crit-severity`, `critWoundLocation`, `EtatPanel`, `combat-sudden-death`, `blessure-majeure-a-l-oreille`, `inconscient`, +31 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/traumas.json`, `src/engine/combat.ts`, +6 fichiers
+- `LDB 18` (l.34, l.38-40, l.42-43) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `crit-severity`, `critWoundLocation`, `EtatPanel`, `blessure-majeure-a-l-oreille`, `combat-sudden-death`, `inconscient`, +31 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/traumas.json`, `src/engine/combat.ts`, +6 fichiers
 
 ---
 
@@ -142,7 +142,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Sources RAW** : `LDB 18 l.44-46`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.44-46) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `crit-severity`, `critWoundLocation`, `EtatPanel`, `combat-sudden-death`, `blessure-majeure-a-l-oreille`, `inconscient`, +30 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/traumas.json`, `src/engine/combat.ts`, +5 fichiers
+- `LDB 18` (l.44-46) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `crit-severity`, `critWoundLocation`, `EtatPanel`, `blessure-majeure-a-l-oreille`, `combat-sudden-death`, `inconscient`, +30 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/traumas.json`, `src/engine/combat.ts`, +5 fichiers
 
 ---
 
@@ -212,7 +212,7 @@ La Compétence Guérison ne raccourcit pas la Majeure (elle informe seulement qu
 **Voir aussi** : [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `availableHealModes`, `dechirure-jambe-majeure`, `resolveAmputation`, `Amputation`, `dechirure-autre-mineure`, `AAEntry`, +37 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, +9 fichiers
+- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `availableHealModes`, `resolveAmputation`, `dechirure-jambe-majeure`, `Amputation`, `AAEntry`, `dechirure-autre-mineure`, +37 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, +9 fichiers
 
 ---
 
@@ -284,7 +284,7 @@ Un personnage est **blessé** s'il a perdu au moins 1 PB. Il n'y a **aucune pén
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 9` (l.255-269) → `carryOverState`, `useDefenseJetProps`, `healDifficulty`, `healWoundsDelta`, `rederiveAttack`, `stopBleedOutcome`, `HealWoundsOptions`, `applyHealWounds`, `defenseSubOf`, `heal-wounds`, +11 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/types.ts`, +4 fichiers
-- `LDB 18` (l.289-300) → `faim`, `cumulSchema`, `permanentAmputations`, `soif`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `dechirure-autre-majeure`, `exposure`, `exposure-heat-drop`, +35 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, +12 fichiers
+- `LDB 18` (l.289-300) → `faim`, `cumulSchema`, `permanentAmputations`, `soif`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `exposure`, `dechirure-autre-majeure`, `exposure-heat-drop`, +35 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, +12 fichiers
 
 ---
 

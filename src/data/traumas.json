@@ -1,6 +1,7 @@
 [
   {
     "id": "dechirure-jambe-mineure",
+    "type": "traumas",
     "label": "Déchirure musculaire",
     "kind": "dechirure",
     "severity": "mineur",
@@ -25,6 +26,7 @@
   },
   {
     "id": "dechirure-jambe-majeure",
+    "type": "traumas",
     "label": "Déchirure musculaire",
     "kind": "dechirure",
     "severity": "majeur",
@@ -49,6 +51,7 @@
   },
   {
     "id": "dechirure-autre-mineure",
+    "type": "traumas",
     "label": "Déchirure musculaire",
     "kind": "dechirure",
     "severity": "mineur",
@@ -61,6 +64,7 @@
   },
   {
     "id": "dechirure-autre-majeure",
+    "type": "traumas",
     "label": "Déchirure musculaire",
     "kind": "dechirure",
     "severity": "majeur",
@@ -73,6 +77,7 @@
   },
   {
     "id": "fracture-torse-mineure",
+    "type": "traumas",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "mineur",
@@ -102,6 +107,7 @@
   },
   {
     "id": "fracture-torse-majeure",
+    "type": "traumas",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "majeur",
@@ -131,6 +137,7 @@
   },
   {
     "id": "fracture-jambe-mineure",
+    "type": "traumas",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "mineur",
@@ -155,6 +162,7 @@
   },
   {
     "id": "fracture-jambe-majeure",
+    "type": "traumas",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "majeur",
@@ -179,6 +187,7 @@
   },
   {
     "id": "fracture-tete-mineure",
+    "type": "traumas",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "mineur",
@@ -191,6 +200,7 @@
   },
   {
     "id": "fracture-tete-majeure",
+    "type": "traumas",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "majeur",
@@ -203,6 +213,7 @@
   },
   {
     "id": "fracture-bras-mineure",
+    "type": "traumas",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "mineur",
@@ -215,6 +226,7 @@
   },
   {
     "id": "fracture-bras-majeure",
+    "type": "traumas",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "majeur",
@@ -227,6 +239,7 @@
   },
   {
     "id": "fracture-mal-ressoudee-membre",
+    "type": "traumas",
     "label": "Fracture mal ressoudée",
     "desc": "Sur un échec, vous subirez une pénalité permanente à tous vos Tests d’Agilité pour une blessure au Bras, à la Jambe ou au Torse.",
     "source": {
@@ -237,6 +250,7 @@
   },
   {
     "id": "fracture-mal-ressoudee-tete",
+    "type": "traumas",
     "label": "Fracture mal ressoudée",
     "desc": "Sur un échec, vous subirez une pénalité permanente à tous vos Tests de Langue s’il s’agit d’une blessure à la tête mal guérie.",
     "source": {
@@ -247,6 +261,7 @@
   },
   {
     "id": "amputation-plaie",
+    "type": "traumas",
     "label": "Amputation",
     "needsSurgery": true,
     "desc": "Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.",
@@ -259,6 +274,7 @@
   },
   {
     "id": "orteil-ampute",
+    "type": "traumas",
     "label": "Orteil(s) amputé(s)",
     "cumul": {
       "portee": "localisation",
@@ -288,6 +304,7 @@
   },
   {
     "id": "membre-inferieur-ampute",
+    "type": "traumas",
     "label": "Membre inférieur amputé",
     "ops": [
       {
@@ -337,6 +354,7 @@
   },
   {
     "id": "doigt-ampute",
+    "type": "traumas",
     "label": "Doigts amputés",
     "cumul": {
       "portee": "localisation",
@@ -362,6 +380,7 @@
   },
   {
     "id": "main-bras-ampute",
+    "type": "traumas",
     "label": "Main/bras amputé",
     "ops": [
       {
@@ -385,6 +404,7 @@
   },
   {
     "id": "langue-amputee",
+    "type": "traumas",
     "label": "Langue amputée",
     "ops": [
       {
@@ -403,6 +423,7 @@
   },
   {
     "id": "nez-ampute",
+    "type": "traumas",
     "label": "Nez amputé",
     "ops": [
       {
@@ -438,6 +459,7 @@
   },
   {
     "id": "oeil-perdu",
+    "type": "traumas",
     "label": "Œil perdu",
     "ops": [
       {
@@ -483,6 +505,7 @@
   },
   {
     "id": "oreille-perdue",
+    "type": "traumas",
     "label": "Oreille perdue",
     "ops": [
       {
@@ -524,6 +547,7 @@
   },
   {
     "id": "dents-perdues",
+    "type": "traumas",
     "label": "Dents perdues",
     "cumul": {
       "portee": "porteur",
@@ -554,6 +578,7 @@
   },
   {
     "id": "cecite",
+    "type": "traumas",
     "label": "Cécité",
     "rig": {
       "bone": "tete",
@@ -592,6 +617,7 @@
   },
   {
     "id": "surdite",
+    "type": "traumas",
     "label": "Surdité",
     "ops": [
       {
@@ -611,6 +637,7 @@
   },
   {
     "id": "perte-auditive-partielle",
+    "type": "traumas",
     "label": "Perte auditive partielle",
     "ops": [
       {
@@ -629,6 +656,7 @@
   },
   {
     "id": "cicatrice-spectaculaire",
+    "type": "traumas",
     "label": "Cicatrice impressionnante",
     "cosmetic": true,
     "passiveKind": "intrinseque",
@@ -649,6 +677,7 @@
   },
   {
     "id": "cicatrice-nez-casse",
+    "type": "traumas",
     "label": "Nez cassé (cicatrice)",
     "cosmetic": true,
     "needsSurgery": true,

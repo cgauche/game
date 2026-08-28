@@ -1,6 +1,7 @@
 [
   {
     "id": "fievre",
+    "type": "symptoms",
     "label": "Fièvre",
     "desc": "Votre température est haute, vous transpirez abondamment et vous n'avez vraiment pas l'air en forme. Subissez une pénalité de -10 à tous vos Tests Physiques et de Sociabilité. Si la fièvre dont vous souffrez est indiquée comme (Grave), vous vous retrouvez dans un état de faiblesse totale vous obligeant à rester alité. Gagnez l'État *Inconscient*, même si la dépense de Points de Détermination peut vous ramener à la conscience pendant quelques minutes.",
     "passive": [
@@ -47,6 +48,7 @@
   },
   {
     "id": "bubons",
+    "type": "symptoms",
     "label": "Bubons",
     "desc": "Vous êtes victime d'une inflammation des ganglions lymphatiques de l'aine, du cou ou des aisselles. Outre le fait que c'est extrêmement douloureux, cela peut causer des saignements ou des épanchements de pus. Leur aspect est dégoûtant, l'odeur répugnante et certains vont penser qu'il s'agit là de signes de faveurs de la part du Seigneur des Épidémies et vont supposer qu'ils renferment de minuscules démons en pleine croissance. Pour se défaire de ces horreurs et de ce qui peut s'y nicher, la pratique la plus courante consiste à les percer, même si cela aboutit souvent à une *Blessure Purulente*. Subissez une pénalité de -10 à tous vos Tests Physiques ainsi qu'à tous vos Tests de Sociabilité si ces bubons sont apparents (ou peuvent être sentis) !",
     "passive": [
@@ -93,6 +95,7 @@
   },
   {
     "id": "convulsions",
+    "type": "symptoms",
     "label": "Convulsions",
     "desc": "Votre corps est la proie de spasmes ou de tremblements alors que l'infection vous transforme petit à petit en pantin. Subissez une pénalité de -10 à tous vos Tests Physiques alors que votre corps convulse sans que vous ne puissiez le contrôler. Si le symptôme est indiqué (Modéré), cette pénalité passe à -20. Si le symptôme est indiqué comme (Grave), vous devez être attaché sous peine de risquer de vous blesser tout seul, ce qui vous laisse dans un état d'incapacité totale.",
     "passive": [
@@ -166,6 +169,7 @@
   },
   {
     "id": "demangeaisons",
+    "type": "symptoms",
     "label": "Démangeaisons",
     "desc": "Vous êtes recouvert de pustules, de gonflements, d'éruptions cutanées ou de boutons qui vous démangent, et c'est loin de vous rendre attirant. Les démangeaisons constituent surtout un problème esthétique, et impliquent une pénalité de -10 à tous les Tests de Sociabilité. De plus, n'oubliez pas d'interpréter ces démangeaisons en cours de jeu. Si vous voulez vous retenir un tant soi peu, réussissez un Test de **Calme Accessible (+20)**.",
     "passive": [
@@ -182,6 +186,7 @@
   },
   {
     "id": "crampes-abdominales",
+    "type": "symptoms",
     "label": "Crampes abdominales",
     "desc": "De violentes crampes abdominales saisissent le patient par intermittence, l'obligeant à se tordre de douleur.\n\nCe dernier subit une pénalité de –20 à tous les Tests en raison de la perturbation provoquée par ces crampes douloureuses.\n\nLorsqu'un Test se solde par un échec normal ou pire, il se plie en deux de douleur, incapable de bouger ou d'agir pendant le prochain Round, et gagne l'État *Sonné*.\n\nSur un Échec Impressionnant ou pire, il doit effectuer un Test de **Force Mentale** ou tomber au sol, gagnant l'État *À Terre*.\n\nSur un Échec Stupéfiant, il s'évanouit de douleur, gagnant l'État *Inconscient*.",
     "passive": [
@@ -280,6 +285,7 @@
   },
   {
     "id": "gangrene",
+    "type": "symptoms",
     "label": "Gangrène",
     "desc": "Votre chair noircit et pourrit, infectée par quelque chose d'horrible. Et cela ne semble pas s'arranger. Effectuez un lancer de pourcentage pour déterminer une Localisation (voir **Combat**). Chaque jour, effectuez un Test de **Résistance Accessible (+20)**. Sur un succès, la *Gangrène* est contenue. Sur un échec, elle empire. Si vous obtenez plus d'échecs que votre Bonus d'Endurance, la Localisation devient totalement inutilisable. Si cela se produit, utilisez les mêmes règles que pour l'Amputation (voir Blessures critiques). Tant que vous souffrez de la *Gangrène*, subissez une pénalité de -10 à tous vos Tests de Sociabilité, et vous subissez le symptôme Blessé. De plus, comme si ce n'était pas suffisant, vous souffrez également de *Toxine* tant que le tissu affecté ne sera pas amputé.",
     "passive": [
@@ -300,6 +306,7 @@
   },
   {
     "id": "blesse",
+    "type": "symptoms",
     "label": "Blessé",
     "desc": "Vous avez une blessure ou une plaie ouverte qui ne guérit pas correctement à cause d'une infection. Pour chaque symptôme Blessé dont vous souffrez, vous ne pouvez pas guérir l'une de vos Blessures, qui reste donc ouverte et vous fait souffrir. Certains écoulements de pus sont même possibles. Chaque jour, réussissez un Test de **Résistance Accessible (+20)** ou subissez une Blessure Purulente si vous n'en avez pas déjà une.",
     "onTick": {
@@ -321,6 +328,7 @@
   },
   {
     "id": "toxine",
+    "type": "symptoms",
     "label": "Toxine",
     "desc": "Vous êtes gravement malade et sans doute plus très loin des Portes de Morr car un poison mortel se répand dans votre corps. Effectuez un Test de **Résistance Très Facile (+60)** tous les jours (en général pendant votre sommeil) ou vous mourrez, peut-être dans votre sommeil, ou en délirant de fièvre, ou encore dans la pire agonie. Si *Toxine* est indiqué (*Modéré*), le Test est **Facile (+40)**. Si elle est indiquée (*Grave*), le Test est **Accessible (+20)**.",
     "onTick": {
@@ -342,6 +350,7 @@
   },
   {
     "id": "persistant",
+    "type": "symptoms",
     "label": "Persistant",
     "desc": "Vous avez une infection qui perdure. De ce fait, vous craignez que cela empire… Après que votre maladie est arrivée à la fin de sa Durée, effectuez un Test de Résistance avec la Difficulté indiquée entre parenthèses après le symptôme comme ceci : Persistant (Accessible) ou Persistant (Facile). Sur un échec Minime (0), rajoutez 1d10 jours à la durée. Sur un échec (-2), vous subissez une *Blessure Purulente*. Sur un échec Stupéfiant (-6), vous développez *Infection du sang*.",
     "capabilities": {
@@ -354,6 +363,7 @@
   },
   {
     "id": "malaise",
+    "type": "symptoms",
     "label": "Malaise",
     "desc": "Vous ne vous sentez pas bien du tout. Vous êtes fatigué, ressentez des difficultés à vous concentrer. En fait, vous vous sentez malade. Gagnez un État *Exténué* dont vous ne pourrez vous défaire qu'une fois votre maladie guérie.",
     "capabilities": {
@@ -366,6 +376,7 @@
   },
   {
     "id": "nausee",
+    "type": "symptoms",
     "label": "Nausée",
     "desc": "Vous vous sentez bien malade et vous risquez de vomir si vous vous déplacez trop vite. Chaque fois que vous échouez à un Test qui implique un déplacement physique, votre nausée prend le dessus et vous vomissez. Vous gagnez l'État *Sonné* qui représente les conséquences de ces vomissements répétitifs ou de la déshydratation, en fonction des circonstances.",
     "capabilities": {
@@ -378,6 +389,7 @@
   },
   {
     "id": "touxEternuements",
+    "type": "symptoms",
     "label": "Toux et éternuements",
     "desc": "Vous toussez et éternuez régulièrement, propageant ainsi votre maladie tout autour de vous. Tout Personnage se trouvant dans votre environnement immédiat s'expose à la maladie dont vous êtes porteur et doit effectuer un Test pour en éviter la Contraction une fois par heure entamée d'exposition.",
     "capabilities": {
@@ -390,6 +402,7 @@
   },
   {
     "id": "intoxication",
+    "type": "symptoms",
     "label": "Intoxication alimentaire",
     "desc": "Dans un premier temps, apparaissent borborygmes et gargouillis, puis c'est la course vers les commodités. Pâle et épuisé, vous avez connu des jours meilleurs. Le MJ peut décider, n'importe quand au cours de la partie, que vous devez vous y rendre. Si l'*Intoxication alimentaire* est indiquée comme (Modérée), le MJ peut vous demander de vous isoler deux fois par séance de jeu. Si elle est indiquée comme (Grave), c'est trois fois, et vous perdrez une Blessure à chaque fois, car le sang que vous avez perdu vous laisse sur les rotules.",
     "source": {
@@ -399,6 +412,7 @@
   },
   {
     "id": "delire",
+    "type": "symptoms",
     "label": "Délire",
     "desc": "Votre raison bascule, avec des moments de clarté remplacés soudain par des accès de délire, d'hallucinations et de terreur. Faites un Test de **Force Mentale Intermédiaire (+0)** toutes les heures et consultez le tableau suivant.\n\n| 1d10 | Effet |\n|------|-------|\n| 1-2  | Épisode lucide : vous vivez une période de calme reposant. Tous les États que vous avez précédemment acquis à cause de votre délire sont supprimés. |\n| 3-5  | Sommeil agité : vous vous tournez et vous retournez, endormi mais pas reposé. Vous gagnez 1 État Inconscient pendant l'heure suivante et 1 État Exténué pendant les 1d10 heures suivantes. |\n| 6-9  | Confusion : en proie à des visions étranges et déformées, vous gagnez un État Sonné pendant l'heure qui suit. |\n| 10   | Hallucinations : vous êtes en proie à des visions étranges et terrifiantes, et vous devez faire un Test contre Terreur 3 toutes les 10 minutes pendant l'heure suivante. Vous gagnez également +1 à l'État Sonné pendant les 1d10 heures suivantes. |\n\n**Traitement :** certaines sommités médicales traitent le délire comme une fièvre, prescrivant les mêmes soins. Les remèdes coûtent de quelques sous de cuivre à quelques pistoles d'argent, et 10 % sont authentiques. Avec le bon médicament, un Test de **Guérison Intermédiaire (+0)** réussi bannit les hallucinations pendant 1d10 heures.\n\nIl est également courant de calmer les patients délirants avec un tranquillisant, tel que la fleur de lune ou même le lotus noir, pour les soulager jusqu'à ce que la maladie soit passée, les plongeant dans un sommeil agité jusqu'à ce qu'ils récupèrent ou en meurent.",
     "source": {
@@ -408,6 +422,7 @@
   },
   {
     "id": "gonflement",
+    "type": "symptoms",
     "label": "Gonflement",
     "desc": "Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au rouge ou au violacé et devenant presque inutilisable. La partie du corps affectée est normalement l'emplacement d'une plaie ou d'une morsure provoquant cette réaction, ou le point où une maladie ou une infection est entrée en contact avec le corps.\n\n**Traitement :** la plupart des traitements consistent à plonger la partie infectée, ou parfois tout le corps, dans un bain d'eau glacée pour réduire la chaleur qui accompagne les gonflements. Un Test étendu de **Guérison Difficile (-20)** nécessitant +3 DR et réduit le gonflement de 2d10 heures. Chaque Test dure une heure. Le patient se retrouve avec un État *Exténué* +1 pour chaque Test effectué au cours du processus.\n\nCertains médecins saignent plutôt le patient avec une lame ou des sangsues. Un Test étendu de **Guérison** prolongé réussi nécessitant +4 DR et des outils professionnels (médecin) réduit le gonflement de (1d10 + le Bonus d'Endurance du patient) heures. Chaque Test a une Difficulté de base Impossible (-50) et dure une demi-heure.\n\n| Localisation | Effet |\n|---|---|\n| Tête | Les yeux et la langue gonflent, les joues deviennent violettes, la mâchoire s'ouvre involontairement. Manger est impossible, mais les liquides peu épais peuvent être sirotés en petites quantités. Tous les Tests nécessitant la parole sont 3 niveaux plus difficiles. |\n| Bras | Le bras et la main gonflent, les articulations de l'épaule et du coude ne peuvent plus bouger et la main devient inutile. Pour la durée du gonflement, le bras est considéré comme amputé (WFJDR, page 180). |\n| Corps | Tout le corps gonfle jusqu'à ce que la victime ne puisse plus porter de vêtements. Tous les Tests impliquant un mouvement deviennent 3 niveaux plus difficiles. |\n| Jambe | La jambe gonfle de façon grotesque, devenant aussi grosse que la partie la plus large de la cuisse et sur toute sa longueur. Le pied est presque impossible à discerner. Pour la durée du gonflement, la jambe est considérée comme amputée (WFJDR, page 180). |\n\nCette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).\n\nQuelques guérisseurs utilisent des cataplasmes cicatrisants pour réduire le gonflement, surtout s'il y a une plaie visible sur laquelle ils peuvent être appliqués. Un Test étendu de **Guérison Complexe (-10)** réussi, nécessitant +5 DR et un cataplasme de guérison par Test, réduit le gonflement de (2d10 + le Bonus d'Endurance du patient) heures. Chaque Test dure 10 minutes.",
     "source": {
@@ -417,6 +432,7 @@
   },
   {
     "id": "rage-meurtriere",
+    "type": "symptoms",
     "label": "Rage meurtrière",
     "desc": "Vous êtes empli de furie et d'un désir de vous en prendre à tous ceux que vous rencontrez. Vous devenez sujet aux Traits psychologiques *Haine (toutes les choses vivantes)* et *Frénésie* (à l'exception du fait que la frénésie ne vous empêche pas d'être sujet à la *Haine*). Le désir de vous en prendre aux êtres vivants est si puissant que des Tests pour éviter les effets de la *Haine* doivent être effectués tous les cinq Rounds, de sorte que vous puissiez y succomber même après avoir réussi les Tests de Psychologie initiaux.\n\nSi vous réussissez le Test de Psychologie pour éviter les effets de la *Haine*, vous êtes suffisamment lucide pour pouvoir interagir de manière rudimentaire avec d'autres êtres vivants. Cette interaction se limite à les fuir, ou à les avertir qu'ils doivent s'écarter de votre chemin.",
     "passive": [
@@ -437,6 +453,7 @@
   },
   {
     "id": "vers-de-carie",
+    "type": "symptoms",
     "label": "Vers de carie",
     "desc": "Une fois installé dans la bouche de sa victime, le ver de carie se nourrit de son souffle : l'essence de l'esprit. Tant que ce parasite demeure, son hôte subit une pénalité de –10 à tous les Tests.\n\nSi le ver de carie n'est pas éliminé dans les trois jours qui suivent, il n'est plus possible de le retirer sans tuer l'hôte. À mesure que le ver s'enfonce dans le cerveau et se prépare à pondre ses œufs, la victime doit effectuer un Test d'**Endurance Accessible (+20)** chaque jour. Chaque jour où le Test est raté, lancez 1d10, ajoutez le nombre de DR négatifs et consultez le tableau suivant :\n\n| Lancer modifié 1d10 | Résultat |\n| --- | --- |\n| 1–2 | –1d10 Initiative |\n| 3–4 | –1d10 Intelligence |\n| 5–6 | –1d10 Force Mentale |\n| 7–8 | –1d10 Sociabilité |\n| 9 | Gain du Trait Nerveux |\n| 10 | Gain du Trait Stupide |\n| 11–12 | Gain du Trait Bestial |\n| 13 | Mort |",
     "passive": [
@@ -571,6 +588,7 @@
   },
   {
     "id": "vers-du-reik",
+    "type": "symptoms",
     "label": "Vers du Reik",
     "desc": "Pour chaque période complète de 30 jours d'infection, le Personnage subit une pénalité de –5 à tous les Tests de **Résistance** permettant de résister aux maladies. Cette pénalité est réduite de 1 point par jour après la mort du ver.\n\nPour déterminer où le ver fait surface, effectuez un lancer de Localisation comme lors d'un combat normal. Lorsque l'ampoule se forme, le patient subit une pénalité de –5 % à tous les Tests d'Agilité en raison de l'irritation constante. De plus, si l'ampoule se trouve à un endroit visible, le Personnage subit également une pénalité de –10 aux Tests de Sociabilité.\n\nLe septième jour suivant l'apparition de la cloque, la personne atteinte doit effectuer un Test de Résistance toutes les heures. Au premier échec, ou à la dernière heure du jour si tous les Tests sont réussis, la cloque éclate, infligeant 1 Blessure et provoquant un État *Sonné* en raison de la sensation de brûlure presque insupportable qui en résulte.",
     "passive": [

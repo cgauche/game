@@ -24,9 +24,10 @@
  *
  * SORTIR un catalogue de l'angle mort = un geste d'auteur : NOMMER son schéma d'entrée (et ses
  * sous-schémas) dans SON def — `export const xSchema` dans `defs/<catalogue>.ts`, patron
- * `defs/criticals.ts` (`critEscalationSchema`, `amputationSchema`) et `defs/props.ts`
- * (`propDataSchema` …) — ou dans `grammaire/` si la forme est RÉELLEMENT partagée entre
- * documents, puis l'ajouter à `TARGETS`.
+ * `defs/criticals.ts` (`critEscalationSchema`, `amputationSchema`) — ou dans `grammaire/` si la forme
+ * est RÉELLEMENT partagée entre documents, puis l'ajouter à `TARGETS`. Un def ADOPTÉ par `document()`
+ * n'expose plus son entrée en nœud zod : il publie ses clés relevées avant le sceau (`cles` du handle,
+ * patron `defs/props.ts`), et `TARGETS` porte alors `cles:` au lieu de `schema:`.
  *
  * SECOND ANGLE MORT, MESURÉ (pas hypothétique) — `fieldConsumers.mjs` ne borne une lecture que sur
  * un identifiant explicitement ANNOTÉ `T` (littéral du nom dans un type de paramètre/variable). Les
@@ -116,8 +117,10 @@ export function buildFieldConsumersMd(): { md: string; byType: Map<string, Map<s
   let trappingRefSpecReaders = 0
   const byType = new Map<string, Map<string, Hit[]>>()
 
-  for (const { schema, type, home } of TARGETS) {
-    const fields = fieldsOf(schema)
+  // Une cible porte SOIT son nœud zod (`schema`), SOIT ses clés déjà relevées (`cles` d'un handle
+  // `document()`, dont le nœud est scellé et n'expose plus de `.shape`).
+  for (const { schema, cles, type, home } of TARGETS as readonly { schema?: unknown; cles?: readonly string[]; type: string; home: string }[]) {
+    const fields = fieldsOf(schema ?? cles)
     const hits = scanFieldReads(type, fields, files, ROOT, cache)
     const byField = groupByField(fields, hits)
     byType.set(type, byField)

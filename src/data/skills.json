@@ -1,6 +1,7 @@
 [
   {
     "id": "art",
+    "type": "skills",
     "label": "Art",
     "characteristic": "dexterite",
     "acces": "base",
@@ -62,6 +63,7 @@
   },
   {
     "id": "athletisme",
+    "type": "skills",
     "label": "Athlétisme",
     "characteristic": "agilite",
     "acces": "base",
@@ -75,6 +77,7 @@
   },
   {
     "id": "calme",
+    "type": "skills",
     "label": "Calme",
     "characteristic": "force-mentale",
     "acces": "base",
@@ -87,6 +90,7 @@
   },
   {
     "id": "charme",
+    "type": "skills",
     "label": "Charme",
     "characteristic": "sociabilite",
     "acces": "base",
@@ -99,6 +103,7 @@
   },
   {
     "id": "chevaucher",
+    "type": "skills",
     "label": "Chevaucher",
     "characteristic": "agilite",
     "acces": "base",
@@ -161,6 +166,7 @@
   },
   {
     "id": "commandement",
+    "type": "skills",
     "label": "Commandement",
     "characteristic": "sociabilite",
     "acces": "base",
@@ -173,6 +179,7 @@
   },
   {
     "id": "conduite-d-attelage",
+    "type": "skills",
     "label": "Conduite d'attelage",
     "characteristic": "agilite",
     "acces": "base",
@@ -185,6 +192,7 @@
   },
   {
     "id": "corps-a-corps",
+    "type": "skills",
     "label": "Corps à corps",
     "characteristic": "capacite-de-combat",
     "acces": "base",
@@ -197,6 +205,7 @@
   },
   {
     "id": "crochetage",
+    "type": "skills",
     "label": "Crochetage",
     "characteristic": "dexterite",
     "acces": "avancee",
@@ -213,6 +222,7 @@
   },
   {
     "id": "discretion",
+    "type": "skills",
     "label": "Discrétion",
     "characteristic": "agilite",
     "acces": "base",
@@ -238,6 +248,7 @@
   },
   {
     "id": "divertissement",
+    "type": "skills",
     "label": "Divertissement",
     "characteristic": "sociabilite",
     "acces": "base",
@@ -391,6 +402,7 @@
   },
   {
     "id": "dressage",
+    "type": "skills",
     "label": "Dressage",
     "characteristic": "intelligence",
     "acces": "avancee",
@@ -462,6 +474,7 @@
   },
   {
     "id": "emprise-sur-les-animaux",
+    "type": "skills",
     "label": "Emprise sur les animaux",
     "characteristic": "force-mentale",
     "acces": "base",
@@ -474,6 +487,7 @@
   },
   {
     "id": "escalade",
+    "type": "skills",
     "label": "Escalade",
     "characteristic": "force",
     "acces": "base",
@@ -487,6 +501,7 @@
   },
   {
     "id": "escamotage",
+    "type": "skills",
     "label": "Escamotage",
     "characteristic": "dexterite",
     "acces": "avancee",
@@ -499,6 +514,7 @@
   },
   {
     "id": "esquive",
+    "type": "skills",
     "label": "Esquive",
     "characteristic": "agilite",
     "acces": "base",
@@ -512,6 +528,7 @@
   },
   {
     "id": "evaluation",
+    "type": "skills",
     "label": "Évaluation",
     "characteristic": "intelligence",
     "acces": "avancee",
@@ -524,6 +541,7 @@
   },
   {
     "id": "focalisation",
+    "type": "skills",
     "label": "Focalisation",
     "characteristic": "force-mentale",
     "acces": "avancee",
@@ -536,6 +554,7 @@
   },
   {
     "id": "hypnotisme",
+    "type": "skills",
     "label": "Hypnotisme",
     "characteristic": "intelligence",
     "acces": "avancee",
@@ -548,6 +567,7 @@
   },
   {
     "id": "guerison",
+    "type": "skills",
     "label": "Guérison",
     "characteristic": "intelligence",
     "acces": "avancee",
@@ -560,6 +580,7 @@
   },
   {
     "id": "intimidation",
+    "type": "skills",
     "label": "Intimidation",
     "characteristic": "force",
     "acces": "base",
@@ -588,6 +609,7 @@
   },
   {
     "id": "intuition",
+    "type": "skills",
     "label": "Intuition",
     "characteristic": "initiative",
     "acces": "base",
@@ -603,6 +625,7 @@
   },
   {
     "id": "langue",
+    "type": "skills",
     "label": "Langue",
     "characteristic": "intelligence",
     "acces": "avancee",
@@ -704,6 +727,7 @@
   },
   {
     "id": "marchandage",
+    "type": "skills",
     "label": "Marchandage",
     "characteristic": "sociabilite",
     "acces": "base",
@@ -716,6 +740,7 @@
   },
   {
     "id": "metier",
+    "type": "skills",
     "label": "Métier",
     "characteristic": "dexterite",
     "acces": "avancee",
@@ -977,6 +1002,7 @@
   },
   {
     "id": "musicien",
+    "type": "skills",
     "label": "Musicien",
     "characteristic": "dexterite",
     "acces": "avancee",
@@ -1026,6 +1052,7 @@
   },
   {
     "id": "natation",
+    "type": "skills",
     "label": "Natation",
     "characteristic": "force",
     "acces": "avancee",
@@ -1039,6 +1066,7 @@
   },
   {
     "id": "orientation",
+    "type": "skills",
     "label": "Orientation",
     "characteristic": "initiative",
     "acces": "base",
@@ -1051,6 +1079,7 @@
   },
   {
     "id": "pari",
+    "type": "skills",
     "label": "Pari",
     "characteristic": "intelligence",
     "acces": "base",
@@ -1063,6 +1092,7 @@
   },
   {
     "id": "perception",
+    "type": "skills",
     "label": "Perception",
     "characteristic": "initiative",
     "acces": "base",
@@ -1076,6 +1106,7 @@
   },
   {
     "id": "piegeage",
+    "type": "skills",
     "label": "Piégeage",
     "characteristic": "dexterite",
     "acces": "avancee",
@@ -1088,6 +1119,7 @@
   },
   {
     "id": "pistage",
+    "type": "skills",
     "label": "Pistage",
     "characteristic": "initiative",
     "acces": "avancee",
@@ -1100,6 +1132,7 @@
   },
   {
     "id": "priere",
+    "type": "skills",
     "label": "Prière",
     "characteristic": "sociabilite",
     "acces": "avancee",
@@ -1115,6 +1148,7 @@
   },
   {
     "id": "projectiles",
+    "type": "skills",
     "label": "Projectiles",
     "characteristic": "capacite-de-tir",
     "acces": "avancee",
@@ -1127,6 +1161,7 @@
   },
   {
     "id": "ragot",
+    "type": "skills",
     "label": "Ragot",
     "characteristic": "sociabilite",
     "acces": "base",
@@ -1139,6 +1174,7 @@
   },
   {
     "id": "ramer",
+    "type": "skills",
     "label": "Ramer",
     "characteristic": "force",
     "acces": "base",
@@ -1151,6 +1187,7 @@
   },
   {
     "id": "recherche",
+    "type": "skills",
     "label": "Recherche",
     "characteristic": "intelligence",
     "acces": "avancee",
@@ -1163,6 +1200,7 @@
   },
   {
     "id": "representation",
+    "type": "skills",
     "label": "Représentation",
     "characteristic": "agilite",
     "acces": "avancee",
@@ -1238,6 +1276,7 @@
   },
   {
     "id": "resistance",
+    "type": "skills",
     "label": "Résistance",
     "characteristic": "endurance",
     "acces": "base",
@@ -1250,6 +1289,7 @@
   },
   {
     "id": "resistance-a-l-alcool",
+    "type": "skills",
     "label": "Résistance à l'alcool",
     "characteristic": "endurance",
     "acces": "base",
@@ -1262,6 +1302,7 @@
   },
   {
     "id": "savoir",
+    "type": "skills",
     "label": "Savoir",
     "characteristic": "intelligence",
     "acces": "avancee",
@@ -1693,6 +1734,7 @@
   },
   {
     "id": "signes-secrets",
+    "type": "skills",
     "label": "Signes secrets",
     "characteristic": "intelligence",
     "acces": "avancee",
@@ -1833,6 +1875,7 @@
   },
   {
     "id": "soin-aux-animaux",
+    "type": "skills",
     "label": "Soin aux animaux",
     "characteristic": "intelligence",
     "acces": "avancee",
@@ -1845,6 +1888,7 @@
   },
   {
     "id": "subornation",
+    "type": "skills",
     "label": "Subornation",
     "characteristic": "sociabilite",
     "acces": "base",
@@ -1857,6 +1901,7 @@
   },
   {
     "id": "survie-en-exterieur",
+    "type": "skills",
     "label": "Survie en extérieur",
     "characteristic": "intelligence",
     "acces": "base",
@@ -1872,6 +1917,7 @@
   },
   {
     "id": "voile",
+    "type": "skills",
     "label": "Voile",
     "characteristic": "agilite",
     "acces": "avancee",
@@ -1905,6 +1951,7 @@
   },
   {
     "id": "augure",
+    "type": "skills",
     "label": "Augure",
     "characteristic": "intelligence",
     "acces": "avancee",
@@ -1917,6 +1964,7 @@
   },
   {
     "id": "psychometrie",
+    "type": "skills",
     "label": "Psychométrie",
     "characteristic": "intelligence",
     "acces": "avancee",

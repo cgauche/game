@@ -1,6 +1,7 @@
 [
   {
     "id": "feu",
+    "type": "domains",
     "label": "Feu",
     "arcane": true,
     "tables": {
@@ -104,6 +105,7 @@
   },
   {
     "id": "lumiere",
+    "type": "domains",
     "label": "Lumière",
     "arcane": true,
     "tables": {
@@ -281,6 +283,7 @@
   },
   {
     "id": "mort",
+    "type": "domains",
     "label": "Mort",
     "arcane": true,
     "tables": {
@@ -409,6 +412,7 @@
   },
   {
     "id": "vie",
+    "type": "domains",
     "label": "Vie",
     "arcane": true,
     "tables": {
@@ -595,6 +599,7 @@
   },
   {
     "id": "cieux",
+    "type": "domains",
     "label": "Cieux",
     "arcane": true,
     "tables": {
@@ -696,6 +701,7 @@
   },
   {
     "id": "metal",
+    "type": "domains",
     "label": "Métal",
     "arcane": true,
     "tables": {
@@ -752,6 +758,7 @@
   },
   {
     "id": "ombres",
+    "type": "domains",
     "label": "Ombres",
     "arcane": true,
     "tables": {
@@ -802,6 +809,7 @@
   },
   {
     "id": "bete",
+    "type": "domains",
     "label": "Bête",
     "arcane": true,
     "tables": {
@@ -911,6 +919,7 @@
   },
   {
     "id": "gueule",
+    "type": "domains",
     "label": "Gueule",
     "arcane": true,
     "desc": "Parfois appelé Gastromancie ou simplement Magie des Entrailles, le Domaine de la Gueule n’est disponible que pour les ogres (voir la Carrière Boucher Ogre). Cette magie met en avant une faim intense, des festins sanglants et une énergie effrénée. Chaque fois qu’un boucher ogre réussit à lancer un sort du Domaine de la Gueule, l’offrande qu’il consomme peut lui permettre de restaurer sa propre santé. Lancez 1d10. Si le résultat est un 10, ou s’il est égal ou supérieur au NI du sort lancé, sans modification de Focalisation et sans utiliser un Grimoire, le Boucher récupère un nombre de Blessures égal au NI non modifié du sort.\n\n**Composants :** les ogres se servent de restes ensanglantés pour alimenter leur magie. Elles sont généralement issues d’animaux et plus elles sont fraîches, mieux la magie opère. Il peut s’agir de morceaux de viande saignants, de bile provenant de l’estomac de créatures étranges, de la moelle de bêtes imposantes ou de la graisse séchée d’animaux domestiques, comme des cochons ou des vaches.",
@@ -922,6 +931,7 @@
   },
   {
     "id": "sorcellerie",
+    "type": "domains",
     "label": "Sorcellerie",
     "arcane": true,
     "desc": "Les Sorts de Sorcellerie se nourrissent de tous les Vents disponibles, sans se soucier des mélanges et d'éventuels résultats catastrophiques. À chaque fois qu'un pratiquant de la Sorcellerie fait un jet sur le Tableau des Incantations Imparfaites, il gagne 1 Point de Corruption. De plus, vous pouvez infliger un État *Hémorragique* à toute cible d'un Sort du Domaine de la Sorcellerie. Enfin, le fait de focaliser ou lancer des Sorts de ce Domaine nécessite systématiquement un lancer sur le Tableau des Incantations Imparfaites Mineures à moins d'être lancé avec un ingrédient, ou bien ce composant ne servira à rien si un jet sur le Tableau des Incantations Imparfaites doit malgré tout être effectué. Par chance, les ingrédients du Domaine de la Sorcellerie sont bon marché et facilement disponibles : la plupart du temps, ce sont des morceaux d'animaux de petite taille. Les composants coûtent le NI du Sort en sous de cuivre, à la place des pistoles d'argent habituelles.",
@@ -933,6 +943,7 @@
   },
   {
     "id": "dhar",
+    "type": "domains",
     "label": "Dhar",
     "wind": "Dhar",
     "desc": "*Dhar*, connu généralement sous le nom de Magie noire, est une méthode bien plus dangereuse pour lancer des Sorts en utilisant plusieurs Vents. Elle n'est généralement pratiquée que par les enchanteurs maléfiques, les nécromanciens, et par de puissantes sorcières, car elle offre une source séduisante de puissance brute, mais souillée de terribles effets secondaires.",
@@ -943,6 +954,7 @@
   },
   {
     "id": "necromancie",
+    "type": "domains",
     "label": "Nécromancie",
     "arcane": true,
     "dark": true,
@@ -954,6 +966,7 @@
   },
   {
     "id": "demonologie",
+    "type": "domains",
     "label": "Démonologie",
     "arcane": true,
     "dark": true,
@@ -965,6 +978,7 @@
   },
   {
     "id": "magie-naturelle",
+    "type": "domains",
     "label": "Magie naturelle",
     "arcane": true,
     "desc": "Les pratiquants de la Magie naturelle mènent généralement des vies discrètes, en marge des plus petites colonies humaines, au service des communautés locales. Tout comme ils vivent entre la civilisation et la nature sauvage, une grande partie de leur Magie concerne l'espace se trouvant entre le monde matériel et le royaume des esprits.",
@@ -975,6 +989,7 @@
   },
   {
     "id": "domaine-de-la-ruine",
+    "type": "domains",
     "label": "Domaine de la Ruine",
     "arcane": true,
     "source": {
@@ -984,6 +999,7 @@
   },
   {
     "id": "domaine-des-ombres",
+    "type": "domains",
     "label": "Domaine des Ombres",
     "arcane": true,
     "source": {
@@ -993,6 +1009,7 @@
   },
   {
     "id": "domaine-de-la-peste",
+    "type": "domains",
     "label": "Domaine de la Peste",
     "arcane": true,
     "source": {
@@ -1002,6 +1019,7 @@
   },
   {
     "id": "divinite",
+    "type": "domains",
     "label": "Divinité",
     "arcane": true,
     "source": {
@@ -1011,6 +1029,7 @@
   },
   {
     "id": "magie-des-mers-de-triton",
+    "type": "domains",
     "label": "Magie des mers de Triton",
     "source": {
       "book": "mer-des-griffes",
@@ -1019,6 +1038,7 @@
   },
   {
     "id": "magie-du-marais-de-mona",
+    "type": "domains",
     "label": "Magie du marais de Mòna",
     "source": {
       "book": "vents-de-la-magie",

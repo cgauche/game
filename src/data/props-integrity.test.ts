@@ -3,13 +3,15 @@ import { schema as propsSchema } from './schemas/defs/props';
 import { props, propMaterials, findPropMaterialById } from './index';
 import { validatePropCatalog, type PropData } from './props.types';
 
-const propFixture = (patch: Partial<PropData>): PropData => ({ id: 'x', label: 'X d’épreuve', solid: true, ...patch });
+const propFixture = (patch: Partial<PropData>): PropData => ({ id: 'x', type: 'props', label: 'X d’épreuve', solid: true, ...patch });
 
 describe('props.json — formes strictes de la recette volumique et des places assises', () => {
   it('refuse une primitive inconnue et un matériau absent', () => {
-    expect(() => propsSchema.parse([{ id: 'x', volume: { primitives: [{ kind: 'sphere' }] } }])).toThrow();
+    // Le `type` d'enveloppe est POSÉ sur chaque sonde négative : sans lui, elles sortiraient rouges
+    // pour un `type` manquant et ne mordraient plus la forme qu'elles visent.
+    expect(() => propsSchema.parse([{ id: 'x', type: 'props', label: 'X d’épreuve', volume: { primitives: [{ kind: 'sphere' }] } }])).toThrow();
     expect(validatePropCatalog(
-      [{ id: 'x', label: 'X d’épreuve', volume: { primitives: [{ kind: 'box', center: { x: 0, y: 0, h: 0.5 }, size: { x: 1, y: 1, h: 1 }, material: 'absent' }] } }],
+      [{ id: 'x', type: 'props', label: 'X d’épreuve', volume: { primitives: [{ kind: 'box', center: { x: 0, y: 0, h: 0.5 }, size: { x: 1, y: 1, h: 1 }, material: 'absent' }] } }],
       [{ id: 'bois-chene', type: 'propMaterials', label: 'Chêne', color: '#5b3a22', roughness: 0.82, metalness: 0 }],
     )).toContain('x: matériau inconnu « absent »');
   });
@@ -17,6 +19,7 @@ describe('props.json — formes strictes de la recette volumique et des places a
   it('accepte une recette et des places assises bien formées', () => {
     expect(() => propsSchema.parse([{
       id: 'x',
+      type: 'props',
       label: 'X d’épreuve',
       solid: true,
       foot: { w: 2, h: 1 },
@@ -32,8 +35,8 @@ describe('props.json — formes strictes de la recette volumique et des places a
   });
 
   it('refuse une face de cylindre hors barème et une pente inconnue', () => {
-    expect(() => propsSchema.parse([{ id: 'x', volume: { primitives: [{ kind: 'cylinder', center: { x: 0, y: 0, h: 0.2 }, radius: 0.1, heightM: 0.4, sides: 10, material: 'fer-noirci' }] } }])).toThrow();
-    expect(() => propsSchema.parse([{ id: 'x', volume: { primitives: [{ kind: 'prism', center: { x: 0, y: 0, h: 0.2 }, size: { x: 1, y: 1, h: 1 }, slope: 'z+', material: 'bois-chene' }] } }])).toThrow();
+    expect(() => propsSchema.parse([{ id: 'x', type: 'props', label: 'X d’épreuve', volume: { primitives: [{ kind: 'cylinder', center: { x: 0, y: 0, h: 0.2 }, radius: 0.1, heightM: 0.4, sides: 10, material: 'fer-noirci' }] } }])).toThrow();
+    expect(() => propsSchema.parse([{ id: 'x', type: 'props', label: 'X d’épreuve', volume: { primitives: [{ kind: 'prism', center: { x: 0, y: 0, h: 0.2 }, size: { x: 1, y: 1, h: 1 }, slope: 'z+', material: 'bois-chene' }] } }])).toThrow();
   });
 });
 

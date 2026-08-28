@@ -29,6 +29,7 @@ import type { Appearance } from '../gameIso/rig/appearance';
 export interface PregenDef {
   /** `id` STABLE app-owned (kebab-case) — identité de navigation/Codex, découplée du `label`. */
   id: string;
+  type: 'pregens';
   label: string;
   /** `id` STABLE de l'espèce (`SpeciesData.id`). */
   species: string;

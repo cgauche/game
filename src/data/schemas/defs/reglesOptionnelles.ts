@@ -11,27 +11,26 @@
  * CHAPITRE seul (le passage ne chiffre rien à pointer — `LDB 18`, `LDB 65`…), 2 au folio
  * imprimé (`MDG 15 p.131`). La `ref` porte la RÉFÉRENCE, jamais de justification en prose : celle
  * d'une valeur que le RAW ne chiffre pas va dans `maison` (CLAUDE.md règle 7, même sémantique que
- * `castingNumberMod.maison`, `grammaire/valeurs.ts`) — 27 entrées.
- * `source` = ancre `{book, page}` de la couverture par ENTRÉE (`sourceRefSchema`, `grammaire/valeurs.ts`) : le
- * folio IMPRIMÉ, relevé au marqueur `data-folio` qui gouverne la ligne de la `ref` (#1318 E8) —
- * jamais dérivé d'un calcul sur la ligne.
+ * `castingNumberMod.maison`, `grammaire/valeurs.ts`) — 27 entrées ; `maison` et `source` sont des clés
+ * d'ENVELOPPE, posées par la fabrique.
+ * `source` = ancre `{book, page}` de la couverture par ENTRÉE : le folio IMPRIMÉ, relevé au marqueur
+ * `data-folio` qui gouverne la ligne de la `ref` (#1318 E8) — jamais dérivé d'un calcul sur la ligne.
  * `action` : action de jeu rendue sous la rangée quand la règle vaut `when` — `icon` (registre
  * `src/ui/icons/`) et `run` (action du store) restent des `string` ici, liés par
  * `src/ui/rule-action-wiring.test.ts`.
  */
 import { z } from 'zod';
-import { ruleValueSchema, sourceRefSchema } from '../grammaire/valeurs';
+import { ruleValueSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'reglesOptionnelles.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string().min(1),
-    label: z.string().min(1),
+const doc = document(
+  'reglesOptionnelles',
+  famille,
+  {
     ref: z.string().min(1),
-    source: sourceRefSchema.optional(),
-    maison: z.string().min(1).optional(),
     group: z.string().min(1),
     kind: z.enum(['flag', 'param', 'mode']),
     default: ruleValueSchema,
@@ -48,5 +47,24 @@ export const schema = z.array(
         run: z.string().min(1),
       })
       .optional(),
-  }),
+  },
+  {
+    ref: { label: 'Référence RAW (citation)', hint: 'Localisation la plus précise dont on dispose dans le livre cité' },
+    group: { label: 'Groupe d’affichage', hint: 'Regroupement à l’écran des Règles optionnelles' },
+    kind: { label: 'Forme du contrôle', hint: 'Interrupteur / paramètre chiffré / mode à choix' },
+    default: { label: 'Valeur par défaut' },
+    options: { label: 'Libellés des choix', hint: 'Pour une règle de type mode' },
+    min: { label: 'Minimum réglable', hint: 'Borne basse de saisie du paramètre chiffré' },
+    max: { label: 'Maximum réglable', hint: 'Borne haute de saisie du paramètre chiffré' },
+    step: { label: 'Incrément de saisie' },
+    hint: { label: 'Aide affichée', hint: 'Aide courte affichée sous le contrôle' },
+    action: { label: 'Action liée', hint: 'Proposée sous la rangée quand la condition de déclenchement est remplie' },
+  },
+  {
+    codex: { keys: ['reglesOptionnelles'] },
+    edit: { dataset: 'reglesOptionnelles' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

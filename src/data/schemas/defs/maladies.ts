@@ -2,10 +2,11 @@
  * Schéma de `maladies.json` — Maladies et infections (LDB 20). Dérivé du contenu RÉEL (16 maladies)
  * et de son consommateur typé `DiseaseDef` (`src/engine/disease.ts`, `DiseaseTime`/`DiceSpec` id.).
  * `source` : ABSENT de `DiseaseDef` (le moteur ne le lit pas) et seulement 5/16 entrées le portent
- * (les maladies hors-LDB — Mort sur le Reik Compagnon, EDO, Middenheim) → optionnel, fidèle aux DEUX.
+ * (les maladies hors-LDB — Mort sur le Reik Compagnon, EDO, Middenheim) ; l'enveloppe la laisse
+ * optionnelle, le refine de provenance de la fabrique exigeant `source` OU `maison`.
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { gameOpSchema } from '../grammaire/mecanique';
 
 export const file = 'maladies.json';
@@ -29,11 +30,10 @@ const diseaseSymptomSchema = z.strictObject({
   spec: z.string().optional(),
 });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    desc: z.string(),
+const doc = document(
+  'maladies',
+  famille,
+  {
     contractDifficulty: z.string(),
     incubation: diseaseTimeSchema,
     duration: diseaseTimeSchema,
@@ -44,6 +44,22 @@ export const schema = z.array(
     infectionPassive: z.array(gameOpSchema).optional(),
     /** `DiseaseDef.contaminatesWaterBarrel` (`src/engine/disease.ts`) — MDG 14 l.209. */
     contaminatesWaterBarrel: z.boolean().optional(),
-    source: sourceRefSchema.optional(),
-  }),
+  },
+  {
+    contractDifficulty: { label: 'Difficulté de contraction' },
+    incubation: { label: 'Incubation', hint: 'Délai avant apparition des symptômes' },
+    duration: { label: 'Durée', hint: 'Durée de la maladie' },
+    symptoms: { label: 'Symptômes' },
+    immuneAfterCure: { label: 'Immunise après guérison' },
+    infectionPassive: { label: 'Effets passifs (infection)', hint: 'Effets actifs en continu tant que l’infection dure' },
+    contaminatesWaterBarrel: { label: 'Contamine un baril d’eau' },
+  },
+  {
+    codex: { keys: ['maladies'] },
+    edit: { dataset: 'maladies' },
+  },
+  { exiges: ['desc'] },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

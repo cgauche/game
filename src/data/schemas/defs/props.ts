@@ -1,11 +1,12 @@
 /**
  * Schéma de `props.json` — accessoires de scène : couche sémantique (solidité/opacité/couvert/lumière),
- * EMPREINTE de grille, recette VOLUMIQUE locale et places assises. `propDataSchema` et ses sous-schémas
- * sont des exports NOMMÉS de ce module (arbitrage vague mobilier), miroir de l'interface `PropData`
- * (`src/data/props.types.ts`).
+ * EMPREINTE de grille, recette VOLUMIQUE locale et places assises. Les sous-schémas sont des exports
+ * NOMMÉS de ce module (arbitrage vague mobilier), miroir de l'interface `PropData`
+ * (`src/data/props.types.ts`) ; l'ENTRÉE elle-même est rendue par `document()`.
  */
 import { z } from 'zod';
 import { cell2Schema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 
 export const file = 'props.json';
 export const famille = 'entite';
@@ -40,21 +41,47 @@ export const propSeatSlotSchema = z.strictObject({
 
 /** `PropData` (`src/data/props.types.ts`) — type de décor app-owned : vérité UNIQUE de l'empreinte,
  *  de la physique, de la recette volumique et des places assises. Entrée de `props.json`, et contrat
- *  partagé par `src/state` (walkability, LdV, lumière) et `src/gameIso` (rendu). */
-export const propDataSchema = z.strictObject({
-  id: z.string(),
-  /** Miroir du `label` de la def d'ART du même id (`src/gameIso/catalog/decor/defs/<id>.ts`) —
-   *  parité gardée par `src/data/props-label-parite.test.ts`. */
-  label: z.string().min(1),
-  solid: z.boolean().optional(),
-  opaque: z.boolean().optional(),
-  cover: z.enum(['imparfaite', 'moyenne', 'totale']).optional(),
-  // `tone` (#1245, L4) = APPARENCE seule (`lightTones.json` : couleur/intensité/vacillement),
-  // résolue au bord du rendu ; le RAYON reste la seule chose que le moteur lise d'une source.
-  light: z.strictObject({ radiusTiles: z.number(), tone: z.string().optional() }).optional(),
-  foot: z.strictObject({ w: z.number().int().positive(), h: z.number().int().positive() }).optional(),
-  volume: propVolumeRecipeSchema.optional(),
-  seatSlots: z.array(propSeatSlotSchema).optional(),
-});
+ *  partagé par `src/state` (walkability, LdV, lumière) et `src/gameIso` (rendu).
+ *  Le `label` de l'enveloppe est le MIROIR du `label` de la def d'ART du même id
+ *  (`src/gameIso/catalog/decor/defs/<id>.ts`) — parité gardée par `src/data/props-label-parite.test.ts`. */
+const doc = document(
+  'props',
+  famille,
+  {
+    solid: z.boolean().optional(),
+    opaque: z.boolean().optional(),
+    cover: z.enum(['imparfaite', 'moyenne', 'totale']).optional(),
+    // `tone` (#1245, L4) = APPARENCE seule (`lightTones.json` : couleur/intensité/vacillement),
+    // résolue au bord du rendu ; le RAYON reste la seule chose que le moteur lise d'une source.
+    light: z.strictObject({ radiusTiles: z.number(), tone: z.string().optional() }).optional(),
+    foot: z.strictObject({ w: z.number().int().positive(), h: z.number().int().positive() }).optional(),
+    volume: propVolumeRecipeSchema.optional(),
+    seatSlots: z.array(propSeatSlotSchema).optional(),
+  },
+  {
+    solid: { label: 'Bloque le passage', hint: 'Empêche de marcher sur la case (combat et exploration)' },
+    opaque: { label: 'Bloque la vue', hint: 'Coupe la ligne de vue (LdV)' },
+    cover: { label: 'Couvert', hint: 'Degré de couvert offert (imparfaite/moyenne/totale)' },
+    light: { label: 'Source lumineuse', hint: 'Rayon éclairé (en cases) et ton optionnel de la source' },
+    foot: { label: 'Empreinte au sol', hint: 'Largeur × profondeur en cases occupées par le décor' },
+    volume: { label: 'Recette volumique', hint: 'Primitives (caisse/cylindre/prisme) composant le rendu volumique du décor' },
+    seatSlots: { label: 'Places assises', hint: 'Ancres, orientation et case d’abord des places offertes par le décor' },
+  },
+  {
+    codex: {
+      exempt: {
+        kind: 'vocabulaire-app-interne',
+        raison:
+          'catalogue des placeables de décor (art, pas règle) — aucune catégorie du Codex ne l’expose ; il s’édite à la palette de l’éditeur de carte',
+      },
+    },
+    edit: { none: 'édité à la PALETTE de décor de l’éditeur de carte, jamais par une catégorie du Codex' },
+  },
+);
 
-export const schema = z.array(propDataSchema);
+export const schema = doc.schema;
+export const meta = doc.meta;
+/** Clés top-level de l'ENTRÉE (enveloppe + champs), relevées AVANT le sceau — le nœud rendu par la
+ *  fabrique n'a plus de `.shape`. Consommée par `scripts/guards/lib/fieldConsumerTargets.mjs`, qui
+ *  dégraderait SILENCIEUSEMENT à zéro champ sur un nœud scellé. */
+export const cles = doc.cles;

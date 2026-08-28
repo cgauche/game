@@ -5,22 +5,24 @@
  * `TrappingRef[]`, `characteristics` = `CharKey[]`. Ces 3 formes (Ref/TrappingRef/AdvancementRef)
  * et l'énum `CharKey` vivent dans la grammaire (`grammaire/reference.ts`, `grammaire/valeurs.ts`),
  * partagées avec `species.ts`/`classes.ts`.
+ *
+ * `id` (composite `<career>-<level>`, 432/432 distincts), `label`, `labelF` (forme féminine MAISON —
+ * le LDB n'imprime que le masculin ; omise = forme épicène) et `source` (dérivée de `CareerData.source`,
+ * #309 : chaque niveau appartient à une Carrière déjà citée, ancre = folio de la Carrière parente,
+ * LDB 7-08) sont des clés d'ENVELOPPE, posées par la fabrique.
  */
 import { z } from 'zod';
-import { charKeySchema, sourceRefSchema } from '../grammaire/valeurs';
+import { charKeySchema } from '../grammaire/valeurs';
 import { advancementRefSchema, trappingRefSchema } from '../grammaire/reference';
+import { document } from '../grammaire/document';
 
 export const file = 'careerLevels.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    /** Identité du niveau — composite `<career>-<level>` (`agitateur-1`), 432/432 distincts. */
-    id: z.string().min(1),
-    label: z.string(),
-    /** Forme féminine d'AFFICHAGE du niveau — MAISON (le LDB n'imprime que le masculin) ;
-     *  omis = forme épicène (identique au masculin). */
-    labelF: z.string().optional(),
+const doc = document(
+  'careerLevels',
+  famille,
+  {
     /** `id` de la Carrière (`CareerData.id`). */
     career: z.string(),
     level: z.number(),
@@ -31,8 +33,33 @@ export const schema = z.array(
     /** Échelon de statut (« Bronze/Argent/Or N ») — VERBATIM du livre : chaîne libre, 432/432 entrées
      *  conformes à la graphie Bronze/Argent/Or + échelon. */
     status: z.string(),
-    /** Dérivé de `CareerData.source` (#309) : chaque niveau appartient à une Carrière déjà citée ;
-     *  ancre retenue = folio de la Carrière parente (LDB 7-08, blocs par Carrière). */
-    source: sourceRefSchema.optional(),
-  }),
+  },
+  {
+    career: { label: 'Carrière', hint: 'Carrière à laquelle appartient ce Niveau' },
+    level: { label: 'Niveau', hint: 'Rang du Niveau au sein de la Carrière' },
+    skills: {
+      label: 'Compétences du Niveau',
+      hint: 'Compétences ouvertes à l’Augmentation par ce Niveau (cumul des Niveaux ≤ courant ; l’italique du N1 sert à Gagner de l’argent)',
+    },
+    talents: {
+      label: 'Talents du Niveau',
+      hint: 'Talents disponibles à l’achat au Niveau COURANT seul (100 PX + 100 par prise) — pas ceux des Niveaux précédents',
+    },
+    trappings: {
+      label: 'Possessions du Niveau',
+      hint: 'Possessions listées à ce Niveau (celles du Niveau 1 dotent le personnage à la création)',
+    },
+    characteristics: {
+      label: 'Caractéristiques du Niveau',
+      hint: 'Caractéristiques de Carrière ouvertes par ce Niveau (Augmentations au coût standard, ×2 hors carrière) ; les Niveaux ≤ courant se cumulent',
+    },
+    status: { label: 'Statut social', hint: 'Échelon Bronze/Argent/Or de ce Niveau' },
+  },
+  {
+    codex: { keys: ['careerLevels'] },
+    edit: { dataset: 'careerLevels' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

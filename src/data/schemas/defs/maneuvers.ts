@@ -7,11 +7,14 @@
  * `qualities.ts`/`talents.ts`/`etats.ts`/`spells.ts`).
  *
  * AUCUN champ de PROSE (#1226) : une manœuvre est la PROJECTION mécanique d'un Trait de créature qui la
- * déclare (`TraitData.grantsManeuvers`) et qui porte SEUL le verbatim + l'ancrage. `strictObject` rejette
- * donc tout `desc` ré-ajouté ici. Résolution du trait : `traitProjectingManeuver` (`src/data/index.ts`).
+ * déclare (`TraitData.grantsManeuvers`) et qui porte SEUL le verbatim + l'ancrage. L'ENVELOPPE de la
+ * fabrique offre `desc` à tout document ; ce document la REFUSE nommément par `options.affinerEntree`
+ * — sans quoi l'adoption rouvrirait en silence la porte que `strictObject` fermait (0/20 en donnée).
+ * Résolution du trait : `traitProjectingManeuver` (`src/data/index.ts`).
  */
 import { z } from 'zod';
-import { charKeySchema, sourceRefSchema, stakeFormSchema } from '../grammaire/valeurs';
+import { charKeySchema, stakeFormSchema } from '../grammaire/valeurs';
+import { document } from '../grammaire/document';
 import { triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'maneuvers.json';
@@ -23,10 +26,10 @@ const maneuverMeasure = z.strictObject({
   plus: z.number().optional(),
 });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'maneuvers',
+  famille,
+  {
     kind: z.enum(['arme', 'morsure', 'caudale', 'cornes', 'souffle', 'vomi', 'tentacules', 'etreinte', 'regard', 'langue', 'hurlement']),
     activation: z.enum(['action', 'free', 'charge']),
     advantageCost: z.number(),
@@ -38,13 +41,50 @@ export const schema = z.array(
     blast: maneuverMeasure.optional(),
     magic: z.boolean().optional(),
     effects: z.array(triggeredEffectSchema),
-    /** Folio du Trait PROJETANT (`traitProjectingManeuver`), le seul ancrage : LDB 338-343 pour les
-     *  attaques naturelles, Middenheim 115-117 pour les capacités de bestiaire. */
-    source: sourceRefSchema,
     priority: z.number().optional(),
     /** ENJEU de l'ENTRÉE (#1117) — ce que la manœuvre met en jeu, COLLÉ à ses `effects` (éditable au
      *  Codex). Rendu par `resolveStake` et PRIORITAIRE sur le gabarit du kind `maneuverDefense`. */
     stake: z.string().optional(),
     stakeForm: stakeFormSchema.optional(),
-  }),
+  },
+  {
+    kind: { label: 'Type d’attaque (rendu)', hint: 'Anime et illustre la manœuvre — n’entre pas dans la résolution' },
+    activation: { label: 'Activation', hint: 'Action / gratuite / charge' },
+    advantageCost: { label: 'Coût en Avantage' },
+    advantageMode: { label: 'Mode de coût', hint: 'Fixe / variable / tout l’Avantage' },
+    stat: { label: 'Caractéristique de test' },
+    defense: { label: 'Défense opposée' },
+    targeting: { label: 'Ciblage' },
+    range: { label: 'Portée' },
+    blast: { label: 'Zone d’effet' },
+    magic: { label: 'Magique' },
+    effects: { label: 'Effets déclenchés' },
+    priority: {
+      label: 'Priorité',
+      hint: 'Poids de pertinence : classe la manœuvre au menu d’attaque et dans le choix de l’IA (défaut 1)',
+    },
+    stake: { label: 'Enjeu', hint: 'Ce que la manœuvre met en jeu, collé à ses effets déclenchés' },
+    stakeForm: { label: 'Forme de l’enjeu' },
+  },
+  {
+    codex: { keys: ['maneuvers'] },
+    edit: { dataset: 'maneuvers' },
+  },
+  {
+    exiges: ['source'],
+    affinerEntree: (entree) =>
+      entree.superRefine((v, ctx) => {
+        const e = v as { id: string; desc?: string };
+        if (e.desc !== undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['desc'],
+            message: `${e.id} : une manœuvre ne porte AUCUNE prose (#1226) — le verbatim vit sur le Trait qui la projette`,
+          });
+        }
+      }),
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

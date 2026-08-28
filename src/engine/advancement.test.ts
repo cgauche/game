@@ -146,6 +146,7 @@ describe('Compléter / Changer de Carrière (LDB 07 l.111-140, LDB 07 l.144)', (
   const LEVELS: CareerLevelData[] = [
     {
       id: 'Test-1',
+      type: 'careerLevels',
       label: 'Niv1',
       career: 'Test',
       level: 1,
@@ -157,6 +158,7 @@ describe('Compléter / Changer de Carrière (LDB 07 l.111-140, LDB 07 l.144)', (
     },
     {
       id: 'Test-2',
+      type: 'careerLevels',
       label: 'Niv2',
       career: 'Test',
       level: 2,

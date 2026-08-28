@@ -3,7 +3,7 @@ import { OPTIONAL_RULES, type OptionalRule } from '../engine/policy';
 import { houseRuleTabs, MISC_TAB_KEY, OWN_TAB_MIN } from './houseRuleTabs';
 
 const fake = (id: string, group: string): OptionalRule => ({
-  id, group, label: id, ref: 'LDB 12 l.1', kind: 'flag', default: false,
+  id, type: 'reglesOptionnelles', group, label: id, ref: 'LDB 12 l.1', kind: 'flag', default: false,
 });
 
 describe('houseRuleTabs — découpe dérivée du registre des règles optionnelles (#839)', () => {

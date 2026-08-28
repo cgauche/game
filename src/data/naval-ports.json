@@ -1,6 +1,7 @@
 [
   {
     "id": "l-anguille",
+    "type": "naval-ports",
     "label": "L'Anguille",
     "region": "Bretonnie",
     "taille": 4,
@@ -25,6 +26,7 @@
   },
   {
     "id": "marienburg",
+    "type": "naval-ports",
     "label": "Marienburg",
     "region": "Wasteland",
     "taille": 4,
@@ -53,6 +55,7 @@
   },
   {
     "id": "aarnau",
+    "type": "naval-ports",
     "label": "Aarnau",
     "region": "Wasteland",
     "taille": 3,
@@ -72,6 +75,7 @@
   },
   {
     "id": "broekwater",
+    "type": "naval-ports",
     "label": "Broekwater",
     "region": "Wasteland",
     "taille": 1,
@@ -89,6 +93,7 @@
   },
   {
     "id": "leydenhoven",
+    "type": "naval-ports",
     "label": "Leydenhoven",
     "region": "Wasteland",
     "taille": 2,
@@ -105,6 +110,7 @@
   },
   {
     "id": "salzenmund",
+    "type": "naval-ports",
     "label": "Salzenmund",
     "region": "Nordland",
     "taille": 4,
@@ -129,6 +135,7 @@
   },
   {
     "id": "dietershafen",
+    "type": "naval-ports",
     "label": "Dietershafen",
     "region": "Nordland",
     "taille": 3,
@@ -148,6 +155,7 @@
   },
   {
     "id": "hargendorf",
+    "type": "naval-ports",
     "label": "Hargendorf",
     "region": "Nordland",
     "taille": 3,
@@ -171,6 +179,7 @@
   },
   {
     "id": "neues-emskrank",
+    "type": "naval-ports",
     "label": "Neues Emskrank",
     "region": "Nordland",
     "taille": 3,
@@ -190,6 +199,7 @@
   },
   {
     "id": "norden",
+    "type": "naval-ports",
     "label": "Norden",
     "region": "Nordland",
     "taille": 3,
@@ -216,6 +226,7 @@
   },
   {
     "id": "salkalten",
+    "type": "naval-ports",
     "label": "Salkalten",
     "region": "Ostland",
     "taille": 3,
@@ -240,6 +251,7 @@
   },
   {
     "id": "schonfeld",
+    "type": "naval-ports",
     "label": "Schönfeld",
     "region": "Ostland",
     "taille": 1,
@@ -257,6 +269,7 @@
   },
   {
     "id": "erengrad",
+    "type": "naval-ports",
     "label": "Erengrad",
     "region": "Kislev",
     "taille": 4,
@@ -279,6 +292,7 @@
   },
   {
     "id": "autel-de-la-moisson-ecarlate",
+    "type": "naval-ports",
     "label": "Autel de la Moisson écarlate",
     "region": "Pays des Trolls",
     "taille": 1,
@@ -295,6 +309,7 @@
   },
   {
     "id": "kraka-ravnsvake",
+    "type": "naval-ports",
     "label": "Kraka Ravnsvake",
     "region": "Kraka Ravnsvake",
     "taille": 2,
@@ -317,6 +332,7 @@
   },
   {
     "id": "kirkjugardur-langskipa",
+    "type": "naval-ports",
     "label": "Kirkjugarður Langskipa",
     "region": "Côte des Skaelings",
     "taille": 2,
@@ -334,6 +350,7 @@
   },
   {
     "id": "skjold",
+    "type": "naval-ports",
     "label": "Skjold",
     "region": "Côte des Bjornlings",
     "taille": 2,
@@ -353,6 +370,7 @@
   },
   {
     "id": "eyristaad",
+    "type": "naval-ports",
     "label": "Eyristaad",
     "region": "Côte des Bjornlings",
     "taille": 2,
@@ -372,6 +390,7 @@
   },
   {
     "id": "svunum",
+    "type": "naval-ports",
     "label": "Svunum",
     "region": "Côte des Bjornlings",
     "taille": 1,
@@ -392,6 +411,7 @@
   },
   {
     "id": "fjirgard",
+    "type": "naval-ports",
     "label": "Fjirgard",
     "region": "Côte des Bjornlings",
     "taille": 1,
@@ -410,6 +430,7 @@
   },
   {
     "id": "altdorf-port",
+    "type": "naval-ports",
     "label": "Altdorf",
     "region": "L'Empire",
     "taille": 4,
@@ -433,6 +454,7 @@
   },
   {
     "id": "bordeleaux",
+    "type": "naval-ports",
     "label": "Bordeleaux",
     "region": "Bretonnie",
     "taille": 4,
@@ -456,6 +478,7 @@
   },
   {
     "id": "brionne",
+    "type": "naval-ports",
     "label": "Brionne",
     "region": "Bretonnie",
     "taille": 4,
@@ -479,6 +502,7 @@
   },
   {
     "id": "lyonesse",
+    "type": "naval-ports",
     "label": "Lyonesse",
     "region": "Bretonnie",
     "taille": 3,
@@ -499,6 +523,7 @@
   },
   {
     "id": "mousillon",
+    "type": "naval-ports",
     "label": "Mousillon",
     "region": "Bretonnie",
     "taille": 3,
@@ -515,6 +540,7 @@
   },
   {
     "id": "miragliano",
+    "type": "naval-ports",
     "label": "Miragliano",
     "region": "Tilée",
     "taille": 2,
@@ -540,6 +566,7 @@
   },
   {
     "id": "tobaro",
+    "type": "naval-ports",
     "label": "Tobaro",
     "region": "Tilée",
     "taille": 4,
@@ -565,6 +592,7 @@
   },
   {
     "id": "sartosa",
+    "type": "naval-ports",
     "label": "Sartosa",
     "region": "Tilée",
     "taille": 3,
@@ -586,6 +614,7 @@
   },
   {
     "id": "luccini",
+    "type": "naval-ports",
     "label": "Luccini",
     "region": "Tilée",
     "taille": 4,
@@ -610,6 +639,7 @@
   },
   {
     "id": "remas",
+    "type": "naval-ports",
     "label": "Remas",
     "region": "Tilée",
     "taille": 4,
@@ -631,6 +661,7 @@
   },
   {
     "id": "magritta",
+    "type": "naval-ports",
     "label": "Magritta",
     "region": "Estalie",
     "taille": 4,
@@ -654,6 +685,7 @@
   },
   {
     "id": "bilbali",
+    "type": "naval-ports",
     "label": "Bilbali",
     "region": "Estalie",
     "taille": 4,
@@ -676,6 +708,7 @@
   },
   {
     "id": "skeggi",
+    "type": "naval-ports",
     "label": "Skeggi",
     "region": "Lustrie",
     "taille": 2,
@@ -696,6 +729,7 @@
   },
   {
     "id": "lothern",
+    "type": "naval-ports",
     "label": "Lothern",
     "region": "Ulthuan",
     "taille": 4,
@@ -717,6 +751,7 @@
   },
   {
     "id": "tor-koruali",
+    "type": "naval-ports",
     "label": "Tor Koruali",
     "region": "Ulthuan",
     "taille": 4,
@@ -739,6 +774,7 @@
   },
   {
     "id": "tor-yvresse",
+    "type": "naval-ports",
     "label": "Tor Yvresse",
     "region": "Ulthuan",
     "taille": 4,
@@ -758,6 +794,7 @@
   },
   {
     "id": "lashiek",
+    "type": "naval-ports",
     "label": "Lashiek",
     "region": "Arabie",
     "taille": 4,
@@ -774,6 +811,7 @@
   },
   {
     "id": "copher",
+    "type": "naval-ports",
     "label": "Copher",
     "region": "Arabie",
     "taille": 4,
@@ -796,6 +834,7 @@
   },
   {
     "id": "al-haikk",
+    "type": "naval-ports",
     "label": "Al-Haikk",
     "region": "Arabie",
     "taille": 4,

@@ -1,10 +1,10 @@
 [
   {
     "id": "talent-aleatoire",
+    "type": "talents",
     "label": "Talent aléatoire",
     "max": null,
     "test": null,
-    "desc": "",
     "specs": [],
     "rand": null,
     "source": {
@@ -14,6 +14,7 @@
   },
   {
     "id": "acrobaties-equestres",
+    "type": "talents",
     "label": "Acrobaties équestres",
     "max": {
       "bonusOf": "agilite"
@@ -41,6 +42,7 @@
   },
   {
     "id": "affable",
+    "type": "talents",
     "label": "Affable",
     "max": 1,
     "test": null,
@@ -61,6 +63,7 @@
   },
   {
     "id": "affinite-avec-les-animaux",
+    "type": "talents",
     "label": "Affinité avec les animaux",
     "max": {
       "bonusOf": "force-mentale"
@@ -83,6 +86,7 @@
   },
   {
     "id": "ambidextre",
+    "type": "talents",
     "label": "Ambidextre",
     "max": 2,
     "test": null,
@@ -102,6 +106,7 @@
   },
   {
     "id": "ame-pure",
+    "type": "talents",
     "label": "Âme pure",
     "max": {
       "bonusOf": "force-mentale"
@@ -120,6 +125,7 @@
   },
   {
     "id": "artilleur",
+    "type": "talents",
     "label": "Artilleur",
     "max": {
       "bonusOf": "dexterite"
@@ -154,6 +160,7 @@
   },
   {
     "id": "artiste",
+    "type": "talents",
     "label": "Artiste",
     "max": {
       "bonusOf": "dexterite"
@@ -225,6 +232,7 @@
   },
   {
     "id": "assaut-feroce",
+    "type": "talents",
     "label": "Assaut féroce",
     "max": {
       "bonusOf": "agilite"
@@ -271,6 +279,7 @@
   },
   {
     "id": "assistant-magique",
+    "type": "talents",
     "label": "Assistant magique",
     "max": 1,
     "test": null,
@@ -284,6 +293,7 @@
   },
   {
     "id": "attirant",
+    "type": "talents",
     "label": "Attirant",
     "max": {
       "bonusOf": "sociabilite"
@@ -307,6 +317,7 @@
   },
   {
     "id": "baratiner",
+    "type": "talents",
     "label": "Baratiner",
     "max": {
       "bonusOf": "sociabilite"
@@ -330,6 +341,7 @@
   },
   {
     "id": "battement",
+    "type": "talents",
     "label": "Battement",
     "max": {
       "bonusOf": "capacite-de-combat"
@@ -368,6 +380,7 @@
   },
   {
     "id": "benediction-de-tzeentch",
+    "type": "talents",
     "label": "Bénédiction de Tzeentch",
     "max": 1,
     "test": null,
@@ -382,6 +395,7 @@
   },
   {
     "id": "beni",
+    "type": "talents",
     "label": "Béni",
     "max": 1,
     "test": null,
@@ -399,6 +413,7 @@
   },
   {
     "id": "bon-marcheur",
+    "type": "talents",
     "label": "Bon marcheur",
     "max": {
       "bonusOf": "agilite"
@@ -448,6 +463,7 @@
   },
   {
     "id": "bonnes-jambes",
+    "type": "talents",
     "label": "Bonnes jambes",
     "max": {
       "bonusOf": "force"
@@ -471,6 +487,7 @@
   },
   {
     "id": "bricoleur",
+    "type": "talents",
     "label": "Bricoleur",
     "max": {
       "bonusOf": "dexterite"
@@ -494,6 +511,7 @@
   },
   {
     "id": "brouet",
+    "type": "talents",
     "label": "Brouet",
     "max": {
       "bonusOf": "endurance"
@@ -517,6 +535,7 @@
   },
   {
     "id": "caid",
+    "type": "talents",
     "label": "Caïd",
     "max": 1,
     "test": null,
@@ -530,6 +549,7 @@
   },
   {
     "id": "cavalier-emerite",
+    "type": "talents",
     "label": "Cavalier émérite",
     "max": {
       "bonusOf": "agilite"
@@ -582,6 +602,7 @@
   },
   {
     "id": "chanceux",
+    "type": "talents",
     "label": "Chanceux",
     "max": {
       "bonusOf": "sociabilite"
@@ -604,6 +625,7 @@
   },
   {
     "id": "charge-berserk",
+    "type": "talents",
     "label": "Charge berserk",
     "max": {
       "bonusOf": "force"
@@ -630,6 +652,7 @@
   },
   {
     "id": "chat-de-gouttiere",
+    "type": "talents",
     "label": "Chat de gouttière",
     "max": {
       "bonusOf": "initiative"
@@ -654,6 +677,7 @@
   },
   {
     "id": "chirurgie",
+    "type": "talents",
     "label": "Chirurgie",
     "max": {
       "bonusOf": "intelligence"
@@ -680,6 +704,7 @@
   },
   {
     "id": "claquer-le-fouet",
+    "type": "talents",
     "label": "Claquer le fouet",
     "max": {
       "bonusOf": "dexterite"
@@ -703,6 +728,7 @@
   },
   {
     "id": "coeur-vaillant",
+    "type": "talents",
     "label": "Cœur vaillant",
     "max": {
       "bonusOf": "force-mentale"
@@ -729,6 +755,7 @@
   },
   {
     "id": "combat-deloyal",
+    "type": "talents",
     "label": "Combat déloyal",
     "max": {
       "bonusOf": "capacite-de-combat"
@@ -755,6 +782,7 @@
   },
   {
     "id": "combat-instinctif",
+    "type": "talents",
     "label": "Combat instinctif",
     "max": {
       "bonusOf": "initiative"
@@ -773,6 +801,7 @@
   },
   {
     "id": "combattant-au-contact",
+    "type": "talents",
     "label": "Combattant au contact",
     "max": {
       "bonusOf": "dexterite"
@@ -796,6 +825,7 @@
   },
   {
     "id": "combattant-en-espace-clos",
+    "type": "talents",
     "label": "Combattant en espace clos",
     "max": {
       "bonusOf": "agilite"
@@ -819,6 +849,7 @@
   },
   {
     "id": "concocter",
+    "type": "talents",
     "label": "Concocter",
     "max": {
       "bonusOf": "intelligence"
@@ -867,6 +898,7 @@
   },
   {
     "id": "contorsionniste",
+    "type": "talents",
     "label": "Contorsionniste",
     "max": {
       "bonusOf": "agilite"
@@ -894,6 +926,7 @@
   },
   {
     "id": "controle-de-la-frenesie",
+    "type": "talents",
     "label": "Contrôle de la Frénésie",
     "max": {
       "bonusOf": "force-mentale"
@@ -959,6 +992,7 @@
   },
   {
     "id": "cooperatif",
+    "type": "talents",
     "label": "Coopératif",
     "max": {
       "bonusOf": "sociabilite"
@@ -977,6 +1011,7 @@
   },
   {
     "id": "commandant-d-equipe",
+    "type": "talents",
     "label": "Commandant d'équipe",
     "max": {
       "bonusOf": "initiative"
@@ -1003,6 +1038,7 @@
   },
   {
     "id": "costaud",
+    "type": "talents",
     "label": "Costaud",
     "max": {
       "bonusOf": "force"
@@ -1029,6 +1065,7 @@
   },
   {
     "id": "coude-a-coude",
+    "type": "talents",
     "label": "Coude-à-coude",
     "max": {
       "bonusOf": "capacite-de-combat"
@@ -1068,6 +1105,7 @@
   },
   {
     "id": "coup-puissant",
+    "type": "talents",
     "label": "Coup puissant",
     "max": {
       "bonusOf": "force"
@@ -1086,6 +1124,7 @@
   },
   {
     "id": "criminel",
+    "type": "talents",
     "label": "Criminel",
     "max": null,
     "test": null,
@@ -1099,6 +1138,7 @@
   },
   {
     "id": "desarmer",
+    "type": "talents",
     "label": "Désarmer",
     "max": {
       "bonusOf": "initiative"
@@ -1122,6 +1162,7 @@
   },
   {
     "id": "destinee",
+    "type": "talents",
     "label": "Destinée",
     "max": 1,
     "test": null,
@@ -1135,6 +1176,7 @@
   },
   {
     "id": "detection-d-artefact",
+    "type": "talents",
     "label": "Détection d'artefact",
     "max": {
       "bonusOf": "initiative"
@@ -1158,6 +1200,7 @@
   },
   {
     "id": "determine",
+    "type": "talents",
     "label": "Déterminé",
     "max": {
       "bonusOf": "force"
@@ -1176,6 +1219,7 @@
   },
   {
     "id": "diction-instinctive",
+    "type": "talents",
     "label": "Diction instinctive",
     "max": {
       "bonusOf": "initiative"
@@ -1202,6 +1246,7 @@
   },
   {
     "id": "discret",
+    "type": "talents",
     "label": "Discret",
     "max": {
       "bonusOf": "agilite"
@@ -1220,6 +1265,7 @@
   },
   {
     "id": "distraire",
+    "type": "talents",
     "label": "Distraire",
     "max": {
       "bonusOf": "agilite"
@@ -1258,6 +1304,7 @@
   },
   {
     "id": "disciple-du-changement",
+    "type": "talents",
     "label": "Disciple du changement",
     "max": 1,
     "test": null,
@@ -1272,6 +1319,7 @@
   },
   {
     "id": "doigts-de-fee",
+    "type": "talents",
     "label": "Doigts de fée",
     "max": 1,
     "test": null,
@@ -1292,6 +1340,7 @@
   },
   {
     "id": "double-vie",
+    "type": "talents",
     "label": "Double vie",
     "max": 1,
     "test": null,
@@ -1306,6 +1355,7 @@
   },
   {
     "id": "doue-en-calcul",
+    "type": "talents",
     "label": "Doué en calcul",
     "max": {
       "bonusOf": "intelligence"
@@ -1331,6 +1381,7 @@
   },
   {
     "id": "dur-a-cuire",
+    "type": "talents",
     "label": "Dur à cuire",
     "max": {
       "bonusOf": "endurance"
@@ -1355,6 +1406,7 @@
   },
   {
     "id": "effraction",
+    "type": "talents",
     "label": "Effraction",
     "max": {
       "bonusOf": "force"
@@ -1378,6 +1430,7 @@
   },
   {
     "id": "effrayant",
+    "type": "talents",
     "label": "Effrayant",
     "max": {
       "bonusOf": "force"
@@ -1396,6 +1449,7 @@
   },
   {
     "id": "endurci",
+    "type": "talents",
     "label": "Endurci",
     "max": {
       "bonusOf": "endurance"
@@ -1414,6 +1468,7 @@
   },
   {
     "id": "empreint-d-aqshy",
+    "type": "talents",
     "label": "Empreint d'Aqshy",
     "max": 1,
     "test": {
@@ -1431,6 +1486,7 @@
   },
   {
     "id": "empreint-d-azyr",
+    "type": "talents",
     "label": "Empreint d'Azyr",
     "max": 1,
     "test": {
@@ -1452,6 +1508,7 @@
   },
   {
     "id": "empreint-d-ulgu",
+    "type": "talents",
     "label": "Empreint d'Ulgu",
     "max": 1,
     "test": {
@@ -1480,6 +1537,7 @@
   },
   {
     "id": "empreint-de-chamon",
+    "type": "talents",
     "label": "Empreint de Chamon",
     "max": 1,
     "test": {
@@ -1501,6 +1559,7 @@
   },
   {
     "id": "empreint-de-ghur",
+    "type": "talents",
     "label": "Empreint de Ghur",
     "max": 1,
     "test": {
@@ -1526,6 +1585,7 @@
   },
   {
     "id": "empreint-de-ghyran",
+    "type": "talents",
     "label": "Empreint de Ghyran",
     "max": 1,
     "test": {
@@ -1559,6 +1619,7 @@
   },
   {
     "id": "empreint-de-hysh",
+    "type": "talents",
     "label": "Empreint de Hysh",
     "max": 1,
     "test": {
@@ -1580,6 +1641,7 @@
   },
   {
     "id": "empreint-de-shyish",
+    "type": "talents",
     "label": "Empreint de Shyish",
     "max": 1,
     "test": {
@@ -1601,6 +1663,7 @@
   },
   {
     "id": "empreint-de-la-magie",
+    "type": "talents",
     "label": "Empreint de la Magie",
     "max": 1,
     "test": null,
@@ -1616,6 +1679,7 @@
   },
   {
     "id": "ergoteur",
+    "type": "talents",
     "label": "Ergoteur",
     "max": {
       "bonusOf": "sociabilite"
@@ -1639,6 +1703,7 @@
   },
   {
     "id": "escroquer",
+    "type": "talents",
     "label": "Escroquer",
     "max": {
       "bonusOf": "intelligence"
@@ -1662,6 +1727,7 @@
   },
   {
     "id": "exaltant",
+    "type": "talents",
     "label": "Exaltant",
     "max": {
       "bonusOf": "sociabilite"
@@ -1685,6 +1751,7 @@
   },
   {
     "id": "faire-la-manche",
+    "type": "talents",
     "label": "Faire la manche",
     "max": {
       "bonusOf": "sociabilite"
@@ -1708,6 +1775,7 @@
   },
   {
     "id": "feinte",
+    "type": "talents",
     "label": "Feinte",
     "max": {
       "bonusOf": "capacite-de-combat"
@@ -1732,6 +1800,7 @@
   },
   {
     "id": "ferveur-ardente",
+    "type": "talents",
     "label": "Ferveur ardente",
     "max": {
       "bonusOf": "sociabilite"
@@ -1755,6 +1824,7 @@
   },
   {
     "id": "flagellant",
+    "type": "talents",
     "label": "Flagellant",
     "max": {
       "bonusOf": "endurance"
@@ -1779,6 +1849,7 @@
   },
   {
     "id": "flairer-les-ennuis",
+    "type": "talents",
     "label": "Flairer les ennuis",
     "max": {
       "bonusOf": "initiative"
@@ -1797,6 +1868,7 @@
   },
   {
     "id": "frappe-assommante",
+    "type": "talents",
     "label": "Frappe assommante",
     "max": {
       "bonusOf": "capacite-de-combat"
@@ -1823,6 +1895,7 @@
   },
   {
     "id": "frappe-blessante",
+    "type": "talents",
     "label": "Frappe blessante",
     "max": {
       "bonusOf": "initiative"
@@ -1858,6 +1931,7 @@
   },
   {
     "id": "frappe-precise",
+    "type": "talents",
     "label": "Frappe précise",
     "max": {
       "bonusOf": "initiative"
@@ -1873,6 +1947,7 @@
   },
   {
     "id": "frappe-reactive",
+    "type": "talents",
     "label": "Frappe réactive",
     "max": {
       "bonusOf": "initiative"
@@ -1938,6 +2013,7 @@
   },
   {
     "id": "frenesie",
+    "type": "talents",
     "label": "Frénésie",
     "max": 1,
     "test": null,
@@ -1951,6 +2027,7 @@
   },
   {
     "id": "fuite",
+    "type": "talents",
     "label": "Fuite !",
     "max": {
       "bonusOf": "agilite"
@@ -2002,6 +2079,7 @@
   },
   {
     "id": "grand-orateur",
+    "type": "talents",
     "label": "Grand orateur",
     "max": {
       "bonusOf": "sociabilite"
@@ -2025,6 +2103,7 @@
   },
   {
     "id": "grimpeur",
+    "type": "talents",
     "label": "Grimpeur",
     "max": {
       "bonusOf": "force"
@@ -2047,6 +2126,7 @@
   },
   {
     "id": "guerrier-ne",
+    "type": "talents",
     "label": "Guerrier né",
     "max": 1,
     "test": null,
@@ -2067,6 +2147,7 @@
   },
   {
     "id": "guide-fluvial",
+    "type": "talents",
     "label": "Guide fluvial",
     "max": {
       "bonusOf": "initiative"
@@ -2090,6 +2171,7 @@
   },
   {
     "id": "haine",
+    "type": "talents",
     "label": "Haine",
     "max": {
       "bonusOf": "force-mentale"
@@ -2159,6 +2241,7 @@
   },
   {
     "id": "haine-sacree",
+    "type": "talents",
     "label": "Haine sacrée",
     "max": {
       "bonusOf": "sociabilite"
@@ -2174,6 +2257,7 @@
   },
   {
     "id": "harmonisation-aethyrique",
+    "type": "talents",
     "label": "Harmonisation aethyrique",
     "max": {
       "bonusOf": "initiative"
@@ -2199,6 +2283,7 @@
   },
   {
     "id": "identite-secrete",
+    "type": "talents",
     "label": "Identité secrète",
     "max": {
       "bonusOf": "intelligence"
@@ -2223,6 +2308,7 @@
   },
   {
     "id": "imitation",
+    "type": "talents",
     "label": "Imitation",
     "max": {
       "bonusOf": "initiative"
@@ -2247,6 +2333,7 @@
   },
   {
     "id": "imperturbable",
+    "type": "talents",
     "label": "Imperturbable",
     "max": 1,
     "test": null,
@@ -2267,6 +2354,7 @@
   },
   {
     "id": "impitoyable",
+    "type": "talents",
     "label": "Impitoyable",
     "max": {
       "bonusOf": "agilite"
@@ -2304,6 +2392,7 @@
   },
   {
     "id": "inebranlable",
+    "type": "talents",
     "label": "Inébranlable",
     "max": {
       "bonusOf": "force-mentale"
@@ -2327,6 +2416,7 @@
   },
   {
     "id": "infatigable",
+    "type": "talents",
     "label": "Infatigable",
     "max": {
       "bonusOf": "force"
@@ -2352,6 +2442,7 @@
   },
   {
     "id": "insignifiant",
+    "type": "talents",
     "label": "Insignifiant",
     "max": {
       "bonusOf": "sociabilite"
@@ -2375,6 +2466,7 @@
   },
   {
     "id": "intrigant",
+    "type": "talents",
     "label": "Intrigant",
     "max": {
       "bonusOf": "intelligence"
@@ -2398,6 +2490,7 @@
   },
   {
     "id": "invocation",
+    "type": "talents",
     "label": "Invocation",
     "max": 1,
     "test": null,
@@ -2414,6 +2507,7 @@
   },
   {
     "id": "lecture-rapide",
+    "type": "talents",
     "label": "Lecture rapide",
     "max": {
       "bonusOf": "intelligence"
@@ -2437,6 +2531,7 @@
   },
   {
     "id": "linguistique",
+    "type": "talents",
     "label": "Linguistique",
     "max": {
       "bonusOf": "intelligence"
@@ -2460,6 +2555,7 @@
   },
   {
     "id": "lire-ecrire",
+    "type": "talents",
     "label": "Lire/Écrire",
     "max": 1,
     "test": null,
@@ -2473,6 +2569,7 @@
   },
   {
     "id": "lire-sur-les-levres",
+    "type": "talents",
     "label": "Lire sur les lèvres",
     "max": {
       "bonusOf": "initiative"
@@ -2496,6 +2593,7 @@
   },
   {
     "id": "loup-de-mer",
+    "type": "talents",
     "label": "Loup de mer",
     "max": {
       "bonusOf": "agilite"
@@ -2519,6 +2617,7 @@
   },
   {
     "id": "machoires-d-acier",
+    "type": "talents",
     "label": "Mâchoires d'acier",
     "max": {
       "bonusOf": "endurance"
@@ -2578,6 +2677,7 @@
   },
   {
     "id": "mage-de-guerre",
+    "type": "talents",
     "label": "Mage de guerre",
     "max": 1,
     "test": null,
@@ -2591,6 +2691,7 @@
   },
   {
     "id": "magie-des-arcanes",
+    "type": "talents",
     "label": "Magie des Arcanes",
     "max": 1,
     "test": null,
@@ -2608,6 +2709,7 @@
   },
   {
     "id": "magie-du-chaos",
+    "type": "talents",
     "label": "Magie du Chaos",
     "max": 1,
     "test": null,
@@ -2625,6 +2727,7 @@
   },
   {
     "id": "magie-mineure",
+    "type": "talents",
     "label": "Magie mineure",
     "max": 1,
     "test": null,
@@ -2641,6 +2744,7 @@
   },
   {
     "id": "magnum-opus",
+    "type": "talents",
     "label": "Magnum Opus",
     "max": null,
     "test": null,
@@ -2654,6 +2758,7 @@
   },
   {
     "id": "mains-agiles",
+    "type": "talents",
     "label": "Mains agiles",
     "max": {
       "bonusOf": "dexterite"
@@ -2681,6 +2786,7 @@
   },
   {
     "id": "maitre-artisan",
+    "type": "talents",
     "label": "Maître artisan",
     "max": {
       "bonusOf": "dexterite"
@@ -2893,6 +2999,7 @@
   },
   {
     "id": "maitre-en-deguisement",
+    "type": "talents",
     "label": "Maître en déguisement",
     "max": {
       "bonusOf": "sociabilite"
@@ -2917,6 +3024,7 @@
   },
   {
     "id": "maitrise-des-des",
+    "type": "talents",
     "label": "Maîtrise des dés",
     "max": {
       "bonusOf": "intelligence"
@@ -2944,6 +3052,7 @@
   },
   {
     "id": "maitrise-du-combat",
+    "type": "talents",
     "label": "Maîtrise du combat",
     "max": {
       "bonusOf": "agilite"
@@ -2962,6 +3071,7 @@
   },
   {
     "id": "maniement-de-deux-armes",
+    "type": "talents",
     "label": "Maniement de deux armes",
     "max": {
       "bonusOf": "agilite"
@@ -2994,6 +3104,7 @@
   },
   {
     "id": "marinier",
+    "type": "talents",
     "label": "Marinier",
     "max": {
       "bonusOf": "agilite"
@@ -3017,6 +3128,7 @@
   },
   {
     "id": "menacant",
+    "type": "talents",
     "label": "Menaçant",
     "max": {
       "bonusOf": "force"
@@ -3039,6 +3151,7 @@
   },
   {
     "id": "menteur",
+    "type": "talents",
     "label": "Menteur",
     "max": {
       "bonusOf": "sociabilite"
@@ -3062,6 +3175,7 @@
   },
   {
     "id": "nageur-endurant",
+    "type": "talents",
     "label": "Nageur endurant",
     "max": {
       "bonusOf": "force"
@@ -3084,6 +3198,7 @@
   },
   {
     "id": "nanti",
+    "type": "talents",
     "label": "Nanti",
     "max": null,
     "test": null,
@@ -3097,6 +3212,7 @@
   },
   {
     "id": "negociateur",
+    "type": "talents",
     "label": "Négociateur",
     "max": {
       "bonusOf": "sociabilite"
@@ -3122,6 +3238,7 @@
   },
   {
     "id": "noblesse",
+    "type": "talents",
     "label": "Noblesse",
     "max": 1,
     "test": {
@@ -3138,6 +3255,7 @@
   },
   {
     "id": "noctambule",
+    "type": "talents",
     "label": "Noctambule",
     "max": {
       "bonusOf": "endurance"
@@ -3161,6 +3279,7 @@
   },
   {
     "id": "nomade",
+    "type": "talents",
     "label": "Nomade",
     "max": {
       "bonusOf": "agilite"
@@ -3184,6 +3303,7 @@
   },
   {
     "id": "numismate",
+    "type": "talents",
     "label": "Numismate",
     "max": {
       "bonusOf": "initiative"
@@ -3207,6 +3327,7 @@
   },
   {
     "id": "obstine",
+    "type": "talents",
     "label": "Obstiné",
     "max": {
       "bonusOf": "force-mentale"
@@ -3229,6 +3350,7 @@
   },
   {
     "id": "oeil-du-chasseur",
+    "type": "talents",
     "label": "Œil du chasseur",
     "max": {
       "bonusOf": "initiative"
@@ -3247,6 +3369,7 @@
   },
   {
     "id": "orateur",
+    "type": "talents",
     "label": "Orateur",
     "max": {
       "bonusOf": "sociabilite"
@@ -3262,6 +3385,7 @@
   },
   {
     "id": "oreille-absolue",
+    "type": "talents",
     "label": "Oreille absolue",
     "max": {
       "bonusOf": "initiative"
@@ -3296,6 +3420,7 @@
   },
   {
     "id": "pansement-de-fortune",
+    "type": "talents",
     "label": "Pansement de fortune",
     "max": {
       "bonusOf": "intelligence"
@@ -3320,6 +3445,7 @@
   },
   {
     "id": "pas-de-cote",
+    "type": "talents",
     "label": "Pas de côté",
     "max": {
       "bonusOf": "agilite"
@@ -3343,6 +3469,7 @@
   },
   {
     "id": "pecheur",
+    "type": "talents",
     "label": "Pêcheur",
     "max": {
       "bonusOf": "initiative"
@@ -3361,6 +3488,7 @@
   },
   {
     "id": "perception-de-la-magie",
+    "type": "talents",
     "label": "Perception de la magie",
     "max": {
       "bonusOf": "initiative"
@@ -3384,6 +3512,7 @@
   },
   {
     "id": "perseverant",
+    "type": "talents",
     "label": "Persévérant",
     "max": {
       "bonusOf": "endurance"
@@ -3407,6 +3536,7 @@
   },
   {
     "id": "perspicace",
+    "type": "talents",
     "label": "Perspicace",
     "max": 1,
     "test": null,
@@ -3427,6 +3557,7 @@
   },
   {
     "id": "petit",
+    "type": "talents",
     "label": "Petit",
     "max": 1,
     "test": null,
@@ -3441,6 +3572,7 @@
   },
   {
     "id": "pharmacologie",
+    "type": "talents",
     "label": "Pharmacologie",
     "max": {
       "bonusOf": "intelligence"
@@ -3465,6 +3597,7 @@
   },
   {
     "id": "pied-marin",
+    "type": "talents",
     "label": "Pied marin",
     "max": {
       "bonusOf": "endurance"
@@ -3483,6 +3616,7 @@
   },
   {
     "id": "pilote",
+    "type": "talents",
     "label": "Pilote",
     "max": {
       "bonusOf": "initiative"
@@ -3519,6 +3653,7 @@
   },
   {
     "id": "porte-bouclier",
+    "type": "talents",
     "label": "Porte-Bouclier",
     "max": {
       "bonusOf": "force"
@@ -3558,6 +3693,7 @@
   },
   {
     "id": "presence-imposante",
+    "type": "talents",
     "label": "Présence imposante",
     "max": {
       "bonusOf": "sociabilite"
@@ -3580,6 +3716,7 @@
   },
   {
     "id": "prevoyant",
+    "type": "talents",
     "label": "Prévoyant",
     "max": {
       "bonusOf": "initiative"
@@ -3595,6 +3732,7 @@
   },
   {
     "id": "rat-d-egout",
+    "type": "talents",
     "label": "Rat d'égout",
     "max": {
       "bonusOf": "agilite"
@@ -3618,6 +3756,7 @@
   },
   {
     "id": "rechargement-rapide",
+    "type": "talents",
     "label": "Rechargement rapide",
     "max": {
       "bonusOf": "dexterite"
@@ -3652,6 +3791,7 @@
   },
   {
     "id": "reflexes-foudroyants",
+    "type": "talents",
     "label": "Réflexes foudroyants",
     "max": 1,
     "test": null,
@@ -3672,6 +3812,7 @@
   },
   {
     "id": "renversement",
+    "type": "talents",
     "label": "Renversement",
     "max": {
       "bonusOf": "capacite-de-combat"
@@ -3714,6 +3855,7 @@
   },
   {
     "id": "resistance",
+    "type": "talents",
     "label": "Résistance",
     "max": {
       "bonusOf": "endurance"
@@ -3761,6 +3903,7 @@
   },
   {
     "id": "resistance-a-la-magie",
+    "type": "talents",
     "label": "Résistance à la Magie",
     "max": {
       "bonusOf": "endurance"
@@ -3782,6 +3925,7 @@
   },
   {
     "id": "riposte",
+    "type": "talents",
     "label": "Riposte",
     "max": {
       "bonusOf": "agilite"
@@ -3809,6 +3953,7 @@
   },
   {
     "id": "robuste",
+    "type": "talents",
     "label": "Robuste",
     "max": {
       "bonusOf": "endurance"
@@ -3827,6 +3972,7 @@
   },
   {
     "id": "sans-peur",
+    "type": "talents",
     "label": "Sans peur",
     "max": {
       "bonusOf": "force-mentale"
@@ -3935,6 +4081,7 @@
   },
   {
     "id": "saut-carpe",
+    "type": "talents",
     "label": "Saut carpé",
     "max": 1,
     "test": null,
@@ -3948,6 +4095,7 @@
   },
   {
     "id": "savant",
+    "type": "talents",
     "label": "Savant",
     "max": {
       "bonusOf": "intelligence"
@@ -4185,6 +4333,7 @@
   },
   {
     "id": "savoir-vivre",
+    "type": "talents",
     "label": "Savoir-vivre",
     "max": {
       "bonusOf": "sociabilite"
@@ -4250,6 +4399,7 @@
   },
   {
     "id": "seconde-vue",
+    "type": "talents",
     "label": "Seconde vue",
     "max": {
       "bonusOf": "initiative"
@@ -4268,6 +4418,7 @@
   },
   {
     "id": "seigneur-de-guerre",
+    "type": "talents",
     "label": "Seigneur de guerre",
     "max": {
       "bonusOf": "sociabilite"
@@ -4291,6 +4442,7 @@
   },
   {
     "id": "sens-aiguise",
+    "type": "talents",
     "label": "Sens aiguisé",
     "max": {
       "bonusOf": "initiative"
@@ -4335,6 +4487,7 @@
   },
   {
     "id": "sens-de-l-orientation",
+    "type": "talents",
     "label": "Sens de l'orientation",
     "max": {
       "bonusOf": "initiative"
@@ -4357,6 +4510,7 @@
   },
   {
     "id": "sixieme-sens",
+    "type": "talents",
     "label": "Sixième sens",
     "max": {
       "bonusOf": "initiative"
@@ -4380,6 +4534,7 @@
   },
   {
     "id": "sociable",
+    "type": "talents",
     "label": "Sociable",
     "max": {
       "bonusOf": "sociabilite"
@@ -4403,6 +4558,7 @@
   },
   {
     "id": "sorcier",
+    "type": "talents",
     "label": "Sorcier !",
     "max": {
       "bonusOf": "force-mentale"
@@ -4425,6 +4581,7 @@
   },
   {
     "id": "souplesse-feline",
+    "type": "talents",
     "label": "Souplesse féline",
     "max": {
       "bonusOf": "agilite"
@@ -4448,6 +4605,7 @@
   },
   {
     "id": "sprinter",
+    "type": "talents",
     "label": "Sprinter",
     "max": {
       "bonusOf": "force"
@@ -4474,6 +4632,7 @@
   },
   {
     "id": "studieux",
+    "type": "talents",
     "label": "Studieux",
     "max": {
       "bonusOf": "intelligence"
@@ -4497,6 +4656,7 @@
   },
   {
     "id": "suborneur",
+    "type": "talents",
     "label": "Suborneur",
     "max": {
       "bonusOf": "sociabilite"
@@ -4519,6 +4679,7 @@
   },
   {
     "id": "tireur-d-elite",
+    "type": "talents",
     "label": "Tireur d'élite",
     "max": 1,
     "test": null,
@@ -4535,6 +4696,7 @@
   },
   {
     "id": "tireur-de-precision",
+    "type": "talents",
     "label": "Tireur de précision",
     "max": 1,
     "test": null,
@@ -4555,6 +4717,7 @@
   },
   {
     "id": "tireur-embusque",
+    "type": "talents",
     "label": "Tireur embusqué",
     "max": 4,
     "test": {
@@ -4574,6 +4737,7 @@
   },
   {
     "id": "tir-mortel",
+    "type": "talents",
     "label": "Tir mortel",
     "max": 1,
     "test": null,
@@ -4590,6 +4754,7 @@
   },
   {
     "id": "tir-precis",
+    "type": "talents",
     "label": "Tir précis",
     "max": {
       "bonusOf": "capacite-de-tir"
@@ -4608,6 +4773,7 @@
   },
   {
     "id": "tir-rapide",
+    "type": "talents",
     "label": "Tir rapide",
     "max": {
       "bonusOf": "agilite"
@@ -4634,6 +4800,7 @@
   },
   {
     "id": "tir-sur",
+    "type": "talents",
     "label": "Tir sûr",
     "max": {
       "bonusOf": "initiative"
@@ -4652,6 +4819,7 @@
   },
   {
     "id": "tour-des-souvenirs",
+    "type": "talents",
     "label": "Tour des souvenirs",
     "max": {
       "bonusOf": "intelligence"
@@ -4667,6 +4835,7 @@
   },
   {
     "id": "trappeur",
+    "type": "talents",
     "label": "Trappeur",
     "max": {
       "bonusOf": "initiative"
@@ -4693,6 +4862,7 @@
   },
   {
     "id": "travailleur-qualifie",
+    "type": "talents",
     "label": "Travailleur qualifié",
     "max": {
       "bonusOf": "dexterite"
@@ -4898,6 +5068,7 @@
   },
   {
     "id": "tres-fort",
+    "type": "talents",
     "label": "Très fort",
     "max": 1,
     "test": null,
@@ -4918,6 +5089,7 @@
   },
   {
     "id": "tres-resistant",
+    "type": "talents",
     "label": "Très résistant",
     "max": 1,
     "test": null,
@@ -4938,6 +5110,7 @@
   },
   {
     "id": "tricheur",
+    "type": "talents",
     "label": "Tricheur",
     "max": {
       "bonusOf": "intelligence"
@@ -4961,6 +5134,7 @@
   },
   {
     "id": "tueur",
+    "type": "talents",
     "label": "Tueur",
     "max": 1,
     "test": null,
@@ -4977,6 +5151,7 @@
   },
   {
     "id": "veloce",
+    "type": "talents",
     "label": "Véloce",
     "max": 1,
     "test": null,
@@ -4996,6 +5171,7 @@
   },
   {
     "id": "vigilance",
+    "type": "talents",
     "label": "Vigilance",
     "max": {
       "bonusOf": "initiative"
@@ -5024,6 +5200,7 @@
   },
   {
     "id": "vision-nocturne",
+    "type": "talents",
     "label": "Vision nocturne",
     "max": {
       "bonusOf": "initiative"
@@ -5047,6 +5224,7 @@
   },
   {
     "id": "visions-sacrees",
+    "type": "talents",
     "label": "Visions sacrées",
     "max": {
       "bonusOf": "initiative"
@@ -5070,6 +5248,7 @@
   },
   {
     "id": "vivacite",
+    "type": "talents",
     "label": "Vivacité",
     "max": 1,
     "test": null,
@@ -5090,6 +5269,7 @@
   },
   {
     "id": "volonte-de-fer",
+    "type": "talents",
     "label": "Volonté de fer",
     "max": {
       "bonusOf": "force-mentale"
@@ -5113,6 +5293,7 @@
   },
   {
     "id": "voyageur-aguerri",
+    "type": "talents",
     "label": "Voyageur aguerri",
     "max": {
       "bonusOf": "intelligence"
@@ -5138,6 +5319,7 @@
   },
   {
     "id": "massif",
+    "type": "talents",
     "label": "Massif",
     "max": 1,
     "test": null,
@@ -5152,6 +5334,7 @@
   },
   {
     "id": "vice",
+    "type": "talents",
     "label": "Vice",
     "max": {
       "bonusOf": "force-mentale"
@@ -5193,6 +5376,7 @@
   },
   {
     "id": "sang-neuf",
+    "type": "talents",
     "label": "Sang Neuf",
     "max": 1,
     "test": null,
@@ -5207,6 +5391,7 @@
   },
   {
     "id": "chanson-de-marin",
+    "type": "talents",
     "label": "Chanson de marin",
     "max": {
       "bonusOf": "intelligence"
@@ -5233,6 +5418,7 @@
   },
   {
     "id": "commandant-emerite",
+    "type": "talents",
     "label": "Commandant émérite",
     "max": {
       "bonusOf": "sociabilite"

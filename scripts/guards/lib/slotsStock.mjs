@@ -166,6 +166,10 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "etats.json", champ: "recover", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "etats.json", champ: "subject", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "etats.json", champ: "test", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // COUVERTURE, pas donnée (#1467 L1b V-FLIP-ENTITE-b) : l'adoption de `document()` expose au scanner
+  // le littéral `champs`, que les fabriques `z.object`/`strictObject` seules ne lui montraient pas.
+  // Les entrées ci-dessous NAISSENT du détecteur élargi — la donnée de `etats.json` n'a pas bougé.
+  { dataset: "etats.json", champ: "value", occurrences: 2, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "flow-stakes.json", champ: "flow", occurrences: 16, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "flow-stakes.json", champ: "phase", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "flow-stakes.json", champ: "rule", occurrences: 33, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -306,8 +310,12 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "stars.json", champ: "ops", occurrences: 55, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "structures.json", champ: "traits", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "symptoms.json", champ: "onFail", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "symptoms.json", champ: "ops", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "symptoms.json", champ: "passive", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // Comptes RELEVÉS à neuf par le scanner élargi (#1467 L1b V-FLIP-ENTITE-b, même cause qu'à
+  // `etats.json` ci-dessus) : `severePassive`/`visiblePassive` NAISSENT, `ops`/`passive` montent.
+  { dataset: "symptoms.json", champ: "ops", occurrences: 10, lot: "L1b #1467", date: "2026-08-28" },
+  { dataset: "symptoms.json", champ: "passive", occurrences: 25, lot: "L1b #1467", date: "2026-08-28" },
+  { dataset: "symptoms.json", champ: "severePassive", occurrences: 6, lot: "L1b #1467", date: "2026-08-28" },
+  { dataset: "symptoms.json", champ: "visiblePassive", occurrences: 1, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "tables.json", champ: "ops", occurrences: 93, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "talents.json", champ: "effects", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "talents.json", champ: "gate", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -333,7 +341,9 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "traits.json", champ: "markMutations", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "of", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "ops", occurrences: 20, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "traits.json", champ: "passive", occurrences: 45, lot: "L2/L3 #1473", date: "2026-08-26" },
+  // Compte RELEVÉ à neuf par le scanner élargi (#1467 L1b V-FLIP-ENTITE-b) — 45 → 65, la donnée de
+  // `traits.json` n'a pas bougé.
+  { dataset: "traits.json", champ: "passive", occurrences: 65, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "traits.json", champ: "subject", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "suppressesCapabilities", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "value", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },

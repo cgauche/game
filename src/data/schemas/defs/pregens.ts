@@ -6,14 +6,15 @@
  * `careerTalent` et `pettySpells` sont les seuls choix AUTHORÉS, le reste suit la recette RAW seedée.
  */
 import { z } from 'zod';
+import { document } from '../grammaire/document';
 
 export const file = 'pregens.json';
 export const famille = 'entite';
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
+const doc = document(
+  'pregens',
+  famille,
+  {
     /** `id` STABLE de l'espèce (`SpeciesData.id`). */
     species: z.string(),
     /** `id` STABLE de la carrière (`CareerData.id`). */
@@ -38,5 +39,26 @@ export const schema = z.array(
     sex: z.enum(['M', 'F']).optional(),
     /** Morphologie 0..1 (cosmétique). Défaut 0.5. */
     build: z.number().optional(),
-  }),
+  },
+  {
+    species: { label: 'Espèce', hint: 'Espèce du pré-tiré, prise au catalogue des espèces' },
+    career: { label: 'Carrière', hint: 'Carrière du pré-tiré, prise au catalogue des carrières' },
+    seed: { label: 'Graine de tirage', hint: 'Graine stable qui rejoue à l’identique tous les tirages du pré-tiré' },
+    motivation: { label: 'Motivation', hint: 'Motivation du personnage (texte d’auteur)' },
+    ambitionShort: { label: 'Ambition à court terme', hint: 'Ambition à court terme affichée sur la fiche' },
+    ambitionLong: { label: 'Ambition à long terme', hint: 'Ambition à long terme affichée sur la fiche' },
+    age: { label: 'Âge', hint: 'Âge du pré-tiré ; absent sur toutes les entrées observées' },
+    careerTalent: { label: 'Talent de carrière choisi', hint: 'Talent de Niveau choisi ; sans lui, le premier de la liste est pris' },
+    pettySpells: { label: 'Sorts de Magie mineure', hint: 'Sorts mineurs choisis, complétés au quota par le générateur' },
+    weaponChoice: { label: 'Arme choisie', hint: 'Objet qui résout un choix d’arme d’équipement de départ' },
+    sex: { label: 'Sexe', hint: 'Sexe visuel du pré-tiré (cosmétique)' },
+    build: { label: 'Morphologie', hint: 'Corpulence visuelle du pré-tiré (cosmétique)' },
+  },
+  {
+    codex: { keys: ['pregens'] },
+    edit: { dataset: 'pregens' },
+  },
 );
+
+export const schema = doc.schema;
+export const meta = doc.meta;

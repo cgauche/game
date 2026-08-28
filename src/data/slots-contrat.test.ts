@@ -155,7 +155,12 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
     // (`{op:'testMod', amount:-10, char:'sociabilite'}`, 1 occurrence). Tant que le def déclarait ses
     // champs dans un `z.strictObject` nommé, l'AST couvrait le champ ; sous `document()` les champs
     // vivent dans un littéral `champs` et le scan le voit. Motif inscrit à sa ligne de stock.
-    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(326);
+    // Cliquet REMONTÉ 326 → 329 avec la vague 12 du lot #1467 L1b V-FLIP-ENTITE-b, MÊME cause qu'à la
+    // vague 11b : le DÉTECTEUR voit le littéral `champs` de `document()` sur 21 defs de plus, et
+    // `symptoms.severePassive`/`symptoms.visiblePassive`/`etats.value` NAISSENT au relevé (les comptes
+    // de `symptoms.ops/passive` et `traits.passive` montent au même titre). Aucune référence neuve
+    // n'a été écrite en donnée : la dette était là, elle est désormais VUE.
+    expect(SLOTS_SANS_DECLARATION.length, 'la dette d’adoption du registre des slots a GONFLÉ.').toBeLessThanOrEqual(329);
   });
 
   it('chaque ligne du stock porte sa DATE et son LOT de mort', () => {

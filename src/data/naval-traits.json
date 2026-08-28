@@ -1,6 +1,7 @@
 [
   {
     "id": "peu-maniable",
+    "type": "naval-traits",
     "label": "Peu maniable",
     "kind": "trait",
     "ranked": true,
@@ -24,6 +25,7 @@
   },
   {
     "id": "renforce",
+    "type": "naval-traits",
     "label": "Renforcé",
     "kind": "trait",
     "ranked": true,
@@ -35,6 +37,7 @@
   },
   {
     "id": "robuste",
+    "type": "naval-traits",
     "label": "Robuste",
     "kind": "trait",
     "passive": [
@@ -52,6 +55,7 @@
   },
   {
     "id": "solide",
+    "type": "naval-traits",
     "label": "Solide",
     "kind": "trait",
     "ranked": true,
@@ -63,6 +67,7 @@
   },
   {
     "id": "ancre",
+    "type": "naval-traits",
     "label": "Ancre",
     "kind": "amelioration",
     "install": {
@@ -99,6 +104,7 @@
   },
   {
     "id": "belier",
+    "type": "naval-traits",
     "label": "Bélier",
     "kind": "amelioration",
     "ram": {
@@ -163,6 +169,7 @@
   },
   {
     "id": "blindage-bronze",
+    "type": "naval-traits",
     "label": "Blindage (bronze)",
     "kind": "amelioration",
     "passive": [
@@ -204,6 +211,7 @@
   },
   {
     "id": "blindage-fer",
+    "type": "naval-traits",
     "label": "Blindage (fer)",
     "kind": "amelioration",
     "passive": [
@@ -245,6 +253,7 @@
   },
   {
     "id": "cabine-de-luxe",
+    "type": "naval-traits",
     "label": "Cabine de luxe",
     "kind": "amelioration",
     "install": {
@@ -275,6 +284,7 @@
   },
   {
     "id": "clinfoc",
+    "type": "naval-traits",
     "label": "Clinfoc",
     "kind": "amelioration",
     "install": {
@@ -351,6 +361,7 @@
   },
   {
     "id": "embarcation-de-bord",
+    "type": "naval-traits",
     "label": "Embarcation de bord",
     "kind": "amelioration",
     "install": {
@@ -365,6 +376,7 @@
   },
   {
     "id": "figure-de-proue",
+    "type": "naval-traits",
     "label": "Figure de proue",
     "kind": "amelioration",
     "install": {
@@ -393,6 +405,7 @@
   },
   {
     "id": "lissage",
+    "type": "naval-traits",
     "label": "Lissage",
     "kind": "amelioration",
     "passive": [
@@ -424,6 +437,7 @@
   },
   {
     "id": "nid-de-pie",
+    "type": "naval-traits",
     "label": "Nid-de-pie",
     "kind": "amelioration",
     "ranked": true,
@@ -468,6 +482,7 @@
   },
   {
     "id": "propulsion-a-vapeur",
+    "type": "naval-traits",
     "label": "Propulsion à vapeur",
     "kind": "amelioration",
     "install": {
@@ -496,6 +511,7 @@
   },
   {
     "id": "ralentisseurs-lateraux",
+    "type": "naval-traits",
     "label": "Ralentisseurs latéraux",
     "kind": "amelioration",
     "install": {
@@ -572,6 +588,7 @@
   },
   {
     "id": "sabord",
+    "type": "naval-traits",
     "label": "Sabord",
     "kind": "amelioration",
     "deckCover": "totale",
@@ -605,6 +622,7 @@
   },
   {
     "id": "bouteur",
+    "type": "naval-traits",
     "label": "Bouteur",
     "kind": "amelioration",
     "passive": [
@@ -666,6 +684,7 @@
   },
   {
     "id": "proue-idole-de-stromfels",
+    "type": "naval-traits",
     "label": "Proue-idole de Stromfels",
     "kind": "amelioration",
     "passive": [
@@ -680,6 +699,7 @@
   },
   {
     "id": "murs-blindes",
+    "type": "naval-traits",
     "label": "Murs blindés",
     "kind": "amelioration",
     "deckCover": "totale",
@@ -742,6 +762,7 @@
   },
   {
     "id": "coque-de-course",
+    "type": "naval-traits",
     "label": "Coque de course",
     "kind": "amelioration",
     "passive": [
@@ -779,6 +800,7 @@
   },
   {
     "id": "safran",
+    "type": "naval-traits",
     "label": "Safran",
     "kind": "amelioration",
     "install": {
@@ -834,6 +856,7 @@
   },
   {
     "id": "plat-bord",
+    "type": "naval-traits",
     "label": "Plat-bord",
     "kind": "amelioration",
     "deckCover": "moyenne",
@@ -889,6 +912,7 @@
   },
   {
     "id": "allegement",
+    "type": "naval-traits",
     "label": "Allégement",
     "kind": "amelioration",
     "install": {
@@ -943,6 +967,7 @@
   },
   {
     "id": "greement-de-course",
+    "type": "naval-traits",
     "label": "Gréement de course",
     "kind": "amelioration",
     "navTestMod": -10,
@@ -998,6 +1023,7 @@
   },
   {
     "id": "fourquines",
+    "type": "naval-traits",
     "label": "Fourquines",
     "kind": "amelioration",
     "install": {

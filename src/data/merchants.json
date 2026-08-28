@@ -1,6 +1,7 @@
 [
   {
     "id": "armurier",
+    "type": "merchants",
     "label": "Armurier",
     "category": {
       "categories": [
@@ -17,6 +18,7 @@
   },
   {
     "id": "avitailleur",
+    "type": "merchants",
     "label": "Avitailleur",
     "category": {
       "subTypes": [
@@ -41,6 +43,7 @@
   },
   {
     "id": "herboriste",
+    "type": "merchants",
     "label": "Herboriste",
     "category": {
       "subTypes": [
@@ -55,6 +58,7 @@
   },
   {
     "id": "maquignon",
+    "type": "merchants",
     "label": "Maquignon",
     "category": {
       "subTypes": [
@@ -72,6 +76,7 @@
   },
   {
     "id": "medecin",
+    "type": "merchants",
     "label": "Médecin",
     "category": {
       "subTypes": [
@@ -95,6 +100,7 @@
   },
   {
     "id": "taverniere",
+    "type": "merchants",
     "label": "Tavernière",
     "category": {
       "subTypes": [

@@ -1,10 +1,11 @@
 /**
  * LES DEUX MIGRATIONS DÉJÀ JOUÉES, REJOUÉES SUR UN ARBRE JETABLE (#1467 L1b V-FLIP-ENTITE-b).
  *
- * `2026-08-28-l1b-6a` a renommé `type`→`polarite` (qualities) et `6c` `type`→`nature`
- * (characteristics). L'adoption de `document()` a ensuite posé une clé d'ENVELOPPE `type` — le NOM DU
- * DOCUMENT — sur ces mêmes entrées, que les deux scripts lisaient comme l'ancien scalaire ressuscité
- * (59 + 19 « arbitrage requis », rejeu ROUGE). Ils distinguent désormais les deux par `typeAncien()`.
+ * `2026-08-28-l1b-6a` a renommé `type`→`polarite` (qualities), `6c` `type`→`nature`
+ * (characteristics) et `6b` `type`→`acces` (skills). L'adoption de `document()` a ensuite posé une clé
+ * d'ENVELOPPE `type` — le NOM DU DOCUMENT — sur ces mêmes entrées, que ces scripts lisaient comme
+ * l'ancien scalaire ressuscité (« arbitrage requis » sur toutes les entrées, rejeu ROUGE). Ils
+ * distinguent désormais les deux par `typeAncien()` — 6a/6c à la vague 11b, 6b à la vague 12.
  *
  * RETOUCHER UN SCRIPT DÉJÀ JOUÉ est le geste le plus risqué du lot : ce test le tient. Il exécute les
  * VRAIS fichiers de `scripts/migrations/` — copiés dans un arbre temporaire pour que leur
@@ -56,6 +57,17 @@ const CAS: readonly Cas[] = [
     cleNeuve: 'nature',
     cardinal: 19,
     valeurs: ['roll', 'wounds', 'extra', 'mv', 'points', 'compteur'],
+  },
+  {
+    script: '2026-08-28-l1b-6b-skills-acces.mjs',
+    fichier: 'skills.json',
+    typeEnveloppe: 'skills',
+    cleNeuve: 'acces',
+    cardinal: 48,
+    // La graphie accentuée `avancée` que 6b NORMALISE est absente d'ici à dessein : le cas A compare
+    // la valeur rendue à la valeur d'entrée, il ne mesurerait pas le renommage mais la normalisation
+    // (couverte, elle, par la preuve post-écriture du script lui-même).
+    valeurs: ['base', 'avancee'],
   },
 ];
 

@@ -412,7 +412,7 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
   // pas un oubli d'adoption : ses deux formes (bande d100 `min`/`max`/`kind` vs Incident de Tir
   // `kind: 'misfire'`) sont DISJOINTES, et `options.variantes` ne les exprime pas (une variante
   // REPUBLIE des champs d'un même document, elle n'en propose pas une seconde forme). `oups` relève
-  // d'une classe « union » à concevoir, hors des vagues 11a/11b. Au 2026-08-28, `scelles` = 23 defs
+  // d'une classe « union » à concevoir, hors des vagues 11a/11b/12. Au 2026-08-28, `scelles` = 64 defs
   // réellement adoptés + `oups`.
   const noeudInterne = (n: unknown): unknown => {
     const d = (n as { _zod?: { def?: Record<string, unknown> }; def?: Record<string, unknown> })?._zod?.def;
@@ -451,8 +451,19 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     //         source −3 (astrology, classes, sea-shanties), icon −1 (calendarPhases).
     //   11b : desc −6 (careers, characteristics, interludeEvents, mutations, qualities, regles),
     //         source −7 (careers, characteristics, locations, qualities, regles, stars, voyage-stakes).
+    //   12  : desc −9 (etats, maladies, naval-traits, skills, steam-breakdown, symptoms, talents,
+    //                  traits, traumas),
+    //         source −9 (combat-stakes, etats, flow-stakes, maneuvers, naval-ports, skills,
+    //                    structures, talents, traits) — 21 defs quittent la mesure (33 → 12, 44 → 65).
     // L'ADOPTION est la cause du recalage, pas une dérive du détecteur.
-    expect(mesure).toEqual({ desc: 13, source: 17, icon: 2, scelles: 44, mesures: 33 });
+    //
+    // UN SEUL ÉCART entre ce que la mesure PERD et ce que `exiges` REPREND, à la vague 12 :
+    // `talents` quitte la population avec `desc` REQUISE et n'exige que `source`. Sa 187ᵉ entrée,
+    // `talent-aleatoire`, est une entrée MÉTA du vocabulaire de tirage (LDB 10 p.132, exemptée
+    // d'obtenabilité par `META_CATALOG_ENTRIES`) sans prose à citer : sa `desc: ""` est PURGÉE par
+    // `2026-08-28-l1b-12a-entite-type.mjs` (renvoi nominatif de la migration 3h), et exiger `desc`
+    // refuserait cette entrée. L'écart est ici, pas dans un silence.
+    expect(mesure).toEqual({ desc: 4, source: 8, icon: 2, scelles: 65, mesures: 12 });
   });
 
 });
@@ -561,6 +572,26 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
     'regles.json · source',
     'stars.json · source',
     'voyage-stakes.json · source',
+    // vague 12 — 17 exigences NEUVES, chacune MORDANTE (la paire n'entre dans la population que si
+    // l'entrée amputée est refusée par le schéma). `talents` n'exige que `source` : l'écart est
+    // motivé au mesureur ci-dessus (entrée MÉTA `talent-aleatoire`, sans prose).
+    'combat-stakes.json · source',
+    'etats.json · desc',
+    'etats.json · source',
+    'flow-stakes.json · source',
+    'maladies.json · desc',
+    'maneuvers.json · source',
+    'naval-ports.json · source',
+    'naval-traits.json · desc',
+    'skills.json · desc',
+    'skills.json · source',
+    'steam-breakdown.json · desc',
+    'structures.json · source',
+    'symptoms.json · desc',
+    'talents.json · source',
+    'traits.json · desc',
+    'traits.json · source',
+    'traumas.json · desc',
   ];
 
   it('la 1ʳᵉ entrée réelle de chaque def adopté est ACCEPTÉE — témoin positif de chaque paire', () => {

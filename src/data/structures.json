@@ -1,6 +1,7 @@
 [
   {
     "id": "porte",
+    "type": "structures",
     "label": "Porte",
     "kind": "porte",
     "char": {
@@ -19,6 +20,7 @@
   },
   {
     "id": "porte-blindee",
+    "type": "structures",
     "label": "Porte blindée",
     "kind": "porte",
     "char": {
@@ -37,6 +39,7 @@
   },
   {
     "id": "porte-de-ville",
+    "type": "structures",
     "label": "Porte de ville",
     "kind": "porte",
     "fortified": true,
@@ -56,6 +59,7 @@
   },
   {
     "id": "mur-en-bois",
+    "type": "structures",
     "label": "Mur en bois",
     "kind": "mur",
     "char": {
@@ -74,6 +78,7 @@
   },
   {
     "id": "mur-en-pierre",
+    "type": "structures",
     "label": "Mur en pierre",
     "kind": "mur",
     "fortified": true,
@@ -93,6 +98,7 @@
   },
   {
     "id": "charrette",
+    "type": "structures",
     "label": "Charrette",
     "kind": "mur",
     "vehicle": true,
@@ -112,6 +118,7 @@
   },
   {
     "id": "chariot-leger",
+    "type": "structures",
     "label": "Chariot léger",
     "kind": "mur",
     "vehicle": true,
@@ -131,6 +138,7 @@
   },
   {
     "id": "chariot-moyen",
+    "type": "structures",
     "label": "Chariot moyen",
     "kind": "mur",
     "vehicle": true,
@@ -150,6 +158,7 @@
   },
   {
     "id": "chariot-lourd",
+    "type": "structures",
     "label": "Chariot lourd",
     "kind": "mur",
     "vehicle": true,
@@ -169,6 +178,7 @@
   },
   {
     "id": "diligence",
+    "type": "structures",
     "label": "Diligence",
     "kind": "mur",
     "vehicle": true,
@@ -188,6 +198,7 @@
   },
   {
     "id": "barge-moyenne",
+    "type": "structures",
     "label": "Barge moyenne",
     "kind": "mur",
     "vehicle": true,
@@ -207,6 +218,7 @@
   },
   {
     "id": "bateau-de-patrouille",
+    "type": "structures",
     "label": "Bateau de patrouille",
     "kind": "mur",
     "vehicle": true,
@@ -226,6 +238,7 @@
   },
   {
     "id": "chaloupe",
+    "type": "structures",
     "label": "Chaloupe",
     "kind": "mur",
     "vehicle": true,
@@ -245,6 +258,7 @@
   },
   {
     "id": "cloture-en-clayonnage",
+    "type": "structures",
     "label": "Clôture en clayonnage",
     "kind": "mur",
     "char": {
@@ -261,6 +275,7 @@
   },
   {
     "id": "herse",
+    "type": "structures",
     "label": "Herse",
     "kind": "mur",
     "edgeKind": "porte",
@@ -277,6 +292,7 @@
   },
   {
     "id": "mantelet-de-bois",
+    "type": "structures",
     "label": "Mantelet de bois",
     "kind": "mur",
     "char": {
@@ -294,6 +310,7 @@
   },
   {
     "id": "mur-a-ossature-en-bois",
+    "type": "structures",
     "label": "Mur à ossature en bois",
     "kind": "mur",
     "char": {
@@ -311,6 +328,7 @@
   },
   {
     "id": "mur-de-chateau",
+    "type": "structures",
     "label": "Mur de château",
     "kind": "mur",
     "char": {
@@ -328,6 +346,7 @@
   },
   {
     "id": "mur-de-forteresse-naine",
+    "type": "structures",
     "label": "Mur de forteresse naine",
     "kind": "mur",
     "char": {
@@ -345,6 +364,7 @@
   },
   {
     "id": "mur-de-pierre-aa",
+    "type": "structures",
     "label": "Mur de pierre (relais fortifié)",
     "kind": "mur",
     "char": {
@@ -362,6 +382,7 @@
   },
   {
     "id": "mur-en-pierres-seches",
+    "type": "structures",
     "label": "Mur en pierres sèches",
     "kind": "mur",
     "char": {
@@ -379,6 +400,7 @@
   },
   {
     "id": "palissade-de-pieux",
+    "type": "structures",
     "label": "Palissade de pieux",
     "kind": "mur",
     "char": {
@@ -396,6 +418,7 @@
   },
   {
     "id": "solide-porte-en-bois",
+    "type": "structures",
     "label": "Solide porte en bois",
     "kind": "porte",
     "char": {
@@ -412,6 +435,7 @@
   },
   {
     "id": "terrassement",
+    "type": "structures",
     "label": "Terrassement",
     "kind": "mur",
     "char": {
